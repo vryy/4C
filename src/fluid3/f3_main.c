@@ -12,6 +12,7 @@ Maintainer: Steffen Genkinger
 ------------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "fluid3_prototypes.h"
+#include "../fluid3ml/fluid3ml_prototypes.h"
 #include "fluid3.h"
 
 #ifdef FLUID3_ML
@@ -25,6 +26,16 @@ Maintainer: Steffen Genkinger
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
 extern ALLDYNA      *alldyn;   
+/*!----------------------------------------------------------------------
+\brief ranks and communicators
+
+<pre>                                                         m.gee 8/00
+This structure struct _PAR par; is defined in main_ccarat.c
+and the type is in partition.h                                                  
+</pre>
+
+*----------------------------------------------------------------------*/
+ extern struct _PAR   par;                      
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -75,9 +86,8 @@ void fluid3(PARTITION   *actpart,
 	   )
 {
 #ifdef D_FLUID3 
-static INT              numff;      /* number of fluid field            */
 static INT              viscstr;
-FLUID_DYNAMIC          *fdyn;
+static FLUID_DYNAMIC   *fdyn;
 #ifdef FLUID3_ML
 static FLUID_DYN_ML    *mlvar;
 static FLUID_ML_SMESH  *submesh;
@@ -87,32 +97,26 @@ static INT              xele,yele,zele;/* numb. of subm. ele. in x,y,z  */
 INT smisal;
 #endif
 
-  FIELD                  *actfield;   /* actual field                     */
-  INT       i;        /* simply a counter */
-  INT       ldflag;
-  GVOL     *actgvol;
-  GSURF    *actgsurf;
-  DSURF    *actdsurf;
+INT       i;        /* simply a counter */
+INT       ldflag;
+GVOL     *actgvol;
+GSURF    *actgsurf;
+DSURF    *actdsurf;
 
 #ifdef DEBUG 
 dstrc_enter("fluid3");
 #endif
 
-fdyn = alldyn[0].fdyn;
 /*------------------------------------------------- switch to do option */
 switch (*action)
 {
 /*------------------------------------------------------ initialization */
 case calc_fluid_init:
 /* ----------------------------------------- find number of fluid field */
-  for (numff=0;numff<genprob.numfld;numff++)
-  {
-     actfield=&(field[numff]);
-     if (actfield->fieldtyp==fluid)
-     break;
-  }
-  data   = alldyn[numff].fdyn->data;
-  viscstr= alldyn[genprob.numff].fdyn->viscstr;
+   fdyn   = alldyn[genprob.numff].fdyn;
+   data   = alldyn[genprob.numff].fdyn->data;
+   viscstr= alldyn[genprob.numff].fdyn->viscstr;
+
 /*------------------------------------------- init the element routines */   
   f3_intg(data,0);
   f3_calele(data,NULL,estif_global,emass_global,etforce_global,
@@ -121,9 +125,9 @@ case calc_fluid_init:
 #ifdef FLUID3_ML
   if (fdyn->mlfem==1) 
   {  
-    mlvar   = alldyn[numff].fdyn->mlvar;
-    submesh = &(alldyn[numff].fdyn->mlvar->submesh);
-    ssmesh  = &(alldyn[numff].fdyn->mlvar->ssmesh);
+    mlvar   = alldyn[genprob.numff].fdyn->mlvar;
+    submesh = &(alldyn[genprob.numff].fdyn->mlvar->submesh);
+    ssmesh  = &(alldyn[genprob.numff].fdyn->mlvar->ssmesh);
 /*------- determine number of submesh elements in coordinate directions */   
     math_intextract(mlvar->smelenum,&ndum,&xele,&yele,&zele);
 /*------------------------------------- create submesh on parent domain */   
@@ -168,37 +172,47 @@ else
                  eiforce_global,edforce_global,hasdirich,hasext,0);
 break;
 
-
-/* calculate fluid stresses */
+/*-------------------------------------------- calculate fluid stresses */
 case calc_fluid_stress:
-  f3_stress(container->str,viscstr,data,ele,container->is_relax);
-  break;
-
+   /*------ calculate stresses only for elements belonging to this proc */
+   if (par.myrank==ele->proc)
+      f3_stress(container->str,viscstr,data,ele,container->is_relax);
+break;
 
 /* calculate fluid stresses for lift&drag calculation */
-  case calc_fluid_liftdrag:
-    if (ele->proc == actintra->intra_rank)
+case calc_fluid_liftdrag:
+  if (ele->proc == actintra->intra_rank)
+  {
+    /* check if element is on liftdrag-dline */
+    actgvol=ele->g.gvol;
+    ldflag=0;
+    for (i=0;i<actgvol->ngsurf;i++)
     {
-      /* check if element is on liftdrag-dline */
-      actgvol=ele->g.gvol;
-      ldflag=0;
-      for (i=0;i<actgvol->ngsurf;i++)
-      {
-        actgsurf=actgvol->gsurf[i];
-        actdsurf=actgsurf->dsurf;
-        if (actdsurf==NULL) continue;
-        if (actdsurf->liftdrag==NULL) continue;
-        ldflag++;
-        break;
-      }
-      if (ldflag>0)
-      {
-        f3_stress(container->str,viscstr,data,ele,container->is_relax);
-        f3_liftdrag(ele,data,container);
-      }
+      actgsurf=actgvol->gsurf[i];
+      actdsurf=actgsurf->dsurf;
+      if (actdsurf==NULL) continue;
+      if (actdsurf->liftdrag==NULL) continue;
+      ldflag++;
+      break;
     }
-    break;
+    if (ldflag>0)
+    {
+      f3_stress(container->str,viscstr,data,ele,container->is_relax);
+      f3_liftdrag(ele,data,container);
+    }
+  }
+break;
 
+/*--------------------------------- calculate height function matrices */
+case calc_fluid_heightfunc:
+   f3_heightfunc(data,ele,estif_global,
+                 eiforce_global,container);
+break;
+
+/*--------------------------- calculate element stabilisation parameter */
+case calc_fluid_stab:
+   f3_calstab(ele,data);
+break;
 
 /*----------------------------------------------------------------------*/
 default:
