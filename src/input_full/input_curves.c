@@ -194,6 +194,8 @@ for (i=0; i<counter; i++)
          actcurve->numex=-7;
       else if (strncmp(buffer,"f(t)=(C2:2PI*C1)*cos(2PI*C1*t)",30)==0)
          actcurve->numex=-8;
+      else if (strncmp(buffer,"f(t)=t:2-C1:(2PI)*cos(PI*t:C1-PI:2)",35)==0)
+         actcurve->numex=-9; /* time integral of numex -5 */
       else
          dserror("cannot read function of CURVE\n");
       if (ierr!=1) dserror("cannot read CURVE");
