@@ -353,7 +353,7 @@ amzero(edforce_global);
 *hasext=0;
 
 /*---------------------------- set element data for large-scale element */
-f2_lsset(ele,eveln,evel,epren,epre,edeadn,edead,hasext);
+f2_lsset(ele,eveln,evel,epre,edeadn,edead,hasext);
 
 /*------------------------------- dynamic subgrid viscosity calculation */
 if (mlvar->smsgvi>2) f2_dynsgv(data,mlvar,submesh,ssmesh,ele);
@@ -425,7 +425,8 @@ f2_lsint(data,ele,mlvar,hasext,estif,emass,eiforce,etforce,funct,
 f2_mlpermestif(estif,emass,wa1,ele->numnp);
 
 /*--------------------------------- permute element load vector etforce */
-if (fdyn->nif!=0) f2_permeforce(etforce,wa1,ele->numnp);
+/*if (fdyn->nif!=0) f2_permeforce(etforce,wa1,ele->numnp);*/
+/* etforce has been removed!!!*/
 
 /*--------------------------------- permute element load vector eiforce */
 if (fdyn->nii+(*hasext)!=0) f2_permeforce(eiforce,wa1,ele->numnp);
