@@ -140,7 +140,7 @@ void f3_mlcalelesize2(ELEMENT         *ele,
                       DOUBLE	   **derxy,	       
 		      DOUBLE	     visc,
 		      INT 	     iel,
-		      INT 	     ntyp); 
+		      DIS_TYP 	     typ) ; 
 		  
 /************************************************************************
  | f3_mlgalmat.c                                                          |
@@ -542,26 +542,26 @@ void f3_smstabpar(ELEMENT         *ele,
 		  DOUBLE	  *velint,  
 		  DOUBLE	   visc,    
 		  INT		   iel,     
-		  INT		   ntyp);
+		  DIS_TYP	   typ);
 void f3_smsgvisc(ELEMENT         *ele,
                  FLUID_DYN_ML    *mlvar,
 		 DOUBLE 	 *velint,  
 		 DOUBLE 	**vderxy,  
 		 DOUBLE 	  visc,    
 		 INT		  iel,     
-		 INT		  ntyp);
+		 DIS_TYP          typ);
 void f3_mlcalstabpar(ELEMENT         *ele,
 		     DOUBLE	   *velint,  
 		     DOUBLE	    visc,    
 		     INT  	    iel,     
-		     INT  	    ntyp,    
+		     DIS_TYP  	    typ,    
 		     INT  	    iflag);
 void f3_calsgvisc(ELEMENT         *ele,
 		  DOUBLE          *velint,  
 		  DOUBLE         **vderxy,  
 		  DOUBLE           visc,    
 		  INT              iel,     
-		  INT              ntyp);
+		  DIS_TYP          typ);
 		 
 /************************************************************************
  | f3_mlsubmesh.c                                                            |
