@@ -1751,4 +1751,31 @@ void fluid3(
 	    CONTAINER   *container
            );
 	   
-	    
+/************************************************************************
+ | f3_massrhs.c                                                         |
+ ************************************************************************/
+ /*!--------------------------------------------------------------------- 
+\brief calculates mass-acceleration-part of the rhs vector for 
+       generalised-alpha time integration
+
+<pre>                                                        chfoe 11/03
+
+This routine performs the multiplication emass*acc(n) and writes its
+negative result on the elemental iteration force vector. This gives a 
+part of the rhs required in the generalised alpha time integration scheme
+for fluids.
+			     
+</pre>
+\param	 *ele		ELEMENT		(i)	actual element
+\param	**emass		DOUBLE		(i)	element mass matrix
+\param  **eaccn		DOUBLE		(i)	element nodal accelerations
+\param 	 *eiforce	DOUBLE	        (o)	element iteration force vec
+
+\warning This routine has not yet been tested!!!
+
+\return void                                               
+\sa calling: 
+             called by: f3_calele()
+                     
+------------------------------------------------------------------------*/
+void f3_massrhs(ELEMENT *ele, DOUBLE **emass, DOUBLE **eaccn, DOUBLE *eiforce);
