@@ -2,7 +2,7 @@
  | control structure                                      m.gee 5/02    |
  | for nonlinear structural dynamics                                    |           
  *----------------------------------------------------------------------*/
-typedef struct _VISUAL_FLUID
+typedef struct _VISUAL_DATA
 {
 int                          step;     
 
@@ -13,4 +13,4 @@ int                          node_fdim;
 int                          node_sdim;
 long int                    *node_handles;
 
-} VISUAL_FLUID;
+} VISUAL_DATA;
