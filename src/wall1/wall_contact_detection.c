@@ -839,6 +839,7 @@ for (i=0; i<contact.ng_slavenode; i++) {
   {
       if (master_owner[j]==myrank) continue;
       if (master_owner[j]==master_owner[j-1]) continue;
+#ifdef PARALLEL 
       MPI_Send(&(contact.g_slavenode[i]->stiffness->a.da[0][0]),
                contact.g_slavenode[i]->stiffness->fdim * contact.g_slavenode[i]->stiffness->sdim,
 	       MPI_DOUBLE,
@@ -857,6 +858,7 @@ for (i=0; i<contact.ng_slavenode; i++) {
 	       master_owner[j],
 	       myrank,
 	       actintra->MPI_INTRA_COMM);
+#endif
   }
   else
   {
@@ -869,6 +871,7 @@ for (i=0; i<contact.ng_slavenode; i++) {
      amdef("stiffness",contact.g_slavenode[i]->stiffness,6,6,"DA");
      amdef("int_force",contact.g_slavenode[i]->int_force,6,1,"DV");
      amdef("ass_index",contact.g_slavenode[i]->ass_index,6,1,"IV");
+#ifdef PARALLEL 
      MPI_Recv(&(contact.g_slavenode[i]->stiffness->a.da[0][0]),
               contact.g_slavenode[i]->stiffness->fdim * contact.g_slavenode[i]->stiffness->sdim,
 	      MPI_DOUBLE,
@@ -890,6 +893,7 @@ for (i=0; i<contact.ng_slavenode; i++) {
 	      master_owner[0],
 	      actintra->MPI_INTRA_COMM,
 	      &status);
+#endif
   }
   
     
@@ -920,9 +924,9 @@ for (i=0; i<contact.ng_slavenode; i++) {
     amdel(contact.g_slavenode[i]->stiffness);  /*Free the memory allocated.*/
     amdel(contact.g_slavenode[i]->int_force);
     amdel(contact.g_slavenode[i]->ass_index);
-    FREE(contact.g_slavenode[i]->stiffness);
-    FREE(contact.g_slavenode[i]->int_force);
-    FREE(contact.g_slavenode[i]->ass_index);
+    CCAFREE(contact.g_slavenode[i]->stiffness);
+    CCAFREE(contact.g_slavenode[i]->int_force);
+    CCAFREE(contact.g_slavenode[i]->ass_index);
 
   }
 } 

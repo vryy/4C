@@ -992,7 +992,7 @@ augend:;
 if (contactflag){
   wall_contact_history_update(actintra);
   actaug = 0;
-  FREE(contact.contact_set);
+  CCAFREE(contact.contact_set);
 /*------------------------ write contact forces to the nodes in place 9 */
 solserv_scalarprod_vec(&(con[0]),(-1.0));
 solserv_result_total(actfield,actintra, &(con[0]),9,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));

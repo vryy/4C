@@ -687,12 +687,14 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frint("RESEVRYSTRS",&(sdyn->updevry_stress),&ierr);
    frint("RESTARTEVRY",&(sdyn->res_write_evry),&ierr);
    frint("CONTACT"    ,&(sdyn->contact)       ,&ierr);
+#ifdef WALLCONTACT
    frint("CET_flag",   &(contact.CET_flag)    ,&ierr);
    frint("FR_flag",    &(contact.FR_flag)     ,&ierr);
+#endif
 /*--------------read DOUBLE */
    frdouble("TIMESTEP",&(sdyn->dt)     ,&ierr);
-#ifdef GEMM
-   frdouble("TIMESTEP",&(contact.dt)   ,&ierr);
+#ifdef WALLCONTACT
+   if (ierr) contact.dt = sdyn->dt;
 #endif
    frdouble("MAXTIME" ,&(sdyn->maxtime),&ierr);
    frdouble("BETA"    ,&(sdyn->beta)   ,&ierr);
@@ -702,9 +704,11 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 #ifdef GEMM   
    frdouble("XSI"     ,&(sdyn->xsi)    ,&ierr);
 #endif
+#ifdef WALLCONTACT
    frdouble("NPP"     ,&(contact.n_pen_par) , &ierr);
    frdouble("TPP"     ,&(contact.t_pen_par) , &ierr);
    frdouble("FR_COEF" ,&(contact.fr_coef)   , &ierr);
+#endif
    frdouble("M_DAMP"  ,&(sdyn->m_damp) ,&ierr);
    frdouble("K_DAMP"  ,&(sdyn->k_damp) ,&ierr);
    frdouble("TOLDISP" ,&(sdyn->toldisp),&ierr);

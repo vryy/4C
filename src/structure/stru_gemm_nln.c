@@ -939,7 +939,7 @@ solserv_result_total(actfield,actintra, &(con[0]),9,&(actsolv->sysarray[stiff_ar
 /*------------------------------------------------Update contact history*/
 wall_contact_update_em(actfield,actintra);
 wall_contact_his_update_em(actintra);
-FREE(contact.contact_set);
+CCAFREE(contact.contact_set);
 #endif
 
 /*----------- make temporary copy of actsolv->rhs[2] to actsolv->rhs[0] */

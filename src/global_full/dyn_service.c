@@ -1389,8 +1389,13 @@ return;
 #ifdef GEMM
 void total_energy(PARTITION *actpart,INTRA *actintra, STRUCT_DYN_CALC *dynvar)
 {
-int          i;
+INT          i;
 ELEMENT     *actele;
+
+#ifdef PARALLEL
+DOUBLE       send[5],recv[5];
+#endif
+
 #ifdef DEBUG 
 dstrc_enter("total_energy");
 #endif
@@ -1421,12 +1426,19 @@ for (i=0; i<actpart->pdis[0].numele; i++)
   dynvar->local_linmom[1]        = dynvar->local_linmom[1] +  actele->e.w1->linmom[1];
   dynvar->local_angular_momentum = dynvar->local_angular_momentum + actele->e.w1->angular_momentum;  
 }
-
- MPI_Allreduce (&(dynvar->local_strain_energy),&(dynvar->total_strain_energy),1,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
- MPI_Allreduce (&(dynvar->local_kinetic_energy),&(dynvar->total_kinetic_energy),1,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
- MPI_Allreduce (&(dynvar->local_linmom[0]),&(dynvar->total_linmom[0]),1,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
- MPI_Allreduce (&(dynvar->local_linmom[1]),&(dynvar->total_linmom[1]),1,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
- MPI_Allreduce (&(dynvar->local_angular_momentum),&(dynvar->total_angular_momentum),1,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
+#ifdef PARALLEL
+send[0] = dynvar->local_strain_energy;
+send[1] = dynvar->local_kinetic_energy;
+send[2] = dynvar->local_linmom[0];
+send[3] = dynvar->local_linmom[1];
+send[4] = dynvar->local_angular_momentum;
+MPI_Allreduce (send,recv,5,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
+recv[0] = send[0];
+recv[1] = send[1];
+recv[2] = send[2];
+recv[3] = send[3];
+recv[4] = send[4];
+#endif
   
 #ifdef DEBUG 
 dstrc_exit();
