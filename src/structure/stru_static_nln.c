@@ -248,8 +248,11 @@ solserv_create_vec(&(actsolv->sol),actsolv->nsol,numeq_total,numeq,"DV");
 for (i=0; i<actsolv->nsol; i++) solserv_zero_vec(&(actsolv->sol[i]));
 /*------------------------ create vector re[0] for out of balance loads */
 /*------------------ re[0] is used to hold residual forces in iteration */
-solserv_create_vec(&(re),1,numeq_total,numeq,"DV");
+/*----- re[1] holds up-to-date residual forces for check of convergence */
+solserv_create_vec(&(re),2,numeq_total,numeq,"DV");
+
 solserv_zero_vec(&(re[0]));
+solserv_zero_vec(&(re[1]));
 /*--------------------- create 3 vectors rsd for residual displacements */
 /*------------ the iteration uses rsd[0] to hold actual residual displ. */
 /*--------------------- rsd[1] and rsd[2] are additional working arrays */
@@ -289,6 +292,14 @@ init_bin_out_field(&out_context,
 if (par.myrank==0)
 if (ioflags.struct_disp_gid||ioflags.struct_stress_gid)
    out_gid_msh();
+/*-------------------------------------- write output of submesh to gid */
+#ifdef D_MLSTRUCT
+if (genprob.multisc_struct == 1 && (ioflags.struct_sm_disp_gid ||ioflags.struct_sm_stress_gid ))
+{
+   out_gid_smsol_init();
+   out_gid_submesh();
+}
+#endif
 /*-------------------------------------- create the original rhs vector */
 /*-------------------------- set action before of calrhs --- genk 10/02 */
 container.kstep = 0;
@@ -489,6 +500,13 @@ for (kstep=0; kstep<nstep; kstep++)
        if (ioflags.struct_stress_gid==1 && mod_stress==0)
        out_gid_sol("stress"      ,actfield,actintra,kstep,0,ZERO);
    }
+   /*------------------------------ printout multiscale results to gid */
+#ifdef D_MLSTRUCT
+   if (genprob.multisc_struct && ioflags.struct_sm_disp_gid && mod_displ==0)
+     out_gid_smdisp("displacement",kstep);
+   if (genprob.multisc_struct && ioflags.struct_sm_stress_gid && mod_stress==0)
+     out_gid_smstress("stress",kstep); 
+#endif
 
 #ifdef BINIO
    if (ioflags.struct_disp_gid==1 && mod_displ==0)
@@ -499,7 +517,7 @@ for (kstep=0; kstep<nstep; kstep++)
 #endif
 
    /*----------------------------------- printout results to pss file */
-   if(mod_restart==0)
+   if(mod_restart==0 && genprob.restart != 0)
   {
    switch(controltyp)
     {
@@ -596,6 +614,7 @@ DOUBLE               spi;              /* forgot.... */
 dstrc_enter("conpre");
 #endif
 /*----------------------------------------------------------------------*/
+statvar->praedictor = 1;
 /*--------------------------------- init the dist sparse matrix to zero */
 /*                  NOTE: Has to be called after solver_control(init=1) */
 solserv_zero_mat(
@@ -623,7 +642,7 @@ solserv_copy_vec(&(actsolv->rhs[actsysarray+1]),&(actsolv->rhs[actsysarray]));
 /*---------- LGS: K*u=F -------------------- solve for incremental load */
 init=0;
 /*
-oll_print(actsolv->sysarray[actsysarray].oll,7);
+oll_print(actsolv->sysarray[actsysarray].oll,200);
 */
 solver_control(
                  actsolv,                             /* active solver typ        */
@@ -753,6 +772,8 @@ DOUBLE               rli;
 INT                  rel_dof;
 DOUBLE               reldisval[6];
 DOUBLE               reldis;
+DOUBLE               resnorm_uptodate=0.0;
+
 
 ARRAY                intforce_a;             /* global redundant vector of internal forces */
 DOUBLE              *intforce;               /* pointer to intforce_a.a.dv */
@@ -767,6 +788,8 @@ dstrc_enter("conequ");
 #endif
 /*----------------------------------------------------------------------*/
 *itnum=0;
+/*----------------------------------------------------------------------*/
+statvar->praedictor = 2;
 /*----------------------------------- get load factor of last increment */
 if (kstep != 0) rl0 = nln_data->arcfac.a.dv[kstep-1];
 else            rl0 = 0.0;
@@ -866,6 +889,8 @@ container->dirich       = NULL;
 container->global_numeq = actsolv->sol[0].numeq_total;
 container->kstep        = kstep;
 calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,container,action);
+/*----------------------------------------------------------------------*/
+statvar->praedictor = 3;
 /*
 oll_print(actsolv->sysarray[actsysarray].oll,7);
 */
@@ -943,6 +968,11 @@ nln_data->renergy = energy;
 /*------------------------------ calculate norm of out-of-balance-loads */
 solserv_vecnorm_euclid(actintra,&(re[0]),&renorm);
 nln_data->renorm = renorm;
+/*--------------- calculate the up-to-date norm of out-of-balance-loads */
+solserv_copy_vec(&(actsolv->rhs[actsysarray+1]),&(re[1]));
+solserv_scalarprod_vec(&(re[1]),rlnew);  /* up-to-date int - ext forces */
+assemble_vec(actintra, &(actsolv->sysarray_typ[actsysarray]), &(actsolv->sysarray[actsysarray]), &(re[1]), intforce, -1.0 );
+solserv_vecnorm_euclid(actintra,&(re[1]),&resnorm_uptodate);
 /*-------------------------------------------------------- update norms */
 nln_data->rrnorm = nln_data->rinorm * rlnew;
 /*------------------------------------- calculate norm of displacements */
@@ -952,7 +982,7 @@ solserv_vecnorm_euclid(actintra,&(rsd[0]),&dinorm);
 /*----------------------------------------------- check for convergence */
 told=0.0;
 if (dinorm > statvar->toldisp) told = dinorm/dnorm;
-if (told   > statvar->toldisp) convergence=0;
+if (told >statvar->toldisp || resnorm_uptodate > statvar->tolresid) convergence=0;
 else                        convergence=1;
 
 /*------------------------------------------------------- make printout */
@@ -963,7 +993,7 @@ solserv_getele_vec(actintra,
                    cdof,
                    &disval);
 if (actintra->intra_rank==0)
-conequ_printiter(*itnum,disval,rlnew,dinorm,renorm,energy,dnorm,nln_data->rrnorm);
+conequ_printiter(*itnum,disval,rlnew,dinorm,resnorm_uptodate,energy,dnorm,nln_data->rrnorm);
 if (convergence)
 {
   if (ioflags.relative_displ>0)
