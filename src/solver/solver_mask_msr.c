@@ -16,6 +16,29 @@ Maintainer: Malte Neumann
 INT cmp_int(const void *a, const void *b );
 DOUBLE cmp_double(const void *a, const void *b );
 
+#if 0
+#ifdef DEBUG
+
+static void out_ivector(INTRA* actintra, INT* vector, INT size, CHAR* vname)
+{
+  INT i;
+  FILE* f;
+  CHAR name[256];
+/*   static INT count = 0; */
+
+  sprintf(name, "ivector.%s.%d", vname, actintra->intra_rank);
+  f = fopen(name, "w");
+  for (i=0; i<size; ++i) {
+    fprintf(f, "%d: %d\n", i, vector[i]);
+  }
+  fclose(f);
+  
+/*   count++; */
+}
+
+#endif
+#endif
+
 static INT kk;
 /*----------------------------------------------------------------------*
  |  calculate the mask of an msr matrix                  m.gee 5/01     |
@@ -70,6 +93,7 @@ msr_nnz_topology(actfield,actpart,actsolv,actintra,msr,dof_connect);
 /*---------------------------------------------- allocate bindx and val */
 amdef("bindx",&(msr->bindx),(msr->nnz+1),1,"IV");
 amdef("val"  ,&(msr->val)  ,(msr->nnz+1),1,"DV");
+msr->bindx_backup.Typ = cca_XX;
 /*---------------------------------------------------------- make bindx */
 msr_make_bindx(actfield,actpart,actsolv,msr,dof_connect);
 /*---------------------------------------- delete the array dof_connect */
@@ -79,6 +103,14 @@ for (i=0; i<msr->numeq_total; i++)
 }
 CCAFREE(dof_connect);
 /*----------------------------------------------------------------------*/
+
+#if 0
+#ifdef DEBUG 
+  out_ivector(actintra, msr->bindx.a.iv, msr->bindx.fdim, "bindx_global");
+  out_ivector(actintra, msr->update.a.iv, msr->update.fdim, "update");
+#endif
+#endif
+
 #ifdef DEBUG 
 dstrc_exit();
 #endif

@@ -23,6 +23,32 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
+
+
+#if 0
+#ifdef DEBUG
+
+static void out_ivector(INTRA* actintra, INT* vector, INT size, CHAR* vname)
+{
+  INT i;
+  FILE* f;
+  CHAR name[256];
+  static INT count = 0;
+
+  sprintf(name, "ivector.%s.%d.%d", vname, actintra->intra_rank, count);
+  f = fopen(name, "w");
+  for (i=0; i<size; ++i) {
+    fprintf(f, "%d: %d\n", i, vector[i]);
+  }
+  fclose(f);
+  
+  count++;
+}
+
+#endif
+#endif
+
+
 /*----------------------------------------------------------------------*
  |  control solver lib AZTEC                             m.gee 9/01     |
  *----------------------------------------------------------------------*/
@@ -245,9 +271,24 @@ case 0:
         free(msr_array->data_org);             msr_array->data_org      =NULL;
       }
       
+      /* Make backup copy of bindx, as it is permuted in
+       * solution. This has to be done on demand as we need the same
+       * thing in the matrix-vector product as well.
+       *
+       * In a sense we abuse bindx_backup because it no longer
+       * contains backup data. Instead all communication with aztec
+       * relys on bindx_backup (transformed) and the outside world ---
+       * that is the assembling --- used the original bindx. */
+      if (msr_array->bindx_backup.Typ == cca_XX) {
+        am_alloc_copy(&(msr_array->bindx),&(msr_array->bindx_backup));
+      }
+      else {
+        amcopy(&(msr_array->bindx),&(msr_array->bindx_backup));
+      }
+      
       AZ_transform(msr_array->proc_config,
                    &(msr_array->external),
-                   msr_array->bindx.a.iv,
+                   msr_array->bindx_backup.a.iv,
                    msr_array->val.a.dv,
                    msr_array->update.a.iv,
                    &(msr_array->update_index),
@@ -260,13 +301,21 @@ case 0:
                    NULL,
                    AZ_MSR_MATRIX);
 
+#if 0
+#ifdef DEBUG 
+      out_ivector(actintra, msr_array->update_index, msr_array->update.fdim, "update_index");
+      out_ivector(actintra, msr_array->external, msr_array->data_org[AZ_N_external], "external");
+      out_ivector(actintra, msr_array->extern_index, msr_array->data_org[AZ_N_external], "extern_index");
+#endif
+#endif
+      
       /* create Aztec structure AZ_MATRIX */
       msr_array->Amat = AZ_matrix_create(msr_array->data_org[AZ_N_internal]+
                                          msr_array->data_org[AZ_N_border]);
 
       /* attach dmsr-matrix to this structure */
       AZ_set_MSR(msr_array->Amat, 
-                 msr_array->bindx.a.iv, 
+                 msr_array->bindx_backup.a.iv, 
                  msr_array->val.a.dv, 
                  msr_array->data_org, 
                  0, 

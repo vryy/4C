@@ -774,14 +774,13 @@ static DOUBLE *work2;
 dstrc_enter("solserv_sparsematvec");
 #endif
 /*----------------------------------------------------------------------*/
-if (work1_a.Typ != cca_DV) work1 = amdef("work1",&work1_a,vec->numeq_total,1,"DV");
-if (work2_a.Typ != cca_DV) work2 = amdef("work2",&work2_a,vec->numeq_total,1,"DV");
-if (work1_a.fdim < vec->numeq_total)
-{
-           amdel(&work1_a);
-   work1 = amdef("work1",&work1_a,vec->numeq_total,1,"DV");
-           amdel(&work2_a);
-   work2 = amdef("work2",&work2_a,vec->numeq_total,1,"DV");
+if (*mattyp != msr) {
+  if (work1_a.Typ != cca_DV) work1 = amdef("work1",&work1_a,vec->numeq_total,1,"DV");
+  if (work2_a.Typ != cca_DV) work2 = amdef("work2",&work2_a,vec->numeq_total,1,"DV");
+  if (work1_a.fdim < vec->numeq_total) {
+    amdel(&work1_a); work1 = amdef("work1",&work1_a,vec->numeq_total,1,"DV");
+    amdel(&work2_a); work2 = amdef("work2",&work2_a,vec->numeq_total,1,"DV");
+  }
 }
 /*----------------------------------------------------------------------*/
 switch (*mattyp)
@@ -827,9 +826,24 @@ case msr:
         free(msr_array->data_org);             msr_array->data_org      =NULL;
       }
       
+      /* Make backup copy of bindx, as it is permuted in
+       * solution. This has to be done on demand as we need the same
+       * thing for solving linear systems.
+       *
+       * In a sense we abuse bindx_backup because it no longer
+       * contains backup data. Instead all communication with aztec
+       * relys on bindx_backup (transformed) and the outside world ---
+       * that is the assembling --- used the original bindx. */
+      if (msr_array->bindx_backup.Typ == cca_XX) {
+        am_alloc_copy(&(msr_array->bindx),&(msr_array->bindx_backup));
+      }
+      else {
+        amcopy(&(msr_array->bindx),&(msr_array->bindx_backup));
+      }
+
       AZ_transform(msr_array->proc_config,
                    &(msr_array->external),
-                   msr_array->bindx.a.iv,
+                   msr_array->bindx_backup.a.iv,
                    msr_array->val.a.dv,
                    msr_array->update.a.iv,
                    &(msr_array->update_index),
@@ -848,7 +862,7 @@ case msr:
 
       /* attach dmsr-matrix to this structure */
       AZ_set_MSR(msr_array->Amat, 
-                 msr_array->bindx.a.iv, 
+                 msr_array->bindx_backup.a.iv, 
                  msr_array->val.a.dv, 
                  msr_array->data_org, 
                  0, 
@@ -1127,6 +1141,7 @@ return;
 
 
 #if 0
+/* No longer needed. We use aztec's function now. */
 /*----------------------------------------------------------------------*
  |  make matrix vector multiplication with msr matrix        m.gee 02/02|
  |  called by solserv_sparsematvec only !                               |
