@@ -79,7 +79,7 @@ DOUBLE dia;
 dstrc_enter("s9_mat_plast_mises");
 #endif
 /*----------------------------------------------------------------------*/
-
+  dia     = ele->e.s9->dia;
 /*----------------------------- get old values -> sig, eps,epstn,yip ---*/
   for (i=0; i<6; i++)
   {
@@ -87,8 +87,6 @@ dstrc_enter("s9_mat_plast_mises");
     eps[i] = ele->e.s9->elewa[actlay].ipwa[ip].eps[i];
     qn[i]  = ele->e.s9->elewa[actlay].ipwa[ip].qn[i];
   }
-/*  dia   = ele->e.s9->elewa[actlay].dia;*/
-  dia   = 1.0;
   yip   = ele->e.s9->elewa[actlay].ipwa[ip].yip;
   epstn = ele->e.s9->elewa[actlay].ipwa[ip].epstn;
 
