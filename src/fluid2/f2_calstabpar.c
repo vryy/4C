@@ -17,6 +17,16 @@ Maintainer: Steffen Genkinger
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #include "fluid2.h"
+/*!----------------------------------------------------------------------
+\brief file pointers
+
+<pre>                                                         m.gee 8/00
+This structure struct _FILES allfiles is defined in input_control_global.c
+and the type is in standardtypes.h                                                  
+It holds all file pointers and some variables needed for the FRSYSTEM
+</pre>
+*----------------------------------------------------------------------*/
+extern struct _FILES  allfiles;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate dynamic variables if needed                      |
@@ -98,7 +108,7 @@ static FLUID_DYNAMIC *fdyn;
 \param   *velint,     DOUBLE	      (i)    vel at center
 \param    visc,       DOUBLE	      (i)    viscosity
 \param    iel,        INT	      (i)    number of nodes	     
-\param	  ntyp,       INT	      (i)    element type
+\param	  typ,        DIS_TYP	      (i)    element type
 \param	  iflag       INT	      (i)    flag for evaluation
 \return void                                                                       
 
@@ -108,7 +118,7 @@ void f2_calstabpar(
 		    DOUBLE          *velint,  
 		    DOUBLE           visc,    
 		    INT              iel,     
-		    INT              ntyp,    
+		    DIS_TYP          typ,    
 		    INT              iflag    
                   )
 {
@@ -130,27 +140,29 @@ dstrc_enter("f2_calstabpar");
 gls  = ele->e.f2->stabi.gls;
 fdyn = alldyn[genprob.numff].fdyn;
 
-if (ele->e.f2->stab_type != stab_gls) 
-   dserror("routine with no or wrong stabilisation called");
+dsassert(ele->e.f2->stab_type == stab_gls,
+   "routine with no or wrong stabilisation called");
 
 /*----------------------- higher order element diameter modifications ? */
 switch(gls->mk)
 {
 case -1:
    c_mk = Q13;
-   if (ntyp==1 && iel>4)
+   if (typ==quad8 || typ==quad9)
    {
-      if (iel<10)
+      dsassert(iel<10,"number of nodes per element not valid!\n");
+/*      if (iel<10)
          hdiv = TWO;
-      else
-         hdiv = THREE;               
+      else */
+      hdiv = THREE;               
    }
-   else if (ntyp==2 && iel>3)
+   else if (typ==tri6)
    {
-      if (iel==6)
+      hdiv = TWO;
+/*      if (iel==6)
          hdiv = TWO;
       else
-         hdiv = THREE;
+         hdiv = THREE; */
    }
 break;
 case 0:
@@ -170,16 +182,16 @@ case 35: /*-------------------------- version diss. Wall - instationary */
    dt = fdyn->dta;     /* check if dta or dt has to be chosen!!!!!!!! */
    for (isp=0;isp<3;isp++)
    {
-      if (gls->itau[isp]!=iflag)
-         continue;
+      if (gls->itau[isp]!=iflag) continue;
       hk = ele->e.f2->hk[isp]/hdiv;
-      switch(isp)
+      if(isp==2)
       {
-      case 2:/* continiuty stabilisation */
          re = c_mk*hk*velno/TWO/visc;  /* element reynolds number */
-	 fdyn->tau[isp] = (gls->clamb)*velno*hk/TWO*DMIN(ONE,re);         
-      break;
-      default: /* velocity / pressure stabilisation */
+         fdyn->tau[isp] = (gls->clamb)*velno*hk/TWO*DMIN(ONE,re);         
+         
+      }
+      else
+      {
          if (velno>EPS15)
 	 { 
 	    aux1 = DMIN(hk/TWO/velno , c_mk*hk*hk/FOUR/visc);
@@ -187,8 +199,7 @@ case 35: /*-------------------------- version diss. Wall - instationary */
          }
 	 else
             fdyn->tau[isp] = DMIN(dt , c_mk*hk*hk/FOUR/visc);
-       break;
-      } /* end switch (isp) */
+      } /* end */
    } /* end of loop over isp */
 break;
    
@@ -198,22 +209,17 @@ case 36: /*---------------------------- version diss. Wall - stationary */
    aux1= velno*c_mk/FOUR/visc;
    for (isp=0;isp<3;isp++)
    {
-      if (gls->itau[isp]!=iflag)
-         continue;
+      if (gls->itau[isp]!=iflag) continue;
       hk = ele->e.f2->hk[isp]/hdiv;
       re = aux1*hk;
-      switch(isp)
-      {
-      case 2: /* continiuty stabilisation ### TWO VERSIONS ??? ###*/
+      if (isp==2)
          fdyn->tau[isp] = (gls->clamb)*velno*hk/TWO*DMIN(ONE,re);
-/*        fdyn->tau[isp] = velno*hk/TWO*DMIN(ONE,re); */
-      break;
-      default: /* velocity / pressure stabilisation */
+      else
+      {
          if (re<ONE)
 	    fdyn->tau[isp] = c_mk*hk*hk/FOUR/visc;
 	 else
 	    fdyn->tau[isp] = hk/TWO/velno;
-      break;
       } 
    }   
 break;
@@ -229,6 +235,104 @@ dstrc_exit();
 
 return;
 } /* end of f2_calstabpar*/	
+
+/*!--------------------------------------------------------------------- 
+\brief routine to calculate stability parameter for height function               
+
+<pre>                                                         genk 06/03   
+
+\return void                                                                       
+
+------------------------------------------------------------------------*/ 
+void f2_calstabpar_hf(
+                        ELEMENT          *ele,
+                        INT               ngnode,
+                        INT              *iedgnod,
+                        DOUBLE          **xyze,
+                        DOUBLE            det,
+                        DOUBLE           *velint,
+                        DOUBLE            phiintng,
+                        DOUBLE            phiintn,
+                        DOUBLE            phiderx
+		     )
+{
+DOUBLE phidot,hs,aux,dx,dy;
+DOUBLE velno,rphi;
+static DOUBLE C_HF=ONE; /* constant for height function, usually ONE
+                           see GUELER, BEHR, TEZDUYAR (1999)             */ 
+
+#ifdef DEBUG 
+dstrc_enter("f2_calstabpar_hf");
+#endif
+
+dsassert(ngnode==2,"Stab-Parameter at free surface only implemented for lin. elements!\n");
+fdyn = alldyn[genprob.numff].fdyn;
+
+/*--------------------------------------- compute hs according to Onate: */
+dx = xyze[0][iedgnod[0]]-xyze[0][iedgnod[1]];
+dy = xyze[1][iedgnod[0]]-xyze[1][iedgnod[1]]; 
+hs = FABS(dx*velint[0]+dy*velint[1]);
+ 
+
+#if 1
+/*------------------------------------------------------ compute tau_DC */
+if(0)
+{
+   dserror("heightfun stabilisation");
+   velno=sqrt(velint[0]*velint[0] + velint[1]*velint[1]);
+#if 0
+   switch (ele->e.f2->ihfs[0])
+   {
+   case 1: /* GUELER, BEHR, TEZDUYAR (1999) */  
+      hs=TWO*det;
+      phidot = (phiintng - phiintn)/fdyn->dta;
+      aux  = phidot + velint[0]*phiderx - velint[1];  
+      rphi = FABS(aux)/fdyn->dphimax;
+      fdyn->tau[3] = DMIN(ONE,C_HF*hs*hs*rphi);
+   break;
+   case 2: /* GUELER, BEHR, TEZDUYAR (1999) */
+      velno=sqrt(velint[0]*velint[0] + velint[1]*velint[1]);
+      C_HF=TWO*det*velno;
+   break;
+   default:
+      dserror("parameter ihfs[0] out of range!\n");
+   }
+#endif
+}
+
+/*---------------------------------------------------- compute tau_SUPG */
+if (0)
+{
+   dserror("heightfun stabilisation");
+#if 0
+   switch (ele->e.f2->ihfs[1])
+   {
+   case 1:
+     fdyn->tau[4]= hs/TWO;      
+     fdyn->tau[4]= 0.01;      
+   break;
+   default:
+      dserror("parameter ihfs[0] out of range!\n");
+   }
+#endif
+}
+
+/*------------------------------------------------- print to error file */  
+#if 1
+   fprintf(allfiles.out_err,"tau_dc = %12.10f  tau_supg = %12.10f\n",
+          fdyn->tau[3],fdyn->tau[4]);
+   fflush(allfiles.out_err); 
+#endif
+
+#endif
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return;
+} /* end of f2_calstabpar_hf*/	
 
 #endif
 /*! @} (documentation module close)*/
