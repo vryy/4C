@@ -212,6 +212,12 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       if (strncmp(buffer,"Yes",3)==0) ioflags.struct_stress_gid=1;
       else                            ioflags.struct_stress_gid=0;
    }
+   frchar("FLUID_SOL_GID",buffer,&ierr);
+   if (ierr)
+   {
+      if (strncmp(buffer,"Yes",3)==0) ioflags.fluid_sol_gid=1;
+      else                            ioflags.fluid_sol_gid=0;
+   }     
    frchar("FLUID_SOL_FILE",buffer,&ierr);
    if (ierr)
    {

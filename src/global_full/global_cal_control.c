@@ -45,7 +45,7 @@ out_general();
 /*--------------------------------------------------- write mesh to gid */
 if (par.myrank==0) 
 {
-   if (ioflags.struct_disp_gid||ioflags.struct_stress_gid) 
+   if (ioflags.struct_disp_gid||ioflags.struct_stress_gid||ioflags.fluid_sol_gid) 
    {
       out_gid_sol_init();
       out_gid_msh();

@@ -140,6 +140,7 @@ int               struct_stress_file;  /* write structural stress to .out */
 int               struct_disp_gid;     /* write structural displacements to .flavia.res */
 int               struct_stress_gid;   /* write structural stresses to .flavia.res */
 int               fluid_sol_file;      /* write vel/pre to .out */
+int               fluid_sol_gid;       /* write vel/pre to .flavia.res */
 int               fluid_vis_file;      /* write solution to pss-file for VISUAL2 */
 } IO_FLAGS;
 

@@ -93,6 +93,8 @@ for (i=0; i<genprob.numfld; i++)
    actgid->is_shell8_33 = 0;
    actgid->is_brick1_222= 0;
    actgid->is_brick1_333= 0;
+   actgid->is_fluid2_22 = 0;
+   actgid->is_fluid2_33 = 0;
    actgid->is_fluid3_222= 0;
    actgid->is_fluid3_333= 0;
    actgid->is_ale_22    = 0;
@@ -127,6 +129,18 @@ for (i=0; i<genprob.numfld; i++)
          {
             actgid->is_brick1_333   = 1;
             actgid->brick1_333_name = "brick1_333"; 
+         }
+      break;
+      case el_fluid2: 
+         if (actele->numnp==4)  
+         {
+            actgid->is_fluid2_22    = 1;
+            actgid->fluid2_22_name  = "fluid2_22";
+         }
+         if (actele->numnp==8  || actele->numnp==9) 
+         {
+            actgid->is_fluid2_33    = 1;
+            actgid->fluid2_33_name  = "fluid2_33";
          }
       break;
       case el_fluid3: 
@@ -219,6 +233,30 @@ for (i=0; i<genprob.numfld; i++)
                                                                 sign,actgid->brick1_333_name,sign,
                                                                 sign,actgid->brick1_333_name,sign);
    fprintf(out,"NUMBER OF GAUSS POINTS: 27\n");
+   fprintf(out,"NATURAL COORDINATES: Internal\n");
+   fprintf(out,"END GAUSSPOINTS\n");
+   }
+   if (actgid->is_fluid2_22)
+   {
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s FLUID2 2x2 GP\n",actgid->fieldname);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Quadrilateral %c%s%c\n",
+                                                                sign,actgid->fluid2_22_name,sign,
+                                                                sign,actgid->fluid2_22_name,sign);
+   fprintf(out,"NUMBER OF GAUSS POINTS: 4\n");
+   fprintf(out,"NATURAL COORDINATES: Internal\n");
+   fprintf(out,"END GAUSSPOINTS\n");
+   }
+   if (actgid->is_fluid2_33)
+   {
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s FLUID2 3x3 GP\n",actgid->fieldname);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Quadrilateral %c%s%c\n",
+                                                                sign,actgid->fluid2_33_name,sign,
+                                                                sign,actgid->fluid2_33_name,sign);
+   fprintf(out,"NUMBER OF GAUSS POINTS: 9\n");
    fprintf(out,"NATURAL COORDINATES: Internal\n");
    fprintf(out,"END GAUSSPOINTS\n");
    }
@@ -1145,7 +1183,142 @@ if (strncmp(string,"stress",stringlenght)==0)
    }
 
 } /* end of (strncmp(string,"stress",stringlenght)==0) */
-
+/*========================================= result type is velocity */
+if (strncmp(string,"velocity",stringlenght)==0)
+{
+   resulttype        = "VECTOR";
+   resultplace       = "ONNODES";
+   gpset             = ""; 
+   rangetable        = actgid->standardrangetable;
+   ncomponent        = 3;
+   componentnames[0] = "x-vel";
+   componentnames[1] = "y-vel";
+   componentnames[2] = "z-vel";
+   /*-------------------------------------------------------------------*/
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# RESULT %s on FIELD %s\n",string,actgid->fieldname);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"RESULT %c%s%c %cpcarat%c %d %s %s\n",
+                                                             sign,string,sign,
+                                                             sign,sign,
+                                                             step,
+                                                             resulttype,
+                                                             resultplace
+                                                             );
+   fprintf(out,"RESULTRANGESTABLE %c%s%c\n",
+                                            sign,actgid->standardrangetable,sign
+                                            );
+   switch (genprob.ndim)
+   {
+     case 3:
+       fprintf(out,"COMPONENTNAMES %c%s%c,%c%s%c,%c%s%c\n",
+                                                       sign,componentnames[0],sign,
+                                                       sign,componentnames[1],sign,
+                                                       sign,componentnames[2],sign
+                                                       );
+     break;
+     case 2:
+       fprintf(out,"COMPONENTNAMES %c%s%c,%c%s%c\n",
+                                                       sign,componentnames[0],sign,
+                                                       sign,componentnames[1],sign
+                                                       );
+     break;
+     default:
+       dserror("Unknown numer of dimensions");
+     break;
+   }
+   fprintf(out,"VALUES\n");
+   for (i=0; i<actfield->dis[0].numnp; i++)
+   {
+      actnode = &(actfield->dis[0].node[i]);
+      switch (genprob.ndim)
+      {
+	case 3:
+        fprintf(out," %6d %18.5E %18.5E %18.5E\n",
+                                                   actnode->Id+1,
+                                                   actnode->sol.a.da[place][0],
+                                                   actnode->sol.a.da[place][1],
+                                                   actnode->sol.a.da[place][2]
+                                                   );
+	break;
+	case 2:
+        fprintf(out," %6d %18.5E %18.5E \n",
+                                                   actnode->Id+1,
+                                                   actnode->sol.a.da[place][0],
+                                                   actnode->sol.a.da[place][1]
+                                                   );
+        break;
+	default:
+	  dserror("Unknown number of dimensions");
+        break;
+      }
+   }
+   fprintf(out,"END VALUES\n");
+} /* end of (strncmp(string,"velocity",stringlenght)==0) */
+/*========================================= result type is pressure */
+if (strncmp(string,"pressure",stringlenght)==0)
+{
+   resulttype        = "SCALAR";
+   resultplace       = "ONNODES";
+   gpset             = ""; 
+   rangetable        = actgid->standardrangetable;
+   ncomponent        = 3;
+   componentnames[0] = "pressure";
+   /*-------------------------------------------------------------------*/
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# RESULT %s on FIELD %s\n",string,actgid->fieldname);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"RESULT %c%s%c %cpcarat%c %d %s %s\n",
+                                                             sign,string,sign,
+                                                             sign,sign,
+                                                             step,
+                                                             resulttype,
+                                                             resultplace
+                                                             );
+   fprintf(out,"RESULTRANGESTABLE %c%s%c\n",
+                                            sign,actgid->standardrangetable,sign
+                                            );
+   switch (genprob.ndim)
+   {
+     case 3:
+       fprintf(out,"COMPONENTNAMES %c%s%c\n",
+                                                       sign,componentnames[0],sign
+                                                       );
+     break;
+     case 2:
+       fprintf(out,"COMPONENTNAMES %c%s%c\n",
+                                                       sign,componentnames[0],sign
+                                                       );
+     break;
+     default:
+       dserror("Unknown numer of dimensions");
+     break;
+   }
+   fprintf(out,"VALUES\n");
+   for (i=0; i<actfield->dis[0].numnp; i++)
+   {
+      actnode = &(actfield->dis[0].node[i]);
+      switch (genprob.ndim)
+      {
+	case 3:
+        fprintf(out," %6d %18.5E \n",
+                                                   actnode->Id+1,
+                                                   actnode->sol.a.da[place][3]
+                                                   );
+	break;
+	case 2:
+        fprintf(out," %6d %18.5E \n",
+                                                   actnode->Id+1,
+                                                   actnode->sol.a.da[place][2]
+                                                   );
+        break;
+	default:
+	  dserror("Unknown number of dimensions");
+        break;
+      }
+   }
+   fprintf(out,"END VALUES\n");
+} /* end of (strncmp(string,"velocity",stringlenght)==0) */
 /*----------------------------------------------------------------------*/
 fflush(out);
 #ifdef DEBUG 

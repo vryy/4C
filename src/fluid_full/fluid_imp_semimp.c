@@ -440,6 +440,15 @@ if (fdyn->step < fdyn->nstep && fdyn->time <= fdyn->maxtime && steady==0)
 if (ioflags.fluid_vis_file==1 && par.myrank==0) 
    fluid_writevispss(actfield,actpos+1,&time_a);
 
+/*----------------------------- print out solution to 0.flavia.res file */
+if (ioflags.fluid_sol_gid==1 && par.myrank==0) 
+{
+    for(i=0;i<actpos+1;i++)
+    {
+        out_gid_sol("velocity",actfield,actintra,i,i);
+        out_gid_sol("pressure",actfield,actintra,i,i);
+    }
+}
 /*---------------------------------- print total CPU-time to the screen */
 #ifdef PARALLEL
 MPI_Barrier(actintra->MPI_INTRA_COMM);

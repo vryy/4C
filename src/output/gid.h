@@ -20,6 +20,10 @@ typedef struct _GIDSET
      char                      *brick1_222_name;
      int                        is_brick1_333;          /* 20/27 noded brick1 3x3x3 GP */
      char                      *brick1_333_name;
+     int                        is_fluid2_22;           /* 4-noded fluid2 2x2 GP */
+     char                      *fluid2_22_name;
+     int                        is_fluid2_33;           /* 8/9-noded fluid2 3x3 GP */
+     char                      *fluid2_33_name;
      int                        is_fluid3_222;          /* 8-noded fluid3 2x2x2 GP */
      char                      *fluid3_222_name;
      int                        is_fluid3_333;          /* 20/27-noded fluid3 3x3x3 GP */
