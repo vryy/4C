@@ -37,7 +37,7 @@ NODEPS=yes
 
 
 # prepare clean up
-function cleanup()
+function cleanup
 {
     #echo cleanup
     make clean >/dev/null
