@@ -47,20 +47,21 @@ Maintainer: Malte Neumann
 void f3_out_gid_sol_str(
     FILE       *out,     /* File pointer to flavia.res */
     FIELD *actfield,     /* active field */ 
+    INT        type,     /* viscous (1) or press (0) stresses */
     INT         init     /* allocate/free memory */
     )
 {
 
-  INT              i,j,inod;         /* counter */
+  INT                 i,j,k;         /* counter */
   INT                 numnp;         /* number of nodal points in actfield */
+  INT                numele;
   INT                   nnp;
-  INT              startstr;
-  DOUBLE             divstr;
+  INT                 count;
+  DOUBLE           invcount;
   DOUBLE           **stress;
+  DOUBLE             str[6];
   ELEMENT           *actele;
   NODE             *actnode;
-  static DOUBLE **tmpnodval;         /* vector with smoothed nodal values */
-  static ARRAY  tmpnodval_a;         /* dito.                             */   
 
 
 #ifdef DEBUG 
@@ -69,82 +70,41 @@ void f3_out_gid_sol_str(
 
 
   numnp  = actfield->dis[0].numnp;
-  if (init==1)
-  {
-    tmpnodval     = amdef("tmpnodval"  ,&tmpnodval_a,numnp,7 ,"DA"); 
-    goto end;      
-  }
-
-  if (init==-1)
-  { 
-    amdel(&tmpnodval_a);
-    goto end;      
-  }
-
-
-  amzero(&tmpnodval_a);
-
-
-  for (i=0; i<actfield->dis[0].numele; i++)
-  {
-    actele = &(actfield->dis[0].element[i]);
-    if (actele->eltyp != el_fluid3) continue;
-    stress=actele->e.f3->stress_ND.a.da;
-
-    nnp = actele->numnp;
-    for (j=0; j<nnp; j++)
-    {
-      inod = actele->node[j]->Id;
-      tmpnodval[inod][0] +=  stress[j][0];
-      tmpnodval[inod][1] +=  stress[j][1];
-      tmpnodval[inod][2] +=  stress[j][2];
-      tmpnodval[inod][3] +=  stress[j][3];
-      tmpnodval[inod][4] +=  stress[j][4];
-      tmpnodval[inod][5] +=  stress[j][5];
-      tmpnodval[inod][6] +=  1.0;
-    }
-  }
-
-
-  /* smooth values */
-  for (i=0; i<numnp; i++)
-  {
-    if(tmpnodval[i][6]==0.0)
-    {
-      tmpnodval[i][0] = 0.0;
-      tmpnodval[i][1] = 0.0;
-      tmpnodval[i][2] = 0.0;
-      tmpnodval[i][3] = 0.0;
-      tmpnodval[i][4] = 0.0;
-      tmpnodval[i][5] = 0.0;
-    }
-    else
-    {
-      divstr = 1.0/tmpnodval[i][6];
-      tmpnodval[i][0] *= divstr;
-      tmpnodval[i][1] *= divstr;
-      tmpnodval[i][2] *= divstr;
-      tmpnodval[i][3] *= divstr;
-      tmpnodval[i][4] *= divstr;
-      tmpnodval[i][5] *= divstr;
-    }
-  }
-
-
   /* write stresses */
   for (i=0; i<numnp; i++)
   {
     actnode = &(actfield->dis[0].node[i]);
-    inod    = actnode->Id;
+    count = 0;
+    for (j=0; j<6; j++) str[j] = 0.0;
+    numele  = actnode->numele;
+
+    for (j=0; j<numele; j++)
+    {
+      actele = actnode->element[j];
+      if (actele->eltyp != el_fluid3 || actele->numnp !=8) continue;
+      count++;
+      stress=actele->e.f3->stress_ND.a.da;
+      for(k=0; k<8; k++)
+        if (actele->node[k] == actnode) break;
+      str[0] += stress[k][type*6+0];
+      str[1] += stress[k][type*6+1];
+      str[2] += stress[k][type*6+2];
+      str[3] += stress[k][type*6+3];
+      str[4] += stress[k][type*6+4];
+      str[5] += stress[k][type*6+5];		
+    }
+
+    invcount = 1.0/count;
+    for (j=0; j<6; j++) str[j] = str[j] * invcount;
 
     fprintf(out,"  %-6d %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E \n",
-        inod+1,
-        tmpnodval[inod][0],
-        tmpnodval[inod][1],
-        tmpnodval[inod][2],
-        tmpnodval[inod][3],
-        tmpnodval[inod][4],
-        tmpnodval[inod][5]
+        actnode->Id+1,
+        str[0],
+        str[1],
+        str[2],
+        str[3],
+        str[4],
+        str[5]
         );
   }
 
