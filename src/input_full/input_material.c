@@ -77,6 +77,21 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("NUE"    ,&(mat[i].m.stvenant->possionratio),&ierr);
       frdouble("DENS",&(mat[i].m.stvenant->density)     ,&ierr);
    }
+   frchk("MAT_Struct_Orthotropic",&ierr);
+   if (ierr==1)
+   {
+      mat[i].mattyp = m_el_orth;
+      mat[i].m.el_orth = (EL_ORTH*)CCACALLOC(1,sizeof(EL_ORTH));
+      frdouble("EMOD1"   ,&(mat[i].m.el_orth->emod1)        ,&ierr);
+      frdouble("EMOD2"   ,&(mat[i].m.el_orth->emod2)        ,&ierr);
+      frdouble("EMOD3"   ,&(mat[i].m.el_orth->emod3)        ,&ierr);
+      frdouble("GMOD12"  ,&(mat[i].m.el_orth->gmod12)       ,&ierr);
+      frdouble("GMOD13"  ,&(mat[i].m.el_orth->gmod13)       ,&ierr);
+      frdouble("GMOD23"  ,&(mat[i].m.el_orth->gmod23)       ,&ierr);
+      frdouble("XNUE12"  ,&(mat[i].m.el_orth->xnue12)       ,&ierr);
+      frdouble("XNUE13"  ,&(mat[i].m.el_orth->xnue13)       ,&ierr);
+      frdouble("XNUE23"  ,&(mat[i].m.el_orth->xnue23)       ,&ierr);
+   }
    frchk("MAT_Struct_STVENPOR",&ierr);
    if (ierr==1)
    {
@@ -228,9 +243,12 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("NUE"  ,&(mat[i].m.pl_dp->possionratio)  ,&ierr);
       frdouble("ALFAT",&(mat[i].m.pl_dp->ALFAT)         ,&ierr);
       frdouble("Sigy" ,&(mat[i].m.pl_dp->Sigy)          ,&ierr);
-      frdouble("Hard" ,&(mat[i].m.pl_dp->Hard)          ,&ierr);
       frdouble("PHI"  ,&(mat[i].m.pl_dp->PHI)           ,&ierr);
+      mat[i].m.pl_dp->Hard = 0.; 
+      mat[i].m.pl_dp->GF   = 0.; 
       mat[i].m.pl_dp->betah= 1.; 
+      frdouble("Hard" ,&(mat[i].m.pl_dp->Hard)          ,&ierr);
+      frdouble("GF"   ,&(mat[i].m.pl_dp->GF)            ,&ierr);
       frdouble("BETAH",&(mat[i].m.pl_dp->betah)         ,&ierr);
    }
    frchk("MAT_ConcretePlastic",&ierr);
@@ -263,6 +281,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frint(   "NSTIFF"  ,&(mat[i].m.pl_epc->nstiff      )        ,&ierr);
       /* number of rebars - next line in input file! */
       frread();
+      mat[i].m.pl_epc->maxreb = 0;
       frint(   "MAXREB"   ,&(mat[i].m.pl_epc->maxreb     )        ,&ierr);
       /* allocate memory */
       ncm       = mat[i].m.pl_epc->maxreb;
@@ -474,6 +493,7 @@ return;
  *----------------------------------------------------------------------*/
 void inp_multimat()
 {
+char buffer[50];
 INT  counter=0;
 INT  check = 0;
 INT  ierr;
@@ -494,7 +514,8 @@ if (frfind("--MULTILAYER MATERIALS")==1)
   frread();
   while(strncmp(allfiles.actplace,"------",6)!=0)
   {
-    counter++;
+    frchar("MULTIMAT",buffer,&ierr);
+    if (ierr==1) counter++;
     frread();
   }
 }
@@ -509,6 +530,11 @@ i=0;
 while(strncmp(allfiles.actplace,"------",6)!=0)
 {
    frint("MULTIMAT",&(multimat[i].Id),&ierr);
+   if (ierr==0) 
+   {
+      frread();
+      continue;
+   }
 
    frchk("MAT_Struct_StVenantKirchhoff",&ierr);
    if (ierr==1)
@@ -577,10 +603,12 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("NUE"  ,&(multimat[i].m.pl_dp->possionratio)  ,&ierr);
       frdouble("ALFAT",&(multimat[i].m.pl_dp->ALFAT)         ,&ierr);
       frdouble("Sigy" ,&(multimat[i].m.pl_dp->Sigy)          ,&ierr);
-      frdouble("Hard" ,&(multimat[i].m.pl_dp->Hard)          ,&ierr);
-      multimat[i].m.pl_dp->PHI  = 0.; 
-      multimat[i].m.pl_dp->betah= 1.; 
       frdouble("PHI"  ,&(multimat[i].m.pl_dp->PHI)           ,&ierr);
+      multimat[i].m.pl_dp->Hard = 0.; 
+      multimat[i].m.pl_dp->GF   = 0.; 
+      multimat[i].m.pl_dp->betah= 1.; 
+      frdouble("Hard" ,&(multimat[i].m.pl_dp->Hard)          ,&ierr);
+      frdouble("GF"   ,&(multimat[i].m.pl_dp->GF)            ,&ierr);
       frdouble("BETAH",&(multimat[i].m.pl_dp->betah)         ,&ierr);
    }
    frchk("MAT_HoffPlastic",&ierr);
