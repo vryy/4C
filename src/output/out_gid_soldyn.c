@@ -213,6 +213,7 @@ if (strncmp(string,"contact",stringlenght)==0)
    }
    fprintf(out,"VALUES\n");
 #if 1 /* this is hexahedra output for shell8 element */
+#ifdef D_SHELL8
    if (actfield->dis[0].element[0].eltyp == el_shell8 && actfield->dis[0].element[0].distyp == quad4)
    {
       tot_numnp = genprob.nnode;
@@ -233,6 +234,7 @@ if (strncmp(string,"contact",stringlenght)==0)
                                                     -actnode->sol.a.da[place][2]-actnode->sol.a.da[place][5]*scal/sdc);
       }
    }
+#endif
 #else
    for (i=0; i<actfield->dis[0].numnp; i++)
    {

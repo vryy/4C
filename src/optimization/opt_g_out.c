@@ -413,14 +413,19 @@ actintra->intra_nprocs   = 1;
      actele = &(actfield->dis[0].element[i]);
     if(actele->proc!=actintra->intra_rank) continue;
     /*--*/
+#ifdef D_WALL1
     if (actele->eltyp == el_wall1)
     {
       sveh[i]=actele->e.w1[0].elewa[0].matdata[0];
     }
+#endif
+
+#ifdef D_BRICK1
     if (actele->eltyp == el_brick1)
     {
       sveh[i]=actele->e.c1[0].elewa[0].matdata[0];
     }
+#endif
     /*--*/
   }
    /*--------------------------------- allreduce element density values */
@@ -462,16 +467,21 @@ if(ndataofmesh >1) fp_out=fopen("zgout/cgs.vval","a");/* open and add   */
       fprintf(fp_out,"%d %d %d %d %18.5#E \n",ndataofmesh, 1,i+1,1,svec[i]);
 #else
     /*--*/
+#ifdef D_WALL1
     if (actele->eltyp == el_wall1)
     {
       fprintf(fp_out,"%d %d %d %d %18.5#E \n",
               ndataofmesh, 1,i+1,1,actele->e.w1[0].elewa[0].matdata[0]);
     }
+#endif
+
+#ifdef D_BRICK1
     if (actele->eltyp == el_brick1)
     {
       fprintf(fp_out,"%d %d %d %d %18.5#E \n",
               ndataofmesh, 1,i+1,1,actele->e.c1[0].elewa[0].matdata[0]);
     }
+#endif
     /*--*/
 #endif
   }

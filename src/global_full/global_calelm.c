@@ -275,6 +275,8 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
 #endif
 
 #ifdef D_FLUID
+
+#ifdef D_FLUID2
    case el_fluid2: 
       if(container->turbu==2 || container->turbu==3)
         actele2 = actpart->pdis[1].element[i];
@@ -285,6 +287,9 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
              &etforce_global,&eiforce_global,&edforce_global,
 	       action,&hasdirich,&hasext,container);
    break;
+#endif
+
+#ifdef D_FLUID2
    case el_fluid2_tu: 
       actele2 = actpart->pdis[0].element[i];
       fluid2_tu(actpart,actintra,actele,actele2,
@@ -292,6 +297,9 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
                 &etforce_global,&eiforce_global,&edforce_global,&eproforce_global,
 	          action,&hasdirich,&hasext,container);
    break;
+#endif
+   
+#ifdef D_FLUID2_PRO
    case el_fluid2_pro:
       actele2 = actpart->pdis[1].element[i];
       fluid2_pro(actpart,actintra,actele,actele2,
@@ -299,13 +307,18 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
 	     &etforce_global,&eiforce_global,
 	     &edforce_global,&gforce_global,action,&hasdirich);
    break;
+#endif
+
+#ifdef D_FLUID3
    case el_fluid3: 
       fluid3(actpart,actintra,actele,
           &estif_global,&emass_global,
           &etforce_global,&eiforce_global,&edforce_global,
           action,&hasdirich,&hasext,container); 
    break;
-#endif   
+#endif
+
+#endif   /* endif D_FLUID */
 
 #ifdef D_ALE
    case el_ale3:

@@ -933,11 +933,13 @@ if(*det<ZERO)
       fluid_mf(99);
       dserror("regulary!\n");
    }
+#ifdef D_FSI
    else if (genprob.probtyp==prb_fsi) 
    {
       dyn_fsi(99);
       dserror("regulary!\n");
    }
+#endif
    else dserror("not regulary!\n");
 #endif
 }

@@ -55,15 +55,24 @@ case prb_structure:
 #endif 
     } 
 break;
+
+#ifdef D_FLUID
 case prb_fluid:
     dyn_fluid();
 break;
+#endif
+
+#ifdef D_FSI
 case prb_fsi:
     dyn_fsi(0);
 break;    
+#endif
+
+#ifdef D_ALE
 case prb_ale:
     dyn_ale();
 break;
+#endif
 default:
     dserror("Dynamic solution of unknown Problemtyp requested");
 break;
