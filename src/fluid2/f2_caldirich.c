@@ -1,3 +1,7 @@
+/* NOT USED ANY MORE
+   all this is now done in fluid_caldirich.c
+*/   
+
 #ifdef D_FLUID2
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h" 
