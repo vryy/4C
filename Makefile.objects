@@ -201,7 +201,6 @@ OBJS9	      = src/brick1/c1_out.o \
                 src/brick1/c1_cint.o \
                 src/brick1/c1_cal_deriv.o \
                 src/brick1/c1_mat_plast_mises.o \
-                src/brick1/c1_mat_plast_hashdel.o \
                 src/brick1/c1_mat_plast_mises_ls.o \
                 src/brick1/c1_cal_eps.o \
                 src/brick1/c1_init.o \
