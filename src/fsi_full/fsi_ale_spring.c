@@ -168,7 +168,7 @@ adyn->nstep=fsidyn->nstep;
 container.isdyn   = 1;  
 container.actndis = 0;    
 container.pos     = 0;
-actpos=1;
+actpos=0;
 outstep=0;
 pssstep=0;
 restartstep=0;
@@ -432,6 +432,9 @@ case 3:
 /*------------------------------------ for iterative staggared schemes:
 /*------------------------ copy from nodal sol_mf[1][j] to sol_mf[0][j] */
 if (fsidyn->ifsi>=4) solserv_sol_copy(actfield,0,3,3,1,0);
+
+/*------------------------ copy from sol_mf[1][j] to sol_incrment[1][j] */
+solserv_sol_copy(actfield,0,3,1,1,1);
 
 /*----------------- set dirichlet boundary conditions on at output time */
 ale_setdirich_increment_fsi(actfield,adyn,actpos);

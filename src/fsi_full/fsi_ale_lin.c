@@ -164,7 +164,7 @@ adyn->nstep=fsidyn->nstep;
 /*----------------------------------------------------------------------*/
 container.isdyn   = 0;  
 container.actndis = 0;    
-actpos=1;
+actpos=0;
 outstep=0;
 pssstep=0;
 restartstep=0;
@@ -339,6 +339,7 @@ solver_control(
                     init
                  );
 /*-------------------------allreduce the result and put it to the nodes */
+#if 0
 solserv_result_total(
                      actfield,
                      actintra,
@@ -347,6 +348,7 @@ solserv_result_total(
                      &(actsolv->sysarray[actsysarray]),
                      &(actsolv->sysarray_typ[actsysarray])
                     );
+#endif
 /*---------------------allreduce the result and put it to sol_increment */
 solserv_result_incre(
                      actfield,
@@ -376,16 +378,6 @@ outstep++;
 pssstep++;
 restartstep++;
 
-if (outstep==adyn->updevry_disp && ioflags.ale_disp_file==1)
-{ 
-    outstep=0;
-    out_sol(actfield,actpart,actintra,adyn->step,actpos);
-/*    if (par.myrank==0) out_gid_sol("displacement",actfield,actintra,adyn->step,0);*/
-}
-/*---------------------------------------------------------- monitoring */
-if (ioflags.monitor==1)
-monitoring(actfield,numfa,actpos,adyn->step,adyn->time);
-
 if (pssstep==fsidyn->uppss && ioflags.fluid_vis_file==1 && par.myrank==0)
 {
    pssstep=0;
@@ -395,6 +387,21 @@ if (pssstep==fsidyn->uppss && ioflags.fluid_vis_file==1 && par.myrank==0)
    time_a.a.dv[actpos] = adyn->time;   
    actpos++;
 }
+
+/*----------- copy solution from sol_increment[0][j] to sol_[actpos][j] */
+solserv_sol_copy(actfield,0,1,0,0,actpos);
+
+if (outstep==adyn->updevry_disp && ioflags.ale_disp_file==1)
+{ 
+    outstep=0;
+    out_sol(actfield,actpart,actintra,adyn->step,actpos);
+/*    if (par.myrank==0) out_gid_sol("displacement",actfield,actintra,adyn->step,0);*/
+}
+
+/*---------------------------------------------------------- monitoring */
+if (ioflags.monitor==1)
+monitoring(actfield,numfa,actpos,adyn->step,adyn->time);
+
 
 /*------------------------------------------------- write restart data */
 if (restartstep==fsidyn->res_write_evry)

@@ -282,10 +282,10 @@ case ale:
 #ifdef D_FSI
    numff = genprob.numff;
    numsf = genprob.numsf;
-   structfield=&(field[numsf]);
+   if (numsf!=-1) structfield=&(field[numsf]);
    fluidfield =&(field[numff]);
    numnp = fluidfield->dis[0].numnp;
-   numnp_struct = structfield->dis[0].numnp;
+   if (numsf != -1) numnp_struct = structfield->dis[0].numnp;
    numnp_ale = actfield->dis[0].numnp;
    for (i=0;i<fluidfield->dis[0].numnp;i++)
    {
@@ -325,7 +325,8 @@ case ale:
       printf("   Reading STEP %d\n",stepin);
       /*------------------------------ find & read displacement results */
       vis_frfind("VALUES");
-      /*------------------------------ skip results of structural field */
+      /*------------ skip results of structural field if there are some */
+      if (numsf!=-1)
       for (i=0;i<numnp_struct;i++)
       if (fgets(line,499,in)==NULL)
          dserror("An error occured reading a line from .flavia.res");
@@ -360,7 +361,7 @@ case ale:
          actgnode = actnode->gnode;
 	 actfnode = actgnode->mfcpnode[numff];
 	 if (actfnode==NULL) continue;
-	 num = actnode->Id_loc;
+	 num = actfnode->Id_loc;
          for (k=0;k<numdf;k++)
             actnode->sol.a.da[counter][k]=val[num][k];
       }
