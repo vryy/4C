@@ -435,6 +435,9 @@ if (fdyn->nii+(*hasext)!=0) f3_permeforce(eiforce,wa1,ele->numnp);
 /*------------------------------- calculate element load vector edforce */
 fluid_mlcaldirich(ele,edforce,estif,hasdirich);
 
+/*----------------------------------------------------- local co-system */
+dsassert(ele->locsys==locsys_no,"locsys not implemented for this element!\n");
+
 end:
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
