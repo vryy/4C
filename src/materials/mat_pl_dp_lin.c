@@ -52,6 +52,7 @@ with the following sorting of stresses and strains:
 \param  DOUBLE    pv        (i)  poisson's ration               
 \param  DOUBLE    sigy      (i)  uniaxial yield stress         
 \param  DOUBLE    eh        (i)  hardening modulus                 
+\param  DOUBLE    gf        (i)  fracture energy
 \param  DOUBLE    betah     (i)  controls the isotropic/kinematic hardening
 \param  DOUBLE    alpha     (i)  coefficient of friction
 \param  DOUBLE    stress[6] (o)  vector of stresses [11,22,33,12,23,13]
@@ -63,6 +64,7 @@ with the following sorting of stresses and strains:
 \param  DOUBLE    sig[6]    (i)  stresses from WA  [11,22,33,12,23,13]
 \param  DOUBLE    eps[6]    (i)  strains from WA  [11,22,33,12,23,13]
 \param  DOUBLE    qn[6]     (i)  backstress vector from WA  [11,22,33,12,23,13]
+\param  DOUBLE    dia     (i)  internal length parameter from WA
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -70,27 +72,30 @@ with the following sorting of stresses and strains:
 
 *----------------------------------------------------------------------*/
 void mat_pl_dp_lin_main(
-             DOUBLE   ym,       /*!< young's modulus */
-             DOUBLE   pv,       /*!< poisson's ration */
-             DOUBLE   sigy,     /*!< uniaxial yield stress */
-             DOUBLE   eh,       /*!< hardening modulus */
-             DOUBLE   betah,    /*!< controls the iso/kin hardening */
-             DOUBLE   phi,      /*!< angle of friction */
-             DOUBLE   stress[6],/*!< ele stress (-resultant) vector */      
-             DOUBLE   strain[6],/*!< actual strains from displacements */
-             DOUBLE **d,        /*!< material matrix 3D */
-             INT     *iupd,     /*!< controls update of new stresses to wa */
-             INT     *yip,      /*!< from WA */
-             DOUBLE  *epstn,    /*!< from WA */
-             DOUBLE   sig[6],   /*!< stresses from WA */
-             DOUBLE   eps[6],   /*!< strains from WA */
-             DOUBLE   qn[6])    /*!< backstress vector from WA */
+             DOUBLE   ym,       
+             DOUBLE   pv,       
+             DOUBLE   sigy,     
+             DOUBLE   eh,       
+             DOUBLE   gf,       
+             DOUBLE   betah,    
+             DOUBLE   phi,      
+             DOUBLE   stress[6],
+             DOUBLE   strain[6],
+             DOUBLE **d,        
+             INT     *iupd,     
+             INT     *yip,      
+             DOUBLE  *epstn,    
+             DOUBLE   sig[6],   
+             DOUBLE   eps[6],   
+             DOUBLE   qn[6],    
+             DOUBLE   dia)      
 {
 /*----------------------------------------------------------------------*/
 INT    i,j;
 DOUBLE q13,ro23;
 DOUBLE yld;
 DOUBLE dlam,ft1,ft2;
+INT    isoft;
 DOUBLE hards;
 DOUBLE eta[6];          /*stress - backstress*/
 DOUBLE sigma[6];        /*stress*/
@@ -101,10 +106,35 @@ DOUBLE trace;           /*trace of trial stresses*/
 DOUBLE n[6];            /*Gradient in deviatoric direction of stresses (s/|s|)*/
 DOUBLE norm;            /*Norm of n*/
 DOUBLE k_eps;           /*uniaxial equivalent stresses -> isotropic hardening*/
+DOUBLE epstmax;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("mat_pl_dp_lin_main");
 #endif
+/*----------------------------------------------------------------------*/
+  *iupd=0;
+/*---------------------------------------------- hardening/softening ---*/
+ if(fabs(gf)>EPS10) /*softening*/
+ {
+   isoft = 1;
+   eh = gf;
+   epstmax = (2. * eh)/(sigy * dia);
+   epstmax = fabs(epstmax);
+   if(*epstn<epstmax)
+   {
+     hards   = -(sigy*sigy * dia)/(2. * eh);
+   }
+   else
+   {
+     hards   = 0.0001;
+   }
+ }
+ else /*hardening*/
+ {
+   isoft = 0;
+   hards = (ym * eh) / (ym - eh);
+ }
+
 /*--------- calculate some needed prevalues -----------------------------*/
 q13  = 1./3.;
 ro23 = sqrt(2./3.);
@@ -118,9 +148,7 @@ K = ym / (3. - 6.* pv);
 G = ym / (2. + 2.* pv);
 
 ft2 = 1.0;   /*initialize for inverted cone*/
-/*----------------------------------------------------------------------*/
-  *iupd=0;
-   hards = (ym * eh) / (ym - eh);
+
 /*----- get linear elastic isotropic material tensor -------------------*/
    mat_el_iso(ym, pv, d); 
 
@@ -182,7 +210,16 @@ ft2 = 1.0;   /*initialize for inverted cone*/
   /*-------- trace(sig - rho) --------------------------------------------*/
   trace = eta[0] + eta[1] + eta[2];
   /*-------- k(epstn)  ---------------------------------------------------*/
-  k_eps = ro23 * (yld + betah*hards* *epstn);
+  /*    Beruecksichtigung des Verfestigungsverhaltens */
+    if(isoft==0)
+    {
+      k_eps = ro23 * (yld + betah*hards* *epstn);
+    }
+    else
+    {
+      if(*epstn < epstmax)  k_eps = ro23 * (yld + betah*hards* *epstn);
+      else k_eps = 0.01*sigy;    
+    }
 
 /*--- yield condition - Drucker Prager 3D - linear hardening/softening  ---*/
   ft1 = norm + alpha1 *trace - k_eps;                            /*main yield surface*/
@@ -653,7 +690,7 @@ with the following sorting of stresses and strains:
 \param  DOUBLE    hards     (i)  (E*Eh)/(E-Eh)  
 \param  DOUBLE    betah     (i)  controls the isotropic/kinematic hardening
 \param  DOUBLE    alpha1    (i)  coefficient of friction for main yield surface          
-\param  DOUBLE   *dlam      (i)  plastic multiplier (dlam1 + dlam2 ; of main yield surface + inverted cone)
+\param  DOUBLE    dlam      (i)  plastic multiplier (dlam1 + dlam2 ; of main yield surface + inverted cone)
 \param  DOUBLE    e         (i)  youngs modulus  
 \param  DOUBLE    vnu       (i)  poisson's ratio  
 \param  DOUBLE  **d         (o)  material matrix to be calculated   
