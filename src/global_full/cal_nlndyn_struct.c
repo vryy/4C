@@ -265,7 +265,7 @@ calinit(actfield,actpart,action);
 
 /*----------------------- call elements to calculate stiffness and mass */
 *action = calc_struct_nlnstiffmass;
-calelm(actfield,actsolv,actpart,actintra,stiff_array,mass_array,NULL,0,0,action);
+calelm(actfield,actsolv,actpart,actintra,stiff_array,mass_array,NULL,NULL,0,0,action);
 
 /*-------------------------------------------- calculate damping matrix */
 if (damp_array>0)
@@ -282,17 +282,15 @@ if (damp_array>0)
                    &(actsolv->sysarray[damp_array]),
                    &(actsolv->sysarray_typ[mass_array]),
                    &(actsolv->sysarray[mass_array]),
-                   sdyn->k_damp);
+                   sdyn->k_damp);  
 }
 /*-------------------------------------- create the original rhs vector */
-*action = calc_struct_eleload;
+/*-------------------------- the approbiate action is set inside calrhs */
 calrhs(actfield,actsolv,actpart,actintra,stiff_array,
-       &(actsolv->rhs[2]),&(actsolv->rhs[3]),0,action);
+       &(actsolv->rhs[2]),0,action);
 
-/*--------------------------------------------- add the two rhs vectors */
-solserv_add_vec(&(actsolv->rhs[3]),&(actsolv->rhs[2]),1.0);
+/*------------------------------------------------- copy the rhs vector */
 solserv_copy_vec(&(actsolv->rhs[2]),&(actsolv->rhs[3]));
-
 /*----------------------- init the time curve applied to the loads here */
 /*-------------- this control routine at the moment always uses curve 0 */
 /*-------------------------------------------------- init the timecurve */
@@ -356,6 +354,33 @@ if (par.myrank==0) dyn_nlnstruct_outhead(&dynvar,sdyn);
                  velocities    are kept in node[].sol[1][0..numdf-1]
                  accelerations are kept in node[].sol[2][0..numdf-1]
 
+Values of the different vectors from above in one loop:
+  /......no change in this step
+  =,+=...evaluation in this step
+
+   vector	Predictor - Start     Precictor - End	  Corrector - Start	Corrector - End			Update - End
+
+   rhs[3]  	/{=orig. load vect.} 	/	 		/		/				/
+   rhs[2]       /{=rhs(t-dt)}     	/			/		/				=rhs[1]{=rhs(t)}
+   rhs[1]       =rhs(t)      		/			/		/				/
+   rhs[0]    	/{=rhs(t-2dt)}		=feff_p			/		=feff_c				=rhs[2]{=rhs(t-dt)}
+
+   fie[2]    	/			/			=fint(t)	/				/
+   fie[1]    	=fint(t-dt)		/			/		/				/
+   fie[0]    	/			/			/		=(1-alpha_f)*fie[2]+alpha_f*fie[1]	/
+
+   dispi[0]  	=0			=Keff^-1*feff-p		/		+=work[0]			/
+
+   sol[0]    	/{=d(t-dt)}		/			/		/				=sol[1]{=d(t)}
+   sol[1]    	{=d(t-dt)}		=sol[0]+dispi[0]{=d(t)}	/		=sol[0]+dispi[0]		/
+   
+   vel[0]    	/{=v(t-dt)}		/			/		/				=v(t)
+   acc[0]    	/{=a(t-dt)}		/			/		/				=a(t)	
+
+   work[2]    	/{=v(t-2dt)}		/			/		/				=v(t-dt)
+   work[1]    	/{=a(t-2dt)}		/			/		/				=a(t-dt)
+   work[0]    	/ 			/			/		=Keff^-1*feff-c			=M*vel[0]
+
 */
 timeloop:
 /*-------------------------------------------------- set some constants */
@@ -389,7 +414,7 @@ solserv_scalarprod_vec(&(actsolv->rhs[1]),dynvar.rldfac);
 solserv_zero_mat(actintra,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
 amzero(&intforce_a);
 *action = calc_struct_nlnstiff;
-calelm(actfield,actsolv,actpart,actintra,stiff_array,-1,intforce,numeq_total,0,action);
+calelm(actfield,actsolv,actpart,actintra,stiff_array,-1,intforce,NULL,numeq_total,0,action);
 
 /*---------------------------- store positive internal forces on fie[1] */
 solserv_zero_vec(&fie[1]);
@@ -462,7 +487,7 @@ amzero(&intforce_a);
 
 /* call element routines for calculation of tangential stiffness and intforce */
 *action = calc_struct_nlnstiff;
-calelm(actfield,actsolv,actpart,actintra,stiff_array,-1,intforce,numeq_total,0,action);
+calelm(actfield,actsolv,actpart,actintra,stiff_array,-1,intforce,NULL,numeq_total,0,action);
 
 /*---------------------------- store positive internal forces on fie[2] */
 solserv_zero_vec(&fie[2]);
@@ -580,7 +605,7 @@ dynvar.etot = dynvar.epot + dynvar.ekin;
 if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1)
 {
    *action = calc_struct_stress;
-   calelm(actfield,actsolv,actpart,actintra,stiff_array,-1,NULL,0,0,action);
+   calelm(actfield,actsolv,actpart,actintra,stiff_array,-1,NULL,NULL,0,0,action);
    /*-------------------------- reduce stresses, so they can be written */
    *action = calc_struct_stressreduce;
    calreduce(actfield,actpart,actintra,action,0);
