@@ -56,6 +56,8 @@ typedef struct _GIDSET
      char                      *ale_tet_1_name;
      INT                        is_ale_tet_4;           /* 4-noded tet ale 4 GP */
      char                      *ale_tet_4_name;
+     INT                        is_axishell;            /* 2-noded axishell */
+     char                      *axishell_name;
      
 
 } GIDSET;

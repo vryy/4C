@@ -6,6 +6,7 @@
 #include "../brick1/brick1.h"
 #include "../ale2/ale2.h"
 #include "../ale3/ale3.h"
+#include "../axishell/axishell.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
@@ -115,6 +116,7 @@ for (i=0; i<genprob.numfld; i++)
    actgid->is_ale_tet_4 = 0;
    actgid->is_wall1_22  = 0;
    actgid->is_wall1_33  = 0;
+   actgid->is_axishell  = 0;
    /*---------------------------- check for different types of elements */
    for (j=0; j<actfield->dis[0].numele; j++)
    {
@@ -290,6 +292,13 @@ for (i=0; i<genprob.numfld; i++)
          }
       break;
 #endif /*D_WALL1*/
+/*---------------------------------------------------------fh 06/02----*/
+#ifdef D_AXISHELL
+      case el_axishell:    
+            actgid->is_axishell    = 1;
+            actgid->axishell_name  = "axishell";
+      break;
+#endif /*D_AXISHELL*/
       default:
          dserror("Unknown type of element");
       break;
@@ -606,6 +615,18 @@ for (i=0; i<genprob.numfld; i++)
    fprintf(out,"NATURAL COORDINATES: Internal\n");
    fprintf(out,"END GAUSSPOINTS\n");
    }
+   /* ---------------------------------------------------------------- */
+   if (actgid->is_axishell)
+   {
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s AXISHELL 1 GP\n",actgid->fieldname);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Linear\n", sign,actgid->axishell_name,sign);
+   fprintf(out,"NUMBER OF GAUSS POINTS: 1\n");
+   fprintf(out,"Nodes not included\n");
+   fprintf(out,"NATURAL COORDINATES: Internal\n");
+   fprintf(out,"END GAUSSPOINTS\n");
+   }
 /*----------------------------------------------------------------------*/
 } /* end of (i=0; i<genprob.numfld; i++) */
 /*----------------------------------------------------------------------*/
@@ -650,7 +671,7 @@ if (actgid->is_shell8_22)
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"# RESULT Domains on MESH %s\n",actgid->shell8_22_name);
    fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %cDomains%c %cpcarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+   fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
                                                                                sign,actgid->shell8_22_name,sign);
    fprintf(out,"VALUES\n");
    for (i=0; i<actfield->dis[0].numele; i++)
@@ -672,7 +693,7 @@ if (actgid->is_shell8_33)
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"# RESULT Domains on MESH %s\n",actgid->shell8_33_name);
    fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %cDomains%c %cpcarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+   fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
                                                                                sign,actgid->shell8_33_name,sign);
    fprintf(out,"VALUES\n");
    for (i=0; i<actfield->dis[0].numele; i++)
@@ -695,7 +716,7 @@ if (actgid->is_shell9_4_22)
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"# RESULT Domains on MESH %s\n",actgid->shell9_4_22_name);
    fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %cDomains%c %cpcarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+   fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
                                                                                sign,actgid->shell9_4_22_name,sign);
    fprintf(out,"VALUES\n");
    for (i=0; i<actfield->dis[0].numele; i++)
@@ -714,7 +735,7 @@ if (actgid->is_shell9_4_33)
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"# RESULT Domains on MESH %s\n",actgid->shell9_4_33_name);
    fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %cDomains%c %cpcarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+   fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
                                                                                sign,actgid->shell9_4_33_name,sign);
    fprintf(out,"VALUES\n");
    for (i=0; i<actfield->dis[0].numele; i++)
@@ -734,7 +755,7 @@ if (actgid->is_shell9_8_22)
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"# RESULT Domains on MESH %s\n",actgid->shell9_8_22_name);
    fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %cDomains%c %cpcarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+   fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
                                                                                sign,actgid->shell9_8_22_name,sign);
    fprintf(out,"VALUES\n");
    for (i=0; i<actfield->dis[0].numele; i++)
@@ -753,7 +774,7 @@ if (actgid->is_shell9_8_33)
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"# RESULT Domains on MESH %s\n",actgid->shell9_8_33_name);
    fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %cDomains%c %cpcarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+   fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
                                                                                sign,actgid->shell9_8_33_name,sign);
    fprintf(out,"VALUES\n");
    for (i=0; i<actfield->dis[0].numele; i++)
@@ -773,7 +794,7 @@ if (actgid->is_shell9_9_22)
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"# RESULT Domains on MESH %s\n",actgid->shell9_9_22_name);
    fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %cDomains%c %cpcarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+   fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
                                                                                sign,actgid->shell9_9_22_name,sign);
    fprintf(out,"VALUES\n");
    for (i=0; i<actfield->dis[0].numele; i++)
@@ -792,7 +813,7 @@ if (actgid->is_shell9_9_33)
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"# RESULT Domains on MESH %s\n",actgid->shell9_9_33_name);
    fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %cDomains%c %cpcarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+   fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
                                                                                sign,actgid->shell9_9_33_name,sign);
    fprintf(out,"VALUES\n");
    for (i=0; i<actfield->dis[0].numele; i++)
@@ -813,7 +834,7 @@ if (actgid->is_brick1_222)
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"# RESULT Domains on MESH %s\n",actgid->brick1_222_name);
    fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %cDomains%c %cpcarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+   fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
                                                                                sign,actgid->brick1_222_name,sign);
    fprintf(out,"VALUES\n");
    for (i=0; i<actfield->dis[0].numele; i++)
@@ -833,7 +854,7 @@ if (actgid->is_brick1_333)
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"# RESULT Domains on MESH %s\n",actgid->brick1_333_name);
    fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %cDomains%c %cpcarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+   fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
                                                                                sign,actgid->brick1_333_name,sign);
    fprintf(out,"VALUES\n");
    for (i=0; i<actfield->dis[0].numele; i++)
@@ -853,7 +874,7 @@ if (actgid->is_fluid3_222)
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"# RESULT Domains on MESH %s\n",actgid->fluid3_222_name);
    fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %cDomains%c %cpcarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+   fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
                                                                                sign,actgid->fluid3_222_name,sign);
    fprintf(out,"VALUES\n");
    for (i=0; i<actfield->dis[0].numele; i++)
@@ -873,7 +894,7 @@ if (actgid->is_fluid3_333)
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"# RESULT Domains on MESH %s\n",actgid->fluid3_333_name);
    fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %cDomains%c %cpcarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+   fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
                                                                                sign,actgid->fluid3_333_name,sign);
    fprintf(out,"VALUES\n");
    for (i=0; i<actfield->dis[0].numele; i++)
@@ -893,7 +914,7 @@ if (actgid->is_ale_11)
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"# RESULT Domains on MESH %s\n",actgid->ale_11_name);
    fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %cDomains%c %cpcarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+   fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
                                                                                          sign,actgid->ale_11_name,sign);
    fprintf(out,"VALUES\n");
    for (i=0; i<actfield->dis[0].numele; i++)
@@ -913,7 +934,7 @@ if (actgid->is_ale_22)
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"# RESULT Domains on MESH %s\n",actgid->ale_22_name);
    fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %cDomains%c %cpcarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+   fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
                                                                                          sign,actgid->ale_22_name,sign);
    fprintf(out,"VALUES\n");
    for (i=0; i<actfield->dis[0].numele; i++)
@@ -933,7 +954,7 @@ if (actgid->is_ale_tri_1)
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"# RESULT Domains on MESH %s\n",actgid->ale_tri_1_name);
    fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %cDomains%c %cpcarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+   fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
                                                                                    sign,actgid->ale_tri_1_name,sign);
    fprintf(out,"VALUES\n");
    for (i=0; i<actfield->dis[0].numele; i++)
@@ -953,7 +974,7 @@ if (actgid->is_ale_tri_3)
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"# RESULT Domains on MESH %s\n",actgid->ale_tri_3_name);
    fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %cDomains%c %cpcarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+   fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
                                                                                    sign,actgid->ale_tri_3_name,sign);
    fprintf(out,"VALUES\n");
    for (i=0; i<actfield->dis[0].numele; i++)
@@ -973,7 +994,7 @@ if (actgid->is_ale_111)
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"# RESULT Domains on MESH %s\n",actgid->ale_111_name);
    fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %cDomains%c %cpcarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+   fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
                                                                                sign,actgid->ale_111_name,sign);
    fprintf(out,"VALUES\n");
    for (i=0; i<actfield->dis[0].numele; i++)
@@ -993,7 +1014,7 @@ if (actgid->is_ale_222)
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"# RESULT Domains on MESH %s\n",actgid->ale_222_name);
    fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %cDomains%c %cpcarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+   fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
                                                                                sign,actgid->ale_222_name,sign);
    fprintf(out,"VALUES\n");
    for (i=0; i<actfield->dis[0].numele; i++)
@@ -1013,7 +1034,7 @@ if (actgid->is_ale_tet_1)
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"# RESULT Domains on MESH %s\n",actgid->ale_tet_1_name);
    fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %cDomains%c %cpcarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+   fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
                                                                                sign,actgid->ale_tet_1_name,sign);
    fprintf(out,"VALUES\n");
    for (i=0; i<actfield->dis[0].numele; i++)
@@ -1033,7 +1054,7 @@ if (actgid->is_ale_tet_4)
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"# RESULT Domains on MESH %s\n",actgid->ale_tet_4_name);
    fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %cDomains%c %cpcarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+   fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
                                                                                sign,actgid->ale_tet_4_name,sign);
    fprintf(out,"VALUES\n");
    for (i=0; i<actfield->dis[0].numele; i++)
@@ -1054,7 +1075,7 @@ if (actgid->is_wall1_22)
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"# RESULT Domains on MESH %s\n",actgid->wall1_22_name);
    fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %cDomains%c %cpcarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+   fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
                                                                                sign,actgid->wall1_22_name,sign);
    fprintf(out,"VALUES\n");
    for (i=0; i<actfield->dis[0].numele; i++)
@@ -1074,7 +1095,7 @@ if (actgid->is_wall1_33)
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"# RESULT Domains on MESH %s\n",actgid->wall1_33_name);
    fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %cDomains%c %cpcarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+   fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
                                                                                sign,actgid->wall1_33_name,sign);
    fprintf(out,"VALUES\n");
    for (i=0; i<actfield->dis[0].numele; i++)
@@ -1175,7 +1196,7 @@ if (strncmp(string,"displacement",stringlenght)==0)
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"# RESULT %s on FIELD %s\n",string,actgid->fieldname);
    fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %c%s%c %cpcarat%c %d %s %s\n",
+   fprintf(out,"RESULT %c%s%c %cccarat%c %d %s %s\n",
                                                              sign,string,sign,
                                                              sign,sign,
                                                              step,
@@ -1186,6 +1207,9 @@ if (strncmp(string,"displacement",stringlenght)==0)
                                             sign,actgid->standardrangetable,sign
                                             );
 
+#ifdef D_AXISHELL
+   genprob.ndim = 3;
+#endif
 #ifdef D_SHELL9
    /*if shell9, the displacement have to be written in 3 components */
    /*NOTE: only first element is tested, as it is assumed that there
@@ -1300,7 +1324,7 @@ if (strncmp(string,"contact",stringlenght)==0)
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"# RESULT %s on FIELD %s\n",string,actgid->fieldname);
    fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %c%s%c %cpcarat%c %d %s %s\n",
+   fprintf(out,"RESULT %c%s%c %cccarat%c %d %s %s\n",
                                                              sign,string,sign,
                                                              sign,sign,
                                                              step,
@@ -1402,7 +1426,7 @@ for (j=0; j<place; j++)
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"# RESULT %s on FIELD %s\n",string,actgid->fieldname);
    fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %c%s%c %cpcarat%c %d %s %s\n",
+   fprintf(out,"RESULT %c%s%c %cccarat%c %d %s %s\n",
                                                              sign,string,sign,
                                                              sign,sign,
                                                              j,
@@ -1453,7 +1477,7 @@ if (strncmp(string,"stress",stringlenght)==0)
       fprintf(out,"#-------------------------------------------------------------------------------\n");
       fprintf(out,"# RESULT shell8_forces on FIELD %s\n",actgid->fieldname);
       fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"RESULT %cshell8_forces%c %cpcarat%c %d %s %s %c%s%c\n",
+      fprintf(out,"RESULT %cshell8_forces%c %cccarat%c %d %s %s %c%s%c\n",
                                                              sign,sign,
                                                              sign,sign,
                                                              step,
@@ -1499,7 +1523,7 @@ if (strncmp(string,"stress",stringlenght)==0)
       fprintf(out,"#-------------------------------------------------------------------------------\n");
       fprintf(out,"# RESULT shell8_moments on FIELD %s\n",actgid->fieldname);
       fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"RESULT %cshell8_moments%c %cpcarat%c %d %s %s %c%s%c\n",
+      fprintf(out,"RESULT %cshell8_moments%c %cccarat%c %d %s %s %c%s%c\n",
                                                              sign,sign,
                                                              sign,sign,
                                                              step,
@@ -1557,7 +1581,7 @@ if (strncmp(string,"stress",stringlenght)==0)
       fprintf(out,"#-------------------------------------------------------------------------------\n");
       fprintf(out,"# RESULT shell8_forces on FIELD %s\n",actgid->fieldname);
       fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"RESULT %cshell8_forces%c %cpcarat%c %d %s %s %c%s%c\n",
+      fprintf(out,"RESULT %cshell8_forces%c %cccarat%c %d %s %s %c%s%c\n",
                                                              sign,sign,
                                                              sign,sign,
                                                              step,
@@ -1603,7 +1627,7 @@ if (strncmp(string,"stress",stringlenght)==0)
       fprintf(out,"#-------------------------------------------------------------------------------\n");
       fprintf(out,"# RESULT shell8_moments on FIELD %s\n",actgid->fieldname);
       fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"RESULT %cshell8_moments%c %cpcarat%c %d %s %s %c%s%c\n",
+      fprintf(out,"RESULT %cshell8_moments%c %cccarat%c %d %s %s %c%s%c\n",
                                                              sign,sign,
                                                              sign,sign,
                                                              step,
@@ -1671,7 +1695,7 @@ if (strncmp(string,"stress",stringlenght)==0)
       fprintf(out,"#-------------------------------------------------------------------------------\n");
       fprintf(out,"# RESULT shell9_stresses on FIELD %s\n",actgid->fieldname);
       fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"RESULT %cshell9_stresses%c %cpcarat%c %d %s %s %c%s%c\n",
+      fprintf(out,"RESULT %cshell9_stresses%c %cccarat%c %d %s %s %c%s%c\n",
                                                              sign,sign,
                                                              sign,sign,
                                                              step,
@@ -1742,7 +1766,7 @@ if (strncmp(string,"stress",stringlenght)==0)
       fprintf(out,"#-------------------------------------------------------------------------------\n");
       fprintf(out,"# RESULT wall1_forces on FIELD %s\n",actgid->fieldname);
       fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"RESULT %cwall1_forces%c %cpcarat%c %d %s %s %c%s%c\n",
+      fprintf(out,"RESULT %cwall1_forces%c %cccarat%c %d %s %s %c%s%c\n",
                                                              sign,sign,
                                                              sign,sign,
                                                              step,
@@ -1795,7 +1819,7 @@ if (strncmp(string,"stress",stringlenght)==0)
       fprintf(out,"#-------------------------------------------------------------------------------\n");
       fprintf(out,"# RESULT wall1_forces on FIELD %s\n",actgid->fieldname);
       fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"RESULT %cwall1_forces%c %cpcarat%c %d %s %s %c%s%c\n",
+      fprintf(out,"RESULT %cwall1_forces%c %cccarat%c %d %s %s %c%s%c\n",
                                                              sign,sign,
                                                              sign,sign,
                                                              step,
@@ -1957,6 +1981,94 @@ if (strncmp(string,"stress",stringlenght)==0)
      }
    }
 #endif
+#ifdef D_AXISHELL   
+   /* STRESS output for AXISHELL */
+   if (actgid->is_axishell)
+   { 
+     /* -------------------------------- write lokale diaplcements first */
+     resulttype        = "VECTOR";
+     resultplace       = "ONNODES";
+     gpset             = ""; 
+     rangetable        = actgid->standardrangetable;
+     ncomponent        = 3;
+     componentnames[0] = "u";
+     componentnames[1] = "w";
+     componentnames[2] = "beta";
+     /*-------------------------------------------------------------------*/
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"# RESULT %s on FIELD %s\n","verschiebungen",actgid->fieldname);
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"RESULT %c%s%c %cccarat%c %d %s %s\n",
+         sign,"verschiebungen",sign,
+         sign,sign,
+         step,
+         resulttype,
+         resultplace
+         );
+     fprintf(out,"RESULTRANGESTABLE %c%s%c\n",
+         sign,actgid->standardrangetable,sign
+         );
+     fprintf(out,"COMPONENTNAMES %c%s%c,%c%s%c,%c%s%c\n",
+         sign,componentnames[0],sign,
+         sign,componentnames[1],sign,
+         sign,componentnames[2],sign
+         );
+     fprintf(out,"VALUES\n");
+     for (i=0; i<actfield->dis[0].numnp; i++)
+     {
+       actnode = &(actfield->dis[0].node[i]);
+       fprintf(out," %6d %18.5E %18.5E %18.5E\n",
+           actnode->Id+1,
+           actnode->sol.a.da[1][0],
+           actnode->sol.a.da[1][1],
+           actnode->sol.a.da[1][2]
+           );
+     }
+     fprintf(out,"END VALUES\n");
+
+     /* --------------------------------------------- now write stresses */
+      ngauss=1;
+      resulttype        = "MATRIX";
+      resultplace       = "ONGAUSSPOINTS";
+      gpset             = actgid->axishell_name;
+      rangetable        = actgid->standardrangetable;
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"# RESULT AXISHELL on FIELD %s\n",actgid->fieldname);
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"RESULT %caxishell_forces%c %cccarat%c %d %s %s %c%s%c\n",
+                                                             sign,sign,
+                                                             sign,sign,
+                                                             step,
+                                                             resulttype,
+                                                             resultplace,
+                                                             sign,gpset,sign
+                                                             );
+
+      fprintf(out,"COMPONENTNAMES %cn_s%c,%cn_theta%c,%cm_s%c,%cm_theta%c,%cq_s%c,%cunused%c\n",
+              sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign);
+
+      fprintf(out,"VALUES\n");
+      for (i=0; i<actfield->dis[0].numele; i++)
+      {
+         actele = &(actfield->dis[0].element[i]);
+         if (actele->eltyp != el_axishell || actele->numnp !=2) continue;
+
+         /* ------------------------------------------------ */
+         stress=actele->e.saxi->stress_GP.a.d3[place];
+	 fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                             actele->Id+1,
+			     stress[0][0],
+			     stress[1][0],
+			     stress[2][0],
+			     stress[3][0],
+			     stress[4][0],
+                             0.0
+			     );
+         /* ------------------------------------------------- */
+      }
+      fprintf(out,"END VALUES\n");
+   }
+#endif
 #ifdef D_ALE
    if (actgid->is_ale_11)
    {
@@ -2007,7 +2119,7 @@ if (strncmp(string,"velocity",stringlenght)==0)
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"# RESULT %s on FIELD %s\n",string,actgid->fieldname);
    fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %c%s%c %cpcarat%c %d %s %s\n",
+   fprintf(out,"RESULT %c%s%c %cccarat%c %d %s %s\n",
                                                              sign,string,sign,
                                                              sign,sign,
                                                              step,
@@ -2077,7 +2189,7 @@ if (strncmp(string,"pressure",stringlenght)==0)
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"# RESULT %s on FIELD %s\n",string,actgid->fieldname);
    fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %c%s%c %cpcarat%c %d %s %s\n",
+   fprintf(out,"RESULT %c%s%c %cccarat%c %d %s %s\n",
                                                              sign,string,sign,
                                                              sign,sign,
                                                              step,
@@ -2128,6 +2240,52 @@ if (strncmp(string,"pressure",stringlenght)==0)
    }
    fprintf(out,"END VALUES\n");
 } /* end of (strncmp(string,"velocity",stringlenght)==0) */
+/*========================================= result type is thickness */
+#ifdef D_AXISHELL
+if (strncmp(string,"thickness",stringlenght)==0)
+{
+  resulttype        = "SCALAR";
+  resultplace       = "ONNODES";
+  gpset             = ""; 
+  rangetable        = actgid->standardrangetable;
+  ncomponent        = 1;
+  componentnames[0] = "thickness";
+  /*-------------------------------------------------------------------*/
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"# RESULT %s on FIELD %s\n",string,actgid->fieldname);
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"RESULT %c%s%c %cccarat%c %d %s %s\n",
+      sign,string,sign,
+      sign,sign,
+      step,
+      resulttype,
+      resultplace
+      );
+
+  fprintf(out,"RESULTRANGESTABLE %c%s%c\n", sign,actgid->standardrangetable,sign);
+
+  fprintf(out,"COMPONENTNAMES %c%s%c\n",sign,componentnames[0],sign);
+
+  fprintf(out,"VALUES\n");
+
+  for (i=0; i<actfield->dis[0].numnp; i++)
+  {
+    actnode = &(actfield->dis[0].node[i]);
+    actele = actnode->element[0];
+
+    if (actele==NULL)
+      dserror("Error in output of thickness");
+
+    if (actele->node[0] == actnode)
+      thick = actele->e.saxi->thick[0];
+    else
+      thick = actele->e.saxi->thick[1];
+
+    fprintf(out," %6d %18.5E \n", actnode->Id+1, thick);
+  }
+   fprintf(out,"END VALUES\n");
+} /* end of (strncmp(string,"thickness",stringlenght)==0) */
+#endif
 /*----------------------------------------------------------------------*/
 fflush(out);
 #ifdef DEBUG 

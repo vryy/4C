@@ -51,7 +51,9 @@ typedef enum _DIS_TYP
                        hex20,          /* 20 noded hexahedra */
                        hex27,          /* 27 noded hexahedra */
                        tet4,           /* 4 noded tetrahedra */
-                       tet10           /* 4 noded tetrahedra */
+                       tet10,          /* 4 noded tetrahedra */
+                       line2,          /* 2 noded line */
+                       line3           /* 3 noded line */
 } DIS_TYP;                         
 /*----------------------------------------------------------------------*
  | enum FE_TYP                                            m.gee 7/01    |
@@ -70,7 +72,8 @@ typedef enum _ELEMENT_TYP
                        el_fluid2_tu,   /* 2D fluid element for turbulence */
                        el_fluid3,      /* 3D fluid element */
                        el_ale2,        /* 2D pseudo structural ale element */
-                       el_ale3         /* 3D pseudo structural ale element */
+                       el_ale3,        /* 3D pseudo structural ale element */
+                       el_axishell     /* 1D axisymmetrical shell element */
 } ELEMENT_TYP;                         
 /*----------------------------------------------------------------------*
  | enum MATERIAL_TYP                                      m.gee 7/01    |
@@ -317,3 +320,12 @@ typedef enum _FLUID_STRESS
      str_liftdrag,
      str_all
 }  FLUID_STRESS; 
+/*----------------------------------------------------------------------*
+ | enum MATRIX_TYP                                          mn 05/03    |
+ *----------------------------------------------------------------------*/
+typedef enum _DLINE_TYP
+{
+                       stline,            /* */
+                       nurbline,          /* */
+                       arcline            /* */
+} DLINE_TYP;                         

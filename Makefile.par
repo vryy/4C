@@ -19,6 +19,7 @@
 # -DD_WALL1      defines element wall1
 # -DD_OPTIM      defines optimization
 # -DD_CONTACT    defines contact algos 2D (with wall element)
+# -DD_AXISHELL   defines axishell element
 #
 # -DDEBUG     defines debug mode: routine and array tracing 
 # -DPARALLEL  defines parallel version of programm

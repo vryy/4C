@@ -241,21 +241,28 @@ dstrc_enter("read_1_dline");
 #endif
 /*----------------------------------------------------------------------*/
 ierr=0;
+/* ------------------------------------------------------ read line typ */
 frchk("LINE",&ierr);
 while (!ierr) {frread(); frchk("LINE",&ierr);}
-frchk("STLINE",&isnurb);
-frchk("NURBLINE",&isnurb);
+frchk("STLINE",&ierr);
+if (ierr==1) dline->typ = stline;
+frchk("NURBLINE",&ierr);
+if (ierr==1) dline->typ = nurbline;
+frchk("ARCLINE",&ierr);
+if (ierr==1) dline->typ = arcline;
 
+/* --------------------------------------------------- read line number */
 frchk("Num:",&ierr);
 while (!ierr) {frread(); frchk("Num:",&ierr);}
 frint("Num:",&i,&ierr);
 if (!ierr) dserror("Cannot read DLINE");
-
 if (i != readId) dserror("DLINEs got mixed up");
 
+/* ----------------------------- read number of conditions to this line */
 frint("conditions:",&(dline->ncond),&ierr);
 if (!ierr) dserror("Cannot read DLINE");
 
+/* -------------------------------- read dpoints connected to this line */
 frchk("Points:",&ierr);
 while (!ierr) {frread(); frchk("Points:",&ierr);}
 frint_n("Points:",dline->my_dnodeId,2,&ierr);
@@ -263,6 +270,37 @@ if (!ierr) dserror("Cannot read DLINE");
 dline->my_dnodeId[0]--;
 dline->my_dnodeId[1]--;
 dline->ndnode=2;
+
+/* -------------------------------------------- read arcline properties */
+if(dline->typ == arcline)
+{
+  dline->props.arcline = (ARCLINE*)CCACALLOC(1,sizeof(ARCLINE));
+  if (dline->props.arcline==NULL) dserror("Allocation of dline failed");
+  /* ------------------------------------------------- read line number */
+  frchk("2D center",&ierr);
+  while (!ierr) {frread(); frchk("2D center",&ierr);}
+  /* -------------------------------------- read radius of this arcline */
+  frdouble("radius=",&(dline->props.arcline->radius),&ierr);
+  if (!ierr) dserror("Cannot read DLINE");
+  /* ------------------------------------- read initang of this arcline */
+  frdouble("initang=",&(dline->props.arcline->initang),&ierr);
+  if (!ierr) dserror("Cannot read DLINE");
+  /* -------------------------------------- read endang of this arcline */
+  frdouble("endang=",&(dline->props.arcline->endang),&ierr);
+  if (!ierr) dserror("Cannot read DLINE");
+  /* ------------------------------------------------ find total length */
+  frchk("TotalLength",&ierr);
+  while (!ierr) {frread(); frchk("TotalLength",&ierr);}
+  /* ------------------------------------------------ read total length */
+  frdouble("TotalLength=",&(dline->props.arcline->total_length),&ierr);
+  if (!ierr) dserror("Cannot read DLINE");
+}
+/* -------------------------------------------- read arcline properties */
+if(dline->typ == stline)
+{
+  dline->props.stline = (STLINE*)CCACALLOC(1,sizeof(STLINE));
+  if (dline->props.stline==NULL) dserror("Allocation of dline failed");
+}
 
 frchk("END",&ierr);
 while (!ierr) {frread(); frchk("END",&ierr);}
@@ -273,7 +311,6 @@ dstrc_exit();
 #endif
 return;
 } /* end of read_1_dline */
-
 
 
 

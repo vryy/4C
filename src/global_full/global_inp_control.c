@@ -139,10 +139,16 @@ if (genprob.probtyp==prb_fsi)
 #ifdef D_FLUID
 if (genprob.probtyp==prb_fluid || genprob.probtyp==prb_fsi)
 {
-   for (i=0; i<genprob.numfld; i++)
-   for (j=0; j<field[i].ndis; j++)
-   inherit_design_dis_freesurf(&(field[i].dis[j]));
+  for (i=0; i<genprob.numfld; i++)
+    for (j=0; j<field[i].ndis; j++)
+      inherit_design_dis_freesurf(&(field[i].dis[j]));
 }
+#endif
+
+/*------------------------ interpolate axishell conditions to the nodes */
+#ifdef D_AXISHELL
+for (j=0; j<field[genprob.numsf].ndis; j++)
+  interpolate_axishell_conds(&(field[genprob.numsf].dis[j]));
 #endif
 
 /*-------------------------------------------- input of monitoring data */

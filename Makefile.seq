@@ -8,17 +8,18 @@
 #  
 #  
 # -DD_FLUID     defines general fluid problem
-# -DD_FSI        defines general FSI problem
+# -DD_FSI       defines general FSI problem
 # -DD_BRICK1    defines element brick1
 # -DD_SHELL8    defines element shell8
 # -DD_SHELL9    defines element shell9
-# -DS8CONTACT    defines contact algorithms for shell8 contact
+# -DS8CONTACT   defines contact algorithms for shell8 contact
 # -DD_FLUID2    defines element fluid2
 # -DD_FLUID3    defines element fluid3
 # -DD_ALE       defines element ale
 # -DD_WALL1     defines element wall1
 # -DD_OPTIM     defines optimization
-# -DD_CONTACT    defines contact algos 2D (with wall element)
+# -DD_CONTACT   defines contact algos 2D (with wall element)
+# -DD_AXISHELL  defines element axishell
 #
 # -DDEBUG     defines debug mode: routine and array tracing 
 # -DPARALLEL  defines parallel version of programm
@@ -47,7 +48,8 @@ FXX=f90
 CCX=cc
 LDX=f90
 PFL	 = -DHPUX11 -DD_FLUID -DD_FSI -DD_OPTIM -DS8CONTACT -DD_CONTACT  \
-	   -DD_FLUID2 -DD_FLUID3 -DD_WALL1 -DD_SHELL9 -DD_BRICK1 -DD_SHELL8 -DD_ALE \
+	   -DD_FLUID2 -DD_FLUID3 -DD_WALL1 -DD_SHELL9 -DD_BRICK1 -DD_SHELL8 \
+	   -DD_ALE -DD_AXISHELL \
 	   -DAZTEC_PACKAGE -DUMFPACK
 #
 #--------------------------------------------------------------------

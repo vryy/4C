@@ -1,6 +1,7 @@
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
+#include "../axishell/axishell.h"
 #include "../shell8/shell8.h"
 #include "../shell9/shell9.h"
 #include "../wall1/wall1.h"
@@ -201,6 +202,13 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
    if (container->dvec) amzero(&intforce_global);
    switch(actele->eltyp)/*======================= call element routines */
    {
+   case el_axishell:
+      container->handsize = 0;
+      container->handles  = NULL;
+      axishell(actpart,actintra,actele,
+               &estif_global,&intforce_global,
+               action,container);
+   break;
    case el_shell8:
       container->handsize = 0;
       container->handles  = NULL;
@@ -530,9 +538,10 @@ void calinit(FIELD       *actfield,   /* the active physical field */
              CALC_ACTION *action,
              CONTAINER   *container)  /*!< contains variables defined in container.h */
 {
-INT i;                        /* a counter */
-INT kk;                       
-INT is_shell8=0;              /* flags to check for presents of certain element types */
+INT i;            /* a counter */
+INT kk;
+INT is_axishell=0;/* flags to check for presents of certain element types */
+INT is_shell8=0;              
 INT is_shell9=0;   
 INT is_brick1=0;
 INT is_wall1 =0;
@@ -565,6 +574,9 @@ for (i=0; i<actfield->dis[kk].numele; i++)
    actele = &(actfield->dis[kk].element[i]);
    switch(actele->eltyp)
    {
+   case el_axishell:
+      is_axishell=1;
+   break;
    case el_shell8:
       is_shell8=1;
    break;
@@ -599,6 +611,14 @@ for (i=0; i<actfield->dis[kk].numele; i++)
 }/* end of loop over all elements */
 /*--------------------- init the element routines for all present types */
 container->kstep = 0;  
+/*----------------------------- init all kind of routines for axishell  */
+if (is_axishell==1)
+{
+   container->handsize = 0;
+   container->handles  = NULL;
+   axishell(actpart,NULL,NULL,&estif_global,&intforce_global,
+            action,container);
+}
 /*------------------------------- init all kind of routines for shell8  */
 if (is_shell8==1)
 {
@@ -685,6 +705,7 @@ void calreduce(FIELD       *actfield, /* the active field */
                CONTAINER   *container)/* contains variables defined in container.h */
 {
 INT i;
+INT is_axishell=0;
 INT is_shell8=0;
 INT is_shell9=0;
 INT is_brick1=0;
@@ -703,6 +724,9 @@ for (i=0; i<actfield->dis[0].numele; i++)
    actele = &(actfield->dis[0].element[i]);
    switch(actele->eltyp)
    {
+   case el_axishell:
+      is_axishell=1;
+   break;
    case el_shell8:
       is_shell8=1;
    break;
@@ -729,6 +753,10 @@ for (i=0; i<actfield->dis[0].numele; i++)
    break;   
    }
 }/* end of loop over all elements */
+/*-----------------------------------------reduce results for axishell  */
+if (is_axishell==1)
+{
+}
 /*-------------------------------------------reduce results for shell8  */
 if (is_shell8==1)
 {

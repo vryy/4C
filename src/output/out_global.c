@@ -233,6 +233,9 @@ break;
 case el_ale2:
 fprintf(out,"ELE glob_Id %6d loc_Id %6d ALE2\n",actele->Id,actele->Id_loc);
 break;
+case el_axishell:
+fprintf(out,"ELE glob_Id %6d loc_Id %6d AXISHELL\n",actele->Id,actele->Id_loc);
+break;
 default:
 dserror("Cannot print elementtype");
 break;

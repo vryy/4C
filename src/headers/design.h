@@ -39,6 +39,13 @@ typedef struct _DNODE
 #ifdef D_FLUID
    struct _FLUID_FREESURF_CONDITION *freesurf;
 #endif
+#ifdef D_AXISHELL
+   struct _SAXI_THICK_CONDITION   *thickness;
+   struct _SAXI_LOAD_CONDITION    *axishellload;
+   INT                             cos_type;  /* type of cos used for this node:
+                                                 0: global (default)
+                                                 1: local */
+#endif
 } DNODE;
 
 
@@ -48,8 +55,14 @@ typedef struct _DNODE
 typedef struct _DLINE
 {
    INT                       Id;            /* Id of this design line */
-   INT                       isnurb;        /* flag to show whether it's a standard or a nurb line */
+   enum _DLINE_TYP           typ   ;        /* typ of the dline (st,nurb,arc) */
    INT                       ncond;         /* number of conditions associated with me (not used at the moment) */
+
+     union                                      /* union pointer to elementformulation */
+     {
+     struct _ARCLINE        *arcline;               /* arcline */
+     struct _STLINE         *stline;                /* stline */
+     }                          props;              /* name of union */ 
 
    /*------- design topology section */
    INT                       my_dnodeId[2]; /* IDs of design nodes to me */
@@ -71,7 +84,34 @@ typedef struct _DLINE
 #ifdef D_FLUID
    struct _FLUID_FREESURF_CONDITION *freesurf;
 #endif
+#ifdef D_AXISHELL
+   struct _SAXI_THICK_CONDITION   *thickness;
+   struct _SAXI_LOAD_CONDITION    *axishellload;
+#endif
 } DLINE;
+
+
+/*----------------------------------------------------------------------*
+ | arcline                                                  mn 05/03    |
+ *----------------------------------------------------------------------*/
+typedef struct _ARCLINE
+{
+   DOUBLE                     radius;            /*  */
+   DOUBLE                     initang;           /*  */
+   DOUBLE                     endang;            /*  */
+   DOUBLE                     center[2];         /*  */
+   DOUBLE                     total_length;      /*  */
+
+} ARCLINE;
+
+/*----------------------------------------------------------------------*
+ | stline                                                   mn 05/03    |
+ *----------------------------------------------------------------------*/
+typedef struct _STLINE
+{
+   DOUBLE                     total_length;      /*  */
+
+} STLINE;
 
 
 /*----------------------------------------------------------------------*

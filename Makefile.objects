@@ -212,7 +212,8 @@ OBJS9	      = src/brick1/c1_out.o \
                 src/brick1/c1_load.o
 #                math
 OBJS10	      = src/math/sort_find.o \
-                src/math/math1.o
+                src/math/math1.o \
+                src/math/arcline.o
 #                output
 OBJS11	      = src/output/out_global.o \
                 src/output/out_gid_msh.o \
@@ -382,6 +383,17 @@ OBJS_OPT      = src/optimization/opt_cal_main.o \
                 src/optimization/opt_vsa.o \
                 src/optimization/opt_smo.o \
                 src/optimization/opt_g_out.o
+#                optimization
+OBJS_AXISHELL = src/axishell/saxi_B.o \
+                src/axishell/saxi_cal_fext.o \
+                src/axishell/saxi_cal_stress.o \
+                src/axishell/saxi_call_mat.o \
+                src/axishell/saxi_call_stiff.o \
+                src/axishell/saxi_init.o \
+                src/axishell/saxi_inpele.o \
+                src/axishell/saxi_intg.o \
+                src/axishell/saxi_main.o \
+                src/axishell/saxi_static_ke.o
 #--------------- fortran parallel and sequentiell on HPUX10.20 / Linux / Sun
 OBJS13        = src/fortran/colsol.o \
                 src/fortran/mpcg_futils.o \

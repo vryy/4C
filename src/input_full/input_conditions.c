@@ -50,6 +50,10 @@ static void inpdesign_vol_couple(void);
 static void inpdesign_line_fsicouple(void);
 static void inpdesign_nodal_freesurf(void);
 static void inpdesign_line_freesurf(void);
+
+static void inpdesign_line_thickness(void);
+static void inpdesign_line_axishellload(void);
+static void inpdesign_point_axishellcos(void);
 /*----------------------------------------------------------------------*
  | input of conditions                                    m.gee 4/01    |
  *----------------------------------------------------------------------*/
@@ -102,6 +106,12 @@ if (genprob.probtyp==prb_fluid || genprob.probtyp==prb_fsi)
 /*------------------------------- input of line free surface conditions */   
    inpdesign_line_freesurf();
 }
+#endif
+#ifdef D_AXISHELL
+   /* -----------------------input of line axishell thickness condition */
+   inpdesign_line_thickness();
+   inpdesign_line_axishellload();
+   inpdesign_point_axishellcos();
 #endif
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -1788,4 +1798,293 @@ dstrc_exit();
 #endif
 return;
 } /* end of inpdesign_line_freesurf */
+#endif
+
+#ifdef D_AXISHELL
+/*----------------------------------------------------------------------*
+ | input of line axishell thickness conditions on design       mn 05/03 |
+ *----------------------------------------------------------------------*/
+static void inpdesign_line_thickness()
+{
+INT    i,j;
+INT    ierr;
+INT    ndline;
+INT    dlineId;
+char  *colptr;
+char   buffer[200];
+DLINE *actdline;
+
+#ifdef DEBUG 
+dstrc_enter("inpdesign_line_thickness");
+#endif
+
+/*----------------------------------------------------------------------*/
+/*---- find the beginning of line fluid freesurface coupling conditions */
+frfind("--DESIGN AXISHELL THICKNESS LINE CONDITIONS");
+frread();
+/*------------------------ read number of design lines with conditions */
+frint("DLINE",&ndline,&ierr);
+dsassert(ierr==1,"Cannot read design-line thickness conditions");
+frread();
+/*-------------------------------------- start reading the design lines */
+while(strncmp(allfiles.actplace,"------",6)!=0)
+{
+   /*------------------------------------------ read the design line Id */
+   frint("E",&dlineId,&ierr);
+   dsassert(ierr==1,"Cannot read design-line thickness conditions");
+   dlineId--;
+   /*--------------------------------------------------- find the dline */
+   actdline=NULL;
+   for (i=0; i<design->ndline; i++)
+   {
+      if (design->dline[i].Id ==  dlineId) 
+      {
+         actdline = &(design->dline[i]);
+         break;
+      }
+   }
+   dsassert(actdline!=NULL,"Cannot read design-line thickness conditions");
+   /*----------- allocate space for a coupling condition in this dline */
+   actdline->thickness = (SAXI_THICK_CONDITION*)CCACALLOC(1,sizeof(SAXI_THICK_CONDITION));
+   if (!actdline->thickness) dserror("Allocation of memory failed");
+
+   /*--------------------------------- move pointer behind the "-" sign */
+   colptr = strstr(allfiles.actplace,"-");
+   dsassert(colptr!=NULL,"Cannot read design-line thickness conditions");
+   colptr++;
+   /*------------------------------------------------ read the fieldtyp */
+  
+   /*---- now read the MAXDOFPERNODE flags for the local slippage conditions */ 
+   for (i=0; i<2; i++)
+   actdline->thickness->value[i] = strtod(colptr,&colptr);
+   
+   frread();
+}
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of inpdesign_line_thickness */
+
+
+
+/*----------------------------------------------------------------------*
+ | input of line axishell load conditions on design            mn 05/03 |
+ *----------------------------------------------------------------------*/
+static void inpdesign_line_axishellload()
+{
+INT    i,j;
+INT    ierr;
+INT    ndline;
+INT    dlineId;
+char  *colptr;
+char   buffer[200];
+DLINE *actdline;
+
+#ifdef DEBUG 
+dstrc_enter("inpdesign_line_axishellload");
+#endif
+
+/*----------------------------------------------------------------------*/
+/*---- find the beginning of line fluid freesurface coupling conditions */
+frfind("--DESIGN AXISHELL LOAD LINE CONDITIONS");
+frread();
+/*------------------------ read number of design lines with conditions */
+frint("DLINE",&ndline,&ierr);
+dsassert(ierr==1,"Cannot read design-line thickness conditions");
+frread();
+/*-------------------------------------- start reading the design lines */
+while(strncmp(allfiles.actplace,"------",6)!=0)
+{
+   /*------------------------------------------ read the design line Id */
+   frint("E",&dlineId,&ierr);
+   dsassert(ierr==1,"Cannot read design-line thickness conditions");
+   dlineId--;
+   /*--------------------------------------------------- find the dline */
+   actdline=NULL;
+   for (i=0; i<design->ndline; i++)
+   {
+      if (design->dline[i].Id ==  dlineId) 
+      {
+         actdline = &(design->dline[i]);
+         break;
+      }
+   }
+   dsassert(actdline!=NULL,"Cannot read design-line thickness conditions");
+   /*----------- allocate space for a coupling condition in this dline */
+   actdline->axishellload = (SAXI_LOAD_CONDITION*)CCACALLOC(1,sizeof(SAXI_LOAD_CONDITION));
+   if (!actdline->axishellload) dserror("Allocation of memory failed");
+
+   /*--------------------------------- move pointer behind the "-" sign */
+   colptr = strstr(allfiles.actplace,"-");
+   dsassert(colptr!=NULL,"Cannot read design-line axishell-load conditions");
+   colptr++;
+   /*------------------------------------------------ read the fieldtyp */
+  
+   /*---- now read the MAXDOFPERNODE flags for the local slippage conditions */ 
+   for (i=0; i<2; i++)
+     actdline->axishellload->pv[i]     = strtod(colptr,&colptr);
+   ierr=sscanf(colptr," %s ",buffer);
+   dsassert(ierr==1,"Cannot read axishell interpolation type");
+   if (strncmp(buffer,"arclength",9)==0) 
+   {
+     actdline->axishellload->interpol_pv = 0;
+     colptr = strstr(colptr,"arclength");
+     dsassert(colptr!=NULL,"Cannot read axishell interpolation type");
+     colptr+=9;
+   }
+   if (strncmp(buffer,"vert._axis",10)==0) 
+   {
+     actdline->axishellload->interpol_pv = 1;
+     colptr = strstr(colptr,"vert._axis");
+     dsassert(colptr!=NULL,"Cannot read axishell interpolation type");
+     colptr+=10;
+   }
+
+
+   for (i=0; i<2; i++)
+     actdline->axishellload->ph[i]     = strtod(colptr,&colptr);
+   ierr=sscanf(colptr," %s ",buffer);
+   dsassert(ierr==1,"Cannot read axishell interpolation type");
+   if (strncmp(buffer,"arclength",9)==0) 
+   {
+     actdline->axishellload->interpol_ph = 0;
+     colptr = strstr(colptr,"arclength");
+     dsassert(colptr!=NULL,"Cannot read axishell interpolation type");
+     colptr+=9;
+   }
+   if (strncmp(buffer,"vert._axis",10)==0) 
+   {
+     actdline->axishellload->interpol_ph = 1;
+     colptr = strstr(colptr,"vert._axis");
+     dsassert(colptr!=NULL,"Cannot read axishell interpolation type");
+     colptr+=10;
+   }
+
+
+   for (i=0; i<2; i++)
+     actdline->axishellload->px[i]     = strtod(colptr,&colptr);
+   ierr=sscanf(colptr," %s ",buffer);
+   dsassert(ierr==1,"Cannot read axishell interpolation type");
+   if (strncmp(buffer,"arclength",9)==0) 
+   {
+     actdline->axishellload->interpol_px = 0;
+     colptr = strstr(colptr,"arclength");
+     dsassert(colptr!=NULL,"Cannot read axishell interpolation type");
+     colptr+=9;
+   }
+   if (strncmp(buffer,"vert._axis",10)==0) 
+   {
+     actdline->axishellload->interpol_px = 1;
+     colptr = strstr(colptr,"vert._axis");
+     dsassert(colptr!=NULL,"Cannot read axishell interpolation type");
+     colptr+=10;
+   }
+
+
+   for (i=0; i<2; i++)
+     actdline->axishellload->pw[i]     = strtod(colptr,&colptr);
+   ierr=sscanf(colptr," %s ",buffer);
+   dsassert(ierr==1,"Cannot read axishell interpolation type");
+   if (strncmp(buffer,"arclength",9)==0) 
+   {
+     actdline->axishellload->interpol_pw = 0;
+     colptr = strstr(colptr,"arclength");
+     dsassert(colptr!=NULL,"Cannot read axishell interpolation type");
+     colptr+=9;
+   }
+   if (strncmp(buffer,"vert._axis",10)==0) 
+   {
+     actdline->axishellload->interpol_pw = 1;
+     colptr = strstr(colptr,"vert._axis");
+     dsassert(colptr!=NULL,"Cannot read axishell interpolation type");
+     colptr+=10;
+   }
+
+   frread();
+}
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of inpdesign_line_axishellload */
+
+
+/*----------------------------------------------------------------------*
+ | input of line axishell point cos conditions on design       mn 05/03 |
+ *----------------------------------------------------------------------*/
+static void inpdesign_point_axishellcos()
+{
+INT     i,j;
+INT     ierr;
+INT     ndnode;
+INT     dnodeId;
+char   *colptr;
+char    buffer[200];
+DNODE *actdnode;
+
+#ifdef DEBUG 
+dstrc_enter("inpdesign_point_axishellcos");
+#endif
+
+/*----------------------------------------------------------------------*/
+/*---- find the beginning of line fluid freesurface coupling conditions */
+frfind("--DESIGN AXISHELL COS POINT CONDITIONS");
+frread();
+/*------------------------ read number of design points with conditions */
+frint("DPOINT",&ndnode,&ierr);
+dsassert(ierr==1,"Cannot read design-point cos conditions");
+frread();
+/*-------------------------------------- start reading the design lines */
+while(strncmp(allfiles.actplace,"------",6)!=0)
+{
+   /*------------------------------------------ read the design line Id */
+   frint("E",&dnodeId,&ierr);
+   dsassert(ierr==1,"Cannot read design-point cos conditions");
+   dnodeId--;
+   /*--------------------------------------------------- find the dline */
+   actdnode=NULL;
+   for (i=0; i<design->ndnode; i++)
+   {
+      if (design->dnode[i].Id ==  dnodeId) 
+      {
+         actdnode = &(design->dnode[i]);
+         break;
+      }
+   }
+   dsassert(actdnode!=NULL,"Cannot read design-point cos conditions");
+
+   /*--------------------------------- move pointer behind the "-" sign */
+   colptr = strstr(allfiles.actplace,"-");
+   dsassert(colptr!=NULL,"Cannot read design-point cos conditions");
+   colptr++;
+   /*------------------------------------------------ read the fieldtyp */
+   ierr=sscanf(colptr," %s ",buffer);
+   dsassert(ierr==1,"Cannot read axishell cos type");
+   if (strncmp(buffer,"global",6)==0) 
+   {
+     actdnode->cos_type = 0;
+     colptr = strstr(colptr,"global");
+     dsassert(colptr!=NULL,"Cannot read axishell cos type");
+     colptr+=6;
+   }
+   if (strncmp(buffer,"local",5)==0) 
+   {
+     actdnode->cos_type = 1;
+     colptr = strstr(colptr,"local");
+     dsassert(colptr!=NULL,"Cannot read axishell cos type");
+     colptr+=5;
+   }
+  
+
+   frread();
+}
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of inpdesign_line_axishellload */
 #endif

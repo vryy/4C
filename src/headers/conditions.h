@@ -84,3 +84,28 @@ typedef struct _FLUID_FREESURF_CONDITION
      enum _FIELDTYP            fieldtyp;        /* type of field this structure is in */
      struct _ARRAY             fixed_onoff;     /* flags for local slippage model */     
 } FLUID_FREESURF_CONDITION;
+
+/*----------------------------------------------------------------------*
+ | axishell thickness condition                             mn 03/05    |
+ | for linear varying thickness along a dline                           |        
+ *----------------------------------------------------------------------*/
+typedef struct _SAXI_THICK_CONDITION
+{
+  DOUBLE            value[2];          /* thickness at the two dnodes of the line */
+} SAXI_THICK_CONDITION;
+
+/*----------------------------------------------------------------------*
+ | axishell thickness condition                             mn 03/05    |
+ | for linear varying thickness along a dline                           |        
+ *----------------------------------------------------------------------*/
+typedef struct _SAXI_LOAD_CONDITION
+{
+  DOUBLE            pv[2];          /* vertical load at the two dnodes of the line */
+  INT               interpol_pv;    /* interpolation typ: 0=along curve; 1= along vertical axis */
+  DOUBLE            ph[2];          /* horizontal load at the two dnodes of the line */
+  INT               interpol_ph;    /* interpolation typ: 0=along curve; 1= along vertical axis */
+  DOUBLE            px[2];          /* tangential load at the two dnodes of the line */
+  INT               interpol_px;    /* interpolation typ: 0=along curve; 1= along vertical axis */
+  DOUBLE            pw[2];          /* normal load at the two dnodes of the line */
+  INT               interpol_pw;    /* interpolation typ: 0=along curve; 1= along vertical axis */
+} SAXI_LOAD_CONDITION;

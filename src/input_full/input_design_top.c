@@ -40,6 +40,8 @@ static void inpdesign_dline_feline(DISCRET *actdis);
 static void inpdesign_dsurf_fesurf(DISCRET *actdis);
 static void inpdesign_dvol_fevol(DISCRET *actdis);
 
+static void calc_arc_props(DLINE *dline);
+
 /*----------------------------------------------------------------------*
  | global variables in this file in this file                      3/02 |
  *----------------------------------------------------------------------*/
@@ -897,3 +899,5 @@ dstrc_exit();
 #endif
 return;
 } /* end of inpdesign_dvol_fevol */
+
+

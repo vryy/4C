@@ -103,6 +103,12 @@ for (j=0; j<actfield->dis[0].numele; j++)
 	 if (actele->node[k]->numdf < 2) actele->node[k]->numdf=2;
       }
       break;
+   case el_axishell:
+      for (k=0; k<actele->numnp; k++)
+      {
+	 if (actele->node[k]->numdf < 2) actele->node[k]->numdf=3;
+      }
+      break;
    default:
       dserror("Unknown type of element, cannot assign number of dofs");
       break;

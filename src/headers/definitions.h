@@ -118,6 +118,16 @@ void iveczero(INT *x, INT *n);
 void mydsyevx(char *jobz,char *range,char *uplo,INT *n,DOUBLE *a,INT *lda,DOUBLE *vl,DOUBLE *vu,INT *il,INT *iu,DOUBLE *abstol,INT *m,DOUBLE *w,DOUBLE *z,INT *ldz,DOUBLE *work,INT *lwork,INT *iwork,INT *ifail,INT *info);
 void fortranpow(DOUBLE *V,DOUBLE *R,DOUBLE *RE);
 /*----------------------------------------------------------------------*
+ | sign of an integer                                          |
+ *----------------------------------------------------------------------*/
+#define SIGN(x)    ((x) <  0  ? (-1) : (1))
+
+/*----------------------------------------------------------------------*
+ | sign of a DOUBLE                                            |
+ *----------------------------------------------------------------------*/
+#define FSIGN(x)   ((x) < 0.0 ? (-(1.0)) : (1.0))
+
+/*----------------------------------------------------------------------*
  | absolut value of an integer                                          |
  *----------------------------------------------------------------------*/
 #define ABS(x)    ((x) <  0  ? (-x) : (x))
@@ -312,3 +322,8 @@ static INT iminarg1,iminarg2;
  *----------------------------------------------------------------------*/
 #define NUM_F3_VELDOF (3) /* number of velocity dofs per node */
 #define MAXNOD_F3 (27)    /* max. number of nodes per element */
+/*----------------------------------------------------------------------*
+ | axishell                                                                |
+ *----------------------------------------------------------------------*/
+#define MAXNOD_AXISHELL     (2)
+

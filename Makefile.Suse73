@@ -1,5 +1,5 @@
 #
-SRC       =  /home/<name>/wdir/ccarat/
+SRC       =  /home/neumann/work/wdir/ccarat_saxi/
 #--------------------------------------------------------------------
 # list of possible defines:
 #--------------------------------------------------------------------
@@ -17,6 +17,7 @@ SRC       =  /home/<name>/wdir/ccarat/
 # -DD_OPTIM      defines optimization
 # -DS8CONTACT    defines contact algorithms for shell8 contact
 # -DD_CONTACT    defines contact algos 2D (with wall element)
+# -DD_AXISHELL   defines axishell element
 #
 # -DDEBUG     defines debug mode: routine and array tracing 
 # -DPARALLEL  defines parallel version of programm
@@ -46,26 +47,26 @@ SRC       =  /home/<name>/wdir/ccarat/
 # SEQUENTIELL PART
 #
 #--------------------------------------------------------------------
-#PROGRAM_NAME  = cca_seq_linux.
-#FXX      = g77
-#CCX	 = gcc
-#LDX      = $(CC)
-#PFL       =  -DSUSE73 -DD_BRICK1 -DD_FLUID -DD_FLUID2 -DD_FLUID3 -DD_SHELL8 -DD_ALE -DD_WALL1 -DAZTEC_PACKAGE
-#AZTEC      = -laztec_seq
-#SPOOLES  = -lspooles
+PROGRAM_NAME  = cca_seq_linux.
+FXX      = g77
+CCX	 = gcc
+LDX      = $(CC)
+PFL       =  -DSUSE73 -DD_BRICK1 -DD_FLUID -DD_FLUID2 -DD_FLUID3 -DD_SHELL8 -DD_ALE -DD_WALL1 -DAZTEC_PACKAGE -DD_AXISHELL 
+AZTEC      = -laztec_seq
+SPOOLES  = -lspooles
 #--------------------------------------------------------------------
 #
 # PARALLEL PART
 #
 #--------------------------------------------------------------------
-PROGRAM_NAME  = cca_par_linux.
-FXX      = /usr/local/mpich-1.2.5/bin/mpif77
-CCX	 = /usr/local/mpich-1.2.5/bin/mpicc
-LDX      = /usr/local/mpich-1.2.5/bin/mpicc
-PFL      =  -DPARALLEL -DSUSE73 -DD_BRICK1 -DD_FLUID -DD_FLUID2 -DD_FLUID2_PRO -DD_FLUID3 -DD_SHELL8 \
-	    -DD_SHELL9 -DD_ALE -DD_WALL1 -DD_OPTIM -DS8CONTACT -DD_CONTACT -DAZTEC_PACKAGE -DSPOOLES_PACKAGE
-AZTEC      = -laztec_par
-SPOOLES  = -lspoolesMPI -lspooles
+#PROGRAM_NAME  = cca_par_linux.
+#FXX      = /usr/local/mpich-1.2.5/bin/mpif77
+#CCX	 = /usr/local/mpich-1.2.5/bin/mpicc
+#LDX      = /usr/local/mpich-1.2.5/bin/mpicc
+#PFL      =  -DPARALLEL -DSUSE73 -DD_BRICK1 -DD_FLUID -DD_FLUID2 -DD_FLUID2_PRO -DD_FLUID3 -DD_SHELL8 \
+#	    -DD_SHELL9 -DD_ALE -DD_WALL1 -DD_OPTIM -DS8CONTACT -DD_CONTACT -DAZTEC_PACKAGE -DSPOOLES_PACKAGE -DD_AXISHELL 
+#AZTEC      = -laztec_par
+#SPOOLES  = -lspoolesMPI -lspooles
 # --------------------------------------------------------------------
 CC	 = $(CCX)
 F77      = $(FXX)
@@ -115,11 +116,12 @@ include ./Makefile.objects
 #
 $(PROGRAM):     $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) $(OBJS7) $(OBJS8) \
                 $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) $(OBJS14) \
-                $(OBJS15) $(OBJS16) $(OBJS17) $(OBJS_OPT)
+                $(OBJS15) $(OBJS16) $(OBJS17) $(OBJS_OPT) $(OBJS_AXISHELL)
 		@echo "Linking $(LD) $(LDFLAGS) $(LIBS) $(INCLUDES) -o $(PROGRAM)"
 		@$(LD) $(LDFLAGS) $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) \
                 $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) $(OBJS14) \
-		$(OBJS15) $(OBJS16) $(OBJS17) $(OBJS_OPT) $(LIBS)  $(INCLUDES) -o $(PROGRAM)
+		$(OBJS15) $(OBJS16) $(OBJS17) $(OBJS_OPT) $(OBJS_AXISHELL) \
+		$(LIBS)  $(INCLUDES) -o $(PROGRAM)
 
 
 		@echo "done"
@@ -207,6 +209,11 @@ $(OBJS_OPT):
 		@echo "Making $@ ..."
 		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $(*F).c $<
 		@echo "MainMake is back."
+#
+$(OBJS_AXISHELL):     
+		@echo "Making $@ ..."
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $(*F).c $<
+		@echo "MainMake is back."
 # fortran
 $(OBJS13):     
 		@echo "Making $@ ..."
@@ -220,5 +227,6 @@ $(OBJS13):
 clean:
 	rm -rf  $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) \
                 $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) \
-                $(OBJS13) $(OBJS14) $(OBJS15) $(OBJS16) $(OBJS17) $(OBJS_OPT) 
+                $(OBJS13) $(OBJS14) $(OBJS15) $(OBJS16) $(OBJS17) $(OBJS_OPT) \
+		$(OBJS_AXISHELL)
 

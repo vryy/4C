@@ -16,6 +16,8 @@ static void inherit_dsurfdline_couple(void);
 static void inherit_dlinednode_couple(void);
 static void inherit_dlinednode_fsicouple(void);
 static void inherit_dlinednode_freesurf(void);
+static void inherit_dlinednode_thickness(void);
+static void inherit_dlinednode_axishellload(void);
 /*----------------------------------------------------------------------*
  | inherit boundary conditions inside design                 m.gee 3/02 |
  *----------------------------------------------------------------------*/
@@ -53,6 +55,8 @@ freesruface conditions are inherited as follows:
 DLINE inherits to its DNODEs if the DNODE does not have its own 
 */
 inherit_dlinednode_freesurf(); 
+inherit_dlinednode_thickness(); 
+inherit_dlinednode_axishellload(); 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -383,3 +387,103 @@ dstrc_exit();
 #endif
 return;
 } /* end of inherit_dlinednode_freesurf */
+
+
+
+/*----------------------------------------------------------------------*
+ | inherit boundary conditions DLINE to DNODE                  mn 05/03 |
+ *----------------------------------------------------------------------*/
+static void inherit_dlinednode_thickness()
+{
+#ifdef D_AXISHELL
+INT             i,j;
+DNODE          *actdnode;
+DLINE          *actdline;
+#ifdef DEBUG 
+dstrc_enter("inherit_dlinednode_thickness");
+#endif
+/*----------------------------------------------------------------------*/
+/*--------------------------------------------------------- loop DLINE */
+for (i=0; i<design->ndline; i++)
+{
+   actdline = &(design->dline[i]);
+   /*-------------------- do nothing if DLINE has no dirichlet condition */
+   if (actdline->thickness==NULL) continue;
+   /*------------------------------- loop the DNODEs related to actdline */
+   for (j=0; j<actdline->ndnode; j++)
+   {
+      actdnode = actdline->dnode[j];
+      /*-------- if actdnode has its own dirichlet condition check value */
+      if (actdnode->thickness != NULL) 
+      {
+        if (actdnode->thickness->value[0] !=  actdline->thickness->value[j])
+          dserror("Thickness ust be equal at both sides of a dnode!");
+      }
+      /*------ inherit the dirichlet condition from actdline to actdnode */
+      actdnode->thickness = (SAXI_THICK_CONDITION*)CCACALLOC(1,sizeof(SAXI_THICK_CONDITION));
+      if (!actdnode->thickness) dserror("Allocation of memory failed");
+      actdnode->thickness->value[0] = actdline->thickness->value[j];
+   }/* loop j over dnodes */
+}/* loop i over dlines */
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+#endif
+return;
+} /* end of inherit_dlinednode_thickness */
+
+
+
+
+/*----------------------------------------------------------------------*
+ | inherit boundary conditions DLINE to DNODE                  mn 05/03 |
+ *----------------------------------------------------------------------*/
+static void inherit_dlinednode_axishellload()
+{
+#ifdef D_AXISHELL 
+INT             i,j;
+DNODE          *actdnode;
+DLINE          *actdline;
+#ifdef DEBUG 
+dstrc_enter("inherit_dlinednode_axishellload");
+#endif
+/*----------------------------------------------------------------------*/
+/*--------------------------------------------------------- loop DLINE */
+for (i=0; i<design->ndline; i++)
+{
+   actdline = &(design->dline[i]);
+   /*-------------------- do nothing if DLINE has no dirichlet condition */
+   if (actdline->axishellload==NULL) continue;
+   /*------------------------------- loop the DNODEs related to actdline */
+   for (j=0; j<actdline->ndnode; j++)
+   {
+      actdnode = actdline->dnode[j];
+      /*-------- if actdnode has its own dirichlet condition check value */
+      if (actdnode->axishellload != NULL) 
+      {
+        if (actdnode->axishellload->pv[0] !=  actdline->axishellload->pv[j] ||
+            actdnode->axishellload->ph[0] !=  actdline->axishellload->ph[j] ||
+            actdnode->axishellload->px[0] !=  actdline->axishellload->px[j] ||
+            actdnode->axishellload->pw[0] !=  actdline->axishellload->pw[j] )
+          dserror("Loadvalue must be equal at both sides of a dnode!");
+      }
+      /*------ inherit the dirichlet condition from actdline to actdnode */
+      actdnode->axishellload = (SAXI_LOAD_CONDITION*)CCACALLOC(1,sizeof(SAXI_LOAD_CONDITION));
+      if (!actdnode->axishellload) dserror("Allocation of memory failed");
+      actdnode->axishellload->pv[0] = actdline->axishellload->pv[j];
+      actdnode->axishellload->ph[0] = actdline->axishellload->ph[j];
+      actdnode->axishellload->px[0] = actdline->axishellload->px[j];
+      actdnode->axishellload->pw[0] = actdline->axishellload->pw[j];
+   }/* loop j over dnodes */
+}/* loop i over dlines */
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+#endif
+return;
+} /* end of inherit_dlinednode_axishellload */
+
+
+

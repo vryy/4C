@@ -14,6 +14,7 @@
 #include "../fluid2/fluid2_prototypes.h"
 #include "../ale3/ale3.h"
 #include "../ale2/ale2.h"
+#include "../axishell/axishell.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
@@ -442,6 +443,21 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    {
       structfield->dis[0].element[counter].eltyp=el_wall1;
       w1inp(&(structfield->dis[0].element[counter]));
+   }
+#endif
+/*------------------------------------------------ elementtyp is WALL  */
+   frchk("SAXI",&ierr);
+   if (ierr==1)
+   {
+#ifndef D_AXISHELL 
+      /*dserror("AXISHELL needed but not defined in Makefile");*/
+#endif
+   }
+#ifdef D_AXISHELL
+   if (ierr==1) 
+   {
+      structfield->dis[0].element[counter].eltyp=el_axishell;
+      saxi_inp(&(structfield->dis[0].element[counter]));
    }
 #endif
 /*--------------------------------------------other structural elements */

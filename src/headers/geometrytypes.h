@@ -59,10 +59,12 @@ typedef struct _ELEMENT
      struct _FLUID3     *f3;                    /* 3D fluid element */
      struct _ALE2       *ale2;                  /* pseudo structural 2D ale element */
      struct _ALE3       *ale3;                  /* pseudo structural 3D ale element */
+     struct _AXISHELL   *saxi;                  /* axisymmetric shell */
      }                          e;              /* name of union */ 
 
      union
      {
+     struct _GLINE    *gline;                   /* my gline, if I am a 1D element */
      struct _GSURF    *gsurf;                   /* my gsurf, if I am a 2D element */
      struct _GVOL     *gvol;                    /* my gvol,  if I am a 3D element */
      }                          g;              /* name of union */           
@@ -131,6 +133,8 @@ typedef struct _GLINE
 #endif
      INT                        proc;           /* my owner intra-proc */
    /*------------fe topology section */
+     struct _ELEMENT           *element;        /* ptr to my ELEMENT, if I am a 1D element, else NULL */
+
      INT                        ngnode;         /* number of gnodes on me */
      struct _GNODE            **gnode;          /* vector of ptrs to these gnodes */
 
