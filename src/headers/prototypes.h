@@ -166,6 +166,17 @@ void out_area(ARRAY totarea_a);
  *----------------------------------------------------------------------*/
 void out_checkfilesize(INT opt); 
 /*----------------------------------------------------------------------*
+ |  out_plt.c                                            chfoe 01/04    |
+ *----------------------------------------------------------------------*/
+void plot_liftdrag(DOUBLE time, DOUBLE *liftdrag);
+void plot_lte(	DOUBLE  time, 
+                INT     step, 
+                DOUBLE  norm, 
+                DOUBLE  dt, 
+                INT     itnum);
+void plot_ale_quality(FIELD *field,INT step, INTRA *actintra, 
+                      PARTITION *actpart);
+/*----------------------------------------------------------------------*
  |  inherit_insidedesign.c                                  m.gee 3/02  |
  *----------------------------------------------------------------------*/
 void inherit_dirich_coup_indesign(void);
@@ -177,6 +188,10 @@ void inherit_design_dis_couple(DISCRET *actdis);
 void inherit_design_dis_fsicouple(DISCRET *actdis);
 void inherit_design_dis_freesurf(DISCRET *actdis);
 void inherit_design_dis_neum(DISCRET *actdis);
+/*----------------------------------------------------------------------*
+ |  inherit_design_ele.c                                   chfoe 01/04  |
+ *----------------------------------------------------------------------*/
+void inherit_design_ele(DISCRET *actdis);
 /*----------------------------------------------------------------------*
  |  input_conditions.c                                  m.gee 11/01     |
  *----------------------------------------------------------------------*/
