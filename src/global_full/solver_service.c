@@ -2,6 +2,61 @@
 #include "../headers/solution.h"
 
 /*----------------------------------------------------------------------*
+ |  make A = A + B * factor                                  m.gee 02/02|
+ *----------------------------------------------------------------------*/
+void solserv_add_mat(INTRA *actintra,
+                     SPARSE_TYP *Atyp,
+                     SPARSE_ARRAY *A,
+                     SPARSE_TYP *Btyp,
+                     SPARSE_ARRAY *B,
+                     double factor)
+{
+int      i;
+
+#ifdef DEBUG 
+dstrc_enter("solserv_add_mat");
+#endif
+/*----------------------------------------------------------------------*/
+if (*Atyp != *Btyp) dserror("Incompatible types of sparse matrices");
+switch (*Atyp)
+{
+case mds:
+   dserror("not implemented for MLIB yet");
+break;
+case msr:
+   amadd(&(A->msr->val),&(B->msr->val),factor,0);
+break;
+case parcsr:
+   dserror("not implemented for HYPRE yet");
+break;
+case ucchb:
+   amadd(&(A->ucchb->a),&(B->ucchb->a),factor,0);
+break;
+case dense:
+   amadd(&(A->dense->A),&(B->dense->A),factor,0);
+break;
+case rc_ptr:
+   amadd(&(A->rc_ptr->A_loc),&(B->rc_ptr->A_loc),factor,0);
+break;
+case skymatrix:
+   amadd(&(A->sky->A),&(B->sky->A),factor,0);
+break;
+case sparse_none:
+   dserror("Unknown typ of sparse distributed system matrix");
+break;
+default:
+   dserror("Unknown typ of sparse distributed system matrix");
+break;
+}
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of solserv_add_mat */
+
+
+/*----------------------------------------------------------------------*
  |  get dimensions of sparse matrix                          m.gee 02/02|
  *----------------------------------------------------------------------*/
 void solserv_getmatdims(SPARSE_ARRAY mat,SPARSE_TYP mattyp,
@@ -54,8 +109,6 @@ dstrc_exit();
 #endif
 return;
 } /* end of solserv_getmatdims */
-
-
 
 
 
@@ -392,3 +445,234 @@ dstrc_exit();
 return;
 } /* end of solserv_cp_densemask */
 
+
+
+/*----------------------------------------------------------------------*
+ |  make matrix vector multiplication                        m.gee 02/02|
+ *----------------------------------------------------------------------*/
+int solserv_sparsematvec(INTRA        *actintra,
+                         DIST_VECTOR  *result,
+                         SPARSE_ARRAY *mat,
+                         SPARSE_TYP   *mattyp,
+                         DIST_VECTOR  *vec)
+{
+static ARRAY   work1_a;
+static double *work1;
+static ARRAY   work2_a;
+static double *work2;
+
+#ifdef DEBUG 
+dstrc_enter("solserv_sparsematvec");
+#endif
+/*----------------------------------------------------------------------*/
+if (work1_a.Typ != DV) work1 = amdef("work1",&work1_a,vec->numeq_total,1,"DV");
+if (work2_a.Typ != DV) work2 = amdef("work2",&work2_a,vec->numeq_total,1,"DV");
+if (work1_a.fdim < vec->numeq_total)
+{
+           amdel(&work1_a);
+   work1 = amdef("work1",&work1_a,vec->numeq_total,1,"DV");
+           amdel(&work2_a);
+   work2 = amdef("work2",&work2_a,vec->numeq_total,1,"DV");
+}
+/*----------------------------------------------------------------------*/
+switch (*mattyp)
+{
+case mds:
+   dserror("Matrix-Vector Product for MLIB not implemented");
+break;
+case msr:
+   solserv_reddistvec(vec,mat,mattyp,work1,vec->numeq_total,actintra);
+   solserv_matvec_msr(actintra,mat->msr,work1,work2);
+   solserv_distribdistvec(result,mat,mattyp,work2,vec->numeq_total,actintra);
+break;
+case parcsr:
+   solserv_reddistvec(vec,mat,mattyp,work1,vec->numeq_total,actintra);
+   solserv_distribdistvec(result,mat,mattyp,work2,vec->numeq_total,actintra);
+   dserror("Matrix-Vector Product for HYPRE not implemented");
+break;
+case ucchb:
+   solserv_reddistvec(vec,mat,mattyp,work1,vec->numeq_total,actintra);
+   solserv_distribdistvec(result,mat,mattyp,work2,vec->numeq_total,actintra);
+   dserror("Matrix-Vector Product for SuperLU not implemented");
+break;
+case dense:
+   solserv_reddistvec(vec,mat,mattyp,work1,vec->numeq_total,actintra);
+   solserv_matvec_dense(actintra,mat->dense,work1,work2);
+   solserv_distribdistvec(result,mat,mattyp,work2,vec->numeq_total,actintra);
+break;
+case rc_ptr:
+   solserv_reddistvec(vec,mat,mattyp,work1,vec->numeq_total,actintra);
+   solserv_distribdistvec(result,mat,mattyp,work2,vec->numeq_total,actintra);
+   dserror("Matrix-Vector Product for MUMPS not implemented");
+break;
+case skymatrix:
+   solserv_reddistvec(vec,mat,mattyp,work1,vec->numeq_total,actintra);
+   solserv_matvec_sky(actintra,mat->sky,work1,work2);
+   solserv_distribdistvec(result,mat,mattyp,work2,vec->numeq_total,actintra);
+break;
+case sparse_none:
+   dserror("Unknown typ of sparse distributed system matrix");
+break;
+default:
+   dserror("Unknown typ of sparse distributed system matrix");
+break;
+}
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of solserv_sparsematvec */
+
+
+
+
+/*----------------------------------------------------------------------*
+ |  make matrix vector multiplication with dense matrix      m.gee 02/02|
+ *----------------------------------------------------------------------*/
+int solserv_matvec_msr(INTRA        *actintra,
+                       AZ_ARRAY_MSR *msr,
+                       double       *work1,
+                       double       *work2)
+{
+#ifdef AZTEC_PACKAGE
+int         i,j,dof;
+int         start,end,lenght,j_index;
+int         myrank;
+int         nprocs;
+int         numeq;
+int         numeq_total;
+int        *update;
+int        *bindx;
+double     *val;
+
+#ifdef DEBUG 
+dstrc_enter("solserv_matvec_msr");
+#endif
+/*----------------------------------------------------------------------*/
+myrank     = actintra->intra_rank;
+nprocs     = actintra->intra_nprocs;
+numeq_total= msr->numeq_total;
+numeq      = msr->numeq;
+update     = msr->update.a.iv;
+bindx      = msr->bindx.a.iv;
+val        = msr->val.a.dv;
+/*------------------------------------------- now loop my own equations */
+for (i=0; i<numeq; i++)
+{
+   dof = update[i];
+   work2[dof]=0.0;
+   /*----------- the dof number is dof, the place in val and bindx is i */
+   /*---------------------------------------- the place in work1 is dof */
+   /*------------------------------------- multiply main diagonal entry */
+   work2[dof] += val[i] * work1[dof];
+   /*------------------------------------ multiply off-diagonal entries */
+   start  = bindx[i];
+   end    = bindx[i+1];
+   lenght = end - start;
+   for (j=start; j<end; j++)
+   {
+      j_index = bindx[j];
+      work2[dof] += val[j] * work1[j_index];
+   }
+}
+/* every proc added his complete part to the full-sized vector work2.
+   There is no need to alreduce this vector here, because it will anyway
+   bre distributed to a DIS_VECTOR */
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+# endif /* end of #ifdef AZTEC_PACKAGE */
+return;
+} /* end of solserv_matvec_msr */
+
+
+
+
+
+/*----------------------------------------------------------------------*
+ |  make matrix vector multiplication with skyline matrix    m.gee 02/02|
+C     ******************************************************************
+C     *  INSTITUT FUER BAUSTATIK  *  CREATED / CHANGED                 *
+C     *  UNIVERSITAET  STUTTGART  *  04.05.92/           O. PETERSEN   *
+C     ******************************************************************
+         ported to C                                     m.gee
+ *----------------------------------------------------------------------*/
+int solserv_matvec_sky(INTRA        *actintra,
+                       SKYMATRIX    *sky,
+                       double       *work1,
+                       double       *work2)
+{
+int     i,j,kl,ku,kdiff;
+int     nrn,neq1,neq;
+double *A;
+int    *maxa;
+
+#ifdef DEBUG 
+dstrc_enter("solserv_matvec_sky");
+#endif
+/*---------------------- the dense matrix is redundant on all processes */
+nrn  = sky->A.fdim;
+neq  = sky->numeq_total;
+neq1 = neq + 1;
+A    = sky->A.a.dv;
+maxa = sky->maxa.a.iv;
+/*----------------------------------------------------------------------*/
+for (i=0; i<neq; i++)
+{
+   work2[i]=0.0;
+   kl    = maxa[i];
+   ku    = maxa[i+1];
+   kdiff = ku-kl;
+   for (j=0; j<kdiff; j++)
+   {
+      work2[i-j] += A[kl+j] * work1[i];
+      if ( (kl+j) != kl )
+      work2[i] += A[kl+j] * work1[i-j];
+   }
+}
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of solserv_matvec_sky */
+
+
+
+/*----------------------------------------------------------------------*
+ |  make matrix vector multiplication with dense matrix      m.gee 02/02|
+ *----------------------------------------------------------------------*/
+int solserv_matvec_dense(INTRA        *actintra,
+                         DENSE        *dense,
+                         double       *work1,
+                         double       *work2)
+{
+int      i,j,k;
+int      I,J;
+double   sum;
+double **A;
+#ifdef DEBUG 
+dstrc_enter("solserv_sparsematvec");
+#endif
+/*---------------------- the dense matrix is redundant on all processes */
+I = dense->numeq_total;
+J = I;
+A = dense->A.a.da;
+/*----------------------------------------------------------------------*/
+for (i=0; i<I; i++)
+{
+   sum = 0.0;
+   for (j=0; j<J; j++)
+   {
+         sum += A[i][j] * work1[j];
+   }
+   work2[i] = sum;
+}
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of solserv_sparsematvec */

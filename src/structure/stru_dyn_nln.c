@@ -81,6 +81,7 @@ int             stiff_array;        /* number of the active system sparse matrix
 int             mass_array;         /* number of the active system sparse matrix */
 int             damp_array;         /* number of the active system sparse matrix */
 int             num_array;          /* number of global stiffness matrices */
+int             actcurve;           /* number of active time curve */
 SOLVAR         *actsolv;            /* pointer to active solution structure */
 PARTITION      *actpart;            /* pointer to active partition */
 FIELD          *actfield;           /* pointer to active field */
@@ -88,7 +89,8 @@ INTRA          *actintra;           /* pointer to active intra-communicator */
 CALC_ACTION    *action;             /* pointer to the structures cal_action enum */
 STRUCT_DYNAMIC *sdyn;
 DIST_VECTOR    *vel;                /* total velocities */              
-DIST_VECTOR    *acc;                /* total accelerations */              
+DIST_VECTOR    *acc;                /* total accelerations */
+STRUCT_DYN_CALC dynvar;             /* variables to perform dynamic structural simulation */              
 #ifdef DEBUG 
 dstrc_enter("dyn_nln_structural");
 #endif
@@ -121,16 +123,19 @@ actintra->intra_nprocs   = 1;
 /* intracommunicator (in case of nonlinear statics, this should be all) */
 if (actintra->intra_fieldtyp != structure) goto end;
 /*------------------------------------ check presence of damping matrix */
-stiff_array=0;
-mass_array=1;
+   stiff_array = 0;
+   mass_array  = 1;
+
 if (sdyn->damp==1) 
 {
-   damp_array=3;
+   damp_array  = 2;
+   
    actsolv->nsysarray=3;
 }
 else
 {
-   damp_array=-1;
+   damp_array  =-1;
+   
    actsolv->nsysarray=2;
 }
 /* stiff_array already exists, so copy it to mass_array (and damp_array if needed) */
@@ -141,6 +146,7 @@ if (!actsolv->sysarray_typ) dserror("Allocation of memory failed");
 actsolv->sysarray = 
 (SPARSE_ARRAY*)REALLOC(actsolv->sysarray,actsolv->nsysarray*sizeof(SPARSE_ARRAY));
 if (!actsolv->sysarray_typ) dserror("Allocation of memory failed");
+
 /*-copy the matrices sparsity mask from stiff_array (and to damp_array) */
 solserv_alloc_cp_sparsemask(  actintra,
                             &(actsolv->sysarray_typ[stiff_array]),
@@ -155,25 +161,12 @@ solserv_alloc_cp_sparsemask(  actintra,
                             &(actsolv->sysarray_typ[damp_array]),
                             &(actsolv->sysarray[damp_array]));
 }
-/*--------------------------------- init the dist sparse matrix to zero */
-/* init matrix stiff_array */
+/*------------------------------- init the dist sparse matrices to zero */
+for (i=0; i<actsolv->nsysarray; i++)
 solserv_zero_mat(
                  actintra,
-                 &(actsolv->sysarray[stiff_array]),
-                 &(actsolv->sysarray_typ[stiff_array])
-                );
-/* init matrix mass_array */
-solserv_zero_mat(
-                 actintra,
-                 &(actsolv->sysarray[mass_array]),
-                 &(actsolv->sysarray_typ[mass_array])
-                );
-/* init matrix damp_array if present */
-if (damp_array>0)                
-solserv_zero_mat(
-                 actintra,
-                 &(actsolv->sysarray[damp_array]),
-                 &(actsolv->sysarray_typ[damp_array])
+                 &(actsolv->sysarray[i]),
+                 &(actsolv->sysarray_typ[i])
                 );
 /*---------------------------- get global and local number of equations */
 solserv_getmatdims(actsolv->sysarray[stiff_array],
@@ -219,24 +212,76 @@ calinit(actfield,actpart,action);
 /*----------------------- call elements to calculate stiffness and mass */
 *action = calc_struct_nlnstiffmass;
 calelm(actfield,actsolv,actpart,actintra,stiff_array,mass_array,NULL,0,0,action);
-
-
-
-
-/*----------------------- calculate absolute time and size of time step */
-if (sdyn->nstep * sdyn->dt > (sdyn->maxtime+EPS14) )
+/*-------------------------------------------- calculate damping matrix */
+if (damp_array>0)
 {
-   sdyn->maxtime = sdyn->nstep * sdyn->dt;
+   if (ABS(sdyn->k_damp) > EPS12)
+   solserv_add_mat(actintra,
+                   &(actsolv->sysarray_typ[damp_array]),
+                   &(actsolv->sysarray[damp_array]),
+                   &(actsolv->sysarray_typ[stiff_array]),
+                   &(actsolv->sysarray[stiff_array]),
+                   sdyn->k_damp);
+   if (ABS(sdyn->m_damp) > EPS12)
+   solserv_add_mat(actintra,
+                   &(actsolv->sysarray_typ[damp_array]),
+                   &(actsolv->sysarray[damp_array]),
+                   &(actsolv->sysarray_typ[mass_array]),
+                   &(actsolv->sysarray[mass_array]),
+                   sdyn->k_damp);
 }
-else
+/*-------------------------------------- create the original rhs vector */
+*action = calc_struct_eleload;
+calrhs(
+          actfield,
+          actsolv,
+          actpart,
+          actintra,
+          stiff_array,
+          &(actsolv->rhs[0]),
+          &(actsolv->rhs[1]),
+          0,
+          action
+      );
+/*--------------------------------------------- add the two rhs vectors */
+solserv_add_vec(&(actsolv->rhs[1]),&(actsolv->rhs[0]));
+solserv_copy_vec(&(actsolv->rhs[0]),&(actsolv->rhs[1]));
+/*----------------------- init the time curve applied to the loads here */
+/*-------------- this control routine at the moment always uses curve 0 */
+/*-------------------------------------------------- init the timecurve */
+actcurve = 0;
+dyn_init_curve(actcurve,
+               sdyn->nstep,
+               sdyn->dt,
+               sdyn->maxtime);
+/*-------------------------------------- get factor at a certain time t */
+dyn_facfromcurve(actcurve,0.0,&(dynvar.rldfac));
+/*-------------------------------------- multiply load vector by rldfac */
+solserv_scalarprod_vec(&(actsolv->rhs[0]),dynvar.rldfac);
+/*-------------------------------------------- make norm of initial rhs */
+solserv_vecnorm_euclid(actintra,&(actsolv->rhs[0]),&(dynvar.rnorm));
+
+/*---------------------------------------------- compute initial energy */
+dyne(&dynvar,actintra,actfield,actsolv,stiff_array,mass_array,&vel[0],
+     &(actsolv->sol[0]),&(actsolv->rhs[0]),0,sdyn->nstep);
+/*-------------------------------------------------- set some constants */
+dyn_setconstants(&dynvar,sdyn,sdyn->dt);
+/*----------------------------------------- output to GID postprozessor */
+if (ioflags.struct_disp_gid==1 || ioflags.struct_stress_gid==1)
+if (par.myrank==0) 
 {
-   sdyn->nstep = (int)(sdyn->maxtime / sdyn->dt) + 1;
-   if (actintra->intra_rank==0)
-   printf("MESSAGE: Number of timesteps increased to %d to suit maxtime = %f\n",
-          sdyn->nstep,sdyn->maxtime);
-   fprintf(allfiles.out_err,"MESSAGE: Number of timesteps increased to %d to suit maxtime = %f\n",
-          sdyn->nstep,sdyn->maxtime);
+   out_gid_domains(actfield);
 }
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -263,3 +308,7 @@ dstrc_exit();
 #endif
 return;
 } /* end of dyn_nln_structural */
+
+
+
+
