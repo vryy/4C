@@ -87,7 +87,7 @@ void f2_smelesize(ELEMENT         *ele,
 {
 
 INT     i;              /* simply a counter	        		*/
-INT     ntyp,nsmtyp;    /* l-s and sm element type (TRI or QUAD)        */
+INT     nsmtyp;         /* l-s and sm element type (TRI or QUAD)        */
 INT     actmat;         /* number of actual material		        */
 INT     iel,smiel;      /* l-s and sm number of nodes of actual element */
 DOUBLE  visc;           /* fluid viscosity                              */
@@ -106,7 +106,6 @@ dstrc_enter("f2_smelesize");
 #endif		
 
 /*---------------------------------------------------------- initialize */
-ntyp   = ele->e.f2->ntyp;
 nsmtyp = mlvar->submesh.ntyp;
 typ    = ele->distyp;
 smtyp  = mlvar->submesh.typ;
@@ -181,20 +180,20 @@ if (mlvar->smesize==4)    /* compute diagonal based diameter */
 if (mlvar->smesize==5)    /* compute streamlength based on l-s velocity */
 {
   f2_mlgcoor2(smfunct,smxyzep,smiel,coor);
-  switch(ntyp)
+  switch(typ)
   {
-  case 1:    /* --> quad - element */
+  case quad4: case quad8: case quad9:    /* --> quad - element */
     f2_rec(funct,deriv,deriv2,coor[0],coor[1],typ,2);
   break;
-  case 2:	/* --> tri - element */ 	     
+  case tri3: case tri6:	/* --> tri - element */ 	     
     f2_tri(funct,deriv,deriv2,coor[0],coor[1],typ,2);
   break;
   default:
-    dserror("ntyp unknown!\n");      
-  } /*end switch(ntyp) */
-  f2_veli(velint,funct,evel,iel);
+    dserror("typ unknown!\n");      
+  } /*end switch(typ) */
+  f2_veci(velint,funct,evel,iel);
   f2_mlgcoor2(smfunct,smxyze,smiel,gcoor);
-  f2_smstrlen(&strle,velint,smxyze,gcoor,cutp,ntyp);	      
+  f2_smstrlen(&strle,velint,smxyze,gcoor,cutp,typ);	      
 } /* endif (mlvar->smesize==5) */
 
 /*----------------------------------- set characteristic element length */
@@ -207,22 +206,22 @@ else if (mlvar->smesize==5) ele->e.f2->smcml = strle;
 if (mlvar->smesize<5)   /* compute l-s velocity */
 {
   f2_mlgcoor2(smfunct,smxyzep,smiel,coor);
-  switch(ntyp)
+  switch(typ)
   {
-  case 1:    /* --> quad - element */
+  case quad4: case quad8:  case quad9:   /* --> quad - element */
     f2_rec(funct,deriv,deriv2,coor[0],coor[1],typ,2);
   break;
-  case 2:	/* --> tri - element */ 	     
+  case tri3: case tri6:	/* --> tri - element */ 	     
     f2_tri(funct,deriv,deriv2,coor[0],coor[1],typ,2);
   break;
   default:
-    dserror("ntyp unknown!\n");      
-  } /*end switch(ntyp) */
-  f2_veli(velint,funct,evel,iel);
+    dserror("typ unknown!\n");      
+  } /*end switch(typ) */
+  f2_veci(velint,funct,evel,iel);
 }  
 
 /*----------------------------------- calculate stabilization parameter */               
-if (mlvar->smstabi>0) f2_smstabpar(ele,mlvar,velint,visc,smiel,ntyp); 
+if (mlvar->smstabi>0) f2_smstabpar(ele,mlvar,velint,visc,smiel,typ); 
 
 /*--------------------------------------------------- subgrid viscosity */               
 if (mlvar->smsgvi==1 || mlvar->smsgvi==2)
@@ -233,7 +232,7 @@ if (mlvar->smsgvi==1 || mlvar->smsgvi==2)
 /*----------------------- get velocity derivatives at integration point */
   f2_vder(vderxy,derxy,evel,iel);
 /*----------------------------------------- calculate subgrid viscosity */               
-  f2_smsgvisc(ele,mlvar,velint,vderxy,visc,smiel,ntyp);
+  f2_smsgvisc(ele,mlvar,velint,vderxy,visc,smiel,typ);
 }
 
 /*----------------------------------------------------------------------*/
@@ -258,7 +257,7 @@ stabilization parameter is calculated.
 \param **smxyze    DOUBLE   (i)    submesh element coordinates
 \param  *gcoor     DOUBLE   (i)    global coord. of int. point
 \param **cutp      DOUBLE   (-)    cutting points
-\param   ntyp	   INT      (i)    flag for element type
+\param   typ	   DIS_TYP  (i)    flag for element type
 \return void                                               
 \sa f2_calelesize()                               
 
@@ -268,7 +267,7 @@ void f2_smstrlen(DOUBLE   *strle,
 		 DOUBLE  **smxyze,	
                  DOUBLE   *gcoor,    
 		 DOUBLE  **cutp,	     
-		 int	   ntyp)
+		 DIS_TYP   typ)
 {
 INT     nodcut=-1;
 INT     nodmax;
@@ -293,17 +292,17 @@ if (dval == ZERO)  /* no flow at this point - take some arbitr. measure for stre
    streamlength is calculated via cutting points of velocity vector
    with straight boundaries                                             
 */
-switch(ntyp)
+switch(typ)
 {
-case 1: /* max number of nodes for quad: 4 --> C-numbering nodmax = 4-1 */
+case quad4: case quad8: case quad9: /* max number of nodes for quad: 4 --> C-numbering nodmax = 4-1 */
    nodmax = 3;
 break;
-case 2:  /* max number of nodes for tri: 3 --> C-numbering nodmax = 3-1 */
+case tri3: case tri6:  /* max number of nodes for tri: 3 --> C-numbering nodmax = 3-1 */
    nodmax = 2;
 break;
 default:
-   dserror("ntyp unknown!\n");   
-} /* end switch(ntyp) */        
+   dserror("typ unknown!\n");   
+} /* end switch(typ) */        
  /*------------------------------------------------- get cutting points */
 for (inod=0;inod<nodmax;inod++)
 {
@@ -376,7 +375,6 @@ INT     ieval = 0;	/* evaluation flag			        */
 INT     igc   = 0;	/* evaluation flag			        */
 INT     istrnint;       /* evaluation flag			        */
 INT     isharea;        /* evaluation flag			        */
-INT     ntyp;           /* element type (TRI or QUAD)  		        */
 INT     actmat;         /* number of actual material		        */
 INT     iel;            /* number of nodes of actual element            */
 DOUBLE  visc;           /* fluid viscosity                              */
@@ -398,13 +396,12 @@ dstrc_enter("f2_mlcalelesize");
 /*---------------------------------------------------------- initialise */
 fdyn = alldyn[genprob.numff].fdyn;
 
-ntyp   = ele->e.f2->ntyp;
 iel    = ele->numnp;
 typ    = ele->distyp;
 gls    = ele->e.f2->stabi.gls;
 
-if (ele->e.f2->stab_type != stab_gls) 
-   dserror("routine with no or wrong stabilisation called");
+dsassert(ele->e.f2->stab_type == stab_gls, 
+         "routine with no or wrong stabilisation called");
 
 istrnint = gls->istrle * gls->ninths;
 isharea  = fdyn->ishape * gls->iareavol;
@@ -424,16 +421,16 @@ if (isharea==1)
    strle = ZERO;
 /*------ get values of integration parameters, shape functions and their
          derivatives ---------------------------------------------------*/
-   switch(ntyp)
+   switch(typ)
    {
-   case 1:    /* --> quad - element */
+   case quad4: case quad8: case quad9:    /* --> quad - element */
       e1   = data->qxg[0][0];
       facr = data->qwgt[0][0];
       e2   = data->qxg[0][0];
       facs = data->qwgt[0][0];
       f2_rec(funct,deriv,deriv2,e1,e2,typ,2);
    break;
-   case 2:       /* --> tri - element */              
+   case tri3: case tri6:       /* --> tri - element */              
       e1   = data->txgr[0][0];
       facr = data->twgt[0][0];
       e2   = data->txgs[0][0];
@@ -441,8 +438,8 @@ if (isharea==1)
       f2_tri(funct,deriv,deriv2,e1,e2,typ,2);
    break;
    default:
-      dserror("ntyp unknown!\n");      
-   } /*end switch(ntyp) */
+      dserror("typ unknown!\n");      
+   } /*end switch(typ) */
    ieval++;
 /* -------------------------------------------- compute jacobian matrix */      
    f2_mljaco(funct,deriv,xjm,&det,ele,iel);
@@ -450,17 +447,17 @@ if (isharea==1)
    area += fac;
    if (istrnint==1)    /* compute streamlength */
    {
-      f2_veli(velint,funct,evel,iel);
+      f2_veci(velint,funct,evel,iel);
       ieval++;
       f2_mlgcoor(funct,ele,iel,gcoor);
       igc++;
-      f2_mlcalstrlen(&strle,velint,ele,gcoor,cutp,ntyp);            
+      f2_mlcalstrlen(&strle,velint,ele,gcoor,cutp,typ);            
    } /* enidf (istrnint==1) */
    if (gls->idiaxy==1)    /* compute diagonal based diameter */
    {
-      switch(ntyp)
+      switch(typ)
       {
-      case 1:
+      case quad4: case quad8: case quad9:
          dx = ele->node[0]->x[0] - ele->node[2]->x[0];
 	 dy = ele->node[0]->x[1] - ele->node[2]->x[1];
 	 dia1 = sqrt(dx*dx+dy*dy);
@@ -470,7 +467,7 @@ if (isharea==1)
 /*------ dia=sqrt(2)*area/(1/2*(dia1+dia2))=sqrt(8)*area/(dia1+dia2) ---*/
 	 dia = sqrt(EIGHT)*area/(dia1+dia2); 
       break;
-      case 2:    /* get global coordinate of element center */
+      case tri3: case tri6:    /* get global coordinate of element center */
          if (igc==0)
 	    f2_mlgcoor(funct,ele,iel,gcoor);
 	 dia = ZERO;
@@ -483,8 +480,8 @@ if (isharea==1)
 	 dia = FOUR*area/sqrt(THREE*dia);
       break;
       default:
-          dserror("ntyp unknown!\n");
-      } /* end switch(ntyp) */
+          dserror("typ unknown!\n");
+      } /* end switch(typ) */
    } /* endif (ele->e.f2->idiaxy==1) */
 /*--------------------------------------------------- set element sizes *
   ----loop over 3 different element sizes: vel/pre/cont  ---------------*/
@@ -515,16 +512,16 @@ else if (istrnint==1 && isharea !=1)
    strle = ZERO;
 /*------ get values of integration parameters, shape functions and their
          derivatives ---------------------------------------------------*/
-   switch(ntyp)
+   switch(typ)
    {
-   case 1:    /* --> quad - element */
+   case quad4: case quad8: case quad9:    /* --> quad - element */
       e1   = data->qxg[0][0];
       facr = data->qwgt[0][0];
       e2   = data->qxg[0][0];
       facs = data->qwgt[0][0];
       f2_rec(funct,deriv,deriv2,e1,e2,typ,2);
    break;
-   case 2:       /* --> tri - element */              
+   case tri3: case tri6:       /* --> tri - element */              
       e1   = data->txgr[0][0];
       facr = data->twgt[0][0];
       e2   = data->txgs[0][0];
@@ -532,17 +529,17 @@ else if (istrnint==1 && isharea !=1)
       f2_tri(funct,deriv,deriv2,e1,e2,typ,2);
    break;
    default:
-      dserror("ntyp unknown!\n");
-   } /* end switch(ntyp) */
+      dserror("typ unknown!\n");
+   } /* end switch(typ) */
    ieval++;
 /* ------------------------------------------- compute jacobian matrix */      
    f2_mljaco(funct,deriv,xjm,&det,ele,iel);
 /*----------------------------------------------- compute streamlength */
-   f2_veli(velint,funct,evel,iel);
+   f2_veci(velint,funct,evel,iel);
    ieval++;
    f2_mlgcoor(funct,ele,iel,gcoor);
    igc++;
-   f2_mlcalstrlen(&strle,velint,ele,gcoor,cutp,ntyp);       
+   f2_mlcalstrlen(&strle,velint,ele,gcoor,cutp,typ);       
 /*--------------------------------------------------- set element sizes *
       loop over 3 different element sizes: vel/pre/cont  ---------------*/
    for (ilen=0;ilen<3;ilen++)
@@ -562,16 +559,16 @@ if(gls->istapc==1 || istrnint==1)
    case 0:
 /*------ get only values of integration parameters and shape functions
         + derivatives for Smagorinsky subgrid viscosity --------------*/
-      switch(ntyp)
+      switch(typ)
       {
-      case 1:    /* --> quad - element */
+      case quad4: case quad8: case quad9:    /* --> quad - element */
          e1   = data->qxg[0][0];
          facr = data->qwgt[0][0];
          e2   = data->qxg[0][0];
          facs = data->qwgt[0][0];
          f2_rec(funct,deriv,deriv2,e1,e2,typ,2);
       break;
-      case 2:       /* --> tri - element */              
+      case tri3: case tri6:       /* --> tri - element */              
          e1   = data->txgr[0][0];
          facr = data->twgt[0][0];
          e2   = data->txgs[0][0];
@@ -579,13 +576,13 @@ if(gls->istapc==1 || istrnint==1)
          f2_tri(funct,deriv,deriv2,e1,e2,typ,2);
       break;      
       default:
-         dserror("ntyp unknown!\n");
-      } /* end switch(ntyp) */
-      f2_veli(velint,funct,evel,iel);
+         dserror("typ unknown!\n");
+      } /* end switch(typ) */
+      f2_veci(velint,funct,evel,iel);
       if (fdyn->sgvisc>0) f2_mljaco(funct,deriv,xjm,&det,ele,iel);
    break;
    case 1:            
-      f2_veli(velint,funct,evel,iel);
+      f2_veci(velint,funct,evel,iel);
    break;
    case 2:
    break;
@@ -595,7 +592,7 @@ if(gls->istapc==1 || istrnint==1)
 /*----------------------------------- calculate stabilisation parameter */               
    actmat=ele->mat-1;
    visc = mat[actmat].m.fluid->viscosity;
-   f2_mlcalstabpar(ele,velint,visc,iel,ntyp,-1); 
+   f2_mlcalstabpar(ele,velint,visc,iel,typ,-1); 
 /*--------------------------------------------------- subgrid viscosity */               
    if (fdyn->sgvisc>0)
    { 
@@ -604,7 +601,7 @@ if(gls->istapc==1 || istrnint==1)
 /*---------------------- get velocity derivatives at integration point */
      f2_vder(vderxy,derxy,evel,iel);
 /*---------------------------------------- calculate subgrid viscosity */               
-     f2_calsgvisc(ele,velint,vderxy,visc,iel,ntyp);
+     f2_calsgvisc(ele,velint,vderxy,visc,iel,typ);
    }
 } /* endif (ele->e.f2->istapc==1 || istrnint==1) */
 
@@ -623,7 +620,7 @@ void f2_mlcalelesize2(ELEMENT         *ele,
 		      DOUBLE	   **cutp,   
 		      DOUBLE	     visc,   
 		      INT 	     iel,    
-		      INT 	     ntyp)
+		      DIS_TYP 	     typ)
 {
 INT    ilen;       /* simply a counter                                  */
 INT    istrnint;   /* evaluation flag                                   */
@@ -648,7 +645,7 @@ if (istrnint==2)
 {
 /*------------------------------------------------ compute streamlength */
    f2_mlgcoor(funct,ele,iel,gcoor);
-   f2_mlcalstrlen(&strle,velint,ele,gcoor,cutp,ntyp);
+   f2_mlcalstrlen(&strle,velint,ele,gcoor,cutp,typ);
 /*--------------------------------------------------- set element sizes *
       loop over 3 different element sizes: vel/pre/cont  ---------------*/
    for (ilen=0;ilen<3;ilen++)
@@ -659,10 +656,10 @@ if (istrnint==2)
 } /* endif (istrnint==2) */
 
 /*----------------------------------- calculate stabilisation parameter */               
-f2_mlcalstabpar(ele,velint,visc,iel,ntyp,1); 
+f2_mlcalstabpar(ele,velint,visc,iel,typ,1); 
    
 /*----------------------------------------- calculate subgrid viscosity */               
-if (fdyn->sgvisc>0) f2_calsgvisc(ele,velint,vderxy,visc,iel,ntyp);
+if (fdyn->sgvisc>0) f2_calsgvisc(ele,velint,vderxy,visc,iel,typ);
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -677,7 +674,7 @@ void f2_mlcalstrlen(DOUBLE   *strle,
 		    ELEMENT  *ele,      
                     DOUBLE   *gcoor,    
 		    DOUBLE  **cutp,	      
-		    INT	    ntyp)
+		    DIS_TYP   typ)
 {
 INT     nodcut=-1;
 INT     nodmax;
@@ -702,17 +699,17 @@ if (dval == ZERO)  /* no flow at this point - take some arbitr. measure for stre
    streamlength is calculated via cutting points of velocity vector
    with straight boundaries                                             
 */
-switch(ntyp)
+switch(typ)
 {
-case 1: /* max number of nodes for quad: 4 --> C-numbering nodmax = 4-1 */
+case quad4: case quad8: case quad9: /* max number of nodes for quad: 4 --> C-numbering nodmax = 4-1 */
    nodmax = 3;
 break;
-case 2:  /* max number of nodes for tri: 3 --> C-numbering nodmax = 3-1 */
+case tri3: case tri6:  /* max number of nodes for tri: 3 --> C-numbering nodmax = 3-1 */
    nodmax = 2;
 break;
 default:
-   dserror("ntyp unknown!\n");   
-} /* end switch(ntyp) */        
+   dserror("typ unknown!\n");   
+} /* end switch(typ) */        
  /*------------------------------------------------- get cutting points */
 for (inod=0;inod<nodmax;inod++)
 {

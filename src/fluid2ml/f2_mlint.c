@@ -199,7 +199,7 @@ void f2_smint(FLUID_DATA      *data,
 { 
 INT       i,j;        /* simply some counters                           */
 INT       iel,smiel;  /* large-scale and submesh number of nodes        */
-INT       ntyp,nsmtyp;/* l-s and submesh element type: 1-quad; 2-tri    */
+INT       nsmtyp;     /* l-s and submesh element type: 1-quad; 2-tri    */
 INT       intc;       /* "integration case" for tri for further infos
                           see f2_inpele.c and f2_intg.c                 */
 INT       nir,nis;    /* number of integration points in r,s direction  */
@@ -230,7 +230,6 @@ smiel  = submesh->numen;
 actmat = ele->mat-1;
 dens   = mat[actmat].m.fluid->density;
 visc   = mat[actmat].m.fluid->viscosity;
-ntyp   = ele->e.f2->ntyp; 
 typ    = ele->distyp;
 nsmtyp = submesh->ntyp; 
 smtyp  = submesh->typ;
@@ -264,13 +263,13 @@ default:
 } /* end switch(nsmtyp) */
 
 /*---------------------------- check if ls-elements are "higher order" */
-switch (ntyp)
+switch (typ)
 {
-case 1:  /* --> quad - element */
+case quad4: case quad8: case quad9:  /* --> quad - element */
    icode   = 3;
    ihoel   = 1;
 break;
-case 2: /* --> tri - element */  
+case tri3: case tri6: /* --> tri - element */  
    if (iel>3)
    {
      icode   = 3;
@@ -278,8 +277,8 @@ case 2: /* --> tri - element */
    }
 break;
 default:
-   dserror("ntyp unknown!");
-} /* end switch(ntyp) */
+   dserror("typ unknown!");
+} /* end switch(typ) */
 
 /*----------------------------------------------------------------------*
  |               start loop over integration points                     |
@@ -318,17 +317,17 @@ for (lr=0;lr<nir;lr++)
       f2_mlgcoor2(smfunct,smxyzep,smiel,coor);
 
 /*---- get values of large-scale shape functions and their derivatives */
-      switch(ntyp)
+      switch(typ)
       {
-      case 1:    /* --> quad - element */
+      case quad4: case quad8: case quad9:    /* --> quad - element */
         f2_rec(funct,deriv,deriv2,coor[0],coor[1],typ,icode);
       break;
-      case 2:	/* --> tri - element */ 	     
+      case tri3: case tri6:	/* --> tri - element */ 	     
         f2_tri(funct,deriv,deriv2,coor[0],coor[1],typ,icode);   
       break;
       default:
-        dserror("ntyp unknown!\n");      
-      } /*end switch(ntyp) */
+        dserror("typ unknown!\n");      
+      } /*end switch(typ) */
 /*------------ compute Jacobian matrix for large-scale shape functions */
       f2_mljaco(funct,deriv,xjm,&det,ele,iel);
 /*----------- compute global derivates for large-scale shape functions */
@@ -337,7 +336,7 @@ for (lr=0;lr<nir;lr++)
       if (ihoel!=0) f2_mlgder2(ele,xjm,wa1,wa2,derxy,derxy2,deriv2,iel);
 
 /*------------ get large-scale velocities (n+1,i) at integration point */
-      f2_veli(velint,funct,evel,iel);
+      f2_veci(velint,funct,evel,iel);
 /*-- get large-scale velocity (n+1,i) derivatives at integration point */
       f2_vder(vderxy,derxy,evel,iel);
       
@@ -360,7 +359,7 @@ for (lr=0;lr<nir;lr++)
         fluid_bubder (smfderxy,smderxy,efbub,smiel,2,2);            
 	 
 /*---------------------- get small-scale velocities at integraton point */
-        f2_veli (smvelint,vbubint,evel,iel);	      
+        f2_veci (smvelint,vbubint,evel,iel);	      
 /*------------ get small-scale velocity derivatives at integraton point */
         f2_vder (smvderxy,vbubderxy,evel,iel);	      
 /*--------------------- get small-scale 'pressures' at integraton point */
@@ -430,7 +429,7 @@ for (lr=0;lr<nir;lr++)
 /*------- get large-scale pressure derivatives (n) at integration point */
         if (fdyn->iprerhs>0) f2_pder(pderxyn,derxy,epren,iel);
 /*------------------ get large-scale velocities (n) at integraton point */
-        f2_veli(velintn,funct,eveln,iel);
+        f2_veci(velintn,funct,eveln,iel);
 /*------- get large-scale velocity derivatives (n) at integration point */
         f2_vder(vderxyn,derxy,eveln,iel);
 /*--- get large-scale 2nd velocity derivatives (n) at integration point */
@@ -463,7 +462,7 @@ for (lr=0;lr<nir;lr++)
 	  fluid_bubder (smfderxy2n,smderxy2,efbubn,smiel,2,3);
 	   
 /*------------------ get small-scale velocities (n) at integraton point */
-          f2_veli (smvelintn,vbubintn,eveln,iel);	      
+          f2_veci (smvelintn,vbubintn,eveln,iel);	      
 /*-------- get small-scale velocity derivatives (n) at integraton point */
           f2_vder (smvderxyn,vbubderxyn,eveln,iel);	      
 /*---- get small-scale 2nd velocity derivatives (n) at integraton point */
@@ -660,7 +659,7 @@ void f2_bubint(FLUID_DATA      *data,
 { 
 INT       i,j;        /* simply some counters                           */
 INT       iel,smiel;  /* number of nodes                                */
-INT       ntyp,nsmtyp;/* l-s and submesh element type: 1-quad; 2-tri    */
+INT       nsmtyp;     /* l-s and submesh element type: 1-quad; 2-tri    */
 INT       intc;       /* "integration case" for tri for further infos
                           see f2_inpele.c and f2_intg.c                 */
 INT       nir,nis;    /* number of integration nodesin r,s direction    */
@@ -691,7 +690,6 @@ smiel  = submesh->numen;
 actmat = ele->mat-1;
 dens   = mat[actmat].m.fluid->density;
 visc   = mat[actmat].m.fluid->viscosity;
-ntyp   = ele->e.f2->ntyp; 
 typ    = ele->distyp;
 nsmtyp = submesh->ntyp; 
 smtyp  = submesh->typ;
@@ -725,13 +723,13 @@ default:
 } /* end switch(nsmtyp) */
 
 /*---------------------------- check if ls-elements are "higher order" */
-switch (ntyp)
+switch (typ)
 {
-case 1:  /* --> quad - element */
+case quad4: case quad8: case quad9:  /* --> quad - element */
    icode   = 3;
    ihoel   = 1;
 break;
-case 2: /* --> tri - element */  
+case tri3: case tri6: /* --> tri - element */  
    if (iel>3)
    {
       icode   = 3;
@@ -739,8 +737,8 @@ case 2: /* --> tri - element */
    }
 break;
 default:
-   dserror("ntyp unknown!");
-} /* end switch(ntyp) */
+   dserror("typ unknown!");
+} /* end switch(typ) */
 
 /*----------------------------------------------------------------------*
  |               start loop over integration points                     |
@@ -779,24 +777,24 @@ for (lr=0;lr<nir;lr++)
       f2_mlgcoor2(smfunct,smxyzep,smiel,coor);
 
 /*---- get values of large-scale shape functions and their derivatives */
-      switch(ntyp)
+      switch(typ)
       {
-      case 1:    /* --> quad - element */
+      case quad4: case quad8: case quad9:    /* --> quad - element */
         f2_rec(funct,deriv,deriv2,coor[0],coor[1],typ,icode);
       break;
-      case 2:	/* --> tri - element */ 	     
+      case tri3: case tri6:	/* --> tri - element */ 	     
         f2_tri(funct,deriv,deriv2,coor[0],coor[1],typ,icode);   
       break;
       default:
-        dserror("ntyp unknown!\n");      
-      } /*end switch(ntyp) */
+        dserror("typ unknown!\n");      
+      } /*end switch(typ) */
 /*------------ compute Jacobian matrix for large-scale shape functions */
       f2_mljaco(funct,deriv,xjm,&det,ele,iel);
 /*----------- compute global derivates for large-scale shape functions */
       f2_gder(derxy,deriv,xjm,det,iel);
 
 /*------------ get large-scale velocities (n+1,i) at integration point */
-      f2_veli(velint,funct,evel,iel);
+      f2_veci(velint,funct,evel,iel);
 /*-- get large-scale velocity (n+1,i) derivatives at integration point */
       f2_vder(vderxy,derxy,evel,iel);
       
@@ -819,7 +817,7 @@ for (lr=0;lr<nir;lr++)
       if (mlvar->convel==0)
       { 
 /*---------------------- get small-scale velocities at integraton point */
-        f2_veli (smvelint,vbubint,evel,iel);	      
+        f2_veci (smvelint,vbubint,evel,iel);	      
 /*------------ get small-scale velocity derivatives at integraton point */
         f2_vder (smvderxy,vbubderxy,evel,iel);	      
 /*--------------------- get small-scale 'pressures' at integraton point */
@@ -844,7 +842,7 @@ for (lr=0;lr<nir;lr++)
  |  Standard Galerkin matrices are all stored in one matrix "estif"     |
  |  Standard Galerkin mass matrix is stored in "emass"                  |
  *----------------------------------------------------------------------*/
-      if (fdyn->nik>0 && mlvar->convel==0)
+      if (mlvar->convel==0)
       {
 /*------------------------ compute standard Galerkin part of matrix Kvv */      
         f2_lscalkvv(estif,velint,vderxy,funct,derxy,fac,visc,iel);
@@ -860,15 +858,15 @@ for (lr=0;lr<nir;lr++)
       f2_calbkvv(estif,velint,vderxy,funct,derxy,vbubint,vbubderxy,
                  fac,visc,iel);
 /*-------------------------- compute bubble function part of matrix Kvp */      
-     f2_calbkvp(estif,velint,vderxy,funct,derxy,pbubint,pbubderxy,
+      f2_calbkvp(estif,velint,vderxy,funct,derxy,pbubint,pbubderxy,
                  fac,visc,iel);
 /*-------------------------- compute bubble function part of matrix Kpv */      
       f2_calbkpv(estif,funct,vbubderxy,fac,iel);
 /*-------------------------- compute bubble function part of matrix Kpp */      
       f2_calbkpp(estif,funct,pbubderxy,fac,iel);
 	
-      if (fdyn->nis==0 && mlvar->transterm==0 || 
-          fdyn->nis==0 && mlvar->transterm==2)
+      if ((fdyn->nis==0 && mlvar->transterm==0) || 
+          (fdyn->nis==0 && mlvar->transterm==2))
       {	   
 /*-------------------------- compute bubble function part of matrix Mvv */      
 	f2_calbmvv(emass,funct,vbubint,fac,iel);
@@ -895,7 +893,7 @@ for (lr=0;lr<nir;lr++)
         if (mlvar->convel!=0)
         {
 /*--------------------- get small-scale velocities at integration point */
-          f2_veli (smvelint,vbubint,evel,iel);	      
+          f2_veci (smvelint,vbubint,evel,iel);	      
 /*----------- get small-scale velocity derivatives at integration point */
           f2_vder (smvderxy,vbubderxy,evel,iel);	      
 /*-------------------- get small-scale 'pressures' at integration point */
@@ -999,7 +997,6 @@ void f2_lsint(FLUID_DATA      *data,
 	      DOUBLE	     **wa2)
 { 
 INT       iel;        /* number of nodes                                */
-INT       ntyp;       /* element type: 1 - quad; 2 - tri                */
 INT       intc;       /* "integration case" for tri for further infos
                           see f2_inpele.c and f2_intg.c                 */
 INT       nir,nis;    /* number of integration nodesin r,s direction    */
@@ -1028,7 +1025,6 @@ iel=ele->numnp;
 actmat=ele->mat-1;
 dens = mat[actmat].m.fluid->density;
 visc = mat[actmat].m.fluid->viscosity;
-ntyp = ele->e.f2->ntyp; 
 typ  = ele->distyp;
 gls    = ele->e.f2->stabi.gls;
 
@@ -1036,16 +1032,16 @@ if (ele->e.f2->stab_type != stab_gls)
    dserror("routine with no or wrong stabilisation called");
 
 /*------ get integration data and check if elements are "higher order" */
-switch (ntyp)
+switch (typ)
 {
-case 1:  /* --> quad - element */
+case quad4: case quad8:  case quad9: /* --> quad - element */
    icode   = 3;
    ihoel   = 1;
    /* initialize integration */
    nir = ele->e.f2->nGP[0];
    nis = ele->e.f2->nGP[1];
 break;
-case 2: /* --> tri - element */  
+case tri3: case tri6: /* --> tri - element */  
    if (iel>3)
    {
       icode   = 3;
@@ -1057,8 +1053,8 @@ case 2: /* --> tri - element */
    intc = ele->e.f2->nGP[1];  
 break;
 default:
-   dserror("ntyp unknown!");
-} /* end switch(ntyp) */
+   dserror("typ unknown!");
+} /* end switch(typ) */
 
 /*----------------------------------------------------------------------*
  |               start loop over integration points                     |
@@ -1068,16 +1064,16 @@ for (lr=0;lr<nir;lr++)
    for (ls=0;ls<nis;ls++)
    {
 /*----------------- get values of shape functions and their derivatives */
-      switch(ntyp)  
+      switch(typ)  
       {
-      case 1:   /* --> quad - element */
+      case quad4: case quad8: case quad9:   /* --> quad - element */
 	 e1   = data->qxg[lr][nir-1];
          facr = data->qwgt[lr][nir-1];
 	 e2   = data->qxg[ls][nis-1];
 	 facs = data->qwgt[ls][nis-1];
          f2_rec(funct,deriv,deriv2,e1,e2,typ,icode);
       break;
-      case 2:   /* --> tri - element */              
+      case tri3: case tri6:   /* --> tri - element */              
 	 e1   = data->txgr[lr][intc];
 	 facr = data->twgt[lr][intc];
 	 e2   = data->txgs[lr][intc];
@@ -1085,8 +1081,8 @@ for (lr=0;lr<nir;lr++)
 	 f2_tri(funct,deriv,deriv2,e1,e2,typ,icode);
       break;
       default:
-         dserror("ntyp unknown!");
-      } /* end switch(ntyp) */
+         dserror("typ unknown!");
+      } /* end switch(typ) */
 /*-------------------------------------------- compute Jacobian matrix */
       f2_mljaco(funct,deriv,xjm,&det,ele,iel);
       fac = facr*facs*det;
@@ -1094,14 +1090,13 @@ for (lr=0;lr<nir;lr++)
       f2_gder(derxy,deriv,xjm,det,iel);
 
 /*------------------------ get velocities (n+1,i) at integration point */
-      f2_veli(velint,funct,evel,iel);
+      f2_veci(velint,funct,evel,iel);
 /*-------------- get velocity derivatives (n+1,i) at integration point */
       f2_vder(vderxy,derxy,evel,iel);
       
  /*--- compute stab. par. or subgrid viscosity during integration loop */
-      if (gls->istabi>0 && gls->iduring!=0 || 
-          fdyn->sgvisc>0    && gls->iduring!=0)
-        f2_mlcalelesize2(ele,funct,velint,vderxy,wa1,visc,iel,ntyp);
+      if (gls->iduring!=0 || ( fdyn->sgvisc>0    && gls->iduring!=0))
+         f2_mlcalelesize2(ele,funct,velint,vderxy,wa1,visc,iel,typ);
 	
 /*----------------------------------------------------------------------*
  |         compute "Standard Galerkin" matrices                         |
@@ -1109,16 +1104,13 @@ for (lr=0;lr<nir;lr++)
  |  Standard Galerkin matrices are all stored in one matrix "estif"     |
  |  Standard Galerkin mass matrix is stored in "emass"                  |
  *----------------------------------------------------------------------*/
-      if(fdyn->nik>0)
-      {
 /*------------------------ compute standard Galerkin part of matrix Kvv */      
-         if (mlvar->convel!=0)
-	   f2_lscalkvv(estif,velint,vderxy,funct,derxy,fac,visc,iel);
+      if (mlvar->convel!=0)
+	f2_lscalkvv(estif,velint,vderxy,funct,derxy,fac,visc,iel);
 /*-------------- compute standard Galerkin part of matrices Kvp and Kpv */      
-	 f2_lscalkvp(estif,funct,derxy,fac,iel);
+      f2_lscalkvp(estif,funct,derxy,fac,iel);
 /*------------------------ compute standard Galerkin part of matrix Mvv */      
-	 if (fdyn->nis==0) f2_lscalmvv(emass,funct,fac,iel);
-      } /* endif (fdyn->nik>0) */
+      if (fdyn->nis==0) f2_lscalmvv(emass,funct,fac,iel);
       
 /*----------------------------------------------------------------------*
  |         compute Stabilization matrices                               |
@@ -1127,37 +1119,32 @@ for (lr=0;lr<nir;lr++)
  |  Stabilization matrices are all stored in one matrix "estif"         |
  |  Stabilization mass matrices are all stored in one matrix "emass"    |
  *----------------------------------------------------------------------*/
-      if (gls->istabi>0)
-      { 
 /*----------------------------------- compute second global derivatives */ 
-         if (ihoel!=0) f2_mlgder2(ele,xjm,wa1,wa2,derxy,derxy2,deriv2,iel);
+      if (ihoel!=0) 
+         f2_mlgder2(ele,xjm,wa1,wa2,derxy,derxy2,deriv2,iel);
    
-         if (fdyn->nie==0)
-         {
 /*---------------------------------------- stabilization for matrix Kvv */
-            f2_lscalstabkvv(ele,estif,velint,vderxy,
+      f2_lscalstabkvv(ele,estif,velint,vderxy,
                           funct,derxy,derxy2,fac,visc,iel,ihoel);
 /*---------------------------------------- stabilization for matrix Kvp */
-            f2_lscalstabkvp(ele,estif,velint,vderxy,
+      f2_lscalstabkvp(ele,estif,velint,vderxy,
                           funct,derxy,derxy2,fac,visc,iel,ihoel);
 /*---------------------------------------- stabilization for matrix Mvv */
-            if (fdyn->nis==0) 
-               f2_lscalstabmvv(ele,emass,velint,vderxy, 
+      if (fdyn->nis==0) 
+         f2_lscalstabmvv(ele,emass,velint,vderxy, 
 	                     funct,derxy,derxy2,fac,visc,iel,ihoel); 
-            if (gls->ipres!=0)	        
-            {
+      if (gls->ipres!=0)	        
+      {
 /*---------------------------------------- stabilization for matrix Kpv */
-               f2_lscalstabkpv(estif,velint,vderxy,
+         f2_lscalstabkpv(estif,velint,vderxy,
 	                     funct,derxy,derxy2,fac,visc,iel,ihoel);
 /*---------------------------------------- stabilization for matrix Mpv */
-	       if (fdyn->nis==0)
-		  f2_lscalstabmpv(emass,funct,derxy,fac,iel);
-            } /* endif (ele->e.f2->ipres!=0) */
-         } /* endif (fdyn->nie==0) */
+	 if (fdyn->nis==0)
+	    f2_lscalstabmpv(emass,funct,derxy,fac,iel);
+      } /* endif (ele->e.f2->ipres!=0) */
 /*---------------------------------------- stabilization for matrix Kpp */
-         if (gls->ipres!=0)
-	    f2_lscalstabkpp(estif,derxy,fac,iel);  
-      } /* endif (ele->e.f2->istabi>0) */
+      if (gls->ipres!=0)
+	 f2_lscalstabkpp(estif,derxy,fac,iel);  
 
 /*----------------------------------------------------------------------*
  |         compute "Iteration" Force Vectors                            |
@@ -1176,9 +1163,10 @@ for (lr=0;lr<nir;lr++)
       if (fdyn->nis==0)
       {
  /*------------------------------ get pressure (n) at integration point */
-        if (fdyn->iprerhs>0) f2_prei(&preintn,funct,epren,iel);
+        if (fdyn->iprerhs>0) 
+          preintn=f2_scali(funct,epren,iel);
 /*----------------------------- get velocities (n) at integration point */
-        f2_veli(velintn,funct,eveln,iel);
+        f2_veci(velintn,funct,eveln,iel);
 /*------------------- get velocity derivatives (n) at integration point */
         f2_vder(vderxyn,derxy,eveln,iel);
 /*------------------ get convective velocities (n) at integration point */
@@ -1384,7 +1372,7 @@ void f2_ssint(FLUID_DATA      *data,
 	      DOUBLE	     **vderxy)
 { 
 INT       iel,ssiel;  /* large-scale and sub-submesh number of nodes    */
-INT       ntyp,nsstyp;/* l-s and ssm element type: 1 - quad; 2 - tri    */
+INT       nsstyp;     /* l-s and ssm element type: 1 - quad; 2 - tri    */
 INT       intc;       /* "integration case" for tri for further infos
                           see f2_inpele.c and f2_intg.c                 */
 INT       nir,nis;    /* number of integration nodes in r,s direction   */
@@ -1407,7 +1395,6 @@ iel    = ele->numnp;
 ssiel  = ssmesh->numen;
 actmat = ele->mat-1;
 visc   = mat[actmat].m.fluid->viscosity;
-ntyp   = ele->e.f2->ntyp; 
 typ    = ele->distyp;
 nsstyp = ssmesh->ntyp; 
 sstyp  = ssmesh->typ;
@@ -1465,24 +1452,24 @@ for (lr=0;lr<nir;lr++)
       f2_mlgcoor2(ssfunct,ssxyzep,ssiel,coor);
       
 /*---- get values of large-scale shape functions and their derivatives */
-      switch(ntyp)
+      switch(typ)
       {
-      case 1:    /* --> quad - element */
+      case quad4: case quad8: case quad9:    /* --> quad - element */
         f2_rec(funct,deriv,deriv2,coor[0],coor[1],typ,2);
       break;
-      case 2:	/* --> tri - element */ 	     
+      case tri3: case tri6:	/* --> tri - element */ 	     
         f2_tri(funct,deriv,deriv2,coor[0],coor[1],typ,2);   
       break;
       default:
-        dserror("ntyp unknown!\n");      
-      } /*end switch(ntyp) */
+        dserror("typ unknown!\n");      
+      } /*end switch(typ) */
 /*------------ compute Jacobian matrix for large-scale shape functions */
       f2_mljaco(funct,deriv,xjm,&det,ele,iel);
 /*----------- compute global derivates for large-scale shape functions */
       f2_gder(derxy,deriv,xjm,det,iel);
 
 /*------------ get large-scale velocities (n+1,i) at integration point */
-      f2_veli(velint,funct,evel,iel);
+      f2_veci(velint,funct,evel,iel);
 /*-- get large-scale velocity (n+1,i) derivatives at integration point */
       f2_vder(vderxy,derxy,evel,iel);
       
