@@ -224,7 +224,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
              NULL,NULL,NULL,action,container);
    break;
    case el_brick1:
-       dserror("Restart for brick not yet impl.");
+
    break;
    case el_wall1:
       container->handsize = 5;
@@ -764,7 +764,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
              NULL,NULL,NULL,action,container);
    break;
    case el_brick1:
-       dserror("Restart for brick not yet impl.");
+
    break;
    case el_wall1:
       container->handsize = 5;
@@ -1030,7 +1030,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
              NULL,NULL,NULL,action,container);
    break;
    case el_brick1:
-       dserror("Restart for brick not yet impl.");
+
    break;
    case el_wall1:
        container->handsize = 5;
