@@ -1077,11 +1077,10 @@ if (strncmp(string,"stress",stringlenght)==0)
                              );
       }
       fprintf(out,"END VALUES\n");
-/*----------------------------------------------------------------------*/
-#endif
-#ifdef D_BRICK1
-      
+/*----------------------------------------------------------------------*/      
    }
+#endif   
+#ifdef D_BRICK1   
    /* bricks have 6 stress - use 3D matrix */
    if (actgid->is_brick1_222)
    {  ngauss=8;
