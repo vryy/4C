@@ -1,4 +1,4 @@
 #--------------------------------------------------------------------
 # enter path to the individual source directory
 #--------------------------------------------------------------------
-SRC       = /bau/statik/genk/ARCHIV/ccarat_repos/
+#SRC       = /bau/statik/<name>/wdir/ccarat/
