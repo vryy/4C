@@ -700,6 +700,7 @@ void dswarning(INT task, INT warning)
 #ifdef PARALLEL
 INT     i;                                /* a counter                    */
 INTRA  *actintra;
+INT     recvbuf;
 #endif
 static INT called;                      /* flag, if warnings occured    */
 static INT ale_quality_min_J_triangles;
@@ -775,6 +776,10 @@ switch (task)
   break;
   /*------------------------------------------------- write warnings ---*/
   case 2:
+  #ifdef PARALLEL
+  MPI_Allreduce(&called,&recvbuf,1,MPI_INT,MPI_SUM,MPI_COMM_WORLD);
+  called=recvbuf;
+  #endif
   if (!called) goto end;  /* supress output if there were no warnings   */
   #ifdef PARALLEL
     for (i=0; i<par.numfld; i++) /* loop all intra communicators        */
