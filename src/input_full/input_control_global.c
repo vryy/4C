@@ -1742,7 +1742,7 @@ void inpctr_dyn_ls(LS_DYNAMIC *lsdyn)
 /*----------------------------------------------------------------------*/  
   
   /* allocate memory for lsdata */
-  lsdyn->lsdata = (LS_GEN_DATA*)CCACALLOC(1,sizeof(LS_GEN_DATA));  
+  lsdyn->lsdata = (LS_GEN_DATA*)CCACALLOC(1,sizeof(LS_GEN_DATA));
   /* set some parameters */
   lsdyn->lsdata->boundary_on_off = 0;
   lsdyn->lsdata->reinitflag = 0;
@@ -1859,6 +1859,16 @@ void inpctr_dyn_ls(LS_DYNAMIC *lsdyn)
         lsdyn->lsdata->reinitialization = 0;
       else
         dserror("REINITIALIZATION unknown!\n");	 
+    }
+    frchar("ANCHOR"   ,buffer    ,&ierr);
+    if (ierr==1)
+    {
+      if (strncmp(buffer,"yes",3)==0)
+        lsdyn->lsdata->anchor = 1;
+      else if (strncmp(buffer,"no",2)==0)
+        lsdyn->lsdata->anchor = 0;
+      else
+        dserror("ANCHOR unknown!\n");	 
     }
     frchar("ALGO"   ,buffer    ,&ierr);
     if (ierr==1)
