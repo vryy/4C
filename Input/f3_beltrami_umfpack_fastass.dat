@@ -4,7 +4,7 @@
 //             http://www.uni-stuttgart.de/ibs/members/neumann/
 //             0711 - 685-6121
 // 
-// necessary defines: RESULTTEST D_FLUID D_FLUID3 AZTEC_PACKAGE CHECK_MAX FAST_ASS
+// necessary defines: RESULTTEST D_FLUID D_FLUID3 UMFPACK CHECK_MAX FAST_ASS
 //
 // #define MAXNOD           (8)
 // #define MAXELE           (8)
@@ -88,19 +88,7 @@ ERRORCAL     yes
 -------------------------------------------------------ALE DYNAMIC
 ------------------------------------------------------OPTIMIZATION
 ------------------------------------------------------FLUID SOLVER
-SOLVER         Aztec_MSR
-AZSOLVE        BiCGSTAB
-AZPREC         ILU
-AZREUSE        0  
-AZDROP         0.0  
-AZFILL         1.0  
-AZGFILL        0  
-AZTOL          1.0E-12  
-AZITER         2500  
-AZSUB          50  
-AZOMEGA        1.0  
-AZGRAPH        1  
-AZPOLY         5  
+SOLVER         UMFPACK
 PARTITION      Cut_Elements
 -----------------------------------------------------STRUCT SOLVER
 --------------------------------------------------------ALE SOLVER
