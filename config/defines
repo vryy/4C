@@ -44,6 +44,7 @@
                     # requires allmost no extra memory
 #BINIO              # binary io
 #NO_TEXT_OUTPUT     # suppress output to text files
+#SOLVE_DIRICH       # solve also for dirichlet dofs
 
 
 
