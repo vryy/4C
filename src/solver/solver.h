@@ -122,18 +122,18 @@ typedef struct _HYPREVARS
 enum _HYPREPRECTYP      hypre_prectyp;    /* type of hypre preconditioner */
 int                     io;               /* flag to set solver quiet */
 int                     maxiter;          /* max iterations allowed */
-int                     numiter;
-double                  resnorm;
-int                     reuse;
-double                  tol;
-int                     kryldim;
-double                  threshold;
-int                     sweep[4];
-int                     ifill;
-double                  dfill;
-int                     bj;
+int                     numiter;          /* number of iterations taken */
+double                  resnorm;          /* residual norm achieved */
+int                     reuse;            /* reuse feature (not yet impl.) */
+double                  tol;              /* user-given tolerance */
+int                     kryldim;          /* dimension of krylov subspace */
+double                  threshold;        /* parameters for amg, see manual */
+int                     sweep[4];         
+int                     ifill;            /* fill in level for ilu */
+double                  dfill;            /* fill in level in percent of the original matrix for ilu and parasails */
+int                     bj;               /* ? */
 
-int                     parasymm;
+int                     parasymm;         /* parasails preconditioner parameters */
 int                     paralevel;
 double                  parathresh;
 double                  parafilter;
@@ -144,7 +144,7 @@ double                  parafilter;
  *----------------------------------------------------------------------*/
 typedef struct _PSUPERLUVARS
 {
-int                     reuse;
+int                     reuse;            /* in progress.... */
 } PSUPERLUVARS;
 
 /*----------------------------------------------------------------------*
@@ -152,11 +152,14 @@ int                     reuse;
  *----------------------------------------------------------------------*/
 typedef struct _LAPACKVARS
 {
-int                     reuse;
+int                     reuse;            /* in progress.... */
 } LAPACKVARS;
 
 /*----------------------------------------------------------------------*
  | a sparse matrix in row/column pointer format          m.gee 12/02    |
+ | this structure holds a distributed sparse matrix for Mumps           |
+ | it uses two integer vectors irn_loc,jcn_loc to hold indicees of an   |
+ | entry in A_loc (see Mumps manual)
  *----------------------------------------------------------------------*/
 typedef struct _RC_PTR
 {
@@ -170,14 +173,13 @@ int                     nnz_total;       /* total number of nonzero entries */
 int                     nnz;             /* number of nonzeros on this proc */
 
 struct _ARRAY           update;          /* sorted list of dofs updated on this proc */
-/*struct _ARRAY           irn;
-struct _ARRAY           jcn;*/
-struct _ARRAY           irn_loc;
-struct _ARRAY           jcn_loc;
-struct _ARRAY           A_loc;
-struct _ARRAY           rowptr;
-struct _ARRAY           bindx;
+struct _ARRAY           irn_loc;         /* proc-local row pointer vector */
+struct _ARRAY           jcn_loc;         /* proc-local column pointer vector */
+struct _ARRAY           A_loc;           /* values of the matrix */
+struct _ARRAY           rowptr;          /* int vector holding the begin of each row in irn_loc */
+struct _ARRAY           bindx;           /* aztec style proc-local indicee-vector */
 
+/* some arrays that are used for parallel assembly, mainly in the case of inter-proc-coupling conditions */
 #ifdef PARALLEL 
 int                     numcoupsend;     /* number of coupling information to be send by this proc */
 int                     numcouprecv;     /* number of coupling information to be recv. by this proc */
@@ -190,6 +192,7 @@ struct _ARRAY          *couple_i_recv;
 
 /*----------------------------------------------------------------------*
  | a dense matrix                                        m.gee 11/01    |
+ | this structure holds a dense matrix to be solved with lapack         |
  *----------------------------------------------------------------------*/
 typedef struct _DENSE
 {
@@ -209,6 +212,7 @@ int                     lwork;           /* work space for sym. Lapack solver */
 struct _ARRAY           work;            /* work space for sym. Lapack solver */
 
 
+/* some arrays that are used for parallel assembly, mainly in the case of inter-proc-coupling conditions */
 #ifdef PARALLEL 
 int                     numcoupsend;     /* number of coupling information to be send by this proc */
 int                     numcouprecv;     /* number of coupling information to be recv. by this proc */
@@ -221,6 +225,7 @@ struct _ARRAY          *couple_i_recv;
 
 /*----------------------------------------------------------------------*
  | a uccHB matrix                                        m.gee 11/01    |
+ | unsym compressed harwell Boeing matrix, to be used with SuperLU
  *----------------------------------------------------------------------*/
 typedef struct _UCCHB
 {
@@ -235,12 +240,12 @@ int                     nnz;              /* number of nonzeros on this proc */
 
 struct _ARRAY           update;           /* list of dofs updated on this proc */
 struct _ARRAY           a;                /* the ucchb matrix */
-struct _ARRAY           asub;
-struct _ARRAY           asub_backup;
-struct _ARRAY           asub_perm_backup;
-struct _ARRAY           xa;
-struct _ARRAY           xa_backup;
-struct _ARRAY           xa_perm_backup;
+struct _ARRAY           asub;             /* pointer vector of the ucchb */
+struct _ARRAY           asub_backup;      /* backup of pointer vector of the ucchb */
+struct _ARRAY           asub_perm_backup; /* backup of permuted pointer vector of the ucchb */
+struct _ARRAY           xa;               /* pointer vector of the ucchb */
+struct _ARRAY           xa_backup;        /* backup of pointer vector of the ucchb */
+struct _ARRAY           xa_perm_backup;   /* permuted backup of pointer vector of the ucchb */
 
 #ifdef PARALLEL 
 #ifdef PARSUPERLU_PACKAGE
@@ -252,6 +257,7 @@ LUstruct_t              LUstruct;         /* structure for the L & U decompositi
 SuperMatrix             A;                /* the matrix structure */
 #endif
 
+/* some arrays that are used for parallel assembly, mainly in the case of inter-proc-coupling conditions */
 int                     numcoupsend;     /* number of coupling information to be send by this proc */
 int                     numcouprecv;     /* number of coupling information to be recv. by this proc */
 struct _ARRAY          *couple_d_send;   /* send and receive buffers if necessary */
@@ -263,6 +269,7 @@ struct _ARRAY          *couple_i_recv;
 
 /*----------------------------------------------------------------------*
  | a ParCSR matrix                                        m.gee 5/01    |
+ | matrix in distributed compressed sparse row format (PCSR)for HYPRE   |
  *----------------------------------------------------------------------*/
 typedef struct _H_PARCSR
 {
@@ -279,11 +286,12 @@ struct _ARRAY           update;              /* ascending list of dofs on all pr
 struct _ARRAY           bindx;               /* see documenation for DMSR format (Aztec2.1) */
 
 #ifdef HYPRE_PACKAGE
-HYPRE_IJMatrix          ij_matrix;           /* the matrix itself, hidden away */
+HYPRE_IJMatrix          ij_matrix;           /* the matrix itself, hidden away by Hypre*/
 HYPRE_Solver            solver;              /* hypre solver structure */
 HYPRE_Solver            precond;             /* hypre preconditioner structure */
 #endif
 
+/* some arrays that are used for parallel assembly, mainly in the case of inter-proc-coupling conditions */
 #ifdef PARALLEL 
 int                     numcoupsend;     /* number of coupling information to be send by this proc */
 int                     numcouprecv;     /* number of coupling information to be recv. by this proc */
@@ -296,6 +304,7 @@ struct _ARRAY          *couple_i_recv;
 
 /*----------------------------------------------------------------------*
  | a DMSR Matrix (Distributed Modified Sparse Row format) m.gee 5/01    |
+ | matrix in dist. modified sparse row format (DMSR) for Aztec2.1       |
  *----------------------------------------------------------------------*/
 typedef struct _AZ_ARRAY_MSR
 {
@@ -310,9 +319,9 @@ struct _ARRAY           update;           /* list of dofs updated on this proc *
 int                     shift;            /* binary shift for searching in update */
 int                    *bins;             /* binary mirror of update */
 struct _ARRAY           bindx;            /* the sparse matrix */
-struct _ARRAY           bindx_backup;
-struct _ARRAY           val;
-struct _ARRAY           val_backup;
+struct _ARRAY           bindx_backup;     /* backup of bindx, as bindx is altered by solver */
+struct _ARRAY           val;              /* values of matrix */
+struct _ARRAY           val_backup;       /* backup of values of matrix as val is altered by solver */
 
 #ifdef AZTEC_PACKAGE
 double                  params[AZ_PARAMS_SIZE];    /* Aztec parameters */
@@ -329,6 +338,7 @@ AZ_MATRIX              *Amat;                      /* the matrix object */
 AZ_PRECOND             *Aprec;                     /* the preconditioner object */
 #endif
 
+/* some arrays that are used for parallel assembly, mainly in the case of inter-proc-coupling conditions */
 #ifdef PARALLEL 
 int                     numcoupsend;     /* number of coupling information to be send by this proc */
 int                     numcouprecv;     /* number of coupling information to be recv. by this proc */
@@ -341,6 +351,11 @@ struct _ARRAY          *couple_i_recv;
 
 /*----------------------------------------------------------------------*
  | a distributed vector for solution                      m.gee 6/01    |
+ | a vector distributed among processors.                               |
+ | each processor holds a piece of size numeq of the vector, the total  |
+ | size of vector is numeq_total                                        |
+ | the layout of the vector in general suits the data format of one of  |
+ | the sparse matrix formats above                                      |
  *----------------------------------------------------------------------*/
 typedef struct _DIST_VECTOR
 {
@@ -352,12 +367,16 @@ struct _ARRAY           vec;             /* local piece of distr. vector */
 /*----------------------------------------------------------------------*
  | put the prototypes of all                                            |
  | routines that have contact to solution.h in here                     |
+ | the global variable solv and the head solution.h is not visible      |
+ | from everywhere in the code, so the prototypes of all functions using|
+ | structurs declared in solution.h are in here and not in prototypes.h |
  |                                                       m.gee 11/00    |
  *----------------------------------------------------------------------*/
 #include "prototypes_sol.h"
 /*----------------------------------------------------------------------*
  | define the global structure solv                                     |
  |                                                                      |
+ | global variable *solv, vector of lenght numfld of structures SOLVAR  |
  |                                                       m.gee 11/00    |
  *----------------------------------------------------------------------*/
 SOLVAR            *solv;

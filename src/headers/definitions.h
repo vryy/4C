@@ -25,7 +25,7 @@
 #define FABS(x)   ((x) < 0.0 ? (-(x)) : (x))
 
 /*----------------------------------------------------------------------*
- | squared of a double                                                  |
+ | square of a double                                                   |
  *----------------------------------------------------------------------*/
 static double dsqrarg;
 #define DSQR(a) ((dsqrarg=(a)) == 0.0 ? 0.0 : dsqrarg*dsqrarg)
@@ -88,11 +88,6 @@ static int iminarg1,iminarg2;
  | maximum number of dofs to an element                                 |
  *----------------------------------------------------------------------*/
 #define MAXDOFPERELE     (MAXNOD*MAXDOFPERNODE)
-
-/*----------------------------------------------------------------------*
- | maximum number of result to one gaussian point                       |
- *----------------------------------------------------------------------*/
-#define MAXRESULTPERGP     (18)
 
 /*----------------------------------------------------------------------*
  | maximum number nonzero entries in a row of a sparse system matrix    |
