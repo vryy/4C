@@ -4,6 +4,7 @@
 
 ------------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
+#include "../fluid_full/fluid_prototypes.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
@@ -48,19 +49,22 @@ VISUAL2
 void ntavisual()
 {
 int    i;        /* simply a counter                                    */
-int    numfld;   /* number of fields                                    */
-int    numf;     /* number of fluid field                               */
-int    nums;     /* number of structural field                          */
-int    numa;     /* number of ale field                                 */
-int    actnum;   /* number of field, which will be visualised           */
 FIELD *actfield; /* actual field                                        */
 
 #ifdef DEBUG 
 dstrc_enter("ntavisual");
 #endif
 
+
 /*------------------------do initial partitioning of nodes and elements */
 part_fields();
+
+#ifdef D_FLUID
+/*---------------------------------- set dofs for implicit free surface */
+if (genprob.numff>=0) fluid_freesurf_setdofs();
+/*----------------------------- modify coordinates for special problems */
+if (genprob.numff>=0) fluid_modcoor();
+#endif
 
 /*------------------------------------------------ assign dofs to nodes */
 for(i=0; i<genprob.numfld; i++)
@@ -91,7 +95,7 @@ case 2: /* 2D - Problem: Visualisation with VISUAL2*/
       if (actfield->fieldtyp==fluid)
       {
          printf("   Visualisation of a single field problem: FLUID\n");
-	 vis2caf(0); 
+	 vis2caf(0,-1,-1); 
       }
       else if (actfield->fieldtyp==structure)
       {
@@ -103,43 +107,31 @@ case 2: /* 2D - Problem: Visualisation with VISUAL2*/
       }
    break;
    default: /* multi field problem */
-      dserror("Visualisation of multi field problem not implemented yet!\n");
-/*      printf("Visualisation of a multi field problem:\n");
       printf("\n");
-      printf("Number of fields: %d\n",numfld);
+      printf("   Visualisation of a multi field problem:\n");
+      printf("   Number of fields: %d\n",numfld);
       printf("\n");
-      for (i=0;i<numfld;i++)
-      {
-         actfield=&(field[i]);
-         if (actfield->fieldtyp==fluid)
-         break;
-	 numf=i;
-      }
-      printf("Actual number of FLUID field:      %d\n",numf);
-      for (i=0;i<numfld;i++)
-      {
-         actfield=&(field[i]);
-         if (actfield->fieldtyp==strcuture)
-         break;
-	 nums=i;
-      }
-      printf("Actual number of STRUCTURE field:  %d\n",nums); 
-      for (i=0;i<numfld;i++)
-      {
-         actfield=&(field[i]);
-         if (actfield->fieldtyp==strcuture)
-         break;
-	 numa=i;
-      }
-      printf("Actual number of ALE field:        %d\n",numa);            
+      
+      numff = genprob.numff;
+      numaf = genprob.numaf;
+      numsf = genprob.numsf;
+      
+      if (genprob.numsf>=0)
+      printf("   Actual number of STRUCTURE field:  %d\n",numsf); 
+      if (genprob.numff>=0)
+      printf("   Actual number of FLUID field:      %d\n",numff);
+      if (genprob.numaf>=0)
+      printf("   Actual number of ALE field:        %d\n",numaf);            
       printf("\n");
-      printf("Which field do you want to visualise?\n);
-      scanf(&actnum);
-      if(actnum==numf) vis2caf(numf);
-      if(actnum==nums) vis2cas(nums);
+      printf("   Which field do you want to visualise?\n");
+      scanf("%d",&actnum);
+      if(actnum==numff) vis2caf(numff,numaf,numsf);
+      else
+      dserror("Visualisation of ale/struct problem not implemented yet!\n");
+/*      if(actnum==nums) vis2cas(nums);
       if(actnum==numa) vis2caa(numa);               */
    } /* end switch(numfld) */   
-   break;
+break;
 /*----------------------------------------------------------------------*/
 #else
    dserror("VISUAL2 package is not compiled in!!!\n");
