@@ -1,0 +1,226 @@
+#!/bin/sh
+#==========================================
+# bash script to compile ccarat for each
+# commented input file, run the file and
+# analyze the output.
+#
+#                           (C) by mn 02/04
+#==========================================
+
+
+# some usability tests
+if [ "x$1" = "x" ]; then
+  echo "usage: $0  typ config-file-name [input-file]"
+  echo "typ = all, rel, single"
+  exit 1
+fi
+
+if [ "x$2" = "x" ]; then
+  echo "usage: $0 typ config-file-name [input-file]"
+  echo "typ = all, rel, single"
+  exit 1
+fi
+
+if [ ! -s "$2" ]; then
+  echo $0: file not found: $1
+  exit 1
+fi
+
+
+# initialize some counters
+fail1=0
+pass1=0
+fail2=0
+pass2=0
+total=0
+number=0
+s_time=0
+e_time=0
+
+# variables used for creating the makefile
+makefile="Makefile.test"
+definefile="config/defines.test"
+reldefinefile="config/release_defs"
+configfile="$2"
+NODEPS=yes
+
+
+# prepare clean up
+function cleanup
+{
+    #echo cleanup
+    make -f $makefile clean >/dev/null
+    rm -f test.tmp test_out_* $exe make.log $makefile $definefile
+
+    # remove hook
+    trap "echo" 0 1 2 15
+    exit
+}
+
+trap "cleanup" 0 1 2 15
+
+
+# remove all output files from previous runs
+rm -f *.dat.scr *.dat.make.log
+
+# figure out whether we are parallel or not
+touch "$definefile"
+. "./$configfile"
+
+
+
+# create the list of files for the different typs of testing
+if [ "x$1" = "xall" ]; then
+
+  # test all files
+  if [ "x$PARALLEL" = "xno" ]; then
+    typ=2
+  else
+    typ=3
+  fi
+
+  # create the list
+  liste=`awk '{ if ($'$typ' ~ /[xX]/) print $1 }' testing/list_of_files`
+
+elif [ "x$1" = "xrel" ]; then
+
+  # test all files using one exe
+  cat $reldefinefile > $definefile
+  if [ "x$PARALLEL" = "xno" ]; then
+    typ=4
+  else
+    typ=5
+  fi
+
+  # create the list
+  liste=`awk '{ if ($'$typ' ~ /[xX]/) print $1 }' testing/list_of_files`
+
+elif [ "x$1" = "xsingle" ]; then
+
+  # test only one file
+
+  # check whether the name of the input file was given
+  if [ "x$3" = "x" ]; then
+    echo "usage: $0 single config-file-name input-file"
+    exit 1
+  fi
+  # check whether the input file exists
+  if [ ! -s "$3" ]; then
+    echo $0: file not found: $1
+    exit 1
+  fi
+
+  # create the list
+  liste=$3
+
+else
+  # unknown test typ
+  echo "ERROR: Unknown typ of testing!!"
+  echo "usage: $0  typ config-file-name [input-file]"
+  echo "typ = all, rel, single"
+  exit 1
+fi
+
+
+# count files in list
+for file in $liste; do
+  total=`expr $total + 1`
+done
+
+
+# get the start-time in seconds:
+h=`date +"%H"`
+m=`date +"%M"`
+s=`date +"%S"`
+st_time=`expr $s + 60 \* $m + 60 \* 60 \* $h`
+
+
+# print out some information
+echo
+echo $0 $1 $2 $3
+echo `whoami`@`hostname`
+date
+echo $configfile
+echo
+echo 'BEGIN OF TEST ========================================'
+
+
+# select the correct testing procedure
+if [ "x$1" = "xall" ]; then
+
+  # test all files
+  . ./testing/loop_all.sh
+
+elif [ "x$1" = "xrel" ]; then
+
+  # test all files using one exe
+  . ./testing/loop_rel.sh
+
+elif [ "x$1" = "xsingle" ]; then
+
+  # test only one file
+  . ./testing/loop_all.sh
+
+else
+
+  # unknown test typ
+  echo "ERROR: Unknown typ of testing!!"
+  echo "usage: $0  typ config-file-name [input-file]"
+  echo "typ = all, rel, single"
+  exit 1
+
+fi
+
+
+# write final time to the screen
+echo
+echo 'END OF TEST =========================================='
+echo
+
+# get the end-time in seconds:
+h=`date +"%H"`
+m=`date +"%M"`
+s=`date +"%S"`
+et_time=`expr $s + 60 \* $m + 60 \* 60 \* $h`
+ttime=`expr $et_time - $st_time`
+mins=`expr $ttime / 60`
+secs=`expr $ttime % 60`
+echo 'Total time:'
+if [ $secs -le 9 ]; then
+  echo ''$mins':0'$secs' mins:secs'
+else
+  echo ''$mins':'$secs' mins:secs'
+fi
+echo
+
+
+# write table with result to the screen
+echo '-----------------------------'
+printf '| '
+printf $total' files    '
+if [ $total -le 9 ]; then
+  printf ' '
+fi
+printf '| pass | fail |\n'
+echo '|-------------|------|------|'
+printf "| compilation |  "
+if [ $pass1 -le 9 ]; then
+  printf ' '
+fi
+printf $pass1'  |  '
+if [ $fail1 -le 9 ]; then
+  printf ' '
+fi
+printf $fail1'  |\n'
+echo '|-------------|------|------|'
+printf "| running     |  "
+if [ $pass2 -le 9 ]; then
+  printf ' '
+fi
+printf $pass2'  |  '
+if [ $fail2 -le 9 ]; then
+  printf ' '
+fi
+printf $fail2'  |\n'
+echo '-----------------------------'
+echo
