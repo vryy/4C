@@ -161,9 +161,70 @@ dstrc_exit();
 #endif
 return;
 } /* end of w1_funct_deriv */
+
+/*----------------------------------------------------------------------*
+ | shape functions and derivatives                        genk 10/02    |
+ | for a degenerated 2D isoparametric element                           |
+ *----------------------------------------------------------------------*/
+void w1_degfuncderiv(double     *funct, 
+                      double    **deriv, 
+                      double      r, 
+                      DIS_TYP     typ,
+                      int         option)
+{
+int            i, ii;
+const double   q12 = ONE/TWO;
+const double   q14 = ONE/FOUR;
+const double   q16 = ONE/SIX;
+double         rr,ss,rp,rm,sp,sm,r2,s2;
+double         rh,sh,rs,rhp,rhm,shp,shm;
+#ifdef DEBUG 
+dstrc_enter("w1_edgefuncderiv");
+#endif
 /*----------------------------------------------------------------------*/
-#endif /*D_WALL1*/
-/*! @} (documentation module close)*/
+/* if option ==0 only funtion evaluation, if option==1 also derivatives */
+/*----------------------------------------------------------------------*/
+rr = r*r;
+rp = ONE+r;
+rm = ONE-r;
+r2 = 1.0-rr;
+
+switch(typ)
+{
+/*------------------------------------------------ rectangular elements */
+case quad4: case tri3:/*-------------- linear rectangular interpolation */
+   funct[0] = q12*rm;
+   funct[1] = q12*rp;
+   if (option==1)              /*--- check for derivative evaluation ---*/
+   {
+      deriv[0][0]= -q12;
+      deriv[0][1]=  q12;
+   }
+break;
+case quad8: case quad9: case tri6:/*---------- quadratic interpolation  */
+/*   dserror("quadratic interpolation for deg. funcs not checked yet!\n");*/
+   funct[0] = -q12*r*rm;
+   funct[1] = r2;
+   funct[2] = q12*r*rp;
+   if (option==1)              /*--- check for derivative evaluation ---*/
+   {
+      deriv[0][0]= -q12+r;
+      deriv[0][1]= -TWO*r;
+      deriv[0][2]=  q12+r;                  
+   }
+break;
+default:
+   dserror("unknown typ of interpolation");
+break;
+} /* end of switch typ */
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of w1_funct_deriv */
+
+#endif
 
 
 
