@@ -103,10 +103,12 @@ static  INT        *invbindx = NULL;
   INT       **cdofs;
   INT         ncdofs;
 
+#if 0  /* coupling not yet implemented */
 #ifdef PARALLEL
   INT         nsend;
   INT       **isend;
   DOUBLE    **dsend;
+#endif
 #endif
 
   INT         lm[MAXNOD*MAXDOFPERNODE];
@@ -190,10 +192,12 @@ static  INT        *invbindx = NULL;
         }
 
 
+#if 0  /* coupling not yet implemented */
 #ifdef PARALLEL
         nsend = sysa->msr->couple_i_send->fdim;
         isend = sysa->msr->couple_i_send->a.ia;
         dsend = sysa->msr->couple_d_send->a.da;
+#endif
 #endif
 
 
