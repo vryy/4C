@@ -51,13 +51,17 @@ static FLUID_DYNAMIC   *fdyn;
 In this routine the element stiffness matrix, iteration-RHS and
 time-RHS for one fluid2 element is calculated
 
+NOTE:
+Iteration-RHS has been renamed to eforce and etforce has been removed
+since the part of the right hand side connected to old time step values
+is now served within the mass-rhs procedure after element integration.
+                                                             chfoe 02/05
+
 </pre>
 \param  *ele	   ELEMENT	   (i)    actual element
-\param  *hasext    INT             (i)    element flag
 \param **estif     DOUBLE	   (o)    element stiffness matrix
 \param **emass     DOUBLE	   (o)    element mass matrix
-\param  *etforce   DOUBLE	   (o)    element time force vector
-\param  *eiforce   DOUBLE	   (o)    element iter force vector
+\param  *eforce    DOUBLE	   (o)    element force vector
 \param **xyze      DOUBLE          (-)    nodal coordinates
 \param  *funct     DOUBLE	   (-)    natural shape functions
 \param **deriv     DOUBLE	   (-)	  deriv. of nat. shape funcs
@@ -65,14 +69,8 @@ time-RHS for one fluid2 element is calculated
 \param **xjm	   DOUBLE	   (-)    jacobian matrix
 \param **derxy     DOUBLE	   (-)	  global derivatives
 \param **derxy2    DOUBLE	   (-)    2nd global derivatives
-\param **eveln     DOUBLE	   (i)    ele vel. at time n
 \param **evelng    DOUBLE	   (i)    ele vel. at time n+g
-\param  *epren     DOUBLE	   (-)    ele pres. at time n
-\param  *edeadn    DOUBLE	   (-)    ele dead load (selfweight) at n
-\param  *edeadng   DOUBLE	   (-)    ele dead load (selfweight) at n+1
 \param **vderxy    DOUBLE	   (-)    global vel. derivatives
-\param  *pderxy    DOUBLE	   (-)    global pres. derivatives
-\param **vderxy2   DOUBLE	   (-)    2nd global vel. deriv.
 \param **wa1	   DOUBLE	   (-)    working array
 \param **wa2	   DOUBLE	   (-)    working array
 \param   visc      DOUBLE	   (-)    viscosity
@@ -81,11 +79,9 @@ time-RHS for one fluid2 element is calculated
 ------------------------------------------------------------------------*/
 void f2_calint(
 	       ELEMENT         *ele,
-               INT             *hasext,
                DOUBLE         **estif,
                DOUBLE         **emass,
-               DOUBLE          *etforce,
-               DOUBLE          *eiforce,
+               DOUBLE          *eforce,
                DOUBLE         **xyze,
                DOUBLE          *funct,
                DOUBLE         **deriv,
@@ -93,14 +89,8 @@ void f2_calint(
                DOUBLE         **xjm,
                DOUBLE         **derxy,
                DOUBLE         **derxy2,
-               DOUBLE         **eveln,
                DOUBLE         **evelng,
-               DOUBLE          *epren,
-               DOUBLE          *edeadn,
-               DOUBLE          *edeadng,
                DOUBLE         **vderxy,
-               DOUBLE          *pderxy,
-               DOUBLE         **vderxy2,
                DOUBLE         **wa1,
                DOUBLE         **wa2,
                DOUBLE           visc
@@ -121,7 +111,6 @@ DOUBLE    det;        /* determinant of jacobian matrix                 */
 DOUBLE    e1,e2;      /* natural coordinates of integr. point           */
 DOUBLE    velint[2];
 DOUBLE    covint[2];
-DOUBLE    preint;     /* pressure at integration point                  */
 DIS_TYP   typ;	      /* element type                                   */
 STAB_PAR_GLS *gls;    /* pointer to GLS stabilisation parameters        */
 FLUID_DATA   *data;
@@ -193,7 +182,7 @@ for (lr=0;lr<nir;lr++)
          dserror("typ unknown!");
       } /* end switch(typ) */
 /*--------------------------------------------- compute Jacobian matrix */
-      f2_jaco(xyze,funct,deriv,xjm,&det,iel,ele);
+      f2_jaco(xyze,deriv,xjm,&det,iel,ele);
       fac = facr*facs*det;
 /*-------------------------------------------- compute global derivates */
       f2_gder(derxy,deriv,xjm,det,iel);
@@ -259,80 +248,13 @@ for (lr=0;lr<nir;lr++)
 /*               covint = u*grad(u)                                     */
          f2_covi(vderxy,velint,covint);
 /*-------------------- calculate galerkin part of "Iter-RHS" (vel dofs) */
-         f2_calgalifv(eiforce,covint,funct,fac,iel);
+         f2_calgalifv(eforce,covint,funct,fac,iel);
 /*------------------- calculate stabilisation for "Iter-RHS" (vel dofs) */
-         f2_calstabifv(gls,ele,eiforce,covint,velint,funct,
+         f2_calstabifv(gls,ele,eforce,covint,velint,funct,
 	               derxy,derxy2,fac,visc,ihoel,iel);
 /*------------------- calculate stabilisation for "Iter-RHS" (pre dofs) */
-         f2_calstabifp(gls,&(eiforce[2*iel]),covint,derxy,fac,iel);
+         f2_calstabifp(gls,&(eforce[2*iel]),covint,derxy,fac,iel);
       } /* endif (fdyn->nii!=0) */
-
-/*----------------------------------------------------------------------*
- |       compute "external" Force Vector (b)                            |
- |  dead load may vary over time, but stays constant over               |
- |  the whole domain --> no interpolation with shape funcs              |
- |  parts changing during the nonlinear iteration are added to          |
- |  Iteration Force Vector                                              |
- *----------------------------------------------------------------------*/
-      if (*hasext!=0)
-      {
-/*------- compute stabilisation part of external RHS (vel dofs) at (n+1)*/
-         f2_calstabexfv(gls,ele,eiforce,derxy,derxy2,edeadng,
-	                 velint,fac,visc,iel,ihoel,1);
-/*------ compute stabilisation part of external RHS (pre dofs) at (n+1) */
-         f2_calstabexfp(gls,&(eiforce[2*iel]),derxy,edeadng,fac,iel,1);
-      } /* endif (*hasext!=0 )  */
-
-/*----------------------------------------------------------------------*
- |         compute "Time" Force Vector                                  |
- *----------------------------------------------------------------------*/
-      if (fdyn->nif!=0)
-      {
-/*------------------------------- get pressure (n) at integration point */
-         preint=f2_scali(funct,epren,iel);
-/*------------------- get pressure derivatives (n) at integration point */
-         f2_pder(pderxy,derxy,epren,iel);
-/*----------------------------- get velocities (n) at integration point */
-	 f2_veci(velint,funct,eveln,iel);
-/*------------------- get velocitiederivatives (n) at integration point */
-         f2_vder(vderxy,derxy,eveln,iel);
-/*------------- get 2nd velocities derivatives (n) at integration point */
-	 if (ihoel!=0)
-	    f2_vder2(vderxy2,derxy2,eveln,iel);
-/*------------------ get convective velocities (n) at integration point */
-         f2_covi(vderxy,velint,covint);
-/*--------------------- calculate galerkin part of "Time-RHS" (vel-dofs)*/
-         f2_calgaltfv(etforce,velint,covint,
-	              funct,derxy,vderxy,preint,visc,fac,iel);
-/*-------------------- calculate galerkin part of "Time-RHS" (pre-dofs) */
-         f2_calgaltfp(&(etforce[2*iel]),funct,vderxy,fac,iel);
-/*------------------- calculate stabilisation for "Time-RHS" (vel-dofs) */
-         f2_calstabtfv(gls,ele,etforce,velint,velint,
-	               covint,derxy,derxy2,vderxy,vderxy2,
-		       pderxy,fac,visc,ihoel,iel);
-
-/*------------------- calculate stabilisation for "Time-RHS" (pre-dofs) */
-         f2_calstabtfp(ele,gls,&(etforce[2*iel]),derxy,vderxy2,
-                       velint,covint,pderxy,visc,fac,ihoel,iel);
-
-/*----------------------------------------------------------------------*
-            | compute "external" Force Vector (b)                       |
-            |  dead load may vary over time, but stays constant over    |
-	    |  the whole domain --> no interpolation with shape funcs   |
-            |  parts staying constant during nonlinear iteration are    |
-            |  add to Time Force Vector                                 |
- *----------------------------------------------------------------------*/
-         if (*hasext!=0)
-	 {
-/*--- compute galerkin part of external RHS (vel dofs) at (n) and (n+1) */
-            f2_calgalexfv(etforce,funct,edeadn,edeadng,fac,iel);
-/*-------- compute stabilisation part of external RHS (vel dofs) at (n) */
-            f2_calstabexfv(gls,ele,etforce,derxy,derxy2,edeadn,
-	                   velint,fac,visc,iel,ihoel,0);
-/*--------------- compute stabilistaion part of external RHS (pre dofs) */
-            f2_calstabexfp(gls,&(etforce[2*iel]),derxy,edeadn,fac,iel,0);
-         } /* endif (*hasext!=0) */
-      } /* endif  (fdyn->nif!=0) */
    } /* end of loop over integration points ls*/
 } /* end of loop over integration points lr */
 /*----------------------------------------------------------------------*/
@@ -352,12 +274,10 @@ time-RHS for one fluid2 element is calculated
 
 </pre>
 \param  *ele       ELEMENT          (i)    actual element
-\param  *hasext    INT              (i)    element flag
 \param   imyrank   INT              (i)    proc number
 \param **estif     DOUBLE           (o)    element stiffness matrix
 \param **emass     DOUBLE           (o)    element mass matrix
-\param  *etforce   DOUBLE           (o)    element time force vector
-\param  *eiforce   DOUBLE           (o)    element iter force vector
+\param  *eforce    DOUBLE           (o)    element force vector
 \param **xyze      DOUBLE           (-)    nodal coordinates at n+theta
 \param  *funct     DOUBLE           (-)    natural shape functions
 \param **deriv     DOUBLE           (-)	   deriv. of nat. shape funcs
@@ -367,15 +287,9 @@ time-RHS for one fluid2 element is calculated
 \param **derxy2    DOUBLE           (-)    2nd global derivatives
 \param **eveln     DOUBLE           (i)    ele vel. at time n
 \param **evelng    DOUBLE           (i)    ele vel. at time n+g
-\param **ealecovn  DOUBLE           (i)    ele ale-conv. vel. at time n
 \param **ealecovng DOUBLE           (i)    ele ale-conv. vel. at time n+1
 \param **egridv    DOUBLE           (i)    ele grid velocity
-\param  *epren     DOUBLE           (-)    ele pres. at time n
-\param  *edeadn    DOUBLE           (-)    ele dead load (selfweight) at n
-\param  *edeadng   DOUBLE           (-)    ele dead load (selfweight) at n+1
 \param **vderxy    DOUBLE           (-)    global vel. derivatives
-\param  *pderxy    DOUBLE           (-)    global pres. derivatives
-\param **vderxy2   DOUBLE           (-)    2nd global vel. deriv.
 \param  *ekappan   DOUBLE           (i)    nodal curvature at n
 \param  *ekappang  DOUBLE           (i)    nodal curvature at n+g
 \param **wa1       DOUBLE           (-)    working array
@@ -385,12 +299,10 @@ time-RHS for one fluid2 element is calculated
 ------------------------------------------------------------------------*/
 void f2_calinta(
                   ELEMENT         *ele,
-                  INT             *hasext,
                   INT              imyrank,
                   DOUBLE         **estif,
                   DOUBLE         **emass,
-                  DOUBLE          *etforce,
-                  DOUBLE          *eiforce,
+                  DOUBLE          *eforce,
                   DOUBLE         **xyze,
                   DOUBLE          *funct,
                   DOUBLE         **deriv,
@@ -400,21 +312,14 @@ void f2_calinta(
                   DOUBLE         **derxy2,
                   DOUBLE         **eveln,
                   DOUBLE         **evelng,
-                  DOUBLE         **ealecovn,
                   DOUBLE         **ealecovng,
                   DOUBLE         **egridv,
-                  DOUBLE          *epren,
-                  DOUBLE          *edeadn,
-                  DOUBLE          *edeadng,
                   DOUBLE         **vderxy,
-                  DOUBLE          *pderxy,
-                  DOUBLE         **vderxy2,
                   DOUBLE          *ekappan,
                   DOUBLE          *ekappang,
                   DOUBLE          *ephin,
                   DOUBLE          *ephing,
                   DOUBLE         **evnng,
-                  DOUBLE         **evnn,
                   DOUBLE         **wa1,
                   DOUBLE         **wa2
                )
@@ -438,19 +343,16 @@ DOUBLE    fac;
 DOUBLE    facr, facs; /* integration weights                            */
 DOUBLE    det;        /* determinant of jacobian matrix                 */
 DOUBLE    e1,e2;      /* natural coordinates of integr. point           */
-DOUBLE    preint;     /* pressure at integration point                  */
 DOUBLE    velint[2];
 DOUBLE    vel2int[2];
 DOUBLE    alecovint[2];
 DOUBLE    gridvint[2];
 DOUBLE    covint[2];
 DOUBLE    vnint[2];
-DOUBLE    vn2int[2];
 DOUBLE    vn[2];      /* component of normal vector                     */
 DOUBLE    sigmaint;   /* surface tension                                */
 DOUBLE    gamma;      /* surface tension coeficient                     */
 DOUBLE    phiintn,phiintng,phiderxn,phiderxng;
-DOUBLE    length;
 DIS_TYP   typ;	      /* element type                                   */
 INT       iedgnod[MAXNOD_F2];
 INT       line,ngnode;
@@ -529,7 +431,7 @@ for (lr=0;lr<nir;lr++)
          dserror("typ unknown!");
       } /* end switch(typ) */
 /*--------------------------------------------- compute Jacobian matrix */
-      f2_jaco(xyze,funct,deriv,xjm,&det,iel,ele);
+      f2_jaco(xyze,deriv,xjm,&det,iel,ele);
       fac = facr*facs*det;
 /*-------------------------------------------- compute global derivates */
       f2_gder(derxy,deriv,xjm,det,iel);
@@ -608,79 +510,13 @@ for (lr=0;lr<nir;lr++)
 /*               covint = c*grad(u)                                     */
          f2_covi(vderxy,alecovint,covint);
 /*-------------------- calculate galerkin part of "Iter-RHS" (vel dofs) */
-         f2_calgalifv(eiforce,covint,funct,fac,iel);
+         f2_calgalifv(eforce,covint,funct,fac,iel);
 /*------------------- calculate stabilisation for "Iter-RHS" (vel dofs) */
-         f2_calstabifv(gls,ele,eiforce,covint,alecovint,funct,
+         f2_calstabifv(gls,ele,eforce,covint,alecovint,funct,
                         derxy,derxy2,fac,visc,ihoel,iel);
 /*------------------- calculate stabilisation for "Iter-RHS" (pre dofs) */
-         f2_calstabifp(gls,&(eiforce[2*iel]),covint,derxy,fac,iel);
+         f2_calstabifp(gls,&(eforce[2*iel]),covint,derxy,fac,iel);
       } /* endif (fdyn->nii!=0) */
-
-/*----------------------------------------------------------------------*
- |       compute "external" Force Vector (b)                            |
- |  dead load may vary over time, but stays constant over               |
- |  the whole domain --> no interpolation with shape funcs              |
- |  parts changing during the nonlinear iteration are added to          |
- |  Iteration Force Vector                                              |
- *----------------------------------------------------------------------*/
-      if (*hasext!=0)
-      {
-/*------- compute stabilisation part of external RHS (vel dofs) at (n+1)*/
-         f2_calstabexfv(gls,ele,eiforce,derxy,derxy2,edeadng,
-                         alecovint,fac,visc,iel,ihoel,1);
-/*------ compute stabilisation part of external RHS (pre dofs) at (n+1) */
-         f2_calstabexfp(gls,&(eiforce[2*iel]),derxy,edeadng,fac,iel,1);
-      } /* endif (*hasext!=0 && ele->e.f2->istabi>0)  */
-/*----------------------------------------------------------------------*
- |         compute "Time" Force Vector                                  |
- *----------------------------------------------------------------------*/
-      if (fdyn->nif!=0)
-      {
-/*------------------------------- get pressure (n) at integration point */
-         preint=f2_scali(funct,epren,iel);
-/*------------------- get pressure derivatives (n) at integration point */
-         f2_pder(pderxy,derxy,epren,iel);
-/*----------------------------- get velocities (n) at integration point */
-         f2_veci(velint,funct,eveln,iel);
-/*-------------- get ale-convective velocities (n) at integration point */
-         f2_veci(alecovint,funct,ealecovn,iel);
-/*------------------- get velocity derivatives (n) at integration point */
-         f2_vder(vderxy,derxy,eveln,iel);
-/*------------- get 2nd velocities derivatives (n) at integration point */
-         if (ihoel!=0) f2_vder2(vderxy2,derxy2,eveln,iel);
-/*------------------ get convective velocities (n) at integration point
-                     covint = c * grad(u)                               */
-         f2_covi(vderxy,alecovint,covint);
-/*--------------------- calculate galerkin part of "Time-RHS" (vel-dofs)*/
-         f2_calgaltfv(etforce,velint,covint,
-                      funct,derxy,vderxy,preint,visc,fac,iel);
-/*-------------------- calculate galerkin part of "Time-RHS" (pre-dofs) */
-         f2_calgaltfp(&(etforce[2*iel]),funct,vderxy,fac,iel);
-/*------------------- calculate stabilisation for "Time-RHS" (vel-dofs) */
-         f2_calstabtfv(gls,ele,etforce,alecovint,velint,
-                       covint,derxy,derxy2,vderxy,vderxy2,
-                       pderxy,fac,visc,ihoel,iel);
-/*------------------- calculate stabilisation for "Time-RHS" (pre-dofs) */
-         f2_calstabtfp(ele,gls,&(etforce[2*iel]),derxy,vderxy2,
-                       velint,covint,pderxy,visc,fac,ihoel,iel);
-/*----------------------------------------------------------------------*
-            | compute "external" Force Vector (b)                       |
-            |  dead load may vary over time, but stays constant over    |
-            |  the whole domain --> no interpolation with shape funcs   |
-            |  parts staying constant during nonlinear iteration are    |
-            |  add to Time Force Vector                                 |
- *----------------------------------------------------------------------*/
-         if (*hasext!=0)
-         {
-/*--- compute galerkin part of external RHS (vel dofs) at (n) and (n+1) */
-            f2_calgalexfv(etforce,funct,edeadn,edeadng,fac,iel);
-/*-------- compute stabilisation part of external RHS (vel dofs) at (n) */
-            f2_calstabexfv(gls,ele,etforce,derxy,derxy2,edeadn,
-                           alecovint,fac,visc,iel,ihoel,0);
-/*--------------- compute stabilistaion part of external RHS (pre dofs) */
-            f2_calstabexfp(gls,&(etforce[2*iel]),derxy,edeadn,fac,iel,0);
-         } /* endif (*hasext!=0) */
-      } /* endif  (fdyn->nif!=0) */
    } /* end of loop over integration points ls*/
 } /* end of loop over integration points lr */
 
@@ -730,7 +566,7 @@ if (ele->e.f2->fs_on==2)  /* element at free surface (local lagrange)   */
    	 facr = data->qwgt[lr][nil-1];
    	 f2_degrectri(funct,deriv,e1,typ,1);
    	 /*------------------------------- compute jacobian determinant */
-     	 f2_edgejaco(xyze,funct,deriv,xjm,&det,ngnode,iedgnod);
+     	 f2_edgejaco(xyze,deriv,xjm,&det,ngnode,iedgnod);
      	 fac = det*facr;
      	 /*--------------------------------- compute matrix Kgv and Kgg */
      	 f2_calkgedge(estif,funct,fac,iedgnod,iel,ngnode);
@@ -753,10 +589,15 @@ if (ele->e.f2->fs_on==2)  /* element at free surface (local lagrange)   */
 	     *----------------------------------------------------------*/
      	    if (fdyn->fsstnif!=0)
 	    {
+            dserror("Surface tension rhs has to be checked by S. Genkinger");
+            /* Im Rahmen der Umstellung auf die Verwendung der Massen-
+               RHS wird etforce abgeschafft. Die korrekte Integration der
+               Oberflaechenspannungseinfluesse muss ueberprueft werden! 
+               chfoe 02/05 */
 	       /*------ calculate surface tension at gauss point at (n) */
                sigmaint = gamma*f2_edgescali(funct,ekappan,iedgnod,ngnode);
 	       /*------------ calculate Time-RHS due to surface tension */
-               f2_calsurftenfv(etforce,funct,vn,sigmaint,
+               f2_calsurftenfv(eforce,funct,vn,sigmaint,
                               fdyn->thsl,facr,ngnode,iedgnod);
             } /* endif (fdyn->fsstnif!=0) */
 	    /*----------------------------------------------------------*
@@ -764,10 +605,15 @@ if (ele->e.f2->fs_on==2)  /* element at free surface (local lagrange)   */
 	     *----------------------------------------------------------*/
             if (fdyn->fsstnii!=0)
             {
+            dserror("Surface tension rhs has to be checked by S. Genkinger");
+            /* Im Rahmen der Umstellung auf die Verwendung der Massen-
+               RHS wird etforce abgeschafft. Die korrekte Integration der
+               Oberflaechenspannungseinfluesse muss ueberprueft werden! 
+               chfoe 02/05 */
                /*---- calculate surface tension at gauss point at (n+1) */
                sigmaint = gamma*f2_edgescali(funct,ekappang,iedgnod,ngnode);
                /*------------ calculate Iter-RHS due to surface tension */
-               f2_calsurftenfv(etforce,funct,vn,sigmaint,
+               f2_calsurftenfv(eforce,funct,vn,sigmaint,
                                fdyn->thsr,facr,ngnode,iedgnod);
             } /* endif (fdyn->fsstnii!=0) */
          } /* endif (fdyn->surftens>0) */
@@ -839,7 +685,7 @@ else if (ele->e.f2->fs_on==5) /* element at free surface (height funct) */
          f2_calmat_vhf(emass,estif,funct,derxy,velint,phiderxng,
                            fac,iel,ngnode,iedgnod);
          /*------------------------------------------------ compute RHS */
-         f2_calrhs_vhf(eiforce,velint,vel2int,phiintn,funct,derxy,
+         f2_calrhs_vhf(eforce,velint,vel2int,phiintn,funct,derxy,
                        phiderxng,phiderxn,fac,iel,ngnode,iedgnod);
       } /* end if loop over integration points */
    } /* end of loop over glines */
@@ -894,7 +740,12 @@ else if (ele->e.f2->fs_on==1 && fdyn->surftens>0)
         /*------------ calculate surface tension at gauss point at (n)*/
          sigmaint = gamma*f2_edgescali(funct,ekappan,iedgnod,ngnode);
          /*----------------- calculate Time-RHS due to surface tension */
-         f2_calsurftenfv(etforce,funct,vn,sigmaint,
+         dserror("Surface tension rhs has to be checked by S. Genkinger");
+         /* Im Rahmen der Umstellung auf die Verwendung der Massen-
+            RHS wird etforce abgeschafft. Die korrekte Integration der
+            Oberflaechenspannungseinfluesse muss ueberprueft werden! 
+            chfoe 02/05 */
+         f2_calsurftenfv(eforce,funct,vn,sigmaint,
                         fdyn->thsl,facr,ngnode,iedgnod);
          /*-------------------------------------------------------------*
           |  surface tension effects at (n+1)                           |
@@ -902,7 +753,12 @@ else if (ele->e.f2->fs_on==1 && fdyn->surftens>0)
          /*---------- calculate surface tension at gauss point at (n+1) */
          sigmaint = gamma*f2_edgescali(funct,ekappang,iedgnod,ngnode);
          /*------------------ calculate Time-RHS due to surface tension */
-         f2_calsurftenfv(etforce,funct,vn,sigmaint,
+         dserror("Surface tension rhs has to be checked by S. Genkinger");
+         /* Im Rahmen der Umstellung auf die Verwendung der Massen-
+            RHS wird etforce abgeschafft. Die korrekte Integration der
+            Oberflaechenspannungseinfluesse muss ueberprueft werden! 
+            chfoe 02/05 */
+         f2_calsurftenfv(eforce,funct,vn,sigmaint,
                          fdyn->thsr,facr,ngnode,iedgnod);
       } /* end of loop over integration points */
    } /* end of loop over glines */
@@ -940,7 +796,7 @@ else if(ele->e.f2->fs_on==6)
          facr = data->qwgt[lr][nil-1];
          f2_degrectri(funct,deriv,e1,typ,1);
          /*------------------------------- compute jacobian determinant */
-         f2_edgejaco(xyze,funct,deriv,xjm,&det,ngnode,iedgnod);
+         f2_edgejaco(xyze,deriv,xjm,&det,ngnode,iedgnod);
          fac = det*facr;
          /*--------------------------------- compute normal at intpoint */
          f2_edgeveci(vnint,funct,evnng,ngnode,iedgnod);
