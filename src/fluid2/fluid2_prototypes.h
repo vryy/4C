@@ -17,6 +17,7 @@ void fluid2(
             CALC_ACTION *action,
 	    int         *hasdirich
 	   );
+#ifdef D_FLUID2
 /*----------------------------------------------------------------------*
  | integration points                                      genk 6/01    |
  | this routine is a try to organise the integration parameters         |
@@ -580,3 +581,4 @@ void f2_caldirich(
                   double   **estif, 
 		  int       *hasdirich
 		 ) ;		  	  	 	 		 			      			      		   		   		   		   		   		   		  	 
+#endif
