@@ -345,6 +345,9 @@ void perf_out ()
   perf_print(19,"exchange dofs",           0,1);
   perf_print(20,"solve system",            0,1);
   printf("%77s\n","-----------------------------------------------------------------------------");
+  perf_print(21,"permute fluid matrices",  2,1);
+  perf_print(22,"local co-ord. system",    2,1);
+  printf("%77s\n","-----------------------------------------------------------------------------");
   user_perf = 0;
   for (i=30; i<90; ++i) {
     if (counter[i] > 0) {
