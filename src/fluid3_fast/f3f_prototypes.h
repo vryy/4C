@@ -252,13 +252,15 @@ void f3fcaltf(
     INT     *sizevec
     );
 
-
 void f3fmassrhs(
-    DOUBLE  *emass,
-    DOUBLE  *eaccn,
-    DOUBLE  *eiforce,
-    INT     *sizevec
-    );
+     DOUBLE *emass,
+     DOUBLE *ehist,
+     DOUBLE *edeadng,
+     DOUBLE *eforce,
+     INT    *hasext,
+     DOUBLE *facl,
+     INT    *sizevec
+     );
 
 
 void f3fmast(
@@ -274,8 +276,7 @@ void f3fcalele(
     ELEMENT        *ele[LOOPL],
     ARRAY           *estif_fast,
     ARRAY           *emass_fast,
-    ARRAY           *etforce_fast,
-    ARRAY           *eiforce_fast,
+    ARRAY           *eforce_fast,
     ARRAY           *edforce_fast,
     INT            *hasdirich,
     INT            *hasext,
@@ -291,8 +292,7 @@ void f3fcalint(
     INT             *hasext,
     DOUBLE          *estif_f,
     DOUBLE          *emass_f,
-    DOUBLE          *etforce_f,
-    DOUBLE          *eiforce_f,
+    DOUBLE          *eforce_f,
     DOUBLE          *funct_f,
     DOUBLE          *deriv_f,
     DOUBLE          *deriv2_f,
@@ -378,8 +378,7 @@ void f3fcalint(
         ELEMENT     *ele[LOOPL],
         ARRAY       *estif_fast,
         ARRAY       *emass_fast,
-        ARRAY       *etforce_fast,
-        ARRAY       *eiforce_fast,
+        ARRAY       *eforce_fast,
         ARRAY       *edforce_fast,
         CALC_ACTION *action,
         INT         *hasdirich,
@@ -547,8 +546,7 @@ void f3fcalinta(
     INT             *hasext,
     DOUBLE          *estif,
     DOUBLE          *emass,
-    DOUBLE          *etforce,
-    DOUBLE          *eiforce,
+    DOUBLE          *eforce,
     DOUBLE          *funct,
     DOUBLE          *deriv,
     DOUBLE          *deriv2,
