@@ -574,7 +574,7 @@ void assemble_dirich_dyn(ELEMENT *actele, double *fullvec, int dim,
                          ARRAY *estif_global, ARRAY *emass_global, double *facs)
 {
 int                   i,j;
-int                   counter;
+int                   counter,hasdirich;
 int                   dof;
 int                   numdf;
 int                   iel;
@@ -592,6 +592,18 @@ GNODE                *actgnode;
 dstrc_enter("assemble_dirich_dyn");
 #endif
 /*----------------------------------------------------------------------*/
+/*---------- check presence of any dirichlet conditions to this element */
+hasdirich=0;
+for (i=0; i<actele->numnp; i++)
+{
+   if (actele->node[i]->gnode->dirich != NULL) 
+   {
+      hasdirich=1;
+      break;
+   }
+}
+/*--------------------- there are no dirichlet conditions here so leave */
+if (hasdirich==0) goto end;
 /*--------------------------------------- check for presence of damping */
 if (ABS(facs[7]) > EPS13 || ABS(facs[8]) > EPS13) 
 {
@@ -880,6 +892,7 @@ for (i=0; i<nd; i++)
    fullvec[lm[i]] += dforces[i];
 }
 /*----------------------------------------------------------------------*/
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
