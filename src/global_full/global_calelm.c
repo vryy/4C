@@ -1,6 +1,13 @@
 #include "../headers/standardtypes.h"
 #include "../headers/solution.h"
 /*----------------------------------------------------------------------*
+ | enum _CALC_ACTION                                      m.gee 1/02    |
+ | command passed from control routine to the element level             |
+ | to tell element routines what to do                                  |
+ | defined globally in global_calelm.c                                  |
+ *----------------------------------------------------------------------*/
+enum _CALC_ACTION calc_action[MAXFIELD];
+/*----------------------------------------------------------------------*
  | global dense matrices for element routines             m.gee 7/01    |
  *----------------------------------------------------------------------*/
 struct _ARRAY estif_global;
@@ -8,46 +15,23 @@ struct _ARRAY emass_global;
 /*----------------------------------------------------------------------*
  |  routine to call elements                             m.gee 6/01     |
  *----------------------------------------------------------------------*/
-void calelm(FIELD      *actfield,     /* active field */        
-            SOLVAR     *actsolv,      /* active SOLVAR */
-            PARTITION  *actpart,      /* my partition of this field */
-            INTRA      *actintra,     /* my intra-communicator */
-            int         sysarray1,    /* number of first sparse system matrix */
-            int         sysarray2,    /* number of secnd system matrix, if present, else -1 */
-            double     *dvec,         /* global redundant vector passed to elements */
-            int         global_numeq, /* size of dvec */
-            int         kstep,        /* time in increment step we are in */
-            int         calc_option)  /* calculation option passed to element routines */
-/*----------------------------------------------------------------------*/
-/*
-  calc_options which are already in use:
-    
-    calc_option=0 init the element routines, do no calculation
-    calc_option=1 calc linear structural stiffness matrix 
-    calc_option=2 calc nonlinear structural stiffness matrix and internal forces
-    calc_option=5 calc structural forces and stresses
-    calc_option=6 calc load vector of element loads
-    calc_option=7 Allreduce stress results to make results redundant on all procs
-    
-    Structural Finite elements should use these calc_options.
-    Fluid      Finite elements can use these calc_options with similar meaning,
-               there won't be a conflict
-    Fluid      Finite elements can use these calc_options with other meaning,
-               there won't be a conflict
-    Fluid      Finite elements can use other calc_options and add them to,
-               this list
-               
-    Some of these calc_options call an assembly to a sparse matrix or a dist. vector.!!!!               
-               
-                                                                  m.gee 01/02
-*/
+void calelm(FIELD        *actfield,     /* active field */        
+            SOLVAR       *actsolv,      /* active SOLVAR */
+            PARTITION    *actpart,      /* my partition of this field */
+            INTRA        *actintra,     /* my intra-communicator */
+            int           sysarray1,    /* number of first sparse system matrix */
+            int           sysarray2,    /* number of secnd system matrix, if present, else -1 */
+            double       *dvec,         /* global redundant vector passed to elements */
+            int           global_numeq, /* size of dvec */
+            int           kstep,        /* time in increment step we are in */
+            CALC_ACTION  *action)       /* calculation option passed to element routines */
 /*----------------------------------------------------------------------*/
 {
 int               i;
 ELEMENT          *actele;
 SPARSE_TYP        sysarray1_typ;
 SPARSE_TYP        sysarray2_typ;
-
+ASSEMBLE_ACTION   assemble_action;
 
 #ifdef DEBUG 
 dstrc_enter("calelm");
@@ -144,13 +128,13 @@ for (i=0; i<actpart->numele; i++)
    switch(actele->eltyp)/*======================= call element routines */
    {
    case el_shell8:
-      shell8(actfield,actpart,actintra,actele,&estif_global,&emass_global,dvec,global_numeq,kstep,calc_option);
+      shell8(actfield,actpart,actintra,actele,&estif_global,&emass_global,dvec,global_numeq,kstep,action);
    break;
    case el_brick1:
-      brick1(actpart,actintra,actele,&estif_global,&emass_global,calc_option);
+      brick1(actpart,actintra,actele,&estif_global,&emass_global,action);
    break;
    case el_wall1:
-      wall1( actpart,actintra,actele,&estif_global,&emass_global,calc_option);
+      wall1( actpart,actintra,actele,&estif_global,&emass_global,action);
    break;
    case el_fluid1: 
    break;
@@ -166,30 +150,44 @@ for (i=0; i<actpart->numele; i++)
    }/* end of calling elements */
 
 
-   switch(calc_option)/*=== call assembly dependent on calculation-flag */
+   switch(*action)/*=== call assembly dependent on calculation-flag */
    {
-   case 1:/* in structural field, calculate linear stiffness only, static analysis */
-      assemble(sysarray1,&estif_global,sysarray2,NULL,actpart,actsolv,actintra,actele,0);
-   break;/* end of assembly */
-   case 2:/* in structural field, calculate nonlinear stiffness only, static analysis */
-      assemble(sysarray1,&estif_global,sysarray2,NULL,actpart,actsolv,actintra,actele,0);
-   break;/* end of assembly */
+   case calc_struct_linstiff: assemble_action = assemble_one_matrix; break;
+   case calc_struct_nlnstiff: assemble_action = assemble_one_matrix; break;
+   case calc_struct_eleload : assemble_action = assemble_do_nothing; break;
+   default: dserror("Unknown type of assembly"); break;
    }
+   assemble(sysarray1,
+            &estif_global,
+            sysarray2,
+            &emass_global,
+            actpart,
+            actsolv,
+            actintra,
+            actele,
+            assemble_action);
 }/* end of loop over elements */
 /*----------------------------------------------------------------------*/
 /*                    in parallel coupled dofs have to be exchanged now */
 /*             (if there are any inter-proc couplings, which is tested) */
 /*----------------------------------------------------------------------*/
 #ifdef PARALLEL 
-switch(calc_option)
+switch(*action)
 {
-case 1: /* in structural field, do linear stiffness only, static analysis */
-   assemble(sysarray1,NULL,sysarray2,NULL,actpart,actsolv,actintra,actele,1);
-break;
-case 2: /* in structural field, do nonlinear stiffness only, static analysis */
-   assemble(sysarray1,NULL,sysarray2,NULL,actpart,actsolv,actintra,actele,1);
-break;
+case calc_struct_linstiff: assemble_action = assemble_one_exchange; break;
+case calc_struct_nlnstiff: assemble_action = assemble_one_exchange; break;
+case calc_struct_eleload : assemble_action = assemble_do_nothing; break;
+default: dserror("Unknown type of assembly"); break;
 }
+assemble(sysarray1,
+         NULL,
+         sysarray2,
+         NULL,
+         actpart,
+         actsolv,
+         actintra,
+         actele,
+         assemble_action);
 #endif
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -209,8 +207,9 @@ return;
 /*----------------------------------------------------------------------*
  |  routine to call elements to init                     m.gee 7/01     |
  *----------------------------------------------------------------------*/
-void calinit(FIELD      *actfield,   /* the actove physical field */ 
-             PARTITION  *actpart)    /* my partition of this field */
+void calinit(FIELD       *actfield,   /* the active physical field */ 
+             PARTITION   *actpart,    /* my partition of this field */
+             CALC_ACTION *action)
 {
 int i;                        /* a counter */
 int is_shell8=0;              /* flags to check for presents of certain element types */
@@ -260,17 +259,17 @@ for (i=0; i<actfield->numele; i++)
 /*------------------------------- init all kind of routines for shell8  */
 if (is_shell8==1)
 {
-   shell8(actfield,actpart,NULL,NULL,&estif_global,&emass_global,NULL,0,0,0);
+   shell8(actfield,actpart,NULL,NULL,&estif_global,&emass_global,NULL,0,0,action);
 }
 /*-------------------------------- init all kind of routines for brick1 */
 if (is_brick1==1)
 {
-   brick1(actpart,NULL,NULL,&estif_global,&emass_global,0);
+   brick1(actpart,NULL,NULL,&estif_global,&emass_global,action);
 }
 /*-------------------------------- init all kind of routines for wall1  */
 if (is_wall1==1)
 {
-   wall1(actpart,NULL,NULL,&estif_global,&emass_global,0);
+   wall1(actpart,NULL,NULL,&estif_global,&emass_global,action);
 }
 /*-------------------------------- init all kind of routines for fluid1 */
 if (is_fluid1==1)
@@ -300,10 +299,11 @@ return;
 /*----------------------------------------------------------------------*
  |  in here the element's results are made redundant     m.gee 12/01    |
  *----------------------------------------------------------------------*/
-void calreduce(FIELD      *actfield, /* the active field */
-               PARTITION  *actpart,  /* my partition of this field */
-               INTRA      *actintra, /* the field's intra-communicator */
-               int         kstep)    /* the actual time or incremental step */
+void calreduce(FIELD       *actfield, /* the active field */
+               PARTITION   *actpart,  /* my partition of this field */
+               INTRA       *actintra, /* the field's intra-communicator */
+               CALC_ACTION *action,   /* action for element routines */
+               int          kstep)    /* the actual time or incremental step */
 {
 int i;
 int is_shell8=0;
@@ -345,7 +345,7 @@ for (i=0; i<actfield->numele; i++)
 /*-------------------------------------------reduce results for shell8  */
 if (is_shell8==1)
 {
-   shell8(actfield,actpart,actintra,NULL,NULL,NULL,NULL,0,kstep,7);
+   shell8(actfield,actpart,actintra,NULL,NULL,NULL,NULL,0,kstep,action);
 }
 /*--------------------------------------------reduce results for brick1 */
 if (is_brick1==1)

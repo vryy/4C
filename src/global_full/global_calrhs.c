@@ -11,7 +11,7 @@ void calrhs(FIELD        *actfield,     /* the active field */
             DIST_VECTOR  *rhs1,         /* 2 dist. vectors for rhs */
             DIST_VECTOR  *rhs2,
             int           kstep,        /* actual time or load incremental step */
-            int           calc_option)  /* cal_option to be passed to element routines */
+            CALC_ACTION  *action)       /* action to be passed to element routines */
 {
 int i;
 SPARSE_TYP   *sysarraytyp;
@@ -40,7 +40,7 @@ calrhs_ele_neumann(actfield,
                    actsysarray,
                    rhs2,
                    kstep,
-                   calc_option);
+                   action);
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -138,7 +138,7 @@ void calrhs_ele_neumann(FIELD        *actfield,    /* the active field */
                         int           actsysarray,
                         DIST_VECTOR  *rhs,
                         int           kstep,
-                        int           calc_option) /* calc_option to be passsed to element routines */
+                        CALC_ACTION  *action) /* action to be passsed to element routines */
 {
 ARRAY                 drhs_send_a;
 double               *drhs_send;
@@ -168,7 +168,7 @@ calelm(
          drhs_send,
          rhs->numeq_total,
          kstep,
-         calc_option
+         action
        );
 /*-----------------------------------------------Allreduce vectors drhs */
 #ifdef PARALLEL 

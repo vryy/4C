@@ -10,17 +10,16 @@ extern struct _MATERIAL  *mat;
 /*----------------------------------------------------------------------*
  | main shell8 control routine                            m.gee 6/01    |
  *----------------------------------------------------------------------*/
-void shell8(      FIELD     *actfield,
-                  PARTITION *actpart,
-                  INTRA     *actintra,
-                  ELEMENT   *ele,
-                  ARRAY     *estif_global,
-                  ARRAY     *emass_global,
-                  double    *global_vec,
-                  int        global_numeq,
-                  int        kstep,
-            const int        option
-            )
+void shell8(      FIELD      *actfield,
+                  PARTITION  *actpart,
+                  INTRA      *actintra,
+                  ELEMENT    *ele,
+                  ARRAY      *estif_global,
+                  ARRAY      *emass_global,
+                  double     *global_vec,
+                  int         global_numeq,
+                  int         kstep,
+                  CALC_ACTION *action)
 {
 int          i;
 int          imyrank;
@@ -33,9 +32,10 @@ dstrc_enter("shell8");
 #endif
 /*----------------------------------------------------------------------*/
 /*------------------------------------------------- switch to do option */
-switch (option)
+switch (*action)
 {
-case 0:/*---------------------- init the element routines and directors */
+/*----------------------------- init the element routines and directors */
+case calc_struct_init:
    s8init(actfield);
    s8static_ke(NULL,NULL,NULL,NULL,NULL,0,0,1);
    s8static_keug(NULL,NULL,NULL,NULL,NULL,0,0,1);
@@ -43,19 +43,24 @@ case 0:/*---------------------- init the element routines and directors */
    s8jaco(NULL,NULL,NULL,NULL,NULL,NULL,0.0,0,NULL,NULL,1);
    s8_stress(NULL,NULL,NULL,0,1);
 break;/*----------------------------------------------------------------*/
-case 1:/*---------------------------- calculate linear stiffness matrix */
+/*----------------------------------- calculate linear stiffness matrix */
+case calc_struct_linstiff:
    actmat = &(mat[ele->mat-1]);
    s8static_ke(ele,&actdata,actmat,estif_global,NULL,0,0,0);
 break;/*----------------------------------------------------------------*/
-case 2:/*--------------------------calculate nonlinear stiffness matrix */
+/*---------------------------------calculate nonlinear stiffness matrix */
+case calc_struct_nlnstiff:
    actmat = &(mat[ele->mat-1]);
    s8static_keug(ele,&actdata,actmat,estif_global,global_vec,global_numeq,kstep,0);
 break;/*----------------------------------------------------------------*/
-case 3:/*------------------- calculate linear stiffness and mass matrix */
+/*-------------------------- calculate linear stiffness and mass matrix */
+case calc_struct_linstiffmass:
 break;/*----------------------------------------------------------------*/
-case 4:/*---------------- calculate nonlinear stiffness and mass matrix */
+/*----------------------- calculate nonlinear stiffness and mass matrix */
+case calc_struct_nlnstiffmass:
 break;/*----------------------------------------------------------------*/
-case 5:/*------------------------- calculate stresses in a certain step */
+/*-------------------------------- calculate stresses in a certain step */
+case calc_struct_stress:
    imyrank = actintra->intra_rank;
    if (imyrank==ele->proc) 
    {
@@ -63,7 +68,8 @@ case 5:/*------------------------- calculate stresses in a certain step */
       s8_stress(ele,&actdata,actmat,kstep,0);
    }
 break;/*----------------------------------------------------------------*/
-case 6:/*----------------------- calculate load vector of element loads */
+/*------------------------------ calculate load vector of element loads */
+case calc_struct_eleload:
    imyrank = actintra->intra_rank;
    if (imyrank==ele->proc) 
    {
@@ -71,7 +77,8 @@ case 6:/*----------------------- calculate load vector of element loads */
       s8eleload(ele,&actdata,actmat,global_vec,global_numeq,0);
    }
 break;/*----------------------------------------------------------------*/
-case 7:/*--------------------------------- reduce stresses to all procs */
+/*---------------------------------------- reduce stresses to all procs */
+case calc_struct_stressreduce:
    /*------------------------------------- not necessary in sequentiell */
    if (actintra->intra_nprocs==1) goto end;
    s8_stress_reduce(actfield,actpart,actintra,kstep);      

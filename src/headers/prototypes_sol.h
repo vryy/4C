@@ -3,32 +3,34 @@
  *----------------------------------------------------------------------*/
 void stanln();
 void conpre(
-            FIELD         *actfield,
-            SOLVAR        *actsolv,
-            PARTITION     *actpart,
-            INTRA         *actintra,
-            int            kstep,
-            int            actsysarray,
-            DIST_VECTOR   *rsd,
-            DIST_VECTOR   *dispi,
-            int            cdof,
-            STANLN        *nln_data,
-            NR_CONTROLTYP  controltyp
+            FIELD         *actfield,     /* the actual physical field */
+            SOLVAR        *actsolv,      /* the field-corresponding solver */
+            PARTITION     *actpart,      /* the partition of the proc */
+            INTRA         *actintra,     /* the intra-communicator of this field */
+            CALC_ACTION   *action,       /* calculation flag */
+            int            kstep,        /* the load or time step we are in */
+            int            actsysarray,  /* number of the system matrix in actsolv->sysarray[actsysarray] to be used */
+            DIST_VECTOR   *rsd,          /* dist. vector of incremental residual forces used for iteration in conequ */
+            DIST_VECTOR   *dispi,        /* dist. vector of incremental displacements */
+            int            cdof,         /* number of the dof to be controlled */
+            STANLN        *nln_data,     /* data of the Newton-Raphson method */
+            NR_CONTROLTYP  controltyp    /* type of control algorithm */
           );
 void conequ(
-            FIELD         *actfield,
-            SOLVAR        *actsolv,
-            PARTITION     *actpart,
-            INTRA         *actintra,
-            int            kstep,
-            int           *itnum,
-            int            actsysarray,
-            DIST_VECTOR   *rsd,
-            DIST_VECTOR   *dispi,
-            DIST_VECTOR   *re,
-            int            cdof,
-            STANLN        *nln_data,
-            NR_CONTROLTYP  controltyp
+            FIELD         *actfield,      /* the actual physical field */
+            SOLVAR        *actsolv,       /* the field-corresponding solver */
+            PARTITION     *actpart,       /* the partition of the proc */
+            INTRA         *actintra,      /* the intra-communicator of this field */
+            CALC_ACTION   *action,        /* calculation flag */
+            int            kstep,         /* the load or time step we are in */
+            int           *itnum,         /* number of corrector steps taken by this routine */
+            int            actsysarray,   /* number of the system matrix in actsolv->sysarray[actsysarray] to be used */
+            DIST_VECTOR   *rsd,           /* dist. vector of incremental residual forces used for iteration in conequ */
+            DIST_VECTOR   *dispi,         /* dist. vector of incremental displacements */
+            DIST_VECTOR   *re,            /* re[0..2] 3 vectors for residual displacements */
+            int            cdof,          /* number of dof to be controlled */
+            STANLN        *nln_data,      /* data of the Newton-Raphson method */
+            NR_CONTROLTYP  controltyp     /* type of control algorithm */
           );
 void conequ_printhead(int kstep, NR_CONTROLTYP  controltyp, int cdof);
 void conequ_printiter(int itnum, double disval, double rlnew, double dinorm,
@@ -36,30 +38,32 @@ void conequ_printiter(int itnum, double disval, double rlnew, double dinorm,
 /*----------------------------------------------------------------------*
  | global_calelm.c                                       m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void calelm(FIELD      *actfield, 
-               SOLVAR     *actsolv, 
-               PARTITION  *actpart, 
-               INTRA      *actintra,
-               int         sysarray1,
-               int         sysarray2,
-               double     *dvec,
-               int         global_numeq,
-               int         kstep,
-               int         calc_option);
-void calinit(FIELD      *actfield, 
-                PARTITION  *actpart);
+void calelm(FIELD        *actfield,     /* active field */        
+            SOLVAR       *actsolv,      /* active SOLVAR */
+            PARTITION    *actpart,      /* my partition of this field */
+            INTRA        *actintra,     /* my intra-communicator */
+            int           sysarray1,    /* number of first sparse system matrix */
+            int           sysarray2,    /* number of secnd system matrix, if present, else -1 */
+            double       *dvec,         /* global redundant vector passed to elements */
+            int           global_numeq, /* size of dvec */
+            int           kstep,        /* time in increment step we are in */
+            CALC_ACTION  *action);       /* calculation option passed to element routines */
+
+void calinit(FIELD       *actfield,   /* the active physical field */ 
+             PARTITION   *actpart,    /* my partition of this field */
+             CALC_ACTION *action);
 /*----------------------------------------------------------------------*
  | global_calrhs.c                                       m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void calrhs(FIELD        *actfield, 
-               SOLVAR       *actsolv, 
-               PARTITION    *actpart, 
-               INTRA        *actintra,
-               int           actsysarray,
-               DIST_VECTOR  *rhs1,
-               DIST_VECTOR  *rhs2,
-               int           kstep,
-               int           calc_option);
+void calrhs(FIELD        *actfield,     /* the active field */
+            SOLVAR       *actsolv,      /* the active SOLVAR */
+            PARTITION    *actpart,      /* my partition of this field */
+            INTRA        *actintra,     /* the field's intra-communicator */
+            int           actsysarray,  /* the active sparse array */
+            DIST_VECTOR  *rhs1,         /* 2 dist. vectors for rhs */
+            DIST_VECTOR  *rhs2,
+            int           kstep,        /* actual time or load incremental step */
+            CALC_ACTION  *action);       /* action to be passed to element routines */
 void calrhs_nodal_neumann(
                              PARTITION    *actpart,
                              INTRA        *actintra,
@@ -67,16 +71,16 @@ void calrhs_nodal_neumann(
                              SPARSE_ARRAY *sysarray,
                              DIST_VECTOR  *rhs
                             );
-void calrhs_ele_neumann(FIELD        *actfield, 
-                           SOLVAR       *actsolv,
-                           PARTITION    *actpart,
-                           INTRA        *actintra,
-                           SPARSE_TYP   *sysarraytyp,
-                           SPARSE_ARRAY *sysarray,
-                           int           actsysarray,
-                           DIST_VECTOR  *rhs,
-                           int           kstep,
-                           int           calc_option);
+void calrhs_ele_neumann(FIELD        *actfield,    /* the active field */
+                        SOLVAR       *actsolv,     
+                        PARTITION    *actpart,
+                        INTRA        *actintra,
+                        SPARSE_TYP   *sysarraytyp,
+                        SPARSE_ARRAY *sysarray,
+                        int           actsysarray,
+                        DIST_VECTOR  *rhs,
+                        int           kstep,
+                        CALC_ACTION  *action); /* action to be passsed to element routines */
 /*----------------------------------------------------------------------*
  | global_calrhs_nodal.c                                 m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -219,15 +223,15 @@ void  rc_ptr_make_sparsity(RC_PTR        *rc_ptr);
  |  solver_add_data.c                                  m.gee 11/01    |
  *----------------------------------------------------------------------*/
 void assemble(
-                 int                sysarray1,
-                 struct _ARRAY     *elearray1,
-                 int                sysarray2,
-                 struct _ARRAY     *elearray2,
-                 struct _PARTITION *actpart,
-                 struct _SOLVAR    *actsolv,
-                 struct _INTRA     *actintra,
-                 struct _ELEMENT   *actele,
-                 int                option
+                 int                    sysarray1, /* number of first sparse system matrix */
+                 struct _ARRAY         *elearray1, /* pointer to first dense element matrix */
+                 int                    sysarray2, /* number of first sparse system matrix or -1 if not given */
+                 struct _ARRAY         *elearray2, /* pointer to second dense element matrix or NULL is not present*/
+                 struct _PARTITION     *actpart,   /* my partition of theactive field */
+                 struct _SOLVAR        *actsolv,   /* the active SOLVAR */
+                 struct _INTRA         *actintra,  /* the active intracommunicator */
+                 struct _ELEMENT       *actele,    /* the element to assemble */
+                 enum _ASSEMBLE_ACTION  assemble_action  /* the assembly option */
                 );
 void init_assembly(
                        struct _PARTITION      *actpart,

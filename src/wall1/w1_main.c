@@ -10,12 +10,12 @@ extern struct _MATERIAL  *mat;
 /*----------------------------------------------------------------------*
  | main wall1  control routine                               al 6/01    |
  *----------------------------------------------------------------------*/
-void wall1(       PARTITION *actpart,
-                  INTRA     *actintra,
-                  ELEMENT   *ele,
-                  ARRAY     *estif_global,
-                  ARRAY     *emass_global,
-                  int        option)
+void wall1(       PARTITION   *actpart,
+                  INTRA       *actintra,
+                  ELEMENT     *ele,
+                  ARRAY       *estif_global,
+                  ARRAY       *emass_global,
+                  CALC_ACTION *action)
 {
 int  i;
 W1_DATA      actdata;
@@ -26,25 +26,29 @@ dstrc_enter("wall1");
 #endif
 /*----------------------------------------------------------------------*/
 /*------------------------------------------------- switch to do option */
-switch (option)
+switch (*action)
 {
-case 0:/*------------------------------------ init the element routines */
+/*------------------------------------------- init the element routines */
+case calc_struct_init:
    w1init(actpart);
    w1static_ke(NULL,NULL,NULL,NULL,1);
 break;/*----------------------------------------------------------------*/
-case 1:/*---------------------------- calculate linear stiffness matrix */
+/*----------------------------------- calculate linear stiffness matrix */
+case calc_struct_linstiff:
    actmat = &(mat[ele->mat-1]);
    w1static_ke(ele,&actdata,actmat,estif_global,0);
 break;/*----------------------------------------------------------------*/
-case 2:/*--------------------------calculate nonlinear stiffness matrix */
+/*---------------------------------calculate nonlinear stiffness matrix */
+case calc_struct_nlnstiff:
 break;/*----------------------------------------------------------------*/
-case 3:/*------------------- calculate linear stiffness and mass matrix */
+/*-------------------------- calculate linear stiffness and mass matrix */
+case calc_struct_linstiffmass:
 break;/*----------------------------------------------------------------*/
-case 4:/*---------------- calculate nonlinear stiffness and mass matrix */
+/*----------------------- calculate nonlinear stiffness and mass matrix */
+case calc_struct_nlnstiffmass:
 break;/*----------------------------------------------------------------*/
-case 5:/*-------------------------- calculate vector of internal forces */
-break;/*----------------------------------------------------------------*/
-case 6:/*----------------------- calculate load vector of element loads */
+/*------------------------------ calculate load vector of element loads */
+case calc_struct_eleload:
 break;/*----------------------------------------------------------------*/
 default:
    dserror("action unknown");

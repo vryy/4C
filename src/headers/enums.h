@@ -80,6 +80,36 @@ typedef enum _PART_TYP
                        cut_nodes
 } PART_TYP;                         
 /*----------------------------------------------------------------------*
+ | enum _CALC_ACTION                                      m.gee 1/02    |
+ | command passed from control routine to the element level             |
+ | to tell element routines what to do                                  |
+ *----------------------------------------------------------------------*/
+typedef enum _CALC_ACTION
+{
+                       calc_struct_none,
+                       calc_struct_init,
+                       calc_struct_linstiff,
+                       calc_struct_linstiffmass,
+                       calc_struct_nlnstiff,
+                       calc_struct_nlnstiffmass,
+                       calc_struct_stress,
+                       calc_struct_stressreduce,
+                       calc_struct_eleload
+} CALC_ACTION;                         
+/*----------------------------------------------------------------------*
+ | enum _ASSEMBLE_ACTION                                  m.gee 1/02    |
+ | command passed from element control routine to the assemble          |
+ | routines to tell them what to do                                     |
+ *----------------------------------------------------------------------*/
+typedef enum _ASSEMBLE_ACTION
+{
+                       assemble_do_nothing,
+                       assemble_one_matrix,
+                       assemble_two_matrix,
+                       assemble_one_exchange,
+                       assemble_two_exchange
+} ASSEMBLE_ACTION;                         
+/*----------------------------------------------------------------------*
  | enum SOLVER_TYP                                        m.gee 7/01    |
  *----------------------------------------------------------------------*/
 typedef enum _SOLVER_TYP

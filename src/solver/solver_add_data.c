@@ -13,31 +13,16 @@ extern struct _ARRAY emass_global;
  |  routine to assemble element arrays to global sparse arrays m.gee 9/01|
  *----------------------------------------------------------------------*/
 void assemble(
-                 int                sysarray1, /* number of first sparse system matrix */
-                 struct _ARRAY     *elearray1, /* pointer to first dense element matrix */
-                 int                sysarray2, /* number of first sparse system matrix or -1 if not given */
-                 struct _ARRAY     *elearray2, /* pointer to second dense element matrix or NULL is not present*/
-                 struct _PARTITION *actpart,   /* my partition of theactive field */
-                 struct _SOLVAR    *actsolv,   /* the active SOLVAR */
-                 struct _INTRA     *actintra,  /* the active intracommunicator */
-                 struct _ELEMENT   *actele,    /* the element to assemble */
-                 int                option     /* the assembly option */
+                 int                    sysarray1, /* number of first sparse system matrix */
+                 struct _ARRAY         *elearray1, /* pointer to first dense element matrix */
+                 int                    sysarray2, /* number of first sparse system matrix or -1 if not given */
+                 struct _ARRAY         *elearray2, /* pointer to second dense element matrix or NULL is not present*/
+                 struct _PARTITION     *actpart,   /* my partition of theactive field */
+                 struct _SOLVAR        *actsolv,   /* the active SOLVAR */
+                 struct _INTRA         *actintra,  /* the active intracommunicator */
+                 struct _ELEMENT       *actele,    /* the element to assemble */
+                 enum _ASSEMBLE_ACTION  assemble_action  /* the assembly option */
                 )
-/*----------------------------------------------------------------------*/
-/*
-   option:
-   option=0 perform assembly of one or two dense element matrices to 
-            one or two given sparse matrices
-
-   option=1 only in parallel (no effect in seq. or on one proc only):
-            dependent of the type of the sparse system matrix an exchange of
-            buffers is performed to add entries to the system matrix which
-            come from another proc due to coupling conditions
-            This is only done in those sparsity types which truly hold the
-            system matrix in a distributed manner. Those holding redundant
-            system matrices do not exchange entries from coupled dofs, because
-            the matrix is alreduced anyway before solution.
-*/   
 /*----------------------------------------------------------------------*/
 {
 int         i,j,k;
@@ -49,6 +34,7 @@ union _SPARSE_ARRAY *sysa2;
 dstrc_enter("assemble");
 #endif
 /*----------------------------------------------------------------------*/
+if (assemble_action==assemble_do_nothing) goto end;
 /*----------------------- check for presence and typ of system matrices */
 if (sysarray1>=0) 
 {
@@ -70,12 +56,11 @@ else
    sysa2     = NULL;
    sysa2_typ = sparse_none;
 }
-/*----------------------- option==0 is normal assembly of system matrix */
-if (!option)/*------------------------- option=0 is the normal assembly */
+/*----------------------------------------------------------------------*/
+if (assemble_action==assemble_two_matrix)
 {
 /*------------------------------------------------ switch typ of matrix */
 /*-------------------------------------------- add to 2 system matrices */
-   if (sysarray1>=0 && sysarray2>=0) 
    switch(sysa1_typ)
    {
    case mds:
@@ -103,8 +88,10 @@ if (!option)/*------------------------- option=0 is the normal assembly */
       dserror("Unspecified type of system matrix");
    break;
    }
+}
 /*--------------------------------------------- add to 1 system matrix */
-   if (sysarray1>=0 && sysarray2<0) 
+if (assemble_action==assemble_one_matrix)
+{
    switch(sysa1_typ)
    {
    case mds:
@@ -136,11 +123,10 @@ if (!option)/*------------------------- option=0 is the normal assembly */
 /*-------------- option==1 is exchange of coupled dofs among processors */
 /*                    (which, of course, only occures in parallel case) */
 #ifdef PARALLEL 
-else if (option==1)
+/*----------------------------------------exchange of 2 system matrices */
+if (assemble_action==assemble_two_exchange)
 {
 /*------------------------------------------------ switch typ of matrix */
-/*----------------------------------------exchange of 2 system matrices */
-      if (sysarray1>=0 && sysarray2>=0) 
       switch(sysa1_typ)
       {
       case msr:
@@ -165,8 +151,10 @@ else if (option==1)
          dserror("Unspecified type of system matrix");
       break;
       }
+}
 /*-------------------------------------------exchange of 1 system matrix */
-      if (sysarray1>=0 && sysarray2<0) 
+if (assemble_action==assemble_one_exchange)
+{
       switch(sysa1_typ)
       {
       case msr:
@@ -191,10 +179,6 @@ else if (option==1)
          dserror("Unspecified type of system matrix");
       break;
       }
-}
-else
-{
-   dserror("Unknown assembly option, has to be option = 0 or 1");
 }
 #endif
 /*----------------------------------------------------------------------*/

@@ -295,6 +295,13 @@ extern struct _PAR   par;
  | struct _SOLVAR  *solv;                                               |
  *----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*
+ | enum _CALC_ACTION                                      m.gee 1/02    |
+ | command passed from control routine to the element level             |
+ | to tell element routines what to do                                  |
+ | defined globally in global_calelm.c                                  |
+ | enum _CALC_ACTION calc_action[MAXFIELD];                             |
+ *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | tracing variables                                                    |
  | defined in pss_ds.c                                                  |

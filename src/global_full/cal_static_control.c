@@ -25,6 +25,15 @@ extern struct _SOLVAR  *solv;
  *----------------------------------------------------------------------*/
 extern struct _STATIC_VAR  *statvar;
 /*----------------------------------------------------------------------*
+ | enum _CALC_ACTION                                      m.gee 1/02    |
+ | command passed from control routine to the element level             |
+ | to tell element routines what to do                                  |
+ | defined globally in global_calelm.c                                  |
+ *----------------------------------------------------------------------*/
+extern enum _CALC_ACTION calc_action[MAXFIELD];
+
+
+/*----------------------------------------------------------------------*
  |  routine to control static execution                  m.gee 6/01     |
  *----------------------------------------------------------------------*/
 void calsta()
@@ -60,17 +69,18 @@ return;
  *----------------------------------------------------------------------*/
 void stalin() 
 {
-int        i;                /* a counter */
-int        numeq;            /* number of equations on this proc */
-int        numeq_total;      /* total number of equations over all procs */
-int        numdf;            /* number of dofs over all procs */
-int        init;             /* init flag for solver */
-int        actsysarray;      /* active sparse system matrix in actsolv->sysarray[] */
+int           i;                /* a counter */
+int           numeq;            /* number of equations on this proc */
+int           numeq_total;      /* total number of equations over all procs */
+int           numdf;            /* number of dofs over all procs */
+int           init;             /* init flag for solver */
+int           actsysarray;      /* active sparse system matrix in actsolv->sysarray[] */
 
-SOLVAR    *actsolv;          /* pointer to the fields SOLVAR structure */
-PARTITION *actpart;          /* pointer to the fields PARTITION structure */
-FIELD     *actfield;         /* pointer to the structural FIELD */
-INTRA     *actintra;         /* pointer to the fields intra-communicator structure */
+SOLVAR       *actsolv;          /* pointer to the fields SOLVAR structure */
+PARTITION    *actpart;          /* pointer to the fields PARTITION structure */
+FIELD        *actfield;         /* pointer to the structural FIELD */
+INTRA        *actintra;         /* pointer to the fields intra-communicator structure */
+CALC_ACTION  *action;           /* pointer to the structures cal_action enum */
 
 SPARSE_TYP    array_typ;     /* type of psarse system matrix */
 #ifdef DEBUG 
@@ -83,6 +93,7 @@ actsysarray=0;
 actfield    = &(field[0]);
 actsolv     = &(solv[0]);
 actpart     = &(partition[0]);
+action      = &(calc_action[0]);
 #ifdef PARALLEL 
 actintra    = &(par.intra[0]);
 #else
@@ -120,6 +131,10 @@ case dense:/*----------------------------- system array is dense matrix */
    numeq       = actsolv->sysarray[actsysarray].dense->numeq;
    numeq_total = actsolv->sysarray[actsysarray].dense->numeq_total;
 break;
+case rc_ptr:/*----------------------- system array is row/column matrix */
+   numeq       = actsolv->sysarray[actsysarray].rc_ptr->numeq;
+   numeq_total = actsolv->sysarray[actsysarray].rc_ptr->numeq_total;
+break;
 default:
    dserror("unknown type of global matrix");
 break;
@@ -155,10 +170,13 @@ solserv_zero_mat(
 /*----------------------------- init the assembly for ONE sparse matrix */
 init_assembly(actpart,actsolv,actintra,actfield,actsysarray);
 /*------------------------------- init the element calculating routines */
-calinit(actfield,actpart);
+*action = calc_struct_init;
+calinit(actfield,actpart,action);
 /*------call element routines to calculate & assemble stiffness matrice */
-calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,NULL,0,0,1);
+*action = calc_struct_linstiff;
+calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,NULL,0,0,action);
 /*----------------------------------- call rhs-routines to assemble rhs */
+*action = calc_struct_eleload;
 calrhs(
           actfield,
           actsolv,
@@ -168,7 +186,7 @@ calrhs(
           &(actsolv->rhs[actsysarray]),
           &(actsolv->rhs[actsysarray+1]),
           0,
-          6
+          action
          );
 /*--------------------------------------------- add the two rhs vectors */
 solserv_add_vec(&(actsolv->rhs[actsysarray+1]),&(actsolv->rhs[actsysarray]));

@@ -36,6 +36,13 @@ extern struct _STATIC_VAR  *statvar;
  | defined in out_global.c                                              |
  *----------------------------------------------------------------------*/
 extern struct _IO_FLAGS     ioflags;
+/*----------------------------------------------------------------------*
+ | enum _CALC_ACTION                                      m.gee 1/02    |
+ | command passed from control routine to the element level             |
+ | to tell element routines what to do                                  |
+ | defined globally in global_calelm.c                                  |
+ *----------------------------------------------------------------------*/
+extern enum _CALC_ACTION calc_action[MAXFIELD];
 
 /*----------------------------------------------------------------------*
  |  routine to control nonlinear static execution       m.gee 11/01     |
@@ -60,7 +67,6 @@ DIST_VECTOR  *re;                 /* vector of out of balance loads */
 DIST_VECTOR  *rsd;                /* vector for incremental displacements */
 DIST_VECTOR  *dispi;              /* incrementel displacements */              
 
-
 SOLVAR       *actsolv;            /* pointer to active solution structure */
 PARTITION    *actpart;            /* pointer to active partition */
 FIELD        *actfield;           /* pointer to active field */
@@ -69,6 +75,8 @@ INTRA        *actintra;           /* pointer to active intra-communicator */
 SPARSE_TYP    array_typ;          /* type of sparse matrix */
 
 STANLN        nln_data;           /* structure to store and pass data for stanln */
+
+CALC_ACTION  *action;             /* pointer to the structures cal_action enum */
 
 #ifdef DEBUG 
 dstrc_enter("stanln");
@@ -91,6 +99,7 @@ actsysarray=0;
 actfield    = &(field[0]);
 actsolv     = &(solv[0]);
 actpart     = &(partition[0]);
+action      = &(calc_action[0]);
 #ifdef PARALLEL 
 actintra    = &(par.intra[0]);
 /* if we are not parallel, we have to allocate an alibi intra-communicator structure */
@@ -184,8 +193,10 @@ solver_control(
 /*----------------------------- init the assembly for ONE sparse matrix */
 init_assembly(actpart,actsolv,actintra,actfield,actsysarray);
 /*------------------------------- init the element calculating routines */
-calinit(actfield,actpart);
+*action = calc_struct_init;
+calinit(actfield,actpart,action);
 /*-------------------------------------- create the original rhs vector */
+*action = calc_struct_eleload;
 calrhs(
           actfield,
           actsolv,
@@ -195,7 +206,7 @@ calrhs(
           &(actsolv->rhs[actsysarray]),
           &(actsolv->rhs[actsysarray+1]),
           0,
-          6
+          action
       );
 /*--------------------------------------------- add the two rhs vectors */
 solserv_add_vec(&(actsolv->rhs[actsysarray+1]),&(actsolv->rhs[actsysarray]));
@@ -232,6 +243,7 @@ for (kstep=0; kstep<nstep; kstep++)
            actsolv,
            actpart,
            actintra,
+           action,
            kstep,
            actsysarray,
            rsd,
@@ -247,6 +259,7 @@ for (kstep=0; kstep<nstep; kstep++)
            actsolv,
            actpart,
            actintra,
+           action,
            kstep,
           &itnum,
            actsysarray,
@@ -261,9 +274,11 @@ for (kstep=0; kstep<nstep; kstep++)
     /*-------------------------------------- perform stress calculation */
     if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1)
     {
-       calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,NULL,0,0,5);
+       *action = calc_struct_stress;
+       calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,NULL,0,0,action);
        /*---------------------- reduce stresses, so they can be written */
-       calreduce(actfield,actpart,actintra,0);
+       *action = calc_struct_stressreduce;
+       calreduce(actfield,actpart,actintra,action,0);
     }
     /*---------------------------------------- print out results to out */
     out_sol(actfield,actpart,actintra,kstep,0);
@@ -296,6 +311,7 @@ void conpre(
             SOLVAR        *actsolv,      /* the field-corresponding solver */
             PARTITION     *actpart,      /* the partition of the proc */
             INTRA         *actintra,     /* the intra-communicator of this field */
+            CALC_ACTION   *action,       /* calculation flag */
             int            kstep,        /* the load or time step we are in */
             int            actsysarray,  /* number of the system matrix in actsolv->sysarray[actsysarray] to be used */
             DIST_VECTOR   *rsd,          /* dist. vector of incremental residual forces used for iteration in conequ */
@@ -324,7 +340,8 @@ solserv_zero_mat(
                  &(actsolv->sysarray_typ[actsysarray])
                 );
 /*----------------------- calculate tangential stiffness in actsysarray */
-calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,NULL,0,kstep,2);
+*action = calc_struct_nlnstiff;
+calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,NULL,0,kstep,action);
 /*----- copy original load vector from [actsysarray+1] to [actsysarray] */
 solserv_copy_vec(&(actsolv->rhs[actsysarray+1]),&(actsolv->rhs[actsysarray]));
 /*------------------------------------------ solve for incremental load */
@@ -391,6 +408,7 @@ void conequ(
             SOLVAR        *actsolv,       /* the field-corresponding solver */
             PARTITION     *actpart,       /* the partition of the proc */
             INTRA         *actintra,      /* the intra-communicator of this field */
+            CALC_ACTION   *action,        /* calculation flag */
             int            kstep,         /* the load or time step we are in */
             int           *itnum,         /* number of corrector steps taken by this routine */
             int            actsysarray,   /* number of the system matrix in actsolv->sysarray[actsysarray] to be used */
@@ -509,6 +527,7 @@ solserv_zero_mat(
 /*------------------------------- initialize vector for internal forces */
 amzero(&intforce_a);
 /*------------------------- calculate new stiffness and internal forces */
+*action = calc_struct_nlnstiff;
 calelm(actfield,
        actsolv,
        actpart,
@@ -518,7 +537,7 @@ calelm(actfield,
        intforce,
        actsolv->sol[0].numeq_total,
        kstep,
-       2);
+       action);
 /* add internal forces to scaled external forces to get residual forces */
 assemble_vec(actintra,
              &(actsolv->sysarray_typ[actsysarray]),

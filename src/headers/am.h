@@ -55,6 +55,7 @@ union
      int     ****i4;                   /* 4D - integer array */
    }                a;                 /* name of union */
 #ifdef DEBUG 
+/*------------------------ the tracing of array4d is not yet implemented ! */
 int                 place_in_trace;    /* place in bugtracing system       */
 #endif
 } ARRAY4D;
