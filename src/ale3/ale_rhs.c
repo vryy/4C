@@ -227,27 +227,26 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    for (j=0; j<actele->numnp; j++)
    {
       actgnode = actele->node[j]->gnode;   
-      if (actgnode->dirich==NULL) 
-       continue;
+      if (actgnode->dirich==NULL) continue;
+      if (actgnode->dirich->dirich_type==dirich_freesurf)
+      {
+         hasdirich=1;
+         goto out;
+      }
+      else if (actgnode->dirich->dirich_type==dirich_FSI)
+      {
+         hasdirich=1;
+         goto out;
+      }       
       else
       {
-	if (actgnode->dirich->dirich_type==dirich_freesurf)
-	{
-	   hasdirich=1;
-	   goto out;
-	}
-	for(k=0; k<actele->node[j]->numdf; k++)
+        for(k=0; k<actele->node[j]->numdf; k++)
 	{
 	  if (actgnode->dirich->dirich_val.a.dv[k]!=0.0)
 	  {
              hasdirich=1;
 	     goto out;
           }
-	  else if (actgnode->dirich->dirich_type==dirich_FSI)
-	  {
-             hasdirich=1;
-	     goto out;
-          }	  
         }
       }
    }   					  
