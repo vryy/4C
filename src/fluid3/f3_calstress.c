@@ -38,6 +38,20 @@ extern struct _GENPROB     genprob;
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
 extern ALLDYNA      *alldyn;
+/*!----------------------------------------------------------------------
+\brief positions of physical values in node arrays
+
+<pre>                                                        chfoe 11/04
+
+This structure contains the positions of the various fluid solutions 
+within the nodal array of sol_increment.a.da[ipos][dim].
+
+extern variable defined in fluid_service.c
+</pre>
+
+------------------------------------------------------------------------*/
+extern struct _FLUID_POSITION ipos;
+
 
 /*!---------------------------------------------------------------------
   \brief calculation of fluid stresses for fluid3
@@ -126,9 +140,9 @@ case 0: /* only real pressure */
   for (i=0;i<iel;i++)
   {
     actnode=ele->node[i];
-    ele->e.f3->stress_ND.a.da[i][0]=-actnode->sol_increment.a.da[3][3]*dens;
-    ele->e.f3->stress_ND.a.da[i][1]=-actnode->sol_increment.a.da[3][3]*dens;
-    ele->e.f3->stress_ND.a.da[i][2]=-actnode->sol_increment.a.da[3][3]*dens;
+    ele->e.f3->stress_ND.a.da[i][0]=-actnode->sol_increment.a.da[ipos.velnp][3]*dens;
+    ele->e.f3->stress_ND.a.da[i][1]=-actnode->sol_increment.a.da[ipos.velnp][3]*dens;
+    ele->e.f3->stress_ND.a.da[i][2]=-actnode->sol_increment.a.da[ipos.velnp][3]*dens;
     ele->e.f3->stress_ND.a.da[i][3]= ZERO;
     ele->e.f3->stress_ND.a.da[i][4]= ZERO;
     ele->e.f3->stress_ND.a.da[i][5]= ZERO;
@@ -168,10 +182,10 @@ case 1: /* real pressure + viscose stresses */
   /* set element velocities, real pressure and coordinates */
   for (j=0;j<iel;j++)
   {
-    evel[0][j] = ele->node[j]->sol_increment.a.da[3][0];
-    evel[1][j] = ele->node[j]->sol_increment.a.da[3][1];
-    evel[2][j] = ele->node[j]->sol_increment.a.da[3][2];
-    epre[j]    = ele->node[j]->sol_increment.a.da[3][3]*dens;
+    evel[0][j] = ele->node[j]->sol_increment.a.da[ipos.velnp][0];
+    evel[1][j] = ele->node[j]->sol_increment.a.da[ipos.velnp][1];
+    evel[2][j] = ele->node[j]->sol_increment.a.da[ipos.velnp][2];
+    epre[j]    = ele->node[j]->sol_increment.a.da[ipos.velnp][3]*dens;
   }/*end for (j=0;j<iel;j++) */
    switch (ele->e.f3->is_ale)
    {
@@ -235,7 +249,7 @@ case 1: /* real pressure + viscose stresses */
 
 
         /* compute Jacobian matrix */
-        f3_jaco(xyze,funct,deriv,xjm,&det,ele,iel);
+        f3_jaco(xyze,deriv,xjm,&det,ele,iel);
 
         /* compute global derivates */
         f3_gder(derxy,deriv,xjm,wa1,det,iel);
