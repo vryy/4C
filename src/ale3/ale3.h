@@ -110,8 +110,11 @@ void ale2_keku(
 /*----------------------------------------------------------------------*
  | ale_dirich.c                                              mn 06/02  |
  *----------------------------------------------------------------------*/
-void ale_setdirich(FIELD  *actfield, ALE_DYNAMIC *adyn,INT actpos,
-		   INT readstructpos);
+void ale_setdirich(
+    FIELD        *actfield, 
+    ALE_DYNAMIC  *adyn, 
+    INT           readstructpos
+    );
 void ale_setdirich_increment(FIELD *actfield, ALE_DYNAMIC *adyn);
 void ale_caldirich(ELEMENT *actele, DOUBLE *fullvec, INT dim,
 		   ARRAY *estif_global);
