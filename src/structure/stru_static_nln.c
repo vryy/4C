@@ -598,7 +598,7 @@ solver_control(  actsolv,
                &(actsolv->sysarray[actsysarray]),
                &(rsd[2]),
                &(re[0]),
-                 init);
+                 init); 
 /*-------------------------------------- solve for original load vector */
 /*                                                          K * du1 = P */
 /*                                 initial guess is value of last solve */
@@ -608,7 +608,7 @@ solver_control(  actsolv,
                &(actsolv->sysarray_typ[actsysarray]),
                &(actsolv->sysarray[actsysarray]),
                &(rsd[1]),
-               &(actsolv->rhs[actsysarray]),
+               &(actsolv->rhs[actsysarray+1]),
                  init);
 /*===============================make increment of load and displacment */
 switch(controltyp)
