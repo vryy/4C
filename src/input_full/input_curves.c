@@ -186,7 +186,14 @@ for (i=0; i<counter; i++)
    if (ierr==1) 
    {
       actcurve->curvetyp = curve_explicit;
-      frint("NUMEX",&(actcurve->numex),&ierr);
+      frchar("FUNC",buffer,&ierr);
+      if (ierr!=1) dserror("cannot read CURVE\n");
+      if (strncmp(buffer,"f(t)=sin(t:C1*PI:2)_for_t<_C1_else_f(t)=1",41)==0)
+         actcurve->numex=-1;
+      else if (strncmp(buffer,"f(t)=exp(1-1:t)",15)==0)
+         actcurve->numex=-2;
+      else
+         dserror("cannot read function of CURVE\n");
       if (ierr!=1) dserror("cannot read CURVE");
       frdouble("C1",&(actcurve->c1),&ierr);
       if (ierr!=1) dserror("cannot read CURVE");  
