@@ -123,38 +123,58 @@ typedef struct _FLUID_DYNAMIC
 /* general control variables of fluid dynamics */
 INT    dyntyp;       /*!< dynamictype                                   */
 INT    iop;          /*!< time integration method                       */
+INT    iops;         /*!< starting algorithm                            */
+INT    init;         /*!< initialisation of starting field              */
 INT    mlfem;        /*!< multilevel algorithm?                         */
 INT    numdf;        /*!< number of dofs of the fluid elements          */
 INT    ite;          /*!< nonlinear iteration scheme                    */
-INT    itchk;        /*!< convergence check during nonlin. iteration    */
-INT    itnorm;       /*!< norm for conv. check d. nonlin. iteration     */
+enum {
+      fncc_no,       /*!< no convergence check                          */
+      fncc_L1,       /*!< converg. check with L1 norm                   */
+      fncc_L2,       /*!< converg. check with L2 norm                   */
+      fncc_Linf      /*!< converg. check with L-inf. norm               */
+     } itnorm;       /*!< norm for conv. check d. nonlin. iteration     */
+INT    itemax;       /*!< number of nonlin. iterations                  */
 INT    stchk;        /*!< steady state check every n steps              */
-INT    stnorm;       /*!< norm for steady state check                   */
-INT    iops;         /*!< starting algorithm                            */
-INT    init;         /*!< initialisation of starting field              */
+enum {
+       fnst_no,
+       fnst_L1,
+       fnst_L2,
+       fnst_Linf
+     } stnorm;       /*!< norm for steady state check                   */
 /* output flags */
 INT    uppss;        /*!< update pss file every n steps                 */
 INT    upout;        /*!< store results every n steps                   */      
 INT    upres;        /*!< store results in .flavia.res every n steps    */      
-INT    res_write_evry; /*!< write restart every n steps                 */
+INT    uprestart;    /*!< write restart every n steps                 */
 INT    resstep;      /*!< restart step                                  */
 /* time stepping flags and variables */
 INT    itnum;        /*!< actual iteration step                         */
 INT    nstep;        /*!< number of timesteps                           */
 INT    step;         /*!< the actual step                               */
-INT    itemax;       /*!< number of nonlin. iterations                  */
 INT    nums;         /*!< number of starting algorithm steps            */
-INT    itemax_ke;    /*!< number of nonlin. iterations for kappa-eps    */
-INT    stepke;       /*!< the actual step for kappa-epsilon             */
+/* time integration variables */
+DOUBLE  maxtime;   /*!< maximal simulation time                         */
+DOUBLE  acttime;   /*!< actual time                                     */
+DOUBLE  dt;        /*!< prescribed time increment from input            */
+DOUBLE  dta;       /*!< actual time increment dt(n)                     */
+DOUBLE  dtp;	   /*!< previous time increment dt(n-1)                 */
+DOUBLE  dt_prop;   /*!< proposed new time increment dt(n+1)		*/
+DOUBLE  max_dt;    /*!< maximal time increment for adaptive             */
+DOUBLE  min_dt;    /*!< minimal time increment for adaptive             */
+DOUBLE  theta;     /*!< time integration constant                       */
+DOUBLE  thetas;    /*!< constant for starting algorithm)                */
+DOUBLE  alpha_m;   /*!< time integration constant                       */
+DOUBLE  alpha_f;   /*!< time integration constant                       */
+DOUBLE  lte;       /*!< local truncation error for adaptive             */
 /* special facilities flags */
 INT    iprerhs;
 INT    viscstr;      /*!< flag for calculation of viscos stresses       */
 INT    freesurf;     /*!< treatment of free surface                     */
 INT    surftens;     /*!< include surface tension effects               */
+INT    ishape;       /*!< flag for new element shape                      */
 INT    checkarea;    /*!< check total area of fluid field               */
 INT    liftdrag;     /*!< calculate lift&drag */
-INT    turbu;        /*!< the type of turbulence-model */
-INT    dis_capt;     /*!< flag for DISCONTINUITY CAPTURING for turbulence model */
 INT    adaptive;     /*!< flag if adaptive time stepping    */
 INT    time_rhs;     /*!< flag if classic or mass time rhs  */
 /* control flags from ml fluid (presumably) */
@@ -185,23 +205,11 @@ INT  niturbu_n;    /*!< EVALUATION OF "TIME - RHS" for turbulence-model */
 INT  kapeps_flag;  /*!< kappa or epsilon equation                       */
 INT  kapomega_flag;/*!< kappa or omega equation                         */
 INT  kappan;       /*!< kappan for production-term                      */
-INT  ishape;       /*!< flag for new element shape                      */
 INT  ncols;        /*!< number of columns in solution history */
-/* time integration variables */
-DOUBLE  maxtime;   /*!< maximal simulation time                         */
-DOUBLE  acttime;   /*!< actual time                                     */
-DOUBLE  dt;        /*!< prescribed time increment from input            */
-DOUBLE  dta;       /*!< actual time increment dt(n)                     */
-DOUBLE  dtp;	   /*!< previous time increment dt(n-1)                 */
-DOUBLE  dt_prop;   /*!< proposed new time increment dt(n+1)		*/
-DOUBLE  max_dt;    /*!< maximal time increment for adaptive             */
-DOUBLE  min_dt;    /*!< minimal time increment for adaptive             */
-/*DOUBLE  alpha;     / *!< time integration constant                       */
-DOUBLE  theta;     /*!< time integration constant                       */
-DOUBLE  thetas;    /*!< constant for starting algorithm)                */
-DOUBLE  alpha_m;   /*!< time integration constant                       */
-DOUBLE  alpha_f;   /*!< time integration constant                       */
-DOUBLE  lte;       /*!< local truncation error for adaptive             */
+INT  turbu;        /*!< the type of turbulence-model */
+INT  dis_capt;     /*!< flag for DISCONTINUITY CAPTURING for turbulence model */
+INT  itemax_ke;    /*!< number of nonlin. iterations for kappa-eps    */
+INT  stepke;       /*!< the actual step for kappa-epsilon             */
 /* coefficients within integration */
 DOUBLE thsl;     /*!< theta-s,l: const. for "stiffness" terms LHS       */
 DOUBLE thsr;     /*!< theta-s,r: const. for "stiffness" terms RHS       */
