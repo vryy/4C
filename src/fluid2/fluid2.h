@@ -30,7 +30,6 @@ contains the fluid elements. (chfoe 01/04)
 #ifdef D_FLUID2
 typedef struct _FLUID2
 {
-INT                ntyp;     /*!< flag for element type: 1=quad; 2=tri    */
 INT                nGP[2];   /*!< number of gaussian points in rs direct. */
 INT                is_ale;   /*!< flag whether there is ale to me or not  */
 
@@ -38,7 +37,7 @@ INT                is_ale;   /*!< flag whether there is ale to me or not  */
 INT                is_ls;    /*!< flag whether there is ls to me or not   */  
 struct _ELEMENT   *my_ls;    /*!< pointer to my ls ele, otherwise NULL    */
 #endif
-struct _ELEMENT   *my_ale;   /*!< pointer to my ale ele, otherwise NULL   */
+
 /*---------------------------------------------------- stabilisation ---*/
 enum _STABILISATION_TYP	stab_type;	/* enum of stabilisation	*/
 union 
@@ -49,7 +48,7 @@ union
 
 /*--------------------------------- element sizes for stability parameter */
 DOUBLE             hk[3];    /*!< vel/pres/cont                           */
-
+DOUBLE             tau_old[3];
 /*-------------------------- flag for turbulence  1=algebraic, 2=ke-model, 3=ko-model */
 INT                turbu;
 
@@ -57,6 +56,7 @@ INT                turbu;
 INT                fs_on;   /*! element belongs to free surface           */
 
 /*------------------------------------------------- structure for submesh */
+#ifdef FLUID2_ML
 INT                smisal;        /* flag for element submesh creation    */
 DOUBLE             smcml;         /* charact. mesh length for submesh     */
 struct _ARRAY      xyzsm;         /* coordinates of submesh nodes         */
@@ -65,7 +65,7 @@ struct _ARRAY      solsmn;        /* sol. of last timestep                */
 
 /*--------------------------------------------- structure for sub-submesh */
 struct _ARRAY      xyzssm;        /* coordinates of sub-submeshnodes      */
-
+#endif
 /*-------------------------------------------------------- stress results */
 struct _ARRAY      stress_ND; /*!< nodal stresses                         */
 /*------------------------------------------------------- nodal curvature */
