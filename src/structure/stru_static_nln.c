@@ -350,7 +350,7 @@ for (kstep=0; kstep<nstep; kstep++)
    {
        if (ioflags.struct_disp_gid==1 && mod_displ==0)
        out_gid_sol("displacement",actfield,actintra,kstep,0);
-       if (ioflags.struct_stress_gid==1 && mod_stress)
+       if (ioflags.struct_stress_gid==1 && mod_stress==0)
        out_gid_sol("stress"      ,actfield,actintra,kstep,0);
    }
    /*----------------------------------- printout results to pss file */
