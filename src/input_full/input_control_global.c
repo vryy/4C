@@ -94,6 +94,16 @@ dstrc_enter("inpctr");
       solv[0].fieldtyp = fluid;
       inpctrsol(&(solv[0]));          
    }
+   if (genprob.probtyp == prb_ale)
+   {
+      if (genprob.numfld!=1) dserror("numfld != 1 for Ale Problem");
+
+      solv = (SOLVAR*)CALLOC(genprob.numfld,sizeof(SOLVAR));
+      if (!solv) dserror("Allocation of SOLVAR failed");
+
+      solv[0].fieldtyp = ale;
+      inpctrsol(&(solv[0]));
+   }
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -144,6 +154,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       if (strncmp("Fluid"                      ,buffer, 5)==0) genprob.probtyp = prb_fluid;
       if (strncmp("Fluid_Structure_Interaction",buffer,24)==0) genprob.probtyp = prb_fsi;
       if (strncmp("Optimisation"               ,buffer,12)==0) genprob.probtyp = prb_opt;
+      if (strncmp("Ale"                        ,buffer, 3)==0) genprob.probtyp = prb_ale;
    }
 
    frchar("TIMETYP"   ,buffer,            &ierr);
@@ -326,6 +337,9 @@ for (i=0; i<genprob.numfld; i++)
       inpctr_dyn_fluid(alldyn[i].fdyn);   
    break;
    case ale:
+      alldyn[i].sdyn = (STRUCT_DYNAMIC*)CALLOC(1,sizeof(STRUCT_DYNAMIC));
+      if (!alldyn[i].sdyn) dserror("Allocation of STRUCT_DYNAMIC failed");
+      inpctr_dyn_struct(alldyn[i].sdyn);
    break;
    case structure:
       alldyn[i].sdyn = (STRUCT_DYNAMIC*)CALLOC(1,sizeof(STRUCT_DYNAMIC));

@@ -1,6 +1,6 @@
 #include "../headers/standardtypes.h"
 #include "../fluid3/fluid3.h"
-#include "../ale/ale.h"
+#include "../ale3/ale3.h"
 #ifdef PARALLEL 
 #ifdef SUN
 #include "../../../lib_sun/metis-4.0/Lib/metis.h"
@@ -191,7 +191,9 @@ for (i=0; i<genprob.numfld; i++)
    amredef(&(adjncy[i]),(adjcounter),1,"IV");    
    amdel(&stack);
 /*------------------------------------------- do not partition ale field */
-   if (actfield->fieldtyp==ale) continue;
+/*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
+/*   if (actfield->fieldtyp==ale) continue;*/
+/*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 /*-------------------------------- do not partition sequentiell version */
    if (inprocs<=1) 
    {
@@ -327,6 +329,8 @@ for (i=0; i<genprob.numfld; i++)
    so the partitioning as it is done for the fluid elements is not necesarily
    balanced for the ale field. Also this can only be done with compatible
    ale fields */  
+#if 0
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (inprocs>1)
 for (i=0; i<genprob.numfld; i++)
 {
@@ -336,14 +340,16 @@ for (i=0; i<genprob.numfld; i++)
    for (j=0; j<actfield->dis[0].numele; j++)
    {
       actele = &(actfield->dis[0].element[j]);
-      actele->proc = actele->e.ale->my_fluid->proc;
+      actele->proc = actele->e.ale3->my_fluid->proc;
 /*----------------------------------------------- loop nodes of element */
       for (k=0; k<actele->numnp; k++)
       {
-         actele->node[k]->proc = actele->e.ale->my_fluid->node[k]->proc;
+         actele->node[k]->proc = actele->e.ale3->my_fluid->node[k]->proc;
       }
    }
 }
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#endif
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();

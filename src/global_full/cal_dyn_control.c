@@ -28,6 +28,9 @@ case prb_fsi:
     dyn_fsi();
 break;
 */    
+case prb_ale:
+    dyn_ale();
+break;
 default:
     dserror("Dynamic solution of unknown Problemtyp requested");
 break;

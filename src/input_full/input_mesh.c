@@ -3,7 +3,6 @@
 #include "../wall1/wall1.h"
 #include "../brick1/brick1.h"
 #include "../fluid3/fluid3.h"
-#include "../ale/ale.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
@@ -59,9 +58,11 @@ if (genprob.probtyp == prb_fsi)
    inp_ale_field  (&(field[2]));
 
 /*--- ale and fluid field are supposed to be compatible, so inherit info */
+#ifdef D_ALE
 /*
    fluid_to_ale(&(field[1]),&(field[2]));
 */
+#endif
 }
 /*------------------------------------------- structure type of problem */
 if (genprob.probtyp==prb_structure)
@@ -83,6 +84,17 @@ if (genprob.probtyp==prb_fluid)
    field[0].fieldtyp = fluid;
    inp_fluid_field (&(field[0]));
 }
+/*------------------------------------------------- ale type of problem */
+if (genprob.probtyp==prb_ale)
+{
+   if (genprob.numfld!=1) dserror("numfld != 1 for ale problem");
+   field = (FIELD*)CALLOC(genprob.numfld,sizeof(FIELD));
+   if (field==NULL) dserror("Allocation of fields failed");
+
+   field[0].fieldtyp = ale;
+   inp_ale_field(&(field[0]));
+}
+
 /*---------------------------------------- Optimisation type of problem */
 if (genprob.probtyp == prb_opt)
 {
@@ -104,7 +116,9 @@ for (i=0; i<genprob.numfld; i++)
 if (genprob.probtyp==prb_fsi)
 {
 /*--- ale and fluid field are supposed to be compatible, so inherit info */
+#ifdef D_ALE
    fluid_to_ale(&(field[1]),&(field[2]));
+#endif
 }
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -466,7 +480,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    elenumber  = strtol(colpointer,&colpointer,10);
    alefield->dis[0].element[counter].Id = --elenumber;
 /*---------- read the typ of element and call element reading function */
-/*------------------------------------------------ elementtyp is ALE */
+/*------------------------------------------------ elementtyp is ALE3 */
    frchk("ALE3",&ierr);
    if (ierr==1)
    {
@@ -477,10 +491,26 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 #ifdef D_ALE 
    if (ierr==1) 
    {
-      alefield->dis[0].element[counter].eltyp=el_ale;
+      alefield->dis[0].element[counter].eltyp=el_ale3;
       ale3inp(&(alefield->dis[0].element[counter]));
    }
 #endif
+/*------------------------------------------------ elementtyp is ALE2 */
+   frchk("ALE2",&ierr);
+   if (ierr==1)
+   {
+#ifndef D_ALE 
+      dserror("ALE2 needed but not defined in Makefile");
+#endif
+   }
+#ifdef D_ALE 
+   if (ierr==1) 
+   {
+      alefield->dis[0].element[counter].eltyp=el_ale2;
+      ale2inp(&(alefield->dis[0].element[counter]));
+   }
+#endif
+/*------------------------------------------------------- elementtyp is */
    counter++;
    frread();
 }

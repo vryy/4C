@@ -133,17 +133,20 @@ for (i=0; i<genprob.numfld; i++)
             actgid->fluid3_333_name = "fluid3_333";
          }
       break;
-      case el_ale:    
+      case el_ale2:    
          if (actele->numnp==4)  
          {
             actgid->is_ale_22    = 1;
             actgid->ale_22_name  = "ale_22";
          }
+      break;
+      case el_ale3:    
          if (actele->numnp==8)  
          {
             actgid->is_ale_222   = 1;
             actgid->ale_222_name = "ale_222";
          }
+      break;
       default:
          dserror("Unknown type of element");
       break;
@@ -422,7 +425,7 @@ if (actgid->is_ale_22)
    for (i=0; i<actfield->dis[0].numele; i++)
    {
       actele = &(actfield->dis[0].element[i]);
-      if (actele->eltyp != el_ale || actele->numnp != 4) continue;
+      if (actele->eltyp != el_ale3 || actele->numnp != 4) continue;
       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
       for (j=1; j<4; j++)
       fprintf(out,"            %18.5E\n",(double)actele->proc); 
@@ -442,7 +445,7 @@ if (actgid->is_ale_222)
    for (i=0; i<actfield->dis[0].numele; i++)
    {
       actele = &(actfield->dis[0].element[i]);
-      if (actele->eltyp != el_ale || actele->numnp != 8) continue;
+      if (actele->eltyp != el_ale3 || actele->numnp != 8) continue;
       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
       for (j=1; j<8; j++)
       fprintf(out,"            %18.5E\n",(double)actele->proc); 
@@ -540,21 +543,50 @@ if (strncmp(string,"displacement",stringlenght)==0)
    fprintf(out,"RESULTRANGESTABLE %c%s%c\n",
                                             sign,actgid->standardrangetable,sign
                                             );
-   fprintf(out,"COMPONENTNAMES %c%s%c,%c%s%c,%c%s%c\n",
+   switch (genprob.ndim)
+   {
+     case 3:
+       fprintf(out,"COMPONENTNAMES %c%s%c,%c%s%c,%c%s%c\n",
                                                        sign,componentnames[0],sign,
                                                        sign,componentnames[1],sign,
                                                        sign,componentnames[2],sign
                                                        );
+     break;
+     case 2:
+       fprintf(out,"COMPONENTNAMES %c%s%c,%c%s%c\n",
+                                                       sign,componentnames[0],sign,
+                                                       sign,componentnames[1],sign
+                                                       );
+     break;
+     default:
+       dserror("Unknown numer of dimensions");
+     break;
+   }
    fprintf(out,"VALUES\n");
    for (i=0; i<actfield->dis[0].numnp; i++)
    {
       actnode = &(actfield->dis[0].node[i]);
-      fprintf(out," %6d %18.5e %18.5e %18.5e\n",
+      switch (genprob.ndim)
+      {
+	case 3:
+        fprintf(out," %6d %18.5E %18.5E %18.5E\n",
                                                    actnode->Id+1,
                                                    actnode->sol.a.da[place][0],
                                                    actnode->sol.a.da[place][1],
                                                    actnode->sol.a.da[place][2]
                                                    );
+	break;
+	case 2:
+        fprintf(out," %6d %18.5E %18.5E \n",
+                                                   actnode->Id+1,
+                                                   actnode->sol.a.da[place][0],
+                                                   actnode->sol.a.da[place][1]
+                                                   );
+        break;
+	default:
+	  dserror("Unknown number of dimensions");
+        break;
+      }
    }
    fprintf(out,"END VALUES\n");
 } /* end of (strncmp(string,"displacement",stringlenght)==0) */
@@ -826,6 +858,10 @@ if (strncmp(string,"stress",stringlenght)==0)
    if (actgid->is_brick1_333)
    {
       dserror("output for 20/27-noded brick not yet impl.");
+   }
+   if (actgid->is_ale_222)
+   {
+    dserror("output for 8-noded ale not yet impl.");
    }
 
 } /* end of (strncmp(string,"stress",stringlenght)==0) */

@@ -205,7 +205,7 @@ for (i=0; i<design->ndvol; i++)
       {
          k=0;
          while (k<actdsurf->ndvol && actdsurf->dvol[k]!=NULL) k++;
-         if (k==actdsurf->ndvol-1 && actdsurf->dvol[k]==NULL)
+         if (k==actdsurf->ndvol-1 && actdsurf->dvol[k]!=NULL)
          dserror("Cannot make dsurf to dvol topology");
          actdsurf->dvol[k] = actdvol;
       }

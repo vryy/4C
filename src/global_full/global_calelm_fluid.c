@@ -4,7 +4,6 @@
 #include "../wall1/wall1.h"
 #include "../brick1/brick1.h"
 #include "../fluid3/fluid3.h"
-#include "../ale/ale.h"
 /*----------------------------------------------------------------------*
  | enum _CALC_ACTION                                      m.gee 1/02    |
  | command passed from control routine to the element level             |
@@ -190,7 +189,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    break;
    case el_fluid3: 
    break;
-   case el_ale:
+   case el_ale3:
    break;
    case el_none:
       dserror("Typ of element unknown");
@@ -279,7 +278,7 @@ int is_brick1=0;
 int is_wall1 =0;
 int is_fluid2=0;
 int is_fluid3=0;
-int is_ale=0;
+int is_ale3=0;
 ELEMENT *actele;              /* active element */
 #ifdef DEBUG 
 dstrc_enter("calinit");
@@ -314,8 +313,8 @@ for (i=0; i<actfield->dis[0].numele; i++)
    case el_fluid3:
       is_fluid3=1;
    break;
-   case el_ale:
-      is_ale=1;
+   case el_ale3:
+      is_ale3=1;
    break;
    default:
       dserror("Unknown typ of element");
@@ -351,7 +350,7 @@ if (is_fluid3==1)
 {
 }
 /*----------------------------------- init all kind of routines for ale */
-if (is_ale==1)
+if (is_ale3==1)
 {
 }
 /*----------------------------------------------------------------------*/

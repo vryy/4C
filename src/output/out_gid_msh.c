@@ -234,7 +234,7 @@ for (i=0; i<genprob.numfld; i++)
       fprintf(out,"#-------------------------------------------------------------------------------\n");
       fprintf(out,"# MESH %s FOR FIELD %s ALE 2x2 GP\n",actgid->ale_22_name,actgid->fieldname);
       fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"MESH %s DIMENSION 3 ELEMTYPE Quadrilateral NNODE 4\n",actgid->ale_22_name);
+      fprintf(out,"MESH %s DIMENSION 2 ELEMTYPE Quadrilateral NNODE 4\n",actgid->ale_22_name);
       /*-------------- if this is first mesh, print coodinates of nodes */
       if (is_firstmesh)
       {
@@ -249,7 +249,7 @@ for (i=0; i<genprob.numfld; i++)
       for (j=0; j<actfield->dis[0].numele; j++)
       {
          actele = &(actfield->dis[0].element[j]);
-         if (actele->eltyp != el_shell8 || actele->numnp !=4) continue;
+         if (actele->eltyp != el_ale2 || actele->numnp !=4) continue;
          fprintf(out," %6d ",actele->Id+1);
          for (k=0; k<actele->numnp; k++)
          fprintf(out,"%6d ",actele->node[k]->Id+1);
@@ -279,7 +279,7 @@ for (i=0; i<genprob.numfld; i++)
       for (j=0; j<actfield->dis[0].numele; j++)
       {
          actele = &(actfield->dis[0].element[j]);
-         if (actele->eltyp != el_ale || actele->numnp !=8) continue;
+         if (actele->eltyp != el_ale3 || actele->numnp !=8) continue;
          fprintf(out," %6d ",actele->Id+1);
          for (k=0; k<actele->numnp; k++)
          fprintf(out,"%6d ",actele->node[k]->Id+1);
@@ -319,11 +319,25 @@ for (i=0; i<genprob.numfld; i++)
    for (j=0; j<actfield->dis[0].numnp; j++)
    {
       actnode = &(actfield->dis[0].node[j]);
-      fprintf(out,"%6d %-18.5f %-18.5f %-18.5f\n",
+      switch (genprob.ndim)
+      {
+	case 3:
+        fprintf(out,"%6d %-18.5f %-18.5f %-18.5f\n",
                                                      actnode->Id+1,
                                                      actnode->x[0],
                                                      actnode->x[1],
                                                      actnode->x[2]);
+        break;
+	case 2:
+        fprintf(out,"%6d %-18.5f %-18.5f \n",
+                                                     actnode->Id+1,
+                                                     actnode->x[0],
+                                                     actnode->x[1]);
+        break;
+	default:
+        dserror("Unknown number of dimensions");
+	break;
+      }
    }
 }/* end of (i=0; i<genprob.numfld; i++)
 /*----------------------------------------------------------------------*/

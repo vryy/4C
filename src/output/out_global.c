@@ -95,6 +95,9 @@ break;
 case prb_opt:
 fprintf(out,"Type of Problem           : Optimization\n");
 break;
+case prb_ale:
+fprintf(out,"Type of Problem           : Ale\n");
+break;
 default:
 dserror("Cannot print problem type");
 break;
@@ -188,8 +191,11 @@ break;
 case el_fluid2:
 fprintf(out,"ELE glob_Id %6d loc_Id %6d FLUID2\n",actele->Id,actele->Id_loc);
 break;
-case el_ale:
-fprintf(out,"ELE glob_Id %6d loc_Id %6d ALE\n",actele->Id,actele->Id_loc);
+case el_ale3:
+fprintf(out,"ELE glob_Id %6d loc_Id %6d ALE3\n",actele->Id,actele->Id_loc);
+break;
+case el_ale2:
+fprintf(out,"ELE glob_Id %6d loc_Id %6d ALE2\n",actele->Id,actele->Id_loc);
 break;
 default:
 dserror("Cannot print elementtype");

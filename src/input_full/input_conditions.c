@@ -383,7 +383,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       if (strncmp(buffer,"none",4)==0) 
       {
          actdsurf->dirich->curve.a.iv[i] = 0;
-         colptr = strstr(allfiles.actplace,"none");
+         colptr = strstr(colptr,"none");
          dsassert(colptr!=NULL,"Cannot read design-surf dirichlet conditions");
          colptr += 4;
       }

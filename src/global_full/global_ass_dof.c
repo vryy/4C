@@ -80,10 +80,16 @@ for (i=0; i<genprob.numfld; i++)
             if (actele->node[k]->numdf < 4) actele->node[k]->numdf=4;
          }
          break;
-      case el_ale:
+      case el_ale3:
          for (k=0; k<actele->numnp; k++)
          {
             if (actele->node[k]->numdf < 3) actele->node[k]->numdf=3;
+         }
+         break;
+      case el_ale2:
+         for (k=0; k<actele->numnp; k++)
+         {
+            if (actele->node[k]->numdf < 2) actele->node[k]->numdf=2;
          }
          break;
       default:

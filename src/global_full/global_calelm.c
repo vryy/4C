@@ -4,7 +4,6 @@
 #include "../wall1/wall1.h"
 #include "../brick1/brick1.h"
 #include "../fluid3/fluid3.h"
-#include "../ale/ale.h"
 /*----------------------------------------------------------------------*
  | enum _CALC_ACTION                                      m.gee 1/02    |
  | command passed from control routine to the element level             |
@@ -192,7 +191,10 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    break;
    case el_fluid3: 
    break;
-   case el_ale:
+   case el_ale3:
+	ale3(actpart,actintra,actele,
+        &estif_global,
+        action);
    break;
    case el_none:
       dserror("Typ of element unknown");
@@ -210,6 +212,8 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    case calc_struct_eleload      : assemble_action = assemble_do_nothing; break;
    case calc_struct_stress       : assemble_action = assemble_do_nothing; break;
    case calc_struct_update_istep : assemble_action = assemble_do_nothing; break;
+   case calc_ale_stiff           : assemble_action = assemble_one_matrix; break;
+   case calc_ale_rhs             : assemble_action = assemble_do_nothing; break;
    default: dserror("Unknown type of assembly"); break;
    }
    /*--------------------------- assemble one or two system matrices */
@@ -242,6 +246,8 @@ case calc_struct_nlnstiffmass  : assemble_action = assemble_two_exchange; break;
 case calc_struct_eleload       : assemble_action = assemble_do_nothing; break;
 case calc_struct_stress        : assemble_action = assemble_do_nothing; break;
 case calc_struct_update_istep  : assemble_action = assemble_do_nothing; break;
+case calc_ale_stiff            : assemble_action = assemble_one_exchange; break;
+case calc_ale_rhs              : assemble_action = assemble_do_nothing; break;
 default: dserror("Unknown type of assembly"); break;
 }
 /*------------------------------ exchange coupled dofs, if there are any */
@@ -283,7 +289,8 @@ int is_brick1=0;
 int is_wall1 =0;
 int is_fluid1=0;
 int is_fluid3=0;
-int is_ale=0;
+int is_ale3=0;
+int is_ale2=0;
 ELEMENT *actele;              /* active element */
 #ifdef DEBUG 
 dstrc_enter("calinit");
@@ -314,8 +321,11 @@ for (i=0; i<actfield->dis[0].numele; i++)
    case el_fluid3:
       is_fluid3=1;
    break;
-   case el_ale:
-      is_ale=1;
+   case el_ale3:
+      is_ale3=1;
+   break;
+   case el_ale2:
+      is_ale2=1;
    break;
    default:
       dserror("Unknown typ of element");
@@ -347,8 +357,14 @@ if (is_fluid3==1)
 {
 }
 /*----------------------------------- init all kind of routines for ale */
-if (is_ale==1)
+if (is_ale3==1)
 {
+   ale3(actpart,NULL,NULL,&estif_global,action);
+}
+/*----------------------------------- init all kind of routines for ale */
+if (is_ale2==1)
+{
+   ale2(actpart,NULL,NULL,&estif_global,action);
 }
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -378,7 +394,7 @@ int is_brick1=0;
 int is_wall1 =0;
 int is_fluid1=0;
 int is_fluid3=0;
-int is_ale=0;
+int is_ale3=0;
 ELEMENT *actele;
 #ifdef DEBUG 
 dstrc_enter("calreduce");
@@ -405,8 +421,8 @@ for (i=0; i<actfield->dis[0].numele; i++)
    case el_fluid3:
       is_fluid3=1;
    break;
-   case el_ale:
-      is_ale=1;
+   case el_ale3:
+      is_ale3=1;
    break;
    default:
       dserror("Unknown typ of element");
@@ -435,7 +451,7 @@ if (is_fluid3==1)
 {
 }
 /*-----------------------------------------------reduce results for ale */
-if (is_ale==1)
+if (is_ale3==1)
 {
 }
 /*----------------------------------------------------------------------*/

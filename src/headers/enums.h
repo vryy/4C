@@ -3,10 +3,11 @@
  *----------------------------------------------------------------------*/
 typedef enum _PROBLEM_TYP
 {
-                       prb_fsi,       /* fluid structure interaction problem */
+                       prb_fsi,       /*  fluid structure interaction problem */
                        prb_structure, /*  structural  problem */
                        prb_fluid,     /*  fluid  problem */
-                       prb_opt        /*  strctural optimization  problem */
+                       prb_opt,       /*  strctural optimization  problem */
+		       prb_ale        /*  pure ale problem */
 } PROBLEM_TYP;
 /*----------------------------------------------------------------------*
  | TIME TYPES                                             m.gee 7/01    |
@@ -56,7 +57,8 @@ typedef enum _ELEMENT_TYP
                        el_wall1,       /* 2D plane stress - plane strain element */
                        el_fluid2,      /* 2D fluid element */
                        el_fluid3,      /* 3D fluid element */
-                       el_ale          /* pseudo structural ale element, can be 2D or 3D */
+                       el_ale2,        /* 2D pseudo structural ale element */
+                       el_ale3         /* 3D pseudo structural ale element */
 } ELEMENT_TYP;                         
 /*----------------------------------------------------------------------*
  | enum MATERIAL_TYP                                      m.gee 7/01    |
@@ -119,7 +121,10 @@ typedef enum _CALC_ACTION
                        write_restart,
                        read_restart,
 		       calc_fluid_init,
-		       calc_fluid
+		       calc_fluid,
+		       calc_ale_init,
+		       calc_ale_stiff,
+		       calc_ale_rhs
 } CALC_ACTION;                         
 /*----------------------------------------------------------------------*
  | enum _ASSEMBLE_ACTION                                  m.gee 1/02    |

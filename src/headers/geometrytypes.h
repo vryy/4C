@@ -51,7 +51,8 @@ typedef struct _ELEMENT
      struct _WALL1    *w1;                      /* 2D plane stress - plane strain element */
      struct _FLUID2   *f2;                      /* 2D fluid element */
      struct _FLUID3   *f3;                      /* 3D fluid element */
-     struct _ALE      *ale;                     /* pseudo structural 2D or 3D ale element */
+     struct _ALE2     *ale2;                    /* pseudo structural 2D ale element */
+     struct _ALE3     *ale3;                    /* pseudo structural 3D ale element */
      }                          e;              /* name of union */ 
 
      union

@@ -225,7 +225,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    case el_fluid3: 
        dserror("Restart for fluid3 not yet impl.");
    break;
-   case el_ale:
+   case el_ale3:
        dserror("Restart for ale not yet impl.");
    break;
    case el_none:
@@ -528,7 +528,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    case el_fluid3: 
        dserror("Restart for fluid3 not yet impl.");
    break;
-   case el_ale:
+   case el_ale3:
        dserror("Restart for ale not yet impl.");
    break;
    case el_none:
