@@ -57,7 +57,7 @@ typedef enum _SHELLPROJECTON
    s8_c_project_onbot
 } SHELLPROJECTON;
 /*----------------------------------------------------------------------*/
-#define EPSN (1.0E+03)
+#define EPSN (1.0E+06)
 #define EPST (1.0E+02)
 #define NU   (0.5)
 /*----------------------------------------------------------------------*/
