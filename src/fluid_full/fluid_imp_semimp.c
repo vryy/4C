@@ -160,7 +160,6 @@ INT             numeq;              /* number of equations on this proc */
 INT             numeq_total;        /* total number of equations        */
 INT             num_sol;	    /* size of field sol_increment 	*/
 INT             init;               /* flag for solver_control call     */
-INT             calstress=0;        /* flag for stress calculation      */
 INT             actsysarray=0;      /* number of actual sysarray        */
 INT             outstep=0;          /* counter for output control       */
 INT             resstep=0;          /* counter for output control       */
@@ -183,8 +182,6 @@ DOUBLE          tes=0.0;            /*					*/
 DOUBLE          tss=0.0;            /*					*/
 DOUBLE          tts=0.0;            /*					*/
 FLUID_STRESS    str;           
-DOUBLE		liftdrag[3];	    /* array with lift & drag coeff.	*/
-DOUBLE		recv[3];
 
 SOLVAR         *actsolv;            /* pointer to active sol. structure */
 PARTITION      *actpart;            /* pointer to active partition      */
@@ -222,10 +219,18 @@ container.actndis   = 0;
 container.turbu     = fdyn->turbu;
 container.fieldtyp  = actfield->fieldtyp;
 container.gen_alpha = dynvar->gen_alpha;
-if (fdyn->liftdrag==0)
+
+
+/* set flag for stress evaluation */
 str         = str_none;
-else
-str         = str_liftdrag;
+
+if (fdyn->liftdrag!=0)
+  str         = str_liftdrag;
+
+if (ioflags.fluid_stress_gid==1)
+  str         = str_all;
+
+
 dynvar->acttime=ZERO;
 
 /*---------------- if we are not parallel, we have to allocate an alibi * 
@@ -372,6 +377,10 @@ if (ioflags.fluid_sol_gid==1 && par.myrank==0)
 {
   out_gid_sol("velocity",actfield,actintra,fdyn->step,actpos,fdyn->time);
   out_gid_sol("pressure",actfield,actintra,fdyn->step,actpos,fdyn->time);
+}
+if (ioflags.fluid_stress_gid==1 && par.myrank==0) 
+{
+  out_gid_sol("stress",actfield,actintra,fdyn->step,actpos,fdyn->time);
 }
 
 /*---------- calculate time independent constants for time algorithm ---*/
@@ -610,6 +619,17 @@ if (fdyn->liftdrag>0)
                  actsolv,actpart,actintra,fdyn);
 }
 
+
+/* stress computation */
+if (ioflags.fluid_stress_gid==1)
+{
+  container.str = str;
+  *action = calc_fluid_stress;
+  calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,
+      &container,action);
+}
+
+
 /*------- copy solution from sol_increment[1][j] to sol_increment[0][j] */
 /*------- -> prev. solution becomes (n-1)-solution of next time step ---*/
 solserv_sol_copy(actfield,0,1,1,1,0);
@@ -646,12 +666,20 @@ if (fdyn->mlfem==1) fluid_smcopy(actpart,fdyn);
 #endif
 
 /*--------------------------------------- write solution to .flavia.res */
-if (resstep==fdyn->upres &&ioflags.fluid_sol_gid==1 && par.myrank==0) 
+if (resstep==fdyn->upres && par.myrank==0) 
 {
-   resstep=0;
-   /*out_checkfilesize(1);*/
-   out_gid_sol("velocity",actfield,actintra,fdyn->step,actpos,fdyn->time);
-   out_gid_sol("pressure",actfield,actintra,fdyn->step,actpos,fdyn->time);
+  resstep=0;
+  /*out_checkfilesize(1);*/
+
+  if(ioflags.fluid_sol_gid==1)
+  {
+    out_gid_sol("velocity",actfield,actintra,fdyn->step,actpos,fdyn->time);
+    out_gid_sol("pressure",actfield,actintra,fdyn->step,actpos,fdyn->time);
+  }
+  if(ioflags.fluid_stress_gid==1)
+  {
+    out_gid_sol("stress",actfield,actintra,fdyn->step,actpos,fdyn->time);
+  }
 }
 
 /*---------------------------------------------- write solution to .out */
