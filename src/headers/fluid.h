@@ -48,8 +48,12 @@ double omt;      /*!< ONE-theta                                   */
 double acttime;  /*!< actual time */
 double velmax;   /*!< max. velocity, needed for stabilisaton parameter */
 double tau[3];   /*!< array for stabilitity parameter */
+double tau_tu;   /*!< array for stabilitity parameter for turbulence*/
+double tau_tu_dc;/*!< array for DISCONTINUITY CAPTURING for turbulence*/
 double sigma;    /*!< const. for nonlinear iteration */   
+double washvel;  /*!< wall shear velocity */   
 double totarea;  /*!< total area of fluid field */
+double coord_scale[2];  /*!<coordinates for scaling the turbulence variables */   
 int    itwost;   /*!< control variable for element evaluation */
 int    isemim;   /*!< control variable for element evaluation */
 int    iprerhs;  /*!< treatment of pressure in time discr. */
@@ -64,6 +68,12 @@ int    nil;	 /*!< EVALUATION OF LUMPED MASS MATRIX (Mvv-lumped)  */
 int    nif;	 /*!< EVALUATION OF "TIME - RHS"           	     */
 int    nii;	 /*!< EVALUATION OF "ITERATION - RHS"		     */
 int    nis;	 /*!< STATIONARY CASE (NO TIMEDEPENDENT TERMS)       */
+int    niturbu_pro;  /*!< EVALUATION OF "TIME - RHS" for turbulence-model */
+int    niturbu_n;    /*!< EVALUATION OF "TIME - RHS" for turbulence-model */
+int    kapeps_flag;  /*!< kappa or epsilon equation                       */
+int    kapomega_flag;/*!< kappa or omega equation                         */
+int    kappan;       /*!< kappan for production-term                      */
+int    dis_capt;     /*!< flag for DISCONTINUITY CAPTURING for turbulence model */
 int    ishape;   /*!< flag for new element shape                     */
 int    ncols;        /*!< number of columns in solution history */
 struct  _FLUID_DATA data;
@@ -90,8 +100,10 @@ int                uppss;        /*!< update pss file every n steps */
 int                upout;        /*!< store results every n steps */      
 int                nstep;        /*!< number of timesteps */
 int                step;         /*!< the actual step */
+int                stepke;       /*!< the actual step for kappa-epsilon*/
 int                ite;          /*!< nonlinear iteration scheme */
 int                itemax;       /*!< number of nonlin. iterations */
+int                itemax_ke;    /*!< number of nonlin. iterations for kappa-eps */
 int                itchk;        /*!< convergence check during nonlin. iteration */
 int                itnorm;       /*!< norm for conv. check d. nonlin. iteration */
 int                stchk;        /*!< steady state check every n steps */
@@ -104,6 +116,11 @@ int                viscstr;      /*!< flag for calculation of viscos stresses */
 int                freesurf;     /*!< treatment of free surface */
 int                surftens;     /*!< include surface tension effects */
 int                checkarea;    /*!< check total area of fluid field */
+int                turbu;        /*!< the type of turbulence-model */
+int                dis_capt;     /*!< flag for DISCONTINUITY CAPTURING for turbulence model */
+double             lenght;       /*!< internal lenght of problem */
+double             rought;       /*!< roughtness of solid boundaries */
+double      coord_scale[2];      /*!< coordinates for scaling the turbulence variables */   
 double             maxtime;      /*!< maximal simulation time */
 double             time;         /*!< actual time */
 double             dt;           /*!< time increment */

@@ -1153,7 +1153,54 @@ void fluid_result_incre(
 			  FLUID_DYNAMIC     *fdyn           
 		       );		        
 
+/************************************************************************
+ | fluid_service_tu.c                                                   |
+ ************************************************************************/
+void fluid_result_incre_tu(FIELD         *actfield,    
+                           INTRA         *actintra,   
+			         DIST_VECTOR   *sol,        
+                           int            place,      
+			         SPARSE_ARRAY  *sysarray,      
+			         SPARSE_TYP    *sysarray_typ,
+			         double        *kapepsrat,        
+		               FLUID_DYNAMIC *fdyn,
+                           double         lower_limit_kappa,
+                           double         lower_limit_eps          
+		              );
 
+void fluid_eddy_update(FIELD         *actfield, 
+                       DIST_VECTOR   *sol   
+                       );
+
+void fluid_lenght_update(FIELD         *actfield, 
+                         DIST_VECTOR   *sol,   
+		             double        *lenghtrat, 
+                         FLUID_DYNAMIC *fdyn      
+                        );
+/************************************************************************
+ | fluid_service_tu_1.c                                                 |
+ ************************************************************************/
+void fluid_result_incre_tu_1(FIELD       *actfield,    
+                           INTRA         *actintra,   
+			         DIST_VECTOR   *sol,        
+                           int            place,      
+			         SPARSE_ARRAY  *sysarray,      
+			         SPARSE_TYP    *sysarray_typ,
+			         double        *kapomegarat,        
+		               FLUID_DYNAMIC *fdyn,
+                           double         lower_limit_kappa,
+                           double         lower_limit_omega         
+		              );
+
+void fluid_eddy_update_1(FIELD         *actfield, 
+                         DIST_VECTOR   *sol   
+                        );
+
+void fluid_lenght_update_1(FIELD         *actfield, 
+                          DIST_VECTOR   *sol,   
+		              double        *lenghtrat, 
+                          FLUID_DYNAMIC *fdyn      
+                         );
 /* -------------------------------------------------------------------- *
  *   global_oll_add.c                                          mn 05/03 *
  * -------------------------------------------------------------------- */

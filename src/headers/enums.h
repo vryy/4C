@@ -67,6 +67,7 @@ typedef enum _ELEMENT_TYP
                        el_wall1,       /* 2D plane stress - plane strain element */
                        el_fluid2,      /* 2D fluid element */
                        el_fluid2_pro,  /* 2D fluid element */
+                       el_fluid2_tu,   /* 2D fluid element for turbulence */
                        el_fluid3,      /* 3D fluid element */
                        el_ale2,        /* 2D pseudo structural ale element */
                        el_ale3         /* 3D pseudo structural ale element */
@@ -147,6 +148,7 @@ typedef enum _CALC_ACTION
                        calc_fluid_vort,
 		       calc_fluid_stress,
 		       calc_fluid_curvature,
+                   calc_fluid_shearvelo,		
 		       calc_ale_init,
 		       calc_ale_stiff,
 		       calc_ale_rhs,

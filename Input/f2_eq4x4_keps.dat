@@ -1,0 +1,373 @@
+==================================================================
+                        General Data File C_CARAT
+==================================================================
+-------------------------------------------------------------TITLE
+Einheitsquadrat
+------------------------------------------------------PROBLEM SIZE
+ELEMENTS          16 
+NODES             25
+DIM                2
+MATERIALS          1
+NUMDF        3
+-------------------------------------------------------PROBLEM TYP
+PROBLEMTYP   Fluid
+NUMFIELD     1
+MULTIDIS     yes
+TIMETYP      Dynamic
+TRACE        secure
+RESTART      0
+----------------------------------------------------DISCRETISATION
+NUMFLUIDDIS  2
+NUMSTRUCDIS  1 
+NUMALEDIS    1
+----------------------------------------------------------------IO
+STRUCT_DISP_FILE   No
+STRUCT_STRESS_FILE No
+STRUCT_DISP_GID    No
+STRUCT_STRESS_GID  No
+FLUID_SOL_FILE     Yes
+FLUID_SOL_GID      Yes
+FLUID_VIS_FILE     Yes
+ALE_DISP_FILE      No
+ALE_DISP_GID       No
+MONITORING         No
+------------------------------------------------------------STATIC
+GEOLINEAR
+------------------------------------------------STRUCTURAL DYNAMIC
+DYNAMICTYP   Nlin_Time_Int
+TIMESTEP     0.05 
+NUMSTEP      100 
+MAXTIME      5.0
+BETA         0.25 
+GAMMA        0.5 
+ALPHA_M      0.5 
+ALPHA_F      0.5
+DAMPING      Yes 
+M_DAMP       0.5 
+K_DAMP       0.5
+ITERATION    full 
+TOLDISP      1.0E-08
+MAXITER      50
+-----------------------------------------------------FLUID DYNAMIC
+DYNAMICTYP   Nlin_Time_Int
+TIMEINTEGR   One_Step_Theta
+NUMDF        3
+VISCSTRESS   no
+FREESURFACE  no
+IPRERHS      1
+NUMCONT      1
+UPPSS        1
+SAVESTEP     1
+MAXTIME      10.0
+NUMSTEP      100 
+TIMESTEP     0.01
+ALPHA        1.00
+THETA        1.00
+GAMMA        1.00
+NONLINITER   fixed_point_like
+ITEMAX       5
+CONVCHECK    L_2_norm
+CONVTOL      1.0E-6
+STEADYCHECK  L_2_norm
+STEADYSTEP   5
+STEADYTOL    1.0E-3
+STARTINGALGO One_Step_Theta
+NUMSTASTEPS  0
+FLUID_START1 0.67
+INITIALFIELD zero_field
+STARTFUNCNO  2
+TURBULENCE   kappa-eps
+DISC_CAPT    No
+INT_LENGHT   0.005
+SC_COORD_X   0.0
+SC_COORD_Y   -0.5
+------------------------------------------------------FLUID SOLVER
+SOLVER         Aztec_MSR
+AZSOLVE        BiCGSTAB
+AZPREC         ILU
+AZREUSE        0  
+AZDROP         0.0  
+AZFILL         1.0  
+AZGFILL        1  
+AZTOL          1.0E-12  
+AZITER         2500  
+AZSUB          50  
+AZOMEGA        1.0  
+AZGRAPH        1  
+AZPOLY         5  
+PARTITION      Cut_Elements
+-----------------------------------------------------STRUCT SOLVER
+SOLVER         Aztec_MSR
+AZSOLVE        CG
+AZPREC         ILU
+AZREUSE        0  
+AZDROP         0.0  
+AZFILL         2.0  
+AZGFILL        0  
+AZTOL          1.0E-08  
+AZITER         2500  
+AZSUB          50  
+AZOMEGA        1.0  
+AZGRAPH        1  
+AZPOLY         5  
+PARTITION      Cut_Elements
+--------------------------------------------------------ALE SOLVER
+SOLVER         Aztec_MSR
+AZSOLVE        CG
+AZPREC         ILU
+AZREUSE        0  
+AZDROP         0.0  
+AZFILL         2.0  
+AZGFILL        0  
+AZTOL          1.0E-08  
+AZITER         2500  
+AZSUB          50  
+AZOMEGA        1.0  
+AZGRAPH        1  
+AZPOLY         5  
+PARTITION      Cut_Elements
+------------------------------------------------DESIGN DESCRIPTION
+NDPOINT 4
+NDLINE  4
+NDSURF  1
+NDVOL   0
+-----------------------------------------------------DESIGN POINTS
+POINT
+Num: 1 HigherEntity: 2 conditions: 2 material: 0
+LAYER: Layer0
+Coord: -0.500000 -0.500000 0.000000
+END POINT
+POINT
+Num: 2 HigherEntity: 2 conditions: 2 material: 0
+LAYER: Layer0
+Coord: 0.500000 -0.500000 0.000000
+END POINT
+POINT
+Num: 3 HigherEntity: 2 conditions: 2 material: 0
+LAYER: Layer0
+Coord: 0.500000 0.500000 0.000000
+END POINT
+POINT
+Num: 4 HigherEntity: 2 conditions: 2 material: 0
+LAYER: Layer0
+Coord: -0.500000 0.500000 0.000000
+END POINT
+------------------------------------------------------DESIGN LINES
+STLINE
+Num: 1 HigherEntity: 1 conditions: 2 material: 0
+LAYER: Layer0
+Meshing Info: (num=3,NOE=1) Elemtype=1 IsStructured=1 size=4 Meshing=Default
+Points: 1 2
+END STLINE
+STLINE
+Num: 2 HigherEntity: 1 conditions: 1 material: 0
+LAYER: Layer0
+Meshing Info: (num=4,NOE=1) Elemtype=1 IsStructured=1 size=4 Meshing=Default
+Points: 2 3
+END STLINE
+STLINE
+Num: 3 HigherEntity: 1 conditions: 2 material: 0
+LAYER: Layer0
+Meshing Info: (num=5,NOE=1) Elemtype=1 IsStructured=1 size=4 Meshing=Default
+Points: 3 4
+END STLINE
+STLINE
+Num: 4 HigherEntity: 1 conditions: 2 material: 0
+LAYER: Layer0
+Meshing Info: (num=2,NOE=1) Elemtype=1 IsStructured=1 size=4 Meshing=Default
+Points: 4 1
+END STLINE
+---------------------------------------------------DESIGN SURFACES
+NURBSURFACE
+Num: 1 HigherEntity: 0 conditions: 2 material: 1
+LAYER: Layer0
+Meshing Info: (num=1,NOE=1) Elemtype=3 IsStructured=1 size=0 Meshing=Default
+NumLines: 4
+Line: 4 Orientation: SAME1ST
+Line: 1 Orientation: SAME1ST
+Line: 2 Orientation: SAME1ST
+Line: 3 Orientation: SAME1ST
+Number of Control Points= 2 2 Degree= 1 1
+Point 1,1 coords:-0.550000,0.550000,0.000000
+Point 1,2 coords:-0.550000,-0.550000,0.000000
+Point 2,1 coords:0.550000,0.550000,0.000000
+Point 2,2 coords:0.550000,-0.550000,0.000000
+Number of knots in U= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Number of knots in V= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Non rational
+IsTrimmed: 1
+Center: -0.000000 0.000000 0.000000
+Normal: 0.000000 0.000000 1.000000
+END NURBSURFACE
+----------------------------------------------------DESIGN VOLUMES
+------------------------------------DESIGN POINT DIRICH CONDITIONS 
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DPOINT 4
+ E 1 -   1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
+ E 2 -   1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
+ E 3 -   1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
+ E 4 -   1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
+-------------------------------------DESIGN LINE DIRICH CONDITIONS 
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DLINE 3
+ E 1 -   1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
+ E 3 -   1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
+ E 4 -   1 1 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 1 none none none none none 
+-------------------------------------DESIGN SURF DIRICH CONDITIONS 
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DSURF 0
+--------------------------------------DESIGN VOL DIRICH CONDITIONS 
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DVOL 0
+-----------------------------------DESIGN POINT NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL 
+DPOINT 0
+------------------------------------DESIGN LINE NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL 
+DLINE 0
+------------------------------------DESIGN SURF NEUMANN CONDITIONS
+// DOBJECT CURVE TYPE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL 
+DSURF 0
+-------------------------------------DESIGN VOL NEUMANN CONDITIONS
+// DOBJECT CURVE TYPE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL 
+DVOL 0
+----------------------------------DESIGN COUPLING POINT CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
+DPOINT 0
+-----------------------------------DESIGN COUPLING LINE CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
+DLINE 0
+-----------------------------------DESIGN COUPLING SURF CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
+DSURF 0
+------------------------------------DESIGN COUPLING VOL CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
+DVOL 0
+-------------------------------DESIGN FSI COUPLING LINE CONDITIONS
+// DOBJECT FSI_ID FIELD MESH
+DLINE 0
+-------------------------DESIGN FLUID FREE SURFACE POINT CONDITIONS
+// DOBJECT FIELD FIXED FIXED FIXED FIXED FIXED FIXED
+DPOINT 0
+-------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
+// DOBJECT
+DLINE 0
+-----------------------------------------------DNODE-NODE TOPOLOGY
+NODE       1 DNODE 1
+NODE      16 DNODE 2
+NODE      25 DNODE 3
+NODE      17 DNODE 4
+-----------------------------------------------DLINE-NODE TOPOLOGY
+NODE       1 DLINE 1
+NODE       2 DLINE 1
+NODE       5 DLINE 1
+NODE      10 DLINE 1
+NODE      16 DLINE 1
+NODE      16 DLINE 2
+NODE      18 DLINE 2
+NODE      21 DLINE 2
+NODE      23 DLINE 2
+NODE      25 DLINE 2
+NODE      25 DLINE 3
+NODE      24 DLINE 3
+NODE      22 DLINE 3
+NODE      19 DLINE 3
+NODE      17 DLINE 3
+NODE      17 DLINE 4
+NODE      11 DLINE 4
+NODE       6 DLINE 4
+NODE       3 DLINE 4
+NODE       1 DLINE 4
+-----------------------------------------------DSURF-NODE TOPOLOGY
+NODE       1 DSURFACE 1
+NODE      16 DSURFACE 1
+NODE      25 DSURFACE 1
+NODE      17 DSURFACE 1
+NODE       2 DSURFACE 1
+NODE       5 DSURFACE 1
+NODE      10 DSURFACE 1
+NODE      18 DSURFACE 1
+NODE      21 DSURFACE 1
+NODE      23 DSURFACE 1
+NODE      24 DSURFACE 1
+NODE      22 DSURFACE 1
+NODE      19 DSURFACE 1
+NODE      11 DSURFACE 1
+NODE       6 DSURFACE 1
+NODE       3 DSURFACE 1
+NODE      12 DSURFACE 1
+NODE       8 DSURFACE 1
+NODE       4 DSURFACE 1
+NODE      14 DSURFACE 1
+NODE       9 DSURFACE 1
+NODE       7 DSURFACE 1
+NODE      20 DSURFACE 1
+NODE      15 DSURFACE 1
+NODE      13 DSURFACE 1
+-----------------------------------------------DVOL-NODE TOPOLOGY
+-------------------------------------------------------NODE COORDS
+NODE 1   COORD -0.500000  -0.500000  0.000000
+NODE 2   COORD -0.250000  -0.500000  0.000000
+NODE 3   COORD -0.500000  -0.250000  0.000000
+NODE 4   COORD -0.250000  -0.250000  0.000000
+NODE 5   COORD 0.000000  -0.500000  0.000000
+NODE 6   COORD -0.500000  0.000000  0.000000
+NODE 7   COORD 0.000000  -0.250000  0.000000
+NODE 8   COORD -0.250000  0.000000  0.000000
+NODE 9   COORD 0.000000  0.000000  0.000000
+NODE 10  COORD 0.250000  -0.500000  0.000000
+NODE 11  COORD -0.500000  0.250000  0.000000
+NODE 12  COORD -0.250000  0.250000  0.000000
+NODE 13  COORD 0.250000  -0.250000  0.000000
+NODE 14  COORD 0.000000  0.250000  0.000000
+NODE 15  COORD 0.250000  0.000000  0.000000
+NODE 16  COORD 0.500000  -0.500000  0.000000
+NODE 17  COORD -0.500000  0.500000  0.000000
+NODE 18  COORD 0.500000  -0.250000  0.000000
+NODE 19  COORD -0.250000  0.500000  0.000000
+NODE 20  COORD 0.250000  0.250000  0.000000
+NODE 21  COORD 0.500000  0.000000  0.000000
+NODE 22  COORD 0.000000  0.500000  0.000000
+NODE 23  COORD 0.500000  0.250000  0.000000
+NODE 24  COORD 0.250000  0.500000  0.000000
+NODE 25  COORD 0.500000  0.500000  0.000000
+----------------------------------------------------------ELEMENTS
+------------------------------------------------STRUCTURE ELEMENTS
+----------------------------------------------------FLUID ELEMENTS
+      1 FLUID2 QUAD4      11     12     19     17 MAT       1 NA Euler GP 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0  TURBULENCE kappa-eps                    
+      2 FLUID2 QUAD4       6      8     12     11 MAT       1 NA Euler GP 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0  TURBULENCE kappa-eps
+      3 FLUID2 QUAD4       3      4      8      6 MAT       1 NA Euler GP 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0  TURBULENCE kappa-eps
+      4 FLUID2 QUAD4       1      2      4      3 MAT       1 NA Euler GP 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0  TURBULENCE kappa-eps
+      5 FLUID2 QUAD4      12     14     22     19 MAT       1 NA Euler GP 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0  TURBULENCE kappa-eps
+      6 FLUID2 QUAD4       8      9     14     12 MAT       1 NA Euler GP 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0  TURBULENCE kappa-eps
+      7 FLUID2 QUAD4       4      7      9      8 MAT       1 NA Euler GP 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0  TURBULENCE kappa-eps
+      8 FLUID2 QUAD4       2      5      7      4 MAT       1 NA Euler GP 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0  TURBULENCE kappa-eps
+      9 FLUID2 QUAD4      14     20     24     22 MAT       1 NA Euler GP 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0  TURBULENCE kappa-eps
+     10 FLUID2 QUAD4       9     15     20     14 MAT       1 NA Euler GP 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0  TURBULENCE kappa-eps
+     11 FLUID2 QUAD4       7     13     15      9 MAT       1 NA Euler GP 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0  TURBULENCE kappa-eps
+     12 FLUID2 QUAD4       5     10     13      7 MAT       1 NA Euler GP 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0  TURBULENCE kappa-eps
+     13 FLUID2 QUAD4      20     23     25     24 MAT       1 NA Euler GP 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0  TURBULENCE kappa-eps
+     14 FLUID2 QUAD4      15     21     23     20 MAT       1 NA Euler GP 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0  TURBULENCE kappa-eps
+     15 FLUID2 QUAD4      13     18     21     15 MAT       1 NA Euler GP 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0  TURBULENCE kappa-eps
+     16 FLUID2 QUAD4      10     16     18     13 MAT       1 NA Euler GP 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0  TURBULENCE kappa-eps
+------------------------------------------------------ALE ELEMENTS
+---------------------------------------------------------MATERIALS
+MAT       1 MAT_fluid  VISCOSITY 0.000003 DENSITY 1.0  
+------------------------------------------------------CONTROL NODE
+-------------------------------------------------------LOAD CURVES
+------------------------------------------------------------CURVE1
+CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 1000.0 FACTOR 1.0 1.0 
+------------------------------------------------------------CURVE2
+------------------------------------------------------------CURVE3
+------------------------------------------------------------CURVE4
+------------------------------------------------------------CURVE5
+---------------------------------------------------------------END
+// END

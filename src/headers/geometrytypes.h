@@ -11,6 +11,7 @@ typedef struct _NODE
      int                        proc;          /* my owner intra-proc */
 
      double                     x[3];          /* my coordinates */
+     double                     c_f_shear;     /* dim. shearstress c_f of node   */
 
      struct _ARRAY              sol;           /* my solution history */
      struct _ARRAY              sol_increment; /* my incremental solution */
@@ -52,6 +53,7 @@ typedef struct _ELEMENT
      struct _WALL1      *w1;                    /* 2D plane stress - plane strain element */
      struct _FLUID2     *f2;                    /* 2D fluid element */
      struct _FLUID2_PRO *f2pro;                 /* 2D fluid element projection method */
+     struct _FLUID2_TU  *f2_tu;                 /* 2D fluid element for turbulence*/
      struct _FLUID3     *f3;                    /* 3D fluid element */
      struct _ALE2       *ale2;                  /* pseudo structural 2D ale element */
      struct _ALE3       *ale3;                  /* pseudo structural 3D ale element */

@@ -83,6 +83,10 @@ static double   *etforce;  /* pointer to Time RHS                       */
 static double   *eiforce;  /* pointer to Iteration RHS                  */
 static double   *edforce;  /* pointer to RHS due to dirichl. conditions */
 
+static ARRAY     eddy_a;       /* element turbulent ken. energy  at (n+gamma)*/
+static double   *eddy;
+
+double           visc;
 /*!--------------------------------------------------------------------- 
 \brief control routine for element integration of fluid2
 
@@ -100,6 +104,7 @@ This routine controls the element evaluation:
 \param  *data	         FLUID_DATA     (i)
 \param  *dynvar	         FLUID_DYN_CALC (i)
 \param  *ele	         ELEMENT	(i)   actual element
+\param  *eleke	         ELEMENT	(i)   element for turbulence-model
 \param  *estif_global    ARRAY	        (o)   ele stiffnes matrix
 \param  *emass_global    ARRAY	        (o)   ele mass matrix
 \param  *etforce_global  ARRAY	        (o)   element time force
@@ -108,6 +113,7 @@ This routine controls the element evaluation:
 \param  *hasdirich       int	        (o)   element flag
 \param  *hasext          int	        (o)   element flag         
 \param   imyrank         int            (i)   proc number
+\param   velgrad	         int	        (i)   flag
 \param   init	         int	        (i)   init flag
 \return void                                               
                                  
@@ -115,16 +121,18 @@ This routine controls the element evaluation:
 void f2_calele(
                 FLUID_DATA     *data, 
                 FLUID_DYN_CALC *dynvar, 
-	        ELEMENT        *ele,             
+	          ELEMENT        *ele,             
+                ELEMENT        *eleke, 
                 ARRAY          *estif_global,   
                 ARRAY          *emass_global,   
-	        ARRAY          *etforce_global,       
-	        ARRAY          *eiforce_global, 
-		ARRAY          *edforce_global,		
-		int            *hasdirich,      
+	          ARRAY          *etforce_global,       
+	          ARRAY          *eiforce_global, 
+		    ARRAY          *edforce_global,		
+		    int            *hasdirich,      
                 int            *hasext,
                 int             imyrank,
-		int             init            
+		    int             velgrad,            
+		    int             init            
 	       )
 {
 
@@ -161,6 +169,7 @@ if (init==1) /* allocate working arrays and set pointers */
    sigmaint  = amdef("sigmaint" ,&sigmaint_a ,3,MAXGAUSS ,"DA");
    ekappan   = amdef("ekappan"  ,&ekappan_a  ,MAXNOD_F2,1 ,"DV");
    ekappang  = amdef("ekappang" ,&ekappang_a ,MAXNOD_F2,1 ,"DV");
+   eddy      = amdef("eddy"     ,&eddy_a  ,MAXNOD_F2,1,"DV");
    wa1       = amdef("wa1"      ,&w1_a       ,50,50,"DA");
    wa2       = amdef("wa2"      ,&w2_a       ,50,50,"DA");  
 /*                                               \- size is arbitrary chosen!  */
@@ -184,12 +193,19 @@ amzero(edforce_global);
 switch(ele->e.f2->is_ale)
 {
 case 0:
+/*compute the shear stresses (only if k-omega or k-epsilon is activated)*/
+if (velgrad==1) 
+{
+ f2_shearstress(ele,dynvar,evelng,vderxy,xjm,xyze,deriv,deriv2,derxy,funct);
+ goto end;
+}
+
 /*---------------------------------------------------- set element data */
    f2_calset(dynvar,ele,xyze,eveln,evelng,epren,edeadn,edeadng,hasext);
 
 /*-------------------------- calculate element size and stab-parameter: */
-   f2_calelesize(ele,data,dynvar,xyze,funct,deriv,deriv2,xjm,evelng,
-                 velint,wa1);
+   f2_calelesize(ele,eleke,data,dynvar,xyze,funct,deriv,deriv2,xjm,derxy,
+                 vderxy,evelng,velint,wa1,eddy,&visc);
 /*-------------------------------- calculate element stiffness matrices */
 /*                                            and element force vectors */
    f2_calint(data,ele,dynvar,hasext,
@@ -197,15 +213,15 @@ case 0:
 	     xyze,funct,deriv,deriv2,xjm,derxy,derxy2,
 	     eveln,evelng,epren,edeadn,edeadng,
 	     velint,vel2int,covint,vderxy,pderxy,vderxy2,
-	     wa1,wa2);
+	     wa1,wa2,visc);
 break;
 case 1:
 /*---------------------------------------------------- set element data */
    f2_calseta(dynvar,ele,xyze,eveln,evelng,ealecovn,
                ealecovng,egridv,epren,edeadn,edeadng,ekappan,ekappang,hasext);
 /*-------------------------- calculate element size and stab-parameter: */   
-   f2_calelesize(ele,data,dynvar,xyze,funct,deriv,deriv2,xjm,ealecovng,
-                 velint,wa1);
+   f2_calelesize(ele,eleke,data,dynvar,xyze,funct,deriv,deriv2,xjm,derxy,
+                 vderxy,ealecovng,velint,wa1,eddy,&visc);
 /*-------------------------------- calculate element stiffness matrices */
 /*                                            and element force vectors */
    f2_calinta(data,ele,dynvar,hasext,imyrank,

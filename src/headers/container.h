@@ -26,14 +26,19 @@ int            kintyp;      /*!< kinematic to be used */
                              /*!< kintyp = 1: updated lagrange */
                              /*!< kintyp = 2: total lagrange */
 int            kstep;        /*!< time in increment step we are in */
+int            actndis;      /*!< which discretisation we have */
 int            inherit;
 int            point_neum;
 
 #ifdef D_FLUID
 double        *ftimerhs;     /*!< ab hier fuer fluid */   
 double        *fiterhs;
+double        *ftimerhs_pro;
 int            nii;
 int            nif;
+int            turbu;
+int            niturbu_pro;
+int            niturbu_n;
 enum _FLUID_STRESS str;         
 #endif
 

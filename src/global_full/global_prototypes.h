@@ -109,6 +109,7 @@ void out_sol(FIELD *actfield, PARTITION *actpart, INTRA *actintra,
 
 void out_fluidmf(FIELD *fluidfield);
 void out_fsi(FIELD *fluidfield);
+void out_fluidtu(FIELD *actfield, INTRA *actintra, int step, int place);
 /*----------------------------------------------------------------------*
  |  out_gid_sol.c                                        m.gee 12/01    |
  *----------------------------------------------------------------------*/

@@ -140,6 +140,7 @@ actsysarray=0;
 /*--------------------------------------------------- set some pointers */
 actfield    = &(field[0]);
 container.fieldtyp  = actfield->fieldtyp;
+container.actndis   = 0;
 actsolv     = &(solv[0]);
 actpart     = &(partition[0]);
 action      = &(calc_action[0]);

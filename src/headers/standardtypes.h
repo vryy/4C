@@ -109,7 +109,8 @@ FILE             *out_out;                /* file-pointer .out  file     */
 FILE             *out_err;                /* file-pointer .err  file     */
 FILE             *out_pss;                /* file ptr to restart-pss file */
 FILE             *in_pss;                 /* file-pointer .pss  file     */
-FILE             *out_mon;               /* file-pointer .mon file     */
+FILE             *out_mon;                /* file-pointer .mon file     */
+FILE             *out_tur;                /* file-pointer .tur  file     */
 
 FILE             *gidmsh;                 /* file pointer .flavia.msh    */
 FILE             *gidres;                 /* file pointer .flavia.res    */
