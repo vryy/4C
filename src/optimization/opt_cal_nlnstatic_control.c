@@ -14,8 +14,7 @@ Maintainer: Andreas Lipka
 #ifdef D_OPTIM                   /* include optimization code to ccarat */
 
 #include "../headers/standardtypes.h"
-#include "../headers/solution_mlpcg.h"
-#include "../headers/solution.h"
+#include "../solver/solver.h"
 #include "../headers/optimization.h"
 #include "opt_prototypes.h"
 /*! 

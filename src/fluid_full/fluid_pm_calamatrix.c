@@ -15,8 +15,7 @@ Maintainer: Steffen Genkinger
 *//*! @{ (documentation module open)*/
 #ifdef D_FLUID
 #include "../headers/standardtypes.h"
-#include "../headers/solution_mlpcg.h"
-#include "../headers/solution.h"
+#include "../solver/solver.h"
 #include "fluid_prototypes.h"
 #include "fluid_pm_prototypes.h"
 static INT     veldis=0;           /* flag, if vel. discr. is used     */

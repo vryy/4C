@@ -13,8 +13,7 @@ Maintainer: Malte Neumann
 *----------------------------------------------------------------------*/
 #ifdef D_ALE
 #include "../headers/standardtypes.h"
-#include "../headers/solution_mlpcg.h"
-#include "../headers/solution.h"
+#include "../solver/solver.h"
 #include "../shell8/shell8.h"
 #include "../wall1/wall1.h"
 #include "../brick1/brick1.h"

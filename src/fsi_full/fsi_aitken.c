@@ -14,8 +14,6 @@ Maintainer: Steffen Genkinger
 \addtogroup FSI
 *//*! @{ (documentation module open)*/
 #include "../headers/standardtypes.h"
-#include "../headers/solution_mlpcg.h"
-#include "../headers/solution.h"
 #include "fsi_prototypes.h"    
 #ifdef D_FSI
 static DOUBLE done = 1.0E20;

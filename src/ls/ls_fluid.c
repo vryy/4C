@@ -12,8 +12,7 @@ Maintainer: Baris Irhan
 *----------------------------------------------------------------------*/
 #ifdef D_LS
 #include "../headers/standardtypes.h"
-#include "../headers/solution_mlpcg.h"
-#include "../headers/solution.h"
+#include "../solver/solver.h"
 #include "../fluid_full/fluid_prototypes.h"
 #include "ls_prototypes.h"
 /*!

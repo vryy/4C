@@ -11,8 +11,7 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
-#include "../headers/solution_mlpcg.h"
-#include "../headers/solution.h"
+#include "../solver/solver.h"
 #include "../fluid_full/fluid_prototypes.h"
 #include "../fsi_full/fsi_prototypes.h"
 #include "../ls/ls_prototypes.h"

@@ -14,8 +14,7 @@ Maintainer: Steffen Genkinger
 \addtogroup FLUID
 *//*! @{ (documentation module open)*/
 #include "../headers/standardtypes.h"
-#include "../headers/solution_mlpcg.h"
-#include "../headers/solution.h"
+#include "../solver/solver.h"
 #include "fluid_prototypes.h"    
 #include "fluid_pm_prototypes.h"
 /*----------------------------------------------------------------------*

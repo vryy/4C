@@ -14,8 +14,7 @@ Maintainer: Malte Neumann
 #include "../headers/standardtypes.h"
 #include "ale3.h"
 #include "../ale2/ale2.h"
-#include "../headers/solution_mlpcg.h"
-#include "../headers/solution.h"
+#include "../solver/solver.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |

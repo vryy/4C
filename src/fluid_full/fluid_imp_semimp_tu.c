@@ -12,8 +12,7 @@ Maintainer: Thomas Hettich
 ------------------------------------------------------------------------*/
 #ifdef D_FLUID
 #include "../headers/standardtypes.h"
-#include "../headers/solution_mlpcg.h"
-#include "../headers/solution.h"
+#include "../solver/solver.h"
 #include "fluid_prototypes.h"
 static INT     rans=0;             /* flag, if vel. discr. is used     */
 static INT     kapeps=1;           /* flag, if pres. discr. is used    */

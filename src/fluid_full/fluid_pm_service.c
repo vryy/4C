@@ -7,8 +7,7 @@
 *//*! @{ (documentation module open)*/
 #ifdef D_FLUID
 #include "../headers/standardtypes.h"
-#include "../headers/solution_mlpcg.h"
-#include "../headers/solution.h"
+#include "../solver/solver.h"
 #include "fluid_prototypes.h"
 #include "fluid_pm_prototypes.h"
 #include "../fluid2_pro/fluid2pro.h"

@@ -14,8 +14,7 @@ Maintainer: Steffen Genkinger
 \addtogroup FSI
 *//*! @{ (documentation module open)*/
 #include "../headers/standardtypes.h"
-#include "../headers/solution_mlpcg.h"
-#include "../headers/solution.h"
+#include "../solver/solver.h"
 #include "fsi_prototypes.h"    
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |

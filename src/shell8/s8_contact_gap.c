@@ -12,8 +12,7 @@ Maintainer: Michael Gee
 *----------------------------------------------------------------------*/
 #ifdef S8CONTACT
 #include "../headers/standardtypes.h"
-#include "../headers/solution_mlpcg.h"
-#include "../headers/solution.h"
+#include "../solver/solver.h"
 #include "s8contact.h"
 #include "shell8.h"
 

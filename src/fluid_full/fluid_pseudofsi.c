@@ -15,8 +15,7 @@ Maintainer: Steffen Genkinger
 *//*! @{ (documentation module open)*/
 #ifdef D_FLUID
 #include "../headers/standardtypes.h"
-#include "../headers/solution_mlpcg.h"
-#include "../headers/solution.h"
+#include "../solver/solver.h"
 #include "fluid_prototypes.h"
 #include "../fluid2/fluid2.h"
 #include "../fluid3/fluid3.h"

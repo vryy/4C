@@ -16,8 +16,7 @@ Maintainer: Steffen Genkinger
 #ifdef D_FLUID
 #ifdef D_FSI
 #include "../headers/standardtypes.h"
-#include "../headers/solution_mlpcg.h"
-#include "../headers/solution.h"
+#include "../solver/solver.h"
 #include "fluid_prototypes.h"  
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |

@@ -15,8 +15,7 @@ Maintainer: Steffen Genkinger
 *//*! @{ (documentation module open)*/
 #ifdef D_FSI
 #include "../headers/standardtypes.h"
-#include "../headers/solution_mlpcg.h"
-#include "../headers/solution.h"
+#include "../solver/solver.h"
 #include "fsi_prototypes.h"    
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |

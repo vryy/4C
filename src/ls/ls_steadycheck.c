@@ -1,12 +1,11 @@
 #ifdef D_LS
 #include "../headers/standardtypes.h"
-#include "../headers/solution_mlpcg.h"
-#include "../headers/solution.h"
+#include "../solver/solver.h"
 #include "ls_prototypes.h"
 
 
 
-extern struct _PAR   par; 														  
+extern struct _PAR   par;
 
 
 
