@@ -6,14 +6,12 @@
 // 
 // necessary defines: -DD_BEAM3 -DRESULTTEST
 //
-// #define MAXNOD           (10)
-// #define MAXELE           (9)
+// #define MAXNOD           (2)
+// #define MAXELE           (2)
 // #define MAXDOFPERNODE    (6)
-// #define MAXGAUSS         (3)
+// #define MAXGAUSS         (2)
 //
-==================================================================
                         General Data File C_CARAT
-==================================================================
 -------------------------------------------------------------TITLE
 Default_title
 ------------------------------------------------------PROBLEM SIZE
