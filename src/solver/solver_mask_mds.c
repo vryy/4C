@@ -25,7 +25,7 @@ dstrc_enter("mask_mds");
 /*------------------------------------------- put total size of problem */
  mds->numeq = actfield->dis[0].numeq;
 /*---------------------------------------------- allocate vector colstr */
- amdef("colstr1",&(mds->colstr),numeq,1,"IV");
+ amdef("colstr1",&(mds->colstr),mds->numeq,1,"IV");
  amzero(&(mds->colstr));
 /*---------------------------------- calculate dof connectivity list ---*/
  dof_connect = (int**)CCACALLOC(mds->numeq,sizeof(int*));

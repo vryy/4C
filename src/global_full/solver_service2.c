@@ -295,6 +295,9 @@ break;
 case skymatrix:
    update = sysarray->sky->update.a.iv;
 break;
+case bdcsr:
+   update = sysarray->bdcsr->update.a.iv;
+break;
 case mds:
    index = indiz;
 break;

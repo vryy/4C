@@ -13,6 +13,7 @@ static void solserv_cp_skymask(SKYMATRIX *from, SKYMATRIX *to);
 static void solserv_cp_msrmask(AZ_ARRAY_MSR *from, AZ_ARRAY_MSR *to);
 static void solserv_cp_densemask(DENSE *from, DENSE *to);
 static void solserv_cp_spomask(SPOOLMAT *from, SPOOLMAT *to);
+static void solserv_cp_bdcsrmask(DBCSR *from, DBCSR *to);
 static void solserv_matvec_rc_ptr(INTRA  *actintra,RC_PTR *rcptr,double *work1,double *work2);
 static void solserv_matvec_spo(INTRA *actintra,SPOOLMAT *spo,double *work1,double *work2);
 static void solserv_matvec_ccf(INTRA  *actintra,CCF *ccf,double *work1,double *work2);
@@ -56,6 +57,9 @@ case rc_ptr:
 break;
 case spoolmatrix:
    amscal(&(A->spo->A_loc),&factor);
+break;
+case bdcsr:
+   amscal(&(A->bdcsr->a),&factor);
 break;
 case ccf:
    amscal(&(A->ccf->Ax),&factor);
@@ -123,6 +127,9 @@ case rc_ptr:
 break;
 case spoolmatrix:
    amadd(&(A->spo->A_loc),&(B->spo->A_loc),factor,0);
+break;
+case bdcsr:
+   amadd(&(A->bdcsr->a),&(B->bdcsr->a),factor,0);
 break;
 case ccf:
    amadd(&(A->ccf->Ax),&(B->ccf->Ax),factor,0);
@@ -381,6 +388,10 @@ case spoolmatrix:
    matto->spo = (SPOOLMAT*)CCACALLOC(1,sizeof(SPOOLMAT));
    solserv_cp_spomask(matfrom->spo,matto->spo);
 break;
+case bdcsr:
+   matto->bdcsr = (DBCSR*)CCACALLOC(1,sizeof(DBCSR));
+   solserv_cp_bdcsrmask(matfrom->bdcsr,matto->bdcsr);
+break;
 case sparse_none:
    dserror("Unknown typ of sparse distributed system matrix");
 break;
@@ -394,6 +405,37 @@ dstrc_exit();
 #endif
 return;
 } /* end of solserv_alloc_cp_sparsemask */
+
+
+/*----------------------------------------------------------------------*
+ |  copies the sparsity mask of a mlpcg matrix               m.gee 01/03|
+ |  for the new sparsity mask, all memory is allocated                  |
+ |  called by solserv_alloc_cp_sparsemask only!                         |
+ *----------------------------------------------------------------------*/
+static void solserv_cp_bdcsrmask(DBCSR *from, DBCSR *to)
+{
+int i;
+#ifdef DEBUG 
+dstrc_enter("solserv_cp_spomask");
+#endif
+/*----------------------------------------------------------------------*/
+/* copy all information, which is directly included in the structure */
+*to = *from;
+
+/* alloccopy update */
+am_alloc_copy(&(from->update),&(to->update));
+/* alloccopy a */
+am_alloc_copy(&(from->a),&(to->a));
+/* alloccopy ja */
+am_alloc_copy(&(from->ja),&(to->ja));
+/* alloccopy ia */
+am_alloc_copy(&(from->ia),&(to->ia));
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of solserv_cp_spomask */
 
 
 /*----------------------------------------------------------------------*
@@ -427,8 +469,6 @@ dstrc_exit();
 #endif
 return;
 } /* end of solserv_cp_spomask */
-
-
 
 
 /*----------------------------------------------------------------------*
@@ -728,6 +768,9 @@ case spoolmatrix:
    solserv_reddistvec(vec,mat,mattyp,work1,vec->numeq_total,actintra);
    solserv_matvec_spo(actintra,mat->spo,work1,work2);
    solserv_distribdistvec(result,mat,mattyp,work2,vec->numeq_total,actintra);
+break;
+case bdcsr:
+   mlpcg_matvec(result->vec.a.dv,mat->bdcsr,vec->vec.a.dv,1.0,1,actintra);
 break;
 case ccf:
    solserv_reddistvec(vec,mat,mattyp,work1,vec->numeq_total,actintra);

@@ -115,7 +115,7 @@ for (i=0; i<nd; i++)
       /*-------------------------------- find position [ii][jj] in A */
       distance  = ii-jj;
       if (distance < 0) continue;
-      if (distance>=height) dserror("Cannot assemble skyline");
+     /* if (distance>=height) dserror("Cannot assemble skyline");*/
       index     = startindex+distance;
       A[index] += estif[i][j];
       if (B)
