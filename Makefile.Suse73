@@ -188,6 +188,7 @@ $(PROGRAM):	$(OBJS_MAIN) $(OBJS_GLOBAL) $(OBJS_PSS) $(OBJS_INPUT) \
 
 
 $(OBJS_MAIN):
+                touch src/headers/compile_settings.h
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
 $(OBJS_GLOBAL):

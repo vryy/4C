@@ -11,6 +11,10 @@ Maintainer: Malte Neumann
 
 ---------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
+#include "../headers/compile_settings.h"
+#ifndef DEFINE_STRING
+#define DEFINE_STRING "\n\tunknown"
+#endif
 /*!----------------------------------------------------------------------
 \brief ranks and communicators
 
@@ -85,9 +89,16 @@ if (par.myrank==0)
 #endif
 }
 
+if ((argc == 2) && (strcmp(argv[1], "-v") == 0)) {
+  if (par.myrank==0) {
+    printf("\nDefine flags used to build ccarat:\n%s\n\n", DEFINE_STRING);
+  }
+}
+else {
 /*----------------------------------------------- everything is in here */
 ntam(argc,argv);
 /*----------------------------------------------------------------------*/
+}
 
 #ifdef PARALLEL
 MPI_Barrier(MPI_COMM_WORLD);
