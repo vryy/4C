@@ -191,7 +191,6 @@ OBJS_ALE      = src/ale3/ale_call_stiff.o \
                 src/ale2/ale2_main.o \
                 src/ale2/ale2_mat_linel.o \
                 src/ale2/ale2_static_ke.o \
-                src/ale3/ale3_funcderiv.o \
                 src/ale3/ale3_service.o \
                 src/ale3/ale3_inpele.o \
                 src/ale3/ale3_main.o \
