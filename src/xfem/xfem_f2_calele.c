@@ -277,6 +277,7 @@ void xfem_f2_loc_ass_tangent()
 {
   INT        i,j;
   INT        i1,j1;
+  INT        cnt,cnt1;
   
 #ifdef DEBUG 
   dstrc_enter("xfem_f2_loc_ass_tangent");
@@ -305,12 +306,22 @@ void xfem_f2_loc_ass_tangent()
  * to avoid singular system at least diagonal terms of the
  * tangent corresponding to dummy equations have to be set
  */
+  cnt = 2*myls2->numnp;
+  cnt1 = cnt;
   /* finalize */
   for (i=0; i<ntotal; i++)
   {
-    if (estif[i][i]==0.0) estif[i][i] = 1.0;
+    if (estif[i][i]==0.0)
+    {      
+      estif[i][i] = 1.0;
+      cnt--;
+    }
   }
-
+  /* check */
+  if (myls2->e.ls2->is_elcut==0 && cnt!=0 ||
+      myls2->e.ls2->is_elcut==1 && cnt!=cnt1)
+    dserror("error in local assembly!");
+  
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
   dstrc_exit();
@@ -448,6 +459,11 @@ void xfem_f2_iand()
  * be sure that the local node numbers are identical for both
  * fluid and levelset element
  */
+  /* check */
+  if (myls2->e.ls2->is_elcut==1 && myls2->e.ls2->nenode!=myls2->numnp ||
+      myls2->e.ls2->is_elcut==2 && myls2->e.ls2->nenode==0)
+    dserror("nenode not set properly!");
+  /* set iand vector */
   for (i=0; i<myls2->e.ls2->nenode; i++)
   {
     locid = myls2->e.ls2->enode[i]-1;

@@ -100,7 +100,7 @@ void xfem_f2_calint(
   for (i=0; i<iel; i++)
   {
     index[i] = 2*i;
-    index[i+iel] = 2*iel+4+2*i;
+    index[i+iel] = 3*iel+2*i;
   }
   /* set associated ls2 element */
   myls2 = ele->e.f2->my_ls;

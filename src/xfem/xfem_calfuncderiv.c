@@ -134,7 +134,6 @@ void xfem_f2_funct(
 } /* end of xfem_f2_funct */
 
 
-
 /************************************************************************
  ----------------------------------------- last checked by Irhan 26.04.04
  ************************************************************************/
@@ -159,12 +158,6 @@ void xfem_f2_funct1(
   switch (typ)
   {
       case tri3:
-        /* compute enriched shape function at Gauss point */
-        for (i=0; i<iel; i++)
-        {
-          funct[iel+i] = 0.0;
-        }
-        break;
       case quad4:
         /*
          * partI => standard
