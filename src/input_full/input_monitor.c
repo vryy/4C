@@ -84,7 +84,8 @@ char  *charpointer;
 dstrc_enter("inp_monitor");
 #endif
 
-
+/*----------------------------------------- skip this for visualisation */
+if (genprob.visual>0) goto end;
 ioflags.monitor=frfind("--MONITORING");
 if (ioflags.monitor==0) goto end;
 if (par.myrank>0) goto end;
