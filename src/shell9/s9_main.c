@@ -88,13 +88,13 @@ switch (*action)
 {
 /*----------------------------- init the element routines and directors */
 case calc_struct_init:
+   s9jaco(NULL,NULL,NULL,NULL,NULL,NULL,0.0,0,NULL,1,0,NULL);
    s9init(actfield);
    s9static_keug(NULL,NULL,NULL,NULL,NULL,0,NULL,0,1);
    s9eleload(NULL,NULL,NULL,1);
-   s9jaco(NULL,NULL,NULL,NULL,NULL,NULL,0.0,0,NULL,1,0,NULL);
    s9_stress(NULL,NULL,NULL,0,0,1);
-   s9_write_restart(NULL,0,NULL,1);
-   s9_read_restart(NULL,NULL,1);
+   s9_write_restart(NULL,NULL,0,NULL,1);
+   s9_read_restart(NULL,NULL,NULL,1);
 break;/*----------------------------------------------------------------*/
 /*----------------------------------- calculate linear stiffness matrix */
 case calc_struct_linstiff:
@@ -191,11 +191,13 @@ case calc_struct_update_istep:
 break;/*----------------------------------------------------------------*/
 /*--------------------------------------------------------write restart */
 case write_restart:
-   s9_write_restart(ele,container->handsize,container->handles,0);
+   actmat = &(mat[ele->mat-1]);
+   s9_write_restart(ele,actmat,container->handsize,container->handles,0);
 break;/*----------------------------------------------------------------*/
 /*---------------------------------------------------------read restart */
 case read_restart:
-   s9_read_restart(ele,container->handles,0);
+   actmat = &(mat[ele->mat-1]);
+   s9_read_restart(ele,actmat,container->handles,0);
 break;/*----------------------------------------------------------------*/
 default:
    dserror("action unknown");
