@@ -69,6 +69,8 @@ DOUBLE		xyzl[2][MAXNOD_F2]; /* nodal coordinates		*/
 DOUBLE		e1;		/* GP-koordinates in r-s-system		*/
 DOUBLE		facr;		/* integration factor  GP-info		*/
 DOUBLE		det;		/* det of jacobian matrix		*/
+DOUBLE          xy[2];		/* GP-global coordinates		*/
+DOUBLE		center[2];	/* center of body in fluid		*/
 
 GLINE		*gline[4];	/* geometrylines of the element		*/
 GLINE		*actgline;
@@ -129,6 +131,10 @@ for (line=0; line<ngline; line++)
       xyzl[0][j] = actnode->x[0];
       xyzl[1][j] = actnode->x[1];
    }
+   
+   /*--------------------- get center of area exposed to lift & drag ---*/
+   center[0] = actgline->dline->ld_center[0];
+   center[1] = actgline->dline->ld_center[1];
 
    /*======================= integration loop ==========================*/
    /*------------- over liftdrag edge of actual element ----------------*/
@@ -162,6 +168,10 @@ for (line=0; line<ngline; line++)
       forceline[0] = sigmaint[0]*vnx + sigmaint[2]*vny;
       forceline[1] = sigmaint[2]*vnx + sigmaint[1]*vny;
       
+      /*------- compute coordinates of Gauss point relative to center---*/
+      xy[0] = funct[0] * xyzl[0][0] + funct[1] * xyzl[0][1]-center[0];
+      xy[1] = funct[0] * xyzl[1][0] + funct[1] * xyzl[1][1]-center[1];
+      
       /*-------------- add load vector component to element load vector */
       /* jacobian determinant cancels with length of normal  vector	*/
       for (j=0; j<ngnode; j++)
@@ -170,6 +180,11 @@ for (line=0; line<ngline; line++)
          container->liftdrag[0] -= funct[j] * forceline[0] * facr;
          container->liftdrag[1] += funct[j] * forceline[1] * facr;
       }/*----------------------------------------- end loop over ngnode */
+      
+      /*----------------------------------------------- add momentum ---*/
+      container->liftdrag[2] += ( forceline[0]*xy[1] 
+                                - forceline[1]*xy[0] ) * facr;
+      
    }/*==================================== end integration loop over lr */
 }/* end loop line over lines to this element */
 
@@ -184,27 +199,7 @@ dstrc_exit();
 #endif
 
 return; 
-} /* end of f2_calinta */
-
-
-
-void f2_plot_liftdrag(DOUBLE time, DOUBLE *liftdrag)
-{
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG 
-dstrc_enter("f2_plot_liftdrag");
-#endif
-
-fprintf(allfiles.gnu,"%10.5f  %8.7f  %8.7f\n", 
-        time, liftdrag[0], liftdrag[1]);
-fflush(allfiles.gnu);
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG 
-dstrc_exit();
-#endif
-
-return;
-} /* end of f2_plot_liftdrag */
+} /* end of f2_calliftdrag */
 
 #endif
 /*! @} (documentation module close)*/         
