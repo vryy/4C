@@ -50,7 +50,7 @@ const INT mss=8;    /*beta22*/
 const INT mrs=7;    /*beta12*/
 const INT qr=3;     /*alfa13*/
 const INT qs=4;     /*alfa23*/
-const INT qt=5;     /*alfa33*/
+/*const INT qt=5; */    /*alfa33*/
 const INT sr=9;     /*beta13*/
 const INT ss=10;    /*beta23*/
 const INT st=11;    /*beta33*/
@@ -60,6 +60,7 @@ DOUBLE    e2e2;
 DOUBLE    e1e1e2;
 DOUBLE    e1e2e2;
 DOUBLE    e1e1e2e2;
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9_eas");
 #endif
@@ -70,221 +71,8 @@ dstrc_enter("s9_eas");
    e1e1e2   = e1*e1e2;
    e1e2e2   = e1e2*e2;
    e1e1e2e2 = e1e2*e1e2;
-/*--------------------------------------------- eight/nine node element */
-if (iel>4)
-{
-/*----------------------------------------------------------------------
-      MEMBRAN: E11,E12,E22 KONSTANT
-  ----------------------------------------------------------------------*/
-   switch(eas[0])
-   {
-   case 0:
-   break;
-   case 7:
-      P[nrr][place_P]   = e2-3.0*e1e1e2; 
-      P[nrr][place_P+1] = e2e2-3.0*e1e1e2e2; 
-      P[nss][place_P+2] = e1-3.0*e1e2e2; 
-      P[nss][place_P+3] = e1e1-3.0*e1e1e2e2; 
-      P[nrs][place_P+4] = e2-3.0*e1e1e2; 
-      P[nrs][place_P+5] = e1-3.0*e1e2e2; 
-      P[nrs][place_P+6] = 1.0-3.0*(e1e1+e2e2)+9.0*e1e1e2e2;
-      place_P+=7;
-   break;
-   case 9:
-      P[nrr][place_P]   = 1.0-3.0*e1e1;; 
-      P[nrr][place_P+1] = e2-3.0*e1e1e2;; 
-      P[nss][place_P+2] = 1.0-3.0*e2e2; 
-      P[nss][place_P+3] = e1-3.0*e1e2e2; 
-      P[nrs][place_P+4] = 1.0-3.0*e1e1e2; 
-      P[nrs][place_P+5] = 1.0-3.0*e1e2e2; 
-      P[nrs][place_P+6] = e2-3.0*e1e1e2; 
-      P[nrs][place_P+7] = e1-3.0*e1e2e2; 
-      P[nrs][place_P+8] = 1.0-3.0*(e1e1+e2e2)+9.0*e1e1e2e2;
-      place_P+=9;
-   break;
-   case 11:
-      P[nrr][place_P]    = 1.0-3.0*e1e1; 
-      P[nrr][place_P+1]  = e2-3.0*e1e1e2; 
-      P[nrr][place_P+2]  = e2e2-3.0*e1e1e2e2; 
-      P[nss][place_P+3]  = 1.0-3.0*e2e2; 
-      P[nss][place_P+4]  = e1-3.0*e1e2e2; 
-      P[nss][place_P+5]  = e1e1-3.0*e1e1e2e2; 
-      P[nrs][place_P+6]  = 1.0-3.0*e1e1; 
-      P[nrs][place_P+7]  = 1.0-3.0*e2e2; 
-      P[nrs][place_P+8]  = e2-3.0*e1e1e2; 
-      P[nrs][place_P+9]  = e1-3.0*e1e2e2; 
-      P[nrs][place_P+10] = 1.0-3.0*(e1e1+e2e2)+9.0*e1e1e2e2; 
-      place_P+=11;
-   break;
-   default:
-      dserror("eas: MEMBRAN: E11,E12,E22 KONSTANT other then 0,7,9,11");
-   }
-/*----------------------------------------------------------------------
-      BIEGUNG: E11,E12,E22 LINEAR
-  ----------------------------------------------------------------------*/
-   switch(eas[1])
-   {
-   case 0:
-   break;
-   case 9:
-      P[mrr][place_P]   = 1.0-3.0*e1e1; 
-      P[mrr][place_P+1] = e2-3.0*e1e1e2; 
-      P[mss][place_P+2] = 1.0-3.0*e2e2; 
-      P[mss][place_P+3] = e1-3.0*e1e2e2; 
-      P[mrs][place_P+4] = 1.0-3.0*e1e1; 
-      P[mrs][place_P+5] = 1.0-3.0*e2e2; 
-      P[mrs][place_P+6] = e2-3.0*e1e1e2; 
-      P[mrs][place_P+7] = e1-3.0*e1e2e2; 
-      P[mrs][place_P+8] = 1.0-3.0*(e1e1+e2e2)+9.0*e1e1e2e2; 
-      place_P+=9;
-   break;
-   case 11:
-      P[mrr][place_P]    = 1.0-3.0*e1e1; 
-      P[mrr][place_P+1]  = e2-3.0*e1e1e2; 
-      P[mrr][place_P+2]  = e2e2-3.0*e1e1e2e2; 
-      P[mss][place_P+3]  = 1.0-3.0*e2e2; 
-      P[mss][place_P+4]  = e1-3.0*e1e2e2; 
-      P[mss][place_P+5]  = e1e1-3.0*e1e1e2e2; 
-      P[mrs][place_P+6]  = 1.0-3.0*e1e1; 
-      P[mrs][place_P+7]  = 1.0-3.0*e2e2; 
-      P[mrs][place_P+8]  = e2-3.0*e1e1e2; 
-      P[mrs][place_P+9]  = e1-3.0*e1e2e2; 
-      P[mrs][place_P+10] = 1.0-3.0*(e1e1+e2e2)+9.0*e1e1e2e2; 
-      place_P+=11;
-   break;
-   default:
-      dserror("eas: BIEGUNG: E11,E12,E22 LINEAR other then 0,9,11");
-   }
-/*----------------------------------------------------------------------
-      DICKENRICHTUNG: E33 LINEAR (--> 7P - FORMULIERUNG)
-  ----------------------------------------------------------------------*/
-   switch(eas[2])
-   {
-   case 0:
-   break;
-   case 1:
-      P[st][place_P] = 1.0; 
-      place_P+=1;
-   break;
-   case 3:
-      P[st][place_P]   = 1.0; 
-      P[st][place_P+1] = e1; 
-      P[st][place_P+2] = e2; 
-      place_P+=3;
-   break;
-   case 4:
-      P[st][place_P]   = 1.0; 
-      P[st][place_P+1] = e1; 
-      P[st][place_P+2] = e2; 
-      P[st][place_P+3] = e1e2; 
-      place_P+=4;
-   break;
-   /*these Parametersettings are not working -> the inversion of the Dtilde-Matrix will fail
-                                                                                 sh 07/03*/
-/*   case 6:
-/*      P[st][place_P]   = 1.0; 
-/*      P[st][place_P+1] = e1; 
-/*      P[st][place_P+2] = e2; 
-/*      P[st][place_P+3] = e1e2; 
-/*      P[st][place_P+4] = e1e1; 
-/*      P[st][place_P+5] = e2e2; 
-/*      place_P+=6;
-/*   break;
-/*   case 8:
-/*      P[st][place_P]   = 1.0; 
-/*      P[st][place_P+1] = e1; 
-/*      P[st][place_P+2] = e2; 
-/*      P[st][place_P+3] = e1e2; 
-/*      P[st][place_P+4] = e1e1; 
-/*      P[st][place_P+5] = e2e2; 
-/*      P[st][place_P+6] = e1e1e2; 
-/*      P[st][place_P+7] = e1e2e2; 
-/*      place_P+=8;
-/*   break;
-/*   case 9:
-/*      P[st][place_P]   = 1.0; 
-/*      P[st][place_P+1] = e1; 
-/*      P[st][place_P+2] = e2; 
-/*      P[st][place_P+3] = e1e2; 
-/*      P[st][place_P+4] = 1.0-3.0*e1e1; 
-/*      P[st][place_P+5] = 1.0-3.0*e2e2; 
-/*      P[st][place_P+6] = e1e1e2; 
-/*      P[st][place_P+7] = e1e2e2; 
-/*      P[st][place_P+8] = 1.0-9.0*e1e1e2e2; 
-/*      place_P+=9;
-/*   break;
-*/
-    default:
-/*      dserror("eas: DICKENRICHTUNG: E33 LINEAR other then 0,1,3,4,5,8,9");*/
-      dserror("eas: DICKENRICHTUNG: E33 LINEAR other then 0,1,3,4");
-   }
-/*----------------------------------------------------------------------
-      QUERSCHUB: E13,E23 KONSTANT
-  ----------------------------------------------------------------------*/
-   switch(eas[3])
-   {
-   case 0:
-   break;
-   case 2:
-      P[qr][place_P]   = e2-3.0*e1e1e2; 
-      P[qs][place_P+1] = e1-3.0*e1e2e2; 
-      place_P+=2;
-   break;
-   case 4:
-      P[qr][place_P]   = 1.0-3.0*e1e1; 
-      P[qr][place_P+1] = e2-3.0*e1e1e2; 
-      P[qs][place_P+2] = 1.0-3.0*e2e2; 
-      P[qs][place_P+3] = e1-3.0*e1e2e2; 
-      place_P+=4;
-   break;
-   case 6:
-      P[qr][place_P]   = 1.0-3.0*e1e1; 
-      P[qr][place_P+1] = e2-3.0*e1e1e2; 
-      P[qr][place_P+2] = e2e2-3.0*e1e1e2e2; 
-      P[qs][place_P+3] = 1.0-3.0*e2e2; 
-      P[qs][place_P+4] = e1-3.0*e1e2e2; 
-      P[qs][place_P+5] = e1e1-3.0*e1e1e2e2; 
-      place_P+=6;
-   break;
-   default:
-      dserror("eas: QUERSCHUB: E13,E23 KONSTANT other then 0,2,4,6");
-   }
-/*----------------------------------------------------------------------
-      QUERSCHUB: E13,E23 LINEAR
-  ----------------------------------------------------------------------*/
-   switch(eas[4])
-   {
-   case 0:
-   break;
-   case 2:
-      P[sr][place_P]   = e1e1; 
-      P[ss][place_P+1] = e2e2; 
-      place_P+=2;
-   break;
-   case 4:
-      P[sr][place_P]   = e1e1; 
-      P[sr][place_P+1] = e1e1e2e2; 
-      P[ss][place_P+2] = e2e2; 
-      P[ss][place_P+3] = e1e1e2e2; 
-      place_P+=4;
-   break;
-   case 6:
-      P[sr][place_P]   = e1e1; 
-      P[sr][place_P+1] = e1e1e2; 
-      P[sr][place_P+2] = e1e1e2e2; 
-      P[ss][place_P+3] = e2e2; 
-      P[ss][place_P+4] = e1e2e2; 
-      P[ss][place_P+5] = e1e1e2e2; 
-      place_P+=6;
-   break;
-   default:
-      dserror("eas: QUERSCHUB: E13,E23 LINEAR other then 0,2,4,6");
-   }
-   /*------------------------------------------------ check correctness */
-   if (place_P != nhyb) dserror("wrong parameter count");
-}
 /*--------------------------------------------------- four node element */
-else if (iel==4)
+if (iel==4)
 {
 /*----------------------------------------------------------------------
       MEMBRAN: E11,E12,E22 KONSTANT
@@ -333,6 +121,8 @@ else if (iel==4)
       P[nrs][place_P+6]=e1e2;
       place_P+=7;
    break;
+   default:
+      dserror("eas: MEMBRAN: E11,E12,E22 KONSTANT other then 0,1,2,3,4,5,7 for Quad4");
    }   
 /*----------------------------------------------------------------------
       BIEGUNG: E11,E12,E22 LINEAR
@@ -366,15 +156,236 @@ else if (iel==4)
       P[mrs][place_P+6]=e1e2;
       place_P+=7;
    break;
-   case 6:
-      P[mrr][place_P]  =e1e1;
-      P[mrr][place_P+1]=e1e1e2e2;
-      P[mss][place_P+2]=e2e2;
-      P[mss][place_P+3]=e1e1e2e2;
-      P[mrs][place_P+4]=e1e1;
-      P[mrs][place_P+5]=e2e2;
-      place_P+=6;
+   default:
+      dserror("eas: BIEGUNG: E11,E12,E22 LINEAR other then 0,4,5,7 for Quad4");
+   }
+/*----------------------------------------------------------------------
+      DICKENRICHTUNG: E33 LINEAR (--> 7P - FORMULIERUNG)
+  ----------------------------------------------------------------------*/
+   switch(eas[2])
+   {
+   case 0:
    break;
+   case 1:
+      P[st][place_P] = 1.0; 
+      place_P+=1;
+   break;
+   case 3:
+      P[st][place_P]   = 1.0; 
+      P[st][place_P+1] = e1; 
+      P[st][place_P+2] = e2; 
+      place_P+=3;
+   break;
+   case 4:
+      P[st][place_P]   = 1.0; 
+      P[st][place_P+1] = e1; 
+      P[st][place_P+2] = e2; 
+      P[st][place_P+3] = e1e2; 
+      place_P+=4;
+   break;
+   default:
+      dserror("eas: DICKENRICHTUNG fuer QUAD4: E33 LINEAR other then 0,1,3,4 for Quad4");
+   }
+/*----------------------------------------------------------------------
+      QUERSCHUB: E13,E23 KONSTANT
+  ----------------------------------------------------------------------*/
+   switch(eas[3])
+   {
+   case 0:
+   break;
+   case 2:
+      P[qr][place_P]  =e1;
+      P[qs][place_P+1]=e2;
+      place_P+=2;
+   break;
+   case 4:
+      P[qr][place_P]  =e1;
+      P[qr][place_P+1]=e1e2;
+      P[qs][place_P+2]=e2;
+      P[qs][place_P+3]=e1e2;
+      place_P+=4;
+   break;
+   default:
+      dserror("eas: QUERSCHUB: E13,E23 KONSTANT other then 0,2,4 for Quad4");
+   }
+/*----------------------------------------------------------------------
+      QUERSCHUB: E13,E23 LINEAR
+  ----------------------------------------------------------------------*/
+   switch(eas[4])
+   {
+   case 0:
+   break;
+   case 2:
+      P[sr][place_P]  =e1;
+      P[ss][place_P+1]=e2;
+      place_P+=2;
+   break;
+   case 4:
+      P[sr][place_P]  =e1;
+      P[sr][place_P+1]=e1e2;
+      P[ss][place_P+2]=e2;
+      P[ss][place_P+3]=e1e2;
+      place_P+=4;
+   break;
+   default:
+      dserror("eas: QUERSCHUB: E13,E23 LINEAR other then 0,2,4 for Quad4");
+   }
+}
+/*--------------------------------------------------- eight node element */
+else if (iel==8)
+{
+/*----------------------------------------------------------------------
+      MEMBRAN: E11,E12,E22 KONSTANT
+  ----------------------------------------------------------------------*/
+   switch(eas[0])
+   {
+   case 0:
+   break;
+   default:
+      dserror("eas: MEMBRAN: E11,E12,E22 KONSTANT other then 0 for Quad8");
+   }
+/*----------------------------------------------------------------------
+      BIEGUNG: E11,E12,E22 LINEAR
+  ----------------------------------------------------------------------*/
+   switch(eas[1])
+   {
+   case 0:
+   break;
+   default:
+      dserror("eas: BIEGUNG: E11,E12,E22 LINEAR other then 0 for Quad8");
+   }
+/*----------------------------------------------------------------------
+      DICKENRICHTUNG: E33 LINEAR (--> 7P - FORMULIERUNG)
+  ----------------------------------------------------------------------*/
+   switch(eas[2])
+   {
+   case 0:
+   break;
+   case 1:
+      P[st][place_P] = 1.0; 
+      place_P+=1;
+   break;
+   case 3:
+      P[st][place_P]   = 1.0; 
+      P[st][place_P+1] = e1; 
+      P[st][place_P+2] = e2; 
+      place_P+=3;
+   break;
+   case 4:
+      P[st][place_P]   = 1.0; 
+      P[st][place_P+1] = e1; 
+      P[st][place_P+2] = e2; 
+      P[st][place_P+3] = e1e2; 
+      place_P+=4;
+   break;
+    default:
+      dserror("eas: DICKENRICHTUNG: E33 LINEAR other then 0,1,3,4 for Quad8");
+   }
+/*----------------------------------------------------------------------
+      QUERSCHUB: E13,E23 KONSTANT
+  ----------------------------------------------------------------------*/
+   switch(eas[3])
+   {
+   case 0:
+   break;
+   default:
+      dserror("eas: QUERSCHUB: E13,E23 KONSTANT other then 0 for Quad8");
+   }
+/*----------------------------------------------------------------------
+      QUERSCHUB: E13,E23 LINEAR
+  ----------------------------------------------------------------------*/
+   switch(eas[4])
+   {
+   case 0:
+   break;
+   default:
+      dserror("eas: QUERSCHUB: E13,E23 LINEAR other then 0 for Quad8");
+   }
+}
+/*--------------------------------------------------- nine node element */
+else if (iel==9)
+{
+/*----------------------------------------------------------------------
+      MEMBRAN: E11,E12,E22 KONSTANT
+  ----------------------------------------------------------------------*/
+   switch(eas[0])
+   {
+   case 0:
+   break;
+   case 7:
+      P[nrr][place_P]   = e2-3.0*e1e1e2; 
+      P[nrr][place_P+1] = e2e2-3.0*e1e1e2e2; 
+      P[nss][place_P+2] = e1-3.0*e1e2e2; 
+      P[nss][place_P+3] = e1e1-3.0*e1e1e2e2; 
+      P[nrs][place_P+4] = e2-3.0*e1e1e2; 
+      P[nrs][place_P+5] = e1-3.0*e1e2e2; 
+      P[nrs][place_P+6] = 1.0-3.0*(e1e1+e2e2)+9.0*e1e1e2e2;
+      place_P+=7;
+   break;
+   case 9:
+      P[nrr][place_P]   = 1.0-3.0*e1e1;; 
+      P[nrr][place_P+1] = e2-3.0*e1e1e2;; 
+      P[nss][place_P+2] = 1.0-3.0*e2e2; 
+      P[nss][place_P+3] = e1-3.0*e1e2e2; 
+      P[nrs][place_P+4] = 1.0-3.0*e1e1; 
+      P[nrs][place_P+5] = 1.0-3.0*e2e2; 
+      P[nrs][place_P+6] = e2-3.0*e1e1e2; 
+      P[nrs][place_P+7] = e1-3.0*e1e2e2; 
+      P[nrs][place_P+8] = 1.0-3.0*(e1e1+e2e2)+9.0*e1e1e2e2;
+      place_P+=9;
+   break;
+   case 11:
+      P[nrr][place_P]    = 1.0-3.0*e1e1; 
+      P[nrr][place_P+1]  = e2-3.0*e1e1e2; 
+      P[nrr][place_P+2]  = e2e2-3.0*e1e1e2e2; 
+      P[nss][place_P+3]  = 1.0-3.0*e2e2; 
+      P[nss][place_P+4]  = e1-3.0*e1e2e2; 
+      P[nss][place_P+5]  = e1e1-3.0*e1e1e2e2; 
+      P[nrs][place_P+6]  = 1.0-3.0*e1e1; 
+      P[nrs][place_P+7]  = 1.0-3.0*e2e2; 
+      P[nrs][place_P+8]  = e2-3.0*e1e1e2; 
+      P[nrs][place_P+9]  = e1-3.0*e1e2e2; 
+      P[nrs][place_P+10] = 1.0-3.0*(e1e1+e2e2)+9.0*e1e1e2e2; 
+      place_P+=11;
+   break;
+   default:
+      dserror("eas: MEMBRAN: E11,E12,E22 KONSTANT other then 0,7,9,11 for Quad9");
+   }
+/*----------------------------------------------------------------------
+      BIEGUNG: E11,E12,E22 LINEAR
+  ----------------------------------------------------------------------*/
+   switch(eas[1])
+   {
+   case 0:
+   break;
+   case 9:
+      P[mrr][place_P]   = 1.0-3.0*e1e1; 
+      P[mrr][place_P+1] = e2-3.0*e1e1e2; 
+      P[mss][place_P+2] = 1.0-3.0*e2e2; 
+      P[mss][place_P+3] = e1-3.0*e1e2e2; 
+      P[mrs][place_P+4] = 1.0-3.0*e1e1; 
+      P[mrs][place_P+5] = 1.0-3.0*e2e2; 
+      P[mrs][place_P+6] = e2-3.0*e1e1e2; 
+      P[mrs][place_P+7] = e1-3.0*e1e2e2; 
+      P[mrs][place_P+8] = 1.0-3.0*(e1e1+e2e2)+9.0*e1e1e2e2; 
+      place_P+=9;
+   break;
+   case 11:
+      P[mrr][place_P]    = 1.0-3.0*e1e1; 
+      P[mrr][place_P+1]  = e2-3.0*e1e1e2; 
+      P[mrr][place_P+2]  = e2e2-3.0*e1e1e2e2; 
+      P[mss][place_P+3]  = 1.0-3.0*e2e2; 
+      P[mss][place_P+4]  = e1-3.0*e1e2e2; 
+      P[mss][place_P+5]  = e1e1-3.0*e1e1e2e2; 
+      P[mrs][place_P+6]  = 1.0-3.0*e1e1; 
+      P[mrs][place_P+7]  = 1.0-3.0*e2e2; 
+      P[mrs][place_P+8]  = e2-3.0*e1e1e2; 
+      P[mrs][place_P+9]  = e1-3.0*e1e2e2; 
+      P[mrs][place_P+10] = 1.0-3.0*(e1e1+e2e2)+9.0*e1e1e2e2; 
+      place_P+=11;
+   break;
+   default:
+      dserror("eas: BIEGUNG: E11,E12,E22 LINEAR other then 0,9,11 for Quad9");
    }
 /*----------------------------------------------------------------------
       DICKENRICHTUNG: E33 LINEAR (--> 7P - FORMULIERUNG)
@@ -432,8 +443,9 @@ else if (iel==4)
       P[st][place_P+8] = 1.0-9.0*e1e1e2e2; 
       place_P+=9;
    break;
-   default:
-      dserror("eas: DICKENRICHTUNG: E33 LINEAR other then 0,1,3,4,5,8,9");
+
+    default:
+      dserror("eas: DICKENRICHTUNG: E33 LINEAR other then 0,1,3,4,5,8,9 for Quad9");
    }
 /*----------------------------------------------------------------------
       QUERSCHUB: E13,E23 KONSTANT
@@ -443,17 +455,28 @@ else if (iel==4)
    case 0:
    break;
    case 2:
-      P[qr][place_P]  =e1;
-      P[qs][place_P+1]=e2;
+      P[qr][place_P]   = e2-3.0*e1e1e2; 
+      P[qs][place_P+1] = e1-3.0*e1e2e2; 
       place_P+=2;
    break;
    case 4:
-      P[qr][place_P]  =e1;
-      P[qr][place_P+1]=e1e2;
-      P[qs][place_P+2]=e2;
-      P[qs][place_P+3]=e1e2;
+      P[qr][place_P]   = 1.0-3.0*e1e1; 
+      P[qr][place_P+1] = e2-3.0*e1e1e2; 
+      P[qs][place_P+2] = 1.0-3.0*e2e2; 
+      P[qs][place_P+3] = e1-3.0*e1e2e2; 
       place_P+=4;
    break;
+   case 6:
+      P[qr][place_P]   = 1.0-3.0*e1e1; 
+      P[qr][place_P+1] = e2-3.0*e1e1e2; 
+      P[qr][place_P+2] = e2e2-3.0*e1e1e2e2; 
+      P[qs][place_P+3] = 1.0-3.0*e2e2; 
+      P[qs][place_P+4] = e1-3.0*e1e2e2; 
+      P[qs][place_P+5] = e1e1-3.0*e1e1e2e2; 
+      place_P+=6;
+   break;
+   default:
+      dserror("eas: QUERSCHUB: E13,E23 KONSTANT other then 0,2,4,6 for Quad9");
    }
 /*----------------------------------------------------------------------
       QUERSCHUB: E13,E23 LINEAR
@@ -463,17 +486,28 @@ else if (iel==4)
    case 0:
    break;
    case 2:
-      P[sr][place_P]  =e1;
-      P[ss][place_P+1]=e2;
+      P[sr][place_P]   = e1e1; 
+      P[ss][place_P+1] = e2e2; 
       place_P+=2;
    break;
    case 4:
-      P[sr][place_P]  =e1;
-      P[sr][place_P+1]=e1e2;
-      P[ss][place_P+2]=e2;
-      P[ss][place_P+3]=e1e2;
+      P[sr][place_P]   = e1e1; 
+      P[sr][place_P+1] = e1e1e2e2; 
+      P[ss][place_P+2] = e2e2; 
+      P[ss][place_P+3] = e1e1e2e2; 
       place_P+=4;
    break;
+   case 6:
+      P[sr][place_P]   = e1e1; 
+      P[sr][place_P+1] = e1e1e2; 
+      P[sr][place_P+2] = e1e1e2e2; 
+      P[ss][place_P+3] = e2e2; 
+      P[ss][place_P+4] = e1e2e2; 
+      P[ss][place_P+5] = e1e1e2e2; 
+      place_P+=6;
+   break;
+   default:
+      dserror("eas: QUERSCHUB: E13,E23 LINEAR other then 0,2,4,6 for Quad9");
    }
 }
 /*------------------------------------------------------------- default */
@@ -523,11 +557,11 @@ void s9_transeas(DOUBLE      **P,
                  INT           nhyb,
                  INT           klay)
 {
-INT          i,j,k;
+INT          i,j;
 const DOUBLE two=2.0;
 DOUBLE       t11,t12,t13,t21,t22,t23,t31,t32,t33;
 DOUBLE       factor;
-DOUBLE       sum;
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9_transeas");
 #endif
