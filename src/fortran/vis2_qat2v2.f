@@ -909,7 +909,7 @@ C=======================================================================
      &	                   XYPIX,XYMIN,XYMAX,
      &  		   NKEYS,IKEYS,FKEYS,FLIMS,
      &			   MNODE,MPTRI,MPPTRI,
-     &			   MFACE,MPFACE,MEDGE,MPEDGE)
+     &			   MFACE,MPFACE,MEDGE,MPEDGE,BGCOLOUR)
 C       ****************************************************************
 C       *                                                              *
 C       *  SUBROUTINE TO CALL V2_INIT                                  *
@@ -919,11 +919,11 @@ C       *                                                              *
 C       ****************************************************************
         
 	INTEGER IOPT,CMNCOL,CMUNIT
-	INTEGER XYPIX(2),NKEYS,IKEYS(9),FKEYS(9)
+	INTEGER XYPIX(2),NKEYS,IKEYS(11),FKEYS(11)
 	INTEGER MNODE,MPTRI,MPPTRI,MFACE,MPFACE,MEDGE,MPEDGE
-	REAL    XYMIN(2), XYMAX(2),FLIMS(2,9)
-        CHARACTER CMFILE*29
-	CHARACTER*16 TKEYS(9)
+	REAL    XYMIN(2), XYMAX(2),FLIMS(2,11)
+        CHARACTER CMFILE*37
+	CHARACTER*16 TKEYS(11)
 	CHARACTER*80 TITL
 	
 	DATA TKEYS / 'PRESSURE        ',
@@ -934,16 +934,22 @@ C       ****************************************************************
      &		     'VELOCITY Uy     ', 
      &		     'ABS. VEL. |U|   ',
      &		     'STRL./STAT.STRL.',
-     &		     'GRID-VEL. VECT. ' /
+     &		     'GRID-VEL. VECT. ',
+     &		     'STOPPING TIME   ',
+     &		     'MOVIE CREATION  ' /
 
        TITL='HOT PICS!!!!'
-       CMFILE='/bau/stat34/opt/vis2/spec.col'
+       IF(BGCOLOUR.EQ.0) THEN
+          CMFILE='/bau/stat26/opt/visual/spec_black.col'
+       ELSE
+          CMFILE='/bau/stat26/opt/visual/spec_white.col'
+       ENDIF
 
-       WRITE(*,*) 'call of V2_INIT not compiled in!!!' 
-       WRITE(*,*) 'change in /src/fortran/vis2_qat2v2.f'
-       STOP
-       
-C       CALL V2_INIT(TITL,IOPT,CMNCOL,CMFILE,CMUNIT,
+      WRITE(*,*) 'call of V2_INIT not compiled in!!!'
+      WRITE(*,*) 'change in /src/fortran/vis2_qat2v2.f'
+      STOP
+
+C        CALL V2_INIT(TITL,IOPT,CMNCOL,CMFILE,CMUNIT,
 C     &              XYPIX,XYMIN,XYMAX,
 C     &		    NKEYS,IKEYS,TKEYS,FKEYS,FLIMS,
 C     &		    MNODE,MPTRI,MPPTRI,
