@@ -85,17 +85,17 @@ if (ans==1)
    {
       rthreei = 1.0 / (sqrt(3.0));
       xqr1[0] = -rthreei; xqs1[0] = -1.0; 
-      xqr1[1] =  rthreei; xqs1[1] = -1.0; 
-      xqr1[2] = -rthreei; xqs1[2] =  0.0; 
-      xqr1[3] =  rthreei; xqs1[3] =  0.0; 
-      xqr1[4] = -rthreei; xqs1[4] =  1.0; 
+      xqr1[1] = -rthreei; xqs1[1] =  0.0; 
+      xqr1[2] = -rthreei; xqs1[2] =  1.0; 
+      xqr1[3] =  rthreei; xqs1[3] = -1.0; 
+      xqr1[4] =  rthreei; xqs1[4] =  0.0; 
       xqr1[5] =  rthreei; xqs1[5] =  1.0; 
 
       xqr2[0] = -1.0;     xqs2[0] = -rthreei; 
-      xqr2[1] = -1.0;     xqs2[1] =  rthreei; 
-      xqr2[2] =  0.0;     xqs2[2] = -rthreei; 
-      xqr2[3] =  0.0;     xqs2[3] =  rthreei; 
-      xqr2[4] =  1.0;     xqs2[4] = -rthreei; 
+      xqr2[1] = 0.0;     xqs2[1] =  -rthreei; 
+      xqr2[2] =  1.0;     xqs2[2] = -rthreei; 
+      xqr2[3] = -1.0;     xqs2[3] =  rthreei; 
+      xqr2[4] =  0.0;     xqs2[4] =  rthreei; 
       xqr2[5] =  1.0;     xqs2[5] =  rthreei; 
    }
 } /* end of (ans==1) */
@@ -114,6 +114,10 @@ return;
 int s8_ansq_funct(double frq[], double fsq[], double r, double s,
                   int iel, int nsansq)
 {
+double rthreei;
+double pr[3],ps[3];
+double qr[2],qs[2];
+double rr[3],rs[3];
 #ifdef DEBUG 
 dstrc_enter("s8_ansq_funct");
 #endif
@@ -125,6 +129,46 @@ if (iel==4)
    
    fsq[0] = 0.5 * (1.0 - r);
    fsq[1] = 0.5 * (1.0 + r);
+}
+if (iel==9)
+{
+   rthreei = 1.0 / (sqrt(3.0));
+   
+   pr[0] = -0.5 * s * (1.0-s);
+   pr[1] =  (1.0-s) * (1.0+s);
+   pr[2] =  0.5 * s * (1.0+s);
+   
+   qr[0] =  0.5 * (1.0-r/rthreei);
+   qr[1] =  0.5 * (1.0+r/rthreei);
+
+   rr[0] =  1.0/6.0 - 0.5 * s;
+   rr[1] =  2.0/3.0;
+   rr[2] =  1.0/6.0 + 0.5 * s;
+   
+   ps[0] = -0.5 * r * (1.0-r); 
+   ps[1] =  (1.0-r) * (1.0+r); 
+   ps[2] =  0.5 * r * (1.0+r);
+
+   qs[0] =  0.5 * (1.0-s/rthreei);
+   qs[1] =  0.5 * (1.0+s/rthreei);
+   
+   rs[0] =  1.0/6.0 - 0.5 * r;
+   rs[1] =  2.0/3.0;
+   rs[2] =  1.0/6.0 + 0.5 * r;
+   
+   frq[0] = pr[0] * qr[0];
+   frq[1] = pr[1] * qr[0];
+   frq[2] = pr[2] * qr[0];
+   frq[3] = pr[0] * qr[1];
+   frq[4] = pr[1] * qr[1];
+   frq[5] = pr[2] * qr[1];
+
+   fsq[0] = ps[0] * qs[0];
+   fsq[1] = ps[1] * qs[0];
+   fsq[2] = ps[2] * qs[0];
+   fsq[3] = ps[0] * qs[1];
+   fsq[4] = ps[1] * qs[1];
+   fsq[5] = ps[2] * qs[1];
 }
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

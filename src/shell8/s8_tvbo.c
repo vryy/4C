@@ -46,8 +46,6 @@ for (inode=0; inode<iel; inode++)
    
    node_start = inode*numdf;
 
-if (nsansq != 6)   
-{
    bop[0][node_start+0]= pk1*a1x;
    bop[0][node_start+1]= pk1*a1y;
    bop[0][node_start+2]= pk1*a1z;
@@ -61,7 +59,7 @@ if (nsansq != 6)
    bop[1][node_start+3]= 0.0;
    bop[1][node_start+4]= 0.0;
    bop[1][node_start+5]= 0.0;
-}
+
 if (nsansq == 0)
 {   
    bop[2][node_start+0]= pk1*a3x;
@@ -71,15 +69,14 @@ if (nsansq == 0)
    bop[2][node_start+4]= pk *a1y;
    bop[2][node_start+5]= pk *a1z;
 }
-if (nsansq != 6)
-{   
+
    bop[3][node_start+0]= pk2*a2x;
    bop[3][node_start+1]= pk2*a2y;
    bop[3][node_start+2]= pk2*a2z;
    bop[3][node_start+3]= 0.0;
    bop[3][node_start+4]= 0.0;
    bop[3][node_start+5]= 0.0;
-}   
+
 if (nsansq == 0)
 {   
    bop[4][node_start+0]= pk2*a3x;
