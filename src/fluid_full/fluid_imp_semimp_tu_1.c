@@ -409,7 +409,7 @@ iststep++;
 if (fdyn->step<=(fdyn->nums+1)) fluid_startproc(fdyn,&nfrastep);
 
 /*------------------------------ calculate constants for time algorithm */
-fluid_tcons(fdyn,dynvar,0);
+fluid_tcons(fdyn,dynvar);
 if (kapomega_yeah == 1) fluid_tcons_tu(fdyn,dynvar); 
 
 fdyn->time += dynvar->dta;

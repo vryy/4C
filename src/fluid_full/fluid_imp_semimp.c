@@ -358,7 +358,7 @@ if (restart!=0)
 if (fdyn->step<=(fdyn->nums+1)) fluid_startproc(fdyn,&nfrastep);
 
 /*------------------------------ calculate constants for time algorithm */
-fluid_tcons(fdyn,dynvar,0);	
+fluid_tcons(fdyn,dynvar);	
 if (fdyn->iop == 1)/* generalised alpha is solved for time n+alpha_f 	*/
    fdyn->time += dynvar->dta * fdyn->alpha_f;
 else

@@ -161,8 +161,7 @@ void fluid_cons(
 		);
 void fluid_tcons(         
                           FLUID_DYNAMIC     *fdyn,
-                          FLUID_DYN_CALC    *dynvar,
-			  INT		     time_prep
+                          FLUID_DYN_CALC    *dynvar
 		);
 void fluid_icons(         
                           FLUID_DYNAMIC     *fdyn,
