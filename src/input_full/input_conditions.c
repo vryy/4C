@@ -10,6 +10,9 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+/*! 
+\addtogroup INPUT 
+*//*! @{ (documentation module open)*/
 #include "../headers/standardtypes.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -77,6 +80,8 @@ static void inpdesign_line_fsicouple(void);
 static void inpdesign_nodal_freesurf(void);
 static void inpdesign_line_freesurf(void);
 static void inpdesign_line_liftdrag(void);
+static void inpdesign_surf_stability(void);
+static void inpdesign_vol_stability(void);
 
 static void inpdesign_line_thickness(void);
 static void inpdesign_line_axishellload(void);
@@ -144,6 +149,10 @@ if (genprob.probtyp==prb_fluid || genprob.probtyp==prb_fsi)
    inpdesign_line_freesurf();
 /*---------------------------------- input of line lift&drag definition */   
    inpdesign_line_liftdrag();
+/*------------------------------- input of surface stability definition */   
+   inpdesign_surf_stability();
+/*-------------------------------- input of volume stability definition */   
+   inpdesign_vol_stability();
 }
 #endif
 #ifdef D_AXISHELL
@@ -1696,6 +1705,23 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
        dsassert(colptr!=NULL,"Cannot reading fsi coupling conditions");
        colptr+=14;
    }
+   /*----------------------------------------------------- read the typ */
+   ierr=sscanf(colptr," %s ",buffer);
+   dsassert(ierr==1,"Cannot reading fsi coupling conditions");
+   if (strncmp(buffer,"fsi_real",10)==0) 
+   {
+       actdline->fsicouple->fsi_typ=fsi_real;
+       colptr = strstr(colptr,"fsi_real");
+       dsassert(colptr!=NULL,"Cannot reading coupling conditions");
+       colptr+=8;
+   }
+   if (strncmp(buffer,"fsi_pseudo",14)==0) 
+   {
+       actdline->fsicouple->fsi_typ=fsi_pseudo;
+       colptr = strstr(colptr,"fsi_pseudo");
+       dsassert(colptr!=NULL,"Cannot reading fsi coupling conditions");
+       colptr+=10;
+   }
 
    frread();
 }
@@ -1890,14 +1916,14 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_line_liftdrag()
 {
-int    i,j;
-int    ierr;
-int    ndline;
-int    dlineId;
+INT    i,j;
+INT    ierr;
+INT    ndline;
+INT    dlineId;
 char  *colptr;
 char   buffer[200];
 DLINE *actdline;
-int    coupleId;
+INT    coupleId;
 
 #ifdef DEBUG 
 dstrc_enter("inpdesign_line_liftdrag");
@@ -1915,7 +1941,7 @@ if (frfind("--DESIGN FLUID LINE LIFT&DRAG") == 0) goto end;
 frread();
 /*------------------------ read number of design lines with conditions */
 frint("DLINE",&ndline,&ierr);
-dsassert(ierr==1,"Cannot read design-line left&drag definition");
+dsassert(ierr==1,"Cannot read design-line lift&drag definition");
 frread();
 /*-------------------------------------- start reading the design lines */
 while(strncmp(allfiles.actplace,"------",6)!=0)
@@ -1941,7 +1967,14 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    dsassert(colptr!=NULL,"Cannot read design-line left&drag definition");
    colptr++;
    /*-------------------------------------------------- read the number */
-   actdline->liftdrag = strtol(colptr,&colptr,10);   
+   actdline->liftdrag = strtol(colptr,&colptr,10);
+   /*--------------------------------------- read center coordinates ---*/
+   actdline->ld_center[0] = strtod(colptr,&colptr);
+   actdline->ld_center[1] = strtod(colptr,&colptr);
+   /*------------------------------------- read corresponding ALE-DLINE */
+   actdline->aledline = strtol(colptr,&colptr,10);
+   actdline->aledline--;
+
    frread();
 }
 end:
@@ -1952,6 +1985,794 @@ dstrc_exit();
 return;
 } /* end of inpdesign_line_freesurf */
 
+
+/*!----------------------------------------------------------------------
+\brief input of surface stability parameters
+
+<pre>                                                       chfoe 01/04
+This routine reads the stability parameters as a condition assigned to
+a design surface for 2D fluid elements.
+The single parameters within one condition line have to be in prescribed
+order while additional free spaces do not matter.
+
+The parameters accociated with gls stabilisation as well as the way they
+are stored is due to genk (as it was converted from elemental input 
+'f2_inp') and previous historical developments.
+</pre>
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa
+
+*-----------------------------------------------------------------------*/
+static void inpdesign_surf_stability()
+{
+INT      i;
+INT      ierr;
+INT      ndsurf;
+INT      dsurfId;
+INT      ndum;          /* dummy value                                  */
+INT      ihelem;        /* temporary variable for ihelem                */
+INT      itaumu;        /*                                              */ 
+INT      itaump;        /*                                              */
+INT      itauc;         /* element flags                                */
+char    *colptr;
+char     buffer[200];
+DSURF   *actdsurf;
+STAB_PAR_GLS *gls;      /* pointer to GLS stabilisation parameters      */
+
+#ifdef DEBUG 
+dstrc_enter("inpdesign_surf_stability");
+#endif
+
+/*----------------------------------------------------------------------*/
+/*---- find the beginning of line fluid freesurface coupling conditions */
+if (frfind("--DESIGN FLUID SURFACE STABILISING CONDITIONS") == 0) goto end;
+frread();
+/*-------------------------- read number of surfaces with conditions ---*/
+frint("DSURF",&ndsurf,&ierr);
+dsassert(ierr==1,"Cannot read design surface for stabilisation");
+frread();
+/*-------------------------------------- start reading the design surfs */
+while(strncmp(allfiles.actplace,"------",6)!=0)
+{
+  /*------------------------------------------ read the design surf Id */
+  frint("E",&dsurfId,&ierr);
+  dsassert(ierr==1,"Cannot read design surface within stabilistation condition");
+  dsurfId--;
+  
+  /*--------------------------------------------------- find the dsurf */
+  actdsurf=NULL; 
+  for (i=0; i<design->ndsurf; i++)
+  {
+    if (design->dsurf[i].Id ==  dsurfId) 
+    {
+      actdsurf = &(design->dsurf[i]);
+      break;
+    }
+  }
+  dsassert(actdsurf!=NULL,"Cannot read design surface stabilisation definition");
+
+  /*--------------------------------- move pointer behind the "-" sign */
+  colptr = strstr(allfiles.actplace,"-");
+  dsassert(colptr!=NULL,"Cannot read design surface stabilisation definition");
+  colptr++;
+  
+  /*-------------------------------- read the type of stabilisation ---*/
+  ierr=sscanf(colptr," %s ",buffer);
+  dsassert(ierr==1,"Cannot read design surface stabilisation conditions");
+  if (strncmp(buffer,"GLS",3)==0) 
+  {
+    actdsurf->stab_type = stab_gls;
+    /* move pointer after "GLS" */
+    while (colptr[0] == ' ')
+      colptr++;
+    colptr += 3;
+  }
+  else if (strncmp(buffer,"PresPro",7)==0)
+  {
+    actdsurf->stab_type = stab_prespro;
+    /* move pointer after "PresPro" */
+    while (colptr[0] == ' ')
+      colptr++;
+    colptr += 7;
+  }
+  else dserror("Unknown stabilisation type!");  
+
+  /*---- All the following is done for eigther stabilisation type! ----*/
+  switch (actdsurf->stab_type)
+  {
+  case stab_gls:
+    /*-- allocate space for stabilisation parameters at this dsurf ---*/
+    actdsurf->stabi.gls = (STAB_PAR_GLS*)CCACALLOC(1,sizeof(STAB_PAR_GLS));
+    gls = actdsurf->stabi.gls;
+    
+    /*------------------------------------------------ read ISTABI ---*/
+    ierr=sscanf(colptr," %s ",buffer);
+    dsassert(ierr==1,"Cannot read design surface stabilisation ISTABI");
+    if (strncmp(buffer,"yes",3)==0)
+    {
+      gls->istabi=1;
+      /* move pointer after "yes" */
+      while (colptr[0] == ' ')
+        colptr++;
+      colptr += 3;
+    }
+    else if (strncmp(buffer,"no",2)==0)
+    {
+      gls->istabi=0;
+      /* move pointer after "no" */
+      while (colptr[0] == ' ')
+        colptr++;
+      colptr += 2;
+    }
+    else
+      dserror("Cannot read design surface stabilisation ISTABI");     
+    
+    /*------------------------------------------------ read IADVEC ---*/
+    ierr=sscanf(colptr," %s ",buffer);
+    dsassert(ierr==1,"Cannot read design surface stabilisation IADVEC");
+    if (strncmp(buffer,"yes",3)==0)
+    {
+      gls->iadvec=1;
+      /* move pointer after "yes" */
+      while (colptr[0] == ' ')
+        colptr++;
+      colptr += 3;
+    }
+    else if (strncmp(buffer,"no",2)==0)
+    {
+      gls->iadvec=0;
+      /* move pointer after "no" */
+      while (colptr[0] == ' ')
+        colptr++;
+      colptr += 2;
+    }
+    else
+      dserror("Cannot read design surface stabilisation IADVEC");     
+    
+    /*------------------------------------------------- read IPRES ---*/
+    ierr=sscanf(colptr," %s ",buffer);
+    dsassert(ierr==1,"Cannot read design surface stabilisation IPRES");
+    if (strncmp(buffer,"yes",3)==0)
+    {
+      gls->ipres=1;
+      /* move pointer after "yes" */
+      while (colptr[0] == ' ')
+        colptr++;
+      colptr += 3;
+    }
+    else if (strncmp(buffer,"no",2)==0)
+    {
+      gls->ipres=0;
+      /* move pointer after "no" */
+      while (colptr[0] == ' ')
+        colptr++;
+      colptr += 2;
+    }
+    else
+      dserror("Cannot read design surface stabilisation IPRES");
+       
+    /*------------------------------------------------- read IVISC ---*/
+    ierr=sscanf(colptr," %s ",buffer);
+    dsassert(ierr==1,"Cannot read design surface stabilisation IVISC");
+    if (strncmp(buffer,"GLS-",4)==0)
+    {
+      gls->ivisc=1;
+      /* move pointer after "GLS-" */
+      while (colptr[0] == ' ')
+        colptr++;
+      colptr += 4;
+    }
+    else if (strncmp(buffer,"GLS+",4)==0)
+    {
+      gls->ivisc=2;
+      /* move pointer after "GLS+" */
+      while (colptr[0] == ' ')
+        colptr++;
+      colptr += 4;
+    }
+    else if (strncmp(buffer,"USFEM",5)==0)
+    {
+      gls->ivisc=3;
+      /* move pointer after "USFEM" */
+      while (colptr[0] == ' ')
+        colptr++;
+      colptr += 5;
+    }
+    else if (strncmp(buffer,"no_GLS",6)==0)
+    {
+      gls->ivisc=0;
+      /* move pointer after "no_GLS" */
+      while (colptr[0] == ' ')
+        colptr++;
+      colptr += 6;
+    }
+    else if (strncmp(buffer,"no_USFEM",8)==0)
+    {
+      gls->ivisc=-1;
+      /* move pointer after "no_USFEM" */
+      while (colptr[0] == ' ')
+        colptr++;
+      colptr += 8;
+    }
+    else
+      dserror("Cannot read design surface stabilisation IVISC");     
+    
+    /*------------------------------------------------- read ICONT ---*/
+    ierr=sscanf(colptr," %s ",buffer);
+    dsassert(ierr==1,"Cannot read design surface stabilisation ICONT");
+    if (strncmp(buffer,"yes",3)==0)
+    {
+      gls->icont=1;
+      /* move pointer after "yes" */
+      while (colptr[0] == ' ')
+        colptr++;
+      colptr += 3;
+    }
+    else if (strncmp(buffer,"no",2)==0)
+    {
+      gls->icont=0;
+      /* move pointer after "no" */
+      while (colptr[0] == ' ')
+        colptr++;
+      colptr += 2;
+    }
+    else
+      dserror("Cannot read design surface stabilisation ICONT");
+       
+    /*------------------------------------------------ read ISTAPA ---*/
+    gls->istapa = strtol(colptr,&colptr,10);
+    
+    /*------------------------------------------------ read NORM_P ---*/
+    ierr=sscanf(colptr," %s ",buffer);
+    dsassert(ierr==1,"Cannot read design surface stabilisation NORM_P");
+    if (strncmp(buffer,"L_2",3)==0)
+    {
+      gls->norm_p=2;
+      /* move pointer after "L_2" */
+      while (colptr[0] == ' ')
+        colptr++;
+      colptr += 3;
+    }
+    else if (strncmp(buffer,"L_1",2)==0)
+    {
+      gls->norm_p=1;
+      /* move pointer after "L_1" */
+      while (colptr[0] == ' ')
+        colptr++;
+      colptr += 3;
+    }
+    else
+      dserror("Cannot read design surface stabilisation NORM_P");
+       
+    /*---------------------------------------------------- read MK ---*/
+    gls->mk = strtol(colptr,&colptr,10);
+     
+    /*------------------------------------------------ read IHELEM ---*/
+    ihelem = strtol(colptr,&colptr,10);
+    
+    /*------------------------------------------------ read NINTHS ---*/
+    ierr=sscanf(colptr," %s ",buffer);
+    dsassert(ierr==1,"Cannot read design surface stabilisation NINTHS");
+    if (strncmp(buffer,"at_center",9)==0)
+    {
+      gls->ninths=1;
+      /* move pointer after "at_center" */
+      while (colptr[0] == ' ')
+        colptr++;
+      colptr += 9;
+    }
+    else if (strncmp(buffer,"every_intpt",11)==0)
+    {
+      gls->ninths=2;
+      /* move pointer after "every_intpt" */
+      while (colptr[0] == ' ')
+        colptr++;
+      colptr += 11;
+    }
+    else
+      dserror("Cannot read design surface stabilisation NINTHS");
+       
+    /*------------------------------------------------ read ISTAPC ---*/
+    ierr=sscanf(colptr," %s ",buffer);
+    dsassert(ierr==1,"Cannot read design surface stabilisation ISTAPC");
+    if (strncmp(buffer,"at_center",9)==0)
+    {
+      gls->istapc=1;
+      /* move pointer after "at_center" */
+      while (colptr[0] == ' ')
+        colptr++;
+      colptr += 9;
+    }
+    else if (strncmp(buffer,"every_intpt",11)==0)
+    {
+      gls->istapc=2;
+      /* move pointer after "every_intpt" */
+      while (colptr[0] == ' ')
+        colptr++;
+      colptr += 11;
+    }
+    else
+      dserror("Cannot read design surface stabilisation ISTAPC");
+
+    /*------------------------------------- read stab const C_LAMB ---*/
+    gls->clamb = strtod(colptr,&colptr);
+    
+    /*------------------------ initialise some stabilisation flags ---*/
+    gls->istrle   = 0;
+    gls->iareavol = 0;
+    gls->iduring  = 0;
+    gls->idiaxy   = 0;
+    itaumu        = 0;
+    itaump        = 0;
+    itauc         = 0;
+
+    math_intextract(ihelem,&ndum, 
+                    &(gls->ihele[0]), 
+		    &(gls->ihele[1]),
+	            &(gls->ihele[2]));
+
+    for(i=0;i<3;i++)
+    {
+      if (gls->ihele[i]==5)
+      {
+        gls->istrle  = 1;
+        if (gls->iadvec!=0 && gls->ninths==1)
+          itaumu = -1;
+        if (gls->iadvec!=0 && gls->ninths!=1)
+          itaumu = 1;
+        if (gls->ipres!=0 && gls->ninths==1)
+          itaump = -1;
+        if (gls->ipres!=0 && gls->ninths!=1)
+          itaump = 1;
+        if (gls->icont!=0 && gls->ninths==1)
+          itauc = -1;
+        if (gls->icont!=0 && gls->ninths!=1)
+          itauc = 1;     
+      }
+      else if (gls->ihele[i]!=0)
+      {
+        gls->iareavol = 1;
+        if (gls->iadvec!=0 && gls->istapc==1)
+          itaumu = -1;
+        if (gls->iadvec!=0 && gls->istapc!=1)
+          itaumu = 1;
+        if (gls->ipres!=0 && gls->istapc==1)
+          itaump = -1;
+        if (gls->ipres!=0 && gls->istapc!=1)
+          itaump = 1;
+        if (gls->icont!=0 && gls->istapc==1)
+          itauc = -1;
+        if (gls->icont!=0 && gls->istapc!=1)
+          itauc = 1;
+	 
+        if (gls->ihele[i]==4)
+          gls->idiaxy = 1;         
+      }
+    }
+
+    if (gls->istrle==1 && gls->ninths!=1)
+      gls->iduring = 1;
+    if (gls->iareavol==1 && gls->istapc!=1)
+      gls->iduring = 1;
+
+    /*------------------------------ store data within the condition ---*/
+    gls->itau[0] = itaumu;
+    gls->itau[1] = itaump;
+    gls->itau[2] = itauc;
+
+  break;
+  case stab_prespro:
+    dserror("Pressure Projection type of stabilisation has not yet been implemented!");
+  break;
+  default:
+    dserror("Unknown stabilisation type!");
+  }
+  frread();
+}
+end:
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of inpdesign_surf_stability */
+
+
+/*!----------------------------------------------------------------------
+\brief input of surface stability parameters
+
+<pre>                                                       chfoe 01/04
+This routine reads the stability parameters as a condition assigned to
+a design volume for 3D fluid elements.
+The single parameters within one condition line have to be in prescribed
+order while additional free spaces do not matter.
+
+The parameters accociated with gls stabilisation as well as the way they
+are stored is due to genk (as it was converted from elemental input 
+'f3_inp') and previous historical developments.
+</pre>
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa
+
+*-----------------------------------------------------------------------*/
+static void inpdesign_vol_stability()
+{
+
+INT      i;
+INT      ierr;
+INT      ndvol;
+INT      dvolId;
+INT      ndum;          /* dummy value                                  */
+INT      ihelem;        /* temporary variable for ihelem                */
+INT      itaumu;        /*                                              */ 
+INT      itaump;        /*                                              */
+INT      itauc;         /* element flags                                */
+char    *colptr;
+char     buffer[200];
+DVOL   *actdvol;
+STAB_PAR_GLS *gls;      /* pointer to GLS stabilisation parameters      */
+
+#ifdef DEBUG 
+dstrc_enter("inpdesign_vol_stability");
+#endif
+/*----------------------------------------------------------------------*/
+/*---- find the beginning of line fluid freesurface coupling conditions */
+if (frfind("--DESIGN FLUID VOLUME STABILISING CONDITIONS") == 0) goto end;
+frread();
+/*-------------------------- read number of surfaces with conditions ---*/
+frint("DVOL",&ndvol,&ierr);
+dsassert(ierr==1,"Cannot read design volume for stabilisation");
+frread();
+/*-------------------------------------- start reading the design surfs */
+while(strncmp(allfiles.actplace,"------",6)!=0)
+{
+  /*------------------------------------------ read the design surf Id */
+  frint("E",&dvolId,&ierr);
+  dsassert(ierr==1,"Cannot read design volume within stabilistation condition");
+  dvolId--;
+  
+  /*--------------------------------------------------- find the dsurf */
+  actdvol=NULL; 
+  for (i=0; i<design->ndvol; i++)
+  {
+    if (design->dvol[i].Id == dvolId) 
+    {
+      actdvol = &(design->dvol[i]);
+      break;
+    }
+  }
+  dsassert(actdvol!=NULL,"Cannot read design volume stabilisation definition");
+
+  /*--------------------------------- move pointer behind the "-" sign */
+  colptr = strstr(allfiles.actplace,"-");
+  dsassert(colptr!=NULL,"Cannot read design volume stabilisation definition");
+  colptr++;
+  
+  /*-------------------------------- read the type of stabilisation ---*/
+  ierr=sscanf(colptr," %s ",buffer);
+  dsassert(ierr==1,"Cannot read design volume stabilisation conditions");
+  if (strncmp(buffer,"GLS",3)==0) 
+  {
+    actdvol->stab_type = stab_gls;
+    /* move pointer after "GLS" */
+    while (colptr[0] == ' ')
+      colptr++;
+    colptr += 3;
+  }
+  else if (strncmp(buffer,"PresPro",7)==0)
+  {
+    actdvol->stab_type = stab_prespro;
+    /* move pointer after "PresPro" */
+    while (colptr[0] == ' ')
+      colptr++;
+    colptr += 7;
+  }
+  else dserror("Unknown stabilisation type!");  
+  
+  /*---- All the following is done for eigther stabilisation type! ----*/
+  switch (actdvol->stab_type)
+  {
+  case stab_gls:
+    /*-- allocate space for stabilisation parameters at this dsurf ---*/
+    actdvol->stabi.gls = (STAB_PAR_GLS*)CCACALLOC(1,sizeof(STAB_PAR_GLS));
+    gls = actdvol->stabi.gls;
+    
+    /*------------------------------------------------ read ISTABI ---*/
+    ierr=sscanf(colptr," %s ",buffer);
+    dsassert(ierr==1,"Cannot read design volume stabilisation ISTABI");
+    if (strncmp(buffer,"yes",3)==0)
+    {
+      gls->istabi=1;
+      /* move pointer after "yes" */
+      while (colptr[0] == ' ')
+        colptr++;
+      colptr += 3;
+    }
+    else if (strncmp(buffer,"no",2)==0)
+    {
+      gls->istabi=0;
+      /* move pointer after "no" */
+      while (colptr[0] == ' ')
+        colptr++;
+      colptr += 2;
+    }
+    else
+      dserror("Cannot read design volume stabilisation ISTABI");     
+    
+    /*------------------------------------------------ read IADVEC ---*/
+    ierr=sscanf(colptr," %s ",buffer);
+    dsassert(ierr==1,"Cannot read design volume stabilisation IADVEC");
+    if (strncmp(buffer,"yes",3)==0)
+    {
+      gls->iadvec=1;
+      /* move pointer after "yes" */
+      while (colptr[0] == ' ')
+        colptr++;
+      colptr += 3;
+    }
+    else if (strncmp(buffer,"no",2)==0)
+    {
+      gls->iadvec=0;
+      /* move pointer after "no" */
+      while (colptr[0] == ' ')
+        colptr++;
+      colptr += 2;
+    }
+    else
+      dserror("Cannot read design volume stabilisation IADVEC");     
+    
+    /*------------------------------------------------- read IPRES ---*/
+    ierr=sscanf(colptr," %s ",buffer);
+    dsassert(ierr==1,"Cannot read design volume stabilisation IPRES");
+    if (strncmp(buffer,"yes",3)==0)
+    {
+      gls->ipres=1;
+      /* move pointer after "yes" */
+      while (colptr[0] == ' ')
+        colptr++;
+      colptr += 3;
+    }
+    else if (strncmp(buffer,"no",2)==0)
+    {
+      gls->ipres=0;
+      /* move pointer after "no" */
+      while (colptr[0] == ' ')
+        colptr++;
+      colptr += 2;
+    }
+    else
+      dserror("Cannot read design volume stabilisation IPRES");
+       
+    /*------------------------------------------------- read IVISC ---*/
+    ierr=sscanf(colptr," %s ",buffer);
+    dsassert(ierr==1,"Cannot read design volume stabilisation IVISC");
+    if (strncmp(buffer,"GLS-",4)==0)
+    {
+      gls->ivisc=1;
+      /* move pointer after "GLS-" */
+      while (colptr[0] == ' ')
+        colptr++;
+      colptr += 4;
+    }
+    else if (strncmp(buffer,"GLS+",4)==0)
+    {
+      gls->ivisc=2;
+      /* move pointer after "GLS+" */
+      while (colptr[0] == ' ')
+        colptr++;
+      colptr += 4;
+    }
+    else if (strncmp(buffer,"USFEM",5)==0)
+    {
+      gls->ivisc=3;
+      /* move pointer after "USFEM" */
+      while (colptr[0] == ' ')
+        colptr++;
+      colptr += 5;
+    }
+    else if (strncmp(buffer,"no_GLS",6)==0)
+    {
+      gls->ivisc=0;
+      /* move pointer after "no_GLS" */
+      while (colptr[0] == ' ')
+        colptr++;
+      colptr += 6;
+    }
+    else if (strncmp(buffer,"no_USFEM",8)==0)
+    {
+      gls->ivisc=-1;
+      /* move pointer after "no_USFEM" */
+      while (colptr[0] == ' ')
+        colptr++;
+      colptr += 8;
+    }
+    else
+      dserror("Cannot read design volume stabilisation IVISC");     
+    
+    /*------------------------------------------------- read ICONT ---*/
+    ierr=sscanf(colptr," %s ",buffer);
+    dsassert(ierr==1,"Cannot read design volume stabilisation ICONT");
+    if (strncmp(buffer,"yes",3)==0)
+    {
+      gls->icont=1;
+      /* move pointer after "yes" */
+      while (colptr[0] == ' ')
+        colptr++;
+      colptr += 3;
+    }
+    else if (strncmp(buffer,"no",2)==0)
+    {
+      gls->icont=0;
+      /* move pointer after "no" */
+      while (colptr[0] == ' ')
+        colptr++;
+      colptr += 2;
+    }
+    else
+      dserror("Cannot read design volume stabilisation ICONT");
+       
+    /*------------------------------------------------ read ISTAPA ---*/
+    gls->istapa = strtol(colptr,&colptr,10);
+    
+    /*------------------------------------------------ read NORM_P ---*/
+    ierr=sscanf(colptr," %s ",buffer);
+    dsassert(ierr==1,"Cannot read design volume stabilisation NORM_P");
+    if (strncmp(buffer,"L_2",3)==0)
+    {
+      gls->norm_p=2;
+      /* move pointer after "L_2" */
+      while (colptr[0] == ' ')
+        colptr++;
+      colptr += 3;
+    }
+    else if (strncmp(buffer,"L_1",2)==0)
+    {
+      gls->norm_p=1;
+      /* move pointer after "L_1" */
+      while (colptr[0] == ' ')
+        colptr++;
+      colptr += 3;
+    }
+    else
+      dserror("Cannot read design volume stabilisation NORM_P");
+       
+    /*---------------------------------------------------- read MK ---*/
+    gls->mk = strtol(colptr,&colptr,10);
+     
+    /*------------------------------------------------ read IHELEM ---*/
+    ihelem = strtol(colptr,&colptr,10);
+    
+    /*------------------------------------------------ read NINTHS ---*/
+    ierr=sscanf(colptr," %s ",buffer);
+    dsassert(ierr==1,"Cannot read design volume stabilisation NINTHS");
+    if (strncmp(buffer,"at_center",9)==0)
+    {
+      gls->ninths=1;
+      /* move pointer after "at_center" */
+      while (colptr[0] == ' ')
+        colptr++;
+      colptr += 9;
+    }
+    else if (strncmp(buffer,"every_intpt",11)==0)
+    {
+      gls->ninths=2;
+      /* move pointer after "every_intpt" */
+      while (colptr[0] == ' ')
+        colptr++;
+      colptr += 11;
+    }
+    else
+      dserror("Cannot read design volume stabilisation NINTHS");
+       
+    /*------------------------------------------------ read ISTAPC ---*/
+    ierr=sscanf(colptr," %s ",buffer);
+    dsassert(ierr==1,"Cannot read design volume stabilisation ISTAPC");
+    if (strncmp(buffer,"at_center",9)==0)
+    {
+      gls->istapc=1;
+      /* move pointer after "at_center" */
+      while (colptr[0] == ' ')
+        colptr++;
+      colptr += 9;
+    }
+    else if (strncmp(buffer,"every_intpt",11)==0)
+    {
+      gls->istapc=2;
+      /* move pointer after "every_intpt" */
+      while (colptr[0] == ' ')
+        colptr++;
+      colptr += 11;
+    }
+    else
+      dserror("Cannot read design volume stabilisation ISTAPC");
+
+    /*------------------------------------- read stab const C_LAMB ---*/
+    gls->clamb = strtod(colptr,&colptr);
+    
+    /*------------------------ initialise some stabilisation flags ---*/
+    gls->istrle   = 0;
+    gls->iareavol = 0;
+    gls->iduring  = 0;
+    gls->idiaxy   = 0;
+    itaumu        = 0;
+    itaump        = 0;
+    itauc         = 0;
+
+    math_intextract(ihelem,&ndum, 
+                    &(gls->ihele[0]), 
+		    &(gls->ihele[1]),
+	            &(gls->ihele[2]));
+
+    for(i=0;i<3;i++)
+    {
+      if (gls->ihele[i]==5)
+      {
+        gls->istrle  = 1;
+        if (gls->iadvec!=0 && gls->ninths==1)
+          itaumu = -1;
+        if (gls->iadvec!=0 && gls->ninths!=1)
+          itaumu = 1;
+        if (gls->ipres!=0 && gls->ninths==1)
+          itaump = -1;
+        if (gls->ipres!=0 && gls->ninths!=1)
+          itaump = 1;
+        if (gls->icont!=0 && gls->ninths==1)
+          itauc = -1;
+        if (gls->icont!=0 && gls->ninths!=1)
+          itauc = 1;     
+      }
+      else if (gls->ihele[i]!=0)
+      {
+        gls->iareavol = 1;
+        if (gls->iadvec!=0 && gls->istapc==1)
+          itaumu = -1;
+        if (gls->iadvec!=0 && gls->istapc!=1)
+          itaumu = 1;
+        if (gls->ipres!=0 && gls->istapc==1)
+          itaump = -1;
+        if (gls->ipres!=0 && gls->istapc!=1)
+          itaump = 1;
+        if (gls->icont!=0 && gls->istapc==1)
+          itauc = -1;
+        if (gls->icont!=0 && gls->istapc!=1)
+          itauc = 1;
+	 
+        if (gls->ihele[i]==4)
+          gls->idiaxy = 1;         
+      }
+    }
+
+    if (gls->istrle==1 && gls->ninths!=1)
+      gls->iduring = 1;
+    if (gls->iareavol==1 && gls->istapc!=1)
+      gls->iduring = 1;
+
+    /*------------------------------ store data within the condition ---*/
+    gls->itau[0] = itaumu;
+    gls->itau[1] = itaump;
+    gls->itau[2] = itauc;
+
+  break;
+  case stab_prespro:
+    dserror("Pressure Projection type of stabilisation has not yet been implemented!");
+  break;
+  default:
+    dserror("Unknown stabilisation type!");
+  }
+  frread();
+}
+ 
+end:
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of inpdesign_vol_stability */
 #endif
 
 
@@ -2352,3 +3173,4 @@ dstrc_exit();
 return;
 } /* end of inpdesign_line_contact */
 #endif
+/*! @} (documentation module close)*/
