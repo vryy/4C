@@ -35,7 +35,7 @@ main is only printing the ccarat head and the finish
 ------------------------------------------------------------------------*/
 INT main(INT argc, char *argv[])
 {
-static char release[12] = "01_20040623";
+static char release[13] = "01_20040623 ";
 #ifdef PARALLEL 
 static char *buff,*dbuff;
 INT          buffsize=MPIBUFFSIZE;
@@ -69,7 +69,7 @@ if (par.myrank==0)
    printf("*          sequential version          *\n");
 #endif
    printf("*                                      *\n");
-   printf("*         Release: %s         *\n",release);
+   printf("*         Release: %s        *\n",release);
    printf("*                                      *\n");
    printf("*       Institut fuer Baustatik        *\n");
    printf("*        Universitaet Stuttgart        *\n");
