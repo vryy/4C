@@ -4,7 +4,7 @@
 //             http://www.uni-stuttgart.de/ibs/members/genkinger/
 //             0711 - 685-6127
 // 
-// necessary defines: -DD_FLUID -DD_FLUID2 -DAZTEC_PACKAGE -DRESULTTEST -DD_FSI -DD_ALE
+// necessary defines: -DD_FLUID -DD_FLUID2 -DUMFPACK -DRESULTTEST -DD_FSI -DD_ALE
 //
 // #define MAXNOD           (4)
 // #define MAXELE           (4)
