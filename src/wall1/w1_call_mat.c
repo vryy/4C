@@ -28,6 +28,9 @@ dstrc_enter("w1_call_mat");
                  wtype,
                  d);
   break;
+  case m_stvenpor:/*------------------------ porous linear elastic ---*/
+    w1_mat_stvpor(mat, ele->e.w1->elewa->matdata, wtype, d);
+  break;
   case m_pl_mises:/*--------------------- von mises material law ---*/
     w1_mat_plast_mises(mat->m.pl_mises->youngs,
                        mat->m.pl_mises->possionratio,

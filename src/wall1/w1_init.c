@@ -28,7 +28,7 @@ deriv_h     = amdef("deriv_h"  ,&deriv_a_h,2,MAXNOD_WALL1 ,"DA");
 xjm_h       = amdef("xjm_h"    ,&xjm_a_h  ,2,2            ,"DA");           
 /*----------------------------------------------------------------------*/
 for (i=0; i<actpart->pdis[0].numele; i++)
-{
+{/*matplast00*/
   actele = actpart->pdis[0].element[i];
   if (actele->eltyp != el_wall1) continue;
   /*---------------------------------------- init integration points ---*/
@@ -52,10 +52,44 @@ for (i=0; i<actpart->pdis[0].numele; i++)
   actele->e.w1->stress[0].fess = (double*)calloc(size_j,sizeof(double));
   actele->e.w1->stress[0].fers = (double*)calloc(size_j,sizeof(double));
   /*--------------------------------------------- init working array ---*/
+  if(mat[actele->mat-1].mattyp == m_stvenpor)
+  {
+    size_i = 1;
+    actele->e.w1->elewa = (W1_ELE_WA*)CALLOC(size_i,sizeof(W1_ELE_WA));
+    if (actele->e.w1->elewa==NULL)
+    {
+      dserror("Allocation of elewa in ELEMENT failed");
+      break;
+    } 
+    /*----------------------------------------------------------*
+     | actele->e.w1->elewa->matdata[0] = current density value  | 
+     *----------------------------------------------------------*/
+    size_j = 1;
+    actele->e.w1->elewa->matdata = (double*)calloc(size_j,sizeof(double));
+    if (actele->e.w1->elewa->matdata==NULL)
+    {
+      dserror("Allocation of matdata in ELEMENT failed");
+      break;
+    } 
+    actele->e.w1->elewa->matdata[0] = mat[actele->mat-1].m.stvenpor->density;
+    /*----------------------------------------------------------*
+     | actele->e.w1->elewa->optdata[0] = current opt.var.num.   | 
+     *----------------------------------------------------------*/
+    size_j = 1;
+    actele->e.w1->elewa->optdata = (int*)calloc(size_j,sizeof(int));
+    if (actele->e.w1->elewa->optdata==NULL)
+    {
+      dserror("Allocation of optdata in ELEMENT failed");
+      break;
+    } 
+    actele->e.w1->elewa->optdata[0] = 0;
+  }
+  
+  /* for plasticity */
   if(mat[actele->mat-1].mattyp == m_pl_mises || 
      mat[actele->mat-1].mattyp == m_pl_dp || 
      mat[actele->mat-1].mattyp == m_pl_epc )
-  {
+  {/*matplast01*/
     size_i = 1;
     actele->e.w1->elewa = (W1_ELE_WA*)CALLOC(size_i,sizeof(W1_ELE_WA));
     if (actele->e.w1->elewa==NULL)
@@ -73,7 +107,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
       break;
     } 
     for (k=0; k<size_j; k++)
-    {
+    {/*matplast02*/
       actele->e.w1->elewa[0].ipwa[k].epstn = 0.;
       actele->e.w1->elewa[0].ipwa[k].yip   = -1;
       actele->e.w1->elewa[0].ipwa[k].qn = (double*)calloc(4,sizeof(double));
@@ -119,7 +153,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
         actele->e.w1->elewa[0].ipwa[k].di[  j] = 0.;
         }
       }
-    }
+    }/*matplast02*/
   /*------------------------------------- calculate element diameter ---*/
     if(mat[actele->mat-1].mattyp == m_pl_mises && 
      (fabs(0.0001 - mat[actele->mat-1].m.pl_mises->GF) > 0.0001) )
@@ -131,8 +165,8 @@ for (i=0; i<actpart->pdis[0].numele; i++)
        w1cdia(actele, &data, funct_h, deriv_h, xjm_h);
     }
    /*-------------------------------------------------------------------*/
-  }
-}
+  }/*matplast01*/
+}/*matplast00*/
 /*----------------------------------------------------------------------*/
 amdel(&funct_a_h);       
 amdel(&deriv_a_h);       
