@@ -5,6 +5,11 @@ typedef struct _BRICK1
 {
 int           nGP[3];
 int           nGP_tet;
+/*----------------------------------------------------------------------*
+ | result struct: stresses                                   fh 6/02    |
+ *----------------------------------------------------------------------*/
+struct _ARRAY4D  stress_GP;
+struct _ARRAY4D  stress_ND;
 } BRICK1;
 
 
