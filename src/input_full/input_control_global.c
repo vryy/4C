@@ -1750,9 +1750,8 @@ void inpctr_dyn_ls(LS_DYNAMIC *lsdyn)
   /* allocate memory for lsdata */
   lsdyn->lsdata = (LS_GEN_DATA*)CCACALLOC(1,sizeof(LS_GEN_DATA));
   /* set some parameters */
-  lsdyn->lsdata->boundary_on_off = 0;
   lsdyn->lsdata->reinitflag = 0;
-  lsdyn->lsdata->print_on_off = 0;  
+  lsdyn->lsdata->print_on_off = 0;
   /* read in lsdyn */
   if (frfind("-LEVELSET DYNAMIC")==0) dserror("frfind: LEVELSET DYNAMIC not in input file");
   frread();
@@ -1788,6 +1787,7 @@ void inpctr_dyn_ls(LS_DYNAMIC *lsdyn)
     /* read INT */
     frint("FLAGVEL", &(lsdyn->lsdata->flag_vel), &ierr);
     frint("NUMLAYER", &(lsdyn->lsdata->numlayer), &ierr);
+    frint("SEARCHBAND", &(lsdyn->lsdata->searchband), &ierr);    
     frint("NUMREINIT", &(lsdyn->lsdata->numreinit), &ierr);
     frint("NUMCIRC", &(lsdyn->lsdata->numcirc), &ierr);
     frint("NUMLINE", &(lsdyn->lsdata->numline), &ierr);    
@@ -1895,6 +1895,18 @@ void inpctr_dyn_ls(LS_DYNAMIC *lsdyn)
         lsdyn->lsdata->is_sharp = 0;
       else
         dserror("ISSHARP unknown!\n");	 
+    }
+    frchar("PROBDESCR"   ,buffer    ,&ierr);
+    if (ierr==1)
+    {
+      if (strncmp(buffer,"none",4)==0)
+        lsdyn->lsdata->probdescr = 0;
+      else if (strncmp(buffer,"bubble",6)==0)
+        lsdyn->lsdata->probdescr = 1;
+      else if (strncmp(buffer,"dam",3)==0)
+        lsdyn->lsdata->probdescr = 2;
+      else
+        dserror("PROBDESCR unknown!\n");	 
     }
     frread();
   }
