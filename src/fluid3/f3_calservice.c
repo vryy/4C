@@ -10,7 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 #ifdef D_FLUID3 
 #include "../headers/standardtypes.h"
 #include "fluid3_prototypes.h"
@@ -631,6 +631,77 @@ dstrc_exit();
 
 return; 
 } /* end of f3_permestif */
+
+
+
+/*!--------------------------------------------------------------------- 
+  \brief get edgnodes for element line
+
+  <pre>                                                         mn 03/04
+
+
+  </pre>
+
+  \param   iegnod    INT   	 (o)   edge nodes
+  \param  *ele       ELEMENT	 (i)   actual element
+  \param   line      DOUBLE	 (i)   actual line number		
+  \return void                                                                       
+
+  ----------------------------------------------------------------------*/
+void f3_iedg(
+    INT     *iegnod,
+    ELEMENT *ele,
+    INT      surf
+    )
+{
+
+  INT i;
+  static INT iegh[2][6][8] =
+   {{{ 0, 1, 2, 3, 0, 0, 0, 0 },  /* surf 0                   */ 
+     { 0, 1, 5, 4, 0, 0, 0, 0 },  /* surf 1                   */ 
+     { 1, 2, 6, 5, 0, 0, 0, 0 },  /* surf 2 for hex 8 element */ 
+     { 2, 3, 7, 6, 0, 0, 0, 0 },  /* surf 3                   */ 
+     { 3, 0, 4, 7, 0, 0, 0, 0 },  /* surf 4                   */ 
+     { 4, 5, 6, 7, 0, 0, 0, 0 }}, /* surf 5                   */ 
+    {{ 0, 0, 0, 0, 0, 0, 0, 0 },   /* surf 0                    */ 
+     { 0, 0, 0, 0, 0, 0, 0, 0 },   /* surf 1                    */ 
+     { 0, 0, 0, 0, 0, 0, 0, 0 },   /* surf 2 for hex 20 element */ 
+     { 0, 0, 0, 0, 0, 0, 0, 0 },   /* surf 3                    */ 
+     { 0, 0, 0, 0, 0, 0, 0, 0 },   /* surf 4                    */ 
+     { 0, 0, 0, 0, 0, 0, 0, 0 }}}; /* surf 5                    */ 
+
+
+  static INT iegt[1][4][6];
+
+#ifdef DEBUG 
+  dstrc_enter("f3_iedg");
+#endif
+
+  switch(ele->distyp)
+  {
+    case hex8:
+      for(i=0;i<4;i++) iegnod[i] = iegh[0][surf][i];
+      break;
+    case hex20: 
+      dserror("iedg for hex20 not yet implemented !!\n");
+      for(i=0;i<8;i++) iegnod[i] = iegh[1][surf][i];
+      break;
+    case tet4:
+      dserror("iedg for tet4 not yet implemented !!\n");
+      break;
+    case tet10:
+      dserror("iedg for tet10 not yet implemented !!\n");
+      break;
+    default:
+      dserror("distyp unknown\n");
+  } /* end switch(ele->distyp) */
+
+#ifdef DEBUG 
+  dstrc_exit();
+#endif
+
+  return; 
+} /* end of f3_iedg */
 
 
 
