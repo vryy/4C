@@ -48,6 +48,9 @@ and the type is in partition.h
 extern struct _FIELD      *field;
 
 
+extern struct _PARTITION  *partition;
+
+
 /*
  * an array of expected results
  */
@@ -196,6 +199,64 @@ static int compare_values(FILE* err, DOUBLE actresult, DOUBLE givenresult, RESUL
 
 
 
+/*
+ * Find node with id |nodenum|. Only the given partition and
+ * discretization is searched.
+ */
+static NODE* find_node(PARTITION* part, INT disnum, INT nodenum)
+{
+  INT i;
+  NODE* res = 0;
+  PARTDISCRET* pdis;
+  
+#ifdef DEBUG 
+  dstrc_enter("find_node");
+#endif
+
+  pdis = &(part->pdis[disnum]);
+  for (i=0; i<pdis->numnp; ++i) {
+    if (pdis->node[i]->Id == nodenum) {
+      res = pdis->node[i];
+      break;
+    }
+  }
+  
+#ifdef DEBUG 
+  dstrc_exit();
+#endif
+  return res;
+}
+
+
+/*
+ * Find element with id |elenum|. Only the given partition and
+ * discretization is searched.
+ */
+static ELEMENT* find_element(PARTITION* part, INT disnum, INT elenum)
+{
+  INT i;
+  ELEMENT* res = 0;
+  PARTDISCRET* pdis;
+  
+#ifdef DEBUG 
+  dstrc_enter("find_element");
+#endif
+
+  pdis = &(part->pdis[disnum]);
+  for (i=0; i<pdis->numele; ++i) {
+    if (pdis->element[i]->Id == elenum) {
+      res = pdis->element[i];
+      break;
+    }
+  }
+  
+#ifdef DEBUG 
+  dstrc_exit();
+#endif
+  return res;
+}
+
+
 /*!---------------------------------------------------------------------  
 \brief testing of result 
 
@@ -210,7 +271,10 @@ results, too.
 ------------------------------------------------------------------------*/
 void global_result_test() 
 {
+#ifndef PARALLEL
   FIELD  *alefield,*structfield,*fluidfield;
+#endif
+  PARTITION *alepart,*structpart,*fluidpart;
   NODE   *actnode;
   DOUBLE  actresult;
   FILE   *err = allfiles.out_err;
@@ -221,9 +285,15 @@ void global_result_test()
   dstrc_enter("global_result_test");
 #endif
 
+#ifndef PARALLEL
   if (genprob.numff>-1) fluidfield  = &(field[genprob.numff]);
   if (genprob.numsf>-1) structfield = &(field[genprob.numsf]);
   if (genprob.numaf>-1) alefield    = &(field[genprob.numaf]);
+#endif
+
+  if (genprob.numff>-1) fluidpart  = &(partition[genprob.numff]);
+  if (genprob.numsf>-1) structpart = &(partition[genprob.numsf]);
+  if (genprob.numaf>-1) alepart    = &(partition[genprob.numaf]);
 
   if (genprob.numresults>0) {
     /* let's do it in a fency style :) */
@@ -231,30 +301,35 @@ void global_result_test()
   }
 
   for (i=0; i<genprob.numresults; ++i) {
-    FIELD* current_field;
+    PARTITION* actpart;
     RESULTDESCR* res = &(resultdescr[i]);
     
     switch (res->field) {
     case fluid:
-      current_field = fluidfield;
+      actpart = fluidpart;
       break;
     case ale:
-      current_field = alefield;
+      actpart = alepart;
       break;
     case structure:
-      current_field = structfield;
+      actpart = structpart;
       break;
     default:
       dserror("Unknown field typ");
     }
 
     if (res->node != -1) {
-      actnode = &(current_field->dis[res->dis].node[res->node]);
-      actresult = get_node_result_value(actnode, res->position);
-      nerr += compare_values(err, actresult, res->value, res);
+      actnode = find_node(actpart, res->dis, res->node);
+      if (actnode != 0) {
+        actresult = get_node_result_value(actnode, res->position);
+        nerr += compare_values(err, actresult, res->value, res);
+      }
     }
     else if (res->element != -1) {
-      ELEMENT* actelement = &(current_field->dis[res->dis].element[res->element]);
+      ELEMENT* actelement = find_element(actpart, res->dis, res->element);
+      if (actelement == 0) {
+        continue;
+      }
     
 #ifdef D_AXISHELL
       if (actelement->eltyp == el_axishell) {
@@ -292,7 +367,9 @@ void global_result_test()
       switch (genprob.probtyp) {
       case prb_fluid:
 #ifdef D_FLUID
+#ifndef PARALLEL
         fluid_cal_error(fluidfield,res->dis);
+#endif
         break;
 #endif
       default:
