@@ -141,8 +141,8 @@ return;
 int s8_ans_bbar_q(double **bop, double frq[], double fsq[],
                   double  *funct1q[],  double  *funct2q[],
                   double **deriv1q[],  double **deriv2q[],
-                  double **akovr1q[],  double **akovr2q[],
-                  double **a3kvpr1q[], double **a3kvpr2q[],
+                  double **akovc1q[],  double **akovc2q[],
+                  double **a3kvpc1q[], double **a3kvpc2q[],
                   int iel, int numdf, int nsansq)
 {
 int inode, node_start;
@@ -195,27 +195,27 @@ for (inode=0; inode<iel; inode++)
    
    for (isamp=0; isamp<nsansq; isamp++)
    {
-      a1x1 = akovr1q[isamp][0][0];
-      a1y1 = akovr1q[isamp][1][0];
-      a1z1 = akovr1q[isamp][2][0];
-      a3x1 = akovr1q[isamp][0][2];
-      a3y1 = akovr1q[isamp][1][2];
-      a3z1 = akovr1q[isamp][2][2];
+      a1x1 = akovc1q[isamp][0][0];
+      a1y1 = akovc1q[isamp][1][0];
+      a1z1 = akovc1q[isamp][2][0];
+      a3x1 = akovc1q[isamp][0][2];
+      a3y1 = akovc1q[isamp][1][2];
+      a3z1 = akovc1q[isamp][2][2];
       
-      a2x2 = akovr2q[isamp][0][1];
-      a2y2 = akovr2q[isamp][1][1];
-      a2z2 = akovr2q[isamp][2][1];
-      a3x2 = akovr2q[isamp][0][2];
-      a3y2 = akovr2q[isamp][1][2];
-      a3z2 = akovr2q[isamp][2][2];
+      a2x2 = akovc2q[isamp][0][1];
+      a2y2 = akovc2q[isamp][1][1];
+      a2z2 = akovc2q[isamp][2][1];
+      a3x2 = akovc2q[isamp][0][2];
+      a3y2 = akovc2q[isamp][1][2];
+      a3z2 = akovc2q[isamp][2][2];
 
-      a31x1 = a3kvpr1q[isamp][0][0];
-      a31y1 = a3kvpr1q[isamp][1][0];
-      a31z1 = a3kvpr1q[isamp][2][0];
+      a31x1 = a3kvpc1q[isamp][0][0];
+      a31y1 = a3kvpc1q[isamp][1][0];
+      a31z1 = a3kvpc1q[isamp][2][0];
 
-      a32x2 = a3kvpr2q[isamp][0][1];
-      a32y2 = a3kvpr2q[isamp][1][1];
-      a32z2 = a3kvpr2q[isamp][2][1];
+      a32x2 = a3kvpc2q[isamp][0][1];
+      a32y2 = a3kvpc2q[isamp][1][1];
+      a32z2 = a3kvpc2q[isamp][2][1];
       
       p1k = funct1q[isamp][inode];
       p2k = funct2q[isamp][inode];
@@ -256,6 +256,8 @@ return;
  | modifications to metrics of shell ody due to ans for querschub       |
  *----------------------------------------------------------------------*/
 int s8_ans_tvhe_q(double **gmkovr,double **gmkovc,double **gmkonr,double **gmkonc,
+                  double **gkovr,double **gkovc,double **amkovc,double **amkovr,
+                  double **akovc,double **akovr,double **a3kvpc,double **a3kvpr,
                   double *detr,   double *detc,
                   double **amkovr1q[], double **amkovc1q[], 
                   double **akovr1q[] , double **akovc1q[] ,
@@ -266,17 +268,227 @@ int s8_ans_tvhe_q(double **gmkovr,double **gmkovc,double **gmkonr,double **gmkon
                   double frq[], double fsq[], double e3, int nansq, int iel)
 {
 int i;
+double b11c=0.0;
+double b12c=0.0;
+double b21c=0.0;
+double b22c=0.0;
+double b31c=0.0;
+double b32c=0.0;
+
+double b11r=0.0;
+double b12r=0.0;
+double b21r=0.0;
+double b22r=0.0;
+double b31r=0.0;
+double b32r=0.0;
+
+double det_dummy;
 #ifdef DEBUG 
 dstrc_enter("s8_ans_tvhe_q");
 #endif
 /*----------------------------------------------------------------------*/
+for (i=0; i<3; i++) b11c += akovc[i][0]*a3kvpc[i][0];
+for (i=0; i<3; i++) b12c += akovc[i][0]*a3kvpc[i][1];
+for (i=0; i<3; i++) b21c += akovc[i][1]*a3kvpc[i][0];
+for (i=0; i<3; i++) b22c += akovc[i][1]*a3kvpc[i][1];
+for (i=0; i<3; i++) b31c += akovc[i][2]*a3kvpc[i][0];
+for (i=0; i<3; i++) b32c += akovc[i][2]*a3kvpc[i][1];
+
+for (i=0; i<3; i++) b11r += akovr[i][0]*a3kvpr[i][0];
+for (i=0; i<3; i++) b12r += akovr[i][0]*a3kvpr[i][1];
+for (i=0; i<3; i++) b21r += akovr[i][1]*a3kvpr[i][0];
+for (i=0; i<3; i++) b22r += akovr[i][1]*a3kvpr[i][1];
+for (i=0; i<3; i++) b31r += akovr[i][2]*a3kvpr[i][0];
+for (i=0; i<3; i++) b32r += akovr[i][2]*a3kvpr[i][1];
+/*----------------------------------------------------------------------*/
+gmkovc[0][0] = gmkovr[0][0] + (amkovc[0][0]-amkovr[0][0]) + e3 * 2.0 * (b11c-b11r);
+gmkovc[1][1] = gmkovr[1][1] + (amkovc[1][1]-amkovr[1][1]) + e3 * 2.0 * (b22c-b22r);
+gmkovc[2][2] = gmkovr[2][2] + (amkovc[2][2]-amkovr[2][2]);
+gmkovc[0][1] = gmkovr[0][1] + (amkovc[0][1]-amkovr[0][1]) + e3 * (b21c+b12c-b21r-b12r);
+gmkovc[0][2] = gmkovr[0][2]                               + e3 * (b31c-b31r);
+gmkovc[1][2] = gmkovr[1][2]                               + e3 * (b32c-b32r);
+gmkovc[2][0] = gmkovc[0][2];
+gmkovc[2][1] = gmkovc[1][2];
+gmkovc[1][0] = gmkovc[0][1];
+/*----------------------------------------------------------------------*/
 for (i=0; i<nansq; i++)
 {
-  /* gmkovc[0][2] +=    */
+   gmkovc[0][2] += (amkovc1q[i][0][2]-amkovr1q[i][0][2]) * frq[i];
+   gmkovc[1][2] += (amkovc2q[i][1][2]-amkovr2q[i][1][2]) * fsq[i];
 }
+   gmkovc[2][0] = gmkovc[0][2];
+   gmkovc[2][1] = gmkovc[1][2];
+/*----------------------------------------------------------------------*/
+math_array_copy(gmkovr,3,3,gmkonr);
+math_inv3(gmkonr,&det_dummy);
+if (det_dummy <= 0.0) det_dummy = EPS8;
+*detr = sqrt(det_dummy);
+
+math_array_copy(gmkovc,3,3,gmkonc);
+math_inv3(gmkonc,&det_dummy);
+if (det_dummy <= 0.0) det_dummy = EPS8;
+*detc = sqrt(det_dummy);
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
 #endif
 return;
 } /* end of s8_ans_tvhe_q */
+
+
+
+/*----------------------------------------------------------------------*
+ |                                                        m.gee 2/02    |
+ | geometric stiffness matrix kg with ans for querschub                 |
+ *----------------------------------------------------------------------*/
+int s8_ans_tvkg(double **estif,double *stress_r,double *funct,double **deriv,
+                int numdf,int iel,double weight,double e1,double e2,
+                double frq[], double fsq[],double *funct1q[],double  *funct2q[],
+                double **deriv1q[], double **deriv2q[],int ansq, int nsansq)
+{
+int     i,inode,jnode;
+int     i_indiz,j_indiz;
+double  pi;
+double  pj;
+double  d11;
+double  d12;
+double  d21;
+double  d22;
+
+double  pd1ij;
+double  pd1ji;
+double  pd2ij;
+double  pd2ji;
+
+double  xn;
+double  xm;
+double  yu;
+double  yo;
+double  yy;
+double  z;
+
+double  sn11;
+double  sn21;
+double  sn31;
+double  sn22;
+double  sn32;
+double  sn33;
+double  sm11;
+double  sm21;
+double  sm31;
+double  sm22;
+double  sm32;
+
+#ifdef DEBUG 
+dstrc_enter("s8_ans_tvkg");
+#endif
+/*----------------------------------------------------------------------*/
+sn11 = stress_r[0];
+sn21 = stress_r[1];
+sn31 = stress_r[2];
+sn22 = stress_r[3];
+sn32 = stress_r[4];
+sn33 = stress_r[5];
+sm11 = stress_r[6];
+sm21 = stress_r[7];
+sm31 = stress_r[8];
+sm22 = stress_r[9];
+sm32 = stress_r[10];
+/*----------------------------------------------------------------------*/
+for (inode=0; inode<iel; inode++)
+{
+   for (jnode=0; jnode<=inode; jnode++)
+   {
+      pi = funct[inode];
+      pj = funct[jnode];
+      
+      d11 = deriv[0][inode] * deriv[0][jnode];
+      d12 = deriv[0][inode] * deriv[1][jnode];
+      d21 = deriv[1][inode] * deriv[0][jnode];
+      d22 = deriv[1][inode] * deriv[1][jnode];
+      
+      xn = (sn11*d11 + sn21*(d12+d21) + sn22*d22) * weight;
+      xm = (sm11*d11 + sm21*(d12+d21) + sm22*d22) * weight;
+
+      /*----------------------------------------- no ans for querschub */
+      if (ansq==0)
+      {
+         pd1ij = deriv[0][inode] * pj;
+         pd1ji = deriv[0][jnode] * pi;
+         pd2ij = deriv[1][inode] * pj;
+         pd2ji = deriv[1][jnode] * pi;
+         yu = (sn31*pd1ji + sn32*pd2ji) * weight;
+         yo = (sn31*pd1ij + sn32*pd2ij) * weight;
+      }
+      else/*----------------------------------------- ans for querschub */
+      {
+         yu=0.0;
+         yo=0.0;
+         for (i=0; i<nsansq; i++)
+         {
+            pd1ij = deriv1q[i][0][inode] * funct1q[i][jnode] * frq[i];
+            pd1ji = deriv1q[i][0][jnode] * funct1q[i][inode] * frq[i];
+            pd2ij = deriv2q[i][1][inode] * funct2q[i][jnode] * fsq[i];
+            pd2ji = deriv2q[i][1][jnode] * funct2q[i][inode] * fsq[i];
+
+            yu += (sn31*pd1ji + sn32*pd2ji) * weight;
+            yo += (sn31*pd1ij + sn32*pd2ij) * weight;
+         }
+      }
+      /*---------------------------------------------------------------*/
+
+      /*---------------- linear part of querschub is always unmodified */
+      pd1ij = deriv[0][inode] * pj;
+      pd1ji = deriv[0][jnode] * pi;
+      pd2ij = deriv[1][inode] * pj;
+      pd2ji = deriv[1][jnode] * pi;
+
+      yy = (sm31*(pd1ij+pd1ji) + sm32*(pd2ij+pd2ji)) * weight;
+      z  = pi*pj*sn33*weight;
+      
+      i_indiz = inode*numdf;
+      j_indiz = jnode*numdf;
+      
+      estif[inode*numdf+0][jnode*numdf+0] += xn;
+      estif[inode*numdf+1][jnode*numdf+1] += xn;
+      estif[inode*numdf+2][jnode*numdf+2] += xn;
+      
+      estif[inode*numdf+3][jnode*numdf+0] += (xm+yu);
+      estif[inode*numdf+4][jnode*numdf+1] += (xm+yu);
+      estif[inode*numdf+5][jnode*numdf+2] += (xm+yu);
+
+      estif[inode*numdf+0][jnode*numdf+3] += (xm+yo);
+      estif[inode*numdf+1][jnode*numdf+4] += (xm+yo);
+      estif[inode*numdf+2][jnode*numdf+5] += (xm+yo);
+  
+      estif[inode*numdf+3][jnode*numdf+3] += (yy+z);
+      estif[inode*numdf+4][jnode*numdf+4] += (yy+z);
+      estif[inode*numdf+5][jnode*numdf+5] += (yy+z);
+      
+      if (inode!=jnode)
+      {
+         estif[jnode*numdf+0][inode*numdf+0] += xn;
+         estif[jnode*numdf+1][inode*numdf+1] += xn;
+         estif[jnode*numdf+2][inode*numdf+2] += xn;
+      
+         estif[jnode*numdf+0][inode*numdf+3] += (xm+yu);
+         estif[jnode*numdf+1][inode*numdf+4] += (xm+yu);
+         estif[jnode*numdf+2][inode*numdf+5] += (xm+yu);
+
+         estif[jnode*numdf+3][inode*numdf+0] += (xm+yo);
+         estif[jnode*numdf+4][inode*numdf+1] += (xm+yo);
+         estif[jnode*numdf+5][inode*numdf+2] += (xm+yo);
+  
+         estif[jnode*numdf+3][inode*numdf+3] += (yy+z);
+         estif[jnode*numdf+4][inode*numdf+4] += (yy+z);
+         estif[jnode*numdf+5][inode*numdf+5] += (yy+z);
+      }
+
+   } /* end loop over jnode */
+} /* end loop over inode */
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of s8_ans_tvkg */

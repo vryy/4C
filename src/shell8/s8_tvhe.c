@@ -27,7 +27,7 @@ void s8_tvhe(double **gmkovr,
              double **a3kvpr,
              double   e3)
 {
-int i,j;
+int i;
 double b11c=0.0;
 double b12c=0.0;
 double b21c=0.0;
@@ -42,10 +42,7 @@ double b22r=0.0;
 double b31r=0.0;
 double b32r=0.0;
 
-double heps[3][3];
-double skalar;
 double det_dummy;
-
 
 #ifdef DEBUG 
 dstrc_enter("s8_tvhe");

@@ -513,7 +513,7 @@ for (lr=0; lr<nir; lr++)
       /*-------------------------------------- modifications due to ans */
       if (ansq==1)
       s8_ans_bbar_q(bop,frq,fsq,funct1q,funct2q,deriv1q,deriv2q,
-                    akovr1q,akovr2q,a3kvpr1q,a3kvpr2q,iel,numdf,nsansq);
+                    akovc1q,akovc2q,a3kvpc1q,a3kvpc2q,iel,numdf,nsansq);
       /*============================== loop GP in thickness direction t */
       for (lt=0; lt<nit; lt++)
       {
@@ -527,11 +527,13 @@ for (lr=0; lr<nir; lr++)
          s8_tmtr(xcure,a3c,e3,gkovc,gkonc,gmkovc,gmkonc,&detc,
                     funct,deriv,iel,condfac,0);
          /*--------------------------------- metric at gp in shell body */     
+         if (ansq==0)
          s8_tvhe(gmkovr,gmkovc,gmkonr,gmkonc,gkovr,gkovc,&detr,&detc,
                  amkovc,amkovr,akovc,akovr,a3kvpc,a3kvpr,e3);     
          /*- modifications to metric of shell body due to querschub-ans */
-         if (ansq==1)
-         s8_ans_tvhe_q(gmkovr,gmkovc,gmkonr,gmkonc,&detr,&detc,
+         else
+         s8_ans_tvhe_q(gmkovr,gmkovc,gmkonr,gmkonc,gkovr,gkovc,amkovc,amkovr,
+                       akovc,akovr,a3kvpc,a3kvpr,&detr,&detc,
                        amkovr1q,amkovc1q,akovr1q,akovc1q,a3kvpr1q,a3kvpc1q,
                        amkovr2q,amkovc2q,akovr2q,akovc2q,a3kvpr2q,a3kvpc2q,
                        frq,fsq,e3,nsansq,iel);
@@ -558,7 +560,11 @@ for (lr=0; lr<nir; lr++)
       /*----------------------------------- elastic stiffness matrix ke */
       s8_BtDB(estif,bop,D,iel,numdf,weight,work);
       /*--------------------------------- geometric stiffness matrix kg */
+      if (ansq==0)
       s8_tvkg(estif,stress_r,funct,deriv,numdf,iel,weight,e1,e2);
+      else
+      s8_ans_tvkg(estif,stress_r,funct,deriv,numdf,iel,weight,e1,e2,
+                  frq,fsq,funct1q,funct2q,deriv1q,deriv2q,ansq,nsansq);
       /*-------------------------------- calculation of internal forces */
       if (force) s8_intforce(intforce,stress_r,bop,iel,numdf,12,weight);
       /*------------- mass matrix : gaussian point on shell mid surface */
