@@ -266,6 +266,14 @@ enum _TIME_TYP    timetyp;       /* type of time, see enum.h */
  | struct _DYNAMIC      *dyn;                                           |
  *----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*
+ |                                                       m.gee 02/02    |
+ | number of load curves numcurve                                       |
+ | vector of structures of curves                                       |
+ | defined in input_curves.c                                            |
+ | int                   numcurve;                                      |
+ | struct _DYNAMIC      *curve;                                         |
+ *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate static variables if needed                       |
  | defined in global_control.c                                          |

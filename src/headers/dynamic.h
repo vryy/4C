@@ -15,15 +15,11 @@ typedef union _DYNAMIC
 typedef struct _STRUCT_DYNAMIC                 
 {
 char               dyntyp[50];
-
 int                nstep;    /* this all is in progress... */
-int                damp;     /* some of these values are read from gid */
+int                damp;     
 int                iter;
 int                maxiter;
-
-int                numcurve;
-struct _CURVE     *curve;
-
+double             toldisp;
 double             dt;
 double             maxtime;
 double             beta;

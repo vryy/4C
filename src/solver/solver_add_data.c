@@ -76,7 +76,7 @@ if (assemble_action==assemble_two_matrix)
       dserror("Simultanous assembly of 2 system matrices not yet impl.");
    break;
    case dense:
-      dserror("Simultanous assembly of 2 system matrices not yet impl.");
+      add_dense(actpart,actsolv,actintra,actele,sysa1->dense,sysa2->dense);
    break;
    case rc_ptr:
       dserror("Simultanous assembly of 2 system matrices not yet impl.");
@@ -110,7 +110,7 @@ if (assemble_action==assemble_one_matrix)
       add_ucchb(actpart,actsolv,actintra,actele,sysa1->ucchb);
    break;
    case dense:
-      add_dense(actpart,actsolv,actintra,actele,sysa1->dense);
+      add_dense(actpart,actsolv,actintra,actele,sysa1->dense,NULL);
    break;
    case rc_ptr:
       add_rc_ptr(actpart,actsolv,actintra,actele,sysa1->rc_ptr);
@@ -145,7 +145,7 @@ if (assemble_action==assemble_two_exchange)
          dserror("Simultanous assembly of 2 system matrices not yet impl.");
       break;
       case dense:
-         dserror("Simultanous assembly of 2 system matrices not yet impl.");
+         redundant_dense(actpart,actsolv,actintra,sysa1->dense,sysa2->dense);
       break;
       case rc_ptr:
          dserror("Simultanous assembly of 2 system matrices not yet impl.");
@@ -176,7 +176,7 @@ if (assemble_action==assemble_one_exchange)
          redundant_ucchb(actpart,actsolv,actintra,sysa1->ucchb);
       break;
       case dense:
-         redundant_dense(actpart,actsolv,actintra,sysa1->dense);
+         redundant_dense(actpart,actsolv,actintra,sysa1->dense,NULL);
       break;
       case skymatrix:
          redundant_skyline(actpart,actsolv,actintra,sysa1->sky);

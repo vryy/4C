@@ -14,7 +14,15 @@ void caldyn()
 dstrc_enter("caldyn");
 #endif
 /*----------------------------------------------------------------------*/
-
+switch (genprob.probtyp)
+{
+case prb_structure:
+    dyn_nln_structural();
+break;
+default:
+    dserror("Dynamic solution of unknown Problemtyp requested");
+break;
+}
 
 
 

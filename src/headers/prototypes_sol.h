@@ -261,12 +261,14 @@ void  add_dense(struct _PARTITION     *actpart,
                   struct _SOLVAR        *actsolv,
                   struct _INTRA         *actintra,
                   struct _ELEMENT       *actele,
-                  struct _DENSE         *dense);
+                  struct _DENSE         *dense1,
+                  struct _DENSE         *dense2);
 void redundant_dense(
                         PARTITION     *actpart,
                         SOLVAR        *actsolv,
                         INTRA         *actintra,
-                        DENSE         *dense
+                        DENSE         *dense1,
+                        DENSE         *dense2
                         );
 /*----------------------------------------------------------------------*
  |  solver_add_msr.c                                  m.gee 11/01    |

@@ -88,6 +88,8 @@ CALC_ACTION  *action;             /* pointer to the structures cal_action enum *
 dstrc_enter("stanln");
 #endif
 /*----------------------------------------------------------------------*/
+/*--------------------------------------------------- check for restart */
+res_control();
 /*------------ the distributed system matrix, which is used for solving */
 /* 
    NOTE: This routine only uses 1 global sparse matrix, which was created
@@ -123,40 +125,10 @@ if (actintra->intra_fieldtyp != structure) goto end;
 /*------------------------------------------------ typ of global matrix */
 array_typ   = actsolv->sysarray_typ[actsysarray];
 /*---------------------------- get global and local number of equations */
-switch(array_typ)
-{
-case mds:/*--------------------------------- system array is mds matrix */
-   numeq       = actsolv->sysarray[actsysarray].mds->numeq;
-   numeq_total = numeq;
-break;
-case msr:/*--------------------------------- system array is msr matrix */
-   numeq       = actsolv->sysarray[actsysarray].msr->numeq;
-   numeq_total = actsolv->sysarray[actsysarray].msr->numeq_total;
-break;
-case parcsr:/*--------------------------- system array is parcsr matrix */
-   numeq       = actsolv->sysarray[actsysarray].parcsr->numeq;
-   numeq_total = actsolv->sysarray[actsysarray].parcsr->numeq_total;
-break;
-case ucchb:/*----------------------------- system array is ucchb matrix */
-   numeq       = actsolv->sysarray[actsysarray].ucchb->numeq;
-   numeq_total = actsolv->sysarray[actsysarray].ucchb->numeq_total;
-break;
-case dense:/*----------------------------- system array is dense matrix */
-   numeq       = actsolv->sysarray[actsysarray].dense->numeq;
-   numeq_total = actsolv->sysarray[actsysarray].dense->numeq_total;
-break;
-case rc_ptr:/*----------------------- system array is row/column matrix */
-   numeq       = actsolv->sysarray[actsysarray].rc_ptr->numeq;
-   numeq_total = actsolv->sysarray[actsysarray].rc_ptr->numeq_total;
-break;
-case skymatrix:/*----------------------- system array is skyline matrix */
-   numeq       = actsolv->sysarray[actsysarray].sky->numeq;
-   numeq_total = actsolv->sysarray[actsysarray].sky->numeq_total;
-break;
-default:
-   dserror("unknown type of global matrix");
-break;
-}
+solserv_getmatdims(actsolv->sysarray[actsysarray],
+                   actsolv->sysarray_typ[actsysarray],
+                   &numeq,
+                   &numeq_total);
 /*--------------------------------------------------- find control node */
 calstatserv_findcontroldof(actfield,
                            statvar->control_node_global,
