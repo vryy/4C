@@ -110,6 +110,7 @@ INT i,j;
 INT numnp;
 INT numr;
 INT nodepos;
+INT myrank;
 DOUBLE actval;
 MONITOR *actmoni;
 NODE *actnode;
