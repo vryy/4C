@@ -1,0 +1,22 @@
+#include "../headers/standardtypes.h"
+#include "../headers/solution.h"
+#include "fluid_prototypes.h"
+/*----------------------------------------------------------------------*
+ | routine to control stationary algorithm for fluid for fluid problems |
+ | combined with Newton, fixed point iteration and fixed point like     |
+ | schemes.                                                 genk  03/02 |
+ *----------------------------------------------------------------------*/
+void fluid_stat()
+{
+#ifdef DEBUG 
+dstrc_enter("fluid_stat");
+#endif
+
+dserror("algorithm for stationary fluid problems not implemented yet!");
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of fluid_stat */ 
