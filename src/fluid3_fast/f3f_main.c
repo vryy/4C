@@ -72,8 +72,7 @@ and the type is in partition.h
   \param ele[LOOPL]      ELEMENT  (i) the set of elements
   \param estif          *DOUBLE   (i) element stiffness matrix
   \param emass          *DOUBLE   (i) element mass matrix
-  \param etforce        *DOUBLE   (i) element time force
-  \param eiforce        *DOUBLE   (i) element iteration force
+  \param eforce         *DOUBLE   (i) element force
   \param edforce        *DOUBLE   (i) element dirichlet force
   \param action         *CALC_ACTION (i) what should I do
   \param hasdirich      *INT      (i) flag if s.th. was written to edforce
@@ -93,8 +92,7 @@ void fluid3_fast(
     ELEMENT     *ele[LOOPL],
     ARRAY       *estif_fast,
     ARRAY       *emass_fast,
-    ARRAY       *etforce_fast,
-    ARRAY       *eiforce_fast,
+    ARRAY       *eforce_fast,
     ARRAY       *edforce_fast,
     CALC_ACTION *action,
     INT         *hasdirich,
@@ -133,7 +131,7 @@ void fluid3_fast(
       f3_intg(0);
 
       f3fcalele(NULL, estif_fast,
-          emass_fast,etforce_fast,eiforce_fast,edforce_fast,
+          emass_fast,eforce_fast,edforce_fast,
           NULL,NULL,1,loop);
 #ifdef PERF
     perf_end(42);
@@ -147,7 +145,7 @@ void fluid3_fast(
     perf_begin(43);
 #endif
       f3fcalele(ele, estif_fast,
-          emass_fast,etforce_fast,eiforce_fast,edforce_fast,
+          emass_fast,eforce_fast,edforce_fast,
           hasdirich,hasext,0,loop);
 #ifdef PERF
     perf_end(43);
@@ -190,13 +188,6 @@ void fluid3_fast(
         }
       }
       break;
-
-
-      /* calculate element stabilisation parameter */
-    case calc_fluid_stab:
-      f3fcalstab(ele,loop);
-      break;
-
 
     case write_restart:
       f3f_write_restart(ele[0],container->handsize,container->handles);
