@@ -33,6 +33,13 @@ struct _DESIGN       *design;
  *----------------------------------------------------------------------*/
 ALLDYNA             *alldyn;   
 /*----------------------------------------------------------------------*
+ |                                                          al 08/02    |
+ | pointer to allocate eigensolution variables                          |
+ | dedfined in global_control.c                                         |
+ | struct _ALLEIG       *alleig;                                        |
+ *----------------------------------------------------------------------*/
+ALLEIG              *alleig;   
+/*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate static variables if needed                       |
  | defined in global_control.c                                          |
