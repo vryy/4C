@@ -49,7 +49,7 @@ typedef struct _DNODE
    struct _FSI_COUPLE_CONDITION *fsicouple;
 #endif
 #ifdef D_FLUID
-   struct _FLUID_FREESURF_CONDITION *freesurf;
+   struct _FLUID_FREESURF_CONDITION *freesurf;   
 #endif
 #ifdef D_AXISHELL
    struct _SAXI_THICK_CONDITION   *thickness;
@@ -58,6 +58,7 @@ typedef struct _DNODE
                                                  0: global (default)
                                                  1: local */
 #endif
+   INT                     locsysId;
 } DNODE;
 
 
@@ -94,6 +95,7 @@ typedef struct _DLINE
 
 #ifdef D_FSI
    struct _FSI_COUPLE_CONDITION *fsicouple;
+   struct _SLIPDIRICH_CONDITION *slipdirich;
 #endif
    
 #ifdef D_FLUID
@@ -109,6 +111,7 @@ typedef struct _DLINE
 #ifdef WALLCONTACT
    enum   _CONTACTTYPE       contype;
 #endif
+   INT                     locsysId;
 } DLINE;
 
 
@@ -167,13 +170,13 @@ typedef struct _DSURF
    struct _NEUM_CONDITION   *neum;        /* neumann conditions to this DSURF, else NULL */
    struct _DIRICH_CONDITION *dirich;      /* dirichlet conditions to this DSURF, else NULL */
    struct _COUPLE_CONDITION *couple;      /* coupling conditions to this DSURF, else NULL */
-
-#ifdef D_FLUID
-   struct _FLUID_LIFTDRAG_CONDITION *liftdrag;
+#ifdef D_FSI
+   struct _FSI_COUPLE_CONDITION *fsicouple;
 #endif
-
-   
-#ifdef D_FLUID /* fluid2 stabilisation is condition assigned to dsurface */
+#ifdef D_FLUID
+   struct _FLUID_FREESURF_CONDITION *freesurf;
+   struct _FLUID_LIFTDRAG_CONDITION *liftdrag;   
+   /* fluid2 stabilisation is condition assigned to dsurface */
    enum _STABILISATION_TYP	stab_type;	/* enum of stabilisation	*/
    union 
    {
@@ -181,6 +184,7 @@ typedef struct _DSURF
    /*  struct _STAB_PRES_PRO *pp; */
    } stabi;
 #endif
+   INT                     locsysId;
 } DSURF;
 
 
@@ -211,4 +215,5 @@ typedef struct _DVOL
    /*  struct _STAB_PRES_PRO *pp; */
    } stabi;
 #endif
+   INT                     locsysId;
 } DVOL;
