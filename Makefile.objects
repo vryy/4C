@@ -33,6 +33,7 @@ OBJS2	      = src/global_full/global_control.o \
                 src/global_full/global_mask_spooles.o \
                 src/global_full/global_mask_bdcsr.o \
                 src/global_full/global_monitoring.o \
+                src/global_full/global_result_test.o \
                 src/global_full/global_calelm.o \
                 src/global_full/global_calrhs.o \
                 src/global_full/global_visual.o \
@@ -60,6 +61,7 @@ OBJS2	      = src/global_full/global_control.o \
                 src/global_full/solver_mumps.o \
                 src/global_full/solver_umfpack.o \
                 src/global_full/solver_colsol.o \
+		src/global_full/solver_copy_matrix.o \
                 src/global_full/solver_spooles.o \
                 src/global_full/solver_mlpcg.o \
                 src/global_full/solver_mlpcg2.o \
@@ -329,13 +331,15 @@ OBJS15        = src/fluid_full/fluid_curvature.o \
                 src/fluid_full/fluid_dirich_tu_1.o \
                 src/fluid_full/fluid_freesurf.o \
                 src/fluid_full/fluid_imp_semimp.o \
+                src/fluid_full/fluid_pm_calamatrix.o \
+                src/fluid_full/fluid_pm.o \
                 src/fluid_full/fluid_imp_semimp_tu.o\
                 src/fluid_full/fluid_imp_semimp_tu_1.o\
                 src/fluid_full/fluid_mf.o \
                 src/fluid_full/fluid_mfcoupling.o \
-                src/fluid_full/fluid_pr_mcorr.o \
                 src/fluid_full/fluid_stationary.o \
                 src/fluid_full/fluid_service.o \
+		src/fluid_full/fluid_pm_service.o \
                 src/fluid_full/fluid_service_tu.o\
                 src/fluid_full/fluid_service_tu_1.o\
 		src/fluid_full/inp_fluid_start_data.o
@@ -445,6 +449,16 @@ OBJS_MAT      = src/materials/mat_el_iso.o \
                 src/materials/mat_pl_hoff.o \
                 src/materials/mat_pl_mises_lin.o \
                 src/materials/mat_pl_dp_lin.o
+OBJS_F2PRO    = src/fluid2_pro/f2pro_inpele.o \
+                src/fluid2_pro/f2pro_ass_dof_ndis.o \
+                src/fluid2_pro/f2pro_calele.o \
+                src/fluid2_pro/f2pro_calint.o \
+                src/fluid2_pro/f2pro_calbdt.o \
+                src/fluid2_pro/f2pro_calgalmat.o \
+                src/fluid2_pro/f2pro_caltimerhs.o \
+                src/fluid2_pro/f2pro_calservice.o \
+                src/fluid2_pro/f2pro_main.o
+#
 #--------------- fortran parallel and sequentiell on HPUX10.20 / Linux / Sun
 OBJS13        = src/fortran/colsol.o \
                 src/fortran/mpcg_futils.o \

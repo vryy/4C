@@ -10,34 +10,35 @@ include ./Makefile.personal_path
 #
 # list of possible defines:
 #  
-# -DD_FLUID      defines general fluid problem
-# -DD_FSI        defines general FSI problem
+# -DD_ALE        defines element ale (2D+3D)
+# -DD_AXISHELL   defines axishell element
+# -DD_BEAM3      defines element beam3
 # -DD_BRICK1     defines element brick1
-# -DD_SHELL8     defines element shell8
-# -DD_SHELL9     defines element shell9
-# -DS8CONTACT    defines contact algorithms for shell8 contact
 # -DD_FLUID2     defines element fluid2
 # -DD_FLUID2_PRO defines element fluid2 with projection method
 # -DD_FLUID3     defines element fluid3
-# -DD_ALE        defines element ale
+# -DD_SHELL8     defines element shell8
+# -DD_SHELL9     defines element shell9
 # -DD_WALL1      defines element wall1
-# -DD_OPTIM      defines optimization
-# -DD_BEAM3      defines element beam3
-# -DD_CONTACT    defines contact algos 2D (with wall element)
-# -DWALLCONTACT  defines contact algorithms for wall contact
-# -DGEMM         defines Generalized Energy-Momentum Int. Scheme
-# -DD_AXISHELL   defines axishell element
-# -DD_MAT       defines materials
 #
-# -DDEBUG     defines debug mode: routine and array tracing 
-# -DPARALLEL  defines parallel version of programm
-# -DSIXTYFOUR defines 64bit compilation and linkage
-# -DSUSE73    defines for compilation and linkage with gcc and g77 on Suselinux
-# -DSUN       defines for compilation and linkage on CUSS Sunfire machine
-# -DAZUSA     defines for compilation on azusa.hww.de
-# -DHPUX10    defines for compilation on HPUX10
-# -DHPUX11    defines for compilation on HPUX11
-# -DHPUXITA   defines compilation for Itanium2 running HPUX11i
+# -DGEMM         defines Generalized Energy-Momentum Int. Scheme
+# -DD_FLUID      defines general fluid problem
+# -DD_FSI        defines general FSI problem
+# -DD_MAT        defines materials
+# -DD_OPTIM      defines optimization
+# -DRESULTTEST   defines defines result testing before checking in a new version
+# -DS8CONTACT    defines contact algorithms for shell8 contact
+# -DWALLCONTACT  defines contact algorithms for wall contact
+#
+# -DDEBUG        defines debug mode: routine and array tracing 
+# -DPARALLEL     defines parallel version of programm
+# -DSIXTYFOUR    defines 64bit compilation and linkage
+# -DSUSE73       defines for compilation and linkage with gcc and g77 on Suselinux
+# -DSUN          defines for compilation and linkage on CUSS Sunfire machine
+# -DAZUSA        defines for compilation on azusa.hww.de
+# -DHPUX10       defines for compilation on HPUX10
+# -DHPUX11       defines for compilation on HPUX11
+# -DHPUXITA      defines compilation for Itanium2 running HPUX11i
 # 
 # -DMLIB_PACKAGE       defines interface to solver library MLIB (HPUX11, sequentiell)
 # -DHYPRE_PACKAGE      defines interface to solver library HYPRE (not yet impl.)
@@ -48,7 +49,7 @@ include ./Makefile.personal_path
 # -DUMFPACK            defines interface to solver library Umfpack
 # -DSPOOLES_PACKAGE    defines interface to solver library Spooles (only in parallel HPUX11)
 #
-# -DVISUAL2_PACKAGE    defines visualisation tool VISUAL2 (only in seriell HPUX10)
+# -DVISUAL2_PACKAGE    defines visualisation tool VISUAL2 (only in seriell)
 #                      (add -lVisual2 -lX11 to INCLUDES!!!)
 #--------------------------------------------------------------------
 #====================================================================
@@ -57,9 +58,10 @@ include ./Makefile.personal_path
 FXX	= /opt/mpi/bin/mpif90
 CCX	= /opt/mpi/bin/mpicc 
 LDX	= /opt/mpi/bin/mpif90 
-PFL	= -DPARALLEL -DHPUXITA -DD_FLUID -DD_FSI -DD_OPTIM -DS8CONTACT -DD_CONTACT  \
+PFL	= -DPARALLEL -DHPUXITA -DD_FLUID -DD_FSI -DD_OPTIM  \
 	  -DD_FLUID2 -DD_FLUID3 -DD_WALL1 -DD_SHELL9 -DD_BRICK1 -DD_SHELL8 -DD_ALE \
-	  -DD_BEAM3  -DD_AXISHELL -DD_MAT -DSPOOLES_PACKAGE 
+	  -DD_FLUID2_PRO -DD_BEAM3  -DD_AXISHELL -DD_MAT \
+	  -DSPOOLES_PACKAGE -DAZTEC_PACKAGE
 NAME	= par
 MPI	= -lmpi
 #====================================================================

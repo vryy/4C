@@ -20,46 +20,50 @@ include ./Makefile.personal_path
 #--------------------------------------------------------------------
 # list of possible defines:
 #--------------------------------------------------------------------
+#
+# list of possible defines:
 #  
-# -DD_FLUID      defines general fluid problem
-# -DD_FSI        defines general FSI problem
+#  
+# -DD_ALE        defines element ale (2D+3D)
+# -DD_AXISHELL   defines axishell element
+# -DD_BEAM3      defines element beam3
 # -DD_BRICK1     defines element brick1
-# -DD_SHELL8     defines element shell8
-# -DS8CONTACT    defines contact algorithms for shell8 contact
-# -DWALLCONTACT  defines contact algorithms for wall contact
-# -DD_SHELL9     defines element shell9
 # -DD_FLUID2     defines element fluid2
 # -DD_FLUID2_PRO defines element fluid2 with projection method
 # -DD_FLUID3     defines element fluid3
-# -DD_ALE        defines element ale
+# -DD_SHELL8     defines element shell8
+# -DD_SHELL9     defines element shell9
 # -DD_WALL1      defines element wall1
-# -DD_CONTACT    defines contact algos 2D (with wall element)
-# -DD_OPTIM      defines optimization
-# -DD_BEAM3      defines element beam3
-# -DD_AXISHELL   defines axishell element
-# -DGEMM         defines Generalized Energy-Momentum Int. Scheme
-# -DD_MAT       defines materials
 #
-# -DDEBUG     defines debug mode: routine and array tracing 
-# -DPARALLEL  defines parallel version of programm
-# -DSIXTYFOUR defines 64bit compilation and linkage
-# -DSUSE73    defines for compilation and linkage with gcc and g77 on Suselinux
-# -DSUN       defines for compilation and linkage on CUSS Sunfire machine
-# -DAZUSA     defines for compilation on azusa.hww.de
-# -DHPUX10    defines for compilation on HPUX10
-# -DHPUX11    defines for compilation on HPUX11
-# -DHPUXITA   defines compilation for Itanium2 running HPUX11i
+# -DGEMM         defines Generalized Energy-Momentum Int. Scheme
+# -DD_FLUID      defines general fluid problem
+# -DD_FSI        defines general FSI problem
+# -DD_MAT        defines materials
+# -DD_OPTIM      defines optimization
+# -DRESULTTEST   defines defines result testing before checking in a new version
+# -DS8CONTACT    defines contact algorithms for shell8 contact
+# -DWALLCONTACT  defines contact algorithms for wall contact
+#
+# -DDEBUG        defines debug mode: routine and array tracing 
+# -DPARALLEL     defines parallel version of programm
+# -DSIXTYFOUR    defines 64bit compilation and linkage
+# -DSUSE73       defines for compilation and linkage with gcc and g77 on Suselinux
+# -DSUN          defines for compilation and linkage on CUSS Sunfire machine
+# -DAZUSA        defines for compilation on azusa.hww.de
+# -DHPUX10       defines for compilation on HPUX10
+# -DHPUX11       defines for compilation on HPUX11
+# -DHPUXITA      defines compilation for Itanium2 running HPUX11i
 # 
 # -DMLIB_PACKAGE       defines interface to solver library MLIB (HPUX11, sequentiell)
-# -DHYPRE_PACKAGE      defines interface to solver library HYPRE
+# -DHYPRE_PACKAGE      defines interface to solver library HYPRE (not yet impl.)
 # -DAZTEC_PACKAGE      defines interface to solver library AZTEC
 # -DPARSUPERLU_PACKAGE defines interface to solver library ParSuperLU
-# -DSUPERLU_PACKAGE    defines interface to solver library SuperLU (not impl. yet)
+# -DSUPERLU_PACKAGE    defines interface to solver library SuperLU 
 # -DMUMPS_PACKAGE      defines interface to solver library Mumps (only in parallel HPUX11)
 # -DUMFPACK            defines interface to solver library Umfpack
-# -DSPOOLES_PACKAGE    defines interface to solver library Spooles (only in parallel)
+# -DSPOOLES_PACKAGE    defines interface to solver library Spooles (only in parallel HPUX11)
 #
-# -DVISUAL2_PACKAGE    defines visualisation tool VISUAL2 (only in seriell HPUX10)
+# -DVISUAL2_PACKAGE    defines visualisation tool VISUAL2 (only in seriell)
 #                      (add -lVisual2 -lX11 to INCLUDES!!!)
 #--------------------------------------------------------------------
 # switch between sequentiell and parallel compilation by uncommenting 
@@ -153,8 +157,8 @@ INCLUDES = -I/opt/mpi/include/ \
            -lmumps \
            -lblas \
            -lumfpack40_hpux10_32 \
-           $(SPOOLES) 
-#           -lPEX5 -lVisual2 -lX11
+           $(SPOOLES) \
+           -lPEX5 -lVisual2 -lX11
 # sparsekit is not used at the moment
 #           -lskit 
 # libHYPRE_superlu.a convlicts with libsuperlu_hppa.a
@@ -176,11 +180,11 @@ PROGRAM       = $(PROGRAMM)
 #
 $(PROGRAM):     $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) $(OBJS7) $(OBJS8) \
                 $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) $(OBJS14) $(OBJS15) \
-                $(OBJS16) $(OBJS17) $(OBJS18) $(OBJS_OPT) $(OBJS_AXISHELL) $(OBJS_MAT)
+                $(OBJS16) $(OBJS17) $(OBJS18) $(OBJS_OPT) $(OBJS_AXISHELL) $(OBJS_MAT) $(OBJS_F2PRO)
 		@echo "Linking $(PROGRAM) ..."
 		@$(LD) $(LDFLAGS) $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) \
                 $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) $(OBJS14) \
-                $(OBJS15) $(OBJS16) $(OBJS17) $(OBJS18) $(OBJS_OPT) $(OBJS_AXISHELL) $(OBJS_MAT) \
+                $(OBJS15) $(OBJS16) $(OBJS17) $(OBJS18) $(OBJS_OPT) $(OBJS_AXISHELL) $(OBJS_MAT) $(OBJS_F2PRO) \
 		$(LIBS) $(INCLUDES) -o $(PROGRAM)
 		@echo "done"
 
@@ -285,6 +289,11 @@ $(OBJS_MAT):
 		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
 		@echo "MainMake is back."
 #
+$(OBJS_F2PRO):     
+		@echo "Making $@ ..."
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
+		@echo "MainMake is back."
+#
 # fortran
 $(OBJS13):     
 		@echo "Making $@ ..."
@@ -302,5 +311,5 @@ clean:
 	rm -rf  $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) \
                 $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) \
                 $(OBJS13) $(OBJS14) $(OBJS15) $(OBJS16) $(OBJS17) $(OBJS18) \
-		$(OBJS_OPT) $(OBJS_AXISHELL) $(OBJS_MAT)
+		$(OBJS_OPT) $(OBJS_AXISHELL) $(OBJS_MAT) $(OBJS_F2PRO)
 $
