@@ -33,6 +33,7 @@ ARRAY       tmpsol_a;
 double     *tmprhs;
 ARRAY       tmprhs_a;
 
+double      l2norm;
 #ifdef DEBUG 
 dstrc_enter("solver_az_msr");
 #endif
@@ -147,10 +148,11 @@ case 1:
    msr_array->options[AZ_max_iter] = azvar->aziter;
    msr_array->options[AZ_overlap]  = 0;
    msr_array->options[AZ_poly_ord] = azvar->azpoly;
-   msr_array->options[AZ_output]   = AZ_none;/*AZ_all;AZ_warnings;AZ_last;300;*/
-   msr_array->options[AZ_conv]     = AZ_r0;
+   msr_array->options[AZ_output]   = AZ_none;/*AZ_all;AZ_warnings;AZ_last;10; */
+   msr_array->options[AZ_conv]     = AZ_noscaled;
    msr_array->params[AZ_tol]       = azvar->aztol;
    msr_array->params[AZ_drop]      = azvar->azdrop;
+   msr_array->options[AZ_scaling]  = AZ_sym_diag; /*AZ_none  */
    /*--------- make backup copy of bindx, as it is permuted in solution */
    am_alloc_copy(&(msr_array->bindx),&(msr_array->bindx_backup));
    /*-------------------------------------- allocate backup copy of val */

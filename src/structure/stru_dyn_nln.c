@@ -730,7 +730,7 @@ solserv_vecnorm_euclid(actintra,&(dispi[0]),&(dynvar.dnorm));
 solserv_vecnorm_Linf(actintra,&(work[0]),&dmax);
 if (dynvar.dinorm < sdyn->toldisp ||
     dynvar.dnorm  < EPS14 ||
-    dynvar.dinorm < EPS14 && dmax < EPS12)
+    (dynvar.dinorm < EPS14 && dmax < EPS12) )
 {
    convergence = 1;
 }    
@@ -852,7 +852,7 @@ if (par.myrank==0) dyn_nlnstruct_outstep(&dynvar,sdyn,itnum);
 t1 = ds_cputime();
 fprintf(allfiles.out_err,"TIME for step %d is %f sec\n",sdyn->step,t1-t0);
 /*-------------------------------------- check time and number of steps */
-if (sdyn->step < sdyn->nstep && sdyn->time <= sdyn->maxtime)
+if (sdyn->step < sdyn->nstep-1 && sdyn->time <= sdyn->maxtime)
 goto timeloop;
 /*----------------------------------------------------------------------*/
 end:
