@@ -29,9 +29,20 @@ main is only printing the ccarat head and the finish
 void main(int argc, char *argv[])
 {
 #ifdef PARALLEL 
+static char *buff,*dbuff;
+int          buffsize=MPIBUFFSIZE;
 MPI_Init(&argc,&argv);
 MPI_Comm_rank(MPI_COMM_WORLD, &par.myrank);
 MPI_Comm_size(MPI_COMM_WORLD, &par.nprocs);
+/*------------------------------------------------ attach buffer to mpi */
+buff = (char*)malloc(buffsize);
+if (!buff) 
+{
+   printf("Allocation of memory for mpi buffer failed");
+   MPI_Finalize();
+   exit(1);
+}   
+MPI_Buffer_attach(buff,buffsize);
 #else
 par.myrank=0;
 par.nprocs=1;
@@ -64,6 +75,9 @@ ntam(argc,argv);
 #ifdef PARALLEL
 MPI_Barrier(MPI_COMM_WORLD);
 printf("processor %d finished normally\n",par.myrank);
+MPI_Buffer_detach(&dbuff,&buffsize);
+if (dbuff!=buff || buffsize != MPIBUFFSIZE)
+dserror("Illegal modification of mpi buffer adress or size appeared"); 
 MPI_Finalize();
 #else
 printf("processor %d finished normally\n",par.myrank);
