@@ -184,7 +184,8 @@ OBJS12	      = src/wall1/w1_bop.o \
                 src/wall1/w1_cal_keu.o \
                 src/wall1/w1_cal_fint.o \
                 src/wall1/w1_cal_fext.o \
-                src/wall1/w1_mat_trans.o
+                src/wall1/w1_mat_trans.o \
+                src/wall1/w1_cal_trans.o
                 #                fluid2
 OBJS14        = src/fluid2/f2_caldirich.o \
                 src/fluid2/f2_calelesize.o \
@@ -210,10 +211,10 @@ OBJS15        = src/fluid_full/cal_fluid.o \
                 src/fluid_full/fluid_service.o \
 		src/fluid_full/inp_fluid_start_data.o
 #--------------- fortran parallel and sequentiell on HPUX10.20 / Linux / Sun
-#OBJS13	      = src/fortran/colsol.o
-#
+OBJS13           = src/fortran/colsol.o
+
 #---------------------------------------------  fortran parallel on HPUX11.0
 #            
-OBJS13         = src/fortran/mumps_interface.o \
-                 src/fortran/bi_f77_get_constants.o \
-                 src/fortran/colsol.o
+#OBJS13         = src/fortran/mumps_interface.o \
+#                 src/fortran/bi_f77_get_constants.o \
+#                 src/fortran/colsol.o
