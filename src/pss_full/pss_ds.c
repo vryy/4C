@@ -588,17 +588,17 @@ void dserror(char string[], ...)
 {
   va_list ap;
   char line[] = "=========================================================================\n";
-  
+#ifdef DEBUG 
+  INT i=0;
+  TRACEROUT *routhis = NULL;
+#endif
 
+  
   /* write warnings */
   dswarning(2,0);
 
   
 #ifdef DEBUG 
-  INT i=0;
-  TRACEROUT *routhis = NULL;
-
-
   if (trace.trace_on==1)
   {
     char message[300];
