@@ -120,7 +120,8 @@ This routine controls the element evaluation:
 \param  *hasdirich       INT	        (o)   element flag
 \param  *hasext          INT	        (o)   element flag         
 \param   imyrank         INT            (i)   proc number
-\param   velgrad	         INT	        (i)   flag
+\param   velgrad         INT	        (i)   flag
+\param   is_relax        INT            (i)   flag
 \param   init	         INT	        (i)   init flag
 \return void                                               
                                  
@@ -128,17 +129,18 @@ This routine controls the element evaluation:
 void f2_calele(
                 FLUID_DATA     *data, 
                 FLUID_DYN_CALC *dynvar, 
-	          ELEMENT        *ele,             
+	        ELEMENT        *ele,             
                 ELEMENT        *eleke, 
                 ARRAY          *estif_global,   
                 ARRAY          *emass_global,   
-	          ARRAY          *etforce_global,       
-	          ARRAY          *eiforce_global, 
-		    ARRAY          *edforce_global,		
-		    INT            *hasdirich,      
+	        ARRAY          *etforce_global,       
+	        ARRAY          *eiforce_global, 
+		ARRAY          *edforce_global,		
+		INT            *hasdirich,      
                 INT            *hasext,
                 INT             imyrank,
-		    INT             init            
+		INT             is_relax,
+		INT             init            
 	       )
 {
 
@@ -217,7 +219,8 @@ break;
 case 1:
 /*---------------------------------------------------- set element data */
    f2_calseta(dynvar,ele,xyze,eveln,evelng,ealecovn,
-               ealecovng,egridv,epren,edeadn,edeadng,ekappan,ekappang,hasext);
+               ealecovng,egridv,epren,edeadn,edeadng,ekappan,ekappang,hasext,
+	       is_relax);
 /*-------------------------- calculate element size and stab-parameter: */   
    f2_calelesize(ele,eleke,data,dynvar,xyze,funct,deriv,deriv2,xjm,derxy,
                  vderxy,ealecovng,velint,wa1,eddy,&visc);
@@ -261,7 +264,7 @@ default:
 }
 
 /*------------------------------- calculate element load vector edforce */
-fluid_caldirich(ele,edforce,estif,hasdirich);
+fluid_caldirich(ele,edforce,estif,hasdirich,is_relax);
 
 end:
 /*----------------------------------------------------------------------*/
@@ -279,17 +282,19 @@ return;
 			     			
 </pre>
 
-\param     str     FLUID_STRESS   (i)    flag for stress calculation
-\param     viscstr INT            (i)    viscose stresses yes/no?
-\param    *data    FLUID_DATA     (i)
-\param    *ele     ELEMENt        (i)    actual element 
+\param     str       FLUID_STRESS   (i)    flag for stress calculation
+\param     viscstr   INT            (i)    viscose stresses yes/no?
+\param    *data      FLUID_DATA     (i)
+\param    *ele       ELEMENt        (i)    actual element 
+\param     is_relax  INT            (i)    flag
 \return void                                               
                                  
 ------------------------------------------------------------------------*/
 void f2_stress(FLUID_STRESS  str, 
                INT           viscstr,
 	       FLUID_DATA   *data, 
-	       ELEMENT      *ele      )
+	       ELEMENT      *ele,
+	       INT           is_relax  )
 {
 INT       i;        /* simply a counter                                 */
 INT       coupled;  /* flag for fsi interface element                   */
@@ -320,7 +325,7 @@ case str_fsicoupling:
    }
    if (coupled==1) 
    f2_calfsistress(viscstr,data,ele,eveln,epren,funct,
-                   deriv,derxy,vderxy,xjm,xyze,sigmaint);      
+                   deriv,derxy,vderxy,xjm,xyze,sigmaint,is_relax);      
 break;
 #endif
 case str_liftdrag:
