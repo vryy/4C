@@ -12,9 +12,10 @@ Maintainer: Steffen Genkinger
 ------------------------------------------------------------------------*/
 #ifdef D_FLUID3 
 #include "../headers/standardtypes.h"
-#include "../fluid_full/fluid_prototypes.h"
 #include "fluid3_prototypes.h"
 #include "fluid3.h"
+#include "../fluid_full/fluid_prototypes.h"
+
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate dynamic variables if needed                      |
@@ -38,6 +39,12 @@ static DOUBLE  **eveln;
 	 accelerations depending upon the time integration scheme!!!!! */
 static ARRAY     evelng_a; /* element velocities at (n+gamma)		*/
 static DOUBLE  **evelng;
+static ARRAY     ealecovn_a;  /* element ale-convective velocities      */
+static DOUBLE  **ealecovn;    /* at (n)                                 */
+static ARRAY     ealecovng_a; /* element ale-convective velocities      */
+static DOUBLE  **ealecovng;   /* at (n+gamma)                           */
+static ARRAY     egridv_a; /* element grid velocity                     */
+static DOUBLE  **egridv;
 static ARRAY     epren_a;  /* element pressures at (n)  		*/
 static DOUBLE   *epren;
 static ARRAY     edeadn_a; /* element dead load (selfweight)            */
@@ -54,12 +61,6 @@ static ARRAY     xyze_a;
 static DOUBLE  **xyze;   
 static ARRAY     xjm_a;    /* jocobian matrix				*/
 static DOUBLE  **xjm;
-static ARRAY     velint_a; /* velocities at integration point		*/
-static DOUBLE   *velint;
-static ARRAY     vel2int_a;/* velocities at integration point		*/
-static DOUBLE   *vel2int;
-static ARRAY	 covint_a; /* convective velocities at integr. point	*/
-static DOUBLE   *covint;
 static ARRAY     vderxy_a; /* vel - derivatives 			*/
 static DOUBLE  **vderxy;
 static ARRAY     pderxy_a; /* pre -derivatives  			*/
@@ -72,6 +73,12 @@ static ARRAY     derxy2_a; /* 2nd coordinate - derivatives		*/
 static DOUBLE  **derxy2;
 static ARRAY     sigmaint_a; /* fluid stresses at integration point     */
 static DOUBLE  **sigmaint;
+static ARRAY     ephin_a;    /* height function value at (n)            */ 
+static DOUBLE   *ephin;
+static ARRAY     ephing_a;   /* height function value at (n+1)          */
+static DOUBLE   *ephing;
+static ARRAY     iedgnod_a;
+static INT      *iedgnod;
 static ARRAY     w1_a;     /* working array of arbitrary chosen size	*/
 static DOUBLE  **wa1;      /* used in different element routines	*/
 static ARRAY     w2_a;     /* working array of arbitrary chosen size	*/
@@ -130,27 +137,30 @@ dstrc_enter("f3_calele");
 
 if (init==1) /* allocate working arrays and set pointers */
 {
-   eveln   = amdef("evln"    ,&eveln_a   ,NUM_F3_VELDOF,MAXNOD_F3,"DA");
-   evelng  = amdef("evelng"  ,&evelng_a  ,NUM_F3_VELDOF,MAXNOD_F3,"DA");
-   epren   = amdef("epren"   ,&epren_a   ,MAXNOD_F3,1,"DV");
-   edeadn  = amdef("edeadn"  ,&edeadn_a  ,3,1,"DV");
-   edeadng = amdef("edeadng" ,&edeadng_a ,3,1,"DV"); 
-   funct   = amdef("funct"   ,&funct_a   ,MAXNOD_F3,1,"DV");
-   deriv   = amdef("deriv"   ,&deriv_a   ,3,MAXNOD_F3,"DA");
-   deriv2  = amdef("deriv2"  ,&deriv2_a  ,6,MAXNOD_F3,"DA");
-   xyze    = amdef("xyze"    ,&xyze_a    ,3,MAXNOD_F3,"DA");
-   xjm     = amdef("xjm"     ,&xjm_a     ,3,3        ,"DA");
-   velint  = amdef("velint"  ,&velint_a  ,NUM_F3_VELDOF,1,"DV");
-   vel2int = amdef("vel2int" ,&vel2int_a ,NUM_F3_VELDOF,1,"DV");
-   covint  = amdef("covint"  ,&covint_a  ,NUM_F3_VELDOF,1,"DV");
-   vderxy  = amdef("vderxy"  ,&vderxy_a  ,3,3,"DA");
-   pderxy  = amdef("pderxy"  ,&pderxy_a  ,3,1,"DV");
-   vderxy2 = amdef("vderxy2" ,&vderxy2_a ,3,6,"DA");
-   derxy   = amdef("derxy"   ,&derxy_a   ,3,MAXNOD_F3,"DA");
-   derxy2  = amdef("derxy2"  ,&derxy2_a  ,6,MAXNOD_F3,"DA");
-   sigmaint= amdef("sigmaint",&sigmaint_a,MAXGAUSS ,6,"DA");
-   wa1     = amdef("wa1"     ,&w1_a      ,300,300        ,"DA");
-   wa2     = amdef("wa2"     ,&w2_a      ,300,300        ,"DA");  
+   eveln     = amdef("evln"   ,&eveln_a  ,NUM_F3_VELDOF,MAXNOD_F3,"DA");
+   evelng    = amdef("evelng" ,&evelng_a ,NUM_F3_VELDOF,MAXNOD_F3,"DA");
+   ealecovn  = amdef("ealecovn" ,&ealecovn_a ,NUM_F3_VELDOF,MAXNOD_F3,"DA");
+   ealecovng = amdef("ealecovng",&ealecovng_a,NUM_F3_VELDOF,MAXNOD_F3,"DA");
+   egridv    = amdef("egridv"   ,&egridv_a   ,NUM_F3_VELDOF,MAXNOD_F3,"DA");
+   epren     = amdef("epren"  ,&epren_a  ,MAXNOD_F3,1,"DV");
+   edeadn    = amdef("edeadn" ,&edeadn_a ,3,1,"DV");
+   edeadng   = amdef("edeadng",&edeadng_a,3,1,"DV"); 
+   funct     = amdef("funct"  ,&funct_a  ,MAXNOD_F3,1,"DV");
+   deriv     = amdef("deriv"  ,&deriv_a  ,3,MAXNOD_F3,"DA");
+   deriv2    = amdef("deriv2" ,&deriv2_a ,6,MAXNOD_F3,"DA");
+   xjm       = amdef("xjm"    ,&xjm_a    ,3,3        ,"DA");
+   xyze      = amdef("xyze"   ,&xyze_a   ,3,MAXNOD_F3,"DA");
+   vderxy    = amdef("vderxy" ,&vderxy_a ,3,3,"DA");
+   pderxy    = amdef("pderxy" ,&pderxy_a ,3,1,"DV");
+   vderxy2   = amdef("vderxy2",&vderxy2_a,3,6,"DA");
+   derxy     = amdef("derxy"  ,&derxy_a  ,3,MAXNOD_F3,"DA");
+   derxy2    = amdef("derxy2" ,&derxy2_a ,6,MAXNOD_F3,"DA");
+   sigmaint  = amdef("sigmaint" ,&sigmaint_a ,MAXGAUSS,6,"DA");
+   ephin     = amdef("ephin"    ,&ephin_a    ,MAXNOD_F3,1 ,"DV");
+   ephing    = amdef("ephing"   ,&ephing_a   ,MAXNOD_F3,1 ,"DV");
+   iedgnod   = amdef("iedgnod"  ,&iedgnod_a  ,MAXNOD_F3,1 ,"IV");
+   wa1       = amdef("wa1"    ,&w1_a      ,300,300        ,"DA");
+   wa2       = amdef("wa2"    ,&w2_a      ,300,300        ,"DA");  
 /*                                        \- size is chosen arbitrarily! */
    estif   = estif_global->a.da;
    emass   = emass_global->a.da;
@@ -170,32 +180,72 @@ amzero(etforce_global);
 amzero(edforce_global);
 *hasdirich=0;
 *hasext=0;
-
+switch(ele->e.f3->is_ale)
+{
+case 0:
 /*---------------------------------------------------- set element data */
-f3_calset(ele,eveln,evelng,epren,edeadn,edeadng,hasext);
+   f3_calset(ele,xyze,eveln,evelng,epren,edeadn,edeadng,hasext);
 
 /*------------------------- calculate element size and stab-parameter: */
-f3_calelesize(ele,data,funct,deriv,deriv2,derxy,xjm,evelng,velint,wa1);
+   f3_calelesize(ele,data,xyze,funct,deriv,deriv2,derxy,xjm,evelng,wa1,0);
 
 /*------------------------------- calculate element stiffness matrices */
 /*                                           and element force vectors */
-f3_calint(data,ele,hasext,
-          estif,emass,etforce,eiforce,
-	  funct,deriv,deriv2,xjm,derxy,derxy2,
-	  eveln,evelng,epren,edeadn,edeadng,
-	  velint,vel2int,covint,vderxy,pderxy,vderxy2,
-	  wa1,wa2);
+   f3_calint(data,ele,hasext,
+             estif,emass,etforce,eiforce,
+             xyze,funct,deriv,deriv2,xjm,derxy,derxy2,
+             eveln,evelng,epren,edeadn,edeadng,
+             vderxy,pderxy,vderxy2,
+             wa1,wa2);
+break;
+case 1:
+/*---------------------------------------------------- set element data */
+   f3_calseta(ele,xyze,eveln,evelng,ealecovn,
+              ealecovng,egridv,epren,edeadn,edeadng,hasext);
+/*------------------------- calculate element size and stab-parameter: */
+   f3_calelesize(ele,data,xyze,funct,deriv,deriv2,derxy,xjm,evelng,wa1,0);
+/*------------------------------- calculate element stiffness matrices */
+/*                                           and element force vectors */
+   f3_calinta(data,ele,hasext,
+              estif,emass,etforce,eiforce,
+              xyze,funct,deriv,deriv2,xjm,derxy,derxy2,
+              eveln,evelng,ealecovn,ealecovng,egridv,epren,edeadn,edeadng,
+              vderxy,pderxy,vderxy2,
+              wa1,wa2);
+break;  
+default:
+   dserror("parameter is_ale not 0 or 1!\n");
+}
+switch(ele->e.f3->fs_on)
+{
+case 0: case 1: case 3: /* no or explict free surface */
+   /*-------------- add emass and estif to estif and permute the matrix */
+   f3_permestif(estif,emass,wa1,ele->numnp);
+   /*------------------------------ permute element load vector etforce */
+   if (fdyn->nif!=0)
+      f3_permeforce(etforce,wa1,ele->numnp);
+   /*------------------------------ permute element load vector eiforce */
+   if (fdyn->nii+(*hasext)!=0)
+      f3_permeforce(eiforce,wa1,ele->numnp);
+break;
+case 2: case 5: /* partitioned implict free surface */
+   dsassert(ele->e.f3->is_ale!=0,"element at free surface has to be ALE!\n");
+   /*-------------- add emass and estif to estif and permute the matrix */
+   f3_permestif_ifs(estif,emass,wa1,ele);
+   /*------------------------------ permute element load vector etforce */
+   if (fdyn->nif!=0)
+      f3_permeforce_ifs(etforce,wa1,ele);
+   /*------------------------------ permute element load vector eiforce */
+   if (fdyn->nii+(*hasext)!=0)
+      f3_permeforce_ifs(eiforce,wa1,ele);
+break;   
+default:
+   dserror("parameter fs_on out of range!\n");
+}
 
-/*----------------- add emass and estif to estif and permute the matrix */
-f3_permestif(estif,emass,wa1,ele->numnp);
-
-/*--------------------------------- permute element load vector etforce */
-if (fdyn->nif!=0)
-   f3_permeforce(etforce,wa1,ele->numnp);
-
-/*--------------------------------- permute element load vector eiforce */
-if (fdyn->nii+(*hasext)!=0)
-   f3_permeforce(eiforce,wa1,ele->numnp);
+/*-------------------------------------------- local co-ordinate system */
+if(ele->locsys==locsys_yes)
+   locsys_trans(ele,estif,NULL,etforce,eiforce); 
 
 /*------------------------------- calculate element load vector edforce */
 fluid_caldirich(ele,edforce,estif,hasdirich,3);
@@ -214,85 +264,68 @@ return;
 } /* end of f3_calele */
 
 
-
-
-
 /*!--------------------------------------------------------------------- 
-  \brief control routine for stress calculation in f3
+\brief control routine for stress calculation
 
-  <pre>                                                         mn 03/04
+<pre>                                                         genk 03/04				     
+			     			
+</pre>
 
-  </pre>
-
-  \param     str       FLUID_STRESS   (i)    flag for stress calculation
-  \param     viscstr   INT            (i)    viscose stresses yes/no?
-  \param    *data      FLUID_DATA     (i)
-  \param    *ele       ELEMENt        (i)    actual element 
-  \param     is_relax  INT            (i)    flag
-
-  \return void                                               
-
-  ------------------------------------------------------------------------*/
-void f3_stress(
-    FLUID_STRESS  str, 
-    INT           viscstr,
-    FLUID_DATA   *data, 
-    ELEMENT      *ele,
-    INT           is_relax
-    )
+\param     str       FLUID_STRESS   (i)    flag for stress calculation
+\param     viscstr   INT            (i)    viscose stresses yes/no?
+\param    *data      FLUID_DATA     (i)
+\param    *ele       ELEMENt        (i)    actual element 
+\param     is_relax  INT            (i)    flag
+\return void                                               
+                                 
+------------------------------------------------------------------------*/
+void f3_stress(FLUID_STRESS  str, 
+               INT           viscstr,
+	       FLUID_DATA   *data, 
+	       ELEMENT      *ele,
+	       INT           is_relax  )
 {
-#if 0
 #ifdef D_FSI
-  INT       i;
-  INT       coupled;      /* flag for fsi interface element */
-  INT       iel;          /* number of nodes per element */
-  GNODE    *actgnode;     /* actual gnode */
+INT       i;
+INT       coupled;      /* flag for fsi interface element */
+INT       iel;          /* number of nodes per element */
+GNODE    *actgnode;     /* actual gnode */
 #endif
-#endif
-
 
 #ifdef DEBUG 
-  dstrc_enter("f3_stress");
+dstrc_enter("f3_stress");
 #endif
 
-  switch(str)
-  {
-    case str_none: /* do nothing */
-      break;
-
-
-#if 0
+switch(str)
+{
+case str_none: /* do nothing */
+break;
 #ifdef D_FSI
-    case str_fsicoupling:
-      /* check if fluid element is coupled to struct element */
-      iel=ele->numnp;
-      coupled=0;
-      for (i=0;i<iel;i++)
-      {
-        actgnode = ele->node[i]->gnode;
-        /* check if there is a coupled struct node */
-        if (actgnode->mfcpnode[genprob.numsf]==NULL) continue;
-        coupled=1;
-        break;    
-      }
-      if (coupled==1) 
-        f3_calfsistress(viscstr,data,ele,eveln,epren,funct,
-            deriv,derxy,vderxy,xjm,xyze,sigmaint,is_relax);      
-      break;
+case str_fsicoupling:
+/* check if fluid element is coupled to struct element */
+   iel=ele->numnp;
+   coupled=0;
+   for (i=0;i<iel;i++)
+   {
+      actgnode = ele->node[i]->gnode;
+      /* check if there is a coupled struct node */
+      if (actgnode->mfcpnode[genprob.numsf]==NULL) continue;
+      coupled=1;
+      break;    
+   }
+   if (coupled==1) 
+   f3_calelestress(viscstr,data,ele,eveln,epren,funct,
+                   deriv,derxy,vderxy,xjm,wa1,xyze,sigmaint);      
+break;
 #endif
-#endif
-
-
-    case str_liftdrag:
-    case str_all:
-      f3_calelestress(viscstr,data,ele,eveln,epren,funct,
-          deriv,derxy,vderxy,xjm,wa1,xyze,sigmaint);      
-      break;
-
-
-    default:
-      dserror("stress calculation not possible!\n");
-  }
+case str_liftdrag:
+case str_all:
+   f3_calelestress(viscstr,data,ele,eveln,epren,funct,
+                  deriv,derxy,vderxy,xjm,wa1,xyze,sigmaint);      
+break;
+default:
+  dserror("stress calculation not possible!\n");
+}
 
   /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -300,6 +333,184 @@ void f3_stress(
 #endif
   return; 
 } /* end of f3_stress */
+
+/*!--------------------------------------------------------------------- 
+\brief control routine for heightfunction
+
+<pre>                                                       genk 04/04                   
+
+evaluation of heightfunction
+			     
+</pre>
+\param   *data             FLUID_DATA        integration parameter
+\param   *ele              ELEMENT           the actual element
+\param   *estif_global     DOUBLE            element stiffness matrix
+\param   *eiforce_global   DOUBLE            ele RHS
+\param   *container        CONTAINER
+\return void                                               
+                                 
+------------------------------------------------------------------------*/
+void f3_heightfunc(                                 
+                   FLUID_DATA           *data,  
+                   ELEMENT              *ele,
+                   ARRAY                *estif_global,   
+		   ARRAY                *eiforce_global,  
+		   CONTAINER            *container		   
+		   )
+{
+#if 0
+#ifdef D_FSI
+INT       i,surf;
+INT       nir ,nil;  
+INT       ngsurf;
+INT       ngnode;
+INT       foundsurf;
+DOUBLE    velint[3],vel2int[3];
+DIS_TYP   typ;	     
+NODE     *actfnode;
+GSURF    *gsurf[6];
+FLUID_FREESURF_CONDITION *surffs[6];
+
+#ifdef DEBUG 
+dstrc_enter("f3_heightfunc");
+#endif
+#endif
+
+fdyn   = alldyn[genprob.numff].fdyn;
+
+amzero(estif_global);
+amzero(eiforce_global);
+
+/*--------------------------------------------- set element coordinates */ 
+f3_alecoor(ele,xyze);
+
+/*-------------------------------------------------- set element values */
+for(i=0;i<ele->numnp;i++) /* loop nodes of element */
+{
+   actfnode=ele->node[i];
+   if(actfnode->hfdof==NULL) continue;
+   /*---------------------------------------- set element values at n+1 */
+   evelng[0][i]   =actfnode->sol_increment.a.da[3][0];
+   evelng[1][i]   =actfnode->sol_increment.a.da[3][1];
+   evelng[2][i]   =actfnode->sol_increment.a.da[3][2];
+   ephing[i]      =actfnode->xfs[2];
+   /*------------------------------------------ set element values at n */
+   eveln[0][i]    =actfnode->sol_increment.a.da[1][0];
+   eveln[1][i]    =actfnode->sol_increment.a.da[1][1];
+   eveln[2][i]    =actfnode->sol_increment.a.da[1][2];
+   ephin[i]       =actfnode->sol_increment.a.da[1][4];  
+} /* end of loop over nodes of element */
+
+typ  = ele->distyp;   
+nir  = ele->e.f3->nGP[0];
+foundsurf=0;
+/*---------------------------------- number of surfaces to this element */
+ngsurf=ele->g.gvol->ngsurf;
+
+/*------- loop over surfaces, check for freesurface conditions on surfs */
+for (i=0; i<ngsurf; i++)
+{
+   gsurf[i] = ele->g.gvol->gsurf[i];
+   surffs[i] = gsurf[i]->freesurf;
+   if(surffs[i]==NULL) continue;
+   foundsurf++;
+}
+
+if (foundsurf!=1) 
+   dserror("no or too many element edges at free surface!\n");  
+
+/*------------------------------------------ set number of gauss points */
+nil = IMAX(nir,2);
+
+/*------------------------------------- loop over surfs at free surface */
+for (surf=0; surf<ngsurf; surf++)
+{
+   if (surffs[surf]==NULL) continue;
+   /*------------------------------------ check number of nodes on surf */
+   ngnode = gsurf[surf]->ngnode;
+   /*--------------------------------------------------- distyp of edge */
+   switch (typ)
+   {
+   case hex8: typ=quad4; break;
+   default: dserror("distyp not allowed for implicit free surface!\n");
+   }
+   /*--------------------------------------------------- get edge nodes */
+   f3_iedg(iedgnod,ele,surf);
+   /*--------------------------------- integration loop on actual gline */
+   f3_calint_hfsep(ele,data,funct,deriv,wa1,wa2,xyze,ngnode,nil,
+                   iedgnod,velint,vel2int,evelng,eveln,ephing,ephin,derxy,typ,
+                   estif,eiforce);
+}
+
+/*------------------------------------------- copy iedgnod to container */
+container->ngnode=ngnode;
+container->iedgnod=iedgnod;
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+#else
+dserror("FSI-functions not compiled!\n");
+#endif
+return; 
+} /* end of f3_heightfunc */
+
+/*!--------------------------------------------------------------------- 
+\brief control routine for stabilisation calculation
+
+<pre>                                                         genk 05/04				     
+
+evaluation of stabilisation parameter at the end of a time step
+			     			
+</pre>
+\param   *ele     ELEMENT        the acutal element
+\param   *data    FLUID_DATA     integration parameter
+\return void                                               
+                                 
+------------------------------------------------------------------------*/
+void f3_calstab(ELEMENT *ele, FLUID_DATA *data)
+{
+INT      i;
+NODE    *actfnode;
+
+#ifdef DEBUG 
+dstrc_enter("f3_calstab");
+#endif
+
+fdyn   = alldyn[genprob.numff].fdyn;
+
+/*--------------------------------------------- get actual co-ordinates */
+if (ele->e.f3->is_ale==0)
+for(i=0;i<ele->numnp;i++)
+{
+   xyze[0][i]=ele->node[i]->x[0];
+   xyze[1][i]=ele->node[i]->x[1];
+   xyze[2][i]=ele->node[i]->x[2];
+}
+else
+   f3_alecoor(ele,xyze);
+
+/*------------------------------------------------ get actual velocity */
+for(i=0;i<ele->numnp;i++) /* loop nodes of element */
+{
+   actfnode=ele->node[i];
+   evelng[0][i]   =actfnode->sol_increment.a.da[3][0];
+   evelng[1][i]   =actfnode->sol_increment.a.da[3][1];
+   evelng[2][i]   =actfnode->sol_increment.a.da[3][2];
+}
+   
+/*-------------------------- calculate element size and stab-parameter: */
+f3_calelesize(ele,data,xyze,funct,deriv,deriv2,derxy,xjm,evelng,wa1,1);
+
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return; 
+} /* end of f2_calstab */
+
 
 
 #endif
