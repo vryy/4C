@@ -26,6 +26,7 @@ functions.
 
 #include <assert.h>
 #include <strings.h>
+#include <stdarg.h>
 
 #include "post_common.h"
 
@@ -285,6 +286,54 @@ void io_emergency_close_files()
 
 /*----------------------------------------------------------------------*/
 /*!
+  \brief The log level of the filter
+
+  Specifies what messages are to appear on the screen. Any messages
+  are written to the log file as long as the log level is greater than
+  zero.
+
+  The value can be set via the command line option -l.
+
+  \author u.kue
+  \date 01/05
+*/
+/*----------------------------------------------------------------------*/
+static INT loglevel = 2;
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Filter log output
+
+  Writes the message to the log file. If the given level is small
+  enough it prints the message on screen as well.
+
+  \param level (i) level of this message
+  \param msg   (i) any text followed by printf like arguments
+
+  \author u.kue
+  \date 01/05
+*/
+/*----------------------------------------------------------------------*/
+void post_log(INT level, CHAR* msg, ...)
+{
+  va_list ap;
+
+  if (loglevel > 0)
+  {
+    va_start(ap, msg);
+
+    vfprintf(allfiles.out_err,msg,ap);
+    if (level <= loglevel)
+      vprintf(msg,ap);
+
+    va_end(ap);
+  }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*!
   \brief Init a translation table.
 
   The purpose of these tables is to find the internal enum value to an
@@ -412,7 +461,7 @@ static void open_data_files(RESULT_DATA* result, MAP* field_info, CHAR* prefix)
       dserror("failed to open file '%s'", filename);
     }
 
-    fprintf(allfiles.out_err, "open file: '%s'\n", buf);
+    post_log(2, "open file: '%s'\n", buf);
   }
 
   sprintf(var_name, "%s_size_file", prefix);
@@ -431,7 +480,7 @@ static void open_data_files(RESULT_DATA* result, MAP* field_info, CHAR* prefix)
       dserror("failed to open file '%s'", filename);
     }
 
-    fprintf(allfiles.out_err, "open file: '%s'\n", buf);
+    post_log(2, "open file: '%s'\n", buf);
   }
 
 #ifdef DEBUG
@@ -547,6 +596,7 @@ static void usage(CHAR* progname)
   printf("\n"
          "  options:\n"
          "    -s beg:end[:step]        read from beg to end-1 every step\n"
+         "    -l [level]               set log level (0==none, infty==everything)\n"
          "\n");
   exit(1);
 }
@@ -619,7 +669,9 @@ void init_problem_data(PROBLEM_DATA* problem, INT argc, CHAR** argv)
           i += 1;
           if (i == argc-1)
           {
-            dserror("option '-s' must be followed by a slice like this: 'beg:end[:step]'");
+            /* dserror is not initialized yet */
+            printf("%s: option '-s' must be followed by a slice like this: 'beg:end[:step]'\n", argv[0]);
+            exit(1);
           }
           arg = argv[i];
         }
@@ -629,7 +681,9 @@ void init_problem_data(PROBLEM_DATA* problem, INT argc, CHAR** argv)
         arg = strstr(arg, ":");
         if (arg == NULL)
         {
-          dserror("option '-s' must be followed by a slice like this: 'beg:end[:step]'");
+          /* dserror is not initialized yet */
+          printf("%s: option '-s' must be followed by a slice like this: 'beg:end[:step]'\n", argv[0]);
+          exit(1);
         }
 
         /* we support things like 'beg::step' and 'beg:' */
@@ -643,13 +697,41 @@ void init_problem_data(PROBLEM_DATA* problem, INT argc, CHAR** argv)
           problem->step = atoi(arg+1);
           if (problem->step < 1)
           {
-            dserror("step must be greater than zero");
+            /* dserror is not initialized yet */
+            printf("%s: step must be greater than zero\n", argv[0]);
+            exit(1);
           }
         }
         break;
       }
       case 'h':
         usage(argv[0]);
+        break;
+      case 'l':
+        if (arg[2] != '\0')
+        {
+          arg = &(arg[2]);
+        }
+        else
+        {
+          if (i+1 == argc-1)
+          {
+            /* no explizit number */
+            loglevel = 3;
+            break;
+          }
+          arg = argv[i+1];
+          if (arg[0] >= '0' && arg[0] <= '9')
+          {
+            i += 1;
+          }
+          else {
+            /* no explizit number */
+            loglevel = 3;
+            break;
+          }
+        }
+        loglevel = atoi(arg);
         break;
       default:
         printf("unsupported option '%s'", arg);

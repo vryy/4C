@@ -1222,7 +1222,7 @@ static void post_visual2()
 
   /*----------------------------------------------- data structure sizes */
   MPTRI  = 100000;
-  MPPTRI = 1500;
+  MPPTRI = 3500;
   MFACE  = 175000;
   MPFACE = 10000;
   MEDGE  = 10000;
@@ -1971,7 +1971,7 @@ int main(int argc, char** argv)
 
   post_visual2();
 
-  fprintf(allfiles.out_err, "Done.\n");
+  post_log(4, "Done.\n");
   return 0;
 }
 

@@ -425,7 +425,7 @@ void shell8_write_displacement(FIELD_DATA *field, RESULT_DATA* result)
   time = map_read_real(result->group, "time");
   step = map_read_int(result->group, "step");
 
-  fprintf(allfiles.out_err, "%s: Write displacement of step %d\n",
+  post_log(3, "%s: Write displacement of step %d\n",
           field->name, step);
 
   /* Again we look at the first element only. */

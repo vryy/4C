@@ -346,6 +346,6 @@ int main(int argc, char** argv)
     }
   }
 
-  fprintf(allfiles.out_err, "Done.\n");
+  post_log(4, "Done.\n");
   return 0;
 }

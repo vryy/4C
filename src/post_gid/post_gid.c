@@ -180,7 +180,7 @@ static void write_domain(FIELD_DATA *field, GIDSET* gid)
   dstrc_enter("write_domain");
 #endif
 
-  fprintf(allfiles.out_err, "%s: Write domain\n", field->name);
+  post_log(3, "%s: Write domain\n", field->name);
   init_chunk_data(&(field->head), &chunk, "domain");
 
 #ifdef D_SHELL8
@@ -280,7 +280,7 @@ static void write_displacement(FIELD_DATA *field, RESULT_DATA* result)
     time = map_read_real(result->group, "time");
     step = map_read_int(result->group, "step");
 
-    fprintf(allfiles.out_err, "%s: Write displacement of step %d\n", field->name, step);
+    post_log(3, "%s: Write displacement of step %d\n", field->name, step);
 
     sprintf(buf, "%s_displacement", fieldnames[field->type]);
     GiD_BeginResult(buf, "ccarat", step, GiD_Vector, GiD_OnNodes,
@@ -342,7 +342,7 @@ static void write_velocity(FIELD_DATA *field, RESULT_DATA* result)
   time = map_read_real(result->group, "time");
   step = map_read_int(result->group, "step");
 
-  fprintf(allfiles.out_err, "%s: Write velocity of step %d\n", field->name, step);
+  post_log(3, "%s: Write velocity of step %d\n", field->name, step);
 
   sprintf(buf, "%s_velocity", fieldnames[field->type]);
   GiD_BeginResult(buf, "ccarat", step, GiD_Vector, GiD_OnNodes,
@@ -402,7 +402,7 @@ static void write_pressure(FIELD_DATA *field, RESULT_DATA* result)
   time = map_read_real(result->group, "time");
   step = map_read_int(result->group, "step");
 
-  fprintf(allfiles.out_err, "%s: Write pressure of step %d\n", field->name, step);
+  post_log(3, "%s: Write pressure of step %d\n", field->name, step);
 
   sprintf(buf, "%s_pressure", fieldnames[field->type]);
   GiD_BeginResult(buf, "ccarat", step, GiD_Scalar, GiD_OnNodes,
@@ -451,7 +451,7 @@ static void write_stress(FIELD_DATA *field, GIDSET* gid, RESULT_DATA* result)
   time = map_read_real(result->group, "time");
   step = map_read_int(result->group, "step");
 
-  fprintf(allfiles.out_err, "%s: Write stress of step %d\n", field->name, step);
+  post_log(3, "%s: Write stress of step %d\n", field->name, step);
 
 #ifdef D_SHELL8
   shell8_write_stress(field, gid, &chunk, time, step);
@@ -1253,7 +1253,7 @@ static void write_fsi(PROBLEM_DATA* problem)
       time = map_read_real(result.group, "time");
       step = map_read_int(result.group, "step");
 
-      fprintf(allfiles.out_err, "%s: Write displacement of step %d\n", ale_field->name, step);
+      post_log(3, "%s: Write displacement of step %d\n", ale_field->name, step);
 
       GiD_BeginResult("fluid_displacement", "ccarat", step, GiD_Vector, GiD_OnNodes,
                       NULL, NULL, chunk.value_entry_length, componentnames);
@@ -1366,6 +1366,6 @@ int main(int argc, char** argv)
 
   GiD_ClosePostResultFile();
 
-  fprintf(allfiles.out_err, "Done.\n");
+  post_log(4, "Done.\n");
   return 0;
 }

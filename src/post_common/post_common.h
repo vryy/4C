@@ -242,6 +242,23 @@ void setup_filter(CHAR* output_name, MAP* control_table, CHAR* basename);
 
 /*----------------------------------------------------------------------*/
 /*!
+  \brief Filter log output
+
+  Writes the message to the log file. If the given level is small
+  enough it prints the message on screen as well.
+
+  \param level (i) level of this message
+  \param msg   (i) any text followed by printf like arguments
+
+  \author u.kue
+  \date 01/05
+*/
+/*----------------------------------------------------------------------*/
+void post_log(INT level, CHAR* msg, ...);
+
+
+/*----------------------------------------------------------------------*/
+/*!
   \brief Init a translation table.
 
   The purpose of these tables is to find the internal enum value to an
