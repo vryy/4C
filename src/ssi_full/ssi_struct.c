@@ -10,7 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
+/*!
 \addtogroup FSI
 *//*! @{ (documentation module open)*/
 #ifdef D_SSI
@@ -18,12 +18,13 @@ Maintainer: Steffen Genkinger
 #include "../solver/solver.h"
 #include "../output/output_prototypes.h"
 #include "ssi_prototypes.h"
+#include "../io/io.h"
 /*!----------------------------------------------------------------------
 \brief file pointers
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *-----------------------------------------------------------------------*/
@@ -51,7 +52,7 @@ extern struct _SOLVAR  *solv;
 
 <pre>                                                         m.gee 8/00
 -the partition of one proc (all discretizations)
--the type is in partition.h                                                  
+-the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -67,14 +68,14 @@ extern struct _IO_FLAGS     ioflags;
  | ranks and communicators                                              |
  | This structure struct _PAR par; is defined in main_ccarat.c
  *----------------------------------------------------------------------*/
- extern struct _PAR   par;                      
+ extern struct _PAR   par;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate dynamic variables if needed                      |
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 02/02    |
  | number of load curves numcurve                                       |
@@ -94,81 +95,84 @@ extern struct _CURVE *curve;
 extern enum _CALC_ACTION calc_action[MAXFIELD];
 
 
-DOUBLE acttime;
+static DOUBLE acttime;
 
 /* due to some problems with the transfer of some pointers to the function
    ssi_struct_decide() the following variables are defined globally    */
-   
-INT numeq;                           /* number of equations on this proc */
-INT numeq_total;                     /* total number of equations */
-INT itnum;                           /* counter for NR-Iterations */
-INT mod_disp, mod_stress;                                                                                   
-INT mod_res_write; 
-INT restart; 
-INT nstep; 
-INT outstep;                         /* counter for output control                          */
-INT restartstep;                     /* counter for restart control                         */ 
-DOUBLE maxtime; 
-DOUBLE t0_res; 
-DOUBLE t1_res; 
-DOUBLE dt; 
-DOUBLE t0;                                        
-DOUBLE t1; 
-DOUBLE dmax;                         /*infinity norm of residual displacements*/
-INT stiff_array;                     /* indice of the active system sparse matrix           */
-INT mass_array;                      /* indice of the active system sparse matrix           */
-INT damp_array;                      /* indice of the active system sparse matrix           */
-INT num_array;                       /* indice of global stiffness matrices                 */
-INT actcurve;                        /* indice of active time curve                         */
-SOLVAR *actsolv;                     /* pointer to active solution structure                */
-PARTITION *actpart;                  /* pointer to active partition                         */
-INTRA *actintra;                     /* pointer to active intra-communicator                */
-CALC_ACTION *action;                 /* pointer to the structure cal_action enum            */
-DIST_VECTOR *vel;                    /* total velocities                                    */
-DIST_VECTOR *acc;                    /* total accelerations                                 */
-DIST_VECTOR *fie;                    /* internal forces and working array                   */
-DIST_VECTOR *dispi;                  /* distributed vector to hold incremental displacments */
-DIST_VECTOR *work;                   /* working vectors                                     */
-DIST_VECTOR *coup_force;
-ARRAY intforce_a;                    /* redundant vector of full length for internal forces */
-DOUBLE *intforce;                                                                             
-ARRAY dirich_a;                      /* red. vector of full length for dirich-part of rhs   */
-DOUBLE *dirich;                      
-INT length_of_coup_force;
-STRUCT_DYN_CALC dynvar;              /* variables to perform dynamic structural simulation  */
-CONTAINER container;                 /* contains variables defined in container.h           */
-INT  init;	                     /* flag for solver_control call           */
-INT  convergence;                    /* convergence flag                  */
-INT  numaf;                          /* number of actual field            */
-                                   
+
+/* Avoid namespace pollution! Variables like these must never be
+ * global. If you really need them make them static. If you absolutely
+ * have to have global variables introduce a new struct that contains
+ * them. (u.kue) */
+
+static INT numeq;                           /* number of equations on this proc */
+static INT numeq_total;                     /* total number of equations */
+static INT itnum;                           /* counter for NR-Iterations */
+static INT mod_disp, mod_stress;
+static INT mod_res_write;
+static INT restart;
+static INT nstep;
+static INT outstep;                         /* counter for output control                          */
+static INT restartstep;                     /* counter for restart control                         */
+static DOUBLE maxtime;
+static DOUBLE t0_res;
+static DOUBLE t1_res;
+static DOUBLE dt;
+static DOUBLE t0;
+static DOUBLE t1;
+static DOUBLE dmax;                         /*infinity norm of residual displacements*/
+static INT stiff_array;                     /* indice of the active system sparse matrix           */
+static INT mass_array;                      /* indice of the active system sparse matrix           */
+static INT damp_array;                      /* indice of the active system sparse matrix           */
+static INT num_array;                       /* indice of global stiffness matrices                 */
+static INT actcurve;                        /* indice of active time curve                         */
+static SOLVAR *actsolv;                     /* pointer to active solution structure                */
+static PARTITION *actpart;                  /* pointer to active partition                         */
+static INTRA *actintra;                     /* pointer to active intra-communicator                */
+static CALC_ACTION *action;                 /* pointer to the structure cal_action enum            */
+static DIST_VECTOR *vel;                    /* total velocities                                    */
+static DIST_VECTOR *acc;                    /* total accelerations                                 */
+static DIST_VECTOR *fie;                    /* internal forces and working array                   */
+static DIST_VECTOR *dispi;                  /* distributed vector to hold incremental displacments */
+static DIST_VECTOR *work;                   /* working vectors                                     */
+static DIST_VECTOR *coup_force;
+static ARRAY intforce_a;                    /* redundant vector of full length for internal forces */
+static DOUBLE *intforce;
+static ARRAY dirich_a;                      /* red. vector of full length for dirich-part of rhs   */
+static DOUBLE *dirich;
+static INT length_of_coup_force;
+static STRUCT_DYN_CALC dynvar;              /* variables to perform dynamic structural simulation  */
+static CONTAINER container;                 /* contains variables defined in container.h           */
+static INT  init;	                     /* flag for solver_control call           */
+static INT  convergence;                    /* convergence flag                  */
+static INT  numaf;                          /* number of actual field            */
 
 
-
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief structural control algorithm for ssi problems
 
 <pre>                                                         genk 09/02
 
-This function solves for the structural displacements within an 
+This function solves for the structural displacements within an
 multifield problem. The loads are transfared from the fluidfield
 as Neumann boundary conditions
-			     
-</pre>   
 
-\param *ssidyn   SSI_DYNAMIC	(i)				
-\param *sdyn	 STRUCT_DYNAMIC	(i)				
-\param *actfield FIELD          (i)     actual field		
-\param  mctrl    INT            (i)     evaluation flag		
-\param  numfs    INT            (i)     number of actual field	
+</pre>
+
+\param *ssidyn   SSI_DYNAMIC	(i)
+\param *sdyn	 STRUCT_DYNAMIC	(i)
+\param *actfield FIELD          (i)     actual field
+\param  mctrl    INT            (i)     evaluation flag
+\param  numfs    INT            (i)     number of actual field
 \param  ssiitnum INT            (i)     counter for Iterations over fields
-\return void 
+\return void
 
 ------------------------------------------------------------------------*/
-void ssi_struct(   
+void ssi_struct(
                    SSI_DYNAMIC       *ssidyn,
-                   STRUCT_DYNAMIC    *sdyn, 
-		   FIELD             *actfield, 
-		   INT                mctrl, 
+                   STRUCT_DYNAMIC    *sdyn,
+		   FIELD             *actfield,
+		   INT                mctrl,
 		   INT                ssiitnum,
 		   enum _SSI_COUPTYP  ssi_couptyp
 	       )
@@ -176,10 +180,14 @@ void ssi_struct(
 INT                  i;		         /* simply a counter		                        */
 
 DOUBLE        dirichfacs[10];	 /* factors needed for dirichlet-part of rhs            */
-/*STRUCT_DYN_CALC dynvar;        */   /* variables to perform dynamic structural simulation  */              
+/*STRUCT_DYN_CALC dynvar;        */   /* variables to perform dynamic structural simulation  */
 /*CONTAINER       container;     */   /* contains variables defined in container.h           */
 
-#ifdef DEBUG 
+#if 0
+static BIN_OUT_FIELD out_context;
+#endif
+
+#ifdef DEBUG
 dstrc_enter("ssi_struct");
 #endif
 
@@ -191,7 +199,7 @@ case ssi_slave:  numaf=1; break;
 default: dserror("SSI COUPTYP out of range!\n");
 }
 
-if (mctrl > 1) 
+if (mctrl > 1)
 {
   ssi_struct_decide(mctrl, numaf);
 }
@@ -201,12 +209,12 @@ switch (mctrl)
 /*======================================================================*
  |                      I N I T I A L I S A T I O N                     |
  *======================================================================*/
-case 1: 
+case 1:
 sdyn->dt=ssidyn->dt;
 sdyn->maxtime=ssidyn->maxtime;
 sdyn->nstep=ssidyn->nstep;
-container.isdyn   = 1;    
-container.actndis = 0;    
+container.isdyn   = 1;
+container.actndis = 0;
 container.coupl_typ = ssidyn->conformmesh;
 outstep=0;
 restartstep=0;
@@ -230,7 +238,7 @@ container.fieldtyp = actfield->fieldtyp;
 dsassert(sdyn->Typ==gen_alfa,"Structural DYNAMICTYP not possible for SSI\n");
 
 /*----------------------------------------------------------------------*/
-#ifdef PARALLEL 
+#ifdef PARALLEL
 actintra    = &(par.intra[0]);
 /* if we are not parallel, we have to allocate an alibi intra-communicator structure */
 #else
@@ -261,7 +269,7 @@ acttime=0.0;
    stiff_array = 0;
    mass_array  = 1;
 
-if (sdyn->damp==1) 
+if (sdyn->damp==1)
 {
    damp_array  = 2;
    actsolv->nsysarray=3;
@@ -276,11 +284,11 @@ else
 /*------------------------------- mass_array (and damp_array if needed) */
 /* reallocate the vector of sparse matrices and the vector of there types */
 /* formerly lenght 1, now lenght 2 or 3 dependent on presence of damp_array */
-actsolv->sysarray_typ = 
+actsolv->sysarray_typ =
 (SPARSE_TYP*)CCAREALLOC(actsolv->sysarray_typ,actsolv->nsysarray*sizeof(SPARSE_TYP));
 if (!actsolv->sysarray_typ) dserror("Allocation of memory failed");
 
-actsolv->sysarray = 
+actsolv->sysarray =
 (SPARSE_ARRAY*)CCAREALLOC(actsolv->sysarray,actsolv->nsysarray*sizeof(SPARSE_ARRAY));
 if (!actsolv->sysarray_typ) dserror("Allocation of memory failed");
 
@@ -319,7 +327,7 @@ MPI_Barrier(actintra->MPI_INTRA_COMM);
 #endif
 for (i=0;i<par.nprocs;i++)
 if (par.myrank==i)
-printf("PROC  %3d | FIELD STRUCTURE | number of equations      : %10d \n", 
+printf("PROC  %3d | FIELD STRUCTURE | number of equations      : %10d \n",
         par.myrank,numeq);
 #ifdef PARALLEL
 MPI_Barrier(actintra->MPI_INTRA_COMM);
@@ -329,7 +337,7 @@ printf("          | FIELD STRUCTURE | total number of equations: %10d \n",numeq_
 if (par.myrank==0) printf("\n\n");
 
 /*---------------------------------------allocate 5 dist. vectors 'rhs' */
-/*  these hold ssi-load vector original load vector, load vector 
+/*  these hold ssi-load vector original load vector, load vector
     at time t and t-dt and interpolated load vector                     */
 actsolv->nrhs = 5;
 solserv_create_vec(&(actsolv->rhs),actsolv->nrhs,numeq_total,numeq,"DV");
@@ -366,7 +374,7 @@ for (i=0; i<1; i++) solserv_zero_vec(&(acc[i]));
 /*------------------------------------ allocate two vectors coup_force */
 if (numaf == 1)
 {
-  length_of_coup_force = actfield->dis->numdf - numeq_total;  
+  length_of_coup_force = actfield->dis->numdf - numeq_total;
   solserv_create_vec(&coup_force,2,numeq_total,length_of_coup_force,"DV");
   for (i=0; i<2; i++) solserv_zero_vec(&(coup_force[i]));
 }
@@ -378,7 +386,7 @@ intforce = amdef("intforce",&intforce_a,numeq_total,1,"DV");
 dirich = amdef("dirich",&dirich_a,numeq_total,1,"DV");
 
 /*----------------------------------------- allocate 3 DIST_VECTOR fie */
-/*                    to hold internal forces at t, t-dt and inbetween */ 
+/*                    to hold internal forces at t, t-dt and inbetween */
 solserv_create_vec(&fie,3,numeq_total,numeq,"DV");
 for (i=0; i<3; i++) solserv_zero_vec(&(fie[i]));
 
@@ -389,7 +397,7 @@ solserv_create_vec(&work,3,numeq_total,numeq,"DV");
 for (i=0; i<3; i++) solserv_zero_vec(&(work[i]));
 /*---------------------------------- initialize solver on all matrices */
 /*
-NOTE: solver init phase has to be called with each matrix one wants to 
+NOTE: solver init phase has to be called with each matrix one wants to
       solve with. Solver init phase has to be called with all matrices
       one wants to do matrix-vector products and matrix scalar products.
       This is not needed by all solver libraries, but the solver-init phase
@@ -451,7 +459,7 @@ if (damp_array>0)
                    &(actsolv->sysarray[damp_array]),
                    &(actsolv->sysarray_typ[mass_array]),
                    &(actsolv->sysarray[mass_array]),
-                   sdyn->m_damp);  
+                   sdyn->m_damp);
 }
 /*-------------------------------------- create the original rhs vector */
 /*-------------------------- the approbiate action is set inside calrhs */
@@ -491,9 +499,22 @@ solserv_vecnorm_euclid(actintra,&(actsolv->rhs[2]),&(dynvar.rnorm));
 /*---------------------------------------------- compute initial energy */
 dyne(&dynvar,actintra,actsolv,mass_array,&vel[0],&work[0]);
 
+#if 0
+/* This does not work. The partition of the slave field is not
+ * properly set up. This is a serious bug. */
+
+/* initialize binary output
+ * It's important to do this only after all the node arrays are set
+ * up because their sizes are used to allocate internal memory. */
+init_bin_out_field(&out_context,
+                   &(actsolv->sysarray_typ[stiff_array]),
+                   &(actsolv->sysarray[stiff_array]),
+                   actfield, actpart, actintra, numaf);
+#endif
+
 /*----------------------------------------- output to GID postprozessor */
 if (ioflags.struct_disp_gid==1 || ioflags.struct_stress_gid==1)
-if (par.myrank==0) 
+if (par.myrank==0)
 {
    out_gid_domains_ssi(actfield, numaf);
 }
@@ -509,6 +530,25 @@ if (restart)
    nstep = sdyn->nstep;
    maxtime = sdyn->maxtime;
    /*----------------------------------- the step to read in is restart */
+#if 0
+/*#ifdef NEW_RESTART_READ*/
+   restart_read_bin_nlnstructdyn(sdyn,
+                                 &dynvar,
+                                 &(actsolv->sysarray_typ[stiff_array]),
+                                 &(actsolv->sysarray[stiff_array]),
+                                 actfield,
+                                 actpart,
+                                 0,
+                                 actintra,
+                                 actsolv->nrhs, actsolv->rhs,
+                                 actsolv->nsol, actsolv->sol,
+                                 1            , dispi       ,
+                                 1            , vel         ,
+                                 1            , acc         ,
+                                 3            , fie         ,
+                                 3            , work        ,
+                                 restart);
+#else
    restart_read_nlnstructdyn(restart,sdyn,&dynvar,actfield,actpart,actintra,action,
                              actsolv->nrhs, actsolv->rhs,
                              actsolv->nsol, actsolv->sol,
@@ -520,6 +560,7 @@ if (restart)
                              &intforce_a,
                              &dirich_a,
                              &container);     /* contains variables defined in container.h */
+#endif
    /*-------------------------------------- put the dt to the structure */
    sdyn->dt = dt;
    /*--------------------------------------- put nstep to the structure */
@@ -544,18 +585,18 @@ break;
 /*======================================================================*
  |                     S O L U T I O N    P H A S E                     |
  *======================================================================*
- * nodal solution history structural field:                             * 
- * sol[0][j]           ... total displacements at time (t)              * 
+ * nodal solution history structural field:                             *
+ * sol[0][j]           ... total displacements at time (t)              *
  * sol[1][j]           ... velocities at time (t)		        *
- * sol[2][j]           ... accels at time (t)         		        * 
- * sol[3][j]           ... prescribed displacements at time (t-dt)      * 
+ * sol[2][j]           ... accels at time (t)         		        *
+ * sol[3][j]           ... prescribed displacements at time (t-dt)      *
  * sol[4][j]           ... prescribed displacements at time (t)	        *
  * sol[5][j]           ... place 4 - place 3                	        *
  * sol[6][j]           ... the  velocities of prescribed dofs  	        *
  * sol[7][j]           ... the  accels of prescribed dofs  	        *
- * sol[8][j]           ... working space   	                        * 
+ * sol[8][j]           ... working space   	                        *
  * sol[9][j]           ... total displacements at time (t-dt)  	        *
- * sol[10][j]          ... velocities at time (t-dt)        	        * 
+ * sol[10][j]          ... velocities at time (t-dt)        	        *
  *======================================================================*/
 
 /*
@@ -573,16 +614,16 @@ break;
 
    sol[0]    total displacements at time t-dt
    sol[1]    total displacements at time t
-   
+
    vel[0]    velocities    at t-dt
    acc[0]    accelerations at t-dt
 
-   work[2]   working vector for sums and matrix-vector products 
-   work[1]   working vector for sums and matrix-vector products 
-   work[0]   working vector for sums and matrix-vector products 
-   work[0]   is used to hold residual displacements in corrector 
+   work[2]   working vector for sums and matrix-vector products
+   work[1]   working vector for sums and matrix-vector products
+   work[0]   working vector for sums and matrix-vector products
+   work[0]   is used to hold residual displacements in corrector
              iteration
-             
+
    in the nodes, displacements are kept in node[].sol[0][0..numdf-1]
                  velocities    are kept in node[].sol[1][0..numdf-1]
                  accelerations are kept in node[].sol[2][0..numdf-1]
@@ -607,9 +648,9 @@ Values of the different vectors from above in one loop:
 
    sol[0]    	/{=d(t-dt)}		/			/		/				=sol[1]{=d(t)}
    sol[1]    	{=d(t-dt)}		=sol[0]+dispi[0]{=d(t)}	/		=sol[0]+dispi[0]		/
-   
+
    vel[0]    	/{=v(t-dt)}		/			/		/				=v(t)
-   acc[0]    	/{=a(t-dt)}		/			/		/				=a(t)	
+   acc[0]    	/{=a(t-dt)}		/			/		/				=a(t)
 
    work[2]    	/{=v(t-2dt)}		/			/		/				=v(t-dt)
    work[1]    	/{=a(t-2dt)}		/			/		/				=a(t-dt)
@@ -623,26 +664,26 @@ case 2:
 /*- there are only procs allowed in here, that belong to the structural */
 /* intracommunicator (in case of nonlinear struct. dyn., this should be all) */
 if (actintra->intra_fieldtyp != structure) break;
-if (par.myrank==0) 
-{   
+if (par.myrank==0)
+{
   if (numaf == 0)
   {
-    printf("Solving MASTERFIELD ...\n"); 
+    printf("Solving MASTERFIELD ...\n");
     printf("---------------------------------------------------------------- \n");
   }
   if (numaf == 1)
   {
-    printf("Solving SLAVEFIELD ...\n"); 
+    printf("Solving SLAVEFIELD ...\n");
     printf("---------------------------------------------------------------- \n");
   }
 }
 /* copy actual relaxation parameter omega into the container */
 container.relax_param = ssidyn->relax;
 /*------------------------ copy solution from sol[9][j] to sol[0][j] ---*/
-if (ssidyn->ifsi>=4 && ssiitnum>0) solserv_sol_copy(actfield,0,0,0,9,0);
+if (ssidyn->ifsi>=4 && ssiitnum>0) solserv_sol_copy(actfield,0,node_array_sol,node_array_sol,9,0);
 
 /*----------------------------- copy from nodal sol[1][j] to sol[10][j] */
-if (ssidyn->ifsi>=4 && ssiitnum==0) solserv_sol_copy(actfield,0,0,0,1,10);
+if (ssidyn->ifsi>=4 && ssiitnum==0) solserv_sol_copy(actfield,0,node_array_sol,node_array_sol,1,10);
 
 /*--- put time to global variable for time-dependent load distributions */
 acttime = sdyn->time;
@@ -674,7 +715,7 @@ dyn_facfromcurve(actcurve,sdyn->time,&(dynvar.rldfac));
 solserv_scalarprod_vec(&(actsolv->rhs[1]),dynvar.rldfac);
 
 
-/*-------------- assemble external forces due to ssi coupling to rhs[4] */ 
+/*-------------- assemble external forces due to ssi coupling to rhs[4] */
 /*if (ssiitnum == 0)*/
 solserv_zero_vec(&(actsolv->rhs[4]));
 if (numaf == 0)
@@ -683,22 +724,22 @@ if (numaf == 0)
   /* only for non-conforming discretization */
 
 /*  if((ssidyn->conformmesh == 1)&&(sdyn->step > 1))*/
-    solserv_sol_add(actfield,0,3,3,5,4,1.0);
+    solserv_sol_add(actfield,0,node_array_sol_mf,node_array_sol_mf,5,4,1.0);
 
   /*--- set factors needed for prescribed displacement terms on rhs eff */
   /*
-  dirichfacs[0] = -(1.0-alpham)*(1.0/beta)/(DSQR(dt))         
-  dirichfacs[1] =  (1.0-alpham)*(1.0/beta)/dt                 
-  dirichfacs[2] =  (1.0-alpham)/(2*beta) - 1                  
-  dirichfacs[3] = -(1.0-alphaf)*(gamma/beta)/dt               
-  dirichfacs[4] =  (1.0-alphaf)*gamma/beta - 1                
-  dirichfacs[5] =  (gamma/(2*beta)-1)*(1.0-alphaf)*dt            
-  dirichfacs[6] =  (1.0-alphaf) or 0                          
-  dirichfacs[7] =  raleigh damping factor for mass            
-  dirichfacs[8] =  raleigh damping factor for stiffness       
-  dirichfacs[9] =  dt     
-  see phd theses Mok page 165: generalized alfa time integration with 
-  prescribed displ.                                    
+  dirichfacs[0] = -(1.0-alpham)*(1.0/beta)/(DSQR(dt))
+  dirichfacs[1] =  (1.0-alpham)*(1.0/beta)/dt
+  dirichfacs[2] =  (1.0-alpham)/(2*beta) - 1
+  dirichfacs[3] = -(1.0-alphaf)*(gamma/beta)/dt
+  dirichfacs[4] =  (1.0-alphaf)*gamma/beta - 1
+  dirichfacs[5] =  (gamma/(2*beta)-1)*(1.0-alphaf)*dt
+  dirichfacs[6] =  (1.0-alphaf) or 0
+  dirichfacs[7] =  raleigh damping factor for mass
+  dirichfacs[8] =  raleigh damping factor for stiffness
+  dirichfacs[9] =  dt
+  see phd theses Mok page 165: generalized alfa time integration with
+  prescribed displ.
   */
   dirichfacs[0] = -dynvar.constants[0];
   dirichfacs[1] =  dynvar.constants[1];
@@ -706,8 +747,8 @@ if (numaf == 0)
   dirichfacs[3] = -dynvar.constants[3];
   dirichfacs[4] =  dynvar.constants[4];
   dirichfacs[5] =  dynvar.constants[5];
-  dirichfacs[6] = -dynvar.constants[6]; 
-  dirichfacs[9] =  sdyn->dt; 
+  dirichfacs[6] = -dynvar.constants[6];
+  dirichfacs[9] =  sdyn->dt;
   if (damp_array>0) {
     dirichfacs[7] =  sdyn->m_damp;
     dirichfacs[8] =  sdyn->k_damp;}
@@ -726,27 +767,27 @@ if (numaf == 0)
        &(actsolv->rhs[4]),action,&container);
 }
 
-/*------------------------ add up the two parts of the external forces 
+/*------------------------ add up the two parts of the external forces
                            and store them in rhs[1]                     */
 
-solserv_add_vec(&(actsolv->rhs[4]),&(actsolv->rhs[1]),ONE);			   
+solserv_add_vec(&(actsolv->rhs[4]),&(actsolv->rhs[1]),ONE);
 
 /*------- put conv. displ. from master node to corresponding slave node */
 /*--- only necessary for slave field (numaf = 1), used for ssi problems */
 /* WARNING! With this approach Dirichlet b.c. on coupling nodes are over-
             written, this is not physically consistent !!!              */
 /*
-dirichfacs[0] = -(1.0-alpham)*(1.0/beta)/(DSQR(dt))         
-dirichfacs[1] =  (1.0-alpham)*(1.0/beta)/dt                 
-dirichfacs[2] =  (1.0-alpham)/(2*beta) - 1                  
-dirichfacs[3] = -(1.0-alphaf)*(gamma/beta)/dt               
-dirichfacs[4] =  (1.0-alphaf)*gamma/beta - 1                
-dirichfacs[5] =  (gamma/(2*beta)-1)*(1.0-alphaf)*dt            
-dirichfacs[6] = -(1.0-alphaf) or 0                          
-dirichfacs[7] =  raleigh damping factor for mass            
-dirichfacs[8] =  raleigh damping factor for stiffness       
-dirichfacs[9] =  dt     
-see phd theses Mok page 165: generalized alfa time integration with prescribed displ.                                    
+dirichfacs[0] = -(1.0-alpham)*(1.0/beta)/(DSQR(dt))
+dirichfacs[1] =  (1.0-alpham)*(1.0/beta)/dt
+dirichfacs[2] =  (1.0-alpham)/(2*beta) - 1
+dirichfacs[3] = -(1.0-alphaf)*(gamma/beta)/dt
+dirichfacs[4] =  (1.0-alphaf)*gamma/beta - 1
+dirichfacs[5] =  (gamma/(2*beta)-1)*(1.0-alphaf)*dt
+dirichfacs[6] = -(1.0-alphaf) or 0
+dirichfacs[7] =  raleigh damping factor for mass
+dirichfacs[8] =  raleigh damping factor for stiffness
+dirichfacs[9] =  dt
+see phd theses Mok page 165: generalized alfa time integration with prescribed displ.
 */
 if (numaf == 1)
 {
@@ -756,14 +797,14 @@ if (numaf == 1)
   dirichfacs[3] = -dynvar.constants[3];
   dirichfacs[4] =  dynvar.constants[4];
   dirichfacs[5] =  dynvar.constants[5];
-  dirichfacs[6] = -dynvar.constants[6]; 
-  dirichfacs[9] =  sdyn->dt; 
-  if (damp_array>0) 
+  dirichfacs[6] = -dynvar.constants[6];
+  dirichfacs[9] =  sdyn->dt;
+  if (damp_array>0)
   {
     dirichfacs[7] =  sdyn->m_damp;
     dirichfacs[8] =  sdyn->k_damp;
   }
-  else 
+  else
   {
     dirichfacs[7] =  0.0;
     dirichfacs[8] =  0.0;
@@ -791,8 +832,8 @@ dirichfacs[2] =  dynvar.constants[2];
 dirichfacs[3] = -dynvar.constants[3];
 dirichfacs[4] =  dynvar.constants[4];
 dirichfacs[5] =  dynvar.constants[5];
-dirichfacs[6] = -dynvar.constants[6]; 
-dirichfacs[9] =  sdyn->dt; 
+dirichfacs[6] = -dynvar.constants[6];
+dirichfacs[9] =  sdyn->dt;
 if (damp_array>0) {
    dirichfacs[7] =  sdyn->m_damp;
    dirichfacs[8] =  sdyn->k_damp;}
@@ -831,10 +872,10 @@ assemble_vec(actintra,&(actsolv->sysarray_typ[stiff_array]),
 
 /*--------------------- create effective load vector (rhs[0]-fie[2])eff */
 /*
-  Peff = rhs[0] - fie[0] 
-         + M*(-a1*dispi[0]+a2*vel[0]+a3*acc[0]) 
+  Peff = rhs[0] - fie[0]
+         + M*(-a1*dispi[0]+a2*vel[0]+a3*acc[0])
          + D*(-a4*dispi[0]+a5*vel[0]+a6*acc[0]) (if present)
-    
+
     a1 =  (1.0-alpham) * (1.0/beta)/(DSQR(dt))
     a2 = ((1.0-alpham) * (1.0/beta)/(DSQR(dt)))*dt
     a3 =  (1.0-alpham) / (2.0*beta) - 1.0
@@ -852,7 +893,7 @@ pefnln_struct(&dynvar,sdyn,actfield,actsolv,actintra,dispi,vel,acc,work,
          constants[6] =  (1.0-alphaf)
          constants[0] =  (1.0-alpham) * (1.0/beta)/(DSQR(dt))
          constants[3] =  (1.0-alphaf) * ((gamma/beta)/dt)
-*/  
+*/
 /*----------------------------------------------------------------------*/
 kefnln_struct(&dynvar,sdyn,actfield,actsolv,actintra,work,stiff_array,mass_array,
               damp_array);
@@ -890,8 +931,8 @@ dirichfacs[2] =  dynvar.constants[2];
 dirichfacs[3] = -dynvar.constants[3];
 dirichfacs[4] =  dynvar.constants[4];
 dirichfacs[5] =  dynvar.constants[5];
-dirichfacs[6] =  0.0; 
-dirichfacs[9] =  sdyn->dt; 
+dirichfacs[6] =  0.0;
+dirichfacs[9] =  sdyn->dt;
 if (damp_array>0) {
    dirichfacs[7] =  sdyn->m_damp;
    dirichfacs[8] =  sdyn->k_damp;}
@@ -983,7 +1024,7 @@ if (dynvar.dinorm < sdyn->toldisp ||
     (dynvar.dinorm < EPS14 && dmax < EPS12) )
 {
    convergence = 1;
-}    
+}
 else
 {
    itnum++;
@@ -992,11 +1033,11 @@ else
 }
 
 /* non-conforming discretization, slave domain */
-if ((ssidyn->conformmesh == 1)&&(numaf==1)) 
+if ((ssidyn->conformmesh == 1)&&(numaf==1))
 {
   /* --------- clean up vector sol_mf[4], this vector contains internal */
   /* --------------------------------------------forces for slave nodes */
-  solserv_sol_zero(actfield, 0, 3, 4);
+  solserv_sol_zero(actfield, 0, node_array_sol_mf, 4);
 }
 
 if (numaf == 1)  /* only for slave domain */
@@ -1014,8 +1055,8 @@ if (numaf == 1)  /* only for slave domain */
    dirichfacs[3] = -dynvar.constants[3];
    dirichfacs[4] =  dynvar.constants[4];
    dirichfacs[5] =  dynvar.constants[5];
-   dirichfacs[6] = -dynvar.constants[6]; 
-   dirichfacs[9] =  sdyn->dt; 
+   dirichfacs[6] = -dynvar.constants[6];
+   dirichfacs[9] =  sdyn->dt;
    if (damp_array>0) {
       dirichfacs[7] =  sdyn->m_damp;
       dirichfacs[8] =  sdyn->k_damp;}
@@ -1029,7 +1070,7 @@ if (numaf == 1)  /* only for slave domain */
    container.dirichfacs    = dirichfacs;
    container.kstep         = 0;
 /* ---------- compute new coupling forces for nodes of coupled elements */
-   calelm(actfield, actsolv, actpart, actintra, stiff_array, mass_array, 
+   calelm(actfield, actsolv, actpart, actintra, stiff_array, mass_array,
           &container, action);
 
 }
@@ -1039,26 +1080,26 @@ if (numaf == 1)  /* only for slave domain */
 
 /*----- for iterative staggered schemes save solution of last iteration */
 /*- copy old total displacments from nodal sol_mf[0][j] to sol_mf[1][j] */
-if (ssidyn->ifsi>=4) solserv_sol_copy(actfield,0,3,3,0,1);
+if (ssidyn->ifsi>=4) solserv_sol_copy(actfield,0,node_array_sol_mf,node_array_sol_mf,0,1);
 
 /*------- copy total displacments from nodal sol[0][j] to sol_mf[0][j]  */
-solserv_sol_copy(actfield,0,0,3,0,0);
+solserv_sol_copy(actfield,0,node_array_sol,node_array_sol_mf,0,0);
 
 /*------- for sequential staggered schemes sol_mf[0][j] == sol_mf[1][j] */
-if (ssidyn->ifsi<4) solserv_sol_copy(actfield,0,3,3,0,1);
+if (ssidyn->ifsi<4) solserv_sol_copy(actfield,0,node_array_sol_mf,node_array_sol_mf,0,1);
 
 /*----------------------------------------------------- print time step */
-if (par.myrank==0) 
+if (par.myrank==0)
 {
    printf("| NUMITER = %3d                                                | \n",
              itnum+1);
    printf("---------------------------------------------------------------- \n");
-   printf("\n"); 
+   printf("\n");
 }
 if (ssidyn->ifsi>=4)
 break;
 
-/*======================================================================* 
+/*======================================================================*
  |                       F I N A L I S I N G                            |
  *======================================================================*/
 case 3:
@@ -1106,27 +1147,27 @@ if (numaf == 0) /*masterfield*/
 /* ------------- copy actual coupling forces sol_mf[4] to vector of old */
 /* ------------------------------------------ coupling forces sol_mf[5] */
    /*solserv_sol_add(actfield,0,3,3,4,5,1.0);*/
-   solserv_sol_copy(actfield,0,3,3,4,5);
+   solserv_sol_copy(actfield,0,node_array_sol_mf,node_array_sol_mf,4,5);
 }
 /*--- copy the displacement of the master nodes at the coupling surface */
 /*--- to the corresponding slave nodes, here we copy the values at time */
 /*------- t, up to this routine there are the values resulting from the */
 /*--- generalized alpha time integration scheme at the nodes, these are */
-/*------------------------------------------------- interpolated values */ 
+/*------------------------------------------------- interpolated values */
 
 ssiserv_put_true_disp2slave(actfield, &container);
 
 /*-------------------------------- save actual solution as old solution */
 /*------------------------------ copy from nodal sol[0][j] to sol[9][j] */
-solserv_sol_copy(actfield,0,0,0,0,9);
+solserv_sol_copy(actfield,0,node_array_sol,node_array_sol,0,9);
 
 /*---------------- save actual relaxed solution as old relaxed solution */
 /*------------------------ copy from nodal sol_mf[1][j] to sol_mf[2][j] */
-solserv_sol_copy(actfield,0,3,3,1,2);
+solserv_sol_copy(actfield,0,node_array_sol_mf,node_array_sol_mf,1,2);
 /*----------- perform stress calculation  and print out results to .out */
 outstep++;
 if (outstep==sdyn->updevry_disp)
-{   
+{
    outstep=0;
    if (ioflags.struct_stress_file==1)
    {
@@ -1161,6 +1202,18 @@ if (restartstep==ssidyn->res_write_evry)
                               &intforce_a,
                               &dirich_a,
                               &container);  /* contains variables defined in container.h */
+#if 0
+   restart_write_bin_nlnstructdyn(&out_context,
+                                  sdyn,
+                                  &dynvar,
+                                  actsolv->nrhs, actsolv->rhs,
+                                  actsolv->nsol, actsolv->sol,
+                                  1            , dispi       ,
+                                  1            , vel         ,
+                                  1            , acc         ,
+                                  3            , fie         ,
+                                  3            , work);
+#endif
 }
 
 /*------------------------------------------ measure time for this step */
@@ -1168,7 +1221,20 @@ t1 = ds_cputime();
 fprintf(allfiles.out_err,"TIME for step %d is %f sec\n",sdyn->step,t1-t0);
 break;
 
-/*======================================================================* 
+/*======================================================================*
+                            Binary Output
+ *======================================================================*/
+case 98:
+#if 0
+  out_results(&out_context, sdyn->time, sdyn->step, 0, OUTPUT_DISPLACEMENT);
+
+  if (ioflags.struct_stress_gid==1) {
+    out_results(&out_context, sdyn->time, sdyn->step, 0, OUTPUT_STRESS);
+  }
+#endif
+  break;
+
+/*======================================================================*
  |                C L E A N I N G   U P   P H A S E                     |
  *======================================================================*/
 case 99:
@@ -1178,7 +1244,7 @@ if (actintra->intra_fieldtyp != structure) break;
 
 /*---------------------------------------- print out the final solution */
 if (outstep!=0)
-{   
+{
    outstep=0;
    if (ioflags.struct_stress_file==1)
    {
@@ -1207,14 +1273,20 @@ solserv_del_vec(&acc,1);
 solserv_del_vec(&fie,3);
 solserv_del_vec(&work,3);
 /*----------------------------------------------------------------------*/
-#ifndef PARALLEL 
+
+#if 0
+/* finalize output */
+destroy_bin_out_field(&out_context);
+#endif
+
+#ifndef PARALLEL
 CCAFREE(actintra);
 #endif
 break;
 default:
 dserror("Parameter mctrl out of range\n");
 }
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1225,8 +1297,8 @@ return;
 \brief function to set and read variables
 
 <pre>
-                                                   firl / genk 10/03    
-   
+                                                   firl / genk 10/03
+
 function to set or read variables either for the master field or for
 slave field, there exists one special set of variables for each
 field, (.)_m and (.)_s corresponds to the master field and to the
@@ -1239,28 +1311,28 @@ routine is called in ssi_struct
 \param  mctrl  INT      (i)
         numaf  INT      (i)
 
-</pre>                                                                       
-                                                                       
+</pre>
+
 ------------------------------------------------------------------------*/
-void ssi_struct_decide(INT mctrl, INT numaf) 
+void ssi_struct_decide(INT mctrl, INT numaf)
 {
 
 static INT     numeq_m; 	         /* number of equations on this proc	*/
 static INT     numeq_total_m;	         /* total number of equations		*/
 static INT     itnum_m; 		 /* counter for NR-Iteration n	*/
-static INT     mod_disp_m; 
-static INT     mod_stress_m; 
+static INT     mod_disp_m;
+static INT     mod_stress_m;
 static INT     mod_res_write_m;
 static INT     restart_m;
 static INT     nstep_m;
 static INT     outstep_m;	         /* counter for output control		*/
-static INT     restartstep_m;	         /* counter for restart control		*/ 
+static INT     restartstep_m;	         /* counter for restart control		*/
 static DOUBLE  maxtime_m;
 static DOUBLE  t0_res_m;
 static DOUBLE  t1_res_m;
 static DOUBLE  dt_m;
-static DOUBLE  t0_m;  
-static DOUBLE  t1_m;  
+static DOUBLE  t0_m;
+static DOUBLE  t1_m;
 static DOUBLE  dmax_m;  	         /* infinity norm of residual displacements	*/
 static INT     stiff_array_m;	         /* indice of the active system sparse matrix */
 static INT     mass_array_m;	         /* indice of the active system sparse matrix	*/
@@ -1273,34 +1345,34 @@ static PARTITION   *actpart_m;	         /* pointer to active partition 		*/
 static INTRA       *actintra_m;	         /* pointer to active intra-communicator	*/
 static CALC_ACTION *action_m;    	 /* pointer to the structure cal_action enum	*/
 
-static DIST_VECTOR  *vel_m;		 /* total velocities				*/	   
+static DIST_VECTOR  *vel_m;		 /* total velocities				*/
 static DIST_VECTOR  *acc_m;		 /* total accelerations 			*/
 static DIST_VECTOR  *fie_m;		 /* internal forces and working array		*/
-static DIST_VECTOR  *dispi_m;		 /* distributed vector to hold incremental displacments */ 
+static DIST_VECTOR  *dispi_m;		 /* distributed vector to hold incremental displacments */
 static DIST_VECTOR  *work_m;		 /* working vectors				*/
 static ARRAY        intforce_a_m;	 /* redundant vector of full length for internal forces */
 static DOUBLE       *intforce_m;
 static ARRAY        dirich_a_m;	         /* red. vector of full length for dirich-part of rhs */
 static DOUBLE       *dirich_m;
-static STRUCT_DYN_CALC dynvar_m;	 /* variables to perform dynamic structural simulation */	 
+static STRUCT_DYN_CALC dynvar_m;	 /* variables to perform dynamic structural simulation */
 static CONTAINER       container_m;	 /* contains variables defined in container.h	*/
 
 static INT     numeq_s; 	         /* number of equations on this proc	*/
 static INT     numeq_total_s;	         /* total number of equations		*/
 static INT     itnum_s; 		 /* counter for NR-Iteration n	*/
-static INT     mod_disp_s; 
-static INT     mod_stress_s; 
+static INT     mod_disp_s;
+static INT     mod_stress_s;
 static INT     mod_res_write_s;
 static INT     restart_s;
 static INT     nstep_s;
 static INT     outstep_s;	         /* counter for output control		*/
-static INT     restartstep_s;	         /* counter for restart control		*/ 
+static INT     restartstep_s;	         /* counter for restart control		*/
 static DOUBLE  maxtime_s;
 static DOUBLE  t0_res_s;
 static DOUBLE  t1_res_s;
 static DOUBLE  dt_s;
-static DOUBLE  t0_s;  
-static DOUBLE  t1_s;  
+static DOUBLE  t0_s;
+static DOUBLE  t1_s;
 static DOUBLE  dmax_s;  	         /* infinity norm of residual displacements	*/
 static INT     stiff_array_s;	         /* indice of the active system sparse matrix */
 static INT     mass_array_s;	         /* indice of the active system sparse matrix	*/
@@ -1312,214 +1384,214 @@ static SOLVAR       *actsolv_s;	         /* pointer to active solution structure
 static PARTITION    *actpart_s;	         /* pointer to active partition 		*/
 static INTRA        *actintra_s;          /* pointer to active intra-communicator	*/
 static CALC_ACTION  *action_s;  	 /* pointer to the structure cal_action enum	*/
-static DIST_VECTOR  *vel_s;		 /* total velocities				*/	   
+static DIST_VECTOR  *vel_s;		 /* total velocities				*/
 static DIST_VECTOR  *acc_s;		 /* total accelerations 			*/
 static DIST_VECTOR  *fie_s;		 /* internal forces and working array		*/
-static DIST_VECTOR  *dispi_s;		 /* distributed vector to hold incremental displacments */ 
+static DIST_VECTOR  *dispi_s;		 /* distributed vector to hold incremental displacments */
 static DIST_VECTOR  *work_s;		 /* working vectors				*/
 static ARRAY        intforce_a_s;        /* redundant vector of full length for internal forces */
 static DOUBLE       *intforce_s;
 static ARRAY        dirich_a_s;	         /* red. vector of full length for dirich-part of rhs */
 static DOUBLE       *dirich_s;
-static STRUCT_DYN_CALC dynvar_s;	 /* variables to perform dynamic structural simulation */	 
+static STRUCT_DYN_CALC dynvar_s;	 /* variables to perform dynamic structural simulation */
 static CONTAINER       container_s;	 /* contains variables defined in container.h	*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ssi_struct_decide");
 #endif
 
-if (mctrl==1) 
+if (mctrl==1)
 {
   /* for mctrl = 1 : definition of the variables */
-  if (numaf == 0) 
+  if (numaf == 0)
   {
     /* numaf == 0 --> master field */
-    /* copy data from variables defined in ssi_struct to the static variables in ssi_struct_decide */ 
-    numeq_m		     =    numeq; 	       
-    numeq_total_m	     =    numeq_total;	       
-    itnum_m		     =    itnum; 	       
-    mod_disp_m               =    mod_disp;  
-    mod_stress_m             =    mod_stress;  
-    mod_res_write_m	     =    mod_res_write;        
-    restart_m  	             =    restart;	       
-    nstep_m		     =    nstep; 	       
-    outstep_m  	             =    outstep;	       
-    restartstep_m	     =    restartstep;	       
-    maxtime_m  	             =    maxtime;	       
+    /* copy data from variables defined in ssi_struct to the static variables in ssi_struct_decide */
+    numeq_m		     =    numeq;
+    numeq_total_m	     =    numeq_total;
+    itnum_m		     =    itnum;
+    mod_disp_m               =    mod_disp;
+    mod_stress_m             =    mod_stress;
+    mod_res_write_m	     =    mod_res_write;
+    restart_m  	             =    restart;
+    nstep_m		     =    nstep;
+    outstep_m  	             =    outstep;
+    restartstep_m	     =    restartstep;
+    maxtime_m  	             =    maxtime;
     t0_res_m                 =    t0_res;
-    t1_res_m	             =    t1_res;        
-    dt_m		     =    dt;		       
-    t0_m		     =    t0; 	       
-    t1_m		     =    t1; 	       
-    dmax_m		     =    dmax;  	       
-    stiff_array_m	     =    stiff_array;	       
-    mass_array_m	     =    mass_array;	       
-    damp_array_m	     =    damp_array;	       
-    num_array_m	             =    num_array;	       
-    actcurve_m 	             =    actcurve;	       
+    t1_res_m	             =    t1_res;
+    dt_m		     =    dt;
+    t0_m		     =    t0;
+    t1_m		     =    t1;
+    dmax_m		     =    dmax;
+    stiff_array_m	     =    stiff_array;
+    mass_array_m	     =    mass_array;
+    damp_array_m	     =    damp_array;
+    num_array_m	             =    num_array;
+    actcurve_m 	             =    actcurve;
 
-    actsolv_m 	             =    actsolv;	       
-    actpart_m 	             =    actpart;	       
-    actintra_m	             =    actintra;	       
-    action_m  	             =    action;	       
-    intforce_m	             =    intforce;	       
-    dirich_m  	             =    dirich;	       
-    vel_m		     =    vel; 	       
-    acc_m		     =    acc;  	       
-    fie_m		     =    fie;  	       
-    dispi_m		     =    dispi;	       
-    work_m		     =    work; 	       
+    actsolv_m 	             =    actsolv;
+    actpart_m 	             =    actpart;
+    actintra_m	             =    actintra;
+    action_m  	             =    action;
+    intforce_m	             =    intforce;
+    dirich_m  	             =    dirich;
+    vel_m		     =    vel;
+    acc_m		     =    acc;
+    fie_m		     =    fie;
+    dispi_m		     =    dispi;
+    work_m		     =    work;
 
-    intforce_a_m	     =    intforce_a;	       
-    dirich_a_m 	             =    dirich_a;	       
-    dynvar_m                 =    dynvar;      
-    container_m	             =    container;	       
+    intforce_a_m	     =    intforce_a;
+    dirich_a_m 	             =    dirich_a;
+    dynvar_m                 =    dynvar;
+    container_m	             =    container;
   }
 
   if (numaf == 1)
-  {   
-    /* numaf == 1 --> slave field */ 
-    /* copy data from variables defined in ssi_struct to the static variables in ssi_struct_decide */ 
-    numeq_s		     =    numeq;	 	
-    numeq_total_s	     =    numeq_total;  	
-    itnum_s		     =    itnum;	 	
-    mod_disp_s               =    mod_disp;  
-    mod_stress_s             =    mod_stress;  
-    mod_res_write_s	     =    mod_res_write;	 
-    restart_s 	             =    restart;	 	
-    nstep_s		     =    nstep;	 	
-    outstep_s  	             =    outstep;	 	
-    restartstep_s	     =    restartstep;  	
-    maxtime_s  	             =    maxtime;	 	
-    t0_res_s	             =    t0_res;	  
-    t1_res_s	             =    t1_res;	  
-    dt_s		     =    dt;  	 	
-    t0_s                     =    t0;         
-    t1_s		     =    t1;         
-    dmax_s		     =    dmax;	 	
-    stiff_array_s	     =    stiff_array;  	
-    mass_array_s	     =    mass_array;   	
-    damp_array_s	     =    damp_array;   	
-    num_array_s	             =    num_array;	 	
-    actcurve_s 	             =    actcurve;	 	
+  {
+    /* numaf == 1 --> slave field */
+    /* copy data from variables defined in ssi_struct to the static variables in ssi_struct_decide */
+    numeq_s		     =    numeq;
+    numeq_total_s	     =    numeq_total;
+    itnum_s		     =    itnum;
+    mod_disp_s               =    mod_disp;
+    mod_stress_s             =    mod_stress;
+    mod_res_write_s	     =    mod_res_write;
+    restart_s 	             =    restart;
+    nstep_s		     =    nstep;
+    outstep_s  	             =    outstep;
+    restartstep_s	     =    restartstep;
+    maxtime_s  	             =    maxtime;
+    t0_res_s	             =    t0_res;
+    t1_res_s	             =    t1_res;
+    dt_s		     =    dt;
+    t0_s                     =    t0;
+    t1_s		     =    t1;
+    dmax_s		     =    dmax;
+    stiff_array_s	     =    stiff_array;
+    mass_array_s	     =    mass_array;
+    damp_array_s	     =    damp_array;
+    num_array_s	             =    num_array;
+    actcurve_s 	             =    actcurve;
 
-    actsolv_s 	             =    actsolv;	 	
-    actpart_s 	             =    actpart;	 	
-    actintra_s	             =    actintra;	 	
-    action_s  	             =    action;	 	
-    vel_s		     =    vel;	 	
-    acc_s		     =    acc;	 	
-    fie_s		     =    fie;           	
-    dispi_s		     =    dispi;  	 	
-    work_s		     =    work;  	 	
-    intforce_s	             =    intforce;	 	
-    dirich_s  	             =    dirich; 	 	
+    actsolv_s 	             =    actsolv;
+    actpart_s 	             =    actpart;
+    actintra_s	             =    actintra;
+    action_s  	             =    action;
+    vel_s		     =    vel;
+    acc_s		     =    acc;
+    fie_s		     =    fie;
+    dispi_s		     =    dispi;
+    work_s		     =    work;
+    intforce_s	             =    intforce;
+    dirich_s  	             =    dirich;
 
-    intforce_a_s	     =    intforce_a;	 	
-    dirich_a_s 	             =    dirich_a;	 	
-    dynvar_s                 =    dynvar;      
-    container_s 	     =    container;	 	
+    intforce_a_s	     =    intforce_a;
+    dirich_a_s 	             =    dirich_a;
+    dynvar_s                 =    dynvar;
+    container_s 	     =    container;
 
   }
-}  
+}
 
-if (mctrl > 1) 
+if (mctrl > 1)
 {
   /* for mctrl > 1 desicion between master field and slave field */
-  
-  if (numaf == 0) 
+
+  if (numaf == 0)
   {
-    /* numaf == 0 --> master field */ 
+    /* numaf == 0 --> master field */
     /* for ssi_couptyp = ssi_master set the master variables (static) to the nonstatic variables of function ssi_struct.c */
-    numeq    		     =    numeq_m;	    
-    numeq_total     	     =    numeq_total_m;     
-    itnum		     =    itnum_m;	      
-    mod_disp                 =    mod_disp_m; 
-    mod_stress               =    mod_stress_m; 
+    numeq    		     =    numeq_m;
+    numeq_total     	     =    numeq_total_m;
+    itnum		     =    itnum_m;
+    mod_disp                 =    mod_disp_m;
+    mod_stress               =    mod_stress_m;
     mod_res_write	     =    mod_res_write_m;
     restart		     =    restart_m;
     nstep		     =    nstep_m;
-    outstep	      	     =    outstep_m;	    
-    restartstep     	     =    restartstep_m;     
+    outstep	      	     =    outstep_m;
+    restartstep     	     =    restartstep_m;
     maxtime		     =    maxtime_m;
     t0_res	             =    t0_res_m;
     t1_res	             =    t1_res_m;
     dt 		             =    dt_m;
-    t0  		     =    t0_m;  
-    t1  		     =    t1_m;  
-    dmax        	     =    dmax_m;      
-    stiff_array      	     =    stiff_array_m;      
-    mass_array  	     =    mass_array_m;        
-    damp_array       	     =    damp_array_m;     
-    num_array   	     =    num_array_m;  	
-    actcurve		     =    actcurve_m;		
+    t0  		     =    t0_m;
+    t1  		     =    t1_m;
+    dmax        	     =    dmax_m;
+    stiff_array      	     =    stiff_array_m;
+    mass_array  	     =    mass_array_m;
+    damp_array       	     =    damp_array_m;
+    num_array   	     =    num_array_m;
+    actcurve		     =    actcurve_m;
 
-    actsolv		     =	  actsolv_m;	      
+    actsolv		     =	  actsolv_m;
     actpart		     =	  actpart_m;
-    actintra		     =	  actintra_m;	      
-    action		     =	  action_m; 
-    vel 		     =	  vel_m;     
-    acc 		     =	  acc_m;     
-    fie 		     =	  fie_m;     
-    dispi		     =	  dispi_m;  
-    work		     =	  work_m;   
+    actintra		     =	  actintra_m;
+    action		     =	  action_m;
+    vel 		     =	  vel_m;
+    acc 		     =	  acc_m;
+    fie 		     =	  fie_m;
+    dispi		     =	  dispi_m;
+    work		     =	  work_m;
     intforce		     =	  intforce_m;
     dirich	             =	  dirich_m;
 
-    intforce_a       	     =    intforce_a_m;     
-    dirich_a		     =    dirich_a_m;		
-    dynvar                   =    dynvar_m;   
-    container      	     =    container_m;    
+    intforce_a       	     =    intforce_a_m;
+    dirich_a		     =    dirich_a_m;
+    dynvar                   =    dynvar_m;
+    container      	     =    container_m;
 
   }
-  
-  if (numaf == 1) 
+
+  if (numaf == 1)
   {
-    /* numaf == 1 --> slave field */ 
+    /* numaf == 1 --> slave field */
     /* for ssi_couptyp = ssi_slave set the slave variables (static) to the nonstatic variables of function ssi_struct.c */
-    numeq	  	     =    numeq_s;	    
-    numeq_total  	     =    numeq_total_s;     
-    itnum	  	     =    itnum_s;	      
-    mod_disp	  	     =    mod_disp_s; 
-    mod_stress   	     =    mod_stress_s; 
+    numeq	  	     =    numeq_s;
+    numeq_total  	     =    numeq_total_s;
+    itnum	  	     =    itnum_s;
+    mod_disp	  	     =    mod_disp_s;
+    mod_stress   	     =    mod_stress_s;
     mod_res_write	     =    mod_res_write_s;
     restart	  	     =    restart_s;
     nstep	  	     =    nstep_s;
-    outstep	  	     =    outstep_s;	    
-    restartstep  	     =    restartstep_s;     
+    outstep	  	     =    outstep_s;
+    restartstep  	     =    restartstep_s;
     maxtime	  	     =    maxtime_s;
     t0_res	  	     =    t0_res_s;
     t1_res	  	     =    t1_res_s;
     dt 	  	             =    dt_s;
-    t0 	  	             =    t0_s;  
-    t1 	  	             =    t1_s;  
-    dmax	  	     =    dmax_s;      
-    stiff_array  	     =    stiff_array_s;      
-    mass_array   	     =    mass_array_s;        
-    damp_array   	     =    damp_array_s;     
-    num_array    	     =    num_array_s;  	
-    actcurve	  	     =    actcurve_s;		
+    t0 	  	             =    t0_s;
+    t1 	  	             =    t1_s;
+    dmax	  	     =    dmax_s;
+    stiff_array  	     =    stiff_array_s;
+    mass_array   	     =    mass_array_s;
+    damp_array   	     =    damp_array_s;
+    num_array    	     =    num_array_s;
+    actcurve	  	     =    actcurve_s;
 
-    actsolv		     =	  actsolv_s;	      
+    actsolv		     =	  actsolv_s;
     actpart		     =	  actpart_s;
-    actintra		     =	  actintra_s;	      
-    action		     =	  action_s; 
-    vel 		     =	  vel_s;     
-    acc 		     =	  acc_s;     
-    fie 		     =	  fie_s;     
-    dispi		     =	  dispi_s;  
-    work		     =	  work_s;   
+    actintra		     =	  actintra_s;
+    action		     =	  action_s;
+    vel 		     =	  vel_s;
+    acc 		     =	  acc_s;
+    fie 		     =	  fie_s;
+    dispi		     =	  dispi_s;
+    work		     =	  work_s;
     intforce		     =	  intforce_s;
     dirich		     =	  dirich_s;
 
-    intforce_a       	     =    intforce_a_s;     
-    dirich_a		     =    dirich_a_s;		
-    dynvar                   =    dynvar_s;   
-    container      	     =    container_s;    
+    intforce_a       	     =    intforce_a_s;
+    dirich_a		     =    dirich_a_s;
+    dynvar                   =    dynvar_s;
+    container      	     =    container_s;
 
   }
 }
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 }

@@ -12,6 +12,7 @@ Maintainer: Michael Gee
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
+#include "../io/io.h"
 /*!----------------------------------------------------------------------
 \brief file pointers
 
@@ -187,6 +188,8 @@ DOUBLE          low,up;
 INT             ilow,iup;
 DOUBLE          tau,tau2,tau3,fac;
 #endif
+
+BIN_OUT_FIELD   out_context;
 
 CONTAINER       container;          /* contains variables defined in container.h */
 container.isdyn   = 1;                /* dynamic calculation */
@@ -417,12 +420,19 @@ solserv_putdirich_to_dof(actfield,0,0,0.0,12);
 
 /*-------------------- put a zero to the place 1 and 2 in sol_increment */
 /*------------------ later this will hold internal forces at t and t-dt */
-solserv_sol_zero(actfield,0,1,2);
-solserv_sol_zero(actfield,0,1,1);
+solserv_sol_zero(actfield,0,node_array_sol_increment,2);
+solserv_sol_zero(actfield,0,node_array_sol_increment,1);
 
 /*------------------------------------------- set initial step and time */
 sdyn->step = -1;
 sdyn->time = 0.0;
+
+/* initialize binary output
+ * It's important to do this only after all the node arrays are set
+ * up because their sizes are used to allocate internal memory. */
+init_bin_out_field(&out_context,
+                   &(actsolv->sysarray_typ[stiff_array]), &(actsolv->sysarray[stiff_array]),
+                   actfield, actpart, actintra, 0);
 
 /*----------------------------------------- output to GID postprozessor */
 if (ioflags.struct_disp_gid==1 || ioflags.struct_stress_gid==1)
@@ -510,6 +520,20 @@ if (restart)
    mod_res_write = sdyn->res_write_evry;
    updevry_disp  = sdyn->updevry_disp;
    /*----------------------------------- the step to read in is restart */
+#ifdef NEW_RESTART_READ
+   restart_read_bin_nlnstructdyn(sdyn, &dynvar,
+                                 &(actsolv->sysarray_typ[stiff_array]),
+                                 &(actsolv->sysarray[stiff_array]),
+                                 actfield, actpart, 0, actintra,
+                                 actsolv->nrhs, actsolv->rhs,
+                                 actsolv->nsol, actsolv->sol,
+                                 1            , dispi       ,
+                                 1            , vel         ,
+                                 1            , acc         ,
+                                 3            , fie         ,
+                                 3            , work        ,
+                                 restart);
+#else
    restart_read_nlnstructdyn(restart,sdyn,&dynvar,actfield,actpart,actintra,action,
                              actsolv->nrhs, actsolv->rhs,
                              actsolv->nsol, actsolv->sol,
@@ -521,6 +545,7 @@ if (restart)
                              &intforce_a,
                              &dirich_a,
                              &container);     /* contains variables defined in container.h */
+#endif
    /*--------- read restart of contact data of shell contact if present */
 #ifdef S8CONTACT
    if (contactflag)  s8_contact_restartread(actintra,sdyn->step);
@@ -790,7 +815,7 @@ if (contactflag)
 
 /* call element routines for calculation of tangential stiffness and intforce */
 *action = calc_struct_nlnstiffmass;
-solserv_sol_zero(actfield,0,1,2);
+solserv_sol_zero(actfield,0,node_array_sol_increment,2);
 container.dvec          = intforce;
 container.dirich        = dirich;
 container.global_numeq  = numeq_total;
@@ -989,11 +1014,11 @@ solserv_result_total(actfield,actintra, &(con[0]),9,&(actsolv->sysarray[stiff_ar
 /* still needed to compute energies                                     */
 solserv_copy_vec(&(actsolv->rhs[2]),&(actsolv->rhs[0]));
 /*------------------------------ copy disp from sol place 0 to place 10 */
-solserv_sol_copy(actfield,0,0,0,0,10);
+solserv_sol_copy(actfield,0,node_array_sol,node_array_sol,0,10);
 /*------------------------------ copy vels from sol place 1 to place 10 */
-solserv_sol_copy(actfield,0,0,0,1,11);
+solserv_sol_copy(actfield,0,node_array_sol,node_array_sol,1,11);
 /*------------------------------ copy accs from sol place 2 to place 11 */
-solserv_sol_copy(actfield,0,0,0,2,12);
+solserv_sol_copy(actfield,0,node_array_sol,node_array_sol,2,12);
 /*------------------ update displacements, velocities and accelerations */
 dyn_nlnstructupd(actfield,
                  &dynvar,sdyn,actsolv,
@@ -1055,7 +1080,7 @@ dyn_eout(&dynvar,sdyn,actintra,actsolv,&dispi[0],&(actsolv->rhs[1]),&(actsolv->r
 dynvar.etot = dynvar.epot + dynvar.ekin;
 /*------------------------- update the internal forces in sol_increment */
 /*       copy from sol_increment.a.da[2][i] to sol_increment.a.da[1][i] */
-solserv_sol_copy(actfield,0,1,1,2,1);
+solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol_increment,2,1);
 /*------------------------------- check whether to write results or not */
 mod_disp      = sdyn->step % sdyn->updevry_disp;
 mod_stress    = sdyn->step % sdyn->updevry_stress;
@@ -1084,7 +1109,23 @@ if (ioflags.struct_stress_file==1 && ioflags.struct_disp_file==1)
   out_sol(actfield,actpart,actintra,sdyn->step,0);
 }
 /*-------------------------- printout results to gid no time adaptivity */
-if (timeadapt==0)
+if (timeadapt==0) {
+  if ((mod_disp==0) && (ioflags.struct_disp_gid==1)) {
+    out_results(&out_context, sdyn->time, sdyn->step, 0, OUTPUT_DISPLACEMENT);
+#ifdef S8CONTACT
+    if (contactflag)
+      out_results(&out_context, sdyn->time, sdyn->step, 9, OUTPUT_CONTACT);
+#endif
+#ifdef WALLCONTACT
+    if (contactflag)
+      out_results(&out_context, sdyn->time, sdyn->step, 9, OUTPUT_CONTACT);
+#endif
+  }
+
+  if ((mod_stress==0) && (ioflags.struct_stress_gid==1)) {
+    out_results(&out_context, sdyn->time, sdyn->step, 0, OUTPUT_STRESS);
+  }
+
 if (par.myrank==0)
 {
    if (mod_disp==0)
@@ -1109,6 +1150,7 @@ if (par.myrank==0)
       out_gid_soldyn("stress"      ,actfield,actintra,sdyn->step,0,sdyn->time);
    }
 }
+}
 /*-------------------------------------- write restart data to pss file */
 if (mod_res_write==0)
 {
@@ -1127,6 +1169,15 @@ restart_write_nlnstructdyn(sdyn,&dynvar,actfield,actpart,actintra,action,
 if (contactflag)
    s8_contact_restartwrite(actintra,sdyn->step);
 #endif
+restart_write_bin_nlnstructdyn(&out_context,
+                               sdyn, &dynvar,
+                               actsolv->nrhs, actsolv->rhs,
+                               actsolv->nsol, actsolv->sol,
+                               1            , dispi       ,
+                               1            , vel         ,
+                               1            , acc         ,
+                               3            , fie         ,
+                               3            , work);
 }
 /*----------------------------------------------------- print time step */
 if (par.myrank==0 && !timeadapt) dyn_nlnstruct_outstep(&dynvar,sdyn,itnum,sdyn->dt);
@@ -1149,6 +1200,10 @@ solserv_del_vec(&vel,1);
 solserv_del_vec(&acc,1);
 solserv_del_vec(&fie,3);
 solserv_del_vec(&work,3);
+
+/* finalize output */
+destroy_bin_out_field(&out_context);
+
 /*----------------------------------------------------------------------*/
 #ifndef PARALLEL
 CCAFREE(actintra);

@@ -31,7 +31,7 @@ TRACE        secure
 RESTART      0
 ----------------------------------------------------------------IO
 STRUCT_DISP_FILE   Yes
-STRUCT_STRESS_FILE Yes
+STRUCT_STRESS_FILE No
 STRUCT_DISP_GID    No
 STRUCT_STRESS_GID  No
 FLUID_SOL_FILE     Yes

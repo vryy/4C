@@ -103,9 +103,9 @@ if (par.myrank==0)
 
 /*=== 5.a ===*/
 /*-- calculate residuum g_i and write it to sol_mf[6][i] of structfield */
-solserv_sol_zero(structfield,0,3,6);
-solserv_sol_add(structfield, 0, 3, 3, 0, 6, 1.0);
-solserv_sol_add(structfield, 0, 3, 3, 1, 6,-1.0);
+solserv_sol_zero(structfield,0,node_array_sol_mf,6);
+solserv_sol_add(structfield, 0, node_array_sol_mf, node_array_sol_mf, 0, 6, 1.0);
+solserv_sol_add(structfield, 0, node_array_sol_mf, node_array_sol_mf, 1, 6,-1.0);
 
 /*=== 5.b ===*/
 /*--------------------- solve Ale mesh with sol_mf[6][i] used as DBC ---*/
@@ -115,8 +115,8 @@ fsi_ale(alefield, 6);
 
 /*=== 5.c,d ===*/
 /*------------------------------------- create some additional space ---*/
-solserv_sol_zero(fluidfield,0,1,7);
-solserv_sol_zero(alefield,0,3,2);
+solserv_sol_zero(fluidfield,0,node_array_sol_increment,7);
+solserv_sol_zero(alefield,0,node_array_sol_mf,2);
 /*------------------------------------- mesh velocity to fluid field ---*/
 for (i=0;i<numnp_fluid;i++) /*----------------------- loop all nodes ---*/
 {

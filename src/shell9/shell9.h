@@ -112,6 +112,7 @@ enum
     }            forcetyp;    /*!< -> forces and stresses in same coordinate system*/
 struct _ARRAY4D  forces;      /*!< stress resultants at GPs -> mid surface */
 struct _ARRAY4D  stresses;    /*!< physical stresses at GPs*/
+struct _ARRAY    gp_stress;   /*!< physical stresses at GPs*/
 /*struct _ARRAY    energy;*/
 /*-------------------------------------------- array of internal forces */
 struct _ARRAY    intforce;

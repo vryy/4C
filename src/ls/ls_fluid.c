@@ -615,13 +615,15 @@ void ls_fluid_fina()
 #endif
 /*----------------------------------------------------------------------*/
 
+  t2=ds_cputime();
+
   /* extrapolate from n+alpha_f to n+1 for generalised alpha */
   if (fdyn->iop == 1)
   {
-    solserv_sol_zero(actfield,0,1,2);
-    solserv_sol_add(actfield,0,1,1,3,2,1.0/fdyn->alpha_f);
-    solserv_sol_add(actfield,0,1,1,1,2,1.0-1.0/fdyn->alpha_f);
-    solserv_sol_copy(actfield,0,1,1,2,3);
+    solserv_sol_zero(actfield,0,node_array_sol_increment,2);
+    solserv_sol_add(actfield,0,node_array_sol_increment,node_array_sol_increment,3,2,1.0/fdyn->alpha_f);
+    solserv_sol_add(actfield,0,node_array_sol_increment,node_array_sol_increment,1,2,1.0-1.0/fdyn->alpha_f);
+    solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol_increment,2,3);
 
     fdyn->acttime += fdyn->dta * (1.0 - fdyn->alpha_f);
   }
@@ -657,13 +659,13 @@ void ls_fluid_fina()
     copy solution from sol_increment[1][j] to sol_increment[0][j]
     -> prev. solution becomes (n-1)-solution of next time step
   */
-  solserv_sol_copy(actfield,0,1,1,1,0);
+  solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol_increment,1,0);
 
   /*
     copy solution from sol_increment[3][j] to sol_increment[1][j]
     -> actual solution becomes previous solution of next time step
   */
-  solserv_sol_copy(actfield,0,1,1,3,1);
+  solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol_increment,3,1);
 
   /* finalise this timestep */
   outstep++;
@@ -686,7 +688,7 @@ void ls_fluid_fina()
    * copy solution from sol_increment[3][j] to sol_[actpos][j]
    * and transform kinematic to real pressure
    */
-  solserv_sol_copy(actfield,0,1,0,3,actpos);
+  solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol,3,actpos);
 /**************************BE CAREFUL************************************/
 /**************************BE CAREFUL************************************/
 /**************************BE CAREFUL************************************/

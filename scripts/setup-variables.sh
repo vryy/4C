@@ -2,6 +2,12 @@
 # default values
 SRC=.
 
+# for filters we need non-mip versions of these
+PLAIN_CC=cc
+PLAIN_F77=f77
+PLAIN_LD=f77
+
+# most of the time these have to begin changed
 CC=cc
 F77=f77
 LD=f77

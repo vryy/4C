@@ -85,11 +85,11 @@ extern struct _GENPROB     genprob;
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par; 
+ extern struct _PAR   par;
 
 /*---------------------------------------------------------------------*
  | monotoring informations                                  genk 01/03 |
@@ -119,12 +119,15 @@ NODE *actnode;
 dstrc_enter("monitoring");
 #endif
 
+if (moni==NULL) goto end;
+
 myrank = par.myrank;
 if (myrank>0) goto end;
 
 actmoni = &(moni[numf]);
-numnp   = actmoni->numnp;
+if (actmoni==NULL) goto end;
 
+numnp   = actmoni->numnp;
 if (numnp==0) goto end;
 
 /*-------------------------------------------------------- store values */

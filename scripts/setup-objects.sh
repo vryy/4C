@@ -5,7 +5,7 @@ OBJ_FLUID=0
 
 # objects:
 OBJECTS="\$(OBJS_MAIN) \$(OBJS_GLOBAL) \$(OBJS_SOLVER) \$(OBJS_PSS) \$(OBJS_INPUT) \
-\$(OBJS_PAR) \$(OBJS_MATH) \$(OBJS_OUTPUT) \$(OBJS_FORTRAN) \$(OBJS_VISUAL) \$(OBJS_STRUCTURE)"
+\$(OBJS_PAR) \$(OBJS_MATH) \$(OBJS_OUTPUT) \$(OBJS_FORTRAN) \$(OBJS_VISUAL) \$(OBJS_STRUCTURE) \$(OBJS_IO)"
 
 # ALE
 if grep '^D_ALE' "$definefile" 2>&1 > /dev/null ; then

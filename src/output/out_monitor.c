@@ -98,8 +98,11 @@ dstrc_enter("out_monitor");
 #endif
 
 /*----------------------------------------------------------------------*/
+if (moni==NULL) goto end;
 myrank = par.myrank;
 actmoni = &(moni[numf]);
+if (actmoni==NULL) goto end;
+
 numval = actmoni->numval;
 numnp = actmoni->numnp;
 

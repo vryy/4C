@@ -11,6 +11,7 @@ Maintainer: Malte Neumann
 
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
+#include "../io/io.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
@@ -127,6 +128,23 @@ void ntam(INT argc, char *argv[])
 #ifdef PARALLEL
   create_communicators();
 #endif
+
+  /* The functions to initialize binary io are quite complex. They make
+   * use of some standard ccarat facilities. In particular the error
+   * logs must already be available. The parallel version makes use of
+   * those communicators as well. */
+
+  if (genprob.restart) {
+    /* If we want to restart this we'll have to initialize our binary
+     * input. That is we need to read the control file. */
+    init_bin_in_main(allfiles.outputfile_kenner);
+  }
+
+  /* initialize module for binary output */
+  /* This can only be done after the (normal) input is read because
+   * here some values are already written. */
+  init_bin_out_main(allfiles.outputfile_kenner);
+
   /*--------------------------------------------------calculation phase */
   t0=ds_cputime();
 #ifdef PERF

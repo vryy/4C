@@ -3,13 +3,15 @@
 PLATFORM=LINUX_MUENCH
 PARALLEL=no
 
+MPIDIR=/opt/mpich
+
 PROGRAMNAME=cca_seq_linux
 F77=g77
 CC=gcc
 LD=gcc
 
-INCLUDEDIRS="-I/opt/mpich/include -I/lnm/include"
-LIBDIRS="-L/lnm/lib"
+INCLUDEDIRS="-I$MPIDIR/include -I/local_lnm/include -I/lnm/include"
+LIBDIRS="-L/local_lnm/lib -L/lnm/lib"
 
 # aztec
 AZTEC_INC=""
@@ -23,8 +25,8 @@ SPOOLES_LIB="-lspoolesMPI -lspooles"
 UMFPACK_INC=
 UMFPACK_LIB="-lumfpack -lamd"
 
-#LIBS="-lc -lm -lg2c -llapack -lgoto_p4_512-r0.6 -lxerbla -lmetis -laztec"
-LIBS="-lc -lm -lg2c -llapack -lblas -lmetis"
+LIBS="-lc -lm -lg2c -llapack -lgoto_p4_512-r0.6 -lxerbla -lmetis"
+#LIBS="-lc -lm -lg2c -llapack -lblas -lmetis"
 
 CFLAGS="-Wall -ansi"
 FFLAGS="-Wall"

@@ -10,9 +10,6 @@ Maintainer: Malte Neumann
 </pre>
 
 ---------------------------------------------------------------------*/
-#ifdef DEBUG
-#include <assert.h>
-#endif
 #include <stdarg.h>
 #include "../headers/standardtypes.h"
 /*!----------------------------------------------------------------------
@@ -666,10 +663,9 @@ void dserror(char string[], ...)
   fflush(stdout);
   fflush(allfiles.out_err);
 
-#ifdef DEBUG
+#ifdef DSERROR_DUMP
   /* Hehehe! */
   *((INT*)0x0) = 123456;
-  assert(0);
 #endif
 #ifdef PARALLEL
   MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);

@@ -10,7 +10,7 @@ Maintainer: Christiane Foerster
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
+/*!
 \addtogroup FSI
 *//*! @{ (documentation module open)*/
 #ifdef D_FSI
@@ -44,11 +44,11 @@ extern struct _MATERIAL  *mat;
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par; 
+ extern struct _PAR   par;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate dynamic variables if needed                      |
@@ -69,7 +69,7 @@ extern struct _CURVE *curve;
 
 
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief initialise interface for fsi coupling
 
 <pre>                                                         firl 04/04
@@ -77,19 +77,19 @@ extern struct _CURVE *curve;
 
  here the number of interfaces and the number of dlines per interface
  is estimated
- 			     
-</pre>   
 
-\param *masterfield   FIELD         (i)      structure field 
-\param *slavefield    FIELD         (i)      fluid field     
+</pre>
+
+\param *masterfield   FIELD         (i)      structure field
+\param *slavefield    FIELD         (i)      fluid field
 \param *int_faces     INTERFACES    (i)      pointer to interface strut.
 
-\return void 
+\return void
 
 ------------------------------------------------------------------------*/
-void fsi_initcoupling_intfaces( 
+void fsi_initcoupling_intfaces(
                                 FIELD       *masterfield,
-                                FIELD       *slavefield, 
+                                FIELD       *slavefield,
                                 INTERFACES  *int_faces
 		              )
 {
@@ -99,7 +99,7 @@ ARRAY   int_ids;                 /* a vector with the interface Ids     */
 DOUBLE  *int_ids_a;
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fsi_initcoupling_intfaces");
 #endif
 
@@ -120,7 +120,7 @@ a=0;
 for(i=0; i<masterfield->dis->ngline; i++)
 {
   actgline = &(masterfield->dis->gline[i]);
-  if(actgline->fsicouple == NULL) continue;  
+  if(actgline->fsicouple == NULL) continue;
   if(actgline->fsicouple->fieldtyp == structure)
   {
     int_ids.a.iv[a] = actgline->fsicouple->fsi_coupleId;
@@ -138,7 +138,7 @@ for(i=0; i<int_ids.fdim; i++)
       a = int_ids.a.iv[j];
       int_ids.a.iv[j] = int_ids.a.iv[j+1];
       int_ids.a.iv[j+1] = a;
-    }  
+    }
   }
 }
 /*---------------------------------- detect the number of interfaces ---*/
@@ -171,7 +171,7 @@ for(i=0; i<int_ids.fdim-1; i++)
 }
 
 /*--------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -179,20 +179,20 @@ return;
 } /* end of fsi_initcoupling_intfaces */
 
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief detect number of nodes on slave and master interface
 
 <pre>                                                  firl / genk 3/04
 
-In this subroutine the interface data are stored in the structure 
-interfaces.  
+In this subroutine the interface data are stored in the structure
+interfaces.
 
 </pre>
 \param *masterfield     FIELD	      (i)   structure field
 \param *slavefield      FIELD         (i)   fluid field
 \param *int_faces       INTERFACES    (i)   the interfaces of the model
 
-\return 0                                                                             
+\return 0
 
 ------------------------------------------------------------------------*/
 void fsi_init_interfaces(FIELD *masterfield, FIELD *slavefield,
@@ -214,7 +214,7 @@ DOUBLE dist1, dist1x, dist1y, dist2, dist2x, dist2y; /* nodal distances */
 FSI_DYNAMIC *fsidyn;
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fsi_init_interfaces");
 #endif
 
@@ -240,7 +240,7 @@ for(i=0; i<int_faces->numint;i++) /* loop the interfaces */
   {
      actgline = &masterfield->dis->gline[j];
      if(actgline->fsicouple == NULL) continue;
-     
+
      if((actgline->fsicouple->fieldtyp == structure) &&
         (actgline->fsicouple->fsi_coupleId == actinterface->Id))
         a++;
@@ -254,9 +254,9 @@ for(i=0; i<int_faces->numint;i++) /* loop the interfaces */
 
   /* -II--allocate memory for the pointer vector to the master nodes and*/
   /* -------------------------------the master elements of actinterface */
-  actinterface->nodem = 
+  actinterface->nodem =
      (NODE**)CCACALLOC(actinterface->numnpm,sizeof(NODE));
-  actinterface->elementm = 
+  actinterface->elementm =
      (ELEMENT**)CCACALLOC(actinterface->numelem,sizeof(ELEMENT));
 
   /* -III define the pointers in actinterface->elementm to the elements */
@@ -277,7 +277,7 @@ for(i=0; i<int_faces->numint;i++) /* loop the interfaces */
           a++;
           goto end_of_this_ele;
        }
-     }     
+     }
     end_of_this_ele: ;
   }
   /* -IV- define the pointers in actinterface->nodem to the nodes at the*/
@@ -300,7 +300,7 @@ for(i=0; i<int_faces->numint;i++) /* loop the interfaces */
          for(l=0; l<actinterface->numnpm; l++)
          {
            if(actinterface->nodem[l] == actnode)
-           { 
+           {
              goto end_of_this_node;
            }
          }
@@ -308,7 +308,7 @@ for(i=0; i<int_faces->numint;i++) /* loop the interfaces */
          a++;
          end_of_this_node: ;
        }
-    }       
+    }
   }
 
 
@@ -334,9 +334,9 @@ for(i=0; i<int_faces->numint;i++) /* loop the interfaces */
 
   /* -II---allocate memory for the pointer vector to the slave nodes and*/
   /* ------------------------------- the slave elements of actinterface */
-  actinterface->nodes = 
+  actinterface->nodes =
      (NODE**)CCACALLOC(actinterface->numnps,sizeof(NODE));
-  actinterface->elements = 
+  actinterface->elements =
      (ELEMENT**)CCACALLOC(actinterface->numeles,sizeof(ELEMENT));
 
   /* ----III define the pointers in actinterface->elements to the fluid */
@@ -357,7 +357,7 @@ for(i=0; i<int_faces->numint;i++) /* loop the interfaces */
           a++;
           break;
        }
-     }     
+     }
   }
   /* -IV- define the pointers in actinterface->nodes to the fluid nodes */
   /* ------------------------------------------------- at the interface */
@@ -380,7 +380,7 @@ for(i=0; i<int_faces->numint;i++) /* loop the interfaces */
          for(l=0; l<actinterface->numnps; l++)
          {
            if(actinterface->nodes[l] == actnode)
-           { 
+           {
              goto end_of_this_node_s;
            }
          }
@@ -388,7 +388,7 @@ for(i=0; i<int_faces->numint;i++) /* loop the interfaces */
          a++;
          end_of_this_node_s: ;
        }
-    }       
+    }
   }
   /* allocate memory for the gnodes which bound actinterface */
   actinterface->gnode_bound1s = (GNODE*)CCACALLOC(1,sizeof(GNODE));
@@ -460,10 +460,10 @@ for(i=0; i<int_faces->numint;i++) /* loop the interfaces */
   /*amdef("int_vec",actinterface->int_vec, 2, 1, "DV");*/
   actinterface->int_vec = (DOUBLE*)CCACALLOC(2,sizeof(DOUBLE));
 
-  actinterface->int_vec[0] = actnode1->x[0] - actnode->x[0];  
+  actinterface->int_vec[0] = actnode1->x[0] - actnode->x[0];
   actinterface->int_vec[1] = actnode1->x[1] - actnode->x[1];
   work = sqrt(actinterface->int_vec[0] * actinterface->int_vec[0] +
-              actinterface->int_vec[1] * actinterface->int_vec[1]);  
+              actinterface->int_vec[1] * actinterface->int_vec[1]);
   actinterface->int_vec[0] *=(1.0/work);
   actinterface->int_vec[1] *=(1.0/work);
 
@@ -539,7 +539,7 @@ for(i=0; i<int_faces->numint;i++) /* loop the interfaces */
   /* boundary of the interface (if it is on a dnode) */
   actinterface->conti_eq_save->ipiv.a.iv[0] = 1;
   actinterface->conti_eq_save->ipiv.a.iv[actinterface->numnps-1] = 1;
-  
+
 
 } /* end of loop over the interfaces (i) */
 /* loop over the interfaces */
@@ -552,7 +552,7 @@ for(i=0; i<int_faces->numint; i++)
   for(j=0; j<actinterface->numnps; j++)
   {
     actnode = actinterface->nodes[j];
-    if(actnode->Id == actinterface->gnode_bound1s->node->Id || 
+    if(actnode->Id == actinterface->gnode_bound1s->node->Id ||
        actnode->Id == actinterface->gnode_bound2s->node->Id)
     {
       /* loop the other interfaces */
@@ -568,22 +568,22 @@ for(i=0; i<int_faces->numint; i++)
           {
             if(actinterface->gnode_bound1sc == NULL)
               actinterface->gnode_bound1sc = actnode->gnode->mfcpnode[2]->gnode;
-            else 
+            else
               actinterface->gnode_bound2sc = actnode->gnode->mfcpnode[2]->gnode;
             break;
           }
         }
         end_of_this_interface: ;
       }
-      
-    }    
+
+    }
   }
 
   /* master domain */
   for(j=0; j<actinterface->numnpm; j++)
   {
     actnode = actinterface->nodem[j];
-    if(actnode->Id == actinterface->gnode_bound1m->node->Id || 
+    if(actnode->Id == actinterface->gnode_bound1m->node->Id ||
        actnode->Id == actinterface->gnode_bound2m->node->Id)
     {
       /* loop the other interfaces */
@@ -599,21 +599,21 @@ for(i=0; i<int_faces->numint; i++)
           {
             if(actinterface->gnode_bound1mc == NULL)
               actinterface->gnode_bound1mc = actnode->gnode;
-            else 
+            else
               actinterface->gnode_bound2mc = actnode->gnode;
             break;
           }
         }
         end_of_this_interface1: ;
       }
-      
-    }    
+
+    }
   }
 
-  /* modify the entries in fsidyn->sid.a.iv, they are originally stored in 
-     fsi_struct_intdofs(); but this original algorithm does not work 
+  /* modify the entries in fsidyn->sid.a.iv, they are originally stored in
+     fsi_struct_intdofs(); but this original algorithm does not work
      correctly for non-conforming discretizations                          */
-  
+
   /* loop over the structure nodes of the interface */
   b=0;
   for(j=0; j<actinterface->numnpm; j++)
@@ -642,14 +642,14 @@ for(i=0; i<int_faces->numint; i++)
 } /* end of fsi_init_interfaces */
 
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief compute coefficients for mortar method
 
 <pre>                                                  firl / genk 1/04
 
-Here is assembled a coefficient matrix and a right hand side. One obtains 
-the coefficients (called zeta_j^r) as solution of this system of 
-equations. It is referred to the master thesis of Matthias Firl for more 
+Here is assembled a coefficient matrix and a right hand side. One obtains
+the coefficients (called zeta_j^r) as solution of this system of
+equations. It is referred to the master thesis of Matthias Firl for more
 information.
 Later the factorized coefficient matrix is needed again. Thus, the pointer
 to the dense structure is a parameter of the function call.
@@ -657,7 +657,7 @@ to the dense structure is a parameter of the function call.
 </pre>
 \param *fsidyn      FSI_DYNAMIC      (i)   pointer to fsi dynamic
 \param int_faces    INTERFACES       (i)   the interfaces of the model
-\return 0                                                                             
+\return 0
 
 ------------------------------------------------------------------------*/
 void fsi_mortar_coeff(FSI_DYNAMIC *fsidyn, INTERFACES *int_faces)
@@ -669,7 +669,7 @@ INT info;                           /* flag for lapack solver */
 INT ione;                           /* number of right hand sides*/
 INT a,b,i,j,k,l,m,n,p,q,r,act;      /* counters */
 INT numnods, switch_act;            /* number of elements of the actual side*/
-                                    /* of actinterface */            
+                                    /* of actinterface */
 INT flag;
 
 char uplo[1];                       /* character for lapack solver */
@@ -699,7 +699,7 @@ DOUBLE *rhs;                         /* to compute the mortar coeff.      */
 
 INTERFACE *actinterface;             /* the actual interface */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fsi_mortar_coeff");
 #endif
 
@@ -749,7 +749,7 @@ for(r=0; r<int_faces->numint; r++)
   {
     if(act==0) /* slave nodes */
     {
-      actnodes = 
+      actnodes =
       (NODE**)CCACALLOC(actinterface->numnps,sizeof(NODE));
       for(i=0; i<actinterface->numnps; i++)
       {
@@ -761,7 +761,7 @@ for(r=0; r<int_faces->numint; r++)
     }
     else /* master nodes */
     {
-      actnodes = 
+      actnodes =
       (NODE**)CCACALLOC(actinterface->numnpm,sizeof(NODE));
       for(i=0; i<actinterface->numnpm; i++)
       {
@@ -831,7 +831,7 @@ for(r=0; r<int_faces->numint; r++)
               }
             }
             if(actnode2_2->Id == actinterface->gnode_bound1s->node->Id ||
-               actnode2_2->Id == actinterface->gnode_bound2s->node->Id) 
+               actnode2_2->Id == actinterface->gnode_bound2s->node->Id)
             {
               if(m == 0)
               {
@@ -868,14 +868,14 @@ for(r=0; r<int_faces->numint; r++)
             lambdr2_1_xy[1] = r2_1[1] / nrmdr1_2[1];
             lambdr2_2_xy[1] = r2_2[1] / nrmdr1_2[1];
             /* check for a possible intersection */
-            if(lambdr2_1_xy[0]/lambdr1_2_xy[0] <= EPS8 && 
-               lambdr2_2_xy[0]/lambdr1_2_xy[0] <= EPS8) 
+            if(lambdr2_1_xy[0]/lambdr1_2_xy[0] <= EPS8 &&
+               lambdr2_2_xy[0]/lambdr1_2_xy[0] <= EPS8)
                  goto end_of_node2;
             if(nr2_1 > nr1_2+EPS6 && lambdr2_1_xy[0] > lambdr1_2_xy[0] &&
                nr2_2 > nr1_2+EPS6 && lambdr2_2_xy[0] > lambdr1_2_xy[0])
                goto end_of_node2;
             /* look for the best lambda for fsi_detect_intersection(),
-               the goal of this choice is to minimize the error due to 
+               the goal of this choice is to minimize the error due to
                floating point division */
             if((r1_2[0] > sqrt(r1_2[1]*r1_2[1])) || (r1_2[0]<-sqrt(r1_2[1]*r1_2[1])))
             {
@@ -890,20 +890,20 @@ for(r=0; r<int_faces->numint; r++)
               lambdr2_2 = lambdr2_2_xy[1];
             }
             /* Check for a possible nonzero intersection, goto end if such an*/
-            /* ---------------------------------intersection is not possible */        
+            /* ---------------------------------intersection is not possible */
             if((lambdr2_1 >= nr1_2) && (lambdr2_2 >= nr1_2)) goto end_of_node2;
             if((lambdr2_1 < 0) && (lambdr2_2 < 0)) goto end_of_node2;
-            
+
             /* ---------------------here we determine the integration bounds */
-            fsi_detect_intersection(lambdr1_2, lambdr2_1, lambdr2_2, nr1_2, 
+            fsi_detect_intersection(lambdr1_2, lambdr2_1, lambdr2_2, nr1_2,
                                     nr2_1, nr2_2, &b1, &b2, &intersection);
-    
+
             if(intersection == 1)
             {
               /* if we have a nonzero inters. we compute the nodal basis fcts*/
-              /* ---calculate slope and value n of the nodal basis function, */ 
-              /* here its the nodal basis function of the trace space of the */ 
-              /* ------slave elements on the interface. Hence, these are the */ 
+              /* ---calculate slope and value n of the nodal basis function, */
+              /* here its the nodal basis function of the trace space of the */
+              /* ------slave elements on the interface. Hence, these are the */
               /* -------------------------------------standard hat functions */
               if(j == 0)
               {
@@ -929,11 +929,11 @@ for(r=0; r<int_faces->numint; r++)
                 m2 = 3.0/(lambdr2_2 - lambdr2_1);
                 n2 = -1.0 - m2 * lambdr2_1;
               }
-    
+
               if(actnode2_1->Id == actinterface->gnode_bound1s->node->Id ||
                  actnode2_1->Id == actinterface->gnode_bound2s->node->Id ||
                  actnode2_2->Id == actinterface->gnode_bound1s->node->Id ||
-                 actnode2_2->Id == actinterface->gnode_bound2s->node->Id) 
+                 actnode2_2->Id == actinterface->gnode_bound2s->node->Id)
               {
                 m2=0;
                 n2=1;
@@ -945,14 +945,14 @@ for(r=0; r<int_faces->numint; r++)
                 for(q=0;q<actinterface->numnps;q++)
                 {
                   if(j == 0 && actnode1_1->Id == actinterface->nodes[q]->gnode->mfcpnode[2]->Id)
-                  /*if(out_node1->Id == actinterface->nodes[q]->Id)*/ 
-                  { 
+                  /*if(out_node1->Id == actinterface->nodes[q]->Id)*/
+                  {
                     a=q;
                     break;
                   }
                   if(j == 1 && actnode1_2->Id == actinterface->nodes[q]->gnode->mfcpnode[2]->Id)
-                  /*if(out_node1->Id == actinterface->nodes[q]->Id)*/ 
-                  { 
+                  /*if(out_node1->Id == actinterface->nodes[q]->Id)*/
+                  {
                     a=q;
                     break;
                   }
@@ -961,62 +961,62 @@ for(r=0; r<int_faces->numint; r++)
                 {
                   if(m==0 && actnode2_1->Id == actinterface->nodes[q]->gnode->mfcpnode[2]->Id)
                   /*if(out_node2->Id == actinterface->nodes[q]->Id) */
-                  { 
+                  {
                     b=q;
                     break;
                   }
                   if(m==1 && actnode2_2->Id == actinterface->nodes[q]->gnode->mfcpnode[2]->Id)
                   /*if(out_node2->Id == actinterface->nodes[q]->Id) */
-                  { 
+                  {
                     b=q;
                     break;
                   }
                 }
-    
+
                 for(p=0;p<2;p++)
                 {
-                  actinterface->continuity_eq->A.a.da[a][b] += 
+                  actinterface->continuity_eq->A.a.da[a][b] +=
                                      (m1 * ((b1+b2)/2 + (b1-b2)/2*gauss2[p][0])+n1) *
                                      (m2 * ((b1+b2)/2 + (b1-b2)/2*gauss2[p][0])+n2) *
                                      ((b2-b1)/2) * gauss2[p][1];
-                  actinterface->conti_eq_save->A.a.da[a][b] += 
+                  actinterface->conti_eq_save->A.a.da[a][b] +=
                                      (m1 * ((b1+b2)/2 + (b1-b2)/2*gauss2[p][0])+n1) *
                                      (m2 * ((b1+b2)/2 + (b1-b2)/2*gauss2[p][0])+n2) *
                                      ((b2-b1)/2) * gauss2[p][1];
-    
+
                 }
-              } 
+              }
               else
               /* act == 1 -> rhs */
               {
                 /* detect position of integral value the rhs matrix */
                 for(q=0;q<actinterface->numnpm;q++)
                 {
-                  if(j==0 && actnode1_1->Id == actinterface->nodem[q]->Id) 
-                  { 
+                  if(j==0 && actnode1_1->Id == actinterface->nodem[q]->Id)
+                  {
                     b=q;
                     break;
                   }
-                  if(j==1 && actnode1_2->Id == actinterface->nodem[q]->Id) 
-                  { 
+                  if(j==1 && actnode1_2->Id == actinterface->nodem[q]->Id)
+                  {
                     b=q;
                     break;
                   }
                 }
                 for(q=0;q<actinterface->numnps;q++)
                 {
-                  if(m==0 && actnode2_1->Id == actinterface->nodes[q]->gnode->mfcpnode[2]->Id) 
-                  { 
+                  if(m==0 && actnode2_1->Id == actinterface->nodes[q]->gnode->mfcpnode[2]->Id)
+                  {
                     a=q;
                     break;
                   }
-                  if(m==1 && actnode2_2->Id == actinterface->nodes[q]->gnode->mfcpnode[2]->Id) 
-                  { 
+                  if(m==1 && actnode2_2->Id == actinterface->nodes[q]->gnode->mfcpnode[2]->Id)
+                  {
                     a=q;
                     break;
                   }
                 }
-    
+
                 for(p=0;p<2;p++)
                 {
                   /* --Here we save the transposed of the rhs solution matrix */
@@ -1034,28 +1034,28 @@ for(r=0; r<int_faces->numint; r++)
       } /* end of loop over the nodes of this slave element (j) */
     } /* end of loop over the slave elements (i)*/
   } /* end of general loop lhs--rhs (act)*/
-  
+
   /*-----------------------------------------------------------------------*/
   /*                     SOLUTION USING LAPACK LU-DECOMPOSITION            */
   /*-----------------------------------------------------------------------*/
-  
+
   /* decomposition of lhs */
-  
+
   dsytrf(
-          uplo,              
-          &(actinterface->continuity_eq->numeq_total),  
-          actinterface->continuity_eq->A.a.da[0],  
-          &(actinterface->continuity_eq->numeq_total),  
-          actinterface->continuity_eq->ipiv.a.iv,  
-          actinterface->continuity_eq->work.a.dv,  
-          &(actinterface->continuity_eq->lwork),   
-          &info              
+          uplo,
+          &(actinterface->continuity_eq->numeq_total),
+          actinterface->continuity_eq->A.a.da[0],
+          &(actinterface->continuity_eq->numeq_total),
+          actinterface->continuity_eq->ipiv.a.iv,
+          actinterface->continuity_eq->work.a.dv,
+          &(actinterface->continuity_eq->lwork),
+          &info
         );
-  
+
   if (info!=0) dserror("Lapack factorization failed");
-  
+
   /* solution for different rhs's*/
-  
+
   info=1;
   dsytrs(
            uplo,
@@ -1073,7 +1073,7 @@ for(r=0; r<int_faces->numint; r++)
   /*-----------------------------------------------------------------------*/
   /*            ALLOCATE MEMORY TO STORE THE SOLUTION AT THE NODES         */
   /*-----------------------------------------------------------------------*/
-  
+
   /* -------------------memory allocation only in the first iteration step */
   if(fsidyn->step == 1)
   {
@@ -1089,26 +1089,26 @@ for(r=0; r<int_faces->numint; r++)
         if((rhs1.a.da[i][j] > EPS10) || (rhs1.a.da[i][j] < -EPS10))
           a++;
       }
-      if(a > b) 
+      if(a > b)
         b=a;
     }
-  
+
     /* --------------allocate memory for the master nodes on the interface */
     for(i=0; i<actinterface->numnpm; i++)
     {
       actnode1_1 = actinterface->nodem[i];
       flag=0;
-      if(actinterface->gnode_bound1mc != NULL)      
+      if(actinterface->gnode_bound1mc != NULL)
         if (actnode1_1->gnode->node->Id == actinterface->gnode_bound1mc->node->Id)
         flag++;
 
-      if(actinterface->gnode_bound2mc != NULL)      
+      if(actinterface->gnode_bound2mc != NULL)
         if (actnode1_1->gnode->node->Id == actinterface->gnode_bound2mc->node->Id)
         flag++;
-    
+
       if(flag>0)
       {
-        if(actnode1_1->mtr_coeff.fdim < 15) 
+        if(actnode1_1->mtr_coeff.fdim < 15)
         /* allocate memory to the node if the pointer mtr_coeff points to zero */
         {
           amdef("mrt coeff.",&(actnode1_1->mtr_coeff),actinterface->numnps,int_faces->numint,"DA");
@@ -1122,13 +1122,13 @@ for(r=0; r<int_faces->numint; r++)
       }
     }
   } /* end of if clause (fsidyn->step)*/
-  
+
   /*-----------------------------------------------------------------------*/
   /*                      STORE THE SOLUTION AT THE NODES                  */
   /*-----------------------------------------------------------------------*/
   /* loop nodes of actinterface->nodem */
   for(i=0; i<actinterface->numnpm; i++)
-  { 
+  {
     actnode1_1 = actinterface->nodem[i];
     /*amzero(&(actnode1_1->mtr_coeff));*/
 
@@ -1140,7 +1140,7 @@ for(r=0; r<int_faces->numint; r++)
     if(actinterface->gnode_bound2mc != NULL)
        if(actnode1_1->gnode->node->Id == actinterface->gnode_bound2mc->node->Id)
           flag++;
-          
+
     if(flag>0)
     {
       /* store the corresponding value of rhs1[][] at the node */
@@ -1149,7 +1149,7 @@ for(r=0; r<int_faces->numint; r++)
       {
         actnode1_1->mtr_coeff.a.da[k][r] = rhs1.a.da[i][k];
       }
-      
+
     }
     else
     {
@@ -1159,20 +1159,20 @@ for(r=0; r<int_faces->numint; r++)
       {
           actnode1_1->mtr_coeff.a.dv[k] = rhs1.a.da[i][k];
       }
-      
+
     }
     a=0;
   } /* end of loop over the nodes of this element */
-  
+
 } /* end of loop over the interfaces (r) */
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 } /*end of fsi_mortar_coeff */
 
 
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief detect intersection of 1-d nodal basis functions
 
 <pre>                                                  firl / genk 1/04
@@ -1188,15 +1188,15 @@ section. Resulting from this data we estimate the integration bounds.
 \param *b1            DOUBLE         (i)   lower integration bound
 \param *b2            DOUBLE         (i)   upper integration bound
 \param *intersection  INT            (i)   flag to detect intersection
-\return 0                                                                             
+\return 0
 
 ------------------------------------------------------------------------*/
-void fsi_detect_intersection(DOUBLE lambdr1_2, DOUBLE lambdr2_1, 
-     DOUBLE lambdr2_2, DOUBLE nr1_2, DOUBLE nr2_1, DOUBLE nr2_2, 
+void fsi_detect_intersection(DOUBLE lambdr1_2, DOUBLE lambdr2_1,
+     DOUBLE lambdr2_2, DOUBLE nr1_2, DOUBLE nr2_1, DOUBLE nr2_2,
      DOUBLE *b1, DOUBLE *b2, INT *intersection)
 {
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fsi_detect_intersection");
 #endif
 
@@ -1206,22 +1206,22 @@ if(lambdr2_1 < lambdr2_2)
                                       /*      1          2              */
   if ((lambdr2_1 < EPS8)&&            /*  1   o                         */
       (lambdr2_1 > -EPS8))            /*  2   o                         */
-  {                                   
+  {
     *b1 = 0.0;
-    if (lambdr1_2<lambdr2_2)          
+    if (lambdr1_2<lambdr2_2)
     {                                 /*  1   o--------o                */
       *b2 = nr1_2;                    /*  2   o------------o            */
       *intersection = 1;
       goto end_of_if;
     }
-    if ((lambdr1_2 < lambdr2_2+EPS6 && lambdr1_2 > lambdr2_2-EPS6) && 
-        (nr1_2 < nr2_2+EPS6 && nr1_2 > nr2_2-EPS6 ))       
+    if ((lambdr1_2 < lambdr2_2+EPS6 && lambdr1_2 > lambdr2_2-EPS6) &&
+        (nr1_2 < nr2_2+EPS6 && nr1_2 > nr2_2-EPS6 ))
     {                                 /*  1   o------------o            */
       *b2 = nr2_2;                    /*  2   o------------o            */
       *intersection = 1;
       goto end_of_if;
     }
-    if (lambdr1_2 > lambdr2_2)           
+    if (lambdr1_2 > lambdr2_2)
     {                                 /*  1   o------------o            */
       *b2 = nr2_2;                    /*  2   o--------o                */
       *intersection = 1;
@@ -1231,20 +1231,20 @@ if(lambdr2_1 < lambdr2_2)
   if (lambdr2_1 < -EPS8)              /*  1      o                      */
   {                                   /*  2   o            o            */
     *b1 = 0.0;
-    if (lambdr1_2 < lambdr2_2)            
+    if (lambdr1_2 < lambdr2_2)
     {                                 /*  1      o------o               */
       *b2 = nr1_2;                    /*  2   o------------o            */
       *intersection = 1;
       goto end_of_if;
     }
-    if ((lambdr1_2 < lambdr2_2+EPS6 && lambdr1_2 > lambdr2_2-EPS6) && 
-        (nr1_2 < nr2_2+EPS6 && nr1_2 > nr2_2-EPS6 ))       
+    if ((lambdr1_2 < lambdr2_2+EPS6 && lambdr1_2 > lambdr2_2-EPS6) &&
+        (nr1_2 < nr2_2+EPS6 && nr1_2 > nr2_2-EPS6 ))
     {                                 /*  1      o---------o            */
       *b2 = nr1_2;                    /*  2   o------------o            */
       *intersection = 1;
       goto end_of_if;
     }
-    if (lambdr1_2 > lambdr2_2)           
+    if (lambdr1_2 > lambdr2_2)
     {                                 /*  1      o------------o         */
       *b2 = nr2_2;                    /*  2   o--------o                */
       *intersection = 1;
@@ -1253,21 +1253,21 @@ if(lambdr2_1 < lambdr2_2)
   }
   if (lambdr2_1 > EPS8)               /*  1   o            o            */
   {                                   /*  2      o                      */
-    *b1 = nr2_1; 
-    if (lambdr1_2 < lambdr2_2)           
+    *b1 = nr2_1;
+    if (lambdr1_2 < lambdr2_2)
     {                                 /*  1   o------------o            */
       *b2 = nr1_2;                    /*  2      o------------o         */
       *intersection = 1;
       goto end_of_if;
     }
-    if ((lambdr1_2 < lambdr2_2+EPS6 && lambdr1_2 > lambdr2_2-EPS6) && 
-        (nr1_2 < nr2_2+EPS6 && nr1_2 > nr2_2-EPS6 ))       
+    if ((lambdr1_2 < lambdr2_2+EPS6 && lambdr1_2 > lambdr2_2-EPS6) &&
+        (nr1_2 < nr2_2+EPS6 && nr1_2 > nr2_2-EPS6 ))
     {                                 /*  1   o------------o            */
       *b2 = nr1_2;                    /*  2      o---------o            */
       *intersection = 1;
       goto end_of_if;
     }
-    if (lambdr1_2 > lambdr2_2)         
+    if (lambdr1_2 > lambdr2_2)
     {                                 /*  1   o------------o            */
       *b2 = nr2_2;                    /*  2      o------o               */
       *intersection = 1;
@@ -1282,21 +1282,21 @@ if(lambdr2_1 > lambdr2_2)
                                       /*      1          2              */
   if ((lambdr2_2 < EPS8)&&            /*  1   o                         */
       (lambdr2_2 > -EPS8))            /*  2   o                         */
-  {                                   
+  {
     *b1 = 0.0;
-    if ((lambdr1_2<lambdr2_1) && (nr1_2 < nr2_1))          
+    if ((lambdr1_2<lambdr2_1) && (nr1_2 < nr2_1))
     {                                 /*  1   o--------o                */
       *b2 = nr1_2;                    /*  2   o------------o            */
       *intersection = 1;
       goto end_of_if;
     }
-    if ((lambdr1_2 == lambdr2_1) && (nr1_2 == nr2_1))       
+    if ((lambdr1_2 == lambdr2_1) && (nr1_2 == nr2_1))
     {                                 /*  1   o------------o            */
       *b2 = nr2_1;                    /*  2   o------------o            */
       *intersection = 1;
       goto end_of_if;
     }
-    if ((lambdr1_2 > lambdr2_1) && (nr1_2 > nr2_1))           
+    if ((lambdr1_2 > lambdr2_1) && (nr1_2 > nr2_1))
     {                                 /*  1   o------------o            */
       *b2 = nr2_1;                    /*  2   o--------o                */
       *intersection = 1;
@@ -1306,19 +1306,19 @@ if(lambdr2_1 > lambdr2_2)
   if (lambdr2_2 < -EPS8)              /*  1      o                      */
   {                                   /*  2   o            o            */
     *b1 = 0.0;
-    if ((lambdr1_2 < lambdr2_1) && (nr1_2 < nr2_1))           
+    if ((lambdr1_2 < lambdr2_1) && (nr1_2 < nr2_1))
     {                                 /*  1      o------o               */
       *b2 = nr1_2;                    /*  2   o------------o            */
       *intersection = 1;
       goto end_of_if;
     }
-    if ((lambdr1_2 == lambdr2_1) && (nr1_2 == nr2_1))      
+    if ((lambdr1_2 == lambdr2_1) && (nr1_2 == nr2_1))
     {                                 /*  1      o---------o            */
       *b2 = nr1_2;                    /*  2   o------------o            */
       *intersection = 1;
       goto end_of_if;
     }
-    if ((lambdr1_2 > lambdr2_1) && (nr1_2 > nr2_1))           
+    if ((lambdr1_2 > lambdr2_1) && (nr1_2 > nr2_1))
     {                                 /*  1      o------------o         */
       *b2 = nr2_1;                    /*  2   o------------o            */
       *intersection = 1;
@@ -1327,20 +1327,20 @@ if(lambdr2_1 > lambdr2_2)
   }
   if (lambdr2_2 > EPS8)               /*  1   o            o            */
   {                                   /*  2      o                      */
-    *b1 = nr2_2; 
-    if ((lambdr1_2 < lambdr2_1) && (nr1_2 < nr2_1))           
+    *b1 = nr2_2;
+    if ((lambdr1_2 < lambdr2_1) && (nr1_2 < nr2_1))
     {                                 /*  1   o------------o            */
       *b2 = nr1_2;                    /*  2      o------------o         */
       *intersection = 1;
       goto end_of_if;
     }
-    if ((lambdr1_2 == lambdr2_1) && (nr1_2 == nr2_1))         
+    if ((lambdr1_2 == lambdr2_1) && (nr1_2 == nr2_1))
     {                                 /*  1   o------------o            */
       *b2 = nr1_2;                    /*  2      o---------o            */
       *intersection = 1;
       goto end_of_if;
     }
-    if ((lambdr1_2 > lambdr2_1) && (nr1_2 > nr2_1))           
+    if ((lambdr1_2 > lambdr2_1) && (nr1_2 > nr2_1))
     {                                 /*  1   o------------o            */
       *b2 = nr2_1;                    /*  2      o------o               */
       *intersection = 1;
@@ -1351,29 +1351,29 @@ if(lambdr2_1 > lambdr2_2)
 
 end_of_if:
 ;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 } /*end of fsi_detect_intersection*/
 
 
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief compute displacements for ale nodes, mortar method
 
 <pre>                                                  firl / genk 02/04
 
 The consistency condition is applied to evaluate the dirichlet b.c. for
-the ale nodes. Here is assumed that the displacements of the structure 
-nodes are stored in sol_mf.a.da[0][..]. After the computation of the 
-corresponding displacements for the ale nodes these values are  
-stored in sol_increment[0][..] and sol[0].  
+the ale nodes. Here is assumed that the displacements of the structure
+nodes are stored in sol_mf.a.da[0][..]. After the computation of the
+corresponding displacements for the ale nodes these values are
+stored in sol_increment[0][..] and sol[0].
 The algorithm is nearly similar to the subroutine fsi_mortar_coeff.
 
 </pre>
-\param    *fsidyn        FSI_DYNAMIC   (i)   pointer to fsi_dynamic 
+\param    *fsidyn        FSI_DYNAMIC   (i)   pointer to fsi_dynamic
 \param    *int_faces     INTERFACES    (i)   pointer to the interfaces of the model
-\return 0                                                                             
+\return 0
 
 ------------------------------------------------------------------------*/
 void fsi_calc_disp4ale(FSI_DYNAMIC *fsidyn, INTERFACES *int_faces)
@@ -1381,7 +1381,7 @@ void fsi_calc_disp4ale(FSI_DYNAMIC *fsidyn, INTERFACES *int_faces)
 DOUBLE gauss2[2][2];                /* gauss points and weights (2)*/
 INT intersection;                   /* flag for intersection of nodal*/
                                     /* basis fct's 0=no, 1=yes*/
-INT a,b,i,j,k,l,m,n,p,q,r;          /* counters */            
+INT a,b,i,j,k,l,m,n,p,q,r;          /* counters */
 NODE *actnode1_1, *actnode1_2, *actnode2_1, *actnode2_2;
                                     /* pointer to actual nodes */
 DOUBLE d1_1[2], d1_2[2], d2_1[2], d2_2[2];
@@ -1426,11 +1426,11 @@ DOUBLE *work_vec_a;
 INTERFACE *actinterface;             /* the actual interface */
 
 ARRAY rel_d_2_1;                     /* the relaxed displacements of the */
-DOUBLE *rel_d_2_1_a;                 /* master node 2_1 */ 
+DOUBLE *rel_d_2_1_a;                 /* master node 2_1 */
 ARRAY rel_d_2_2;                     /* the relaxed displacements of the */
-DOUBLE *rel_d_2_2_a;                 /* master node 2_2 */ 
-                                     
-#ifdef DEBUG 
+DOUBLE *rel_d_2_2_a;                 /* master node 2_2 */
+
+#ifdef DEBUG
 dstrc_enter("fsi_calc_disp4ale");
 #endif
 
@@ -1471,12 +1471,12 @@ for(r=0; r<int_faces->numint; r++)
   amzero(&rel_d_2_2);
   /* ---the pointer lhs_dens points on factorized matrix, this matrix has */
   /* -------------------------------their coefficients below the diagonal */
-  uplo[0] = 'L'; 
+  uplo[0] = 'L';
   /* the unmber of right hand sides corresponds to the number of dof of the*/
   /* ---------------------------------------------------------master nodes */
   ione = actinterface->nodem[0]->numdf;
-  
-  
+
+
   /*loop elements of slavefield, biorthogonal shape functions, test space */
   for(i=0;i<actinterface->numnps-1;i++)
   {
@@ -1529,13 +1529,13 @@ for(r=0; r<int_faces->numint; r++)
       /* detect position of integral value in the vectors lhs and rhs */
       for(q=0;q<actinterface->numnps;q++)
       {
-        if(j==0 && actnode1_1->gnode->mfcpnode[1]->Id == actinterface->nodes[q]->Id) 
-        { 
+        if(j==0 && actnode1_1->gnode->mfcpnode[1]->Id == actinterface->nodes[q]->Id)
+        {
           a=q;
           break;
         }
-        if(j==1 && actnode1_2->gnode->mfcpnode[1]->Id == actinterface->nodes[q]->Id) 
-        { 
+        if(j==1 && actnode1_2->gnode->mfcpnode[1]->Id == actinterface->nodes[q]->Id)
+        {
           a=q;
           break;
         }
@@ -1562,7 +1562,7 @@ for(r=0; r<int_faces->numint; r++)
           d2_1[0] = actnode2_1->x[0]+actnode2_1->sol_mf.a.da[1][0];
           d2_1[1] = actnode2_1->x[1]+actnode2_1->sol_mf.a.da[1][1];
           d2_2[0] = actnode2_2->x[0]+actnode2_2->sol_mf.a.da[1][0];
-          d2_2[1] = actnode2_2->x[1]+actnode2_2->sol_mf.a.da[1][1]; 
+          d2_2[1] = actnode2_2->x[1]+actnode2_2->sol_mf.a.da[1][1];
           /* -------------------------compute vectors relative to node 1_1 */
           r1_2[0] = d1_2[0] - d1_1[0];
           r1_2[1] = d1_2[1] - d1_1[1];
@@ -1587,14 +1587,14 @@ for(r=0; r<int_faces->numint; r++)
           lambdr2_1_xy[1] = r2_1[1] / nrmdr1_2[1];
           lambdr2_2_xy[1] = r2_2[1] / nrmdr1_2[1];
             /* check for a possible intersection */
-            if(lambdr2_1_xy[0]/lambdr1_2_xy[0] <= EPS8 && 
-               lambdr2_2_xy[0]/lambdr1_2_xy[0] <= EPS8) 
+            if(lambdr2_1_xy[0]/lambdr1_2_xy[0] <= EPS8 &&
+               lambdr2_2_xy[0]/lambdr1_2_xy[0] <= EPS8)
                  goto end_of_node2;
             if(nr2_1 > nr1_2+EPS6 && lambdr2_1_xy[0] > lambdr1_2_xy[0] &&
                nr2_2 > nr1_2+EPS6 && lambdr2_2_xy[0] > lambdr1_2_xy[0])
                goto end_of_node2;
           /* look for the best lambda for fsi_detect_intersection(),
-             the goal of this choice is to minimize the error due to 
+             the goal of this choice is to minimize the error due to
              floating point division */
           if((r1_2[0] > sqrt(r1_2[1]*r1_2[1])) || (r1_2[0]<-sqrt(r1_2[1]*r1_2[1])))
           {
@@ -1609,14 +1609,14 @@ for(r=0; r<int_faces->numint; r++)
             lambdr2_2 = lambdr2_2_xy[1];
           }
           /* Check for a possible nonzero intersection, goto end if such an*/
-          /* ---------------------------------intersection is not possible */        
+          /* ---------------------------------intersection is not possible */
           if((lambdr2_1 >= nr1_2) && (lambdr2_2 >= nr1_2)) goto end_of_node2;
           if((lambdr2_1 < 0) && (lambdr2_2 < 0)) goto end_of_node2;
-          
+
           /* ---------------------here we determine the integration bounds */
-          fsi_detect_intersection(lambdr1_2, lambdr2_1, lambdr2_2, nr1_2, 
+          fsi_detect_intersection(lambdr1_2, lambdr2_1, lambdr2_2, nr1_2,
                                   nr2_1, nr2_2, &b1, &b2, &intersection);
-  
+
           if(intersection == 1)
           {
             /* if we have a nonzero inters. we compute the nodal basis fcts*/
@@ -1645,20 +1645,20 @@ for(r=0; r<int_faces->numint; r++)
             /* loop over numdf */
             for(q=0;q<actnode2_1->numdf;q++)
             {
-              /* ---calculate slope and value n of the nodal basis function, */ 
-              /* here its the nodal basis function of the trace space of the */ 
-              /* -----master elements on the interface. Hence, these are the */ 
+              /* ---calculate slope and value n of the nodal basis function, */
+              /* here its the nodal basis function of the trace space of the */
+              /* -----master elements on the interface. Hence, these are the */
               /* ---standard hat functions multiplied with the corresponding */
               /* ----------------------------------------displacement values */
-              if(m==0)   
+              if(m==0)
               {
-                m2 = (rel_d_2_2.a.dv[q] - rel_d_2_1.a.dv[q]) / 
+                m2 = (rel_d_2_2.a.dv[q] - rel_d_2_1.a.dv[q]) /
                      (lambdr2_2 - lambdr2_1);
                 n2 = rel_d_2_1.a.dv[q] - m2 * lambdr2_1;
               }
               else
               {
-                m2 = (rel_d_2_1.a.dv[q] - rel_d_2_2.a.dv[q]) / 
+                m2 = (rel_d_2_1.a.dv[q] - rel_d_2_2.a.dv[q]) /
                      (lambdr2_2 - lambdr2_1);
                 n2 = rel_d_2_1.a.dv[q] - m2 * lambdr2_1;
               }
@@ -1674,10 +1674,10 @@ for(r=0; r<int_faces->numint; r++)
           end_of_node2: ;
         } /* end of loop over the nodes of the master element (m) */
       } /* end of loop over the master elements (l)*/
-  
+
     } /* end of loop over the nodes of this slave element (j) */
   } /* end of loop over the slave elements (i)*/
-  
+
 
   /***********************************************************************/
   /*                                                                     */
@@ -1689,16 +1689,16 @@ for(r=0; r<int_faces->numint; r++)
      forces strong continuity at the boundary of the interface. Hence, the
      displacements of the master nodes at the boundary of the interface are
      directly transferred to the slave nodes at the boundary of the inter-
-     face. 
-     In the second approach the continuity equation is applied over the 
-     whole interface. Hence, the continuity at the boundary of the interface 
-     is also fulfilled in a weak sense. */   
+     face.
+     In the second approach the continuity equation is applied over the
+     whole interface. Hence, the continuity at the boundary of the interface
+     is also fulfilled in a weak sense. */
 
   /*---------------------------------------------------------------------*/
   /* COMPUTATION OF NODAL DISPLACEMENTS WITH STRONG CONTINUITY AT THE    */
   /*                     BOUNDARY OF THE INTERFACE                       */
   /*---------------------------------------------------------------------*/
-  
+
   /* fill vector solu with known displacements, the displacements of the */
   /* master node on the corresponding dnode */
 
@@ -1728,7 +1728,7 @@ for(r=0; r<int_faces->numint; r++)
     slv_nods_onint_work.a.iv[i] = actinterface->nodes[i]->gnode->
                                   mfcpnode[2]->Id; /* ALE node */
   }
-  
+
   /* rearrange the system of equations */
   /* loop over the vector actinterface->conti_eq_save->ipiv */
   for(i=0; i<actinterface->numnps; i++)
@@ -1802,7 +1802,7 @@ for(r=0; r<int_faces->numint; r++)
     }
     end_02: ;
   }
-  
+
   /* loop the rearranged vector hasdnode to obtain the number of free nodes */
   for(i=0; i<actinterface->numnps; i++)
   {
@@ -1818,21 +1818,21 @@ for(r=0; r<int_faces->numint; r++)
       rhs_d.a.da[i][1] += actinterface->conti_eq_save->A.a.da[i][j] * solu_arr.a.da[j][1];
     }
   }
-  
+
   /* sum up the two rhs's */
   for(i=0; i<work_int; i++)
   {
     rhs_d.a.da[i][0] = -rhs_d.a.da[i][0] + rhs.a.da[0][i];
     rhs_d.a.da[i][1] = -rhs_d.a.da[i][1] + rhs.a.da[1][i];
   }
-  
+
   /* compute the nodal displacements for the slave nodes at the interface */
   for(i=0; i<work_int; i++)
   {
     solu_arr.a.da[i][0] = rhs_d.a.da[i][0] / actinterface->conti_eq_save->A.a.da[i][i];
     solu_arr.a.da[i][1] = rhs_d.a.da[i][1] / actinterface->conti_eq_save->A.a.da[i][i];
   }
-  
+
   /*-----------------------------------------------------------------------*/
   /*                      STORE THE SOLUTION AT THE NODES                  */
   /*-----------------------------------------------------------------------*/
@@ -1852,7 +1852,7 @@ for(r=0; r<int_faces->numint; r++)
     actnode1_1->sol_mf.a.da[3][0] = solu_arr.a.da[a][0];
     actnode1_1->sol_mf.a.da[3][1] = solu_arr.a.da[a][1];
 
-    /* copy the displacements to field sol_mf[6], in the */ 
+    /* copy the displacements to field sol_mf[6], in the */
     /* subroutine fsi_mortar_coeff this values are needed */
   }
 
@@ -1866,9 +1866,9 @@ for(r=0; r<int_faces->numint; r++)
   /*---------------------------------------------------------------------*/
   /*                     SOLUTION USING LAPACK LU-DECOMPOSITION          */
   /*---------------------------------------------------------------------*/
-  
+
   /* here the second part of the LAPACK solver is used. In actinterface->
-     continuity_eq->A the factorized lhs matrix is stored. The 
+     continuity_eq->A the factorized lhs matrix is stored. The
      factorization is computed in the subroutine fsi_mortar_coeff */
   info=1;
   dsytrs(
@@ -1883,7 +1883,7 @@ for(r=0; r<int_faces->numint; r++)
            &info
               );
   if (info!=0) dserror("Lapack solve failed");
-  
+
   /*-----------------------------------------------------------------------*/
   /*                      STORE THE SOLUTION AT THE NODES                  */
   /*-----------------------------------------------------------------------*/
@@ -1914,7 +1914,7 @@ for(r=0; r<int_faces->numint; r++)
 
 <pre>                                                         firl 04/04
 
-in this function the function f2_fsiload is called to calculate the 
+in this function the function f2_fsiload is called to calculate the
 internal forces of the fluid elements at the interface
 
 </pre>
@@ -1939,7 +1939,7 @@ for(i=0; i<int_faces->numint; i++)
     f2_fsiload(actfele);
   }
 }
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 } /* end of fsi_calc_intforces*/
@@ -1973,7 +1973,7 @@ DOUBLE       facr;  /* integration factor  GP-info    */
 INT             foundline;   /* flag for lineload present or not       */
 INT             ngline;      /* number of geometrylines to the element */
 GNODE          *actgnode;    /* the actual gnode under consideration   */
-GLINE          *gline[4];    /* geometrylines of the element           */   
+GLINE          *gline[4];    /* geometrylines of the element           */
 FSI_COUPLE_CONDITION *linefsi[4]; /* short grep on line-neum. conditions    */
 NODE           *actfnode;    /* actual fluid node                      */
 NODE           *actanode;    /* actual ale node                      */
@@ -1983,7 +1983,7 @@ INT             ngr;         /* number of GP'e for line-integration    */
 INT             iegnod[4];
 DOUBLE          xgp[3];      /* Coordinates of GP'es                   */
 DOUBLE          wgx[3];      /* weights at GP'es                       */
-DOUBLE          vnx,vny;     /* comp, of normal vector at INT point    */ 
+DOUBLE          vnx,vny;     /* comp, of normal vector at INT point    */
 
 DOUBLE          forceline[2];/* lineload value in x and y direct.(inp) */
 DOUBLE          sigmaint[3]; /* fluid stresses at integration point    */
@@ -1991,9 +1991,9 @@ DOUBLE          nsigma[3][4];/* nodal fluid stresses       */
 DOUBLE          xyzl[2][4];  /* nodal coordinates            */
 DOUBLE          funct[2];    /* shape function values */
 DOUBLE          deriv[2][2]; /* derivative of shape functions */
-ARRAY eload_a; 
+ARRAY eload_a;
 DOUBLE **eload;              /* static element load vector */
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_fsiload");
 #endif
 
@@ -2050,7 +2050,7 @@ for (line=0; line<ngline; line++)
       actfnode  = actgnode->mfcpnode[1];
       /*------------- get the coordinates in the deformed configuration */
       xyzl[0][j] = actanode->x[0]+actanode->sol.a.da[0][0];
-      xyzl[1][j] = actanode->x[1]+actanode->sol.a.da[0][1];      
+      xyzl[1][j] = actanode->x[1]+actanode->sol.a.da[0][1];
       /*-- loop the 3 stresses and get values from sol_mf of fluid node */
       for (i=0;i<3;i++)
       {
@@ -2059,7 +2059,7 @@ for (line=0; line<ngline; line++)
    }
    /*-------------------- coordinates and weights of integration points */
    /*--------- original GP-coordinates and weights for area-integration */
-   ngr = nir; 
+   ngr = nir;
    /* _MF_
    for (i=0; i<ngr; i++) { xgp[i] = data->xgrr[i];
    			   wgx[i] = data->wgtr[i]; } */
@@ -2073,7 +2073,7 @@ for (line=0; line<ngline; line++)
    {
       /*============================= gaussian point and weight at it ===*/
       e1   = xgp[lr];
-      facr = wgx[lr]; 
+      facr = wgx[lr];
       /*------------------- get shape function values on the actual edge */
       /*w1_degfuncderiv(funct,deriv,e1,ele->distyp,1);*/
       funct[0] = 1.0/2.0 * (1-e1);
@@ -2085,7 +2085,7 @@ for (line=0; line<ngline; line++)
       for (i=0;i<3;i++)
       {
    	 for (j=0;j<ngnode;j++) sigmaint[i]+=funct[j]*nsigma[i][j];
-      } 	 
+      }
       /*-------------------------- compute normal vector at gauss point *
        | see Mok et al in Engineering Computations (1999)               |
        *----------------------------------------------------------------*/
@@ -2118,9 +2118,9 @@ endline:
 /*----------------------------------------------------------------------*/
 /* loop over the nodes of ele */
 for(i=0; i<ele->numnp; i++)
-{ 
+{
   actfnode = ele->node[i];
-  /* loop over the dofs of actfnode */ 
+  /* loop over the dofs of actfnode */
   for(j=0; j<2; j++)
   {
     actfnode->sol_mf.a.da[3][j] += eload[j][i];
@@ -2130,31 +2130,31 @@ for(i=0; i<ele->numnp; i++)
 #else
 dserror("FSI-functions not compiled in\n");
 #endif
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of f2_fsiload */
 
 
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief put coupling forces from fluid nodes to structure nodes, mortar method
 
 <pre>                                                        firl 04/04
 
-The internal forces of the fluid nodes  are stored at 
-sol_mf.a.da[3][..]. This subroutine assembles a array 
-coupforc.a.da [actinterface->numnps][2]. 
-In a second step the corresponding forces on the structure nodes are 
-computed. This forces depend on the mortar coefficients stored at the 
-structure nodes on the interface in node->mtr_coeff.a.dv[]. The coupling 
+The internal forces of the fluid nodes  are stored at
+sol_mf.a.da[3][..]. This subroutine assembles a array
+coupforc.a.da [actinterface->numnps][2].
+In a second step the corresponding forces on the structure nodes are
+computed. This forces depend on the mortar coefficients stored at the
+structure nodes on the interface in node->mtr_coeff.a.dv[]. The coupling
 forces on the structure nodes are stored at sol_mf.a.da[4][..].
 
 </pre>
 \param *masterfield   FIELD	     (i)   struct field
 \param *int_faces    INTERFACES      (i)   the interfaces of the model
-\return 0                                                                             
+\return 0
 
 ------------------------------------------------------------------------*/
 void fsi_put_coupforc2struct(FIELD *masterfield, INTERFACES *int_faces)
@@ -2168,7 +2168,7 @@ DOUBLE b;                          /* parameter for nodal position      */
 INTERFACE *actinterface;           /* the actual interface              */
 
 /* erase sol_mf[4] for all master nodes */
-solserv_sol_zero(masterfield, 0, 3, 4);
+solserv_sol_zero(masterfield, 0, node_array_sol_mf, 4);
 
 /* loop over the interfaces */
 for(i=0; i<int_faces->numint; i++)
@@ -2177,12 +2177,12 @@ for(i=0; i<int_faces->numint; i++)
   /*------------------------------------------------- values to variables */
   coupforc_a = amdef("coupforc", &coupforc, actinterface->numnps, 2, "DA");
   amzero(&coupforc);
-  
+
   /*----------------------------------------------------------------------*/
   /*                               PART I                                 */
   /*----------------------------------------------------------------------*/
   /* construct array of coupling forces according to the order of nodes in*/
-  
+
   /* loop slave nodes at the interface */
   for(j=0; j<actinterface->numnps; j++)
   {
@@ -2196,18 +2196,18 @@ for(i=0; i<int_faces->numint; i++)
     if(actinterface->gnode_bound2sc != NULL &&
        actnode->gnode->node->Id == actinterface->gnode_bound2sc->node->Id)
       b=0.5;
-    
+
     /*------ the internal forces of sol_mf.a.da[3][.] are scaled by -1 to */
     /*-------------------------------------------- obtain external forces */
     coupforc.a.da[j][0] = -actnode->sol_mf.a.da[3][0] * b;
     coupforc.a.da[j][1] = -actnode->sol_mf.a.da[3][1] * b;
   }
-  
+
   /*----------------------------------------------------------------------*/
   /*                               PART II                                */
   /*----------------------------------------------------------------------*/
   /* ---put forces from coupforc[..][0..1] to the respective master nodes */
-  
+
   /* loop master nodes at the interface */
   for(j=0; j<actinterface->numnpm; j++)
   {
@@ -2222,26 +2222,26 @@ for(i=0; i<int_faces->numint; i++)
       if((a+k)<coupforc.fdim)
       {
         /* check if the actual node is on the intersection between two interfaces*/
-        if((actinterface->gnode_bound1mc != NULL && 
-           actnode->gnode->node->Id == actinterface->gnode_bound1mc->node->Id) || 
-          (actinterface->gnode_bound2mc != NULL && 
+        if((actinterface->gnode_bound1mc != NULL &&
+           actnode->gnode->node->Id == actinterface->gnode_bound1mc->node->Id) ||
+          (actinterface->gnode_bound2mc != NULL &&
            actnode->gnode->node->Id == actinterface->gnode_bound2mc->node->Id))
-        {    
+        {
           /* the index i runs with the interfaces */
-          actnode->sol_mf.a.da[4][0] += actnode->mtr_coeff.a.da[k][i] * 
+          actnode->sol_mf.a.da[4][0] += actnode->mtr_coeff.a.da[k][i] *
                                         coupforc.a.da[a+k][0];
-          actnode->sol_mf.a.da[4][1] += actnode->mtr_coeff.a.da[k][i] * 
+          actnode->sol_mf.a.da[4][1] += actnode->mtr_coeff.a.da[k][i] *
                                           coupforc.a.da[a+k][1];
         }
         else
-        {    
-          actnode->sol_mf.a.da[4][0] += actnode->mtr_coeff.a.dv[k] * 
+        {
+          actnode->sol_mf.a.da[4][0] += actnode->mtr_coeff.a.dv[k] *
                                          coupforc.a.da[a+k][0];
-          actnode->sol_mf.a.da[4][1] += actnode->mtr_coeff.a.dv[k] * 
+          actnode->sol_mf.a.da[4][1] += actnode->mtr_coeff.a.dv[k] *
                                         coupforc.a.da[a+k][1];
         }
       }
-    } /* end of loop over the mortar coefficients (k)*/     
+    } /* end of loop over the mortar coefficients (k)*/
   } /* end of loop over the master nodes at the interface (i) */
 } /* end of loop over the interfaces (i)*/
 } /* end of fsi_put_coupforc2struct */
@@ -2250,23 +2250,23 @@ for(i=0; i<int_faces->numint; i++)
 /*!----------------------------------------------------------------------
 \brief  point neumann conditions                            firl  04/04     |
 
- <pre> 
+ <pre>
 
- this routine is based on rhs_point_neum written by m.gee in 3/02     
- Attention! This assembly of nodal forces works only correct with    
- partitioning in the "Cut_Elements" style !!!!                       
-                                                                      
- Here we set up the rhs[4] for the structure field                    
- The forces assembled in this routine are resulting from fsi coupling 
+ this routine is based on rhs_point_neum written by m.gee in 3/02
+ Attention! This assembly of nodal forces works only correct with
+ partitioning in the "Cut_Elements" style !!!!
+
+ Here we set up the rhs[4] for the structure field
+ The forces assembled in this routine are resulting from fsi coupling
 
 </pre>
 \param *rhs          DOUBLE	     (i)   pointer to rhs
 \param dimrhs        INT             (i)   the dimension of the rhs
 \param *actpart      PARTITION       (i)   the actual part
-\return 0                                                 
-                            
+\return 0
+
 ------------------------------------------------------------------------*/
-void fsiserv_rhs_point_neum(DOUBLE *rhs, INT dimrhs, PARTITION *actpart)     
+void fsiserv_rhs_point_neum(DOUBLE *rhs, INT dimrhs, PARTITION *actpart)
 {
 INT             i,j;
 NODE           *actnode;
@@ -2297,7 +2297,7 @@ for (i=0; i<actpart->pdis[0].numnp; i++)
   }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -18,6 +18,7 @@ Maintainer: Steffen Genkinger
 #include "../solver/solver.h"
 #include "../fluid_full/fluid_prototypes.h"
 #include "fsi_prototypes.h"
+#include "../io/io.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -145,6 +146,8 @@ static CONTAINER       container;          /* variables for calelm             *
 static FLUID_STRESS    str;
 static FLUID_DYNAMIC  *fdyn;               /* fluid dynamic variables   */
 static FSI_DYNAMIC    *fsidyn;             /* fsi dynamic variables     */
+
+static BIN_OUT_FIELD out_context;
 
 #ifdef DEBUG
 dstrc_enter("fsi_fluid");
@@ -347,8 +350,16 @@ fluid_cons();
 #ifdef D_MORTAR
 /* redefine the size of sol_mf from 2 to 3, the third field is necessary*/
 /* to store the nodal forces due to fsi */
-  solserv_sol_zero(actfield, 0, 3, 3);
+  solserv_sol_zero(actfield, 0, node_array_sol_mf, 3);
 #endif
+
+  /* initialize binary output
+   * It's important to do this only after all the node arrays are set
+   * up because their sizes are used to allocate internal memory. */
+  init_bin_out_field(&out_context,
+                     &(actsolv->sysarray_typ[actsysarray]),
+                     &(actsolv->sysarray[actsysarray]),
+                     actfield, actpart, actintra, 0);
 
 break;
 
@@ -580,7 +591,7 @@ if (fsidyn->ifsi>0)
    "Stress reduction for 'cut_nodes' not possible\n");
    fluid_reducestress(actintra,actpart,actfield,fdyn->numdf,str);
    /*----------------------------------------- store stresses in sol_mf */
-   solserv_sol_zero(actfield,0,3,1);
+   solserv_sol_zero(actfield,0,node_array_sol_mf,1);
    fsi_fluidstress_result(actfield,fdyn->numdf);
 }
 
@@ -590,7 +601,7 @@ if(fsidyn->coupmethod == 0) /* mortar method */
 {
   /*------- redefine the size of sol_mf from 2 to 3, the third field is */
   /*-------------------- necessary to store the nodal forces due to fsi */
-  solserv_sol_zero(actfield, 0, 3, 3);
+  solserv_sol_zero(actfield, 0, node_array_sol_mf, 3);
 }
 #endif
 
@@ -633,15 +644,15 @@ fluid_cal_normal(actfield,2,action);
 
 /*------- copy solution from sol_increment[1][j] to sol_increment[0][j] */
 if (fdyn->freesurf==3 || fdyn->freesurf==5)
-   solserv_sol_copy(actfield,0,1,1,1,0);
+   solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol_increment,1,0);
 
 /*------- copy solution from sol_increment[3][j] to sol_increment[1][j] */
-solserv_sol_copy(actfield,0,1,1,3,1);
+solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol_increment,3,1);
 
 /*---------------------- for multifield fluid problems with freesurface */
 /*-------------- copy solution from sol_increment[3][j] to sol_mf[0][j] */
 /* check this for FSI with free surface!!! */
-if (fdyn->freesurf>0) solserv_sol_copy(actfield,0,1,3,3,0);
+if (fdyn->freesurf>0) solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol_mf,3,0);
 
 
 /*---------------------------------------------- finalise this timestep */
@@ -661,7 +672,7 @@ if (pssstep==fsidyn->uppss && ioflags.fluid_vis_file==1)
 
 /*-------- copy solution from sol_increment[3][j] to sol[actpos][j]
            and transform kinematic to real pressure --------------------*/
-solserv_sol_copy(actfield,0,1,0,3,actpos);
+solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol,3,actpos);
 fluid_transpres(actfield,0,0,actpos,fdyn->numdf-1,0);
 
 if (outstep==fdyn->upout && ioflags.fluid_sol_file==1)
@@ -675,6 +686,7 @@ if (restartstep==fsidyn->uprestart)
 {
    restartstep=0;
    restart_write_fluiddyn(fdyn,actfield,actpart,actintra,action,&container);
+   restart_write_bin_fluiddyn(&out_context, fdyn);
 }
 
 /*---------------------------------------------------------- monitoring */
@@ -831,12 +843,21 @@ if (fsidyn->ifsi>0)
    fluid_reducestress(actintra,actpart,actfield,fdyn->numdf,str);
 
    /*----------------------------------------- store stresses in sol_mf */
-   solserv_sol_zero(actfield,0,3,1);
+   solserv_sol_zero(actfield,0,node_array_sol_mf,1);
    fsi_fluidstress_result(actfield,fdyn->numdf);
 }
 
 break;
 
+/*======================================================================*
+                            Binary Output
+ *======================================================================*/
+case 98:
+  if (ioflags.fluid_sol_gid==1) {
+    out_results(&out_context, fdyn->acttime, fdyn->step, actpos, OUTPUT_VELOCITY);
+    out_results(&out_context, fdyn->acttime, fdyn->step, actpos, OUTPUT_PRESSURE);
+  }
+  break;
 
 /*======================================================================*
  |                C L E A N I N G   U P   P H A S E                     |
@@ -894,10 +915,12 @@ if (fdyn->checkarea>0) amdel(&totarea_a);
 solserv_del_vec(&(actsolv->rhs),actsolv->nrhs);
 solserv_del_vec(&(actsolv->sol),actsolv->nsol);
 
+/* finalize output */
+destroy_bin_out_field(&out_context);
+
 #ifndef PARALLEL
 CCAFREE(actintra);
 #endif
-
 break;
 default:
    dserror("Parameter out of range: mctrl \n");

@@ -19,6 +19,7 @@ Maintainer: Steffen Genkinger
 #include "../ale3/ale3.h"
 #include "../ale2/ale2.h"
 #include "fsi_prototypes.h"
+#include "../io/io.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -154,6 +155,8 @@ static SPARSE_TYP    array_typ;   /* type of psarse system matrix               
 
 static FSI_DYNAMIC  *fsidyn;
 static ALE_DYNAMIC  *adyn;
+
+static BIN_OUT_FIELD out_context;
 
 #ifdef DEBUG
 dstrc_enter("fsi_ale_2step");
@@ -298,10 +301,29 @@ calinit(actfield,actpart,action,&container);
 /*--------------------------------------------------- init ale field ---*/
 fsi_init_ale(actfield,2);
 
+/* initialize binary output
+ * It's important to do this only after all the node arrays are set
+ * up because their sizes are used to allocate internal memory. */
+init_bin_out_field(&out_context,
+                   &(actsolv->sysarray_typ[actsysarray]),
+                   &(actsolv->sysarray[actsysarray]),
+                   actfield, actpart, actintra, 0);
+
 /*--------------------------------------------------- check for restart */
 if (genprob.restart!=0)
 {
+#ifdef NEW_RESTART_READ
+   restart_read_bin_aledyn(adyn,
+                           &(actsolv->sysarray_typ[i]),
+                           &(actsolv->sysarray[i]),
+                           actfield,
+                           actpart,
+                           0,
+                           actintra,
+                           genprob.restart);
+#else
    restart_read_aledyn(genprob.restart,adyn,actfield,actpart,actintra);
+#endif
 }
 
 /*---------------------------------------------------------- monitoring */
@@ -360,7 +382,7 @@ if (par.myrank==0)
 /*--------------------------------------- sequential staggered schemes: */
 /*------------------------ copy from nodal sol_mf[1][j] to sol_mf[0][j] */
 if (fsidyn->ifsi<3 && fsidyn->ifsi>0)
-solserv_sol_copy(actfield,0,3,3,1,0);
+solserv_sol_copy(actfield,0,node_array_sol_mf,node_array_sol_mf,1,0);
 
 dsassert(fsidyn->ifsi!=3,"ale-solution handling not implemented for algo with DT/2-shift!\n");
 
@@ -483,14 +505,14 @@ solserv_result_incre(actfield,
 /*---------- add actual solution increment to sol (to serve output): ---*/
 /* step 1: */
    /* copy prev. solution form sol_increment[1][j] to sol[actpos][j] ---*/
-solserv_sol_copy(actfield,0,1,0,1,actpos);
+solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol,1,actpos);
 /* step 2: */
        /*----------- add actual solution increment to sol[actpos][j] ---*/
-solserv_sol_add(actfield,0,1,0,0,actpos,1.0);
+solserv_sol_add(actfield,0,node_array_sol_increment,node_array_sol,0,actpos,1.0);
 
 /* save actual solution to be the previous one in the next time step ---*/
 /*--------- copy actual solution from sol[actpos][i] to sol_mf[1][i] ---*/
-solserv_sol_copy(actfield,0,0,3,actpos,1);
+solserv_sol_copy(actfield,0,node_array_sol,node_array_sol_mf,actpos,1);
 
 /*----------------------------------------------------------------------*/
 if (fsidyn->ifsi>=4 || fsidyn->ifsi<0)
@@ -503,14 +525,14 @@ case 3:
 /*------------------------------------ for iterative staggared schemes: */
 /*------------------------ copy from nodal sol_mf[1][j] to sol_mf[0][j] */
 if (fsidyn->ifsi>=4 || fsidyn->ifsi==-1)
-   solserv_sol_copy(actfield,0,3,3,1,0);
+   solserv_sol_copy(actfield,0,node_array_sol_mf,node_array_sol_mf,1,0);
 
 /*--------------------- to get the corrected free surface position copy
   --------------------------------- from sol_mf[1][j] to sol[actpos][j] */
-solserv_sol_copy(actfield,0,3,0,0,actpos);
+solserv_sol_copy(actfield,0,node_array_sol_mf,node_array_sol,0,actpos);
 
 /*---------------------------- from sol_mf[1][j] to sol_increment[1][j] */
-solserv_sol_copy(actfield,0,3,1,1,1);
+solserv_sol_copy(actfield,0,node_array_sol_mf,node_array_sol_increment,1,1);
 
 /*------------------------------------------- print out results to .out */
 outstep++;
@@ -542,6 +564,7 @@ if (restartstep==fsidyn->uprestart)
 {
    restartstep=0;
    restart_write_aledyn(adyn,actfield,actpart,actintra);
+   restart_write_bin_aledyn(&out_context, adyn);
 }
 
 /*--------------------------------------- do mesh quality statistics ---*/
@@ -624,6 +647,12 @@ solserv_result_incre(
 
 break;
 
+/*======================================================================*
+                            Binary Output
+ *======================================================================*/
+case 98:
+  out_results(&out_context, adyn->time, adyn->step, actpos, OUTPUT_DISPLACEMENT);
+  break;
 
 /*======================================================================*
  |                C L E A N I N G   U P   P H A S E                     |
@@ -655,6 +684,10 @@ if (ioflags.fluid_vis_file==1 && par.myrank==0)
 if (par.myrank==0) amdel(&time_a);
 solserv_del_vec(&(actsolv->rhs),actsolv->nrhs);
 solserv_del_vec(&(actsolv->sol),actsolv->nsol);
+
+/* finalize output */
+destroy_bin_out_field(&out_context);
+
 #ifndef PARALLEL
 CCAFREE(actintra);
 #endif

@@ -11,7 +11,7 @@
 Maintainer: Stefan Hartmann
             hartmann@statik.uni-stuttgart.de
             http://www.uni-stuttgart.de/ibs/members/hartmann/
-            0771 - 685-6120
+            0711 - 685-6120
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -116,7 +116,7 @@ DOUBLE              strain[6];                              /* strains */
 
 static ARRAY        strK_a;      static DOUBLE **gp_strK;   /* element array for stresses on nodal points */
 
-static ARRAY        stress_a;    static DOUBLE **gp_stress; /* element array for stresses on gaussian points */
+/*static ARRAY        stress_a;    static DOUBLE **gp_stress;*/ /* element array for stresses on gaussian points */
                                       DOUBLE ***ele_stress; /* pointer to array of stress history in element */
 /*static ARRAY        forces_a;    static DOUBLE **gp_forces;*/ /* element array for forces (stress resultants) on gaussian points */
 /*                                      DOUBLE ***ele_forces;*/ /* pointer to array of stress history in element */
@@ -217,8 +217,10 @@ C         = amdef("C"      ,&C_a   ,6 ,6                    ,"DA");
 D         = amdef("D"      ,&D_a   ,12,12                   ,"DA");
 
 gp_strK   = amdef("gp_strK"  ,&strK_a,   6,MAXNODESTRESS_SHELL9,"DA");
-gp_stress = amdef("gp_stress",&stress_a, 6,MAXGAUSS,"DA");
+/*gp_stress = amdef("gp_stress",&stress_a, 6,MAXGAUSS,"DA");*/
 /*gp_forces = amdef("gp_forces",&forces_a,18,MAXGAUSS,"DA"); */
+
+amzero(&C_a);
 
    goto end;
 }
@@ -267,7 +269,7 @@ amdel(&C_a);
 amdel(&D_a);
 
 amdel(&strK_a);
-amdel(&stress_a);
+/*amdel(&stress_a);*/
 /*amdel(&forces_a);*/
 
 goto end;
@@ -286,7 +288,8 @@ for (kl=0; kl<num_klay; kl++)
 }
 /*-------------------------------------------- init the gaussian points */
 s9intg(ele,data,0);
-amzero(&stress_a);
+amzero(&(ele->e.s9->gp_stress));
+/*amzero(&stress_a);*/
 /*amzero(&forces_a);*/
 /*----------------------------------------------- integrationsparameter */
 nir     = ele->e.s9->nGP[0];
@@ -393,7 +396,7 @@ for (lr=0; lr<nir; lr++)
                            gkovr,gkonr,rot_axis,phi,ip,actlay,istore,newval);
                /*- calculates physical stresses at gaussian point in respect to local/global coordinat system */
                ID_stress = ngauss + (2*actlay + lt) * (nir*nis);  /*write gp's layerwise*/
-               s9_tstress(gp_stress,stress,ID_stress,gkovr,ele);
+               s9_tstress(ele->e.s9->gp_stress.a.da,stress,ID_stress,gkovr,ele);
             }/*========================================== end of loop over lt */
             actlay++;
          }/*======= end of loop over all material layers of aktual kinematic layer*/
@@ -465,7 +468,7 @@ for (actlay=0; actlay<sum_lay; actlay++)   /*loop over all layers */
                for (k=0; k<(nir*nis); k++)
                {
                  ID_stress = k + (2*actlay + lt) * (nir*nis);  /*write gp's layerwise*/
-                 strGP[k] = gp_stress[j][ID_stress];
+                 strGP[k] = ele->e.s9->gp_stress.a.da[j][ID_stress];
                }
 
                if      (distyp == quad4)

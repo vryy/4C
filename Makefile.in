@@ -1,4 +1,14 @@
 
+# Can we get by without any libraries?
+post_gid: $(OBJS_POST_GID_BIN) $(OBJS_POST_GID_COMMON) $(OBJS_POST_COMMON)
+	$(PLAIN_LD) $(LDFLAGS) $(OBJS_POST_GID_BIN) $(OBJS_POST_GID_COMMON) $(OBJS_POST_COMMON) -o post_gid
+
+post_gid_txt: $(OBJS_POST_GID_TXT) $(OBJS_POST_GID_COMMON) $(OBJS_POST_COMMON)
+	$(PLAIN_LD) $(LDFLAGS) $(OBJS_POST_GID_TXT) $(OBJS_POST_GID_COMMON) $(OBJS_POST_COMMON) -o post_gid_txt
+
+post_out: $(OBJS_POST_OUT) $(OBJS_POST_COMMON)
+	$(PLAIN_LD) $(LDFLAGS) $(OBJS_POST_OUT) $(OBJS_POST_COMMON) -o post_out
+
 $(OBJS_MAIN):
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
@@ -92,6 +102,21 @@ $(OBJS_XFEM):
 $(OBJS_VISUAL):
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
+$(OBJS_POST_GID_BIN):
+		$(PLAIN_CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+
+$(OBJS_POST_GID_TXT):
+		$(PLAIN_CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+
+$(OBJS_POST_GID_COMMON):
+		$(PLAIN_CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+
+$(OBJS_POST_COMMON):
+		$(PLAIN_CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+
+$(OBJS_POST_OUT):
+		$(PLAIN_CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+
 # fortran
 $(OBJS_FORTRAN):
 		$(F77) $(FFLAGS)  -c ${SRC}/${@D}/$(*F).f -o ${SRC}/$@
@@ -104,4 +129,8 @@ $(OBJS_FORTRAN):
 
 clean:
 	rm -f	src/*/*.o
+
+pack:
+	find . -type f| sed -e 's/^\.//' -e 's/^\///' -e 's/.*~$$//' -e 's/^cca_.*//' -e 's/^post_gid$$//' -e 's/^post_gid_txt$$//' -e 's/^Makefile$$//' -e 's/^files$$//' -e 's/.*\.o$$//' -e '/^$$/d' | sort -u > files
+	tar cjf ../ccarat-current.tar.bz2 -T files
 

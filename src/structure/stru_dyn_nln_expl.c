@@ -12,6 +12,7 @@ Maintainer: Michael Gee
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
+#include "../io/io.h"
 /*!----------------------------------------------------------------------
 \brief file pointers
 
@@ -138,6 +139,8 @@ ARRAY           dirich_a;           /* redundant vector of full length for diric
 DOUBLE         *dirich;
 
 STRUCT_DYN_CALC dynvar;             /* variables to perform dynamic structural simulation */
+
+BIN_OUT_FIELD   out_context;
 
 CONTAINER       container;          /* contains variables defined in container.h */
 container.isdyn = 1;                /* dynamic calculation */
@@ -389,6 +392,13 @@ dyne(&dynvar,actintra,actsolv,mass_array,&vel[0],&work[0]);
 sdyn->step = -1;
 sdyn->time = 0.0;
 
+/* initialize binary output
+ * It's important to do this only after all the node arrays are set
+ * up because their sizes are used to allocate internal memory. */
+init_bin_out_field(&out_context,
+                   &(actsolv->sysarray_typ[stiff_array]), &(actsolv->sysarray[stiff_array]),
+                   actfield, actpart, actintra, 0);
+
 /*----------------------------------------- output to GID postprozessor */
 if (ioflags.struct_disp_gid==1 || ioflags.struct_stress_gid==1)
 if (par.myrank==0)
@@ -445,6 +455,20 @@ if (restart)
    /*------------- save the restart interval, as it will be overwritten */
    mod_res_write = sdyn->res_write_evry;
    /*----------------------------------- the step to read in is restart */
+#ifdef NEW_RESTART_READ
+   restart_read_bin_nlnstructdyn(sdyn, &dynvar,
+                                 &(actsolv->sysarray_typ[stiff_array]),
+                                 &(actsolv->sysarray[stiff_array]),
+                                 actfield, actpart, 0, actintra,
+                                 actsolv->nrhs, actsolv->rhs,
+                                 actsolv->nsol, actsolv->sol,
+                                 1            , dispi       ,
+                                 1            , vel         ,
+                                 1            , acc         ,
+                                 3            , fie         ,
+                                 3            , work        ,
+                                 restart);
+#else
    restart_read_nlnstructdyn(restart,
                              sdyn,
                              &dynvar,
@@ -463,6 +487,7 @@ if (restart)
                              &dirich_a,
                              &container /* contains variables defined in container.h */
                              );
+#endif
    /*-------------------------------------- put the dt to the structure */
    sdyn->dt = dt;
    /*--------------------------------------- put nstep to the structure */
@@ -613,6 +638,16 @@ if (ioflags.struct_stress_file==1 && ioflags.struct_disp_file==1)
   out_sol(actfield,actpart,actintra,sdyn->step,0);
 }
 /*--------------------------------------------- printout results to gid */
+if (mod_disp==0)
+  if (ioflags.struct_disp_gid==1) {
+    out_results(&out_context, sdyn->time, sdyn->step, 0, OUTPUT_DISPLACEMENT);
+    out_results(&out_context, sdyn->time, sdyn->step, 1, OUTPUT_VELOCITY);
+    out_results(&out_context, sdyn->time, sdyn->step, 2, OUTPUT_ACCELERATION);
+  }
+if (mod_stress==0)
+  if (ioflags.struct_stress_gid==1)
+    out_results(&out_context, sdyn->time, sdyn->step, 0, OUTPUT_STRESS);
+
 if (par.myrank==0)
 {
    if (mod_disp==0)
@@ -627,7 +662,7 @@ if (par.myrank==0)
    out_gid_sol("stress"      ,actfield,actintra,sdyn->step,0,ZERO);
 }
 /*-------------------------------------- write restart data to pss file */
-if (mod_res_write==0)
+if (mod_res_write==0) {
 restart_write_nlnstructdyn(sdyn,
                            &dynvar,
                            actfield,
@@ -645,6 +680,16 @@ restart_write_nlnstructdyn(sdyn,
                            &dirich_a,
                            &container   /* contains variables defined in container.h */
                            );
+restart_write_bin_nlnstructdyn(&out_context,
+                               sdyn, &dynvar,
+                               actsolv->nrhs, actsolv->rhs,
+                               actsolv->nsol, actsolv->sol,
+                               1            , dispi       ,
+                               1            , vel         ,
+                               1            , acc         ,
+                               3            , fie         ,
+                               3            , work);
+}
 /*----------------------------------------------------- print time step */
 if (par.myrank==0) dyn_nlnstruct_outstep(&dynvar,sdyn,0,sdyn->dt);
 /*------------------------------------------ measure time for this step */
@@ -664,6 +709,10 @@ solserv_del_vec(&vel,1);
 solserv_del_vec(&acc,1);
 solserv_del_vec(&fie,3);
 solserv_del_vec(&work,3);
+
+/* finalize output */
+destroy_bin_out_field(&out_context);
+
 /*----------------------------------------------------------------------*/
 #ifndef PARALLEL
 CCAFREE(actintra);

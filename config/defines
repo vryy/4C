@@ -7,6 +7,12 @@
 # even though we never make mistakes debugging is an option
 #DEBUG
 
+# some people like dserror to dump core
+#DSERROR_DUMP
+
+# enable reading restart data the new way
+#NEW_RESTART_READ
+
 # all possible elements
 #D_ALE              # defines element ale (2D+3D)
 #D_AXISHELL         # defines axisymmetric shell element
@@ -68,5 +74,3 @@
 # visual packages (only in seriell)
 #VISUAL2_PACKAGE    # defines visualisation tool VISUAL2
 #VISUAL3_PACKAGE    # defines visualisation tool VISUAL3
-
-#GID_BINARY          # binary output

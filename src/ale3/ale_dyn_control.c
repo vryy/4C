@@ -345,7 +345,7 @@ solserv_result_incre(
 locsys_trans_sol(actfield,0,1,0,1);
 
 /*------------------- copy from nodal sol_increment[0][j] to sol[0][j] */
-solserv_sol_copy(actfield,0,1,0,0,0);
+solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol,0,0);
 
 /*------------------------------------------- print out results to .out */
 if (ioflags.ale_disp_file==1)
@@ -495,7 +495,7 @@ init_assembly(actpart,actsolv,actintra,actfield,actsysarray,0);
 *action = calc_ale_init_nln;
 calinit(actfield,actpart,action,&container);
 /*--------------------------------------- init solution to zero -------*/
-solserv_sol_zero(actfield,0,1,1); /* solution on sol_increment[1][j] */
+solserv_sol_zero(actfield,0,node_array_sol_increment,1); /* solution on sol_increment[1][j] */
 /*--------------------------------------- init all applied time curves */
 for (actcurve = 0;actcurve<numcurve;actcurve++)
    dyn_init_curve(actcurve,adyn->nstep,adyn->dt,adyn->maxtime);
@@ -587,9 +587,9 @@ solserv_result_incre(
 		     0);
 /*--------- update nodal solution values by adding actual increments ---*/
    /* sol_increment.a.da[1][j] += sol_increment.a.da[0][j]; */
-solserv_sol_add(actfield,0,1,1,0,1,1.0);
+solserv_sol_add(actfield,0,node_array_sol_increment,node_array_sol_increment,0,1,1.0);
    /* sol.a.da[0][j] = sol_increment.a.da[1][j]; */
-solserv_sol_copy(actfield,0,1,0,1,0);
+solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol,1,0);
 /*------------------------------------------- print out results to .out */
 if (ioflags.ale_disp_file==1)
 {
@@ -745,7 +745,7 @@ init_assembly(actpart,actsolv,actintra,actfield,actsysarray,0);
 *action = calc_ale_init_step2;
 calinit(actfield,actpart,action,&container);
 /*--------------------------------------- init solution to zero -------*/
-solserv_sol_zero(actfield,0,1,1); /* solution on sol_increment[1][j] */
+solserv_sol_zero(actfield,0,node_array_sol_increment,1); /* solution on sol_increment[1][j] */
 /*---------------- put actual min and max stiffening factor in place ---*/
 container.min = 0.10;
 container.max = 500.0;
@@ -883,9 +883,9 @@ solserv_result_incre(actfield,
      		     0);
 /*--------- update nodal solution values by adding actual increments ---*/
    /* sol_increment.a.da[1][j] += sol_increment.a.da[0][j]; */
-solserv_sol_add(actfield,0,1,1,0,1,1.0);
+solserv_sol_add(actfield,0,node_array_sol_increment,node_array_sol_increment,0,1,1.0);
    /* sol.a.da[0][j] = sol_increment.a.da[1][j]; */
-solserv_sol_copy(actfield,0,1,0,1,0);
+solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol,1,0);
 /*------------------------------------------- print out results to .out */
 if (ioflags.ale_disp_file==1)
 {
@@ -1036,7 +1036,7 @@ init_assembly(actpart,actsolv,actintra,actfield,actsysarray,0);
  *action = calc_ale_init_spring;
 calinit(actfield,actpart,action,&container);
 /*--------------------------------------- init solution to zero -------*/
-solserv_sol_zero(actfield,0,1,1); /* solution on sol_increment[1][j] */
+solserv_sol_zero(actfield,0,node_array_sol_increment,1); /* solution on sol_increment[1][j] */
 /*--------------------------------------- init all applied time curves */
 for (actcurve = 0;actcurve<numcurve;actcurve++)
    dyn_init_curve(actcurve,adyn->nstep,adyn->dt,adyn->maxtime);
@@ -1126,9 +1126,9 @@ solserv_result_incre(
 		     0);
 /*--------- update nodal solution values by adding actual increments ---*/
    /* sol_increment.a.da[1][j] += sol_increment.a.da[0][j]; */
-solserv_sol_add(actfield,0,1,1,0,1,1.0);
+solserv_sol_add(actfield,0,node_array_sol_increment,node_array_sol_increment,0,1,1.0);
    /* sol.a.da[0][j] = sol_increment.a.da[1][j]; */
-solserv_sol_copy(actfield,0,1,0,1,0);
+solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol,1,0);
 /*------------------------------------------- print out results to .out */
 if (ioflags.ale_disp_file==1)
 {
@@ -1282,7 +1282,7 @@ init_assembly(actpart,actsolv,actintra,actfield,actsysarray,0);
 *action = calc_ale_init_laplace;
 calinit(actfield,actpart,action,&container);
 /*--------------------------------------- init solution to zero -------*/
-solserv_sol_zero(actfield,0,1,1); /* solution on sol_increment[1][j] */
+solserv_sol_zero(actfield,0,node_array_sol_increment,1); /* solution on sol_increment[1][j] */
 /*--------------------------------------- init all applied time curves */
 for (actcurve = 0;actcurve<numcurve;actcurve++)
    dyn_init_curve(actcurve,adyn->nstep,adyn->dt,adyn->maxtime);
@@ -1371,9 +1371,9 @@ solserv_result_incre(
 		     0);
 /*--------- update nodal solution values by adding actual increments ---*/
    /* sol_increment.a.da[1][j] += sol_increment.a.da[0][j]; */
-solserv_sol_add(actfield,0,1,1,0,1,1.0);
+solserv_sol_add(actfield,0,node_array_sol_increment,node_array_sol_increment,0,1,1.0);
    /* sol.a.da[0][j] = sol_increment.a.da[1][j]; */
-solserv_sol_copy(actfield,0,1,0,1,0);
+solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol,1,0);
 /*------------------------------------------- print out results to .out */
 if (ioflags.ale_disp_file==1)
 {

@@ -17,6 +17,7 @@ Maintainer: Steffen Genkinger
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 #include "fsi_prototypes.h"
+#include "../io/io.h"
 /*!----------------------------------------------------------------------
 \brief file pointers
 
@@ -162,6 +163,8 @@ static CONTAINER       container;        /* contains variables defined in contai
 
 static FSI_DYNAMIC       *fsidyn;
 static STRUCT_DYNAMIC    *sdyn;
+
+static BIN_OUT_FIELD out_context;
 
 #ifdef DEBUG
 dstrc_enter("fsi_struct");
@@ -445,6 +448,24 @@ fsi_structpredictor(actfield,1);
 /*-------------------------------------------- initialise energey check */
 if (fsidyn->ichecke>0)
 fsi_dyneint(actfield,1);
+
+if (fsidyn->ifsi>=4) {
+  /* entry 10 is used below. So make sure it exists now. */
+  solserv_sol_zero(actfield, 0, node_array_sol, 10);
+}
+else {
+  /* Make sure the entry for our old solution is there. */
+  solserv_sol_zero(actfield, 0, node_array_sol, 9);
+}
+
+/* initialize binary output
+ * It's important to do this only after all the node arrays are set
+ * up because their sizes are used to allocate internal memory. */
+init_bin_out_field(&out_context,
+                   &(actsolv->sysarray_typ[stiff_array]),
+                   &(actsolv->sysarray[stiff_array]),
+                   actfield, actpart, actintra, 0);
+
 /*----------------------------------------- output to GID postprozessor */
 if (ioflags.struct_disp_gid==1 || ioflags.struct_stress_gid==1)
 if (par.myrank==0)
@@ -463,6 +484,24 @@ if (restart)
    nstep = sdyn->nstep;
    maxtime = sdyn->maxtime;
    /*----------------------------------- the step to read in is restart */
+#ifdef NEW_RESTART_READ
+   restart_read_bin_nlnstructdyn(sdyn,
+                                 &dynvar,
+                                 &(actsolv->sysarray_typ[stiff_array]),
+                                 &(actsolv->sysarray[stiff_array]),
+                                 actfield,
+                                 actpart,
+                                 0,
+                                 actintra,
+                                 actsolv->nrhs, actsolv->rhs,
+                                 actsolv->nsol, actsolv->sol,
+                                 1            , dispi       ,
+                                 1            , vel         ,
+                                 1            , acc         ,
+                                 3            , fie         ,
+                                 3            , work        ,
+                                 restart);
+#else
    restart_read_nlnstructdyn(restart,sdyn,&dynvar,actfield,actpart,actintra,action,
                              actsolv->nrhs, actsolv->rhs,
                              actsolv->nsol, actsolv->sol,
@@ -474,6 +513,7 @@ if (restart)
                              &intforce_a,
                              &dirich_a,
                              &container);     /* contains variables defined in container.h */
+#endif
    /*-------------------------------------- put the dt to the structure */
    sdyn->dt = dt;
    /*--------------------------------------- put nstep to the structure */
@@ -510,8 +550,8 @@ break;
  * sol_mf[2][j]        ... converged relaxed displ. at time (t-dt)      *
  * sol_mf[3][j]        ... actual dispi                                 *
  * sol_mf[4][j]        ... FSI coupl.-forces at the end of the timestep *
- * sol_mf[5][j]        ... FSI coupl.-forces at beginning of the timest.* 
- * sol_mf[6][j]        ... used in fsi_gradient.c                       * 
+ * sol_mf[5][j]        ... FSI coupl.-forces at beginning of the timest.*
+ * sol_mf[6][j]        ... used in fsi_gradient.c                       *
  *======================================================================*/
 
 /*
@@ -586,10 +626,10 @@ if (par.myrank==0)
 }
 
 /*--------------------------- copy solution from sol[9][j] to sol[0][j] */
-if (fsidyn->ifsi>=4 && fsiitnum>0) solserv_sol_copy(actfield,0,0,0,9,0);
+if (fsidyn->ifsi>=4 && fsiitnum>0) solserv_sol_copy(actfield,0,node_array_sol,node_array_sol,9,0);
 
 /*----------------------------- copy from nodal sol[1][j] to sol[10][j] */
-if (fsidyn->ifsi>=4 && fsiitnum==0) solserv_sol_copy(actfield,0,0,0,1,10);
+if (fsidyn->ifsi>=4 && fsiitnum==0) solserv_sol_copy(actfield,0,node_array_sol,node_array_sol,1,10);
 
 /*--------------------------------------------- increment step and time */
 /*sdyn->step++;*/
@@ -625,8 +665,8 @@ dyn_facfromcurve(actcurve,sdyn->time,&(dynvar.rldfac));
 /*------------------------ multiply rhs[1] by actual load factor rldfac */
 solserv_scalarprod_vec(&(actsolv->rhs[1]),dynvar.rldfac);
 
-/*----------------------- calculate external forces due to fsi coupling */ 
-if (fsidyn->coupmethod == 1) 
+/*----------------------- calculate external forces due to fsi coupling */
+if (fsidyn->coupmethod == 1)
 /* conforming discretization, take values from coincodent nodes         */
 {
   solserv_zero_vec(&(actsolv->rhs[4]));
@@ -636,8 +676,8 @@ if (fsidyn->coupmethod == 1)
   calrhs(actfield,actsolv,actpart,actintra,stiff_array,
          &(actsolv->rhs[4]),action,&container);
 }
-/* mortar method (mtr) */ 
-else if(fsidyn->coupmethod == 0) 
+/* mortar method (mtr) */
+else if(fsidyn->coupmethod == 0)
 {
   solserv_zero_vec(&(actsolv->rhs[4]));
   container.inherit = 0;
@@ -645,7 +685,7 @@ else if(fsidyn->coupmethod == 0)
   *action = calc_struct_fsiload_mtr;
   calrhs(actfield,actsolv,actpart,actintra,stiff_array,
          &(actsolv->rhs[4]),action,&container);
- 
+
 }
 else
   dserror("fsidyn->coupmethod unknown in fsi_struct! ");
@@ -892,13 +932,13 @@ else
 
 /*----- for iterative staggered schemes save solution of last iteration */
 /*- copy old total displacments from nodal sol_mf[0][j] to sol_mf[1][j] */
-if (fsidyn->ifsi>=4) solserv_sol_copy(actfield,0,3,3,0,1);
+if (fsidyn->ifsi>=4) solserv_sol_copy(actfield,0,node_array_sol_mf,node_array_sol_mf,0,1);
 
 /*------- copy total displacments from nodal sol[0][j] to sol_mf[0][j]  */
-solserv_sol_copy(actfield,0,0,3,0,0);
+solserv_sol_copy(actfield,0,node_array_sol,node_array_sol_mf,0,0);
 
 /*------- for sequential staggered schemes sol_mf[0][j] == sol_mf[1][j] */
-if (fsidyn->ifsi<4) solserv_sol_copy(actfield,0,3,3,0,1);
+if (fsidyn->ifsi<4) solserv_sol_copy(actfield,0,node_array_sol_mf,node_array_sol_mf,0,1);
 
 /*----------------------------------------------------- print time step */
 if (par.myrank==0)
@@ -966,16 +1006,16 @@ if (fsidyn->ichecke>0)
    fsi_dyneint(actfield,0);
 
    /*------ copy old fsi-forces from nodal sol_mf[4][j] to sol_mf[5][j] */
-   solserv_sol_copy(actfield,0,3,3,4,5);
+   solserv_sol_copy(actfield,0,node_array_sol_mf,node_array_sol_mf,4,5);
 }
 
 /*-------------------------------- save actual solution as old solution */
 /*------------------------------ copy from nodal sol[0][j] to sol[9][j] */
-solserv_sol_copy(actfield,0,0,0,0,9);
+solserv_sol_copy(actfield,0,node_array_sol,node_array_sol,0,9);
 
 /*---------------- save actual relaxed solution as old relaxed solution */
 /*------------------------ copy from nodal sol_mf[1][j] to sol_mf[2][j] */
-solserv_sol_copy(actfield,0,3,3,1,2);
+solserv_sol_copy(actfield,0,node_array_sol_mf,node_array_sol_mf,1,2);
 
 /*----------- perform stress calculation  and print out results to .out */
 outstep++;
@@ -1015,6 +1055,16 @@ if (restartstep==fsidyn->uprestart)
                               &intforce_a,
                               &dirich_a,
                               &container);  /* contains variables defined in container.h */
+   restart_write_bin_nlnstructdyn(&out_context,
+                                  sdyn,
+                                  &dynvar,
+                                  actsolv->nrhs, actsolv->rhs,
+                                  actsolv->nsol, actsolv->sol,
+                                  1            , dispi       ,
+                                  1            , vel         ,
+                                  1            , acc         ,
+                                  3            , fie         ,
+                                  3            , work);
 }
 
 /*----------------------------------------------------- print time step */
@@ -1028,6 +1078,23 @@ if (restartstep==fsidyn->uprestart)
 t1 = ds_cputime();
 fprintf(allfiles.out_err,"TIME for step %d is %f sec\n",sdyn->step,t1-t0);
 break;
+
+/*======================================================================*
+                            Binary Output
+ *======================================================================*/
+case 98:
+  out_results(&out_context, sdyn->time, sdyn->step, 0, OUTPUT_DISPLACEMENT);
+
+  /* This was not implemented before. I doubt it works. */
+  if (ioflags.struct_disp_gid==1) {
+    out_results(&out_context, sdyn->time, sdyn->step, 1, OUTPUT_VELOCITY);
+    out_results(&out_context, sdyn->time, sdyn->step, 2, OUTPUT_ACCELERATION);
+  }
+
+  if (ioflags.struct_stress_gid==1) {
+    out_results(&out_context, sdyn->time, sdyn->step, 0, OUTPUT_STRESS);
+  }
+  break;
 
 /*======================================================================*
  |                C L E A N I N G   U P   P H A S E                     |
@@ -1067,6 +1134,10 @@ solserv_del_vec(&vel,1);
 solserv_del_vec(&acc,1);
 solserv_del_vec(&fie,3);
 solserv_del_vec(&work,3);
+
+/* finalize output */
+destroy_bin_out_field(&out_context);
+
 /*----------------------------------------------------------------------*/
 #ifndef PARALLEL
 CCAFREE(actintra);

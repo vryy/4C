@@ -29,14 +29,14 @@ ccarat=`basename "$3"`
 
 # You want to do this regularly. However if you execute it here
 # you'll kill any ccarat instance currently running.
-#killall $ccarat
+killall $ccarat
 
 # Start the first debugger. It'll start all processes.
 mpirun -dbg=ddd $* &
 
 # Wait until the child processes have been created. That's cruical.
 # If the script fails you might have to increase this time.
-sleep 5
+sleep 15
 
 for i in `seq 1 $NP`; do
   # find the right process number

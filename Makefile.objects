@@ -20,7 +20,8 @@ OBJS_GLOBAL   = src/global_full/global_control.o \
                 src/global_full/global_calrhs.o \
                 src/global_full/global_restart_control.o \
                 src/global_full/global_open_files.o \
-		src/global_full/global_check_max.o
+		src/global_full/global_check_max.o \
+		src/global_full/element_info.o
 #                structure
 OBJS_STRUCTURE= src/structure/stru_dyn_nln.o \
                 src/structure/stru_dyn_nln_expl.o \
@@ -91,7 +92,8 @@ OBJS_PSS      = src/pss_full/pss_am.o \
                 src/pss_full/pss_fr.o \
                 src/pss_full/pss_pss.o \
                 src/pss_full/pss_perf.o \
-                src/pss_full/pss_visual.o
+                src/pss_full/pss_visual.o \
+                src/pss_full/pss_table.o
 #                input_full
 OBJS_INPUT    = src/input_full/input_control_global.o \
                 src/input_full/input_ctr_head.o \
@@ -245,6 +247,10 @@ OBJS_OUTPUT   = src/output/out_global.o \
                 src/output/out_gid_soldyn.o \
                 src/output/out_checkfilesize.o \
                 src/output/out_plt.o
+#                io
+OBJS_IO       = src/io/bin_singlefile.o \
+                src/io/bin_restart.o \
+                src/io/bin_packing.o
 #                wall1
 OBJS_WALL1    = src/wall1/w1_bop.o \
                 src/wall1/w1_b_barop.o \
@@ -614,3 +620,26 @@ OBJS_FORTRAN  = src/fortran/colsol.o \
 #                 src/fortran/s8_fserv.o \
 #                 src/fortran/opt_ffsd.o \
 #                 src/fortran/eigen_subspace.o
+
+#                post_common
+OBJS_POST_COMMON = src/post_common/post_common.o \
+                src/post_common/post_am.o \
+                src/post_common/post_ds.o \
+                src/post_common/post_perf.o \
+                src/post_common/post_table.o \
+                src/post_common/post_element_info.o
+
+#                post_gid
+OBJS_POST_GID_COMMON = src/post_gid/post_gid.o \
+                src/post_gid/shell9_out.o \
+                src/post_gid/shell9_intg.o \
+                src/post_gid/shell9_funcderiv.o
+
+OBJS_POST_GID_BIN = src/post_gid/gid_out.o \
+                src/post_gid/zlibint1.o \
+                src/post_gid/zlibint2.o
+
+OBJS_POST_GID_TXT = src/post_gid/gid_out_txt.o
+
+#                 post_out
+OBJS_POST_OUT = src/post_out/post_out.o

@@ -162,7 +162,7 @@ void ls_dyn()
             if (lsdyn->lsdata->reinitialization==1)
             {
               /* copy solution from sol_increment[1][j] to sol_increment[2][j] */
-              solserv_sol_copy(lsetfield,0,1,1,1,2);
+              solserv_sol_copy(lsetfield,0,node_array_sol_increment,node_array_sol_increment,1,2);
               /* turn reinitialization flag on */
               if (lsdyn->lsdata->reinitflag==1) dserror("reinitflag is on!");
               lsdyn->lsdata->reinitflag = 1;
@@ -264,7 +264,7 @@ void ls_dyn()
             if (lsdyn->lsdata->reinitialization==1)
             {
               /* copy solution from sol_increment[1][j] to sol_increment[2][j] */
-              solserv_sol_copy(lsetfield,0,1,1,1,2);
+              solserv_sol_copy(lsetfield,0,node_array_sol_increment,node_array_sol_increment,1,2);
               /* turn reinitialization flag on */
               if (lsdyn->lsdata->reinitflag==1) dserror("reinitflag is on!");
               lsdyn->lsdata->reinitflag = 1;

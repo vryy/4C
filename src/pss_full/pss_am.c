@@ -11,6 +11,8 @@ Maintainer: Malte Neumann
 
 ---------------------------------------------------------------------*/
 
+/*#include <assert.h>*/
+
 /*!----------------------------------------------------------------------
 \brief the header of everything
 *----------------------------------------------------------------------*/
@@ -169,6 +171,7 @@ return (void*)(buf+DWORD);
 void *CCAMALLOC(INT size)
 {
 void *buf;
+/*assert(size>0);*/
 buf = malloc((size_t)size);
 if (!buf) dserror("Allocation of memory failed");
 return (void*)(buf);
@@ -205,6 +208,7 @@ return (void*)(buf+DWORD);
 void *CCACALLOC(INT num, INT size)
 {
 void *buf;
+/*assert(num*size>0);*/
 buf = calloc((size_t)num,(size_t)size);
 if (!buf) dserror("Allocation of memory failed");
 return (void *)(buf);
@@ -246,6 +250,7 @@ return (void*)(buf+DWORD);
 void *CCAREALLOC(void *oldptr, INT size)
 {
 void *buf;
+/*assert(size>0);*/
 buf = realloc(oldptr,(size_t)size);
 if (!buf) dserror("Allocation of memory failed");
 return (void*)(buf);

@@ -805,7 +805,7 @@ if (fdyn->stchk==iststep)
 
 /*--------------------------------- copy solution at (n+1) to place (n) *
                                       in solution history sol_increment */
-solserv_sol_copy(actfield,0,1,1,3,1);
+solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol_increment,3,1);
 
 /*---------------------------------------------- finalise this timestep */
 outstep++;
@@ -813,7 +813,7 @@ pssstep++;
 
 /*-------- copy solution from sol_increment[3][j] to sol_[actpos][j]
            and transform kinematic to real pressure --------------------*/
-solserv_sol_copy(actfield,0,1,0,3,actpos);
+solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol,3,actpos);
 fluid_transpres(actfield,0,0,actpos,fdyn->numdf-1,0);
 
 fluid_copysol_tu(actfield,3,actpos,1);

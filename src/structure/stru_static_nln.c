@@ -12,6 +12,7 @@ Maintainer: Michael Gee
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
+#include "../io/io.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
@@ -132,6 +133,8 @@ SPARSE_TYP    array_typ;          /* type of sparse matrix */
 STANLN        nln_data;           /* structure to store and pass data for stanln */
 
 CALC_ACTION  *action;             /* pointer to the structures cal_action enum */
+
+BIN_OUT_FIELD out_context;
 
 CONTAINER     container;          /* contains variables defined in container.h */
 container.isdyn   = 0;              /* static computation */
@@ -269,6 +272,14 @@ init_assembly(actpart,actsolv,actintra,actfield,actsysarray,0);
 /*------------------------------- init the element calculating routines */
 *action = calc_struct_init;
 calinit(actfield,actpart,action,&container);
+
+/* initialize binary output
+ * It's important to do this only after all the node arrays are set
+ * up because their sizes are used to allocate internal memory. */
+init_bin_out_field(&out_context,
+                   &(actsolv->sysarray_typ[actsysarray]), &(actsolv->sysarray[actsysarray]),
+                   actfield, actpart, actintra, 0);
+
 /*----------------------------------------- write output of mesh to gid */
 if (par.myrank==0)
 if (ioflags.struct_disp_gid||ioflags.struct_stress_gid)
@@ -359,6 +370,20 @@ for (kstep=0; kstep<nstep; kstep++)
      stepsi=statvar->stepsize;
      restartevery = statvar->resevery_restart;
    /*------------------------------------ read restart from pss- file --*/
+#ifdef NEW_RESTART_READ
+     restart_read_bin_nlnstructstat(statvar,
+                                    &nln_data,
+                                    &array_typ,
+                                    &(actsolv->sysarray[actsysarray]),
+                                    actfield,
+                                    actpart,
+                                    0,
+                                    actintra,
+                                    actsolv->nrhs, actsolv->rhs,
+                                    actsolv->nsol, actsolv->sol,
+                                    1            , dispi,
+                                    restart);
+#else
      restart_read_nlnstructstat(restart,
                            statvar,
                            &nln_data,
@@ -370,6 +395,7 @@ for (kstep=0; kstep<nstep; kstep++)
                            actsolv->nsol, actsolv->sol,
                            1            , dispi,
                            &container);  /* contains variables defined in container.h */
+#endif
    /*--------------- give the restartinfo to the associated variables --*/
    /* kstep = restart; --*/
      kstep = restart+1;
@@ -458,6 +484,13 @@ for (kstep=0; kstep<nstep; kstep++)
        if (ioflags.struct_stress_gid==1 && mod_stress==0)
        out_gid_sol("stress"      ,actfield,actintra,kstep,0,ZERO);
    }
+
+   if (ioflags.struct_disp_gid==1 && mod_displ==0)
+     out_results(&out_context, 0, kstep, 0, OUTPUT_DISPLACEMENT);
+
+   if (ioflags.struct_stress_gid==1 && mod_stress==0)
+     out_results(&out_context, 0, kstep, 0, OUTPUT_STRESS);
+
    /*----------------------------------- printout results to pss file */
    if(mod_restart==0)
   {
@@ -475,6 +508,13 @@ for (kstep=0; kstep<nstep; kstep++)
                            actsolv->nsol, actsolv->sol,
                            1            , dispi,
                            &container);  /* contains variables defined in container.h */
+      restart_write_bin_nlnstructstat(&out_context,
+                                      statvar,
+                                      &nln_data,
+                                      kstep,
+                                      actsolv->nrhs, actsolv->rhs,
+                                      actsolv->nsol, actsolv->sol,
+                                      1            , dispi);
     break;
     case control_arc:                            /* arclenght control */
       dserror("restart for arclengh not yet impl.");

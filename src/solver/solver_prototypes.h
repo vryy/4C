@@ -1057,10 +1057,10 @@ void solserv_result_mf(FIELD *actfield,INTRA *actintra,DIST_VECTOR *sol,
 /*----------------------------------------------------------------------*
  |  solver_service3.c                                    m.gee 04/03    |
  *----------------------------------------------------------------------*/
-void solserv_sol_zero(FIELD *actfield, INT disnum, INT arraynum, INT place);
-void solserv_sol_copy(FIELD *actfield, INT disnum, INT arrayfrom, INT arrayto,
+void solserv_sol_zero(FIELD *actfield, INT disnum, NODE_ARRAY arraynum, INT place);
+void solserv_sol_copy(FIELD *actfield, INT disnum, NODE_ARRAY arrayfrom, NODE_ARRAY arrayto,
                       INT from, INT to);
-void solserv_sol_add(FIELD *actfield, INT disnum, INT arrayfrom, INT arrayto,
+void solserv_sol_add(FIELD *actfield, INT disnum, NODE_ARRAY arrayfrom, NODE_ARRAY arrayto,
                       INT from, INT to, DOUBLE fac);
 void solserv_sol_localassemble(INTRA *actintra, ELEMENT *actele, DOUBLE *localvec, INT arraynum,
                               INT place);

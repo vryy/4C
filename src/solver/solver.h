@@ -122,6 +122,9 @@ Maintainer: Malte Neumann
 #ifdef PARALLEL
 #ifdef SPOOLES_PACKAGE
 
+/* Avoid the stupid spooles timing header. It's never used anyway. */
+#define _TIMINGS_
+
 #ifdef HPUX10
 #include <spooles/MPI/spoolesMPI.h>
 #endif

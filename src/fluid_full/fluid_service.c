@@ -19,6 +19,7 @@ Maintainer: Steffen Genkinger
 #include "fluid_prototypes.h"
 #include "../fluid2/fluid2.h"
 #include "../fluid3/fluid3.h"
+#include "../io/io.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
@@ -652,7 +653,7 @@ for (i=0;i<actpart->pdis[0].numele;i++)
 #ifdef D_FLUID2
    if (numdf==3)
    {
-      dsassert(actele->eltyp==el_fluid2,"eltyp not allowed!\n");
+      dsassert(actele->eltyp==el_fluid2 || actele->eltyp==el_fluid2_xfem,"eltyp not allowed!\n");
       amdef("Stabpar",&(actele->e.f2->tau_old),3,1,"DV");
       amzero(&(actele->e.f2->tau_old));
    }
@@ -797,9 +798,14 @@ if (fdyn->init>=1)
    if (fdyn->init==1) /*------------ initial data from fluid_start.data */
       inp_fluid_start_data(actfield);
 
-   if (fdyn->init==2) /*-------------------- initial data from pss file */
+   if (fdyn->init==2) { /*------------------ initial data from pss file */
+#ifdef NEW_RESTART_READ
+     restart_read_bin_fluiddyn(fdyn, NULL, NULL, actfield, actpart, 0, actintra, fdyn->resstep);
+#else
       restart_read_fluiddyn(fdyn->resstep,fdyn,actfield,actpart,actintra,
                             action,container);
+#endif
+   }
 
 #ifdef D_FSI
    if (fdyn->init==6) /*--------------------------------- solitary wave */

@@ -24,6 +24,11 @@ typedef enum _PROBLEM_TYP
                        prb_twophase,  /*  two phase fluid flow (used for levelset) */
                        prb_levelset   /*  pure level set problem (user defined advection velocity) */
 } PROBLEM_TYP;
+/* Mapping from problem type numbers to printable names. To be used to
+ * initialize static variables. Keep in sync!
+ * The trailing NULL is essential or the filters to read the problem
+ * type! */
+#define PROBLEMNAMES { "fsi","ssi","structure","fluid","opt","ale","twophase","levelset", NULL };
 /*----------------------------------------------------------------------*
  | TIME TYPES                                             m.gee 7/01    |
  *----------------------------------------------------------------------*/
@@ -43,6 +48,9 @@ typedef enum _FIELDTYP
                        structure,   /* structural field */
                        levelset     /* levelset field */
 } FIELDTYP;
+/* Mapping from fieldtyp numbers to printable names. To be used to
+ * initialize static variables. Keep in sync! */
+#define FIELDNAMES {"none", "fluid", "ale", "structure", "levelset", NULL}
 /*----------------------------------------------------------------------*
  | DISRCETISATION MODES                                   genk 08/02    |
  *----------------------------------------------------------------------*/
@@ -71,10 +79,23 @@ typedef enum _DIS_TYP
                        line2,          /* 2 noded line */
                        line3           /* 3 noded line */
 } DIS_TYP;
-/*----------------------------------------------------------------------*
- | enum FE_TYP                                            m.gee 7/01    |
- | type of element formulation                                          |
- *----------------------------------------------------------------------*/
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief type of element formulation
+
+  Please be careful with this enum. Don't delete any element
+  types. New names might only be added at the end just before \a
+  el_count, which must always be the last entry (and does not refer to
+  an element). The reason for this is that the numbers defines here
+  are written to the binary output files. Once these numbers are
+  changed old output files cannot be read anymore. :(
+
+  \author m.gee
+  \date 07/01
+*/
+/*----------------------------------------------------------------------*/
 typedef enum _ELEMENT_TYP
 {
                        el_none,        /* unknown type of element */
@@ -94,7 +115,10 @@ typedef enum _ELEMENT_TYP
                        el_interf,      /* 1D interface element (combination only with wall) */
                        el_wallge,      /* gradient enhanced wall element */
                        el_ls2,         /* 2D element for level set calculations */
-                       el_fluid2_xfem  /* 2D element for x-fem calculations */
+                       el_fluid2_xfem, /* 2D element for x-fem calculations */
+                       el_count        /* The number of known
+                                        * elements. This must be the
+                                        * last entry! */
 } ELEMENT_TYP;
 
 /*----------------------------------------------------------------------*/
@@ -112,6 +136,9 @@ typedef enum _NODE_ARRAY {
   node_array_sol_residual,
   node_array_sol_mf
 } NODE_ARRAY;
+/* Mapping from node array numbers to printable names. To be used to
+ * initialize static variables. Keep in sync! */
+#define NODEARRAYNAMES {"sol", "sol_increment", "sol_residual", "sol_mf", NULL}
 
 /*----------------------------------------------------------------------*
  | enum MATERIAL_TYP                                      m.gee 7/01    |
@@ -408,23 +435,23 @@ typedef enum _DLINE_TYP
 } DLINE_TYP;
 
 /*!----------------------------------------------------------------------
-\brief enum of SSI coupling types                                            
+\brief enum of SSI coupling types
 
 <pre>                                                          chfoe 07/04
-This is the enumeration of all types of SSI coupling with non conforming 
+This is the enumeration of all types of SSI coupling with non conforming
 discretisation (mortar)
 </pre>
 
 *----------------------------------------------------------------------*/
 typedef enum _SSI_COUPTYP
 {
-                       ssi_none,            
-                       ssi_master, 
-		       ssi_slave        
-} SSI_COUPTYP;                         
+                       ssi_none,
+                       ssi_master,
+		       ssi_slave
+} SSI_COUPTYP;
 
 /*!----------------------------------------------------------------------
-\brief enum of FSI coupling types                                            
+\brief enum of FSI coupling types
 
 <pre>                                                          chfoe 07/04
 This is the enumeration of all types of FSI coupling with non conforming
@@ -434,10 +461,10 @@ discretisation (mortar)
 *----------------------------------------------------------------------*/
 typedef enum _FSI_COUPTYP
 {
-                       fsi_none,            
-                       fsi_master 
-} FSI_COUPTYP;                         
- 
+                       fsi_none,
+                       fsi_master
+} FSI_COUPTYP;
+
 /*!----------------------------------------------------------------------
 \brief enum of stabilisation types
 

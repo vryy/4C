@@ -12,6 +12,7 @@ Maintainer: Michael Gee
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
+#include "../io/io.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | structure of flags to control output                                 |
@@ -120,6 +121,8 @@ CONTAINER     container;        /* contains variables defined in container.h */
 
 SPARSE_TYP    array_typ;        /* type of psarse system matrix */
 
+BIN_OUT_FIELD out_context;
+
 container.isdyn   = 0;           /* static calculation */
 container.kintyp  = 0;           /* kintyp  = 0: geo_lin*/
 container.actndis = 0;           /* actndis = 0: only one discretisation*/
@@ -193,6 +196,14 @@ init_assembly(actpart,actsolv,actintra,actfield,actsysarray,0);
 /*------------------------------- init the element calculating routines */
 *action = calc_struct_init;
 calinit(actfield,actpart,action,&container);
+
+/* initialize binary output
+ * It's important to do this only after all the node arrays are set
+ * up because their sizes are used to allocate internal memory. */
+init_bin_out_field(&out_context,
+                   &(actsolv->sysarray_typ[actsysarray]), &(actsolv->sysarray[actsysarray]),
+                   actfield, actpart, actintra, 0);
+
 /*----------------------------------------- write output of mesh to gid */
 if (par.myrank==0)
 if (ioflags.struct_disp_gid||ioflags.struct_stress_gid)
@@ -250,6 +261,20 @@ if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1)
    calreduce(actfield,actpart,actintra,action,&container);
    out_sol(actfield,actpart,actintra,0,0);
 }
+
+  if (ioflags.struct_disp_gid==1) {
+    out_results(&out_context, 0, 0, 0, OUTPUT_DISPLACEMENT);
+
+#ifdef D_AXISHELL
+    out_results(&out_context, 0, 0, 0, OUTPUT_THICKNESS);
+    out_results(&out_context, 0, 0, 0, OUTPUT_AXI_LOADS);
+#endif
+  }
+
+  if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1) {
+    out_results(&out_context, 0, 0, 0, OUTPUT_STRESS);
+  }
+
 /*--------------------------------------------- printout results to gid */
 if (ioflags.struct_disp_gid==1 && par.myrank==0)
 {
@@ -267,6 +292,10 @@ if ( (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1) && par.myra
 }
 /*----------------------------------------------------------------------*/
 end:
+
+/* finalize output */
+destroy_bin_out_field(&out_context);
+
 #ifndef PARALLEL
 CCAFREE(actintra);
 #endif

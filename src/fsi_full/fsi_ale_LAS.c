@@ -10,6 +10,7 @@
 #include "../headers/standardtypes.h"
 #include "../ale3/ale3.h"
 #include "fsi_prototypes.h"
+#include "../io/io.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -138,6 +139,8 @@ static ARRAY         time_a;      /* stored time                                
 static FSI_DYNAMIC  *fsidyn;
 static ALE_DYNAMIC  *adyn;
 
+static BIN_OUT_FIELD out_context;
+
 #ifdef DEBUG
 dstrc_enter("fsi_ale_LAS");
 #endif
@@ -202,6 +205,14 @@ for (i=0;i<numnp_total;i++)
    if (index[i]==mone)
       dserror ("something went wrong!\n");
 
+/* initialize binary output
+ * It's important to do this only after all the node arrays are set
+ * up because their sizes are used to allocate internal memory. */
+init_bin_out_field(&out_context,
+                   NULL,
+                   NULL,
+                   actfield, actpart, actintra, 0);
+
 /*---------------------------------------------------------- monitoring */
 if (ioflags.monitor==1)
 {
@@ -252,10 +263,10 @@ case 3:
 /*------------------------------------ for iterative staggared schemes: */
 /*------------------------ copy from nodal sol_mf[1][j] to sol_mf[0][j] */
 if (fsidyn->ifsi>=4 || fsidyn->ifsi==-1)
-   solserv_sol_copy(actfield,0,3,3,1,0);
+   solserv_sol_copy(actfield,0,node_array_sol_mf,node_array_sol_mf,1,0);
 /*--------------------- to get the corrected free surface position copy
   --------------------------------- from sol_mf[1][j] to sol[actpos][j] */
-solserv_sol_copy(actfield,0,3,0,0,actpos);
+solserv_sol_copy(actfield,0,node_array_sol_mf,node_array_sol,0,actpos);
 
 /*---------------------------------------------- increment output flags */
 outstep++;
@@ -295,6 +306,12 @@ if (restartstep==fsidyn->uprestart)
 break;
 
 
+/*======================================================================*
+                            Binary Output
+ *======================================================================*/
+case 98:
+  out_results(&out_context, adyn->time, adyn->step, actpos, OUTPUT_DISPLACEMENT);
+  break;
 
 
 /*======================================================================*
@@ -323,6 +340,9 @@ if (ioflags.fluid_vis_file==1 && par.myrank==0)
 
 /*------------------------------------------------------------- tidy up */
 amdel(&index_a);
+
+/* finalize output */
+destroy_bin_out_field(&out_context);
 
 break;
 default:

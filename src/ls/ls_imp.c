@@ -394,7 +394,7 @@ frontlsflag = front_ls_write;
 ls_update(frontlsflag);
 
 /*------- copy solution from sol_increment[1][j] to sol_increment[0][j] */
-solserv_sol_copy(actfield,0,1,1,1,0);
+solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol_increment,1,0);
 
 /*---------------------------------------------- finalise this timestep */
 outstep++;
@@ -403,7 +403,7 @@ resstep++;
 restartstep++;
 
 /*-------- copy solution from sol_increment[3][j] to sol_[actpos][j] ---*/
-solserv_sol_copy(actfield,0,1,0,1,0);
+solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol,1,0);
 
 /*--------------------------------------- write solution to .flavia.res */
 if (ioflags.lset_sol_gid==1 && par.myrank==0)

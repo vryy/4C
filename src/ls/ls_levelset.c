@@ -439,7 +439,7 @@ void ls_levelset_fina()
 
   /* F I N A L I Z E */
   /* copy solution from sol_increment[1][j] to sol_increment[0][j] */
-  solserv_sol_copy(actfield,0,1,1,1,0);
+  solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol_increment,1,0);
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG

@@ -10,7 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
+/*!
 \addtogroup SSI
 *//*! @{ (documentation module open)*/
 #ifdef D_SSI
@@ -47,11 +47,11 @@ extern struct _MATERIAL  *mat;
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par; 
+ extern struct _PAR   par;
 /*!----------------------------------------------------------------------*
  |                                                       m.gee 02/02    |
  | number of load curves numcurve                                       |
@@ -73,23 +73,23 @@ extern struct _DENSE lhs_dens;
 \brief coupling algorithm for ssi problems
 
 <pre>
-                                                   firl / genk 10/03    
-                                                                       
-  routine to transfer displacements at time t from the master field to 
+                                                   firl / genk 10/03
+
+  routine to transfer displacements at time t from the master field to
   the slave field in ssi problems, the displacements are directly written
-  on the nodes, only possible for conforming meshes 
+  on the nodes, only possible for conforming meshes
   and two field problems;
   WARNING! With this approach Dirichlet b.c. on coupling nodes are over-
-           written, this is not physically consistent !       
-  
-  The routine is placed in ssi_service.c
-                                                                       
-\param  *actfield  FIELD      (i) pointer to the field under consideration                   
+           written, this is not physically consistent !
 
-</pre>                                                                       
-                                                                       
+  The routine is placed in ssi_service.c
+
+\param  *actfield  FIELD      (i) pointer to the field under consideration
+
+</pre>
+
 ------------------------------------------------------------------------*/
-void ssiserv_put_disp2slave(FIELD *actfield, CONTAINER *container, 
+void ssiserv_put_disp2slave(FIELD *actfield, CONTAINER *container,
                             DOUBLE *rldfac, SSI_DYNAMIC *ssidyn)
 {
 DISCRET *actdis;
@@ -98,7 +98,7 @@ NODE *actmnode;                     /* used for the actual master node */
 DIRICH_CONDITION *dirich;
 INT i, j;                           /* counters */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ssiserv_put_disp2node");
 #endif
 
@@ -122,13 +122,13 @@ for (i=0; i<actdis->numnp; i++)
     dsassert(dirich != NULL,"Pointer to dirichlet condition for slave node \
              not properly set!");
 
-     /* put values from actmnode->sol_mf.a.da[0][j] to 
+     /* put values from actmnode->sol_mf.a.da[0][j] to
         dirich->dirich_val.a.dv[j] */
      for (j=0; j<actsnode->numdf; j++)
-       dirich->dirich_val.a.dv[j] =((-1.0 * container->dirichfacs[6] * 
-                                   actmnode->sol.a.da[9][j]) + 
-                                   ((1.0 + container->dirichfacs[6]) * 
-                                   (ssidyn->relax * actmnode->sol_mf.a.da[0][j] + 
+       dirich->dirich_val.a.dv[j] =((-1.0 * container->dirichfacs[6] *
+                                   actmnode->sol.a.da[9][j]) +
+                                   ((1.0 + container->dirichfacs[6]) *
+                                   (ssidyn->relax * actmnode->sol_mf.a.da[0][j] +
                                    (1.0 - ssidyn->relax) * actmnode->sol_mf.a.da[1][j])));
                                    /* end of loop over numdf */
   } /* end of if clause (if(container->coupl_typ == 0) )*/
@@ -139,23 +139,23 @@ for (i=0; i<actdis->numnp; i++)
     dsassert(dirich != NULL,"Pointer to dirichlet condition for slave node \
              not properly set!");
 
-     /* put values from actsnode->sol_mf.a.da[0][j] to 
+     /* put values from actsnode->sol_mf.a.da[0][j] to
         dirich->dirich_val.a.dv[j] */
      for (j=0; j<actsnode->numdf; j++)
      {
-     /* new approach 08/03/04 the parameter rldfac was deleted in subroutine 
+     /* new approach 08/03/04 the parameter rldfac was deleted in subroutine
          solserv_putdirich_to_dof; hence the dirichlet condition is not divided
          by rldfac anymore  */
 
-      dirich->dirich_val.a.dv[j] =((-1.0 * container->dirichfacs[6] * 
-                                 actsnode->sol.a.da[9][j]) + 
-                                 ((1.0 + container->dirichfacs[6]) * 
+      dirich->dirich_val.a.dv[j] =((-1.0 * container->dirichfacs[6] *
+                                 actsnode->sol.a.da[9][j]) +
+                                 ((1.0 + container->dirichfacs[6]) *
                                  actsnode->sol_mf.a.da[0][j]));
     } /* end of loop over numdf */
   }
   } /* ens of if clause ssi_slave*/
 } /* end of loop over numnp */
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 } /* end of ssiserv_put_disp2slave */
@@ -163,28 +163,28 @@ dstrc_exit();
 
 
 /*!----------------------------------------------------------------------*
-\brief put the displacements at time t to the coupling nodes on the slave 
+\brief put the displacements at time t to the coupling nodes on the slave
        side
 
 <pre>
-                                                   firl / genk 11/03    
-                                                                       
-  routine to transfer displacements at time t from the master field to 
+                                                   firl / genk 11/03
+
+  routine to transfer displacements at time t from the master field to
   the slave field in ssi problems, the displacements are directly written
-  on the nodes, only possible for conforming meshes 
+  on the nodes, only possible for conforming meshes
   and two field problems;
   WARNING! With this approach Dirichlet b.c. on coupling nodes are over-
-           written, this is not physically consistent !       
-  This is necessary to obtain correct stresses and displacments in the 
+           written, this is not physically consistent !
+  This is necessary to obtain correct stresses and displacments in the
   output file.
-  
-  
-  The routine is placed in ssi_service.c
-                                                                       
-\param  *actfield  FIELD      (i) pointer to the field under consideration                   
 
-</pre>                                                                       
-                                                                       
+
+  The routine is placed in ssi_service.c
+
+\param  *actfield  FIELD      (i) pointer to the field under consideration
+
+</pre>
+
 ------------------------------------------------------------------------*/
 void ssiserv_put_true_disp2slave(FIELD *actfield, CONTAINER *container)
 {
@@ -193,17 +193,17 @@ void ssiserv_put_true_disp2slave(FIELD *actfield, CONTAINER *container)
   NODE *actmnode;                     /* used for the actual master node */
   INT i, j;                           /* counters */
 
-  #ifdef DEBUG 
+  #ifdef DEBUG
   dstrc_enter("ssiserv_put_true_disp2node");
   #endif
-  
+
   actdis = &(actfield->dis[0]);
   /* loop nodes of slave field */
   for (i=0; i<actdis->numnp; i++)
   {
     actsnode = &(actdis->node[i]);
-    /* do nothing if the node is not a coupling node */ 
-    if(actsnode->gnode->ssicouple == NULL) continue; 
+    /* do nothing if the node is not a coupling node */
+    if(actsnode->gnode->ssicouple == NULL) continue;
     if(actsnode->gnode->ssicouple->ssi_couptyp == ssi_slave)
     {
       if(container->coupl_typ == 0) /* conforming discretization */
@@ -212,39 +212,39 @@ void ssiserv_put_true_disp2slave(FIELD *actfield, CONTAINER *container)
         actmnode = actsnode->gnode->mfcpnode[0];
         dsassert(actmnode != NULL,"Pointer to master node not properly set!");
 
-        /* put values from actmnode->sol_mf.a.da[0][j] to 
+        /* put values from actmnode->sol_mf.a.da[0][j] to
            actsnode->sol.a.da[0][j] */
         for (j=0; j<actsnode->numdf; j++)
         {
-	  actsnode->sol.a.da[0][j] = actmnode->sol.a.da[9][j]; 
+	  actsnode->sol.a.da[0][j] = actmnode->sol.a.da[9][j];
         }
       }
       else /* non-conforming discretization */
       {
-        /* put values from actsnode->sol_mf.a.da[0][j] to 
+        /* put values from actsnode->sol_mf.a.da[0][j] to
            actsnode->sol.a.da[0][j] */
         for (j=0; j<actsnode->numdf; j++)
         {
 	  actsnode->sol.a.da[0][j] = actsnode->sol_mf.a.da[6][j];
-	  actsnode->sol_mf.a.da[0][j] = actsnode->sol_mf.a.da[6][j]; 
-	  /*actsnode->sol.a.da[0][j] = actsnode->sol_mf.a.da[1][j];*/ 
+	  actsnode->sol_mf.a.da[0][j] = actsnode->sol_mf.a.da[6][j];
+	  /*actsnode->sol.a.da[0][j] = actsnode->sol_mf.a.da[1][j];*/
         }
       }
     }
   }
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 } /* end of ssiserv_put_true_disp2slave */
 
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief compute internal forces for slave nodes on the interface
 
 <pre>                                                  firl / genk 2/04
 
-Here are computed the internal forces in the slave elements at the 
-interface. These values are transferred to the master nodes on the 
+Here are computed the internal forces in the slave elements at the
+interface. These values are transferred to the master nodes on the
 interface. This subroutine is used for conforming desretizations as well
 as for non-conforming discretizations.
 
@@ -253,7 +253,7 @@ as for non-conforming discretizations.
 \param *estif_global  ARRAY          (i)   stiffness matrix of act. elem.
 \param *emass_global  ARRAY          (i)   mass matrix of act. ele.
 \param *container     CONTAINER      (i)   the container
-\return 0                                                                             
+\return 0
 
 ------------------------------------------------------------------------*/
 
@@ -280,7 +280,7 @@ as for non-conforming discretizations.
  | in the nodes the results are stored the following way:                    |
  |                                                                           |
  | results from sol_increment.a.da[0][0..numdf-1]                            |
- | place 0 holds converged incremental displacements (without prescribed dofs) 
+ | place 0 holds converged incremental displacements (without prescribed dofs)
  |                                                                           |
  | in ARRAY sol.a.da[place][0..numdf-1]:                                     |
  | place 0 holds total displacements of free dofs at time t                  |
@@ -299,7 +299,7 @@ as for non-conforming discretizations.
  |                                                                           |
  | see PhD theses Mok page 165                                               |
  *---------------------------------------------------------------------------*/
-void calc_ssi_coupforce_mod(ELEMENT *actele, ARRAY *estif_global, 
+void calc_ssi_coupforce_mod(ELEMENT *actele, ARRAY *estif_global,
                          ARRAY *emass_global, CONTAINER *container)
 {
 INT                   i,j;
@@ -319,17 +319,17 @@ INT                   lm[MAXDOFPERELE];
 GNODE                *actgnode;
 NODE                 *actmnode, *actsnode;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("calc_ssi_coupforce");
 #endif
-    
+
 /*----------------------------------------------------------------------*/
 /*-------- check presence of any ssi coupling condition to this element */
 hasdirich=0;
 for (i=0; i<actele->numnp; i++)
 {
    if (actele->node[i]->gnode->dirich == NULL) continue;
-   if (actele->node[i]->gnode->dirich->dirich_type == dirich_SSI) 
+   if (actele->node[i]->gnode->dirich->dirich_type == dirich_SSI)
    {
       hasdirich=1;
       break;
@@ -339,7 +339,7 @@ for (i=0; i<actele->numnp; i++)
 if (hasdirich==0) goto end;
 /*--------------------------------------- check for presence of damping */
 
-if (ABS(container->dirichfacs[7]) > EPS13 || ABS(container->dirichfacs[8]) > EPS13) 
+if (ABS(container->dirichfacs[7]) > EPS13 || ABS(container->dirichfacs[8]) > EPS13)
 {
    idamp=1;
    mdamp = container->dirichfacs[7];
@@ -385,13 +385,13 @@ for (i=0; i<actele->numnp; i++)
 {
   actsnode = actele->node[i];
   /*---------- check if the node under consideration is a coupling node */
-  if (actsnode->gnode->ssicouple == NULL)  /* free node */ 
+  if (actsnode->gnode->ssicouple == NULL)  /* free node */
   {
-    if (actsnode->gnode->dirich == NULL) 
+    if (actsnode->gnode->dirich == NULL)
     {
       for (j=0; j<actsnode->numdf; j++)
       {
-        dirich[counter] = actsnode->sol.a.da[0][j] - 
+        dirich[counter] = actsnode->sol.a.da[0][j] -
                           actsnode->sol.a.da[9][j];
         counter++;
       }
@@ -401,7 +401,7 @@ for (i=0; i<actele->numnp; i++)
     {
       for (j=0; j<actsnode->numdf; j++)
       {
-        dirich[counter] = actsnode->sol.a.da[0][j] - 
+        dirich[counter] = actsnode->sol.a.da[0][j] -
                           actsnode->sol.a.da[9][j];
         counter++;
       }
@@ -410,7 +410,7 @@ for (i=0; i<actele->numnp; i++)
   else if (actsnode->gnode->ssicouple->ssi_couptyp == ssi_slave) /* slave node */
   {
     if(container->coupl_typ == 0) /* conforming discretization */
-    {  
+    {
       /*------------------------------ set the corresponing master node */
       actmnode = actsnode->gnode->mfcpnode[0];
       for (j=0; j<actsnode->numdf; j++)
@@ -418,11 +418,11 @@ for (i=0; i<actele->numnp; i++)
         /* the displacements at the master nodes are not scaled with the */
         /* relaxation factor omega up to now; Hence this is done here to */
         /* obtain consistent forces; it is assumed the there are the actual */
-        /* displacements in sol_mf.a.da[0][] and the old ones in sol_mf.a.da[1][]*/ 
-        dirich[counter] = ((container->relax_param * 
+        /* displacements in sol_mf.a.da[0][] and the old ones in sol_mf.a.da[1][]*/
+        dirich[counter] = ((container->relax_param *
                            actmnode->sol_mf.a.da[0][j]) +
-                          (1-container->relax_param) * 
-                           actmnode->sol_mf.a.da[1][j]) - 
+                          (1-container->relax_param) *
+                           actmnode->sol_mf.a.da[1][j]) -
                            actmnode->sol.a.da[9][j];
         counter++;
       }
@@ -439,12 +439,12 @@ for (i=0; i<actele->numnp; i++)
     }
   }
   /*-------------- check if the node under consideration is a free node */
-  else if (actsnode->gnode->ssicouple->ssi_couptyp == ssi_none && 
+  else if (actsnode->gnode->ssicouple->ssi_couptyp == ssi_none &&
            actsnode->gnode->dirich->dirich_onoff.a.iv[counter] == 0)
   {
     for (j=0; j<actsnode->numdf; j++)
     {
-      dirich[counter] = actsnode->sol.a.da[0][j] - 
+      dirich[counter] = actsnode->sol.a.da[0][j] -
                         actsnode->sol.a.da[9][j];
       counter++;
     }
@@ -456,27 +456,27 @@ for (i=0; i<nd; i++)
    /*---------------------------------- loop columns of unsupported row */
    for (j=0; j<nd; j++)
    {
-      dforces[i] += estif[i][j] * dirich[j] * 
+      dforces[i] += estif[i][j] * dirich[j] *
                     (-1.0 * container->dirichfacs[6]);
    }/* loop j over columns */
 }/* loop i over rows */
 
 /*----------------------------------------------------------------------*/
 /*--------------------------- make the entries M  * h(du,udot,udotdot) */
-/* 
+/*
 this consists of three parts:
-   M * -facs[0] * sol_increment.a.da[0][0...numdf-1]  
-   M * -facs[1] * sol[1][0..numdf-1]       
-   M * -facs[2] * sol[2][0..numdf-1]       
+   M * -facs[0] * sol_increment.a.da[0][0...numdf-1]
+   M * -facs[1] * sol[1][0..numdf-1]
+   M * -facs[2] * sol[2][0..numdf-1]
 
    sol_increment.a.da[0][0...numdf-1]    contains    (u(t)-u(t-dt))
    sol[1][0..numdf-1]                    contains    (udot(t-dt))
    sol[2][0..numdf-1]                    contains    (uddot(t-dt))
-*/   
+*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*
-   M * -facs[0] * sol_increment.a.da[0][0..numdf-1] 
+   M * -facs[0] * sol_increment.a.da[0][0..numdf-1]
    sol_increment.a.da[0] holds (u(t) - u(t-dt))
 */
 for (i=0; i<nd; i++) dirich[i]=0.0;
@@ -486,11 +486,11 @@ for (i=0; i<actele->numnp; i++)
 {
   actsnode = actele->node[i];
   /*---------- check if the node under consideration is a coupling node */
-  if (actsnode->gnode->ssicouple == NULL) continue; 
+  if (actsnode->gnode->ssicouple == NULL) continue;
   if (actsnode->gnode->ssicouple->ssi_couptyp == ssi_slave)
   {
     if(container->coupl_typ == 0) /* conforming discretization */
-    {  
+    {
       /*----------------------------- set the corresponding master node */
       actmnode = actsnode->gnode->mfcpnode[0];
       for (j=0; j<actsnode->numdf; j++)
@@ -509,7 +509,7 @@ for (i=0; i<actele->numnp; i++)
     }
   }
   /*-------------- check if the node under consideration is a free node */
-  if (actsnode->gnode->ssicouple->ssi_couptyp == ssi_none && 
+  if (actsnode->gnode->ssicouple->ssi_couptyp == ssi_none &&
       actsnode->gnode->dirich->dirich_onoff.a.iv[counter] == 0)
   {
     for (j=0; j<actsnode->numdf; j++)
@@ -525,7 +525,7 @@ for (i=0; i<nd; i++)
    /*---------------------------------- loop columns of unsupported row */
    for (j=0; j<nd; j++)
    {
-      dforces[i] += emass[i][j] * dirich[j] * 
+      dforces[i] += emass[i][j] * dirich[j] *
                     container->dirichfacs[0] * (-1.0);
    }/* loop j over columns */
 }/* loop i over rows */
@@ -537,11 +537,11 @@ for (i=0; i<actele->numnp; i++)
 {
   actsnode = actele->node[i];
   /*---------- check if the node under consideration is a coupling node */
-  if (actsnode->gnode->ssicouple == NULL) continue; 
+  if (actsnode->gnode->ssicouple == NULL) continue;
   if (actsnode->gnode->ssicouple->ssi_couptyp == ssi_slave)
   {
     if(container->coupl_typ == 0) /* conforming discretization */
-    {  
+    {
       /*----------------------------- set the corresponding master node */
       actmnode = actsnode->gnode->mfcpnode[0];
       for (j=0; j<actsnode->numdf; j++)
@@ -560,7 +560,7 @@ for (i=0; i<actele->numnp; i++)
     }
   }
   /*-------------- check if the node under consideration is a free node */
-  if (actsnode->gnode->ssicouple->ssi_couptyp == ssi_none && 
+  if (actsnode->gnode->ssicouple->ssi_couptyp == ssi_none &&
       actsnode->gnode->dirich->dirich_onoff.a.iv[counter] == 0)
   {
     for (j=0; j<actsnode->numdf; j++)
@@ -576,7 +576,7 @@ for (i=0; i<nd; i++)
    /*---------------------------------- loop columns of unsupported row */
    for (j=0; j<nd; j++)
    {
-      dforces[i] += emass[i][j] * dirich[j] * 
+      dforces[i] += emass[i][j] * dirich[j] *
                     container->dirichfacs[1] * (-1.0);
    }/* loop j over columns */
 }/* loop i over rows */
@@ -595,11 +595,11 @@ for (i=0; i<actele->numnp; i++)
 {
   actsnode = actele->node[i];
   /*---------- check if the node under consideration is a coupling node */
-  if (actsnode->gnode->ssicouple == NULL) continue; 
+  if (actsnode->gnode->ssicouple == NULL) continue;
   if (actsnode->gnode->ssicouple->ssi_couptyp == ssi_slave)
   {
     if(container->coupl_typ == 0) /* conforming discretization */
-    {  
+    {
       /*----------------------------- set the corresponding master node */
       actmnode = actsnode->gnode->mfcpnode[0];
       for (j=0; j<actsnode->numdf; j++)
@@ -618,7 +618,7 @@ for (i=0; i<actele->numnp; i++)
     }
   }
   /*-------------- check if the node under consideration is a free node */
-  if (actsnode->gnode->ssicouple->ssi_couptyp == ssi_none && 
+  if (actsnode->gnode->ssicouple->ssi_couptyp == ssi_none &&
       actsnode->gnode->dirich->dirich_onoff.a.iv[counter] == 0)
   {
     for (j=0; j<actsnode->numdf; j++)
@@ -634,7 +634,7 @@ for (i=0; i<nd; i++)
    /*---------------------------------- loop columns of unsupported row */
    for (j=0; j<nd; j++)
    {
-      dforces[i] += emass[i][j] * dirich[j] * 
+      dforces[i] += emass[i][j] * dirich[j] *
                     container->dirichfacs[2] * (-1.0);
    }/* loop j over columns */
 }/* loop i over rows */
@@ -646,17 +646,17 @@ if (idamp)
 
 /*----------------------------------------------------------------------*/
 /*--------------------------- make the entries C  * e(-du,udot,udotdot) */
-/* 
+/*
 this consists of three parts:
-   C * -facs[3] * sol_increment.a.da[0][0..numdf-1]       
+   C * -facs[3] * sol_increment.a.da[0][0..numdf-1]
    sol_increment.a.da[0] holds (u(t) - u(t-dt))
    C * -facs[4] * sol[1][0..numdf-1]       sol[1] holds udot(t)
    C * -facs[5] * sol[2][0..numdf-1]       sol[2] holds uddot(t)
-*/   
+*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*
-   C * facs[3] * sol_increment.a.da[0][0..numdf-1]       
+   C * facs[3] * sol_increment.a.da[0][0..numdf-1]
    sol_increment.a.da[0] holds (u(t) - u(t-dt))
 */
 for (i=0; i<nd; i++) dirich[i]=0.0;
@@ -669,7 +669,7 @@ for (i=0; i<actele->numnp; i++)
   if (actsnode->gnode->ssicouple->ssi_couptyp == ssi_slave)
   {
     if(container->coupl_typ == 0) /* conforming discretization */
-    {  
+    {
       /*------------------------------ set the corresponing master node */
       actmnode = actsnode->gnode->mfcpnode[0];
       for (j=0; j<actsnode->numdf; j++)
@@ -688,7 +688,7 @@ for (i=0; i<actele->numnp; i++)
     }
   }
   /*-------------- check if the node under consideration is a free node */
-  if (actsnode->gnode->ssicouple->ssi_couptyp == ssi_none && 
+  if (actsnode->gnode->ssicouple->ssi_couptyp == ssi_none &&
       actsnode->gnode->dirich->dirich_onoff.a.iv[counter] == 0)
   {
     for (j=0; j<actsnode->numdf; j++)
@@ -704,7 +704,7 @@ for (i=0; i<nd; i++)
    /*---------------------------------- loop columns of unsupported row */
    for (j=0; j<nd; j++)
    {
-      dforces[i] += (mdamp*emass[i][j]+kdamp*estif[i][j]) * dirich[j] * 
+      dforces[i] += (mdamp*emass[i][j]+kdamp*estif[i][j]) * dirich[j] *
                      container->dirichfacs[3] * (-1);
    }/* loop j over columns */
 }/* loop i over rows */
@@ -723,7 +723,7 @@ for (i=0; i<actele->numnp; i++)
   if (actsnode->gnode->ssicouple->ssi_couptyp == ssi_slave)
   {
     if(container->coupl_typ == 0) /* conforming discretization */
-    {  
+    {
       /*------------------------------ set the corresponing master node */
       actmnode = actsnode->gnode->mfcpnode[0];
       for (j=0; j<actsnode->numdf; j++)
@@ -742,7 +742,7 @@ for (i=0; i<actele->numnp; i++)
     }
   }
   /*-------------- check if the node under consideration is a free node */
-  if (actsnode->gnode->ssicouple->ssi_couptyp == ssi_none && 
+  if (actsnode->gnode->ssicouple->ssi_couptyp == ssi_none &&
       actsnode->gnode->dirich->dirich_onoff.a.iv[counter] == 0)
   {
     for (j=0; j<actsnode->numdf; j++)
@@ -758,7 +758,7 @@ for (i=0; i<nd; i++)
    /*---------------------------------- loop columns of unsupported row */
    for (j=0; j<nd; j++)
    {
-      dforces[i] += (mdamp*emass[i][j]+kdamp*estif[i][j]) * dirich[j] * 
+      dforces[i] += (mdamp*emass[i][j]+kdamp*estif[i][j]) * dirich[j] *
                      container->dirichfacs[4] * (-1);
    }/* loop j over columns */
 }/* loop i over rows */
@@ -777,7 +777,7 @@ for (i=0; i<actele->numnp; i++)
   if (actsnode->gnode->ssicouple->ssi_couptyp == ssi_slave)
   {
     if(container->coupl_typ == 0) /* conforming discretization */
-    {  
+    {
       /*------------------------------ set the corresponing master node */
       actmnode = actsnode->gnode->mfcpnode[0];
       for (j=0; j<actsnode->numdf; j++)
@@ -796,7 +796,7 @@ for (i=0; i<actele->numnp; i++)
     }
   }
   /*-------------- check if the node under consideration is a free node */
-  if (actsnode->gnode->ssicouple->ssi_couptyp == ssi_none && 
+  if (actsnode->gnode->ssicouple->ssi_couptyp == ssi_none &&
       actsnode->gnode->dirich->dirich_onoff.a.iv[counter] == 0)
   {
     for (j=0; j<actsnode->numdf; j++)
@@ -812,7 +812,7 @@ for (i=0; i<nd; i++)
    /*---------------------------------- loop columns of unsupported row */
    for (j=0; j<nd; j++)
    {
-      dforces[i] += (mdamp*emass[i][j]+kdamp*estif[i][j]) * dirich[j] * 
+      dforces[i] += (mdamp*emass[i][j]+kdamp*estif[i][j]) * dirich[j] *
                      container->dirichfacs[5] * (-1);
    }/* loop j over columns */
 }/* loop i over rows */
@@ -838,15 +838,15 @@ for (i=0; i<actele->numnp; i++)
 {
   actsnode = actele->node[i];
   /*---------- check if the node under consideration is a coupling node */
-  if (actsnode->gnode->ssicouple == NULL) 
+  if (actsnode->gnode->ssicouple == NULL)
   {
     counter += 2;
-    continue; 
+    continue;
   }
   if (actsnode->gnode->ssicouple->ssi_couptyp == ssi_slave)
   {
     if(container->coupl_typ == 0) /* conforming discretization */
-    {  
+    {
       /*------------------------------ set the corresponing master node */
       actmnode = actsnode->gnode->mfcpnode[0];
       for (j=0; j<actsnode->numdf; j++)
@@ -870,7 +870,7 @@ for (i=0; i<actele->numnp; i++)
   }
 }
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -883,15 +883,15 @@ return;
 \brief enlarge node.sol.a.da to [11][numdf-1] and init to zero
 
 <pre>
-                                                   firl / genk 10/03    
-                                                                       
-  The routine is placed in ssi_service.c
-                                                                       
-\param  *actfield  FIELD      (i) pointer to the field under consideration                   
+                                                   firl / genk 10/03
 
-</pre>                                                                       
-                                                                       
-------------------------------------------------------------------------*/        
+  The routine is placed in ssi_service.c
+
+\param  *actfield  FIELD      (i) pointer to the field under consideration
+
+</pre>
+
+------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*
  |  Resize node.sol.a.da to [11][numdf-1] and set      firl / genk 10/03|
  |  values to zero                                                      |
@@ -907,7 +907,7 @@ INT      i;
 INT      numeq_total;
 NODE    *actnode;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("init_sol_a_tozero");
 #endif
 /*----------------------------------------------------------------------*/
@@ -917,7 +917,7 @@ for (i=0; i<actfield->dis[0].numnp; i++)
 {
    actnode = &(actfield->dis[0].node[i]);
    /*--------------------------------------------------- enlarge sol ---*/
-   
+
    amredef(&(actnode->sol),11,actnode->sol.sdim,"DA");
    amzero(&(actnode->sol));
 #if 0
@@ -928,11 +928,11 @@ for (i=0; i<actfield->dis[0].numnp; i++)
       actnode->sol.a.da[0][j] = 0.0;
       actnode->sol.a.da[1][j] = 0.0;
       actnode->sol.a.da[2][j] = 0.0;
-   }   
+   }
 #endif
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -942,15 +942,15 @@ return;
 \brief enlarge node.sol_mf.a.da to [7][numdf-1] and init to zero
 
 <pre>
-                                                   firl / genk 10/03    
-                                                                       
-  The routine is placed in ssi_service.c
-                                                                       
-\param  *actfield  FIELD      (i) pointer to the field under consideration                   
+                                                   firl / genk 10/03
 
-</pre>                                                                       
-                                                                       
-------------------------------------------------------------------------*/    
+  The routine is placed in ssi_service.c
+
+\param  *actfield  FIELD      (i) pointer to the field under consideration
+
+</pre>
+
+------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*
  |  Resize node.sol_mf.a.da to [7][numdf-1] and set    firl / genk 10/03|
  |  values to zero                                                      |
@@ -965,7 +965,7 @@ INT      i;
 INT      numeq_total;
 NODE    *actnode;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("init_sol_mf_a_tozero");
 #endif
 /*----------------------------------------------------------------------*/
@@ -989,11 +989,11 @@ for (i=0; i<actfield->dis[0].numnp; i++)
       actnode->sol_mf.a.da[4][j] = 0.0;
       actnode->sol_mf.a.da[5][j] = 0.0;
       actnode->sol_mf.a.da[6][j] = 0.0;
-   }   
+   }
 #endif
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1006,15 +1006,15 @@ return;
 \brief point neumann conditions
 
 <pre>
-                                                   firl / genk 10/03    
+                                                   firl / genk 10/03
   The routine is placed in ssi_service.c
-                                                                       
+
 \param  *rhs      DOUBLE      (o) rhs for master field
          dimrhs   INT         (i) length of rhs
         *actpart  PARTITION   (i) pointer to actual partition
 
-</pre>                                                                       
-                                                                       
+</pre>
+
 ------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*
  |  point neumann conditions                      firl / genk 10/03     |
@@ -1025,7 +1025,7 @@ return;
  | Here we set up the rhs for the master field                          |
  | The forces assembled in this routine are resulting from ssi coupling |
  *----------------------------------------------------------------------*/
-void ssiserv_rhs_point_neum(DOUBLE *rhs, INT dimrhs, PARTITION *actpart)     
+void ssiserv_rhs_point_neum(DOUBLE *rhs, INT dimrhs, PARTITION *actpart)
 {
 INT             i,j;
 NODE           *actnode;
@@ -1056,7 +1056,7 @@ for (i=0; i<actpart->pdis[0].numnp; i++)
   }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1065,7 +1065,7 @@ return;
 
 
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief convergence check for SSI-iteration
 
 <pre>                                                  firl / genk 10/03
@@ -1078,16 +1078,16 @@ There are two possibilities to check the convergence:
 - scaled_2-norm_of_residual (inrmfsi=1):
    || g(i) || / sqrt(neq) <= TOL
 
--  2-norm_of_residual_of_1st_iter (inrmfsi=2):  
+-  2-norm_of_residual_of_1st_iter (inrmfsi=2):
    || g(i) || / || g(0) || <= TOL
 
 where g(i) = d~(i+1) - d(i);
       neq ... number of structural inteface dofs
-		     
+
 </pre>
 \param *structfield   FIELD	     (i)   structural field
-\param *ssidyn 	      SSI_DYNAMIC    (i)   
-\return INT                                                                             
+\param *ssidyn 	      SSI_DYNAMIC    (i)
+\return INT
 
 ------------------------------------------------------------------------*/
 INT ssi_convcheck(FIELD *structfield, SSI_DYNAMIC *ssidyn, INT itnum)
@@ -1098,14 +1098,14 @@ INT     numnp_total;   /* total number of nodes                         */
 INT     numdf_total;   /* total number of dofs                          */
 INT     numdf,dof;     /* actual number of dofs, actual dof             */
 INT    *sid;           /* structural interface dofs                     */
-DOUBLE  fac; 
-DOUBLE  gnorm=ZERO;    
+DOUBLE  fac;
+DOUBLE  gnorm=ZERO;
 DOUBLE  g;
 DOUBLE  grat=10.0;
 NODE   *actsnode;      /* actual struct node                            */
 static DOUBLE g0norm;  /* norm of first iteration                       */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ssi_convcheck");
 #endif
 
@@ -1114,7 +1114,7 @@ if (itnum==0)
    grat=ONE;
    goto check;
 }
-    
+
 /*----------------------------------------------------- set some values */
 numnp_total = structfield->dis[0].numnp;
 sid         = ssidyn->sid.a.iv;
@@ -1125,17 +1125,17 @@ for (i=0;i<numnp_total;i++)
 {
    actsnode  = &(structfield->dis[0].node[i]);
    /*----------------------------------------- check for coupling nodes */
-   numdf = actsnode->numdf; 
+   numdf = actsnode->numdf;
    /*-------------------------------------------------------- loop dofs */
    for (j=0;j<numdf;j++)
-   {   
+   {
       dof = actsnode->dof[j];
       dsassert(dof<numdf_total,"dofnumber not valid!\n");
       if (sid[dof]==0) continue;
       g = actsnode->sol_mf.a.da[0][j] - actsnode->sol_mf.a.da[1][j];
       gnorm += g*g;
-   } /* end of loop over dofs */  
-} /* end of loop over nodes */   
+   } /* end of loop over dofs */
+} /* end of loop over nodes */
 
 /*------------------------------------- determine the convergence ratio */
 gnorm = sqrt(gnorm);
@@ -1146,12 +1146,12 @@ case 1: /* scaled_2-norm_of_residual */
    grat = gnorm/fac;
 break;
 case 2: /* 2-norm_of_residual_of_1st_iter */
-   if (itnum==1) 
+   if (itnum==1)
    {
       g0norm = gnorm;
       if (g0norm<EPS5) g0norm=ONE;
    }
-   grat = gnorm/g0norm;   
+   grat = gnorm/g0norm;
 break;
 default:
    dserror("parameter out of range: inrmfsi\n");
@@ -1184,7 +1184,7 @@ case 1:
               grat,ssidyn->convtol);
       printf("NO CONVERGENCE OF ITERATION OVER FIELDS AFTER ITEMAX STEPS!\n");
       printf("                ***** CONTINUING ****\n\n");
-   }    	
+   }
    if (converged>=2)
    {
       printf("|| g(i) || / sqrt(neq) = %10.3E < TOL = %10.3E \n",
@@ -1192,7 +1192,7 @@ case 1:
       printf("CONVERGENCE OF ITERATION OVER FIELDS!  STEP %3i \n\n", ssidyn->step);
    }
 break;
-case 2:   
+case 2:
    if (converged==0)
    {
       printf("|| g(i) || / || g(0) || = %10.3E >= TOL = %10.3E \n",
@@ -1205,7 +1205,7 @@ case 2:
               grat,ssidyn->convtol);
       printf("NO CONVERGENCE OF ITERATION OVER FIELDS AFTER ITEMAX STEPS!\n");
       printf("                ***** CONTINUING ****\n\n");
-   }    	
+   }
    if (converged>=2)
    {
       printf("|| g(i) || / || g(0) || = %10.3E < TOL = %10.3E \n",
@@ -1214,11 +1214,11 @@ case 2:
    }
 break;
 default:
-   dserror("parameter out of range: inrmfsi\n");   
+   dserror("parameter out of range: inrmfsi\n");
 }/* end switch (ssidyn->inrmfsi) */
 }/* end if (par.myrank==0)*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return (converged);
@@ -1227,29 +1227,29 @@ return (converged);
 
 
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief service routine to update the coupling forces in sol_mf[4]
 
 <pre>                                                  firl / genk 10/03
-The old coupling forces are written on sol_mf[5] these where scaled and 
+The old coupling forces are written on sol_mf[5] these where scaled and
 added to the actual coupling forces written in sol_mf[4]
 </pre>
 
 \param *actfield              FIELD          (i)   the actual field
 \param *container             CONTAINER	     (i)   a pointer on the container
 ------------------------------------------------------------------------
- facs[0] = -(1.0-alpham)*(1.0/beta)/(DSQR(dt))  		
- facs[1] =  (1.0-alpham)*(1.0/beta)/dt  			
- facs[2] =  (1.0-alpham)/(2*beta) - 1				
- facs[3] = -(1.0-alphaf)*(gamma/beta)/dt			
- facs[4] =  (1.0-alphaf)*gamma/beta - 1 			
- facs[5] =  (gamma/(2*beta)-1)*(1.0-alphaf)*dt  		
- facs[6] = -(1.0-alphaf)					
- facs[7] =  raleigh damping factor for mass			
- facs[8] =  raleigh damping factor for stiffness		
- facs[9] =  dt  	
+ facs[0] = -(1.0-alpham)*(1.0/beta)/(DSQR(dt))
+ facs[1] =  (1.0-alpham)*(1.0/beta)/dt
+ facs[2] =  (1.0-alpham)/(2*beta) - 1
+ facs[3] = -(1.0-alphaf)*(gamma/beta)/dt
+ facs[4] =  (1.0-alphaf)*gamma/beta - 1
+ facs[5] =  (gamma/(2*beta)-1)*(1.0-alphaf)*dt
+ facs[6] = -(1.0-alphaf)
+ facs[7] =  raleigh damping factor for mass
+ facs[8] =  raleigh damping factor for stiffness
+ facs[9] =  dt
 ------------------------------------------------------------------------*/
- 					
+
 void ssiserv_update_coupforc(FIELD *actfield, CONTAINER *container)
 {
 INT i,j;
@@ -1262,13 +1262,13 @@ for (i=0; i<actfield->dis->numnp; i++)
     actsnode = actmnode->gnode->mfcpnode[1];
     for (j=0; j<actmnode->numdf; j++)
     {
-      actmnode->sol_mf.a.da[5][j] *= (((container->dirichfacs[6])+1.0) / 
+      actmnode->sol_mf.a.da[5][j] *= (((container->dirichfacs[6])+1.0) /
                                      (container->dirichfacs[6] * (-1.0)));
-      actmnode->sol_mf.a.da[4][j] *= (1.0 / 
+      actmnode->sol_mf.a.da[4][j] *= (1.0 /
                                      (container->dirichfacs[6] * (-1.0)));
       actmnode->sol_mf.a.da[4][j] += actmnode->sol_mf.a.da[5][j];
     }
-    
+
   }
 }
 }
@@ -1285,28 +1285,28 @@ for (i=0; i<actfield->dis->numnp; i++)
     actmnode = actsnode->gnode->mfcpnode[0];
     for (j=0; j<actsnode->numdf; j++)
     {
-      actmnode->sol_mf.a.da[4][j] = 0.0; 
+      actmnode->sol_mf.a.da[4][j] = 0.0;
     }
-    
+
   }
 }
 }
 
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief detect number of nodes on slave and master interface
 
 <pre>                                                  firl / genk 3/04
 
-In this subroutine the interface data are stored in the structure 
-interfaces.  
+In this subroutine the interface data are stored in the structure
+interfaces.
 
 </pre>
 \param *masterfield     FIELD	      (i)   master field
 \param *slavefield      FIELD         (i)   slave field
 \param *int_faces       INTERFACES    (i)   the interfaces of the model
 
-\return 0                                                                             
+\return 0
 
 ------------------------------------------------------------------------*/
 void ssi_detect_nmb_nods_int(FIELD *masterfield, FIELD *slavefield,
@@ -1320,15 +1320,15 @@ ELEMENT *actele;                    /* actual element under consideration */
 INT k;                              /* number of dline */
 GLINE *actgline;                    /* actual gline under consideration */
 GNODE *actgnode;                    /* actual gnode under consideration */
-/*ARRAY slv_nods_onint;*/               /* ARRAY for the slave nodes on the */ 
+/*ARRAY slv_nods_onint;*/               /* ARRAY for the slave nodes on the */
                                     /* interface */
-/*ARRAY mst_nods_onint;*/               /* ARRAY for the master nodes on the*/ 
+/*ARRAY mst_nods_onint;*/               /* ARRAY for the master nodes on the*/
                                     /* interface */
 /*INT work;*/                           /* working integer */
 INTERFACE *actinterface, *actinterface2;/* pointer to the actual interface */
 DOUBLE work;
 DOUBLE dist1, dist1x, dist1y, dist2, dist2x, dist2y; /* nodal distances */
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ssi_detect_nmb_nods_int");
 #endif
 
@@ -1351,7 +1351,7 @@ for(i=0; i<int_faces->numint;i++)
   {
      actgline = &masterfield->dis->gline[j];
      if(actgline->ssicouple == NULL) continue;
-     
+
      if((actgline->ssicouple->ssi_couptyp == ssi_master) &&
         (actgline->ssicouple->ssi_coupleId == actinterface->Id))
         a++;
@@ -1365,9 +1365,9 @@ for(i=0; i<int_faces->numint;i++)
 
   /* -II--allocate memory for the pointer vector to the master nodes and*/
   /* -------------------------------the master elements of actinterface */
-  actinterface->nodem = 
+  actinterface->nodem =
      (NODE**)CCACALLOC(actinterface->numnpm,sizeof(NODE));
-  actinterface->elementm = 
+  actinterface->elementm =
      (ELEMENT**)CCACALLOC(actinterface->numelem,sizeof(ELEMENT));
 
   /* -III define the pointers in actinterface->elementm to the elements */
@@ -1381,7 +1381,7 @@ for(i=0; i<int_faces->numint;i++)
      {
        actgline = actele->g.gsurf->gline[k];
        if(actgline->ssicouple == NULL) continue;
-       
+
        if((actgline->ssicouple->ssi_couptyp == ssi_master) &&
           (actgline->ssicouple->ssi_coupleId == actinterface->Id))
        {
@@ -1389,7 +1389,7 @@ for(i=0; i<int_faces->numint;i++)
           a++;
           goto end_of_this_ele;
        }
-     }     
+     }
     end_of_this_ele: ;
   }
   /* -IV- define the pointers in actinterface->nodem to the nodes at the*/
@@ -1399,7 +1399,7 @@ for(i=0; i<int_faces->numint;i++)
   {
     actgline = &masterfield->dis->gline[j];
     if(actgline->ssicouple == NULL) continue;
-    
+
     if((actgline->ssicouple->ssi_couptyp == ssi_master) &&
        (actgline->ssicouple->ssi_coupleId == actinterface->Id))
     {
@@ -1414,7 +1414,7 @@ for(i=0; i<int_faces->numint;i++)
          {
            if(actinterface->nodem[l] == NULL) continue;
            if(actinterface->nodem[l]->Id == actnode->Id)
-           { 
+           {
              goto end_of_this_node;
            }
          }
@@ -1422,7 +1422,7 @@ for(i=0; i<int_faces->numint;i++)
          a++;
          end_of_this_node: ;
        }
-    }       
+    }
   }
 
 
@@ -1435,7 +1435,7 @@ for(i=0; i<int_faces->numint;i++)
   {
      actgline = &slavefield->dis->gline[j];
      if(actgline->ssicouple == NULL) continue;
-     
+
      if((actgline->ssicouple->ssi_couptyp == ssi_slave) &&
         (actgline->ssicouple->ssi_coupleId == actinterface->Id))
         a++;
@@ -1449,9 +1449,9 @@ for(i=0; i<int_faces->numint;i++)
 
   /* -II---allocate memory for the pointer vector to the slave nodes and*/
   /* ------------------------------- the slave elements of actinterface */
-  actinterface->nodes = 
+  actinterface->nodes =
      (NODE**)CCACALLOC(actinterface->numnps,sizeof(NODE));
-  actinterface->elements = 
+  actinterface->elements =
      (ELEMENT**)CCACALLOC(actinterface->numeles,sizeof(ELEMENT));
 
   /* -III define the pointers in actinterface->elements to the elements */
@@ -1472,7 +1472,7 @@ for(i=0; i<int_faces->numint;i++)
           a++;
           goto end_of_this_ele_s;
        }
-     }     
+     }
     end_of_this_ele_s: ;
   }
   /* -IV- define the pointers in actinterface->nodes to the nodes at the*/
@@ -1482,7 +1482,7 @@ for(i=0; i<int_faces->numint;i++)
   {
     actgline = &slavefield->dis->gline[j];
     if(actgline->ssicouple == NULL) continue;
-       
+
     if((actgline->ssicouple->ssi_couptyp == ssi_slave) &&
        (actgline->ssicouple->ssi_coupleId == actinterface->Id))
     {
@@ -1497,7 +1497,7 @@ for(i=0; i<int_faces->numint;i++)
          {
            if(actinterface->nodes[l] == NULL) continue;
            if(actinterface->nodes[l]->Id == actnode->Id)
-           { 
+           {
              goto end_of_this_node_s;
            }
          }
@@ -1505,7 +1505,7 @@ for(i=0; i<int_faces->numint;i++)
          a++;
          end_of_this_node_s: ;
        }
-    }       
+    }
   }
   /* allocate memory for the gnodes which bound actinterface */
   actinterface->gnode_bound1s = (GNODE*)CCACALLOC(1,sizeof(GNODE));
@@ -1557,7 +1557,7 @@ for(i=0; i<int_faces->numint;i++)
       {
         actgline = actgnode->gline[l];
         if(actgline->ssicouple == NULL) continue;
-        
+
         if(actgline->ssicouple->ssi_coupleId == actinterface->Id)
           a++;
       }
@@ -1577,10 +1577,10 @@ for(i=0; i<int_faces->numint;i++)
   /*amdef("int_vec",actinterface->int_vec, 2, 1, "DV");*/
   actinterface->int_vec = (DOUBLE*)CCACALLOC(2,sizeof(DOUBLE));
 
-  actinterface->int_vec[0] = actnode1->x[0] - actnode->x[0];  
+  actinterface->int_vec[0] = actnode1->x[0] - actnode->x[0];
   actinterface->int_vec[1] = actnode1->x[1] - actnode->x[1];
   work = sqrt(actinterface->int_vec[0] * actinterface->int_vec[0] +
-              actinterface->int_vec[1] * actinterface->int_vec[1]);  
+              actinterface->int_vec[1] * actinterface->int_vec[1]);
   actinterface->int_vec[0] *=(1.0/work);
   actinterface->int_vec[1] *=(1.0/work);
 
@@ -1656,7 +1656,7 @@ for(i=0; i<int_faces->numint;i++)
   /* boundary of the interface (if it is on a dnode) */
   actinterface->conti_eq_save->ipiv.a.iv[0] = 1;
   actinterface->conti_eq_save->ipiv.a.iv[actinterface->numnps-1] = 1;
-  
+
 
 } /* end of loop over the interfaces (i) */
 /* loop over the interfaces */
@@ -1669,7 +1669,7 @@ for(i=0; i<int_faces->numint; i++)
   for(j=0; j<actinterface->numnps; j++)
   {
     actnode = actinterface->nodes[j];
-    if(actnode->gnode->node->Id == actinterface->gnode_bound1s->node->Id || 
+    if(actnode->gnode->node->Id == actinterface->gnode_bound1s->node->Id ||
        actnode->gnode->node->Id == actinterface->gnode_bound2s->node->Id)
     {
       /* loop the other interfaces */
@@ -1685,22 +1685,22 @@ for(i=0; i<int_faces->numint; i++)
           {
             if(actinterface->gnode_bound1sc == NULL)
               actinterface->gnode_bound1sc = actnode->gnode;
-            else 
+            else
               actinterface->gnode_bound2sc = actnode->gnode;
             break;
           }
         }
         end_of_this_interface: ;
       }
-      
-    }    
+
+    }
   }
 
   /* master domain */
   for(j=0; j<actinterface->numnpm; j++)
   {
     actnode = actinterface->nodem[j];
-    if(actnode->gnode->node->Id == actinterface->gnode_bound1m->node->Id || 
+    if(actnode->gnode->node->Id == actinterface->gnode_bound1m->node->Id ||
        actnode->gnode->node->Id == actinterface->gnode_bound2m->node->Id)
     {
       /* loop the other interfaces */
@@ -1716,34 +1716,34 @@ for(i=0; i<int_faces->numint; i++)
           {
             if(actinterface->gnode_bound1mc == NULL)
               actinterface->gnode_bound1mc = actnode->gnode;
-            else 
+            else
               actinterface->gnode_bound2mc = actnode->gnode;
             break;
           }
         }
         end_of_this_interface1: ;
       }
-      
-    }    
+
+    }
   }
 
 } /* end og loop over the interfaces (i) */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 } /* end of ssi_detect_nmb_nods_int */
 /*! @} (documentation module close)*/
 
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief compute coefficients for mortar method
 
 <pre>                                                  firl / genk 1/04
 
-Here we assemble a coefficient matrix and a right hand side. One obtains 
-the coefficients (called zeta_j^r) as solution of this system of 
-equations. We refer to the master thesis of Matthias Firl for more 
+Here we assemble a coefficient matrix and a right hand side. One obtains
+the coefficients (called zeta_j^r) as solution of this system of
+equations. We refer to the master thesis of Matthias Firl for more
 informations.
 Later the factorized coefficient matrix is needed again. Thus, the pointer
 to the dense structure is a parameter of the function call.
@@ -1757,10 +1757,10 @@ to the dense structure is a parameter of the function call.
 \param *mst_nods_onint ARRAY         (i)   master nodes in the interface
 \param step            INT           (i)   the actual iteration step
 \param *lhs_dens       DENSE         (i)   pointer to a dense structure
-\return 0                                                                             
+\return 0
 
 ------------------------------------------------------------------------*/
-void ssi_mortar_coeff(FIELD *masterfield, FIELD *slavefield, 
+void ssi_mortar_coeff(FIELD *masterfield, FIELD *slavefield,
                       INT step, SSI_DYNAMIC *ssidyn, INTERFACES *int_faces)
 {
 DOUBLE gauss2[2][2];                /* gauss points and weights (2)*/
@@ -1770,7 +1770,7 @@ INT info;                           /* flag for lapack solver */
 INT ione;                           /* number of right hand sides*/
 INT a,b,i,j,k,l,m,n,p,q,r,act;    /* counters */
 INT numnods, switch_act;            /* number of elements of the actual side*/
-                                    /* of actinterface */            
+                                    /* of actinterface */
 char uplo[1];                       /* character for lapack solver */
 NODE *actnode1_1, *actnode1_2, *actnode2_1, *actnode2_2;
                                     /* pointer to actual nodes */
@@ -1795,7 +1795,7 @@ DOUBLE *rhs;                         /* to compute the mortar coeff.      */
 INTERFACE *actinterface;             /* the actual interface */
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mortar_coefficients");
 #endif
 
@@ -1845,7 +1845,7 @@ for(r=0; r<int_faces->numint; r++)
   {
     if(act==0) /* slave nodes */
     {
-      actnodes = 
+      actnodes =
       (NODE**)CCACALLOC(actinterface->numnps,sizeof(NODE));
       for(i=0; i<actinterface->numnps; i++)
       {
@@ -1856,7 +1856,7 @@ for(r=0; r<int_faces->numint; r++)
     }
     else /* master nodes */
     {
-      actnodes = 
+      actnodes =
       (NODE**)CCACALLOC(actinterface->numnpm,sizeof(NODE));
       for(i=0; i<actinterface->numnpm; i++)
       {
@@ -1885,21 +1885,21 @@ for(r=0; r<int_faces->numint; r++)
         else /* actual elements = master elements */
         {
           /* the deformed geometry is used to set up the functions*/
-          actnode1_1->sol_mf.a.da[6][0] = (ssidyn->relax * 
+          actnode1_1->sol_mf.a.da[6][0] = (ssidyn->relax *
                                            actnode1_1->sol_mf.a.da[0][0])+
-                                          (1-ssidyn->relax) * 
+                                          (1-ssidyn->relax) *
                                            actnode1_1->sol_mf.a.da[1][0];
-          actnode1_1->sol_mf.a.da[6][1] = (ssidyn->relax * 
+          actnode1_1->sol_mf.a.da[6][1] = (ssidyn->relax *
                                            actnode1_1->sol_mf.a.da[0][1])+
-                                          (1-ssidyn->relax) * 
+                                          (1-ssidyn->relax) *
                                            actnode1_1->sol_mf.a.da[1][1];
-          actnode1_2->sol_mf.a.da[6][0] = (ssidyn->relax * 
+          actnode1_2->sol_mf.a.da[6][0] = (ssidyn->relax *
                                            actnode1_2->sol_mf.a.da[0][0])+
-                                          (1-ssidyn->relax) * 
+                                          (1-ssidyn->relax) *
                                            actnode1_2->sol_mf.a.da[1][0];
-          actnode1_2->sol_mf.a.da[6][1] = (ssidyn->relax * 
+          actnode1_2->sol_mf.a.da[6][1] = (ssidyn->relax *
                                            actnode1_2->sol_mf.a.da[0][1])+
-                                          (1-ssidyn->relax) * 
+                                          (1-ssidyn->relax) *
                                            actnode1_2->sol_mf.a.da[1][1];
 
           d1_1[0] = actnode1_1->x[0] + actnode1_1->sol_mf.a.da[6][0];
@@ -1940,7 +1940,7 @@ for(r=0; r<int_faces->numint; r++)
               }
             }
             if(actnode2_2->gnode->node->Id == actinterface->gnode_bound1s->node->Id ||
-               actnode2_2->gnode->node->Id == actinterface->gnode_bound2s->node->Id) 
+               actnode2_2->gnode->node->Id == actinterface->gnode_bound2s->node->Id)
             {
               if(m == 0)
               {
@@ -1981,20 +1981,20 @@ for(r=0; r<int_faces->numint; r++)
               lambdr2_2 = r2_2[1] / nrmdr1_2[1];
             }
             /* Check for a possible nonzero intersection, goto end if such an*/
-            /* ---------------------------------intersection is not possible */        
+            /* ---------------------------------intersection is not possible */
             if((lambdr2_1 >= nr1_2) && (lambdr2_2 >= nr1_2)) goto end_of_node2;
             if((lambdr2_1 < 0) && (lambdr2_2 < 0)) goto end_of_node2;
-            
+
             /* ---------------------here we determine the integration bounds */
-            ssi_detect_intersection(lambdr1_2, lambdr2_1, lambdr2_2, nr1_2, 
+            ssi_detect_intersection(lambdr1_2, lambdr2_1, lambdr2_2, nr1_2,
                                     nr2_1, nr2_2, &b1, &b2, &intersection);
-    
+
             if(intersection == 1)
             {
               /* if we have a nonzero inters. we compute the nodal basis fcts*/
-              /* ---calculate slope and value n of the nodal basis function, */ 
-              /* here its the nodal basis function of the trace space of the */ 
-              /* ------slave elements on the interface. Hence, these are the */ 
+              /* ---calculate slope and value n of the nodal basis function, */
+              /* here its the nodal basis function of the trace space of the */
+              /* ------slave elements on the interface. Hence, these are the */
               /* -------------------------------------standard hat functions */
               if(j == 0)
               {
@@ -2020,11 +2020,11 @@ for(r=0; r<int_faces->numint; r++)
                 m2 = 3.0/(lambdr2_2 - lambdr2_1);
                 n2 = -1.0 - m2 * lambdr2_1;
               }
-    
+
               if(actnode2_1->gnode->node->Id == actinterface->gnode_bound1s->node->Id ||
                  actnode2_1->gnode->node->Id == actinterface->gnode_bound2s->node->Id ||
                  actnode2_2->gnode->node->Id == actinterface->gnode_bound1s->node->Id ||
-                 actnode2_2->gnode->node->Id == actinterface->gnode_bound2s->node->Id) 
+                 actnode2_2->gnode->node->Id == actinterface->gnode_bound2s->node->Id)
               {
                 m2=0;
                 n2=1;
@@ -2036,14 +2036,14 @@ for(r=0; r<int_faces->numint; r++)
                 for(q=0;q<actinterface->numnps;q++)
                 {
                   if(j == 0 && actnode1_1->Id == actinterface->nodes[q]->Id)
-                  /*if(out_node1->Id == actinterface->nodes[q]->Id)*/ 
-                  { 
+                  /*if(out_node1->Id == actinterface->nodes[q]->Id)*/
+                  {
                     a=q;
                     break;
                   }
                   if(j == 1 && actnode1_2->Id == actinterface->nodes[q]->Id)
-                  /*if(out_node1->Id == actinterface->nodes[q]->Id)*/ 
-                  { 
+                  /*if(out_node1->Id == actinterface->nodes[q]->Id)*/
+                  {
                     a=q;
                     break;
                   }
@@ -2052,62 +2052,62 @@ for(r=0; r<int_faces->numint; r++)
                 {
                   if(m==0 && actnode2_1->Id == actinterface->nodes[q]->Id)
                   /*if(out_node2->Id == actinterface->nodes[q]->Id) */
-                  { 
+                  {
                     b=q;
                     break;
                   }
                   if(m==1 && actnode2_2->Id == actinterface->nodes[q]->Id)
                   /*if(out_node2->Id == actinterface->nodes[q]->Id) */
-                  { 
+                  {
                     b=q;
                     break;
                   }
                 }
-    
+
                 for(p=0;p<2;p++)
                 {
-                  actinterface->continuity_eq->A.a.da[a][b] += 
+                  actinterface->continuity_eq->A.a.da[a][b] +=
                                      (m1 * ((b1+b2)/2 + (b1-b2)/2*gauss2[p][0])+n1) *
                                      (m2 * ((b1+b2)/2 + (b1-b2)/2*gauss2[p][0])+n2) *
                                      ((b2-b1)/2) * gauss2[p][1];
-                  actinterface->conti_eq_save->A.a.da[a][b] += 
+                  actinterface->conti_eq_save->A.a.da[a][b] +=
                                      (m1 * ((b1+b2)/2 + (b1-b2)/2*gauss2[p][0])+n1) *
                                      (m2 * ((b1+b2)/2 + (b1-b2)/2*gauss2[p][0])+n2) *
                                      ((b2-b1)/2) * gauss2[p][1];
-    
+
                 }
-              } 
+              }
               else
               /* act == 1 -> rhs */
               {
                 /* detect position of integral value the rhs matrix */
                 for(q=0;q<actinterface->numnpm;q++)
                 {
-                  if(j==0 && actnode1_1->Id == actinterface->nodem[q]->Id) 
-                  { 
+                  if(j==0 && actnode1_1->Id == actinterface->nodem[q]->Id)
+                  {
                     b=q;
                     break;
                   }
-                  if(j==1 && actnode1_2->Id == actinterface->nodem[q]->Id) 
-                  { 
+                  if(j==1 && actnode1_2->Id == actinterface->nodem[q]->Id)
+                  {
                     b=q;
                     break;
                   }
                 }
                 for(q=0;q<actinterface->numnps;q++)
                 {
-                  if(m==0 && actnode2_1->Id == actinterface->nodes[q]->Id) 
-                  { 
+                  if(m==0 && actnode2_1->Id == actinterface->nodes[q]->Id)
+                  {
                     a=q;
                     break;
                   }
-                  if(m==1 && actnode2_2->Id == actinterface->nodes[q]->Id) 
-                  { 
+                  if(m==1 && actnode2_2->Id == actinterface->nodes[q]->Id)
+                  {
                     a=q;
                     break;
                   }
                 }
-    
+
                 for(p=0;p<2;p++)
                 {
                   /* --Here we save the transposed of the rhs solution matrix */
@@ -2125,28 +2125,28 @@ for(r=0; r<int_faces->numint; r++)
       } /* end of loop over the nodes of this slave element (j) */
     } /* end of loop over the slave elements (i)*/
   } /* end of general loop lhs--rhs (act)*/
-  
+
   /*-----------------------------------------------------------------------*/
   /*                     SOLUTION USING LAPACK LU-DECOMPOSITION            */
   /*-----------------------------------------------------------------------*/
-  
+
   /* decomposition of lhs */
-  
+
   dsytrf(
-          uplo,              
-          &(actinterface->continuity_eq->numeq_total),  
-          actinterface->continuity_eq->A.a.da[0],  
-          &(actinterface->continuity_eq->numeq_total),  
-          actinterface->continuity_eq->ipiv.a.iv,  
-          actinterface->continuity_eq->work.a.dv,  
-          &(actinterface->continuity_eq->lwork),   
-          &info              
+          uplo,
+          &(actinterface->continuity_eq->numeq_total),
+          actinterface->continuity_eq->A.a.da[0],
+          &(actinterface->continuity_eq->numeq_total),
+          actinterface->continuity_eq->ipiv.a.iv,
+          actinterface->continuity_eq->work.a.dv,
+          &(actinterface->continuity_eq->lwork),
+          &info
         );
-  
+
   if (info!=0) dserror("Lapack factorization failed");
-  
+
   /* solution for different rhs's*/
-  
+
   info=1;
   dsytrs(
            uplo,
@@ -2164,7 +2164,7 @@ for(r=0; r<int_faces->numint; r++)
   /*-----------------------------------------------------------------------*/
   /*            ALLOCATE MEMORY TO STORE THE SOLUTION AT THE NODES         */
   /*-----------------------------------------------------------------------*/
-  
+
   /* -------------------memory allocation only in the first iteration step */
   if(step == 1)
   {
@@ -2180,10 +2180,10 @@ for(r=0; r<int_faces->numint; r++)
         if((rhs1.a.da[i][j] > EPS10) || (rhs1.a.da[i][j] < -EPS10))
           a++;
       }
-      if(a > b) 
+      if(a > b)
         b=a;
     }
-  
+
     /* --------------allocate memory for the master nodes on the interface */
     for(i=0; i<actinterface->numnpm; i++)
     {
@@ -2198,7 +2198,7 @@ for(r=0; r<int_faces->numint; r++)
 
       if(flag>0)
       {
-        if(actnode1_1->mtr_coeff.fdim < 15) 
+        if(actnode1_1->mtr_coeff.fdim < 15)
         /* allocate memory to the node if the pointer mtr_coeff points to zero */
         {
           /*
@@ -2218,13 +2218,13 @@ for(r=0; r<int_faces->numint; r++)
       }
     }
   } /* end of if clause (step)*/
-  
+
   /*-----------------------------------------------------------------------*/
   /*                      STORE THE SOLUTION AT THE NODES                  */
   /*-----------------------------------------------------------------------*/
   /* loop nodes of actinterface->nodem */
   for(i=0; i<actinterface->numnpm; i++)
-  { 
+  {
     actnode1_1 = actinterface->nodem[i];
     /*amzero(&(actnode1_1->mtr_coeff));*/
 
@@ -2245,7 +2245,7 @@ for(r=0; r<int_faces->numint; r++)
       {
         actnode1_1->mtr_coeff.a.da[k][r] = rhs1.a.da[i][k];
       }
-      
+
     }
     else
     {
@@ -2255,23 +2255,23 @@ for(r=0; r<int_faces->numint; r++)
       {
           actnode1_1->mtr_coeff.a.dv[k] = rhs1.a.da[i][k];
       }
-      
+
     }
     /* update actnode1_1->nmb_zeros */
     a=0;
   } /* end of loop over the nodes of this element */
-  
+
 } /* end of loop over the interfaces (r) */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 } /*end of ssi_mortar_coeff */
-  
 
 
 
-/*!---------------------------------------------------------------------                                         
+
+/*!---------------------------------------------------------------------
 \brief detect intersection of 1-d nodal basis functions
 
 <pre>                                                  firl / genk 1/04
@@ -2287,15 +2287,15 @@ section. Resulting from this data we estimate the integration bounds.
 \param *b1            DOUBLE         (i)   lower integration bound
 \param *b2            DOUBLE         (i)   upper integration bound
 \param *intersection  INT            (i)   flag to detect intersection
-\return 0                                                                             
+\return 0
 
 ------------------------------------------------------------------------*/
-void ssi_detect_intersection(DOUBLE lambdr1_2, DOUBLE lambdr2_1, 
-     DOUBLE lambdr2_2, DOUBLE nr1_2, DOUBLE nr2_1, DOUBLE nr2_2, 
+void ssi_detect_intersection(DOUBLE lambdr1_2, DOUBLE lambdr2_1,
+     DOUBLE lambdr2_2, DOUBLE nr1_2, DOUBLE nr2_1, DOUBLE nr2_2,
      DOUBLE *b1, DOUBLE *b2, INT *intersection)
 {
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ssi_detect_intersection");
 #endif
 
@@ -2305,22 +2305,22 @@ if(lambdr2_1 < lambdr2_2)
                                       /*      1          2              */
   if ((lambdr2_1 < EPS8)&&            /*  1   o                         */
       (lambdr2_1 > -EPS8))            /*  2   o                         */
-  {                                   
+  {
     *b1 = 0.0;
-    if ((lambdr1_2<lambdr2_2) && (nr1_2 < nr2_2))          
+    if ((lambdr1_2<lambdr2_2) && (nr1_2 < nr2_2))
     {                                 /*  1   o--------o                */
       *b2 = nr1_2;                    /*  2   o------------o            */
       *intersection = 1;
       goto end_of_if;
     }
-    if ((lambdr1_2 < lambdr2_2+EPS10 && lambdr1_2 > lambdr2_2-EPS10) && 
-        (nr1_2 < nr2_2+EPS10 && nr1_2 > nr2_2-EPS10 ))       
+    if ((lambdr1_2 < lambdr2_2+EPS10 && lambdr1_2 > lambdr2_2-EPS10) &&
+        (nr1_2 < nr2_2+EPS10 && nr1_2 > nr2_2-EPS10 ))
     {                                 /*  1   o------------o            */
       *b2 = nr2_2;                    /*  2   o------------o            */
       *intersection = 1;
       goto end_of_if;
     }
-    if ((lambdr1_2 > lambdr2_2) && (nr1_2 > nr2_2))           
+    if ((lambdr1_2 > lambdr2_2) && (nr1_2 > nr2_2))
     {                                 /*  1   o------------o            */
       *b2 = nr2_2;                    /*  2   o--------o                */
       *intersection = 1;
@@ -2330,20 +2330,20 @@ if(lambdr2_1 < lambdr2_2)
   if (lambdr2_1 < -EPS8)              /*  1      o                      */
   {                                   /*  2   o            o            */
     *b1 = 0.0;
-    if ((lambdr1_2 < lambdr2_2) && (nr1_2 < nr2_2))           
+    if ((lambdr1_2 < lambdr2_2) && (nr1_2 < nr2_2))
     {                                 /*  1      o------o               */
       *b2 = nr1_2;                    /*  2   o------------o            */
       *intersection = 1;
       goto end_of_if;
     }
-    if ((lambdr1_2 < lambdr2_2+EPS10 && lambdr1_2 > lambdr2_2-EPS10) && 
-        (nr1_2 < nr2_2+EPS10 && nr1_2 > nr2_2-EPS10 ))       
+    if ((lambdr1_2 < lambdr2_2+EPS10 && lambdr1_2 > lambdr2_2-EPS10) &&
+        (nr1_2 < nr2_2+EPS10 && nr1_2 > nr2_2-EPS10 ))
     {                                 /*  1      o---------o            */
       *b2 = nr1_2;                    /*  2   o------------o            */
       *intersection = 1;
       goto end_of_if;
     }
-    if ((lambdr1_2 > lambdr2_2) && (nr1_2 > nr2_2))           
+    if ((lambdr1_2 > lambdr2_2) && (nr1_2 > nr2_2))
     {                                 /*  1      o------------o         */
       *b2 = nr2_2;                    /*  2   o------------o            */
       *intersection = 1;
@@ -2352,21 +2352,21 @@ if(lambdr2_1 < lambdr2_2)
   }
   if (lambdr2_1 > EPS8)               /*  1   o            o            */
   {                                   /*  2      o                      */
-    *b1 = nr2_1; 
-    if ((lambdr1_2 < lambdr2_2) && (nr1_2 < nr2_2))           
+    *b1 = nr2_1;
+    if ((lambdr1_2 < lambdr2_2) && (nr1_2 < nr2_2))
     {                                 /*  1   o------------o            */
       *b2 = nr1_2;                    /*  2      o------------o         */
       *intersection = 1;
       goto end_of_if;
     }
-    if ((lambdr1_2 < lambdr2_2+EPS10 && lambdr1_2 > lambdr2_2-EPS10) && 
-        (nr1_2 < nr2_2+EPS10 && nr1_2 > nr2_2-EPS10 ))       
+    if ((lambdr1_2 < lambdr2_2+EPS10 && lambdr1_2 > lambdr2_2-EPS10) &&
+        (nr1_2 < nr2_2+EPS10 && nr1_2 > nr2_2-EPS10 ))
     {                                 /*  1   o------------o            */
       *b2 = nr1_2;                    /*  2      o---------o            */
       *intersection = 1;
       goto end_of_if;
     }
-    if ((lambdr1_2 > lambdr2_2) && (nr1_2 > nr2_2))           
+    if ((lambdr1_2 > lambdr2_2) && (nr1_2 > nr2_2))
     {                                 /*  1   o------------o            */
       *b2 = nr2_2;                    /*  2      o------o               */
       *intersection = 1;
@@ -2380,21 +2380,21 @@ if(lambdr2_1 > lambdr2_2)
                                       /*      1          2              */
   if ((lambdr2_2 < EPS8)&&            /*  1   o                         */
       (lambdr2_2 > -EPS8))            /*  2   o                         */
-  {                                   
+  {
     *b1 = 0.0;
-    if ((lambdr1_2<lambdr2_1) && (nr1_2 < nr2_1))          
+    if ((lambdr1_2<lambdr2_1) && (nr1_2 < nr2_1))
     {                                 /*  1   o--------o                */
       *b2 = nr1_2;                    /*  2   o------------o            */
       *intersection = 1;
       goto end_of_if;
     }
-    if ((lambdr1_2 == lambdr2_1) && (nr1_2 == nr2_1))       
+    if ((lambdr1_2 == lambdr2_1) && (nr1_2 == nr2_1))
     {                                 /*  1   o------------o            */
       *b2 = nr2_1;                    /*  2   o------------o            */
       *intersection = 1;
       goto end_of_if;
     }
-    if ((lambdr1_2 > lambdr2_1) && (nr1_2 > nr2_1))           
+    if ((lambdr1_2 > lambdr2_1) && (nr1_2 > nr2_1))
     {                                 /*  1   o------------o            */
       *b2 = nr2_1;                    /*  2   o--------o                */
       *intersection = 1;
@@ -2404,19 +2404,19 @@ if(lambdr2_1 > lambdr2_2)
   if (lambdr2_2 < -EPS8)              /*  1      o                      */
   {                                   /*  2   o            o            */
     *b1 = 0.0;
-    if ((lambdr1_2 < lambdr2_1) && (nr1_2 < nr2_1))           
+    if ((lambdr1_2 < lambdr2_1) && (nr1_2 < nr2_1))
     {                                 /*  1      o------o               */
       *b2 = nr1_2;                    /*  2   o------------o            */
       *intersection = 1;
       goto end_of_if;
     }
-    if ((lambdr1_2 == lambdr2_1) && (nr1_2 == nr2_1))      
+    if ((lambdr1_2 == lambdr2_1) && (nr1_2 == nr2_1))
     {                                 /*  1      o---------o            */
       *b2 = nr1_2;                    /*  2   o------------o            */
       *intersection = 1;
       goto end_of_if;
     }
-    if ((lambdr1_2 > lambdr2_1) && (nr1_2 > nr2_1))           
+    if ((lambdr1_2 > lambdr2_1) && (nr1_2 > nr2_1))
     {                                 /*  1      o------------o         */
       *b2 = nr2_1;                    /*  2   o------------o            */
       *intersection = 1;
@@ -2425,20 +2425,20 @@ if(lambdr2_1 > lambdr2_2)
   }
   if (lambdr2_2 > EPS8)               /*  1   o            o            */
   {                                   /*  2      o                      */
-    *b1 = nr2_2; 
-    if ((lambdr1_2 < lambdr2_1) && (nr1_2 < nr2_1))           
+    *b1 = nr2_2;
+    if ((lambdr1_2 < lambdr2_1) && (nr1_2 < nr2_1))
     {                                 /*  1   o------------o            */
       *b2 = nr1_2;                    /*  2      o------------o         */
       *intersection = 1;
       goto end_of_if;
     }
-    if ((lambdr1_2 == lambdr2_1) && (nr1_2 == nr2_1))         
+    if ((lambdr1_2 == lambdr2_1) && (nr1_2 == nr2_1))
     {                                 /*  1   o------------o            */
       *b2 = nr1_2;                    /*  2      o---------o            */
       *intersection = 1;
       goto end_of_if;
     }
-    if ((lambdr1_2 > lambdr2_1) && (nr1_2 > nr2_1))           
+    if ((lambdr1_2 > lambdr2_1) && (nr1_2 > nr2_1))
     {                                 /*  1   o------------o            */
       *b2 = nr2_1;                    /*  2      o------o               */
       *intersection = 1;
@@ -2449,34 +2449,34 @@ if(lambdr2_1 > lambdr2_2)
 
 end_of_if: ;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 } /*end of ssi_detect_intersection*/
 
-  
-  
-/*!---------------------------------------------------------------------                                         
+
+
+/*!---------------------------------------------------------------------
 \brief put coupling forces from slave nodes to master nodes, mortar method
 
 <pre>                                                  firl / genk 02/04
 
-The internal forces of the slave nodes  are stored at 
-sol_mf.a.da[4][..]. This subroutine assembles a array 
-coupforc.a.da [actinterface->numnps][2]. 
-In a second step the corresponding forces on the master nodes are 
-computed. This forces depend on the mortar coefficients stored at the 
-master nodes on the inteface in node->mtr_coeff.a.dv[]. The coupling 
+The internal forces of the slave nodes  are stored at
+sol_mf.a.da[4][..]. This subroutine assembles a array
+coupforc.a.da [actinterface->numnps][2].
+In a second step the corresponding forces on the master nodes are
+computed. This forces depend on the mortar coefficients stored at the
+master nodes on the inteface in node->mtr_coeff.a.dv[]. The coupling
 forces on the master nodes are also stored at sol_mf.a.da[4][..].
 
 </pre>
 \param *masterfield   FIELD	     (i)   master field
 \param *slavefield    FIELD          (i)   slave field
 \param *int_faces    INTERFACES      (i)   the interfaces of the model
-\return 0                                                                             
+\return 0
 
 ------------------------------------------------------------------------*/
-void ssi_put_coupforc2mst(FIELD *masterfield, FIELD *slavefield, 
+void ssi_put_coupforc2mst(FIELD *masterfield, FIELD *slavefield,
                           INTERFACES *int_faces)
 {
 ARRAY coupforc;                         /* array of coupling forces     */
@@ -2487,11 +2487,11 @@ DOUBLE b;                               /* parameter for nodal position */
                                         /* on the interface             */
 INTERFACE *actinterface;                /* the actual interface         */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ssi_put_coupforc2mst");
 #endif
 /* erase sol_mf[4] for all master nodes */
-solserv_sol_zero(masterfield, 0, 3, 4);
+solserv_sol_zero(masterfield, 0, node_array_sol_mf, 4);
 
 /* loop over the interfaces */
 for(i=0; i<int_faces->numint; i++)
@@ -2500,12 +2500,12 @@ for(i=0; i<int_faces->numint; i++)
   /*------------------------------------------------- values to variables */
   coupforc_a = amdef("coupforc", &coupforc, actinterface->numnps, 2, "DA");
   amzero(&coupforc);
-  
+
   /*----------------------------------------------------------------------*/
   /*                               PART I                                 */
   /*----------------------------------------------------------------------*/
   /* construct array of coupling forces according to the order of nodes in*/
-  
+
   /* loop slave nodes at the interface */
   for(j=0; j<actinterface->numnps; j++)
   {
@@ -2523,11 +2523,11 @@ for(i=0; i<int_faces->numint; i++)
     coupforc.a.da[j][0] = actnode->sol_mf.a.da[4][0] * b;
     coupforc.a.da[j][1] = actnode->sol_mf.a.da[4][1] * b;
   }
-  
+
   /*----------------------------------------------------------------------*/
   /*                               PART II                                */
   /*----------------------------------------------------------------------*/
-  
+
   /* loop master nodes at the interface */
   for(j=0; j<actinterface->numnpm; j++)
   {
@@ -2542,51 +2542,51 @@ for(i=0; i<int_faces->numint; i++)
       if((a+k)<coupforc.fdim)
       {
         /* check if the actual node is on the intersection between two interfaces*/
-        if((actinterface->gnode_bound1mc != NULL && 
-           actnode->gnode->node->Id == actinterface->gnode_bound1mc->node->Id) || 
-          (actinterface->gnode_bound2mc != NULL && 
+        if((actinterface->gnode_bound1mc != NULL &&
+           actnode->gnode->node->Id == actinterface->gnode_bound1mc->node->Id) ||
+          (actinterface->gnode_bound2mc != NULL &&
            actnode->gnode->node->Id == actinterface->gnode_bound2mc->node->Id))
-        {    
+        {
           /* the index i runs with the interfaces */
-          actnode->sol_mf.a.da[4][0] += actnode->mtr_coeff.a.da[k][i] * 
+          actnode->sol_mf.a.da[4][0] += actnode->mtr_coeff.a.da[k][i] *
                                         coupforc.a.da[a+k][0];
-          actnode->sol_mf.a.da[4][1] += actnode->mtr_coeff.a.da[k][i] * 
+          actnode->sol_mf.a.da[4][1] += actnode->mtr_coeff.a.da[k][i] *
                                           coupforc.a.da[a+k][1];
         }
         else
-        {    
-          actnode->sol_mf.a.da[4][0] += actnode->mtr_coeff.a.dv[k] * 
+        {
+          actnode->sol_mf.a.da[4][0] += actnode->mtr_coeff.a.dv[k] *
                                          coupforc.a.da[a+k][0];
-          actnode->sol_mf.a.da[4][1] += actnode->mtr_coeff.a.dv[k] * 
+          actnode->sol_mf.a.da[4][1] += actnode->mtr_coeff.a.dv[k] *
                                         coupforc.a.da[a+k][1];
         }
       }
-    } /* end of loop over the mortar coefficients (k)*/     
+    } /* end of loop over the mortar coefficients (k)*/
   } /* end of loop over the master nodes at the interface */
 } /* end of loop over the interfaces (i)*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 } /* end of ssi_put_coupforc2mst */
 
-  
-  
-/*!---------------------------------------------------------------------                                         
+
+
+/*!---------------------------------------------------------------------
 \brief put displacements from master nodes ot slave nodes, interpol. method
 
 <pre>                                                  firl / genk 02/04
 
-The actual displacements are relaxed by ssidym-->relax. Then the 
-displacements of the slave nodes are linearly interpolated between the 
-relaxed displacements of the master nodes. 
+The actual displacements are relaxed by ssidym-->relax. Then the
+displacements of the slave nodes are linearly interpolated between the
+relaxed displacements of the master nodes.
 
 </pre>
 \param *field_to      FIELD	     (i)   field which gets values
 \param *field_from    FIELD          (i)   field with given values
 \param place          INT            (i)   position in sol_mf[place][0..1]
 \param *ssidyn        SSI_DYNAMIC    (i)   pointer to structure ssi_dynamic
-\return 0                                                                             
+\return 0
 
 ------------------------------------------------------------------------*/
 void ssi_interpolation_disp(FIELD *field_to, FIELD *field_from, INT place,
@@ -2609,18 +2609,18 @@ DOUBLE nto_from2;                       /* norm of vector to_from2 */
 DOUBLE fac1, fac2;                      /* working values */
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ssi_interpolation_disp");
 #endif
 /* clean vector sol_mf[place] of the nodes of field_to */
-solserv_sol_zero(field_to, 0, 3, place);
+solserv_sol_zero(field_to, 0, node_array_sol_mf, place);
 
 /* loop nodes of field_to */
 for(i=0; i<field_to->dis->numnp; i++)
 {
   actnode_to = &(field_to->dis->node[i]);
   /*check if actnode_to is on the interface and not on the boundary of the interface*/
-  if((actnode_to->gnode->ssicouple->ssi_couptyp != ssi_none) && 
+  if((actnode_to->gnode->ssicouple->ssi_couptyp != ssi_none) &&
     (actnode_to->gnode->ondesigntyp == ondline))
   {
     /* loop elements of field_from */
@@ -2647,16 +2647,16 @@ for(i=0; i<field_to->dis->numnp; i++)
                 /* compute relaxed displacement if place == 6 */
                 if(place==6)
                 {
-                  actnode_from1->sol_mf.a.da[place][0] = 
+                  actnode_from1->sol_mf.a.da[place][0] =
                     ssidyn->relax * actnode_from1->sol_mf.a.da[0][0] +
                     (1-ssidyn->relax) * actnode_from1->sol_mf.a.da[1][0];
-                  actnode_from1->sol_mf.a.da[place][1] = 
+                  actnode_from1->sol_mf.a.da[place][1] =
                     ssidyn->relax * actnode_from1->sol_mf.a.da[0][1] +
                     (1-ssidyn->relax) * actnode_from1->sol_mf.a.da[1][1];
-                  actnode_from2->sol_mf.a.da[place][0] = 
+                  actnode_from2->sol_mf.a.da[place][0] =
                     ssidyn->relax * actnode_from2->sol_mf.a.da[0][0] +
                     (1-ssidyn->relax) * actnode_from2->sol_mf.a.da[1][0];
-                  actnode_from2->sol_mf.a.da[place][1] = 
+                  actnode_from2->sol_mf.a.da[place][1] =
                     ssidyn->relax * actnode_from2->sol_mf.a.da[0][1] +
                     (1-ssidyn->relax) * actnode_from2->sol_mf.a.da[1][1];
                 }
@@ -2665,19 +2665,19 @@ for(i=0; i<field_to->dis->numnp; i++)
                 /* between this nodes; thus, the actual relaxed displacement */
                 /* is added to the initial geometry */
                 from1from2[0] = (actnode_from1->x[0]+actnode_from1->sol_mf.a.da[6][0]) -
-                                (actnode_from2->x[0]+actnode_from2->sol_mf.a.da[6][0]); 
+                                (actnode_from2->x[0]+actnode_from2->sol_mf.a.da[6][0]);
                 from1from2[1] = (actnode_from1->x[1]+actnode_from1->sol_mf.a.da[6][1]) -
-                                (actnode_from2->x[1]+actnode_from2->sol_mf.a.da[6][1]); 
+                                (actnode_from2->x[1]+actnode_from2->sol_mf.a.da[6][1]);
                 to_from1[0] = (actnode_to->x[0]+actnode_to->sol_mf.a.da[6][0]) -
-                              (actnode_from1->x[0]+actnode_from1->sol_mf.a.da[6][0]); 
+                              (actnode_from1->x[0]+actnode_from1->sol_mf.a.da[6][0]);
                 to_from1[1] = (actnode_to->x[1]+actnode_to->sol_mf.a.da[6][1]) -
-                              (actnode_from1->x[1]+actnode_from1->sol_mf.a.da[6][1]); 
+                              (actnode_from1->x[1]+actnode_from1->sol_mf.a.da[6][1]);
                 to_from2[0] = (actnode_to->x[0]+actnode_to->sol_mf.a.da[6][0]) -
-                              (actnode_from2->x[0]+actnode_from2->sol_mf.a.da[6][0]); 
+                              (actnode_from2->x[0]+actnode_from2->sol_mf.a.da[6][0]);
                 to_from2[1] = (actnode_to->x[1]+actnode_to->sol_mf.a.da[6][1]) -
-                              (actnode_from2->x[1]+actnode_from2->sol_mf.a.da[6][1]); 
+                              (actnode_from2->x[1]+actnode_from2->sol_mf.a.da[6][1]);
                 /* compute norms of the three vectors */
-                nfrom1from2 = sqrt((from1from2[0]*from1from2[0]) + 
+                nfrom1from2 = sqrt((from1from2[0]*from1from2[0]) +
                                    (from1from2[1]*from1from2[1]));
                 nto_from1 = sqrt((to_from1[0]*to_from1[0]) +
                                  (to_from1[1]*to_from1[1]));
@@ -2691,19 +2691,19 @@ for(i=0; i<field_to->dis->numnp; i++)
                           actnode_from1->sol_mf.a.da[place][0]) / nfrom1from2;
                   fac2 = actnode_from1->sol_mf.a.da[place][0];
                   /* apply interpolated value to actnode_to->sol_mf[place][0]*/
-                  actnode_to->sol_mf.a.da[place][0] = 
+                  actnode_to->sol_mf.a.da[place][0] =
                     fac1 * nto_from1 + fac2;
                   /* compute working values slope, shift */
                   fac1 = (actnode_from2->sol_mf.a.da[place][1]-
                           actnode_from1->sol_mf.a.da[place][1]) / nfrom1from2;
                   fac2 = actnode_from1->sol_mf.a.da[place][1];
-                  actnode_to->sol_mf.a.da[place][1] = 
+                  actnode_to->sol_mf.a.da[place][1] =
                     fac1 * nto_from1 + fac2;
                   if(place==6)
                   {
-                    actnode_to->sol_mf.a.da[0][0] = 
+                    actnode_to->sol_mf.a.da[0][0] =
                     actnode_to->sol_mf.a.da[place][0];
-                    actnode_to->sol_mf.a.da[0][1] = 
+                    actnode_to->sol_mf.a.da[0][1] =
                     actnode_to->sol_mf.a.da[place][1];
                   }
                   goto end_of_loop;
@@ -2716,7 +2716,7 @@ for(i=0; i<field_to->dis->numnp; i++)
     } /* end of loop over elements of field_from */
   } /* end of if clause if actnode_to is on the interface */
   /*check if actnode_to is on the interface and on the boundary of the interface*/
-  if((actnode_to->gnode->ssicouple->ssi_couptyp != ssi_none) && 
+  if((actnode_to->gnode->ssicouple->ssi_couptyp != ssi_none) &&
     (actnode_to->gnode->ondesigntyp == ondnode))
   {
     /* loop nodes of field_from */
@@ -2730,18 +2730,18 @@ for(i=0; i<field_to->dis->numnp; i++)
         /* compute relaxed displacement if place == 6 */
         if(place==6)
         {
-          actnode_from1->sol_mf.a.da[place][0] = 
+          actnode_from1->sol_mf.a.da[place][0] =
             ssidyn->relax * actnode_from1->sol_mf.a.da[0][0] +
             (1-ssidyn->relax) * actnode_from1->sol_mf.a.da[1][0];
-          actnode_from1->sol_mf.a.da[place][1] = 
+          actnode_from1->sol_mf.a.da[place][1] =
             ssidyn->relax * actnode_from1->sol_mf.a.da[0][1] +
             (1-ssidyn->relax) * actnode_from1->sol_mf.a.da[1][1];
         }
         /* compute vector between this two nodes */
         to_from1[0] = (actnode_to->x[0]+actnode_to->sol_mf.a.da[6][0]) -
-                      (actnode_from1->x[0]+actnode_from1->sol_mf.a.da[6][0]); 
+                      (actnode_from1->x[0]+actnode_from1->sol_mf.a.da[6][0]);
         to_from1[1] = (actnode_to->x[1]+actnode_to->sol_mf.a.da[6][1]) -
-                      (actnode_from1->x[1]+actnode_from1->sol_mf.a.da[6][1]); 
+                      (actnode_from1->x[1]+actnode_from1->sol_mf.a.da[6][1]);
         /* compute norm of this vector */
         nto_from1 = sqrt((to_from1[0]*to_from1[0]) +
                          (to_from1[1]*to_from1[1]));
@@ -2751,15 +2751,15 @@ for(i=0; i<field_to->dis->numnp; i++)
         {
          /* apply value from actnode_from1->sol_mf[place][0..1] directly */
          /* to actnode_to->sol_mf[place][0..1] */
-          actnode_to->sol_mf.a.da[place][0] = 
+          actnode_to->sol_mf.a.da[place][0] =
           actnode_from1->sol_mf.a.da[place][0];
-          actnode_to->sol_mf.a.da[place][1] = 
+          actnode_to->sol_mf.a.da[place][1] =
           actnode_from1->sol_mf.a.da[place][1];
           if(place==6)
           {
-            actnode_to->sol_mf.a.da[0][0] = 
+            actnode_to->sol_mf.a.da[0][0] =
             actnode_to->sol_mf.a.da[place][0];
-            actnode_to->sol_mf.a.da[0][1] = 
+            actnode_to->sol_mf.a.da[0][1] =
             actnode_to->sol_mf.a.da[place][1];
           }
           goto end_of_loop;
@@ -2770,27 +2770,27 @@ for(i=0; i<field_to->dis->numnp; i++)
   end_of_loop: ;
 } /* end of loop over master nodes */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 } /* end of ssi_interpolation */
 
 
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief transfer forces between subdomains, interpol. method
 
 <pre>                                                  firl / genk 02/04
 
 The internal forces of field_from are stored in sol_mf[4][]. These forces
-are transfered to the corresponding nodes of field_to. 
+are transfered to the corresponding nodes of field_to.
 
 </pre>
 \param *field_to      FIELD	     (i)   field which gets values
 \param *field_from    FIELD          (i)   field with given values
 \param place          INT            (i)   position in sol_mf[place][0..1]
 \param *ssidyn        SSI_DYNAMIC    (i)   pointer to structure ssi_dynamic
-\return 0                                                                             
+\return 0
 
 ------------------------------------------------------------------------*/
 void ssi_interpolation_frc(FIELD *field_to, FIELD *field_from, INT place,
@@ -2814,12 +2814,12 @@ DOUBLE fac1, fac2;                      /* working values */
 
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ssi_interpolation_frc");
 #endif
 
 /* clean vector sol_mf[place] of the nodes of field_to */
-solserv_sol_zero(field_to, 0, 3, place);
+solserv_sol_zero(field_to, 0, node_array_sol_mf, place);
 
 /* loop elements of field_to */
 for(i=0; i<field_to->dis->numele; i++)
@@ -2846,32 +2846,32 @@ for(i=0; i<field_to->dis->numele; i++)
             for(l=0; l<field_from->dis->numnp;l++)
             {
               actnode_from = &(field_from->dis->node[l]);
-              /* check if actnode_from is a coupling node and check that 
+              /* check if actnode_from is a coupling node and check that
                  actnode_from is on a dline */
-              if((actnode_from->gnode->ssicouple->ssi_couptyp != ssi_none) && 
+              if((actnode_from->gnode->ssicouple->ssi_couptyp != ssi_none) &&
                  (actnode_from->gnode->ondesigntyp == ondline))
               {
                 /* compute the vectors between the nodes */
                 /* the parameters of the vector depend on the actual position*/
                 /* between this nodes; thus, the actual relaxed displacement */
                 /* is added to the initial geometry */
-                to1to2[0] = 
-                  (actnode_to2->x[0] + actnode_to2->sol_mf.a.da[6][0]) - 
-                  (actnode_to1->x[0] + actnode_to1->sol_mf.a.da[6][0]);                
-                to1to2[1] = 
-                  (actnode_to2->x[1] + actnode_to2->sol_mf.a.da[6][1]) - 
-                  (actnode_to1->x[1] + actnode_to1->sol_mf.a.da[6][1]);                
-                from_to1[0] = 
-                  (actnode_to1->x[0] + actnode_to1->sol_mf.a.da[6][0]) - 
+                to1to2[0] =
+                  (actnode_to2->x[0] + actnode_to2->sol_mf.a.da[6][0]) -
+                  (actnode_to1->x[0] + actnode_to1->sol_mf.a.da[6][0]);
+                to1to2[1] =
+                  (actnode_to2->x[1] + actnode_to2->sol_mf.a.da[6][1]) -
+                  (actnode_to1->x[1] + actnode_to1->sol_mf.a.da[6][1]);
+                from_to1[0] =
+                  (actnode_to1->x[0] + actnode_to1->sol_mf.a.da[6][0]) -
                   (actnode_from->x[0] + actnode_from->sol_mf.a.da[6][0]);
-                from_to1[1] = 
-                  (actnode_to1->x[1] + actnode_to1->sol_mf.a.da[6][1]) - 
+                from_to1[1] =
+                  (actnode_to1->x[1] + actnode_to1->sol_mf.a.da[6][1]) -
                   (actnode_from->x[1] + actnode_from->sol_mf.a.da[6][1]);
-                from_to2[0] = 
-                  (actnode_to2->x[0] + actnode_to2->sol_mf.a.da[6][0]) - 
+                from_to2[0] =
+                  (actnode_to2->x[0] + actnode_to2->sol_mf.a.da[6][0]) -
                   (actnode_from->x[0] + actnode_from->sol_mf.a.da[6][0]);
-                from_to2[1] = 
-                  (actnode_to2->x[1] + actnode_to2->sol_mf.a.da[6][1]) - 
+                from_to2[1] =
+                  (actnode_to2->x[1] + actnode_to2->sol_mf.a.da[6][1]) -
                   (actnode_from->x[1] + actnode_from->sol_mf.a.da[6][1]);
                 /* compute norms of the three vectors */
                 nto1to2 = sqrt((to1to2[0]*to1to2[0])+
@@ -2891,29 +2891,29 @@ for(i=0; i<field_to->dis->numele; i++)
                   actnode_to1->sol_mf.a.da[4][1] += fac1 * actnode_from->sol_mf.a.da[4][1];
                   actnode_to2->sol_mf.a.da[4][0] += fac2 * actnode_from->sol_mf.a.da[4][0];
                   actnode_to2->sol_mf.a.da[4][1] += fac2 * actnode_from->sol_mf.a.da[4][1];
-                  goto end_of_node_from; 
+                  goto end_of_node_from;
                 }
               } /* end of if-clause */
-              /* check if actnode_from is a coupling node and check that 
+              /* check if actnode_from is a coupling node and check that
                  actnode_from is on a dnode */
-              if((actnode_from->gnode->ssicouple->ssi_couptyp != ssi_none) && 
+              if((actnode_from->gnode->ssicouple->ssi_couptyp != ssi_none) &&
                  (actnode_from->gnode->ondesigntyp == ondnode))
               {
                 /* compute the vectors between the nodes */
                 /* the parameters of the vector depend on the actual position*/
                 /* between this nodes; thus, the actual relaxed displacement */
                 /* is added to the initial geometry */
-                from_to1[0] = 
-                  (actnode_to1->x[0] + actnode_to1->sol_mf.a.da[6][0]) - 
+                from_to1[0] =
+                  (actnode_to1->x[0] + actnode_to1->sol_mf.a.da[6][0]) -
                   (actnode_from->x[0] + actnode_from->sol_mf.a.da[6][0]);
-                from_to1[1] = 
-                  (actnode_to1->x[1] + actnode_to1->sol_mf.a.da[6][1]) - 
+                from_to1[1] =
+                  (actnode_to1->x[1] + actnode_to1->sol_mf.a.da[6][1]) -
                   (actnode_from->x[1] + actnode_from->sol_mf.a.da[6][1]);
-                from_to2[0] = 
-                  (actnode_to2->x[0] + actnode_to2->sol_mf.a.da[6][0]) - 
+                from_to2[0] =
+                  (actnode_to2->x[0] + actnode_to2->sol_mf.a.da[6][0]) -
                   (actnode_from->x[0] + actnode_from->sol_mf.a.da[6][0]);
-                from_to2[1] = 
-                  (actnode_to2->x[1] + actnode_to2->sol_mf.a.da[6][1]) - 
+                from_to2[1] =
+                  (actnode_to2->x[1] + actnode_to2->sol_mf.a.da[6][1]) -
                   (actnode_from->x[1] + actnode_from->sol_mf.a.da[6][1]);
                 /* compute norms of the three vectors */
                 nfrom_to1 = sqrt((from_to1[0]*from_to1[0])+
@@ -2926,14 +2926,14 @@ for(i=0; i<field_to->dis->numele; i++)
                   /* compute nodal forces for the nodes of actele_to */
                   actnode_to1->sol_mf.a.da[4][0] += actnode_from->sol_mf.a.da[4][0];
                   actnode_to1->sol_mf.a.da[4][1] += actnode_from->sol_mf.a.da[4][1];
-                  goto end_of_node_from; 
+                  goto end_of_node_from;
                 }
                 if(nfrom_to2 < EPS8)
                 {
                   /* compute nodal forces for the nodes of actele_to */
                   actnode_to2->sol_mf.a.da[4][0] += actnode_from->sol_mf.a.da[4][0];
                   actnode_to2->sol_mf.a.da[4][1] += actnode_from->sol_mf.a.da[4][1];
-                  goto end_of_node_from; 
+                  goto end_of_node_from;
                 }
               } /* end of if-clause */
               end_of_node_from: ;
@@ -2946,7 +2946,7 @@ for(i=0; i<field_to->dis->numele; i++)
 } /* end of loop elements of field_to (i) */
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 } /* end of ssi_interpolation_frc */
@@ -2956,16 +2956,16 @@ dstrc_exit();
 
 
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief compute displacements for slave nodes, mortar method
 
 <pre>                                                  firl / genk 02/04
 
 The consistency condition is applied to evaluate the dirichlet b.c. for
-the slave nodes. Here is assumed that the displacements of the master 
-nodes are stored in sol_mf.a.da[0][..]. After the computation of the 
-corresponding displacements for the slave nodes these values are also 
-stored in sol_mf[0][..]. Here of course at the slave nodes. 
+the slave nodes. Here is assumed that the displacements of the master
+nodes are stored in sol_mf.a.da[0][..]. After the computation of the
+corresponding displacements for the slave nodes these values are also
+stored in sol_mf[0][..]. Here of course at the slave nodes.
 The algorithm is similar to the subroutine ssi_mortar_coeff.
 
 </pre>
@@ -2973,10 +2973,10 @@ The algorithm is similar to the subroutine ssi_mortar_coeff.
 \param *slavefield    FIELD          (i)   slave field
 \param nmb_nods_mstint INT           (i)   nmb of nods on master interface
 \param nmb_nods_slvint INT           (i)   nmb of nods on slave interface
-\return 0                                                                             
+\return 0
 
 ------------------------------------------------------------------------*/
-void ssi_calc_disp4slv(FIELD *masterfield, FIELD *slavefield, 
+void ssi_calc_disp4slv(FIELD *masterfield, FIELD *slavefield,
                        SSI_DYNAMIC *ssidyn, INTERFACES *int_faces)
 {
 DOUBLE gauss2[2][2];                /* gauss points and weights (2)     */
@@ -3021,11 +3021,11 @@ DOUBLE *work_vec_a;
 INTERFACE *actinterface;             /* the actual interface */
 
 ARRAY rel_d_2_1;                     /* the relaxed displacements of the */
-DOUBLE *rel_d_2_1_a;                 /* master node 2_1 */ 
+DOUBLE *rel_d_2_1_a;                 /* master node 2_1 */
 ARRAY rel_d_2_2;                     /* the relaxed displacements of the */
-DOUBLE *rel_d_2_2_a;                 /* master node 2_2 */ 
-                                     
-#ifdef DEBUG 
+DOUBLE *rel_d_2_2_a;                 /* master node 2_2 */
+
+#ifdef DEBUG
 dstrc_enter("ssi_calc_disp4slv");
 #endif
 
@@ -3066,12 +3066,12 @@ for(r=0; r<int_faces->numint; r++)
   amzero(&rel_d_2_2);
   /* ---the pointer lhs_dens points on factorized matrix, this matrix has */
   /* -------------------------------their coefficients below the diagonal */
-  uplo[0] = 'L'; 
+  uplo[0] = 'L';
   /* the unmber of right hand sides corresponds to the number of dof of the*/
   /* ---------------------------------------------------------master nodes */
   ione = masterfield->dis->node[0].numdf;
-  
-  
+
+
   /*loop elements of slavefield, biorthogonal shape functions, test space */
   for(i=0;i<actinterface->numnps-1;i++)
   {
@@ -3121,13 +3121,13 @@ for(r=0; r<int_faces->numint; r++)
       /* detect position of integral value in the vectors lhs and rhs */
       for(q=0;q<actinterface->numnps;q++)
       {
-        if(j==0 && actnode1_1->Id == actinterface->nodes[q]->Id) 
-        { 
+        if(j==0 && actnode1_1->Id == actinterface->nodes[q]->Id)
+        {
           a=q;
           break;
         }
-        if(j==1 && actnode1_2->Id == actinterface->nodes[q]->Id) 
-        { 
+        if(j==1 && actnode1_2->Id == actinterface->nodes[q]->Id)
+        {
           a=q;
           break;
         }
@@ -3170,9 +3170,9 @@ for(r=0; r<int_faces->numint; r++)
           nrmdr1_2[1] = r1_2[1] / nr1_2;
           /* --------compute lambda values of the vectors r1_2, r2_1, r2_2 */
           /* the component with the biggest norm is taken to compute the */
-          /* lambdas, thus the error due to floating point division is */ 
+          /* lambdas, thus the error due to floating point division is */
           /* minimized*/
-          if(sqrt(r1_2[0]*r1_2[0]) > sqrt(r1_2[1]*r1_2[1])) 
+          if(sqrt(r1_2[0]*r1_2[0]) > sqrt(r1_2[1]*r1_2[1]))
           {
             lambdr1_2 = r1_2[0] / nrmdr1_2[0];
             lambdr2_1 = r2_1[0] / nrmdr1_2[0];
@@ -3185,14 +3185,14 @@ for(r=0; r<int_faces->numint; r++)
             lambdr2_2 = r2_2[1] / nrmdr1_2[1];
           }
           /* Check for a possible nonzero intersection, goto end if such an*/
-          /* ---------------------------------intersection is not possible */        
+          /* ---------------------------------intersection is not possible */
           if((lambdr2_1 >= nr1_2) && (lambdr2_2 >= nr1_2)) goto end_of_node2;
           if((lambdr2_1 < 0) && (lambdr2_2 < 0)) goto end_of_node2;
-          
+
           /* ---------------------here we determine the integration bounds */
-          ssi_detect_intersection(lambdr1_2, lambdr2_1, lambdr2_2, nr1_2, 
+          ssi_detect_intersection(lambdr1_2, lambdr2_1, lambdr2_2, nr1_2,
                                   nr2_1, nr2_2, &b1, &b2, &intersection);
-  
+
           if(intersection == 1)
           {
             /* if we have a nonzero inters. we compute the nodal basis fcts*/
@@ -3221,20 +3221,20 @@ for(r=0; r<int_faces->numint; r++)
             /* loop over numdf */
             for(q=0;q<actnode2_1->numdf;q++)
             {
-              /* ---calculate slope and value n of the nodal basis function, */ 
-              /* here its the nodal basis function of the trace space of the */ 
-              /* -----master elements on the interface. Hence, these are the */ 
+              /* ---calculate slope and value n of the nodal basis function, */
+              /* here its the nodal basis function of the trace space of the */
+              /* -----master elements on the interface. Hence, these are the */
               /* ---standard hat functions multiplied with the corresponding */
               /* ----------------------------------------displacement values */
-              if(m==0)   
+              if(m==0)
               {
-                m2 = (rel_d_2_2.a.dv[q] - rel_d_2_1.a.dv[q]) / 
+                m2 = (rel_d_2_2.a.dv[q] - rel_d_2_1.a.dv[q]) /
                      (lambdr2_2 - lambdr2_1);
                 n2 = rel_d_2_1.a.dv[q] - m2 * lambdr2_1;
               }
               else
               {
-                m2 = (rel_d_2_1.a.dv[q] - rel_d_2_2.a.dv[q]) / 
+                m2 = (rel_d_2_1.a.dv[q] - rel_d_2_2.a.dv[q]) /
                      (lambdr2_2 - lambdr2_1);
                 n2 = rel_d_2_1.a.dv[q] - m2 * lambdr2_1;
               }
@@ -3253,7 +3253,7 @@ for(r=0; r<int_faces->numint; r++)
 
     } /* end of loop over the nodes of this slave element (j) */
   } /* end of loop over the slave elements (i)*/
-  
+
 
   /***********************************************************************/
   /*                                                                     */
@@ -3265,16 +3265,16 @@ for(r=0; r<int_faces->numint; r++)
      forces strong continuity at the boundary of the interface. Hence, the
      displacements of the master nodes at the boundary of the interface are
      directly transferred to the slave nodes at the boundary of the inter-
-     face. 
-     In the second approach the continuity equation is applied over the 
-     whole interface. Hence, the continuity at the boundary of the interface 
-     is also fulfilled in a weak sense. */   
+     face.
+     In the second approach the continuity equation is applied over the
+     whole interface. Hence, the continuity at the boundary of the interface
+     is also fulfilled in a weak sense. */
 
   /*---------------------------------------------------------------------*/
   /* COMPUTATION OF NODAL DISPLACEMENTS WITH STRONG CONTINUITY AT THE    */
   /*                     BOUNDARY OF THE INTERFACE                       */
   /*---------------------------------------------------------------------*/
-  
+
   /* fill vector solu with known displacements, the displacements of the */
   /* master node on the corresponding dnode */
 
@@ -3305,7 +3305,7 @@ for(r=0; r<int_faces->numint; r++)
     /* store a copy of vector actinterface->conti_eq_save->ipiv in slv_nods_onint_work */
     slv_nods_onint_work.a.iv[i] = actinterface->nodes[i]->Id;
   }
-  
+
   /* rearrange the system of equations */
   /* loop over the vector actinterface->conti_eq_save->ipiv */
   for(i=0; i<actinterface->numnps; i++)
@@ -3379,7 +3379,7 @@ for(r=0; r<int_faces->numint; r++)
     }
     end_02: ;
   }
-  
+
   /* loop the rearranged vector hasdnode to obtain the number of free nodes */
   for(i=0; i<actinterface->numnps; i++)
   {
@@ -3400,21 +3400,21 @@ for(r=0; r<int_faces->numint; r++)
       rhs_d.a.da[i][1] += actinterface->conti_eq_save->A.a.da[i][j] * solu_arr.a.da[j][1];
     }
   }
-  
+
   /* sum up the two rhs's */
   for(i=0; i<work_int; i++)
   {
     rhs_d.a.da[i][0] = -rhs_d.a.da[i][0] + rhs.a.da[0][i];
     rhs_d.a.da[i][1] = -rhs_d.a.da[i][1] + rhs.a.da[1][i];
   }
-  
+
   /* compute the nodal displacements for the slave nodes at the interface */
   for(i=0; i<work_int; i++)
   {
     solu_arr.a.da[i][0] = rhs_d.a.da[i][0] / actinterface->conti_eq_save->A.a.da[i][i];
     solu_arr.a.da[i][1] = rhs_d.a.da[i][1] / actinterface->conti_eq_save->A.a.da[i][i];
   }
-  
+
   /*-----------------------------------------------------------------------*/
   /*                      STORE THE SOLUTION AT THE NODES                  */
   /*-----------------------------------------------------------------------*/
@@ -3432,14 +3432,14 @@ for(r=0; r<int_faces->numint; r++)
       }
     }
 
-    actnode1_1->sol_mf.a.da[0][0] = (ssidyn->relax * solu_arr.a.da[a][0]) + 
-                                    (1 - ssidyn->relax) * 
+    actnode1_1->sol_mf.a.da[0][0] = (ssidyn->relax * solu_arr.a.da[a][0]) +
+                                    (1 - ssidyn->relax) *
                                      actnode1_1->sol_mf.a.da[6][0];
-    actnode1_1->sol_mf.a.da[0][1] = (ssidyn->relax * solu_arr.a.da[a][1]) + 
-                                    (1 - ssidyn->relax) * 
+    actnode1_1->sol_mf.a.da[0][1] = (ssidyn->relax * solu_arr.a.da[a][1]) +
+                                    (1 - ssidyn->relax) *
                                      actnode1_1->sol_mf.a.da[6][1];
 
-    /* copy the displacements to field sol_mf[6], in the */ 
+    /* copy the displacements to field sol_mf[6], in the */
     /* subroutine ssi_mortar_coeff this values are needed */
     actnode1_1->sol_mf.a.da[6][0] = actnode1_1->sol_mf.a.da[0][0];
     actnode1_1->sol_mf.a.da[6][1] = actnode1_1->sol_mf.a.da[0][1];
@@ -3456,9 +3456,9 @@ for(r=0; r<int_faces->numint; r++)
   /*---------------------------------------------------------------------*/
 
   /* solution for different rhs's*/
-  
+
   /* here the second part of the LAPACK solver is used. In actinterface->
-     continuity_eq->A the factorized lhs matrix is stored. The 
+     continuity_eq->A the factorized lhs matrix is stored. The
      factorization is computed in the subroutine ssi_mortar_coeff */
   info=1;
   dsytrs(
@@ -3473,7 +3473,7 @@ for(r=0; r<int_faces->numint; r++)
            &info
               );
   if (info!=0) dserror("Lapack solve failed");
-  
+
   /*-----------------------------------------------------------------------*/
   /*                      STORE THE SOLUTION AT THE NODES                  */
   /*-----------------------------------------------------------------------*/
@@ -3481,14 +3481,14 @@ for(r=0; r<int_faces->numint; r++)
   {
     actnode1_1 = actinterface->nodes[i];
 
-    actnode1_1->sol_mf.a.da[0][0] = ssidyn->relax * rhs.a.da[0][i] + 
-                                    (1-ssidyn->relax) * 
+    actnode1_1->sol_mf.a.da[0][0] = ssidyn->relax * rhs.a.da[0][i] +
+                                    (1-ssidyn->relax) *
                                     actnode1_1->sol_mf.a.da[6][0];
-    actnode1_1->sol_mf.a.da[0][1] = ssidyn->relax * rhs.a.da[1][i] + 
-                                    (1-ssidyn->relax) * 
+    actnode1_1->sol_mf.a.da[0][1] = ssidyn->relax * rhs.a.da[1][i] +
+                                    (1-ssidyn->relax) *
                                     actnode1_1->sol_mf.a.da[6][1];
 
-    /* copy the displacements to field sol_mf[6], in the */ 
+    /* copy the displacements to field sol_mf[6], in the */
     /* subroutine ssi_mortar_coeff this values are needed */
     actnode1_1->sol_mf.a.da[6][0] = actnode1_1->sol_mf.a.da[0][0];
     actnode1_1->sol_mf.a.da[6][1] = actnode1_1->sol_mf.a.da[0][1];
@@ -3497,29 +3497,29 @@ for(r=0; r<int_faces->numint; r++)
 
 } /* end of loop over the interfaces (r) */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 } /*end of ssi_calc_disp4slv */
 
-                                                                                                                                        
 
 
 
-/*!---------------------------------------------------------------------                                         
+
+/*!---------------------------------------------------------------------
 \brief allocate dirich condition for each slave gnode at the interface
 
 <pre>                                                  firl / genk 02/04
 
-In general each slave node at the interface has its own dirichlet 
-condition. The value of this condition results from the coupling 
+In general each slave node at the interface has its own dirichlet
+condition. The value of this condition results from the coupling
 algorithm. Per default all nodes on a dirich line obtain their Dirichlet
-boundary condition from the dline. Hence, all nodes at this dline get the 
+boundary condition from the dline. Hence, all nodes at this dline get the
 same Dirichlet boundary condition.
 
 </pre>
 \param *slavefield    FIELD          (i)   slave field
-\return 0                                                                             
+\return 0
 
 ------------------------------------------------------------------------*/
 void ssi_alloc_dirich(FIELD *slavefield)
@@ -3529,36 +3529,36 @@ GNODE *actgnode;                      /* actual gnode  */
 NODE *actnode;                        /* actual node  */
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ssi_alloc_dirich");
 #endif
 /*loop all nodes of slavefield*/
 for(i=0; i<slavefield->dis->numnp; i++)
 {
   actnode=&(slavefield->dis->node[i]);
-  actgnode = actnode->gnode;  
+  actgnode = actnode->gnode;
   /*check if actgnode is a coupling node*/
   if(actgnode->ssicouple == NULL) continue;
   if(actgnode->ssicouple->ssi_couptyp == ssi_slave)
   {
     actgnode->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
-    if (!actgnode->dirich) dserror("Allocation of memory failed");  
+    if (!actgnode->dirich) dserror("Allocation of memory failed");
     amdef("onoff",&(actgnode->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
     amzero(&(actgnode->dirich->dirich_onoff));
     amdef("val",&(actgnode->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
-    amdef("curve",&(actgnode->dirich->curve),MAXDOFPERNODE,1,"IV"); 
+    amdef("curve",&(actgnode->dirich->curve),MAXDOFPERNODE,1,"IV");
     amdef("function",&(actgnode->dirich->funct),MAXDOFPERNODE,1,"IV");
     amzero(&(actgnode->dirich->dirich_val));
     amzero(&(actgnode->dirich->curve));
     amzero(&(actgnode->dirich->funct));
     /*----------------------------------- initialise for ssi-coupling */
-    actgnode->dirich->dirich_onoff.a.iv[0] = 1;   
-    actgnode->dirich->dirich_onoff.a.iv[1] = 1;       
+    actgnode->dirich->dirich_onoff.a.iv[0] = 1;
+    actgnode->dirich->dirich_onoff.a.iv[1] = 1;
     actgnode->dirich->dirich_type=dirich_SSI;
   }
 }
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 }

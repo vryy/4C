@@ -759,7 +759,7 @@ void w1_b_barop(ELEMENT *ele,                          /* actual element*/
 		INT nd,       /* total number degrees of freedom of ele.*/
 		INT ip);                     /*Integration point counter*/
 /*----------------------------------------------------------------------*
-/*  w1_b_barop.c                                                        *
+ *  w1_b_barop.c                                                        *
  * calc b_bar operator at Gaussian point r,s            genk /04/04     *
  *----------------------------------------------------------------------*/
 void w1_g_barop(DOUBLE **g_bar, DOUBLE **gop,

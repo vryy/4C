@@ -1575,7 +1575,7 @@ ELEMENT      *actele;
 GIDSET       *actgid = NULL;
 char          sign='"';
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("out_gid_domains");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1601,15 +1601,15 @@ if (actgid->is_wall1_22)
     fprintf(out,"#-------------------------------------------------------------------------------\n");
     fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,sign,actgid->wall1_22_name,sign);
     fprintf(out,"VALUES\n");
-  }                                                                              
-   
+  }
+
   for (i=0; i<actfield->dis[0].numele; i++)
   {
     actele = &(actfield->dis[0].element[i]);
     if (actele->eltyp != el_wall1) continue;
     fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
     for (j=1; j<4; j++)
-    fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
+    fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
   }
   if (numaf == 1) /* print end values only for the slave field */
   {
@@ -1622,7 +1622,7 @@ else
 }
 /*----------------------------------------------------------------------*/
 fflush(out);
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1724,9 +1724,13 @@ if (strncmp(string,"displacement",stringlenght)==0)
    fprintf(out,"RESULTRANGESTABLE %c%s%c\n",
                                             sign,actgid->standardrangetable,sign
                                             );
-
+#if 0
+   /* This is a sin! Never change such a cruical global variable!
+    * Everybody depends on it!
+    * (It breaks the new io module in a non-obvious way!) */
 #ifdef D_AXISHELL
    genprob.ndim = 3;
+#endif
 #endif
 #ifdef D_SHELL9
    /*if shell9, the displacement have to be written in 3 components */
@@ -2288,7 +2292,7 @@ if (strncmp(string,"stress",stringlenght)==0)
       rangetable        = actgid->standardrangetable;
 #ifdef D_SSI
       /* if we have an ssi coupling condition on this gsurf */
-      if(actfield->dis->element[0].g.gsurf->ssicouple) 
+      if(actfield->dis->element[0].g.gsurf->ssicouple)
       if(actfield->dis->element[0].g.gsurf->ssicouple->ssi_couptyp == ssi_master)
 #endif /* D_SSI*/
       {
@@ -2410,7 +2414,7 @@ if (strncmp(string,"stress",stringlenght)==0)
                        0.0
                        );
       }
-#ifdef D_SSI      
+#ifdef D_SSI
       if(actfield->dis->element[0].g.gsurf->ssicouple->ssi_couptyp == ssi_slave)
 #endif
         fprintf(out,"END VALUES\n");

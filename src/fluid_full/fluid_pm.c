@@ -722,14 +722,14 @@ solserv_result_incre(actfield,actintra,sol_pnew,3,
                      &(presolv->sysarray_typ[0]),predis);
 
 /*-------- copy solution from sol_increment[3][j] to sol_increment[1[j] */
-solserv_sol_copy(actfield,veldis,1,1,3,1);
-solserv_sol_copy(actfield,predis,1,1,3,1);
+solserv_sol_copy(actfield,veldis,node_array_sol_increment,node_array_sol_increment,3,1);
+solserv_sol_copy(actfield,predis,node_array_sol_increment,node_array_sol_increment,3,1);
 
 
 /*-------- copy solution from sol_increment[3][j] to sol_[actpos][j]
            and transform kinematic to real pressure --------------------*/
-solserv_sol_copy(actfield,veldis,1,0,3,actpos);
-solserv_sol_copy(actfield,predis,1,0,3,actpos);
+solserv_sol_copy(actfield,veldis,node_array_sol_increment,node_array_sol,3,actpos);
+solserv_sol_copy(actfield,predis,node_array_sol_increment,node_array_sol,3,actpos);
 fluid_transpres(actfield,predis,0,actpos,predof,0);
 
 /*------------------------- copy pressure from pre discr. to vel discr. */

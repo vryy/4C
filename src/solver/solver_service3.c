@@ -24,7 +24,7 @@ Maintainer: Malte Neumann
  |                                          3 = sol_mf                  |
  | INT    place    (i) row in ARRAY sol to be set to zero               |
  *----------------------------------------------------------------------*/
-void solserv_sol_zero(FIELD *actfield, INT disnum, INT arraynum, INT place)
+void solserv_sol_zero(FIELD *actfield, INT disnum, NODE_ARRAY arraynum, INT place)
 {
 INT               i,j;
 INT               diff,max;
@@ -94,7 +94,7 @@ return;
  |                                           3 = sol_mf                 |
  | INT    from    (i) row in ARRAY sol to be set to zero                |
  *----------------------------------------------------------------------*/
-void solserv_sol_copy(FIELD *actfield, INT disnum, INT arrayfrom, INT arrayto,
+void solserv_sol_copy(FIELD *actfield, INT disnum, NODE_ARRAY arrayfrom, NODE_ARRAY arrayto,
                       INT from, INT to)
 {
 INT               i,j;
@@ -187,7 +187,7 @@ return;
  |                                           3 = sol_mf                 |
  | INT    from    (i) row in ARRAY sol to be set to zero                |
  *----------------------------------------------------------------------*/
-void solserv_sol_add(FIELD *actfield, INT disnum, INT arrayfrom, INT arrayto,
+void solserv_sol_add(FIELD *actfield, INT disnum, NODE_ARRAY arrayfrom, NODE_ARRAY arrayto,
                       INT from, INT to, DOUBLE fac)
 {
 INT               i,j;
@@ -407,7 +407,7 @@ for (i=0; i<actdis->numnp; i++)
       if (dirich->dirich_onoff.a.iv[j]==0) continue;
       array->a.da[place][j] = dirich->dirich_val.a.dv[j] * scale;
 
-#ifdef D_SSI      
+#ifdef D_SSI
       /* special approach for ssi - problems mfirl 03/04 */
     if (actnode->gnode->ssicouple != NULL)
       if(actnode->gnode->ssicouple->ssi_couptyp == ssi_slave)

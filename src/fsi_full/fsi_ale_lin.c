@@ -18,6 +18,7 @@ Maintainer: Steffen Genkinger
 #include "../solver/solver.h"
 #include "../ale3/ale3.h"
 #include "fsi_prototypes.h"
+#include "../io/io.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -151,6 +152,8 @@ static SPARSE_TYP    array_typ;   /* type of psarse system matrix               
 static FSI_DYNAMIC  *fsidyn;
 static ALE_DYNAMIC  *adyn;
 
+static BIN_OUT_FIELD out_context;
+
 #ifdef DEBUG
 dstrc_enter("fsi_ale_lin");
 #endif
@@ -272,10 +275,38 @@ container.global_numeq = 0;
 container.kstep        = 0;
 calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,&container,action);
 
+#ifdef D_MORTAR
+if(adyn->coupmethod == 0) /* mortar method */
+{
+  /*------- redefine the size of sol_mf from 2 to 4, the fourth field is */
+  /*------------- necessary to store the nodal displacements due to fsi */
+  solserv_sol_zero(actfield, 0, node_array_sol_mf, 3);
+}
+#endif
+
+/* initialize binary output
+ * It's important to do this only after all the node arrays are set
+ * up because their sizes are used to allocate internal memory. */
+init_bin_out_field(&out_context,
+                   &(actsolv->sysarray_typ[actsysarray]),
+                   &(actsolv->sysarray[actsysarray]),
+                   actfield, actpart, actintra, 0);
+
 /*--------------------------------------------------- check for restart */
 if (genprob.restart!=0)
 {
+#ifdef NEW_RESTART_READ
+   restart_read_bin_aledyn(adyn,
+                           &(actsolv->sysarray_typ[actsysarray]),
+                           &(actsolv->sysarray[actsysarray]),
+                           actfield,
+                           actpart,
+                           0,
+                           actintra,
+                           genprob.restart);
+#else
    restart_read_aledyn(genprob.restart,adyn,actfield,actpart,actintra);
+#endif
 }
 
 /*---------------------------------------------------------- monitoring */
@@ -292,16 +323,6 @@ out_sol(actfield,actpart,actintra,adyn->step,actpos);
 out_gid_domains(actfield);*/
 #endif
 
-#ifdef D_MORTAR
-if(adyn->coupmethod == 0) /* mortar method */
-{
-  /*------- redefine the size of sol_mf from 2 to 4, the fourth field is */
-  /*------------- necessary to store the nodal displacements due to fsi */
-  solserv_sol_zero(actfield, 0, 3, 3);
-}
-#endif
-  
-
 break;
 
 /*======================================================================*
@@ -310,9 +331,9 @@ break;
  * nodal solution history ale field:                                    *
  * sol[1...actpos][j]  ... solution for visualisation (real pressure)	*
  * sol_mf[0][i]        ... displacements at (n)			        *
- * sol_mf[1][i]        ... displacements at (n+1) 		        * 
- * sol_mf[2][i]        ... used in fsi_gradient.c                       * 
- * sol_mf[3][i]        ... displacements at (n+1) stored in fsi_calc_disp4ale* 
+ * sol_mf[1][i]        ... displacements at (n+1) 		        *
+ * sol_mf[2][i]        ... used in fsi_gradient.c                       *
+ * sol_mf[3][i]        ... displacements at (n+1) stored in fsi_calc_disp4ale*
  *======================================================================*/
 case 2:
 /*- there are only procs allowed in here, that belong to the fluid -----*/
@@ -328,7 +349,7 @@ if (par.myrank==0)
 /*--------------------------------------- sequential staggered schemes: */
 /*------------------------ copy from nodal sol_mf[1][j] to sol_mf[0][j] */
 if (fsidyn->ifsi<3 && fsidyn->ifsi>0)
-solserv_sol_copy(actfield,0,3,3,1,0);
+solserv_sol_copy(actfield,0,node_array_sol_mf,node_array_sol_mf,1,0);
 
 
 dsassert(fsidyn->ifsi!=3,"ale-solution handling not implemented for algo with DT/2-shift!\n");
@@ -383,7 +404,7 @@ solserv_result_incre(
 locsys_trans_sol(actfield,0,1,0,1);
 
 /*----------------- copy from nodal sol_increment[0][j] to sol_mf[1][j] */
-solserv_sol_copy(actfield,0,1,3,0,1);
+solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol_mf,0,1);
 
 if (fsidyn->ifsi>=4 || fsidyn->ifsi<0)
 break;
@@ -395,10 +416,10 @@ case 3:
 /*------------------------------------ for iterative staggared schemes: */
 /*------------------------ copy from nodal sol_mf[1][j] to sol_mf[0][j] */
 if (fsidyn->ifsi>=4 || fsidyn->ifsi==-1)
-   solserv_sol_copy(actfield,0,3,3,1,0);
+   solserv_sol_copy(actfield,0,node_array_sol_mf,node_array_sol_mf,1,0);
 /*--------------------- to get the corrected free surface position copy
   --------------------------------- from sol_mf[1][j] to sol[actpos][j] */
-solserv_sol_copy(actfield,0,3,0,1,actpos);
+solserv_sol_copy(actfield,0,node_array_sol_mf,node_array_sol,1,actpos);
 
 /*---------------------------------------------- increment output flags */
 outstep++;
@@ -431,6 +452,7 @@ if (restartstep==fsidyn->uprestart)
 {
    restartstep=0;
    restart_write_aledyn(adyn,actfield,actpart,actintra);
+   restart_write_bin_aledyn(&out_context, adyn);
 }
 
 /*--------------------------------------------------------------------- */
@@ -447,7 +469,7 @@ break;
  * sol_mf[0][i]        ... displacements at (n)			        *
  * sol_mf[1][i]        ... displacements at (n+1) 		        *
  * sol_mf[2][i]        ... grid position in relaxation parameter calc.  *
- * sol_mf[3][i]        ... displacements at (n+1) stored in fsi_calc_disp4ale* 
+ * sol_mf[3][i]        ... displacements at (n+1) stored in fsi_calc_disp4ale*
  * sol_increment[0][i] ... displacement used to determine omega_RELAX   *
  *======================================================================*/
 case 6:
@@ -511,6 +533,12 @@ solserv_result_incre(
 
 break;
 
+/*======================================================================*
+                            Binary Output
+ *======================================================================*/
+case 98:
+  out_results(&out_context, adyn->time, adyn->step, actpos, OUTPUT_DISPLACEMENT);
+  break;
 
 /*======================================================================*
  |                C L E A N I N G   U P   P H A S E                     |
@@ -542,6 +570,10 @@ if (ioflags.fluid_vis_file==1 && par.myrank==0)
 if (par.myrank==0) amdel(&time_a);
 solserv_del_vec(&(actsolv->rhs),actsolv->nrhs);
 solserv_del_vec(&(actsolv->sol),actsolv->nsol);
+
+/* finalize output */
+destroy_bin_out_field(&out_context);
+
 #ifndef PARALLEL
 CCAFREE(actintra);
 #endif

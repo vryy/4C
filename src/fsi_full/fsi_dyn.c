@@ -16,6 +16,7 @@ Maintainer: Steffen Genkinger
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 #include "fsi_prototypes.h"
+#include "../io/io.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate dynamic variables if needed                      |
@@ -99,7 +100,7 @@ static ALE_DYNAMIC    *adyn;
 INTERFACES            *int_faces; /* interface information for mortar   */
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("dyn_fsi");
 #endif
 
@@ -174,7 +175,11 @@ fsi_struct(structfield,mctrl,itnum);
 
 if (genprob.restart!=0)
 {
+#ifdef NEW_RESTART_READ
+   restart_read_bin_fsidyn(fsidyn, genprob.restart);
+#else
    restart_read_fsidyn(genprob.restart,fsidyn);
+#endif
    /*----------------------------------------------- plausibility check */
    if (fsidyn->time != adyn->time ||
        fsidyn->time != fdyn->acttime ||
@@ -263,7 +268,7 @@ else if (fsidyn->ifsi==2 || fsidyn->ifsi>=4)
    {
      /*-- computation of interface displacements for ale nodes, only for*/
      /* ----------------- interfaces with nonconforming discretizations */
-     fsi_calc_disp4ale(fsidyn, int_faces);  
+     fsi_calc_disp4ale(fsidyn, int_faces);
    }
    #endif
 
@@ -276,7 +281,7 @@ else if (fsidyn->ifsi==2 || fsidyn->ifsi>=4)
    if (fsidyn->coupmethod == 0) /* mortar method */
    {
      fsi_calc_intforces(int_faces);
-     /* --------put coupling forces from fluid nodes to structure nodes */ 
+     /* --------put coupling forces from fluid nodes to structure nodes */
      fsi_put_coupforc2struct(structfield, int_faces);
    }
    #endif
@@ -326,11 +331,21 @@ if (fsidyn->ifsi>=4)
 resstep++;
 restartstep++;
 
-if (resstep==fsidyn->upres && par.myrank==0)
+if (resstep==fsidyn->upres)
 {
    resstep=0;
-   out_checkfilesize(1);
-   out_gid_sol_fsi(fluidfield,structfield);
+   if (par.myrank==0) {
+     out_checkfilesize(1);
+     out_gid_sol_fsi(fluidfield,structfield);
+   }
+
+   /*
+    * Binary output has to be done by the algorithms because the
+    * contexts are there. */
+   mctrl = 98;
+   fsi_ale(alefield,mctrl);
+   fsi_fluid(fluidfield,mctrl);
+   fsi_struct(structfield,mctrl,itnum);
 }
 
 /*---------------------------------------------- write fsi-restart data */
@@ -338,6 +353,7 @@ if (restartstep==fsidyn->uprestart)
 {
    restartstep=0;
    restart_write_fsidyn(fsidyn);
+   restart_write_bin_fsidyn(fsidyn);
 }
 
 /*-------------------------------------------------------- energy check */
