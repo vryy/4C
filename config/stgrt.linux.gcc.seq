@@ -1,0 +1,36 @@
+# -*- shell-script -*-
+PLATFORM=SUSE73
+PARALLEL=no
+
+F77=g77
+CC=gcc
+LD=gcc
+
+BASEDIR="../lib/linux"
+
+INCLUDEDIRS="-I../include"
+LIBDIRS="-L/usr/lib -L/usr/lib/gcc-lib/i486-suse-linux/2.95.3 -L$BASEDIR/lapack -L$BASEDIR/blas" 
+
+# aztec
+AZTEC_INC=""
+AZTEC_LIB="-L$BASEDIR/aztec21/ -laztec_seq"
+
+# spooles
+SPOOLES_INC=""
+SPOOLES_LIB=""
+
+# umfpack
+UMFPACK_INC=""
+UMFPACK_LIB="-L$BASEDIR/umfpack/ -lumfpack"
+
+
+LIBS="-lc -lm -lF77ext -lf2c -lg2c -llapack -lblas"
+
+# FAST
+PROGRAMNAME=cca_seq
+CFLAGS_OPT="-O"
+FFLAGS_OPT="-O"
+CFLAGS="-v -ansi"
+FFLAGS=""
+LDFLAGS="-Xlinker -defsym -Xlinker MAIN__=main"
+

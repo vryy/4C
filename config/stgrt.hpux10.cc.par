@@ -1,0 +1,36 @@
+# -*- shell-script -*-
+PLATFORM=HPUX10
+PARALLEL=yes
+
+F77=/opt/mpi/bin/mpif77
+CC=/opt/mpi/bin/mpicc
+LD=/opt/mpi/bin/mpicc
+
+BASEDIR="/bau/stat16/users/statik/ccarat/lib/hpux_10"
+
+INCLUDEDIRS="-I/opt/mlib/include -I/bau/stat16/users/statik/ccarat/include"
+LIBDIRS="-L$BASEDIR/lapack -L$BASEDIR/metis" 
+
+# aztec
+AZTEC_INC=""
+AZTEC_LIB="-L$BASEDIR/aztec21 -laztec_par21"
+
+# spooles
+SPOOLES_INC=""
+SPOOLES_LIB="-L$BASEDIR/spooles -lspoolesMPI_10.20  -lspooles_10.20"
+
+# umfpack
+UMFPACK_INC=""
+UMFPACK_LIB="-L$BASEDIR/umfpack -lumfpack40_hpux10_32"
+
+
+LIBS="-lcl -lc -lM -lm -lmetis -llapack_hppa -lblas"
+
+# FAST
+PROGRAMNAME=cca_par_32
+CFLAGS_OPT="-O +Onolimit"
+FFLAGS_OPT="-O"
+CFLAGS="-D__HP__  +e -Ae +w1 -v"
+FFLAGS=""
+LDFLAGS=""
+

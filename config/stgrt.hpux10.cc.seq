@@ -1,0 +1,36 @@
+# -*- shell-script -*-
+PLATFORM=HPUX10
+PARALLEL=no
+
+F77=f77
+CC=cc
+LD=cc
+
+BASEDIR="/bau/stat16/users/statik/ccarat/lib/hpux_10"
+
+INCLUDEDIRS="-I/opt/mlib/include -I/bau/stat16/users/statik/ccarat/include"
+LIBDIRS="-L$BASEDIR/lapack" 
+
+# aztec
+AZTEC_INC=""
+AZTEC_LIB="-L$BASEDIR/aztec21 -laztec_seriell21"
+
+# spooles
+SPOOLES_INC=""
+SPOOLES_LIB=""
+
+# umfpack
+UMFPACK_INC=""
+UMFPACK_LIB="-L$BASEDIR/umfpack -lumfpack40_hpux10_32"
+
+
+LIBS="-lcl -lc -lM -lm -llapack_hppa -lblas"
+
+# FAST
+PROGRAMNAME=cca_seq_32
+CFLAGS_OPT="-O +Onolimit"
+FFLAGS_OPT="-O"
+CFLAGS="-D__HP__  +e -Ae +w1 -v"
+FFLAGS=""
+LDFLAGS=""
+

@@ -1,0 +1,36 @@
+# -*- shell-script -*-
+PLATFORM=SUSE73
+PARALLEL=yes
+
+F77=mpif77
+CC=mpicc
+LD=mpicc
+
+BASEDIR="../lib/linux/"
+
+INCLUDEDIRS="-I/usr/local/mpich-1.2.5/include/ -I../include"
+LIBDIRS="-L/usr/lib -L/usr/lib/gcc-lib/i486-suse-linux/2.95.3 -L$BASEDIR/lapack -L$BASEDIR/blas -L$BASEDIR/metis" 
+
+# aztec
+AZTEC_INC=""
+AZTEC_LIB="-L$BASEDIR/aztec21/ -laztec_par"
+
+# spooles
+SPOOLES_INC=""
+SPOOLES_LIB="-L$BASEDIR/spooles/ -lspoolesMPI -lspooles"
+
+# umfpack
+UMFPACK_INC=""
+UMFPACK_LIB="-L$BASEDIR/umfpack/ -lumfpack"
+
+
+LIBS="-lc -lm -lF77ext -lf2c -lg2c -llapack -lblas -lmetis"
+
+# FAST
+PROGRAMNAME=cca_par
+CFLAGS_OPT="-O"
+FFLAGS_OPT="-O"
+CFLAGS="-v -ansi"
+FFLAGS=""
+LDFLAGS="-Xlinker -defsym -Xlinker MAIN__=main"
+
