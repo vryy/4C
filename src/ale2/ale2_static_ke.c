@@ -1,9 +1,38 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'ale2_static_ke' which integrates the 
+linear stiffness for the 2d ale element
+
+*----------------------------------------------------------------------*/
 #ifdef D_ALE
 #include "../headers/standardtypes.h"
 #include "ale2.h"
-/*----------------------------------------------------------------------*
- | integration of linear stiffness ke for ALE element     mn 06/02      |
- *----------------------------------------------------------------------*/
+
+/*! 
+\addtogroup Ale 
+*//*! @{ (documentation module open)*/
+
+/*!----------------------------------------------------------------------
+\brief  integration of linear stiffness ke for ALE element 
+
+<pre>                                                              mn 06/02 
+This routine integrates the linear stiffness for the 2d ale element
+
+</pre>
+\param *ele           ELEMENT   (i)   my element
+\param *data          ALE2_DATA (i)   structure containing gaussian point and weight
+\param *mat           MATERIAL  (i)   my material
+\param *estif_global  ARRAY     (o)   the stifness matrix
+\param init           int       (i)   flag init == 1 : initialization
+                                           init != 1 : integration
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa calling: ale2_intg(), ale2_funct_deriv(), ale2_jaco(), ale2_bop(), 
+             ale2_mat_linel(), ale_keku(), ale2_hourglass(); 
+             called by: ale2()
+
+*----------------------------------------------------------------------*/
 void ale2_static_ke(ELEMENT   *ele, 
                    ALE2_DATA  *data, 
                    MATERIAL  *mat,
@@ -40,7 +69,7 @@ double det;
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
-dstrc_enter("ale_static_ke");
+dstrc_enter("ale2_static_ke");
 #endif
 /*------------------------------------------------- some working arrays */
 if (init==1)
@@ -54,7 +83,7 @@ bop       = amdef("bop"  ,&bop_a ,numeps,(numdf*MAXNOD_BRICK1),"DA");
 goto end;
 }
 /*------------------------------------------- integration parameters ---*/
-ale2_intg(ele,data,1);
+ale2_intg(ele,data);
 /*-------------- some of the fields have to be reinitialized to zero ---*/
 amzero(estif_global);
 estif     = estif_global->a.da;
@@ -104,3 +133,4 @@ return;
 } /* end of ale2_static_ke */
 /*----------------------------------------------------------------------*/
 #endif
+/*! @} (documentation module close)*/

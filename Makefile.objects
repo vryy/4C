@@ -110,29 +110,30 @@ OBJS6	      = src/shell8/s8_main.o \
                 src/shell8/s8_xint.o \
                 src/shell8/s8_init.o 
 #                ale
-OBJS7         = src/ale3/ale3_inpele.o \
-                src/ale3/ale3_intg.o \
-                src/ale3/ale3_static_ke.o \
-                src/ale3/ale3_funcderiv.o \
-                src/ale3/ale3_bop.o \
-                src/ale3/ale3_jaco.o \
-                src/ale3/ale3_mat_linel.o \
-                src/ale3/ale3_call_stiff.o \
-                src/ale3/ale3_hourglass.o \
-                src/ale3/ale3_main.o \
-                src/ale3/ale3_calelm.o \
-                src/ale3/ale3_rhs.o \
-                src/ale3/ale3_dirich.o \
-                src/ale3/ale3_dyn_control.o \
+OBJS7 = \
+                src/ale3/ale_calelm.o \
+                src/ale3/ale_call_stiff.o \
+                src/ale3/ale_dirich.o \
+                src/ale3/ale_dyn_control.o \
+                src/ale3/ale_rhs.o \
+                src/ale2/ale2_bop.o \
+                src/ale2/ale2_funcderiv.o \
+                src/ale2/ale2_hourglass.o \
                 src/ale2/ale2_inpele.o \
                 src/ale2/ale2_intg.o \
-                src/ale2/ale2_static_ke.o \
-                src/ale2/ale2_funcderiv.o \
-                src/ale2/ale2_bop.o \
                 src/ale2/ale2_jaco.o \
+                src/ale2/ale2_main.o \
                 src/ale2/ale2_mat_linel.o \
-                src/ale2/ale2_hourglass.o \
-                src/ale2/ale2_main.o
+                src/ale2/ale2_static_ke.o \
+                src/ale3/ale3_bop.o \
+                src/ale3/ale3_funcderiv.o \
+                src/ale3/ale3_hourglass.o \
+                src/ale3/ale3_inpele.o \
+                src/ale3/ale3_intg.o \
+                src/ale3/ale3_jaco.o \
+                src/ale3/ale3_main.o \
+                src/ale3/ale3_mat_linel.o \
+                src/ale3/ale3_static_ke.o
 #                parallel
 OBJS8	      = src/parallel/par_initmetis.o \
                 src/parallel/par_make_comm.o \

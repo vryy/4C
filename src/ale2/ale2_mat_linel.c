@@ -1,10 +1,33 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'ale2_mat_linel' which calculates the
+linear elastic constitutive matrix for a 2D ale element
+
+*----------------------------------------------------------------------*/
 #ifdef D_ALE
 #include "../headers/standardtypes.h"
 #include "ale2.h"
-/*----------------------------------------------------------------------*
- | constitutive matrix - linear elastic - 2D              al    9/01    |
- | plane stress, plane strain, rotational symmetry                      |
- *----------------------------------------------------------------------*/
+
+/*! 
+\addtogroup Ale 
+*//*! @{ (documentation module open)*/
+
+/*!----------------------------------------------------------------------
+\brief  calculates the linear elastic constitutive matrix
+
+<pre>                                                              mn 06/02 
+This routine calculates the linear elastic isotropic constitutive 
+matrix for a 2D ale element.
+
+</pre>
+\param *mat   STVENANT   (i)   my material
+\param *d     double     (o)   the constitutive matrix
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa calling: ---; called by: ale2_static_ke()
+
+*----------------------------------------------------------------------*/
 void ale2_mat_linel(STVENANT *mat, double **d)
 {
 double e1, e2, e3, a1, b1, c1;
@@ -67,3 +90,4 @@ dstrc_exit();
 return;
 } /* end of ale2_mat_linel */
 #endif
+/*! @} (documentation module close)*/

@@ -1,9 +1,37 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'ale3_bop' which calclates the operator 
+       matrix for a 3d ale element
+
+*----------------------------------------------------------------------*/
 #ifdef D_ALE
 #include "../headers/standardtypes.h"
-/*----------------------------------------------------------------------*
- | calculate operator matrix at point r,s                     mn 06/02  |
- *----------------------------------------------------------------------*/
-void ale_bop(double    **b,
+#include "ale3.h"
+
+/*! 
+\addtogroup Ale 
+*//*! @{ (documentation module open)*/
+
+/*!----------------------------------------------------------------------
+\brief calculate operator matrix at point r,s                                            
+
+<pre>                                                             mn 06/02 
+This routine calcuates the operator matrix b at the given point r,s,t
+for an 3D-ale-element.
+
+</pre>
+\param **b       double  (o)   the calculated operator matrix
+\param **deriv   double  (i)   the derivatives of the shape functions
+\param **xjm     double  (i)   the Jacobian matrix
+\param det       double  (i)   the determinant of the Jacobian matrix
+\param iel       int     (i)   number of nodes per element
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa calling: ---; called by: ale3_static_ke()
+
+*----------------------------------------------------------------------*/
+void ale3_bop(double    **b,
              double    **deriv,
              double    **xjm,
              double      det,
@@ -17,7 +45,7 @@ double xi11, xi12, xi13, xi21, xi22, xi23, xi31, xi32, xi33;
 double hr, hs, ht;
 double h1, h2, h3;
 #ifdef DEBUG 
-dstrc_enter("ale_bop");
+dstrc_enter("ale3_bop");
 #endif
 /*---------------------------------------------- inverse of jacobian ---*/
   x1r = xjm[0][0];
@@ -78,6 +106,7 @@ dstrc_enter("ale_bop");
 dstrc_exit();
 #endif
 return;
-} /* end of ale_bop */
+} /* end of ale3_bop */
 /*----------------------------------------------------------------------*/
 #endif
+/*! @} (documentation module close)*/

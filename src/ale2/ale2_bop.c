@@ -1,9 +1,35 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'ale2_bop' which calclates the operator 
+       matrix for a 2d ale element
+
+*----------------------------------------------------------------------*/
 #ifdef D_ALE
 #include "../headers/standardtypes.h"
 #include "ale2.h"
-/*----------------------------------------------------------------------*
- | calculate operator matrix at point r,s                    al 9/01    |
- *----------------------------------------------------------------------*/
+
+/*! 
+\addtogroup Ale 
+*//*! @{ (documentation module open)*/
+
+/*!----------------------------------------------------------------------
+\brief calculate operator matrix at point r,s                                            
+
+<pre>                                                              mn 06/02
+This routine calcuates the operator matrix b at the given point r,s
+for an 2D-ale-element.
+</pre>
+\param **bop     double  (o)   the calculated operator matrix
+\param **deriv   double  (i)   the derivatives of the shape functions
+\param **xjm     double  (i)   the Jacobian matrix
+\param det       double  (i)   the determinant of the Jacobian matrix
+\param iel       int     (i)   number of nodes per element
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa calling: ---; called by: ale2_static_ke()
+
+*----------------------------------------------------------------------*/
 void ale2_bop(double    **bop,
               double    **deriv,
               double    **xjm,
@@ -43,3 +69,4 @@ return;
 } /* end of ale2_bop */
 /*----------------------------------------------------------------------*/
 #endif
+/*! @} (documentation module close)*/

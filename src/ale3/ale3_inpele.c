@@ -1,10 +1,32 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'ale3inp' which reads a 3d ale element
+
+*----------------------------------------------------------------------*/
 #ifdef D_ALE
 #include "../headers/standardtypes.h"
 #include "../fluid3/fluid3.h"
 #include "ale3.h"
-/*----------------------------------------------------------------------*
- | read ale element                                       m.gee 8/00    |
- *----------------------------------------------------------------------*/
+
+/*! 
+\addtogroup Ale 
+*//*! @{ (documentation module open)*/
+
+
+/*!----------------------------------------------------------------------
+\brief reads a 3d ale element from the input file
+
+<pre>                                                              mn 06/02 
+This routine reads a 3d ale element from the input file
+
+</pre>
+\param *ele  ELEMENT  (o)   the element
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa caling: ---; called by: inp_ale_field()
+
+*----------------------------------------------------------------------*/
 void ale3inp(ELEMENT *ele)
 {
 int  i;
@@ -72,9 +94,20 @@ return;
 
 
 
-/*----------------------------------------------------------------------*
- | copy element info from fluidfield to ale field         m.gee 4/01    |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief  copy element info from fluidfield to ale field 
+
+<pre>                                                              mg 04/01 
+
+</pre>
+\param *fluidfield  FIELD  (i/o)   
+\param *alefield    FIELD  (i/o)   
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa caling: ---; called by: inpfield()
+
+*----------------------------------------------------------------------*/
 void fluid_to_ale(const FIELD *fluidfield, const FIELD *alefield)
 {
 int  ierr=0;
@@ -142,9 +175,21 @@ return;
 
 
 
-/*----------------------------------------------------------------------*
- | copy element info from fluidfield to ale field           m.gee 4/01    |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief finds the compatible ale element 
+
+<pre>                                                              mg 04/01 
+
+</pre>
+\param *ele1    ELEMENT  (i/o)   
+\param *ele2    ELEMENT  (i/o)   
+\param *ierr    int      (i/o)   
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa calling: ---; called by: fluid_to_ale()
+
+*----------------------------------------------------------------------*/
 void find_compatible_ele(const ELEMENT *ele1, const ELEMENT *ele2, int *ierr)
 {
 int  i,j,k;
@@ -186,3 +231,4 @@ dstrc_exit();
 return;
 } /* end of find_compatible_ele */
 #endif
+/*! @} (documentation module close)*/

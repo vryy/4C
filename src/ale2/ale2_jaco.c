@@ -1,9 +1,36 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'ale2_jaco' which calculates the Jacobian 
+matrix for a 2d ale element
+
+*----------------------------------------------------------------------*/
 #ifdef D_ALE
 #include "../headers/standardtypes.h"
 #include "ale2.h"
-/*----------------------------------------------------------------------*
- | calculate operator matrix at point r,s                    al 9/01    |
- *----------------------------------------------------------------------*/
+
+/*! 
+\addtogroup Ale 
+*//*! @{ (documentation module open)*/
+
+/*!----------------------------------------------------------------------
+\brief  calculate the Jacobian matrix  
+
+<pre>                                                              mn 06/02 
+This routine calculates the Jacobian matrix  at a point r,s for 
+a 2D ale element.
+
+</pre>
+\param *deriv   double     (i)   derivatives of the shape functions
+\param **xjm    double     (o)   the Jacobian matrix
+\param *det     double     (i)   determinant of the Jacobian matrix
+\param *ele     ELEMENT    (i)   the element
+\param iel      int        (i)   number of nodes of the element
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa caling: ---; called by: ale2_static_ke()
+
+*----------------------------------------------------------------------*/
 void ale2_jaco(double    **deriv,
              double    **xjm,
              double     *det,
@@ -39,3 +66,4 @@ dstrc_exit();
 return;
 } /* end of ale2_jaco */
 #endif
+/*! @} (documentation module close)*/

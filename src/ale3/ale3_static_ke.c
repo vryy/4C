@@ -1,10 +1,40 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'ale3_static_ke' which integrates the 
+linear stiffness for the 3d ale element
+
+*----------------------------------------------------------------------*/
 #ifdef D_ALE
 #include "../headers/standardtypes.h"
 #include "ale3.h"
-/*----------------------------------------------------------------------*
- | integration of linear stiffness ke for ALE element     mn 06/02      |
- *----------------------------------------------------------------------*/
-void ale_static_ke(ELEMENT   *ele, 
+
+/*! 
+\addtogroup Ale 
+*//*! @{ (documentation module open)*/
+
+/*!----------------------------------------------------------------------
+\brief  integration of linear stiffness ke for ALE element 
+
+<pre>                                                              mn 06/02 
+This routine integrates the linear stiffness for the 3d ale element
+
+
+</pre>
+\param *ele           ELEMENT   (i)   my element
+\param *data          ALE3_DATA (i)   structure containing gaussian point and weight
+\param *mat           MATERIAL  (i)   my material
+\param *estif_global  ARRAY     (o)   the stifness matrix
+\param init           int       (i)   flag init == 1 : initialization
+                                           init != 1 : integration
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa calling: ale3_intg(), ale3_funct_deriv(), ale3_jaco(), ale3_bop(),
+             ale3_mat_linel(), ale_keku(), ale3_hourglass();
+             called by: ale3()
+
+*----------------------------------------------------------------------*/
+void ale3_static_ke(ELEMENT   *ele, 
                    ALE3_DATA  *data, 
                    MATERIAL  *mat,
                    ARRAY     *estif_global, 
@@ -41,7 +71,7 @@ double det;
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
-dstrc_enter("ale_static_ke");
+dstrc_enter("ale3_static_ke");
 #endif
 /*------------------------------------------------- some working arrays */
 if (init==1)
@@ -55,7 +85,7 @@ bop       = amdef("bop"  ,&bop_a ,numeps,(numdf*MAXNOD_BRICK1),"DA");
 goto end;
 }
 /*------------------------------------------- integration parameters ---*/
-ale_intg(ele,data,1);
+ale3_intg(ele,data);
 /*-------------- some of the fields have to be reinitialized to zero ---*/
 amzero(estif_global);
 estif     = estif_global->a.da;
@@ -83,9 +113,9 @@ for (lr=0; lr<nir; lr++)
      e3   = data->xgpt[lt];
      fact = data->wgtt[lt];
      /*-------------------------- shape functions and their derivatives */
-     ale_funct_deriv(funct,deriv,e1,e2,e3,ele->distyp,1);
+     ale3_funct_deriv(funct,deriv,e1,e2,e3,ele->distyp,1);
      /*------------------------------------- compute jacobian matrix ---*/
-     ale_jaco (deriv,xjm,&det,ele,iel);
+     ale3_jaco (deriv,xjm,&det,ele,iel);
      /*------------------------------------ calculate element volume ---*/
      vol = vol + facr*facs*fact*det;
      /*----------------------------- use jacobian determinant or not ---*/
@@ -95,9 +125,9 @@ for (lr=0; lr<nir; lr++)
        fac = facr * facs *  fact;
      /*---------------------------------------- calculate operator B ---*/
      amzero(&bop_a);
-     ale_bop(bop,deriv,xjm,det,iel);
+     ale3_bop(bop,deriv,xjm,det,iel);
      /*------------------------------------------- call material law ---*/
-     ale_mat_linel(mat->m.stvenant,D);
+     ale3_mat_linel(mat->m.stvenant,D);
      /*--------------------------------- elastic stiffness matrix ke ---*/
      ale_keku(estif,bop,D,fac,nd,numeps);
      /*---------------- hourglass stabalization  stiffness matrix ke ---*/
@@ -112,6 +142,7 @@ end:
 dstrc_exit();
 #endif
 return; 
-} /* end of ale_static_ke */
+} /* end of ale3_static_ke */
 /*----------------------------------------------------------------------*/
 #endif
+/*! @} (documentation module close)*/

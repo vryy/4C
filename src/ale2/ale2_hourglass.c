@@ -1,25 +1,46 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'ale2_hourglass' which calculates the 
+hourglass stabilization matrix for a 2D ale element
+
+*----------------------------------------------------------------------*/
 #ifdef D_ALE
 #include "../headers/standardtypes.h"
+#include "ale2.h"
 /*----------------------------------------------------------------------*
  |                                                         mn 06/02     |
  | vector of material laws                                              |
  | defined in global_control.c
 *----------------------------------------------------------------------*/
 extern struct _MATERIAL  *mat;
-/*----------------------------------------------------------------------*
- | additional  stiffness matrix for hourglass stabilization    mn 06/02 |
- |                                                                      |
- | see also:                                                            |
- | T. Belytschko and L.P. Bindeman:                                     |
- | Assumed strain stabilization of the 4-node quadrilateral with 1-point|
- | quadrature for nonlinear problems.                                   |
- | Comp. Meth. Appl. Mech. Eng. 88 (1991) p. 311-340.                   |
- |                                                                      |
- |----------------------------------------------------------------------|
- | ele     -->  Element                                                 |
- | S       -->  ELEMENT STIFFNESS MATRIX                                |
- |                                                                      |
- *----------------------------------------------------------------------*/
+
+/*! 
+\addtogroup Ale 
+*//*! @{ (documentation module open)*/
+
+/*!----------------------------------------------------------------------
+\brief calculates the additional stiffness matrix for hourglass stabilization
+
+<pre>                                                              mn 06/02 
+This routine calcuates the additional stiffness matrix for hourglass
+stabilization for a 2D element.
+  
+see also:                                                             
+   T. Belytschko and L.P. Bindeman:                                      
+   Assumed strain stabilization of the 4-node quadrilateral with 1-point 
+   quadrature for nonlinear problems.                                    
+   Comp. Meth. Appl. Mech. Eng. 88 (1991) p. 311-340.                    
+        
+</pre>
+\param *ele  ELEMENT  (i)   the element
+\param **s   double   (i/o) (i) the one point quadrature matrix
+                            (o) the complete, stabilized stiffness matrix
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa calling: ---; called by: ale2_static_ke()
+
+*----------------------------------------------------------------------*/
 void ale2_hourglass(ELEMENT  *ele,
 		    double  **s) 
 {
@@ -158,3 +179,4 @@ dstrc_exit();
 return;
 } /* end of ale2_hourglass */
 #endif
+/*! @} (documentation module close)*/

@@ -1,3 +1,8 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'ale3', the main routine of the 3d ale element 
+
+*----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "ale3.h"
 /*----------------------------------------------------------------------*
@@ -6,10 +11,30 @@
  | defined in global_control.c
  *----------------------------------------------------------------------*/
 extern struct _MATERIAL  *mat;
-/*----------------------------------------------------------------------*
- | main ale3    control routine                            mn 06/02     |
- |                                                                      |
- *----------------------------------------------------------------------*/
+
+/*! 
+\addtogroup Ale 
+*//*! @{ (documentation module open)*/
+
+/*!----------------------------------------------------------------------
+\brief  control routine for the 3d ale element
+
+<pre>                                                              mn 06/02 
+This routine controles the calculation of the element stiffness, acts
+according to the action.
+
+</pre>
+\param *actpart      PARTITION   (i)   my partition
+\param *actintra     INTRA       (i)   my intra-communicator 
+\param *ele          ELEMENT     (i)   my element
+\param *estif_global ARRAY       (i)   global stiffness matrix
+\param *action       CALC_ACTION (i)   option passed to element
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa calling: ale3_static_ke; called by: ale_calelm(), ale_rhs()
+
+*----------------------------------------------------------------------*/
 void ale3(     PARTITION   *actpart,
                INTRA       *actintra,
                ELEMENT     *ele,
@@ -30,12 +55,12 @@ switch (*action)
 {
 /*------------------------------------------- init the element routines */
 case calc_ale_init:
-   ale_static_ke(NULL,NULL,NULL,NULL,1);
+   ale3_static_ke(NULL,NULL,NULL,NULL,1);
 break;
 /*----------------------------------- calculate linear stiffness matrix */
 case calc_ale_stiff:
    actmat = &(mat[ele->mat-1]);
-   ale_static_ke(ele,&actdata,actmat,estif_global,0);
+   ale3_static_ke(ele,&actdata,actmat,estif_global,0);
 break;
 /*----------------------------------------------------------- do nothig */
 case calc_ale_rhs:
@@ -52,3 +77,4 @@ dstrc_exit();
 #endif
 return; 
 } /* end of ale3 */
+/*! @} (documentation module close)*/

@@ -1,9 +1,38 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'ale2_funct_deriv' which calculates the 
+shape functions for a 2d ale element
+
+*----------------------------------------------------------------------*/
 #ifdef D_ALE
 #include "../headers/standardtypes.h"
 #include "ale2.h"
-/*----------------------------------------------------------------------*
- | shape functions and derivatives                               al 9/01|
- *----------------------------------------------------------------------*/
+
+/*! 
+\addtogroup Ale 
+*//*! @{ (documentation module open)*/
+
+/*!----------------------------------------------------------------------
+\brief calculates the shape functions and derivatives
+
+<pre>                                                              mn 06/02
+This routine calcuates the shape functions and their derivatives at a
+point r,s for an 2D-ale-element.
+
+</pre>
+\param *funct  double  (o)   shape functions
+\param **deriv double  (o)   the derivatives of the shape functions
+\param r       double  (i)   r coordinate
+\param s       double  (i)   s coordinate
+\param typ     DIS_TYP (i)   type of dicretization
+\param option  int     (i)   option == 0 : only functions,
+                             option == 1 : also derivatives
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa calling: ---; called by: ale2_static_ke()
+
+*----------------------------------------------------------------------*/
 void ale2_funct_deriv(double     *funct, 
                     double    **deriv, 
                     double      r, 
@@ -149,3 +178,4 @@ dstrc_exit();
 return;
 } /* end of ale2_funct_deriv */
 #endif
+/*! @} (documentation module close)*/

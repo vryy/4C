@@ -1,3 +1,8 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'ale2', the main routine of the 2d ale element 
+
+*----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "ale2.h"
 /*----------------------------------------------------------------------*
@@ -6,10 +11,30 @@
  | defined in global_control.c
  *----------------------------------------------------------------------*/
 extern struct _MATERIAL  *mat;
-/*----------------------------------------------------------------------*
- | main ale2    control routine                            mn 06/02     |
- |                                                                      |
- *----------------------------------------------------------------------*/
+
+/*! 
+\addtogroup Ale 
+*//*! @{ (documentation module open)*/
+
+/*!----------------------------------------------------------------------
+\brief  control routine for the 2d ale element
+
+<pre>                                                              mn 06/02 
+This routine controles the calculation of the element stiffness, acts
+according to the action.
+
+</pre>
+\param *actpart      PARTITION   (i)   my partition
+\param *actintra     INTRA       (i)   my intra-communicator 
+\param *ele          ELEMENT     (i)   my element
+\param *estif_global ARRAY       (i)   global stiffness matrix
+\param *action       CALC_ACTION (i)   option passed to element
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa calling: ale2_static_ke(); called by: ale_calelm(), ale_rhs()
+
+*----------------------------------------------------------------------*/
 void ale2(     PARTITION   *actpart,
                INTRA       *actintra,
                ELEMENT     *ele,
@@ -52,3 +77,4 @@ dstrc_exit();
 #endif
 return; 
 } /* end of ale3 */
+/*! @} (documentation module close)*/

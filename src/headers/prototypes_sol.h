@@ -1101,4 +1101,15 @@ void restart_read_nlnstructstat(int restart,   /*------------------------ restar
                 int nrhs,  DIST_VECTOR *rhs,   /*-- Fext processorpart of actual load step --*/
                 int nsol,  DIST_VECTOR *sol,   /*-- solution processorpart     --"--       --*/
                 int ndis,  DIST_VECTOR *dispi); /*-- displacement processorpart  --"--     --*/
+/*----------------------------------------------------------------------*
+ | ale_calelm.c                                               mn 06/02  |
+ *----------------------------------------------------------------------*/
+void ale_calelm(FIELD *actfield, SOLVAR *actsolv, PARTITION *actpart, 
+                INTRA *actintra, int sysarray1, int sysarray2, CALC_ACTION  *action);
+/*----------------------------------------------------------------------*
+ | ale_rhs.c                                                  mn 06/02  |
+ *----------------------------------------------------------------------*/
+void ale_rhs(FIELD *actfield, SOLVAR *actsolv, PARTITION *actpart,
+             INTRA *actintra, int sysarray1, int sysarray2, double *dirich,
+             int global_numeq, int kstep, CALC_ACTION *action);
              

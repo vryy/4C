@@ -1,9 +1,37 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'ale3_jaco' which calculates the Jacobian 
+matrix for a 3d ale element
+
+*----------------------------------------------------------------------*/
 #ifdef D_ALE
 #include "../headers/standardtypes.h"
-/*----------------------------------------------------------------------*
- | calculate operator matrix at point r,s,t                  mn 06/02   |
- *----------------------------------------------------------------------*/
-void ale_jaco(double    **deriv,
+#include "ale3.h"
+
+/*! 
+\addtogroup Ale 
+*//*! @{ (documentation module open)*/
+
+/*!----------------------------------------------------------------------
+\brief  calculate the Jacobian matrix  
+
+<pre>                                                              mn 06/02 
+This routine calculates the Jacobian matrix  at a point r,s,t for 
+a 3D ale element.
+
+</pre>
+\param *deriv   double     (i)   derivatives of the shape functions
+\param **xjm    double     (o)   the Jacobian matrix
+\param *det     double     (i)   determinant of the Jacobian matrix
+\param *ele     ELEMENT    (i)   the element
+\param iel      int        (i)   number of nodes of the element
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa calling: ---; called by: ale3_static_ke
+
+*----------------------------------------------------------------------*/
+void ale3_jaco(double    **deriv,
               double    **xjm,
               double     *det,
               ELEMENT    *ele,
@@ -13,7 +41,7 @@ void ale_jaco(double    **deriv,
 int i,j,k,l;
 double dum;
 #ifdef DEBUG 
-dstrc_enter("ale_jaco");
+dstrc_enter("ale3_jaco");
 #endif
 /*-------------------------------- determine jacobian at point r,s,t ---*/       
   for (i=0; i<3; i++)
@@ -42,6 +70,7 @@ dstrc_enter("ale_jaco");
 dstrc_exit();
 #endif
 return;
-} /* end of ale_jaco */
+} /* end of ale3_jaco */
 /*----------------------------------------------------------------------*/
 #endif
+/*! @} (documentation module close)*/

@@ -1,28 +1,50 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'ale3_hourglass' which calculates the 
+hourglass stabilization matrix for a 3D ale element
+
+*----------------------------------------------------------------------*/
 #ifdef D_ALE
 #include "../headers/standardtypes.h"
+#include "ale3.h"
 /*----------------------------------------------------------------------*
  |                                                         mn 06/02     |
  | vector of material laws                                              |
  | defined in global_control.c
 *----------------------------------------------------------------------*/
 extern struct _MATERIAL  *mat;
-/*----------------------------------------------------------------------*
- | additional  stiffness matrix for hourglass stabilization    mn 06/02 |
- |                                                                      |
- | see also:                                                            |
- | (1) T. Belytschko and L.P. Bindeman:                                 |
- |     Assumed strain stabilization of the 8-node hexahedral element    |
- |     Comp. Meth. Appl. Mech. Eng.: 105 (1993) p. 225-260.             |
- | (2) D.P. Flanagan and T. Belytschko:                                 |
- |     A uniform strain hexahedron and quadrilateral with orthogonal    |
- |     hourglass control                                                |
- |     Int. J. Num. Meth. Ing.: Vol. 17 (1981) p. 679-706.              |
- |                                                                      |
- |----------------------------------------------------------------------|
- | ele     -->  Element                                                 |
- | S       -->  ELEMENT STIFFNESS MATRIX                                |
- |                                                                      |
- *----------------------------------------------------------------------*/
+
+/*! 
+\addtogroup Ale 
+*//*! @{ (documentation module open)*/
+
+/*!----------------------------------------------------------------------
+\brief calculates the additional stiffness matrix for hourglass stabilization
+
+<pre>                                                              mn 06/02 
+This routine calcuates the additional stiffness matrix for hourglass
+stabilization for a 3D element.
+   
+see also:                                                             
+   (1) T. Belytschko and L.P. Bindeman:                                  
+       Assumed strain stabilization of the 8-node hexahedral element     
+       Comp. Meth. Appl. Mech. Eng.: 105 (1993) p. 225-260.              
+   (2) D.P. Flanagan and T. Belytschko:                                  
+       A uniform strain hexahedron and quadrilateral with orthogonal     
+       hourglass control                                                 
+       Int. J. Num. Meth. Ing.: Vol. 17 (1981) p. 679-706.        
+
+</pre>
+\param *ele  ELEMENT  (i)   the element
+\param **s   double   (i/o) (i) the one point quadrature matrix
+                            (o) the complete, stabilized stiffness matrix
+\param vol   double   (i)   the volume of the element
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa calling: ---; called by: ale3_static_ke
+
+*----------------------------------------------------------------------*/
 void ale3_hourglass(ELEMENT  *ele,
 		    double  **s,
 		    double    vol)
@@ -347,3 +369,4 @@ dstrc_exit();
 return;
 } /* end of ale3_hourglass */
 #endif
+/*! @} (documentation module close)*/

@@ -1,10 +1,41 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'ale3_funct_deriv' which calculates the 
+shape functions for a 3d ale element
+
+*----------------------------------------------------------------------*/
 #ifdef D_ALE
 #include "../headers/standardtypes.h"
+#include "ale3.h"
 
-/*----------------------------------------------------------------------*
- | shape functions and derivatives                             mn 06/02 |
- *----------------------------------------------------------------------*/
-void ale_funct_deriv(double     *funct, 
+
+/*! 
+\addtogroup Ale 
+*//*! @{ (documentation module open)*/
+
+/*!----------------------------------------------------------------------
+\brief calculates the shape functions and derivatives
+
+<pre>                                                              mn 06/02 
+This routine calcuates the shape functions and their derivatives at a
+point r,s,t for an 3D-ale-element.
+
+</pre>
+\param *funct  double  (o)   shape functions
+\param **deriv double  (o)   the derivatives of the shape functions
+\param r       double  (i)   r coordinate
+\param s       double  (i)   s coordinate
+\param t       double  (i)   t coordinate
+\param typ     DIS_TYP (i)   type of dicretization
+\param option  int     (i)   option == 0 : only functions,
+                             option == 1 : also derivatives
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa calling: ---; called by: ale3_static_ke
+
+*----------------------------------------------------------------------*/
+void ale3_funct_deriv(double     *funct, 
                        double    **deriv, 
                        double      r, 
                        double      s,
@@ -21,7 +52,7 @@ const double   q64 = 1.0/64.0;
 const double   q964= 9.0/64.0;
 double         rr,ss,tt,rp,sp,tp,rm,sm,tm,rrm,ssm,ttm;
 #ifdef DEBUG 
-dstrc_enter("ale_funct_deriv");
+dstrc_enter("ale3_funct_deriv");
 #endif
 /*----------------------------------------------------------------------*/
 /* if option ==0 only funtion evaluation, if option==1 also derivatives */
@@ -88,5 +119,6 @@ break;
 dstrc_exit();
 #endif
 return;
-} /* end of ale_funct_deriv */
+} /* end of ale3_funct_deriv */
 #endif
+/*! @} (documentation module close)*/

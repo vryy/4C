@@ -1,3 +1,8 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'ale_setdirich' and 'ale_caldirich'
+
+*----------------------------------------------------------------------*/
 #ifdef D_ALE
 #include "../headers/standardtypes.h"
 #include "../headers/solution.h"
@@ -18,10 +23,30 @@ extern struct _MATERIAL  *mat;
  *----------------------------------------------------------------------*/
 extern int            numcurve;
 extern struct _CURVE *curve;
- /*----------------------------------------------------------------------*
- |  routine to set dirichlet boundary conditions on at time <time>       |
- |                                                           genk 04/02  |
- *----------------------------------------------------------------------*/
+
+/*! 
+\addtogroup Ale 
+*//*! @{ (documentation module open)*/
+
+/*!----------------------------------------------------------------------
+\brief sets dirichlet boundary conditions on at time t
+
+<pre>                                                              mn 06/02 
+This routine reads the initial value for the dirichlet condition from 
+actgnode->dirich->dirich_val.a.dv[j], gets the appropriate factor from 
+the timecurve and writes the value for the dirichlet conditions at the
+time t to actnode->sol.a.da[0][j].
+
+</pre>
+\param *actfield  FIELD          (i)  my field
+\param *sdyn      STRUCT_DYNAMIK (i)  structure containing time information
+
+\warning For (dirich_val.a.dv == 90) the boundary conditions for a special
+         example (rotating hole) are calculated.
+\return void                                               
+\sa calling: dyn_facfromcurve(); called by: dyn_ale()
+
+*----------------------------------------------------------------------*/
 void ale_setdirich(FIELD  *actfield, STRUCT_DYNAMIC *sdyn)
 {
 GNODE                *actgnode;
@@ -103,10 +128,23 @@ return;
 
 
 
-/*----------------------------------------------------------------------*
- |  routine to calculate the element dirichlet load vector              |
- |                                                  genk 05/02          |
- *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief calculates the element dirichlet load vector  
+
+<pre>                                                              mn 06/02 
+This routine calculates the element dirichlet load vector, reading the
+values of the dirichlet conditions from actnode->sol.a.da[0][j]
+
+</pre>
+\param *actele        ELEMENT (i)  my element
+\param *fullvec        double  (o)  the dirichlet load vector as full vector
+\param dim            int     (i)  dimension
+\param *estif_global  ARRAY   (i)  the element stiffness matrix
+
+\return void                                               
+\sa calling: ---; called by: ale_rhs()
+
+*----------------------------------------------------------------------*/
 void ale_caldirich(
                      ELEMENT   *actele, 
 		     double    *fullvec,
@@ -186,3 +224,4 @@ dstrc_exit();
 return;
 } /* end of ale_caldirich*/ 
 #endif
+/*! @} (documentation module close)*/

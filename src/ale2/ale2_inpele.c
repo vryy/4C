@@ -1,10 +1,31 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'ale2inp' which reads a 2d ale element
+
+*----------------------------------------------------------------------*/
 #ifdef D_ALE
 #include "../headers/standardtypes.h"
 #include "../fluid3/fluid3.h"
 #include "ale2.h"
-/*----------------------------------------------------------------------*
- | read ale element                                       m.gee 8/00    |
- *----------------------------------------------------------------------*/
+
+/*! 
+\addtogroup Ale 
+*//*! @{ (documentation module open)*/
+
+/*!----------------------------------------------------------------------
+\brief reads a 2d ale element from the input file
+
+<pre>                                                              mn 06/02 
+This routine reads a 2d ale element from the input file.
+
+</pre>
+\param *ele  ELEMENT  (o)   the element
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa calling: ---; called by: inp_ale_field()
+
+*----------------------------------------------------------------------*/
 void ale2inp(ELEMENT *ele)
 {
 int  i;
@@ -71,3 +92,4 @@ dstrc_exit();
 return;
 } /* end of ale2inp */
 #endif
+/*! @} (documentation module close)*/

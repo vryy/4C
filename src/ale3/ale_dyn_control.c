@@ -1,4 +1,11 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'dyn_ale' which controles the calculation
+of the problemtype ale
+
+*----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
+#include "ale3.h"
 #include "../headers/solution.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -77,9 +84,27 @@ extern enum _CALC_ACTION calc_action[MAXFIELD];
 
 
 
-/*----------------------------------------------------------------------*
- |  routine to control static execution                  m.gee 6/01     |
- *----------------------------------------------------------------------*/
+
+/*! 
+\addtogroup Ale 
+*//*! @{ (documentation module open)*/
+
+/*!----------------------------------------------------------------------
+\brief controls the  execution of pure ale problems
+
+<pre>                                                              mn 06/02 
+This routine  controls the  execution of pure ale problems.
+Initialization, once the calculation of the stiffness matrix, and multiple
+calculation of the rhs and solving.
+
+</pre>
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa   calling: ale_calelm(), ale_setdirich(), ale_rhs(); 
+      called by: caldyn()
+
+*----------------------------------------------------------------------*/
 void dyn_ale()
 {
 #ifdef D_ALE
@@ -255,3 +280,4 @@ dstrc_exit();
 #endif
 return;
 } /* end of dyn_ale */
+/*! @} (documentation module close)*/

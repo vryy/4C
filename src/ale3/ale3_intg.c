@@ -1,16 +1,35 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'ale3_intg' which gives the coordinates and
+weight factors for numerical integration of a 3D ale element
+
+*----------------------------------------------------------------------*/
 #ifdef D_ALE
 #include "../headers/standardtypes.h"
 #include "ale3.h"
-/*----------------------------------------------------------------------*
- | integration points                                        mn 06/02   |
- -----------------------------------------------------------------------|
- | HEX-ELEMENT                                                          |
- | COORDINATES AND WEIGHTING FACTORS OF GAUSS-INTEGRATION-POINTS FOR    |
- | NUMERICAL INTEGRATION                                                |
- *----------------------------------------------------------------------*/
-void ale_intg(const ELEMENT   *ele,
-              ALE3_DATA        *data,
-              int              option)
+
+/*! 
+\addtogroup Ale 
+*//*! @{ (documentation module open)*/
+
+/*!----------------------------------------------------------------------
+\brief coordinates and weight factors for numerical integration 
+
+<pre>                                                              mn 06/02 
+This routine  gives the coordinates and weight factors for numerical
+integration of a 3D ale element.
+
+</pre>
+\param *ele    ELEMENT    (i)   the element
+\param *data   ALE3_DATA  (o)   structure containing the coordinates and weighting factors
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa calling: ---; called by: ale3_static_ke
+
+*----------------------------------------------------------------------*/
+void ale3_intg(const ELEMENT   *ele,
+              ALE3_DATA        *data)
 {
 int i, k;
 
@@ -23,7 +42,7 @@ double  q12, q13, q16, q23;
 double  xgr[13][8],xgs[13][8],wgtt[13][8];
 static double xg[6][6],wgt[6][6];
 #ifdef DEBUG 
-dstrc_enter("ale_intg");
+dstrc_enter("ale3_intg");
 #endif
 /*----------------------------------------------------------------------*  
  |     INTEGRATION PARAMETERS FOR    H E X A H E D R A L     ELEMENTS   |
@@ -45,7 +64,7 @@ case 1:
   data->wgtr[0] = 2.0;
 break;
 default:
-   dserror("unknown number of gaussian points in ale_intg");
+   dserror("unknown number of gaussian points in ale3_intg");
 break;
 }
 switch(ele->e.ale3->nGP[1])/* direction s */
@@ -63,7 +82,7 @@ case 1:
   data->wgts[0] = 2.0;
 break;
 default:
-   dserror("unknown number of gaussian points in ale_intg");
+   dserror("unknown number of gaussian points in ale3_intg");
 break;
 }
 switch(ele->e.ale3->nGP[2])/* direction t */
@@ -81,7 +100,7 @@ case 1:
   data->wgtt[0] = 2.0;
 break;
 default:
-   dserror("unknown number of gaussian points in ale_intg");
+   dserror("unknown number of gaussian points in ale3_intg");
 break;
 }
 /*----------------------------------------------------------------------*/
@@ -89,6 +108,7 @@ break;
 dstrc_exit();
 #endif
 return;
-} /* end of ale_intg */
+} /* end of ale3_intg */
 /*----------------------------------------------------------------------*/
 #endif
+/*! @} (documentation module close)*/
