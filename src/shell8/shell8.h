@@ -19,6 +19,7 @@ enum
     s8_rst_ortho
     }            forcetyp;   
 struct _ARRAY4D  forces;
+/*struct _ARRAY    energy;*/
 /*-------------------------------------------- array of internal forces */
 struct _ARRAY    intforce;
 /*-------------------------------------------- variables needed for eas */
@@ -309,6 +310,8 @@ void s8_stress_reduce(FIELD     *actfield,
                       PARTITION *actpart,
                       INTRA     *actintra,
                       int        kstep);
+void s8_strains_res(double **akovr, double **akovc, double **a3kvpr, double **a3kvpc,
+                   double hh, double *strains);
 /*----------------------------------------------------------------------*
  |  s8_vthv.c                                            m.gee 02/02    |
  *----------------------------------------------------------------------*/

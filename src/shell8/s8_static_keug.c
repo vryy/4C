@@ -19,6 +19,7 @@ void s8static_keug(ELEMENT   *ele,                         /* the element struct
 {
 int                 i,j,k,l;                                /* some loopers */
 double              sum;
+int                 ngauss;
 
 int                 imass;                                  /* flag for calculating mass matrix */
 double              density;                                /* density of the material */
@@ -48,8 +49,12 @@ double              detc;                                   /* jacobian determin
 double              h[3];                                   /* working array */
 double              da;                                     /* area on mid surface */
 
-double              stress[6], stress_r[12];                /* stress and stress resultants */
-double              strain[6];                              /* strains */
+double              stress[6], stress_r[12];                 /* stress and stress resultants */
+double              strain[6];
+/*
+double              strain_r[12], strain_b[12], strain_m[12], strain_t[12]; 
+double              strain_work[12];
+*/
 double             *intforce;
 
 static ARRAY        C_a;         static double **C;         /* material tensor */
@@ -122,7 +127,6 @@ static ARRAY        Dtild_a;     static double **Dtild;     /* eas matrix Dtilde
 static ARRAY        Dtildinv_a;  static double **Dtildinv;  /* inverse of eas matrix Dtilde */
 static ARRAY        Rtild_a;     static double  *Rtild;     /* eas part of internal forces */
 static ARRAY        eashelp_a;   static double  *eashelp;   /* working vector for eas */
-
 
 /* arrays for ANS */
 int                 ansq;
@@ -394,6 +398,7 @@ else
 amzero(&D_a);
 amzero(estif_global);
 estif     = estif_global->a.da;
+/*amzero(&(ele->e.s8->energy));*/
 /*----------------------------------------------- integrationsparameter */
 nir     = ele->e.s8->nGP[0];
 nis     = ele->e.s8->nGP[1];
@@ -461,6 +466,7 @@ if (nhyb>0)
               funct,deriv,iel,condfac,0);
 }
 /*=================================================== integration loops */
+ngauss=0;
 for (lr=0; lr<nir; lr++)
 {
    /*================================== gaussian point and weight at it */
@@ -477,7 +483,16 @@ for (lr=0; lr<nir; lr++)
       if (ansq==1) s8_ansq_funct(frq,fsq,e1,e2,iel,nsansq);
       /*-------- init mid surface material tensor and stress resultants */
       amzero(&D_a);
-      for (i=0; i<12; i++) stress_r[i]=0.0;
+      for (i=0; i<12; i++)
+      { 
+      stress_r[i]=0.0;
+      /*
+      strain_r[i]=0.0;
+      strain_b[i]=0.0;
+      strain_m[i]=0.0;
+      strain_t[i]=0.0;
+      */
+      }
       /*------------------------------------ init mass matrix variables */
       if (imass)
       {
@@ -557,6 +572,54 @@ for (lr=0; lr<nir; lr++)
       }/*========================================== end of loop over lt */
       /*------------ product of all weights and jacobian of mid surface */
       weight = facr*facs*da;
+      /*--------------------------------------------- strain resultants */
+      /*s8_strains_res(akovr,akovc,a3kvpr,a3kvpc,h2,strain_r);
+      strain_m[0]  = strain_r[0];
+      strain_m[1]  = strain_r[1];
+      strain_m[3]  = strain_r[3];
+      strain_b[6]  = strain_r[6];
+      strain_b[7]  = strain_r[7];
+      strain_b[9]  = strain_r[9];
+      strain_t[2]  = strain_r[2];
+      strain_t[4]  = strain_r[4];
+      strain_t[8]  = strain_r[8];
+      strain_t[10] = strain_r[10];
+      /* membrane energy on energy.a.da[ngauss][0] */
+      /*for (i=0; i<12; i++) strain_work[i]=0.0;
+      for (i=0; i<12; i++)
+      {
+         sum=0.0;
+         for (k=0; k<12; k++) sum += D[i][k] * strain_m[k];
+         strain_work[i] = sum;
+      }
+      sum = 0.0;
+      for (i=0; i<12; i++) sum += strain_m[i] * strain_work[i];
+      ele->e.s8->energy.a.da[ngauss][0] += sum;
+      ele->e.s8->energy.a.da[0][4] += sum*weight;
+      /* bending energy on energy.a.da[ngauss][1] */
+      /*for (i=0; i<12; i++) strain_work[i]=0.0;
+      for (i=0; i<12; i++)
+      {
+         sum=0.0;
+         for (k=0; k<12; k++) sum += D[i][k] * strain_b[k];
+         strain_work[i] = sum;
+      }
+      sum = 0.0;
+      for (i=0; i<12; i++) sum += strain_b[i] * strain_work[i];
+      ele->e.s8->energy.a.da[ngauss][1] += sum;
+      ele->e.s8->energy.a.da[0][5] += sum*weight;
+      /* shear energy on energy.a.da[ngauss][2] */
+      /*for (i=0; i<12; i++) strain_work[i]=0.0;
+      for (i=0; i<12; i++)
+      {
+         sum=0.0;
+         for (k=0; k<12; k++) sum += D[i][k] * strain_t[k];
+         strain_work[i] = sum;
+      }
+      sum = 0.0;
+      for (i=0; i<12; i++) sum += strain_t[i] * strain_work[i];
+      ele->e.s8->energy.a.da[ngauss][2] += sum;
+      ele->e.s8->energy.a.da[0][6] += sum*weight;
       /*----------------------------------- elastic stiffness matrix ke */
       s8_BtDB(estif,bop,D,iel,numdf,weight,work);
       /*--------------------------------- geometric stiffness matrix kg */
@@ -599,6 +662,7 @@ for (lr=0; lr<nir; lr++)
          /*------------------------- eas part of internal forces Rtilde */
          math_mattrnvecdense(Rtild,transP,stress_r,nhyb,12,1,weight);
       }
+   ngauss++;
    }/*============================================= end of loop over ls */ 
 }/*================================================ end of loop over lr */
 /*----------------- make modifications to stiffness matrices due to eas */
@@ -639,27 +703,6 @@ for (i=0; i<ele->numnp; i++)
    }
 }
 /*----------------------------------------------------------------- end */
-/*-------------------------------------- just to test symmetry of estif */
-/*
-for (i=0; i<nd; i++)
-{
-   for (j=0; j<nd; j++)
-   {
-      if (i==j); 
-      else
-      {
-         sum = emass[i][j] - emass[j][i];
-         sum = FABS(sum);
-         if (sum > EPS11)
-         {
-            printf("emass[%d][%d]=%f emass[%d][%d]=%f diff=%20.10E\n",
-            i,j,emass[i][j],
-            j,i,emass[j][i],
-            sum);
-         }
-      }
-   }
-}*/
 /*----------------------------------------------------------------------*/
 end:
 #ifdef DEBUG 

@@ -102,6 +102,7 @@ dstrc_enter("stalin");
 actsysarray=0;
 /*--------------------------------------------------- set some pointers */
 actfield    = &(field[0]);
+/*----------------------------------------------------------------------*/
 actsolv     = &(solv[0]);
 actpart     = &(partition[0]);
 action      = &(calc_action[0]);
@@ -197,6 +198,16 @@ solserv_result_total(
 if (ioflags.struct_disp_gid==1)
 {
    out_gid_sol("displacement",actfield,actintra,0,0);
+}
+/*------------------------------------------ perform stress calculation */
+if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1)
+{
+   *action = calc_struct_stress;
+   calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,NULL,NULL,0,0,action);
+   /*-------------------------- reduce stresses, so they can be written */
+   *action = calc_struct_stressreduce;
+   calreduce(actfield,actpart,actintra,action,0);
+   out_gid_sol("stress"      ,actfield,actintra,0,0);
 }
 /*----------------------------------------------------------------------*/
 end:

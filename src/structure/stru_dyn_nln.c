@@ -75,7 +75,7 @@ double acttime;
  *----------------------------------------------------------------------*/
 void dyn_nln_structural() 
 {
-int             i;                  /* simply a counter */
+int             i,j,k;                  /* simply a counter */
 int             numeq;              /* number of equations on this proc */
 int             numeq_total;        /* total number of equations */
 int             init;               /* flag for solver_control call */
@@ -84,6 +84,7 @@ int             convergence;        /* convergence flag */
 int             mod_disp,mod_stress;
 int             mod_res_write;
 int             restart;
+double          maxtime;
 double          t0_res,t1_res;
 
 double          dt;
@@ -119,7 +120,6 @@ double         *dirich;
 double          dirichfacs[10];      /* factors needed for dirichlet-part of rhs */
  
 STRUCT_DYN_CALC dynvar;             /* variables to perform dynamic structural simulation */              
-
 
 #ifdef DEBUG 
 dstrc_enter("dyn_nln_structural");
@@ -261,7 +261,6 @@ for (i=0; i<3; i++) solserv_zero_vec(&(fie[i]));
 /*    vectors, I needed three to make things straight-forward and easy */
 solserv_create_vec(&work,3,numeq_total,numeq,"DV");
 for (i=0; i<3; i++) solserv_zero_vec(&(work[i]));
-
 /*---------------------------------- initialize solver on all matrices */
 /*
 NOTE: solver init phase has to be called with each matrix one wants to 
@@ -375,9 +374,6 @@ if (par.myrank==0) dyn_nlnstruct_outhead(&dynvar,sdyn);
 /*----------------------------------------------------------------------*/
 /*                     START LOOP OVER ALL STEPS                        */
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-/*                     Predictor                                        */
-/*----------------------------------------------------------------------*/
 /*
    rhs[3]    original load vector
    rhs[2]             load vector at time t-dt
@@ -446,6 +442,7 @@ if (restart)
    dt    = sdyn->dt;
    /*------ save the number of steps, as it will be overwritten in sdyn */
    nstep = sdyn->nstep;
+   maxtime = sdyn->maxtime;
    /*------------- save the restart interval, as it will be overwritten */
    mod_res_write = sdyn->res_write_evry;
    /*----------------------------------- the step to read in is restart */
@@ -469,31 +466,18 @@ if (restart)
    sdyn->dt = dt;
    /*--------------------------------------- put nstep to the structure */
    sdyn->nstep = nstep;
+   sdyn->maxtime = maxtime;
    /*-------------------------------- put restart interval to structure */
    sdyn->res_write_evry = mod_res_write;
    /*------------------------------------------- switch the restart off */
    restart=0;
    /*----------------------------------------------------- measure time */
    t1_res = ds_cputime();
-   fprintf(allfiles.out_err,"TIME for restart reading is %f sec\n",sdyn->step,t1_res-t0_res);
+   fprintf(allfiles.out_err,"TIME for restart reading is %f sec\n",t1_res-t0_res);
 }
 /*--------------------------------------------- increment step and time */
 sdyn->step++;
 /*------------------- modifications to time steps siye can be done here */
-/* kegel_big1.dat
-if (sdyn->step==52) sdyn->dt = 0.02;
-if (sdyn->step==65) sdyn->dt = 0.005;*/
-/* kegel_big2.dat lief bis inkl. 133 
-if (sdyn->step==50) sdyn->dt = 0.01;
-if (sdyn->step==80) sdyn->dt = 0.005;*/
-/* kegel_big3.dat
-if (sdyn->step==50) sdyn->dt = 0.01;
-if (sdyn->step==80) sdyn->dt = 0.005;
-if (sdyn->step==134) sdyn->dt = 0.002;*/
-/* oritz_5600_.dat
-if (sdyn->step==50) sdyn->dt = 0.01;
-if (sdyn->step==80) sdyn->dt = 0.005;
-if (sdyn->step==134) sdyn->dt = 0.002;*/
 /*------------------------------------------------ set new absolue time */
 sdyn->time += sdyn->dt;
 /*--- put time to global variable for time-dependent load distributions */
@@ -512,9 +496,6 @@ solserv_result_resid(actfield,actintra,&dispi[0],0,
 /*----------------------------------------------------------------------*/
 /*                     PREDICTOR                                        */
 /*----------------------------------------------------------------------*/
-/*---------------------- copy initial load vector from rhs[3] to rhs[1] */
-/*solserv_copy_vec(&(actsolv->rhs[3]),&(actsolv->rhs[1]));*/
-
 /*---------------------- this vector holds loads due to external forces */
 solserv_zero_vec(&(actsolv->rhs[1]));
 calrhs(actfield,actsolv,actpart,actintra,stiff_array,
@@ -571,11 +552,9 @@ solserv_zero_mat(actintra,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_
 solserv_zero_mat(actintra,&(actsolv->sysarray[mass_array]),&(actsolv->sysarray_typ[mass_array]));
 amzero(&dirich_a);
 amzero(&intforce_a);
-
 *action = calc_struct_nlnstiffmass;
 calelm_dyn(actfield,actsolv,actpart,actintra,stiff_array,mass_array,
            intforce,dirich,numeq_total,dirichfacs,0,action);
-
 /*---------------------------- store positive internal forces on fie[1] */
 solserv_zero_vec(&fie[1]);
 assemble_vec(actintra,&(actsolv->sysarray_typ[stiff_array]),
@@ -666,12 +645,10 @@ solserv_zero_mat(actintra,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_
 solserv_zero_mat(actintra,&(actsolv->sysarray[mass_array]),&(actsolv->sysarray_typ[mass_array]));
 amzero(&intforce_a);
 amzero(&dirich_a);
-
 /* call element routines for calculation of tangential stiffness and intforce */
 *action = calc_struct_nlnstiffmass;
 calelm_dyn(actfield,actsolv,actpart,actintra,stiff_array,mass_array,
            intforce,dirich,numeq_total,dirichfacs,0,action);
-
 /*---------------------------- store positive internal forces on fie[2] */
 solserv_zero_vec(&fie[2]);
 assemble_vec(actintra,&(actsolv->sysarray_typ[stiff_array]),
@@ -693,7 +670,6 @@ solserv_add_vec(&fie[0],&(actsolv->rhs[0]),-1.0);
 /*------------------ add dirichlet forces from prescribed displacements */
 assemble_vec(actintra,&(actsolv->sysarray_typ[stiff_array]),
              &(actsolv->sysarray[stiff_array]),&(actsolv->rhs[0]),dirich,1.0);
-
 /*--------------------- create effective load vector (rhs[0]-fie[0])eff */
 pefnln_struct(&dynvar,sdyn,actfield,actsolv,actintra,dispi,vel,acc,work,
               mass_array,damp_array);
@@ -754,7 +730,6 @@ else
 /*----------------------------------------------------------------------*/
 /*                      END OF EQUILLIBRIUM ITERATION                   */
 /*----------------------------------------------------------------------*/
-
 /*----------- make temporary copy of actsolv->rhs[2] to actsolv->rhs[0] */
 /*                                   (load at t-dt)                     */
 /* because in  dyn_nlnstructupd actsolv->rhs[2] is overwritten but is   */
@@ -837,7 +812,9 @@ if (par.myrank==0)
    }
    if (mod_stress==0)
    if (ioflags.struct_stress_gid==1)
+   {
    out_gid_sol("stress"      ,actfield,actintra,sdyn->step,0);
+   }
 }
 /*-------------------------------------- write restart data to pss file */
 if (mod_res_write==0)

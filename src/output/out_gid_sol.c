@@ -549,7 +549,7 @@ if (strncmp(string,"displacement",stringlenght)==0)
    for (i=0; i<actfield->dis[0].numnp; i++)
    {
       actnode = &(actfield->dis[0].node[i]);
-      fprintf(out," %6d %18.5E %18.5E %18.5E\n",
+      fprintf(out," %6d %18.5e %18.5e %18.5e\n",
                                                    actnode->Id+1,
                                                    actnode->sol.a.da[place][0],
                                                    actnode->sol.a.da[place][1],
@@ -594,7 +594,7 @@ for (j=0; j<place; j++)
    for (i=0; i<actfield->dis[0].numnp; i++)
    {
       actnode = &(actfield->dis[0].node[i]);
-      fprintf(out," %6d %18.5E %18.5E %18.5E\n",
+      fprintf(out," %6d %18.5e %18.5e %18.5e\n",
                                                    actnode->Id+1,
                                                    actnode->sol.a.da[j][0],
                                                    actnode->sol.a.da[j][1],
@@ -646,7 +646,7 @@ if (strncmp(string,"stress",stringlenght)==0)
          actele = &(actfield->dis[0].element[i]);
          if (actele->eltyp != el_shell8 || actele->numnp !=4) continue;
          forces = actele->e.s8->forces.a.d3[place];
-         fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+         fprintf(out," %6d %18.5e %18.5e %18.5e %18.5e %18.5e %18.5e \n",
                              actele->Id+1,
                              forces[0][gaussperm4[0]],
                              forces[1][gaussperm4[0]],
@@ -656,7 +656,7 @@ if (strncmp(string,"stress",stringlenght)==0)
                              forces[3][gaussperm4[0]]
                              );
          for (j=1; j<ngauss; j++)
-         fprintf(out,"        %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+         fprintf(out,"        %18.5e %18.5e %18.5e %18.5e %18.5e %18.5e \n",
                              forces[0][gaussperm4[j]],
                              forces[1][gaussperm4[j]],
                              forces[9][gaussperm4[j]],
@@ -692,7 +692,7 @@ if (strncmp(string,"stress",stringlenght)==0)
          actele = &(actfield->dis[0].element[i]);
          if (actele->eltyp != el_shell8 || actele->numnp !=4) continue;
          forces = actele->e.s8->forces.a.d3[place];
-         fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+         fprintf(out," %6d %18.5e %18.5e %18.5e %18.5e %18.5e %18.5e \n",
                              actele->Id+1,
                              forces[5] [gaussperm4[0]],
                              forces[6] [gaussperm4[0]],
@@ -702,7 +702,7 @@ if (strncmp(string,"stress",stringlenght)==0)
                              forces[10][gaussperm4[0]]
                              );
          for (j=1; j<ngauss; j++)
-         fprintf(out,"        %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+         fprintf(out,"        %18.5e %18.5e %18.5e %18.5e %18.5e %18.5e \n",
                              forces[5] [gaussperm4[j]],
                              forces[6] [gaussperm4[j]],
                              forces[15][gaussperm4[j]],
@@ -750,7 +750,7 @@ if (strncmp(string,"stress",stringlenght)==0)
          actele = &(actfield->dis[0].element[i]);
          if (actele->eltyp != el_shell8 || actele->numnp !=9) continue;
          forces = actele->e.s8->forces.a.d3[place];
-         fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+         fprintf(out," %6d %18.5e %18.5e %18.5e %18.5e %18.5e %18.5e \n",
                              actele->Id+1,
                              forces[0][gaussperm9[0]],
                              forces[1][gaussperm9[0]],
@@ -760,7 +760,7 @@ if (strncmp(string,"stress",stringlenght)==0)
                              forces[3][gaussperm9[0]]
                              );
          for (j=1; j<ngauss; j++)
-         fprintf(out,"        %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+         fprintf(out,"        %18.5e %18.5e %18.5e %18.5e %18.5e %18.5e \n",
                              forces[0][gaussperm9[j]],
                              forces[1][gaussperm9[j]],
                              forces[9][gaussperm9[j]],
@@ -796,7 +796,7 @@ if (strncmp(string,"stress",stringlenght)==0)
          actele = &(actfield->dis[0].element[i]);
          if (actele->eltyp != el_shell8 || actele->numnp !=9) continue;
          forces = actele->e.s8->forces.a.d3[place];
-         fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+         fprintf(out," %6d %18.5e %18.5e %18.5e %18.5e %18.5e %18.5e \n",
                              actele->Id+1,
                              forces[5] [gaussperm9[0]],
                              forces[6] [gaussperm9[0]],
@@ -806,7 +806,7 @@ if (strncmp(string,"stress",stringlenght)==0)
                              forces[10][gaussperm9[0]]
                              );
          for (j=1; j<ngauss; j++)
-         fprintf(out,"        %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+         fprintf(out,"        %18.5e %18.5e %18.5e %18.5e %18.5e %18.5e \n",
                              forces[5] [gaussperm9[j]],
                              forces[6] [gaussperm9[j]],
                              forces[15][gaussperm9[j]],
@@ -828,8 +828,6 @@ if (strncmp(string,"stress",stringlenght)==0)
       dserror("output for 20/27-noded brick not yet impl.");
    }
 
-
-
 } /* end of (strncmp(string,"stress",stringlenght)==0) */
 
 /*----------------------------------------------------------------------*/
@@ -839,3 +837,6 @@ dstrc_exit();
 #endif
 return;
 } /* end of out_gid_sol */
+
+
+

@@ -209,6 +209,7 @@ if (assemble_action==assemble_one_exchange)
       break;
       case spoolmatrix:
          exchange_coup_spo(actpart,actsolv,actintra,sysa1->spo);
+      break;
       case ccf:
          redundant_ccf(actpart,actsolv,actintra,sysa1->ccf,NULL);
       break;
@@ -575,6 +576,129 @@ return;
 
 
 /*----------------------------------------------------------------------*
+ |  routine to sum a global vector                          m.gee 6/02 |
+ *----------------------------------------------------------------------*/
+void sum_vec(INTRA        *actintra,
+             SPARSE_TYP   *sysarraytyp,
+             SPARSE_ARRAY *sysarray,
+             double       *drhs,
+             int           numeq,
+             double       *sum)
+{
+int                   i;
+int                   dof;
+int                   imyrank;
+double                recv;
+ML_ARRAY_MDS         *mds_array;
+AZ_ARRAY_MSR         *msr_array;
+H_PARCSR             *parcsr_array;
+UCCHB                *ucchb_array;
+DENSE                *dense_array;
+RC_PTR               *rcptr_array;
+CCF                  *ccf_array;
+SKYMATRIX            *sky_array;
+SPOOLMAT             *spo;
+#ifdef DEBUG 
+dstrc_enter("sum_vec");
+#endif
+/*----------------------------------------------------------------------*/
+imyrank = actintra->intra_rank;
+/*----------------------------------------------------------------------*/
+*sum=0.0;
+/*----------------------------------------------------------------------*/
+switch(*sysarraytyp)
+{
+case mds:
+    mds_array = sysarray->mds;
+    for (i=0; i<numeq; i++)
+    {
+       *sum += drhs[i];
+    }
+break;
+case msr:
+    msr_array = sysarray->msr;
+    for (i=0; i<numeq; i++)
+    {
+       dof = msr_array->update.a.iv[i];
+       *sum += drhs[dof];
+    }
+break;
+case parcsr:
+    parcsr_array = sysarray->parcsr;
+    for (i=0; i<numeq; i++)
+    {
+       dof     = parcsr_array->update.a.ia[imyrank][i];
+       *sum += drhs[dof];
+    }
+break;
+case ucchb:
+    ucchb_array = sysarray->ucchb;
+    for (i=0; i<numeq; i++)
+    {
+       dof = ucchb_array->update.a.iv[i];
+       *sum += drhs[dof];
+    }
+break;
+case dense:
+    dense_array = sysarray->dense;
+    for (i=0; i<numeq; i++)
+    {
+       dof = dense_array->update.a.iv[i];
+       *sum += drhs[dof];
+    }
+break;
+case skymatrix:
+    sky_array = sysarray->sky;
+    for (i=0; i<numeq; i++)
+    {
+       dof = sky_array->update.a.iv[i];
+       *sum += drhs[dof];
+    }
+break;
+case rc_ptr:
+    rcptr_array = sysarray->rc_ptr;
+    for (i=0; i<numeq; i++)
+    {
+       dof = rcptr_array->update.a.iv[i];
+       *sum += drhs[dof];
+    }
+break;
+case ccf:
+    ccf_array = sysarray->ccf;
+    for (i=0; i<numeq; i++)
+    {
+       dof = ccf_array->update.a.iv[i];
+       *sum += drhs[dof];
+    }
+break;
+case spoolmatrix:
+    spo = sysarray->spo;
+    for (i=0; i<numeq; i++)
+    {
+       dof = spo->update.a.iv[i];
+       *sum += drhs[dof];
+    }
+break;
+default:
+   dserror("Unknown typ of system matrix");
+break;
+}
+/*----------------------------------------------------------------------*/
+#ifdef PARALLEL 
+MPI_Allreduce(sum,&recv,1,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
+*sum = recv;
+#endif
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of sum_vec */
+
+
+
+
+/*----------------------------------------------------------------------*
  |  assembles an element vector to a redundant global vector m.gee 3/02 |
  *----------------------------------------------------------------------*/
 void assemble_intforce(ELEMENT *actele, double *fullvec, int dim,
@@ -596,7 +720,18 @@ for (i=0; i<actele->numnp; i++)
    for (j=0; j<numdf; j++)
    {
       dof = actele->node[i]->dof[j];
-      if (dof >= dim) continue;
+      if (dof >= dim) 
+      {
+      /* Auflagerreaktionen werden auf sol_increment.a.da[1][] addiert */
+      /* nicht getestet, evt. Konflikt mit Steuerroutinen 
+         if (actele->node[i]->gnode->dirich)
+         {
+            if (FABS(actele->node[i]->gnode->dirich->dirich_val.a.dv[j])>EPS13)
+            actele->node[i]->sol_increment.a.da[1][j] += elevec[i*numdf+j];
+         }
+      */
+         continue;
+      }
       fullvec[dof] += elevec[i*numdf+j];
    }
 }

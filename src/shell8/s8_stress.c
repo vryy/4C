@@ -256,9 +256,7 @@ for (lr=0; lr<nir; lr++)
                  amkonr,hhi,e3,fact,detsmr,detsrr);
       }/*========================================== end of loop over lt */
       /* calculate forces in respect to local/global coordinate systems */
-      /*----------------------- at the momment, only global implemented */
       s8_tforce(gp_stress,ngauss,akovr,akonr,ele);
-
    /*------------------ set counter for total number of gaussian points */
    ngauss++;
    }/*============================================= end of loop over ls */ 
@@ -337,6 +335,7 @@ for (i=0; i<actfield->dis[0].numele; i++)
    }
 #ifdef PARALLEL 
    MPI_Bcast(buffer[0],18*MAXGAUSS,MPI_DOUBLE,actele->proc,actintra->MPI_INTRA_COMM);
+/*   MPI_Bcast(actele->e.s8->energy.a.da[0],3*MAXGAUSS,MPI_DOUBLE,actele->proc,actintra->MPI_INTRA_COMM);*/
 #endif
    if (actele->proc != imyrank)
    {
@@ -352,4 +351,72 @@ dstrc_exit();
 #endif
 return;
 } /* end of s8_stress_reduce */
+
+
+/*----------------------------------------------------------------------*
+ | strains nach bischoff seite 37                          m.gee 6/02   |
+ *----------------------------------------------------------------------*/
+void s8_strains_res(double **akovr, double **akovc, double **a3kvpr, double **a3kvpc,
+                   double hh, double *strains)
+{
+int          i,j,k;
+double       a1r[3],a1c[3],a2r[3],a2c[3],a3r[3],a3c[3],a31r[3],a31c[3],a32r[3],a32c[3];
+#ifdef DEBUG 
+dstrc_enter("s8_strains_res");
 #endif
+/*----------------------------------------------------------------------*/
+for (i=0; i<12; i++) strains[i]=0.0;
+/*----------------------------------------------------------------------*/
+for (i=0; i<3; i++) a1r[i] = akovr[i][0];
+for (i=0; i<3; i++) a1c[i] = akovc[i][0];
+for (i=0; i<3; i++) a2r[i] = akovr[i][1];
+for (i=0; i<3; i++) a2c[i] = akovc[i][1];
+for (i=0; i<3; i++) a3r[i] = akovr[i][2];
+for (i=0; i<3; i++) a3c[i] = akovc[i][2];
+for (i=0; i<3; i++) a31r[i] = a3kvpr[i][0];
+for (i=0; i<3; i++) a31c[i] = a3kvpc[i][0];
+for (i=0; i<3; i++) a32r[i] = a3kvpr[i][1];
+for (i=0; i<3; i++) a32c[i] = a3kvpc[i][1];
+/*----------------------------------------------------------------------*/
+/* a11 */
+for (i=0; i<3; i++) strains[0] += a1c[i]*a1c[i] - a1r[i]*a1r[i];
+strains[0] /= 2.0;
+/* a12 */
+for (i=0; i<3; i++) strains[1] += a1c[i]*a2c[i] - a1r[i]*a2r[i];
+strains[1] /= 2.0;
+/* a13 */
+for (i=0; i<3; i++) strains[2] += a1c[i]*a3c[i] - a1r[i]*a3r[i];
+strains[2] /= 2.0;
+/* a22 */
+for (i=0; i<3; i++) strains[3] += a2c[i]*a2c[i] - a2r[i]*a2r[i];
+strains[3] /= 2.0;
+/* a23 */
+for (i=0; i<3; i++) strains[4] += a2c[i]*a3c[i] - a2r[i]*a3r[i];
+strains[4] /= 2.0;
+/* a33 */
+for (i=0; i<3; i++) strains[5] += a3c[i]*a3c[i] - a3r[i]*a3r[i];
+strains[5] /= 2.0;
+/* b11 */
+for (i=0; i<3; i++) strains[6] += 2.0*a1c[i]*a31c[i] - 2.0*a1r[i]*a31r[i];
+strains[6] /= hh;
+/* b12 */
+for (i=0; i<3; i++) strains[7] += a1c[i]*a32c[i] + a2c[i]*a31c[i] - a1r[i]*a32r[i] - a2r[i]*a31r[i];
+strains[7] /= hh;
+/* b13 */
+for (i=0; i<3; i++) strains[8] += a31c[i]*a3c[i] - a31r[i]*a3r[i];
+strains[8] /= hh;
+/* b22 */
+for (i=0; i<3; i++) strains[9] += 2.0*a2c[i]*a32c[i] - 2.0*a2r[i]*a32r[i];
+strains[9] /= hh;
+/* b23 */
+for (i=0; i<3; i++) strains[10] += a32c[i]*a3c[i] - a32r[i]*a3r[i];
+strains[10] /= hh;
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of s8_strains_res */
+#endif
+
+

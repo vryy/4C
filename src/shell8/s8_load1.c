@@ -468,7 +468,9 @@ case neum_increhydro_z:
 break;
 /*----------------------------------------------------------------------*/
 
-
+default:
+   dserror("Unknown type of load");
+break;
 
 }/* end of switch(ele->g.gsurf->neum->neum_type)*/
 /*----------------------------------------------------------------------*/
