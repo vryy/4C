@@ -122,7 +122,6 @@ typedef struct _FSI_COUPLE_CONDITION
 typedef struct _FLUID_FREESURF_CONDITION
 {
      enum _FIELDTYP            fieldtyp;        /* type of field this structure is in */
-     struct _ARRAY             fixed_onoff;     /* flags for local slippage model */     
 } FLUID_FREESURF_CONDITION;
 
 
