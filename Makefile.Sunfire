@@ -42,8 +42,8 @@ PFL       =  -DSUN -DD_SHELL8 -DD_BRICK1 -DD_FLUID2 -DD_FLUID3 -DD_ALE -DD_WALL1
 # tar -xvf lib_sun.tar
 # compile on the andromeda !!!!!!!!!!!!!!!!!!!!
 # set correct HOMEDIR to the directory where you placed ccarat and lib_sun
-HOMEDIR      =  /users/stgt/gee
-SRC          =  $(HOMEDIR)/ccarat/src
+HOMEDIR      =  /users/stgt/<name>
+SRC          =  $(HOMEDIR)/ccarat/
 METISDIR     =  $(HOMEDIR)/lib_sun/metis-4.0/Lib
 SPOOLESDIR   =  $(HOMEDIR)/lib_sun/spooles
 AZTECDIR     =  $(HOMEDIR)/lib_sun/aztec21/lib
@@ -61,25 +61,25 @@ RM	 = /bin/rm -f
 #---------------------------------------------------------------
 #                                            this is debug 32bit
 #---------------------------------------------------------------
-#CFLAGS   = -g $(PFL) -xlic_lib=sunperf -DDEBUG
-#FFLAGS   = -g -dalign -xlic_lib=sunperf
-#LDFLAGS  = -g -xlic_lib=sunperf
-#LDOPTS   = -g -xlic_lib=sunperf
-#NAGCDIR  = $(NAGCDIR32)
-#LIBPATHS = -L/usr/lib -L$(NAGCDIR) -R$(NAGCDIR) -L$(METISDIR) -L$(SPOOLESDIR) -L$(AZTECDIR)
-#LIBS	  = $(LIBPATHS) -lm -lmetis_sun32 -lspoolesMPI_sun32 -lspooles_sun32 -laztec_sun_par21_32 -lnagc -lm -mt -lmpi
-#PROGRAM  = cca_sun_debg.exe
-#----------------------------------------------------------------
-#                                             this is fast 32 bit
-#----------------------------------------------------------------
-CFLAGS   = -fast -xtarget=ultra3 -xarch=v8plusb -xlic_lib=sunperf -xvector=s $(PFL)
-FFLAGS   = -fast -xtarget=ultra3 -xarch=v8plusb -dalign -xlic_lib=sunperf -xvector
-LDFLAGS  = -fast -xtarget=ultra3 -xarch=v8plusb -xlic_lib=sunperf -xvector=s
-LDOPTS   = -fast -xtarget=ultra3 -xarch=v8plusb -dalign -xlic_lib=sunperf -xvector
+CFLAGS   = -g $(PFL) -xlic_lib=sunperf -DDEBUG
+FFLAGS   = -g -dalign -xlic_lib=sunperf
+LDFLAGS  = -g -xlic_lib=sunperf
+LDOPTS   = -g -xlic_lib=sunperf
 NAGCDIR  = $(NAGCDIR32)
 LIBPATHS = -L/usr/lib -L$(NAGCDIR) -R$(NAGCDIR) -L$(METISDIR) -L$(SPOOLESDIR) -L$(AZTECDIR)
 LIBS	 = $(LIBPATHS) -lm -lmetis_sun32 -lspoolesMPI_sun32 -lspooles_sun32 -laztec_sun_par21_32 -lnagc -lm -mt -lmpi
-PROGRAM  = cca_sun_fast32.exe
+PROGRAM  = cca_sun_debg.exe
+#----------------------------------------------------------------
+#                                             this is fast 32 bit
+#----------------------------------------------------------------
+#CFLAGS   = -fast -xtarget=ultra3 -xarch=v8plusb -xlic_lib=sunperf -xvector=s $(PFL)
+#FFLAGS   = -fast -xtarget=ultra3 -xarch=v8plusb -dalign -xlic_lib=sunperf -xvector
+#LDFLAGS  = -fast -xtarget=ultra3 -xarch=v8plusb -xlic_lib=sunperf -xvector=s
+#LDOPTS   = -fast -xtarget=ultra3 -xarch=v8plusb -dalign -xlic_lib=sunperf -xvector
+#NAGCDIR  = $(NAGCDIR32)
+#LIBPATHS = -L/usr/lib -L$(NAGCDIR) -R$(NAGCDIR) -L$(METISDIR) -L$(SPOOLESDIR) -L$(AZTECDIR)
+#LIBS	  = $(LIBPATHS) -lm -lmetis_sun32 -lspoolesMPI_sun32 -lspooles_sun32 -laztec_sun_par21_32 -lnagc -lm -mt -lmpi
+#PROGRAM  = cca_sun_fast32.exe
 #----------------------------------------------------------------
 #                                             this is fast 64 bit
 #----------------------------------------------------------------
@@ -329,77 +329,77 @@ $(PROGRAM):     $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) $(OBJS7) $
 		@echo "done"
 $(OBJS1):     
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $*.c ${<F}
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $(*F).c $<
 		@echo "MainMake is back."
 #
 $(OBJS2):     
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $*.c ${<F}
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $(*F).c $<
 		@echo "MainMake is back."
 #
 $(OBJS3):     
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $*.c ${<F}
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $(*F).c $<
 		@echo "MainMake is back."
 #
 $(OBJS4):     
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $*.c ${<F}
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $(*F).c $<
 		@echo "MainMake is back."
 #
 $(OBJS5):     
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $*.c ${<F}
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $(*F).c $<
 		@echo "MainMake is back."
 #
 $(OBJS6):     
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $*.c ${<F}
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $(*F).c $<
 		@echo "MainMake is back."
 #
 $(OBJS7):     
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $*.c ${<F}
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $(*F).c $<
 		@echo "MainMake is back."
 #
 $(OBJS8):     
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $*.c ${<F}
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $(*F).c $<
 		@echo "MainMake is back."
 #
 $(OBJS9):     
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $*.c ${<F}
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $(*F).c $<
 		@echo "MainMake is back."
 #
 $(OBJS10):     
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $*.c ${<F}
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $(*F).c $<
 		@echo "MainMake is back."
 #
 $(OBJS11):     
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $*.c ${<F}
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $(*F).c $<
 		@echo "MainMake is back."
 #
 $(OBJS12):     
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $*.c ${<F}
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $(*F).c $<
 		@echo "MainMake is back."
 #
 $(OBJS14):     
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $*.c ${<F}
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $(*F).c $<
 		@echo "MainMake is back."
 #
 $(OBJS15):     
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $*.c ${<F}
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $(*F).c $<
 		@echo "MainMake is back."
 # fortran
 $(OBJS13):     
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(F77) $(FFLAGS)  -c $*.f ${<F}
+		cd ${SRC}; cd ${@D}; $(F77) $(FFLAGS)  -c $(*F).f $<
 		@echo "MainMake is back."
 
 .c.o:
