@@ -39,6 +39,12 @@ double             alpha_m;
 double             alpha_f;
 double             m_damp;     /* factors for Raleigh damping */
 double             k_damp;
+
+int                timeadapt;  /* flag to switch adaptive time stepping on */
+int                itwant;     /* requested number of newton iterations */
+double             maxdt;      /* max allowed time step */
+double             resultdt;   /* postprocessing time step */
+int                writecounter; /* counter for output steps */
 } STRUCT_DYNAMIC;
 /*----------------------------------------------------------------------*
  | general dynamic-variables for analysis                 m.gee 4/01    |

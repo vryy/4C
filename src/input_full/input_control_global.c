@@ -485,7 +485,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
           sdyn->iter=0;
    }
 
-/*--------------read int */
+/*-----------------read int */
    frint("EIGEN"      ,&(sdyn->eigen)         ,&ierr);
    frint("NUMSTEP"    ,&(sdyn->nstep)         ,&ierr);
    frint("MAXITER"    ,&(sdyn->maxiter)       ,&ierr);
@@ -504,6 +504,12 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frdouble("M_DAMP"  ,&(sdyn->m_damp) ,&ierr);
    frdouble("K_DAMP"  ,&(sdyn->k_damp) ,&ierr);
    frdouble("TOLDISP" ,&(sdyn->toldisp),&ierr);
+
+/*------ read time adaption */
+   frint("TIMEADAPT"  ,&(sdyn->timeadapt),&ierr);
+   frint("ITWANT"     ,&(sdyn->itwant)   ,&ierr);
+   frdouble("MAXDT"   ,&(sdyn->maxdt)    ,&ierr);
+   frdouble("RESULTDT",&(sdyn->resultdt) ,&ierr);
 
    frread();
 }

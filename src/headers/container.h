@@ -21,6 +21,7 @@ double        *dirichfacs;   /*!< factors for rhs-entries due to prescribed disp
 int            isdyn;        /*!< flag for dynamic or static calculation */
                             /*!< isdyn = 0 for static calculation */
                             /*!< isdyn = 1 for dynamic calculation */
+double         ekin;         /*!< kinetic energy, calculated at element level */
 int            kstep;        /*!< time in increment step we are in */
 int            kintyp;      /*!< kinematic to be used */
                              /*!< kintyp = 0: linear kinematic */

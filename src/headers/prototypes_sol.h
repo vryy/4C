@@ -118,9 +118,18 @@ void dyn_nlnstructupd(FIELD *actfield,      STRUCT_DYN_CALC *dynvar,
                       DIST_VECTOR *work2);
 void dyn_nlnstruct_outhead(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn);
 void dyn_nlnstru_outhead_expl(void);
-void dyn_nlnstruct_outstep(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, int numiter);
+void dyn_nlnstruct_outstep(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, int numiter, double dt);
 void assemble_dirich_dyn(ELEMENT *actele, ARRAY *estif_global, 
                          ARRAY *emass_global, CONTAINER *container);
+void dyn_epot(FIELD *actfield, int disnum, INTRA *actintra, STRUCT_DYN_CALC *dynvar, double *deltaepot);
+void dyn_ekin(FIELD *actfield, SOLVAR *actsolv, PARTITION *actpart, INTRA *actintra, CALC_ACTION *action,
+             CONTAINER *container, int stiff_array, int mass_array);
+void dyn_eout(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, INTRA *actintra, SOLVAR *actsolv, 
+              DIST_VECTOR *dispi, /* converged incremental displacements */
+              DIST_VECTOR *rhs1,  /* load at time t                      */ 
+              DIST_VECTOR *rhs2,  /* load at time t-dt                   */ 
+              DIST_VECTOR *work0);
+void dyn_ekin_local(ELEMENT *actele,ARRAY *emass, CONTAINER  *container);
 
 /*----------------------------------------------------------------------*
  | fluid_service.c                                         genk 04/02   |
@@ -959,79 +968,26 @@ void solserv_result_incre(FIELD *actfield,INTRA *actintra,DIST_VECTOR *sol,
 void solserv_result_resid(FIELD *actfield,INTRA *actintra,DIST_VECTOR *sol,
                           int place,SPARSE_ARRAY *sysarray,SPARSE_TYP *sysarray_typ);
 /*----------------------------------------------------------------------*
- |                                                            m.gee 3/02|
- | dirichlet conditions are scaled by scale and written to sol in the   |
- | given place place                                                    |
- | This routine takes values from the structure actnode->gnode->dirich  |
- | and scales them by a given factor scale. Then it writes these values |
- | the ARRAY node->sol in the given place                               |
- | actnode->sol.a.da[place][j] = actnode->gnode->dirich_val.a.dv[j]*scale|
- | Nothing is done for dofs or nodes which do not have a dirichlet      |
- | condition                                                            |
- | FIELD *actfield (i) active field                                     |
- | int    disnum   (i) indize of the discretization in actfield to be used|
- | double scale    (i) scaling factor for dirichlet condition           |
- | int place       (i) row to put values in the ARRAY sol               |
+ |  solver_service3.c                                    m.gee 04/03    |
  *----------------------------------------------------------------------*/
-void solserv_putdirich_to_dof(FIELD *actfield, int disnum, double scale, 
-                           int place);
-/*----------------------------------------------------------------------*
- |                                                            m.gee 3/02|
- | entries in sol in the place  placefrom1 and placefrom2 are added     |
- | node->sol[to][..] = node->sol[from1][..] * facfrom1 +                |
- |                     node->sol[from2][..] * facfrom2                  |
- |                                                                      |
- | This is ONLY performed for dofs which have a dirichlet condition     |
- |                                                                      |
- | FIELD *actfield (i) active field                                     |
- | int    disnum   (i) indize of the discretization in actfield to be used|
- | int    from1    (i) place in ARRAY sol to take the values from       |
- | int    from2    (i) place in ARRAY sol to take the values from       |
- | int    to       (i) place in ARRAY sol to write values to            |
- | double facfrom1 (i) scaling factor vor values from from1             |
- | double facfrom2 (i) scaling factor vor values from from2             |
- *----------------------------------------------------------------------*/
-void solserv_adddirich(FIELD *actfield, int disnum,
+void solserv_sol_zero(FIELD *actfield, int disnum, int arraynum, int place);
+void solserv_sol_copy(FIELD *actfield, int disnum, int arrayfrom, int arrayto, 
+                      int from, int to);
+void solserv_sol_add(FIELD *actfield, int disnum, int arrayfrom, int arrayto, 
+                      int from, int to, double fac);
+void solserv_sol_localassemble(INTRA *actintra, ELEMENT *actele, double *localvec, int arraynum,
+                              int place);
+void solserv_putdirich_to_dof(FIELD *actfield, int disnum, int arraynum, double scale, 
+                              int place);
+void solserv_adddirich(FIELD *actfield, int disnum, int arraynum,
                               int from1,int from2,int to,
                               double facfrom1, double facfrom2);
-/*----------------------------------------------------------------------*
- |                                                            m.gee 3/02|
- | entries in sol in the place  placefrom1 and placefrom2 are added     |
- | node->sol[to][..] += node->sol[from1][..] * facfrom1 +               |
- |                      node->sol[from2][..] * facfrom2                 |
- |                                                                      |
- | same functionality as solserv_adddirich but adds to sol in the place to|
- |                                                                      |
- |                                                                      |
- *----------------------------------------------------------------------*/
-void solserv_assdirich_fac(FIELD *actfield, int disnum,
+void solserv_assdirich_fac(FIELD *actfield, int disnum, int arraynum,
                            int from1,int from2,int to, 
                            double facfrom1, double facfrom2);
-/*----------------------------------------------------------------------*
- |                                                            m.gee 3/02|
- | entries in sol in the place  placefrom1  are copied to  place to     |
- | node->sol[to][..] = node->sol[from][..]                              |
- |                                                                      |
- | This is only performed for dofs which have a dirichlet condition on them |
- |                                                                      |
- | FIELD *actfield (i) active field                                     |
- | int    disnum   (i) indize of the discretization in actfield to be used|
- | int    to       (i) place in ARRAY sol to write values to            |
- | int    from     (i) place in ARRAY sol to take the values from       |
- *----------------------------------------------------------------------*/
-void solserv_cpdirich(FIELD *actfield, int disnum,
+void solserv_cpdirich(FIELD *actfield, int disnum, int arraynum,
                       int from,int to);
-/*----------------------------------------------------------------------*
- |                                                            m.gee 3/02|
- | init sol[place] to zero                                              |
- |                                                                      |
- | This is only performed for dofs which have a dirichlet condition on them |
- |                                                                      |
- | FIELD *actfield (i) active field                                     |
- | int    disnum   (i) indize of the discretization in actfield to be used|
- | int    place    (i) row in ARRAY sol to be set to zero               | 
- *----------------------------------------------------------------------*/
-void solserv_zerodirich(FIELD *actfield, int disnum, int place);
+void solserv_zerodirich(FIELD *actfield, int disnum, int arraynum, int place);
 /*----------------------------------------------------------------------*
  |  solver_superlu.c                                     m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -1204,6 +1160,7 @@ void s8_contact_detection(FIELD        *actfield,
                           SPARSE_ARRAY *matrix, 
                           SPARSE_TYP   *matrix_type, 
                           double       *cforce,
-                          int          *iscontact);
+                          int          *iscontact,
+                          double       *maxdt);
 #endif
 /*! @} (documentation module close)*/
