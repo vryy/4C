@@ -24,7 +24,7 @@ int                 newval = 0;          /* controls evaluation of new stresses 
 const int           numdf  = 2;          /* number dof per node                    */
 const int           numeps = 4;          /* number of strain components            */
 
-double              fac;              /* integration factor                        */
+double              fac,facm;              /* integration factor                        */
 double              e1,e2,e3;         /*GP-coords                                  */
 double              facr,facs,fact;   /* weights at GP                             */
 double              thick,density;    /* for calculation of mass matrix            */
@@ -194,9 +194,18 @@ for (lr=0; lr<nir; lr++)
       /*------------------------------------ integration factor  -------*/ 
       fac = facr * facs * det * thick;                        
       /*------------------------------ compute mass matrix if imass=1---*/
-       #if 0
-       ! noch zu machen !
-       #endif
+      if (imass == 1) 
+      {
+       facm = fac * density;
+       for (a=0; a<iel; a++)
+       {
+        for (b=0; b<iel; b++)
+        {
+         emass[2*a][2*b]     += facm * funct[a] * funct[b]; /* a,b even */
+         emass[2*a+1][2*b+1] += facm * funct[a] * funct[b]; /* a,b odd  */
+        }
+       }
+      } 
       /*----------------------------------- calculate operator Blin  ---*/
       amzero(&boplin_a);
       w1_boplin(boplin,deriv,xjm,det,iel);
