@@ -70,6 +70,49 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("YOUNG",&(mat[i].m.neohooke->youngs)        ,&ierr);
       frdouble("NUE"  ,&(mat[i].m.neohooke->possionratio)  ,&ierr);
    }
+   frchk("MAT_MisesPlastic",&ierr);
+   if (ierr==1)
+   {
+      mat[i].mattyp = m_pl_mises;
+      mat[i].m.pl_mises = (PL_MISES*)calloc(1,sizeof(PL_MISES));
+      if (mat[i].m.pl_mises==NULL) dserror("Alloocation of MISES material failed");
+      frdouble("YOUNG",&(mat[i].m.pl_mises->youngs)        ,&ierr);
+      frdouble("NUE"  ,&(mat[i].m.pl_mises->possionratio)  ,&ierr);
+      frdouble("ALFAT",&(mat[i].m.pl_mises->ALFAT)         ,&ierr);
+      frdouble("Sigy" ,&(mat[i].m.pl_mises->Sigy)          ,&ierr);
+      mat[i].m.pl_mises->Hard = 0.; 
+      mat[i].m.pl_mises->GF   = 0.; 
+      frdouble("Hard" ,&(mat[i].m.pl_mises->Hard)          ,&ierr);
+      frdouble("GF"   ,&(mat[i].m.pl_mises->GF)            ,&ierr);
+   }
+   frchk("MAT_DP_Plastic",&ierr);
+   if (ierr==1)
+   {
+      mat[i].mattyp = m_pl_dp;
+      mat[i].m.pl_dp = (PL_DP*)calloc(1,sizeof(PL_DP));
+      if (mat[i].m.pl_dp==NULL) dserror("Alloocation of Drucker Prager material failed");
+      frdouble("YOUNG",&(mat[i].m.pl_dp->youngs)        ,&ierr);
+      frdouble("NUE"  ,&(mat[i].m.pl_dp->possionratio)  ,&ierr);
+      frdouble("ALFAT",&(mat[i].m.pl_dp->ALFAT)         ,&ierr);
+      frdouble("Sigy" ,&(mat[i].m.pl_dp->Sigy)          ,&ierr);
+      frdouble("Hard" ,&(mat[i].m.pl_dp->Hard)          ,&ierr);
+      frdouble("PHI"  ,&(mat[i].m.pl_dp->PHI)           ,&ierr);
+   }
+   frchk("MAT_Porous_MisesPlastic",&ierr);
+   if (ierr==1)
+   {
+      mat[i].mattyp = m_pl_por_mises;
+      mat[i].m.pl_por_mises = (PL_POR_MISES*)calloc(1,sizeof(PL_POR_MISES));
+      if (mat[i].m.pl_por_mises==NULL) dserror("Alloocation of MISES material failed");
+      frdouble("YOUNG"   ,&(mat[i].m.pl_por_mises->youngs)        ,&ierr);
+      frdouble("DP_YM"   ,&(mat[i].m.pl_por_mises->DP_YM )        ,&ierr);
+      frdouble("NUE"     ,&(mat[i].m.pl_por_mises->possionratio)  ,&ierr);
+      frdouble("ALFAT"   ,&(mat[i].m.pl_por_mises->ALFAT)         ,&ierr);
+      frdouble("Sigy"    ,&(mat[i].m.pl_por_mises->Sigy)          ,&ierr);
+      frdouble("DP_Sigy" ,&(mat[i].m.pl_por_mises->DP_Sigy)       ,&ierr);
+      frdouble("Hard"    ,&(mat[i].m.pl_por_mises->Hard)          ,&ierr);
+      frdouble("DP_Hard" ,&(mat[i].m.pl_por_mises->DP_Hard)       ,&ierr);
+   }
    i++;
 /*----------------------------------------------------------------------*/
    frread();
