@@ -49,7 +49,7 @@ LIBS="-lmetis_$BIT -lF90 -lU77 -lcl -lc -lm -lveclib -llapack -Wl,-aarchive_shar
 PROGRAMNAME=cca_11_par$BIT
 CFLAGS_OPT="-O +Onolimit"
 FFLAGS_OPT="-O"
-CFLAGS="-D__HP__  +e -Ae +w1 -v"
+CFLAGS="-D__HP__  -Aa -Ae +e +w1"
 FFLAGS=""
 LDFLAGS=""
 
