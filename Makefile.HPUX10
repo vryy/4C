@@ -40,6 +40,7 @@ include ./Makefile.personal_path
 # -DPARSUPERLU_PACKAGE defines interface to solver library ParSuperLU
 # -DSUPERLU_PACKAGE    defines interface to solver library SuperLU (not impl. yet)
 # -DMUMPS_PACKAGE      defines interface to solver library Mumps (only in parallel HPUX11)
+# -DUMFPACK            defines interface to solver library Umfpack
 # -DSPOOLES_PACKAGE    defines interface to solver library Spooles (only in parallel HPUX11)
 #
 #--------------------------------------------------------------------
@@ -49,23 +50,25 @@ include ./Makefile.personal_path
 #
 # sequentiell part
 #--------------------------------------------------------------------
-PROGRAM_NAME  = cca_seq_10.20.exe
-FXX   = f77
-CCX   = cc
-LDX   = cc
-PFL   = -DD_SHELL8 -DD_FLUID2 -DD_FLUID3 -DD_ALE -DD_BRICK1 -DD_WALL1 -DAZTEC_PACKAGE
-AZTEC = -laztec_seriell21
+#PROGRAM_NAME  = cca_seq_10.20.exe
+#FXX     = f77
+#CCX     = cc
+#LDX     = cc
+#PFL     = -DD_SHELL8 -DD_FLUID2 -DD_FLUID3 -DD_ALE -DD_BRICK1 -DD_WALL1 -DAZTEC_PACKAGE -DUMFPACK
+#AZTEC   = -laztec_seriell21
+#UMFPACK = -lumfpack40_32
 #--------------------------------------------------------------------
 #
 # parallel part
 #--------------------------------------------------------------------
-#PROGRAM_NAME  = cca_par_10.20.exe
-#FXX   = /opt/mpi/bin/mpif77
-#CCX   = /opt/mpi/bin/mpicc
-#LDX   = /opt/mpi/bin/mpicc
-#PFL   = -DPARALLEL  -DD_FLUID2  -DD_SHELL8 -DD_FLUID3 -DD_ALE -DD_BRICK1 -DD_WALL1 \
-#        -DAZTEC_PACKAGE 
-#AZTEC = -laztec_par21
+PROGRAM_NAME  = cca_par_10.20.exe
+FXX     = /opt/mpi/bin/mpif77
+CCX     = /opt/mpi/bin/mpicc
+LDX     = /opt/mpi/bin/mpicc
+PFL     = -DPARALLEL  -DD_FLUID2  -DD_SHELL8 -DD_FLUID3 -DD_ALE -DD_BRICK1 -DD_WALL1 \
+          -DAZTEC_PACKAGE -DUMFPACK
+AZTEC   = -laztec_par21
+UMFPACK = -lumfpack40_32
 #
 #--------------------------------------------------------------------
 #
@@ -97,6 +100,7 @@ INCLUDES = -I/opt/mpi/include/ \
            -L/bau/stat33/users/statik/lib/SCALAPACK \
            -L/bau/stat33/users/statik/lib/BLACS/LIB \
            -L/bau/stat33/users/statik/lib/MUMPS4.1.6/lib \
+           -L/bau/stat33/users/statik/lib/UMFPACK/lib \
            -llapack_hppa \
            -lHYPRE_DistributedMatrix \
            -lHYPRE_DistributedMatrixPilutSolver \
@@ -122,7 +126,8 @@ INCLUDES = -I/opt/mpi/include/ \
            -lblacsF77init_MPI-HPPA-0 \
            -lscalapack_HPPA \
            -lmumps \
-           -lblas
+           -lblas \
+           -lumfpack40_32
 
 # sparsekit is not used at the moment
 #           -lskit 
@@ -161,6 +166,7 @@ OBJS2	      = ${SRC}/global_full/global_control.o \
                 ${SRC}/global_full/global_mask_ucchb.o \
                 ${SRC}/global_full/global_mask_dense.o \
                 ${SRC}/global_full/global_mask_rcptr.o \
+                ${SRC}/global_full/global_mask_ccf.o \
                 ${SRC}/global_full/global_mask_skyline.o \
                 ${SRC}/global_full/global_mask_spooles.o \
                 ${SRC}/global_full/global_calelm.o \
@@ -177,6 +183,7 @@ OBJS2	      = ${SRC}/global_full/global_control.o \
                 ${SRC}/global_full/solver_add_ucchb.o \
                 ${SRC}/global_full/solver_add_dense.o \
                 ${SRC}/global_full/solver_add_rcptr.o \
+                ${SRC}/global_full/solver_add_ccf.o \
                 ${SRC}/global_full/solver_add_skyline.o \
                 ${SRC}/global_full/solver_add_spooles.o \
                 ${SRC}/global_full/solver_mlib.o \
@@ -185,6 +192,7 @@ OBJS2	      = ${SRC}/global_full/global_control.o \
                 ${SRC}/global_full/solver_superlu.o \
                 ${SRC}/global_full/solver_lapack.o \
                 ${SRC}/global_full/solver_mumps.o \
+                ${SRC}/global_full/solver_umfpack.o \
                 ${SRC}/global_full/solver_colsol.o \
                 ${SRC}/global_full/solver_spooles.o \
                 ${SRC}/global_full/restart_control.o \

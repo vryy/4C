@@ -6,6 +6,7 @@
  | prototypes of functions only visible in this file                    |
  *----------------------------------------------------------------------*/
 static void solserv_cp_rc_ptrmask(INTRA *actintra, RC_PTR *from, RC_PTR *to);
+static void solserv_cp_ccfmask(INTRA *actintra, CCF *from, CCF *to);
 static void solserv_cp_ucchbmask(UCCHB *from, UCCHB *to);
 static void solserv_cp_skymask(SKYMATRIX *from, SKYMATRIX *to);
 static void solserv_cp_msrmask(AZ_ARRAY_MSR *from, AZ_ARRAY_MSR *to);
@@ -13,6 +14,7 @@ static void solserv_cp_densemask(DENSE *from, DENSE *to);
 static void solserv_cp_spomask(SPOOLMAT *from, SPOOLMAT *to);
 static void solserv_matvec_rc_ptr(INTRA  *actintra,RC_PTR *rcptr,double *work1,double *work2);
 static void solserv_matvec_spo(INTRA *actintra,SPOOLMAT *spo,double *work1,double *work2);
+static void solserv_matvec_ccf(INTRA  *actintra,CCF *ccf,double *work1,double *work2);
 static void solserv_matvec_msr(INTRA *actintra,AZ_ARRAY_MSR *msr,double *work1,double *work2);
 static void solserv_matvec_sky(INTRA *actintra,SKYMATRIX *sky,double *work1,double *work2);
 static void solserv_matvec_dense(INTRA *actintra,DENSE *dense,double *work1,double *work2);
@@ -53,6 +55,9 @@ case rc_ptr:
 break;
 case spoolmatrix:
    amscal(&(A->spo->A_loc),&factor);
+break;
+case ccf:
+   amscal(&(A->ccf->Ax),&factor);
 break;
 case skymatrix:
    amscal(&(A->sky->A),&factor);
@@ -118,6 +123,9 @@ break;
 case spoolmatrix:
    amadd(&(A->spo->A_loc),&(B->spo->A_loc),factor,0);
 break;
+case ccf:
+   amadd(&(A->ccf->Ax),&(B->ccf->Ax),factor,0);
+break;
 case skymatrix:
    amadd(&(A->sky->A),&(B->sky->A),factor,0);
 break;
@@ -175,6 +183,10 @@ break;
 case rc_ptr:
    *numeq       = mat.rc_ptr->numeq;
    *numeq_total = mat.rc_ptr->numeq_total;
+break;
+case ccf:
+   *numeq       = mat.ccf->numeq;
+   *numeq_total = mat.ccf->numeq_total;
 break;
 case skymatrix:
    *numeq       = mat.sky->numeq;
@@ -254,6 +266,10 @@ break;
 case rc_ptr:
    amzero(&(mat->rc_ptr->A_loc));
    mat->rc_ptr->is_factored=0;
+break;
+case ccf:
+   amzero(&(mat->ccf->Ax));
+   mat->ccf->is_factored=0;
 break;
 case skymatrix:
    amzero(&(mat->sky->A));
@@ -349,6 +365,11 @@ case rc_ptr:
    matto->rc_ptr = (RC_PTR*)CALLOC(1,sizeof(RC_PTR));
    if (!matto->rc_ptr) dserror("Allocation of memory failed");
    solserv_cp_rc_ptrmask(actintra,matfrom->rc_ptr,matto->rc_ptr);
+break;
+case ccf:
+   matto->ccf = (CCF*)CALLOC(1,sizeof(CCF));
+   if (!matto->ccf) dserror("Allocation of memory failed");
+   solserv_cp_ccfmask(actintra,matfrom->ccf,matto->ccf);
 break;
 case skymatrix:
    matto->sky = (SKYMATRIX*)CALLOC(1,sizeof(SKYMATRIX));
@@ -457,6 +478,36 @@ dstrc_exit();
 #endif
 return;
 } /* end of solserv_cp_rc_ptrmask */
+
+
+static void solserv_cp_ccfmask(INTRA *actintra, CCF *from, CCF *to)
+{
+int i;
+#ifdef DEBUG 
+dstrc_enter("solserv_cp_ccfmask");
+#endif
+/*----------------------------------------------------------------------*/
+/* copy all information, which is directly included in the structure */
+*to = *from;
+
+/* alloccopy update */
+am_alloc_copy(&(from->update),&(to->update));
+
+/* alloccopy irn_loc */
+am_alloc_copy(&(from->Ap),&(to->Ap));
+
+/* alloccopy jcn_loc */
+am_alloc_copy(&(from->Ai),&(to->Ai));
+
+/* alloccopy A_loc */
+am_alloc_copy(&(from->Ax),&(to->Ax));
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of solserv_cp_ccfmask */
 
 
 /*----------------------------------------------------------------------*
@@ -678,6 +729,11 @@ case spoolmatrix:
    solserv_matvec_spo(actintra,mat->spo,work1,work2);
    solserv_distribdistvec(result,mat,mattyp,work2,vec->numeq_total,actintra);
 break;
+case ccf:
+   solserv_reddistvec(vec,mat,mattyp,work1,vec->numeq_total,actintra);
+   solserv_matvec_ccf(actintra,mat->ccf,work1,work2);
+   solserv_distribdistvec(result,mat,mattyp,work2,vec->numeq_total,actintra);
+break;
 case skymatrix:
    solserv_reddistvec(vec,mat,mattyp,work1,vec->numeq_total,actintra);
    solserv_matvec_sky(actintra,mat->sky,work1,work2);
@@ -817,6 +873,62 @@ dstrc_exit();
 # endif /* end of #ifdef MUMPS_PACKAGE */
 return;
 } /* end of solserv_matvec_rc_ptr */
+
+
+/*----------------------------------------------------------------------*
+ |  make matrix vector multiplication with ccf matrix  s.offermanns 05/02|
+ |  called by solserv_sparsematvec only !                               |
+ *----------------------------------------------------------------------*/
+static void solserv_matvec_ccf(INTRA        *actintra,
+                                  CCF          *ccf,
+                                  DOUBLE       *work1,
+                                  DOUBLE       *work2)/* work2 is the result */
+{
+#ifdef UMFPACK
+INT         i,j,dof;
+INT         myrank;
+INT         nprocs;
+INT         numeq_total;
+INT        *update;
+INT        *Ap,*Ai;
+DOUBLE     *Ax;
+INT         start,end;
+INT         col;
+
+#ifdef DEBUG 
+dstrc_enter("solserv_matvec_ccf");
+#endif
+/*----------------------------------------------------------------------*/
+myrank      = actintra->intra_rank;
+nprocs      = actintra->intra_nprocs;
+numeq_total = ccf->numeq_total;
+update      = ccf->update.a.iv;
+Ap          = ccf->Ap.a.iv;
+Ai          = ccf->Ai.a.iv;
+Ax          = ccf->Ax.a.dv;
+/*------------------------------------------- now loop my own equations */
+for (i=0; i<numeq_total; i++)
+{
+   dof = i;
+   work2[dof]=0.0;
+   start     = Ap[i];
+   end       = Ap[i+1];
+   for (j=start; j<end;j++)
+   {
+      col = Ai[j];
+      work2[dof] += Ax[j] * work1[col];
+   }
+}
+/* every proc added his complete part to the full-sized vector work2.
+   There is no need to alreduce this vector here, because it will anyway
+   bre distributed to a DIS_VECTOR */
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+#endif /* end of ifdef UMFPACK */
+return;
+} /* end of solserv_matvec_ccf */
 
 
 

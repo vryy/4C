@@ -31,8 +31,8 @@ FXX=/opt/mpi/bin/mpif90
 CCX=/opt/mpi/bin/mpicc 
 LDX=/opt/mpi/bin/mpicc 
 PFL= -DPARALLEL -DD_SHELL8 -DD_FLUID3 -DD_FLUID2 -DD_ALE -DD_BRICK1 -DD_WALL1 \
-     -DSPOOLES_PACKAGE 
-#PFL= -DPARALLEL -DD_SHELL8 -DD_FLUID3 -DD_ALE -DD_BRICK1 \
+     -DSPOOLES_PACKAGE -DAZTEC_PACKAGE -DMUMPS_PACKAGE -DUMFPACK
+#PFL= -DPARALLEL -DD_SHELL8 -DD_FLUID3 -DD_ALE -DD_BRICK1 -DUMFPACK\
 #     -DPARSUPERLU_PACKAGE -DHYPRE_PACKAGE -DAZTEC_PACKAGE -DMUMPS_PACKAGE
 #
 #--------------------------------------------------------------------
@@ -45,13 +45,14 @@ RM	 = /bin/rm -f
 PROGRAM_NAME  = cca_par_32_debg.exe
 CFLAGS        = -D__HP__ -Aa -Ae -g +w1 ${PFL} -DDEBUG
 FFLAGS        = -g 
-LDFLAGS       = -v
+LDFLAGS       =
 BLAS          = -lblas
 AZTEC         = -laztec_par21_32
 METIS         = -lmetis_32
 SUPLU         = 
 #SUPLU         = -lsuperlu_par32
 MUMPS         = -lmumps_par_32  -lscalapack_par_32 -lblacs_MPI-HPPA-0_par_32 -lblacsCinit_MPI-HPPA-0_par_32 -lblacsF77init_MPI-HPPA-0_par_32  
+UMFPACK        = -lumfpack40_32
 SPOOLES       =  -lspoolesMPI_32  -lspooles_32 
 FORTLIBS      = -L/opt/fortran90/lib/pa2.0 -lF90 -L/opt/fortran90/lib  -lU77 
 MPILIB        = -L/opt/mlib/lib/pa2.0
@@ -66,6 +67,7 @@ MPILIB        = -L/opt/mlib/lib/pa2.0
 #SUPLU         = 
 ##SUPLU         = -lsuperlu_par32
 #MUMPS         = -lmumps_par_32  -lscalapack_par_32 -lblacs_MPI-HPPA-0_par_32 -lblacsCinit_MPI-HPPA-0_par_32 -lblacsF77init_MPI-HPPA-0_par_32  
+#UMFPACK       = -lumfpack40_32
 #SPOOLES       = -lspoolesMPI_32  -lspooles_32 
 #FORTLIBS      = -L/opt/fortran90/lib/pa2.0 -lF90 -L/opt/fortran90/lib  -lU77 
 #MPILIB        = -L/opt/mlib/lib/pa2.0
@@ -80,6 +82,7 @@ MPILIB        = -L/opt/mlib/lib/pa2.0
 #SUPLU         = 
 ##SUPLU         = -lsuperlu_par64
 #MUMPS         = -lblacs_MPI-HPPA-0_par_64 -lblacsCinit_MPI-HPPA-0_par_64 -lblacsF77init_MPI-HPPA-0_par_64 -lscalapack_par_64 -lmumps_par_64
+#UMFPACK       = -lumfpack40_64
 #SPOOLES       = -lspoolesMPI_64  -lspooles_64 
 #FORTLIBS      = -L/opt/fortran90/lib/pa20_64 -lF90 -L/opt/fortran90/lib/pa20_64  -lU77 
 #MPILIB        = -L/opt/mlib/lib/pa20_64
@@ -94,6 +97,7 @@ MPILIB        = -L/opt/mlib/lib/pa2.0
 ##SUPLU         = -lsuperlu_par64
 #SUPLU         = 
 #MUMPS         = -lblacs_MPI-HPPA-0_par_64 -lblacsCinit_MPI-HPPA-0_par_64 -lblacsF77init_MPI-HPPA-0_par_64 -lscalapack_par_64 -lmumps_par_64
+#UMFPACK        = -lumfpack40_64
 #SPOOLES       = -lspoolesMPI_64  -lspooles_64 
 #FORTLIBS      = -L/opt/fortran90/lib/pa20_64 -lF90 -L/opt/fortran90/lib/pa20_64  -lU77 
 #MPILIB        = -L/opt/mlib/lib/pa20_64
@@ -111,11 +115,13 @@ LIBS	      =  -L/usr/lib \
                  -L/bau/stat16/users/statik/lib/SCALAPACK/ \
                  -L/bau/stat16/users/statik/lib/BLACS/LIB \
                  -L/bau/stat16/users/statik/lib/MUMPS4.1.6/lib \
+                 -L/bau/stat16/users/statik/lib/UMFPACK/lib \
                  -L/bau/stat16/users/statik/lib/spooles \
                  $(METIS) \
                  $(AZTEC) \
                  $(SUPLU) \
                  $(MUMPS) \
+                 $(UMFPACK) \
                  $(SPOOLES) \
                  $(FORTLIBS) -lcl -lc -lm \
                  -lveclib -llapack $(BLAS) -Wl,-aarchive_shared -lmpi

@@ -32,7 +32,7 @@ FXX=f90
 CCX=cc
 LDX=cc
 PFL=   -DD_SHELL8 -DD_FLUID2 -DD_ALE -DD_BRICK1 -DD_WALL1 \
-       -DAZTEC_PACKAGE -DMLIB_PACKAGE 
+       -DAZTEC_PACKAGE -DMLIB_PACKAGE -DUMFPACK
 #
 #--------------------------------------------------------------------
 #
@@ -46,24 +46,28 @@ CFLAGS        = -D__HP__ -Aa -Ae -g +w1 ${PFL} -DDEBUG
 FFLAGS        = -g
 LDFLAGS       = 
 AZTEC         = -laztec_seq21_32
+UMFPACK       = -lumfpack40_32
 #------------------------------------------------- this is fast-32bit
 #PROGRAM_NAME  = cca_seq_32_fast.exe
 #CFLAGS        = -D__HP__  +e -Ae +w1 -v -O +Onolimit ${PFL}
 #FFLAGS        = -O
 #LDFLAGS       = 
 #AZTEC         = -laztec_seq21_32
+#UMFPACK       = -lumfpack40_32
 #------------------------------------------------ this is debug-64bit
 #PROGRAM_NAME   = cca_seq_64_debg.exe
 #CFLAGS         = -D__HP__ -Aa -Ae +DD64 -g +w1 ${PFL} -DDEBUG -DSIXTYFOUR
 #FFLAGS         = +DA2.0W -g
 #LDFLAGS        = +DD64 -v
 #AZTEC          = -laztec_seq21_64
+#UMFPACK        = -lumfpack40_64
 #------------------------------------------------- this is fast-64bit
 #PROGRAM_NAME   = cca_seq_64_fast.exe
 #CFLAGS         = -D__HP__ -Aa -Ae +DD64 -O +w1 ${PFL} -DSIXTYFOUR
 #FFLAGS         = +DA2.0W -O
 #LDFLAGS        = +DD64 -v
 #AZTEC          = -laztec_seq21_64
+#UMFPACK        = -lumfpack40_64
 #--------------------------------------------------------------------
 INCLUDES        = -I/opt/mlib/include
 
@@ -74,7 +78,9 @@ LDOPTS          = -a archive -v
 LIBS	        =  -L/usr/lib \
                    -L/opt/mlib/lib/pa2.0 \
                    -L/bau/stat16/users/statik/lib/AZTEC21\
+                   -L/bau/stat16/users/statik/lib/UMFPACK/lib \
                    $(AZTEC) \
+                   $(UMFPACK) \
                    -lcl -lc -lm \
                    -lveclib -llapack
 

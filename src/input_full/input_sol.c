@@ -173,6 +173,14 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          if (!(solv->mumpsvars)) dserror("Allocation of MUMPSVARS failed");
          mumpsvars = solv->mumpsvars;
       }
+      /*------------------------------------------------ solver Umfpack */
+      if (strncmp("UMFPACK",buffer,7)==0) 
+      {
+#ifndef UMFPACK
+         dserror("UMFPACK is not compiled in");
+#endif
+         solv->solvertyp = umfpack;
+      }
       /*------------------------------------------------- solver Colsol */
       if (strncmp("Colsol",buffer,6)==0) 
       {
@@ -414,6 +422,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    case mumps_sym:/*--------------------------------- read solver MUMPS */
    break;
    case mumps_nonsym:/*------------------------------ read solver MUMPS */
+   break;
+   case umfpack:/*--------------------------------- read solver UMFPACK */
    break;
    case colsol_solver:/*---------------------------- read solver Colsol */
    break;

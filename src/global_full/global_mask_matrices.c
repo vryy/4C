@@ -48,6 +48,7 @@ int ismlib_d_sp  =0;       /*mlib direct solver  - sparse */
 int isrc_ptr     =0;
 int iscolsol     =0;
 int isspooles    =0;
+int isumfpack    =0;
 FIELD      *actfield;      /* the active field */
 PARTITION  *actpart;       /* my partition of the active field */
 SOLVAR     *actsolv;       /* the active SOLVAR */
@@ -128,6 +129,13 @@ for (i=0; i<genprob.numfld; i++)
       if (actsolv->parttyp != cut_elements)
       dserror("Partitioning has to be Cut_Elements for solution with MUMPS"); 
       else isrc_ptr=1;
+   }
+   /*-------------------- matrix is compressed column format for Umfpack */
+   if (actsolv->solvertyp==umfpack)
+   {
+      if (actsolv->parttyp != cut_elements)
+      dserror("Partitioning has to be Cut_Elements for solution with HYPRE"); 
+      else isumfpack=1;
    }
    /*------------------------------ matrix is skyline format for colsol */
    if (actsolv->solvertyp==colsol_solver)
@@ -283,6 +291,23 @@ for (i=0; i<genprob.numfld; i++)
       }
       mask_rc_ptr(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].rc_ptr);
       isrc_ptr=0;
+   }
+   /*---------------- matrix is row-column pointer format for umfpack solver */
+   if (isumfpack==1)
+   {
+      actsolv->nsysarray = 1;
+      actsolv->sysarray_typ = (SPARSE_TYP*)  CALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
+      actsolv->sysarray     = (SPARSE_ARRAY*)CALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
+      if (!actsolv->sysarray_typ || !actsolv->sysarray)
+         dserror("Allocation of SPARSE_ARRAY failed");
+      for (i=0; i<actsolv->nsysarray; i++)
+      {
+         actsolv->sysarray_typ[i] = ccf;
+         actsolv->sysarray[i].ccf = (CCF*)CALLOC(1,sizeof(CCF));
+         if (actsolv->sysarray[i].ccf==NULL) dserror("Allocation of CCF failed");
+      }
+      mask_ccf(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].ccf);
+      isumfpack=0;
    }
    /*---------------------------------------- matrix is skyline format  */
    if (iscolsol==1)

@@ -288,6 +288,9 @@ break;
 case rc_ptr:
    update = sysarray->rc_ptr->update.a.iv;
 break;
+case ccf:
+   update = sysarray->ccf->update.a.iv;
+break;
 case skymatrix:
    update = sysarray->sky->update.a.iv;
 break;
@@ -560,6 +563,20 @@ case spoolmatrix:
 break;
 
 
+case ccf:
+   for (i=0; i<sysarray->ccf->numeq; i++)
+   {
+      dof = sysarray->ccf->update.a.iv[i];
+      fullvec[dof] = distvec->vec.a.dv[i];
+   }
+#ifdef PARALLEL 
+   MPI_Allreduce(fullvec,recvbuff,dim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
+   for (i=0; i<dim; i++) fullvec[i] = recvbuff[i];
+#endif
+break;
+
+
+
 case skymatrix:
    for (i=0; i<sysarray->sky->numeq; i++)
    {
@@ -673,6 +690,14 @@ case rc_ptr:
    for (i=0; i<sysarray->rc_ptr->numeq; i++)
    {
       dof = sysarray->rc_ptr->update.a.iv[i];
+      distvec->vec.a.dv[i] = fullvec[dof];
+   }
+break;
+
+case ccf:
+   for (i=0; i<sysarray->ccf->numeq; i++)
+   {
+      dof = sysarray->ccf->update.a.iv[i];
       distvec->vec.a.dv[i] = fullvec[dof];
    }
 break;
@@ -1027,8 +1052,8 @@ for (i=0; i<actdis->numnp; i++)
    {
       if (dirich->dirich_onoff.a.iv[j]==0) continue;
       actnode->sol.a.da[place][j] = dirich->dirich_val.a.dv[j] * scale;
-/* this is special for the ortiz example 
-      actnode->sol.a.da[place][j] *= actnode->x[0];*/
+/* this is special for the ortiz example */
+/*      actnode->sol.a.da[place][j] *= actnode->x[0];*/
    }   
 }
 /*----------------------------------------------------------------------*/

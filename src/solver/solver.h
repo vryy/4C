@@ -42,6 +42,12 @@
 #endif
 #endif
 
+/*----------------------------------------------------------------------*
+ | includes for solver package Spooles              s.offermanns 5/02    |
+ *----------------------------------------------------------------------*/
+#ifdef UMFPACK
+#include "/bau/stat16/users/statik/lib/UMFPACK/include/umfpack.h"
+#endif
 
 /*----------------------------------------------------------------------*
  | includes for solver package SuperLU_DIST              m.gee 10/01    |
@@ -68,7 +74,8 @@ typedef enum _SPARSE_TYP
      dense,                  /* dense matrix for Lapack */
      rc_ptr,                 /* row column pointer format for mumps */
      skymatrix,              /* skyline format for solver colsol */  
-     spoolmatrix             /* matrix object for solver spooles */
+     spoolmatrix,            /* matrix object for solver spooles */
+     ccf,                    /* compressed column format for umfpack */
 } SPARSE_TYP;
 
 /*----------------------------------------------------------------------*
@@ -84,6 +91,7 @@ struct _H_PARCSR       *parcsr; /*         to HYPRE's ParCSR matrix */
 struct _UCCHB          *ucchb;  /*         to Superlu's UCCHB matrix */
 struct _DENSE          *dense;  /*         to dense matrix */
 struct _RC_PTR         *rc_ptr; /*         to Mump's row/column ptr matrix */
+struct _CCF            *ccf;    /*         to Umfpack compressed column matrix */
 struct _SKYMATRIX      *sky;    /*         to Colsol's skyline matrix */
 struct _SPOOLMAT       *spo;    /*         to Spoole's matrix */
 
@@ -283,6 +291,41 @@ struct _ARRAY          *couple_d_recv;
 struct _ARRAY          *couple_i_recv;
 #endif
 } RC_PTR;
+
+/*----------------------------------------------------------------------*
+ | a sparse matrix in compressed column format      s.offermanns 04/02  |
+ | this structure holds a distributed sparse matrix for Umfpack 4beta   |
+ | it uses two integer vectors Ap, Ap to hold indicees of an            |
+ | entry in Ax (see Umpfack manual)
+ *----------------------------------------------------------------------*/
+typedef struct _CCF
+{
+int                     is_init;         /* was this matrix initialized ? */
+int                     is_factored;     /* is this matrix already factored ? */
+int                     ncall;           /* how often was this matrix solved */
+
+int                     numeq_total;     /* total number of unknowns */
+int                     numeq;           /* number of unknowns updated on this proc */ 
+int                     nnz_total;       /* total number of nonzero entries */
+int                     nnz;             /* number of nonzeros on this proc */
+
+int                     comm;
+
+struct _ARRAY           update;          /* sorted list of dofs updated on this proc */
+struct _ARRAY           Ap;              /* column pointer vector */
+struct _ARRAY           Ai;              /* row pointer vector */
+struct _ARRAY           Ax;              /* values of the matrix */
+
+/* some arrays that are used for parallel assembly, mainly in the case of inter-proc-coupling conditions */
+#ifdef PARALLEL 
+int                     numcoupsend;     /* number of coupling information to be send by this proc */
+int                     numcouprecv;     /* number of coupling information to be recv. by this proc */
+struct _ARRAY          *couple_d_send;   /* send and receive buffers if necessary */
+struct _ARRAY          *couple_i_send;
+struct _ARRAY          *couple_d_recv;
+struct _ARRAY          *couple_i_recv;
+#endif
+} CCF;
 
 /*----------------------------------------------------------------------*
  | a dense matrix                                        m.gee 11/01    |

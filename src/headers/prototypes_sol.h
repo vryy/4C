@@ -303,6 +303,40 @@ void  rc_ptr_make_bindx(FIELD         *actfield,
 void  rc_ptr_make_sparsity(RC_PTR        *rc_ptr,
                            int           *bindx);
 /*----------------------------------------------------------------------*
+ |  global_mask_ccf.c                              s.offermanns 04/02    |
+ *----------------------------------------------------------------------*/
+void mask_ccf(FIELD         *actfield, 
+              PARTITION     *actpart, 
+              SOLVAR        *actsolv,
+              INTRA         *actintra, 
+              CCF        *ccf);
+void  ccf_red_dof_connect(FIELD        *actfield, 
+                          PARTITION    *actpart,
+                          SOLVAR       *actsolv,
+                          INTRA        *actintra,
+                          CCF          *ccf,
+                          int         **dof_connect,
+                          ARRAY        *red_dof_connect);
+void  ccf_update(FIELD         *actfield, 
+                 PARTITION     *actpart, 
+                 SOLVAR        *actsolv,
+                 INTRA         *actintra,
+                 CCF           *ccf);
+void  ccf_nnz_topology(FIELD        *actfield, 
+                       PARTITION    *actpart, 
+                       SOLVAR       *actsolv,
+                       INTRA        *actintra,
+                       CCF          *ccf,
+                       int         **dof_connect);
+void  ccf_make_bindx(FIELD         *actfield, 
+                     PARTITION     *actpart, 
+                     SOLVAR        *actsolv,
+                     CCF           *ccf,
+                     int           *bindx,
+                     ARRAY         *red_dof_connect);
+void  ccf_make_sparsity(CCF        *ccf,
+                        int        *bindx);
+/*----------------------------------------------------------------------*
  |  global_mask_skyline.c                                m.gee 02/02    |
  *----------------------------------------------------------------------*/
 void mask_skyline(FIELD         *actfield, 
@@ -486,6 +520,20 @@ void exchange_coup_rc_ptr(
                          RC_PTR        *rc_ptr
                         );
 /*----------------------------------------------------------------------*
+ |  solver_add_ccf.c                              s.offermanns 02/02    |
+ *----------------------------------------------------------------------*/
+void  add_ccf(struct _PARTITION       *actpart,
+                struct _SOLVAR        *actsolv,
+                struct _INTRA         *actintra,
+                struct _ELEMENT       *actele,
+                struct _CCF           *ccf,
+                struct _CCF           *ccf2);
+void redundant_ccf(struct _PARTITION *actpart,
+                   struct _SOLVAR    *actsolv,
+                   struct _INTRA     *actintra,
+                   struct _CCF       *ccf1,
+                   struct _CCF       *ccf2);
+/*----------------------------------------------------------------------*
  |  solver_add_spooles.c                                 m.gee 05/02    |
  *----------------------------------------------------------------------*/
 void  add_spo(struct _PARTITION     *actpart,
@@ -529,6 +577,15 @@ void solver_mumps(struct _SOLVAR         *actsolv,
                   struct _DIST_VECTOR    *sol,
                   struct _DIST_VECTOR    *rhs,
                   int                     option);
+/*----------------------------------------------------------------------*
+ |  solver_umfpack.c                              s.offermanns 02/02    |
+ *----------------------------------------------------------------------*/
+void solver_umfpack(struct _SOLVAR         *actsolv,
+                    struct _INTRA          *actintra,
+                    struct _CCF            *ccf,
+                    struct _DIST_VECTOR    *sol,
+                    struct _DIST_VECTOR    *rhs,
+                    int                     option);
 /*----------------------------------------------------------------------*
  |  solver_aztec.c                                       m.gee 11/01    |
  *----------------------------------------------------------------------*/

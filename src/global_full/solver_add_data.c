@@ -83,6 +83,9 @@ if (assemble_action==assemble_two_matrix)
    case rc_ptr:
       add_rc_ptr(actpart,actsolv,actintra,actele,sysa1->rc_ptr,sysa2->rc_ptr);
    break;
+   case ccf:
+      add_ccf(actpart,actsolv,actintra,actele,sysa1->ccf,sysa2->ccf);
+   break;
    case skymatrix:
       add_skyline(actpart,actsolv,actintra,actele,sysa1->sky,sysa2->sky);
    break;
@@ -119,6 +122,9 @@ if (assemble_action==assemble_one_matrix)
    break;
    case rc_ptr:
       add_rc_ptr(actpart,actsolv,actintra,actele,sysa1->rc_ptr,NULL);
+   break;
+   case ccf:
+      add_ccf(actpart,actsolv,actintra,actele,sysa1->ccf,NULL);
    break;
    case skymatrix:
       add_skyline(actpart,actsolv,actintra,actele,sysa1->sky,NULL);
@@ -163,6 +169,8 @@ if (assemble_action==assemble_two_exchange)
       case spoolmatrix:
          exchange_coup_spo(actpart,actsolv,actintra,sysa1->spo);
          exchange_coup_spo(actpart,actsolv,actintra,sysa2->spo);
+      case ccf:
+         redundant_ccf(actpart,actsolv,actintra,sysa1->ccf,sysa2->ccf);
       break;
       case skymatrix:
          redundant_skyline(actpart,actsolv,actintra,sysa1->sky,sysa2->sky);
@@ -200,6 +208,8 @@ if (assemble_action==assemble_one_exchange)
       break;
       case spoolmatrix:
          exchange_coup_spo(actpart,actsolv,actintra,sysa1->spo);
+      case ccf:
+         redundant_ccf(actpart,actsolv,actintra,sysa1->ccf,NULL);
       break;
       case sparse_none:
          dserror("Unspecified type of system matrix");
@@ -304,6 +314,14 @@ case rc_ptr:
    couple_i_send_ptr = &(actsolv->sysarray[actsysarray].rc_ptr->couple_i_send);
    couple_d_recv_ptr = &(actsolv->sysarray[actsysarray].rc_ptr->couple_d_recv);
    couple_i_recv_ptr = &(actsolv->sysarray[actsysarray].rc_ptr->couple_i_recv);
+break;
+case ccf:
+   numcoupsend       = &(actsolv->sysarray[actsysarray].ccf->numcoupsend);
+   numcouprecv       = &(actsolv->sysarray[actsysarray].ccf->numcouprecv);
+   couple_d_send_ptr = &(actsolv->sysarray[actsysarray].ccf->couple_d_send);
+   couple_i_send_ptr = &(actsolv->sysarray[actsysarray].ccf->couple_i_send);
+   couple_d_recv_ptr = &(actsolv->sysarray[actsysarray].ccf->couple_d_recv);
+   couple_i_recv_ptr = &(actsolv->sysarray[actsysarray].ccf->couple_i_recv);
 break;
 case skymatrix:
    numcoupsend       = &(actsolv->sysarray[actsysarray].sky->numcoupsend);
@@ -461,6 +479,7 @@ H_PARCSR             *parcsr_array;
 UCCHB                *ucchb_array;
 DENSE                *dense_array;
 RC_PTR               *rcptr_array;
+CCF                  *ccf_array;
 SKYMATRIX            *sky_array;
 SPOOLMAT             *spo;
 #ifdef DEBUG 
@@ -523,6 +542,14 @@ case rc_ptr:
     for (i=0; i<rhs->numeq; i++)
     {
        dof = rcptr_array->update.a.iv[i];
+       rhs->vec.a.dv[i] += drhs[dof]*factor;
+    }
+break;
+case ccf:
+    ccf_array = sysarray->ccf;
+    for (i=0; i<rhs->numeq; i++)
+    {
+       dof = ccf_array->update.a.iv[i];
        rhs->vec.a.dv[i] += drhs[dof]*factor;
     }
 break;

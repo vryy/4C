@@ -54,6 +54,9 @@ break;
 case rc_ptr:/*---------------------- system matrix is row/column matrix */
    solver_mumps(actsolv,actintra,sysarray->rc_ptr,sol,rhs,option);
 break;
+case ccf:/*------------------ system matrix is compressed column matrix */
+   solver_umfpack(actsolv,actintra,sysarray->ccf,sol,rhs,option);
+break;
 case skymatrix:/*---------------------- system matrix is skyline matrix */
    solver_colsol(actsolv,actintra,sysarray->sky,sol,rhs,option);
 break;
