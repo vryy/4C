@@ -105,7 +105,12 @@ for (i=0; i<actele->numnp; i++)
       counter++;
    }
 }/* end of loop over element nodes */
+/* end of loop over element nodes *//* this check is not possible any more for fluid element with implicit 
+free surface condition: nd not eqaual numnp*numdf!!!                    */
+#if 0
 if (counter != nd) dserror("assemblage failed due to wrong dof numbering");
+#endif
+nd = counter;
 /*========================================== now start looping the dofs */
 /*======================================= loop over i (the element row) */
 ii_iscouple = 0;
