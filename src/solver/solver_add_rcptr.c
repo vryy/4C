@@ -140,7 +140,7 @@ for (i=0; i<nd; i++)
    {
       ii_iscouple = 0;
       ii_owner    = -1;
-      add_msr_checkcouple(ii,cdofs,ncdofs,&ii_iscouple,&ii_owner,nprocs);
+      add_rcptr_checkcouple(ii,cdofs,ncdofs,&ii_iscouple,&ii_owner,nprocs);
    }
 #endif
    /*-------------------- ii is not a coupled dofs or I am master owner */
@@ -192,6 +192,66 @@ dstrc_exit();
 #endif
 return;
 } /* end of add_rc_ptr */
+
+
+
+
+
+/*----------------------------------------------------------------------*
+ |  checks coupling for the add_rcptr routine                 m.gee 9/01|
+ *----------------------------------------------------------------------*/
+void add_rcptr_checkcouple(
+    INT         ii,
+    INT       **cdofs,
+    INT         ncdofs,
+    INT        *iscouple,
+    INT        *isowner,
+    INT         nprocs)
+{
+
+  INT         i,k;
+
+#ifdef DEBUG 
+  dstrc_enter("add_rcptr_checkcouple");
+#endif
+
+  for (k=0; k<ncdofs; k++)
+  {
+    if (ii==cdofs[k][0])
+    {
+      *iscouple=1;
+      for (i=1; i<=nprocs; i++)
+      {
+        if (cdofs[k][i]==2)
+        {
+          *isowner=i-1;
+          break;
+        }
+      }
+    }
+  }
+
+#ifdef DEBUG 
+  dstrc_exit();
+#endif
+
+  return;
+} /* end of add_rcptr_checkcouple */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /*----------------------------------------------------------------------*
  |  fill sendbuffer isend and dsend                           m.gee 1/02|
