@@ -398,6 +398,11 @@ void ls_printnodeinfo(
   );
 
 
+void ls_printnodeinfo_to_file(
+  NODE*
+  );
+
+
 void ls_setdata();
 
 

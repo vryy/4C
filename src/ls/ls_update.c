@@ -321,9 +321,10 @@ void ls_initialize()
       if (completionflag==1)
       {
         /* not possible! */
-        ls_printelinfo(actele);
-        printf("\n\n**ERROR** in level set initialization!");
-        printf("\nsomething is wrong level set initialization!");
+        fprintf(file12,"\n\n**ERROR** in ls_initialize()");
+        fprintf(file12,"\n**ERROR** completionflag=1");
+        fprintf(file12,"\nsomething is wrong level set initialization!");
+        ls_printelinfo_to_file(actele);
 #ifdef PARALLEL 
         MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
 #else
@@ -338,9 +339,9 @@ void ls_initialize()
            * boundary off the computational domain is not allowed
            * to be cut by the interface!
            */
-          printf("\n\n**ERROR** in level set initialization!");
-          printf("\n\nelement first_in_list is on boundary!");
-          ls_printelinfo(actele);			
+          fprintf(file12,"\n\n**ERROR** in ls initialize()");
+          fprintf(file12,"\nelement first_in_list is on boundary!");
+          ls_printelinfo_to_file(actele);			
 #ifdef PARALLEL 
           MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
 #else
@@ -396,6 +397,8 @@ void ls_initialize()
   ls_initialize();
   /* print to screen */  
   printf("\n**WARNING** NUMINTERFACE =%2d",lsupdt.numinterface);  
+  /* print to file */  
+  fprintf(file12,"\n**WARNING** NUMINTERFACE =%2d",lsupdt.numinterface);  
   
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -462,9 +465,9 @@ void ls_updt()
       /* check */
       if (completionflag==1)
       {
-        ls_printelinfo(actele);
-        printf("\n\n**ERROR** in level set update!");
-        printf("\nsomething is wrong level set update!");
+        fprintf(file12,"\n\n**ERROR** in ls_update()");
+        fprintf(file12,"\ncompletionflag=1");
+        ls_printelinfo_to_file(actele);
 #ifdef PARALLEL 
         MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
 #else
@@ -479,9 +482,9 @@ void ls_updt()
            * boundary off the computational domain is not allowed
            * to be cut by the interface!
            */
-          printf("\n\n**ERROR** in level set initialization!");
-          printf("\n\nelement first_in_list is on boundary!");
-          ls_printelinfo(actele);			
+          fprintf(file12,"\n\n**ERROR** in ls_update()");
+          fprintf(file12,"\nelement first_in_list is on boundary!");
+          ls_printelinfo_to_file(actele);			
 #ifdef PARALLEL 
           MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
 #else
@@ -531,7 +534,8 @@ void ls_updt()
   ls_updt();
   /* print to screen */  
   printf("\n**WARNING** NUMINTERFACE =%2d",lsupdt.numinterface);  
-
+  /* print to file */  
+  fprintf(file12,"\n**WARNING** NUMINTERFACE =%2d",lsupdt.numinterface);  
  end1:
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -586,9 +590,9 @@ void ls_construct(
      */
     if (actele->e.ls2->is_elcut!=1)
     {
-      ls_printelinfo(actele);
-      printf("\n\n**ERROR** in level set construction!");
-      printf("\nsomething is wrong level set construction!");
+      fprintf(file12,"\n\n**ERROR** in ls_construct()");
+      fprintf(file12,"\nelement must have been cut by the interface");
+      ls_printelinfo_to_file(actele);
 #ifdef PARALLEL 
       MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
 #else
@@ -618,10 +622,9 @@ void ls_construct(
            * boundary off the computational domain is not allowed
            * to be cut by the interface!
            */
-          printf("\n\n**ERROR** in level set initialization!");
-          printf("\nelement actele is on boundary!");
-          printf("\n=> LINE 510");
-          ls_printelinfo(actele);			
+          fprintf(file12,"\n\n**ERROR** in ls_construct()");
+          fprintf(file12,"\nelement actele is on boundary!");
+          ls_printelinfo_to_file(actele);			
 #ifdef PARALLEL 
           MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
 #else
@@ -636,6 +639,8 @@ void ls_construct(
             lsupdt.typeinterface[numint] = 1;
             /* print to screen */
             printf("\n**WARNING** LEVELSET TOUCHES BOUNDARY => RECONSTRUCTION ACTIVE");
+            /* print to file */
+            fprintf(file12,"\n**WARNING** LEVELSET TOUCHES BOUNDARY => RECONSTRUCTION ACTIVE");            
             /* turn on lsdyn->lsdata->reconstruct_on_off flag */
             lsdyn->lsdata->reconstruct_on_off = 1;
             /* RECONSTRUCTION! ( => use nbor_s ) */
@@ -654,9 +659,9 @@ void ls_construct(
             /* check */
             if (actele->Id!=Id_first_old)
             {
-              ls_printelinfo(actele);
-              printf("\n\n**ERROR** in level set reconstruction!");
-              printf("\nactele->Id!=Id_first_old");
+              fprintf(file12,"\n\n**ERROR** in ls_construct()");
+              fprintf(file12,"\nactele->Id!=Id_first_old");
+              ls_printelinfo_to_file(actele);
 #ifdef PARALLEL 
               MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
 #else
@@ -705,6 +710,8 @@ void ls_construct(
  end:
   /* print to screen */
   printf("\n**WARNING** LEVELSET UPDATE COMPLETED!");  
+  /* print to screen */
+  fprintf(file12,"\n**WARNING** LEVELSET UPDATE COMPLETED!");  
   
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -1173,13 +1180,7 @@ void ls_updateneighbor(
 /*************************BE CAREFUL*************************************/
           if (nbor->e.ls2->is_elcut==1) /* nbor is already cut */
           {
-            /* print to screen */
-            printf("\n**WARNING** in updating the neighbor element!");
-            printf("\nin ls_updateneighbor()");
-            printf("\nneighbor element is cut second times by the interface!");
-            ls_printelinfo(nbor);
             /* print to file */
-            fprintf(file12,"\n**WARNING** in updating the neighbor element!");
             fprintf(file12,"\nin ls_updateneighbor()");
             fprintf(file12,"\nneighbor element is cut second times by the interface!");
             fprintf(file12,"\njunction = %2d",junction);            
@@ -1419,6 +1420,8 @@ void ls_activate()
   }
   /* print to screen */
   printf("\n**WARNING** LEVELSET ACTIVATE COMPLETED!");  
+  /* print to screen */
+  fprintf(file12,"\n**WARNING** LEVELSET ACTIVATE COMPLETED!");  
   
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -1937,10 +1940,10 @@ void ls_printelinfo_to_file(
 
 
 /*!----------------------------------------------------------------------
-\brief print node data
+\brief print node data to screen
 
 <pre>                                                            irhan 05/04
-print node data
+print node data to screen
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -1954,12 +1957,12 @@ void ls_printnodeinfo(
 #endif
 /*----------------------------------------------------------------------*/
   
-  printf("Node=%6d",node->Id+1);
-  printf("\n\nx=\n[\n%10.5E %10.5E\n]",node->x[0],node->x[1]);
-  printf("\n\nval = %10.5E",node->sol_increment.a.da[1][0]);
-  printf("\n\nis_node_active =%2d",node->gnode->is_node_active);
-  printf("\n\nis_node_inside =%2d",node->gnode->is_node_inside);
-  printf("\n\nNumInterface=%6d\n\n",lsupdt.numinterface);  
+  printf("\n\nNode=%6d",node->Id+1);
+  printf("\nx=\n[\n%10.5E %10.5E\n]",node->x[0],node->x[1]);
+  printf("\nval = %10.5E",node->sol_increment.a.da[1][0]);
+  printf("\nis_node_active =%2d",node->gnode->is_node_active);
+  printf("\nis_node_inside =%2d",node->gnode->is_node_inside);
+  printf("\nNumInterface=%2d\n\n",lsupdt.numinterface);  
   
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -1968,6 +1971,41 @@ void ls_printnodeinfo(
   
   return;
 } /* end of ls_printnodeinfo */
+
+
+
+/*!----------------------------------------------------------------------
+\brief print node data to file
+
+<pre>                                                            irhan 05/04
+print node data to file
+</pre>
+
+*----------------------------------------------------------------------*/
+void ls_printnodeinfo_to_file(
+  NODE *node
+  )
+{
+
+#ifdef DEBUG 
+  dstrc_enter("ls_printnodeinfo_to_file");
+#endif
+/*----------------------------------------------------------------------*/
+  
+  fprintf(file12,"\n\nNode=%6d",node->Id+1);
+  fprintf(file12,"\nx=\n[\n%10.5E %10.5E\n]",node->x[0],node->x[1]);
+  fprintf(file12,"\nval = %10.5E",node->sol_increment.a.da[1][0]);
+  fprintf(file12,"\nis_node_active =%2d",node->gnode->is_node_active);
+  fprintf(file12,"\nis_node_inside =%2d",node->gnode->is_node_inside);
+  fprintf(file12,"\nNumInterface=%2d\n\n",lsupdt.numinterface);  
+  
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+  dstrc_exit();
+#endif
+  
+  return;
+} /* end of ls_printnodeinfo_to_file */
 
 
 
@@ -2307,6 +2345,8 @@ void ls_localize()
 
   /* print to screen */
   printf("\n**WARNING** LEVELSET LAYER ACTIVATION FOR LOCALIZATION COMPLETED!");
+  /* print to file */
+  fprintf(file12,"\n**WARNING** LEVELSET LAYER ACTIVATION FOR LOCALIZATION COMPLETED!");
   
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -2505,6 +2545,8 @@ void ls_polygonize()
   }
   /* print to screen */
   printf("\n**WARNING** LEVELSET POLYGONIZATION COMPLETED!");    
+  /* print to file */
+  fprintf(file12,"\n**WARNING** LEVELSET POLYGONIZATION COMPLETED!\n\n\n\n");    
   
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -2579,6 +2621,8 @@ void ls_init_material()
   }
   /* print to screen */
   printf("\n**WARNING** LEVELSET MATERIAL INITIALIZATION COMPLETED!");    
+  /* print to file */
+  fprintf(file12,"\n**WARNING** LEVELSET MATERIAL INITIALIZATION COMPLETED!");    
   
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -2655,6 +2699,8 @@ void ls_updt_material()
   }
   /* print to screen */
   printf("\n**WARNING** LEVELSET MATERIAL UPDATE COMPLETED!");    
+  /* print to file */
+  fprintf(file12,"\n**WARNING** LEVELSET MATERIAL UPDATE COMPLETED!");    
   
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -2699,9 +2745,9 @@ void ls_check_profile()
     if (fabs(val)<EPS5)
     {
       actnode->sol_increment.a.da[1][0] = NODETHRESHOLD;
-      printf("\n\n**WARNING** DISTANCE FUNCTION FOR NODE %4d MODIFIED!",
-             actnode->Id+1);
-      ls_printnodeinfo(actnode);
+      fprintf(file12,"\n\n**WARNING** DISTANCE FUNCTION FOR NODE %4d MODIFIED!",
+              actnode->Id+1);
+      ls_printnodeinfo_to_file(actnode);
     }
   }
   

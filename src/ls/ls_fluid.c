@@ -252,11 +252,15 @@ void ls_fluid_init()
     str = str_liftdrag;
 
 /**************************BE CAREFUL************************************/
+/**************************BE CAREFUL************************************/
+/**************************BE CAREFUL************************************/  
   if (ioflags.fluid_stress_gid==1)
   {
     dserror("ioflags.fluid_stress_gid=1 but not implemented!");
     /* str = str_all;*/
   }
+/**************************BE CAREFUL************************************/
+/**************************BE CAREFUL************************************/  
 /**************************BE CAREFUL************************************/
   
   fdyn->acttime = ZERO;
@@ -684,7 +688,15 @@ void ls_fluid_fina()
    * and transform kinematic to real pressure
    */
   solserv_sol_copy(actfield,0,1,0,3,actpos);
-  fluid_transpres(actfield,0,0,actpos,fdyn->numdf-1,0);
+/**************************BE CAREFUL************************************/
+/**************************BE CAREFUL************************************/
+/**************************BE CAREFUL************************************/
+  
+/*  fluid_transpres(actfield,0,0,actpos,fdyn->numdf-1,0);*/
+
+/**************************BE CAREFUL************************************/
+/**************************BE CAREFUL************************************/
+/**************************BE CAREFUL************************************/  
 
   /* copy solution on level 2 at (n+1) to place (n) for multi-level FEM */
 #if defined(FLUID2_ML) || defined(FLUID3_ML)
