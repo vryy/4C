@@ -220,7 +220,7 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
    case el_shell9:
       container->handsize = 0;
       container->handles  = NULL;
-      shell9(actfield,actpart,actintra,actele,
+      shell9(actfield,actintra,actele,
              &estif_global,&emass_global,&intforce_global,
              action,container);
    break;
@@ -644,7 +644,7 @@ if (is_shell9==1)
 {
    container->handsize = 0;
    container->handles  = NULL;
-   shell9(actfield,actpart,NULL,NULL,&estif_global,&emass_global,&intforce_global,
+   shell9(actfield,NULL,NULL,&estif_global,&emass_global,&intforce_global,
           action,container);
 }
 /*-------------------------------- init all kind of routines for brick1 */
@@ -794,7 +794,7 @@ if (is_shell9==1)
 {
    container->handsize = 0;
    container->handles  = NULL;
-   shell9(actfield,actpart,actintra,NULL,NULL,NULL,NULL,action,container);
+   shell9(actfield,actintra,NULL,NULL,NULL,NULL,action,container);
 }
 /*--------------------------------------------reduce results for brick1 */
 if (is_brick1==1)
