@@ -1,83 +1,80 @@
-# This is a sample defines file
-
-# fancy things first (there are terminals that don't like colors)
-#COLOROUTPUT
+# List of all possible defines
+#=============================
 
 # even though we never make mistakes debugging is an option
 #DEBUG
 
-# some people like dserror to dump core
-#DSERROR_DUMP
-
-# enable reading restart data the new way
-#NEW_RESTART_READ
-
-# if you are content with binary io you'd want to suppress to
-# write results to text files
-#NO_TEXT_OUTPUT
-
-# crash ccarat if a nan of inf occurs
-#TRAP_FE
 
 # all possible elements
-#D_ALE              # defines element ale (2D+3D)
-#D_AXISHELL         # defines axisymmetric shell element
-#D_BEAM3            # defines element beam3
-#D_BRICK1           # defines element brick1
-#D_FLUID2           # defines element fluid2
-#D_FLUID2_PRO       # defines element fluid2 with projection method
-#FLUID2_ML          # defines element fluid2 with multilevel
-#D_FLUID3           # defines element fluid3
-#D_FLUID3_F         # defines element fluid3_fast
-#FLUID3_ML          # defines element fluid3 with multilevel
-#D_SHELL8           # defines element shell8
-#D_SHELL9           # defines element shell9
-#D_WALL1            # defines element wall1
-#D_INTERF           # defines interface element
-#D_WALLGE           # defines gradient enhanced wall element
-#D_MLSTRUCT         # defines an 2D element for structural analysis with multiscale
+#D_ALE              # ale element (2D+3D)
+#D_AXISHELL         # axisymmetric shell element
+#D_BEAM3            # beam3
+#D_BRICK1           # brick1
+#D_FLUID2           # fluid2
+#D_FLUID2_PRO       # fluid2 with projection method
+#FLUID2_ML          # fluid2 with multilevel
+#D_FLUID3           # fluid3
+#D_FLUID3_F         # fluid3_fast
+#FLUID3_ML          # fluid3 with multilevel
+#D_SHELL8           # shell8
+#D_SHELL9           # shell9
+#D_WALL1            # wall1
+#D_INTERF           # interface element
+#D_WALLGE           # gradient enhanced wall element
+#D_MLSTRUCT         # 2D element for structural analysis with multiscale
 
 
 # problem types
-#D_FLUID            # defines general fluid problem
-#D_FSI              # defines general FSI problem
-#D_SSI              # defines general SSI problem
-#D_MORTAR           # defines mortar coupling problem (FSI/SSI)
-#D_OPTIM            # defines optimization
-#D_CONTACT          # defines contact problems
+#D_FLUID            # general fluid problem
+#D_FSI              # general FSI problem
+#D_SSI              # general SSI problem
+#D_MORTAR           # mortar coupling problem (FSI/SSI)
+#D_OPTIM            # optimization
+#D_CONTACT          # contact problems
+
 
 # additional features
 #D_MAT              # defines materials
-#S8CONTACT          # defines contact algorithms for shell8 contact
-#WALLCONTACT        # defines contact algorithms for wall contact
-#GEMM               # defines Generalized Energy-Momentum Int. Scheme
+#S8CONTACT          # contact algorithms for shell8 contact
+#WALLCONTACT        # contact algorithms for wall contact
+#GEMM               # Generalized Energy-Momentum Int. Scheme
 #FAST_ASS           # use a faster procedure for assembling
                     # requires a lot of memory !!!
 #FAST_ASS2          # use a faster procedure for assembling
                     # requires allmost no extra memory
 #BINIO              # binary io
+#NO_TEXT_OUTPUT     # suppress output to text files
+
+
 
 # tools
-#RESULTTEST         # defines defines result testing
+#RESULTTEST         # result testing
 #PERF               # routines for exact time measurements  (overhead!!)
 #CHECK_MAX          # check the values of MAXNOD etc. (overhead!!)
 
 
+# fancy stuff
+#COLOROUTPUT        # use colored output to the terminal
+#DSERROR_DUMP       # dserror creates a core file
+#TRAP_FE            # crash ccarat if a nan of inf occurs
+
+
 # possible solver packages
-#AZTEC_PACKAGE      # interface to solver library AZTEC
-#UMFPACK            # interface to solver library Umfpack
-#SPOOLES_PACKAGE    # interface to solver library Spooles (only in parallel)
+#AZTEC_PACKAGE      # solver library AZTEC
+#UMFPACK            # solver library Umfpack
+#SPOOLES_PACKAGE    # solver library Spooles (only in parallel)
 #MLPCG              # interface and solver mlpcg
 
+
 # inactive solvers
-#PARSUPERLU_PACKAGE # defines interface to solver library ParSuperLU
-#SUPERLU_PACKAGE    # defines interface to solver library SuperLU
-#MUMPS_PACKAGE      # defines interface to solver library Mumps
-#HYPRE_PACKAGE      # defines interface to solver library HYPRE
-#MLIB_PACKAGE       # defines interface to solver library MLIB
+#PARSUPERLU_PACKAGE # solver library ParSuperLU
+#SUPERLU_PACKAGE    # solver library SuperLU
+#MUMPS_PACKAGE      # solver library Mumps
+#HYPRE_PACKAGE      # solver library HYPRE
+#MLIB_PACKAGE       # solver library MLIB
 
 
 # visual packages (only in seriell)
-#VISUAL2_PACKAGE    # defines visualisation tool VISUAL2
-#VISUAL3_PACKAGE    # defines visualisation tool VISUAL3
+#VISUAL2_PACKAGE    # visualisation tool VISUAL2
+#VISUAL3_PACKAGE    # visualisation tool VISUAL3
 
