@@ -40,100 +40,70 @@ typedef char      CHAR;
 /*----------------------------------------------------------------------*
  | special definitions for special compilers.....                       |
  *----------------------------------------------------------------------*/
+/* append underslashs, if necessary */
+#undef CCA_APPEND_U
 /* append underslash for gnu's linux compiler gcc and g77 */
 #ifdef SUSE73 
-#define dsytrf dsytrf_
-#define dsytri dsytri_
-#define dsytrs dsytrs_
-#define dgetrf dgetrf_
-#define dgetri dgetri_
-#define dgetrs dgetrs_
-#define dsygv  dsygv_
-#define dsyevd dsyevd_
-#define colsol colsol_
-#define c1inv6 c1inv6_
-#define c1ab   c1ab_
-#define mxmatb mxmatb_
-#define mxmabt mxmabt_
-#define fortranpow fortranpow_
-#define mxmab  mxmab_
-#define c1invf c1invf_
-#define solveq solveq_
-#define c1jacb c1jacb_
-#define dsyev  dsyev_
-#define mumps_interface   mumps_interface_
-#define iluk           iluk_
-#define lusol          lusol_
-#define mlpcgveczero   mlpcgveczero_
-#define mlpcgvecvec    mlpcgvecvec_
-#define mlpcgupdupdvec mlpcgupdupdvec_
-#define mlpcgupdvec    mlpcgupdvec_
-#define dveczero       dveczero_
-#define iveczero       iveczero_
+#define CCA_APPEND_U (1)
 #endif
 /* append underslash for CUSS Sunfire */
 #ifdef SUN 
-#define dsytrf dsytrf_
-#define dsytri dsytri_
-#define dsytrs dsytrs_
-#define dgetrf dgetrf_
-#define dgetri dgetri_
-#define dgetrs dgetrs_
-#define dsygv  dsygv_
-#define dsyevd dsyevd_
-#define colsol colsol_
-#define c1inv6 c1inv6_
-#define c1ab   c1ab_
-#define mxmatb mxmatb_
-#define mxmabt mxmabt_
-#define fortranpow fortranpow_
-#define mxmab  mxmab_
-#define c1invf c1invf_
-#define solveq solveq_
-#define c1jacb c1jacb_
-#define dsyev  dsyev_
-#define mumps_interface   mumps_interface_
-#define iluk           iluk_
-#define lusol          lusol_
-#define mlpcgveczero   mlpcgveczero_
-#define mlpcgvecvec    mlpcgvecvec_
-#define mlpcgupdupdvec mlpcgupdupdvec_
-#define mlpcgupdvec    mlpcgupdvec_
-#define dveczero       dveczero_
-#define iveczero       iveczero_
+#define CCA_APPEND_U (1)
 #endif
 /* append underslash for SIXTYFOUR */
 #ifdef SIXTYFOUR 
-#define dsytrf dsytrf_
-#define dsytri dsytri_
-#define dsytrs dsytrs_
-#define dgetrf dgetrf_
-#define dgetri dgetri_
-#define dgetrs dgetrs_
-#define dsygv  dsygv_
-#define dsyevd dsyevd_
-#define colsol colsol_
-#define c1inv6 c1inv6_
-#define c1ab   c1ab_
-#define mxmatb mxmatb_
-#define mxmabt mxmabt_
-#define fortranpow fortranpow_
-#define mxmab  mxmab_
-#define c1invf c1invf_
-#define solveq solveq_
-#define c1jacb c1jacb_
-#define dsyev  dsyev_
-#define mumps_interface   mumps_interface_
-#define iluk           iluk_
-#define lusol          lusol_
-#define mlpcgveczero   mlpcgveczero_
-#define mlpcgvecvec    mlpcgvecvec_
-#define mlpcgupdupdvec mlpcgupdupdvec_
-#define mlpcgupdvec    mlpcgupdvec_
-#define dveczero       dveczero_
-#define iveczero       iveczero_
+#define CCA_APPEND_U (1)
 #endif
 
+
+#ifdef CCA_APPEND_U
+#define dsytrf              dsytrf_
+#define dsytri              dsytri_
+#define dsytrs              dsytrs_
+#define dgetrf              dgetrf_
+#define dgetri              dgetri_
+#define dgetrs              dgetrs_
+#define dsygv               dsygv_
+#define dsyevd              dsyevd_
+#define dsyev               dsyev_
+#define colsol              colsol_
+#define c1inv6              c1inv6_
+#define c1ab                c1ab_
+#define mxmatb              mxmatb_
+#define mxmabt              mxmabt_
+#define fortranpow         fortranpow_
+#define mxmab               mxmab_
+#define c1invf              c1invf_
+#define solveq              solveq_
+#define c1jacb              c1jacb_
+#define mumps_interface     mumps_interface_
+#define iluk                iluk_
+#define lusol               lusol_
+#define mlpcgveczero        mlpcgveczero_
+#define mlpcgvecvec         mlpcgvecvec_
+#define mlpcgupdupdvec      mlpcgupdupdvec_
+#define mlpcgupdvec         mlpcgupdvec_
+#define dveczero            dveczero_
+#define iveczero            iveczero_
+#endif
+void dsytrf(char *uplo, int *n, double *a, int *lda, int *ipiv, double *work, int *lwork, int *info);
+void dsytri(char *uplo, int *n, double *a, int *lda, int *ipiv, double *work, int *info);
+void dsytrs(char *uplo, int *n, int *nrhs, double *a, int *lda, int *ipiv, double *b, int *ldb, int *info);
+void dgetrf(int *m, int *n, double *a, int *lda, int *ipiv, int *info);
+void dgetri(int *n, double *a, int *lda, int *ipiv, double *work, int *lwork, int *info);
+void dgetrs(char *trans, int *n, int *nrhs, double *a, int *lda, int *ipiv, double *b, int *ldb, int *info);
+void dsygv(int *itype, char *jobz, char *uplo, int *n, double *a, int *lda, double *b, int *ldb, double *w, double *work, int *lwork, int *info);
+void dsyevd(char *jobz, char *uplo, int *n, double *a, int *lda, double *w, double *work, int *lwork, int *iwork, int *liwork, int *info);
+void dsyev(char *jobz, char *uplo, int *n, double *a, int *lda, double *w, double *work, int *lwork, int *info);
+void colsol(double *a, double *v, int *maxa, int *nn, int *nrr, int *nrc, int *nwa, int *nqm, int *nr1, int *nr2, int *kkk, double *det, int *isc, int *nsch, int *ipr, int *info);
+void iluk(int *n, double *a, int *ja, int *ia, int *lfil, double *alu, int *jlu, int *ju, int *levs, int *iwk, double *w, int *jw, int *ierr);
+void lusol(int *n, double *y, double *x, double *alu, int *jlu, int *ju);
+void mlpcgveczero(double *x, int *n);
+void mlpcgvecvec(double *x, double *y, double *sum, int *n);
+void mlpcgupdupdvec(double *a, double *y, double *facy, double *x, double *facx, int *init, int *n);
+void mlpcgupdvec(double *y, double *x, double *fac, int *init, int *n);
+void dveczero(double *x, int *n);
+void iveczero(int *x, int *n);
 /*----------------------------------------------------------------------*
  | absolut value of an integer                                          |
  *----------------------------------------------------------------------*/
