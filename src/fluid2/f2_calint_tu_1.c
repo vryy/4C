@@ -211,7 +211,7 @@ for (lr=0;lr<nir;lr++)
          dserror("typ unknown!");
       } /* end switch(typ) */
 /*-------------------------------------------- compute Jacobian matrix */
-      f2_jaco(xyze,funct,deriv,xjm,&det,iel,ele);
+      f2_jaco(xyze,deriv,xjm,&det,iel,ele);
       fac = facr*facs*det;
 
 /*------------------------------------------- compute global derivates */
