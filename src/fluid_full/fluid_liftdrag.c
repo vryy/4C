@@ -80,13 +80,13 @@ INT           actcurve,numline;
 FIELD        *structfield;
 DLINE        *actdline,*aledline;
 NODE         *actnode;
-DOUBLE	      liftdrag[(FLUID_NUM_LD+1)*6];	/* array with lift & drag coeff.*/
+DOUBLE	      liftdrag[(FLUID_NUM_LD+1)*12];	/* array with lift & drag coeff.*/
 DOUBLE        acttimefac;
 DOUBLE        timefac[5];
 DOUBLE        initval;
 
 #ifdef PARALLEL
-DOUBLE        recv[(FLUID_NUM_LD+1)*6];          /*  receive buffer              */
+DOUBLE        recv[(FLUID_NUM_LD+1)*12];          /*  receive buffer              */
 #endif
 
 #ifdef DEBUG 
@@ -166,7 +166,7 @@ break;
 if (init>0)
 {
   /*---------------- initialise lift- and drag- coefficient to zero ---*/
-  for (i=0; i<(FLUID_NUM_LD+1)*6; i++)
+  for (i=0; i<(FLUID_NUM_LD+1)*12; i++)
   {
    liftdrag[i] = ZERO;
   }
@@ -181,53 +181,91 @@ if (init>0)
 
    /*----------- distribute lift- and drag- coefficient to all procs ---*/
 #ifdef PARALLEL
-   MPI_Reduce(liftdrag,recv,6*(FLUID_NUM_LD+1),MPI_DOUBLE,MPI_SUM,0,actintra->MPI_INTRA_COMM);
-   for (i=0; i<(FLUID_NUM_LD+1)*6; i++)
+   MPI_Reduce(liftdrag,recv,12*(FLUID_NUM_LD+1),MPI_DOUBLE,MPI_SUM,0,actintra->MPI_INTRA_COMM);
+   for (i=0; i<(FLUID_NUM_LD+1)*12; i++)
        liftdrag[i] = recv[i];
 #endif
 
+   /* pressure */
    /* calculate the sums of all liftdrag conditions */ 
    for (j=0; j<6; j++) 
      for (i=0; i<FLUID_NUM_LD; i++)
        liftdrag[FLUID_NUM_LD*6+j] += liftdrag[i*6+j];
    
+   /* calculate the sums of all liftdrag conditions */ 
+   for (j=0; j<6; j++) 
+     for (i=0; i<FLUID_NUM_LD; i++)
+       liftdrag[(2*FLUID_NUM_LD+1)*6+j] += liftdrag[(FLUID_NUM_LD+1)*6+i*6+j];
+   
    /*-------------------------------------------------------- output ---*/
    if(par.myrank == 0)
    {
-      printf("Drag (global x-direction) = ");
-      for (i=0; i<FLUID_NUM_LD+1; i++)
-        printf(" %12.4E ",  liftdrag[i*6+0]);
-      printf("\n");
+     /* pressure */
+     printf("F_x = ");
+     for (i=0; i<FLUID_NUM_LD+1; i++)
+       printf(" %12.4E ",  liftdrag[i*6+0]);
+     printf("\n");
 
-      printf("Lift (global y-direction) = ");
-      for (i=0; i<FLUID_NUM_LD+1; i++)
-        printf(" %12.4E ",  liftdrag[i*6+1]);
-      printf("\n");
+     printf("F_y = ");
+     for (i=0; i<FLUID_NUM_LD+1; i++)
+       printf(" %12.4E ",  liftdrag[i*6+1]);
+     printf("\n");
 
-      printf("Lift (global z-direction) = ");
-      for (i=0; i<FLUID_NUM_LD+1; i++)
-        printf(" %12.4E ",  liftdrag[i*6+2]);
-      printf("\n");
+     printf("F_z = ");
+     for (i=0; i<FLUID_NUM_LD+1; i++)
+       printf(" %12.4E ",  liftdrag[i*6+2]);
+     printf("\n");
 
-      printf("Angular Momentum x        = ");
-      for (i=0; i<FLUID_NUM_LD+1; i++)
-        printf(" %12.4E ",  liftdrag[i*6+3]);
-      printf("\n");
+     printf("M_x = ");
+     for (i=0; i<FLUID_NUM_LD+1; i++)
+       printf(" %12.4E ",  liftdrag[i*6+3]);
+     printf("\n");
 
-      printf("Angular Momentum y        = ");
-      for (i=0; i<FLUID_NUM_LD+1; i++)
-        printf(" %12.4E ",  liftdrag[i*6+4]);
-      printf("\n");
+     printf("M_y = ");
+     for (i=0; i<FLUID_NUM_LD+1; i++)
+       printf(" %12.4E ",  liftdrag[i*6+4]);
+     printf("\n");
 
-      printf("Angular Momentum z        = ");
-      for (i=0; i<FLUID_NUM_LD+1; i++)
-        printf(" %12.4E ",  liftdrag[i*6+5]);
-      printf("\n\n");
+     printf("M_z = ");
+     for (i=0; i<FLUID_NUM_LD+1; i++)
+       printf(" %12.4E ",  liftdrag[i*6+5]);
+     printf("\n\n");
+
+     /* viscous */
+     printf("F_x = ");
+     for (i=0; i<FLUID_NUM_LD+1; i++)
+       printf(" %12.4E ",  liftdrag[(FLUID_NUM_LD +1+i)*6+0]);
+     printf("\n");
+
+     printf("F_y = ");
+     for (i=0; i<FLUID_NUM_LD+1; i++)
+       printf(" %12.4E ",  liftdrag[(FLUID_NUM_LD +1+i)*6+1]);
+     printf("\n");
+
+     printf("F_z = ");
+     for (i=0; i<FLUID_NUM_LD+1; i++)
+       printf(" %12.4E ",  liftdrag[(FLUID_NUM_LD +1+i)*6+2]);
+     printf("\n");
+
+     printf("M_x = ");
+     for (i=0; i<FLUID_NUM_LD+1; i++)
+       printf(" %12.4E ",  liftdrag[(FLUID_NUM_LD +1+i)*6+3]);
+     printf("\n");
+
+     printf("M_y = ");
+     for (i=0; i<FLUID_NUM_LD+1; i++)
+       printf(" %12.4E ",  liftdrag[(FLUID_NUM_LD +1+i)*6+4]);
+     printf("\n");
+
+     printf("M_z = ");
+     for (i=0; i<FLUID_NUM_LD+1; i++)
+       printf(" %12.4E ",  liftdrag[(FLUID_NUM_LD +1+i)*6+5]);
+     printf("\n\n");
    }
    if (par.myrank == 0)
-      plot_liftdrag(fdyn->time, liftdrag);
+     plot_liftdrag(fdyn->time, liftdrag);
 }
-   
+
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
