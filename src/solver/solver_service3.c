@@ -10,6 +10,7 @@
  | int    arraynum (i) indize of the array, 0 = sol                     |
  |                                          1 = sol_increment           |
  |                                          2 = sol_residual            |
+ |                                          3 = sol_mf                  |
  | int    place    (i) row in ARRAY sol to be set to zero               | 
  *----------------------------------------------------------------------*/
 void solserv_sol_zero(FIELD *actfield, int disnum, int arraynum, int place)
@@ -39,8 +40,11 @@ for (i=0; i<actdis->numnp; i++)
    case 2:
       array = &(actnode->sol_residual);
    break;
+   case 3:
+      array = &(actnode->sol_mf);
+   break;      
    default:
-      dserror("Only 0,1,2 allowed for arraynum to select sol, sol_increment, sol_residual");
+      dserror("Only 0,1,2,3 allowed for arraynum to select sol, sol_increment, sol_residual, sol_mf");
    }
    /* check the size of array */
    if (place >= array->fdim)
@@ -50,7 +54,7 @@ for (i=0; i<actdis->numnp; i++)
       max = diff;
       amredef(array,array->fdim+max+1,array->sdim,"DA");
    }
-   for (j=0; j<actnode->numdf; j++)
+   for (j=0; j<array->sdim; j++)
       array->a.da[place][j] = 0.0;
 }
 /*----------------------------------------------------------------------*/
@@ -104,8 +108,11 @@ for (i=0; i<actdis->numnp; i++)
    case 2:
       arrayf = &(actnode->sol_residual);
    break;
+   case 3:
+      arrayf = &(actnode->sol_mf);
+   break;   
    default:
-      dserror("Only 0,1,2 allowed for arrayfrom to select sol, sol_increment, sol_residual");
+      dserror("Only 0,1,2,3 allowed for arrayfrom to select sol, sol_increment, sol_residual, sol_mf");
    }
    /*----------------------------------------- select correct arrayfrom */
    switch(arrayto)
@@ -119,8 +126,11 @@ for (i=0; i<actdis->numnp; i++)
    case 2:
       arrayt = &(actnode->sol_residual);
    break;
+   case 3:
+      arrayt = &(actnode->sol_mf);
+   break;      
    default:
-      dserror("Only 0,1,2 allowed for arrayto to select sol, sol_increment, sol_residual");
+      dserror("Only 0,1,2,3 allowed for arrayfrom to select sol, sol_increment, sol_residual, sol_mf");
    }
    /* check the size of arrayf */
    if (from >= arrayf->fdim)
@@ -133,7 +143,7 @@ for (i=0; i<actdis->numnp; i++)
       max = diff;
       amredef(arrayt,arrayt->fdim+max+1,arrayt->sdim,"DA");
    }
-   for (j=0; j<actnode->numdf; j++)
+   for (j=0; j<arrayt->sdim; j++)
       arrayt->a.da[to][j] = arrayf->a.da[from][j];
 }
 /*----------------------------------------------------------------------*/
@@ -187,8 +197,11 @@ for (i=0; i<actdis->numnp; i++)
    case 2:
       arrayf = &(actnode->sol_residual);
    break;
+   case 3:
+      arrayf = &(actnode->sol_mf);
+   break;   
    default:
-      dserror("Only 0,1,2 allowed for arrayfrom to select sol, sol_increment, sol_residual");
+      dserror("Only 0,1,2,3 allowed for arrayfrom to select sol, sol_increment, sol_residual, sol_mf");
    }
    /*----------------------------------------- select correct arrayfrom */
    switch(arrayto)
@@ -202,8 +215,11 @@ for (i=0; i<actdis->numnp; i++)
    case 2:
       arrayt = &(actnode->sol_residual);
    break;
+   case 3:
+      arrayt = &(actnode->sol_mf);
+   break;      
    default:
-      dserror("Only 0,1,2 allowed for arrayto to select sol, sol_increment, sol_residual");
+      dserror("Only 0,1,2,3 allowed for arrayfrom to select sol, sol_increment, sol_residual, sol_mf");
    }
    /* check the size of arrayf */
    if (from >= arrayf->fdim)
@@ -216,7 +232,7 @@ for (i=0; i<actdis->numnp; i++)
       max = diff;
       amredef(arrayt,arrayt->fdim+max+1,arrayt->sdim,"DA");
    }
-   for (j=0; j<actnode->numdf; j++)
+   for (j=0; j<arrayt->sdim; j++)
       arrayt->a.da[to][j] += arrayf->a.da[from][j]*fac;
 }
 /*----------------------------------------------------------------------*/
@@ -270,8 +286,11 @@ for (i=0; i<actele->numnp; i++)
    case 2:
       array = &(actnode->sol_residual);
    break;
+   case 3:
+      array = &(actnode->sol_mf);
+   break;      
    default:
-      dserror("Only 0,1,2 allowed for arraynum to select sol, sol_increment, sol_residual");
+      dserror("Only 0,1,2,3 allowed for arraynum to select sol, sol_increment, sol_residual, sol_mf");
    }
    /*-- check for correct size of array in the adjacent nodes to actele */
    if (place >= array->fdim)
@@ -344,8 +363,11 @@ for (i=0; i<actdis->numnp; i++)
    case 2:
       array = &(actnode->sol_residual);
    break;
+   case 3:
+      array = &(actnode->sol_mf);
+   break;      
    default:
-      dserror("Only 0,1,2 allowed for arraynum to select sol, sol_increment, sol_residual");
+      dserror("Only 0,1,2,3 allowed for arraynum to select sol, sol_increment, sol_residual, sol_mf");
    }
    /*------------------------------------------ get dirichlet condition */
    dirich = actnode->gnode->dirich;
@@ -426,8 +448,11 @@ for (i=0; i<actdis->numnp; i++)
    case 2:
       array = &(actnode->sol_residual);
    break;
+   case 3:
+      array = &(actnode->sol_mf);
+   break;      
    default:
-      dserror("Only 0,1,2 allowed for arraynum to select sol, sol_increment, sol_residual");
+      dserror("Only 0,1,2,3 allowed for arraynum to select sol, sol_increment, sol_residual, sol_mf");
    }
    /* get dirichlet condition */
    dirich = actnode->gnode->dirich;
@@ -502,8 +527,11 @@ for (i=0; i<actdis->numnp; i++)
    case 2:
       array = &(actnode->sol_residual);
    break;
+   case 3:
+      array = &(actnode->sol_mf);
+   break;      
    default:
-      dserror("Only 0,1,2 allowed for arraynum to select sol, sol_increment, sol_residual");
+      dserror("Only 0,1,2,3 allowed for arraynum to select sol, sol_increment, sol_residual, sol_mf");
    }
    /* get dirichlet condition */
    dirich = actnode->gnode->dirich;
@@ -580,8 +608,11 @@ for (i=0; i<actdis->numnp; i++)
    case 2:
       array = &(actnode->sol_residual);
    break;
+   case 3:
+      array = &(actnode->sol_mf);
+   break;      
    default:
-      dserror("Only 0,1,2 allowed for arraynum to select sol, sol_increment, sol_residual");
+      dserror("Only 0,1,2,3 allowed for arraynum to select sol, sol_increment, sol_residual, sol_mf");
    }
    /* get dirichlet condition */
    dirich = actnode->gnode->dirich;
@@ -651,8 +682,11 @@ for (i=0; i<actdis->numnp; i++)
    case 2:
       array = &(actnode->sol_residual);
    break;
+   case 3:
+      array = &(actnode->sol_mf);
+   break;      
    default:
-      dserror("Only 0,1,2 allowed for arraynum to select sol, sol_increment, sol_residual");
+      dserror("Only 0,1,2,3 allowed for arraynum to select sol, sol_increment, sol_residual, sol_mf");
    }
    /* get dirichlet condition */
    dirich = actnode->gnode->dirich;
