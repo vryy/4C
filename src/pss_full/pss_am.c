@@ -138,13 +138,10 @@ void *CCAMALLOC(int size)
 char *buf;
 
 buf = (char*)malloc((size_t)(size+DWORD));
-if (buf)
-{
-   ((int*)buf)[0] = size;
-   num_byte_allocated += (size+DWORD);
-   return (void*)(buf+DWORD);
-}
-else return (void*)(NULL);
+if (!buf) dserror("Allocation of memory failed");
+((int*)buf)[0] = size;
+num_byte_allocated += (size+DWORD);
+return (void*)(buf+DWORD);
 }/* end of CCAMALLOC */
 /*----------------------------------------------------------------------*
  | redefinition of malloc FAST version                        m.gee 2/02|
@@ -155,6 +152,7 @@ void *CCAMALLOC(int size)
 {
 void *buf;
 buf = malloc((size_t)size);
+if (!buf) dserror("Allocation of memory failed");
 return (void*)(buf);
 }/* end of CCAMALLOC */
 #endif
@@ -175,15 +173,11 @@ if compiled with DEBUG define, it counts the allocated memory
 void *CCACALLOC(int num, int size)
 {
 char *buf;
-
 buf = (char*)calloc((size_t)(num*size+DWORD),(size_t)MYBYTE);
-if (buf)
-{
-   ((int*)buf)[0] = size*num;
-   num_byte_allocated += (num*size+DWORD);
-   return (void*)(buf+DWORD);
-}
-else return (void*)(NULL);
+if (!buf) dserror("Allocation of memory failed");
+((int*)buf)[0] = size*num;
+num_byte_allocated += (num*size+DWORD);
+return (void*)(buf+DWORD);
 }/* end of CCACALLOC */
 /*----------------------------------------------------------------------*
  | redefinition of calloc FAST version                    m.gee 2/02    |
@@ -194,6 +188,7 @@ void *CCACALLOC(int num, int size)
 {
 void *buf;
 buf = calloc((size_t)num,(size_t)size);
+if (!buf) dserror("Allocation of memory failed");
 return (void *)(buf);
 }/* end of CCACALLOC */
 #endif
@@ -219,15 +214,11 @@ if (!oldptr) dserror("Tried to realloc NULL pointer");
 if (!buf)    dserror("Tried to realloc NULL-DWORD pointer");
 n = ((int*)buf)[0];
 num_byte_allocated -= (n+DWORD);
-
 buf = (char*)realloc(buf,(size_t)(size+DWORD));
-if (buf)
-{
-   ((int*)buf)[0] = size;
-   num_byte_allocated += (size+DWORD);
-   return (void*)(buf+DWORD);
-}
-else return (void*)(NULL);
+if (!buf) dserror("Allocation of memory failed");
+((int*)buf)[0] = size;
+num_byte_allocated += (size+DWORD);
+return (void*)(buf+DWORD);
 }/* end of CCAREALLOC */
 /*----------------------------------------------------------------------*
  | redefinition of realloc FAST version                  m.gee 2/02     |
@@ -238,6 +229,7 @@ void *CCAREALLOC(void *oldptr, int size)
 {
 void *buf;
 buf = realloc(oldptr,(size_t)size);
+if (!buf) dserror("Allocation of memory failed");
 return (void*)(buf);
 }/* end of CCAREALLOC */
 #endif
