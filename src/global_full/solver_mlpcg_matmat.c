@@ -692,6 +692,9 @@ if (myrank==0) printf("out  = work * P inter I  : %20.10f\n",t2-t1);
 /*
 t1 = ds_cputime();
 */
+#ifdef PARALLEL 
+MPI_Barrier(actintra->MPI_INTRA_COMM);
+#endif
 for (i=0; i<work->numeq; i++)/* loop all my rows of work */
 {
    actrow = work->update.a.iv[i];
@@ -731,6 +734,9 @@ for (i=0; i<work->numeq; i++)/* loop all my rows of work */
 t2 = ds_cputime();
 if (myrank==0) printf("out  = work * P local    : %20.10f\n",t2-t1);
 */
+#ifdef PARALLEL 
+MPI_Barrier(actintra->MPI_INTRA_COMM);
+#endif
 /*======================================================================*/
 /*             do interproc computation out = work * P   part II        */
 /*======================================================================*/
@@ -874,6 +880,9 @@ CCAFREE(col);
 CCAFREE(rcolP);
 CCAFREE(colP);
 
+#ifdef PARALLEL 
+MPI_Barrier(actintra->MPI_INTRA_COMM);
+#endif
 /*----------------------------------------------------------------------*/
 /*------------------------------debugging */
 #if 0 /* make dense printout from work */

@@ -105,6 +105,7 @@ dstrc_enter("mlpcg_precond_spoolessolve");
 /*----------------------------------------------------------------------*/
 myrank      = actintra->intra_rank;
 nproc       = actintra->intra_nprocs;
+dsmemreport();fflush(stdout);
 /*----------------------- int the inprocs=1 case pivoting does not work */
 if (nproc>1)   pivotingflag=1;
 else           pivotingflag=0;

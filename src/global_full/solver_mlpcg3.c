@@ -170,8 +170,13 @@ for (i=0; i<mlsolver.maxiter; i++)
    mlpcg_vecvec(&work,r,r,numeq,actintra);
    /* make eps */
    eps = sqrt(work);
+   if (i!=0)
+   if (10%i==0)
    if (myrank==0)
-   printf("%d : %20.15f\n",i,eps);
+   {
+      printf("%d : %20.15f\n",i,eps);
+      fflush(stdout);
+   }
    if (eps<=mlsolver.tol) 
    break;
    /*------------------------------------------------------ update rho2 */

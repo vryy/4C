@@ -592,7 +592,7 @@ if (mlprecond.ncall==0 && mlprecond.typ==2)
 /*------------------------------------------------------------take time */
 t2 = ds_cputime();
 /*------------------------------------------ print time for aggregation */
-if (actintra->intra_rank==0 && mlprecond.ncall==0)
+if (actintra->intra_rank==0)
 {
    printf("Time aggregation : %20.10f\n",t2-t1);
    fflush(stdout);
@@ -607,7 +607,7 @@ if (mlprecond.mod==0 && mlprecond.typ==1) /* prolongator fish-style */
 /*------------------------------------------------------------take time */
 t2 = ds_cputime();
 /*------------------------------------------ print time for prolongator */
-if (actintra->intra_rank==0 && mlprecond.ncall==0)
+if (actintra->intra_rank==0)
 {
    printf("Time P lev 0     : %20.10f\n",t2-t1);
    fflush(stdout);
@@ -620,13 +620,13 @@ if (mlprecond.mod==0)
 /*------------------------------------------------------------take time */
 t2 = ds_cputime();
 /*------------------------------------------------- print time for PTKP */
-if (actintra->intra_rank==0 && mlprecond.ncall==0)
+if (actintra->intra_rank==0)
 {
    printf("Time PTKP        : %20.10f\n",t2-t1);
    fflush(stdout);
 }
 /*------------------------------------------------------- make printout */
-if (actintra->intra_rank==0 && mlprecond.ncall==0)
+if (actintra->intra_rank==0)
 {
    printf("level 0: size %d nnz %d\n",mlprecond.level[0].csr->numeq_total,
                                       mlprecond.level[0].csr->ja.fdim);
@@ -650,7 +650,7 @@ for (i=1; i<mlprecond.numlev-1; i++)
    /*---------------------------------------------------------take time */
    t2 = ds_cputime();
    /*--------------------------------------- print time for aggregation */
-   if (actintra->intra_rank==0 && mlprecond.ncall==0)
+   if (actintra->intra_rank==0)
    {
       printf("Time aggregation : %20.10f\n",t2-t1);
       fflush(stdout);
@@ -665,7 +665,7 @@ for (i=1; i<mlprecond.numlev-1; i++)
    /*---------------------------------------------------------take time */
    t2 = ds_cputime();
    /*--------------------------------------- print time for prolongator */
-   if (actintra->intra_rank==0 && mlprecond.ncall==0)
+   if (actintra->intra_rank==0)
    {
       printf("Time P lev %d     : %20.10f\n",i,t2-t1);
       fflush(stdout);
@@ -678,13 +678,13 @@ for (i=1; i<mlprecond.numlev-1; i++)
    /*---------------------------------------------------------take time */
    t2 = ds_cputime();
    /*---------------------------------------------- print time for PTKP */
-   if (actintra->intra_rank==0 && mlprecond.ncall==0)
+   if (actintra->intra_rank==0)
    {
       printf("Time PTKP        : %20.10f\n",t2-t1);
       fflush(stdout);
    }
    /*---------------------------------------------------- make printout */
-   if (actintra->intra_rank==0 && mlprecond.ncall==0)
+   if (actintra->intra_rank==0)
    {
       printf("level %d: size %d nnz %d\n",i,mlprecond.level[i].csr->numeq_total,
                                             mlprecond.level[i].csr->ja.fdim);
@@ -696,7 +696,7 @@ for (i=1; i<mlprecond.numlev-1; i++)
 }
 /*------------------------ make level numlev-1 (coarse grid) separately */
 /*------------------------------------------------------- make printout */
-if (actintra->intra_rank==0 && mlprecond.ncall==0)
+if (actintra->intra_rank==0)
 {
    printf("level %d: size %d nnz %d\n",i,mlprecond.level[i].csr->numeq_total,
                                          mlprecond.level[i].csr->ja.fdim);

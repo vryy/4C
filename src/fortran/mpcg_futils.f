@@ -1,9 +1,9 @@
 c-----------------------------------------------------------------------
       subroutine iluk(n,a,ja,ia,lfil,alu,jlu,ju,levs,iwk,w,jw,ierr)
       implicit none 
-      integer n,ierr
+      integer n,ierr,iwk,lfil
       real*8 a(*),alu(iwk),w(n)
-      integer ja(*),ia(n+1),jlu(iwk),ju(n),levs(iwk),jw(3*n),lfil,iwk
+      integer ja(*),ia(n+1),jlu(iwk),ju(n),levs(iwk),jw(3*n)
 c----------------------------------------------------------------------* 
 c     SPARSKIT ROUTINE ILUK -- ILU WITH LEVEL OF FILL-IN OF K (ILU(k)) *
 c----------------------------------------------------------------------*
