@@ -54,6 +54,7 @@ INT          i,j,k;
 INT          size_j;
 ELEMENT     *actele;
 NODE        *actnode;
+S9_DATA      data;
 
 INT          num_mlay,ml;     /*number of material layers to a kinematic layer*/
 INT          num_klay,kl;     /*number of kineamtic layers to this element*/
@@ -66,10 +67,24 @@ DOUBLE       a3[3];
 ARRAY        collaverdir_a;
 DOUBLE     **collaverdir;
 DOUBLE       h2;            /*thickness of actele -> evaluation of shared director of thickness of adjacent elements differ from each other*/
+
+/*--- for s9_cdia -----------*/
+ARRAY    funct_a;     DOUBLE  *funct;    /* shape functions */  
+ARRAY    deriv_a;     DOUBLE **deriv;    /* derivatives of shape functions */ 
+ARRAY4D  a3r_a;       DOUBLE ***a3r;     /* a3 in reference config -> for each kinematic layer */
+ARRAY    x_a;         DOUBLE **x;        /* nodal coordinates */ 
+ARRAY    xjm_a;       DOUBLE **xjm;      /* jacobian */
+
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9init");
 #endif
+/*----------------------------------------------------------------------*/
+a3r     = am4def("a3r"   ,&a3r_a ,3  ,MAXNOD_SHELL9,1,0,"D3");         
+x       = amdef("x"      ,&x_a   ,3  ,MAXNOD_SHELL9,"DA");
+xjm     = amdef("xjm_a"  ,&xjm_a ,3  ,3            ,"DA");
+funct   = amdef("funct"  ,&funct_a,MAXNOD_SHELL9,1,"DV");       
+deriv   = amdef("deriv"  ,&deriv_a,2,MAXNOD_SHELL9,"DA");       
 /*----------------------------------------------------------------------*/
 for (i=0; i<actfield->dis[0].numele; i++)
 {
@@ -140,7 +155,7 @@ for (i=0; i<actfield->dis[0].numele; i++)
                 }
              }/*end mises or dp */
 
-             /* hoff ... */
+            /* hoff ... */
              if (actmultimat->mattyp == m_pl_hoff)
              {
                 for (k=0; k<size_j; k++)/*initialize for every gausspoint*/
@@ -168,6 +183,11 @@ for (i=0; i<actfield->dis[0].numele; i++)
 
         }/*end loop material layers*/
     }/*end loop kinematic layers*/
+
+    /*--- calculate equivalent element length (dia) if a plastic material model to this element (wa_flag == 1) ----------*/
+    s9intg(actele,&data,0);   
+    s9_cdia(actele,&data,funct,deriv,xjm,x,a3r);
+
   }/*end wa_flag ==1 */
 
 }
@@ -205,14 +225,19 @@ for (i=0; i<actfield->dis[0].numele; i++)
     for (j=0; j<actnode->numele; j++)                                                        
     {                                                                                        
        actele = actnode->element[j];                                                         
+       h2 = actele->e.s9->thick;                                                             
        if (actele->eltyp != el_shell9) continue;                                             
        for (k=0; k<actele->numnp; k++)                                                       
        {                                                                                     
           if (actele->node[k] == actnode)                                                    
           {                                                                                  
-             actele->e.s9->a3ref.a.da[0][k] = a3[0];                                         
-             actele->e.s9->a3ref.a.da[1][k] = a3[1];                                         
-             actele->e.s9->a3ref.a.da[2][k] = a3[2];                                         
+             actele->e.s9->a3ref.a.da[0][k] = a3[0]/h2;                                        
+             actele->e.s9->a3ref.a.da[1][k] = a3[1]/h2;                                         
+             actele->e.s9->a3ref.a.da[2][k] = a3[2]/h2;                                         
+/*           make normation of director here instead of doing this in s9_a3.c !!!*/
+/*             actele->e.s9->a3ref.a.da[0][k] = a3[0]; */                                       
+/*             actele->e.s9->a3ref.a.da[1][k] = a3[1]; */                                        
+/*             actele->e.s9->a3ref.a.da[2][k] = a3[2]; */                                        
              break;                                                                          
           }                                                                                  
        }                                                                                     
@@ -220,6 +245,12 @@ for (i=0; i<actfield->dis[0].numele; i++)
  }/* end of loop over all nodes */                                                           
 /*----------------------------------------------------------------------*/                   
 amdel(&collaverdir_a);
+amdel(&funct_a);       
+amdel(&deriv_a);       
+am4del(&a3r_a);
+amdel(&x_a);
+amdel(&xjm_a);
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -228,4 +259,3 @@ return;
 /*----------------------------------------------------------------------*/
 #endif /*D_SHELL9*/
 /*! @} (documentation module close)*/
-
