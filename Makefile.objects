@@ -355,6 +355,7 @@ OBJS17       = src/shell9/s9_main.o \
                 src/shell9/s9_mat_orth3D.o \
                 src/shell9/s9_math.o\
                 src/shell9/s9_out.o\
+                src/shell9/s9_out_unsmo.o\
                 src/shell9/s9_restart.o \
                 src/shell9/s9_static_keug.o \
                 src/shell9/s9_stress.o \
@@ -383,7 +384,7 @@ OBJS_OPT      = src/optimization/opt_cal_main.o \
                 src/optimization/opt_vsa.o \
                 src/optimization/opt_smo.o \
                 src/optimization/opt_g_out.o
-#                optimization
+#                axishell
 OBJS_AXISHELL = src/axishell/saxi_B.o \
                 src/axishell/saxi_cal_fext.o \
                 src/axishell/saxi_cal_stress.o \
