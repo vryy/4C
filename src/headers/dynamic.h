@@ -19,7 +19,8 @@ typedef struct _STRUCT_DYNAMIC
 enum
    {
     gen_alfa,
-    centr_diff
+    centr_diff,
+    Gen_EMM,
    }               Typ;         /* type of time integration algorithm */
 INT                updevry_disp;/* write result very updevry step */
 INT                updevry_stress;/* write result very updevry step */
@@ -39,6 +40,9 @@ DOUBLE             beta;       /* time integration coefficients */
 DOUBLE             gamma;
 DOUBLE             alpha_m;
 DOUBLE             alpha_f;
+#ifdef GEMM
+DOUBLE             xsi;        /*  Parameter used by GEMM */
+#endif
 DOUBLE             m_damp;     /* factors for Raleigh damping */
 DOUBLE             k_damp;
 
@@ -63,7 +67,16 @@ DOUBLE             epot;            /* potential energy */
 DOUBLE             eout;            /* external energy */
 DOUBLE             etot;            /* total energy */
 DOUBLE             ekin;            /* kinetic energy */
-
+#ifdef D_WALL1
+double             total_linmom[2];
+double             total_angular_momentum;
+double             total_strain_energy;
+double             total_kinetic_energy;
+double             local_linmom[2];
+double             local_angular_momentum;
+double             local_strain_energy;
+double             local_kinetic_energy;
+#endif
 DOUBLE             dinorm;  /* square of the L2-norm of the residual displacements */
 DOUBLE             dnorm;   /* square of the L2-norm of the displacements increment */
 

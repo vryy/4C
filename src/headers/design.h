@@ -88,6 +88,9 @@ typedef struct _DLINE
    struct _SAXI_THICK_CONDITION   *thickness;
    struct _SAXI_LOAD_CONDITION    *axishellload;
 #endif
+#ifdef WALLCONTACT
+   enum   _CONTACTTYPE       contype;
+#endif
 } DLINE;
 
 
