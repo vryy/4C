@@ -554,13 +554,13 @@ DOUBLE d,t,p,u1,u2,u3;
 /*----------------------------------------- variables for solitary wave */
 #ifdef D_FSI
 DOUBLE eta,c,g,H,x,y,fac,fac1,sech;
+#endif
 
 #ifdef D_FLUID3_F
   FAST_ELES        *act_fast_eles;
   INT               l;
 #endif
 
-#endif
 
 /* variables for beltrami */
 DOUBLE    visc,a,x1,x2,x3;
@@ -877,29 +877,60 @@ case str_liftdrag:
          }
       }
 #endif
+   } /* for (i=0;i<numele_total;i++) */
+
 
 #ifdef D_FLUID3_F
-      if (actele->eltyp == el_fluid3_fast)
-      {
-         actgvol=actele->g.gvol;
-         ldflag=0;
-         for (j=0;j<actgvol->ngsurf;j++)
-         {
+  for (i=0; i<actpart->pdis[disnum].num_fele; i++)
+  {
+
+    act_fast_eles = &(actpart->pdis[disnum].fast_eles[i]);
+
+    switch(act_fast_eles->fast_ele_typ)
+    {
+      case fele_f3f_hex8_e:
+      case fele_f3f_hex8_a:
+      case fele_f3f_tet4_e:
+      case fele_f3f_tet4_a:
+
+        ldflag=0;
+        for (l=0;l<act_fast_eles->aloopl;l++)
+        {
+          actele = act_fast_eles->ele_vec[l];
+          actgvol=actele->g.gvol;
+          for (j=0;j<actgvol->ngsurf;j++)
+          {
             actgsurf=actgvol->gsurf[j];
             actdsurf=actgsurf->dsurf;
             if (actdsurf==NULL) continue;
             if (actdsurf->liftdrag==NULL) continue;
             ldflag++;
             break;
-         }
-         if (ldflag>0)
-         {
-           amdef("stress_ND",&(actele->e.f3->stress_ND),actele->numnp,6,"DA");
-           amzero(&(actele->e.f3->stress_ND));
-         }
-      }
+          }
+        }
+
+        if (ldflag > 0)
+        {
+          for (l=0;l<act_fast_eles->aloopl;l++)
+          {
+            actele = act_fast_eles->ele_vec[l];
+            if (actele->e.f3->stress_ND.Typ == cca_XX)
+            {
+              amdef("stress_ND",&(actele->e.f3->stress_ND),actele->numnp,6,"DA");
+              amzero(&(actele->e.f3->stress_ND));
+            }
+
+          }
+        }
+        break;
+
+      default:
+        break;
+
+    } /* switch(act_fast_eles->fast_ele_typ) */
+  }
 #endif
-   }
+
 break;
 
 
