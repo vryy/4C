@@ -58,8 +58,11 @@ static DOUBLE **deriv;
 static ARRAY    xjm_a;    /* jacobian matrix */     
 static DOUBLE **xjm;         
 static ARRAY    boplin_a; /* linear B-operator */   
-static DOUBLE **boplin; 
-
+static double **boplin; 
+static ARRAY    b_bar_a;     /* B_bar operator */ 
+static double **b_bar; 
+static ARRAY    int_b_bar_a; /* Interpolated B_bar operator   */
+static double **int_b_bar;
 static ARRAY    F_a;      /* deformation gradient */   
 static DOUBLE  *F; 
 static ARRAY    strain_a; /* strain (Green-Lagr for total lagr.) */   
@@ -95,6 +98,8 @@ if (init==1)
   D         = amdef("D"      ,&D_a   ,6,6             ,"DA");           
   xjm       = amdef("xjm"    ,&xjm_a ,numdf,numdf     ,"DA");           
   boplin    = amdef("boplin" ,&boplin_a ,numeps,(numdf*MAXNOD_WALL1),"DA"); 
+  b_bar     = amdef("b_bar"  ,&b_bar_a,numeps,(numdf*MAXNOD_WALL1),"DA");
+  int_b_bar = amdef("int_b_bar"  ,&int_b_bar_a,numeps,(numdf*MAXNOD_WALL1),"DA");
   F         = amdef("F"      ,&F_a ,numeps,1,"DV"); 
   strain    = amdef("strain" ,&strain_a ,numeps,1,"DV"); 
   stress    = amdef("stress" ,&stress_a ,numeps,numeps,"DA"); 
@@ -115,6 +120,8 @@ else if (init==-1)
    amdel(&D_a);
    amdel(&xjm_a);
    amdel(&boplin_a);
+   amdel(&b_bar_a);
+   amdel(&int_b_bar_a);
    amdel(&F_a);
    amdel(&strain_a);
    amdel(&stress_a);
@@ -220,6 +227,10 @@ for (lr=0; lr<nir; lr++)
       amzero(&F_a);
       amzero(&strain_a);
       w1_defgrad(F,strain,xrefe,xcure,boplin,iel);
+      /*----------------------------------------calculate b_bar operator*/
+      amzero(&b_bar_a);
+      amzero(&int_b_bar_a);
+      w1_b_barop(ele,b_bar,int_b_bar,boplin,F,numeps,nd,ip);      
       /*------------------------------------------ call material law ---*/
       amzero(&stress_a);
       amzero(&D_a);
@@ -229,9 +240,9 @@ for (lr=0; lr<nir; lr++)
       if(istore==0)
       {
       /*---------------------- geometric part of stiffness matrix kg ---*/
-        w1_kg(kg,boplin,stress,fac,nd,numeps);
+        w1_kg(ele,kg,boplin,stress,fac,nd,numeps,ip);
       /*------------------ elastic+displacement stiffness matrix keu ---*/
-        w1_keu(keu,boplin,D,F,fac,nd,numeps);
+        w1_keu(keu,b_bar,int_b_bar,D,F,fac,nd,numeps);
       /*------------------------------- stiffness matrix keug=keu+kg ---*/
        for (a=0; a<nd; a++)
        {  
@@ -241,7 +252,7 @@ for (lr=0; lr<nir; lr++)
          } 
        }
       /*--------------- nodal forces fi from integration of stresses ---*/
-        if (force) w1_fint(stress,F,boplin,force,fac,nd);                    
+        if (force) w1_fint(ele,stress,F,int_b_bar,force,fac,nd,ip);                    
       }
    }/*============================================= end of loop over ls */ 
 }/*================================================ end of loop over lr */

@@ -111,12 +111,19 @@ typedef enum _MODEL_TYPE
 typedef struct _WALL1
 {
 enum _WALL_TYPE    wtype;             /* type of 2D problem, see above */
-enum _KINEMATIK_TYPE  kintype;	  /* type of Kinematik             */
-enum _MODEL_TYPE modeltype;	        /* type of model for QUAD4       */
+enum _KINEMATIK_TYPE  kintype;	      /* type of Kinematik             */
+enum _MODEL_TYPE modeltype;	      /* type of model for QUAD4       */
 
 INT           nGP[4];
 
 DOUBLE        thick;
+
+#ifdef GEMM
+double strain_energy;
+double kinetic_energy;
+double angular_momentum;
+double linmom[2];
+#endif
 
 W1_ELE_WA     *elewa;                         /* element working array */
 
@@ -129,6 +136,12 @@ enum
 
 struct _ARRAY4D  stress_GP;
 struct _ARRAY4D  stress_ND;
+/*---------------------------------------------------------------------*/
+/*------------------------------------------History for  EM Int. Scheme*/
+#ifdef GEMM
+struct _ARRAY4D b_bar_history;
+struct _ARRAY4D PK_history;
+#endif
 } WALL1;
 /*----------------------------------------------------------------------*
  |  prototypes of main and input routines                   al 11/01    |

@@ -127,6 +127,9 @@ case calc_struct_update_istep:
    w1static_keug(ele,&actdata,actmat,estif_global,emass_global,NULL,0);
    dyn_ekin_local(ele,emass_global,container);
    }
+#ifdef GEMM  
+   if (container->isdyn) w1_update_history(ele,&actdata,actmat);
+#endif
 break;/*----------------------------------------------------------------*/
 /*------------------------------------------------------- write restart */
 case write_restart:

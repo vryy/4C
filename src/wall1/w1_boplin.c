@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file
 \brief contains the routine 'w1_boplin' which calculates the 
-       linear operator matrix for a wall element at point r,s
+       boplin operator matrix for a wall element at point r,s
 
 *----------------------------------------------------------------------*/
 #ifdef D_WALL1
@@ -16,7 +16,7 @@
 *//*! @{ (documentation module open)*/
 
 /*----------------------------------------------------------------------*
- | calculate linear operator matrix at point r,s            ah 06/02    |
+ | calculate boplin operator matrix at point r,s                         |
  *----------------------------------------------------------------------*/
 void w1_boplin(DOUBLE    **boplin,
                DOUBLE    **deriv,
@@ -37,7 +37,7 @@ xji[0][0] = xjm[1][1]* dum;
 xji[0][1] =-xjm[0][1]* dum;
 xji[1][0] =-xjm[1][0]* dum;
 xji[1][1] = xjm[0][0]* dum;
-/*----------------------------- get operator b of global derivatives ---*/
+/*----------------------------- get operator boplin of global derivatives -*/
 for (inode=0; inode<iel; inode++)
 {
   dnode = inode*2;

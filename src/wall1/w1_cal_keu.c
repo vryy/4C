@@ -9,6 +9,11 @@
 #include "wall1.h"
 #include "wall1_prototypes.h"
 
+#ifdef GEMM
+extern ALLDYNA      *alldyn;   
+#endif
+
+
 /*! 
 \addtogroup WALL1 
 *//*! @{ (documentation module open)*/
@@ -25,75 +30,42 @@
  | NEPS    -->  ACTUAL NUMBER OF STRAIN COMPONENTS   =4                 |
  |                                                                      |
  *----------------------------------------------------------------------*/
-void w1_keu(DOUBLE  **keu, 
-            DOUBLE  **boplin, 
-            DOUBLE  **D,
-            DOUBLE   *F,
-            DOUBLE    fac, 
-            INT       nd,
-            INT       neps)
+void w1_keu(    
+	    double  **keu, 
+            double  **b_bar,
+            double  **int_b_bar,
+	    double  **D,
+            double   *F,
+            double    fac, 
+            int       nd,
+            int       neps)
 {
-INT       i, j, r, s, t, l, m;
-DOUBLE    bfcfb;
-DOUBLE    fb[4], cfb[4], fcfb[4];
-DOUBLE    Fmatrix[4][4];
+
+int       i, j, k, m;          /*New format*/
+#ifdef GEMM
+STRUCT_DYNAMIC *sdyn;    
+double    alpha_f, xsi;
+#endif
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1_keu");
 #endif
-/*------------------------------ write Vector F as a Matrix Fmatrix-----*/
-for(i=0;i<neps;i++)
-{
-  for(j=0;j<neps;j++)
-  {
-    Fmatrix[i][j]=0;
-  }
-}
-Fmatrix[0][0] = F[0];
-Fmatrix[0][2] = 0.5 * F[2];
-Fmatrix[0][3] = 0.5 * F[2];
-Fmatrix[1][1] = F[1];
-Fmatrix[1][2] = 0.5 * F[3];
-Fmatrix[1][3] = 0.5 * F[3];
-Fmatrix[2][1] = F[2];
-Fmatrix[2][2] = 0.5 * F[0];
-Fmatrix[2][3] = 0.5 * F[0];
-Fmatrix[3][0] = F[3];
-Fmatrix[3][2] = 0.5 * F[1];
-Fmatrix[3][3] = 0.5 * F[1];
 
-/*----------------------------------------------------------------------*/
-for (j=0; j<nd; j++)
-{
-   for (r=0; r<neps; r++)
-   {
-      fcfb[r]=0;
-      for (s=0; s<neps; s++)
-      {
-         cfb[s]=0;
-         for (t=0; t<neps; t++)
-         {
-           fb[t]=0;
-           for (l=0; l<neps; l++)
-           { 
-             fb[t] +=  Fmatrix[l][t] * boplin[l][j];
-           }
-           cfb[s] += D[s][t] * fb[t];
-         }
-       fcfb[r] +=  Fmatrix[r][s] * cfb[s];
-       }
-   }
-   for (i=0; i<nd; i++)
-   {
-     bfcfb=0;
-     for (m=0; m<neps; m++)
-     {
-       bfcfb += boplin[m][i] * fcfb[m];
-     }
-     keu[i][j] += bfcfb * fac;
-   }
-}
-
+#ifdef GEMM
+sdyn = alldyn[0].sdyn;
+alpha_f = sdyn->alpha_f;
+xsi     = sdyn->xsi;
+#endif
+/*------------------------------------------------------------new format*/
+  for(i=0; i<nd; i++)
+    for(j=0; j<nd; j++)
+      for(k=0; k<neps; k++)
+        for(m=0; m<neps; m++)
+#ifdef GEMM        
+	keu[i][j] +=  ((1.0-alpha_f+xsi)/(1.0-alpha_f)) * (int_b_bar[k][i]*D[k][m]*b_bar[m][j]*fac);
+#else
+        keu[i][j] +=  int_b_bar[k][i]*D[k][m]*b_bar[m][j]*fac;
+#endif	
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();

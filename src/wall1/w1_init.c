@@ -31,6 +31,11 @@ DOUBLE **deriv_h;
 ARRAY    xjm_a_h;    /* jacobian matrix */     
 DOUBLE **xjm_h;         
 
+#ifdef GEMM
+double ***b_bar_history; /* previous B_hat operator*/
+double ***PK_history; /* previous 2nd PK stresses*/
+#endif
+
 #ifdef DEBUG 
 dstrc_enter("w1init");
 #endif
@@ -49,8 +54,13 @@ for (i=0; i<actpart->pdis[0].numele; i++)
   /*-------------------------------- allocate the space for stresses ---*/
   am4def("stress_GP",&(actele->e.w1->stress_GP),1,7,MAXGAUSS,0,"D3");
   am4def("stress_ND",&(actele->e.w1->stress_ND),1,7,MAXNOD,0,"D3");
-/*----------------------------------------------------------------------*/  
-  
+/*------------------------------------------init history for GEMM scheme*/  
+#ifdef GEMM
+  b_bar_history = am4def("b_bar",&(actele->e.w1->b_bar_history),MAXGAUSS,4,MAXNOD_WALL1*2,0,"D3");
+  PK_history    = am4def("PK",&(actele->e.w1->PK_history),MAXGAUSS,4,4,0,"D3");
+  am4zero(&(actele->e.w1->b_bar_history));
+  am4zero(&(actele->e.w1->PK_history));
+#endif  
   /*--------------------------------------------- init working array ---*/
   if(mat[actele->mat-1].mattyp == m_stvenpor)
   {

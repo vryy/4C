@@ -10,6 +10,10 @@
 #include "wall1_prototypes.h"
 #include "wall1_prototypes.h"
 
+#ifdef GEMM
+extern ALLDYNA      *alldyn;   
+#endif
+
 /*! 
 \addtogroup WALL1
 *//*! @{ (documentation module open)*/
@@ -17,35 +21,60 @@
 /*----------------------------------------------------------------------*
  | evaluate internal element forces for large def (total Lagr) ah 06/02  |
  *----------------------------------------------------------------------*/
-void w1_fint(DOUBLE **stress,     /* 2.PK stresses        */ 
-             DOUBLE  *F,          /* Deformation gradient */ 
-             DOUBLE **boplin,     /* B-lin-operator       */ 
-             DOUBLE  *fint,       /* internal forces      */ 
-             DOUBLE   fac,        /* detJ*wr*ws*thickness */ 
-             INT      nd)         /* Element-DOF          */
+void w1_fint(
+	     ELEMENT *ele,        /*active element pointer*/
+	     double **stress,     /* 2.PK stresses        */ 
+             double  *F,          /* Deformation gradient */ 
+             double **int_b_bar,      
+             double  *fint,       /* internal forces      */ 
+             double   fac,        /* detJ*wr*ws*thickness */ 
+             int      nd,         /* Element-DOF          */	     
+	     int      ip          /*Integration point     */
+	     )
+	              
 {
 /*----------------------------------------------------------------------*/
-INT i,j;
-DOUBLE fs[4];
+int i, j, k;
+double st[4];
+double int_stress[4][4];
+#ifdef GEMM
+STRUCT_DYNAMIC *sdyn;
+double alpha_f, xsi;       
+#endif
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1_fint");
 #endif
 /*--------------------------------------------- F*S = Vektor fs[i] -----*/
 
-fs[0] = fac * (stress[0][0] * F[0] + stress[0][2] * F[2]);
-fs[1] = fac * (stress[1][1] * F[1] + stress[0][2] * F[3]);
-fs[2] = fac * (stress[1][1] * F[2] + stress[0][2] * F[0]);
-fs[3] = fac * (stress[0][0] * F[3] + stress[0][2] * F[1]);
+#ifdef GEMM
+sdyn = alldyn[0].sdyn;
+alpha_f = sdyn->alpha_f;
+xsi     = sdyn->xsi;
+#endif
 
-/*---------------------------------------------------------------------*/
+/*----------------------------------------------------------B_bar format*/
+for(i=0;i<4;i++)
+ for(j=0;j<4;j++) 
+    int_stress[i][j] = 0.0;       
+       
+for(i=0; i<4; i++)
+  for(j=0; j<4; j++){
+#ifdef GEMM  
+  int_stress[i][j] = (1.0-alpha_f+xsi) * stress[i][j] + (alpha_f-xsi) * ele->e.w1->PK_history.a.d3[ip][i][j];    
+#else
+  int_stress[i][j] = stress[i][j];
+#endif
+  }   
+    
+st[0] = fac * int_stress[0][0];
+st[1] = fac * int_stress[1][1];
+st[2] = fac * int_stress[0][2];
+st[3] = fac * int_stress[0][2];
+    
 for(i=0; i<nd; i++)
-{
-  j=i+1;
-  fint[i] += boplin[0][i]*fs[0]+boplin[2][i]*fs[2];    /* even          */
-  fint[j] += boplin[1][j]*fs[1]+boplin[3][j]*fs[3];    /* odd           */
-}
-
+  for(j=0; j<4; j++)   
+    fint[i] += int_b_bar[j][i]*st[j];
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
