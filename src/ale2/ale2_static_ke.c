@@ -356,6 +356,9 @@ for (lr=0; lr<nir; lr++)
   }/*============================================== end of loop over ls */
 }/*================================================ end of loop over lr */
 /*----------------------------------------------------------------------*/
+/*----------------------------------------------------- local co-system */
+dsassert(ele->locsys==locsys_no,"locsys not implemented for this element!\n");
+
 end:
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -598,6 +601,8 @@ for (i=0; i<nd; i++)
    rhs[lm[i]] += fint[i];
 }
 /*----------------------------------------------------------------------*/
+/*----------------------------------------------------- local co-system */
+dsassert(ele->locsys==locsys_no,"locsys not implemented for this element!\n");
 end:
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -835,6 +840,8 @@ for (lr=0; lr<nir; lr++)
      ale2_keku(estif,bop,D,fac,nd,numeps);
   }/*============================================== end of loop over ls */
 }/*================================================ end of loop over lr */
+/*----------------------------------------------------- local co-system */
+dsassert(ele->locsys==locsys_no,"locsys not implemented for this element!\n");
 end:
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -969,6 +976,8 @@ switch (ele->distyp)
        dserror("unknown distyp in ale spring dynamic");
        break;
 }
+/*----------------------------------------------------- local co-system */
+dsassert(ele->locsys==locsys_no,"locsys not implemented for this element!\n");
 end:
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -1157,6 +1166,8 @@ for (lr=0; lr<nir; lr++)
   }/*============================================== end of loop over ls */
 }/*================================================ end of loop over lr */
 /*----------------------------------------------------------------------*/
+/*----------------------------------------------------- local co-system */
+dsassert(ele->locsys==locsys_no,"locsys not implemented for this element!\n");
 end:
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
