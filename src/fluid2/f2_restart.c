@@ -17,6 +17,19 @@ Maintainer: Steffen Genkinger
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #include "fluid2.h"
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
 /*!----------------------------------------------------------------------
 \brief file pointers
 
@@ -57,27 +70,37 @@ extern struct _PARTITION  *partition;
 void f2_write_restart(ELEMENT *actele, INT nhandle, long int *handles)
 {
 INT ierr;
+INT counter=1;
+FLUID_DYNAMIC   *fdyn;
 FILE *out;
 #ifdef DEBUG
 dstrc_enter("f2_write_restart");
 #endif
 /*----------------------------------------------------------------------*/
 /*
-   the only thing the fluid2 element has to write are the curvature
-   kappa at the free surface
+   fluid2 element has to write the curvature data at the free surface
+   and the stab parameter of the last time step.
+   
 */
 /*----------------------------------------------------------------------*/
+fdyn= alldyn[genprob.numff].fdyn;
 out = allfiles.out_pss;
 /*----------------------------------------------------------------------*/
 handles[0]=0;
-if (actele->e.f2->fs_on>0)
+handles[0]+=1;
+if (handles[0]+1 > nhandle) dserror("Handle range too small for element");
+/*--------------------------------------------------------- write kappa */
+if (fdyn->surftens>0 && actele->e.f2->fs_on>0)
 {
-   handles[0]+=1;
-   if (handles[0]+1 > nhandle) dserror("Handle range too small for element");
-   /*------------------------------------------------------ write kappa */
-   pss_write_array(&(actele->e.f2->kappa_ND),&(handles[1]),out,&ierr);
+   pss_write_array(&(actele->e.f2->kappa_ND),&(handles[counter]),out,&ierr);
    if (ierr != 1) dserror("Error writing restart data");
+   counter++;
 }
+/*----------------------------------------------------- write stab-par */
+pss_write_array(&(actele->e.f2->tau_old),&(handles[counter]),out,&ierr);
+if (ierr != 1) dserror("Error writing restart data");
+counter++;
+
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
 dstrc_exit();
@@ -105,31 +128,51 @@ void f2_read_restart(ELEMENT *actele, INT nhandle, long int *handles)
 {
 INT ierr;
 INT dims[3];
+INT          counter=1;
+FLUID_DYNAMIC   *fdyn;
 FILE *in;
 #ifdef DEBUG
 dstrc_enter("f2_read_restart");
 #endif
 /*----------------------------------------------------------------------*/
 /*
-   the only thing the fluid2 element has to read are the curvature
-   kappa at the free surface
+   fluid2 element has to read the curvature data at the free surface
+   and the stab parameter of the last time step.
+   
 */
 /*----------------------------------------------------------------------*/
-in = allfiles.in_pss;
+fdyn= alldyn[genprob.numff].fdyn;
+in  = allfiles.in_pss;
 if (!in) dserror("There is no restart input file open");
 /*----------------------------------------------------------------------*/
-if (actele->e.f2->fs_on>0)
+if (fdyn->surftens!=0 && actele->e.f2->fs_on>0)
 {
    /*-------------------------------------------- check dimensions kappa*/
-   pss_getdims_name_handle(actele->e.f2->kappa_ND.name,&dims[0],&dims[1],&dims[2],&handles[1],in,&ierr);
+   pss_getdims_name_handle(actele->e.f2->kappa_ND.name,&dims[0],&dims[1],
+                           &dims[2],&handles[counter],in,&ierr);
    if (ierr != 1) dserror("Cannot read restart data");
    if (actele->e.f2->kappa_ND.fdim != dims[0] ||
        actele->e.f2->kappa_ND.sdim != dims[1])
        dserror("Mismatch in reading element restart data");
-   /*-------------------------------------------------------- read alfa */
-   pss_read_array_name_handle(actele->e.f2->kappa_ND.name,&(actele->e.f2->kappa_ND),&handles[1],in,&ierr);
+   /*------------------------------------------------------- read kappa */
+   pss_read_array_name_handle(actele->e.f2->kappa_ND.name,
+      &(actele->e.f2->kappa_ND),&handles[counter],in,&ierr);
    if (ierr != 1) dserror("Cannot read restart data");
+   counter++;
 }
+/*-------------------------------------------- check dimensions tau_old */
+pss_getdims_name_handle(actele->e.f2->tau_old.name,&dims[0],&dims[1],
+                        &dims[2],&handles[counter],in,&ierr);
+if (ierr != 1) dserror("Cannot read restart data");
+if (actele->e.f2->tau_old.fdim != dims[0] ||
+    actele->e.f2->tau_old.sdim != dims[1])
+    dserror("Mismatch in reading element restart data");
+/*-------------------------------------------------------- read tau_old */
+pss_read_array_name_handle(actele->e.f2->tau_old.name,
+   &(actele->e.f2->tau_old),&handles[counter],in,&ierr);
+if (ierr != 1) dserror("Cannot read restart data");
+counter++;
+
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
 dstrc_exit();
