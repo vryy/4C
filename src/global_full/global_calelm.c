@@ -5,6 +5,8 @@
 #include "../wall1/wall1.h"
 #include "../brick1/brick1.h"
 #include "../fluid3/fluid3.h"
+#include "../ale3/ale3.h"
+#include "../ale2/ale2.h"
 /*----------------------------------------------------------------------*
  | enum _CALC_ACTION                                      m.gee 1/02    |
  | command passed from control routine to the element level             |
@@ -209,7 +211,12 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    case el_ale3:
 	ale3(actpart,actintra,actele,
         &estif_global,
-        action);
+        action,container);
+   break;
+   case el_ale2:
+	ale2(actpart,actintra,actele,
+        &estif_global,
+        action,container);
    break;
    case el_none:
       dserror("Typ of element unknown");
@@ -277,7 +284,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
       }   
    break;
    case ale:
-      dserror("not implemented yet!");
+   break;
    default:
       dserror("fieldtyp unknown!");
    }
@@ -426,12 +433,12 @@ if (is_fluid3==1)
 /*----------------------------------- init all kind of routines for ale */
 if (is_ale3==1)
 {
-   ale3(actpart,NULL,NULL,&estif_global,action);
+   ale3(actpart,NULL,NULL,&estif_global,action,container);
 }
 /*----------------------------------- init all kind of routines for ale */
 if (is_ale2==1)
 {
-   ale2(actpart,NULL,NULL,&estif_global,action);
+   ale2(actpart,NULL,NULL,&estif_global,action,container);
 }
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

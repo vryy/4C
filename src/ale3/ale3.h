@@ -131,7 +131,7 @@ void ale3_jaco(DOUBLE **deriv, DOUBLE **xjm, DOUBLE *det, ELEMENT *ele,
  | ale3_main.c                                                mn 06/02  |
  *----------------------------------------------------------------------*/
 void ale3(PARTITION *actpart, INTRA *actintra, ELEMENT *ele,
-	  ARRAY *estif_global, CALC_ACTION *action);
+	  ARRAY *estif_global, CALC_ACTION *action, CONTAINER *container);
 /*----------------------------------------------------------------------*
  | ale3_mat_linel.c                                           mn 06/02  |
  *----------------------------------------------------------------------*/

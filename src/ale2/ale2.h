@@ -74,7 +74,7 @@ void ale2_jaco(DOUBLE **deriv, DOUBLE **xjm, DOUBLE *det, ELEMENT *ele,
  | ale2_main.c                                                 mn 06/02  |
  *----------------------------------------------------------------------*/
 void ale2(PARTITION *actpart, INTRA *actintra, ELEMENT *ele,
-	  ARRAY *estif_global, CALC_ACTION *action);
+	  ARRAY *estif_global, CALC_ACTION *action, CONTAINER *container);
 /*----------------------------------------------------------------------*
  | ale2_mat_linel.c                                            mn 06/02  |
  *----------------------------------------------------------------------*/

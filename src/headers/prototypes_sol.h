@@ -1111,7 +1111,7 @@ void ale_calelm(FIELD *actfield, SOLVAR *actsolv, PARTITION *actpart,
  *----------------------------------------------------------------------*/
 void ale_rhs(FIELD *actfield, SOLVAR *actsolv, PARTITION *actpart,
              INTRA *actintra, int sysarray1, int sysarray2, double *dirich,
-             int global_numeq, int kstep, CALC_ACTION *action);
+             int global_numeq, int kstep, CONTAINER *container, CALC_ACTION *action);
 /*----------------------------------------------------------------------*
  | MLPCG prototypes                                        m.gee 09/02  |
  *----------------------------------------------------------------------*/

@@ -64,6 +64,7 @@ void ale_rhs(FIELD        *actfield,     /* active field */
             DOUBLE       *dirich,       /* global redundant vector of dirichlet forces */
             INT           global_numeq, /* size of dvec */
             INT           kstep,        /* time in increment step we are in */
+            CONTAINER    *container,
             CALC_ACTION  *action)       /* calculation option passed to element routines */
 /*----------------------------------------------------------------------*/
 {
@@ -238,12 +239,12 @@ for (i=0; i<actpart->pdis[0].numele; i++)
      case el_ale3:
 	ale3(actpart,actintra,actele,
         &estif_global,
-        action);
+        action,container);
      break;
      case el_ale2:
 	ale2(actpart,actintra,actele,
         &estif_global,
-        action);
+        action,container);
      break;
      case el_none:
         dserror("Typ of element unknown");

@@ -124,6 +124,7 @@ FIELD        *actfield;         /* pointer to the structural FIELD */
 INTRA        *actintra;         /* pointer to the fields intra-communicator structure */
 CALC_ACTION  *action;           /* pointer to the structures cal_action enum */
 STRUCT_DYNAMIC *sdyn;               /* pointer to structural dynamic input data */
+CONTAINER     container;        /* contains variables defined in container.h */
 
 ARRAY         dirich_a;         /* redundant vector of full length for dirichlet-part of rhs*/
 DOUBLE       *dirich;
@@ -133,10 +134,12 @@ SPARSE_TYP    array_typ;        /* type of psarse system matrix */
 dstrc_enter("dyn_ale");
 #endif
 /*----------------------------------------------------------------------*/
+container.isdyn = 0;            /* static calculation */
 /*------------ the distributed system matrix, which is used for solving */
 actsysarray=0;
 /*--------------------------------------------------- set some pointers */
 actfield    = &(field[0]);
+container.fieldtyp  = actfield->fieldtyp;
 actsolv     = &(solv[0]);
 actpart     = &(partition[0]);
 action      = &(calc_action[0]);
@@ -196,14 +199,14 @@ solserv_zero_mat(
 init_assembly(actpart,actsolv,actintra,actfield,actsysarray);
 /*------------------------------- init the element calculating routines */
 *action = calc_ale_init;
-dserror("Not yet changed to container-style");
-# if 0
-/* inconsistent with prototypes_sol.h due to container! */
-calinit(actfield,actpart,action);
-# endif 
+calinit(actfield,actpart,action,&container);
 /*------call element routines to calculate & assemble stiffness matrice */
 *action = calc_ale_stiff;
-ale_calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,action);
+container.dvec         = NULL;
+container.dirich       = NULL;
+container.global_numeq = 0;
+container.kstep        = 0;
+calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,&container,action);
 /*--------------------------------------- init all applied time curves */
 for (actcurve = 0;actcurve<numcurve;actcurve++)
    dyn_init_curve(actcurve,sdyn->nstep,sdyn->dt,sdyn->maxtime);   
@@ -232,7 +235,7 @@ amzero(&dirich_a);
 ale_setdirich(actfield,sdyn);
 /*------------------------------- call element-routines to assemble rhs */
 *action = calc_ale_rhs;
-ale_rhs(actfield,actsolv,actpart,actintra,actsysarray,-1,dirich,numeq_total,0,action);
+ale_rhs(actfield,actsolv,actpart,actintra,actsysarray,-1,dirich,numeq_total,0,&container,action);
 /*------------------------ add rhs from prescribed displacements to rhs */
 assemble_vec(actintra,&(actsolv->sysarray_typ[actsysarray]),
      &(actsolv->sysarray[actsysarray]),&(actsolv->rhs[actsysarray]),

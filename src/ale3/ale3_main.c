@@ -29,6 +29,7 @@ according to the action.
 \param *ele          ELEMENT     (i)   my element
 \param *estif_global ARRAY       (i)   global stiffness matrix
 \param *action       CALC_ACTION (i)   option passed to element
+\param *container    CONTAINER   (i/o) contains variables defined in container.h
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -39,7 +40,8 @@ void ale3(     PARTITION   *actpart,
                INTRA       *actintra,
                ELEMENT     *ele,
                ARRAY       *estif_global,
-               CALC_ACTION *action)
+               CALC_ACTION *action,
+               CONTAINER   *container)
 {
 #ifdef D_ALE
 INT  i;
