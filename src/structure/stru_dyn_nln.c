@@ -1221,6 +1221,7 @@ end:
 /*--------------------------------------------------- cleaning up phase */
 if (contactflag) amdel(&contactforce_a);
 amdel(&intforce_a);
+amdel(&dirich_a);
 solserv_del_vec(&(actsolv->rhs),actsolv->nrhs);
 solserv_del_vec(&(actsolv->sol),actsolv->nsol);
 solserv_del_vec(&dispi,1);

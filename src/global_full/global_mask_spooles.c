@@ -529,6 +529,7 @@ for (i=0; i<numeq; i++)
    qsort((INT*)(&(dof_connect[dof][3])), dof_connect[dof][0]-3, sizeof(INT), cmp_int);
 }
 /*----------------------------------------------------------------------*/
+CCAFREE(node_dof);
 amdel(&dofpatch);
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

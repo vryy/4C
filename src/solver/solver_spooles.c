@@ -566,8 +566,15 @@ if (spo->is_factored==0)
    }
    IV_fill(spo->vtxmapIV, 0);
    firsttag++ ;
-   spo->mtxX = DenseMtx_MPI_splitByRows(spo->mtxX,spo->vtxmapIV,stats,msglvl,msgFile,
-                                   firsttag,actintra->MPI_INTRA_COMM);
+      {
+        DenseMtx* mtxX;
+        /*spo->mtxX = DenseMtx_MPI_splitByRows(spo->mtxX,spo->vtxmapIV,stats,msglvl,msgFile,
+          firsttag,actintra->MPI_INTRA_COMM);*/
+        mtxX = DenseMtx_MPI_splitByRows(spo->mtxX,spo->vtxmapIV,stats,msglvl,msgFile,
+                                        firsttag,actintra->MPI_INTRA_COMM);
+        DenseMtx_free(spo->mtxX);
+        spo->mtxX = mtxX;
+      }
    /* put complete solution to recv on proc 0 */
    if (imyrank==0)
    {
