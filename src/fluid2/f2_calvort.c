@@ -182,7 +182,7 @@ for (lr=0;lr<nir;lr++)
       }/*end of switch(typ) */
 
 /*--------------------------------------------- compute Jacobian matrix */
-      f2_jaco2(xyze,funct,deriv,xjm,&det,iel,ele);
+      f2_jaco2(xyze,deriv,xjm,&det,iel);
 /*--------------------------------- compute global derivative ----------*/
       f2_gder(derxy,deriv,xjm,det,iel);
 /*-------- compute velocity derivatives at integration points ----------*/
