@@ -261,7 +261,7 @@ void fluid_mlcaldirich(
 /************************************************************************
  | fluid_normal.c                                                       |
  ************************************************************************/
-void fluid_cal_normal(FIELD *actfield, FLUID_DYNAMIC *fdyn, INT init,
+void fluid_cal_normal(FIELD *actfield, INT init,
                       CALC_ACTION *action         );
 
 /************************************************************************

@@ -21,6 +21,19 @@ Maintainer: Steffen Genkinger
 #include "../fluid2/fluid2.h"
 #include "../fluid3/fluid3.h"
 /*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+/*----------------------------------------------------------------------*
  |                                                        genk 04/04    |
  | number of local co-ordinate systems                                  |
  | vector of structures of local co-ordinate systems                    |
@@ -41,7 +54,7 @@ extern struct _LOCSYS *locsys;
 \return void 
 
 ------------------------------------------------------------------------*/
-void fluid_cal_normal(FIELD *actfield, FLUID_DYNAMIC *fdyn, INT init,
+void fluid_cal_normal(FIELD *actfield, INT init,
                       CALC_ACTION *action         ) 
 {
 INT         i,j,l;       /* simply some counters */
@@ -59,12 +72,13 @@ INT         ngline;        /* number of glines */
 GLINE      *actgline;      /* the actual gline */
 #endif
 LOCSYS     *actlocsys;     /* the actual local co-system xzy* */
-
+FLUID_DYNAMIC *fdyn; 
 
 #ifdef DEBUG 
 dstrc_enter("fluid_cal_normal");
 #endif
 
+fdyn = alldyn[genprob.numff].fdyn;
 numele_total=actfield->dis[0].numele;
 numnp_total=actfield->dis[0].numnp;
 
@@ -99,6 +113,7 @@ if (init==1) /* initialise and calculate initial normal */
          }
       }
 #ifdef D_FSI
+#ifdef D_FLUID2
       if (actele->e.f2->fs_on==6) /* generalised free surface */
       {
          ngline=actele->g.gsurf->ngline;
@@ -118,6 +133,7 @@ if (init==1) /* initialise and calculate initial normal */
             }                        
          }
       }   
+#endif
 #endif
    }
 }
