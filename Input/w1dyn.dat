@@ -4,7 +4,7 @@
 //             http://www.uni-stuttgart.de/ibs/members/hund/
 //             0711 - 685-6122
 // 
-// necessary defines: D_WALL1
+// necessary defines: D_WALL1 RESULTTEST
 //
 // #define MAXNOD           (9)
 // #define MAXELE           (9)
@@ -272,5 +272,10 @@ CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.6 3.01 FACTOR 0.0 0.0
 ------------------------------------------------------------CURVE3
 ------------------------------------------------------------CURVE4
 ------------------------------------------------------------CURVE5
+------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS 1 NODE 1 POSITION sol(1,1) NAME ux VALUE -0.1063138052975246 TOLERANCE 1e-9
+STRUCTURE DIS 1 NODE 1 POSITION sol(1,2) NAME uy VALUE 0.0929774123822898 TOLERANCE 1e-9
+STRUCTURE DIS 1 NODE 2 POSITION sol(1,1) NAME ux VALUE -0.1531031480164950 TOLERANCE 1e-9
+STRUCTURE DIS 1 NODE 2 POSITION sol(1,2) NAME uy VALUE -0.0003093427447209 TOLERANCE 1e-9
 ---------------------------------------------------------------END
 // END
