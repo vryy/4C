@@ -41,10 +41,12 @@ INT            pos;          /*<! sol_increment[pos] contains dbc in ale */
 #ifdef D_FLUID               /*!< ab hier fuer fluid */ 
 DOUBLE        *ftimerhs;       
 DOUBLE        *fiterhs;
+DOUBLE        *liftdrag;
 DOUBLE        *fidrichrhs;   /*!< for storing the pressure rhs values */
 DOUBLE        *ftimerhs_pro;
 INT            nii;
 INT            nif;
+INT            nim;
 struct _DBCSR *gradmatrix;   /*!< gradient matrix Projection Method */
 struct _DBCSR *lumpedmass;   /*!< gradient matrix Projection Method */
 INT            turbu;
