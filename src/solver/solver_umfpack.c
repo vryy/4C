@@ -125,9 +125,6 @@ case 0:
        control [UMFPACK_PRL] = 5 ;
 #endif
 
-/*       printf ("\nA: ") ;
-       (void) umfpack_di_report_matrix (n, n, Ap, Ai, Ax, 1, control) ;
-*/
        /* symbolic factorization */
        status = umfpack_di_symbolic (n, n, Ap, Ai, &symbolic, control, info);
 #ifdef DEBUG 
