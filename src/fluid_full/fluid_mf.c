@@ -74,7 +74,7 @@ int             actcurve;     /* actual curve                           */
 static FIELD          *fluidfield;   
 static FIELD          *alefield;
 static FLUID_DYNAMIC  *fdyn;
-static STRUCT_DYNAMIC *adyn;
+static ALE_DYNAMIC    *adyn;
 static FSI_DYNAMIC    *fsidyn;
 
 #ifdef DEBUG 
@@ -107,7 +107,7 @@ dsassert(alefield->fieldtyp==ale,"FIELD 1 has to be ale\n");
  *======================================================================*/
 mctrl=1;
 fdyn= alldyn[numff].fdyn;
-adyn= alldyn[numaf].sdyn;
+adyn= alldyn[numaf].adyn;
 fsidyn=alldyn[numaf+1].fsidyn;
 fsidyn->time=ZERO;
 fsidyn->step=0;
