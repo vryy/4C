@@ -66,14 +66,14 @@ dstrc_enter("opt_calsta");
 #endif
 /*----------------------------------------------------------------------*/
 
-if (statvar->geolinear==1 && statvar->geononlinear==1)
+if (statvar->linear==1 && statvar->nonlinear==1)
    dserror("linear and nonlinear static analysis on");
    
-if (statvar->geolinear==1) 
+if (statvar->linear==1) 
 {
    opt_stalin(stalact);
 }
-if (statvar->geononlinear==1) 
+if (statvar->nonlinear==1) 
 {
   /* stanln(); */
 }

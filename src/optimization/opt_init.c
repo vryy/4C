@@ -90,7 +90,7 @@ MATERIAL    *actmat;
   *action = calc_struct_opt_init;
   calinit(actfield,actpart,action,&container);
 /*------------------------------------------------ initialize solver ---*/
-  if (statvar->geolinear==1) 
+  if (statvar->linear==1) 
   {
     opt_calsta(calsta_init);
   }

@@ -293,10 +293,21 @@ frfind("-STATIC");
 frread();
 while(strncmp(allfiles.actplace,"------",6)!=0)
 {
-   frchk("GEOLINEAR",&ierr);
-   if (ierr==1) {statvar->geolinear=1;statvar->geononlinear=0;}
-   frchk("GEONONLINEAR",&ierr);
-   if (ierr==1) {statvar->geononlinear=1;statvar->geolinear=0;}
+   frchk("LINEAR",&ierr);
+   if (ierr==1) {statvar->linear=1;statvar->nonlinear=0;}
+   frchk("NONLINEAR",&ierr);
+   if (ierr==1) {statvar->nonlinear=1;statvar->linear=0;}
+   /*------------------------- read for typ of kinematic sh 03/03 */   
+   frchar("KINTYP",buffer,&ierr);
+   if (ierr==1)
+   {
+      if (strncmp(buffer,"Geo_Lin",7)==0) 
+      statvar->kintyp = geo_linear;
+      if (strncmp(buffer,"Upd_Lagr",8)==0)
+      statvar->kintyp = upd_lagr;
+      if (strncmp(buffer,"Tot_Lagr",8)==0)
+      statvar->kintyp = tot_lagr;
+   }
    /*------------------------- read for typ of pathfollowing technique */   
    frchar("NEWTONRAPHSO",buffer,&ierr);
    if (ierr==1)
@@ -339,8 +350,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frread();
 }
 frrewind();
-/*------------------------------ in geononlinear case find control node */
-if (statvar->geononlinear)
+/*--------------------------------- in nonlinear case find control node */
+if (statvar->nonlinear)
 {
    /*---------------------------------------------------- start reading */
    frfind("-CONTROL NODE");
