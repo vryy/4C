@@ -114,7 +114,7 @@ void ls2(
   );
 
 
-void ls2_init();
+void ls2_init(void);
 
 
 void ls2_calc(
@@ -184,7 +184,7 @@ void ls_setdirich(
 
 
 /* ls_dyn.c */
-void ls_dyn();
+void ls_dyn(void);
 
 
 /* ls_fluid.c */
@@ -193,16 +193,16 @@ void ls_fluid(
   );
 
 
-void ls_fluid_init();
+void ls_fluid_init(void);
 
 
-void ls_fluid_solv();
+void ls_fluid_solv(void);
 
 
-void ls_fluid_fina();
+void ls_fluid_fina(void);
 
 
-void ls_fluid_clea();
+void ls_fluid_clea(void);
 
 
 /* ls_init.c */
@@ -291,16 +291,16 @@ void ls_levelset(
   );
 
 
-void ls_levelset_init();
+void ls_levelset_init(void);
 
 
-void ls_levelset_solv();
+void ls_levelset_solv(void);
 
 
-void ls_levelset_fina();
+void ls_levelset_fina(void);
 
 
-void ls_levelset_clea();
+void ls_levelset_clea(void);
 
 
 /* ls_update.c */
@@ -314,10 +314,10 @@ void ls_update(
   );
 
 
-void ls_initialize();
+void ls_initialize(void);
 
 
-void ls_updt();
+void ls_updt(void);
 
 
 void ls_construct(
@@ -371,16 +371,16 @@ void ls_makepatch(
   );
 
 
-void ls_activate();
+void ls_activate(void);
 
 
-void ls_write();
+void ls_write(void);
 
 
-void ls_write_soln();
+void ls_write_soln(void);
 
 
-void ls_reset();
+void ls_reset(void);
 
 
 void ls_resetintdata(
@@ -393,7 +393,7 @@ void ls_resetpolydata(
   );
 
 
-void ls_finalize();
+void ls_finalize(void);
 
 
 void ls_printelinfo(
@@ -416,10 +416,10 @@ void ls_printnodeinfo_to_file(
   );
 
 
-void ls_setdata();
+void ls_setdata(void);
 
 
-void ls_printelements();				 
+void ls_printelements(void);				 
 
 
 void ls_printelement(
@@ -427,10 +427,10 @@ void ls_printelement(
   );
 
 
-void ls_localize();
+void ls_localize(void);
 
 
-void ls_to_matlab();									  
+void ls_to_matlab(void);									  
 
 
 void ls_polygon_con(
@@ -440,17 +440,17 @@ void ls_polygon_con(
   );
 
 
-void ls_polygonize();
+void ls_polygonize(void);
 
 
-void ls_init_material();
+void ls_init_material(void);
 
 
-void ls_updt_material();
+void ls_updt_material(void);
 
 
-void ls_check_profile();
+void ls_check_profile(void);
 
-void ls_init_pres_bd();
+void ls_init_pres_bd(void);
 /*! @} (documentation module close)*/	    
 #endif

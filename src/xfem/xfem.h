@@ -36,7 +36,7 @@ typedef enum _XFEMPOLYFLAG
       xfem_poly_computeGP,
       xfem_poly_write,
       xfem_poly_open,
-      xfem_poly_close,      
+      xfem_poly_close
 } XFEMPOLYFLAG;
 /*! @} (documentation module close)*/
 

@@ -248,10 +248,10 @@ void xfem_f2_calele(
   );
 
 
-void xfem_f2_loc_con();
+void xfem_f2_loc_con(void);
 
 
-void xfem_f2_loc_ass_tangent();
+void xfem_f2_loc_ass_tangent(void);
 
 
 void xfem_f2_loc_ass_intforce(
@@ -260,7 +260,7 @@ void xfem_f2_loc_ass_intforce(
   );
 
 
-void xfem_f2_array_init();
+void xfem_f2_array_init(void);
 
 
 void xfem_f2_init(
@@ -268,7 +268,7 @@ void xfem_f2_init(
   );
 
 
-void xfem_f2_iand();
+void xfem_f2_iand(void);
 
 
 /* xfem_f2_calelesize.c */
@@ -482,16 +482,16 @@ void xfem_polygon_compGP(
   );
 
 
-void xfem_polygon_funct();
+void xfem_polygon_funct(void);
 
 
-void xfem_polygon_deriv();
+void xfem_polygon_deriv(void);
 
 
-void xfem_polygon_resNewton();
+void xfem_polygon_resNewton(void);
 
 
-void xfem_polygon_tanNewton();
+void xfem_polygon_tanNewton(void);
 
 
 void xfem_polygon_write(
@@ -499,13 +499,13 @@ void xfem_polygon_write(
   );
 
 
-void xfem_polygon_open();
+void xfem_polygon_open(void);
 
 
-void xfem_polygon_close();
+void xfem_polygon_close(void);
 
 
-void xfem_polygon_area_rect();
+void xfem_polygon_area_rect(void);
 
 
 DOUBLE xfem_polygon_area_subtri(
@@ -513,10 +513,10 @@ DOUBLE xfem_polygon_area_subtri(
   );
 
 
-DOUBLE xfem_polygon_area_tri();
+DOUBLE xfem_polygon_area_tri(void);
 
 
-void xfem_polygon_target_tri();
+void xfem_polygon_target_tri(void);
 
 
 void xfem_polygon_target_subtri(
