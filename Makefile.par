@@ -31,7 +31,7 @@ FXX=/opt/mpi/bin/mpif90
 CCX=/opt/mpi/bin/mpicc 
 LDX=/opt/mpi/bin/mpicc 
 PFL= -DPARALLEL -DD_SHELL8 -DD_FLUID3 -DD_ALE -DD_BRICK1 -DD_WALL1 \
-     -DAZTEC_PACKAGE -DSPOOLES_PACKAGE 
+     -DSPOOLES_PACKAGE 
 #PFL= -DPARALLEL -DD_SHELL8 -DD_FLUID3 -DD_ALE -DD_BRICK1 \
 #     -DPARSUPERLU_PACKAGE -DHYPRE_PACKAGE -DAZTEC_PACKAGE -DMUMPS_PACKAGE
 #
@@ -80,6 +80,7 @@ MPILIB        = -L/opt/mlib/lib/pa2.0
 #SUPLU         = 
 ##SUPLU         = -lsuperlu_par64
 #MUMPS         = -lblacs_MPI-HPPA-0_par_64 -lblacsCinit_MPI-HPPA-0_par_64 -lblacsF77init_MPI-HPPA-0_par_64 -lscalapack_par_64 -lmumps_par_64
+#SPOOLES       = -lspoolesMPI_64  -lspooles_64 
 #FORTLIBS      = -L/opt/fortran90/lib/pa20_64 -lF90 -L/opt/fortran90/lib/pa20_64  -lU77 
 #MPILIB        = -L/opt/mlib/lib/pa20_64
 #------------------------------------------------- this is fast-64bit
@@ -93,6 +94,7 @@ MPILIB        = -L/opt/mlib/lib/pa2.0
 ##SUPLU         = -lsuperlu_par64
 #SUPLU         = 
 #MUMPS         = -lblacs_MPI-HPPA-0_par_64 -lblacsCinit_MPI-HPPA-0_par_64 -lblacsF77init_MPI-HPPA-0_par_64 -lscalapack_par_64 -lmumps_par_64
+#SPOOLES       = -lspoolesMPI_64  -lspooles_64 
 #FORTLIBS      = -L/opt/fortran90/lib/pa20_64 -lF90 -L/opt/fortran90/lib/pa20_64  -lU77 
 #MPILIB        = -L/opt/mlib/lib/pa20_64
 #--------------------------------------------------------------------
