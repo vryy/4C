@@ -245,7 +245,8 @@ for (i=0; i<ngline; i++)
    gline[i] = ele->g.gsurf->gline[i];
    lineneum[i] = gline[i]->neum;
    if (lineneum[i]==NULL) continue;
-   if (lineneum[i]->neum_type==neum_FSI) lineneum[i]=NULL;
+   if (lineneum[i]->neum_type == neum_SSI || lineneum[i]->neum_type == neum_FSI)
+     lineneum[i]=NULL;
    if (lineneum[i]) foundline=1;
 }
 if (foundline==0) goto endline;
