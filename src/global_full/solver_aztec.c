@@ -262,17 +262,24 @@ for (i=0; i<dim; i++) *(dto++) = 0.0;
 /*--------------------------------------------- check the reuse feature */
 msr_array->data_org[AZ_name]=azname;
 /*---------------------------------------------------------- first call */
+/* 
+ * reuse feature funktioniert nicht beim problemtype ALE
+ *--------------------------------------------------------------------- */
+/*
 if (msr_array->ncall==0)
 {
    msr_array->options[AZ_pre_calc]  = AZ_calc;
    msr_array->options[AZ_keep_info] = 1;
 }
+*/
 /*------------------------------------------------------ not first call */
+/*
 else
 {
    if (msr_array->is_factored==0) 
    {
       msr_array->options[AZ_pre_calc] = AZ_recalc;
+      msr_array->options[AZ_keep_info] = 1;
    }
    else                           
    {
@@ -280,6 +287,7 @@ else
       msr_array->options[AZ_keep_info] = 1;
    }
 }
+*/
 /*--------------------------------------------------------- call solver */
 AZ_iterate(
            tmpsol,
