@@ -317,10 +317,13 @@ void xfem_f2_loc_ass_tangent()
       cnt--;
     }
   }
-  /* check */
-  if (myls2->e.ls2->is_elcut==0 && cnt!=0 ||
-      myls2->e.ls2->is_elcut==1 && cnt!=cnt1)
-    dserror("error in local assembly!");
+  if (genprob.xfem_on_off==1)
+  {
+    /* check */
+    if (myls2->e.ls2->is_elcut==0 && cnt!=0 ||
+        myls2->e.ls2->is_elcut==1 && cnt!=cnt1)
+      dserror("error in local assembly!");
+  }
   
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
