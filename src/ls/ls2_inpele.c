@@ -87,6 +87,7 @@ void ls2inp(
   ele->e.ls2->prncnt   = 0;
   ele->e.ls2->rstcnt   = 0;
   ele->e.ls2->is_sedge_set = 0;
+  ele->e.ls2->is_el_junction = 0;
   /*ele->e.ls2->intdata = (LS_INT_DATA*)CCACALLOC(2,sizeof(LS_INT_DATA));
   ele->e.ls2->polydata = (LS_POLY_DATA*)CCACALLOC(2,sizeof(LS_POLY_DATA));
   */

@@ -21,6 +21,10 @@ Maintainer: Baris Irhan
 
 
 
+extern struct  _LS_DYNAMIC    *lsdyn;
+
+
+
 static  LS_INT_DATA  *intdata;
 static  LS_POLY_DATA *polydata;
 static  DOUBLE       *pstart;
@@ -606,59 +610,59 @@ void xfem_polygon_compGP(
 
   switch (typ)
   {
-      case tri3:
-        /* initialize */
-        GP[0] = 0.0;
-        GP[1] = 0.0;
-        /* compute */
-        xyze_subp[0][0] = xtarget[0];
-        xyze_subp[1][0] = xtarget[1];
-        for (j=0; j<2; j++)
-        {
-          nd1 = node_to_node_tri[0][j];
-          nd2 = node_to_node_tri[1][j];
-          xyze_subp[0][1] = xyze[0][nd1-1];
-          xyze_subp[1][1] = xyze[1][nd1-1];
-          xyze_subp[0][2] = xyze[0][nd2-1];
-          xyze_subp[1][2] = xyze[1][nd2-1];
-          area = xfem_polygon_area_tri();
-          GP[j] = area/atri;
-        }
-        break;
-      case quad4:
-        /* initial guess */
-        GP[0] = 0.0;
-        GP[1] = 0.0;
-        /* START Newton iteration */
-        for (ii=0; ii<nitnmax; ii++)
-        {
-          /* evaluate shape functions at GP */
-          xfem_polygon_funct();
-          /* evaluate derivative of shape functions at GP */
-          xfem_polygon_deriv();
-          /* compute residuum */
-          xfem_polygon_resNewton();
-          /* check norm of the residuum */
-          if (sqrt(R[0]*R[0]+R[1]*R[1])<tol) return;
-          /* compute tangent */
-          xfem_polygon_tanNewton();
-          /* compute determinant of A */
-          det = A[0][0]*A[1][1] - A[1][0]*A[0][1];
-          /* update GP */
-          GP[0] = GP[0] - ( A[1][1]*R[0] - A[0][1]*R[1])/det;
-          GP[1] = GP[1] - (-A[1][0]*R[0] + A[0][0]*R[1])/det;
-        }
-        /* END Newton iteration */
-        break;
-      default:
-        dserror("typ unknown!");
+  case tri3:
+    /* initialize */
+    GP[0] = 0.0;
+    GP[1] = 0.0;
+    /* compute */
+    xyze_subp[0][0] = xtarget[0];
+    xyze_subp[1][0] = xtarget[1];
+    for (j=0; j<2; j++)
+    {
+      nd1 = node_to_node_tri[0][j];
+      nd2 = node_to_node_tri[1][j];
+      xyze_subp[0][1] = xyze[0][nd1-1];
+      xyze_subp[1][1] = xyze[1][nd1-1];
+      xyze_subp[0][2] = xyze[0][nd2-1];
+      xyze_subp[1][2] = xyze[1][nd2-1];
+      area = xfem_polygon_area_tri();
+      GP[j] = area/atri;
+    }
+    break;
+  case quad4:
+    /* initial guess */
+    GP[0] = 0.0;
+    GP[1] = 0.0;
+    /* START Newton iteration */
+    for (ii=0; ii<nitnmax; ii++)
+    {
+      /* evaluate shape functions at GP */
+      xfem_polygon_funct();
+      /* evaluate derivative of shape functions at GP */
+      xfem_polygon_deriv();
+      /* compute residuum */
+      xfem_polygon_resNewton();
+      /* check norm of the residuum */
+      if (sqrt(R[0]*R[0]+R[1]*R[1])<tol) goto end;
+      /* compute tangent */
+      xfem_polygon_tanNewton();
+      /* compute determinant of A */
+      det = A[0][0]*A[1][1] - A[1][0]*A[0][1];
+      /* update GP */
+      GP[0] = GP[0] - ( A[1][1]*R[0] - A[0][1]*R[1])/det;
+      GP[1] = GP[1] - (-A[1][0]*R[0] + A[0][0]*R[1])/det;
+    }
+    /* END Newton iteration */
+    break;
+  default:
+    dserror("typ unknown!");
   }
 
 /*----------------------------------------------------------------------*/
+end:
 #ifdef DEBUG
   dstrc_exit();
 #endif
-
   return;
 } /* end of xfem_polygon_compGP */
 
@@ -844,6 +848,12 @@ void xfem_polygon_write(
 #endif
 /*----------------------------------------------------------------------*/
 
+  /* check */
+  if (lsdyn->lsdata->print_to_file_on_off!=1)
+  {
+    dserror("lsdyn->lsdata->print_to_file_on_off!=1!");
+  }
+
   /* write element nodal coordinate data */
   for (i=0; i<2; i++)
   {
@@ -908,7 +918,7 @@ void xfem_polygon_write(
   {
     for (j=0; j<7; j++)
     {
-      fprintf(f06,"%10.5E  ",polygonmat[i][j]);
+      fprintf(f06,"%d  ",polygonmat[i][j]);
     }
     fprintf(f06,"\n");
   }
@@ -938,6 +948,12 @@ void xfem_polygon_open()
   dstrc_enter("xfem_polygon_open");
 #endif
 /*----------------------------------------------------------------------*/
+
+  /* check */
+  if (lsdyn->lsdata->print_to_file_on_off!=1)
+  {
+    dserror("lsdyn->lsdata->print_to_file_on_off!=1!");
+  }
 
   /* open files to write polygon information */
   f01 = fopen("src/ls/to_matlab/xfem_to_matlab/xfem_to_matlab_xyze","w");
@@ -971,6 +987,12 @@ void xfem_polygon_close()
   dstrc_enter("xfem_polygon_close");
 #endif
 /*----------------------------------------------------------------------*/
+
+  /* check */
+  if (lsdyn->lsdata->print_to_file_on_off!=1)
+  {
+    dserror("lsdyn->lsdata->print_to_file_on_off!=1!");
+  }
 
   /* close the files */
   fclose(f01);

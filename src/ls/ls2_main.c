@@ -46,6 +46,8 @@ extern struct _MATERIAL     *mat;
 extern         ALLDYNA      *alldyn;
 
 
+extern struct _LS_DYNAMIC   *lsdyn;      /* ls dynamic variables                */
+
 
 static ARRAY               lset00_a;
 static DOUBLE             *lset00;       /* element nodal values at (n)         */
@@ -69,18 +71,16 @@ static DOUBLE            **estif;        /* pointer to element tangent matrix   
 static DOUBLE            **emass;        /* pointer to element mass matrix      */
 static DOUBLE             *etforce;      /* pointer to Time RHS                 */
 static DOUBLE             *eiforce;      /* pointer to Iteration RHS            */
-static INT                 algo;	 /* treatment of velocity (exp. or imp.)*/
 static DOUBLE	           thdt;	 /* (  theta)*dt	  		*/
 static DOUBLE              thdt1;	 /* (1-theta)*dt 			*/
 static DOUBLE              epsilon;	 /* smoothing parameter			*/
-static LS_DYNAMIC         *lsdyn;        /* pointer to dynamic control struct   */
 static LS2_INTG_DATA      *data;         /* integration data                    */
 
 
 
 static INT                 nlayer;
 static INT                 is_elcut;
-static INT                 iand[4];      /* index vector of active nodes        */
+
 
 
 /*!----------------------------------------------------------------------
@@ -99,17 +99,18 @@ void ls2(
   ARRAY       *emass_global,
   ARRAY       *etforce_global,
   ARRAY       *eiforce_global,
-  CALC_ACTION *action
+  CALC_ACTION *action,
+  CONTAINER   *container
   )
 {
 #ifdef DEBUG
   dstrc_enter("ls2");
 #endif
 /*----------------------------------------------------------------------*/
-
   switch (*action)
   {
       case calc_ls_init:                /* initialize */
+
         estif   = estif_global->a.da;
         emass   = emass_global->a.da;
         eiforce = eiforce_global->a.dv;
@@ -118,13 +119,34 @@ void ls2(
         ls2_init();
 
         break;
+
       case calc_ls:                     /* calculate element contributions */
+
         amzero(estif_global);
         amzero(emass_global);
         amzero(eiforce_global);
         amzero(etforce_global);
 
         ls2_calc(ele);
+
+        break;
+
+      case write_restart:               /* write element data */
+
+        ls2_write_restart(
+          ele,
+          container->handsize,
+          container->handles
+          );
+
+        break;
+      case read_restart:                /* read element data */
+
+        ls2_read_restart(
+          ele,
+          container->handsize,
+          container->handles
+          );
 
         break;
       default:
@@ -169,10 +191,6 @@ void ls2_init()
   if (genprob.numls==-1)
     dserror("\n**ERROR** there is no levelset field initialized!\n");
 
- end:
-  /* set lsdyn */
-  lsdyn = alldyn[genprob.numls].lsdyn;
-
   /* smoothing parameter for the computation of sign function */
   epsilon = lsdyn->lsdata->epsilon;
 
@@ -215,23 +233,61 @@ void ls2_calc(
   /* set is_elcut */
   is_elcut = ele->e.ls2->is_elcut;
 
-  if (lsdyn->lsdata->reinitflag==1)
+  /* compute element contributions */
+  switch (lsdyn->lsdata->ls2_calc_flag)
   {
+  case ls2_advection:
+
     if (lsdyn->lsdata->localization==1 && nlayer==0)
+    {
       ls2_calc_localized(ele);
+    }
     else
-      ls2_calc_reinitialized(ele);
-  }
-  else
-  {
+    {
+      ls2_calc_advection(ele);
+    }
+    break;
+
+  case ls2_reinitialization:
+
     if (lsdyn->lsdata->localization==1 && nlayer==0)
+    {
       ls2_calc_localized(ele);
+    }
     else
-      ls2_calc_nonlocalized(ele);
+    {
+      ls2_calc_reinitialization(ele);
+    }
+    break;
+
+  case ls2_gradient:
+
+    if (nlayer==1 || nlayer==2)
+    {
+      ls2_calc_gradient(ele);
+    }
+    else
+    {
+      ls2_calc_localized(ele);
+    }
+    break;
+
+  case ls2_curvature:
+
+    if (nlayer==1 || nlayer==2)
+    {
+      ls2_calc_curvature(ele);
+    }
+    else
+    {
+      ls2_calc_localized(ele);
+    }
+    break;
+  default:
+    dserror("action unknown\n");
   }
 
 /*----------------------------------------------------------------------*/
- end:
 #ifdef DEBUG
   dstrc_exit();
 #endif
@@ -249,7 +305,7 @@ compute element contributions to tangent and internal force vector
 </pre>
 
 *----------------------------------------------------------------------*/
-void ls2_calc_nonlocalized(
+void ls2_calc_advection(
   ELEMENT* ele
   )
 {
@@ -270,7 +326,7 @@ void ls2_calc_nonlocalized(
   DOUBLE      velnorm=0.0;
 
 #ifdef DEBUG
-  dstrc_enter("ls2_calc_nonlocalized");
+  dstrc_enter("ls2_calc_advection");
 #endif
 /*----------------------------------------------------------------------*/
 
@@ -411,8 +467,8 @@ void ls2_calc_nonlocalized(
           for (k=0; k<2; k++)
             emass[i][j] += tau*velGP[k]*derxy[k][i]*funct[j]*fac;
       /*
-      /* => TANGENT matrix
-      /*
+       * => TANGENT matrix
+       *
        * contribution due to Galerkin part
        */
       for (i=0; i<iel; i++)
@@ -444,7 +500,7 @@ void ls2_calc_nonlocalized(
 #endif
 
   return;
-} /* end of ls2_calc_nonlocalized */
+} /* end of ls2_calc_advection */
 
 
 
@@ -458,7 +514,7 @@ for re-initialization problem
 </pre>
 
 *----------------------------------------------------------------------*/
-void ls2_calc_reinitialized(
+void ls2_calc_reinitialization(
   ELEMENT* ele
   )
 {
@@ -485,7 +541,7 @@ void ls2_calc_reinitialized(
   INT         locid;
 
 #ifdef DEBUG
-  dstrc_enter("ls2_calc_reinitialized");
+  dstrc_enter("ls2_calc_reinitialization");
 #endif
 /*----------------------------------------------------------------------*/
 
@@ -592,7 +648,7 @@ void ls2_calc_reinitialized(
           for (k=0; k<2; k++)
             gradnorm += derxy[k][i]*derxy[k][j]*lset00[i]*lset00[j];
       gradnorm = sqrt(gradnorm);
-      /* normal */
+      /* compute normal */
       for (i=0; i<2; i++)
         for (j=0; j<iel; j++)
           normal[i] += derxy[i][j]*lset00[j]/gradnorm;
@@ -618,8 +674,8 @@ void ls2_calc_reinitialized(
         if (velnorm!=0.0) tau = 0.5*sqrt(area)/velnorm;
       }
       /*
-      /* MASS matrix */
-      /*
+       * MASS matrix
+       *
        * contribution due to Galerkin part
        */
       for (i=0; i<iel; i++)
@@ -633,8 +689,8 @@ void ls2_calc_reinitialized(
           for (k=0; k<2; k++)
             emass[i][j] += tau*velGP[k]*derxy[k][i]*funct[j]*fac;
       /*
-      /* TANGENT matrix */
-      /*
+       * TANGENT matrix
+       *
        * contribution due to Galerkin part
        */
       for (i=0; i<iel; i++)
@@ -650,31 +706,40 @@ void ls2_calc_reinitialized(
             for (l=0; l<2; l++)
               estif[i][j] += thdt*tau*velGP[k]*velGP[l]*derxy[k][i]*derxy[l][j]*fac;
       /*
-      /* SOURCE term
+       * SOURCE term
        */
       /*
        * contribution due to Galerkin part
        */
       for (i=0; i<iel; i++)
-        fs[i] -= sign*funct[i]*fac;
+        fs[i] += sign*funct[i]*fac;
       /*
        * contribution due to stabilization
        */
         for (i=0; i<iel; i++)
           for (j=0; j<2; j++)
-            fs[i] -= tau*sign*velGP[j]*derxy[j][i]*fac;
+            fs[i] += tau*sign*velGP[j]*derxy[j][i]*fac;
     }
   }
   /* TIME right hand side */
   for (i=0; i<iel; i++)
+  {
+    etforce[i] += thdt1*fs[i];
     for (j=0; j<iel; j++)
-      etforce[i] += emass[i][j]*lset00[j] - thdt1/thdt*estif[i][j]*lset00[j]
-                                          - thdt1*fs[i];
+    {
+      etforce[i] += emass[i][j]*lset00[j] - thdt1/thdt*estif[i][j]*lset00[j];
+
+    }
+  }
   /* ITERATION right hand side */
   for (i=0; i<iel; i++)
+  {
+    eiforce[i] += thdt*fs[i];
     for (j=0; j<iel; j++)
-      eiforce[i] += -emass[i][j]*lset01[j] - estif[i][j]*lset01[j]
-                                           - thdt*fs[i];
+    {
+      eiforce[i] += -emass[i][j]*lset01[j] - estif[i][j]*lset01[j];
+    }
+  }
   /* ANCHOR the interface so that it can not move during reinitialization */
   if (lsdyn->lsdata->anchor == 1)
   {
@@ -723,7 +788,162 @@ void ls2_calc_reinitialized(
 #endif
 
   return;
-} /* end of ls2_calc_reinitialized */
+} /* end of ls2_calc_reinitialization */
+
+
+
+/*!----------------------------------------------------------------------
+\brief compute element contributions to tangent and internal force vector
+for gradient computation
+
+<pre>                                                            irhan 09/04
+compute element contributions to tangent and internal force vector
+for gradient computation
+</pre>
+
+*----------------------------------------------------------------------*/
+void ls2_calc_gradient(
+  ELEMENT* ele
+  )
+{
+  INT         i,j;
+  INT         iel;
+  INT         nir,nis;
+  INT         lr,ls;
+  DOUBLE      fac;
+  DOUBLE      facr,facs;
+  DOUBLE      det;
+  DOUBLE      e1,e2;
+  INT         ntyp;
+  DIS_TYP     typ;
+
+  INT         direction;
+  INT         PLACE;
+  DOUBLE      lset_grad[4];
+
+#ifdef DEBUG
+  dstrc_enter("ls2_calc_gradient");
+#endif
+/*----------------------------------------------------------------------*/
+
+  /* set element parameters */
+  iel = ele->numnp;
+  typ = ele->distyp;
+  ntyp = ele->e.ls2->ntyp;
+
+  /* set spatial direction */
+  direction = lsdyn->lsdata->gradient_direction;
+  PLACE = 2 + direction;
+
+  /*
+   * get nodal coordinates of the element and nodal values of the levelset
+   * function at time step (n) and (n+1)
+   */
+  ls2_calset(ele,xyze,lset00,lset01);
+  /* set lset_grad */
+  ls2_calset1(ele,PLACE,lset_grad);
+  /* integration data */
+  switch (ntyp)
+  {
+      case 1:
+        nir = ele->e.ls2->nGP[0];
+        nis = ele->e.ls2->nGP[1];
+        break;
+      case 2:
+        nir = 1;
+        nis = ele->e.ls2->nGP[0];
+        break;
+      default:
+        dserror("typ unknown!");
+  }
+  /* loop over integration points */
+  for (lr=0; lr<nir; lr++)
+  {
+    for (ls=0; ls<nis; ls++)
+    {
+      /* shape functions and their derivatives */
+      switch(ntyp)
+      {
+          case 1:
+            e1   = data->xgq[lr][nir-1];
+            facr = data->wgtq[lr][nir-1];
+            e2   = data->xgq[ls][nis-1];
+            facs = data->wgtq[ls][nis-1];
+            ls2_funct(funct,deriv,e1,e2,typ);
+            break;
+          case 2:
+            e1   = data->xgtr[ls][nis-1];
+            facr = ONE;
+            e2   = data->xgts[ls][nis-1];
+            facs = data->wgtt[ls][nis-1];
+            ls2_funct(funct,deriv,e1,e2,typ);
+            break;
+          default:
+            dserror("typ unknown!");
+      }
+      /* Jacobian matrix */
+      ls2_jaco(xyze,funct,deriv,xjm,&det,iel,ele);
+      fac = facr*facs*det;
+      /* global derivatives */
+      ls2_gder(derxy,deriv,xjm,det,iel);
+      /* "MASS" matrix */
+      for (i=0; i<iel; i++)
+        for (j=0; j<iel; j++)
+          emass[i][j] += funct[i]*funct[j]*fac;
+      /* "TANGENT" matrix */
+      for (i=0; i<iel; i++)
+        for (j=0; j<iel; j++)
+          estif[i][j] = 0.0;
+      /* TIME right hand side */
+      for (i=0; i<iel; i++)
+        etforce[i] = 0.0;
+      /* ITERATION right hand side */
+      for (i=0; i<iel; i++)
+        for (j=0; j<iel; j++)
+          eiforce[i] += -funct[i]*funct[j]*lset_grad[j]*fac +
+                         funct[i]*derxy[direction-1][j]*lset01[j]*fac;
+    }
+  }
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+
+  return;
+} /* end of ls2_calc_gradient */
+
+
+
+/*!----------------------------------------------------------------------
+\brief compute element contributions to tangent and internal force vector
+for curvature computation
+
+<pre>                                                            irhan 09/04
+compute element contributions to tangent and internal force vector
+for curvature computation
+</pre>
+
+*----------------------------------------------------------------------*/
+void ls2_calc_curvature(
+  ELEMENT* ele
+  )
+{
+
+#ifdef DEBUG
+  dstrc_enter("ls2_calc_curvature");
+#endif
+/*----------------------------------------------------------------------*/
+
+  /* ... */
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+
+  return;
+} /* end of ls2_calc_curvature */
 
 
 
@@ -751,9 +971,6 @@ void ls2_calc_localized(
 #endif
 /*----------------------------------------------------------------------*/
 
-  /* check whether element is active */
-  if (nlayer!=0) dserror("\nelement is in active region");
-
   iel = ele->numnp;
   /* initialize */
   for (i=0; i<iel; i++)
@@ -775,7 +992,16 @@ void ls2_calc_localized(
   for (i=0; i<iel; i++)
   {
     actnode = ele->node[i];
-    if (actnode->gnode->is_node_active!=0) estif[i][i] = 0.0;
+    /* correct diagonal terms of the estif */
+    if (lsdyn->lsdata->ls2_calc_flag == ls2_advection)
+    {
+      if (actnode->gnode->is_node_active!=0) estif[i][i] = 0.0;
+    }
+    else if (lsdyn->lsdata->ls2_calc_flag == ls2_gradient)
+    {
+      if (actnode->gnode->is_node_active == 1 || actnode->gnode->is_node_active == 2)
+        estif[i][i] = 0.0;
+    }
   }
 
 /*----------------------------------------------------------------------*/
@@ -842,9 +1068,8 @@ void ls2_setfluidvel_byuser(
   INT flag
   )
 {
-  INT         i,j;
+  INT         i;
   DOUBLE      dx1,dx2,dxl;
-  DOUBLE      rad,rad2;
   DOUBLE      height = 1.0;
 
 #ifdef DEBUG
@@ -916,6 +1141,13 @@ void ls2_setfluidvel_byuser(
         {
           velocity[0][i] = -xyze[1][i]*(xyze[1][i]-height)/(height/2.0)/(height/2.0);
           velocity[1][i] = 0.0;
+        }
+        break;
+      case 9: /* modify the velocity field so that we have a shearing flow */
+        for (i=0; i<iel; i++)
+        {
+          velocity[0][i] = sin(PI*xyze[0][i])*sin(PI*xyze[0][i])*sin(TWO*PI*xyze[1][i]);
+          velocity[1][i] = -sin(PI*xyze[1][i])*sin(PI*xyze[1][i])*sin(TWO*PI*xyze[0][i]);
         }
         break;
       default:

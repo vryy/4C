@@ -131,3 +131,8 @@ fi
 if grep '^D_XFEM' "$definefile" 2>&1 > /dev/null ; then
     OBJECTS="$OBJECTS \$(OBJS_XFEM)"
 fi
+
+# CHIMERA
+if grep '^D_CHIMERA' "$definefile" 2>&1 > /dev/null ; then
+    OBJECTS="$OBJECTS \$(OBJS_CHIMERA)"
+fi

@@ -1,14 +1,5 @@
 /* note that ls_updt_material has been changed */
-/* note that ls_updt_material has been changed */
-/* note that ls_updt_material has been changed */
-/* note that ls_updt_material has been changed */
-/* note that ls_updt_material has been changed */
-/* note that ls_updt_material has been changed */
-/* note that ls_updt_material has been changed */
-/* note that ls_updt_material has been changed */
-/* note that ls_updt_material has been changed */
-/* note that ls_updt_material has been changed */
-/* note that ls_updt_material has been changed */
+/* note that nodes of fluid elements are also activated */
 
 /*!----------------------------------------------------------------------
 \file
@@ -32,7 +23,6 @@ Maintainer: Baris Irhan
 
 
 
-struct _LS_UPDATE             lsupdt;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate dynamic variables if needed                      |
@@ -57,13 +47,20 @@ extern struct _GENPROB        genprob;
  | defined in global_control.c                                          |
  *----------------------------------------------------------------------*/
 extern struct _MATERIAL      *mat;
+extern struct _LS_DYNAMIC    *lsdyn;
+
+
+struct _LS_UPDATE             lsupdt;
+
+
+extern struct _FIELD         *fluidfield;
+extern struct _FIELD         *lsetfield;
 
 
 
-static  FIELD                *actfield;               /* pointer to levelset field */
-static  FIELD                *fluidfield;             /* pointer to fluid field */
-static  LS_DYNAMIC           *lsdyn;
-static  INT                   completionflag;         /* flag for completion of level set update */
+static  INT                   COMPLETIONFLAG;         /* flag for completion of level set update */
+static  INT                   RESTARTFLAG;            /* flag for completion of level set update */
+const static INT              NUM_MAX_INTERFACE = 50; /* maximum number of interfaces allowed */
 const static DOUBLE           NODETHRESHOLD = 0.001;  /* node threshold (used in case anyone of
                                                        * the nodes lie on the interface) */
 static INT                    SEARCHBAND;             /* band of search used for front detection */
@@ -123,7 +120,6 @@ void ls_main(
   LSFLAG lsflag
   )
 {
-  FRONTLSFLAG      frontlsflag;
   XFEMPOLYFLAG     xfempolyflag;
 
 #ifdef DEBUG
@@ -135,100 +131,195 @@ void ls_main(
   {
 /*---------------------------------------------------------- initialize */
       case ls_initphase:
-        /* open */
-        xfempolyflag = xfem_poly_open;
-        xfem_polygon(xfempolyflag,NULL);
         /* initialize level set update */
-        frontlsflag = front_ls_set;
-        ls_update(frontlsflag);
+        ls_setdata();
+#if 0
+        if (lsdyn->lsdata->print_to_file_on_off==1)
+        {
+          ls_to_matlab();
+        }
+#endif
         /* construct initial front and write it to output files */
-        frontlsflag = front_ls_init;
-        ls_update(frontlsflag);
-/****************BE CAREFUL*********************************************/
-/****************BE CAREFUL*********************************************/
-/****************BE CAREFUL*********************************************/
-        if (genprob.probtyp==prb_twophase)
+        if (RESTARTFLAG!=1)
+        {
+          ls_reset(); /* reset the front */
+          ls_check_profile();
+          ls_initialize();
+        }
+        else
+        {
+          ls_reset(); /* reset the front */
+          ls_check_profile();
+          ls_updt();
+        }
+        /* activate the nodes and elements */
+        ls_activate();
+        /* activate layers for localization */
+        ls_localize();
+        /* isolate end points */
+        if (lsdyn->lsdata->isolate_end_points==1)
+        {
+          /* find first and last elements in the open interfaces */
+          ls_mark_tip_elements();
+        }
+        /* write initial front into file */
+#if 0
+        if (lsdyn->lsdata->print_to_file_on_off==1)
+        {
+          ls_write();
+        }
+#endif
+
+
+
+
+/****************TWO PHASE FLOW*****************************************/
+/****************TWO PHASE FLOW*****************************************/
+/****************TWO PHASE FLOW*****************************************/
+        if (lsdyn->lsdata->print_to_file_on_off==1)
+        {
+          /* open files */
+          xfempolyflag = xfem_poly_open;
+          xfem_polygon(xfempolyflag,NULL);
+        }
+
+        if (genprob.probtyp==prb_twophase && RESTARTFLAG==0)
         {
           /* initialize material data */
-          frontlsflag = front_ls_initmat;
-          ls_update(frontlsflag);
+          ls_init_material();
         }
-/****************BE CAREFUL*********************************************/
-/****************BE CAREFUL*********************************************/
-/****************BE CAREFUL*********************************************/
-        /* activate the nodes and elements */
-        frontlsflag = front_ls_activate;
-        ls_update(frontlsflag);
-        /* activate layers for localization */
-        frontlsflag = front_ls_localize;
-        ls_update(frontlsflag);
         /* polygonize the elements cut by the interface */
-        frontlsflag = front_ls_polygonize;
-        ls_update(frontlsflag);
-        /* write initial front into file */
-        frontlsflag = front_ls_write;
-        ls_update(frontlsflag);
-/****************BE CAREFUL*********************************************/
-/****************BE CAREFUL*********************************************/
-/****************BE CAREFUL*********************************************/
-        if (genprob.probtyp==prb_twophase && lsdyn->lsdata->probdescr==2)
-        {
-          /* initialize pressure values for breaking dam problem */
-          frontlsflag = front_ls_init_pressure_breaking_dam;
-          ls_update(frontlsflag);
-        }
-/****************BE CAREFUL*********************************************/
-/****************BE CAREFUL*********************************************/
-/****************BE CAREFUL*********************************************/
+        ls_polygonize();
+/****************TWO PHASE FLOW*****************************************/
+/****************TWO PHASE FLOW*****************************************/
+/****************TWO PHASE FLOW*****************************************/
+
+
+
+
+
         break;
 /*-------------------------------------------------------------- update */
       case ls_updtphase:
         /* update zero level set */
-        frontlsflag = front_ls_updt;
-        ls_update(frontlsflag);
+        ls_reset(); /* reset the front */
+        ls_check_profile();
+        ls_updt();
         /* activate the nodes and elements */
-        frontlsflag = front_ls_activate;
-        ls_update(frontlsflag);
+        ls_activate();
         /* activate layers for localization */
-        frontlsflag = front_ls_localize;
-        ls_update(frontlsflag);
-/****************BE CAREFUL*********************************************/
-/****************BE CAREFUL*********************************************/
-/****************BE CAREFUL*********************************************/
+        ls_localize();
+        /* isolate end points */
+        if (lsdyn->lsdata->isolate_end_points==1)
+        {
+          /* find first and last elements in the open interfaces */
+          ls_mark_tip_elements();
+        }
+
+
+
+
+
+
+/****************TWO PHASE FLOW*****************************************/
+/****************TWO PHASE FLOW*****************************************/
+/****************TWO PHASE FLOW*****************************************/
+        if (genprob.probtyp==prb_twophase)
+        {
+          /* reset sol_increment in enriched directions */
+          ls_reset_fld_sol_increment();
+        }
         if (genprob.probtyp==prb_twophase)
         {
           /* update material data */
-          frontlsflag = front_ls_updtmat;
-          ls_update(frontlsflag);
+          ls_updt_material();
         }
-/****************BE CAREFUL*********************************************/
-/****************BE CAREFUL*********************************************/
-/****************BE CAREFUL*********************************************/
         /* polygonize the elements cut by the interface */
-        frontlsflag = front_ls_polygonize;
-        ls_update(frontlsflag);
+        ls_polygonize();
+/****************TWO PHASE FLOW*****************************************/
+/****************TWO PHASE FLOW*****************************************/
+/****************TWO PHASE FLOW*****************************************/
+
+
+
+
+
+
+
+        break;
+/*------------------------------------------------------------ write */
+      case ls_writphase:
         /* take some print out */
-        if (lsdyn->lsdata->print_on_off==1)
+        if (lsdyn->lsdata->print_to_file_on_off==1 && lsdyn->lsdata->print_on_off==1)
         {
           /* write front into file */
-          frontlsflag = front_ls_write;
-          ls_update(frontlsflag);
+          ls_write();
+
+
+
+
+
+
+
+/****************TWO PHASE FLOW*****************************************/
+/****************TWO PHASE FLOW*****************************************/
+/****************TWO PHASE FLOW*****************************************/
           /* write fluid solution to file */
-          if (genprob.probtyp == prb_twophase)
+          if (genprob.probtyp == prb_twophase && lsdyn->lsdata->print_fld_soln_to_file_on_off==1)
           {
-            frontlsflag = front_ls_write_fld_soln;
-            ls_update(frontlsflag);
+            ls_write_fluid_soln();
           }
+/****************TWO PHASE FLOW*****************************************/
+/****************TWO PHASE FLOW*****************************************/
+/****************TWO PHASE FLOW*****************************************/
+
+
+
+
+
+
+
+          /* turn off print flag */
+          lsdyn->lsdata->print_on_off = 0;
+        }
+        else if (lsdyn->lsdata->print_on_off==1)
+        {
           /* turn off print flag */
           lsdyn->lsdata->print_on_off = 0;
         }
         break;
 /*------------------------------------------------------------ finalize */
       case ls_finaphase:
-        frontlsflag = front_ls_finalize;
-        ls_update(frontlsflag);
-        xfempolyflag = xfem_poly_close;
-        xfem_polygon(xfempolyflag,NULL);
+        ls_finalize();
+
+
+
+
+
+
+
+
+
+/****************TWO PHASE FLOW*****************************************/
+/****************TWO PHASE FLOW*****************************************/
+/****************TWO PHASE FLOW*****************************************/
+        if (lsdyn->lsdata->print_to_file_on_off==1)
+        {
+          xfempolyflag = xfem_poly_close;
+          xfem_polygon(xfempolyflag,NULL);
+        }
+/****************TWO PHASE FLOW*****************************************/
+/****************TWO PHASE FLOW*****************************************/
+/****************TWO PHASE FLOW*****************************************/
+
+
+
+
+
+
+
+
+
         break;
 /*------------------------------------------------------------- default */
       default:
@@ -242,93 +333,6 @@ void ls_main(
 
   return;
 } /* end of ls_main */
-
-
-
-/*!----------------------------------------------------------------------
-\brief perform operations dictated by execution flag (frontlsflag)
-
-<pre>                                                            irhan 05/04
-perform operations dictated by execution flag (frontlsflag)
-</pre>
-
-*----------------------------------------------------------------------*/
-void ls_update(
-  FRONTLSFLAG frontlsflag
-  )
-{
-#ifdef DEBUG
-  dstrc_enter("ls_update");
-#endif
-/*----------------------------------------------------------------------*/
-
-  switch (frontlsflag)
-  {
-/*--------------------------------------------- set the data structures */
-      case front_ls_set:
-        ls_setdata();
-        ls_to_matlab();
-        break;
-/*------------------------------------------------ initialize the front */
-      case front_ls_init:
-        ls_reset(); /* reset the front */
-        ls_check_profile();
-        ls_initialize();
-        break;
-/*-------------------------------------------- initialize material data */
-      case front_ls_initmat:
-        ls_init_material();
-        break;
-/*---------------------------------------------------- update the front */
-      case front_ls_updt:
-        ls_reset(); /* reset the front */
-        ls_check_profile();
-        ls_updt();
-        break;
-/*------------------------------------------------ update material data */
-      case front_ls_updtmat:
-        ls_updt_material();
-        break;
-/*------------------------------------- activate the nodes and elements */
-      case front_ls_activate:
-        ls_activate();
-        break;
-/*------------------------------------------------ perform localization */
-      case front_ls_localize:
-        ls_localize();
-        break;
-/*------------------------ polygonize the elements cut by the interface */
-      case front_ls_polygonize:
-        ls_polygonize();
-        break;
-/*------------------------------------------------- write front to file */
-      case front_ls_write:
-        ls_write();
-        break;
-/*---------------------------------------- write fluid solution to file */
-      case front_ls_write_fld_soln:
-        ls_write_soln();
-        break;
-/*------------------------------------------------------------ finalize */
-      case front_ls_finalize:
-        ls_finalize();
-        break;
-/*------------------------------------------------------------ finalize */
-      case front_ls_init_pressure_breaking_dam:
-        ls_init_pres_bd();
-        break;
-/*------------------------------------------------------------- default */
-      default:
-        dserror("action unknown\n");
-  }
-
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG
-  dstrc_exit();
-#endif
-
-  return;
-} /* end of ls_updt */
 
 
 
@@ -351,10 +355,9 @@ able to be constructed by recursive call.
 *----------------------------------------------------------------------*/
 void ls_initialize()
 {
-  INT              i,j;
+  INT              i;
   INT              numint;
   INT              intcnt;
-  INT              ctrl;
   ELEMENT         *actele;
   LS_INT_DATA     *intdata;
 
@@ -364,15 +367,17 @@ void ls_initialize()
 /*----------------------------------------------------------------------*/
 
   /* loop over the elements */
-  for (i=0; i<actfield->dis[0].numele; i++)
+  for (i=0; i<lsetfield->dis[0].numele; i++)
   {
     /* access to the element */
-    actele = &(actfield->dis[0].element[i]);
+    actele = &(lsetfield->dis[0].element[i]);
+
     /*
       check whether element is already included
       in one of the previously generated interfaces
     */
     if (actele->e.ls2->is_elcut==1) continue;
+
     /* get information from the element */
     ls2_calset(actele,xyze,lset00,lset01);
     /* check whether element is cut by the front */
@@ -388,20 +393,23 @@ void ls_initialize()
       */
       ls_updateneighbor(actele,actele->e.ls2->intdata[intcnt].edge[1],0);
       /* check */
-      if (completionflag==1)
+      if (COMPLETIONFLAG==1)
       {
         /* not possible! */
-        fprintf(file12,"\n\n**ERROR** in ls_initialize()");
-        fprintf(file12,"\n**ERROR** completionflag=1");
-        fprintf(file12,"\nsomething is wrong level set initialization!");
-        ls_printelinfo_to_file(actele);
+        if (lsdyn->lsdata->print_to_file_on_off==1)
+        {
+          fprintf(file12,"\n\n**ERROR** in ls_initialize()");
+          fprintf(file12,"\n**ERROR** COMPLETIONFLAG=1");
+          fprintf(file12,"\nsomething is wrong level set initialization!");
+          ls_printelinfo_to_file(actele);
+        }
 #ifdef PARALLEL
         MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
 #else
         exit(EXIT_FAILURE);
 #endif
       }
-      if (completionflag==2)
+      if (COMPLETIONFLAG==2)
       {
         if (lsdyn->lsdata->boundary_on_off==0)
         {
@@ -409,9 +417,12 @@ void ls_initialize()
            * boundary off the computational domain is not allowed
            * to be cut by the interface!
            */
-          fprintf(file12,"\n\n**ERROR** in ls initialize()");
-          fprintf(file12,"\nelement first_in_list is on boundary!");
-          ls_printelinfo_to_file(actele);
+          if (lsdyn->lsdata->print_to_file_on_off==1)
+          {
+            fprintf(file12,"\n\n**ERROR** in ls initialize()");
+            fprintf(file12,"\nelement first_in_list is on boundary!");
+            ls_printelinfo_to_file(actele);
+          }
 #ifdef PARALLEL
           MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
 #else
@@ -434,17 +445,17 @@ void ls_initialize()
       goto end;
     }
   }
-  return;
+  goto real_end;
  end:
   /* construct the front */
-  if (completionflag==0)
+  if (COMPLETIONFLAG==0)
   {
     actele->e.ls2->intcnt++;
     /* increment the number of active elements (nael++) */
     lsupdt.nael[numint]++;
     ls_construct(actele->e.ls2->intdata[intcnt].nbor);
   }
-  else if (completionflag==2)
+  else if (COMPLETIONFLAG==2)
   {
 /*******************************BE CAREFUL*******************************/
 /*******************************BE CAREFUL*******************************/
@@ -468,9 +479,13 @@ void ls_initialize()
   /* print to screen */
   printf("\n**WARNING** NUMINTERFACE =%2d",lsupdt.numinterface);
   /* print to file */
-  fprintf(file12,"\n**WARNING** NUMINTERFACE =%2d",lsupdt.numinterface);
+  if (lsdyn->lsdata->print_to_file_on_off==1)
+  {
+    fprintf(file12,"\n**WARNING** NUMINTERFACE =%2d",lsupdt.numinterface);
+  }
 
 /*----------------------------------------------------------------------*/
+real_end:
 #ifdef DEBUG
   dstrc_exit();
 #endif
@@ -494,10 +509,9 @@ marked. It is done by turning 'ele->e.ls2->is_elsearch' flag on.
 *----------------------------------------------------------------------*/
 void ls_updt()
 {
-  INT              i,j;
+  INT              i;
   INT              numint;
   INT              intcnt;
-  INT              ctrl;
   ELEMENT         *actele;
   LS_INT_DATA     *intdata;
 
@@ -507,10 +521,10 @@ void ls_updt()
 /*----------------------------------------------------------------------*/
 
   /* loop over the elements */
-  for (i=0; i<actfield->dis[0].numele; i++)
+  for (i=0; i<lsetfield->dis[0].numele; i++)
   {
     /* access to the element */
-    actele = &(actfield->dis[0].element[i]);
+    actele = &(lsetfield->dis[0].element[i]);
     /*
       check whether element is already included
       in one of the previously generated interfaces or
@@ -533,18 +547,21 @@ void ls_updt()
       */
       ls_updateneighbor(actele,actele->e.ls2->intdata[intcnt].edge[1],0);
       /* check */
-      if (completionflag==1)
+      if (COMPLETIONFLAG==1)
       {
-        fprintf(file12,"\n\n**ERROR** in ls_update()");
-        fprintf(file12,"\ncompletionflag=1");
-        ls_printelinfo_to_file(actele);
+        if (lsdyn->lsdata->print_to_file_on_off==1)
+        {
+          fprintf(file12,"\n\n**ERROR** in ls_update()");
+          fprintf(file12,"\nCOMPLETIONFLAG=1");
+          ls_printelinfo_to_file(actele);
+        }
 #ifdef PARALLEL
         MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
 #else
         exit(EXIT_FAILURE);
 #endif
       }
-      if (completionflag==2)
+      if (COMPLETIONFLAG==2)
       {
         if (lsdyn->lsdata->boundary_on_off==0)
         {
@@ -552,9 +569,12 @@ void ls_updt()
            * boundary off the computational domain is not allowed
            * to be cut by the interface!
            */
-          fprintf(file12,"\n\n**ERROR** in ls_update()");
-          fprintf(file12,"\nelement first_in_list is on boundary!");
-          ls_printelinfo_to_file(actele);
+          if (lsdyn->lsdata->print_to_file_on_off==1)
+          {
+            fprintf(file12,"\n\n**ERROR** in ls_update()");
+            fprintf(file12,"\nelement first_in_list is on boundary!");
+            ls_printelinfo_to_file(actele);
+          }
 #ifdef PARALLEL
           MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
 #else
@@ -580,14 +600,14 @@ void ls_updt()
   goto end1;
  end:
   /* construct the front */
-  if (completionflag==0)
+  if (COMPLETIONFLAG==0)
   {
     actele->e.ls2->intcnt++;
     /* increment the number of active elements (nael++) */
     lsupdt.nael[numint]++;
     ls_construct(actele->e.ls2->intdata[intcnt].nbor);
   }
-  else if (completionflag==2)
+  else if (COMPLETIONFLAG==2)
   {
     /* deactivate the element */
     actele->e.ls2->is_elcut = 0;
@@ -605,7 +625,10 @@ void ls_updt()
   /* print to screen */
   printf("\n**WARNING** NUMINTERFACE =%2d",lsupdt.numinterface);
   /* print to file */
-  fprintf(file12,"\n**WARNING** NUMINTERFACE =%2d",lsupdt.numinterface);
+  if (lsdyn->lsdata->print_to_file_on_off==1)
+  {
+    fprintf(file12,"\n**WARNING** NUMINTERFACE =%2d",lsupdt.numinterface);
+  }
  end1:
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -660,9 +683,12 @@ void ls_construct(
      */
     if (actele->e.ls2->is_elcut!=1)
     {
-      fprintf(file12,"\n\n**ERROR** in ls_construct()");
-      fprintf(file12,"\nelement must have been cut by the interface");
-      ls_printelinfo_to_file(actele);
+      if (lsdyn->lsdata->print_to_file_on_off==1)
+      {
+        fprintf(file12,"\n\n**ERROR** in ls_construct()");
+        fprintf(file12,"\nelement must have been cut by the interface");
+        ls_printelinfo_to_file(actele);
+      }
 #ifdef PARALLEL
       MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
 #else
@@ -683,8 +709,8 @@ void ls_construct(
       /* increment the number of interfaces cut the element */
       actele->e.ls2->intcnt++;
       /* check completion of interface construction */
-      if (completionflag==1) goto end;
-      else if (completionflag==2)
+      if (COMPLETIONFLAG==1) goto end;
+      else if (COMPLETIONFLAG==2)
       {
         if (lsdyn->lsdata->boundary_on_off==0)
         {
@@ -692,9 +718,12 @@ void ls_construct(
            * boundary off the computational domain is not allowed
            * to be cut by the interface!
            */
-          fprintf(file12,"\n\n**ERROR** in ls_construct()");
-          fprintf(file12,"\nelement actele is on boundary!");
-          ls_printelinfo_to_file(actele);
+          if (lsdyn->lsdata->print_to_file_on_off==1)
+          {
+            fprintf(file12,"\n\n**ERROR** in ls_construct()");
+            fprintf(file12,"\nelement actele is on boundary!");
+            ls_printelinfo_to_file(actele);
+          }
 #ifdef PARALLEL
           MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
 #else
@@ -710,7 +739,10 @@ void ls_construct(
             /* print to screen */
             printf("\n**WARNING** INTERFACE TOUCHES BOUNDARY => RECONSTRUCTION ACTIVE");
             /* print to file */
-            fprintf(file12,"\n**WARNING** INTERFACE TOUCHES BOUNDARY => RECONSTRUCTION ACTIVE");
+            if (lsdyn->lsdata->print_to_file_on_off==1)
+            {
+              fprintf(file12,"\n**WARNING** INTERFACE TOUCHES BOUNDARY => RECONSTRUCTION ACTIVE");
+            }
             /* turn on lsdyn->lsdata->reconstruct_on_off flag */
             lsdyn->lsdata->reconstruct_on_off = 1;
             /* RECONSTRUCTION! ( => use nbor_s ) */
@@ -729,9 +761,12 @@ void ls_construct(
             /* check */
             if (actele->Id!=Id_first_old)
             {
-              fprintf(file12,"\n\n**ERROR** in ls_construct()");
-              fprintf(file12,"\nactele->Id!=Id_first_old");
-              ls_printelinfo_to_file(actele);
+              if (lsdyn->lsdata->print_to_file_on_off==1)
+              {
+                fprintf(file12,"\n\n**ERROR** in ls_construct()");
+                fprintf(file12,"\nactele->Id!=Id_first_old");
+                ls_printelinfo_to_file(actele);
+              }
 #ifdef PARALLEL
               MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
 #else
@@ -780,8 +815,11 @@ void ls_construct(
  end:
   /* print to screen */
   printf("\n**WARNING** LEVELSET UPDATE COMPLETED!");
-  /* print to screen */
-  fprintf(file12,"\n**WARNING** LEVELSET UPDATE COMPLETED!");
+  /* print to file */
+  if (lsdyn->lsdata->print_to_file_on_off==1)
+  {
+    fprintf(file12,"\n**WARNING** LEVELSET UPDATE COMPLETED!");
+  }
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -831,159 +869,159 @@ void ls_updatelement(
   counter = 0;
   switch (typ)
   {
-      case tri3:   /* => 3 noded triangular element */
-        /*
-         * check whether the sedge of element is set by previously
-         * activated element
-         * NOTE =>
-         * it is NOT only the case for the element first_in_list
-         */
-        sedge_ = 0;
-        if (ele->e.ls2->is_sedge_set==1)
-        {
-          /* access to the start edge */
-          /*
-           * NOTE =>
-           * note that this information is also provided by
-           * the element which has already been activated
-           */
-          sedge_ = ele->e.ls2->intdata[intcnt].edge[0];
-          if (sedge_<=0) dserror("start edge not set properly!\n");
-        }
-        /* loop over the nodes */
-        for (j=0; j<3; j++)
-        {
-          u[j] = lset[j];
-        }
-        /* check whether subtriangle is cut by zero level set */
-        is_tricut(u,&is_cut,&sedge,&eedge,&snode);
-        if (!is_cut)
+  case tri3:   /* => 3 noded triangular element */
+    /*
+     * check whether the sedge of element is set by previously
+     * activated element
+     * NOTE =>
+     * it is NOT only the case for the element first_in_list
+     */
+    sedge_ = 0;
+    if (ele->e.ls2->is_sedge_set==1)
+    {
+      /* access to the start edge */
+      /*
+       * NOTE =>
+       * note that this information is also provided by
+       * the element which has already been activated
+       */
+      sedge_ = ele->e.ls2->intdata[intcnt].edge[0];
+      if (sedge_<=0) dserror("start edge not set properly!\n");
+    }
+    /* loop over the nodes */
+    for (j=0; j<3; j++)
+    {
+      u[j] = lset[j];
+    }
+    /* check whether subtriangle is cut by zero level set */
+    is_tricut(u,&is_cut,&sedge,&eedge,&snode);
+    if (!is_cut)
+    {
+      /* element interior not cut by interface! */
+      goto end1;
+    }
+    /* switch edges if necessary */
+    if (sedge_!=0 && sedge_!=sedge)
+    {
+      temp  = sedge;
+      sedge = eedge;
+      eedge = temp;
+    }
+    /* set edges */
+    ele->e.ls2->intdata[intcnt].edge[0]  = sedge;
+    ele->e.ls2->intdata[intcnt].edge[1]  = eedge;
+    /* compute intersection with the edges */
+    ls_compintersection(ele->e.ls2->intdata[intcnt].p[0],u,sedge,-1);
+    ls_compintersection(ele->e.ls2->intdata[intcnt].p[1],u,eedge,-1);
+    /* construct polygon connectivity to be used in refined integration (partially) */
+    ls_polygon_con(ele->e.ls2->intdata[intcnt].polycon[0],snode,-1);
+    /* set is_diagcut */
+    ele->e.ls2->intdata[intcnt].is_diagcut = 0;
+    if (ele->e.ls2->is_elcut!=1)
+    {
+      /* activate the element */
+      ele->e.ls2->is_elcut = 1;
+      /* add element to the first layer */
+      ele->e.ls2->nlayer = 1;
+    }
+    break;
+  case quad4:  /* => 4 noded quadrilateral element */
+    ind[0] = 1;
+    ind[1] = 2;
+    /* check whether the element is set by previously activated element */
+    /*
+     * NOTE =>
+     * it is NOT only the case for the element first_in_list
+     */
+    sedge_ = 0;
+    if (ele->e.ls2->is_sedge_set==1)
+    {
+      /* access to the start edge */
+      /*
+       * NOTE =>
+       * note that this information is also provided by
+       * the element which has already been activated
+       */
+      sedge_ = ele->e.ls2->intdata[intcnt].edge[0];
+      if (sedge_<=0) dserror("start edge not set properly!\n");
+      /* check to which triangle this edge belongs to */
+      ntri = edge_to_triangle[sedge_-1];
+      /* switch the order of triangles if necessary */
+      if (ntri==2)
+      {
+        ind[0] = 2;
+        ind[1] = 1;
+      }
+    }
+    /* loop over the triangles */
+    for (i=0; i<2; i++)
+    {
+      /* loop over the nodes */
+      for (j=0; j<3; j++)
+      {
+        nd = node_to_node[ind[i]-1][j]-1;
+        u[j] = lset[nd];
+      }
+      /* check whether subtriangle is cut by zero level set */
+      is_tricut(u,&is_cut,&sedge,&eedge,&snode);
+      if (!is_cut)
+      {
+        counter++;
+        if (counter==2)
         {
           /* element interior not cut by interface! */
-          return;
+          goto end1;
         }
-        /* switch edges if necessary */
-        if (sedge_!=0 && sedge_!=sedge)
-        {
-          temp  = sedge;
-          sedge = eedge;
-          eedge = temp;
-        }
-        /* set edges */
-        ele->e.ls2->intdata[intcnt].edge[0]  = sedge;
-        ele->e.ls2->intdata[intcnt].edge[1]  = eedge;
-        /* compute intersection with the edges */
-        ls_compintersection(ele->e.ls2->intdata[intcnt].p[0],u,sedge,-1);
-        ls_compintersection(ele->e.ls2->intdata[intcnt].p[1],u,eedge,-1);
-        /* construct polygon connectivity to be used in refined integration (partially) */
-        ls_polygon_con(ele->e.ls2->intdata[intcnt].polycon[0],snode,-1);
-        /* set is_diagcut */
-        ele->e.ls2->intdata[intcnt].is_diagcut = 0;
-        if (ele->e.ls2->is_elcut!=1)
-        {
-          /* activate the element */
-          ele->e.ls2->is_elcut = 1;
-          /* add element to the first layer */
-          ele->e.ls2->nlayer = 1;
-        }
-        break;
-      case quad4:  /* => 4 noded quadrilateral element */
-        ind[0] = 1;
-        ind[1] = 2;
-        /* check whether the element is set by previously activated element */
-        /*
-         * NOTE =>
-         * it is NOT only the case for the element first_in_list
-         */
-        sedge_ = 0;
-        if (ele->e.ls2->is_sedge_set==1)
-        {
-          /* access to the start edge */
-          /*
-           * NOTE =>
-           * note that this information is also provided by
-           * the element which has already been activated
-           */
-          sedge_ = ele->e.ls2->intdata[intcnt].edge[0];
-          if (sedge_<=0) dserror("start edge not set properly!\n");
-          /* check to which triangle this edge belongs to */
-          ntri = edge_to_triangle[sedge_-1];
-          /* switch the order of triangles if necessary */
-          if (ntri==2)
-          {
-            ind[0] = 2;
-            ind[1] = 1;
-          }
-        }
-        /* loop over the triangles */
-        for (i=0; i<2; i++)
-        {
-          /* loop over the nodes */
-          for (j=0; j<3; j++)
-          {
-            nd = node_to_node[ind[i]-1][j]-1;
-            u[j] = lset[nd];
-          }
-          /* check whether subtriangle is cut by zero level set */
-          is_tricut(u,&is_cut,&sedge,&eedge,&snode);
-          if (!is_cut)
-          {
-            counter++;
-            if (counter==2)
-            {
-              /* element interior not cut by interface! */
-              goto end1;
-            }
-            continue;
-          }
-          if (edge_to_edge[ind[i]-1][eedge-1]!=-1) goto end;
-          /* set edge */
-          ele->e.ls2->intdata[intcnt].edge[i]  = edge_to_edge[ind[i]-1][sedge-1];
-          /* compute intersection with the edges */
-          ls_compintersection(ele->e.ls2->intdata[intcnt].p[i],u,sedge,ind[i]);
-          /* construct polygon connectivity to be used in refined integration (partially) */
-          ls_polygon_con(ele->e.ls2->intdata[intcnt].polycon[ind[i]-1],snode,ind[i]);
-          /* compute intersection with the diagonal */
-          if (i==1)
-          {
-            ele->e.ls2->intdata[intcnt].is_diagcut = 1;
-            ls_compintersection(ele->e.ls2->intdata[intcnt].pd,u,3,ind[i]);
-          }
-        }
-        if (ele->e.ls2->is_elcut!=1)
-        {
-          /*  activate the element */
-          ele->e.ls2->is_elcut = 1;
-          /*  add element to the first layer */
-          ele->e.ls2->nlayer = 1;
-        }
-        goto end1;
+        continue;
+      }
+      if (edge_to_edge[ind[i]-1][eedge-1]!=-1) goto end;
+      /* set edge */
+      ele->e.ls2->intdata[intcnt].edge[i]  = edge_to_edge[ind[i]-1][sedge-1];
+      /* compute intersection with the edges */
+      ls_compintersection(ele->e.ls2->intdata[intcnt].p[i],u,sedge,ind[i]);
+      /* construct polygon connectivity to be used in refined integration (partially) */
+      ls_polygon_con(ele->e.ls2->intdata[intcnt].polycon[ind[i]-1],snode,ind[i]);
+      /* compute intersection with the diagonal */
+      if (i==1)
+      {
+        ele->e.ls2->intdata[intcnt].is_diagcut = 1;
+        ls_compintersection(ele->e.ls2->intdata[intcnt].pd,u,3,ind[i]);
+      }
+    }
+    if (ele->e.ls2->is_elcut!=1)
+    {
+      /*  activate the element */
+      ele->e.ls2->is_elcut = 1;
+      /*  add element to the first layer */
+      ele->e.ls2->nlayer = 1;
+    }
+    goto end1;
   end:
-        /* switch edges if necessary */
-        if (sedge_!=0 && sedge_!=edge_to_edge[ind[i]-1][sedge-1])
-        {
-          temp  = sedge;
-          sedge = eedge;
-          eedge = temp;
-        }
-        /* set edge and solitary node */
-        ele->e.ls2->intdata[intcnt].edge[0] = edge_to_edge[ind[i]-1][sedge-1];
-        ele->e.ls2->intdata[intcnt].edge[1] = edge_to_edge[ind[i]-1][eedge-1];
-        /* compute intersection with the edges */
-        ls_compintersection(ele->e.ls2->intdata[intcnt].p[0],u,sedge,ind[i]);
-        ls_compintersection(ele->e.ls2->intdata[intcnt].p[1],u,eedge,ind[i]);
-        /* construct polygon connectivity to be used in refined integration (partially) */
-        ls_polygon_con(ele->e.ls2->intdata[intcnt].polycon[ind[i]-1],snode,ind[i]);
-        if (ele->e.ls2->is_elcut!=1)
-        {
-          /* activate the element */
-          ele->e.ls2->is_elcut = 1;
-          /* add element to the first layer */
-          ele->e.ls2->nlayer = 1;
-        }
-        break;
-      default:
-        dserror("typ unknown!");
+    /* switch edges if necessary */
+    if (sedge_!=0 && sedge_!=edge_to_edge[ind[i]-1][sedge-1])
+    {
+      temp  = sedge;
+      sedge = eedge;
+      eedge = temp;
+    }
+    /* set edge and solitary node */
+    ele->e.ls2->intdata[intcnt].edge[0] = edge_to_edge[ind[i]-1][sedge-1];
+    ele->e.ls2->intdata[intcnt].edge[1] = edge_to_edge[ind[i]-1][eedge-1];
+    /* compute intersection with the edges */
+    ls_compintersection(ele->e.ls2->intdata[intcnt].p[0],u,sedge,ind[i]);
+    ls_compintersection(ele->e.ls2->intdata[intcnt].p[1],u,eedge,ind[i]);
+    /* construct polygon connectivity to be used in refined integration (partially) */
+    ls_polygon_con(ele->e.ls2->intdata[intcnt].polycon[ind[i]-1],snode,ind[i]);
+    if (ele->e.ls2->is_elcut!=1)
+    {
+      /* activate the element */
+      ele->e.ls2->is_elcut = 1;
+      /* add element to the first layer */
+      ele->e.ls2->nlayer = 1;
+    }
+    break;
+  default:
+    dserror("typ unknown!");
   } /* end switch(typ) */
 
 /*----------------------------------------------------------------------*/
@@ -1049,7 +1087,7 @@ void is_tricut(
     *sedge = 1;
     *eedge = 3;
     *snode = 1;
-    return;
+    goto end;
   }
   if (u[1]>0.0)
   {
@@ -1058,6 +1096,7 @@ void is_tricut(
     *snode = 2;
   }
 /*----------------------------------------------------------------------*/
+end:
 #ifdef DEBUG
   dstrc_exit();
 #endif
@@ -1194,7 +1233,7 @@ void ls_updateneighbor(
   /* access to interface number crossing the element */
   intcntele = ele->e.ls2->intcnt;
   /* set completion flag */
-  completionflag = 0;
+  COMPLETIONFLAG = 0;
   /* access to the interface number */
   numint = lsupdt.numinterface;
   /* access to geometry objects of ele */
@@ -1224,7 +1263,7 @@ void ls_updateneighbor(
         if (nbor->Id==lsupdt.first_in_list[numint].Id)
         {
           /* interface construction completed succesfully */
-          completionflag = 1;
+          COMPLETIONFLAG = 1;
           goto end;
         }
         else
@@ -1243,6 +1282,8 @@ void ls_updateneighbor(
           }
           else
           {
+            /* turn junction flag on */
+            ele->e.ls2->is_el_junction = 1;
             ele->e.ls2->intdata[intcntele-1].nbor_s = nbor;
           }
 /*************************BE CAREFUL*************************************/
@@ -1250,14 +1291,18 @@ void ls_updateneighbor(
 /*************************BE CAREFUL*************************************/
           if (nbor->e.ls2->is_elcut==1) /* nbor is already cut */
           {
-            /* print to file */
-            fprintf(file12,"\nin ls_updateneighbor()");
-            fprintf(file12,"\nneighbor element is cut second times by the interface!");
-            fprintf(file12,"\njunction = %2d",junction);
-            fprintf(file12,"\nactive element =>");
-            ls_printelinfo_to_file(ele);
-            fprintf(file12,"\nneighbor to active element =>");
-            ls_printelinfo_to_file(nbor);
+            if (lsdyn->lsdata->print_to_file_on_off==1)
+            {
+
+              /* print to file */
+              fprintf(file12,"\nin ls_updateneighbor()");
+              fprintf(file12,"\nneighbor element is cut second times by the interface!");
+              fprintf(file12,"\njunction = %2d",junction);
+              fprintf(file12,"\nactive element =>");
+              ls_printelinfo_to_file(ele);
+              fprintf(file12,"\nneighbor to active element =>");
+              ls_printelinfo_to_file(nbor);
+            }
           }
         }
       }
@@ -1266,7 +1311,7 @@ void ls_updateneighbor(
   }
   /* there is no neighbor element */
   nbor = NULL;
-  completionflag = 2;
+  COMPLETIONFLAG = 2;
  end:
 
 /*----------------------------------------------------------------------*/
@@ -1356,14 +1401,12 @@ layers surrounding the interface are activated.
 *----------------------------------------------------------------------*/
 void ls_activate()
 {
-  INT          ii,i,j;
+  INT          i,j;
   INT         *flagactive,*flaginside;
-  INT          dummy;
   INT         *nenode;
   DOUBLE       val;
   NODE        *actnode;
-  ELEMENT     *actele,*myf2;
-  DOUBLE       lset01[4];
+  ELEMENT     *actele;
 
 #ifdef DEBUG
   dstrc_enter("ls_activate");
@@ -1371,11 +1414,12 @@ void ls_activate()
 /*----------------------------------------------------------------------*/
 
   /* activate the nodes of firstlayer */
-  for (i=0; i<actfield->dis[0].numele; i++)
+  for (i=0; i<lsetfield->dis[0].numele; i++)
   {
-    actele = &(actfield->dis[0].element[i]);
+    actele = &(lsetfield->dis[0].element[i]);
     if (actele->e.ls2->is_elcut==1)
     {
+      /* activate nodes of levelset element */
       for (j=0; j<actele->numnp; j++)
       {
         actnode =  actele->node[j];
@@ -1388,24 +1432,65 @@ void ls_activate()
           *flagactive = 1;
           /* set whether node is inside or outside */
           if (val<0.0)
+          {
             *flaginside = -1;
+          }
           else
+          {
             *flaginside = 1;
+          }
           /* increment the nand */
           lsupdt.nand++;
         }
       }
+
+
+
+
+
+
+
+/****************TWO PHASE FLOW*****************************************/
+/****************TWO PHASE FLOW*****************************************/
+/****************TWO PHASE FLOW*****************************************/
+      if (genprob.probtyp==prb_twophase)
+      {
+        /* activate nodes of associated fluid element */
+        for (j=0; j<actele->e.ls2->my_fluid->numnp; j++)
+        {
+          actnode =  actele->e.ls2->my_fluid->node[j];
+          flagactive = &(actnode->gnode->is_node_active);
+          if (*flagactive==0)
+          {
+            /* activate the node */
+            *flagactive = 1;
+          }
+        }
+      }
+/****************TWO PHASE FLOW*****************************************/
+/****************TWO PHASE FLOW*****************************************/
+/****************TWO PHASE FLOW*****************************************/
+
+
+
+
+
+
+
+
     }
     else
     {
       /* do nothing for a while */
     }
   }
+  /* set number of enriched nodes */
+  lsupdt.nenode = lsupdt.nand;
 
   /* activate the elements of second layer */
-  for (i=0; i<actfield->dis[0].numele; i++)
+  for (i=0; i<lsetfield->dis[0].numele; i++)
   {
-    actele = &(actfield->dis[0].element[i]);
+    actele = &(lsetfield->dis[0].element[i]);
     /* set nenode and enode */
     /*
      * NOTE => these data structures are used
@@ -1439,9 +1524,9 @@ void ls_activate()
   }
 
   /* activate the nodes of second layer */
-  for (i=0; i<actfield->dis[0].numele; i++)
+  for (i=0; i<lsetfield->dis[0].numele; i++)
   {
-    actele = &(actfield->dis[0].element[i]);
+    actele = &(lsetfield->dis[0].element[i]);
     if (actele->e.ls2->is_elcut==2)
     {
       for (j=0; j<actele->numnp; j++)
@@ -1471,27 +1556,13 @@ void ls_activate()
     }
   }
 
-  /*
-     reset sol_increment of enriched directions corresponding
-     to previously active nodes
-  */
-  for (i=0; i<actfield->dis[0].numnp; i++)
-  {
-    actnode =  &(actfield->dis[0].node[i]);
-    flagactive = &(actnode->gnode->is_node_active);
-    if (*flagactive>2)
-    {
-      /* reset solution at enriched directions */
-      myf2->node[j]->sol_increment.a.da[1][3] = 0.0;
-      myf2->node[j]->sol_increment.a.da[1][4] = 0.0;
-      myf2->node[j]->sol_increment.a.da[3][3] = 0.0;
-      myf2->node[j]->sol_increment.a.da[3][4] = 0.0;
-    }
-  }
   /* print to screen */
   printf("\n**WARNING** LEVELSET ACTIVATE COMPLETED!");
-  /* print to screen */
-  fprintf(file12,"\n**WARNING** LEVELSET ACTIVATE COMPLETED!");
+  /* print to file */
+  if (lsdyn->lsdata->print_to_file_on_off==1)
+  {
+    fprintf(file12,"\n**WARNING** LEVELSET ACTIVATE COMPLETED!");
+  }
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -1525,6 +1596,12 @@ void ls_write()
   dstrc_enter("ls_write");
 #endif
 /*----------------------------------------------------------------------*/
+
+  /* check */
+  if (lsdyn->lsdata->print_to_file_on_off!=1)
+  {
+    dserror("lsdyn->lsdata->print_to_file_on_off!=1!");
+  }
 
   /*  write number of interfaces to file */
   fprintf(file05,"%5d\n",lsupdt.numinterface);
@@ -1592,17 +1669,17 @@ void ls_write()
   /* NOTE =>
    * print also the node coordinates for surface plotting
    */
-  for (i=0; i<actfield->dis[0].numnp; i++)
+  for (i=0; i<lsetfield->dis[0].numnp; i++)
   {
-    actnode = &(actfield->dis[0].node[i]);
+    actnode = &(lsetfield->dis[0].node[i]);
     fprintf(file02,"%10.5E %5d\n",actnode->sol_increment.a.da[1][0],actnode->Id+1);
   }
   fprintf(file02,"\n");
 
   /* print out nodes activated */
-  for (i=0; i<actfield->dis[0].numnp; i++)
+  for (i=0; i<lsetfield->dis[0].numnp; i++)
   {
-    actnode = &(actfield->dis[0].node[i]);
+    actnode = &(lsetfield->dis[0].node[i]);
     flagactive = actnode->gnode->is_node_active;
     flaginside = actnode->gnode->is_node_inside;
     if (flagactive!=0) fprintf(file07,"%5d %5d %5d\n",actnode->Id+1,flagactive,flaginside);
@@ -1614,9 +1691,9 @@ void ls_write()
   /* print out lael */
   counter = 0;
   counter1 = 0;
-  for (i=0; i<actfield->dis[0].numele; i++)
+  for (i=0; i<lsetfield->dis[0].numele; i++)
   {
-    actele = &(actfield->dis[0].element[i]);
+    actele = &(lsetfield->dis[0].element[i]);
     if (actele->e.ls2->is_elcut==1) counter1++;
     if (actele->e.ls2->is_elcut==1 ||
         actele->e.ls2->is_elcut==2)
@@ -1633,9 +1710,9 @@ void ls_write()
 
   /* print out element layers */
   counter = 0;
-  for (i=0; i<actfield->dis[0].numele; i++)
+  for (i=0; i<lsetfield->dis[0].numele; i++)
   {
-    actele = &(actfield->dis[0].element[i]);
+    actele = &(lsetfield->dis[0].element[i]);
     if (actele->e.ls2->nlayer==0)
     {
       continue;
@@ -1650,13 +1727,37 @@ void ls_write()
   /* print out numlayer */
   fprintf(file11,"%5d\n",counter);
 
-  /* print out element material index */
-  for (i=0; i<actfield->dis[0].numele; i++)
+
+
+
+
+
+
+
+
+/****************TWO PHASE FLOW*****************************************/
+/****************TWO PHASE FLOW*****************************************/
+/****************TWO PHASE FLOW*****************************************/
+  if (genprob.probtyp==prb_twophase)
   {
-    actele = &(actfield->dis[0].element[i]);
-    fprintf(file14,"%5d\n",actele->e.ls2->my_fluid->mat-1);
+    /* print out element material index */
+    for (i=0; i<lsetfield->dis[0].numele; i++)
+    {
+      actele = &(lsetfield->dis[0].element[i]);
+      fprintf(file14,"%5d\n",actele->e.ls2->my_fluid->mat-1);
+    }
+    fprintf(file14,"\n");
   }
-  fprintf(file14,"\n");
+/****************TWO PHASE FLOW*****************************************/
+/****************TWO PHASE FLOW*****************************************/
+/****************TWO PHASE FLOW*****************************************/
+
+
+
+
+
+
+
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -1677,7 +1778,7 @@ files are sent to MATLAB and processed to produce some graphical outputs.
 </pre>
 
 *----------------------------------------------------------------------*/
-void ls_write_soln()
+void ls_write_fluid_soln()
 {
   INT          i,j;
   NODE        *actnode;
@@ -1686,6 +1787,12 @@ void ls_write_soln()
   dstrc_enter("ls_write_soln");
 #endif
 /*----------------------------------------------------------------------*/
+
+  /* check */
+  if (lsdyn->lsdata->print_to_file_on_off!=1)
+  {
+    dserror("lsdyn->lsdata->print_to_file_on_off!=1!");
+  }
 
   /* write solution to file */
   for (i=0; i<fluidfield->ndis; i++)
@@ -1720,20 +1827,26 @@ data structures are initialized for the next time step.
 *----------------------------------------------------------------------*/
 void ls_reset()
 {
-  INT              i,j;
+  INT              i,j,k,kk;
   ELEMENT         *actele;
+  ELEMENT         *first;
+  ELEMENT         *last;
+  ELEMENT         *list[2];
   NODE            *actnode;
   LS_INT_DATA     *intdata;
   LS_POLY_DATA    *polydata;
+  DOUBLE           x1,x2,xm1,xm2,dist;
+  INT              found_flag;
 
 #ifdef DEBUG
   dstrc_enter("ls_reset");
 #endif
 /*----------------------------------------------------------------------*/
 
-  for (i=0; i<actfield->dis[0].numele; i++)
+  /* confine search region for next time step */
+  for (i=0; i<lsetfield->dis[0].numele; i++)
   {
-    actele = &(actfield->dis[0].element[i]);
+    actele = &(lsetfield->dis[0].element[i]);
     if (actele->e.ls2->nlayer!=0 && actele->e.ls2->nlayer<=SEARCHBAND)
     {
       actele->e.ls2->is_elsearch = 1;
@@ -1742,9 +1855,83 @@ void ls_reset()
     {
       actele->e.ls2->is_elsearch = 0;
     }
+  }
+
+  found_flag = 0;
+  /* additional confinement */
+  if (lsdyn->lsdata->isolate_end_points==1)
+  {
+    /* find first and last */
+    for (k=0; k<lsetfield->dis[0].numele; k++)
+    {
+      actele = &(lsetfield->dis[0].element[k]);
+
+      if (actele->e.ls2->is_el_first==1)
+      {
+        found_flag = 1;
+        first = actele;
+      }
+
+      if (actele->e.ls2->is_el_last==1)
+      {
+        found_flag = 1;
+        last = actele;
+      }
+    }
+
+    if (found_flag==1)
+    {
+      /* form list vector */
+      list[0] = first;
+      list[1] = last;
+      /* loop over the elements and set is_elsearch=0 for elements which are
+       * in radious of influence */
+      /* check for active elements on boundary */
+      for (j=0; j<2; j++)
+      {
+        /* compute coordinates of the mid-point */
+        for (kk=0; kk<list[j]->numnp; kk++)
+        {
+          x1 += list[j]->node[kk]->x[0];
+          x2 += list[j]->node[kk]->x[1];
+        }
+        x1 /= list[j]->numnp;
+        x2 /= list[j]->numnp;
+        /* loop over elements */
+        for (k=0; k<lsetfield->dis[0].numele; k++)
+        {
+          actele = &(lsetfield->dis[0].element[k]);
+          /* compute coordinates of the mid-point */
+          for (kk=0; kk<actele->numnp; kk++)
+          {
+            xm1 += actele->node[kk]->x[0];
+            xm2 += actele->node[kk]->x[1];
+          }
+          xm1 /= actele->numnp;
+          xm2 /= actele->numnp;
+          /* compute distance */
+          dist = (xm2-x2)*(xm2-x2) + (xm1-x1)*(xm1-x1);
+          dist = sqrt(dist);
+          /* check */
+          if (dist<lsdyn->lsdata->rad_inactive_region)
+          {
+            actele->e.ls2->is_elsearch = 0;
+          }
+        }
+      }
+    }
+  }
+
+  /* reset element data */
+  for (i=0; i<lsetfield->dis[0].numele; i++)
+  {
+    actele = &(lsetfield->dis[0].element[i]);
     /* reset flags and counters */
     actele->e.ls2->is_elcut = 0;
     actele->e.ls2->is_sedge_set = 0;
+    actele->e.ls2->is_el_junction = 0;
+    actele->e.ls2->is_el_first = 0;
+    actele->e.ls2->is_el_last = 0;
     actele->e.ls2->nlayer = 0;
     actele->e.ls2->nenode = 0;
     actele->e.ls2->prncnt = 0;
@@ -1768,12 +1955,43 @@ void ls_reset()
   }
 
   /* reset flag for node activation */
-  for (i=0; i<actfield->dis[0].numnp; i++)
+  /* levelset field */
+  for (i=0; i<lsetfield->dis[0].numnp; i++)
   {
-    actnode = &(actfield->dis[0].node[i]);
+    actnode = &(lsetfield->dis[0].node[i]);
     actnode->gnode->is_node_active = 0;
     actnode->gnode->is_node_inside = 0;
   }
+
+
+
+
+
+
+
+/****************TWO PHASE FLOW*****************************************/
+/****************TWO PHASE FLOW*****************************************/
+/****************TWO PHASE FLOW*****************************************/
+  if (genprob.probtyp==prb_twophase)
+  {
+    /* fluid field */
+    for (i=0; i<fluidfield->dis[0].numnp; i++)
+    {
+      actnode = &(fluidfield->dis[0].node[i]);
+      actnode->gnode->is_node_active = 0;
+    }
+  }
+/****************TWO PHASE FLOW*****************************************/
+/****************TWO PHASE FLOW*****************************************/
+/****************TWO PHASE FLOW*****************************************/
+
+
+
+
+
+
+
+
   /* reset nand */
   lsupdt.nand = 0;
 
@@ -1785,7 +2003,7 @@ void ls_reset()
     lsupdt.typeinterface[i] = 0;
   }
   lsupdt.numinterface = 0;
-  lsupdt.first_in_list = (ELEMENT*)CCACALLOC(10,sizeof(ELEMENT));
+  lsupdt.first_in_list = (ELEMENT*)CCACALLOC(NUM_MAX_INTERFACE,sizeof(ELEMENT));
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -1809,8 +2027,6 @@ void ls_resetintdata(
   LS_INT_DATA *data
   )
 {
-  INT     i,j,k;
-
 #ifdef DEBUG
   dstrc_enter("ls_resetintdata");
 #endif
@@ -1877,6 +2093,7 @@ void ls_resetpolydata(
   for (i=0; i<2; i++)
     for (j=0; j<7; j++)
       data->polygonmat[i][j] = 0;
+
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
   dstrc_exit();
@@ -1912,22 +2129,25 @@ void ls_finalize()
   amdel(&node_to_edge_tri_a);
   amdel(&edge_to_triangle_a);
 
-  /* close the files */
-  fclose(file01);
-  fclose(file02);
-  fclose(file03);
-  fclose(file04);
-  fclose(file04_);
-  fclose(file05);
-  fclose(file06);
-  fclose(file07);
-  fclose(file08);
-  fclose(file09);
-  fclose(file10);
-  fclose(file11);
-  fclose(file12);
-  fclose(file13);
-  fclose(file14);
+  if (lsdyn->lsdata->print_to_file_on_off==1)
+  {
+    /* close the files */
+    fclose(file01);
+    fclose(file02);
+    fclose(file03);
+    fclose(file04);
+    fclose(file04_);
+    fclose(file05);
+    fclose(file06);
+    fclose(file07);
+    fclose(file08);
+    fclose(file09);
+    fclose(file10);
+    fclose(file11);
+    fclose(file12);
+    fclose(file13);
+    fclose(file14);
+  }
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -2019,6 +2239,12 @@ void ls_printelinfo_to_file(
   dstrc_enter("ls_printelinfo_to_file");
 #endif
 /*----------------------------------------------------------------------*/
+
+  /* check */
+  if (lsdyn->lsdata->print_to_file_on_off!=1)
+  {
+    dserror("lsdyn->lsdata->print_to_file_on_off!=1!");
+  }
 
   /* print element Id */
   fprintf(file12,"\nElement=%6d\n\n",ele->Id+1);
@@ -2116,6 +2342,12 @@ void ls_printnodeinfo_to_file(
 #endif
 /*----------------------------------------------------------------------*/
 
+  /* check */
+  if (lsdyn->lsdata->print_to_file_on_off!=1)
+  {
+    dserror("lsdyn->lsdata->print_to_file_on_off!=1!");
+  }
+
   fprintf(file12,"\n\nNode=%6d",node->Id+1);
   fprintf(file12,"\nx=\n[\n%10.5E %10.5E\n]",node->x[0],node->x[1]);
   fprintf(file12,"\nval = %10.5E",node->sol_increment.a.da[1][0]);
@@ -2143,7 +2375,7 @@ initialize the parameters used in level set update
 *----------------------------------------------------------------------*/
 void ls_setdata()
 {
-  INT     i;
+  INT         i;
 
 #ifdef DEBUG
   dstrc_enter("ls_setdata");
@@ -2265,53 +2497,28 @@ void ls_setdata()
   node_to_edge_tri[0][2] = 2;
   node_to_edge_tri[1][2] = 3;
 
-/* set the flag to check successfullness of level set update */
-  completionflag = 0;
+  /* set the flag to check successfullness of level set update */
+  COMPLETIONFLAG = 0;
 
-/* open files to write some useful information */
-  file01 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_levelsetzero","w");
-  file02 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_levelsetprofile","w");
-  file03 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_lael","w");
-  file04 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_nael","w");
-  file04_ = fopen("src/ls/to_matlab/xfem_to_matlab/xfem_to_matlab_nael","w");
-  file05 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_nint","w");
-  file06 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_nand","w");
-  file07 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_land","w");
-  file08 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_nseg","w");
-  file09 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_firstinlist","w");
-  file10 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_layer","w");
-  file11 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_nlayer","w");
-  file14 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_matindex","w");
+  /* set the restart flag */
+  RESTARTFLAG = 0;
 
-  /* this file is used for debugging purposes */
-  file12 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_debug","w");
-
-  /* open files to write fluid solution (velocity and pressure) */
-  file13 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_fluid_solution","w");
-
-  /*initialize the lsupdt */
-  lsupdt.nael = (INT*)CCACALLOC(50,sizeof(INT));
-  lsupdt.typeinterface = (INT*)CCACALLOC(50,sizeof(INT));
-
-  /* set actfield (level set) */
-  actfield = &(field[genprob.numls]);
-  /* perform check for the field type */
-  if (actfield->fieldtyp!=levelset) dserror("field != levelset");
-
-  /* set fluid field */
-  if (genprob.probtyp == prb_twophase)
+  if (genprob.restart>0)
   {
-    fluidfield = &(field[genprob.numff]);
-    /* perform check for the field type */
-    if (fluidfield->fieldtyp!=fluid) dserror("field != fluid");
+    /* turn on restart flag */
+    RESTARTFLAG = 1;
   }
 
-  /* initialize the flag for node activation */
-  for (i=0; i<actfield->dis[0].ngnode; i++)
-    actfield->dis[0].gnode[i].is_node_active = 0;
+  /*initialize the lsupdt */
+  lsupdt.nael = (INT*)CCACALLOC(NUM_MAX_INTERFACE,sizeof(INT));
+  lsupdt.typeinterface = (INT*)CCACALLOC(NUM_MAX_INTERFACE,sizeof(INT));
 
-  /* set lsdyn */
-  lsdyn = alldyn[genprob.numls].lsdyn;
+  /* initialize the flag for node activation */
+  for (i=0; i<lsetfield->dis[0].ngnode; i++)
+  {
+    lsetfield->dis[0].gnode[i].is_node_active = 0;
+    lsetfield->dis[0].gnode[i].is_node_inside = 0;
+  }
 
   SEARCHBAND = lsdyn->lsdata->searchband;
   /* check */
@@ -2320,8 +2527,29 @@ void ls_setdata()
     SEARCHBAND = lsdyn->lsdata->numlayer;
   }
 
-  /* initialise level set field */
-  ls_init(actfield,lsdyn,3);
+  if (lsdyn->lsdata->print_to_file_on_off==1)
+  {
+    /* open files to write some useful information */
+    file01 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_levelsetzero","w");
+    file02 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_levelsetprofile","w");
+    file03 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_lael","w");
+    file04 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_nael","w");
+    file04_ = fopen("src/ls/to_matlab/xfem_to_matlab/xfem_to_matlab_nael","w");
+    file05 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_nint","w");
+    file06 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_nand","w");
+    file07 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_land","w");
+    file08 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_nseg","w");
+    file09 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_firstinlist","w");
+    file10 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_layer","w");
+    file11 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_nlayer","w");
+    file14 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_matindex","w");
+
+    /* this file is used for debugging purposes */
+    file12 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_debug","w");
+
+    /* open files to write fluid solution (velocity and pressure) */
+    file13 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_fluid_solution","w");
+  }
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -2352,10 +2580,10 @@ void ls_printelements()
 /*----------------------------------------------------------------------*/
 
   /*loop over the nodes of the discretization associated with field */
-  for (i=0; i<actfield->dis[0].numele; i++)
+  for (i=0; i<lsetfield->dis[0].numele; i++)
   {
     /* access to element */
-    actele = &(actfield->dis[0].element[i]);
+    actele = &(lsetfield->dis[0].element[i]);
     /* print the element information */
     ls_printelement(actele);
   }
@@ -2389,6 +2617,12 @@ void ls_printelement(
   dstrc_enter("ls_printelement");
 #endif
 /*----------------------------------------------------------------------*/
+
+  /* check */
+  if (lsdyn->lsdata->print_to_file_on_off!=1)
+  {
+    dserror("lsdyn->lsdata->print_to_file_on_off!=1!");
+  }
 
   /*loop over the nodes of ele */
   for (i=0; i<ele->numnp; i++)
@@ -2436,9 +2670,9 @@ void ls_localize()
     for (ii=2; ii<lsdyn->lsdata->numlayer; ii++)
     {
       /* add elements */
-      for (i=0; i<actfield->dis[0].numele; i++)
+      for (i=0; i<lsetfield->dis[0].numele; i++)
       {
-        actele = &(actfield->dis[0].element[i]);
+        actele = &(lsetfield->dis[0].element[i]);
         /* check */
         if (actele->e.ls2->nlayer!=0) continue;
         /* loop */
@@ -2452,9 +2686,9 @@ void ls_localize()
         }
       }
       /* add nodes */
-      for (i=0; i<actfield->dis[0].numele; i++)
+      for (i=0; i<lsetfield->dis[0].numele; i++)
       {
-        actele = &(actfield->dis[0].element[i]);
+        actele = &(lsetfield->dis[0].element[i]);
         if (actele->e.ls2->nlayer==ii+1)
         {
           for (j=0; j<actele->numnp; j++)
@@ -2489,7 +2723,10 @@ void ls_localize()
   /* print to screen */
   printf("\n**WARNING** LEVELSET LAYER ACTIVATION FOR LOCALIZATION COMPLETED!");
   /* print to file */
-  fprintf(file12,"\n**WARNING** LEVELSET LAYER ACTIVATION FOR LOCALIZATION COMPLETED!");
+  if (lsdyn->lsdata->print_to_file_on_off==1)
+  {
+    fprintf(file12,"\n**WARNING** LEVELSET LAYER ACTIVATION FOR LOCALIZATION COMPLETED!");
+  }
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -2521,6 +2758,12 @@ void ls_to_matlab()
 #endif
 /*----------------------------------------------------------------------*/
 
+  /* check */
+  if (lsdyn->lsdata->print_to_file_on_off!=1)
+  {
+    dserror("lsdyn->lsdata->print_to_file_on_off!=1!");
+  }
+
   /* I need the connectivity */
   f1 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_connectivity","w");
 
@@ -2531,6 +2774,7 @@ void ls_to_matlab()
     {
       actele = &(field[i].dis[0].element[j]);
       fprintf(f1,"%5d ",i+1);
+      fprintf(f1,"%5d ",actele->Id+1);
       for (k=0; k<actele->numnp; k++)
       {
         fprintf(f1,"%5d ",actele->lm[k]+1);
@@ -2564,13 +2808,15 @@ void ls_to_matlab()
   fclose(f1);
 
   /* I need some general information */
-  if (actfield->fieldtyp==levelset)
+  if (lsetfield->fieldtyp==levelset)
   {
     f1 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_general","w");
-    fprintf(f1,"%5d\n",actfield->dis[0].numnp);
-    fprintf(f1,"%5d\n",actfield->dis[0].numele);
+    fprintf(f1,"%5d\n",lsetfield->dis[0].numnp);
+    fprintf(f1,"%5d\n",lsetfield->dis[0].numele);
     fprintf(f1,"%5d\n",lsdyn->nstep+1);
     fprintf(f1,"%5d\n",genprob.numls+1);
+    fprintf(f1,"%5d\n",genprob.ndim);
+    fprintf(f1,"%10.5E\n",lsdyn->dt);
     fclose(f1);
   }
   else
@@ -2580,7 +2826,7 @@ void ls_to_matlab()
 
   /* print number of nodes per element */
   f1 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_nodeperelement","w");
-  fprintf(f1,"%5d",actfield->dis[0].element[0].numnp);
+  fprintf(f1,"%5d",lsetfield->dis[0].element[0].numnp);
   fclose(f1);
 
 /*----------------------------------------------------------------------*/
@@ -2665,9 +2911,9 @@ void ls_polygonize()
 /*----------------------------------------------------------------------*/
 
   /* loop over the elements */
-  for (i=0; i<actfield->dis[0].numele; i++)
+  for (i=0; i<lsetfield->dis[0].numele; i++)
   {
-    actele = &(actfield->dis[0].element[i]);
+    actele = &(lsetfield->dis[0].element[i]);
     if (actele->e.ls2->is_elcut==1)
     {
       /* initialize polygon */
@@ -2683,14 +2929,21 @@ void ls_polygonize()
       xfempolyflag = xfem_poly_computeGP;
       xfem_polygon(xfempolyflag,actele);
       /* write polygon information to files */
-      xfempolyflag = xfem_poly_write;
-      xfem_polygon(xfempolyflag,actele);
+      if (lsdyn->lsdata->print_to_file_on_off==1)
+      {
+        xfempolyflag = xfem_poly_write;
+        xfem_polygon(xfempolyflag,actele);
+      }
     }
   }
   /* print to screen */
-  printf("\n**WARNING** LEVELSET POLYGONIZATION COMPLETED!");
+  printf("\n**WARNING** LEVELSET POLYGONIZATION COMPLETED!\n\n\n");
   /* print to file */
-  fprintf(file12,"\n**WARNING** LEVELSET POLYGONIZATION COMPLETED!\n\n\n\n");
+  /* check */
+  if (lsdyn->lsdata->print_to_file_on_off==1)
+  {
+    fprintf(file12,"\n**WARNING** LEVELSET POLYGONIZATION COMPLETED!\n\n\n\n");
+  }
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -2726,9 +2979,9 @@ void ls_init_material()
 /*----------------------------------------------------------------------*/
 
   /* loop over the elements */
-  for (i=0; i<actfield->dis[0].numele; i++)
+  for (i=0; i<lsetfield->dis[0].numele; i++)
   {
-    actele = &(actfield->dis[0].element[i]);
+    actele = &(lsetfield->dis[0].element[i]);
     if (actele->e.ls2->is_elcut==1)
     {
       actele->e.ls2->my_fluid->mat = 3;
@@ -2765,8 +3018,12 @@ void ls_init_material()
   }
   /* print to screen */
   printf("\n**WARNING** LEVELSET MATERIAL INITIALIZATION COMPLETED!");
-  /* print to file */
-  fprintf(file12,"\n**WARNING** LEVELSET MATERIAL INITIALIZATION COMPLETED!");
+
+  if (lsdyn->lsdata->print_to_file_on_off==1)
+  {
+    /* print to file */
+    fprintf(file12,"\n**WARNING** LEVELSET MATERIAL INITIALIZATION COMPLETED!");
+  }
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -2799,9 +3056,9 @@ void ls_updt_material()
 /*----------------------------------------------------------------------*/
 
   /* loop over the elements */
-  for (i=0; i<actfield->dis[0].numele; i++)
+  for (i=0; i<lsetfield->dis[0].numele; i++)
   {
-    actele = &(actfield->dis[0].element[i]);
+    actele = &(lsetfield->dis[0].element[i]);
     if (actele->e.ls2->is_elcut==0 && actele->e.ls2->is_elsearch==0)
     {
       /* no update */
@@ -2846,8 +3103,12 @@ void ls_updt_material()
   }
   /* print to screen */
   printf("\n**WARNING** LEVELSET MATERIAL UPDATE COMPLETED!");
-  /* print to file */
-  fprintf(file12,"\n**WARNING** LEVELSET MATERIAL UPDATE COMPLETED!");
+
+  if (lsdyn->lsdata->print_to_file_on_off==1)
+  {
+    /* print to file */
+    fprintf(file12,"\n**WARNING** LEVELSET MATERIAL UPDATE COMPLETED!");
+  }
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -2883,17 +3144,23 @@ void ls_check_profile()
 /*----------------------------------------------------------------------*/
 
   /* loop */
-  for (i=0; i<actfield->dis[0].numnp; i++)
+  for (i=0; i<lsetfield->dis[0].numnp; i++)
   {
-    actnode = &(actfield->dis[0].node[i]);
+    actnode = &(lsetfield->dis[0].node[i]);
     val = actnode->sol_increment.a.da[1][0];
     /* check */
     if (fabs(val)<EPS5)
     {
       actnode->sol_increment.a.da[1][0] = NODETHRESHOLD;
-      fprintf(file12,"\n\n**WARNING** DISTANCE FUNCTION FOR NODE %4d MODIFIED!",
-              actnode->Id+1);
-      ls_printnodeinfo_to_file(actnode);
+
+      /* print to file */
+      if (lsdyn->lsdata->print_to_file_on_off==1)
+      {
+
+        fprintf(file12,"\n\n**WARNING** DISTANCE FUNCTION FOR NODE %4d MODIFIED!",
+                actnode->Id+1);
+        ls_printnodeinfo_to_file(actnode);
+      }
     }
   }
 
@@ -2919,14 +3186,13 @@ are initialized to hydrostatic pressure.
 *----------------------------------------------------------------------*/
 void ls_init_pres_bd()
 {
-  INT         i,j;
+  INT         i;
   ELEMENT    *actele;
-  ELEMENT    *my_fluid;
   NODE       *actnode;
-  INT         actmat;
   DOUBLE      p;
   DOUBLE      DENS;
-  DOUBLE      GRAVITY=-9800.0;
+  DOUBLE      GRAVITY;
+  DOUBLE      xrange, yrange;
 
 #ifdef DEBUG
   dstrc_enter("ls_init_pres_bd");
@@ -2943,43 +3209,28 @@ void ls_init_pres_bd()
   DENS = mat[1].m.fluid->density;
 
   /* set gravity */
-/*  actele = &(actfield->dis[0].element[0]);
-  my_fluid = &(actele->e.ls2->my_fluid);
-  GRAVITY = -ONE*my_fluid->g.gsurf->neum->neum_val.a.dv[1];*/
+  actele = &(fluidfield->dis[0].element[0]);
+  GRAVITY = -1.0*actele->g.gsurf->neum->neum_val.a.dv[1];
 
-
-
-
+  /* set xrange and yrange */
+  xrange = lsdyn->lsdata->xe1;
+  yrange = lsdyn->lsdata->ye1;
 
   /* loop over elements */
-  for (i=0; i<actfield->dis[0].numele; i++)
+  for (i=0; i<fluidfield->dis[0].numnp; i++)
   {
-    /* access to associated fluid element */
-    actele = &(actfield->dis[0].element[i]);
-    my_fluid = &(actele->e.ls2->my_fluid);
-    /* access to material index of corresponding fluid element */
-    actmat = my_fluid->mat-1;
-    if (actmat==1) /* element belongs to WATER block */
+    actnode = &(fluidfield->dis[0].node[i]);
+    if (actnode->x[0]<=xrange && actnode->x[1]<=yrange)
     {
-      /* loop over the nodes of element */
-      for (j=0; j<my_fluid->numnp; j++)
-      {
-        actnode =  my_fluid->node[j];
-        /* compute pressure */
-        p = DENS*GRAVITY*actnode->x[1];
-
-        printf("%10.5E\n",p);
-
-        /* initialize the pressure */
-        actnode->sol_increment.a.da[1][2] = p;
-        actnode->sol_increment.a.da[3][2] = p;
-      }
+      /* compute pressure */
+      p = DENS*GRAVITY*actnode->x[1];
+      /* initialize the pressure */
+      actnode->sol_increment.a.da[1][2] = p;
+      actnode->sol_increment.a.da[3][2] = p;
     }
   }
   /* print to screen */
-  printf("\n**WARNING** PRESSURE INITIALIZED FOR BREAKING DAM PROBLEM!");
-  /* print to file */
-  fprintf(file12,"\n**WARNING** PRESSURE INITIALIZED FOR BREAKING DAM PROBLEM!");
+  printf("\n**WARNING** PRESSURE INITIALIZED FOR BREAKING DAM PROBLEM!\n\n");
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -2988,5 +3239,178 @@ void ls_init_pres_bd()
 
   return;
 } /* end of ls_init_pres_bd */
+
+
+
+/*!----------------------------------------------------------------------
+\brief find last element in the list
+
+<pre>                                                            irhan 07/04
+In this subroutine element which is last in a given interface (closed
+or opened) is found
+</pre>
+
+*----------------------------------------------------------------------*/
+ELEMENT* ls_find_last_in_list(
+  INT numint
+  )
+{
+  INT          i;
+  INT          ctrl;
+  ELEMENT     *first;
+  ELEMENT     *last;
+  ELEMENT     *temp;
+
+#ifdef DEBUG
+  dstrc_enter("ls_find_last_in_list");
+#endif
+/*----------------------------------------------------------------------*/
+
+  /* access to first element in list */
+  first = &(lsupdt.first_in_list[numint]);
+  temp = first;
+  ctrl = 0;
+  /* find last in list */
+  if (lsupdt.typeinterface[numint]==1)
+  {
+    for (i=0; i<lsupdt.nael[numint]-1; i++)
+    {
+
+
+      if (ctrl == 0)
+      {
+        if (temp->e.ls2->is_el_junction==0)
+        {
+          last = temp->e.ls2->intdata[0].nbor_s;
+        }
+        else if (temp->e.ls2->is_el_junction==1)
+        {
+          ctrl = 1;
+          last = temp->e.ls2->intdata[0].nbor_s;
+        }
+      }
+      else
+      {
+        last = temp->e.ls2->intdata[0].nbor;
+      }
+      /* set temp */
+      temp = last;
+    }
+    /* check */
+    if (last->e.ls2->intdata[0].nbor!=NULL ||
+        last->e.ls2->intdata[0].nbor_s!=NULL)
+    {
+/*      dserror("last->nbor!=NULL || last->nbor_s!=NULL");*/
+    }
+  }
+  else if (lsupdt.typeinterface[i]==0)
+  {
+    for (i=0; i<lsupdt.nael[numint]-1; i++)
+    {
+      last = temp->e.ls2->intdata[0].nbor;
+      temp = last;
+    }
+    /* check */
+    if (last->e.ls2->intdata[0].nbor!=first)
+    {
+      dserror("last->nbor!=first");
+    }
+  }
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+
+  return last;
+} /* end of ls_find_last_in_list */
+
+
+
+/*!----------------------------------------------------------------------
+\brief mark tip elements
+
+<pre>                                                            irhan 07/04
+In this subroutine element which is last in a given interface (closed
+or opened) is found
+</pre>
+
+*----------------------------------------------------------------------*/
+void ls_mark_tip_elements()
+{
+  INT          i;
+  ELEMENT     *first;
+  ELEMENT     *last;
+
+#ifdef DEBUG
+  dstrc_enter("ls_mark_tip_elements");
+#endif
+/*----------------------------------------------------------------------*/
+
+  for (i=0; i<lsupdt.numinterface; i++)
+  {
+    if (lsupdt.typeinterface[i]==1)
+    {
+      first = &(lsupdt.first_in_list[i]);
+      last = ls_find_last_in_list(i);
+      /* set flags */
+      first->e.ls2->is_el_first = 1;
+      last->e.ls2->is_el_last = 1;
+    }
+  }
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+} /* end of ls_mark_tip_elements */
+
+
+
+/*!----------------------------------------------------------------------
+\brief mark tip elements
+
+<pre>                                                            irhan 07/04
+In this subroutine element which is last in a given interface (closed
+or opened) is found
+</pre>
+
+*----------------------------------------------------------------------*/
+void ls_reset_fld_sol_increment()
+{
+  INT          i;
+  INT         *flagactive;
+  NODE        *actnode;
+
+#ifdef DEBUG
+  dstrc_enter("ls_reset_fld_sol_increment");
+#endif
+/*----------------------------------------------------------------------*/
+
+  /*
+    reset sol_increment of enriched directions corresponding
+    to previously active nodes
+  */
+  for (i=0; i<fluidfield->dis[0].numnp; i++)
+  {
+    actnode = &(fluidfield->dis[0].node[i]);
+    flagactive = &(actnode->gnode->is_node_active);
+    if (*flagactive!=1)
+    {
+      /* reset solution at enriched directions */
+      actnode->sol_increment.a.da[1][3] = 0.0;
+      actnode->sol_increment.a.da[1][4] = 0.0;
+      actnode->sol_increment.a.da[3][3] = 0.0;
+      actnode->sol_increment.a.da[3][4] = 0.0;
+    }
+  }
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+
+  return;
+} /* end of ls_reset_fld_sol_increment */
 /*! @} (documentation module close)*/
 #endif

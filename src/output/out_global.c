@@ -164,7 +164,10 @@ void out_general()
         fprintf(out,"Type of Problem           : Two-Phase-Fluid-Flow\n");
         break;
       case prb_levelset:
-        fprintf(out,"Type of Problem           : Levelset \n");
+        fprintf(out,"Type of Problem           : Levelset\n");
+        break;
+      case prb_chimera:
+        fprintf(out,"Type of Problem           : Chimera\n");
         break;
       default:
         dserror("Cannot print problem type");
@@ -1143,12 +1146,12 @@ return;
 \brief print ssi coupling informations
 
 <pre>                                                         genk 01/03
-		     
+
 </pre>
 
-\param *masterfield    FIELD   (i)    
+\param *masterfield    FIELD   (i)
 
-\return void                                                                             
+\return void
 
 ------------------------------------------------------------------------*/
 void out_ssi(FIELD *masterfield)
@@ -1161,7 +1164,7 @@ INT        myrank;
 INT        nprocs;
 INT        numsf;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("out_ssi");
 #endif
 
@@ -1186,7 +1189,7 @@ for (i=0;i<masterfield->dis[0].numnp;i++)
    if (actsnode!=NULL)
    fprintf(out,"%-6d         %-6d\n",actmnode->Id,actsnode->Id);
    else
-   fprintf(out,"%-6d         ------\n",actmnode->Id);    
+   fprintf(out,"%-6d         ------\n",actmnode->Id);
 
 }
 fprintf(out,"________________________________________________________________________________\n\n");
@@ -1203,7 +1206,7 @@ for (i=0;i<masterfield->dis[0].numnp;i++)
    if (actsnode!=NULL)
    fprintf(out,"%-6d         %-6d\n",actmnode->Id_loc,actsnode->Id_loc);
    else
-   fprintf(out,"%-6d         ------\n",actmnode->Id_loc);    
+   fprintf(out,"%-6d         ------\n",actmnode->Id_loc);
 
 }
 
@@ -1216,7 +1219,7 @@ if (myrank==0) fflush(out);
 #else
 dserror("SSI functions not compiled in\n");
 #endif
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -1200,6 +1200,67 @@ return;
 
 
 
+void out_gid_msh_trial()
+{
+INT           i,j,k,n;
+FILE         *out = allfiles.gidmsh;
+FIELD        *actfield;
+GIDSET       *actgid;
+ELEMENT      *actele;
+
+#ifdef DEBUG
+dstrc_enter("out_gid_msh_trial");
+#endif
+/*----------------------------------------------------------------------*/
+/*-------------------------------------------------------- print a head */
+fprintf(out,"#--------------------------------------------------------------------------------\n");
+fprintf(out,"# P_CARAT postprocessing output to GiD - MESH file\n");
+fprintf(out,"#--------------------------------------------------------------------------------\n");
+/*---------------------------------------------------- loop over fields */
+for (i=0; i<genprob.numfld; i++)
+{
+   actfield = &(field[i]);
+   actgid   = &(gid[i]);
+   /*----------------------------------- print the meshes of this field */
+   if (actgid->is_fluid2_22)
+   {
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"# MESH %s FOR FIELD %s FLUID2 2x2 GP\n",actgid->fluid2_22_name,actgid->fieldname);
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"MESH %s DIMENSION 2 ELEMTYPE Quadrilateral NNODE 4\n",actgid->fluid2_22_name);
+      /*-------------- if this is first mesh, print coodinates of nodes */
+      fprintf(out,"# printout ALL nodal coordinates of ALL fields in first mesh only\n");
+      fprintf(out,"COORDINATES\n");
+      out_gid_allcoords_trial(out);
+      fprintf(out,"END COORDINATES\n");
+      /*------------------------------------------------ print elements */
+      fprintf(out,"ELEMENTS\n");
+      for (j=0; j<actfield->ndis; j++)
+      {
+        for (k=0; k<actfield->dis[j].numele; k++)
+        {
+          actele = &(actfield->dis[j].element[k]);
+          if (actele->eltyp != el_fluid2 || actele->numnp !=4) continue;
+          fprintf(out," %6d ",actele->Id+1);
+          for (n=0; n<actele->numnp; n++)
+            fprintf(out,"%6d ",actele->node[n]->Id+1);
+          fprintf(out,"\n");
+        }
+      }
+      fprintf(out,"END ELEMENTS\n");
+   }
+} /* end of (i=0; i<genprob.numfld; i++) */
+/*----------------------------------------------------------------------*/
+fflush(out);
+#ifdef DEBUG
+dstrc_exit();
+#endif
+return;
+} /* end of out_gid_msh_trial */
+
+
+
+
 /*----------------------------------------------------------------------*
  |  routine to write all nodal coordinates of all fields m.gee 12/01    |
  *----------------------------------------------------------------------*/
@@ -1246,3 +1307,54 @@ dstrc_exit();
 return;
 } /* end of out_gid_allcoords */
 
+
+
+
+/*----------------------------------------------------------------------*
+ |  routine to write all nodal coordinates of all fields m.gee 12/01    |
+ *----------------------------------------------------------------------*/
+void out_gid_allcoords_trial(FILE *out)
+{
+INT           i,j,k;
+FIELD        *actfield;
+NODE         *actnode;
+#ifdef DEBUG
+dstrc_enter("out_gid_allcoords_trial");
+#endif
+/*---------------------------------------------------- loop over fields */
+for (i=0; i<genprob.numfld; i++)
+{
+  actfield = &(field[i]);
+  for (j=0; j<actfield->ndis; j++)
+  {
+    for (k=0; k<actfield->dis[j].numnp; k++)
+    {
+      actnode = &(actfield->dis[j].node[k]);
+      switch (genprob.ndim)
+      {
+          case 3:
+            fprintf(out,"%6d %-18.5f %-18.5f %-18.5f\n",
+                    actnode->Id+1,
+                    actnode->x[0],
+                    actnode->x[1],
+                    actnode->x[2]);
+            break;
+          case 2:
+            fprintf(out,"%6d %-18.5f %-18.5f \n",
+                    actnode->Id+1,
+                    actnode->x[0],
+                    actnode->x[1]);
+             break;
+          default:
+            dserror("Unknown number of dimensions");
+            break;
+      }
+    }
+  }
+} /* end of (i=0; i<genprob.numfld; i++) */
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
+dstrc_exit();
+#endif
+return;
+} /* end of out_gid_allcoords_trial */

@@ -285,7 +285,10 @@ for (j=0; j<genprob.numfld; j++)
   /*------------------------- matrix is ditributed modified sparse row */
   if (isaztec_msr==1)
   {
-    if(nsysarray>1) dserror("different discretisations not possible with SOLVER_TYP 'AZTEC_MSR'\n");
+    /* needed for chimera */
+    if (actfield->fieldtyp==fluid) nsysarray = actfield->ndis;
+
+    /*if(nsysarray>1) dserror("different discretisations not possible with SOLVER_TYP 'AZTEC_MSR'\n");*/
     actsolv->nsysarray = nsysarray;
     actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
     actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
@@ -294,7 +297,7 @@ for (j=0; j<genprob.numfld; j++)
       actsolv->sysarray_typ[i] = msr;
       actsolv->sysarray[i].msr = (AZ_ARRAY_MSR*)CCACALLOC(1,sizeof(AZ_ARRAY_MSR));
       actsolv->sysarray[i].msr->bins=NULL;
-      mask_msr(actfield,actpart,actsolv,actintra,actsolv->sysarray[i].msr,0);
+      mask_msr(actfield,actpart,actsolv,actintra,actsolv->sysarray[i].msr,i);
     }
     isaztec_msr=0;
   }
@@ -455,6 +458,115 @@ dstrc_exit();
 return;
 } /* end of mask_global_matrices */
 
+
+
+
+
+void remask_global_matrices_xfem()
+{
+
+INT i,j;               /* some counters */
+#ifdef AZTEC_PACKAGE
+INT isaztec_msr  =0;       /* flag for a certain sparsity pattern */
+#endif
+
+#ifdef UMFPACK
+INT isumfpack    =0;
+#endif
+
+
+INT nsysarray    =1;
+INT actdis       =0;
+
+INT numeq;
+INT numeq_total;
+
+FIELD      *actfield;        /* the active field */
+PARTITION  *actpart;         /* my partition of the active field */
+SOLVAR     *actsolv;         /* the active SOLVAR */
+INTRA      *actintra = NULL; /* the field's intra-communicator */
+
+#ifdef DEBUG
+dstrc_enter("remask_global_matrices");
+#endif
+
+/*------------------------------------------------ loop over all fields */
+for (j=0; j<genprob.numfld; j++)
+{
+  actfield = &(field[j]);
+  actsolv  = &(solv[j]);
+  actpart  = &(partition[j]);
+#ifdef PARALLEL
+  actintra = &(par.intra[j]);
+#else
+  /* if we are not parallel here, we have to allocate a pseudo-intracommunicator */
+  actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
+  actintra->intra_fieldtyp = actfield->fieldtyp;
+  actintra->intra_rank   = 0;
+  actintra->intra_nprocs   = 1;
+#endif
+  /*-------------------------------------- not member of this field group */
+  if (actintra->intra_fieldtyp!=fluid) continue;
+
+#ifdef UMFPACK
+  /*-------------------- matrix is compressed column format for Umfpack */
+  if (actsolv->solvertyp==umfpack)
+  {
+    if (actsolv->parttyp != cut_elements)
+      dserror("Partitioning has to be Cut_Elements for solution with Umfpack");
+    else isumfpack=1;
+  }
+#endif
+
+#ifdef AZTEC_PACKAGE
+  /*--------- matrix is distributed modified sparse row DMSR for Aztec */
+  if (actsolv->solvertyp==aztec_msr)
+  {
+    if (actsolv->parttyp != cut_elements)
+      dserror("Partitioning has to be Cut_Elements for solution with Aztec");
+    else isaztec_msr=1;
+  }
+#endif
+
+
+#ifdef UMFPACK
+  /*---------------- matrix is row-column pointer format for umfpack solver */
+  if (isumfpack==1)
+  {
+    for (i=0; i<actsolv->nsysarray; i++)
+    {
+    }
+    mask_ccf(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].ccf);
+    isumfpack=0;
+  }
+#endif
+
+
+#ifdef AZTEC_PACKAGE
+  /*------------------------- matrix is ditributed modified sparse row */
+  if (isaztec_msr==1)
+  {
+    for (i=0; i<actsolv->nsysarray; i++)
+    {
+      actsolv->sysarray[i].msr->bins=NULL;
+      mask_msr(actfield,actpart,actsolv,actintra,actsolv->sysarray[i].msr,i);
+    }
+    isaztec_msr=0;
+  }
+#endif
+} /* end of loop over numfld fields */
+
+/*----------------------------------------------------------------------*/
+#ifndef PARALLEL
+CCAFREE(actintra);
+#endif
+
+#ifdef DEBUG
+dstrc_exit();
+#endif
+
+return;
+} /* end of mask_global_matrices_xfem */
 
 
 

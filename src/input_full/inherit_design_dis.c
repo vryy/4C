@@ -344,3 +344,43 @@ dstrc_exit();
 return;
 } /* end of inherit_design_dis_neum */
 
+
+
+#ifdef D_CHIMERA
+/*----------------------------------------------------------------------*
+ | inherit chimera boundary conditions from design to GNODEs       gammi |
+ *----------------------------------------------------------------------*/
+void inherit_design_dis_chimera(
+  DISCRET *actdis
+  )
+{
+INT     i;
+GNODE  *actgnode;
+#ifdef DEBUG
+dstrc_enter("inherit_design_dis_chimera");
+#endif
+/*----------------------------------------------------------------------*/
+for (i=0; i<actdis->ngnode; i++)
+{
+   actgnode = &(actdis->gnode[i]);
+   switch(actgnode->ondesigntyp)
+   {
+   case ondnode:    actgnode->chi_bndtype = actgnode->d.dnode->chi_bndtype;   break;
+   case ondline:    actgnode->chi_bndtype = actgnode->d.dline->chi_bndtype;   break;
+   }
+}
+/*----------------------------------------------------------------------*/
+for (i=0; i<actdis->ngnode; i++)
+{
+   actgnode = &(actdis->gnode[i]);
+   switch(actgnode->ondesigntyp)
+   {
+   case ondnode:    actgnode->chi_pres_coupling_point = actgnode->d.dnode->chi_pres_coupling_point;   break;
+   }
+}
+#ifdef DEBUG
+dstrc_exit();
+#endif
+return;
+} /* end of inherit_design_dis_chimera */
+#endif

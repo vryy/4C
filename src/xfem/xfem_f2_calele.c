@@ -42,6 +42,7 @@ extern struct _GENPROB     genprob;
  | defined in global_control.c
  *----------------------------------------------------------------------*/
 extern struct _MATERIAL   *mat;
+extern struct _XFEM_DATA   xfem_data;
 
 
 
@@ -252,6 +253,37 @@ void xfem_f2_calele(
   amzero(etforce_global);
   amzero(edforce_global);
 
+  amzero(&(iarr_a));
+  amzero(&(iand_a));
+  amzero(&(estif_temp_a));
+  amzero(&(emass_temp_a));
+  amzero(&(eiforce_temp_a));
+  amzero(&(etforce_temp_a));
+
+  amzero(&(eveln_a));
+  amzero(&(evelng_a));
+  amzero(&(epren_a));
+  amzero(&(edeadn_a));
+  amzero(&(edeadng_a));
+  amzero(&(funct_a));
+  amzero(&(deriv_a));
+  amzero(&(deriv2_a));
+  amzero(&(xjm_a));
+  amzero(&(xyze_a));
+  amzero(&(xyzen_a));
+  amzero(&(velint_a));
+  amzero(&(vel2int_a));
+  amzero(&(covint_a));
+  amzero(&(vderxy_a));
+  amzero(&(pderxy_a));
+  amzero(&(vderxy2_a));
+  amzero(&(derxy_a));
+  amzero(&(derxy2_a));
+  amzero(&(ekappan_a));
+  amzero(&(ekappang_a));
+  amzero(&(w1_a));
+  amzero(&(w2_a));
+
   *hasdirich=0;
   *hasext=0;
 
@@ -405,11 +437,11 @@ void xfem_f2_loc_ass_tangent()
       cnt--;
     }
   }
-  if (genprob.xfem_on_off==1)
+  if (xfem_data.xfem_on_off==1)
   {
     /* check */
-    if (myls2->e.ls2->is_elcut==0 && cnt!=0 ||
-        myls2->e.ls2->is_elcut==1 && cnt!=cnt1)
+    if ((myls2->e.ls2->is_elcut==0 && cnt!=0) ||
+        (myls2->e.ls2->is_elcut==1 && cnt!=cnt1))
       dserror("severe error in local assembly!");
   }
 

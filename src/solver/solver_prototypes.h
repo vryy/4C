@@ -10,6 +10,8 @@ Maintainer: Malte Neumann
 </pre>
 
 ---------------------------------------------------------------------*/
+#include "../ls/ls.h"
+
 
 #ifndef SOLVER_PROTOTYPES_H
 #define SOLVER_PROTOTYPES_H
@@ -873,6 +875,10 @@ void solserv_sparsematvec(INTRA *actintra,DIST_VECTOR *result,
 void solserv_create_vec(DIST_VECTOR **vector,INT numvectors,
                         INT numeq_total,
                         INT numeq,        char typstr[]);
+void solserv_create_vec2(
+  DIST_VECTOR **vector,INT numvectors,
+  INT *numeq_total,INT *numeq,char typstr[]
+  );
 /*----------------------------------------------------------------------*
  |   delete number of distributed vectors - collective call ! m.gee 2/02|
  |  DIST_VECTOR **vector (i/o) adress of pointer a vector of            |
@@ -1176,6 +1182,26 @@ void restart_read_aledyn(INT restart,
 void restart_write_fsidyn(FSI_DYNAMIC       *fsidyn);
 void restart_read_fsidyn(INT restart,
                          FSI_DYNAMIC   *fsidyn);
+#ifdef D_LS
+void restart_write_levelset(
+  LS_DYNAMIC        *lsdyn,
+  FIELD	            *actfield,
+  PARTITION	    *actpart,
+  INTRA	            *actintra,
+  CALC_ACTION       *action,
+  CONTAINER         *container
+  );
+void restart_read_levelset(
+  INT                restart,
+  LS_DYNAMIC        *lsdyn,
+  FIELD	            *actfield,
+  PARTITION	    *actpart,
+  INTRA	            *actintra,
+  CALC_ACTION       *action,
+  CONTAINER         *container
+  );
+#endif
+
 /*---------------------------------------------------------------------*
  | routine to find the maximum value of a distributed vector           |
  | ab =  0 absolut maximum value                                       |
@@ -1229,6 +1255,7 @@ void s8_contact_detection(FIELD        *actfield,
  ************************************************************************/
 void fluid_result_incre(
                           FIELD             *actfield,
+                          INT                disnum,
                           INTRA             *actintra,
 			  DIST_VECTOR       *sol,
                           INT                place,
@@ -1466,6 +1493,9 @@ void oll_copy(
   | global_mask_matrices.c                              m.gee 11/01    |
  *----------------------------------------------------------------------*/
 void mask_global_matrices(void);
+
+
+void remask_global_matrices_xfem(void);
 
 
 

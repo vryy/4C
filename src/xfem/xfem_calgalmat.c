@@ -101,7 +101,7 @@ void xfem_f2_calkvv(
  |   icol - column number in element matrix                             |
  |   irn  - row node: number of node considered for matrix-row          |
  |   icn  - column node: number of node considered for matrix column    |
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
   INT        irow,icol,irn,icn;
   DOUBLE     c,aux;
 
@@ -235,7 +235,7 @@ void xfem_f2_calkvp(
  |   ird  - row dim.: number of spatial dimension at row node           |
  |   posc - since there's only one full element stiffness matrix the    |
  |          column number has to be changed!                            |
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
   INT        irow,icol,irn,ird;
   INT        posc;
   DOUBLE     aux;
@@ -323,7 +323,7 @@ void xfem_f2_calmvv(
  |   icol - column number in element matrix                             |
  |   irn  - row node: number of node considered for matrix-row          |
  |   icn  - column node: number of node considered for matrix column    |
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
   INT        irow,icol,irn,icn;
   DOUBLE     aux;
 

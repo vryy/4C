@@ -102,27 +102,30 @@ extern struct _FILES            allfiles;
 
 
 
+extern struct _LS_DYNAMIC    *lsdyn;       /* ls dynamic variables             */
+extern struct _FIELD      *fluidfield;
+
+
+
 static INT             numff;              /* field number for fluid field     */
-static INT             numls;              /* field number for level set field */
 static INT             numeq;              /* number of equations on this proc */
 static INT             numeq_total;        /* total number of equations        */
+static INT             itnum;              /* iteration number                 */
 static INT             init;               /* flag for solver_control call     */
-static INT             nsysarray = 1;      /* one system matrix                */
 static INT             actsysarray = 0;    /* number of actual sysarray        */
-static INT             outstep;            /* counter for output control       */
+static INT             outstep = 0;        /* counter for output control       */
 static INT             resstep = 0;        /* counter for output control       */
-static INT             pssstep;            /* counter for output control       */
+static INT             pssstep = 0;        /* counter for output control       */
 static INT             restartstep = 0;    /* counter for restart control      */
+INT                    iststep = 0;        /* counter for time integration     */
 static INT             nfrastep;           /* number of steps for fractional-
                                               step-theta procedure             */
 static INT             restart;
 
 static INT             actpos;             /* actual position in sol. history  */
-static DOUBLE          grat;               /* convergence ratios               */
 static DOUBLE          tes = ZERO;         /*				       */
 static DOUBLE          tss = ZERO;         /*				       */
 static DOUBLE          tts = ZERO;         /*				       */
-static FIELD          *actfield;           /* pointer to active field          */
 static SOLVAR         *actsolv;            /* pointer to active sol. structure */
 static PARTITION      *actpart;            /* pointer to active partition      */
 static INTRA          *actintra;           /* pointer to active intra-communic.*/
@@ -133,13 +136,11 @@ static DOUBLE         *ftimerhs;	   /* time - RHS		       */
 static ARRAY           fiterhs_a;
 static DOUBLE         *fiterhs;	           /* iteration - RHS  		       */
 static ARRAY           time_a;             /* stored time                      */
-static ARRAY           totarea_a;
-static DOUBLE        **totarea;
 static CONTAINER       container;          /* variables for calelm             */
 static FILE           *out;
 static FLUID_STRESS    str;
 static FLUID_DYNAMIC  *fdyn;               /* fluid dynamic variables          */
-static LS_DYNAMIC     *lsdyn;              /* ls dynamic variables             */
+
 
 
 
@@ -166,7 +167,8 @@ void ls_fluid(
   {
 /*-------------------------------------------- initialize fluid problem */
       case 1:
-        ls_fluid_init();
+        ls_fluid_init_data();
+        ls_fluid_init_fluid();
         break;
 /*------------------------------------------------- solve fluid problem */
       case 2:
@@ -175,6 +177,14 @@ void ls_fluid(
 /*---------------------------------------------- finalize fluid problem */
       case 3:
         ls_fluid_fina();
+        break;
+/*--------------------------------------------------- initialize solver */
+      case 4:
+        ls_fluid_init_solver();
+        break;
+/*-------------------------------------------------- reinitialize solver */
+      case 5:
+        ls_fluid_reinit_solver();
         break;
 /*--------------------------------------------------------------- clean */
       case 99:
@@ -203,66 +213,31 @@ initialization of sub-problem fluid
 </pre>
 
 *----------------------------------------------------------------------*/
-void ls_fluid_init()
+void ls_fluid_init_data()
 {
-  INT     i;
-  INT     actcurve;
 
 #ifdef DEBUG
-  dstrc_enter("ls_fluid_init");
+  dstrc_enter("ls_fluid_init_data");
 #endif
 /*----------------------------------------------------------------------*/
 
   /* I N I T I A L I S A T I O N */
   /* set */
   numff = genprob.numff;
-  numls = genprob.numls;
   fdyn   = alldyn[numff].fdyn;
-  lsdyn = alldyn[numls].lsdyn;
 
   fdyn->dt = lsdyn->dt;
   fdyn->maxtime = lsdyn->maxtime;
   fdyn->nstep = lsdyn->nstep;
-  grat = ZERO;
-  dsassert(fdyn->iop==4,"TIMEINTEGR for fluid: only ONE-STEP-THETA implemented!\n");
-
-  /* initialiase some counters */
-  outstep=0;
-  pssstep=0;
-  restartstep=0;
-
-  /* set file pointer out */
-  out = allfiles.out_out;
 
   /* set pointers */
-  actfield = &(field[numff]);
   actsolv = &(solv[numff]);
   actpart = &(partition[numff]);
   action = &(calc_action[numff]);
   restart = genprob.restart;
   container.actndis = 0;
   container.turbu = fdyn->turbu;
-  container.fieldtyp = actfield->fieldtyp;
-
-  /* set flag for stress evaluation */
-  str = str_none;
-
-  if (fdyn->liftdrag!=0)
-    str = str_liftdrag;
-
-/**************************BE CAREFUL************************************/
-/**************************BE CAREFUL************************************/
-/**************************BE CAREFUL************************************/
-  if (ioflags.fluid_stress_gid==1)
-  {
-    dserror("ioflags.fluid_stress_gid=1 but not implemented!");
-    /* str = str_all;*/
-  }
-/**************************BE CAREFUL************************************/
-/**************************BE CAREFUL************************************/
-/**************************BE CAREFUL************************************/
-
-  fdyn->acttime = ZERO;
+  container.fieldtyp = fluidfield->fieldtyp;
 
   /*
    * if we are not parallel, we have to allocate an alibi
@@ -281,6 +256,153 @@ void ls_fluid_init()
    * intracommunicator (in case of nonlinear fluid. dyn., this should be all)
    */
   if (actintra->intra_fieldtyp != fluid) goto end;
+
+ end:
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+
+  return;
+} /* end of ls_fluid_init_data */
+
+
+
+/*!----------------------------------------------------------------------
+\brief initialization of sub-problem fluid
+
+<pre>                                                            irhan 05/04
+initialization of sub-problem fluid
+</pre>
+
+*----------------------------------------------------------------------*/
+void ls_fluid_init_fluid()
+{
+  INT     actcurve;
+
+#ifdef DEBUG
+  dstrc_enter("ls_fluid_init_fluid");
+#endif
+/*----------------------------------------------------------------------*/
+
+  /* set flag for stress evaluation */
+  str = str_none;
+
+  if (fdyn->liftdrag!=0)
+    str         = str_liftdrag;
+
+/**************************BE CAREFUL************************************/
+/**************************BE CAREFUL************************************/
+/**************************BE CAREFUL************************************/
+  if (ioflags.fluid_stress_gid==1)
+  {
+    dserror("ioflags.fluid_stress_gid=1 but not implemented!");
+    /* str = str_all;*/
+  }
+/**************************BE CAREFUL************************************/
+/**************************BE CAREFUL************************************/
+/**************************BE CAREFUL************************************/
+
+  /* set file pointer out */
+  out = allfiles.out_out;
+
+  if (ioflags.fluid_stress_gid==1)
+  {
+    dserror("ioflags.fluid_stress_gid=1 but not implemented!");
+    str = str_all;
+  }
+
+  fdyn->acttime = ZERO;
+
+  /* initialise fluid field */
+  if (restart>0)
+  {
+    if (fdyn->init>0)
+      dserror("Initial field either by restart, or by function or from file ...\n");
+    else
+    {
+      fdyn->resstep=genprob.restart;
+      fdyn->init=2;
+    }
+  }
+  fluid_init(actpart,actintra,fluidfield, 0,action,&container,4,str);
+  actpos=0;
+
+  /* initialize multilevel algorithm */
+#if defined(FLUID2_ML) || defined(FLUID3_ML)
+  if (fdyn->mlfem==1) fluid_ml_init(fluidfield);
+#endif
+
+  /* init all applied time curves -*/
+  for (actcurve=0; actcurve<numcurve; actcurve++)
+    dyn_init_curve(actcurve,fdyn->nstep,fdyn->dt,fdyn->maxtime);
+
+  /* init the dirichlet-conditions -*/
+  fluid_initdirich(fluidfield);
+
+  /* allocate fluid integration data */
+  alldyn[genprob.numff].fdyn->data = (FLUID_DATA*)CCACALLOC(1,sizeof(FLUID_DATA));
+
+  /* init the element calculating routines */
+  *action = calc_fluid_init;
+  calinit(fluidfield,actpart,action,&container);
+
+  /* calculate nodal normals */
+  fluid_cal_normal(fluidfield,1,action);
+
+  /* define local co-sys */
+  fluid_locsys(fluidfield,fdyn);
+
+  /* print out initial data to .out */
+  out_sol(fluidfield,actpart,actintra,fdyn->step,actpos);
+
+  /* print out initial data to .flavia.res */
+  if (ioflags.fluid_sol_gid==1 && par.myrank==0)
+  {
+    out_gid_sol("velocity",fluidfield,actintra,fdyn->step,actpos,fdyn->acttime);
+    out_gid_sol("pressure",fluidfield,actintra,fdyn->step,actpos,fdyn->acttime);
+  }
+  if (ioflags.fluid_stress_gid==1 && par.myrank==0)
+  {
+    out_gid_sol("stress",fluidfield,actintra,fdyn->step,actpos,fdyn->acttime);
+  }
+
+  /* monitoring */
+  if (ioflags.monitor==1)
+  {
+    out_monitor(fluidfield,genprob.numff,ZERO,1);
+    monitoring(fluidfield,genprob.numff,actpos,fdyn->acttime);
+  }
+
+  /* calculate time independent constants for time algorithm */
+  fluid_cons();
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+
+  return;
+} /* end of ls_fluid_init_fluid */
+
+
+
+/*!----------------------------------------------------------------------
+\brief initialization of sub-problem fluid
+
+<pre>                                                            irhan 05/04
+initialization of sub-problem fluid
+</pre>
+
+*----------------------------------------------------------------------*/
+void ls_fluid_init_solver()
+{
+  INT     i;
+
+#ifdef DEBUG
+  dstrc_enter("ls_fluid_init_solver");
+#endif
+/*----------------------------------------------------------------------*/
 
   /* init the dist sparse matrices to zero */
   solserv_zero_mat(
@@ -353,32 +475,123 @@ void ls_fluid_init()
   if (ioflags.fluid_vis_file==1 )
     amdef("time",&time_a,1000,1,"DV");
 
-  /* initialise fluid field */
-  if (restart>0)
-  {
-    if (fdyn->init>0)
-      dserror("Initial field either by restart, or by function or from file ...\n");
-    else
-    {
-      fdyn->resstep=genprob.restart;
-      fdyn->init=2;
-    }
-  }
+  /* initialize solver on all matrices */
 
-  fluid_init(actpart,actintra,actfield,action,&container,4,str);
-  actpos=0;
+  /*
+    NOTE => solver init phase has to be called with each matrix one wants
+    to solve with. Solver init phase has to be called with all matrices
+    one wants to do matrix-vector products and matrix scalar products.
+    This is not needed by all solver libraries, but the solver-init
+    phase is cheap in computation (can be costly in memory)
+  */
 
-  /* initialize multilevel algorithm */
-#if defined(FLUID2_ML) || defined(FLUID3_ML)
-  if (fdyn->mlfem==1) fluid_ml_init(actfield);
+  /* initialize solver */
+  init=1;
+  solver_control(
+    actsolv, actintra,
+    &(actsolv->sysarray_typ[actsysarray]),
+    &(actsolv->sysarray[actsysarray]),
+    &(actsolv->sol[0]),
+    &(actsolv->rhs[0]),
+    init
+    );
+
+  /* init the assembly for stiffness */
+  init_assembly(actpart,actsolv,actintra,fluidfield,actsysarray,0);
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
 #endif
 
-  /* init all applied time curves -*/
-  for (actcurve=0; actcurve<numcurve; actcurve++)
-    dyn_init_curve(actcurve,fdyn->nstep,fdyn->dt,fdyn->maxtime);
+  return;
+} /* end of ls_fluid_init_solver */
 
-  /* init the dirichlet-conditions -*/
-  fluid_initdirich(actfield);
+
+
+/*!----------------------------------------------------------------------
+\brief initialization of sub-problem fluid
+
+<pre>                                                            irhan 05/04
+initialization of sub-problem fluid
+</pre>
+
+*----------------------------------------------------------------------*/
+void ls_fluid_reinit_solver()
+{
+  INT     i;
+
+#ifdef DEBUG
+  dstrc_enter("ls_fluid_reinit_solver");
+#endif
+/*----------------------------------------------------------------------*/
+
+  /* init the dist sparse matrices to zero */
+  solserv_zero_mat(
+    actintra,
+    &(actsolv->sysarray[actsysarray]),
+    &(actsolv->sysarray_typ[actsysarray])
+    );
+
+  /* get global and local number of equations */
+  solserv_getmatdims(
+    &(actsolv->sysarray[actsysarray]),
+    actsolv->sysarray_typ[actsysarray],
+    &numeq,
+    &numeq_total
+    );
+
+  /* output to the screen */
+#ifdef PARALLEL
+  MPI_Barrier(actintra->MPI_INTRA_COMM);
+#endif
+  for (i=0;i<par.nprocs;i++)
+    if (par.myrank==i)
+      printf("PROC  %3d | FIELD FLUID     | number of equations      : %10d \n",
+             par.myrank,numeq);
+#ifdef PARALLEL
+  MPI_Barrier(actintra->MPI_INTRA_COMM);
+#endif
+  if (par.myrank==0)
+    printf("          | FIELD FLUID     | total number of equations: %10d \n",numeq_total);
+  if (par.myrank==0) printf("\n\n");
+
+  /* write general data to .out */
+  if (par.myrank==0)
+  {
+    fprintf(out,"max. values for:\n");
+    fprintf(out," step |    time    | ite|   ite tol  | steady tol |\n");
+    fprintf(out,"---------------------------------------------------\n");
+    fprintf(out,"%5d | %10.3E | %2d | %10.3E | %10.3E |\n",
+            fdyn->nstep,fdyn->maxtime,fdyn->itemax,fdyn->ittol,fdyn->sttol);
+    fprintf(out,"---------------------------------------------------\n");
+    fprintf(out,"\n");
+    fprintf(out," step |    time    | ite| vel. error | pre. error |\n");
+    fprintf(out,"---------------------------------------------------\n");
+  }
+
+  /* allocate dist. vectors 'rhs' */
+  if (fdyn->iop == 7) actsolv->nrhs = 2; /* two dist. rhs vecs for BDF2	*/
+  else actsolv->nrhs = 1;
+  solserv_create_vec(&(actsolv->rhs),actsolv->nrhs,numeq_total,numeq,"DV");
+  solserv_zero_vec(&(actsolv->rhs[0]));
+
+  /* allocate dist. solution vectors */
+  actsolv->nsol = 1;
+  solserv_create_vec(&(actsolv->sol),actsolv->nsol,numeq_total,numeq,"DV");
+  solserv_zero_vec(&(actsolv->sol[0]));
+
+  /*
+   * allocate one redundant vector ftimerhs of full lenght
+   * this is used by the element routines to assemble the  Time RHS
+   */
+  ftimerhs = amdef("ftimerhs",&ftimerhs_a,numeq_total,1,"DV");
+
+  /*
+   * allocate one redundant vector fiterhs of full lenght
+   * this is used by the element routines to assemble the  Iteration RHS
+   */
+  fiterhs = amdef("fiterhs",&fiterhs_a,numeq_total,1,"DV");
 
   /* initialize solver on all matrices */
 
@@ -402,40 +615,15 @@ void ls_fluid_init()
     );
 
   /* init the assembly for stiffness */
-  init_assembly(actpart,actsolv,actintra,actfield,actsysarray,0);
+  init_assembly(actpart,actsolv,actintra,fluidfield,actsysarray,0);
 
-  /* allocate fluid integration data */
-  alldyn[genprob.numff].fdyn->data = (FLUID_DATA*)CCACALLOC(1,sizeof(FLUID_DATA));
-
-  /* init the element calculating routines */
-  *action = calc_fluid_init;
-  calinit(actfield,actpart,action,&container);
-
-  /* print out initial data to .out */
-  out_sol(actfield,actpart,actintra,fdyn->step,actpos);
-
-  /* print out initial data to .flavia.res */
-  if (ioflags.fluid_sol_gid==1 && par.myrank==0)
-  {
-    out_gid_sol("velocity",actfield,actintra,fdyn->step,actpos,fdyn->acttime);
-    out_gid_sol("pressure",actfield,actintra,fdyn->step,actpos,fdyn->acttime);
-  }
-  if (ioflags.fluid_stress_gid==1 && par.myrank==0)
-  {
-    out_gid_sol("stress",actfield,actintra,fdyn->step,actpos,fdyn->acttime);
-  }
-
-  /* calculate time independent constants for time algorithm */
-  fluid_cons();
-
- end:
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
   dstrc_exit();
 #endif
 
   return;
-} /* end of ls_fluid_init */
+} /* end of ls_fluid_reinit_solver */
 
 
 
@@ -450,7 +638,6 @@ solution of sub-problem fluid
 void ls_fluid_solv()
 {
   INT        converged = 0;        /* convergence flag */
-  INT        itnum = 0;            /* iteration number */
   DOUBLE     vrat,prat;
   DOUBLE     t1,ts,te;
 
@@ -464,6 +651,7 @@ void ls_fluid_solv()
 
   /* calculate constants for time algorithm */
   fluid_tcons();
+
   /* set new absolute time */
   if (fdyn->iop == 1) /* generalised alpha is solved for time n+alpha_f */
     fdyn->acttime += fdyn->dta * fdyn->alpha_f;
@@ -474,14 +662,14 @@ void ls_fluid_solv()
   if (par.myrank==0) fluid_algoout();
 
   /* set dirichlet boundary conditions to sol_increment[3] */
-  fluid_setdirich(actfield,3);
+  fluid_setdirich(fluidfield,3);
 
   /* initialise timerhs */
   amzero(&ftimerhs_a);
 
   /* prepare time rhs in mass form */
   if(fdyn->time_rhs==0)
-    fluid_prep_rhs(actfield);
+    fluid_prep_rhs(fluidfield);
 
   /* start time step on the screen */
   if (fdyn->itnorm!=fncc_no && par.myrank==0)
@@ -521,7 +709,7 @@ void ls_fluid_solv()
   container.nim          = fdyn->nim;
   container.kstep        = 0;
   container.is_relax     = 0;
-  calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,
+  calelm(fluidfield,actsolv,actpart,actintra,actsysarray,-1,
          &container,action);
   te=ds_cputime()-t1;
   tes+=te;
@@ -569,7 +757,7 @@ void ls_fluid_solv()
 
   /* return solution to the nodes and calculate the convergence ratios */
   fluid_result_incre(
-    actfield,actintra,&(actsolv->sol[0]),3,
+    fluidfield, 0,actintra,&(actsolv->sol[0]),3,
     &(actsolv->sysarray[actsysarray]),
     &(actsolv->sysarray_typ[actsysarray]),
     &vrat,&prat,NULL
@@ -620,10 +808,10 @@ void ls_fluid_fina()
   /* extrapolate from n+alpha_f to n+1 for generalised alpha */
   if (fdyn->iop == 1)
   {
-    solserv_sol_zero(actfield,0,node_array_sol_increment,2);
-    solserv_sol_add(actfield,0,node_array_sol_increment,node_array_sol_increment,3,2,1.0/fdyn->alpha_f);
-    solserv_sol_add(actfield,0,node_array_sol_increment,node_array_sol_increment,1,2,1.0-1.0/fdyn->alpha_f);
-    solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol_increment,2,3);
+    solserv_sol_zero(fluidfield,0,node_array_sol_increment,2);
+    solserv_sol_add(fluidfield,0,node_array_sol_increment,node_array_sol_increment,3,2,1.0/fdyn->alpha_f);
+    solserv_sol_add(fluidfield,0,node_array_sol_increment,node_array_sol_increment,1,2,1.0-1.0/fdyn->alpha_f);
+    solserv_sol_copy(fluidfield,0,node_array_sol_increment,node_array_sol_increment,2,3);
 
     fdyn->acttime += fdyn->dta * (1.0 - fdyn->alpha_f);
   }
@@ -632,7 +820,7 @@ void ls_fluid_fina()
 /*if (fdyn->stchk==iststep)
   {
     iststep=0;
-    steady = fluid_steadycheck(actfield,numeq_total);
+    steady = fluid_steadycheck(fluidfield,numeq_total);
     }*/
 
   /* lift&drag computation */
@@ -641,7 +829,7 @@ void ls_fluid_fina()
     container.str = str;
     *action = calc_fluid_liftdrag;
     fluid_liftdrag(
-      1,action,&container,actfield,
+      1,action,&container,fluidfield,
       actsolv,actpart,actintra
       );
   }
@@ -651,7 +839,7 @@ void ls_fluid_fina()
   {
     container.str = str;
     *action = calc_fluid_stress;
-    calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,
+    calelm(fluidfield,actsolv,actpart,actintra,actsysarray,-1,
            &container,action);
   }
 
@@ -659,13 +847,13 @@ void ls_fluid_fina()
     copy solution from sol_increment[1][j] to sol_increment[0][j]
     -> prev. solution becomes (n-1)-solution of next time step
   */
-  solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol_increment,1,0);
+  solserv_sol_copy(fluidfield,0,node_array_sol_increment,node_array_sol_increment,1,0);
 
   /*
     copy solution from sol_increment[3][j] to sol_increment[1][j]
     -> actual solution becomes previous solution of next time step
   */
-  solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol_increment,3,1);
+  solserv_sol_copy(fluidfield,0,node_array_sol_increment,node_array_sol_increment,3,1);
 
   /* finalise this timestep */
   outstep++;
@@ -688,12 +876,15 @@ void ls_fluid_fina()
    * copy solution from sol_increment[3][j] to sol_[actpos][j]
    * and transform kinematic to real pressure
    */
-  solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol,3,actpos);
+  solserv_sol_copy(fluidfield,0,node_array_sol_increment,node_array_sol,3,actpos);
 /**************************BE CAREFUL************************************/
 /**************************BE CAREFUL************************************/
 /**************************BE CAREFUL************************************/
+/*  NOTE => note that Navier-Stokes equations are solved in
+ *  non-dimensionalized form. In other words, density is included explicitly.
+ *  Therefore there is no need to transfer pressure.
 
-/*  fluid_transpres(actfield,0,0,actpos,fdyn->numdf-1,0);*/
+/ *  fluid_transpres(fluidfield,0,0,actpos,fdyn->numdf-1,0);*/
 
 /**************************BE CAREFUL************************************/
 /**************************BE CAREFUL************************************/
@@ -704,6 +895,14 @@ void ls_fluid_fina()
   if (fdyn->mlfem==1) fluid_smcopy(actpart);
 #endif
 
+  /* local co-ordinate system:
+     the values in sol are given in the xyz* co-system, however
+     output is done in the XYZ co-system. So we have to tranform the
+     values from xyz* to XYZ */
+#if 0
+  locsys_trans_sol(fluidfield,0,0,actpos,1);
+#endif
+
   /* write solution to .flavia.res */
   if (resstep==fdyn->upres && par.myrank==0)
   {
@@ -712,12 +911,12 @@ void ls_fluid_fina()
 
     if(ioflags.fluid_sol_gid==1)
     {
-      out_gid_sol("velocity",actfield,actintra,fdyn->step,actpos,fdyn->acttime);
-      out_gid_sol("pressure",actfield,actintra,fdyn->step,actpos,fdyn->acttime);
+      out_gid_sol("velocity",fluidfield,actintra,fdyn->step,actpos,fdyn->acttime);
+      out_gid_sol("pressure",fluidfield,actintra,fdyn->step,actpos,fdyn->acttime);
     }
     if(ioflags.fluid_stress_gid==1)
     {
-      out_gid_sol("stress",actfield,actintra,fdyn->step,actpos,fdyn->acttime);
+      out_gid_sol("stress",fluidfield,actintra,fdyn->step,actpos,fdyn->acttime);
     }
   }
 
@@ -725,19 +924,35 @@ void ls_fluid_fina()
   if (outstep==fdyn->upout && ioflags.fluid_sol_file==1)
   {
     outstep=0;
-    out_sol(actfield,actpart,actintra,fdyn->step,actpos);
+    out_sol(fluidfield,actpart,actintra,fdyn->step,actpos);
   }
 
   /* write restart to pss file */
   if (restartstep==fdyn->uprestart)
   {
     restartstep=0;
-    restart_write_fluiddyn(fdyn,actfield,actpart,actintra,action,&container);
+    restart_write_fluiddyn(fdyn,fluidfield,actpart,actintra,action,&container);
   }
 
   tt=ds_cputime()-t2;
   tts+=tt;
   printf("PROC  %3d | total time for this time step: %10.3e \n",par.myrank,tt);
+
+/*  if (!fdyn->nim)
+  {
+    / * calculate stabilisation parameter */
+/*    *action = calc_fluid_stab;
+    container.dvec         = NULL;
+    container.ftimerhs     = NULL;
+    container.fiterhs      = NULL;
+    container.nii          = 0;
+    container.nif          = 0;
+    container.nim          = 0;
+    calelm(
+      fluidfield,actsolv,actpart,actintra,actsysarray,-1,
+      &container,action
+      );
+  }*/
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -769,7 +984,7 @@ void ls_fluid_clea()
   if (pssstep==0) actpos--;
   /* print out solution to .out file */
   if (outstep!=0 && ioflags.fluid_sol_file==1)
-    out_sol(actfield,actpart,actintra,fdyn->step,actpos);
+    out_sol(fluidfield,actpart,actintra,fdyn->step,actpos);
 
   /* print out solution to 0.pss file */
   if (ioflags.fluid_vis_file==1)
@@ -781,7 +996,7 @@ void ls_fluid_clea()
         amredef(&(time_a),time_a.fdim+1000,1,"DV");
       time_a.a.dv[actpos] = fdyn->acttime;
     }
-    if (par.myrank==0) visual_writepss(actfield,actpos+1,&time_a);
+    if (par.myrank==0) visual_writepss(fluidfield,actpos+1,&time_a);
   }
 
   /* print total CPU-time to the screen */

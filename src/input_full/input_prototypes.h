@@ -44,6 +44,10 @@ void inherit_design_dis_neum(
 
 void inherit_design_dis_slipdirich(DISCRET *actdis);
 
+void inherit_design_dis_chimera(
+  DISCRET *actdis
+  );
+
 /*----------------------------------------------------------------------*
   |  inherit_design_ele.c                                   chfoe 01/04  |
  *----------------------------------------------------------------------*/
@@ -175,6 +179,8 @@ void inp_struct_field(
 
 void inp_fluid_field(
     FIELD         *fluidfield);
+
+void inp_fluid_discretization(FIELD *fluid_field, DISCRET *fluiddis);
 
 void inp_ale_field(
     FIELD         *alefield);

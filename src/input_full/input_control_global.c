@@ -15,11 +15,11 @@ Maintainer: Malte Neumann
 /*----------------------------------------------------------------------*
  | structures for level set                               irhan 04/04   |
  *----------------------------------------------------------------------*/
-#include "../ls/ls.h"
+#include "../ls/ls_prototypes.h"
 /*----------------------------------------------------------------------*
  | structures for xfem                                    irhan 04/04   |
  *----------------------------------------------------------------------*/
-#include "../xfem/xfem.h"
+#include "../xfem/xfem_prototypes.h"
 /*!----------------------------------------------------------------------
 \brief file pointers
 
@@ -76,6 +76,7 @@ extern struct _IO_FLAGS     ioflags;
  *----------------------------------------------------------------------*/
 extern struct _FIELD       *field;
 
+struct _LS_DYNAMIC    *lsdyn;
 
 /*----------------------------------------------------------------------*
  | input of control information                           m.gee 8/00    |
@@ -87,7 +88,7 @@ extern struct _WALL_CONTACT contact;
 #endif
 
 #ifdef D_LS
-void inpctr_dyn_ls(LS_DYNAMIC *lsdyn);
+void inpctr_dyn_ls();
 #endif
 
 #ifdef D_SSI
@@ -123,9 +124,9 @@ dstrc_enter("inpctr");
    if (genprob.probtyp == prb_ssi)
    {
       if (genprob.numfld!=2) dserror("numfld != 2 for SSI");
-      
+
       solv = (SOLVAR*)CCACALLOC(genprob.numfld,sizeof(SOLVAR));
-      
+
       solv[0].fieldtyp = structure;
       inpctrsol(&(solv[0]));
 
@@ -200,6 +201,19 @@ dstrc_enter("inpctr");
      inpctrsol(&(solv[genprob.numls]));
    }
 #endif
+#ifdef D_CHIMERA
+   if (genprob.probtyp == prb_chimera)
+   {
+     if (genprob.numfld!=1) dserror("numfld != 1 for Chimera Problem");
+
+     /* initialize solver object */
+     solv = (SOLVAR*)CCACALLOC(genprob.numfld,sizeof(SOLVAR));
+
+     /* initialize solver for the fluid field */
+     solv[genprob.numff].fieldtyp = fluid;
+     inpctrsol(&(solv[genprob.numff]));
+   }
+#endif /* D_CHIMERA */
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -258,6 +272,8 @@ ioflags.fluid_sol_file        =0;
 ioflags.fluid_vis_file        =0;
 ioflags.ale_disp_file         =0;
 ioflags.ale_disp_gid          =0;
+ioflags.chimera_to_pager      =0;
+ioflags.chimera_to_matlab     =0;
 ioflags.relative_displ        =0;
 
 
@@ -276,16 +292,19 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
     if (strncmp("Ale"                        ,buffer, 3)==0) genprob.probtyp = prb_ale;
     if (strncmp("Two_Phase_Fluid_Flow"       ,buffer,20)==0) genprob.probtyp = prb_twophase;
     if (strncmp("Levelset"                   ,buffer, 8)==0) genprob.probtyp = prb_levelset;
+    if (strncmp("Chimera"                    ,buffer, 7)==0) genprob.probtyp = prb_chimera;
   }
 
-#ifdef D_XFEM
-  frchar("ENRONOFF"   ,buffer    ,&ierr);
+#ifdef D_CHIMERA
+  frchar("MULDISONOFF"   ,buffer    ,&ierr);
   if (ierr==1)
   {
-    if (strncmp(buffer,"yes",3)==0)
-      genprob.xfem_on_off=1;
+    if (strncmp(buffer,"on",2)==0)
+      genprob.mdis_on_off=1;
     else
-      genprob.xfem_on_off=0;
+#endif
+      genprob.mdis_on_off=0;
+#ifdef D_CHIMERA
   }
 #endif
 
@@ -308,6 +327,13 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
   frint("GRADERW",&(genprob.graderw),&ierr);
   frread();
 }
+
+#ifdef D_XFEM
+if (genprob.probtyp==prb_twophase || genprob.probtyp==prb_levelset)
+{
+  xfem_inpctr_data();
+}
+#endif
 
 /*----------------- set field numbers depending on problem type and numfld */
 if (genprob.probtyp==prb_fsi)
@@ -338,6 +364,8 @@ if (genprob.probtyp==prb_twophase)
   genprob.numfld   = 2;
   genprob.numff    = 0;
   genprob.numls    = 1;
+  /* initialize two phase flow data structure */
+  twophase_inpctr_data();
 }
 if (genprob.probtyp==prb_levelset)
 {
@@ -346,6 +374,22 @@ if (genprob.probtyp==prb_levelset)
   genprob.numls    = 0;
 }
 #endif /* D_LS */
+#ifdef D_CHIMERA
+if (genprob.probtyp==prb_chimera)
+{
+  /* set field numbers */
+  genprob.numfld   = 1;
+  genprob.numff    = 0;
+  /* check */
+  if (genprob.mdis_on_off!=0)
+  {
+    /* turn the mdis_on_off flag on */
+    genprob.mdis_on_off = 1;
+  }
+  /* initialize chimera data structure */
+  chimera_inpctr_data();
+}
+#endif /* D_CHIMERA */
 
 if (frfind("---IO")==1)
 {
@@ -428,6 +472,20 @@ if (frfind("---IO")==1)
       if (strncmp(buffer,"yes",3)==0) ioflags.ale_disp_gid=1;
       if (strncmp(buffer,"YES",3)==0) ioflags.ale_disp_gid=1;
       if (strncmp(buffer,"Yes",3)==0) ioflags.ale_disp_gid=1;
+    }
+    frchar("CHIMERA_SOL_TO_PAGER",buffer,&ierr);
+    if (ierr)
+    {
+      if (strncmp(buffer,"yes",3)==0) ioflags.chimera_to_pager=1;
+      if (strncmp(buffer,"YES",3)==0) ioflags.chimera_to_pager=1;
+      if (strncmp(buffer,"Yes",3)==0) ioflags.chimera_to_pager=1;
+    }
+    frchar("CHIMERA_SOL_TO_MATLAB",buffer,&ierr);
+    if (ierr)
+    {
+      if (strncmp(buffer,"yes",3)==0) ioflags.chimera_to_matlab=1;
+      if (strncmp(buffer,"YES",3)==0) ioflags.chimera_to_matlab=1;
+      if (strncmp(buffer,"Yes",3)==0) ioflags.chimera_to_matlab=1;
     }
     frint("RELATIVE_DISP_NUM",&(ioflags.relative_displ),&ierr);
     frread();
@@ -742,8 +800,7 @@ for (i=0; i<genprob.numfld; i++)
          break;
 #ifdef D_LS
        case levelset:
-         alldyn[i].lsdyn = (LS_DYNAMIC*)CCACALLOC(1,sizeof(LS_DYNAMIC));
-         inpctr_dyn_ls(alldyn[i].lsdyn);
+         inpctr_dyn_ls();
          break;
 #endif
        case none:
@@ -763,8 +820,8 @@ for (i=0; i<genprob.numfld; i++)
    inpctr_dyn_fsi(alldyn[i].fsidyn);
 #else
    dserror("General FSI problem not defined in Makefile!!!");
-#endif 
-}
+#endif
+ }
 /*----------------------------------------------------------------------*/
 if (genprob.probtyp==prb_ssi)
 {
@@ -775,7 +832,7 @@ if (genprob.probtyp==prb_ssi)
    dserror("General SSI problem not defined in Makefile!!!");
 #endif
 }
- 
+
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
  dstrc_exit();
@@ -1529,7 +1586,7 @@ fsidyn->entol=EPS6;
 fsidyn->relax=ONE;
 fsidyn->convtol=EPS6;
 fsidyn->coupmethod=1;
-    
+
 if (frfind("-FSI DYNAMIC")==0) goto end;
 frread();
 while(strncmp(allfiles.actplace,"------",6)!=0)
@@ -1651,17 +1708,17 @@ return;
 
 #ifdef D_SSI
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief input of the SSI DYNAMIC block in the input-file
 
 <pre>                                                         genk 10/03
 
 In this routine the data in the SSI DYNAMIC block of the input file
-are read and stored in ssidyn	       
+are read and stored in ssidyn
 
 </pre>
-\param  *ssidyn 	  SSI_DATA       (o)	   
-\return void                                                                       
+\param  *ssidyn 	  SSI_DATA       (o)
+\return void
 
 ------------------------------------------------------------------------*/
 void inpctr_dyn_ssi(SSI_DYNAMIC *ssidyn)
@@ -1670,7 +1727,7 @@ INT    ierr;
 INT    length;
 INT    mod_res_write;
 char   buffer[50];
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpctr_dyn_ssi");
 #endif
 
@@ -1684,21 +1741,21 @@ ssidyn->ichopt=0;
 ssidyn->iait=0;
 ssidyn->itechapp=0;
 ssidyn->ichmax=1;
-ssidyn->isdmax=1;  
-ssidyn->nstep=1;   
-ssidyn->itemax=1;  
-ssidyn->iale=1;    
+ssidyn->isdmax=1;
+ssidyn->nstep=1;
+ssidyn->itemax=1;
+ssidyn->iale=1;
 ssidyn->uppss=1;
 ssidyn->upres=1;
 ssidyn->res_write_evry=1;
-ssidyn->dt=ONE/TEN;	
+ssidyn->dt=ONE/TEN;
 ssidyn->maxtime=1000.0;
-ssidyn->entol=EPS6;  
-ssidyn->relax=ONE;  
+ssidyn->entol=EPS6;
+ssidyn->relax=ONE;
 ssidyn->convtol=EPS6;
 ssidyn->conformmesh=1;
 ssidyn->coupmethod=0;
-    
+
 if (frfind("-SSI DYNAMIC")==0) goto end;
 frread();
 while(strncmp(allfiles.actplace,"------",6)!=0)
@@ -1708,20 +1765,20 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    if (ierr==1)
    {
       length = strlen(buffer);
-      if (strncmp(buffer,"basic_sequ_stagg",16)==0 && length==16) 
+      if (strncmp(buffer,"basic_sequ_stagg",16)==0 && length==16)
          ssidyn->ifsi=1;
-      else if (strncmp(buffer,"sequ_stagg_pred",15)==0 && length==15) 
-         ssidyn->ifsi=2;                 
+      else if (strncmp(buffer,"sequ_stagg_pred",15)==0 && length==15)
+         ssidyn->ifsi=2;
       else if (strncmp(buffer,"sequ_stagg_shift",15)==0 && length==15)
-         ssidyn->ifsi=3;  
-      else if (strncmp(buffer,"iter_stagg_fixed_rel_param",26)==0 && length==26) 
+         ssidyn->ifsi=3;
+      else if (strncmp(buffer,"iter_stagg_fixed_rel_param",26)==0 && length==26)
          ssidyn->ifsi=4;
-      else if (strncmp(buffer,"iter_stagg_AITKEN_rel_param",27)==0 && length==27) 
-         ssidyn->ifsi=5;      
-      else if (strncmp(buffer,"iter_stagg_steep_desc",21)==0 && length==21) 
+      else if (strncmp(buffer,"iter_stagg_AITKEN_rel_param",27)==0 && length==27)
+         ssidyn->ifsi=5;
+      else if (strncmp(buffer,"iter_stagg_steep_desc",21)==0 && length==21)
          ssidyn->ifsi=6;
-      else if (strncmp(buffer,"iter_stagg_CHEB_rel_param",25)==0 && length==25) 
-         ssidyn->ifsi=7;      
+      else if (strncmp(buffer,"iter_stagg_CHEB_rel_param",25)==0 && length==25)
+         ssidyn->ifsi=7;
       else
          dserror("Coupling Algorithm COUPALGO unknown");
    }
@@ -1729,12 +1786,12 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    if (ierr==1)
    {
       length = strlen(buffer);
-      if (strncmp(buffer,"||g(i)||:sqrt(neq)",18)==0 && length==18) 
+      if (strncmp(buffer,"||g(i)||:sqrt(neq)",18)==0 && length==18)
          ssidyn->inrmfsi=1;
-      else if (strncmp(buffer,"||g(i)||:||g(0)||",17)==0 && length==17) 
+      else if (strncmp(buffer,"||g(i)||:||g(0)||",17)==0 && length==17)
          ssidyn->inrmfsi=2;
       else
-         dserror("Convergence criterion CONVCRIT unknown!");     
+         dserror("Convergence criterion CONVCRIT unknown!");
    }
    frchar("ENERGYCHECK"  ,buffer    ,&ierr);
    if (ierr==1)
@@ -1742,14 +1799,14 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       length = strlen(buffer);
       if ((strncmp(buffer,"No",2)==0 ||
            strncmp(buffer,"NO",2)==0 ||
-	   strncmp(buffer,"no",2)==0) && length==2) 
+	   strncmp(buffer,"no",2)==0) && length==2)
          ssidyn->ichecke=0;
       else if ((strncmp(buffer,"yes",3)==0 ||
-                strncmp(buffer,"YES",3)==0 ||                 
-	        strncmp(buffer,"Yes",3)==0) && length==3) 
+                strncmp(buffer,"YES",3)==0 ||
+	        strncmp(buffer,"Yes",3)==0) && length==3)
          ssidyn->ichecke=1;
       else
-         dserror("Parameter for ENERGYCHECK unknown!");     
+         dserror("Parameter for ENERGYCHECK unknown!");
    }
 
    frchar("NESTEDITER"  ,buffer    ,&ierr);
@@ -1758,26 +1815,26 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       length = strlen(buffer);
       if ((strncmp(buffer,"No",2)==0 ||
            strncmp(buffer,"NO",2)==0 ||
-	   strncmp(buffer,"no",2)==0) && length==2) 
+	   strncmp(buffer,"no",2)==0) && length==2)
          ssidyn->inest=0;
-      else if (strncmp(buffer,"fluid+structure",15)==0 && length==15) 
+      else if (strncmp(buffer,"fluid+structure",15)==0 && length==15)
          ssidyn->inest=1;
-      else if (strncmp(buffer,"structure",9)==0 && length==9) 
+      else if (strncmp(buffer,"structure",9)==0 && length==9)
          ssidyn->inest=2;
       else
-         dserror("Parameter unknown: NESTEDITER");     
-   }      
+         dserror("Parameter unknown: NESTEDITER");
+   }
    frchar("ICHOPT"  ,buffer    ,&ierr);
    if (ierr==1)
    {
       length = strlen(buffer);
-      if (strncmp(buffer,"no",2)==0 && length==2) 
+      if (strncmp(buffer,"no",2)==0 && length==2)
          ssidyn->ichopt=0;
-      else if (strncmp(buffer,"yes",3)==0 && length==3) 
+      else if (strncmp(buffer,"yes",3)==0 && length==3)
          ssidyn->ichopt=1;
       else
-         dserror("Parameter unknown: ICHOPT");     
-   }   
+         dserror("Parameter unknown: ICHOPT");
+   }
    frchar("IALE"    ,buffer    ,&ierr);
    if (ierr==1)
    {
@@ -1803,7 +1860,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          dserror("Parameter unknown: MESHCONFORM");
    }
    /* parameter to indicate the coupling method that is applied */
-   /* mortar method --> ssidyn->coupmethod == 0 (default) */ 
+   /* mortar method --> ssidyn->coupmethod == 0 (default) */
    /* interpolation scheme --> ssidyn-->coupmethod == 1*/
    frchar("COUPMETHOD"    ,buffer    ,&ierr);
    if (ierr==1)
@@ -1834,7 +1891,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frdouble("MAXTIME"    ,&(ssidyn->maxtime),&ierr);
    frdouble("TOLENCHECK" ,&(ssidyn->entol)  ,&ierr);
    frdouble("RELAX"      ,&(ssidyn->relax)  ,&ierr);
-   frdouble("CONVTOL"    ,&(ssidyn->convtol),&ierr);      
+   frdouble("CONVTOL"    ,&(ssidyn->convtol),&ierr);
    frread();
 }
 frrewind();
@@ -1852,9 +1909,9 @@ else
 {
    mod_res_write =  ssidyn->upres % ssidyn->res_write_evry;
    if (mod_res_write!=0)
-   dserror("RESTARTEVRY and UPRES have to be multiple of each other!\n");   
+   dserror("RESTARTEVRY and UPRES have to be multiple of each other!\n");
 }
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1960,7 +2017,7 @@ are read and stored in adyn
 ------------------------------------------------------------------------*/
 
 #ifdef D_LS
-void inpctr_dyn_ls(LS_DYNAMIC *lsdyn)
+void inpctr_dyn_ls()
 {
   INT ierr;
   char buffer[50];
@@ -1970,11 +2027,18 @@ void inpctr_dyn_ls(LS_DYNAMIC *lsdyn)
 #endif
 /*----------------------------------------------------------------------*/
 
+  /* allocate memory for lsdyn */
+  lsdyn = (LS_DYNAMIC*)CCACALLOC(1,sizeof(LS_DYNAMIC));
   /* allocate memory for lsdata */
   lsdyn->lsdata = (LS_GEN_DATA*)CCACALLOC(1,sizeof(LS_GEN_DATA));
   /* set some parameters */
-  lsdyn->lsdata->reinitflag = 0;
   lsdyn->lsdata->print_on_off = 0;
+
+
+  lsdyn->lsdata->isolate_end_points = 1;
+
+
+
   /* read in lsdyn */
   if (frfind("-LEVELSET DYNAMIC")==0) dserror("frfind: LEVELSET DYNAMIC not in input file");
   frread();
@@ -1983,8 +2047,9 @@ void inpctr_dyn_ls(LS_DYNAMIC *lsdyn)
     /* read INT */
     frint("NSTEP", &(lsdyn->nstep), &ierr);
     frint("NFSTEP", &(lsdyn->nfstep), &ierr);
-    frint("NFREINIT", &(lsdyn->nfreinit), &ierr);
-    frint("NFREPRN", &(lsdyn->nfreprn), &ierr);
+    frint("PERFREINITEVRY", &(lsdyn->perf_reinit_evry), &ierr);
+    frint("DATAWRITEEVRY", &(lsdyn->data_write_evry), &ierr);
+    frint("RESWRITEEVRY", &(lsdyn->res_write_evry), &ierr);
     frint("ITEMAX", &(lsdyn->itemax), &ierr);
     frint("INIT", &(lsdyn->init), &ierr);
     frint("IOP", &(lsdyn->iop), &ierr);
@@ -2038,6 +2103,7 @@ void inpctr_dyn_ls(LS_DYNAMIC *lsdyn)
     frdouble("YE3", &(lsdyn->lsdata->ye3), &ierr);
     frdouble("RDT", &(lsdyn->lsdata->rdt), &ierr);
     frdouble("EPSILON", &(lsdyn->lsdata->epsilon), &ierr);
+    frdouble("RADINFLUENCE", &(lsdyn->lsdata->rad_inactive_region), &ierr);
     /* read character */
     frchar("BOUNDARYONOFF"   ,buffer    ,&ierr);
     if (ierr==1)
@@ -2128,8 +2194,42 @@ void inpctr_dyn_ls(LS_DYNAMIC *lsdyn)
         lsdyn->lsdata->probdescr = 1;
       else if (strncmp(buffer,"dam",3)==0)
         lsdyn->lsdata->probdescr = 2;
+      else if (strncmp(buffer,"advection",9)==0)
+        lsdyn->lsdata->probdescr = 3;
+      else if (strncmp(buffer,"reinitialization",16)==0)
+        lsdyn->lsdata->probdescr = 4;
       else
         dserror("PROBDESCR unknown!\n");
+    }
+    frchar("PRNTOFILE"   ,buffer    ,&ierr);
+    if (ierr==1)
+    {
+      if (strncmp(buffer,"on",2)==0)
+        lsdyn->lsdata->print_to_file_on_off = 1;
+      else if (strncmp(buffer,"off",3)==0)
+        lsdyn->lsdata->print_to_file_on_off = 0;
+      else
+        dserror("PRNTOFILE unknown!\n");
+    }
+    frchar("PRNFLDSOLNTOFILE"   ,buffer    ,&ierr);
+    if (ierr==1)
+    {
+      if (strncmp(buffer,"on",2)==0)
+        lsdyn->lsdata->print_fld_soln_to_file_on_off = 1;
+      else if (strncmp(buffer,"off",3)==0)
+        lsdyn->lsdata->print_fld_soln_to_file_on_off = 0;
+      else
+        dserror("PRNTOFILE unknown!\n");
+    }
+    frchar("ISOENDPOINTS"   ,buffer    ,&ierr);
+    if (ierr==1)
+    {
+      if (strncmp(buffer,"yes",3)==0)
+        lsdyn->lsdata->isolate_end_points = 1;
+      else if (strncmp(buffer,"no",2)==0)
+        lsdyn->lsdata->isolate_end_points = 0;
+      else
+        dserror("ISOENDPOINTS unknown!\n");
     }
     frread();
   }

@@ -65,6 +65,9 @@ touch "$definefile"
 if [ "x$PARALLEL" = "xno" ]; then
   # sequentiell test
   liste='
+  xfem_ls_risingbubble.dat
+  xfem_ls_joggedchannel.dat
+  chimera_test.dat
   ale2_nln.dat
   ale_3d_hourg.dat
   ale_3d_umfpack.dat
@@ -108,8 +111,6 @@ if [ "x$PARALLEL" = "xno" ]; then
   w1_incompmode.dat
   w1_mises.dat
   w1dyn.dat
-  xfem_ls_risingbubble.dat
-  xfem_ls_joggedchannel.dat
   '
 else
   # parallel test
@@ -122,6 +123,7 @@ else
   c1_neum_geonln.dat
   c1_optfsd.dat
   c1_plast_mises.dat
+  chimera_test.dat
   dyn_shell_dirich.dat
   dyn_shell_neum.dat
   f2_drivencavity20x20.dat
@@ -139,19 +141,17 @@ else
   fsi_tank3D_par.dat
   shell8_lineload.dat
   shell9_dpmisGF.dat
-  shell9_epc.dat
   shell9_el_lay_eans.dat
+  shell9_epc.dat
   shell9_kreuz_easnl.dat
   shell9_matnl.dat
   w1_3DmisGF.dat
-  w1_epc3D.dat
   w1_Eulerstab.dat
-  w1_incompmode.dat
+  w1_epc3D.dat
   w1_gemm_contact_emconserv.dat
+  w1_incompmode.dat
   w1_mises.dat
   w1dyn.dat
-  xfem_ls_risingbubble.dat
-  xfem_ls_joggedchannel.dat
   '
 fi
  

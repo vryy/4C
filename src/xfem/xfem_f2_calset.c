@@ -38,6 +38,7 @@ extern ALLDYNA      *alldyn;
  | global variable GENPROB genprob is defined in global_control.c       |
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
+extern struct _XFEM_DATA   xfem_data;
 
 
 
@@ -124,10 +125,13 @@ void xfem_f2_calset(
     evelng[0][i]=actnode->sol_increment.a.da[3][0];
     evelng[1][i]=actnode->sol_increment.a.da[3][1];
     /* => enriched */
-    evelng[0][i+iel]=actnode->sol_increment.a.da[3][3];
-    evelng[1][i+iel]=actnode->sol_increment.a.da[3][4];
+    if (actnode->gnode->is_node_active==1)
+    {
+      evelng[0][i+iel]=actnode->sol_increment.a.da[3][3];
+      evelng[1][i+iel]=actnode->sol_increment.a.da[3][4];
+    }
     /* check */
-    if (genprob.xfem_on_off==0 &&
+    if (xfem_data.xfem_on_off==0 &&
         (actnode->sol_increment.a.da[3][3]!=ZERO||actnode->sol_increment.a.da[3][4]!=ZERO))
       dserror("severe error in enriched formulation");
     /* set supported pressures (n+1) */
@@ -148,10 +152,13 @@ void xfem_f2_calset(
       eveln[0][i]=actnode->sol_increment.a.da[1][0];
       eveln[1][i]=actnode->sol_increment.a.da[1][1];
       /* => enriched */
-      eveln[0][i+iel]=actnode->sol_increment.a.da[1][3];
-      eveln[1][i+iel]=actnode->sol_increment.a.da[1][4];
+      if (actnode->gnode->is_node_active==1)
+      {
+        eveln[0][i+iel]=actnode->sol_increment.a.da[1][3];
+        eveln[1][i+iel]=actnode->sol_increment.a.da[1][4];
+      }
       /* check */
-      if (genprob.xfem_on_off==0 &&
+      if (xfem_data.xfem_on_off==0 &&
           (actnode->sol_increment.a.da[1][3]!=ZERO||actnode->sol_increment.a.da[1][4]!=ZERO))
         dserror("severe error in enriched formulation");
       /* set pressures (n) */

@@ -30,6 +30,10 @@ Maintainer: Malte Neumann
 #include "../ls/ls_prototypes.h"
 #endif
 
+#ifdef D_CHIMERA
+#include "../chimera/chimera_prototypes.h"
+#endif
+
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | structure of flags to control output                                 |
@@ -41,7 +45,7 @@ extern struct _IO_FLAGS     ioflags;
  | general problem data                                                 |
  | global variable GENPROB genprob is defined in global_control.c       |
  *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
+extern struct _GENPROB      genprob;
 /*!----------------------------------------------------------------------
 \brief ranks and communicators
 
@@ -57,12 +61,13 @@ and the type is in partition.h
  | vector of numfld FIELDs, defined in global_control.c                 |
  *----------------------------------------------------------------------*/
 extern struct _FIELD      *field;
+extern struct _XFEM_DATA   xfem_data;
 /*----------------------------------------------------------------------*
  |  routine to control execution phase                   m.gee 6/01     |
  *----------------------------------------------------------------------*/
 void ntacal()
 {
-INT i;
+INT i,j;
 FIELD *actfield;
 
 #ifdef DEBUG
@@ -93,11 +98,41 @@ if (genprob.graderw>0) wge_setdof();
 #ifdef PERF
   perf_begin(13);
 #endif
-for(i=0; i<genprob.numfld; i++)
+if (genprob.mdis_on_off==0)
 {
-   actfield = &(field[i]);
-   if (actfield->ndis==1) assign_dof(actfield);
-   if (actfield->ndis>1) assign_dof_ndis(actfield);
+#ifdef D_XFEM
+  if (xfem_data.xfem_optimize==0)
+  {
+#endif
+    for(i=0; i<genprob.numfld; i++)
+    {
+      actfield = &(field[i]);
+      if (actfield->ndis==1) assign_dof(actfield);
+      if (actfield->ndis>1) assign_dof_ndis(actfield);
+    }
+#ifdef D_XFEM
+  }
+#endif
+}
+else if (genprob.mdis_on_off==1)
+{
+#ifdef D_XFEM
+  if (xfem_data.xfem_optimize==0)
+  {
+#endif
+    for(i=0; i<genprob.numfld; i++)
+      for(j=0; j<field[i].ndis; j++)
+      {
+        init_dof_discretization(&(field[i].dis[j]));
+        assign_dof_discretization(&(field[i].dis[j]));
+      }
+#ifdef D_XFEM
+  }
+#endif
+}
+else
+{
+  dserror("mdis_on_off not set properly!");
 }
 #ifdef PERF
   perf_end(13);
@@ -122,7 +157,16 @@ part_assignfield();
 #ifdef PERF
   perf_begin(15);
 #endif
-mask_global_matrices();
+
+#ifdef D_XFEM
+if (xfem_data.xfem_optimize==0)
+{
+#endif
+  mask_global_matrices();
+#ifdef D_XFEM
+}
+#endif
+
 #ifdef PERF
   perf_end(15);
 #endif
@@ -177,7 +221,7 @@ case prb_fsi:
 #ifdef D_SSI
 case prb_ssi:
   dyn_ssi();
-  break;    
+  break;
 #endif
 
 #ifdef D_ALE
@@ -190,6 +234,12 @@ case prb_ale:
 case prb_twophase:
 case prb_levelset:
   ls_dyn();
+  break;
+#endif
+
+#ifdef D_CHIMERA
+case prb_chimera:
+  chimera_dyn();
   break;
 #endif
 

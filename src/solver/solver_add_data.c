@@ -84,7 +84,7 @@ if (assemble_action==assemble_two_matrix)
 #ifdef AZTEC_PACKAGE
    case msr:
 #if defined(FAST_ASS2) && !defined(FAST_ASS)
-      add_msr_fast2(actpart,actsolv,actintra,actele,sysa1->msr,sysa2->msr);
+       add_msr_fast2(actpart,actsolv,actintra,actele,sysa1->msr,sysa2->msr);
 #endif
 
 #if defined(FAST_ASS) && !defined(FAST_ASS2)
@@ -92,7 +92,7 @@ if (assemble_action==assemble_two_matrix)
 #endif
 
 #if !defined(FAST_ASS) && !defined(FAST_ASS2)
-      add_msr(actpart,actsolv,actintra,actele,sysa1->msr,sysa2->msr);
+       add_msr(actpart,actsolv,actintra,actele,sysa1->msr,sysa2->msr);
 #endif
    break;
 #endif

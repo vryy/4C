@@ -503,7 +503,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    {
      if (genprob.nmat!=3) dserror("number of materials incorrect");
 
-     if (frfind("--LS_MATERIAL_SECOND_PHASE")==0)
+     if (frfind("--TWOPHASE_MATERIAL_SECOND_PHASE")==0)
        dserror("frfind: MATERIAL PROPERTIES FOR SECOND PHASE is not in input file");
      frread();
      while(strncmp(allfiles.actplace,"------",6)!=0)

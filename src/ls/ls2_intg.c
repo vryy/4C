@@ -16,8 +16,6 @@ Maintainer: Baris Irhan
 /*!
 \addtogroup LEVELSET
 *//*! @{ (documentation module open)*/
-static DOUBLE     q12 = 1.0/2.0;
-static DOUBLE     q13 = 1.0/3.0;
 
 
 

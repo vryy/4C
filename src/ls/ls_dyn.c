@@ -57,9 +57,14 @@ extern struct _PAR        par;
  | INT                   numcurve;                                      |
  | struct _CURVE      *curve;                                           |
  *----------------------------------------------------------------------*/
-extern INT                numcurve;
-extern struct _CURVE     *curve;
+extern INT                 numcurve;
+extern struct _CURVE      *curve;
+extern struct _LS_DYNAMIC *lsdyn;
+extern struct _XFEM_DATA   xfem_data;
 
+
+struct _FIELD      *fluidfield;
+struct _FIELD      *lsetfield;
 
 
 /*!----------------------------------------------------------------------
@@ -76,15 +81,14 @@ void ls_dyn()
 {
   INT                i;
   INT		     eflag;
-  FIELD             *fluidfield;
-  FIELD             *lsetfield;
   FLUID_DYNAMIC     *fdyn;
-  LS_DYNAMIC        *lsdyn;
   INT                numfld;
   INT                numff;
   INT                numls;
   INT                actcurve;
-  INT                pcnt = 0;
+  INT                datastep = 0;     /* counter for output print */
+  INT                restartstep = 0;  /* counter for restart data print */
+
 
   LS_GEN_DATA       *lsdata;
   LSFLAG             lsflag;
@@ -99,73 +103,127 @@ void ls_dyn()
       case prb_twophase:
         /*
          * convention used at the moment =>
-         * TWO PHASE FLUID FLOW -> FIELD 0: levelset
-         *                         FIELD 1: fluid
+         * TWO PHASE FLUID FLOW -> FIELD 0: fluid
+         *                         FIELD 1: levelset
          */
 
         /* I N I T I A L I Z A T I O N */
         /* access to field objects */
-        numfld=genprob.numfld;
+        numfld = genprob.numfld;
         dsassert(numfld==2,"Two fields needed for Two Phase Fluid Flow Problem!\n");
-        numls       = genprob.numls;
-        lsetfield   = &(field[numls]);
-        numff       = genprob.numff;
-        fluidfield  = &(field[numff]);
+        numls = genprob.numls;
+        lsetfield = &(field[numls]);
+        numff = genprob.numff;
+        fluidfield = &(field[numff]);
         /* plausibility check */
         dsassert(lsetfield->fieldtyp==levelset,"FIELD 0 has to be levelset\n");
         dsassert(fluidfield->fieldtyp==fluid,"FIELD 1 has to be fluid\n");
         /* set */
-        lsdyn= alldyn[numls].lsdyn;
         lsdata = lsdyn->lsdata;
         fdyn = alldyn[numff].fdyn;
         /* set execution flag */
-        eflag=1;
+        eflag = 1;
         /* check */
-        if (lsdata->setvel!=2)
+        if (lsdata->setvel != 2)
           dserror("lsdata->setvel!=2 for Two Phase Fluid Flow Problem");
         /* init all applied time curves */
         for (actcurve = 0;actcurve<numcurve;actcurve++)
           dyn_init_curve(actcurve,lsdyn->nstep,lsdyn->dt,lsdyn->maxtime);
-        /* initialize fluid problem */
-        ls_fluid(eflag);
+
+        if (xfem_data.xfem_optimize == 1)
+        {
+          /* init degrees of freedom for levelset field */
+          init_dof_discretization(&(lsetfield->dis[0]));
+        }
+
         /* initialize levelset problem */
         ls_levelset(eflag);
+
         /* initialize levelset module */
         lsflag = ls_initphase;
         ls_main(lsflag);
+
+        if (xfem_data.xfem_optimize == 1)
+        {
+          /* init degrees of freedom for fluid field */
+          init_dof_discretization_xfem(&(fluidfield->dis[0]));
+        }
+
+        /* initialize fluid problem */
+        ls_fluid(eflag);
+
+        if (xfem_data.xfem_optimize == 1)
+        {
+          /* assign degrees of freedom to level set field */
+          assign_dof_discretization(&(lsetfield->dis[0]));
+          /* assign degrees of freedom to fluid field */
+          assign_dof_discretization_xfem(&(fluidfield->dis[0]));
+          /* mask matrices */
+          mask_global_matrices();
+        }
+        eflag = 4;
+        /* initialize fluid solver */
+        ls_fluid(eflag);
+        /* initialize levelset solver */
+        ls_levelset(eflag);
+
         /* T I M E L O O P */
   timeloop1:
         lsdyn->step++;
-        lsdyn->time += lsdyn->dt;
+        lsdyn->acttime += lsdyn->dt;
         fdyn->step = lsdyn->step;
-        fdyn->acttime = lsdyn->time;
+        fdyn->acttime = lsdyn->acttime;
+
         /* set execution flag */
-        eflag=2;
+        eflag = 2;
+
         /* solve fluid field */
         ls_fluid(eflag);
+
         /* solve levelset field */
-        if (lsdyn->step>lsdyn->nfstep)
+        if (lsdyn->step > lsdyn->nfstep)
+        {
+          /* set flag for element calculation */
+          lsdyn->lsdata->ls2_calc_flag = ls2_advection;
+
           ls_levelset(eflag);
+        }
+
         /* F I N A L I Z E */
+
         /* set execution flag */
-        eflag=3;
+        eflag = 3;
+
         /* finalize fluid field */
         ls_fluid(eflag);
+
         /* finalize levelset field */
-        if (lsdyn->step>lsdyn->nfstep)
-          ls_levelset(eflag);
-        /* START REINITIALIZATION */
-        if (lsdyn->step>lsdyn->nfstep)
+        if (lsdyn->step > lsdyn->nfstep)
         {
-          if (lsdyn->step%lsdyn->nfreinit==0)
+          ls_levelset(eflag);
+        }
+
+        /* update level set module */
+        if (lsdyn->step > lsdyn->nfstep)
+        {
+          lsflag = ls_updtphase;
+          ls_main(lsflag);
+        }
+
+        /* START REINITIALIZATION */
+        if (lsdyn->step > lsdyn->nfstep)
+        {
+          if (lsdyn->step%lsdyn->perf_reinit_evry == 0)
           {
-            if (lsdyn->lsdata->reinitialization==1)
+            if (lsdyn->lsdata->reinitialization == 1)
             {
+              /* set flag for element calculation */
+              lsdyn->lsdata->ls2_calc_flag = ls2_reinitialization;
+
               /* copy solution from sol_increment[1][j] to sol_increment[2][j] */
+              /* this operation is necessary for the computation of sign function */
               solserv_sol_copy(lsetfield,0,node_array_sol_increment,node_array_sol_increment,1,2);
-              /* turn reinitialization flag on */
-              if (lsdyn->lsdata->reinitflag==1) dserror("reinitflag is on!");
-              lsdyn->lsdata->reinitflag = 1;
+
               /* print to screen */
               printf("\n**WARNING** PERFORMING RE-INITIALIZATION!");
               if (lsdyn->lsdata->anchor == 1)
@@ -174,142 +232,362 @@ void ls_dyn()
               }
               for (i=0; i<lsdyn->lsdata->numreinit; i++)
               {
-                /* solve levelset field */
+                /* set execution flag */
                 eflag = 2;
+
+                /* solve levelset field */
                 ls_levelset(eflag);
-                /* finalize levelset field */
+
+                /* set execution flag */
                 eflag = 3;
+
+                /* finalize levelset field */
                 ls_levelset(eflag);
               }
-              /* turn reinitialization flag off */
-              lsdyn->lsdata->reinitflag = 0;
             }
           }
-        } /* END REINITIALIZATION */
-        /* update level set module */
-        if (lsdyn->step>lsdyn->nfstep)
+        }
+        /* END REINITIALIZATION */
+
+
+
+
+
+
+/****************** TEST VERSION *************************/
+/****************** TEST VERSION *************************/
+/****************** TEST VERSION *************************/
+/****************** TEST VERSION *************************/
+/****************** TEST VERSION *************************/
+/****************** TEST VERSION *************************/
+
+
+
+
+        if (lsdyn->step > lsdyn->nfstep)
         {
-          /* increment the print counter (used to print intermediate results into files) */
-          pcnt++;
-          if (pcnt==lsdyn->nfreprn)
+
+          /* START COMPUTING GRADIENT FIELD */
+
+          /* set flag for element calculation */
+          lsdyn->lsdata->ls2_calc_flag = ls2_gradient;
+
+          printf("\n**WARNING** COMPUTING GRADIENT FIELD!");
+
+          /* COMPUTE FIRST COMPONENT OF THE GRADIENT FIELD */
+
+          /* set spatial direction ( 1 or 2 ) */
+          lsdyn->lsdata->gradient_direction = 1;
+
+          /* set execution flag */
+          eflag = 2;
+
+          /* solve levelset field */
+          ls_levelset(eflag);
+
+
+
+          /* COMPUTE SECOND COMPONENT OF THE GRADIENT FIELD */
+
+          /* set spatial direction ( 1 or 2 ) */
+          lsdyn->lsdata->gradient_direction = 2;
+
+          /* set execution flag */
+          eflag = 2;
+
+          /* solve levelset field */
+          ls_levelset(eflag);
+
+          /* END COMPUTING GRADIENT FIELD */
+        }
+
+
+
+
+/****************** TEST VERSION *************************/
+/****************** TEST VERSION *************************/
+/****************** TEST VERSION *************************/
+/****************** TEST VERSION *************************/
+/****************** TEST VERSION *************************/
+/****************** TEST VERSION *************************/
+
+
+
+
+
+
+
+
+
+        /* write data to files */
+        if (lsdyn->step > lsdyn->nfstep)
+        {
+          /* increment the print counters (used to print intermediate results into files) */
+          datastep++;
+          restartstep++;
+          if (datastep == lsdyn->data_write_evry)
           {
-            if (lsdyn->lsdata->print_on_off!=0) dserror("lsdyn->lsdata->print_on_off!=0");
+            if (lsdyn->lsdata->print_on_off != 0) dserror("lsdyn->lsdata->print_on_off!=0");
             /* turn on print flag */
             lsdyn->lsdata->print_on_off = 1;
-            pcnt = 0;
+            datastep = 0;
           }
-          lsflag = ls_updtphase;
+          lsflag = ls_writphase;
           ls_main(lsflag);
+
+          /* write restart to pss file */
+          if (restartstep == lsdyn->res_write_evry)
+          {
+            restartstep=0;
+            eflag = 5;
+            ls_levelset(eflag);
+          }
         }
+
+        if (xfem_data.xfem_optimize == 1)
+        {
+          /* assign degrees of freedom to fluid field */
+          assign_dof_discretization_xfem(&(fluidfield->dis[0]));
+          /* mask matrices */
+          remask_global_matrices_xfem();
+        }
+        eflag = 5;
+        /* reinitialize fluid solver */
+        ls_fluid(eflag);
+
         /* finalizing this time step */
-        if (lsdyn->step < lsdyn->nstep && lsdyn->time <= lsdyn->maxtime)
+        if (lsdyn->step < lsdyn->nstep && lsdyn->acttime <= lsdyn->maxtime)
           goto timeloop1;
+
         /* C L E A N I N G   U P   P H A S E */
+
         /* set execution flag */
         eflag=99;
         ls_fluid(eflag);
         ls_levelset(eflag);
+
         /* finalize level set module */
         lsflag = ls_finaphase;
         ls_main(lsflag);
         break;
       case prb_levelset:
-        /*
-         * convention used at the moment =>
-         * PURE LEVELSET PROBLEM -> FIELD 0: levelset
-         */
+	if (lsdyn->lsdata->probdescr == 3) /* advection equation is solved */
+	  {
+	    /*
+	     * convention used at the moment =>
+	     * PURE LEVELSET PROBLEM -> FIELD 0: levelset
+	     */
+	    /* I N I T I A L I Z A T I O N */
+	    /* access to field objects */
+	    numfld = genprob.numfld;
+	    dsassert(numfld==1,"Two fields needed for Pure Level Set Problem!\n");
+	    numls       = genprob.numls;
+	    lsetfield   = &(field[numls]);
+	    /* plausibility check */
+	    dsassert(lsetfield->fieldtyp==levelset,"FIELD 0 has to be levelset\n");
+	    /* set */
+	    lsdata = lsdyn->lsdata;
+	    /* set execution flag */
+	    eflag=1;
+	    /* check */
+	    if (lsdata->setvel != 1)
+	      dserror("lsdata->setvel!=1 for Pure Level Set Problem");
+	    /* init all applied time curves */
+	    for (actcurve = 0;actcurve<numcurve;actcurve++)
+	      dyn_init_curve(actcurve,lsdyn->nstep,lsdyn->dt,lsdyn->maxtime);
 
-        /* I N I T I A L I Z A T I O N */
-        /* access to field object */
-        numfld=genprob.numfld;
-        dsassert(numfld==1,"One field needed for Pure Levelset Problem!\n");
-        numls       = genprob.numls;
-        lsetfield   = &(field[numls]);
-        /* plausibility check */
-        dsassert(lsetfield->fieldtyp==levelset,"FIELD 0 has to be levelset\n");
-        /* set */
-        lsdyn= alldyn[numls].lsdyn;
-        lsdata = lsdyn->lsdata;
-        /* set execution flag */
-        eflag=1;
-        /* check */
-        if (lsdata->setvel!=1)
-          dserror("lsdata->setvel!=1 for Pure Levelset Problem");
-        /* init all applied time curves */
-        for (actcurve = 0;actcurve<numcurve;actcurve++)
-          dyn_init_curve(actcurve,lsdyn->nstep,lsdyn->dt,lsdyn->maxtime);
-        /* initialize levelset problem */
-        ls_levelset(eflag);
-        /* initialize levelset module */
-        lsflag = ls_initphase;
-        ls_main(lsflag);
-        /* T I M E L O O P */
-  timeloop2:
-        lsdyn->step++;
-        lsdyn->time += lsdyn->dt;
-        /* set execution flag */
-        eflag=2;
-        /* solve levelset field */
-        ls_levelset(eflag);
-        /* F I N A L I Z E */
-        /* set execution flag */
-        eflag=3;
-        /* finalize levelset field */
-        ls_levelset(eflag);
-        /* START REINITIALIZATION */
-        if (lsdyn->step>lsdyn->nfstep)
-        {
-          if (lsdyn->step%lsdyn->nfreinit==0)
-          {
-            if (lsdyn->lsdata->reinitialization==1)
+            if (xfem_data.xfem_optimize == 1)
             {
-              /* copy solution from sol_increment[1][j] to sol_increment[2][j] */
-              solserv_sol_copy(lsetfield,0,node_array_sol_increment,node_array_sol_increment,1,2);
-              /* turn reinitialization flag on */
-              if (lsdyn->lsdata->reinitflag==1) dserror("reinitflag is on!");
-              lsdyn->lsdata->reinitflag = 1;
-              /* print to screen */
-              printf("\n**WARNING** PERFORMING RE-INITIALIZATION!");
-              if (lsdyn->lsdata->anchor == 1)
-              {
-                printf("\n**WARNING** INTERFACE IS ANCHORED!");
-              }
-              for (i=0; i<lsdyn->lsdata->numreinit; i++)
-              {
-                /* solve levelset field */
-                eflag = 2;
-                ls_levelset(eflag);
-                /* finalize levelset field */
-                eflag = 3;
-                ls_levelset(eflag);
-              }
-              /* turn reinitialization flag off */
-              lsdyn->lsdata->reinitflag = 0;
+              /* init degrees of freedom for levelset field */
+              init_dof_discretization(&(lsetfield->dis[0]));
             }
-          }
-        } /* END REINITIALIZATION */
-        /* increment the print counter (used to print intermediate results into files) */
-        pcnt++;
-        if (pcnt==lsdyn->nfreprn)
-        {
-          if (lsdyn->lsdata->print_on_off!=0) dserror("lsdyn->lsdata->print_on_off!=0");
-          /* turn on print flag */
-          lsdyn->lsdata->print_on_off = 1;
-          pcnt = 0;
-        }
-        /* update level set module */
-        lsflag = ls_updtphase;
-        ls_main(lsflag);
-        /* finalizing this time step */
-        if (lsdyn->step < lsdyn->nstep && lsdyn->time <= lsdyn->maxtime)
-          goto timeloop2;
-        /* C L E A N I N G   U P   P H A S E */
-        /* set execution flag */
-        eflag=99;
-        ls_levelset(eflag);
-        /* finalize level set module */
-        lsflag = ls_finaphase;
-        ls_main(lsflag);
+
+            /* initialize levelset problem */
+	    ls_levelset(eflag);
+
+            if (xfem_data.xfem_optimize == 1)
+            {
+              /* assign degrees of freedom to level set field */
+              assign_dof_discretization(&(lsetfield->dis[0]));
+              /* mask matrices */
+              mask_global_matrices();
+            }
+            eflag = 4;
+            /* initialize levelset solver */
+            ls_levelset(eflag);
+
+
+            printf("i am here!\n");
+
+	    /* initialize levelset module */
+	    lsflag = ls_initphase;
+	    ls_main(lsflag);
+	    /* T I M E L O O P */
+	  timeloop2:
+	    lsdyn->step++;
+	    lsdyn->acttime += lsdyn->dt;
+	    /* set execution flag */
+	    eflag=2;
+            /* set flag for element calculation */
+            lsdyn->lsdata->ls2_calc_flag = ls2_advection;
+	    /* solve levelset field */
+	    ls_levelset(eflag);
+	    /* F I N A L I Z E */
+	    /* set execution flag */
+	    eflag=3;
+	    /* finalize levelset field */
+	    ls_levelset(eflag);
+	    /* update level set module */
+	    lsflag = ls_updtphase;
+	    ls_main(lsflag);
+	    /* START REINITIALIZATION */
+	    if (lsdyn->step%lsdyn->perf_reinit_evry == 0)
+            {
+              if (lsdyn->lsdata->reinitialization == 1)
+              {
+                /* set flag for element calculation */
+                lsdyn->lsdata->ls2_calc_flag = ls2_reinitialization;
+                /* copy solution from sol_increment[1][j] to sol_increment[2][j] */
+                solserv_sol_copy(lsetfield,0,1,1,1,2);
+                /* print to screen */
+                printf("\n**WARNING** PERFORMING RE-INITIALIZATION!");
+                if (lsdyn->lsdata->anchor == 1)
+                {
+                  printf("\n**WARNING** INTERFACE IS ANCHORED!");
+                }
+                for (i=0; i<lsdyn->lsdata->numreinit; i++)
+                {
+                  /* solve levelset field */
+                  eflag = 2;
+                  ls_levelset(eflag);
+                  /* finalize levelset field */
+                  eflag = 3;
+                  ls_levelset(eflag);
+                }
+              }
+            } /* END REINITIALIZATION */
+	    /* increment the print counter (used to print intermediate results into files) */
+	    datastep++;
+	    restartstep++;
+	    if (datastep == lsdyn->data_write_evry)
+            {
+              if (lsdyn->lsdata->print_on_off != 0) dserror("lsdyn->lsdata->print_on_off!=0");
+              /* turn on print flag */
+              lsdyn->lsdata->print_on_off = 1;
+              datastep = 0;
+            }
+            /* write data to files */
+	    lsflag = ls_writphase;
+	    ls_main(lsflag);
+	    /* write restart to pss file */
+	    if (restartstep == lsdyn->res_write_evry)
+	      {
+		restartstep=0;
+		eflag = 5;
+		ls_levelset(eflag);
+	      }
+	    /* finalizing this time step */
+	    if (lsdyn->step < lsdyn->nstep && lsdyn->acttime <= lsdyn->maxtime)
+	      goto timeloop2;
+	    /* C L E A N I N G   U P   P H A S E */
+	    /* set execution flag */
+	    eflag=99;
+	    ls_levelset(eflag);
+	    /* finalize level set module */
+	    lsflag = ls_finaphase;
+	    ls_main(lsflag);
+	  }
+	else if (lsdyn->lsdata->probdescr == 4) /* reinitialization is performed */
+	  {
+	    /*
+	     * convention used at the moment =>
+	     * PURE LEVELSET PROBLEM -> FIELD 0: levelset
+	     */
+
+	    /* I N I T I A L I Z A T I O N */
+	    /* access to field objects */
+	    numfld = genprob.numfld;
+	    dsassert(numfld==1,"Two fields needed for Pure Level Set Problem!\n");
+	    numls       = genprob.numls;
+	    lsetfield   = &(field[numls]);
+	    /* plausibility check */
+	    dsassert(lsetfield->fieldtyp==levelset,"FIELD 0 has to be levelset\n");
+	    /* set */
+	    lsdata = lsdyn->lsdata;
+	    /* set execution flag */
+	    eflag=1;
+	    /* check */
+	    if (lsdata->setvel != 1)
+	      dserror("lsdata->setvel!=1 for Pure Level Set Problem");
+	    /* init all applied time curves */
+	    for (actcurve = 0;actcurve<numcurve;actcurve++)
+	      dyn_init_curve(actcurve,lsdyn->nstep,lsdyn->dt,lsdyn->maxtime);
+	    /* initialize levelset problem */
+	    ls_levelset(eflag);
+            eflag = 4;
+            /* initialize levelset solver */
+            ls_levelset(eflag);
+	    /* initialize levelset module */
+	    lsflag = ls_initphase;
+	    ls_main(lsflag);
+	    /* copy solution from sol_increment[1][j] to sol_increment[2][j] */
+	    solserv_sol_copy(lsetfield,0,1,1,1,2);
+	    /* set */
+	    lsdyn->dt = lsdyn->lsdata->rdt;
+            lsdyn->nstep = lsdyn->lsdata->numreinit;
+
+	    /* T I M E L O O P */
+  timeloop3:
+	    lsdyn->step++;
+	    lsdyn->acttime += lsdyn->dt;
+
+            /* set flag for element calculation */
+            lsdyn->lsdata->ls2_calc_flag = ls2_reinitialization;
+	    /* print to screen */
+	    printf("\n**WARNING** PERFORMING RE-INITIALIZATION!");
+	    if (lsdyn->lsdata->anchor == 1)
+	      {
+		printf("\n**WARNING** INTERFACE IS ANCHORED!");
+	      }
+	    /* solve levelset field */
+	    eflag = 2;
+	    ls_levelset(eflag);
+	    /* finalize levelset field */
+	    eflag = 3;
+	    ls_levelset(eflag);
+
+	    /* increment the print counter (used to print intermediate results into files) */
+	    datastep++;
+	    restartstep++;
+	    if (datastep == lsdyn->data_write_evry)
+            {
+		if (lsdyn->lsdata->print_on_off != 0) dserror("lsdyn->lsdata->print_on_off!=0");
+		/* turn on print flag */
+		lsdyn->lsdata->print_on_off = 1;
+		datastep = 0;
+            }
+	    lsflag = ls_writphase;
+	    ls_main(lsflag);
+
+	    /* write restart to pss file */
+	    if (restartstep == lsdyn->res_write_evry)
+            {
+              restartstep=0;
+              eflag = 5;
+              ls_levelset(eflag);
+            }
+
+            /* finalizing this time step */
+	    if (lsdyn->step < lsdyn->nstep && lsdyn->acttime <= lsdyn->maxtime)
+	      goto timeloop3;
+	    /* C L E A N I N G   U P   P H A S E */
+	    /* set execution flag */
+	    eflag=99;
+	    ls_levelset(eflag);
+	    /* finalize level set module */
+	    lsflag = ls_finaphase;
+	    ls_main(lsflag);
+	  }
         break;
       default:
         dserror("in ls_dyn() unknown Problemtyp requested");

@@ -47,6 +47,8 @@ extern struct _MATERIAL  *mat;
 extern INT                numcurve;
 extern struct _CURVE     *curve;
 
+extern struct _LS_DYNAMIC     *lsdyn;
+
 
 
 /*!----------------------------------------------------------------------
@@ -60,8 +62,7 @@ process
 
 *----------------------------------------------------------------------*/
 void ls_initdirich(
-  FIELD          *actfield,
-  LS_DYNAMIC     *lsdyn
+  FIELD          *actfield
   )
 {
   INT        i,j;
@@ -157,7 +158,6 @@ in the process
 *----------------------------------------------------------------------*/
 void ls_setdirich(
   FIELD           *actfield,
-  LS_DYNAMIC      *lsdyn,
   INT              pos
   )
 {
@@ -176,7 +176,7 @@ void ls_setdirich(
 /*----------------------------------------------------------------------*/
 
   /* set time */
-  T = lsdyn->time;
+  T = lsdyn->acttime;
   /* values from time curve */
   for (actcurve=0;actcurve<numcurve;actcurve++)
   {

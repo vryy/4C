@@ -219,6 +219,7 @@ void  add_msr(
         {
           index       = AZ_find_index(jj,&(bindx[start]),lenght);
           if (index==-1) dserror("dof jj not found in this row ii");
+
           index      += start;
 
           val1[index] += estif[i][j];
@@ -611,6 +612,7 @@ void  add_msr_fast2(
 } /* end of add_msr_fast2 */
 
 #endif /* ifdef FAST_ASS2 */
+
 
 
 

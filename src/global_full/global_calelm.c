@@ -396,7 +396,7 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
    case el_ls2:
      ls2(
        actpart,actintra,actele,&estif_global,&emass_global,
-       &etforce_global,&eiforce_global,action
+       &etforce_global,&eiforce_global,action,container
        );
    break;
 #endif
@@ -1007,7 +1007,7 @@ if (is_ls2==1)
   /* init all kind of routines for ls2 */
   ls2(
     actpart,NULL,NULL,&estif_global,&emass_global,
-    &etforce_global,&eiforce_global,action
+    &etforce_global,&eiforce_global,action,container
     );
 }
 #endif

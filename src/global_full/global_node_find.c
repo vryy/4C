@@ -85,6 +85,56 @@ return;
 
 
 
+void iscouple_find_node_comp_discretization(
+  NODE  *actnode,
+  DISCRET *searchdis,
+  NODE **partnernode,
+  INT    coupleID,
+  INT    dof
+  )
+{
+INT i;
+INT ierr;
+DOUBLE tol = EPS8;
+#ifdef DEBUG
+dstrc_enter("iscouple_find_node_comp_discretization");
+#endif
+/*----------------------------------------------------------------------*/
+*partnernode=NULL;
+   for (i=0; i<searchdis->numnp; i++)
+   {
+      /* no coupling conditions on this node */
+      if (searchdis->node[i].gnode->couple==NULL) continue;
+      /* I do not find myself */
+      if (searchdis->node[i].Id_loc == actnode->Id_loc) continue;
+         /* check for the right coupling set */
+         /*
+         Note: At the moment only the given dof is checked here */
+         if (searchdis->node[i].gnode->couple->couple.a.ia[dof][0]==coupleID)
+         {
+            /* check geometrical distance */
+            cheque_distance(actnode->x,searchdis->node[i].x,tol,&ierr);
+            /* distance is too large ( > 1.0E-08 ) */
+            if (ierr==0) continue;
+            /* I found the correct node */
+            else
+            {
+               *partnernode = &(searchdis->node[i]);
+               goto finish;
+            }
+         }
+   }
+finish:
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
+dstrc_exit();
+#endif
+
+return;
+} /* end of iscouple_find_node_comp_discertization */
+
+
+
 /*----------------------------------------------------------------------*
  | check distance between nodes                           m.gee 8/00    |
  *----------------------------------------------------------------------*/
@@ -207,3 +257,98 @@ dstrc_exit();
 
 return;
 } /* end of find_assign_coupset */
+
+
+
+void find_assign_coupset_discretization(
+  DISCRET *actdis,
+  INT    coupleID,
+  INT   *counter
+  )
+{
+INT i,l;
+INT dof;
+#ifdef DEBUG
+dstrc_enter("find_assign_coupset_discretization");
+#endif
+/*----------------------------------------------------------------------*/
+/*----- check in couple set for already given dof / dirichlet condition */
+/*
+   if there is one dof in the coupling set which is dirichlet-conditioned, then the
+   whole coupling set has to be dirichlet-conditioned
+*/
+dof = -2;
+/*------------------------ check for a dirichlet condition in coupleset */
+for (i=0; i<actdis->numnp; i++)
+{
+   if (actdis->node[i].gnode->couple==NULL &&
+       actdis->node[i].gnode->dirich==NULL) continue;
+   if (actdis->node[i].gnode->couple==NULL) continue;
+   for (l=0; l<actdis->node[i].numdf; l++)
+   {
+      if (actdis->node[i].gnode->couple->couple.a.ia[l][1]!=coupleID) continue;
+      if (actdis->node[i].gnode->dirich!=NULL)
+      {
+         if (actdis->node[i].gnode->dirich->dirich_onoff.a.iv[l]!=0)
+         {
+            dof = -1;
+            goto assign;
+         }
+      }
+   }
+}
+for (i=0; i<actdis->numnp; i++)
+{
+   if (actdis->node[i].gnode->couple==NULL &&
+       actdis->node[i].gnode->dirich==NULL) continue;
+   if (actdis->node[i].gnode->couple==NULL) continue;
+   for (l=0; l<actdis->node[i].numdf; l++)
+   {
+      if (actdis->node[i].gnode->couple->couple.a.ia[l][1]!=coupleID) continue;
+      if (actdis->node[i].dof[l]!=-2)
+      {
+         dof = actdis->node[i].dof[l];
+         goto assign;
+      }
+   }
+}
+/*----------------------------------------------------------------------*/
+assign:
+if (dof != -2)
+for (i=0; i<actdis->numnp; i++)
+{
+   if (actdis->node[i].gnode->couple==NULL &&
+       actdis->node[i].gnode->dirich==NULL) continue;
+   if (actdis->node[i].gnode->couple==NULL) continue;
+   for (l=0; l<actdis->node[i].numdf; l++)
+   {
+      if (actdis->node[i].gnode->couple->couple.a.ia[l][1]!=coupleID) continue;
+
+      if (actdis->node[i].dof[l]==dof) goto finish;
+      actdis->node[i].dof[l]=dof;
+   }
+}
+else
+{
+for (i=0; i<actdis->numnp; i++)
+{
+   if (actdis->node[i].gnode->couple==NULL &&
+       actdis->node[i].gnode->dirich==NULL) continue;
+   if (actdis->node[i].gnode->couple==NULL) continue;
+   for (l=0; l<actdis->node[i].numdf; l++)
+   {
+      if (actdis->node[i].gnode->couple->couple.a.ia[l][1]!=coupleID) continue;
+
+      actdis->node[i].dof[l]=*counter;
+   }
+}
+(*counter)=(*counter)+1;
+}
+finish:
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
+dstrc_exit();
+#endif
+
+return;
+} /* end of find_assign_coupset_discretization */

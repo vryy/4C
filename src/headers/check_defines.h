@@ -97,4 +97,9 @@ Maintainer: Malte Neumann
 #error "FAST_ASS and FAST_ASS2 are not possible together."
 #endif
 
+
+#if defined(D_LS) && defined(PARALLEL)
+#error "LevelSet not (yet) available in parallel."
+#endif
+
 /*----------------------------------------------------------------------*/

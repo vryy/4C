@@ -214,16 +214,20 @@ ls_init(actfield,lsdyn,2);
 actpos=0;
 
 /*----------------------------------------- initialize level set update */
-frontlsflag = front_ls_set;
-ls_update(frontlsflag);
+ls_setdata();
+#if 0
+if (lsdyn->lsdata->print_to_file_on_off==1) {
+  ls_to_matlab();
+}
+#endif
 
 /* --------------- construct initial front and write it to output files */
-frontlsflag = front_ls_init;
-ls_update(frontlsflag);
+ls_reset(); /* reset the front */
+ls_check_profile();
+ls_initialize();
 
 /* -------------------------------------- write initial front into file */
-frontlsflag = front_ls_write;
-ls_update(frontlsflag);
+ls_write();
 
 /*---------------------------------------- init all applied time curves */
 for (actcurve=0; actcurve<numcurve; actcurve++)
@@ -386,12 +390,12 @@ if (lsdyn->schk==iststep)
 }
 
 /*----------------------------------------------- update zero level set */
-frontlsflag = front_ls_updt;
-ls_update(frontlsflag);
+ls_reset(); /* reset the front */
+ls_check_profile();
+ls_updt();
 
 /* ---------------------------------------------- write front into file */
-frontlsflag = front_ls_write;
-ls_update(frontlsflag);
+ls_write();
 
 /*------- copy solution from sol_increment[1][j] to sol_increment[0][j] */
 solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol_increment,1,0);
@@ -434,8 +438,7 @@ if (lsdyn->step < lsdyn->nitn && lsdyn->t <= lsdyn->mtim && steady==0)
 
 /*---------------------------------- print total CPU-time to the screen */
 /* ---------------------------------------------- write front into file */
-frontlsflag = front_ls_finalize;
-ls_update(frontlsflag);
+ls_finalize();
 
 /*---------------------------------- print total CPU-time to the screen */
 #ifdef PARALLEL

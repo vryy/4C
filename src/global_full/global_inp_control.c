@@ -299,6 +299,15 @@ if (genprob.probtyp==prb_ssi)
          inherit_design_dis_ssicouple(&(field[i].dis[j]));
 }
 #endif
+#ifdef D_CHIMERA
+/*---- set pointers in the discretisations to the design chimera conditions */
+if (genprob.probtyp==prb_chimera)
+{
+  for (i=0; i<genprob.numfld; i++)
+    for (j=0; j<field[i].ndis; j++)
+      inherit_design_dis_chimera(&(field[i].dis[j]));
+}
+#endif
 /*------ set pointers in the discr. to the design freesurface condition */
 #ifdef D_FLUID
 if (genprob.probtyp==prb_fluid || genprob.probtyp==prb_fsi)

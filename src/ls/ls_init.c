@@ -34,7 +34,7 @@ void ls_init(
   )
 {
   INT i;
-  INT flag;
+  INT eflag;
   NODE  *actnode;
 
 #ifdef DEBUG
@@ -55,12 +55,29 @@ void ls_init(
     amzero(&(actnode->sol_increment));
   }
 
+  /* set 3rd and 4th components of sol_increment to a trivial number */
+  /*
+   * This operation is necessary to avoid problem in norm calculation
+   * for the convergence check
+   */
+  for (i=0; i<actfield->dis[0].numnp; i++)
+  {
+    actnode = &(actfield->dis[0].node[i]);
+    actnode->sol_increment.a.da[3][0] = ONE;
+    actnode->sol_increment.a.da[4][0] = ONE;    
+  }
+
   /* construct the initial profile */
   if (lsdyn->init>=1)
   {
     if (lsdyn->init==1)              /* initial data from ls_start.data */
       dserror("reading from a file not implemented!\n");
-    else if (lsdyn->init==2)                /* generate initial profile */
+    else if (lsdyn->init==2)         /* initial data from pss file */
+    {
+      eflag = 6;
+      ls_levelset(eflag);
+    }
+    else if (lsdyn->init==3)         /* generate initial profile */
     {
       /* initialize circles */
       if (lsdyn->lsdata->numcirc!=0)

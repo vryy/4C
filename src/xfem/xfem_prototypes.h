@@ -426,6 +426,10 @@ void xfem_f2_calstabtfp(
   );
 
 
+/* xfem_inpctr_data.c */
+void xfem_inpctr_data();
+
+
 /* xfem_f2_intg.c */
 void xfem_f2_intg(
   FLUID_DATA*

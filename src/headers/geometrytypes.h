@@ -115,8 +115,12 @@ typedef struct _ELEMENT
 /*----------------------------------------------------------------------*/
 #endif                   /* stop including optimization code to ccarat :*/
 /*----------------------------------------------------------------------*/
-     enum _ELECOSYS    locsys;
 
+#ifdef D_CHIMERA
+  enum _CHIMERA_AUTOHOLE_PARENTTYP chimera_parenttyp;
+#endif
+
+  enum _ELECOSYS    locsys;
 } ELEMENT;
 
 
@@ -182,6 +186,12 @@ typedef struct _GNODE
   INT     is_node_inside;   /* flag to control node position relative to the interface */
 #endif
 
+#ifdef D_CHIMERA
+  enum  _CHIMERA_PRES_COUPLE        chi_pres_coupling_point;
+  enum  _CHIMERA_BOUNDARYTYPE       chi_bndtype;
+  enum  _CHIMERA_AUTOHOLE_KNOTENTYP Knotentyp;
+  INT                               Randmarker; /* 1 Randelement  0 sonstiges */
+#endif
 } GNODE;
 
 

@@ -35,7 +35,6 @@ void ls2_funct(
   DIS_TYP     typ
   )
 {
-  INT        i;
   DOUBLE     rp,rm,sp,sm;
 
 #ifdef DEBUG

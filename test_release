@@ -148,8 +148,6 @@ else
   w1_incompmode.dat
   w1_mises.dat
   w1dyn.dat
-  xfem_ls_risingbubble.dat
-  xfem_ls_joggedchannel.dat
   '
 fi
  

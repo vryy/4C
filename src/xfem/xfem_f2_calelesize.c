@@ -41,6 +41,7 @@ extern struct _GENPROB    genprob;
  | defined in global_control.c                                          |
  *----------------------------------------------------------------------*/
 extern struct _MATERIAL  *mat;
+extern struct _XFEM_DATA  xfem_data;
 
 
 
@@ -150,7 +151,6 @@ void xfem_f2_calelesize(
   DOUBLE      dia,dia1,dia2;  /* values used for calc. of element size  */
   DOUBLE      dx,dy;          /* values used for calc. of element size  */
   DOUBLE      gcoor[2];       /* global coordinates                     */
-  DOUBLE      eddyint;        /* eddy-viscosity                         */
   DIS_TYP     typ;
 
   INT         is_elcut;
@@ -166,7 +166,7 @@ void xfem_f2_calelesize(
 /*----------------------------------------------------------------------*/
 
   /* is element cut? */
-  if (genprob.xfem_on_off==1) /* enriched formulation! */
+  if (xfem_data.xfem_on_off==1) /* enriched formulation! */
   {
     is_elcut = ele->e.f2->my_ls->e.ls2->is_elcut;
   }

@@ -326,7 +326,7 @@ if (fdyn->adaptive==0 && fdyn->time_rhs)
   num_sol = 4;
 else
   num_sol = 8;
-fluid_init(actpart,actintra,actfield,action,&container,num_sol,str);
+fluid_init(actpart,actintra,actfield, 0,action,&container,num_sol,str);
 actpos=0;
 
 /*------------------------------------ initialize multilevel algorithm */
@@ -539,7 +539,7 @@ tss+=ts;
 fdyn->ishape=0;
 
 /*--- return solution to the nodes and calculate the convergence ratios */
-fluid_result_incre(actfield,actintra,&(actsolv->sol[0]),3,
+fluid_result_incre(actfield, 0,actintra,&(actsolv->sol[0]),3,
                      &(actsolv->sysarray[actsysarray]),
                      &(actsolv->sysarray_typ[actsysarray]),
 		     &vrat,&prat,NULL);

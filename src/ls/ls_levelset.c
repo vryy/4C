@@ -90,6 +90,10 @@ extern INT                     numcurve;
 extern enum   _CALC_ACTION     calc_action[MAXFIELD];
 
 
+extern struct _LS_DYNAMIC     *lsdyn;           /* ls dynamic variables */
+extern struct _FIELD          *lsetfield;
+
+
 
 static INT             numls;            /* field number for level set field */
 static INT             init;             /* flag for solver_control call     */
@@ -101,12 +105,12 @@ static DOUBLE          lrat;
 static DOUBLE          t1,ts,te;
 static DOUBLE          tes = ZERO;
 static DOUBLE          tss = ZERO;
-static FIELD          *actfield;         /* pointer to active field          */
 static SOLVAR         *actsolv;          /* pointer to active sol. structure */
 static PARTITION      *actpart;          /* pointer to active partition      */
 static INTRA          *actintra;         /* pointer to active intra-communic.*/
 static CALC_ACTION    *action;           /* pointer to the cal_action enum   */
-static LS_DYNAMIC     *lsdyn;            /* ls dynamic variables             */
+
+static INT             restart;
 
 static ARRAY           ftimerhs_a;
 static DOUBLE         *ftimerhs;	 /* time - RHS		             */
@@ -139,7 +143,8 @@ void ls_levelset(
   {
 /*----------------------------------------- initialize levelset problem */
       case 1:
-        ls_levelset_init();
+        ls_levelset_init_data();
+        ls_levelset_init_levelset();
         break;
 /*---------------------------------------------- solve levelset problem */
       case 2:
@@ -148,6 +153,22 @@ void ls_levelset(
 /*------------------------------------------- finalize levelset problem */
       case 3:
         ls_levelset_fina();
+        break;
+/*--------------------------------------------------- initialize solver */
+      case 4:
+        ls_levelset_init_solver();
+        break;
+/*-------------------------------------- write restart data to pss file */
+      case 5:
+        ls_levelset_write_restart();
+        break;
+/*------------------------------------- read restart data from pss file */
+      case 6:
+        ls_levelset_read_restart();
+        break;
+/*-------------------- reset level set solution before reinitialization */
+      case 7:
+        ls_levelset_reset_sol_increment();
         break;
 /*--------------------------------------------------------------- clean */
       case 99:
@@ -172,16 +193,14 @@ void ls_levelset(
 \brief initialization of sub-problem level set
 
 <pre>                                                            irhan 05/04
-initialization of sub-problem level set
+initialization of sub-problem level set (data)
 </pre>
 
 *----------------------------------------------------------------------*/
-void ls_levelset_init()
+void ls_levelset_init_data()
 {
-  INT     i;
-
 #ifdef DEBUG
-  dstrc_enter("ls_levelset_init");
+  dstrc_enter("ls_levelset_init_data");
 #endif
 /*----------------------------------------------------------------------*/
 
@@ -189,12 +208,11 @@ void ls_levelset_init()
   numls = genprob.numls;
   lrat = ZERO;
   /* set some pointers */
-  lsdyn = alldyn[numls].lsdyn;
-  actfield = &(field[numls]);
   actsolv = &(solv[numls]);
   actpart = &(partition[numls]);
   action = &(calc_action[numls]);
-  container.fieldtyp = actfield->fieldtyp;
+  restart = genprob.restart;
+  container.fieldtyp = lsetfield->fieldtyp;
   container.actndis = 0;
   /*
    * if we are not parallel, we have to allocate an alibi
@@ -214,6 +232,76 @@ void ls_levelset_init()
    * intracommunicator (in case of nonlinear levelset dyn., this should be all)
    */
   if (actintra->intra_fieldtyp!=levelset) dserror("fieldtyp != levelset");
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+
+  return;
+} /* end of ls_levelset_init_data */
+
+
+
+/*!----------------------------------------------------------------------
+\brief initialization of sub-problem level set
+
+<pre>                                                            irhan 05/04
+initialization of sub-problem level set (levelset)
+</pre>
+
+*----------------------------------------------------------------------*/
+void ls_levelset_init_levelset()
+{
+#ifdef DEBUG
+  dstrc_enter("ls_levelset_init_levelset");
+#endif
+/*----------------------------------------------------------------------*/
+
+  /* initialise level set field */
+  if (genprob.restart>0)
+  {
+    /* turn on restart flag */
+    lsdyn->resstep = genprob.restart;
+    lsdyn->init = 2;
+  }
+  else if (genprob.restart==0)
+  {
+    lsdyn->init = 3;
+  }
+  ls_init(lsetfield,lsdyn,5);
+
+  /* init the element calculating routines */
+  *action = calc_ls_init;
+  calinit(lsetfield,actpart,action,&container);
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+
+  return;
+} /* end of ls_levelset_init_levelset */
+
+
+
+/*!----------------------------------------------------------------------
+\brief initialization of sub-problem level set
+
+<pre>                                                            irhan 05/04
+initialization of sub-problem level set (solver)
+</pre>
+
+*----------------------------------------------------------------------*/
+void ls_levelset_init_solver()
+{
+  INT     i;
+
+#ifdef DEBUG
+  dstrc_enter("ls_levelset_init_solver");
+#endif
+/*----------------------------------------------------------------------*/
+
   /* init the dist sparse matrices to zero */
   solserv_zero_mat(
     actintra,
@@ -245,8 +333,8 @@ void ls_levelset_init()
    * this is used by the element routines to assemble the  Iteration RHS
    */
   fiterhs = amdef("fiterhs",&fiterhs_a,numeq_total,1,"DV");
-  /* init the dirichlet-conditions */
-  ls_initdirich(actfield,lsdyn);
+  /* init the dirichlet conditions */
+  ls_initdirich(lsetfield);
   /* initialize solver */
   init=1;
   solver_control(
@@ -258,10 +346,7 @@ void ls_levelset_init()
     init
     );
   /* init the assembly for stiffness */
-  init_assembly(actpart,actsolv,actintra,actfield,actsysarray,0);
-  /* init the element calculating routines */
-  *action = calc_ls_init;
-  calinit(actfield,actpart,action,&container);
+  init_assembly(actpart,actsolv,actintra,lsetfield,actsysarray,0);
   /* output to the screen */
 #ifdef PARALLEL
   MPI_Barrier(actintra->MPI_INTRA_COMM);
@@ -283,7 +368,7 @@ void ls_levelset_init()
 #endif
 
   return;
-} /* end of ls_levelset_init */
+} /* end of ls_levelset_init_solver */
 
 
 
@@ -299,6 +384,7 @@ void ls_levelset_solv()
 {
   INT        itnum;
   INT        converged;
+  INT        PLACE;
 
 #ifdef DEBUG
   dstrc_enter("ls_levelset_solv");
@@ -319,9 +405,9 @@ void ls_levelset_solv()
   */
   if (actintra->intra_fieldtyp!=levelset) dserror("fieldtyp!=levelset");
   /* output to the screen */
-  if (par.myrank==0) ls_algout(lsdyn);
-  /* set dirichlet boundary conditions for  timestep */
-  ls_setdirich(actfield,lsdyn,1);
+  if (par.myrank==0) ls_algout();
+  /* set dirichlet boundary conditions for timestep */
+  ls_setdirich(lsetfield,1);
   /* initialise timerhs */
   amzero(&ftimerhs_a);
 
@@ -355,7 +441,7 @@ void ls_levelset_solv()
   container.kstep = 0;
   container.is_relax = 0;
   calelm(
-    actfield,actsolv,actpart,actintra,actsysarray,actsysarray,
+    lsetfield,actsolv,actpart,actintra,actsysarray,actsysarray,
     &container,action
     );
   lsdyn->nif = 0;
@@ -396,9 +482,19 @@ void ls_levelset_solv()
     );
   ts=ds_cputime()-t1;
   tss+=ts;
+  /* set place */
+  if (lsdyn->lsdata->ls2_calc_flag==ls2_advection ||
+      lsdyn->lsdata->ls2_calc_flag==ls2_reinitialization)
+  {
+    PLACE = 1;
+  }
+  else if (lsdyn->lsdata->ls2_calc_flag==ls2_gradient)
+  {
+    PLACE = 2 + lsdyn->lsdata->gradient_direction;
+  }
   /* return solution to the nodes and calculate the convergence ratios */
   ls_result_incre(
-    actfield,actintra,&(actsolv->sol[0]),1,
+    lsetfield,actintra,&(actsolv->sol[0]),PLACE,
     &(actsolv->sysarray[actsysarray]),
     &(actsolv->sysarray_typ[actsysarray]),
     &lrat,lsdyn
@@ -438,8 +534,16 @@ void ls_levelset_fina()
 /*----------------------------------------------------------------------*/
 
   /* F I N A L I Z E */
-  /* copy solution from sol_increment[1][j] to sol_increment[0][j] */
-  solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol_increment,1,0);
+  if (lsdyn->lsdata->ls2_calc_flag == ls2_advection)
+  {
+    /* copy solution from sol_increment[1][j] to sol_increment[0][j] */
+    solserv_sol_copy(lsetfield,0,node_array_sol_increment,node_array_sol_increment,1,0);
+  }
+  else if (lsdyn->lsdata->ls2_calc_flag == ls2_reinitialization)
+  {
+    /* copy solution from sol_increment[1][j] to sol_increment[0][j] */
+    solserv_sol_copy_reinit(lsetfield,0,node_array_sol_increment,node_array_sol_increment,1,0);
+  }
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -507,5 +611,106 @@ void ls_levelset_clea()
 
   return;
 } /* end of ls_levelset_clea */
+
+
+
+/*!----------------------------------------------------------------------
+\brief write restart data for levelset
+
+<pre>                                                            irhan 05/04
+write restart data for levelset
+</pre>
+
+*----------------------------------------------------------------------*/
+void ls_levelset_write_restart()
+{
+#ifdef DEBUG
+  dstrc_enter("ls_levelset_write_restart");
+#endif
+/*----------------------------------------------------------------------*/
+
+  /* write restart data into pss file */
+  restart_write_levelset(
+    lsdyn,lsetfield,actpart,
+    actintra,action,&container
+    );
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+
+  return;
+} /* end of ls_levelset_write_restart */
+
+
+
+/*!----------------------------------------------------------------------
+\brief read restart data for levelset
+
+<pre>                                                            irhan 05/04
+read restart data for levelset
+</pre>
+
+*----------------------------------------------------------------------*/
+void ls_levelset_read_restart()
+{
+#ifdef DEBUG
+  dstrc_enter("ls_levelset_read_restart");
+#endif
+/*----------------------------------------------------------------------*/
+
+  /* read restart data from pss file */
+  restart_read_levelset(
+    lsdyn->resstep,lsdyn,lsetfield,actpart,
+    actintra,action,&container
+    );
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+
+  return;
+} /* end of ls_levelset_read_restart */
+
+
+
+/*!----------------------------------------------------------------------
+\brief reset level set solution before reinitialization
+
+<pre>                                                            irhan 08/04
+write reset level set solution before reinitialization
+</pre>
+
+*----------------------------------------------------------------------*/
+void ls_levelset_reset_sol_increment()
+{
+  INT       i;
+  NODE     *actnode;
+
+#ifdef DEBUG
+  dstrc_enter("ls_levelset_reset_sol_increment");
+#endif
+/*----------------------------------------------------------------------*/
+
+  for (i=0; i<lsetfield->dis[0].numnp; i++)
+  {
+    /* access to the node */
+    actnode = &(lsetfield->dis[0].node[i]);
+    if (actnode->gnode->is_node_active==0)
+    {
+      /* reset solution */
+      amzero(&(actnode->sol_increment));
+    }
+  }
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+
+  return;
+} /* end of ls_levelset_reset_sol_increment */
 /*! @} (documentation module close)*/
 #endif

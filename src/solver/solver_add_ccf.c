@@ -333,6 +333,7 @@ void  add_ccf_fast(
 
 
 
+
 void redundant_ccf(PARTITION *actpart,
                    SOLVAR    *actsolv,
                    INTRA     *actintra,

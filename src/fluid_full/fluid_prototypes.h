@@ -48,9 +48,17 @@ void fluid_curvature(FIELD        *actfield,
  | fluid_dirich.c                                                       |
  ************************************************************************/
 void fluid_initdirich(  FIELD          *actfield );
+void fluid_initdirich_discretization(
+  DISCRET          *actdis
+  );
 void fluid_setdirich(   FIELD           *actfield,
 			INT              pos
 	            );
+void fluid_setdirich_discretization(
+  FIELD             *actfield,
+  DISCRET           *actdis,
+  INT                pos
+  );
 void fluid_setdirich_cyl(FIELD  *actfield );
 void fluid_setdirich_parabolic(FIELD  *actfield );
 void fluid_setdirich_sd(   FIELD           *actfield );
@@ -283,17 +291,33 @@ void fluid_init(
                           PARTITION	    *actpart,
                           INTRA	            *actintra,
 			  FIELD             *actfield,
+                          INT                disnum,
                           CALC_ACTION       *action,
                           CONTAINER         *container,
                           INT                numr,
                           FLUID_STRESS       str
 	       );
+void fluid_init_discretization(
+  PARTITION	    *actpart,
+  INTRA	            *actintra,
+  DISCRET           *actdis,
+  CALC_ACTION       *action,
+  CONTAINER         *container,
+  INT                numr,
+  FLUID_STRESS       str
+  );
 void fluid_norm(
                           FIELD             *actfield,
 		          INT                numeq_total,
                           DOUBLE            *vrat,
 		          DOUBLE            *prat
 	       );
+void fluid_norm_chimera(
+  FIELD             *actfield,
+  INT                numeq_total,
+  DOUBLE            *vrat,
+  DOUBLE            *prat
+  );
 void fluid_sol_copy(
                           FIELD             *actfield,
 			  INT                disnum,
@@ -315,6 +339,10 @@ INT fluid_steadycheck(
                           FIELD             *actfield,
 		          INT                numeq_total
 		     );
+INT fluid_steadycheck_chimera(
+  FIELD             *actfield,
+  INT                numeq_total
+  );
 INT fluid_convcheck(
                           DOUBLE             vrat,
 		          DOUBLE             prat,

@@ -38,6 +38,23 @@ typedef enum _XFEMPOLYFLAG
       xfem_poly_open,
       xfem_poly_close
 } XFEMPOLYFLAG;
+
+
+
+/*!----------------------------------------------------------------------
+\brief XFEM data structure
+
+<pre>                                                            irhan 08/04
+This structure contains options related to xfem formulation
+</pre>
+
+*----------------------------------------------------------------------*/
+typedef struct _XFEM_DATA
+{
+  INT     xfem_on_off;
+  INT     xfem_optimize;
+  INT     xfem_area_check;
+} XFEM_DATA;
 /*! @} (documentation module close)*/
 
 #endif

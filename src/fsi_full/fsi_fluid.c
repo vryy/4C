@@ -256,7 +256,7 @@ if (restart>0)
       fdyn->init=2;
    }
 }
-fluid_init(actpart,actintra,actfield,action,&container,7,str);
+fluid_init(actpart,actintra,actfield, 0,action,&container,7,str);
 actpos=0;
 
 /*-------------------------------------- init the dirichlet-conditions */
@@ -535,7 +535,7 @@ tss+=ts;
 fdyn->ishape=0;
 
 /*--- return solution to the nodes and calculate the convergence ratios */
-fluid_result_incre(actfield,actintra,&(actsolv->sol[0]),3,
+fluid_result_incre(actfield, 0,actintra,&(actsolv->sol[0]),3,
                      &(actsolv->sysarray[actsysarray]),
                      &(actsolv->sysarray_typ[actsysarray]),
 		     &vrat,&prat,&grat);

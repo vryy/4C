@@ -353,7 +353,7 @@ fiterhs_ko = amdef("fiterhs_ko",&fiterhs_ko_a,numeq_total[kapomega],1,"DV");
 amdef("time",&time_a,1000,1,"DV");
 
 /*--------------------------------------------- initialise fluid field */
-fluid_init(actpart,actintra,actfield,action,&container,4,str);
+fluid_init(actpart,actintra,actfield, 0,action,&container,4,str);
 fluid_init_tu(actfield);
 actpos=0;
 
@@ -516,7 +516,7 @@ tss+=ts;
 fdyn->ishape=0;
 
 /*--- return solution to the nodes and calculate the convergence ratios */
-fluid_result_incre(actfield,actintra,&(actsolv->sol[k_array]),3,
+fluid_result_incre(actfield, 0,actintra,&(actsolv->sol[k_array]),3,
                      &(actsolv->sysarray[k_array]),
                      &(actsolv->sysarray_typ[k_array]),
 		         &vrat,&prat,NULL);

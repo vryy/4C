@@ -33,6 +33,10 @@ void out_gid_sol_init(void);
 void out_gid_domains(FIELD *actfield);
 void out_gid_sol(char string[], FIELD *actfield, INTRA  *actintra, INT step,
                  INT place, DOUBLE time);
+void out_gid_sol_trial(
+  char string[], FIELD *actfield, INTRA  *actintra, INT step,
+  INT place, DOUBLE time
+  );
 void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield);
 void out_gid_domains_ssi(FIELD *actfield, INT numaf);
 /*----------------------------------------------------------------------*
@@ -48,7 +52,9 @@ void out_gid_sol_ssi(FIELD *slavefield, FIELD *masterfield);
  |  out_gid_msh.c                                        m.gee 12/01    |
  *----------------------------------------------------------------------*/
 void out_gid_msh(void);
+void out_gid_msh_trial(void);
 void out_gid_allcoords(FILE *out);
+void out_gid_allcoords_trial(FILE *out);
 /*----------------------------------------------------------------------*
  |  out_monitor.c                                         genk 01/03    |
  *----------------------------------------------------------------------*/

@@ -110,7 +110,8 @@ void ls2(
   ARRAY*,
   ARRAY*,
   ARRAY*,
-  CALC_ACTION*
+  CALC_ACTION*,
+  CONTAINER*
   );
 
 
@@ -122,12 +123,22 @@ void ls2_calc(
   );
 
 
-void ls2_calc_nonlocalized(
+void ls2_calc_advection(
   ELEMENT*
   );
 
 
-void ls2_calc_reinitialized(
+void ls2_calc_reinitialization(
+  ELEMENT*
+  );
+
+
+void ls2_calc_gradient(
+  ELEMENT*
+  );
+
+
+void ls2_calc_curvature(
   ELEMENT*
   );
 
@@ -154,9 +165,7 @@ void ls2_setfluidvel_byfluid(
 
 
 /* ls_algout.c */
-void ls_algout(
-  LS_DYNAMIC*
-  );
+void ls_algout();
 
 
 /* ls_convcheck.c */
@@ -171,14 +180,12 @@ INT ls_convcheck(
 
 /* ls_dirich.c */
 void ls_initdirich(
-  FIELD*,
-  LS_DYNAMIC*
+  FIELD*
   );
 
 
 void ls_setdirich(
   FIELD*,
-  LS_DYNAMIC*,
   INT
   );
 
@@ -193,7 +200,16 @@ void ls_fluid(
   );
 
 
-void ls_fluid_init(void);
+void ls_fluid_init_data();
+
+
+void ls_fluid_init_fluid();
+
+
+void ls_fluid_init_solver();
+
+
+void ls_fluid_reinit_solver();
 
 
 void ls_fluid_solv(void);
@@ -291,7 +307,13 @@ void ls_levelset(
   );
 
 
-void ls_levelset_init(void);
+void ls_levelset_init_data();
+
+
+void ls_levelset_init_levelset();
+
+
+void ls_levelset_init_solver();
 
 
 void ls_levelset_solv(void);
@@ -303,14 +325,44 @@ void ls_levelset_fina(void);
 void ls_levelset_clea(void);
 
 
-/* ls_update.c */
-void ls_main(
-  LSFLAG
+void ls_levelset_write_restart();
+
+
+void ls_levelset_read_restart();
+
+
+void ls_levelset_reset_sol_increment();
+
+
+/* ls_solserv_sol_copy_reinit.c */
+void solserv_sol_copy_reinit(
+  FIELD*,
+  INT,
+  INT,
+  INT,
+  INT,
+  INT
   );
 
 
-void ls_update(
-  FRONTLSFLAG
+/* ls_restart.c */
+void ls2_write_restart(
+  ELEMENT*,
+  INT,
+  long int*
+  );
+
+
+void ls2_read_restart(
+  ELEMENT *actele,
+  INT nhandle,
+  long int *handles
+  );
+
+
+/* ls_update.c */
+void ls_main(
+  LSFLAG
   );
 
 
@@ -377,7 +429,7 @@ void ls_activate(void);
 void ls_write(void);
 
 
-void ls_write_soln(void);
+void ls_write_fluid_soln();
 
 
 void ls_reset(void);
@@ -419,7 +471,7 @@ void ls_printnodeinfo_to_file(
 void ls_setdata(void);
 
 
-void ls_printelements(void);
+void ls_printelements();
 
 
 void ls_printelement(
@@ -430,7 +482,7 @@ void ls_printelement(
 void ls_localize(void);
 
 
-void ls_to_matlab(void);
+void ls_to_matlab();
 
 
 void ls_polygon_con(
@@ -451,6 +503,32 @@ void ls_updt_material(void);
 
 void ls_check_profile(void);
 
-void ls_init_pres_bd(void);
+
+void ls_init_pres_bd();
+
+
+ELEMENT* ls_find_last_in_list();
+
+
+void ls_mark_tip_elements();
+
+
+void ls_reset_fld_sol_increment();
+
+
+void ls_result_incre(
+  FIELD             *actfield,
+  INTRA             *actintra,
+  DIST_VECTOR       *sol,
+  INT                place,
+  SPARSE_ARRAY      *sysarray,
+  SPARSE_TYP        *sysarray_typ,
+  DOUBLE            *lrat,
+  LS_DYNAMIC       *lsdyn
+  );
+
+
+/* twophase_inpctr_data.c */
+void twophase_inpctr_data();
 /*! @} (documentation module close)*/
 #endif

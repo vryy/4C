@@ -61,6 +61,7 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 extern struct _FILES  allfiles;
 /* global variable: flag for the creation of a second discretisation */
 extern INT      create_dis;
+extern struct _TWOPHASE_DATA     *twophase_data;
 /*----------------------------------------------------------------------*
  | Global variables for this file                        m.gee 11/00    |
  *----------------------------------------------------------------------*/
@@ -120,10 +121,10 @@ if (genprob.probtyp == prb_fsi)
 if (genprob.probtyp == prb_ssi)
 {
    if (genprob.numfld!=2) dserror("numfld != 2 for FSI");
-   
+
    field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
 
-   field[0].fieldtyp = structure;   
+   field[0].fieldtyp = structure;
    field[1].fieldtyp = structure;
    field[0].ndis=1;
    field[1].ndis=1;
@@ -213,6 +214,29 @@ if (genprob.probtyp==prb_levelset)
    field[genprob.numls].fieldtyp = levelset;
    inpdis(&(field[genprob.numls]));
    inp_ls_field(&(field[genprob.numls]));
+}
+#endif
+#ifdef D_CHIMERA
+/*----------------------------------------------------- chimera problem */
+if (genprob.probtyp==prb_chimera)
+{
+  if (genprob.numfld!=1) dserror("numfld != 1 for chimera problem");
+  field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
+
+  field[genprob.numff].fieldtyp = fluid;
+  inpdis(&(field[genprob.numff]));
+  if (field[genprob.numff].ndis!=2) dserror("ndis != 2 for chimera problem");
+
+  /* initialize discretization object of field */
+  field[genprob.numff].dis = (DISCRET*)CCACALLOC(field[genprob.numff].ndis,sizeof(DISCRET));
+
+  /* read discretizations */
+  for (i=0; i<field[genprob.numff].ndis; i++)
+  {
+    DISCRET *actdis;
+    actdis = &(field[genprob.numff].dis[i]);
+    inp_fluid_discretization(&(field[genprob.numff]), actdis);
+  }
 }
 #endif
 /*---------------------------------------- Optimisation type of problem */
@@ -654,7 +678,7 @@ char *colpointer;
 INT  *flag;
 ARRAY flag_a;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inp_struct_field_ssi");
 #endif
 /*----------------------------------------- allocate one discretization */
@@ -665,7 +689,7 @@ if (slavefield->ndis>1)
 masterfield->dis = (DISCRET*)CCACALLOC(masterfield->ndis,sizeof(DISCRET));
 slavefield->dis  = (DISCRET*)CCACALLOC(slavefield->ndis,sizeof(DISCRET));
 /*-------------------------------------------- count number of elements */
-#ifndef D_WALL1 
+#ifndef D_WALL1
       dserror("WALL1 needed but not defined in Makefile");
 #endif
 
@@ -692,17 +716,17 @@ if (frfind("--STRUCTURE ELEMENTS")==1)
     dserror("SSI only possible with wall elements!");
     frchk("Master",&ierr_m);
     frchk("Slave",&ierr_s);
-    if (ierr_s==1) 
+    if (ierr_s==1)
     {
        slavecounter++;
        flag[counter]=1;
     }
-    else if (ierr_m==1) 
-    {   
+    else if (ierr_m==1)
+    {
        mastercounter++;
        flag[counter]=0;
     }
-    else dserror("SSI_COUPTYP not possible for wall element!");    
+    else dserror("SSI_COUPTYP not possible for wall element!");
     counter++;
     frread();
   }
@@ -733,12 +757,12 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frchk("WALL",&ierr);
       if (ierr==1)
       {
-#ifndef D_WALL1 
+#ifndef D_WALL1
          dserror("WALL1 needed but not defined in Makefile");
 #endif
       }
-#ifdef D_WALL1 
-      if (ierr==1) 
+#ifdef D_WALL1
+      if (ierr==1)
       {
          masterfield->dis[0].element[mastercounter].eltyp=el_wall1;
          w1inp(&(masterfield->dis[0].element[mastercounter]));
@@ -757,12 +781,12 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frchk("WALL",&ierr);
       if (ierr==1)
       {
-#ifndef D_WALL1 
+#ifndef D_WALL1
          dserror("WALL1 needed but not defined in Makefile");
 #endif
       }
-#ifdef D_WALL1 
-      if (ierr==1) 
+#ifdef D_WALL1
+      if (ierr==1)
       {
          slavefield->dis[0].element[slavecounter].eltyp=el_wall1;
          w1inp(&(slavefield->dis[0].element[slavecounter]));
@@ -781,7 +805,7 @@ frrewind();
 /*----------------------------------------------------------------------*/
 
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -897,7 +921,14 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 #ifdef D_XFEM
      if (genprob.probtyp==prb_twophase)
      {
-       fluidfield->dis[0].element[counter].eltyp=el_fluid2_xfem;
+       if (twophase_data->soln_method==tp_lsxfem)
+       {
+         fluidfield->dis[0].element[counter].eltyp=el_fluid2_xfem;
+       }
+       else
+       {
+         dserror("**ERROR** only lsxfem formulation is possible at the moment!\n");
+       }
      }
      else
      {
@@ -943,6 +974,80 @@ dstrc_exit();
 #endif
 return;
 } /* end of inp_fluid_field */
+
+
+
+
+
+
+
+
+void inp_fluid_discretization(
+  FIELD   *fluid_field,
+  DISCRET *fluidiscr
+  )
+{
+  INT        ierr;
+  INT        counter=0;
+  INT        elenumber;
+  CHAR      *colpointer;
+  CHAR      *discrs[2] = { "--FLUID DISCRETIZATION_01","--FLUID DISCRETIZATION_02" };
+  CHAR      *discr;
+  INT        disno;
+
+#ifdef DEBUG
+  dstrc_enter("inp_fluid_discretization");
+#endif
+/*----------------------------------------------------------------------*/
+
+  /* access to disno */
+  disno = fluidiscr - fluid_field->dis;
+  if (disno>1) dserror("**ERROR** disno>1 not allowed at the moment");
+  /* set discretization string */
+  discr = discrs[disno];
+  /* count number of elements */
+  if (frfind(discr)==1)
+  {
+    frread();
+    while(strncmp(allfiles.actplace,"------",6)!=0)
+    {
+      counter++;
+      frread();
+    }
+  }
+  fluidiscr->numele = counter;
+  /* allocate elements */
+  fluidiscr->element=(ELEMENT*)CCACALLOC(fluidiscr->numele,sizeof(ELEMENT));
+  /* read elements */
+  if (frfind(discr)==0) goto end;
+  frread();
+  counter=0;
+  while(strncmp(allfiles.actplace,"------",6)!=0)
+  {
+    colpointer = allfiles.actplace;
+    elenumber  = strtol(colpointer,&colpointer,10);
+    fluidiscr->element[counter].Id = --elenumber;
+    /* read the typ of element and call element reading function */
+    /* elementtyp is FLUID2 */
+    frchk("FLUID2",&ierr);
+#ifdef D_FLUID2
+    if (ierr==1)
+    {
+      fluidiscr->element[counter].eltyp=el_fluid2;
+      f2_inp(&(fluidiscr->element[counter]),counter);
+    }
+#endif
+    counter++;
+    frread();
+  }
+  frrewind();
+/*----------------------------------------------------------------------*/
+ end:
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+} /* end of inp_fluid_discretization */
 
 
 

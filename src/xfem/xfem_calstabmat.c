@@ -437,7 +437,7 @@ void xfem_f2_calstabkvp(
  |   ird  - row dim.: number of spatial dimension at row node           |
  |   posc - since there's only one full element stiffness matrix the    |
  |          column number has to be changed!                            |
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
   INT        irow,icol,irn,posc;
   DOUBLE     taumu;
   DOUBLE     taump;
@@ -598,7 +598,7 @@ void xfem_f2_calstabmvv(
  |   icol - column number in element matrix                             |
  |   irn  - row node: number of node considered for matrix-row          |
  |   ird  - row dim.: number of spatial dimension at row node           |
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
   INT        irow,icol,irn,icn;
   DOUBLE     taumu;
   DOUBLE     taump;
@@ -765,7 +765,7 @@ void xfem_f2_calstabkpv(
  |   ird  - row dim.: number of spatial dimension at row node           |
  |   posr - since there's only one full element stiffness matrix the    |
  |          row number has to be changed!                               |
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
   INT        irow,icol,icn,posr;
   DOUBLE     c;
   DOUBLE     aux;
@@ -906,7 +906,7 @@ void xfem_f2_calstabmpv(
  |   ird  - row dim.: number of spatial dimension at row node           |
  |   posr - since there's only one full element stiffness matrix the    |
  |          row number has to be changed!                               |
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
   INT        irow,icol,icn,posr;
   DOUBLE     c;
   DOUBLE     taump;
@@ -993,7 +993,7 @@ void xfem_f2_calstabkpp(
  |          row number has to be changed!                               |
  |   posc - since there's only one full element stiffness matrix the    |
  |          column number has to be changed!                            |
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
   INT        irow,icol,posc,posr;
   DOUBLE     c;
   DOUBLE     taump;

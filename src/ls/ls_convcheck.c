@@ -98,7 +98,7 @@ INT ls_convcheck(
   {
     if (par.myrank==0)
     {
-      printf("      iteration step: %3d / 3d \n",
+      printf("      iteration step: %3d / %3d \n",
              itnum, lsdyn->itemax);
       if(itnum==lsdyn->itemax)
       {

@@ -1427,7 +1427,7 @@ void inp_detailed_topology(DISCRET   *actdis)
         if(actgvol->gline[2]->gnode[2] == NULL)
         {
           actgvol->gline[2]->gnode[2] = actgvol->element->node[3]->gnode;
-          actgvol->gline[2]->gnode[2]->ngline++; 
+          actgvol->gline[2]->gnode[2]->ngline++;
         }
         /* line 3: 1st gnode */
         if(actgvol->gline[3]->gnode[0] == NULL)

@@ -41,7 +41,7 @@ extern struct _MATERIAL      *mat;
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
 extern ALLDYNA               *alldyn;
-
+extern struct _XFEM_DATA      xfem_data;
 
 
 /*!---------------------------------------------------------------------
@@ -141,7 +141,7 @@ void xfem_f2_calint(
 /******************************XFEM**************************************/
   ELEMENT       *myls2;
   INT            is_elcut;
-  DOUBLE         lset00[4],lset01[4],lset02[4];
+  DOUBLE         lset01[4];
   INT           *ind;
   INT           *polygonmat[2];
   DOUBLE        *polygonwgt[2];
@@ -179,7 +179,7 @@ void xfem_f2_calint(
   myls2 = ele->e.f2->my_ls;
   polydata = &(myls2->e.ls2->polydata[0]);
   /* is element cut? */
-  if (genprob.xfem_on_off==1)
+  if (xfem_data.xfem_on_off==1)
   {
     is_elcut = myls2->e.ls2->is_elcut;  /* enriched formulation! */
   }
@@ -257,7 +257,7 @@ void xfem_f2_calint(
            Standard Galerkin matrices are stored in one matrix "estif"
            Standard Galerkin mass matrix is stored in "emass"
         */
-          /* compute matrix Kvv */
+        /* compute matrix Kvv */
         xfem_f2_calkvv(
           ele,estif,velint,NULL,vderxy,funct,derxy,
           fac,visc,iel,index,DENS
@@ -320,7 +320,6 @@ void xfem_f2_calint(
           f2_calstabkpp(
             gls,estif,derxy,fac,iel
             );
-
 
         /* compute "external" Force Vector (b) => */
         if (*hasext != 0)

@@ -68,7 +68,7 @@ Maintainer: Malte Neumann
  | Points, Lines, Surfaces and Volumes on design level    m.gee 8/00    |
  *----------------------------------------------------------------------*/
 #include "design.h"
-  /*----------------------------------------------------------------------*
+/*----------------------------------------------------------------------*
  | structures used by load curves                         m.gee 8/00    |
  *----------------------------------------------------------------------*/
 #include "curve.h"
@@ -194,6 +194,8 @@ INT               fluid_stress_gid;       /* write stresses to .flavia.res */
 INT               fluid_vis_file;         /* write solution to pss-file for VISUAL2 */
 INT               ale_disp_file;          /* write ale displacements to .out */
 INT               ale_disp_gid;           /* write ale displacement to .flavia.res */
+INT               chimera_to_pager;       /* write chimera solution to pager */
+INT               chimera_to_matlab;      /* write chimera solution to matlab */
 INT               monitor;
 INT               relative_displ;         /* write relative displacements to .err */
 } IO_FLAGS;
@@ -265,9 +267,8 @@ INT               numaf;         /* actual number of ale field */
 INT               numls;         /* actual number of ls field */
 INT               graderw;       /* flag is gradient enhanced material model */
 
-#ifdef D_XFEM
-INT               xfem_on_off;    /* flag to switch enriched formulation */
-#endif
+INT               mdis_on_off;    /* flag to switch multi discretization on */
+
 
 enum _PROBLEM_TYP probtyp;       /* type of problem, see enum.h */
 enum _TIME_TYP    timetyp;       /* type of time, see enum.h */
@@ -329,13 +330,13 @@ typedef struct _INTERFACE
                                              /* two master interfaces */
      DOUBLE *int_vec;                        /* the vector which denotes */
                                              /* the positve direction of */
-                                             /* the interface */                                        
-     
+                                             /* the interface */
+
      struct _ELEMENT **elements;             /* pointer vector of the */
                                              /* slave elements */
      struct _ELEMENT **elementm;             /* pointer vector of the */
                                              /* master elements */
-     
+
      struct _NODE    **nodes;                /* pointer vector of the */
                                              /* slave nodes */
      struct _NODE    **nodem;                /* pointer vector of the */
