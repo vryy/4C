@@ -56,7 +56,7 @@ static INT    counter[100];
   ------------------------------------------------------------------------*/
 DOUBLE perf_time ()
 {
-  DOUBLE  ret;
+  DOUBLE  ret=0;
 
 #ifdef HPUX10
   struct timeval _tstart;
@@ -137,7 +137,8 @@ DOUBLE perf_time ()
 
   times(&buf);
   clk_tck = (DOUBLE)sysconf(_SC_CLK_TCK);
-  ret = (buf.tms_utime + buf.tms_stime)/clk_tck;
+  if (clk_tck > 0)
+    ret = (buf.tms_utime + buf.tms_stime)/clk_tck;
 #endif
 
 #ifdef HPUX_MUENCH
@@ -346,10 +347,10 @@ void perf_print (INT index, char string[], INT bezug, INT ops)
         string,
         counter[index],
         sumtime[index],
-        (sumtime[index]/(sumtime[bezug]))*100,
+        (sumtime[bezug] != 0) ? (sumtime[index]/(sumtime[bezug]))*100 : 0,
         bezug,
         ops,
-        ops/(sumtime[index]/counter[index]*1.0e6)
+        ((sumtime[bezug] != 0) && (counter[index] != 0)) ? ops/(sumtime[index]/counter[index]*1.0e6) : 0
         );
   }
   else
@@ -359,7 +360,7 @@ void perf_print (INT index, char string[], INT bezug, INT ops)
         string,
         counter[index],
         sumtime[index],
-        (sumtime[index]/(sumtime[bezug]))*100,
+        (sumtime[bezug] != 0) ? (sumtime[index]/(sumtime[bezug]))*100 : 0,
         bezug
         );
   }

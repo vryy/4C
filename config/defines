@@ -12,6 +12,9 @@
 # enable reading restart data the new way
 #NEW_RESTART_READ
 
+# crash ccarat if a nan of inf occurs
+#TRAP_FE
+
 # all possible elements
 #D_ALE              # defines element ale (2D+3D)
 #D_AXISHELL         # defines axisymmetric shell element

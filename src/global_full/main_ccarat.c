@@ -13,6 +13,22 @@ Maintainer: Malte Neumann
 #include "../headers/standardtypes.h"
 #include "../headers/compile_settings.h"
 
+#ifdef TRAP_FE
+
+#ifdef LINUX_MUENCH
+/*
+ * This is to get the GNU prototypes. Is there a better way to state
+ * that we want to use them? */
+#define __USE_GNU
+#include <fenv.h>
+#endif
+
+#ifdef HPUX_MUENCH
+#include <fenv.h>
+#endif
+
+#endif /* TRAP_FE */
+
 /* In case the settings header is brocken */
 #ifndef COMPILE_SETTINGS_H
 #define DEFINE_STRING "\n\tunknown"
@@ -141,6 +157,36 @@ if ((argc == 2) && (strcmp(argv[1], "-v") == 0)) {
   }
 }
 else {
+  /* Here we turn the NaN and inf numbers of. No need to calculate
+   * those. If those appear the calculation needs much (!) more
+   * time. Better stop immediately if some illegal operation occurs. */
+#ifdef TRAP_FE
+
+  /* Sadly, it seems the functions needed for this are different on
+   * different maschines. */
+#ifdef LINUX_MUENCH
+
+  /* This is a GNU extention thus it's only available on linux. But
+   * it's exactly what we want: SIGFPE just for the given
+   * exceptions. We don't care about FE_INEXACT. (It happens all the
+   * time.) */
+  feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_UNDERFLOW | FE_OVERFLOW);
+
+  /* The hard GNU way. But it does too much. */
+  /*fesetenv((fenv_t*)-2);*/
+
+#endif
+
+#ifdef HPUX_MUENCH
+  /*
+   * Don't ask me why they want this. The man page said it's needed on
+   * itanium maschines. */
+#pragma STDC FENV_ACCESS ON
+  fesettrapenable(FE_INVALID | FE_DIVBYZERO | FE_UNDERFLOW | FE_OVERFLOW);
+#endif
+
+#endif /* TRAP_FE */
+
 /*----------------------------------------------- everything is in here */
 ntam(argc,argv);
 /*----------------------------------------------------------------------*/

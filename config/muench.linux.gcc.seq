@@ -35,6 +35,8 @@ VISUAL2_LIB="-L/usr/X11R6/lib -lVisual2 -lX11"
 #LIBS="-lc -lg2c -llapack -lgoto_p4_512-r0.6 -lxerbla -lmetis"
 LIBS="-lc -lg2c -llapack -lblas -lmetis"
 
-CFLAGS="-Wall -ansi"
-FFLAGS="-Wall"
+# Alle Bibliotheken neu übersetzen?!
+# -malign-double
+CFLAGS="-Wall -march=pentium4 -msse2 -mfpmath=sse -ansi"
+FFLAGS="-Wall -march=pentium4 -msse2 -mfpmath=sse"
 LDFLAGS="-Xlinker -defsym -Xlinker MAIN__=main"
