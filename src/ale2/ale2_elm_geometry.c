@@ -22,7 +22,7 @@ This routine evaluates the area of a 4 noded quad ale element
                                                       2dn index: x or y
 
 \warning There is nothing special to this routine
-\return void                                               
+\return DOUBLE element area                                              
 \sa calling: 
              called by: ale2_static_ke_prestress(), 
 	                ale2_static_ke_step2()
@@ -73,7 +73,7 @@ This routine evaluates the area of a 3 noded triangular ale element
 \param   k      INT       (i)   node k
 
 \warning There is nothing special to this routine
-\return void                                               
+\return DOUBLE element area                                               
 \sa calling: 
              called by: ale2_torsional()
 
