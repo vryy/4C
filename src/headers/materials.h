@@ -77,6 +77,7 @@ typedef struct _FLUID
 {
      double                    viscosity;
      double                    density;
+     double                    gamma;     /* surface tension coeficient */
 } FLUID;
 /*----------------------------------------------------------------------*
  | plastic mises material                              a.lipka 17/05    |

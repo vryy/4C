@@ -58,6 +58,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       if (mat[i].m.fluid==NULL) dserror("Alloocation of FLUID material failed");
       frdouble("VISCOSITY",&(mat[i].m.fluid->viscosity),&ierr);
       frdouble("DENS"  ,&(mat[i].m.fluid->density)  ,&ierr);
+      frdouble("GAMMA",&(mat[i].m.fluid->gamma)  ,&ierr);
    }
    frchk("MAT_Struct_StVenantKirchhoff",&ierr);
    if (ierr==1)
