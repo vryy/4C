@@ -178,8 +178,8 @@ element quality statistics
 
 *----------------------------------------------------------------------*/
 #ifdef D_ALE
-void plot_ale_quality(FIELD *field,INT step, INTRA *actintra,
-                      PARTITION *actpart)
+void plot_ale_quality(FIELD *field,INT step, DOUBLE time,
+                      INTRA *actintra, PARTITION *actpart)
 {
 #ifndef NO_TEXT_OUTPUT
 INT i;      /* a counter */
@@ -240,9 +240,9 @@ if (par.myrank==0)
    average = average/numele_total;
 /*----------------------------------------------------- gnuplot file ---*/
    if(step == 1)
-   fprintf(allfiles.gnu,"# step nr.  av. quality  standard degr.  min quality max quality\n");
-   fprintf(allfiles.gnu,"%i  %8.7f  %8.7f  %8.7f  %8.7f\n",
-           step-1, average, stand_degr, min, max);
+      fprintf(allfiles.gnu,"# step nr.  time    av. quality  standard degr.  min quality max quality\n");
+   fprintf(allfiles.gnu,"%i  %8.3f   %8.7f  %8.7f  %8.7f  %8.7f\n",
+           step-1, time, average, stand_degr, min, max);
    fflush(allfiles.gnu);
 }
 
