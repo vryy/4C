@@ -94,6 +94,8 @@ inpdesign_topology_fe();
 if (genprob.timetyp==time_dynamic) inpctrdyn();
 /*---------------------------------------- input of general static data */
 else inpctrstat();
+/*----------------------------------------- input of eigensolution data */
+inpctreig();
 /*------------------------------------------------- input of conditions */
 /* dirichlet/coupling/neumann conditions are read from file to the
    DVOLS/DSURFS/DLINES/DNODES
