@@ -416,7 +416,7 @@ else if (iel==4)
    case 4:
       P[qr][place_P]  =e1;
       P[qr][place_P+1]=e1e2;
-      P[qs][place_P+2]=e1;
+      P[qs][place_P+2]=e2;
       P[qs][place_P+3]=e1e2;
       place_P+=4;
    break;
@@ -436,7 +436,7 @@ else if (iel==4)
    case 4:
       P[sr][place_P]  =e1;
       P[sr][place_P+1]=e1e2;
-      P[ss][place_P+2]=e1;
+      P[ss][place_P+2]=e2;
       P[ss][place_P+3]=e1e2;
       place_P+=4;
    break;

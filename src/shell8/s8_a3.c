@@ -95,7 +95,7 @@ double     a3[3];
 double     a3norm;
 
 #ifdef DEBUG 
-dstrc_enter("s8a3");
+dstrc_enter("s8a3ref_extern");
 #endif
 /*----------------------------------------------------------------------*/
 iel = ele->numnp;
@@ -136,7 +136,7 @@ for (j=0; j<3; j++) a3ref[j][i] = a3[j];
 dstrc_exit();
 #endif
 return;
-} /* end of s8a3 */
+} /* end of s8a3ref_extern */
 
 
 
