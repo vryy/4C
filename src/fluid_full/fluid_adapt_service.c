@@ -525,7 +525,7 @@ for (i=0; i<3; i++)  getvec[i] = vel0[i];
 
 /*---------------- truncate characteristic velocity at lower bound ...
                                        ... to avoid division by zero ---*/
-if (par.myrank == 0) for (i=0; i<3; i++) vel0[i]=DMAX(getvec[i],0.000001);	
+if (par.myrank == 0) for (i=0; i<3; i++) vel0[i]=DMAX(getvec[i],0.0001);	
 
 /*------------------------------------------- send vel0 to all procs ---*/
 #ifdef PARALLEL 
@@ -545,7 +545,7 @@ for (i=0; i<actpart->pdis[0].numnp; i++)
     continue; /* do nothing for dbc dofs*/
     sum += DSQR( actnode->sol_increment.a.da[7][j]
          / ( FABS(actnode->sol_increment.a.da[3][j]) + vel0[j] ) );
-    nvel;
+    nvel++;
   }
 }
 
