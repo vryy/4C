@@ -1,3 +1,16 @@
+//
+// Maintainer: Steffen Genkinger
+//             genk@statik.uni-stuttgart.de
+//             http://www.uni-stuttgart.de/ibs/members/genkinger/
+//             0711 - 685-6127
+// 
+// necessary defines: -DD_FLUID -DD_FLUID2 -DAZTEC_PACKAGE -DUMFPACK -DRESULTTEST
+//
+// #define MAXNOD           (4)
+// #define MAXELE           (4)
+// #define MAXDOFPERNODE    (3)
+// #define MAXGAUSS         (3)
+//
 ==================================================================
                         General Data File C_CARAT
 ==================================================================
