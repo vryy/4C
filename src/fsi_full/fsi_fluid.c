@@ -567,7 +567,7 @@ fsidyn->actpos = actpos;
 if (restartstep==fsidyn->res_write_evry)
 {
    restartstep=0;
-   restart_write_fluiddyn(fdyn,actfield,actpart,actintra,action,container);   
+   restart_write_fluiddyn(fdyn,actfield,actpart,actintra,action,&container);   
 }
 
 /*--------------------------------------------------------------------- */

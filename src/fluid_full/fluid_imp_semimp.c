@@ -489,7 +489,7 @@ if (outstep==fdyn->upout && ioflags.fluid_sol_file==1)
 if (restartstep==fdyn->res_write_evry)
 {
    restartstep=0;
-   restart_write_fluiddyn(fdyn,actfield,actpart,actintra,action,container);   
+   restart_write_fluiddyn(fdyn,actfield,actpart,actintra,action,&container);   
 }
 
 /*--------------------- check time and number of steps and steady state */

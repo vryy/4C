@@ -495,7 +495,7 @@ if (fdyn->init>=1)
 
    if (fdyn->init==2) /*-------------------- initial data from pss file */
       restart_read_fluiddyn(fdyn->resstep,fdyn,actfield,actpart,actintra,
-                            container);
+                            action,container);
 			    
    if (fdyn->init==6) /*--------------------------------- solitary wave */
    {
