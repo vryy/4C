@@ -142,7 +142,7 @@ if (genprob.restart>0)
 }
 
 /*----------------------------------------------------------------------*/
-out_gid_msh();
+if (par.myrank==0) out_gid_msh();
 /*--------------------------------------- write initial solution to gid */
 /*----------------------------- print out solution to 0.flavia.res file */
 if (par.myrank==0)
