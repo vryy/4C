@@ -1260,7 +1260,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       if (strncmp(buffer,"yes",3)==0 ||
                strncmp(buffer,"YES",3)==0 ||
 	       strncmp(buffer,"Yes",3)==0    )
-         fdyn->liftdrag=ld_nodeforce;
+         fdyn->liftdrag=ld_stress;
       else if (strncmp(buffer,"nodeforce",9)==0 ||
                strncmp(buffer,"NODEFORCE",9)==0 ||
 	       strncmp(buffer,"Nodeforce",9)==0    )
