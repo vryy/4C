@@ -65,8 +65,7 @@ extern struct _MATERIAL  *mat;
   \param hasext         *INT      (i) flag if there are ext forces
   \param estif          *DOUBLE   (i) element stiffness matrix
   \param emass          *DOUBLE   (i) element mass matrix
-  \param etforce        *DOUBLE   (i) element time force
-  \param eiforce        *DOUBLE   (i) element iteration force
+  \param eforce         *DOUBLE   (i) element iteration force
   \param funct          *DOUBLE   (i) shape functions
   \param deriv          *DOUBLE   (i) deriv. of shape funcs
   \param deriv2         *DOUBLE   (i) 2nd deriv. of sh. funcs
@@ -100,8 +99,7 @@ void f3fcalint(
     INT             *hasext,
     DOUBLE          *estif,
     DOUBLE          *emass,
-    DOUBLE          *etforce,
-    DOUBLE          *eiforce,
+    DOUBLE          *eforce,
     DOUBLE          *funct,
     DOUBLE          *deriv,
     DOUBLE          *deriv2,
@@ -420,122 +418,13 @@ void f3fcalint(
 
 
           /* calculate galerkin and stabilisation of "Iter-RHS" */
-          f3fcalif(eiforce,covint,velint,funct,derxy,derxy2,
+          f3fcalif(eforce,covint,velint,funct,derxy,derxy2,
               facsll, tau, paravec, flagvec, sizevec);
 
         } /* endif (fdyn->nii!=0) */
 #ifdef PERF
     perf_end(60);
 #endif
-
-
-
-        /*----------------------------------------------------------------------*
-          |       compute "external" Force Vector                              |
-          |   (at the moment there are no external forces implemented)         |
-          |  but there can be due to self-weight /magnetism / etc. (b)         |
-          |  dead load may vary over time, but stays constant over             |
-          |  the whole domain --> no interpolation with shape funcs            |
-          |  parts changing during the nonlinear iteration are added to        |
-          |  Iteration Force Vector                                            |
-         *----------------------------------------------------------------------*/
-#ifdef PERF
-    perf_begin(61);
-#endif
-        if (hasext[0]!=0)
-        {
-          /* compute stabilisation part of external RHS (vel dofs) at (n+1)*/
-          ths=fdyn->thsl;
-          thp=fdyn->thpl;
-
-          f3fcalstabexf(eiforce,derxy,derxy2,edeadng,velint,fac,&ths,&thp,
-              tau, paravec, flagvec, sizevec);
-
-        } /* endif (*hasext!=0) */
-#ifdef PERF
-    perf_end(61);
-#endif
-
-
-
-        /*----------------------------------------------------------------------*
-          |         compute "Time" Force Vectors                               |
-         *----------------------------------------------------------------------*/
-#ifdef PERF
-    perf_begin(62);
-#endif
-        if (fdyn->nif!=0)
-        {
-          /* get pressure (n) at integration point */
-          f3fprei(preint, funct, epren, sizevec);
-
-          /* get pressure derivatives (n) at integration point */
-          f3fpder(pderxy, derxy, epren, sizevec);
-
-          /* get velocities (n) at integration point */
-          f3fveli( velint, funct, eveln, sizevec);
-
-          /* get velocitie derivatives (n) at integration point */
-          f3fvder(vderxy, derxy, eveln, sizevec);
-
-          /* get 2nd velocities derivatives (n) at integration point */
-          if (flagvec[5]!=0)
-            f3fvder2(vderxy2, derxy2, eveln, sizevec);
-
-
-          /* get convective velocities (n) at integration point */
-          f3fcovi( vderxy, velint, covint, sizevec);
-
-
-          ths=fdyn->thsr;
-          thp=fdyn->thpr;
-
-          /* calculate galerkin and stabilization  part of "Time-RHS" */
-          f3fcaltf(etforce,velint,velint,covint,funct,derxy,
-              derxy2,vderxy,vderxy2,pderxy,preint,fac,&ths,&thp,
-              tau,paravec, flagvec, sizevec);
-
-#ifdef PERF
-    perf_end(62);
-#endif
-
-
-
-          /*-------------------------------------------------------------*
-            | compute "external" Force Vector                           |
-            | (at the moment there are no external forces implemented)  |
-            |  but there can be due to self-weight /magnetism / etc. (b)|
-            |  dead load may vary over time, but stays constant over    |
-            |  the whole domain --> no interpolation with shape funcs   |
-            |  parts staying constant during nonlinear iteration are    |
-            |  add to Time Force Vector                                 |
-           *-------------------------------------------------------------*/
-#ifdef PERF
-    perf_begin(63);
-#endif
-
-          if (hasext[0]!=0)
-          {
-            /* compute galerkin part of external RHS (vel dofs) at (n) and (n+1) */
-            facsl = fdyn->thsl;
-            facsr = fdyn->thsr;
-
-            f3fcalgalexf(etforce, funct, edeadn, edeadng, fac, &facsl, &facsr,
-                sizevec);
-
-            /* compute stabilisation part of external RHS at (n) */
-            ths=fdyn->thsr;
-            thp=fdyn->thpr;
-
-            f3fcalstabexf(etforce,derxy,derxy2,edeadn,velint,fac,&ths,&thp,tau,
-                paravec, flagvec, sizevec);
-
-          } /* endif (*hasext!=0) */
-#ifdef PERF
-    perf_end(63);
-#endif
-        } /* endif (fdyn->nif!=0)   */
-
       }
     }
   } /* end of loop over integration points */

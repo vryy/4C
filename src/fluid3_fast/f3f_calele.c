@@ -41,6 +41,20 @@ extern ALLDYNA      *alldyn;
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
 
+/*!----------------------------------------------------------------------
+\brief positions of physical values in node arrays
+
+<pre>                                                        chfoe 11/04
+
+This structure contains the positions of the various fluid solutions 
+within the nodal array of sol_increment.a.da[ipos][dim].
+
+extern variable defined in fluid_service.c
+</pre>
+
+------------------------------------------------------------------------*/
+extern struct _FLUID_POSITION ipos;
+
 
 static DOUBLE   *eveln;
 static DOUBLE   *evelng;
@@ -76,8 +90,7 @@ static DOUBLE   *nostr;
 
 static DOUBLE   *estif;
 static DOUBLE   *emass;
-static DOUBLE   *etforce;
-static DOUBLE   *eiforce;
+static DOUBLE   *eforce;
 static DOUBLE   *edforce;
 
 static FLUID_DYNAMIC   *fdyn;
@@ -100,8 +113,7 @@ static FLUID_DYNAMIC   *fdyn;
   \param ele[LOOPL]      ELEMENT  (i) the set of elements
   \param estif          *DOUBLE   (i) element stiffness matrix
   \param emass          *DOUBLE   (i) element mass matrix
-  \param etforce        *DOUBLE   (i) element time force
-  \param eiforce        *DOUBLE   (i) element iteration force
+  \param eforce         *DOUBLE   (i) element force
   \param edforce        *DOUBLE   (i) element dirichlet force
   \param hasdirich      *INT      (i) flag if s.th. was written to edforce
   \param hasext         *INT      (i) flag if there are ext forces
@@ -118,8 +130,7 @@ void f3fcalele(
     ELEMENT        *ele[LOOPL],
     ARRAY          *estif_fast,
     ARRAY          *emass_fast,
-    ARRAY          *etforce_fast,
-    ARRAY          *eiforce_fast,
+    ARRAY          *eforce_fast,
     ARRAY          *edforce_fast,
     INT            *hasdirich,
     INT            *hasext,
@@ -142,8 +153,7 @@ void f3fcalele(
   {
     estif   = estif_fast->a.dv;
     emass   = emass_fast->a.dv;
-    eiforce = eiforce_fast->a.dv;
-    etforce = etforce_fast->a.dv;
+    eforce  = eforce_fast->a.dv;
     edforce = edforce_fast->a.dv;
 
     eveln     = (DOUBLE *)CCAMALLOC(LOOPL*NUM_F3_VELDOF*MAXNOD_F3*sizeof(DOUBLE));
@@ -187,8 +197,7 @@ void f3fcalele(
   /* initialise with ZERO */
   amzero(estif_fast);
   amzero(emass_fast);
-  amzero(eiforce_fast);
-  amzero(etforce_fast);
+  amzero(eforce_fast);
   amzero(edforce_fast);
 
   for(l=0;l<LOOPL;l++)
@@ -251,7 +260,7 @@ void f3fcalele(
       /* calculate element stiffness matrices
          and element force vectors */
       f3fcalint(ele,elecord,tau,hasext,estif,
-          emass,etforce,eiforce,
+          emass,eforce,
           funct,deriv,deriv2,
           xjm,derxy,derxy2,eveln,evelng,
           epren,edeadn,edeadng,velint,vel2int,
@@ -308,7 +317,7 @@ void f3fcalele(
       /* calculate element stiffness matrices
          and element force vectors */
       f3fcalinta(ele,elecord,tau,hasext,estif,
-          emass,etforce,eiforce,
+          emass,eforce,
           funct,deriv,deriv2,
           xjm,derxy,derxy2,eveln,evelng,
           ealecovn,ealecovng,egridv,
@@ -350,7 +359,7 @@ void f3fcalele(
 #if 0
   /* local co-ordinate system */
   if(ele->locsys==locsys_yes)
-    locsys_trans(ele,estif,NULL,etforce,eiforce);
+    locsys_trans(ele,estif,NULL,NULL,eforce);
 #endif
 
 
@@ -368,9 +377,8 @@ void f3fcalele(
 #ifdef PERF
     perf_begin(50);
 #endif
-  /* calculate emass * vec(n) */
-  if (fdyn->nim)
-    f3fmassrhs(emass, eveln, eiforce, sizevec);
+    /* calculate emass * hist */
+    f3fmassrhs(emass,eveln,edeadng,eforce,hasext,&(fdyn->thsl),sizevec);
 #ifdef PERF
     perf_end(50);
 #endif
@@ -411,12 +419,15 @@ void f3fcalstab(
   INT      i,j;
   NODE    *actnode;
   INT      sizevec[6];
+  INT      velnp;
+  
 
 #ifdef DEBUG
   dstrc_enter("f3fcalstab");
 #endif
 
   fdyn   = alldyn[genprob.numff].fdyn;
+  velnp  = ipos.velnp;
 
 
   sizevec[0] = MAXNOD_F3;
@@ -442,9 +453,9 @@ void f3fcalstab(
     {
       actnode=ele[j]->node[i];
       /* get actual velocity */
-      evelng[                  LOOPL*i+j] = actnode->sol_increment.a.da[3][0];
-      evelng[  MAXNOD_F3*LOOPL+LOOPL*i+j] = actnode->sol_increment.a.da[3][1];
-      evelng[2*MAXNOD_F3*LOOPL+LOOPL*i+j] = actnode->sol_increment.a.da[3][2];
+      evelng[                  LOOPL*i+j] = actnode->sol_increment.a.da[velnp][0];
+      evelng[  MAXNOD_F3*LOOPL+LOOPL*i+j] = actnode->sol_increment.a.da[velnp][1];
+      evelng[2*MAXNOD_F3*LOOPL+LOOPL*i+j] = actnode->sol_increment.a.da[velnp][2];
     }/*loop*/
   } /* end of loop over nodes */
 
