@@ -82,7 +82,8 @@ OBJS_SOLVER   = src/solver/solver_control.o \
                 src/solver/solver_mask_ccf.o \
                 src/solver/solver_mask_skyline.o \
                 src/solver/solver_mask_spooles.o \
-                src/solver/solver_mask_bdcsr.o
+                src/solver/solver_mask_bdcsr.o \
+		src/solver/solver_mask_service.o
 #                pss_full
 OBJS_PSS      = src/pss_full/pss_am.o \
                 src/pss_full/pss_ds.o \
