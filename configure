@@ -61,6 +61,14 @@ END { print defs }
 #echo ">>>" $DEFINES "<<<"
 #exit
 
+# add special cflags from command line
+if [ $# -eq 3 ] ; then
+    echo "Found special cflags on the command line !!"
+    CFLAGS="$CFLAGS $3"
+    FFLAGS="$FFLAGS $3"
+fi
+
+
 # the debug version needs special treatment
 if grep '^DEBUG' "$2" 2>&1 > /dev/null ; then
     DEBUGFLAG=-g
@@ -140,6 +148,126 @@ if grep '^VISUAL3_PACKAGE' "$2" 2>&1 > /dev/null ; then
     INCLUDEDIRS="$INCLUDEDIRS $VISUAL2_INC"
 fi
 
+# fluid objects:
+OBJ_FLUID=0
+
+
+# objects:
+OBJECTS="\$(OBJS_MAIN) \$(OBJS_GLOBAL) \$(OBJS_PSS) \$(OBJS_INPUT) \
+\$(OBJS_PAR) \$(OBJS_MATH) \$(OBJS_OUTPUT) \$(OBJS_FORTRAN)"
+
+# ALE
+if grep '^D_ALE' "$2" 2>&1 > /dev/null ; then
+    OBJECTS="$OBJECTS \$(OBJS_ALE)"
+fi
+
+# AXISHELL
+if grep '^D_AXISHELL' "$2" 2>&1 > /dev/null ; then
+    OBJECTS="$OBJECTS \$(OBJS_AXISHELL)"
+fi
+
+# BEAM3
+if grep '^D_BEAM3' "$2" 2>&1 > /dev/null ; then
+    OBJECTS="$OBJECTS \$(OBJS_BEAM3)"
+fi
+
+# BRICK1
+if grep '^D_BRICK1' "$2" 2>&1 > /dev/null ; then
+    OBJECTS="$OBJECTS \$(OBJS_BRICK1)"
+fi
+
+# FLUID2 
+if grep '^D_FLUID2' "$2" 2>&1 > /dev/null ; then
+    if [ "x$OBJ_FLUID" = "x0" ] ; then
+        OBJECTS="$OBJECTS \$(OBJS_FLUID2) \$(OBJS_FLUID)"
+        OBJ_FLUID=1
+    else
+        OBJECTS="$OBJECTS \$(OBJS_FLUID2)"
+    fi
+fi
+
+# FLUID2_ML
+if grep '^FLUID2_ML' "$2" 2>&1 > /dev/null ; then
+    if [ "x$OBJ_FLUID" = "x0" ] ; then
+        OBJECTS="$OBJECTS \$(OBJS_F2ML) \$(OBJS_FLUID)"
+        OBJ_FLUID=1
+    else
+        OBJECTS="$OBJECTS \$(OBJS_F2ML)"
+    fi
+fi
+
+# FLUID3
+if grep '^D_FLUID3' "$2" 2>&1 > /dev/null ; then
+    if [ "x$OBJ_FLUID" = "x0" ] ; then
+        OBJECTS="$OBJECTS \$(OBJS_FLUID3) \$(OBJS_FLUID)"
+        OBJ_FLUID=1
+    else
+        OBJECTS="$OBJECTS \$(OBJS_FLUID3)"
+    fi
+fi
+
+# FLUID3_ML
+if grep '^FLUID3_ML' "$2" 2>&1 > /dev/null ; then
+    if [ "x$OBJ_FLUID" = "x0" ] ; then
+        OBJECTS="$OBJECTS \$(OBJS_F3ML) \$(OBJS_FLUID)"
+        OBJ_FLUID=1
+    else
+        OBJECTS="$OBJECTS \$(OBJS_F3ML)"
+    fi
+fi
+
+# FLUID2_PR
+if grep '^D_FLUID2_PR' "$2" 2>&1 > /dev/null ; then
+    if [ "x$OBJ_FLUID" = "x0" ] ; then
+        OBJECTS="$OBJECTS \$(OBJS_F2PRO) \$(OBJS_FLUID)"
+        OBJ_FLUID=1
+    else
+        OBJECTS="$OBJECTS \$(OBJS_F2PRO)"
+    fi
+fi
+
+# SHELL8
+if grep '^D_SHELL8' "$2" 2>&1 > /dev/null ; then
+    OBJECTS="$OBJECTS \$(OBJS_SHELL8)"
+fi
+
+# SHELL9
+if grep '^D_SHELL9' "$2" 2>&1 > /dev/null ; then
+    OBJECTS="$OBJECTS \$(OBJS_SHELL9)"
+fi
+
+# WALL1
+if grep '^D_WALL1' "$2" 2>&1 > /dev/null ; then
+    OBJECTS="$OBJECTS \$(OBJS_WALL1)"
+fi
+
+# INTERF
+if grep '^D_INTERF' "$2" 2>&1 > /dev/null ; then
+    OBJECTS="$OBJECTS \$(OBJS_IF)"
+fi
+
+# WALLGE
+if grep '^D_WALLGE' "$2" 2>&1 > /dev/null ; then
+    OBJECTS="$OBJECTS \$(OBJS_WALLGE)"
+fi
+
+# FSI
+if grep '^D_FSI' "$2" 2>&1 > /dev/null ; then
+    OBJECTS="$OBJECTS \$(OBJS_FSI)"
+fi
+
+# OPTIM 
+if grep '^D_OPTIM' "$2" 2>&1 > /dev/null ; then
+    OBJECTS="$OBJECTS \$(OBJS_OPT)"
+fi
+
+# MAT
+if grep '^D_MAT' "$2" 2>&1 > /dev/null ; then
+    OBJECTS="$OBJECTS \$(OBJS_MAT)"
+fi
+
+
+
 # build the Makefile
 # This is done in three steps
 
@@ -163,6 +291,17 @@ FFLAGS=$FFLAGS $DEBUGFLAG -D$PLATFORM $DEFINES
 LDFLAGS=$LDFLAGS
 INCLUDES=$INCLUDEDIRS
 LIBS=$LIBDIRS $LIBS
+
+#----------------------- binaries -----------------------------------
+include ./Makefile.objects
+#--------------------------------------------------------------------
+#
+\$(PROGRAM): \\
+		$OBJECTS
+		@echo "Linking \$(LD) \$(LDFLAGS) \$(LIBS) \$(INCLUDES) -o \$(PROGRAM)"
+		@\$(LD) \$(LDFLAGS) \\
+		$OBJECTS \\
+		\$(LIBS)  -o \$(PROGRAM)
 
 EOF
 
