@@ -30,12 +30,18 @@ switch (genprob.probtyp)
 case prb_structure:
     if (alldyn[0].sdyn->Typ == centr_diff)
     {
-       dyn_nln_stru_expl();/* generalized alfa time integration */
+       dyn_nln_stru_expl();/* central difference time integration */
     }
     if (alldyn[0].sdyn->Typ == gen_alfa)
     {
-       dyn_nln_structural();/* central difference time integration */
+       dyn_nln_structural();/* generalized alfa time integration */
     }
+    if (alldyn[0].sdyn->Typ == Gen_EMM)
+    {
+#ifdef GEMM
+       dyn_nln_gemm(); /* Generalized Energy-Momentum time integration */
+#endif 
+    } 
 break;
 case prb_fluid:
     dyn_fluid();

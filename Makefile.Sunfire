@@ -18,6 +18,8 @@
 # -DD_CONTACT    defines contact algos 2D (with wall element)
 # -DD_BEAM3      defines element beam3
 # -DD_AXISHELL   defines axishell element
+# -DWALLCONTACT  defines contact algorithms for wall contact
+# -DGEMM         defines Generalized Energy-Momentum Int. Scheme
 #
 # -DDEBUG     defines debug mode: routine and array tracing 
 # -DPARALLEL  defines parallel version of programm

@@ -7,12 +7,14 @@
 # -DD_SHELL8    defines element shell8
 # -DS8CONTACT    defines contact algorithms for shell8 contact
 # -DD_CONTACT    defines contact algos 2D (with wall element)
+# -DWALLCONTACT  defines contact algorithms for wall contact
 # -DD_SHELL9    defines element shell9
 # -DD_FLUID2    defines element fluid2
 # -DD_FLUID3    defines element fluid3
 # -DD_ALE       defines element ale
 # -DD_WALL1     defines element wall1
 # -DD_OPTIM      defines optimization
+# -DGEMM         defines Generalized Energy-Momentum Int. Scheme
 # -DD_BEAM3      defines element beam3
 # -DD_BRICK1     defines element brick1
 # -DD_AXISHELL  defines element axishell

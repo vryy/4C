@@ -11,6 +11,7 @@ SRC       =  /home/neumann/work/wdir/ccarat_saxi/
 # -DD_FLUID2_PRO defines element fluid2 with projection method
 # -DD_SHELL8    defines element shell8
 # -DD_SHELL9    defines element shell9
+# -DWALLCONTACT  defines contact algorithms for wall contact
 # -DD_FLUID3    defines element fluid3
 # -DD_ALE       defines element ale
 # -DD_WALL1     defines element wall1
@@ -19,6 +20,7 @@ SRC       =  /home/neumann/work/wdir/ccarat_saxi/
 # -DS8CONTACT    defines contact algorithms for shell8 contact
 # -DD_CONTACT    defines contact algos 2D (with wall element)
 # -DD_AXISHELL  defines element axishell
+# -DGEMM         defines Generalized Energy-Momentum Int. Scheme
 #
 # -DDEBUG     defines debug mode: routine and array tracing 
 # -DPARALLEL  defines parallel version of programm

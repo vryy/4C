@@ -20,6 +20,8 @@
 # -DD_OPTIM      defines optimization
 # -DD_BEAM3      defines element beam3
 # -DD_CONTACT    defines contact algos 2D (with wall element)
+# -DWALLCONTACT  defines contact algorithms for wall contact
+# -DGEMM         defines Generalized Energy-Momentum Int. Scheme
 # -DD_AXISHELL   defines axishell element
 #
 # -DDEBUG     defines debug mode: routine and array tracing 

@@ -14,6 +14,7 @@ OBJS2	      = src/global_full/global_control.o \
                 src/global_full/cal_nlnstatic_control.o \
                 src/global_full/cal_nlndyn_struct.o \
                 src/global_full/cal_nlndyn_stru_expl.o \
+		src/global_full/cal_nlngemm_struct.o \
                 src/global_full/cal_static_service.o \
                 src/global_full/ccarat_visual2.o \
                 src/global_full/dyn_timecurve.o \
@@ -223,7 +224,8 @@ OBJS11	      = src/output/out_global.o \
                 src/output/out_gid_soldyn.o
 #                wall1
 OBJS12	      = src/wall1/w1_bop.o \
-                src/wall1/w1_cal_deriv.o \
+                src/wall1/w1_b_barop.o \
+		src/wall1/w1_cal_deriv.o \
                 src/wall1/w1_cal_eps.o \
                 src/wall1/w1_cal_stress.o \
                 src/wall1/w1_call_mat.o \
@@ -255,7 +257,24 @@ OBJS12	      = src/wall1/w1_bop.o \
                 src/wall1/w1_mat_trans.o \
                 src/wall1/w1_cal_trans.o \
                 src/wall1/w1_incompmode.o \
-                src/wall1/w1_math.o
+                src/wall1/w1_math.o \
+		src/wall1/wallcontact_init.o \
+		src/wall1/wall_contact_detection.o \
+		src/wall1/wall_contact_update.o \
+		src/wall1/wall_contact_set.o \
+		src/wall1/wall_contact_flag.o \
+		src/wall1/wall_contact_augmentation.o \
+		src/wall1/wall_contact_his_update.o \
+		src/wall1/wall_contact_detection_em.o \
+		src/wall1/wall_contact_mid.o \
+		src/wall1/wall_contact_augmentation_em.o\
+		src/wall1/wall_contact_update_em.o \
+		src/wall1/wall_contact_update_em_a.o \
+		src/wall1/wall_contact_his_update_em.o \
+		src/wall1/w1_history.o \
+		src/wall1/w1_kinetic_energy.o \
+		src/wall1/w1_strain_energy.o \
+		src/wall1/w1_update_history.o		
 #                fluid2
 OBJS14        = src/fluid2/f2_calcurvature.o \
                 src/fluid2/f2_calelesize.o \
