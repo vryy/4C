@@ -378,6 +378,7 @@ OBJS_OPT      = src/optimization/opt_cal_main.o \
                 src/optimization/opt_w1_cint.o \
                 src/optimization/opt_fsd.o \
                 src/optimization/opt_func.o \
+                src/optimization/opt_linking.o \
                 src/optimization/opt_vsa.o \
                 src/optimization/opt_smo.o \
                 src/optimization/opt_g_out.o
