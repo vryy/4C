@@ -94,6 +94,7 @@ typedef enum _MATERIAL_TYP
                        m_el_orth,     /* elastic orthotropic material */
                        m_mfoc,        /* open cell metal foam */
                        m_mfcc,        /* closed cell metal foam */
+                       m_nhmfcc,      /* foam, closed cell, based on modified Neo Hook */
                        m_multi_layer, /* multilayer material -> shell9*/
                        m_orthotropic  /* linear elastic orthotropic material*/
 } MATERIAL_TYP;                         
@@ -131,6 +132,7 @@ typedef enum _CALC_ACTION
                        calc_struct_init,
                        calc_struct_linstiff,
                        calc_struct_linstiffmass,
+                       calc_struct_linstifflmass,
                        calc_struct_nlnstiff,
                        calc_struct_nlnstiffmass,
                        calc_struct_internalforce,
@@ -161,6 +163,8 @@ typedef enum _CALC_ACTION
                        calc_struct_stm,  /* mass   */
                        calc_struct_dee,  /* derivative of strain energy   */
                        calc_struct_dmc,  /* derivative of mass constraint */
+                       calc_struct_def,  /* derivative of eigen frequency */
+                       calc_deriv_self_adj,/*         selfadjoint problem */
                        update_struct_odens,/* updata density in ele wa    */
                        upd_optvar,
                        put_optvar
@@ -252,6 +256,14 @@ typedef enum _HYPREPRECTYP
                        hypreprec_parasails,      /* apporximate inverse precond. */
                        hypreprec_amg             /* algebraic multigrid precond. */
 } HYPREPRECTYP;                         
+/*----------------------------------------------------------------------*
+ | enum EIG_SOL_TYPE                                         al 8/02    |
+ *----------------------------------------------------------------------*/
+typedef enum _EIG_SOL_TYPE
+{
+                       subspace,      /* subspace iteration*/
+                       eig_none       /* no solver defined */
+} EIG_SOL_TYPE;                         
 /*----------------------------------------------------------------------*
  | enum STALIN_EXEC                                           al 09/02  |
  | to tell control routine for static structural analysis               |
