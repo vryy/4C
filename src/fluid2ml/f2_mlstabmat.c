@@ -667,91 +667,87 @@ if (gls->iadvec!=0)
 {
 /*----------------------------------------------------------------------*
    Calculate convection stabilisation part Nc(u):
- *----------------------------------------------------------------------*/
-  if (fdyn->nic!=0) /* evaluate for Newton- and fixed-point-like-iteration */
-  {
 /*----------------------------------------------------------------------*
     /
    |  tau_mu * u_old * grad(v) * u_old * grad(u)   d_omega
   /
  *----------------------------------------------------------------------*/
-    icol=0;
-    for (icn=0;icn<iel;icn++)
-    {
-      auxc = (velint[0]*derxy[0][icn] + velint[1]*derxy[1][icn])*con;
-      irow=0;
-      for (irn=0;irn<iel;irn++)
-      {
-        aux = (velint[0]*derxy[0][irn] + velint[1]*derxy[1][irn])*auxc;
-        estif[irow][icol]     += aux;
-        estif[irow+1][icol+1] += aux;
-        irow += 2;
-      } /* end of loop over irn */
-      icol += 2;
-    } /* end of loop over icn */
+icol=0;
+for (icn=0;icn<iel;icn++)
+{
+  auxc = (velint[0]*derxy[0][icn] + velint[1]*derxy[1][icn])*con;
+  irow=0;
+  for (irn=0;irn<iel;irn++)
+  {
+    aux = (velint[0]*derxy[0][irn] + velint[1]*derxy[1][irn])*auxc;
+    estif[irow][icol]     += aux;
+    estif[irow+1][icol+1] += aux;
+    irow += 2;
+  } /* end of loop over irn */
+  icol += 2;
+} /* end of loop over icn */
 
-    if (fdyn->conte!=0)  
-    {
-      cb  = con*beta;
-      cbb = cb*beta*signre;
+if (fdyn->conte!=0)  
+{
+  cb  = con*beta;
+  cbb = cb*beta*signre;
 /*----------------------------------------------------------------------*
     /
    |  beta * tau_mu * u_old * grad(v) * u * div(u_old)   d_omega
   /
  *----------------------------------------------------------------------*/
-      icol=0;
-      for (icn=0;icn<iel;icn++)
-      {
-        auxc = funct[icn]*divv*cb;
-        irow=0;
-        for (irn=0;irn<iel;irn++)
-        {
-          aux = (velint[0]*derxy[0][irn] + velint[1]*derxy[1][irn])*auxc;
-          estif[irow][icol]     += aux;
-          estif[irow+1][icol+1] += aux;
-          irow += 2;
-        } /* end of loop over irn */
-        icol += 2;
-      } /* end of loop over icn */
+  icol=0;
+  for (icn=0;icn<iel;icn++)
+  {
+    auxc = funct[icn]*divv*cb;
+    irow=0;
+    for (irn=0;irn<iel;irn++)
+    {
+      aux = (velint[0]*derxy[0][irn] + velint[1]*derxy[1][irn])*auxc;
+      estif[irow][icol]     += aux;
+      estif[irow+1][icol+1] += aux;
+      irow += 2;
+    } /* end of loop over irn */
+    icol += 2;
+  } /* end of loop over icn */
 /*----------------------------------------------------------------------*
     /
    |  +/- beta * tau_mu * v * div(u_old) * u_old * grad(u)   d_omega
   /
  *----------------------------------------------------------------------*/
-      cb = cb*signre;
-      icol=0;
-      for (icn=0;icn<iel;icn++)
-      {
-        aux = (velint[0]*derxy[0][icn] + velint[1]*derxy[1][icn])*divv*cb;
-        irow=0;
-        for (irn=0;irn<iel;irn++)
-        {
-          estif[irow][icol]     += aux*funct[irn];
-          estif[irow+1][icol+1] += aux*funct[irn];
-          irow += 2;
-        } /* end of loop over irn */
-        icol += 2;
-      } /* end of loop over icn */
+   cb = cb*signre;
+   icol=0;
+   for (icn=0;icn<iel;icn++)
+   {
+     aux = (velint[0]*derxy[0][icn] + velint[1]*derxy[1][icn])*divv*cb;
+     irow=0;
+     for (irn=0;irn<iel;irn++)
+     {
+       estif[irow][icol]     += aux*funct[irn];
+       estif[irow+1][icol+1] += aux*funct[irn];
+       irow += 2;
+     } /* end of loop over irn */
+     icol += 2;
+   } /* end of loop over icn */
 /*----------------------------------------------------------------------*
     /
    |  +/- beta * beta * tau_mu * v * div(u_old) * u * div(u_old)   d_omega
   /
  *----------------------------------------------------------------------*/
-      icol=0;
-      for (icn=0;icn<iel;icn++)
-      {
-        aux = funct[icn]*divv*divv*cbb;
-        irow=0;
-        for (irn=0;irn<iel;irn++)
-        {
-          estif[irow][icol]     += aux*funct[irn];
-          estif[irow+1][icol+1] += aux*funct[irn];
-          irow += 2;
-        } /* end of loop over irn */
-        icol += 2;
-      } /* end of loop over icn */
-    }
-  } /* endif (fdyn->nic!=0) */
+   icol=0;
+   for (icn=0;icn<iel;icn++)
+   {
+     aux = funct[icn]*divv*divv*cbb;
+     irow=0;
+     for (irn=0;irn<iel;irn++)
+     {
+       estif[irow][icol]     += aux*funct[irn];
+       estif[irow+1][icol+1] += aux*funct[irn];
+       irow += 2;
+     } /* end of loop over irn */
+     icol += 2;
+   } /* end of loop over icn */
+ }
 
 /*----------------------------------------------------------------------*
    Calculate convection stabilisation part Nr(u):
@@ -992,47 +988,44 @@ if (ihoel!=0 && gls->ivisc>0)
  *----------------------------------------------------------------------*/
     ccon = fac * taump * visc * signvi;
    
-    if (fdyn->nic!=0) /* evaluate for Newton- and fixed-point-like-iteration */
+    icol=0;
+    for (icn=0;icn<iel;icn++)
     {
-      icol=0;
-      for (icn=0;icn<iel;icn++)
+      irow=0;
+      auxc = (velint[0]*derxy[0][icn] + velint[1]*derxy[1][icn])*ccon;
+      for (irn=0;irn<iel;irn++)
       {
-        irow=0;
-	auxc = (velint[0]*derxy[0][icn] + velint[1]*derxy[1][icn])*ccon;
-	for (irn=0;irn<iel;irn++)
-	{
-	  aux = (derxy2[0][irn] + derxy2[1][irn])*auxc;
-	  estif[irow][icol]	-= aux;
-	  estif[irow+1][icol+1] -= aux;
-	  irow += 2;
-	} /* end of loop over irn */
-	icol += 2;
-      } /* end of loop over icn */
+        aux = (derxy2[0][irn] + derxy2[1][irn])*auxc;
+        estif[irow][icol]     -= aux;
+        estif[irow+1][icol+1] -= aux;
+        irow += 2;
+      } /* end of loop over irn */
+      icol += 2;
+    } /* end of loop over icn */
 
-      if (fdyn->conte!=0)  
-      {
-        ccb  = ccon*beta;
+    if (fdyn->conte!=0)  
+    {
+      ccb  = ccon*beta;
 /*----------------------------------------------------------------------*
     /
    |  -/+ beta * tau_mp  * 2 * nue * div(eps(v)) * u * div(u_old) d_omega
   /
  *----------------------------------------------------------------------*/
-        icol=0;
-        for (icn=0;icn<iel;icn++)
+      icol=0;
+      for (icn=0;icn<iel;icn++)
+      {
+        irow=0;
+        auxc = funct[icn]*divv*ccb;
+        for (irn=0;irn<iel;irn++)
         {
-          irow=0;
-	  auxc = funct[icn]*divv*ccb;
-	  for (irn=0;irn<iel;irn++)
-	  {
-	    aux = (derxy2[0][irn] + derxy2[1][irn])*auxc;
-	    estif[irow][icol]	  -= aux;
-	    estif[irow+1][icol+1] -= aux;
-	    irow += 2;
-	  } /* end of loop over irn */
-	  icol += 2;
-        } /* end of loop over icn */
-      }
-    } /* endif (fdyn->nic!=0) */
+          aux = (derxy2[0][irn] + derxy2[1][irn])*auxc;
+          estif[irow][icol]     -= aux;
+          estif[irow+1][icol+1] -= aux;
+          irow += 2;
+        } /* end of loop over irn */
+        icol += 2;
+      } /* end of loop over icn */
+    }
    
 /*----------------------------------------------------------------------*
    Calculate viscous stabilisation part Nr(u) for higher order elements:
@@ -1126,8 +1119,6 @@ if (ihoel!=0 && gls->ivisc>0)
  *----------------------------------------------------------------------*/
     ccon = fac * taump * visc * signvi;
    
-    if (fdyn->nic!=0) /* evaluate for Newton- and fixed-point-like-iteration */
-    {
       icol=0;
       for (icn=0;icn<iel;icn++)
       {
@@ -1170,7 +1161,6 @@ if (ihoel!=0 && gls->ivisc>0)
 	  icol += 2;
         } /* end of loop over icn */
       }
-    } /* endif (fdyn->nic!=0) */
    
 /*----------------------------------------------------------------------*
    Calculate viscous stabilisation part Nr(u) for higher order elements:
@@ -1808,8 +1798,6 @@ default:
 /*----------------------------------------------------------------------*
    Calculate stabilisation part Nc(u):
  *----------------------------------------------------------------------*/
-if (fdyn->nic!=0) /* evaluate for Newton- and fixed-point-like-iteration */
-{
 /*----------------------------------------------------------------------*
     /
    |  - tau_mp * grad(q) * u_old * grad(u) d_omega
@@ -1849,7 +1837,6 @@ if (fdyn->nic!=0) /* evaluate for Newton- and fixed-point-like-iteration */
       icol += 2;
     } /* end loop over icn */
   }
-} /* endif (fdyn->nic!=0) */ 
 
 /*----------------------------------------------------------------------*
    Calculate stabilisation part Nr(u):
