@@ -327,7 +327,7 @@ for (j=0; j<actfield->dis[0].numnp; j++)
    for (k=0; k<actnode->numdf; k++) 
    {
       if (place >= actnode->sol.fdim) dserror("Cannot print solution step");
-      fprintf(out,"%20.7#E ",actnode->sol.a.da[place][k]);
+      fprintf(out,"%20.7E ",actnode->sol.a.da[place][k]);
    }
    fprintf(out,"\n");
 }
@@ -340,7 +340,7 @@ for (j=0; j<actfield->dis[0].numnp; j++)
    for (k=0; k<actnode->numdf; k++) 
    {
       if (place >= actnode->sol.fdim) dserror("Cannot print solution step");
-      fprintf(out,"%20.7#E ",actnode->sol.a.da[place][k]);
+      fprintf(out,"%20.7E ",actnode->sol.a.da[place][k]);
    }
    fprintf(out,"\n");
 }
@@ -373,7 +373,7 @@ for (j=0; j<actfield->dis[0].numele; j++)
        }
        for (i=0; i<ngauss; i++)
        {
-       fprintf(out,"Gauss %d   %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E \n",
+       fprintf(out,"Gauss %d   %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E \n",
        i,
        actele->e.s8->forces.a.d3[place][0][i],
        actele->e.s8->forces.a.d3[place][2][i],
@@ -402,7 +402,7 @@ for (j=0; j<actfield->dis[0].numele; j++)
        }
        for (i=0; i<ngauss; i++)
        {
-       fprintf(out,"Gauss %d   %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E \n",
+       fprintf(out,"Gauss %d   %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E \n",
        i,
        actele->e.s8->forces.a.d3[place][5][i],
        actele->e.s8->forces.a.d3[place][7][i],
@@ -437,7 +437,7 @@ for (j=0; j<actfield->dis[0].numele; j++)
        }
        for (i=0; i<ngauss; i++)
        {
-       fprintf(out,"Gauss %d   %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E \n",
+       fprintf(out,"Gauss %d   %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E \n",
        i,
        actele->e.w1->stress_GP.a.d3[place][0][i],
        actele->e.w1->stress_GP.a.d3[place][1][i],
@@ -485,7 +485,7 @@ for (j=0; j<actfield->dis[0].numele; j++)
        }
        for (i=0; i<numnp; i++)
        {
-       fprintf(out,"Node %d  IEL %d %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E \n",
+       fprintf(out,"Node %d  IEL %d %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E \n",
        actele->node[i]->Id,
        i,
        actele->e.w1->stress_ND.a.d3[place][0][i],

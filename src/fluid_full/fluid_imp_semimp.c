@@ -458,13 +458,13 @@ for (i=0;i<par.nprocs;i++)
 if (par.myrank==i)
 {
 printf("\n");
-printf("PROC %3d: TOTAL TIME for setting dirichlet values: %10.3#E \n", par.myrank,tds);
-printf("PROC %3d: TOTAL TIME for element calculations: %10.3#E \n", par.myrank,tes);
-printf("PROC %3d: TOTAL TIME for assembly of RHS: %10.3#E \n", par.myrank,tas);
-printf("PROC %3d: TOTAL TIME for SOLVER: %10.3#E \n", par.myrank,tss);
-printf("PROC %3d: TOTAL TIME for calculation of convergence ratios: %10.3#E \n", par.myrank,tcs);
-printf("PROC %3d: TOTAL TIME for steady state check: %10.3#E \n", par.myrank,tsts);
-printf("PROC %3d: TOTAL TIME finalising of time step: %10.3#E \n", par.myrank,tfs);
+printf("PROC %3d: TOTAL TIME for setting dirichlet values: %10.3E \n", par.myrank,tds);
+printf("PROC %3d: TOTAL TIME for element calculations: %10.3E \n", par.myrank,tes);
+printf("PROC %3d: TOTAL TIME for assembly of RHS: %10.3E \n", par.myrank,tas);
+printf("PROC %3d: TOTAL TIME for SOLVER: %10.3E \n", par.myrank,tss);
+printf("PROC %3d: TOTAL TIME for calculation of convergence ratios: %10.3E \n", par.myrank,tcs);
+printf("PROC %3d: TOTAL TIME for steady state check: %10.3E \n", par.myrank,tsts);
+printf("PROC %3d: TOTAL TIME finalising of time step: %10.3E \n", par.myrank,tfs);
 }
 }
 #ifdef PARALLEL

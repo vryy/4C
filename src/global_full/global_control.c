@@ -81,7 +81,7 @@ ti=ds_cputime()-t0;
 if (par.myrank==0)
 {
  printf("\n");
- printf("Total CPU Time for INPUT:       %10.3#E sec \n",ti);
+ printf("Total CPU Time for INPUT:       %10.3E sec \n",ti);
  printf("\n"); 
 }
 /*--------------------------------close the input file, delete the copy */
@@ -100,7 +100,7 @@ tc=ds_cputime()-t0;
 if (par.myrank==0)
 {
  printf("\n");
- printf("Total CPU Time for CALCULATION: %10.3#E sec \n",tc);
+ printf("Total CPU Time for CALCULATION: %10.3E sec \n",tc);
  printf("\n"); 
 }
 goto endcal;

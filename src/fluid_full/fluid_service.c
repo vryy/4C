@@ -890,21 +890,21 @@ if (par.myrank==0)
    switch (fdyn->stnorm) 
    {  
    case 0:
-      printf("   --> steady state check   (tolerance[norm]):  %10.3#E [L_in] \n",  
+      printf("   --> steady state check   (tolerance[norm]):  %10.3E [L_in] \n",  
 	        fdyn->sttol);
    break;
    case 1:
-      printf("   --> steady state check   (tolerance[norm]):  %10.3#E [L_1 ] \n",
+      printf("   --> steady state check   (tolerance[norm]):  %10.3E [L_1 ] \n",
 	        fdyn->sttol);
    break;
    case 2:
-      printf("   --> steady state check   (tolerance[norm]):  %10.3#E [L_2 ] \n",
+      printf("   --> steady state check   (tolerance[norm]):  %10.3E [L_2 ] \n",
 	        fdyn->sttol);
    break;
    default:
       dserror("Norm for steady state check unknwon!\n");
    } /* end switch (fdyn->stnorm)  */
-   printf("         velocities: %10.3#E	   pressures:   %10.3#E  \n", 
+   printf("         velocities: %10.3E	   pressures:   %10.3E  \n", 
           vrat,prat);
 } /* endif (par.myrank) */
 /* check if the ratios are smaller than the given tolerance and set flag */	  
@@ -966,17 +966,17 @@ if (fdyn->itchk!=0)
       switch(fdyn->itnorm)
       {
       case 0: /* infinity norm */
-         printf("|  %3d/%3d   | %10.3#E[L_in]  | %10.3#E   | %10.3#E  | {te: %10.3#E} {ts:%10.3#E} \n", 
+         printf("|  %3d/%3d   | %10.3E[L_in]  | %10.3E   | %10.3E  | {te: %10.3E} {ts:%10.3E} \n", 
                  itnum,fdyn->itemax,fdyn->ittol,vrat,prat,te,ts);
          printf("|            |                   |              |             | \n");
       break;
       case 1: /* L_1 norm */
-         printf("|  %3d/%3d   | %10.3#E[L_1 ]  | %10.3#E   | %10.3#E  | {te: %10.3#E} {ts:%10.3#E} \n", 
+         printf("|  %3d/%3d   | %10.3E[L_1 ]  | %10.3E   | %10.3E  | {te: %10.3E} {ts:%10.3E} \n", 
               itnum,fdyn->itemax,fdyn->ittol,vrat,prat,te,ts);
          printf("|            |                   |              |             | \n");
       break;
       case 2: /* L_2 norm */
-         printf("|  %3d/%3d   | %10.3#E[L_2 ]  | %10.3#E   | %10.3#E  | {te: %10.3#E} {ts:%10.3#E} \n", 
+         printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E  | {te: %10.3E} {ts:%10.3E} \n", 
                  itnum,fdyn->itemax,fdyn->ittol,vrat,prat,te,ts);
          printf("|            |                   |              |             | \n");
       break;
@@ -1037,19 +1037,19 @@ printf("\n");
 switch(fdyn->iop)
 {
 case 2:
-   printf("TIME: %11.4#E/%11.4#E  DT = %11.4#E  Semi-Impl-One-Step  STEP = %4d/%4d \n",
+   printf("TIME: %11.4E/%11.4E  DT = %11.4E  Semi-Impl-One-Step  STEP = %4d/%4d \n",
           fdyn->time,fdyn->maxtime,dynvar->dta,fdyn->step,fdyn->nstep);
 break;
 case 3:
-   printf("TIME: %11.4#E/%11.4#E  DT = %11.4#E  Semi-Impl-Two-Step  STEP = %4d/%4d \n",
+   printf("TIME: %11.4E/%11.4E  DT = %11.4E  Semi-Impl-Two-Step  STEP = %4d/%4d \n",
           fdyn->time,fdyn->maxtime,dynvar->dta,fdyn->step,fdyn->nstep);
 break;
 case 4:
-   printf("TIME: %11.4#E/%11.4#E  DT = %11.4#E  One-Step-Theta  STEP = %4d/%4d \n",
+   printf("TIME: %11.4E/%11.4E  DT = %11.4E  One-Step-Theta  STEP = %4d/%4d \n",
           fdyn->time,fdyn->maxtime,dynvar->dta,fdyn->step,fdyn->nstep);
 break;
 case 5:
-   printf("TIME: %11.4#E/%11.4#E  DT = %11.4#E  Fract-Step-Theta  STEP = %4d/%4d \n",
+   printf("TIME: %11.4E/%11.4E  DT = %11.4E  Fract-Step-Theta  STEP = %4d/%4d \n",
           fdyn->time,fdyn->maxtime,dynvar->dta,fdyn->step,fdyn->nstep);
 break;         
 default:
