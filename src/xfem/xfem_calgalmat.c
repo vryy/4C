@@ -40,7 +40,8 @@ void xfem_f2_calkvv(
   DOUBLE           fac,    
   DOUBLE           visc,   
   INT              iel,
-  INT             *index       
+  INT             *index,
+  DOUBLE           DENS
   )
 {
 /*----------------------------------------------------------------------*
@@ -97,7 +98,7 @@ void xfem_f2_calkvv(
       {
         irow = index[irn];
         aux = (velint[0]*derxy[0][icn] +
-               velint[1]*derxy[1][icn])*funct[irn]*fac;
+               velint[1]*derxy[1][icn])*funct[irn]*fac*DENS;
         estif[irow  ][icol  ] += aux;
         estif[irow+1][icol+1] += aux;
       }
@@ -117,7 +118,7 @@ void xfem_f2_calkvv(
       for (irn=0; irn<TWO*iel; irn++)
       {
         irow = index[irn];
-        aux = funct[irn]*funct[icn]*fac;
+        aux = funct[irn]*funct[icn]*fac*DENS;
         estif[irow  ][icol  ] += aux*vderxy[0][0];
         estif[irow+1][icol  ] += aux*vderxy[1][0];
         estif[irow+1][icol+1] += aux*vderxy[1][1];
@@ -200,7 +201,7 @@ void xfem_f2_calmvv(
   DOUBLE           fac,   
   INT              iel,
   INT             *index,
-  DOUBLE           dens
+  DOUBLE           DENS
   )
 {
 /*----------------------------------------------------------------------*
@@ -225,7 +226,7 @@ void xfem_f2_calmvv(
     for (irn=0; irn<TWO*iel; irn++)
     {
       irow = index[irn];      
-      aux = dens*funct[icn]*funct[irn]*fac;
+      aux = funct[icn]*funct[irn]*fac*DENS;
       emass[irow  ][icol  ] += aux;
       emass[irow+1][icol+1] += aux;   
     }

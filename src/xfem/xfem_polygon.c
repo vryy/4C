@@ -1063,8 +1063,8 @@ void xfem_polygon_mat(
   DOUBLE     lset01[4];
   INT        indmat[2][7] =
                             {
-                             {1,1,1,2,2,2,2},
-                             {2,2,2,1,1,1,1}
+                              {2,2,2,1,1,1,1},
+                              {1,1,1,2,2,2,2}
                             };
   
 #ifdef DEBUG 
@@ -1098,8 +1098,8 @@ void xfem_polygon_mat(
           {
             /* set proper corner node */
             cn = 2*i;
-            if (lset01[cn]>0.0) polygonmat[i][0] = 2;
-            else polygonmat[i][0] = 1;
+            if (lset01[cn]>0.0) polygonmat[i][0] = 1;
+            else polygonmat[i][0] = 2;
             continue;
           }
           /* check solitary node */

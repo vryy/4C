@@ -40,7 +40,8 @@ void xfem_f2_calgaltfv(
   DOUBLE           visc,     
   DOUBLE           fac,      
   INT              iel,
-  INT             *index 
+  INT             *index,
+  DOUBLE           DENS
   )  
 {
   INT        j,irow,isd,inode;  
@@ -70,7 +71,7 @@ void xfem_f2_calgaltfv(
     irow = index[inode];
     for (isd=0; isd<2; isd++)
     {
-      eforce[irow] += funct[inode]*fact[isd];
+      eforce[irow] += funct[inode]*fact[isd]*DENS;
       irow++;
     }
   }
@@ -80,7 +81,7 @@ void xfem_f2_calgaltfv(
     irow = index[inode];
     for (isd=0; isd<2; isd++)
     {
-      eforce[irow] -= funct[inode]*covint[isd]*facsr;
+      eforce[irow] -= funct[inode]*covint[isd]*facsr*DENS;
       irow++;
     }
   }
@@ -140,7 +141,8 @@ void xfem_f2_calstabtfv(
   DOUBLE           visc,    
   INT              ihoel,   
   INT              iel,
-  INT             *index 
+  INT             *index,
+  DOUBLE           DENS
   )
 {
   INT        irow,isd,inode;
@@ -183,7 +185,7 @@ void xfem_f2_calstabtfv(
       aux = derxy[0][inode]*velint[0] + derxy[1][inode]*velint[1];
       for (isd=0; isd<2; isd++)
       {
-        eforce[irow] += aux*fact[isd];
+        eforce[irow] += aux*fact[isd]*DENS*DENS;
         irow++;
       }
     }
@@ -208,9 +210,9 @@ void xfem_f2_calstabtfv(
     {
       irow = index[inode];
       eforce[irow  ] -= ((TWO*derxy2[0][inode] + derxy2[1][inode])*vel2int[0] +
-                              derxy2[2][inode]*vel2int[1])*fvts;
+                              derxy2[2][inode]*vel2int[1])*fvts*DENS;
       eforce[irow+1] -= ((TWO*derxy2[1][inode] + derxy2[0][inode])*vel2int[1] +
-                              derxy2[2][inode]*vel2int[0])*fvts;
+                              derxy2[2][inode]*vel2int[0])*fvts*DENS;
     }
   }
   /* calculate convective/convective stab-forces of time force vector */
@@ -224,7 +226,7 @@ void xfem_f2_calstabtfv(
       aux = derxy[0][inode]*velint[0] + derxy[1][inode]*velint[1];
       for (isd=0; isd<2; isd++)
       {
-        eforce[irow] -= aux*fact[isd];
+        eforce[irow] -= aux*fact[isd]*DENS*DENS;
         irow++;
       }
     }
@@ -238,9 +240,9 @@ void xfem_f2_calstabtfv(
       irow = index[inode];            
       aux = derxy2[0][inode] + derxy2[1][inode];
       eforce[irow  ] += ((derxy2[0][inode] + aux)*covint[0] +
-                          derxy2[2][inode]*covint[1])*fvtsr;
+                          derxy2[2][inode]*covint[1])*fvtsr*DENS;
       eforce[irow+1] += ((derxy2[1][inode] + aux)*covint[1] +
-                          derxy2[2][inode]*covint[0])*fvtsr;
+                          derxy2[2][inode]*covint[0])*fvtsr*DENS;
     }
   }
   /* calculate viscous/convective stab-forces of time force vector */
@@ -253,8 +255,8 @@ void xfem_f2_calstabtfv(
     {
       irow = index[inode];                  
       aux = derxy[0][inode]*velint[0] + derxy[1][inode]*velint[1];
-      eforce[irow  ] += aux*fact[0];
-      eforce[irow+1] += aux*fact[1];
+      eforce[irow  ] += aux*fact[0]*DENS;
+      eforce[irow+1] += aux*fact[1]*DENS;
     }
   }
   /* calculate viscous/viscous stab-forces of time force vector */
@@ -298,7 +300,7 @@ void xfem_f2_calstabtfv(
       aux = derxy[0][inode]*velint[0] + derxy[1][inode]*velint[1];
       for (isd=0;isd<2;isd++)
       {
-        eforce[irow] -= aux*fact[isd];
+        eforce[irow] -= aux*fact[isd]*DENS;
         irow++;
       }
     }
@@ -325,4 +327,108 @@ void xfem_f2_calstabtfv(
   
   return;
 } /* end of xfem_f2_calstabtfv */
+
+
+
+void xfem_f2_calstabtfp(
+  DOUBLE          *eforce,    
+  DOUBLE         **derxy,   
+  DOUBLE         **vderxy2, 
+  DOUBLE          *velint,  
+  DOUBLE          *covint,  
+  DOUBLE          *pderxy,  
+  DOUBLE           visc,    
+  DOUBLE           fac,     
+  INT              ihoel,   
+  INT              iel,
+  DOUBLE           DENS
+  ) 
+{
+INT      inode;
+DOUBLE   fact[2];
+DOUBLE   facsr,facpr;
+DOUBLE   taump;
+
+#ifdef DEBUG 
+dstrc_enter("f2_calstabtfp");
+#endif
+
+/*--------------------------------------------------- set some factors */
+fdyn  = alldyn[genprob.numff].fdyn;
+
+facsr = fac * fdyn->thsr;
+facpr = fac * fdyn->thpr;
+taump = fdyn->tau[1];
+
+/*----------------------------------------------------------------------*
+   Calculate inertia/pressure stab forces of time force vector:
+        /
+   -   |  tau_mp * grad(q) * u  d_omega
+      /
+ *----------------------------------------------------------------------*/
+fact[0] = velint[0]*taump*fac;
+fact[1] = velint[1]*taump*fac;
+for (inode=0;inode<iel;inode++)
+{
+   eforce[inode] -= (derxy[0][inode]*fact[0] + derxy[1][inode]*fact[1])*DENS;
+}
+ 
+/*----------------------------------------------------------------------*
+   Calculate convective/pressure stab forces of time force vector:
+EULER:
+                     /
+   + (1-THETA)*dt   |  tau_mp * grad(q) * u * grad(u)  d_omega
+                   /
+ALE:
+                     /
+   + (1-THETA)*dt   |  tau_mp * grad(q) * c * grad(u)  d_omega
+                   /
+ *----------------------------------------------------------------------*/
+fact[0] = covint[0]*taump*facsr;
+fact[1] = covint[1]*taump*facsr;
+for (inode=0;inode<iel;inode++)
+{
+   eforce[inode] += (derxy[0][inode]*fact[0] + derxy[1][inode]*fact[1])*DENS;
+}
+/*----------------------------------------------------------------------*
+   Calculate vsicous/pressure stab forces of time force vector:
+                     /
+   - (1-THETA)*dt   |  tau_mp * 2*nue * grad(q) * div( eps(u) )  d_omega
+                   /
+ *----------------------------------------------------------------------*/
+if (ihoel!=0)
+{
+   fact[0] = (TWO*vderxy2[0][0] + vderxy2[0][1] + vderxy2[1][2]) \
+             *taump*visc*facsr;   
+   fact[1] = (TWO*vderxy2[1][1] + vderxy2[1][0] + vderxy2[0][2]) \
+             *taump*visc*facsr;
+   for (inode=0;inode<iel;inode++)
+   {
+      eforce[inode] -= (derxy[0][inode]*fact[0] + derxy[1][inode]*fact[1]);
+   }
+} 
+ 
+/*----------------------------------------------------------------------*
+   Calculate pressure/pressure stab forces of time force vector:
+                     /
+   + (1-THETA)*dt   |  tau_mp * grad(q) * grad(p)  d_omega
+                   /
+ *----------------------------------------------------------------------*/
+if (fdyn->iprerhs!=0)
+{
+   fact[0] = taump*pderxy[0]*facpr;
+   fact[1] = taump*pderxy[1]*facpr;
+   for (inode=0;inode<iel;inode++)
+   {
+      eforce[inode] += (derxy[0][inode]*fact[0] + derxy[1][inode]*fact[1]);
+   }
+}
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return;
+} /* end of xfem_f2_calstabtfp */
 #endif

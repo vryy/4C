@@ -7,24 +7,8 @@
 
 
 
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | pointer to allocate dynamic variables if needed                      |
- | dedfined in global_control.c                                         |
- | ALLDYNA               *alldyn;                                       |
- *----------------------------------------------------------------------*/
 extern ALLDYNA      *alldyn;   
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | vector of material laws                                              |
- | defined in global_control.c
- *----------------------------------------------------------------------*/
+extern struct _GENPROB    genprob;
 extern struct _MATERIAL  *mat;
 
 
@@ -81,10 +65,16 @@ void xfem_f2_calelesize(
 /*----------------------------------------------------------------------*/
 
   /* is element cut? */
-  is_elcut = ele->e.f2->my_ls->e.ls2->is_elcut;
+  if (genprob.xfem_on_off==1) /* enriched formulation! */
+  {
+    is_elcut = ele->e.f2->my_ls->e.ls2->is_elcut;  
+  }
+  else                        /* standard formulation! */
+  {
+    is_elcut = 0;                       
+  }
   /* access to the nodal values of level set profile */
   ls2_calset1(ele->e.f2->my_ls,1,lset01);
-
   /* initialize */
   ntyp   = ele->e.f2->ntyp;
   iel    = ele->numnp;

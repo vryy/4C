@@ -172,7 +172,8 @@ void xfem_f2_calkvv(
   DOUBLE,    
   DOUBLE,   
   INT,
-  INT*
+  INT*,
+  DOUBLE
   );
 
 
@@ -235,7 +236,8 @@ void xfem_f2_calstabkvv(
   DOUBLE,   
   INT,    
   INT,
-  INT*
+  INT*,
+  DOUBLE
   );
 
 
@@ -250,7 +252,8 @@ void xfem_f2_calstabkvp(
   DOUBLE,  
   INT,   
   INT,
-  INT*
+  INT*,
+  DOUBLE
   );
 
 
@@ -283,7 +286,8 @@ void xfem_f2_calstabkpv(
   DOUBLE,   
   INT,    
   INT,
-  INT*
+  INT*,
+  DOUBLE
   );
 
 
@@ -376,7 +380,8 @@ void xfem_f2_calgaltfv(
   DOUBLE,     
   DOUBLE,      
   INT,
-  INT*
+  INT*,
+  DOUBLE
   );
 
 
@@ -395,7 +400,23 @@ void xfem_f2_calstabtfv(
   DOUBLE,    
   INT,   
   INT,
-  INT*
+  INT*,
+  DOUBLE
+  );
+
+
+void xfem_f2_calstabtfp(
+  DOUBLE*,    
+  DOUBLE**,   
+  DOUBLE**, 
+  DOUBLE*,  
+  DOUBLE*,  
+  DOUBLE*,  
+  DOUBLE,    
+  DOUBLE,     
+  INT,   
+  INT,
+  DOUBLE
   );
 
 

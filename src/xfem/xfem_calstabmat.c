@@ -43,7 +43,8 @@ void xfem_f2_calstabkvv(
   DOUBLE           visc,   
   INT              iel,    
   INT              ihoel,
-  INT             *index 
+  INT             *index,
+  DOUBLE           DENS
   )
 {
 /*----------------------------------------------------------------------*
@@ -105,7 +106,7 @@ void xfem_f2_calstabkvv(
     {
       for (icn=0; icn<TWO*iel; icn++)
       {
-        auxc = (velint[0]*derxy[0][icn] + velint[1]*derxy[1][icn])*cc;
+        auxc = (velint[0]*derxy[0][icn] + velint[1]*derxy[1][icn])*cc*DENS*DENS;
         icol = index[icn];
         for (irn=0; irn<TWO*iel; irn++)
         {
@@ -127,7 +128,7 @@ void xfem_f2_calstabkvv(
         for (irn=0; irn<TWO*iel; irn++)
         {
           irow = index[irn];          
-          aux = (vel2int[0]*derxy[0][irn] + vel2int[1]*derxy[1][irn])*auxc;
+          aux = (vel2int[0]*derxy[0][irn] + vel2int[1]*derxy[1][irn])*auxc*DENS*DENS;
           estif[irow  ][icol  ] += aux*vderxy[0][0];
           estif[irow+1][icol  ] += aux*vderxy[1][0];
           estif[irow  ][icol+1] += aux*vderxy[0][1];
@@ -147,7 +148,7 @@ void xfem_f2_calstabkvv(
         for (irn=0; irn<TWO*iel; irn++)
         {
           irow = index[irn];                    
-          aux = (vel2int[0]*derxy[0][irn] + vel2int[1]*derxy[1][irn])*cc;
+          aux = (vel2int[0]*derxy[0][irn] + vel2int[1]*derxy[1][irn])*cc*DENS;
           estif[irow  ][icol  ] -= aux*(derxy2[0][icn] + auxc);
           estif[irow+1][icol  ] -= aux* derxy2[2][icn];
           estif[irow+1][icol+1] -= aux*(derxy2[1][icn] + auxc);
@@ -212,10 +213,10 @@ void xfem_f2_calstabkvv(
         {
           irow = index[irn];                  
           auxr = derxy2[0][irn] + derxy2[1][irn];
-          estif[irow  ][icol  ] -= (derxy2[0][irn]+auxr)*aux*cc;
-          estif[irow+1][icol  ] -=  derxy2[2][irn]*aux*cc;
-          estif[irow  ][icol+1] -=  derxy2[2][irn]*aux*cc;
-          estif[irow+1][icol+1] -= (derxy2[1][irn]+auxr)*aux*cc;
+          estif[irow  ][icol  ] -= (derxy2[0][irn]+auxr)*aux*cc*DENS;
+          estif[irow+1][icol  ] -=  derxy2[2][irn]*aux*cc*DENS;
+          estif[irow  ][icol+1] -=  derxy2[2][irn]*aux*cc*DENS;
+          estif[irow+1][icol+1] -= (derxy2[1][irn]+auxr)*aux*cc*DENS;
         }
       }
     }
@@ -233,16 +234,16 @@ void xfem_f2_calstabkvv(
           auxr = derxy2[0][irn]*derxy2[1][irn];
           estif[irow  ][icol  ] -=  (derxy2[0][irn]*vderxy[0][0] +
                                      derxy2[2][irn]*vderxy[1][0] +
-                                     auxr*vderxy[0][0])*aux;
+                                     auxr*vderxy[0][0])*aux*DENS;
           estif[irow+1][icol  ] -=  (derxy2[2][irn]*vderxy[0][0] +
                                      derxy2[1][irn]*vderxy[1][0] +
-                                     auxr*vderxy[1][0])*aux;
+                                     auxr*vderxy[1][0])*aux*DENS;
           estif[irow  ][icol+1] -=  (derxy2[0][irn]*vderxy[0][1] +
                                      derxy2[2][irn]*vderxy[1][1] +
-                                     auxr*vderxy[0][1])*aux;
+                                     auxr*vderxy[0][1])*aux*DENS;
           estif[irow+1][icol+1] -=  (derxy2[2][irn]*vderxy[0][1] +
                                      derxy2[1][irn]*vderxy[1][1] +
-                                     auxr*vderxy[1][1])*aux;
+                                     auxr*vderxy[1][1])*aux*DENS;
         }
       }
     }
@@ -272,7 +273,8 @@ void xfem_f2_calstabkvp(
   DOUBLE           visc,  
   INT              iel,   
   INT              ihoel,
-  INT             *index   
+  INT             *index,
+  DOUBLE           DENS
   )
 {
 /*----------------------------------------------------------------------*
@@ -316,7 +318,7 @@ void xfem_f2_calstabkvp(
       for (irn=0; irn<TWO*iel; irn++)
       {
         irow = index[irn];
-        aux = (velint[0]*derxy[0][irn] + velint[1]*derxy[1][irn])*c;
+        aux = (velint[0]*derxy[0][irn] + velint[1]*derxy[1][irn])*c*DENS;
         estif[irow  ][posc] += derxy[0][icol]*aux;
         estif[irow+1][posc] += derxy[1][icol]*aux;
       }
@@ -380,7 +382,7 @@ void xfem_f2_calstabmvv(
   INT              iel,    
   INT              ihoel,
   INT             *index,
-  DOUBLE           dens
+  DOUBLE           DENS
   )
 {
 /*----------------------------------------------------------------------*
@@ -412,7 +414,7 @@ void xfem_f2_calstabmvv(
   taumu = fdyn->tau[0];
   taump = fdyn->tau[1];
   
-  c = fac * taumu * dens;
+  c = fac * taumu;
   cc = c;
 
   /* calculate advection stabilisation part */
@@ -420,7 +422,7 @@ void xfem_f2_calstabmvv(
   {
     for (icn=0; icn<TWO*iel; icn++)
     {
-      auxc = funct[icn]*cc;
+      auxc = funct[icn]*cc*DENS*DENS;
       icol = index[icn];
       for (irn=0; irn<TWO*iel; irn++)
       {
@@ -450,7 +452,7 @@ void xfem_f2_calstabmvv(
     
     for (icn=0; icn<TWO*iel; icn++)
     {      
-      aux = funct[icn]*c;
+      aux = funct[icn]*c*DENS;
       icol = index[icn];
       for(irn=0; irn<TWO*iel; irn++)
       {
@@ -489,7 +491,8 @@ void xfem_f2_calstabkpv(
   DOUBLE           visc,   
   INT              iel,    
   INT              ihoel,
-  INT             *index   
+  INT             *index,
+  DOUBLE           DENS
   )
 {
 /*----------------------------------------------------------------------*
@@ -525,7 +528,7 @@ void xfem_f2_calstabkpv(
     for (icn=0; icn<TWO*iel; icn++)
     {
       icol = index[icn];
-      aux = (velint[0]*derxy[0][icn] + velint[1]*derxy[1][icn])*c;
+      aux = (velint[0]*derxy[0][icn] + velint[1]*derxy[1][icn])*c*DENS;
       for (irow=0; irow<iel; irow++)
       {
         posr = irow + 2*iel;
@@ -592,7 +595,7 @@ void xfem_f2_calstabmpv(
   DOUBLE           fac,    
   INT              iel,
   INT             *index,
-  DOUBLE           dens
+  DOUBLE           DENS
   )
 {
 /*----------------------------------------------------------------------*
@@ -620,12 +623,12 @@ void xfem_f2_calstabmpv(
   /* set stabilisation parameter */
   taump = fdyn->tau[1];
   
-  c = fac * taump * dens;
+  c = fac * taump;
   /* calculate stabilisation part for matrix Mpv */
   for (icn=0; icn<TWO*iel; icn++)
   {
     icol = index[icn];
-    auxc = funct[icn]*c;
+    auxc = funct[icn]*c*DENS;
     for (irow=0; irow<iel; irow++)
     {
       posr = irow + 2*iel;

@@ -37,7 +37,7 @@ void xfem_f2_calgalexfv(
   DOUBLE              fac,      
   INT                 iel,
   INT                *index,
-  DOUBLE              dens
+  DOUBLE              DENS
   ) 
 {
   DOUBLE  facsl,facsr;
@@ -61,7 +61,7 @@ void xfem_f2_calgalexfv(
     irow = index[inode];
     for (isd=0;isd<2;isd++)
     {
-      eforce[irow] += funct[inode]*dens*(edeadn[isd]*facsr+edeadng[isd]*facsl);
+      eforce[irow] += funct[inode]*(edeadn[isd]*facsr+edeadng[isd]*facsl)*DENS;
       irow++;      
     }
   }
@@ -92,7 +92,7 @@ void xfem_f2_calstabexfv(
   INT                ihoel,
   INT                flag,
   INT               *index,
-  DOUBLE             dens
+  DOUBLE             DENS
   ) 
 {
   INT         irow,inode,isd;
@@ -130,8 +130,8 @@ void xfem_f2_calstabexfv(
   /* calculate external/convective stab-forces of time force vector => */
   if (gls->iadvec!=0)
   {
-    fact[0] = dens*edead[0]*fac*taumu*c;
-    fact[1] = dens*edead[1]*fac*taumu*c;
+    fact[0] = edead[0]*fac*taumu*c*DENS*DENS;
+    fact[1] = edead[1]*fac*taumu*c*DENS*DENS;
     for (inode=0;inode<TWO*iel;inode++)
     {
       irow = index[inode];
@@ -159,7 +159,7 @@ void xfem_f2_calstabexfv(
           dserror("viscous stabilisation parameter unknown: IVISC");
     }
     
-    fvts = fac*visc*taump*sign*c*dens;
+    fvts = fac*visc*taump*sign*c*DENS;
     for (inode=0;inode<TWO*iel;inode++)
     {
       irow = index[inode];
@@ -190,7 +190,7 @@ void xfem_f2_calstabexfp(
   DOUBLE           fac,      
   INT              iel,
   INT              flag,
-  DOUBLE           dens
+  DOUBLE           DENS
   ) 
 {
   INT        inode;
@@ -220,9 +220,9 @@ void xfem_f2_calstabexfp(
         dserror("value of flag not valid!!!\n");
   }
 
-  /* calculate inertia/pressure stab forces of time force vector */
-  fact[0] = dens*edead[0]*taump*fac*c;
-  fact[1] = dens*edead[1]*taump*fac*c;
+  /* calculate external/pressure stab forces of time force vector */
+  fact[0] = edead[0]*taump*fac*c*DENS;
+  fact[1] = edead[1]*taump*fac*c*DENS;
   for (inode=0;inode<iel;inode++)
   {
     eforce[inode] -= (derxy[0][inode]*fact[0] + derxy[1][inode]*fact[1]);
