@@ -556,8 +556,10 @@ DOUBLE dens;            /* density                                      */
 NODE  *actnode;         /* the actual node                              */
 GNODE *actgnode;        /* the actual gnode                             */
 ELEMENT *actele;        /* the actual element                           */
+GVOL    *actgvol;
 GSURF   *actgsurf;
 GLINE   *actgline;
+DSURF   *actdsurf;
 DLINE   *actdline;
 
 /*----------------------------------------- variables for solitary wave */
@@ -633,6 +635,7 @@ case str_all: /* allocate stress field for all elements */
    for (i=0;i<numele_total;i++)
    {
       actele = &(actfield->dis[0].element[i]);   
+      numnp=actele->numnp;
 #ifdef D_FLUID2
       if (numdf==3)    
          amdef("stress_ND",&(actele->e.f2->stress_ND),numnp,3,"DA");
@@ -644,10 +647,10 @@ case str_all: /* allocate stress field for all elements */
    }
 break;   
 case str_liftdrag:  
-#ifdef D_FLUID2      
    for (i=0;i<numele_total;i++)
    {
       actele = &(actfield->dis[0].element[i]); 
+#ifdef D_FLUID2      
       if (numdf==3)
       {
          actgsurf=actele->g.gsurf;         
@@ -657,15 +660,33 @@ case str_liftdrag:
             actgline=actgsurf->gline[j];
             actdline=actgline->dline;
             if (actdline==NULL) continue;
-            if (actdline->liftdrag==0) continue;
+            if (actdline->liftdrag==NULL) continue;
 	    ldflag++;
 	    break;
          }  
          if (ldflag>0)
-            amdef("stress_ND",&(actele->e.f2->stress_ND),actele->numnp,3,"DA");
+            amdef("stress_ND",&(actele->e.f2->stress_ND),actele->numnp,6,"DA");
       }
-   }
+#endif
+#ifdef D_FLUID3
+      if (numdf==4)
+      {
+         actgvol=actele->g.gvol;         
+         ldflag=0;
+	 for (j=0;j<actgvol->ngsurf;j++)
+         {
+            actgsurf=actgvol->gsurf[j];
+            actdsurf=actgsurf->dsurf;
+            if (actdsurf==NULL) continue;
+            if (actdsurf->liftdrag==NULL) continue;
+	    ldflag++;
+	    break;
+         }  
+         if (ldflag>0)
+            amdef("stress_ND",&(actele->e.f3->stress_ND),actele->numnp,6,"DA");
+      }
 #endif	
+   }
 break;   
 default:
    dserror("option for 'str' not implemented yet!\n");
