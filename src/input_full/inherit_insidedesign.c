@@ -413,6 +413,7 @@ for (i=0; i<design->ndline; i++)
       actdnode->fsicouple->fieldtyp = actdline->fsicouple->fieldtyp;
       actdnode->fsicouple->fsi_coupleId = actdline->fsicouple->fsi_coupleId;
       actdnode->fsicouple->fsi_mesh = actdline->fsicouple->fsi_mesh;
+      actdnode->fsicouple->fsi_typ = actdline->fsicouple->fsi_typ;
    }/* loop j over dnodes */
 }/* loop i over dlines */
 /*----------------------------------------------------------------------*/
