@@ -60,6 +60,7 @@ if grep '^DEBUG' "$2" 2>&1 > /dev/null ; then
     PROGRAMNAME=$PROGRAMNAME.debg
 else
     DEBUGFLAG=
+    PROGRAMNAME=$PROGRAMNAME.fast
 fi
 
 # a parallel version needs one more compile time flag
@@ -71,7 +72,7 @@ fi
 
 # aztec
 if grep '^AZTEC_PACKAGE' "$2" 2>&1 > /dev/null ; then
-    if [ "x$SPOOLES_LIB" = "x" ] ; then
+    if [ "x$AZTEC_LIB" = "x" ] ; then
         echo $0: Warning: Variable AZTEC_LIB undefined but AZTEC_PACKAGE requested.
     fi
     LIBS="$LIBS $AZTEC_LIB"
@@ -86,6 +87,16 @@ if grep '^SPOOLES_PACKAGE' "$2" 2>&1 > /dev/null ; then
     LIBS="$LIBS $SPOOLES_LIB"
     INCLUDEDIRS="$INCLUDEDIRS $SPOOLES_INC"
 fi
+
+# umfpack
+if grep '^UMFPACK' "$2" 2>&1 > /dev/null ; then
+    if [ "x$UMFPACK_LIB" = "x" ] ; then
+        echo $0: Variable UMFPACK_LIB undefined but UMFPACK_PACKAGE requested.
+    fi
+    LIBS="$LIBS $UMFPACK_LIB"
+    INCLUDEDIRS="$INCLUDEDIRS $UMFPACK_INC"
+fi
+
 
 # build the Makefile
 # This is done in three steps
