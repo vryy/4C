@@ -325,6 +325,7 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
    case calc_ale_stiff_spring       : assemble_action = assemble_one_matrix; break;
    case calc_ale_stiff_laplace      : assemble_action = assemble_one_matrix; break;
    case calc_fluid                  : assemble_action = assemble_one_matrix; break;
+   case calc_fluid_liftdrag         : assemble_action = assemble_do_nothing; break;
    case calc_fluid_vort             : assemble_action = assemble_do_nothing; break;
    case calc_fluid_stress           : assemble_action = assemble_do_nothing; break;
    case calc_fluid_shearvelo        : assemble_action = assemble_do_nothing; break;
@@ -367,7 +368,7 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
          assemble_intforce(actele,&etforce_global,container,actintra);
       }
    /*-------------- assemble the vector eiforce_global to iteration rhs */
-      if (container->nii+hasext!=0)
+      if (container->nii+hasext!=0 || container->gen_alpha==1 || container->nim!=0)
       {   
          container->dvec = container->fiterhs;
          assemble_intforce(actele,&eiforce_global,container,actintra); 
@@ -449,6 +450,7 @@ case calc_ale_stiff_spring       : assemble_action = assemble_one_exchange; brea
 case calc_ale_stiff_laplace      : assemble_action = assemble_one_exchange; break;
 case calc_ale_rhs                : assemble_action = assemble_do_nothing;   break;
 case calc_fluid                  : assemble_action = assemble_one_exchange; break;
+case calc_fluid_liftdrag         : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_vort             : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_stress           : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_shearvelo        : assemble_action = assemble_do_nothing;   break;
@@ -501,8 +503,9 @@ case calc_ale_stiff_nln          : assemble_action = assemble_close_1matrix; bre
 case calc_ale_stiff_stress       : assemble_action = assemble_close_1matrix; break;
 case calc_ale_stiff_step2        : assemble_action = assemble_close_1matrix; break;
 case calc_ale_stiff_spring       : assemble_action = assemble_close_1matrix; break;
-case calc_ale_stiff_laplace      : assemble_action = assemble_one_matrix;    break;
+case calc_ale_stiff_laplace      : assemble_action = assemble_close_1matrix; break;
 case calc_fluid                  : assemble_action = assemble_close_1matrix; break;
+case calc_fluid_liftdrag         : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_vort             : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_stress           : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_shearvelo        : assemble_action = assemble_do_nothing;   break;
