@@ -227,7 +227,9 @@ for (kk=0;kk<actfield->ndis;kk++)
 	    switch(nodeflag[actnode->Id_loc])
 	    {
 	    case 11:
+#ifdef D_FLUID2_PRO          
 	       f2pro_ass_dof_q2q1(actnode,&counter,0);
+#endif             
 	    break;
 	    default:
                for (l=0; l<actnode->numdf; l++)
