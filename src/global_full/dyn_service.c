@@ -369,18 +369,33 @@ return;
 
 
 /*----------------------------------------------------------------------*
- |  update the vectors                                       m.gee 02/02|
+ |  update the vectors                                       m.gee 03/02|
  | displacements sol_new -> sol_old                                     |
  |               rhs_new -> rhs_old                                     |
  | new accelerations at time t                                          |
  | new velocities    at time t                                          |
+ |                                                                      |
+ | in node->sol[place][0..numdf-1] is stored:                           |
+ |                                                                      |
+ | in the nodes the results are stored the following way:               |
+ | place 0 holds total displacements of free dofs at time t             |
+ | place 1 holds velocities at time t                                   |
+ | place 2 holds accels at time t                                       |
+ | place 3 holds prescribed displacements at time t-dt                  |
+ | place 4 holds prescribed displacements at time t                     |
+ | place 5 holds place 4 - place 3                                      |
+ | place 6 holds the  velocities of prescribed dofs                     |
+ | place 7 holds the  accels of prescribed dofs                         |
+ | place 8 is working space                                             |
+ |                                                                      |
  *----------------------------------------------------------------------*/
-void dyn_nlnstructupd(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, SOLVAR *actsolv,
-                     DIST_VECTOR *sol_old, DIST_VECTOR *sol_new,
-                     DIST_VECTOR *rhs_new, DIST_VECTOR *rhs_old,
-                     DIST_VECTOR *vel,     DIST_VECTOR *acc,
-                     DIST_VECTOR *work0,   DIST_VECTOR *work1,
-                     DIST_VECTOR *work2)
+void dyn_nlnstructupd(FIELD *actfield,      STRUCT_DYN_CALC *dynvar, 
+                      STRUCT_DYNAMIC *sdyn, SOLVAR *actsolv,
+                      DIST_VECTOR *sol_old, DIST_VECTOR *sol_new,
+                      DIST_VECTOR *rhs_new, DIST_VECTOR *rhs_old,
+                      DIST_VECTOR *vel,     DIST_VECTOR *acc,
+                      DIST_VECTOR *work0,   DIST_VECTOR *work1,
+                      DIST_VECTOR *work2)
 {
 
 double a1,a2,a3,a4,a5,a6;
@@ -410,16 +425,43 @@ solserv_copy_vec(acc,work1);
 solserv_copy_vec(vel,work2);
 /*--------------- make new acc = a1*(sol_new-sol_old)+a2*vel+a3*acc_old */
 /* this is equiv. to       acc = a1*work0            +a2*vel+a3*work1   */
+/*----------------------------------------------------------------------*/
 solserv_copy_vec(work0,acc);
 solserv_scalarprod_vec(acc,a1);
 solserv_add_vec(vel,acc,a2);
 solserv_add_vec(work1,acc,a3);
+
+/*--------------------------------------- for prescribed displacements: */
+/*  sol[7] = a1*(sol[4]-sol[3])+a2*sol[6]+a3*sol[7] */
+/*----------------------------------------------------------------------*/
+solserv_cpdirich(actfield,0,7,8);               /* make a copy of sol[7] in sol[8] */              
+solserv_zerodirich(actfield,0,7);               /* init sol[7] to zero             */              
+solserv_assdirich_fac(actfield,0,4,3,7,a1,-a1); /* sol[7]+=a1*sol[4]-a1*sol[3]     */
+solserv_assdirich_fac(actfield,0,6,0,7,a2,0.0); /* sol[7]+=a2*sol[6]               */
+solserv_assdirich_fac(actfield,0,8,0,7,a3,0.0); /* sol[7]+=a3*sol[8]               */
+
 /*--------------- make new vel = a4*(sol_new-sol_old)+a5*vel+a6*acc_old */
 /* this is equiv. to       vel = a4*work0            +a5*work2+a6*work1 */
+/*----------------------------------------------------------------------*/
 solserv_copy_vec(work0,vel);
 solserv_scalarprod_vec(vel,a4);
 solserv_add_vec(work2,vel,a5);
 solserv_add_vec(work1,vel,a6);
+
+/*--------------------------------------- for prescribed displacements: */
+/* sol[6] = a4*(sol[4]-sol[3])+a5*sol[6]+a6*sol[7]_old */
+/*----------------------------------------------------------------------*/
+solserv_adddirich(actfield,0,6,0,6,a5,0.0);     /* sol[6] = sol[6] * a5                 */ 
+solserv_assdirich_fac(actfield,0,4,3,6,a4,-a4); /* sol[6] += a4 * sol[4] + -a4 * sol[3] */
+solserv_assdirich_fac(actfield,0,8,0,6,a6,0.0); /* sol[6] += a6 * sol[8] (=sol[7]_old)  */
+
+/*--------------------------------------- zero the working place sol[8] */
+solserv_zerodirich(actfield,0,8);  
+
+/*--------------------------------- update the prescribed displacements */
+solserv_adddirich(actfield,0,4,0,3,1.0,0.0);  
+solserv_zerodirich(actfield,0,4);
+
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -492,3 +534,354 @@ dstrc_exit();
 #endif
 return;
 } /* end of dyn_nlnstruct_outstep */
+
+
+/*---------------------------------------------------------------------------*
+ |  dirichlet conditions to an element vector elevec_a       m.gee 3/02      |
+ |  and then assembles this element vector of cond. dirich.conditions to the |
+ |  global vector fullvec                                                    |
+ |  this assembly is a special design for structural dynamics with           |
+ |  with generalized alfa method                                             |
+ |                                                                           |
+ |  facs[0] = -(1.0-alpham)*(1.0/beta)/(DSQR(dt))                            |
+ |  facs[1] =  (1.0-alpham)*(1.0/beta)/dt                                    |
+ |  facs[2] =  (1.0-alpham)/(2*beta) - 1                                     |
+ |  facs[3] = -(1.0-alphaf)*(gamma/beta)/dt                                  |
+ |  facs[4] =  (1.0-alphaf)*gamma/beta - 1                                   |
+ |  facs[5] =  (gamma/(2*beta)-1)*(1.0-alphaf)                               |
+ |  facs[6] = -(1.0-alphaf) or 0                                             |
+ |  facs[7] =  raleigh damping factor for mass                               |
+ |  facs[8] =  raleigh damping factor for stiffness                          |
+ |  facs[9] =  dt                                                            |
+ |                                                                           |
+ | in the nodes the results are stored the following way:                    |
+ | place 0 holds total displacements of free dofs at time t                  |
+ | place 1 holds velocities at time t                                        |
+ | place 2 holds accels at time t                                            |
+ | place 3 holds prescribed displacements at time t-dt                       |
+ | place 4 holds prescribed displacements at time t                          |
+ | place 5 holds place 4 - place 3                                           |
+ | place 6 holds the  velocities of prescribed dofs                          |
+ | place 7 holds the  accels of prescribed dofs                              |
+ | place 8 is working space                                                  |
+ |                                                                           |
+ |  fullvec contains the rhs mass, damping and stiffness parts due to        |
+ |  prescribed displacements (dirichlet conditions !=0)                      |
+ |                                                                           |
+ | see PhD theses Mok page 165                                               |
+ *---------------------------------------------------------------------------*/
+void assemble_dirich_dyn(ELEMENT *actele, double *fullvec, int dim,
+                         ARRAY *estif_global, ARRAY *emass_global, double *facs)
+{
+int                   i,j;
+int                   counter;
+int                   dof;
+int                   numdf;
+int                   iel;
+int                   nd=0;
+int                   idamp=0;
+double                mdamp,kdamp;
+double              **estif;
+double              **emass;
+double                dirich[MAXDOFPERELE];
+double                dforces[MAXDOFPERELE];
+int                   dirich_onoff[MAXDOFPERELE];
+int                   lm[MAXDOFPERELE];
+GNODE                *actgnode;
+#ifdef DEBUG 
+dstrc_enter("assemble_dirich_dyn");
+#endif
+/*----------------------------------------------------------------------*/
+/*--------------------------------------- check for presence of damping */
+if (ABS(facs[7]) > EPS13 || ABS(facs[8]) > EPS13) 
+{
+   idamp=1;
+   mdamp = facs[7];
+   kdamp = facs[8];
+}
+/*----------------------------------------------------------------------*/
+estif  = estif_global->a.da;
+emass  = emass_global->a.da;
+/*---------------------------------- set number of dofs on this element */
+for (i=0; i<actele->numnp; i++) nd += actele->node[i]->numdf;
+/*---------------------------- init the vectors dirich and dirich_onoff */
+for (i=0; i<nd; i++)
+{
+   dirich[i] = 0.0;
+   dforces[i] = 0.0;
+   dirich_onoff[i] = 0;
+}
+/*-------------------------------- fill vectors dirich and dirich_onoff */
+for (i=0; i<actele->numnp; i++)
+{
+   numdf    = actele->node[i]->numdf;
+   actgnode = actele->node[i]->gnode;
+   for (j=0; j<numdf; j++)
+   {
+      lm[i*numdf+j] = actele->node[i]->dof[j];
+      if (actgnode->dirich==NULL) continue;
+      dirich_onoff[i*numdf+j] = actgnode->dirich->dirich_onoff.a.iv[j];
+   }
+}
+/*----------------------------------------------------------------------*/
+/*------------------------------ make the entries -K * (u(t) - u(t-dt)) */
+/*--------------------------------                 K * facs[6]          */
+/*                                       facs[6] is 0 in corrector call */
+/*----------------------------------------------------------------------*/
+/* 
+prescribed displacement increment (u(t) - u(t-dt)) are in node->sol[5][0..numdf-1]
+*/
+counter=0;
+for (i=0; i<actele->numnp; i++)
+   for (j=0; j<actele->node[i]->numdf; j++)
+   {
+      if (dirich_onoff[counter]==0)
+      {
+         counter++;
+         continue;
+      }
+      dirich[counter] = actele->node[i]->sol.a.da[5][j];
+      counter++;
+   }
+/*----------------------------------------- loop rows of element matrix */
+for (i=0; i<nd; i++)
+{
+   /*------------------------------------- do nothing for supported row */
+   if (dirich_onoff[i]!=0) continue;
+   /*---------------------------------- loop columns of unsupported row */
+   for (j=0; j<nd; j++)
+   {
+      /*---------------------------- do nothing for unsupported columns */
+      if (dirich_onoff[j]==0) continue;
+      dforces[i] += estif[i][j] * dirich[j] * facs[6];
+   }/* loop j over columns */
+}/* loop i over rows */
+
+
+
+
+/*----------------------------------------------------------------------*/
+/*--------------------------- make the entries M  * h(-du,udot,udotdot) */
+/* 
+this consists of three parts:
+   M * facs[0] * sol[5][0..numdf-1]       sol[5] holds (u(t) - u(t-dt))
+   M * facs[1] * sol[6][0..numdf-1]       sol[6] holds ddot(t)
+   M * facs[2] * sol[7][0..numdf-1]       sol[7] holds ddotdot(t)
+*/   
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+/*
+   M * facs[0] * sol[5][0..numdf-1]       sol[5] holds (u(t) - u(t-dt))
+*/
+for (i=0; i<nd; i++) dirich[i]=0.0;
+counter=0;
+for (i=0; i<actele->numnp; i++)
+   for (j=0; j<actele->node[i]->numdf; j++)
+   {
+      if (dirich_onoff[counter]==0)
+      {
+         counter++;
+         continue;
+      }
+      dirich[counter] = actele->node[i]->sol.a.da[5][j];
+      counter++;
+   }
+/*----------------------------------------- loop rows of element matrix */
+for (i=0; i<nd; i++)
+{
+   /*------------------------------------- do nothing for supported row */
+   if (dirich_onoff[i]!=0) continue;
+   /*---------------------------------- loop columns of unsupported row */
+   for (j=0; j<nd; j++)
+   {
+      /*---------------------------- do nothing for unsupported columns */
+      if (dirich_onoff[j]==0) continue;
+      dforces[i] += emass[i][j] * dirich[j] * facs[0];
+   }/* loop j over columns */
+}/* loop i over rows */
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+/*
+   M * facs[1] * sol[6][0..numdf-1]       sol[6] holds ddot(t)
+*/
+for (i=0; i<nd; i++) dirich[i]=0.0;
+counter=0;
+for (i=0; i<actele->numnp; i++)
+   for (j=0; j<actele->node[i]->numdf; j++)
+   {
+      if (dirich_onoff[counter]==0)
+      {
+         counter++;
+         continue;
+      }
+      dirich[counter] = actele->node[i]->sol.a.da[6][j];
+      counter++;
+   }
+/*----------------------------------------- loop rows of element matrix */
+for (i=0; i<nd; i++)
+{
+   /*------------------------------------- do nothing for supported row */
+   if (dirich_onoff[i]!=0) continue;
+   /*---------------------------------- loop columns of unsupported row */
+   for (j=0; j<nd; j++)
+   {
+      /*---------------------------- do nothing for unsupported columns */
+      if (dirich_onoff[j]==0) continue;
+      dforces[i] += emass[i][j] * dirich[j] * facs[1];
+   }/* loop j over columns */
+}/* loop i over rows */
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+/*
+   M * facs[2] * sol[7][0..numdf-1]       sol[7] holds ddotdot(t)
+*/
+for (i=0; i<nd; i++) dirich[i]=0.0;
+counter=0;
+for (i=0; i<actele->numnp; i++)
+   for (j=0; j<actele->node[i]->numdf; j++)
+   {
+      if (dirich_onoff[counter]==0)
+      {
+         counter++;
+         continue;
+      }
+      dirich[counter] = actele->node[i]->sol.a.da[7][j];
+      counter++;
+   }
+/*----------------------------------------- loop rows of element matrix */
+for (i=0; i<nd; i++)
+{
+   /*------------------------------------- do nothing for supported row */
+   if (dirich_onoff[i]!=0) continue;
+   /*---------------------------------- loop columns of unsupported row */
+   for (j=0; j<nd; j++)
+   {
+      /*---------------------------- do nothing for unsupported columns */
+      if (dirich_onoff[j]==0) continue;
+      dforces[i] += emass[i][j] * dirich[j] * facs[2];
+   }/* loop j over columns */
+}/* loop i over rows */
+
+
+
+if (idamp)
+{
+/*----------------------------------------------------------------------*/
+/*--------------------------- make the entries C  * e(-du,udot,udotdot) */
+/* 
+this consists of three parts:
+   C * facs[3] * sol[5][0..numdf-1]       sol[5] holds (u(t) - u(t-dt))
+   C * facs[4] * sol[6][0..numdf-1]       sol[6] holds ddot(t)
+   C * facs[5] * sol[7][0..numdf-1]       sol[7] holds ddotdot(t)
+*/   
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+/*
+   C * facs[3] * sol[5][0..numdf-1]       sol[5] holds (u(t) - u(t-dt))
+*/
+for (i=0; i<nd; i++) dirich[i]=0.0;
+counter=0;
+for (i=0; i<actele->numnp; i++)
+   for (j=0; j<actele->node[i]->numdf; j++)
+   {
+      if (dirich_onoff[counter]==0)
+      {
+         counter++;
+         continue;
+      }
+      dirich[counter] = actele->node[i]->sol.a.da[5][j];
+      counter++;
+   }
+/*----------------------------------------- loop rows of element matrix */
+for (i=0; i<nd; i++)
+{
+   /*------------------------------------- do nothing for supported row */
+   if (dirich_onoff[i]!=0) continue;
+   /*---------------------------------- loop columns of unsupported row */
+   for (j=0; j<nd; j++)
+   {
+      /*---------------------------- do nothing for unsupported columns */
+      if (dirich_onoff[j]==0) continue;
+      dforces[i] += (mdamp*emass[i][j]+kdamp*estif[i][j]) * dirich[j] * facs[3];
+   }/* loop j over columns */
+}/* loop i over rows */
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+/*
+   C * facs[4] * sol[6][0..numdf-1]       sol[6] holds ddot(t)
+*/
+for (i=0; i<nd; i++) dirich[i]=0.0;
+counter=0;
+for (i=0; i<actele->numnp; i++)
+   for (j=0; j<actele->node[i]->numdf; j++)
+   {
+      if (dirich_onoff[counter]==0)
+      {
+         counter++;
+         continue;
+      }
+      dirich[counter] = actele->node[i]->sol.a.da[6][j];
+      counter++;
+   }
+/*----------------------------------------- loop rows of element matrix */
+for (i=0; i<nd; i++)
+{
+   /*------------------------------------- do nothing for supported row */
+   if (dirich_onoff[i]!=0) continue;
+   /*---------------------------------- loop columns of unsupported row */
+   for (j=0; j<nd; j++)
+   {
+      /*---------------------------- do nothing for unsupported columns */
+      if (dirich_onoff[j]==0) continue;
+      dforces[i] += (mdamp*emass[i][j]+kdamp*estif[i][j]) * dirich[j] * facs[4];
+   }/* loop j over columns */
+}/* loop i over rows */
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+/*
+   C * facs[5] * sol[7][0..numdf-1]       sol[7] holds ddotdot(t)
+*/
+for (i=0; i<nd; i++) dirich[i]=0.0;
+counter=0;
+for (i=0; i<actele->numnp; i++)
+   for (j=0; j<actele->node[i]->numdf; j++)
+   {
+      if (dirich_onoff[counter]==0)
+      {
+         counter++;
+         continue;
+      }
+      dirich[counter] = actele->node[i]->sol.a.da[7][j];
+      counter++;
+   }
+/*----------------------------------------- loop rows of element matrix */
+for (i=0; i<nd; i++)
+{
+   /*------------------------------------- do nothing for supported row */
+   if (dirich_onoff[i]!=0) continue;
+   /*---------------------------------- loop columns of unsupported row */
+   for (j=0; j<nd; j++)
+   {
+      /*---------------------------- do nothing for unsupported columns */
+      if (dirich_onoff[j]==0) continue;
+      dforces[i] += (mdamp*emass[i][j]+kdamp*estif[i][j]) * dirich[j] * facs[5];
+   }/* loop j over columns */
+}/* loop i over rows */
+/*----------------------------------------------------------------------*/
+} /* end of if (idamp) */
+
+
+
+
+/*-------- now assemble the vector dforces to the global vector fullvec */
+for (i=0; i<nd; i++)
+{
+   if (lm[i] >= dim) continue;
+   fullvec[lm[i]] += dforces[i];
+}
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of assemble_dirich_dyn */

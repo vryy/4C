@@ -1,4 +1,5 @@
 #include "../headers/standardtypes.h"
+#include "../headers/solution.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |

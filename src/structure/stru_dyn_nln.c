@@ -63,19 +63,19 @@ extern enum _CALC_ACTION calc_action[MAXFIELD];
  *----------------------------------------------------------------------*/
 void dyn_nln_structural() 
 {
-int             i;                  /* simply a counter */
-int             numeq;              /* number of equations on this proc */
-int             numeq_total;        /* total number of equations */
-int             init;               /* flag for solver_control call */
-int             itnum;              /* counter for NR-Iterations */
-int             convergence;        /* convergence flag */
-double          dmax;               /* infinity norm of residual displacements */
+INT             i;                  /* simply a counter */
+INT             numeq;              /* number of equations on this proc */
+INT             numeq_total;        /* total number of equations */
+INT             init;               /* flag for solver_control call */
+INT             itnum;              /* counter for NR-Iterations */
+INT             convergence;        /* convergence flag */
+DOUBLE          dmax;               /* infinity norm of residual displacements */
 
-int             stiff_array;        /* indice of the active system sparse matrix */
-int             mass_array;         /* indice of the active system sparse matrix */
-int             damp_array;         /* indice of the active system sparse matrix */
-int             num_array;          /* indice of global stiffness matrices */
-int             actcurve;           /* indice of active time curve */
+INT             stiff_array;        /* indice of the active system sparse matrix */
+INT             mass_array;         /* indice of the active system sparse matrix */
+INT             damp_array;         /* indice of the active system sparse matrix */
+INT             num_array;          /* indice of global stiffness matrices */
+INT             actcurve;           /* indice of active time curve */
 
 SOLVAR         *actsolv;            /* pointer to active solution structure */
 PARTITION      *actpart;            /* pointer to active partition */
@@ -87,12 +87,17 @@ STRUCT_DYNAMIC *sdyn;               /* pointer to structural dynamic input data 
 DIST_VECTOR    *vel;                /* total velocities */              
 DIST_VECTOR    *acc;                /* total accelerations */
 DIST_VECTOR    *fie;                /* internal forces and working array */
-ARRAY           intforce_a;
-double         *intforce;
 DIST_VECTOR    *dispi;              /* distributed vector to hold incremental displacments */ 
 DIST_VECTOR    *work;               /* working vectors */
+
+ARRAY           intforce_a;         /* redundant vector of full length for internal forces */
+DOUBLE         *intforce;
+ARRAY           dirich_a;           /* redundant vector of full length for dirichlet-part of rhs */
+DOUBLE         *dirich;
+DOUBLE          dirichfacs[10];      /* factors needed for dirichlet-part of rhs */
  
 STRUCT_DYN_CALC dynvar;             /* variables to perform dynamic structural simulation */              
+
 
 #ifdef DEBUG 
 dstrc_enter("dyn_nln_structural");
@@ -213,6 +218,8 @@ for (i=0; i<1; i++) solserv_zero_vec(&(acc[i]));
 /*-------------- allocate one redundant vector intforce of full lenght */
 /* this is used by the element routines to assemble the internal forces*/
 intforce = amdef("intforce",&intforce_a,numeq_total,1,"DV");
+/*----------- create a vector of full length for dirichlet part of rhs */
+dirich = amdef("intforce",&dirich_a,numeq_total,1,"DV");
 /*----------------------------------------- allocate 3 DIST_VECTOR fie */
 /*                    to hold internal forces at t, t-dt and inbetween */ 
 solserv_create_vec(&fie,3,numeq_total,numeq,"DV");
@@ -265,7 +272,7 @@ calinit(actfield,actpart,action);
 
 /*----------------------- call elements to calculate stiffness and mass */
 *action = calc_struct_nlnstiffmass;
-calelm(actfield,actsolv,actpart,actintra,stiff_array,mass_array,NULL,NULL,0,0,action);
+calelm_dyn(actfield,actsolv,actpart,actintra,stiff_array,mass_array,NULL,NULL,0,NULL,0,action);
 
 /*-------------------------------------------- calculate damping matrix */
 if (damp_array>0)
@@ -286,6 +293,7 @@ if (damp_array>0)
 }
 /*-------------------------------------- create the original rhs vector */
 /*-------------------------- the approbiate action is set inside calrhs */
+/*---------------------- this vector holds loads due to external forces */
 calrhs(actfield,actsolv,actpart,actintra,stiff_array,
        &(actsolv->rhs[2]),0,action);
 
@@ -297,11 +305,24 @@ solserv_copy_vec(&(actsolv->rhs[2]),&(actsolv->rhs[3]));
 actcurve = 0;
 dyn_init_curve(actcurve,sdyn->nstep,sdyn->dt,sdyn->maxtime);
 
+/* put a zero the the place 7 in node->sol to init the velocities and accels */
+/* of prescribed displacements */
+solserv_putdirich_to_dof(actfield,0,0.0,8);
+
 /*---------------------------------- get factor at a certain time t=0.0 */
 dyn_facfromcurve(actcurve,0.0,&(dynvar.rldfac));
 
 /*-------------------------------------- multiply load vector by rldfac */
 solserv_scalarprod_vec(&(actsolv->rhs[2]),dynvar.rldfac);
+
+/*---------------- put the scaled prescribed displacements to the nodes */
+/*             in field sol at place 0 together with free displacements */
+solserv_putdirich_to_dof(actfield,0,dynvar.rldfac,0);
+
+
+/*----- also put prescribed displacements to the nodes in field sol at  */
+/*                                  place 3 separate from the free dofs */
+solserv_putdirich_to_dof(actfield,0,dynvar.rldfac,3);
 
 /*-------------------------------------------- make norm of initial rhs */
 solserv_vecnorm_euclid(actintra,&(actsolv->rhs[2]),&(dynvar.rnorm));
@@ -410,11 +431,55 @@ dyn_facfromcurve(actcurve,sdyn->time,&(dynvar.rldfac));
 /*------------------------ multiply rhs[1] by actual load factor rldfac */
 solserv_scalarprod_vec(&(actsolv->rhs[1]),dynvar.rldfac);
 
-/*----- calculate tangential stiffness and internal forces at time t-dt */
+/*---------------- put the scaled prescribed displacements to the nodes */
+/*             in field sol at place 0 together with free displacements */
+solserv_putdirich_to_dof(actfield,0,dynvar.rldfac,0);
+
+/* put the prescribed scaled displacements to the nodes in field sol at */
+/*                                  place 4 separate from the free dofs */
+solserv_putdirich_to_dof(actfield,0,dynvar.rldfac,4);
+
+/*-------- put presdisplacements(t) - presdisplacements(t-dt) in place 5 */
+solserv_adddirich(actfield,0,3,4,5,-1.0,1.0);
+
+/*----- set factors needed for prescribed displacement terms on rhs eff */
+/*
+dirichfacs[0] = -(1.0-alpham)*(1.0/beta)/(DSQR(dt))         
+dirichfacs[1] =  (1.0-alpham)*(1.0/beta)/dt                 
+dirichfacs[2] =  (1.0-alpham)/(2*beta) - 1                  
+dirichfacs[3] = -(1.0-alphaf)*(gamma/beta)/dt               
+dirichfacs[4] =  (1.0-alphaf)*gamma/beta - 1                
+dirichfacs[5] =  (gamma/(2*beta)-1)*(1.0-alphaf)            
+dirichfacs[6] = -(1.0-alphaf) or 0                          
+dirichfacs[7] =  raleigh damping factor for mass            
+dirichfacs[8] =  raleigh damping factor for stiffness       
+dirichfacs[9] =  dt     
+see phd theses Mok page 165: generalized alfa time integration with prescribed displ.                                    
+*/
+dirichfacs[0] = -dynvar.constants[0];
+dirichfacs[1] =  dynvar.constants[1];
+dirichfacs[2] =  dynvar.constants[2];
+dirichfacs[3] = -dynvar.constants[3];
+dirichfacs[4] =  dynvar.constants[4];
+dirichfacs[5] =  dynvar.constants[5];
+dirichfacs[6] = -dynvar.constants[6]; 
+dirichfacs[9] =  sdyn->dt; 
+if (damp_array>0) {
+   dirichfacs[7] =  sdyn->m_damp;
+   dirichfacs[8] =  sdyn->k_damp;}
+else {
+   dirichfacs[7] =  0.0;
+   dirichfacs[8] =  0.0;}
+
+/*- calculate tangential stiffness/mass and internal forces at time t-dt */
 solserv_zero_mat(actintra,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
+solserv_zero_mat(actintra,&(actsolv->sysarray[mass_array]),&(actsolv->sysarray_typ[mass_array]));
+amzero(&dirich_a);
 amzero(&intforce_a);
-*action = calc_struct_nlnstiff;
-calelm(actfield,actsolv,actpart,actintra,stiff_array,-1,intforce,NULL,numeq_total,0,action);
+
+*action = calc_struct_nlnstiffmass;
+calelm_dyn(actfield,actsolv,actpart,actintra,stiff_array,mass_array,
+           intforce,dirich,numeq_total,dirichfacs,0,action);
 
 /*---------------------------- store positive internal forces on fie[1] */
 solserv_zero_vec(&fie[1]);
@@ -428,6 +493,10 @@ solserv_add_vec(&(actsolv->rhs[1]),&(actsolv->rhs[0]),(1.0-sdyn->alpha_f));
 
 /*---------- subtract internal forces from interpolated external forces */
 solserv_add_vec(&(fie[1]),&(actsolv->rhs[0]),-1.0);
+
+/*------------------------ add rhs from prescribed displacements to rhs */
+assemble_vec(actintra,&(actsolv->sysarray_typ[stiff_array]),
+             &(actsolv->sysarray[stiff_array]),&(actsolv->rhs[0]),dirich,1.0);
 
 /*--------------------- create effective load vector (rhs[0]-fie[2])eff */
 /*
@@ -476,18 +545,37 @@ solserv_result_total(actfield,actintra, &(actsolv->sol[1]),0,
 solserv_result_incre(actfield,actintra,&dispi[0],0,
                      &(actsolv->sysarray[stiff_array]),
                      &(actsolv->sysarray_typ[stiff_array]));
+/* here put incremental prescribed displacements from sol[5] to sol_increment[0] ? */
 /*----------------------------------------------------------------------*/
 /*                     PERFORM EQUILLIBRIUM ITERATION                   */
 /*----------------------------------------------------------------------*/
 itnum=0;
 iterloop:
-/*------------ zero the stiffness matrix and vector for internal forces */
+/*----- set factors needed for prescribed displacement terms on rhs eff */
+dirichfacs[0] = -dynvar.constants[0];
+dirichfacs[1] =  dynvar.constants[1];
+dirichfacs[2] =  dynvar.constants[2];
+dirichfacs[3] = -dynvar.constants[3];
+dirichfacs[4] =  dynvar.constants[4];
+dirichfacs[5] =  dynvar.constants[5];
+dirichfacs[6] =  0.0; 
+dirichfacs[9] =  sdyn->dt; 
+if (damp_array>0) {
+   dirichfacs[7] =  sdyn->m_damp;
+   dirichfacs[8] =  sdyn->k_damp;}
+else {
+   dirichfacs[7] =  0.0;
+   dirichfacs[8] =  0.0;}
+/* zero the stiffness matrix and vector for internal forces and dirichlet forces */
 solserv_zero_mat(actintra,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
+solserv_zero_mat(actintra,&(actsolv->sysarray[mass_array]),&(actsolv->sysarray_typ[mass_array]));
 amzero(&intforce_a);
+amzero(&dirich_a);
 
 /* call element routines for calculation of tangential stiffness and intforce */
-*action = calc_struct_nlnstiff;
-calelm(actfield,actsolv,actpart,actintra,stiff_array,-1,intforce,NULL,numeq_total,0,action);
+*action = calc_struct_nlnstiffmass;
+calelm_dyn(actfield,actsolv,actpart,actintra,stiff_array,mass_array,
+           intforce,dirich,numeq_total,dirichfacs,0,action);
 
 /*---------------------------- store positive internal forces on fie[2] */
 solserv_zero_vec(&fie[2]);
@@ -506,6 +594,10 @@ solserv_add_vec(&fie[1],&fie[0],sdyn->alpha_f);
 
 /*-- subtract interpolated internal forces from interp. external forces */
 solserv_add_vec(&fie[0],&(actsolv->rhs[0]),-1.0);
+
+/*------------------ add dirichlet forces from prescribed displacements */
+assemble_vec(actintra,&(actsolv->sysarray_typ[stiff_array]),
+             &(actsolv->sysarray[stiff_array]),&(actsolv->rhs[0]),dirich,1.0);
 
 /*--------------------- create effective load vector (rhs[0]-fie[0])eff */
 pefnln_struct(&dynvar,sdyn,actfield,actsolv,actintra,dispi,vel,acc,work,
@@ -574,7 +666,8 @@ else
 /* still needed to compute energies in dynnle                           */
 solserv_copy_vec(&(actsolv->rhs[2]),&(actsolv->rhs[0]));
 /*------------------ update displacements, velocities and accelerations */
-dyn_nlnstructupd(&dynvar,sdyn,actsolv,
+dyn_nlnstructupd(actfield,
+                 &dynvar,sdyn,actsolv,
                  &(actsolv->sol[0]),   /* total displacements at time t-dt */
                  &(actsolv->sol[1]),   /* total displacements at time t    */
                  &(actsolv->rhs[1]),   /* load vector         at time t    */
@@ -585,16 +678,31 @@ dyn_nlnstructupd(&dynvar,sdyn,actsolv,
                  &work[1],             /* working arrays                   */
                  &work[2]);            /* working arrays                   */
 
+/* 
+in the nodes the results are stored the following way: 
+place 0 holds total displacements of free dofs at time t 
+place 1 holds velocities at time t
+place 2 holds accels at time t
+place 3 holds prescribed displacements at time t-dt 
+place 4 holds prescribed displacements at time t
+place 5 holds place 4 - place 3
+place 6 holds the  velocities of prescribed dofs
+place 7 holds the  accels of prescribed dofs
+place 8 is working space
+*/
 /*-------------------------------------- return velocities to the nodes */
 solserv_result_total(actfield,actintra, &vel[0],1,
                      &(actsolv->sysarray[stiff_array]),
                      &(actsolv->sysarray_typ[stiff_array]));
-
+/*---------------------------------------velocities for prescribed dofs */
+solserv_adddirich(actfield,0,6,0,1,1.0,0.0);
 /*------------------------------------------ return accel. to the nodes */
 solserv_result_total(actfield,actintra, &acc[0],2,
                      &(actsolv->sysarray[stiff_array]),
                      &(actsolv->sysarray_typ[stiff_array]));
 
+/*-------------------------------------------accel. for prescribed dofs */
+solserv_adddirich(actfield,0,7,0,2,1.0,0.0);
 /*------------------------------------------ make all types of energies */
 dynnle(&dynvar,sdyn,actintra,actsolv,&dispi[0],&fie[1],&fie[2],
        &(actsolv->rhs[1]),&(actsolv->rhs[0]),&work[0]);
@@ -605,7 +713,7 @@ dynvar.etot = dynvar.epot + dynvar.ekin;
 if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1)
 {
    *action = calc_struct_stress;
-   calelm(actfield,actsolv,actpart,actintra,stiff_array,-1,NULL,NULL,0,0,action);
+   calelm_dyn(actfield,actsolv,actpart,actintra,stiff_array,-1,NULL,NULL,0,NULL,0,action);
    /*-------------------------- reduce stresses, so they can be written */
    *action = calc_struct_stressreduce;
    calreduce(actfield,actpart,actintra,action,0);
@@ -634,19 +742,6 @@ if (par.myrank==0) dyn_nlnstruct_outstep(&dynvar,sdyn,itnum);
 /*-------------------------------------- check time and number of steps */
 if (sdyn->step < sdyn->nstep && sdyn->time <= sdyn->maxtime)
 goto timeloop;
-
-
-
-
-
-
-
-
-
-
-
-
-
 /*----------------------------------------------------------------------*/
 end:
 /*--------------------------------------------------- cleaning up phase */
