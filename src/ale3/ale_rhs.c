@@ -39,7 +39,6 @@ struct _ARRAY intforce_global;
 This routine controls the calculation of the rhs for ale elements.
 
 </pre>
-\param *actfield    FIELD       (i)  active field
 \param *actsolv     SOLVAR      (i)  active solvar
 \param *actpart     PARTITION   (i)  my partition of the field
 \param *actintra    INTRA       (i)  my intra-communicator
@@ -47,7 +46,6 @@ This routine controls the calculation of the rhs for ale elements.
 \param sysarray2    INT         (i)  number of second sparse system matrix
 \param *dirich      DOUBLE      (i)  global redundant vector of dirichlet forces
 \param global_numeq INT         (i)  size of dvec
-\param kstep        INT         (i)  time in increment step we are in
 \param *action      CALC_ACTION (i)  calculation option passed to elements
 
 \warning There is nothing special to this routine
@@ -55,17 +53,15 @@ This routine controls the calculation of the rhs for ale elements.
 \sa calling: ale2(), ale3(); ale_caldirich(); called by: dyn_ale
 
 *----------------------------------------------------------------------*/
-void ale_rhs(FIELD        *actfield,     /* active field */
-            SOLVAR       *actsolv,      /* active SOLVAR */
-            PARTITION    *actpart,      /* my partition of this field */
-            INTRA        *actintra,     /* my intra-communicator */
-            INT           sysarray1,    /* number of first sparse system matrix */
-            INT           sysarray2,    /* number of secnd system matrix, if present, else -1 */
-            DOUBLE       *dirich,       /* global redundant vector of dirichlet forces */
-            INT           global_numeq, /* size of dvec */
-            INT           kstep,        /* time in increment step we are in */
-            CONTAINER    *container,
-            CALC_ACTION  *action)       /* calculation option passed to element routines */
+void ale_rhs(SOLVAR       *actsolv,      /* active SOLVAR */
+             PARTITION    *actpart,      /* my partition of this field */
+             INTRA        *actintra,     /* my intra-communicator */
+             INT           sysarray1,    /* number of first sparse system matrix */
+             INT           sysarray2,    /* number of secnd system matrix, if present, else -1 */
+             DOUBLE       *dirich,       /* global redundant vector of dirichlet forces */
+             INT           global_numeq, /* size of dvec */
+             CONTAINER    *container,
+             CALC_ACTION  *action)       /* calculation option passed to element routines */
 /*----------------------------------------------------------------------*/
 {
 INT               i,j,k;
