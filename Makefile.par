@@ -23,6 +23,7 @@
 # -DWALLCONTACT  defines contact algorithms for wall contact
 # -DGEMM         defines Generalized Energy-Momentum Int. Scheme
 # -DD_AXISHELL   defines axishell element
+# -DD_MAT       defines materials
 #
 # -DDEBUG     defines debug mode: routine and array tracing 
 # -DPARALLEL  defines parallel version of programm
@@ -52,7 +53,7 @@ CCX=/opt/mpi/bin/mpicc
 LDX=/opt/mpi/bin/mpicc 
 PFL= -DPARALLEL -DHPUX11 -DD_FLUID -DD_FSI -DD_OPTIM -DS8CONTACT -DD_CONTACT  \
      -DD_FLUID2 -DD_FLUID3 -DD_WALL1 -DD_BEAM3 -DD_SHELL9 -DD_BRICK1 -DD_SHELL8 -DD_ALE \
-     -DAZTEC_PACKAGE -DUMFPACK -DSPOOLES_PACKAGE 
+     -DD_MAT -DAZTEC_PACKAGE -DUMFPACK -DSPOOLES_PACKAGE 
 
 #
 #--------------------------------------------------------------------
@@ -81,11 +82,11 @@ RM	 = /bin/rm -f
 #CFLAGS        = -D__HP__ -Aa -Ae -O +w1 ${PFL} 
 #FFLAGS        = -O
 #LDFLAGS       = 
-#BLAS	       = -lblas
+#BLAS        = -lblas
 #AZTEC         = -laztec_par21_32
 #METIS         = -lmetis_32
 #SUPLU         = 
-##SUPLU 	= -lsuperlu_par32
+##SUPLU     = -lsuperlu_par32
 #MUMPS         = -lmumps_par_32  -lscalapack_par_32 -lblacs_MPI-HPPA-0_par_32 -lblacsCinit_MPI-HPPA-0_par_32 -lblacsF77init_MPI-HPPA-0_par_32  
 #UMFPACK       = -lumfpack40_hpux11_32
 #SPOOLES       = -lspoolesMPI_32  -lspooles_32 

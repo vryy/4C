@@ -23,6 +23,7 @@
 # -DD_AXISHELL  defines element axishell
 # -DWALLCONTACT  defines contact algorithms for wall contact
 # -DGEMM         defines Generalized Energy-Momentum Int. Scheme
+# -DD_MAT       defines materials
 #
 # -DDEBUG     defines debug mode: routine and array tracing 
 # -DPARALLEL  defines parallel version of programm
@@ -52,7 +53,7 @@ CCX=cc
 LDX=f90
 PFL	 = -DHPUX11 -DD_FLUID -DD_FSI -DD_OPTIM -DS8CONTACT -DD_CONTACT  \
 	   -DD_FLUID2 -DD_FLUID3 -DD_WALL1 -DD_BEAM3 -DD_SHELL9 -DD_BRICK1 -DD_SHELL8 \
-	   -DD_ALE -DD_AXISHELL \
+	   -DD_ALE -DD_AXISHELL -DD_MAT \
 	   -DAZTEC_PACKAGE -DUMFPACK
 #
 #--------------------------------------------------------------------

@@ -27,6 +27,7 @@ include ./Makefile.personal_path
 # -DWALLCONTACT  defines contact algorithms for wall contact
 # -DGEMM         defines Generalized Energy-Momentum Int. Scheme
 # -DD_AXISHELL   defines axishell element
+# -DD_MAT       defines materials
 #
 # -DDEBUG     defines debug mode: routine and array tracing 
 # -DPARALLEL  defines parallel version of programm
@@ -58,7 +59,7 @@ CCX	= /opt/mpi/bin/mpicc
 LDX	= /opt/mpi/bin/mpif90 
 PFL	= -DPARALLEL -DHPUXITA -DD_FLUID -DD_FSI -DD_OPTIM -DS8CONTACT -DD_CONTACT  \
 	  -DD_FLUID2 -DD_FLUID3 -DD_WALL1 -DD_SHELL9 -DD_BRICK1 -DD_SHELL8 -DD_ALE \
-	  -DD_AXISHELL -DSPOOLES_PACKAGE 
+	  -DD_BEAM3  -DD_AXISHELL -DD_MAT -DSPOOLES_PACKAGE 
 NAME	= par
 MPI	= -lmpi
 #====================================================================
@@ -69,7 +70,7 @@ MPI	= -lmpi
 #LDX	 = f90 
 #PFL	 = -DHPUXITA -DD_FLUID -DD_FSI -DD_OPTIM -DS8CONTACT -DD_CONTACT  \
 #	   -DD_FLUID2 -DD_FLUID3 -DD_WALL1 -DD_SHELL9 -DD_BRICK1 -DD_SHELL8 -DD_ALE \
-#	   -DD_AXISHELL -DSPOOLES_PACKAGE 
+#	   -DD_AXISHELL -DD_MAT -DSPOOLES_PACKAGE 
 #NAME	 = seq
 #MPI	 = 
 #--------------------------------------------------------------------     
@@ -146,11 +147,12 @@ PROGRAM       = $(PROGRAM_NAME)
 #
 $(PROGRAM):     $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) $(OBJS7) $(OBJS8) \
                 $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) $(OBJS14) $(OBJS15) \
-                $(OBJS16) $(OBJS17) $(OBJS18) $(OBJS_OPT) $(OBJS_AXISHELL)
+                $(OBJS16) $(OBJS17) $(OBJS18) $(OBJS_OPT) $(OBJS_AXISHELL) $(OBJS_MAT)
 		@echo "Linking $(PROGRAM) ..."
 		@$(LD) $(LDFLAGS) $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) \
                 $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) \
-                $(OBJS14) $(OBJS15) $(OBJS16) $(OBJS17) $(OBJS18) $(OBJS_OPT) $(OBJS_AXISHELL) \
+                $(OBJS14) $(OBJS15) $(OBJS16) $(OBJS17) $(OBJS18) $(OBJS_OPT) \
+                $(OBJS_AXISHELL)  $(OBJS_MAT)\
 		$(LIBS) $(INCLUDES) -o $(PROGRAM)
 		@echo "done"
 
@@ -249,6 +251,11 @@ $(OBJS_AXISHELL):
 		@echo "Making $@ ..."
 		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
 		@echo "MainMake is back."
+#
+$(OBJS_MAT):     
+		@echo "Making $@ ..."
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
+		@echo "MainMake is back."
 # FORTRAN90
 $(OBJS13):     
 		@echo "Making $@ ..."
@@ -267,5 +274,5 @@ clean:
 	rm -rf  $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) \
                 $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) \
                 $(OBJS13) $(OBJS14) $(OBJS15) $(OBJS16) $(OBJS17) $(OBJS18) \
-		$(OBJS_OPT) $(OBJS_AXISHELL)
+		$(OBJS_OPT) $(OBJS_AXISHELL) $(OBJS_MAT)
 $

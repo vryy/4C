@@ -2,8 +2,8 @@
 # list of possible defines:
 #--------------------------------------------------------------------
 #  
-# -DD_FLUID      defines general fluid problem
-# -DD_FSI        defines general FSI problem
+# -DD_FLUID     defines general fluid problem
+# -DD_FSI       defines general FSI problem
 # -DD_SHELL8    defines element shell8
 # -DS8CONTACT    defines contact algorithms for shell8 contact
 # -DD_CONTACT    defines contact algos 2D (with wall element)
@@ -18,6 +18,7 @@
 # -DD_BEAM3      defines element beam3
 # -DD_BRICK1     defines element brick1
 # -DD_AXISHELL  defines element axishell
+# -DD_MAT       defines materials
 #
 # -DDEBUG     defines debug mode: routine and array tracing 
 # -DPARALLEL  defines parallel version of programm
@@ -42,7 +43,8 @@
 #                      (add -lVisual2 -lX11 to INCLUDES!!!) 
 #
 PFL	   =  -DAZUSA -DSIXTYFOUR -DPARALLEL -DD_SHELL8 -DD_BRICK1 -DD_FLUID -DS8CONTACT -DD_CONTACT \
-	      -DD_FLUID2 -DD_FLUID3 -DD_ALE -DD_WALL1 -DD_SHELL9 -DD_BEAM3 -DD_AXISHELL -DSPOOLES_PACKAGE
+	      -DD_FLUID2 -DD_FLUID3 -DD_ALE -DD_WALL1 -DD_SHELL9 -DD_BEAM3 -DD_AXISHELL \
+            -DD_MAT -DSPOOLES_PACKAGE
 #
 # set correct HOMEDIR to the directory where you placed ccarat 
 #place the com director from lib_azusa.tar.gz into your home
@@ -103,11 +105,11 @@ include ./Makefile.objects
 #
 $(PROGRAM):     $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) $(OBJS7) $(OBJS8) \
                 $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) $(OBJS14) $(OBJS15) \
-                $(OBJS16) $(OBJS17) $(OBJS18) $(OBJS_OPT) $(OBJS_AXISHELL)
+                $(OBJS16) $(OBJS17) $(OBJS18) $(OBJS_OPT) $(OBJS_AXISHELL) $(OBJS_MAT)
 		@echo "Linking $(LD) $(LDFLAGS) $(LIBS) -o $(PROGRAM)"
 		@$(LD) $(LDFLAGS) $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) \
                 $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) $(OBJS14) \
-		$(OBJS15) $(OBJS16) $(OBJS17) $(OBJS18) $(OBJS_OPT) $(OBJS_AXISHELL) \
+		$(OBJS15) $(OBJS16) $(OBJS17) $(OBJS18) $(OBJS_OPT) $(OBJS_AXISHELL) $(OBJS_MAT) \
 		$(LIBS) -o $(PROGRAM)
 
 
@@ -206,6 +208,11 @@ $(OBJS_AXISHELL):
 		@echo "Making $@ ..."
 		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $(*F).c $<
 		@echo "MainMake is back."
+#
+$(OBJS_MAT):     
+		@echo "Making $@ ..."
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
+		@echo "MainMake is back."
 # fortran
 $(OBJS13):     
 		@echo "Making $@ ..."
@@ -220,5 +227,5 @@ clean:
 	rm -rf  $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) \
                 $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) \
                 $(OBJS13) $(OBJS14) $(OBJS15) $(OBJS16) $(OBJS17) $(OBJS18) \
-		$(OBJS_OPT) $(OBJS_AXISHELL)
+		$(OBJS_OPT) $(OBJS_AXISHELL) $(OBJS_MAT)
 

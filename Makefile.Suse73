@@ -1,5 +1,5 @@
 #
-SRC       =  /home/neumann/work/wdir/ccarat_saxi/
+SRC       =  /home/hardy/wdir/ccarat/
 #--------------------------------------------------------------------
 # list of possible defines:
 #--------------------------------------------------------------------
@@ -21,6 +21,7 @@ SRC       =  /home/neumann/work/wdir/ccarat_saxi/
 # -DD_CONTACT    defines contact algos 2D (with wall element)
 # -DD_AXISHELL  defines element axishell
 # -DGEMM         defines Generalized Energy-Momentum Int. Scheme
+# -DD_MAT       defines materials
 #
 # -DDEBUG     defines debug mode: routine and array tracing 
 # -DPARALLEL  defines parallel version of programm
@@ -54,7 +55,8 @@ PROGRAM_NAME  = cca_seq_linux.
 FXX      = g77
 CCX	 = gcc
 LDX      = $(CC)
-PFL       =  -DSUSE73 -DD_BRICK1 -DD_FLUID -DD_FLUID2 -DD_FLUID3 -DD_SHELL8 -DD_BEAM3 -DD_ALE -DD_WALL1 -DAZTEC_PACKAGE -DD_AXISHELL 
+PFL       =  -DSUSE73 -DD_BRICK1 -DD_FLUID -DD_FLUID2 -DD_FLUID3 -DD_SHELL8 -DD_BEAM3 -DD_ALE \
+             -DD_WALL1 -DAZTEC_PACKAGE -DD_AXISHELL -DD_MAT 
 AZTEC      = -laztec_seq
 SPOOLES  = -lspooles
 #--------------------------------------------------------------------
@@ -67,7 +69,8 @@ SPOOLES  = -lspooles
 #CCX	 = /usr/local/mpich-1.2.5/bin/mpicc
 #LDX      = /usr/local/mpich-1.2.5/bin/mpicc
 #PFL      =  -DPARALLEL -DSUSE73 -DD_BRICK1 -DD_FLUID -DD_FLUID2 -DD_FLUID2_PRO -DD_FLUID3 -DD_BEAM3 -DD_SHELL8 \
-#	    -DD_SHELL9 -DD_ALE -DD_WALL1 -DD_OPTIM -DS8CONTACT -DD_CONTACT -DAZTEC_PACKAGE -DSPOOLES_PACKAGE -DD_AXISHELL 
+#            -DD_SHELL9 -DD_ALE -DD_WALL1 -DD_OPTIM -DS8CONTACT -DD_CONTACT -DAZTEC_PACKAGE -DSPOOLES_PACKAGE \
+#            -DD_AXISHELL -DD_MAT 
 #AZTEC      = -laztec_par
 #SPOOLES  = -lspoolesMPI -lspooles
 # --------------------------------------------------------------------
@@ -102,8 +105,7 @@ LIBS	 =  -L/usr/lib -lc -lm -lF77ext -lf2c \
 	    -L../lib_linux/blas/lib -lblas \
 	    -L../lib_linux/metis/lib -lmetis \
 	    -L../lib_linux/aztec21/lib/ $(AZTEC) \
-	    -L../lib_linux/spooles/lib/ $(SPOOLES) \
-	    -L/usr/local/mpich-1.2.5/lib/ -lmpich
+	    -L../lib_linux/spooles/lib/ $(SPOOLES) 
 #               
 #
 #
@@ -119,12 +121,12 @@ include ./Makefile.objects
 #
 $(PROGRAM):     $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) $(OBJS7) $(OBJS8) \
                 $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) $(OBJS14) \
-                $(OBJS15) $(OBJS16) $(OBJS17) $(OBJS18) $(OBJS_OPT) $(OBJS_AXISHELL)
+                $(OBJS15) $(OBJS16) $(OBJS17) $(OBJS18) $(OBJS_OPT) $(OBJS_AXISHELL) $(OBJS_MAT)
 		@echo "Linking $(LD) $(LDFLAGS) $(LIBS) $(INCLUDES) -o $(PROGRAM)"
 		@$(LD) $(LDFLAGS) $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) \
                 $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) $(OBJS14) \
                 $(OBJS15) $(OBJS16) $(OBJS17) $(OBJS18) $(OBJS_OPT) $(OBJS_AXISHELL) \
-                $(LIBS)  $(INCLUDES) -o $(PROGRAM)
+                 $(OBJS_MAT) $(LIBS)  $(INCLUDES) -o $(PROGRAM)
 
 
 		@echo "done"
@@ -222,6 +224,11 @@ $(OBJS_AXISHELL):
 		@echo "Making $@ ..."
 		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $(*F).c $<
 		@echo "MainMake is back."
+#
+$(OBJS_MAT):     
+		@echo "Making $@ ..."
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $(*F).c $<
+		@echo "MainMake is back."
 # fortran
 $(OBJS13):     
 		@echo "Making $@ ..."
@@ -236,5 +243,5 @@ clean:
 	rm -rf  $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) \
                 $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) \
                 $(OBJS13) $(OBJS14) $(OBJS15) $(OBJS16) $(OBJS17) $(OBJS18) $(OBJS_OPT) \
-		$(OBJS_AXISHELL)
+                $(OBJS_AXISHELL) $(OBJS_MAT)
 
