@@ -230,6 +230,9 @@ break;
 case el_fluid2:
 fprintf(out,"ELE glob_Id %6d loc_Id %6d FLUID2\n",actele->Id,actele->Id_loc);
 break;
+case el_fluid2_pro:
+fprintf(out,"ELE glob_Id %6d loc_Id %6d FLUID2_PRO\n",actele->Id,actele->Id_loc);
+break;
 case el_ale3:
 fprintf(out,"ELE glob_Id %6d loc_Id %6d ALE3\n",actele->Id,actele->Id_loc);
 break;
@@ -337,9 +340,9 @@ return;
 void out_sol(FIELD *actfield, PARTITION *actpart, INTRA *actintra, 
              INT step, INT place)
 {
-INT        i,j,k;
-INT        is_shell9;    /*->shell9*/
-INT        num_klay,kl;  /*->shell9*/
+int        i,j,k,kk,l;
+int        is_shell9;    /*->shell9*/
+int        num_klay,kl;  /*->shell9*/
 FILE      *out = allfiles.out_out;
 NODE      *actnode;
 ELEMENT   *actele;
@@ -433,18 +436,24 @@ case structure:
 break;
 case fluid:
    if (ioflags.fluid_sol_file==1)
-   for (j=0; j<actfield->dis[0].numnp; j++)
+   for (kk=0;kk<actfield->ndis;kk++)
    {
-      actnode = &(actfield->dis[0].node[j]);
+   fprintf(out,"================================================================================\n");
+   fprintf(out,"Converged Solution of Discretisation %d\n",kk); 
+   fprintf(out,"================================================================================\n");
+   for (j=0; j<actfield->dis[kk].numnp; j++)
+   {
+      actnode = &(actfield->dis[kk].node[j]);
       fprintf(out,"NODE glob_Id %6d loc_Id %6d    ",actnode->Id,actnode->Id_loc);
       for (k=0; k<actnode->numdf; k++) 
       {
-   	 if (place >= actnode->sol.fdim) dserror("Cannot print solution step");
-   	 fprintf(out,"%20.7#E ",actnode->sol.a.da[place][k]);
+         if (place >= actnode->sol.fdim) dserror("Cannot print solution step");
+         fprintf(out,"%20.7E ",actnode->sol.a.da[place][k]);
       }
       fprintf(out,"\n");
    }
-   fprintf(out,"________________________________________________________________________________\n\n");
+   }
+fprintf(out,"________________________________________________________________________________\n\n");
 break;
 case ale:
    if (ioflags.ale_disp_file==1)
