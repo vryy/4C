@@ -257,4 +257,5 @@ OBJS13           = src/fortran/colsol.o \
 #OBJS13         = src/fortran/mumps_interface.o \
 #                 src/fortran/bi_f77_get_constants.o \
 #                 src/fortran/colsol.o \
-#                 src/fortran/mpcg_futils.o
+#                 src/fortran/mpcg_futils.o \
+#                 src/fortran/hex_fserv.o
