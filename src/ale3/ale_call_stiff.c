@@ -51,7 +51,7 @@ dstrc_enter("ale_keku");
    {
      for (k=0; k<neps; k++)
      {
-      db[k] = 0.0 ;                                                              
+      db[k] = 0.0;
        for (l=0; l<neps; l++)
        {
        db[k] = db[k] + d[k][l]*bs[l][j]*fac ;
@@ -59,7 +59,7 @@ dstrc_enter("ale_keku");
      }
      for (i=0; i<nd; i++)
      {
-       dum = 0.0 ;                                                                
+       dum = 0.0;
        for (m=0; m<neps; m++)
        {
         dum = dum + bs[m][i]*db[m] ;

@@ -88,19 +88,22 @@ ale2_intg(ele,data);
 amzero(estif_global);
 estif     = estif_global->a.da;
 /*------------------------------------------- integration parameters ---*/
-if(ele->distyp==quad4 || ele->distyp==quad8 || ele->distyp==quad9)
+switch (ele->distyp)
 {
-nir     = ele->e.ale2->nGP[0];
-nis     = ele->e.ale2->nGP[1];
-}
-else if (ele->distyp==tri3 || ele->distyp==tri6)
-{
-    nir = ele->e.ale2->nGP[0];
-    nis = 1;
-}
-else
-{
-   dserror("unknown number of gaussian points in ale2_intg");
+    case quad4:
+    case quad8:
+    case quad9:
+        nir     = ele->e.ale2->nGP[0];
+        nis     = ele->e.ale2->nGP[1];
+        break;
+    case tri3:
+    case tri6:
+        nir = ele->e.ale2->nGP[0];
+        nis = 1;
+        break;
+    default:
+        dserror("unknown number of gaussian points in ale2_intg");
+        break;
 }
 
 iel     = ele->numnp;
@@ -114,20 +117,23 @@ for (lr=0; lr<nir; lr++)
   for (ls=0; ls<nis; ls++)
   {
      /*============================= gaussian point and weight at it ===*/
-     if(ele->distyp==quad4 || ele->distyp==quad8 || ele->distyp==quad9)
-     {
-         e2   = data->xgps[ls];
-         facs = data->wgts[ls];
-     }
-     else if (ele->distyp==tri3 || ele->distyp==tri6)
-     {
-         e2   = data->xgps[lr];
-         facs = ONE;
-     }
-     else
-     {
-       dserror("unknown number of gaussian points in ale2_intg");
-     }
+      switch (ele->distyp)
+      {
+          case quad4:
+          case quad8:
+          case quad9:
+              e2   = data->xgps[ls];
+              facs = data->wgts[ls];
+              break;
+          case tri3:
+          case tri6:
+              e2   = data->xgps[lr];
+              facs = ONE;
+              break;
+          default:
+              dserror("unknown number of gaussian points in ale2_intg");
+              break;
+      }
      /*---------------------- shape functions and their derivatives */
      ale2_funct_deriv(funct,deriv,e1,e2,ele->distyp,1);
      /*------------------------------------- compute jacobian matrix ---*/
@@ -145,7 +151,7 @@ for (lr=0; lr<nir; lr++)
      /*--------------------------------- elastic stiffness matrix ke ---*/
      ale_keku(estif,bop,D,fac,nd,numeps);
      /*---------------- hourglass stabalization  stiffness matrix ke ---*/
-     if(nir == 1 && nis == 1)
+     if(ele->distyp==quad4 && nir == 1 && nis == 1)
        ale2_hourglass(ele,estif);
   }/*============================================== end of loop over ls */
 }/*================================================ end of loop over lr */

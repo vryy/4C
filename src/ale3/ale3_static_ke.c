@@ -90,21 +90,23 @@ ale3_intg(ele,data);
 amzero(estif_global);
 estif     = estif_global->a.da;
 /*------------------------------------------- integration parameters ---*/
-if(ele->distyp==hex8 || ele->distyp==hex20)
+switch(ele->distyp)
 {
-nir     = ele->e.ale3->nGP[0];
-nis     = ele->e.ale3->nGP[1];
-nit     = ele->e.ale3->nGP[2];
-}
-else if (ele->distyp==tet4 || ele->distyp==tet10)
-{
-    nir = ele->e.ale3->nGP[0];
-    nis = 1;
-    nit = 1;
-}
-else
-{
-   dserror("unknown number of gaussian points in ale2_intg");
+    case hex8:
+    case hex20:
+        nir     = ele->e.ale3->nGP[0];
+        nis     = ele->e.ale3->nGP[1];
+        nit     = ele->e.ale3->nGP[2];
+        break;
+    case tet4:
+    case tet10:
+        nir = ele->e.ale3->nGP[0];
+        nis = 1;
+        nit = 1;
+        break;
+    default:
+        dserror("unknown number of gaussian points in ale2_intg");
+        break;
 }
 iel     = ele->numnp;
 nd      = numdf * iel;
@@ -121,24 +123,26 @@ for (lr=0; lr<nir; lr++)
     for (lt=0; lt<nit; lt++)
     {
      /*============================= gaussian point and weight at it ===*/
-     if(ele->distyp==hex8 || ele->distyp==hex20)
-     {
-         e2   = data->xgps[ls];
-         facs = data->wgts[ls];
-         e3   = data->xgpt[lt];
-         fact = data->wgtt[lt];
-     }
-     else if (ele->distyp==tet4 || ele->distyp==tet10)
-     {
-         e2   = data->xgps[lr];
-         facs = ONE;
-         e3   = data->xgpt[lr];
-         fact = ONE;
-     }
-     else
-     {
-       dserror("unknown number of gaussian points");
-     }
+        switch(ele->distyp)
+        {
+            case hex8:
+            case hex20:
+                e2   = data->xgps[ls];
+                facs = data->wgts[ls];
+                e3   = data->xgpt[lt];
+                fact = data->wgtt[lt];
+                break;
+            case tet4:
+            case tet10:
+                e2   = data->xgps[lr];
+                facs = ONE;
+                e3   = data->xgpt[lr];
+                fact = ONE;
+                break;
+            default:
+                dserror("unknown number of gaussian points in ale2_intg");
+                break;
+        }
      /*-------------------------- shape functions and their derivatives */
      ale3_funct_deriv(funct,deriv,e1,e2,e3,ele->distyp,1);
      /*------------------------------------- compute jacobian matrix ---*/
@@ -158,7 +162,7 @@ for (lr=0; lr<nir; lr++)
      /*--------------------------------- elastic stiffness matrix ke ---*/
      ale_keku(estif,bop,D,fac,nd,numeps);
      /*---------------- hourglass stabalization  stiffness matrix ke ---*/
-     if(nir == 1 && nis == 1 && nit ==1)
+     if(ele->distyp==hex8 && nir == 1 && nis == 1 && nit ==1)
        ale3_hourglass(ele,estif,vol);
   }/*============================================== end of loop over lt */
   }/*============================================== end of loop over ls */
