@@ -372,7 +372,12 @@ case str_fsicoupling:
    {
       actgnode = ele->node[i]->gnode;
       /* check if there is a coupled struct node */
+      /* this approach does not work with a nonconforming discretization
+         of the interface, thus it is replaced by the second one */
+      /*
       if (actgnode->mfcpnode[genprob.numsf]==NULL) continue;
+      */
+      if (actgnode->fsicouple == NULL) continue;
       coupled=1;
       break;
    }
