@@ -24,6 +24,8 @@ void ntaini(INT argc, char *argv[])
 #ifdef DEBUG 
 dsinit();
 #endif
+/*---------------------------------------------- initialise warnings ---*/
+dswarning(0,0);
 /*-------------------------------------------------------initialize I/O */
 ntadev(argc,argv);
 /*------------------------------------------initialize free-field-input */

@@ -615,6 +615,11 @@ void dsassert(INT true, char string[]);
  *----------------------------------------------------------------------*/
 void dserror(char string[]);
 /*----------------------------------------------------------------------*
+ | collects warnings during running process                  ck 07/03   |
+ | and writes them to the screen at the end                             |
+ *----------------------------------------------------------------------*/
+void dswarning(INT task, INT warning);
+/*----------------------------------------------------------------------*
  | Initialize bugtracing systems                          m.gee 8/00    |
  *----------------------------------------------------------------------*/
 void dsinit(void);

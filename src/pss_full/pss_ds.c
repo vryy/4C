@@ -634,6 +634,68 @@ exit(EXIT_FAILURE);
 return;
 } /* end of dserror */
 
+/*!-----------------------------------------------------------------------
+\brief get warnings and write them to the screen at the end 
+
+<pre>                                                             ck 07/03
+depending on task it initialises all warnings to Zero (= no warning),
+collects warnings during running process and reports them to the screen at 
+the end. A reoccuring warning is written once!
+</pre>
+\param task     INT (i)  flag, what to do
+\param warning  INT (i)  flag, which warning shall be printed at the end
+\return void                                                
+\sa 
+
+------------------------------------------------------------------------*/
+void dswarning(INT task, INT warning)
+{
+static INT ale_quality_min_J_triangles;
+static INT ale_quality_ar;
+static INT ale_quality_ca;
+static INT ale_quality_Je;
+/*----------------------------------------------------------------------*/
+switch (task)
+{
+   /*------------------------------------------------ initialisation ---*/
+   case 0:
+      ale_quality_min_J_triangles = 0;
+      ale_quality_ar = 0;
+      ale_quality_ca = 0;
+      ale_quality_Je = 0;
+   break;
+   /*------------------------------------------------ create warning ---*/
+   case 1:
+      if (warning == 1)
+         ale_quality_min_J_triangles++;
+      if (warning == 2)
+         ale_quality_ar++;	 
+      if (warning == 3)
+         ale_quality_ca++;	 
+      if (warning == 4)
+         ale_quality_Je++;	 
+   break;
+   /*------------------------------------------------ write warnings ---*/
+   case 2:
+      if (ale_quality_min_J_triangles)
+      {
+         printf("\n Warning: There is no sense in monitoring lineare triangles with min_J!!!\n");
+         printf("          The .plt-file is not useful!\n");
+      }
+      if (ale_quality_ar)
+         printf("\n Warning: aspect_ratio quality monitoring for one of the distyps not implemented!!\n");
+      if (ale_quality_ca)
+         printf("\n Warning: corner_angle quality monitoring for one of the distyps not implemented!!\n");
+      if (ale_quality_Je)
+         printf("\n Warning: min_J quality monitoring for one of the distyps not implemented!!\n");
+   break;
+   /*------------------------------------------------------- default ---*/
+   default:
+   break;
+} /* end of switch init */
+} /* end of dswarning */
+
+
 
 /*!---------------------------------------------------------------------
 \brief routine to initialise the cpu - time                                              
