@@ -37,6 +37,10 @@ Maintainer: Malte Neumann
 #include <aztec21/az_aztec.h>
 #endif
 
+#ifdef SX5
+#include <aztec21/az_aztec.h>
+#endif
+
 #ifdef AZUSA
 #include "../../../../lib_ita1/aztec21/lib/az_aztec.h"
 #endif
@@ -72,6 +76,10 @@ Maintainer: Malte Neumann
 #endif
 
 #ifdef BULL
+#include <aztec21/az_aztec.h>
+#endif
+
+#ifdef SX5
 #include <aztec21/az_aztec.h>
 #endif
 
