@@ -187,8 +187,10 @@ solserv_create_vec(&(rsd),3,numeq_total,numeq,"DV");
 for (i=0; i<3; i++) solserv_zero_vec(&(rsd[i]));
 /*------------------- create vector dispi for incremental displacements */
 /*------------------ dispi[0] holds converged incremental displacements */
-solserv_create_vec(&(dispi),1,numeq_total,numeq,"DV");
+/*------------------ dispi[1] holds converged displacements last step   */
+solserv_create_vec(&(dispi),2,numeq_total,numeq,"DV");
 solserv_zero_vec(&(dispi[0]));
+solserv_zero_vec(&(dispi[1]));
 /*--------------------------------------------------- initialize solver */
 init=1;
 solver_control(  
@@ -366,7 +368,7 @@ solver_control(
                  init
               );
 /*--------------------------- calculate euclidian norm of displacements */
-/*solserv_vecnorm_euclid(actintra,&(rsd[0]),&prenorm);*/
+solserv_vecnorm_euclid(actintra,&(rsd[0]),&prenorm);
 /*--------------------------------------- do scaling for load parameter */
 switch(controltyp)
 {
@@ -378,6 +380,14 @@ case control_disp:
                        cdof,
                       &controldisp);
    rldiff = (statvar->stepsize)/controldisp;
+break;
+case control_arc:
+   if (statvar->iarc==0) statvar->arcscl=0.0;
+   else if (kstep==0 && statvar->iarc==1)
+   {
+      statvar->arcscl = prenorm / sqrt((double)(actsolv->sol[0].numeq_total));
+   }
+   rldiff = (statvar->stepsize) / (sqrt(prenorm*prenorm + statvar->arcscl*statvar->arcscl));
 break;
 case control_none:
    dserror("Unknown typ of path following control");
@@ -466,7 +476,7 @@ rlnew               = nln_data->rlnew;
 rlpre               = nln_data->rlpre;
 stepsize            = statvar->stepsize;
 itemax              = statvar->maxiter;
-/*---------------------------- update total displacements on sol[0] */
+/*-------------------------------- update total displacements on sol[0] */
 solserv_add_vec(&(dispi[0]),&(actsolv->sol[0]));
 /*------- put actsolv->sol[kstep] to the elements (total displacements) */ 
 solserv_result_total(
@@ -583,34 +593,15 @@ solver_control(
                &(actsolv->rhs[actsysarray+1]),
                  init
               );
-/*------------------------------------------ get values of control node */
-solserv_getele_vec(actintra,
-                   &(actsolv->sysarray_typ[actsysarray]),
-                   &(actsolv->sysarray[actsysarray]),
-                   &(rsd[2]),
-                   cdof,
-                   &rsd2);
-solserv_getele_vec(actintra,
-                   &(actsolv->sysarray_typ[actsysarray]),
-                   &(actsolv->sysarray[actsysarray]),
-                   &(rsd[1]),
-                   cdof,
-                   &rsd1);
 /*===============================make increment of load and displacment */
 switch(controltyp)
 {
 case control_disp:/*===============================displacement control */
-   rli = -rsd2/rsd1;
-   /*-------------------------------- make rsd[0] = rsd[1]*rli + rsd[2] */
-   /*------------------- make dispi[0] = dispi[0] + rsd[1]*rli + rsd[2] */
-   solserv_copy_vec(&(rsd[1]),&(rsd[0]));
-   solserv_scalarprod_vec(&(rsd[0]),rli);
-   solserv_add_vec(&(rsd[0]),&(dispi[0]));
-   solserv_add_vec(&(rsd[2]),&(rsd[0]));
-   solserv_add_vec(&(rsd[2]),&(dispi[0]));
+   increment_controldisp(actintra,actsolv,actsysarray,cdof,rsd,dispi,&rli);
 break;
-case control_arc:
-   dserror("arclenght control not yet impl.");
+case control_arc:/*=================================== arlenght control */
+   increment_controlarc(actintra,actsolv,actsysarray,rsd,dispi,&(actsolv->sol[0]),
+                        rlnew,rlold,stepsize,&rli);
 break;
 case control_load:
    dserror("load control not yet impl.");
@@ -685,8 +676,8 @@ else/*---------------------------------------------------no convergence */
 }
 } /*--------------------------------------------- end of iteration loop */
 /*---------------------------------- update data after incremental step */           
-/*-------------------------------- copy converged solution to next step */
-/*solserv_copy_vec(&(actsolv->sol[kstep]),&(actsolv->sol[kstep+1]));*/
+/*--------------------- copy converged solution from sol[0] to dispi[1] */
+solserv_copy_vec(&(actsolv->sol[0]),&(dispi[1]));
 /*----------------- put converged solution to the elements in next step */
 solserv_result_total(
                      actfield,
@@ -708,6 +699,186 @@ dstrc_exit();
 #endif
 return;
 } /* end of conequ */
+
+
+
+/*----------------------------------------------------------------------*
+ |  make load factor for arclenght control                    m.gee 1/02|
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+/*
+C-----------------------------------------------------------------------
+C        TOPIC: NEWTON-RAPHSON ITERATION (CRISFIELD'S METHOD)
+C-----------------------------------------------------------------------
+C        DISP   .. ACTUAL DISPLACEMENTS
+C        DISP0  .. DISPLACEMENT OF LAST CONVERGED SOLUTION
+C        DISPI  .. DISPLACEMENTS OF INCREMENT
+C        RSD    .. DISPLACEMENTS OF ITERATION
+C        RSD1   .. SOLUTION WITH LOAD AS RHS-VECTOR
+C        RSD2   .. SOLUTION WITH OUT-OF-BALANCE-LOAD P AS RHS-VECTOR
+C        RLNEW  .. ACTUAL LOAD PARAMETER
+C        RL0    .. LOAD PARAMETER OF LAST CONVERGED SOLUTION
+C        RLI    .. LOAD PARAMETER INCREMENT
+C        DS0    .. ARC LENGTH
+C        NEQ    .. NUMBER OF EQUATIONS
+C-----------------------------------------------------------------------
+*/
+int increment_controlarc(INTRA         *actintra,
+                          SOLVAR        *actsolv,
+                          int            actsysarray,
+                          DIST_VECTOR   *rsd,
+                          DIST_VECTOR   *dispi,
+                          DIST_VECTOR   *disp,
+                          double         rlnew,
+                          double         rlold, 
+                          double         stepsize,  
+                          double        *rli)
+{
+int                  i;
+double               rsd1,rsd2;
+double               val1,val2,val3,val4,val5,val6;
+double               a1,a2,a3,a4,a5;
+double               ddisp;
+double               actdisp;
+double               convdisp;
+double               drl;
+double               valsqr;
+double               rli1,rli2;
+double               valcos1,valcos2;
+
+#ifdef DEBUG 
+dstrc_enter("increment_controldisp");
+#endif
+/*----------------------------------------------------------------------*/
+val1 = val2 = val3 = val4 = val5 = val6 = 0.0;
+   for (i=0; i<dispi[0].numeq_total; i++)
+   {
+      solserv_getele_vec(actintra,
+                         &(actsolv->sysarray_typ[actsysarray]),
+                         &(actsolv->sysarray[actsysarray]),
+                         disp,
+                         i,
+                         &actdisp);
+      solserv_getele_vec(actintra,
+                         &(actsolv->sysarray_typ[actsysarray]),
+                         &(actsolv->sysarray[actsysarray]),
+                         &(dispi[1]),
+                         i,
+                         &convdisp);
+      solserv_getele_vec(actintra,
+                         &(actsolv->sysarray_typ[actsysarray]),
+                         &(actsolv->sysarray[actsysarray]),
+                         &(rsd[1]),
+                         i,
+                         &rsd1);
+      solserv_getele_vec(actintra,
+                         &(actsolv->sysarray_typ[actsysarray]),
+                         &(actsolv->sysarray[actsysarray]),
+                         &(rsd[2]),
+                         i,
+                         &rsd2);
+
+      ddisp  = actdisp - convdisp;
+      val1  += rsd1 * rsd1;
+      val2  += rsd1 * (ddisp+rsd2);
+      val3  += (ddisp+rsd2) * (ddisp+rsd2);
+      val4  += ddisp * ddisp;
+      val5  += ddisp * rsd2;
+      val6  += ddisp * rsd1;   
+   }/* end of (i=0; i<dispi[0].numeq_total; i++) */
+/*
+C-----------------------------------------------------------------------
+C            PARAMETER FOR QUADRATIC FUNCTION 
+C               A1*RLI*RLI + A2*RLI +A3 = 0
+C               A3,A4  TO CHOOSE ONE OF BOTH SOLUTIONS FOR RLI 
+C            ARCSCL --> SCALING FACTOR
+C               = 1  SPERICAL ARC-LENGTH-METHOD
+C               = 0  CYLINDRICAL ARC-LENGTH-METHOD
+C-----------------------------------------------------------------------
+*/
+   drl = rlnew - rlold;
+   a1 =     val1 + statvar->arcscl*statvar->arcscl;
+   a2 = 2.0*val2 + 2.0*drl*statvar->arcscl*statvar->arcscl;    
+   a3 =     val3 + drl*drl*statvar->arcscl*statvar->arcscl - stepsize*stepsize;
+   a4 =     val4 + val5;
+   a5 =     val6;
+   valsqr = a2*a2 - 4.0*a1*a3;
+   if (valsqr < 0.0) dserror("No solution for qudratic function in arclenght-method, try new stepsize"); 
+   else if (valsqr<EPS8) *rli = -a2 / (2.0*a1);
+   else
+   {
+      rli1 = (-a2 + sqrt(valsqr)) / (2.0*a1);
+      rli2 = (-a2 - sqrt(valsqr)) / (2.0*a1);
+      valcos1 = a4+a5*rli1;
+      valcos2 = a4+a5*rli2;
+      if (valcos1>valcos2) *rli = rli1;
+      else                 *rli = rli2;
+   }
+/*----------------------------------- make rsd[0] = rsd[1]*rli + rsd[2] */
+/*---------------------- make dispi[0] = dispi[0] + rsd[1]*rli + rsd[2] */
+solserv_copy_vec(&(rsd[1]),&(rsd[0]));
+solserv_scalarprod_vec(&(rsd[0]),*rli);
+solserv_add_vec(&(rsd[0]),&(dispi[0]));
+solserv_add_vec(&(rsd[2]),&(rsd[0]));
+solserv_add_vec(&(rsd[2]),&(dispi[0]));
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of increment_controldisp */
+
+
+
+
+/*----------------------------------------------------------------------*
+ |  make load factor for displacement control                 m.gee 1/02|
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+int increment_controldisp(INTRA *actintra,
+                          SOLVAR        *actsolv,
+                          int            actsysarray,
+                          int            cdof,
+                          DIST_VECTOR   *rsd,
+                          DIST_VECTOR   *dispi,   
+                          double        *rli)
+{
+double rsd1,rsd2;
+
+#ifdef DEBUG 
+dstrc_enter("increment_controldisp");
+#endif
+/*----------------------------------------------------------------------*/
+/*------------------------------------------ get values of control node */
+solserv_getele_vec(actintra,
+                   &(actsolv->sysarray_typ[actsysarray]),
+                   &(actsolv->sysarray[actsysarray]),
+                   &(rsd[2]),
+                   cdof,
+                   &rsd2);
+solserv_getele_vec(actintra,
+                   &(actsolv->sysarray_typ[actsysarray]),
+                   &(actsolv->sysarray[actsysarray]),
+                   &(rsd[1]),
+                   cdof,
+                   &rsd1);
+*rli = -rsd2/rsd1;
+/*----------------------------------- make rsd[0] = rsd[1]*rli + rsd[2] */
+/*---------------------- make dispi[0] = dispi[0] + rsd[1]*rli + rsd[2] */
+solserv_copy_vec(&(rsd[1]),&(rsd[0]));
+solserv_scalarprod_vec(&(rsd[0]),*rli);
+solserv_add_vec(&(rsd[0]),&(dispi[0]));
+solserv_add_vec(&(rsd[2]),&(rsd[0]));
+solserv_add_vec(&(rsd[2]),&(dispi[0]));
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of increment_controldisp */
+
+
+
 
 /*----------------------------------------------------------------------*
  |  print out iteration head                                 m.gee 11/01|
