@@ -56,7 +56,8 @@ void find_assign_coupset(FIELD *actfield,
  *----------------------------------------------------------------------*/
 void out_gid_sol_init();
 void out_gid_domains(FIELD *actfield);
-void out_gid_sol(char string[], FIELD *actfield, INTRA  *actintra, int step);
+void out_gid_sol(char string[], FIELD *actfield, INTRA  *actintra, int step,
+                 int place);
 /*----------------------------------------------------------------------*
  |  out_gid_msh.c                                        m.gee 12/01    |
  *----------------------------------------------------------------------*/
