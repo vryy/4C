@@ -68,6 +68,7 @@ case calc_struct_init:
    s8static_keug(NULL,NULL,NULL,NULL,NULL,NULL,0,1);
    s8static_mass(NULL,NULL,NULL,NULL,NULL,NULL,0,1);
    s8eleload(NULL,NULL,NULL,NULL,1);
+   s8fsiload(NULL,NULL,NULL,NULL,1);
    s8jaco(NULL,NULL,NULL,NULL,NULL,NULL,0.0,0,NULL,NULL,1);
    s8_stress(NULL,NULL,NULL,0,1);
 break;/*----------------------------------------------------------------*/
@@ -142,6 +143,12 @@ case calc_struct_eleload:
       s8eleload(ele,&actdata,actmat,intforce,0);
 /*   }*/
 break;/*----------------------------------------------------------------*/
+/*----------------- calculate load vector of element loads due to fluid */
+
+case calc_struct_fsiload:
+   actmat = &(mat[ele->mat-1]);
+   s8fsiload(ele,&actdata,actmat,intforce,0);   
+break;
 /*---------------------------------------- reduce stresses to all procs */
 case calc_struct_stressreduce:
    /*------------------------------------- not necessary in sequentiell */

@@ -15,6 +15,12 @@ Maintainer: Michael Gee
 #include "shell8.h"
 extern DOUBLE acttime;
 /*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+/*----------------------------------------------------------------------*
  | integration of element loads                          m.gee 10/01    |
  | in here, line and surface loads are integrated                       |
  *----------------------------------------------------------------------*/
@@ -105,8 +111,10 @@ goto end;
 }
 amzero(&eload_a);
 /*--------------------------------- check for presence of element loads */
+/*---------------------------------- FSI loads are treated seperately ! */
 foundsurface=0;
 if (!(ele->g.gsurf->neum)) goto endsurface;
+if (ele->g.gsurf->neum->neum_type==neum_FSI) goto endsurface;
 foundsurface=1;
 /*---------------------------------------------------- initialize eload */
 /*-------------------------------------------- init the gaussian points */
@@ -179,9 +187,11 @@ for (lr=0; lr<nir; lr++)/*---------------------------- loop r-direction */
       s8loadGP(ele,eload,hhi,wgt,xjm,funct,deriv,iel,xi,yi,zi);
    } /* end of loop over ls */
 } /* end of loop over lr */
-/* the surface load of this element has been done, so which the neumann */
-/* condition off */
-ele->g.gsurf->neum=NULL;
+/* the surface load of this element has been done, so switch the neumann */
+/* condition off, for a combination of live and FSI loads keep it       */
+if (ele->g.gsurf->neum->neum_type != neum_live_FSI &&
+    ele->g.gsurf->neum->neum_type != neum_opres_FSI)
+   ele->g.gsurf->neum=NULL;
 /*----------------------------------------------------------------------*/
 endsurface:
 /*----------------------------------------------------------------------*/
@@ -397,7 +407,7 @@ dstrc_enter("s8loadGP");
 /*----------------------------------------------------------------------*/
 switch(ele->g.gsurf->neum->neum_type)
 {
-case neum_live:
+case neum_live: case neum_live_FSI:
 /*----------------------------------------------------------------------*/
 /*                                                    uniform live load */
 /*----------------------------------------------------------------------*/
@@ -479,7 +489,7 @@ break;
 /*----------------------------------------------------------------------*/
 
 
-case neum_orthopressure:
+case neum_orthopressure: case neum_opres_FSI:
 /*----------------------------------------------------------------------*/
 /* orthogonal pressure dep. on load curve only                         */
 /*----------------------------------------------------------------------*/
@@ -508,10 +518,227 @@ break;
 
 }/* end of switch(ele->g.gsurf->neum->neum_type)*/
 /*----------------------------------------------------------------------*/
-end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
 return; 
 } /* end of s8loadGP */
+
+void s8fsiload(ELEMENT  *ele,
+               S8_DATA  *data,
+               MATERIAL *mat,
+               DOUBLE	*loadvec,
+               INT	 init)
+{
+#ifdef D_FSI
+INT          lr,ls;
+INT          i,j;
+INT          inode,idof;
+INT          nir;
+INT          nis;
+INT          nit;
+INT          iel;
+INT          nd;
+INT          foundsurface;
+
+DOUBLE       nsigma[6][MAXNOD_SHELL8]; /* nodal fluid stresses       */
+DOUBLE       sigmaint[6];   /* fluid stresses at integration point    */
+DOUBLE      *hte;
+DOUBLE       hhi;
+DOUBLE       e1,e2,e3;
+DOUBLE       facr,facs,wgt;
+DOUBLE       det;
+DOUBLE       deta;
+DOUBLE       ap[3];
+DOUBLE       ar[3];
+DOUBLE       forcesurf[3];
+
+GNODE       *actsgnode;
+NODE        *actfnode;
+
+static ARRAY eload_a; static DOUBLE **eload;
+static ARRAY x_a;     static DOUBLE **x;
+static ARRAY xc_a;    static DOUBLE **xc;
+static ARRAY funct_a; static DOUBLE *funct;
+static ARRAY deriv_a; static DOUBLE **deriv;
+static ARRAY xjm_a;   static DOUBLE **xjm;
+static ARRAY a3ref_a; static DOUBLE **a3ref;
+static ARRAY a3cur_a; static DOUBLE **a3cur;
+static ARRAY a3r_a;   static DOUBLE **a3r;
+static ARRAY a3c_a;   static DOUBLE **a3c;
+
+#ifdef DEBUG 
+dstrc_enter("s8eleload");
+#endif
+/*----------------------------------------------------------------------*/
+/*----------------------------------------- init phase for this routine */
+if (init==1)
+{
+eload     = amdef("eload",&eload_a,MAXDOFPERNODE,MAXNOD_SHELL8,"DA");
+x         = amdef("x"    ,&x_a    ,3            ,MAXNOD_SHELL8,"DA");
+xc        = amdef("xc"   ,&xc_a   ,3            ,MAXNOD_SHELL8,"DA");
+funct     = amdef("funct",&funct_a,MAXNOD_SHELL8,1            ,"DV");       
+deriv     = amdef("deriv",&deriv_a,2            ,MAXNOD_SHELL8,"DA");       
+xjm       = amdef("xjm_a",&xjm_a  ,3            ,3            ,"DA");
+a3ref     = amdef("a3ref",&a3ref_a,3            ,MAXNOD_SHELL8,"DA");
+a3cur     = amdef("a3cur",&a3cur_a,3            ,MAXNOD_SHELL8,"DA");
+a3r       = amdef("a3r"  ,&a3r_a  ,3            ,MAXNOD_SHELL8,"DA");
+a3c       = amdef("a3c"  ,&a3c_a  ,3            ,MAXNOD_SHELL8,"DA");
+goto end;
+}
+else if (init==-1)/*--------------------- delete phase for this routine */
+{
+amdel(&eload_a);
+amdel(&x_a);   
+amdel(&xc_a);   
+amdel(&funct_a);
+amdel(&deriv_a);
+amdel(&xjm_a);
+amdel(&a3ref_a);
+amdel(&a3cur_a);
+amdel(&a3r_a);
+amdel(&a3c_a);
+goto end;  
+}
+amzero(&eload_a);
+/*----------------------------- check for presence of FSI element loads */
+foundsurface=0;
+if (!(ele->g.gsurf->neum)) goto endsurface;
+if (ele->g.gsurf->neum->neum_type!=neum_FSI && 
+    ele->g.gsurf->neum->neum_type!=neum_live_FSI &&
+    ele->g.gsurf->neum->neum_type!=neum_opres_FSI) goto endsurface;
+foundsurface=1;
+/*---------------------------------------------------- initialize eload */
+/*-------------------------------------------- init the gaussian points */
+s8intg(ele,data,0);
+nir     = ele->e.s8->nGP[0];
+nis     = ele->e.s8->nGP[1];
+nit     = ele->e.s8->nGP[2];
+iel     = ele->numnp;
+nd      = iel*NUMDOF_SHELL8;
+hte     = ele->e.s8->thick_node.a.dv;
+s8a3ref_extern(funct,deriv,hte,a3ref,ele);
+/*------------------------------------- calculate element's coordinates */
+for (i=0; i<iel; i++)
+{
+   x[0][i] = ele->node[i]->x[0];
+   x[1][i] = ele->node[i]->x[1];
+   x[2][i] = ele->node[i]->x[2];
+
+   a3r[0][i] = a3ref[0][i] * hte[i];
+   a3r[1][i] = a3ref[1][i] * hte[i];
+   a3r[2][i] = a3ref[2][i] * hte[i];
+
+   xc[0][i] = x[0][i] + ele->node[i]->sol.a.da[0][0];
+   xc[1][i] = x[1][i] + ele->node[i]->sol.a.da[0][1];
+   xc[2][i] = x[2][i] + ele->node[i]->sol.a.da[0][2];
+
+   a3c[0][i] = a3r[0][i] + ele->node[i]->sol.a.da[0][3];
+   a3c[1][i] = a3r[1][i] + ele->node[i]->sol.a.da[0][4];
+   a3c[2][i] = a3r[2][i] + ele->node[i]->sol.a.da[0][5];
+
+   a3cur[0][i] = a3c[0][i] / hte[i];
+   a3cur[1][i] = a3c[1][i] / hte[i];
+   a3cur[2][i] = a3c[2][i] / hte[i];
+}
+/*--------------------------------- get nodal stresses for fluid sol_mf */
+for (j=0;j<iel;j++)
+{
+   actsgnode = ele->g.gsurf->gnode[j];
+   actfnode  = actsgnode->mfcpnode[genprob.numff];
+   for (i=0;i<6;i++)
+   {
+      nsigma[i][j] = actfnode->sol_mf.a.da[1][i];
+   }
+
+}
+/*--------------------------------------------------- start integration */
+e3=ZERO;
+for (lr=0; lr<nir; lr++)/*---------------------------- loop r-direction */
+{
+   /*-------------------------------------- gaussian points and weights */
+   e1   = data->xgpr[lr];
+   facr = data->wgtr[lr];
+   for (ls=0; ls<nis; ls++)/*------------------------- loop s direction */
+   {
+      e2   = data->xgps[ls];
+      facs = data->wgts[ls];
+      /*------------- shape functions and derivatives at gaussian point */
+      s8_funct_deriv(funct,deriv,e1,e2,ele->distyp,1);
+      /*----------------------------------- compute load at gauss point */
+      for (i=0;i<6;i++) sigmaint[i]=ZERO;
+      for (i=0;i<6;i++)
+      {
+   	 for (j=0;j<iel;j++) sigmaint[i]+=funct[j]*nsigma[i][j];
+      } 	 
+      /*--------------------------- element thickness at gaussian point */
+      hhi=ZERO;
+      for (i=0; i<iel; i++) hhi += funct[i] * hte[i];
+      /*-------------------------------------- evaluate Jacobian matrix */
+      /*---------------------------------------- xjm is jacobian matrix */
+      /* in current configuration with hydro and pressure type of loads */
+      s8jaco(funct,deriv,xc,xjm,hte,a3cur,e3,iel,&det,&deta,0);
+      /*--------------------------- make total weight at gaussian point */
+      wgt = facr*facs;
+
+      /*-------------------------- compute normal vector at gauss point */
+      /*  xjm = J = (g1 g2 g3) siehe Dissertation Braun Kap. Grundlagen */
+      /*- the lenght of the vector ap (which is g3) is det(J) is |g3|   */
+      ap[0] = xjm[0][1]*xjm[1][2] - xjm[1][1]*xjm[0][2];
+      ap[1] = xjm[0][2]*xjm[1][0] - xjm[1][2]*xjm[0][0];
+      ap[2] = xjm[0][0]*xjm[1][1] - xjm[1][0]*xjm[0][1];
+
+      /*------------------------ compute traction vector at gauss point *
+       |  force = sigma * n  (Cauchy's law)                             |
+       *----------------------------------------------------------------*/
+      /*################################################################
+         VZW NUR FUER AKTUELLE RECHNUNG !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      */
+      forcesurf[0] = -sigmaint[0]*ap[0]+sigmaint[3]*ap[1]+sigmaint[4]*ap[2];
+      forcesurf[1] = -sigmaint[3]*ap[0]+sigmaint[1]*ap[1]+sigmaint[5]*ap[2];
+      forcesurf[2] = -sigmaint[4]*ap[0]+sigmaint[5]*ap[1]+sigmaint[2]*ap[2];   
+      
+      /*------------------- loop over all degrees of freedom at element */
+      /*
+         ar[i] = det(J) * facr*facs * valueofload
+               jacobian determinant cancels with length of normal vector 
+      */
+      for (i=0; i<3; i++)
+      {
+         ar[i] = wgt * forcesurf[i];
+      }
+      
+      /*-------------- add load vector component to element load vector */
+      for (i=0; i<iel; i++)
+      {
+         for (j=0; j<3; j++)
+         {
+            eload[j][i] += funct[i] * ar[j];
+         }
+      }
+   } /* end of loop over ls */
+} /* end of loop over lr */
+/* the surface load of this element has been done, so swhich the neumann */
+/* condition off */
+ele->g.gsurf->neum=NULL;
+/*----------------------------------------------------------------------*/
+endsurface:
+/*--------------------------------------------- add eload to global vec */
+if (foundsurface != 0)
+for (inode=0; inode<iel; inode++)
+{
+   for (idof=0; idof<NUMDOF_SHELL8; idof++)
+   {
+         loadvec[inode*NUMDOF_SHELL8+idof] += eload[idof][inode];
+   }
+}
+/*----------------------------------------------------------------------*/
+end:
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+#endif
+return; 
+} /* end of s8eleload */
+
 #endif

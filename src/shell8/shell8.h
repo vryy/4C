@@ -163,6 +163,11 @@ void s8loadGP(ELEMENT    *ele,
                 DOUBLE      xi,
                 DOUBLE      yi,
                 DOUBLE      zi);
+void s8fsiload(ELEMENT  *ele,
+               S8_DATA  *data,
+               MATERIAL *mat,
+               DOUBLE	*loadvec,
+               INT	 init);               
 /*----------------------------------------------------------------------*
  |  s8_loccoordnode.c                                    m.gee 11/01    |
  *----------------------------------------------------------------------*/
