@@ -9,6 +9,9 @@
 #ifdef D_WALL1
   #include "../wall1/wall1.h"
 #endif /*D_WALL1*/
+#ifdef D_BRICK1
+  #include "../brick1/brick1.h"
+#endif /*D_BRICK1*/
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | structure of flags to control output                                 |
@@ -638,6 +641,136 @@ for (j=0; j<actfield->dis[0].numele; j++)
        );
        }           
 #endif /*D_WALL1*/   
+   break;
+   case el_brick1:
+#ifdef D_BRICK1
+       ngauss =  actele->e.c1->nGP[0]
+               * actele->e.c1->nGP[1]
+               * actele->e.c1->nGP[2];
+       fprintf(out,"________________________________________________________________________________\n");
+       fprintf(out,"Element glob_Id %d loc_Id %d                BRICK1\n",actele->Id,actele->Id_loc);
+       fprintf(out,"\n");
+       switch(actele->e.c1->stresstyp)
+       {
+       case c1_gpxyz:
+       fprintf(out,"int.point   x-coord.     y-coord.     z-coord.     stress-xx    stress-yy    stress-zz    stress-xy    stress-xz    stress-yz\n");
+       for (i=0; i<ngauss; i++)
+       {
+          fprintf(out,"  %-6d %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E \n",
+          i,
+          actele->e.c1->stress_GP.a.d3[place][24][i],
+          actele->e.c1->stress_GP.a.d3[place][25][i],
+          actele->e.c1->stress_GP.a.d3[place][26][i],
+          actele->e.c1->stress_GP.a.d3[place][ 6][i],
+          actele->e.c1->stress_GP.a.d3[place][ 7][i],
+          actele->e.c1->stress_GP.a.d3[place][ 8][i],
+          actele->e.c1->stress_GP.a.d3[place][ 9][i],
+          actele->e.c1->stress_GP.a.d3[place][10][i],
+          actele->e.c1->stress_GP.a.d3[place][11][i]
+          );
+       }           
+       break;
+       case c1_gprst:
+       fprintf(out,"r,s,t    ---> local system on element level \n");                                                 
+       fprintf(out,"rr,ss,tt ---> normal-stresses               \n");                                                  
+       fprintf(out,"rs,st,tr ---> shear -stresses               \n\n");                                               
+       fprintf(out,"int.point   x-coord.     y-coord.     z-coord.     stress-rr    stress-ss    stress-tt    stress-rs    stress-st    stress-tr\n");
+       for (i=0; i<ngauss; i++)
+       {
+          fprintf(out,"  %-6d %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E \n",
+          i,
+          actele->e.c1->stress_GP.a.d3[place][24][i],
+          actele->e.c1->stress_GP.a.d3[place][25][i],
+          actele->e.c1->stress_GP.a.d3[place][26][i],
+          actele->e.c1->stress_GP.a.d3[place][0][i],
+          actele->e.c1->stress_GP.a.d3[place][1][i],
+          actele->e.c1->stress_GP.a.d3[place][2][i],
+          actele->e.c1->stress_GP.a.d3[place][3][i],
+          actele->e.c1->stress_GP.a.d3[place][4][i],
+          actele->e.c1->stress_GP.a.d3[place][5][i]
+          );
+       }           
+       break;
+       case c1_gp123:
+       fprintf(out,"11,22,33 ---> principal-stresses                       \n");                                                 
+       fprintf(out,"r1,s1,t1 ---> angles to the first  principal direction \n");                                                  
+       fprintf(out,"r2,s2,t2 ---> angles to the second principal direction \n");                                               
+       fprintf(out,"r3,s3,t3 ---> angles to the third  principal direction \n\n"); 
+       fprintf(out,"int.point   stress-11    stress-22    stress-33  ang-r1  ang-s1   ang-t1    ang-r2   ang-s2   ang-t2   ang-r3   ang-s3   ang-t3\n");
+       for (i=0; i<ngauss; i++)
+       {
+          fprintf(out,"  %-6d %12.3E %12.3E %12.3E %5.2f    %5.2f    %5.2f    %5.2f    %5.2f    %5.2f    %5.2f    %5.2f    %5.2f \n",
+          i,
+          actele->e.c1->stress_GP.a.d3[place][12][i],
+          actele->e.c1->stress_GP.a.d3[place][13][i],
+          actele->e.c1->stress_GP.a.d3[place][14][i] ,
+          actele->e.c1->stress_GP.a.d3[place][15][i],
+          actele->e.c1->stress_GP.a.d3[place][16][i],
+          actele->e.c1->stress_GP.a.d3[place][17][i],
+          actele->e.c1->stress_GP.a.d3[place][18][i],
+          actele->e.c1->stress_GP.a.d3[place][19][i],
+          actele->e.c1->stress_GP.a.d3[place][20][i],
+          actele->e.c1->stress_GP.a.d3[place][21][i],
+          actele->e.c1->stress_GP.a.d3[place][22][i],
+          actele->e.c1->stress_GP.a.d3[place][23][i]
+          );
+       }           
+       break;
+       case c1_nprst:
+       fprintf(out,"elenode     stress-rr    stress-ss    stress-tt    stress-rs    stress-st    stress-tr\n");
+       for (i=0; i<actele->numnp; i++)
+       {
+          fprintf(out,"  %-6d %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E \n",
+          i,
+          actele->e.c1->stress_ND.a.d3[place][0][i],
+          actele->e.c1->stress_ND.a.d3[place][1][i],
+          actele->e.c1->stress_ND.a.d3[place][2][i] ,
+          actele->e.c1->stress_ND.a.d3[place][3][i],
+          actele->e.c1->stress_ND.a.d3[place][4][i],
+          actele->e.c1->stress_ND.a.d3[place][5][i]
+          );
+       }           
+       break;
+       case c1_np123:
+       fprintf(out,"elenode     stress-11    stress-22    stress-33  ang-r1  ang-s1   ang-t1    ang-r2   ang-s2   ang-t2   ang-r3   ang-s3   ang-t3\n");
+       for (i=0; i<actele->numnp; i++)
+       {
+          fprintf(out,"  %-6d %12.3E %12.3E %12.3E %5.2f    %5.2f    %5.2f    %5.2f    %5.2f    %5.2f    %5.2f    %5.2f    %5.2f \n",
+          i,
+          actele->e.c1->stress_ND.a.d3[place][12][i],
+          actele->e.c1->stress_ND.a.d3[place][13][i],
+          actele->e.c1->stress_ND.a.d3[place][14][i] ,
+          actele->e.c1->stress_ND.a.d3[place][15][i],
+          actele->e.c1->stress_ND.a.d3[place][16][i],
+          actele->e.c1->stress_ND.a.d3[place][17][i],
+          actele->e.c1->stress_ND.a.d3[place][18][i],
+          actele->e.c1->stress_ND.a.d3[place][19][i],
+          actele->e.c1->stress_ND.a.d3[place][20][i],
+          actele->e.c1->stress_ND.a.d3[place][21][i],
+          actele->e.c1->stress_ND.a.d3[place][22][i],
+          actele->e.c1->stress_ND.a.d3[place][23][i]
+          );
+       }           
+       break;
+       case c1_npxyz:
+       fprintf(out,"elenode     stress-xx    stress-yy    stress-zz    stress-xy    stress-yz    stress-xz\n");
+       for (i=0; i<actele->numnp; i++)
+       {
+          fprintf(out,"  %-6d %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E \n",
+          i,
+          actele->e.c1->stress_ND.a.d3[place][ 6][i],
+          actele->e.c1->stress_ND.a.d3[place][ 7][i],
+          actele->e.c1->stress_ND.a.d3[place][ 8][i] ,
+          actele->e.c1->stress_ND.a.d3[place][ 9][i],
+          actele->e.c1->stress_ND.a.d3[place][10][i],
+          actele->e.c1->stress_ND.a.d3[place][11][i]
+          );
+       }           
+       break;
+       default:
+       fprintf(out,"no stresses available\n");
+       }
+#endif /*D_BRICK1*/   
    break;
    
    default:
