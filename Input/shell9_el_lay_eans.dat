@@ -23,6 +23,7 @@ STRUCT_STRESS_GID  Yes
 FLUID_SOL_FILE     No
 ------------------------------------------------------------STATIC
 LINEAR
+-----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Gen_Alfa
 EIGEN        0

@@ -23,6 +23,7 @@ STRUCT_STRESS_GID  No
 FLUID_SOL_FILE     No
 ------------------------------------------------------------STATIC
 GEOLINEAR
+-----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Centr_Diff
 EIGEN        1

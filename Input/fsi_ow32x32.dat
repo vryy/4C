@@ -27,6 +27,7 @@ ALE_DISP_FILE      No
 ALE_DISP_GID       No
 ------------------------------------------------------------STATIC
 GEOLINEAR
+-----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Gen_Alfa
 EIGEN        0

@@ -31,6 +31,7 @@ TOLDISP      1.0E-07
 STEPSIZE     1.0
 IARC         No
 ARCSCL       1.0
+-----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Nlin_Time_Int
 RESEVRYDISP  10
@@ -2101,13 +2102,13 @@ NODE 31  COORD -2.000000  2.000000  2.000000
 NODE 32  COORD -2.000000  2.000000  0.000000
 ----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
-      1 BRICK1 HEX8       6     12     22     16      4      8     14     13 MAT       1 GP 2 2 2 GP_TET 2 HYB= 0 FORM= 0 
-      2 BRICK1 HEX8       3      9     12      6      1      2      8      4 MAT       1 GP 2 2 2 GP_TET 2 HYB= 0 FORM= 0 
-      3 BRICK1 HEX8      32     30     16     22     31     27     13     14 MAT       1 GP 2 2 2 GP_TET 2 HYB= 0 FORM= 0 
-      4 BRICK1 HEX8      18     20     12      8     26     28     22     14 MAT       1 GP 2 2 2 GP_TET 2 HYB= 0 FORM= 0 
-      5 BRICK1 HEX8      11      7      4      6     21     19     13     16 MAT       1 GP 2 2 2 GP_TET 2 HYB= 0 FORM= 0 
-      6 BRICK1 HEX8       5     10      8      4     15     24     14     13 MAT       1 GP 2 2 2 GP_TET 2 HYB= 0 FORM= 0 
-      7 BRICK1 HEX8      23     17      6     12     29     25     16     22 MAT       1 GP 2 2 2 GP_TET 2 HYB= 0 FORM= 0 
+      1 BRICK1 HEX8       6     12     22     16      4      8     14     13 MAT       1 GP 2 2 2 GP_TET 2 HYB  0 FORM  2 
+      2 BRICK1 HEX8       3      9     12      6      1      2      8      4 MAT       1 GP 2 2 2 GP_TET 2 HYB  0 FORM  2 
+      3 BRICK1 HEX8      32     30     16     22     31     27     13     14 MAT       1 GP 2 2 2 GP_TET 2 HYB  0 FORM  2 
+      4 BRICK1 HEX8      18     20     12      8     26     28     22     14 MAT       1 GP 2 2 2 GP_TET 2 HYB  0 FORM  2 
+      5 BRICK1 HEX8      11      7      4      6     21     19     13     16 MAT       1 GP 2 2 2 GP_TET 2 HYB  0 FORM  2 
+      6 BRICK1 HEX8       5     10      8      4     15     24     14     13 MAT       1 GP 2 2 2 GP_TET 2 HYB  0 FORM  2 
+      7 BRICK1 HEX8      23     17      6     12     29     25     16     22 MAT       1 GP 2 2 2 GP_TET 2 HYB  0 FORM  2 
 ----------------------------------------------------FLUID ELEMENTS
 ------------------------------------------------------ALE ELEMENTS
 ---------------------------------------------------------MATERIALS

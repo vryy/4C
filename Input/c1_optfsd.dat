@@ -17,8 +17,8 @@ TIMETYP      Static
 TRACE        secure
 RESTART      0
 ----------------------------------------------------------------IO
-STRUCT_DISP_FILE   No
-STRUCT_STRESS_FILE No
+STRUCT_DISP_FILE   Yes
+STRUCT_STRESS_FILE Yes
 STRUCT_DISP_GID    No
 STRUCT_STRESS_GID  No
 FLUID_SOL_FILE     Yes
@@ -26,6 +26,7 @@ FLUID_SOL_GID      Yes
 FLUID_VIS_FILE     Yes
 ------------------------------------------------------------STATIC
 GEOLINEAR
+-----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Gen_Alfa
 EIGEN        0
@@ -737,22 +738,22 @@ NODE           49     COORD 1.600000000000000e+01     0.000000000000000e+00     
 NODE           50     COORD 1.600000000000000e+01     1.000000000000000e+00     1.600000000000000e+01   
 ----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
-      1 BRICK1 HEX8       7      8      5      3      4      6      2      1 MAT       1 GP 2 2 2 GP_TET 2 
-      2 BRICK1 HEX8      14     16      8      7     10     12      6      4 MAT       1 GP 2 2 2 GP_TET 2 
-      3 BRICK1 HEX8      24     26     16     14     20     22     12     10 MAT       1 GP 2 2 2 GP_TET 2 
-      4 BRICK1 HEX8      35     37     26     24     32     34     22     20 MAT       1 GP 2 2 2 GP_TET 2 
-      5 BRICK1 HEX8      13     15     11      9      7      8      5      3 MAT       1 GP 2 2 2 GP_TET 2 
-      6 BRICK1 HEX8      17     18     15     13     14     16      8      7 MAT       1 GP 2 2 2 GP_TET 2 
-      7 BRICK1 HEX8      28     30     18     17     24     26     16     14 MAT       1 GP 2 2 2 GP_TET 2 
-      8 BRICK1 HEX8      41     43     30     28     35     37     26     24 MAT       1 GP 2 2 2 GP_TET 2 
-      9 BRICK1 HEX8      23     25     21     19     13     15     11      9 MAT       1 GP 2 2 2 GP_TET 2 
-     10 BRICK1 HEX8      27     29     25     23     17     18     15     13 MAT       1 GP 2 2 2 GP_TET 2 
-     11 BRICK1 HEX8      39     40     29     27     28     30     18     17 MAT       1 GP 2 2 2 GP_TET 2 
-     12 BRICK1 HEX8      45     47     40     39     41     43     30     28 MAT       1 GP 2 2 2 GP_TET 2 
-     13 BRICK1 HEX8      36     38     33     31     23     25     21     19 MAT       1 GP 2 2 2 GP_TET 2 
-     14 BRICK1 HEX8      42     44     38     36     27     29     25     23 MAT       1 GP 2 2 2 GP_TET 2 
-     15 BRICK1 HEX8      46     48     44     42     39     40     29     27 MAT       1 GP 2 2 2 GP_TET 2 
-     16 BRICK1 HEX8      49     50     48     46     45     47     40     39 MAT       1 GP 2 2 2 GP_TET 2 
+      1 BRICK1 HEX8       7      8      5      3      4      6      2      1 MAT       1 GP 2 2 2 GP_TET 2 STRESSES GPRST  
+      2 BRICK1 HEX8      14     16      8      7     10     12      6      4 MAT       1 GP 2 2 2 GP_TET 2 STRESSES GPRST  
+      3 BRICK1 HEX8      24     26     16     14     20     22     12     10 MAT       1 GP 2 2 2 GP_TET 2 STRESSES GPRST  
+      4 BRICK1 HEX8      35     37     26     24     32     34     22     20 MAT       1 GP 2 2 2 GP_TET 2 STRESSES GPRST  
+      5 BRICK1 HEX8      13     15     11      9      7      8      5      3 MAT       1 GP 2 2 2 GP_TET 2 STRESSES GPRST  
+      6 BRICK1 HEX8      17     18     15     13     14     16      8      7 MAT       1 GP 2 2 2 GP_TET 2 STRESSES GPRST  
+      7 BRICK1 HEX8      28     30     18     17     24     26     16     14 MAT       1 GP 2 2 2 GP_TET 2 STRESSES GPRST  
+      8 BRICK1 HEX8      41     43     30     28     35     37     26     24 MAT       1 GP 2 2 2 GP_TET 2 STRESSES GPRST  
+      9 BRICK1 HEX8      23     25     21     19     13     15     11      9 MAT       1 GP 2 2 2 GP_TET 2 STRESSES GPRST  
+     10 BRICK1 HEX8      27     29     25     23     17     18     15     13 MAT       1 GP 2 2 2 GP_TET 2 STRESSES GPRST  
+     11 BRICK1 HEX8      39     40     29     27     28     30     18     17 MAT       1 GP 2 2 2 GP_TET 2 STRESSES GPRST  
+     12 BRICK1 HEX8      45     47     40     39     41     43     30     28 MAT       1 GP 2 2 2 GP_TET 2 STRESSES GPRST  
+     13 BRICK1 HEX8      36     38     33     31     23     25     21     19 MAT       1 GP 2 2 2 GP_TET 2 STRESSES GPRST  
+     14 BRICK1 HEX8      42     44     38     36     27     29     25     23 MAT       1 GP 2 2 2 GP_TET 2 STRESSES GPRST  
+     15 BRICK1 HEX8      46     48     44     42     39     40     29     27 MAT       1 GP 2 2 2 GP_TET 2 STRESSES GPRST  
+     16 BRICK1 HEX8      49     50     48     46     45     47     40     39 MAT       1 GP 2 2 2 GP_TET 2 STRESSES GPRST  
 ----------------------------------------------------FLUID ELEMENTS
 ------------------------------------------------------ALE ELEMENTS
 ---------------------------------------------------------MATERIALS

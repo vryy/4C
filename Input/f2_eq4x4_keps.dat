@@ -33,6 +33,7 @@ ALE_DISP_GID       No
 MONITORING         No
 ------------------------------------------------------------STATIC
 GEOLINEAR
+-----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Nlin_Time_Int
 TIMESTEP     0.05 

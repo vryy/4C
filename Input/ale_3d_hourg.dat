@@ -25,6 +25,7 @@ ALE_DISP_FILE      yes
 ALE_DISP_GID       yes
 ------------------------------------------------------------STATIC
 GEOLINEAR
+-----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Gen_Alfa
 RESEVRYDISP  10

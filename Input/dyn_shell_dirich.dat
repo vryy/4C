@@ -22,6 +22,7 @@ STRUCT_DISP_GID    Yes
 STRUCT_STRESS_GID  Yes
 ------------------------------------------------------------STATIC
 GEOLINEAR
+-----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Nlin_Time_Int
 TIMESTEP     0.0001 

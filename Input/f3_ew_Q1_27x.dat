@@ -25,6 +25,7 @@ FLUID_SOL_GID      Yes
 FLUID_VIS_FILE     Yes
 ------------------------------------------------------------STATIC
 GEOLINEAR
+-----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Nlin_Time_Int
 TIMESTEP     0.05 

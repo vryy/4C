@@ -31,6 +31,7 @@ TOLDISP      1.0E-07
 STEPSIZE     0.05
 IARC         No
 ARCSCL       1.0
+-----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Gen_Alfa
 EIGEN        0

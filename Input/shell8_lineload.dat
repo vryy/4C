@@ -30,6 +30,7 @@ TOLDISP      1.0E-07
 STEPSIZE     0.1
 IARC         No
 ARCSCL       1.0
+-----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Nlin_Time_Int
 TIMESTEP     0.05 
