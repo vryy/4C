@@ -62,6 +62,7 @@ typedef enum _ELEMENT_TYP
                        el_none,        /* unknown type of element */
                        el_shell1,      /* 5 parameter shell element */
                        el_shell8,      /* 7 parameter shell element */
+                       el_shell9,      /* multi layer shell element */
                        el_brick1,      /* structural brick element */
                        el_wall1,       /* 2D plane stress - plane strain element */
                        el_fluid2,      /* 2D fluid element */
@@ -90,7 +91,9 @@ typedef enum _MATERIAL_TYP
                        m_pl_hash,     /* elpl. hashin delamination material */
                        m_el_orth,     /* elastic orthotropic material */
                        m_mfoc,        /* open cell metal foam */
-                       m_mfcc         /* closed cell metal foam */
+                       m_mfcc,        /* closed cell metal foam */
+                       m_multi_layer, /* multilayer material -> shell9*/
+                       m_orthotropic  /* linear elastic orthotropic material*/
 } MATERIAL_TYP;                         
 /*----------------------------------------------------------------------*
  | enum PART_TYP                                          m.gee 7/01    |
@@ -245,5 +248,15 @@ typedef enum _CALSTA_EXEC
                        calsta_solve,        /* solve                */
                        calsta_free          /* free memory          */
 } CALSTA_EXEC;                         
+/*----------------------------------------------------------------------*
+ | enum KINTYP                                              sh 03/03    |
+ | type of kinematic, that is used in nonlinear static analysis         |                                                           |
+ *----------------------------------------------------------------------*/
+typedef enum _KINTYP         /* type of kinematic */
+{
+                       geo_linear,   /* linear kinematic */
+                       upd_lagr,     /* updated lagrange */
+                       tot_lagr      /* total lagrange */
+} KINTYP;                         
 
 
