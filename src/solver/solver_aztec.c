@@ -188,6 +188,9 @@ break;
 /*                                                    calculation phase */
 /*----------------------------------------------------------------------*/
 case 0:
+#ifdef PERF
+  perf_begin(31);
+#endif
 /*--------------------------------------------- check the reuse feature */
 /* NOTE: This is not multifield yet !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
 /* 
@@ -302,6 +305,18 @@ else
 }
 */
 /*--------------------------------------------------------- call solver */
+#ifdef PERF
+  perf_end(31);
+#endif
+#ifdef PERF
+  perf_begin(32);
+#endif
+/* Let's try several times. Normally the first try should succeed. But
+ * there are issues with BiCGSTAB and fluid fields. In case of a
+ * breakdown we simply start again and use the current solution as
+ * initial guess. See the aztec manual.
+ */
+for (i=0; i<10; ++i) {
 AZ_iterate(
            tmpsol,
            tmprhs,
@@ -313,6 +328,21 @@ AZ_iterate(
            NULL,
            NULL
           );
+if ( (DOUBLE)(msr_array->status[AZ_why]) == AZ_breakdown ) {
+  if (actintra->intra_rank==0) {
+    printf("Numerical breakdown occured in solver Aztec -> restart aztec with new initial guess\n");
+  }
+}
+else {
+  break;
+}
+}
+#ifdef PERF
+  perf_end(32);
+#endif
+#ifdef PERF
+  perf_begin(33);
+#endif
 /*------------------------------------------------ delete temporary rhs */          
 amdel(&tmprhs_a);
 /*-------------------------------------------- recover unpermuted bindx */
@@ -324,7 +354,7 @@ AZ_invorder_vec(
                 msr_array->update_index,
                 NULL,
                 sol->vec.a.dv
-               ); 
+               );
 /*------------------------------------ delete temporary solution vector */
 amdel(&tmpsol_a);
 /*---------------------------------------- destroy the Aztec structures */
@@ -379,6 +409,9 @@ if (actintra->intra_rank==0)
 /*----------------------------------------------------------- set flags */
 msr_array->ncall++;
 msr_array->is_factored=1;
+#ifdef PERF
+  perf_end(33);
+#endif
 break;
 /*----------------------------------------------------------------------*/
 /*                                             end of calculation phase */
