@@ -516,5 +516,8 @@ NODE       1 DOF 3
 ------------------------------------------------------------CURVE3
 ------------------------------------------------------------CURVE4
 ------------------------------------------------------------CURVE5
+------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS 1 NODE 12 POSITION sol(1,3) NAME displacement VALUE 0.006214781874804086 TOLERANCE 1e-6
+STRUCTURE DIS 1 ELEMENT 12 POSITION stresses(1,1,2) NAME stresses VALUE 0.3065420533487162 TOLERANCE 1e-6
 ---------------------------------------------------------------END
 // END

@@ -272,6 +272,11 @@ INT               xfem_on_off;    /* flag to switch enriched formulation */
 enum _PROBLEM_TYP probtyp;       /* type of problem, see enum.h */
 enum _TIME_TYP    timetyp;       /* type of time, see enum.h */
 
+#ifdef RESULTTEST
+  INT             numresults;   /* number of known results waiting to
+                                 * be compared to the calculated ones. */
+#endif
+  
 NODE            **nodes;
 INT               ngnode;
 GNODE           **gnodes;
@@ -298,6 +303,35 @@ ARRAY            time;
 } MONITOR;
 
 
+#ifdef RESULTTEST
+
+/*
+ * The results we expect. For testing.
+ * Each record describes one value and where to find it.
+ *
+ * Be careful: Testing is only legal running one processor.
+ */
+typedef struct _RESULTDESCR
+{
+  FIELDTYP field;               /* the field the value steams from */
+  INT dis;                      /* the discretisation */
+  
+  /* You can only have one. Either node or element. The other one must
+   * equal -1. */
+  INT node;                     /* the node the value belongs to */
+  INT element;                  /* or the element */
+  
+  CHAR position[100];           /* The position of the checked value
+                                 * inside its node or
+                                 * element. Normally it looks like
+                                 * "sol(row,col)" but for elements it
+                                 * could be anything. */
+  CHAR name[25];                /* the physical quantity, used for output */
+  DOUBLE value;                 /* the expected value  */
+  DOUBLE tolerance;             /* an exceptable tolerance */
+} RESULTDESCR;
+
+#endif
 
 /*----------------------------------------------------------------------*
  | Prototypes                                            m.gee 06/01    |

@@ -316,5 +316,8 @@ MULTIMAT 1  MAT_Struct_StVenantKirchhoff  YOUNG 15000 NUE 0.2 DENS 0.0
 ------------------------------------------------------------CURVE3
 ------------------------------------------------------------CURVE4
 ------------------------------------------------------------CURVE5
+------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS 1 NODE 7 POSITION sol(1,2) NAME displacement VALUE 0.004085462018049922 TOLERANCE 1e-6
+STRUCTURE DIS 1 ELEMENT 4 POSITION stresses(1,3,1) NAME stresses VALUE 1.323600311248807 TOLERANCE 1e-6
 ---------------------------------------------------------------END
 // END

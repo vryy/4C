@@ -306,6 +306,11 @@ if (genprob.probtyp==prb_structure)
 /*-------------------------------------------- input of monitoring data */
 inp_monitor();
 
+#ifdef RESULTTEST
+/*---------------------------------------- input of result descriptions */
+inp_resultdescr();
+#endif
+
 /*--------------------------------------------- all reading is over here*/
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

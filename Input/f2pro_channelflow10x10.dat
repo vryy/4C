@@ -1382,5 +1382,9 @@ CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 2.5 100.0 FACTOR 1.0 1.0
 ------------------------------------------------------------CURVE3
 ------------------------------------------------------------CURVE4
 ------------------------------------------------------------CURVE5
+------------------------------------------------RESULT DESCRIPTION
+FLUID DIS 1 NODE 380 POSITION sol(1,1) NAME velx VALUE 0.09770648919466481 TOLERANCE 1e-6
+FLUID DIS 1 NODE 380 POSITION sol(1,2) NAME vely VALUE 0.0007473681392594219 TOLERANCE 1e-6
+FLUID DIS 1 NODE 380 POSITION sol(1,3) NAME pressure VALUE 0.02664107119660589 TOLERANCE 1e-6
 ---------------------------------------------------------------END
 // END
