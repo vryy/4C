@@ -33,8 +33,6 @@ Maintainer: Andrea Hund
 void w1_cal_stress(ELEMENT   *ele, 
                    W1_DATA   *data, 
                    MATERIAL  *mat,
-                   ARRAY     *estif_global, 
-                   DOUBLE    *force,  /* global vector for internal forces (initialized!) */
                    INT	      kstep,  /* number of current load step */
 		       INT        init)
 {
@@ -42,7 +40,6 @@ INT                 i,j,k,l;            /* some loopers */
 INT                 nir,nis;          /* num GP in r/s/t direction */
 INT                 lr, ls;           /* loopers over GP */
 INT                 iel;              /* numnp to this element */
-INT                 dof;
 INT                 nd;
 INT                 ip;
 INT                 intc;      /* "integration case" for tri-element */
@@ -55,8 +52,8 @@ const INT           numstr = 4;
 
 DOUBLE              fac;
 DOUBLE              e1,e2;            /*GP-coords*/
-DOUBLE              facr,facs;        /* weights at GP */
-DOUBLE              weight;
+DOUBLE              facr=1.0;        /* weights at GP */
+DOUBLE              facs=1.0;        /* weights at GP */
 DOUBLE              dum;
 DOUBLE deltad[8], help[4];
 DOUBLE knninv[4][4], knc[8][4];
@@ -144,7 +141,7 @@ if(ele->e.w1->modeltype == incomp_mode)
  /*------------------ shape functions and their derivatives at r,s=0 ---*/
  w1_funct_deriv(funct,deriv,0,0,ele->distyp,1);
  /*-------------------------------- compute jacobian matrix at r,s=0 ---*/       
- w1_jaco (funct,deriv,xjm0,&det0,ele,iel);
+ w1_jaco (deriv,xjm0,&det0,ele,iel);
  amzero(&alpha_a); 
  if(mat->mattyp != m_stvenant)
  {
@@ -204,7 +201,7 @@ for (lr=0; lr<nir; lr++)
        /*------------------------- shape functions and their derivatives */
       w1_funct_deriv(funct,deriv,e1,e2,ele->distyp,1);
       /*------------------------------------ compute jacobian matrix ---*/       
-      w1_jaco (funct,deriv,xjm,&det,ele,iel);                         
+      w1_jaco (deriv,xjm,&det,ele,iel);                         
       fac = facr * facs * det; 
       /*--------------------------------------- calculate operator B ---*/
       amzero(&bop_a);
@@ -218,7 +215,7 @@ for (lr=0; lr<nir; lr++)
      /*------------------------------------------ call material law ---*/
 /*-----------------------------------------------------fh 06/02---*/
       newval=1; /* Flag to calculate stresses */
-      w1_call_mat(ele, mat,ele->e.w1->wtype, bop,gop,alpha, xjm, ip, F,D, istore,newval);
+      w1_call_mat(ele, mat,ele->e.w1->wtype, bop,gop,alpha, ip, F,D, istore,newval);
       
       /* transformation of global stresses into local stresses and vice versa */
       
@@ -307,7 +304,6 @@ DOUBLE		W[2];
 INT		lwork=5;
 DOUBLE		work[5];
 INT		info=0;
-DOUBLE		vlength;
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -398,7 +394,7 @@ dstrc_enter("w1rsn");
 #endif
 /*---------------------------------- labels for element nodal points ---*/
     jump = label[iel - 1];
-    switch ((INT)jump) {
+    switch (jump) {
 	case 1:  goto L1;
 	case 2:  goto L2;
 	case 3:  goto L3;

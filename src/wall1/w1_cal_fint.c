@@ -28,20 +28,18 @@ extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  | evaluate internal element forces for large def (total Lagr) ah 06/02  |
  *----------------------------------------------------------------------*/
-void w1_fint(
-	     ELEMENT *ele,        /*active element pointer*/
-	     DOUBLE **stress,     /* 2.PK stresses        */ 
-             DOUBLE  *F,          /* Deformation gradient */ 
+void w1_fint(ELEMENT *ele,        /*active element pointer*/
+             DOUBLE **stress,     /* 2.PK stresses        */ 
              DOUBLE **int_b_bar,      
              DOUBLE  *fint,       /* internal forces      */ 
              DOUBLE   fac,        /* detJ*wr*ws*thickness */ 
              INT      nd,         /* Element-DOF          */	     
-	     INT      ip          /*Integration point     */
-	     )
+             INT      ip          /*Integration point     */
+	       )
 	              
 {
 /*----------------------------------------------------------------------*/
-INT i, j, k;
+INT i, j;
 DOUBLE st[4];
 DOUBLE int_stress[4][4];
 #ifdef GEMM

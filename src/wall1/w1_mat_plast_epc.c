@@ -25,49 +25,37 @@ Maintainer: Andrea Hund
  | const. matrix - forces - elastoplastic concrete - 2D     al  9/01    |
  | plane stress, plane strain                                           |
  *----------------------------------------------------------------------*/
-void w1_mat_plast_epc(  DOUBLE dens      ,
-                        DOUBLE emod      ,
-                        DOUBLE vnu       ,
-                        DOUBLE alfat     ,
-                        DOUBLE xsi       ,
-                        DOUBLE sigyc     ,
-                        DOUBLE ftm       ,
-                        DOUBLE fcm       ,
-                        DOUBLE gt        ,
-                        DOUBLE gc        ,
-                        DOUBLE gamma1    ,
-                        DOUBLE gamma2    ,
-                        INT    nstiff    ,
-                        INT    maxreb    ,
-                        INT    *rebar     ,
-                        DOUBLE *reb_area  ,
-                        DOUBLE *reb_ang   ,
-                        DOUBLE *reb_so    ,
-                        DOUBLE *reb_ds    ,
-                        DOUBLE *reb_rgamma,
-                        DOUBLE *reb_dens  ,
-                        DOUBLE *reb_alfat ,
-                        DOUBLE *reb_emod  ,
-                        DOUBLE *reb_rebnue,
-                        DOUBLE *reb_sigy  ,
-                        DOUBLE *reb_hard  , 
-                        ELEMENT   *ele,
-                        WALL_TYPE wtype,
-                        DOUBLE **bop,
-                        DOUBLE  *gop,
-                        DOUBLE  *alph,
-                        DOUBLE **xjm,
-                        INT ip,
-                        DOUBLE *stressc,       
-                        DOUBLE **d,
-                        INT istore,/* controls storing of new stresses to wa */
-                        INT newval)/* controls evaluation of new stresses    */
+void w1_mat_plast_epc(DOUBLE emod      ,
+                      DOUBLE vnu       ,
+                      DOUBLE ftm       ,
+                      DOUBLE fcm       ,
+                      DOUBLE gt        ,
+                      DOUBLE gc        ,
+                      DOUBLE gamma1    ,
+                      DOUBLE gamma2    ,
+                      INT    nstiff    ,
+                      INT    maxreb    ,
+                      DOUBLE *reb_area  ,
+                      DOUBLE *reb_ang   ,
+                      DOUBLE *reb_so    ,
+                      DOUBLE *reb_ds    ,
+                      DOUBLE *reb_rgamma,
+                      ELEMENT   *ele,
+                      WALL_TYPE wtype,
+                      DOUBLE **bop,
+                      DOUBLE  *gop,
+                      DOUBLE  *alph,
+                      INT ip,
+                      DOUBLE *stressc,       
+                      DOUBLE **d,
+                      INT istore,/* controls storing of new stresses to wa */
+                      INT newval)/* controls evaluation of new stresses    */
 {
 /*----------------------------------------------------------------------*/
-INT i,j,k;
+INT i,j;
 INT iupd, yipold, yip, yip2;
 DOUBLE q23, betah; 
-DOUBLE e1, e2, e3, a1, b1, c1, sum, epstn, acrs;
+DOUBLE sum, acrs;
 DOUBLE alpha[4];
 DOUBLE hards[4];
 DOUBLE alphac[2];
@@ -196,7 +184,7 @@ dstrc_enter("w1_mat_plast_epc");
       {
         w1acrs (ele->e.w1->thick,maxreb,sig,&angle,
                 reb_area, reb_ang, reb_so, reb_ds, reb_rgamma,
-                &thick, ele->e.w1->elewa[0].dia,xjm,&acrs);
+                &thick, ele->e.w1->elewa[0].dia,&acrs);
       }
       else
       {
@@ -271,8 +259,8 @@ dstrc_enter("w1_mat_plast_epc");
           dn[0][i]   = gradi[i]-dcom[0][i];
           grad[0][i] = gradi[i]; 
         }
-	w1mapl2 (tau,d,&dlam[0],wtype,&alpha[0],&emod,&gmod,
-                 &com,&betah,&hards[0],dn[0],grad[0],&dev);
+	w1mapl2 (tau,d,&dlam[0],wtype,&alpha[0],&gmod,
+                 &com,&hards[0],dn[0],grad[0]);
       }
       else if (yip == 4) 
       {
@@ -285,8 +273,8 @@ dstrc_enter("w1_mat_plast_epc");
           dn[2][i]   = gradi[i]-dcom[2][i];
           grad[2][i] = gradi[i]; 
         }
-	w1mapl2 (tau,d,&dlam[1],wtype,&alpha[2],&emod,&gmod,
-                 &com,&betah,&hards[2],dn[2],grad[2],&dev);
+	w1mapl2 (tau,d,&dlam[1],wtype,&alpha[2],&gmod,
+                 &com,&hards[2],dn[2],grad[2]);
       }
       else if (yip == 5) 
       {
@@ -453,12 +441,12 @@ dstrc_enter("w1_mat_plast_epc");
 
         w1cradi (tau,&epst[0],&dlam[0],wtype,yip,
                      &alpha[0],&ft[0],&emod,&gmod,&com,&sigym[0],&hards[0],
-                     &sigy[0],dn[0],dcom[0],grad[0],devsig,sm,
+                     &sigy[0],dn[0],dcom[0],devsig,sm,
                      &fcm,&gc,&ftm,&gt,&gamma1,&gamma2,
                      &ele->e.w1->elewa[0].dia,&acrs); 
 
-	w1mapl2 (tauc,d,&dlam[0],wtype,&alpha[0],&emod,&gmod,
-                 &com,&betah,&hards[0],dn[0],grad[0],&dev);
+	w1mapl2 (tauc,d,&dlam[0],wtype,&alpha[0],&gmod,
+               &com,&hards[0],dn[0],grad[0]);
       } 
       else
       {
@@ -470,8 +458,8 @@ dstrc_enter("w1_mat_plast_epc");
                       ele->e.w1->elewa[0].dia,acrs); 
         if (dlam[0]>=0.) 
         {
-	  w1mapl2 (tauc,d,&dlam[0],wtype,&alpha[0],&emod,&gmod,
-                   &com,&betah,&hards[0],dn[0],grad[0],&dev);
+	  w1mapl2 (tauc,d,&dlam[0],wtype,&alpha[0],&gmod,
+                   &com,&hards[0],dn[0],grad[0]);
         }
         else
         {
@@ -506,14 +494,14 @@ dstrc_enter("w1_mat_plast_epc");
         if (dlam[0] == 0.) yip=4;
         if (dlam[1] == 0.) yip=2;
 
-	if (yip==2) w1mapl2 (tauc,d,&dlam[0],wtype,&alpha[0],&emod,&gmod,
-                             &com,&betah,&hards[0],dn[2],grad[0],&dev);
+	if (yip==2) w1mapl2 (tauc,d,&dlam[0],wtype,&alpha[0],&gmod,
+                             &com,&hards[0],dn[2],grad[0]);
                    
         else if (yip==3) w1maplg (tauc,d,dlamc,wtype,yip,
                          emod,gmod,com,hardsc,dnc,gradc);
         
-        else if (yip==4) w1mapl2 (tauc,d,&dlam[1],wtype,&alpha[2],&emod,&gmod,
-                                  &com,&betah,&hards[2],dn[2],grad[2],&dev);
+        else if (yip==4) w1mapl2 (tauc,d,&dlam[1],wtype,&alpha[2],&gmod,
+                                  &com,&hards[2],dn[2],grad[2]);
         
         for (i=0; i<4; i++) tau[i] = tau3[i];   
       }
@@ -524,8 +512,8 @@ dstrc_enter("w1_mat_plast_epc");
       
       w1radcap (tau ,&epst[1],&dlam[1],wtype,
                     alpha,&emod,&gmod,&com,sigym,hards,
-                    grad[2],devsig,sm,&dev,&hyd,&hyd3,
-                    &fcm,&gc,&ftm,&gt,&gamma2,&ele->e.w1->elewa[0].dia);
+                    grad[2],devsig,&dev,&hyd,&hyd3,
+                    &fcm,&gc,&gamma2,&ele->e.w1->elewa[0].dia);
 
           w1mplcap(tau,d,&dlam[1],wtype,alpha,&emod,&vnu,hards,sigym,
                    grad[2],&cappae,&cappauc,&epst[1],&sig3);
@@ -541,7 +529,7 @@ dstrc_enter("w1_mat_plast_epc");
       epst2 = epst[1];
       w1cradi (tau3,&epst2,&dlam[1],wtype,yip2,
                     &alpha[2],&ft[2],&emod,&gmod,&com,&sigym[2],&hards[2],
-                    &sigy[2],dn[2],dcom[2],grad[2],devsig,sm,
+                    &sigy[2],dn[2],dcom[2],devsig,sm,
                     &fcm,&gc,&ftm,&gt,&gamma1,&gamma2,
                     &ele->e.w1->elewa[0].dia,&acrs); 
       w1pres(tau3,devsigt,smt,&dev3,&hyd3);
@@ -551,8 +539,8 @@ dstrc_enter("w1_mat_plast_epc");
       if (hyd3>=hydv || (yip!=5&&yip!=-5)) 
       {
         yip=4;
-        w1mapl2 (tauc,d,&dlam[1],wtype,&alpha[2],&emod,&gmod,
-                 &com,&betah,&hards[2],dn[2],grad[2],&dev);
+        w1mapl2 (tauc,d,&dlam[1],wtype,&alpha[2],&gmod,
+                 &com,&hards[2],dn[2],grad[2]);
         epst[1] = epst2;
         for (i = 0; i < 4; i++) tau[i]  = tau3[i]; 
       }
@@ -561,8 +549,8 @@ dstrc_enter("w1_mat_plast_epc");
         yip=5;
           w1radcap (tau ,&epst[1],&dlam[1],wtype,
                     alpha,&emod,&gmod,&com,sigym,hards,
-                    grad[2],devsig,sm,&dev,&hyd,&hyd3,
-                    &fcm,&gc,&ftm,&gt,&gamma2,&ele->e.w1->elewa[0].dia);
+                    grad[2],devsig,&dev,&hyd,&hyd3,
+                    &fcm,&gc,&gamma2,&ele->e.w1->elewa[0].dia);
           w1mplcap(tau,d,&dlam[1],wtype,alpha,&emod,&vnu,hards,sigym,
                    grad[2],&cappae,&cappauc,&epst[1],&sig3);
       } 
@@ -585,8 +573,8 @@ dstrc_enter("w1_mat_plast_epc");
           yip=5;
           w1radcap (tau3 ,&epst[1],&dlam[1],wtype,
                     alpha,&emod,&gmod,&com,sigym,hards,
-                    grad[2],devsig,sm,&dev,&hyd,&hyd3,
-                    &fcm,&gc,&ftm,&gt,&gamma2,&ele->e.w1->elewa[0].dia);
+                    grad[2],devsig,&dev,&hyd,&hyd3,
+                    &fcm,&gc,&gamma2,&ele->e.w1->elewa[0].dia);
           w1mplcap(tau3,d,&dlam[1],wtype,alpha,&emod,&vnu,hards,sigym,
                    grad[2],&cappae,&cappauc,&epst[1],&sig3);
           for (i=0;i<4;i++) tau[i] = tau3[i];	

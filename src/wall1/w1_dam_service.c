@@ -76,7 +76,7 @@ void w1_mat_ela(DOUBLE   ym,
                 )
 {
 INT    i,j,k,l;
-DOUBLE mu,lam,trace;
+DOUBLE mu,lam;
 #ifdef DEBUG 
 dstrc_enter("w1_mat_ela");
 #endif
@@ -106,7 +106,6 @@ dstrc_exit();
 return;
 } /* end of w1_mat_ela */
 
-
 /*----------------------------------------------------------------------*
  | compute actuel equivalent strains and                  he    04/03   |
  | their global derivatives of epsilon                                  |
@@ -121,7 +120,6 @@ void w1_equi_eps(DOUBLE   epsilon[3][3],
                  INT      Equival,
                  DOUBLE   *eta, 
                  DOUBLE   eta_der[3][3],
-                 DOUBLE   ym,
                  DOUBLE   pv,
                  DOUBLE   k
                  )
@@ -260,7 +258,6 @@ void w1_4to9(DOUBLE  *vector,
              DOUBLE   tensor[3][3]       
              )
 {
-INT    i,j;
 #ifdef DEBUG 
 dstrc_enter("w1_4to9");
 #endif
@@ -290,7 +287,6 @@ void w1_9to4(DOUBLE   tensor[3][3],
              DOUBLE  *vector       
              )
 {
-INT    i,j;
 #ifdef DEBUG 
 dstrc_enter("w1_9to4");
 #endif
@@ -401,7 +397,6 @@ void w1_dam_typ(DOUBLE *damage,
                 INT    Damtyp
                 )
 {
-INT    i,j;
 #ifdef DEBUG 
 dstrc_enter("w1_dam_typ");
 #endif
@@ -514,7 +509,7 @@ void w1_cond(DOUBLE sig[4],
              DOUBLE **d
               )
 {
-INT    i,j,k,l;
+INT    i,j;
 DOUBLE sig_con[4];
 DOUBLE d_con[4][4];
 #ifdef DEBUG 

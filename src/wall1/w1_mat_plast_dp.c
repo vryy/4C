@@ -25,28 +25,27 @@ Maintainer: Andrea Hund
  | constitutive matrix - forces - Drucker Prager - 2D     al    9/01    |
  | plane stress, plane strain, rotational symmetry                      |
  *----------------------------------------------------------------------*/
-void w1_mat_plast_dp(   DOUBLE ym,
-                        DOUBLE pv,
-                        DOUBLE ALFAT,
-                        DOUBLE sigy,
-                        DOUBLE hard,
-                        DOUBLE phi,
-                        ELEMENT   *ele,
-                        WALL_TYPE wtype,
-                        DOUBLE **bop,
-                        DOUBLE  *gop,
-                        DOUBLE  *alpha,
-                        INT ip,
-                        DOUBLE *stress,       
-                        DOUBLE **d,
-                        INT istore,/* controls storing of new stresses to wa */
-                        INT newval)/* controls evaluation of new stresses    */
+void w1_mat_plast_dp(DOUBLE     ym,
+                     DOUBLE     pv,
+                     DOUBLE     sigy,
+                     DOUBLE     hard,
+                     DOUBLE     phi,
+                     ELEMENT   *ele,
+                     WALL_TYPE  wtype,
+                     DOUBLE   **bop,
+                     DOUBLE    *gop,
+                     DOUBLE    *alpha,
+                     INT        ip,
+                     DOUBLE    *stress,       
+                     DOUBLE   **d,
+                     INT        istore,/* controls storing of new stresses to wa */
+                     INT        newval)/* controls evaluation of new stresses    */
 {
 /*----------------------------------------------------------------------*/
-INT i,j,k;
+INT i,j;
 INT yip;
 INT iupd;
-DOUBLE e1, e2, e3, a1, b1, c1, sum, epstn, ft;
+DOUBLE sum, epstn, ft;
 DOUBLE disd[5];
 DOUBLE sig[4];
 DOUBLE eps[4];

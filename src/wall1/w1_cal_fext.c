@@ -93,7 +93,7 @@ void w1_eleload(ELEMENT  *ele,     /* actual element                  */
                 INT       imyrank) 
 {
 INT          lr,ls;              /* integration directions          */
-INT          i,j,k;              /* some loopers                    */
+INT          i,j;                /* some loopers                    */
 INT          inode,idof;         /* some loopers                    */
 INT          nir,nis;            /* number of GP's in r-s direction */
 INT          nil;                /* number of GP's in for triangle  */
@@ -103,12 +103,11 @@ INT          intc;               /* "integration case" for tri-element */
 const INT    numdf  = 2;         /* dof per node                    */
 INT          foundsurface;       /* flag for surfaceload present    */
 INT          iedgnod[3];
-INT          node;
 INT          irow;
 
 /* DOUBLE       thickness;            */
 DOUBLE       e1,e2;              /* GP-koordinates in r-s-system   */
-DOUBLE       fac,facr,facs,wgt;  /* integration factor  GP-info    */
+DOUBLE       fac,facr,facs;      /* integration factor  GP-info    */
 DOUBLE       det;                /* det of jacobian matrix         */
 
 /*--------------------- variables needed for integration of line loads */
@@ -222,7 +221,7 @@ if (imyrank==ele->proc)
       /*-------- shape functions (and (not needed)their derivatives) */
       w1_funct_deriv(funct,deriv,e1,e2,ele->distyp,1);
       /*-------------------------------------------- jacobian matrix */       
-      w1_jaco (funct,deriv,xjm,&det,ele,iel); 
+      w1_jaco (deriv,xjm,&det,ele,iel); 
       /*---------------------------------------- integration factor  */ 
       fac = facr * facs * det; 
       /*---------------------------------------------- surface-load  */
@@ -326,7 +325,7 @@ for (line=0; line<ngline; line++)
           /*----------------------- shape functions and their derivatives */
           w1_funct_deriv(funct,deriv,e1,e2,ele->distyp,1);
           /*--------------------------------------------- jacobian matrix */       
-          w1_jaco (funct,deriv,xjm,&det,ele,iel); 
+          w1_jaco (deriv,xjm,&det,ele,iel); 
           /*---------------------------------------------- line increment */
           ds = 0.0;
           switch (rsgeo)
@@ -480,7 +479,6 @@ break;
 /*----------------------------------------------------------------------*/
 }/* end of switch(ele->g.gsurf->neum->neum_type)*/
 /*----------------------------------------------------------------------*/
-end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -510,6 +508,9 @@ void w1_fsiload(ELEMENT  *ele,
                 INT	  init,    
                 INT       imyrank)
 {
+
+#ifdef D_FSI
+
 INT          lr,ls;              /* integration directions          */
 INT          i,j,jj,k;           /* some loopers                    */
 INT          inode,idof;         /* some loopers                    */
@@ -546,6 +547,8 @@ DOUBLE          sigmaint[3]; /* fluid stresses at integration point    */
 DOUBLE          nsigma[3][MAXNOD_WALL1]; /* nodal fluid stresses       */
 DOUBLE          xyzl[2][MAXNOD_WALL1]; /* nodal coordinates            */
 RSF rsgeo;                   /* integration direction on line          */
+
+#endif /* D_FSI */
 
 #ifdef DEBUG 
 dstrc_enter("w1_fsiload");
@@ -669,12 +672,12 @@ for (inode=0; inode<iel; inode++)
 #else
 dserror("FSI-functions not compiled in\n");
 #endif
-end:
+
 #ifdef DEBUG 
 dstrc_exit();
 #endif
 return; 
-} /* end of w1_eleload */
+} /* end of w1_fsiload */
 
 /*======================================================================*/
 void w1_iedg(INT *iegnod, ELEMENT *ele, INT line, INT init)

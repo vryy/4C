@@ -23,16 +23,11 @@ Maintainer: Andrea Hund
 /*----------------------------------------------------------------------*
  | select proper material law                               ah 06/02    |
  *----------------------------------------------------------------------*/
-void w1_call_matgeononl(ELEMENT   *ele,
-                        MATERIAL  *mat, 
+void w1_call_matgeononl(MATERIAL  *mat, 
                         WALL_TYPE  wtype,
-                        DOUBLE   **boplin,
-                        DOUBLE   **xjm,
-                        INT        ip,       
                         DOUBLE    *strain,
                         DOUBLE   **stress,
                         DOUBLE   **d,
-                        INT        istore,
                         INT        numeps)
 {
 /*----------------------------------------------------------------------*/

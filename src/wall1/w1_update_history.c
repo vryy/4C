@@ -160,8 +160,7 @@ for (lr=0; lr<nir; lr++)
       /*------------------------------------------- call material law ---*/
       amzero(&stress_a);
       amzero(&D_a);
-      w1_call_matgeononl(ele,mat,ele->e.w1->wtype,boplin,xjm,
-                          ip,strain,stress,D,istore,numeps);
+      w1_call_matgeononl(mat,ele->e.w1->wtype,strain,stress,D,numeps);
       
       /*----------------------------------- update b_bar and 2PK stresses*/
 #ifdef GEMM

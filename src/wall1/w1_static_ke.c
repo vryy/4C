@@ -32,11 +32,10 @@ void w1static_ke(ELEMENT   *ele,
                  DOUBLE    *force,  /* global vector for internal forces (initialized!) */
                  INT        init)
 {
-INT                 i,j,k,a,b;        /* some loopers */
+INT                 i,a,b;            /* some loopers */
 INT                 nir,nis;          /* num GP in r/s direction */
 INT                 lr, ls;           /* loopers over GP */
 INT                 iel;              /* numnp to this element */
-INT                 dof;
 INT                 nd;
 INT                 ip;
 INT                 intc;      /* "integration case" for tri-element     */
@@ -50,7 +49,6 @@ DOUBLE              fac,facm;         /* integration factors            */
 DOUBLE              stifac;           /* thickness                      */
 DOUBLE              e1,e2;            /* GP-coords                      */
 DOUBLE              facr,facs;        /* weights at GP                  */
-DOUBLE              weight;
 DOUBLE              density;          /* for calculation of mass matrix */       
 INT                 imass;            /* flag for calc of mass matrix   */
 
@@ -87,7 +85,6 @@ static DOUBLE **estif;       /* element stiffness matrix ke */
 static DOUBLE **emass;       /* mass matrix */
 
 DOUBLE F[4];                 /* stress */
-DOUBLE fie[18];              /* internal force */
 
 DOUBLE det,det0;             /* Jacobi-det, Jacobi-det at r=s=0 */
 
@@ -163,7 +160,6 @@ else
 /*-------------- some of the fields have to be reinitialized to zero ---*/
 amzero(estif_global);
 estif     = estif_global->a.da;
-for (i=0; i<18; i++) fie[i] = 0.0;
 /*------------------------------------------- integration parameters ---*/
 iel     = ele->numnp;
 nd      = numdf * iel;
@@ -183,7 +179,7 @@ if(ele->e.w1->modeltype == incomp_mode)
  /*------------------ shape functions and their derivatives at r,s=0 ---*/
  w1_funct_deriv(funct,deriv,0,0,ele->distyp,1);
  /*-------------------------------- compute jacobian matrix at r,s=0 ---*/       
- w1_jaco (funct,deriv,xjm0,&det0,ele,iel);                         
+ w1_jaco (deriv,xjm0,&det0,ele,iel);                         
  /*---------------------------------------------------------------------*/
  amzero(&alpha_a);
  if(mat->mattyp != m_stvenant)
@@ -247,7 +243,7 @@ for (lr=0; lr<nir; lr++)
       /*------------------------- shape functions and their derivatives */
       w1_funct_deriv(funct,deriv,e1,e2,ele->distyp,1);
       /*------------------------------------ compute jacobian matrix ---*/       
-      w1_jaco (funct,deriv,xjm,&det,ele,iel);                         
+      w1_jaco (deriv,xjm,&det,ele,iel);                         
       /*--------------------------- thickness rebar  (input rebar %) ---*/       
       if(lanz>0)
       {
@@ -280,7 +276,7 @@ for (lr=0; lr<nir; lr++)
       /*------------------------------------------ call material law ---*/
       if(lanz==0)
       {
-        w1_call_mat(ele,mat,ele->e.w1->wtype,bop,gop,alpha,xjm,ip, F, D,istore,newval);
+        w1_call_mat(ele,mat,ele->e.w1->wtype,bop,gop,alpha,ip, F, D,istore,newval);
       }
       else
       {
@@ -342,7 +338,7 @@ void w1fi( DOUBLE  *F,
 {
 /*----------------------------------------------------------------------*/
 INT i,j;
-DOUBLE tau11, tau12, tau21, tau22, tau33;
+DOUBLE tau11, tau12, tau22, tau33;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1fi");

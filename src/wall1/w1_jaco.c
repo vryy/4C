@@ -23,8 +23,7 @@ Maintainer: Andrea Hund
 /*----------------------------------------------------------------------*
  | calculate operator matrix at point r,s                    al 9/01    |
  *----------------------------------------------------------------------*/
-void w1_jaco(DOUBLE     *funct,
-             DOUBLE    **deriv,
+void w1_jaco(DOUBLE    **deriv,
              DOUBLE    **xjm,
              DOUBLE     *det,
              ELEMENT    *ele,

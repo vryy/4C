@@ -28,7 +28,7 @@ void w1_funct_deriv(DOUBLE     *funct,
                     DOUBLE    **deriv, 
                     DOUBLE      r, 
                     DOUBLE      s,
-                    DIS_TYP   typ,
+                    DIS_TYP     typ,
                     INT         option)
 {
 INT            i, ii;
@@ -193,12 +193,10 @@ void w1_degfuncderiv(DOUBLE     *funct,
                       DIS_TYP     typ,
                       INT         option)
 {
-INT            i, ii;
 const DOUBLE   q12 = ONE/TWO;
 const DOUBLE   q14 = ONE/FOUR;
 const DOUBLE   q16 = ONE/SIX;
-DOUBLE         rr,ss,rp,rm,sp,sm,r2,s2;
-DOUBLE         rh,sh,rs,rhp,rhm,shp,shm;
+DOUBLE         rr,rp,rm,r2;
 #ifdef DEBUG 
 dstrc_enter("w1_edgefuncderiv");
 #endif

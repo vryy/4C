@@ -26,15 +26,14 @@ edges.
 /*----------------------------------------------------------------------*
  | BESTIMMUNG DER Formfunktionen f. Linienintegr. der Trian. he 04/03   |
  *----------------------------------------------------------------------*/
-void w1_degrectri(
-                    double     *funct, 
-                    double    **deriv, 
-                    double      r, 
-                    DIS_TYP     typ,
-                    int         option
-		 )
+void w1_degrectri(DOUBLE     *funct, 
+                  DOUBLE    **deriv, 
+                  DOUBLE      r, 
+                  DIS_TYP     typ,
+                  INT         option
+		      )
 {
-double         rr,rp,rm,r2;
+DOUBLE         rr,rp,rm,r2;
 const double   q12 = ONE/TWO;
 
 #ifdef DEBUG 
@@ -97,17 +96,17 @@ In this routine the jacobian matrix and its determinant is calculated
  *----------------------------------------------------------------------*/
 void w1_edgejaco(
                  ELEMENT    *ele, 
-                 double     *funct,    
-                 double    **deriv,   
-                 double    **xjm,     
-                 double     *det,          
-                 int         iel,
-                 int        *iedgnod
+                 DOUBLE     *funct,    
+                 DOUBLE    **deriv,   
+                 DOUBLE    **xjm,     
+                 DOUBLE     *det,          
+                 INT         iel,
+                 INT        *iedgnod
 	        )
 
 {
-int k;
-int node;
+INT k;
+INT node;
 
 #ifdef DEBUG 
 dstrc_enter("w1_edgejaco");

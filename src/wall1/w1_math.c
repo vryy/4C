@@ -150,7 +150,7 @@ void w1_ludcmp(DOUBLE **a, /* I: Original Matrix (will be rearanged)     */
               for (i=j+1;i<=n;i++) a[i][j] *= dum;
         }
   }
-  w1_free_vector(vv,1,n);
+  w1_free_vector(vv,1);
   /*------------------------------------------------------------------*/
   #ifdef DEBUG 
   dstrc_exit();
@@ -207,7 +207,7 @@ DOUBLE *w1_vector(INT nl, INT nh)
 	return v-nl+NR_END;
 }/* end of w1_vector */
 
-void w1_free_vector(DOUBLE *v, INT nl, INT nh)
+void w1_free_vector(DOUBLE *v, INT nl)
 /* free a DOUBLE vector allocated with vector() */
 {
 	free((FREE_ARG) (v+nl-NR_END));

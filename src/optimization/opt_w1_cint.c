@@ -158,7 +158,7 @@ for (lr=0; lr<nir; lr++)
       /*------------------------- shape functions and their derivatives */
       w1_funct_deriv(funct,deriv,e1,e2,ele->distyp,1);
       /*------------------------------------ compute jacobian matrix ---*/       
-      w1_jaco (funct,deriv,xjm,&det,ele,iel);                      
+      w1_jaco (deriv,xjm,&det,ele,iel);                      
       /*------------------------------------ integration factor  -------*/ 
       fac = facr * facs * det * stifac;
       /*------------------------------------------- calculate volume ---*/
@@ -175,7 +175,7 @@ for (lr=0; lr<nir; lr++)
       /*------------------------------- get actual strains -> strain ---*/
       w1_eps (disd,ele->e.w1->wtype,strain);
       /*------------------------------------------ call material law ---*/
-      w1_call_mat(ele,mat,ele->e.w1->wtype,bop,NULL,NULL,xjm,ip, F, D,istore,newval);
+      w1_call_mat(ele,mat,ele->e.w1->wtype,bop,NULL,NULL,ip, F, D,istore,newval);
       /*------------------------------------ calculate strain energy ---*/
       if (init==2)
       {

@@ -46,7 +46,6 @@ DOUBLE sigma[3][3];
 DOUBLE epsilon[3][3];
 DOUBLE sigma_el[3][3];
 DOUBLE eta_der[3][3];
-DOUBLE c_tan[3][3][3][3];
 DOUBLE c_sec[3][3][3][3];
 DOUBLE c_el[3][3][3][3];
 DOUBLE delta_c[3][3][3][3];
@@ -133,7 +132,7 @@ ym = ym*0.95;
 /*------------------------- get elast. stresses ------------------------*/
   w1_stress_ela(ym,pv,epsilon,sigma_el,delta);
 /*----------------- get actual equival. strains an derivatives-> eta ---*/
-  w1_equi_eps(epsilon,sigma_el,delta,Equival,&eta,eta_der,ym,pv,k_fac);
+  w1_equi_eps(epsilon,sigma_el,delta,Equival,&eta,eta_der,pv,k_fac);
 /*----------------- get history-parameter kappa ------------------------*/
   kappa  = ele->e.w1->elewa[0].ipwa[ip].kap;
 /*----------------------------------------------------------------------*/

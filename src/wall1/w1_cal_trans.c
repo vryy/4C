@@ -56,13 +56,12 @@ return;
 void w1_lss(DOUBLE    *a,
             DOUBLE    **G,
             DOUBLE    **GI,
-	    INT         it)
+	      INT         it)
 {
 /*----------------------------------------------------------------------*/
 INT numeps=4;
 INT i;
 DOUBLE ga[4];
-DOUBLE dum;
 #ifdef DEBUG 
 dstrc_enter("w1_lss");
 #endif
@@ -75,7 +74,7 @@ dstrc_enter("w1_lss");
  |  it	=	2	Eps(global)  --->  Eps(local)       (i)    |
  |  it	=	3	Eps(local)   --->  Eps(global)      (i)    |
  |----------------------------------------------------------------*/
-switch ((INT)it) {
+switch (it) {
 	case 0: goto L1;
 	case 1: goto L2;
 	case 2: goto L3;
@@ -143,7 +142,6 @@ DOUBLE a11,a12,a21,a22;
 DOUBLE zero=0.;
 DOUBLE one=1.;
 INT i,j;
-DOUBLE dum;
 #ifdef DEBUG 
 dstrc_enter("w1_sett");
 #endif

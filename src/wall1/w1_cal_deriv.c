@@ -32,8 +32,6 @@ void w1_disd(ELEMENT   *ele,
 {
 /*----------------------------------------------------------------------*/
 INT i,inode, node_start;
-DOUBLE dum;
-DOUBLE xji[2][2];
 #ifdef DEBUG 
 dstrc_enter("w1_disd");
 #endif

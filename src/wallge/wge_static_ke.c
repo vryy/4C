@@ -202,8 +202,8 @@ for (lr=0; lr<nir; lr++)
       w1_funct_deriv(functd,derivd,e1,e2,ele->distyp,1);
       w1_funct_deriv(functe,derive,e1,e2,quad4,1);
       /*------------------------------------ compute jacobian matrix ---*/       
-      w1_jaco(NULL,derivd,xjmd,&detd,ele,ield);                         
-      w1_jaco(NULL,derive,xjme,&dete,ele,iele);                         
+      w1_jaco(derivd,xjmd,&detd,ele,ield);                         
+      w1_jaco(derive,xjme,&dete,ele,iele);                         
       /*------------------------------------ integration factor  -------*/ 
       facd = facr * facs * detd * thick;
       face = facr * facs * dete * thick;

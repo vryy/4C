@@ -143,7 +143,7 @@ for (lr=0; lr<nir; lr++)/*------------------------- loop r-direction */
      /*----------------------------------------- shape functions ---*/
      w1_funct_deriv(functd,derivd,e1,e2,ele->distyp,1);
      /*------------------------------------------ jacobian matrix ---*/       
-     w1_jaco(functd,derivd,xjm,&det,ele,ield); 
+     w1_jaco(derivd,xjm,&det,ele,ield); 
      /*--------------------------------------- integration factor ---*/ 
      fac = facr * facs * det; 
      /*--------------------------------------------------------------*/ 
@@ -229,7 +229,7 @@ for (line=0; line<ngline; line++)
          /*------------------------------------------- shape functions ---*/
           w1_funct_deriv(functd,derivd,e1,e2,ele->distyp,1);
           /*--------------------------------------------- jacobian matrix */       
-          w1_jaco(functd,derivd,xjm,&det,ele,ield); 
+          w1_jaco(derivd,xjm,&det,ele,ield); 
           /*---------------------------------------------- line increment */
           ds = 0.0;
           switch (rsgeo)

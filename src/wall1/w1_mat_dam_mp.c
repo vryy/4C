@@ -40,8 +40,8 @@ void w1_mat_dam_mp(DOUBLE     youngs,
                    INT        ip,
                    DOUBLE    *stress,
                    DOUBLE   **D,
-                   DOUBLE     istore,
-                   DOUBLE     newval) 
+                   INT        istore,
+                   INT        newval) 
 {
 INT i,j,k;
 INT yip;

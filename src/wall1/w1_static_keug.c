@@ -31,7 +31,7 @@ void w1static_keug(ELEMENT   *ele,
                    DOUBLE    *force,        /* global vector for internal forces (initialized!)*/
                    INT        init)
 {
-INT                 i,j,k,a,b;        /* some loopers              */
+INT                 i,k,a,b;          /* some loopers              */
 INT                 nir,nis;          /* num GP in r/s/t direction */
 INT                 lr, ls;           /* loopers over GP           */
 INT                 iel;              /* numnp to this element     */
@@ -83,8 +83,6 @@ static DOUBLE **kg;
 
 static DOUBLE **estif;    /* element stiffness matrix keug */
 static DOUBLE **emass;    /* mass matrix */
-
-DOUBLE fie[18];
 
 DOUBLE det;
 
@@ -237,7 +235,7 @@ for (lr=0; lr<nir; lr++)
       /*------------------------- shape functions and their derivatives */
       w1_funct_deriv(funct,deriv,e1,e2,ele->distyp,1);
       /*------------------------------------ compute jacobian matrix ---*/       
-      w1_jaco (funct,deriv,xjm,&det,ele,iel); 
+      w1_jaco (deriv,xjm,&det,ele,iel); 
       /*------------------------------------ integration factor  -------*/ 
       fac = facr * facs * det * thick;                        
       /*------------------------------ compute mass matrix if imass=1---*/
@@ -267,15 +265,14 @@ for (lr=0; lr<nir; lr++)
       /*------------------------------------------ call material law ---*/
       amzero(&stress_a);
       amzero(&D_a);
-      w1_call_matgeononl(ele,mat,ele->e.w1->wtype,boplin,xjm,
-                          ip,strain,stress,D,istore,numeps);
+      w1_call_matgeononl(mat,ele->e.w1->wtype,strain,stress,D,numeps);
       /*----------------------------------------------------------------*/
       if(istore==0)
       {
       /*---------------------- geometric part of stiffness matrix kg ---*/
         w1_kg(ele,kg,boplin,stress,fac,nd,numeps,ip);
       /*------------------ elastic+displacement stiffness matrix keu ---*/
-        w1_keu(keu,b_bar,int_b_bar,D,F,fac,nd,numeps);
+        w1_keu(keu,b_bar,int_b_bar,D,fac,nd,numeps);
       /*------------------------------- stiffness matrix keug=keu+kg ---*/
        for (a=0; a<nd; a++)
        {  
@@ -285,7 +282,7 @@ for (lr=0; lr<nir; lr++)
          } 
        }
       /*--------------- nodal forces fi from integration of stresses ---*/
-        if (force) w1_fint(ele,stress,F,int_b_bar,force,fac,nd,ip);                    
+        if (force) w1_fint(ele,stress,int_b_bar,force,fac,nd,ip);                    
       }
    }/*============================================= end of loop over ls */ 
 }/*================================================ end of loop over lr */

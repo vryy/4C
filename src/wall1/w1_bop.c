@@ -73,7 +73,6 @@ void w1_gop(DOUBLE    *gop,            /* operator matrix G             */
             DOUBLE      e2)            /* actual GP coordinate s        */
 {
 /*----------------------------------------------------------------------*/
-INT i;
 DOUBLE dum;
 DOUBLE xji[2][2];
 #ifdef DEBUG 

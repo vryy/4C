@@ -27,7 +27,6 @@ Maintainer: Andrea Hund
  *----------------------------------------------------------------------*/
 void w1_mat_plast_mises(DOUBLE ym,
                         DOUBLE pv,
-                        DOUBLE ALFAT,
                         DOUBLE sigy,
                         DOUBLE hard,
                         DOUBLE gf,
@@ -44,11 +43,11 @@ void w1_mat_plast_mises(DOUBLE ym,
                         INT newval)/* controls evaluation of new stresses    */
 {
 /*----------------------------------------------------------------------*/
-INT i,j,k;
+INT i,j;
 INT yip;
 INT isoft;
 INT iupd;
-DOUBLE e1, e2, e3, a1, b1, c1, sum, epstn, ft;
+DOUBLE sum, epstn, ft;
 DOUBLE disd[5];
 DOUBLE sig[4];
 DOUBLE eps[4];

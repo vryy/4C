@@ -48,7 +48,6 @@ void w1_kg(ELEMENT *ele,
 {
 INT i, j, r, m;
 DOUBLE int_stress[4][4];
-DOUBLE local[4][4];
 #ifdef GEMM
 STRUCT_DYNAMIC *sdyn;
 DOUBLE alpha_f, xsi;       

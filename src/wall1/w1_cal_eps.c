@@ -29,8 +29,7 @@ void w1_eps( DOUBLE   *disd,
              DOUBLE   *eps)
 {
 /*----------------------------------------------------------------------*/
-INT i,inode, node_start;
-DOUBLE dum;
+INT i;
 DOUBLE u11, u12, u21, u22, u33;
 #ifdef DEBUG 
 dstrc_enter("w1_eps");

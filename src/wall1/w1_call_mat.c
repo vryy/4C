@@ -31,7 +31,6 @@ void w1_call_mat(ELEMENT   *ele,
                  DOUBLE **bop,
                  DOUBLE  *gop,
                  DOUBLE  *alpha,
-                 DOUBLE **xjm,
                  INT ip,       
                  DOUBLE *stress,
                  DOUBLE **d,
@@ -44,7 +43,6 @@ DOUBLE disd2;
 DOUBLE disd[4];
 /*----------------------------------------------------------------------*/
 DOUBLE strain[6];
-DOUBLE *qn;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1_call_mat");
@@ -57,31 +55,10 @@ dstrc_enter("w1_call_mat");
                  mat->m.stvenant->possionratio,
                  wtype,
                  d);
-/*--------------------------------------------------fh 03/02----------*/
-    if (newval=1)
-    {
-       w1_disd(ele,bop,gop,alpha,wtype,disd);
-       switch(wtype)
-       {
-       case plane_stress:
-	  disd2=(disd[2]+disd[3]);
-    	  stress[0]=d[0][0]*disd[0]+d[0][1]*disd[1]+d[0][2]*disd2;
-    	  stress[1]=d[1][0]*disd[0]+d[1][1]*disd[1]+d[1][2]*disd2;
-    	  stress[2]=d[2][0]*disd[0]+d[2][1]*disd[1]+d[2][2]*disd2;
-	  stress[3]=0.0;
-       break;
-       
-       case rotat_symmet:
-	  disd2=(disd[2]+disd[3]);        	 
-	  stress[0]=d[0][0]*disd[0]+d[0][1]*disd[1]+d[0][2]*disd2+d[0][3]*disd[4];
-	  stress[1]=d[1][0]*disd[0]+d[1][1]*disd[1]+d[1][2]*disd2+d[1][3]*disd[4];
-	  stress[2]=d[2][0]*disd[0]+d[2][1]*disd[1]+d[2][2]*disd2+d[2][3]*disd[4];
-	  stress[3]=d[3][0]*disd[0]+d[3][1]*disd[1]+d[3][2]*disd2+d[3][3]*disd[4];
-       }
-    }    
-/*------------------------------------------------------------------*/	
-  
-  
+    w1_disd(ele,bop,gop,alpha,wtype,disd);
+    w1_eps (disd,ele->e.w1->wtype,strain);
+    for (i=0; i<4; i++) stress[i] = 0.0;
+    for (i=0; i<4; i++) for (j=0; j<4; j++) stress[i] += d[i][j]*strain[j];
   break;
   case m_stvenpor:/*------------------------ porous linear elastic ---*/
     w1_mat_stvpor(mat, ele->e.w1->elewa->matdata, wtype, d);
@@ -93,7 +70,6 @@ dstrc_enter("w1_call_mat");
   case m_pl_mises:/*--------------------- von mises material law ---*/
     w1_mat_plast_mises(mat->m.pl_mises->youngs,
                        mat->m.pl_mises->possionratio,
-                       mat->m.pl_mises->ALFAT,
                        mat->m.pl_mises->Sigy,
                        mat->m.pl_mises->Hard,
                        mat->m.pl_mises->GF,
@@ -112,7 +88,6 @@ dstrc_enter("w1_call_mat");
   case m_pl_mises_3D:/*--------------------- von mises material law -> 3D---*/
     w1_mat_plast_mises_3D(mat->m.pl_mises->youngs,
                           mat->m.pl_mises->possionratio,
-                          mat->m.pl_mises->ALFAT,
                           mat->m.pl_mises->Sigy,
                           mat->m.pl_mises->Hard,
                           mat->m.pl_mises->GF,
@@ -131,7 +106,6 @@ dstrc_enter("w1_call_mat");
   case m_pl_dp:/*------------------- drucker prager material law ---*/
     w1_mat_plast_dp(   mat->m.pl_dp->youngs,
                        mat->m.pl_dp->possionratio,
-                       mat->m.pl_dp->ALFAT,
                        mat->m.pl_dp->Sigy,
                        mat->m.pl_dp->Hard,
                        mat->m.pl_dp->PHI,
@@ -147,12 +121,8 @@ dstrc_enter("w1_call_mat");
                        newval);
   break;
   case m_pl_epc:/*---------- elastoplastic concrete material law ---*/
-    w1_mat_plast_epc(  mat->m.pl_epc->dens        ,
-                       mat->m.pl_epc->youngs      ,
+    w1_mat_plast_epc(  mat->m.pl_epc->youngs      ,
                        mat->m.pl_epc->possionratio,
-                       mat->m.pl_epc->alfat       ,
-                       mat->m.pl_epc->xsi         ,
-                       mat->m.pl_epc->sigy        ,
                        mat->m.pl_epc->ftm         ,
                        mat->m.pl_epc->fcm         ,
                        mat->m.pl_epc->gt          ,
@@ -161,24 +131,16 @@ dstrc_enter("w1_call_mat");
                        mat->m.pl_epc->gamma2      ,
                        mat->m.pl_epc->nstiff      ,
                        mat->m.pl_epc->maxreb      ,
-                       mat->m.pl_epc->rebar       ,
                        mat->m.pl_epc->reb_area    ,
                        mat->m.pl_epc->reb_ang     ,
                        mat->m.pl_epc->reb_so      ,
                        mat->m.pl_epc->reb_ds      ,
                        mat->m.pl_epc->reb_rgamma  ,
-                       mat->m.pl_epc->reb_dens    ,
-                       mat->m.pl_epc->reb_alfat   ,
-                       mat->m.pl_epc->reb_emod    ,
-                       mat->m.pl_epc->reb_rebnue  ,
-                       mat->m.pl_epc->reb_sigy    ,
-                       mat->m.pl_epc->reb_hard    ,
                        ele,                      
                        wtype,                    
                        bop,
                        gop,
                        alpha,
-                       xjm,                      
                        ip,                       
                        stress,                   
                        d,                        

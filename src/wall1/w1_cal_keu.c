@@ -37,12 +37,10 @@ extern ALLDYNA      *alldyn;
  | NEPS    -->  ACTUAL NUMBER OF STRAIN COMPONENTS   =4                 |
  |                                                                      |
  *----------------------------------------------------------------------*/
-void w1_keu(    
-	    DOUBLE  **keu, 
+void w1_keu(DOUBLE  **keu, 
             DOUBLE  **b_bar,
             DOUBLE  **int_b_bar,
-	    DOUBLE  **D,
-            DOUBLE   *F,
+            DOUBLE  **D,
             DOUBLE    fac, 
             INT       nd,
             INT       neps)
