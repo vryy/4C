@@ -94,10 +94,12 @@ if [ "x$PARALLEL" = "xno" ]; then
   fsi_tank20x10.dat
   shell8_lineload.dat
   shell9_dpmisGF.dat
+  shell9_epc.dat
   shell9_el_lay_eans.dat
   shell9_kreuz_easnl.dat
   shell9_matnl.dat
   w1_3DmisGF.dat
+  w1_epc3D.dat
   w1_Eulerstab.dat
   w1_incompmode.dat
   w1_mises.dat
@@ -130,10 +132,12 @@ else
   fsi_tank20x10.dat
   shell8_lineload.dat
   shell9_dpmisGF.dat
+  shell9_epc.dat
   shell9_el_lay_eans.dat
   shell9_kreuz_easnl.dat
   shell9_matnl.dat
   w1_3DmisGF.dat
+  w1_epc3D.dat
   w1_Eulerstab.dat
   w1_incompmode.dat
   w1_mises.dat
@@ -143,7 +147,7 @@ else
   '
 fi
  
-#liste=' xfem_ls_joggedchannel.dat  ale2_nln.dat'
+#liste=' ale2_nln.dat'
 
 
 # get the start-time in seconds:
