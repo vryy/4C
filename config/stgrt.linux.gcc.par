@@ -49,7 +49,7 @@ VISUAL3_LIB=""
 LIBS="-lc -lm -lF77ext -lf2c -lg2c -llapack -lblas -lmetis"
 
 # FAST
-PROGRAMNAME=cca_par
+PROGRAMNAME=cca_linux_par
 CFLAGS_OPT="-O"
 FFLAGS_OPT="-O"
 CFLAGS="-v -ansi"
