@@ -163,10 +163,8 @@ pss_write_array(dirich_a,&(res.dirich),out,&ierr);
 /*----------------------------------------------------------------------*/
 numnp = actpart->pdis[0].numnp;
 res.node_handles = (long int**)CCAMALLOC(numnp*sizeof(long int*));
-if (!res.node_handles) dserror("Allocation of memory failed");
 node_handles = res.node_handles;
 res.node_handles[0] = (long int*)CCAMALLOC(3*numnp*sizeof(long int));
-if (!res.node_handles[0]) dserror("Allocation of memory failed");
 for (i=1; i<numnp; i++) 
 node_handles[i] = &(node_handles[0][i*3]);
 /*----------------------------------------------------------------------*/
@@ -196,8 +194,8 @@ CCAFREE(res.node_handles);
 /*----------------------------------------------------------------------*/
 /* 
    we come to the most difficult part, the writing of the element data.
-   One element is assumed not to have more then 5 different records to
-   write of arbitary type
+   One element is assumed not to have more then MAXRECORDPERELE different 
+   records to write of arbitary type
    
    The element is called with the element action action = write_restart
    Again, all elements to the processors partition are written
@@ -224,11 +222,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
              NULL,NULL,NULL,action,container);
    break;
    case el_shell9:
-      container->kstep    = 0;      
-      container->handsize = MAXRECORDPERELE;
-      container->handles  = ele_handles[i];
-      shell9(actfield,actpart,actintra,actele,
-             NULL,NULL,NULL,action,container);
+       dserror("Restart 'nlnstructdyn' for shell9 not yet impl.");
    break;
    case el_brick1:
 
@@ -455,10 +449,8 @@ if (numnp != res.node_fdim || 3 != res.node_sdim)
 /*----------------------------------------- define the array of handles */
 numnp = actpart->pdis[0].numnp;
 res.node_handles = (long int**)CCAMALLOC(numnp*sizeof(long int*));
-if (!res.node_handles) dserror("Allocation of memory failed");
 node_handles = res.node_handles;
 res.node_handles[0] = (long int*)CCAMALLOC(3*numnp*sizeof(long int));
-if (!res.node_handles[0]) dserror("Allocation of memory failed");
 for (i=1; i<numnp; i++) 
 node_handles[i] = &(node_handles[0][i*3]);
 /*------------------------------------------- read the array of handles */
@@ -521,10 +513,8 @@ if (numele != res.ele_fdim || MAXRECORDPERELE != res.ele_sdim)
     dserror("Mismatch in number of elements on reading restart");
 /*----------------------------------------- define the array of handles */
 res.ele_handles = (long int**)CCAMALLOC(numele*sizeof(long int*));
-if (!res.ele_handles) dserror("Allocation of memory failed");
 ele_handles = res.ele_handles;
 res.ele_handles[0] = (long int*)CCAMALLOC(MAXRECORDPERELE*numele*sizeof(long int));
-if (!res.ele_handles[0]) dserror("Allocation of memory failed");
 for (i=1; i<numele; i++) 
 ele_handles[i] = &(ele_handles[0][i*MAXRECORDPERELE]);
 /*------------------------------------------- read the array of handles */
@@ -546,11 +536,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
              NULL,NULL,NULL,action,container);
    break;
    case el_shell9:
-      container->kstep    = 0;  
-      container->handsize = MAXRECORDPERELE;
-      container->handles  = ele_handles[i];       
-      shell9(actfield,actpart,actintra,actele,
-             NULL,NULL,NULL,action,container);
+      dserror("Restart 'nlnstructdyn' for shell9 not yet impl.");
    break;
    case el_brick1:
        dserror("Restart for brick not yet impl.");
@@ -721,10 +707,8 @@ res.dist_vec_dispi[0] = ndis;
 /*----------------------------------------------------------------------*/
 numnp = actpart->pdis[0].numnp;
 res.node_handles = (long int**)CCAMALLOC(numnp*sizeof(long int*));
-if (!res.node_handles) dserror("Allocation of memory failed");
 node_handles = res.node_handles;
 res.node_handles[0] = (long int*)CCAMALLOC(3*numnp*sizeof(long int));
-if (!res.node_handles[0]) dserror("Allocation of memory failed");
 for (i=1; i<numnp; i++) 
 node_handles[i] = &(node_handles[0][i*3]);
 /*----------------------------------------------------------------------*/
@@ -754,8 +738,8 @@ CCAFREE(res.node_handles);
 /*----------------------------------------------------------------------*/
 /* 
    we come to the most difficult part, the writing of the element data.
-   One element is assumed not to have more then 5 different records to
-   write of arbitary type
+   One element is assumed not to have more then MAXRECORDPERELE different 
+   records to write of arbitary type
    
    The element is called with the element action action = write_restart
    Again, all elements to the processors partition are written
@@ -763,12 +747,10 @@ CCAFREE(res.node_handles);
 /*----------------------------------------------------------------------*/
 numele = actpart->pdis[0].numele;
 res.ele_handles = (long int**)CCAMALLOC(numele*sizeof(long int*));
-if (!res.ele_handles) dserror("Allocation of memory failed");
 ele_handles = res.ele_handles;
-res.ele_handles[0] = (long int*)CCAMALLOC(5*numele*sizeof(long int));
-if (!res.ele_handles[0]) dserror("Allocation of memory failed");
+res.ele_handles[0] = (long int*)CCAMALLOC(MAXRECORDPERELE*numele*sizeof(long int));
 for (i=1; i<numele; i++) 
-ele_handles[i] = &(ele_handles[0][i*5]);
+ele_handles[i] = &(ele_handles[0][i*MAXRECORDPERELE]);
 /*--------------------- now loop element and switch for type of element */
 *action = write_restart;
 for (i=0; i<actpart->pdis[0].numele; i++)
@@ -778,23 +760,23 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    {
    case el_shell8:
       container->kstep    = 0;   
-      container->handsize = 5;
+      container->handsize = MAXRECORDPERELE;
       container->handles  = ele_handles[i];
       shell8(actfield,actpart,actintra,actele,
              NULL,NULL,NULL,action,container);
    break;
    case el_shell9:
       container->kstep    = 0;   
-      container->handsize = 5;
+      container->handsize = MAXRECORDPERELE;
       container->handles  = ele_handles[i];
-      shell9(actfield,actpart,actintra,actele,
+      shell9(actfield,actintra,actele,
              NULL,NULL,NULL,action,container);
    break;
    case el_brick1:
 
    break;
    case el_wall1:
-      container->handsize = 5;
+      container->handsize = MAXRECORDPERELE;
       container->handles  = ele_handles[i];
       wall1(actpart,actintra,actele,
             NULL,NULL,NULL,action,container);
@@ -809,7 +791,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
        dserror("Restart for ale not yet impl.");
    break;
    case el_beam3:
-       container->handsize = 5;
+       container->handsize = MAXRECORDPERELE;
        container->handles = ele_handles[i];
        beam3(actfield,actpart,actintra,actele,
              NULL,NULL,NULL,action,container);       
@@ -827,8 +809,8 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    it in res.handle_of_ele_handles
 */   
 res.ele_fdim = numele;
-res.ele_sdim = 5;
-pss_write("ele_hand",numele,5,sizeof(long int),ele_handles[0],&(res.handle_of_ele_handles),out,&ierr);
+res.ele_sdim = MAXRECORDPERELE;
+pss_write("ele_hand",numele,MAXRECORDPERELE,sizeof(long int),ele_handles[0],&(res.handle_of_ele_handles),out,&ierr);
 if (ierr != 1) dserror("Error writing restart data");
 /*------------------ delete the res.ele_handles but keep the dimensions */
 CCAFREE(res.ele_handles[0]);
@@ -972,10 +954,8 @@ if (numnp != res.node_fdim || 3 != res.node_sdim)
 /*----------------------------------------- define the array of handles */
 numnp = actpart->pdis[0].numnp;
 res.node_handles = (long int**)CCAMALLOC(numnp*sizeof(long int*));
-if (!res.node_handles) dserror("Allocation of memory failed");
 node_handles = res.node_handles;
 res.node_handles[0] = (long int*)CCAMALLOC(3*numnp*sizeof(long int));
-if (!res.node_handles[0]) dserror("Allocation of memory failed");
 for (i=1; i<numnp; i++) 
 node_handles[i] = &(node_handles[0][i*3]);
 /*------------------------------------------- read the array of handles */
@@ -1034,16 +1014,14 @@ CCAFREE(res.node_handles);
 */
 /*----------------------------------------------------------------------*/
 numele = actpart->pdis[0].numele;
-if (numele != res.ele_fdim || 5 != res.ele_sdim)
+if (numele != res.ele_fdim || MAXRECORDPERELE != res.ele_sdim)
     dserror("Mismatch in number of elements on reading restart");
 /*----------------------------------------- define the array of handles */
 res.ele_handles = (long int**)CCAMALLOC(numele*sizeof(long int*));
-if (!res.ele_handles) dserror("Allocation of memory failed");
 ele_handles = res.ele_handles;
-res.ele_handles[0] = (long int*)CCAMALLOC(5*numele*sizeof(long int));
-if (!res.ele_handles[0]) dserror("Allocation of memory failed");
+res.ele_handles[0] = (long int*)CCAMALLOC(MAXRECORDPERELE*numele*sizeof(long int));
 for (i=1; i<numele; i++) 
-ele_handles[i] = &(ele_handles[0][i*5]);
+ele_handles[i] = &(ele_handles[0][i*MAXRECORDPERELE]);
 /*------------------------------------------- read the array of handles */
 pss_read_name_handle("ele_hand",&res.ele_fdim,&res.ele_sdim,&i,
                      ele_handles[0],&res.handle_of_ele_handles,in,&ierr);
@@ -1057,23 +1035,23 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    {
    case el_shell8:
       container->kstep    = 0;    
-      container->handsize = 5;
+      container->handsize = MAXRECORDPERELE;
       container->handles  = ele_handles[i];
       shell8(actfield,actpart,actintra,actele,
              NULL,NULL,NULL,action,container);
    break;
    case el_shell9:
       container->kstep    = 0;    
-      container->handsize = 5;
+      container->handsize = MAXRECORDPERELE;
       container->handles  = ele_handles[i];
-      shell9(actfield,actpart,actintra,actele,
+      shell9(actfield,actintra,actele,
              NULL,NULL,NULL,action,container);
    break;
    case el_brick1:
 
    break;
    case el_wall1:
-       container->handsize = 5;
+       container->handsize = MAXRECORDPERELE;
        container->handles  = ele_handles[i];
        wall1(actpart,actintra,actele,NULL,NULL,NULL,action,container);
    break;
@@ -1088,7 +1066,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    break;
    case el_beam3:
        container->kstep = 0;
-       container->handsize = 5;
+       container->handsize = MAXRECORDPERELE;
        container->handles = ele_handles[i];
        beam3(actfield,actpart,actintra,actele,
              NULL,NULL,NULL,action,container);       
