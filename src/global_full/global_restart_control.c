@@ -459,7 +459,7 @@ for (i=0; i<numnp; i++)
    /*------------------------- check for the dimensions of actnode->sol */
    pss_getdims_name_handle(actnode->sol.name,&dims[0],&dims[1],&dims[2],&(node_handles[i][0]),in,&ierr);
    if (ierr != 1) dserror("Cannot read restart data");
-   if (dims[2] != sizeof(double)) dserror("Cannot read restart data");
+   if ((unsigned)dims[2] != sizeof(double)) dserror("Cannot read restart data");
    /*------------------------ redefine it, if dimension mismatch occurs */
    if (dims[0] != actnode->sol.fdim ||
        dims[1] != actnode->sol.sdim)
@@ -471,7 +471,7 @@ for (i=0; i<numnp; i++)
    /*--------------- check for the dimensions of actnode->sol_increment */
    pss_getdims_name_handle(actnode->sol_increment.name,&dims[0],&dims[1],&dims[2],&(node_handles[i][1]),in,&ierr);
    if (ierr != 1) dserror("Cannot read restart data");
-   if (dims[2] != sizeof(double)) dserror("Cannot read restart data");
+   if ((unsigned)dims[2] != sizeof(double)) dserror("Cannot read restart data");
    /*------------------------ redefine it, if dimension mismatch occurs */
    if (dims[0] != actnode->sol_increment.fdim ||
        dims[1] != actnode->sol_increment.sdim)
@@ -483,7 +483,7 @@ for (i=0; i<numnp; i++)
    /*---------------- check for the dimensions of actnode->sol_residual */
    pss_getdims_name_handle(actnode->sol_residual.name,&dims[0],&dims[1],&dims[2],&(node_handles[i][2]),in,&ierr);
    if (ierr != 1) dserror("Cannot read restart data");
-   if (dims[2] != sizeof(double)) dserror("Cannot read restart data");
+   if ((unsigned)dims[2] != sizeof(double)) dserror("Cannot read restart data");
    /*------------------------ redefine it, if dimension mismatch occurs */
    if (dims[0] != actnode->sol_residual.fdim ||
        dims[1] != actnode->sol_residual.sdim)
@@ -956,7 +956,7 @@ for (i=0; i<numnp; i++)
    /*------------------------- check for the dimensions of actnode->sol */
    pss_getdims_name_handle(actnode->sol.name,&dims[0],&dims[1],&dims[2],&(node_handles[i][0]),in,&ierr);
    if (ierr != 1) dserror("Cannot read restart data");
-   if (dims[2] != sizeof(double)) dserror("Cannot read restart data");
+   if ((unsigned)dims[2] != sizeof(double)) dserror("Cannot read restart data");
    /*------------------------ redefine it, if dimension mismatch occurs */
    if (dims[0] != actnode->sol.fdim ||
        dims[1] != actnode->sol.sdim)
@@ -968,7 +968,7 @@ for (i=0; i<numnp; i++)
    /*--------------- check for the dimensions of actnode->sol_increment */
    pss_getdims_name_handle(actnode->sol_increment.name,&dims[0],&dims[1],&dims[2],&(node_handles[i][1]),in,&ierr);
    if (ierr != 1) dserror("Cannot read restart data");
-   if (dims[2] != sizeof(double)) dserror("Cannot read restart data");
+   if ((unsigned)dims[2] != sizeof(double)) dserror("Cannot read restart data");
    /*------------------------ redefine it, if dimension mismatch occurs */
    if (dims[0] != actnode->sol_increment.fdim ||
        dims[1] != actnode->sol_increment.sdim)
@@ -980,7 +980,7 @@ for (i=0; i<numnp; i++)
    /*---------------- check for the dimensions of actnode->sol_residual */
    pss_getdims_name_handle(actnode->sol_residual.name,&dims[0],&dims[1],&dims[2],&(node_handles[i][2]),in,&ierr);
    if (ierr != 1) dserror("Cannot read restart data");
-   if (dims[2] != sizeof(double)) dserror("Cannot read restart data");
+   if ((unsigned)dims[2] != sizeof(double)) dserror("Cannot read restart data");
    /*------------------------ redefine it, if dimension mismatch occurs */
    if (dims[0] != actnode->sol_residual.fdim ||
        dims[1] != actnode->sol_residual.sdim)

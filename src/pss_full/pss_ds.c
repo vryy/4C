@@ -101,7 +101,7 @@ num_byte_allocated=0;
 the routine CCACALLOC uses unsigned char to allocate internally, so it is
 necessary, that unsigned char is exactly one byte in DEBUG mode 
 */
-if (sizeof(unsigned char) != 1)
+if (sizeof(unsigned char) != (unsigned)1)
 {
    dserror("unsigned char not 1 byte - will have CCACALLOC problems !!!");
 }

@@ -530,7 +530,7 @@ else
 /*--------------------------------------- read the dimensions of record */
    err=fread(dimensions,sizeof(int),3,in);
    if (err != 3) dserror("error reading pss-file");
-   if (dimensions[2] == sizeof(int)) /* it's a int-record */
+   if ((unsigned)dimensions[2] == sizeof(int)) /* it's a int-record */
    {
        if ( array->Typ == cca_IV )/* it's an int-vector */
        {
@@ -545,7 +545,7 @@ else
           dserror("error reading pss-file");
        }
    }
-   else if (dimensions[2] == sizeof(double))/* it's a double-record */
+   else if ((unsigned)dimensions[2] == sizeof(double))/* it's a double-record */
    {
        if ( array->Typ == cca_DV )/* it's a double-vector */
        {
@@ -610,7 +610,7 @@ long int    offset = 0;
 int         i; 
 int         err=0; 
 int         foundit=0;
-int         name_size=0; 
+unsigned int name_size=0; 
 int         sizename=0;
 int         write_error=0;
 int         dimensions[3];
@@ -652,7 +652,7 @@ else
 /*--------------------------------------- read the dimensions of record */
    err=fread(dimensions,sizeof(int),3,in);
    if (err != 3) dserror("error reading pss-file");
-   if (dimensions[2] == sizeof(int)) /* it's a int-record */
+   if ((unsigned)dimensions[2] == sizeof(int)) /* it's a int-record */
    {
        if ( array->Typ == cca_IV )/* it's an int-vector */
        {
@@ -667,7 +667,7 @@ else
           dserror("error reading pss-file");
        }
    }
-   else if (dimensions[2] == sizeof(double))/* it's a double-record */
+   else if ((unsigned)dimensions[2] == sizeof(double))/* it's a double-record */
    {
        if ( array->Typ == cca_DV )/* it's a double-vector */
        {
@@ -729,7 +729,7 @@ long int    offset = 0;
 int         i; 
 int         err=0; 
 int         foundit=0;
-int         name_size=0; 
+unsigned int name_size=0; 
 int         sizename=0;
 int         write_error=0;
 int         dimensions[3];
@@ -773,7 +773,7 @@ else
 /*--------------------------------------- read the dimensions of record */
    err=fread(dimensions,sizeof(int),3,in);
    if (err != 3) dserror("error reading pss-file");
-   if (dimensions[2] == sizeof(int)) /* it's a int-record */
+   if ((unsigned)dimensions[2] == sizeof(int)) /* it's a int-record */
    {
        if ( array->Typ == cca_IV )/* it's an int-vector */
        {
@@ -788,7 +788,7 @@ else
           dserror("error reading pss-file");
        }
    }
-   else if (dimensions[2] == sizeof(double))/* it's a double-record */
+   else if ((unsigned)dimensions[2] == sizeof(double))/* it's a double-record */
    {
        if ( array->Typ == cca_DV )/* it's a double-vector */
        {
