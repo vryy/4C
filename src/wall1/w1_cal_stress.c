@@ -251,8 +251,8 @@ void w1_mami(double *stress,
 /*----------------------------------------------------------------------*/
 double 		ag;
 static double 	rad=0.;
-char		jobz='V';
-char		uplo='L';
+char		jobz[1];
+char		uplo[1];
 int		n=2;
 int		lda=2;
 double		A[4];
@@ -267,6 +267,8 @@ double		vlength;
 dstrc_enter("w1_mami");
 #endif
 /*----------------------------------------------------------------------*/
+jobz[0]='V';
+uplo[0]='L';
 
 A[0]=stress[0];
 A[1]=stress[2];
@@ -275,8 +277,8 @@ A[3]=stress[1];
 
 /*------calculate eigenvalues in ascending order and corresponding------*/
 /*------orthonormal eigenvectors with LAPACK FORTRAN ROUTINE------------*/
-dsyev(&jobz,
-      &uplo,
+dsyev(jobz,
+      uplo,
       &n,
       &(A[0]),
       &lda,
