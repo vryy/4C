@@ -16,6 +16,7 @@ Maintainer: Malte Neumann
 typedef enum _PROBLEM_TYP
 {
                        prb_fsi,       /*  fluid structure interaction problem */
+                       prb_ssi,       /*  structure structure interaction problem */
                        prb_structure, /*  structural  problem */
                        prb_fluid,     /*  fluid  problem */
                        prb_opt,       /*  strctural optimization  problem */
@@ -186,8 +187,11 @@ typedef enum _CALC_ACTION
                        calc_struct_stressreduce,
                        calc_struct_eleload,
                        calc_struct_fsiload,
+                       calc_struct_fsiload_mtr,
                        calc_struct_update_istep,
                        calc_struct_update_stepback,
+                       calc_struct_ssi_coup_force,
+                       calc_struct_ssiload,
                        write_restart,
                        read_restart,
 		       calc_fluid_init,
@@ -255,7 +259,7 @@ typedef enum _ASSEMBLE_ACTION
  *----------------------------------------------------------------------*/
 typedef enum _SOLVER_TYP
 {
-                       mlib_d_sp,     /* solver package, hp's mlib, direct-sparse-symmetric-unsymmetric*/
+                       mlib_d_sp,     /* solver package, hp's mlib, ect-sparse-symmetric-unsymmetric*/
                        aztec_msr,     /* solver package aztec 2.1, matrix in dmsr format */
                        hypre_amg,     /* solver package hypre, amg-solver, matrix in parcsr format */
                        hypre_pcg,     /* solver package hypre, cg, matrix in parcsr format */
@@ -370,6 +374,15 @@ typedef enum _FSI_MESH
 } FSI_MESH;
 
 /*----------------------------------------------------------------------*
+ |  SSI MESHES                                            genk 10/02    |
+ *----------------------------------------------------------------------*/
+typedef enum _SSI_MESH
+{
+     conform,
+     non_conform
+} SSI_MESH;
+
+/*----------------------------------------------------------------------*
  |  FSI MESHES                                            genk 10/02    |
  *----------------------------------------------------------------------*/
 typedef enum _FLUID_STRESS
@@ -394,6 +407,37 @@ typedef enum _DLINE_TYP
                        arcline            /* arc line */
 } DLINE_TYP;
 
+/*!----------------------------------------------------------------------
+\brief enum of SSI coupling types                                            
+
+<pre>                                                          chfoe 07/04
+This is the enumeration of all types of SSI coupling with non conforming 
+discretisation (mortar)
+</pre>
+
+*----------------------------------------------------------------------*/
+typedef enum _SSI_COUPTYP
+{
+                       ssi_none,            
+                       ssi_master, 
+		       ssi_slave        
+} SSI_COUPTYP;                         
+
+/*!----------------------------------------------------------------------
+\brief enum of FSI coupling types                                            
+
+<pre>                                                          chfoe 07/04
+This is the enumeration of all types of FSI coupling with non conforming
+discretisation (mortar)
+</pre>
+
+*----------------------------------------------------------------------*/
+typedef enum _FSI_COUPTYP
+{
+                       fsi_none,            
+                       fsi_master 
+} FSI_COUPTYP;                         
+ 
 /*!----------------------------------------------------------------------
 \brief enum of stabilisation types
 
