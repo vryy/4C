@@ -1,0 +1,32 @@
+# -*- shell-script -*-
+PLATFORM=HPUX11
+PARALLEL=no
+
+F77=f90
+CC=cc
+LD=f90
+
+INCLUDEDIRS="-I/opt/mlib/include"
+LIBDIRS="-L/usr/lib -L/opt/mlib/lib/pa2.0 -L/bau/stat16/users/statik/lib" 
+
+# aztec
+AZTEC_INC=""
+AZTEC_LIB="-L/bau/stat16/users/statik/lib/AZTEC21 -laztec_seq21_32"
+
+# spooles
+SPOOLES_INC=""
+SPOOLES_LIB=""
+
+# umfpack
+UMFPACK_INC=""
+UMFPACK_LIB="-L/bau/stat16/users/statik/lib/UMFPACK/lib -lumfpack40_hpux11_32"
+
+
+LIBS="-lcl -lc -lm -lveclib -llapack"
+
+# FAST
+PROGRAMNAME=cca_seq_32
+CFLAGS="-D__HP__  +e -Ae +w1 -v -O +Onolimit"
+FFLAGS="-O"
+LDFLAGS=""
+
