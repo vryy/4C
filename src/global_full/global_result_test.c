@@ -362,6 +362,19 @@ case prb_ale:
       if (FABS(actresult-givenresult)>EPS6)
          dserror("RESULTCHECK: vely not correct!");
    }
+   /*-------------------------------- check results of ale2_nln.dat */
+   if(strstr(allfiles.title[0],"mOVING hOLE, nonlinear ale2-test") != NULL)
+   {
+      /*-- check result of ale node with global Id 123 */
+      printf("\nChecking results for nonlinear ale2-test example ...\n");
+      /*-------------------------------------------- check displacement */
+      actresult   = alefield->dis[0].node[123].sol.a.da[0][1];
+      givenresult = 1.6274434734043111;
+      fprintf(err,"result test\n");
+      fprintf(err,"actual = %24.16lf, given = %24.16lf\n",actresult,givenresult);
+      if (FABS(actresult/givenresult-ONE)>EPS6)
+         dserror("RESULTCHECK: disp-y not correct!");
+   }
 #endif
 break;
 }
@@ -371,5 +384,5 @@ break;
 dstrc_exit();
 #endif
 return;
-} /* end of V2GRID */
+} /* end of global_result_test */
 #endif
