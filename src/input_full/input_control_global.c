@@ -475,9 +475,11 @@ for (i=0; i<genprob.numfld; i++)
 #endif            
    break;
    case ale:
+#ifdef D_ALE
       alldyn[i].adyn = (ALE_DYNAMIC*)CCACALLOC(1,sizeof(ALE_DYNAMIC));
       if (!alldyn[i].adyn) dserror("Allocation of STRUCT_DYNAMIC failed");
       inpctr_dyn_ale(alldyn[i].adyn);
+#endif
    break;
    case structure:
       alldyn[i].sdyn = (STRUCT_DYNAMIC*)CCACALLOC(1,sizeof(STRUCT_DYNAMIC));
