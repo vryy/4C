@@ -207,8 +207,7 @@ return;
 This routine reads the initial value for the dirichlet condition from 
 actgnode->dirich->dirich_val.a.dv[j], gets the appropriate factor from 
 the timecurve and writes the value for the incremental dirichlet conditions 
-at the time t to actnode->sol_increment.a.da[1][j].
-The total actual dirichlet conditions are written to actnode->sol.a.da[0][j].
+at the time t to actnode->sol_increment.a.da[0][j].
 Routine is used for fsi-ale problems with changing ale stiffness over time.
 
 </pre>
@@ -288,39 +287,10 @@ for (i=0;i<numnp_total;i++)
             acttimefac = 1.0;
          else
             acttimefac = timefac[actcurve];
-            initval  = actagnode->dirich->dirich_val.a.dv[j];               
-/*=====================================================================*
- |    example: rotating hole (dirich_val.a.dv == 90)                   |
- |    sonst: Normalfall:                                               |
- |    actanode->sol.a.da[0][j] = initval*acttimefac;                   |
- *=====================================================================*/
-         if (initval != 90)
-         {
+            initval  = actagnode->dirich->dirich_val.a.dv[j];
 	    actanode->sol_increment.a.da[0][j] = initval*acttimefac
 	                                       - actanode->sol_increment.a.da[1][j];  
-	    actanode->sol.a.da[actpos][j] = initval*acttimefac; 
-         }
-	 else
-         {
-	   cx = actanode->x[0]; 
-	   cy = actanode->x[1];
-	   win = (initval * acttimefac * 3.14159265359)/180.0;
-	   wino= atan(cy/cx);
-	   dd = sqrt(cx*cx+cy*cy);
-	   if(cx < 0.0) wino += 3.14159265359;
-           if (j==0)
-	   {
-	     actanode->sol_increment.a.da[0][j] = dd * cos(win+wino) - cx
-	                                        - actanode->sol_mf.a.da[0][j];
-	     actanode->sol.a.da[actpos][j] = dd * cos(win+wino) - cx;
-           }
-	   else
-	   {
-	     actanode->sol_increment.a.da[0][j] = dd * sin(win+wino) - cy
-	                                        - actanode->sol_mf.a.da[0][j];
-	     actanode->sol.a.da[actpos][j] = dd * sin(win+wino) - cy;
-           }
-	 } 
+/*	    actanode->sol.a.da[actpos][j] = initval*acttimefac; */
       }
    break;
 #ifdef D_FSI
@@ -330,7 +300,7 @@ for (i=0;i<numnp_total;i++)
       {
          actanode->sol_increment.a.da[0][j] = actsnode->sol_mf.a.da[0][j]
 	                                    - actanode->sol_increment.a.da[1][j];  
-	 actanode->sol.a.da[actpos][j] = actsnode->sol_mf.a.da[0][j]; 
+/*	 actanode->sol.a.da[actpos][j] = actsnode->sol_mf.a.da[0][j]; */
       }
    break;
    case dirich_freesurf: /* dirichvalues = displacement of fluid
@@ -342,13 +312,13 @@ for (i=0;i<numnp_total;i++)
 	 {
             actanode->sol_increment.a.da[0][j] 
 	       = actfnode->sol_mf.a.da[0][j]*dt;
-	    actanode->sol.a.da[actpos][j] 
-	       = actanode->sol_mf.a.da[0][j] + actfnode->sol_mf.a.da[0][j]*dt;
+/*	    actanode->sol.a.da[actpos][j] 
+	       = actanode->sol_mf.a.da[0][j] + actfnode->sol_mf.a.da[0][j]*dt;*/
 	 }
 	 else 
 	 {
 	    actanode->sol_increment.a.da[0][j] = ZERO;
-	    actanode->sol.a.da[actpos][j] = ZERO;
+/*	    actanode->sol.a.da[actpos][j] = ZERO; */
 	 }
       }    
    break;  
