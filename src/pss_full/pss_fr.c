@@ -74,7 +74,7 @@ if (par.myrank==0)
          goto read;
       }
 /*----------------------check whether there is a commentar in the line */
-      remarkpointer=strchr(allfiles.input_file[i],':');
+      remarkpointer=strchr(allfiles.input_file[i],'//');
       if (remarkpointer!=NULL)
       {
          strcpy(remarkpointer,"\n\0");
