@@ -81,7 +81,12 @@ fdyn->step=0;
 /*----------------------------------------------------------------------*
 |  call algorithms                                                      |
  *----------------------------------------------------------------------*/
-if (dyntyp==1) fluid_pm();
+if (dyntyp==1)
+#ifdef D_FLUID2_PRO 
+  fluid_pm();
+#else
+dserror("FLUID2TU needed but not compiled in!");
+#endif
 else if (dyntyp==0)
 {
    switch (iop)
@@ -91,34 +96,40 @@ else if (dyntyp==0)
    break;
 
    case 1:		/* Generalised alpha time integration		*/
-      fdyn->time_rhs = 0;
       fluid_isi();
    break;
 
    case 4:		/* One step Theta 				*/
-      if(freesurf==0 && fdyn->adaptive==0)
-      {
-	/* implicit and semi-implicit algorithms 			*/
-         if(fdyn->turbu == 0 || fdyn->turbu ==1) fluid_isi();
-	/* implicit and semi-implicit algorithms with turbulence-model	*/
-         if(fdyn->turbu == 2)                    fluid_isi_tu();
-	/* implicit and semi-implicit algorithms with turbulence-model	*/
-         if(fdyn->turbu == 3)                    fluid_isi_tu_1();
-      }
+      if(genprob.numfld > 1) fluid_mf(0);
       else
       {
-	/* fluid multiefield algorithm      				*/
-         if(freesurf && fdyn->adaptive==0)		fluid_mf(0);
-   	/* for adaptive time stepping 					*/
-         else if(freesurf==0 && fdyn->adaptive)	fluid_isi();
-	/* adaptive time stepping fuer multifield 			*/
-         else if(freesurf && fdyn->adaptive)
-            dserror("free surface and adaptive time stepping not yet combined");
+         if(freesurf==0 && fdyn->adaptive==0)
+         {
+   	   /* implicit and semi-implicit algorithms 			*/
+            if(fdyn->turbu == 0 || fdyn->turbu ==1) fluid_isi();
+#ifdef D_FLUID2TU 
+	   /* implicit and semi-implicit algorithms with turbulence-model	*/
+            if(fdyn->turbu == 2)                    fluid_isi_tu();
+	   /* implicit and semi-implicit algorithms with turbulence-model	*/
+            if(fdyn->turbu == 3)                    fluid_isi_tu_1();
+#endif
+         }
+         else
+         {
+	   /* fluid multiefield algorithm      				*/
+            if(freesurf && fdyn->adaptive==0)		fluid_mf(0);
+   	   /* for adaptive time stepping 					*/
+            else if(freesurf==0 && fdyn->adaptive)	fluid_isi();
+	   /* adaptive time stepping fuer multifield 			*/
+            else if(freesurf && fdyn->adaptive)
+               dserror("free surface and adaptive time stepping not yet combined");
+         }
       }
    break;
 
    case 7:		/* 2nd order backward differencing (BDF2)	*/
-      fluid_isi();
+      if(genprob.numfld==1)  fluid_isi();
+      else fluid_mf(0);
    break;
 
    default:
