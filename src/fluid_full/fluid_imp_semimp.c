@@ -144,9 +144,10 @@ INT             actpos;             /* actual position in sol. history  */
 INT             restart;
 INT             step_s;
 DOUBLE          vrat,prat;          /* convergence ratios               */
-DOUBLE          t1,ts,te;	    /*					*/
+DOUBLE          t1,t2,ts,te,tt;	    /*					*/
 DOUBLE          tes=0.0;            /*					*/
 DOUBLE          tss=0.0;            /*					*/
+DOUBLE          tts=0.0;            /*					*/
 FLUID_STRESS    str;           
 
 SOLVAR         *actsolv;            /* pointer to active sol. structure */
@@ -318,6 +319,8 @@ if (ioflags.fluid_sol_gid==1 && par.myrank==0)
  * sol_increment[3][j] ... solution at time (n+1)			*
  *======================================================================*/
 timeloop:
+t2=ds_cputime();
+
 fdyn->step++;
 iststep++;
 
@@ -473,7 +476,7 @@ fluid_sol_copy(actfield,0,1,0,3,actpos,fdyn->numdf);
 if (resstep==fdyn->upres &&ioflags.fluid_sol_gid==1 && par.myrank==0) 
 {
    resstep=0;
-   out_checkfilesize(1);
+   /*out_checkfilesize(1);*/
    out_gid_sol("velocity",actfield,actintra,fdyn->step,actpos,fdyn->time);
    out_gid_sol("pressure",actfield,actintra,fdyn->step,actpos,fdyn->time);
 }
@@ -491,6 +494,10 @@ if (restartstep==fdyn->res_write_evry)
    restartstep=0;
    restart_write_fluiddyn(fdyn,actfield,actpart,actintra,action,&container);   
 }
+
+tt=ds_cputime()-t2;
+tts+=tt;
+printf("PROC  %3d | total time for this time step: %10.3e \n",par.myrank,tt);
 
 /*--------------------- check time and number of steps and steady state */
 if (fdyn->step < fdyn->nstep && fdyn->time <= fdyn->maxtime && steady==0)
@@ -534,6 +541,8 @@ printf("PROC  %3d | FIELD FLUID     | total time element for calculations: %10.3
         par.myrank,tes);
 printf("PROC  %3d | FIELD FLUID     | total time for solver              : %10.3E \n", 
         par.myrank,tss);
+printf("PROC  %3d | FIELD FLUID     | total time for time loop           : %10.3E \n", 
+        par.myrank,tts);
 }
 }
 #ifdef PARALLEL
