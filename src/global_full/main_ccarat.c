@@ -10,8 +10,6 @@ struct _PAR     par;
  *----------------------------------------------------------------------*/
 void main(int argc, char *argv[])
 {
-/*------------------------------- the size of the mpi buffer in doubles */
-/*                                     (do not touch if things go well) */
 #ifdef PARALLEL 
 MPI_Init(&argc,&argv);
 MPI_Comm_rank(MPI_COMM_WORLD, &par.myrank);
