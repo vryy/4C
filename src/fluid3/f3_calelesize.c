@@ -199,7 +199,7 @@ if (ishvol==1)
 
    ieval++;
 /* ------------------------------------------- compute jacobian matrix */
-   f3_jaco(xyze,funct,deriv,xjm,&det,ele,iel);
+   f3_jaco(xyze,deriv,xjm,&det,ele,iel);
    fac=facr*facs*fact*det;
    vol += fac;
    if (istrnint==1)    /* compute streamlength */
@@ -285,7 +285,7 @@ else if (istrnint==1 && ishvol !=1)
       dserror("typ unknown!");
    } /*end switch(typ) */
 /* ------------------------------------------- compute jacobian matrix */
-   f3_jaco(xyze,funct,deriv,xjm,&det,ele,iel);
+   f3_jaco(xyze,deriv,xjm,&det,ele,iel);
 /* --------------------------------------------- compute stream length */
    f3_veci(velint,funct,evel,iel);
    f3_gder(derxy,deriv,xjm,wa1,det,iel);

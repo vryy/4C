@@ -127,7 +127,7 @@ for (ls=0;ls<nil;ls++)
       dserror("typ unknown!");
    } /* end switch(typ) */
    /*------------------------------- compute jacobian determinant */
-   f3_edgejaco(xyze,funct,deriv,xjm,&det,iedgnod,ngnode,ele);
+   f3_edgejaco(xyze,deriv,xjm,&det,iedgnod,ngnode,ele);
    fac = det*facr*facs;
    /*--------------------------------------- compute global derivatives */
    f3_edgegder(derxy,deriv,xjm,det,ngnode);
@@ -226,7 +226,7 @@ default:
       dserror("typ unknown!");
 } /* end switch(typ) */
 
-f3_edgejaco(xyze,funct,deriv,xjm,&area,iedgnod,ngnode,ele);
+f3_edgejaco(xyze,deriv,xjm,&area,iedgnod,ngnode,ele);
 
 /*---------------------------------------------- determine element size */
 h = sqrt(area);
