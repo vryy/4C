@@ -33,6 +33,13 @@ extern struct _FIELD      *field;
 extern struct _GENPROB     genprob;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
  | vector of material laws                                              |
  | defined in global_control.c
  *----------------------------------------------------------------------*/
@@ -544,7 +551,10 @@ GLINE   *actgline;
 DLINE   *actdline;
 
 /*----------------------------------------- variables for solitary wave */
-DOUBLE u1,u2,eta,p,c,g,H,d,x,y,t,fac,fac1,sech;
+DOUBLE u1,u2,u3,eta,p,c,g,H,d,x,y,t,fac,fac1,sech;
+
+/* variables for beltrami */
+DOUBLE    visc,a,x1,x2,x3;
 
 #ifdef DEBUG 
 dstrc_enter("fluid_init");
@@ -758,6 +768,88 @@ if (fdyn->init>=1)
 	 actnode->sol.a.da[0][0] = u1;
 	 actnode->sol.a.da[0][1] = u2;
 	 actnode->sol.a.da[0][2] = p ;
+	 actnode->sol_increment.a.da[1][0] = u1;  
+	 actnode->sol_increment.a.da[1][1] = u2;  
+	 actnode->sol_increment.a.da[1][2] = p ;  
+	 actnode->sol_increment.a.da[3][0] = u1;  
+	 actnode->sol_increment.a.da[3][1] = u2;  
+	 actnode->sol_increment.a.da[3][2] = p ;
+      }    
+   }
+
+   if (fdyn->init==8) /* Beltrami flow */
+   {
+      actele = &(actfield->dis[0].element[0]);
+      actmat = actele->mat-1;
+      numnp_total=actfield->dis[0].numnp;
+      /* set some constants */
+      visc   = mat[actmat].m.fluid->viscosity;
+      a      = PI/4.0;
+      d      = PI/2.0;
+      t      = 0.0;
+      for (i=0;i<numnp_total;i++) /* loop nodes */
+      {
+         actnode=&(actfield->dis[0].node[i]);
+	 x1   = actnode->x[0];
+	 x2   = actnode->x[1];
+	 x3   = actnode->x[2];
+	 /* calculate initial values */ 	 
+	 p    = -a*a/2 * ( exp(2*a*x1) + exp(2*a*x2) + exp(2*a*x3) 
+                + 2 * sin(a*x1 + d*x2) * cos(a*x3 + d*x1) * exp(a*(x2+x3))
+                + 2 * sin(a*x2 + d*x3) * cos(a*x1 + d*x2) * exp(a*(x3+x1))
+                + 2 * sin(a*x3 + d*x1) * cos(a*x2 + d*x3) * exp(a*(x1+x2)) )
+                * exp(-2*visc*d*d*t);
+	 u1   = -a * ( exp(a*x1) * sin(a*x2 + d*x3) +
+                     exp(a*x3) * cos(a*x1 + d*x2) ) * exp(-visc*d*d*t);
+	 u2   = -a * ( exp(a*x2) * sin(a*x3 + d*x1) +
+                     exp(a*x1) * cos(a*x2 + d*x3) ) * exp(-visc*d*d*t);
+	 u3   = -a * ( exp(a*x3) * sin(a*x1 + d*x2) +
+                     exp(a*x2) * cos(a*x3 + d*x1) ) * exp(-visc*d*d*t);
+	 /* write values to nodes */
+	 actnode->sol.a.da[0][0] = u1;
+	 actnode->sol.a.da[0][1] = u2;
+	 actnode->sol.a.da[0][2] = u3;
+	 actnode->sol.a.da[0][3] = p ;
+	 actnode->sol_increment.a.da[0][0] = u1;  
+	 actnode->sol_increment.a.da[0][1] = u2;  
+	 actnode->sol_increment.a.da[0][2] = u3;  
+	 actnode->sol_increment.a.da[0][3] = p ;  
+	 actnode->sol_increment.a.da[1][0] = u1;  
+	 actnode->sol_increment.a.da[1][1] = u2;  
+	 actnode->sol_increment.a.da[1][2] = u3;  
+	 actnode->sol_increment.a.da[1][3] = p ;  
+	 actnode->sol_increment.a.da[3][0] = u1;  
+	 actnode->sol_increment.a.da[3][1] = u2;  
+	 actnode->sol_increment.a.da[3][2] = u3;  
+	 actnode->sol_increment.a.da[3][3] = p ;
+      }    
+   }
+
+   if (fdyn->init==9) /* Kim-Moin flow */
+   {
+      actele = &(actfield->dis[0].element[0]);
+      actmat = actele->mat-1;
+      numnp_total=actfield->dis[0].numnp;
+      /* set some constants */
+      visc   = mat[actmat].m.fluid->viscosity;
+      a      = 2.0;
+      t      = 0.0;
+      for (i=0;i<numnp_total;i++) /* loop nodes */
+      {
+         actnode=&(actfield->dis[0].node[i]);
+	 x1   = actnode->x[0];
+	 x2   = actnode->x[1];
+	 /* calculate initial values */ 	 
+	 p    = -1.0/4.0 * ( cos(2.0*a*PI*x1) + cos(2.0*a*PI*x2) ) * exp(-4.0*a*a*PI*PI*t*visc);
+	 u1   = - cos(a*PI*x1) * sin(a*PI*x2) * exp(-2.0*a*a*PI*PI*t*visc); 
+	 u2   = + sin(a*PI*x1) * cos(a*PI*x2) * exp(-2.0*a*a*PI*PI*t*visc);
+	 /* write values to nodes */
+	 actnode->sol.a.da[0][0] = u1;
+	 actnode->sol.a.da[0][1] = u2;
+	 actnode->sol.a.da[0][2] = p ;
+	 actnode->sol_increment.a.da[0][0] = u1;  
+	 actnode->sol_increment.a.da[0][1] = u2;  
+	 actnode->sol_increment.a.da[0][2] = p ;  
 	 actnode->sol_increment.a.da[1][0] = u1;  
 	 actnode->sol_increment.a.da[1][1] = u2;  
 	 actnode->sol_increment.a.da[1][2] = p ;  
@@ -1543,7 +1635,7 @@ if (fdyn->itchk!=0)
       default:
          dserror("Norm for nonlin. convergence check unknown!!\n");
       } /*end of switch(fdyn->itnorm) */
-   } /* endif (par.myrank)
+   } /* endif (par.myrank) */
    /*------------------------------------------------ convergence check */
    if (vrat<fdyn->ittol && prat<fdyn->ittol && grat<fdyn->ittol)
       converged=2;
@@ -2465,6 +2557,358 @@ dstrc_exit();
 return;
 } /* end of fluid_lte_norm */
 
+
+
+/*!--------------------------------------------------------------------- 
+\brief calculating errors for beltrami and kim-moin
+
+<pre>                                                         mn 02/04
+
+In this routine different velocity and pressure error norms for the 
+beltramii and kim-moin flow are calculated.
+			     
+</pre>   
+\param *actfield      FIELD          (i)   actual field
+\param  index         INT            (i)   index for type of flow
+                                           index = 1: beltrami
+                                           index = 2: kim-moin
+\return void 
+
+------------------------------------------------------------------------*/
+void fluid_cal_error(
+    FIELD             *actfield,
+    INT                index
+    )
+{
+  INT         i,j;            /* simply some counters */
+  INT         numdf;          /* number of fluid dofs */
+  INT         numvel;         /* total number of vel-dofs */
+  INT         predof;         /* actual number of pres dof */
+  INT         numnp_total;    /* total number of fluid nodes */
+  INT         actdof;         /* actual dof number */
+
+  DOUBLE      dvinorm=ZERO;   /* infinity norms */
+  DOUBLE       vinorm=ZERO;   /* infinity norms */
+  DOUBLE      dpinorm=ZERO;   /* infinity norms */
+  DOUBLE       pinorm=ZERO;   /* infinity norms */
+
+
+  DOUBLE      dv1norm=ZERO;   /* L1 norms */
+  DOUBLE       v1norm=ZERO;   /* L1 norms */
+  DOUBLE      dp1norm=ZERO;   /* L1 norms */
+  DOUBLE       p1norm=ZERO;   /* L1 norms */
+
+  DOUBLE      dv2norm=ZERO;   /* L2 norms */
+  DOUBLE       v2norm=ZERO;   /* L2 norms */
+  DOUBLE      dp2norm=ZERO;   /* L2 norms */
+  DOUBLE       p2norm=ZERO;   /* L2 norms */
+
+  NODE        *actnode;       /* actual node */
+  ELEMENT     *actele;
+  INT          actmat;
+  DOUBLE       visc,a,d,t;
+  DOUBLE       x1,x2,x3;
+  DOUBLE       u[3],p;
+
+  INT            numeq_total;
+  FLUID_DYNAMIC *fdyn;                /* pointer to fluid dyn. inp.data   */
+
+#ifdef DEBUG 
+  dstrc_enter("fluid_cal_error");
+#endif
+
+  /*---------------------------------------------------- set some values */
+  fdyn = alldyn[genprob.numff].fdyn;
+  numdf        = fdyn->numdf;
+  numnp_total  = actfield->dis[0].numnp;
+  numeq_total  = actfield->dis[0].numeq;
+  predof       = numdf-1;
+  numvel       = numdf-1;
+
+  switch (index)
+  {
+    case 1: /* BELTRAMI */
+
+      for (i=0;i<numnp_total;i++) /* loop nodes */
+      {
+        actnode=&(actfield->dis[0].node[i]);
+
+        /* calculate analytical solution */
+        actele = actnode->element[0];
+        actmat = actele->mat-1;
+        /* set some constants */
+        visc   = mat[actmat].m.fluid->viscosity;
+        a      = PI/4.0;
+        d      = PI/2.0;
+        t      = fdyn->time;
+        x1   = actnode->x[0];
+        x2   = actnode->x[1];
+        x3   = actnode->x[2];
+        /* calculate analytical values */ 	 
+        p    = -a*a/2 * ( exp(2*a*x1) + exp(2*a*x2) + exp(2*a*x3) 
+            + 2 * sin(a*x1 + d*x2) * cos(a*x3 + d*x1) * exp(a*(x2+x3))
+            + 2 * sin(a*x2 + d*x3) * cos(a*x1 + d*x2) * exp(a*(x3+x1))
+            + 2 * sin(a*x3 + d*x1) * cos(a*x2 + d*x3) * exp(a*(x1+x2)) )
+          * exp(-2*visc*d*d*t);
+        u[0]   = -a * ( exp(a*x1) * sin(a*x2 + d*x3) +
+            exp(a*x3) * cos(a*x1 + d*x2) ) * exp(-visc*d*d*t);
+        u[1]   = -a * ( exp(a*x2) * sin(a*x3 + d*x1) +
+            exp(a*x1) * cos(a*x2 + d*x3) ) * exp(-visc*d*d*t);
+        u[2]   = -a * ( exp(a*x3) * sin(a*x1 + d*x2) +
+            exp(a*x2) * cos(a*x3 + d*x1) ) * exp(-visc*d*d*t);
+
+        /* infinity norm */
+        for (j=0;j<numvel;j++) /* loop vel-dofs */
+        {
+          actdof = actnode->dof[j];
+          if (actdof>=numeq_total) continue;
+          dvinorm = DMAX(dvinorm,FABS(actnode->sol_increment.a.da[3][j] - u[j]));
+          vinorm = DMAX( vinorm,FABS(u[j]));
+        } /* end of loop over vel-dofs */
+
+        actdof = actnode->dof[predof];
+        if (actdof>=numeq_total) continue;
+        dpinorm = DMAX(dpinorm,FABS(actnode->sol_increment.a.da[3][predof] - p));
+        pinorm = DMAX( pinorm,FABS(p));                
+
+
+        /* L1 norm */
+        for (j=0;j<numvel;j++) /* loop vel-dofs */
+        {
+          actdof = actnode->dof[j];
+          if (actdof>=numeq_total) continue;
+          dv1norm += FABS(actnode->sol_increment.a.da[3][j] - u[j]);
+          v1norm += FABS(u[j]);
+        } /* end of loop over vel-dofs */
+
+        actdof = actnode->dof[predof];
+        if (actdof>=numeq_total) continue;
+        dp1norm += FABS(actnode->sol_increment.a.da[3][predof] - p);
+        p1norm += FABS(p);                
+
+
+        /* L_2 norm */   
+        actnode=&(actfield->dis[0].node[i]);
+        for (j=0;j<numvel;j++) /* loop vel-dofs */
+        { 
+          actdof = actnode->dof[j];
+          if (actdof>=numeq_total) continue;
+          dv2norm += pow(actnode->sol_increment.a.da[3][j] - u[j],2);
+          v2norm += pow(u[j],2);
+        } /* end of loop over vel-dofs */
+
+        actdof = actnode->dof[predof];
+        if (actdof>=numeq_total) continue;
+        dp2norm += pow(actnode->sol_increment.a.da[3][predof] - p,2);
+        p2norm += pow(p,2);                
+
+      } /* end ol LOOP all nodes */
+
+
+      dv2norm = sqrt(dv2norm);
+      v2norm = sqrt( v2norm);
+      dp2norm = sqrt(dp2norm);
+      p2norm = sqrt( p2norm);   
+
+
+      /* check for "ZERO-field" */
+      if (vinorm<EPS5)
+      {
+        vinorm = ONE;
+        printf("ATTENTION: zero vel field - inf norm <= 1.0e-5 set to 1.0!! \n");
+      }
+      if (pinorm<EPS5)
+      {
+        pinorm = ONE;
+        printf("ATTENTION: zero pre field - inf norm <= 1.0e-5 set to 1.0!! \n");
+      }
+
+      if (v1norm<EPS5)
+      {
+        v1norm = ONE;
+        printf("ATTENTION: zero vel field - L1 norm <= 1.0e-5 set to 1.0!! \n");
+      }
+      if (p1norm<EPS5)
+      {
+        p1norm = ONE;
+        printf("ATTENTION: zero pre field - L1 norm <= 1.0e-5 set to 1.0!! \n");
+      }
+
+      if (v2norm<EPS5)
+      {
+        v2norm = ONE;
+        printf("ATTENTION: zero vel field - L2 norm <= 1.0e-5 set to 1.0!! \n");
+      }
+      if (p2norm<EPS5)
+      {
+        p2norm = ONE;
+        printf("ATTENTION: zero pre field - L2 norm <= 1.0e-5 set to 1.0!! \n");
+      }
+
+      /*
+         printf("\nabsolute vel error for Beltrami in inf norm:  %11.4E \n",  dvinorm);
+         printf("absolute pre error for Beltrami in inf norm:  %11.4E \n\n",dpinorm);
+
+         printf("absolute vel error for Beltrami in L1  norm:  %11.4E \n",  dv1norm);
+         printf("absolute pre error for Beltrami in L1  norm:  %11.4E \n\n",dp1norm);
+
+         printf("absolute vel error for Beltrami in L2  norm:  %11.4E \n",  dv2norm);
+         printf("absolute pre error for Beltrami in L2  norm:  %11.4E \n\n",dp2norm);
+         */
+
+
+      printf("\nErrors for Beltrami flow:\n");
+      printf("norm | abs. vel.  | rel. vel.  | abs. pre.  | rel. pre.  |\n");
+      printf("----------------------------------------------------------\n");
+      printf("inf  |%11.4E |%11.4E |%11.4E |%11.4E |\n",dvinorm,dvinorm/vinorm,dpinorm,dpinorm/pinorm);
+      printf("L1   |%11.4E |%11.4E |%11.4E |%11.4E |\n",dv1norm,dv1norm/v1norm,dp1norm,dp1norm/p1norm);
+      printf("L2   |%11.4E |%11.4E |%11.4E |%11.4E |\n\n",dv2norm,dv2norm/v2norm,dp2norm,dp2norm/p2norm);
+
+      break;
+      /* end of BELTRAMI */
+
+    case 2: /* KIM-MOIN */
+
+      for (i=0;i<numnp_total;i++) /* loop nodes */
+      {
+        actnode=&(actfield->dis[0].node[i]);
+
+        /* calculate analytical solution */
+        actele = actnode->element[0];
+        actmat = actele->mat-1;
+        /* set some constants */
+        visc   = mat[actmat].m.fluid->viscosity;
+        a      = 2.0;
+        t      = fdyn->time;
+        x1   = actnode->x[0];
+        x2   = actnode->x[1];
+        /* calculate analytical values */ 	 
+        p      = -1.0/4.0 * ( cos(2.0*a*PI*x1) + cos(2.0*a*PI*x2) ) * exp(-4.0*a*a*PI*PI*t*visc);
+        u[0]   = - cos(a*PI*x1) * sin(a*PI*x2) * exp(-2.0*a*a*PI*PI*t*visc);
+        u[1]   = + sin(a*PI*x1) * cos(a*PI*x2) * exp(-2.0*a*a*PI*PI*t*visc);
+
+        /* infinity norm */
+        for (j=0;j<numvel;j++) /* loop vel-dofs */
+        {
+          actdof = actnode->dof[j];
+          if (actdof>=numeq_total) continue;
+          dvinorm = DMAX(dvinorm,FABS(actnode->sol_increment.a.da[3][j] - u[j]));
+          vinorm = DMAX( vinorm,FABS(u[j]));
+        } /* end of loop over vel-dofs */
+
+        actdof = actnode->dof[predof];
+        if (actdof>=numeq_total) continue;
+        dpinorm = DMAX(dpinorm,FABS(actnode->sol_increment.a.da[3][predof] - p));
+        pinorm = DMAX( pinorm,FABS(p));                
+
+
+        /* L1 norm */
+        for (j=0;j<numvel;j++) /* loop vel-dofs */
+        {
+          actdof = actnode->dof[j];
+          if (actdof>=numeq_total) continue;
+          dv1norm += FABS(actnode->sol_increment.a.da[3][j] - u[j]);
+          v1norm += FABS(u[j]);
+        } /* end of loop over vel-dofs */
+
+        actdof = actnode->dof[predof];
+        if (actdof>=numeq_total) continue;
+        dp1norm += FABS(actnode->sol_increment.a.da[3][predof] - p);
+        p1norm += FABS(p);                
+
+
+        /* L_2 norm */   
+        actnode=&(actfield->dis[0].node[i]);
+        for (j=0;j<numvel;j++) /* loop vel-dofs */
+        { 
+          actdof = actnode->dof[j];
+          if (actdof>=numeq_total) continue;
+          dv2norm += pow(actnode->sol_increment.a.da[3][j] - u[j],2);
+          v2norm += pow(u[j],2);
+        } /* end of loop over vel-dofs */
+
+        actdof = actnode->dof[predof];
+        if (actdof>=numeq_total) continue;
+        dp2norm += pow(actnode->sol_increment.a.da[3][predof] - p,2);
+        p2norm += pow(p,2);                
+
+      } /* end ol LOOP all nodes */
+
+
+      dv2norm = sqrt(dv2norm);
+      v2norm = sqrt( v2norm);
+      dp2norm = sqrt(dp2norm);
+      p2norm = sqrt( p2norm);   
+
+
+      /* check for "ZERO-field" */
+      if (vinorm<EPS5)
+      {
+        vinorm = ONE;
+        printf("ATTENTION: zero vel field - inf norm <= 1.0e-5 set to 1.0!! \n");
+      }
+      if (pinorm<EPS5)
+      {
+        pinorm = ONE;
+        printf("ATTENTION: zero pre field - inf norm <= 1.0e-5 set to 1.0!! \n");
+      }
+
+      if (v1norm<EPS5)
+      {
+        v1norm = ONE;
+        printf("ATTENTION: zero vel field - L1 norm <= 1.0e-5 set to 1.0!! \n");
+      }
+      if (p1norm<EPS5)
+      {
+        p1norm = ONE;
+        printf("ATTENTION: zero pre field - L1 norm <= 1.0e-5 set to 1.0!! \n");
+      }
+
+      if (v2norm<EPS5)
+      {
+        v2norm = ONE;
+        printf("ATTENTION: zero vel field - L2 norm <= 1.0e-5 set to 1.0!! \n");
+      }
+      if (p2norm<EPS5)
+      {
+        p2norm = ONE;
+        printf("ATTENTION: zero pre field - L2 norm <= 1.0e-5 set to 1.0!! \n");
+      }
+
+      /*
+         printf("\nabsolute vel error for Beltrami in inf norm:  %11.4E \n",  dvinorm);
+         printf("absolute pre error for Beltrami in inf norm:  %11.4E \n\n",dpinorm);
+
+         printf("absolute vel error for Beltrami in L1  norm:  %11.4E \n",  dv1norm);
+         printf("absolute pre error for Beltrami in L1  norm:  %11.4E \n\n",dp1norm);
+
+         printf("absolute vel error for Beltrami in L2  norm:  %11.4E \n",  dv2norm);
+         printf("absolute pre error for Beltrami in L2  norm:  %11.4E \n\n",dp2norm);
+         */
+
+
+      printf("\nErrors for Kim-Moin flow:\n");
+      printf("norm | abs. vel.  | rel. vel.  | abs. pre.  | rel. pre.  |\n");
+      printf("----------------------------------------------------------\n");
+      printf("inf  |%11.4E |%11.4E |%11.4E |%11.4E |\n",dvinorm,dvinorm/vinorm,dpinorm,dpinorm/pinorm);
+      printf("L1   |%11.4E |%11.4E |%11.4E |%11.4E |\n",dv1norm,dv1norm/v1norm,dp1norm,dp1norm/p1norm);
+      printf("L2   |%11.4E |%11.4E |%11.4E |%11.4E |\n\n",dv2norm,dv2norm/v2norm,dp2norm,dp2norm/p2norm);
+
+      break;
+  /* end of KIM-MOIN */
+
+    default:
+      dserror("Unknown type of flow for error calculation");
+      break;
+  }
+  
+  /*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+  dstrc_exit();
+#endif
+
+  return;
+} /* end of fluid_cal_error */
 
 
 #endif
