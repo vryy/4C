@@ -89,12 +89,12 @@ PFL   = -DHPUX11 -DPARALLEL \
 #
 #--------------------------------------------------------------------
 #
-FXX=/opt/mpi/bin/mpif90
+F77=/opt/mpi/bin/mpif90
 CCX=/opt/mpi/bin/mpicc 
 LDX=/opt/mpi/bin/mpicc 
 #
 CC	 = $(CCX)
-LD       = $(FXX)
+LD       = $(F77)
 RM	 = /bin/rm -f
 #
 #------------------------------------------------ this is debug-32bit

@@ -164,123 +164,104 @@ include ./Makefile.objects
 SRC=.
 #
 #
-$(PROGRAM):     $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) $(OBJS7) $(OBJS8) \
-                $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) $(OBJS14) \
-                $(OBJS15) $(OBJS16) $(OBJS17) $(OBJS18) $(OBJS19) $(OBJS20) $(OBJS_OPT) \
-                $(OBJS_AXISHELL) $(OBJS_MAT) $(OBJS_F2PRO) $(OBJS_IF) $(OBJS_WALLGE) 
-		@echo "Linking $(LD) $(LDFLAGS) $(LIBS) $(INCLUDES) -o $(PROGRAM)"
-		@$(LD) $(LDFLAGS) $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) \
-                $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) $(OBJS14) \
-                $(OBJS15) $(OBJS16) $(OBJS17) $(OBJS18) $(OBJS19) $(OBJS20) $(OBJS_OPT) \
-                $(OBJS_AXISHELL) $(OBJS_MAT) $(OBJS_F2PRO) $(OBJS_IF) $(OBJS_WALLGE) \
-                $(LIBS)  $(INCLUDES) -o $(PROGRAM)
-
+#
+$(PROGRAM):	$(OBJS_MAIN) $(OBJS_GLOBAL) $(OBJS_PSS) $(OBJS_INPUT) \
+		$(OBJS_PAR) $(OBJS_MATH) $(OBJS_OUTPUT) $(OBJS_FORTRAN) \
+		$(OBJS_FLUID) $(OBJS_FLUID3) $(OBJS_FLUID2) $(OBJS_ALE) \
+		$(OBJS_FSI) $(OBJS_F2PRO) $(OBJS_F2ML) $(OBJS_F3ML) \
+		$(OBJS_BRICK1) $(OBJS_BEAM3) $(OBJS_OPT) $(OBJS_MAT) \
+		$(OBJS_SHELL9) $(OBJS_SHELL8) $(OBJS_AXISHELL) \
+		$(OBJS_WALL1) $(OBJS_WALLGE) $(OBJS_IF)
+		@echo "Linking $(PROGRAM) ..."
+		@$(LD) $(LDFLAGS) \
+		$(OBJS_MAIN) $(OBJS_GLOBAL) $(OBJS_PSS) $(OBJS_INPUT) \
+		$(OBJS_PAR) $(OBJS_MATH) $(OBJS_OUTPUT) $(OBJS_FORTRAN) \
+		$(OBJS_FLUID) $(OBJS_FLUID3) $(OBJS_FLUID2) $(OBJS_ALE) \
+		$(OBJS_FSI) $(OBJS_F2PRO) $(OBJS_F2ML) $(OBJS_F3ML) \
+		$(OBJS_BRICK1) $(OBJS_BEAM3) $(OBJS_OPT) $(OBJS_MAT) \
+		$(OBJS_SHELL9) $(OBJS_SHELL8) $(OBJS_AXISHELL) \
+		$(OBJS_WALL1) $(OBJS_WALLGE) $(OBJS_IF) \
+		$(LIBS) $(INCLUDES) -o $(PROGRAM)
 		@echo "done"
 
 
-$(OBJS1):
-		@echo "Making $@ ..."
+$(OBJS_MAIN):
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
-$(OBJS2):     
-		@echo "Making $@ ..."
+$(OBJS_GLOBAL):
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
-$(OBJS3):     
-		@echo "Making $@ ..."
+$(OBJS_PSS):
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
-$(OBJS4):     
-		@echo "Making $@ ..."
+$(OBJS_INPUT):
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
-$(OBJS5):     
-		@echo "Making $@ ..."
+$(OBJS_FLUID3):
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
-$(OBJS6):     
-		@echo "Making $@ ..."
+$(OBJS_SHELL8):
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
-$(OBJS7):     
-		@echo "Making $@ ..."
+$(OBJS_ALE):
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
-$(OBJS8):     
-		@echo "Making $@ ..."
+$(OBJS_PAR):
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
-$(OBJS9):     
-		@echo "Making $@ ..."
+$(OBJS_BRICK1):
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
-$(OBJS10):     
-		@echo "Making $@ ..."
+$(OBJS_MATH):
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
-$(OBJS11):     
-		@echo "Making $@ ..."
+$(OBJS_OUTPUT):
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
-$(OBJS12):     
-		@echo "Making $@ ..."
+$(OBJS_WALL1):
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
-$(OBJS14):     
-		@echo "Making $@ ..."
+$(OBJS_FLUID2):
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
-$(OBJS15):     
-		@echo "Making $@ ..."
+$(OBJS_FLUID):
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
-$(OBJS16):     
-		@echo "Making $@ ..."
+$(OBJS_FSI):
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
-$(OBJS17):     
-		@echo "Making $@ ..."
+$(OBJS_SHELL9):
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
-$(OBJS18):     
-		@echo "Making $@ ..."
+$(OBJS_BEAM3):
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
-$(OBJS19):     
-		@echo "Making $@ ..."
+$(OBJS_F2ML):
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
-$(OBJS20):     
-		@echo "Making $@ ..."
+$(OBJS_F3ML):
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
 $(OBJS_OPT):     
-		@echo "Making $@ ..."
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
 $(OBJS_AXISHELL):     
-		@echo "Making $@ ..."
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
 $(OBJS_MAT):     
-		@echo "Making $@ ..."
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
 $(OBJS_F2PRO):
-		@echo "Making $@ ..."
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
-		
+
 $(OBJS_IF):
-		@echo "Making $@ ..."
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
 $(OBJS_WALLGE):
-		@echo "Making $@ ..."
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
 # fortran
-$(OBJS13):     
-		@echo "Making $@ ..."
+$(OBJS_FORTRAN):     
 		$(F77) $(FFLAGS)  -c ${SRC}/${@D}/$(*F).f -o ${SRC}/$@
 
 .c.o:
@@ -290,11 +271,11 @@ $(OBJS13):
 	$(F77) $(FFLAGS) $(INCLUDES) -c $< -o $@
 
 clean:
-	rm -rf  $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) \
-                $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) \
-                $(OBJS13) $(OBJS14) $(OBJS15) $(OBJS16) $(OBJS17) $(OBJS18) \
-		$(OBJS19) $(OBJS20) \
-		$(OBJS_OPT) $(OBJS_AXISHELL) $(OBJS_MAT) $(OBJS_F2PRO) \
-		$(OBJS_WALLGE) $(OBJS_IF)
-
-
+	rm -rf 	$(OBJS_MAIN) $(OBJS_GLOBAL) $(OBJS_PSS) $(OBJS_INPUT) \
+		$(OBJS_PAR) $(OBJS_MATH) $(OBJS_OUTPUT) $(OBJS_FORTRAN) \
+		$(OBJS_FLUID) $(OBJS_FLUID3) $(OBJS_FLUID2) $(OBJS_ALE) \
+		$(OBJS_FSI) $(OBJS_F2PRO) $(OBJS_F2ML) $(OBJS_F3ML) \
+		$(OBJS_BRICK1) $(OBJS_BEAM3) $(OBJS_OPT) $(OBJS_MAT) \
+		$(OBJS_SHELL9) $(OBJS_SHELL8) $(OBJS_AXISHELL) \
+		$(OBJS_WALL1) $(OBJS_WALLGE) $(OBJS_IF)
+#

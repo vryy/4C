@@ -1,9 +1,9 @@
 #
 # binaries
 #                main
-OBJS1         = src/main/main_ccarat.o 
+OBJS_MAIN     = src/main/main_ccarat.o 
 #                global_full
-OBJS2	      = src/global_full/global_control.o \
+OBJS_GLOBAL   = src/global_full/global_control.o \
                 src/global_full/global_inp_control.o \
                 src/global_full/global_cal_control.o \
                 src/global_full/global_init_control.o \
@@ -85,14 +85,14 @@ OBJS2	      = src/global_full/global_control.o \
 		src/global_full/global_oll_service.o \
 		src/global_full/global_oll_service2.o
 #                pss_full
-OBJS3	      = src/pss_full/pss_am.o \
+OBJS_PSS      = src/pss_full/pss_am.o \
                 src/pss_full/pss_ds.o \
                 src/pss_full/pss_fr.o \
                 src/pss_full/pss_pss.o \
                 src/pss_full/pss_perf.o \
                 src/pss_full/pss_visual.o 
 #                input_full
-OBJS4	      = src/input_full/input_control_global.o \
+OBJS_INPUT    = src/input_full/input_control_global.o \
                 src/input_full/input_ctr_head.o \
                 src/input_full/input_sol.o \
                 src/input_full/input_design.o \
@@ -109,7 +109,7 @@ OBJS4	      = src/input_full/input_control_global.o \
                 src/input_full/inp_cal_dirich_fac.o \
                 src/input_full/input_funct.o
 #                fluid3
-OBJS5	      = src/fluid3/f3_calele.o \
+OBJS_FLUID3   = src/fluid3/f3_calele.o \
                 src/fluid3/f3_calelesize.o \
                 src/fluid3/f3_calextrhs.o \
                 src/fluid3/f3_calfuncderiv.o \
@@ -128,7 +128,7 @@ OBJS5	      = src/fluid3/f3_calele.o \
 		src/fluid3/f3_liftdrag.o \
 		src/fluid3/f3_out.o
 #                shell8
-OBJS6	      = src/shell8/s8_main.o \
+OBJS_SHELL8   = src/shell8/s8_main.o \
                 src/shell8/s8_restart.o \
                 src/shell8/s8_inpele.o \
                 src/shell8/s8_intg.o \
@@ -173,7 +173,7 @@ OBJS6	      = src/shell8/s8_main.o \
                 src/shell8/s8_contact_history.o \
                 src/shell8/s8_contact_init.o
 #                ale
-OBJS7 	      = src/ale3/ale_call_stiff.o \
+OBJS_ALE      = src/ale3/ale_call_stiff.o \
                 src/ale3/ale_dirich.o \
                 src/ale3/ale_dyn_control.o \
                 src/ale3/ale_rhs.o \
@@ -199,11 +199,11 @@ OBJS7 	      = src/ale3/ale_call_stiff.o \
                 src/ale3/ale3_mat_linel.o \
                 src/ale3/ale3_static_ke.o
 #                parallel
-OBJS8	      = src/parallel/par_initmetis.o \
+OBJS_PAR      = src/parallel/par_initmetis.o \
                 src/parallel/par_make_comm.o \
                 src/parallel/par_assignmesh.o
 #                brick1
-OBJS9	      = src/brick1/c1_out.o \
+OBJS_BRICK1   = src/brick1/c1_out.o \
                 src/brick1/c1_bop.o \
                 src/brick1/c1_call_mat.o \
                 src/brick1/c1_call_stiff.o \
@@ -224,11 +224,11 @@ OBJS9	      = src/brick1/c1_out.o \
                 src/brick1/c1_cstr.o \
                 src/brick1/c1_load.o
 #                math
-OBJS10	      = src/math/sort_find.o \
+OBJS_MATH     = src/math/sort_find.o \
                 src/math/math1.o \
                 src/math/arcline.o
 #                output
-OBJS11	      = src/output/out_global.o \
+OBJS_OUTPUT   = src/output/out_global.o \
                 src/output/out_gid_msh.o \
                 src/output/out_gid_sol.o \
                 src/output/out_monitor.o \
@@ -237,7 +237,7 @@ OBJS11	      = src/output/out_global.o \
                 src/output/out_checkfilesize.o \
                 src/output/out_plt.o
 #                wall1
-OBJS12	      = src/wall1/w1_bop.o \
+OBJS_WALL1    = src/wall1/w1_bop.o \
                 src/wall1/w1_b_barop.o \
 		src/wall1/w1_cal_deriv.o \
                 src/wall1/w1_cal_eps.o \
@@ -293,7 +293,7 @@ OBJS12	      = src/wall1/w1_bop.o \
                 src/wall1/w1_mat_damage.o \
                 src/wall1/w1_dam_service.o
 #                fluid2
-OBJS14        = src/fluid2/f2_calcurvature.o \
+OBJS_FLUID2   = src/fluid2/f2_calcurvature.o \
                 src/fluid2/f2_calelesize.o \
                 src/fluid2/f2_calele.o \
                 src/fluid2/f2_calele_tu.o \
@@ -339,7 +339,7 @@ OBJS14        = src/fluid2/f2_calcurvature.o \
                 src/fluid2/f2_ass_dof_ndis_tu.o \
                 src/fluid2/f2_restart.o 
 #                fluid_full
-OBJS15        = src/fluid_full/fluid_adapt_service.o \
+OBJS_FLUID    = src/fluid_full/fluid_adapt_service.o \
                 src/fluid_full/fluid_curvature.o \
                 src/fluid_full/fluid_dyn.o \
                 src/fluid_full/fluid_dirich.o \
@@ -362,7 +362,7 @@ OBJS15        = src/fluid_full/fluid_adapt_service.o \
                 src/fluid_full/fluid_service_tu_1.o\
 		src/fluid_full/inp_fluid_start_data.o
 #                fsi_full
-OBJS16        = src/fsi_full/fsi_aitken.o \
+OBJS_FSI      = src/fsi_full/fsi_aitken.o \
                 src/fsi_full/fsi_ale.o \
                 src/fsi_full/fsi_ale_lin.o \
                 src/fsi_full/fsi_ale_nln.o \
@@ -378,7 +378,7 @@ OBJS16        = src/fsi_full/fsi_aitken.o \
                 src/fsi_full/fsi_service.o \
                 src/fsi_full/fsi_struct.o        	
 #                shell9
-OBJS17       = src/shell9/s9_main.o \
+OBJS_SHELL9   = src/shell9/s9_main.o \
                 src/shell9/s9_a3.o \
                 src/shell9/s9_ans.o \
                 src/shell9/s9_btdb.o \
@@ -419,7 +419,7 @@ OBJS17       = src/shell9/s9_main.o \
                 src/shell9/s9_vthv.o \
                 src/shell9/s9_xint.o 
 #                beam3
-OBJS18        = src/beam3/b3_bop.o \
+OBJS_BEAM3    = src/beam3/b3_bop.o \
                 src/beam3/b3_cal_ele.o \
                 src/beam3/b3_cal_fext.o \
                 src/beam3/b3_cal_force.o \
@@ -436,7 +436,7 @@ OBJS18        = src/beam3/b3_bop.o \
                 src/beam3/b3_mat_plast_mises.o \
                 src/beam3/b3_restart.o 
 #                fluid2ml
-OBJS19        = src/fluid2ml/f2_mlbubmat.o \
+OBJS_F2ML     = src/fluid2ml/f2_mlbubmat.o \
                 src/fluid2ml/f2_mlele.o \
                 src/fluid2ml/f2_mlelesize.o \
                 src/fluid2ml/f2_mlgalmat.o \
@@ -448,7 +448,7 @@ OBJS19        = src/fluid2ml/f2_mlbubmat.o \
                 src/fluid2ml/f2_mltimerhs.o \
                 src/fluid2ml/f2_mlvmmrhs.o 
 #                fluid3ml
-OBJS20        = src/fluid3ml/f3_mlbubmat.o \
+OBJS_F3ML     = src/fluid3ml/f3_mlbubmat.o \
                 src/fluid3ml/f3_mlele.o \
                 src/fluid3ml/f3_mlelesize.o \
                 src/fluid3ml/f3_mlgalmat.o \
@@ -533,7 +533,7 @@ OBJS_WALLGE   = src/wallge/wge_setdof.o \
                 src/wallge/wge_fext.o
 #            
 #--------------- fortran parallel and sequentiell on HPUX10.20 / Linux / Sun
-OBJS13        = src/fortran/colsol.o \
+OBJS_FORTRAN  = src/fortran/colsol.o \
                 src/fortran/mpcg_futils.o \
                 src/fortran/vis2_qat2v2.o \
                 src/fortran/hex_fserv.o \
@@ -542,7 +542,7 @@ OBJS13        = src/fortran/colsol.o \
                 src/fortran/eigen_subspace.o
 #--------------------------------------------  fortran parallel on HPUX11.0
 #            
-#OBJS13         = src/fortran/mumps_interface.o \
+#OBJS_FORTRAN   = src/fortran/mumps_interface.o \
 #                 src/fortran/bi_f77_get_constants.o \
 #                 src/fortran/colsol.o \
 #                 src/fortran/mpcg_futils.o \

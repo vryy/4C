@@ -89,12 +89,12 @@ PFL   = -DHPUX11 \
 #
 #--------------------------------------------------------------------
 #
-FXX=f90
+F77=f90
 CCX=cc
 LDX=f90
 #
 CC	 = $(CCX)
-LD       = $(FXX)
+LD       = $(F77)
 RM	 = /bin/rm -f
 #
 #------------------------------------------------ this is debug-32bit
@@ -105,19 +105,19 @@ RM	 = /bin/rm -f
 #AZTEC	       = -laztec_seq21_32
 #UMFPACK       = -lumfpack40_hpux11_32
 #------------------------------------------------- this is fast-32bit
-#PROGRAM_NAME  = cca_seq_32_fast.exe
-#CFLAGS        = -D__HP__  +e -Ae +w1 -v -O +Onolimit ${PFL}
-#FFLAGS        = -O
-#LDFLAGS       =
-#AZTEC         = -laztec_seq21_32
-#UMFPACK       = -lumfpack40_hpux11_32
+PROGRAM_NAME  = cca_seq_32_fast.exe
+CFLAGS        = -D__HP__  +e -Ae +w1 -v -O +Onolimit ${PFL}
+FFLAGS        = -O
+LDFLAGS       =
+AZTEC         = -laztec_seq21_32
+UMFPACK       = -lumfpack40_hpux11_32
 #------------------------------------------------ this is debug-64bit
-PROGRAM_NAME	= cca_seq_64_debg.exe
-CFLAGS 	= -D__HP__ -Aa -Ae +DD64 -g +w1 ${PFL} -DDEBUG -DSIXTYFOUR
-FFLAGS 	= +DA2.0W -g
-LDFLAGS	= +DA2.0W -v
-AZTEC  	= -laztec_seq21_64
-UMFPACK	= -lumfpack40_hpux11_64
+#PROGRAM_NAME	= cca_seq_64_debg.exe
+#CFLAGS 	= -D__HP__ -Aa -Ae +DD64 -g +w1 ${PFL} -DDEBUG -DSIXTYFOUR
+#FFLAGS 	= +DA2.0W -g
+#LDFLAGS	= +DA2.0W -v
+#AZTEC  	= -laztec_seq21_64
+#UMFPACK	= -lumfpack40_hpux11_64
 #------------------------------------------------- this is fast-64bit
 #PROGRAM_NAME   = cca_seq_64_fast.exe
 #CFLAGS         = -D__HP__ -Aa -Ae +DD64 -O +w1 ${PFL} -DSIXTYFOUR
