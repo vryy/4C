@@ -125,7 +125,6 @@ INT    dyntyp;       /*!< dynamictype                                   */
 INT    iop;          /*!< time integration method                       */
 INT    mlfem;        /*!< multilevel algorithm?                         */
 INT    numdf;        /*!< number of dofs of the fluid elements          */
-INT    numcont;      /*!< number of continuation steps (?)              */
 INT    ite;          /*!< nonlinear iteration scheme                    */
 INT    itchk;        /*!< convergence check during nonlin. iteration    */
 INT    itnorm;       /*!< norm for conv. check d. nonlin. iteration     */
@@ -133,7 +132,6 @@ INT    stchk;        /*!< steady state check every n steps              */
 INT    stnorm;       /*!< norm for steady state check                   */
 INT    iops;         /*!< starting algorithm                            */
 INT    init;         /*!< initialisation of starting field              */
-INT    iprerhs;      /*!< treatment of pressure in time discr.          */
 /* output flags */
 INT    uppss;        /*!< update pss file every n steps                 */
 INT    upout;        /*!< store results every n steps                   */      
@@ -141,6 +139,7 @@ INT    upres;        /*!< store results in .flavia.res every n steps    */
 INT    res_write_evry; /*!< write restart every n steps                 */
 INT    resstep;      /*!< restart step                                  */
 /* time stepping flags and variables */
+INT    itnum;        /*!< actual iteration step                         */
 INT    nstep;        /*!< number of timesteps                           */
 INT    step;         /*!< the actual step                               */
 INT    itemax;       /*!< number of nonlin. iterations                  */
@@ -148,6 +147,7 @@ INT    nums;         /*!< number of starting algorithm steps            */
 INT    itemax_ke;    /*!< number of nonlin. iterations for kappa-eps    */
 INT    stepke;       /*!< the actual step for kappa-epsilon             */
 /* special facilities flags */
+INT    iprerhs;
 INT    viscstr;      /*!< flag for calculation of viscos stresses       */
 INT    freesurf;     /*!< treatment of free surface                     */
 INT    surftens;     /*!< include surface tension effects               */
@@ -161,13 +161,8 @@ INT    time_rhs;     /*!< flag if classic or mass time rhs  */
 INT    conte;    /*!< form of convective term                        */
 INT    vite;     /*!< form of viscous term                           */
 INT    sgvisc;   /*!< type of subgrid viscosity                      */
-INT    fsstnif; 
-INT    fsstnii;
 /* evaluation flags for left and right hand side */
-INT    nik; 	 /*!< EVALUATION OF LHS-MATRICES (w/o NONLINEAR TERM)	*/
-INT    nic;	 /*!< EVALUATION OF NONLINEAR LHS N-CONVECTIVE		*/
 INT    nir;	 /*!< EVALUATION OF NONLINEAR LHS N-REACTION		*/
-INT    nie;	 /*!< EVALUATE ONLY LHS-TERMS FOR EXPLICIT VELOCITY	*/
 INT    nil;	 /*!< EVALUATION OF LUMPED MASS MATRIX (Mvv-lumped)	*/
 INT    nif;	 /*!< EVALUATION OF "TIME - RHS"			*/
 INT    nii;	 /*!< EVALUATION OF "ITERATION - RHS"			*/
@@ -217,18 +212,25 @@ DOUBLE sigma;    /*!< const. for nonlinear iteration                    */
 /* tolerances */
 DOUBLE  ittol;     /*!< tolerance for iteration convergence check       */
 DOUBLE  sttol;     /*!< tolerance for steady state check                */
+/*!< variables related to free surface */
+DOUBLE totarea;  /*!< total area of fluid field */
+DOUBLE dphimax;
+INT    fsstnif; 
+INT    fsstnii;
+INT    hf_numeq_total;
+INT    hf_numeq;
+INT    hf_stab;
+INT    hf_numdf_total;
 /* DOUBLEs related to turbulence*/
 DOUBLE  lenght;         /*!< internal lenght of problem                 */
 DOUBLE  rought;         /*!< roughtness of solid boundaries             */
 DOUBLE  coord_scale[2]; /*!< coordinates for scaling the turbulence variables */   
 /*!< variables related to stabilisation                                 */
-DOUBLE velmax;   /*!< max. velocity, needed for stabilisaton parameter  */
 DOUBLE tau[3];   /*!< array for stabilitity parameter */
 DOUBLE tau_tu;   /*!< array for stabilitity parameter for turbulence*/
 DOUBLE tau_tu_dc;/*!< array for DISCONTINUITY CAPTURING for turbulence*/
 /*!< variables related to ml or turbulence (?) */
 DOUBLE washvel;  /*!< wall shear velocity */   
-DOUBLE totarea;  /*!< total area of fluid field */
 DOUBLE sugrvisc; /*!< subgrid viscosity       */
 DOUBLE smagcon;  /*!< Smagorinsky constant       */
 /**/
