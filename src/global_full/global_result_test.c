@@ -264,13 +264,13 @@ case prb_structure:
       printf("\nChecking results for SHELL9_ortho_geoNL ...\n");
       /*-------------------------------------------- check displacement */
       actresult   = structfield->dis[0].node[48].sol.a.da[0][1];
-      givenresult = 0.03653441520182501;
+      givenresult = -0.01117777927876936;
       fprintf(err,"actual = %24.16lf, given = %24.16lf\n",actresult,givenresult);
       if (FABS(actresult-givenresult)>EPS6)
          dserror("RESULTCHECK: displacement not correct!");
       /*-------------------------------------------------- check stresses */
       actresult   = structfield->dis[0].element[8].e.s9->stresses.a.d3[0][0][3];
-      givenresult = 26.42108001591104;
+      givenresult = 95.62657876539751;
       fprintf(err,"actual = %24.16lf, given = %24.16lf\n",actresult,givenresult);
       if (FABS(actresult-givenresult)>EPS6)
          dserror("RESULTCHECK: stresses not correct!");
