@@ -14,7 +14,7 @@ typedef struct _OPTI
         ot_topology_optimization
      }                    opttype;
 
-     int                  numiter;  /* total number of iteration steps  */
+     INT                  numiter;  /* total number of iteration steps  */
                                
      enum 
      {                              /* type of optimization strategy    */
@@ -42,21 +42,23 @@ typedef struct _OPTI
        struct _OSNLP *nlp;
      }                       strat;
                                          
-     int  numvar;                /* total number struct. opt. variables */
-     int  nvaind;                /* number of independent opt variables */
-     int  numeqc;                /* number equality     constraints     */
-     int  numiqc;                /* number inequality   constraints     */
-     int  numres;                /* number restriction data             */
-     int  numlin;                /* number linking     data             */
+     INT  numvar;                /* total number struct. opt. variables */
+     INT  nvaind;                /* number of independent opt variables */
+     INT  numeqc;                /* number equality     constraints     */
+     INT  numiqc;                /* number inequality   constraints     */
+     INT  numres;                /* number restriction data             */
+     INT  numlin;                /* number linking     data             */
      struct _OBTV            *ovar;           /* optimization variables */
      struct _OEQC            *oeqc;           /* equality   constraints */
      struct _OIQC            *oiqc;           /* inequality constraints */
      struct _ORES            *ores;           /* variable restricitons  */
      struct _OLIN            *olin;           /* variable linking       */
      
-     double totvol;
-     double totwgt;
-     double totmas;
+     struct _OEIG      *oeig;/* struct contains eigenvalue analysis data */
+     DOUBLE totvol;
+     DOUBLE totwgt;
+     DOUBLE totmas;
+     DOUBLE nlndat;
      /*---- smoothing of objectives or densities or ... ---*/                               
      /* input file should contain:
      OPT_SMO       ON          : smooth gradients or other values
@@ -75,8 +77,8 @@ typedef struct _OPTI
         sm_dens
      }                    smoothtype;
      /* modified sigmund smoothing function (diss: maute...)*/
-     double smoothrad; /* radius   */
-     double smoothexp; /* exponent */
+     DOUBLE smoothrad; /* radius   */
+     DOUBLE smoothexp; /* exponent */
 
 } OPTI;
 /*----------------------------------------------------------------------*
@@ -104,23 +106,23 @@ typedef enum _LINKR
  *----------------------------------------------------------------------*/
 typedef struct _OSFSD
 {
-     int     numiter;   /* number of iteration steps with fsd           */
-     int      numvar;   /* number number of independent opt. variables  */
-     double   grdinc;   /* forward difference step increment            */
+     INT     numiter;   /* number of iteration steps with fsd           */
+     INT      numvar;   /* number number of independent opt. variables  */
+     DOUBLE   grdinc;   /* forward difference step increment            */
      
      EVGRAD    fgrad;   /* evaluation of function gradients             */
 
-     double    acc  ;   /*  erforderliche genauigkeit                   */
-     double    alpha;   /*  genauigkeit fuer die gleichheitsrestriktion */
-     double    beta ;   /*  schreitweitenfaktor                         */
-     double    delta;   /*  schrittweitenbegrenzung                     */
-     double    gamma;   /*  gleichheitsrestriktionswert                 */
+     DOUBLE    acc  ;   /*  erforderliche genauigkeit                   */
+     DOUBLE    alpha;   /*  genauigkeit fuer die gleichheitsrestriktion */
+     DOUBLE    beta ;   /*  schreitweitenfaktor                         */
+     DOUBLE    delta;   /*  schrittweitenbegrenzung                     */
+     DOUBLE    gamma;   /*  gleichheitsrestriktionswert                 */
 
-     double    *grdobj;
-     double    *grdcon;
-     double    *var   ;
-     double    *resu  ;
-     double    *resl  ;
+     DOUBLE    *grdobj;
+     DOUBLE    *grdcon;
+     DOUBLE    *var   ;
+     DOUBLE    *resu  ;
+     DOUBLE    *resl  ;
 
 
 } OSFSD;
@@ -130,7 +132,7 @@ typedef struct _OSFSD
 typedef struct _OSNLP
 {
      EVGRAD    fgrad;   /* evaluation of function gradients             */
-     double   grdinc;   /* forward difference step increment            */
+     DOUBLE   grdinc;   /* forward difference step increment            */
      
      enum 
      {                  /* type of scaling the variables                */
@@ -139,59 +141,59 @@ typedef struct _OSNLP
         hessian
      }                         sclvar;
      
-     double    acc ;   /*  accuracy in program nlpql                    */
-     double sclfun ;    /* scaling factor for objective                 */
-     double sclcon ;    /* scaling factors for constraints              */
-     double scbou  ;    /* variable for autom. scaling of objective     */
-     int    numiter;    /* number of iteration steps with nlp           */
-     int    nlpldl ;    /* flag for control of nonlinear programming    */
-     int    nlluen ;    /* lueunberger selfscaling bfgs parameter       */
-     int    maxfun ;    /*  max. n. o. function calls in line search    */
-     int    lise   ;    /*  flag for control of nonlinear programming   */
-     double amue   ;    /*  factor for line search adjustment           */
-     int    merit  ;    /*  aug. lagrangian / l1-penalty merit function */
+     DOUBLE    acc ;   /*  accuracy in program nlpql                    */
+     DOUBLE sclfun ;    /* scaling factor for objective                 */
+     DOUBLE sclcon ;    /* scaling factors for constraints              */
+     DOUBLE scbou  ;    /* variable for autom. scaling of objective     */
+     INT    numiter;    /* number of iteration steps with nlp           */
+     INT    nlpldl ;    /* flag for control of nonlinear programming    */
+     INT    nlluen ;    /* lueunberger selfscaling bfgs parameter       */
+     INT    maxfun ;    /*  max. n. o. function calls in line search    */
+     INT    lise   ;    /*  flag for control of nonlinear programming   */
+     DOUBLE amue   ;    /*  factor for line search adjustment           */
+     INT    merit  ;    /*  aug. lagrangian / l1-penalty merit function */
 
 
 
-     int numcon; /* max. number struct. opt. constraints      */
-     int numeqc; /* max. number equality     constraints      */
-     int iscvar; /* type of scaling the variables             */
-     int igrad ; /* define kind of gradient evaluation        */
-     int isqp  ; /* flag for control of nonlinear programming */
-     int mode  ; /* mode = 0 : normal execution.              */
-     double time; /* cpu time used for optimization with nlp  */   
-     int nprint; /* write nlp process data to file            */
-     double *var;  /* initial guess for the optimal solution, on return: the last computed iterate */
-     double *resl; /* the upper bounds of the variables */
-     double *resu; /* the lower bounds of the variables */
-     double *vscale; /* scaling factors  for variables   */
-     double *rconst; /* equilibrium equality constraint array */
-     double *cscale; /* scaling factors  for constraints */
-     double *rumult; /* vector of lagrange multipliers  */
-     int    *active; /* active constraints (active(j) = .true.) */
-     double *df;     /* gradients of the objective function */
-     double *dg;     /* gradients of the active constraints */
-     double *rchess; /* approximation of the hessian matrix */
-     double *rdhess; /* hessian matrix ?*/
-     double *wa;     /* wa is a real working array of length lwa */
-     int    *kwa;    /* wa is a intg working array of length lwa */
-     int    *lwa;    /* wa is a intg working array of length lwa */
-     double *f; /* the objective function value of x */   
-     int    nitstep; /* current iteration step */
+     INT numcon; /* max. number struct. opt. constraints      */
+     INT numeqc; /* max. number equality     constraints      */
+     INT iscvar; /* type of scaling the variables             */
+     INT igrad ; /* define kind of gradient evaluation        */
+     INT isqp  ; /* flag for control of nonlinear programming */
+     INT mode  ; /* mode = 0 : normal execution.              */
+     DOUBLE time; /* cpu time used for optimization with nlp  */   
+     INT nprint; /* write nlp process data to file            */
+     DOUBLE *var;  /* initial guess for the optimal solution, on return: the last computed iterate */
+     DOUBLE *resl; /* the upper bounds of the variables */
+     DOUBLE *resu; /* the lower bounds of the variables */
+     DOUBLE *vscale; /* scaling factors  for variables   */
+     DOUBLE *rconst; /* equilibrium equality constraint array */
+     DOUBLE *cscale; /* scaling factors  for constraints */
+     DOUBLE *rumult; /* vector of lagrange multipliers  */
+     INT    *active; /* active constraints (active(j) = .true.) */
+     DOUBLE *df;     /* gradients of the objective function */
+     DOUBLE *dg;     /* gradients of the active constraints */
+     DOUBLE *rchess; /* approximation of the hessian matrix */
+     DOUBLE *rdhess; /* hessian matrix ?*/
+     DOUBLE *wa;     /* wa is a real working array of length lwa */
+     INT    *kwa;    /* wa is a intg working array of length lwa */
+     INT    *lwa;    /* wa is a intg working array of length lwa */
+     DOUBLE *f; /* the objective function value of x */   
+     INT    nitstep; /* current iteration step */
      /* dimensions for wa's ... */
-     int n;
-     int nr;
-     int mnn2;
-     int mmax;   /* row dimension of dg >=1                    */
-     int nmax;   /* row dimension of c  >=1                    */
-     int nc1;    /* = nmax; first  dimension of c              */
-     int nc2;    /* = nmax; second dimension of c              */
-     int nlwa ;
-     int lkwa ;
-     int llwa ;
-     double *scg ;/* scaling factors for constraints */ 
-     int ixmax;
-     int ixmin;
+     INT n;
+     INT nr;
+     INT mnn2;
+     INT mmax;   /* row dimension of dg >=1                    */
+     INT nmax;   /* row dimension of c  >=1                    */
+     INT nc1;    /* = nmax; first  dimension of c              */
+     INT nc2;    /* = nmax; second dimension of c              */
+     INT nlwa ;
+     INT lkwa ;
+     INT llwa ;
+     DOUBLE *scg ;/* scaling factors for constraints */ 
+     INT ixmax;
+     INT ixmin;
      
 
 
@@ -205,8 +207,8 @@ typedef struct _OSNLP
  *----------------------------------------------------------------------*/
 typedef struct _OBTV
 {
-     int objId;          /* object Id (design node, material number ... */
-     int posgl;          /* position in global variable vector          */ 
+     INT objId;          /* object Id (design node, material number ... */
+     INT posgl;          /* position in global variable vector          */ 
      /* type of object with variable attributes */
      enum 
      {                  
@@ -215,16 +217,17 @@ typedef struct _OBTV
         dcoorx,                   /* variable design coordinates        */
         dcoory,
         dcoorz,
+        eleofdesofmat,     /* variable material data of design elements */
         eleofmat,                 /* variable material data of elements */
         material                  /* variable material                  */
      }            ovatt;
-     int    numvar     ;/*  number of opt. variables                    */
-     double *var       ;/*  pointer to opt. variable                    */
-     double scva       ;/*  scaling factor                              */
-     double bupper     ;/*  upper limitation of opt. variable           */
-     double blower     ;/*  lower limitation of opt. variable           */
+     INT    numvar     ;/*  number of opt. variables                    */
+     DOUBLE *var       ;/*  pointer to opt. variable                    */
+     DOUBLE scva       ;/*  scaling factor                              */
+     DOUBLE bupper     ;/*  upper limitation of opt. variable           */
+     DOUBLE blower     ;/*  lower limitation of opt. variable           */
      
-     int    linked     ;/*  prescribed linking                          */
+     INT    linked     ;/*  prescribed linking                          */
      LINKR olin_type;          /* type of objects to be linked with              */
 } OBTV;
 /*----------------------------------------------------------------------*
@@ -232,7 +235,7 @@ typedef struct _OBTV
  *----------------------------------------------------------------------*/
 typedef struct _OEQC
 {
-     int objId;          /* object Id (design node, material number ... */
+     INT objId;          /* object Id (design node, material number ... */
     
      enum 
      {                  
@@ -246,15 +249,15 @@ typedef struct _OEQC
         volume,                    /* volume  equality constraint       */
         mass                       /* mass    equality constraint       */
      }                         oeqc_type;
-     double val        ;           /*  value  of equality constraint    */
-     double scl        ;           /*  scaling factor of constraint     */
+     DOUBLE val        ;           /*  value  of equality constraint    */
+     DOUBLE scl        ;           /*  scaling factor of constraint     */
 } OEQC;
 /*----------------------------------------------------------------------*
  | inequality constraints                              a.lipka 5/01     |
  *----------------------------------------------------------------------*/
 typedef struct _OIQC
 {
-     int objIds[2];   /* object Ids (design nodes, material numbers ... */
+     INT objIds[2];   /* object Ids (design nodes, material numbers ... */
      
      enum 
      {                  
@@ -278,7 +281,7 @@ typedef struct _OIQC
         lart                       /* <     */
      }                         oiqc_operator;
 
-     double *val        ;         /* values  of inequality constraint   */
+     DOUBLE *val        ;         /* values  of inequality constraint   */
 } OIQC;
 /*----------------------------------------------------------------------*
  | variable restricitons                               a.lipka 5/01     |
@@ -292,7 +295,7 @@ typedef struct _OIQC
  *----------------------------------------------------------------------*/
 typedef struct _ORES
 {
-     int objId;          /* object Id (design node, material number ... */
+     INT objId;          /* object Id (design node, material number ... */
      
      enum 
      {                  
@@ -303,9 +306,9 @@ typedef struct _ORES
      
      } ores_type;
 
-     double resuval;                               /*  upper value */
-     double reslval;                               /*  lower value */
-     double ressval;                               /*  scale value */
+     DOUBLE resuval;                               /*  upper value */
+     DOUBLE reslval;                               /*  lower value */
+     DOUBLE ressval;                               /*  scale value */
 } ORES;
 /*----------------------------------------------------------------------*
  | variable linking                                    a.lipka 5/01     |
@@ -319,10 +322,24 @@ typedef struct _ORES
  *----------------------------------------------------------------------*/
 typedef struct _OLIN
 {
-     int objIds[2];   /* object Ids (design nodes, material numbers ... */
+     INT objIds[2];   /* object Ids (design nodes, material numbers ... */
      
      LINKR olin_type;          /* type of objects to be linked with              */
 } OLIN;
+/*----------------------------------------------------------------------*
+ | struct for eigenvalue analysis                      a.lipka 5/01     |
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+typedef struct _OEIG
+{
+     INT      numeigv; /* number of eigenvalues   */  
+     DOUBLE  eigv[10]; /* vector with eigenvalues */
+     DOUBLE  eigf[10]; /* vector with frequencies */
+     DOUBLE  eigs[10]; /* scaling vector          */
+     DOUBLE  *scasens; /* vector with scaling factors for sens. ana.*/        
+     /*--- KREISSELMEIER-STEINHAUSER  ---*/
+     DOUBLE  rhoks;
+} OEIG;
 
 typedef enum _OPT_GR_OUT
 {
