@@ -6,15 +6,21 @@ C
 C-----------------------------------------------------------------------
       IMPLICIT REAL*8 (A-H,O-Z)
       INTEGER   INFO
-      PARAMETER (INFO=12)
-      PARAMETER (ZERO=0.0D0,ONE=1.0D0,TWO=2.0D0,HALF=0.5D0)
-      PARAMETER (PI=3.1415927D0,PIHF=1.5707963D0) 
-      PARAMETER (UP=1.0D+08,UL=1.0D-08)
       DIMENSION VAR(NUMVAR),DF(NUMVAR),DG(NUMVAR),ETAI(NUMVAR)
       DIMENSION RESU(NUMVAR),RESL(NUMVAR),VARUP(NUMVAR),VARLO(NUMVAR)
 C------------------------------------------------------ IN LINE FUNCTION
       POW(A,B) = EXP(B*LOG(A))
 C
+C-----------------------------------------------------------------------
+      INFO=12
+      ZERO=0.0D0
+      ONE=1.0D0
+      TWO=2.0D0
+      HALF=0.5D0
+      PI=3.1415927D0
+      PIHF=1.5707963D0
+      UP=1.0D+08
+      UL=1.0D-08
 C
 C------------------------------------------- OPEN OUPUTFILE
       IF (IPRINT.GT.0) THEN

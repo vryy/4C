@@ -670,7 +670,7 @@ c
 *
 *     .. Parameters ..
       DOUBLE PRECISION   ZERO, ONE
-      PARAMETER          ( ZERO = 0.0D+0, ONE = 1.0D+0 )
+C      PARAMETER          ( ZERO = 0.0D+0, ONE = 1.0D+0 )
 *     ..
 *     .. Local Scalars ..
       LOGICAL            ALLEIG, INDEIG, LOWER, LQUERY, VALEIG, WANTZ
@@ -696,6 +696,9 @@ c
       INTRINSIC          MAX, MIN, SQRT
 *     ..
 *     .. Executable Statements ..
+*
+      ZERO = 0.0D+0
+      ONE = 1.0D+0
 *
 *     Test the input parameters.
 *

@@ -185,12 +185,21 @@ C     * V      --> PRINCIPAL DIRECTIONS (EIGENVECTORS)           (O)   *
 C     ******************************************************************
 C
       IMPLICIT REAL*8 (A-H,O-Z)
-      PARAMETER (ITM=200,ERR=1.D-9,ZERO=0.0D0,ONE=1.0D0,ZTOLP=1.D-9,
-     +TWO=2.0D0,FOUR=4.0D0,KKK=3)
-      DIMENSION A(KKK,KKK),V(KKK,KKK)
+C      PARAMETER (ITM=200,ERR=1.D-9,ZERO=0.0D0,ONE=1.0D0,ZTOLP=1.D-9,
+C     +TWO=2.0D0,FOUR=4.0D0,KKK=3)
+      DIMENSION A(3,3),V(3,3)
 C
       IT=0
 C
+C-----------------------------------------------------------------------
+      ITM=200
+      ERR=1.D-9
+      ZERO=0.0D0
+      ONE=1.0D0
+      ZTOLP=1.D-9
+      TWO=2.0D0
+      FOUR=4.0D0
+      KKK=3
 C-------------------------------------------PUT A UNIT MATRIX IN ARRAY V
 C
       DO 10 I=1,KKK
@@ -274,8 +283,11 @@ C         IRC -->  RETURN CODE ( IRC = 0   OK
 C                                IRC = 1   ERROR: MATRIX SINGULAER )  
 C----------------------------------------------------------------------C
       IMPLICIT REAL*8 (A-H,O-Z)
-      PARAMETER (TOL=1.0D-20,N=6)
-      DIMENSION A(N,N),B(N,N),MX(N),MY(N)
+C      PARAMETER (TOL=1.0D-20,N=6)
+      DIMENSION A(6,6),B(6,6),MX(6),MY(6)
+
+      TOL=1.0D-20
+      N=6
 
       IRC=0                 
 
@@ -427,9 +439,16 @@ C     FNI = INVERSE FROM FN
 C     DETF= DETERMINANT FROM FNI 
 C----------------------------------------------------------------------
       IMPLICIT  REAL*8 (A-H,O-Z)
-      PARAMETER (NDISD=9)
-      PARAMETER (ZERO=0.0D0,ONE=1.0D0,TWO=2.0D0,THREE=3.0D0)
+C      PARAMETER (NDISD=9)
+C      PARAMETER (ZERO=0.0D0,ONE=1.0D0,TWO=2.0D0,THREE=3.0D0)
       DIMENSION  FN(9),FNI(9)
+
+      NDISD=9
+      ZERO=0.0D0
+      ONE=1.0D0
+      TWO=2.0D0
+      THREE=3.0D0
+      
       DUM = ( FN(1)*FN(2)*FN(3) +
      1        FN(5)*FN(7)*FN(8) +
      2        FN(9)*FN(4)*FN(6) -
@@ -470,9 +489,16 @@ C
       IMPLICIT REAL*8 (A-H,O-Z)
       CHARACTER SNAME*6
       DIMENSION TENSOR(6),DEVIAT(6)
-      PARAMETER (SNAME='C1PRDR',ZERO=0.0D0,ONE=1.0D0,TWO=2.0D0)
-      PARAMETER (THREE=3.0D0,TOL=1.E-5)
+C      PARAMETER (SNAME='C1PRDR',ZERO=0.0D0,ONE=1.0D0,TWO=2.0D0)
+C      PARAMETER (THREE=3.0D0,TOL=1.E-5)
 C
+      SNAME='C1PRDR'
+      ZERO=0.0D0
+      ONE=1.0D0
+      TWO=2.0D0
+      THREE=3.0D0
+      TOL=1.E-5
+      
       FAC1 = - THREE*SQRT(THREE)/TWO
       TR = TENSOR(1)+TENSOR(2)+TENSOR(3)
 C
