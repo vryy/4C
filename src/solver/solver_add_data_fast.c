@@ -29,14 +29,12 @@ Maintainer: Malte Neumann
 /*----------------------------------------------------------------------*
   | global dense matrices for element routines             m.gee 7/01  |
  *----------------------------------------------------------------------*/
-extern struct _ARRAY etforce_global;  /* element Time RHS */
-extern struct _ARRAY eiforce_global;  /* element Iteration RHS */
+extern struct _ARRAY eforce_global;   /* element Iteration RHS */
 extern struct _ARRAY edforce_global;  /* element dirichlet RHS */
 
 extern struct _ARRAY estif_fast;
 extern struct _ARRAY emass_fast;
-extern struct _ARRAY etforce_fast;
-extern struct _ARRAY eiforce_fast;
+extern struct _ARRAY eforce_fast;
 extern struct _ARRAY edforce_fast;
 
 
@@ -87,7 +85,7 @@ static  INT        *invbindx = NULL;
   union _SPARSE_ARRAY *sysa;
 
   DOUBLE *estif_f,*emass_f;
-  DOUBLE  *etforce,*etforce_f,*eiforce,*eiforce_f,*edforce,*edforce_f;
+  DOUBLE  *eforce,*eforce_f,*edforce,*edforce_f;
   INT   i,j,k,l;
   INT        counter;
   ELEMENT          *actele;
@@ -118,14 +116,12 @@ static  INT        *invbindx = NULL;
 #endif
 
 
-  eiforce = eiforce_global.a.dv;
-  etforce = etforce_global.a.dv;
+  eforce = eforce_global.a.dv;
   edforce = edforce_global.a.dv;
 
   estif_f = estif_fast.a.dv;
   emass_f = emass_fast.a.dv;
-  etforce_f = etforce_fast.a.dv;
-  eiforce_f = eiforce_fast.a.dv;
+  eforce_f  = eforce_fast.a.dv;
   edforce_f = edforce_fast.a.dv;
 
 
@@ -361,8 +357,7 @@ static  INT        *invbindx = NULL;
 #endif
           for(j=0;j<iel*4;j++)
           {
-            etforce[j]=etforce_f[j*LOOPL+l];
-            eiforce[j]=eiforce_f[j*LOOPL+l];
+            eforce[j] =eforce_f[j*LOOPL+l];
             edforce[j]=edforce_f[j*LOOPL+l];
           }
 #ifdef PERF
@@ -372,24 +367,17 @@ static  INT        *invbindx = NULL;
 #ifdef PERF
     perf_begin(69);
 #endif
-          /* assemble time rhs */
-          if (container->nif!=0)
-          {
-            container->dvec = container->ftimerhs;
-            assemble_intforce(actele,&etforce_global,container,actintra);
-          }
-
           /* assemble iteration rhs */
-          if (container->nii+hasext[l]!=0 || container->nim!=0)
+          if (container->nii+hasext[l]!=0)
           {
-            container->dvec = container->fiterhs;
-            assemble_intforce(actele,&eiforce_global,container,actintra);
+            container->dvec = container->frhs;
+            assemble_intforce(actele,&eforce_global,container,actintra);
           }
 
           /* assemble edforce */
           if (hasdirich[l]!=0)
           {
-            container->dvec = container->fiterhs;
+            container->dvec = container->frhs;
             assemble_intforce(actele,&edforce_global,container,actintra);
           }
 
