@@ -91,6 +91,9 @@ if [ "x$PARALLEL" = "xno" ]; then
   f3_beltrami_fastass.dat
   f3_beltrami_fastass2.dat
   f3_ew_Q1_27x.dat
+  f3f_beltrami.dat
+  f3f_ew_Q1_27x.dat
+  ffsi_ow3D.dat
   fsi_mtr_dc4x4.dat
   fsi_ow32x32.dat
   fsi_tank20x10.dat
@@ -131,6 +134,9 @@ else
   f3_beltrami_fastass.dat
   f3_beltrami_fastass2.dat
   f3_ew_Q1_27x.dat
+  f3f_beltrami.dat
+  f3f_ew_Q1_27x.dat
+  ffsi_ow3D.dat
   fsi_mtr_dc4x4.dat
   fsi_ow32x32.dat
   fsi_tank20x10.dat
@@ -149,7 +155,7 @@ else
   '
 fi
 
-#liste=' w1_epc3D.dat '
+#liste=' f3f_beltrami.dat f3f_ew_Q1_27x.dat ffsi_ow3D.dat'
 
 # get the start-time in seconds:
 h=`date +"%H"`

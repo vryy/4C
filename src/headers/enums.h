@@ -99,6 +99,7 @@ typedef enum _ELEMENT_TYP
                        el_none,        /* unknown type of element */
                        el_shell1,      /* 5 parameter shell element */
                        el_shell8,      /* 7 parameter shell element */
+                       el_shell8_fast,
                        el_shell9,      /* multi layer shell element */
                        el_brick1,      /* structural brick element */
                        el_wall1,       /* 2D plane stress - plane strain element */
@@ -107,6 +108,7 @@ typedef enum _ELEMENT_TYP
                        el_fluid2_pro,  /* 2D fluid element */
                        el_fluid2_tu,   /* 2D fluid element for turbulence */
                        el_fluid3,      /* 3D fluid element */
+                       el_fluid3_fast,
                        el_ale2,        /* 2D pseudo structural ale element */
                        el_ale3,        /* 3D pseudo structural ale element */
                        el_axishell,    /* 1D axisymmetrical shell element */
@@ -116,6 +118,31 @@ typedef enum _ELEMENT_TYP
                                         * elements. This must be the
                                         * last entry! */
 } ELEMENT_TYP;
+
+
+
+#ifdef D_FLUID3_F
+/*----------------------------------------------------------------------*/
+/*!
+  \brief  typs of fast elements
+
+  List of typs of fast elements. Each set of fast elements can only contain ONE
+  typ of elements.
+
+  \author mn
+  \date 10/04
+*/
+/*----------------------------------------------------------------------*/
+typedef enum _FAST_ELE_TYP
+{
+  fele_f3f_hex8_e,        /* fluid3 fast, hexaeder,   8 nodes, euler */
+  fele_f3f_hex8_a,        /* fluid3 fast, hexaeder,   8 nodes, ale   */
+  fele_f3f_tet4_e,        /* fluid3 fast, tetraheder, 4 nodes, euler */
+  fele_f3f_tet4_a         /* fluid3 fast, tetraheder, 4 nodes, ale   */
+} FAST_ELE_TYP;
+#endif
+
+
 
 /*----------------------------------------------------------------------*/
 /*!

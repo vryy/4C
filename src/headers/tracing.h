@@ -81,7 +81,7 @@ typedef struct _TRACEARRAY
 defined in pss_ds.c, declared in tracing.h
 </pre>
 *----------------------------------------------------------------------*/
-typedef struct _TRACE
+typedef struct _CCA_TRACE
 {
 /* variables for watching the ARRAYS */
 INT                 trace_on;             /*!< switches trace on/off */
@@ -94,7 +94,7 @@ struct _TRACEARRAY *endarraychain;        /*!< ptr to the actual end of the chai
 INT                 deepness;             /*!< the actual deepness of the calling tree */
 struct _TRACEROUT   routine[100];         /*!< chained list ring to trace routine */
 struct _TRACEROUT   *actroutine;          /*!< ptr to actual routine */
-} TRACE;
+} CCA_TRACE;
 
 
 /*! @} (documentation module close)*/

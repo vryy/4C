@@ -410,6 +410,8 @@ if (ioflags.monitor==1)
 /*---------- calculate time independent constants for time algorithm ---*/
 fluid_cons();
 
+dsmemreport();
+
 /*======================================================================*
  |                         T I M E L O O P                              |
  *======================================================================*/
@@ -738,6 +740,8 @@ monitoring(actfield,genprob.numff,actpos,fdyn->acttime);
 tt=ds_cputime()-t2;
 tts+=tt;
 printf("PROC  %3d | total time for this time step: %10.3e \n",par.myrank,tt);
+
+dsmemreport();
 
 /*--------------------- check time and number of steps and steady state */
 if (fdyn->step < fdyn->nstep && fdyn->acttime <= fdyn->maxtime && steady==0)

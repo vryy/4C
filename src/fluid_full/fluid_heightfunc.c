@@ -389,6 +389,7 @@ for (i=0;i<numele;i++)
    actele = actpart->pdis[0].element[i];
    switch(actele->eltyp)
    {
+
 #ifdef D_FLUID2
    case el_fluid2:
       if (actele->e.f2->fs_on!=3) continue;
@@ -398,15 +399,27 @@ for (i=0;i<numele;i++)
 	     action,NULL,NULL,container);
    break;
 #endif
+
 #ifdef D_FLUID3
    case el_fluid3:
       if (actele->e.f3->fs_on!=3) continue;
       fluid3(actpart,actintra,actele,
              &estif_global,NULL,
              &etforce_global,&eiforce_global,NULL,
-	     action,NULL,NULL,container);
+             action,NULL,NULL,container);
    break;
 #endif
+
+#ifdef D_FLUID3_F
+   case el_fluid3_fast:
+      if (actele->e.f3->fs_on!=3) continue;
+      fluid3_fast(actpart,actintra,actele,
+             &estif_global,NULL,
+             &etforce_global,&eiforce_global,NULL,
+             action,NULL,NULL,container);
+   break;
+#endif
+
    default:
       dserror("eltyp unknown!\n");
    }

@@ -25,6 +25,10 @@ SPOOLES_LIB="-lspoolesMPI -lspooles"
 UMFPACK_INC=
 UMFPACK_LIB="-lumfpack -lamd"
 
+# fast elements
+LOOPL="-DLOOPL=64"
+
+
 LIBS="-lc -lm -lg2c -llapack -lgoto_p4_512-r0.6 -lxerbla -lmetis"
 #LIBS="-lc -lm -lg2c -llapack -lblas -lmetis"
 

@@ -15,7 +15,7 @@ BASEDIR="/gdata0/rus/rus/stati/lib"
 
 
 INCLUDEDIRS="-I/gdata0/rus/rus/stati/include"
-LIBDIRS="-L$BASEDIR/metis" 
+LIBDIRS="-L$BASEDIR/metis"
 
 # aztec
 AZTEC_INC=""
@@ -29,6 +29,10 @@ SPOOLES_LIB="-L$BASEDIR/spooles -lspooles"
 UMFPACK_INC=""
 UMFPACK_LIB=""
 
+# fast elements
+LOOPL="-DLOOPL=512"
+
+
 
 LIBS="-lmetis -lc -lm -llapack  -lblas"
 
@@ -36,8 +40,8 @@ LIBS="-lmetis -lc -lm -llapack  -lblas"
 PROGRAMNAME=cca_sx6_par
 CFLAGS_OPT="-O nooverlap -alias nopointer"
 FFLAGS_OPT=""
-CFLAGS="-Xc -DSIXTYFOUR -pvctl,loopcnt=500000"
-FFLAGS="-DSIXTYFOUR -Wf,\"-pvctl,loopcnt=500000\""
+CFLAGS="-Xc -DSIXTYFOUR -pvctl loopcnt=500000 noassume"
+FFLAGS="-DSIXTYFOUR -Wf,\"-pvctl loopcnt=500000 noassume\""
 LDFLAGS=""
 
 #CFLAGS="-Xc -DSIXTYFOUR -ftrace -loopprof -pvctl,loopcnt=500000"

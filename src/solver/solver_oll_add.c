@@ -167,8 +167,8 @@ void  add_oll(
 #endif
   INT         myrank;                /* my intra-proc number */
   INT         nprocs;                /* my intra- number of processes */
-  DOUBLE    **estif;                 /* element matrix to be added to system matrix */
-  DOUBLE    **emass;                 /* element matrix to be added to system matrix */
+  DOUBLE    **estif = NULL;          /* element matrix to be added to system matrix */
+  DOUBLE    **emass = NULL;          /* element matrix to be added to system matrix */
   INT        *update;                /* vector update see AZTEC manual */
   INT       **cdofs;                 /* list of coupled dofs and there owners, see init_assembly */
   INT         ncdofs;                /* total number of coupled dofs */

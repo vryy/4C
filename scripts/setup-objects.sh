@@ -65,6 +65,16 @@ if grep '^D_FLUID3' "$definefile" 2>&1 > /dev/null ; then
     fi
 fi
 
+# FLUID3_FAST
+if grep '^D_FLUID3_F' "$definefile" 2>&1 > /dev/null ; then
+    if [ "x$OBJ_FLUID" = "x0" ] ; then
+        OBJECTS="$OBJECTS \$(OBJS_F3F) \$(OBJS_F3F_F) \$(OBJS_FLUID)"
+        OBJ_FLUID=1
+    else
+        OBJECTS="$OBJECTS \$(OBJS_F3F) \$(OBJS_F3F_F)"
+    fi
+fi
+
 # FLUID3_ML
 if grep '^FLUID3_ML' "$definefile" 2>&1 > /dev/null ; then
     if [ "x$OBJ_FLUID" = "x0" ] ; then

@@ -132,8 +132,8 @@ DOUBLE val;          /* temporary calculation value                     */
 DOUBLE velno;        /* velocity norm                                   */
 DOUBLE strle;        /* streamlength                                    */
 DOUBLE e1,e2,e3;     /* natural coordinates of inegration point         */
-DOUBLE fac,facr;     /* factors                                         */
-DOUBLE facs,fact;    /* factors                                         */
+DOUBLE fac,facr = 0.0;  /* factors                                      */
+DOUBLE facs = 0.0,fact= 0.0;  /* factors                                */
 DOUBLE velino[3];    /* normed velocity vector at integration point     */
 DOUBLE velint[3];
 DIS_TYP typ;

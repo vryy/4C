@@ -928,7 +928,7 @@ void spo_make_index(
   return;
 } /* end of spo_make_index */
 
-#endif FAST_ASS /* ifdef FAST_ASS */
+#endif /* ifdef FAST_ASS */
 
 
 

@@ -95,9 +95,11 @@ void f3_calelestress(
   DIS_TYP typ;	               /* element displacement type  */
   DOUBLE  dens,visc,twovisc;   /* material parameters */
   NODE   *actnode;             /* actual node */
+#ifdef D_FSI
   NODE   *actfnode;             /* actual node */
   NODE   *actanode;             /* actual node */
   GNODE  *actfgnode;             /* actual node */
+#endif
   FLUID_DATA     *data;
   FLUID_DYNAMIC  *fdyn;
 
@@ -180,6 +182,7 @@ case 1: /* real pressure + viscose stresses */
          xyze[1][j] = ele->node[j]->x[1];
          xyze[2][j] = ele->node[j]->x[2];
       }
+      break;
 #ifdef D_FSI
    case 1:
       for (j=0;j<iel;j++)
@@ -269,6 +272,13 @@ case 1: /* real pressure + viscose stresses */
         sigmaint[iv][3] = (vderxy[0][1] + vderxy[1][0])*visc;
         sigmaint[iv][4] = (vderxy[1][2] + vderxy[2][1])*visc;
         sigmaint[iv][5] = (vderxy[0][2] + vderxy[2][0])*visc;
+
+        /*sigmaint[iv][0] = -preint;
+        sigmaint[iv][1] = -preint;
+        sigmaint[iv][2] = -preint;
+        sigmaint[iv][3] = 0.0;
+        sigmaint[iv][4] = 0.0;
+        sigmaint[iv][5] = 0.0;*/
 
         iv++;
 

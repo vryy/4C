@@ -380,6 +380,10 @@ void msr_nnz_topology(
       }
     }
   }  /* end of loop over numeq */
+
+  /* free node_dof */
+  CCAFREE(node_dof);
+
   /*--------------------------------------------- now do the coupled dofs */
   coupledofs = &(actpart->pdis[kk].coupledofs);
   for (i=0; i<coupledofs->fdim; i++)
@@ -513,6 +517,7 @@ void msr_nnz_topology(
                 dof_connect[dof][k] = -1;
             }
           }
+
           /*-------------------- move all remaining dofs to the front */
           counter2=2;
           for (m=2; m<dof_connect[dof][0]; m++)
@@ -874,7 +879,7 @@ void  add_msr(
   INT         ii_iscouple;          /* flag whether ii is a coupled dof */
   INT         ii_owner;             /* who is owner of dof ii -> procnumber */
   INT         ii_index;             /* place of ii in dmsr format */
-  INT         nd,ndnd;              /* size of estif */
+  INT         nd;                   /* size of estif */
   INT         nnz;                  /* number of nonzeros in sparse system matrix */
   INT         numeq_total;          /* total number of equations */
   INT         numeq;                /* number of equations on this proc */
@@ -911,7 +916,6 @@ void  add_msr(
   if (msr2) emass = elearray2->a.da;
   else      emass = NULL;
   nd         = actele->numnp * actele->node[0]->numdf;
-  ndnd       = nd*nd;
   nnz        = msr1->nnz;
   numeq_total= msr1->numeq_total;
   numeq      = msr1->numeq;
@@ -1232,8 +1236,7 @@ void  add_msr_fast2(
   INT         ii_iscouple;          /* flag whether ii is a coupled dof */
   INT         ii_owner;             /* who is owner of dof ii -> procnumber */
   INT         ii_index;             /* place of ii in dmsr format */
-  INT         nd,ndnd;              /* size of estif */
-  INT         nnz;                  /* number of nonzeros in sparse system matrix */
+  INT         nd;                   /* size of estif */
   INT         numeq_total;          /* total number of equations */
   INT         numeq;                /* number of equations on this proc */
   INT         lm[MAXDOFPERELE];     /* location vector for this element */
@@ -1272,8 +1275,6 @@ void  add_msr_fast2(
   if (msr2) emass = elearray2->a.da;
   else      emass = NULL;
   nd         = actele->numnp * actele->node[0]->numdf;
-  ndnd       = nd*nd;
-  nnz        = msr1->nnz;
   numeq_total= msr1->numeq_total;
   numeq      = msr1->numeq;
   update     = msr1->update.a.iv;
@@ -1291,7 +1292,7 @@ void  add_msr_fast2(
     invupdate = (INT*)CCACALLOC( numeq_total,sizeof(INT));
     if (!invupdate) dserror("Allocation of invupdate failed");
 
-    /* initializa with minus one */
+    /* initialize with minus one */
     for (k=0; k<numeq_total; k++)
     {
       invupdate[k] = -1;

@@ -42,18 +42,22 @@ VISUAL2_LIB=""
 # visual3
 if grep '^VISUAL3_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
   echo $0: Error: VISUAL3 not possible for parallel executable.
-  exit1 
+  exit1
 fi
 VISUAL3_INC=""
 VISUAL3_LIB=""
 
 LIBS="-lmetis_$BIT -lF90 -lU77 -lcl -lc -lm -lveclib -llapack -Wl,-aarchive_shared -lmpi"
 
+# fast elements
+LOOPL="-DLOOPL=64"
+
+
 # FAST
 PROGRAMNAME=cca_11_par$BIT
 CFLAGS_OPT="-O +Onolimit"
 FFLAGS_OPT="-O"
-CFLAGS="-D__HP__  -Aa -Ae +e +w1"
+CFLAGS="-D__HP__ -Aa -Ae +e +w1"
 FFLAGS=""
 LDFLAGS=""
 

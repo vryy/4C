@@ -19,7 +19,7 @@ PLAIN_LD=cc
 BASEDIR="/bau/stat16/users/statik/ccarat/lib/hpux_10"
 
 INCLUDEDIRS="-I/opt/mlib/include -I/bau/stat16/users/statik/ccarat/include"
-LIBDIRS="-L$BASEDIR/lapack -L$BASEDIR/metis" 
+LIBDIRS="-L$BASEDIR/lapack -L$BASEDIR/metis"
 
 # aztec
 AZTEC_INC=""
@@ -49,12 +49,16 @@ fi
 VISUAL3_INC=""
 VISUAL3_LIB=""
 
+# fast elements
+LOOPL="-DLOOPL=64"
+
+
 LIBS="-lcl -lc -lM -lm -lmetis -llapack_hppa -lblas"
 
 # FAST
 PROGRAMNAME=cca_10_par
 CFLAGS_OPT="-O +Onolimit"
 FFLAGS_OPT="-O"
-CFLAGS="-D__HP__  +e -Ae +w1 -v"
+CFLAGS="-D__HP__  +e -Ae +w1"
 FFLAGS=""
 LDFLAGS=""

@@ -13,7 +13,7 @@ PLAIN_LD=gcc
 BASEDIR="/bau/stat16/users/statik/ccarat/lib/hpux_ita2_gnu"
 
 INCLUDEDIRS="-I/opt/mlib/include -I/bau/stat16/users/statik/ccarat/include"
-LIBDIRS="-L/usr/lib -L/opt/mlib/lib/pa2.0" 
+LIBDIRS="-L/usr/lib -L/opt/mlib/lib/pa2.0"
 
 # aztec
 AZTEC_INC=""
@@ -46,6 +46,10 @@ if grep '^VISUAL3_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
 fi
 VISUAL3_INC=""
 VISUAL3_LIB=""
+
+# fast elements
+LOOPL="-DLOOPL=64"
+
 
 LIBS="-lcl -lc -lm -lg2c -lveclib -llapack"
 

@@ -13,7 +13,7 @@ PLAIN_LD=gcc
 BASEDIR="/bau/stat16/users/statik/ccarat/lib/hpux_11"
 
 INCLUDEDIRS="-I/opt/mlib/include -I/bau/stat16/users/statik/ccarat/include"
-LIBDIRS="-L/usr/lib -L/opt/mlib/lib/pa2.0" 
+LIBDIRS="-L/usr/lib -L/opt/mlib/lib/pa2.0"
 
 # aztec
 AZTEC_INC=""
@@ -26,6 +26,9 @@ SPOOLES_LIB=""
 # umfpack
 UMFPACK_INC=""
 UMFPACK_LIB="-L$BASEDIR/umfpack -lumfpack40_hpux11_32"
+
+# fast elements
+LOOPL="-DLOOPL=64"
 
 
 LIBS="-lcl -lc -lm -lg2c -lveclib -llapack"

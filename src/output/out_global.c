@@ -266,6 +266,9 @@ void out_general()
           case el_fluid3:
             fprintf(out,"ELE glob_Id %6d loc_Id %6d FLUID3\n",actele->Id,actele->Id_loc);
             break;
+          case el_fluid3_fast:
+            fprintf(out,"ELE glob_Id %6d loc_Id %6d FLUID3_FAST\n",actele->Id,actele->Id_loc);
+            break;
           case el_fluid2:
             fprintf(out,"ELE glob_Id %6d loc_Id %6d FLUID2\n",actele->Id,actele->Id_loc);
             break;

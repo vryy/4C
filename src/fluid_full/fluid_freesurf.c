@@ -481,6 +481,33 @@ if (fdyn->freesurf>0)
 	          dserror("Parameter freesurf out of range\n");
 #endif
             break;
+
+#ifdef D_FLUID3_F
+            case el_fluid3_fast:
+               if (fdyn->freesurf==1)
+                  actele->e.f3->fs_on=1;
+               else if (fdyn->freesurf==2)
+               {
+                  actnode->numdf=7;
+                  actele->e.f3->fs_on=2;
+               }
+               else if (fdyn->freesurf==3)
+               {
+                  if (actnode->hfdof==NULL)
+                  {
+                     actnode->hfdof=(INT*)CCACALLOC(1,sizeof(INT));
+                     actnode->hfdof[0]=counter;
+                     actele->e.f3->fs_on=3;
+                     counter++;
+                     if (actnode->proc==myrank)
+                     counter2++;
+                  }
+               }
+               else
+                  dserror("Parameter freesurf out of range\n");
+            break;
+#endif
+
             default:
                dserror("no fluid element in fluid field!\n");
             }

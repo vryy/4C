@@ -56,7 +56,7 @@ defined in pss_ds.c, declared in tracing.h
 </pre>
 *----------------------------------------------------------------------*/
 #ifdef DEBUG
-struct _TRACE         trace;
+struct _CCA_TRACE         trace;
 #endif
 /*!----------------------------------------------------------------------
 \brief global variables for time tracing

@@ -104,7 +104,7 @@ case 0:
       D = amdef("D",&Da,bdcsr->numeq_total,1,"DV");
    }
    /*-------------------------------- copy the array bdcsr->a to a_copy */
-   /*amcopy(&(bdcsr->a),&(a_copy));
+   /*amcopy(&(bdcsr->a),&(a_copy)); */
    /*-------------------------- make symmetric scaling of bdcsr and rhs */
    mlpcg_sym_scale1(bdcsr,rhs,D,actintra);
    /*----------------------------- create the multilevel preconditioner */

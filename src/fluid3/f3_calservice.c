@@ -1155,7 +1155,7 @@ void f3_permestif_ifs(
 INT    i,j,icol,irow;     /* simply some counters                       */
 INT    nvdof;             /* number of vel dofs                         */
 INT    rdist,cdist;
-INT    totdof;            /* total number of dofs                       */
+INT    totdof = 0;        /* total number of dofs                       */
 INT    iel;               /* actuel number of element nodes             */
 INT    nvpdof;            /* number of vel+pres dofs                    */
 INT    posc,posr;         /* positions in matrix                        */

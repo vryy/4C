@@ -104,6 +104,27 @@ for (i=0; i<actdis->numele; i++)
         dserror("Other than gls stabilisation not yet implemented!");
 #endif
     break;
+
+#ifdef D_FLUID3_F
+    case el_fluid3_fast:
+      /*------------------------------------------ set some pointers ---*/
+      fluid3 = actele->e.f3;
+      actdvol = actele->g.gvol->dvol;
+
+      /*------------------- get type of stabilisation to the element ---*/
+      fluid3->stab_type = actdvol->stab_type;
+
+      /*--- assign pointer to corresponding stabilisation parameters ---*/
+      if (fluid3->stab_type == stab_gls)
+      {
+        dsassert(actdvol->stabi.gls!=NULL,"no stabilisation at DVOL!\n");
+        fluid3->stabi.gls = actdvol->stabi.gls;
+      }
+      else
+        dserror("Other than gls stabilisation not yet implemented!");
+    break;
+#endif
+
     default: dserror("Unknown element (eltyp) in fluid field!");
   }
 }

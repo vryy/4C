@@ -15,11 +15,11 @@ BASEDIR="/gdata0/rus/rus/stati/lib"
 
 
 INCLUDEDIRS="-I/gdata0/rus/rus/stati/include"
-LIBDIRS="" 
+LIBDIRS=""
 
 # aztec
 AZTEC_INC=""
-AZTEC_LIB="-L$BASEDIR/aztec21 -laztec_seq"
+AZTEC_LIB="-L$BASEDIR/aztec21/orig -laztec_seq"
 
 # spooles
 SPOOLES_INC=""
@@ -29,6 +29,10 @@ SPOOLES_LIB=""
 UMFPACK_INC=""
 UMFPACK_LIB=""
 
+# fast elements
+LOOPL="-DLOOPL=512"
+
+
 
 LIBS="-lc -lm -llapack  -lblas"
 
@@ -36,8 +40,8 @@ LIBS="-lc -lm -llapack  -lblas"
 PROGRAMNAME=cca_sx6_seq
 CFLAGS_OPT="-O nooverlap -alias nopointer"
 FFLAGS_OPT=""
-CFLAGS="-Xc -DSIXTYFOUR -pvctl,loopcnt=500000"
-FFLAGS="-DSIXTYFOUR -Wf,\"-pvctl,loopcnt=500000\""
+CFLAGS="-Xc -DSIXTYFOUR -pvctl loopcnt=500000 noassume"
+FFLAGS="-DSIXTYFOUR -Wf,\"-pvctl loopcnt=500000 noassume\""
 LDFLAGS=""
 
 #CFLAGS="-Xc -DSIXTYFOUR -ftrace -loopprof -pvctl,loopcnt=500000"

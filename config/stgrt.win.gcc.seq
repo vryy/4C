@@ -18,7 +18,7 @@ PLAIN_LD=gcc
 BASEDIR="/home/ccarat/lib"
 
 INCLUDEDIRS="-I/home/ccarat/include"
-LIBDIRS="-L/usr/lib -L$BASEDIR/blas -L$BASEDIR/lapack" 
+LIBDIRS="-L/usr/lib -L$BASEDIR/blas -L$BASEDIR/lapack"
 
 # aztec
 AZTEC_INC=""
@@ -47,6 +47,10 @@ if grep '^VISUAL3_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
 fi
 VISUAL3_INC=""
 VISUAL3_LIB=""
+
+# fast elements
+LOOPL="-DLOOPL=16"
+
 
 
 LIBS="-llapack  -lblas -lm -lg2c"

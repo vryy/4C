@@ -822,7 +822,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       goto read;
    }
 #endif
-/*------------------------------------------------ elementtyp is FLUID3 */
+
+
+/* elementtyp is FLUID3 */
    frchk("FLUID3",&ierr);
    if (ierr==1)
    {
@@ -837,6 +839,21 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       f3inp(&(fluidfield->dis[0].element[counter]),counter);
    }
 #endif
+
+
+/* elementtyp is FLUID3_FAST */
+   frchk("FLUID3_FAST",&ierr);
+   if (ierr==1)
+   {
+#ifndef D_FLUID3_F
+      dserror("FLUID3_F needed but not defined in Makefile");
+#else
+      fluidfield->dis[0].element[counter].eltyp=el_fluid3_fast;
+      f3inp(&(fluidfield->dis[0].element[counter]),counter);
+#endif
+   }
+
+
 /*------------------------------------------------ elementtyp is FLUID2 */
    frchk("FLUID2",&ierr);
    if (ierr==1)

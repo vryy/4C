@@ -143,6 +143,8 @@ for (i=0; i<genprob.numfld; i++)
    actgid->is_fluid2_pro_33 = 0;
    actgid->is_fluid3_222= 0;
    actgid->is_fluid3_333= 0;
+   actgid->is_f3f_222   = 0;
+   actgid->is_f3f_333   = 0;
    actgid->is_ale_11    = 0;
    actgid->is_ale_22    = 0;
    actgid->is_ale_tri_1 = 0;
@@ -269,6 +271,7 @@ for (i=0; i<genprob.numfld; i++)
          }
       break;
 #endif
+
 #ifdef D_FLUID3
       case el_fluid3:
          if (actele->numnp==8)
@@ -283,6 +286,22 @@ for (i=0; i<genprob.numfld; i++)
          }
       break;
 #endif
+
+#ifdef D_FLUID3_F
+      case el_fluid3_fast:
+         if (actele->numnp==8)
+         {
+            actgid->is_f3f_222   = 1;
+            actgid->f3f_222_name = "f3f_222";
+         }
+         if (actele->numnp==20 || actele->numnp==27)
+         {
+            actgid->is_f3f_333   = 1;
+            actgid->f3f_333_name = "f3f_333";
+         }
+      break;
+#endif
+
 #ifdef D_ALE
       case el_ale2:
          if (actele->numnp==4)
@@ -625,6 +644,8 @@ for (i=0; i<genprob.numfld; i++)
    fprintf(out,"NATURAL COORDINATES: Internal\n");
    fprintf(out,"END GAUSSPOINTS\n");
    }
+
+#ifdef D_FLUID3
    if (actgid->is_fluid3_222)
    {
    fprintf(out,"#-------------------------------------------------------------------------------\n");
@@ -637,6 +658,7 @@ for (i=0; i<genprob.numfld; i++)
    fprintf(out,"NATURAL COORDINATES: Internal\n");
    fprintf(out,"END GAUSSPOINTS\n");
    }
+
    if (actgid->is_fluid3_333)
    {
    fprintf(out,"#-------------------------------------------------------------------------------\n");
@@ -649,6 +671,36 @@ for (i=0; i<genprob.numfld; i++)
    fprintf(out,"NATURAL COORDINATES: Internal\n");
    fprintf(out,"END GAUSSPOINTS\n");
    }
+#endif
+
+#ifdef D_FLUID3_F
+   if (actgid->is_f3f_222)
+   {
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s FLUID3_FAST 2x2x2 GP\n",actgid->fieldname);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Hexahedra %c%s%c\n",
+                                                                sign,actgid->f3f_222_name,sign,
+                                                                sign,actgid->f3f_222_name,sign);
+   fprintf(out,"NUMBER OF GAUSS POINTS: 8\n");
+   fprintf(out,"NATURAL COORDINATES: Internal\n");
+   fprintf(out,"END GAUSSPOINTS\n");
+   }
+
+   if (actgid->is_f3f_333)
+   {
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s FLUID3_FAST 3x3x3 GP\n",actgid->fieldname);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Hexahedra %c%s%c\n",
+                                                                sign,actgid->f3f_333_name,sign,
+                                                                sign,actgid->f3f_333_name,sign);
+   fprintf(out,"NUMBER OF GAUSS POINTS: 27\n");
+   fprintf(out,"NATURAL COORDINATES: Internal\n");
+   fprintf(out,"END GAUSSPOINTS\n");
+   }
+#endif
+
    if (actgid->is_ale_11)
    {
    fprintf(out,"#-------------------------------------------------------------------------------\n");
@@ -1177,6 +1229,48 @@ if (actgid->is_fluid3_333)
    }
    fprintf(out,"END VALUES\n");
 }
+
+
+#ifdef D_FLUID3_F
+if (actgid->is_f3f_222)
+{
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# RESULT Domains on MESH %s\n",actgid->f3f_222_name);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+                                                                               sign,actgid->f3f_222_name,sign);
+   fprintf(out,"VALUES\n");
+   for (i=0; i<actfield->dis[0].numele; i++)
+   {
+      actele = &(actfield->dis[0].element[i]);
+      if (actele->eltyp != el_fluid3_fast || actele->numnp != 8) continue;
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
+      for (j=1; j<8; j++)
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
+   }
+   fprintf(out,"END VALUES\n");
+}
+
+
+if (actgid->is_f3f_333)
+{
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# RESULT Domains on MESH %s\n",actgid->f3f_333_name);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+                                                                               sign,actgid->f3f_333_name,sign);
+   fprintf(out,"VALUES\n");
+   for (i=0; i<actfield->dis[0].numele; i++)
+   {
+      actele = &(actfield->dis[0].element[i]);
+      if (actele->eltyp != el_fluid3_fast || (actele->numnp != 20 || actele->numnp != 27)) continue;
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
+      for (j=1; j<27; j++)
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
+   }
+   fprintf(out,"END VALUES\n");
+}
+#endif
 
 
 if (actgid->is_ale_11)
@@ -2542,6 +2636,7 @@ if (strncmp(string,"stress",stringlenght)==0)
      }
    }
 #endif
+
 #ifdef D_FLUID3
    /* bricks have 6 stress - use 3D matrix */
    if (actgid->is_fluid3_222)
@@ -2551,7 +2646,6 @@ if (strncmp(string,"stress",stringlenght)==0)
      gpset             = actgid->fluid3_222_name;
      rangetable        = actgid->standardrangetable;
 
-     /* pressure stresses */
      fprintf(out,"#-------------------------------------------------------------------------------\n");
      fprintf(out,"# RESULT %s on FIELD %s\n",string,actgid->fieldname);
      fprintf(out,"# TIME %18.5E \n",time);
@@ -2565,21 +2659,8 @@ if (strncmp(string,"stress",stringlenght)==0)
      f3_out_gid_sol_str(out,actfield,0,0); /*extrapolated to nodal points!*/
      fprintf(out,"END VALUES\n");
 
-
-     /* viscous stresses */
-     fprintf(out,"#-------------------------------------------------------------------------------\n");
-     fprintf(out,"# RESULT %s on FIELD %s\n",string,actgid->fieldname);
-     fprintf(out,"# TIME %18.5E \n",time);
-     fprintf(out,"# STEP %6d    \n",step);
-     fprintf(out,"#-------------------------------------------------------------------------------\n");
-     fprintf(out,"RESULT %cviscous_fluid_stresses%c %cccarat%c %d %s %s %c%s%c\n",
-         sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,sign );
-     fprintf(out,"COMPONENTNAMES %cStress-xx%c,%cStress-yy%c,%cStress-zz%c,%cStress-xy%c,%cStress-yz%c,%cStress-zx%c\n",
-         sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign);
-     fprintf(out,"VALUES\n");
-     f3_out_gid_sol_str(out,actfield,1,0); /*extrapolated to nodal points!*/
-     fprintf(out,"END VALUES\n");
    }
+
    if (actgid->is_fluid3_333)
    {
      resulttype                             = "MATRIX";
@@ -2588,7 +2669,6 @@ if (strncmp(string,"stress",stringlenght)==0)
      rangetable        = actgid->standardrangetable;
 
 
-     /* pressure stresses */
      fprintf(out,"#-------------------------------------------------------------------------------\n");
      fprintf(out,"# RESULT %s on FIELD %s\n",string,actgid->fieldname);
      fprintf(out,"# TIME %18.5E \n",time);
@@ -2602,22 +2682,57 @@ if (strncmp(string,"stress",stringlenght)==0)
      f3_out_gid_sol_str(out,actfield,0,0); /*extrapolated to nodal points!*/
      fprintf(out,"END VALUES\n");
 
+   }
+#endif
 
-     /* viscous stresses */
+#ifdef D_FLUID3_F
+   /* bricks have 6 stress - use 3D matrix */
+   if (actgid->is_f3f_222)
+   {
+     resulttype                             = "MATRIX";
+     resultplace                            = "ONNODES";                 /*extrapolated to nodal points!*/
+     gpset             = actgid->f3f_222_name;
+     rangetable        = actgid->standardrangetable;
+
      fprintf(out,"#-------------------------------------------------------------------------------\n");
      fprintf(out,"# RESULT %s on FIELD %s\n",string,actgid->fieldname);
      fprintf(out,"# TIME %18.5E \n",time);
      fprintf(out,"# STEP %6d    \n",step);
      fprintf(out,"#-------------------------------------------------------------------------------\n");
-     fprintf(out,"RESULT %cviscous_fluid_stresses%c %cccarat%c %d %s %s %c%s%c\n",
+     fprintf(out,"RESULT %cfluid_stresses%c %cccarat%c %d %s %s %c%s%c\n",
          sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,sign );
      fprintf(out,"COMPONENTNAMES %cStress-xx%c,%cStress-yy%c,%cStress-zz%c,%cStress-xy%c,%cStress-yz%c,%cStress-zx%c\n",
          sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign);
      fprintf(out,"VALUES\n");
-     f3_out_gid_sol_str(out,actfield,1,0); /*extrapolated to nodal points!*/
+     f3f_out_gid_sol_str(out,actfield,0); /*extrapolated to nodal points!*/
      fprintf(out,"END VALUES\n");
+
+   }
+
+   if (actgid->is_f3f_333)
+   {
+     resulttype                             = "MATRIX";
+     resultplace                            = "ONNODES";                 /*extrapolated to nodal points!*/
+     gpset             = actgid->f3f_333_name;
+     rangetable        = actgid->standardrangetable;
+
+
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"# RESULT %s on FIELD %s\n",string,actgid->fieldname);
+     fprintf(out,"# TIME %18.5E \n",time);
+     fprintf(out,"# STEP %6d    \n",step);
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"RESULT %cbrick1_forces%c %cccarat%c %d %s %s %c%s%c\n",
+         sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,sign );
+     fprintf(out,"COMPONENTNAMES %cStress-xx%c,%cStress-yy%c,%cStress-zz%c,%cStress-xy%c,%cStress-yz%c,%cStress-zx%c\n",
+         sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign);
+     fprintf(out,"VALUES\n");
+     f3f_out_gid_sol_str(out,actfield,0); /*extrapolated to nodal points!*/
+     fprintf(out,"END VALUES\n");
+
    }
 #endif
+
 #ifdef D_AXISHELL
    /* STRESS output for AXISHELL */
    if (actgid->is_axishell)

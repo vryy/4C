@@ -24,6 +24,10 @@ SPOOLES_LIB="-lspoolesMPI -lspooles"
 UMFPACK_INC=
 UMFPACK_LIB="-lumfpack -lamd"
 
+# fast elements
+LOOPL="-DLOOPL=64"
+
+
 LIBS="-llapack -lmetis"
 
 CFLAGS=

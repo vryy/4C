@@ -24,6 +24,10 @@ AZTEC_LIB="-laztec"
 SPOOLES_INC=""
 SPOOLES_LIB="-lspoolesMPI -lspooles"
 
+# fast elements
+LOOPL="-DLOOPL=64"
+
+
 LIBS="-lc -lm -lmkl_lapack64 -lmkl -lguide -lmetis"
 
 CFLAGS="-Wall -ansi -ipo -w2 -O3 -tpp7 -ip -p -vec_report3 -opt_report_levelmin"

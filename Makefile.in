@@ -30,6 +30,9 @@ $(OBJS_INPUT):
 $(OBJS_FLUID3):
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
+$(OBJS_F3F):
+		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+
 $(OBJS_SHELL8):
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
@@ -116,6 +119,9 @@ $(OBJS_POST_OUT):
 
 # fortran
 $(OBJS_FORTRAN):
+		$(F77) $(FFLAGS)  -c ${SRC}/${@D}/$(*F).f -o ${SRC}/$@
+
+$(OBJS_F3F_F):
 		$(F77) $(FFLAGS)  -c ${SRC}/${@D}/$(*F).f -o ${SRC}/$@
 
 .c.o:

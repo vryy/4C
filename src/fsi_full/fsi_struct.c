@@ -618,6 +618,9 @@ Values of the different vectors from above in one loop:
 
 */
 case 2:
+
+t0 = ds_cputime();
+
 /*------------------------------------------------- write memory report */
 /* if (par.myrank==0) dsmemreport();                                    */
 /*------------------------------------------------ output to the screen */

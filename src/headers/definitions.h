@@ -142,6 +142,39 @@ typedef char      CHAR;
 #define v3vect              v3vect_
 #define v3update            v3update_
 
+#define f3fhex             f3fhex_
+#define f3ftet             f3ftet_
+#define f3fjaco            f3fjaco_
+#define f3fveli            f3fveli_
+#define f3fcovi            f3fcovi_
+#define f3fgder            f3fgder_
+#define f3fgder2           f3fgder2_
+#define f3fgder2loop       f3fgder2loop_
+#define f3fcalstabpar      f3fcalstabpar_
+#define f3fvder            f3fvder_
+#define f3fvder2           f3fvder2_
+#define f3fpder            f3fpder_
+#define f3fprei            f3fprei_
+
+#define f3fcalgalk         f3fcalgalk_
+#define f3fcalgalm         f3fcalgalm_
+#define f3fcalstabk        f3fcalstabk_
+#define f3fcalstabm        f3fcalstabm_
+
+#define f3fcalif           f3fcalif_
+
+#define f3fcalstabexf      f3fcalstabexf_
+#define f3fcalgalexf       f3fcalgalexf_
+
+#define f3fcaltf           f3fcaltf_
+
+#define f3fmast            f3fmast_
+#define f3fmassrhs         f3fmassrhs_
+#define f3fsigint          f3fsigint_
+
+#define faddmsr             faddmsr_
+#define faddmsrp            faddmsrp_
+
 #endif
 
 #ifndef AZTEC_PACKAGE

@@ -444,11 +444,19 @@ for (i=0;i<numfnp;i++)
          if (actele->e.f2->is_ale>0) is_ale++;
       break;
 #endif
+
 #ifdef D_FLUID3
       case el_fluid3:
          if (actele->e.f3->is_ale>0) is_ale++;
       break;
 #endif
+
+#ifdef D_FLUID3_F
+      case el_fluid3_fast:
+         if (actele->e.f3->is_ale>0) is_ale++;
+      break;
+#endif
+
       default:
          dserror("eltyp unknow\n");
       }

@@ -191,7 +191,7 @@ DOUBLE dyn_facexplcurve(INT actcurve,   /* number of actual time curve  */
 		       )
 {
 INT numex;          /* number of explicit time curve                    */
-DOUBLE val1, fac;
+DOUBLE val1, fac=0.0;
 DOUBLE c1,c2;       /* function constants                               */
 DOUBLE d,visc;      /* parameters for Beltrami-flow                     */
 DOUBLE a;           /* parameters for Kim-Moin flow */

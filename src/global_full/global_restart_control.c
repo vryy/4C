@@ -22,6 +22,10 @@ Maintainer: Malte Neumann
 #include "../fluid2/fluid2_prototypes.h"
 #include "../fluid3/fluid3_prototypes.h"
 
+#ifdef D_FLUID3_F
+#include "../fluid3_fast/f3f_prototypes.h"
+#endif
+
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -1343,29 +1347,42 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    actele = actpart->pdis[0].element[i];
    switch(actele->eltyp)/*===================== call element routines */
    {
-   case el_fluid2:
 #ifdef D_FLUID2
+   case el_fluid2:
       container->handsize = 5;
       container->handles  = ele_handles[i];
       fluid2(actpart,actintra,actele,NULL,
              NULL,NULL,
              NULL,NULL,NULL,
              action,NULL,NULL,container);
-#endif
    break;
-   case el_fluid3:
+#endif
+
 #ifdef D_FLUID3
+   case el_fluid3:
       container->handsize = 5;
       container->handles  = ele_handles[i];
       fluid3(actpart,actintra,actele,
              NULL,NULL,
              NULL,NULL,NULL,
              action,NULL,NULL,container);
-#endif
    break;
+#endif
+
+#ifdef D_FLUID3_F
+   case el_fluid3_fast:
+      container->handsize = 5;
+      container->handles  = ele_handles[i];
+      fluid3_fast(actpart,actintra,&actele,
+             NULL,NULL,
+             NULL,NULL,NULL,
+             action,NULL,NULL,container,1);
+   break;
+#endif
    case el_none:
       dserror("Typ of element unknown");
    break;
+
    default:
       dserror("Typ of element unknown");
    }/* end of calling elements */

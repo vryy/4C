@@ -43,6 +43,10 @@ Maintainer: Malte Neumann
 #include "../fluid3/fluid3.h"
 #endif
 
+#ifdef D_FLUID3_FAST
+#include "../fluid3/fluid3.h"
+#endif
+
 #ifdef D_AXISHELL
 #endif
 
@@ -138,7 +142,7 @@ for(i=0; i<genprob.numfld; i++)  /* loop all fields */
 
 #ifdef D_SHELL8
         case el_shell8:
-          gauss = actele->e.s8->nGP[0]*actele->e.s8->nGP[1]*actele->e.s8->nGP[2];
+          gauss = actele->e.s8->nGP[0]*actele->e.s8->nGP[1];
           break;
 #endif
 
@@ -177,6 +181,12 @@ for(i=0; i<genprob.numfld; i++)  /* loop all fields */
 
 #ifdef D_FLUID3
         case el_fluid3:
+          gauss = actele->e.f3->nGP[0]*actele->e.f3->nGP[1]*actele->e.f3->nGP[2];
+          break;
+#endif
+
+#ifdef D_FLUID3_F
+        case el_fluid3_fast:
           gauss = actele->e.f3->nGP[0]*actele->e.f3->nGP[1]*actele->e.f3->nGP[2];
           break;
 #endif
@@ -222,7 +232,7 @@ for(i=0; i<genprob.numfld; i++)  /* loop all fields */
 #endif
 
         case el_none:
-          dserror("Typ of element unknown");
+          dserror("No element typ given");
           break;
 
         default:

@@ -529,6 +529,7 @@ INT    ldflag;
 NODE  *actnode;         /* the actual node                              */
 ELEMENT *actele;        /* the actual element                           */
 GSURF   *actgsurf;
+
 #ifdef D_FSI
 INT    found;
 INT    addcol=0;
@@ -537,6 +538,7 @@ DOUBLE phi;
 NODE  *actanode;        /* the actual ale ode                           */
 GNODE *actgnode;        /* the actual gnode                             */
 #endif
+
 #ifdef D_FLUID3
 GVOL    *actgvol;
 DSURF   *actdsurf;
@@ -552,6 +554,12 @@ DOUBLE d,t,p,u1,u2,u3;
 /*----------------------------------------- variables for solitary wave */
 #ifdef D_FSI
 DOUBLE eta,c,g,H,x,y,fac,fac1,sech;
+
+#ifdef D_FLUID3_F
+  FAST_ELES        *act_fast_eles;
+  INT               l;
+#endif
+
 #endif
 
 /* variables for beltrami */
@@ -653,29 +661,39 @@ if (fdyn->dyntyp==0)
 for (i=0;i<actpart->pdis[disnum].numele;i++)
 {
    actele = actpart->pdis[disnum].element[i];
+   switch(actele->eltyp)
+   {
 #ifdef D_FLUID2
-   if (numdf==3)
-   {
-      dsassert(actele->eltyp==el_fluid2,"eltyp not allowed!\n");
-      amdef("Stabpar",&(actele->e.f2->tau_old),3,1,"DV");
-      amzero(&(actele->e.f2->tau_old));
-   }
+     case el_fluid2:
+       amdef("Stabpar",&(actele->e.f2->tau_old),3,1,"DV");
+       amzero(&(actele->e.f2->tau_old));
+       break;
 #endif
+
 #ifdef D_FLUID3
-   if (numdf==4)
-   {
-      dsassert(actele->eltyp==el_fluid3,"eltyp not allowed!\n");
-      amdef("Stabpar",&(actele->e.f3->tau_old),3,1,"DV");
-      amzero(&(actele->e.f3->tau_old));
-   }
+     case el_fluid3:
+       amdef("Stabpar",&(actele->e.f3->tau_old),3,1,"DV");
+       amzero(&(actele->e.f3->tau_old));
+       break;
 #endif
+
+#ifdef D_FLUID3_F
+     case el_fluid3_fast:
+       amdef("Stabpar",&(actele->e.f3->tau_old),3,1,"DV");
+       amzero(&(actele->e.f3->tau_old));
+       break;
+#endif
+   }
 }
 
-/*-------------------- check for stress calculation and allocate arrays */
+/* check for stress calculation and allocate arrays */
 switch (str)
 {
+
 case str_none: /* do nothing */
 break;
+
+
 #ifdef D_FSI
 case str_fsicoupling: /* allocate stress field for elements with fsi-coupled nodes */
    for (i=0;i<numele_total;i++)
@@ -686,85 +704,205 @@ case str_fsicoupling: /* allocate stress field for elements with fsi-coupled nod
       for (j=0;j<numnp;j++)
       {
          actnode=actele->node[j];
-	 actgnode = actnode->gnode;
+         actgnode = actnode->gnode;
          /* this approach does not work with a nonconforming discretization
             of the interface, thus it is replaced by the second one */
          /*
-	    if (actgnode->mfcpnode[0]!=NULL) found=1;
+            if (actgnode->mfcpnode[0]!=NULL) found=1;
          */
          if (actgnode->fsicouple != NULL) found = 1;
       }
+
       if (found==1)
       {
 #ifdef D_FLUID2
-         if (numdf==3)
-            amdef("stress_ND",&(actele->e.f2->stress_ND),numnp,3,"DA");
+        if (actele->eltyp == el_fluid2)
+        {
+          amdef("stress_ND",&(actele->e.f2->stress_ND),numnp,3,"DA");
+          amzero(&(actele->e.f2->stress_ND));
+        }
 #endif
+
 #ifdef D_FLUID3
-         if (numdf==4)
-            amdef("stress_ND",&(actele->e.f3->stress_ND),numnp,6,"DA");
+        if (actele->eltyp == el_fluid3)
+        {
+          amdef("stress_ND",&(actele->e.f3->stress_ND),numnp,6,"DA");
+          amzero(&(actele->e.f3->stress_ND));
+        }
 #endif
+
+#ifdef D_FLUID3_F
+        if (actele->eltyp == el_fluid3_fast)
+        {
+          amdef("stress_ND",&(actele->e.f3->stress_ND),numnp,6,"DA");
+          amzero(&(actele->e.f3->stress_ND));
+        }
+#endif
+
       }
    }
+
+
+#ifdef D_FLUID3_F
+  for (i=0; i<actpart->pdis[disnum].num_fele; i++)
+  {
+
+    act_fast_eles = &(actpart->pdis[disnum].fast_eles[i]);
+
+    switch(act_fast_eles->fast_ele_typ)
+    {
+      case fele_f3f_hex8_e:
+      case fele_f3f_hex8_a:
+      case fele_f3f_tet4_e:
+      case fele_f3f_tet4_a:
+
+        found=0;
+        for (l=0;l<act_fast_eles->aloopl;l++)
+        {
+          actele = act_fast_eles->ele_vec[l];
+          numnp=actele->numnp;
+          for (j=0;j<numnp;j++)
+          {
+            actnode=actele->node[j];
+            actgnode = actnode->gnode;
+            if (actgnode->fsicouple != NULL)
+              found = 1;
+          }
+        }
+
+        if (found == 1)
+        {
+          for (l=0;l<act_fast_eles->aloopl;l++)
+          {
+            actele = act_fast_eles->ele_vec[l];
+            if (actele->e.f3->stress_ND.Typ == cca_XX)
+            {
+              amdef("stress_ND",&(actele->e.f3->stress_ND),numnp,6,"DA");
+              amzero(&(actele->e.f3->stress_ND));
+            }
+
+          }
+        }
+        break;
+
+      default:
+        break;
+
+    } /* switch(act_fast_eles->fast_ele_typ) */
+  }
+#endif
+
 break;
 #endif
+
+
 case str_all: /* allocate stress field for all elements */
    for (i=0;i<numele_total;i++)
    {
       actele = &(actfield->dis[disnum].element[i]);
       numnp=actele->numnp;
+
 #ifdef D_FLUID2
-      if (numdf==3)
-         amdef("stress_ND",&(actele->e.f2->stress_ND),numnp,3,"DA");
+      if (actele->eltyp == el_fluid2)
+      {
+        amdef("stress_ND",&(actele->e.f2->stress_ND),numnp,3,"DA");
+        amzero(&(actele->e.f2->stress_ND));
+      }
 #endif
+
 #ifdef D_FLUID3
-      if (numdf==4)
-         amdef("stress_ND",&(actele->e.f3->stress_ND),numnp,6,"DA");
+      if (actele->eltyp == el_fluid3)
+      {
+        amdef("stress_ND",&(actele->e.f3->stress_ND),numnp,6,"DA");
+        amzero(&(actele->e.f3->stress_ND));
+      }
 #endif
+
+#ifdef D_FLUID3_F
+      if (actele->eltyp == el_fluid3_fast)
+      {
+        amdef("stress_ND",&(actele->e.f3->stress_ND),numnp,6,"DA");
+        amzero(&(actele->e.f3->stress_ND));
+      }
+#endif
+
    }
 break;
+
+
 case str_liftdrag:
    for (i=0;i<numele_total;i++)
    {
       actele = &(actfield->dis[disnum].element[i]);
 #ifdef D_FLUID2
-      if (numdf==3)
+      if (actele->eltyp == el_fluid2)
       {
          actgsurf=actele->g.gsurf;
          ldflag=0;
-	 for (j=0;j<actgsurf->ngline;j++)
+         for (j=0;j<actgsurf->ngline;j++)
          {
             actgline=actgsurf->gline[j];
             actdline=actgline->dline;
             if (actdline==NULL) continue;
             if (actdline->liftdrag==NULL) continue;
-	    ldflag++;
-	    break;
+            ldflag++;
+            break;
          }
          if (ldflag>0)
-            amdef("stress_ND",&(actele->e.f2->stress_ND),actele->numnp,6,"DA");
+         {
+           amdef("stress_ND",&(actele->e.f2->stress_ND),actele->numnp,6,"DA");
+           amzero(&(actele->e.f2->stress_ND));
+         }
       }
 #endif
+
 #ifdef D_FLUID3
-      if (numdf==4)
+      if (actele->eltyp == el_fluid3)
       {
          actgvol=actele->g.gvol;
          ldflag=0;
-	 for (j=0;j<actgvol->ngsurf;j++)
+         for (j=0;j<actgvol->ngsurf;j++)
          {
             actgsurf=actgvol->gsurf[j];
             actdsurf=actgsurf->dsurf;
             if (actdsurf==NULL) continue;
             if (actdsurf->liftdrag==NULL) continue;
-	    ldflag++;
-	    break;
+            ldflag++;
+            break;
          }
          if (ldflag>0)
-            amdef("stress_ND",&(actele->e.f3->stress_ND),actele->numnp,6,"DA");
+         {
+           amdef("stress_ND",&(actele->e.f3->stress_ND),actele->numnp,6,"DA");
+           amzero(&(actele->e.f3->stress_ND));
+         }
+      }
+#endif
+
+#ifdef D_FLUID3_F
+      if (actele->eltyp == el_fluid3_fast)
+      {
+         actgvol=actele->g.gvol;
+         ldflag=0;
+         for (j=0;j<actgvol->ngsurf;j++)
+         {
+            actgsurf=actgvol->gsurf[j];
+            actdsurf=actgsurf->dsurf;
+            if (actdsurf==NULL) continue;
+            if (actdsurf->liftdrag==NULL) continue;
+            ldflag++;
+            break;
+         }
+         if (ldflag>0)
+         {
+           amdef("stress_ND",&(actele->e.f3->stress_ND),actele->numnp,6,"DA");
+           amzero(&(actele->e.f3->stress_ND));
+         }
       }
 #endif
    }
 break;
+
+
 default:
    dserror("option for 'str' not implemented yet!\n");
 }
@@ -776,7 +914,7 @@ if (fdyn->surftens>0)
    {
       actele = &(actfield->dis[disnum].element[i]);
 #ifdef D_FLUID2
-      if (numdf==3)
+      if (actele->eltyp == el_fluid2)
       {
 	 if (actele->e.f2->fs_on==0) continue;
 	 {
@@ -785,9 +923,15 @@ if (fdyn->surftens>0)
          }
       }
 #endif
+
 #ifdef D_FLUID3
-      if (numdf==4)
+      if (actele->eltyp == el_fluid3)
          dserror("curvature not implemented for 3D fluid elements!\n");
+#endif
+
+#ifdef D_FLUID3_F
+      if (actele->eltyp == el_fluid3_fast)
+         dserror("curvature not implemented for 3D fluid fast elements!\n");
 #endif
    }
 }
@@ -873,6 +1017,7 @@ if (fdyn->init>=1)
       }
    }
 #endif
+
 #ifdef D_FSI
    if (fdyn->init==7) /*-------------------------- wavebreaking problem */
    {
@@ -2135,9 +2280,10 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    /* continue if element belongs to other proc or is not coupled */
    if (par.myrank!=actele->proc || coupled==-1) continue;
    numnp=actele->numnp;
+
    /*------------------------------------------- set buffer and dim */
 #ifdef D_FLUID2
-   if (numdf==3)
+   if (actele->eltyp == el_fluid2)
    {
       start=coupled*MAXNOD*3;
       for (j=0;j<numnp;j++)
@@ -2149,8 +2295,9 @@ for (i=0; i<actpart->pdis[0].numele; i++)
       }
    }
 #endif
+
 #ifdef D_FLUID3
-   if (numdf==4)
+   if (actele->eltyp == el_fluid3)
    {
       start=coupled*MAXNOD*6;
       for (j=0;j<numnp;j++)
@@ -2165,6 +2312,24 @@ for (i=0; i<actpart->pdis[0].numele; i++)
       }
    }
 #endif
+
+#ifdef D_FLUID3_F
+   if (actele->eltyp == el_fluid3_fast)
+   {
+      start=coupled*MAXNOD*6;
+      for (j=0;j<numnp;j++)
+      {
+         buffer[start]  =actele->e.f3->stress_ND.a.da[j][0];
+         buffer[start+1]=actele->e.f3->stress_ND.a.da[j][1];
+         buffer[start+2]=actele->e.f3->stress_ND.a.da[j][2];
+         buffer[start+3]=actele->e.f3->stress_ND.a.da[j][3];
+         buffer[start+4]=actele->e.f3->stress_ND.a.da[j][4];
+         buffer[start+5]=actele->e.f3->stress_ND.a.da[j][5];
+         start+=6;
+      }
+   }
+#endif
+
 } /* end of loop over all elements */
 
 /*------------------------------------------------------ allreduce the vector */
@@ -2179,7 +2344,7 @@ for(i=0;i<numele_total;i++) /* loop elements */
    if (coupled==-1) continue; /* no stress reduction */
    numnp=actele->numnp;
 #ifdef D_FLUID2
-   if (numdf==3)
+   if (actele->eltyp == el_fluid2)
    {
       start=coupled*MAXNOD*3;
       for (j=0;j<numnp;j++)
@@ -2191,8 +2356,9 @@ for(i=0;i<numele_total;i++) /* loop elements */
       }
    }
 #endif
+
 #ifdef D_FLUID3
-   if (numdf==4)
+   if (actele->eltyp == el_fluid3)
    {
       start=coupled*MAXNOD*6;
       for (j=0;j<numnp;j++)
@@ -2207,6 +2373,24 @@ for(i=0;i<numele_total;i++) /* loop elements */
       }
    }
 #endif
+
+#ifdef D_FLUID3_F
+   if (actele->eltyp == el_fluid3_fast)
+   {
+      start=coupled*MAXNOD*6;
+      for (j=0;j<numnp;j++)
+      {
+         actele->e.f3->stress_ND.a.da[j][0]=recvbuffer[start]  ;
+         actele->e.f3->stress_ND.a.da[j][1]=recvbuffer[start+1];
+         actele->e.f3->stress_ND.a.da[j][2]=recvbuffer[start+2];
+         actele->e.f3->stress_ND.a.da[j][3]=recvbuffer[start+3];
+         actele->e.f3->stress_ND.a.da[j][4]=recvbuffer[start+4];
+         actele->e.f3->stress_ND.a.da[j][5]=recvbuffer[start+5];
+         start+=6;
+      }
+   }
+#endif
+
 } /* end of loop over all elements */
 
 /*----------------------------------------------------------------------*/

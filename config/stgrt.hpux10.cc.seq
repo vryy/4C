@@ -20,7 +20,7 @@ OPENGLDIR="/opt/graphics/OpenGL/lib"
 PEX5DIR="/opt/graphics/PEX5/lib"
 
 INCLUDEDIRS="-I/opt/mlib/include -I/bau/stat16/users/statik/ccarat/include"
-LIBDIRS="-L$BASEDIR/lapack -L/usr/lib -L/opt/fortran/lib" 
+LIBDIRS="-L$BASEDIR/lapack -L/usr/lib -L/opt/fortran/lib"
 
 # aztec
 AZTEC_INC=""
@@ -47,13 +47,17 @@ VISUAL3_INC=""
 VISUAL3_LIB="-L$BASEDIR/visual -lVisual3 -lX11 -lXext -lXi -L$OPENGLDIR -lGLU -lGL -L$PEX5DIR -LPEX5"
 
 
+# fast elements
+LOOPL="-DLOOPL=64"
+
+
 LIBS="-lcl -lc -lM -lm -llapack_hppa -lblas"
 
 # FAST
 PROGRAMNAME=cca_10_seq
 CFLAGS_OPT="-O +Onolimit"
 FFLAGS_OPT="-O"
-CFLAGS="-D__HP__  +e -Ae +w1 -v"
+CFLAGS="-D__HP__  +e -Ae +w1"
 FFLAGS=""
 LDFLAGS=""
 

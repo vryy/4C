@@ -1890,6 +1890,62 @@ void dof_find_centernode(
 
 
 
+void assemble_fast(
+    INT                    sysarray, /* number of first sparse system matrix */
+    struct _PARTITION     *actpart,   /* my partition of theactive field */
+    struct _SOLVAR        *actsolv,   /* the active SOLVAR */
+    struct _INTRA         *actintra,  /* the active intracommunicator */
+    struct _ELEMENT       *elevec[LOOPL],    /* the element to assemble */
+    enum _ASSEMBLE_ACTION  assemble_action, /* the assembly option */
+    CONTAINER             *container,
+    INT                    iel,
+    INT                    hasext[LOOPL],
+    INT                    hasdirich[LOOPL],
+    INT                    aloopl
+    );
+
+
+void faddmsr(
+    DOUBLE    *estif,
+    INT       *lm,
+    INT       *owner,
+    INT       *invupdate,
+    INT       *bindx,
+    INT       *invbindx,
+    DOUBLE    *val,
+    INT       *myrank,
+    INT       *nprocs,
+    INT       *numeq_total,
+    INT       *numeq,
+    INT       *numnp,
+    INT       *nd,
+    INT       *aloopl,
+    INT       *loopl,
+    INT       *ele
+    );
+
+void faddmsrp(
+    DOUBLE    *estif,
+    INT       *lm,
+    INT       *owner,
+    INT       *invupdate,
+    INT       *bindx,
+    INT       *invbindx,
+    DOUBLE    *val,
+    INT       *myrank,
+    INT       *nprocs,
+    INT       *numeq_total,
+    INT       *numeq,
+    INT       *numnp,
+    INT       *nd,
+    INT       *aloopl,
+    INT       *loopl,
+    INT       *ele
+    );
+
+
+
+
 
 #endif
 

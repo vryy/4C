@@ -807,10 +807,10 @@ void  add_skyline(
 #endif
   INT               myrank;                /* my intra-proc number */
   INT               nprocs;                /* my intra- number of processes */
-  DOUBLE          **estif;                  /* element matrix 1 to be added to system matrix */
-  DOUBLE          **emass;                  /* element matrix 2 to be added to system matrix */
-  DOUBLE           *A;                      /* the skyline matrix 1 */
-  DOUBLE           *B;                      /* the skyline matrix 2 */
+  DOUBLE          **estif = NULL;          /* element matrix 1 to be added to system matrix */
+  DOUBLE          **emass = NULL;          /* element matrix 2 to be added to system matrix */
+  DOUBLE           *A;                     /* the skyline matrix 1 */
+  DOUBLE           *B;                     /* the skyline matrix 2 */
   INT              *maxa;
 
   INT               startindex;

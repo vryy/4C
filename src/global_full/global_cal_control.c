@@ -67,7 +67,7 @@ extern struct _FIELD      *sm_field;
  *----------------------------------------------------------------------*/
 void ntacal()
 {
-INT i,j;
+INT i;
 FIELD *actfield;
 #ifdef D_MLSTRUCT
 FIELD *actsmfield;
@@ -130,9 +130,16 @@ part_assignfield();
 #endif
 
 
+  /* divide fast elements into vectors */
+#ifdef D_FLUID3_F
+  divide_fast();
+#endif
+
+
   /* check the values of the defines for MAXNODE etc. */
 #ifdef CHECK_MAX
-  check_max_sizes();
+  if (par.myrank==0)
+    check_max_sizes();
 #endif
 
 

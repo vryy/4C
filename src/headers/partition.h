@@ -70,6 +70,8 @@ INT                  ndis;                /*!< number of discretization in this 
 struct _PARTDISCRET *pdis;                /*!< vector of partitions of discretizations of this field */
 } PARTITION;
 
+
+
 /*!----------------------------------------------------------------------
 \brief one proc's info about his partition of one discret.
 
@@ -98,7 +100,39 @@ struct _ELEMENT   **bou_element;         /*!< ptrs to boundary elements */
 
 struct _ARRAY       coupledofs;          /*!< number of coupled dofs, which dofs, */
 
+
+#ifdef D_FLUID3_F
+  INT                  num_fele;         /* number of sets of fast elements */
+  struct _FAST_ELES   *fast_eles;        /* pointers to the sets of fast elements */
+#endif
+
+
 } PARTDISCRET;
+
+
+
+#ifdef D_FLUID3_F
+/*----------------------------------------------------------------------*/
+/*!
+  \brief structure for a set of fast elements
+
+  This structure represents a set of fast elements. These elements are
+  collected as pointers in a vector.
+
+  \author mn
+  \date 10/04
+
+*/
+/*----------------------------------------------------------------------*/
+typedef struct _FAST_ELES
+{
+  FAST_ELE_TYP       fast_ele_typ;   /* the typ of fast elements collected
+                                        in this set */
+  INT                aloopl;         /* the number of elements in this sets */
+  struct _ELEMENT  **ele_vec;        /* a vector containing pointers to the
+                                        elemenst in this set */
+} FAST_ELES;
+#endif
 
 /*! @} (documentation module close)*/
 

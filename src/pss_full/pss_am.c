@@ -37,7 +37,7 @@ defined in pss_ds.c, declared in tracing.h
 </pre>
 *----------------------------------------------------------------------*/
 #ifdef DEBUG
-extern struct _TRACE         trace;
+extern struct _CCA_TRACE         trace;
 #endif
 
 

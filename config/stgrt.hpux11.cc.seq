@@ -13,7 +13,7 @@ PLAIN_LD=f90
 BASEDIR="/bau/stat16/users/statik/ccarat/lib/hpux_11"
 
 INCLUDEDIRS="-I/opt/mlib/include -I/bau/stat16/users/statik/ccarat/include"
-LIBDIRS="-L/usr/lib -L/opt/mlib/lib/pa2.0" 
+LIBDIRS="-L/usr/lib -L/opt/mlib/lib/pa2.0"
 
 # aztec
 AZTEC_INC=""
@@ -43,6 +43,10 @@ fi
 VISUAL3_INC=""
 VISUAL3_LIB=""
 
+# fast elements
+LOOPL="-DLOOPL=64"
+
+
 LIBS="-lcl -lc -lm -lveclib -llapack"
 
 # FAST
@@ -50,7 +54,7 @@ PROGRAMNAME=cca_11_seq$BIT
 CFLAGS_OPT="-O +Onolimit"
 FFLAGS_OPT="-O"
 LDFLAGS_OPT=""
-CFLAGS="-D__HP__  +e -Ae +w1 -v"
+CFLAGS="-D__HP__  +e -Ae +w1"
 FFLAGS=""
 LDFLAGS=""
 

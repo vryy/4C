@@ -143,11 +143,11 @@ for (i=0; i<mlsolver.maxiter; i++)
    mlpcg_precond_amgVW(0,&(mlsolver.z),&(mlsolver.r),actintra,&one);
    /*----------- this is the f-cycle algebraic multigrid preconditioner */
    /*two = 2;
-   mlpcg_precond_amgF(0,&(mlsolver.z),&(mlsolver.r),actintra,&two);
+   mlpcg_precond_amgF(0,&(mlsolver.z),&(mlsolver.r),actintra,&two); */
    /*------- this is a simple additive schwarz one level preconditioner */
-   /*mlpcg_precond_presmo(z,r,bdcsr,&(mlprecond.level[0]),actintra,0);
+   /*mlpcg_precond_presmo(z,r,bdcsr,&(mlprecond.level[0]),actintra,0); */
    /*--------------------------------- this is no preconditioner at all */
-   /*mlpcgupdvec(z,r,&done,&ione,&numeq);
+   /*mlpcgupdvec(z,r,&done,&ione,&numeq); */
    /*----------------------------------------- inner product rho1 = r*z */
    mlpcg_vecvec(&rho1,r,z,numeq,actintra);
    /*------------------------------- -------- check for first iteration */
@@ -1063,7 +1063,8 @@ for (i=0; i<numeq; i++)
       a[j] = a[j]*D[col];
    }
 }
-/*----------------------------------------------------------------------*/
+*/
+
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
 dstrc_exit();

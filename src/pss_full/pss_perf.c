@@ -27,6 +27,15 @@ double cputime_thread();
 #include <sys/times.h>
 #endif
 
+#if defined(HPUX11) && defined(HPUX_GNU)
+#include <unistd.h>
+#include <sys/times.h>
+#endif
+
+#if defined(SUSE73)
+#include <unistd.h>
+#include <sys/times.h>
+#endif
 
 #ifdef PERF
 static DOUBLE begtime[100];
@@ -67,7 +76,9 @@ DOUBLE perf_time ()
 #endif
 
 #if defined(HPUX11) && defined(HPUX_GNU)
-  ret = 0.0;
+  clock_t c0;
+  c0 = clock();
+  ret = c0;
 #endif
 
 
@@ -80,17 +91,27 @@ DOUBLE perf_time ()
 #endif
 
 #if defined(HPUXITA) && defined(HPUX_GNU)
-  ret = 0.0;
+  clock_t c0;
+  c0 = clock();
+  ret = c0;
 #endif
 
 
 #ifdef SUSE73
+  DOUBLE clk_tck;
+  struct tms buf;
+
+  times(&buf);
+  clk_tck = (DOUBLE)sysconf(_SC_CLK_TCK);
+  ret = (buf.tms_utime + buf.tms_stime)/clk_tck;
+#if 0
   struct timeval _tstart;
   DOUBLE t1;
 
   gettimeofday(&_tstart, NULL);
   t1 =  (double)_tstart.tv_sec + (double)_tstart.tv_usec/(1000*1000);
   ret = t1;
+#endif
 #endif
 
 #ifdef WIN
@@ -213,6 +234,26 @@ void perf_begin (INT index)
   /*----------------------------------------------------------------------*/
   return;
 }
+void perfbeginf (INT *index)
+{
+  DOUBLE perf_cpu();
+  DOUBLE perf_time();
+
+  begtime[*index] = perf_time();
+
+  /*----------------------------------------------------------------------*/
+  return;
+}
+void perfbeginf_ (INT *index)
+{
+  DOUBLE perf_cpu();
+  DOUBLE perf_time();
+
+  begtime[*index] = perf_time();
+
+  /*----------------------------------------------------------------------*/
+  return;
+}
 
 
 /*!---------------------------------------------------------------------
@@ -237,8 +278,44 @@ void perf_end (INT index)
 
   elapsed_time = end_time - begtime[index];
 
+#if defined(HPUX11) && defined(HPUX_GNU)
+  elapsed_time = elapsed_time/CLOCKS_PER_SEC;
+#endif
+
   sumtime[index] += elapsed_time;
   counter[index] += 1;
+
+  /*----------------------------------------------------------------------*/
+  return;
+}
+void perfendf (INT *index)
+{
+  DOUBLE perf_time();
+
+  DOUBLE end_time, elapsed_time;
+
+  end_time = perf_time();
+
+  elapsed_time = end_time - begtime[*index];
+
+  sumtime[*index] += elapsed_time;
+  counter[*index] += 1;
+
+  /*----------------------------------------------------------------------*/
+  return;
+}
+void perfendf_ (INT *index)
+{
+  DOUBLE perf_time();
+
+  DOUBLE end_time, elapsed_time;
+
+  end_time = perf_time();
+
+  elapsed_time = end_time - begtime[*index];
+
+  sumtime[*index] += elapsed_time;
+  counter[*index] += 1;
 
   /*----------------------------------------------------------------------*/
   return;
@@ -352,7 +429,7 @@ void perf_out ()
   perf_print(22,"local co-ord. system",    2,1);
   printf("%77s\n","-----------------------------------------------------------------------------");
   user_perf = 0;
-  for (i=30; i<90; ++i) {
+  for (i=30; i<40; ++i) {
     if (counter[i] > 0) {
       perf_print(i, "temp perf slot", 0, 1);
       user_perf = 1;
@@ -360,6 +437,40 @@ void perf_out ()
   }
   if (user_perf)
     printf("-----------------------------------------------------------------------------\n");
+  perf_print(40,"calc matrices fast", 0,1);
+  perf_print(41,"assemble_fast", 0,1);
+  perf_print(42,"init element", 0,1);
+  perf_print(43,"calele", 0,1);
+  printf("-----------------------------------------------------------------------------\n");
+  perf_print(44,"calset", 43,1);
+  perf_print(45,"elecord", 43,1);
+  perf_print(46,"elesize", 43,1);
+  perf_print(47,"calint", 43,1);
+  perf_print(48,"make_estif", 43,1);
+  perf_print(49,"caldirich", 43,1);
+  perf_print(50,"massrhs", 43,1);
+  printf("%77s\n","-----------------------------------------------------------------------------");
+  perf_print(51,"functderiv", 47,1);
+  perf_print(52,"jacob", 47,1);
+  perf_print(53,"gder", 47,1);
+  perf_print(54,"gder2", 47,1);
+  perf_print(55,"veli", 47,1);
+  perf_print(56,"vder", 47,1);
+  perf_print(57,"elesize_2", 47,1);
+  perf_print(58,"gal_mat", 47,1);
+  perf_print(59,"stab_mat", 47,1);
+  perf_print(60,"iter_rhs", 47,1);
+  perf_print(61,"ext_rhs", 47,1);
+  perf_print(62,"time_rhs", 47,1);
+  perf_print(63,"ext_rhs", 47,1);
+  printf("%77s\n","-----------------------------------------------------------------------------");
+  perf_print(64,"invupdate", 41,1);
+  perf_print(65,"invbindx", 41,1);
+  perf_print(66,"make lm", 41,1);
+  perf_print(67,"faddmsr", 41,1);
+  perf_print(68,"copy rhs", 41,1);
+  perf_print(69,"assemble rhs", 41,1);
+  printf("%77s\n","-----------------------------------------------------------------------------");
   perf_print(95,"amdef",                   0,1);
   perf_print(94,"amredef",                 0,1);
   perf_print(93,"amdel",                   0,1);

@@ -102,7 +102,9 @@ static void inpdesign_point_axishellcos(void);
 static void inpdesign_line_contact(void);
 #endif
 
+#ifdef D_SSI
 static void inpdesign_line_ssi(void);
+#endif
 
 /*----------------------------------------------------------------------*
  | input of conditions                                    m.gee 4/01    |

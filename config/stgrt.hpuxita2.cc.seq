@@ -13,7 +13,7 @@ PLAIN_LD=f90
 BASEDIR="/bau/stat16/users/statik/ccarat/lib/hpux_ita2"
 
 INCLUDEDIRS="-I/opt/mlib/include -I/bau/stat16/users/statik/ccarat/include"
-LIBDIRS="-L/usr/lib -L/opt/mlib/lib/pa2.0" 
+LIBDIRS="-L/usr/lib -L/opt/mlib/lib/pa2.0"
 
 # aztec
 AZTEC_INC=""
@@ -47,6 +47,10 @@ fi
 VISUAL3_INC=""
 VISUAL3_LIB=""
 
+# fast elements
+LOOPL="-DLOOPL=64"
+
+
 LIBS="-lcl -lc -lm -lveclib -llapack"
 
 # FAST
@@ -56,7 +60,7 @@ FFLAGS_OPT="+O3 +Onolimit +Onoptrs_to_globals +Oinline"
 LDFLAGS_OPT="-O"
 CFLAGS="+DSitanium -Aa -Ae +DD64 +w1 -z"
 FFLAGS="+DSitanium +DD64"
-LDFLAGS="+DSitanium +DD64 -v +A"
+LDFLAGS="+DSitanium +DD64 +A"
 
 if [ x$BIT = "x32" ] ; then
     echo $0: Warning: Only 64 bit executable on platform HPUXita2.

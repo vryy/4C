@@ -99,18 +99,22 @@ for (j=0; j<actfield->dis[0].numele; j++)
          if (actele->node[k]->numdf < 3) actele->node[k]->numdf=3;
       }
       break;
+
    case el_wall1:
       for (k=0; k<actele->numnp; k++)
       {
          if (actele->node[k]->numdf < 2) actele->node[k]->numdf=2;
       }
       break;
+
    case el_fluid2:
       for (k=0; k<actele->numnp; k++)
       {
          if (actele->node[k]->numdf < 3) actele->node[k]->numdf=3;
       }
       break;
+
+#ifdef D_FLUID3
    case el_fluid3:
       for (k=0; k<actele->numnp; k++)
       {
@@ -118,24 +122,43 @@ for (j=0; j<actfield->dis[0].numele; j++)
          if (actele->node[k]->numdf < 4) actele->node[k]->numdf=4;
       }
       break;
+#endif
+
+#ifdef D_FLUID3_F
+   case el_fluid3_fast:
+      for (k=0; k<actele->numnp; k++)
+      {
+
+        if (actele->node[k]->numdf < 4) actele->node[k]->numdf=4;
+      }
+      break;
+#endif
+
+#ifdef D_ALE
    case el_ale3:
       for (k=0; k<actele->numnp; k++)
       {
          if (actele->node[k]->numdf < 3) actele->node[k]->numdf=3;
       }
       break;
+
    case el_ale2:
       for (k=0; k<actele->numnp; k++)
       {
          if (actele->node[k]->numdf < 2) actele->node[k]->numdf=2;
       }
       break;
+#endif
+
+#ifdef D_AXISHELL
    case el_axishell:
       for (k=0; k<actele->numnp; k++)
       {
          if (actele->node[k]->numdf < 2) actele->node[k]->numdf=3;
       }
       break;
+#endif
+
 #ifdef D_INTERF
    case el_interf:
       for (k=0; k<actele->numnp; k++)
@@ -145,12 +168,16 @@ for (j=0; j<actfield->dis[0].numele; j++)
       if (actele->distyp == quad8)  if_dirichnode(actele);
       break;
 #endif
+
+#ifdef D_WALLGE
    case el_wallge:
       for (k=0; k<actele->numnp; k++)
       {
          if (actele->node[k]->numdf < 2) actele->node[k]->numdf=2;
       }
       break;
+#endif
+
    default:
       dserror("Unknown type of element, cannot assign number of dofs");
       break;

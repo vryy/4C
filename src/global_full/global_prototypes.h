@@ -176,6 +176,18 @@ void calreduce(
     CONTAINER     *container);  /*!< contains variables defined in container.h */
 
 
+void calelm_fast(
+    FIELD        *actfield,     /* active field */
+    SOLVAR       *actsolv,      /* active SOLVAR */
+    PARTITION    *actpart,      /* my partition of this field */
+    INTRA        *actintra,     /* my intra-communicator */
+    INT           sysarray1,    /* number of first sparse system matrix */
+    INT           sysarray2,    /* number of secnd system matrix, if present, else -1 */
+    CONTAINER    *container,    /* contains variables defined in container.h */
+    CALC_ACTION  *action        /* calculation option passed to element routines */
+);
+
+
 /*----------------------------------------------------------------------*
   | global_calrhs.c                                     m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -202,6 +214,12 @@ void rhs_point_neum(
 void check_max_sizes(void);
 #endif
 
+/*----------------------------------------------------------------------*
+  | global_divide_fast.c                                       mn 09/04 |
+ *----------------------------------------------------------------------*/
+#ifdef D_FLUID3_F
+void divide_fast(void);
+#endif
 
 
 

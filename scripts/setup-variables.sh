@@ -62,3 +62,6 @@ fi
 if [ x$PARALLEL = "xyes" ] ; then
     DEFINES=" -DPARALLEL $DEFINES"
 fi
+
+# define the length of the loops for fast elements
+DEFINES="$DEFINES $LOOPL"
