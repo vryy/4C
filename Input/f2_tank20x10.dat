@@ -18,10 +18,11 @@ RESTART      0
 ----------------------------------------------------------------IO
 STRUCT_DISP_FILE   Yes
 STRUCT_STRESS_FILE No
-STRUCT_DISP_GID    No
+STRUCT_DISP_GID    Yes
 STRUCT_STRESS_GID  No
 FLUID_SOL_FILE     Yes
-FLUID_VIS_FILE     Yes
+FLUID_SOL_GID      Yes
+FLUID_VIS_FILE     No
 ALE_DISP_FILE      Yes
 ALE_DISP_GID       No
 ------------------------------------------------------------STATIC
@@ -57,6 +58,8 @@ IPRERHS      1
 NUMCONT      1
 UPPSS        1
 UPOUT        1
+UPRES        1
+RESTARTEVRY  20
 MAXTIME      1000.0
 NUMSTEP      200  
 TIMESTEP     0.05
@@ -87,8 +90,10 @@ QUALITY      none
 -------------------------------------------------------FSI DYNAMIC
 MAXTIME      1000.0
 TIMESTEP     0.025
-NUMSTEP      5
+NUMSTEP      10
 UPPSS        1 
+UPRES        1
+RESTARTEVRY  1
 IALE         Pseudo_Structure
 COUPALGO     iter_stagg_AITKEN_rel_param
 // COUPALGO     sequ_stagg_pred
@@ -105,8 +110,8 @@ ICHMAX       0
 ITECHAPP     20
 ICHOPT       no
 ------------------------------------------------------FLUID SOLVER
-SOLVER         SPOOLES_nonsym
-//SOLVER         Aztec_MSR
+//SOLVER         SPOOLES_nonsym
+SOLVER         Aztec_MSR
 AZSOLVE        BiCGSTAB
 AZPREC         ILU
 AZREUSE        0  

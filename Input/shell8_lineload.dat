@@ -34,7 +34,7 @@ ARCSCL       1.0
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Nlin_Time_Int
 TIMESTEP     0.05 
-NUMSTEP      200 
+NUMSTEP      100 
 MAXTIME      5.0
 BETA         0.25 
 GAMMA        0.5 

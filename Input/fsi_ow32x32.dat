@@ -22,9 +22,9 @@ STRUCT_DISP_GID    Yes
 STRUCT_STRESS_GID  No
 FLUID_SOL_FILE     Yes
 FLUID_SOL_GID      Yes
-FLUID_VIS_FILE     Yes
-ALE_DISP_FILE      No
-ALE_DISP_GID       No
+FLUID_VIS_FILE     No
+ALE_DISP_FILE      Yes
+ALE_DISP_GID       Yes
 ------------------------------------------------------------STATIC
 GEOLINEAR
 -----------------------------------------------EIGENVALUE ANALYSIS
@@ -57,6 +57,8 @@ IPRERHS      1
 NUMCONT      1
 UPPSS        1
 UPOUT        1
+UPRES        1
+RESTARTEVRY  20
 MAXTIME      1000.0
 NUMSTEP      1000
 TIMESTEP     0.05
@@ -90,8 +92,14 @@ TIMESTEP     0.1
 NUMSTEP      5
 IALE         Pseudo_Structure
 UPPSS        1
+UPRES        1
+RESTARTEVRY  1
 COUPALGO     iter_stagg_AITKEN_rel_param
+//COUPALGO     iter_stagg_steep_desc
+//PREDICTOR    d(n)
 PREDICTOR    d(n)+dt*(1.5*v(n)-0.5*v(n-1))
+//PREDICTOR    d(n)+dt*v(n)
+//PREDICTOR    d(n)+dt*v(n)+0.5*dt^2*a(n)
 CONVCRIT     ||g(i)||:sqrt(neq)
 ENERGYCHECK  yes
 TOLENCHECK   1.0
@@ -113,7 +121,7 @@ AZREUSE        0
 AZDROP         0.0
 AZFILL         1.0
 AZGFILL        1  
-AZTOL          1.0E-8  
+AZTOL          1.0E-15  
 AZITER         2500  
 AZSUB	       50  
 AZOMEGA        1.0  

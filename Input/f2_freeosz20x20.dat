@@ -21,9 +21,10 @@ STRUCT_STRESS_FILE No
 STRUCT_DISP_GID    No
 STRUCT_STRESS_GID  No
 FLUID_SOL_FILE     Yes
-FLUID_VIS_FILE     Yes
-ALE_DISP_FILE      No
-ALE_DISP_GID       No
+FLUID_SOL_GID      Yes
+FLUID_VIS_FILE     No
+ALE_DISP_FILE      Yes
+ALE_DISP_GID       Yes
 MONITOR            Yes
 ------------------------------------------------------------STATIC
 GEOLINEAR
@@ -53,14 +54,16 @@ TIMEINTEGR   One_Step_Theta
 NUMDF        3
 VISCSTRESS   no
 FREESURFACE  implicit
-SURFTENSION  yes
-CHECKAREA    yes
+SURFTENSION  no
+CHECKAREA    no
 IPRERHS      1
 NUMCONT      1
 UPPSS        1
 UPOUT        1
+UPRES        1
+RESTARTEVRY  1
 MAXTIME      1000.0
-NUMSTEP      10  
+NUMSTEP      20  
 TIMESTEP     0.05
 ALPHA        1.00
 THETA        1.00
@@ -81,8 +84,10 @@ TURBULENCE   No
 -------------------------------------------------------FSI DYNAMIC
 MAXTIME      1000.0
 TIMESTEP     0.001
-NUMSTEP      5 
+NUMSTEP      10 
 UPPSS        1
+UPRES        1
+RESTARTEVRY  1
 IALE         Pseudo_Structure
 COUPALGO     basic_sequ_stagg
 PREDICTOR    d(n)
@@ -106,8 +111,8 @@ NUM_INITSTEP 0
 RESEVRYDISP  1
 Quality      min_J
 ------------------------------------------------------FLUID SOLVER
-//SOLVER         UMFPACK
-SOLVER         SPOOLES_nonsym
+SOLVER         UMFPACK
+//SOLVER         SPOOLES_nonsym
 //SOLVER         Aztec_MSR
 //AZSOLVE        BiCGSTAB
 //AZPREC         ILU

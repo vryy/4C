@@ -21,7 +21,8 @@ STRUCT_STRESS_FILE No
 STRUCT_DISP_GID    No
 STRUCT_STRESS_GID  No
 FLUID_SOL_FILE     Yes
-FLUID_VIS_FILE     Yes
+FLUID_SOL_GID      Yes
+FLUID_VIS_FILE     No
 ALE_DISP_FILE      No
 ALE_DISP_GID       No
 MONITORING         No
@@ -57,8 +58,10 @@ IPRERHS      1
 NUMCONT      1
 UPPSS        1
 UPOUT        1
+UPRES        1
+RESTARTEVRY  10
 MAXTIME      1000.0
-NUMSTEP      5   
+NUMSTEP      10   
 TIMESTEP     0.1
 ALPHA        1.00
 THETA        0.60
@@ -74,6 +77,8 @@ STARTINGALGO One_Step_Theta
 NUMSTASTEPS  0
 START_THETA  0.67
 INITIALFIELD zero_field
+//INITIALFIELD field_from_file
+RESSTEP      5
 STARTFUNCNO  2
 TURBULENCE   No
 -------------------------------------------------------FSI DYNAMIC
@@ -104,7 +109,7 @@ AZREUSE        0
 AZDROP         0.0  
 AZFILL         1.0  
 AZGFILL        1  
-AZTOL	       1.0E-8
+AZTOL	       1.0E-12
 AZITER         2500  
 AZSUB	       50  
 AZOMEGA        1.0  

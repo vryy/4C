@@ -51,7 +51,7 @@ NUMCONT      1
 UPPSS        1
 SAVESTEP     1
 MAXTIME      1000.0
-NUMSTEP      100  
+NUMSTEP      10  
 TIMESTEP     0.05
 ALPHA        1.00
 THETA        0.50
