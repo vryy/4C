@@ -158,7 +158,6 @@ FIELD         *structfield;
 ARRAY          time_a ;         /* time array				*/
 ARRAY          step_a ;         /* time array				*/
 FLUID_DYNAMIC *fdyn;                /* pointer to fluid dyn. inp.data   */
-FLUID_DYN_CALC *dynvar;             /* pointer to fluid_dyn_calc        */ 
 /*!---------------------------------------------------------------------                                         
 \brief call of visual2 for fluid 
 
@@ -301,8 +300,7 @@ if (IVORT==1)
    printf("   Calculating the vorticity...\n");
 
    fdyn = alldyn[numff].fdyn;
-   dynvar      = &(fdyn->dynvar);
-   dynvar->ncols=ncols;
+   fdyn->ncols=ncols;
    *action = calc_fluid_initvort;
    calinit(actfield,actpart,action,&container);
    *action = calc_fluid_vort; 

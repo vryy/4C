@@ -126,7 +126,6 @@ FIELD         *structfield;
 ARRAY          time_a ;         /* time array				*/
 ARRAY          step_a ;         /* time array				*/
 FLUID_DYNAMIC *fdyn;                /* pointer to fluid dyn. inp.data   */
-FLUID_DYN_CALC *dynvar;             /* pointer to fluid_dyn_calc        */ 
 /*!---------------------------------------------------------------------                                         
 \brief call of visual3 for fluid 
 
