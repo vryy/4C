@@ -72,31 +72,36 @@ static FSI_DYNAMIC  *fsidyn;               /* fluid dynamic variables   */
 
   u_grid = [d(n+1)-d(n)]/dt
 
+  phase=1: ALE PHASE I
+  phase=2: ALE PHASE II: update during the nonlinear iteration
+           local lagrange part. impl.: use solution for u_grid
 </pre>   
 \param *fdyn	   FLUID_DYNAMIC       (i)                              
+\param  dt	   DOUBLE              (i)       time increment                            
 \param  numdf      INT                 (i)       number of dofs         
-\param  phse       INT                 (i)       flag for ale-phase
+\param  phase      INT                 (i)       flag for ale-phase
 \return void 
 
 ------------------------------------------------------------------------*/
 void fsi_alecp(
-		             FIELD           *fluidfield, 
-		             INT               numdf,
-		             INT               phase
+		             FIELD           *fluidfield,  
+                             DOUBLE           dt,
+		             INT              numdf,
+		             INT              phase
 	       )      
 {
-INT     i,j;           /* some counters                                 */
-INT     numnp_total;   /* total number of nodes                         */
-INT     numveldof;     /* number of velocity dofs                       */
-INT     numaf;         /* number of ALE field                           */
-DOUBLE  dt;            /* time increment                                */
-DOUBLE  dxyzn;         /* ale-displement at (n)                         */
-DOUBLE  dxyz;          /* ale-displement at (n+1)                       */
-NODE   *actfnode;      /* actual fluid node                             */
-NODE   *actanode;      /* actual ale node                               */
-GNODE  *actfgnode;     /* actual fluid gnode                            */
+INT     i,j;             /* some counters                               */
+INT     numnp_total;     /* total number of nodes                       */
+INT     numveldof;       /* number of velocity dofs                     */
+INT     numaf;           /* number of ALE field                         */
+INT     phipos;          /* index of free surface movement (height func)*/
+DOUBLE  dxyzn;           /* ale-displement at (n)                       */
+DOUBLE  dxyz;            /* ale-displement at (n+1)                     */
+DOUBLE  phi,phin;        /* heightfunction values                       */
+NODE   *actfnode;        /* actual fluid node                           */
+NODE   *actanode;        /* actual ale node                             */
+GNODE  *actfgnode;       /* actual fluid gnode                          */
 FLUID_DYNAMIC *fdyn;
-
 
 #ifdef DEBUG 
 dstrc_enter("fsi_alecp");
@@ -105,8 +110,8 @@ dstrc_enter("fsi_alecp");
 fdyn = alldyn[genprob.numff].fdyn;
 
 numnp_total  = fluidfield->dis[0].numnp;
-dt           = fdyn->dta;
 numveldof    = numdf-1;
+phipos       = numdf-2;
 numaf        = genprob.numaf;
 
 /*======================================================================*
@@ -126,7 +131,7 @@ numaf        = genprob.numaf;
 
 switch (phase)
 {
-case 1: /* ale phase 1: get grid velocity from mesh displacements ------*/
+case 1: /* ALE-PHASE I: get grid velocity from mesh displacements ------*/
    /*--------------------------------------------------- loop all nodes */
    for (i=0;i<numnp_total;i++)
    {
@@ -143,20 +148,34 @@ case 1: /* ale phase 1: get grid velocity from mesh displacements ------*/
       } /* end of loop over vel dofs */
    } /* end of loop over all nodes */
 break;
-case 2: /* ale phase 2: update grid velocity at free surface -----------*/
+case 2: case 6: /* ALE-PHASE II: update grid velocity at free surface 
+           (local lagrange) --------------------------------------------*/
    /*--------------------------------------------------- loop all nodes */
    for (i=0;i<numnp_total;i++)
    {   
       actfnode  = &(fluidfield->dis[0].node[i]); 
-      if (actfnode->numdf==numdf) continue;
+      if (actfnode->xfs==NULL) continue;
       for (j=0;j<numveldof;j++)
       actfnode->sol_increment.a.da[4][j]
          = actfnode->sol_increment.a.da[3][j+numdf];    
-   } /* end of loop over vel dofs */
+
+   } /* end of loop over nodes */
+break;
+case 3: case 5: /* ALE-PHASE II: update grid velocity at free surface
+           (height function separat & implicit) ------------------------*/
+   for (i=0;i<numnp_total;i++)
+   {   
+      actfnode  = &(fluidfield->dis[0].node[i]); 
+      if (actfnode->xfs==NULL) continue;
+      phi  = actfnode->xfs[phipos];
+      phin = actfnode->sol_increment.a.da[1][numdf];
+      actfnode->sol_increment.a.da[4][phipos] = (phi-phin)/dt;  
+   }  /* end of loop over nodes */ 
 break;
 default:
    dserror("ale phase out of range!\n");
 }   
+
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -173,6 +192,11 @@ return;
 
    c(n+1) = u(n+1) - u_grid(n->n+1)
    c(n)   = u(n)   - u_grid(n->n+1) 
+
+   NOTE: local co-system
+         u is given in the xyz* co-system
+         u_grid is given in the XYZ co-system
+         Thus we have to transform the u-vector from xyz* to XYZ       
 
 </pre>   
 \param *fdyn	   FLUID_DYNAMIC     (i)  			  
@@ -213,7 +237,7 @@ numc         = numdf-1;
  * sol_increment[6][i] ... convective velocity at time (n+1)	        *
  *		needed for steepest descent method only:		*
  * sol_increment[7][i] ... fluid solution for Relaxation parameter	*
- *======================================================================*
+ *======================================================================*/
 
 /*------------------------------------------------------ loop all nodes */
 for (i=0;i<numnp_total;i++)
@@ -223,9 +247,19 @@ for (i=0;i<numnp_total;i++)
    {
       actfnode->sol_increment.a.da[pos1][j]
          =   actfnode->sol_increment.a.da[pos2][j] 
-	   - actfnode->sol_increment.a.da[4][j]; 
+         - actfnode->sol_increment.a.da[4][j]; 
    }
 }
+
+#if 0
+for (i=0;i<numnp_total;i++)
+{
+   actfnode  = &(fluidfield->dis[0].node[i]); 
+   if (actfnode->xfs==NULL) continue;
+   printf(" %12.10lf   %12.10lf\n", actfnode->sol_increment.a.da[pos1][0],
+                                    actfnode->sol_increment.a.da[pos1][1]);
+}
+#endif
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -295,18 +329,18 @@ for (i=0;i<numnp_total;i++) /* loop nodes */
 #ifdef D_FLUID2
       if (numdf==3)
       {
-	 for(l=0;l<3;l++) 
-	 actnode->sol_mf.a.da[1][l]+=actele->e.f2->stress_ND.a.da[k][l]/numele;
+         for(l=0;l<3;l++) 
+         actnode->sol_mf.a.da[1][l]+=actele->e.f2->stress_ND.a.da[k][l]/numele;
       }
 #endif
 #ifdef D_FLUID3	 
       if (numdf==4)
       {
-	 for(l=0;l<6;l++) 
-	 actnode->sol_mf.a.da[1][l]+=actele->e.f3->stress_ND.a.da[k][l]/numele;
+         for(l=0;l<6;l++) 
+         actnode->sol_mf.a.da[1][l]+=actele->e.f3->stress_ND.a.da[k][l]/numele;
       }
 #endif	 
-   }
+   } 
 } /* end of loop over nodes */
 
 /*----------------------------------------------------------------------*/
@@ -792,7 +826,7 @@ INT 	 numnp_total;
 NODE 	*actnode;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
-dstrc_enter("fluid_init");
+dstrc_enter("fsi_init_ale");
 #endif
 
 for (k=0;k<actfield->ndis;k++)
