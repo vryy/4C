@@ -1,6 +1,11 @@
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
+
+#ifdef D_SHELL9
+   #include "../shell9/shell9.h"
+#endif /*D_SHELL9*/
+
 /*----------------------------------------------------------------------*
  |  routine to call rhs-routines                         m.gee 10/01    |
  |  in here, only step dependent loads are calculated, which means      |
@@ -94,18 +99,50 @@ int             i,j;
 int             dof;
 NODE           *actnode;
 NEUM_CONDITION *actneum;
+int             nsurf;     /* 1=MID; 2=TOP; 3=BOT */
+int             numklay;   /* number of kinematic layers if shell9 */
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG
 dstrc_enter("rhs_point_neum");
 #endif
 /*----------------------------------------------------------------------*/
 for (i=0; i<actpart->pdis[0].numnp; i++)
 {
-   /*------------------------ check presence of nodal eumann conditions */
+   /*----------------------- check presence of nodal neumann conditions */
    if (actpart->pdis[0].node[i]->gnode->neum == NULL) continue;
    /*-------------------------------------------------- set active node */
    actnode = actpart->pdis[0].node[i];
    /*------------------------------------- set active neumann condition */
    actneum = actnode->gnode->neum;
+   
+   #ifdef D_SHELL9
+     if (actnode->element[0]->eltyp == el_shell9)
+     {
+       numklay = (actnode->numdf-3)/3;
+       /* modify the loadvector if load is applied on the surface of shell elements */
+       /* */
+       switch(actneum->neum_surf)
+       {
+       case mid:
+          nsurf = 1;
+       break;
+       case top:
+          nsurf = 2;
+       break;
+       case bot:
+          nsurf = 3;
+       break;
+       default:
+          dserror("Unknown type of neum_surf");
+       break;
+       }/*end of switch(actneum->neum_surf*/
+       /* modify the nodal load vector due to nsurf */
+       s9_surf_P(actneum->neum_val.a.dv, nsurf, numklay);
+       /*switch the neum_onoff to 1 due to nsurf */
+       s9_surf_onoff(actneum->neum_onoff.a.iv, nsurf, numklay);
+     }
+   #endif /*D_SHELL9*/
+   
    /*------------------------------------------------ loop dofs of node */
    for (j=0; j<actnode->numdf; j++)
    {
