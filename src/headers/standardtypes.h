@@ -263,7 +263,7 @@ enum _TIME_TYP    timetyp;       /* type of time, see enum.h */
  |                                                       m.gee 06/01    |
  | pointer to allocate dynamic variables if needed                      |
  | dedfined in global_control.c                                         |
- | struct _DYNAMIC      *dyn;                                           |
+ | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*
  |                                                       m.gee 02/02    |
@@ -271,7 +271,7 @@ enum _TIME_TYP    timetyp;       /* type of time, see enum.h */
  | vector of structures of curves                                       |
  | defined in input_curves.c                                            |
  | int                   numcurve;                                      |
- | struct _DYNAMIC      *curve;                                         |
+ | struct _CURVE      *curve;                                           |
  *----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |

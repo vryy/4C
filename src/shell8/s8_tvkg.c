@@ -8,17 +8,15 @@ C.......................................................................
 C!    GEAENDERTE METRIK DES VERF. SCHALENRAUMS INFOLGE ENHANCED STRAIN .
 C.......................................................................
 */
-void s8_tvkg(
-              double **estif,
-              double  *stress_r,
-              double  *funct,
-              double **deriv,
-              int      numdf,
-              int      iel,
-              double   weight,
-              double   e1,
-              double   e2
-            )
+void s8_tvkg(double **estif,
+             double  *stress_r,
+             double  *funct,
+             double **deriv,
+             int      numdf,
+             int      iel,
+             double   weight,
+             double   e1,
+             double   e2)
 {
 int     i,inode,jnode;
 int     i_indiz,j_indiz;

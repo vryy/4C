@@ -1,5 +1,10 @@
 #include "../headers/standardtypes.h"
 #include "../headers/solution.h"
+#include "../shell8/shell8.h"
+#include "../wall1/wall1.h"
+#include "../brick1/brick1.h"
+#include "../fluid3/fluid3.h"
+#include "../ale/ale.h"
 /*----------------------------------------------------------------------*
  | enum _CALC_ACTION                                      m.gee 1/02    |
  | command passed from control routine to the element level             |

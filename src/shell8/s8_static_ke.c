@@ -379,7 +379,7 @@ for (lr=0; lr<nir; lr++)
          math_matvecdense(epsh,transP,alfa,12,nhyb,0,1.0);
       }
       /*------------------------ make B-operator for compatible strains */
-      s8_tvbo(e1,e2,bop,funct,deriv,iel,numdf,akovc,a3kvpc);
+      s8_tvbo(e1,e2,bop,funct,deriv,iel,numdf,akovc,a3kvpc,0);
       /*------------------------------ loop GP in thickness direction t */
       for (lt=0; lt<nit; lt++)
       {

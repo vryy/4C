@@ -5,20 +5,28 @@ void main(int argc, char *argv[]);
 /*----------------------------------------------------------------------*
  |  global_ass_dof.c                                     m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void assign_dof();
+void assign_dof(void);
 /*----------------------------------------------------------------------*
  |  global_cal_control.c                                 m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void ntacal();
+void ntacal(void);
 /*----------------------------------------------------------------------*
  |  cal_dyn_control.c                                    m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void caldyn();
+void caldyn(void);
 /*----------------------------------------------------------------------*
  | cal_static_control.c                                  m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void calsta();
-void stalin();
+void calsta(void);
+void stalin(void);
+/*----------------------------------------------------------------------*
+ | cal_static_service.c                                  m.gee 11/01    |
+ *----------------------------------------------------------------------*/
+void calstatserv_findcontroldof(FIELD     *actfield,
+                                int        control_node_global,
+                                int        control_dof,
+                                NODE     **node,
+                                int       *cdof); 
 /*----------------------------------------------------------------------*
  | global_control.c                                      m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -30,17 +38,21 @@ void ntaini(int argc, char *argv[]);
 /*----------------------------------------------------------------------*
  | global_inp_control.c                                  m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void ntainp();
+void ntainp(void);
 /*----------------------------------------------------------------------*
- | global_mask_matrices.c                                   m.gee 11/01    |
+ | global_mask_matrices.c                                m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void mask_global_matrices();
+void mask_global_matrices(void);
 /*----------------------------------------------------------------------*
- |  machine_hpux.c                                  m.gee 11/01    |
+ |  machine_hpux.c                                       m.gee 11/01    |
  *----------------------------------------------------------------------*/
 void ntadev(int argc, char *argv[]);
 /*----------------------------------------------------------------------*
- |  map_node_find.c                                  m.gee 11/01    |
+ |  restart_control.c                                    m.gee 02/02    |
+ *----------------------------------------------------------------------*/
+void res_control(void);
+/*----------------------------------------------------------------------*
+ |  map_node_find.c                                      m.gee 11/01    |
  *----------------------------------------------------------------------*/
 void iscouple_find_node_comp(NODE  *actnode, 
                                 FIELD *searchfield, 
@@ -52,16 +64,32 @@ void find_assign_coupset(FIELD *actfield,
                             int    coupleID, 
                             int   *counter);
 /*----------------------------------------------------------------------*
+ |  dyn_timecurve.c                                      m.gee 02/02    |
+ *----------------------------------------------------------------------*/
+void dyn_init_curve(int actcurve,
+                   int    nstep,
+                   double dt,
+                   double maxtime);
+void dyn_facfromcurve(int actcurve,
+                   double T,
+                   double *fac);
+/*----------------------------------------------------------------------*
+ |  out_global.c                                         m.gee 12/01    |
+ *----------------------------------------------------------------------*/
+void out_general(void);
+void out_sol(FIELD *actfield, PARTITION *actpart, INTRA *actintra, 
+             int step, int place);
+/*----------------------------------------------------------------------*
  |  out_gid_sol.c                                        m.gee 12/01    |
  *----------------------------------------------------------------------*/
-void out_gid_sol_init();
+void out_gid_sol_init(void);
 void out_gid_domains(FIELD *actfield);
 void out_gid_sol(char string[], FIELD *actfield, INTRA  *actintra, int step,
                  int place);
 /*----------------------------------------------------------------------*
  |  out_gid_msh.c                                        m.gee 12/01    |
  *----------------------------------------------------------------------*/
-void out_gid_msh();
+void out_gid_msh(void);
 void out_gid_allcoords(FILE *out);
 /*----------------------------------------------------------------------*
  |  input_cond_couple.c                                  m.gee 11/01    |
@@ -80,51 +108,53 @@ void inp_cond_ele_struct(FIELD *field);
 /*----------------------------------------------------------------------*
  |  input_conditions.c                                  m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void inp_conditions();
+void inp_conditions(void);
 /*----------------------------------------------------------------------*
  |  input_control_global.c                                  m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void inpctr();
-void inpctrprob();
-void inpctrdyn();
-void inpctrstat();
+void inpctr(void);
+void inpctrprob(void);
+void inpctrdyn(void);
+void inpctrstat(void);
+void inpctr_dyn_struct(STRUCT_DYNAMIC *sdyn);
 /*----------------------------------------------------------------------*
  |  input_ctr_head.c                                  m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void inpctrhed();
-void inptrace();
+void inpctrhed(void);
+void inptrace(void);
 /*----------------------------------------------------------------------*
  |  input_curves.c                                  m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void inp_cond_curve();
+void inp_cond_curve(void);
 void inp_read_curve(char *string);
 /*----------------------------------------------------------------------*
  |  input_design.c                                  m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void inpdesign();
-void inp_dnode();
+void inpdesign(void);
+void inp_dnode(void);
 void read_1_dnode(DNODE *dnode, int readId);
-void inp_dline();
+void inp_dline(void);
 void read_1_dline(DLINE *dline, int readId);
-void inp_dsurface();
+void inp_dsurface(void);
 void read_1_dsurf(DSURF *dsurf, int readId);
-void inp_dvolume();
+void inp_dvolume(void);
 void read_1_dvol(DVOL *dvol, int readId);
+void inp_designsize(void);
 /*----------------------------------------------------------------------*
  |  input_design_top.c                                  m.gee 11/01    |
  *---------------------------------------------------------------------*/
-void inpdesign_topology_design();
-void inpdesign_topology_fe();
+void inpdesign_topology_design(void);
+void inpdesign_topology_fe(void);
 /*----------------------------------------------------------------------*
  |  input_material.c                                  m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void inp_material();
+void inp_material(void);
 /*----------------------------------------------------------------------*
  |  input_mesh.c                                  m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void inpfield();
+void inpfield(void);
 void inp_assign_nodes(FIELD *field);
-void inpnodes();
+void inpnodes(void);
 void inp_struct_field(FIELD *structfield);
 void inp_fluid_field(FIELD *fluidfield);
 void inp_ale_field(FIELD *alefield);
@@ -191,15 +221,15 @@ int find_index(int key, int list[], int length);
 /*----------------------------------------------------------------------*
  |  par_assignmesh.c                                  m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void part_assignfield();
+void part_assignfield(void);
 /*----------------------------------------------------------------------*
  |  par_initmetis.c                                  m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void part_fields();
+void part_fields(void);
 /*----------------------------------------------------------------------*
  |  par_make_comm.c                                  m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void create_communicators();
+void create_communicators(void);
 /*----------------------------------------------------------------------*
  |  pss_am.c                                  m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -226,28 +256,29 @@ void* am4redef(ARRAY4D *array, int newfdim, int newsdim, int newtdim, int newfod
 /*----------------------------------------------------------------------*
  |  pss_ds.c                                  m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void dsmemreport();
+void dsmemreport(void);
 void dserror(char string[]);
-void dsinit();
+void dsinit(void);
 void dstrc_enter(char string[]);
-void dstrc_exit();
-void dstracesize();
+void dstrc_exit(void);
+void dstracesize(void);
 void dsreportarray(void *array, int typ);
-void dstrace_to_err();
+void dsdeletearray(void *array, int typ);
+void dstrace_to_err(void);
 /*----------------------------------------------------------------------*
  |  pss_fr.c                                  m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void frinit();
-void frrewind();
+void frinit(void);
+void frrewind(void);
 void frfind(char string[]);
-void frread();
+void frread(void);
 void frint_n(char string[],int *var,int num, int *ierr);
 void frint(char string[],int *var, int *ierr);
 void frdouble_n(char string[],double *var,int num, int *ierr);
 void frdouble(char string[],double *var, int *ierr);
 void frchar(char string[],char *var, int *ierr);
 void frchk(char string[], int *ierr);
-void frend();
+void frend(void);
 /*----------------------------------------------------------------------*
  |  pss_pss.c                                  m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -304,4 +335,4 @@ void pss_getdims_name_handle(char       *name,
                                 int        *byte,
                                 int        *handle,
                                 int        *ierr);
-void pss_status_to_err();
+void pss_status_to_err(void);

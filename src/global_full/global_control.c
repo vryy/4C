@@ -24,12 +24,9 @@ struct _DESIGN       *design;
  |                                                       m.gee 06/01    |
  | pointer to allocate dynamic variables if needed                      |
  | dedfined in global_control.c                                         |
+ | struct _ALLDYNA       *alldyn;                                       |
  *----------------------------------------------------------------------*/
-#ifdef SUSE73
-DYNAMIC *dyn;   
-#else
-struct _DYNAMIC *dyn;   
-#endif
+ALLDYNA             *alldyn;   
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate static variables if needed                       |
@@ -54,7 +51,6 @@ extern struct _FILES  allfiles;
  | This structure struct _PAR par; is defined in main_ccarat.c
  *----------------------------------------------------------------------*/
  extern struct _PAR   par;                      
-
 /*----------------------------------------------------------------------*
  | main routine                                           m.gee 8/00    |
  *----------------------------------------------------------------------*/

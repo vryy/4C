@@ -758,6 +758,7 @@ case IA:
    for (j=0; j<sdim; j++)
    iato[i][j] += (int)((double)iafrom[i][j] * factor);
 break; 
+case IV:
    fdim   = array_to->fdim * array_to->sdim;
    sdim   = array_from->fdim * array_from->sdim;
    fdim   = DMIN(fdim,sdim);
@@ -765,7 +766,6 @@ break;
    ivto   = array_to->a.iv;
    for (i=0; i<fdim; i++)
    ivto[i] += (int)((double)ivfrom[i] * factor);
-case IV:
 break; 
 default:
    dserror("Unknown type of array given");

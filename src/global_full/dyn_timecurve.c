@@ -12,11 +12,10 @@ extern struct _CURVE *curve;
 /*----------------------------------------------------------------------*
  |  init the control of time factors                         m.gee 02/02|
  *----------------------------------------------------------------------*/
-int dyn_init_curve(int actcurve,
+void dyn_init_curve(int actcurve,
                    int    nstep,
                    double dt,
-                   double maxtime
-                  )
+                   double maxtime)
 {
 int      i;
 int      numtstep;
@@ -83,7 +82,7 @@ return;
 /*----------------------------------------------------------------------*
  |  get factor at a certain time T                           m.gee 02/02|
  *----------------------------------------------------------------------*/
-int dyn_facfromcurve(int actcurve,
+void dyn_facfromcurve(int actcurve,
                    double T,
                    double *fac)
 {

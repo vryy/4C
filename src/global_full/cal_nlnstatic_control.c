@@ -226,7 +226,7 @@ if (par.myrank==0)
 for (kstep=0; kstep<nstep; kstep++)
 {
    /*---------------------------------------------- write memory report */
-   dsmemreport(actintra);
+   if (par.myrank==0) dsmemreport();
    dstrace_to_err();
    /*--------------------------------------------------- make predictor */
    conpre(
@@ -722,7 +722,7 @@ C        DS0    .. ARC LENGTH
 C        NEQ    .. NUMBER OF EQUATIONS
 C-----------------------------------------------------------------------
 */
-int increment_controlarc(INTRA         *actintra,
+void increment_controlarc(INTRA         *actintra,
                           SOLVAR        *actsolv,
                           int            actsysarray,
                           DIST_VECTOR   *rsd,
@@ -834,7 +834,7 @@ return;
  |  make load factor for displacement control                 m.gee 1/02|
  |                                                                      |
  *----------------------------------------------------------------------*/
-int increment_controldisp(INTRA *actintra,
+void increment_controldisp(INTRA *actintra,
                           SOLVAR        *actsolv,
                           int            actsysarray,
                           int            cdof,

@@ -26,14 +26,12 @@ extern struct _FILES  allfiles;
  | NOTE2: the solver and preconditioner objects are never destroyed         |
  | This could be reason for growth of memory
  *--------------------------------------------------------------------------*/
-void  solver_hypre_parcsr( 
-                            struct _SOLVAR         *actsolv,
-                            struct _INTRA          *actintra,
-                            struct _H_PARCSR       *parcsr,
-                            struct _DIST_VECTOR    *sol,
-                            struct _DIST_VECTOR    *rhs,
-                            int                     option
-                           )
+void  solver_hypre_parcsr(struct _SOLVAR         *actsolv,
+                          struct _INTRA          *actintra,
+                          struct _H_PARCSR       *parcsr,
+                          struct _DIST_VECTOR    *sol,
+                          struct _DIST_VECTOR    *rhs,
+                          int                     option)
 {
 #ifdef HYPRE_PACKAGE
 int                 i;                     /* counter variable */

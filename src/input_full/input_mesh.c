@@ -1,4 +1,9 @@
 #include "../headers/standardtypes.h"
+#include "../shell8/shell8.h"
+#include "../wall1/wall1.h"
+#include "../brick1/brick1.h"
+#include "../fluid3/fluid3.h"
+#include "../ale/ale.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |

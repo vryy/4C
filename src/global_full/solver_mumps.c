@@ -12,14 +12,12 @@ fortran90 subroutines:
 /*----------------------------------------------------------------------*
  |  control solver lib Lapack                            m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void solver_mumps( 
-                              struct _SOLVAR         *actsolv,
-                              struct _INTRA          *actintra,
-                              struct _RC_PTR         *rc_ptr,
-                              struct _DIST_VECTOR    *sol,
-                              struct _DIST_VECTOR    *rhs,
-                              int                     option
-                             )
+void solver_mumps(struct _SOLVAR         *actsolv,
+                  struct _INTRA          *actintra,
+                  struct _RC_PTR         *rc_ptr,
+                  struct _DIST_VECTOR    *sol,
+                  struct _DIST_VECTOR    *rhs,
+                  int                     option)
 {
 #ifdef MUMPS_PACKAGE
 int            i;

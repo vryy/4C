@@ -78,7 +78,7 @@ extern enum _CALC_ACTION calc_action[MAXFIELD];
          constants[3] =  (1.0-alphaf) * ((gamma/beta)/dt)
  *----------------------------------------------------------------------*/
   
-int kefnln_struct(STRUCT_DYN_CALC *dynvar, 
+void kefnln_struct(STRUCT_DYN_CALC *dynvar, 
                   STRUCT_DYNAMIC  *sdyn,
                   FIELD           *actfield,
                   SOLVAR          *actsolv,
@@ -142,7 +142,7 @@ return;
     a6 =  (gamma/beta)/2.0 - 1.0) * dt * (1.0-alphaf)
 
  *----------------------------------------------------------------------*/
-int pefnln_struct(STRUCT_DYN_CALC *dynvar, 
+void pefnln_struct(STRUCT_DYN_CALC *dynvar, 
                   STRUCT_DYNAMIC  *sdyn,
                   FIELD           *actfield,
                   SOLVAR          *actsolv,
@@ -241,7 +241,7 @@ return;
      ******************************************************************
 (ported from fortran)
  *----------------------------------------------------------------------*/
-int dynnle(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, INTRA *actintra, SOLVAR *actsolv, 
+void dynnle(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, INTRA *actintra, SOLVAR *actsolv, 
            DIST_VECTOR *dispi, /* converged incremental displacements */
            DIST_VECTOR *fie1,  /* internal forces at time t-dt */
            DIST_VECTOR *fie2,  /* internal forces at time t */
@@ -295,7 +295,7 @@ return;
      *     **  EKIN = 1/2*VEL^T*M*VEL                         **      *
      ******************************************************************
  *----------------------------------------------------------------------*/
-int dyne(STRUCT_DYN_CALC *dynvar,
+void dyne(STRUCT_DYN_CALC *dynvar,
          INTRA           *actintra,
          SOLVAR          *actsolv,
          int              mass_array,
@@ -328,7 +328,7 @@ return;
 /*----------------------------------------------------------------------*
  |  set time integration constants                           m.gee 02/02|
  *----------------------------------------------------------------------*/
-int dyn_setconstants(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, double dt)
+void dyn_setconstants(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, double dt)
 {
 double *constants;
 double  beta;
@@ -379,7 +379,7 @@ return;
  | new accelerations at time t                                          |
  | new velocities    at time t                                          |
  *----------------------------------------------------------------------*/
-int dyn_nlnstructupd(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, SOLVAR *actsolv,
+void dyn_nlnstructupd(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, SOLVAR *actsolv,
                      DIST_VECTOR *sol_old, DIST_VECTOR *sol_new,
                      DIST_VECTOR *rhs_new, DIST_VECTOR *rhs_old,
                      DIST_VECTOR *vel,     DIST_VECTOR *acc,
@@ -436,7 +436,7 @@ return;
 /*----------------------------------------------------------------------*
  |  print head of nln structural dynamics                    m.gee 02/02|
  *----------------------------------------------------------------------*/
-int dyn_nlnstruct_outhead(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn)
+void dyn_nlnstruct_outhead(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn)
 {
 double  beta;
 double  gamma;
@@ -477,7 +477,7 @@ return;
 /*----------------------------------------------------------------------*
  |  print head of nln structural dynamics                    m.gee 02/02|
  *----------------------------------------------------------------------*/
-int dyn_nlnstruct_outstep(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, int numiter)
+void dyn_nlnstruct_outstep(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, int numiter)
 {
 #ifdef DEBUG 
 dstrc_enter("dyn_nlnstruct_outstep");

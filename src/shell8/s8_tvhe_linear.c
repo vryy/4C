@@ -12,13 +12,13 @@ c!    gmkovc_ij ungleich gkovc_i*gkovc_j                                        
 C.......................................................................
 */
 void s8_tvhe_linear(double **gmkovr,
-                       double **gmkovc,
-                       double **gmkonr,
-                       double **gmkonc,
-                       double **gkovr,
-                       double **gkovc,
-                       double  *detr,
-                       double  *detc)
+                    double **gmkovc,
+                    double **gmkonr,
+                    double **gmkonc,
+                    double **gkovr,
+                    double **gkovc,
+                    double  *detr,
+                    double  *detc)
 {
 int i,j,k;
 double heps[3][3];

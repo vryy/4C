@@ -47,7 +47,7 @@ return;
 /*----------------------------------------------------------------------*
  | input of design size                                   m.gee 4/01    |
  *----------------------------------------------------------------------*/
-int inp_designsize()
+void inp_designsize()
 {
 int  i,ierr;
 int  numdnode;

@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*
  | cal_nlnstatic_control.c                               m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void stanln();
+void stanln(void);
 void conpre(
             FIELD         *actfield,     /* the actual physical field */
             SOLVAR        *actsolv,      /* the field-corresponding solver */
@@ -35,6 +35,72 @@ void conequ(
 void conequ_printhead(int kstep, NR_CONTROLTYP  controltyp, int cdof, double csp);
 void conequ_printiter(int itnum, double disval, double rlnew, double dinorm,
                      double renorm, double energy, double dnorm, double rrnorm);
+void increment_controlarc(INTRA         *actintra,
+                          SOLVAR        *actsolv,
+                          int            actsysarray,
+                          DIST_VECTOR   *rsd,
+                          DIST_VECTOR   *dispi,
+                          DIST_VECTOR   *disp,
+                          double         rlnew,
+                          double         rlold, 
+                          double         stepsize,  
+                          double        *rli);
+void increment_controldisp(INTRA *actintra,
+                          SOLVAR        *actsolv,
+                          int            actsysarray,
+                          int            cdof,
+                          DIST_VECTOR   *rsd,
+                          DIST_VECTOR   *dispi,   
+                          double        *rli);
+/*----------------------------------------------------------------------*
+ | cal_nlndyn_struct.c                                   m.gee 02/02    |
+ *----------------------------------------------------------------------*/
+void dyn_nln_structural(void); 
+/*----------------------------------------------------------------------*
+ | dyn_service.c                                         m.gee 02/02    |
+ *----------------------------------------------------------------------*/
+void kefnln_struct(STRUCT_DYN_CALC *dynvar, 
+                  STRUCT_DYNAMIC  *sdyn,
+                  FIELD           *actfield,
+                  SOLVAR          *actsolv,
+                  INTRA           *actintra,
+                  DIST_VECTOR     *work,
+                  int              stiff_array,
+                  int              mass_array,
+                  int              damp_array);
+void pefnln_struct(STRUCT_DYN_CALC *dynvar, 
+                  STRUCT_DYNAMIC  *sdyn,
+                  FIELD           *actfield,
+                  SOLVAR          *actsolv,
+                  INTRA           *actintra,
+                  DIST_VECTOR     *dispi,
+                  DIST_VECTOR     *vel,
+                  DIST_VECTOR     *acc,
+                  DIST_VECTOR     *work,
+                  int              mass_array,
+                  int              damp_array);
+void dynnle(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, INTRA *actintra, SOLVAR *actsolv, 
+           DIST_VECTOR *dispi, /* converged incremental displacements */
+           DIST_VECTOR *fie1,  /* internal forces at time t-dt */
+           DIST_VECTOR *fie2,  /* internal forces at time t */
+           DIST_VECTOR *rhs1,  /* load at time t                      */ 
+           DIST_VECTOR *rhs2,  /* load at time t-dt                   */ 
+           DIST_VECTOR *work0);
+void dyne(STRUCT_DYN_CALC *dynvar,
+         INTRA           *actintra,
+         SOLVAR          *actsolv,
+         int              mass_array,
+         DIST_VECTOR     *vel,
+         DIST_VECTOR     *work);
+void dyn_setconstants(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, double dt);
+void dyn_nlnstructupd(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, SOLVAR *actsolv,
+                     DIST_VECTOR *sol_old, DIST_VECTOR *sol_new,
+                     DIST_VECTOR *rhs_new, DIST_VECTOR *rhs_old,
+                     DIST_VECTOR *vel,     DIST_VECTOR *acc,
+                     DIST_VECTOR *work0,   DIST_VECTOR *work1,
+                     DIST_VECTOR *work2);
+void dyn_nlnstruct_outhead(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn);
+void dyn_nlnstruct_outstep(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, int numiter);
 /*----------------------------------------------------------------------*
  | global_calelm.c                                       m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -52,6 +118,11 @@ void calelm(FIELD        *actfield,     /* active field */
 void calinit(FIELD       *actfield,   /* the active physical field */ 
              PARTITION   *actpart,    /* my partition of this field */
              CALC_ACTION *action);
+void calreduce(FIELD       *actfield, /* the active field */
+               PARTITION   *actpart,  /* my partition of this field */
+               INTRA       *actintra, /* the field's intra-communicator */
+               CALC_ACTION *action,   /* action for element routines */
+               int          kstep);    /* the actual time or incremental step */
 /*----------------------------------------------------------------------*
  | global_calrhs.c                                       m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -228,6 +299,33 @@ void  rc_ptr_make_bindx(FIELD         *actfield,
 void  rc_ptr_make_sparsity(RC_PTR        *rc_ptr,
                            int           *bindx);
 /*----------------------------------------------------------------------*
+ |  global_mask_skyline.c                                m.gee 02/02    |
+ *----------------------------------------------------------------------*/
+void mask_skyline(FIELD         *actfield, 
+                  PARTITION     *actpart, 
+                  SOLVAR        *actsolv,
+                  INTRA         *actintra, 
+                  SKYMATRIX     *sky);
+void  skyline_update(FIELD         *actfield, 
+                    PARTITION     *actpart, 
+                    SOLVAR        *actsolv,
+                    INTRA         *actintra,
+                    SKYMATRIX     *sky);
+void  skyline_nnz_topology(FIELD      *actfield, 
+                         PARTITION    *actpart, 
+                         SOLVAR       *actsolv,
+                         INTRA        *actintra,
+                         SKYMATRIX    *sky,
+                         int         **dof_connect);
+void   skyline_make_red_dof_connect(FIELD         *actfield, 
+                                   PARTITION     *actpart, 
+                                   SOLVAR        *actsolv,
+                                   INTRA         *actintra,
+                                   SKYMATRIX     *sky,
+                                   int          **dof_connect,
+                                   ARRAY         *red_dof_connect);
+void  skyline_make_sparsity(SKYMATRIX  *sky, ARRAY *red_dof_connect);
+/*----------------------------------------------------------------------*
  |  solver_add_data.c                                  m.gee 11/01    |
  *----------------------------------------------------------------------*/
 void assemble(
@@ -336,7 +434,50 @@ void redundant_skyline(
                         SKYMATRIX     *sky2
                         );
 /*----------------------------------------------------------------------*
- |  solver_aztec.c                                  m.gee 11/01    |
+ |  solver_add_rc_ptr.c                                  m.gee 02/02    |
+ *----------------------------------------------------------------------*/
+void  add_rc_ptr(struct _PARTITION     *actpart,
+                struct _SOLVAR        *actsolv,
+                struct _INTRA         *actintra,
+                struct _ELEMENT       *actele,
+                struct _RC_PTR        *rc_ptr);
+void add_rcptr_sendbuff(int ii,int jj,int i,int j,int ii_owner,int **isend,
+                    double **dsend,double **estif, int numsend);
+void exchange_coup_rc_ptr(
+                         PARTITION     *actpart,
+                         SOLVAR        *actsolv,
+                         INTRA         *actintra,
+                         RC_PTR        *rc_ptr
+                        );
+/*----------------------------------------------------------------------*
+ |  solver_colsol.c                                       m.gee 02/02    |
+ *----------------------------------------------------------------------*/
+void solver_colsol(struct _SOLVAR         *actsolv,
+                   struct _INTRA          *actintra,
+                   struct _SKYMATRIX      *sky,
+                   struct _DIST_VECTOR    *sol,
+                   struct _DIST_VECTOR    *rhs,
+                   int                     option);
+/*----------------------------------------------------------------------*
+ |  solver_hypre.c                                       m.gee 02/02    |
+ *----------------------------------------------------------------------*/
+void  solver_hypre_parcsr(struct _SOLVAR         *actsolv,
+                          struct _INTRA          *actintra,
+                          struct _H_PARCSR       *parcsr,
+                          struct _DIST_VECTOR    *sol,
+                          struct _DIST_VECTOR    *rhs,
+                          int                     option);
+/*----------------------------------------------------------------------*
+ |  solver_mumps.c                                       m.gee 02/02    |
+ *----------------------------------------------------------------------*/
+void solver_mumps(struct _SOLVAR         *actsolv,
+                  struct _INTRA          *actintra,
+                  struct _RC_PTR         *rc_ptr,
+                  struct _DIST_VECTOR    *sol,
+                  struct _DIST_VECTOR    *rhs,
+                  int                     option);
+/*----------------------------------------------------------------------*
+ |  solver_aztec.c                                       m.gee 11/01    |
  *----------------------------------------------------------------------*/
 void solver_az_msr( 
                       struct _SOLVAR         *actsolv,
@@ -347,7 +488,7 @@ void solver_az_msr(
                       int                     option
                      );
 /*----------------------------------------------------------------------*
- |  solver_control.c                                  m.gee 11/01    |
+ |  solver_control.c                                     m.gee 11/01    |
  *----------------------------------------------------------------------*/
 void solver_control(
                        struct _SOLVAR         *actsolv,
@@ -359,7 +500,7 @@ void solver_control(
                        int                     option
                       );
 /*----------------------------------------------------------------------*
- |  solver_hypre.c                                  m.gee 11/01    |
+ |  solver_hypre.c                                       m.gee 11/01    |
  *----------------------------------------------------------------------*/
 #ifdef HYPRE_PACKAGE
 void  solver_hypre_parcsr( 

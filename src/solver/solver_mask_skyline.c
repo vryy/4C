@@ -86,7 +86,7 @@ return;
 /*----------------------------------------------------------------------*
  |  allocate update put dofs in update in ascending order   m.gee 1/02  |
  *----------------------------------------------------------------------*/
-int  skyline_update(FIELD         *actfield, 
+void  skyline_update(FIELD         *actfield, 
                     PARTITION     *actpart, 
                     SOLVAR        *actsolv,
                     INTRA         *actintra,
@@ -190,7 +190,7 @@ return;
 /*----------------------------------------------------------------------*
  |  calculate number of nonzero entries and dof topology    m.gee 1/02  |
  *----------------------------------------------------------------------*/
-int  skyline_nnz_topology(FIELD      *actfield, 
+void  skyline_nnz_topology(FIELD      *actfield, 
                          PARTITION    *actpart, 
                          SOLVAR       *actsolv,
                          INTRA        *actintra,
@@ -494,24 +494,10 @@ return;
 } /* end of skyline_nnz_topology */
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /*----------------------------------------------------------------------*
  |  make the dof_connect list redundant                    m.gee 01/02  |
  *----------------------------------------------------------------------*/
-int   skyline_make_red_dof_connect(FIELD         *actfield, 
+void   skyline_make_red_dof_connect(FIELD         *actfield, 
                                    PARTITION     *actpart, 
                                    SOLVAR        *actsolv,
                                    INTRA         *actintra,
@@ -607,7 +593,7 @@ return;
 /*----------------------------------------------------------------------*
  |  make sparsity mask for skyline matrix                   m.gee 1/02  |
  *----------------------------------------------------------------------*/
-int  skyline_make_sparsity(SKYMATRIX  *sky, ARRAY *red_dof_connect)
+void  skyline_make_sparsity(SKYMATRIX  *sky, ARRAY *red_dof_connect)
 {
 int        i,j,k,l;
 int      **reddof;

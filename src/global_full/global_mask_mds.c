@@ -8,7 +8,7 @@ double cmp_double(const void *a, const void *b );
  |                                                            al  10/01 |
  |  calculate the mask of a column pointer, row index sparse  matrix    |
  *----------------------------------------------------------------------*/
-void mask_mds(FIELD        *actfield, 
+int mask_mds(FIELD        *actfield, 
               PARTITION    *actpart, 
               SOLVAR       *actsolv,
               INTRA        *actintra, 

@@ -22,12 +22,9 @@ extern struct _SOLVAR  *solv;
  |                                                       m.gee 06/01    |
  | pointer to allocate dynamic variables if needed                      |
  | dedfined in global_control.c                                         |
+ | ALLDYNA       *alldyn;                                               |
  *----------------------------------------------------------------------*/
-#ifdef SUSE73
-extern DYNAMIC *dyn;   
-#else
-extern struct _DYNAMIC *dyn;   
-#endif
+extern ALLDYNA        *alldyn;   
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate static variables if needed                       |
@@ -305,8 +302,8 @@ FIELD *actfield;
 dstrc_enter("inpctrdyn");
 #endif
 /*----------------------------------------------------------------------*/
-dyn = (DYNAMIC*)CALLOC(genprob.numfld,sizeof(DYNAMIC));
-if (!dyn) dserror("Allocation of DYNAMIC failed");
+alldyn = (ALLDYNA*)CALLOC(genprob.numfld,sizeof(ALLDYNA));
+if (!alldyn) dserror("Allocation of ALLDYNA failed");
 /*----------------------------------------------------------------------*/
 for (i=0; i<genprob.numfld; i++)
 {
@@ -318,9 +315,9 @@ for (i=0; i<genprob.numfld; i++)
    case ale:
    break;
    case structure:
-      dyn[i].sdyn = (STRUCT_DYNAMIC*)CALLOC(1,sizeof(STRUCT_DYNAMIC));
-      if (!dyn[i].sdyn) dserror("Allocation of DYNAMIC failed");
-      inpctr_dyn_struct(dyn[i].sdyn);
+      alldyn[i].sdyn = (STRUCT_DYNAMIC*)CALLOC(1,sizeof(STRUCT_DYNAMIC));
+      if (!alldyn[i].sdyn) dserror("Allocation of STRUCT_DYNAMIC failed");
+      inpctr_dyn_struct(alldyn[i].sdyn);
    break;
    case none:
       dserror("Cannot find type of field");
@@ -342,7 +339,7 @@ return;
 /*----------------------------------------------------------------------*
  | input of dynamic problem data  for field structure     m.gee 2/02    |
  *----------------------------------------------------------------------*/
-int inpctr_dyn_struct(STRUCT_DYNAMIC *sdyn)
+void inpctr_dyn_struct(STRUCT_DYNAMIC *sdyn)
 {
 int    ierr;
 int    i;

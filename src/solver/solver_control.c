@@ -6,7 +6,7 @@
  | global variable *solv, vector of lenght numfld of structures SOLVAR  |
  |                                                       m.gee 11/00    |
  *----------------------------------------------------------------------*/
- struct _SOLVAR  *solv;
+ struct _SOLVAR  *solv; 
 /*----------------------------------------------------------------------*
  |  routine to control all solver calls                  m.gee 9/01     |
  *----------------------------------------------------------------------*/

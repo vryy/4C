@@ -10,14 +10,12 @@ fortran90 subroutines:
 /*----------------------------------------------------------------------*
  |  control solver colsol                                m.gee 01/02    |
  *----------------------------------------------------------------------*/
-void solver_colsol( 
-                    struct _SOLVAR         *actsolv,
-                    struct _INTRA          *actintra,
-                    struct _SKYMATRIX      *sky,
-                    struct _DIST_VECTOR    *sol,
-                    struct _DIST_VECTOR    *rhs,
-                    int                     option
-                   )
+void solver_colsol(struct _SOLVAR         *actsolv,
+                   struct _INTRA          *actintra,
+                   struct _SKYMATRIX      *sky,
+                   struct _DIST_VECTOR    *sol,
+                   struct _DIST_VECTOR    *rhs,
+                   int                     option)
 {
 int            i;
 int            dof;

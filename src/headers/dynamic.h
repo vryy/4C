@@ -1,11 +1,11 @@
 /*----------------------------------------------------------------------*
  | general structural dynamic-variables                   m.gee 4/01    |
  *----------------------------------------------------------------------*/
-typedef union _DYNAMIC                 
+typedef union _ALLDYNA                 
 {
    struct _STRUCT_DYNAMIC    *sdyn;
    struct _FLUID_DYNAMIC     *fdyn;
-} DYNAMIC;
+} ALLDYNA;
 
 
 

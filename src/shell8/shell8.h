@@ -227,6 +227,7 @@ void s8_tmat(ELEMENT    *ele,
                 double      detr,
                 double      e3,
                 int         option);
+void s8_getdensity(MATERIAL   *mat, double *density);
 /*----------------------------------------------------------------------*
  |  s8_tmtr.c                                            m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -296,3 +297,99 @@ void s8_tforce(double **force,
              double **akon,
              ELEMENT *ele);
 void s8_tettr(double x[3][3], double **a, double b[3][3]);
+/*----------------------------------------------------------------------*
+ |  s8_stress.c                                          m.gee 02/02    |
+ *----------------------------------------------------------------------*/
+void s8_stress(ELEMENT      *ele,
+               S8_DATA      *data,
+               MATERIAL     *mat,
+               int           kstep,
+               int           init);
+void s8_stress_reduce(FIELD     *actfield,
+                      PARTITION *actpart,
+                      INTRA     *actintra,
+                      int        kstep);
+/*----------------------------------------------------------------------*
+ |  s8_vthv.c                                            m.gee 02/02    |
+ *----------------------------------------------------------------------*/
+void s8_vthv(double **gmkovc,
+             double **gmkonc,
+             double  *epsh,
+             double  *detc,
+             double   e3);
+/*----------------------------------------------------------------------*
+ |  s8_tvhe.c                                            m.gee 02/02    |
+ *----------------------------------------------------------------------*/
+void s8_tvhe(double **gmkovr,
+             double **gmkovc,
+             double **gmkonr,
+             double **gmkonc,
+             double **gkovr,
+             double **gkovc,
+             double  *detr,
+             double  *detc,
+             double **amkovc,
+             double **amkovr,
+             double **akovc,
+             double **akovr,
+             double **a3kvpc,
+             double **a3kvpr,
+             double   e3);
+void s8_tvhe_lin(double **gmkovr,
+                 double **gmkovc,
+                 double **gmkonr,
+                 double **gmkonc,
+                 double **gkovr,
+                 double **gkovc,
+                 double  *detr,
+                 double  *detc,
+                 double **amkovc,
+                 double **amkovr,
+                 double **akovc,
+                 double **akovr,
+                 double **a3kvpc,
+                 double **a3kvpr,
+                 double   e3);
+/*----------------------------------------------------------------------*
+ |  s8_tvkg.c                                            m.gee 02/02    |
+ *----------------------------------------------------------------------*/
+void s8_tvkg(double **estif,
+             double  *stress_r,
+             double  *funct,
+             double **deriv,
+             int      numdf,
+             int      iel,
+             double   weight,
+             double   e1,
+             double   e2);
+/*----------------------------------------------------------------------*
+ |  s8_intforce.c                                        m.gee 02/02    |
+ *----------------------------------------------------------------------*/
+void s8_intforce(double *intforce, double *stress_r, double **bop,
+                 int iel, int numdf, int nstress_r, double weight);
+/*----------------------------------------------------------------------*
+ |  s8_cal_dyn.c                                         m.gee 02/02    |
+ *----------------------------------------------------------------------*/
+void s8_tmas(double *funct, double *thick, double **emass, int iel, int numdf,
+             double facv, double facw, double facvw);
+/*----------------------------------------------------------------------*
+ |  s8_xint.c                                            m.gee 02/02    |
+ *----------------------------------------------------------------------*/
+void s8_xint(double *result, double *values, double *funct, int iel);
+/*----------------------------------------------------------------------*
+ |  s8_tfte.c                                            m.gee 02/02    |
+ *----------------------------------------------------------------------*/
+void s8_tfte(double **force,
+             int      ngauss,
+             double  *stress,
+             double **gkov,
+             double **akon,
+             double **gmkov,
+             double **gmkon,
+             double **amkov,
+             double **amkon,
+             double   h,
+             double   e3,
+             double   fact,
+             double   detsm,
+             double   detsr);

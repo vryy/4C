@@ -161,7 +161,7 @@ return;
 /*----------------------------------------------------------------------*
  |  fill sendbuffer isend and dsend                           m.gee 1/02|
  *----------------------------------------------------------------------*/
-int add_rcptr_sendbuff(int ii,int jj,int i,int j,int ii_owner,int **isend,
+void add_rcptr_sendbuff(int ii,int jj,int i,int j,int ii_owner,int **isend,
                     double **dsend,double **estif, int numsend)
 {
 #ifdef MUMPS_PACKAGE
