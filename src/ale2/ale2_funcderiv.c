@@ -181,7 +181,7 @@ case tri6:
    funct[0]=(ONE-TWO*r-TWO*s)*(ONE-r-s);
    funct[1]=TWO*rr-r;
    funct[2]=TWO*ss-s;
-   funct[3]=FOUR*(r-rr-rs);
+   funct[3]=FOUR*(r-rr-rs); 
    funct[4]=FOUR*rs;
    funct[5]=FOUR*(s-rs-ss);
    

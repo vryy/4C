@@ -8,6 +8,12 @@
 #include "ale3.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
  | vector of material laws                                              |
  | defined in global_control.c
  *----------------------------------------------------------------------*/
@@ -39,6 +45,7 @@ time t to actnode->sol.a.da[0][j].
 </pre>
 \param *actfield  FIELD          (i)  my field
 \param *sdyn      STRUCT_DYNAMIK (i)  structure containing time information
+\param  actpos    int            (i)  actual position in solution history
 
 \warning For (dirich_val.a.dv == 90) the boundary conditions for a special
          example (rotating hole) are calculated.
@@ -46,16 +53,21 @@ time t to actnode->sol.a.da[0][j].
 \sa calling: dyn_facfromcurve(); called by: dyn_ale()
 
 *----------------------------------------------------------------------*/
-void ale_setdirich(FIELD  *actfield, STRUCT_DYNAMIC *sdyn)
+void ale_setdirich(FIELD  *actfield, STRUCT_DYNAMIC *sdyn, int actpos)
 {
-GNODE                *actgnode;
-NODE                 *actnode;
+GNODE                *actagnode;
+NODE                 *actsnode;
+NODE                 *actanode;
+NODE                 *actfnode;
 INT                   i,j;
 INT                   numnp_total;
 INT                   numele_total;
 INT                   actcurve;
+INT                   diff,max;
+INT                   numff,numsf;
 DOUBLE                timefac[ALENUMTIMECURVE];
 DOUBLE                T;
+DOUBLE                dt;
 DOUBLE                acttimefac;
 DOUBLE                initval;
 
@@ -68,6 +80,9 @@ dstrc_enter("ale_setdirich");
 numnp_total  = actfield->dis[0].numnp;
 numele_total = actfield->dis[0].numele;
 T            = sdyn->time;
+dt           = sdyn->dt;
+numff        = genprob.numff;
+numsf        = genprob.numsf;
 
 /*------------------------------------------ get values from time curve */
 for (actcurve=0;actcurve<numcurve;actcurve++)
@@ -78,50 +93,99 @@ for (actcurve=0;actcurve<numcurve;actcurve++)
 /*------------------------------------------------- loop over all nodes */
 for (i=0;i<numnp_total;i++)
 {
-   actnode  = &(actfield->dis[0].node[i]); 
-   actgnode = actnode->gnode;      
-   if (actgnode->dirich==NULL)
-         continue;
-   for (j=0;j<actnode->numdf;j++)
+   actanode  = &(actfield->dis[0].node[i]); 
+   actagnode = actanode->gnode;      
+   if (actpos >= actanode->sol.fdim)
    {
-      if (actgnode->dirich->dirich_onoff.a.iv[j]==0)
+      diff = actpos - actanode->sol.fdim;
+      max  = IMAX(diff,5);
+      amredef(&(actanode->sol),actanode->sol.fdim+max+1,actanode->sol.sdim,"DA");
+   }
+   if (actagnode->dirich==NULL)
          continue;
-      actcurve = actgnode->dirich->curve.a.iv[j]-1;
-      if (actcurve<0)
-         acttimefac = 1.0;
-      else
-         acttimefac = timefac[actcurve];
-      initval  = actgnode->dirich->dirich_val.a.dv[j];               
+   switch(actagnode->dirich->dirich_type)
+   {
+   case dirich_none:
+      for (j=0;j<actanode->numdf;j++)
+      {
+         if (actagnode->dirich->dirich_onoff.a.iv[j]==0)
+            continue;
+         actcurve = actagnode->dirich->curve.a.iv[j]-1;
+         if (actcurve<0)
+            acttimefac = 1.0;
+         else
+            acttimefac = timefac[actcurve];
+         initval  = actagnode->dirich->dirich_val.a.dv[j];               
 /*=====================================================================*
  |    example: rotating hole (dirich_val.a.dv == 90)                   |
  |    sonst: Normalfall:                                               |
- |     actnode->sol.a.da[0][j] = initval*acttimefac;                   |
+ |    actanode->sol.a.da[0][j] = initval*acttimefac;                   |
  *=====================================================================*/
-      if (initval != 90)
-        actnode->sol.a.da[0][j] = initval*acttimefac;
-      else
-      {
-	cx = actnode->x[0]; 
-	cy = actnode->x[1];
-	win = (initval * acttimefac * 3.14159265359)/180.0;
-	wino= atan(cy/cx);
-	dd = sqrt(cx*cx+cy*cy);
-	if(cx < 0.0) wino += 3.14159265359;
-        if (j==0)
-	  actnode->sol.a.da[0][j] = dd * cos(win+wino) - cx;
-        else
-	  actnode->sol.a.da[0][j] = dd * sin(win+wino) - cy;
+         if (initval != 90)
+         {
+	    actanode->sol_increment.a.da[0][j] = initval*acttimefac;  
+	    actanode->sol.a.da[actpos][j] = initval*acttimefac; 
+         }
+	 else
+         {
+	   cx = actanode->x[0]; 
+	   cy = actanode->x[1];
+	   win = (initval * acttimefac * 3.14159265359)/180.0;
+	   wino= atan(cy/cx);
+	   dd = sqrt(cx*cx+cy*cy);
+	   if(cx < 0.0) wino += 3.14159265359;
+           if (j==0)
+	   {
+	     actanode->sol_increment.a.da[0][j] = dd * cos(win+wino) - cx;
+	     actanode->sol.a.da[actpos][j] = dd * cos(win+wino) - cx;
+           }
+	   else
+	   {
+	     actanode->sol_increment.a.da[0][j] = dd * sin(win+wino) - cy;
+	     actanode->sol.a.da[actpos][j] = dd * sin(win+wino) - cy;
+           }
+	 } 
       }
-/*=====================================================================*/
+   break;
+#ifdef D_FSI
+   case dirich_FSI: /* dirichvalues = displacements of structure -------*/
+      actsnode = actagnode->mfcpnode[numsf];
+      for (j=0;j<actanode->numdf;j++)
+      {
+         actanode->sol_increment.a.da[0][j] = actsnode->sol_mf.a.da[0][j];  
+	 actanode->sol.a.da[actpos][j] = actsnode->sol_mf.a.da[0][j]; 
+      }
+   break;
+   case dirich_freesurf: /* dirichvalues = displacement of fluid
+                            free surface                                */
+      actfnode = actagnode->mfcpnode[numff];                            
+      for (j=0;j<actanode->numdf;j++)
+      {
+         if (actagnode->freesurf->fixed_onoff.a.iv[j]==0)
+	 {
+            actanode->sol_increment.a.da[0][j] 
+	       = actanode->sol_mf.a.da[0][j] + actfnode->sol_mf.a.da[0][j]*dt;
+	    actanode->sol.a.da[actpos][j] 
+	       = actanode->sol_increment.a.da[0][j];
+	 }
+	 else 
+	 {
+	    actanode->sol_increment.a.da[0][j] = ZERO;
+	    actanode->sol.a.da[actpos][j] = ZERO;
+	 }
+      }    
+   break;  
+#endif   
+   default:
+      dserror("dirich type unknown!\n");
    }
 }
-
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
 #endif
 return;
-} /* end of ale_settdirich*/
+} /* end of ale_setdirich*/
 
 
 
@@ -179,8 +243,8 @@ for (i=0; i<nd; i++)
    dforces[i] = 0.0;
 }
 /*-------------------------------- fill vectors dirich and dirich_onoff */
-/*                                 dirichlet values at (n) were already */
-/*                                     written to the nodes (sol[0][j]) */
+/*                                 dirichlet values at (n) were already *
+/*                            written to the nodes (sol_icrement[0][j]) */
 for (i=0; i<actele->numnp; i++)
 {
    numdf    = actele->node[i]->numdf;
@@ -191,7 +255,7 @@ for (i=0; i<actele->numnp; i++)
       lm[i*numdf+j] = actele->node[i]->dof[j];
       if (actgnode->dirich==NULL) continue;
       dirich_onoff[i*numdf+j] = actgnode->dirich->dirich_onoff.a.iv[j];
-      dirich[i*numdf+j] = actnode->sol.a.da[0][j];
+      dirich[i*numdf+j] = actnode->sol_increment.a.da[0][j];
    }
 }
 /*----------------------------------------- loop rows of element matrix */

@@ -6,7 +6,9 @@
 #ifdef D_ALE
 #include "../headers/standardtypes.h"
 #include "../fluid3/fluid3.h"
+#include "../fluid2/fluid2.h"
 #include "ale3.h"
+#include "../ale2/ale2.h"
 
 /*! 
 \addtogroup Ale 
@@ -146,44 +148,65 @@ for (i=0; i<fluidfield->dis[0].numele; i++)
              fluid_ele->e.f3->my_ale  = NULL;
           }
 #endif
+#ifdef D_FLUID2
           if (fluid_ele->eltyp==el_fluid2)
           {
-             dserror("Fluid2 not yet implemented");
+            fluid_ele->e.f2->my_ale  = NULL;  
           }
+#endif	  
 }
 for (i=0; i<alefield->dis[0].numele; i++)
 {
    ale_ele = &(alefield->dis[0].element[i]);
-   ale_ele->e.ale3->my_fluid = NULL;
+   if (fluid_ele->eltyp==el_ale3)
+   {
+      ale_ele->e.ale3->my_fluid = NULL;
+   }
+   if (fluid_ele->eltyp==el_ale2)
+   {
+       ale_ele->e.ale2->my_fluid = NULL;
+   }   
 }
 /*----------------------------------------------------------------------*/
 for (i=0; i<fluidfield->dis[0].numele; i++)/*------ loop fluid elements */
 {
     fluid_ele = &(fluidfield->dis[0].element[i]);
-    if (fluid_ele->e.f3->is_ale!=1) continue;
-    for (j=0; j<alefield->dis[0].numele; j++)/*------ loop ale elements */
+#ifdef D_FLUID3    
+    if (fluid_ele->eltyp==el_fluid3)
     {
-       ale_ele = &(alefield->dis[0].element[j]);
-       if (ale_ele->e.ale3->my_fluid!=NULL) continue;
-       /*----------------------- check the geometry of the two elements */
-       find_compatible_ele(fluid_ele,ale_ele,&ierr);
-       if (ierr==0) continue;
-/*--------------------------------------- set ale flag in fluid element */
-#ifdef D_FLUID3 
-       if (fluid_ele->eltyp==el_fluid3)
+       if (fluid_ele->e.f3->is_ale!=1) continue;
+       for (j=0; j<alefield->dis[0].numele; j++)/*------ loop ale elements */
        {
+          ale_ele = &(alefield->dis[0].element[j]);
+          if (ale_ele->e.ale3->my_fluid!=NULL) continue;
+          /*----------------------- check the geometry of the two elements */
+          find_compatible_ele(fluid_ele,ale_ele,&ierr);
+          if (ierr==0) continue;
+/*--------------------------------------- set ale flag in fluid element */
           fluid_ele->e.f3->my_ale  = ale_ele;
           ale_ele->e.ale3->my_fluid = fluid_ele;
-       }
+	  break;
+       } /* end of loop over alefield */
+    } /* endif (fluid_ele->eltyp==el_fluid3) */
 #endif
-#ifdef D_FLUID1 
-       if (fluid_ele->eltyp==el_fluid2)
+#ifdef D_FLUID2 
+    if (fluid_ele->eltyp==el_fluid2)
+    {
+       if (fluid_ele->e.f2->is_ale!=1) continue;
+       for (j=0; j<alefield->dis[0].numele; j++)/*------ loop ale elements */
        {
-          dserror("Fluid2 not yet implemented");
-       }
-#endif
-          break;
-    } /* end of loop over alefield */
+          ale_ele = &(alefield->dis[0].element[j]);
+          if (ale_ele->e.ale2->my_fluid!=NULL) continue;
+          /*----------------------- check the geometry of the two elements */
+          find_compatible_ele(fluid_ele,ale_ele,&ierr);
+          if (ierr==0) continue;
+/*--------------------------------------- set ale flag in fluid element */       
+          fluid_ele->e.f2->my_ale  = ale_ele;
+          ale_ele->e.ale2->my_fluid = fluid_ele;
+	  break;          
+       } /* end of loop over alefield */        
+    } /* endif (fluid_ele->eltyp==el_fluid2) */
+#endif 
 } /* end of loop over fluidfield */
 
 #ifdef DEBUG 
@@ -213,7 +236,7 @@ return;
 void find_compatible_ele(const ELEMENT *ele1, const ELEMENT *ele2, INT *ierr)
 {
 INT  i;
-DOUBLE tol=1.0E-08;
+DOUBLE tol=EPS8;
 DOUBLE x1,y1,z1, x2,y2,z2;
 DOUBLE x,y,z;
 #ifdef DEBUG 

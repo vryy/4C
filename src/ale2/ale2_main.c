@@ -65,7 +65,7 @@ case calc_ale_stiff:
 break;
 /*----------------------------------------------------------- do nothig */
 case calc_ale_rhs:
-break;
+break;  
 /*-------------------------------------------------------------- defaul */
 default:
    dserror("action unknown");
