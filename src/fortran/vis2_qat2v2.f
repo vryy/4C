@@ -438,7 +438,7 @@ c
 	  if(.not. rev) then
 	    rev = .true.
             kh = (ktri - kstri)/2
-c$dir no_recurrence
+c $ dir no_recurrence
             do 67 k = kstri, kstri+kh
               kx = ktri + kstri - k
               isave = ptri(k)
@@ -592,7 +592,7 @@ c
 	  if(.not. rev) then
 	    rev = .true.
             kh = (ktri - kstri)/2
-c$dir no_recurrence
+c $ dir no_recurrence
             do 77 k = kstri, kstri+kh
               kx = ktri + kstri - k
               isave = ptri(k)
@@ -805,7 +805,7 @@ c	the rest (cross - strips)
 	    k2 = wface(1,kf)
 	    kw = wnode(k2)
 	    kh = (kface - ksface)/2
-c$dir no_recurrence
+c $ dir no_recurrence
 	    do 93 k = ksface, ksface+kh
 	      ke = kface + ksface - k
 	      isave = pface(k)
@@ -937,9 +937,9 @@ C       ****************************************************************
      &		     'GRID-VEL. VECT. ',
      &		     'STOPPING TIME   ',
      &		     'MOVIE CREATION  ',
-     &                 'TURB. KIN. ENERGY',
-     &                 'TURB. DISS. RATE',
-     &                 'TURB. VISCOSITY' /
+     &               'TURB. KIN. ENERGY',
+     &               'TURB. DISS. RATE',
+     &               'TURB. VISCOSITY' /
 
        TITL='HOT PICS!!!!'
        IF(BGCOLOUR.EQ.0) THEN
