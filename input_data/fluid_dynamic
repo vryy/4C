@@ -69,10 +69,9 @@ CHECKAREA  no
 // Monitor the size of the fluid domain
 LIFTDRAG     no
 // Flag, if time stepping is adaptive
-ADAPT_TIME   no
-// How to build timerhs?  classic  => as described in diss. Wall
-//                        mass     => by means of mass matrix
-TIME_RHS     classic
+//   no          => do no lift&drag calculation
+//   nodeforce   => get lift&drag from consistent nodeforces
+//   stress      => get lift&drag from fluid stresses
 TURBULENCE   No
 INT_LENGHT   1.0
 ROUGHTNESS   1.0
