@@ -49,7 +49,7 @@ LOOPL="-DLOOPL=64"
 
 
 LIBS="-lmetis_ita2_64 -lcl -lc -lm -lveclib -llapack -lmpi"
-PLAIN_LIBS="-lmetis_ita2_64 -lcl -lc -lm -lveclib -llapack"
+PLAIN_LIBS="-lcl -lc -lm"
 
 # FAST
 PROGRAMNAME=cca_ita2_par64

@@ -32,6 +32,7 @@ LOOPL="-DLOOPL=64"
 
 
 LIBS="-lcl -lc -lm -lg2c -lveclib -llapack"
+PLAIN_LIBS="-lcl -lc -lm -lg2c"
 
 # FAST
 PROGRAMNAME=cca_11_seq

@@ -50,6 +50,7 @@ LOOPL="-DLOOPL=64"
 
 
 LIBS="-lc -lm -lF77ext -lf2c -lg2c -llapack -lblas"
+PLAIN_LIBS="-lc -lm -lF77ext -lf2c -lg2c"
 
 # FAST
 PROGRAMNAME=cca_linux_seq

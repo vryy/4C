@@ -52,6 +52,7 @@ LOOPL="-DLOOPL=64"
 
 
 LIBS="-lcl -lc -lM -lm -llapack_hppa -lblas"
+PLAIN_LIBS="-lcl -lc -lM -lm"
 
 # FAST
 PROGRAMNAME=cca_10_seq

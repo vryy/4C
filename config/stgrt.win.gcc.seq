@@ -54,6 +54,7 @@ LOOPL="-DLOOPL=16"
 
 
 LIBS="-llapack  -lblas -lm -lg2c"
+PLAIN_LIBS="-lm -lg2c"
 
 # FAST
 PROGRAMNAME=ccarat.exe

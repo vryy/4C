@@ -48,6 +48,7 @@ LOOPL="-DLOOPL=64"
 
 
 LIBS="-lcl -lc -lm -lveclib -llapack"
+PLAIN_LIBS="-lcl -lc -lm"
 
 # FAST
 PROGRAMNAME=cca_11_seq$BIT
