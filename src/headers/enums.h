@@ -362,4 +362,18 @@ typedef enum _DLINE_TYP
                        stline,            /* straight line */
                        nurbline,          /* nurb line */
                        arcline            /* arc line */
-} DLINE_TYP;                         
+} DLINE_TYP;
+ 
+/*!----------------------------------------------------------------------
+\brief enum of stabilisation types                                            
+
+<pre>                                                        chfoe 01/04
+This is the enumeration of all types of different stabilisation schemes
+</pre>
+
+*-----------------------------------------------------------------------*/
+typedef enum _STABILISATION_TYP
+{
+   stab_gls,	/*! Galerkin least square stabilisation			*/
+   stab_prespro	/*! Stabilisation based on pressure projection		*/
+} STABILISATION_TYP;
