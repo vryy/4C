@@ -4,7 +4,7 @@
 # aztec
 if grep '^[ \t]*AZTEC_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
     if [ "x$AZTEC_LIB" = "x" ] ; then
-        echo $0: Warning: Variable AZTEC_LIB undefined but AZTEC_PACKAGE requested.        
+        echo $0: Warning: Variable AZTEC_LIB undefined but AZTEC_PACKAGE requested.
     fi
     LIBS="$AZTEC_LIB $LIBS"
     INCLUDEDIRS="$INCLUDEDIRS $AZTEC_INC"
@@ -45,7 +45,7 @@ fi
 # visual3
 if grep '^[ \t]*VISUAL3_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
     if grep '^VISUAL2_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
-       echo $0: Error: VISUAL2 & VISUAL3 cannot linked into the same executable. 
+       echo $0: Error: VISUAL2 & VISUAL3 cannot linked into the same executable.
        exit 1
     fi
     if [ "x$VISUAL3_LIB" = "x" ] ; then
