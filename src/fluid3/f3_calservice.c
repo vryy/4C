@@ -1,0 +1,619 @@
+/*!----------------------------------------------------------------------
+\file
+\brief service routines for fluid3 element 
+
+------------------------------------------------------------------------*/
+#ifdef D_FLUID3 
+#include "../headers/standardtypes.h"
+#include "fluid3_prototypes.h"
+static int PREDOF = 3;
+/*!---------------------------------------------------------------------
+\brief set all arrays for element calculation
+
+<pre>                                                         genk 05/02
+
+get the element velocities and the pressure at different times 
+
+NOTE: in contradiction to the old programm the kinematic pressure
+      is stored in the solution history; so one can avoid the	 
+      transformation in every time step 			 
+				      
+</pre>
+\param   *dynvar   FLUID_DYN_CALC  (i)
+\param   *ele      ELEMENT	   (i)    actual element
+\param  **eveln    double	   (o)    ele vels at time n
+\param  **evelng   double	   (o)    ele vels at time n+g
+\param   *epren    double	   (o)    ele pres at time n
+\return void                                                                       
+
+------------------------------------------------------------------------*/
+void f3_calset( 
+                FLUID_DYN_CALC  *dynvar, 
+	        ELEMENT         *ele,
+                double         **eveln,
+	        double         **evelng,
+	        double          *epren
+	      )
+{
+int i,j,irow;
+NODE *actnode;
+
+#ifdef DEBUG 
+dstrc_enter("f3_calset");
+#endif
+
+
+/*---------------------------------------------------------------------*
+ | position of the different solutions:                                |
+ | node->sol_incement: solution history used for calculations          |
+ |       sol_increment[0][i]: solution at (n-1)                        |
+ |	 sol_increment[1][i]: solution at (n)                          |
+ |	 sol_increment[2][i]: solution at (n+g)                        |
+ |	 sol_increment[3][i]: solution at (n+1)                        |
+ *---------------------------------------------------------------------*/
+
+
+if(dynvar->isemim==0)  /* -> implicit time integration method ---------*/
+{
+   for(i=0;i<ele->numnp;i++) /* loop nodes */
+   {
+      actnode=ele->node[i];
+/*----------------------------------- set element velocities (n+gamma) */      
+      evelng[0][i]=actnode->sol_increment.a.da[3][0];
+      evelng[1][i]=actnode->sol_increment.a.da[3][1]; 
+      evelng[2][i]=actnode->sol_increment.a.da[3][2];
+/*-------------------------------------- set supported pressures (n+1) */   
+/*      if(actnode->dof[PREDOF]>numeq)
+         epres[i]=actnode->sol_increment.a.da[3][PREDOF]; */
+   } /* end of loop over nodes */
+   
+} /* endif (dynvar->isemim==0) */ 
+else  /* -> semi-implicit time integration method 
+       | for semi-impl. methods one needs extra suup. velocities-------*/
+{   
+   if(dynvar->itwost==0)   /* -> semi-implicit one-step ---------------*/
+   {
+      for(i=0;i<ele->numnp;i++) /* loop nodes */
+      {
+         actnode=ele->node[i];
+/*--------------------- set element velocities (n) and supported (n+1) */ 	 
+         evelng[0][i]=actnode->sol_increment.a.da[1][0];
+	 evelng[1][i]=actnode->sol_increment.a.da[1][1];
+	 evelng[2][i]=actnode->sol_increment.a.da[1][2];
+/*	 if (actnode->dof[0]>numeq)
+            evels[0][i]=actnode->sol_increment.a.da[3][0];
+	 if (actnode->dof[1]>numeq)
+            evels[1][i]=actnode->sol_increment.a.da[3][1];      
+/*-------------------------------------- set supported pressures (n+1) */   
+/*         if(actnode->dof[PREDOF]>numeq)
+            epres[i]=actnode->sol_increment.a.da[3][PREDOF];           */
+      } /* end of loop over nodes */
+   } /* endif (dynvar->itwost==0) */
+   else  /* -> semi-implicit two-step ---------------------------------*/
+   {  
+      for(i=0;i<ele->numnp;i++) /* loop nodes */
+      {
+         actnode=ele->node[i];
+/*--------------- set element velocities (n+gamma) and supported (n+1) */	 
+         evelng[0][i]=actnode->sol_increment.a.da[2][0];
+	 evelng[1][i]=actnode->sol_increment.a.da[2][1];
+	 evelng[2][i]=actnode->sol_increment.a.da[2][2];
+/*	 if (actnode->dof[0]>numeq)
+	    evels[0][i]=actnode->sol_increment.a.da[3][0];
+	 if (actnode->dof[1]>numeq)
+	    evels[1][i]=actnode->sol_increment.a.da[3][1];      
+/*-------------------------------------- set supported pressures (n+1) */   
+/*         if(actnode->dof[PREDOF]>numeq)
+            epres[i]=actnode->sol_increment.a.da[3][PREDOF];      */
+      } /* endof loop over nodes */
+   } /* end else */
+} /* end else */
+
+if(dynvar->nif!=0) /* -> computation if time forces "on" --------------
+                      -> velocities and pressure at (n) are needed ----*/
+{
+      for(i=0;i<ele->numnp;i++) /* loop nodes */
+      {
+         actnode=ele->node[i];
+/*------------------------------------- set element velocities at (n) */	 
+         eveln[0][i]=actnode->sol_increment.a.da[1][0];
+	 eveln[1][i]=actnode->sol_increment.a.da[1][1];    
+	 eveln[2][i]=actnode->sol_increment.a.da[1][2]; 
+/*------------------------------------------------- set pressures (n) */   
+         epren[i]   =actnode->sol_increment.a.da[1][PREDOF];      
+      } /* end of loop over nodes */
+} /* endif (dynvar->nif!=0) */
+
+/*---------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return; 
+} /* end of f3_calset */
+
+/*!--------------------------------------------------------------------- 
+\brief routine to calculate velocities at integration point
+
+<pre>                                                         genk 05/02
+				      
+</pre>
+\param   *velint   double        (o)   velocities at integration point
+\param   *funct    double        (i)   shape functions
+\param  **evel     double        (i)   velocites at element nodes
+\param    iel	   int           (i)   number of nodes in this element
+\return void                                                                       
+
+------------------------------------------------------------------------*/
+void f3_veli(
+             double  *velint,    
+             double  *funct,    
+	     double **evel,     
+	     int      iel       
+	    ) 
+{
+int     i,j;
+
+#ifdef DEBUG 
+dstrc_enter("f3_veli");
+#endif
+
+for (i=0;i<3;i++)
+{
+   velint[i]=ZERO;
+   for (j=0;j<iel;j++)
+   {
+      velint[i] += funct[j]*evel[i][j];
+   } /* end of loop over j */
+} /* end of loop over i */
+
+/*---------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return; 
+} /* end of f3_veli */
+
+/*!--------------------------------------------------------------------- 
+\brief routine to calculate pressure at integration point
+
+<pre>                                                         genk 05/02
+				      
+</pre>
+\param  *preint    double        (o)   pressure at integration point
+\param  *funct     double        (i)   shape functions
+\param  *epre      double        (i)   pressure at element nodes
+\param   iel	   int           (i)   number of nodes in this element
+\return void                                                                       
+
+------------------------------------------------------------------------*/
+void f3_prei(
+             double  *preint,    
+             double  *funct,    
+	     double  *epre,     
+	     int      iel       
+	    ) 
+{
+int     j;
+
+#ifdef DEBUG 
+dstrc_enter("f3_prei");
+#endif
+
+*preint = ZERO;
+for (j=0;j<iel;j++)
+{
+   *preint += funct[j] * epre[j];
+} /* end of loop over j */
+
+/*---------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return; 
+} /* end of f3_prei */
+
+/*!--------------------------------------------------------------------- 
+\brief routine to calculate velocity derivatives at integration point
+
+<pre>                                                         genk 05/02
+
+In this routine the derivatives of the velocity w.r.t x/y are calculated
+vderxy[0][2] = Ux,z  
+				      
+</pre>
+\param  **vderxy   double        (o)   velocity derivativs
+\param  **derxy    double        (i)   globael derivatives
+\param  **evel     double        (i)   velocites at element nodes
+\param    iel	   int           (i)   number of nodes in this element
+\return void                                                                       
+
+------------------------------------------------------------------------*/
+void f3_vder(
+             double **vderxy,     
+             double **derxy,    
+	     double **evel,     
+	     int      iel       
+	    ) 
+{
+int     i,j;
+
+#ifdef DEBUG 
+dstrc_enter("f3_vder");
+#endif
+
+for (i=0;i<3;i++)
+{
+   vderxy[0][i]=ZERO;
+   vderxy[1][i]=ZERO;
+   vderxy[2][i]=ZERO;
+   for (j=0;j<iel;j++)
+   {
+      vderxy[0][i] += derxy[i][j]*evel[0][j];
+      vderxy[1][i] += derxy[i][j]*evel[1][j];
+      vderxy[2][i] += derxy[i][j]*evel[2][j];
+   } /* end of loop over j */
+} /* end of loop over i */
+
+/*---------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return; 
+} /* end of f3_vder */
+
+/*!---------------------------------------------------------------------  
+\brief routine to calculate 2nd velocity derivatives at integration point
+
+<pre>                                                         genk 04/02
+
+In this routine the 2nd derivatives of the velocity
+w.r.t x/y/z are calculated
+   vderxy2[0][0] = Ux,xx 
+   vderxy2[0][3] = Ux,xy 
+   vderxy2[1][4] = Ux,xz 
+   vderxy2[2][5] = Ux,yz 
+				      
+</pre>
+\param  **vderxy2  double        (o)   2nd velocity derivativs
+\param  **derxy2   double        (i)   2nd global derivatives
+\param  **evel     double        (i)   velocites at element nodes
+\param    iel	   int           (i)   number of nodes in this element
+\return void                                                                       
+
+------------------------------------------------------------------------*/
+void f3_vder2(
+             double **vderxy2,   
+             double **derxy2,   
+	     double **evel,     
+	     int      iel       
+	    ) 
+{
+int     i,j;
+
+#ifdef DEBUG 
+dstrc_enter("f3_vder2");
+#endif
+
+for (i=0;i<6;i++)
+{
+   vderxy2[0][i]=ZERO;
+   vderxy2[1][i]=ZERO;
+   vderxy2[2][i]=ZERO;
+   for (j=0;j<iel;j++)
+   {
+      vderxy2[0][i] += derxy2[i][j]*evel[0][j];
+      vderxy2[1][i] += derxy2[i][j]*evel[1][j];
+      vderxy2[2][i] += derxy2[i][j]*evel[2][j];
+   } /* end of loop over j */
+} /* end of loop over i */
+
+/*---------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return; 
+} /* end of f3_vder2 */
+
+/*!--------------------------------------------------------------------- 
+\brief routine to calculate pressure derivatives at integration point
+
+<pre>                                                         genk 05/02
+
+In this routine derivatives of the pressure w.r.t x/y/z are calculated
+				      
+</pre>
+\param   *pderxy   double        (o)   pressure derivativs
+\param  **derxy    double        (i)   globael derivatives
+\param   *epre     double        (i)   pressure at element nodes
+\param    iel	   int           (i)   number of nodes in this element
+\return void                                                                       
+
+------------------------------------------------------------------------*/
+void f3_pder(
+             double  *pderxy,    
+             double **derxy,    
+	     double  *epre,     
+	     int      iel       
+	    ) 
+{
+int     i,j;
+
+#ifdef DEBUG 
+dstrc_enter("f3_pder");
+#endif
+
+for (i=0;i<3;i++)
+{
+   pderxy[i] =  ZERO;
+   for (j=0;j<iel;j++)
+   {
+      pderxy[i] += derxy[i][j]*epre[j];
+   } /* end of loop over j */
+} /* end of loop over i */
+
+/*---------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return; 
+} /* end of f3_pder */
+
+/*!--------------------------------------------------------------------- 
+\brief convective velocities 
+
+<pre>                                                         genk 05/02		 
+
+in this routine the convective velocity is calculated at the 
+integration point:
+ u * grad(u)
+ e.g. 3D: COVx = Ux*Ux,x + Uy*Ux,y + Uz*Ux,z
+
+</pre>
+\param  **vderxy   double        (o)   velocity derivativs
+\param   *velint   double        (i)   velocity at integration point
+\param   *covint   double        (i)   convective velocity at int point
+\return void                                                                       
+
+------------------------------------------------------------------------*/
+void f3_covi(
+             double **vderxy,    
+             double  *velint,   
+	     double  *covint    
+	    ) 
+{
+int     i,j;      
+#ifdef DEBUG 
+dstrc_enter("f3_covi");
+#endif
+
+for (i=0;i<3;i++)
+{
+   covint[i]=ZERO;
+   for (j=0;j<3;j++)
+   {
+      covint[i] +=velint[j]*vderxy[i][j];
+   } /* end of loop over j */
+} /* end of loop over i */
+
+
+/*---------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return; 
+} /* end of f3_covi */
+
+/*!--------------------------------------------------------------------- 
+\brief permutation of element force vector 
+
+<pre>                                                         genk 05/02		 
+
+routine to rearrange the entries of the element force vector	  
+this is necessary since we would like to use the existing assembly
+routines for the RHS						  
+hence a splitting of vel- and pre dof in the element force vector 
+is not possible any more!!!!					  
+
+
+</pre>
+\param   *eforce   double        (i/o) element force vector
+\param  **tmp      double        (i)   working array
+\param    iel	   double        (i)   number of nodes in this ele
+\return void                                                                       
+
+------------------------------------------------------------------------*/
+void f3_permeforce(
+		   double    *eforce,
+		   double   **tmp,
+		   int        iel		   		   
+	          ) 
+{
+int i,irow;
+int nvdof;      /* number of vel dofs                                   */
+int totdof;     /* total number of dofs                                 */
+
+#ifdef DEBUG 
+dstrc_enter("f3_permeforce");
+#endif
+
+nvdof  = NUM_F3_VELDOF*iel;
+totdof = (NUM_F3_VELDOF+1)*iel;
+
+/*---------------------------------------------------- compute vel-dofs */
+irow = 0;
+for (i=0;i<nvdof;i+=3)
+{   
+   tmp[irow][0]   = eforce[i];
+   tmp[irow+1][0] = eforce[i+1];
+   tmp[irow+2][0] = eforce[i+2];
+   irow += 4;   
+} /* end of loop over i */
+
+/*---------------------------------------------------- compute pre-dofs */
+irow = 3;
+for (i=nvdof;i<totdof;i++)
+{
+   tmp[irow][0] = eforce[i];
+   irow += 4;
+} /* end of loop over i */
+
+/*------------------------------------------------- copy back to eforce */
+for (i=0;i<totdof;i++)
+{
+   eforce[i] = tmp[i][0];
+} /* end of loop over i */
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return; 
+} /* end of f3_permeforce */
+
+/*!--------------------------------------------------------------------- 
+\brief permutation of element stiffness matrix
+
+<pre>                                                         genk 05/02		 
+
+routine to add galerkin and stabilisation parts of the elment	   
+stiffness matrix and to rearrange its entries!  		   
+this is necessary since we would like to use the existing assembly 
+routines for the stiffness matrix				   
+hence a splitting of vel- and pre dofs is not possible any more!!!!				  
+
+</pre>
+\param  **estif   double	 (i/o) ele stiffnes matrix
+\param  **emass   double	 (i)   ele mass matrix
+\param  **tmp     double	 (-)   working array		
+\param	  iel	  int		 (i)   number of nodes in ele
+\param	 *dynvar  FLUID_DYN_CALC
+\return void                                                                       
+
+------------------------------------------------------------------------*/
+void f3_permestif(                  
+		   double         **estif,
+		   double         **emass,
+		   double         **tmp,
+		   int              iel,
+		   FLUID_DYN_CALC  *dynvar		   		   
+	          ) 
+{
+int i,j,icol,irow;          /* simply some counters  	        	*/
+int nvdof;                  /* number of vel dofs 			*/
+int npdof;                  /* number of pre dofs 			*/
+int totdof;                 /* total number of dofs			*/
+double thsl;	            /* factor for LHS (THETA*DT)		*/
+
+#ifdef DEBUG 
+dstrc_enter("f3_permestif");
+#endif
+
+nvdof  = NUM_F3_VELDOF*iel;
+npdof  = iel;
+totdof = (NUM_F3_VELDOF+1)*iel;
+thsl   = dynvar->thsl;
+
+/*--------------------------------------------- copy estif to tmp-array *
+                           and mutlitply stiffniss matrix with THETA*DT */
+for (i=0;i<totdof;i++)
+{
+   for (j=0;j<totdof;j++)
+   {
+      tmp[i][j] = estif[i][j] * thsl;
+   } /* end of loop over j */
+} /* end of loop over i */
+/*------------------------------- add mass matrix for instationary case */
+if (dynvar->nis==0)
+{
+   for (i=0;i<totdof;i++)
+   {
+      for (j=0;j<nvdof;j++)
+      {
+         tmp[i][j] += emass[i][j];
+      } /* end of loop over j */
+   } /* end of loop over i */
+} /* endif (dynvar->nis==0) *
+
+/*--------------------------------------------------------- compute Kvv */
+irow = 0;
+for (i=0;i<nvdof;i+=3)
+{   
+   icol = 0;
+   for (j=0;j<nvdof;j+=3)
+   {
+      estif[irow][icol]     = tmp[i][j];
+      estif[irow+1][icol]   = tmp[i+1][j];
+      estif[irow+2][icol]   = tmp[i+2][j];
+      estif[irow][icol+1]   = tmp[i][j+1];
+      estif[irow+1][icol+1] = tmp[i+1][j+1];
+      estif[irow+2][icol+1] = tmp[i+2][j+1];
+      estif[irow][icol+2]   = tmp[i][j+2];
+      estif[irow+1][icol+2] = tmp[i+1][j+2];
+      estif[irow+2][icol+2] = tmp[i+2][j+2];      
+      icol += 4;
+   } /* end of loop over j */
+   irow += 4;   
+} /* end of loop over i */
+
+/*--------------------------------------------------------- compute Kvp */
+irow = 0;
+for (i=0;i<nvdof;i+=3)
+{
+   icol = 3;
+   for (j=nvdof;j<totdof;j++)
+   {
+      estif[irow][icol]   = tmp[i][j];
+      estif[irow+1][icol] = tmp[i+1][j];
+      estif[irow+2][icol] = tmp[i+2][j];
+      icol += 4;     
+   } /* end of loop over j */
+   irow += 4;   
+} /* end of loop over i */
+
+/*--------------------------------------------------------- compute Kpv */
+irow = 3;
+for (i=nvdof;i<totdof;i++)
+{
+   icol = 0;
+   for (j=0;j<nvdof;j+=3)
+   {
+      estif[irow][icol]   = tmp[i][j];
+      estif[irow][icol+1] = tmp[i][j+1];
+      estif[irow][icol+2] = tmp[i][j+2];
+      icol += 4;     
+   } /* end of loop over j */
+   irow += 4;   
+} /* end of loop over i */
+
+/*--------------------------------------------------------- compute Kpp */
+irow = 3;
+for (i=nvdof;i<totdof;i++)
+{
+   icol = 3;
+   for (j=nvdof;j<totdof;j++)
+   {
+      estif[irow][icol] = tmp[i][j];
+      icol += 4;
+   } /* end of loop over j */
+   irow += 4;
+} /* end of loop over i */
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return; 
+} /* end of f3_permestif */
+
+
+
+#endif

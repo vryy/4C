@@ -1,0 +1,1198 @@
+/*!----------------------------------------------------------------------
+\file
+\brief shape functions and their natural derivatives for fluid3 element
+
+------------------------------------------------------------------------*/
+#ifdef D_FLUID3 
+#include "../headers/standardtypes.h"
+#include "fluid3_prototypes.h"
+static double Q12 = ONE/TWO;
+static double Q14 = ONE/FOUR;
+static double Q16 = ONE/SIX;
+static double Q18 = ONE/EIGHT;
+/*!---------------------------------------------------------------------                                         
+\brief shape functions and their natural derivatives for hexaeder
+
+<pre>                                                         genk 05/02
+
+In this routine the shape functions and their natural first and second
+derivatives with respect to r/s/t are evaluated for 
+ H E X A H E D E R
+ 
+   Numbering of the nodes:
+
+                           ^ t
+                           |
+                           |
+                           |
+                    8      |  15        7
+                    o---------o---------o
+                   /|                  /|
+                  / |                 / |
+                 /  |                /	|
+              16o   |     o       14o   |
+               /    o20       o    /	o19
+              /     |             /     |
+             /      |  13      6 /	|
+          5 o---------o---------o	|
+            |   o   |     o   	|   o   |  ---------->
+            |       o---------o-|-------o           s
+            |      / 4       11 |      /3
+            |     /             |     /
+          17o    /    o         o18  /
+            | 12o         o     |   o10
+            |  /                |  /
+            | /                 | /
+            |/	                |/
+            o---------o---------o
+	    1	/     9         2
+	       /
+	      /
+	     /
+	    r  
+
+   PROBLEM: GID has a different numbering of the element nodes than this one.
+            So either the shape functions for hex20 and hex27 (see drawing)
+	    has to be adapted or during the input phase the numbering has to 
+	    be adapted to the shape functions. 
+	    This is all in progress and should be done for fluid3 and
+	    brick1 the same way!!!!	   
+
+</pre>
+\param  *funct     double   (o)    shape functions
+\param **deriv     double   (o)    1st natural deriv. of shape funct.
+\param **deriv2    double   (o)    2nd natural deriv. of shape funct.
+\param   r 	   double   (i)    coordinate
+\param   s 	   double   (i)    coordinate
+\param   t 	   double   (i)    coordinate
+\param   typ 	   DIS_TYP  (i)    element type
+\param   icode	   int	    (i)    evaluation flag
+\return void                                                                       
+\warning shape functions for hex20/hex27/tet10 not implemented yet!!!
+
+------------------------------------------------------------------------*/
+ void f3_hex(
+            double     *funct,     
+            double    **deriv,    
+            double    **deriv2,   
+	    double      r,        
+            double      s,        
+            double      t,        
+            DIS_TYP     typ,      
+            int         icode     
+	   )
+{
+int    i,ii;
+double rp,rm,sp,sm,tp,tm;
+double rrm,ssm,ttm;
+double drm1,dr00,drp1,dsm1,ds00,dsp1,dtm1,dt00,dtp1;
+double rm1,r00,rp1,sm1,s00,sp1,tm1,t00,tp1;
+
+#ifdef DEBUG 
+dstrc_enter("f3_rec");
+#endif
+
+/*------------------------------- selection of polynomial interpolation */
+switch (typ)
+{
+case hex8: /* LINEAR shape functions and their natural derivatives ----*/
+/*--------------------------------------------------- form basic values */
+   rp=ONE+r;
+   rm=ONE-r;
+   sp=ONE+s;
+   sm=ONE-s;
+   tp=ONE+t;
+   tm=ONE-t;
+   
+   funct[0]=Q18*rp*sm*tm;
+   funct[1]=Q18*rp*sp*tm;
+   funct[2]=Q18*rm*sp*tm;
+   funct[3]=Q18*rm*sm*tm;
+   funct[4]=Q18*rp*sm*tp;
+   funct[5]=Q18*rp*sp*tp;
+   funct[6]=Q18*rm*sp*tp;
+   funct[7]=Q18*rm*sm*tp;
+   
+   if(icode>1) /* --> first derivative evaluation */
+   {         
+      deriv[0][0]= Q18*sm*tm  ;
+      deriv[0][1]= Q18*sp*tm  ;
+      deriv[0][2]=-deriv[0][1];
+      deriv[0][3]=-deriv[0][0];
+      deriv[0][4]= Q18*sm*tp  ;
+      deriv[0][5]= Q18*sp*tp  ;
+      deriv[0][6]=-deriv[0][5];
+      deriv[0][7]=-deriv[0][4];
+
+      deriv[1][0]=-Q18*tm*rp  ;
+      deriv[1][1]=-deriv[1][0];
+      deriv[1][2]= Q18*tm*rm  ;
+      deriv[1][3]=-deriv[1][2];
+      deriv[1][4]=-Q18*tp*rp  ;
+      deriv[1][5]=-deriv[1][4];
+      deriv[1][6]= Q18*tp*rm  ;
+      deriv[1][7]=-deriv[1][6];
+
+      deriv[2][0]=-Q18*rp*sm  ;
+      deriv[2][1]=-Q18*rp*sp  ;
+      deriv[2][2]=-Q18*rm*sp  ;
+      deriv[2][3]=-Q18*rm*sm  ;
+      deriv[2][4]=-deriv[2][0];
+      deriv[2][5]=-deriv[2][1];
+      deriv[2][6]=-deriv[2][2];
+      deriv[2][7]=-deriv[2][3];
+   } /* endif (icode>1) */
+   if(icode==3) /* --> second derivative evaluation */
+   {
+      deriv2[0][0] =  ZERO;
+      deriv2[1][0] =  ZERO;
+      deriv2[2][0] =  ZERO;
+      deriv2[3][0] = -Q18*tm;
+      deriv2[4][0] = -Q18*sm;
+      deriv2[5][0] =  Q18*rp;
+      
+      deriv2[0][1] =  ZERO; 
+      deriv2[1][1] =  ZERO;
+      deriv2[2][1] =  ZERO;
+      deriv2[3][1] = -deriv2[3][0];
+      deriv2[4][1] = -Q18*sp;
+      deriv2[5][1] = -deriv2[5][0];
+            
+      deriv2[0][2] =  ZERO; 
+      deriv2[1][2] =  ZERO;
+      deriv2[2][2] =  ZERO;
+      deriv2[3][2] =  deriv2[3][0];
+      deriv2[4][2] = -deriv2[4][1];
+      deriv2[5][2] = -Q18*rm;
+      
+      deriv2[0][3] =  ZERO; 
+      deriv2[1][3] =  ZERO;
+      deriv2[2][3] =  ZERO;
+      deriv2[3][3] = -deriv2[3][0];
+      deriv2[4][3] = -deriv2[4][0];
+      deriv2[5][3] = -deriv2[5][2]; 
+      
+      deriv2[0][4] =  ZERO; 
+      deriv2[1][4] =  ZERO;
+      deriv2[2][4] =  ZERO;
+      deriv2[3][4] = -Q18*tp;
+      deriv2[4][4] = -deriv2[4][0];
+      deriv2[5][4] = -deriv2[5][0]; 
+      
+      deriv2[0][5] =  ZERO; 
+      deriv2[1][5] =  ZERO;
+      deriv2[2][5] =  ZERO;
+      deriv2[3][5] = -deriv2[3][4];
+      deriv2[4][5] = -deriv2[4][1];
+      deriv2[5][5] =  deriv2[5][0]; 
+      
+      deriv2[0][6] =  ZERO; 
+      deriv2[1][6] =  ZERO;
+      deriv2[2][6] =  ZERO;
+      deriv2[3][6] =  deriv2[3][4];
+      deriv2[4][6] =  deriv2[4][1];
+      deriv2[5][6] = -deriv2[5][2];       
+      
+      deriv2[0][7] =  ZERO; 
+      deriv2[1][7] =  ZERO;
+      deriv2[2][7] =  ZERO;
+      deriv2[3][7] = -deriv2[3][4];
+      deriv2[4][7] =  deriv2[4][0];
+      deriv2[5][7] =  deriv2[5][2];                   	   
+   } /* endif icode==3) */
+break;
+   
+case hex20: /* QUADRATIC shape functions and their natural derivatives 
+                         without central nodes                      ----*/
+			 
+   dserror("shape functions for hex20 not implemented yet - see f3_calfuncderiv!\n");
+/*--------------------------------------------------- form basic values */
+   rp=ONE+r;
+   rm=ONE-r;
+   sp=ONE+s;
+   sm=ONE-s;
+   tp=ONE+t;
+   tm=ONE-t;   
+   rrm=ONE-r*r;
+   ssm=ONE-s*s;
+   ttm=ONE-t*t;
+
+   funct[0] =Q18*rp*sm*tm*(rp+sm+tm-FIVE);
+   funct[1] =Q18*rp*sp*tm*(rp+sp+tm-FIVE);
+   funct[2] =Q18*rm*sp*tm*(rm+sp+tm-FIVE);
+   funct[3] =Q18*rm*sm*tm*(rm+sm+tm-FIVE);
+   funct[4] =Q18*rp*sm*tp*(rp+sm+tp-FIVE);
+   funct[5] =Q18*rp*sp*tp*(rp+sp+tp-FIVE);
+   funct[6] =Q18*rm*sp*tp*(rm+sp+tp-FIVE);
+   funct[7] =Q18*rm*sm*tp*(rm+sm+tp-FIVE);
+   funct[8] =Q14*rp*ssm*tm;
+   funct[9] =Q14*rrm*sp*tm;
+   funct[10]=Q14*rm*ssm*tm;
+   funct[11]=Q14*rrm*sm*tm;
+   funct[12]=Q14*rp*ssm*tp;
+   funct[13]=Q14*rrm*sp*tp;
+   funct[14]=Q14*rm*ssm*tp;
+   funct[15]=Q14*rrm*sm*tp;
+   funct[16]=Q14*rp*sm*ttm;
+   funct[17]=Q14*rp*sp*ttm;
+   funct[18]=Q14*rm*sp*ttm;
+   funct[19]=Q14*rm*sm*ttm;  /* analytisch gecheckt und fuer OK erklaert!!! */
+
+   if(icode>1) /* --> first derivative evaluation */
+   {
+      deriv[0][0] = Q18*sm*tm*(TWO*rp+sm+tm-FIVE);
+      deriv[1][0] =-Q18*tm*rp*(TWO*sm+tm+rp-FIVE);
+      deriv[2][0] =-Q18*rp*sm*(TWO*tm+rp+sm-FIVE);
+
+      deriv[0][1] = Q18*sp*tm*(TWO*rp+sp+tm-FIVE);
+      deriv[1][1] = Q18*tm*rp*(TWO*sp+tm+rp-FIVE);
+      deriv[2][1] =-Q18*rp*sp*(TWO*tm+rp+sp-FIVE);
+						
+      deriv[0][2] =-Q18*sp*tm*(TWO*rm+sp+tm-FIVE);
+      deriv[1][2] = Q18*tm*rm*(TWO*sp+tm+rm-FIVE);
+      deriv[2][2] =-Q18*rm*sp*(TWO*tm+rm+sp-FIVE);
+
+      deriv[0][3] =-Q18*sm*tm*(TWO*rm+sm+tm-FIVE);
+      deriv[1][3] =-Q18*tm*rm*(TWO*sm+tm+rm-FIVE);
+      deriv[2][3] =-Q18*rm*sm*(TWO*tm+rm+sm-FIVE);
+
+      deriv[0][4] = Q18*sm*tp*(TWO*rp+sm+tp-FIVE);
+      deriv[1][4] =-Q18*tp*rp*(TWO*sm+tp+rp-FIVE);
+      deriv[2][4] = Q18*rp*sm*(TWO*tp+rp+sm-FIVE);
+
+      deriv[0][5] = Q18*sp*tp*(TWO*rp+sp+tp-FIVE);
+      deriv[1][5] = Q18*tp*rp*(TWO*sp+tp+rp-FIVE);
+      deriv[2][5] = Q18*rp*sp*(TWO*tp+rp+sp-FIVE);
+
+      deriv[0][6] =-Q18*sp*tp*(TWO*rm+sp+tp-FIVE);
+      deriv[1][6] = Q18*tp*rm*(TWO*sp+tp+rm-FIVE);
+      deriv[2][6] = Q18*rm*sp*(TWO*tp+rm+sp-FIVE);
+
+      deriv[0][7] =-Q18*sm*tp*(TWO*rm+sm+tp-FIVE);
+      deriv[1][7] =-Q18*tp*rm*(TWO*sm+tp+rm-FIVE);
+      deriv[2][7] = Q18*rm*sm*(TWO*tp+rm+sm-FIVE);
+
+      deriv[0][8] = Q14*ssm*tm;
+      deriv[1][8] =-Q12*s*tm*rp;
+      deriv[2][8] =-Q14*ssm*rp;
+
+      deriv[0][9] =-Q12*r*sp*tm;
+      deriv[1][9] = Q14*rrm*tm;
+      deriv[2][9] =-Q14*rrm*sp;
+
+      deriv[0][10]=-deriv[0][8];
+      deriv[1][10]=-Q12*s*tm*rm;
+      deriv[2][10]=-Q14*ssm*rm;
+
+      deriv[0][11]=-Q12*r*sm*tm;
+      deriv[1][11]=-deriv[1][9];
+      deriv[2][11]=-Q14*rrm*sm;
+
+      deriv[0][12]= Q14*ssm*tp;
+      deriv[1][12]=-Q12*s*tp*rp;
+      deriv[2][12]=-deriv[2][8];
+
+      deriv[0][13]=-Q12*r*sp*tp;
+      deriv[1][13]= Q14*rrm*tp;
+      deriv[2][13]=-deriv[2][8];
+
+      deriv[0][14]=-deriv[0][12];
+      deriv[1][14]=-Q12*s*tp*rm;
+      deriv[2][14]=-deriv[2][10];
+
+      deriv[0][15]=-Q12*r*sm*tp;
+      deriv[1][15]=-deriv[1][13];
+      deriv[2][15]=-deriv[2][11];
+
+      deriv[0][16]= Q14*sm*ttm;
+      deriv[1][16]=-Q14*ttm*rp;
+      deriv[2][16]=-Q12*t*rp*sm;
+
+      deriv[0][17]= Q14*sp*ttm;
+      deriv[1][17]=-deriv[1][16];
+      deriv[2][17]=-Q12*t*rp*sp;
+
+      deriv[0][18]=-deriv[0][17];
+      deriv[1][18]= Q14*ttm*rm;
+      deriv[2][18]=-Q12*t*rm*sp;
+
+      deriv[0][19]=-deriv[0][16];
+      deriv[1][19]=-deriv[1][18];
+      deriv[2][19]=-Q12*t*rm*sm;   
+   } /* endif (icode>1) */
+   if(icode==3) /* --> second derivative evaluation  */
+   {
+      deriv2[0][0] = Q14*sm*tm;
+      deriv2[1][0] = Q14*tm*rp;
+      deriv2[2][0] = Q14*rp*sm;
+      deriv2[3][0] =-Q18*(tm*(2*rp+sm+tm-FIVE+sm*tm));
+      deriv2[4][0] =-Q18*(sm*(2*rp+sm+tm-FIVE+sm*tm));
+      deriv2[5][0] = Q18*(rp*(2*sm+tm+rp-FIVE+tm*rp));
+
+      deriv2[0][1] = Q14*sp*tm;
+      deriv2[1][1] = deriv2[2][1];
+      deriv2[2][1] = Q14*rp*sp;
+      deriv2[3][1] =-Q18*(tm*(2*rp+sp+tm-FIVE+sp*tm));
+      deriv2[4][1] =-Q18*(sp*(2*rp+sp+tm-FIVE+sp*tm));
+      deriv2[5][1] =-Q18*(rp*(2*sp+tm+rp-FIVE+tm*rp));
+
+      deriv2[0][2] =-deriv2[1][2];
+      deriv2[1][2] = Q14*tm*rm;
+      deriv2[2][2] = Q14*rm*sp;
+      deriv2[3][2] =-Q18*(tm*(2*rm+sp+tm-FIVE+sp*tm));
+      deriv2[4][2] = Q18*(sp*(2*rm+sp+tm-FIVE+sp*tm));
+      deriv2[5][2] =-Q18*(rm*(2*sp+tm+rm-FIVE+tm*rm));
+
+      deriv2[0][3] =-deriv2[1][1];
+      deriv2[1][3] = deriv2[2][3];
+      deriv2[2][3] = Q14*rm*sm;
+      deriv2[3][3] =-Q18*(tm*(2*rm+sm+tm-FIVE+sm*tm));
+      deriv2[4][3] = Q18*(sm*(2*rm+sm+tm-FIVE+sm*tm));
+      deriv2[5][3] = Q18*(rm*(2*sm+tm+rm-FIVE+tm*rm));
+
+      deriv2[0][4] = Q14*sm*tp;
+      deriv2[1][4] = Q14*tp*rp;
+      deriv2[2][4] = deriv2[3][1];
+      deriv2[3][4] =-Q18*(tp*(2*rp+sm+tp-FIVE+sm*tp));
+      deriv2[4][4] = Q18*(sm*(2*rp+sm+tp-FIVE+sm*tp));
+      deriv2[5][4] =-Q18*(rp*(2*sm+tp+rp-FIVE+tp*rp));
+
+      deriv2[0][5] = Q14*sp*tp;
+      deriv2[1][5] = deriv2[2][5];
+      deriv2[2][5] = deriv2[3][2];
+      deriv2[3][5] =-Q18*(tp*(2*rp+sp+tp-FIVE+sp*tp));
+      deriv2[4][5] = Q18*(sp*(2*rp+sp+tp-FIVE+sp*tp));
+      deriv2[5][5] = Q18*(rp*(2*sp+tp+rp-FIVE+tp*rp));
+
+      deriv2[0][6] =-deriv2[1][6];
+      deriv2[1][6] = Q14*tp*rm;
+      deriv2[2][6] = deriv2[3][3];
+      deriv2[3][6] =-Q18*(tp*(2*rm+sp+tp-FIVE+sp*tp));
+      deriv2[4][6] =-Q18*(sp*(2*rm+sp+tp-FIVE+sp*tp));
+      deriv2[5][6] = Q18*(rm*(2*sp+tp+rm-FIVE+tp*rm));
+
+      deriv2[0][7] =-deriv2[1][5];
+      deriv2[1][7] = deriv2[2][7];
+      deriv2[2][7] = deriv2[3][4];
+      deriv2[3][7] =-Q18*(tp*(2*rm+sm+tp-FIVE+sm*tp));
+      deriv2[4][7] =-Q18*(sm*(2*rm+sm+tp-FIVE+sm*tp));
+      deriv2[5][7] =-Q18*(rm*(2*sm+tp+rm-FIVE+tp*rm));
+
+      deriv2[0][8] = ZERO;
+      deriv2[1][8] = -Q12*tm*rp;
+      deriv2[2][8] = ZERO;
+      deriv2[3][8] =-Q12*s*tm;
+      deriv2[4][8] =-Q14*ssm;
+      deriv2[5][8] = Q12*s*rp;
+
+      deriv2[0][9]=-Q12*sp*tm;
+      deriv2[1][9]= ZERO;
+      deriv2[2][9]= ZERO;
+      deriv2[3][9]=-Q12*r*tm;
+      deriv2[4][9]= Q12*r*sp;
+      deriv2[5][9]=-Q14*rrm ;
+
+      deriv2[0][10]= ZERO;
+      deriv2[1][10]= -Q12*tm*rm;
+      deriv2[2][10]= ZERO;
+      deriv2[3][10]= Q12*s*tm;
+      deriv2[4][10]=-deriv2[4][8];
+      deriv2[5][10]= Q12*s*rm;
+
+      deriv2[0][11]=-Q12*sm*tm;
+      deriv2[1][11]= ZERO;
+      deriv2[2][11]= ZERO;
+      deriv2[3][11]= Q12*r*tm;
+      deriv2[4][11]= Q12*r*sm;
+      deriv2[5][11]=-deriv2[5][9];
+
+      deriv2[0][12]= ZERO;
+      deriv2[1][12]= -Q12*tp*rp;
+      deriv2[2][12]= ZERO;
+      deriv2[3][12]=-Q12*s*tp;
+      deriv2[4][12]=-deriv2[4][8];
+      deriv2[5][12]=-deriv2[5][8];
+
+      deriv2[0][13]=-Q12*sp*tp;
+      deriv2[1][13]= ZERO;
+      deriv2[2][13]= ZERO;
+      deriv2[3][13]=-Q12*r*tp;
+      deriv2[4][13]=-deriv2[4][9];
+      deriv2[5][13]=-deriv2[5][9];
+
+      deriv2[0][14]= ZERO;
+      deriv2[1][14]= -Q12*tp*rm;
+      deriv2[2][14]= ZERO;
+      deriv2[3][14]= Q12*s*tp;
+      deriv2[4][14]= deriv2[4][8];
+      deriv2[5][14]=-deriv2[5][10];
+
+      deriv2[0][15]=-Q12*sm*tp;
+      deriv2[1][15]= ZERO;
+      deriv2[2][15]= ZERO;
+      deriv2[3][15]= Q12*r*tp;
+      deriv2[4][15]=-deriv2[4][11];
+      deriv2[5][15]= deriv2[5][9];
+
+      deriv2[0][16]= ZERO;
+      deriv2[1][16]= ZERO;
+      deriv2[2][16]= ZERO;
+      deriv2[3][16]=-Q14*ttm;
+      deriv2[4][16]=-Q12*t*sm;
+      deriv2[5][16]= Q12*t*rp;
+
+      deriv2[0][17]= ZERO;
+      deriv2[1][17]= ZERO;
+      deriv2[2][17]= ZERO;
+      deriv2[3][17]= Q14*ttm;
+      deriv2[4][17]=-Q12*t*sp;
+      deriv2[5][17]=-deriv2[5][16];
+
+      deriv2[0][18]= ZERO;
+      deriv2[1][18]= ZERO;
+      deriv2[2][18]= ZERO;
+      deriv2[3][18]= deriv2[3][16];
+      deriv2[4][18]= Q12*t*sp;
+      deriv2[5][18]= Q12*t*rm;
+
+      deriv2[0][19]= ZERO;
+      deriv2[1][19]= ZERO;
+      deriv2[2][19]= ZERO;
+      deriv2[3][19]= deriv2[3][17];
+      deriv2[4][19]= Q12*t*sm;
+      deriv2[5][19]=-deriv2[5][18];
+   } /* endif (icode==3) */
+break;
+   
+case hex27: /* QUADRATIC shape functions and their natural derivatives 
+                         with central nodes                         ----*/
+
+   dserror("shape functions for hex20 not implemented yet - see f3_calfuncderiv!\n");
+/*--------------------------------------------------- form basic values */
+   rm1=Q12*r*(r - ONE);
+   r00=(ONE - r*r);
+   rp1=Q12*r*(r + ONE);
+   sm1=Q12*s*(s - ONE);
+   s00=(ONE - s*s);
+   sp1=Q12*s*(s + ONE);
+   tm1=Q12*t*(t - ONE);
+   t00=(ONE - t*t);
+   tp1=Q12*t*(t + ONE);
+   
+   funct[0 ]= rp1 * sm1 * tm1;
+   funct[1 ]= rp1 * sp1 * tm1;
+   funct[2 ]= rm1 * sp1 * tm1;
+   funct[3 ]= rm1 * sm1 * tm1;
+   funct[4 ]= rp1 * sm1 * tp1;
+   funct[5 ]= rp1 * sp1 * tp1;
+   funct[6 ]= rm1 * sp1 * tp1;
+   funct[7 ]= rm1 * sm1 * tp1;
+   funct[8 ]= rp1 * s00 * tm1;
+   funct[9 ]= r00 * sp1 * tm1;
+   funct[10]= rm1 * s00 * tm1;
+   funct[11]= r00 * sm1 * tm1;
+   funct[12]= rp1 * s00 * tp1;
+   funct[13]= r00 * sp1 * tp1;
+   funct[14]= rm1 * s00 * tp1;
+   funct[15]= r00 * sm1 * tp1;
+   funct[16]= rp1 * sm1 * t00;
+   funct[17]= rp1 * sp1 * t00;
+   funct[18]= rm1 * sp1 * t00;
+   funct[19]= rm1 * sm1 * t00;
+   funct[20]= rp1 * s00 * t00;
+   funct[21]= r00 * sp1 * t00;
+   funct[22]= rm1 * s00 * t00;
+   funct[23]= r00 * sm1 * t00;
+   funct[24]= r00 * s00 * tp1;
+   funct[25]= r00 * s00 * tm1;
+   funct[26]= r00 * s00 * t00;
+   
+   if(icode>1) /* --> first derivative evaluation */
+   {
+      drm1 = r - Q12;
+      dr00 = -TWO * r;
+      drp1 = r + Q12;
+      dsm1 = s - Q12;
+      ds00 = -TWO * s;
+      dsp1 = s + Q12;
+      dtm1 = t - Q12;
+      dt00 = -TWO * t;
+      dtp1 = t + Q12;
+
+      deriv[0][0 ]= drp1 * sm1 * tm1;
+      deriv[0][1 ]= drp1 * sp1 * tm1;
+      deriv[0][2 ]= drm1 * sp1 * tm1;
+      deriv[0][3 ]= drm1 * sm1 * tm1;
+      deriv[0][4 ]= drp1 * sm1 * tp1;
+      deriv[0][5 ]= drp1 * sp1 * tp1;
+      deriv[0][6 ]= drm1 * sp1 * tp1;
+      deriv[0][7 ]= drm1 * sm1 * tp1;
+      deriv[0][8 ]= drp1 * s00 * tm1;
+      deriv[0][9 ]= dr00 * sp1 * tm1;
+      deriv[0][10]= drm1 * s00 * tm1;
+      deriv[0][11]= dr00 * sm1 * tm1;
+      deriv[0][12]= drp1 * s00 * tp1;
+      deriv[0][13]= dr00 * sp1 * tp1;
+      deriv[0][14]= drm1 * s00 * tp1;
+      deriv[0][15]= dr00 * sm1 * tp1;
+      deriv[0][16]= drp1 * sm1 * t00;
+      deriv[0][17]= drp1 * sp1 * t00;
+      deriv[0][18]= drm1 * sp1 * t00;
+      deriv[0][19]= drm1 * sm1 * t00;
+      deriv[0][20]= drp1 * s00 * t00;
+      deriv[0][21]= dr00 * sp1 * t00;
+      deriv[0][22]= drm1 * s00 * t00;
+      deriv[0][23]= dr00 * sm1 * t00;
+      deriv[0][24]= dr00 * s00 * tp1;
+      deriv[0][25]= dr00 * s00 * tm1;
+      deriv[0][26]= dr00 * s00 * t00;
+
+      deriv[1][0 ]= rp1 * dsm1 * tm1;
+      deriv[1][1 ]= rp1 * dsp1 * tm1;
+      deriv[1][2 ]= rm1 * dsp1 * tm1;
+      deriv[1][3 ]= rm1 * dsm1 * tm1;
+      deriv[1][4 ]= rp1 * dsm1 * tp1;
+      deriv[1][5 ]= rp1 * dsp1 * tp1;
+      deriv[1][6 ]= rm1 * dsp1 * tp1;
+      deriv[1][7 ]= rm1 * dsm1 * tp1;
+      deriv[1][8 ]= rp1 * ds00 * tm1;
+      deriv[1][9 ]= r00 * dsp1 * tm1;
+      deriv[1][10]= rm1 * ds00 * tm1;
+      deriv[1][11]= r00 * dsm1 * tm1;
+      deriv[1][12]= rp1 * ds00 * tp1;
+      deriv[1][13]= r00 * dsp1 * tp1;
+      deriv[1][14]= rm1 * ds00 * tp1;
+      deriv[1][15]= r00 * dsm1 * tp1;
+      deriv[1][16]= rp1 * dsm1 * t00;
+      deriv[1][17]= rp1 * dsp1 * t00;
+      deriv[1][18]= rm1 * dsp1 * t00;
+      deriv[1][19]= rm1 * dsm1 * t00;
+      deriv[1][20]= rp1 * ds00 * t00;
+      deriv[1][21]= r00 * dsp1 * t00;
+      deriv[1][22]= rm1 * ds00 * t00;
+      deriv[1][23]= r00 * dsm1 * t00;
+      deriv[1][24]= r00 * ds00 * tp1;
+      deriv[1][25]= r00 * ds00 * tm1;
+      deriv[1][26]= r00 * ds00 * t00;
+
+      deriv[2][0 ]= rp1 * sm1 * dtm1;
+      deriv[2][1 ]= rp1 * sp1 * dtm1;
+      deriv[2][2 ]= rm1 * sp1 * dtm1;
+      deriv[2][3 ]= rm1 * sm1 * dtm1;
+      deriv[2][4 ]= rp1 * sm1 * dtp1;
+      deriv[2][5 ]= rp1 * sp1 * dtp1;
+      deriv[2][6 ]= rm1 * sp1 * dtp1;
+      deriv[2][7 ]= rm1 * sm1 * dtp1;
+      deriv[2][8 ]= rp1 * s00 * dtm1;
+      deriv[2][9 ]= r00 * sp1 * dtm1;
+      deriv[2][10]= rm1 * s00 * dtm1;
+      deriv[2][11]= r00 * sm1 * dtm1;
+      deriv[2][12]= rp1 * s00 * dtp1;
+      deriv[2][13]= r00 * sp1 * dtp1;
+      deriv[2][14]= rm1 * s00 * dtp1;
+      deriv[2][15]= r00 * sm1 * dtp1;
+      deriv[2][16]= rp1 * sm1 * dt00;
+      deriv[2][17]= rp1 * sp1 * dt00;
+      deriv[2][18]= rm1 * sp1 * dt00;
+      deriv[2][19]= rm1 * sm1 * dt00;
+      deriv[2][20]= rp1 * s00 * dt00;
+      deriv[2][21]= r00 * sp1 * dt00;
+      deriv[2][22]= rm1 * s00 * dt00;
+      deriv[2][23]= r00 * sm1 * dt00;
+      deriv[2][24]= r00 * s00 * dtp1;
+      deriv[2][25]= r00 * s00 * dtm1;
+      deriv[2][26]= r00 * s00 * dt00;
+   }  /* endif (icode>1) */ 
+   if(icode==3) /* --> second derivative evaluation */
+   {
+      dserror("second derivatives for hex27 not implemented yet!!!\n");
+   }
+break;
+
+/*----------------------------------------------------------------------*/   
+default:
+   dserror("distyp unknown\n");
+} /* end switch (typ) */
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return;
+} /* end of f3_hex */  
+
+/*!---------------------------------------------------------------------                                         
+\brief shape functions and their natural derivatives for tetraeder
+
+<pre>                                                         genk 08/02
+
+In this routine the shape functions and their natural first and second
+derivatives with respect to r/s/t are evaluated for 
+T E T R A E D E R  
+		     
+</pre>
+\param  *funct     double   (o)    shape functions
+\param **deriv     double   (o)    1st natural deriv. of shape funct.
+\param **deriv2    double   (o)    2nd natural deriv. of shape funct.
+\param   r 	   double   (i)    coordinate
+\param   s 	   double   (i)    coordinate
+\param   t 	   double   (i)    coordinate
+\param   typ 	   DIS_TYP  (i)    element type
+\param   icode	   int	    (i)    evaluation flag
+\return void                                                                       
+\warning shape functions for TET10 not implemented yet!!!
+
+------------------------------------------------------------------------*/
+void f3_tet(
+            double     *funct,     
+            double    **deriv,    
+            double    **deriv2,   
+	    double      r,        
+            double      s,        
+            double      t,        
+            DIS_TYP     typ,      
+            int         icode     
+	   )
+{
+int    i;
+double t1,t2,t3,t4;
+
+
+#ifdef DEBUG 
+dstrc_enter("f3_rec");
+#endif
+/*------------------------------- selection of polynomial interpolation */
+switch (typ)
+{
+case tet4: /* LINEAR shape functions and their natural derivatives -----*/
+/*--------------------------------------------------- form basic values */
+   t1=r;
+   t2=s;
+   t3=t;
+   t4=ONE-r-s-t;
+      
+   funct[0]= t1;
+   funct[1]= t2;
+   funct[2]= t3;
+   funct[3]= t4;
+   
+   if(icode>1) /* --> first derivative evaluation */
+   {         
+      deriv[0][0]= ONE;
+      deriv[0][1]= ZERO;
+      deriv[0][2]= ZERO;
+      deriv[0][3]=-ONE;
+
+      deriv[1][0]= ZERO;
+      deriv[1][1]= ONE;
+      deriv[1][2]= ZERO;
+      deriv[1][3]=-ONE;
+
+      deriv[2][0]= ZERO;
+      deriv[2][1]= ZERO;
+      deriv[2][2]= ONE;
+      deriv[2][3]=-ONE;
+   } /* endif (icode>1) */  
+break;
+   
+case tet10: /*  QUADRATIC shape functions and their natural derivatives */
+			 
+   dserror("shape functions for tet10 not implemented yet!\n"); 
+/*--------------------------------------------------- form basic values */
+/*   t1=r;
+   t2=s;
+   t3=t;
+   t4=ONE-r-s-t;
+   
+   funct[0] =  ;
+   funct[1] =  ;
+   funct[2] = ;
+   funct[3] = ;
+   funct[4] = ;
+   funct[5] = ;
+   funct[6] = ;
+   funct[7] = ;
+   funct[8] = ;
+   funct[9] = ;
+
+
+   if(icode>1) /* --> first derivative evaluation */
+/*   {
+/*      deriv[0][0] = ;
+      deriv[1][0] = ;
+      deriv[2][0] = ;
+
+      deriv[0][1] = ;
+      deriv[1][1] = ;
+      deriv[2][1] = ;
+		
+      deriv[0][2] = ;
+      deriv[1][2] = ;
+      deriv[2][2] = ;
+
+      deriv[0][3] = ;
+      deriv[1][3] = ;
+      deriv[2][3] = ;
+
+      deriv[0][4] = ;
+      deriv[1][4] = ;
+      deriv[2][4] = ;
+
+      deriv[0][5] = ;
+      deriv[1][5] = ;
+      deriv[2][5] = ;
+
+      deriv[0][6] = ;
+      deriv[1][6] = ;
+      deriv[2][6] = ;
+
+      deriv[0][7] = ;
+      deriv[1][7] = ;
+      deriv[2][7] = ;
+
+      deriv[0][8] = ;
+      deriv[1][8] = ;
+      deriv[2][8] = ;
+
+      deriv[0][9] = ;
+      deriv[1][9] = ;
+      deriv[2][9] = ;
+   
+   }   
+   if(icode==3) /* --> second derivative evaluation  */
+/*   {
+      deriv2[0][0] =  ;
+      deriv2[1][0] =  ;
+      deriv2[2][0] =  ;
+      deriv2[3][0] = ;
+      deriv2[4][0] = ;
+      deriv2[5][0] = ;
+
+      deriv2[0][1] =  ;
+      deriv2[1][1] =  ;
+      deriv2[2][1] =  ;
+      deriv2[3][1] = ;
+      deriv2[4][1] = ;
+      deriv2[5][1] = ;
+
+      deriv2[0][2] =  ;
+      deriv2[1][2] = ;
+      deriv2[2][2] =  ;
+      deriv2[3][2] = ;
+      deriv2[4][2] = ;
+      deriv2[5][2] = ;
+
+      deriv2[0][3] = ;
+      deriv2[1][3] =  ;
+      deriv2[2][3] =  ;
+      deriv2[3][3] = ;
+      deriv2[4][3] = ;
+      deriv2[5][3] = ;
+
+      deriv2[0][4] =  ;
+      deriv2[1][4] =  ;
+      deriv2[2][4] =  ;
+      deriv2[3][4] = ;
+      deriv2[4][4] = ;
+      deriv2[5][4] = ;
+
+      deriv2[0][5] =  ;
+      deriv2[1][5] =  ;
+      deriv2[2][5] =  ;
+      deriv2[3][5] = ;
+      deriv2[4][5] = ;
+      deriv2[5][5] = ;
+
+      deriv2[0][6] = ;
+      deriv2[1][6] =  ;
+      deriv2[2][6] =  ;
+      deriv2[3][6] = ;
+      deriv2[4][6] = ;
+      deriv2[5][6] = ;
+
+      deriv2[0][7] = ;
+      deriv2[1][7] = ;
+      deriv2[2][7] = ;
+      deriv2[3][7] = ;
+      deriv2[4][7] = ;
+      deriv2[5][7] = ;
+
+      deriv2[0][8] =  ;
+      deriv2[1][8] =  ;
+      deriv2[2][8] =  ;
+      deriv2[3][8] = ;
+      deriv2[4][8] = ;
+      deriv2[5][8] =  ;
+
+      deriv2[0][9]= ;
+      deriv2[1][9]=  ;
+      deriv2[2][9]=  ;
+      deriv2[3][9]= ;
+      deriv2[4][9]= ;
+      deriv2[5][9]=  ;
+
+   }*/
+break;
+   
+/*----------------------------------------------------------------------*/   
+default:
+   dserror("distyp unknown\n");
+} /* end switch(typ) */
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return;
+} /* end of f3_tet */ 
+
+/*!---------------------------------------------------------------------                                         
+\brief jacobian matrix
+
+<pre>                                                         genk 05/02
+
+In this routine the jacobian matrix and its determinant is calculated
+		     
+</pre>
+\param  *funct     double   (i)    natural shape functions
+\param **deriv     double   (i)    natural deriv. of shape funcs
+\param **xjm       double   (o)    jacobian matrix
+\param  *det       double   (o)    determinant of jacobian matrix
+\param  *ele       ELEMENT  (i)    actual element
+\param   iel       int      (i)    num. of nodes of act. ele
+\return void                                                                       
+
+------------------------------------------------------------------------*/
+void f3_jaco(double     *funct,
+             double    **deriv,
+             double    **xjm,
+             double     *det,
+             ELEMENT    *ele,
+             int         iel)
+
+{
+int i,j,l;
+double dum;
+
+#ifdef DEBUG 
+dstrc_enter("f3_jaco");
+#endif	 
+
+/*-------------------------------- determine jacobian at point r,s,t ---*/       
+for (i=0; i<3; i++)
+{
+   for (j=0; j<3; j++)
+   {
+      dum=0.0;
+      for (l=0; l<iel; l++)
+      {
+         dum += deriv[i][l]*ele->node[l]->x[j];
+      }
+      xjm[i][j]=dum;
+   } /* end loop j */
+} /* end loop i */
+/*------------------------------------------ determinant of jacobian ---*/        
+*det = xjm[0][0]*xjm[1][1]*xjm[2][2]+
+       xjm[0][1]*xjm[1][2]*xjm[2][0]+
+       xjm[0][2]*xjm[1][0]*xjm[2][1]-
+       xjm[0][2]*xjm[1][1]*xjm[2][0]-
+       xjm[0][0]*xjm[1][2]*xjm[2][1]-
+       xjm[0][1]*xjm[1][0]*xjm[2][2];
+       
+if(*det<ZERO)
+{   
+   printf("\n");
+   printf("GLOBAL ELEMENT %i\n",ele->Id);
+   dserror("NEGATIVE JACOBIAN DETERMINANT\n");
+}
+      
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return;
+} /* end of f3_jaco */
+
+/*!---------------------------------------------------------------------                                         
+\brief global derivates
+
+<pre>                                                         genk 05/02
+
+In this routine the global derivatives w.r.t. x,y,z at point r,s,t are
+calculated.
+		     
+</pre>
+\param **derxy     double   (o)    global derivatives wrt. x/y/z
+\param **deriv     double   (i)    derivatives of shape functions
+\param **xjm       double   (i)    jacobian matrix
+\param **xji       double   (-)    inverse of jacobian
+\param   det       double   (i)    jacobian determinant
+\param   iel       int      (i)    number of nodes in actual element
+\return void                                                                       
+
+------------------------------------------------------------------------*/
+void f3_gder(
+              double   **derxy,     
+	      double   **deriv,    
+	      double   **xjm,      
+	      double   **xji,      
+	      double     det,      
+	      int        iel       
+	    )
+{
+int    k;
+
+#ifdef DEBUG 
+dstrc_enter("f3_gder");
+#endif
+
+/*------------------------------------------------------- initialistion */
+for(k=0;k<iel;k++)
+{
+   derxy[0][k]=ZERO;
+   derxy[1][k]=ZERO;
+   derxy[2][k]=ZERO;
+} /* end of loop over k */
+
+/*------------------------------------------------- inverse of jacobian */
+xji[0][0] = (  xjm[1][1]*xjm[2][2] - xjm[2][1]*xjm[1][2])/det;
+xji[1][0] = (- xjm[1][0]*xjm[2][2] + xjm[2][0]*xjm[1][2])/det;
+xji[2][0] = (  xjm[1][0]*xjm[2][1] - xjm[2][0]*xjm[1][1])/det;
+xji[0][1] = (- xjm[0][1]*xjm[2][2] + xjm[2][1]*xjm[0][2])/det;
+xji[1][1] = (  xjm[0][0]*xjm[2][2] - xjm[2][0]*xjm[0][2])/det;
+xji[2][1] = (- xjm[0][0]*xjm[2][1] + xjm[2][0]*xjm[0][1])/det;
+xji[0][2] = (  xjm[0][1]*xjm[1][2] - xjm[1][1]*xjm[0][2])/det;
+xji[1][2] = (- xjm[0][0]*xjm[1][2] + xjm[1][0]*xjm[0][2])/det;
+xji[2][2] = (  xjm[0][0]*xjm[1][1] - xjm[1][0]*xjm[0][1])/det;
+
+/*---------------------------------------- calculate global derivatives */
+for (k=0;k<iel;k++)
+{
+   derxy[0][k] +=   xji[0][0] * deriv[0][k] \
+                  + xji[0][1] * deriv[1][k] \
+		  + xji[0][2] * deriv[2][k] ;
+   derxy[1][k] +=   xji[1][0] * deriv[0][k] \
+                  + xji[1][1] * deriv[1][k] \
+		  + xji[1][2] * deriv[2][k] ;
+   derxy[2][k] +=   xji[2][0] * deriv[0][k] \
+                  + xji[2][1] * deriv[1][k] \
+		  + xji[2][2] * deriv[2][k] ;   
+} /* end of loop over k */
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return;
+} /* end of f3_gder */
+    
+/*!---------------------------------------------------------------------                                         
+\brief global coordinates
+
+<pre>                                                         genk 05/02
+
+In this routine the global coordinates for given shape function values
+are set.
+		     
+</pre>
+\param *funct      double   (i)    shape functions
+\param *ele        double   (i)    actual element
+\param  iel        double   (i)    number of nodes in act. element
+\param *gcoor      double   (o)    global coordinates
+\return void                                                                       
+
+------------------------------------------------------------------------*/
+void f3_gcoor(
+              double     *funct,     
+              ELEMENT    *ele,
+	      int         iel,      
+	      double     *gcoor      
+	     )
+{
+int i;
+
+#ifdef DEBUG 
+dstrc_enter("f3_gcoor");
+#endif
+
+gcoor[0]=ZERO;
+gcoor[1]=ZERO;
+gcoor[2]=ZERO;
+
+for(i=0;i<iel;i++)
+{
+   gcoor[0] += funct[i] * ele->node[i]->x[0];
+   gcoor[1] += funct[i] * ele->node[i]->x[1];
+   gcoor[2] += funct[i] * ele->node[i]->x[2];
+} /* end of loop over i */
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return;
+} /* end of f3_gcoor */
+
+/*!---------------------------------------------------------------------                                         
+\brief second global derivatives
+
+<pre>                                                         genk 05/02
+
+In this routine the second global derivatives w.r.t x/y/z at point r,s,t
+are calculated.
+		     
+</pre>
+\param  *ele 	   ELEMENT  (i)    actual element
+\param **xjm 	   double   (i)    jacobian matrix
+\param **bm 	   double   (-)    working array
+\param **xder2     double   (-)    working array
+\param **derxy     double   (i)    glob. coord.. deriv.
+\param **derxy2    double   (o)    2nd. glob. coord. deriv.
+\param **deriv2    double   (i)    2nd. nat. deriv. of shape funcs
+\param   iel	   int	    (i)    number of nodes of actual ele
+\return void                                                                       
+
+------------------------------------------------------------------------*/
+void f3_gder2(
+               ELEMENT     *ele,
+	       double     **xjm,            
+               double     **bm,
+	       double     **xder2,
+	       double     **derxy,
+	       double     **derxy2,
+               double     **deriv2,
+	       int          iel
+	     )
+{
+int i,j;
+double r0,r1,r2,r3,r4,r5;
+
+#ifdef DEBUG 
+dstrc_enter("f3_gder2");
+#endif
+
+/*--------------------------- calculate elements of jacobian_bar matrix */
+bm[0][0] = xjm[0][0]*xjm[0][0];
+bm[1][0] = xjm[1][0]*xjm[1][0];
+bm[2][0] = xjm[2][0]*xjm[2][0];
+bm[3][0] = xjm[0][0]*xjm[1][0];
+bm[4][0] = xjm[0][0]*xjm[2][0];
+bm[5][0] = xjm[1][0]*xjm[2][0];
+
+bm[0][1] = xjm[0][1]*xjm[0][1];
+bm[1][1] = xjm[1][1]*xjm[1][1];
+bm[2][1] = xjm[2][1]*xjm[2][1];
+bm[3][1] = xjm[0][1]*xjm[1][1];
+bm[4][1] = xjm[0][1]*xjm[2][1];
+bm[5][1] = xjm[1][1]*xjm[2][1];
+
+bm[0][2] = xjm[0][2]*xjm[0][2];
+bm[1][2] = xjm[1][2]*xjm[1][2];
+bm[2][2] = xjm[2][2]*xjm[2][2];
+bm[3][2] = xjm[0][2]*xjm[1][2];
+bm[4][2] = xjm[0][2]*xjm[2][2];
+bm[5][2] = xjm[1][2]*xjm[2][2];
+
+bm[0][3] = TWO*xjm[0][0]*xjm[0][1];
+bm[1][3] = TWO*xjm[1][0]*xjm[1][1];
+bm[2][3] = TWO*xjm[2][0]*xjm[2][1];
+bm[3][3] = xjm[0][0]*xjm[1][1]+xjm[1][0]*xjm[0][1];
+bm[4][3] = xjm[0][0]*xjm[2][1]+xjm[2][0]*xjm[0][1];
+bm[5][3] = xjm[1][0]*xjm[2][1]+xjm[2][0]*xjm[1][1];
+
+bm[0][4] = TWO*xjm[0][0]*xjm[0][2];
+bm[1][4] = TWO*xjm[1][0]*xjm[1][2];
+bm[2][4] = TWO*xjm[2][0]*xjm[2][2];
+bm[3][4] = xjm[0][0]*xjm[1][2]+xjm[1][0]*xjm[0][2];
+bm[4][4] = xjm[0][0]*xjm[2][2]+xjm[2][0]*xjm[0][2];
+bm[5][4] = xjm[1][0]*xjm[2][2]+xjm[2][0]*xjm[1][2];
+
+bm[0][5] = TWO*xjm[0][1]*xjm[0][2];
+bm[1][5] = TWO*xjm[1][1]*xjm[1][2];
+bm[2][5] = TWO*xjm[2][1]*xjm[2][2];
+bm[3][5] = xjm[0][1]*xjm[1][2]+xjm[1][1]*xjm[0][2];
+bm[4][5] = xjm[0][1]*xjm[2][2]+xjm[2][1]*xjm[0][2];
+bm[5][5] = xjm[1][1]*xjm[2][2]+xjm[2][1]*xjm[1][2];
+
+/*-------------------------------------- inverse of jacobian_bar matrix */
+math_unsym_inv(bm, 6, 6);
+
+/*----------------------------------------------------------- initialise*/
+for (i=0;i<3;i++)
+{
+   for (j=0;j<6;j++) xder2[j][i]=ZERO;
+}
+for (i=0;i<iel;i++)
+{
+   for (j=0;j<6;j++) derxy2[j][i]=ZERO;
+}
+
+/*----------------------- determine 2nd derivatives of coord.-functions */
+for (i=0;i<iel;i++)
+{
+   xder2[0][0] += deriv2[0][i] * ele->node[i]->x[0];
+   xder2[1][0] += deriv2[1][i] * ele->node[i]->x[0];
+   xder2[2][0] += deriv2[2][i] * ele->node[i]->x[0];
+   xder2[3][0] += deriv2[3][i] * ele->node[i]->x[0];
+   xder2[4][0] += deriv2[4][i] * ele->node[i]->x[0];
+   xder2[5][0] += deriv2[5][i] * ele->node[i]->x[0];
+
+   xder2[0][1] += deriv2[0][i] * ele->node[i]->x[1];
+   xder2[1][1] += deriv2[1][i] * ele->node[i]->x[1];
+   xder2[2][1] += deriv2[2][i] * ele->node[i]->x[1];
+   xder2[3][1] += deriv2[3][i] * ele->node[i]->x[1];
+   xder2[4][1] += deriv2[4][i] * ele->node[i]->x[1];
+   xder2[5][1] += deriv2[5][i] * ele->node[i]->x[1];
+
+   xder2[0][2] += deriv2[0][i] * ele->node[i]->x[2];
+   xder2[1][2] += deriv2[1][i] * ele->node[i]->x[2];
+   xder2[2][2] += deriv2[2][i] * ele->node[i]->x[2];
+   xder2[3][2] += deriv2[3][i] * ele->node[i]->x[2];
+   xder2[4][2] += deriv2[4][i] * ele->node[i]->x[2];
+   xder2[5][2] += deriv2[5][i] * ele->node[i]->x[2];
+} /* end of loop over i */
+
+/*--------------------------------- calculate second global derivatives */
+for (i=0;i<iel;i++)
+{
+   r0 = deriv2[0][i] - xder2[0][0]*derxy[0][i] - xder2[0][1]*derxy[1][i] \
+                     - xder2[0][2]*derxy[2][i];
+   r1 = deriv2[1][i] - xder2[1][0]*derxy[0][i] - xder2[1][1]*derxy[1][i] \
+                     - xder2[1][2]*derxy[2][i];
+   r2 = deriv2[2][i] - xder2[2][0]*derxy[0][i] - xder2[2][1]*derxy[1][i] \
+                     - xder2[2][2]*derxy[2][i]; 
+   r3 = deriv2[3][i] - xder2[3][0]*derxy[0][i] - xder2[3][1]*derxy[1][i] \
+                     - xder2[3][2]*derxy[2][i];		     
+   r4 = deriv2[4][i] - xder2[4][0]*derxy[0][i] - xder2[4][1]*derxy[1][i] \
+                     - xder2[4][2]*derxy[2][i];		     
+   r5 = deriv2[5][i] - xder2[5][0]*derxy[0][i] - xder2[5][1]*derxy[1][i] \
+                     - xder2[5][2]*derxy[2][i];		     
+		     		     		       
+   derxy2[0][i] += bm[0][0]*r0 + bm[0][1]*r1 + bm[0][2]*r2 \
+                +  bm[0][3]*r3 + bm[0][4]*r4 + bm[0][5]*r5;
+   derxy2[1][i] += bm[1][0]*r0 + bm[1][1]*r1 + bm[1][2]*r2 \
+                +  bm[1][3]*r3 + bm[1][4]*r4 + bm[1][5]*r5;
+   derxy2[2][i] += bm[2][0]*r0 + bm[2][1]*r1 + bm[2][2]*r2 \
+                +  bm[2][3]*r3 + bm[2][4]*r4 + bm[2][5]*r5;
+   derxy2[3][i] += bm[3][0]*r0 + bm[3][1]*r1 + bm[3][2]*r2 \
+                +  bm[3][3]*r3 + bm[3][4]*r4 + bm[3][5]*r5;
+   derxy2[4][i] += bm[4][0]*r0 + bm[4][1]*r1 + bm[4][2]*r2 \
+                +  bm[4][3]*r3 + bm[4][4]*r4 + bm[4][5]*r5;
+   derxy2[5][i] += bm[5][0]*r0 + bm[5][1]*r1 + bm[5][2]*r2 \
+                +  bm[5][3]*r3 + bm[5][4]*r4 + bm[5][5]*r5;
+} /* end of loop over i */
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return;
+} /* end of f3_gder2 */
+
+#endif
