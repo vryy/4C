@@ -41,22 +41,6 @@ INT          buffsize=MPIBUFFSIZE;
 MPI_Init(&argc,&argv);
 MPI_Comm_rank(MPI_COMM_WORLD, &par.myrank);
 MPI_Comm_size(MPI_COMM_WORLD, &par.nprocs);
-/*--------------------------------------- check plausibility of defines */
-/*--------------------------------------------------------- wallcontact */
-#ifdef WALLCONTACT
-#ifndef D_CONTACT
-dserror("WALLCONTACT needs D_CONTACT");
-#endif
-#ifdef S8CONTACT
-dserror("WALLCONTACT may not come together with S8CONTACT");
-#endif
-#endif
-/*------------------------------------- check shell contact definitions */
-#ifdef S8CONTACT
-#ifndef D_CONTACT
-dserror("S8CONTACT needs D_CONTACT");
-#endif
-#endif
 /*------------------------------------------------ attach buffer to mpi */
 buff = (char*)malloc(buffsize);
 if (!buff) 
