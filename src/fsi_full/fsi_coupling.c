@@ -333,11 +333,13 @@ GNODE  *actfgnode,*actsgnode,*actagnode;     /* actual gnodes           */
 ELEMENT *actele;
 ARRAY   aindex_a, sindex_a;
 INT    *aindex, *sindex;
+FSI_DYNAMIC    *fsidyn;
 
 #ifdef DEBUG
 dstrc_enter("fsi_initcoupling");
 #endif
 
+fsidyn= alldyn[3].fsidyn;
 /*---------------------------- find number of nodes in different fields */
 numsnp  = structfield->dis[0].numnp;
 numfnp  = fluidfield->dis[0].numnp;
@@ -497,6 +499,7 @@ amdel(&aindex_a);
 amdel(&sindex_a);
 
 if (genprob.visual>0) goto end;
+if (fsidyn->coupmethod == 0) goto end;
 
 /*------------------------------------------------ plausibility checks */
 for (i=0;i<numfnp;i++)
