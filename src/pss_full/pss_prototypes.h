@@ -328,9 +328,13 @@ void dsmemreport( void);
  | test - (input) boolean criterium                                     |
  | string - (input) error message                                       |
  *----------------------------------------------------------------------*/
-void dsassert(
+void dsassert_func(
     INT     test,
-    char    string[]);
+    char    string[],
+    char* file,
+    INT line);
+
+#define dsassert(test, string) dsassert_func(test, string, __FILE__, __LINE__)
 
 /*----------------------------------------------------------------------*
  | report an error and stop program                       m.gee 8/00    |
@@ -367,6 +371,8 @@ void dstrc_enter(
  | is empty is DEBUG is not defined                                     |
  *----------------------------------------------------------------------*/
 void dstrc_exit(void);
+
+void dstrc_whereami(void);
 
 /*----------------------------------------------------------------------*
  | report a new DOUBLE array to the bugtracing system     m.gee 8/00    |
@@ -717,6 +723,7 @@ void perf_print (
   \return void
   ------------------------------------------------------------------------*/
 void perf_out (void);
+
 
 #endif
 

@@ -66,7 +66,7 @@ INT  counter1, counter2, counter3;
 */
 #ifdef DEBUG
 trace.actroutine = trace.actroutine->next;
-strncpy(trace.actroutine->name,"ntainp",49);
+trace.actroutine->name = "ntainp";
 trace.actroutine->dsroutcontrol=dsin;
 trace.deepness++;
 #endif

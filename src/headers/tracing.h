@@ -30,7 +30,7 @@ typedef struct _TRACEROUT
 {
 struct _TRACEROUT   *prev;          /*!< ptr to previous structure in chained list */
 struct _TRACEROUT   *next;          /*!< ptr to next structure in chained list */
-char                 name[50];      /*!< name of routine */
+char                *name;          /*!< name of routine */
 enum
    {
     dsnone,

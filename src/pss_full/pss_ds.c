@@ -126,26 +126,26 @@ trace.endarraychain = trace.arraychain;
 trace.routine[0].prev = &(trace.routine[99]);
 trace.routine[0].next = &(trace.routine[1]);
 trace.routine[0].dsroutcontrol = dsnone;
-strcpy(trace.routine[0].name,"xxxxxxxxxxxxxxxxx");
+trace.routine[0].name = "xxxxxxxxxxxxxxxxx";
 for (i=1; i<99; i++)
 {
    trace.routine[i].prev = &(trace.routine[i-1]);
    trace.routine[i].next = &(trace.routine[i+1]);
-   strcpy(trace.routine[i].name,"xxxxxxxxxxxxxxxxx");
+   trace.routine[i].name = "xxxxxxxxxxxxxxxxx";
    trace.routine[i].dsroutcontrol = dsnone;
 }
 trace.routine[99].prev = &(trace.routine[98]);
 trace.routine[99].next = &(trace.routine[0]);
 trace.routine[99].dsroutcontrol = dsnone;
-strcpy(trace.routine[99].name,"xxxxxxxxxxxxxxxxx");
+trace.routine[99].name = "xxxxxxxxxxxxxxxxx";
 /*------------------------------------------------- set starting values */
 trace.deepness=2;
 /*-------------------------------------------------------- this routine */
-strcpy(trace.routine[0].name,"main");
+trace.routine[0].name = "main";
 trace.routine[0].dsroutcontrol = dsin;
-strcpy(trace.routine[1].name,"ntam");
+trace.routine[1].name = "ntam";
 trace.routine[1].dsroutcontrol = dsin;
-strcpy(trace.routine[2].name,"ntaini");
+trace.routine[2].name = "ntaini";
 trace.routine[2].dsroutcontrol = dsin;
 
 trace.actroutine = &(trace.routine[2]);
@@ -175,7 +175,7 @@ void dstrc_enter(char string[])
 if (trace.trace_on==1)
 {
 trace.actroutine = trace.actroutine->next;
-strncpy(trace.actroutine->name,string,49);
+trace.actroutine->name = string;
 trace.actroutine->dsroutcontrol=dsin;
 trace.deepness++;
 }
@@ -209,7 +209,24 @@ return;
 } /* end of dstrc_exit */
 
 
-
+/*----------------------------------------------------------------------*/
+/*!
+ \brief print the current function stack.
+ */
+/*----------------------------------------------------------------------*/
+void dstrc_whereami()
+{
+#ifdef DEBUG
+  INT i;
+  TRACEROUT *routhis = trace.actroutine;
+  for (i=0; i<trace.deepness; i++)
+  {
+    routhis = routhis->prev;
+    fprintf(allfiles.out_err,"%s\n",routhis->name);
+    printf("%s\n",routhis->name);
+  }
+#endif
+}
 
 
 /*!---------------------------------------------------------------------
@@ -556,13 +573,12 @@ making it slow when running as fast-exe
 \sa dserror()
 
 ------------------------------------------------------------------------*/
-void dsassert(INT true, char string[])
+void dsassert_func(INT test, char string[], char* file, INT line)
 {
 #ifdef DEBUG
 /*----------------------------------------------------------------------*/
-if (true) return;
-else
-dserror(string);
+if (!test)
+  dserror("%s\n%s:%d", string, file, line);
 /*----------------------------------------------------------------------*/
 #endif
 return;
@@ -595,7 +611,10 @@ void dserror(char string[], ...)
 
 
   /* write warnings */
-  dswarning(2,0);
+  /* No! This might cause death locks as it's not guaranteed that all
+   * processes call dserror and these stupid warnings cause
+   * communication. */
+  /*dswarning(2,0);*/
 
 
 #ifdef DEBUG
@@ -647,12 +666,14 @@ void dserror(char string[], ...)
   fflush(stdout);
   fflush(allfiles.out_err);
 
+#ifdef DEBUG
+  /* Hehehe! */
+  *((INT*)0x0) = 123456;
+  assert(0);
+#endif
 #ifdef PARALLEL
   MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
 #else
-#ifdef DEBUG
-  assert(0);
-#endif
   exit(EXIT_FAILURE);
 #endif
   return;

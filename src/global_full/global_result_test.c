@@ -245,7 +245,7 @@ static int compare_values(FILE* err, DOUBLE actresult, DOUBLE givenresult, RESUL
   dstrc_enter("compare_values");
 #endif
 
-  fprintf(err,"actual = %24.16f, given = %24.16f\n", actresult, givenresult);
+  fprintf(err,"actual = %24.16f, given = %24.16f, diff = %24.16f\n", actresult, givenresult, actresult-givenresult);
   if (!(FABS(FABS(actresult-givenresult)-FABS(actresult-givenresult)) < res->tolerance)) {
     printf("RESULTCHECK: %s is NAN!\n", res->name);
     ret = 1;
@@ -363,6 +363,7 @@ void global_result_test()
   FILE   *err = allfiles.out_err;
   INT i;
   INT nerr = 0;
+  INT test_count = 0;
 
 #ifdef DEBUG
   dstrc_enter("global_result_test");
@@ -380,10 +381,9 @@ void global_result_test()
   if (genprob.numaf>-1) alepart    = &(partition[genprob.numaf]);
 
   /* let's do it in a fancy style :) */
-  printf("\n[35;1mChecking results ...[m\n");
+  printf("\n" GRAY_LIGHT "Checking results ..." END_COLOR "\n");
   fprintf(err,"\n===========================================\n");
   fprintf(err,"Checking results ...\n");
-
 
   for (i=0; i<genprob.numresults; ++i) {
     PARTITION* actpart = NULL;
@@ -410,9 +410,8 @@ void global_result_test()
       if (actnode != 0) {
         actresult = get_node_result_value(actnode, res->position);
         nerr += compare_values(err, actresult, res->value, res);
+        test_count++;
       }
-      else
-        dswarning(1,12);
     }
     else if (res->element != -1) {
       /* We have a value at an element. Find the element. If we have
@@ -422,8 +421,10 @@ void global_result_test()
         continue;
       }
 
+      switch (actelement->eltyp) {
+
 #ifdef D_AXISHELL
-      if (actelement->eltyp == el_axishell) {
+      case el_axishell: {
         INT args[3];
         if (parse_position_descr(res->position, "stress_GP", 3, args) == 1) {
           actresult = actelement->e.saxi->stress_GP.a.d3[args[0]][args[1]][args[2]];
@@ -436,11 +437,12 @@ void global_result_test()
         else {
           dserror("Unknown position specifier");
         }
+        break;
       }
 #endif
 
 #ifdef D_SHELL9
-      if (actelement->eltyp == el_shell9) {
+      case el_shell9: {
         INT args[3];
         if (parse_position_descr(res->position, "stresses", 3, args) == 1) {
           actresult = actelement->e.s9->stresses.a.d3[args[0]][args[1]][args[2]];
@@ -449,11 +451,12 @@ void global_result_test()
         else {
           dserror("Unknown position specifier");
         }
+        break;
       }
 #endif
 
 #ifdef D_WALL1
-      if (actelement->eltyp == el_wall1) {
+      case el_wall1: {
         INT args[3];
         if (parse_position_descr(res->position, "stress_GP", 3, args) == 1) {
           actresult = actelement->e.w1->stress_GP.a.d3[args[0]][args[1]][args[2]];
@@ -462,9 +465,15 @@ void global_result_test()
         else {
           dserror("Unknown position specifier");
         }
+        break;
       }
 #endif
 
+      default:
+        dserror("Nothing known about element type %d", actelement->eltyp);
+      }
+
+      test_count++;
     }
     else {
       /* special cases that need further code support */
@@ -474,6 +483,7 @@ void global_result_test()
 #ifndef PARALLEL
         fluid_cal_error(fluidfield,res->dis);
 #endif
+        test_count = -1;
         break;
 #endif
       default:
@@ -488,8 +498,25 @@ void global_result_test()
   else
     fprintf(err,"===========================================\n");
 
-  printf("\n[35;1mOK[m\n");
+  /* test_count == -1 means we had a special test routine. It's thus
+   * illegal to use both a special routine and single tests. But who
+   * wants that? */
+  if (test_count > -1) {
+#ifdef PARALLEL
+    INT count;
+    MPI_Allreduce(&test_count, &count, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+    test_count = count;
+#endif
 
+    /* It's indeed possible to count more tests than expected if you
+     * happen to test values of a boundary element. We don't want this
+     * dserror to go off it that case. */
+    if (test_count < genprob.numresults) {
+      dserror("expected %d tests but performed %d", genprob.numresults, test_count);
+    }
+  }
+
+  printf("\n" MAGENTA_LIGHT "OK" END_COLOR "\n");
 
 /*----------------------------------------------------------------------*/
 end:
