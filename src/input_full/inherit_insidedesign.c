@@ -27,10 +27,9 @@ static void inherit_dvoldsurf_couple(void);
 static void inherit_dsurfdline_couple(void);
 static void inherit_dlinednode_couple(void);
 #ifdef D_FSI
+static void inherit_dsurfdline_fsicouple(void);
 static void inherit_dlinednode_fsicouple(void);
-#endif
-
-#ifdef D_FLUID
+static void inherit_dsurfdline_freesurf(void);
 static void inherit_dlinednode_freesurf(void);
 #endif
 
@@ -70,13 +69,15 @@ fsi coupling conditions are inherited as follows:
 DLINE inherits to its DNODEs if the DNODE does not have its own 
 */
 #ifdef D_FSI
+inherit_dsurfdline_fsicouple();
 inherit_dlinednode_fsicouple();
 #endif
 /* 
 freesruface conditions are inherited as follows:
 DLINE inherits to its DNODEs if the DNODE does not have its own 
 */
-#ifdef D_FLUID
+#ifdef D_FSI
+inherit_dsurfdline_freesurf(); 
 inherit_dlinednode_freesurf(); 
 #endif
 /*
@@ -127,7 +128,6 @@ for (i=0; i<design->ndvol; i++)
       /*------ inherit the dirichlet condition from actdvol to actdsurf */
       actdsurf->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
       if (!actdsurf->dirich) dserror("Allocation of memory failed");
-/*      actdsurf->dirich->curve = actdvol->dirich->curve;*/
       actdsurf->dirich->dirich_type = actdvol->dirich->dirich_type;
       am_alloc_copy(&(actdvol->dirich->dirich_onoff),&(actdsurf->dirich->dirich_onoff));  
       am_alloc_copy(&(actdvol->dirich->dirich_val),&(actdsurf->dirich->dirich_val));  
@@ -168,7 +168,7 @@ for (i=0; i<design->ndsurf; i++)
       /*------ inherit the dirichlet condition from actdsurf to actdline */
       actdline->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
       if (!actdline->dirich) dserror("Allocation of memory failed");
-/*      actdline->dirich->curve = actdsurf->dirich->curve;*/
+      actdline->dirich->dirich_type = actdsurf->dirich->dirich_type;
       am_alloc_copy(&(actdsurf->dirich->dirich_onoff),&(actdline->dirich->dirich_onoff));  
       am_alloc_copy(&(actdsurf->dirich->dirich_val),&(actdline->dirich->dirich_val));  
       am_alloc_copy(&(actdsurf->dirich->curve),&(actdline->dirich->curve));
@@ -199,6 +199,8 @@ for (i=0; i<design->ndline; i++)
    actdline = &(design->dline[i]);
    /*-------------------- do nothing if DLINE has no dirichlet condition */
    if (actdline->dirich==NULL) continue;
+   /*-------------------------- do not inherit for slip dirich condition */
+   if (actdline->dirich->dirich_type==dirich_slip) continue;
    /*------------------------------- loop the DNODEs related to actdline */
    for (j=0; j<actdline->ndnode; j++)
    {
@@ -207,7 +209,7 @@ for (i=0; i<design->ndline; i++)
       if (actdnode->dirich != NULL) continue;
       /*------ inherit the dirichlet condition from actdline to actdnode */
       actdnode->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
-/*      actdnode->dirich->curve = actdline->dirich->curve;*/
+      actdnode->dirich->dirich_type = actdline->dirich->dirich_type;
       am_alloc_copy(&(actdline->dirich->dirich_onoff),&(actdnode->dirich->dirich_onoff));  
       am_alloc_copy(&(actdline->dirich->dirich_val),&(actdnode->dirich->dirich_val));  
       am_alloc_copy(&(actdline->dirich->curve),&(actdnode->dirich->curve));
@@ -343,6 +345,46 @@ return;
 
 #ifdef D_FSI
 /*----------------------------------------------------------------------*
+ | inherit fsicoupling conditions DSURF to DLINE             genk 02/04 |
+ *----------------------------------------------------------------------*/
+static void inherit_dsurfdline_fsicouple()
+{
+#ifdef D_FSI
+INT             i,j;
+DSURF          *actdsurf;
+DLINE          *actdline;
+#ifdef DEBUG 
+dstrc_enter("inherit_dsurfdline_fsicouple");
+#endif
+/*----------------------------------------------------------------------*/
+/*--------------------------------------------------------- loop DSURF */
+for (i=0; i<design->ndsurf; i++)
+{
+   actdsurf = &(design->dsurf[i]);
+   /*-------------------- do nothing if DLINE has no dirichlet condition */
+   if (actdsurf->fsicouple==NULL) continue;
+   /*------------------------------- loop the DNODEs related to actdline */
+   for (j=0; j<actdsurf->ndline; j++)
+   {
+      actdline = actdsurf->dline[j];
+      /*--------------- if actdnode has its own fsi condition do nothing */
+      if (actdline->fsicouple != NULL) continue;
+      /*------ inherit the dirichlet condition from actdline to actdnode */
+      actdline->fsicouple = (FSI_COUPLE_CONDITION*)CCACALLOC(1,sizeof(FSI_COUPLE_CONDITION));
+      actdline->fsicouple->fieldtyp = actdsurf->fsicouple->fieldtyp;
+      actdline->fsicouple->fsi_coupleId = actdsurf->fsicouple->fsi_coupleId;
+      actdline->fsicouple->fsi_mesh = actdsurf->fsicouple->fsi_mesh;
+   }/* loop j over dnodes */
+}/* loop i over dlines */
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+#endif
+return;
+} /* end of inherit_dsurfdline_fsicouple */
+
+/*----------------------------------------------------------------------*
  | inherit fsicoupling conditions DLINE to DNODE             genk 10/02 |
  *----------------------------------------------------------------------*/
 static void inherit_dlinednode_fsicouple()
@@ -368,7 +410,6 @@ for (i=0; i<design->ndline; i++)
       if (actdnode->fsicouple != NULL) continue;
       /*------ inherit the dirichlet condition from actdline to actdnode */
       actdnode->fsicouple = (FSI_COUPLE_CONDITION*)CCACALLOC(1,sizeof(FSI_COUPLE_CONDITION));
-      if (!actdnode->fsicouple) dserror("Allocation of memory failed");
       actdnode->fsicouple->fieldtyp = actdline->fsicouple->fieldtyp;
       actdnode->fsicouple->fsi_coupleId = actdline->fsicouple->fsi_coupleId;
       actdnode->fsicouple->fsi_mesh = actdline->fsicouple->fsi_mesh;
@@ -383,7 +424,43 @@ return;
 #endif
 
 
-#ifdef D_FLUID
+#ifdef D_FSI
+/*----------------------------------------------------------------------*
+ | inherit freesurface conditions DSURF to DLINE             genk 02/03 |
+ *----------------------------------------------------------------------*/
+static void inherit_dsurfdline_freesurf()
+{
+INT             i,j;
+DLINE          *actdline;
+DSURF          *actdsurf;
+#ifdef DEBUG 
+dstrc_enter("inherit_dsurfdline_freesurf");
+#endif
+/*----------------------------------------------------------------------*/
+/*---------------------------------------------------------- loop DLINE */
+for (i=0; i<design->ndsurf; i++)
+{
+   actdsurf = &(design->dsurf[i]);
+   /*------------------- do nothing if DSURF has no dirichlet condition */
+   if (actdsurf->freesurf==NULL) continue;
+   /*------------------------------ loop the DLINEs related to actdsurf */
+   for (j=0; j<actdsurf->ndline; j++)
+   {
+      actdline = actdsurf->dline[j];
+      /*--------- if actdnode has its own freesurf condition do nothing */
+      if (actdline->freesurf != NULL) continue;
+      /*------ inherit the freesurf condition from actdline to actdnode */
+      actdline->freesurf = (FLUID_FREESURF_CONDITION*)CCACALLOC(1,sizeof(FLUID_FREESURF_CONDITION));
+      actdline->freesurf->fieldtyp = actdsurf->freesurf->fieldtyp;
+   }/* loop j over dnodes */
+}/* loop i over dlines */
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of inherit_dsurfdline_freesurf */
+
 /*----------------------------------------------------------------------*
  | inherit freesurface conditions DLINE to DNODE             genk 01/03 |
  *----------------------------------------------------------------------*/
@@ -396,13 +473,13 @@ DLINE          *actdline;
 dstrc_enter("inherit_dlinednode_freesurf");
 #endif
 /*----------------------------------------------------------------------*/
-/*--------------------------------------------------------- loop DLINE */
+/*---------------------------------------------------------- loop DLINE */
 for (i=0; i<design->ndline; i++)
 {
    actdline = &(design->dline[i]);
-   /*-------------------- do nothing if DLINE has no dirichlet condition */
+   /*------------------- do nothing if DLINE has no dirichlet condition */
    if (actdline->freesurf==NULL) continue;
-   /*------------------------------- loop the DNODEs related to actdline */
+   /*------------------------------ loop the DNODEs related to actdline */
    for (j=0; j<actdline->ndnode; j++)
    {
       actdnode = actdline->dnode[j];
@@ -410,9 +487,7 @@ for (i=0; i<design->ndline; i++)
       if (actdnode->freesurf != NULL) continue;
       /*------ inherit the freesurf condition from actdline to actdnode */
       actdnode->freesurf = (FLUID_FREESURF_CONDITION*)CCACALLOC(1,sizeof(FLUID_FREESURF_CONDITION));
-      if (!actdnode->freesurf) dserror("Allocation of memory failed");
       actdnode->freesurf->fieldtyp = actdline->freesurf->fieldtyp;
-      am_alloc_copy(&(actdline->freesurf->fixed_onoff),&(actdnode->freesurf->fixed_onoff)); 
    }/* loop j over dnodes */
 }/* loop i over dlines */
 /*----------------------------------------------------------------------*/
