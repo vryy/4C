@@ -22,7 +22,7 @@ out_general();
 /*--------------------------------------------------- write mesh to gid */
 if (par.myrank==0) 
 {
-   out_gid_sol_init();
+   if (ioflags.struct_disp_gid||ioflags.struct_stress_gid) out_gid_sol_init();
    out_gid_msh();
 }
 /*------------------ call control programs of static or dynamic control */
