@@ -44,6 +44,7 @@ struct _STATIC_VAR   *statvar;
  | defined in global_control.c
  *----------------------------------------------------------------------*/
 struct _MATERIAL     *mat;
+struct _MULTIMAT     *multimat;
 /*!----------------------------------------------------------------------
 \brief file pointers
 
