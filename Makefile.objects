@@ -143,12 +143,15 @@ OBJS6	      = src/shell8/s8_main.o \
                 src/shell8/s8_eps.o \
                 src/shell8/s8_intforce.o \
                 src/shell8/s8_mat_linel.o \
+                src/shell8/s8_mat_ogden.o \
+                src/shell8/s8_mat_ogden2.o \
                 src/shell8/s8_btdb.o \
                 src/shell8/s8_eas.o \
                 src/shell8/s8_ans.o \
                 src/shell8/s8_vthv.o \
                 src/shell8/s8_xint.o \
                 src/shell8/s8_init.o \
+                src/shell8/s8_mattransform.o \
                 src/shell8/s8_contact1.o \
                 src/shell8/s8_contact2.o \
                 src/shell8/s8_contact_nearestnode.o \
@@ -369,16 +372,18 @@ OBJS_OPT      = src/optimization/opt_cal_main.o \
                 src/optimization/opt_smo.o \
                 src/optimization/opt_g_out.o
 #--------------- fortran parallel and sequentiell on HPUX10.20 / Linux / Sun
-OBJS13           = src/fortran/colsol.o \
-                   src/fortran/mpcg_futils.o \
-                   src/fortran/vis2_qat2v2.o \
-                   src/fortran/hex_fserv.o \
-                   src/fortran/opt_ffsd.o
-#---------------------------------------------  fortran parallel on HPUX11.0
+OBJS13        = src/fortran/colsol.o \
+                src/fortran/mpcg_futils.o \
+                src/fortran/vis2_qat2v2.o \
+                src/fortran/hex_fserv.o \
+                src/fortran/s8_fserv.o \
+                src/fortran/opt_ffsd.o
+#--------------------------------------------  fortran parallel on HPUX11.0
 #            
 #OBJS13         = src/fortran/mumps_interface.o \
 #                 src/fortran/bi_f77_get_constants.o \
 #                 src/fortran/colsol.o \
 #                 src/fortran/mpcg_futils.o \
 #                 src/fortran/hex_fserv.o \
+#                 src/fortran/s8_fserv.o \
 #                 src/fortran/opt_ffsd.o
