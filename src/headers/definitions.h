@@ -239,7 +239,7 @@ static INT iminarg1,iminarg2;
  | maximum numberof restart records per element in dynamic and nonlinear|
  | static restarting from and to pss file
  *----------------------------------------------------------------------*/
-#define MAXRECORDPERELE  (5)
+#define MAXRECORDPERELE  (6)
 /*----------------------------------------------------------------------*
  | numbers                                                              |
  *----------------------------------------------------------------------*/
@@ -286,7 +286,8 @@ static INT iminarg1,iminarg2;
 /*----------------------------------------------------------------------*
  | shell9                                                               |
  |                                                                      |
- |    !!! set MAXDOFPERNODE according to number of kinematic Layers !!! |
+ |  set MAXDOFPERNODE = 3+3*klay                                        |
+ |  set MAXGAUSS      = lr*ls*lt*numlay (numlay=total number of layers) |
  |                                                                      |
  *----------------------------------------------------------------------*/
 #define MAXNOD_SHELL9    (9)
@@ -297,7 +298,8 @@ static INT iminarg1,iminarg2;
 #define A3FAC_SHELL9     (1.0) /* makes it possible to change the norm of a3L */
                                /* A3FAC_SHELL9 = 0.5 : |a3L| = 0.5 * hL -> as in shell8 */
                                /* A3FAC_SHELL9 = 1.0 : |a3L| = 1.0 * hL -> like in Dis. Braun */
-#define MAXNODESTRESS_SHELL9 (72) /* Numnod*lt*numlay */
+#define MAXNODESTRESS_SHELL9 (72) /* Numnod*lt*numlay with Numnod=4 for Quad4   */
+                                  /*                       Numnod=9 for Quad8/9 */
 /*----------------------------------------------------------------------*
  | wall1                                                                |
  *----------------------------------------------------------------------*/
