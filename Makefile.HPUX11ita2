@@ -68,7 +68,7 @@ MPI     = -lmpi
 #CFLAGS        = +DSitanium -Aa -Ae -g +w1 -z \
 #                ${PFL} -DDEBUG
 #FFLAGS        = +DSitanium -g
-#LDFLAGS       = -g -v +A
+#LDFLAGS       = +DSitanium -g -v +A
 #AZTEC         =
 #METIS         = -lmetis_ita2_32
 #UMFPACK       =
@@ -78,7 +78,7 @@ PROGRAM_NAME  = cca_$(NAME)_32_fast.11i
 CFLAGS        = +DSitanium -Aa -Ae +O3 +Onolimit +Optrs_to_globals +Odataprefetch  \
                 +Onoinitcheck +Oinline +Oclone +w1 -z ${PFL} 
 FFLAGS        = +DSitanium +O3 +Onolimit +Onoptrs_to_globals +Oinline
-LDFLAGS       = +O -v +A 
+LDFLAGS       = +DSitanium +O -v +A 
 AZTEC         =
 METIS         = -lmetis_ita2_32
 UMFPACK       =
@@ -88,7 +88,7 @@ SPOOLES       = -lspooles_ita2_32
 #CFLAGS        = +DSitanium -Aa -Ae +DD64 -g +w1 -z \
 #                ${PFL} -DSIXTYFOUR -DDEBUG 
 #FFLAGS        = +DSitanium +DD64 -g
-#LDFLAGS       = +DD64 -v +A
+#LDFLAGS       = +DSitanium +DD64 -v +A
 #AZTEC         = 
 #METIS         = -lmetis_ita2_64
 #UMFPACK       = 
@@ -98,7 +98,7 @@ SPOOLES       = -lspooles_ita2_32
 #CFLAGS        = +DSitanium -Aa -Ae +DD64 +O3 +Onolimit +Optrs_to_globals +Odataprefetch \
 #                +Onoinitcheck +Oinline +Oclone +w1 -z ${PFL} -DSIXTYFOUR 
 #FFLAGS        = +DSitanium +DD64 +O3 +Onolimit +Onoptrs_to_globals +Oinline
-#LDFLAGS       = +DD64 -O -v +A
+#LDFLAGS       = +DSitanium +DD64 -O -v +A
 #AZTEC         = 
 #METIS         = -lmetis_ita2_64
 #UMFPACK       = 
