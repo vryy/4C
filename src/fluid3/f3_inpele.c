@@ -50,7 +50,6 @@ if (ierr==1)
 {
    ele->numnp=8;
    ele->distyp=hex8;
-   ele->e.f3->ntyp=1;
    ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed\n");
    frint_n("HEX8",&(ele->lm[0]),ele->numnp,&ierr);
@@ -62,7 +61,6 @@ if (ierr==1)
    dserror("HEX20 elements not implemented yet!!!\n"); 
    ele->numnp=20;
    ele->distyp=hex20;
-   ele->e.f3->ntyp=1;
    ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed\n");
    frint_n("HEX20",&(ele->lm[0]),ele->numnp,&ierr);
@@ -74,7 +72,6 @@ if (ierr==1)
    dserror("HEX27 elements not implemented yet!!!\n");
    ele->numnp=27;
    ele->distyp=hex27;
-   ele->e.f3->ntyp=1;
    ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed\n");
    frint_n("HEX20",&(ele->lm[0]),ele->numnp,&ierr);
@@ -85,7 +82,6 @@ if (ierr==1)
 {
    ele->numnp=4;
    ele->distyp=tet4;
-   ele->e.f3->ntyp=2;   
    ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed\n");
    frint_n("TET4",&(ele->lm[0]),ele->numnp,&ierr);
@@ -101,7 +97,6 @@ if (ierr==1)
    dserror("TET10 not implemented yet!!!\n");
    ele->numnp=10;
    ele->distyp=tet10;
-   ele->e.f3->ntyp=2; 
    ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed\n");
    frint_n("TET10",&(ele->lm[0]),ele->numnp,&ierr);
@@ -183,7 +178,9 @@ else
 ele->e.f3->fs_on=0;
 
 /*-------------------------------------------------------- submesh data */
+#ifdef FLUID3_ML
 ele->e.f3->smisal = 0;   
+#endif
 /*--------------------------------------------------------------------- */
 #ifdef DEBUG 
 dstrc_exit();

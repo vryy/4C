@@ -88,7 +88,7 @@ void f3_smelesize(ELEMENT         *ele,
 {
 
 INT     i,ilen,inod;    /* simply some counters	        		*/
-INT     ntyp,nsmtyp;    /* l-s and sm element type (TRI or QUAD)        */
+INT     nsmtyp;         /* l-s and sm element type (TRI or QUAD)        */
 INT     actmat;         /* number of actual material		        */
 INT     iel,smiel;      /* l-s and sm number of nodes of actual element */
 DOUBLE  visc;           /* fluid viscosity                              */
@@ -109,7 +109,6 @@ dstrc_enter("f3_smelesize");
 #endif		
 
 /*---------------------------------------------------------- initialize */
-ntyp   = ele->e.f3->ntyp;
 nsmtyp = mlvar->submesh.ntyp;
 typ    = ele->distyp;
 smtyp  = mlvar->submesh.typ;
@@ -161,18 +160,18 @@ if (mlvar->smesize==4) dserror("no diagonal-based diameter in 3D yet!\n");
 if (mlvar->smesize==5)    /* compute streamlength based on l-s velocity */
 {
   f3_mlgcoor2(smfunct,smxyzep,smiel,coor);
-  switch(ntyp)
+  switch(typ)
   {
-  case 1:    /* --> quad - element */
+  case hex8: case hex20: case hex27:    /* --> quad - element */
     f3_hex(funct,deriv,deriv2,coor[0],coor[1],coor[2],typ,2);
   break;
-  case 2:	/* --> tri - element */ 	     
+  case tet4: case tet10:	/* --> tri - element */ 	     
     f3_tet(funct,deriv,deriv2,coor[0],coor[1],coor[2],typ,2);
   break;
   default:
-    dserror("ntyp unknown!\n");      
-  } /*end switch(ntyp) */
-  f3_veli(velint,funct,evel,iel);
+    dserror("typ unknown!\n");      
+  } /*end switch(typ) */
+  f3_veci(velint,funct,evel,iel);
   f3_mljaco(funct,deriv,xjm,&det,ele,iel);
   f3_gder(derxy,deriv,xjm,wa1,det,iel); 
   val = ZERO;
@@ -209,22 +208,22 @@ else if (mlvar->smesize==5) ele->e.f3->smcml = strle;
 if (mlvar->smesize<5)     /* compute l-s velocity */
 {
   f3_mlgcoor2(smfunct,smxyzep,smiel,coor);
-  switch(ntyp)
+  switch(typ)
   {
-  case 1:    /* --> hex - element */
+  case hex8: case hex20: case hex27:    /* --> hex - element */
     f3_hex(funct,deriv,deriv2,coor[0],coor[1],coor[2],typ,2);
   break;
-  case 2:	/* --> tet - element */ 	     
+  case tet4: case tet10:	/* --> tet - element */ 	     
     f3_tet(funct,deriv,deriv2,coor[0],coor[1],coor[2],typ,2);
   break;
   default:
-    dserror("ntyp unknown!\n");      
-  } /*end switch(ntyp) */
-  f3_veli(velint,funct,evel,iel);
+    dserror("typ unknown!\n");      
+  } /*end switch(typ) */
+  f3_veci(velint,funct,evel,iel);
 }  
 
 /*----------------------------------- calculate stabilization parameter */               
-if (mlvar->smstabi>0) f3_smstabpar(ele,mlvar,velint,visc,smiel,ntyp); 
+if (mlvar->smstabi>0) f3_smstabpar(ele,mlvar,velint,visc,smiel,typ); 
 
 /*--------------------------------------------------- subgrid viscosity */               
 if (mlvar->smsgvi==1 || mlvar->smsgvi==2)
@@ -235,7 +234,7 @@ if (mlvar->smsgvi==1 || mlvar->smsgvi==2)
 /*----------------------- get velocity derivatives at integration point */
   f3_vder(vderxy,derxy,evel,iel);
 /*----------------------------------------- calculate subgrid viscosity */               
-  f3_smsgvisc(ele,mlvar,velint,vderxy,visc,smiel,ntyp);
+  f3_smsgvisc(ele,mlvar,velint,vderxy,visc,smiel,typ);
 }
 
 /*----------------------------------------------------------------------*/
@@ -262,7 +261,6 @@ INT ieval = 0;       /* evaluation flag			                */
 INT i,ilen, inod;    /* simply a counter	        		*/
 INT istrnint;        /* evaluation flag		     	                */
 INT ishvol;          /* evaluation flag		        	        */
-INT ntyp;            /* element type (TET or HEX)  		        */
 INT actmat;          /* number of actual material		        */
 INT iel;             /* number of nodes of actual element               */
 DOUBLE visc;         /* fluid viscosity                                 */
@@ -285,7 +283,6 @@ dstrc_enter("f3_mlcalelesize");
 /*---------------------------------------------------------- initialise */
 fdyn = alldyn[genprob.numff].fdyn;
 
-ntyp   = ele->e.f3->ntyp;
 iel    = ele->numnp;
 typ    = ele->distyp;
 gls    = ele->e.f3->stabi.gls;
@@ -311,9 +308,9 @@ if (ishvol==1)
    strle = ZERO;
 /*------ get values of integration parameters, shape functions and their
          derivatives ---------------------------------------------------*/
-   switch(ntyp)
+   switch(typ)
    {
-   case 1:   /* --> hex - element */
+   case hex8: case hex20: case hex27:   /* --> hex - element */
       e1   = data->qxg[0][0];
       facr = data->qwgt[0][0];
       e2   = data->qxg[0][0];
@@ -322,7 +319,7 @@ if (ishvol==1)
       fact = data->qwgt[0][0]; 
       f3_hex(funct,deriv,deriv2,e1,e2,e3,typ,2);
    break;        
-   case 2:  /* --> tet - element */
+   case tet4: case tet10:  /* --> tet - element */
       e1   = data->txgr[0][0];
       facr = data->twgt[0][0];
       e2   = data->txgs[0][0];
@@ -332,8 +329,8 @@ if (ishvol==1)
       f3_tet(funct,deriv,deriv2,e1,e2,e3,typ,2);      
    break;
    default:
-      dserror("ntyp unknown!"); 
-   } /*end switch(ntyp) */
+      dserror("typ unknown!"); 
+   } /*end switch(typ) */
    ieval++;
 /* ------------------------------------------- compute jacobian matrix */        
    f3_mljaco(funct,deriv,xjm,&det,ele,iel);
@@ -341,7 +338,7 @@ if (ishvol==1)
    vol += fac;
    if (istrnint==1)    /* compute streamlength */
    {
-      f3_veli(velint,funct,evel,iel);      
+      f3_veci(velint,funct,evel,iel);      
       f3_gder(derxy,deriv,xjm,wa1,det,iel); 
       ieval++;
       val = ZERO;
@@ -398,9 +395,9 @@ else if (istrnint==1 && ishvol !=1)
    strle = ZERO;
 /*------ get values of integration parameters, shape functions and their
          derivatives ---------------------------------------------------*/
-   switch(ntyp)
+   switch(typ)
    {
-   case 1:   /* --> hex - element */
+   case hex8: case hex20: case hex27:   /* --> hex - element */
       e1   = data->qxg[0][0];
       facr = data->qwgt[0][0];
       e2   = data->qxg[0][0];
@@ -409,7 +406,7 @@ else if (istrnint==1 && ishvol !=1)
       fact = data->qwgt[0][0]; 
       f3_hex(funct,deriv,deriv2,e1,e2,e3,typ,2);
    break;        
-   case 2:  /* --> tet - element */
+   case tet4: case tet10:  /* --> tet - element */
       e1   = data->txgr[0][0];
       facr = data->twgt[0][0];
       e2   = data->txgs[0][0];
@@ -419,12 +416,12 @@ else if (istrnint==1 && ishvol !=1)
       f3_tet(funct,deriv,deriv2,e1,e2,e3,typ,2);
    break;
    default:
-      dserror("ntyp unknown!"); 
-   } /*end switch(ntyp) */ 
+      dserror("typ unknown!"); 
+   } /*end switch(typ) */ 
 /* ------------------------------------------- compute jacobian matrix */        
    f3_mljaco(funct,deriv,xjm,&det,ele,iel);
 /* --------------------------------------------- compute stream length */    
-   f3_veli(velint,funct,evel,iel);	
+   f3_veci(velint,funct,evel,iel);	
    f3_gder(derxy,deriv,xjm,wa1,det,iel); 
    ieval++;
    val = ZERO;
@@ -469,9 +466,9 @@ if(gls->istapc==1 || istrnint==1)
    case 0:
 /*------ get only values of integration parameters and shape functions
         + derivatives for Smagorinsky subgrid viscosity --------------*/
-      switch(ntyp)
+      switch(typ)
       {
-      case 1:    /* --> quad - element */
+      case hex8: case hex20: case hex27:    /* --> quad - element */
          e1   = data->qxg[0][0];
          facr = data->qwgt[0][0];
          e2   = data->qxg[0][0];
@@ -480,7 +477,7 @@ if(gls->istapc==1 || istrnint==1)
          fact = data->qwgt[0][0]; 
          f3_hex(funct,deriv,deriv2,e1,e2,e3,typ,2);
       break;
-      case 2:       /* --> tet - element */              
+      case tet4: case tet10:       /* --> tet - element */              
          e1   = data->txgr[0][0];
          facr = data->twgt[0][0];
          e2   = data->txgs[0][0];
@@ -490,13 +487,13 @@ if(gls->istapc==1 || istrnint==1)
          f3_tet(funct,deriv,deriv2,e1,e2,e3,typ,2);
       break;      
       default:
-         dserror("ntyp unknown!");
-      } /* end switch (ntyp) */
-      f3_veli(velint,funct,evel,iel);
+         dserror("typ unknown!");
+      } /* end switch (typ) */
+      f3_veci(velint,funct,evel,iel);
       if (fdyn->sgvisc>0) f3_mljaco(funct,deriv,xjm,&det,ele,iel);
    break;
    case 1:            
-      f3_veli(velint,funct,evel,iel);
+      f3_veci(velint,funct,evel,iel);
    break;
    case 2:
    break;
@@ -506,7 +503,7 @@ if(gls->istapc==1 || istrnint==1)
 /*----------------------------------- calculate stabilisation parameter */               
    actmat=ele->mat-1;
    visc = mat[actmat].m.fluid->viscosity;
-   f3_mlcalstabpar(ele,velint,visc,iel,ntyp,-1);    
+   f3_mlcalstabpar(ele,velint,visc,iel,typ,-1);    
 /*--------------------------------------------------- subgrid viscosity */               
    if (fdyn->sgvisc>0)
    { 
@@ -515,7 +512,7 @@ if(gls->istapc==1 || istrnint==1)
 /*---------------------- get velocity derivatives at integration point */
      f3_vder(vderxy,derxy,evel,iel);
 /*---------------------------------------- calculate subgrid viscosity */               
-     f3_calsgvisc(ele,velint,vderxy,visc,iel,ntyp);
+     f3_calsgvisc(ele,velint,vderxy,visc,iel,typ);
    }
 } /* endif (ele->e.f3->istapc==1 || istrnint==1) */
 
@@ -534,7 +531,7 @@ void f3_mlcalelesize2(ELEMENT         *ele,
                       DOUBLE	   **derxy,	       
 		      DOUBLE	     visc,
 		      INT 	     iel,
-		      INT 	     ntyp) 
+		      DIS_TYP 	     typ) 
 {
 INT    ilen, inod; /* simply a counter                                  */
 INT    istrnint;   /* evaluation flag                                   */
@@ -593,10 +590,10 @@ if (istrnint==2)
    } /* end of loop over ilen */
 } /* endif (istrnint==2) */
 /*----------------------------------- calculate stabilisation parameter */               
-f3_mlcalstabpar(ele,velint,visc,iel,ntyp,1); 
+f3_mlcalstabpar(ele,velint,visc,iel,typ,1); 
    
 /*----------------------------------------- calculate subgrid viscosity */               
-if (fdyn->sgvisc>0) f3_calsgvisc(ele,velint,vderxy,visc,iel,ntyp);
+if (fdyn->sgvisc>0) f3_calsgvisc(ele,velint,vderxy,visc,iel,typ);
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
