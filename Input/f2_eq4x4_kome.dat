@@ -1,3 +1,16 @@
+//
+// Maintainer: Thomas Hettich
+//             hettich@statik.uni-stuttgart.de
+//             http://www.uni-stuttgart.de/ibs/members/hettich/
+//             0711 - 685-6575
+// 
+// necessary defines: -DD_FLUID -DD_FLUID2 -DAZTEC_PACKAGE -DUMFPACK 
+//
+// #define MAXNOD           (4)
+// #define MAXELE           (4)
+// #define MAXDOFPERNODE    (3)
+// #define MAXGAUSS         (4)
+//
 ==================================================================
                         General Data File C_CARAT
 ==================================================================
