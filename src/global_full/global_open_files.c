@@ -193,20 +193,6 @@ if (par.myrank==0)
      }
     printf("turbulence is written to   %s\n",allfiles.outputfile_name);
 }     
-/*-----------------------------------------------------open .mon file */
-if (par.myrank==0)
-{     
-     strncpy(charpointer,".mon",4);
-     if ( (allfiles.out_mon=fopen(allfiles.outputfile_name,"w"))==NULL)
-     {
-        printf("Opening of monitoring file .mon failed\n");
-#ifdef PARALLEL 
-        MPI_Finalize();
-#endif 
-        exit(1);
-     }
-    printf("monitoring is written to   %s\n",allfiles.outputfile_name);
-} 
 
 /*------------------------------------------------------open .pss file */
 /* is opened on all procs */     
