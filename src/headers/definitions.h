@@ -46,6 +46,7 @@ typedef char      CHAR;
 #define dsytri dsytri_
 #define dsytrs dsytrs_
 #define dgetrf dgetrf_
+#define dgetrf dgetri_
 #define dgetrs dgetrs_
 #define dsygv  dsygv_
 #define dsyevd dsyevd_
@@ -57,6 +58,7 @@ typedef char      CHAR;
 #define dsytri dsytri_
 #define dsytrs dsytrs_
 #define dgetrf dgetrf_
+#define dgetrf dgetri_
 #define dgetrs dgetrs_
 #define dsygv  dsygv_
 #define dsyevd dsyevd_
@@ -124,6 +126,11 @@ static INT iminarg1,iminarg2;
 #define PI               (asin(1.0)*2.0)
 
 /*----------------------------------------------------------------------*
+ | maximum number columns in input file                                 |
+ *----------------------------------------------------------------------*/
+#define MAXNUMCOL        (500)
+
+/*----------------------------------------------------------------------*
  | maximum number of nodes to an element                                |
  *----------------------------------------------------------------------*/
 #define MAXNOD           (27)
@@ -163,6 +170,26 @@ static INT iminarg1,iminarg2;
 #define MAXFIELD         (3)
 
 /*----------------------------------------------------------------------*
+ | maximum numberof fields                                              |
+ *----------------------------------------------------------------------*/
+#define MAXTIMECURVE         (5)
+/*----------------------------------------------------------------------*
+ | numbers                                                              |
+ *----------------------------------------------------------------------*/
+#define ZERO              (0.0)
+#define ONE               (1.0)
+#define TWO               (2.0)
+#define THREE             (3.0)
+#define FOUR              (4.0)
+#define FIVE              (5.0)
+#define SIX               (6.0)
+#define SEVEN             (7.0)
+#define EIGHT             (8.0)
+#define NINE              (9.0)
+#define TEN              (10.0)
+#define ELEVEN           (11.0)
+#define TWELVE           (12.0)
+/*----------------------------------------------------------------------*
  | a set of different tolerances                                        |
  *----------------------------------------------------------------------*/
 #define EPS5             (1.0E-05)
@@ -197,11 +224,19 @@ static INT iminarg1,iminarg2;
  *----------------------------------------------------------------------*/
 #define MAXNOD_BRICK1    (20)
 /*----------------------------------------------------------------------*
- | fluid2                                                               |
+ | fluid                                                              |
  *----------------------------------------------------------------------*/
 #define MAXQINTC (6)   /* max. number of implemented integration cases for QUADS */
 #define MAXQINTP (6)   /* max. number of integration parameters  for QUADS */ 
 #define MAXTINTC (11)  /* max. number of implemented integration cases for TRIS */
 #define MAXTINTP (13)  /* max. number of integration parameters  for TRIS */
+/*----------------------------------------------------------------------*
+ | fluid2                                                               |
+ *----------------------------------------------------------------------*/
 #define NUM_F2_VELDOF (2) /* number of velocity dofs per node */
-#define MAXNOD_F2 (9)  /* max. number of nodes per element */
+#define MAXNOD_F2 (9)    /* max. number of nodes per element */
+/*----------------------------------------------------------------------*
+ | fluid3                                                               |
+ *----------------------------------------------------------------------*/
+#define NUM_F3_VELDOF (3) /* number of velocity dofs per node */
+#define MAXNOD_F3 (27)    /* max. number of nodes per element */
