@@ -231,7 +231,6 @@ INT               numfld;        /* number of fields */
 INT               numdf;         /* maximum number of dofs to one node (not used, in progress)*/
 INT               restart;       /* is restart or not */
 INT               visual;        /* flag for visualise mode or not */
-INT               multidis;      /* flag for multi-discretisation problem */
 INT               numsf;         /* actual number of struct-field */
 INT               numff;         /* actual number of fluid field */
 INT               numaf;         /* actual number of ale field */

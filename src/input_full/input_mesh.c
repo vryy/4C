@@ -65,18 +65,15 @@ if (genprob.probtyp == prb_fsi)
    field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
 
    field[genprob.numsf].fieldtyp = structure;   
-   if (genprob.multidis>0) inpdis(&(field[genprob.numsf]));
-   else field[genprob.numsf].ndis=1;
+   inpdis(&(field[genprob.numsf]));
    inp_struct_field(&(field[genprob.numsf]));
    
    field[genprob.numff].fieldtyp = fluid;
-   if (genprob.multidis>0) inpdis(&(field[genprob.numff]));
-   else field[genprob.numff].ndis=1;
+   inpdis(&(field[genprob.numff]));
    inp_fluid_field (&(field[genprob.numff]));
    
    field[genprob.numaf].fieldtyp = ale;
-   if (genprob.multidis>0) inpdis(&(field[genprob.numaf]));
-   else field[genprob.numaf].ndis=1;
+   inpdis(&(field[genprob.numaf]));
    inp_ale_field  (&(field[genprob.numaf]));
 
 /*--- ale and fluid field are supposed to be compatible, so inherit info */
@@ -93,8 +90,7 @@ if (genprob.probtyp==prb_structure)
    field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
    
    field[genprob.numsf].fieldtyp = structure;
-   if (genprob.multidis>0) inpdis(&(field[genprob.numsf]));
-   else field[genprob.numsf].ndis=1;
+   inpdis(&(field[genprob.numsf]));
    inp_struct_field(&(field[genprob.numsf]));
 }
 /*---------------------------------------- Optimisation type of problem */
@@ -104,8 +100,7 @@ if (genprob.probtyp == prb_opt)
    field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
 
    field[0].fieldtyp = structure;
-   if (genprob.multidis>0) inpdis(&(field[0]));
-   else field[0].ndis=1;
+   inpdis(&(field[0]));
    inp_struct_field(&(field[0]));
 }
 /*----------------------------------------------- fluid type of problem */
@@ -116,8 +111,7 @@ if (genprob.probtyp==prb_fluid)
       field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
    
       field[genprob.numff].fieldtyp = fluid;
-      if (genprob.multidis>0) inpdis(&(field[genprob.numff]));
-      else field[genprob.numff].ndis=1;
+      inpdis(&(field[genprob.numff]));
       inp_fluid_field (&(field[genprob.numff]));
    }
    else if (genprob.numfld==2) /* two field fluid problem (fluid+ale)       */
@@ -125,13 +119,11 @@ if (genprob.probtyp==prb_fluid)
       field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
       
       field[genprob.numff].fieldtyp = fluid;
-      if (genprob.multidis>0) inpdis(&(field[genprob.numff]));
-      else field[genprob.numff].ndis=1;
+      inpdis(&(field[genprob.numff]));
       inp_fluid_field (&(field[genprob.numff]));
 
       field[genprob.numaf].fieldtyp = ale;
-      if (genprob.multidis>0) inpdis(&(field[genprob.numaf]));
-      else field[genprob.numaf].ndis=1;
+      inpdis(&(field[genprob.numaf]));
       inp_ale_field  (&(field[genprob.numaf]));      
    }
    else dserror("NUMFLD>2 not allowed for Problemtype FLUID\n");   
@@ -143,8 +135,7 @@ if (genprob.probtyp==prb_ale)
    field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
    
    field[genprob.numaf].fieldtyp = ale;
-   if (genprob.multidis>0) inpdis(&(field[genprob.numaf]));
-   else field[genprob.numaf].ndis=1;
+   inpdis(&(field[genprob.numaf]));
    inp_ale_field(&(field[genprob.numaf]));
 }
 
@@ -261,6 +252,8 @@ char buffer[50];
 #ifdef DEBUG 
 dstrc_enter("inpdis");
 #endif
+/*--------------------------------------------------- set default value */
+actfield->ndis=1;
 
 /*------------------------------------------------- read discretisation */
 if (frfind("--DISCRETISATION")==0) goto end;

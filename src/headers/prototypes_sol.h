@@ -919,8 +919,8 @@ void solserv_result_total(FIELD *actfield,INTRA *actintra,DIST_VECTOR *sol,
  |  Functionality is the same as in solserv_result_total                |
  *----------------------------------------------------------------------*/
 void solserv_result_incre(FIELD *actfield,INTRA *actintra,DIST_VECTOR *sol,
-                          INT place,SPARSE_ARRAY *sysarray,
-                          SPARSE_TYP *sysarray_typ);
+                          int place,SPARSE_ARRAY *sysarray,
+                          SPARSE_TYP *sysarray_typ,int ndis);
 /*----------------------------------------------------------------------*
  |  Put the results of a DIST_VECTOR to the nodes in a       m.gee 11/01|
  |  certain place in ARRAY sol_residual                                 |
@@ -972,6 +972,8 @@ void solver_psuperlu_ucchb(
                       struct _DIST_VECTOR    *rhs,
                       INT                     option
                      );
+
+		     
 /*----------------------------------------------------------------------*
  |  input_sol.c                                          m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -1294,18 +1296,21 @@ void oll_numeq(
     INT                     dis,
     INT                    *numeq);
 void oll_dof_in_coupledofs(
-    INT                     dof,
-    struct _PARTITION      *actpart,
-    INT                    *iscoupled);
+    INT dof,
+    PARTITION *actpart,
+    INT *iscoupled,
+    INT  dis);
 void oll_dof_find_centernode(
-    INT                     dof,
-    struct _PARTITION      *actpart,
-    struct _NODE          **centernode);
+    INT dof,
+    PARTITION *actpart,
+    NODE **centernode,
+    INT dis);
 void oll_nnz_topology(
-    struct _FIELD          *actfield, 
-    struct _PARTITION      *actpart, 
-    struct _INTRA          *actintra,
-    struct _OLL            *oll);
+    struct _FIELD         *actfield, 
+    struct _PARTITION     *actpart, 
+    struct _INTRA         *actintra,
+    struct _OLL           *oll,
+    INT            dis);
 void oll_update(
     struct _FIELD          *actfield, 
     struct _PARTITION      *actpart, 
@@ -1325,13 +1330,13 @@ void oll_pattern(
 /* -------------------------------------------------------------------- *
  *   global_oll_service2.c                                     mn 05/03 *
  * -------------------------------------------------------------------- */
-void oll_open(
-    struct _OLL            *matrix,
-    INT                     numeq,
-    INT                     numeq_total,
-    struct _FIELD          *actfield,
-    struct _PARTITION      *actpart,
-    struct _INTRA          *actintra);
+void oll_open(struct _OLL       *matrix,
+              INT        numeq,
+              INT        numeq_total,
+              struct _FIELD     *actfield,
+              struct _PARTITION *actpart,
+              struct _INTRA     *actintra,
+              INT        dis);
 /*void oll_getentry(
     struct _OLL            *matrix,
     struct _MATENTRY      **ret);*/
@@ -1374,6 +1379,9 @@ void oll_to_spo(
 void oll_to_msr(
     struct _OLL            *oll,
     union  _SPARSE_ARRAY   *sysarray);
+void oll_to_ccf(
+                struct _OLL     *oll,
+                union  _SPARSE_ARRAY    *sysarray);
 void oll_copy(
     struct _OLL            *from,
     struct _OLL            *to);

@@ -73,7 +73,8 @@ void mlpcg_renumberdofs(INT            myrank,
                         FIELD         *actfield, 
                         PARTDISCRET   *actpdiscret, 
                         INTRA         *actintra,
-                        DBCSR         *bdcsr);
+                        DBCSR         *bdcsr,
+			INT            dis);
 void mlpcg_extractcollocal(DBCSR *P, INT actcol, DOUBLE *col, 
                            INT *rcol, INT *nrow);
 void mlpcg_csr_open(DBCSR*  matrix,
