@@ -334,9 +334,9 @@ if (restart != 0)
   }
 }
 
+fluid_init_pos_euler();
 fluid_init(actpart,actintra,actfield, 0,action,&container,8,str);
 actpos=0;
-fluid_init_pos_euler();
 
 /*------------------------------------ initialize multilevel algorithm */
 #if defined(FLUID2_ML) || defined(FLUID3_ML)
