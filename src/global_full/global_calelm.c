@@ -6,6 +6,9 @@
 #include "../wall1/wall1.h"
 #include "../brick1/brick1.h"
 #include "../fluid3/fluid3.h"
+#include "../fluid3/fluid3_prototypes.h"
+#include "../fluid2/fluid2.h"
+#include "../fluid2/fluid2_prototypes.h"
 #include "../ale3/ale3.h"
 #include "../ale2/ale2.h"
 
@@ -34,7 +37,7 @@ void calelm(FIELD        *actfield,     /* active field */
             INTRA        *actintra,     /* my intra-communicator */
             int           sysarray1,    /* number of first sparse system matrix */
             int           sysarray2,    /* number of secnd system matrix, if present, else -1 */
-            CONTAINER    *container,    /*!< contains variables defined in container.h */
+            CONTAINER    *container,    /* contains variables defined in container.h */
             CALC_ACTION  *action)       /* calculation option passed to element routines */     
 /*----------------------------------------------------------------------*/
 {
@@ -258,6 +261,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    case calc_struct_nlnstiffmass    : assemble_action = assemble_two_matrix; break;
    case calc_struct_internalforce   : assemble_action = assemble_do_nothing; break;
    case calc_struct_eleload         : assemble_action = assemble_do_nothing; break;
+   case calc_struct_fsiload      : assemble_action = assemble_do_nothing; break;
    case calc_struct_stress          : assemble_action = assemble_do_nothing; break;
    case calc_struct_ste             : assemble_action = assemble_do_nothing; break;
    case calc_struct_stm             : assemble_action = assemble_do_nothing; break;
@@ -270,6 +274,8 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    case calc_ale_stiff              : assemble_action = assemble_one_matrix; break;
    case calc_ale_rhs                : assemble_action = assemble_do_nothing; break;
    case calc_fluid                  : assemble_action = assemble_one_matrix; break;
+   case calc_fluid_vort          : assemble_action = assemble_do_nothing; break;
+   case calc_fluid_stress        : assemble_action = assemble_do_nothing; break;
    default: dserror("Unknown type of assembly 1"); break;
    }
    /*--------------------------- assemble one or two system matrices */
@@ -298,6 +304,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
       if (container->dirich && container->isdyn==1)
       assemble_dirich_dyn(actele,&estif_global,&emass_global,container);
    break;
+#ifdef D_FLUID
    case fluid:
       if (container->nif!=0)
       {
@@ -305,18 +312,20 @@ for (i=0; i<actpart->pdis[0].numele; i++)
          assemble_intforce(actele,&etforce_global,container);
       }
    /*-------------- assemble the vector eiforce_global to iteration rhs */
-   if (container->nii+hasext!=0)
+      if (container->nii+hasext!=0)
       {   
          container->dvec = container->fiterhs;
          assemble_intforce(actele,&eiforce_global,container); 
       }
    /*-------------- assemble the vector edforce_global to iteration rhs */
-   if (hasdirich!=0)
+      if (hasdirich!=0)
       {
          container->dvec = container->fiterhs;
          assemble_intforce(actele,&edforce_global,container);
-      }   
+      }
+      container->dvec=NULL;   
    break;
+#endif   
    case ale:
    break;
    default:
@@ -335,6 +344,7 @@ case calc_struct_nlnstiff        : assemble_action = assemble_one_exchange; brea
 case calc_struct_internalforce   : assemble_action = assemble_do_nothing;   break;
 case calc_struct_nlnstiffmass    : assemble_action = assemble_two_exchange; break;
 case calc_struct_eleload         : assemble_action = assemble_do_nothing;   break;
+case calc_struct_fsiload         : assemble_action = assemble_do_nothing;   break;
 case calc_struct_stress          : assemble_action = assemble_do_nothing;   break;
 case calc_struct_ste             : assemble_action = assemble_do_nothing;   break;
 case calc_struct_stm             : assemble_action = assemble_do_nothing;   break;
@@ -347,6 +357,8 @@ case calc_struct_update_stepback : assemble_action = assemble_do_nothing;   brea
 case calc_ale_stiff              : assemble_action = assemble_one_exchange; break;
 case calc_ale_rhs                : assemble_action = assemble_do_nothing;   break;
 case calc_fluid                  : assemble_action = assemble_one_exchange; break;
+case calc_fluid_vort             : assemble_action = assemble_do_nothing;   break;
+case calc_fluid_stress           : assemble_action = assemble_do_nothing;   break;
 default: dserror("Unknown type of assembly 2"); break;
 }
 /*------------------------------ exchange coupled dofs, if there are any */
@@ -371,14 +383,24 @@ switch(*action)
 {
 case calc_struct_linstiff        : assemble_action = assemble_close_1matrix; break;
 case calc_struct_nlnstiff        : assemble_action = assemble_close_1matrix; break;
+case calc_struct_internalforce   : assemble_action = assemble_do_nothing;   break;
 case calc_struct_nlnstiffmass    : assemble_action = assemble_close_2matrix; break;
 case calc_struct_eleload         : assemble_action = assemble_do_nothing;    break;
+case calc_struct_fsiload         : assemble_action = assemble_do_nothing;    break;
 case calc_struct_stress          : assemble_action = assemble_do_nothing;    break;
-case calc_struct_update_istep    : assemble_action = assemble_do_nothing;    break;
-case calc_struct_update_stepback : assemble_action = assemble_do_nothing;    break;
+case calc_struct_ste             : assemble_action = assemble_do_nothing;   break;
+case calc_struct_stm             : assemble_action = assemble_do_nothing;   break;
+case calc_struct_stv             : assemble_action = assemble_do_nothing;   break;
+case calc_struct_dmc             : assemble_action = assemble_do_nothing;   break;
+case update_struct_odens         : assemble_action = assemble_do_nothing;   break;
+case calc_struct_dee             : assemble_action = assemble_do_nothing;   break;
+case calc_struct_update_istep    : assemble_action = assemble_do_nothing;   break;
+case calc_struct_update_stepback : assemble_action = assemble_do_nothing;   break;
 case calc_ale_stiff              : assemble_action = assemble_close_1matrix; break;
 case calc_ale_rhs                : assemble_action = assemble_do_nothing;    break;
 case calc_fluid                  : assemble_action = assemble_close_1matrix; break;
+case calc_fluid_vort             : assemble_action = assemble_do_nothing;   break;
+case calc_fluid_stress           : assemble_action = assemble_do_nothing;   break;
 default: dserror("Unknown type of assembly 3"); break;
 }
 assemble(sysarray1,
@@ -456,12 +478,15 @@ ELEMENT *actele;              /* active element */
 dstrc_enter("calinit");
 #endif
 /*-------------------------- define dense element matrices for assembly */
+if (estif_global.Typ != cca_DA)
+{
 amdef("estif",&estif_global,(MAXNOD*MAXDOFPERNODE),(MAXNOD*MAXDOFPERNODE),"DA");
 amdef("emass",&emass_global,(MAXNOD*MAXDOFPERNODE),(MAXNOD*MAXDOFPERNODE),"DA");
 amdef("etforce",&etforce_global,(MAXNOD*MAXDOFPERNODE),1,"DV");
 amdef("eiforce",&eiforce_global,(MAXNOD*MAXDOFPERNODE),1,"DV");
 amdef("edforce",&edforce_global,(MAXNOD*MAXDOFPERNODE),1,"DV");
 amdef("inforce",&intforce_global,(MAXNOD*MAXDOFPERNODE),1,"DV");
+}
 /*--------------------what kind of elements are there in this example ? */
 for (i=0; i<actfield->dis[0].numele; i++)
 {
