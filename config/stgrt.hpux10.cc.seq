@@ -11,6 +11,10 @@ F77=f77
 CC=cc
 LD=cc
 
+PLAIN_F77=f77
+PLAIN_CC=cc
+PLAIN_LD=cc
+
 BASEDIR="/bau/stat16/users/statik/ccarat/lib/hpux_10"
 OPENGLDIR="/opt/graphics/OpenGL/lib"
 PEX5DIR="/opt/graphics/PEX5/lib"

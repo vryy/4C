@@ -6,6 +6,10 @@ F77=f90
 CC=cc
 LD=f90
 
+PLAIN_F77=f90
+PLAIN_CC=cc
+PLAIN_LD=f90
+
 BASEDIR="/bau/stat16/users/statik/ccarat/lib/hpux_ita2"
 
 INCLUDEDIRS="-I/opt/mlib/include -I/bau/stat16/users/statik/ccarat/include"

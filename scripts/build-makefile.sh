@@ -26,6 +26,7 @@ FFLAGS=$FFLAGS $DEBUGFLAG -D$PLATFORM $DEFINES
 LDFLAGS=$LDFLAGS
 INCLUDES=$INCLUDEDIRS
 LIBS=$LIBDIRS $LIBS
+PLAIN_LIBS=$LIBDIRS $LIBS
 
 #----------------------- binaries -----------------------------------
 include ./Makefile.objects

@@ -300,14 +300,16 @@ static void out_pack_node_arrays(BIN_OUT_CHUNK *chunk,
       INT k;                                                            \
       INT size = actnode->node_array.fdim*actnode->node_array.sdim;     \
       dsassert(size <= chunk->field->max_size[node_array_ ## node_array], \
-               "outdated size calculation. panic.");                    \
-      DOUBLE *src_ptr = actnode->node_array.a.da[0];                    \
-      DOUBLE *dst_ptr = &(send_buf[chunk->value_entry_length*counter]); \
-      pack_send_size_buf(node_array);                                   \
-      for (k=0; k<size; ++k) {                                          \
-        *dst_ptr++ = *src_ptr++;                                        \
+               "outdated size calculation. panic.");                      \
+      {                                                                   \
+        DOUBLE *src_ptr = actnode->node_array.a.da[0];                    \
+        DOUBLE *dst_ptr = &(send_buf[chunk->value_entry_length*counter]); \
+        pack_send_size_buf(node_array);                                   \
+        for (k=0; k<size; ++k) {                                          \
+          *dst_ptr++ = *src_ptr++;                                        \
+        }                                                                 \
+        counter += 1;                                                     \
       }                                                                 \
-      counter += 1;                                                     \
     }                                                                   \
   }                                                                     \
   dsassert(counter*chunk->value_entry_length == send_count,             \

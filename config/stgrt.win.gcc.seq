@@ -11,6 +11,10 @@ F77=g77
 CC=gcc
 LD=gcc
 
+PLAIN_F77=g77
+PLAIN_CC=gcc
+PLAIN_LD=gcc
+
 BASEDIR="/home/ccarat/lib"
 
 INCLUDEDIRS="-I/home/ccarat/include"

@@ -7,6 +7,9 @@ PLAIN_CC=cc
 PLAIN_F77=f77
 PLAIN_LD=f77
 
+# for the filters we do NOT nedd the solver libs
+PLAIN_LIBS=$LIBS
+
 # most of the time these have to begin changed
 CC=cc
 F77=f77

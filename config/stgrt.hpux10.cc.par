@@ -12,6 +12,10 @@ F77=/opt/mpi/bin/mpif77
 CC=/opt/mpi/bin/mpicc
 LD=/opt/mpi/bin/mpicc
 
+PLAIN_F77=f77
+PLAIN_CC=cc
+PLAIN_LD=cc
+
 BASEDIR="/bau/stat16/users/statik/ccarat/lib/hpux_10"
 
 INCLUDEDIRS="-I/opt/mlib/include -I/bau/stat16/users/statik/ccarat/include"

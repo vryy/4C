@@ -687,10 +687,10 @@ int GiD_ClosePostResultFile()
 int GiD_BeginGaussPoint( char * name, GiD_ElementType EType, char * MeshName,
 			 int GP_number, int NodesIncluded, int InternalCoord )
 {
+  char line[LINE_SIZE];
+
   /* check state & validation */
   assert(CheckState(POST_S0, level_res));
-
-  char line[LINE_SIZE];
 
   snprintf( line, LINE_SIZE-1,
 	    "GaussPoints \"%s\" ElemType %s", name, GetElementTypeName(EType));
@@ -1141,11 +1141,13 @@ int GiD_WriteScalar( int id, double v )
 
 int GiD_WriteVector( int id, double x, double y, double z )
 {
+  double mod;
+  
   /* check state */
   assert(CheckState(POST_RESULT_VALUES, level_res));
 
   /* compute the module */
-  double mod = sqrt(x*x + y*y + z*z);
+  mod = sqrt(x*x + y*y + z*z);
 
   return flag_isgroup ? gid_buffer_write_values(&buffer_values, id, 4, x, y, z, mod) :
     gid_write_values(&ResultFile, id, 4, x, y, z, mod);

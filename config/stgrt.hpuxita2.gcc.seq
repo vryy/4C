@@ -6,6 +6,10 @@ F77=g77
 CC=gcc
 LD=gcc
 
+PLAIN_F77=g77
+PLAIN_CC=gcc
+PLAIN_LD=gcc
+
 BASEDIR="/bau/stat16/users/statik/ccarat/lib/hpux_ita2_gnu"
 
 INCLUDEDIRS="-I/opt/mlib/include -I/bau/stat16/users/statik/ccarat/include"

@@ -6,6 +6,10 @@ F77=sxmpif90
 CC=sxmpic++
 LD=sxmpif90
 
+PLAIN_F77=sxf90
+PLAIN_CC=sxc++
+PLAIN_LD=sxf90
+
 
 BASEDIR="/gdata0/rus/rus/stati/lib"
 
