@@ -973,6 +973,7 @@ if (strncmp(string,"stress",stringlenght)==0)
       fprintf(out,"END VALUES\n");
    }
 #endif
+#ifdef D_WALL1
 /*---------------------------------------------------------fh 06/02----*/
    /*--------- ---------now go through the meshes and print the results */
    /*===============================wall1 element with 2x2 gausspoints */
@@ -1077,7 +1078,8 @@ if (strncmp(string,"stress",stringlenght)==0)
       }
       fprintf(out,"END VALUES\n");
 /*----------------------------------------------------------------------*/
-
+#endif
+#ifdef D_BRICK1
       
    }
    /* bricks have 6 stress - use 3D matrix */
@@ -1176,12 +1178,13 @@ if (strncmp(string,"stress",stringlenght)==0)
       }
       fprintf(out,"END VALUES\n");                       
    }
-
+#endif
+#ifdef D_ALE
    if (actgid->is_ale_222)
    {
     dserror("output for 8-noded ale not yet impl.");
    }
-
+#endif
 } /* end of (strncmp(string,"stress",stringlenght)==0) */
 /*========================================= result type is velocity */
 if (strncmp(string,"velocity",stringlenght)==0)
