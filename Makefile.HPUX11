@@ -33,6 +33,8 @@ OBJS2	      = ${SRC}/global_full/global_control.o \
                 ${SRC}/global_full/map_node_find.o \
                 ${SRC}/global_full/global_mask_matrices.o \
                 ${SRC}/global_full/global_mask_msr.o \
+                ${SRC}/global_full/global_mask_mds.o \
+                ${SRC}/global_full/global_dofconnect.o \
                 ${SRC}/global_full/global_mask_parcsr.o \
                 ${SRC}/global_full/global_mask_ucchb.o \
                 ${SRC}/global_full/global_mask_dense.o \
@@ -44,9 +46,11 @@ OBJS2	      = ${SRC}/global_full/global_control.o \
                 ${SRC}/global_full/solver_service.o \
                 ${SRC}/global_full/solver_add_data.o \
                 ${SRC}/global_full/solver_add_msr.o \
+                ${SRC}/global_full/solver_add_mlib.o \
                 ${SRC}/global_full/solver_add_parcsr.o \
                 ${SRC}/global_full/solver_add_ucchb.o \
                 ${SRC}/global_full/solver_add_dense.o \
+                ${SRC}/global_full/solver_mlib.o \
                 ${SRC}/global_full/solver_aztec.o \
                 ${SRC}/global_full/solver_hypre.o \
                 ${SRC}/global_full/solver_superlu.o \
@@ -112,7 +116,15 @@ OBJS8	      = ${SRC}/parallel/par_initmetis.o \
                 ${SRC}/parallel/par_make_comm.o \
                 ${SRC}/parallel/par_assignmesh.o
 #                brick1
-OBJS9	      = ${SRC}/brick1/b1_inpele.o 
+OBJS9	      = ${SRC}/brick1/b1_inpele.o \
+                ${SRC}/brick1/b1_intg.o \
+                ${SRC}/brick1/b1_static_ke.o \
+                ${SRC}/brick1/b1_funcderiv.o \
+                ${SRC}/brick1/b1_bop.o \
+                ${SRC}/brick1/b1_jaco.o \
+                ${SRC}/brick1/b1_mat_linel.o \
+                ${SRC}/brick1/b1_call_stiff.o \
+                ${SRC}/brick1/b1_main.o
 #                math
 OBJS10	      = ${SRC}/math/sort_find.o \
                 ${SRC}/math/math1.o
@@ -120,20 +132,19 @@ OBJS10	      = ${SRC}/math/sort_find.o \
 OBJS11	      = ${SRC}/output/out_global.o \
                 ${SRC}/output/out_gid_msh.o \
                 ${SRC}/output/out_gid_sol.o
-#                fortran
-OBJS12	      = ${SRC}/fortran/bi_f77_get_constants.o \
-                ${SRC}/fortran/mumps_interface.o
 #                wall1
-#OBJS12        = ${SRC}/wall1/w1_init.o \
-#                ${SRC}/wall1/w1_inpele.o \
-#                ${SRC}/wall1/w1_intg.o \
-#                ${SRC}/wall1/w1_static_ke.o \
-#                ${SRC}/wall1/w1_funcderiv.o \
-#                ${SRC}/wall1/w1_bop.o \
-#                ${SRC}/wall1/w1_jaco.o \
-#                ${SRC}/wall1/w1_mat_linel.o \
-#                ${SRC}/wall1/w1_call_stiff.o \
-#                ${SRC}/wall1/w1_main.o
+OBJS12	      = ${SRC}/wall1/w1_init.o \
+                ${SRC}/wall1/w1_inpele.o \
+                ${SRC}/wall1/w1_intg.o \
+                ${SRC}/wall1/w1_static_ke.o \
+                ${SRC}/wall1/w1_funcderiv.o \
+                ${SRC}/wall1/w1_bop.o \
+                ${SRC}/wall1/w1_jaco.o \
+                ${SRC}/wall1/w1_mat_linel.o \
+                ${SRC}/wall1/w1_call_stiff.o \
+                ${SRC}/wall1/w1_main.o
+#                fortran
+OBJS13	      = ${SRC}/fortran/fortran_dummy.o
 #
 #
 # targets
@@ -143,10 +154,10 @@ PROGRAM       = $(PROGRAM_NAME)
 # dependencies
 #
 $(PROGRAM):     $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) $(OBJS7) $(OBJS8) \
-                $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12)
+                $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13)
 		@echo "Linking $(PROGRAM) ..."
 		@$(LD) $(LDFLAGS) $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) \
-                $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(LIBS) $(INCLUDES) -o $(PROGRAM)
+                $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) $(LIBS) $(INCLUDES) -o $(PROGRAM)
 		@echo "done"
 
 #
@@ -204,10 +215,15 @@ $(OBJS11):
 		@echo "Making $@ ..."
 		cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  $<
 		@echo "MainMake is back."
-# FORTRAN90
+#
 $(OBJS12):     
 		@echo "Making $@ ..."
-		cd ${@D}; $(FXX) $(FFLAGS)  -c  $<
+		cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  $<
+		@echo "MainMake is back."
+# FORTRAN90
+$(OBJS13):     
+		@echo "Making $@ ..."
+		cd ${@D}; $(FXX) $(FFLAGS) $(INCLUDES)  -c  $<
 		@echo "MainMake is back."
 #
 
@@ -217,7 +233,7 @@ $(OBJS12):
 
 .f.o:
 	@ echo "$@ wird kompiliert...."
-	$(FXX) $(FFLAGS) -c  $<
+	$(FXX) $(FFLAGS) $(INCLUDES) -c  $<
 clean:
 	rm -rf  $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) \
                 $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12)
