@@ -290,6 +290,7 @@ static INT iminarg1,iminarg2;
  |                                                                      |
  *----------------------------------------------------------------------*/
 #define MAXNOD_SHELL9    (9)
+#define MAXLAY_SHELL9    (30)                   /* max. total number of layers */
 #define MAXKLAY_SHELL9   (10)                   /* max. nr of kin lay */
 #define NUMDOF_SHELL9    (3+3*MAXKLAY_SHELL9)   /* numdf = 3 + 3*klay */
 #define MAXHYB_SHELL9    (45)
