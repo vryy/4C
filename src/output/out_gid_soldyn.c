@@ -30,7 +30,7 @@ extern struct _FILES  allfiles;
 /*----------------------------------------------------------------------*
  |  routine to write solution of a step to GID           m.gee 12/01    |
  *----------------------------------------------------------------------*/
-int out_gid_soldyn(char string[], FIELD *actfield, INTRA  *actintra, int step,
+void out_gid_soldyn(char string[], FIELD *actfield, INTRA  *actintra, int step,
                    int place, double totaltime)
 {
 int           i,j;
@@ -59,7 +59,7 @@ double      **stress;
 double        a1,a2,a3,thick,scal,sdc;
 int           tot_numnp;
 
-int           num_klay,klay,ele_ID,numele;   /*for shell9*/
+int           numele;   /*for shell9*/
 /* 
    gausspoint permutation :
    On the Gausspoint number i in Gid, the results of Carats GP number gausspermn[i]
