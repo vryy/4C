@@ -258,8 +258,8 @@ typedef enum _CALC_ACTION
 		       calc_fluid_liftdrag,
                        calc_fluid_shearvelo,
 		       calc_fluid_time_rhs,
-		       calc_fluid_stab,
 		       calc_fluid_normal,
+                       calc_fluid_stressprojection,
 		       /* ale */
 		       calc_ale_init,   	/* classic linear ale calculation */
 		       calc_ale_stiff,
@@ -496,6 +496,8 @@ This is the enumeration of all types of different stabilisation schemes
 *-----------------------------------------------------------------------*/
 typedef enum _STABILISATION_TYP
 {
+   stab_none,
    stab_gls,	/*! Galerkin least square stabilisation			*/
+   stab_usfem,  /*! Unusual 'least square' stabilisation                */
    stab_prespro	/*! Stabilisation based on pressure projection		*/
 } STABILISATION_TYP;
