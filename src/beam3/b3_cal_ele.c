@@ -121,17 +121,17 @@ istore = 0;
 
 if (init==1)
 {
-funct     = amdef("funct"   ,&funct_a,MAXNOD_BEAM3,1              ,"DV");       
-HC        = amdef("HC    "  ,&HC_a  ,max+1,1                      ,"DV");       
-deriv     = amdef("deriv"   ,&deriv_a,2,MAXNOD_BEAM3              ,"DA");       
-D         = amdef("D"       ,&D_a   ,numeps,numeps                ,"DA");           
+funct     = amdef("funct"   ,&funct_a,MAXNOD_BEAM3,1              ,"DV");
+HC        = amdef("HC    "  ,&HC_a  ,max+1,1                      ,"DV");
+deriv     = amdef("deriv"   ,&deriv_a,2,MAXNOD_BEAM3              ,"DA");
+D         = amdef("D"       ,&D_a   ,numeps,numeps                ,"DA");
 K         = amdef("K"       ,&K_a   ,max,max                      ,"DA");
 A         = amdef("A"       ,&A_a   ,max,max                      ,"DA");
-xjm       = amdef("xjm"     ,&xjm_a ,numgpc,numgpc                ,"DA");           
-ijm       = amdef("ijm"     ,&ijm_a ,numgpc,numgpc                ,"DA");           
-bop       = amdef("bop"     ,&bop_a ,numeps,((numeps+2)*MAXNOD_BEAM3) ,"DA");           
+xjm       = amdef("xjm"     ,&xjm_a ,numgpc,numgpc                ,"DA");
+ijm       = amdef("ijm"     ,&ijm_a ,numgpc,numgpc                ,"DA");
+bop       = amdef("bop"     ,&bop_a ,numeps,((numeps+2)*MAXNOD_BEAM3) ,"DA");
 KLA       = amdef("KLA"     ,&KLA_a ,max,max                      ,"DA");
-intforce  = amdef("intforce",&intforce_a,max,1                    ,"DV");       
+intforce  = amdef("intforce",&intforce_a,max,1                    ,"DV");
 eload     = amdef("eload"   ,&eload_a,max,1                       ,"DV");
 edisp     = amdef("edisp"   ,&edisp_a,max,1		          ,"DV");
 dummy     = amdef("dummy"   ,&dummy_a,max,1			  ,"DV");
@@ -205,7 +205,7 @@ case calc_struct_linstiff:
      l2=ele->e.b3->length/2.;
      for (lr=0; lr<nir; lr++)
      {
-        /*=============================== gaussian point and weight at it ===*/
+        /*=============================== gaussian point and weight at it =*/
         e1   = data->xgrr[lr];
         facr = data->wgtr[lr]*l2;
         /*------------------------- shape functions and their derivatives */
@@ -231,30 +231,30 @@ case calc_struct_linstiff:
      amzero(&K_a);
      for (lr=0; lr<nir; lr++)
      {
-        /*=============================== gaussian point and weight at it ===*/
+        /*=============================== gaussian point and weight at it =*/
 	e1   = data->xgrr[lr];
 	facr = data->wgtr[lr];
 	/*------------------------- shape functions and their derivatives */
 	b3_funct_deriv(funct,deriv,e1,ele->distyp,1);        
 	for (ls=0; ls<nist; ls++)
 	{
-	   /*=========================== lobatto point s and weight at it ===*/
+	   /*=========================== lobatto point s and weight at it =*/
 	   e2   = data->xlst[ls];
 	   facs = data->wlst[ls];
 	   for (lt=0; lt<nist; lt++)
 	   {
-	      /*======================== lobatto point t and weight at it ===*/
+	      /*======================== lobatto point t and weight at it =*/
 	      e3   = data->xlst[lt];
 	      fact = data->wlst[lt];	      
-	      /*-----------Jacobian matrix at point r,s,t -------------------*/
+	      /*-----------Jacobian matrix at point r,s,t -----------------*/
               b3_jaco(funct,deriv,xjm,ijm,A,&det,e2,e3,ele,iel);
-              /*-----------calculate operator B -----------------------------*/
+              /*-----------calculate operator B ---------------------------*/
               amzero(&bop_a);
 	      b3_boplin3D(bop,deriv,funct,xjm,ijm,A,e2,e3,b,a,iel,init);
-              /*---------- call material law --------------------------------*/
+              /*---------- call material law ------------------------------*/
               amzero(&D_a);
 	      b3_call_mat(ele,mat,eps,bop,D,NULL,lr,0,0);
-	      /*------factor for integration wxr*wxs*wxt*det-----------------*/
+	      /*------factor for integration wxr*wxs*wxt*det---------------*/
 	      fac=facr*facs*fact*det;
 	      numeps=3;
 	      b3_keku(K,bop,D,fac,numeledof+2*iel,numeps);
@@ -288,7 +288,7 @@ case calc_struct_linstiff:
   }	
 break;
 
-/*-------- calculate element load vector ------------------------------------*/
+/*-------- calculate element load vector ----------------------------------*/
 case calc_struct_eleload:
    calcstep=3;
    if (ike==1)
@@ -340,7 +340,7 @@ case calc_struct_eleload:
    }   
 break;
 
-/*-------- calculate element internal force vector --------------------------*/
+/*-------- calculate element internal force vector ------------------------*/
 case calc_struct_stress:
    calcstep=4;
    am4zero(&(ele->e.b3->force_GP));
@@ -393,21 +393,21 @@ case calc_struct_stress:
 	   facs = data->wlst[ls];
 	   for (lt=0; lt<nist; lt++)
 	   {
-	      /*======================== lobatto point t and weight at it ===*/
+	      /*====================== lobatto point t and weight at it ===*/
 	      e3   = data->xlst[lt];
 	      fact = data->wlst[lt];	      
-	      /*-----------Jacobian matrix at point r,s,t -------------------*/
+	      /*-----------Jacobian matrix at point r,s,t -----------------*/
               b3_jaco(funct,deriv,xjm,ijm,A,&det,e2,e3,ele,iel);
-	      /*-----------calculate operator B -----------------------------*/
+	      /*-----------calculate operator B ---------------------------*/
 	      amzero(&bop_a);
 	      b3_boplin3D(bop,deriv,funct,xjm,ijm,A,e2,e3,b,a,iel,init);
-	      /*------factor for integration da=dr*ds------------------------*/
+	      /*------factor for integration da=dr*ds----------------------*/
 	      fac=detrs*facs*fact;
 	      amzero(&eps_a);
 	      numeps=3;
 	      b3_cal_eps(eps,pv,edisp,bop,numeps,numeledof);
 	      amzero(&D_a);
-	      b3_call_mat(ele,mat,eps,bop,D,intforce,ip,0,1);	 	      
+	      b3_call_mat(ele,mat,eps,bop,D,intforce,ip,0,1);
 	      b3_cal_forcelin3D(ele,intforce,fac,lr,e2,e3,0);
 	      ip+=1;
 	   }
@@ -455,7 +455,7 @@ case calc_struct_nlnstiff:
 	    b3_call_mat(ele,mat,eps,bop,D,intforce,ip,0,0);
   	    ip+=1;
 	    fac=facr*facs*fact*det;
-	    /*------calculate Fictitious nodal forces----------------------*/ 
+	    /*------calculate Fictitious nodal forces----------------------*/
 	    math_mattrnvecdense(force,bop,intforce,numeledof,3,1,fac);
 	    /*------factor for integration wxr*wxs*wxt*det-----------------*/
   	    fac=facr*facs*fact*det;
