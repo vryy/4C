@@ -509,20 +509,16 @@ void w1_fsiload(ELEMENT  *ele,
                 INT	  init,    
                 INT       imyrank)
 {
-
-#ifdef D_FSI
-
-INT          lr,ls;              /* integration directions          */
-INT          i,j,jj,k;           /* some loopers                    */
+INT          lr;                 /* integration directions          */
+INT          i,j,jj;             /* some loopers                    */
 INT          inode,idof;         /* some loopers                    */
 INT          nir,nis;            /* number of GP's in r-s direction */
 INT          iel;                /* number of element nodes         */
 INT          nd;                 /* element DOF                     */
 const INT    numdf  = 2;         /* dof per node                    */
 
-DOUBLE       e1,e2;              /* GP-koordinates in r-s-system   */
-DOUBLE       fac,facr,facs,wgt;  /* integration factor  GP-info    */
-DOUBLE       det;                /* det of jacobian matrix         */
+DOUBLE       e1;                 /* GP-koordinates in r-s-system    */
+DOUBLE       facr;               /* integration factor  GP-info     */
 
 /*--------------------- variables needed for integration of line loads */
 INT             foundline;   /* flag for lineload present or not       */
@@ -534,22 +530,16 @@ NODE           *actfnode;    /* actual fluid node                      */
 NODE           *actsnode;    /* actual structural node                 */
 INT             line;        /* looper over lines                      */
 INT             ngnode;      /* number of geometry-nodes on g-line     */
-INT             ngr,ngs;     /* number of GP'e for line-integration    */
+INT             ngr;         /* number of GP'e for line-integration    */
 INT             iegnod[MAXNOD_WALL1];
 DOUBLE          xgp[3];      /* Coordinates of GP'es                   */
-DOUBLE          ygp[3];      /* Coordinates of GP'es                   */
 DOUBLE          wgx[3];      /* weights at GP'es                       */
-DOUBLE          wgy[3];      /* weights at GP'es                       */
-DOUBLE          ds;          /* dx/dy line incr. for line integration  */
 DOUBLE          vnx,vny;     /* comp, of normal vector at INT point    */ 
-DOUBLE          facline;     /*integration factor for line integration */
 DOUBLE          forceline[2];/* lineload value in x and y direct.(inp) */
 DOUBLE          sigmaint[3]; /* fluid stresses at integration point    */
 DOUBLE          nsigma[3][MAXNOD_WALL1]; /* nodal fluid stresses       */
 DOUBLE          xyzl[2][MAXNOD_WALL1]; /* nodal coordinates            */
-RSF rsgeo;                   /* integration direction on line          */
 
-#endif /* D_FSI */
 
 #ifdef DEBUG 
 dstrc_enter("w1_fsiload");
@@ -650,7 +640,7 @@ for (line=0; line<ngline; line++)
          eload[1][jj] += funct[j] * forceline[1] * facr;
       }
    }/*============================================= end of loop over lr */
-   /* line number lie has been done,switch of the neumann pointer of it */
+   /* line number line has been done,switch off the neumann pointer     */
    ele->g.gsurf->gline[line]->neum=NULL;
 }/* end loop line over lines */
 /*-----------------------------------------------------------------------*/

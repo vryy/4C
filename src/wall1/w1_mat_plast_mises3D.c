@@ -149,6 +149,7 @@ dstrc_enter("w1_mat_plast_mises_3D");
 /*----------------------------------------------------------------------*/
    if(newval!=1)  /*Check of yield criteria with possible return*/
    {
+#ifdef D_MAT
     /*Aufruf der Materialroutine, allg. 3D*/
     mat_pl_mises_lin_main(
                        ym,
@@ -167,6 +168,9 @@ dstrc_enter("w1_mat_plast_mises_3D");
                        eps3D,    /*(input)*/
                        qn3D,     /*qn3d to be calculated (output)*/
                        dia);
+#else
+   dserror("mat-funcs needed but not defined!\n");
+#endif
    }
     /* do sorting back to wall [11,22,12,33] */
     w1_vec_switch(stress3D,2,3);      

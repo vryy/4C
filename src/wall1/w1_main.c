@@ -64,7 +64,7 @@ case calc_struct_init:
    w1static_ke(NULL,NULL,NULL,NULL,NULL,NULL,1);
    w1static_keug(NULL,NULL,NULL,NULL,NULL,NULL,1);
    w1_cal_stress(NULL,NULL,NULL,0,1);
-   w1_eleload(ele,&actdata,intforce,1,NULL);
+   w1_eleload(ele,&actdata,intforce,1,-1);
    w1_iedg(NULL,NULL,0,1);
    w1_write_restart(NULL,NULL,0,NULL,1);
    w1_read_restart(NULL,NULL,NULL,1);

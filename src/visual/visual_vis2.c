@@ -11,7 +11,9 @@ Maintainer: Steffen Genkinger
 
 ------------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
-#ifdef VISUAL2_PACKAGE
+#include "../fluid_full/fluid_prototypes.h"
+#include "../fsi_full/fsi_prototypes.h"
+#ifdef VISUAL2_PACKAGE                   
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
@@ -109,7 +111,9 @@ static INT     *CEDGE;                /* pointers to arrays             */
 static INT     numnp;	        /* number of nodes of actual field	*/
 static INT     numele;	        /* number of elements of actual field	*/
 static INT     ncols=1;         /* number of sol steps stored in sol	*/
+#ifdef D_FSI
 static INT     nacols=1;        /* number of sol steps of ALE field     */
+#endif
 static INT     isstr=0;         /* flag for streamline calculation	*/
 static INT     icol=-1;         /* act. num. of sol step to be visual.  */
 static INT     FIRSTSTEP;
@@ -133,7 +137,9 @@ static DOUBLE  vort;            /*                                      */
 static DOUBLE  kappa;	        /*					*/
 static DOUBLE  dissi;	        /*					*/
 static DOUBLE  visco;	        /*					*/
+#ifdef D_FSI
 static DOUBLE  xy;              /*					*/
+#endif
 static DOUBLE  minxy,maxxy;     /*					*/
 static DOUBLE  centerx,centery; /*                                      */
 static DOUBLE  minpre,maxpre;   /*					*/
@@ -170,10 +176,9 @@ FLUID_DYNAMIC *fdyn;                /* pointer to fluid dyn. inp.data   */
 void vis2caf(INT numff, INT numaf, INT numsf) 
 {
 
-INT iscan, i,j,k;
+INT iscan, i,j;
 INT screen, dummy;
 CALC_ACTION    *action;             /* pointer to the cal_action enum   */
-INTRA          *actintra;           /* pointer to active intra-communic.*/
 PARTITION      *actpart;            /* pointer to active partition      */
 CONTAINER       container;          /* contains variables defined in container.h */
 FLUID_DYNAMIC *fdyn;                /* pointer to fluid dyn. inp.data   */
@@ -308,7 +313,6 @@ if (IVORT==1)
    container.nif=0;
    container.nii=0;
    container.nim=0;
-   container.gen_alpha=0;
    container.fieldtyp=fluid;
    container.dvec=NULL;
    container.is_relax     = 0;
@@ -409,6 +413,7 @@ if (SCAL==1)
    printf("\n");
    printf("     Scaling parameter for y-coordinates?\n");
    scanf("%lf",&yscale);
+   dummy=getchar();
 }
 else
    yscale=ONE;
@@ -951,6 +956,8 @@ case structure:
    dserror("fieldtyp not implemented yet!");
 case ale:
    dserror("fieldtyp not implemented yet!");
+default:
+   dserror("fieldtyp not valid!\n");
 } /* end switch(actfieldtyp) */
 
 /*----------------------------------------------------------------------*/
@@ -1161,6 +1168,8 @@ case structure:
    dserror("fieldtyp not implemented yet!\n");
 case ale:
    dserror("fieldtyp not implemented yet!\n");
+default:
+   dserror("fieldtyp not valid!\n");
 } /* end switch(actfieldtyp) */
 
 /*----------------------------------------------------------------------*/
@@ -1192,7 +1201,6 @@ void v2vect(INT *JKEY, float V[][2])
 {
 
 INT i;
-float vx,vy;
 
 #ifdef DEBUG 
 dstrc_enter("V2VECT");
@@ -1247,6 +1255,8 @@ case structure:
    dserror("fieldtyp not implemented yet!\n");
 case ale:
    dserror("fieldtyp not implemented yet!\n");
+default:
+   dserror("fieldtyp not valid!\n");
 } /* end switch(actfieldtyp) */
 
 /*----------------------------------------------------------------------*/
@@ -1273,7 +1283,6 @@ icol is also updated
 ------------------------------------------------------------------------*/
 void v2update(float *TIME) 
 {
-INT i;
 
 #ifdef DEBUG 
 dstrc_enter("V2UPDATE");
@@ -1323,6 +1332,8 @@ case structure:
    dserror("fieldtyp not implemented yet!\n");
 case ale:
    dserror("fieldtyp not implemented yet!\n");
+default:
+   dserror("fieldtyp not valid!\n");
 } /* end switch(actfieldtyp) */
 
 
@@ -1378,6 +1389,8 @@ case structure:
    dserror("fieldtyp not implemented yet!\n");
 case ale:
    dserror("fieldtyp not implemented yet!\n");
+default:
+   dserror("fieldtyp not valid!\n");
 } /* end switch(actfieldtyp) */
 
 
@@ -1401,7 +1414,7 @@ return;
 ------------------------------------------------------------------------*/
 void v2cell(FIELD *actfield) 
 {
-INT i,j,k;
+INT i,j;
 INT inel;
 
 #ifdef DEBUG 
@@ -1576,7 +1589,7 @@ dstrc_enter("v2movie");
 
 /*--------------------------------------- add file counter to filenames */
 #ifdef HPUX11
-printf("movie creation ony possible under HPUX 10.20\n");
+printf("movie creation only possible under HPUX 10.20\n");
 goto end;
 #endif
 
@@ -1610,7 +1623,9 @@ system(&convert[0]);
 system(&remove[0]);
 
 /*----------------------------------------------------------------------*/
+#ifdef HPUX11
 end:
+#endif
 #ifdef DEBUG 
 dstrc_exit();
 #endif
