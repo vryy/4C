@@ -105,17 +105,12 @@ INT                ifsi;            /*!< coupling algorithm */
 INT                ipre;            /*!< type of predictor */
 INT                inrmfsi;         /*!< convergence criterion */
 INT                ichecke;         /*!< energy check */
-INT                inest;           /*!< nested iteration */
-INT                ichopt;          /*!< optimal ordering for CHEBYCHEV parameter */
-INT                iait;            /*!< Aitken iteration */
-INT                itechapp;        /*!< No. of Iter. for approx. EW-Calculation */
-INT                ichmax;          /*!< Max. No. of CHEBYCHEV iterations */
 INT                isdmax;          /*!< Max. No. of steepest descent iterations */
 INT                nstep;           /*!< number of steps */
 INT                itemax;          /*!< max. number of iterations over fields */
 INT                uppss;           /*!<  */
 INT                upres;           /*!< update .flavia.res every step */
-INT                res_write_evry;  /*!< write restart every step */
+INT                uprestart;       /*!< write restart every step */
 INT                step;            /*!<  */
 INT                iale;            /*!<  */
 DOUBLE             time;            /*!<  */
