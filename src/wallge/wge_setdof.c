@@ -2,16 +2,17 @@
 \file
 \brief contains the routine 'wge_setdof' to define dof of the gradient
 enhanced wall element
+<pre>
+Maintainer: Andrea Hund
+            hund@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/hund/
+            0771 - 685-6122
+</pre>
 
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "wallge.h"
 #include "wallge_prototypes.h"
-/*----------------------------------------------------------------------*
- |                                                          mn 06/02    |
- | vector of material laws                                              |
- | defined in global_control.c
- *----------------------------------------------------------------------*/
 
 /*!
 \addtogroup WALLGE
@@ -19,16 +20,9 @@ enhanced wall element
 
 
 /*!----------------------------------------------------------------------
-\brief  define dofs of the gradient enhanced wall element     mn 05/03
-
-<pre>
-This routine .
-
-</pre>
-\param *actpart      PARTITION   (i)   my partition
+\brief  define dofs of the gradient enhanced wall element     ah 05/03
 
 \return void
-\sa calling:   ;
 
 *----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*

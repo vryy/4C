@@ -3,10 +3,18 @@
 \brief contains the routine 'wge_mat_damage' which calculates stresses and
        material tangentes for isotropic gradient enhanced damage
 
+<pre>
+Maintainer: Andrea Hund
+            hund@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/hund/
+            0771 - 685-6122
+</pre>
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "wallge.h"
 #include "wallge_prototypes.h"
+#include "../wall1/wall1.h"
+#include "../wall1/wall1_prototypes.h"
 
 /*!
 \addtogroup WALLGE
@@ -17,6 +25,32 @@
 \brief contains the routine 'wge_mat_damage' which calculates stresses and
        material tangentes for isotropic gradient enhanced damage
 
+\param   equival        INT         (i)   flag for equivalent strains
+\param   damtyp         INT         (i)   flag for Damage-Typ
+\param   youngs         DOUBLE      (i)   young's modulus
+\param   nue            DOUBLE      (i)   poisson's ratio
+\param   kappa_0        DOUBLE      (i)   initial damage equivalent strain
+\param   kappa_m        DOUBLE      (i)   factor for damage-law
+\param   alpha          DOUBLE      (i)   factor for exp. damage-law
+\param   beta           DOUBLE      (i)   factor for exp. damage-law
+\param   k_fac          DOUBLE      (i)   de Vree
+\param  *ele            ELEMENT     (i)   my element
+\param **bopd           DOUBLE      (i)   B-operator for displacements
+\param  *functe         DOUBLE      (i)   Ansatz-funct. for equiv. strain
+\param **bope           DOUBLE      (i)   B-operator for equiv. strain
+\param   ip             INT         (i)   integration point Id
+\param  *stress         DOUBLE      (O)   stress vector
+\param  *eps_vl         DOUBLE      (O)   local equivalent strain
+\param  *eps_vnl        DOUBLE      (O)   nonlocal equivalent strain
+\param  *grad_eps_vnl   DOUBLE      (O)   grad of nonlocal equivalent strain
+\param **D              DOUBLE      (O)   1. Material tangent
+\param  *E              DOUBLE      (O)   2. Material tangent
+\param  *F              DOUBLE      (O)   3. Material tangent
+\param   istore         INT         (i)   update?
+\param   newval         INT         (i)   stress fpr output?
+
+
+\return void
 *----------------------------------------------------------------------*/
 void wge_mat_damage(INT      equival,  /* flag for equivalent strains     */
                     INT      damtyp,   /* flag for Damage-Typ             */
@@ -45,10 +79,8 @@ void wge_mat_damage(INT      equival,  /* flag for equivalent strains     */
 {
 #ifdef D_WALLGE
 /*----------------------------------------------------------------------*/
-INT i,j,k;
+INT i,j;
 INT yip;                     /* loading yip=1, unloading yip=0          */
-/*-------------------------------------------- for local degredation ---*/
-INT flag;
 /*------------------------------------------------------------------------*/
 DOUBLE kappa_n, kappa;       /* max. of ever reached nonl equiv.strain  */
 DOUBLE damage,dam_derv;      /* damage, (partial D)/(partial eps_equiv) */

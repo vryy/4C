@@ -2,6 +2,12 @@
 \file
 \brief contains the routine 'wgeinit' which initializes the element
 
+<pre>
+Maintainer: Andrea Hund
+            hund@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/hund/
+            0771 - 685-6122
+</pre>
 *----------------------------------------------------------------------*/
 #ifdef D_WALLGE
 #include "../headers/standardtypes.h"
@@ -15,24 +21,22 @@
 /*!----------------------------------------------------------------------
 \brief  initialization routine for the gradient enhanced wall element
 
-<pre>                                                              mn 05/03
+<pre>                                                              ah 05/03
 This routine inits the integration points and allocates stresses.
-
 </pre>
-\param *actpart      PARTITION   (i)   my partition
+
+\param *actpart      PARTITION   (I)   my partition
+\param *mat          MATERIAL    (I)   the element's material
 
 \warning There is nothing special to this routine.
 \return void
-\sa calling:   wgeintg;
-    called by: wallge();
 
 *----------------------------------------------------------------------*/
 void wgeinit(PARTITION *actpart,MATERIAL *mat)
 {
-INT          i,j,k,l,m,ncm;
+INT          i,j,k;
 INT          size_i, size_j;
 ELEMENT     *actele;
-NODE        *actnode;
 WALLGE_DATA    data;
 
 ARRAY    funct_a_h;  /* shape functions */

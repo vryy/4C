@@ -2,6 +2,12 @@
 \file
 \brief contains the routine 'wge_cal_stress' which gets converged stresses
     of GP-IPWA to have them for the output
+<pre>
+Maintainer: Andrea Hund
+            hund@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/hund/
+            0771 - 685-6122
+</pre>
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "wallge.h"
@@ -16,6 +22,7 @@
 \brief  the routine 'wge_cal_stress' which gets converged stresses
         of GP-IPWA to have them for the output
 
+\param *ele             ELEMENT     (I)   my element
 *----------------------------------------------------------------------*/
 void wge_cal_stress(ELEMENT   *ele)
 {

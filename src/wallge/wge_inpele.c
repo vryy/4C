@@ -3,6 +3,12 @@
 \brief contains the routine 'wge_inp' which reads the
        gradient enhanced wall element
 
+<pre>
+Maintainer: Andrea Hund
+            hund@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/hund/
+            0771 - 685-6122
+</pre>
 *----------------------------------------------------------------------*/
 #ifdef D_WALLGE
 #include "../headers/standardtypes.h"
@@ -16,10 +22,10 @@
 /*!----------------------------------------------------------------------
 \brief reads an gradient enhanced wall element from the input file
 
-<pre>                                                              mn 05/03
+<pre>                                                        ah 05/03
 This routine reads an gradient enhanced wall element from the input file
-
 </pre>
+
 \param *ele  ELEMENT  (o)   the element
 
 \warning buffer[50] is not needed locally

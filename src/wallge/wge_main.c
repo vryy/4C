@@ -3,6 +3,12 @@
 \brief contains the routine 'wallge' the main routine for the
  gradient enhanced wall element
 
+<pre>
+Maintainer: Andrea Hund
+            hund@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/hund/
+            0771 - 685-6122
+</pre>
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "wallge.h"
@@ -22,12 +28,12 @@ extern struct _MATERIAL  *mat;
 /*!----------------------------------------------------------------------
 \brief  control routine for the gradient enhanced wall element
 
-<pre>                                                              mn 05/03
+<pre>                                                              ah 05/03
 This routine acts according to the action and either initializes the element
 or computes the linear stiffness matrix, internal forces,the stresses or the
 right hand side vector.
-
 </pre>
+
 \param *actpart         PARTITION   (i)   my partition
 \param *actintra        INTRA       (i)   my intra-communicator
 \param *ele             ELEMENT     (i)   my element

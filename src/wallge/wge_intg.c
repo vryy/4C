@@ -3,6 +3,12 @@
 \brief contains the routine 'wgeintg' which calculates the needed values
        for the integration points
 
+<pre>
+Maintainer: Andrea Hund
+            hund@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/hund/
+            0771 - 685-6122
+</pre>
 *----------------------------------------------------------------------*/
 #ifdef D_WALLGE
 #include "../headers/standardtypes.h"
@@ -13,7 +19,7 @@
 *//*! @{ (documentation module open)*/
 
 /*----------------------------------------------------------------------*
- | integration points                                        al 6/01    |
+ | integration points                                        ah 6/03    |
  -----------------------------------------------------------------------|
  |     ngp[0] --> number of integration points r-direction              |
  |     ngp[1] --> number of integration points s-direction              |
@@ -22,6 +28,17 @@
  |     wgtr   --> weighting factors            r-direction              |
  |     wgts   --> weighting factors            s-direction              |
  *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief  calculates the needed values for the integration points
+
+\param *ele          ELEMENT     (I)   the element
+\param *data         WALLGE_DATA (I/O) the element's integration data
+\param  option       INT         (I)   write the data or get them?
+
+\warning There is nothing special to this routine.
+\return void
+
+*----------------------------------------------------------------------*/
 void wgeintg(ELEMENT       *ele,
              WALLGE_DATA   *data,
              INT            option)

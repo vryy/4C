@@ -3,25 +3,38 @@
 \brief contains the routine 'wge_static_ke' which calculates the
 stiffness matrix and internal forces for a gradient enhanced wall element
 
+<pre>
+Maintainer: Andrea Hund
+            hund@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/hund/
+            0771 - 685-6122
+</pre>
 *-----------------------------------------------------------------------*/
 #ifdef D_WALLGE
 #include "../headers/standardtypes.h"
 #include "wallge.h"
 #include "wallge_prototypes.h"
+#include "../wall1/wall1.h"
+#include "../wall1/wall1_prototypes.h"
 
 /*!
 \addtogroup WALLGE
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief calculates stiffness matrix and internal forcees
+\brief calculates stiffness matrix and internal forces
 
-<pre>                                                              mn 05/03
+<pre>                                                            ah 05/03
 This routine calculates stiffness matrix for small strains formulation.
-
 </pre>
-\param **s       DOUBLE    (o)  blablabla
-\param   dl      DOUBLE    (i)  blablabal
+
+\param  *ele          ELEMENT     (I)  actual element
+\param  *data         WALLGE_DATA (I): element integration data
+\param  *mat          MATERIAL    (I): element's material
+\param  *estif_global DOUBLE      (O): element's stiffness matrix (mixed displ and equiv.strains)
+\param  *emass_global DOUBLE      (O): element's mass matrix if dynamic
+\param  *force        DOUBLE      (O): element's internal force(mixed displ and equiv.strains)
+\param   init         INT         (I): is it initalisation?
 
 \warning There is nothing special to this routine
 \return void
@@ -55,7 +68,7 @@ void wgestatic_ke(ELEMENT       *ele,
                   DOUBLE        *force,  /* global int forces (0-initialized in the corrector, not needed for predictor) */
                   INT            init)
 {
-INT             lr,ls,i,j;       /* looper */
+INT             lr,ls,i;       /* looper */
 INT             ip;
 INT             nir,nis;     /* num GP in r/s direction */
 INT             ield;        /* num nodal points for displacements */

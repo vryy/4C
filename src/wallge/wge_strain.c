@@ -3,6 +3,12 @@
 \brief  contains the routine 'wge_disd' which calculates displacement
         derivatives for gradient enhanced wall element
 
+<pre>
+Maintainer: Andrea Hund
+            hund@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/hund/
+            0771 - 685-6122
+</pre>
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "wallge.h"
@@ -17,12 +23,19 @@
 \brief  contains the routine 'wge_disd' which calculates displacement
         derivatives for gradient enhanced wall element
 
+\param *ele             ELEMENT     (I)   my element
+\param **bopd           DOUBLE      (I)   B-operator for displacements
+\param  *functe         DOUBLE      (I)   Ansatz-funct. for equiv. strain
+\param **bope           DOUBLE      (I)   B-operator for equiv. strain
+\param  *strain         DOUBLE      (O)   strain vector
+\param  *eps_vnl        DOUBLE      (O)   nonlocal equivalent strain
+\param  *grad_eps_vnl   DOUBLE      (O)   grad nonl. equiv. strain
 *----------------------------------------------------------------------*/
 void wge_strain(ELEMENT   *ele,     /* actual element                  */
                 DOUBLE   **bopd,    /* B-operator for displacements    */
                 DOUBLE    *functe,  /* Ansatz-funct. for equiv. strain */
                 DOUBLE   **bope,    /* B-operator for equiv. strain    */
-                DOUBLE    *strain,  /* stress vector                   */
+                DOUBLE    *strain,  /* strain vector                   */
                 DOUBLE    *eps_vnl, /* nonlocal equivalent strain      */
                 DOUBLE    *grad_eps_vnl) /* grad nonl. equiv. strain   */
 {

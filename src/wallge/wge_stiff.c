@@ -2,6 +2,12 @@
 \file
 \brief contains the routines 'wge_stiff_de' -> calculates stiffness
        matrix K_de as sum over gaussian points,
+<pre>
+Maintainer: Andrea Hund
+            hund@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/hund/
+            0771 - 685-6122
+</pre>
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "wallge.h"
@@ -13,9 +19,17 @@
 
 
 /*!----------------------------------------------------------------------
-\brief routine 'wge_stiff_de' -> calculates stiffness
+\brief routine 'wge_stiff_de' -> calculates stiffness       ah 6/03
        matrix K_de as sum over gaussian points
 
+\param **Kde            DOUBLE      (O)   stiffnes displ - equiv,strain
+\param **bopd           DOUBLE      (I)   B-operator for displacements
+\param  *E              DOUBLE      (I)   2. Material tangent
+\param  *functe         DOUBLE      (I)   Ansatz-funct. for equiv. strain
+\param   fac            DOUBLE      (I)   integration factor
+\param   numdfd         INT         (I)   number of element displacement DOF
+\param   iele           INT         (I)   number of element equiv.strain DOF
+\param   neps           INT         (I)   number of strain components
 *----------------------------------------------------------------------*/
 void wge_stiff_de(DOUBLE  **Kde,      /* stiffnes displ - equiv,strain */
                   DOUBLE  **bopd,     /* B-operator for displacements  */

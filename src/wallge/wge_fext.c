@@ -4,10 +4,18 @@
        vector due to external element (line and surface) loads for gradient
        enhanced wall element
 
+<pre>
+Maintainer: Andrea Hund
+            hund@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/hund/
+            0771 - 685-6122
+</pre>
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "wallge.h"
 #include "wallge_prototypes.h"
+#include "../wall1/wall1.h"
+#include "../wall1/wall1_prototypes.h"
 /*----------------------------------------------------------------------*/
 typedef enum _RSF
 { /* r..r-dir., s..s-dir., n..-1.0, p..+1.0 */
@@ -30,6 +38,12 @@ static ARRAY xjm_a;    static DOUBLE **xjm;    /* jacobian matrix            */
        vector due to external element (line and surface) loads for gradient
        enhanced wall element
 
+\param  *ele        ELEMENT     (I): actual element
+\param  *data       WALLGE_DATA (I): element integration data
+\param  *loadvec    DOUBLE      (O): external element forces
+\param   init       INT         (I): is it initalisation?
+
+\return void
 *----------------------------------------------------------------------*/
  /*----------------------------------------------------------------------*
  |                 s                            s                        |
@@ -64,7 +78,7 @@ INT          ield;               /* number of element nodes         */
 INT          foundsurface;       /* flag for surfaceload present    */
 
 DOUBLE       e1,e2;              /* GP-koordinates in r-s-system   */
-DOUBLE       fac,facr,facs,wgt;  /* integration factor  GP-info    */
+DOUBLE       fac,facr,facs;  /* integration factor  GP-info    */
 DOUBLE       det;                /* det of jacobian matrix         */
 
 /*--------------------- variables needed for integration of line loads */

@@ -138,7 +138,10 @@ void w1_sett(DOUBLE   **A,
 /*----------------------------------------------------------------------*/
 INT numeps=4;
 INT l;
-DOUBLE a11,a12,a21,a22;
+DOUBLE a11=0.0;
+DOUBLE a12=0.0;
+DOUBLE a21=0.0;
+DOUBLE a22=0.0;
 DOUBLE zero=0.;
 DOUBLE one=1.;
 INT i,j;

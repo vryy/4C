@@ -37,12 +37,13 @@ void w1_cal_stress(ELEMENT   *ele,
 		       INT        init)
 {
 INT                 i,j,k,l;            /* some loopers */
-INT                 nir,nis;          /* num GP in r/s/t direction */
+INT                 nir=0;          /* num GP in r/s/t direction */
+INT                 nis=0;          /* num GP in r/s/t direction */
 INT                 lr, ls;           /* loopers over GP */
 INT                 iel;              /* numnp to this element */
 INT                 nd;
 INT                 ip;
-INT                 intc;      /* "integration case" for tri-element */
+INT                 intc=0;      /* "integration case" for tri-element */
 INT	              it=0;      /* flag for transformation global/local   */
 INT                 istore = 0;/* controls storing of new stresses to wa */
 INT                 newval = 1;/* controls evaluation of new stresses    */
@@ -51,7 +52,8 @@ const INT           numeps = 3;
 const INT           numstr = 4;
 
 DOUBLE              fac;
-DOUBLE              e1,e2;            /*GP-coords*/
+DOUBLE              e1=0.0;            /*GP-coords*/
+DOUBLE              e2=0.0;            /*GP-coords*/
 DOUBLE              facr=1.0;        /* weights at GP */
 DOUBLE              facs=1.0;        /* weights at GP */
 DOUBLE              dum;
