@@ -324,6 +324,13 @@ void s9_out_gid_eletop(FILE *out,INT type,ELEMENT *actele);
 void s9_out_gid_sol_dis(FILE *out,FIELD *actfield,INT place);
 void s9_out_gid_sol_str(FILE *out,FIELD *actfield,INT place);
 /*----------------------------------------------------------------------*
+ |  s9_out_unsmo.c                                          sh 07/03    |
+ *----------------------------------------------------------------------*/
+void s9_out_gid_allcoords_unsmo(FILE *out,INT type);
+void s9_out_gid_eletop_unsmo(FILE *out,INT type,INT j);
+void s9_out_gid_sol_dis_unsmo(FILE *out,FIELD *actfield,INT place);
+void s9_out_gid_sol_str_unsmo(FILE *out,FIELD *actfield,INT place);
+/*----------------------------------------------------------------------*
  |  s9_restart.c                                         m.gee 05/02    |
  *----------------------------------------------------------------------*/
 void s9_write_restart(ELEMENT *actele, INT nhandle, long int *handles);
