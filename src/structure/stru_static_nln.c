@@ -143,6 +143,23 @@ actsolv     = &(solv[0]);         /* the corresponednt SOLVAR structure */
 actpart     = &(partition[0]);    /*     the partitioning of this field */
 action      = &(calc_action[0]);  /*        the calculation action enum */
 container.fieldtyp = actfield->fieldtyp;
+/*------------------------------------ put kintyp to container sh 03/03 */
+switch(statvar->kintyp)
+{
+case geo_linear:
+   container.kintyp = 0;
+break;
+case upd_lagr:
+   container.kintyp = 1;
+break;
+case tot_lagr:
+   container.kintyp = 2;
+break;
+default: 
+   dserror("Unknown typ of kinematic");
+break;
+}
+
 #ifdef PARALLEL 
 actintra    = &(par.intra[0]);    /*     the field's intra-communicator */
 /*---------------- if we are not parallel, we have to allocate a pseudo */
