@@ -199,7 +199,7 @@ void f3_smint(FLUID_DATA      *data,
 { 
 INT       i,j;        /* simply some counters                           */
 INT       iel,smiel;  /* large-scale and submesh number of nodes        */
-INT       ntyp,nsmtyp;/* l-s and submesh element type: 1 - hex; 2 - tet */
+INT       nsmtyp;     /* l-s and submesh element type: 1 - hex; 2 - tet */
 INT       intc;       /* "integration case" for tet for further infos
                           see f3_inpele.c and f3_intg.c                 */
 INT       nir,nis,nit;/* number of integration nodes in r,s direction   */
@@ -230,7 +230,6 @@ smiel  = submesh->numen;
 actmat = ele->mat-1;
 dens   = mat[actmat].m.fluid->density;
 visc   = mat[actmat].m.fluid->viscosity;
-ntyp   = ele->e.f3->ntyp; 
 typ    = ele->distyp;
 nsmtyp = submesh->ntyp; 
 smtyp  = submesh->typ;
@@ -263,13 +262,13 @@ default:
 } /* end switch(nsmtyp) */
 
 /*---------------------------- check if ls-elements are "higher order" */
-switch (ntyp)
+switch (typ)
 {
-case 1:  /* --> hex - element */
+case hex8: case hex20: case hex27:  /* --> hex - element */
    icode   = 3;
    ihoel   = 1;
 break;
-case 2: /* --> tet - element */  
+case tet4: case tet10: /* --> tet - element */  
    if (iel>4)
    {
      icode   = 3;
@@ -277,8 +276,8 @@ case 2: /* --> tet - element */
    }
 break;
 default:
-   dserror("ntyp unknown!");
-} /* end switch(ntyp) */
+   dserror("typ unknown!");
+} /* end switch(typ) */
 
 /*----------------------------------------------------------------------*
  |               start loop over integration points                     |
@@ -311,7 +310,7 @@ for (lr=0;lr<nir;lr++)
          f3_tet(smfunct,smderiv,smderiv2,e1,e2,e3,smtyp,icodesm); 
       break;
       default:
-         dserror("ntyp unknown!");
+         dserror("typ unknown!");
       } /* end switch(nsmtyp) */
 /*-------------------------------- compute Jacobian matrix for submesh */
       f3_mljaco3(smxyze,smfunct,smderiv,smxjm,&det,smiel,ele);
@@ -323,17 +322,17 @@ for (lr=0;lr<nir;lr++)
       f3_mlgcoor2(smfunct,smxyzep,smiel,coor);
 
 /*---- get values of large-scale shape functions and their derivatives */
-      switch(ntyp)
+      switch(typ)
       {
-      case 1:    /* --> hex - element */
+      case hex8: case hex20: case hex27:    /* --> hex - element */
         f3_hex(funct,deriv,deriv2,coor[0],coor[1],coor[2],typ,icode);
       break;
-      case 2:	/* --> tet - element */ 	     
+      case tet4: case tet10:	/* --> tet - element */ 	     
         f3_tet(funct,deriv,deriv2,coor[0],coor[1],coor[2],typ,icode); 
       break;
       default:
-        dserror("ntyp unknown!\n");      
-      } /*end switch(ntyp) */
+        dserror("typ unknown!\n");      
+      } /*end switch(typ) */
 /*------------ compute Jacobian matrix for large-scale shape functions */
       f3_mljaco(funct,deriv,xjm,&det,ele,iel);
 /*----------- compute global derivates for large-scale shape functions */
@@ -342,7 +341,7 @@ for (lr=0;lr<nir;lr++)
       if (ihoel!=0) f3_mlgder2(ele,xjm,wa2,derxy,derxy2,deriv2,iel);
 
 /*------------ get large-scale velocities (n+1,i) at integration point */
-      f3_veli(velint,funct,evel,iel);
+      f3_veci(velint,funct,evel,iel);
 /*-- get large-scale velocity (n+1,i) derivatives at integration point */
       f3_vder(vderxy,derxy,evel,iel);
       
@@ -365,7 +364,7 @@ for (lr=0;lr<nir;lr++)
         fluid_bubder (smfderxy,smderxy,efbub,smiel,3,3);            
 	 
 /*---------------------- get small-scale velocities at integraton point */
-        f3_veli (smvelint,vbubint,evel,iel);	      
+        f3_veci (smvelint,vbubint,evel,iel);	      
 /*------------ get small-scale velocity derivatives at integraton point */
         f3_vder (smvderxy,vbubderxy,evel,iel);	      
 /*--------------------- get small-scale 'pressures' at integraton point */
@@ -435,7 +434,7 @@ for (lr=0;lr<nir;lr++)
 /*------- get large-scale pressure derivatives (n) at integration point */
         if (fdyn->iprerhs>0) f3_pder(pderxyn,derxy,epren,iel);
 /*------------------ get large-scale velocities (n) at integraton point */
-        f3_veli(velintn,funct,eveln,iel);
+        f3_veci(velintn,funct,eveln,iel);
 /*------- get large-scale velocity derivatives (n) at integration point */
         f3_vder(vderxyn,derxy,eveln,iel);
 /*--- get large-scale 2nd velocity derivatives (n) at integration point */
@@ -468,7 +467,7 @@ for (lr=0;lr<nir;lr++)
 	  fluid_bubder (smfderxy2n,smderxy2,efbubn,smiel,3,6);
 	   
 /*------------------ get small-scale velocities (n) at integraton point */
-          f3_veli (smvelintn,vbubintn,eveln,iel);	      
+          f3_veci (smvelintn,vbubintn,eveln,iel);	      
 /*-------- get small-scale velocity derivatives (n) at integraton point */
           f3_vder (smvderxyn,vbubderxyn,eveln,iel);	      
 /*---- get small-scale 2nd velocity derivatives (n) at integraton point */
@@ -666,7 +665,7 @@ void f3_bubint(FLUID_DATA      *data,
 { 
 INT       i,j;        /* simply some counters                           */
 INT       iel,smiel;  /* number of nodes                                */
-INT       ntyp,nsmtyp;/* l-s and submesh element type: 1 - hex; 2 - tet */
+INT       nsmtyp;     /* l-s and submesh element type: 1 - hex; 2 - tet */
 INT       intc;       /* "integration case" for tet for further infos
                           see f3_inpele.c and f3_intg.c                 */
 INT       nir,nis,nit;/* number of integration nodesin r,s direction    */
@@ -697,7 +696,6 @@ smiel  = submesh->numen;
 actmat = ele->mat-1;
 dens   = mat[actmat].m.fluid->density;
 visc   = mat[actmat].m.fluid->viscosity;
-ntyp   = ele->e.f3->ntyp; 
 typ    = ele->distyp;
 nsmtyp = submesh->ntyp; 
 smtyp  = submesh->typ;
@@ -730,13 +728,13 @@ default:
 } /* end switch(nsmtyp) */
 
 /*---------------------------- check if ls-elements are "higher order" */
-switch (ntyp)
+switch (typ)
 {
-case 1:  /* --> hex - element */
+case hex8: case hex20: case hex27:  /* --> hex - element */
    icode   = 3;
    ihoel   = 1;
 break;
-case 2: /* --> tet - element */  
+case tet4: case tet10: /* --> tet - element */  
    if (iel>4)
    {
       icode   = 3;
@@ -744,8 +742,8 @@ case 2: /* --> tet - element */
    }
 break;
 default:
-   dserror("ntyp unknown!");
-} /* end switch(ntyp) */
+   dserror("typ unknown!");
+} /* end switch(typ) */
 
 /*----------------------------------------------------------------------*
  |               start loop over integration points                     |
@@ -790,24 +788,24 @@ for (lr=0;lr<nir;lr++)
       f3_mlgcoor2(smfunct,smxyzep,smiel,coor);
 
 /*---- get values of large-scale shape functions and their derivatives */
-      switch(ntyp)
+      switch(typ)
       {
-      case 1:    /* --> hex - element */
+      case hex8: case hex20: case hex27:    /* --> hex - element */
         f3_hex(funct,deriv,deriv2,coor[0],coor[1],coor[2],typ,icode);
       break;
-      case 2:	/* --> tri - element */ 	     
+      case tet4: case tet10:	/* --> tri - element */ 	     
         f3_tet(funct,deriv,deriv2,coor[0],coor[1],coor[2],typ,icode);   
       break;
       default:
-        dserror("ntyp unknown!\n");      
-      } /*end switch(ntyp) */
+        dserror("typ unknown!\n");      
+      } /*end switch(typ) */
 /*------------ compute Jacobian matrix for large-scale shape functions */
       f3_mljaco(funct,deriv,xjm,&det,ele,iel);
 /*----------- compute global derivates for large-scale shape functions */
       f3_gder(derxy,deriv,xjm,wa1,det,iel);
 
 /*------------ get large-scale velocities (n+1,i) at integration point */
-      f3_veli(velint,funct,evel,iel);
+      f3_veci(velint,funct,evel,iel);
 /*-- get large-scale velocity (n+1,i) derivatives at integration point */
       f3_vder(vderxy,derxy,evel,iel);
       
@@ -830,7 +828,7 @@ for (lr=0;lr<nir;lr++)
       if (mlvar->convel==0)
       { 
 /*--------------------- get small-scale velocities at integration point */
-        f3_veli (smvelint,vbubint,evel,iel);	      
+        f3_veci (smvelint,vbubint,evel,iel);	      
 /*----------- get small-scale velocity derivatives at integration point */
         f3_vder (smvderxy,vbubderxy,evel,iel);	      
 /*-------------------- get small-scale 'pressures' at integration point */
@@ -855,7 +853,7 @@ for (lr=0;lr<nir;lr++)
  |  Standard Galerkin matrices are all stored in one matrix "estif"     |
  |  Standard Galerkin mass matrix is stored in "emass"                  |
  *----------------------------------------------------------------------*/
-      if (fdyn->nik>0 && mlvar->convel==0)
+      if (mlvar->convel==0)
       {
 /*------------------------ compute standard Galerkin part of matrix Kvv */      
         f3_lscalkvv(estif,velint,vderxy,funct,derxy,fac,visc,iel);
@@ -878,8 +876,8 @@ for (lr=0;lr<nir;lr++)
 /*-------------------------- compute bubble function part of matrix Kpp */      
       f3_calbkpp(estif,funct,pbubderxy,fac,iel);
 	
-      if (fdyn->nis==0 && mlvar->transterm==0 || 
-          fdyn->nis==0 && mlvar->transterm==2)
+      if ((fdyn->nis==0 && mlvar->transterm==0) || 
+          (fdyn->nis==0 && mlvar->transterm==2))
       {	   
 /*-------------------------- compute bubble function part of matrix Mvv */      
 	f3_calbmvv(emass,funct,vbubint,fac,iel);
@@ -906,7 +904,7 @@ for (lr=0;lr<nir;lr++)
         if (mlvar->convel!=0)
         {
 /*--------------------- get small-scale velocities at integration point */
-          f3_veli (smvelint,vbubint,evel,iel);	      
+          f3_veci (smvelint,vbubint,evel,iel);	      
 /*----------- get small-scale velocity derivatives at integration point */
           f3_vder (smvderxy,vbubderxy,evel,iel);	      
 /*-------------------- get small-scale 'pressures' at integration point */
@@ -1011,7 +1009,6 @@ void f3_lsint(FLUID_DATA      *data,
 	      DOUBLE	     **wa2)
 { 
 INT      iel;	      /* number of nodes 			        */
-INT      ntyp;        /* element type: 1 - hex; 2 - tet  	        */
 INT      intc;        /* "integration case" for tet for further infos
          		 see f3_inpele.c and f3_intg.c                  */
 INT      nir,nis,nit; /* number of integration nodes in r,s,t direction */
@@ -1040,7 +1037,6 @@ iel=ele->numnp;
 actmat=ele->mat-1;
 dens = mat[actmat].m.fluid->density;
 visc = mat[actmat].m.fluid->viscosity;
-ntyp = ele->e.f3->ntyp; 
 typ  = ele->distyp;
 gls    = ele->e.f3->stabi.gls;
 
@@ -1048,9 +1044,9 @@ if (ele->e.f3->stab_type != stab_gls)
    dserror("routine with no or wrong stabilisation called");
    
 /*------- get integraton data and check if elements are "higher order" */
-switch (ntyp)
+switch (typ)
 {
-case 1:  /* --> hex - element */
+case hex8: case hex20: case hex27:  /* --> hex - element */
    icode   = 3;
    ihoel   = 1;
    /* initialize integration */
@@ -1058,7 +1054,7 @@ case 1:  /* --> hex - element */
    nis = ele->e.f3->nGP[1];
    nit = ele->e.f3->nGP[2];
    break;
-case 2: /* --> tet - element */  
+case tet4: case tet10: /* --> tet - element */  
    if (iel>4)
    {
       icode   = 3;
@@ -1071,8 +1067,8 @@ case 2: /* --> tet - element */
    intc = ele->e.f3->nGP[1];  
    break;
 default:
-   dserror("ntyp unknown!");
-} /* end switch (ntyp) */
+   dserror("typ unknown!");
+} /* end switch (typ) */
 
 /*----------------------------------------------------------------------*
  |               start loop over integration points                     |
@@ -1084,9 +1080,9 @@ for (ls=0;ls<nis;ls++)
 for (lt=0;lt<nit;lt++)
 {
 /*---------------- get values of  shape functions and their derivatives */
-   switch(ntyp)  
+   switch(typ)  
    {
-   case 1:   /* --> hex - element */
+   case hex8: case hex20: case hex27:   /* --> hex - element */
       e1   = data->qxg[lr][nir-1];
       facr = data->qwgt[lr][nir-1];
       e2   = data->qxg[ls][nis-1];
@@ -1095,7 +1091,7 @@ for (lt=0;lt<nit;lt++)
       fact = data->qwgt[lt][nit-1];
       f3_hex(funct,deriv,deriv2,e1,e2,e3,typ,icode);
       break;
-   case 2:   /* --> tet - element */		  	
+   case tet4: case tet10:   /* --> tet - element */		  	
       e1   = data->txgr[lr][intc];
       facr = data->twgt[lr][intc];
       e2   = data->txgs[lr][intc];
@@ -1105,8 +1101,8 @@ for (lt=0;lt<nit;lt++)
       f3_tet(funct,deriv,deriv2,e1,e2,e3,typ,icode); 
       break;
    default:
-      dserror("ntyp unknown!");
-   } /* end switch (ntyp) */
+      dserror("typ unknown!");
+   } /* end switch (typ) */
 /*-------------------------------------------- compute Jacobian matrix */  
    f3_mljaco(funct,deriv,xjm,&det,ele,iel);
    fac = facr*facs*fact*det;
@@ -1114,30 +1110,27 @@ for (lt=0;lt<nit;lt++)
    f3_gder(derxy,deriv,xjm,wa1,det,iel);
 
 /*------------------------ get velocities (n+1,i) at integration point */
-   f3_veli(velint,funct,evel,iel);
+   f3_veci(velint,funct,evel,iel);
 /*-------------- get velocity derivatives (n+1,i) at integration point */
    f3_vder(vderxy,derxy,evel,iel);
  
 /*---- compute stab. par. or subgrid viscosity during integration loop */
-      if (gls->istabi>0 && gls->iduring!=0 || 
-          fdyn->sgvisc>0    && gls->iduring!=0)
-        f3_mlcalelesize2(ele,velint,vderxy,derxy,visc,iel,ntyp);
+      if (gls->iduring!=0 || 
+          (fdyn->sgvisc>0    && gls->iduring!=0))
+        f3_mlcalelesize2(ele,velint,vderxy,derxy,visc,iel,typ);
 /*----------------------------------------------------------------------*
  |         compute "Standard Galerkin" matrices                         |
  | NOTE:                                                                |
  |  Standard Galerkin matrices are all stored in one matrix "estif"     |
  |  Standard Galerkin mass matrix is stored in "emass"                  |
  *----------------------------------------------------------------------*/
-   if(fdyn->nik>0)
-   {
 /*------------------------ compute standard Galerkin part of matrix Kvv */      
-     if (mlvar->convel!=0) 
-       f3_lscalkvv(estif,velint,vderxy,funct,derxy,fac,visc,iel);
+   if (mlvar->convel!=0) 
+      f3_lscalkvv(estif,velint,vderxy,funct,derxy,fac,visc,iel);
 /*-------------- compute standard Galerkin part of matrices Kvp and Kpv */      
-      f3_lscalkvp(estif,funct,derxy,fac,iel);
+   f3_lscalkvp(estif,funct,derxy,fac,iel);
 /*------------------------ compute standard Galerkin part of matrix Mvv */      
-      if (fdyn->nis==0) f3_lscalmvv(emass,funct,fac,iel);
-   } /* endif (fdyn->nik>0) */
+   if (fdyn->nis==0) f3_lscalmvv(emass,funct,fac,iel);
    
 /*----------------------------------------------------------------------*
  |         compute Stabilization matrices                               |
@@ -1146,37 +1139,31 @@ for (lt=0;lt<nit;lt++)
  |  Stabilization matrices are all stored in one matrix "estif"         |
  |  Stabilization mass matrices are all stored in one matrix "emass"    |
  *----------------------------------------------------------------------*/
-   if (gls->istabi>0)
-   { 
 /*------------------------------------ compute second global derivative */ 
-      if (ihoel!=0) f3_mlgder2(ele,xjm,wa2,derxy,derxy2,deriv2,iel);
+   if (ihoel!=0) f3_mlgder2(ele,xjm,wa2,derxy,derxy2,deriv2,iel);
    
-      if (fdyn->nie==0)
-      {
 /*---------------------------------------- stabilization for matrix Kvv */
-         f3_lscalstabkvv(ele,estif,velint,vderxy,
+   f3_lscalstabkvv(ele,estif,velint,vderxy,
                           funct,derxy,derxy2,fac,visc,iel,ihoel);
 /*---------------------------------------- stabilization for matrix Kvp */
-         f3_lscalstabkvp(ele,estif,velint,vderxy,
+   f3_lscalstabkvp(ele,estif,velint,vderxy,
                        funct,derxy,derxy2,fac,visc,iel,ihoel); 
 /*---------------------------------------- stabilization for matrix Mvv */
-         if (fdyn->nis==0) 
-            f3_lscalstabmvv(ele,emass,velint,vderxy,
+   if (fdyn->nis==0) 
+      f3_lscalstabmvv(ele,emass,velint,vderxy,
 	                     funct,derxy,derxy2,fac,visc,iel,ihoel);
-         if (gls->ipres!=0)	        
-         {
+   if (gls->ipres!=0)	        
+   {
 /*---------------------------------------- stabilization for matrix Kpv */ 
-            f3_lscalstabkpv(estif,velint,vderxy,
+      f3_lscalstabkpv(estif,velint,vderxy,
 	                  funct,derxy,derxy2,fac,visc,iel,ihoel);
 /*---------------------------------------- stabilization for matrix Mpv */
-	    if (fdyn->nis==0)
-	       f3_lscalstabmpv(emass,funct,derxy,fac,iel);
-         } /* endif (ele->e.f3->ipres!=0) */
-      } /* endif (fdyn->nie==0) */
-/*---------------------------------------- stabilization for matrix Kpp */ 
-      if (gls->ipres!=0)
-	 f3_lscalstabkpp(estif,derxy,fac,iel);  
-   } /* endif (ele->e.f3->istabi>0) */ 
+      if (fdyn->nis==0)
+         f3_lscalstabmpv(emass,funct,derxy,fac,iel);
+   } /* endif (ele->e.f3->ipres!=0) */
+   /*---------------------------------------- stabilization for matrix Kpp */ 
+   if (gls->ipres!=0)
+      f3_lscalstabkpp(estif,derxy,fac,iel);  
 
 /*----------------------------------------------------------------------*
  |         compute "Iteration" Force Vectors                            |
@@ -1195,9 +1182,10 @@ for (lt=0;lt<nit;lt++)
     if (fdyn->nis==0)
     {
  /*------------------------------ get pressure (n) at integration point */
-      if (fdyn->iprerhs>0) f3_prei(&preintn,funct,epren,iel);
+      if (fdyn->iprerhs>0) 
+         preintn=f3_scali(funct,epren,iel);
 /*----------------------------- get velocities (n) at integration point */
-      f3_veli(velintn,funct,eveln,iel);
+      f3_veci(velintn,funct,eveln,iel);
 /*------------------- get velocity derivatives (n) at integration point */
       f3_vder(vderxyn,derxy,eveln,iel);
 /*------------------ get convective velocities (n) at integration point */
@@ -1416,7 +1404,7 @@ void f3_ssint(FLUID_DATA      *data,
 	      DOUBLE	     **wa1)
 { 
 INT       iel,ssiel;  /* large-scale and sub-submesh number of nodes    */
-INT       ntyp,nsstyp;/* l-s and ssm element type: 1 - hex; 2 - tri    */
+INT       nsstyp;     /* l-s and ssm element type: 1 - hex; 2 - tri    */
 INT       intc;       /* "integration case" for tet for further infos
                           see f3_inpele.c and f3_intg.c                 */
 INT       nir,nis,nit;/* number of integration nodesin r,s direction    */
@@ -1439,7 +1427,6 @@ iel    = ele->numnp;
 ssiel  = ssmesh->numen;
 actmat = ele->mat-1;
 visc   = mat[actmat].m.fluid->viscosity;
-ntyp   = ele->e.f3->ntyp; 
 typ    = ele->distyp;
 nsstyp = ssmesh->ntyp; 
 sstyp  = ssmesh->typ;
@@ -1503,24 +1490,24 @@ for (lr=0;lr<nir;lr++)
       f3_mlgcoor2(ssfunct,ssxyzep,ssiel,coor);
       
 /*---- get values of large-scale shape functions and their derivatives */
-      switch(ntyp)
+      switch(typ)
       {
-      case 1:    /* --> hex - element */
+      case hex8: case hex20: case hex27:    /* --> hex - element */
         f3_hex(funct,deriv,deriv2,coor[0],coor[1],coor[2],typ,2);
       break;
-      case 2:	/* --> tet - element */ 	     
+      case tet4: case tet10:	/* --> tet - element */ 	     
         f3_tet(funct,deriv,deriv2,coor[0],coor[1],coor[2],typ,2);   
       break;
       default:
-        dserror("ntyp unknown!\n");      
-      } /*end switch(ntyp) */
+        dserror("typ unknown!\n");      
+      } /*end switch(typ) */
 /*------------ compute Jacobian matrix for large-scale shape functions */
       f3_mljaco(funct,deriv,xjm,&det,ele,iel);
 /*----------- compute global derivates for large-scale shape functions */
       f3_gder(derxy,deriv,xjm,wa1,det,iel);
 
 /*------------ get large-scale velocities (n+1,i) at integration point */
-      f3_veli(velint,funct,evel,iel);
+      f3_veci(velint,funct,evel,iel);
 /*-- get large-scale velocity (n+1,i) derivatives at integration point */
       f3_vder(vderxy,derxy,evel,iel);
       
