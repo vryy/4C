@@ -13,7 +13,7 @@ int i,inode, node_start;
 double dum;
 double u11, u12, u21, u22, u33;
 #ifdef DEBUG 
-dstrc_enter("w1_disd");
+dstrc_enter("w1_eps");
 #endif
 /*----------------------------------------------------------------------*/
   for (i=0; i<4; i++) eps[i] = 0.0;

@@ -190,6 +190,7 @@ double tol = 1.0E-10;
 double dlam;
 double sigym;
 double rad;
+int    isoft = 0;
 #ifdef DEBUG 
 dstrc_enter("w1_mat_plast_dp");
 #endif
@@ -278,7 +279,7 @@ C
   {
     yip = 2;
     w1radi_dp(ym, hard, phi, sigy, pv, tau, qn, &epstn, &sigym, &dlam, wtype);
-    w1mapl(ym, hard, sigy, pv, tau, &epstn, &dlam, d, wtype);
+    w1mapl(ym, hard, sigy, pv, tau, isoft, &epstn, &dlam, d, wtype);
     
     for (i=0; i<4; i++) stress[i] = tau[i] + qn[i];
   }
