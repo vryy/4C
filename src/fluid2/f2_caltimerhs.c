@@ -105,7 +105,7 @@ DOUBLE facsr;
 DOUBLE facpr;
 DOUBLE fact[2];
  
- #ifdef DEBUG 
+#ifdef DEBUG 
 dstrc_enter("f2_calgaltfv");
 #endif
 
@@ -179,19 +179,16 @@ for (inode=0;inode<iel;inode++)
    + (1-THETA)*dt  |  div(v) * p  d_omega
                   /
  *----------------------------------------------------------------------*/ 
-if (fdyn->iprerhs>0)
+aux = preint * facpr;
+irow=-1;
+for (inode=0;inode<iel;inode++)
 {
-   aux = preint * facpr;
-   irow=-1;
-   for (inode=0;inode<iel;inode++)
+   for (isd=0;isd<2;isd++)
    {
-      for (isd=0;isd<2;isd++)
-      {
-         irow++;
-         eforce[irow] += derxy[isd][inode]*aux;
-      } /* end of loop over isd */
-   } /* end of loop over inode */
-} /*endif (fdyn->iprerhs>0) */
+      irow++;
+      eforce[irow] += derxy[isd][inode]*aux;
+   } /* end of loop over isd */
+} /* end of loop over inode */
  
 /*----------------------------------------------------------------------*/ 
 #ifdef DEBUG 
@@ -360,6 +357,7 @@ NOTE: for ALE
         velint = C(n)
 	vel2int= U(n)
 	covint = C(n) * grad(U(n))
+
 </pre>
 \param   *ele        ELEMENT	      (i)    actual element
 \param   *eforce     DOUBLE	      (i/o)  element force vector
@@ -379,20 +377,21 @@ NOTE: for ALE
 
 ------------------------------------------------------------------------*/
 void f2_calstabtfv(
-                   ELEMENT         *ele,      
-	           DOUBLE          *eforce,  
-	 	   DOUBLE          *velint,  
-		   DOUBLE          *vel2int, 
-		   DOUBLE          *covint,  
-		   DOUBLE         **derxy,   
-		   DOUBLE         **derxy2,  
-		   DOUBLE         **vderxy,  
-		   DOUBLE         **vderxy2, 
-		   DOUBLE          *pderxy,  
-		   DOUBLE           fac,     
-		   DOUBLE           visc,    
-		   INT              ihoel,   
-		   INT              iel      
+                     STAB_PAR_GLS    *gls,  
+                     ELEMENT         *ele,      
+                     DOUBLE          *eforce,  
+                     DOUBLE          *velint,  
+                     DOUBLE          *vel2int, 
+                     DOUBLE          *covint,  
+                     DOUBLE         **derxy,   
+                     DOUBLE         **derxy2,  
+                     DOUBLE         **vderxy,  
+                     DOUBLE         **vderxy2, 
+                     DOUBLE          *pderxy,  
+                     DOUBLE           fac,     
+                     DOUBLE           visc,    
+                     INT              ihoel,   
+                     INT              iel      
                   )
 {
 INT    irow,isd,inode;
@@ -403,8 +402,7 @@ DOUBLE facsr;
 DOUBLE facpr;
 DOUBLE fvts,fvtsr,fvvtsr;
 DOUBLE fact[2];
-DOUBLE sign;
-STAB_PAR_GLS *gls;	/* pointer to GLS stabilisation parameters	*/
+DOUBLE sign=ONE;
 
 #ifdef DEBUG 
 dstrc_enter("f2_calstabtfv");
@@ -412,16 +410,21 @@ dstrc_enter("f2_calstabtfv");
 
 /*---------------------------------------------------------- initialise */
 fdyn   = alldyn[genprob.numff].fdyn;
-gls    = ele->e.f2->stabi.gls;
 
-if (ele->e.f2->stab_type != stab_gls) 
-   dserror("routine with no or wrong stabilisation called");
-  
+dsassert(ele->e.f2->stab_type == stab_gls, 
+   "routine with no or wrong stabilisation called");
+ 
 /*--------------------------------------------------- set some factors */
+#if 0
 taumu = fdyn->tau[0];
 taump = fdyn->tau[1];
 tauc  = fdyn->tau[2];
-
+#endif
+#if 1
+taumu = ele->e.f2->tau_old[0];
+taump = ele->e.f2->tau_old[1];
+tauc  = ele->e.f2->tau_old[2];
+#endif
 facsr = fac * fdyn->thsr;
 facpr = fac * fdyn->thpr;
 c     = facsr * visc;
@@ -449,11 +452,11 @@ if (gls->iadvec!=0)
       for (isd=0;isd<2;isd++)
       {
          irow++;
-	 eforce[irow] += aux*fact[isd];
+         eforce[irow] += aux*fact[isd];
       } /* end loop over isd */
    } /* end loop over inode */
 } /* endif (ele->e.f2->iadvec!=0) */
- 
+
 /*----------------------------------------------------------------------*
    Calculate inertia/viscous stab-forces of time force vector:
         /
@@ -462,17 +465,7 @@ if (gls->iadvec!=0)
  *----------------------------------------------------------------------*/
 if (gls->ivisc!=0 && ihoel!=0)
 {
-   switch (gls->ivisc) /* choose stabilisation type --> sign */
-   {
-   case 1: /* GLS- */
-      sign = ONE;
-   break;
-   case 2: /* GLS+ */
-      sign = -ONE;
-   break;
-   default:
-      dserror("viscous stabilisation parameter unknown: IVISC");
-   } /* end switch (ele->e.f2->ivisc) */
+   if (gls->ivisc==2) sign*=-ONE; /* GLS+ stabilisation */
 
    fvts = fac*visc*taump*sign;
    irow = 0;
@@ -510,7 +503,7 @@ if (gls->iadvec!=0)
       for (isd=0;isd<2;isd++)
       {
          irow++;
-	 eforce[irow] -= aux*fact[isd];
+	        eforce[irow] -= aux*fact[isd];
       } /* end loop over isd */
    } /* end loop ove inode */
 } /* endif (ele->e.f2->iadvec!=0) */
@@ -590,6 +583,7 @@ if (gls->ivisc!=0 && ihoel!=0)
    irow += 2;
    } /* end loop over inode */
 } /* endif (ele->e.f2->ivisc!=0 && ihoel!=0) */
+
 /*----------------------------------------------------------------------*
    Calculate continuity stab-forces of time force vector:
      /
@@ -605,11 +599,11 @@ if (gls->icont!=0)
       for (isd=0;isd<2;isd++)
       {
          irow++;
-	 eforce[irow] -= derxy[isd][inode]*aux;
+         eforce[irow] -= derxy[isd][inode]*aux;
       } /* end loop over isd */
    } /* end loop over inode */
 } /* endif (ele->e.f2->icont!=0) */
- 
+
 /*----------------------------------------------------------------------*
    Calculate pressure/convective stab-forces of time force vector:
 EULER:
@@ -622,7 +616,7 @@ ALE:
   (-) (1-THETA)*dt | tau_mu * c * grad(v) * grad(p)   d_omega
                   /
  *----------------------------------------------------------------------*/  
-if (gls->iadvec!=0 && fdyn->iprerhs>0)
+if (gls->iadvec!=0)
 {
    fact[0] = taumu*pderxy[0]*facpr;
    fact[1] = taumu*pderxy[1]*facpr;
@@ -633,18 +627,18 @@ if (gls->iadvec!=0 && fdyn->iprerhs>0)
       for (isd=0;isd<2;isd++)
       {
          irow++;
-	 eforce[irow] -= aux*fact[isd];	 
+         eforce[irow] -= aux*fact[isd];	 
       } /* end loop over isd */
    } /* end loop over inode */
-} /* endif (ele->e.f2->iadvec!=0 && fdyn->iprerhs>0) */
-  	 
+} /* endif (ele->e.f2->iadvec!=0) */
+
 /*----------------------------------------------------------------------*
    Calculate pressure/viscous stab-forces of time force vector:
                     /
   -/+ (1-THETA)*dt | tau_mp * 2*nue * div( eps(v) ) * grad(p)    d_omega
                   /
  *----------------------------------------------------------------------*/  
-if (gls->ivisc!=0 && ihoel!=0 && fdyn->iprerhs>0)
+if (gls->ivisc!=0 && ihoel!=0)
 {
    cc = facpr*visc*taump*sign;
    irow=0;
@@ -709,7 +703,7 @@ NOTE: for EULER
       covint = U(n) * grad(U(n))
 
 NOTE: for ALE:
-      velint = C(n) (ale-convective velocity)
+      velint = U(n)
       covint = C(n) * grad(U(n))      
       
 </pre>
@@ -727,16 +721,18 @@ NOTE: for ALE:
 
 ------------------------------------------------------------------------*/
 void f2_calstabtfp(
-                   DOUBLE          *eforce,    
-     		   DOUBLE         **derxy,   
-		   DOUBLE         **vderxy2, 
-		   DOUBLE          *velint,  
-		   DOUBLE          *covint,  
-		   DOUBLE          *pderxy,  
-		   DOUBLE           visc,    
-		   DOUBLE           fac,     
-		   INT              ihoel,   
-		   INT              iel      
+                     ELEMENT         *ele,
+                     STAB_PAR_GLS    *gls,  
+                     DOUBLE          *eforce,    
+                     DOUBLE         **derxy,   
+                     DOUBLE         **vderxy2, 
+                     DOUBLE          *velint,  
+                     DOUBLE          *covint,  
+                     DOUBLE          *pderxy,  
+                     DOUBLE           visc,    
+                     DOUBLE           fac,     
+                     INT              ihoel,   
+                     INT              iel      
                   ) 
 {
 INT      inode;
@@ -748,12 +744,18 @@ DOUBLE   taump;
 dstrc_enter("f2_calstabtfp");
 #endif
 
+if (gls->ipres==0) goto end; /* no pressure stabilisation */
+
 /*--------------------------------------------------- set some factors */
 fdyn  = alldyn[genprob.numff].fdyn;
-
 facsr = fac * fdyn->thsr;
 facpr = fac * fdyn->thpr;
+#if 0 
 taump = fdyn->tau[1];
+#endif
+#if 1
+taump = ele->e.f2->tau_old[1];
+#endif
 
 /*----------------------------------------------------------------------*
    Calculate inertia/pressure stab forces of time force vector:
@@ -809,17 +811,15 @@ if (ihoel!=0)
    + (1-THETA)*dt   |  tau_mp * grad(q) * grad(p)  d_omega
                    /
  *----------------------------------------------------------------------*/
-if (fdyn->iprerhs!=0)
+fact[0] = taump*pderxy[0]*facpr;
+fact[1] = taump*pderxy[1]*facpr;
+for (inode=0;inode<iel;inode++)
 {
-   fact[0] = taump*pderxy[0]*facpr;
-   fact[1] = taump*pderxy[1]*facpr;
-   for (inode=0;inode<iel;inode++)
-   {
-      eforce[inode] += (derxy[0][inode]*fact[0] + derxy[1][inode]*fact[1]);
-   }
+   eforce[inode] += (derxy[0][inode]*fact[0] + derxy[1][inode]*fact[1]);
 }
 
 /*----------------------------------------------------------------------*/
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
