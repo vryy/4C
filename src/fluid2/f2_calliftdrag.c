@@ -153,8 +153,6 @@ for (line=0; line<ngline; line++)
          actanode = actfgnode->mfcpnode[genprob.numaf];
          xyzl[0][j] = actnode->x[0] + actanode->sol_mf.a.da[1][0];
          xyzl[1][j] = actnode->x[1] + actanode->sol_mf.a.da[1][1];
-#else
-         dserror("multifield requires FSI");
 #endif
       }
    }
@@ -203,17 +201,12 @@ for (line=0; line<ngline; line++)
 
       /*-------------- add load vector component to element load vector */
       /* jacobian determinant cancels with length of normal  vector	*/
-      for (j=0; j<ngnode; j++)
-      {
-         /*-- TOTAL Lift and Drag forces in global coordinate system ---*/
-         container->liftdrag[ld_id*6+0] -= funct[j] * forceline[0] * facr;
-         container->liftdrag[ld_id*6+1] += funct[j] * forceline[1] * facr;
-      }/*----------------------------------------- end loop over ngnode */
-
+      /*-- TOTAL Lift and Drag forces in global coordinate system ---*/
+      container->liftdrag[(ld_id-1)*6+0] -= forceline[0] * facr;
+      container->liftdrag[(ld_id-1)*6+1] -= forceline[1] * facr;
       /*----------------------------------------------- add momentum ---*/
-      container->liftdrag[ld_id*6+3] += ( forceline[0]*xy[1]
+      container->liftdrag[(ld_id-1)*6+5] += ( forceline[0]*xy[1] 
                                 - forceline[1]*xy[0] ) * facr;
-
    }/*==================================== end integration loop over lr */
 }/* end loop line over lines to this element */
 
