@@ -95,7 +95,7 @@ void s8_funct_deriv(double     *funct,
                        double    **deriv, 
                        double      r, 
                        double      s,
-                       ELEMENT_TYP typ,
+                       DIS_TYP     typ,
                        int         option);
 /*----------------------------------------------------------------------*
  |  s8_init.c                                            m.gee 11/01    |

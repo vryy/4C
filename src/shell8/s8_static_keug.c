@@ -124,6 +124,29 @@ static ARRAY        Rtild_a;     static double  *Rtild;     /* eas part of inter
 static ARRAY        eashelp_a;   static double  *eashelp;   /* working vector for eas */
 
 
+/* arrays for ANS */
+const int           nsansmax=6;
+int                 nsansq;                                  /* number of sampling points for ans */
+double              xr1[6];                                  /* coordinates of collocation points for ANS */
+double              xs1[6];
+double              xr2[6];
+double              xs2[6];                     
+
+static ARRAY       funct1q_a[6];  static double  *funct1q[6];    /* shape functions at collocation points */
+static ARRAY       deriv1q_a[6];  static double **deriv1q[6];    /* derivation of these shape functions */
+
+static ARRAY       akovr1q_a[6];  static double **akovr1q[6];
+static ARRAY       akonr1q_a[6];  static double **akonr1q[6];
+static ARRAY       amkovr1q_a[6]; static double **amkovr1q[6];
+static ARRAY       amkonr1q_a[6]; static double **amkonr1q[6];
+static ARRAY       a3kvpr1q_a[6]; static double **a3kvpr1q[6];
+
+static ARRAY       akovc1q_a[6];  static double **akovc1q[6];
+static ARRAY       akonc1q_a[6];  static double **akonc1q[6];
+static ARRAY       amkovc1q_a[6]; static double **amkovc1q[6];
+static ARRAY       amkonc1q_a[6]; static double **amkonc1q[6];
+static ARRAY       a3kvpc1q_a[6]; static double **a3kvpc1q[6];
+
 #ifdef DEBUG 
 dstrc_enter("s8static_keug");
 #endif
@@ -192,6 +215,25 @@ Dtildinv  = amdef("Dtildi" ,&Dtildinv_a,MAXHYB_SHELL8        ,MAXHYB_SHELL8     
 Rtild     = amdef("Rtild"  ,&Rtild_a   ,MAXHYB_SHELL8        ,1                    ,"DV");
 eashelp   = amdef("eashelp",&eashelp_a ,MAXHYB_SHELL8        ,1                    ,"DV");
 
+/* for ans */
+for (i=0; i<nsansmax; i++) funct1q[i]  = amdef("funct1q",&(funct1q_a[i]),MAXNOD_SHELL8,1,"DV");
+for (i=0; i<nsansmax; i++) deriv1q[i]  = amdef("deriv1q",&(deriv1q_a[i]),2,MAXNOD_SHELL8,"DA");
+
+for (i=0; i<nsansmax; i++) akovr1q[i]  = amdef("akovr1q" ,&(akovr1q_a[i]) ,3,3,"DA");
+for (i=0; i<nsansmax; i++) akonr1q[i]  = amdef("akonr1q" ,&(akonr1q_a[i]) ,3,3,"DA");
+for (i=0; i<nsansmax; i++) amkovr1q[i] = amdef("amkovr1q",&(amkovr1q_a[i]),3,3,"DA");
+for (i=0; i<nsansmax; i++) amkonr1q[i] = amdef("amkonr1q",&(amkonr1q_a[i]),3,3,"DA");
+for (i=0; i<nsansmax; i++) a3kvpr1q[i] = amdef("a3kvpr1q",&(a3kvpr1q_a[i]),3,2,"DA");
+
+for (i=0; i<nsansmax; i++) akovc1q[i]  = amdef("akovc1q" ,&(akovc1q_a[i]) ,3,3,"DA");
+for (i=0; i<nsansmax; i++) akonc1q[i]  = amdef("akonc1q" ,&(akonc1q_a[i]) ,3,3,"DA");
+for (i=0; i<nsansmax; i++) amkovc1q[i] = amdef("amkovc1q",&(amkovc1q_a[i]),3,3,"DA");
+for (i=0; i<nsansmax; i++) amkonc1q[i] = amdef("amkonc1q",&(amkonc1q_a[i]),3,3,"DA");
+for (i=0; i<nsansmax; i++) a3kvpc1q[i] = amdef("a3kvpc1q",&(a3kvpc1q_a[i]),3,2,"DA");
+
+
+
+
 goto end;
 }
 /*----------------------------------------------------------------------*/
@@ -255,6 +297,8 @@ amdel(&Dtild_a);
 amdel(&Dtildinv_a);
 amdel(&Rtild_a);
 amdel(&eashelp_a);
+
+/* uninit von ans feldern fehlt noch */
 
 goto end;  
 }
@@ -356,7 +400,19 @@ for (k=0; k<iel; k++)
    a3c[1][k] = a3r[1][k]     + ele->node[k]->sol.a.da[0][4];
    a3c[2][k] = a3r[2][k]     + ele->node[k]->sol.a.da[0][5];
 }
-/*------------------------------- metric of element mid point (for eas) */
+/*============ metric and shape functions at collocation points (ANS=1) */
+/*----------------------------------------------------- 4-noded element */
+if (ele->e.s8->ans==1 || ele->e.s8->ans==3)/* querschub_ans */
+{
+   if (iel==4) nsansq=2;
+   if (iel==9) nsansq=6;
+   s8_ans_colloqcoords(xr1,xs1,xr2,xs2,iel,ele->e.s8->ans);
+   for (i=0; i<nsansq; i++)
+   {
+     s8_funct_deriv(funct1q[i],deriv1q[i],xr1[i],xs1[i],ele->distyp,1);
+   }
+}
+/*=============================== metric of element mid point (for eas) */
 if (nhyb>0)
 {
    s8_funct_deriv(funct,deriv,0.0,0.0,ele->distyp,1);
