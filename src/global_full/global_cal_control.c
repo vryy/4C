@@ -21,12 +21,18 @@ and the type is in partition.h
 
 *----------------------------------------------------------------------*/
  extern struct _PAR   par;                      
-
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | vector of numfld FIELDs, defined in global_control.c                 |
+ *----------------------------------------------------------------------*/
+extern struct _FIELD      *field;
 /*----------------------------------------------------------------------*
  |  routine to control execution phase                   m.gee 6/01     |
  *----------------------------------------------------------------------*/
 void ntacal()
 {
+int i;
+FIELD *actfield;
 
 #ifdef DEBUG 
 dstrc_enter("ntacal");
@@ -34,10 +40,17 @@ dstrc_enter("ntacal");
 /*----------------------------------------------------------------------*/
 /*------------------------do initial partitioning of nodes and elements */
 part_fields();
+
 /*------------------------------------------------ assign dofs to nodes */
-assign_dof();
+for(i=0; i<genprob.numfld; i++)
+{
+   actfield = &(field[i]); 
+   if (actfield->ndis==1) assign_dof(actfield);
+   if (actfield->ndis>1) assign_dof_ndis(actfield);
+}
 /*--------make the procs know their own nodes and elements a bit better */
 part_assignfield();
+ 
 /*-------------------calculate system matrices parallel storage formats */
 mask_global_matrices();
 /*------------------------------------------------ write general output */

@@ -304,8 +304,8 @@ solver_control(actsolv, actintra,
                init);
 /*----------------- init the assembly for stiffness and for mass matrix */
 /*                                           (damping is not assembled) */
-init_assembly(actpart,actsolv,actintra,actfield,stiff_array);
-init_assembly(actpart,actsolv,actintra,actfield,mass_array);
+init_assembly(actpart,actsolv,actintra,actfield,stiff_array,0);
+init_assembly(actpart,actsolv,actintra,actfield,mass_array,0);
 
 /*------------------------------- init the element calculating routines */
 *action = calc_struct_init;

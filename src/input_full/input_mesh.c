@@ -1,3 +1,8 @@
+/*!----------------------------------------------------------------------
+\file
+\brief input of mesh data
+
+------------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "../shell8/shell8.h"
 #include "../wall1/wall1.h"
@@ -35,11 +40,12 @@ static ARRAY tmpnodes2;
  *----------------------------------------------------------------------*/
 void inpfield()
 {
-int  i;
+int  i,j;
 int  ierr;
 #ifdef DEBUG 
 dstrc_enter("inpfield");
 #endif
+
 /*--------------------------------------read node coordinates from file */
 inpnodes();
 /*--------------------------------------------------------- read field  */
@@ -53,12 +59,18 @@ if (genprob.probtyp == prb_fsi)
    if (field==NULL) dserror("Allocation of fields failed");
 
    field[0].fieldtyp = structure;
+   if (genprob.multidis>0) inpdis(&(field[0]));
+   else field[0].ndis=1;
    inp_struct_field(&(field[0]));
    
    field[1].fieldtyp = fluid;
+   if (genprob.multidis>0) inpdis(&(field[1]));
+   else field[1].ndis=1;
    inp_fluid_field (&(field[1]));
    
    field[2].fieldtyp = ale;
+   if (genprob.multidis>0) inpdis(&(field[2]));
+   else field[2].ndis=1;
    inp_ale_field  (&(field[2]));
 
 /*--- ale and fluid field are supposed to be compatible, so inherit info */
@@ -76,6 +88,8 @@ if (genprob.probtyp==prb_structure)
    if (field==NULL) dserror("Allocation of fields failed");
 
    field[0].fieldtyp = structure;
+   if (genprob.multidis>0) inpdis(&(field[0]));
+   else field[0].ndis=1;
    inp_struct_field(&(field[0]));
 }
 /*----------------------------------------------- fluid type of problem */
@@ -86,6 +100,8 @@ if (genprob.probtyp==prb_fluid)
    if (field==NULL) dserror("Allocation of fields failed");
    
    field[0].fieldtyp = fluid;
+   if (genprob.multidis>0) inpdis(&(field[0]));
+   else field[0].ndis=1;
    inp_fluid_field (&(field[0]));
 }
 /*------------------------------------------------- ale type of problem */
@@ -96,6 +112,8 @@ if (genprob.probtyp==prb_ale)
    if (field==NULL) dserror("Allocation of fields failed");
 
    field[0].fieldtyp = ale;
+   if (genprob.multidis>0) inpdis(&(field[0]));
+   else field[0].ndis=1;
    inp_ale_field(&(field[0]));
 }
 
@@ -106,16 +124,16 @@ if (genprob.probtyp == prb_opt)
 }
 /*-------------------------------------- assign the nodes to the fields */
 for (i=0; i<genprob.numfld; i++)
-{
-   inp_assign_nodes(&(field[i]));
-}
+for (j=0;j<field[i].ndis;j++)
+   inp_assign_nodes(&(field[i].dis[j]));
+
 amdel(&tmpnodes1);
 amdel(&tmpnodes2);
 /*---------------------------------- make element-node-element topology */
 for (i=0; i<genprob.numfld; i++)
-{
-   inp_topology(&(field[i]));
-}
+for (j=0;j<field[i].ndis;j++)
+   inp_topology(&(field[i].dis[j]));
+
 /*----------------------------------------------- FSI 3D typ of problem */
 if (genprob.probtyp==prb_fsi)
 {
@@ -138,7 +156,7 @@ return;
 /*----------------------------------------------------------------------*
  | sort nodes to the fields                               m.gee 4/01    |
  *----------------------------------------------------------------------*/
-void inp_assign_nodes(FIELD *field)
+void inp_assign_nodes(DISCRET *actdis)
 {
 int  i,j,k;
 int  ierr;
@@ -154,9 +172,9 @@ dstrc_enter("inp_assign_nodes");
 amdef("nodeflag",&nodeflag,genprob.nnode,1,"IV");
 aminit(&nodeflag,&minusone);
 /*----------------  set a flag to the node_id for each node in the field */
-for (i=0; i<field->dis[0].numele; i++)
+for (i=0; i<actdis->numele; i++)
 {
-   actele = &(field->dis[0].element[i]);
+   actele = &(actdis->element[i]);
    for (j=0; j<actele->numnp; j++)
    {
       node_Id = actele->lm[j];
@@ -169,20 +187,20 @@ for (i=0; i<genprob.nnode; i++)
 {
    if (nodeflag.a.iv[i]!=-1) counter++;
 }
-field->dis[0].numnp=counter;
+actdis->numnp=counter;
 /*-------------------------------------- Allocate the nodes to the field */
-field->dis[0].node = (NODE*)CALLOC(field->dis[0].numnp,sizeof(NODE));
-if (field->dis[0].node==NULL) dserror("Allocation of nodes failed");
+actdis->node = (NODE*)CALLOC(counter,sizeof(NODE));
+if (actdis->node==NULL) dserror("Allocation of nodes failed");
 /*---------------- assign the node Ids and coords to the NODE structure */
 counter=0;
 for (i=0; i<genprob.nnode; i++)
 {
    if (nodeflag.a.iv[i]!=-1)
    {
-      field->dis[0].node[counter].Id = nodeflag.a.iv[i];
+      actdis->node[counter].Id = nodeflag.a.iv[i];
       for (j=0; j<3; j++)
       {
-         field->dis[0].node[counter].x[j] = tmpnodes1.a.da[i][j];
+         actdis->node[counter].x[j] = tmpnodes1.a.da[i][j];
       }
       counter++;
    }
@@ -197,7 +215,59 @@ return;
 
 
 
+/*!---------------------------------------------------------------------                                         
+\brief input of disretisation data
 
+<pre>                                                         genk 08/02		     
+</pre>
+
+\return void                                                                             
+
+------------------------------------------------------------------------*/
+void inpdis(FIELD *actfield)
+{
+int  ierr=0;
+char buffer[50];
+#ifdef DEBUG 
+dstrc_enter("inpdis");
+#endif
+
+/*--------------------------------------------------------- rewind file */
+frrewind();
+/*------------------------------------------------- read discretisation */
+frfind("--DISCRETISATION");
+frread();
+switch(actfield->fieldtyp)
+{
+case fluid: 
+   while(strncmp(allfiles.actplace,"------",6)!=0)
+   {
+      frint("NUMFLUIDDIS", &(actfield->ndis),&ierr);
+      frread();
+   }
+break;
+case structure:
+   while(strncmp(allfiles.actplace,"------",6)!=0)
+   {
+      frint("NUMSTRUCDIS", &(actfield->ndis),&ierr);
+      frread();
+   }
+break;
+case ale:
+   while(strncmp(allfiles.actplace,"------",6)!=0)
+   {
+      frint("NUMALEDIS", &(actfield->ndis),&ierr);
+      frread();
+   }
+break;
+}   
+frrewind();
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of inpdis */
 
 
 
@@ -259,7 +329,9 @@ char *colpointer;
 dstrc_enter("inp_struct_field");
 #endif
 /*----------------------------------------- allocate one discretization */
-structfield->ndis=1;
+/*structfield->ndis=1;*/
+if (structfield->ndis>1)
+   dserror("different discretisations not implemented yet for structural elements\n");
 structfield->dis = (DISCRET*)CALLOC(structfield->ndis,sizeof(DISCRET));
 if (!structfield->dis) dserror("Allocation of memory failed");
 /*-------------------------------------------- count number of elements */
@@ -358,16 +430,22 @@ void inp_fluid_field(FIELD *fluidfield)
 {
 int  ierr;
 int  counter=0;
+int  cpro=0;
 int  elenumber;
 int  isquad;
 char *colpointer;
 #ifdef DEBUG 
 dstrc_enter("inp_fluid_field");
 #endif
-/*----------------------------------------- allocate one discretization */
-fluidfield->ndis=1;
+/*-------------------------------------------- allocate discretizations */
+/*fluidfield->ndis=1; */
 fluidfield->dis = (DISCRET*)CALLOC(fluidfield->ndis,sizeof(DISCRET));
 if (!fluidfield->dis) dserror("Allocation of memory failed");
+
+/*
+remarks about different discretisations:
+we asume to read in one "global" discretisation from the input file.
+from this discretisation all the other ones can be directly derived!!!
 /*-------------------------------------------- count number of elements */
 frrewind();
 frfind("--FLUID ELEMENTS");
@@ -393,6 +471,34 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    elenumber  = strtol(colpointer,&colpointer,10);
    fluidfield->dis[0].element[counter].Id = --elenumber;
 /*---------- read the typ of element and call element readning function */
+/*-------------------------------------------- elementtyp is FLUID2_PRO */
+   frchk("FLUID2_PRO",&ierr);
+   if (ierr==1)
+   {
+#ifndef D_FLUID2_PRO 
+      dserror("FLUID2_PRO needed but not defined in Makefile");
+#endif
+   }
+#ifdef D_FLUID2_PRO 
+   if (ierr==1) 
+   {
+      /*-------------------------- allocate elements of second discretisation */
+      if (cpro==0)
+      {
+         if(fluidfield->ndis<2) 
+            dserror("NUMFLUIDDIS has to be g.t. 1 for FLUID2_PRO Elements!\n");
+         fluidfield->dis[1].numele = fluidfield->dis[0].numele;
+	 fluidfield->dis[1].element=(ELEMENT*)CALLOC(fluidfield->dis[1].numele,sizeof(ELEMENT));
+         if (fluidfield->dis[1].element==NULL) dserror("Allocation of ELEMENT failed");
+         cpro++;
+      } /* endif (cpro==0) */      
+      fluidfield->dis[0].element[counter].eltyp=el_fluid2_pro;
+      fluidfield->dis[1].element[counter].eltyp=el_fluid2_pro;
+      f2pro_inp(&(fluidfield->dis[0].element[counter]));
+      f2pro_dis(&(fluidfield->dis[0].element[counter]),&(fluidfield->dis[1].element[counter]));       
+      goto read;
+   }
+#endif
 /*------------------------------------------------ elementtyp is FLUID3 */
    frchk("FLUID3",&ierr);
    if (ierr==1)
@@ -406,8 +512,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    {
       fluidfield->dis[0].element[counter].eltyp=el_fluid3;
       f3inp(&(fluidfield->dis[0].element[counter]));
+      goto read;
    }
-#endif
+#endif   
 /*------------------------------------------------ elementtyp is FLUID2 */
    frchk("FLUID2",&ierr);
    if (ierr==1)
@@ -421,8 +528,11 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    {
       fluidfield->dis[0].element[counter].eltyp=el_fluid2;
       f2_inp(&(fluidfield->dis[0].element[counter]));
+      goto read;
    }
 #endif
+/*----------------------------------------------------------------------*/
+read:
    counter++;
    frread();
 }
@@ -456,7 +566,9 @@ dstrc_enter("inp_ale_field");
 #endif
 
 /*----------------------------------------- allocate one discretization */
-alefield->ndis=1;
+/*alefield->ndis=1;*/
+if (alefield->ndis>1) 
+   dserror("different discretisations not implemented yet for structural elements\n");
 alefield->dis = (DISCRET*)CALLOC(alefield->ndis,sizeof(DISCRET));
 if (!alefield->dis) dserror("Allocation of memory failed");
 /*-------------------------------------------- count number of elements */

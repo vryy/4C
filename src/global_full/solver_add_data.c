@@ -248,13 +248,20 @@ return;
  |  allocate the send and recv buffers for                              |
  |  coupling conditions                                                 |
  |  and to perform other inits which may become necessary for assembly  |
+#########################################################################
+VERY DANGEROUS CHANGE:
+ to the paremeter list of this function I added
+    int actndis!!!  - number of the actual discretisations
+ this has to be done for all other calls of init_assembly     genk 08/02
+######################################################################### 
  *----------------------------------------------------------------------*/
 void init_assembly(
                        struct _PARTITION      *actpart,
                        struct _SOLVAR         *actsolv,
                        struct _INTRA          *actintra,
                        struct _FIELD          *actfield,
-                       int                     actsysarray
+                       int                     actsysarray,
+		       int                     actndis
                      )
 {
 int         i,j,k,counter;
@@ -359,10 +366,10 @@ default:
 break;
 }
 /*---------------- now check for coupling dofs and interdomain coupling */
-coupledofs = &(actpart->pdis[0].coupledofs);
+coupledofs = &(actpart->pdis[actndis].coupledofs);
 numsend = 0;
 numrecv = 0;
-numeq   = actfield->dis[0].numeq;
+numeq   = actfield->dis[actndis].numeq;
 /* 
    An inter-proc coupled equation produces communications calculating the 
    sparsity mask of the matrix

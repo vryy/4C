@@ -44,10 +44,16 @@ and the type is in partition.h
  |  for various kinds of distributed sparsity patterns                  |
  |  the sparsity pattern implemented at the moment can be found in      |
  |  solution.h                                                          |
+ |  for several discretisations:                                        |
+ |    - at the moment only implemented for AZTEC_msr                    |
+ |    - all discretisations have to use the same solver with the same   |
+ |      parameter                                                       |
+ |    - evertying is done seperate for each discritisations             |
  *----------------------------------------------------------------------*/
 void mask_global_matrices()
 {
 int i,j,k,l;               /* some counters */
+int actndis;               /* actual number of sysarray=discretisation */
 int isaztec_msr  =0;       /* flag for a certain sparsity pattern */
 int isaztec_vbr  =0;       
 int ishypre      =0;
@@ -59,6 +65,8 @@ int iscolsol     =0;
 int isspooles    =0;
 int isumfpack    =0;
 int ismlpcg      =0;
+int nsysarray    =1;
+
 FIELD      *actfield;      /* the active field */
 PARTITION  *actpart;       /* my partition of the active field */
 SOLVAR     *actsolv;       /* the active SOLVAR */
@@ -168,13 +176,16 @@ for (j=0; j<genprob.numfld; j++)
       dserror("Partitioning has to be Cut_Elements for solution with MLPCG"); 
       else ismlpcg=1;
    }
+   /*----------------------------------------- determine number of sysarrays */   
+   if (ismlib_d_sp==1) nsysarray = 2;
+   if (isaztec_msr==1 && actfield->fieldtyp==fluid) nsysarray = actfield->ndis;
    /* allocate only one sparse matrix for each field. The sparsity
       pattern of the matrices for mass and damping and stiffness are  
       supposed to be the same, so they are calculated only once (expensive!) */
    /*-------------------------- for the lower triangle of the matrix ---*/
    if (ismlib_d_sp==1)
-   {
-      actsolv->nsysarray = 2;
+   {      
+      actsolv->nsysarray = nsysarray;
       actsolv->sysarray_typ = (SPARSE_TYP*)  CALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
       actsolv->sysarray     = (SPARSE_ARRAY*)CALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
       if (!actsolv->sysarray_typ || !actsolv->sysarray)
@@ -191,26 +202,28 @@ for (j=0; j<genprob.numfld; j++)
    }
    /*------------------------- matrix is ditributed modified sparse row */
    if (isaztec_msr==1)
-   {
-      actsolv->nsysarray = 1;
+   {      
+      actsolv->nsysarray = nsysarray;
       actsolv->sysarray_typ = (SPARSE_TYP*)  CALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
       actsolv->sysarray     = (SPARSE_ARRAY*)CALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
       if (!actsolv->sysarray_typ || !actsolv->sysarray)
          dserror("Allocation of SPARSE_ARRAY failed");
       for (i=0; i<actsolv->nsysarray; i++)
       {
-         actsolv->sysarray_typ[i] = msr;
+         actndis=i;
+	 actsolv->sysarray_typ[i] = msr;
          actsolv->sysarray[i].msr = (AZ_ARRAY_MSR*)CALLOC(1,sizeof(AZ_ARRAY_MSR));
          if (actsolv->sysarray[i].msr==NULL) dserror("Allocation of AZ_ARRAY_MSR failed");
-         actsolv->sysarray[i].msr->bins=NULL;
+         actsolv->sysarray[i].msr->bins=NULL;      
+         mask_msr(actfield,actpart,actsolv,actintra,actsolv->sysarray[i].msr,actndis);
       }
-      mask_msr(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].msr);
       isaztec_msr=0;
    }
    /*------------------------- matrix is ditributed variable block row */
    if (isaztec_vbr==1)
    {
-      actsolv->nsysarray = 1;
+      if(nsysarray>1) dserror("different discretisations not possible with SOLVER_TYP 'aztec_vbr'\n");
+      actsolv->nsysarray = nsysarray;
       actsolv->sysarray_typ = (SPARSE_TYP*)  CALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
       actsolv->sysarray     = (SPARSE_ARRAY*)CALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
       if (!actsolv->sysarray_typ || !actsolv->sysarray)
@@ -227,7 +240,8 @@ for (j=0; j<genprob.numfld; j++)
    /*------------------------------------- matrix is Spooles's matrix  */
    if (isspooles==1)
    {
-      actsolv->nsysarray = 1;
+      if(nsysarray>1) dserror("different discretisations not possible with SOLVER_TYP 'SPOOLES'\n");
+      actsolv->nsysarray = nsysarray;
       actsolv->sysarray_typ = (SPARSE_TYP*)  CALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
       actsolv->sysarray     = (SPARSE_ARRAY*)CALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
       if (!actsolv->sysarray_typ || !actsolv->sysarray)
@@ -244,7 +258,8 @@ for (j=0; j<genprob.numfld; j++)
    /*------------------------------------------- matrix is hypre_parcsr */
    if (ishypre==1)
    {
-      actsolv->nsysarray = 1;
+      if(nsysarray>1) dserror("different discretisations not possible with SOLVER_TYP 'HYPRE'\n");
+      actsolv->nsysarray = nsysarray;
       actsolv->sysarray_typ = (SPARSE_TYP*)  CALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
       actsolv->sysarray     = (SPARSE_ARRAY*)CALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
       if (!actsolv->sysarray_typ || !actsolv->sysarray)
@@ -261,7 +276,8 @@ for (j=0; j<genprob.numfld; j++)
    /*---------------------------------------------------- matrix is ucchb */
    if (isucchb==1)
    {
-      actsolv->nsysarray = 1;
+      if(nsysarray>1) dserror("different discretisations not possible with SOLVER_TYP 'parsuperlu'\n");
+      actsolv->nsysarray = nsysarray;
       actsolv->sysarray_typ = (SPARSE_TYP*)  CALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
       actsolv->sysarray     = (SPARSE_ARRAY*)CALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
       if (!actsolv->sysarray_typ || !actsolv->sysarray)
@@ -278,7 +294,8 @@ for (j=0; j<genprob.numfld; j++)
    /*---------------------------------------------------- matrix is dense */
    if (isdense==1)
    {
-      actsolv->nsysarray = 1;
+      if(nsysarray>1) dserror("different discretisations not possible with SOLVER_TYP 'Lapack'\n");
+      actsolv->nsysarray = nsysarray;
       actsolv->sysarray_typ = (SPARSE_TYP*)  CALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
       actsolv->sysarray     = (SPARSE_ARRAY*)CALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
       if (!actsolv->sysarray_typ || !actsolv->sysarray)
@@ -295,7 +312,8 @@ for (j=0; j<genprob.numfld; j++)
    /*----------------------------- matrix is row-column pointer format  */
    if (isrc_ptr==1)
    {
-      actsolv->nsysarray = 1;
+      if(nsysarray>1) dserror("different discretisations not possible with SOLVER_TYP 'Mumps'\n");
+      actsolv->nsysarray = nsysarray;
       actsolv->sysarray_typ = (SPARSE_TYP*)  CALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
       actsolv->sysarray     = (SPARSE_ARRAY*)CALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
       if (!actsolv->sysarray_typ || !actsolv->sysarray)
@@ -312,7 +330,8 @@ for (j=0; j<genprob.numfld; j++)
    /*---------------- matrix is row-column pointer format for umfpack solver */
    if (isumfpack==1)
    {
-      actsolv->nsysarray = 1;
+      if(nsysarray>1) dserror("different discretisations not possible with SOLVER_TYP 'umfpack'\n");
+      actsolv->nsysarray = nsysarray;
       actsolv->sysarray_typ = (SPARSE_TYP*)  CALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
       actsolv->sysarray     = (SPARSE_ARRAY*)CALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
       if (!actsolv->sysarray_typ || !actsolv->sysarray)
@@ -329,7 +348,8 @@ for (j=0; j<genprob.numfld; j++)
    /*---------------------------------------- matrix is skyline format  */
    if (iscolsol==1)
    {
-      actsolv->nsysarray = 1;
+      if(nsysarray>1) dserror("different discretisations not possible with SOLVER_TYP 'colsol'\n");
+      actsolv->nsysarray = nsysarray;
       actsolv->sysarray_typ = (SPARSE_TYP*)  CALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
       actsolv->sysarray     = (SPARSE_ARRAY*)CALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
       if (!actsolv->sysarray_typ || !actsolv->sysarray)

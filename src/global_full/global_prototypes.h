@@ -5,7 +5,11 @@ void main(int argc, char *argv[]);
 /*----------------------------------------------------------------------*
  |  global_ass_dof.c                                     m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void assign_dof(void);
+void assign_dof(FIELD *actfield);
+/*----------------------------------------------------------------------*
+ |  global_ass_dof_ndis.c                                 genk 08/02    |
+ *----------------------------------------------------------------------*/
+void assign_dof_ndis(FIELD *actfield);
 /*----------------------------------------------------------------------*
  |  global_cal_control.c                                 m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -182,7 +186,8 @@ void inp_material(void);
  |  input_mesh.c                                  m.gee 11/01           |
  *----------------------------------------------------------------------*/
 void inpfield(void);
-void inp_assign_nodes(FIELD *field);
+void inp_assign_nodes(DISCRET *actdis);
+void inpdis(FIELD *actfield);
 void inpnodes(void);
 void inp_struct_field(FIELD *structfield);
 void inp_fluid_field(FIELD *fluidfield);
@@ -190,7 +195,7 @@ void inp_ale_field(FIELD *alefield);
 /*----------------------------------------------------------------------*
  |  input_topology.c                                  m.gee 11/01       |
  *----------------------------------------------------------------------*/
-void inp_topology(FIELD *field);
+void inp_topology(DISCRET *actdis);
 void inp_detailed_topology(DISCRET   *actdis);
 /*----------------------------------------------------------------------*
  |  math1.c                                               m.gee 11/01   |
@@ -240,6 +245,7 @@ void math_matmattrndense(double **R,
 void math_sym_inv(double **A, int dim);
 void math_unsym_inv(double **A, int dimr, int dimc);
 void math_sppr(double *spat, double *a, double *b, double *c);
+void math_addab(double **a, double **b, int dim1, int dim2);
 /*!---------------------------------------------------------------------                                         
 \brief extract digits from integer number
 
@@ -260,6 +266,7 @@ void math_intextract(
 		    int *id,    
 		    int *io     
 	            );
+
 /*----------------------------------------------------------------------*
  |  sort_find.c                                          m.gee 11/01    |
  *----------------------------------------------------------------------*/

@@ -242,7 +242,8 @@ void mask_msr(FIELD         *actfield,
               PARTITION     *actpart, 
               SOLVAR        *actsolv,
               INTRA         *actintra, 
-              AZ_ARRAY_MSR  *msr);
+              AZ_ARRAY_MSR  *msr,
+	      int            actdis);
 void msr_numeq(FIELD         *actfield, 
                   PARTITION    *actpart, 
                   SOLVAR       *actsolv,
@@ -436,7 +437,8 @@ void init_assembly(
                        struct _SOLVAR         *actsolv,
                        struct _INTRA          *actintra,
                        struct _FIELD          *actfield,
-                       int                     actsysarray
+                       int                     actsysarray,
+		       int                     actndis
                      );
 void assemble_vec(INTRA        *actintra,
                     SPARSE_TYP   *sysarraytyp,
@@ -1160,3 +1162,12 @@ void bdcsr_numeq(FIELD         *actfield,
                  SOLVAR        *actsolv,
                  INTRA         *actintra,
                  int           *numeq);
+/*----------------------------------------------------------------------*
+ | solver_copy_matrices                                      genk 11/02 |
+ *----------------------------------------------------------------------*/
+void solver_copy_csr(
+                       SPARSE_ARRAY  *amatrix,
+                       SPARSE_TYP    *amatrix_typ,
+                       DBCSR         *amatrix_csr,
+		       int            numeq_total
+                     );

@@ -62,7 +62,7 @@ off by malte neumann at the moment (Aug/2002)
 ------------------------------------------------------------------------*/
 void part_fields()
 {
-int  i,j,k,l,m,n;
+int      i,j,k,l,m,n,kk;
 int      counter;
 int      adjcounter;
 long int max,min;
@@ -71,9 +71,12 @@ int      proc;
 INTRA   *actintra;
 int      imyrank;
 int      inprocs;
-FIELD   *actfield;
 NODE    *actnode;
+FIELD   *actfield;
 ELEMENT *actele;
+#if D_FLUID2_PRO
+ELEMENT *actvele, *actpele;
+#endif
 ARRAY    stack;
 
 ARRAY    xadj[MAXFIELD];
@@ -92,6 +95,7 @@ ARRAY    ele_per_proc;
 #ifdef DEBUG 
 dstrc_enter("part_fields");
 #endif
+
 /*--------- sequentiell version assign all elements and nodes to proc 0 */
 /* the partitioning is not performed, all nodes and elements are assigned to
    proc 0, but the graphs of the fields are build in sequentiell and
@@ -102,14 +106,18 @@ if (par.nprocs<=1)
    for (i=0; i<genprob.numfld; i++)
    {
       actfield = &(field[i]);
-      for (j=0; j<actfield->dis[0].numele; j++) 
-      actfield->dis[0].element[j].proc = 0;
-      for (j=0; j<actfield->dis[0].numnp; j++)  
-      actfield->dis[0].node[j].proc    = 0;
+      for(kk=0;kk<actfield->ndis;kk++)
+      {         
+         for (j=0; j<actfield->dis[kk].numele; j++) 
+         actfield->dis[kk].element[j].proc = 0;
+         for (j=0; j<actfield->dis[kk].numnp; j++)  
+         actfield->dis[kk].node[j].proc    = 0;
+      }
    }
 }
 imyrank=0;
 inprocs=1;
+
 /*----------------------------------------------------------------------*/
 for (i=0; i<genprob.numfld; i++)
 {
@@ -360,14 +368,13 @@ for (i=0; i<genprob.numfld; i++)
 #if 0
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (inprocs>1)
-for (i=0; i<genprob.numfld; i++)
+for (kk=0;kk<actfield->ndis;kk++)
 {
-   actfield = &(field[i]);
    if (actfield->fieldtyp!=ale) continue;
 /*--------------------------------------------------- loop ale elements */   
-   for (j=0; j<actfield->dis[0].numele; j++)
+   for (j=0; j<actfield->dis[kk].numele; j++)
    {
-      actele = &(actfield->dis[0].element[j]);
+      actele = &(actfield->dis[kk].element[j]);
       actele->proc = actele->e.ale3->my_fluid->proc;
 /*----------------------------------------------- loop nodes of element */
       for (k=0; k<actele->numnp; k++)
@@ -375,8 +382,35 @@ for (i=0; i<genprob.numfld; i++)
          actele->node[k]->proc = actele->e.ale3->my_fluid->node[k]->proc;
       }
    }
-}
+} /* end of loop over discretisations */
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#endif
+#if D_FLUID2_PRO
+/*------------------------------------------------------------------------
+  For the FLUID2_PRO element we have two discretisations 
+  (velocity=0 and pressure=1):
+  discretisation 0 was partitioned by METIS and this is no copied to
+  discretisation 1:
+*/  
+if (inprocs>1)
+{
+   if (actfield->fieldtyp==fluid && actfield->ndis>1)
+   {
+      for(j=0; j<actfield->dis[0].numele; j++)
+      {
+         actvele = &(actfield->dis[0].element[j]);
+	 actpele = &(actfield->dis[1].element[j]);
+	 dsassert(actvele->eltyp==el_fluid2_pro,
+	          "actfield=fluid & ndis>1 but eltyp!=el_fluid2_pro\n");
+         dsassert(actpele->eltyp==el_fluid2_pro,
+	          "actfield=fluid & ndis>1 but eltyp!=el_fluid2_pro\n");		  
+         actpele->proc = actvele->proc;
+         for (k=0; k<actpele->numnp; k++)         
+	 actpele->node[k]->proc = actvele->node[k]->proc;	 	 
+      }
+   }
+}
 #endif
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

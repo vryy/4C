@@ -171,7 +171,7 @@ solserv_zero_mat(
                     &(actsolv->sysarray_typ[actsysarray])
                    );
 /*----------------------------- init the assembly for ONE sparse matrix */
-init_assembly(actpart,actsolv,actintra,actfield,actsysarray);
+init_assembly(actpart,actsolv,actintra,actfield,actsysarray,0);
 /*------------------------------- init the element calculating routines */
 *action = calc_struct_init;
 calinit(actfield,actpart,action,&container);

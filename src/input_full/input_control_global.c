@@ -152,6 +152,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 /*------------------------------------------------------ check values */
 if (genprob.nmat<=0)
    dserror ("No Material defined!");
+/*------------------------------  default value vor multidis flag = 0 */
+genprob.multidis=0;
+  
 frrewind();
 
 frfind("-PROBLEM TYP");
@@ -173,6 +176,12 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    {
       if (strncmp("Static" ,buffer,6)==0) genprob.timetyp=time_static;
       if (strncmp("Dynamic",buffer,7)==0) genprob.timetyp=time_dynamic;
+   }
+
+   frchar("MULTIDIS"   ,buffer,            &ierr);
+   if (ierr==1)
+   {
+      if (strncmp("yes" ,buffer,3)==0) genprob.multidis=1;
    }
 
    frint("RESTART"    ,&(genprob.restart),&ierr);
@@ -519,7 +528,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    {
       if (strncmp(buffer,"Stationary",10)==0) 
          fdyn->iop=0;
-      else if (strncmp(buffer,"PM",2)==0) 
+      else if (strncmp(buffer,"Projection_Method",17)==0) 
          fdyn->iop=1;
       else if (strncmp(buffer,"Semi_Impl_One_Step",18)==0) 
          fdyn->iop=2;                  

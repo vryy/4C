@@ -22,7 +22,7 @@ static void inptop_makesurfnodes(ELEMENT *actele, int surfnodes[6][4]);
 /*----------------------------------------------------------------------*
  | create the node-element topology for this field        m.gee 4/01    |
  *----------------------------------------------------------------------*/
-void inp_topology(FIELD *field)
+void inp_topology(DISCRET *actdis)
 {
 int  i,j,k;
 int  node_id;
@@ -32,9 +32,9 @@ NODE    *actnode;
 dstrc_enter("inp_topology");
 #endif
 /*------------------------------- create pointer from elements to nodes */
-for (i=0; i<field->dis[0].numele; i++)
+for (i=0; i<actdis->numele; i++)
 {
-   actele = &(field->dis[0].element[i]);
+   actele = &(actdis->element[i]);
 /*--------------------------------- allocate the ELEMENTs node-pointers */
    actele->node = (NODE**)CALLOC(actele->numnp,sizeof(NODE*));
    if (actele->node==NULL) dserror("Allocation of node pointers failed");
@@ -43,11 +43,11 @@ for (i=0; i<field->dis[0].numele; i++)
    {
       node_id = actele->lm[j];
       
-      for (k=0; k<field->dis[0].numnp; k++)
+      for (k=0; k<actdis->numnp; k++)
       {
-         if (field->dis[0].node[k].Id == node_id)
+         if (actdis->node[k].Id == node_id)
          {
-            actele->node[j] = &(field->dis[0].node[k]);
+            actele->node[j] = &(actdis->node[k]);
             break;
          }
       } /* end of loop over all nodes */
@@ -55,28 +55,28 @@ for (i=0; i<field->dis[0].numele; i++)
 }/* end of loop over elements */
 
 /*------------------------------ create pointers from nodes to elements */
-for (i=0; i<field->dis[0].numnp; i++) field->dis[0].node[i].numele=0;
+for (i=0; i<actdis->numnp; i++) actdis->node[i].numele=0;
 /*---------------------------- count the number of elements to one node */
-for (i=0; i<field->dis[0].numele; i++)
+for (i=0; i<actdis->numele; i++)
 {
-   actele = &(field->dis[0].element[i]);
+   actele = &(actdis->element[i]);
    for (j=0; j<actele->numnp; j++)
    {
       (actele->node[j]->numele)++;
    }
 }
 /*------------------------- allocate space for element pointers in NODE */
-for (i=0; i<field->dis[0].numnp; i++)
+for (i=0; i<actdis->numnp; i++)
 {
-   actnode = &(field->dis[0].node[i]);
+   actnode = &(actdis->node[i]);
    actnode->element = (ELEMENT**)CALLOC(actnode->numele,sizeof(ELEMENT*));
    if (actnode->element==NULL) dserror("Allocation of element pointers failed");
    for (j=0; j<actnode->numele; j++) actnode->element[j]=NULL;
 }
 /*---------------- loop elements and point from their nodes to themself */
-for (i=0; i<field->dis[0].numele; i++)
+for (i=0; i<actdis->numele; i++)
 {
-   actele = &(field->dis[0].element[i]);
+   actele = &(actdis->element[i]);
    for (j=0; j<actele->numnp; j++)
    {
       actnode = actele->node[j];

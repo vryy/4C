@@ -168,7 +168,7 @@ struct _DISCRET   *dis;           /* structure holding a number of discretisatio
  *----------------------------------------------------------------------*/
 typedef struct _DISCRET
 {
-int                numnp;          /* number of nodes in this field */                          
+int                numnp;          /* number of nodes in this field */ 
 int                numele;         /* number of elements in this field */
 int                numeq;          /* number of unknowns */
 int                numdf;          /* number of degrees of freedom */
@@ -203,6 +203,7 @@ int               numfld;        /* number of fields */
 int               numdf;         /* maximum number of dofs to one node (not used, in progress)*/
 int               restart;       /* is restart or not */
 int               visual;        /* flag for visualise mode or not */
+int               multidis;      /* flag for multi-discretisation problem */
 
 enum _PROBLEM_TYP probtyp;       /* type of problem, see enum.h */
 enum _TIME_TYP    timetyp;       /* type of time, see enum.h */
