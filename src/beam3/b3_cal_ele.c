@@ -122,7 +122,7 @@ istore = 0;
 if (init==1)
 {
 funct     = amdef("funct"   ,&funct_a,MAXNOD_BEAM3,1              ,"DV");
-HC        = amdef("HC    "  ,&HC_a  ,max+1,1                      ,"DV");
+HC        = amdef("HC    "  ,&HC_a  ,max+1,1                      ,"IV");
 deriv     = amdef("deriv"   ,&deriv_a,2,MAXNOD_BEAM3              ,"DA");
 D         = amdef("D"       ,&D_a   ,numeps,numeps                ,"DA");
 K         = amdef("K"       ,&K_a   ,max,max                      ,"DA");
