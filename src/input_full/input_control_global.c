@@ -90,6 +90,10 @@ extern struct _WALL_CONTACT contact;
 void inpctr_dyn_ls(LS_DYNAMIC *lsdyn);
 #endif
 
+#ifdef D_SSI
+void inpctr_dyn_ssi(SSI_DYNAMIC *ssidyn);
+#endif
+
 void inpctr()
 {
 #ifdef DEBUG
@@ -115,6 +119,18 @@ dstrc_enter("inpctr");
 
       solv[genprob.numaf].fieldtyp = ale;
       inpctrsol(&(solv[genprob.numaf]));
+   }
+   if (genprob.probtyp == prb_ssi)
+   {
+      if (genprob.numfld!=2) dserror("numfld != 2 for SSI");
+      
+      solv = (SOLVAR*)CCACALLOC(genprob.numfld,sizeof(SOLVAR));
+      
+      solv[0].fieldtyp = structure;
+      inpctrsol(&(solv[0]));
+
+      solv[1].fieldtyp = structure;
+      inpctrsol(&(solv[1]));
    }
    if (genprob.probtyp == prb_structure)
    {
@@ -255,6 +271,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
     if (strncmp("Structure"                  ,buffer, 9)==0) genprob.probtyp = prb_structure;
     if (strncmp("Fluid"                      ,buffer, 5)==0) genprob.probtyp = prb_fluid;
     if (strncmp("Fluid_Structure_Interaction",buffer,24)==0) genprob.probtyp = prb_fsi;
+    if (strncmp("Structure_Structure_Interaction",buffer,31)==0) genprob.probtyp = prb_ssi;
     if (strncmp("Optimisation"               ,buffer,12)==0) genprob.probtyp = prb_opt;
     if (strncmp("Ale"                        ,buffer, 3)==0) genprob.probtyp = prb_ale;
     if (strncmp("Two_Phase_Fluid_Flow"       ,buffer,20)==0) genprob.probtyp = prb_twophase;
@@ -306,6 +323,12 @@ if (genprob.probtyp==prb_fluid)
 }
 if (genprob.probtyp==prb_ale) genprob.numaf=0;
 if (genprob.probtyp==prb_structure) genprob.numsf=0;
+#ifdef D_SSI
+if (genprob.probtyp==prb_ssi)
+{
+   genprob.numsf=0;
+}
+#endif
 #ifdef D_LS
 if (genprob.probtyp==prb_twophase)
 {
@@ -686,6 +709,8 @@ dstrc_enter("inpctrdyn");
 if (genprob.probtyp==prb_fsi ||
    (genprob.probtyp==prb_fluid &&  genprob.numfld>1))
    alldyn = (ALLDYNA*)CCACALLOC((genprob.numfld+1),sizeof(ALLDYNA));
+else if (genprob.probtyp==prb_ssi)
+   alldyn = (ALLDYNA*)CCACALLOC((genprob.numfld+1),sizeof(ALLDYNA));
 else
    alldyn = (ALLDYNA*)CCACALLOC(genprob.numfld,sizeof(ALLDYNA));
 if (!alldyn) dserror("Allocation of ALLDYNA failed");
@@ -738,9 +763,19 @@ for (i=0; i<genprob.numfld; i++)
    inpctr_dyn_fsi(alldyn[i].fsidyn);
 #else
    dserror("General FSI problem not defined in Makefile!!!");
+#endif 
+}
+/*----------------------------------------------------------------------*/
+if (genprob.probtyp==prb_ssi)
+{
+#ifdef D_SSI
+   alldyn[i].ssidyn = (SSI_DYNAMIC*)CCACALLOC(1,sizeof(SSI_DYNAMIC));
+   inpctr_dyn_ssi(alldyn[i].ssidyn);
+#else
+   dserror("General SSI problem not defined in Makefile!!!");
 #endif
- }
-
+}
+ 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
  dstrc_exit();
@@ -1493,7 +1528,8 @@ fsidyn->maxtime=1000.0;
 fsidyn->entol=EPS6;
 fsidyn->relax=ONE;
 fsidyn->convtol=EPS6;
-
+fsidyn->coupmethod=1;
+    
 if (frfind("-FSI DYNAMIC")==0) goto end;
 frread();
 while(strncmp(allfiles.actplace,"------",6)!=0)
@@ -1570,6 +1606,23 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       else
          dserror("Parameter unknown: IALE");
    }
+   /* parameter to indicate the coupling method that is applied         */
+   /* mortar method       --> fsidyn-->coupmethod == 0                  */
+   /* conforming coupling --> fsidyn-->coupmethod == 1 (default)        */
+   frchar("COUPMETHOD"    ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      length = strlen(buffer);
+      if ((strncmp(buffer,"MTR",3)==0 ||
+           strncmp(buffer,"Mtr",3)==0 ||
+           strncmp(buffer,"mtr",3)==0) && length==3)
+          fsidyn->coupmethod=0;
+      else if (strncmp(buffer,"conforming",10)==0 && length==10)
+               fsidyn->coupmethod=1;
+      else
+         dserror("Parameter unknown: COUPMETHOD");
+   }
+/*--------------read INT */
    frint("ISDMAX"     ,&(fsidyn->isdmax)     ,&ierr);
    frint("NUMSTEP"    ,&(fsidyn->nstep)      ,&ierr);
    frint("ITEMAX"     ,&(fsidyn->itemax)     ,&ierr);
@@ -1593,6 +1646,219 @@ dstrc_exit();
 #endif
 return;
 } /* end of inpctr_dyn_fsi */
+
+#endif
+
+#ifdef D_SSI
+
+/*!--------------------------------------------------------------------- 
+\brief input of the SSI DYNAMIC block in the input-file
+
+<pre>                                                         genk 10/03
+
+In this routine the data in the SSI DYNAMIC block of the input file
+are read and stored in ssidyn	       
+
+</pre>
+\param  *ssidyn 	  SSI_DATA       (o)	   
+\return void                                                                       
+
+------------------------------------------------------------------------*/
+void inpctr_dyn_ssi(SSI_DYNAMIC *ssidyn)
+{
+INT    ierr;
+INT    length;
+INT    mod_res_write;
+char   buffer[50];
+#ifdef DEBUG 
+dstrc_enter("inpctr_dyn_ssi");
+#endif
+
+/*-------------------------------------------------- set default values */
+ssidyn->ifsi=1;
+ssidyn->ipre=1;
+ssidyn->inrmfsi=1;
+ssidyn->ichecke=0;
+ssidyn->inest=0;
+ssidyn->ichopt=0;
+ssidyn->iait=0;
+ssidyn->itechapp=0;
+ssidyn->ichmax=1;
+ssidyn->isdmax=1;  
+ssidyn->nstep=1;   
+ssidyn->itemax=1;  
+ssidyn->iale=1;    
+ssidyn->uppss=1;
+ssidyn->upres=1;
+ssidyn->res_write_evry=1;
+ssidyn->dt=ONE/TEN;	
+ssidyn->maxtime=1000.0;
+ssidyn->entol=EPS6;  
+ssidyn->relax=ONE;  
+ssidyn->convtol=EPS6;
+ssidyn->conformmesh=1;
+ssidyn->coupmethod=0;
+    
+if (frfind("-SSI DYNAMIC")==0) goto end;
+frread();
+while(strncmp(allfiles.actplace,"------",6)!=0)
+{
+/*--------------read chars */
+   frchar("COUPALGO"  ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      length = strlen(buffer);
+      if (strncmp(buffer,"basic_sequ_stagg",16)==0 && length==16) 
+         ssidyn->ifsi=1;
+      else if (strncmp(buffer,"sequ_stagg_pred",15)==0 && length==15) 
+         ssidyn->ifsi=2;                 
+      else if (strncmp(buffer,"sequ_stagg_shift",15)==0 && length==15)
+         ssidyn->ifsi=3;  
+      else if (strncmp(buffer,"iter_stagg_fixed_rel_param",26)==0 && length==26) 
+         ssidyn->ifsi=4;
+      else if (strncmp(buffer,"iter_stagg_AITKEN_rel_param",27)==0 && length==27) 
+         ssidyn->ifsi=5;      
+      else if (strncmp(buffer,"iter_stagg_steep_desc",21)==0 && length==21) 
+         ssidyn->ifsi=6;
+      else if (strncmp(buffer,"iter_stagg_CHEB_rel_param",25)==0 && length==25) 
+         ssidyn->ifsi=7;      
+      else
+         dserror("Coupling Algorithm COUPALGO unknown");
+   }
+   frchar("CONVCRIT"  ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      length = strlen(buffer);
+      if (strncmp(buffer,"||g(i)||:sqrt(neq)",18)==0 && length==18) 
+         ssidyn->inrmfsi=1;
+      else if (strncmp(buffer,"||g(i)||:||g(0)||",17)==0 && length==17) 
+         ssidyn->inrmfsi=2;
+      else
+         dserror("Convergence criterion CONVCRIT unknown!");     
+   }
+   frchar("ENERGYCHECK"  ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      length = strlen(buffer);
+      if ((strncmp(buffer,"No",2)==0 ||
+           strncmp(buffer,"NO",2)==0 ||
+	   strncmp(buffer,"no",2)==0) && length==2) 
+         ssidyn->ichecke=0;
+      else if ((strncmp(buffer,"yes",3)==0 ||
+                strncmp(buffer,"YES",3)==0 ||                 
+	        strncmp(buffer,"Yes",3)==0) && length==3) 
+         ssidyn->ichecke=1;
+      else
+         dserror("Parameter for ENERGYCHECK unknown!");     
+   }
+
+   frchar("NESTEDITER"  ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      length = strlen(buffer);
+      if ((strncmp(buffer,"No",2)==0 ||
+           strncmp(buffer,"NO",2)==0 ||
+	   strncmp(buffer,"no",2)==0) && length==2) 
+         ssidyn->inest=0;
+      else if (strncmp(buffer,"fluid+structure",15)==0 && length==15) 
+         ssidyn->inest=1;
+      else if (strncmp(buffer,"structure",9)==0 && length==9) 
+         ssidyn->inest=2;
+      else
+         dserror("Parameter unknown: NESTEDITER");     
+   }      
+   frchar("ICHOPT"  ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      length = strlen(buffer);
+      if (strncmp(buffer,"no",2)==0 && length==2) 
+         ssidyn->ichopt=0;
+      else if (strncmp(buffer,"yes",3)==0 && length==3) 
+         ssidyn->ichopt=1;
+      else
+         dserror("Parameter unknown: ICHOPT");     
+   }   
+   frchar("IALE"    ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      length = strlen(buffer);
+      if (strncmp(buffer,"Pseudo_Structure",16)==0 && length==16)
+         ssidyn->iale=1;
+      else
+         dserror("Parameter unknown: IALE");
+   }
+   frchar("MESHCONFORM"    ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      length = strlen(buffer);
+      if ((strncmp(buffer,"YES",3)==0 ||
+           strncmp(buffer,"Yes",3)==0 ||
+           strncmp(buffer,"yes",3)==0) && length==3)
+          ssidyn->conformmesh=0;
+      else if ((strncmp(buffer,"NO",2)==0 ||
+                strncmp(buffer,"No",2)==0 ||
+                strncmp(buffer,"no",2)==0) && length==2)
+               ssidyn->conformmesh=1;
+      else
+         dserror("Parameter unknown: MESHCONFORM");
+   }
+   /* parameter to indicate the coupling method that is applied */
+   /* mortar method --> ssidyn->coupmethod == 0 (default) */ 
+   /* interpolation scheme --> ssidyn-->coupmethod == 1*/
+   frchar("COUPMETHOD"    ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      length = strlen(buffer);
+      if ((strncmp(buffer,"MTR",3)==0 ||
+           strncmp(buffer,"Mtr",3)==0 ||
+           strncmp(buffer,"mtr",3)==0) && length==3)
+          ssidyn->coupmethod=0;
+      else if ((strncmp(buffer,"INT",3)==0 ||
+                strncmp(buffer,"Int",3)==0 ||
+                strncmp(buffer,"int",3)==0) && length==3)
+               ssidyn->coupmethod=1;
+      else
+         dserror("Parameter unknown: COUPMETHOD");
+   }
+/*--------------read INT */
+   frint("ITECHAPP"   ,&(ssidyn->itechapp)         ,&ierr);
+   frint("ICHMAX"     ,&(ssidyn->ichmax)           ,&ierr);
+   frint("ISDMAX"     ,&(ssidyn->isdmax)           ,&ierr);
+   frint("NUMSTEP"    ,&(ssidyn->nstep)            ,&ierr);
+   frint("ITEMAX"     ,&(ssidyn->itemax)           ,&ierr);
+   frint("UPPSS"      ,&(ssidyn->uppss)            ,&ierr);
+   frint("UPRES"      ,&(ssidyn->upres)            ,&ierr);
+   frint("RESTARTEVRY",&(ssidyn->res_write_evry)   ,&ierr);
+/*--------------read DOUBLE */
+   frdouble("TIMESTEP"   ,&(ssidyn->dt)     ,&ierr);
+   frdouble("MAXTIME"    ,&(ssidyn->maxtime),&ierr);
+   frdouble("TOLENCHECK" ,&(ssidyn->entol)  ,&ierr);
+   frdouble("RELAX"      ,&(ssidyn->relax)  ,&ierr);
+   frdouble("CONVTOL"    ,&(ssidyn->convtol),&ierr);      
+   frread();
+}
+frrewind();
+/*----------------------------------------------------------------------*/
+
+end:
+/*------------------------------------------------ check restart option */
+if (ssidyn->res_write_evry >= ssidyn->upres)
+{
+   mod_res_write = ssidyn->res_write_evry % ssidyn->upres;
+   if (mod_res_write!=0)
+   dserror("RESTARTEVRY and UPRES have to be multiple of each other!\n");
+}
+else
+{
+   mod_res_write =  ssidyn->upres % ssidyn->res_write_evry;
+   if (mod_res_write!=0)
+   dserror("RESTARTEVRY and UPRES have to be multiple of each other!\n");   
+}
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of inpctr_dyn_ssi */
 
 #endif
 
