@@ -1,30 +1,45 @@
+/*!----------------------------------------------------------------------
+\file
+\brief integration parameters for fluid2 element
+
+------------------------------------------------------------------------*/
 #ifdef D_FLUID2 
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
+static double Q12 = ONE/TWO;
+static double Q13 = ONE/THREE;
+static double Q16 = ONE/SIX;
+static double Q23 = TWO/THREE;
+/*!---------------------------------------------------------------------                                         
+\brief integration parameters for fluid2 element
 
-/*----------------------------------------------------------------------*
- | integration points                                      genk 03/02   |
- | this routine is a try to organise the integration parameters         |
- | different. ALL paramters are saved in F2_DATA, so that this routine  |
- | has to be (hopefully) called only once!!!                            |
- *----------------------------------------------------------------------*/
-void f2_intg(const ELEMENT   *ele,
-             F2_DATA         *data,
-             int              option)
+<pre>                                                         genk 06/02
+
+this routine is a try to organise the integration parameters   
+different. ALL paramters are stored in FLUID_DATA, so that this
+routine has to be (hopefully) called only once!!!	       
+
+</pre>
+\param  *data 	  FLUID_DATA       (o)	   
+\param   option	  int              (i)     flag (not used at the moment 
+\return void                                                                       
+
+------------------------------------------------------------------------*/
+void f2_intg(FLUID_DATA         *data,
+             int                option  
+	    )
 {
-int i, k;
+int     i, k;                          /* simply some counters          */
+double  xgr[MAXTINTP][MAXTINTC];       /* coord. of integr. points QUAD */
+double  xgs[MAXTINTP][MAXTINTC];       /* coord. of integr. points QUAD */
+double  wgtt[MAXTINTP][MAXTINTC];      /* integr. weights QUAD          */
+double  xg[MAXQINTP][MAXQINTC];        /* coord. of integr. points TRI  */
+double  wgt[MAXQINTP][MAXQINTC];       /* integr. weights TRI    	*/
 
-double zero  = 0.0;
-double one   = 1.0;
-double two   = 2.0;
-double three = 3.0;
-
-double  q12, q13, q16, q23;
-double  xgr[MAXTINTP][MAXTINTC],xgs[MAXTINTP][MAXTINTC],wgtt[MAXTINTP][MAXTINTC];
-double  xg[MAXQINTP][MAXQINTC],wgt[MAXQINTP][MAXQINTC];
 #ifdef DEBUG 
 dstrc_enter("f2_intg");
 #endif
+
 /*----------------------------------------------------------------------*/
 if (option==0)
 {                                                  /* initialize arrays */
@@ -32,109 +47,123 @@ if (option==0)
   {
     for (k=0; k<MAXTINTC; k++)
     {
-       xgr[i][k] = 0.;
-       xgs[i][k] = 0.;
-      wgtt[i][k] = 0.;
-    }
-  }
+       xgr[i][k] = ZERO;
+       xgs[i][k] = ZERO;
+      wgtt[i][k] = ZERO;
+    } /* end loop over k */
+  } /* end loop over i */
   for (i=0; i<MAXQINTP; i++)
   {
     for (k=0; k<MAXQINTC; k++)
     {
-       xg[i][k] = 0.;
-       wgt[i][k] = 0.;
-    }
-  }
+       xg[i][k]  = ZERO;
+       wgt[i][k] = ZERO;
+    } /* end loop over k */
+  } /* end loop over i */
+
 /*----------------------------------------------------------------------*  
  |     INTEGRATION PARAMETERS FOR    R E C T A N G U L A R   ELEMENTS   |        
  |     GAUSS SAMPLING POINTS  AT     R/S-COORDINATES     RESPECTIVELY   |      
  |                            AND    CORRESPONDING WEIGHTING  FACTORS   |      
+ |     xg[i][j]                                                         |
+ |    wgt[i][j]:  i+1 - actual number of gausspoint                     |
+ |                j+1 - total number of gausspoints                     |
  *----------------------------------------------------------------------*/       
+/* coordinates for two gauss points */
       xg[0][1]  =  -0.5773502691896;                                            
       xg[1][1]  =  -xg[0][1]       ;
+/* coordinates for three gauss points */
       xg[0][2]  =  -0.7745966692415;
       xg[2][2]  =  -xg[0][2]       ;
+/* coordinates for four gauss points */
       xg[0][3]  =  -0.8611363115941;
       xg[1][3]  =  -0.3399810435849;
       xg[2][3]  =  -xg[1][3]       ;
       xg[3][3]  =  -xg[0][3]       ;
+/* coordinates for five gauss points */
       xg[0][4]  =  -0.9061798459387;
       xg[1][4]  =  -0.5384693101057;
       xg[3][4]  =  -xg[1][4]       ;
       xg[4][4]  =  -xg[0][4]       ;
+/* coordinates for six gauss points */
       xg[0][5]  =  -0.9324695142032;                                            
       xg[1][5]  =  -0.6612093864663;                                            
       xg[2][5]  =  -0.2386191860832;                                            
       xg[3][5]  =  -xg[2][5]       ;
       xg[4][5]  =  -xg[1][5]       ;
       xg[5][5]  =  -xg[0][5]       ;
-                                 
-      wgt[0][0] =  two             ;
-      wgt[0][1] =  one             ;
-      wgt[1][1] =  one             ;
+
+/* weights for one gauss points */                                 
+      wgt[0][0] =  TWO             ;
+/* weights for two gauss points */
+      wgt[0][1] =  ONE             ;
+      wgt[1][1] =  ONE             ;
+/* weights for three gauss points */
       wgt[0][2] =  0.5555555555556 ;
       wgt[1][2] =  0.8888888888889 ;
       wgt[2][2] =  wgt[0][2]       ;
+/* weights for four gauss points */
       wgt[0][3] =  0.3478548451375 ;
       wgt[1][3] =  0.6521451548625 ;
       wgt[2][3] =  wgt[1][3]       ;
       wgt[3][3] =  wgt[0][3]       ;
+/* weights for five gauss points */
       wgt[0][4] =  0.2369268850562 ;
       wgt[1][4] =  0.4786286704994 ;
       wgt[2][4] =  0.5688888888889 ;
       wgt[3][4] =  wgt[1][4]       ;
       wgt[4][4] =  wgt[0][4]       ;
+/* weights for six gauss points */
       wgt[0][5] =  0.1713244923792 ;
       wgt[1][5] =  0.3607615730481 ;
       wgt[2][5] =  0.4679139345727 ;
       wgt[3][5] =  wgt[2][5]       ;
       wgt[4][5] =  wgt[1][5]       ;
       wgt[5][5] =  wgt[0][5]       ;
+
 /*----------------------------------------------------------------------*  
  |     INTEGRATION PARAMETERS FOR    T R I A N G U L A R     ELEMENTS   |
  |     GAUSS SAMPLING POINTS  AT     R/S-COORDINATES     RESPECTIVELY   |
  |                            AND    CORRESPONDING WEIGHTING  FACTORS   |
+ |     xgr[i][j]                                                        |
+ |    wgts[i][j]:  i+1 - actual number of gausspoint                    |
+ |                 j+1 - number for integration case (from input)       |
  *----------------------------------------------------------------------*/       
-/*---------------------------------------------- form initial values ---*/
-      q12 = one/two   ;
-      q13 = one/three ;
-      q16 = q13/two   ;
-      q23 = q13*two   ;                                                                                                             
+                                                                                                     
 /*----------------------------------------------------------------------*  
  |    GAUSS INTEGRATION         1 SAMPLING POINT, DEG.OF PRECISION 1    |        
  |                              CASE 0                                  |
  *----------------------------------------------------------------------*/       
-      xgr[0][0]    =  q13 ;
-      xgs[0][0]    =  q13 ;
-      wgtt[0][0]   =  q12 ;
+      xgr[0][0]    =  Q13 ;
+      xgs[0][0]    =  Q13 ;
+      wgtt[0][0]   =  Q12 ;
 /*----------------------------------------------------------------------*  
  |    GAUSS INTEGRATION        3 SAMPLING POINTS, DEG.OF PRECISION 2    |
  |                             CASE 1                                   |        
  *----------------------------------------------------------------------*/       
-      xgr[0][1]    =  q12  ;
-      xgr[1][1]    =  q12  ;
-      xgr[2][1]    =  zero ;
-      xgs[0][1]    =  zero ;
-      xgs[1][1]    =  q12  ;
-      xgs[2][1]    =  q12  ;
-      wgtt[0][1]   =  q16  ;
-      wgtt[1][1]   =  q16  ;
-      wgtt[2][1]   =  q16  ;
-      
+      xgr[0][1]    =  Q12  ;
+      xgr[1][1]    =  Q12  ;
+      xgr[2][1]    =  ZERO ;
+      xgs[0][1]    =  ZERO ;
+      xgs[1][1]    =  Q12  ;
+      xgs[2][1]    =  Q12  ;
+      wgtt[0][1]   =  Q16  ;
+      wgtt[1][1]   =  Q16  ;
+      wgtt[2][1]   =  Q16  ;
 /*----------------------------------------------------------------------*  
  |    ALT.GAUSS INTEGRATION    3 SAMPLING POINTS, DEG.OF PRECISION 2    |        
  |                             CASE 2                                   |    
  *----------------------------------------------------------------------*/       
 
-      xgr[0][2]    =  q16  ;
-      xgr[1][2]    =  q23  ;
-      xgr[2][2]    =  q16  ;
-      xgs[0][2]    =  q16  ;
-      xgs[1][2]    =  q16  ;
-      xgs[2][2]    =  q23  ;
-      wgtt[0][2]   =  q16  ;
-      wgtt[1][2]   =  q16  ;
-      wgtt[2][2]   =  q16  ;
+      xgr[0][2]    =  Q16  ;
+      xgr[1][2]    =  Q23  ;
+      xgr[2][2]    =  Q16  ;
+      xgs[0][2]    =  Q16  ;
+      xgs[1][2]    =  Q16  ;
+      xgs[2][2]    =  Q23  ;
+      wgtt[0][2]   =  Q16  ;
+      wgtt[1][2]   =  Q16  ;
+      wgtt[2][2]   =  Q16  ;
 /*----------------------------------------------------------------------*  
  |    GAUSS INTEGRATION        4 SAMPLING POINTS, DEG.OF PRECISION 3    |        
  |                             CASE 3                                   |
@@ -142,11 +171,11 @@ if (option==0)
       xgr[0][3]    =  0.2                ;
       xgr[1][3]    =  0.6                ;
       xgr[2][3]    =  0.2                ;
-      xgr[3][3]    =  q13                ;
+      xgr[3][3]    =  Q13                ;
       xgs[0][3]    =  0.2                ;
       xgs[1][3]    =  0.2                ;
       xgs[2][3]    =  0.6                ;
-      xgs[3][3]    =  q13                ;
+      xgs[3][3]    =  Q13                ;
       wgtt[0][3]   =  0.2604166666667    ;
       wgtt[1][3]   =  wgtt[0][2]         ;
       wgtt[2][3]   =  wgtt[0][2]         ;
@@ -172,8 +201,7 @@ if (option==0)
       wgtt[2][4]   =  wgtt[0][3]	;
       wgtt[3][4]   =  0.1116907948390	;
       wgtt[4][4]   =  wgtt[3][3]	;
-      wgtt[5][4]   =  wgtt[3][3]	;				       
-         
+      wgtt[5][4]   =  wgtt[3][3]	;				            
 /*----------------------------------------------------------------------*  
  |    ALT.GAUSS INTEGRATION    6 SAMPLING POINTS, DEG.OF PRECISION 3    |        
  |                             CASE 5                                   |
@@ -206,14 +234,14 @@ if (option==0)
       xgr[3][6]    =  xgr[1][4]       ;
       xgr[4][6]    =  xgr[0][4]       ;
       xgr[5][6]    =  0.0597158717898 ;
-      xgr[6][6]    =  q13	      ;
+      xgr[6][6]    =  Q13	      ;
       xgs[0][6]    =  xgr[0][4]       ;
       xgs[1][6]    =  xgr[5][4]       ;
       xgs[2][6]    =  xgr[0][4]       ;
       xgs[3][6]    =  xgr[1][4]       ;
       xgs[4][6]    =  xgr[2][4]       ;
       xgs[5][6]    =  xgr[1][4]       ;
-      xgs[6][6]    =  q13	      ;
+      xgs[6][6]    =  Q13	      ;
       wgtt[0][6]   =  0.0629695902724 ;
       wgtt[1][6]   =  0.0661970763943 ;
       wgtt[2][6]   =  wgtt[0][4]      ;
@@ -231,14 +259,14 @@ if (option==0)
       xgr[3][7]    =  xgr[0][4]       ;
       xgr[4][7]    =  0.0253551345591 ;
       xgr[5][7]    =  xgr[4][4]       ;
-      xgr[6][7]    =  q13	      ;
+      xgr[6][7]    =  Q13	      ;
       xgs[0][7]    =  xgr[4][4]       ;
       xgs[1][7]    =  xgr[4][4]       ;
       xgs[2][7]    =  xgr[0][4]       ;
       xgs[3][7]    =  xgr[1][4]       ;
       xgs[4][7]    =  xgr[1][4]       ;
       xgs[5][7]    =  xgr[0][4]       ;
-      xgs[6][7]    =  q13	      ;
+      xgs[6][7]    =  Q13	      ;
       wgtt[0][7]   =  0.0520833333333 ;
       wgtt[1][7]   =  wgtt[0][4]      ;
       wgtt[2][7]   =  wgtt[0][4]      ;
@@ -290,9 +318,9 @@ if (option==0)
       xgr[6][9]    =  xgr[0][6]           ;
       xgr[7][9]    =  0.0531450498448     ;
       xgr[8][9]    =  xgr[7][6]           ;
-      xgr[9][9]   =  0.2492867451709     ;
+      xgr[9][9]    =  0.2492867451709     ;
       xgr[10][9]   =  0.5014265096582     ;
-      xgr[11][9]   =  xgr[9][6]          ;
+      xgr[11][9]   =  xgr[9][6]           ;
       xgs[0][9]    =  xgr[0][6]           ;
       xgs[1][9]    =  xgr[7][6]           ;
       xgs[2][9]    =  xgr[7][6]           ;
@@ -302,8 +330,8 @@ if (option==0)
       xgs[6][9]    =  xgr[3][6]           ;
       xgs[7][9]    =  xgr[2][6]           ;
       xgs[8][9]    =  xgr[1][6]           ;
-      xgs[9][9]   =  xgr[9][6]          ;
-      xgs[10][9]   =  xgr[9][6]          ;
+      xgs[9][9]    =  xgr[9][6]           ;
+      xgs[10][9]   =  xgr[9][6]           ;
       xgs[11][9]   =  xgr[10][6]          ;
       wgtt[0][9]   =  0.0254224531851     ;
       wgtt[1][9]   =  0.0414255378092     ;
@@ -314,9 +342,9 @@ if (option==0)
       wgtt[6][9]   =  wgtt[0][6]          ;
       wgtt[7][9]   =  wgtt[1][6]          ;
       wgtt[8][9]   =  wgtt[1][6]          ;
-      wgtt[9][9]  =  0.0583931378632     ;
-      wgtt[10][9]  =  wgtt[9][6]         ;
-      wgtt[11][6]  =  wgtt[9][6]         ;
+      wgtt[9][9]   =  0.0583931378632     ;
+      wgtt[10][9]  =  wgtt[9][6]          ;
+      wgtt[11][6]  =  wgtt[9][6]          ;
 /*----------------------------------------------------------------------*
  |    GAUSS INTEGRATION       13 SAMPLING POINTS, DEG.OF PRECISION 7    |
  |                            CASE 10                                   |
@@ -330,10 +358,10 @@ if (option==0)
       xgr[6][10]    =  xgr[0][7]           ;
       xgr[7][10]    =  0.0486903154253     ;
       xgr[8][10]    =  xgr[7][7]           ;
-      xgr[9][10]   =  0.2603459660790     ;
+      xgr[9][10]    =  0.2603459660790     ;
       xgr[10][10]   =  0.4793080678419     ;
-      xgr[11][10]   =  xgr[9][7]          ;
-      xgr[12][10]   =  q13                 ;
+      xgr[11][10]   =  xgr[9][7]           ;
+      xgr[12][10]   =  Q13                 ;
       xgs[0][10]    =  xgr[0][7]           ;
       xgs[1][10]    =  xgr[7][7]           ;
       xgs[2][10]    =  xgr[7][7]           ;
@@ -343,10 +371,10 @@ if (option==0)
       xgs[6][10]    =  xgr[3][7]           ;
       xgs[7][10]    =  xgr[2][7]           ;
       xgs[8][10]    =  xgr[1][7]           ;
-      xgs[9][10]   =  xgr[9][7]          ;
-      xgs[10][10]   =  xgr[9][7]          ;
+      xgs[9][10]    =  xgr[9][7]           ;
+      xgs[10][10]   =  xgr[9][7]           ;
       xgs[11][10]   =  xgr[10][7]          ;
-      xgs[12][10]   =  q13                 ;
+      xgs[12][10]   =  Q13                 ;
       wgtt[0][10]   =  0.0266736178044     ;
       wgtt[1][10]   =  0.0385568804451     ;
       wgtt[2][10]   =  wgtt[1][7]          ;
@@ -356,12 +384,12 @@ if (option==0)
       wgtt[6][10]   =  wgtt[0][7]          ;
       wgtt[7][10]   =  wgtt[1][7]          ;
       wgtt[8][10]   =  wgtt[1][7]          ;
-      wgtt[9][10]  =  0.0878076287166     ;
-      wgtt[10][10]  =  wgtt[9][7]         ;
-      wgtt[11][10]  =  wgtt[9][7]         ;
+      wgtt[9][10]   =  0.0878076287166     ;
+      wgtt[10][10]  =  wgtt[9][7]          ;
+      wgtt[11][10]  =  wgtt[9][7]          ;
       wgtt[12][10]  = -0.0747850222338     ;
 /*----------------------------------------------------------------------*/
-/*------------------------------ save integration parameters in F2_DATA */
+/*----------------------------- store integration parameters in F2_DATA */
 /*----------------- RECTANGLES -----------------------------------------*/
    for (i=0;i<MAXQINTP;i++)
    {
@@ -369,8 +397,8 @@ if (option==0)
      {
         data->qxg[i][k]=xg[i][k];
         data->qwgt[i][k]=wgt[i][k];
-     }
-   }
+     } /* end loop over k */
+   } /* end loop over i */
 /*----------------- TRIANGLES ------------------------------------------*/
    for (i=0;i<MAXTINTP;i++)
    {
@@ -379,17 +407,19 @@ if (option==0)
         data->txgr[i][k]=xgr[i][k];
         data->txgs[i][k]=xgs[i][k];
 	data->twgt[i][k]=wgtt[i][k];
-     }
-   }
-}                                                 
+     } /* end loop over k */
+   } /* end loop over i */
+} /* endif (option==0) */                                                
 else
 {
 /* do nothing at the moment --------------------------------------------*/       
 }
+
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
 #endif
+
 return;
 } /* end of f2_intg */
 

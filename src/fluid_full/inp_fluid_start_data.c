@@ -1,3 +1,9 @@
+/*!----------------------------------------------------------------------
+\file
+\brief reading fluid data from fluid_start_data
+
+------------------------------------------------------------------------*/
+#ifdef D_FLUID
 #include "../headers/standardtypes.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -21,37 +27,45 @@ extern ALLDYNA      *alldyn;
  | variables needed for parallel comp.                    m.gee 8/00    |
  *----------------------------------------------------------------------*/
 extern struct _PAR   par;
-/*----------------------------------------------------------------------*
- | input of initial starting field from fluid_start.data                |
- | ONLY SEQUENTIEL VERSION TESTED!!!!!                                  |
- *----------------------------------------------------------------------*/
+/*!---------------------------------------------------------------------                                         
+\brief input from file 'fluid_start-data'
+
+<pre>                                                         genk 07/02
+
+in this routine the inital fluid data are read form 'fluid_start_data'
+and stored in the array 'start'
+			     
+</pre>   
+\return void  
+\warning ONLY SEQUENTIEL VERSION !!!!!
+------------------------------------------------------------------------*/
 void inp_fluid_start_data()
 {
-int irc=1;                        /* flag for file opening */
-int j,k;                          /* counters */
-int ierr1=0;                      /* flag for reading form file */
-int ierr2=0;                      /* flag for reading form file */
-int ierr3=0;                      /* flag for reading form file */
-int numnp, numdf;                 /* number of points, dof per node */
+int irc=1;                        /* flag for file opening              */
+int j,k;                          /* counters                           */
+int ierr1=0;                      /* flag for reading form file         */
+int ierr2=0;                      /* flag for reading form file         */
+int ierr3=0;                      /* flag for reading form file         */
+int numnp, numdf;                 /* number of points, dof per node     */
 int num;                          /* actual number of node during input */
 int counter=0;                    
-int actnf;                        /* actual field number */
+int actnf;                        /* actual field number                */
 double time;                      
 char line [500];
 char *foundit  = NULL;
 char *foundit1 = NULL;
 char *foundit2 = NULL;
-char *foundit3 = NULL;		  /* pointers for input */
+char *foundit3 = NULL;		  /* pointers for input                 */
 char *end;
 double **start;
 FILE *file;
-FLUID_DYNAMIC *fdyn;               /* pointer to fluid dynamic input data */
-FIELD *actfield;                   /* pointer to actual field             */
+FLUID_DYNAMIC *fdyn;              /* pointer to fluid dynamic input data*/
+FIELD *actfield;                  /* pointer to actual field            */
 
 #ifdef DEBUG 
 dstrc_enter("inp_fluid_start_data");
 #endif
-/* ------------------------------------------- find number of fluid field */
+/* -------------------------------------------find number of fluid field */
 for (actnf=0;actnf<genprob.numfld;actnf++)
 {
    actfield=&(field[actnf]);
@@ -197,3 +211,6 @@ dstrc_exit();
 return;
 } 
 /* end of inp_fluid_start_data */ 
+
+
+#endif

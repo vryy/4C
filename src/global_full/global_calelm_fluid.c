@@ -1,3 +1,8 @@
+/*!----------------------------------------------------------------------
+\file
+\brief initialise and control element calculations 
+
+------------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "../headers/solution.h"
 #include "../shell8/shell8.h"
@@ -14,41 +19,59 @@ enum _CALC_ACTION calc_action[MAXFIELD];
 /*----------------------------------------------------------------------*
  | global dense matrices for element routines             genk 04/02    |
  *----------------------------------------------------------------------*/
-struct _ARRAY estif_global;    /* element stiffness matrix */  
-struct _ARRAY etforce_global;  /* element Time RHS */
-struct _ARRAY eiforce_global;  /* element Iteration RHS    */
-struct _ARRAY edforce_global;  /* element dirichlet RHS    */
-struct _ARRAY emass_global;
+struct _ARRAY estif_global;    /* element stiffness matrix              */
+struct _ARRAY emass_global;    /* element mass matrix                   */  
+struct _ARRAY etforce_global;  /* element Time RHS                      */
+struct _ARRAY eiforce_global;  /* element Iteration RHS                 */
+struct _ARRAY edforce_global;  /* element dirichlet RHS                 */
 struct _ARRAY intforce_global;
-/*----------------------------------------------------------------------*
- |  routine to call fluid elements                       genk 04/02     |
- *----------------------------------------------------------------------*/
-void calelm_fluid(FIELD        *actfield,     /* active field */        
-                  SOLVAR       *actsolv,      /* active SOLVAR */
-                  PARTITION    *actpart,      /* my partition of this field */
-                  INTRA        *actintra,     /* my intra-communicator */
-                  int           sysarray1,    /* number of first sparse system matrix */
-                  int           sysarray2,    /* number of secnd system matrix, if present, else -1 */
-                  double       *ftimerhs,
-		  double       *fiterhs,
-                  int           global_numeq, /* total number of equations on all procs */
-                  int           nii,          /* flag for iteration RHS*/
-		  int           nif,          /* flag for time RHS */
+/*!---------------------------------------------------------------------                                         
+\brief call fluid elements
+
+<pre>                                                         genk 04/02       
+</pre>
+\param *actfield      FIELD	  (i)	 active field		 
+\param *actsolv       SOLVAR	  (i)    active SOLVAR  	 
+\param *actpart       PARTITION   (i)	 my part. of this field  
+\param *actintra      INTRA	  (i)	 my intra-communicator   
+\param  sysarray1     int	  (i)	 num. of 1st sparse system matrix  
+\param  sysarray2     int	  (i)	 number of secnd system matrix, if present, else -1  
+\param *ftimerhs      double	  (o)	 time RHS		 
+\param *fiterhs       double	  (o)	 iteration RHS  	 
+\param  global_numeq  int	  (i)	 total number of equations on all procs 
+\param  nii	      int	  (i)	 flag for iteration RHS  
+\param  nif	      int	  (i)	 flag for time RHS	 
+\param  kstep	      int	  (-)
+\param *action	      CALC_ACTION (i)	 calculation option passed to element routines  
+\return void                                                                       
+
+------------------------------------------------------------------------*/
+void calelm_fluid(FIELD        *actfield,      
+                  SOLVAR       *actsolv,      
+                  PARTITION    *actpart,      
+                  INTRA        *actintra,     
+                  int           sysarray1,    
+                  int           sysarray2,    
+                  double       *ftimerhs,     
+		  double       *fiterhs,      
+                  int           global_numeq, 
+                  int           nii,          
+		  int           nif,          
                   int           kstep,
-                  CALC_ACTION  *action)       /* calculation option passed to element routines */
+                  CALC_ACTION  *action)       
 /*----------------------------------------------------------------------*/
 {
 int               i;
-int               hasdirich=0;
-ELEMENT          *actele;
-SPARSE_TYP        sysarray1_typ;
+int               hasdirich=0;      /* flag                             */
+ELEMENT          *actele;           /* actual element                   */
+SPARSE_TYP        sysarray1_typ;     
 SPARSE_TYP        sysarray2_typ;
 ASSEMBLE_ACTION   assemble_action;
 
 #ifdef DEBUG 
 dstrc_enter("calelm_fluid");
 #endif
-/*----------------------------------------------------------------------*/
+
 /*-------------- zero the parallel coupling exchange buffers if present */  
 #ifdef PARALLEL 
 /*------------------------ check the send & recv buffers from sysarray1 */
@@ -156,6 +179,7 @@ if (sysarray2 != -1)
    }
 }
 #endif
+
 /* =======================================================call elements */
 /*---------------------------------------------- loop over all elements */
 for (i=0; i<actpart->pdis[0].numele; i++)
@@ -187,7 +211,11 @@ for (i=0; i<actpart->pdis[0].numele; i++)
              &etforce_global,&eiforce_global,&edforce_global,
 	     action,&hasdirich); 
    break;
-   case el_fluid3: 
+   case el_fluid3:
+      fluid3(actpart,actintra,actele,
+             &estif_global,&emass_global,
+             &etforce_global,&eiforce_global,&edforce_global,
+	     action,&hasdirich);    
    break;
    case el_ale3:
    break;
@@ -210,7 +238,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    case calc_fluid               : assemble_action = assemble_one_matrix; break;
    default: dserror("Unknown type of assembly"); break;
    }
-   /*--------------------------- assemble one or two system matrices */
+   /*------------------------------ assemble one or two system matrices */
    assemble(sysarray1,
             &estif_global,
             sysarray2,
@@ -220,13 +248,13 @@ for (i=0; i<actpart->pdis[0].numele; i++)
             actintra,
             actele,
             assemble_action);
-   /*------------------ assemble the vector etforce_global to time-rhs */
+   /*------------------- assemble the vector etforce_global to time-rhs */
    if (nif!=0)
       assemble_intforce(actele,ftimerhs,global_numeq,&etforce_global);
-   /*------------- assemble the vector eiforce_global to iteration rhs */
+   /*-------------- assemble the vector eiforce_global to iteration rhs */
    if (nii!=0)
       assemble_intforce(actele,fiterhs,global_numeq,&eiforce_global); 
-   /*------------ assemble the vector edforce_global to iteration rhs */
+   /*-------------- assemble the vector edforce_global to iteration rhs */
    if (hasdirich!=0)
       assemble_intforce(actele,fiterhs,global_numeq,&edforce_global);
 }/* end of loop over elements */
@@ -257,6 +285,7 @@ assemble(sysarray1,
          actele,
          assemble_action);
 #endif
+
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -264,12 +293,19 @@ dstrc_exit();
 return;
 } /* end of calelm_fluid */
 
+/*!---------------------------------------------------------------------                                         
+\brief call fluid elements and initialise them
 
-/*----------------------------------------------------------------------*
- |  routine to call elements to init                    genk 04/02      |
- *----------------------------------------------------------------------*/
-void calinit_fluid(FIELD       *actfield,   /* the active physical field */ 
-                   PARTITION   *actpart,    /* my partition of this field */
+<pre>                                                         genk 04/02       
+</pre>
+\param *actfield      FIELD	  (i)	 active field		 
+\param *actpart       PARTITION   (i)	 my part. of this field  
+\param *action	      CALC_ACTION (i)	 calculation option passed to element routines  
+\return void                                                                       
+
+------------------------------------------------------------------------*/
+void calinit_fluid(FIELD       *actfield,    
+                   PARTITION   *actpart,    
                    CALC_ACTION *action)
 {
 int i;                        /* a counter */
@@ -280,10 +316,11 @@ int is_fluid2=0;
 int is_fluid3=0;
 int is_ale3=0;
 ELEMENT *actele;              /* active element */
+
 #ifdef DEBUG 
 dstrc_enter("calinit");
 #endif
-/*----------------------------------------------------------------------*/
+
 /*-------------------------- define dense element matrices for assembly */
 amdef("estif",&estif_global,(MAXNOD*MAXDOFPERNODE),(MAXNOD*MAXDOFPERNODE),"DA");
 amdef("emass",&emass_global,(MAXNOD*MAXDOFPERNODE),(MAXNOD*MAXDOFPERNODE),"DA");
@@ -343,20 +380,26 @@ if (is_fluid2==1)
    fluid2(actpart,NULL,NULL,
           &estif_global,&emass_global,
           &etforce_global,&eiforce_global,&edforce_global,
-          action);
+          action,NULL);
 }
 /*-------------------------------- init all kind of routines for fluid3 */
 if (is_fluid3==1)
 {
+   fluid3(actpart,NULL,NULL,
+          &estif_global,&emass_global,
+          &etforce_global,&eiforce_global,&edforce_global,
+          action,NULL);
 }
 /*----------------------------------- init all kind of routines for ale */
 if (is_ale3==1)
 {
 }
+
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
 #endif
+
 return;
 } /* end of calinit_fluid */
 

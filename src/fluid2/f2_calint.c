@@ -1,69 +1,105 @@
+/*!----------------------------------------------------------------------
+\file
+\brief integration loop for one fluid2 element
+
+------------------------------------------------------------------------*/
 #ifdef D_FLUID2 
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
-# define ONE (1.0)
-
-void genkout(double **matrix, double *vector, char *title, int ntitle,
-             int istart, int iend, int jstart, int jend, int flag);
-
+#include "fluid2.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of material laws                                              |
  | defined in global_control.c
  *----------------------------------------------------------------------*/
 extern struct _MATERIAL  *mat;
+
 /*----------------------------------------------------------------------*
  | integration loop for one fluid element                               |
  |                                                                      |
  |                                                           genk 03/02 |
  *----------------------------------------------------------------------*/
+/*!---------------------------------------------------------------------
+\brief integration loop for one fluid2 element
+
+<pre>                                                         genk 04/02
+
+In this routine the element stiffness matrix, iteration-RHS and
+time-RHS for one fluid2 element is calculated
+      
+</pre>
+\param  *data      FLUID_DATA	   (i)	  integration data
+\param  *ele	   ELEMENT	   (i)    actual element
+\param  *dynvar    FLUID_DYN_CALC  (i)
+\param **estif     double	   (o)    element stiffness matrix
+\param **emass     double	   (o)    element mass matrix
+\param  *etforce   double	   (o)    element time force vector
+\param  *eiforce   double	   (o)    element iter force vector
+\param  *funct     double	   (-)    natural shape functions
+\param **deriv     double	   (-)	  deriv. of nat. shape funcs
+\param **deriv2    double	   (-)    2nd deriv. of nat. shape f.
+\param **xjm	   double	   (-)    jacobian matrix
+\param **derxy     double	   (-)	  global derivatives
+\param **derxy2    double	   (-)    2nd global derivatives
+\param **eveln     double	   (i)    ele vel. at time n
+\param **evelng    double	   (i)    ele vel. at time n+g
+\param  *epren     double	   (-)    ele pres. at time n
+\param  *velint    double	   (-)    vel at integration point
+\param  *vel2int   double	   (-)    vel at integration point
+\param  *covint    double	   (-)    conv. vel. at integr. point
+\param **vderxy    double	   (-)    global vel. derivatives
+\param  *pderxy    double	   (-)    global pres. derivatives
+\param **vderxy2   double	   (-)    2nd global vel. deriv.
+\param **wa1	   double	   (-)    working array
+\param **wa2	   double	   (-)    working array
+\return void                                                   
+
+------------------------------------------------------------------------*/
 void f2_calint(
-               F2_DATA         *data, 
-	       ELEMENT         *ele,
-	       FLUID_DYN_CALC  *dynvar,
-               double         **estif,
-	       double         **emass,
-	       double          *etforce,
-	       double          *eiforce,
-	       double          *funct,
-	       double         **deriv,
-	       double         **deriv2,
-	       double         **xjm,
-	       double         **derxy,
-	       double         **derxy2,
-	       double         **eveln,
-	       double         **evelng,
-	       double          *epren,
-	       double          *velint,
-	       double          *vel2int,
-	       double          *covint,
-	       double         **vderxy,
-	       double          *pderxy,
-	       double         **vderxy2,
-	       double         **wa1,
-	       double         **wa2
+               FLUID_DATA      *data,     
+	       ELEMENT         *ele,     
+	       FLUID_DYN_CALC  *dynvar, 
+               double         **estif,   
+	       double         **emass,   
+	       double          *etforce, 
+	       double          *eiforce, 
+	       double          *funct,   
+	       double         **deriv,   
+	       double         **deriv2,  
+	       double         **xjm,     
+	       double         **derxy,   
+	       double         **derxy2,  
+	       double         **eveln,   
+	       double         **evelng,  
+	       double          *epren,   
+	       double          *velint,  
+	       double          *vel2int, 
+	       double          *covint,  
+	       double         **vderxy,  
+	       double          *pderxy,  
+	       double         **vderxy2, 
+	       double         **wa1,     
+	       double         **wa2      
 	      )
 { 
-int       i,j;
-int       iel;        /* number of nodes */
-int       ntyp;       /* element type: 1 - quad; 2 - tri */
+int       i,j;        /* simply a counter                               */
+int       iel;        /* number of nodes                                */
+int       ntyp;       /* element type: 1 - quad; 2 - tri                */
 int       intc;       /* "integration case" for tri for further infos
-                          see f2_inpele.c and f2_intg.c*/
-int       nir, nis;
-int       actmat;     /* material number of the element */
-int       ihoel=0;
-int       icode=2;
-int       ielstrl;   
-int       lr, ls;     /* counter for integration */
-double    dens;       /* density */
-double    visc;       /* viscosity */
+                          see f2_inpele.c and f2_intg.c                 */
+int       nir,nis;    /* number of integration nodesin r,s direction    */
+int       actmat;     /* material number of the element                 */
+int       ihoel=0;    /* flag for higher order elements                 */
+int       icode=2;    /* flag for eveluation of shape functions         */     
+int       lr, ls;     /* counter for integration                        */
+double    dens;       /* density                                        */
+double    visc;       /* viscosity                                      */
 double    fac;
-double    facr, facs; /* integration weights */
-double    det;        /* determinant of jacobian matrix */
-double    e1,e2;
-double    preint;     /*pressure at integration point */
-
-DIS_TYP   typ;
+double    facr, facs; /* integration weights                            */
+double    det;        /* determinant of jacobian matrix                 */
+double    e1,e2;      /* natural coordinates of integr. point           */
+double    preint;     /* pressure at integration point                  */
+DIS_TYP   typ;	      /* element type                                   */
 
 #ifdef DEBUG 
 dstrc_enter("f2_calint");
@@ -76,6 +112,7 @@ dens = mat[actmat].m.fluid->density;
 visc = mat[actmat].m.fluid->viscosity;
 ntyp = ele->e.f2->ntyp; 
 typ  = ele->distyp;
+
 /*------- get integraton data and check if elements are "higher order" */
 switch (ntyp)
 {
@@ -85,7 +122,7 @@ case 1:  /* --> quad - element */
    /* initialise integration */
    nir = ele->e.f2->nGP[0];
    nis = ele->e.f2->nGP[1];
-   break;
+break;
 case 2: /* --> tri - element */  
    if (iel>3)
    {
@@ -96,12 +133,14 @@ case 2: /* --> tri - element */
    nir  = ele->e.f2->nGP[0];
    nis  = 1;
    intc = ele->e.f2->nGP[1];  
-   break;
+break;
 default:
    dserror("ntyp unknown!");
-}
+} /* end switch(ntyp) */
 
-/* start loop over integration points */
+/*----------------------------------------------------------------------*
+ |               start loop over integration points                     |
+ *----------------------------------------------------------------------*/
 for (lr=0;lr<nir;lr++)
 {    
    for (ls=0;ls<nis;ls++)
@@ -115,17 +154,17 @@ for (lr=0;lr<nir;lr++)
 	 e2   = data->qxg[ls][nis-1];
 	 facs = data->qwgt[ls][nis-1];
          f2_rec(funct,deriv,deriv2,e1,e2,typ,icode);
-         break;
+      break;
       case 2:   /* --> tri - element */              
 	 e1   = data->txgr[lr][intc];
 	 facr = data->twgt[lr][intc];
 	 e2   = data->txgs[lr][intc];
 	 facs = ONE;
 	 f2_tri(funct,deriv,deriv2,e1,e2,typ,icode);
-	 break;
+      break;
       default:
          dserror("ntyp unknown!");
-      }
+      } /* end switch(ntyp) */
 /*-------------------------------------------- compute Jacobian matrix */
       f2_jaco(funct,deriv,xjm,&det,ele,iel);
       fac = facr*facs*det;
@@ -139,27 +178,25 @@ for (lr=0;lr<nir;lr++)
 /*----------------------------------------------------------------------*
  |         compute "Standard Galerkin" matrices                         |
  | NOTE:                                                                |
- |  Standard Galerkin matrices are all stored in one matrix "egal"      |
- |  --> the final solution of the different parts have to be computed   |
- |  --> THETA and DT are NOT already included!!! - BUT HAVE TO!!!!      |
+ |  Standard Galerkin matrices are all stored in one matrix "estif"     |
+ |  Standard Galerkin mass matrix is stored in "emass"                  |
  *----------------------------------------------------------------------*/
       if(dynvar->nik>0)
       {
 /*-------------------------------------------------- compute matrix Kvv */      
          f2_calkvv(dynvar,estif,velint,vderxy,funct,derxy,fac,visc,iel);
-/*------------------------------------------ compute matrix Kvp and Kpv */	 
+/*------------------------------------------ compute matrix Kvp and Kpv */
 	 f2_calkvp(estif,funct,derxy,fac,iel);
 /*-------------------------------------------------- compute matrix Mvv */
 	 if (dynvar->nis==0)	  	 	    
             f2_calmvv(emass,funct,fac,iel);
-      }
+      } /* endif (dynvar->nik>0) */
       
 /*----------------------------------------------------------------------*
  |         compute Stabilisation matrices                               |
  | NOTE:                                                                |
- |  Stabilisation matrices are all stored in one matrix "egstab"        |
- |  --> the final solution of the different parts have to be computed   |
- |  --> THETA and DT are NOT already included!!! - BUT HAVE TO!!!!      |
+ |  Stabilisation matrices are all stored in one matrix "estif"         |
+ |  Stabilisation mass matrices are all stored in one matrix "emass"    |
  *----------------------------------------------------------------------*/
       if (ele->e.f2->istabi>0)
       { 
@@ -174,34 +211,33 @@ for (lr=0;lr<nir;lr++)
          {
 /*---------------------------------------- stabilisation for matrix Kvv */
             f2_calstabkvv(ele,dynvar,estif,velint,vderxy,
-                          funct,derxy,derxy2,fac,visc,iel,ihoel);			  
+                          funct,derxy,derxy2,fac,visc,iel,ihoel);
 /*---------------------------------------- stabilisation for matrix Kvp */
             f2_calstabkvp(ele,dynvar,estif,velint,
-                          funct,derxy,derxy2,fac,visc,iel,ihoel);   			  
+                          funct,derxy,derxy2,fac,visc,iel,ihoel);
 /*---------------------------------------- stabilisation for matrix Mvv */
             if (dynvar->nis==0) 
-               f2_calstabmvv(ele,dynvar,emass,velint,
-	                     funct,derxy,derxy2,fac,visc,iel,ihoel);
+               f2_calstabmvv(ele,dynvar,emass,velint, 
+	                     funct,derxy,derxy2,fac,visc,iel,ihoel); 
             if (ele->e.f2->ipres!=0)	        
             {
-/*---------------------------------------- stabilisation for matrix Kpv */      
+/*---------------------------------------- stabilisation for matrix Kpv */
                f2_calstabkpv(dynvar,estif,velint,vderxy,
-	                     funct,derxy,derxy2,fac,visc,iel,ihoel);			     
-/*---------------------------------------- stabilisation for matrix Mpv */	 
+	                     funct,derxy,derxy2,fac,visc,iel,ihoel);
+/*---------------------------------------- stabilisation for matrix Mpv */
 	       if (dynvar->nis==0)
 		  f2_calstabmpv(dynvar,emass,funct,derxy,fac,iel);
-            }
-         }
-/*---------------------------------------- stabilisation for matrix Kpp */   
+            } /* endif (ele->e.f2->ipres!=0) */
+         } /* endif (dynvar->nie==0) */
+/*---------------------------------------- stabilisation for matrix Kpp */
          if (ele->e.f2->ipres!=0)
 	    f2_calstabkpp(dynvar,estif,derxy,fac,iel);  
-      }
+      } /* endif (ele->e.f2->istabi>0) */
  
 /*----------------------------------------------------------------------*
  |       compute "external" Force Vector                                |
  |   (at the moment there are no external forces implemented)           |
- |  but there can be due to self-weight (b) and                         |
- |  due to surface loads / tension                                      |
+ |  but there can be due to self-weight /magnetism / etc. (b)           |
  *----------------------------------------------------------------------*/
 /*-------------------- compute galerkin part of external RHS (vel dofs) *
          f2_calgalexfv();
@@ -229,8 +265,8 @@ for (lr=0;lr<nir;lr++)
 /*------------------- calculate stabilisation for "Iter-RHS" (pre dofs) */
             if (ele->e.f2->ipres!=0)
                f2_calstabifp(dynvar,eiforce,covint,derxy,fac,iel);
-	 }
-      }
+	 } /* endif (ele->e.f2->istabi>0) */
+      } /* endif (dynvar->nii!=0) */
     
 /*----------------------------------------------------------------------*
  |         compute "Time" Force Vectors                                 |
@@ -243,7 +279,7 @@ for (lr=0;lr<nir;lr++)
             f2_prei(&preint,funct,epren,iel);
 /*------------------- get pressure derivatives (n) at integration point */
             f2_pder(pderxy,derxy,epren,iel);
-	 }
+	 } /* endif (dynvar->iprerhs>0) */
 	 if (dynvar->isemim==0)
 	 {
 	    
@@ -256,14 +292,14 @@ for (lr=0;lr<nir;lr++)
 	       instead the ones from the field (n+1,0) are taken
 	       (shouldn't be too much of a difference)!!!               */
 	    
-/*----------------------------- get velocities (n) at integration point */	    
+/*----------------------------- get velocities (n) at integration point */
 	    f2_veli(velint,funct,eveln,iel);
 /*------------------- get velocitiederivatives (n) at integration point */
             f2_vder(vderxy,derxy,eveln,iel);
 /*------------- get 2nd velocities derivatives (n) at integration point */
 	    if (ihoel!=0)
 	       f2_vder2(vderxy2,derxy2,eveln,iel);	       
-	 }
+	 } /* endif (dynvar->isemim==0) */
 	 if (dynvar->itwost!=0)
 	 {
 	    
@@ -272,14 +308,14 @@ for (lr=0;lr<nir;lr++)
 	       --> velint  = U(n+g) from above;
 	           vel2int = U(n) get now;                              */
 	    
-/*----------------------------- get velocities (n) at integration point */	    
+/*----------------------------- get velocities (n) at integration point */
 	    f2_veli(vel2int,funct,eveln,iel);
 /*------------------- get velocitiederivatives (n) at integration point */
             f2_vder(vderxy,derxy,eveln,iel);
 /*------------- get 2nd velocities derivatives (n) at integration point */
 	    if (ihoel!=0)
 	       f2_vder2(vderxy2,derxy2,eveln,iel);            
-	 }
+	 } /* endif (dynvar->itwost!=0) */
 	 if (dynvar->itwost==0)
 	    vel2int=velint;
 /*------------------ get convective velocities (n) at integration point */
@@ -299,87 +335,19 @@ for (lr=0;lr<nir;lr++)
             if (ele->e.f2->ipres!=0)
 	       f2_calstabtfp(dynvar,&(etforce[2*iel]),derxy,vderxy2,
 	                     velint,covint,pderxy,visc,fac,ihoel,iel);
-         }
-      }   
-   }
-} /* end of loop over integration points */
-
-/* TEST - TEST - TEST - TEST - TEST - TEST - TEST - TEST - TEST - TEST */
-/* output to the screen for testing */
-#ifdef DEBUG
-/*
-if (ele->Id==190)
-{
-printf("\n");
-printf("ELEMENT NUMBER ===== %d \n",ele->Id_loc);
-printf("\n");
-genkout(estif,NULL,"EKVV",4,0    ,2*iel,0    ,2*iel,0);
-genkout(estif,NULL,"EKVP",4,0    ,2*iel,2*iel,3*iel,0);
-genkout(estif,NULL,"EKPV",4,2*iel,3*iel,0    ,2*iel,0);
-genkout(estif,NULL,"EKPP",4,2*iel,3*iel,2*iel,3*iel,0);
-genkout(emass,NULL,"EMVV",4,0    ,2*iel,0    ,2*iel,0);
-genkout(emass,NULL,"EMPV",4,2*iel,3*iel,0    ,2*iel,0);
-genkout(NULL,etforce,"EFTV",4,0    ,2*iel,0,0,1);
-genkout(NULL,etforce,"EFTP",4,2*iel,3*iel,0,0,1);
-genkout(NULL,eiforce,"EFIV",4,0    ,2*iel,0,0,1);
-genkout(NULL,eiforce,"EFIP",4,2*iel,3*iel,0,0,1);
-exit(EXIT_FAILURE);
-}*/
-#endif 
-/* TEST - TEST - TEST - TEST - TEST - TEST - TEST - TEST - TEST - TEST */ 
-/* add external loads due to surface tension here!!!! 
-   loop over the element edges
-   loop over gauss-point
-   integrate loads due to surface tension
-*/ 
+         } /* endif (ele->e.f2->istabi>0) */
+      } /* endif  (dynvar->nif!=0) */
+   } /* end of loop over integration points ls*/
+} /* end of loop over integration points lr */
  
-  
-/*----------------------------------------------------------------------*/
+  /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
 #endif
+
 return; 
 } /* end of f2_calint */
 
-#ifdef DEBUG
-/* TEST - TEST - TEST - TEST - TEST - TEST - TEST - TEST - TEST - TEST */
-/* output to the screen for testing */
-void genkout(double **matrix, double *vector, char *title, int ntitle,
-             int istart, int iend, int jstart, int jend, int flag)
-{
-int i,j;
 
-for (i=0;i<ntitle;i++) printf("%c",title[i]);
-for (j=jstart;j<jend;j++)   printf("%15d",j);
-printf("\n");
-
-switch (flag)
-{
-case 0:  /* output of matrix : */
-   for (i=istart;i<iend;i++)
-   {
-      printf("%3d", i);
-      for (j=jstart;j<jend;j++)
-      {
-         printf("%15.5#E",matrix[i][j]);
-      }
-      printf("\n");
-   }
-   break;
-case 1: /* output of vector: */
-   for (i=istart;i<iend;i++)
-   {
-      printf("%3d", i);
-      printf("%15.5#E \n",vector[i]);
-   }   
-}
-
-printf("\n");
-printf("\n");
-
-return; 
-}
-/* TEST - TEST - TEST - TEST - TEST - TEST - TEST - TEST - TEST - TEST */
-#endif
 
 #endif

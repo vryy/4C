@@ -1,3 +1,9 @@
+/*!----------------------------------------------------------------------
+\file
+\brief stationary solution algorithm for fluid
+
+------------------------------------------------------------------------*/
+#ifdef D_FLUID
 #include "../headers/standardtypes.h"
 #include "../headers/solution.h"
 #include "fluid_prototypes.h"
@@ -8,15 +14,21 @@
  *----------------------------------------------------------------------*/
 void fluid_stat()
 {
+
 #ifdef DEBUG 
 dstrc_enter("fluid_stat");
 #endif
 
-dserror("algorithm for stationary fluid problems not implemented yet!");
+dserror("algorithm for stationary fluid problems not implemented yet!\n");
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
 #endif
+
 return;
 } /* end of fluid_stat */ 
+
+
+
+#endif

@@ -1,3 +1,9 @@
+/*!----------------------------------------------------------------------
+\file
+\brief predictor-multicorrector time integration algorithm for fluid
+
+------------------------------------------------------------------------*/
+#ifdef D_FLUID
 #include "../headers/standardtypes.h"
 #include "../headers/solution.h"
 #include "fluid_prototypes.h"
@@ -12,11 +18,13 @@ void fluid_pm()
 dstrc_enter("fluid_pm");
 #endif
 
-dserror("PM algorithm for fluid problems not implemented yet!");
+dserror("PM algorithm for fluid problems not implemented yet!\n");
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
 #endif
+
 return;
 } /* end of fluid_pm */ 
+#endif
