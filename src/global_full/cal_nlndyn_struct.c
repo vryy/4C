@@ -446,6 +446,8 @@ if (restart)
    dt    = sdyn->dt;
    /*------ save the number of steps, as it will be overwritten in sdyn */
    nstep = sdyn->nstep;
+   /*------------- save the restart interval, as it will be overwritten */
+   mod_res_write = sdyn->res_write_evry;
    /*----------------------------------- the step to read in is restart */
    restart_read_nlnstructdyn(restart,
                              sdyn,
@@ -467,6 +469,8 @@ if (restart)
    sdyn->dt = dt;
    /*--------------------------------------- put nstep to the structure */
    sdyn->nstep = nstep;
+   /*-------------------------------- put restart interval to structure */
+   sdyn->res_write_evry = mod_res_write;
    /*------------------------------------------- switch the restart off */
    restart=0;
    /*----------------------------------------------------- measure time */

@@ -29,6 +29,7 @@ int                step;       /* actual step */
 int                damp;       /* flag to switch damping on/off */
 int                iter;       /* number of active iteration */
 int                maxiter;    /* maximum number of iterations */
+int                eigen;      /* flag for eigenvalue analysis */
 double             toldisp;    /* displacement tolerance */
 double             dt;         /* stepsize */
 double             maxtime;    /* maximum total time */

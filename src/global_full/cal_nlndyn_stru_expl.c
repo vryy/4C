@@ -299,7 +299,12 @@ calinit(actfield,actpart,action);
 /*----------------------- call elements to calculate stiffness and mass */
 *action = calc_struct_nlnstiffmass;
 calelm_dyn(actfield,actsolv,actpart,actintra,stiff_array,mass_array,NULL,NULL,0,NULL,0,action);
-
+/*------------------------------- make eigenvalue analysis if requested */
+if (sdyn->eigen==1)
+{
+   if (actintra->intra_nprocs > 1) dserror("Eigenanalysis only on 1 processor");
+   dyn_eigen(actfield,actpart,actsolv,actintra,stiff_array,mass_array);
+}
 /*-------------------------------------------- calculate damping matrix */
 if (damp_array>0)
 {
@@ -398,6 +403,8 @@ if (restart)
    dt    = sdyn->dt;
    /*------ save the number of steps, as it will be overwritten in sdyn */
    nstep = sdyn->nstep;
+   /*------------- save the restart interval, as it will be overwritten */
+   mod_res_write = sdyn->res_write_evry;
    /*----------------------------------- the step to read in is restart */
    restart_read_nlnstructdyn(restart,
                              sdyn,
@@ -419,6 +426,8 @@ if (restart)
    sdyn->dt = dt;
    /*--------------------------------------- put nstep to the structure */
    sdyn->nstep = nstep;
+   /*-------------------------------- put restart interval to structure */
+   sdyn->res_write_evry = mod_res_write;
    /*------------------------------------------- switch the restart off */
    restart=0;
    /*----------------------------------------------------- measure time */

@@ -364,6 +364,7 @@ dstrc_enter("inpctr_dyn_struct");
 sdyn->updevry_disp=1;
 sdyn->updevry_stress=1;
 sdyn->res_write_evry=1;
+sdyn->eigen=0;
 
 frfind("-STRUCTURAL DYNAMIC");
 frread();
@@ -400,9 +401,10 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    }
 
 /*--------------read int */
-   frint("NUMSTEP",&(sdyn->nstep)  ,&ierr);
-   frint("MAXITER",&(sdyn->maxiter),&ierr);
-   frint("RESEVRYDISP",&(sdyn->updevry_disp),&ierr);
+   frint("EIGEN"      ,&(sdyn->eigen)         ,&ierr);
+   frint("NUMSTEP"    ,&(sdyn->nstep)         ,&ierr);
+   frint("MAXITER"    ,&(sdyn->maxiter)       ,&ierr);
+   frint("RESEVRYDISP",&(sdyn->updevry_disp)  ,&ierr);
    frint("RESEVRYSTRS",&(sdyn->updevry_stress),&ierr);
    frint("RESTARTEVRY",&(sdyn->res_write_evry),&ierr);
    

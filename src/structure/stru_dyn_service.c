@@ -1019,3 +1019,77 @@ dstrc_exit();
 #endif
 return;
 } /* end of dyn_keff_expl */
+
+
+/*----------------------------------------------------------------------*
+ |  make eigenanalysis of dynamic system                     m.gee 06/02|
+ *----------------------------------------------------------------------*/
+void dyn_eigen(FIELD *actfield, PARTITION *actpart, SOLVAR *actsolv,
+               INTRA *actintra, int stiff, int mass)
+{
+int       i,j,k;
+SPOOLMAT *spostiff;
+SPOOLMAT *spomass;
+int       numeq;
+int       itype=1;
+char      jobz[1];
+char      uplo[1];
+ARRAY     A_a,B_a;
+ARRAY     EW_a;
+double  **A,**B, *EW;
+int       lwork;
+ARRAY     WORK_a;
+double   *WORK;
+int       info=1;
+int      *irn,*jcn, nnz;
+#ifdef DEBUG 
+dstrc_enter("dyn_eigen");
+#endif
+/*----------------------------------------------------------------------*/
+if (actsolv->sysarray_typ[stiff] != spoolmatrix)
+   dserror("Eigenanalysis only with spooles");
+/*-------------------------------------------------------some variables */
+spostiff = actsolv->sysarray[stiff].spo;
+spomass  = actsolv->sysarray[mass].spo;
+numeq    = spostiff->numeq_total;
+lwork    = (int)(3.2*numeq);
+jobz[0]  = 'N';
+uplo[0]  = 'L';
+A    = amdef("A",&A_a,numeq,numeq,"DA");
+B    = amdef("B",&B_a,numeq,numeq,"DA");
+EW   = amdef("EW",&EW_a,numeq,1,"DV");
+WORK = amdef("WORK",&WORK_a,lwork,1,"DV");
+amzero(&A_a);
+amzero(&B_a);
+irn  = spostiff->irn_loc.a.iv;
+jcn  = spostiff->jcn_loc.a.iv;
+nnz  = spostiff->irn_loc.fdim;
+/*--- fill the dense arrays A and B with the sparse stiffness and mass */
+for (k=0; k<nnz; k++)
+{
+   i = irn[k];
+   j = jcn[k];
+   A[i][j] = spostiff->A_loc.a.dv[k];
+   B[i][j] = spomass->A_loc.a.dv[k];
+}
+/*--------------------------- call lapack to calculate the eigenvalues */
+printf("Reached eigensolver\n");
+fflush(stdout);
+dsygv(&itype,jobz,uplo,&numeq,A[0],&numeq,B[0],&numeq,EW,WORK,&lwork,&info);
+printf("info=%d\n",info);
+printf("Largest Eigenvalue is %30.15E\n",EW[numeq-1]);
+printf("Time step should then be smaller then %30.15E\n",2.0/(sqrt(EW[numeq-1])));
+fflush(stdout);
+
+/*----------------------------------------------------------------------*/
+amdel(&A_a);
+amdel(&B_a);
+amdel(&EW_a);
+amdel(&WORK_a);
+dserror("Eigensolution finished "); 
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of dyn_eigen */
