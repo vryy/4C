@@ -47,5 +47,5 @@ dstrc_enter("w1_eps");
 dstrc_exit();
 #endif
 return;
-} /* end of w1_disd */
+} /* end of w1_eps */
 /*----------------------------------------------------------------------*/
