@@ -180,7 +180,7 @@ OC_ICO 0 global inequality constraints
 OC_ECO 1 global   equality constraints
       DVOLU 1 TYP WEIGHT  SCL 1. 
 --------------------------------------------------LEVELSET DYNAMIC
-NSTEP        1
+NSTEP        2
 NFSTEP       0
 NFREINIT     1
 NFREPRN      1
@@ -197,12 +197,14 @@ ITTOL        1.0E-14
 STTOL        1.0E-14
 THETA        0.5
 --------------------------------------------LEVELSET GENERAL DATA
+PROBDESCR          bubble
 BOUNDARYONOFF      on
 SETVEL             by_fluid
 FLAGVEL            5
 ISSTAB             yes
 LOCALIZATION       off
-NUMLAYER           3
+NUMLAYER           2
+SEARCHBAND         1
 REINITIALIZATION   on
 ANCHOR             yes
 NUMREINIT          1
@@ -220,9 +222,9 @@ YC3                0.53
 RAD3               0.25 
 NUMLINE            1
 XS1                1.0
-YS1                1.05
+YS1                0.85
 XE1                0.0
-YE1                1.05
+YE1                0.85
 XS2                0.0
 YS2                0.0
 XE2                0.0

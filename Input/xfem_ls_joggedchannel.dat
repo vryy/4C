@@ -36,11 +36,11 @@ NUMALEDIS    1
 ----------------------------------------------------------------IO
 STRUCT_DISP_FILE   No
 STRUCT_STRESS_FILE No
-STRUCT_DISP_GID    Yes
+STRUCT_DISP_GID    No
 STRUCT_STRESS_GID  No
 STRUCT_STRESS_GID_SMO  No
 FLUID_SOL_FILE         No
-FLUID_SOL_GID          No
+FLUID_SOL_GID          Yes
 FLUID_STRESS_GID       No
 FLUID_VIS_FILE         No
 ALE_DISP_FILE          No
@@ -197,12 +197,14 @@ ITTOL        1.0E-14
 STTOL        1.0E-14
 THETA        0.5
 --------------------------------------------LEVELSET GENERAL DATA
+PROBDESCR          bubble
 BOUNDARYONOFF      on
 SETVEL             by_fluid
 FLAGVEL            5
 ISSTAB             yes
 LOCALIZATION       off
-NUMLAYER           8
+NUMLAYER           2
+SEARCHBAND         1
 REINITIALIZATION   on
 ANCHOR             yes
 NUMREINIT          1
@@ -237,20 +239,6 @@ EPSILON            0.025
 MAT       2 MAT_fluid VISCOSITY 4.0 DENSITY 4.0 GAMMA 1.0 
 ------------------------------------------------------FLUID SOLVER
 SOLVER         UMFPACK
-//SOLVER         SPOOLES_nonsym
-//SOLVER         Aztec_MSR
-//AZSOLVE        BiCGSTAB
-//AZPREC         ILU
-//AZREUSE        0  
-//AZDROP         0.0  
-//AZFILL         1.0  
-//AZGFILL        1  
-//AZTOL          1.0E-15  
-//AZITER         2500  
-//AZSUB          50  
-//AZOMEGA        1.0  
-//AZGRAPH        1  
-//AZPOLY         5  
 PARTITION      Cut_Elements
 -----------------------------------------------------STRUCT SOLVER
 SOLVER         Aztec_MSR

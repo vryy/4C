@@ -1,3 +1,15 @@
+/* note that ls_updt_material has been changed */
+/* note that ls_updt_material has been changed */
+/* note that ls_updt_material has been changed */
+/* note that ls_updt_material has been changed */
+/* note that ls_updt_material has been changed */
+/* note that ls_updt_material has been changed */
+/* note that ls_updt_material has been changed */
+/* note that ls_updt_material has been changed */
+/* note that ls_updt_material has been changed */
+/* note that ls_updt_material has been changed */
+/* note that ls_updt_material has been changed */
+
 /*!----------------------------------------------------------------------
 \file
 \brief ls_fluid.c
@@ -39,6 +51,12 @@ extern struct _FIELD         *field;
  | global variable GENPROB genprob is defined in global_control.c       |
  *----------------------------------------------------------------------*/
 extern struct _GENPROB        genprob;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | vector of material laws                                              |
+ | defined in global_control.c                                          |
+ *----------------------------------------------------------------------*/
+extern struct _MATERIAL      *mat;
 
 
 
@@ -48,6 +66,7 @@ static  LS_DYNAMIC           *lsdyn;
 static  INT                   completionflag;         /* flag for completion of level set update */
 const static DOUBLE           NODETHRESHOLD = 0.001;  /* node threshold (used in case anyone of
                                                        * the nodes lie on the interface) */
+static INT                    SEARCHBAND;             /* band of search used for front detection */
 
 
 static  ARRAY                 lset00_a;
@@ -125,6 +144,8 @@ void ls_main(
         /* construct initial front and write it to output files */
         frontlsflag = front_ls_init;
         ls_update(frontlsflag);
+/****************BE CAREFUL*********************************************/        
+/****************BE CAREFUL*********************************************/                
 /****************BE CAREFUL*********************************************/
         if (genprob.probtyp==prb_twophase)
         {
@@ -132,6 +153,8 @@ void ls_main(
           frontlsflag = front_ls_initmat;
           ls_update(frontlsflag);
         }
+/****************BE CAREFUL*********************************************/
+/****************BE CAREFUL*********************************************/
 /****************BE CAREFUL*********************************************/        
         /* activate the nodes and elements */
         frontlsflag = front_ls_activate;
@@ -141,18 +164,22 @@ void ls_main(
         ls_update(frontlsflag);
         /* polygonize the elements cut by the interface */
         frontlsflag = front_ls_polygonize;
-        ls_update(frontlsflag);        
-/****************BE CAREFUL*********************************************/
-        /* modify levelset profile for localization */
-        if (lsdyn->lsdata->localization==1)
-        {
-          frontlsflag = front_ls_modify;
-          ls_update(frontlsflag);
-        }
-/****************BE CAREFUL*********************************************/        
+        ls_update(frontlsflag);
         /* write initial front into file */
         frontlsflag = front_ls_write;
         ls_update(frontlsflag);
+/****************BE CAREFUL*********************************************/
+/****************BE CAREFUL*********************************************/
+/****************BE CAREFUL*********************************************/        
+        if (genprob.probtyp==prb_twophase && lsdyn->lsdata->probdescr==2)
+        {
+          /* initialize pressure values for breaking dam problem */
+          frontlsflag = front_ls_init_pressure_breaking_dam;
+          ls_update(frontlsflag);
+        }
+/****************BE CAREFUL*********************************************/
+/****************BE CAREFUL*********************************************/
+/****************BE CAREFUL*********************************************/        
         break;
 /*-------------------------------------------------------------- update */
       case ls_updtphase:
@@ -166,24 +193,21 @@ void ls_main(
         frontlsflag = front_ls_localize;
         ls_update(frontlsflag);
 /****************BE CAREFUL*********************************************/
+/****************BE CAREFUL*********************************************/
+/****************BE CAREFUL*********************************************/
         if (genprob.probtyp==prb_twophase)
         {
           /* update material data */
           frontlsflag = front_ls_updtmat;
           ls_update(frontlsflag);
         }
+/****************BE CAREFUL*********************************************/
+/****************BE CAREFUL*********************************************/        
 /****************BE CAREFUL*********************************************/        
         /* polygonize the elements cut by the interface */
         frontlsflag = front_ls_polygonize;
         ls_update(frontlsflag);
-/****************BE CAREFUL*********************************************/
-        /* modify levelset profile for localization */
-        if (lsdyn->lsdata->localization==1)
-        {
-          frontlsflag = front_ls_modify;
-          ls_update(frontlsflag);
-        }
-/****************BE CAREFUL*********************************************/        
+        /* take some print out */
         if (lsdyn->lsdata->print_on_off==1)
         {
           /* write front into file */
@@ -277,10 +301,6 @@ void ls_update(
       case front_ls_polygonize:
         ls_polygonize();
         break;
-/*------------------------ modify the levelset profile for localization */
-      case front_ls_modify:
-        ls_modify_profile();
-        break;        
 /*------------------------------------------------- write front to file */        
       case front_ls_write:
         ls_write();
@@ -292,6 +312,10 @@ void ls_update(
 /*------------------------------------------------------------ finalize */
       case front_ls_finalize: 
         ls_finalize();
+        break;
+/*------------------------------------------------------------ finalize */
+      case front_ls_init_pressure_breaking_dam: 
+        ls_init_pres_bd();
         break;
 /*------------------------------------------------------------- default */
       default:
@@ -684,9 +708,9 @@ void ls_construct(
             /* set type of inerface to open ( 0 => closed; 1 => open ) */
             lsupdt.typeinterface[numint] = 1;
             /* print to screen */
-            printf("\n**WARNING** LEVELSET INTERFACE TOUCHES BOUNDARY => RECONSTRUCTION ACTIVE");
+            printf("\n**WARNING** INTERFACE TOUCHES BOUNDARY => RECONSTRUCTION ACTIVE");
             /* print to file */
-            fprintf(file12,"\n**WARNING** LEVELSET INTERFACE TOUCHES BOUNDARY => RECONSTRUCTION ACTIVE");            
+            fprintf(file12,"\n**WARNING** INTERFACE TOUCHES BOUNDARY => RECONSTRUCTION ACTIVE");            
             /* turn on lsdyn->lsdata->reconstruct_on_off flag */
             lsdyn->lsdata->reconstruct_on_off = 1;
             /* RECONSTRUCTION! ( => use nbor_s ) */
@@ -1710,7 +1734,7 @@ void ls_reset()
   for (i=0; i<actfield->dis[0].numele; i++)
   {
     actele = &(actfield->dis[0].element[i]);
-    if (actele->e.ls2->nlayer!=0)
+    if (actele->e.ls2->nlayer!=0 && actele->e.ls2->nlayer<=SEARCHBAND)
     {
       actele->e.ls2->is_elsearch = 1;
     }
@@ -1761,7 +1785,7 @@ void ls_reset()
     lsupdt.typeinterface[i] = 0;    
   }
   lsupdt.numinterface = 0;
-  lsupdt.first_in_list = (ELEMENT*)CCACALLOC(50,sizeof(ELEMENT));
+  lsupdt.first_in_list = (ELEMENT*)CCACALLOC(10,sizeof(ELEMENT));
   
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -2289,6 +2313,13 @@ void ls_setdata()
   /* set lsdyn */
   lsdyn = alldyn[genprob.numls].lsdyn;
 
+  SEARCHBAND = lsdyn->lsdata->searchband;
+  /* check */
+  if (lsdyn->lsdata->searchband>lsdyn->lsdata->numlayer)
+  {
+    SEARCHBAND = lsdyn->lsdata->numlayer;
+  }
+
   /* initialise level set field */
   ls_init(actfield,lsdyn,3);
   
@@ -2776,37 +2807,40 @@ void ls_updt_material()
       /* no update */
       continue;
     }
-    else if (actele->e.ls2->is_elcut==1)
+    else
     {
-      actele->e.ls2->my_fluid->mat = 3;
-    }
-    else if (actele->e.ls2->intcnt==1)
-    {
-      /* access to the nodal values of level set profile */
-      ls2_calset1(actele,1,lset01);
-      if (lset01[0]<0.0)
+      if (actele->e.ls2->is_elcut==1)
       {
-        /* check */
-        for (j=0; j<actele->numnp; j++)
-        {
-          if (lset01[j]>0.0)
-          {
-            dserror("\n**ERROR** in ls_updt_material()");
-          }
-        }
-        actele->e.ls2->my_fluid->mat = 2;
+        actele->e.ls2->my_fluid->mat = 3;
       }
       else
       {
-        /* check */
-        for (j=0; j<actele->numnp; j++)
+        /* access to the nodal values of level set profile */
+        ls2_calset1(actele,1,lset01);
+        if (lset01[0]<0.0)
         {
-          if (lset01[j]<0.0)
+          /* check */
+          for (j=0; j<actele->numnp; j++)
           {
-            dserror("\n**ERROR** in ls_updt_material()");
+            if (lset01[j]>0.0)
+            {
+/*              dserror("\n**ERROR** in ls_updt_material()");*/
+            }
           }
+          actele->e.ls2->my_fluid->mat = 2;
         }
-        actele->e.ls2->my_fluid->mat = 1;
+        else
+        {
+          /* check */
+          for (j=0; j<actele->numnp; j++)
+          {
+            if (lset01[j]<0.0)
+            {
+/*              dserror("\n**ERROR** in ls_updt_material()");*/
+            }
+          }
+          actele->e.ls2->my_fluid->mat = 1;
+        }
       }
     }
   }
@@ -2841,7 +2875,6 @@ void ls_check_profile()
 {
   INT         i;
   DOUBLE      val;
-  ELEMENT    *actele;
   NODE       *actnode;
   
 #ifdef DEBUG
@@ -2871,67 +2904,82 @@ void ls_check_profile()
   
   return;
 } /* end of ls_check_profile */
+/*! @} (documentation module close)*/
 
 
 
 /*!----------------------------------------------------------------------
-\brief modify level set profile for localization
+\brief initialize pressure profile for breaking dam problem
 
-<pre>                                                            irhan 15/06
-In this subroutine nodal values of the levelset are set to zero for
-those lying outside the active region
+<pre>                                                            irhan 07/04
+In this subroutine pressure values for the nodes belonging to water dam
+are initialized to hydrostatic pressure.
 </pre>
 
 *----------------------------------------------------------------------*/
-void ls_modify_profile()
+void ls_init_pres_bd()
 {
-  INT         i;
-  DOUBLE      val;
-  DOUBLE      tol = 1.0E-09;
+  INT         i,j;
   ELEMENT    *actele;
+  ELEMENT    *my_fluid;
   NODE       *actnode;
+  INT         actmat;
+  DOUBLE      p;
+  DOUBLE      DENS;
+  DOUBLE      GRAVITY=-9800.0;
   
 #ifdef DEBUG
-  dstrc_enter("ls_modify_profile");
+  dstrc_enter("ls_init_pres_bd");
 #endif
 /*----------------------------------------------------------------------*/
-  
-  /* loop */
-  for (i=0; i<actfield->dis[0].numnp; i++)
+
+  /* check */
+  if (lsdyn->lsdata->probdescr!=2)
   {
-    actnode = &(actfield->dis[0].node[i]);
-    /* check */
-    if(actnode->gnode->is_node_active==0)
+    dserror("lsdyn->lsdata->probdescr!=2\n");
+  }
+
+  /* set density of water */
+  DENS = mat[1].m.fluid->density;
+
+  /* set gravity */
+/*  actele = &(actfield->dis[0].element[0]);
+  my_fluid = &(actele->e.ls2->my_fluid);
+  GRAVITY = -ONE*my_fluid->g.gsurf->neum->neum_val.a.dv[1];*/
+
+
+          
+
+
+  /* loop over elements */
+  for (i=0; i<actfield->dis[0].numele; i++)
+  {
+    /* access to associated fluid element */
+    actele = &(actfield->dis[0].element[i]);
+    my_fluid = &(actele->e.ls2->my_fluid);
+    /* access to material index of corresponding fluid element */
+    actmat = my_fluid->mat-1;
+    if (actmat==1) /* element belongs to WATER block */
     {
-      actnode->sol_increment.a.da[0][0] = 0.0;
-      actnode->sol_increment.a.da[1][0] = 0.0;      
-      fprintf(file12,"\n\n**WARNING** DISTANCE FUNCTION FOR NODE %4d SET TO ZERO!",
-              actnode->Id+1);
-      ls_printnodeinfo_to_file(actnode);      
-    }
-    else
-    {
-      if(actnode->gnode->is_node_active>=lsdyn->lsdata->numlayer-2)
+      /* loop over the nodes of element */
+      for (j=0; j<my_fluid->numnp; j++)
       {
-        if(abs(actnode->sol_increment.a.da[1][0])<tol)
-        {
-          if(actnode->gnode->is_node_inside==-1)
-          {
-            actnode->sol_increment.a.da[0][0] = -0.2;
-            actnode->sol_increment.a.da[1][0] = -0.2;
-          }
-          else
-          {
-            actnode->sol_increment.a.da[0][0] = 0.2;
-            actnode->sol_increment.a.da[1][0] = 0.2;            
-          }
-/*          printf("\nI am here!");
-          printf("\n%10.5E",actnode->sol_increment.a.da[0][0]);
-          printf("\n%5d",actnode->gnode->is_node_inside);*/
-        }
+        actnode =  my_fluid->node[j];
+        /* compute pressure */
+        p = DENS*GRAVITY*actnode->x[1];
+
+        printf("%10.5E\n",p);
+        
+        /* initialize the pressure */
+        actnode->sol_increment.a.da[1][2] = p;
+        actnode->sol_increment.a.da[3][2] = p;        
       }
     }
   }
+  /* print to screen */  
+  printf("\n**WARNING** PRESSURE INITIALIZED FOR BREAKING DAM PROBLEM!");  
+  /* print to file */  
+  fprintf(file12,"\n**WARNING** PRESSURE INITIALIZED FOR BREAKING DAM PROBLEM!");  
   
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -2939,6 +2987,6 @@ void ls_modify_profile()
 #endif
   
   return;
-} /* end of ls_modify_profile */
+} /* end of ls_init_pres_bd */
 /*! @} (documentation module close)*/
 #endif

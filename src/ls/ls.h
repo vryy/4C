@@ -184,8 +184,13 @@ typedef struct _LS_GEN_DATA
 
   INT        boundary_on_off;     /* treatment of boundary */
   INT        reconstruct_on_off;  /* flag used in reconstruction phase */
-  INT        print_on_off;        /* flag used to control print out */  
-} LS_GEN_DATA;
+  INT        print_on_off;        /* flag used to control print out */
+
+  INT        probdescr;           /* ( = 0 ) => no description */
+                                  /* ( = 1 ) => bubble problem */
+                                  /* ( = 2 ) => breaking dam   */
+  INT        searchband;          /* maximum number of layer. it is used for element search in interface construction */
+} LS_GEN_DATA;                  
 
 
 
@@ -265,10 +270,10 @@ typedef enum _FRONTLSFLAG
   front_ls_activate,
   front_ls_localize,
   front_ls_polygonize,
-  front_ls_modify,  
   front_ls_write,
   front_ls_write_fld_soln,
-  front_ls_finalize
+  front_ls_finalize,
+  front_ls_init_pressure_breaking_dam          
 } FRONTLSFLAG;
 /*! @} (documentation module close)*/
 

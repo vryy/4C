@@ -451,7 +451,6 @@ void ls_updt_material();
 
 void ls_check_profile();
 
-
-void ls_modify_profile();
+void ls_init_pres_bd();
 /*! @} (documentation module close)*/	    
 #endif
