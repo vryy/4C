@@ -27,6 +27,8 @@ Maintainer: Malte Neumann
 #include "../fluid_full/fluid_pm_prototypes.h"
 #include "../beam3/beam3.h"
 #include "../fluid2_pro/fluid2pro_prototypes.h"
+#include "../interf/interf.h"
+#include "../wallge/wallge.h"
 
 /*----------------------------------------------------------------------*
  | enum _CALC_ACTION                                      m.gee 1/02    |
@@ -299,7 +301,28 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
       	container->handles  = NULL;
 	beam3(actfield,actpart,actintra,actele,
 	      &estif_global,&emass_global,&intforce_global,
-	      action,container);                  
+	      action,container);
+   break;
+   case el_interf:
+      container->handsize = 0;
+      container->handles  = NULL;
+      if (sysarray2 == -1)
+	{
+        interf(actpart,actintra,actele,&estif_global,NULL,
+               &intforce_global,action,container);
+      }
+      else
+	{
+        interf(actpart,actintra,actele,&estif_global,&emass_global,
+               &intforce_global,action,container);
+      }
+   break;
+   case el_wallge:
+      container->handsize = 0;
+      container->handles  = NULL;
+      wallge(actpart,actintra,actele,
+            &estif_global,&emass_global,&intforce_global,
+            action, container);
    break;
    case el_none:
       dserror("Typ of element unknown");
@@ -602,6 +625,8 @@ INT is_fluid3=0;
 INT is_ale3=0;
 INT is_ale2=0;
 INT is_beam3=0;
+INT is_interf=0;
+INT is_wallge=0;
 
 ELEMENT *actele;              /* active element */
 /*----------------------------------------------------------------------*/
@@ -664,6 +689,12 @@ for (i=0; i<actfield->dis[kk].numele; i++)
    break;
    case el_ale2:
       is_ale2=1;
+   break;
+   case el_interf:
+      is_interf=1;
+   break;
+   case el_wallge:
+      is_wallge=1;
    break;
    default:
       dserror("Unknown typ of element");
@@ -751,13 +782,29 @@ if (is_ale2==1)
 {
    ale2(actpart,NULL,NULL,&estif_global,action,container);
 }
-/*-------------------------------- init all kind of routines for beam3  */
+/*--------------------------------- init all kind of routines for beam3 */
 if (is_beam3==1)
 {
    container->handsize = 0;
    container->handles  = NULL;
    beam3(actfield,actpart,NULL,NULL,&estif_global,&emass_global,&intforce_global,
          action,container);
+}
+/*----------------------------- init all kind of routines for interface */
+if (is_interf==1)
+{
+   container->handsize = 0;
+   container->handles  = NULL;
+   interf(actpart,NULL,NULL,&estif_global,&emass_global,&intforce_global, 
+           action,container);                                
+}
+/*----------------------------- init all kind of routines for interface */
+if (is_wallge==1)
+{
+   container->handsize = 0;
+   container->handles  = NULL;
+   wallge(actpart,NULL,NULL,&estif_global,&emass_global,&intforce_global, 
+           action,container);                                
 }
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -791,6 +838,8 @@ INT is_fluid1=0;
 INT is_fluid3=0;
 INT is_ale3=0;
 INT is_beam3=0;
+INT is_interf=0;
+INT is_wallge=0;
 
 ELEMENT *actele;
 #ifdef DEBUG 
@@ -829,6 +878,12 @@ for (i=0; i<actfield->dis[0].numele; i++)
    break;
    case el_beam3:
       is_beam3=1;
+   break;
+   case el_interf:
+      is_interf=1;
+   break;
+   case el_wallge:
+      is_wallge=1;
    break;
    default:
       dserror("Unknown typ of element");
@@ -871,6 +926,14 @@ if (is_fluid3==1)
 }
 /*-----------------------------------------------reduce results for ale */
 if (is_ale3==1)
+{
+}
+/*---------------------------------------- reduce results for interface */
+if (is_interf==1)
+{
+}
+/*---------------------------------------------- reduce results for wge */
+if (is_wallge==1)
 {
 }
 /*---------------------------------------------reduce results for beam3 */

@@ -60,6 +60,10 @@ if (genprob.numff>=0) fluid_freesurf_setdofs();
 /*----------------------------- modify coordinates for special problems */
 if (genprob.numff>=0) fluid_modcoor();
 #endif
+/*-------------------------------- set dofs for gradient enhanced model */
+#ifdef D_WALLGE
+if (genprob.graderw>0) wge_setdof();
+#endif
 
 /*------------------------------------------------ assign dofs to nodes */
 for(i=0; i<genprob.numfld; i++)

@@ -128,6 +128,19 @@ for (j=0; j<actfield->dis[0].numele; j++)
 	 if (actele->node[k]->numdf < 2) actele->node[k]->numdf=3;
       }
       break;
+   case el_interf:
+      for (k=0; k<actele->numnp; k++)
+      {
+	 if (actele->node[k]->numdf < 2) actele->node[k]->numdf=2;
+      }
+      if (actele->distyp == quad8)  if_dirichnode(actele);
+      break;
+   case el_wallge:
+      for (k=0; k<actele->numnp; k++)
+      {
+	 if (actele->node[k]->numdf < 2) actele->node[k]->numdf=2;
+      }
+      break;
    default:
       dserror("Unknown type of element, cannot assign number of dofs");
       break;

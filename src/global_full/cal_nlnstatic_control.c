@@ -93,6 +93,8 @@ INT           init;               /* flag for solver_control call */
 INT           actsysarray;        /* number of the active system sparse matrix */
 INT           cdof;               /* the Id of the controlled dof */
 
+INT           reldof[6];          /* the Id's of the dofs for output */
+
 INT           kstep;              /* active step in nonlinear analysis */
 INT           nstep;              /* total number of steps */
 INT           itnum;              /* number of iterations taken by corrector */
@@ -204,6 +206,15 @@ calstatserv_findcontroldof(actfield,
                            statvar->control_dof,
                            &(statvar->controlnode),
                            &cdof); 
+/*--------------- reldof are dof numbers wanted for output  to err file */
+if(ioflags.relative_displ>0)
+{
+  calstatserv_findreldofs(actfield,
+                          statvar->reldisnode_ID,
+                          statvar->reldis_dof,
+                          ioflags.relative_displ,
+                          reldof);
+}
 /*------------------------------------------------- get type of control */
 /*              type of control algorithm (displacement, arclenght ...) */
 controltyp = statvar->nr_controltyp;
@@ -325,6 +336,11 @@ for (kstep=0; kstep<nstep; kstep++)
 {
    /*---------------------------------------------- write memory report */
    if (par.myrank==0) dsmemreport();
+   /*---------------------- if stepsize is variable get actual stepsize */
+   if (statvar->isrelstepsize==1)
+   {
+     get_stepsize(kstep,statvar);
+   }
    /*---------- write report about all ARRAYs and ARRAY4Ds to .err file */
    /*dstrace_to_err();*/
    /*---- if this is a restart calc. get necessary info about last step */
@@ -347,7 +363,8 @@ for (kstep=0; kstep<nstep; kstep++)
                            1            , dispi,
                            &container);  /* contains variables defined in container.h */ 
    /*--------------- give the restartinfo to the associated variables --*/
-     kstep = restart; 
+   /* kstep = restart; --*/
+     kstep = restart+1; 
    /*--------------------------------------------- switch restart off --*/
      restart = 0; 
    /*----------------------- give back temporary storage of new input --*/
@@ -383,6 +400,7 @@ for (kstep=0; kstep<nstep; kstep++)
           dispi,
           re,
           cdof,
+          reldof,
           &nln_data,
           controltyp,
           &container);    
@@ -407,7 +425,7 @@ for (kstep=0; kstep<nstep; kstep++)
          container.dirich       = NULL;
          container.global_numeq = 0;
          container.kstep        = 0;
-         calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,&container,action);
+         calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,&container,action); 
          /*---------------------- reduce stresses, so they can be written */
          /*- this makes the result of the stress calculation redundant on */
          /*                                                         procs */
@@ -452,7 +470,7 @@ for (kstep=0; kstep<nstep; kstep++)
     break;
     case control_arc:                            /* arclenght control */
       dserror("restart for arclengh not yet impl.");
-    break;
+    break;  
     case control_load:
       dserror("load control not yet impl.");
     break;
@@ -547,6 +565,9 @@ calelm(actfield,        /* active field                          */
 solserv_copy_vec(&(actsolv->rhs[actsysarray+1]),&(actsolv->rhs[actsysarray]));
 /*---------- LGS: K*u=F -------------------- solve for incremental load */
 init=0;
+/*
+oll_print(actsolv->sysarray[actsysarray].oll,7);
+*/
 solver_control(  
                  actsolv,                             /* active solver typ        */
                  actintra,                            /* my intra-comunicators    */
@@ -647,6 +668,7 @@ void conequ( /*!< rueckgabe INT da kein prototyp definiert wurde! */
             DIST_VECTOR   *dispi,         /* dist. vector of incremental displacements */
             DIST_VECTOR   *re,            /* re[0..2] 3 vectors for residual displacements */
             INT            cdof,          /* number of dof to be controlled */
+            INT           *reldof,        /* numbers of dofs for output */
             STANLN        *nln_data,      /* data of the Newton-Raphson method */
             NR_CONTROLTYP  controltyp,    /* type of control algorithm */
             CONTAINER     *container	  /* contains variables defined in container.h */
@@ -656,6 +678,7 @@ INT                  init;                   /* init flag for solver */
 INT                  itemax;                 /* max. number of corrector steps allowed */
 DOUBLE               stepsize;               /* stepsize */
 INT                  convergence=0;          /* test flag for convergence */
+INT                  j;                  
 DOUBLE               rl0;                    /* some norms and working variables */                   
 DOUBLE               rlold;
 DOUBLE               rlnew;
@@ -667,6 +690,10 @@ DOUBLE               dinorm;
 DOUBLE               told;
 DOUBLE               disval;
 DOUBLE               rli;
+
+INT                  rel_dof;                 
+DOUBLE               reldisval[6];                 
+DOUBLE               reldis;                 
 
 ARRAY                intforce_a;             /* global redundant vector of internal forces */
 DOUBLE              *intforce;               /* pointer to intforce_a.a.dv */
@@ -780,6 +807,9 @@ container->dirich       = NULL;
 container->global_numeq = actsolv->sol[0].numeq_total;
 container->kstep        = kstep;
 calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,container,action);
+/*
+oll_print(actsolv->sysarray[actsysarray].oll,7);
+*/
 /*--------------------------------------- allreduce the vector intforce */
 #ifdef PARALLEL 
 amzero(&intforcerecv_a);
@@ -876,7 +906,27 @@ solserv_getele_vec(actintra,
 if (actintra->intra_rank==0)
 conequ_printiter(*itnum,disval,rlnew,dinorm,renorm,energy,dnorm,nln_data->rrnorm);
 if (convergence)
-fprintf(allfiles.out_err,"final state: disval %20.10f rlnew %20.10f\n",disval,rlnew);
+{
+  if (ioflags.relative_displ>0)
+  {
+    for (j=0; j<ioflags.relative_displ; j++)
+    {
+       rel_dof = reldof[j];
+       solserv_getele_vec(actintra,
+                          &(actsolv->sysarray_typ[actsysarray]),
+                          &(actsolv->sysarray[actsysarray]),
+                          &(actsolv->sol[0]),
+                          rel_dof,
+                          &reldis);
+       reldisval[j] = reldis;
+    }
+    fprintf(allfiles.out_err,"final state: disval %20.10f reldisA %20.10f reldisB %20.10f reldisC %20.10f reldisD %20.10f rlnew %20.10f\n",disval,reldisval[0],reldisval[1],reldisval[2],reldisval[3],rlnew);
+  }
+  else
+  {
+    fprintf(allfiles.out_err,"final state: disval %20.10f rlnew %20.10f\n",disval,rlnew);
+  }
+}
 /*----------------------------- decide for or against another iteration */
 if (convergence)/*------------------------------------------convergence */
 {
