@@ -395,6 +395,14 @@ defined in pss_ds.c, declared in tracing.h
  | struct _CURVE      *curve;                                           |
  *----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*
+ |                                                          mn 02/04    |
+ | number of spatual load functions   numcurve                          |
+ | vector of structures of functions                                    |
+ | defined in input_funct.c                                             |
+ | INT                 numfunct;                                        |
+ | struct _FUNCT      *funct;                                           |
+ *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate static variables if needed                       |
  | defined in global_control.c                                          |
