@@ -1,6 +1,8 @@
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
+#include "../fluid_full/fluid_prototypes.h"
+#include "../fsi_full/fsi_prototypes.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -38,11 +40,9 @@ break;
 case prb_fluid:
     dyn_fluid();
 break;
-/*
 case prb_fsi:
-    dyn_fsi();
-break;
-*/    
+    dyn_fsi(0);
+break;    
 case prb_ale:
     dyn_ale();
 break;
