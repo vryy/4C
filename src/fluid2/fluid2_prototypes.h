@@ -11,7 +11,12 @@
 \addtogroup FLUID2 
 *//*! @{ (documentation module open)*/
 /************************************************************************
- | f2_cacurvature.c                                                     |
+ | f2_ass_dof_ndis_tu.c                                                 |
+ ************************************************************************/
+void f2tu_ass_dof(NODE *actnode, INT *counter);
+
+/************************************************************************
+ | f2_calcurvature.c                                                    |
  ************************************************************************/
 void f2_calq4curv( GLINE                        **actgline, 
                      FLUID_FREESURF_CONDITION   **actlinefs,
