@@ -1,3 +1,4 @@
+#ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
 #include "wall1_prototypes.h"
@@ -10,7 +11,8 @@ void w1_cal_stress(ELEMENT   *ele,
                    MATERIAL  *mat,
                    ARRAY     *estif_global, 
                    double    *force,  /* global vector for internal forces (initialized!) */
-                   int        init)
+                   int	      kstep,  /* number of current load step */
+		   int        init)
 {
 int                 i,j,k;            /* some loopers */
 int                 nir,nis;          /* num GP in r/s/t direction */
@@ -19,6 +21,7 @@ int                 iel;              /* numnp to this element */
 int                 dof;
 int                 nd;
 int                 ip;
+int	            it=0;      /* flag for transformation global/local   */
 int                 istore = 0;/* controls storing of new stresses to wa */
 int                 newval = 1;/* controls evaluation of new stresses    */
 const int           numdf  = 2;
@@ -39,13 +42,20 @@ static ARRAY    deriv_a;  /* derivatives of shape functions */
 static double **deriv;     
 static ARRAY    xjm_a;    /* jacobian matrix */     
 static double **xjm;         
+static ARRAY    xji_a;    /* inverse of jacobian matrix */
+static double **xji;
+static ARRAY    F_a;      /* dummy matrix for saving stresses at gauss point*/
+static double  *F;  
 static ARRAY    bop_a;    /* B-operator */   
 static double **bop;       
-static ARRAY    spar_a;    /* function parameters for extrapolation */   
+static ARRAY    spar_a;   /* function parameters for extrapolation */   
 static double **spar;       
-static double **estif;    /* element stiffness matrix ke */
-double F[4];
-double fie[8];
+static ARRAY    transm_a; /* transformation matrix sig(loc)-->sig(glob) */   
+static double **transm;       
+static ARRAY    transmi_a;/* inverse transformation matrix sig(glob)-->sig(loc) */   
+static double **transmi;       
+static ARRAY    work_a;
+static double **work;     /* working array */
 
 double det;
 int node, npoint;
@@ -62,10 +72,13 @@ funct     = amdef("funct"  ,&funct_a,MAXNOD_WALL1,1 ,"DV");
 deriv     = amdef("deriv"  ,&deriv_a,2,MAXNOD_WALL1 ,"DA");       
 D         = amdef("D"      ,&D_a   ,6,6             ,"DA");           
 xjm       = amdef("xjm"    ,&xjm_a ,numdf,numdf     ,"DA");           
-
+xji       = amdef("xji"    ,&xji_a ,numdf,numdf     ,"DA");           
+F         = amdef("F"      ,&F_a,4,1     ,"DV");           
 bop       = amdef("bop"  ,&bop_a ,numeps,(numdf*MAXNOD_WALL1),"DA");           
-
+transm    = amdef("transm"  ,&transm_a ,numstr,numstr,"DA");           
+transmi   = amdef("transmi"  ,&transmi_a ,numstr,numstr,"DA");           
 spar      = amdef("spar"  ,&spar_a ,numstr,16,"DA");           
+work      = amdef("work"  ,&work_a ,4,4,"DA");
 goto end;
 }
 /*------------------------------------------- integration parameters ---*/
@@ -96,17 +109,32 @@ for (lr=0; lr<nir; lr++)
       fac = facr * facs * det; 
       /*--------------------------------------- calculate operator B ---*/
       amzero(&bop_a);
-      w1_bop(bop,deriv,xjm,det,iel);
+      w1_bop(bop,deriv,xjm,det,xji,iel);
       /*------------------------------------------ call material law ---*/
+/*-----------------------------------------------------fh 06/02---*/
+      newval=1; /* Flag to calculate stresses */
       w1_call_mat(ele, mat,ele->e.w1->wtype, bop, xjm, ip, F,D, istore,newval);
       
-      ele->e.w1->stress[0].gprr[ip] = F[0];
-      ele->e.w1->stress[0].gpss[ip] = F[1];
-      ele->e.w1->stress[0].gprs[ip] = F[2];
+      /* transformation of global stresses into local stresses and vice versa */
       
-      w1_mami(F, &ele->e.w1->stress[0].fps[ip], 
-                 &ele->e.w1->stress[0].sps[ip], 
-                 &ele->e.w1->stress[0].aps[ip]);
+      switch(ele->e.w1->stresstyp){
+      case w1_rs: 
+      w1_tram(xjm,transm,transmi,work);
+      w1_lss(F,transmi,transm,it);
+      break;
+      default:
+      break;
+      }    
+      for (i=0; i<4; i++)
+      {
+	ele->e.w1->stress_GP.a.d3[kstep][i][ip]= F[i];
+      }
+
+      
+      w1_mami(F, &ele->e.w1->stress_GP.a.d3[kstep][4][ip], 
+                 &ele->e.w1->stress_GP.a.d3[kstep][5][ip], 
+                 &ele->e.w1->stress_GP.a.d3[kstep][6][ip]);
+      
    }/*============================================= end of loop over ls */ 
 }/*================================================ end of loop over lr */
 /*----------------------------------------------------------------------*/
@@ -117,16 +145,29 @@ for (node=1; node<=iel; node++)
   r = w1rsn (node,1,iel) ;                                               
   s = w1rsn (node,2,iel) ;                                               
 /*------------------------------------------- extrapolate values now ---*/        
-  w1recs (&fv,r,s,ele->e.w1->stress[0].gprr,spar[0],npoint,node);        
-  ele->e.w1->stress[0].ferr[node-1] = fv;
-  
-  w1recs (&fv,r,s,ele->e.w1->stress[0].gpss,spar[1],npoint,node);        
-  ele->e.w1->stress[0].fess[node-1] = fv;
-  
-  w1recs (&fv,r,s,ele->e.w1->stress[0].gprs,spar[2],npoint,node);       
-  ele->e.w1->stress[0].fers[node-1] = fv;
+  w1recs (&fv,r,s,&ele->e.w1->stress_GP.a.d3[kstep][0][0],spar[0],npoint,node);        
+  ele->e.w1->stress_ND.a.d3[kstep][0][node-1] = fv;
+
+  w1recs (&fv,r,s,&ele->e.w1->stress_GP.a.d3[kstep][1][0],spar[1],npoint,node);        
+  ele->e.w1->stress_ND.a.d3[kstep][1][node-1] = fv;
+
+  w1recs (&fv,r,s,&ele->e.w1->stress_GP.a.d3[kstep][2][0],spar[2],npoint,node);        
+  ele->e.w1->stress_ND.a.d3[kstep][2][node-1] = fv;
+
+  w1recs (&fv,r,s,&ele->e.w1->stress_GP.a.d3[kstep][3][0],spar[3],npoint,node);        
+  ele->e.w1->stress_ND.a.d3[kstep][3][node-1] = fv;
+ 
+  F[0] = ele->e.w1->stress_ND.a.d3[kstep][0][node-1];
+  F[1] = ele->e.w1->stress_ND.a.d3[kstep][1][node-1];
+  F[2] = ele->e.w1->stress_ND.a.d3[kstep][2][node-1];
+  F[3] = ele->e.w1->stress_ND.a.d3[kstep][3][node-1];
+    
+  w1_mami(F, &ele->e.w1->stress_ND.a.d3[kstep][4][node-1], 
+             &ele->e.w1->stress_ND.a.d3[kstep][5][node-1], 
+             &ele->e.w1->stress_ND.a.d3[kstep][6][node-1]);  
 }
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------*/
+
 end:
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -150,38 +191,64 @@ void w1_mami(double *stress,
              double *aps) /* ANGLE OF PRINCIPAL DIRECTION  */ 
 {
 /*----------------------------------------------------------------------*/
-int                 i,j,k;            /* some loopers */
-double cc, bb, cr, p1, p2, ag;
-static double rad=0.;
+double 		ag;
+static double 	rad=0.;
+char		jobz='V';
+char		uplo='L';
+int		n=2;
+int		lda=2;
+double		A[4];
+double		W[2];
+int		lwork=5;
+double		work[5];
+int		info=0;
+double		vlength;
+
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1_mami");
 #endif
 /*----------------------------------------------------------------------*/
+
+A[0]=stress[0];
+A[1]=stress[2];
+A[2]=stress[2];
+A[3]=stress[1];
+
+/*------calculate eigenvalues in ascending order and corresponding------*/
+/*------orthonormal eigenvectors with LAPACK FORTRAN ROUTINE------------*/
+dsyev(&jobz,
+      &uplo,
+      &n,
+      &(A[0]),
+      &lda,
+      &(W[0]),
+      &(work[0]),
+      &lwork,
+      &info);
+
   if (rad == 0.) 
   {
     rad = atan(1.) / 45.;
   }
-  cc = (stress[0] + stress[1]) * .5;
-  bb = (stress[0] - stress[1]) * .5;
-  cr = sqrt(bb * bb + stress[2] * stress[2]);
-  p1 = cc + cr;
-  p2 = cc - cr;
-  if (fabs(stress[2]) < 1e-10 && fabs(bb) < 1e-10) {
-      ag = 0.;
-  } else {
-      ag = atan(stress[2]/bb) / rad / 2.;
+ag=acos(A[2]) /rad;
+
+if (A[3]<0.)
+  {
+    ag=180-ag;
   }
+
 /*----------------------------------------- store principal stresses ---*/
-  *fps = p1;
-  *sps = p2;
-  *aps = ag;
+*fps=W[1];
+*sps=W[0];
+*aps=ag;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
 #endif
 return; 
 } /* end of w1_mami */
+
 /*----------------------------------------------------------------------*
  |                                                           al 9/01    |
  |      returns R/S coordinates of gauss integration points             |
@@ -468,4 +535,4 @@ dstrc_exit();
     return ;
 } /* w1recs */
 /*----------------------------------------------------------------------*/
-
+#endif
