@@ -85,7 +85,7 @@ static FIELD          *alefield;
 static FLUID_DYNAMIC  *fdyn;
 static FSI_DYNAMIC    *fsidyn;
 static STRUCT_DYNAMIC *sdyn;
-static STRUCT_DYNAMIC *adyn;
+static ALE_DYNAMIC    *adyn;
 
 #ifdef DEBUG 
 dstrc_enter("dyn_fsi");
@@ -118,7 +118,7 @@ dsassert(alefield->fieldtyp==ale,"FIELD 2 has to be ale\n");
 mctrl=1;
 sdyn= alldyn[0].sdyn;
 fdyn= alldyn[1].fdyn;
-adyn= alldyn[2].sdyn;
+adyn= alldyn[2].adyn;
 fsidyn= alldyn[3].fsidyn;
 fsidyn->time=ZERO;
 fsidyn->step=0;

@@ -108,10 +108,11 @@ typedef struct _ALE_DYNAMIC
 enum
    {
                   classic_lin
-   } typ;                      /* switch dynamic algorithm */
-INT                nstep;      /* number of steps */
-INT                step;       /* actual step */
-DOUBLE             dt;         /* stepsize */
-DOUBLE             maxtime;    /* maximum total time */
-DOUBLE             time;       /* actual time */
+   } typ;                        /* switch dynamic algorithm */
+INT                nstep;        /* number of steps */
+INT                step;         /* actual step */
+INT                updevry_disp; /* write result very updevry step */
+DOUBLE             dt;           /* stepsize */
+DOUBLE             maxtime;      /* maximum total time */
+DOUBLE             time;         /* actual time */
 } ALE_DYNAMIC;

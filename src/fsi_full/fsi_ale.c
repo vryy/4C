@@ -99,7 +99,7 @@ interface and at the free surface as Dirichlet boundary conditions
 </pre>
 
 \param  *fsidyn     FSI_DYNAMIC    (i)  			  
-\param  *sdyn       STRUCT_DYNAMIC (i)  			  
+\param  *adyn       STRUCT_DYNAMIC (i)  			  
 \param  *actfield   FIELD          (i)     ale field 			  
 \param   mctrl      int            (i)     control flag		  
 \param   numfa      int            (i)     number of ale field	  
@@ -109,10 +109,10 @@ interface and at the free surface as Dirichlet boundary conditions
 *----------------------------------------------------------------------*/
 void fsi_ale(
                FSI_DYNAMIC      *fsidyn,
-               STRUCT_DYNAMIC   *sdyn,
+               ALE_DYNAMIC      *adyn,
                FIELD            *actfield,
-               int               mctrl,
-               int               numfa
+               INT               mctrl,
+               INT               numfa
 	    )
 {
 #ifdef D_FSI
@@ -144,9 +144,9 @@ switch (mctrl)
  |                      I N I T I A L I S A T I O N                     |
  *======================================================================*/
 case 1: 
-sdyn->dt=fsidyn->dt;
-sdyn->maxtime=fsidyn->maxtime;
-sdyn->nstep=fsidyn->nstep;
+adyn->dt=fsidyn->dt;
+adyn->maxtime=fsidyn->maxtime;
+adyn->nstep=fsidyn->nstep;
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 container.isdyn = 0;  
@@ -250,7 +250,7 @@ calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,&container,action);
 
 /*---------------------------------------------------------- monitoring */
 if (ioflags.monitor==1)
-monitoring(actfield,numfa,0,0,sdyn->time);
+monitoring(actfield,numfa,0,0,adyn->time);
 
 /*------------------------------------------- print out results to .out */
 #ifdef PARALLEL 
@@ -292,7 +292,7 @@ solserv_zero_vec(&(actsolv->sol[actsysarray]));
 amzero(&dirich_a);
 
 /*-------------------------set dirichlet boundary conditions on at time */
-ale_setdirich(actfield,sdyn,actpos);
+ale_setdirich(actfield,adyn,actpos);
 
 /*------------------------------- call element-routines to assemble rhs */
 *action = calc_ale_rhs;
@@ -351,15 +351,15 @@ if (fsidyn->ifsi>=4) solserv_sol_copy(actfield,0,3,3,1,0);
 /*------------------------------------------- print out results to .out */
 outstep++;
 pssstep++;
-if (outstep==sdyn->updevry_disp && ioflags.ale_disp_file==1)
+if (outstep==adyn->updevry_disp && ioflags.ale_disp_file==1)
 { 
     outstep=0;
-    out_sol(actfield,actpart,actintra,sdyn->step,actpos);
-/*    if (par.myrank==0) out_gid_sol("displacement",actfield,actintra,sdyn->step,0);*/
+    out_sol(actfield,actpart,actintra,adyn->step,actpos);
+/*    if (par.myrank==0) out_gid_sol("displacement",actfield,actintra,adyn->step,0);*/
 }
 /*---------------------------------------------------------- monitoring */
 if (ioflags.monitor==1)
-monitoring(actfield,numfa,actpos,sdyn->step,sdyn->time);
+monitoring(actfield,numfa,actpos,adyn->step,adyn->time);
 
 if (pssstep==fsidyn->uppss && ioflags.fluid_vis_file==1 && par.myrank==0)
 {
@@ -367,7 +367,7 @@ if (pssstep==fsidyn->uppss && ioflags.fluid_vis_file==1 && par.myrank==0)
    /*--------------------------------------------- store time in time_a */
    if (actpos >= time_a.fdim)
    amredef(&(time_a),time_a.fdim+1000,1,"DV");
-   time_a.a.dv[actpos] = sdyn->time;   
+   time_a.a.dv[actpos] = adyn->time;   
    actpos++;
 } 
 /*--------------------------------------------------------------------- */   
@@ -390,7 +390,7 @@ out_monitor(actfield,numfa);
 
 /*------------------------------------------- print out results to .out */
 if (outstep!=0 && ioflags.ale_disp_file==1)
-out_sol(actfield,actpart,actintra,sdyn->step,actpos);
+out_sol(actfield,actpart,actintra,adyn->step,actpos);
 
 /*------------------------------------------- print out result to 0.pss */
 if (ioflags.fluid_vis_file==1 && par.myrank==0)
@@ -400,7 +400,7 @@ if (ioflags.fluid_vis_file==1 && par.myrank==0)
       /*------------------------------------------ store time in time_a */
       if (actpos >= time_a.fdim)
       amredef(&(time_a),time_a.fdim+1000,1,"DV");
-      time_a.a.dv[actpos] = sdyn->time;   
+      time_a.a.dv[actpos] = adyn->time;   
    }   
    visual_writepss(actfield,actpos+1,&time_a);
 }

@@ -1076,7 +1076,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       if (strncmp(buffer,"classic_lin",11)==0) adyn->typ = classic_lin;
    }
 /*--------------read int */
-   frint("NUMSTEP" , &(adyn->nstep) , &ierr);
+   frint("NUMSTEP" ,   &(adyn->nstep) ,       &ierr);
+   frint("RESEVRYDISP",&(adyn->updevry_disp), &ierr);
 /*--------------read double */
    frdouble("TIMESTEP", &(adyn->dt)     , &ierr);
    frdouble("MAXTIME" , &(adyn->maxtime), &ierr);

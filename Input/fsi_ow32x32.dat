@@ -74,6 +74,11 @@ NUMSTASTEPS  0
 FLUID_START1 0.67
 INITIALFIELD zero_field
 STARTFUNCNO  2
+-------------------------------------------------------ALE DYNAMIC
+TIMESTEP     0.1
+NUMSTEP      41 
+MAXTIME      4.0
+ALE_TYPE     classic_lin
 -------------------------------------------------------FSI DYNAMIC
 MAXTIME      1000.0
 TIMESTEP     0.1

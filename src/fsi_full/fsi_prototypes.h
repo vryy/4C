@@ -25,7 +25,7 @@ void fsi_aitken(
  ************************************************************************/
 void fsi_ale(
                FSI_DYNAMIC      *fsidyn,
-               STRUCT_DYNAMIC   *sdyn,
+               ALE_DYNAMIC      *sdyn,
                FIELD            *actfield,
                int               mctrl,
                int               numfa
