@@ -85,15 +85,9 @@ switch (*action)
 /*------------------------------------------------------ initialisation */
 case calc_fluid_init:
 /* ----------------------------------------- find number of fluid field */
-   for (numff=0;numff<genprob.numfld;numff++)
-   {
-      actfield=&(field[numff]);
-      if (actfield->fieldtyp==fluid)
-      break;
-   } /* end loop over numff */
-   dynvar = &(alldyn[numff].fdyn->dynvar);
-   data   = &(alldyn[numff].fdyn->dynvar.data);
-   viscstr= alldyn[numff].fdyn->viscstr;
+   dynvar = &(alldyn[genprob.numff].fdyn->dynvar);
+   data   = &(alldyn[genprob.numff].fdyn->dynvar.data);
+   viscstr= alldyn[genprob.numff].fdyn->viscstr;
 /*------------------------------------------- init the element routines */   
    f2_intg(data,0);
    f2_calele(data,dynvar,NULL,NULL,
@@ -105,14 +99,8 @@ break;
 
 case calc_fluid_initvort:
 /* ----------------------------------------- find number of fluid field */
-   for (numff=0;numff<genprob.numfld;numff++)
-   {
-      actfield=&(field[numff]);
-      if (actfield->fieldtyp==fluid)
-      break;
-   } /* end loop over numff */
-   dynvar = &(alldyn[numff].fdyn->dynvar);
-   data   = &(alldyn[numff].fdyn->dynvar.data);
+   dynvar = &(alldyn[genprob.numff].fdyn->dynvar);
+   data   = &(alldyn[genprob.numff].fdyn->dynvar.data);
 /*------------------------------------------- init the element routines */
    f2_intg(data,0); 
    f2_calvort(data,dynvar,ele,1);  
