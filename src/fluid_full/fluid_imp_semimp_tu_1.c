@@ -126,12 +126,13 @@ INT             conv_check_rans;
 INT             i,kk;               /* simply a counter                 */
 INT             numeq[2];           /* number of equations on this proc */
 INT             numeq_total[2];     /* total number of equations        */
+INT             numeq_oll;
+INT             numeq_total_oll;
 INT             init;               /* flag for solver_control call     */
 INT             start;               /* flag for solver_control call     */
-INT             nsysarray=2;        /* two system matrix                */
+INT             nsysarray=1;        /* two system matrix                */
 INT             actsysarray;        /* number of actual sysarray        */
 INT             k_array=0;          /* index of K-matrix in solver      */
-INT             a_array=1;          /* index of A-matrix in solver      */
 INT             iststep=0;          /* counter for time integration     */
 INT             nfrastep;           /* number of steps for fractional-
                                        step-theta procedure             */
@@ -146,15 +147,16 @@ DOUBLE          kapomegarat,lenghtrat;/* convergence ratios               */
 DOUBLE          lower_limit_kappa;    /* convergence ratio                */
 DOUBLE          lower_limit_omega;    /* convergence ratio                */
 
-DOUBLE          t1,ts,te;	      /*					*/
-DOUBLE          tes=0.0;            /*					*/
-DOUBLE          tss=0.0;            /*					*/
+DOUBLE          t1,ts,te;	     /*					*/
+DOUBLE          tes=0.0;             /*					*/
+DOUBLE          tss=0.0;             /*					*/
 FLUID_STRESS    str;           
 
 DIST_VECTOR    *rhs_ko;              /* distr. RHS for solving ko        */
 DIST_VECTOR    *sol_ko;              /* distr. ko solution               */
 
 SOLVAR         *actsolv;            /* pointer to active sol. structure */
+SOLVAR         *kosolv;             /* solver for kappa-epsilon         */
 PARTITION      *actpart;            /* pointer to active partition      */
 FIELD          *actfield;           /* pointer to active field          */
 INTRA          *actintra;           /* pointer to active intra-communic.*/
@@ -166,11 +168,11 @@ DOUBLE         *ftimerhs;	    /* time - RHS			*/
 ARRAY           ftimerhs_ko_a;
 DOUBLE         *ftimerhs_ko;	    /* time - RHS			*/
 ARRAY           ftimerhs_kappa_a;
-DOUBLE         *ftimerhs_kappa;   /* time - RHS			*/
+DOUBLE         *ftimerhs_kappa;    /* time - RHS			*/
 ARRAY           ftimerhs_omega_a;
-DOUBLE         *ftimerhs_omega; /* time - RHS			*/
+DOUBLE         *ftimerhs_omega;    /* time - RHS			*/
 ARRAY           ftimerhs_pro_a;
-DOUBLE         *ftimerhs_pro; /* time - RHS			*/
+DOUBLE         *ftimerhs_pro;      /* time - RHS			*/
 ARRAY           ftimerhs_pro_kappa_a;
 DOUBLE         *ftimerhs_pro_kappa; /* time - RHS			*/
 ARRAY           ftimerhs_pro_omega_a;
@@ -234,6 +236,34 @@ actintra->intra_nprocs   = 1;
 /* intracommunicator (in case of nonlinear fluid. dyn., this should be all)*/
 if (actintra->intra_fieldtyp != fluid) goto end;
 
+solv = (SOLVAR*)CCAREALLOC(solv,2*sizeof(SOLVAR));
+/*-------------------------------------- set pointer to pressure solver */
+actsolv = &(solv[rans]);
+kosolv  = &(solv[kapomega]);
+kosolv->fieldtyp = fluid;
+
+/*-------------------------------------- now we set some default values */
+#ifdef PARALLEL
+#ifndef SPOOLES_PACKAGE
+dserror("SPOOLES package is not compiled in");
+#else
+kosolv->solvertyp = SPOOLES_nonsym;
+#endif
+#else
+kosolv->solvertyp = umfpack;
+#endif
+kosolv->parttyp = cut_elements;
+kosolv->matrixtyp = oll_matrix;
+
+/* -------------------------- create solver for pressure discretisation */
+kosolv->nsysarray = 1;
+kosolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(kosolv->nsysarray,sizeof(SPARSE_TYP));
+kosolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(kosolv->nsysarray,sizeof(SPARSE_ARRAY));
+
+kosolv->sysarray_typ[0] = oll;
+kosolv->sysarray[0].oll = (OLL*)CCACALLOC(1,sizeof(OLL));
+
+
 /*------------------------------- loop the matrices and intitialise them */
 for(kk=0;kk<nsysarray;kk++)
 {
@@ -253,6 +283,16 @@ solserv_getmatdims(actsolv->sysarray[actsysarray],
                    &numeq_total[kk]);
 
 } /* end of loop over sys_arrays */
+
+/*-------------------------------------- initialise solver for pressure */
+numeq_total_oll = actfield->dis[kapomega].numeq;
+oll_numeq(actfield, actpart, actintra, kapomega, &numeq_oll);
+
+oll_open(kosolv->sysarray[0].oll, numeq_oll, numeq_total_oll, 
+	 actfield, actpart, actintra, kapomega);
+
+numeq[kapomega] = numeq_oll;
+numeq_total[kapomega] = numeq_total_oll;
 
 /*------------------------------------------------ output to the screen */
 #ifdef PARALLEL
@@ -333,16 +373,16 @@ solver_control(actsolv, actintra,
                &(actsolv->rhs[0]),
                init);
 
-solver_control(actsolv, actintra,
-               &(actsolv->sysarray_typ[a_array]),
-               &(actsolv->sysarray[a_array]),
+solver_control(kosolv, actintra,
+               &(kosolv->sysarray_typ[0]),
+               &(kosolv->sysarray[0]),
                sol_ko,
                rhs_ko,
                init);
 	       
 /*------------------------------------- init the assembly for stiffness */
 init_assembly(actpart,actsolv,actintra,actfield,k_array,rans);
-init_assembly(actpart,actsolv,actintra,actfield,a_array,kapomega);
+init_assembly(actpart,kosolv,actintra,actfield,0,kapomega);
 	       	       
 /*------------------------------- init the element calculating routines */
 *action = calc_fluid_init;
@@ -557,8 +597,8 @@ nonlniter1:
 fluid_icons_tu(fdyn,dynvar,itnum1,itnumke,itnum_n);
 /*---------------------------- intitialise global matrix and global rhs */
 solserv_zero_vec(rhs_ko);
-solserv_zero_mat(actintra,&(actsolv->sysarray[kapomega]),
-                 &(actsolv->sysarray_typ[kapomega]));
+solserv_zero_mat(actintra,&(kosolv->sysarray[0]),
+                 &(kosolv->sysarray_typ[0]));
 
 /*------------------------------------------- initialise iterations-rhs */
 amzero(&fiterhs_ko_a);
@@ -584,7 +624,7 @@ container.niturbu_n    = dynvar->niturbu_n;
 container.nii          = 0;
 container.nif          = 0;
 container.kstep        = 0;
-calelm(actfield,actsolv,actpart,actintra,a_array,-1,
+calelm(actfield,kosolv,actpart,actintra,0,-1,
        &container,action);
 te=ds_cputime()-t1;
 tes+=te;	     
@@ -605,24 +645,24 @@ if(dynvar->kapomega_flag==1)
  *----------------------------------------------------------------------*/
 /* add time-rhs: */
 assemble_vec(actintra,
-             &(actsolv->sysarray_typ[kapomega]),
-             &(actsolv->sysarray[kapomega]),
+             &(kosolv->sysarray_typ[0]),
+             &(kosolv->sysarray[0]),
              rhs_ko,
              ftimerhs_ko, 
              1.0
              );
 /* add iteration-rhs: */
 assemble_vec(actintra,
-             &(actsolv->sysarray_typ[kapomega]),
-             &(actsolv->sysarray[kapomega]),
+             &(kosolv->sysarray_typ[0]),
+             &(kosolv->sysarray[0]),
              rhs_ko,
              fiterhs_ko,
              1.0
              );
 /* add iteration-rhs: */
 assemble_vec(actintra,
-             &(actsolv->sysarray_typ[kapomega]),
-             &(actsolv->sysarray[kapomega]),
+             &(kosolv->sysarray_typ[0]),
+             &(kosolv->sysarray[0]),
              rhs_ko,
              ftimerhs_pro,
              1.0
@@ -631,9 +671,9 @@ assemble_vec(actintra,
 /*-------------------------------------------------------- solve system */
 init=0;
 t1=ds_cputime();
-solver_control(actsolv, actintra,
-               &(actsolv->sysarray_typ[kapomega]),
-               &(actsolv->sysarray[kapomega]),
+solver_control(kosolv, actintra,
+               &(kosolv->sysarray_typ[0]),
+               &(kosolv->sysarray[0]),
                sol_ko,
                rhs_ko,
                init);
@@ -642,8 +682,8 @@ tss+=ts;
 
 /*--- return solution to the nodes and calculate the convergence ratios */
 fluid_result_incre_tu_1(actfield,actintra,sol_ko,3,
-                     &(actsolv->sysarray[kapomega]),
-                     &(actsolv->sysarray_typ[kapomega]),
+                     &(kosolv->sysarray[0]),
+                     &(kosolv->sysarray_typ[0]),
 		         &kapomegarat,fdyn,lower_limit_kappa,lower_limit_omega);
 
 /*----------------------------------------- iteration convergence check */
@@ -760,7 +800,9 @@ pssstep++;
 
 /*-------- copy solution from sol_increment[3][j] to sol_[actpos][j]   
            and transform kinematic to real pressure --------------------*/
-fluid_sol_copy(actfield,0,1,0,3,actpos,fdyn->numdf);
+solserv_sol_copy(actfield,0,1,0,3,actpos);
+fluid_transpres(actfield,0,0,actpos,fdyn->numdf-1,0);
+
 fluid_copysol_tu(fdyn,actfield,3,actpos,1);
 
 if (outstep==fdyn->upout && ioflags.fluid_sol_file==1)
