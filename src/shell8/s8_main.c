@@ -10,20 +10,22 @@ extern struct _MATERIAL  *mat;
 /*----------------------------------------------------------------------*
  | main shell8 control routine                            m.gee 6/01    |
  *----------------------------------------------------------------------*/
-void shell8(      FIELD      *actfield,
-                  PARTITION  *actpart,
-                  INTRA      *actintra,
-                  ELEMENT    *ele,
-                  ARRAY      *estif_global,
-                  ARRAY      *emass_global,
-                  double     *global_vec,
-                  int         global_numeq,
-                  int         kstep,
-                  CALC_ACTION *action)
+void shell8(FIELD      *actfield,
+            PARTITION  *actpart,
+            INTRA      *actintra,
+            ELEMENT    *ele,
+            ARRAY      *estif_global,
+            ARRAY      *emass_global,
+            ARRAY      *intforce_global,
+            int         kstep,
+            CALC_ACTION *action)
 {
 int          i;
 int          imyrank;
 int          inprocs;
+
+double      *intforce;
+
 S8_DATA      actdata;
 MATERIAL    *actmat;
 
@@ -31,6 +33,7 @@ MATERIAL    *actmat;
 dstrc_enter("shell8");
 #endif
 /*----------------------------------------------------------------------*/
+intforce = intforce_global->a.dv;
 /*------------------------------------------------- switch to do option */
 switch (*action)
 {
@@ -38,8 +41,8 @@ switch (*action)
 case calc_struct_init:
    s8init(actfield);
    s8static_ke(NULL,NULL,NULL,NULL,NULL,0,0,1);
-   s8static_keug(NULL,NULL,NULL,NULL,NULL,NULL,0,0,1);
-   s8eleload(NULL,NULL,NULL,NULL,0,1);
+   s8static_keug(NULL,NULL,NULL,NULL,NULL,NULL,0,1);
+   s8eleload(NULL,NULL,NULL,NULL,1);
    s8jaco(NULL,NULL,NULL,NULL,NULL,NULL,0.0,0,NULL,NULL,1);
    s8_stress(NULL,NULL,NULL,0,1);
 break;/*----------------------------------------------------------------*/
@@ -63,8 +66,7 @@ case calc_struct_nlnstiff:
                  actmat,
                  estif_global,
                  NULL,
-                 global_vec,
-                 global_numeq,
+                 intforce,
                  kstep,
                  0);
 break;/*----------------------------------------------------------------*/
@@ -79,8 +81,7 @@ case calc_struct_nlnstiffmass:
                  actmat,
                  estif_global,
                  emass_global,
-                 global_vec,
-                 global_numeq,
+                 intforce,
                  kstep,
                  0);
 break;/*----------------------------------------------------------------*/
@@ -99,7 +100,7 @@ case calc_struct_eleload:
    if (imyrank==ele->proc) 
    {
       actmat = &(mat[ele->mat-1]);
-      s8eleload(ele,&actdata,actmat,global_vec,global_numeq,0);
+      s8eleload(ele,&actdata,actmat,intforce,0);
    }
 break;/*----------------------------------------------------------------*/
 /*---------------------------------------- reduce stresses to all procs */

@@ -25,7 +25,7 @@ for (i=0; i<actfield->dis[0].numele; i++)
    actele = &(actfield->dis[0].element[i]);
    if (actele->eltyp != el_shell8) continue;
    /*------------------------------------------ init integration points */
-   s8intg(actele,&data,0);
+   s8intg(actele,&data,0);/* ueberfluessig! ?*/
    /*---------------------------------------- init directors of element */
    s8a3(actele,&data,0);
    /*---------------------------------- allocate the space for stresses */

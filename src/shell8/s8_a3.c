@@ -5,8 +5,8 @@
  | evaluation of directors at nodal points                m.gee 6/01    |
  *----------------------------------------------------------------------*/
 void s8a3(ELEMENT   *ele,
-             S8_DATA   *data,/* is' hier ueberfluessig, rausschmeissen!*/
-             int        option)
+          S8_DATA   *data,/* is' hier ueberfluessig, rausschmeissen!*/
+          int        option)
 {
 int        i,j;
 int        ialpha;

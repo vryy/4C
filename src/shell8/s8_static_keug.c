@@ -9,8 +9,7 @@ void s8static_keug(ELEMENT   *ele,                         /* the element struct
                    MATERIAL  *mat,                        /* the material structure */
                    ARRAY     *estif_global,               /* element stiffness matrix (NOT initialized!) */
                    ARRAY     *emass_global,               /* element mass matrix      (NOT initialized!) */
-                   double    *force,                      /* global vector for internal forces (initialized!) */
-                   int        iforce,                     /* size of force */
+                   double    *force,                      /* for internal forces (initialized!) */
                    int        kstep,                      /* actual step in nonlinear analysis */
                    int        init)                       /* init=1 -> init phase / init=0 -> calc. phase / init=-1 -> uninit phase */
 /*----------------------------------------------------------------------*/
@@ -631,16 +630,11 @@ if (nhyb>0)
 }
 /*- add internal forces to global vector, if a global vector was passed */
 /*                                                      to this routine */
-if (force)
+for (i=0; i<ele->numnp; i++)
 {
-   for (i=0; i<ele->numnp; i++)
+   for (j=0; j<ele->node[i]->numdf; j++)
    {
-      for (j=0; j<ele->node[i]->numdf; j++)
-      {
-         dof = ele->node[i]->dof[j];
-         if (dof>=iforce) continue;
-         force[dof] += intforce[i*numdf+j];
-      }
+      force[i*numdf+j] += intforce[i*numdf+j];
    }
 }
 /*----------------------------------------------------------------- end */

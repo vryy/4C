@@ -56,6 +56,9 @@ double        wgtt[3];
 /*----------------------------------------------------------------------*
  |  s8_a3.c                                              m.gee 11/01    |
  *----------------------------------------------------------------------*/
+void s8a3(ELEMENT   *ele,
+          S8_DATA   *data,/* is' hier ueberfluessig, rausschmeissen!*/
+          int        option);
 void s8a3ref_extern(double   *funct,
                        double  **deriv,
                        double   *thick,
@@ -132,7 +135,6 @@ void s8eleload(ELEMENT  *ele,
                   S8_DATA  *data,
                   MATERIAL *mat,
                   double   *global_vec,
-                  int       global_numeq,
                   int       init);
 void s8loadGP(ELEMENT    *ele,
                 double    **eload,
@@ -152,16 +154,15 @@ double s8_local_coord_node(int node, int flag, ELEMENT_TYP typ);
 /*----------------------------------------------------------------------*
  |  s8_main.c                                            m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void shell8(      FIELD      *actfield,
-                  PARTITION  *actpart,
-                  INTRA      *actintra,
-                  ELEMENT    *ele,
-                  ARRAY      *estif_global,
-                  ARRAY      *emass_global,
-                  double     *global_vec,
-                  int         global_numeq,
-                  int         kstep,
-                  CALC_ACTION *action);
+void shell8(FIELD      *actfield,
+            PARTITION  *actpart,
+            INTRA      *actintra,
+            ELEMENT    *ele,
+            ARRAY      *estif_global,
+            ARRAY      *emass_global,
+            ARRAY      *intforce_global,
+            int         kstep,
+            CALC_ACTION *action);
 /*----------------------------------------------------------------------*
  |  s8_mat_linel.c                                       m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -199,14 +200,13 @@ void s8static_ke(ELEMENT   *ele,
  |  s8_static_keug.c                                       m.gee 11/01    |
  *----------------------------------------------------------------------*/
 void s8static_keug(ELEMENT   *ele,                         /* the element structure */
-                    S8_DATA   *data,                       /* element integration data */
-                    MATERIAL  *mat,                        /* the material structure */
-                    ARRAY     *estif_global,               /* element stiffness matrix (NOT initialized!) */
-                    ARRAY     *emass_global,               /* element mass matrix      (NOT initialized!) */
-                    double    *force,                      /* global vector for internal forces (initialized!) */
-                    int        iforce,                     /* size of force */
-                    int        kstep,                      /* actual step in nonlinear analysis */
-                    int        init);                      /* init=1 -> init phase / init=0 -> calc. phase / init=-1 -> uninit phase */
+                   S8_DATA   *data,                       /* element integration data */
+                   MATERIAL  *mat,                        /* the material structure */
+                   ARRAY     *estif_global,               /* element stiffness matrix (NOT initialized!) */
+                   ARRAY     *emass_global,               /* element mass matrix      (NOT initialized!) */
+                   double    *force,                      /* global vector for internal forces (initialized!) */
+                   int        kstep,                      /* actual step in nonlinear analysis */
+                   int        init);                      /* init=1 -> init phase / init=0 -> calc. phase / init=-1 -> uninit phase */
 /*----------------------------------------------------------------------*
  |  s8_tmat.c                                            m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -393,3 +393,50 @@ void s8_tfte(double **force,
              double   fact,
              double   detsm,
              double   detsr);
+/*----------------------------------------------------------------------*
+ |  s8_ans.c                                            m.gee 03/02    |
+ *----------------------------------------------------------------------*/
+void s8_ans_colloqpoints(int nsansq,int iel,int ans,DIS_TYP distyp,
+                        double xr1[],double xs1[],double xr2[],double xs2[],
+                        double *funct1q[],double **deriv1q[], 
+                        double *funct2q[],double **deriv2q[],
+                        double **xrefe,double **a3r,double **xcure,double **a3c,
+                        double **akovr1q[] ,double **akonr1q[],
+                        double **amkovr1q[],double **amkonr1q[],
+                        double **a3kvpr1q[],
+                        double **akovc1q[] ,double **akonc1q[],
+                        double **amkovc1q[],double **amkonc1q[],
+                        double **a3kvpc1q[],
+                        double **akovr2q[] ,double **akonr2q[],
+                        double **amkovr2q[],double **amkonr2q[],
+                        double **a3kvpr2q[],
+                        double **akovc2q[] ,double **akonc2q[],
+                        double **amkovc2q[],double **amkonc2q[],
+                        double **a3kvpc2q[],
+                        double *detr, double *detc);
+void s8_ans_colloqcoords(double xqr1[], double xqs1[],
+                        double xqr2[], double xqs2[],
+                        int iel, int ans);
+void s8_ansq_funct(double frq[], double fsq[], double r, double s,
+                  int iel, int nsansq);
+void s8_ans_bbar_q(double **bop, double frq[], double fsq[],
+                  double  *funct1q[],  double  *funct2q[],
+                  double **deriv1q[],  double **deriv2q[],
+                  double **akovc1q[],  double **akovc2q[],
+                  double **a3kvpc1q[], double **a3kvpc2q[],
+                  int iel, int numdf, int nsansq);
+void s8_ans_tvhe_q(double **gmkovr,double **gmkovc,double **gmkonr,double **gmkonc,
+                  double **gkovr,double **gkovc,double **amkovc,double **amkovr,
+                  double **akovc,double **akovr,double **a3kvpc,double **a3kvpr,
+                  double *detr,   double *detc,
+                  double **amkovr1q[], double **amkovc1q[], 
+                  double **akovr1q[] , double **akovc1q[] ,
+                  double **a3kvpr1q[], double **a3kvpc1q[],
+                  double **amkovr2q[], double **amkovc2q[], 
+                  double **akovr2q[] , double **akovc2q[] ,
+                  double **a3kvpr2q[], double **a3kvpc2q[],
+                  double frq[], double fsq[], double e3, int nansq, int iel);
+void s8_ans_tvkg(double **estif,double *stress_r,double *funct,double **deriv,
+                int numdf,int iel,double weight,double e1,double e2,
+                double frq[], double fsq[],double *funct1q[],double  *funct2q[],
+                double **deriv1q[], double **deriv2q[],int ansq, int nsansq);

@@ -5,7 +5,7 @@
  | collocation points, shape functions and derivatives    m.gee 2/02    |
  | and all necessary basis vectors and metrics at these points          |
  *----------------------------------------------------------------------*/
-int s8_ans_colloqpoints(int nsansq,int iel,int ans,DIS_TYP distyp,
+void s8_ans_colloqpoints(int nsansq,int iel,int ans,DIS_TYP distyp,
                         double xr1[],double xs1[],double xr2[],double xs2[],
                         double *funct1q[],double **deriv1q[], 
                         double *funct2q[],double **deriv2q[],
@@ -61,7 +61,7 @@ return;
 /*----------------------------------------------------------------------*
  | collocation points, shape functions and derivatives    m.gee 2/02    |
  *----------------------------------------------------------------------*/
-int s8_ans_colloqcoords(double xqr1[], double xqs1[],
+void s8_ans_colloqcoords(double xqr1[], double xqs1[],
                         double xqr2[], double xqs2[],
                         int iel, int ans)
 {
@@ -111,7 +111,7 @@ return;
  |                                                        m.gee 2/02    |
  | shape functions for assumed strains (querschub)                      |
  *----------------------------------------------------------------------*/
-int s8_ansq_funct(double frq[], double fsq[], double r, double s,
+void s8_ansq_funct(double frq[], double fsq[], double r, double s,
                   int iel, int nsansq)
 {
 double rthreei;
@@ -180,9 +180,9 @@ return;
 
 /*----------------------------------------------------------------------*
  |                                                        m.gee 2/02    |
- |                       |
+ |                                                                      |
  *----------------------------------------------------------------------*/
-int s8_ans_bbar_q(double **bop, double frq[], double fsq[],
+void s8_ans_bbar_q(double **bop, double frq[], double fsq[],
                   double  *funct1q[],  double  *funct2q[],
                   double **deriv1q[],  double **deriv2q[],
                   double **akovc1q[],  double **akovc2q[],
@@ -299,7 +299,7 @@ return;
  |                                                        m.gee 2/02    |
  | modifications to metrics of shell ody due to ans for querschub       |
  *----------------------------------------------------------------------*/
-int s8_ans_tvhe_q(double **gmkovr,double **gmkovc,double **gmkonr,double **gmkonc,
+void s8_ans_tvhe_q(double **gmkovr,double **gmkovc,double **gmkonr,double **gmkonc,
                   double **gkovr,double **gkovc,double **amkovc,double **amkovr,
                   double **akovc,double **akovr,double **a3kvpc,double **a3kvpr,
                   double *detr,   double *detc,
@@ -385,7 +385,7 @@ return;
  |                                                        m.gee 2/02    |
  | geometric stiffness matrix kg with ans for querschub                 |
  *----------------------------------------------------------------------*/
-int s8_ans_tvkg(double **estif,double *stress_r,double *funct,double **deriv,
+void s8_ans_tvkg(double **estif,double *stress_r,double *funct,double **deriv,
                 int numdf,int iel,double weight,double e1,double e2,
                 double frq[], double fsq[],double *funct1q[],double  *funct2q[],
                 double **deriv1q[], double **deriv2q[],int ansq, int nsansq)
