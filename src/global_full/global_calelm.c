@@ -184,7 +184,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    break;
    case el_wall1:
       wall1(actpart,actintra,actele,
-            &estif_global,&emass_global,&intforce_global,
+            &estif_global,&emass_global,&intforce_global,0,NULL,
             action);
    break;
    case el_fluid2: 
@@ -346,7 +346,7 @@ if (is_brick1==1)
 /*-------------------------------- init all kind of routines for wall1  */
 if (is_wall1==1)
 {
-   wall1(actpart,NULL,NULL,&estif_global,&emass_global,&intforce_global,action);
+   wall1(actpart,NULL,NULL,&estif_global,&emass_global,&intforce_global,0,NULL,action);
 }
 /*-------------------------------- init all kind of routines for fluid1 */
 if (is_fluid1==1)

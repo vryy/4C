@@ -185,7 +185,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    break;
    case el_wall1:
       wall1(actpart,actintra,actele,
-            &estif_global,&emass_global,&intforce_global,
+            &estif_global,&emass_global,&intforce_global,0,NULL,
             action);
    break;
    case el_fluid2: 
