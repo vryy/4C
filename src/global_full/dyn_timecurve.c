@@ -10,6 +10,12 @@
 extern INT            numcurve;
 extern struct _CURVE *curve;
 /*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | vector of material laws                                              |
+ | defined in global_control.c
+ *----------------------------------------------------------------------*/
+extern struct _MATERIAL  *mat;
+/*----------------------------------------------------------------------*
  |  init the control of time factors                         m.gee 02/02|
  *----------------------------------------------------------------------*/
 void dyn_init_curve(INT actcurve,
@@ -173,6 +179,7 @@ DOUBLE dyn_facexplcurve(INT actcurve,   /* number of actual time curve  */
 INT numex;          /* number of explicit time curve                    */
 DOUBLE val1, fac;
 DOUBLE c1,c2;       /* function constants                               */
+DOUBLE d,visc;      /* parameters for Beltrami-flow                     */
 static DOUBLE savefac;
 
 #ifdef DEBUG 
@@ -213,6 +220,14 @@ case -3: /* f(t)=1-cos(C1*PI*t) */
    val1 = c1*PI*T;
    fac  = ONE - cos(val1);
 break;   
+   
+case -4: /* Beltrami-Flow */
+   visc = mat[0].m.fluid->viscosity;
+   d = PI/TWO;
+   val1 = -c1*visc*d*d*T;
+   fac = exp(val1);
+break;
+   
 default:
    dserror("Number of explicit timecurve (NUMEX) unknown\n");
 } /* end switch(numex)  
