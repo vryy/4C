@@ -403,7 +403,7 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
          assemble_intforce(actele,&etforce_global,container,actintra);
       }
    /*-------------- assemble the vector eiforce_global to iteration rhs */
-      if (container->nii+hasext!=0 || container->gen_alpha==1 || container->nim!=0)
+      if (container->nii+hasext!=0 || container->nim!=0)
       {   
          container->dvec = container->fiterhs;
          assemble_intforce(actele,&eiforce_global,container,actintra); 
