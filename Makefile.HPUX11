@@ -19,222 +19,222 @@ include ./Makefile.par
 #
 # binaries
 #                main
-OBJS1         = ${SRC}/main/main_ccarat.o 
+OBJS1         = src/main/main_ccarat.o 
 #                global_full
-OBJS2	      = ${SRC}/global_full/global_control.o \
-                ${SRC}/global_full/global_inp_control.o \
-                ${SRC}/global_full/global_cal_control.o \
-                ${SRC}/global_full/global_init_control.o \
-                ${SRC}/global_full/global_ass_dof.o \
-                ${SRC}/global_full/cal_dyn_control.o \
-                ${SRC}/global_full/cal_static_control.o \
-                ${SRC}/global_full/cal_nlnstatic_control.o \
-                ${SRC}/global_full/cal_nlndyn_struct.o \
-                ${SRC}/global_full/cal_nlndyn_stru_expl.o \
-                ${SRC}/global_full/cal_static_service.o \
-                ${SRC}/global_full/dyn_timecurve.o \
-                ${SRC}/global_full/dyn_service.o \
-                ${SRC}/global_full/map_node_find.o \
-                ${SRC}/global_full/global_mask_matrices.o \
-                ${SRC}/global_full/global_mask_msr.o \
-                ${SRC}/global_full/global_mask_vbr.o \
-                ${SRC}/global_full/global_mask_mds.o \
-                ${SRC}/global_full/global_dofconnect.o \
-                ${SRC}/global_full/global_mask_parcsr.o \
-                ${SRC}/global_full/global_mask_ucchb.o \
-                ${SRC}/global_full/global_mask_dense.o \
-                ${SRC}/global_full/global_mask_rcptr.o \
-                ${SRC}/global_full/global_mask_ccf.o \
-                ${SRC}/global_full/global_mask_skyline.o \
-                ${SRC}/global_full/global_mask_spooles.o \
-                ${SRC}/global_full/global_calelm.o \
-                ${SRC}/global_full/global_calelm_dyn.o \
-                ${SRC}/global_full/global_calelm_fluid.o \
-                ${SRC}/global_full/global_calrhs.o \
-                ${SRC}/global_full/solver_control.o \
-                ${SRC}/global_full/solver_service.o \
-                ${SRC}/global_full/solver_service2.o \
-                ${SRC}/global_full/solver_add_data.o \
-                ${SRC}/global_full/solver_add_msr.o \
-                ${SRC}/global_full/solver_add_mlib.o \
-                ${SRC}/global_full/solver_add_parcsr.o \
-                ${SRC}/global_full/solver_add_ucchb.o \
-                ${SRC}/global_full/solver_add_dense.o \
-                ${SRC}/global_full/solver_add_rcptr.o \
-                ${SRC}/global_full/solver_add_ccf.o \
-                ${SRC}/global_full/solver_add_skyline.o \
-                ${SRC}/global_full/solver_add_spooles.o \
-                ${SRC}/global_full/solver_mlib.o \
-                ${SRC}/global_full/solver_aztec.o \
-                ${SRC}/global_full/solver_hypre.o \
-                ${SRC}/global_full/solver_superlu.o \
-                ${SRC}/global_full/solver_lapack.o \
-                ${SRC}/global_full/solver_mumps.o \
-                ${SRC}/global_full/solver_umfpack.o \
-                ${SRC}/global_full/solver_colsol.o \
-                ${SRC}/global_full/solver_spooles.o \
-                ${SRC}/global_full/restart_control.o \
-                ${SRC}/global_full/machine_hpux.o 
+OBJS2	      = src/global_full/global_control.o \
+                src/global_full/global_inp_control.o \
+                src/global_full/global_cal_control.o \
+                src/global_full/global_init_control.o \
+                src/global_full/global_ass_dof.o \
+                src/global_full/cal_dyn_control.o \
+                src/global_full/cal_static_control.o \
+                src/global_full/cal_nlnstatic_control.o \
+                src/global_full/cal_nlndyn_struct.o \
+                src/global_full/cal_nlndyn_stru_expl.o \
+                src/global_full/cal_static_service.o \
+                src/global_full/dyn_timecurve.o \
+                src/global_full/dyn_service.o \
+                src/global_full/map_node_find.o \
+                src/global_full/global_mask_matrices.o \
+                src/global_full/global_mask_msr.o \
+                src/global_full/global_mask_vbr.o \
+                src/global_full/global_mask_mds.o \
+                src/global_full/global_dofconnect.o \
+                src/global_full/global_mask_parcsr.o \
+                src/global_full/global_mask_ucchb.o \
+                src/global_full/global_mask_dense.o \
+                src/global_full/global_mask_rcptr.o \
+                src/global_full/global_mask_ccf.o \
+                src/global_full/global_mask_skyline.o \
+                src/global_full/global_mask_spooles.o \
+                src/global_full/global_calelm.o \
+                src/global_full/global_calelm_dyn.o \
+                src/global_full/global_calelm_fluid.o \
+                src/global_full/global_calrhs.o \
+                src/global_full/solver_control.o \
+                src/global_full/solver_service.o \
+                src/global_full/solver_service2.o \
+                src/global_full/solver_add_data.o \
+                src/global_full/solver_add_msr.o \
+                src/global_full/solver_add_mlib.o \
+                src/global_full/solver_add_parcsr.o \
+                src/global_full/solver_add_ucchb.o \
+                src/global_full/solver_add_dense.o \
+                src/global_full/solver_add_rcptr.o \
+                src/global_full/solver_add_ccf.o \
+                src/global_full/solver_add_skyline.o \
+                src/global_full/solver_add_spooles.o \
+                src/global_full/solver_mlib.o \
+                src/global_full/solver_aztec.o \
+                src/global_full/solver_hypre.o \
+                src/global_full/solver_superlu.o \
+                src/global_full/solver_lapack.o \
+                src/global_full/solver_mumps.o \
+                src/global_full/solver_umfpack.o \
+                src/global_full/solver_colsol.o \
+                src/global_full/solver_spooles.o \
+                src/global_full/restart_control.o \
+                src/global_full/machine_hpux.o 
 #                pss_full
-OBJS3	      = ${SRC}/pss_full/pss_am.o \
-                ${SRC}/pss_full/pss_ds.o \
-                ${SRC}/pss_full/pss_fr.o \
-                ${SRC}/pss_full/pss_pss.o 
+OBJS3	      = src/pss_full/pss_am.o \
+                src/pss_full/pss_ds.o \
+                src/pss_full/pss_fr.o \
+                src/pss_full/pss_pss.o 
 #                input_full
-OBJS4	      = ${SRC}/input_full/input_control_global.o \
-                ${SRC}/input_full/input_ctr_head.o \
-                ${SRC}/input_full/input_sol.o \
-                ${SRC}/input_full/input_design.o \
-                ${SRC}/input_full/input_design_top.o \
-                ${SRC}/input_full/input_mesh.o \
-                ${SRC}/input_full/input_topology.o \
-                ${SRC}/input_full/input_curves.o \
-                ${SRC}/input_full/input_material.o \
-                ${SRC}/input_full/inherit_insidedesign.o \
-                ${SRC}/input_full/inherit_design_dis.o \
-                ${SRC}/input_full/input_conditions.o
+OBJS4	      = src/input_full/input_control_global.o \
+                src/input_full/input_ctr_head.o \
+                src/input_full/input_sol.o \
+                src/input_full/input_design.o \
+                src/input_full/input_design_top.o \
+                src/input_full/input_mesh.o \
+                src/input_full/input_topology.o \
+                src/input_full/input_curves.o \
+                src/input_full/input_material.o \
+                src/input_full/inherit_insidedesign.o \
+                src/input_full/inherit_design_dis.o \
+                src/input_full/input_conditions.o
 #                fluid3
-OBJS5	      = ${SRC}/fluid3/f3_inpele.o 
+OBJS5	      = src/fluid3/f3_inpele.o 
 #                shell8
-OBJS6	      = ${SRC}/shell8/s8_main.o \
-                ${SRC}/shell8/s8_restart.o \
-                ${SRC}/shell8/s8_inpele.o \
-                ${SRC}/shell8/s8_intg.o \
-                ${SRC}/shell8/s8_jaco.o \
-                ${SRC}/shell8/s8_a3.o \
-                ${SRC}/shell8/s8_loccoordnode.o \
-                ${SRC}/shell8/s8_funcderiv.o \
-                ${SRC}/shell8/s8_static_ke.o \
-                ${SRC}/shell8/s8_static_keug.o \
-                ${SRC}/shell8/s8_cal_dyn.o \
-                ${SRC}/shell8/s8_stress.o \
-                ${SRC}/shell8/s8_tfte.o \
-                ${SRC}/shell8/s8_tforce.o \
-                ${SRC}/shell8/s8_tvkg.o \
-                ${SRC}/shell8/s8_load1.o \
-                ${SRC}/shell8/s8_tmtr.o \
-                ${SRC}/shell8/s8_mtr.o \
-                ${SRC}/shell8/s8_tvmr.o \
-                ${SRC}/shell8/s8_tvbo.o \
-                ${SRC}/shell8/s8_tvhe_linear.o \
-                ${SRC}/shell8/s8_tvhe.o \
-                ${SRC}/shell8/s8_tvma.o \
-                ${SRC}/shell8/s8_tmat.o \
-                ${SRC}/shell8/s8_eps.o \
-                ${SRC}/shell8/s8_intforce.o \
-                ${SRC}/shell8/s8_mat_linel.o \
-                ${SRC}/shell8/s8_btdb.o \
-                ${SRC}/shell8/s8_eas.o \
-                ${SRC}/shell8/s8_ans.o \
-                ${SRC}/shell8/s8_vthv.o \
-                ${SRC}/shell8/s8_xint.o \
-                ${SRC}/shell8/s8_init.o 
+OBJS6	      = src/shell8/s8_main.o \
+                src/shell8/s8_restart.o \
+                src/shell8/s8_inpele.o \
+                src/shell8/s8_intg.o \
+                src/shell8/s8_jaco.o \
+                src/shell8/s8_a3.o \
+                src/shell8/s8_loccoordnode.o \
+                src/shell8/s8_funcderiv.o \
+                src/shell8/s8_static_ke.o \
+                src/shell8/s8_static_keug.o \
+                src/shell8/s8_cal_dyn.o \
+                src/shell8/s8_stress.o \
+                src/shell8/s8_tfte.o \
+                src/shell8/s8_tforce.o \
+                src/shell8/s8_tvkg.o \
+                src/shell8/s8_load1.o \
+                src/shell8/s8_tmtr.o \
+                src/shell8/s8_mtr.o \
+                src/shell8/s8_tvmr.o \
+                src/shell8/s8_tvbo.o \
+                src/shell8/s8_tvhe_linear.o \
+                src/shell8/s8_tvhe.o \
+                src/shell8/s8_tvma.o \
+                src/shell8/s8_tmat.o \
+                src/shell8/s8_eps.o \
+                src/shell8/s8_intforce.o \
+                src/shell8/s8_mat_linel.o \
+                src/shell8/s8_btdb.o \
+                src/shell8/s8_eas.o \
+                src/shell8/s8_ans.o \
+                src/shell8/s8_vthv.o \
+                src/shell8/s8_xint.o \
+                src/shell8/s8_init.o 
 #                ale
-OBJS7         = ${SRC}/ale3/ale3_inpele.o \
-		${SRC}/ale3/ale3_intg.o \
-		${SRC}/ale3/ale3_static_ke.o \
-		${SRC}/ale3/ale3_funcderiv.o \
-		${SRC}/ale3/ale3_bop.o \
-		${SRC}/ale3/ale3_jaco.o \
-		${SRC}/ale3/ale3_mat_linel.o \
-         	${SRC}/ale3/ale3_call_stiff.o \
-		${SRC}/ale3/ale3_hourglass.o \
-		${SRC}/ale3/ale3_main.o \
-		${SRC}/ale3/ale3_calelm.o \
-	        ${SRC}/ale3/ale3_rhs.o \
-		${SRC}/ale3/ale3_dirich.o \
-		${SRC}/ale3/ale3_dyn_control.o \
-		${SRC}/ale2/ale2_inpele.o \
-		${SRC}/ale2/ale2_intg.o \
-		${SRC}/ale2/ale2_static_ke.o \
-		${SRC}/ale2/ale2_funcderiv.o \
-		${SRC}/ale2/ale2_bop.o \
-		${SRC}/ale2/ale2_jaco.o \
-		${SRC}/ale2/ale2_mat_linel.o \
-		${SRC}/ale2/ale2_hourglass.o \
-		${SRC}/ale2/ale2_main.o
+OBJS7         = src/ale3/ale3_inpele.o \
+                src/ale3/ale3_intg.o \
+                src/ale3/ale3_static_ke.o \
+                src/ale3/ale3_funcderiv.o \
+                src/ale3/ale3_bop.o \
+                src/ale3/ale3_jaco.o \
+                src/ale3/ale3_mat_linel.o \
+                src/ale3/ale3_call_stiff.o \
+                src/ale3/ale3_hourglass.o \
+                src/ale3/ale3_main.o \
+                src/ale3/ale3_calelm.o \
+                src/ale3/ale3_rhs.o \
+                src/ale3/ale3_dirich.o \
+                src/ale3/ale3_dyn_control.o \
+                src/ale2/ale2_inpele.o \
+                src/ale2/ale2_intg.o \
+                src/ale2/ale2_static_ke.o \
+                src/ale2/ale2_funcderiv.o \
+                src/ale2/ale2_bop.o \
+                src/ale2/ale2_jaco.o \
+                src/ale2/ale2_mat_linel.o \
+                src/ale2/ale2_hourglass.o \
+                src/ale2/ale2_main.o
 #                parallel
-OBJS8	      = ${SRC}/parallel/par_initmetis.o \
-                ${SRC}/parallel/par_make_comm.o \
-                ${SRC}/parallel/par_assignmesh.o
+OBJS8	      = src/parallel/par_initmetis.o \
+                src/parallel/par_make_comm.o \
+                src/parallel/par_assignmesh.o
 #                brick1
-OBJS9	      = ${SRC}/brick1/b1_inpele.o \
-                ${SRC}/brick1/b1_intg.o \
-                ${SRC}/brick1/b1_static_ke.o \
-                ${SRC}/brick1/b1_funcderiv.o \
-                ${SRC}/brick1/b1_bop.o \
-                ${SRC}/brick1/b1_jaco.o \
-                ${SRC}/brick1/b1_mat_linel.o \
-                ${SRC}/brick1/b1_call_stiff.o \
-                ${SRC}/brick1/b1_main.o
+OBJS9	      = src/brick1/b1_inpele.o \
+                src/brick1/b1_intg.o \
+                src/brick1/b1_static_ke.o \
+                src/brick1/b1_funcderiv.o \
+                src/brick1/b1_bop.o \
+                src/brick1/b1_jaco.o \
+                src/brick1/b1_mat_linel.o \
+                src/brick1/b1_call_stiff.o \
+                src/brick1/b1_main.o
 #                math
-OBJS10	      = ${SRC}/math/sort_find.o \
-                ${SRC}/math/math1.o
+OBJS10	      = src/math/sort_find.o \
+                src/math/math1.o
 #                output
-OBJS11	      = ${SRC}/output/out_global.o \
-                ${SRC}/output/out_gid_msh.o \
-                ${SRC}/output/out_gid_sol.o
+OBJS11	      = src/output/out_global.o \
+                src/output/out_gid_msh.o \
+                src/output/out_gid_sol.o
 #                wall1
-OBJS12	      = ${SRC}/wall1/w1_bop.o \
-                ${SRC}/wall1/w1_cal_deriv.o \
-                ${SRC}/wall1/w1_cal_eps.o \
-                ${SRC}/wall1/w1_cal_stress.o \
-                ${SRC}/wall1/w1_call_mat.o \
-                ${SRC}/wall1/w1_call_stiff.o \
-                ${SRC}/wall1/w1_funcderiv.o \
-                ${SRC}/wall1/w1_init.o \
-                ${SRC}/wall1/w1_inpele.o \
-                ${SRC}/wall1/w1_intg.o \
-                ${SRC}/wall1/w1_jaco.o \
-                ${SRC}/wall1/w1_main.o \
-                ${SRC}/wall1/w1_mat_linel.o \
-                ${SRC}/wall1/w1_mat_plast_dp.o \
-                ${SRC}/wall1/w1_mat_plast_epc.o \
-                ${SRC}/wall1/w1_mat_plast_epc_serv.o \
-                ${SRC}/wall1/w1_mat_plast_mises.o \
-                ${SRC}/wall1/w1_mat_plast_serv.o \
-                ${SRC}/wall1/w1_mat_serv.o \
-                ${SRC}/wall1/w1_static_ke.o \
-                ${SRC}/wall1/w1_static_keug.o \
-                ${SRC}/wall1/w1_boplin.o \
-                ${SRC}/wall1/w1_defgrad.o \
-                ${SRC}/wall1/w1_call_matgeononl.o \
-                ${SRC}/wall1/w1_mat_linelgeonon.o \
-                ${SRC}/wall1/w1_cal_kg.o \
-                ${SRC}/wall1/w1_cal_keu.o \
-                ${SRC}/wall1/w1_cal_fint.o \
-                ${SRC}/wall1/w1_cal_fext.o \
-                ${SRC}/wall1/w1_mat_trans.o
-#                fluid2
-OBJS14        = ${SRC}/fluid2/f2_caldirich.o \
-                ${SRC}/fluid2/f2_calelesize.o \
-                ${SRC}/fluid2/f2_calele.o \
-                ${SRC}/fluid2/f2_calfuncderiv.o \
-                ${SRC}/fluid2/f2_calint.o \
-                ${SRC}/fluid2/f2_caliterrhs.o \
-                ${SRC}/fluid2/f2_calgalmat.o \
-                ${SRC}/fluid2/f2_caljaco.o \
-                ${SRC}/fluid2/f2_calservice.o \
-                ${SRC}/fluid2/f2_calstabpar.o \
-                ${SRC}/fluid2/f2_calstabmat.o \
-                ${SRC}/fluid2/f2_caltimerhs.o \
-                ${SRC}/fluid2/f2_inpele.o \
-                ${SRC}/fluid2/f2_intg.o \
-                ${SRC}/fluid2/f2_main.o 
+OBJS12	      = src/wall1/w1_bop.o \
+                src/wall1/w1_cal_deriv.o \
+                src/wall1/w1_cal_eps.o \
+                src/wall1/w1_cal_stress.o \
+                src/wall1/w1_call_mat.o \
+                src/wall1/w1_call_stiff.o \
+                src/wall1/w1_funcderiv.o \
+                src/wall1/w1_init.o \
+                src/wall1/w1_inpele.o \
+                src/wall1/w1_intg.o \
+                src/wall1/w1_jaco.o \
+                src/wall1/w1_main.o \
+                src/wall1/w1_mat_linel.o \
+                src/wall1/w1_mat_plast_dp.o \
+                src/wall1/w1_mat_plast_epc.o \
+                src/wall1/w1_mat_plast_epc_serv.o \
+                src/wall1/w1_mat_plast_mises.o \
+                src/wall1/w1_mat_plast_serv.o \
+                src/wall1/w1_mat_serv.o \
+                src/wall1/w1_static_ke.o \
+                src/wall1/w1_static_keug.o \
+                src/wall1/w1_boplin.o \
+                src/wall1/w1_defgrad.o \
+                src/wall1/w1_call_matgeononl.o \
+                src/wall1/w1_mat_linelgeonon.o \
+                src/wall1/w1_cal_kg.o \
+                src/wall1/w1_cal_keu.o \
+                src/wall1/w1_cal_fint.o \
+                src/wall1/w1_cal_fext.o \
+                src/wall1/w1_mat_trans.o
+                #                fluid2
+OBJS14        = src/fluid2/f2_caldirich.o \
+                src/fluid2/f2_calelesize.o \
+                src/fluid2/f2_calele.o \
+                src/fluid2/f2_calfuncderiv.o \
+                src/fluid2/f2_calint.o \
+                src/fluid2/f2_caliterrhs.o \
+                src/fluid2/f2_calgalmat.o \
+                src/fluid2/f2_caljaco.o \
+                src/fluid2/f2_calservice.o \
+                src/fluid2/f2_calstabpar.o \
+                src/fluid2/f2_calstabmat.o \
+                src/fluid2/f2_caltimerhs.o \
+                src/fluid2/f2_inpele.o \
+                src/fluid2/f2_intg.o \
+                src/fluid2/f2_main.o 
 #                fluid_full
-OBJS15        = ${SRC}/fluid_full/cal_fluid.o \
-                ${SRC}/fluid_full/fluid_dirich.o \
-                ${SRC}/fluid_full/fluid_imp_semimp.o \
-                ${SRC}/fluid_full/fluid_pr_mcorr.o \
-                ${SRC}/fluid_full/fluid_stationary.o \
-                ${SRC}/fluid_full/fluid_service.o \
-		${SRC}/fluid_full/inp_fluid_start_data.o
+OBJS15        = src/fluid_full/cal_fluid.o \
+                src/fluid_full/fluid_dirich.o \
+                src/fluid_full/fluid_imp_semimp.o \
+                src/fluid_full/fluid_pr_mcorr.o \
+                src/fluid_full/fluid_stationary.o \
+                src/fluid_full/fluid_service.o \
+		src/fluid_full/inp_fluid_start_data.o
 #  fortran sequentiell              
-#OBJS13        = ${SRC}/fortran/colsol.o
+#OBJS13        = src/fortran/colsol.o
 #  fortran parallel             
-OBJS13         = ${SRC}/fortran/mumps_interface.o \
-                 ${SRC}/fortran/bi_f77_get_constants.o \
-                 ${SRC}/fortran/colsol.o
+OBJS13         = src/fortran/mumps_interface.o \
+                 src/fortran/bi_f77_get_constants.o \
+                 src/fortran/colsol.o
 #                
 #
 #
@@ -254,78 +254,78 @@ $(PROGRAM):     $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) $(OBJS7) $
 #
 $(OBJS1):     
 		@echo "Making $@ ..."
-		cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  $<
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
 		@echo "MainMake is back."
 #
 $(OBJS2):     
 		@echo "Making $@ ..."
-		cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  $<
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
 		@echo "MainMake is back."
 #
 $(OBJS3):     
 		@echo "Making $@ ..."
-		cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  $<
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
 		@echo "MainMake is back."
 #
 $(OBJS4):     
 		@echo "Making $@ ..."
-		cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  $<
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
 		@echo "MainMake is back."
 #
 $(OBJS5):     
 		@echo "Making $@ ..."
-		cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  $<
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
 		@echo "MainMake is back."
 #
 $(OBJS6):     
 		@echo "Making $@ ..."
-		cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  $<
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
 		@echo "MainMake is back."
 #
 $(OBJS7):     
 		@echo "Making $@ ..."
-		cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  $<
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
 		@echo "MainMake is back."
 #
 $(OBJS8):     
 		@echo "Making $@ ..."
-		cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  $<
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
 		@echo "MainMake is back."
 #
 $(OBJS9):     
 		@echo "Making $@ ..."
-		cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  $<
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
 		@echo "MainMake is back."
 #
 $(OBJS10):     
 		@echo "Making $@ ..."
-		cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  $<
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
 		@echo "MainMake is back."
 #
 $(OBJS11):     
 		@echo "Making $@ ..."
-		cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  $<
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
 		@echo "MainMake is back."
 #
 $(OBJS12):     
 		@echo "Making $@ ..."
-		cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  $<
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
 		@echo "MainMake is back."
 #
 $(OBJS14):     
 		@echo "Making $@ ..."
-		cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  $<
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
 		@echo "MainMake is back."
 		@echo "MainMake is back."
 #
 $(OBJS15):     
 		@echo "Making $@ ..."
-		cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  $<
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
 		@echo "MainMake is back."
 # FORTRAN90
 $(OBJS13):     
 		@echo "Making $@ ..."
-		cd ${@D}; $(FXX) $(FFLAGS)  -c  $<
+		cd ${SRC}; cd ${@D}; $(FXX) $(FFLAGS)  -c  ${<F}
 		@echo "MainMake is back."
 #
 
