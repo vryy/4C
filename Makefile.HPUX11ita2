@@ -100,7 +100,7 @@ MPI	= -lmpi
 #                ${PFL} -DSIXTYFOUR -DDEBUG 
 #FFLAGS        = +DSitanium +DD64 -g
 #LDFLAGS       = +DSitanium +DD64 -v +A
-#AZTEC         = 
+#AZTEC         = -laztec_ita2_64
 #METIS         = -lmetis_ita2_64
 #UMFPACK       = 
 #SPOOLES       = -lspooles_ita2_64
@@ -110,7 +110,7 @@ CFLAGS        = +DSitanium -Aa -Ae +DD64 +O3 +Onolimit +Optrs_to_globals +Odatap
 		+Onoinitcheck +Oinline +Oclone +w1 -z ${PFL} -DSIXTYFOUR 
 FFLAGS        = +DSitanium +DD64 +O3 +Onolimit +Onoptrs_to_globals +Oinline
 LDFLAGS       = +DSitanium +DD64 -O -v +A
-AZTEC	      = 
+AZTEC	      = -laztec_ita2_64
 METIS	      = -lmetis_ita2_64
 UMFPACK       = 
 SPOOLES       = -lspooles_ita2_64
@@ -126,7 +126,7 @@ RM	 = /bin/rm -f
 # libs
 #--------------------------------------------------------------------
 LIBS	      =  -L/bau/stat16/users/statik/lib/lib_ita2_hpux/metis \
-                 -L/bau/stat16/users/statik/lib/lib_ita2_hpux/aztec21 \
+                 -L/bau/stat16/users/statik/lib/lib_ita2_hpux/aztec21/lib \
                  -L/bau/stat16/users/statik/lib/lib_ita2_hpux/umfpack/lib \
                  -L/bau/stat16/users/statik/lib/lib_ita2_hpux/spooles \
                  $(METIS) \
