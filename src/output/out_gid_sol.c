@@ -1534,7 +1534,7 @@ if (strncmp(string,"contact",stringlenght)==0)
      break;
    }
    fprintf(out,"VALUES\n");
-#if 1 /* this is hexahedra output for shell8 element */
+#if 0 /* this is hexahedra output for shell8 element */
    if (actfield->dis[0].element[0].eltyp == el_shell8 && actfield->dis[0].element[0].distyp == quad4)
    {
       tot_numnp = genprob.nnode;
