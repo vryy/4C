@@ -48,7 +48,7 @@ union
 
 /*--------------------------------- element sizes for stability parameter */
 DOUBLE             hk[3];    /*!< vel/pres/cont                           */
-DOUBLE             tau_old[3];
+struct _ARRAY      tau_old;
 /*-------------------------- flag for turbulence  1=algebraic, 2=ke-model, 3=ko-model */
 INT                turbu;
 
@@ -67,7 +67,7 @@ struct _ARRAY      solsmn;        /* sol. of last timestep                */
 struct _ARRAY      xyzssm;        /* coordinates of sub-submeshnodes      */
 #endif
 /*-------------------------------------------------------- stress results */
-struct _ARRAY      stress_ND; /*!< nodal stresses                         */
+struct _ARRAY      stress_ND;    /*!< nodal stresses                         */
 /*------------------------------------------------------- nodal curvature */
 struct _ARRAY      kappa_ND;
 } FLUID2;

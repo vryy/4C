@@ -421,9 +421,9 @@ taump = fdyn->tau[1];
 tauc  = fdyn->tau[2];
 #endif
 #if 1
-taumu = ele->e.f2->tau_old[0];
-taump = ele->e.f2->tau_old[1];
-tauc  = ele->e.f2->tau_old[2];
+taumu = ele->e.f2->tau_old.a.dv[0];
+taump = ele->e.f2->tau_old.a.dv[1];
+tauc  = ele->e.f2->tau_old.a.dv[2];
 #endif
 facsr = fac * fdyn->thsr;
 facpr = fac * fdyn->thpr;
@@ -754,7 +754,7 @@ facpr = fac * fdyn->thpr;
 taump = fdyn->tau[1];
 #endif
 #if 1
-taump = ele->e.f2->tau_old[1];
+taump = ele->e.f2->tau_old.a.dv[1];
 #endif
 
 /*----------------------------------------------------------------------*

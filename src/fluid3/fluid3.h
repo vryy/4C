@@ -37,7 +37,7 @@ union
 
 /*--------------------------------- element sizes for stability parameter */
 DOUBLE             hk[3];    /*!< vel/pres/cont                           */
-DOUBLE             tau_old[3];
+struct _ARRAY      tau_old;
 
 /*------------------------------------------------ free surface parameter */
 INT                fs_on;    /*! element belongs to free surface          */

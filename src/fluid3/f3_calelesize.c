@@ -375,7 +375,7 @@ if(gls->istapc==1 || istrnint==1)
 if (cpele==1)
 {
    for (i=0;i<3;i++)
-      ele->e.f3->tau_old[i]=fdyn->tau[i];
+      ele->e.f3->tau_old.a.dv[i]=fdyn->tau[i];
 }
 
 
