@@ -29,11 +29,14 @@ typedef struct _NEUM_CONDITION
      neum_none,
      neum_live,
      neum_dead,
+     neum_live_FSI,            /* on shells surfaces it's possible to have both */
+     neum_opres_FSI,            /* on shells surfaces it's possible to have both */
      neum_FSI,
      pres_domain_load,
      neum_consthydro_z,
      neum_increhydro_z,
-     neum_orthopressure
+     neum_orthopressure,
+     neum_LAS
      }                         neum_type;
 
      enum
@@ -60,13 +63,33 @@ typedef struct _DIRICH_CONDITION
      struct _ARRAY             dirich_val;   /* values of this condition */    
      enum
      {
-     dirich_none,
-     dirich_FSI,
+     dirich_none,                            /* no specification */
+     dirich_FSI,                             /* fluid-structure interaction */
      dirich_FSI_pseudo,
-     dirich_freesurf
+     dirich_freesurf,
+     dirich_slip
      }                         dirich_type;                       
 
 } DIRICH_CONDITION;
+/*----------------------------------------------------------------------*
+ | dirichlet condition                                    m.gee 3/02    |
+ |                                                                      |
+ | this structure holds a dirichlet condition                           |
+ | depend on number of dofs to a fe-node and type of element it is      |
+ | is connected to, the arrays can be defined in several styles         |
+ *----------------------------------------------------------------------*/
+typedef struct _SLIPDIRICH_CONDITION
+{
+     INT             curve;        /* time curve */
+     
+     DOUBLE          dirich_val;   /* values of this condition */    
+     DOUBLE          length;
+     DOUBLE          alpha;       
+
+     NODE           *firstnode;
+     NODE           *lastnode;
+} SLIPDIRICH_CONDITION;
+
 /*----------------------------------------------------------------------*
  | coupling condition                                     m.gee 3/02    |
  |                                                                      |
@@ -154,7 +177,6 @@ stabilisation parameters used for fluid2 or fluid3 elements in case of
 typedef struct _STAB_PAR_GLS
 {
 /*---------------------------------------------- stabilisation flags ---*/
-   INT	istabi;		/*!< stabilisation: 0=no; 1=yes			*/
    INT	iadvec;		/*!< advection stab.: 0=no; 1=yes		*/
    INT	ipres;		/*!< pressure stab.: 0=no; 1=yes		*/
    INT	ivisc;		/*!< diffusion stab.: 0=no; 1=GLS-; 2=GLS+	*/
