@@ -3,6 +3,7 @@
 #include "brick1_calc.h"
 /*----------------------------------------------------------------------*
  | main brick1  control routine                              al 6/01    |
+ |                                                                      |
  *----------------------------------------------------------------------*/
 void brick1(      PARTITION *actpart,
                   INTRA     *actintra,
