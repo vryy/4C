@@ -41,7 +41,7 @@ Maintainer: Malte Neumann
 #include <aztec21/az_aztec.h>
 #endif
 
-#ifdef SX5
+#ifdef SX6
 #include <aztec21/az_aztec.h>
 #endif
 
@@ -83,7 +83,7 @@ Maintainer: Malte Neumann
 #include <aztec21/az_aztec.h>
 #endif
 
-#ifdef SX5
+#ifdef SX6
 #include <aztec21/az_aztec.h>
 #endif
 
@@ -131,6 +131,10 @@ Maintainer: Malte Neumann
 #endif
 
 #ifdef SUSE73
+#include <spooles/MPI/spoolesMPI.h>
+#endif
+
+#ifdef SX6
 #include <spooles/MPI/spoolesMPI.h>
 #endif
 

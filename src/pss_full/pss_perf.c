@@ -22,6 +22,11 @@ double cputime_thread();
 #include <sys/times.h>
 #endif
 
+#if defined(SX6)
+#include <unistd.h>
+#include <sys/times.h>
+#endif
+
 
 #ifdef PERF
 static DOUBLE begtime[100];
@@ -82,6 +87,18 @@ DOUBLE perf_time ()
   t1 =  (double)_tstart.tv_sec + (double)_tstart.tv_usec/(1000*1000);
   ret = t1;
 #endif
+
+
+#ifdef SX6
+  /*ret = clock();*/
+  DOUBLE clk_tck;
+  struct tms buf;
+
+  times(&buf);
+  clk_tck = (DOUBLE)sysconf(_SC_CLK_TCK);
+  ret = (buf.tms_utime + buf.tms_stime)/clk_tck;
+#endif
+
 
 #ifdef LINUX_MUENCH
   /*ret = clock();*/
