@@ -135,7 +135,7 @@ for (i=0;i<numnp_total;i++)
  |    sonst: Normalfall:                                               |
  |    actanode->sol.a.da[0][j] = initval*acttimefac;                   |
  *=====================================================================*/
-         if (initval != 90)
+         if (fabs(initval-90.0) > EPS13)
          {
 	    actanode->sol_increment.a.da[0][j] = initval*acttimefac;  
 	    actanode->sol.a.da[actpos][j] = initval*acttimefac; 
