@@ -38,13 +38,15 @@
 
 # tools
 #RESULTTEST         # defines defines result testing
-#PERF               # defines routines for exact time measurements 
+#PERF               # routines for exact time measurements  (overhead!!)
+#CHECK_MAX          # check the values of MAXNOD etc. (overhead!!)
 
 
 # possible solver packages
-#AZTEC_PACKAGE      # defines interface to solver library AZTEC
-#UMFPACK            # defines interface to solver library Umfpack
-#SPOOLES_PACKAGE    # defines interface to solver library Spooles (only in parallel)
+#AZTEC_PACKAGE      # interface to solver library AZTEC
+#UMFPACK            # interface to solver library Umfpack
+#SPOOLES_PACKAGE    # interface to solver library Spooles (only in parallel)
+#MLPCG              # interface and solver mlpcg
 
 # inactive solvers
 #PARSUPERLU_PACKAGE # defines interface to solver library ParSuperLU
