@@ -258,6 +258,7 @@ if (ioflags.struct_disp_gid==1 && par.myrank==0)
    out_gid_domains(actfield);
 #ifdef D_AXISHELL
    out_gid_sol("thickness",actfield,actintra,0,0,ZERO);
+   out_gid_sol("axi_loads",actfield,actintra,0,0,ZERO);
 #endif
 }
 /*---------------------------------------------- printout stress to gid */

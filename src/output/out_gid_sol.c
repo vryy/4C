@@ -1555,6 +1555,7 @@ DOUBLE      **forces;/* for shell8 */
 DOUBLE      **stress;
 
 DOUBLE        a1,a2,a3,thick,scal,sdc; /* for shell8 */
+DOUBLE        pv,ph,pw,px;
 INT           tot_numnp;
 
 INT           numele;   /*for shell9/shell8*/
@@ -3375,6 +3376,74 @@ if (strncmp(string,"thickness",stringlenght)==0)
   }
    fprintf(out,"END VALUES\n");
 } /* end of (strncmp(string,"thickness",stringlenght)==0) */
+#endif
+/*========================================= result type is thickness */
+#ifdef D_AXISHELL
+if (strncmp(string,"axi_loads",stringlenght)==0)
+{
+  resulttype        = "MATRIX";
+  resultplace       = "ONNODES";
+  gpset             = ""; 
+  rangetable        = actgid->standardrangetable;
+  ncomponent        = 4;
+  componentnames[0] = "pv";
+  componentnames[1] = "ph";
+  componentnames[2] = "px";
+  componentnames[3] = "pw";
+  componentnames[4] = "not_used";
+  componentnames[5] = "not_used";
+  /*-------------------------------------------------------------------*/
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"# RESULT %s on FIELD %s\n",string,actgid->fieldname);
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"RESULT %c%s%c %cccarat%c %d %s %s\n",
+      sign,string,sign,
+      sign,sign,
+      step,
+      resulttype,
+      resultplace
+      );
+
+  fprintf(out,"RESULTRANGESTABLE %c%s%c\n", sign,actgid->standardrangetable,sign);
+
+  fprintf(out,"COMPONENTNAMES %c%s%c %c%s%c %c%s%c %c%s%c %c%s%c %c%s%c\n",
+      sign,componentnames[0],sign,
+      sign,componentnames[1],sign,
+      sign,componentnames[2],sign,
+      sign,componentnames[3],sign,
+      sign,componentnames[4],sign,
+      sign,componentnames[5],sign);
+
+  fprintf(out,"VALUES\n");
+
+  for (i=0; i<actfield->dis[0].numnp; i++)
+  {
+    actnode = &(actfield->dis[0].node[i]);
+    actele = actnode->element[0];
+
+    if (actele==NULL)
+      dserror("Error in output of axishell loads");
+
+    if (actele->node[0] == actnode)
+    {
+      pv = actele->e.saxi->pv[0];
+      ph = actele->e.saxi->ph[0];
+      px = actele->e.saxi->px[0];
+      pw = actele->e.saxi->pw[0];
+    }
+    else
+    {
+      pv = actele->e.saxi->pv[1];
+      ph = actele->e.saxi->ph[1];
+      px = actele->e.saxi->px[1];
+      pw = actele->e.saxi->pw[1];
+    }
+
+    fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+        actnode->Id+1,pv,ph,px,pw,0.0,0.0);
+  }
+   fprintf(out,"END VALUES\n");
+} /* end of (strncmp(string,"axi_loads",stringlenght)==0) */
 #endif
 /*----------------------------------------------------------------------*/
 fflush(out);
