@@ -29,6 +29,20 @@ extern struct _FILES  allfiles;
 
 
 
+/*!----------------------------------------------------------------------
+\brief 
+
+<pre>                                                         oezdem 8/03
+</pre>
+*----------------------------------------------------------------------*/
+#ifdef WALLCONTACT
+extern struct _WALL_CONTACT contact;
+#endif
+
+
+
+
+
 /*----------------------------------------------------------------------*
  | prototypes of functions callable only in this file                   |
  *----------------------------------------------------------------------*/
@@ -54,6 +68,9 @@ static void inpdesign_line_freesurf(void);
 static void inpdesign_line_thickness(void);
 static void inpdesign_line_axishellload(void);
 static void inpdesign_point_axishellcos(void);
+
+static void inpdesign_line_contact(void);
+
 /*----------------------------------------------------------------------*
  | input of conditions                                    m.gee 4/01    |
  *----------------------------------------------------------------------*/
@@ -91,6 +108,16 @@ inpdesign_line_couple();
 inpdesign_surf_couple();
 /*------------------------------------ input of vol coupling conditions */
 inpdesign_vol_couple();
+/*----------------------------------------- input of wall contact stuff */
+#ifdef WALLCONTACT
+inpdesign_line_contact();
+#endif
+
+
+
+
+
+
 /*------------------------------- input of line FSI coupling conditions */
 #ifdef D_FSI
 if (genprob.probtyp==prb_fsi)
@@ -173,6 +200,23 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    colptr++;
    /*--- now read the 6 flags for the dirichlet conditions */ 
    /*---------------------------- and the 6 values of them */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
    amdef("onoff",&(actdnode->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
    amdef("val",&(actdnode->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
    amdef("curve",&(actdnode->dirich->curve),MAXDOFPERNODE,1,"IV");
@@ -279,6 +323,22 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    /*----------------------------------- read the curvenumber or "none" */
    /*--- now read the 6 flags for the dirichlet conditions */ 
    /*---------------------------- and the 6 values of them */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
    amdef("onoff",&(actdline->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
    amdef("val",&(actdline->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
    amdef("curve",&(actdline->dirich->curve),MAXDOFPERNODE,1,"IV");
@@ -384,6 +444,23 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    colptr++;
    /*--- now read the 6 flags for the dirichlet conditions */ 
    /*---------------------------- and the 6 values of them */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
    amdef("onoff",&(actdsurf->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
    amdef("val",&(actdsurf->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
    amdef("curve",&(actdsurf->dirich->curve),MAXDOFPERNODE,1,"IV");
@@ -489,6 +566,23 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    colptr++;
    /*--- now read the 6 flags for the dirichlet conditions */ 
    /*---------------------------- and the 6 values of them */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
    amdef("onoff",&(actdvol->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
    amdef("val",&(actdvol->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
    amdef("curve",&(actdvol->dirich->curve),MAXDOFPERNODE,1,"IV"); 
@@ -852,7 +946,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    if (ierr) actdsurf->neum->neum_type = neum_live;
    frchk("Dead",&ierr);
    if (ierr) actdsurf->neum->neum_type = neum_dead;
-   frchk("PredescrDomainLoad",&ierr);   
+   frchk("PrescribedDomainLoad",&ierr);   
    if (ierr) actdsurf->neum->neum_type = pres_domain_load;
    frchk("constHydro_z",&ierr);
    if (ierr) actdsurf->neum->neum_type = neum_consthydro_z;
@@ -2031,7 +2125,6 @@ INT     dnodeId;
 char   *colptr;
 char    buffer[200];
 DNODE *actdnode;
-
 #ifdef DEBUG 
 dstrc_enter("inpdesign_point_axishellcos");
 #endif
@@ -2043,6 +2136,9 @@ frread();
 /*------------------------ read number of design points with conditions */
 frint("DPOINT",&ndnode,&ierr);
 dsassert(ierr==1,"Cannot read design-point cos conditions");
+
+
+
 frread();
 /*-------------------------------------- start reading the design lines */
 while(strncmp(allfiles.actplace,"------",6)!=0)
@@ -2062,7 +2158,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       }
    }
    dsassert(actdnode!=NULL,"Cannot read design-point cos conditions");
-
    /*--------------------------------- move pointer behind the "-" sign */
    colptr = strstr(allfiles.actplace,"-");
    dsassert(colptr!=NULL,"Cannot read design-point cos conditions");
@@ -2086,6 +2181,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    }
   
 
+
    frread();
 }
 /*----------------------------------------------------------------------*/
@@ -2096,4 +2192,77 @@ dstrc_exit();
 #endif
 return;
 } /* end of inpdesign_line_axishellload */
+#endif
+
+
+
+
+
+
+#ifdef WALLCONTACT
+/*----------------------------------------------------------------------*
+ |                                                         oezdem 08/03 |
+ *----------------------------------------------------------------------*/
+static void inpdesign_line_contact()
+{
+int    i,j,counter=0;
+int    ierr;
+int    ndline;
+int    dlineId;
+int    foundit;
+char  *colptr;
+char   buffer[200];
+DLINE *actdline;
+#ifdef DEBUG 
+dstrc_enter("inpdesign_line_contact");
+#endif
+/*----------------------------------------------------------------------*/
+/*----------------------- find the beginning of line contact conditions */
+frfind("----CONTACT CONDITIONS");
+frread();
+/*------------------------- read number of design lines with conditions */
+frint("DLINE",&ndline,&ierr);
+dsassert(ierr==1,"Cannot read design-line contact conditions");
+contact.ndline = ndline;
+contact.dline = (DLINE**)CCACALLOC(ndline,sizeof(DLINE*));
+if (!(contact.dline)) dserror("Allocation of memory failed");
+frread();
+/*-------------------------------------- start reading the design lines */
+while(strncmp(allfiles.actplace,"------",6)!=0)
+{
+   /*------------------------------------------ read the design line Id */
+   frint("E",&dlineId,&ierr);
+   dsassert(ierr==1,"Cannot read design-line contact conditions");
+   dlineId--;
+   /*--------------------------------------------------- find the dline */
+   actdline=NULL;
+   for (i=0; i<design->ndline; i++)
+   {
+      if (design->dline[i].Id ==  dlineId) 
+      {
+         actdline = &(design->dline[i]);
+         break;
+      }
+   }
+   dsassert(actdline!=NULL,"Cannot read design-line contact conditions");
+   contact.dline[counter] = actdline;
+   counter++;
+   actdline->contype = contact_none;
+   frchk("Master",&ierr);
+   if (ierr) actdline->contype = contact_master;
+   frchk("Slave",&ierr);
+   if (ierr) actdline->contype = contact_slave;
+   frchk("Self",&ierr);
+   if (ierr) actdline->contype = contact_self;
+
+
+   /*--------------------------------------------------- read next line */
+   frread();
+}
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of inpdesign_line_contact */
 #endif
