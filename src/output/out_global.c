@@ -137,6 +137,9 @@ break;
 case el_brick1:
 fprintf(out,"ELE glob_Id %6d loc_Id %6d BRICK1\n",actele->Id,actele->Id_loc);
 break;
+case el_wall1:
+fprintf(out,"ELE glob_Id %6d loc_Id %6d WALL1\n",actele->Id,actele->Id_loc);
+break;
 case el_fluid3:
 fprintf(out,"ELE glob_Id %6d loc_Id %6d FLUID3\n",actele->Id,actele->Id_loc);
 break;

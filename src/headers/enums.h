@@ -53,6 +53,7 @@ typedef enum _ELEMENT_TYP
                        el_none,        /* unknown type of element */
                        el_shell8,      /* 7 parameter shell element */
                        el_brick1,      /* structural brick element */
+                       el_wall1,       /* 2D plain stress - plain strain element */
                        el_fluid1,      /* 2D fluid element */
                        el_fluid3,      /* 3D fluid element */
                        el_ale          /* pseudo structural ale element, can be 2D or 3D */
@@ -137,4 +138,5 @@ typedef enum _HYPREPRECTYP
                        hypreprec_parasails,      /* apporximate inverse precond. */
                        hypreprec_amg             /* algebraic multigrid precond. */
 } HYPREPRECTYP;                         
+
 
