@@ -63,7 +63,7 @@ void f2_calsmk(FLUID_DYN_ML    *mlvar,
  | NOTATION:                                                            |
  |   irow - row number in element matrix                                |
  |   icol - column number in element matrix                             |
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 INT     irow,icol;
 DOUBLE  con,aux,beta,divv;
 
@@ -364,53 +364,50 @@ else
 /*----------------------------------------------------------------------*
    Calculate full Galerkin part of matrix Nc(u)
  *----------------------------------------------------------------------*/
-if(fdyn->nic != 0) /* evaluate for Newton- and fixed-point-like-iteration */
-{
 /*----------------------------------------------------------------------*
     /
    |  v * u_old * grad(u)     d_omega
   /
  *----------------------------------------------------------------------*/
-  icol=0;
-  for (icn=0;icn<iel;icn++)
-  {
-     irow=0;  
-     for (irn=0;irn<iel;irn++)
-     {
-  	aux = (velint[0]*derxy[0][icn] \
-  	      +velint[1]*derxy[1][icn])*funct[irn]*fac;
-        estif[irow][icol]     += aux;
-  	estif[irow+1][icol+1] += aux;
-  	irow += 2;	
-     } /* end loop over irn */
-     icol += 2;
-  } /* end loop over icn */
-  
-  if (fdyn->conte!=0)  
-  {
+icol=0;
+for (icn=0;icn<iel;icn++)
+{
+   irow=0;  
+   for (irn=0;irn<iel;irn++)
+   {
+      aux = (velint[0]*derxy[0][icn] \
+            +velint[1]*derxy[1][icn])*funct[irn]*fac;
+      estif[irow][icol]     += aux;
+      estif[irow+1][icol+1] += aux;
+      irow += 2;      
+   } /* end loop over irn */
+   icol += 2;
+} /* end loop over icn */
+
+if (fdyn->conte!=0)  
+{
 /*----------------------------------------------------------------------*
     /
    | beta * v * u * div(u_old)   d_omega
   /
  *----------------------------------------------------------------------*/
-    if (fdyn->conte==1) beta = ONE;
-    else beta = ONE/TWO;
-    divv= vderxy[0][0]+vderxy[1][1]; 
-    icol=0;
-    for (icn=0;icn<iel;icn++)
+  if (fdyn->conte==1) beta = ONE;
+  else beta = ONE/TWO;
+  divv= vderxy[0][0]+vderxy[1][1]; 
+  icol=0;
+  for (icn=0;icn<iel;icn++)
+  {
+    irow=0;  
+    aux = beta*funct[icn]*divv*fac;
+    for (irn=0;irn<iel;irn++)
     {
-      irow=0;  
-      aux = beta*funct[icn]*divv*fac;
-      for (irn=0;irn<iel;irn++)
-      {
-        estif[irow][icol]     += aux*funct[irn];
-  	estif[irow+1][icol+1] += aux*funct[irn];
-  	irow += 2;	
-      } /* end loop over irn */
-      icol += 2;
-    } /* end loop over icn */
-  }
-} /* endif (fdyn->nic != 0) */
+      estif[irow][icol]     += aux*funct[irn];
+      estif[irow+1][icol+1] += aux*funct[irn];
+      irow += 2;      
+    } /* end loop over irn */
+    icol += 2;
+  } /* end loop over icn */
+}
 
 /*----------------------------------------------------------------------*
    Calculate full Galerkin part of matrix Nr(u):
