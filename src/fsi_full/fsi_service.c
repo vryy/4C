@@ -318,7 +318,12 @@ for (i=0;i<numnp_total;i++) /* loop nodes */
    actnode=&(actfield->dis[0].node[i]);
    actgnode = actnode->gnode;
    /* check if there is a struct node coupled to actnode */
+   /* this approach does not work with a nonconforming discretization
+      of the interface, thus it is replaced by the second one */
+   /*
    if (actgnode->mfcpnode[genprob.numsf]==NULL) continue;
+   */
+   if (actgnode->fsicouple == NULL) continue; 
    numele=actnode->numele;
    for (j=0; j<numele; j++) /* loop elements belonging to node */
    {
