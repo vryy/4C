@@ -284,6 +284,11 @@ for (i=0;i<numnp_total;i++)
          actnode->sol_increment.a.da[pos][j]
 	=actnode->sol_increment.a.da[4][j];
    break;
+   case dirich_FSI_pseudo: /* dirichvalues = grid velocity!!! */     
+      for (j=0;j<numveldof;j++)  /* loop vel-dofs */
+         actnode->sol_increment.a.da[pos][j]
+	=actnode->sol_increment.a.da[4][j];
+   break;
    default:
       dserror("dirch_type unknown!\n");
    } /* end switch */
