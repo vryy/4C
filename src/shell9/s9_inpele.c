@@ -160,7 +160,8 @@ if (ierr!=1) dserror("Reading of SHELL9 element failed");
 /*-------------------------------------------- read the gaussian points */
 frint_n("GP",&(ele->e.s9->nGP[0]),3,&ierr);
 if (ierr!=1) dserror("Reading of SHELL9 element failed");
-if (ele->e.s9->nGP[2] != 2) dserror("nGP[2] != 2 -> only 2 GP in Thickness direction implemented: Reading of SHELL9 element failed");
+/*if (ele->e.s9->nGP[2] != 2) dserror("nGP[2] != 2 -> only 2 GP in Thickness direction implemented: Reading of SHELL9 element failed");*/
+if (ele->e.s9->nGP[2] != 2) printf("WARNING in s9_inpele.c: nGP[2] != 2 -> this could lead to wrong stress calculation for OUTPUT of stresses \n");
 /*write a warning if a 8/9-noded Element is calculated with less than 3 GPs*/
 if (ele->distyp == quad9 && ele->e.s9->nGP[0] < 3) printf("WARNING in s9_inpele.c: QUAD9 but GP[0]<3 ; this could lead to ZEMs \n");
 if (ele->distyp == quad8 && ele->e.s9->nGP[0] < 3) printf("WARNING in s9_inpele.c: QUAD8 but GP[0]<3 ; this could lead to ZEMs \n");

@@ -53,20 +53,28 @@ if (option==0)
 {
        switch(ele->e.s9->nGP[2])/*---------------- thickness direction t */
        {
-          case 2:
-             b   = 1.0/3.0;
-             b   = sqrt(b);
-             wgt = 1.0;
-             data->xgpt[0] = -b;
-             data->xgpt[1] =  b;
-             data->xgpt[2] =  0.0;
-             data->wgtt[0] =  wgt;
-             data->wgtt[1] =  wgt;
-             data->wgtt[2] =  0.0;
-          break;
-          default:
-              dserror("unknown number of GP points");
-          break;
+       case 1:
+          data->xgpt[0] = 0.0;
+          data->xgpt[1] = 0.0;
+          data->xgpt[2] = 0.0;
+          data->wgtt[0] = 2.0;
+          data->wgtt[1] = 0.0;
+          data->wgtt[2] = 0.0;
+       break;
+       case 2:
+          b   = 1.0/3.0;
+          b   = sqrt(b);
+          wgt = 1.0;
+          data->xgpt[0] = -b;
+          data->xgpt[1] =  b;
+          data->xgpt[2] =  0.0;
+          data->wgtt[0] =  wgt;
+          data->wgtt[1] =  wgt;
+          data->wgtt[2] =  0.0;
+       break;
+       default:
+           dserror("'s9_intg.c': unknown number of GP points thickness direction t");
+       break;
        }
    if (ele->distyp == quad4 || /*---------------- quadrilateral elements */
        ele->distyp == quad8 ||
@@ -106,7 +114,7 @@ if (option==0)
           data->wgtr[2] =  wgt;
        break;
        default:
-          dserror("unknown number of GP points");
+          dserror("'s9_intg.c': unknown number of GP points direction r");
        break;
        }
        switch(ele->e.s9->nGP[1])/* direction s */
@@ -143,7 +151,7 @@ if (option==0)
           data->wgts[2] =  wgt;
        break;
        default:
-          dserror("unknown number of GP points");
+          dserror("'s9_intg.c': unknown number of GP points direction s");
        break;
        }
     }
@@ -185,7 +193,7 @@ if (option==0)
           data->wgts[2] =  wgt;
        break;
        default:
-             dserror("unknown number of GP points");
+             dserror("'s9_intg.c': unknown number of GP for triangular elements");
        break;
        }
     }
