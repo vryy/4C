@@ -95,7 +95,7 @@ static FLUID_DYNAMIC *fdyn;
 \param   *velint,     DOUBLE	      (i)    vel at center
 \param    visc,       DOUBLE	      (i)    viscosity
 \param    iel,        INT	      (i)    number of nodes	     
-\param	  ntyp,       INT	      (i)    element type
+\param	  typ,        DIS_TYP	      (i)    element type
 \param	  iflag       INT	      (i)    flag for evaluation
 \return void                                                                       
 
@@ -105,7 +105,7 @@ void f3_calstabpar(
 		    DOUBLE          *velint,  
 		    DOUBLE           visc,    
 		    INT              iel,     
-		    INT              ntyp,    
+		    DIS_TYP          typ,    
 		    INT              iflag    
                   )
 {
@@ -127,27 +127,29 @@ dstrc_enter("f3_calstabpar");
 gls   = ele->e.f3->stabi.gls;
 fdyn  = alldyn[genprob.numff].fdyn;
 
-if (ele->e.f3->stab_type != stab_gls) 
-   dserror("routine with no or wrong stabilisation called");
+dsassert(ele->e.f3->stab_type == stab_gls, 
+         "routine with no or wrong stabilisation called");
 
 /*------------------------ higher order element diameter modifications ? */
 switch(gls->mk)
 {
 case -1:
    c_mk = Q13;
-   if (ntyp==1 && iel>8)
+   if (typ==hex20 || typ==hex27)
    {
-      if (iel<32)
+      hdiv=TWO;
+/*      if (iel<32)
          hdiv = TWO;
       else
-         hdiv = THREE;               
+         hdiv = THREE; */ 
    }
-   else if (ntyp==2 && iel>4)
+   else if (typ==tet10)
    {
-      if (iel==10)
+      hdiv=TWO;
+/*      if (iel==10)
          hdiv = TWO;
       else
-         hdiv = THREE;
+         hdiv = THREE; */
    }
 break;
 case 0:
@@ -173,13 +175,13 @@ case 35: /*-------------------------- version diss. Wall - instationary */
       if (gls->itau[isp]!=iflag)
          continue;
       hk = ele->e.f3->hk[isp]/hdiv;
-      switch(isp)
-      {
-      case 2:/* continiuty stabilisation */
+      if (isp== 2)/* continiuty stabilisation */
+      {   
          re = c_mk*hk*velno/TWO/visc;  /* element reynolds number */
-	 fdyn->tau[isp] = (gls->clamb)*velno*hk/TWO*DMIN(ONE,re);         
-      break;
-      default: /* velocity / pressure stabilisation */
+	 fdyn->tau[isp] = (gls->clamb)*velno*hk/TWO*DMIN(ONE,re);        
+      }
+      else /* velocity / pressure stabilisation */
+      {
          if (velno>EPS15)
 	 { 
 	    aux1 = DMIN(hk/TWO/velno , c_mk*hk*hk/FOUR/visc);
@@ -187,8 +189,7 @@ case 35: /*-------------------------- version diss. Wall - instationary */
          }
 	 else
             fdyn->tau[isp] = DMIN(dt , c_mk*hk*hk/FOUR/visc);
-       break;
-      } /* end switch (isp) */
+      } /* endif(isp) */
    } /* end of loop over isp */
 break;
    
@@ -204,18 +205,17 @@ case 36: /*---------------------------- version diss. Wall - stationary */
          continue;
       hk = ele->e.f3->hk[isp]/hdiv;
       re = aux1*hk;
-      switch(isp)
+      if (isp==2) /* continiuty stabilisation ### TWO VERSIONS ??? ###*/
       {
-      case 2: /* continiuty stabilisation ### TWO VERSIONS ??? ###*/
          fdyn->tau[isp] = (gls->clamb)*velno*hk/TWO*DMIN(ONE,re);
-/*         fdyn->tau[isp] = velno*hk/TWO*DMIN(ONE,re);*/
-         break;
-      default: /* velocity / pressure stabilisation */
+/*         dynvar->tau[isp] = velno*hk/TWO*DMIN(ONE,re);*/
+      }
+      else
+      {
          if (re<ONE)
 	    fdyn->tau[isp] = c_mk*hk*hk/FOUR/visc;
 	 else
 	    fdyn->tau[isp] = hk/TWO/velno;
-      break;
       }  /* end switch (isp) */
    } /* end loop over isp */   
 break;
