@@ -87,7 +87,7 @@ void xfem_fluid2(
 
   switch (*action)
   {
-       /* initialize */
+      /* initialize */
       case calc_fluid_init:
         /* access to the number of fluid field */
         fdyn  = alldyn[genprob.numff].fdyn;

@@ -380,7 +380,7 @@ EULER:
 /*!---------------------------------------------------------------------
 \brief evaluate stabilisaton part of Kvp
 
-<pre>                                                            irhan 05/04
+<pre>
 
 In this routine the stabilisation part of matrix Kvv is calculated:
 

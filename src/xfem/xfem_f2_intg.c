@@ -54,7 +54,7 @@ void xfem_f2_intg(
   data->qwgt[1][2] = 0.8888888888888;
   data->qwgt[2][2] = 0.5555555555555;  
 
-  /* coordinates for  gauss points */
+  /* coordinates of Gauss points */
   data->qxg[0][0] =  0.0000000000000;
   data->qxg[0][1] = -0.5773502691896;                                            
   data->qxg[1][1] =  0.5773502691896;
@@ -70,7 +70,7 @@ void xfem_f2_intg(
   data->twgt[0][2] = 0.1666666666667;
   data->twgt[1][2] = 0.1666666666667;
   data->twgt[2][2] = 0.1666666666667;
-  /* Gauss points */
+  /* coordinates of Gauss points */
   data->txgr[0][0] = 0.3333333333333;
   data->txgr[0][1] = DUMMY;
   data->txgr[1][1] = DUMMY;

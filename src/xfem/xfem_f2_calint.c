@@ -208,18 +208,37 @@ void xfem_f2_calint(
     polygonmat[0] = polydata->polygonmat[0];
     polygonmat[1] = polydata->polygonmat[1];    
     /* set icode and ihoel */    
-    if (ntyp==1) ihoel = 1;
-    else if (ntyp==2) ihoel=0;
-    else dserror("ntyp not set properly!");
-    /**************************************/
-    /* START LOOP OVER INTEGRATION POINTS */
-    /**************************************/
+    if (ntyp==1)
+    {
+      ihoel = 1;
+    }
+    else if (ntyp==2)
+    {
+      ihoel=0;
+    }
+    else
+    {
+      dserror("ntyp not set properly!");
+    }
+    /********************************************************************/
+    /* START LOOP OVER INTEGRATION POINTS (MODIFIED INTEGRATION SCHEME) */
+    /********************************************************************/
     /* loop over triangles */
     for (ntri=0; ntri<2; ntri++)
     {
-      if (ind[ntri]==-1) continue;
-      if (ind[ntri]==0) nsubtotal = 1;
-      else nsubtotal = 7;
+      /* check */
+      if (ind[ntri]==-1)
+      {
+        continue;
+      }
+      else if (ind[ntri]==0)
+      {
+        nsubtotal = 1;
+      }
+      else
+      {
+        nsubtotal = 7;
+      }
       /* loop over subtriangles */
       for (nsub=0; nsub<nsubtotal; nsub++)
       {
@@ -351,7 +370,7 @@ void xfem_f2_calint(
               pderxy,derxy,epren,iel
               );
           }
-
+          
           /* velocities (n) at integration point */
           xfem_f2_veli(
             velint,funct,eveln,iel
@@ -419,9 +438,9 @@ void xfem_f2_calint(
         } 
       }
     }
-    /************************************/
-    /* END LOOP OVER INTEGRATION POINTS */
-    /************************************/
+    /********************************************************************/
+    /* END LOOP OVER INTEGRATION POINTS (MODIFIED INTEGRATION SCHEME)   */
+    /********************************************************************/
   }
   else
   {
@@ -448,9 +467,9 @@ void xfem_f2_calint(
         default:
           dserror("ntyp unknown!");
     }
-    /**************************************/
-    /* START LOOP OVER INTEGRATION POINTS */
-    /**************************************/
+    /********************************************************************/
+    /* START LOOP OVER INTEGRATION POINTS (STANDARD INTEGRATION SCHEME) */
+    /********************************************************************/
     for (lr=0; lr<nir; lr++)
     {    
       for (ls=0; ls<nis; ls++)
@@ -677,9 +696,9 @@ void xfem_f2_calint(
         }
       }
     }
-    /************************************/
-    /* END LOOP OVER INTEGRATION POINTS */
-    /************************************/
+    /********************************************************************/
+    /* END LOOP OVER INTEGRATION POINTS (STANDARD INTEGRATION SCHEME)   */
+    /********************************************************************/
   }
   
 /*----------------------------------------------------------------------*/

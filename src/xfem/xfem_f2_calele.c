@@ -218,6 +218,10 @@ void xfem_f2_calele(
     wa1       = amdef("wa1"      ,&w1_a       ,50,50,"DA");
     wa2       = amdef("wa2"      ,&w2_a       ,50,50,"DA");
 
+
+    /******************************XFEM**************************************/
+    /******************************XFEM**************************************/
+    /******************************XFEM**************************************/
     /* allocate temp arrays and iarr and iand */
     iarr         = amdef("iarr"        , &iarr_a        , MAXNOD*MAXDOFPERNODE, ONE                 , "IV");
     iand         = amdef("iand"        , &iand_a        , MAXNOD              , ONE                 , "IV");
@@ -225,6 +229,10 @@ void xfem_f2_calele(
     emass_temp   = amdef("emass_temp"  , &emass_temp_a  , MAXNOD*MAXDOFPERNODE, MAXNOD*MAXDOFPERNODE, "DA");
     eiforce_temp = amdef("eiforce_temp", &eiforce_temp_a, MAXNOD*MAXDOFPERNODE, ONE                 , "DV");
     etforce_temp = amdef("etforce_temp", &etforce_temp_a, MAXNOD*MAXDOFPERNODE, ONE                 , "DV");
+    /******************************XFEM**************************************/
+    /******************************XFEM**************************************/
+    /******************************XFEM**************************************/
+    
     
     estif   = estif_global->a.da;
     emass   = emass_global->a.da;
@@ -402,7 +410,7 @@ void xfem_f2_loc_ass_tangent()
     /* check */
     if (myls2->e.ls2->is_elcut==0 && cnt!=0 ||
         myls2->e.ls2->is_elcut==1 && cnt!=cnt1)
-      dserror("error in local assembly!");
+      dserror("severe error in local assembly!");
   }
   
 /*----------------------------------------------------------------------*/
@@ -526,7 +534,7 @@ void xfem_f2_init(
   ntotal = FIVE*iel;
   /* compute theta*dt */
   thdt = fdyn->thsl;
-  /* set ls2 element aassociated */
+  /* set ls2 element associated */
   myls2 = ele->e.f2->my_ls;
 
 /*----------------------------------------------------------------------*/
@@ -556,15 +564,15 @@ void xfem_f2_iand()
   dstrc_enter("xfem_f2_iand");
 #endif
 /*----------------------------------------------------------------------*/
-  
-/*
- * NOTE =>
- * be sure that the local node numbers are identical for both
- * fluid and levelset element
- */
+
+  /*
+   * NOTE =>
+   * be sure that the local node numbers are identical for both
+   * fluid and levelset element
+   */
   /* check */
-  if (myls2->e.ls2->is_elcut==1 && myls2->e.ls2->nenode!=myls2->numnp ||
-      myls2->e.ls2->is_elcut==2 && myls2->e.ls2->nenode==0)
+  if ((myls2->e.ls2->is_elcut==1 && myls2->e.ls2->nenode!=myls2->numnp) ||
+      (myls2->e.ls2->is_elcut==2 && myls2->e.ls2->nenode==0))
     dserror("nenode not set properly!");
   /* set iand vector */
   for (i=0; i<myls2->e.ls2->nenode; i++)

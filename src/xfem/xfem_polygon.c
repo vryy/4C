@@ -75,14 +75,16 @@ static  INT           polygoncon[3][7] =
                                           {6,6,6,7,7,7,7}
                                          };
 
+
 static FILE          *f01;
 static FILE          *f02;
 static FILE          *f03;
 static FILE          *f04;
-static FILE          *f05; 
+static FILE          *f05;
+static FILE          *f06; 
 
 
-static DOUBLE         atri; /* area of triangle */
+static DOUBLE         atri;  /* area of triangle */
 static DOUBLE         arect; /* area of rectangle */
 static DOUBLE         asubp; /* area of subpolygon */
 static const DOUBLE   HALF = ONE/TWO;
@@ -420,7 +422,8 @@ one Gauss point is assigned to center of each subtriangle.
 
 *----------------------------------------------------------------------*/
 void xfem_polygon_GP(
-  ELEMENT *myls2)
+  ELEMENT *myls2
+  )
 {
   INT              i,j;
   DOUBLE           sum;
@@ -506,7 +509,10 @@ void xfem_polygon_GP(
         sum = 0.0;
         for (i=0; i<2; i++)
         {
-          if (ind[i]==0) sum += polygonwgt[i][0];
+          if (ind[i]==0)
+          {
+            sum += polygonwgt[i][0];
+          }
           else
           {
             for (j=0; j<7; j++)
@@ -895,8 +901,19 @@ void xfem_polygon_write(
   {
     fprintf(f05,"%2d  ",ind[i]);
   }
-  fprintf(f05,"\n");    
-    
+  fprintf(f05,"\n");
+
+  /* write polygon material index data */
+  for (i=0; i<2; i++)
+  {
+    for (j=0; j<7; j++)
+    {
+      fprintf(f06,"%10.5E  ",polygonmat[i][j]);
+    }
+    fprintf(f06,"\n");
+  }
+  fprintf(f06,"\n");
+   
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
   dstrc_exit();
@@ -928,6 +945,7 @@ void xfem_polygon_open()
   f03 = fopen("src/ls/to_matlab/xfem_to_matlab/xfem_to_matlab_polygonxy","w");
   f04 = fopen("src/ls/to_matlab/xfem_to_matlab/xfem_to_matlab_polygonGP","w");
   f05 = fopen("src/ls/to_matlab/xfem_to_matlab/xfem_to_matlab_ind","w");
+  f06 = fopen("src/ls/to_matlab/xfem_to_matlab/xfem_to_matlab_polygonmat","w");
   
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -960,6 +978,7 @@ void xfem_polygon_close()
   fclose(f03);
   fclose(f04);
   fclose(f05);
+  fclose(f06);  
   
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
