@@ -204,12 +204,11 @@ case 7:		/* 2nd order backward differencing BDF2 */
    /* set number of starting steps for restarts */
    if (genprob.restart != 0) /* restart using the pss-file */
    {
-     /* nicht unbedignt notwendig !! */
+     /* nicht unbedingt notwendig !! */
      fdyn->nums = genprob.restart + 1;
    }
    else  /* restart aus flavia.res */
    {
-     printf("step: %3d",fdyn->step);
      fdyn->nums += fdyn->step;
    }
    
