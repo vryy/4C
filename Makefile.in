@@ -65,13 +65,13 @@ $(OBJS_F2ML):
 $(OBJS_F3ML):
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
-$(OBJS_OPT):     
+$(OBJS_OPT):
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
-$(OBJS_AXISHELL):     
+$(OBJS_AXISHELL):
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
-$(OBJS_MAT):     
+$(OBJS_MAT):
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
 $(OBJS_F2PRO):
@@ -93,7 +93,7 @@ $(OBJS_VISUAL):
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
 # fortran
-$(OBJS_FORTRAN):     
+$(OBJS_FORTRAN):
 		$(F77) $(FFLAGS)  -c ${SRC}/${@D}/$(*F).f -o ${SRC}/$@
 
 .c.o:
@@ -103,12 +103,5 @@ $(OBJS_FORTRAN):
 	$(F77) $(FFLAGS) $(INCLUDES) -c $< -o $@
 
 clean:
-	rm -rf 	$(OBJS_MAIN) $(OBJS_GLOBAL) $(OBJS_PSS) $(OBJS_INPUT) \
-		$(OBJS_PAR) $(OBJS_MATH) $(OBJS_OUTPUT) $(OBJS_FORTRAN) \
-		$(OBJS_FLUID) $(OBJS_FLUID3) $(OBJS_FLUID2) $(OBJS_ALE) \
-		$(OBJS_FSI) $(OBJS_SSI) $(OBJS_F2PRO) $(OBJS_F2ML) $(OBJS_F3ML) \
-		$(OBJS_BRICK1) $(OBJS_BEAM3) $(OBJS_OPT) $(OBJS_MAT) \
-		$(OBJS_SHELL9) $(OBJS_SHELL8) $(OBJS_AXISHELL) \
-		$(OBJS_WALL1) $(OBJS_WALLGE) $(OBJS_LS) $(OBJS_XFEM) \
-	        $(OBJS_IF) $(OBJS_SOLVER) $(OBJS_VISUAL) $(OBJS_STRUCTURE)
+	rm -f	src/*/*.o
 
