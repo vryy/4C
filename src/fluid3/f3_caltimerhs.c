@@ -427,7 +427,7 @@ if (ele->e.f3->ivisc!=0 && ihoel!=0)
       irow += 3;			 
    } /* end of loop over inode */   
 } /* endif (ele->e.f3->ivisc!=0 && ihoel!=0) */
-
+ 
 /*----------------------------------------------------------------------*
    Calculate convective/convective stab-forces of time force vector:
                    /
@@ -464,20 +464,20 @@ if (ele->e.f3->ivisc!=0 && ihoel!=0)
    irow = 0;
    for (inode=0;inode<iel;inode++)
    {
-      aux = derxy2[0][inode] + derxy[1][inode] + derxy[2][inode];
+      aux = derxy2[0][inode] + derxy2[1][inode] + derxy2[2][inode];
       eforce[irow]   += (derxy2[0][inode]*covint[0] \
                        + derxy2[3][inode]*covint[1] \
 		       + derxy2[4][inode]*covint[2] + aux*covint[0])*fvtsr;
       eforce[irow+1] += (derxy2[3][inode]*covint[0] \
                        + derxy2[1][inode]*covint[1] \
 		       + derxy2[5][inode]*covint[2] + aux*covint[1])*fvtsr;
-      eforce[irow+1] += (derxy2[4][inode]*covint[0] \
+      eforce[irow+2] += (derxy2[4][inode]*covint[0] \
                        + derxy2[5][inode]*covint[1] \
 		       + derxy2[2][inode]*covint[2] + aux*covint[2])*fvtsr;
       irow +=3;
    } /* end of loop over inode */
 } /* endif (ele->e.f3->ivisc!=0 && ihoel!=0) */
-
+ 
 /*----------------------------------------------------------------------*
    Calculate viscous/convective stab-forces of time force vector:
                    /
@@ -536,14 +536,14 @@ if (ele->e.f3->ivisc!=0 && ihoel!=0)
    irow += 3;
    } /* end of loop over inode */
 } /* endif (ele->e.f3->ivisc!=0 && ihoel!=0) */
-  
+   
 /*----------------------------------------------------------------------*
    Calculate continuity stab-forces of time force vector:
      /
   - |  tau_c * div(v) * div(u)  d_omega
    /
  *----------------------------------------------------------------------*/  
-if (ele->e.f3->ivisc!=0)
+if (ele->e.f3->ivisc!=1)
 {
    aux = tauc*facsr*(vderxy[0][0] + vderxy[1][1] + vderxy[2][2]);
    irow = -1;
@@ -556,7 +556,7 @@ if (ele->e.f3->ivisc!=0)
       } /* end of loop over isd */
    } /* end of loop over inode */
 } /* endif (ele->e.f3->ivisc!=0) */
-
+ 
 /*----------------------------------------------------------------------*
    Calculate pressure/convective stab-forces of time force vector:
                   /
@@ -606,7 +606,7 @@ if (ele->e.f3->ivisc!=0 && ihoel!=0 && dynvar->iprerhs>0)
       irow += 3;		
    } /* end of loop over inode */
 } /* endif (ele->e.f3->ivisc!=0 && ihoel!=0 && dynvar->iprerhs>0) */
-
+ 
 /*----------------------------------------------------------------------*
    Calculate external load/convective stab-forces of time force vector:
                   /
