@@ -24,12 +24,8 @@ SPOOLES_INC=""
 SPOOLES_LIB=""
 
 # umfpack
-if grep '^UMFPACK' "$definefile" 2>&1 > /dev/null ; then
-  echo $0: Error: UMFPACK not possible on platform HPUX11ita2.
-  exit 1
-fi
 UMFPACK_INC=""
-UMFPACK_LIB=""
+UMFPACK_LIB="-L$BASEDIR/umfpack -lumfpack_ita2_64"
 
 # visual2
 if grep '^VISUAL2_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
