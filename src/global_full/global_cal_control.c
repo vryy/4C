@@ -12,6 +12,20 @@ Maintainer: Malte Neumann
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "../fluid_full/fluid_prototypes.h"
+
+#ifdef D_WALLGE
+#include "../wallge/wallge.h"
+#include "../wallge/wallge_prototypes.h"
+#endif
+
+#ifdef D_FSI
+#include "../fsi_full/fsi_prototypes.h"
+#endif
+
+#ifdef D_LS
+#include "../ls/ls_prototypes.h"
+#endif
+
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | structure of flags to control output                                 |

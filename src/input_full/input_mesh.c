@@ -24,6 +24,19 @@ Maintainer: Malte Neumann
 #include "../axishell/axishell.h"
 #include "../beam3/beam3.h"
 #include "../interf/interf.h"
+
+#ifdef D_LS
+#include "../ls/ls_prototypes.h"
+#endif
+
+#ifdef D_WALLGE
+#include "../wallge/wallge.h"
+#endif
+
+#ifdef D_FLUID2_PRO
+#include "../fluid2_pro/fluid2pro_prototypes.h"
+#endif
+
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |

@@ -1472,10 +1472,9 @@ are read and stored in fsidyn
 void inpctr_dyn_fsi(FSI_DYNAMIC *fsidyn)
 {
 INT    ierr;
-INT    i;
 INT    length;
-INT    mod_res_write;
 char   buffer[50];
+
 #ifdef DEBUG 
 dstrc_enter("inpctr_dyn_fsi");
 #endif
@@ -1558,13 +1557,13 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    if (ierr==1)
    {
       length = strlen(buffer);
-      if (strncmp(buffer,"No",2)==0 ||
-          strncmp(buffer,"NO",2)==0 ||
-	  strncmp(buffer,"no",2)==0 && length==2) 
+      if ((strncmp(buffer,"No",2)==0 ||
+           strncmp(buffer,"NO",2)==0 ||
+	   strncmp(buffer,"no",2)==0) && length==2) 
          fsidyn->ichecke=0;
-      else if (strncmp(buffer,"yes",3)==0 ||
-               strncmp(buffer,"YES",3)==0 ||                 
-	       strncmp(buffer,"Yes",3)==0 && length==3) 
+      else if ((strncmp(buffer,"yes",3)==0 ||
+                strncmp(buffer,"YES",3)==0 ||                 
+	        strncmp(buffer,"Yes",3)==0) && length==3) 
          fsidyn->ichecke=1;
       else
          dserror("Parameter for ENERGYCHECK unknown!");     
@@ -1574,9 +1573,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    if (ierr==1)
    {
       length = strlen(buffer);
-      if (strncmp(buffer,"No",2)==0 ||
-          strncmp(buffer,"NO",2)==0 ||
-	  strncmp(buffer,"no",2)==0 && length==2) 
+      if ((strncmp(buffer,"No",2)==0 ||
+           strncmp(buffer,"NO",2)==0 ||
+	   strncmp(buffer,"no",2)==0) && length==2) 
          fsidyn->inest=0;
       else if (strncmp(buffer,"fluid+structure",15)==0 && length==15) 
          fsidyn->inest=1;
@@ -1893,7 +1892,6 @@ void inpctr_dyn_ls(LS_DYNAMIC *lsdyn)
     frread();
   }
   frrewind();
- end:
   
 /*----------------------------------------------------------------------*/  
 #ifdef DEBUG 

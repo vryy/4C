@@ -15,6 +15,12 @@ Maintainer: Malte Neumann
 #ifdef D_SHELL9
    #include "../shell9/shell9.h"
 #endif /*D_SHELL9*/
+
+#ifdef D_INTERF
+#include "../interf/interf.h"
+#include "../interf/interf_prototypes.h"
+#endif
+
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |

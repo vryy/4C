@@ -76,7 +76,7 @@ INT               hasdirich=0;      /* flag                             */
 INT               hasext=0;         /* flag                             */
 ELEMENT          *actele;
 #if defined(D_FLUID2) || defined(D_FLUID2_PRO)
-ELEMENT          *actele2;
+ELEMENT          *actele2 = NULL;
 #endif
 ASSEMBLE_ACTION   assemble_action;
 

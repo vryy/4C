@@ -241,11 +241,13 @@ void f3_stress(
     INT           is_relax
     )
 {
+#if 0
 #ifdef D_FSI
   INT       i;
   INT       coupled;      /* flag for fsi interface element */
   INT       iel;          /* number of nodes per element */
   GNODE    *actgnode;     /* actual gnode */
+#endif
 #endif
 
 

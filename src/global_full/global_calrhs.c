@@ -123,8 +123,8 @@ INT             dof;
 NODE           *actnode;
 NEUM_CONDITION *actneum;
 #ifdef D_SHELL9
-INT             nsurf;     /* 1=MID; 2=TOP; 3=BOT */
-INT             numklay;   /* number of kinematic layers if shell9 */
+INT             nsurf   = 0;     /* 1=MID; 2=TOP; 3=BOT */
+INT             numklay = 0;   /* number of kinematic layers if shell9 */
 #endif
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -161,8 +161,10 @@ for (i=0; i<actpart->pdis[0].numnp; i++)
           dserror("Unknown type of neum_surf");
        break;
        }/*end of switch(actneum->neum_surf*/
+
        /* modify the nodal load vector due to nsurf */
        s9_surf_P(actneum->neum_val.a.dv, nsurf, numklay);
+
        /*switch the neum_onoff to 1 due to nsurf */
        s9_surf_onoff(actneum->neum_onoff.a.iv, nsurf, numklay);
      }

@@ -14,6 +14,10 @@ Maintainer: Steffen Genkinger
 #include "fluid3_prototypes.h"
 #include "fluid3.h"
 
+#ifdef FLUID3_ML
+#include "../fluid3ml/fluid3ml_prototypes.h"
+#endif
+
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate dynamic variables if needed                      |
