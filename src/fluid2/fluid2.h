@@ -3,7 +3,9 @@
 \brief The 2D fluid element
 
 ------------------------------------------------------------------------*/
-
+/*! 
+\addtogroup FLUID2 
+*//*! @{ (documentation module open)*/
 /*!---------------------------------------------------------------------
 \brief fluid2                                                 
 
@@ -15,9 +17,9 @@ fluid element fluid2 are stored.
 </pre>
 
 --------------------------------------------------------------------------*/
+#ifdef D_FLUID2
 typedef struct _FLUID2
 {
-
 int                ntyp;     /*!< flag for element type: 1=quad; 2=tri    */
 int                nGP[2];   /*!< number of gaussian points in rs direct. */
 int                is_ale;   /*!< flag whether there is ale to me or not  */
@@ -52,5 +54,14 @@ int                itau[3];  /*!< flags for tau_? calculation
 /*--------------------------------- element sizes for stability parameter */
 double             hk[3];    /*!< vel/pres/cont                           */
 
+/*------------------------------------------------ free surface parameter */
+int                fs_on;   /*! element belongs to free surface           */
+
+/*-------------------------------------------------------- stress results */
+struct _ARRAY      stress_ND; /*!< nodal stresses                         */
+/*------------------------------------------------------- nodal curvature */
+struct _ARRAY      kappa_ND;
 } FLUID2;
 
+#endif
+/*! @} (documentation module close)*/
