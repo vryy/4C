@@ -7,7 +7,7 @@ calculates the B-Operator matrix for a 3d / 1d spatial beam element
 Maintainer: Frank Huber
             huber@statik.uni-stuttgart.de
             http://www.uni-stuttgart.de/ibs/members/huber/
-            0771 - 685-6120
+            0711 - 685-6120
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -27,7 +27,7 @@ Maintainer: Frank Huber
 Maintainer: Frank Huber
             huber@statik.uni-stuttgart.de
             http://www.uni-stuttgart.de/ibs/members/huber/
-            0771 - 685-6120
+            0711 - 685-6120
 </pre>
 
 <pre>                                                              fh 02/03

@@ -7,7 +7,7 @@ the internal forces for an interface element
 Maintainer: Andrea Hund
             hund@statik.uni-stuttgart.de
             http://www.uni-stuttgart.de/ibs/members/hund/
-            0771 - 685-6122
+            0711 - 685-6122
 
 *-----------------------------------------------------------------------*/
 #ifdef D_INTERF

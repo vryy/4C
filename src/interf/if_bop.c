@@ -6,7 +6,7 @@ matrix for a interface element at gaussian points
 Maintainer: Andrea Hund
             hund@statik.uni-stuttgart.de
             http://www.uni-stuttgart.de/ibs/members/hund/
-            0771 - 685-6122
+            0711 - 685-6122
 </pre>
 
 *-----------------------------------------------------------------------*/

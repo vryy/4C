@@ -6,7 +6,7 @@
 Maintainer: Thomas Hettich
             hettich@statik.uni-stuttgart.de
             http://www.uni-stuttgart.de/ibs/members/hettich/
-            0771 - 685-6575
+            0711 - 685-6575
 </pre>
 
 ------------------------------------------------------------------------*/

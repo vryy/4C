@@ -8,7 +8,7 @@ structures and prototypes
 Maintainer: Michael Gee
             gee@statik.uni-stuttgart.de
             http://www.uni-stuttgart.de/ibs/members/gee/
-            0771 - 685-6572
+            0711 - 685-6572
 </pre>
 
 ------------------------------------------------------------------------*/

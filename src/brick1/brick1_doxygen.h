@@ -7,7 +7,7 @@ for the 3D hexahedral and tetrahedral-elements.
 Maintainer: Andreas Lipka
             lipka@statik.uni-stuttgart.de
             http://www.uni-stuttgart.de/ibs/members/lipka/
-            0771 - 685-6575
+            0711 - 685-6575
 </pre>
 
 This module 'BRICK1' contains all routines and structures necessary

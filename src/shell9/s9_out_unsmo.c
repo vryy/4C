@@ -23,7 +23,7 @@ at one node and one upper and one lower layer)
 Maintainer: Stefan Hartmann
             hartmann@statik.uni-stuttgart.de
             http://www.uni-stuttgart.de/ibs/members/hartmann/
-            0771 - 685-6120
+            0711 - 685-6120
 </pre>
 
 *----------------------------------------------------------------------*/

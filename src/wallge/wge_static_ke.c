@@ -7,7 +7,7 @@ stiffness matrix and internal forces for a gradient enhanced wall element
 Maintainer: Andrea Hund
             hund@statik.uni-stuttgart.de
             http://www.uni-stuttgart.de/ibs/members/hund/
-            0771 - 685-6122
+            0711 - 685-6122
 </pre>
 *-----------------------------------------------------------------------*/
 #ifdef D_WALLGE
