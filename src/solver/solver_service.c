@@ -36,9 +36,7 @@ static void solserv_matvec_sky(INTRA *actintra,SKYMATRIX *sky,DOUBLE *work1,DOUB
 
 #ifdef AZTEC_PACKAGE
 static void solserv_cp_msrmask(AZ_ARRAY_MSR *from, AZ_ARRAY_MSR *to);
-#if 0
 static void solserv_matvec_msr(INTRA *actintra,AZ_ARRAY_MSR *msr,DOUBLE *work1,DOUBLE *work2);
-#endif
 #endif
 
 static void solserv_cp_densemask(DENSE *from, DENSE *to);
@@ -449,7 +447,7 @@ break;
 #ifdef UMFPACK
 case ccf:
    amzero(&(mat->ccf->Ax));
-  /* mat->ccf->is_factored=0; is never used but for struct2_ml, 
+  /* mat->ccf->is_factored=0; is never used but for struct2_ml,
                               and there I need it not to be set to zero */
 break;
 #endif
@@ -956,14 +954,12 @@ dstrc_enter("solserv_sparsematvec");
 #endif
 
 /*----------------------------------------------------------------------*/
-if (*mattyp != msr) {
   if (work1_a.Typ != cca_DV) work1 = amdef("work1",&work1_a,vec->numeq_total,1,"DV");
   if (work2_a.Typ != cca_DV) work2 = amdef("work2",&work2_a,vec->numeq_total,1,"DV");
   if (work1_a.fdim < vec->numeq_total) {
     amdel(&work1_a); work1 = amdef("work1",&work1_a,vec->numeq_total,1,"DV");
     amdel(&work2_a); work2 = amdef("work2",&work2_a,vec->numeq_total,1,"DV");
   }
-}
 
 /*----------------------------------------------------------------------*/
 switch (*mattyp)
@@ -976,12 +972,14 @@ break;
 
 #ifdef AZTEC_PACKAGE
 case msr:
-#if 0
    solserv_reddistvec(vec,mat,mattyp,work1,vec->numeq_total,actintra);
    solserv_matvec_msr(actintra,mat->msr,work1,work2);
    solserv_distribdistvec(result,mat,mattyp,work2,vec->numeq_total,actintra);
-#endif
-#if 1
+
+   /*
+    * As m.gee pointed out this does not work. It destroys the
+    * matrix. */
+#if 0
 {
   struct _AZ_ARRAY_MSR* msr_array = mat->msr;
 
@@ -1367,8 +1365,6 @@ return;
 
 
 
-#if 0
-/* No longer needed. We use aztec's function now. */
 #ifdef AZTEC_PACKAGE
 /*----------------------------------------------------------------------*
  |  make matrix vector multiplication with msr matrix        m.gee 02/02|
@@ -1430,7 +1426,6 @@ dstrc_exit();
 return;
 } /* end of solserv_matvec_msr */
 # endif /* ifdef AZTEC_PACKAGE */
-#endif
 
 
 
