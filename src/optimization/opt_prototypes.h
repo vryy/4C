@@ -3,6 +3,14 @@
  *----------------------------------------------------------------------*/
 void opt_stalin(CALSTA_EXEC stalact);
 /*----------------------------------------------------------------------*
+ |  routine to control nonlinear static execution          al 11/01     |
+ *----------------------------------------------------------------------*/
+void opt_stanln(CALSTA_EXEC stalact) ;
+/*----------------------------------------------------------------------*
+ |  routine to control dynamic eigenvalue analysis              al 08/02|
+ *----------------------------------------------------------------------*/
+void calfrq(INT init); 
+/*----------------------------------------------------------------------*
  |                                                      a.lipka 5/01    |
  | control program for update of fem-arrays for act. variable           |
  *----------------------------------------------------------------------*/
@@ -62,8 +70,51 @@ void optvsa(double *grdobj, double *grdcon,int init);
  *----------------------------------------------------------------------*/
 void optsmo(double *vvar, int init);
 /*----------------------------------------------------------------------*
+ |                                                      a.lipka 5/01    |
+ | create objective function with eigen frequencies or buckling         |
+ *----------------------------------------------------------------------*/
+void objeig(double *objctval);
+/*----------------------------------------------------------------------*
  | prototypes for fortran routines                               al 9/01|
  *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | control program for eigenvalue analysis                  al 05/01    |
+ *----------------------------------------------------------------------*/
+void sspace(double *A, 
+            double *ACOP,
+            double *B,
+            int *MAXA,
+            double *R,
+            double *EIGV,
+            double *TT,
+            double *W,
+            double *AR,
+            double *BR,
+            double *VEC,
+            double *D,
+            double *RTOLV,
+            int *IND,
+            int *NN,
+            int *NNM,
+            int *NWK,
+            int *NWM,
+            int *NC,
+            int *NSTA,
+            int *ISOL,
+            int *NNZ,
+            double *EIGFOU,
+            double *RFOU,
+            int *NROOT,
+            int *NITEM,
+            int *NSMAX,
+            int *IFSS,
+            int *ISUB,
+            double *TOLEIG,
+            double *TOLJAC,
+            double *SHIFT,
+            int *ISTLDL,
+            int *INIT,
+            int *IPRINT);
 void fortranpow (double *V,double *R,double *RE);
 void fsdoc  (double *var,double *df,double *dg,double *etai,double *etha,
              double *xdgo,double *resu,double *resl,double *varup,

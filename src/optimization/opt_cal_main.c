@@ -45,6 +45,13 @@ void caloptmain()
   #ifdef DEBUG 
   dstrc_enter("caloptmain");
   #endif
+/*----------------------------------------------------------------------*/
+  if(opt->objective==oj_frequency&&par.nprocs>1)
+  {
+    printf(" no optimization in parallel implemented");
+    printf(" for eigen frequencies\n");
+    goto endoptmain;
+  } 
 /*-------------------------------------- initialize graphical output ---*/
   opt_g_out(gr_init);
 /*----------------------- initialize execution stage of optimization ---*/
@@ -58,6 +65,8 @@ void caloptmain()
   {
     optfsd();
   }
+/*----------------------------------------------------------------------*/
+  endoptmain:;
 /*----------------------------------------------------------------------*/
   #ifdef DEBUG 
   dstrc_exit();

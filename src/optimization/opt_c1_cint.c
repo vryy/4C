@@ -14,11 +14,19 @@
 #include "../headers/standardtypes.h"
 #include "../brick1/brick1.h"
 #include "../brick1/brick1_prototypes.h"
+#include "../headers/optimization.h"
 
 /*! 
 \addtogroup BRICK1 
 *//*! @{ (documentation module open)*/
 
+/*!----------------------------------------------------------------------
+\brief the optimization main structure
+<pre>                                                            al 06/01   
+defined in opt_cal_main.c
+</pre>
+*----------------------------------------------------------------------*/
+ struct _OPTI *opt;
 /*!----------------------------------------------------------------------
 \brief integration routine for BRICK1 element
 
@@ -60,13 +68,16 @@ const INT           numeps=6;
 DOUBLE              fac;
 DOUBLE              e1,e2,e3;         /*GP-coords*/
 DOUBLE              facr,facs,fact;   /* weights at GP */
+DOUBLE              rs;
 
+DOUBLE dfie[80];
 DOUBLE disd[9];
 DOUBLE F[6];  /* element stress vector   (stress-resultants) */
 DOUBLE DF[6]; /* derivative of element stress vector         */
 DOUBLE strain[6];
 DOUBLE xyze[60];
 DOUBLE edis[60];  
+DOUBLE grdis[60];/* displacement derivatives                  */  
 DOUBLE  g[6][6]; /* transformation matrix s(glob)= g*s(loc)   */
 DOUBLE gi[6][6]; /* inverse of g          s(loc) = gi*s(glob) */
 /*-------------------------------------------  for eas elements only ---*/
@@ -87,6 +98,9 @@ static DOUBLE **bop;
 static ARRAY    bnop_a;   /* BN-operator */   
 static DOUBLE **bn;       
 
+static DOUBLE **estiflo;       
+static ARRAY    estiflo_a; /* local element stiffness matrix ke for eas */   
+
 DOUBLE det;
 
 INT    iform;             /* index for nonlinear formulation of element */
@@ -96,8 +110,19 @@ DOUBLE  ste;  /* strain energy               */
 DOUBLE dste;  /* derivative of strain energy */
 DOUBLE  stm;  /* mass                        */
 DOUBLE  stv;  /* volume                      */
+DOUBLE  stf;  /* frequency                   */
 
-DOUBLE dens;  /* density                     */
+INT    ieig;     /* counter for eigen values   */
+DOUBLE kro, kru; /* Kreiselmeier Steinhaeuser  */
+DOUBLE reig[10][60];/* vec. with eigenforms    */
+DOUBLE teta_s1[10]; /* helping vector for freq */
+DOUBLE teta1[10];   /* helping vector for freq */
+DOUBLE hvar1[60];   /* helping vector for freq */
+DOUBLE w2s1[10];    /* helping vector for freq */
+DOUBLE krexpo;      /* exponent in Kreiselmeier*/
+DOUBLE dens, density;  /* density                     */
+DOUBLE lmvec[60];   /* lumped mass vector     */
+DOUBLE facm, totmas, emasdg;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("c1_oint");
@@ -116,6 +141,7 @@ if (init==1)
   xjm       = amdef("xjm"    ,&xjm_a ,numdf,numdf      ,"DA");           
   bop       = amdef("bop"  ,&bop_a ,numeps,(numdf*MAXNOD_BRICK1),"DA");           
   bn        = amdef("bnop" ,&bnop_a,3     ,       MAXNOD_BRICK1 ,"DA");           
+  estiflo   = amdef("estiflo"  ,&estiflo_a ,60,60,"DA");           
 goto end;
 }
 /*------------------------------------------- integration parameters ---*/
@@ -133,6 +159,23 @@ c1intg(ele,data);
     for (i=0;i<iel;i++) for (j=0;j<3;j++) xyze[cc++] = ele->node[i]->x[j];
     cc=0;
     for (i=0;i<iel;i++) for (j=0;j<3;j++) edis[cc++] = ele->node[i]->sol.a.da[0][j];
+    /*------------------------------------------------------------------*/
+    if (init==6)
+    {
+    cc=0;
+    for (i=0;i<iel;i++) for (j=0;j<3;j++) grdis[cc++] = ele->node[i]->sol.a.da[1][j];
+    }
+    /*------------------------------------------------------------------*/
+    if (init==7)/* eigen frequency optimization */
+    {
+      for (ieig=0;ieig<opt->oeig->numeigv;ieig++)
+      {/* loop eigenvalues */
+        cc=0;
+        for (i=0;i<iel;i++) for (j=0;j<3;j++)
+                    reig[ieig][cc++] = ele->node[i]->sol.a.da[ieig][j];
+      }/* loop eigenvalues */
+    }
+    /*------------------------------------------------------------------*/
   }
   else 
   {/*iel==20*/
@@ -258,6 +301,140 @@ c1intg(ele,data);
    edis[cc++] = ele->node[15]->sol.a.da[0][0];
    edis[cc++] = ele->node[15]->sol.a.da[0][1];
    edis[cc++] = ele->node[15]->sol.a.da[0][2];
+    if (init==6)
+    {
+   cc=0;
+   grdis[cc++] = ele->node[0]->sol.a.da[1][0];
+   grdis[cc++] = ele->node[0]->sol.a.da[1][1];
+   grdis[cc++] = ele->node[0]->sol.a.da[1][2];
+   grdis[cc++] = ele->node[1]->sol.a.da[1][0];
+   grdis[cc++] = ele->node[1]->sol.a.da[1][1];
+   grdis[cc++] = ele->node[1]->sol.a.da[1][2];
+   grdis[cc++] = ele->node[2]->sol.a.da[1][0];
+   grdis[cc++] = ele->node[2]->sol.a.da[1][1];
+   grdis[cc++] = ele->node[2]->sol.a.da[1][2];
+   grdis[cc++] = ele->node[3]->sol.a.da[1][0];
+   grdis[cc++] = ele->node[3]->sol.a.da[1][1];
+   grdis[cc++] = ele->node[3]->sol.a.da[1][2];
+   grdis[cc++] = ele->node[4]->sol.a.da[1][0];
+   grdis[cc++] = ele->node[4]->sol.a.da[1][1];
+   grdis[cc++] = ele->node[4]->sol.a.da[1][2];
+   grdis[cc++] = ele->node[5]->sol.a.da[1][0];
+   grdis[cc++] = ele->node[5]->sol.a.da[1][1];
+   grdis[cc++] = ele->node[5]->sol.a.da[1][2];
+   grdis[cc++] = ele->node[6]->sol.a.da[1][0];
+   grdis[cc++] = ele->node[6]->sol.a.da[1][1];
+   grdis[cc++] = ele->node[6]->sol.a.da[1][2];
+   grdis[cc++] = ele->node[7]->sol.a.da[1][0];
+   grdis[cc++] = ele->node[7]->sol.a.da[1][1];
+   grdis[cc++] = ele->node[7]->sol.a.da[1][2];
+   grdis[cc++] = ele->node[8]->sol.a.da[1][0];
+   grdis[cc++] = ele->node[8]->sol.a.da[1][1];
+   grdis[cc++] = ele->node[8]->sol.a.da[1][2];
+   grdis[cc++] = ele->node[9]->sol.a.da[1][0];
+   grdis[cc++] = ele->node[9]->sol.a.da[1][1];
+   grdis[cc++] = ele->node[9]->sol.a.da[1][2];
+   grdis[cc++] = ele->node[10]->sol.a.da[1][0];
+   grdis[cc++] = ele->node[10]->sol.a.da[1][1];
+   grdis[cc++] = ele->node[10]->sol.a.da[1][2];
+   grdis[cc++] = ele->node[11]->sol.a.da[1][0];
+   grdis[cc++] = ele->node[11]->sol.a.da[1][1];
+   grdis[cc++] = ele->node[11]->sol.a.da[1][2];
+   grdis[cc++] = ele->node[16]->sol.a.da[1][0];
+   grdis[cc++] = ele->node[16]->sol.a.da[1][1];
+   grdis[cc++] = ele->node[16]->sol.a.da[1][2];
+   grdis[cc++] = ele->node[17]->sol.a.da[1][0];
+   grdis[cc++] = ele->node[17]->sol.a.da[1][1];
+   grdis[cc++] = ele->node[17]->sol.a.da[1][2];
+   grdis[cc++] = ele->node[18]->sol.a.da[1][0];
+   grdis[cc++] = ele->node[18]->sol.a.da[1][1];
+   grdis[cc++] = ele->node[18]->sol.a.da[1][2];
+   grdis[cc++] = ele->node[19]->sol.a.da[1][0];
+   grdis[cc++] = ele->node[19]->sol.a.da[1][1];
+   grdis[cc++] = ele->node[19]->sol.a.da[1][2];
+   grdis[cc++] = ele->node[12]->sol.a.da[1][0];
+   grdis[cc++] = ele->node[12]->sol.a.da[1][1];
+   grdis[cc++] = ele->node[12]->sol.a.da[1][2];
+   grdis[cc++] = ele->node[13]->sol.a.da[1][0];
+   grdis[cc++] = ele->node[13]->sol.a.da[1][1];
+   grdis[cc++] = ele->node[13]->sol.a.da[1][2];
+   grdis[cc++] = ele->node[14]->sol.a.da[1][0];
+   grdis[cc++] = ele->node[14]->sol.a.da[1][1];
+   grdis[cc++] = ele->node[14]->sol.a.da[1][2];
+   grdis[cc++] = ele->node[15]->sol.a.da[1][0];
+   grdis[cc++] = ele->node[15]->sol.a.da[1][1];
+   grdis[cc++] = ele->node[15]->sol.a.da[1][2];
+   for (i=0; i<80; i++) dfie[i] = 0.0;
+   }
+   /*------------------------------------------------*/
+    if (init==7)
+    {/*init==7*/
+      for (ieig=0;ieig<opt->oeig->numeigv;ieig++)
+      {/* loop eigenvalues */
+         cc=0;
+         reig[ieig][cc++] = ele->node[0]->sol.a.da[ieig][0];
+         reig[ieig][cc++] = ele->node[0]->sol.a.da[ieig][1];
+         reig[ieig][cc++] = ele->node[0]->sol.a.da[ieig][2];
+         reig[ieig][cc++] = ele->node[1]->sol.a.da[ieig][0];
+         reig[ieig][cc++] = ele->node[1]->sol.a.da[ieig][1];
+         reig[ieig][cc++] = ele->node[1]->sol.a.da[ieig][2];
+         reig[ieig][cc++] = ele->node[2]->sol.a.da[ieig][0];
+         reig[ieig][cc++] = ele->node[2]->sol.a.da[ieig][1];
+         reig[ieig][cc++] = ele->node[2]->sol.a.da[ieig][2];
+         reig[ieig][cc++] = ele->node[3]->sol.a.da[ieig][0];
+         reig[ieig][cc++] = ele->node[3]->sol.a.da[ieig][1];
+         reig[ieig][cc++] = ele->node[3]->sol.a.da[ieig][2];
+         reig[ieig][cc++] = ele->node[4]->sol.a.da[ieig][0];
+         reig[ieig][cc++] = ele->node[4]->sol.a.da[ieig][1];
+         reig[ieig][cc++] = ele->node[4]->sol.a.da[ieig][2];
+         reig[ieig][cc++] = ele->node[5]->sol.a.da[ieig][0];
+         reig[ieig][cc++] = ele->node[5]->sol.a.da[ieig][1];
+         reig[ieig][cc++] = ele->node[5]->sol.a.da[ieig][2];
+         reig[ieig][cc++] = ele->node[6]->sol.a.da[ieig][0];
+         reig[ieig][cc++] = ele->node[6]->sol.a.da[ieig][1];
+         reig[ieig][cc++] = ele->node[6]->sol.a.da[ieig][2];
+         reig[ieig][cc++] = ele->node[7]->sol.a.da[ieig][0];
+         reig[ieig][cc++] = ele->node[7]->sol.a.da[ieig][1];
+         reig[ieig][cc++] = ele->node[7]->sol.a.da[ieig][2];
+         reig[ieig][cc++] = ele->node[8]->sol.a.da[ieig][0];
+         reig[ieig][cc++] = ele->node[8]->sol.a.da[ieig][1];
+         reig[ieig][cc++] = ele->node[8]->sol.a.da[ieig][2];
+         reig[ieig][cc++] = ele->node[9]->sol.a.da[ieig][0];
+         reig[ieig][cc++] = ele->node[9]->sol.a.da[ieig][1];
+         reig[ieig][cc++] = ele->node[9]->sol.a.da[ieig][2];
+         reig[ieig][cc++] = ele->node[10]->sol.a.da[ieig][0];
+         reig[ieig][cc++] = ele->node[10]->sol.a.da[ieig][1];
+         reig[ieig][cc++] = ele->node[10]->sol.a.da[ieig][2];
+         reig[ieig][cc++] = ele->node[11]->sol.a.da[ieig][0];
+         reig[ieig][cc++] = ele->node[11]->sol.a.da[ieig][1];
+         reig[ieig][cc++] = ele->node[11]->sol.a.da[ieig][2];
+         reig[ieig][cc++] = ele->node[16]->sol.a.da[ieig][0];
+         reig[ieig][cc++] = ele->node[16]->sol.a.da[ieig][1];
+         reig[ieig][cc++] = ele->node[16]->sol.a.da[ieig][2];
+         reig[ieig][cc++] = ele->node[17]->sol.a.da[ieig][0];
+         reig[ieig][cc++] = ele->node[17]->sol.a.da[ieig][1];
+         reig[ieig][cc++] = ele->node[17]->sol.a.da[ieig][2];
+         reig[ieig][cc++] = ele->node[18]->sol.a.da[ieig][0];
+         reig[ieig][cc++] = ele->node[18]->sol.a.da[ieig][1];
+         reig[ieig][cc++] = ele->node[18]->sol.a.da[ieig][2];
+         reig[ieig][cc++] = ele->node[19]->sol.a.da[ieig][0];
+         reig[ieig][cc++] = ele->node[19]->sol.a.da[ieig][1];
+         reig[ieig][cc++] = ele->node[19]->sol.a.da[ieig][2];
+         reig[ieig][cc++] = ele->node[12]->sol.a.da[ieig][0];
+         reig[ieig][cc++] = ele->node[12]->sol.a.da[ieig][1];
+         reig[ieig][cc++] = ele->node[12]->sol.a.da[ieig][2];
+         reig[ieig][cc++] = ele->node[13]->sol.a.da[ieig][0];
+         reig[ieig][cc++] = ele->node[13]->sol.a.da[ieig][1];
+         reig[ieig][cc++] = ele->node[13]->sol.a.da[ieig][2];
+         reig[ieig][cc++] = ele->node[14]->sol.a.da[ieig][0];
+         reig[ieig][cc++] = ele->node[14]->sol.a.da[ieig][1];
+         reig[ieig][cc++] = ele->node[14]->sol.a.da[ieig][2];
+         reig[ieig][cc++] = ele->node[15]->sol.a.da[ieig][0];
+         reig[ieig][cc++] = ele->node[15]->sol.a.da[ieig][1];
+         reig[ieig][cc++] = ele->node[15]->sol.a.da[ieig][2];
+      }/* loop eigenvalues */
+    }/*init==7*/
+   /*------------------------------------------------*/
   }
 /*-------------------------------------  type of element formulation ---*/
   iform   = ele->e.c1->form;/*=1:linear:=2 total lagrangian formulation */
@@ -265,6 +442,23 @@ c1intg(ele,data);
   ste  = 0.;
   stv  = 0.;
   dste = 0.;
+/*------------------------------------ check calculation of mass matrix */
+if (init==7) 
+{
+  krexpo = opt->oeig->rhoks;                 /* exponent in Kreiselmeier*/
+  /*---------------------------------------------------- get density ---*/
+  #ifdef D_OPTIM                   /* include optimization code to ccarat */
+   if(ele->e.c1->elewa->matdata==NULL) c1_getdensity(mat, &density);
+   else density = ele->e.c1[0].elewa[0].matdata[0];   
+  #else
+  c1_getdensity(mat, &density);
+  #endif /* stop including optimization code to ccarat :*/
+  for (i=0; i<60; i++) lmvec[i] = 0.0;
+  amzero(&estiflo_a);
+} 
+/*-------------------------------------------  initialize total mass ---*/
+  totmas = 0.0;
+  emasdg = 0.0;
 /*================================================ integration loops ===*/
 ip = -1;
 for (lr=0; lr<nir; lr++)
@@ -313,6 +507,13 @@ for (lr=0; lr<nir; lr++)
       /*------------------------------------ calculate strain energy ---*/
       if (init==2)
       {
+          if(mat->mattyp==m_nhmfcc)
+          {
+            ste += strain[0]*fac;
+            continue;
+          }
+          
+          
           ste += (F[0]*strain[0] + F[1]*strain[1] + F[2]*strain[2] +
                   F[3]*strain[3] + F[4]*strain[4] + F[5]*strain[5])
                   *fac*0.5;
@@ -323,14 +524,90 @@ for (lr=0; lr<nir; lr++)
       if(init==4)
       {
         for (i=0;i<6;i++) DF[i] = 0.;
+        if(mat->mattyp==m_nhmfcc)
+        {
+          c1_call_matd(ele, mat,DF,strain,DD,g);
+          dste -= strain[0]*fac;
+
+
+        }
+        else
+        {
+          c1_call_matd(ele, mat,DF,strain,DD,g);
+          dste -= (DF[0]*strain[0] + DF[1]*strain[1] + DF[2]*strain[2] +
+                   DF[3]*strain[3] + DF[4]*strain[4] + DF[5]*strain[5])
+                   *fac*0.5;
+        }
+      }
+      /*------------- calculate derivatives for selfadjoint problems ---*/
+      if(init==6)
+      {
+        for (i=0;i<6;i++) DF[i] = 0.;
         c1_call_matd(ele, mat,DF,strain,DD,g);
-        dste -= (DF[0]*strain[0] + DF[1]*strain[1] + DF[2]*strain[2] +
-                 DF[3]*strain[3] + DF[4]*strain[4] + DF[5]*strain[5])
-                 *fac*0.5;
+        /* derivative of internal force vector */
+        c1dfi (DF,fac,bop,disd,nd,dfie);                    
+      }
+      /*--------------- calculate derivatives for frequency problems ---*/
+      if(init==7)
+      {
+       /*- eval. derivatives of stiffness and mass matrix(with dens=1.0)*/
+        for (i=0;i<6;i++) DF[i] = 0.;
+        c1_call_matd(ele, mat,DF,strain,DD,g);
+        c1_keku(estiflo,bop,DD,fac,nd,numeps);
+        
+        density = 1.0;
+        facm = fac * density;
+        totmas += facm;
+        c1cptp (funct,lmvec,NULL,&emasdg,iel,1,facm);
       }
   }/*============================================== end of loop over lt */
   }/*============================================== end of loop over ls */
 }/*================================================ end of loop over lr */
+/*----------------------------------------------------------------------*/
+  /*---------------------------------------------------- mass matrix ---*/
+  if (init==7) 
+  {
+  /*--------------------------------------------------------------------*/
+    fac=3.0*totmas/emasdg;
+    for (i=0; i<nd; i++) lmvec[i] *= fac;
+    
+    for (ieig=0;ieig<opt->oeig->numeigv;ieig++)
+    {/* loop eigenvalues */
+      /*-------------------------------------------- k,s - w|2 * m,s ---*/ 
+      for (i=0; i<(iel*3); i++)
+      {
+        estiflo[i][i] -= opt->oeig->eigv[ieig] * lmvec[i];
+      }
+      /*------------------------- w|2,s = rt * (k,s - w|2 * m,s) * r ---*/ 
+      w2s1[ieig]=0.0;
+      for (i=0; i<(iel*3); i++) hvar1[i]=0.0;
+      for (i=0; i<(iel*3); i++)
+      {
+        for (j=0; j<(iel*3); j++) hvar1[i] += reig[ieig][j]*estiflo[j][i];
+	w2s1[ieig] += hvar1[i]*reig[ieig][i];
+      }
+      /*---------------------------------------------------- scaling ---*/
+      w2s1[ieig]=w2s1[ieig]/opt->oeig->eigs[ieig];
+      /*-------------------------------- teta_s = w|2,s / (8*PI*fie) ---*/ 
+      teta_s1[ieig] =  w2s1[ieig] / (4.0*PI*sqrt(opt->oeig->eigv[ieig]));
+      teta1[ieig]   =  sqrt(opt->oeig->eigv[ieig]) / (2*PI);
+    }
+      /*------------------------- Kreisselmeier-Steinhaeuser (MAUTE) ---*/ 
+      stf = 0.0;
+      if(opt->oeig->numeigv==1)
+      {
+        stf = - teta_s1[0];
+      }
+      else
+      {
+        kro = 0.0; 
+        kru = 0.0; 
+        for (j=0;j<opt->oeig->numeigv;j++) kro -= exp(-krexpo*teta1[j])*teta_s1[j];
+        for (j=0;j<opt->oeig->numeigv;j++) kru += exp(-krexpo*teta1[j])           ;
+        stf = kro / kru;
+      }
+  /*--------------------------------------------------------------------*/
+  }
 /*----------------------------------------------------------------------*/
   switch(init)
   {
@@ -352,6 +629,14 @@ for (lr=0; lr<nir; lr++)
   case 4:
           (*retval) = dste;
   break;
+  case 6:
+          rs = 0.;
+          for (i=0;i<nd;i++) rs += grdis[i] * dfie[i];
+          (*retval) = -1. * rs;
+  break;
+  case 7:
+          (*retval) = stf;
+  break;
   }
 
 /*----------------------------------------------------------------------*/
@@ -362,6 +647,80 @@ dstrc_exit();
 #endif
 return; 
 } /* end of c1_oint */
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | derivative of internal force vector                   al    9/01     |
+ *----------------------------------------------------------------------*/
+void c1dfi(DOUBLE  *F,  /*  force vector integral (stress-resultants)  */
+           DOUBLE   fac, /*  multiplier for numerical integration       */
+           DOUBLE **bop, /*  b-operator matrix                          */
+           DOUBLE *disd, /* displacement derivatives               */
+           INT      nd,  /*  total number degrees of freedom of element */
+           DOUBLE  *fie) /*  internal force vector                      */
+{
+/*----------------------------------------------------------------------*/
+INT i,j,k;
+DOUBLE n11,n22,n33,n12,n23,n31;
+DOUBLE dd11,dd22,dd33,dd12,dd21,dd13,dd23,dd31,dd32;
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_enter("c1dfi");
+#endif
+/*---------------------------- set values of force vector components ---*/
+  n11 = F[0]*fac;
+  n22 = F[1]*fac;
+  n33 = F[2]*fac;
+  n12 = F[3]*fac;
+  n23 = F[4]*fac;
+  n31 = F[5]*fac;
+  
+  dd11 = disd[0] + 1.;
+  dd22 = disd[1] + 1.;
+  dd33 = disd[2] + 1.;
+  dd12 = disd[3];
+  dd21 = disd[4];
+  dd13 = disd[5];
+  dd31 = disd[6];
+  dd23 = disd[7];
+  dd32 = disd[8];
+/*----------------------------- updated lagrange or geometric linear ---*/
+  for (j=2; j<nd; j+=3)
+  {
+    k=j-1;
+    i=j-2;
+    /*
+    fie[i]+=  bop[0][i]*dd11*n11 + bop[1][i]*dd12*n22 + bop[2][i]*dd13*n33 +
+              bop[3][i]*(dd12+dd11)*n12 + 
+              bop[4][i]*(dd13+dd11)*n23 + 
+              bop[5][i]*(dd13+dd12)*n31;
+    fie[k]+=  bop[0][k]*dd21*n11 + bop[1][k]*dd22*n22 + bop[2][k]*dd23*n33 +
+              bop[3][k]*(dd22+dd21)*n12 +
+              bop[4][k]*(dd23+dd21)*n23 +
+              bop[5][k]*(dd23+dd22)*n31;
+    fie[j]+=  bop[0][j]*dd31*n11 + bop[1][j]*dd32*n22 + bop[2][j]*dd33*n33 +
+              bop[3][j]*(dd32+dd31)*n12 +
+              bop[4][j]*(dd33+dd31)*n23 +
+              bop[5][j]*(dd33+dd32)*n31;
+    /**/
+    fie[i]+=  bop[0][i]*n11 + bop[1][i]*n22 + bop[2][i]*n33 +
+              bop[3][i]*n12 + 
+              bop[4][i]*n23 + 
+              bop[5][i]*n31;
+    fie[k]+=  bop[0][k]*n11 + bop[1][k]*n22 + bop[2][k]*n33 +
+              bop[3][k]*n12 +
+              bop[4][k]*n23 +
+              bop[5][k]*n31;
+    fie[j]+=  bop[0][j]*n11 + bop[1][j]*n22 + bop[2][j]*n33 +
+              bop[3][j]*n12 +
+              bop[4][j]*n23 +
+              bop[5][j]*n31;
+  }
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of c1dfi */
 /*----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*/

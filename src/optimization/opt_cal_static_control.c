@@ -75,7 +75,7 @@ if (statvar->linear==1)
 }
 if (statvar->nonlinear==1) 
 {
-  /* stanln(); */
+   opt_stanln(stalact);
 }
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

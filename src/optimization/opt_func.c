@@ -95,11 +95,19 @@ DOUBLE constraint;
 dstrc_enter("func");
 #endif
 /*----------------------------------------------------------------------*/
-(*m)=0;
+  *m=NULL;
 /*---------------- update all arrays with actual values of variables ---*/
   optupd(0);
+/*------------------------------------------ eigenfrequency analysis ---*/
+  if(opt->objective==oj_frequency)
+  {
+    calfrq(0);
+  }
 /*-------------------------------------------------- linear analysis ---*/
-  opt_stalin(calsta_solve);
+  else
+  {
+    opt_calsta(calsta_solve);
+  }  
 /*------------------------- evaluate objective and constraint values ---*/
   optobj(&objective);             
 
@@ -333,8 +341,23 @@ dstrc_enter("optupd");
           }
         }
       }
+    /*-----------------------------*/
+      if(opt->ovar[i].ovatt==eleofdesofmat)
+      {
+        for (j=0; j<actfield->dis[0].numele; j++)
+        {
+          actele = &(actfield->dis[0].element[j]);
+          if(actele->mat==opt->ovar[i].objId)
+          {
+            if(actele->optdata==NULL) continue; /* element does not take part in opt. */
+            if(actele->optdata[0]==0) continue; /* position in variable vector        */
+            svec[actele->optdata[0]-1] = opt->strat.fsd->var[actele->optdata[0]-1];
+            cc++;
+          }
+        }
+      }
+    /*-----------------------------*/
     }
-    /*********/
     
     calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,&container,action);
 
@@ -428,6 +451,11 @@ dstrc_enter("optobj");
   objective[0] = 0.0; /* only one value, right now */
   container.fieldtyp  = actfield->fieldtyp;
 /*----------------------------------------------------------------------*/
+  if(opt->objective==oj_frequency)
+  {
+    
+    objeig(&objective[0]); 
+  }
   if(opt->objective == oj_strain_energy)
   {
     *action = calc_struct_ste;
@@ -461,6 +489,60 @@ dstrc_exit();
 return;
 } /* end of optobj */
 
+/*----------------------------------------------------------------------*
+ |                                                      a.lipka 5/01    |
+ | create objective function with eigen frequencies or buckling         |
+ *----------------------------------------------------------------------*/
+void objeig(double *objctval)
+{
+/*----------------------------------------------------------------------*/
+INT ieig;
+DOUBLE val, big, objval, fac, objsum, objct, frequ;
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_enter("objeig");
+#endif
+/*---------------------------------- create objective function value ---*/
+/*---------------------------------------- KREISSELMEIER-STEINHAUSER ---*/
+  val = opt->oeig->rhoks; 
+  big = 1.0e+99;
+/*----------------------------------------------------------------------*/
+  for (ieig=0;ieig<opt->oeig->numeigv;ieig++)
+  {/* loop eigenvalues */
+    objval = sqrt(opt->oeig->eigv[ieig])/(2.*PI);
+    fac    = -1.0;
+    if (big>(fac*objval)) big = fac*objval;
+  }/* loop eigenvalues */
+/*----------------------------------------------------------------------*/
+  objsum=0.0;
+  if(val*big<log(1.0e-30))
+  {
+    val = log(1.0e-30) / big;
+    printf("modifing rhoks, new rhoks = %E\n",val);
+    opt->oeig->rhoks = val; 
+  } 
+  for (ieig=0;ieig<opt->oeig->numeigv;ieig++)
+  {/* loop eigenvalues */
+    objval  = sqrt(opt->oeig->eigv[ieig])/(2.*PI);
+    fac     = -1.0;          
+    objsum += exp(val*fac*objval);   
+  }/* loop eigenvalues */
+  objct = 1.0/val*log(objsum);                  
+/*----------------------------------------- print nature frequencies ---*/
+  for (ieig=0;ieig<opt->oeig->numeigv;ieig++)
+  {/* loop eigenvalues */
+    frequ = sqrt(opt->oeig->eigv[ieig])/(2*PI);
+    printf("%6d. NATURE FREQUENCY : %E\n",ieig+1,frequ);
+  }/* loop eigenvalues */
+/*-------------------------------- store objective function value(s) ---*/
+  (*objctval) = objct;
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of objeig */
+/*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 #endif /* stop including optimization code to ccarat :*/
 /*----------------------------------------------------------------------*/

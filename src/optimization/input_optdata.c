@@ -234,6 +234,17 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
         frdouble("SCL"  ,&(opt->ovar[ccdv].scva  ) ,&ierr); 
         ccdv++;
       }
+      frint(   "ELEofDesofMAT",&(idum) ,&ierr); 
+      if(ierr==1)
+      { /* ELEofMAT 1 TYPE DENS  DL 1.0E-1  DU 1.0E0 SCL 1. */
+        opt->ovar[ccdv].objId  =  idum;
+        opt->ovar[ccdv].ovatt  =  eleofdesofmat;
+        opt->ovar[ccdv].numvar =  1;
+        frdouble("DL"   ,&(opt->ovar[ccdv].blower) ,&ierr); 
+        frdouble("DU"   ,&(opt->ovar[ccdv].bupper) ,&ierr); 
+        frdouble("SCL"  ,&(opt->ovar[ccdv].scva  ) ,&ierr); 
+        ccdv++;
+      }
     }
   }
 /*-------------------------------------- global equality constraints ---*/

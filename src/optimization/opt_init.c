@@ -58,6 +58,19 @@ extern struct _STATIC_VAR  *statvar;
  | defined in global_control.c
  *----------------------------------------------------------------------*/
 extern struct _MATERIAL  *mat;
+/*----------------------------------------------------------------------*
+ |                                                          al 08/02    |
+ | pointer to allocate eigensolution variables                          |
+ | dedfined in global_control.c                                         |
+ | struct _ALLEIG       *alleig;                                        |
+ *----------------------------------------------------------------------*/
+extern ALLEIG              *alleig;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate design if needed                                 |
+ | defined in global_control.c                                          |
+ *----------------------------------------------------------------------*/
+extern struct _DESIGN *design;
 
 
 /*----------------------------------------------------------------------*
@@ -75,6 +88,9 @@ MATERIAL    *actmat;
 /*----------------------------------------------------------------------*/
   INT i, j;
   INT numvar;                       /* number of optimization variables */
+  INT dId, desmat;
+  INT *dsurfopt;
+  INT *dvolopt;
   DOUBLE dens;
   ELEMENT *actele;                  /* active element                   */
 /*----------------------------------------------------------------------*/
@@ -90,10 +106,17 @@ MATERIAL    *actmat;
   *action = calc_struct_opt_init;
   calinit(actfield,actpart,action,&container);
 /*------------------------------------------------ initialize solver ---*/
-  if (statvar->linear==1) 
+  if(opt->objective==oj_frequency)
+  {
+    calfrq(1);
+    opt->oeig = (OEIG*)CCACALLOC(1,sizeof(OEIG));
+    opt->oeig->numeigv = alleig->nroot;  /* number of eigenvalues in opt.process */
+    opt->oeig->rhoks   = 5.0;            /* KREISSELMEIER-STEINHAUSER            */
+  }
+  else
   {
     opt_calsta(calsta_init);
-  }
+  }  
 /*--------------- initialize element arrays for sensitivity analysis ---*/        
 /*----------------------------------------------- number of opt.var. ---*/
   numvar=0;
@@ -108,12 +131,88 @@ MATERIAL    *actmat;
          {
            numvar++;
            /* initialize element struct for opti. */
-           actele->optdata = (int*)CCACALLOC(2,sizeof(int));
+           actele->optdata = (INT*)CCACALLOC(2,sizeof(INT));
          }
       }
     
     }
   }
+  /*-----------------------------------------------*/
+  desmat = 0;
+  for (i=0; i<opt->numvar; i++) if(opt->ovar[i].ovatt==eleofdesofmat) desmat = 1;
+  /*-----------------------------------------------*/
+  if(desmat > 0)
+  {/*desmat*/
+  /*-----------------------------------------------*/
+  if(design->ndsurf> 0 )
+  {
+    dsurfopt = (INT*)CCACALLOC(design->ndsurf,sizeof(INT));
+    for (i=0; i<design->ndsurf; i++) dsurfopt[i] = 0;
+  }
+  if(design->ndvol > 0 )
+  {
+    dvolopt  = (INT*)CCACALLOC(design->ndvol ,sizeof(INT));
+    for (i=0; i<design->ndvol ; i++)  dvolopt[i] = 0;
+  }
+  /*-----------------------------------------------*/
+  for (i=0; i<opt->numvar; i++)
+  {
+    if(opt->ovar[i].ovatt==eleofdesofmat)
+    {
+      /*---------*/
+      for (j=0; j<actfield->dis[0].numele; j++)
+      {
+         actele = &(actfield->dis[0].element[j]);
+         if(actele->mat==opt->ovar[i].objId)
+         {
+           /* initialize element struct for opti. */
+           actele->optdata = (INT*)CCACALLOC(2,sizeof(INT));
+           
+           if(actele->eltyp==el_wall1)
+           {
+             dId = actele->g.gsurf[0].dsurf->Id;
+             dsurfopt[dId] = 1;
+           }
+           if(actele->eltyp==el_brick1)
+           {
+             dId = actele->g.gvol[0].dvol->Id;
+             dvolopt[dId] = 1;
+           }
+         
+         }
+      }
+      /*---------*/
+      /*
+      for (j=0; j<design->ndsurf; j++) if(dsurfopt[dId]==1) numvar++;
+      for (j=0; j<design->ndvol ; j++) if( dvolopt[dId]==1) numvar++;
+      /*---------*/
+      /* position in variable vector */
+      for (j=0; j<design->ndsurf; j++)
+      {
+       if(dsurfopt[j]==1)
+       {
+         numvar++;
+         dsurfopt[j]=numvar;
+       }
+      }
+      for (j=0; j<design->ndvol; j++)
+      {
+       if(dvolopt[j]==1)
+       {
+         numvar++;
+         dvolopt[j]=numvar;
+       }
+      }
+      
+      /*---------*/
+    }
+  }
+  /*-----------------------------------------------*/
+  /*
+  if(design->ndsurf> 0 ) CCAFREE(dsurfopt);
+  if(design->ndvol > 0 ) CCAFREE(dvolopt );
+  /*-----------------------------------------------*/
+  }/*desmat*/
 /*------------------------------------------------- initialize nlpql ---*/
   if (opt->strategy==os_nlp)
   {
@@ -123,11 +222,11 @@ MATERIAL    *actmat;
   {
     opt->strat.fsd->numvar  = numvar;
     
-    opt->strat.fsd->grdobj  = (double*)CCACALLOC(numvar,sizeof(double));
-    opt->strat.fsd->grdcon  = (double*)CCACALLOC(numvar,sizeof(double));
-    opt->strat.fsd->var     = (double*)CCACALLOC(numvar,sizeof(double)); 
-    opt->strat.fsd->resu    = (double*)CCACALLOC(numvar,sizeof(double));
-    opt->strat.fsd->resl    = (double*)CCACALLOC(numvar,sizeof(double)); 
+    opt->strat.fsd->grdobj  = (DOUBLE*)CCACALLOC(numvar,sizeof(DOUBLE));
+    opt->strat.fsd->grdcon  = (DOUBLE*)CCACALLOC(numvar,sizeof(DOUBLE));
+    opt->strat.fsd->var     = (DOUBLE*)CCACALLOC(numvar,sizeof(DOUBLE)); 
+    opt->strat.fsd->resu    = (DOUBLE*)CCACALLOC(numvar,sizeof(DOUBLE));
+    opt->strat.fsd->resl    = (DOUBLE*)CCACALLOC(numvar,sizeof(DOUBLE)); 
     for (i=0; i<numvar; i++)
     {
       opt->strat.fsd->grdobj[i]  =  0.;
@@ -162,6 +261,15 @@ MATERIAL    *actmat;
            case m_stvenpor:/* porous linear elastic ---*/
               dens = actmat->m.stvenpor->density;
            break;
+           case m_mfoc:/* Porous open cell ST.VENANT-KIRCHHOFF-material */
+              dens = actmat->m.mfoc->dens;
+           break;
+           case m_mfcc:/* Porous closed cell ST.VENANT-KIRCHHOFF-material */
+              dens = actmat->m.mfcc->dens;
+           break;
+           case m_nhmfcc:/* foam, closed cell, based on modified Neo Hook */
+              dens = actmat->m.nhmfcc->dens;
+           break;
            default:
               dserror("Ilegal typ of material");
            break;
@@ -182,6 +290,78 @@ MATERIAL    *actmat;
     
     }
   }
+  /*--------------------------------------------------------------------*/
+  if(desmat > 0)
+  {/*desmat*/
+  /*-----------------------------------------------*/
+  numvar=0;
+  for (i=0; i<opt->numvar; i++)
+  {
+    if(opt->ovar[i].ovatt==eleofdesofmat)
+    {
+      for (j=0; j<actfield->dis[0].numele; j++)
+      {
+         actele = &(actfield->dis[0].element[j]);
+         if(actele->mat==opt->ovar[i].objId)
+         {
+           actmat = &(mat[actele->mat-1]);
+
+           switch(actmat->mattyp)
+           {
+           case m_stvenant:/* ST.VENANT-KIRCHHOFF-material */
+              dens = actmat->m.stvenant->density;
+           break;
+           case m_mfoc:/* Porous open cell ST.VENANT-KIRCHHOFF-material */
+              dens = actmat->m.mfoc->dens;
+           break;
+           case m_mfcc:/* Porous closed cell ST.VENANT-KIRCHHOFF-material */
+              dens = actmat->m.mfcc->dens;
+           break;
+           case m_neohooke:/* kompressible neo-hooke */
+              dens = actmat->m.neohooke->density;
+           break;
+           case m_stvenpor:/* porous linear elastic ---*/
+              dens = actmat->m.stvenpor->density;
+           break;
+           default:
+              dserror("Ilegal typ of material");
+           break;
+           }
+           /*----------------------------------------*/
+           if(actele->eltyp==el_wall1)
+           {
+             /* element gets position in variable vector */
+             dId = actele->g.gsurf[0].dsurf->Id;
+             actele->optdata[0] = dsurfopt[dId];
+             /* fill variable vector with initial values */
+             opt->strat.fsd->var[ dsurfopt[dId]-1] = dens;
+             opt->strat.fsd->resu[dsurfopt[dId]-1] = opt->ovar[i].bupper;
+             opt->strat.fsd->resl[dsurfopt[dId]-1] = opt->ovar[i].blower;
+           }
+           if(actele->eltyp==el_brick1)
+           {
+             /* element gets position in variable vector */
+             dId = actele->g.gvol[0].dvol->Id;
+             actele->optdata[0] = dvolopt[dId];
+             /* fill variable vector with initial values */
+             opt->strat.fsd->var[ dvolopt[dId]-1] = dens;
+             opt->strat.fsd->resu[dvolopt[dId]-1] = opt->ovar[i].bupper;
+             opt->strat.fsd->resl[dvolopt[dId]-1] = opt->ovar[i].blower;
+           }
+           /* and material Id of porous material */
+           actele->optdata[1] = opt->ovar[i].objId;
+         }
+      }
+    
+    }
+  }
+  
+  /*-----------------------------------------------*/
+  if(design->ndsurf> 0 ) CCAFREE(dsurfopt);
+  if(design->ndvol > 0 ) CCAFREE(dvolopt );
+  /*-----------------------------------------------*/
+  }/*desmat*/
+  /*--------------------------------------------------------------------*/
 /*-------------------- initialize upodate of optimization variables  ---*/
   optupd(1); 
 /*-------------------- initialize evaluation of equality constraints ---*/
