@@ -62,16 +62,19 @@ int    lasthandle,nrecords;
    {
 /*--------------------------------------- check for visualisation mode */ 
 /* visulisation mode is called by:
-   cca.exe '$$vis2$$' input.dat output */
+   cca.exe input.dat output0 vis2 */
      genprob.visual=0;
-     vismode=argv[1];
-     length = strlen(argv[1]);
-     if (length == 8)
+     if ( argc > 3)
      {
-        if (strncmp("$$vis2$$",vismode,length)==0) genprob.visual+=2;
-	if (strncmp("$$VIS2$$",vismode,length)==0) genprob.visual+=2;
-	if (strncmp("$$vis3$$",vismode,length)==0) genprob.visual+=3;
-	if (strncmp("$$VIS3$$",vismode,length)==0) genprob.visual+=3;
+       vismode=argv[3];
+       length = strlen(argv[3]);
+       if (length == 4)
+       {
+         if (strncmp("vis2",vismode,length)==0) genprob.visual=2;
+         if (strncmp("VIS2",vismode,length)==0) genprob.visual=2;
+         if (strncmp("vis3",vismode,length)==0) genprob.visual=3;
+         if (strncmp("VIS3",vismode,length)==0) genprob.visual=3;
+       }
      }
      if (genprob.visual) goto visualisation ;
 /*-----------------------------get input file name and open input file */
@@ -134,6 +137,21 @@ if (par.myrank==0)
      }
     if (par.myrank==0)
     printf("errors are reported to     %s\n",allfiles.outputfile_name);
+/*-----------------------------------------------------open .mon file */
+if (par.myrank==0)
+{     
+     strncpy(charpointer,".mon",4);
+     if ( (allfiles.out_mon=fopen(allfiles.outputfile_name,"w"))==NULL)
+     {
+        printf("Opening of monitoring file .mon failed\n");
+#ifdef PARALLEL 
+        MPI_Finalize();
+#endif 
+        exit(1);
+     }
+    printf("monitoring is written to   %s\n",allfiles.outputfile_name);
+} 
+
 /*------------------------------------------------------open .pss file */
 /* is opened on all procs */     
 /*-------------------------------------------------- check for restart */
@@ -240,7 +258,7 @@ if (genprob.visual>0)
 /*---------------------------- at the moment the informations of the 
   input file is used for visualisation with Visual 2 / Visual 3       */
 /*-----------------------------get input file name and open input file */
-      allfiles.inputfile_name=argv[2];
+      allfiles.inputfile_name=argv[1];
       if ( (allfiles.in_input=fopen(allfiles.inputfile_name,"r"))==NULL)
       {
          printf("Opening of input file %s failed\n",allfiles.inputfile_name);
@@ -248,8 +266,8 @@ if (genprob.visual>0)
       }
       printf("input is read from           %s\n",allfiles.inputfile_name);   
 /*------------------------------------- kenner of pss file and open it */
-     allfiles.vispsslength=strlen(argv[3]);
-     allfiles.vispssfile_kenner=argv[3];    
+     allfiles.vispsslength=strlen(argv[2]);
+     allfiles.vispssfile_kenner=argv[2];    
      strcpy(allfiles.vispssfile_name,allfiles.vispssfile_kenner);
      charpointer=allfiles.vispssfile_name+strlen(allfiles.vispssfile_kenner);
      charpointer = allfiles.vispssfile_name+strlen(allfiles.vispssfile_name); 
