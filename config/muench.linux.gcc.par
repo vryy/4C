@@ -14,8 +14,16 @@ LD=$MPIDIR/bin/mpicc
 INCLUDEDIRS="-I$MPIDIR/include -I/lnm/include"
 LIBDIRS="-L/lnm/lib"
 
+# aztec
+AZTEC_INC=""
+AZTEC_LIB="-laztec"
+
+# spooles
+SPOOLES_INC=""
+SPOOLES_LIB="-lspoolesMPI -lspooles"
+
 #LIBS="-lc -lm -lg2c -llapack -lgoto_p4_512-r0.6 -lxerbla -lmetis -laztec -lspoolesMPI -lspooles"
-LIBS="-lc -lm -lg2c -llapack -lblas -lmetis -laztec -lspoolesMPI -lspooles"
+LIBS="-lc -lm -lg2c -llapack -lblas -lmetis"
 
 CFLAGS="-Wall -ansi"
 FFLAGS="-Wall"

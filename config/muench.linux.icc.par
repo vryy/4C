@@ -16,11 +16,15 @@ LD=$F77
 INCLUDEDIRS="-I$MPIDIR/include -I$MKLDIR/include -I/lnm/include"
 LIBDIRS="-L$MPIDIR/lib -L$MKLDIR/lib/32 -L/lnm/lib"
 
-LIBS="-lc -lm \
-    -lmkl_lapack64 -lmkl -lguide \
-    -lmetis \
-    -laztec \
-    -lspoolesMPI -lspooles"
+# aztec
+AZTEC_INC=""
+AZTEC_LIB="-laztec"
+
+# spooles
+SPOOLES_INC=""
+SPOOLES_LIB="-lspoolesMPI -lspooles"
+
+LIBS="-lc -lm -lmkl_lapack64 -lmkl -lguide -lmetis"
 
 CFLAGS="-Wall -ansi -w2 -O3 -tpp7 -ip -p -vec_report3 -opt_report_levelmin"
 FFLAGS="-Wall"

@@ -16,7 +16,15 @@ LD="$CC"
 INCLUDEDIRS="-I$MPIDIR/include -I/usr/local/include"
 LIBDIRS="-L/usr/local/lib/hpux32 -L/usr/local/lib -L/opt/mlib/lib/hpux32"
 
-LIBS="-lm -lg2c -llapack -lmetis -laztec -lspoolesMPI -lspooles"
+# aztec
+AZTEC_INC=""
+AZTEC_LIB="-laztec"
+
+# spooles
+SPOOLES_INC=""
+SPOOLES_LIB="-lspoolesMPI -lspooles"
+
+LIBS="-lm -lg2c -llapack -lmetis"
 
 CFLAGS="-Wall -ansi -D_HPUX_SOURCE"
 FFLAGS="-Wall"

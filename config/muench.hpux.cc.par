@@ -14,7 +14,15 @@ LD=$F77
 INCLUDEDIRS="-I$MPIDIR/include -I/usr/local/include"
 LIBDIRS="-L/usr/local/lib/hpux32 -L/usr/local/lib -L/opt/mlib/lib/hpux32"
 
-LIBS="-llapack -lmetis -laztec -lspoolesMPI -lspooles"
+# aztec
+AZTEC_INC=""
+AZTEC_LIB="-laztec"
+
+# spooles
+SPOOLES_INC=""
+SPOOLES_LIB="-lspoolesMPI -lspooles"
+
+LIBS="-llapack -lmetis"
 
 CFLAGS=
 FFLAGS=

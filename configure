@@ -54,6 +54,7 @@ END { print defs }
 #echo ">>>" $DEFINES "<<<"
 #exit
 
+# the debug version needs special treatment
 if grep '^DEBUG' "$2" 2>&1 > /dev/null ; then
     DEBUGFLAG=-g
     PROGRAMNAME=$PROGRAMNAME.debg
@@ -61,8 +62,29 @@ else
     DEBUGFLAG=
 fi
 
+# a parallel version needs one more compile time flag
 if [ x$PARALLEL = "xyes" ] ; then
     DEFINES=" -DPARALLEL $DEFINES"
+fi
+
+# check the different solvers
+
+# aztec
+if grep '^AZTEC_PACKAGE' "$2" 2>&1 > /dev/null ; then
+    if [ "x$SPOOLES_LIB" = "x" ] ; then
+        echo $0: Warning: Variable AZTEC_LIB undefined but AZTEC_PACKAGE requested.
+    fi
+    LIBS="$LIBS $AZTEC_LIB"
+    INCLUDEDIRS="$INCLUDEDIRS $AZTEC_INC"
+fi
+
+# spooles
+if grep '^SPOOLES_PACKAGE' "$2" 2>&1 > /dev/null ; then
+    if [ "x$SPOOLES_LIB" = "x" ] ; then
+        echo $0: Variable SPOOLES_LIB undefined but SPOOLES_PACKAGE requested.
+    fi
+    LIBS="$LIBS $SPOOLES_LIB"
+    INCLUDEDIRS="$INCLUDEDIRS $SPOOLES_INC"
 fi
 
 # build the Makefile

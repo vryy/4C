@@ -11,8 +11,16 @@ LD=f77
 INCLUDEDIRS="-I$MPIDIR/include -I/usr/local/include"
 LIBDIRS="-L/usr/local/lib/hpux32 -L/usr/local/lib -L/opt/mpi/lib/hpux32 -L/opt/mlib/lib/hpux32"
 
+# aztec
 # mpi is needed to satisfy aztec dependencies. It won't be called.
-LIBS="-llapack -lmetis -laztec -lspoolesMPI -lspooles -lmpi"
+AZTEC_INC=""
+AZTEC_LIB="-laztec -lmpi"
+
+# spooles
+SPOOLES_INC=""
+SPOOLES_LIB="-lspoolesMPI -lspooles"
+
+LIBS="-llapack -lmetis"
 
 CFLAGS=
 FFLAGS=
