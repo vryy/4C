@@ -113,36 +113,13 @@ actintra->intra_nprocs   = 1;
 if (actintra->intra_fieldtyp != structure) goto end;
 /*------------------------------------------------ typ of global matrix */
 array_typ   = actsolv->sysarray_typ[actsysarray];
-switch(array_typ)
-{
-case mds:/*--------------------------------- system array is mds matrix */
-   numeq       = actsolv->sysarray[actsysarray].mds->numeq;
-   numeq_total = numeq;
-break;
-case msr:/*--------------------------------- system array is msr matrix */
-   numeq       = actsolv->sysarray[actsysarray].msr->numeq;
-   numeq_total = actsolv->sysarray[actsysarray].msr->numeq_total;
-break;
-case parcsr:/*--------------------------- system array is parcsr matrix */
-   numeq       = actsolv->sysarray[actsysarray].parcsr->numeq;
-   numeq_total = actsolv->sysarray[actsysarray].parcsr->numeq_total;
-break;
-case ucchb:/*----------------------------- system array is ucchb matrix */
-   numeq       = actsolv->sysarray[actsysarray].ucchb->numeq;
-   numeq_total = actsolv->sysarray[actsysarray].ucchb->numeq_total;
-break;
-case dense:/*----------------------------- system array is dense matrix */
-   numeq       = actsolv->sysarray[actsysarray].dense->numeq;
-   numeq_total = actsolv->sysarray[actsysarray].dense->numeq_total;
-break;
-case rc_ptr:/*----------------------- system array is row/column matrix */
-   numeq       = actsolv->sysarray[actsysarray].rc_ptr->numeq;
-   numeq_total = actsolv->sysarray[actsysarray].rc_ptr->numeq_total;
-break;
-default:
-   dserror("unknown type of global matrix");
-break;
-}
+/*---------------------------- get global and local number of equations */
+/*   numeq equations are on this proc, the total number of equations is */
+/*                                                          numeq_total */
+solserv_getmatdims(actsolv->sysarray[actsysarray],
+                   actsolv->sysarray_typ[actsysarray],
+                   &numeq,
+                   &numeq_total);
 /*---------------------------------- number of rhs and solution vectors */
 actsolv->nrhs=2;
 actsolv->nsol=2;
