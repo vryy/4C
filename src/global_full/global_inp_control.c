@@ -245,8 +245,12 @@ if (genprob.probtyp==prb_fsi) fsi_createfsicoup();
 #ifdef D_FLUID
 /*----------------- inherit the freesurface condition inside the design 
    condition is transformed into a dirichlet condition for ale fiedl    */
-if (genprob.numff>=0 && genprob.numfld>1 && genprob.probtyp!=prb_twophase)
-  fluid_createfreesurf();
+if ((genprob.probtyp==prb_fluid && genprob.numfld>=2) || genprob.probtyp==prb_fsi) 
+   fluid_createfreesurf();
+
+if (genprob.probtyp==prb_fluid && genprob.numfld>=2)
+   fluid_createpseudofsi();
+
 /*------ inherit stabilisation condition from design to the elements ---*/
 for (i=0; i<genprob.numfld; i++)
 {
@@ -272,22 +276,24 @@ for (i=0; i<genprob.numfld; i++)
 for (j=0; j<field[i].ndis; j++)
 inherit_design_dis_couple(&(field[i].dis[j]));
 #ifdef D_FSI
-/*--------------------------------------------- do we really need this? 
-  I don't think so - check it!!!                                        */
-if (genprob.probtyp==prb_fsi) 
+/*---- set pointers in the discretisations to the design fsi conditions */
+if (genprob.probtyp==prb_fluid || genprob.probtyp==prb_fsi) 
 {   
    for (i=0; i<genprob.numfld; i++)
-   for (j=0; j<field[i].ndis; j++)
-   inherit_design_dis_fsicouple(&(field[i].dis[j]));  
+      for (j=0; j<field[i].ndis; j++)
+         inherit_design_dis_fsicouple(&(field[i].dis[j]));  
 }
 #endif
-/*------ set pointers n the discretisation to the freesurface condition */
+/*------ set pointers in the discr. to the design freesurface condition */
 #ifdef D_FLUID
 if (genprob.probtyp==prb_fluid || genprob.probtyp==prb_fsi)
 {
-  for (i=0; i<genprob.numfld; i++)
-    for (j=0; j<field[i].ndis; j++)
-      inherit_design_dis_freesurf(&(field[i].dis[j]));
+   for (i=0; i<genprob.numfld; i++)
+      for (j=0; j<field[i].ndis; j++)
+      {
+         inherit_design_dis_freesurf(&(field[i].dis[j]));
+         inherit_design_dis_slipdirich(&(field[i].dis[j]));
+      }
 }
 #endif
 
