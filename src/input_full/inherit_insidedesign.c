@@ -81,9 +81,10 @@ for (i=0; i<design->ndvol; i++)
       /*------ inherit the dirichlet condition from actdvol to actdsurf */
       actdsurf->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
       if (!actdsurf->dirich) dserror("Allocation of memory failed");
-      actdsurf->dirich->curve = actdvol->dirich->curve;
+/*      actdsurf->dirich->curve = actdvol->dirich->curve;*/
       am_alloc_copy(&(actdvol->dirich->dirich_onoff),&(actdsurf->dirich->dirich_onoff));  
       am_alloc_copy(&(actdvol->dirich->dirich_val),&(actdsurf->dirich->dirich_val));  
+      am_alloc_copy(&(actdvol->dirich->curve),&(actdsurf->dirich->curve));
    }/* loop j over dsurfs */
 }/* loop i over dvols */
 /*----------------------------------------------------------------------*/
@@ -119,9 +120,10 @@ for (i=0; i<design->ndsurf; i++)
       /*------ inherit the dirichlet condition from actdsurf to actdline */
       actdline->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
       if (!actdline->dirich) dserror("Allocation of memory failed");
-      actdline->dirich->curve = actdsurf->dirich->curve;
+/*      actdline->dirich->curve = actdsurf->dirich->curve;*/
       am_alloc_copy(&(actdsurf->dirich->dirich_onoff),&(actdline->dirich->dirich_onoff));  
       am_alloc_copy(&(actdsurf->dirich->dirich_val),&(actdline->dirich->dirich_val));  
+      am_alloc_copy(&(actdsurf->dirich->curve),&(actdline->dirich->curve));
    }/* loop j over dlines */
 }/* loop i over dsurfs */
 /*----------------------------------------------------------------------*/
@@ -157,9 +159,10 @@ for (i=0; i<design->ndline; i++)
       /*------ inherit the dirichlet condition from actdline to actdnode */
       actdnode->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
       if (!actdnode->dirich) dserror("Allocation of memory failed");
-      actdnode->dirich->curve = actdline->dirich->curve;
+/*      actdnode->dirich->curve = actdline->dirich->curve;*/
       am_alloc_copy(&(actdline->dirich->dirich_onoff),&(actdnode->dirich->dirich_onoff));  
       am_alloc_copy(&(actdline->dirich->dirich_val),&(actdnode->dirich->dirich_val));  
+      am_alloc_copy(&(actdline->dirich->curve),&(actdnode->dirich->curve));
    }/* loop j over dnodes */
 }/* loop i over dlines */
 /*----------------------------------------------------------------------*/
