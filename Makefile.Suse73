@@ -22,6 +22,7 @@ SRC       =  /home/<name>/wdir/ccarat/
 # -DAZUSA     defines for compilation on azusa.hww.de
 # -DHPUX10    defines for compilation on HPUX10
 # -DHPUX11    defines for compilation on HPUX11
+# -DHPUXITA   defines compilation for Itanium2 running HPUX11i
 # 
 # -DMLIB_PACKAGE       defines interface to solver library MLIB (HPUX11, sequentiell)
 # -DHYPRE_PACKAGE      defines interface to solver library HYPRE

@@ -1,36 +1,27 @@
-#
 #--------------------------------------------------------------------
-#    Makefile CARAT (parallel and sequentiel)
-#--------------------------------------------------------------------
-#
-# ! pfad der unterverzeichnisse in den debugger aufnehmen !
-#
-#
-#
-# Ausschalten der Ausgabe von Kommandos durch Make
-.SILENT:
-#
-#--------------------------------------------------------------------
-#
-# enter path to your source directory here
+# include path to the source
 #--------------------------------------------------------------------
 include ./Makefile.personal_path
 #
+# Ausschalten der Ausgabe von Kommandos durch Make
+#.SILENT:
 #
 #--------------------------------------------------------------------
+#
 # list of possible defines:
-#--------------------------------------------------------------------
 #  
 # -DD_FLUID      defines general fluid problem
 # -DD_BRICK1     defines element brick1
 # -DD_SHELL8     defines element shell8
 # -DD_SHELL9     defines element shell9
+# -DS8CONTACT    defines contact algorithms for shell8 contact
 # -DD_FLUID2     defines element fluid2
 # -DD_FLUID2_PRO defines element fluid2 with projection method
 # -DD_FLUID3     defines element fluid3
 # -DD_ALE        defines element ale
 # -DD_WALL1      defines element wall1
 # -DD_OPTIM      defines optimization
+# -DD_CONTACT    defines contact algos 2D (with wall element)
 #
 # -DDEBUG     defines debug mode: routine and array tracing 
 # -DPARALLEL  defines parallel version of programm
@@ -43,126 +34,103 @@ include ./Makefile.personal_path
 # -DHPUXITA   defines compilation for Itanium2 running HPUX11i
 # 
 # -DMLIB_PACKAGE       defines interface to solver library MLIB (HPUX11, sequentiell)
-# -DHYPRE_PACKAGE      defines interface to solver library HYPRE
+# -DHYPRE_PACKAGE      defines interface to solver library HYPRE (not yet impl.)
 # -DAZTEC_PACKAGE      defines interface to solver library AZTEC
 # -DPARSUPERLU_PACKAGE defines interface to solver library ParSuperLU
-# -DSUPERLU_PACKAGE    defines interface to solver library SuperLU (not impl. yet)
+# -DSUPERLU_PACKAGE    defines interface to solver library SuperLU 
 # -DMUMPS_PACKAGE      defines interface to solver library Mumps (only in parallel HPUX11)
 # -DUMFPACK            defines interface to solver library Umfpack
-# -DSPOOLES_PACKAGE    defines interface to solver library Spooles (only in parallel)
-#
-# -DVISUAL2_PACKAGE    defines visualisation tool VISUAL2 (only in seriell HPUX10)
-#                      (add -lVisual2 -lX11 to INCLUEDS!!!)
+# -DSPOOLES_PACKAGE    defines interface to solver library Spooles (only in parallel HPUX11)
 #--------------------------------------------------------------------
-# switch between sequentiell and parallel compilation by uncommenting 
-# the approbiate compilers:
-#--------------------------------------------------------------------
-#
-# sequentiell part
-#--------------------------------------------------------------------
-PROGRAM_NAME  = cca_seq_10.20.
-FXX     = f77
-CCX     = cc
-LDX     = cc
-PFL     = -DHPUX10 -DD_FLUID -DD_FLUID2 -DD_FLUID3 -DD_BRICK1 -DD_ALE -DD_SHELL8 \
-          -DD_SHELL9 -DD_WALL1 -DD_OPTIM -DAZTEC_PACKAGE -DUMFPACK 
-AZTEC   = -laztec_seriell21
-UMFPACK = -lumfpack40_hpux10_32
-SPOOLES = 
-##--------------------------------------------------------------------
-#
+#====================================================================
 # parallel part
-#--------------------------------------------------------------------
-#PROGRAM_NAME  = cca_par_10.20.
-#FXX     = /opt/mpi/bin/mpif77
-#CCX     = /opt/mpi/bin/mpicc
-#LDX     = /opt/mpi/bin/mpicc
-#PFL     = -DPARALLEL -DHPUX10 -DD_FLUID -DD_FLUID2 -DD_FLUID3 -DD_BRICK1 -DD_ALE \
-#          -DD_SHELL8 -DD_SHELL9 -DD_WALL1 -DD_OPTIM -DAZTEC_PACKAGE -DUMFPACK \
-#          -DSPOOLES_PACKAGE  
-#AZTEC   = -laztec_par21
-#UMFPACK = -lumfpack40_hpux10_32
-#SPOOLES = -lspoolesMPI_10.20  -lspooles_10.20
-#
-#--------------------------------------------------------------------
-#
-CC	 = $(CCX)
-LD       = $(CCX)
-RM	 = /bin/rm -f
-
-#--------------------------------------------------------------------
-# switch between fast and debug compilation by uncommenting 
-# the approbiate flags:
-#------------------------------------------------ this is debug-32bit
-PROGRAMM      =  $(PROGRAM_NAME)debg
-CFLAGS        = -D__HP__ +w1 +e -Aa -Ae  -g ${PFL} -DDEBUG
-FFLAGS        = -g -I/opt/mpi/include/
+#====================================================================
+FXX     = /opt/mpi/bin/mpif90
+CCX     = /opt/mpi/bin/mpicc 
+LDX     = /opt/mpi/bin/mpif90 
+PFL     = -DPARALLEL -DHPUXITA -DD_SHELL8  -DD_SHELL9 -DD_FLUID -DD_FLUID2 \
+          -DD_FLUID3 -DD_ALE -DD_WALL1 -DD_OPTIM -DSPOOLES_PACKAGE
+NAME    = par
+MPI     = -lmpi
+#====================================================================
+# sequentiell part
+#====================================================================
+#FXX     = f90
+#CCX     = cc 
+#LDX     = f90 
+#PFL     = -DPARALLEL -DHPUXITA -DD_SHELL8 -DD_CONTACT -DS8CONTACT -DD_SHELL9 -DD_FLUID -DD_FLUID2 \
+#          -DD_FLUID3 -DD_ALE -DD_WALL1 -DD_OPTIM 
+#NAME    = seq
+#MPI     = 
+#--------------------------------------------------------------------     
+#------------------------------------------------- this is debg-32bit
+#PROGRAM_NAME  = cca_$(NAME)_32_debg.11i
+#CFLAGS        = +DSitanium -Aa -Ae -g +w1 -z \
+#                ${PFL} -DDEBUG
+#FFLAGS        = -g
+#LDFLAGS       = -g -v +A
+#AZTEC         =
+#METIS         = -lmetis_ita2_32
+#UMFPACK       =
+#SPOOLES       = -lspooles_ita2_32
 #------------------------------------------------- this is fast-32bit
-#PROGRAMM      =  $(PROGRAM_NAME)fast
-#CFLAGS        = -D__HP__  +w1 +e -Aa -Ae -O +Onolimit  ${PFL}
-#FFLAGS        = +O2 +Onolimit -I/opt/mpi/include/
+PROGRAM_NAME  = cca_$(NAME)_32_fast.11i
+CFLAGS        = +DSitanium -Aa -Ae +O2 +Onolimit +Optrs_to_globals +Odataprefetch  \
+                +Onoinitcheck +Oinline +Oclone +w1 -z ${PFL} 
+FFLAGS        = +O2 +Onolimit
+LDFLAGS       = +O -v +A 
+AZTEC         =
+METIS         = -lmetis_ita2_32
+UMFPACK       =
+SPOOLES       = -lspooles_ita2_32
+#------------------------------------------------- this is debg-64bit
+#PROGRAM_NAME  = cca_$(NAME)_64_debg.11i
+#CFLAGS        = +DSitanium -Aa -Ae +DD64 -g +w1 -z \
+#                ${PFL} -DSIXTYFOUR -DDEBUG 
+#FFLAGS        = +DD64 -g
+#LDFLAGS       = +DD64 -v +A
+#AZTEC         = 
+#METIS         = -lmetis_ita2_64
+#UMFPACK       = 
+#SPOOLES       = -lspooles_ita2_64
+#------------------------------------------------- this is fast-64bit
+#PROGRAM_NAME  = cca_$(NAME)_64_fast.11i
+#CFLAGS        = +DSitanium -Aa -Ae +DD64 +O2 +Onolimit +Optrs_to_globals +Odataprefetch \
+#                +Onoinitcheck +Oinline +Oclone +w1 -z ${PFL} -DSIXTYFOUR 
+#FFLAGS        = +DD64 +O2
+#LDFLAGS       = +DD64 -O -v +A
+#AZTEC         = 
+#METIS         = -lmetis_ita2_64
+#UMFPACK       = 
+#SPOOLES       = -lspooles_ita2_64
 #--------------------------------------------------------------------
-LDFLAGS	 = -L/usr/lib -L/opt/fortran/lib -lcl -lc -lM -lm 
-INCLUDES = -I/opt/mpi/include/ \
-           -I/bau/stat33/users/statik/lib/hypre-1.6.0/src/hypre/include/ \
-           -I/bau/stat33/users/statik/lib/SULUDIST0210/SuperLU_DIST/SRC \
-           -I/bau/stat33/users/statik/lib/METIS/ \
-           -L/bau/stat33/users/statik/lib/METIS/ -lmetis \
-           -L/bau/stat33/users/statik/lib/AZTEC21_MPI/ \
-           -L/bau/stat33/users/statik/lib/AZTEC21/ $(AZTEC) \
-           -L/bau/stat33/users/statik/lib \
-           -L/bau/stat33/users/statik/lib/hypre-1.6.0/src/hypre/lib \
-           -L/bau/stat33/users/statik/lib/SULUDIST0210/SuperLU_DIST \
-           -L/bau/stat33/users/statik/lib/SCALAPACK \
-           -L/bau/stat33/users/statik/lib/BLACS/LIB \
-           -L/bau/stat33/users/statik/lib/MUMPS4.1.6/lib \
-           -L/bau/stat33/users/statik/lib/UMFPACK/lib \
-           -L/bau/stat16/users/statik/lib/spooles \
-           -llapack_hppa \
-           -lHYPRE_DistributedMatrix \
-           -lHYPRE_DistributedMatrixPilutSolver \
-           -lHYPRE_Euclid \
-           -lHYPRE_FEI \
-           -lHYPRE_IJ_mv \
-           -lHYPRE_LSI \
-           -lHYPRE_MatrixMatrix \
-           -lHYPRE_ParaSails \
-           -lHYPRE_blas \
-           -lHYPRE_parcsr_ls \
-           -lHYPRE_parcsr_mv \
-           -lHYPRE_seq_mv \
-           -lHYPRE_sstruct_ls \
-           -lHYPRE_sstruct_mv \
-           -lHYPRE_struct_ls \
-           -lHYPRE_struct_mv \
-           -lHYPRE_utilities \
-           -lkrylov \
-           -lsuperlu_hppa \
-           -lblacs_MPI-HPPA-0 \
-           -lblacsCinit_MPI-HPPA-0 \
-           -lblacsF77init_MPI-HPPA-0 \
-           -lscalapack_HPPA \
-           -lmumps \
-           -lblas \
-           -lumfpack40_hpux10_32 \
-           $(SPOOLES)
-#           -lPEX5 -lVisual2 -lX11
-# sparsekit is not used at the moment
-#           -lskit 
-# libHYPRE_superlu.a convlicts with libsuperlu_hppa.a
-#           -lHYPRE_superlu
-
-LDOPTS        = -a archive -v
-
-
-LIBS          =                 
+# general part
+#--------------------------------------------------------------------
+CC	 = $(CCX)
+F90      = $(FXX)
+LD       = $(LDX)
+RM	 = /bin/rm -f
 #
+#--------------------------------------------------------------------
+# libs
+#--------------------------------------------------------------------
+LIBS	      =  -L/bau/stat16/users/statik/lib/lib_ita2_hpux/metis \
+                 -L/bau/stat16/users/statik/lib/lib_ita2_hpux/aztec21 \
+                 -L/bau/stat16/users/statik/lib/lib_ita2_hpux/umfpack/lib \
+                 -L/bau/stat16/users/statik/lib/lib_ita2_hpux/spooles \
+                 $(METIS) \
+                 $(AZTEC) \
+                 $(UMFPACK) \
+                 $(SPOOLES) \
+                 -lcl -lc -lm -lveclib -llapack $(MPI)  
 #----------------------- binaries -----------------------------------
 include ./Makefile.objects
-#--------------------------------------------------------------------
+#--------------------------------------------------------------------                
+#
+#
 # targets
 #
-PROGRAM       = $(PROGRAMM)
+PROGRAM       = $(PROGRAM_NAME)
 #
 # dependencies
 #
@@ -171,8 +139,8 @@ $(PROGRAM):     $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) $(OBJS7) $
                 $(OBJS16) $(OBJS_OPT)
 		@echo "Linking $(PROGRAM) ..."
 		@$(LD) $(LDFLAGS) $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) \
-                $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) $(OBJS14) \
-                $(OBJS15) $(OBJS16) $(OBJS_OPT) $(LIBS) $(INCLUDES) -o $(PROGRAM)
+                $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) \
+                $(OBJS14) $(OBJS15) $(OBJS16) $(OBJS_OPT) $(LIBS) $(INCLUDES) -o $(PROGRAM)
 		@echo "done"
 
 #
@@ -255,22 +223,22 @@ $(OBJS_OPT):
 		@echo "Making $@ ..."
 		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
 		@echo "MainMake is back."
-#
-# fortran
+# FORTRAN90
 $(OBJS13):     
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(FXX) $(FFLAGS)  -c  ${<F}
+		cd ${SRC}; cd ${@D}; $(F90) $(FFLAGS)  -c  ${<F}
 		@echo "MainMake is back."
-##
+#
+
 .c.o:
 	@ echo "$@ wird kompiliert...."
 	$(CC) $(CFLAGS) $(INCLUDES) -c  $<
 
 .f.o:
 	@ echo "$@ wird kompiliert...."
-	$(FXX) $(FFLAGS) -c  $<
+	$(FXX) $(FFLAGS) $(INCLUDES) -c  $<
 clean:
 	rm -rf  $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) \
                 $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) \
-                $(OBJS13) $(OBJS14) $(OBJS15) $(OBJS16) $(OBJS_OPT) 
+                $(OBJS13) $(OBJS14) $(OBJS15) $(OBJS16) $(OBJS_OPT)
 $
