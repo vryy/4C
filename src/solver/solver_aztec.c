@@ -302,10 +302,10 @@ AZ_invorder_vec(
 amdel(&tmpsol_a);
 /*---------------------------------------- destroy the Aztec structures */
 AZ_matrix_destroy(&(msr_array->Amat)); msr_array->Amat          =NULL;
-FREE(msr_array->external);             msr_array->external      =NULL;
-FREE(msr_array->update_index);         msr_array->update_index  =NULL;
-FREE(msr_array->extern_index);         msr_array->extern_index  =NULL;
-FREE(msr_array->data_org);             msr_array->data_org      =NULL;
+free(msr_array->external);             msr_array->external      =NULL;
+free(msr_array->update_index);         msr_array->update_index  =NULL;
+free(msr_array->extern_index);         msr_array->extern_index  =NULL;
+free(msr_array->data_org);             msr_array->data_org      =NULL;
 /*----------------------------------------- check for success of solver */
 if ( (double)(msr_array->status[AZ_why]) != AZ_normal )
 {

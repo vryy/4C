@@ -504,7 +504,7 @@ if (nhyb>0)
    /*---------------------------------- make estif -= Lt * Dtildinv * L */
    math_matmatdense(estif,workeas2,Lt,nd,nhyb,nd,1,-1.0);
    /*===================================================================*/
-   /* R(12) = R(12) - Ltrans(nhyb,nd) * Dtilde^-1(nhyb,nhyb) * Rtilde(nhyb)
+   /* R(nd) = R(nd) - Ltrans(nhyb,nd) * Dtilde^-1(nhyb,nhyb) * Rtilde(nhyb)
    /*===================================================================*/
    /*--------------------------- make intforce -= Lt * Dtildinv * Rtild */
    math_matvecdense(intforce,workeas2,Rtild,nd,nhyb,1,-1.0);

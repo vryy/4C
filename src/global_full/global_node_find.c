@@ -1,6 +1,9 @@
 #include "../headers/standardtypes.h"
+#ifdef PARALLEL
+#ifndef SUSE73
 #include "/bau/stat33/users/statik/lib/METIS/metis.h"
-
+#endif
+#endif
 /*----------------------------------------------------------------------*
  | find a partner coupling compatible node                m.gee 8/00    |
  *----------------------------------------------------------------------*/

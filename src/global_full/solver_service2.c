@@ -182,7 +182,7 @@ void solserv_vecnorm_Linf(INTRA *actintra,DIST_VECTOR *dist_vec,double *result)
 {
 int                  i;
 double              *vec;
-double               sendbuff=0.0;;
+double               sendbuff=0.0;
 int                  numeq;
 #ifdef DEBUG 
 dstrc_enter("solserv_vecnorm_Linf");

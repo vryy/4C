@@ -368,6 +368,11 @@ dyn_setconstants(&dynvar,sdyn,sdyn->dt);
 /*---------------------- set incremental displacements dispi[0] to zero */
 solserv_zero_vec(&dispi[0]);
 
+/*------------------------- set residual displacements in nodes to zero */
+solserv_result_resid(actfield,actintra,&dispi[0],0,
+                     &(actsolv->sysarray[stiff_array]),
+                     &(actsolv->sysarray_typ[stiff_array]));
+
 /*--------------------------------------------- increment step and time */
 sdyn->step++;
 sdyn->time += sdyn->dt;
