@@ -135,6 +135,7 @@ typedef enum _CALC_ACTION
                        calc_struct_stress,
                        calc_struct_stressreduce,
                        calc_struct_eleload,
+                       calc_struct_fsiload,
                        calc_struct_update_istep,
                        calc_struct_update_stepback,
                        write_restart,
@@ -144,6 +145,8 @@ typedef enum _CALC_ACTION
 		       calc_fluid,
 		       calc_fluid_amatrix,
                        calc_fluid_vort,
+		       calc_fluid_stress,
+		       calc_fluid_curvature,
 		       calc_ale_init,
 		       calc_ale_stiff,
 		       calc_ale_rhs,
@@ -270,4 +273,22 @@ typedef enum _KINTYP         /* type of kinematic */
                        tot_lagr      /* total lagrange */
 } KINTYP;                         
 
+/*----------------------------------------------------------------------*
+ |  FSI MESHES                                            genk 10/02    |
+ *----------------------------------------------------------------------*/
+typedef enum _FSI_MESH
+{
+     conforming,
+     non_conforming
+} FSI_MESH;
 
+/*----------------------------------------------------------------------*
+ |  FSI MESHES                                            genk 10/02    |
+ *----------------------------------------------------------------------*/
+typedef enum _FLUID_STRESS
+{
+     str_none,
+     str_fsicoupling,
+     str_liftdrag,
+     str_all
+}  FLUID_STRESS; 
