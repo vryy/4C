@@ -85,6 +85,7 @@ if [ "x$PARALLEL" = "xno" ]; then
   f2_eq4x4_kome.dat
   f2_freeosz20x20.dat
   f2_kim-moin.dat
+  f2_locsystest.dat
   f2pro_channelflow10x10.dat
   f3_beltrami.dat
   f3_beltrami_fastass.dat
@@ -92,6 +93,7 @@ if [ "x$PARALLEL" = "xno" ]; then
   f3_ew_Q1_27x.dat
   fsi_ow32x32.dat
   fsi_tank20x10.dat
+  fsi_tank3D.dat
   shell8_lineload.dat
   shell9_dpmisGF.dat
   shell9_epc.dat
@@ -124,12 +126,14 @@ else
   f2_eq4x4_algebraic.dat
   f2_freeosz20x20.dat
   f2_kim-moin.dat
+  f2_locsystest.dat
   f3_beltrami.dat
   f3_beltrami_fastass.dat
   f3_beltrami_fastass2.dat
   f3_ew_Q1_27x.dat
   fsi_ow32x32.dat
   fsi_tank20x10.dat
+  fsi_tank3D_par.dat
   shell8_lineload.dat
   shell9_dpmisGF.dat
   shell9_epc.dat
@@ -248,7 +252,7 @@ for file in $liste; do
     # parallel run
     echo
     echo '  Running Input-file in parallel...'
-    mpirun -np 1 ./$exe Input/$file test_out_ >test.tmp 
+    mpirun -np 2 ./$exe Input/$file test_out_ >test.tmp 
   fi
 
   # get the end-time in seconds:
