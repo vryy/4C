@@ -48,7 +48,7 @@ void ale2_static_ke(ELEMENT   *ele,
                    INT         init)
 {
 INT                 i, j;         /* counters */
-INT                 nir,nis;      /* num GP in r/s/t direction */
+INT                 nir=0,nis=0;  /* num GP in r/s/t direction */
 INT                 lr, ls;       /* loopers over GP */
 INT                 iel;          /* numnp to this element */
 INT                 nd;
@@ -56,8 +56,8 @@ const INT           numdf =2;
 const INT           numeps=3;
 
 DOUBLE              fac;
-DOUBLE              e1,e2;         /*GP-coords*/
-DOUBLE              facr,facs;   /* weights at GP */
+DOUBLE              e1,e2=0;      /*GP-coords*/
+DOUBLE              facr,facs=0;  /* weights at GP */
 
 static ARRAY    D_a;      /* material tensor */
 static DOUBLE **D;
@@ -224,7 +224,7 @@ void ale2_static_ke_stiff(ELEMENT     *ele,
 	        	  INT          quality)
 {
 INT                 i,j;             /* some loopers */
-INT                 nir,nis;         /* num GP in r/s/t direction */
+INT                 nir=0,nis=0;     /* num GP in r/s/t direction */
 INT                 lr, ls;          /* loopers over GP */
 INT                 iel;             /* numnp to this element */
 INT                 nd;
@@ -233,8 +233,8 @@ const INT           numdf  = 2;
 const INT           numeps = 3;
 
 DOUBLE              fac;
-DOUBLE              e1,e2;         /* GP-coords */
-DOUBLE              facr,facs;   /* weights at GP */
+DOUBLE              e1,e2=0;         /* GP-coords */
+DOUBLE              facr,facs=0;     /* weights at GP */
 
 DOUBLE              min_detF;         /* minimal Jacobian determinant */
 
@@ -409,7 +409,7 @@ void ale2_static_ke_prestress(ELEMENT    *ele,
 		              INT         quality)
 {
 INT                 i,j;              /* some loopers */
-INT                 nir,nis;          /* num GP in r/s/t direction */
+INT                 nir=0,nis=0;      /* num GP in r/s/t direction */
 INT                 lr, ls;           /* loopers over GP */
 INT                 iel;              /* numnp to this element */
 INT                 nd;
@@ -418,8 +418,8 @@ const INT           numdf  = 2;
 const INT           numeps = 3;
 
 DOUBLE              fac;
-DOUBLE              e1,e2;            /* GP-coords */
-DOUBLE              facr,facs;        /* weights at GP */
+DOUBLE              e1,e2=0;          /* GP-coords */
+DOUBLE              facr,facs=0;      /* weights at GP */
 INT                 lm[8];
 
 DOUBLE              a,b,c;            /* geometric parameters */
@@ -660,7 +660,7 @@ void ale2_static_ke_step2(ELEMENT    *ele,
 			  DOUBLE     *max)
 {
 INT                 i,j;            /* some loopers */
-INT                 nir,nis;        /* num GP in r/s/t direction */
+INT                 nir=0,nis=0;    /* num GP in r/s/t direction */
 INT                 lr, ls;         /* loopers over GP */
 INT                 iel;            /* numnp to this element */
 INT                 nd;
@@ -669,8 +669,8 @@ const INT           numdf =2;
 const INT           numeps=3;
 
 DOUBLE              fac;
-DOUBLE              e1,e2;            /* GP-coords */
-DOUBLE              facr,facs;        /* weights at GP */
+DOUBLE              e1,e2=0;          /* GP-coords */
+DOUBLE              facr,facs=0;      /* weights at GP */
 DOUBLE              min_detF;         /* minimal Jacobian determinant */
 DOUBLE              el_area;          /* elemental area */
 DOUBLE              stiff;            /* stiffness factor */
@@ -1027,7 +1027,7 @@ void ale2_static_ke_laplace(ELEMENT     *ele,
 		            INT          quality)
 {
 INT                 i,j;             /* some loopers */
-INT                 nir,nis;         /* num GP in r/s/t direction */
+INT                 nir=0,nis=0;     /* num GP in r/s/t direction */
 INT                 lr, ls;          /* loopers over GP */
 INT                 iel;             /* numnp to this element */
 INT                 nd;
@@ -1035,8 +1035,8 @@ INT                 nd;
 const INT           numdf  = 2;
 
 DOUBLE              fac;
-DOUBLE              e1,e2;            /* GP-coords */
-DOUBLE              facr,facs;        /* weights at GP */
+DOUBLE              e1,e2=0;          /* GP-coords */
+DOUBLE              facr,facs=0;      /* weights at GP */
 
 DOUBLE              min_detF;         /* minimal Jacobian determinant */
 
