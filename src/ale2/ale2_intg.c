@@ -57,6 +57,15 @@ switch (ele->distyp)
          *----------------------------------------------------------------------*/
         switch(ele->e.ale2->nGP[0])/* direction r */
         {
+            case 3:
+                data->xgpr[0] = -0.7745966692415;
+                data->xgpr[1] =  0.0;
+                data->xgpr[2] = +0.7745966692415;
+
+                data->wgtr[0] = 0.55555555555556;
+                data->wgtr[1] = 0.88888888888889;
+                data->wgtr[2] = 0.55555555555556;
+                break;
             case 2:
                 data->xgpr[0] = -0.5773502691896;
                 data->xgpr[1] =  0.5773502691896;
@@ -75,6 +84,15 @@ switch (ele->distyp)
         }
         switch(ele->e.ale2->nGP[1])/* direction s */
         {
+            case 3:
+                data->xgps[0] = -0.7745966692415;
+                data->xgps[1] =  0.0;
+                data->xgps[2] = +0.7745966692415;
+
+                data->wgts[0] = 0.55555555555556;
+                data->wgts[1] = 0.88888888888889;
+                data->wgts[2] = 0.55555555555556;
+                break;
             case 2:
                 data->xgps[0] = -0.5773502691896;
                 data->xgps[1] =  0.5773502691896;
