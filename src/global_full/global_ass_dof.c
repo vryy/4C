@@ -28,7 +28,7 @@ int couple,geocouple,dirich;       /* flags for conditions */
 FIELD   *actfield;                 /* the actual field */
 ELEMENT *actele;                   /* the element in progress */
 NODE    *actnode, *partnernode;    /* node and coupling partner in progress */
-
+int max;
 #ifdef DEBUG 
 dstrc_enter("assign_dof");
 #endif
@@ -105,13 +105,15 @@ for (i=0; i<genprob.numfld; i++)
       if (!(actfield->dis[0].node[j].dof)) 
          dserror("Allocation of dof in NODE failed");
       /*------------------------- allocate the arrays to hold solutions */
-      amdef("sol",&(actfield->dis[0].node[j].sol),1,actfield->dis[0].node[j].numdf,"DA");
+      max = IMAX(3,actfield->dis[0].node[j].numdf);
+      
+      amdef("sol",&(actfield->dis[0].node[j].sol),1,max,"DA");
       amzero(&(actfield->dis[0].node[j].sol));
 
-      amdef("sol_incr",&(actfield->dis[0].node[j].sol_increment),1,actfield->dis[0].node[j].numdf,"DA");
+      amdef("sol_incr",&(actfield->dis[0].node[j].sol_increment),1,max,"DA");
       amzero(&(actfield->dis[0].node[j].sol_increment));
 
-      amdef("sol_res",&(actfield->dis[0].node[j].sol_residual),1,actfield->dis[0].node[j].numdf,"DA");
+      amdef("sol_res",&(actfield->dis[0].node[j].sol_residual),1,max,"DA");
       amzero(&(actfield->dis[0].node[j].sol_residual));
       /*------------------------------------------- init all dofs to -2 */
       for (l=0; l<actfield->dis[0].node[j].numdf; l++) actfield->dis[0].node[j].dof[l]=-2;
