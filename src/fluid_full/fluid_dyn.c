@@ -56,9 +56,9 @@ see dissertation of W.A. WALL, chapter 4.2 'Zeitdiskretisierung'
 ------------------------------------------------------------------------*/
 void dyn_fluid()
 {
-int dyntyp;
-int iop   ;                         /* flag for time algorithm          */
-int freesurf;                       /* flag for fluid problem w/ freesurface */ 
+INT dyntyp;
+INT iop   ;                         /* flag for time algorithm          */
+INT freesurf;                       /* flag for fluid problem w/ freesurface */ 
 FLUID_DYNAMIC *fdyn;                /* pointer to fluid dyn. inp.data   */
 
 #ifdef DEBUG 
