@@ -19,6 +19,10 @@ typedef struct _MATERIAL
      struct _PL_POR_MISES     *pl_por_mises; /* porous von Mises material */
      struct _NEO_HOOKE        *neohooke;     /* Neo-Hooke material */
      struct _FLUID            *fluid;        /* fluid material */
+     struct _PL_HASH          *pl_hash;      /* elpl. hashin delamination material */
+     struct _EL_ORTH          *el_orth;      /* elastic orthotropic material */
+     struct _MFOC             *mfoc;         /* metal foam, open cell  */
+     struct _MFCC             *mfcc;         /* metal foam, closed cell  */
      }                         m;            /* union pointer to material specific structure */
 
 } MATERIAL;
@@ -160,3 +164,78 @@ typedef struct _PL_POR_MISES
      double                    Hard;
      double                    DP_Hard;
 } PL_POR_MISES;
+/*----------------------------------------------------------------------*
+ | delamination material                               a.lipka 17/05    |
+ *----------------------------------------------------------------------*/
+typedef struct _PL_HASH
+{
+     double                    emod1;
+     double                    emod2;
+     double                    emod3;
+     double                    xnue23;
+     double                    xnue13;
+     double                    xnue12;
+     double                    gmod12;
+     double                    gmod23;
+     double                    gmod13;
+     double                    s33;
+     double                    sinf33;
+     double                    s23;
+     double                    s13;
+     double                    gamma;
+     double                    gc;
+     double                    deltat;
+     double                    eta_i;
+     double                    c1hgt;
+     double                    c1layhgt;
+     int                       ivisco;
+} PL_HASH;
+
+/*----------------------------------------------------------------------*
+ | elastic orthotropic material                              al 4/01    |
+ *----------------------------------------------------------------------*/
+typedef struct _EL_ORTH
+{
+     double                    emod1;
+     double                    emod2;
+     double                    emod3;
+     double                    xnue23;
+     double                    xnue13;
+     double                    xnue12;
+     double                    gmod12;
+     double                    gmod23;
+     double                    gmod13;
+} EL_ORTH;
+
+/*----------------------------------------------------------------------*
+ | open cell metal foam material (optimization)              al 4/01    |
+ *----------------------------------------------------------------------*/
+typedef struct _MFOC
+{
+     double                    es;             /* Young's modulus (cell) */
+     double                    pr;             /* Possion ratio */
+     double                    dens;           /* density foam  */
+     double                    denss;          /* density (bulk) */
+     double                    denmin;         /* min. dens. foam (opti.)*/
+     double                    denmax;         /* max. dens. foam (opti.)*/
+     double                    refdens;        /* reference density */
+     double                    oce;            /* exponent  */
+     double                    ocf;            /* factor    */
+} MFOC;
+
+/*----------------------------------------------------------------------*
+ | closed cell metal foam material (optimization)            al 4/01    |
+ *----------------------------------------------------------------------*/
+typedef struct _MFCC
+{
+     double                    es;             /* Young's modulus (cell) */
+     double                    pr;             /* Possion ratio */
+     double                    dens;           /* density foam  */
+     double                    denss;          /* density (bulk) */
+     double                    denmin;         /* min. dens. foam (opti.)*/
+     double                    denmax;         /* max. dens. foam (opti.)*/
+     double                    refdens;        /* reference density */
+     double                    cce;            /* exponent  */
+     double                    ccf;            /* factor    */
+} MFCC;
+

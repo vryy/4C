@@ -1,17 +1,40 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'c1intg' which calclate data of 
+       integration points for a 3D hex element
+
+*----------------------------------------------------------------------*/
+#ifdef D_BRICK1
+
 #include "../headers/standardtypes.h"
 #include "brick1.h"
-#include "brick1_calc.h"
+#include "brick1_prototypes.h"
 
-/*----------------------------------------------------------------------*
- | integration points                                        al 6/01    |
- -----------------------------------------------------------------------|
- | HEX-ELEMENT                                                          |
- | COORDINATES AND WEIGHTING FACTORS OF GAUSS-INTEGRATION-POINTS FOR    |
- | NUMERICAL INTEGRATION                                                |
- *----------------------------------------------------------------------*/
-void b1intg(const ELEMENT   *ele,
-               B1_DATA         *data,
-               int              option)
+/*! 
+\addtogroup BRICK1 
+*//*! @{ (documentation module open)*/
+
+/*!----------------------------------------------------------------------
+\brief compute coordinates and weighting factors of gauss-integration-points
+
+<pre>                                                              al 06/02
+This routine calcuates coordinates and weighting factors of
+gauss-integration-points 
+for an 3D-hex-element.
+
+</pre>
+\param  *ele     ELEMENT (i)   the element
+\param *data     C1_DATA (i)   structure containing gaussian point and weight
+\param option        INT (i)   unused ?
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa calling: ---; called by: c1_cint()
+
+*----------------------------------------------------------------------*/
+void c1intg(ELEMENT         *ele,
+            C1_DATA         *data,
+            int              option)
 {
 int i, k;
 
@@ -24,14 +47,14 @@ double  q12, q13, q16, q23;
 double  xgr[13][8],xgs[13][8],wgtt[13][8];
 static double xg[6][6],wgt[6][6];
 #ifdef DEBUG 
-dstrc_enter("b1intg");
+dstrc_enter("c1intg");
 #endif
 /*----------------------------------------------------------------------*  
  |     INTEGRATION PARAMETERS FOR    H E X A H E D R A L     ELEMENTS   |
  |     GAUSS SAMPLING POINTS  AT     R/S/T-COORDINATES   RESPECTIVELY   |
  |                            AND    CORRESPONDING WEIGHTING  FACTORS   |
  *----------------------------------------------------------------------*/       
-switch(ele->e.b1->nGP[0])/* direction r */
+switch(ele->e.c1->nGP[0])/* direction r */
 {
 case 2:
   data->xgrr[0] = -0.5773502691896;
@@ -89,10 +112,10 @@ case 6:
   data->wgtr[5] =  0.1713244923792;
 break;
 default:
-   dserror("unknown number of gaussian points in b1intg");
+   dserror("unknown number of gaussian points in c1intg");
 break;
 }
-switch(ele->e.b1->nGP[1])/* direction s */
+switch(ele->e.c1->nGP[1])/* direction s */
 {
 case 2:
   data->xgss[0] = -0.5773502691896;
@@ -150,10 +173,10 @@ case 6:
   data->wgts[5] =  0.1713244923792;
 break;
 default:
-   dserror("unknown number of gaussian points in b1intg");
+   dserror("unknown number of gaussian points in c1intg");
 break;
 }
-switch(ele->e.b1->nGP[2])/* direction t */
+switch(ele->e.c1->nGP[2])/* direction t */
 {
 case 2:
   data->xgtt[0] = -0.5773502691896;
@@ -211,7 +234,7 @@ case 6:
   data->wgtt[5] =  0.1713244923792;
 break;
 default:
-   dserror("unknown number of gaussian points in b1intg");
+   dserror("unknown number of gaussian points in c1intg");
 break;
 }
 /*----------------------------------------------------------------------*/
@@ -219,5 +242,7 @@ break;
 dstrc_exit();
 #endif
 return;
-} /* end of b1intg */
+} /* end of c1intg */
 /*----------------------------------------------------------------------*/
+#endif
+/*! @} (documentation module close)*/

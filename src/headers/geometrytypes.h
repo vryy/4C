@@ -47,7 +47,7 @@ typedef struct _ELEMENT
      union                                      /* union pointer to elementformulation */
      {
      struct _SHELL8   *s8;                      /* shell8 element */
-     struct _BRICK1   *b1;                      /* structural volume element */
+     struct _BRICK1   *c1;                      /* structural hexaeder element */
      struct _WALL1    *w1;                      /* 2D plane stress - plane strain element */
      struct _FLUID2   *f2;                      /* 2D fluid element */
      struct _FLUID3   *f3;                      /* 3D fluid element */

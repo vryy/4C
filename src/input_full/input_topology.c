@@ -379,8 +379,8 @@ for (i=0; i<actdis->ngvol; i++)
           if (!actdis->gsurf[counter].gvol)           dserror("Allocation of memory failed");
           actdis->gsurf[counter].gvol[0] = actgvol;
           /* increment gsurf, check whether we still have space in the initial guess */
-          counter++;
           dsassert(counter<actdis->ngsurf,"Initial guess of ngsurf too small");
+          counter++;
        }
     }/* end loop surfaces of volumetric elements */
 } /* end loop over volumetric elements */
@@ -2032,6 +2032,7 @@ thirdnode = surfnodes[2];
 /*------------------------------------------ loop the patch of elements */
 for (i=0; i<npatch; i++)
 {
+   foundsurface=-1;
    actele  = elepatch[i];
    actgvol = actele->g.gvol;
    /*---------------------------- we do not want to find firstele again */

@@ -314,7 +314,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    if (ierr==1) 
    {
       structfield->dis[0].element[counter].eltyp=el_brick1;
-      b1inp(&(structfield->dis[0].element[counter]));
+      c1inp(&(structfield->dis[0].element[counter]));
    }
 #endif
 /*------------------------------------------------ elementtyp is WALL  */

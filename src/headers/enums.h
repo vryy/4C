@@ -75,7 +75,11 @@ typedef enum _MATERIAL_TYP
                        m_stvenpor,    /* porous St.Venant Kirchhoff material */
                        m_pl_por_mises,/* porous von Mises material */
                        m_neohooke,    /* Neo-Hooke material */
-                       m_fluid        /* fluid */
+                       m_fluid,       /* fluid */
+                       m_pl_hash,     /* elpl. hashin delamination material */
+                       m_el_orth,     /* elastic orthotropic material */
+                       m_mfoc,        /* open cell metal foam */
+                       m_mfcc         /* closed cell metal foam */
 } MATERIAL_TYP;                         
 /*----------------------------------------------------------------------*
  | enum PART_TYP                                          m.gee 7/01    |
