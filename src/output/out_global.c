@@ -206,9 +206,6 @@ void out_general()
         case structure:
           fprintf(out,"FIELD: structure\n");
           break;
-        case levelset:
-          fprintf(out,"FIELD: levelset\n");
-          break;
         default:
           dserror("Cannot print fieldtype");
           break;

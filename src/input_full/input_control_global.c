@@ -421,7 +421,7 @@ if (frfind("-STATIC")==1)
     if (ierr==1) {statvar->linear=1;statvar->nonlinear=0;}
     frchk("NONLINEAR",&ierr);
     if (ierr==1) {statvar->nonlinear=1;statvar->linear=0;}
-    /*------------------------- read if multiscale model */   
+    /*------------------------- read if multiscale model */
     frchar("MULTISCALE",buffer,&ierr);
     if (ierr)
     {
@@ -589,8 +589,6 @@ for (i=0; i<genprob.numfld; i++)
    case fluid:
    break;
    case ale:
-   break;
-   case levelset:
    break;
    case structure:
      inpctr_eig_struct(alleig);

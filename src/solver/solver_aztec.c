@@ -233,7 +233,6 @@ case 0:
     case structure: azname=0*MAXNUMMATRICES + actsolv->nsysarray; break;
     case fluid:     azname=1*MAXNUMMATRICES + actsolv->nsysarray; break;
     case ale:       azname=2*MAXNUMMATRICES + actsolv->nsysarray; break;
-    case levelset:  azname=3*MAXNUMMATRICES + actsolv->nsysarray; break;
     default:
       dserror("Unknown type of field");
       break;

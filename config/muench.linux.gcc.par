@@ -31,7 +31,8 @@ LOOPL="-DLOOPL=64"
 
 
 #LIBS="-lc -lm -lg2c -llapack -lgoto_p4_512-r0.6 -lxerbla -lmetis -laztec -lspoolesMPI -lspooles"
-LIBS="-lc -lm -lg2c -llapack -lblas -lmetis"
+#LIBS="-lc -lm -lg2c -llapack -lblas -lmetis"
+LIBS="-lc -lg2c -llapack -lblas -lmetis"
 
 CFLAGS="-Wall -ansi"
 FFLAGS="-Wall"

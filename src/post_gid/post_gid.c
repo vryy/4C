@@ -17,6 +17,11 @@ some code with ccarat and are closely linked to ccarat internals.
 The general idea is that we cannot load the whole result data into
 memory at once.
 
+Filters are independent programs, thus they have their own main
+function. This filter's main function is the last function in this
+file (to keep the number of needed function prototypes as small as
+possible). You might want to start reading the file from there.
+
 \author u.kue
 \date 09/04
 
@@ -28,8 +33,22 @@ memory at once.
 
 #include "post_gid.h"
 
-extern struct _FILES           allfiles;
-
+/* map from DIS_TYP to GiD_ElementType */
+static GiD_ElementType gid_type_map[] = {
+  GiD_NoElement,                /* dis_none,       -- unknown dis type */
+  GiD_Quadrilateral,            /* quad4,          -- 4 noded quadrilateral */
+  GiD_Quadrilateral,            /* quad8,          -- 8 noded quadrilateral */
+  GiD_Quadrilateral,            /* quad9,          -- 9 noded quadrilateral */
+  GiD_Triangle,                 /* tri3,           -- 3 noded triangle */
+  GiD_Triangle,                 /* tri6,           -- 6 noded triangle */
+  GiD_Hexahedra,                /* hex8,           -- 8 noded hexahedra */
+  GiD_Hexahedra,                /* hex20,          -- 20 noded hexahedra */
+  GiD_Hexahedra,                /* hex27,          -- 27 noded hexahedra */
+  GiD_Tetrahedra,               /* tet4,           -- 4 noded tetrahedra */
+  GiD_Tetrahedra,               /* tet10,          -- 4 noded tetrahedra */
+  GiD_Linear,                   /* line2,          -- 2 noded line */
+  GiD_Linear                    /* line3           -- 3 noded line */
+};
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -125,16 +144,19 @@ static void write_elements(PROBLEM_DATA* problem, INT num, INT element, INT node
     major = mesh_entry[1];
     minor = mesh_entry[2];
 
-    dsassert((major >= 0) && (major < el_count), "major element number out of range");
-    dsassert((minor >= 0) && (minor < MAX_EL_MINOR), "minor element number out of range");
+    /* convert from file major/minor to internal major/minor */
+    minor = field->internal_minors[major][minor];
+    major = field->internal_majors[major];
 
     /* Write the element if major number and numbers of nodes match. */
     if ((element == major) &&
         (element_info[element].variant[minor].node_number == nodes)) {
       INT j;
       /* All GiD ids are one based. */
+      /* Additionally we have to convert discretization local ids to
+       * global ids. */
       for (j=0; j<nodes; ++j) {
-        mesh_entry[j+3] += 1;
+        mesh_entry[j+3] = field->node_ids[mesh_entry[j+3]] + 1;
       }
       GiD_WriteElement(field->element_type[i].Id+1, mesh_entry+3);
     }
@@ -178,7 +200,7 @@ static void write_domain(FIELD_DATA *field, MAP* group)
         CHAR GP_name[30];
 
         NNode = info->variant[j].node_number;
-        EType = info->variant[j].gid_type;
+        EType = gid_type_map[info->variant[j].dis_type];
         GP_number = info->variant[j].gauss_number;
 
         sprintf(GP_name, "%s_%d", info->name, GP_number);
@@ -382,118 +404,7 @@ static void write_pressure(FIELD_DATA *field, MAP* group)
 
 /*----------------------------------------------------------------------*/
 /*!
-  \brief Write the nodal stresses for one time step.
-
-  This is element specific again. That is we require that there is
-  just one kind of element in the discretization. We'll find it and
-  interpret the values that we read accordingly.
-
-  This function is needed to support the legacy elements. It's not a
-  good idea to write extrapolated stresses in new code.
-
-  \author u.kue
-  \date 09/04
-*/
-/*----------------------------------------------------------------------*/
-static void write_nd_stress(FIELD_DATA *field, MAP* group)
-{
-  INT i;
-  INT j;
-  INT k;
-  MAP* stress_group;
-  INT value_entry_length;
-  DOUBLE time;
-  INT step;
-
-  stress_group = map_read_map(group, "nd_stress");
-
-  dsassert(map_read_int(stress_group, "size_entry_length") == 0,
-           "stress size mismatch");
-
-  value_entry_length = map_read_int(stress_group, "value_entry_length");
-
-  time = map_read_real(group, "time");
-  step = map_read_int(group, "step");
-
-  fprintf(allfiles.out_err, "%s: Write nodal stress of step %d\n", field->name, step);
-
-  for (i=0; i<el_count; ++i) {
-    for (j=0; j<MAX_EL_MINOR; ++j) {
-      if (field->element_flags[i][j]) {
-
-        ELEMENT_INFO* info;
-        info = &(element_info[i]);
-
-        switch (i) {
-#ifdef D_FLUID3
-        case el_fluid3: {       /* 3D fluid element */
-          CHAR* componentnames[] = { "Stress-xx", "Stress-yy", "Stress-zz",
-                                     "Stress-xy", "Stress-yz", "Stress-zx" };
-          DOUBLE stress[12];
-
-          if (value_entry_length != 12) {
-            dserror("fluid3 requires 12 stress entries but %d are announced", value_entry_length);
-          }
-
-          /* The special thing here is that there are two
-           * results. Pressure and viscous stresses. We need to give GiD
-           * two tables and thus need to read the results two times. */
-
-          /* pressure stresses */
-          GiD_BeginResult("fluid_stresses", "ccarat", step, GiD_Matrix, GiD_OnNodes,
-                          NULL, NULL, 6, componentnames);
-
-          fseek(field->value_file, map_read_int(stress_group, "value_offset"), SEEK_SET);
-
-          /* Iterate all nodes.
-           * Each node is supposed to have a meaningful stress array. */
-          for (k = 0; k < field->numnp; ++k) {
-
-            if (fread(stress, sizeof(DOUBLE), value_entry_length, field->value_file) != value_entry_length) {
-              dserror("failed to read stress of node %d", k);
-            }
-
-            GiD_Write3DMatrix(field->node_ids[k]+1,
-                              stress[0], stress[1], stress[2],
-                              stress[3], stress[4], stress[5]);
-          }
-
-          GiD_EndResult();
-
-          /* viscous stresses */
-          GiD_BeginResult("fluid_stresses", "ccarat", step, GiD_Matrix, GiD_OnNodes,
-                          NULL, NULL, 6, componentnames);
-
-          fseek(field->value_file, map_read_int(stress_group, "value_offset"), SEEK_SET);
-
-          /* Iterate all nodes. */
-          for (k = 0; k < field->numnp; ++k) {
-
-            if (fread(stress, sizeof(DOUBLE), value_entry_length, field->value_file) != value_entry_length) {
-              dserror("failed to read stress of node %d", k);
-            }
-
-            GiD_Write3DMatrix(field->node_ids[k]+1,
-                              stress[0+6], stress[1+6], stress[2+6],
-                              stress[3+6], stress[4+6], stress[5+6]);
-          }
-
-          GiD_EndResult();
-          break;
-        }
-#endif
-        default:
-          dserror("node based stress output not supported for element type %d", i);
-        }
-      }
-    }
-  }
-}
-
-
-/*----------------------------------------------------------------------*/
-/*!
-  \brief Write the gaus point stresses for one time step.
+  \brief Write the gauss point stresses for one time step.
 
   This is element specific again.
 
@@ -511,6 +422,17 @@ static void write_stress(FIELD_DATA *field, MAP* group)
   DOUBLE* stress;
   DOUBLE time;
   INT step;
+
+/*
+   gausspoint permutation :
+   On the Gausspoint number i in Gid, the results of Carats GP number gausspermn[i]
+   have to be written
+*/
+
+  INT           gaussperm4[4] = {3,1,0,2};
+  /*INT           gaussperm8[8] = {0,4,2,6,1,5,3,7};*/
+  INT           gaussperm9[9] = {8,2,0,6,5,1,3,7,4};
+  /*INT           gaussperm27[27] = {0,9,18,3,12,21,6,15,24,1,10,19,4,13,22,7,16,25,2,11,20,5,14,23,8,17,26};*/
 
   stress_group = map_read_map(group, "stress");
 
@@ -538,11 +460,11 @@ static void write_stress(FIELD_DATA *field, MAP* group)
         info = &(element_info[i]);
 
         NNode = info->variant[j].node_number;
-        EType = info->variant[j].gid_type;
+        EType = gid_type_map[info->variant[j].dis_type];
         GP_number = info->variant[j].gauss_number;
         sprintf(GP_name, "%s_%d", info->name, GP_number);
 
-        dsassert(value_entry_length >= element_info[i].variant[j].el_stress_matrix_size,
+        dsassert(value_entry_length >= element_info[i].variant[j].stress_matrix_size,
                  "stress too short for element type");
 
         switch (i) {
@@ -555,6 +477,7 @@ static void write_stress(FIELD_DATA *field, MAP* group)
           fseek(field->value_file, map_read_int(stress_group, "value_offset"), SEEK_SET);
 
           switch (j) {
+#if 0                           /* not yet... */
           case MINOR_WALL1_11: { /* 3-noded wall1 1x1 GP */
 
             /* Iterate all elements, choose the ones with matching type */
@@ -571,9 +494,13 @@ static void write_stress(FIELD_DATA *field, MAP* group)
             }
             break;
           }
+#endif
           case MINOR_WALL1_22:  /* 4-noded wall1 2x2 GP */
+
+#if 0                           /* not yet... */
           case MINOR_WALL1_8_33: /* 8-noded wall1 3x3 GP */
           case MINOR_WALL1_9_33: /* 9-noded wall1 3x3 GP */
+#endif
 
             /* Iterate all elements, choose the ones with matching type */
             for (k=0; k<field->numele; ++k) {
@@ -584,9 +511,11 @@ static void write_stress(FIELD_DATA *field, MAP* group)
                   (field->element_type[k].minor == j)) {
                 INT l;
                 for (l=0; l<element_info[i].variant[j].gauss_number; ++l) {
+                  INT p;
+                  p = gaussperm4[l];
                   GiD_Write3DMatrix(field->node_ids[k]+1,
-                                    stress[6*l+0], stress[6*l+1], stress[6*l+2],
-                                    stress[6*l+3], stress[6*l+4], stress[6*l+5]);
+                                    stress[9*p+0], stress[9*p+1], stress[9*p+2],
+                                    stress[9*p+3], stress[9*p+7], stress[9*p+8]);
                 }
               }
             }
@@ -734,9 +663,11 @@ static void write_stress(FIELD_DATA *field, MAP* group)
                 (field->element_type[k].minor == j)) {
               INT l;
               for (l=0; l<element_info[i].variant[j].gauss_number; ++l) {
+                INT p;
+                p = gaussperm4[l];
                 GiD_Write3DMatrix(field->node_ids[k]+1,
-                                  stress[6*l+0], stress[6*l+1], stress[6*l+2],
-                                  stress[6*l+3], stress[6*l+4], stress[6*l+5]);
+                                  stress[6*p+0], stress[6*p+1], stress[6*p+2],
+                                  stress[6*p+3], stress[6*p+4], stress[6*p+5]);
               }
             }
           }
@@ -821,7 +752,7 @@ static void write_mesh(PROBLEM_DATA *problem, INT num)
     for (j=0; j<MAX_EL_MINOR; ++j) {
       if (field->element_flags[i][j]) {
         NNode = info->variant[j].node_number;
-        EType = info->variant[j].gid_type;
+        EType = gid_type_map[info->variant[j].dis_type];
 
         dsassert((NNode > 0) && (EType != GiD_NoElement),
                  "non-existing element variant selected");
@@ -873,7 +804,7 @@ static void write_mesh(PROBLEM_DATA *problem, INT num)
         CHAR GP_name[30];
 
         NNode = info->variant[j].node_number;
-        EType = info->variant[j].gid_type;
+        EType = gid_type_map[info->variant[j].dis_type];
         GP_number = info->variant[j].gauss_number;
 
         /* The gauss point definition is meant just for this
@@ -887,23 +818,6 @@ static void write_mesh(PROBLEM_DATA *problem, INT num)
       }
     }
   }
-}
-
-
-/*----------------------------------------------------------------------*/
-/*!
-  \brief Tell whether a given result group belongs to this field.
-
-  \author u.kue
-  \date 10/04
-*/
-/*----------------------------------------------------------------------*/
-static INT match_field_result(FIELD_DATA *field, MAP *result_group)
-{
-  return (strcmp(map_read_string(result_group, "field"),
-                 fieldnames[field->type]) == 0) &&
-    (map_read_int(result_group, "field_pos") == field->field_pos) &&
-    (map_read_int(result_group, "discretization") == field->disnum);
 }
 
 
@@ -967,9 +881,6 @@ static void write_field(PROBLEM_DATA* problem, INT num)
       if (map_has_map(result_group, "pressure")) {
         write_pressure(field, result_group);
       }
-      if (map_has_map(result_group, "nd_stress")) {
-        write_nd_stress(field, result_group);
-      }
 
       /* element dependend results */
       if (map_has_map(result_group, "stress")) {
@@ -979,6 +890,8 @@ static void write_field(PROBLEM_DATA* problem, INT num)
   }
 }
 
+
+#ifdef D_FSI
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -1000,13 +913,7 @@ static void write_fsi(PROBLEM_DATA* problem)
   FIELD_DATA* fluid_field;
   FIELD_DATA* ale_field;
 
-  MAP* coords_group;
-  INT value_entry_length;
-  INT value_offset;
-
-  DOUBLE* ale_coords;
-  INT* fluid_connect;
-  DOUBLE coords[3];
+  INT* fluid_ale_connect;
 
   /* Find the corresponding discretizations. We don't rely on any order. */
   for (i=0; i<problem->num_discr; ++i) {
@@ -1049,63 +956,17 @@ static void write_fsi(PROBLEM_DATA* problem)
   /*--------------------------------------------------------------------*/
   /* We need to find the connection between ale and fluid nodes. */
 
-  coords_group = map_read_map(ale_field->table, "coords");
-  value_entry_length = map_read_int(coords_group, "value_entry_length");
-  dsassert(value_entry_length == problem->ndim, "wrong dimension number in ale field");
-  value_offset = map_read_int(coords_group, "value_offset");
+  {
+    INT *fluid_struct_connect;
+    post_find_fsi_coupling(problem,
+                           struct_field, fluid_field, ale_field,
+                           &fluid_struct_connect, &fluid_ale_connect);
 
-  ale_coords = (DOUBLE*)CCACALLOC(value_entry_length*ale_field->numnp, sizeof(DOUBLE));
-
-  fseek(ale_field->value_file, value_offset, SEEK_SET);
-  if (fread(ale_coords, sizeof(DOUBLE),
-            value_entry_length*ale_field->numnp,
-            ale_field->value_file) != value_entry_length*ale_field->numnp) {
-    dserror("reading coordinates of ale field failed");
-  }
-
-  coords_group = map_read_map(fluid_field->table, "coords");
-  value_entry_length = map_read_int(coords_group, "value_entry_length");
-  dsassert(value_entry_length == problem->ndim, "wrong dimension number in fluid field");
-  value_offset = map_read_int(coords_group, "value_offset");
-
-  fluid_connect = (INT*)CCACALLOC(fluid_field->numnp, sizeof(INT));
-
-  /* This is a quadratic loop. If it turns out to be too slow one
-   * could implement some quad- or octtree algorithm. */
-  fseek(fluid_field->value_file, value_offset, SEEK_SET);
-  for (i=0; i<fluid_field->numnp; ++i) {
-    INT n_ale;
-    if (fread(coords, sizeof(DOUBLE), value_entry_length, fluid_field->value_file)!=value_entry_length) {
-      dserror("reading coordinates of fluid field failed");
-    }
-
-    /* no corresponding ale node by default */
-    fluid_connect[i] = -1;
-
-    /* search the ale node */
-    for (n_ale=0; n_ale<ale_field->numnp; ++n_ale) {
-      INT k;
-      DOUBLE diff = 0;
-
-      /* quadratic error norm */
-      for (k=0; k<problem->ndim; ++k) {
-        DOUBLE d = coords[k] - ale_coords[problem->ndim*n_ale+k];
-        diff += d*d;
-      }
-
-      /*
-       * If the difference is very small we've found the corresponding
-       * node. The tolerance here might be too big for very fine
-       * meshes. I don't know. (ccarat uses the same tolerance but
-       * applies it to the sqare root. I don't want to waste the time
-       * to calculate it...)
-       *
-       * In fluid_connect we store the local indices, that is no real
-       * ids. */
-      if (diff < 1e-10) {
-        fluid_connect[i] = n_ale;
-        break;
-      }
+    /*
+     * We don't need the connection to the structure field here. Free
+     * it immediately. */
+    if (struct_field != NULL) {
+      CCAFREE(fluid_struct_connect);
     }
   }
 
@@ -1157,11 +1018,11 @@ static void write_fsi(PROBLEM_DATA* problem)
         /* Iterate all fluid nodes. */
         for (k = 0; k < fluid_field->numnp; ++k) {
 
-          if (fluid_connect[k] != -1) {
+          if (fluid_ale_connect[k] != -1) {
 
             /* We have to seek each time. This is not efficient. */
             fseek(ale_field->value_file,
-                  value_offset + sizeof(DOUBLE)*fluid_connect[k]*value_entry_length,
+                  value_offset + sizeof(DOUBLE)*fluid_ale_connect[k]*value_entry_length,
                   SEEK_SET);
             if (fread(x, sizeof(DOUBLE), value_entry_length, ale_field->value_file) != value_entry_length) {
               dserror("failed to read displacement of node %d", k);
@@ -1191,10 +1052,6 @@ static void write_fsi(PROBLEM_DATA* problem)
 #if 0
       /* No fluid stresses yet? */
 
-      if (map_has_map(result_group, "nd_stress")) {
-        write_nd_stress(fluid_field, result_group);
-      }
-
       /* element dependend results */
       if (map_has_map(result_group, "stress")) {
         write_stress(fluid_field, result_group);
@@ -1216,10 +1073,6 @@ static void write_fsi(PROBLEM_DATA* problem)
           write_pressure(struct_field, result_group);
         }
 
-        if (map_has_map(result_group, "nd_stress")) {
-          write_nd_stress(struct_field, result_group);
-        }
-
         if (map_has_map(result_group, "stress")) {
           write_stress(struct_field, result_group);
         }
@@ -1227,9 +1080,10 @@ static void write_fsi(PROBLEM_DATA* problem)
     }
   }
 
-  CCAFREE(fluid_connect);
-  CCAFREE(ale_coords);
+  CCAFREE(fluid_ale_connect);
 }
+
+#endif
 
 
 /*----------------------------------------------------------------------*/

@@ -1,3 +1,4 @@
+*.control
 *.cur
 *.dat.scr
 *.err
@@ -7,12 +8,13 @@
 *.out
 *.plt
 *.pss
+*.sizes
 *.tur
+*.values
 .svn
 Makefile
 cca_*.debg
 cca_*.fast
 post_*
-*.control
-*.values
-*.sizes
+*.microres
+*.submesh

@@ -20,6 +20,10 @@ understand. Feel free to add your own.
 
 #ifdef BINIO
 
+/*!
+\addtogroup IO
+*//*! @{ (documentation module open)*/
+
 #include "io_restart.h"
 
 #include "../shell8/shell8.h"
@@ -1062,4 +1066,5 @@ void restart_read_bin_fsidyn(FSI_DYNAMIC *fsidyn, INT step)
 #endif
 }
 
+/*! @} (documentation module close)*/
 #endif

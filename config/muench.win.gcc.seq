@@ -1,0 +1,63 @@
+# -*- shell-script -*-
+PLATFORM=WIN_MUENCH
+PARALLEL=no
+
+if [ x$BIT = "x64" ] ; then
+    echo $0: Warning: Only 32 bit executable on platform Windows.
+    BIT=32
+fi
+
+F77=g77
+CC=gcc
+LD=gcc
+
+PLAIN_F77=g77
+PLAIN_CC=gcc
+PLAIN_LD=gcc
+
+BASEDIR="/d/mydocs/kuettler/lib"
+
+#INCLUDEDIRS="-I/e/programme/minigw/include -I/h/ccarat/include"
+#LIBDIRS="-L/e/programme/minigw/lib -L$BASEDIR/blas -L$BASEDIR/lapack" 
+INCLUDEDIRS="-I/d/mydocs/kuettler/include"
+LIBDIRS="-L$BASEDIR/blas -L$BASEDIR/lapack" 
+
+# aztec
+AZTEC_INC=""
+AZTEC_LIB="-L$BASEDIR/aztec21/ -laztec"
+
+# spooles
+SPOOLES_INC=""
+SPOOLES_LIB=""
+
+# umfpack
+UMFPACK_INC=""
+UMFPACK_LIB="-L$BASEDIR/umfpack/ -lumfpack"
+
+# visual2
+if grep '^VISUAL2_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
+ echo $0: Error: VISUAL2 not possible on platform Windows.
+ exit 1
+fi
+VISUAL2_INC=""
+VISUAL2_LIB=""
+
+# visual3
+if grep '^VISUAL3_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
+ echo $0: Error: VISUAL3 not possible on platform Windows.
+ exit 1
+fi
+VISUAL3_INC=""
+VISUAL3_LIB=""
+
+
+LIBS="-llapack  -lblas -lm -lg2c"
+
+# FAST
+PROGRAMNAME=ccarat.exe
+CFLAGS_OPT="-O"
+FFLAGS_OPT="-O"
+CFLAGS="-c -ansi -Wall"
+FFLAGS="-Wall"
+LDFLAGS=""
+

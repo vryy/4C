@@ -99,6 +99,10 @@ Maintainer: Malte Neumann
 #include <aztec21/lib/az_aztec.h>
 #endif
 
+#ifdef WIN_MUENCH
+#include <aztec21/lib/az_aztec.h>
+#endif
+
 #endif
 #endif /* end of ifdef AZTEC_PACKAGE */
 
@@ -174,6 +178,8 @@ Maintainer: Malte Neumann
 #elif defined(LINUX_MUENCH)
 #include <umfpack.h>
 #elif defined(HPUX_MUENCH)
+#include <umfpack.h>
+#elif defined(WIN_MUENCH)
 #include <umfpack.h>
 #else
 #include <umfpack/umfpack.h>

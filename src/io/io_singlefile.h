@@ -51,6 +51,10 @@ All io is done using chunks.
 
 #ifdef BINIO
 
+/*!
+\addtogroup IO
+*//*! @{ (documentation module open)*/
+
 #ifndef BIN_SINGLEFILE_H
 #define BIN_SINGLEFILE_H
 
@@ -316,6 +320,9 @@ typedef struct _BIN_IN_CHUNK {
   \brief Init the main (static) data structure that is needed for
   writing.
 
+  Open the control file and write the first lines. To open the file
+  its name must be known. In case of restart we have to adjust it.
+
   \author u.kue
   \date 08/04
 */
@@ -327,6 +334,8 @@ void init_bin_out_main(CHAR* outputname);
 /*!
   \brief Init the main (static) data structure that is needed for
   reading.
+
+  Read the control file and put its content in a map.
 
   \author u.kue
   \date 08/04
@@ -621,4 +630,6 @@ void in_distvec_chunk(BIN_IN_FIELD* context,
 MAP *in_find_restart_group(FIELD *actfield, INT disnum, INT step);
 
 #endif
+
+/*! @} (documentation module close)*/
 #endif

@@ -352,13 +352,6 @@ switch(actfield->fieldtyp)
       frread();
     }
     break;
-  case levelset:
-    while(strncmp(allfiles.actplace,"------",6)!=0)
-    {
-      frint("NUMLEVELSETDIS", &(actfield->ndis),&ierr);
-      frread();
-    }
-    break;
   default:
     dserror("Unknown fieldtype");
     break;

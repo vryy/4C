@@ -821,11 +821,6 @@ switch (task)
         fprintf(err,"*************************************\n");
         fprintf(err,"WARNINGS Structure Field: \n");
       break;
-      case levelset:
-        if (par.myrank==0) printf("\nWARNINGS Levelset Field: \n");
-        fprintf(err,"*************************************\n");
-        fprintf(err,"WARNINGS Levelset Field: \n");
-      break;
       default: dserror("Unknown fieldtyp!");
       }
   #endif

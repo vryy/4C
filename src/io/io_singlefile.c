@@ -51,10 +51,18 @@ All io is done using chunks.
 
 #ifdef BINIO
 
+/*!
+\addtogroup IO
+*//*! @{ (documentation module open)*/
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <time.h>
+#ifndef WIN_MUENCH
+#include <pwd.h>
+#endif
 
 #include "../headers/standardtypes.h"
 
@@ -180,10 +188,23 @@ CHAR* fieldnames[] = FIELDNAMES;
 static CHAR* nodearraynames[] = NODEARRAYNAMES;
 
 
+/*======================================================================*/
+/* So the journey begins. I've put in some frames like this one that
+ * describe what the following code is all about. These frames build
+ * on each other, so you might want to read them from top to bottom.
+ *
+ * Above all there are the two main constructors. These functions set
+ * up the io module. ccarat calls them before the calculation starts. */
+/*======================================================================*/
+
+
 /*----------------------------------------------------------------------*/
 /*!
   \brief Init the main (static) data structure that is needed for
   writing.
+
+  Open the control file and write the first lines. To open the file
+  its name must be known. In case of restart we have to adjust it.
 
   \author u.kue
   \date 08/04
@@ -199,7 +220,6 @@ void init_bin_out_main(CHAR* outputname)
    * already written. Instead we try to find a new file name. */
   if (genprob.restart) {
     if (par.myrank == 0) {
-      INT id;
       CHAR tmpbuf[256];
       INT len;
       INT number = 0;
@@ -214,10 +234,14 @@ void init_bin_out_main(CHAR* outputname)
       }
 
       for (;;) {
+	/*INT id;*/
+	FILE* f;
         number += 1;
         sprintf(bin_out_main.name, "%s-%d.control", tmpbuf, number);
-        if ((id = open(bin_out_main.name, O_CREAT|O_EXCL, 0660)) != -1) {
-          close(id);
+        /*if ((id = open(bin_out_main.name, O_CREAT|O_EXCL, 0660)) != -1) {*/
+	if ((f = fopen(bin_out_main.name, "rb")) != NULL) {
+          /*close(id);*/
+          fclose(f);
           bin_out_main.name[strlen(bin_out_main.name)-8] = '\0';
           break;
         }
@@ -240,16 +264,44 @@ void init_bin_out_main(CHAR* outputname)
   if (par.myrank == 0) {
     static CHAR* problem_names[] = PROBLEMNAMES;
     CHAR name[256];
-    sprintf(name, "%s.control", bin_out_main.name);
-    bin_out_main.control_file = fopen(name, "w");
+    time_t time_value;
+    CHAR hostname[31];
+    struct passwd *user_entry;
 
+    sprintf(name, "%s.control", bin_out_main.name);
+    bin_out_main.control_file = fopen(name, "wb");
+
+#ifndef WIN_MUENCH
+    user_entry = getpwuid(getuid());
+    gethostname(hostname, 30);
+#else
+    strcpy(hostname, "unknown host");
+#endif
+    time_value = time(NULL);
     fprintf(bin_out_main.control_file, "# ccarat output control file\n"
+            "# created by %s on %s at %s\n"
             "version = \"0.1\"\n"
+            "input_file = \"%s\"\n"
             "problem_type = \"%s\"\n"
             "ndim = %d\n"
             "\n",
+#ifndef WIN_MUENCH
+            user_entry->pw_name,
+#else
+	    "unknown",
+#endif
+            hostname,
+            ctime(&time_value),
+            allfiles.inputfile_name,
             problem_names[genprob.probtyp],
             genprob.ndim);
+
+    /* insert back reference */
+    if (genprob.restart) {
+      fprintf(bin_out_main.control_file,
+              "restarted_run = \"%s\"\n\n",
+              outputname);
+    }
 
     fflush(bin_out_main.control_file);
   }
@@ -264,6 +316,8 @@ void init_bin_out_main(CHAR* outputname)
 /*!
   \brief Init the main (static) data structure that is needed for
   reading.
+
+  Read the control file and put its content in a map.
 
   \author u.kue
   \date 08/04
@@ -285,6 +339,13 @@ void init_bin_in_main(CHAR* inputname)
   dstrc_exit();
 #endif
 }
+
+
+/*======================================================================*/
+/* Let's have the destructors next. These functions are called
+ * whenever an object has to be destroyd. They free the memory and
+ * close the files. Nothing special here. */
+/*======================================================================*/
 
 
 /*----------------------------------------------------------------------*/
@@ -469,44 +530,62 @@ void destroy_bin_in_chunk(BIN_IN_CHUNK* chunk)
 
 
 
+#ifdef PARALLEL
+
+/*======================================================================*/
+/* Now here are three service functions that find the number of items
+ * that need to be exchanged between processors. Items can be nodes,
+ * elements or dofs, thus there are three functions. Of course the
+ * whole sending and receiving business needs only be done in the
+ * parallel version.
+ *
+ * These functions are actually part of the discretication output
+ * constructor. */
+/*======================================================================*/
+
+
 /*----------------------------------------------------------------------*/
 /*!
   \brief Find the number dofs that need to be send and received.
 
+  Find the number dofs that need to be send and received in order to
+  output a distributed vector.
+
   This is solver dependent.
 
-  The main duty of this function is needed in the parallel version
-  only. However it also finds the number of dofs, and we want to know
-  it in the sequential version, too.
-
-  \return the number of dofs.
+  \param *context    (i/o) the discretication to be set up
 
   \author u.kue
   \date 09/04
 */
 /*----------------------------------------------------------------------*/
-static INT out_setup_dof_transfer(BIN_OUT_FIELD *context,
-                                  SPARSE_TYP *sysarray_typ,
-                                  SPARSE_ARRAY *sysarray,
-                                  INTRA *actintra,
-                                  INT nprocs,
-                                  INT rank)
+static void out_setup_dof_transfer(BIN_OUT_FIELD *context)
 {
   INT i, max_num, fullarrays;
   INT tag_base = 0xABCD;
-  INT ndof = 0;
+
+  SPARSE_TYP *sysarray_typ;
+  SPARSE_ARRAY *sysarray;
+  INTRA *actintra;
+
+  INT nprocs;
+  INT rank;
 
 #ifdef DEBUG
   dstrc_enter("out_setup_dof_transfer");
 #endif
 
+  sysarray_typ = context->sysarray_typ;
+  sysarray = context->sysarray;
+  actintra = context->actintra;
+
+  nprocs = actintra->intra_nprocs;
+  rank = actintra->intra_rank;
 
 #define calc_max_number(numeq_total)                            \
-  ndof = numeq_total;                                           \
   max_num = ((numeq_total) + nprocs - 1) / nprocs;              \
   fullarrays = nprocs - (nprocs*max_num - (numeq_total));
 
-#ifdef PARALLEL
 #define boilerplate_code                                        \
   {                                                             \
     INT proc;                                                   \
@@ -523,10 +602,6 @@ static INT out_setup_dof_transfer(BIN_OUT_FIELD *context,
     /* Count for sending. */                                    \
     context->send_numdof[proc]++;                               \
   }
-
-#else
-#define boilerplate_code
-#endif
 
   /* Find out how many dofs we have to send to which processor. */
   switch (*sysarray_typ) {
@@ -645,8 +720,6 @@ static INT out_setup_dof_transfer(BIN_OUT_FIELD *context,
 #undef boilerplate_code
 #undef calc_max_number
 
-#ifdef PARALLEL
-
   /* The information how many dofs we have to receive can only be
    * found by communication. */
   for (i=0; i<nprocs; ++i) {
@@ -666,39 +739,46 @@ static INT out_setup_dof_transfer(BIN_OUT_FIELD *context,
     }
   }
 
-#endif
-
 #ifdef DEBUG
   dstrc_exit();
 #endif
-  return ndof;
+  return;
 }
 
-
-#ifdef PARALLEL
 
 
 /*----------------------------------------------------------------------*/
 /*!
   \brief Find the number elements that need to be send and received.
 
+  \param *context    (i/o) the discretication to be set up
+
   \author u.kue
   \date 09/04
 */
 /*----------------------------------------------------------------------*/
-static void out_setup_element_transfer(BIN_OUT_FIELD *context,
-                                       INTRA *actintra,
-                                       INT nprocs,
-                                       INT rank,
-                                       DISCRET *actdis,
-                                       PARTDISCRET *actpdis)
+static void out_setup_element_transfer(BIN_OUT_FIELD *context)
 {
   INT i, max_num, fullarrays, j;
   INT tag_base = 0xABCD;
 
+  DISCRET *actdis;
+  PARTDISCRET *actpdis;
+  INTRA *actintra;
+
+  INT nprocs;
+  INT rank;
+
 #ifdef DEBUG
   dstrc_enter("out_setup_element_transfer");
 #endif
+
+  actdis = &(context->actfield->dis[context->disnum]);
+  actpdis = &(context->actpart->pdis[context->disnum]);
+  actintra = context->actintra;
+
+  nprocs = actintra->intra_nprocs;
+  rank = actintra->intra_rank;
 
   max_num = (actdis->numele + nprocs - 1) / nprocs;
   fullarrays = nprocs - (nprocs*max_num - actdis->numele);
@@ -751,23 +831,34 @@ static void out_setup_element_transfer(BIN_OUT_FIELD *context,
 /*!
   \brief Find the number nodes that need to be send and received.
 
+  \param *context    (i/o) the discretication to be set up
+
   \author u.kue
   \date 09/04
 */
 /*----------------------------------------------------------------------*/
-static void out_setup_node_transfer(BIN_OUT_FIELD *context,
-                                    INTRA *actintra,
-                                    INT nprocs,
-                                    INT rank,
-                                    DISCRET *actdis,
-                                    PARTDISCRET *actpdis)
+static void out_setup_node_transfer(BIN_OUT_FIELD *context)
 {
   INT i, max_num, fullarrays, j;
   INT tag_base = 0xABCD;
 
+  DISCRET *actdis;
+  PARTDISCRET *actpdis;
+  INTRA *actintra;
+
+  INT nprocs;
+  INT rank;
+
 #ifdef DEBUG
   dstrc_enter("out_setup_node_transfer");
 #endif
+
+  actdis = &(context->actfield->dis[context->disnum]);
+  actpdis = &(context->actpart->pdis[context->disnum]);
+  actintra = context->actintra;
+
+  nprocs = actintra->intra_nprocs;
+  rank = actintra->intra_rank;
 
   max_num = (actdis->numnp + nprocs - 1) / nprocs;
   fullarrays = nprocs - (nprocs*max_num - actdis->numnp);
@@ -820,7 +911,144 @@ static void out_setup_node_transfer(BIN_OUT_FIELD *context,
 #endif
 }
 
+
 #endif
+
+
+/*======================================================================*/
+/* Further support functions the discretization output constructor
+ * needs. */
+/*======================================================================*/
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Write information about all element variants used in this
+  discretization to the control file.
+
+  The "mesh" chunk specifies the type of each element by its major and
+  minor number, so the meaning of these numbers is a crucial
+  information and it's hardly possible to guarantee that these number
+  never change inside ccarat. Therefore we write out what these
+  numbers mean.
+
+  \param context      (i) pointer to a context variable during setup.
+
+  \author u.kue
+  \date 10/04
+*/
+/*----------------------------------------------------------------------*/
+static void out_element_variants(BIN_OUT_FIELD *context)
+{
+  INT ele;
+
+#ifdef DEBUG
+  dstrc_enter("out_element_variants");
+#endif
+
+  fprintf(bin_out_main.control_file,
+          "    # the element variants used in this discretization\n");
+  for (ele=0; ele<el_count; ++ele) {
+    if (count_element_variants(context, ele) > 0) {
+      INT var;
+      for (var=0; var<MAX_EL_MINOR; ++var) {
+        if (context->element_flag[ele][var]) {
+          write_variant_group(bin_out_main.control_file, ele, var);
+        }
+      }
+    }
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Open the data files for output.
+
+  \param context      (i) pointer to a context variable during setup.
+
+  \author u.kue
+  \date 10/04
+*/
+/*----------------------------------------------------------------------*/
+static void out_open_data_files(BIN_OUT_FIELD *context)
+{
+#ifdef PARALLEL
+  INT err;
+#endif
+  INT field_pos;
+  FIELD *actfield;
+  INTRA *actintra;
+  INT disnum;
+  INT rank;
+  CHAR filename[256];
+
+#ifdef DEBUG
+  dstrc_enter("out_open_data_files");
+#endif
+
+  actfield = context->actfield;
+  actintra = context->actintra;
+  disnum = context->disnum;
+  rank = actintra->intra_rank;
+
+  /*
+   * The file names must be unique even in (future) problems with
+   * different field of the same type and many discretizations. Thus
+   * the names get a little weird. */
+
+  field_pos = get_field_position(context);
+
+  sprintf(filename, "%s.%s.%d.%d.values", bin_out_main.name,
+          fieldnames[actfield->fieldtyp], field_pos, disnum);
+#ifdef PARALLEL
+  err = MPI_File_open(actintra->MPI_INTRA_COMM, filename,
+                      MPI_MODE_WRONLY | MPI_MODE_CREATE, MPI_INFO_NULL,
+                      &(context->value_file));
+  if (err != 0) {
+    dserror("MPI_File_open failed for file '%s': %d", filename, err);
+  }
+#else
+  context->value_file = fopen(filename, "wb");
+#endif
+  if (rank == 0) {
+    fprintf(bin_out_main.control_file, "    value_file = \"%s\"\n", filename);
+  }
+
+  sprintf(filename, "%s.%s.%d.%d.sizes", bin_out_main.name,
+          fieldnames[actfield->fieldtyp], field_pos, disnum);
+#ifdef PARALLEL
+  err = MPI_File_open(actintra->MPI_INTRA_COMM, filename,
+                      MPI_MODE_WRONLY | MPI_MODE_CREATE, MPI_INFO_NULL,
+                      &(context->size_file));
+  if (err != 0) {
+    dserror("MPI_File_open failed for file '%s': %d", filename, err);
+  }
+#else
+  context->size_file = fopen(filename, "wb");
+#endif
+  if (rank == 0) {
+    fprintf(bin_out_main.control_file, "    size_file = \"%s\"\n", filename);
+  }
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
+
+/*======================================================================*/
+/* Now, finally, here are the two constructors, one for the
+ * discretization and one for a single chunk. The former is quite big
+ * and sets up lots of things while the later does only very
+ * little. That's good because the discretization output constructor
+ * runs once for each discretization while the chunk output
+ * constructor runs for every chunk. */
+/*======================================================================*/
+
 
 
 /*----------------------------------------------------------------------*/
@@ -858,9 +1086,8 @@ void init_bin_out_field(BIN_OUT_FIELD* context,
                         INT disnum)
 {
 #ifdef PARALLEL
-  INT err;
-#endif
   INT nprocs = actintra->intra_nprocs;
+#endif
   INT rank = actintra->intra_rank;
   INT j;
   DISCRET* actdis = &(actfield->dis[disnum]);
@@ -874,9 +1101,6 @@ void init_bin_out_field(BIN_OUT_FIELD* context,
 #else
   INT* max_size = context->max_size;
 #endif
-
-  INT field_pos;
-  CHAR filename[256];
 
 #ifdef DEBUG
   dstrc_enter("init_bin_out_field");
@@ -904,44 +1128,7 @@ void init_bin_out_field(BIN_OUT_FIELD* context,
   /*--------------------------------------------------------------------*/
   /* open file to write this field */
 
-  /*
-   * The file names must be unique even in (future) problems with
-   * different field of the type and many discretizations. Thus the
-   * names get a little weird. */
-
-  field_pos = get_field_position(context);
-
-  sprintf(filename, "%s.%s.%d.%d.values", bin_out_main.name,
-          fieldnames[actfield->fieldtyp], field_pos, disnum);
-#ifdef PARALLEL
-  err = MPI_File_open(actintra->MPI_INTRA_COMM, filename,
-                      MPI_MODE_WRONLY | MPI_MODE_CREATE, MPI_INFO_NULL,
-                      &(context->value_file));
-  if (err != 0) {
-    dserror("MPI_File_open failed for file '%s': %d", filename, err);
-  }
-#else
-  context->value_file = fopen(filename, "w");
-#endif
-  if (rank == 0) {
-    fprintf(bin_out_main.control_file, "    value_file = \"%s\"\n", filename);
-  }
-
-  sprintf(filename, "%s.%s.%d.%d.sizes", bin_out_main.name,
-          fieldnames[actfield->fieldtyp], field_pos, disnum);
-#ifdef PARALLEL
-  err = MPI_File_open(actintra->MPI_INTRA_COMM, filename,
-                      MPI_MODE_WRONLY | MPI_MODE_CREATE, MPI_INFO_NULL,
-                      &(context->size_file));
-  if (err != 0) {
-    dserror("MPI_File_open failed for file '%s': %d", filename, err);
-  }
-#else
-  context->size_file = fopen(filename, "w");
-#endif
-  if (rank == 0) {
-    fprintf(bin_out_main.control_file, "    size_file = \"%s\"\n", filename);
-  }
+  out_open_data_files(context);
 
 #ifdef PARALLEL
 
@@ -991,23 +1178,25 @@ void init_bin_out_field(BIN_OUT_FIELD* context,
   /*--------------------------------------------------------------------*/
   /* find number of nodes that need to be communicated */
 
-  out_setup_node_transfer(context, actintra, nprocs, rank, actdis, actpdis);
+  out_setup_node_transfer(context);
 
   /*--------------------------------------------------------------------*/
   /* find number of elements that need to be communicated */
 
-  out_setup_element_transfer(context, actintra, nprocs, rank, actdis, actpdis);
-
-#endif
+  out_setup_element_transfer(context);
 
   /*--------------------------------------------------------------------*/
   /* find number of dofs that need to be communicated */
 
-  /*
-   * this is done in the sequential version, too, to get the number of
-   * dofs. */
   if (sysarray_typ != NULL) {
-    ndof = out_setup_dof_transfer(context, sysarray_typ, sysarray, actintra, nprocs, rank);
+    out_setup_dof_transfer(context);
+  }
+
+#endif
+
+  if (sysarray_typ != NULL) {
+    INT numeq;
+    solserv_getmatdims(sysarray, *sysarray_typ, &numeq, &ndof);
   }
 
   /*--------------------------------------------------------------------*/
@@ -1025,102 +1214,10 @@ void init_bin_out_field(BIN_OUT_FIELD* context,
             "    numdof = %d\n"
             "\n",
             actdis->numnp, actdis->numele, ndof);
+
+    /* Give explicit details about all used variants. */
+    out_element_variants(context);
   }
-
-  /*
-   * Some element specific code has to go here because some elements
-   * require special treatment. */
-#ifdef D_SHELL8
-  {
-    INT shell8_count = count_element_variants(context, el_shell8);
-    if (shell8_count > 0) {
-      ELEMENT* actele;
-      SHELL8* s8;
-
-      if (shell8_count != count_element_types(context)) {
-        dserror("shell8 is supposed to be the only element in the mesh");
-      }
-      if (shell8_count != 1) {
-        dserror("there must be only one shell8 variant");
-      }
-
-      /*
-       * OK. We have a shell8 problem.  */
-      context->is_shell8_problem = 1;
-
-      actele = context->actpart->pdis[context->disnum].element[0];
-      dsassert(actele->eltyp == el_shell8, "shell8 expected");
-
-      s8 = actele->e.s8;
-      context->s8_minor = MINOR_SHELL8(actele);
-
-      /*
-       * Mark this discretization. The filter will know that it is a
-       * special one. */
-      if (rank == 0) {
-        fprintf(bin_out_main.control_file,
-                "    shell8_minor = %d\n"
-                "    shell8_scal = %f\n"
-                "    shell8_sdc = %f\n"
-                "\n",
-                context->s8_minor, 1.0, s8->sdc);
-      }
-    }
-    else {
-      context->is_shell8_problem = 0;
-    }
-  }
-#endif
-#ifdef D_SHELL9
-  {
-    INT shell9_count = count_element_variants(context, el_shell9);
-    if (shell9_count > 0) {
-      ELEMENT* actele;
-      SHELL9* s9;
-      INT klay;
-
-      if (shell9_count != count_element_types(context)) {
-        dserror("shell9 is supposed to be the only element in the mesh");
-      }
-      if (shell9_count != 1) {
-        dserror("there must be only one shell9 variant");
-      }
-
-      /*
-       * OK. We have a shell9 problem.  */
-      context->is_shell9_problem = 1;
-
-      actele = context->actpart->pdis[context->disnum].element[0];
-      dsassert(actele->eltyp == el_shell9, "shell9 expected");
-
-      s9 = actele->e.s9;
-      context->s9_minor = MINOR_SHELL9(actele);
-
-      context->s9_layers = 0;
-      for (klay=0; klay<s9->num_klay; klay++) {
-        context->s9_layers += s9->kinlay[klay].num_mlay;
-      }
-
-      /*
-       * Mark this discretization. The filter will know that it is a
-       * special one. */
-      if (rank == 0) {
-        fprintf(bin_out_main.control_file,
-                "    shell9_smoothed = \"%s\"\n"
-                "    shell9_minor = %d\n"
-                "    shell9_layers = %d\n"
-                "    shell9_forcetype = \"%s\"\n"
-                "\n",
-                (ioflags.struct_stress_gid_smo ? "yes" : "no"),
-                context->s9_minor, context->s9_layers,
-                (s9->forcetyp==s9_xyz) ? "xyz" : ((s9->forcetyp==s9_rst) ? "rst" : "rst_ortho"));
-      }
-    }
-    else {
-      context->is_shell9_problem = 0;
-    }
-  }
-#endif
 
   /*--------------------------------------------------------------------*/
   /* store the mesh connectivity and node coordinates */
@@ -1129,39 +1226,15 @@ void init_bin_out_field(BIN_OUT_FIELD* context,
   out_element_chunk(context, "mesh", cc_mesh, value_length, size_length, 0);
   out_node_chunk(context, "coords", cc_coords, genprob.ndim, 1, 0);
 
+  /*
+   * Some element specific code has to go here because some elements
+   * require special treatment. */
 #ifdef D_SHELL8
-  if (context->is_shell8_problem) {
-    INT numnp;
-    numnp = element_info[el_shell8].variant[context->s8_minor].node_number;
-
-    /* There is a director at each node. Furthermore we need the
-     * element thickness. Let's play it save and output one thickness
-     * value per node. This is more that is currently supported by
-     * ccarat's input though. */
-    out_element_chunk(context, "shell8_director", cc_shell8_director, (3+1)*numnp, 0, 0);
-  }
+  out_shell8_setup(context);
 #endif
 
 #ifdef D_SHELL9
-  if (context->is_shell9_problem) {
-    INT numnp;
-    INT layer_count;
-
-    /* We need space for three values per artificial node. */
-
-    numnp = element_info[el_shell9].variant[context->s9_minor].node_number;
-
-    if ((context->s9_minor == MINOR_SHELL9_4_22) ||
-        (context->s9_minor == MINOR_SHELL9_4_33)) {
-      layer_count = 1;
-    }
-    else {
-      layer_count = 2;
-    }
-
-    out_element_chunk(context, "shell9_coords", cc_shell9_coords,
-                      3*numnp*(layer_count*context->s9_layers+1), 0, 0);
-  }
+  out_shell9_setup(context);
 #endif
 
 #ifdef PARALLEL
@@ -1240,7 +1313,7 @@ void init_bin_out_chunk(BIN_OUT_FIELD* context,
     chunk->first_id -= rank - chunk->fullarrays;
   }
 
-  /* remember the items size */
+  /* Remember the items size to write to the control file later on. */
 
   map_insert_int_cpy(&chunk->group, value_entry_length, "value_entry_length");
   map_insert_int_cpy(&chunk->group, size_entry_length, "size_entry_length");
@@ -1270,6 +1343,12 @@ void init_bin_out_chunk(BIN_OUT_FIELD* context,
 #endif
 }
 
+
+/*======================================================================*/
+/* The inner working functions for output. These functions are
+ * general. The specific setup has been done and all sepcific
+ * gathering is delegated. */
+/*======================================================================*/
 
 
 /*----------------------------------------------------------------------*/
@@ -1584,6 +1663,12 @@ void out_write_chunk(BIN_OUT_FIELD *context,
 }
 
 
+/*======================================================================*/
+/* The next functions make up the module local interface. These
+ * functions are called by the restart functions among others. They
+ * provide the functionality based on low level functions. */
+/*======================================================================*/
+
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -1717,27 +1802,36 @@ void out_distvec_chunk(BIN_OUT_FIELD* context,
 
 
 
-/*--------------------------------------------------------------------*/
+/*======================================================================*/
 /*
   Input
 
-  There is no use out output anything if it's not going to be read
-  back. And as ccarat attempts to write in its own format we'll have
-  to read it ourselves to do something useful with that data. Yet
-  there are different ways to write data. One way is to dump ccarat's
-  internal memory to disk. This enables us to read it back and go on
-  with our calculation provided the input file can be read again as we
-  don't want to dump information we have read before. Another approach
-  is to write some meaningful data. This is required for post
-  processing but most of the time we're not going to read it back into
-  ccarat. In preparing meaningful numbers some information is omitted
-  that ccarat needs to go on in its operation. Thus there is no
-  attempt to read such values here.
+  There is no use to output anything if it's not going to be read
+  back. Yet there are different ways to write data. One way is to dump
+  ccarat's internal memory to disk for restart. This enables us to go
+  on with the calculation provided the input file can be read,
+  too. Another approach is to write some meaningful data. This is
+  required for postprocessing but most of the time we're not going to
+  read it back into ccarat. In preparing meaningful numbers some
+  information is omitted that ccarat needs to go on in its
+  operation. Thus there is no attempt to read such values here. The
+  input is currently designed for restart.
+
+  The structure of the input functions closely resembles the one of
+  the output functions. There are a few comments less here.
 */
-/*--------------------------------------------------------------------*/
+/*======================================================================*/
 
 
 #ifdef PARALLEL
+
+/*======================================================================*/
+/* Support functions for the discretization input constructor. We need
+ * to figure out how many items (nodes, elements, dofs) are to be
+ * handled. Additionally we need to know which ones, the actual ids,
+ * because the processor that reads an item must know to which (other)
+ * processor to send it. */
+/*======================================================================*/
 
 
 /*----------------------------------------------------------------------*/
@@ -2300,6 +2394,11 @@ static void in_setup_dof_transfer(BIN_IN_FIELD *context,
 #endif
 
 
+/*======================================================================*/
+/* The two constructors. */
+/*======================================================================*/
+
+
 /*----------------------------------------------------------------------*/
 /*!
   \brief Init the data struture to read node arrays from one
@@ -2327,6 +2426,7 @@ void init_bin_in_field(BIN_IN_FIELD* context,
   DISCRET* actdis = &(actfield->dis[disnum]);
   SYMBOL* dir;
   CHAR* filename;
+  INT field_pos;
 
 #ifdef DEBUG
   dstrc_enter("init_bin_in_field");
@@ -2342,13 +2442,25 @@ void init_bin_in_field(BIN_IN_FIELD* context,
   context->disnum = disnum;
 
   /*--------------------------------------------------------------------*/
-  /* find the describtion of this field in the control file */
+  /* find the description of this field in the control file */
+
+  for (field_pos=0; field_pos<genprob.numfld; ++field_pos) {
+    if (actfield == &(field[field_pos])) {
+      break;
+    }
+  }
+
+  if (field_pos==genprob.numfld) {
+    dserror("unregistered field object");
+  }
+
   dir = map_find_symbol(&(bin_in_main.table), "field");
   while (dir != NULL) {
     if (symbol_is_map(dir)) {
       MAP* map;
       symbol_get_map(dir, &map);
-      if (map_has_string(map, "type", fieldnames[actfield->fieldtyp]) &&
+      if (map_has_string(map, "field", fieldnames[actfield->fieldtyp]) &&
+          map_has_int(map, "field_pos", field_pos) &&
           map_has_int(map, "discretization", disnum)) {
         /* The group entry that contains the distinguishing
          * definitions. This group contains information we need to know. */
@@ -2374,7 +2486,7 @@ void init_bin_in_field(BIN_IN_FIELD* context,
     dserror("MPI_File_open failed for file '%s': %d", filename, err);
   }
 #else
-  context->value_file = fopen(filename, "r");
+  context->value_file = fopen(filename, "rb");
 #endif
 
   filename = map_read_string(context->field_info, "size_file");
@@ -2386,7 +2498,7 @@ void init_bin_in_field(BIN_IN_FIELD* context,
     dserror("MPI_File_open failed for file '%s': %d", filename, err);
   }
 #else
-  context->size_file = fopen(filename, "r");
+  context->size_file = fopen(filename, "rb");
 #endif
 
   {
@@ -2555,6 +2667,12 @@ void init_bin_in_chunk(BIN_IN_FIELD* context,
   dstrc_exit();
 #endif
 }
+
+
+/*======================================================================*/
+/* And here we are, at the core of the input mechanism. Reading and
+ * distributing general data chunks. */
+/*======================================================================*/
 
 
 /*----------------------------------------------------------------------*/
@@ -2832,6 +2950,11 @@ void in_read_chunk(BIN_IN_FIELD *context,
 }
 
 
+/*======================================================================*/
+/* Finally there is the module local interface for input. */
+/*======================================================================*/
+
+
 /*----------------------------------------------------------------------*/
 /*!
   \brief Read on node array of the given discretization and distribute
@@ -2957,6 +3080,13 @@ void in_distvec_chunk(BIN_IN_FIELD* context,
 }
 
 
+/*======================================================================*/
+/* Service for the restart file. This function is closely related to
+ * the internal workings of the io module. So I think hiding it away
+ * from the restart file is a good idea. */
+/*======================================================================*/
+
+
 /*----------------------------------------------------------------------*/
 /*!
   \brief Find the description of the restart data in the control file
@@ -3010,5 +3140,7 @@ MAP *in_find_restart_group(FIELD *actfield, INT disnum, INT step)
 #endif
   return result_info;
 }
+
+/*! @} (documentation module close)*/
 
 #endif

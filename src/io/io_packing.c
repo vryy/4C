@@ -30,6 +30,10 @@ function calls.
 
 #ifdef BINIO
 
+/*!
+\addtogroup IO
+*//*! @{ (documentation module open)*/
+
 #include "io_packing.h"
 #include "io_singlefile.h"
 
@@ -134,6 +138,11 @@ extern BIN_IN_MAIN bin_in_main;
 extern CHAR* fieldnames[];
 
 
+/*======================================================================*/
+/* Let's start this file with element dependent code that's needed by
+ * the discretization output constructor. */
+/*======================================================================*/
+
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -170,65 +179,79 @@ void out_find_element_types(struct _BIN_OUT_FIELD *context,
     ELEMENT* actele = actpdis->element[i];
 
     switch (actele->eltyp) {
+#ifdef D_SHELL8
     case el_shell8:
-      element_flag[el_shell8][MINOR_SHELL8(actele)] = 1;
+      element_flag[el_shell8][find_shell8_minor_type(actele)] = 1;
       break;
+#endif
 #ifdef D_SHELL9
     case el_shell9:
-      element_flag[el_shell9][MINOR_SHELL9(actele)] = 1;
+      element_flag[el_shell9][find_shell9_minor_type(actele)] = 1;
       break;
 #endif
 #ifdef D_BRICK1
     case el_brick1:
-      element_flag[el_brick1][MINOR_BRICK1(actele)] = 1;
+      element_flag[el_brick1][find_brick1_minor_type(actele)] = 1;
       break;
 #endif
 #ifdef D_FLUID2
     case el_fluid2:
-      element_flag[el_fluid2][MINOR_FLUID2(actele)] = 1;
+      element_flag[el_fluid2][find_fluid2_minor_type(actele)] = 1;
       break;
 #endif
 #ifdef D_FLUID2_PRO
     case el_fluid2_pro:
-      element_flag[el_fluid2_pro][MINOR_FLUID2_PRO(actele)] = 1;
+      element_flag[el_fluid2_pro][find_fluid2_pro_minor_type(actele)] = 1;
+      break;
+#endif
+#ifdef D_FLUID2TU
+    case el_fluid2_tu:
+      element_flag[el_fluid2_tu][find_fluid2_tu_minor_type(actele)] = 1;
       break;
 #endif
 #ifdef D_FLUID3
     case el_fluid3:
-      element_flag[el_fluid3][MINOR_FLUID3(actele)] = 1;
+      element_flag[el_fluid3][find_fluid3_minor_type(actele)] = 1;
+      break;
+#endif
+#ifdef D_FLUID3_F
+    case el_fluid3_fast:
+      element_flag[el_fluid3_fast][find_fluid3_fast_minor_type(actele)] = 1;
       break;
 #endif
 #ifdef D_ALE
     case el_ale2:
-      element_flag[el_ale2][MINOR_ALE2(actele)] = 1;
+      element_flag[el_ale2][find_ale2_minor_type(actele)] = 1;
       break;
+#endif
+#ifdef D_ALE
     case el_ale3:
-      element_flag[el_ale3][MINOR_ALE3(actele)] = 1;
+      element_flag[el_ale3][find_ale3_minor_type(actele)] = 1;
       break;
 #endif
 #ifdef D_WALL1
     case el_wall1:
-      element_flag[el_wall1][MINOR_WALL1(actele)] = 1;
+      element_flag[el_wall1][find_wall1_minor_type(actele)] = 1;
       break;
 #endif
 #ifdef D_BEAM3
     case el_beam3:
-      element_flag[el_beam3][MINOR_BEAM3(actele)] = 1;
+      element_flag[el_beam3][find_beam3_minor_type(actele)] = 1;
       break;
 #endif
 #ifdef D_AXISHELL
     case el_axishell:
-      element_flag[el_axishell][MINOR_AXISHELL] = 1;
+      element_flag[el_axishell][find_axishell_minor_type(actele)] = 1;
       break;
 #endif
 #ifdef D_INTERF
     case el_interf:
-      element_flag[el_interf][MINOR_INTERF(actele)] = 1;
+      element_flag[el_interf][find_interf_minor_type(actele)] = 1;
       break;
 #endif
 #ifdef D_WALLGE
     case el_wallge:
-      element_flag[el_wallge][MINOR_WALLGE(actele)] = 1;
+      element_flag[el_wallge][find_wallge_minor_type(actele)] = 1;
       break;
 #endif
     default:
@@ -252,7 +275,201 @@ void out_find_element_types(struct _BIN_OUT_FIELD *context,
 }
 
 
+/*======================================================================*/
+/* There are special elements that demand a special setup for the
+ * discretization output object if they are used. The following
+ * functions provide just that. They are called by init_bin_out_field,
+ * the discretization output constructor. */
+/*======================================================================*/
+
+
+#ifdef D_SHELL8
+
 /*----------------------------------------------------------------------*/
+/*!
+  \brief Shell8 specific setup of the discretization output object.
+
+  Shell8 has six displacement dofs per node. The three normal ones and
+  the three steaming from the director vector. These additional three
+  must be handled here.
+
+  Currently a discretization must contains just one type of shell8
+  elements if it contains shell8 elements at all.
+
+  \param context      (i) pointer to a context variable during setup.
+
+  \author u.kue
+  \date 10/04
+*/
+/*----------------------------------------------------------------------*/
+void out_shell8_setup(struct _BIN_OUT_FIELD *context)
+{
+  INT rank = context->actintra->intra_rank;
+  INT shell8_count;
+
+#ifdef DEBUG
+  dstrc_enter("out_shell8_setup");
+#endif
+
+  shell8_count = count_element_variants(context, el_shell8);
+  if (shell8_count > 0) {
+    ELEMENT* actele;
+    SHELL8* s8;
+    INT numnp;
+
+    if (shell8_count != count_element_types(context)) {
+      dserror("shell8 is supposed to be the only element in the mesh");
+    }
+    if (shell8_count != 1) {
+      dserror("there must be only one shell8 variant");
+    }
+
+    /*
+     * OK. We have a shell8 problem.  */
+    context->is_shell8_problem = 1;
+
+    actele = context->actpart->pdis[context->disnum].element[0];
+    dsassert(actele->eltyp == el_shell8, "shell8 expected");
+
+    s8 = actele->e.s8;
+    context->s8_minor = find_shell8_minor_type(actele);
+
+    /*
+     * Mark this discretization. The filter will know that it is a
+     * special one. */
+    if (rank == 0) {
+      CHAR* forcetype[] = S8_FORCETYPE;
+      fprintf(bin_out_main.control_file,
+              "    shell8_minor = %d\n"
+              "    shell8_scal = %f\n"
+              "    shell8_sdc = %f\n"
+              "    shell8_forcetype = \"%s\"\n"
+              "\n",
+              context->s8_minor, 1.0, s8->sdc, forcetype[s8->forcetyp]);
+    }
+
+    numnp = element_info[el_shell8].variant[context->s8_minor].node_number;
+
+    /* There is a director at each node. Furthermore we need the
+     * element thickness. Let's play it save and output one thickness
+     * value per node. This is more that is currently supported by
+     * ccarat's input though. */
+    out_element_chunk(context, "shell8_director", cc_shell8_director, (3+1)*numnp, 0, 0);
+  }
+  else {
+    context->is_shell8_problem = 0;
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
+#endif
+
+
+
+#ifdef D_SHELL9
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Shell9 specific setup of the discretization output object.
+
+  Shell9 is a layered element with many displacement dofs per
+  node. These demand a special threatment.
+
+  Currently a discretization must contains just one type of shell9
+  elements if it contains shell9 elements at all.
+
+  \param context      (i) pointer to a context variable during setup.
+
+  \author u.kue
+  \date 10/04
+*/
+/*----------------------------------------------------------------------*/
+void out_shell9_setup(struct _BIN_OUT_FIELD *context)
+{
+  INT rank = context->actintra->intra_rank;
+  INT shell9_count;
+
+#ifdef DEBUG
+  dstrc_enter("out_shell9_setup");
+#endif
+
+  shell9_count = count_element_variants(context, el_shell9);
+  if (shell9_count > 0) {
+    ELEMENT* actele;
+    SHELL9* s9;
+    INT klay;
+
+    INT numnp;
+    INT layer_count;
+
+    if (shell9_count != count_element_types(context)) {
+      dserror("shell9 is supposed to be the only element in the mesh");
+    }
+    if (shell9_count != 1) {
+      dserror("there must be only one shell9 variant");
+    }
+
+    /*
+     * OK. We have a shell9 problem.  */
+    context->is_shell9_problem = 1;
+
+    actele = context->actpart->pdis[context->disnum].element[0];
+    dsassert(actele->eltyp == el_shell9, "shell9 expected");
+
+    s9 = actele->e.s9;
+    context->s9_minor = find_shell9_minor_type(actele);
+
+    context->s9_layers = 0;
+    for (klay=0; klay<s9->num_klay; klay++) {
+      context->s9_layers += s9->kinlay[klay].num_mlay;
+    }
+
+    /*
+     * Mark this discretization. The filter will know that it is a
+     * special one. */
+    if (rank == 0) {
+      fprintf(bin_out_main.control_file,
+              "    shell9_smoothed = \"%s\"\n"
+              "    shell9_minor = %d\n"
+              "    shell9_layers = %d\n"
+              "    shell9_forcetype = \"%s\"\n"
+              "\n",
+              (ioflags.struct_stress_gid_smo ? "yes" : "no"),
+              context->s9_minor, context->s9_layers,
+              (s9->forcetyp==s9_xyz) ? "xyz" : ((s9->forcetyp==s9_rst) ? "rst" : "rst_ortho"));
+    }
+
+    /* We need space for three values per artificial node. */
+
+    numnp = element_info[el_shell9].variant[context->s9_minor].node_number;
+
+    if ((context->s9_minor == MINOR_SHELL9_4_22) ||
+        (context->s9_minor == MINOR_SHELL9_4_33)) {
+      layer_count = 1;
+    }
+    else {
+      layer_count = 2;
+    }
+
+    out_element_chunk(context, "shell9_coords", cc_shell9_coords,
+                      3*numnp*(layer_count*context->s9_layers+1), 0, 0);
+  }
+  else {
+    context->is_shell9_problem = 0;
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
+#endif
+
+
+/*======================================================================*/
 /* Here we have lots of functions that do nothing but packing
  * something (node arrays, element stuff, distributed vectors) into
  * the output buffers. These functions share a common structure. See
@@ -260,7 +477,7 @@ void out_find_element_types(struct _BIN_OUT_FIELD *context,
  *
  * These are the functions that need to be changed according to
  * changes in the elements. */
-/*----------------------------------------------------------------------*/
+/*======================================================================*/
 
 
 
@@ -401,13 +618,13 @@ static void out_pack_mesh(BIN_OUT_CHUNK *chunk,
 
       *ptr++ = actele->Id;
       *ptr++ = actele->eltyp;
-      *ptr++ = FIND_MINOR(actele);
+      *ptr++ = find_minor_type(actele);
 
       dsassert(actele->numnp+3 <= len, "size entry too short");
 
       for (j=0; j<actele->numnp; ++j) {
-        /* We have to store the global Id here. */
-        *ptr++ = actele->node[j]->Id;
+        /* We have to store the local Id here, of course. */
+        *ptr++ = actele->node[j]->Id_loc;
       }
 
       counter += 1;
@@ -598,8 +815,8 @@ static void out_pack_shell8_director(BIN_OUT_CHUNK *chunk,
       INT numnp;
 
       s8 = actele->e.s8;
-      minor = FIND_MINOR(actele);
-      numnp = element_info[el_shell9].variant[minor].node_number;
+      minor = find_shell8_minor_type(actele);
+      numnp = element_info[el_shell8].variant[minor].node_number;
 
       /* Where this element's values are to go. */
       dst_ptr = &(send_buf[len*counter]);
@@ -675,7 +892,7 @@ static void out_pack_shell9_coords(BIN_OUT_CHUNK *chunk,
       DOUBLE *dst_ptr;
 
       s9 = actele->e.s9;
-      minor = FIND_MINOR(actele);
+      minor = find_shell9_minor_type(actele);
 
       /* Where this element's values are to go. */
       dst_ptr = &(send_buf[len*counter]);
@@ -1017,7 +1234,7 @@ static void out_pack_shell9_displacement(BIN_OUT_CHUNK *chunk,
       INT klay;
 
       s9 = actele->e.s9;
-      minor = FIND_MINOR(actele);
+      minor = find_shell9_minor_type(actele);
 
       /* Where this element's values are to go. */
       dst_ptr = &(send_buf[len*counter]);
@@ -1398,7 +1615,14 @@ static void out_pack_pressure(BIN_OUT_CHUNK *chunk,
 /*!
   \brief Pack the element's stresses.
 
-  Here the element based stresses are handled.
+  Here the element based stresses are handled, that is the stresses at
+  the gauss points. We visit all elements and copy its stress array to
+  the correct send_buf place. We copy in such a way that all stress
+  values that belong to one gauss point will be close to each other in
+  the send_buf. The internal ccarat arrays do it the other way
+  round. There each gauss point corresponds to a column and each row
+  has its meaning. Thus the C memory layout will bring all values with
+  the same meaning together.
 
   This is highly element specific. That is the filter must know what
   these numbers mean. Each element is different.
@@ -1429,11 +1653,6 @@ static void out_pack_stress(BIN_OUT_CHUNK *chunk,
    have to be written
 */
 
-  static INT gaussperm4[4] = {3,1,0,2};
-  /*INT gaussperm8[8] = {0,4,2,6,1,5,3,7};*/
-  static INT gaussperm9[9] = {8,2,0,6,5,1,3,7,4};
-  /*INT gaussperm27[27] = {0,9,18,3,12,21,6,15,24,1,10,19,4,13,22,7,16,25,2,11,20,5,14,23,8,17,26};*/
-
 #ifdef DEBUG
   dstrc_enter("out_pack_stress");
 #endif
@@ -1457,7 +1676,7 @@ static void out_pack_stress(BIN_OUT_CHUNK *chunk,
       /* Where this element's values are to go. */
       dst_ptr = &(send_buf[len*counter]);
 
-      minor = FIND_MINOR(actele);
+      minor = find_minor_type(actele);
 
       /* What needs to be done depends on major and minor element
        * number. */
@@ -1466,12 +1685,32 @@ static void out_pack_stress(BIN_OUT_CHUNK *chunk,
 #ifdef D_WALL1
       case el_wall1:            /* 2D plane stress - plane strain element */
 
+        /*
+         * The first element on proc 0 decides what kind of stresses
+         * we get. Of course it's undefined in a parallel setting
+         * which elements will be on proc 0. Thus this is only valid
+         * if all wall elements are the same. But this flag just
+         * determines how these stresses are labeled anyway.
+         *
+         * What do we do if there happen to be no wall elements on
+         * proc 0? */
+        if (map_symbol_count(&chunk->group, "wall1_stresstype") == 0) {
+          if (actele->e.w1->stresstyp == w1_rs) {
+            map_insert_string_cpy(&chunk->group, "wall1_stresstype", "w1_rs");
+          }
+          else {
+            map_insert_string_cpy(&chunk->group, "wall1_stresstype", "w1_xy");
+          }
+        }
+
         /* there is just one source for all variants of wall elements */
         stress = actele->e.w1->stress_GP.a.d3[place];
 
         /*
          * The triangle version needs special treatment. And no
          * thought has been spend about the D_SSI issue. */
+
+        dsassert(minor == MINOR_WALL1_22, "unsupported wall1 variant for stress calculations");
 
         switch (minor) {
         case MINOR_WALL1_11:    /* 3-noded wall1 1x1 GP */
@@ -1485,24 +1724,36 @@ static void out_pack_stress(BIN_OUT_CHUNK *chunk,
         case MINOR_WALL1_8_33:  /* 8-noded wall1 3x3 GP */
         case MINOR_WALL1_9_33:  /* 9-noded wall1 3x3 GP */
         case MINOR_WALL1_8_22:  /* 8-noded wall1 2x2 GP */
+
+          /*
+           * This is bad. Only the first four values are stresses
+           * (only a four gauss point version is supported here). The
+           * remaining values would better be put to their own
+           * chunk. */
           rows = element_info[el_wall1].variant[minor].gauss_number;
-          cols = 6;
+          cols = 9;
           if (actele->e.w1->elewa != NULL) {
             for (j=0; j<rows; j++) {
-              *dst_ptr++ = stress[0][gaussperm4[j]];
-              *dst_ptr++ = stress[1][gaussperm4[j]];
-              *dst_ptr++ = stress[2][gaussperm4[j]];
-              *dst_ptr++ = stress[3][gaussperm4[j]];
-              *dst_ptr++ = actele->e.w1->elewa[0].ipwa[gaussperm4[j]].damage;
-              *dst_ptr++ = actele->e.w1->elewa[0].ipwa[gaussperm4[j]].aequistrain;
+              *dst_ptr++ = stress[0][j];
+              *dst_ptr++ = stress[1][j];
+              *dst_ptr++ = stress[2][j];
+              *dst_ptr++ = stress[3][j];
+              *dst_ptr++ = stress[4][j];
+              *dst_ptr++ = stress[5][j];
+              *dst_ptr++ = stress[6][j];
+              *dst_ptr++ = actele->e.w1->elewa[0].ipwa[j].damage;
+              *dst_ptr++ = actele->e.w1->elewa[0].ipwa[j].aequistrain;
             }
           }
           else {
             for (j=0; j<rows; j++) {
-              *dst_ptr++ = stress[0][gaussperm4[j]];
-              *dst_ptr++ = stress[1][gaussperm4[j]];
-              *dst_ptr++ = stress[2][gaussperm4[j]];
-              *dst_ptr++ = stress[3][gaussperm4[j]];
+              *dst_ptr++ = stress[0][j];
+              *dst_ptr++ = stress[1][j];
+              *dst_ptr++ = stress[2][j];
+              *dst_ptr++ = stress[3][j];
+              *dst_ptr++ = stress[4][j];
+              *dst_ptr++ = stress[5][j];
+              *dst_ptr++ = stress[6][j];
               *dst_ptr++ = 0;
               *dst_ptr++ = 0;
             }
@@ -1535,13 +1786,13 @@ static void out_pack_stress(BIN_OUT_CHUNK *chunk,
         }
 
         /* copy the values */
-        /* It's unusual that the later index varies less than the
-         * first. However that's how the stresses are stored and I
-         * don't want to deviate from the way the other elements do it. */
         for (j=0; j<rows; j++) {
-          for (k=0; k<cols; ++k) {
-            *dst_ptr++ = stress[k][j];
-          }
+          *dst_ptr++ = stress[0][j];
+          *dst_ptr++ = stress[1][j];
+          *dst_ptr++ = stress[2][j];
+          *dst_ptr++ = stress[3][j];
+          *dst_ptr++ = stress[4][j];
+          *dst_ptr++ = stress[5][j];
         }
 
         break;
@@ -1595,6 +1846,24 @@ static void out_pack_stress(BIN_OUT_CHUNK *chunk,
       case el_wallge:           /* gradient enhanced wall element */
         /*stress = actele->e.wallge->stress_GP.a.d3[place];*/
 
+        /*
+         * The first element on proc 0 decides what kind of stresses
+         * we get. Of course it's undefined in a parallel setting
+         * which elements will be on proc 0. Thus this is only valid
+         * if all wallge elements are the same. But this flag just
+         * determines how these stresses are labeled anyway.
+         *
+         * What do we do if there happen to be no wallge elements on
+         * proc 0? */
+        if (map_symbol_count(&chunk->group, "wallge_stresstype") == 0) {
+          if (actele->e.wallge->stresstyp == wge_rs) {
+            map_insert_string_cpy(&chunk->group, "wallge_stresstype", "wge_rs");
+          }
+          else {
+            map_insert_string_cpy(&chunk->group, "wallge_stresstype", "wge_xy");
+          }
+        }
+
         switch (minor) {
         case MINOR_WALLGE_22:   /* gradient enhanced wall 2x2 GP */
           rows = 4;
@@ -1609,12 +1878,12 @@ static void out_pack_stress(BIN_OUT_CHUNK *chunk,
 
         /* copy the values */
         for (j=0; j<rows; j++) {
-          *dst_ptr++ = actele->e.wallge->elwa[0].iptwa[gaussperm4[j]].sig[0];
-          *dst_ptr++ = actele->e.wallge->elwa[0].iptwa[gaussperm4[j]].sig[1];
-          *dst_ptr++ = actele->e.wallge->elwa[0].iptwa[gaussperm4[j]].sig[2];
-          *dst_ptr++ = actele->e.wallge->elwa[0].iptwa[gaussperm4[j]].damage;
-          *dst_ptr++ = actele->e.wallge->elwa[0].iptwa[gaussperm4[j]].aequistrain;
-          *dst_ptr++ = actele->e.wallge->elwa[0].iptwa[gaussperm4[j]].aequistrain_nl;
+          *dst_ptr++ = actele->e.wallge->elwa[0].iptwa[j].sig[0];
+          *dst_ptr++ = actele->e.wallge->elwa[0].iptwa[j].sig[1];
+          *dst_ptr++ = actele->e.wallge->elwa[0].iptwa[j].sig[2];
+          *dst_ptr++ = actele->e.wallge->elwa[0].iptwa[j].damage;
+          *dst_ptr++ = actele->e.wallge->elwa[0].iptwa[j].aequistrain;
+          *dst_ptr++ = actele->e.wallge->elwa[0].iptwa[j].aequistrain_nl;
         }
 
         break;
@@ -1654,6 +1923,9 @@ static void out_pack_stress(BIN_OUT_CHUNK *chunk,
         dsassert(rows*cols <= send_count, "shell9 entry too small");
 
         /* copy the values */
+        /*
+         * This is special! We keep the memory layout of the internal
+         * ccarat array. The filters seem to be easier that way. */
         for (j=0; j<rows; j++) {
           for (k=0; k<cols; k++) {
             *dst_ptr++ = stress[j][k];
@@ -1662,8 +1934,87 @@ static void out_pack_stress(BIN_OUT_CHUNK *chunk,
         break;
       }
 #endif
-      case el_shell8:           /* 7 parameter shell element */
-      case el_brick1:           /* structural brick element */
+#ifdef D_SHELL8
+      case el_shell8: {         /* 7 parameter shell element */
+        SHELL8* s8 = actele->e.s8;
+
+        /*
+         * We rely on the fact that the first index is not used. It
+         * steams back to the old idea of keeping all results in
+         * memory... */
+        stress = s8->forces.a.d3[0];
+
+        /* thus the second dimension gives the number of rows. */
+        rows = s8->forces.sdim;
+
+        /*
+         * Are there triangular versions those number of gauss points
+         * cannot be calculated like this? */
+        cols = s8->nGP[0]*s8->nGP[1]*s8->nGP[2];
+
+        dsassert(rows == 18, "shell8 changed but binary output not updated");
+        dsassert(rows*cols <= send_count, "shell8 entry too small");
+
+        /* copy the values */
+        /*
+         * The inner loop must loop the rows in order to keep the
+         * values of one gauss point together. */
+        for (k=0; k<cols; k++) {
+          for (j=0; j<rows; j++) {
+            *dst_ptr++ = stress[j][k];
+          }
+        }
+        break;
+      }
+#endif
+#ifdef D_BRICK1
+      case el_brick1: {         /* structural brick element */
+        CHAR* stresstype[] = BRICK1_STRESSTYPE;
+        BRICK1* c1 = actele->e.c1;
+
+        /*
+         * The first element on proc 0 decides what kind of stresses
+         * we get. Of course it's undefined in a parallel setting
+         * which elements will be on proc 0. Thus this is only valid
+         * if all brick1 elements are the same.
+         *
+         * What do we do when there happen to be no brick1 elements on
+         * proc 0? */
+        if (map_symbol_count(&chunk->group, "brick1_stresstype") == 0) {
+          map_insert_string_cpy(&chunk->group,
+                                "brick1_stresstype",
+                                stresstype[c1->stresstyp]);
+        }
+
+        /*
+         * We rely on the fact that the first index is not used. It
+         * steams back to the old idea of keeping all results in
+         * memory... */
+        stress = c1->stress_GP.a.d3[0];
+
+        /* thus the second dimension gives the number of rows. */
+        rows = c1->stress_GP.sdim;
+
+        /*
+         * Are there triangular versions those number of gauss points
+         * cannot be calculated like this? */
+        cols = c1->nGP[0]*c1->nGP[1]*c1->nGP[2];
+
+        dsassert(rows == 27, "brick1 changed but binary output not updated");
+        dsassert(rows*cols <= send_count, "brick1 entry too small");
+
+        /* copy the values */
+        /*
+         * The inner loop must loop the rows in order to keep the
+         * values of one gauss point together. */
+        for (k=0; k<cols; k++) {
+          for (j=0; j<rows; j++) {
+            *dst_ptr++ = stress[j][k];
+          }
+        }
+        break;
+      }
+#endif
       case el_fluid2:           /* 2D fluid element */
       case el_fluid2_pro:       /* 2D fluid element */
       case el_fluid2_tu:        /* 2D fluid element for turbulence */
@@ -1680,128 +2031,6 @@ static void out_pack_stress(BIN_OUT_CHUNK *chunk,
       counter += 1;
     }
   }
-
-#ifdef DEBUG
-  dstrc_exit();
-#endif
-}
-
-
-/*----------------------------------------------------------------------*/
-/*!
-  \brief Pack the stresses.
-
-  Here the node based stresses are handled. I'd like to avoid
-  this. Better have the filter do the interpolation.
-
-  This is highly element specific. That is the filter must know what
-  these numbers mean. Each element is different.
-
-  \author u.kue
-  \date 09/04
-  \sa out_pack_items
-*/
-/*----------------------------------------------------------------------*/
-static void out_pack_nd_stress(BIN_OUT_CHUNK *chunk,
-                               INT place,
-                               PARTDISCRET *actpdis,
-                               DOUBLE *send_buf,
-                               INT send_count,
-                               INT *send_size_buf,
-                               INT dst_first_id,
-                               INT dst_num)
-{
-  INT len;
-  INT counter;
-  INT j;
-
-#ifdef DEBUG
-  dstrc_enter("out_pack_nd_stress");
-#endif
-
-  dsassert(chunk->size_entry_length == 0, "invalid size entry length");
-
-  len = chunk->value_entry_length;
-
-  /* gather the nodes to be send to processor i */
-  counter = 0;
-  for (j=0; j<actpdis->numnp; ++j) {
-    NODE* actnode = actpdis->node[j];
-    if ((actnode->Id_loc >= dst_first_id) &&
-        (actnode->Id_loc < dst_first_id+dst_num)) {
-      INT k;
-      INT count;
-      INT numele;
-      ELEMENT *actele;
-      INT minor;
-      DOUBLE invcount;
-      DOUBLE *dst_ptr;
-      DOUBLE **stress;
-
-      dst_ptr = &(send_buf[len*counter]);
-
-      numele = actnode->numele;
-
-      /* The approach demands that there is just one type of element
-       * in the discretization. So we take the first element and
-       * decide depending on its type what to do. */
-      actele = actnode->element[0];
-
-      minor = FIND_MINOR(actele);
-
-      switch (actele->eltyp) {
-#ifdef D_FLUID3
-      case el_fluid3:           /* 3D fluid element */
-        dsassert(minor == MINOR_FLUID3_222, "unsupported f3 variant");
-        dsassert(len >= 12, "stress entry too small");
-
-        /* This is the function f3_out_gid_sol_str in disguise. */
-        count = 0;
-        for (k=0; k<12; ++k) {
-          dst_ptr[k] = 0.0;
-        }
-        for (k=0; k<numele; ++k) {
-          INT i;
-          INT l;
-          actele = actnode->element[j];
-
-          if (actele->eltyp != el_fluid3 || actele->numnp !=8) {
-            dserror("uniform mesh expected");
-          }
-
-          count++;
-          stress = actele->e.f3->stress_ND.a.da;
-          for (l=0; l<8; l++)
-            if (actele->node[l] == actnode) break;
-          for (i=0; i<12; i++) {
-            dst_ptr[i] += stress[l][i];
-          }
-        }
-
-        invcount = 1.0/count;
-        for (j=0; j<12; j++) {
-          dst_ptr[j] *= invcount;
-        }
-
-        break;
-#endif
-
-      default:
-        dserror("node based stress output not supported for element type %d", actele->eltyp);
-      }
-
-
-#ifdef PARALLEL
-      send_size_buf[counter] = actnode->Id_loc;
-#endif
-
-/*       for (k=0; k<ndim; ++k) { */
-/*         send_buf[ndim*counter+k] = *ptr++; */
-/*       } */
-      counter += 1;
-    }
-  }
-  dsassert(counter*len == send_count, "node pack count mismatch");
 
 #ifdef DEBUG
   dstrc_exit();
@@ -2258,7 +2487,7 @@ static void out_pack_restart_element(BIN_OUT_CHUNK *chunk,
           INT k;
           INT ngauss;
 
-          minor = MINOR_WALL1(actele);
+          minor = find_wall1_minor_type(actele);
           ngauss = element_info[el_wall1].variant[minor].gauss_number;
 
           /* This is w1_write_restart. Disguised as usual. */
@@ -2338,12 +2567,40 @@ static void out_pack_restart_element(BIN_OUT_CHUNK *chunk,
         break;
 #endif
 
-        /* There's nothing to be saved for interface and wallge
-         * elements, right? */
-      case el_interf:
+#ifdef D_INTERF
+      case el_interf: {
+        IF_ELE_WA* elewa = actele->e.interf->elewa;
+        if (elewa != NULL) {
+          INT k;
+          INT ngauss;
+
+          /*minor = find_interf_minor_type(actele);*/
+          /*ngauss = element_info[el_interf].variant[minor].gauss_number;*/
+          ngauss = actele->e.interf->nGP;
+
+          dsassert(len >= ngauss*10, "value entry too short");
+          for (k=0; k<ngauss; ++k) {
+            *dst_ptr++ = actele->e.interf->elewa[0].ipwa[k].Tt;
+            *dst_ptr++ = actele->e.interf->elewa[0].ipwa[k].Tn;
+            *dst_ptr++ = actele->e.interf->elewa[0].ipwa[k].dt;
+            *dst_ptr++ = actele->e.interf->elewa[0].ipwa[k].dn;
+            *dst_ptr++ = actele->e.interf->elewa[0].ipwa[k].yip;
+            *dst_ptr++ = actele->e.interf->elewa[0].ipwa[k].jump_ut_pl;
+            *dst_ptr++ = actele->e.interf->elewa[0].ipwa[k].Q[0][0];
+            *dst_ptr++ = actele->e.interf->elewa[0].ipwa[k].Q[0][1];
+            *dst_ptr++ = actele->e.interf->elewa[0].ipwa[k].Q[1][0];
+            *dst_ptr++ = actele->e.interf->elewa[0].ipwa[k].Q[1][1];
+          }
+        }
         break;
+      }
+#endif
+
+#ifdef D_WALLGE
+        /* There's nothing to be saved for wallge elements, right? */
       case el_wallge:
         break;
+#endif
 
 #ifdef D_FLUID2
       case el_fluid2: {
@@ -2440,7 +2697,8 @@ static void out_pack_restart_element(BIN_OUT_CHUNK *chunk,
   \param  send_count     (i)  number of double values to be collected
   \param *send_size_buf  (o)  buffer to collect integer values
   \param  dst_first_id   (i)  the id (Id_loc) of the first item to be written
-  \param  dst_num        (i)  the number of (consecutive) items to be written
+  \param  dst_num        (i)  the number of (consecutive) items to be
+                              written on the receiving processor in total
 
   \author u.kue
   \date 08/04
@@ -2481,11 +2739,8 @@ void out_pack_items(struct _BIN_OUT_CHUNK *chunk,
   case cc_pressure:
     out_pack_pressure(chunk, array, actpdis, send_buf, send_count, send_size_buf, dst_first_id, dst_num);
     break;
-  case cc_el_stress:
+  case cc_stress:
     out_pack_stress(chunk, array, actpdis, send_buf, send_count, send_size_buf, dst_first_id, dst_num);
-    break;
-  case cc_nd_stress:
-    out_pack_nd_stress(chunk, array, actpdis, send_buf, send_count, send_size_buf, dst_first_id, dst_num);
     break;
   case cc_domain:
     /* array flag unused here */
@@ -2524,7 +2779,7 @@ void out_pack_items(struct _BIN_OUT_CHUNK *chunk,
 }
 
 
-/*----------------------------------------------------------------------*/
+/*======================================================================*/
 /* Here we have lots of functions that do nothing but unpacking input
  * buffers and put the values somewhere (node arrays, element stuff,
  * distributed vectors). These functions share a common structure. See
@@ -2532,7 +2787,7 @@ void out_pack_items(struct _BIN_OUT_CHUNK *chunk,
  *
  * These are the functions that need to be changed according to
  * changes in the elements. */
-/*----------------------------------------------------------------------*/
+/*======================================================================*/
 
 
 /*----------------------------------------------------------------------*/
@@ -2950,7 +3205,7 @@ static void in_unpack_restart_element(BIN_IN_FIELD *context,
         INT ngauss;
         INT minor;
 
-        minor = MINOR_WALL1(actele);
+        minor = find_wall1_minor_type(actele);
         ngauss = element_info[el_wall1].variant[minor].gauss_number;
 
         /* This is w1_write_restart. Disguised as usual. */
@@ -3030,12 +3285,40 @@ static void in_unpack_restart_element(BIN_IN_FIELD *context,
       break;
 #endif
 
-      /* There's nothing to be restored for interface and wallge
-       * elements, right? */
-    case el_interf:
+#ifdef D_INTERF
+    case el_interf: {
+      IF_ELE_WA* elewa = actele->e.interf->elewa;
+      if (elewa != NULL) {
+        INT k;
+        INT ngauss;
+
+        /*minor = find_interf_minor_type(actele);*/
+        /*ngauss = element_info[el_interf].variant[minor].gauss_number;*/
+        ngauss = actele->e.interf->nGP;
+
+        dsassert(len >= ngauss*10, "value entry too short");
+        for (k=0; k<ngauss; ++k) {
+          actele->e.interf->elewa[0].ipwa[k].Tt = *src_ptr++;
+          actele->e.interf->elewa[0].ipwa[k].Tn = *src_ptr++;
+          actele->e.interf->elewa[0].ipwa[k].dt = *src_ptr++;
+          actele->e.interf->elewa[0].ipwa[k].dn = *src_ptr++;
+          actele->e.interf->elewa[0].ipwa[k].yip = *src_ptr++;
+          actele->e.interf->elewa[0].ipwa[k].jump_ut_pl = *src_ptr++;
+          actele->e.interf->elewa[0].ipwa[k].Q[0][0] = *src_ptr++;
+          actele->e.interf->elewa[0].ipwa[k].Q[0][1] = *src_ptr++;
+          actele->e.interf->elewa[0].ipwa[k].Q[1][0] = *src_ptr++;
+          actele->e.interf->elewa[0].ipwa[k].Q[1][1] = *src_ptr++;
+        }
+      }
       break;
+    }
+#endif
+
+#ifdef D_WALLGE
+      /* There's nothing to be restored for wallge elements, right? */
     case el_wallge:
       break;
+#endif
 
 #ifdef D_FLUID2
     case el_fluid2: {
@@ -3169,6 +3452,20 @@ void in_unpack_items(struct _BIN_IN_FIELD *context,
 }
 
 
+/*======================================================================*/
+/* After packing and unpacking there is a third element dependent
+ * task. To tell the required sizes. Most of the time these functions
+ * are needed to provide the space to pack the elements for
+ * writing. When we read elements we the control file tells the
+ * required sizes.
+ *
+ * There are two strategies. To iterate all elements and check each
+ * one, finding the highest demand, or to look up element information
+ * by element type. We use the later one whenever possible and fall
+ * back to the former when needed. */
+/*======================================================================*/
+
+
 /*----------------------------------------------------------------------*/
 /*!
   \brief Find the number of different element types in this field.
@@ -3269,6 +3566,8 @@ void find_mesh_item_length(struct _BIN_OUT_FIELD* context,
 
   /* We simply need to find the maximum element node number in the
    * discretization. */
+
+  /* skip el_none==0. */
   for (i=1; i<el_count; ++i) {
     for (j=0; j<MAX_EL_MINOR; ++j) {
       if (context->element_flag[i][j]) {
@@ -3293,15 +3592,7 @@ void find_mesh_item_length(struct _BIN_OUT_FIELD* context,
   to store the element stresses.
 
   We want to store the real stress array for each
-  element. Postprocessing can be done later. However the real array is
-  not always available. Each element is different. Some elements do
-  even extrapolate their stresses to the nodes. This should better be
-  done by the filter, but for now we'll have to support this. Thus we
-  need to find the size of the node based stress array, too.
-
-  Of course extrapolating to the nodes requires that all elements at
-  the node agree on the nodal stress. In effect this demands that only
-  one type of element is used in the discretization.
+  element. Postprocessing can be done later.
 
   For many element types it's sufficient to lookup the \a element_info
   table to find the stress array's size. But dynamic elements like
@@ -3312,10 +3603,8 @@ void find_mesh_item_length(struct _BIN_OUT_FIELD* context,
 */
 /*----------------------------------------------------------------------*/
 void find_stress_item_length(struct _BIN_OUT_FIELD* context,
-                             INT* el_value_length,
-                             INT* el_size_length,
-                             INT* nd_value_length,
-                             INT* nd_size_length)
+                             INT* value_length,
+                             INT* size_length)
 {
   INT i;
   INT j;
@@ -3324,10 +3613,8 @@ void find_stress_item_length(struct _BIN_OUT_FIELD* context,
   dstrc_enter("find_stress_item_length");
 #endif
 
-  *el_value_length = 0;
-  *el_size_length = 0;
-  *nd_value_length = 0;
-  *nd_size_length = 0;
+  *value_length = 0;
+  *size_length = 0;
 
   /* We need to find the maximum size of the stress array. */
   for (i=1; i<el_count; ++i) {
@@ -3335,9 +3622,9 @@ void find_stress_item_length(struct _BIN_OUT_FIELD* context,
       if (context->element_flag[i][j]) {
 
         /* element based stresses */
-        if (element_info[i].variant[j].el_stress_matrix_size != -1) {
-          *el_value_length = MAX(*el_value_length,
-                                 element_info[i].variant[j].el_stress_matrix_size);
+        if (element_info[i].variant[j].stress_matrix_size != -1) {
+          *value_length = MAX(*value_length,
+                              element_info[i].variant[j].stress_matrix_size);
         }
         else {
           switch (i) {
@@ -3360,23 +3647,11 @@ void find_stress_item_length(struct _BIN_OUT_FIELD* context,
             s9 = actele->e.s9;
 
             /* There are 6 stress components. */
-            *el_value_length = MAX(*el_value_length,
+            *value_length = MAX(*value_length,
                                    6*context->s9_layers*s9->nGP[0]*s9->nGP[1]*s9->nGP[2]);
             break;
           }
 #endif
-          default:
-            dserror("no specific treatment of element type %d", i);
-          }
-        }
-
-        /* stresses extrapolated to the nodes */
-        if (element_info[i].variant[j].nd_stress_matrix_size != -1) {
-          *nd_value_length = MAX(*nd_value_length,
-                                 element_info[i].variant[j].nd_stress_matrix_size);
-        }
-        else {
-          switch (i) {
           default:
             dserror("no specific treatment of element type %d", i);
           }
@@ -3628,8 +3903,23 @@ void find_restart_item_length(struct _BIN_OUT_FIELD* context,
   }
 #endif
 
-  /* There's nothing to be saved for interface and wallge elements,
-   * right? */
+#ifdef D_INTERF
+  if (count_element_variants(context, el_interf) > 0) {
+    INT j;
+
+    for (j=0; j<MAX_EL_MINOR; ++j) {
+      if (context->element_flag[el_fluid2][j]) {
+        INT ngauss;
+        ngauss = element_info[el_fluid2].variant[j].gauss_number;
+        *value_length = MAX(*value_length, ngauss*10);
+      }
+    }
+  }
+#endif
+
+#ifdef D_WALLGE
+  /* There's nothing to be saved for wallge elements, right? */
+#endif
 
 #ifdef D_FLUID2
   if (count_element_variants(context, el_fluid2) > 0) {
@@ -3680,6 +3970,11 @@ end:
 #endif
   return;
 }
+
+
+/*======================================================================*/
+/* Largely unrelated utility functions */
+/*======================================================================*/
 
 
 /*----------------------------------------------------------------------*/
@@ -3754,6 +4049,11 @@ void out_main_group_head(struct _BIN_OUT_FIELD  *context, CHAR* name)
   dstrc_exit();
 #endif
 }
+
+
+/*======================================================================*/
+/* The final one. The big public result output function. */
+/*======================================================================*/
 
 
 /*----------------------------------------------------------------------*/
@@ -3869,22 +4169,12 @@ void out_results(struct _BIN_OUT_FIELD* context,
   }
 
   if (flags & OUTPUT_STRESS) {
-    INT el_value_length;
-    INT nd_value_length;
-    INT el_size_length;
-    INT nd_size_length;
+    INT value_length;
+    INT size_length;
 
-    find_stress_item_length(context,
-                            &el_value_length, &el_size_length,
-                            &nd_value_length, &nd_size_length);
-    if ((el_value_length > 0) || (el_size_length > 0)) {
-      /*
-       * use the general name "stress" for the most natural gauss
-       * point stresses. */
-      out_element_chunk(context, "stress", cc_el_stress, el_value_length, el_size_length, 0);
-    }
-    if ((nd_value_length > 0) || (nd_size_length > 0)) {
-      out_element_chunk(context, "nd_stress", cc_nd_stress, nd_value_length, nd_size_length, 0);
+    find_stress_item_length(context, &value_length, &size_length);
+    if ((value_length > 0) || (size_length > 0)) {
+      out_element_chunk(context, "stress", cc_stress, value_length, size_length, 0);
     }
   }
 
@@ -3909,4 +4199,5 @@ void out_results(struct _BIN_OUT_FIELD* context,
 #endif
 }
 
+/*! @} (documentation module close)*/
 #endif

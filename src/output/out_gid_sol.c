@@ -106,10 +106,6 @@ for (i=0; i<genprob.numfld; i++)
       actgid->fieldnamelenght = 3;
       actgid->fieldname       = "ale";
    break;
-   case levelset:
-      actgid->fieldnamelenght = 8;
-      actgid->fieldname       = "levelset";
-   break;
    default:
       dserror("Unknown type of field");
    break;
@@ -3683,7 +3679,7 @@ FILE             *out       = allfiles.gidmicrores;
 char             *charptr;
 char              sign='"';
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("out_gid_smsol_init");
 #endif
 /*----------------------------------------------------------------------*/
@@ -3758,13 +3754,13 @@ for (j=0; j<actsmfield->dis[0].numele; j++)
    switch(actsmele->eltyp)
    {
 #ifdef D_WALL1
-   case el_wall1:    
-      if (actsmele->e.w1->nGP[0]==2)  
+   case el_wall1:
+      if (actsmele->e.w1->nGP[0]==2)
       {
          actsmgid->is_wall1_22    = 1;
          actsmgid->wall1_22_name  = "wall1_22";
       }
-      if (actsmele->e.w1->nGP[0]==3)  
+      if (actsmele->e.w1->nGP[0]==3)
       {
          actsmgid->is_wall1_33   = 1;
          actsmgid->wall1_33_name = "wall1_33";
@@ -3772,13 +3768,13 @@ for (j=0; j<actsmfield->dis[0].numele; j++)
    break;
 #endif /*D_WALL1*/
 #ifdef D_INTERF
-   case el_interf:    
-      if (actsmele->e.interf->nGP==2)  
+   case el_interf:
+      if (actsmele->e.interf->nGP==2)
       {
          actsmgid->is_interf_22    = 1;
          actsmgid->interf_22_name  = "interf_22";
       }
-      if (actsmele->e.interf->nGP==3)  
+      if (actsmele->e.interf->nGP==3)
       {
          actsmgid->is_interf_33    = 1;
          actsmgid->interf_33_name  = "interf_33";
@@ -3841,7 +3837,7 @@ fprintf(out,"END GAUSSPOINTS\n");
 }
 /*----------------------------------------------------------------------*/
 fflush(out);
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -3873,7 +3869,7 @@ char         *rangetable;
 INT           ncomponent;
 char         *componentnames[2];
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("out_gid_smdisp");
 #endif
 /*----------------------------------------------------------------------*/
@@ -3883,7 +3879,7 @@ actsmgid   = &(sm_gid[0]);
 /*----------------------------------------------------------------------*/
 resulttype        = "VECTOR";
 resultplace       = "ONNODES";
-gpset             = ""; 
+gpset             = "";
 rangetable        = actsmgid->standardrangetable;
 ncomponent        = 2;
 componentnames[0] = "x-displ";
@@ -3931,7 +3927,7 @@ fprintf(out,"END VALUES\n");
 /*----------------------------------------------------------------------*/
 fflush(out);
 /*-------------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -3963,15 +3959,15 @@ char         *resultplace;
 char         *gpset;
 char         *rangetable;
 INT           ngauss;
-/* 
+/*
    gausspoint permutation :
    On the Gausspoint number i in Gid, the results of Carats GP number gausspermn[i]
    have to be written
-*/   
+*/
 INT           gaussperm4[4] = {3,1,0,2};
 INT           gaussperm9[9] = {8,2,0,6,5,1,3,7,4};
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("out_gid_smstress");
 #endif
 /*----------------------------------------------------------------------*/
@@ -3981,7 +3977,7 @@ actsmgid   = &(sm_gid[0]);
 /*----------------------------------------------------------------------*/
 /*------------------------------------------ print the submesh stresses */
 if (actsmgid->is_wall1_22)
-{ 
+{
    ngauss=4;
    resulttype        = "MATRIX";
    resultplace       = "ONGAUSSPOINTS";
@@ -4016,7 +4012,7 @@ if (actsmgid->is_wall1_22)
          actsmele = &(actsmfield->dis[0].element[j]);
          if (actsmele->eltyp != el_wall1 ) continue;
          GlobalID = i * actsmfield->dis[0].numele + (actsmele->Id + 1);
-       
+
          for (a=0; a<ngauss; a++)
          {
            damage[a] = actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[a].damage;
@@ -4083,7 +4079,7 @@ if (actsmgid->is_wall1_33)
          actsmele = &(actsmfield->dis[0].element[j]);
          if (actsmele->eltyp != el_wall1 ) continue;
          GlobalID = i * actsmfield->dis[0].numele + (actsmele->Id + 1);
-         
+
          for (a=0; a<ngauss; a++)
          {
            damage[a] = actmaele->e.w1->sm_eledata[actsmele->Id].sm_GPdata[a].damage;
@@ -4115,7 +4111,7 @@ if (actsmgid->is_wall1_33)
 } /* end: if (actsmgid->is_wall1_33) */
 /*----------------------------------------------------------------------*/
 if (actsmgid->is_interf_22)
-{ 
+{
    resulttype        = "MATRIX";
    resultplace       = "ONGAUSSPOINTS";
    gpset             = actsmgid->interf_22_name;
@@ -4186,7 +4182,7 @@ if (actsmgid->is_interf_22)
 }/* end: if (actsmgid->is_interf_22) */
 /*----------------------------------------------------------------------*/
 if (actsmgid->is_interf_33)
-{ 
+{
    resulttype        = "MATRIX";
    resultplace       = "ONGAUSSPOINTS";
    gpset             = actsmgid->interf_33_name;
@@ -4299,7 +4295,7 @@ if (actsmgid->is_interf_33)
 /*----------------------------------------------------------------------*/
 fflush(out);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -100,7 +100,7 @@ if (par.myrank==0)
 
 if ((argc == 2) && (strcmp(argv[1], "-v") == 0)) {
   if (par.myrank==0) {
-    printf("\nBuild by %s on %s\n", CREATOR, CREATION_DATE);
+    printf("\nBuilt by %s on %s\n", CREATOR, CREATION_DATE);
     printf("using configuration: %s\n", CONFIGURATION);
     printf("\nDefine flags used to build ccarat:\n%s\n", DEFINE_STRING);
     printf("\nDefault values:\n");

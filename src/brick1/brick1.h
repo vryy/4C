@@ -138,6 +138,7 @@ enum
 struct _ARRAY4D  stress_GP;  /*!< array for stress values */
 struct _ARRAY4D  stress_ND;  /*!< array for stress values */
 } BRICK1;
+#define BRICK1_STRESSTYPE { "c1_nostr", "c1_gpxyz", "c1_gprst", "c1_gp123", "c1_npxyz", "c1_nprst", "c1_np123", "c1_npeqs", NULL }
 /*!----------------------------------------------------------------------
 \brief rst-flag for edge, surface - load evaluation
 

@@ -54,7 +54,7 @@ function cleanup
 
     # remove hook
     trap "echo" 0 1 2 15
-    exit
+    #exit
 }
 
 trap "cleanup" 0 1 2 15
@@ -224,3 +224,11 @@ fi
 printf $fail2'  |\n'
 echo '-----------------------------'
 echo
+
+# exit with non-zero return code if something went wrong
+if [ $fail1 -ge 1 ]; then
+  exit 1
+fi
+if [ $fail2 -ge 1 ]; then
+  exit 1
+fi

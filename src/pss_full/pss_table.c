@@ -1447,7 +1447,11 @@ static void init_parser_data(struct _PARSER_DATA* data, CHAR* filename)
   {
     INT bytes_read;
     FILE* file;
-    file = fopen(filename, "r");
+    file = fopen(filename, "rb");
+
+    if (file==NULL) {
+      dserror("cannot read file '%s'", filename);
+    }
 
     /* find out the control file size */
     fseek(file, 0, SEEK_END);
@@ -1579,6 +1583,13 @@ static void print_token(PARSER_DATA* data)
 static int getnext(PARSER_DATA* data)
 {
   if (data->pos < data->file_size) {
+
+    /* ignore dos line endings */
+    if (data->file_buffer[data->pos] == '\r') {
+      data->pos++;
+    }
+
+    /* Increment the counter and return the char at the old position. */
     return data->file_buffer[data->pos++];
   }
   return EOF;

@@ -79,7 +79,7 @@ int gid_match_connectivity(GID_POST_ASCII* gid, int written)
 
 int gid_open(GID_POST_ASCII* gid, char* name)
 {
-  gid->file = fopen(name, "w");
+  gid->file = fopen(name, "wb");
   return gid->file == NULL;
 }
 
@@ -1142,7 +1142,7 @@ int GiD_WriteScalar( int id, double v )
 int GiD_WriteVector( int id, double x, double y, double z )
 {
   double mod;
-  
+
   /* check state */
   assert(CheckState(POST_RESULT_VALUES, level_res));
 

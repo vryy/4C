@@ -43,12 +43,11 @@ typedef enum _FIELDTYP
                        none,        /* unknown type of mechanical field */
                        fluid,       /* fluid field */
                        ale,         /* pseudo structural field */
-                       structure,   /* structural field */
-                       levelset     /* levelset field */
+                       structure    /* structural field */
 } FIELDTYP;
 /* Mapping from fieldtyp numbers to printable names. To be used to
  * initialize static variables. Keep in sync! */
-#define FIELDNAMES {"none", "fluid", "ale", "structure", "levelset", NULL}
+#define FIELDNAMES {"none", "fluid", "ale", "structure", NULL}
 /*----------------------------------------------------------------------*
  | DISRCETISATION MODES                                   genk 08/02    |
  *----------------------------------------------------------------------*/
@@ -99,7 +98,6 @@ typedef enum _ELEMENT_TYP
                        el_none,        /* unknown type of element */
                        el_shell1,      /* 5 parameter shell element */
                        el_shell8,      /* 7 parameter shell element */
-                       el_shell8_fast,
                        el_shell9,      /* multi layer shell element */
                        el_brick1,      /* structural brick element */
                        el_wall1,       /* 2D plane stress - plane strain element */

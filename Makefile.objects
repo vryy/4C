@@ -626,3 +626,9 @@ OBJS_POST_GID_TXT = src/post_gid/gid_out_txt.o
 #                 post_out
 OBJS_POST_OUT = src/post_out/post_out.o
 
+#                 post_visual2
+OBJS_POST_VISUAL2 = src/post_visual/post_visual2.o
+
+#                 post_monitor
+OBJS_POST_MONITOR = src/post_monitor/post_monitor.o \
+                src/post_monitor/post_out_monitor.o

@@ -8,5 +8,4 @@ post_gid_txt:
 	cd ../.. && $(MAKE) post_gid_txt
 
 clean:
-	rm -f *.o
-
+	cd ../.. && $(MAKE) clean

@@ -29,7 +29,6 @@
 #D_INTERF           # defines interface element
 #D_WALLGE           # defines gradient enhanced wall element
 #D_MLSTRUCT         # defines an 2D element for structural analysis with multiscale
-#D_XFEM             # defines for enriched fluid element
 
 
 # problem types
@@ -39,7 +38,6 @@
 #D_MORTAR           # defines mortar coupling problem (FSI/SSI)
 #D_OPTIM            # defines optimization
 #D_CONTACT          # defines contact problems
-#D_LS               # defines for level set problem
 
 # additional features
 #D_MAT              # defines materials

@@ -40,6 +40,10 @@ out), how the values are collected and how they are put pack.
 
 #ifdef BINIO
 
+/*!
+\addtogroup IO
+*//*! @{ (documentation module open)*/
+
 #ifndef BIN_PACKING_H
 #define BIN_PACKING_H
 
@@ -96,8 +100,7 @@ typedef enum _CHUNK_CONTENT_TYPE {
   cc_displacement,
   cc_velocity,
   cc_pressure,
-  cc_el_stress,
-  cc_nd_stress,
+  cc_stress,
   cc_domain,
 
   cc_dist_vector,
@@ -127,6 +130,51 @@ void out_find_element_types(struct _BIN_OUT_FIELD *context,
                             INTRA *actintra,
                             PARTDISCRET *actpdis);
 
+
+#ifdef D_SHELL8
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Shell8 specific setup of the discretization output object.
+
+  Shell8 has six displacement dofs per node. The three normal ones and
+  the three steaming from the director vector. These additional three
+  must be handled here.
+
+  Currently a discretization must contains just one type of shell8
+  elements if it contains shell8 elements at all.
+
+  \param context      (i) pointer to a context variable during setup.
+
+  \author u.kue
+  \date 10/04
+*/
+/*----------------------------------------------------------------------*/
+void out_shell8_setup(struct _BIN_OUT_FIELD *context);
+
+#endif
+
+#ifdef D_SHELL9
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Shell9 specific setup of the discretization output object.
+
+  Shell9 is a layered element with many displacement dofs per
+  node. These demand a special threatment.
+
+  Currently a discretization must contains just one type of shell9
+  elements if it contains shell9 elements at all.
+
+  \param context      (i) pointer to a context variable during setup.
+
+  \author u.kue
+  \date 10/04
+*/
+/*----------------------------------------------------------------------*/
+void out_shell9_setup(struct _BIN_OUT_FIELD *context);
+
+#endif
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -182,15 +230,7 @@ void find_mesh_item_length(struct _BIN_OUT_FIELD* context,
   to store the element stresses.
 
   We want to store the real stress array for each
-  element. Postprocessing can be done later. However the real array is
-  not always available. Each element is different. Some elements do
-  even extrapolate their stresses to the nodes. This should better be
-  done by the filter, but for now we'll have to support this. Thus we
-  need to find the size of the node based stress array, too.
-
-  Of course extrapolating to the nodes requires that all elements at
-  the node agree on the nodal stress. In effect this demands that only
-  one type of element is used in the discretization.
+  element. Postprocessing can be done later.
 
   For many element types it's sufficient to lookup the \a element_info
   table to find the stress array's size. But dynamic elements like
@@ -201,10 +241,8 @@ void find_mesh_item_length(struct _BIN_OUT_FIELD* context,
 */
 /*----------------------------------------------------------------------*/
 void find_stress_item_length(struct _BIN_OUT_FIELD* context,
-                             INT* el_value_length,
-                             INT* el_size_length,
-                             INT* nd_value_length,
-                             INT* nd_size_length);
+                             INT* value_length,
+                             INT* size_length);
 
 
 /*----------------------------------------------------------------------*/
@@ -381,4 +419,6 @@ void out_results(struct _BIN_OUT_FIELD* context,
 
 
 #endif
+
+/*! @} (documentation module close)*/
 #endif

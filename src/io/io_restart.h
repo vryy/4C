@@ -20,6 +20,10 @@ understand. Feel free to add your own.
 
 #ifdef BINIO
 
+/*!
+\addtogroup IO
+*//*! @{ (documentation module open)*/
+
 #ifndef BIN_RESTART_H
 #define BIN_RESTART_H
 
@@ -208,4 +212,6 @@ void restart_read_bin_fsidyn(FSI_DYNAMIC *fsidyn, INT step);
 
 
 #endif
+
+/*! @} (documentation module close)*/
 #endif

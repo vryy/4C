@@ -28,10 +28,21 @@ INCLUDES=$INCLUDEDIRS
 LIBS=$LIBDIRS $LIBS
 PLAIN_LIBS=$LIBDIRS $LIBS
 
+VISUAL2_LIB=$VISUAL2_LIB
+#VISUAL2_INC=$VISUAL2_INC
+
 #----------------------- binaries -----------------------------------
 include ./Makefile.objects
 #--------------------------------------------------------------------
 #
+# The main rule called when no arguments are given
+ccarat: \$(PROGRAM)
+
+# Build (nearly) everything.
+# Some filters (like the visual ones) are very specific and system dependent
+# and thus not included here. This rule is supposed to work everywhere.
+all: \$(PROGRAM) post_gid post_gid_txt post_out post_monitor
+
 \$(PROGRAM): \\
 		$OBJECTS
 		@echo "Linking \$(LD) \$(LDFLAGS) \$(LIBS) \$(INCLUDES) -o \$(PROGRAM)"

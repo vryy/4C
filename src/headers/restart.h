@@ -116,24 +116,3 @@ INT                          step;
 DOUBLE                       time;
 DOUBLE                       relax;
 } RESTART_DYNFSI;
-
-/*----------------------------------------------------------------------*
- | control structure                                      genk 09/03    |
- | for levelset                                                         |
- *----------------------------------------------------------------------*/
-typedef struct _RESTART_LEVELSET
-{
-INT                          step;
-DOUBLE                       time;
-
-long int                     handle_of_node_handles;
-INT                          node_fdim;
-INT                          node_sdim;
-long int                   **node_handles;
-
-long int                     handle_of_ele_handles;
-INT                          ele_fdim;
-INT                          ele_sdim;
-long int                   **ele_handles;
-
-} RESTART_LEVELSET;

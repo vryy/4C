@@ -744,7 +744,7 @@ static void write_shell9_stress_unsmoothed(FIELD_DATA *field, MAP* group)
   gp_strK = amdef("gp_strK", &strK_a, 6, nir_x*nis_x*nit_x*field->s9_layers,"DA");
 
   /* The length of one row in the stress array. That's the number of
-   * gauss points per shell9 element. */
+   * gauss points per shell9 element (per layer). */
   stress_row_length = nir_x*nis_x*nit_x*field->s9_layers;
 
   dsassert(value_entry_length == 6*stress_row_length,

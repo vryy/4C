@@ -714,6 +714,7 @@ void inp_detailed_topology(DISCRET   *actdis)
     /*------------------- all other pointers to glines are not yet built */
     for (i=0; i<actdis->numele; i++)
     {
+      actele = &(actdis->element[i]);
       switch (actele->distyp)
       {
         case line2:

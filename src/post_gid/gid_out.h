@@ -25,6 +25,21 @@ copied.
 #include "../headers/standardtypes.h"
 
 
+/*----------------------------------------------------------------------*/
+/*!
+  \brief post element types.
+*/
+/*----------------------------------------------------------------------*/
+typedef enum _GiD_ElementType {
+  GiD_NoElement = 0,
+  GiD_Point,
+  GiD_Linear,
+  GiD_Triangle,
+  GiD_Quadrilateral,
+  GiD_Tetrahedra,
+  GiD_Hexahedra
+} GiD_ElementType;
+
 /* domain dimension */
 
 typedef enum { GiD_2D = 2, GiD_3D = 3 } GiD_Dimension;

@@ -30,6 +30,7 @@ enum
     s8_rst,
     s8_rst_ortho
     }            forcetyp;
+#define S8_FORCETYPE { "s8_xyz", "s8_rst", "s8_rst_ortho", NULL }
 struct _ARRAY4D  forces;
 /*struct _ARRAY    energy;*/
 /*-------------------------------------------- array of internal forces */

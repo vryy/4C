@@ -68,6 +68,10 @@ typedef char      CHAR;
 #define CCA_APPEND_U (1)
 #endif
 
+#ifdef WIN_MUENCH
+#define CCA_APPEND_U (1)
+#endif
+
 #ifdef HPUX_GNU
 #define CCA_APPEND_U (1)
 #endif
