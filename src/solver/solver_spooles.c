@@ -40,17 +40,23 @@ int        nmycol;
 InpMtx    *newA;    
 DenseMtx  *newY;
 SolveMap  *solvemap ;
-int        sym=SPOOLES_NONSYMMETRIC;/* SPOOLES_SYMMETRIC laeuft nich */ 
-int        pivotingflag=0;
+int        sym=SPOOLES_NONSYMMETRIC;
+/*int        sym=SPOOLES_SYMMETRIC;*/
+int        pivotingflag;
 static ARRAY recv_a;
 static double *recv;
+char  buffer[50];
 /* for debugging 
 int   msglvl=2;
-FILE *msgFile;*/
+FILE *msgFile;
+FILE *mtxf;
+FILE *rhsf;*/
 /* for debugging */
 int   msglvl=0;
 FILE *msgFile=NULL;
-char  buffer[50];
+FILE *mtxf=NULL;
+FILE *rhsf=NULL;
+
 
 
 #ifdef DEBUG 
@@ -60,10 +66,19 @@ if (msglvl)
 {
    sprintf(buffer,"spooles.msg%d",actintra->intra_rank);
    msgFile = fopen(buffer,"a+");
+   sprintf(buffer,"cca.mtx.%d.input",actintra->intra_rank);
+   mtxf = fopen(buffer,"w");
+   sprintf(buffer,"cca.rhs.%d.input",actintra->intra_rank);
+   rhsf = fopen(buffer,"w");
 }
 /*----------------------------------------------------------------------*/
 imyrank      = actintra->intra_rank;
 inprocs      = actintra->intra_nprocs;
+/*----- for some reason the pivoting works only in the case inprocs > 1 */
+/*                                   (in fact it does not work without) */
+/*----------------------- int the inprocs=1 case pivoting does not work */
+if (inprocs>1) pivotingflag=1;
+else           pivotingflag=0;
 /*----------------------------------------------------------------------*/
 switch(option)
 {
@@ -104,6 +119,20 @@ case 0:
    {
       amdel(&recv_a);
       recv = amdef("recv",&recv_a,numeq_total,1,"DV");
+   }
+/*----------------------------------------------------------------------*/
+/* print the matrix in a format that can be read by the spooles test drivers*/   
+   if (msglvl)
+   {
+      fprintf(mtxf,"%d %d %d\n",numeq_total,numeq_total,nnz);
+      for (i=0; i<nnz; i++)
+      fprintf(mtxf,"%d %d %18.12E \n",irn[i],jcn[i],A_loc[i]);
+      fflush(mtxf);
+      
+      fprintf(rhsf,"%d 1\n",numeq);
+      for (i=0; i<numeq; i++)
+      fprintf(rhsf,"%d %18.12E \n",update[i],b[i]);
+      fflush(rhsf);
    }
 /*----------------------------------------------------------------------*/
 /*
@@ -155,14 +184,11 @@ case 0:
    (2) order the graph using multiple minimum degree
    -------------------------------------------------
 */
-   if (spo->ncall==0) 
    spo->graph  = Graph_new();
-   if (spo->ncall==0) 
    spo->adjIVL = InpMtx_MPI_fullAdjacency(spo->mtxA,stats,msglvl,msgFile,
                                           actintra->MPI_INTRA_COMM);
 
    nedges = IVL_tsize(spo->adjIVL);
-   if (spo->ncall==0) 
    Graph_init2(spo->graph,0,numeq_total,0,nedges,numeq_total,nedges,
                spo->adjIVL,NULL,NULL);
    /* debug */
@@ -173,7 +199,7 @@ case 0:
       fflush(msgFile);
    }
    spo->frontETree = orderViaMMD(spo->graph,seed+imyrank,msglvl,msgFile);
- /*  Graph_free(spo->graph);*/
+   Graph_free(spo->graph);
    /* debug */
    if (msglvl)
    {
@@ -209,7 +235,7 @@ case 0:
    ETree_permuteVertices(spo->frontETree,spo->oldToNewIV);
    InpMtx_permute(spo->mtxA,IV_entries(spo->oldToNewIV),
                             IV_entries(spo->oldToNewIV));
-   if (sym==SPOOLES_SYMMETRIC)
+   if (sym==SPOOLES_SYMMETRIC || sym == SPOOLES_HERMITIAN)
    InpMtx_mapToUpperTriangle(spo->mtxA);
    InpMtx_changeCoordType(spo->mtxA,INPMTX_BY_CHEVRONS);
    InpMtx_changeStorageMode(spo->mtxA,INPMTX_BY_VECTORS);
@@ -497,8 +523,8 @@ case 0:
    -----------
 */
    FrontMtx_free(spo->frontmtx);
-   InpMtx_free(spo->mtxA);
-   DenseMtx_free(spo->mtxY);
+   InpMtx_free(newA);
+   DenseMtx_free(newY);
    DenseMtx_free(spo->mtxX);
    ETree_free(spo->frontETree);
    SubMtxManager_free(spo->mtxmanager);
@@ -521,7 +547,12 @@ default:
 break;   
 }
 /*----------------------------------------------------------------------*/
-if (msglvl) fclose(msgFile);
+if (msglvl) 
+{
+   fclose(msgFile);
+   fclose(mtxf);
+   fclose(rhsf);
+}
 #ifdef DEBUG 
 dstrc_exit();
 #endif
