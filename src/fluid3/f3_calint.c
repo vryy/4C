@@ -50,22 +50,16 @@ time-RHS for one fluid3 element is calculated
 
 </pre>
 \param  *ele	   ELEMENT	   (i)    actual element
-\param  *hasext    INT             (i)    element flag
 \param **estif     DOUBLE	   (o)    element stiffness matrix
 \param **emass     DOUBLE	   (o)    element mass matrix
-\param  *etforce   DOUBLE	   (o)    element time force vector
-\param  *eiforce   DOUBLE	   (o)    element iter force vector
+\param  *eforce    DOUBLE	   (o)    element force vector
 \param  *funct     DOUBLE	   (-)    natural shape functions
 \param **deriv     DOUBLE	   (-)	  deriv. of nat. shape funcs
 \param **deriv2    DOUBLE	   (-)    2nd deriv. of nat. shape f.
 \param **xjm	   DOUBLE	   (-)    jacobian matrix
 \param **derxy     DOUBLE	   (-)	  global derivatives
 \param **derxy2    DOUBLE	   (-)    2nd global derivatives
-\param **eveln     DOUBLE	   (i)    ele vel. at time n
 \param **evelng    DOUBLE	   (i)    ele vel. at time n+g
-\param  *epren     DOUBLE	   (-)    ele pres. at time n
-\param  *edeadn    DOUBLE	   (-)    ele dead load (selfweight) at n
-\param  *edeadng   DOUBLE	   (-)    ele dead load (selfweight) at n+1
 \param  *velint    DOUBLE	   (-)    vel at integration point
 \param  *vel2int   DOUBLE	   (-)    vel at integration point
 \param  *covint    DOUBLE	   (-)    conv. vel. at integr. point
@@ -79,11 +73,9 @@ time-RHS for one fluid3 element is calculated
 ------------------------------------------------------------------------*/
 void f3_calint(
                ELEMENT         *ele,
-               INT             *hasext,
                DOUBLE         **estif,
                DOUBLE         **emass,
-               DOUBLE          *etforce,
-               DOUBLE          *eiforce,
+               DOUBLE          *eforce,
                DOUBLE         **xyze,
                DOUBLE          *funct,
                DOUBLE         **deriv,
@@ -91,14 +83,8 @@ void f3_calint(
                DOUBLE         **xjm,
                DOUBLE         **derxy,
                DOUBLE         **derxy2,
-               DOUBLE         **eveln,
                DOUBLE         **evelng,
-               DOUBLE          *epren,
-               DOUBLE          *edeadn,
-               DOUBLE          *edeadng,
                DOUBLE         **vderxy,
-               DOUBLE          *pderxy,
-               DOUBLE         **vderxy2,
                DOUBLE         **wa1,
                DOUBLE         **wa2
                )
@@ -117,7 +103,6 @@ DOUBLE   fac;
 DOUBLE   facr,facs,fact; /* integration weights                         */
 DOUBLE   det;	      /* determinant of jacobian matrix                 */
 DOUBLE   e1,e2,e3;    /* natural coordinates of integr. point           */
-DOUBLE   preint;      /*pressure at integration point */
 DOUBLE   velint[3];
 DOUBLE   covint[3];
 DIS_TYP  typ;         /* element type                                   */
@@ -211,7 +196,7 @@ for (lt=0;lt<nit;lt++)
       dserror("typ unknown!");
    } /* end switch (typ) */
 /*-------------------------------------------- compute Jacobian matrix */
-   f3_jaco(xyze,funct,deriv,xjm,&det,ele,iel);
+   f3_jaco(xyze,deriv,xjm,&det,ele,iel);
    fac = facr*facs*fact*det;
 /*------------------------------------------- compute global derivates */
    f3_gder(derxy,deriv,xjm,wa1,det,iel);
@@ -277,84 +262,14 @@ for (lt=0;lt<nit;lt++)
 /*-------------- get convective velocities (n+1,i) at integration point */
       f3_covi(vderxy,velint,covint);
 /*-------------------- calculate galerkin part of "Iter-RHS" (vel dofs) */
-      f3_calgalifv(eiforce,covint,funct,fac,iel);
+      f3_calgalifv(eforce,covint,funct,fac,iel);
 /*------------------- calculate stabilisation for "Iter-RHS" (vel dofs) */
-      f3_calstabifv(gls,ele,eiforce,covint,velint,funct,
+      f3_calstabifv(gls,ele,eforce,covint,velint,
                      derxy,derxy2,fac,visc,ihoel,iel);
 /*------------------- calculate stabilisation for "Iter-RHS" (pre dofs) */
-      f3_calstabifp(gls,&(eiforce[3*iel]),covint,derxy,fac,iel);
+      f3_calstabifp(gls,&(eforce[3*iel]),covint,derxy,fac,iel);
    } /* endif (fdyn->nii!=0) */
 
-/*----------------------------------------------------------------------*
- |       compute "external" Force Vector                                |
- |   (at the moment there are no external forces implemented)           |
- |  but there can be due to self-weight /magnetism / etc. (b)           |
- |  dead load may vary over time, but stays constant over               |
- |  the whole domain --> no interpolation with shape funcs              |
- |  parts changing during the nonlinear iteration are added to          |
- |  Iteration Force Vector                                              |
- *----------------------------------------------------------------------*/
-   if (*hasext!=0)
-   {
-/*------- compute stabilisation part of external RHS (vel dofs) at (n+1)*/
-      f3_calstabexfv(gls,ele,eiforce,derxy,derxy2,edeadng,
-	             velint,fac,visc,iel,ihoel,1);
-/*------ compute stabilisation part of external RHS (pre dofs) at (n+1) */
-      f3_calstabexfp(gls,&(eiforce[3*iel]),derxy,edeadng,fac,iel,1);
-   } /* endif (*hasext!=0) */
-
-/*----------------------------------------------------------------------*
- |         compute "Time" Force Vectors                                 |
- *----------------------------------------------------------------------*/
-   if (fdyn->nif!=0)
-   {
-/*------------------------------- get pressure (n) at integration point */
-      preint=f3_scali(funct,epren,iel);
-/*------------------- get pressure derivatives (n) at integration point */
-      f3_pder(pderxy,derxy,epren,iel);
-/*----------------------------- get velocities (n) at integration point */
-      f3_veci(velint,funct,eveln,iel);
-/*------------------- get velocitiederivatives (n) at integration point */
-      f3_vder(vderxy,derxy,eveln,iel);
-/*------------- get 2nd velocities derivatives (n) at integration point */
-      if (ihoel!=0)
-         f3_vder2(vderxy2,derxy2,eveln,iel);
-/*------------------ get convective velocities (n) at integration point */
-      f3_covi(vderxy,velint,covint);
-/*--------------------- calculate galerkin part of "Time-RHS" (vel-dofs)*/
-      f3_calgaltfv(etforce,velint,covint,
-                  funct,derxy,vderxy,preint,visc,fac,iel);
-/*-------------------- calculate galerkin part of "Time-RHS" (pre-dofs) */
-      f3_calgaltfp(&(etforce[3*iel]),funct,vderxy,fac,iel);
-/*------------------- calculate stabilisation for "Time-RHS" (vel-dofs) */
-      f3_calstabtfv(gls,ele,etforce,velint,velint,
-                     covint,derxy,derxy2,vderxy,vderxy2,
-                     pderxy,fac,visc,ihoel,iel);
-
-/*------------------- calculate stabilisation for "Time-RHS" (pre-dofs) */
-      f3_calstabtfp(ele,gls,&(etforce[3*iel]),derxy,vderxy2,
-                   velint,covint,pderxy,visc,fac,ihoel,iel);
-
-/*----------------------------------------------------------------------*
-            | compute "external" Force Vector                           |
-            |  but there can be due to self-weight /magnetism / etc. (b)|
-            |  dead load may vary over time, but stays constant over    |
-	    |  the whole domain --> no interpolation with shape funcs   |
-            |  parts staying constant during nonlinear iteration are    |
-            |  add to Time Force Vector                                 |
- *----------------------------------------------------------------------*/
-      if (*hasext!=0)
-      {
-/*--- compute galerkin part of external RHS (vel dofs) at (n) and (n+1) */
-         f3_calgalexfv(etforce,funct,edeadn,edeadng,fac,iel);
-
-/*-------- compute stabilisation part of external RHS (vel dofs) at (n) */
-         f3_calstabexfv(gls,ele,etforce,derxy,derxy2,edeadn,
-                        velint,fac,visc,iel,ihoel,0);
-/*--------------- compute stabilistaion part of external RHS (pre dofs) */
-         f3_calstabexfp(gls,&(etforce[3*iel]),derxy,edeadn,fac,iel,0);
-      } /* endif (*hasext!=0) */
-   } /* endif (fdyn->nif!=0)   */
 }
 }
 } /* end of loop over integration points */
@@ -381,8 +296,7 @@ time-RHS for one fluid3 element is calculated
 \param  *hasext    INT              (i) element flag
 \param **estif     DOUBLE           (o) element stiffness matrix
 \param **emass     DOUBLE           (o) element mass matrix
-\param  *etforce   DOUBLE           (o) element time force vector
-\param  *eiforce   DOUBLE           (o) element iter force vector
+\param  *eforce    DOUBLE           (o) element force vector
 \param **xyze      DOUBLE           (-) nodal coordinates
 \param  *funct     DOUBLE           (-) natural shape functions
 \param **deriv     DOUBLE           (-)	deriv. of nat. shape funcs
@@ -390,7 +304,6 @@ time-RHS for one fluid3 element is calculated
 \param **xjm       DOUBLE           (-) jacobian matrix
 \param **derxy     DOUBLE           (-)	global derivatives
 \param **derxy2    DOUBLE           (-) 2nd global derivatives
-\param **eveln     DOUBLE           (i) ele vel. at time n
 \param **evelng    DOUBLE           (i) ele vel. at time n+g
 \param  *epren     DOUBLE           (-) ele pres. at time n
 \param  *edeadn    DOUBLE           (-) ele dead load (selfweight) at n
@@ -407,11 +320,9 @@ time-RHS for one fluid3 element is calculated
 ------------------------------------------------------------------------*/
 void f3_calinta(
                   ELEMENT         *ele,
-                  INT             *hasext,
                   DOUBLE         **estif,
                   DOUBLE         **emass,
-                  DOUBLE          *etforce,
-                  DOUBLE          *eiforce,
+                  DOUBLE          *eforce,
                   DOUBLE         **xyze,
                   DOUBLE          *funct,
                   DOUBLE         **deriv,
@@ -419,17 +330,10 @@ void f3_calinta(
                   DOUBLE         **xjm,
                   DOUBLE         **derxy,
                   DOUBLE         **derxy2,
-                  DOUBLE         **eveln,
                   DOUBLE         **evelng,
-                  DOUBLE         **ealecovn,
                   DOUBLE         **ealecovng,
                   DOUBLE         **egridv,
-                  DOUBLE          *epren,
-                  DOUBLE          *edeadn,
-                  DOUBLE          *edeadng,
                   DOUBLE         **vderxy,
-                  DOUBLE          *pderxy,
-                  DOUBLE         **vderxy2,
                   DOUBLE         **wa1,
                   DOUBLE         **wa2
 	      )
@@ -451,7 +355,6 @@ DOUBLE   fac;
 DOUBLE   facr,facs,fact; /* integration weights                         */
 DOUBLE   det;	      /* determinant of jacobian matrix                 */
 DOUBLE   e1,e2,e3;    /* natural coordinates of integr. point           */
-DOUBLE   preint;      /*pressure at integration point */
 DOUBLE   velint[3];
 DOUBLE   alecovint[3];
 DOUBLE   gridvint[3];
@@ -540,7 +443,7 @@ for (lt=0;lt<nit;lt++)
       dserror("typ unknown!");
    } /* end switch (typ) */
 /*-------------------------------------------- compute Jacobian matrix */
-   f3_jaco(xyze,funct,deriv,xjm,&det,ele,iel);
+   f3_jaco(xyze,deriv,xjm,&det,ele,iel);
    fac = facr*facs*fact*det;
 /*------------------------------------------- compute global derivates */
    f3_gder(derxy,deriv,xjm,wa1,det,iel);
@@ -615,85 +518,13 @@ for (lt=0;lt<nit;lt++)
 /*               covint = c*grad(u)                                     */
       f3_covi(vderxy,alecovint,covint);
 /*-------------------- calculate galerkin part of "Iter-RHS" (vel dofs) */
-      f3_calgalifv(eiforce,covint,funct,fac,iel);
+      f3_calgalifv(eforce,covint,funct,fac,iel);
 /*------------------- calculate stabilisation for "Iter-RHS" (vel dofs) */
-      f3_calstabifv(gls,ele,eiforce,covint,alecovint,funct,
+      f3_calstabifv(gls,ele,eforce,covint,alecovint,
                    derxy,derxy2,fac,visc,ihoel,iel);
 /*------------------- calculate stabilisation for "Iter-RHS" (pre dofs) */
-      f3_calstabifp(gls,&(eiforce[3*iel]),covint,derxy,fac,iel);
+      f3_calstabifp(gls,&(eforce[3*iel]),covint,derxy,fac,iel);
    } /* endif (fdyn->nii!=0) */
-
-/*----------------------------------------------------------------------*
- |       compute "external" Force Vector                                |
- |   (at the moment there are no external forces implemented)           |
- |  but there can be due to self-weight /magnetism / etc. (b)           |
- |  dead load may vary over time, but stays constant over               |
- |  the whole domain --> no interpolation with shape funcs              |
- |  parts changing during the nonlinear iteration are added to          |
- |  Iteration Force Vector                                              |
- *----------------------------------------------------------------------*/
-   if (*hasext!=0)
-   {
-/*------- compute stabilisation part of external RHS (vel dofs) at (n+1)*/
-      f3_calstabexfv(gls,ele,eiforce,derxy,derxy2,edeadng,
-                     alecovint,fac,visc,iel,ihoel,1);
-/*------ compute stabilisation part of external RHS (pre dofs) at (n+1) */
-      f3_calstabexfp(gls,&(eiforce[3*iel]),derxy,edeadng,fac,iel,1);
-   } /* endif (*hasext!=0) */
-
-/*----------------------------------------------------------------------*
- |         compute "Time" Force Vectors                                 |
- *----------------------------------------------------------------------*/
-   if (fdyn->nif!=0)
-   {
-/*------------------------------- get pressure (n) at integration point */
-      preint=f3_scali(funct,epren,iel);
-/*------------------- get pressure derivatives (n) at integration point */
-      f3_pder(pderxy,derxy,epren,iel);
-/*----------------------------- get velocities (n) at integration point */
-      f3_veci(velint,funct,eveln,iel);
-/*-------------- get ale-convective velocities (n) at integration point */
-      f3_veci(alecovint,funct,ealecovn,iel);
-/*------------------- get velocitiederivatives (n) at integration point */
-      f3_vder(vderxy,derxy,eveln,iel);
-/*------------- get 2nd velocities derivatives (n) at integration point */
-      if (ihoel!=0)
-         f3_vder2(vderxy2,derxy2,eveln,iel);
-/*------------------ get convective velocities (n) at integration point
-                     covint = c * grad(u)                               */
-      f3_covi(vderxy,alecovint,covint);
-/*--------------------- calculate galerkin part of "Time-RHS" (vel-dofs)*/
-      f3_calgaltfv(etforce,velint,covint,
-                  funct,derxy,vderxy,preint,visc,fac,iel);
-/*-------------------- calculate galerkin part of "Time-RHS" (pre-dofs) */
-      f3_calgaltfp(&(etforce[3*iel]),funct,vderxy,fac,iel);
-/*------------------- calculate stabilisation for "Time-RHS" (vel-dofs) */
-      f3_calstabtfv(gls,ele,etforce,alecovint,velint,
-                     covint,derxy,derxy2,vderxy,vderxy2,
-                     pderxy,fac,visc,ihoel,iel);
-/*------------------- calculate stabilisation for "Time-RHS" (pre-dofs) */
-      f3_calstabtfp(ele,gls,&(etforce[3*iel]),derxy,vderxy2,
-                     velint,covint,pderxy,visc,fac,ihoel,iel);
-/*----------------------------------------------------------------------*
-            | compute "external" Force Vector                           |
-            | (at the moment there are no external forces implemented)  |
-            |  but there can be due to self-weight /magnetism / etc. (b)|
-            |  dead load may vary over time, but stays constant over    |
-            |  the whole domain --> no interpolation with shape funcs   |
-            |  parts staying constant during nonlinear iteration are    |
-            |  add to Time Force Vector                                 |
-/-----------------------------------------------------------------------*/
-      if (*hasext!=0)
-      {
-/*--- compute galerkin part of external RHS (vel dofs) at (n) and (n+1) */
-         f3_calgalexfv(etforce,funct,edeadn,edeadng,fac,iel);
-/*-------- compute stabilisation part of external RHS (vel dofs) at (n) */
-         f3_calstabexfv(gls,ele,etforce,derxy,derxy2,edeadn,
-                        alecovint,fac,visc,iel,ihoel,0);
-/*--------------- compute stabilistaion part of external RHS (pre dofs) */
-         f3_calstabexfp(gls,&(etforce[3*iel]),derxy,edeadn,fac,iel,0);
-      } /* endif (*hasext!=0) */
-   } /* endif (fdyn->nif!=0)   */
 }
 }
 } /* end of loop over integration points */
