@@ -14,6 +14,11 @@ double              toldisp;            /* tolerance of residual displacements *
 double              stepsize;           /* steplenght */
 int                 iarc;               /* flag for arscaling in Crisfields Arclenght control */
 double              arcscl;             /* arc scaling scaling factor of load part of predictor */
+int                 signchcsp;          /* flag for singn changing by CSP */
+int                 resevry_disp;       /* write result very updevry step */
+int                 resevry_stress;     /* write result very updevry step */
+int                 resevery_restart;   /* write restart every res_write_evry step */
+				
 
 struct _NODE       *controlnode;        /* ptr to control node */
 int                 control_node_global;/* global control node Id (redundant) */
@@ -26,7 +31,7 @@ int                 control_dof;        /* dof of control node to be controlled 
  *----------------------------------------------------------------------*/
 typedef struct _STANLN  
 {
-double              sp1;
+double              sp1;                  /* initial stiffness of control node */
 double              csp;                  /* current stiffness parameter */
 double              rlold;                /* load factor of last step */
 double              rlnew;                /* load factor of actual step */

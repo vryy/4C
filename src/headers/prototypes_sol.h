@@ -1075,3 +1075,30 @@ void calelm_fluid(FIELD        *actfield,     /* active field */
 void calinit_fluid(FIELD       *actfield,   /* the active physical field */ 
                    PARTITION   *actpart,    /* my partition of this field */
                    CALC_ACTION *action);
+/*----------------------------------------------------------------------*
+ |  restart_control.c                                   ah 08/02        |
+ *----------------------------------------------------------------------*/
+void restart_write_nlnstructstat(STATIC_VAR     *statvar,/*------------ static input --*/                  
+             STANLN          *nln_data,  /*-- control variables for global NR-Iterat --*/
+             FIELD           *actfield,  /*---------------------------- actual field --*/
+             PARTITION       *actpart,   /*------------------------ actual partition --*/
+             INTRA           *actintra,  /*---------------- actual intra comunicator --*/
+             CALC_ACTION     *action,    /*---------- element action = write-restart --*/
+             int kstep,                  /*------------------------ actual load step --*/
+             int nrhs,  DIST_VECTOR *rhs,/*-- Fext processorpart of actual load step --*/
+             int nsol,  DIST_VECTOR *sol,/* solution processorpart of actual load step */
+             int ndis,  DIST_VECTOR *dispi);/*- displacement processorpart  --"--     --*/
+/*----------------------------------------------------------------------*
+ |  restart_control.c                                   ah 08/02        |
+ *----------------------------------------------------------------------*/
+void restart_read_nlnstructstat(int restart,   /*------------------------ restart step ??? --*/
+                STATIC_VAR     *statvar,       /*---------------------------- static input --*/                  
+                STANLN          *nln_data,     /*-- control variables for global NR-Iterat --*/
+                FIELD           *actfield,     /*---------------------------- actual field --*/
+                PARTITION       *actpart,      /*------------------------ actual partition --*/
+                INTRA           *actintra,     /*---------------- actual intra comunicator --*/
+                CALC_ACTION     *action,       /*---------- element action = write-restart --*/
+                int nrhs,  DIST_VECTOR *rhs,   /*-- Fext processorpart of actual load step --*/
+                int nsol,  DIST_VECTOR *sol,   /*-- solution processorpart     --"--       --*/
+                int ndis,  DIST_VECTOR *dispi); /*-- displacement processorpart  --"--     --*/
+             
