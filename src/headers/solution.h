@@ -9,6 +9,11 @@
 #ifdef AZTEC_PACKAGE
 #ifdef PARALLEL 
 /*-------------------------------- with mpi parallel version of aztec2.1*/
+
+#ifdef HPUXITA
+#include </bau/stat16/users/statik/lib/AZTEC21_MPI/az_aztec.h>
+#endif
+
 #ifdef HPUX11
 #include </bau/stat33/users/statik/lib/AZTEC21_MPI/az_aztec.h>
 #endif
@@ -27,6 +32,10 @@
 
 #else
 /*------------------------ without mpi , sequentiel version of aztec2.1 */
+#ifdef HPUXITA
+#include </bau/stat16/users/statik/lib/AZTEC21/az_aztec.h>
+#endif
+
 #ifdef HPUX11
 #include </bau/stat33/users/statik/lib/AZTEC21/az_aztec.h>
 #endif
