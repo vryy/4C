@@ -44,7 +44,7 @@ dstrc_enter("w1_call_mat");
                        istore,
                        newval);
   break;
-  case m_pl_dp:/*------------------------ von mises material law ---*/
+  case m_pl_dp:/*------------------- drucker prager material law ---*/
     w1_mat_plast_dp(   mat->m.pl_dp->youngs,
                        mat->m.pl_dp->possionratio,
                        mat->m.pl_dp->ALFAT,
