@@ -27,7 +27,7 @@ PROBLEMTYP   Structure
 NUMFIELD     1
 MULTIDIS     no
 TIMETYP      Static
-TRACE        fast
+TRACE        secure
 RESTART      0
 ----------------------------------------------------------------IO
 STRUCT_DISP_FILE   No
