@@ -141,7 +141,7 @@ return;
 
 
 /*----------------------------------------------------------------------*
- |  make redundant ucchb matrix on all procs                 m.gee 11/01|
+ |  make redundant dense matrix on all procs                 m.gee 11/01|
  *----------------------------------------------------------------------*/
 void redundant_dense(
                         PARTITION     *actpart,
