@@ -321,8 +321,23 @@ for (lr=0; lr<nir; lr++)
   for (ls=0; ls<nis; ls++)
   {
      /*============================= gaussian point and weight at it ===*/
-     e2   = data->xgps[ls];
-     facs = data->wgts[ls];
+      switch (ele->distyp)
+      {
+          case quad4:
+          case quad8:
+          case quad9:
+              e2   = data->xgps[ls];
+              facs = data->wgts[ls];
+              break;
+          case tri3:
+          case tri6:
+              e2   = data->xgps[lr];
+              facs = ONE;
+              break;
+          default:
+              dserror("unknown number of gaussian points in ale2_intg");
+              break;
+      }
      /*-------------------------- shape functions and their derivatives */
      ale2_funct_deriv(funct,deriv,e1,e2,ele->distyp,1);
      /*------------------------------------- compute jacobian matrix ---*/
@@ -528,9 +543,25 @@ for (lr=0; lr<nir; lr++)
   facr = data->wgtr[lr];
   for (ls=0; ls<nis; ls++)
   {
+
      /*============================= gaussian point and weight at it ===*/
-     e2   = data->xgps[ls];
-     facs = data->wgts[ls];
+      switch (ele->distyp)
+      {
+          case quad4:
+          case quad8:
+          case quad9:
+              e2   = data->xgps[ls];
+              facs = data->wgts[ls];
+              break;
+          case tri3:
+          case tri6:
+              e2   = data->xgps[lr];
+              facs = ONE;
+              break;
+          default:
+              dserror("unknown number of gaussian points in ale2_intg");
+              break;
+      }
      /*-------------------------- shape functions and their derivatives */
      ale2_funct_deriv(funct,deriv,e1,e2,ele->distyp,1);
      /*------------------------------------- compute jacobian matrix ---*/
@@ -750,8 +781,23 @@ for (lr=0; lr<nir; lr++)
         strain[i] = 0.0;
      }
      /*============================= gaussian point and weight at it ===*/
-     e2   = data->xgps[ls];
-     facs = data->wgts[ls];
+      switch (ele->distyp)
+      {
+          case quad4:
+          case quad8:
+          case quad9:
+              e2   = data->xgps[ls];
+              facs = data->wgts[ls];
+              break;
+          case tri3:
+          case tri6:
+              e2   = data->xgps[lr];
+              facs = ONE;
+              break;
+          default:
+              dserror("unknown number of gaussian points in ale2_intg");
+              break;
+      }
      /*-------------------------- shape functions and their derivatives */
      ale2_funct_deriv(funct,deriv,e1,e2,ele->distyp,1);
      /*------------------------------------- compute jacobian matrix ---*/
@@ -777,8 +823,10 @@ for (lr=0; lr<nir; lr++)
                 + 4.0*strain[2]*strain[2] );
      strain[0] = m + r;  /* epsilon_11 */
      strain[1] = m - r;  /* epsilon_22 */
+     /*------------------------- in the first step where the rhs = 0 ---*/
      if (strain[0] == 0.0 && strain[1] == 0.0)
         stiff = 1.0;
+     /*--------------- else for ordinary steps, where strains appear ---*/
      else
      {
      /* equations refere to paper of Chiandussi et al. 2000 */
@@ -1013,7 +1061,6 @@ INT                 stepswitch = 0;
 DOUBLE              el_area;          /* element area */
 DOUBLE              min_detF;         /* minimal Jacobian determinant */
 
-DOUBLE              x,y;              /* actual coordinates */
 DOUBLE              k_diff;
 
 static ARRAY    D_a;        /* material tensor */     
@@ -1096,8 +1143,23 @@ else if (quality == 2)  /* case corner angle */
    ele->e.ale2->quality = ale2_corner_angle(xyz); 
 else if (quality == 3)  /* case (normalised) min. Jacobian determinant */
 {
-   el_area = ale2_el_area(xyz);
-   ele->e.ale2->quality = min_detF * 4.0/el_area;
+   switch (ele->distyp)
+   {
+       case quad4:
+          el_area = ale2_el_area(xyz);
+	  ele->e.ale2->quality = min_detF * 4.0/el_area;
+	  break;
+       case tri3:
+       /* here a warning is needed, because min J monitoring with linear 
+          triangles doesn't work, so nothing is done and calculation goes
+	  on. */
+	  break;
+       default:
+	  /* an ongoing calculation and a warning at the end about the 
+	  monitoring would be much better! */
+	  dserror("min J quality monitoring for disytp not implemented");
+	  break;
+   }
 }
 /*================================================ integration loops ===*/
 for (lr=0; lr<nir; lr++)
@@ -1108,8 +1170,23 @@ for (lr=0; lr<nir; lr++)
   for (ls=0; ls<nis; ls++)
   {
      /*============================= gaussian point and weight at it ===*/
-     e2   = data->xgps[ls];
-     facs = data->wgts[ls];
+      switch (ele->distyp)
+      {
+          case quad4:
+          case quad8:
+          case quad9:
+              e2   = data->xgps[ls];
+              facs = data->wgts[ls];
+              break;
+          case tri3:
+          case tri6:
+              e2   = data->xgps[lr];
+              facs = ONE;
+              break;
+          default:
+              dserror("unknown number of gaussian points in ale2_intg");
+              break;
+      }
      /*-------------------------- shape functions and their derivatives */
      ale2_funct_deriv(funct,deriv,e1,e2,ele->distyp,1);
      /*------------------------------------- compute jacobian matrix ---*/
@@ -1119,15 +1196,7 @@ for (lr=0; lr<nir; lr++)
      /*-------------------------------- calculate global derivatives ---*/
      amzero(&deriv_xy_a);
      ale2_deriv_xy(deriv_xy,deriv,xjm,det,iel);
-     /*--------------------------------- fit diffusivity to example2 ---*/
-     /*-------------------------------- determine actual coordinates ---*/
-     x = y = 0.0;
-     for (i=0; i<iel; i++)
-     {
-        x += funct[i] * ele->node[i]->x[0];
-        y += funct[i] * ele->node[i]->x[1];
-     }
-     /*-------------------------------- modify diffusion coefficient ---*/
+     /*------------------------- diffusivity depends on displacement ---*/
      k_diff = 1.0/min_detF/min_detF; 
      /*------------------------------- sort it into stiffness matrix ---*/
      for (i=0; i<iel; i++)
