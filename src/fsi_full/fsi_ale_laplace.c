@@ -123,7 +123,7 @@ interface and at the free surface as Dirichlet boundary conditions
 \return void                                               
                                         
 \sa   calling: calelm(), monitoring(), ale_setdirich_increment_fsi(),
-               ale_quality()
+               plot_ale_quality()
       called by: fsi_ale()
 
 *----------------------------------------------------------------------*/
@@ -475,7 +475,8 @@ if (restartstep==fsidyn->res_write_evry)
 } 
 
 /*--------------------------------------- do mesh quality statistics ---*/
-if (container.quality) ale_quality(actfield,fsidyn->step,actintra,actpart);
+if (container.quality) 
+  plot_ale_quality(actfield,fsidyn->step,actintra,actpart);
 /*--------------------------------------------------------------------- */   
 
 break;
