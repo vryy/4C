@@ -2,9 +2,18 @@
 \file
 \brief Testing of results
 
+<pre>
+Maintainer:  Steffen Genkinger
+             genk@statik.uni-stuttgart.de
+             http://www.uni-stuttgart.de/ibs/members/genkinger/index.html
+
+
+</pre>
+
 ------------------------------------------------------------------------*/
 #ifdef RESULTTEST
 #include "../headers/standardtypes.h"
+#include "../axishell/axishell.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -194,10 +203,45 @@ case prb_fsi:
    }
 break; 
 case prb_structure:
+#ifdef D_AXISHELL
+   /*-------------------------------- check results of  axishell.dat */
+   if(strstr(allfiles.title[0],"AXISHELL_TEST_EXAMPLE") != NULL)
+   {
+      /*-- check result of fluid node with global Id 123 */
+      printf("\nChecking results for AXISHELL_TEST_EXAMPLE ...\n");
+      /*-------------------------------------------- check displacement */
+      actresult   = structfield->dis[0].node[123].sol.a.da[0][0];
+      givenresult = -0.02778858368483676;
+      fprintf(err,"actual = %24.16lf, given = %24.16lf\n",actresult,givenresult);
+      if (FABS(actresult-givenresult)>EPS6)
+         dserror("RESULTCHECK: vely not correct!");
+      /*-------------------------------------------------- check stress */
+      /*actresult   = structfield->dis[0].element[123].e.saxi.stress_GP;*/
+      actresult   = structfield->dis[0].element[123].e.saxi->stress_GP.a.d3[0][2][0];
+      givenresult = -169.4900467515912;
+      fprintf(err,"actual = %24.16lf, given = %24.16lf\n",actresult,givenresult);
+      if (FABS(actresult-givenresult)>EPS6)
+         dserror("RESULTCHECK: pressure not correct!");
+   }
+#endif
 break;
 case prb_opt:
 break;
 case prb_ale:
+#ifdef D_ALE
+   /*-------------------------------- check results of  axishell.dat */
+   if(strstr(allfiles.title[0],"PURE_ALE_TEST_EXAMPLE") != NULL)
+   {
+      /*-- check result of fluid node with global Id 123 */
+      printf("\nChecking results for PURE_ALE_TEST_EXAMPLE ...\n");
+      /*-------------------------------------------- check displacement */
+      actresult   = alefield->dis[0].node[123].sol.a.da[0][1];
+      givenresult = -0.5152044455551235;
+      fprintf(err,"actual = %24.16lf, given = %24.16lf\n",actresult,givenresult);
+      if (FABS(actresult-givenresult)>EPS6)
+         dserror("RESULTCHECK: vely not correct!");
+   }
+#endif
 break;
 }
 
