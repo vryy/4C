@@ -15,7 +15,7 @@
 # -DDEBUG     defines debug mode: routine and array tracing 
 # -DPARALLEL  defines parallel version of programm
 # 
-# -DMLIB_PACKAGE       defines interface to solver library MLIB
+# -DMLIB_PACKAGE       defines interface to solver library MLIB (HPUX11, sequentiell)
 # -DHYPRE_PACKAGE      defines interface to solver library HYPRE (not yet impl.)
 # -DAZTEC_PACKAGE      defines interface to solver library AZTEC
 # -DPARSUPERLU_PACKAGE defines interface to solver library ParSuperLU

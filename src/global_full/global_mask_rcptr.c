@@ -51,7 +51,7 @@ if (!dof_connect) dserror("Allocation of dof_connect failed");
 rc_ptr_nnz_topology(actfield,actpart,actsolv,actintra,rc_ptr,dof_connect);
 /*----------------------------------------------------- allocate arrays */
 /*                                                     see MUMPS manual */
-amdef("rowptr" ,&(rc_ptr->rowptr) ,rc_ptr->numeq    ,1,"IV");
+amdef("rowptr" ,&(rc_ptr->rowptr) ,rc_ptr->numeq+1  ,1,"IV");
 amdef("irn_loc",&(rc_ptr->irn_loc),rc_ptr->nnz      ,1,"IV");
 amdef("jcn_loc",&(rc_ptr->jcn_loc),rc_ptr->nnz      ,1,"IV");
 amdef("A"      ,&(rc_ptr->A_loc)  ,rc_ptr->nnz      ,1,"DV");
@@ -61,8 +61,13 @@ amdef("bindx",&(rc_ptr->bindx),(rc_ptr->nnz+1),1,"IV");
 rc_ptr_make_bindx(actfield,actpart,actsolv,rc_ptr,dof_connect);
 /*----------------- make rowptr, irn_loc, jcn_loc from bindx and update */
 rc_ptr_make_sparsity(rc_ptr);
-/*------------------------------------- make irn, jcn, irn_loc, jcn_loc */
-
+/*------------------------------------------------------ make nnz_total */
+#ifdef PARALLEL
+rc_ptr->nnz_total=0;
+MPI_Allreduce(&(rc_ptr->nnz),&(rc_ptr->nnz_total),1,MPI_INT,MPI_SUM,actintra->MPI_INTRA_COMM);
+#else
+rc_ptr->nnz_total=rc_ptr->nnz;
+#endif
 /*---------------------------------------- delete the array dof_connect */
 for (i=0; i<rc_ptr->numeq_total; i++)
 {
@@ -537,7 +542,8 @@ return;
 void  rc_ptr_make_sparsity(RC_PTR        *rc_ptr)
 {
 int        i,j,k,l;
-int        start,end;
+int        start,end,issmaller;
+int        counter;
 int        actdof;
 int        numeq;
 int        numeq_total;
@@ -561,10 +567,35 @@ irn         = rc_ptr->irn_loc.a.iv;
 jcn         = rc_ptr->jcn_loc.a.iv;
 rptr        = rc_ptr->rowptr.a.iv;
 /*------------------------------------------ loop all dofs on this proc */
+counter=0;
 for (i=0; i<numeq; i++)
 {
-   actdof = update[i];
+   actdof   = update[i];
+   start    = bindx[i];
+   end      = bindx[i+1];
+   rptr[i]  = counter;
+   j=start;
+   while (j<end && bindx[j]<actdof)/* dofs lower then actdof */ 
+   {
+      irn[counter]=actdof;
+      jcn[counter]=bindx[j];
+      counter++;
+      j++;
+   }
+   /*------------------------------- main diagonal of actdof */
+   irn[counter]=actdof;
+   jcn[counter]=actdof;
+   counter++;
+   while(j<end)/*------------------- dofs higher then actdof */
+   {
+      irn[counter]=actdof;
+      jcn[counter]=bindx[j];
+      counter++;
+      j++;
+   }
 }
+rptr[i]=counter;
+if (counter != nnz) dserror("sparsity mask failure");
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();

@@ -50,6 +50,7 @@ OBJS2	      = ${SRC}/global_full/global_control.o \
                 ${SRC}/global_full/solver_add_parcsr.o \
                 ${SRC}/global_full/solver_add_ucchb.o \
                 ${SRC}/global_full/solver_add_dense.o \
+                ${SRC}/global_full/solver_add_rcptr.o \
                 ${SRC}/global_full/solver_mlib.o \
                 ${SRC}/global_full/solver_aztec.o \
                 ${SRC}/global_full/solver_hypre.o \
@@ -144,9 +145,9 @@ OBJS12	      = ${SRC}/wall1/w1_init.o \
                 ${SRC}/wall1/w1_call_stiff.o \
                 ${SRC}/wall1/w1_main.o
 #                fortran
-OBJS13	      = ${SRC}/fortran/fortran_dummy.o
-#OBJS13	      = ${SRC}/fortran/bi_f77_get_constants.o \
-#                ${SRC}/fortran/mumps_interface.o
+#OBJS13	      = ${SRC}/fortran/fortran_dummy.o
+OBJS13	      = ${SRC}/fortran/bi_f77_get_constants.o \
+                ${SRC}/fortran/mumps_interface.o
 #
 #
 # targets

@@ -21,7 +21,6 @@ int            inprocs;
 
 int            job;
 int            sym;
-int            comm;
 int            parproc;
 int            n;
 int            nz;
@@ -29,7 +28,7 @@ int            nz_loc;
 int           *irn_loc;
 int           *jcn_loc;
 double        *A_loc;
-int            icntl[20];
+int           *icntl;
 
 MUMPSVARS     *mumpsvars;
 
@@ -45,6 +44,12 @@ dstrc_enter("solver_mumps");
 imyrank      = actintra->intra_rank;
 inprocs      = actintra->intra_nprocs;
 mumpsvars    = actsolv->mumpsvars;
+switch(actsolv->solvertyp)
+{
+case mumps_sym:    sym=2; break;
+case mumps_nonsym: sym=0; break;
+default: dserror("Unknown typ of solver"); break;
+}
 /*----------------------------------------------------------------------*/
 switch(option)
 {
@@ -52,37 +57,53 @@ switch(option)
 /*                                                           init phase */
 /*----------------------------------------------------------------------*/
 case 1:
-   switch(actsolv->solvertyp)
-   {
-   case mumps_sym:    sym=2; break;
-   case mumps_nonsym: sym=0; break;
-   default: dserror("Unknown typ of solver"); break;
-   }
    /*------------------------------------------- set some other values */
-   job     = -1;
-   parproc =  1;
+   job       = -1;
+   parproc   =  1;
+   /*--------------------------------- input is dist. assembled matrix */
+   icntl     =  rc_ptr->icntl;
+   icntl[17] = 3;
+   icntl[2]  = 0;
+   /*------------------------------------- This will only do one HPUX! */
 #ifdef PARALLEL 
-   comm    =  MPI_Comm_c2f(actintra->MPI_INTRA_COMM);
+   rc_ptr->comm  =  MPI_Comm_c2f(actintra->MPI_INTRA_COMM);
 #endif
-   n       =  rc_ptr->numeq_total;
-   nz      =  rc_ptr->nnz_total;
-   nz_loc  =  rc_ptr->nnz;
-   irn_loc =  rc_ptr->irn_loc.a.iv;
-   jcn_loc =  rc_ptr->jcn_loc.a.iv;
-   A_loc   =  rc_ptr->A_loc.a.dv;
+   icntl[17] = 3;                   
+   icntl[2]  = 0;
+   /*------------------- copy the pointer vectors to fortran numbering */
+   am_alloc_copy(&(rc_ptr->irn_loc),&(rc_ptr->irn_locf));
+   am_alloc_copy(&(rc_ptr->jcn_loc),&(rc_ptr->jcn_locf));
+   for (i=0; i<rc_ptr->irn_locf.fdim; i++)
+   {
+      rc_ptr->irn_locf.a.iv[i]++;
+      rc_ptr->jcn_locf.a.iv[i]++;
+   }
+   /*------------------------------------------ call the solver to init */
+   parproc   =  1;
+   icntl     =  rc_ptr->icntl;
+   icntl[17] =  3;
+/*   icntl[2]  =  0;*/
+   n         =  rc_ptr->numeq_total;
+   nz        =  rc_ptr->nnz_total;
+   nz_loc    =  rc_ptr->nnz;
+   irn_loc   =  rc_ptr->irn_locf.a.iv;
+   jcn_loc   =  rc_ptr->jcn_locf.a.iv;
+   A_loc     =  rc_ptr->A_loc.a.dv;
    mumps_interface(&job,
                    &parproc,
-                   &comm,
+                   &(rc_ptr->comm),
                    &sym,
+                   icntl,
                    &n,
                    &nz,
                    &nz_loc,
                    irn_loc,
                    jcn_loc,
-                   A_loc);
+                   A_loc,
+                   NULL);
    /* set flag, that this matrix has been initialized and is ready for solve */   
-   rc_ptr->is_init    = 1;
-   rc_ptr->ncall      = 0;
+   rc_ptr->is_init     = 1;
+   rc_ptr->ncall       = 0;
    rc_ptr->is_factored = 0;
 break;
 /*----------------------------------------------------------------------*/
@@ -115,19 +136,51 @@ case 0:
       b[dof]   = rhs->vec.a.dv[i]; 
    }
 #endif
-   switch(actsolv->solvertyp)
+   /*------------------------------------------- set some other values */
+   if (rc_ptr->is_factored) 
    {
-   case lapack_sym:
-   break;
-   case lapack_nonsym:/*-------------- nonsymmetric lapack dense solver */
-   break;
-   default:
-      dserror("Unknown typ of solver");
-   break;
+      job = 3;
    }
+   else
+   {
+      job = 6;
+      amcopy(&(rc_ptr->irn_loc),&(rc_ptr->irn_locf));
+      amcopy(&(rc_ptr->jcn_loc),&(rc_ptr->jcn_locf));
+      for (i=0; i<rc_ptr->irn_locf.fdim; i++)
+      {
+         rc_ptr->irn_locf.a.iv[i]++;
+         rc_ptr->jcn_locf.a.iv[i]++;
+      }
+   }
+   parproc   =  1;
+   icntl     =  rc_ptr->icntl;
+   icntl[17] =  3;
+   icntl[2]  =  0;
+   n         =  rc_ptr->numeq_total;
+   nz        =  rc_ptr->nnz_total;
+   nz_loc    =  rc_ptr->nnz;
+   irn_loc   =  rc_ptr->irn_locf.a.iv;
+   jcn_loc   =  rc_ptr->jcn_locf.a.iv;
+   A_loc     =  rc_ptr->A_loc.a.dv;
+   mumps_interface(&job,
+                   &parproc,
+                   &(rc_ptr->comm),
+                   &sym,
+                   icntl,
+                   &n,
+                   &nz,
+                   &nz_loc,
+                   irn_loc,
+                   jcn_loc,
+                   A_loc,
+                   b);
    /*---------- set flag, that this matrix is factored and count solves */
    rc_ptr->ncall++;
    rc_ptr->is_factored=1;
+   /*------------------------------------------------- broadcast result */
+#ifdef PARALLEL 
+   MPI_Bcast(b,n,MPI_DOUBLE,0,actintra->MPI_INTRA_COMM);
+#endif
    /*------------------------------------------------------- get result */
    for (i=0; i<sol->numeq; i++)
    {

@@ -104,6 +104,10 @@ case dense:
    amzero(&(mat->dense->A));
    mat->dense->is_factored=0;
 break;
+case rc_ptr:
+   amzero(&(mat->rc_ptr->A_loc));
+   mat->rc_ptr->is_factored=0;
+break;
 case sparse_none:
    dserror("Unknown typ of sparse distributed system matrix");
 break;
@@ -253,6 +257,9 @@ case ucchb:
 break;
 case dense:
    update = sysarray->dense->update.a.iv;
+break;
+case rc_ptr:
+   update = sysarray->rc_ptr->update.a.iv;
 break;
 default:
    dserror("Unknown typ of system matrix given");
@@ -454,6 +461,20 @@ case mds:
       fullvec[i] = distvec->vec.a.dv[i];
    }
 break;
+case rc_ptr:
+   for (i=0; i<sysarray->rc_ptr->numeq; i++)
+   {
+      dof = sysarray->rc_ptr->update.a.iv[i];
+      fullvec[dof] = distvec->vec.a.dv[i];
+   }
+#ifdef PARALLEL 
+   recvbuff = (double*)calloc(dim,sizeof(double));
+   if (!recvbuff) dserror("Allocation of memory failed");
+   MPI_Allreduce(fullvec,recvbuff,dim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
+   for (i=0; i<dim; i++) fullvec[i] = recvbuff[i];
+   free(recvbuff);
+#endif
+break;
 default:
    dserror("Unknown typ of system matrix given");
 break;
@@ -471,7 +492,7 @@ return;
 /*----------------------------------------------------------------------*
  |  Put the results of a DIST_VECTOR to the nodes in a       m.gee 10/01|
  |  certain place  in ARRAY sol                                         |
- |  Result have to bee allreduced and are put to the whole              |
+ |  Result has to be allreduced and are put to the whole                |
  |  field on each proc                                                  |
  *----------------------------------------------------------------------*/
 void solserv_result_total(
