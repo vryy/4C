@@ -148,17 +148,32 @@ dstrc_exit();
 return;
 } /* end of dyn_facfromcurve */
 
-/*----------------------------------------------------------------------*
- |  get factor at a certain time T defined by any explict function      |
- |                                                           genk 06/02 |
- *----------------------------------------------------------------------*/
+/*!---------------------------------------------------------------------                                         
+\brief get factor at a certain time T defined by any explict function
+
+<pre>                                                         genk 06/02
+
+implemented time functions
+numex = -1: f(T) = sin(T/c1*PI/2) for T<c1 else f(T) = 1
+numex = -2: f(T) = exp(1-1/T) for T<c1 else f(T) = f(c1)
+numex = -3: f(T) = 1-cos(c1*PI*T)
+tbc
+		     
+</pre>
+
+\param     actcurve     int            (i)    number of actual time curve
+\param     T            double         (i)    actual time       
+\return double
+
+------------------------------------------------------------------------*/
 double dyn_facexplcurve(int actcurve,   /* number of actual time curve  */
                         double T        /* actual time                  */
 		       )
 {
 int numex;          /* number of explicit time curve                    */
 double val1, fac;
-double c1,c2;
+double c1,c2;       /* function constants                               */
+static double savefac;
 
 #ifdef DEBUG 
 dstrc_enter("dyn_facexplcurve");
@@ -170,9 +185,8 @@ c2=curve[actcurve].c2;
 
 /*----------------------------------------------------------------------*/
 switch (numex)
-{
-   
-case -1:
+{   
+case -1: /* f(t)=sin(t:C1*PI:2)_for_t<_C1_else_f(t)=1 */
    if (T <= c1)
    {
       val1 = T/c1*PI/2;
@@ -180,23 +194,28 @@ case -1:
    }
    else
       fac = ONE;         
-   break;
-   
-case -2:
+break;
+case -2: /* f(t)=exp(1-1:t)_for_t<C1_else_const. */
    if (T < EPS6) 
    {
       fac = ZERO;
    }
-   else
+   else if (T<=c1 || c1<EPS6)
    {
       val1 = ONE - ONE/T;
       fac = exp(val1);
+      savefac = fac;
    }
-   break;
-   
+   else
+      fac = savefac;
+break;
+case -3: /* f(t)=1-cos(C1*PI*t) */
+   val1 = c1*PI*T;
+   fac  = ONE - cos(val1);
+break;   
 default:
    dserror("Number of explicit timecurve (NUMEX) unknown\n");
-}   
+} /* end switch(numex)  
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
