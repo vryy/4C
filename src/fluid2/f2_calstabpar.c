@@ -240,6 +240,7 @@ return;
 \brief routine to calculate stability parameter for height function
 
 <pre>                                                         genk 06/03
+</pre>
 
 \return void
 
