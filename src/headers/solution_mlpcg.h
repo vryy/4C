@@ -66,11 +66,14 @@ variables needed by the MLPCG solver
 typedef struct _MLPCGVARS
 {
 int                     numlev;      /*!< number of grids in the ml precond. */
+int                     reuse;       /*!< reuse of coarse grid information flag */
+int                     overlap;     /*!< degree of overlap for the ilu smoother */
 double                  p_omega;     /*!< damping of the prolongator smoother */
 int                     numdf;       /*!< number of coarse grid dofs per node */
 int                     ilu_n;       /*!< ilu(n) */
 double                  tol;         /*!< cg-tolerance */
 int                     maxiter;     /*!< max number of cg iterations */
+int                     typ;         /*!< typ=1: amg Fish-style, typ=2: amg Vanek-style */
 enum _MLPCG_COARSESOLVE coarsesolv;  /*!< coarsest level solver */
 int                     co_ilu_n;    /*!< coarsest level ilu(n) in case of ilu solver */
 enum _MLPCG_PRESMOOTH   presmoother; /*!< upgoing smoother on levels */
@@ -128,7 +131,8 @@ MPI_Request            *request;       /*!< send request */
 int                     firstcoupledof;/*!< dof number of the first dof that has interproc coupling */
 
 struct _DBCSR          *csc;           /*!< the treansposed matrix in compressed sparse column format */
-struct _DBCSR          *ilu;           /*!< the ilu-decomposed matrix */
+struct _DBCSR          *ilu;           /*!< the ilu-decomposed asm - matrix */
+struct _DBCSR          *asm;           /*!< the asm splitted matrix */
 ARRAY                  *dense;         /*!< for dense solve on coarsest grid */
 ARRAY                  *ipiv;          /*!< for dense solve on coarsest grid */
 
@@ -193,7 +197,12 @@ this structure holds the complete ml preconditioner
 -------------------------------------------------------------------------*/
 typedef struct _MLPRECOND
 {
-int                     numlev;
+int                     numlev;          /*!< number of levels */
+int                     reuse;           /*!< reuse flag for coarse grid information */
+int                     mod;             /*!< reuse flag for coarse grid information */
+int                     ncall;           /*!< counting the call to the solver */
+int                     overlap;         /*!< degree of overlap for the ilu smoother */
+int                     typ;             /*!< typ=1: amg Fish-style, typ=2: amg Vanek-style */
 struct _MLLEVEL        *level;           /*!< vector of levels */
 struct _DISCRET        *fielddis;        /*!< warning: this is a pointer to the field original, not a copy! */
 struct _PARTDISCRET    *partdis;         /*!< warning: this is a pointer to the partition original, not a copy! */
