@@ -69,7 +69,6 @@ dstrc_enter("s9inp");
 #endif
 /*------------------------------------------------ allocate the element */      
 ele->e.s9 = (SHELL9*)CCACALLOC(1,sizeof(SHELL9));
-if (ele->e.s9==NULL) dserror("Allocation of element failed");
 /*---------------------------------------------- read elements topology */
 frchk("QUAD4",&ierr);
 if (ierr==1) 
@@ -77,7 +76,7 @@ if (ierr==1)
    ele->distyp = quad4;
    ele->numnp=4;
    ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
-   if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
+ 
    frint_n("QUAD4",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
 }
@@ -87,7 +86,7 @@ if (ierr==1)
    ele->distyp = quad8;
    ele->numnp=8;
    ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
-   if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
+
    frint_n("QUAD8",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
 }
@@ -97,7 +96,7 @@ if (ierr==1)
    ele->distyp = quad9;
    ele->numnp=9;
    ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
-   if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
+
    frint_n("QUAD9",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
 }
@@ -107,7 +106,7 @@ if (ierr==1)
    ele->distyp = tri3;
    ele->numnp=3;
    ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
-   if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
+
    frint_n("TRI3",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
 }
@@ -117,7 +116,7 @@ if (ierr==1)
    ele->distyp = tri6;
    ele->numnp=6;
    ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
-   if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
+
    frint_n("TRI6",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
 }
@@ -137,11 +136,11 @@ if (actmat->mattyp != m_multi_layer) dserror("Wrong mattyp to SHELL9 element -> 
   ele->e.s9->numdf = numdof_shell9;
   /*-------------- allocate vector for layerhgt of kinematic layers ------*/
   ele->e.s9->klayhgt = (DOUBLE*)CCACALLOC(ele->e.s9->num_klay,sizeof(DOUBLE));
-  if (ele->e.s9->klayhgt==NULL) dserror("Allocation of SHELL9 element failed -> klayhgt");
+
   ele->e.s9->klayhgt = actmat->m.multi_layer->klayhgt;
   /*--------------------- allocate a kinlay for each kinematic layer ------*/
   ele->e.s9->kinlay = (KINLAY*)CCACALLOC(ele->e.s9->num_klay,sizeof(KINLAY));
-  if (ele->e.s9->kinlay==NULL) dserror("Allocation of SHELL9 element failed -> kinlay");
+
   /*-------------------- put information for each kinematic layer --------*/
   for (i=0; i<ele->e.s9->num_klay; i++)
   {
@@ -177,65 +176,85 @@ if (ierr)
 colpointer = strstr(allfiles.actplace,"EAS");
 colpointer+=3;
 
+/*----------------------------------------------------------------------
+      MEMBRAN: E11,E12,E22 KONSTANT
+  ----------------------------------------------------------------------*/
 colpointer = strpbrk(colpointer,"Nn");
 ierr = sscanf(colpointer," %s ",buffer);    
 if (ierr!=1) dserror("Reading of shell9 eas failed");
-if (strncmp(buffer,"none",4)==0)  ele->e.s9->eas[0]=0;
-if (strncmp(buffer,"N4_1",4)==0)  ele->e.s9->eas[0]=1;
-if (strncmp(buffer,"N4_2",4)==0)  ele->e.s9->eas[0]=2;
-if (strncmp(buffer,"N4_3",4)==0)  ele->e.s9->eas[0]=3;
-if (strncmp(buffer,"N4_4",4)==0)  ele->e.s9->eas[0]=4;
-if (strncmp(buffer,"N4_5",4)==0)  ele->e.s9->eas[0]=5;
-if (strncmp(buffer,"N4_7",4)==0)  ele->e.s9->eas[0]=7;
-if (strncmp(buffer,"N9_7",4)==0)  ele->e.s9->eas[0]=7;
-if (strncmp(buffer,"N9_9",4)==0)  ele->e.s9->eas[0]=9;
-if (strncmp(buffer,"N9_11",4)==0) ele->e.s9->eas[0]=11;
+     if (strncmp(buffer,"none",4)==0)  ele->e.s9->eas[0]=0;
+else if (strncmp(buffer,"N4_1",4)==0)  ele->e.s9->eas[0]=1;
+else if (strncmp(buffer,"N4_2",4)==0)  ele->e.s9->eas[0]=2;
+else if (strncmp(buffer,"N4_3",4)==0)  ele->e.s9->eas[0]=3;
+else if (strncmp(buffer,"N4_4",4)==0)  ele->e.s9->eas[0]=4;
+else if (strncmp(buffer,"N4_5",4)==0)  ele->e.s9->eas[0]=5;
+else if (strncmp(buffer,"N4_7",4)==0)  ele->e.s9->eas[0]=7;
+else if (strncmp(buffer,"N9_7",4)==0)  ele->e.s9->eas[0]=7;
+else if (strncmp(buffer,"N9_9",4)==0)  ele->e.s9->eas[0]=9;
+else if (strncmp(buffer,"N9_11",4)==0) ele->e.s9->eas[0]=11;
+else dserror("Wrong Parameter for EAS[0] -> E11,E12,E22 KONSTANT (Membran) SHELL9");
 colpointer += strlen(buffer);    
     
+/*----------------------------------------------------------------------
+      BIEGUNG: E11,E12,E22 LINEAR
+  ----------------------------------------------------------------------*/
 colpointer = strpbrk(colpointer,"Nn");
 ierr = sscanf(colpointer," %s ",buffer);    
 if (ierr!=1) dserror("Reading of shell9 eas failed");
-if (strncmp(buffer,"none",4)==0)  ele->e.s9->eas[1]=0;
-if (strncmp(buffer,"N4_4",4)==0)  ele->e.s9->eas[1]=4;
-if (strncmp(buffer,"N4_5",4)==0)  ele->e.s9->eas[1]=5;
-if (strncmp(buffer,"N4_6",4)==0)  ele->e.s9->eas[1]=6;
-if (strncmp(buffer,"N4_7",4)==0)  ele->e.s9->eas[1]=7;
-if (strncmp(buffer,"N9_9",4)==0)  ele->e.s9->eas[1]=9;
-if (strncmp(buffer,"N9_11",4)==0) ele->e.s9->eas[1]=11;
+     if (strncmp(buffer,"none",4)==0)  ele->e.s9->eas[1]=0;
+else if (strncmp(buffer,"N4_4",4)==0)  ele->e.s9->eas[1]=4;
+else if (strncmp(buffer,"N4_5",4)==0)  ele->e.s9->eas[1]=5;
+else if (strncmp(buffer,"N4_6",4)==0)  ele->e.s9->eas[1]=6;
+else if (strncmp(buffer,"N4_7",4)==0)  ele->e.s9->eas[1]=7;
+else if (strncmp(buffer,"N9_9",4)==0)  ele->e.s9->eas[1]=9;
+else if (strncmp(buffer,"N9_11",4)==0) ele->e.s9->eas[1]=11;
+else dserror("Wrong Parameter for EAS[1] -> E11,E12,E22 LINEAR (Biegung) SHELL9");
 colpointer += strlen(buffer);    
     
+/*----------------------------------------------------------------------
+      DICKENRICHTUNG: E33 LINEAR (--> 7P - FORMULIERUNG)
+  ----------------------------------------------------------------------*/
 colpointer = strpbrk(colpointer,"Nn");
 ierr = sscanf(colpointer," %s ",buffer);    
 if (ierr!=1) dserror("Reading of shell9 eas failed");
-if (strncmp(buffer,"none",4)==0)  ele->e.s9->eas[2]=0;
-if (strncmp(buffer,"N_1",4)==0)   ele->e.s9->eas[2]=1;
-if (strncmp(buffer,"N_3",4)==0)   ele->e.s9->eas[2]=3;
-if (strncmp(buffer,"N_4",4)==0)   ele->e.s9->eas[2]=4;
-if (strncmp(buffer,"N_6",4)==0)   ele->e.s9->eas[2]=6;
+     if (strncmp(buffer,"none",4)==0)  ele->e.s9->eas[2]=0;
+else if (strncmp(buffer,"N_1",4)==0)   ele->e.s9->eas[2]=1;
+else if (strncmp(buffer,"N_3",4)==0)   ele->e.s9->eas[2]=3;
+else if (strncmp(buffer,"N_4",4)==0)   ele->e.s9->eas[2]=4;
+else dserror("Wrong Parameter for EAS[2] -> E33 LINEAR (7P-Formulation) SHELL9");
+/*if (strncmp(buffer,"N_6",4)==0)   ele->e.s9->eas[2]=6;
 if (strncmp(buffer,"N_8",4)==0)   ele->e.s9->eas[2]=8;
-if (strncmp(buffer,"N_9",4)==0)   ele->e.s9->eas[2]=9;
+if (strncmp(buffer,"N_9",4)==0)   ele->e.s9->eas[2]=9;*/
 colpointer += strlen(buffer);    
 
+/*----------------------------------------------------------------------
+      QUERSCHUB: E13,E23 KONSTANT
+  ----------------------------------------------------------------------*/
 colpointer = strpbrk(colpointer,"Nn");
 ierr = sscanf(colpointer," %s ",buffer);    
 if (ierr!=1) dserror("Reading of shell9 eas failed");
-if (strncmp(buffer,"none",4)==0)  ele->e.s9->eas[3]=0;
-if (strncmp(buffer,"N4_2",4)==0)  ele->e.s9->eas[3]=2;
-if (strncmp(buffer,"N4_4",4)==0)  ele->e.s9->eas[3]=4;
-if (strncmp(buffer,"N9_2",4)==0)  ele->e.s9->eas[3]=2;
-if (strncmp(buffer,"N9_4",4)==0)  ele->e.s9->eas[3]=4;
-if (strncmp(buffer,"N9_6",4)==0)  ele->e.s9->eas[3]=6;
+     if (strncmp(buffer,"none",4)==0)  ele->e.s9->eas[3]=0;
+else if (strncmp(buffer,"N4_2",4)==0)  ele->e.s9->eas[3]=2;
+else if (strncmp(buffer,"N4_4",4)==0)  ele->e.s9->eas[3]=4;
+else if (strncmp(buffer,"N9_2",4)==0)  ele->e.s9->eas[3]=2;
+else if (strncmp(buffer,"N9_4",4)==0)  ele->e.s9->eas[3]=4;
+else if (strncmp(buffer,"N9_6",4)==0)  ele->e.s9->eas[3]=6;
+else dserror("Wrong Parameter for EAS[3] -> E13,E23 KONSTANT (Querschub) SHELL9");
 colpointer += strlen(buffer);    
 
+/*----------------------------------------------------------------------
+      QUERSCHUB: E13,E23 LINEAR
+  ----------------------------------------------------------------------*/
 colpointer = strpbrk(colpointer,"Nn");
 ierr = sscanf(colpointer," %s ",buffer);    
 if (ierr!=1) dserror("Reading of shell9 eas failed");
-if (strncmp(buffer,"none",4)==0)  ele->e.s9->eas[4]=0;
-if (strncmp(buffer,"N4_2",4)==0)  ele->e.s9->eas[4]=2;
-if (strncmp(buffer,"N4_4",4)==0)  ele->e.s9->eas[4]=4;
-if (strncmp(buffer,"N9_2",4)==0)  ele->e.s9->eas[4]=2;
-if (strncmp(buffer,"N9_4",4)==0)  ele->e.s9->eas[4]=4;
-if (strncmp(buffer,"N9_6",4)==0)  ele->e.s9->eas[4]=6;
+     if (strncmp(buffer,"none",4)==0)  ele->e.s9->eas[4]=0;
+else if (strncmp(buffer,"N4_2",4)==0)  ele->e.s9->eas[4]=2;
+else if (strncmp(buffer,"N4_4",4)==0)  ele->e.s9->eas[4]=4;
+else if (strncmp(buffer,"N9_2",4)==0)  ele->e.s9->eas[4]=2;
+else if (strncmp(buffer,"N9_4",4)==0)  ele->e.s9->eas[4]=4;
+else if (strncmp(buffer,"N9_6",4)==0)  ele->e.s9->eas[4]=6;
+else dserror("Wrong Parameter for EAS[4] -> E13,E23 LINEAR (Querschub) SHELL9");
 /*--------------------- count nhyb and allocate storage for eas strains */
 for (i=0; i<5; i++) nhyb+=ele->e.s9->eas[i];
 ele->e.s9->nhyb=nhyb;
@@ -256,8 +275,9 @@ if (nhyb>0)
 /*------------------------------------------------------------ read ANS */
 frchar("ANS",buffer,&ierr);
 if (ierr!=1) dserror("reading of shell9 ans failed");
-if (strncmp(buffer,"none",4)==0)  ele->e.s9->ans=0;
-if (strncmp(buffer,"Q",4)==0)     ele->e.s9->ans=1;
+     if (strncmp(buffer,"none",4)==0)  ele->e.s9->ans=0;
+else if (strncmp(buffer,"Q",4)==0)     ele->e.s9->ans=1;
+else dserror("Wrong Parameter for ans -> SHELL9");
 /*if (strncmp(buffer,"T",4)==0)     ele->e.s9->ans=2;
 if (strncmp(buffer,"QT",4)==0)    ele->e.s9->ans=3;
 if (strncmp(buffer,"TQ",4)==0)    ele->e.s9->ans=3;
