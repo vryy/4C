@@ -330,12 +330,12 @@ return;
  |  allocate the send and recv buffers for                              |
  |  coupling conditions                                                 |
  |  and to perform other inits which may become necessary for assembly  |
-#########################################################################
-VERY DANGEROUS CHANGE:
- to the paremeter list of this function I added
-    int actndis!!!  - number of the actual discretisations
- this has to be done for all other calls of init_assembly     genk 08/02
-######################################################################### 
+ | #################################################################### |
+ |  to the paremeter list of this function I added                      |
+ |  int actndis!!!  - number of the actual discretisation               |
+ |  this has to be done for all other calls of init_assembly            |
+ |                                                           genk 08/02 |
+ | #################################################################### |
  *----------------------------------------------------------------------*/
 void init_assembly(
                        struct _PARTITION      *actpart,
@@ -844,34 +844,24 @@ void assemble_intforce(ELEMENT *actele,ARRAY *elevec_a,CONTAINER *container)
 int                   i,j;
 int                   dof;
 int                   numdf;
+int                   irow;
 double               *elevec;
 #ifdef DEBUG 
 dstrc_enter("assemble_intforce");
 #endif
 /*----------------------------------------------------------------------*/
 elevec = elevec_a->a.dv;
+irow=-1;
 /*----------------------------------------------------------------------*/
 for (i=0; i<actele->numnp; i++)
 {
    numdf = actele->node[i]->numdf;
    for (j=0; j<numdf; j++)
    {
+      irow++;
       dof = actele->node[i]->dof[j];
-      if (dof >= container->global_numeq) 
-      {
-      /* Auflagerreaktionen werden auf sol_increment.a.da[1][] addiert */
-      /* nicht getestet, evt. Konflikt mit Steuerroutinen 
-         if (actele->node[i]->gnode->dirich)
-         {
-            if (actele->node[i]->gnode->dirich->dirich_onoff.a.iv[j]!=0)
-            {
-               actele->node[i]->sol_increment.a.da[1][j] += elevec[i*numdf+j];
-            }
-         }
-      */
-         continue;
-      }
-      container->dvec[dof] += elevec[i*numdf+j];
+      if (dof >= container->global_numeq) continue;
+      container->dvec[dof] += elevec[irow];
    }
 }
 /*----------------------------------------------------------------------*/
