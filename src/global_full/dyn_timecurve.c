@@ -175,6 +175,8 @@ implemented time functions
 numex = -1: f(T) = sin(T/c1*PI/2) for T<c1 else f(T) = 1
 numex = -2: f(T) = exp(1-1/T) for T<c1 else f(T) = f(c1)
 numex = -3: f(T) = 1-cos(c1*PI*T)
+numex = -4: f(T) = exp(-c1*nu*d*d*T)                       beltrami flow
+numex = -5: f(T) = exp(-c1*a*a*PI*PI*nu*T)                 kim-moin flow
 tbc
 		     
 </pre>
@@ -192,6 +194,7 @@ INT numex;          /* number of explicit time curve                    */
 DOUBLE val1, fac;
 DOUBLE c1,c2;       /* function constants                               */
 DOUBLE d,visc;      /* parameters for Beltrami-flow                     */
+DOUBLE a;           /* parameters for Kim-Moin flow */
 static DOUBLE savefac;
 
 #ifdef DEBUG 
@@ -237,6 +240,13 @@ case -4: /* Beltrami-Flow */
    visc = mat[0].m.fluid->viscosity;
    d = PI/TWO;
    val1 = -c1*visc*d*d*T;
+   fac = exp(val1);
+break;
+   
+case -5: /* Kim-Moin-Flow */
+   visc = mat[0].m.fluid->viscosity;
+   a = 2.0;
+   val1 = -c1*a*a*PI*PI*visc*T;
    fac = exp(val1);
 break;
    
