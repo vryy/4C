@@ -72,61 +72,15 @@ dstrc_enter("f3_calset");
  *---------------------------------------------------------------------*/
 
 
-if(dynvar->isemim==0)  /* -> implicit time integration method ---------*/
+for(i=0;i<ele->numnp;i++) /* loop nodes */
 {
-   for(i=0;i<ele->numnp;i++) /* loop nodes */
-   {
-      actnode=ele->node[i];
+   actnode=ele->node[i];
 /*----------------------------------- set element velocities (n+gamma) */      
-      evelng[0][i]=actnode->sol_increment.a.da[3][0];
-      evelng[1][i]=actnode->sol_increment.a.da[3][1]; 
-      evelng[2][i]=actnode->sol_increment.a.da[3][2];
-/*-------------------------------------- set supported pressures (n+1) */   
-/*      if(actnode->dof[PREDOF]>numeq)
-         epres[i]=actnode->sol_increment.a.da[3][PREDOF]; */
-   } /* end of loop over nodes */
+   evelng[0][i]=actnode->sol_increment.a.da[3][0];
+   evelng[1][i]=actnode->sol_increment.a.da[3][1]; 
+   evelng[2][i]=actnode->sol_increment.a.da[3][2];
+} /* end of loop over nodes */
    
-} /* endif (dynvar->isemim==0) */ 
-else  /* -> semi-implicit time integration method 
-       | for semi-impl. methods one needs extra suup. velocities-------*/
-{   
-   if(dynvar->itwost==0)   /* -> semi-implicit one-step ---------------*/
-   {
-      for(i=0;i<ele->numnp;i++) /* loop nodes */
-      {
-         actnode=ele->node[i];
-/*--------------------- set element velocities (n) and supported (n+1) */ 	 
-         evelng[0][i]=actnode->sol_increment.a.da[1][0];
-	 evelng[1][i]=actnode->sol_increment.a.da[1][1];
-	 evelng[2][i]=actnode->sol_increment.a.da[1][2];
-/*	 if (actnode->dof[0]>numeq)
-            evels[0][i]=actnode->sol_increment.a.da[3][0];
-	 if (actnode->dof[1]>numeq)
-            evels[1][i]=actnode->sol_increment.a.da[3][1];      
-/*-------------------------------------- set supported pressures (n+1) */   
-/*         if(actnode->dof[PREDOF]>numeq)
-            epres[i]=actnode->sol_increment.a.da[3][PREDOF];           */
-      } /* end of loop over nodes */
-   } /* endif (dynvar->itwost==0) */
-   else  /* -> semi-implicit two-step ---------------------------------*/
-   {  
-      for(i=0;i<ele->numnp;i++) /* loop nodes */
-      {
-         actnode=ele->node[i];
-/*--------------- set element velocities (n+gamma) and supported (n+1) */	 
-         evelng[0][i]=actnode->sol_increment.a.da[2][0];
-	 evelng[1][i]=actnode->sol_increment.a.da[2][1];
-	 evelng[2][i]=actnode->sol_increment.a.da[2][2];
-/*	 if (actnode->dof[0]>numeq)
-	    evels[0][i]=actnode->sol_increment.a.da[3][0];
-	 if (actnode->dof[1]>numeq)
-	    evels[1][i]=actnode->sol_increment.a.da[3][1];      
-/*-------------------------------------- set supported pressures (n+1) */   
-/*         if(actnode->dof[PREDOF]>numeq)
-            epres[i]=actnode->sol_increment.a.da[3][PREDOF];      */
-      } /* endof loop over nodes */
-   } /* end else */
-} /* end else */
 
 if(dynvar->nif!=0) /* -> computation if time forces "on" --------------
                       -> velocities and pressure at (n) are needed ----*/
