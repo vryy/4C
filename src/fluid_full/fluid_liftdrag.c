@@ -3,10 +3,10 @@
 \brief controlling lift&drag calculation
 
 <pre>
-Maintainer: Steffen Genkinger
-            genkinger@statik.uni-stuttgart.de
-            http://www.uni-stuttgart.de/ibs/members/genkinger/
-            0711 - 685-6127
+Maintainer: Christiane Foerster
+            foerster@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/foerster/
+            0711 - 685-6572
 </pre>
 
 ---------------------------------------------------------------------*/
@@ -59,7 +59,7 @@ static FLUID_DYNAMIC *fdyn;
 /*!---------------------------------------------------------------------
 \brief controlling lift and drag calculation
 
-<pre>                                                         genk 12/03
+<pre>                                                        chfoe 09/04
 
 </pre>
 
@@ -69,43 +69,55 @@ static FLUID_DYNAMIC *fdyn;
 ------------------------------------------------------------------------*/
 void fluid_liftdrag(INT            init,
                     CALC_ACTION   *action,
-		    CONTAINER     *container,
-		    FIELD         *actfield,
-		    SOLVAR        *actsolv,
-		    PARTITION     *actpart,
-		    INTRA         *actintra)
+	            CONTAINER     *container,
+                    FIELD         *actfield,
+                    SOLVAR        *actsolv,
+                    PARTITION     *actpart,
+                    INTRA         *actintra)
 {
-INT           i,j,k;
-INT           actcurve,numline;
-FIELD        *structfield;
-DLINE        *actdline,*aledline;
-NODE         *actnode;
-DOUBLE	      liftdrag[(FLUID_NUM_LD+1)*12];	/* array with lift & drag coeff.*/
-DOUBLE        acttimefac;
-DOUBLE        timefac[5];
-DOUBLE        initval;
+INT     i, j, k;
+INT     numline;
+INT     actcurve;
+
+DOUBLE  acttimefac;
+DOUBLE  timefac[5];
+DOUBLE  initval;
+DOUBLE  liftdrag[(FLUID_NUM_LD+1)*12];  /* array with lift & drag coeff.*/
 
 #ifdef PARALLEL
-DOUBLE        recv[(FLUID_NUM_LD+1)*12];          /*  receive buffer              */
+DOUBLE  recv[(FLUID_NUM_LD+1)*12];      /* receive buffer               */
 #endif
 
+FIELD  *structfield;
+NODE   *actnode;
+DLINE  *actdline, *aledline;
+DNODE  *actdnode;
+
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG
 dstrc_enter("fluid_liftdrag");
 #endif
 
 fdyn = alldyn[genprob.numff].fdyn;
-/*****************************************************************
+/************************************************************************
  *
  * W A R N I N G ! ! !
  *
  * lift and drag for multifield (pseudo fsi and real fsi)
  * only for 2 D  !!!
  *
- *****************************************************************/
-
-
+ ************************************************************************/
+ 
+/*----------- keep track of the lift&drag center of angular momentum ---*/
 switch (init)
 {
+case -1: /* init elemental data for liftdrag calculation */
+   if(fdyn->liftdrag==ld_nodeforce)
+   {
+      fluid_cbf(&(actpart->pdis[0]),container,0);
+   }
+break;
+
 case 0: /* init multifield */
 structfield = &(field[genprob.numsf]);
 for (i=0; i<design->ndline; i++) /* loop over dlines */
@@ -137,6 +149,7 @@ case 2: /* evaluate for pseudo fsi problem */
       if (actdline->liftdrag == NULL) continue;
       numline = actdline->liftdrag->aledline;
       aledline = &(design->dline[numline]);
+      dsassert(aledline!=NULL,"No valid corresponding ALE dline given in input!\n");
       for (j=0;j<2;j++)
       {
          actcurve = aledline->dirich->curve.a.iv[j]-1;
@@ -163,6 +176,7 @@ case 3: /* evaluate for real fsi problem */
 break;
 }
 
+/*----------------------------------- do actual lift&drag evaluation ---*/
 if (init>0)
 {
   /*---------------- initialise lift- and drag- coefficient to zero ---*/
@@ -170,14 +184,22 @@ if (init>0)
   {
    liftdrag[i] = ZERO;
   }
-
-   /*------------------------- get fluid stresses and integrate them ---*/
-   container->liftdrag = liftdrag;
-   container->nii= 0;
-   container->nim= 0;
-   container->nif= 0;
-   calelm(actfield,actsolv,actpart,actintra,0,-1,
-          container,action);
+   
+   if(fdyn->liftdrag==ld_stress)
+   {
+      /*---------------------- get fluid stresses and integrate them ---*/
+      container->liftdrag = liftdrag;
+      container->nii      = 0;
+      calelm(actfield,actsolv,actpart,actintra,0,-1,
+             container,action);
+   }
+   if(fdyn->liftdrag==ld_nodeforce)
+   {
+      /*--------------------------- evaluate consistent nodal forces ---*/   
+      container->liftdrag = liftdrag;
+      container->nii      = 0;
+      fluid_cbf(&(actpart->pdis[0]),container,1);
+   }
 
    /*----------- distribute lift- and drag- coefficient to all procs ---*/
 #ifdef PARALLEL
@@ -194,6 +216,12 @@ if (init>0)
    /*-------------------------------------------------------- output ---*/
    if(par.myrank == 0)
    {
+     printf("    lift & drag linear and angular momentums\n");
+     if(fdyn->liftdrag==ld_stress)
+        printf(" -> obtained via nodal stresses!\n");
+     if(fdyn->liftdrag==ld_nodeforce)
+        printf(" -> consistent nodal fluid forces!\n");
+     /* viscous */
      printf("F_x = ");
      for (i=0; i<FLUID_NUM_LD+1; i++)
        printf(" %12.4E ",  liftdrag[i*6+0]);
@@ -229,7 +257,6 @@ if (init>0)
      plot_liftdrag(fdyn->acttime, liftdrag);
 }
 
-
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
 dstrc_exit();
@@ -238,3 +265,4 @@ dstrc_exit();
 return;
 } /* end of fluid_liftdrag*/
 #endif
+/*! @} (documentation module close)*/
