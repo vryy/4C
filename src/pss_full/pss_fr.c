@@ -204,6 +204,9 @@ while ( strstr(allfiles.input_file[i],string) == NULL )
       /*dserror(message);*/
       printf("%s\n",message);
       frrewind();
+#ifdef DEBUG 
+      dstrc_exit();
+#endif
       return 0;
    }
    i++;
