@@ -122,6 +122,7 @@ typedef enum _CALC_ACTION
                        read_restart,
 		       calc_fluid_init,
 		       calc_fluid,
+                       calc_fluid_vort,
 		       calc_ale_init,
 		       calc_ale_stiff,
 		       calc_ale_rhs
