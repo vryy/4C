@@ -1,9 +1,6 @@
 
 # This is a sample defines file
 
-# sure it's a parallel one
-PARALLEL
-
 # even though we never make mistakes debugging is an option
 DEBUG
 

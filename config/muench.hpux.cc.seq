@@ -1,6 +1,7 @@
 # -*- shell-script -*-
 
 PLATFORM=HPUX_MUENCH
+PARALLEL=no
 
 PROGRAMNAME=cca_seq_hpux
 F77=f77

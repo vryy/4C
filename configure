@@ -61,6 +61,10 @@ else
     DEBUGFLAG=
 fi
 
+if [ x$PARALLEL = "xyes" ] ; then
+    DEFINES=" -DPARALLEL $DEFINES"
+fi
+
 # build the Makefile
 # This is done in three steps
 

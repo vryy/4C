@@ -1,6 +1,7 @@
 # -*- shell-script -*-
 
 PLATFORM=LINUX_MUENCH
+PARALLEL=no
 
 # just for convenience
 MPIDIR=/opt/mpich

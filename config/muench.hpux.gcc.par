@@ -3,6 +3,7 @@
 # Would it be possible to create a 64bit version? Would it be faster?
 
 PLATFORM=HPUX_MUENCH
+PARALLEL=yes
 
 # just for convenience
 MPIDIR=/opt/mpi

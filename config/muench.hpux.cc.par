@@ -1,6 +1,7 @@
 # -*- shell-script -*-
 
 PLATFORM=HPUX_MUENCH
+PARALLEL=yes
 
 # just for convenience
 MPIDIR=/opt/mpi

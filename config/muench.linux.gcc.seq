@@ -1,6 +1,7 @@
 # -*- shell-script -*-
 
 PLATFORM=LINUX_MUENCH
+PARALLEL=no
 
 PROGRAMNAME=cca_seq_linux
 F77=g77
