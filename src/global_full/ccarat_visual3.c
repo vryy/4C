@@ -11,7 +11,7 @@ Maintainer: Steffen Genkinger
 
 ------------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
-#if VISUAL3_PACKAGE
+#ifdef VISUAL3_PACKAGE
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
