@@ -18,20 +18,6 @@
 conf="muench.linux.gcc.par"
 #conf="muench.linux.gcc.seq"
 #
-# do a parallel test
-#-------------------
-#para=0
-para=1
-#
-# use the following name for the executable
-#------------------------------------------
-#exe="cca_11_seq32.fast"
-#exe="cca_11_par32.fast"
-exe="cca_par_linux.fast"
-#exe="cca_seq_linux.fast"
-#
-#
-#
 #==========================================
 #
 # initialize some counters
@@ -41,19 +27,21 @@ fail2=0
 pass2=0
 total=0
 
-# Remember current working directory
-apwd=`pwd`
+# variables used for creating the makefile
+makefile="Makefile.test"
+#inputfile="Input/$file"
+configfile="config/$conf"
+definefile="config/defines.test"
+#specialargs="$pfl"
+NODEPS=yes
+
 
 # prepare clean up
 function cleanup()
 {
-    echo cleanup
-    mv -f src/headers/define_sizes.h_tmp src/headers/define_sizes.h
+    #echo cleanup
     make clean >/dev/null
-    rm -f test.tmp test_out_* Makefile config/defines.test $exe
-
-    # keep the logfile in case of failtures
-    #rm -f make.log
+    rm -f test.tmp test_out_* $exe make.log $makefile $definefile
 
     # remove hook
     trap "echo" 0 1 2 15
@@ -63,15 +51,15 @@ function cleanup()
 trap "cleanup" 0 1 2 15
 
 
-# copy define_sizes.h to define_sizes.h_tmp
-cp src/headers/define_sizes.h src/headers/define_sizes.h_tmp
+# remove all output files from previous runs
+rm -f *.dat.scr *.dat.make.log
 
-# remove all *.dat.scr files
-rm -f *.dat.scr
+# figure out whether we are parallel or not
+. "./$configfile"
 
 
 # create a list with all commented Input files
-if [ $para -eq 0 ]; then
+if [ "x$PARALLEL" = "xno" ]; then
   # sequentiell test
   liste='
   ale2_nln.dat
@@ -156,51 +144,30 @@ for file in $liste; do
   echo 'Testing ' $file
   total=`expr $total + 1`
 
+  inputfile="Input/$file"
 
-  # copy define_sizes.h_tmp to define_sizes.h
-  cp src/headers/define_sizes.h_tmp src/headers/define_sizes.h
-
-  # remove executable
-  rm -f $exe
-
-  # for each #define in the input file 
-  # - append an according string to PFL1
-  pfl1=`awk -v ORS=' ' '/#define / {print "-D" $3 "=" $4}' Input/$file`
-  #   remove the parentheses around the numbers
-  pfl=`echo $pfl1 | sed 's/(//g' | sed 's/)//g' `
-
-
-  # for each #define in the input file 
-  # - delete the matching line in define_sizes.h
-  def=`awk '/#define / {print $3 }' Input/$file`
-  for zeile in $def; do
-    sed '/'$zeile' /d' src/headers/define_sizes.h > test.h
-    mv test.h src/headers/define_sizes.h
-  done
-  
-
-  # read the necessary defines from the input file and 
-  # write them to config/defines.test
-  pfl3=`awk '/necessary defines:/ {print $0}' Input/$file `
-  pfl4=`echo $pfl3 | sed 's/\/\/ necessary defines: //g'`
-  echo $pfl4 |awk '{for (i=1; i<=NF; i++) printf("%s\n",$i) }' > config/defines.test
-
-   
   # create Makefile
   echo
   echo '  Making Makefile ...'
-  echo '  NODEPS=yes ./configure config/'$conf' config/defines.test "'$pfl'"'
-  #failc=`NODEPS=yes ./configure config/$conf config/defines.test "$pfl"`
-  NODEPS=yes ./configure config/$conf config/defines.test "$pfl"
+  echo "  NODEPS=$NODEPS ./configure $configfile $definefile"
+
+  . ./scripts/extract-defines.sh
+  . ./scripts/setup-variables.sh
+  . ./scripts/setup-libraries.sh
+  . ./scripts/setup-objects.sh
+  . ./scripts/build-makefile.sh
+   
+  exe=$PROGRAMNAME
+
+  # remove executable
+  rm -f $exe
 
 
   # make the executable
   echo
   echo '  Making executable ...'
-  #make clean 2>&- 1>&-
-  #make 2>&- >/dev/null
-  (make clean 2>&1 | cat >> make.log) || cleanup
-  (make 2>&1 | cat >> make.log) || cleanup 
+  make clean 2>&1 | cat > make.log
+  make -f $makefile 2>&1 | cat >> make.log
 
   # check the success of the make
   # (look for the executable)
@@ -210,11 +177,15 @@ for file in $liste; do
     chmod 755 $exe
   else
     echo '    Failed!!'
+
+    # save the log on failture
+    mv make.log $file.make.log
+
     fail1=`expr $fail1 + 1`
     continue
   fi
 
-  if [ $para -eq 0 ]; then
+  if [ "x$PARALLEL" = "xno" ]; then
     # run the executable with the inputfile
     echo
     echo '  Running Input-file...'
@@ -223,7 +194,7 @@ for file in $liste; do
     # parallel run
     echo
     echo '  Running Input-file in parallel...'
-    mpirun -np 1 $exe Input/$file test_out_ >test.tmp 
+    mpirun -np 1 ./$exe Input/$file test_out_ >test.tmp 
   fi
 
 
@@ -282,7 +253,3 @@ fi
 printf $fail2'  |\n'
 echo '-----------------------------'
 echo
-
-# change back to the current working directory
-# that doesn't have any effect
-#cd $apwd

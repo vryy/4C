@@ -6,8 +6,8 @@
 #
 
 # some usability tests
-if [ "x$1" = "x" -o "x$2" = "x" ]; then
-  echo usage: $0 config-file-name defines-file-name
+if [ "x$1" = "x" -o "x$2" = "x" -o "x$3" = "x" ]; then
+  echo usage: $0 ccarat-input-file config-file-name defines-file-name
   exit 1
 fi
 
@@ -32,9 +32,16 @@ if [ ! -r "$2" ]; then
 fi
 
 makefile="Makefile"
-configfile="$1"
-definefile="$2"
-specialargs="$3"
+inputfile="$1"
+configfile="$2"
+definefile="$3"
+specialargs="$4"
+
+. ./scripts/extract-defines.sh
+
+if [ "x$DEBUG" = "xyes" ] ; then
+  echo "DEBUG" >> "$definefile"
+fi
 
 . ./scripts/setup-variables.sh
 . ./scripts/setup-libraries.sh

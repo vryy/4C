@@ -20,38 +20,52 @@ Maintainer: Malte Neumann
 /*----------------------------------------------------------------------*
  | maximum number of nodes to an element                                |
  *----------------------------------------------------------------------*/
+#ifndef MAXNOD
 #define MAXNOD           (8)
+#endif
 
 /*----------------------------------------------------------------------*
  | maximum number of elements to a node                                 |
  *----------------------------------------------------------------------*/
+#ifndef MAXELE
 #define MAXELE           (8)
+#endif
 
 /*----------------------------------------------------------------------*
  | maximum number of dofs to a node -> can be more than 6 for shell9    |
  *----------------------------------------------------------------------*/
+#ifndef MAXDOFPERNODE
 #define MAXDOFPERNODE    (5)
+#endif
 
 /*----------------------------------------------------------------------*
  | maximum number of gaussian points in an element                      |
  *----------------------------------------------------------------------*/
-#define MAXGAUSS         (8)  
+#ifndef MAXGAUSS
+#define MAXGAUSS         (8)
+#endif
 
 /*----------------------------------------------------------------------*
  | maximum number of fields                                             |
  *----------------------------------------------------------------------*/
+#ifndef MAXFIELD
 #define MAXFIELD         (3)
+#endif
 
 /*----------------------------------------------------------------------*
  | maximum numberof fields                                              |
  *----------------------------------------------------------------------*/
+#ifndef MAXTIMECURVE
 #define MAXTIMECURVE     (5)
+#endif
 
 /*----------------------------------------------------------------------*
  | maximum numberof restart records per element in dynamic and nonlinear|
  | static restarting from and to pss file                               |
  *----------------------------------------------------------------------*/
+#ifndef MAXRECORDPERELE
 #define MAXRECORDPERELE  (6)
+#endif
 
 
 
@@ -64,47 +78,85 @@ Maintainer: Malte Neumann
 /*----------------------------------------------------------------------*
  | axishell                                                             |
  *----------------------------------------------------------------------*/
+#ifndef MAXNOD_AXISHELL
 #define MAXNOD_AXISHELL  (2)
+#endif
 
 /*----------------------------------------------------------------------*
  | beam3                                                                |
  *----------------------------------------------------------------------*/
+#ifndef MAXNOD_BEAM3
 #define MAXNOD_BEAM3     (3)
+#endif
 
 /*----------------------------------------------------------------------*
  | brick8                                                               |
  *----------------------------------------------------------------------*/
+#ifndef MAXNOD_BRICK1
 #define MAXNOD_BRICK1    (20)
+#endif
+#ifndef NUMDOF_BRICK1
 #define NUMDOF_BRICK1    (3)
+#endif
 
 /*----------------------------------------------------------------------*
  | fluid                                                                |
  *----------------------------------------------------------------------*/
-#define MAXQINTC         (6)  /* max. number of implemented integration cases for QUADS */
-#define MAXQINTP         (6)  /* max. number of integration parameters  for QUADS */ 
-#define MAXTINTC         (11) /* max. number of implemented integration cases for TRIS */
-#define MAXTINTP         (13) /* max. number of integration parameters  for TRIS */
+#ifndef MAXQINTC
+#define MAXQINTC         (6)  /* max. number of implemented
+                               * integration cases for QUADS */
+#endif
+#ifndef MAXQINTP
+#define MAXQINTP         (6)  /* max. number of integration parameters
+                               * for QUADS */
+#endif
+#ifndef MAXTINTC
+#define MAXTINTC         (11) /* max. number of implemented
+                               * integration cases for TRIS */
+#endif
+#ifndef MAXTINTP
+#define MAXTINTP         (13) /* max. number of integration parameters
+                               * for TRIS */
+#endif
+#ifndef FLUID_NUM_LD
 #define FLUID_NUM_LD     (4)  /* number of lift and drag conditions */
+#endif
 
 /*----------------------------------------------------------------------*
  | fluid2                                                               |
  *----------------------------------------------------------------------*/
+#ifndef NUM_F2_VELDOF
 #define NUM_F2_VELDOF    (2)  /* number of velocity dofs per node */
+#endif
+#ifndef NUMDOF_FLUID2
 #define NUMDOF_FLUID2    (3)  /* number of dofs per node */
+#endif
+#ifndef MAXNOD_F2
 #define MAXNOD_F2        (9)  /* max. number of nodes per element */
+#endif
 
 /*----------------------------------------------------------------------*
  | fluid3                                                               |
  *----------------------------------------------------------------------*/
+#ifndef NUM_F3_VELDOF
 #define NUM_F3_VELDOF    (3)  /* number of velocity dofs per node */
+#endif
+#ifndef MAXNOD_F3
 #define MAXNOD_F3        (27) /* max. number of nodes per element */
+#endif
 
 /*----------------------------------------------------------------------*
  | shell8                                                               |
  *----------------------------------------------------------------------*/
+#ifndef MAXNOD_SHELL8
 #define MAXNOD_SHELL8    (9)
+#endif
+#ifndef NUMDOF_SHELL8
 #define NUMDOF_SHELL8    (6)
+#endif
+#ifndef MAXHYB_SHELL8
 #define MAXHYB_SHELL8    (45)
+#endif
 
 /*----------------------------------------------------------------------*
  | shell9                                                               |
@@ -113,23 +165,46 @@ Maintainer: Malte Neumann
  |  set MAXGAUSS      = lr*ls*lt*numlay (numlay=total number of layers) |
  |                                                                      |
  *----------------------------------------------------------------------*/
+#ifndef MAXNOD_SHELL9
 #define MAXNOD_SHELL9    (9)
-#define MAXLAY_SHELL9    (30)                   /* max. total number of layers */
-#define MAXKLAY_SHELL9   (10)                   /* max. nr of kin lay */
-#define NUMDOF_SHELL9    (3+3*MAXKLAY_SHELL9)   /* numdf = 3 + 3*klay */
+#endif
+#ifndef MAXLAY_SHELL9
+#define MAXLAY_SHELL9    (30)                   /* max. total number
+                                                 * of layers */
+#endif
+#ifndef MAXKLAY_SHELL9
+#define MAXKLAY_SHELL9   (10)                   /* max. nr of kin lay
+                                                 * */
+#endif
+#ifndef NUMDOF_SHELL9
+#define NUMDOF_SHELL9    (3+3*MAXKLAY_SHELL9)   /* numdf = 3 + 3*klay
+                                                 * */
+#endif
+#ifndef MAXHYB_SHELL9
 #define MAXHYB_SHELL9    (45)
-#define A3FAC_SHELL9     (1.0) /* makes it possible to change the norm of a3L */
+#endif
+#ifndef A3FAC_SHELL9
+#define A3FAC_SHELL9     (1.0) /* makes it possible to change the norm
+                                * of a3L */
+#endif
                                /* A3FAC_SHELL9 = 0.5 : |a3L| = 0.5 * hL -> as in shell8 */
                                /* A3FAC_SHELL9 = 1.0 : |a3L| = 1.0 * hL -> like in Dis. Braun */
-#define MAXNODESTRESS_SHELL9 (72) /* Numnod*lt*numlay with Numnod=4 for Quad4   */
+#ifndef MAXNODESTRESS_SHELL9
+#define MAXNODESTRESS_SHELL9 (72) /* Numnod*lt*numlay with Numnod=4
+                                   * for Quad4   */
+#endif
                                   /*                       Numnod=9 for Quad8/9 */
 
 /*----------------------------------------------------------------------*
  | wall1                                                                |
  *----------------------------------------------------------------------*/
+#ifndef MAXNOD_WALL1
 #define MAXNOD_WALL1     (9)
+#endif
 
 /*----------------------------------------------------------------------*
  | ls2                                                                  |
  *----------------------------------------------------------------------*/
+#ifndef MAXNOD_LS2
 #define MAXNOD_LS2 (4)
+#endif
