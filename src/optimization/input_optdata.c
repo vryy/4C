@@ -283,6 +283,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 /*
 GOUTSTEP 5
 */   
+  opt->graph_out = 1;
   frint(   "GOUTSTEP",&(iloop) ,&ierr); /* number of steps */
   if (ierr==1)  opt->graph_out = iloop; 
 
@@ -310,7 +311,9 @@ OC_ECO 1                  : global equality constraints
         
         frchar(  "TYP"   ,buffer          ,&ierr); /* type of constraint */
         if (strncmp(buffer,"Volume",6)==0 ) opt->oeqc[i].oeqc_type = volume;
+        if (strncmp(buffer,"WEIGHT",6)==0 ) opt->oeqc[i].oeqc_type = mass;
         frdouble("VAL"   ,&(opt->oeqc[i].val) ,&ierr); /* initial ? */
+        frdouble("SCL"   ,&(opt->oeqc[i].scl) ,&ierr); /* scaling factor */
 
       }
       /* */
