@@ -29,14 +29,15 @@ This routine reads a 3d ale element from the input file
 *----------------------------------------------------------------------*/
 void ale3inp(ELEMENT *ele)
 {
-int  i;
-int  ierr=0;
-int  quad;
-int  dum[8];
-int  counter;
-long int  topology[100];
-char *colpointer;
-char buffer[50];
+INT  i;
+INT  ierr=0;
+INT  quad;
+INT  dum[8];
+INT  counter;
+/* wird nicht gebraucht!!  */
+/* long int  topology[100];*/
+CHAR *colpointer;
+CHAR buffer[50];
 #ifdef DEBUG 
 dstrc_enter("ale3inp");
 #endif
@@ -50,7 +51,7 @@ if (ierr==1)
 {
    ele->distyp = hex8;
    ele->numnp=8;
-   ele->lm = (int*)CALLOC(ele->numnp,sizeof(int));
+   ele->lm = (INT*)CALLOC(ele->numnp,sizeof(INT));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
    frint_n("HEX8",&(dum[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
@@ -60,7 +61,7 @@ if (ierr==1)
 {
    ele->distyp = hex20;
    ele->numnp=20;
-   ele->lm = (int*)CALLOC(ele->numnp,sizeof(int));
+   ele->lm = (INT*)CALLOC(ele->numnp,sizeof(INT));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
    frint_n("HEX20",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
@@ -110,8 +111,8 @@ return;
 *----------------------------------------------------------------------*/
 void fluid_to_ale(const FIELD *fluidfield, const FIELD *alefield)
 {
-int  ierr=0;
-int  i,j,k;
+INT  ierr=0;
+INT  i,j,k;
 ELEMENT *fluid_ele;
 ELEMENT *ale_ele;
 #ifdef DEBUG 
@@ -183,19 +184,19 @@ return;
 </pre>
 \param *ele1    ELEMENT  (i/o)   
 \param *ele2    ELEMENT  (i/o)   
-\param *ierr    int      (i/o)   
+\param *ierr    INT      (i/o)   
 
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: fluid_to_ale()
 
 *----------------------------------------------------------------------*/
-void find_compatible_ele(const ELEMENT *ele1, const ELEMENT *ele2, int *ierr)
+void find_compatible_ele(const ELEMENT *ele1, const ELEMENT *ele2, INT *ierr)
 {
-int  i,j,k;
-double tol=1.0E-08;
-double x1,y1,z1, x2,y2,z2;
-double x,y,z;
+INT  i,j,k;
+DOUBLE tol=1.0E-08;
+DOUBLE x1,y1,z1, x2,y2,z2;
+DOUBLE x,y,z;
 #ifdef DEBUG 
 dstrc_enter("find_compatible_ele");
 #endif

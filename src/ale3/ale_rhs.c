@@ -42,11 +42,11 @@ This routine controls the calculation of the rhs for ale elements.
 \param *actsolv     SOLVAR      (i)  active solvar
 \param *actpart     PARTITION   (i)  my partition of the field
 \param *actintra    INTRA       (i)  my intra-communicator
-\param sysarray1    int         (i)  number of first sparse system matrix
-\param sysarray2    int         (i)  number of second sparse system matrix
-\param *dirich      double      (i)  global redundant vector of dirichlet forces
-\param global_numeq int         (i)  size of dvec
-\param kstep        int         (i)  time in increment step we are in
+\param sysarray1    INT         (i)  number of first sparse system matrix
+\param sysarray2    INT         (i)  number of second sparse system matrix
+\param *dirich      DOUBLE      (i)  global redundant vector of dirichlet forces
+\param global_numeq INT         (i)  size of dvec
+\param kstep        INT         (i)  time in increment step we are in
 \param *action      CALC_ACTION (i)  calculation option passed to elements
 
 \warning There is nothing special to this routine
@@ -58,16 +58,16 @@ void ale_rhs(FIELD        *actfield,     /* active field */
             SOLVAR       *actsolv,      /* active SOLVAR */
             PARTITION    *actpart,      /* my partition of this field */
             INTRA        *actintra,     /* my intra-communicator */
-            int           sysarray1,    /* number of first sparse system matrix */
-            int           sysarray2,    /* number of secnd system matrix, if present, else -1 */
-            double       *dirich,       /* global redundant vector of dirichlet forces */
-            int           global_numeq, /* size of dvec */
-            int           kstep,        /* time in increment step we are in */
+            INT           sysarray1,    /* number of first sparse system matrix */
+            INT           sysarray2,    /* number of secnd system matrix, if present, else -1 */
+            DOUBLE       *dirich,       /* global redundant vector of dirichlet forces */
+            INT           global_numeq, /* size of dvec */
+            INT           kstep,        /* time in increment step we are in */
             CALC_ACTION  *action)       /* calculation option passed to element routines */
 /*----------------------------------------------------------------------*/
 {
-int               i,j,k;
-int               hasdirich;
+INT               i,j,k;
+INT               hasdirich;
 ELEMENT          *actele;
 SPARSE_TYP        sysarray1_typ;
 SPARSE_TYP        sysarray2_typ;

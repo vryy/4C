@@ -21,17 +21,17 @@ matrix for a 2D ale element.
 
 </pre>
 \param *mat   STVENANT   (i)   my material
-\param *d     double     (o)   the constitutive matrix
+\param *d     DOUBLE     (o)   the constitutive matrix
 
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: ale2_static_ke()
 
 *----------------------------------------------------------------------*/
-void ale2_mat_linel(STVENANT *mat, double **d)
+void ale2_mat_linel(STVENANT *mat, DOUBLE **d)
 {
-double e1, e2, e3, a1, b1, c1;
-double ym,pv;
+DOUBLE e1, e2, e3, a1, b1, c1;
+DOUBLE ym,pv;
 #ifdef DEBUG 
 dstrc_enter("ale2_mat_linel");
 #endif

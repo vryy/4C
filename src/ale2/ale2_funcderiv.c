@@ -20,12 +20,12 @@ This routine calcuates the shape functions and their derivatives at a
 point r,s for an 2D-ale-element.
 
 </pre>
-\param *funct  double  (o)   shape functions
-\param **deriv double  (o)   the derivatives of the shape functions
-\param r       double  (i)   r coordinate
-\param s       double  (i)   s coordinate
+\param *funct  DOUBLE  (o)   shape functions
+\param **deriv DOUBLE  (o)   the derivatives of the shape functions
+\param r       DOUBLE  (i)   r coordinate
+\param s       DOUBLE  (i)   s coordinate
 \param typ     DIS_TYP (i)   type of dicretization
-\param option  int     (i)   option == 0 : only functions,
+\param option  INT     (i)   option == 0 : only functions,
                              option == 1 : also derivatives
 
 \warning There is nothing special to this routine
@@ -33,19 +33,19 @@ point r,s for an 2D-ale-element.
 \sa calling: ---; called by: ale2_static_ke()
 
 *----------------------------------------------------------------------*/
-void ale2_funct_deriv(double     *funct, 
-                    double    **deriv, 
-                    double      r, 
-                    double      s,
+void ale2_funct_deriv(DOUBLE     *funct, 
+                    DOUBLE    **deriv, 
+                    DOUBLE      r, 
+                    DOUBLE      s,
                     DIS_TYP   typ,
-                    int         option)
+                    INT         option)
 {
-int            i, ii;
-const double   q12 = 1.0/2.0;
-const double   q14 = 1.0/4.0;
-const double   q16 = 1.0/6.0;
-double         rr,ss,rp,rm,sp,sm,r2,s2;
-double         rh,sh,rs,rhp,rhm,shp,shm;
+INT            i, ii;
+const DOUBLE   q12 = 1.0/2.0;
+const DOUBLE   q14 = 1.0/4.0;
+const DOUBLE   q16 = 1.0/6.0;
+DOUBLE         rr,ss,rp,rm,sp,sm,r2,s2;
+DOUBLE         rh,sh,rs,rhp,rhm,shp,shm;
 #ifdef DEBUG 
 dstrc_enter("ale2_funct_deriv");
 #endif

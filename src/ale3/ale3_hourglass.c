@@ -36,9 +36,9 @@ see also:
 
 </pre>
 \param *ele  ELEMENT  (i)   the element
-\param **s   double   (i/o) (i) the one point quadrature matrix
+\param **s   DOUBLE   (i/o) (i) the one point quadrature matrix
                             (o) the complete, stabilized stiffness matrix
-\param vol   double   (i)   the volume of the element
+\param vol   DOUBLE   (i)   the volume of the element
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -46,42 +46,42 @@ see also:
 
 *----------------------------------------------------------------------*/
 void ale3_hourglass(ELEMENT  *ele,
-		    double  **s,
-		    double    vol)
+		    DOUBLE  **s,
+		    DOUBLE    vol)
 {
 
 MATERIAL      *actmat;
 
-int            i,j,k,l;
-int            l0,l1,l2,l3,l4,l5,l6,l7;
+INT            i,j,k,l;
+INT            l0,l1,l2,l3,l4,l5,l6,l7;
 
-double         x1r, x2s, x3t;
-double         x[3][8];
-double         xc[3][8];
-double         b[3][8];
+DOUBLE         x1r, x2s, x3t;
+DOUBLE         x[3][8];
+DOUBLE         xc[3][8];
+DOUBLE         b[3][8];
 
-double         a[3][3];
-double         ba[3];
-double         r[3][3];
+DOUBLE         a[3][3];
+DOUBLE         ba[3];
+DOUBLE         r[3][3];
 
-double         h[4][8] = {{1,1,-1,-1,-1,-1,1,1},{1,-1,-1,1,-1,1,1,-1},
+DOUBLE         h[4][8] = {{1,1,-1,-1,-1,-1,1,1},{1,-1,-1,1,-1,1,1,-1},
 			  {1,-1,1,-1,1,-1,1,-1},{-1,1,-1,1,1,-1,1,-1}};
-double         lam[3][8] = {{-1,1,1,-1,-1,1,1,-1},
+DOUBLE         lam[3][8] = {{-1,1,1,-1,-1,1,1,-1},
 			    {-1,-1,1,1,-1,-1,1,1},
 			    {-1,-1,-1,-1,1,1,1,1}};
-double         gam[4][8];
-double         lx[3];
-double         hh[3][3];
+DOUBLE         gam[4][8];
+DOUBLE         lx[3];
+DOUBLE         hh[3][3];
 
-double         gg00[8][8], gg11[8][8], gg22[8][8], gg33[8][8];
-double         gg01[8][8], gg10[8][8], gg02[8][8], gg20[8][8];
-double         gg12[8][8], gg21[8][8];
+DOUBLE         gg00[8][8], gg11[8][8], gg22[8][8], gg33[8][8];
+DOUBLE         gg01[8][8], gg10[8][8], gg02[8][8], gg20[8][8];
+DOUBLE         gg12[8][8], gg21[8][8];
 
-double         kstab[24][24];
+DOUBLE         kstab[24][24];
 
-double         c1,c2,c3;
-double         dum;
-double         ee,nu,mu;
+DOUBLE         c1,c2,c3;
+DOUBLE         dum;
+DOUBLE         ee,nu,mu;
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

@@ -18,10 +18,10 @@ extern struct _MATERIAL  *mat;
  | number of load curves numcurve                                       |
  | vector of structures of curves                                       |
  | defined in input_curves.c                                            |
- | int                   numcurve;                                      |
+ | INT                   numcurve;                                      |
  | struct _CURVE      *curve;                                           |
  *----------------------------------------------------------------------*/
-extern int            numcurve;
+extern INT            numcurve;
 extern struct _CURVE *curve;
 
 /*! 
@@ -51,16 +51,16 @@ void ale_setdirich(FIELD  *actfield, STRUCT_DYNAMIC *sdyn)
 {
 GNODE                *actgnode;
 NODE                 *actnode;
-int                   i,j;
-int                   numnp_total;
-int                   numele_total;
-int                   actcurve;
-double                timefac[ALENUMTIMECURVE];
-double                T;
-double                acttimefac;
-double                initval;
+INT                   i,j;
+INT                   numnp_total;
+INT                   numele_total;
+INT                   actcurve;
+DOUBLE                timefac[ALENUMTIMECURVE];
+DOUBLE                T;
+DOUBLE                acttimefac;
+DOUBLE                initval;
 
-double                cx,cy,win,wino,dd;
+DOUBLE                cx,cy,win,wino,dd;
 
 #ifdef DEBUG 
 dstrc_enter("ale_setdirich");
@@ -137,8 +137,8 @@ values of the dirichlet conditions from actnode->sol.a.da[0][j]
 
 </pre>
 \param *actele        ELEMENT (i)  my element
-\param *fullvec        double  (o)  the dirichlet load vector as full vector
-\param dim            int     (i)  dimension
+\param *fullvec        DOUBLE  (o)  the dirichlet load vector as full vector
+\param dim            INT     (i)  dimension
 \param *estif_global  ARRAY   (i)  the element stiffness matrix
 
 \return void                                               
@@ -147,23 +147,23 @@ values of the dirichlet conditions from actnode->sol.a.da[0][j]
 *----------------------------------------------------------------------*/
 void ale_caldirich(
                      ELEMENT   *actele, 
-		     double    *fullvec,
-		     int        dim,
+		     DOUBLE    *fullvec,
+		     INT        dim,
                      ARRAY     *estif_global
 		    )     
 {
 
-int                   i,j;
-int                   dof;
-int                   numdf;
-int                   nd=0;
-double              **estif;
-double                dirich[MAXDOFPERELE];
-int                   dirich_onoff[MAXDOFPERELE];
-double                dforces[MAXDOFPERELE];
+INT                   i,j;
+INT                   dof;
+INT                   numdf;
+INT                   nd=0;
+DOUBLE              **estif;
+DOUBLE                dirich[MAXDOFPERELE];
+INT                   dirich_onoff[MAXDOFPERELE];
+DOUBLE                dforces[MAXDOFPERELE];
 GNODE                *actgnode;
 NODE                 *actnode;
-int                   lm[MAXDOFPERELE];
+INT                   lm[MAXDOFPERELE];
 
 #ifdef DEBUG 
 dstrc_enter("ale_caldirich");

@@ -46,8 +46,8 @@ This structure contains all specific information for a 3D ale element
 typedef struct _ALE3
 {
 
-int                nGP[3];         /*!< number of gaussian points in rst direction */
-int                jacobi;         /*!< flag whether to use the Jacobean matrix    */
+INT                nGP[3];         /*!< number of gaussian points in rst direction */
+INT                jacobi;         /*!< flag whether to use the Jacobean matrix    */
 struct _ELEMENT   *my_fluid;       /*!< pointer to fluid element associated to me  */
 
 } ALE3;
@@ -64,14 +64,14 @@ of a 3D ale element
 *----------------------------------------------------------------------*/
 typedef struct _ALE3_DATA
 {
-double        xgpr[3];         /*!< natural coordinates r of gaussian points */
-double        wgtr[3];         /*!< weights at natural coordinates r */
+DOUBLE        xgpr[3];         /*!< natural coordinates r of gaussian points */
+DOUBLE        wgtr[3];         /*!< weights at natural coordinates r */
 
-double        xgps[3];         /*!< natural coordinates s of gaussian points */
-double        wgts[3];         /*!< weights at natural coordinates r */
+DOUBLE        xgps[3];         /*!< natural coordinates s of gaussian points */
+DOUBLE        wgts[3];         /*!< weights at natural coordinates r */
 
-double        xgpt[3];         /*!< natural coordinates t of gaussian points */
-double        wgtt[3];         /*!< weights at natural coordinates r */
+DOUBLE        xgpt[3];         /*!< natural coordinates t of gaussian points */
+DOUBLE        wgtt[3];         /*!< weights at natural coordinates r */
 } ALE3_DATA;
 
 
@@ -91,17 +91,17 @@ number of time curves for ale elements
 /*----------------------------------------------------------------------*
  | ale3_bop.c                                                 mn 06/02  |
  *----------------------------------------------------------------------*/
-void ale3_bop(double **b, double **deriv, double **xjm, double det, int iel);
+void ale3_bop(DOUBLE **b, DOUBLE **deriv, DOUBLE **xjm, DOUBLE det, INT iel);
 /*----------------------------------------------------------------------*
  | ale_call_stiff.c                                          mn 06/02  |
  *----------------------------------------------------------------------*/
-void ale_keku(double **s, double **bs, double **d,
-	      double fac, int nd, int neps);
+void ale_keku(DOUBLE **s, DOUBLE **bs, DOUBLE **d,
+	      DOUBLE fac, INT nd, INT neps);
 /*----------------------------------------------------------------------*
  | ale_dirich.c                                              mn 06/02  |
  *----------------------------------------------------------------------*/
 void ale_setdirich(FIELD  *actfield, STRUCT_DYNAMIC *sdyn);
-void ale_caldirich(ELEMENT *actele, double *fullvec, int dim,
+void ale_caldirich(ELEMENT *actele, DOUBLE *fullvec, INT dim,
 		   ARRAY *estif_global);
 /*----------------------------------------------------------------------*
  | ale_dyn_control.c                                         mn 06/02  |
@@ -110,14 +110,14 @@ void dyn_ale();
 /*----------------------------------------------------------------------*
  | ale3_funct_deriv.c                                         mn 06/02  |
  *----------------------------------------------------------------------*/
-void ale3_funct_deriv(double *funct, double **deriv, double r, double s,
-		     double t, DIS_TYP typ, int option);
+void ale3_funct_deriv(DOUBLE *funct, DOUBLE **deriv, DOUBLE r, DOUBLE s,
+		     DOUBLE t, DIS_TYP typ, INT option);
 /*----------------------------------------------------------------------*
  | ale3_inpele.c                                              mn 06/02  |
  *----------------------------------------------------------------------*/
 void ale3inp(ELEMENT *ele);
 void fluid_to_ale(const FIELD *fluidfield, const FIELD *alefield);
-void find_compatible_ele(const ELEMENT *ele1, const ELEMENT *ele2, int *ierr);
+void find_compatible_ele(const ELEMENT *ele1, const ELEMENT *ele2, INT *ierr);
 /*----------------------------------------------------------------------*
  | ale3_intg.c                                                mn 06/02  |
  *----------------------------------------------------------------------*/
@@ -125,8 +125,8 @@ void ale3_intg(const ELEMENT *ele, ALE3_DATA  *data);
 /*----------------------------------------------------------------------*
  | ale3_jaco.c                                                mn 06/02  |
  *----------------------------------------------------------------------*/
-void ale3_jaco(double **deriv, double **xjm, double *det, ELEMENT *ele,
-	      int iel);
+void ale3_jaco(DOUBLE **deriv, DOUBLE **xjm, DOUBLE *det, ELEMENT *ele,
+	      INT iel);
 /*----------------------------------------------------------------------*
  | ale3_main.c                                                mn 06/02  |
  *----------------------------------------------------------------------*/
@@ -135,15 +135,15 @@ void ale3(PARTITION *actpart, INTRA *actintra, ELEMENT *ele,
 /*----------------------------------------------------------------------*
  | ale3_mat_linel.c                                           mn 06/02  |
  *----------------------------------------------------------------------*/
-void ale3_mat_linel(STVENANT *mat, double **d);
+void ale3_mat_linel(STVENANT *mat, DOUBLE **d);
 /*----------------------------------------------------------------------*
  | ale3_static_ke.c                                           mn 06/02  |
  *----------------------------------------------------------------------*/
 void ale3_static_ke(ELEMENT *ele, ALE3_DATA *data, MATERIAL *mat,
-		   ARRAY *estif_global, int init);
+		   ARRAY *estif_global, INT init);
 /*----------------------------------------------------------------------*
  | ale3_hourglass.c                                           mn 06/02  |
  *----------------------------------------------------------------------*/
- void ale3_hourglass(ELEMENT *ele, double **s, double vol); 
+ void ale3_hourglass(ELEMENT *ele, DOUBLE **s, DOUBLE vol); 
 #endif
 /*! @} (documentation module close)*/

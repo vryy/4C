@@ -31,16 +31,16 @@ integration of a 2D ale element.
 void ale2_intg(const ELEMENT   *ele,
               ALE2_DATA        *data)
 {
-int i, k;
+INT i, k;
 
-double zero  = 0.0;
-double one   = 1.0;
-double two   = 2.0;
-double three = 3.0;
+DOUBLE zero  = 0.0;
+DOUBLE one   = 1.0;
+DOUBLE two   = 2.0;
+DOUBLE three = 3.0;
 
-double  q12, q13, q16, q23;
-double  xgr[13][8],xgs[13][8],wgtt[13][8];
-static double xg[6][6],wgt[6][6];
+DOUBLE  q12, q13, q16, q23;
+DOUBLE  xgr[13][8],xgs[13][8],wgtt[13][8];
+static DOUBLE xg[6][6],wgt[6][6];
 #ifdef DEBUG 
 dstrc_enter("ale2_intg");
 #endif

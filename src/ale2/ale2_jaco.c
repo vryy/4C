@@ -20,25 +20,25 @@ This routine calculates the Jacobian matrix  at a point r,s for
 a 2D ale element.
 
 </pre>
-\param *deriv   double     (i)   derivatives of the shape functions
-\param **xjm    double     (o)   the Jacobian matrix
-\param *det     double     (i)   determinant of the Jacobian matrix
+\param *deriv   DOUBLE     (i)   derivatives of the shape functions
+\param **xjm    DOUBLE     (o)   the Jacobian matrix
+\param *det     DOUBLE     (i)   determinant of the Jacobian matrix
 \param *ele     ELEMENT    (i)   the element
-\param iel      int        (i)   number of nodes of the element
+\param iel      INT        (i)   number of nodes of the element
 
 \warning There is nothing special to this routine
 \return void                                               
 \sa caling: ---; called by: ale2_static_ke()
 
 *----------------------------------------------------------------------*/
-void ale2_jaco(double    **deriv,
-             double    **xjm,
-             double     *det,
+void ale2_jaco(DOUBLE    **deriv,
+             DOUBLE    **xjm,
+             DOUBLE     *det,
              ELEMENT    *ele,
-             int         iel)
+             INT         iel)
 {
 /*----------------------------------------------------------------------*/
-int k;
+INT k;
 #ifdef DEBUG 
 dstrc_enter("ale2_jaco");
 #endif

@@ -33,7 +33,7 @@ see also:
         
 </pre>
 \param *ele  ELEMENT  (i)   the element
-\param **s   double   (i/o) (i) the one point quadrature matrix
+\param **s   DOUBLE   (i/o) (i) the one point quadrature matrix
                             (o) the complete, stabilized stiffness matrix
 
 \warning There is nothing special to this routine
@@ -42,33 +42,33 @@ see also:
 
 *----------------------------------------------------------------------*/
 void ale2_hourglass(ELEMENT  *ele,
-		    double  **s) 
+		    DOUBLE  **s) 
 {
 
 MATERIAL      *actmat;
 
-int            i, j;
+INT            i, j;
 
-double         h[4];
-double         x[4];
-double         y[4];
-double         y24,y13,x24,x13;
+DOUBLE         h[4];
+DOUBLE         x[4];
+DOUBLE         y[4];
+DOUBLE         y24,y13,x24,x13;
 
-double         hxx,hyy,hxy;
+DOUBLE         hxx,hyy,hxy;
 
-double         c1,c2,c3;
+DOUBLE         c1,c2,c3;
 
-double         ee,nu,mu;
+DOUBLE         ee,nu,mu;
 
-double         bx[4];
-double         by[4];
+DOUBLE         bx[4];
+DOUBLE         by[4];
 
-double         hx,hy;
+DOUBLE         hx,hy;
 
-double         gam[4];
-double         gg[4][4];
+DOUBLE         gam[4];
+DOUBLE         gg[4][4];
 
-double         aa;
+DOUBLE         aa;
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

@@ -20,28 +20,28 @@ This routine calculates usual stiffness matrix in total lagrangian
 formulation.
 
 </pre>
-\param **s   double    (o)  element stiffness matrix 
-\param **bs  double    (i)  derivative operator
-\param **d   double    (i)  constitutive matrix
-\param fac   double    (i)  integration factor
-\param nd    int       (i)  total number degrees of freedom of element
-\param neps  int       (i)  actual number of strain components
+\param **s   DOUBLE    (o)  element stiffness matrix 
+\param **bs  DOUBLE    (i)  derivative operator
+\param **d   DOUBLE    (i)  constitutive matrix
+\param fac   DOUBLE    (i)  integration factor
+\param nd    INT       (i)  total number degrees of freedom of element
+\param neps  INT       (i)  actual number of strain components
 
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; caled by: ale2_static_ke(), ale3_static_ke()
 
 *----------------------------------------------------------------------*/
-void ale_keku(double  **s, 
-              double  **bs, 
-              double  **d, 
-              double    fac, 
-              int       nd,
-              int       neps)
+void ale_keku(DOUBLE  **s, 
+              DOUBLE  **bs, 
+              DOUBLE  **d, 
+              DOUBLE    fac, 
+              INT       nd,
+              INT       neps)
 {
-int            i, j, k, l, m;
-double         dum;
-double         db[24];
+INT            i, j, k, l, m;
+DOUBLE         dum;
+DOUBLE         db[24];
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("ale_keku");

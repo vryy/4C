@@ -23,7 +23,7 @@ This routine integrates the linear stiffness for the 2d ale element
 \param *data          ALE2_DATA (i)   structure containing gaussian point and weight
 \param *mat           MATERIAL  (i)   my material
 \param *estif_global  ARRAY     (o)   the stifness matrix
-\param init           int       (i)   flag init == 1 : initialization
+\param init           INT       (i)   flag init == 1 : initialization
                                            init != 1 : integration
 
 \warning There is nothing special to this routine
@@ -37,35 +37,35 @@ void ale2_static_ke(ELEMENT   *ele,
                    ALE2_DATA  *data, 
                    MATERIAL  *mat,
                    ARRAY     *estif_global, 
-                   int        init)
+                   INT        init)
 {
-int                 i,j,k;            /* some loopers */
-int                 nir,nis;      /* num GP in r/s/t direction */
-int                 lr, ls;       /* loopers over GP */
-int                 iel;              /* numnp to this element */
-int                 nd;
-const int           numdf =2;
-const int           numeps=3;
+INT                 i,j,k;            /* some loopers */
+INT                 nir,nis;      /* num GP in r/s/t direction */
+INT                 lr, ls;       /* loopers over GP */
+INT                 iel;              /* numnp to this element */
+INT                 nd;
+const INT           numdf =2;
+const INT           numeps=3;
 
-double              fac;
-double              e1,e2,e3;         /*GP-coords*/
-double              facr,facs,fact;   /* weights at GP */
-double              xnu;              /* value of shell shifter */
-double              weight;
+DOUBLE              fac;
+DOUBLE              e1,e2,e3;         /*GP-coords*/
+DOUBLE              facr,facs,fact;   /* weights at GP */
+DOUBLE              xnu;              /* value of shell shifter */
+DOUBLE              weight;
 
 static ARRAY    D_a;      /* material tensor */     
-static double **D;         
+static DOUBLE **D;         
 static ARRAY    funct_a;  /* shape functions */    
-static double  *funct;     
+static DOUBLE  *funct;     
 static ARRAY    deriv_a;  /* derivatives of shape functions */   
-static double **deriv;     
+static DOUBLE **deriv;     
 static ARRAY    xjm_a;    /* jacobian matrix */     
-static double **xjm;         
+static DOUBLE **xjm;         
 static ARRAY    bop_a;    /* B-operator */   
-static double **bop;       
-static double **estif;    /* element stiffness matrix ke */
+static DOUBLE **bop;       
+static DOUBLE **estif;    /* element stiffness matrix ke */
 
-double det;
+DOUBLE det;
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

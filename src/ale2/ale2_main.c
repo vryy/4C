@@ -42,7 +42,7 @@ void ale2(     PARTITION   *actpart,
                CALC_ACTION *action)
 {
 #ifdef D_ALE
-int  i;
+INT  i;
 ALE2_DATA     actdata;
 MATERIAL    *actmat;
 

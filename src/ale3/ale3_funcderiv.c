@@ -21,13 +21,13 @@ This routine calcuates the shape functions and their derivatives at a
 point r,s,t for an 3D-ale-element.
 
 </pre>
-\param *funct  double  (o)   shape functions
-\param **deriv double  (o)   the derivatives of the shape functions
-\param r       double  (i)   r coordinate
-\param s       double  (i)   s coordinate
-\param t       double  (i)   t coordinate
+\param *funct  DOUBLE  (o)   shape functions
+\param **deriv DOUBLE  (o)   the derivatives of the shape functions
+\param r       DOUBLE  (i)   r coordinate
+\param s       DOUBLE  (i)   s coordinate
+\param t       DOUBLE  (i)   t coordinate
 \param typ     DIS_TYP (i)   type of dicretization
-\param option  int     (i)   option == 0 : only functions,
+\param option  INT     (i)   option == 0 : only functions,
                              option == 1 : also derivatives
 
 \warning There is nothing special to this routine
@@ -35,22 +35,22 @@ point r,s,t for an 3D-ale-element.
 \sa calling: ---; called by: ale3_static_ke
 
 *----------------------------------------------------------------------*/
-void ale3_funct_deriv(double     *funct, 
-                       double    **deriv, 
-                       double      r, 
-                       double      s,
-                       double      t,
+void ale3_funct_deriv(DOUBLE     *funct, 
+                       DOUBLE    **deriv, 
+                       DOUBLE      r, 
+                       DOUBLE      s,
+                       DOUBLE      t,
                        DIS_TYP     typ,
-                       int         option)
+                       INT         option)
 {
-int            i, ii;
-const double   q12 = 1.0/2.0;
-const double   q14 = 1.0/4.0;
-const double   q16 = 1.0/6.0;
-const double   q18 = 1.0/8.0;
-const double   q64 = 1.0/64.0;
-const double   q964= 9.0/64.0;
-double         rr,ss,tt,rp,sp,tp,rm,sm,tm,rrm,ssm,ttm;
+INT            i, ii;
+const DOUBLE   q12 = 1.0/2.0;
+const DOUBLE   q14 = 1.0/4.0;
+const DOUBLE   q16 = 1.0/6.0;
+const DOUBLE   q18 = 1.0/8.0;
+const DOUBLE   q64 = 1.0/64.0;
+const DOUBLE   q964= 9.0/64.0;
+DOUBLE         rr,ss,tt,rp,sp,tp,rm,sm,tm,rrm,ssm,ttm;
 #ifdef DEBUG 
 dstrc_enter("ale3_funct_deriv");
 #endif

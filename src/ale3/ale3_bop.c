@@ -20,30 +20,30 @@ This routine calcuates the operator matrix b at the given point r,s,t
 for an 3D-ale-element.
 
 </pre>
-\param **b       double  (o)   the calculated operator matrix
-\param **deriv   double  (i)   the derivatives of the shape functions
-\param **xjm     double  (i)   the Jacobian matrix
-\param det       double  (i)   the determinant of the Jacobian matrix
-\param iel       int     (i)   number of nodes per element
+\param **b       DOUBLE  (o)   the calculated operator matrix
+\param **deriv   DOUBLE  (i)   the derivatives of the shape functions
+\param **xjm     DOUBLE  (i)   the Jacobian matrix
+\param det       DOUBLE  (i)   the determinant of the Jacobian matrix
+\param iel       INT     (i)   number of nodes per element
 
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: ale3_static_ke()
 
 *----------------------------------------------------------------------*/
-void ale3_bop(double    **b,
-             double    **deriv,
-             double    **xjm,
-             double      det,
-             int         iel)
+void ale3_bop(DOUBLE    **b,
+             DOUBLE    **deriv,
+             DOUBLE    **xjm,
+             DOUBLE      det,
+             INT         iel)
 {
 /*----------------------------------------------------------------------*/
-int i,node_start;
-double dum;
-double x1r, x2r, x3r, x1s, x2s, x3s, x1t, x2t, x3t;
-double xi11, xi12, xi13, xi21, xi22, xi23, xi31, xi32, xi33;
-double hr, hs, ht;
-double h1, h2, h3;
+INT i,node_start;
+DOUBLE dum;
+DOUBLE x1r, x2r, x3r, x1s, x2s, x3s, x1t, x2t, x3t;
+DOUBLE xi11, xi12, xi13, xi21, xi22, xi23, xi31, xi32, xi33;
+DOUBLE hr, hs, ht;
+DOUBLE h1, h2, h3;
 #ifdef DEBUG 
 dstrc_enter("ale3_bop");
 #endif

@@ -20,26 +20,26 @@ This routine calculates the Jacobian matrix  at a point r,s,t for
 a 3D ale element.
 
 </pre>
-\param *deriv   double     (i)   derivatives of the shape functions
-\param **xjm    double     (o)   the Jacobian matrix
-\param *det     double     (i)   determinant of the Jacobian matrix
+\param *deriv   DOUBLE     (i)   derivatives of the shape functions
+\param **xjm    DOUBLE     (o)   the Jacobian matrix
+\param *det     DOUBLE     (i)   determinant of the Jacobian matrix
 \param *ele     ELEMENT    (i)   the element
-\param iel      int        (i)   number of nodes of the element
+\param iel      INT        (i)   number of nodes of the element
 
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: ale3_static_ke
 
 *----------------------------------------------------------------------*/
-void ale3_jaco(double    **deriv,
-              double    **xjm,
-              double     *det,
+void ale3_jaco(DOUBLE    **deriv,
+              DOUBLE    **xjm,
+              DOUBLE     *det,
               ELEMENT    *ele,
-              int         iel)
+              INT         iel)
 {
 /*----------------------------------------------------------------------*/
-int i,j,k,l;
-double dum;
+INT i,j,k,l;
+DOUBLE dum;
 #ifdef DEBUG 
 dstrc_enter("ale3_jaco");
 #endif

@@ -43,8 +43,8 @@ element-routine
 \param *actsolv   SOLVAR      (i)  active solvar
 \param *actpart   PARTITION   (i)  my partition of the field
 \param *actintra  INTRA       (i)  my intra-communicator
-\param sysarray1  int         (i)  number of first sparse system matrix
-\param sysarray2  int         (i)  number of second sparse system matrix
+\param sysarray1  INT         (i)  number of first sparse system matrix
+\param sysarray2  INT         (i)  number of second sparse system matrix
 \param *action    CALC_ACTION (i)  calculation option passed to elements
 
 \warning There is nothing special to this routine
@@ -58,12 +58,12 @@ void ale_calelm(
     SOLVAR       *actsolv,      /* active SOLVAR */
     PARTITION    *actpart,      /* my partition of this field */
     INTRA        *actintra,     /* my intra-communicator */
-    int           sysarray1,    /* number of first sparse system matrix */
-    int           sysarray2,    /* number of secnd system matrix,*/
+    INT           sysarray1,    /* number of first sparse system matrix */
+    INT           sysarray2,    /* number of secnd system matrix,*/
     CALC_ACTION  *action)       /* calculation option passed to element routines */
 /*----------------------------------------------------------------------*/
 {
-int               i;
+INT               i;
 ELEMENT          *actele;
 SPARSE_TYP        sysarray1_typ;
 SPARSE_TYP        sysarray2_typ;

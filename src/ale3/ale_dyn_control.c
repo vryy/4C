@@ -70,10 +70,10 @@ extern enum _CALC_ACTION calc_action[MAXFIELD];
  | number of load curves numcurve                                       |
  | vector of structures of curves                                       |
  | defined in input_curves.c                                            |
- | int                   numcurve;                                      |
+ | INT                   numcurve;                                      |
  | struct _CURVE      *curve;                                           |
  *----------------------------------------------------------------------*/
- extern int            numcurve;
+ extern INT            numcurve;
  extern struct _CURVE *curve;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -108,14 +108,14 @@ calculation of the rhs and solving.
 void dyn_ale()
 {
 #ifdef D_ALE
-int           i;                /* a counter */
-int           numeq;            /* number of equations on this proc */
-int           numeq_total;      /* total number of equations over all procs */
-int           init;             /* init flag for solver */
-int           actsysarray;      /* active sparse system matrix in actsolv->sysarray[] */
+INT           i;                /* a counter */
+INT           numeq;            /* number of equations on this proc */
+INT           numeq_total;      /* total number of equations over all procs */
+INT           init;             /* init flag for solver */
+INT           actsysarray;      /* active sparse system matrix in actsolv->sysarray[] */
 
-int             actcurve;           /* indice of active time curve */
-double          t0,t1;
+INT             actcurve;           /* indice of active time curve */
+DOUBLE          t0,t1;
 
 SOLVAR       *actsolv;          /* pointer to the fields SOLVAR structure */
 PARTITION    *actpart;          /* pointer to the fields PARTITION structure */
@@ -125,7 +125,7 @@ CALC_ACTION  *action;           /* pointer to the structures cal_action enum */
 STRUCT_DYNAMIC *sdyn;               /* pointer to structural dynamic input data */
 
 ARRAY         dirich_a;         /* redundant vector of full length for dirichlet-part of rhs*/
-double       *dirich;
+DOUBLE       *dirich;
 
 SPARSE_TYP    array_typ;        /* type of psarse system matrix */
 #ifdef DEBUG 

@@ -19,27 +19,27 @@
 This routine calcuates the operator matrix b at the given point r,s
 for an 2D-ale-element.
 </pre>
-\param **bop     double  (o)   the calculated operator matrix
-\param **deriv   double  (i)   the derivatives of the shape functions
-\param **xjm     double  (i)   the Jacobian matrix
-\param det       double  (i)   the determinant of the Jacobian matrix
-\param iel       int     (i)   number of nodes per element
+\param **bop     DOUBLE  (o)   the calculated operator matrix
+\param **deriv   DOUBLE  (i)   the derivatives of the shape functions
+\param **xjm     DOUBLE  (i)   the Jacobian matrix
+\param det       DOUBLE  (i)   the determinant of the Jacobian matrix
+\param iel       INT     (i)   number of nodes per element
 
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: ale2_static_ke()
 
 *----------------------------------------------------------------------*/
-void ale2_bop(double    **bop,
-              double    **deriv,
-              double    **xjm,
-              double      det,
-              int         iel)
+void ale2_bop(DOUBLE    **bop,
+              DOUBLE    **deriv,
+              DOUBLE    **xjm,
+              DOUBLE      det,
+              INT         iel)
 {
 /*----------------------------------------------------------------------*/
-int inode, node_start;
-double dum;
-double xji[2][2];
+INT inode, node_start;
+DOUBLE dum;
+DOUBLE xji[2][2];
 #ifdef DEBUG 
 dstrc_enter("ale2_bop");
 #endif
