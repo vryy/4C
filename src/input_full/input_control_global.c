@@ -906,6 +906,10 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          fdyn->init=1;
       else if (strncmp(buffer,"field_by_function",17)==0) 
          fdyn->init=-1;                      
+      else if (strncmp(buffer,"BELTRAMI-FLOW",13)==0) 
+         fdyn->init=8;
+      else if (strncmp(buffer,"KIM-MOIN-FLOW",13)==0) 
+         fdyn->init=9;
       else
          dserror("INITIALFIELD unknown!");
    }   

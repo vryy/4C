@@ -214,8 +214,10 @@ for (i=0; i<counter; i++)
          actcurve->numex=-2;
       else if (strncmp(buffer,"f(t)=1-cos(C1*PI*t)",19)==0)
           actcurve->numex=-3;
-     else if (strncmp(buffer,"f(t)=exp(-C1*(PI:2)*(PI:2)*t)->Beltrami",39)==0)
+     else if (strncmp(buffer,"BELTRAMI",8)==0)
          actcurve->numex=-4;
+     else if (strncmp(buffer,"KIM-MOIN",8)==0)
+         actcurve->numex=-5;
       else
          dserror("cannot read function of CURVE\n");
       if (ierr!=1) dserror("cannot read CURVE");
