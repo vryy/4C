@@ -53,7 +53,7 @@ time t to actnode->sol.a.da[0][j].
 \sa calling: dyn_facfromcurve(); called by: dyn_ale()
 
 *----------------------------------------------------------------------*/
-void ale_setdirich(FIELD  *actfield, STRUCT_DYNAMIC *sdyn, int actpos)
+void ale_setdirich(FIELD  *actfield, ALE_DYNAMIC *adyn, INT actpos)
 {
 GNODE                *actagnode;
 NODE                 *actsnode;
@@ -79,8 +79,8 @@ dstrc_enter("ale_setdirich");
 
 numnp_total  = actfield->dis[0].numnp;
 numele_total = actfield->dis[0].numele;
-T            = sdyn->time;
-dt           = sdyn->dt;
+T            = adyn->time;
+dt           = adyn->dt;
 numff        = genprob.numff;
 numsf        = genprob.numsf;
 

@@ -146,8 +146,8 @@ return;
  *----------------------------------------------------------------------*/
 void inpctrprob()
 {
-int  ierr;
-int  i;
+INT  ierr;
+INT  i;
 char buffer[50];
 #ifdef DEBUG 
 dstrc_enter("inpctrprob");
@@ -337,8 +337,8 @@ return;
  *----------------------------------------------------------------------*/
 void inpctrstat()
 {
-int  ierr;
-int  i;
+INT  ierr;
+INT  i;
 char buffer[50];
 #ifdef DEBUG 
 dstrc_enter("inpctrstat");
@@ -445,8 +445,8 @@ return;
  *----------------------------------------------------------------------*/
 void inpctrdyn()
 {
-int    ierr;
-int    i;
+INT    ierr;
+INT    i;
 char   buffer[50];
 FIELD *actfield;
 #ifdef DEBUG 
@@ -475,9 +475,9 @@ for (i=0; i<genprob.numfld; i++)
 #endif            
    break;
    case ale:
-      alldyn[i].sdyn = (STRUCT_DYNAMIC*)CCACALLOC(1,sizeof(STRUCT_DYNAMIC));
-      if (!alldyn[i].sdyn) dserror("Allocation of STRUCT_DYNAMIC failed");
-      inpctr_dyn_struct(alldyn[i].sdyn);
+      alldyn[i].adyn = (ALE_DYNAMIC*)CCACALLOC(1,sizeof(ALE_DYNAMIC));
+      if (!alldyn[i].adyn) dserror("Allocation of STRUCT_DYNAMIC failed");
+      inpctr_dyn_ale(alldyn[i].adyn);
    break;
    case structure:
       alldyn[i].sdyn = (STRUCT_DYNAMIC*)CCACALLOC(1,sizeof(STRUCT_DYNAMIC));
@@ -518,8 +518,8 @@ return;
  *----------------------------------------------------------------------*/
 void inpctr_dyn_struct(STRUCT_DYNAMIC *sdyn)
 {
-int    ierr;
-int    i;
+INT    ierr;
+INT    i;
 char   buffer[50];
 #ifdef DEBUG 
 dstrc_enter("inpctr_dyn_struct");
@@ -564,7 +564,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
           sdyn->iter=0;
    }
 
-/*-----------------read int */
+/*-----------------read INT */
    frint("EIGEN"      ,&(sdyn->eigen)         ,&ierr);
    frint("NUMSTEP"    ,&(sdyn->nstep)         ,&ierr);
    frint("MAXITER"    ,&(sdyn->maxiter)       ,&ierr);
@@ -573,7 +573,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frint("RESTARTEVRY",&(sdyn->res_write_evry),&ierr);
    frint("CONTACT"    ,&(sdyn->contact)       ,&ierr);
    
-/*--------------read double */
+/*--------------read DOUBLE */
    frdouble("TIMESTEP",&(sdyn->dt)     ,&ierr);
    frdouble("MAXTIME" ,&(sdyn->maxtime),&ierr);
    frdouble("BETA"    ,&(sdyn->beta)   ,&ierr);
@@ -617,9 +617,9 @@ are read and stored in fdyn
 ------------------------------------------------------------------------*/
 void inpctr_dyn_fluid(FLUID_DYNAMIC *fdyn)
 {
-int    ierr;
-int    i;
-int    thetafound=0;
+INT    ierr;
+INT    i;
+INT    thetafound=0;
 char   buffer[50];
 #ifdef DEBUG 
 dstrc_enter("inpctr_dyn_fluid");
@@ -821,7 +821,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          dserror("CHECKAREA unknown!\n");	 
    }
 
-/*--------------read int */
+/*--------------read INT */
    frint("NUMDF"     ,&(fdyn->numdf)  ,&ierr);
    frint("NUMCONT"   ,&(fdyn->numcont),&ierr);
    frint("UPPSS"     ,&(fdyn->uppss)  ,&ierr);
@@ -842,7 +842,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    }
    frint("IPRERHS",&(fdyn->iprerhs),&ierr); 
    frint("ITEMAX" ,&(fdyn->itemax) ,&ierr);  
-/*--------------read double */
+/*--------------read DOUBLE */
    frdouble("TIMESTEP" ,&(fdyn->dt)     ,&ierr);
    frdouble("MAXTIME"  ,&(fdyn->maxtime),&ierr);
    frdouble("ALPHA"    ,&(fdyn->alpha)  ,&ierr);
@@ -885,9 +885,9 @@ are read and stored in fsidyn
 ------------------------------------------------------------------------*/
 void inpctr_dyn_fsi(FSI_DYNAMIC *fsidyn)
 {
-int    ierr;
-int    i;
-int    length;
+INT    ierr;
+INT    i;
+INT    length;
 char   buffer[50];
 #ifdef DEBUG 
 dstrc_enter("inpctr_dyn_fsi");
@@ -1016,14 +1016,14 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       else
          dserror("Parameter unknown: IALE");
    }
-/*--------------read int */
+/*--------------read INT */
    frint("ITECHAPP"  ,&(fsidyn->itechapp),&ierr);
    frint("ICHMAX"    ,&(fsidyn->ichmax)  ,&ierr);
    frint("ISDMAX"    ,&(fsidyn->isdmax)  ,&ierr);
    frint("NUMSTEP"   ,&(fsidyn->nstep)   ,&ierr);
    frint("ITEMAX"    ,&(fsidyn->itemax)  ,&ierr);
    frint("UPPSS"     ,&(fsidyn->uppss)   ,&ierr);
-/*--------------read double */
+/*--------------read DOUBLE */
    frdouble("TIMESTEP"   ,&(fsidyn->dt)     ,&ierr);
    frdouble("MAXTIME"    ,&(fsidyn->maxtime),&ierr);
    frdouble("TOLENCHECK" ,&(fsidyn->entol)  ,&ierr);
@@ -1039,4 +1039,54 @@ dstrc_exit();
 return;
 } /* end of inpctr_dyn_fsi */
 
+#endif
+
+
+/*!---------------------------------------------------------------------                                         
+\brief input of the ALE DYNAMIC block in the input-file
+
+<pre>                                                           ck 12/02
+
+In this routine the data in the ALE DYNAMIC block of the input file
+are read and stored in adyn	       
+
+</pre>
+\param  *adyn 	  ALE_DATA       (o)	   
+\return void                                                                       
+
+------------------------------------------------------------------------*/
+#ifdef D_ALE
+void inpctr_dyn_ale(ALE_DYNAMIC *adyn)
+{
+int    ierr;
+char buffer[50];
+
+#ifdef DEBUG 
+dstrc_enter("inpctr_dyn_ale");
+#endif
+
+frfind("-ALE DYNAMIC");
+frread();
+while(strncmp(allfiles.actplace,"------",6)!=0)
+{
+/*--------------read chars */
+   frchar("ALE_TYPE",buffer,&ierr);
+   if (ierr==1)
+   {
+      if (strncmp(buffer,"classic_lin",11)==0) adyn->typ = classic_lin;
+   }
+/*--------------read int */
+   frint("NUMSTEP" , &(adyn->nstep) , &ierr);
+/*--------------read double */
+   frdouble("TIMESTEP", &(adyn->dt)     , &ierr);
+   frdouble("MAXTIME" , &(adyn->maxtime), &ierr);
+   
+   frread();
+}
+frrewind();
+
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+} /* end of inpctr_dyn_ale */
 #endif

@@ -123,7 +123,7 @@ PARTITION    *actpart;          /* pointer to the fields PARTITION structure */
 FIELD        *actfield;         /* pointer to the structural FIELD */
 INTRA        *actintra;         /* pointer to the fields intra-communicator structure */
 CALC_ACTION  *action;           /* pointer to the structures cal_action enum */
-STRUCT_DYNAMIC *sdyn;               /* pointer to structural dynamic input data */
+ALE_DYNAMIC  *adyn;             /* pointer to ale dynamic input data */
 CONTAINER     container;        /* contains variables defined in container.h */
 
 ARRAY         dirich_a;         /* redundant vector of full length for dirichlet-part of rhs*/
@@ -143,7 +143,7 @@ container.fieldtyp  = actfield->fieldtyp;
 actsolv     = &(solv[0]);
 actpart     = &(partition[0]);
 action      = &(calc_action[0]);
-sdyn        =   alldyn[0].sdyn;
+adyn        =   alldyn[0].adyn;
 #ifdef PARALLEL 
 actintra    = &(par.intra[0]);
 #else
@@ -209,7 +209,7 @@ container.kstep        = 0;
 calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,&container,action);
 /*--------------------------------------- init all applied time curves */
 for (actcurve = 0;actcurve<numcurve;actcurve++)
-   dyn_init_curve(actcurve,sdyn->nstep,sdyn->dt,sdyn->maxtime);   
+   dyn_init_curve(actcurve,adyn->nstep,adyn->dt,adyn->maxtime);   
 /*------------------------------------------- print out results to .out */
 #ifdef PARALLEL 
 if (ioflags.ale_disp_gid==1)
@@ -223,16 +223,16 @@ if (ioflags.ale_disp_gid==1)
 timeloop:
 t0 = ds_cputime();
 /*--------------------------------------------- increment step and time */
-sdyn->step++;
+adyn->step++;
 /*------------------------------------------------ set new absolue time */
-sdyn->time += sdyn->dt;
+adyn->time += adyn->dt;
 /*------------------------------ init the created dist. vectors to zero */
 solserv_zero_vec(&(actsolv->rhs[actsysarray]));
 solserv_zero_vec(&(actsolv->sol[actsysarray]));
 /*--------------------------------------------------------------------- */
 amzero(&dirich_a);
 /*-------------------------set dirichlet boundary conditions on at time */
-ale_setdirich(actfield,sdyn,0);
+ale_setdirich(actfield,adyn,0);
 /*------------------------------- call element-routines to assemble rhs */
 *action = calc_ale_rhs;
 ale_rhs(actfield,actsolv,actpart,actintra,actsysarray,-1,dirich,numeq_total,0,&container,action);
@@ -271,16 +271,16 @@ solserv_result_incre(
                     );
 /*------------------------------------------- print out results to .out */
 if (ioflags.ale_disp_file==1)
-   out_sol(actfield,actpart,actintra,sdyn->step,0);
+   out_sol(actfield,actpart,actintra,adyn->step,0);
 if (par.myrank==0 && ioflags.ale_disp_gid==1) 
-   out_gid_sol("displacement",actfield,actintra,sdyn->step,0);
+   out_gid_sol("displacement",actfield,actintra,adyn->step,0);
 /*--------------------------------------------------------------------- */
 /*------------------------------------------ measure time for this step */
 t1 = ds_cputime();
-fprintf(allfiles.out_err,"TIME for ALE step %d is %f sec\n",sdyn->step,t1-t0);
-printf("TIME for ALE step %d is %f sec\n",sdyn->step,t1-t0);
+fprintf(allfiles.out_err,"TIME for ALE step %d is %f sec\n",adyn->step,t1-t0);
+printf("TIME for ALE step %d is %f sec\n",adyn->step,t1-t0);
 /*-------------------------------------- check time and number of steps */
-if (sdyn->step < sdyn->nstep-1 && sdyn->time <= sdyn->maxtime)
+if (adyn->step < adyn->nstep-1 && adyn->time <= adyn->maxtime)
 goto timeloop;
 
 /*----------------------------------------------------------------------*/
