@@ -49,6 +49,10 @@ typedef struct _GIDSET
      char                      *fluid2_22_name;
      INT                        is_fluid2_33;           /* 8/9-noded fluid2 3x3 GP */
      char                      *fluid2_33_name;
+     INT                        is_fluid2_xfem_22;      /* 4-noded fluid2_xfem 2x2 GP */
+     char                      *fluid2_xfem_22_name;
+     INT                        is_fluid2_xfem_33;      /* 3-noded fluid2_xfem 3 GP */
+     char                      *fluid2_xfem_33_name;
      INT                        is_fluid2_pro_22;       /* 4-noded fluid2_pro 2x2 GP */
      char                      *fluid2_pro_22_name;
      INT                        is_fluid2_pro_33;       /* 8/9-noded fluid2 3x3 GP */
@@ -83,15 +87,18 @@ typedef struct _GIDSET
      char                      *ale_tet_4_name;
      INT                        is_axishell;            /* 2-noded axishell */
      char                      *axishell_name;
-     INT                        is_interf_22;            /* interface 2x2 GP */
+     INT                        is_interf_22;           /* interface 2x2 GP */
      char                      *interf_22_name;
-     INT                        is_interf_33;            /* interface 3x3 GP */
+     INT                        is_interf_33;           /* interface 3x3 GP */
      char                      *interf_33_name;
-     INT                        is_wallge_22;            /* gradient enhanced wall 2x2 GP */
+     INT                        is_wallge_22;           /* gradient enhanced wall 2x2 GP */
      char                      *wallge_22_name;
-     INT                        is_wallge_33;            /* gradient enhanced wall 3x3 GP */
+     INT                        is_wallge_33;           /* gradient enhanced wall 3x3 GP */
      char                      *wallge_33_name;
-     
+     INT                        is_ls2_33;              /* 3-noded ls 3 GP */
+     char                      *ls2_33_name;
+     INT                        is_ls2_22;              /* 4-noded ls 2x2 GP */
+     char                      *ls2_22_name;
 
 } GIDSET;
 /*------------------------ global variable needed by gid postprocessing */

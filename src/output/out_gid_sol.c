@@ -100,6 +100,10 @@ for (i=0; i<genprob.numfld; i++)
       actgid->fieldnamelenght = 3;
       actgid->fieldname       = "ale";
    break;
+   case levelset:
+      actgid->fieldnamelenght = 8;
+      actgid->fieldname       = "levelset";
+   break;   
    default:
       dserror("Unknown type of field");
    break;
@@ -129,6 +133,8 @@ for (i=0; i<genprob.numfld; i++)
    actgid->is_brick1_333= 0;
    actgid->is_fluid2_22 = 0;
    actgid->is_fluid2_33 = 0;
+   actgid->is_fluid2_xfem_22 = 0;
+   actgid->is_fluid2_xfem_33 = 0;
    actgid->is_fluid2_pro_22 = 0;
    actgid->is_fluid2_pro_33 = 0;
    actgid->is_fluid3_222= 0;
@@ -152,6 +158,8 @@ for (i=0; i<genprob.numfld; i++)
    actgid->is_interf_33  = 0;
    actgid->is_wallge_22  = 0;
    actgid->is_wallge_33  = 0;
+   actgid->is_ls2_33 = 0;
+   actgid->is_ls2_22 = 0;
    /*---------------------------- check for different types of elements */
    for (j=0; j<actfield->dis[0].numele; j++)
    {
@@ -244,6 +252,20 @@ for (i=0; i<genprob.numfld; i++)
          }
       break;
 #endif
+#ifdef D_XFEM
+      case el_fluid2_xfem: 
+         if (actele->numnp==4)  
+         {
+            actgid->is_fluid2_xfem_22    = 1;
+            actgid->fluid2_xfem_22_name  = "fluid2_xfem_22";
+         }
+         if (actele->numnp==3) 
+         {
+            actgid->is_fluid2_xfem_33    = 1;
+            actgid->fluid2_xfem_33_name  = "fluid2_xfem_33";
+         }
+      break;
+#endif      
 #ifdef D_FLUID2_PRO
       case el_fluid2_pro:
          if (actele->numnp==4)  
@@ -413,6 +435,20 @@ for (i=0; i<genprob.numfld; i++)
          }
      break;
 #endif /*D_WALLGE*/
+#ifdef D_LS
+      case el_ls2:    
+         if (actele->e.ls2->nGP[0]==2)  
+         {
+            actgid->is_ls2_22    = 1;
+            actgid->ls2_22_name  = "ls2_22";
+         }
+         if (actele->e.ls2->nGP[1]==3)  
+         {
+            actgid->is_ls2_33   = 1;
+            actgid->ls2_33_name  = "ls2_33";
+         }
+     break;
+#endif /*D_LS*/     
 
       default:
          dserror("Unknown type of element");
@@ -582,6 +618,30 @@ for (i=0; i<genprob.numfld; i++)
                                                                 sign,actgid->fluid2_33_name,sign,
                                                                 sign,actgid->fluid2_33_name,sign);
    fprintf(out,"NUMBER OF GAUSS POINTS: 9\n");
+   fprintf(out,"NATURAL COORDINATES: Internal\n");
+   fprintf(out,"END GAUSSPOINTS\n");
+   }
+   if (actgid->is_fluid2_xfem_22)
+   {
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s FLUID2_XFEM 2x2 GP\n",actgid->fieldname);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Quadrilateral %c%s%c\n",
+                                                                sign,actgid->fluid2_xfem_22_name,sign,
+                                                                sign,actgid->fluid2_xfem_22_name,sign);
+   fprintf(out,"NUMBER OF GAUSS POINTS: 4\n");
+   fprintf(out,"NATURAL COORDINATES: Internal\n");
+   fprintf(out,"END GAUSSPOINTS\n");
+   }
+   if (actgid->is_fluid2_xfem_33)
+   {
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s FLUID2_XFEM 3 GP\n",actgid->fieldname);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Triangle %c%s%c\n",
+                                                                sign,actgid->fluid2_xfem_33_name,sign,
+                                                                sign,actgid->fluid2_xfem_33_name,sign);
+   fprintf(out,"NUMBER OF GAUSS POINTS: 3\n");
    fprintf(out,"NATURAL COORDINATES: Internal\n");
    fprintf(out,"END GAUSSPOINTS\n");
    }
@@ -868,6 +928,30 @@ for (i=0; i<genprob.numfld; i++)
    fprintf(out,"NATURAL COORDINATES: Internal\n");
    fprintf(out,"END GAUSSPOINTS\n");
    }
+   /* ---------------------------------------------------------------- */
+   if (actgid->is_ls2_33)
+   {
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s LS2 3 GP\n",actgid->fieldname);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Triangle\n", sign,actgid->ls2_33_name,sign);
+   fprintf(out,"NUMBER OF GAUSS POINTS: 3\n");
+   fprintf(out,"Nodes not included\n");
+   fprintf(out,"NATURAL COORDINATES: Internal\n");
+   fprintf(out,"END GAUSSPOINTS\n");
+   }
+   /* ---------------------------------------------------------------- */
+   if (actgid->is_ls2_22)
+   {
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s LS2 2x2 GP\n",actgid->fieldname);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Quadrilateral\n", sign,actgid->ls2_22_name,sign);
+   fprintf(out,"NUMBER OF GAUSS POINTS: 4\n");
+   fprintf(out,"Nodes not included\n");
+   fprintf(out,"NATURAL COORDINATES: Internal\n");
+   fprintf(out,"END GAUSSPOINTS\n");
+   }      
 /*----------------------------------------------------------------------*/
 } /* end of (i=0; i<genprob.numfld; i++) */
 /*----------------------------------------------------------------------*/

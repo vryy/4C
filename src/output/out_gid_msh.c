@@ -453,6 +453,67 @@ for (i=0; i<genprob.numfld; i++)
       fprintf(out,"END ELEMENTS\n");
    }
 
+   
+
+   if (actgid->is_fluid2_xfem_22)
+   {
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"# MESH %s FOR FIELD %s FLUID2 2x2 GP\n",actgid->fluid2_xfem_22_name,actgid->fieldname);
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"MESH %s DIMENSION 2 ELEMTYPE Quadrilateral NNODE 4\n",actgid->fluid2_xfem_22_name);
+      /*-------------- if this is first mesh, print coodinates of nodes */
+      if (is_firstmesh)
+      {
+         is_firstmesh=0;
+         fprintf(out,"# printout ALL nodal coordinates of ALL fields in first mesh only\n");
+         fprintf(out,"COORDINATES\n");
+         out_gid_allcoords(out);
+         fprintf(out,"END COORDINATES\n");
+      }
+      /*------------------------------------------------ print elements */
+      fprintf(out,"ELEMENTS\n");
+      for (j=0; j<actfield->dis[0].numele; j++)
+      {
+         actele = &(actfield->dis[0].element[j]);
+         if (actele->eltyp != el_fluid2_xfem || actele->numnp !=4) continue;
+         fprintf(out," %6d ",actele->Id+1);
+         for (k=0; k<actele->numnp; k++)
+         fprintf(out,"%6d ",actele->node[k]->Id+1);
+         fprintf(out,"\n");
+      }
+      fprintf(out,"END ELEMENTS\n");
+   }
+
+
+   if (actgid->is_fluid2_xfem_33)
+   {
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"# MESH %s FOR FIELD %s FLUID2 3 GP\n",actgid->fluid2_xfem_33_name,actgid->fieldname);
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"MESH %s DIMENSION 2 ELEMTYPE Triangle NNODE 3\n",actgid->fluid2_xfem_33_name);
+      /*-------------- if this is first mesh, print coodinates of nodes */
+      if (is_firstmesh)
+      {
+         is_firstmesh=0;
+         fprintf(out,"# printout ALL nodal coordinates of ALL fields in first mesh only\n");
+         fprintf(out,"COORDINATES\n");
+         out_gid_allcoords(out);
+         fprintf(out,"END COORDINATES\n");
+      }
+      /*------------------------------------------------ print elements */
+      fprintf(out,"ELEMENTS\n");
+      for (j=0; j<actfield->dis[0].numele; j++)
+      {
+         actele = &(actfield->dis[0].element[j]);
+         if (actele->eltyp != el_fluid2_xfem || actele->numnp !=3) continue;
+         fprintf(out," %6d ",actele->Id+1);
+         for (k=0; k<actele->numnp; k++)
+         fprintf(out,"%6d ",actele->node[k]->Id+1);
+         fprintf(out,"\n");
+      }
+      fprintf(out,"END ELEMENTS\n");
+   }
+
 
    if (actgid->is_fluid3_222)
    {
