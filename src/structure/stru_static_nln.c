@@ -515,7 +515,7 @@ solserv_result_total(
                      &(actsolv->sysarray_typ[actsysarray])
                     );
 /*----------- printf out iteration heading to err and to shell */
-if (actintra->intra_rank==0) conequ_printhead(kstep,controltyp,cdof);
+if (actintra->intra_rank==0) conequ_printhead(kstep,controltyp,cdof,nln_data->csp);
 /*--------------------- make iteration parameter before first iteration */
 /*----------------------------------- norm of incremental displacements */
 solserv_vecnorm_euclid(actintra,&(dispi[0]),&dnorm);
@@ -913,7 +913,7 @@ return;
  |  controltyp                      type of control algorithm           |
  |  cdof                            number of dof that is controlled    |      
  *----------------------------------------------------------------------*/
-void conequ_printhead(int kstep, NR_CONTROLTYP  controltyp, int cdof)
+void conequ_printhead(int kstep, NR_CONTROLTYP  controltyp, int cdof, double csp)
 {
 #ifdef DEBUG 
 dstrc_enter("conequ_printhead");
@@ -949,6 +949,7 @@ dstrc_enter("conequ_printhead");
    printf("ENERGY....Product of Out-of-Balance Loads and Residual Displacements\n");
    printf("DNORM.....Norm of incemental Displacements\n");
    printf("RNORM.....Norm of total Load\n");
+   printf("CSP=%f (Current Stiffness to Reference Stiffness of first step)\n",csp);
    printf("----------------------------------------------------------------------------------------------\n");
    printf("ITE  DISVAL       RLNEW        DINORM       RENORM       ENERGY       DNORM        RNORM\n");
 /*----------------------------------------------------------------------*/
@@ -982,6 +983,7 @@ dstrc_enter("conequ_printhead");
    fprintf(allfiles.out_err,"ENERGY....Product of Out-of-Balance Loads and Residual Displacements\n");
    fprintf(allfiles.out_err,"DNORM.....Norm of incemental Displacements\n");
    fprintf(allfiles.out_err,"RNORM.....Norm of total Load\n");
+   fprintf(allfiles.out_err,"CSP=%f (Current Stiffness to Reference Stiffness of first step)\n",csp);
    fprintf(allfiles.out_err,"----------------------------------------------------------------------------------------------\n");
    fprintf(allfiles.out_err,"ITE  DISVAL       RLNEW        DINORM       RENORM       ENERGY       DNORM        RNORM\n");
    fflush(allfiles.out_err);
