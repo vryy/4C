@@ -17,7 +17,8 @@ typedef union _ALLDYNA
 {
    struct _STRUCT_DYNAMIC    *sdyn;   /* ptr for allocation of structural dynamic data */
    struct _FLUID_DYNAMIC     *fdyn;   /* ptr for allocation of fluid dynamic data */
-   struct _FSI_DYNAMIC       *fsidyn; /* ptr for allocation of fsi dynamic data */
+   struct _FSI_DYNAMIC       *fsidyn; /*ptr for allocation of fsi dynamic data */
+   struct _SSI_DYNAMIC       *ssidyn; /*ptr for allocation of ssi dynamic data */
    struct _ALE_DYNAMIC       *adyn;   /* ptr for allocation of ale dynamic data */
 #ifdef D_LS
   struct _LS_DYNAMIC        *lsdyn;  /* ptr for allocation of ls dynamic data */
@@ -123,7 +124,45 @@ DOUBLE             deltaeint;       /*!< energy production at the interface */
 ARRAY              sid;             /*!< structural interface dofs */
 INT                numsid;          /*!< number of structural interface dofs */
 INT                actpos;          /*!<  */
+INT                coupmethod;      /*!< flag, 0=mortar , 1=conforming */
 } FSI_DYNAMIC;
+
+/*----------------------------------------------------------------------*
+ | general ssi variables                                  genk 10/03    |
+ *----------------------------------------------------------------------*/
+typedef struct _SSI_DYNAMIC                 
+{
+INT                ifsi;            /*!< coupling algorithm */
+INT                ipre;            /*!< type of predictor */
+INT                inrmfsi;         /*!< convergence criterion */
+INT                ichecke;         /*!< energy check */
+INT                inest;           /*!< nested iteration */
+INT                ichopt;          /*!< optimal ordering for CHEBYCHEV parameter */
+INT                iait;            /*!< Aitken iteration */
+INT                itechapp;        /*!< No. of Iter. for approx. EW-Calculation */
+INT                ichmax;          /*!< Max. No. of CHEBYCHEV iterations */
+INT                isdmax;          /*!< Max. No. of steepest descent iterations */
+INT                nstep;           /*!< number of steps */
+INT                itemax;          /*!< max. number of iterations over fields */
+INT                uppss;           /*!<  */
+INT                upres;           /*!< update .flavia.res every step */
+INT                res_write_evry;  /*!< write restart every step */
+INT                step;            /*!<  */
+INT                iale;            /*!<  */
+DOUBLE             time;            /*!<  */
+DOUBLE             dt;              /*!< time increment */
+DOUBLE             maxtime;         /*!< total time */
+DOUBLE             entol;           /*!< tolerance for energy check over fields */
+DOUBLE             relax;           /*!< actual relaxation parameter */
+DOUBLE             convtol;         /*!< tolerance for iteration over fields */ 
+DOUBLE             deltaeint;       /*!< energy production at the interface */
+ARRAY              sid;             /*!< structural interface dofs */
+INT                numsid;          /*!< number of structural interface dofs */
+INT                actpos;          /*!<  */
+INT                conformmesh;     /*!< flag, 0=conf. discr., 1=nonconf. discr. */
+INT                coupmethod;      /*!< flag, 0=mortar , 1=interpolation */
+} SSI_DYNAMIC;
+
 
 /*----------------------------------------------------------------------*
  | general ale dynamic variables                            ck 12/02    |
@@ -156,4 +195,5 @@ INT                num_initstep; /*!< number of initial steps with prestress */
 DOUBLE             dt;           /*!< stepsize */
 DOUBLE             maxtime;      /*!< maximum total time */
 DOUBLE             time;         /*!< actual time */
+INT                coupmethod;   /*!< flag, 0=mortar , 1=conforming */
 } ALE_DYNAMIC;
