@@ -72,6 +72,10 @@ void kefnln_struct(STRUCT_DYN_CALC *dynvar,
                   int              stiff_array,
                   int              mass_array,
                   int              damp_array);
+void dyn_keff_expl(INTRA *actintra,
+                   SPARSE_TYP *sysarray_typ, SPARSE_ARRAY *sysarray,
+                   int stiff_array, int mass_array, int damp_array,
+                   STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn);
 void pefnln_struct(STRUCT_DYN_CALC *dynvar, 
                   STRUCT_DYNAMIC  *sdyn,
                   FIELD           *actfield,
@@ -97,6 +101,7 @@ void dyne(STRUCT_DYN_CALC *dynvar,
          DIST_VECTOR     *vel,
          DIST_VECTOR     *work);
 void dyn_setconstants(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, double dt);
+void dyn_setconstants_expl(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, double dt);
 void dyn_nlnstructupd(FIELD *actfield,      STRUCT_DYN_CALC *dynvar, 
                       STRUCT_DYNAMIC *sdyn, SOLVAR *actsolv,
                       DIST_VECTOR *sol_old, DIST_VECTOR *sol_new,
@@ -105,6 +110,7 @@ void dyn_nlnstructupd(FIELD *actfield,      STRUCT_DYN_CALC *dynvar,
                       DIST_VECTOR *work0,   DIST_VECTOR *work1,
                       DIST_VECTOR *work2);
 void dyn_nlnstruct_outhead(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn);
+void dyn_nlnstru_outhead_expl(void);
 void dyn_nlnstruct_outstep(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, int numiter);
 void assemble_dirich_dyn(ELEMENT *actele, double *fullvec, int dim,
                          ARRAY *estif_global, ARRAY *emass_global, double *facs);
