@@ -75,11 +75,22 @@ typedef enum _WALL_TYPE
                        rotat_symmet  
 } WALL_TYPE;
 /*----------------------------------------------------------------------*
+ | type of Kinematik                                       ah 06/02    |
+ *----------------------------------------------------------------------*/
+typedef enum _KINEMATIK_TYPE
+{
+                       geo_lin, 
+                       total_lagr,
+                       updated_lagr  
+} KINEMATIK_TYPE;
+/*----------------------------------------------------------------------*
  | wall                                                     al 01/02    |
  *----------------------------------------------------------------------*/
 typedef struct _WALL1
 {
 enum _WALL_TYPE    wtype;             /* type of 2D problem, see above */
+
+enum _KINEMATIK_TYPE  kintype;	  /* type of Kinematik             */
 
 int           nGP[4];
 

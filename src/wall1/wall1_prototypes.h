@@ -667,6 +667,17 @@ void w1static_ke(ELEMENT   *ele,    /* actual element                   */
                  double    *force,  /* global vector for internal forces*/  
                  int        init);  /* initialize this function         */
 /*-----------------------------------------------------------------------*
+|  w1_static_keug.c                                        ah 06/02      |
+|  integration of nonlinear stiffness keug for wall1 element             |
+*-----------------------------------------------------------------------*/
+void w1static_keug(ELEMENT  *ele,           /* actual element           */
+                   W1_DATA   *data,         /* wall1 data               */
+                   MATERIAL  *mat,          /* actual material          */
+                   ARRAY     *estif_global, /* element stiffness matrix */
+                   ARRAY     *emass_global, /* element mass matrix      */
+                   double    *force,/* global vector for internal forces*/
+                   int        init);        /* initialize this function */
+/*-----------------------------------------------------------------------*
 |  w1_static_ke.c                                            al 9/01     |
 |  evaluates element forces                                              |
 *-----------------------------------------------------------------------*/
@@ -674,7 +685,105 @@ void w1fi( double  *F,    /* element stresses                           */
            double   fac,  /* integration factor                         */
            double **bop,  /* derivative operator                        */
            int      nd,   /* total number degrees of freedom of element */
-           double  *fie); /* nodal forces                               */
+           double  *fie); /* nodal forces                               */           
+/*----------------------------------------------------------------------*/
+/*  w1_call_mat.c                                         ah 06/02      */
+/* get density out of material law                                      */
+/*----------------------------------------------------------------------*/
+#if 1
+void w1_getdensity(MATERIAL  *mat,        /* actual material            */
+                   double *density);      /* density of actual material */
+#endif
+/*----------------------------------------------------------------------*/
+/*  w1_boplin.c                                           ah 06/02      */
+/* evaluation of linear B-operator                                      */
+/*----------------------------------------------------------------------*/
+#if 1
+void w1_boplin(double    **boplin,        /* Blin                       */
+               double    **deriv,     /* derivatives of ansatzfunctions */
+               double    **xjm,           /* jacobian matrix            */
+               double      det,           /* det of jacobian matrix     */
+               int         iel);          /* nodenumber of element      */
+#endif               
+/*----------------------------------------------------------------------*/
+/*  w1_defgrad.c                                          ah 06/02      */
+/*  evaluation of deformation gradient F                                */
+/*----------------------------------------------------------------------*/
+#if 1
+void w1_defgrad(double    *F,        /* Deformation gradient            */
+                double    *strain,   /* Green-Lagrange-strains          */
+                double    **xrefe,   /* coordinates in referenz-config. */
+                double    **xcure,   /* coordinates in current-config.  */
+                double    **boplin,  /* Blin                            */
+                int         iel);    /* nodenumber of element           */
+#endif
+/*----------------------------------------------------------------------*
+|  w1_call_matgeononl.c                                     ah 06/02     |
+|  select proper material law for large deformations                     |
+*-----------------------------------------------------------------------*/
+void w1_call_matgeononl(ELEMENT   *ele,   /* actual element             */
+                        MATERIAL  *mat,   /* material of actual element */
+                        WALL_TYPE wtype,/*Info about actual wall element*/
+                        double **boplin,  /* linear B-operator          */
+                        double **xjm,     /* jacobian matrix            */
+                        int ip,           /* integration point Id       */
+                        double *strain,  /*strain at act. gaussian point*/
+                        double **stress, /*stress at act. gaussian point*/
+                        double **d,       /* material tangent           */
+                        int istore,
+                        int numeps);     /* number of strain components */
+/*----------------------------------------------------------------------*
+|  w1_mat_linelgeonon.c                                     ah 06/02     |
+|  linear elastic material law for large deformations                    |
+*-----------------------------------------------------------------------*/
+void w1_mat_linelgeonon(double ym,       /* Young's modulus             */
+                        double pv,       /* poisson's ratio             */
+                        WALL_TYPE wtype,/*Info about actual wall element*/
+                        double *strain,  /*strain at act. gaussian point*/
+                        double **d,      /* material tangent            */
+                        double **stress, /*stress at act. gaussian point*/
+                        int numeps);     /* number of strain components */
+/*-----------------------------------------------------------------------*
+|  w1_cal_kg.c                                              ah 06/02     |
+|  evaluation of geometric part of stiffness matrix in geononl. case     |
+*-----------------------------------------------------------------------*/
+void w1_kg(double  **kg,                 /* geometric stiffness matrix  */
+           double  **boplin,             /* linear B-operator           */
+           double  **stress,             /*stress at act. gaussian point*/
+           double    fac,                /* integration factor          */
+           int       nd,                 /* dof's of element            */
+           int       neps);              /* number of strain components */
+/*-----------------------------------------------------------------------*
+|  w1_cal_keu.c                                              ah 06/02    |
+|  evaluation of elast+init. disp. part of stiffness in geononl. case    |
+*-----------------------------------------------------------------------*/
+void w1_keu(double  **keu,    /* elastic + initial deformation stiffness*/
+            double  **boplin,            /* linear B-operator           */
+            double  **D,                 /* material tangente           */
+            double   *F,                 /* deformation gradient        */
+            double    fac,               /* integration factor          */
+            int       nd,                /* dof's of element            */
+            int       neps);             /* number of strain components */
+ /*----------------------------------------------------------------------*
+ |  w1_cal_fint.c                                              ah 06/02   |
+ | evaluate internal element forces for large def (total Lagr)           |
+ *----------------------------------------------------------------------*/
+void w1_fint( double **stress,           /* 2.PK stresses               */ 
+              double  *F,                /* Deformation gradient        */ 
+              double **boplin,           /* B-lin-operator              */ 
+              double  *fint,             /* internal forces             */ 
+              double   fac,              /* detJ*wr*ws*thickness        */ 
+              int      nd);              /* Element-DOF                 */
+/*----------------------------------------------------------------------*
+ | integration of element loads                              ah 07/02   |
+ | in here, line and surface loads are integrated                       |
+ *----------------------------------------------------------------------*/
+void w1_eleload(ELEMENT  *ele,
+                W1_DATA  *data,
+                MATERIAL *mat,
+                double	*loadvec,
+                int	 init);
+
                                                                         
                                                                         
                                                                         

@@ -64,10 +64,23 @@ frchk("PLANE_STRAIN",&ierr);
 if (ierr==1) ele->e.w1->wtype = plane_strain;
 frchk("ROTATIONAL_SYMMETRY",&ierr);
 if (ierr==1) ele->e.w1->wtype = rotat_symmet;
-    
+/*------------------------------------ read kinematic type (ah 06/02)*/
+ele->e.w1->kintype = geo_lin;   /* default */
+frchk("W_GeoLin",&ierr);
+if (ierr==1) ele->e.w1->kintype = geo_lin;
+frchk("W_TotalLagr",&ierr);
+if (ierr==1) ele->e.w1->kintype = total_lagr;
+frchk("W_UpdatedLagr",&ierr);
+if (ierr==1) 
+{
+ ele->e.w1->kintype = updated_lagr;
+ dserror("updated lagrange for WALL1 not implemented");
+}
+
 #ifdef DEBUG 
 dstrc_exit();
 #endif
 
 return;
+
 } /* end of w1inp */
