@@ -26,7 +26,7 @@ and the type is in partition.h
  | vector of material laws                                              |
  | defined in global_control.c
  *----------------------------------------------------------------------*/
-extern struct _MATERIAL  *mat;
+extern struct _MATERIAL  *mat; 
 /*!----------------------------------------------------------------------*
  |                                                       m.gee 02/02    |
  | number of load curves numcurve                                       |
@@ -192,7 +192,7 @@ return;
 \brief routine to set dirichlet boundary conditions at time <time>
 
 <pre>                                                         genk 04/02
-
+                                                             
 in this routine the dirichlet boundary conditions for fluid2 and fluid3
 elements are set at time <T=fdyn->time>.
 the actual dirichlet values are written to the solution history of the
@@ -283,6 +283,210 @@ for (i=0;i<numnp_total;i++)
 dstrc_exit();
 #endif
 
+return;
+} /* end of fluid_settdirich*/
+
+/*!---------------------------------------------------------------------                                         
+\brief routine to set dirichlet boundary conditions for a parabolic velocity 
+profile modified for projection algorithm 
+
+<pre>                                                         genk 04/02
+                                                              basol 03/03
+
+in this routine the dirichlet boundary conditions for fluid2pro
+elements are set at time <T=fdyn->time>.
+the actual dirichlet values are written to the solution history of the
+nodes:
+    'actnode->sol_increment.a.da[3][j] = initval*acttimefac'
+                                 |        |         |
+                            time (n+1)    |         |               
+                          initial value from input  |               
+                                       factor from timecurve			     
+</pre>
+\param *actfield FIELD         (i)  actual field (fluid)   
+\param *fdyn	 FLUID_DYNAMIC (i)  
+
+\return void                                                                             
+
+------------------------------------------------------------------------*/
+void fluid_setdirich_parabolic(FIELD  *actfield, FLUID_DYNAMIC *fdyn)
+{
+INT        i,j;
+INT        numnp_total;              /* total number of fluid nodes     */
+INT        numele_total;             /* total number of fluid elements  */
+INT        numdf;	             /* number of fluid dofs    	*/
+INT        actcurve;	             /* actual timecurve		*/
+DOUBLE     timefac[MAXTIMECURVE];   /* factors from time-curve         */
+DOUBLE     T;		            /* actual time		       */
+DOUBLE     acttimefac;              /* actual factor from timecurve    */
+DOUBLE     L=ONE;
+DOUBLE     initval;	            /* intial dirichlet value	       */
+GNODE     *actgnode;	             /* actual GNODE		        */
+NODE      *actnode;	             /* actual NODE		        */
+
+#ifdef DEBUG 
+dstrc_enter("fluid_setdirich_parabolic");
+#endif 
+/*======================================================================*/
+/*REMARK: Here the inflow profile is assumed to be set at point x=-0.5
+/*also the profile is formulated according to the parabolic formula below
+/*-(TWO/L)*(TWO/L)*actnode->x[1]*actnode->x[1]+ONE; 
+/*a better way of doing this would be implementing the velocity profile into
+/*preprocessor code "GID"
+/*----------------------------------------------------- set some values */
+numnp_total  = actfield->dis[0].numnp;
+numele_total = actfield->dis[0].numele;
+T            = fdyn->time;
+numdf        = fdyn->numdf;
+
+/*------------------------------------------ get values from time curve */
+for (actcurve=0;actcurve<numcurve;actcurve++)
+{
+  dyn_facfromcurve(actcurve,T,&timefac[actcurve]) ;
+} /* end loop over active timecurves */ 
+
+/*-------------------- loop all nodes and set actual dirichlet condition */
+for (i=0;i<numnp_total;i++) 
+{
+   actnode  = &(actfield->dis[0].node[i]); 
+   actgnode = actnode->gnode;      
+   if (actgnode->dirich==NULL) continue;
+   for (j=0;j<numdf;j++) /* loop dofs */
+   {
+      if (actgnode->dirich->dirich_onoff.a.iv[j]==0) continue;
+      actcurve = actgnode->dirich->curve.a.iv[j]-1;
+      if (actcurve<0) 
+      {
+         acttimefac = ONE;
+      }else{
+         acttimefac = timefac[actcurve];
+      }
+      if (actnode->x[0]==-0.5)
+      {
+         if (j==0) /*--the parabolic velocity profile is only for the x-dof--*/
+	 { 
+            /*--parabolic profile is formulated as below---*/
+            initval  = -(TWO/L)*(TWO/L)*actnode->x[1]*actnode->x[1]+ONE;               
+            /*--it is multiplied with a timefac------------*/
+	    actnode->sol_increment.a.da[3][j] = initval*acttimefac;
+         }else{
+	    initval  = actgnode->dirich->dirich_val.a.dv[j];               
+            actnode->sol_increment.a.da[3][j] = initval*acttimefac;
+	 }/*end of if (j==0)*/
+      }else{
+         initval  = actgnode->dirich->dirich_val.a.dv[j];               
+         actnode->sol_increment.a.da[3][j] = initval*acttimefac;
+      }/*end of (actnode->x[0]==-0.5)*/
+   } /* end loop over dofs */
+} /*end loop over nodes */
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return;
+} /* end of fluid_settdirich*/
+
+/*!---------------------------------------------------------------------                                         
+\brief routine to set dirichlet boundary conditions for the specific problem 
+"flow around a cylinder"
+
+<pre>                                                         basol 05/03
+
+in this routine the dirichlet boundary conditions for fluid2 and fluid3
+elements are set at time <T=fdyn->time>.
+the actual dirichlet values are written to the solution history of the
+nodes:
+    'actnode->sol_increment.a.da[3][j] = initval*acttimefac'
+                                 |        |         |
+                            time (n+1)    |         |               
+                          initial value from input  |               
+                                       factor from timecurve			     
+</pre>
+\param *actfield FIELD         (i)  actual field (fluid)   
+\param *fdyn	 FLUID_DYNAMIC (i)  
+
+\return void                                                                             
+
+------------------------------------------------------------------------*/
+void fluid_setdirich_cyl(FIELD  *actfield, FLUID_DYNAMIC *fdyn)
+{
+INT        i,j;
+INT        numnp_total;                /* total number of fluid nodes     */
+INT        numele_total;               /* total number of fluid elements  */
+INT        numdf;	               /* number of fluid dofs    	  */
+INT        actcurve;	               /* actual timecurve		  */
+DOUBLE   timefac[MAXTIMECURVE];      /* factors from time-curve         */
+DOUBLE   T;  		             /* actual time		        */
+DOUBLE   acttimefac;                 /* actual factor from timecurve    */
+DOUBLE   initval;  	             /* intial dirichlet value	        */
+DOUBLE   Um=1.5;                     /* maximum velocity                */
+DOUBLE   H=0.41;                     /* height of the channel           */
+GNODE     *actgnode;	              /* actual GNODE		         */
+NODE      *actnode;	              /* actual NODE		         */
+
+#ifdef DEBUG 
+dstrc_enter("fluid_setdirich_cyl");
+#endif 
+/*======================================================================*/
+/*REMARK: Here the inflow profile is assumed to be set at point x=0.0
+/*also the profile is formulated according to the parabolic formula below
+/*FOUR*Um*actnode->x[1]*(H-actnode->x[1])/(H*H); 
+/*see the DFG Benchmark paper for the flow around a cylinder for the proper
+/*description of the problem 
+/*a better way of doing this would be implementing the velocity profile into
+/*preprocessor code "GID"
+/*----------------------------------------------------- set some values */
+numnp_total  = actfield->dis[0].numnp;
+numele_total = actfield->dis[0].numele;
+T            = fdyn->time;
+numdf        = fdyn->numdf;
+/*------------------------------------------ get values from time curve */
+for (actcurve=0;actcurve<numcurve;actcurve++)
+{
+  dyn_facfromcurve(actcurve,T,&timefac[actcurve]) ;
+} /* end loop over active timecurves */ 
+
+/*-------------------- loop all nodes and set actual dirichlet condition */
+for (i=0;i<numnp_total;i++) 
+{
+   actnode  = &(actfield->dis[0].node[i]); 
+   actgnode = actnode->gnode;      
+   if (actgnode->dirich==NULL)
+         continue;
+   for (j=0;j<numdf;j++) /* loop dofs */
+   {
+      if (actgnode->dirich->dirich_onoff.a.iv[j]==0)
+         continue;
+      actcurve = actgnode->dirich->curve.a.iv[j]-1;
+      if (actcurve<0)
+         acttimefac = ONE;
+      else
+         acttimefac = timefac[actcurve];
+      if (actnode->x[0]==0.0)
+      {
+         if (j==0)/*--the parabolic velocity profile is only for the x-dof--*/
+	 { 
+            /*--parabolic profile is formulated as below---*/
+	    initval  = FOUR*Um*actnode->x[1]*(H-actnode->x[1])/(H*H);               
+            /*--it is multiplied with a timefac------------*/
+	    actnode->sol_increment.a.da[3][j] = initval*acttimefac;
+         }else{
+	    initval  = actgnode->dirich->dirich_val.a.dv[j];               
+            actnode->sol_increment.a.da[3][j] = initval*acttimefac;
+	 }/*end of if (j==0)*/
+      }else{
+         initval  = actgnode->dirich->dirich_val.a.dv[j];               
+         actnode->sol_increment.a.da[3][j] = initval*acttimefac;
+      }/*end of if (actnode->x[0]==0.0)*/
+   } /* end loop over dofs */
+} /*end loop over nodes */
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
 return;
 } /* end of fluid_settdirich*/
 
@@ -477,7 +681,7 @@ return;
 
 
 
-/*!---------------------------------------------------------------------
+/*!--------------------------------------------------------------------
 \brief routine to calculate the element dirichlet load vector
 
 <pre>                                                         genk 04/02
@@ -498,7 +702,6 @@ the element load vector 'dforce' is calculated by eveluating
 \param   is_relax  INT       (i)   flag if it is for relaxation param
 
 \return void                                                                             
-
 ------------------------------------------------------------------------*/
 void fluid_caldirich(
                         ELEMENT         *actele,  
@@ -590,6 +793,377 @@ dstrc_exit();
 #endif
 return;
 } /* end of fluid_caldirich*/ 
+
+/*!---------------------------------------------------------------------                                         
+\brief routine to calculate the element dirichlet load vector for the 
+projection method (constant velocity profile)
+
+<pre>                                                     basol 11/02
+
+in this routine the element load vector due to dirichlet conditions
+is calcluated. The prescribed values are taken from the node solution
+history at (n+1) 'dirich[j] = actnode->sol_increment.a.da[3][j]'.
+the element load vector 'dforce' is calculated by eveluating
+</pre>
+\code
+      dforces[i] -= (emass[i][j]+dt*estif[i][j]) * dirich[j];
+\endcode			     
+
+\param  *actele    ELEMENT   (i)   actual element	  
+\param  *dforces   DOUBLE    (o)   dirichlet force vector
+\param **estif     DOUBLE    (i)   element stiffness matrix
+\param **emass     DOUBLE    (i)   element mass matrix
+\param   dt        DOUBLE    (i)   time increment
+\param  theta      DOUBLE    (i)   variable for the time integration of viscousity matrix
+                                   for the implicitly treated K, theta=1.0
+\param  *hasdirich INT       (o)   flag if s.th. was written to dforces
+\return void                                                                             
+------------------------------------------------------------------------*/
+void fluid_pm_caldirich(
+                     ELEMENT   *actele,  
+		     DOUBLE   *dforces, 
+                     DOUBLE   **estif,
+		     DOUBLE   **emass,
+		     DOUBLE   dt,   
+		     DOUBLE   theta,
+		     INT       *hasdirich
+		    )     
+{
+
+INT         i,j;
+INT         dof;
+INT         numdf;                      /* number of fluid dofs         */
+INT         nd=0;                      
+DOUBLE    dirich[MAXDOFPERELE];      /* dirichlet values of act. ele */
+INT         dirich_onoff[MAXDOFPERELE];  /* dirichlet flags of act. ele  */ 
+GNODE      *actgnode;	                /* actual GNODE                 */
+NODE       *actnode;	                /* actual NODE                  */
+DOUBLE     tol=1.0E-6;
+#ifdef DEBUG 
+dstrc_enter("fluid_pm_caldirich");
+#endif  
+
+/*------------------------- check if there are any dirichlet conditions *
+                                          for the nodes of this element */
+for (i=0; i<actele->numnp; i++)
+{
+   actgnode = actele->node[i]->gnode;   
+   if (actgnode->dirich==NULL) 
+      continue;
+   else
+      *hasdirich=1;
+   break;
+} /* end loop over nodes */					  
+
+if (*hasdirich==0) /* --> no nodes with DBC for this element */
+   goto end;
+
+/*---------------------------------- set number of dofs on this element */
+for (i=0; i<actele->numnp; i++) nd += actele->node[i]->numdf;
+
+/*---------------------------- init the vectors dirich and dirich_onoff */
+for (i=0; i<nd; i++)
+{
+   dirich[i] = 0.0;
+   dirich_onoff[i] = 0;
+}
+
+/*-------------------------------- fill vectors dirich and dirich_onoff */
+/*                               dirichlet values at (n+1) were already */
+/*                           written to the nodes (sol_increment[3][j]) */
+for (i=0; i<actele->numnp; i++) /* loop nodes */
+{
+   numdf    = actele->node[i]->numdf;
+   actnode  = actele->node[i];   
+   actgnode = actnode->gnode;
+   for (j=0; j<numdf; j++) /* loop dofs */
+   {
+      if (actgnode->dirich==NULL) continue;
+      dirich_onoff[i*numdf+j] = actgnode->dirich->dirich_onoff.a.iv[j];
+      dirich[i*numdf+j] = actnode->sol_increment.a.da[3][j];
+   } /* end loop over dofs */
+} /* end loop over nodes */
+
+/*----------------------------------------- loop rows of element matrix */
+for (i=0; i<nd; i++)
+{
+   /*------------------------------------- do nothing for supported row */
+   if (dirich_onoff[i]!=0) continue;
+   /*---------------------------------- loop columns of unsupported row */
+   for (j=0; j<nd; j++)
+   {
+      /*---------------------------- do nothing for unsupported columns */
+      if (dirich_onoff[j]==0) continue;
+      dforces[i] -= (estif[i][j]*dt*theta+emass[i][j]) * dirich[j];
+   }/* loop j over columns */
+}/* loop i over rows */
+
+end:
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of fluid_caldirich*/ 
+
+/*!---------------------------------------------------------------------                                         
+\brief routine to calculate the element dirichlet load vector for the 
+       projection method for a parabolic velocity profile
+
+<pre>                                                     basol 11/02
+
+in this routine the element load vector due to dirichlet conditions
+is calcluated. The prescribed values are taken from the node solution
+history at (n+1) 'dirich[j] = actnode->sol_increment.a.da[3][j]'.
+the element load vector 'dforce' is calculated by eveluating
+</pre>
+\code
+      dforces[i] -= (emass[i][j]+dt*estif[i][j]) * dirich[j];
+\endcode			     
+
+\param  *actele    ELEMENT   (i)   actual element	  
+\param  *dforces   DOUBLE    (o)   dirichlet force vector
+\param **estif     DOUBLE    (i)   element stiffness matrix
+\param **emass     DOUBLE    (i)   element mass matrix
+\param   dt        DOUBLE    (i)   time increment
+\param  theta      DOUBLE    (i)   variable for the time integration of viscousity matrix
+                                   for the implicitly treated K, theta=1.0
+\param  *hasdirich INT       (o)   flag if s.th. was written to dforces
+\return void                                                                             
+------------------------------------------------------------------------*/
+void fluid_pm_caldirich_parabolic(
+                     ELEMENT   *actele,  
+		     DOUBLE   *dforces, 
+                     DOUBLE   **estif,
+		     DOUBLE   **emass,
+		     DOUBLE   dt,   
+                     DOUBLE   theta,
+		     INT       *hasdirich
+		    )     
+{
+
+INT         i,j;
+INT         dof;
+INT         numdf;                          /* number of fluid dofs         */
+INT         nd=0;                      
+DOUBLE    dirich[MAXDOFPERELE];           /* dirichlet values of act. ele */
+INT         dirich_onoff[MAXDOFPERELE];    /* dirichlet flags of act. ele  */ 
+GNODE      *actgnode;	                  /* actual GNODE                 */
+NODE       *actnode;	                  /* actual NODE                  */
+DOUBLE     tol=1.0E-6;				
+DOUBLE     y_coor;
+DOUBLE     L=ONE;
+#ifdef DEBUG 
+dstrc_enter("fluid_pm_caldirich_parabolic");
+#endif  
+/*======================================================================*/
+/*REMARK: the profile is formulated according to the parabolic formula below
+/*-(TWO/L)*(TWO/L)*y_coor*y_coor+ONE; 
+/*if the parabolic input profile is implemented into the preprocessor "GID" 
+/*one doesn't need any further subroutines then "fluid_caldirich"
+/*------------------------- check if there are any dirichlet conditions *
+                                          for the nodes of this element */
+for (i=0; i<actele->numnp; i++)
+{
+   actgnode = actele->node[i]->gnode;   
+   if (actgnode->dirich==NULL) 
+      continue;
+   else
+      *hasdirich=1;
+   break;
+} /* end loop over nodes */					  
+
+if (*hasdirich==0) /* --> no nodes with DBC for this element */
+   goto end;
+
+/*---------------------------------- set number of dofs on this element */
+for (i=0; i<actele->numnp; i++) nd += actele->node[i]->numdf;
+
+/*---------------------------- init the vectors dirich and dirich_onoff */
+for (i=0; i<nd; i++)
+{
+   dirich[i] = 0.0;
+   dirich_onoff[i] = 0;
+}
+
+/*-------------------------------- fill vectors dirich and dirich_onoff */
+/*                               dirichlet values at (n+1) were already */
+/*                           written to the nodes (sol_increment[3][j]) */
+/*----------------------------------------------------------------------*/
+for (i=0; i<actele->numnp; i++) /* loop nodes */
+{
+   numdf    = actele->node[i]->numdf;
+   actnode  = actele->node[i];   
+   actgnode = actnode->gnode;
+   for (j=0; j<numdf; j++) /* loop dofs */
+   {
+      if (actgnode->dirich==NULL) continue;
+      dirich_onoff[i*numdf+j] = actgnode->dirich->dirich_onoff.a.iv[j];
+      if (actgnode->dirich->dirich_val.a.dv[j] < tol)
+      {
+         dirich[i*numdf+j] = ZERO;
+      }else{
+          /*--the parabolic equation is formulated---*/ 
+	  /*--according to the y-coordinate----------*/
+          y_coor = actnode->x[1];
+	  /*--parabolic value of the velocity--------*/
+	  dirich[i*numdf+j] = -(TWO/L)*(TWO/L)*y_coor*y_coor+ONE;  
+      }/* end of if (actgnode->dirich->dirich_val.a.dv[j] < tol)*/   
+   } /* end loop over dofs */
+} /* end loop over nodes */
+/*----------------------------------------- loop rows of element matrix */
+for (i=0; i<nd; i++)
+{
+   /*------------------------------------- do nothing for supported row */
+   if (dirich_onoff[i]!=0) continue;
+   /*---------------------------------- loop columns of unsupported row */
+   for (j=0; j<nd; j++)
+   {
+      /*---------------------------- do nothing for unsupported columns */
+      if (dirich_onoff[j]==0) continue;
+      /*--(M+dt*K)*dirich-----------------------------*/
+      /*--K_eff*dirich--------------------------------*/
+      dforces[i] -= (estif[i][j]*dt*theta+emass[i][j]) * dirich[j];
+   }/* loop j over columns */
+}/* loop i over rows */
+
+end:
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of fluid_pm_caldirich_parabolic*/ 
+
+/*!---------------------------------------------------------------------                                         
+\brief routine to calculate the element dirichlet load vector for the 
+       projection method for a parabolic velocity profile & for the specific
+       problem "flow around a cylinder"
+
+<pre>                                                     basol 11/02
+
+in this routine the element load vector due to dirichlet conditions
+is calcluated. The prescribed values are taken from the node solution
+history at (n+1) 'dirich[j] = actnode->sol_increment.a.da[3][j]'.
+the element load vector 'dforce' is calculated by eveluating
+</pre>
+\code
+      dforces[i] -= (emass[i][j]+dt*estif[i][j]) * dirich[j];
+\endcode			     
+
+\param  *actele    ELEMENT   (i)   actual element	  
+\param  *dforces   DOUBLE    (o)   dirichlet force vector
+\param **estif     DOUBLE    (i)   element stiffness matrix
+\param **emass     DOUBLE    (i)   element mass matrix
+\param   dt        DOUBLE    (i)   time increment
+\param  theta      DOUBLE    (i)   variable for the time integration of viscousity matrix
+                                   for the implicitly treated K, theta=1.0
+\param  *hasdirich INT       (o)   flag if s.th. was written to dforces
+\return void                                                                             
+/*----------------------------------------------------------------------*/
+void fluid_pm_caldirich_cyl(
+                     ELEMENT   *actele,  
+		     DOUBLE   *dforces, 
+                     DOUBLE   **estif,
+		     DOUBLE   **emass,
+		     DOUBLE   dt,   
+                     DOUBLE   theta,
+		     INT       *hasdirich
+		    )     
+{
+
+INT         i,j;
+INT         dof;
+INT         numdf;                        /* number of fluid dofs         */
+INT         nd=0;                      
+DOUBLE    dirich[MAXDOFPERELE];         /* dirichlet values of act. ele */
+INT         dirich_onoff[MAXDOFPERELE];  /* dirichlet flags of act. ele  */ 
+GNODE      *actgnode;	                /* actual GNODE                 */
+NODE       *actnode;	                /* actual NODE                  */
+DOUBLE     tol=1.0E-6;
+/*===============================================================*/
+/*for detailed description of the problem see the DFG benchmark--*/
+/*paper   ------------------------------------------------------ */
+DOUBLE   Um=1.5;                       /* mean velocity                */
+DOUBLE   H=0.41;                       /* height of the channel        */
+/*===============================================================*/
+#ifdef DEBUG 
+dstrc_enter("fluid_pm_caldirich_cyl");
+#endif  
+/*======================================================================*/
+/*REMARK: the profile is formulated according to the parabolic formula below
+/*FOUR*Um*actnode->x[1]*(H-actnode->x[1])/(H*H);
+/*if the parabolic input profile is implemented into the preprocessor "GID" 
+/*one doesn't need any further subroutines then "fluid_caldirich"
+/*------------------------- check if there are any dirichlet conditions--*/ 
+/*------------------------- for the nodes of this element----------------*/
+for (i=0; i<actele->numnp; i++)
+{
+   actgnode = actele->node[i]->gnode;   
+   if (actgnode->dirich==NULL) 
+      continue;
+   else
+      *hasdirich=1;
+   break;
+} /* end loop over nodes */					  
+
+if (*hasdirich==0) /* --> no nodes with DBC for this element */
+   goto end;
+
+/*---------------------------------- set number of dofs on this element */
+for (i=0; i<actele->numnp; i++) nd += actele->node[i]->numdf;
+
+/*---------------------------- init the vectors dirich and dirich_onoff */
+for (i=0; i<nd; i++)
+{
+   dirich[i] = 0.0;
+   dirich_onoff[i] = 0;
+}
+/*-------------------------------- fill vectors dirich and dirich_onoff */
+/*                               dirichlet values at (n+1) were already */
+/*                           written to the nodes (sol_increment[3][j]) */
+/*----------------------------------------------------------------------*/
+for (i=0; i<actele->numnp; i++) /* loop nodes */
+{
+   numdf    = actele->node[i]->numdf;
+   actnode  = actele->node[i];   
+   actgnode = actnode->gnode;
+   for (j=0; j<numdf; j++) /* loop dofs */
+   {
+      if (actgnode->dirich==NULL) continue;
+      dirich_onoff[i*numdf+j] = actgnode->dirich->dirich_onoff.a.iv[j];
+      if (actgnode->dirich->dirich_val.a.dv[j] < tol)
+      {
+         dirich[i*numdf+j] = ZERO;
+      }else{
+         /*--parabolic value of the velocity-----------------*/
+         dirich[i*numdf+j] = FOUR*Um*actnode->x[1]*(H-actnode->x[1])/(H*H);  
+      }/*end of if (actgnode->dirich->dirich_val.a.dv[j] < tol)*/   
+   } /* end loop over dofs */
+} /* end loop over nodes */
+/*----------------------------------------- loop rows of element matrix */
+for (i=0; i<nd; i++)
+{
+   /*------------------------------------- do nothing for supported row */
+   if (dirich_onoff[i]!=0) continue;
+   /*---------------------------------- loop columns of unsupported row */
+   for (j=0; j<nd; j++)
+   {
+      /*---------------------------- do nothing for unsupported columns */
+      if (dirich_onoff[j]==0) continue;
+      /*--(M+dt*K)*dirich-----------------------------*/
+      /*--K_eff*dirich--------------------------------*/
+      dforces[i] -= (estif[i][j]*dt*theta+emass[i][j]) * dirich[j];
+   }/* loop j over columns */
+}/* loop i over rows */
+
+end:
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of fluid_pm_caldirich_parabolic*/ 
 
 #endif
 /*! @} (documentation module close)*/

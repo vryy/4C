@@ -361,20 +361,19 @@ void fluid_init(
 		          FLUID_STRESS       str	
 	       )      
 {
-INT    i,j;          /* simply counters                                 */
-INT    actmat;       /* number of actual material                       */
-INT    numdf;        /* number of dofs in this discretisation           */
-INT    numnp_total;  /* total number of nodes in this discretisation    */
-INT    numele_total; /* total number of elements in this discr.         */  
-INT    numnp=0;      /* number of nodes at actual element               */
-INT    predof;       /* pressure dof number                             */
-INT    numveldof;    /* number of veld dofs                             */
+INT    i,j,k;           /* simply counters                              */
+INT    actmat;          /* number of actual material                    */
+INT    numdf;           /* number of dofs in this discretisation        */
+INT    numnp_total;     /* total number of nodes in this discretisation */
+INT    numele_total;    /* total number of elements in this discr.      */  
+INT    numnp=0;         /* number of nodes at actual element            */
+INT    numveldof;       /* number of veld dofs                          */
 INT    found;
 INT    num;
-DOUBLE dens;         /* density                                         */
-NODE  *actnode;      /* the actual node                                 */
-GNODE *actgnode;     /* the actual gnode                                */
-ELEMENT *actele;     /* the actual element                              */
+DOUBLE dens;            /* density                                      */
+NODE  *actnode;         /* the actual node                              */
+GNODE *actgnode;        /* the actual gnode                             */
+ELEMENT *actele;        /* the actual element                           */
 
 /*----------------------------------------- variables for solitary wave */
 DOUBLE u1,u2,eta,p,c,g,H,d,x,y,t,fac,fac1,sech;
@@ -384,31 +383,30 @@ dstrc_enter("fluid_init");
 #endif
 
 /*----------------------- set control variables for element evaluation */
-fdyn->dynvar.itwost = 0;
-fdyn->dynvar.isemim = 0;
 fdyn->dynvar.ishape = 1;
 fdyn->dynvar.iprerhs= fdyn->iprerhs;
-
-if(fdyn->iop==3) 
-   fdyn->dynvar.itwost = 1;
-if(fdyn->iop==2 || fdyn->iop==3)   
-  fdyn->dynvar.isemim = 1;  
   
-/*---------------------------------------------------- set some values */
-numdf        = fdyn->numdf;
-numnp_total  = actfield->dis[0].numnp;
+numdf = fdyn->numdf;
 numele_total = actfield->dis[0].numele;
-predof       = numdf-1;
-numveldof    = numdf-1;
+
 /*-------------------------------- allocate space for solution history */
-for (i=0;i<numnp_total;i++)
+for (k=0;k<actfield->ndis;k++)
 {
-      actnode=&(actfield->dis[0].node[i]);
-      dsassert(numdf==actnode->numdf ||
-               5 == actnode->numdf   ||
-	       7 == actnode->numdf,"inconsistency from input regarding numdf!\n");
+   numnp_total=actfield->dis[k].numnp;
+   for (i=0;i<numnp_total;i++)
+   {
+      actnode=&(actfield->dis[k].node[i]);
       amredef(&(actnode->sol_increment),numr,actnode->numdf,"DA");
       amzero(&(actnode->sol_increment));
+   }
+}
+
+/*---------------------- redefine solution history for projecton method */
+if (fdyn->dyntyp==1)
+for (i=0;i<actfield->dis[0].numnp;i++)
+{
+   actnode=&(actfield->dis[0].node[i]);
+   amredef(&(actnode->sol),actnode->sol.fdim,actnode->sol.sdim+1,"DA");
 }
 
 /*-------------------- check for stress calculation and allocate arrays */
@@ -485,7 +483,7 @@ if (fdyn->surftens>0)
 }
 
 /*--------- inherit the neuman conditions from design to discretization */
-for (i=0; i<actfield->ndis; i++) inherit_design_dis_neum(&(actfield->dis[i]));
+for (k=0; k<actfield->ndis; k++) inherit_design_dis_neum(&(actfield->dis[k]));
 
 /*-------------------------------------------- create the initial field */
 if (fdyn->init>=1)
@@ -501,6 +499,7 @@ if (fdyn->init>=1)
    {
       actele = &(actfield->dis[0].element[0]);
       actmat = actele->mat-1;
+      numnp_total=actfield->dis[0].numnp;
       /*-------------------------------------------- set some constants */
       dens   = mat[actmat].m.fluid->density;
       g      = -actele->g.gsurf->neum->neum_val.a.dv[1];
@@ -540,6 +539,7 @@ if (fdyn->init>=1)
    {
       actele = &(actfield->dis[0].element[0]);
       actmat = actele->mat-1;
+      numnp_total=actfield->dis[0].numnp;
       /*-------------------------------------------- set some constants */
       dens   = mat[actmat].m.fluid->density;
       g      = -actele->g.gsurf->neum->neum_val.a.dv[1];
@@ -1009,6 +1009,7 @@ return;
 
 in this routine the solution at postion 'from' in the nodal solution 
 history is copied to the positon 'to'.	
+The pressure is transformed from kinematic to real pressure
 			     
 </pre>     
 \param *actfield      FIELD	     (i)  actual field
@@ -1032,7 +1033,8 @@ void fluid_sol_copy(
 		          INT                numdf      
 		  )
 {
-INT         i,j;          /* simply some counters                       */
+INT         i,j,k;        /* simply some counters                       */
+INT         numnp_total;  /* total number of nodes                      */
 INT         diff,max;     /* integers for amredef                       */
 INT         predof;       /* pressure dof                               */
 DOUBLE      dens;         /* density                                    */
@@ -1118,6 +1120,108 @@ dstrc_exit();
 
 return;
 } /* end of fluid_sol_copy*/
+
+/*!---------------------------------------------------------------------
+\brief transform pressure
+
+<pre>                                                         genk 05/02
+
+in this routine the pressure is transformed in the solution history.
+  
+  index = 0: actnode->sol
+  index = 1: actnode->sol_increment
+  index = 2: actnode->sol_residual
+  index = 3: actnode->sol_mf
+  
+  option = 0: kinematic pressure -> real pressure
+  option = 1: real pressure -> kinematic pressure
+  
+  (kintematic pressure) = (real pressure)/density
+			     
+</pre>     
+\param *actfield      FIELD	     (i)  actual field
+\param  disnum        INT	     (i)  number of the discr.
+\param  index         INT	     (i)  index of the array
+\param  actpos        INT            (i)  position where to transform
+\param  predof        INT            (i)  postion of pressure dof
+\return void 
+\sa
+
+------------------------------------------------------------------------*/
+void fluid_transpres(       
+                          FIELD             *actfield,
+			  INT                disnum,
+			  INT                index,
+			  INT                actpos,
+                          INT                predof,
+			  INT                option     
+		    )
+{
+INT         i,j,k;        /* simply some counters                       */
+INT         numnp_total;  /* total number of nodes                      */
+DOUBLE      dens;         /* density                                    */
+NODE       *actnode;      /* actual node                                */
+ELEMENT    *actele;       /* actual element                             */
+DISCRET    *actdis;       /* actual discretisation                      */
+ARRAY      *array;        /* pointer to solution array                  */
+
+#ifdef DEBUG 
+dstrc_enter("fluid_transpres");
+#endif
+
+
+/* since different materials are not allowed  one can work with the 
+   material parameters of any element ---------------------------------*/
+actele = &(actfield->dis[disnum].element[0]);
+dens  = mat[actele->mat-1].m.fluid->density;
+
+actdis = &(actfield->dis[disnum]);
+for (i=0; i<actdis->numnp; i++)
+{
+   actnode = &(actdis->node[i]);
+   /*----------------------------------------- select correct arrayfrom */
+   switch(index)
+   {
+   case 0:
+      array = &(actnode->sol);
+   break;
+   case 1:
+      array = &(actnode->sol_increment);
+   break;
+   case 2:
+      array = &(actnode->sol_residual);
+   break;
+   case 3:
+      array = &(actnode->sol_mf);
+   break;   
+   default:
+      dserror("Only 0,1,2,3 allowed for index to select sol, sol_increment, sol_residual, sol_mf");
+   }
+   dsassert(actpos<array->fdim,"cannot transform pressure\n");
+   dsassert(predof<array->sdim,"cannot transform pressure\n");
+   /*------------------------------------------ pressure transformation */
+   switch (option)
+   {
+   case 0: /*kinematic pressure -> real pressure  */
+      array->a.da[actpos][predof]*=dens;
+   break;
+   case 1: /*real pressure -> kinematic pressure  */
+      array->a.da[actpos][predof]/=dens;
+   break;
+   default:
+      dserror("option out of range: don't know what to do!\n");
+   }
+} /* end of loop over nodes */
+
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return;
+} /* end of fluid_transpres*/
+
 
 /*!---------------------------------------------------------------------
 \brief steady state check

@@ -28,6 +28,12 @@ void fluid_setdirich(   FIELD           *actfield,
                         FLUID_DYNAMIC   *fdyn,
 			INT              pos
 	            );
+void fluid_setdirich_cyl(FIELD  *actfield, 
+                         FLUID_DYNAMIC *fdyn
+			 );
+void fluid_setdirich_parabolic(FIELD  *actfield, 
+                         FLUID_DYNAMIC *fdyn
+			 );			 		    
 void fluid_setdirich_sd(   FIELD           *actfield, 
                            FLUID_DYNAMIC   *fdyn
 	               );
@@ -36,9 +42,36 @@ void fluid_caldirich(
 		        DOUBLE          *dforces, 
                         DOUBLE         **estif,   
 		        INT             *hasdirich,
-			INT              is_relax
-		    ); 
-
+                        INT              is_relax
+		    ); 		    
+void fluid_pm_caldirich(
+                     ELEMENT   *actele,  
+		     DOUBLE   *dforces, 
+                     DOUBLE   **estif,
+		     DOUBLE   **emass,
+		     DOUBLE   dt,   
+		     DOUBLE   theta,
+		     INT       *hasdirich
+		    );
+void fluid_pm_caldirich_parabolic(
+                     ELEMENT   *actele,  
+		     DOUBLE   *dforces, 
+                     DOUBLE   **estif,
+		     DOUBLE   **emass,
+		     DOUBLE   dt,   
+                     DOUBLE   theta,
+		     INT       *hasdirich
+		    );	
+void fluid_pm_caldirich_cyl(
+                     ELEMENT   *actele,  
+		     DOUBLE   *dforces, 
+                     DOUBLE   **estif,
+		     DOUBLE   **emass,
+		     DOUBLE   dt,   
+                     DOUBLE   theta,
+		     INT       *hasdirich
+		    );		 
+		       
 /************************************************************************
  | fluid_dirich_tu.c                                                     |
  ************************************************************************/
@@ -114,11 +147,11 @@ void fluid_initmfcoupling(
                            FIELD         *fluidfield,
 			   FIELD         *alefield		
 		         );
-			   
+			 			   
 /************************************************************************
- | fluid_pr_mcorr.c                                                     |
+ | fluid_promethod.c                                                    |
  ************************************************************************/
-void fluid_pm(void);
+void fluid_pm(FLUID_DYNAMIC *fdyn);
 
 /************************************************************************
  | fluid_service.c                                                      |
@@ -162,6 +195,14 @@ void fluid_sol_copy(
 		          INT                to,       
 		          INT                numdf      
 		  );
+void fluid_transpres(       
+                          FIELD             *actfield,
+			  INT                disnum,
+			  INT                index,
+			  INT                actpos,
+                          INT                predof,
+			  INT                option     
+		    );		  
 INT fluid_steadycheck(    
                           FLUID_DYNAMIC     *fdyn, 	  
                           FIELD             *actfield,   
