@@ -1,4 +1,3 @@
-#ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
 #include "wall1_prototypes.h"
@@ -21,6 +20,7 @@ void wall1(PARTITION   *actpart,
            long int    *handles,
            CALC_ACTION *action)
 {
+#ifdef D_WALL1
 int  i;
 W1_DATA      actdata;
 MATERIAL    *actmat;
@@ -123,6 +123,7 @@ break;
 #ifdef DEBUG 
 dstrc_exit();
 #endif
+#endif
 return; 
 } /* end of wall1 */
-#endif
+

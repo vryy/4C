@@ -1,3 +1,4 @@
+#ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
 #include "wall1_prototypes.h"
@@ -56,6 +57,4 @@ return;
 } /* end of w1_kg */
 
 
-
-
-
+#endif

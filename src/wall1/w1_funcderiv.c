@@ -14,9 +14,9 @@ void w1_funct_deriv(double     *funct,
                     int         option)
 {
 int            i, ii;
-const double   q12 = 1.0/2.0;
-const double   q14 = 1.0/4.0;
-const double   q16 = 1.0/6.0;
+const double   q12 = ONE/TWO;
+const double   q14 = ONE/FOUR;
+const double   q16 = ONE/SIX;
 double         rr,ss,rp,rm,sp,sm,r2,s2;
 double         rh,sh,rs,rhp,rhm,shp,shm;
 #ifdef DEBUG 
@@ -73,14 +73,14 @@ case quad8:/*------------- quadratic interpolation without central node */
       deriv[1][1]= q14*rm;
       deriv[1][2]=-q14*rm;
       deriv[1][3]=-q14*rp;
-      deriv[0][4]=-1.0*r*sp;
+      deriv[0][4]=-ONE*r*sp;
       deriv[0][5]=-q12*  s2;
-      deriv[0][6]=-1.0*r*sm;
+      deriv[0][6]=-ONE*r*sm;
       deriv[0][7]= q12*  s2;
       deriv[1][4]= q12*r2  ;
-      deriv[1][5]=-1.0*rm*s;
+      deriv[1][5]=-ONE*rm*s;
       deriv[1][6]=-q12*r2  ;
-      deriv[1][7]=-1.0*rp*s;
+      deriv[1][7]=-ONE*rp*s;
       
       deriv[0][0]=deriv[0][0] - q12*(deriv[0][4] + deriv[0][7]);                   
       deriv[1][0]=deriv[1][0] - q12*(deriv[1][4] + deriv[1][7]);                   
