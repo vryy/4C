@@ -189,6 +189,7 @@ typedef struct _PL_DP
      DOUBLE                    Sigy;
      DOUBLE                    Hard;
      DOUBLE                    PHI;
+     DOUBLE                    betah;
 } PL_DP;
 /*----------------------------------------------------------------------*
  | elastoplastic concrete material                     a.lipka 17/05    |
@@ -370,6 +371,7 @@ typedef struct _MULTIMAT
      struct _STVENANT         *stvenant;     /* St. Venant-Kirchhoff material */
      struct _PL_MISES         *pl_mises;     /* von Mises material */
      struct _PL_HOFF          *pl_hoff;      /* anisotropic plastic material, based on hoffman-criterion */
+     struct _PL_DP            *pl_dp;        /* Drucker Prager material */
      struct _NEO_HOOKE        *neohooke;     /* Neo-Hooke material */
      struct _EL_ORTH          *el_orth;      /* linear elastic orthotropic material */
      }                         m;            /* union pointer to material specific structure */

@@ -29,7 +29,7 @@ NONLINEAR
 KINTYP       Geo_Lin
 //KINTYP       Tot_Lagr
 NEWTONRAPHSO Displacement_Control
-NUMSTEP      5
+NUMSTEP      15
 MAXITER      20
 TOLRESID     1.0E-07
 TOLDISP      1.0E-07
@@ -457,8 +457,8 @@ MAT       1 MAT_Multilayer  NUM_KLAY 2 SEC_KLAY 50,50
 //MAT       1 MAT_Multilayer  NUM_KLAY 4 SEC_KLAY 25,25,25,25
 //MAT       1 MAT_Multilayer  NUM_KLAY 5 SEC_KLAY 20,20,20,20,20
 //MAT       1 MAT_Multilayer  NUM_KLAY 8 SEC_KLAY 12.5,12.5,12.5,12.5,12.5,12.5,12.5,12.5
-     KINLAY 1 NUM_MLAY 1  SEC_MLAY  100  SEC_MAT  1  SEC_PHI  0.0  SEC_ROT  3
-     KINLAY 2 NUM_MLAY 1  SEC_MLAY  100  SEC_MAT  2  SEC_PHI  0.0  SEC_ROT  3
+     KINLAY 1 NUM_MLAY 1  SEC_MLAY  100    SEC_MAT  1    SEC_PHI  0.0      SEC_ROT  3
+     KINLAY 2 NUM_MLAY 2  SEC_MLAY  50,50  SEC_MAT  2,3  SEC_PHI  0.0,0.0  SEC_ROT  3,3
 //     KINLAY 3 NUM_MLAY 1  SEC_MLAY  100  SEC_MAT  1  SEC_PHI  0.0  SEC_ROT  3
 //     KINLAY 4 NUM_MLAY 1  SEC_MLAY  100  SEC_MAT  1  SEC_PHI  0.0  SEC_ROT  3
 //     KINLAY 5 NUM_MLAY 1  SEC_MLAY  100  SEC_MAT  1  SEC_PHI  0.0  SEC_ROT  3
@@ -500,7 +500,8 @@ MULTIMAT 1  MAT_HoffPlastic  EMOD1 21e3 EMOD2 21e3 EMOD3 21e3  GMOD12 10.5e3 GMO
  HA11T  0.01  HA11C 0.01  HA22T  0.01  HA22C 0.01  HA33T  0.01  HA33C 0.01  HA12 0.01  HA23 0.01  HA13 0.01 
 //
 //MULTIMAT 1  MAT_Struct_StVenantKirchhoff  YOUNG 21e3 NUE 0.0 DENS 0.0
-MULTIMAT    2 MAT_MisesPlastic  YOUNG 21e3  NUE  0.0  Xsi 0.0  Sigy 4.2  Hard  0.1
+MULTIMAT    2 MAT_MisesPlastic  YOUNG 21e3  NUE  0.0  Sigy 4.2  BETAH  0.5 Hard  0.1
+MULTIMAT    3 MAT_DP_Plastic    YOUNG 30e3  NUE  0.0  Sigy 2.0  BETAH  0.0 Hard -0.3  PHI 40.0  
 ------------------------------------------------------CONTROL NODE
 NODE       1 DOF 3 
 -------------------------------------------------------LOAD CURVES

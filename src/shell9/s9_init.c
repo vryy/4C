@@ -89,6 +89,7 @@ for (i=0; i<actfield->dis[0].numele; i++)
      {
        actmultimat = &(multimat[actele->e.s9->kinlay[kl].mmatID[ml]-1]);
        if (actmultimat->mattyp == m_pl_mises  ||
+           actmultimat->mattyp == m_pl_dp     ||
            actmultimat->mattyp == m_pl_hoff )     wa_flag = 1;
      }/*end loop material layers*/
   }/*end loop kinematic layers*/
@@ -107,13 +108,15 @@ for (i=0; i<actfield->dis[0].numele; i++)
           actmultimat = &(multimat[actele->e.s9->kinlay[kl].mmatID[ml]-1]);
           /*-------------- init working array for plasticity -------------*/
           if (actmultimat->mattyp == m_pl_mises ||
+              actmultimat->mattyp == m_pl_dp    ||
               actmultimat->mattyp == m_pl_hoff )
           {
              size_j = actele->e.s9->nGP[0]*actele->e.s9->nGP[1]*actele->e.s9->nGP[2];
              actele->e.s9->elewa[actlay].ipwa = (S9_IP_WA*)CCACALLOC(size_j,sizeof(S9_IP_WA));
 
-             /* mises ... */
-             if (actmultimat->mattyp == m_pl_mises)
+             /* mises or dp */
+             if (actmultimat->mattyp == m_pl_mises ||
+                 actmultimat->mattyp == m_pl_dp)
              {
                 for (k=0; k<size_j; k++)/*initialize for every gausspoint*/
                 {
@@ -127,7 +130,7 @@ for (i=0; i<actfield->dis[0].numele; i++)
                     actele->e.s9->elewa[actlay].ipwa[k].qn[j]  = 0.;
                   }
                 }
-             }/*end mises ... */
+             }/*end mises or dp */
 
              /* hoff ... */
              if (actmultimat->mattyp == m_pl_hoff)

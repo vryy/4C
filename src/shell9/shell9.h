@@ -387,6 +387,24 @@ void s9_mat_plast_mises(
                  INT        istore,    /*!< controls storing of stresses */
                  INT        newval);   /*!< controls eval. of stresses   */
 /*----------------------------------------------------------------------*
+ |  s9_mat_plast_dp.c                                        sh 09/03    |
+ *----------------------------------------------------------------------*/
+void s9_mat_plast_dp(
+                 DOUBLE     ym,        /*!< young's modulus              */
+                 DOUBLE     pv,        /*!< poisson's ratio              */
+                 DOUBLE     sigy,      /*!< yield stress                 */
+                 DOUBLE     eh,        /*!< hardening modulus            */
+                 DOUBLE     betah,     /*!< controls the iso/kin hard.   */
+                 DOUBLE     phi,       /*!< friction angle               */
+                 ELEMENT   *ele,       /*!< actual element               */
+                 INT        ip,        /*!< integration point Id         */
+                 INT        actlay,    /*!< actual layer                 */
+                 DOUBLE     stress[6], /*!< vector of stresses [11,22,33,12,23,13]  */
+                 DOUBLE     strain[6], /*!< vector of strains  [11,22,33,12,23,13]  */
+                 DOUBLE   **d,         /*!< constitutive matrix          */
+                 INT        istore,    /*!< controls storing of stresses */
+                 INT        newval);   /*!< controls eval. of stresses   */
+/*----------------------------------------------------------------------*
  |  s9_math.c                                               sh 02/03    |
  *----------------------------------------------------------------------*/
 void s9_Msort_bs9(DOUBLE **M);

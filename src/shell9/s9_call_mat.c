@@ -201,6 +201,40 @@ case m_pl_mises:/*--------------------- von mises material law ---*/
    /*transform  stresses from cartesian to curvilinear */
    s9_Scacu(stress,gkonr);
 break;
+case m_pl_dp:/*------------------- drucker prager material law ---*/
+   s9_eps(strain,gmkovc,gmkovr);        /* get strains: curvilinear*/
+
+   /* transform strains from curvilinear to cartesian */
+   s9_Ecuca(strain,gkonr);  
+   /* do sorting from "shell9" = [11,12,22,13,23,33] -> "brick" = [11,22,33,12,23,13] */
+   s9_Vsort_s9b(strain); 
+   
+   /*Drucker Prager Plasticity, formulated in cartesian coordinate system, sorting: [11,22,33,12,23,13] */
+   s9_mat_plast_dp(multimat->m.pl_dp->youngs,       
+                   multimat->m.pl_dp->possionratio,      
+                   multimat->m.pl_dp->Sigy,     
+                   multimat->m.pl_dp->Hard,       
+                   multimat->m.pl_dp->betah,    
+                   multimat->m.pl_dp->PHI,      
+                   ele,      
+                   ip,       
+                   actlay,   
+                   stress,
+                   strain,
+                   C,        
+                   istore,   
+                   newval);   
+                 
+   /* do sorting from "brick" = [11,22,33,12,23,13] -> "shell9" = [11,12,22,13,23,33] */
+   s9_Msort_bs9(C);
+   /*transform the C-Matrix from cartesian to curvilinear*/
+   if (FABS(multimat->m.pl_dp->betah)<EPS8) s9_Ccacu_sym(C,gkonr);   /*only kinematic hardening -> ass. in apex*/
+   else                                     s9_Ccacu_unsym(C,gkonr); /*isotropic hardening -> nonass. in apex*/ 
+   /* do sorting from "brick" = [11,22,33,12,23,13] -> "shell9" = [11,12,22,13,23,33] */
+   s9_Vsort_bs9(stress);  
+   /*transform  stresses from cartesian to curvilinear */
+   s9_Scacu(stress,gkonr);
+break;
 default:
    dserror("Ilegal typ of material for this element");
 break;

@@ -22,8 +22,9 @@
 void mat_el_iso(DOUBLE   youngs,
                 DOUBLE   possionratio,
                 DOUBLE **d);
-
-
+void mat_el_iso_inv(DOUBLE   youngs,
+                    DOUBLE   possionratio,
+                    DOUBLE   dinv[36]);
 /*----------------------------------------------------------------------*
  |  mat_el_orth.c                                             sh 04/03  |
  |                                                                      |
@@ -39,8 +40,6 @@ void mat_el_orth(DOUBLE    emod1,
                  DOUBLE    gmod23,
                  DOUBLE    gmod13,
                  DOUBLE  **d);
-
-
 /*----------------------------------------------------------------------*
  |  mat_pl_hoff.c                                             sh 04/03  |
  |                                                                      |
@@ -158,6 +157,73 @@ void mat_pl_mises_lin_mapl(DOUBLE   e,
                            DOUBLE  *epstn,
                            DOUBLE   dlam,
                            DOUBLE **d);
+/*----------------------------------------------------------------------*
+ |  mat_pl_dp_lin.c                                           sh 09/03  |
+ |                                                                      |
+ |  plasticity model based on the 'Drucker Prager' yield criterion      |
+ |  -> combined linear iso./kin. hardening law                          |
+ |  for theory see Dis. Menrath                                         |
+ *----------------------------------------------------------------------*/
+void mat_pl_dp_lin_main(
+             DOUBLE   ym,       /*!< young's modulus */
+             DOUBLE   pv,       /*!< poisson's ration */
+             DOUBLE   sigy,     /*!< uniaxial yield stress */
+             DOUBLE   eh,       /*!< hardening modulus */
+             DOUBLE   betah,    /*!< controls the iso/kin hardening */
+             DOUBLE   phi,      /*!< angle of friction */
+             DOUBLE   stress[6],/*!< ele stress (-resultant) vector */      
+             DOUBLE   strain[6],/*!< actual strains from displacements */
+             DOUBLE **d,        /*!< material matrix 3D */
+             INT     *iupd,     /*!< controls update of new stresses to wa */
+             INT     *yip,      /*!< from WA */
+             DOUBLE  *epstn,    /*!< from WA */
+             DOUBLE   sig[6],   /*!< stresses from WA */
+             DOUBLE   eps[6],   /*!< strains from WA */
+             DOUBLE   qn[6]);   /*!< backstress vector from WA */
+void mat_pl_dp_lin_radi(DOUBLE  hards, 
+                        DOUBLE  betah,
+                        DOUBLE *epstn,
+                        DOUBLE  G,
+                        DOUBLE  K,
+                        DOUBLE  alpha,
+                        DOUBLE  sigma[6],
+                        DOUBLE  qn[6],
+                        DOUBLE *dlam,
+                        DOUBLE  ft_tr,
+                        DOUBLE  n[6]);
+void mat_pl_dp_lin_mapl(DOUBLE   hards,
+                        DOUBLE   betah,
+                        DOUBLE   alpha,
+                        DOUBLE   dlam,
+                        DOUBLE   e,
+                        DOUBLE   vnu,
+                        DOUBLE **d,
+                        DOUBLE   norm,
+                        DOUBLE   n[6]);
+void mat_pl_dp_lin_radi_apex(DOUBLE  hards, 
+                             DOUBLE  betah,
+                             DOUBLE *epstn,
+                             DOUBLE  G,
+                             DOUBLE  K,
+                             DOUBLE  alpha1,
+                             DOUBLE  sigma[6],
+                             DOUBLE  qn[6],
+                             DOUBLE *dlam,
+                             DOUBLE  ft1,
+                             DOUBLE  ft2,
+                             DOUBLE  n[6]);
+void mat_pl_dp_lin_mapl_apex(DOUBLE   hards,
+                             DOUBLE   betah,
+                             DOUBLE   alpha1,
+                             DOUBLE   dlam,
+                             DOUBLE   e,
+                             DOUBLE   vnu,
+                             DOUBLE **d,
+                             DOUBLE   norm, 
+                             DOUBLE   n[6]); 
+void mat_pl_dp_lin_preval(DOUBLE   sig[6], 
+                          DOUBLE  *norm,
+                          DOUBLE   n[6]);
 /*----------------------------------------------------------------------*
  | prototypes for fortran routines                               al 9/01|
  *----------------------------------------------------------------------*/

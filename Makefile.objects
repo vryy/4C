@@ -376,6 +376,7 @@ OBJS17       = src/shell9/s9_main.o \
                 src/shell9/s9_mat_linel.o \
                 src/shell9/s9_mat_plast_hoff.o \
                 src/shell9/s9_mat_plast_mises.o \
+                src/shell9/s9_mat_plast_dp.o \
                 src/shell9/s9_math.o\
                 src/shell9/s9_out.o\
                 src/shell9/s9_out_unsmo.o\
@@ -439,7 +440,8 @@ OBJS_AXISHELL = src/axishell/saxi_B.o \
 OBJS_MAT      = src/materials/mat_el_iso.o \
                 src/materials/mat_el_orth.o \
                 src/materials/mat_pl_hoff.o \
-                src/materials/mat_pl_mises_lin.o
+                src/materials/mat_pl_mises_lin.o \
+                src/materials/mat_pl_dp_lin.o
 #--------------- fortran parallel and sequentiell on HPUX10.20 / Linux / Sun
 OBJS13        = src/fortran/colsol.o \
                 src/fortran/mpcg_futils.o \

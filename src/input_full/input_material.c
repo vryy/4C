@@ -202,6 +202,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("Sigy" ,&(mat[i].m.pl_dp->Sigy)          ,&ierr);
       frdouble("Hard" ,&(mat[i].m.pl_dp->Hard)          ,&ierr);
       frdouble("PHI"  ,&(mat[i].m.pl_dp->PHI)           ,&ierr);
+      mat[i].m.pl_dp->betah= 1.; 
+      frdouble("BETAH",&(mat[i].m.pl_dp->betah)         ,&ierr);
    }
    frchk("MAT_ConcretePlastic",&ierr);
    if (ierr==1)
@@ -447,13 +449,37 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("GF"   ,&(multimat[i].m.pl_mises->GF)            ,&ierr);
       frdouble("BETAH",&(multimat[i].m.pl_mises->betah)         ,&ierr);
    }
+   frchk("MAT_DP_Plastic",&ierr);
+   if (ierr==1)
+   {
+      /*write a warning to use an unsymmetric solver*/
+      printf("|---------------------------------------------------------------------------------------| \n");
+      printf("|    WARNING in input_material.c:    ==============================================     | \n");
+      printf("|    WARNING in input_material.c:    MAT_DP_Plastic -> use an UNsymmetric solver if     | \n");
+      printf("|    WARNING in input_material.c:    trial stresses could be in the apex region and     | \n");
+      printf("|    WARNING in input_material.c:    hardening law not fully kinematic (betah > 0)      | \n");
+      printf("|    WARNING in input_material.c:    ==============================================     | \n");
+      printf("|---------------------------------------------------------------------------------------| \n");
+
+      multimat[i].mattyp = m_pl_dp;
+      multimat[i].m.pl_dp = (PL_DP*)CCACALLOC(1,sizeof(PL_DP));
+      frdouble("YOUNG",&(multimat[i].m.pl_dp->youngs)        ,&ierr);
+      frdouble("NUE"  ,&(multimat[i].m.pl_dp->possionratio)  ,&ierr);
+      frdouble("ALFAT",&(multimat[i].m.pl_dp->ALFAT)         ,&ierr);
+      frdouble("Sigy" ,&(multimat[i].m.pl_dp->Sigy)          ,&ierr);
+      frdouble("Hard" ,&(multimat[i].m.pl_dp->Hard)          ,&ierr);
+      multimat[i].m.pl_dp->PHI  = 0.; 
+      multimat[i].m.pl_dp->betah= 1.; 
+      frdouble("PHI"  ,&(multimat[i].m.pl_dp->PHI)           ,&ierr);
+      frdouble("BETAH",&(multimat[i].m.pl_dp->betah)         ,&ierr);
+   }
    frchk("MAT_HoffPlastic",&ierr);
    if (ierr==1)
    {
       /*write a warning to use an unsymmetric solver*/
       printf("|---------------------------------------------------------------------------------------| \n");
       printf("|    WARNING in input_material.c:    ============================================       | \n");
-      printf("|    WARNING in input_material.c:    MAT_HoffPlastic -> use an unsymmetric solver       | \n");
+      printf("|    WARNING in input_material.c:    MAT_HoffPlastic -> use an UNsymmetric solver       | \n");
       printf("|    WARNING in input_material.c:    ============================================       | \n");
       printf("|---------------------------------------------------------------------------------------| \n");
 
