@@ -17,7 +17,7 @@ int cmp(const void *a, const void *b )
 /*----------------------------------------------------------------------*
  |  realloc memory in dof-dof connectivity list           a.lipka 5/01  |
  *----------------------------------------------------------------------*/
-int dofdof_realloc(int dof1,int **dof_dof)
+void dofdof_realloc(int dof1,int **dof_dof)
 {
 /*----------------------------------------------------------------------*/
   int i=0, j=0;
@@ -47,7 +47,7 @@ return;
 /*----------------------------------------------------------------------*
  |  eleminate redundant dof's in connectivity list        a.lipka 5/01  |
  *----------------------------------------------------------------------*/
-int delete_redundant_dof(int dof1,int **dof_dof)
+void delete_redundant_dof(int dof1,int **dof_dof)
 {
 /*----------------------------------------------------------------------*/
   int m=0, k=0;
@@ -86,7 +86,7 @@ return;
 /*----------------------------------------------------------------------*
  |  eleminate one dof in connectivity list                a.lipka 5/01  |
  *----------------------------------------------------------------------*/
-int delete_single_dof(int dof1,int **dof_dof)
+void delete_single_dof(int dof1,int **dof_dof)
 {
 /*----------------------------------------------------------------------*/
   int m=0, k=0;
@@ -118,7 +118,7 @@ return;
 /*----------------------------------------------------------------------*
  |  calculate dof topology                                   al  10/01  |
  *----------------------------------------------------------------------*/
-int dofconnectivity(FIELD        *actfield, 
+void dofconnectivity(FIELD        *actfield, 
                         int      **dof_dof,
                         int       *nnz)
 {
@@ -240,13 +240,13 @@ return;
  |  calculate the mask of a column pointer, row index sparse  matrix    |
  |  -symmetric- lower triangular part                                   |
  *----------------------------------------------------------------------*/
-int mds_make_colstr_rowind(SOLVAR       *actsolv,
+void mds_make_colstr_rowind(SOLVAR       *actsolv,
                             ML_ARRAY_MDS  *mds,
                             int       **dof_dof,
                             int         numeq)
 {
   int        i,j,k,l;
-  int        count1,count2;
+  int        count1,count2; 
   int        count;
   int        dof1, dof2;
   int        ncdof;
