@@ -157,7 +157,10 @@ fprintf(out,"Type of Problem           : Ale\n");
 break;
 case prb_twophase:
 fprintf(out,"Type of Problem           : Two-Phase-Fluid-Flow\n");
-break; 
+break;
+case prb_levelset:
+fprintf(out,"Type of Problem           : Levelset \n");
+break;  
 default:
 dserror("Cannot print problem type");
 break;

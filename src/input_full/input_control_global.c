@@ -173,6 +173,17 @@ dstrc_enter("inpctr");
      solv[genprob.numls].fieldtyp = levelset;
      inpctrsol(&(solv[genprob.numls]));
    }
+   if (genprob.probtyp == prb_levelset)
+   {
+     if (genprob.numfld!=1) dserror("numfld != 1 for Pure Level Set Problem");
+     
+     /* initialize solver object */
+     solv = (SOLVAR*)CCACALLOC(genprob.numfld,sizeof(SOLVAR));
+
+     /* initialize solver for the levelset field */
+     solv[genprob.numls].fieldtyp = levelset;
+     inpctrsol(&(solv[genprob.numls]));
+   }   
 #endif
    
 /*----------------------------------------------------------------------*/
@@ -262,7 +273,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
     if (strncmp("Fluid_Structure_Interaction",buffer,24)==0) genprob.probtyp = prb_fsi;
     if (strncmp("Optimisation"               ,buffer,12)==0) genprob.probtyp = prb_opt;
     if (strncmp("Ale"                        ,buffer, 3)==0) genprob.probtyp = prb_ale;
-    if (strncmp("Two_Phase_Fluid_Flow"       ,buffer,20)==0) genprob.probtyp = prb_twophase;    
+    if (strncmp("Two_Phase_Fluid_Flow"       ,buffer,20)==0) genprob.probtyp = prb_twophase;
+    if (strncmp("Levelset"                   ,buffer, 8)==0) genprob.probtyp = prb_levelset;        
   }
   
 #ifdef D_XFEM
@@ -320,7 +332,13 @@ if (genprob.probtyp==prb_twophase)
   genprob.numff    = 0;
   genprob.numls    = 1;  
 }
-#endif
+if (genprob.probtyp==prb_levelset)
+{
+  /* set field numbers */
+  genprob.numfld   = 1;
+  genprob.numls    = 0;  
+}
+#endif /* D_LS */
 
 if (frfind("---IO")==1)
 {

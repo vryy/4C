@@ -172,6 +172,16 @@ if (genprob.probtyp==prb_twophase)
    inpdis(&(field[genprob.numls]));
    inp_ls_field(&(field[genprob.numls]));
 }
+/*----------------------------------------------- pure levelset problem */
+if (genprob.probtyp==prb_levelset)
+{
+   if (genprob.numfld!=1) dserror("numfld != 1 for pure level set problem");
+   field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
+
+   field[genprob.numls].fieldtyp = levelset;
+   inpdis(&(field[genprob.numls]));
+   inp_ls_field(&(field[genprob.numls]));
+}
 #endif
 /*---------------------------------------- Optimisation type of problem */
 if (genprob.probtyp == prb_opt)

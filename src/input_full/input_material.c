@@ -444,7 +444,13 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
      frread();
      }
 
-     /* define matrerial propertie for the interface */
+     /* define material to be used for elements located at the interface */
+     /*
+      * NOTE =>
+      * third material is used in case the sharp change in the density and
+      * viscosity is smoothed out over certain layers of element around the
+      * interface
+      */
      mat[i].mattyp = m_fluid;
      mat[i].m.fluid = (FLUID*)CCACALLOC(1,sizeof(FLUID));     
      mat[i].m.fluid->viscosity =

@@ -216,7 +216,12 @@ void ls2_calc(
   is_elcut = ele->e.ls2->is_elcut;
   
   if (lsdyn->lsdata->reinitflag==1)
-    ls2_calc_reinitialized(ele);
+  {
+    if (lsdyn->lsdata->localization==1 && nlayer==0)
+      ls2_calc_localized(ele);
+    else
+      ls2_calc_reinitialized(ele);
+  }
   else
   {
     if (lsdyn->lsdata->localization==1 && nlayer==0)
@@ -727,8 +732,7 @@ void ls2_calc_localized(
   for (i=0; i<iel; i++)
   {
     actnode = ele->node[i];
-    if (actnode->gnode->is_node_active==1 ||
-        actnode->gnode->is_node_active==2) estif[i][i] = 0.0;
+    if (actnode->gnode->is_node_active!=0) estif[i][i] = 0.0;
   }
   
 /*----------------------------------------------------------------------*/

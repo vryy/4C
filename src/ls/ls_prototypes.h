@@ -447,5 +447,8 @@ void ls_updt_material();
 
 
 void ls_check_profile();
+
+
+void ls_modify_profile();
 /*! @} (documentation module close)*/	    
 #endif

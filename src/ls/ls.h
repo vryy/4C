@@ -22,42 +22,6 @@ Maintainer: Baris Irhan
 
 
 /*!----------------------------------------------------------------------
-\brief 2D level set element
-
-<pre>
-Maintainer: Baris Irhan
-            irhan@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/Members/irhan/
-            089 - 289-15236
-</pre>
-
-<pre>                                                          irhan 05/04
-This structure contains all specific information for a 2D level set element
-</pre>
-
-*----------------------------------------------------------------------*/
-typedef struct _LS2
-{
-  INT                  ntyp;         /* flag for element type */
-  INT                  nGP[2];       /* # of GP in r and s directions */
-  INT                  is_elcut;     /* flag to control element activation */
-  INT                  is_sedge_set; /* flag to control element edge activation */
-  INT                  is_elsearch;  /* flag to confine element search */
-  INT                  nlayer;       /* corresponding layer number */
-  INT                  nenode;       /* number of enriched nodes */
-  INT                  enode[4];     /* local node numbers of enriched nodes */
-  INT                  intcnt;       /* index to interface number involved */
-  INT                  prncnt;       /* counter used in printing */  
-  INT                  rstcnt;       /* counter used in resetting */
-
-  struct _LS_INT_DATA  *intdata;     /* struct to store interface data */
-  struct _LS_POLY_DATA *polydata;    /* struct to store polygon data */
-  struct _ELEMENT      *my_fluid;    /* pointer to fluid element associated */
-} LS2;
-
-
-
-/*!----------------------------------------------------------------------
 \brief 2D level set interface data
 
 <pre>                                                            irhan 05/04
@@ -94,6 +58,41 @@ typedef struct _LS_POLY_DATA
   DOUBLE               polygonGP[2][2][7];   /* Gauss points corresponding to each subpolygon */
 } LS_POLY_DATA;
 
+
+
+/*!----------------------------------------------------------------------
+\brief 2D level set element
+
+<pre>
+Maintainer: Baris Irhan
+            irhan@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/Members/irhan/
+            089 - 289-15236
+</pre>
+
+<pre>                                                          irhan 05/04
+This structure contains all specific information for a 2D level set element
+</pre>
+
+*----------------------------------------------------------------------*/
+typedef struct _LS2
+{
+  INT                  ntyp;         /* flag for element type */
+  INT                  nGP[2];       /* # of GP in r and s directions */
+  INT                  is_elcut;     /* flag to control element activation */
+  INT                  is_sedge_set; /* flag to control element edge activation */
+  INT                  is_elsearch;  /* flag to confine element search */
+  INT                  nlayer;       /* corresponding layer number */
+  INT                  nenode;       /* number of enriched nodes */
+  INT                  enode[4];     /* local node numbers of enriched nodes */
+  INT                  intcnt;       /* index to interface number involved */
+  INT                  prncnt;       /* counter used in printing */  
+  INT                  rstcnt;       /* counter used in resetting */
+
+  struct _LS_INT_DATA  intdata[2];   /* struct to store interface data */
+  struct _LS_POLY_DATA polydata[2];  /* struct to store polygon data */
+  struct _ELEMENT      *my_fluid;    /* pointer to fluid element associated */
+} LS2;
 
 
 /*!----------------------------------------------------------------------
@@ -265,6 +264,7 @@ typedef enum _FRONTLSFLAG
   front_ls_activate,
   front_ls_localize,
   front_ls_polygonize,
+  front_ls_modify,  
   front_ls_write,
   front_ls_finalize
 } FRONTLSFLAG;

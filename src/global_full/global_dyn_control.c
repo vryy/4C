@@ -77,6 +77,7 @@ break;
 
 #ifdef D_LS
 case prb_twophase:
+case prb_levelset:  
     ls_dyn();
 break;
 #endif 

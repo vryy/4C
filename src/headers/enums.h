@@ -20,7 +20,8 @@ typedef enum _PROBLEM_TYP
                        prb_fluid,     /*  fluid  problem */
                        prb_opt,       /*  strctural optimization  problem */
 		       prb_ale,       /*  pure ale problem */
-                       prb_twophase   /*  two phase fluid flow (used for levelset) */
+                       prb_twophase,  /*  two phase fluid flow (used for levelset) */
+                       prb_levelset   /*  pure level set problem (user defined advection velocity) */                       
 } PROBLEM_TYP;
 /*----------------------------------------------------------------------*
  | TIME TYPES                                             m.gee 7/01    |

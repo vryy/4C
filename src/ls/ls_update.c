@@ -119,9 +119,14 @@ void ls_main(
         /* construct initial front and write it to output files */
         frontlsflag = front_ls_init;
         ls_update(frontlsflag);
-        /* initialize material data */
-        frontlsflag = front_ls_initmat;
-        ls_update(frontlsflag);
+/****************BE CAREFUL*********************************************/
+        if (genprob.probtyp==prb_twophase)
+        {
+          /* initialize material data */
+          frontlsflag = front_ls_initmat;
+          ls_update(frontlsflag);
+        }
+/****************BE CAREFUL*********************************************/        
         /* activate the nodes and elements */
         frontlsflag = front_ls_activate;
         ls_update(frontlsflag);
@@ -130,7 +135,15 @@ void ls_main(
         ls_update(frontlsflag);
         /* polygonize the elements cut by the interface */
         frontlsflag = front_ls_polygonize;
-        ls_update(frontlsflag);
+        ls_update(frontlsflag);        
+/****************BE CAREFUL*********************************************/
+        /* modify levelset profile for localization */
+        if (lsdyn->lsdata->localization==1)
+        {
+          frontlsflag = front_ls_modify;
+          ls_update(frontlsflag);
+        }
+/****************BE CAREFUL*********************************************/        
         /* write initial front into file */
         frontlsflag = front_ls_write;
         ls_update(frontlsflag);
@@ -146,12 +159,25 @@ void ls_main(
         /* activate layers for localization */
         frontlsflag = front_ls_localize;
         ls_update(frontlsflag);
-        /* update material data */
-        frontlsflag = front_ls_updtmat;
-        ls_update(frontlsflag);
+/****************BE CAREFUL*********************************************/
+        if (genprob.probtyp==prb_twophase)
+        {
+          /* update material data */
+          frontlsflag = front_ls_updtmat;
+          ls_update(frontlsflag);
+        }
+/****************BE CAREFUL*********************************************/        
         /* polygonize the elements cut by the interface */
         frontlsflag = front_ls_polygonize;
         ls_update(frontlsflag);
+/****************BE CAREFUL*********************************************/
+        /* modify levelset profile for localization */
+        if (lsdyn->lsdata->localization==1)
+        {
+          frontlsflag = front_ls_modify;
+          ls_update(frontlsflag);
+        }
+/****************BE CAREFUL*********************************************/        
         if (lsdyn->lsdata->print_on_off==1)
         {
           /* write front into file */
@@ -239,6 +265,10 @@ void ls_update(
       case front_ls_polygonize:
         ls_polygonize();
         break;
+/*------------------------ modify the levelset profile for localization */
+      case front_ls_modify:
+        ls_modify_profile();
+        break;        
 /*------------------------------------------------- write front to file */        
       case front_ls_write:
         ls_write();
@@ -1519,10 +1549,13 @@ void ls_write()
   fprintf(file01,"\n");													  
 
   /* print out the level set profile */
+  /* NOTE =>
+   * print also the node coordinates for surface plotting
+   */
   for (i=0; i<actfield->dis[0].numnp; i++)
   {
     actnode = &(actfield->dis[0].node[i]);
-    fprintf(file02,"%10.5E\n",actnode->sol_increment.a.da[1][0]);
+    fprintf(file02,"%10.5E %5d\n",actnode->sol_increment.a.da[1][0],actnode->Id+1);
   }
   fprintf(file02,"\n");
 
@@ -2427,6 +2460,7 @@ void ls_to_matlab()
     fprintf(f1,"%5d\n",actfield->dis[0].numnp);
     fprintf(f1,"%5d\n",actfield->dis[0].numele);
     fprintf(f1,"%5d\n",lsdyn->nstep+1);
+    fprintf(f1,"%5d\n",genprob.numls+1);    
     fclose(f1);
   }
   else
@@ -2436,7 +2470,7 @@ void ls_to_matlab()
 
   /* print number of nodes per element */
   f1 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_nodeperelement","w");
-  fprintf(f1,"%5d",field[1].dis[0].element[0].numnp);
+  fprintf(f1,"%5d",actfield->dis[0].element[0].numnp);
   fclose(f1);
 
 /*----------------------------------------------------------------------*/
@@ -2758,5 +2792,74 @@ void ls_check_profile()
   
   return;
 } /* end of ls_check_profile */
+
+
+
+/*!----------------------------------------------------------------------
+\brief modify level set profile for localization
+
+<pre>                                                            irhan 15/06
+In this subroutine nodal values of the levelset are set to zero for
+those lying outside the active region
+</pre>
+
+*----------------------------------------------------------------------*/
+void ls_modify_profile()
+{
+  INT         i;
+  DOUBLE      val;
+  DOUBLE      tol = 1.0E-09;
+  ELEMENT    *actele;
+  NODE       *actnode;
+  
+#ifdef DEBUG
+  dstrc_enter("ls_modify_profile");
+#endif
+/*----------------------------------------------------------------------*/
+  
+  /* loop */
+  for (i=0; i<actfield->dis[0].numnp; i++)
+  {
+    actnode = &(actfield->dis[0].node[i]);
+    /* check */
+    if(actnode->gnode->is_node_active==0)
+    {
+      actnode->sol_increment.a.da[0][0] = 0.0;
+      actnode->sol_increment.a.da[1][0] = 0.0;      
+      fprintf(file12,"\n\n**WARNING** DISTANCE FUNCTION FOR NODE %4d SET TO ZERO!",
+              actnode->Id+1);
+      ls_printnodeinfo_to_file(actnode);      
+    }
+    else
+    {
+      if(actnode->gnode->is_node_active>=lsdyn->lsdata->numlayer-2)
+      {
+        if(abs(actnode->sol_increment.a.da[1][0])<tol)
+        {
+          if(actnode->gnode->is_node_inside==-1)
+          {
+            actnode->sol_increment.a.da[0][0] = -0.2;
+            actnode->sol_increment.a.da[1][0] = -0.2;
+          }
+          else
+          {
+            actnode->sol_increment.a.da[0][0] = 0.2;
+            actnode->sol_increment.a.da[1][0] = 0.2;            
+          }
+/*          printf("\nI am here!");
+          printf("\n%10.5E",actnode->sol_increment.a.da[0][0]);
+          printf("\n%5d",actnode->gnode->is_node_inside);*/
+        }
+      }
+    }
+  }
+  
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+  dstrc_exit();
+#endif
+  
+  return;
+} /* end of ls_modify_profile */
 /*! @} (documentation module close)*/
 #endif

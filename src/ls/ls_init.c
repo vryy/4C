@@ -626,8 +626,8 @@ void ls_init_double_line(
 /*----------------------------------------------------------------------*/
 
   /* set start and end points of the first line */  
-  xo = lsdyn->lsdata->xs1;
-  yo = lsdyn->lsdata->ys2;
+  xo = lsdyn->lsdata->xe1;
+  yo = lsdyn->lsdata->ye1;
 
   
   /* loop over the nodes */
