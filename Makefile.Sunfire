@@ -26,6 +26,7 @@
 # -DWALLCONTACT  defines contact algorithms for wall contact
 # -DD_INTERF     defines interface element
 # -DD_WALLGE     defines gradient enhanced wall element
+# -DPERF         defines routines for exact time measurements 
 #
 # -DDEBUG        defines debug mode: routine and array tracing 
 # -DPARALLEL     defines parallel version of programm

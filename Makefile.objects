@@ -89,6 +89,7 @@ OBJS3	      = src/pss_full/pss_am.o \
                 src/pss_full/pss_ds.o \
                 src/pss_full/pss_fr.o \
                 src/pss_full/pss_pss.o \
+                src/pss_full/pss_perf.o \
                 src/pss_full/pss_visual.o 
 #                input_full
 OBJS4	      = src/input_full/input_control_global.o \
@@ -487,6 +488,7 @@ OBJS_MAT      = src/materials/mat_el_iso.o \
                 src/materials/mat_pl_hoff.o \
                 src/materials/mat_pl_mises_lin.o \
                 src/materials/mat_pl_dp_lin.o
+#
 OBJS_F2PRO    = src/fluid2_pro/f2pro_inpele.o \
                 src/fluid2_pro/f2pro_ass_dof_ndis.o \
                 src/fluid2_pro/f2pro_calele.o \

@@ -33,6 +33,7 @@ include ./Makefile.personal_path
 # -DWALLCONTACT  defines contact algorithms for wall contact
 # -DD_INTERF     defines interface element
 # -DD_WALLGE     defines gradient enhanced wall element
+# -DPERF         defines routines for exact time measurements 
 #
 # -DDEBUG        defines debug mode: routine and array tracing 
 # -DPARALLEL     defines parallel version of programm
@@ -74,8 +75,8 @@ MPI	= -lmpi
 #CCX	 = cc 
 #LDX	 = f90 
 #PFL	 = -DHPUXITA -DD_FLUID -DD_FSI -DD_OPTIM -DS8CONTACT -DD_CONTACT  \
-#	   -DD_FLUID2 -DD_FLUID3 -DD_WALL1 -DD_SHELL9 -DD_BRICK1 -DD_SHELL8 -DD_ALE \
-#	   -DD_AXISHELL -DD_MAT -DSPOOLES_PACKAGE 
+#	   -DD_FLUID2 -DD_FLUID3 -DD_WALL1 -DD_SHELL9 -DD_BRICK1 -DD_SHELL8 \
+#	   -DD_ALE -DD_AXISHELL -DD_MAT -DAZTEC_PACKAGE
 #NAME	 = seq
 #MPI	 = 
 #--------------------------------------------------------------------     
