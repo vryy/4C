@@ -317,7 +317,7 @@ if (fdyn->surftens!=0)
 }
 
 /*--------------------------------------------- calculate nodal normals */
-fluid_cal_normal(actfield,fdyn,1,action);
+fluid_cal_normal(actfield,1,action);
 
 /*------------------------------------------------- define local co-sys */
 fluid_locsys(actfield,fdyn);
@@ -403,7 +403,7 @@ else  dserror("ALE field by function not implemented yet!\n");
 /*--------------------- set dirichlet boundary conditions for  timestep */
 fluid_setdirich(actfield,3);
 
-if (fdyn->itchk!=0 && par.myrank==0)
+if (fdyn->itnorm!=fncc_no && par.myrank==0)
 {
    if (fdyn->freesurf>1)
    {
@@ -533,7 +533,7 @@ if (fdyn->freesurf>1)
 fluid_updfscoor(actfield, fdyn, fdyn->dta, 1);
 
 /*---------- based on the new position calculate normal at free surface */
-if (itnum==1) fluid_cal_normal(actfield,fdyn,0,action);
+if (itnum==1) fluid_cal_normal(actfield,0,action);
 
 
 /*----------------------------------------- iteration convergence check */
@@ -608,7 +608,7 @@ if (fdyn->freesurf>0)
    fluid_updfscoor(actfield, fdyn, fdyn->dta, 0);
 
 /*--------- based on the predictor calculate new normal at free surface */
-fluid_cal_normal(actfield,fdyn,2,action);
+fluid_cal_normal(actfield,2,action);
 
 /*------- copy solution from sol_increment[1][j] to sol_increment[0][j] */
 if (fdyn->freesurf==3 || fdyn->freesurf==5) 
@@ -650,7 +650,7 @@ if (outstep==fdyn->upout && ioflags.fluid_sol_file==1)
 }
 
 /*------------------------------------------- write restart to pss file */
-if (restartstep==fsidyn->res_write_evry)
+if (restartstep==fsidyn->uprestart)
 {
    restartstep=0;
    restart_write_fluiddyn(fdyn,actfield,actpart,actintra,action,&container);   
