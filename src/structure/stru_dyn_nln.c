@@ -74,6 +74,11 @@ extern struct _CURVE *curve;
  | to tell element routines what to do                                  |
  | defined globally in global_calelm.c                                  |
  *----------------------------------------------------------------------*/
+
+#ifdef WALLCONTACT
+extern struct _WALL_CONTACT contact;
+#endif
+
 extern enum _CALC_ACTION calc_action[MAXFIELD];
 
 
@@ -131,27 +136,28 @@ DOUBLE          dirichfacs[10];     /* factors needed for dirichlet-part of rhs 
  
 STRUCT_DYN_CALC dynvar;             /* variables to perform dynamic structural simulation */              
 
-INT             contact = 0;        /* flag for contact onoff */
+int             contactflag = 0;    /* flag for contact onoff */
 ARRAY           contactforce_a;     /* redundant vector of full length for contact forces */
 DOUBLE         *cforce;
 DIST_VECTOR    *con;                /*  contact forces */              
-INT             augon=0;
-INT             actaug;
-DOUBLE          contactdt;
+int             augon=0;
+int             actaug=0;
+int             aug_number=5;       /*  # of augmentation loops */
+double          contactdt;
 
-INT             timeadapt;          /* flag to switch time adaption on/off */
-INT             itwant;
-DOUBLE          maxdt;
-DOUBLE          resultdt;
-DOUBLE          newdt;
-DOUBLE          olddt;
-DOUBLE          eta;
-INT             repeatcount;
-DOUBLE          lowtime,uptime,writetime;
-DOUBLE          remain;
-DOUBLE          low,up;
-INT             ilow,iup;
-DOUBLE          tau,tau2,tau3,fac;
+int             timeadapt;          /* flag to switch time adaption on/off */
+int             itwant;
+double          maxdt;
+double          resultdt;
+double          newdt;
+double          olddt;
+double          eta;
+int             repeatcount;
+double          lowtime,uptime,writetime;
+double          remain;
+double          low,up;
+int             ilow,iup;
+double          tau,tau2,tau3,fac;
 
 CONTAINER       container;          /* contains variables defined in container.h */
 container.isdyn   = 1;                /* dynamic calculation */
@@ -168,7 +174,7 @@ actsolv            = &(solv[0]);
 actpart            = &(partition[0]);
 action             = &(calc_action[0]);
 sdyn               = alldyn[0].sdyn;
-contact            = sdyn->contact;
+contactflag        = sdyn->contact;
 container.fieldtyp = actfield->fieldtyp;
 timeadapt          = sdyn->timeadapt;
 itwant             = sdyn->itwant;
@@ -200,6 +206,7 @@ dynvar.dinorm       = 0.0;
 dynvar.dnorm        = 0.0;
 for (i=0; i<20; i++) dynvar.constants[i] = 0.0;
 acttime=0.0;
+
 /*------------------------------------ check presence of damping matrix */
 /*                 and set indice of stiffness and mass sparse matrices */
    stiff_array = 0;
@@ -282,7 +289,7 @@ intforce = amdef("intforce",&intforce_a,numeq_total,1,"DV");
 /*----------- create a vector of full length for dirichlet part of rhs */
 dirich = amdef("dirich",&dirich_a,numeq_total,1,"DV");
 /*------------------ create a vector of full length for contact forces */
-if (contact)
+if (contactflag)
 {
    cforce = amdef("contact",&contactforce_a,numeq_total,1,"DV");
    solserv_create_vec(&con,1,numeq_total,numeq,"DV");
@@ -334,8 +341,13 @@ if (ioflags.struct_disp_gid||ioflags.struct_stress_gid)
 
 /*----------------- init the contact algorithms for contact with shells */
 #ifdef S8CONTACT
-if (contact)
+if (contactflag)
 s8contact_init(actfield,actpart,actintra);
+#endif
+/*------------------------------------------------or with wall elements */
+#ifdef WALLCONTACT
+if (contactflag)
+wallcontact_init(actfield);
 #endif
 /*----------------------- call elements to calculate stiffness and mass */
 *action = calc_struct_nlnstiffmass;
@@ -480,7 +492,7 @@ if (restart)
                              &container);     /* contains variables defined in container.h */
    /*--------- read restart of contact data of shell contact if present */
 #ifdef S8CONTACT
-   if (contact)  s8_contact_restartread(actintra,sdyn->step);
+   if (contactflag)  s8_contact_restartread(actintra,sdyn->step);
 #endif
    /*-------------------------------------- put the dt to the structure */
    sdyn->dt = dt;
@@ -578,7 +590,7 @@ amzero(&dirich_a);
 amzero(&intforce_a);
 /*---------------------------------------------------- contact detection */
 #ifdef S8CONTACT
-if (contact)
+if (contactflag)
 {
    s8_contact_searchupdate(actintra,sdyn->dt);
    amzero(&contactforce_a);
@@ -586,6 +598,15 @@ if (contact)
    s8_contact_detection(actfield,actintra,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]),cforce,&augon,&contactdt);
 }
 #endif
+
+#ifdef WALLCONTACT
+if (contactflag)
+{
+   amzero(&contactforce_a);
+   wall_contact_detection(actfield,actintra,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]),cforce);
+}
+#endif
+
 /*-------------------------------------------------------- call elements */
 *action = calc_struct_nlnstiffmass;
 container.dvec          = intforce;
@@ -601,7 +622,12 @@ assemble_vec(actintra,&(actsolv->sysarray_typ[stiff_array]),&(actsolv->sysarray[
 
 /*-------------------------------- put contact forces to internal forces */
 #ifdef S8CONTACT
-if (contact)
+if (contactflag)
+assemble_vec(actintra,&(actsolv->sysarray_typ[stiff_array]),&(actsolv->sysarray[stiff_array]),&(fie[1]),cforce,1.0);
+#endif
+
+#ifdef WALLCONTACT
+if (contactflag)
 assemble_vec(actintra,&(actsolv->sysarray_typ[stiff_array]),&(actsolv->sysarray[stiff_array]),&(fie[1]),cforce,1.0);
 #endif
 
@@ -669,8 +695,9 @@ solserv_result_incre(actfield,actintra,&dispi[0],0,&(actsolv->sysarray[stiff_arr
 /*----------------------------------------------------------------------*/
 /*                     AUGMENTATION FOR CONTACT                         */
 /*----------------------------------------------------------------------*/
+
 #ifdef S8CONTACT
-if (contact)
+if (contactflag)
 {
    actaug = 0;
    /* set lagrangian multipliers in contact to zero for nodes no longer in contact */
@@ -678,6 +705,11 @@ if (contact)
 }
 augstart:;
 #endif
+#ifdef WALLCONTACT
+if (contactflag)
+augstart:;
+#endif
+
 /*----------------------------------------------------------------------*/
 /*                     PERFORM EQUILLIBRIUM ITERATION                   */
 /*----------------------------------------------------------------------*/
@@ -705,11 +737,19 @@ amzero(&intforce_a);
 amzero(&dirich_a);
 /*------------------------------------------------------ detect contact */
 #ifdef S8CONTACT
-if (contact)
+if (contactflag)
 {
    amzero(&contactforce_a);
    augon = 0;
    s8_contact_detection(actfield,actintra,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]),cforce,&augon,&contactdt);
+}
+#endif
+
+#ifdef WALLCONTACT
+if (contactflag)
+{
+   amzero(&contactforce_a);
+   wall_contact_detection(actfield,actintra,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]),cforce,&augon,&contactdt);   
 }
 #endif
 
@@ -729,7 +769,16 @@ assemble_vec(actintra,&(actsolv->sysarray_typ[stiff_array]),&(actsolv->sysarray[
 
 /*-------------------------------- put contact forces to internal forces */
 #ifdef S8CONTACT
-if (contact)
+if (contactflag)
+{
+solserv_zero_vec(&(con[0]));
+assemble_vec(actintra,&(actsolv->sysarray_typ[stiff_array]),&(actsolv->sysarray[stiff_array]),&(con[0]),cforce,1.0);
+assemble_vec(actintra,&(actsolv->sysarray_typ[stiff_array]),&(actsolv->sysarray[stiff_array]),&(fie[2]),cforce,1.0);
+}
+#endif
+
+#ifdef WALLCONTACT
+if (contactflag)
 {
 solserv_zero_vec(&(con[0]));
 assemble_vec(actintra,&(actsolv->sysarray_typ[stiff_array]),&(actsolv->sysarray[stiff_array]),&(con[0]),cforce,1.0);
@@ -790,6 +839,10 @@ if (par.myrank==0 && ioflags.struct_disp_gid)
 /*----------------------- return incremental displacements to the nodes */
 solserv_result_incre(actfield,actintra,&dispi[0],0,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
 
+#ifdef WALLCONTACT
+wall_contact_update(actfield,actintra);
+#endif
+
 /*----------------------------------------------- check for convergence */
 convergence = 0;
 dmax        = 0.0;
@@ -807,10 +860,12 @@ if (dynvar.dinorm < sdyn->toldisp ||
 else
 {
    itnum++;
+#if 0
    if (itnum==sdyn->maxiter && timeadapt)
       goto adapt_bot;
+#endif
    if (itnum==sdyn->maxiter && !timeadapt)
-      dserror("No convergence in maxiter steps");
+      dserror("No convergence in maxiter steps");   
    goto iterloop;
 }
 /*----------------------------------------------------------------------*/
@@ -820,7 +875,7 @@ else
 /*                     AUGMENTATION FOR CONTACT                         */
 /*----------------------------------------------------------------------*/
 #ifdef S8CONTACT
-if (contact)
+if (contactflag)
 {
    s8_contact_updlagr(actfield,actpart,actintra);
    if (augon)
@@ -831,7 +886,7 @@ if (contact)
       /* or for the next predictor, which also uses the correct multipliers */
       actaug++;
       /* make augmentation for actaug = 0,1,2, where 0 is penalty method */
-      if (actaug<4)
+      if (actaug<5)
       { 
          if (par.myrank==0) printf("\nAUGMENTATION %d\n",actaug);fflush(stdout);
          augon = 0;
@@ -847,10 +902,31 @@ s8_contact_history(actintra);
 solserv_result_total(actfield,actintra, &(con[0]),9,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
 /*-------------------------------- set the augmenation flag back to off */
 augon = 0;
-}/* end of if (contact) */
+}/* end of if (contactflag) */
 #endif
+
+
+#ifdef WALLCONTACT
+if (contactflag)
+{
+  if(actaug >= aug_number) goto augend;
+ 
+  wall_contact_flag(actintra);
+  if(aug_number == 1) goto augend;
+  if(contact.contactflag == contact_off && actaug == 0) goto augend;
+  
+  wall_contact_set();
+  wall_contact_augmentation(actintra);
+  actaug++;
+  
+  contact.contact_set = NULL;
+  contact.set_size = 0;   
+  goto augstart;
+}
+#endif
+
 /*------------------------------ make time adaption iteration indicator */
-#if 1
+#if 0
 adapt_bot:
 if (timeadapt)
 {
@@ -889,7 +965,7 @@ if (timeadapt)
       calelm(actfield,actsolv,actpart,actintra,stiff_array,mass_array,&container,action);
       /* set contact augmented lagrangian multipliers back to last step */
       #ifdef S8CONTACT
-      if (contact)
+      if (contactflag)
       s8_contact_historyback(actintra);
       #endif
       /* go back to the predictor */
@@ -906,9 +982,24 @@ if (timeadapt)
 /*----------------------------------------------------------------------*/
 #ifdef S8CONTACT
 /*----------------------------------------------- make contact history  */
-if (contact)
+if (contactflag)
 s8_contact_history(actintra);
 #endif
+
+#ifdef WALLCONTACT
+/*----------------------------------------------- make contact history  */
+augend:;
+if (contactflag){
+  wall_contact_history_update(actintra);
+  actaug = 0;
+  FREE(contact.contact_set);
+/*------------------------ write contact forces to the nodes in place 9 */
+solserv_scalarprod_vec(&(con[0]),(-1.0));
+solserv_result_total(actfield,actintra, &(con[0]),9,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
+/*----------------------------------------------------------------------*/
+}
+#endif
+
 /*----------- make temporary copy of actsolv->rhs[2] to actsolv->rhs[0] */
 /*                                   (load at t-dt)                     */
 /* because in  dyn_nlnstructupd actsolv->rhs[2] is overwritten but is   */
@@ -960,13 +1051,15 @@ place 11 holds velocities           time t-dt   (free/prescr)
 place 12 holds accels               time t-dt   (free/prescr) 
 
 in ARRAY sol_increment.a.da[place][0..numdf-1]
-place 0 holds converged incremental displacments (without prescribed dofs) 
+place 0 holds converged incremental displacements (without prescribed dofs) 
 place 1 holds converged internal forces at time t-dt 
 place 2 holds converged internal forces at time t
 
 in ARRAY sol_residual
 place 0 holds residual displacements during iteration (without prescribed dofs)
 */
+
+
 /*---------------------- make incremental potential energy at the nodes */
 dyn_epot(actfield,0,actintra,&dynvar,&deltaepot);
 dynvar.epot += deltaepot;
@@ -1017,8 +1110,15 @@ if (par.myrank==0)
       out_gid_soldyn("displacement",actfield,actintra,sdyn->step,0,sdyn->time);
       /*out_gid_soldyn("velocity",actfield,actintra,sdyn->step,1,sdyn->time);*/
       /*out_gid_soldyn("accelerations",actfield,actintra,sdyn->step,2,sdyn->time);*/
-      if (contact)
+#ifdef S8CONTACT
+      if (contactflag)
       out_gid_soldyn("contact",actfield,actintra,sdyn->step,9,sdyn->time);
+#endif
+#ifdef WALLCONTACT
+      if (contactflag)
+      out_gid_soldyn("contact",actfield,actintra,sdyn->step,9,sdyn->time);
+#endif
+
    }
    if (mod_stress==0)
    if (ioflags.struct_stress_gid==1)
@@ -1027,6 +1127,7 @@ if (par.myrank==0)
    }
 }
 /*----------------------------- printout results to gid time adaptivity */
+#if 0
 if (timeadapt)
 {
    lowtime = sdyn->time - olddt;
@@ -1057,11 +1158,12 @@ if (timeadapt)
        if (par.myrank==0)
        out_gid_soldyn("displacement",actfield,actintra,sdyn->writecounter,8,writetime);
        /* write contact forces */
-       if (contact && par.myrank==0)
+       if (contactflag && par.myrank==0)
        out_gid_soldyn("contact",actfield,actintra,sdyn->writecounter,9,writetime);
        sdyn->writecounter++;
    }
 }
+#endif
 /*-------------------------------------- write restart data to pss file */
 if (mod_res_write==0)
 {
@@ -1077,12 +1179,14 @@ restart_write_nlnstructdyn(sdyn,&dynvar,actfield,actpart,actintra,action,
                            &dirich_a,
                            &container);     /* contains variables defined in container.h */
 #ifdef S8CONTACT
-if (contact)
+if (contactflag)
    s8_contact_restartwrite(actintra,sdyn->step);
 #endif
 }                           
 /*----------------------------------------------------- print time step */
+#if 0
 if (par.myrank==0 &&  timeadapt)  dyn_nlnstruct_outstep(&dynvar,sdyn,itnum,olddt);
+#endif
 if (par.myrank==0 && !timeadapt) dyn_nlnstruct_outstep(&dynvar,sdyn,itnum,sdyn->dt);
 /*------------------------------------------ measure time for this step */
 t1 = ds_cputime();
@@ -1093,7 +1197,7 @@ goto timeloop;
 /*----------------------------------------------------------------------*/
 end:
 /*--------------------------------------------------- cleaning up phase */
-if (contact) amdel(&contactforce_a);
+if (contactflag) amdel(&contactforce_a);
 amdel(&intforce_a);
 solserv_del_vec(&(actsolv->rhs),actsolv->nrhs);
 solserv_del_vec(&(actsolv->sol),actsolv->nsol);
