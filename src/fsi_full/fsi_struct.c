@@ -744,7 +744,8 @@ solserv_result_total(actfield,actintra, &(actsolv->sol[1]),0,
 /*----------------------- return incremental displacements to the nodes */
 solserv_result_incre(actfield,actintra,&dispi[0],0,
                      &(actsolv->sysarray[stiff_array]),
-                     &(actsolv->sysarray_typ[stiff_array]));
+                     &(actsolv->sysarray_typ[stiff_array]),
+		     0);
 /* here put incremental prescribed displacements from sol[5] to sol_increment[0] ? */
 
 /*----------------------------------------------------------------------*/
@@ -839,7 +840,7 @@ solserv_result_total(actfield,actintra, &(actsolv->sol[1]),0,
 /*----------------------- return incremental displacements to the nodes */
 solserv_result_incre(actfield,actintra,&dispi[0],0,
                      &(actsolv->sysarray[stiff_array]),
-                     &(actsolv->sysarray_typ[stiff_array]));
+                     &(actsolv->sysarray_typ[stiff_array]),0);
 
 /*----------------------------------------------- check for convergence */
 convergence = 0;

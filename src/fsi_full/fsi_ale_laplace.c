@@ -406,8 +406,8 @@ solserv_result_incre(
                      &(actsolv->sol[actsysarray]),
                      0,
                      &(actsolv->sysarray[actsysarray]),
-                     &(actsolv->sysarray_typ[actsysarray])
-                    );
+                     &(actsolv->sysarray_typ[actsysarray]),
+                     0);
 
 /*---------- add actual solution increment to sol (to serve output): ---*/
 /* step 1: */
@@ -542,8 +542,8 @@ solserv_result_incre(
                      &(actsolv->sol[actsysarray]),
                      0,
                      &(actsolv->sysarray[constsysarray]),
-                     &(actsolv->sysarray_typ[constsysarray])
-                    );
+                     &(actsolv->sysarray_typ[constsysarray]),
+                     0);
 
 break;
 

@@ -354,8 +354,8 @@ solserv_result_incre(
                      &(actsolv->sol[actsysarray]),
                      0,
                      &(actsolv->sysarray[actsysarray]),
-                     &(actsolv->sysarray_typ[actsysarray])
-                    );
+                     &(actsolv->sysarray_typ[actsysarray]),
+                     0);
    
 /*----------------- copy from nodal sol_increment[0][j] to sol_mf[1][j] */
 solserv_sol_copy(actfield,0,1,3,0,1);
@@ -475,8 +475,8 @@ solserv_result_incre(
                      &(actsolv->sol[actsysarray]),
                      0,
                      &(actsolv->sysarray[actsysarray]),
-                     &(actsolv->sysarray_typ[actsysarray])
-                    );
+                     &(actsolv->sysarray_typ[actsysarray]),
+                     0);
 
 break;
 
