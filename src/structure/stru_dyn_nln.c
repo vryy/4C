@@ -56,7 +56,7 @@ extern struct _CURVE *curve;
 extern enum _CALC_ACTION calc_action[MAXFIELD];
 
 
-
+DOUBLE acttime;
 
 /*----------------------------------------------------------------------*
  |  routine to control nonlinear dynamic structural analysis m.gee 02/02|
@@ -132,6 +132,7 @@ dynvar.ekin   = 0.0;
 dynvar.dinorm = 0.0;
 dynvar.dnorm  = 0.0;
 for (i=0; i<20; i++) dynvar.constants[i] = 0.0;
+acttime=0.0;
 /*------------------------------------ check presence of damping matrix */
 /*                 and set indice of stiffness and mass sparse matrices */
    stiff_array = 0;
@@ -404,6 +405,25 @@ Values of the different vectors from above in one loop:
 
 */
 timeloop:
+/*------------------------------------------------- write memory report */
+if (par.myrank==0) dsmemreport();
+/*--------------------------------------------- increment step and time */
+sdyn->step++;
+/*------------------- modifications to time steps siye can be done here */
+/* kegel_big1.dat
+if (sdyn->step==52) sdyn->dt = 0.02;
+if (sdyn->step==65) sdyn->dt = 0.005;*/
+/* kegel_big2.dat lief bis inkl. 133 
+if (sdyn->step==50) sdyn->dt = 0.01;
+if (sdyn->step==80) sdyn->dt = 0.005;*/
+/* kegel_big3.dat
+if (sdyn->step==50) sdyn->dt = 0.01;
+if (sdyn->step==80) sdyn->dt = 0.005;
+if (sdyn->step==134) sdyn->dt = 0.002;*/
+/*------------------------------------------------ set new absolue time */
+sdyn->time += sdyn->dt;
+/*--- put time to global variable for time-dependent load distributions */
+acttime = sdyn->time;
 /*-------------------------------------------------- set some constants */
 dyn_setconstants(&dynvar,sdyn,sdyn->dt);
 
@@ -415,15 +435,16 @@ solserv_result_resid(actfield,actintra,&dispi[0],0,
                      &(actsolv->sysarray[stiff_array]),
                      &(actsolv->sysarray_typ[stiff_array]));
 
-/*--------------------------------------------- increment step and time */
-sdyn->step++;
-sdyn->time += sdyn->dt;
-
 /*----------------------------------------------------------------------*/
 /*                     PREDICTOR                                        */
 /*----------------------------------------------------------------------*/
 /*---------------------- copy initial load vector from rhs[3] to rhs[1] */
-solserv_copy_vec(&(actsolv->rhs[3]),&(actsolv->rhs[1]));
+/*solserv_copy_vec(&(actsolv->rhs[3]),&(actsolv->rhs[1]));*/
+
+/*---------------------- this vector holds loads due to external forces */
+solserv_zero_vec(&(actsolv->rhs[1]));
+calrhs(actfield,actsolv,actpart,actintra,stiff_array,
+       &(actsolv->rhs[1]),0,action);
 
 /*------------------------------------------------ get factor at time t */
 dyn_facfromcurve(actcurve,sdyn->time,&(dynvar.rldfac));
