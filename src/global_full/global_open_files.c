@@ -228,6 +228,20 @@ else/*------------------------------- no restart, open a new pss-file */
     printf("binary is written   to     %s\n",allfiles.outputfile_name);
     allfiles.in_pss=NULL;
 }
+/*------------------------------------------------------open .plt file */
+if (par.myrank==0)
+{     
+     strncpy(charpointer,".plt",4);
+     if ( (allfiles.gnu=fopen(allfiles.outputfile_name,"w"))==NULL)
+     {
+        printf("Opening of output file .plt failed\n");
+#ifdef PARALLEL 
+        MPI_Finalize();
+#endif 
+        exit(1);
+     }
+    printf("output is written to       %s\n",allfiles.outputfile_name);
+}     
 /*-----------------------------------------------open .flavia.msh file */
 if (par.myrank==0)
 {     
