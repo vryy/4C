@@ -29,7 +29,6 @@ dstrc_enter("iscouple_find_node_comp");
          /* check for the right coupling set */
          /*
          Note: At the moment only the given dof is checked here */
-         */
          if (searchfield->node[i].c->couple.a.ia[dof][0]==coupleID)
          {
             /* check geometrical distance */
