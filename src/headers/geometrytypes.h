@@ -26,6 +26,10 @@ typedef struct _NODE
 #ifdef D_FLUID   
      struct _FLUID_VARIA       *fluid_varia;   /* ptr to my fluid_varia */
 #endif
+#ifdef WALLCONTACT  
+     double                     x_cr[3];       /* current coordinates (for contact only) */     
+     double                     x_mid[3];      /* mid_configuration  coordinates(contact and EM Int. Scheme)*/  
+#endif
 } NODE;
 
 
@@ -121,6 +125,17 @@ typedef struct _GNODE
      struct _FLUID_FREESURF_CONDITION *freesurf;
      struct _NODE                **mfcpnode;    /* ptrs to multi-field coupling nodes */
 #endif
+
+#ifdef WALLCONTACT
+     enum   _CONTACTTYPE       contype;
+     enum   _CONTACTFLAG   contactflag; 
+     struct _ARRAY          *stiffness;
+     struct _ARRAY          *int_force;
+     struct _ARRAY          *ass_index;
+     struct _GNODE          *mymasters[2];
+     struct _HISTORY        *history;     
+#endif
+
 } GNODE;
 
 
@@ -151,6 +166,11 @@ typedef struct _GLINE
      struct _FSI_COUPLE_CONDITION *fsicouple;
      struct _FLUID_FREESURF_CONDITION *freesurf;
 #endif
+
+#ifdef WALLCONTACT
+     enum   _CONTACTTYPE       contype;
+#endif
+
 } GLINE;
 /*----------------------------------------------------------------------*
  | 1 GSURF                                                 m.gee 3/02   |
