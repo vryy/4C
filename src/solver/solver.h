@@ -30,7 +30,11 @@
  *----------------------------------------------------------------------*/
 #ifdef PARALLEL 
 #ifdef SPOOLES_PACKAGE
+#ifndef SUN
 #include "/bau/stat16/users/statik/lib/spooles/MPI/spoolesMPI.h"
+#else
+#include "../../../lib_sun/spooles/MPI/spoolesMPI.h"
+#endif
 #endif
 #endif
 
