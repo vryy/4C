@@ -7,7 +7,7 @@
 # list of possible defines:
 #  
 # -DD_BRICK1    defines element brick1
-# -DD_FLUID1    defines element fluid1
+# -DD_FLUID2    defines element fluid2
 # -DD_SHELL8    defines element shell8
 # -DD_FLUID3    defines element fluid3
 # -DD_ALE       defines element ale
