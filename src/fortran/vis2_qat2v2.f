@@ -929,7 +929,7 @@ C       ****************************************************************
 	INTEGER XYPIX(2),NKEYS,IKEYS(14),FKEYS(14)
 	INTEGER MNODE,MPTRI,MPPTRI,MFACE,MPFACE,MEDGE,MPEDGE
 	REAL    XYMIN(2), XYMAX(2),FLIMS(2,14)
-        CHARACTER CMFILE*37
+        CHARACTER CMFILE*53
 	CHARACTER*16 TKEYS(14)
 	CHARACTER*80 TITL
 	
@@ -949,35 +949,38 @@ C       ****************************************************************
      &                 'TUR. VISCOSITY' /
 
        TITL='HOT PICS!!!!'
+C UNIX Stuttgart
        IF(BGCOLOUR.EQ.0) THEN
-          CMFILE='/bau/stat26/opt/visual/spec_black.col'
+          CMFILE='/bau/stat16/users/statik/ccarat/viscol/spec_black.col'
        ELSE IF (BGCOLOUR.EQ.1) THEN
-          CMFILE='/bau/stat26/opt/visual/spec_white.col'
+          CMFILE='/bau/stat16/users/statik/ccarat/viscol/spec_white.col'
        ELSE IF (BGCOLOUR.EQ.2) THEN
-          CMFILE='/bau/stat26/opt/visual/spec_grey_.col'
+          CMFILE='/bau/stat16/users/statik/ccarat/viscol/spec_grey_.col'
+C LINUX Stuttgart
        ELSE IF (BGCOLOUR.EQ.10) THEN
-          CMFILE='/home/genk/wdir/visual/spec_black.col'
+          CMFILE='/home/ccarat/viscol/spec_black.col'
        ELSE IF (BGCOLOUR.EQ.11) THEN
-          CMFILE='/home/genk/wdir/visual/spec_white.col'
+          CMFILE='/home/ccarat/viscol/spec_white.col'
        ELSE
+          WRITE(*,*) 'cannot find colour file - STOPPING!'
           STOP
        ENDIF
- 
-      WRITE(*,*) 'call of V2_INIT not compiled in!!!'
-      WRITE(*,*) 'change in /src/fortran/vis2_qat2v2.f'
-      STOP
- 
-C	 CALL V2_INIT(TITL,IOPT,CMNCOL,CMFILE,CMUNIT,
-C     & 	     XYPIX,XYMIN,XYMAX,
-C     & 	    NKEYS,IKEYS,TKEYS,FKEYS,FLIMS,
-C     & 	    MNODE,MPTRI,MPPTRI,
-C     & 	    MFACE,MPFACE,MEDGE,MPEDGE)
+C 
+C      WRITE(*,*) 'call of V2_INIT not compiled in!!!'
+C      WRITE(*,*) 'change in  src/fortran/vis2_qat2v2.f'
+C      STOP
+C 
+	CALL V2_INIT(TITL,IOPT,CMNCOL,CMFILE,CMUNIT,
+     &  	    XYPIX,XYMIN,XYMAX,
+     &  	   NKEYS,IKEYS,TKEYS,FKEYS,FLIMS,
+     &  	   MNODE,MPTRI,MPPTRI,
+     &  	   MFACE,MPFACE,MEDGE,MPEDGE)
 	
 	RETURN
 	END
 
 C=======================================================================
-        SUBROUTINE v3call(IOPT,WIN3TMP,
+        SUBROUTINE v3call(IOPT,WIN3TMP,CMUNIT,
      &	                  NKEYS,IKEYS,FKEYS,FLIMS,
      &			  MIRROR,KNODE,KCEL1,KCEL2,KCEL3,KCEL4,
      &			  KSURF,BGCOLOUR)
@@ -989,13 +992,13 @@ C       *  A PAIN IN THE ASS TO PASS CHAR VARIABLES FROM C TO FORTRAN  *
 C       *                                                              *
 C       ****************************************************************
         
-	INTEGER IOPT,CMNCOL,CMUNIT,BGCOLOUR,WIN3TMP
+	INTEGER IOPT,CMUNIT,BGCOLOUR,WIN3TMP
 	INTEGER NKEYS,IKEYS(7),FKEYS(7)
 	INTEGER MIRROR,KNODE,KCEL1,KCEL2,KCEL3,KCEL4
 	INTEGER KEQUIV,KNPTET,KPTET,KNBLOCK,BLOCKS,KSURF
 	REAL   FLIMS(2,7)
         LOGICAL WIN3D
-	CHARACTER CMFILE*37
+	CHARACTER CMFILE*53
 	CHARACTER*16 TKEYS(7)
 	CHARACTER*80 TITL
 	
@@ -1008,19 +1011,24 @@ C       ****************************************************************
      &		     'MOVIE CREATION  '/
 
        TITL='HOT PICS!!!!'
+C UNIX Stuttgart
        IF(BGCOLOUR.EQ.0) THEN
-          CMFILE='/bau/stat26/opt/visual/spec_black.col'
+          CMFILE='/bau/stat16/users/statik/ccarat/viscol/spec_black.col'
        ELSE IF (BGCOLOUR.EQ.1) THEN
-          CMFILE='/bau/stat26/opt/visual/spec_white.col'
+          CMFILE='/bau/stat16/users/statik/ccarat/viscol/spec_white.col'
+       ELSE IF (BGCOLOUR.EQ.2) THEN
+          CMFILE='/bau/stat16/users/statik/ccarat/viscol/spec_grey_.col'
+C LINUX Stuttgart
        ELSE IF (BGCOLOUR.EQ.10) THEN
-          CMFILE='/home/genk/wdir/visual/spec_black.col'
+          CMFILE='/home/ccarat/viscol/spec_black.col'
        ELSE IF (BGCOLOUR.EQ.11) THEN
-          CMFILE='/home/genk/wdir/visual/spec_white.col'
+          CMFILE='/home/ccarat/viscol/spec_white.col'
        ELSE
+          WRITE(*,*) 'cannot find colour file - STOPPING!'
           STOP
        ENDIF
        WIN3D=.TRUE.
-       IF (WIN3TMP.EQ.-1) THEN
+       IF (WIN3TMP.EQ.1) THEN
           WIN3D=.FALSE.
        ENDIF
        KEQUIV=0
@@ -1029,15 +1037,85 @@ C       ****************************************************************
        KNBLOCK=0
        BLOCKS=0
        KNSURF=0
- 
-       WRITE(*,*) 'call of V3_INIT not compiled in!!!'
-       WRITE(*,*) 'change in /src/fortran/vis2_qat2v2.f'
-       STOP
-C
-C	CALL V3_INIT(TITL,IOPT,CMFILE,CMUNIT,WIN3D,
-C    &  	     NKEYS,IKEYS,TKEYS,FKEYS,FLIMS,MIRROR,
-C    &  	     KNODE,KEQUIV,KCEL1,KCEL2,KCEL3,KCEL4,
-C    &  	     KNPTET,KPTET,KNBLOCK,BLOCKS,KSURF,KNSURF)
+C 
+C      WRITE(*,*) 'call of V3_INIT not compiled in!!!'
+C      WRITE(*,*) 'change in  src/fortran/vis2_qat2v2.f'
+C      STOP
+C 
+	CALL V3_INIT(TITL,IOPT,CMFILE,CMUNIT,WIN3D,
+     &  	     NKEYS,IKEYS,TKEYS,FKEYS,FLIMS,MIRROR,
+     &  	     KNODE,KEQUIV,KCEL1,KCEL2,KCEL3,KCEL4,
+     &  	     KNPTET,KPTET,KNBLOCK,BLOCKS,KSURF,KNSURF)
+	
+	RETURN
+	END
+
+
+C=======================================================================
+        SUBROUTINE v3call_struct(IOPT,WIN3TMP,CMUNIT,
+     &	                  NKEYS,IKEYS,FKEYS,FLIMS,
+     &			  MIRROR,KNODE,KCEL1,KCEL2,KCEL3,KCEL4,
+     &			  KSURF,BGCOLOUR)
+C       ****************************************************************
+C       *                                                              *
+C       *  SUBROUTINE TO CALL V3_INIT                                  *
+C       *  THIS IS BETTER DONE WITH A FORTRAN ROUTINE, SINCE IT IS     *
+C       *  A PAIN IN THE ASS TO PASS CHAR VARIABLES FROM C TO FORTRAN  *
+C       *                                                              *
+C       ****************************************************************
+        
+	INTEGER IOPT,CMUNIT,BGCOLOUR,WIN3TMP
+	INTEGER NKEYS,IKEYS(5),FKEYS(5)
+	INTEGER MIRROR,KNODE,KCEL1,KCEL2,KCEL3,KCEL4
+	INTEGER KEQUIV,KNPTET,KPTET,KNBLOCK,BLOCKS,KSURF
+	REAL   FLIMS(2,5)
+        LOGICAL WIN3D
+	CHARACTER CMFILE*53
+	CHARACTER*16 TKEYS(5)
+	CHARACTER*80 TITL
+	
+	DATA TKEYS / 'DISPL. Dx       ',
+     &		     'DISPL. Dy       ',
+     &		     'DISPL. Dz       ', 
+     &		     'ABS. DISP. |D|  ',
+     &		     'MOVIE CREATION  '/
+
+       TITL='HOT PICS!!!!'
+C UNIX Stuttgart
+       IF(BGCOLOUR.EQ.0) THEN
+          CMFILE='/bau/stat16/users/statik/ccarat/viscol/spec_black.col'
+       ELSE IF (BGCOLOUR.EQ.1) THEN
+          CMFILE='/bau/stat16/users/statik/ccarat/viscol/spec_white.col'
+       ELSE IF (BGCOLOUR.EQ.2) THEN
+          CMFILE='/bau/stat16/users/statik/ccarat/viscol/spec_grey_.col'
+C LINUX Stuttgart
+       ELSE IF (BGCOLOUR.EQ.10) THEN
+          CMFILE='/home/ccarat/viscol/spec_black.col'
+       ELSE IF (BGCOLOUR.EQ.11) THEN
+          CMFILE='/home/ccarat/viscol/spec_white.col'
+       ELSE
+          WRITE(*,*) 'cannot find colour file - STOPPING!'
+          STOP
+       ENDIF
+       WIN3D=.TRUE.
+       IF (WIN3TMP.EQ.1) THEN
+          WIN3D=.FALSE.
+       ENDIF
+       KEQUIV=0
+       KNPTET=0
+       KPTET=0
+       KNBLOCK=0
+       BLOCKS=0
+       KNSURF=0
+C 
+C      WRITE(*,*) 'call of V3_INIT not compiled in!!!'
+C      WRITE(*,*) 'change in  src/fortran/vis2_qat2v2.f'
+C      STOP
+C 
+	CALL V3_INIT(TITL,IOPT,CMFILE,CMUNIT,WIN3D,
+     &  	     NKEYS,IKEYS,TKEYS,FKEYS,FLIMS,MIRROR,
+     &  	     KNODE,KEQUIV,KCEL1,KCEL2,KCEL3,KCEL4,
+     &  	     KNPTET,KPTET,KNBLOCK,BLOCKS,KSURF,KNSURF)
 	
 	RETURN
 	END
