@@ -26,7 +26,7 @@ main is only printing the ccarat head and the finish
 \return void                                               
 
 ------------------------------------------------------------------------*/
-void main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
 #ifdef PARALLEL 
 static char *buff,*dbuff;
@@ -78,9 +78,10 @@ printf("processor %d finished normally\n",par.myrank);
 MPI_Buffer_detach(&dbuff,&buffsize);
 if (dbuff!=buff || buffsize != MPIBUFFSIZE)
 dserror("Illegal modification of mpi buffer adress or size appeared"); 
+free(dbuff);
 MPI_Finalize();
 #else
 printf("processor %d finished normally\n",par.myrank);
 #endif
-return;
+return(0);
 } /* end of main */

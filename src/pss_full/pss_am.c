@@ -71,7 +71,7 @@ This variable is used by the function ShiftPointer
                                                       
 <pre>                                                          m.gee 3/02 
 This routine is usefull when data is moved in the memory (e.g.) by a 
-call to REALLOC, and there are pointers which used to point to this  
+call to CCAREALLOC, and there are pointers which used to point to this  
 data. After moving the data these pointers do no longer point to the 
 correct adresses, but they can be moved to the new location of the   
 data by using this function.                                         
@@ -129,11 +129,11 @@ return;
 bhaves exactly like malloc conform to ansi c standard
 if compiled with DEBUG define, it counts the allocated memory
 </pre>
-\sa CALLOC() , REALLOC() , FREE()
+\sa CCACALLOC() , CCAREALLOC() , CCAFREE()
 
 *----------------------------------------------------------------------*/
 #ifdef DEBUG
-void *MALLOC(int size)
+void *CCAMALLOC(int size)
 {
 char *buf;
 
@@ -145,18 +145,18 @@ if (buf)
    return (void*)(buf+DWORD);
 }
 else return (void*)(NULL);
-}/* end of MALLOC */
+}/* end of CCAMALLOC */
 /*----------------------------------------------------------------------*
  | redefinition of malloc FAST version                        m.gee 2/02|
  | bhaves exactly like malloc conform to ansi c standard                |
  *----------------------------------------------------------------------*/
 #else
-void *MALLOC(int size)
+void *CCAMALLOC(int size)
 {
 void *buf;
 buf = malloc((size_t)size);
 return (void*)(buf);
-}/* end of MALLOC */
+}/* end of CCAMALLOC */
 #endif
 
 
@@ -168,11 +168,11 @@ return (void*)(buf);
 bhaves exactly like calloc conform to ansi c standard
 if compiled with DEBUG define, it counts the allocated memory
 </pre>
-\sa MALLOC() , REALLOC() , FREE()
+\sa CCAMALLOC() , CCAREALLOC() , CCAFREE()
 
 *----------------------------------------------------------------------*/
 #ifdef DEBUG
-void *CALLOC(int num, int size)
+void *CCACALLOC(int num, int size)
 {
 char *buf;
 
@@ -184,18 +184,18 @@ if (buf)
    return (void*)(buf+DWORD);
 }
 else return (void*)(NULL);
-}/* end of CALLOC */
+}/* end of CCACALLOC */
 /*----------------------------------------------------------------------*
  | redefinition of calloc FAST version                    m.gee 2/02    |
  | bhaves exactly like calloc conform to ansi c standard                |
  *----------------------------------------------------------------------*/
 #else
-void *CALLOC(int num, int size)
+void *CCACALLOC(int num, int size)
 {
 void *buf;
 buf = calloc((size_t)num,(size_t)size);
 return (void *)(buf);
-}/* end of CALLOC */
+}/* end of CCACALLOC */
 #endif
 
 
@@ -207,11 +207,11 @@ return (void *)(buf);
 bhaves exactly like realloc conform to ansi c standard
 if compiled with DEBUG define, it counts the allocated memory
 </pre>
-\sa CALLOC() , MALLOC() , FREE()
+\sa CCACALLOC() , CCAMALLOC() , CCAFREE()
 
 *----------------------------------------------------------------------*/
 #ifdef DEBUG
-void *REALLOC(void *oldptr, int size)
+void *CCAREALLOC(void *oldptr, int size)
 {
 int   n;
 char *buf = ((char*)oldptr) - DWORD;
@@ -228,18 +228,18 @@ if (buf)
    return (void*)(buf+DWORD);
 }
 else return (void*)(NULL);
-}/* end of REALLOC */
+}/* end of CCAREALLOC */
 /*----------------------------------------------------------------------*
  | redefinition of realloc FAST version                  m.gee 2/02     |
  | bhaves exactly like realloc conform to ansi c standard               |
  *----------------------------------------------------------------------*/
 #else
-void *REALLOC(void *oldptr, int size)
+void *CCAREALLOC(void *oldptr, int size)
 {
 void *buf;
 buf = realloc(oldptr,(size_t)size);
 return (void*)(buf);
-}/* end of REALLOC */
+}/* end of CCAREALLOC */
 #endif
 
 
@@ -251,11 +251,11 @@ return (void*)(buf);
 bhaves exactly like free conform to ansi c standard
 if compiled with DEBUG define, it counts the allocated memory
 </pre>
-\sa CALLOC() , MALLOC() , REALLOC()
+\sa CCACALLOC() , CCAMALLOC() , CCAREALLOC()
 
 *----------------------------------------------------------------------*/
 #ifdef DEBUG
-void *FREE(void *oldptr)
+void *CCAFREE(void *oldptr)
 {
 int   n;
 char *p = ((char*)oldptr) - DWORD;
@@ -272,7 +272,7 @@ return (oldptr=NULL);
  | bhaves exactly like free conform to ansi c standard                  |
  *----------------------------------------------------------------------*/
 #else
-void *FREE(void *oldptr)
+void *CCAFREE(void *oldptr)
 {
 free(oldptr);
 return (oldptr=NULL);
@@ -335,29 +335,29 @@ next:
 switch (a->Typ)
 {
 case cca_DA: /* -------------------------------------------double array */
-a->a.da    = (double**)MALLOC((fdim*sizeof(double*)));
+a->a.da    = (double**)CCAMALLOC((fdim*sizeof(double*)));
 if (!(a->a.da))    dserror("Allocation of memory failed");
-a->a.da[0] = (double*) MALLOC((fdim*sdim*sizeof(double)));
+a->a.da[0] = (double*) CCAMALLOC((fdim*sdim*sizeof(double)));
 if (!(a->a.da[0])) dserror("Allocation of memory failed");
 for (i=1; i<fdim; i++) a->a.da[i] = &(a->a.da[0][i*sdim]);
 break;
 
 
 case cca_IA: /* ------------------------------------------integer array */
-a->a.ia    = (int**)MALLOC((fdim*sizeof(int*)));
+a->a.ia    = (int**)CCAMALLOC((fdim*sizeof(int*)));
 if (!(a->a.ia))    dserror("Allocation of memory failed");
-a->a.ia[0] = (int*) MALLOC((fdim*sdim*sizeof(int)));
+a->a.ia[0] = (int*) CCAMALLOC((fdim*sdim*sizeof(int)));
 if (!(a->a.ia[0])) dserror("Allocation of memory failed");
 for (i=1; i<fdim; i++) a->a.ia[i] = &(a->a.ia[0][i*sdim]);
 break;
 
 case cca_DV: /* ------------------------------------------double vector */
-a->a.dv = (double*)MALLOC((fdim*sdim*sizeof(double)));
+a->a.dv = (double*)CCAMALLOC((fdim*sdim*sizeof(double)));
 if (!(a->a.dv)) dserror("Allocation of memory failed");
 break;
 
 case cca_IV: /* -----------------------------------------integer vector */
-a->a.iv = (int*)MALLOC((fdim*sdim*sizeof(int)));
+a->a.iv = (int*)CCAMALLOC((fdim*sdim*sizeof(int)));
 if (!(a->a.iv)) dserror("Allocation of memory failed");
 break;
 
@@ -625,20 +625,20 @@ strncpy(array->name,"DELETED",9);
 switch(array->Typ)
 {
 case cca_DA:
-   if (array->sdim)             FREE(array->a.da[0]);
-   if (array->fdim) array->a.da=FREE(array->a.da);
+   if (array->sdim)             CCAFREE(array->a.da[0]);
+   if (array->fdim) array->a.da=CCAFREE(array->a.da);
 break;
 case cca_IA:
-   if (array->sdim)             FREE(array->a.ia[0]);
-   if (array->fdim) array->a.ia=FREE(array->a.ia);
+   if (array->sdim)             CCAFREE(array->a.ia[0]);
+   if (array->fdim) array->a.ia=CCAFREE(array->a.ia);
 break;
 case cca_DV:
    size = array->fdim * array->sdim;
-   if (size) array->a.dv=FREE(array->a.dv);
+   if (size) array->a.dv=CCAFREE(array->a.dv);
 break;
 case cca_IV:
    size = array->fdim * array->sdim;
-   if (size) array->a.iv=FREE(array->a.iv);
+   if (size) array->a.iv=CCAFREE(array->a.iv);
 break;
 default:
 dserror("Unknown type of array given");
@@ -1125,11 +1125,11 @@ switch (a->Typ)
 {
 case cca_D3: /* --------------------------------------------double D3 array */
 if (fodim != 0) dserror("Illegal fourth dimension in call to am4def");
-a->a.d3       = (double***)MALLOC((fdim*sizeof(double**)));
+a->a.d3       = (double***)CCAMALLOC((fdim*sizeof(double**)));
 if (!(a->a.d3))       dserror("Allocation of memory failed");
-a->a.d3[0]    = (double**) MALLOC((fdim*sdim*sizeof(double*)));
+a->a.d3[0]    = (double**) CCAMALLOC((fdim*sdim*sizeof(double*)));
 if (!(a->a.d3[0]))    dserror("Allocation of memory failed");
-a->a.d3[0][0] = (double*)  MALLOC((fdim*sdim*tdim*sizeof(double)));
+a->a.d3[0][0] = (double*)  CCAMALLOC((fdim*sdim*tdim*sizeof(double)));
 if (!(a->a.d3[0][0])) dserror("Allocation of memory failed");
 
 for (i=1; i<fdim; i++)    a->a.d3[i]    = &(a->a.d3[0][i*sdim]);
@@ -1139,11 +1139,11 @@ break;
 
 case cca_I3: /* ----------------------------------------------int I3 array */
 if (fodim != 0) dserror("Illegal fourth dimension in call to am4def");
-a->a.i3       = (int***)MALLOC((fdim*sizeof(int**)));
+a->a.i3       = (int***)CCAMALLOC((fdim*sizeof(int**)));
 if (!(a->a.i3))       dserror("Allocation of memory failed");
-a->a.i3[0]    = (int**) MALLOC((fdim*sdim*sizeof(int*)));
+a->a.i3[0]    = (int**) CCAMALLOC((fdim*sdim*sizeof(int*)));
 if (!(a->a.i3[0]))    dserror("Allocation of memory failed");
-a->a.i3[0][0] = (int*)  MALLOC((fdim*sdim*tdim*sizeof(int)));
+a->a.i3[0][0] = (int*)  CCAMALLOC((fdim*sdim*tdim*sizeof(int)));
 if (!(a->a.i3[0][0])) dserror("Allocation of memory failed");
 
 for (i=1; i<fdim; i++)    a->a.i3[i]    = &(a->a.i3[0][i*sdim]);
@@ -1152,13 +1152,13 @@ for (i=1; i<endloop; i++) a->a.i3[0][i] = &(a->a.i3[0][0][i*tdim]);
 break;
 
 case cca_D4: /* --------------------------------------------double D4 array */
-a->a.d4          = (double****)MALLOC((fdim*sizeof(double***)));
+a->a.d4          = (double****)CCAMALLOC((fdim*sizeof(double***)));
 if (!(a->a.d4))          dserror("Allocation of memory failed");
-a->a.d4[0]       = (double***) MALLOC((fdim*sdim*sizeof(double**)));
+a->a.d4[0]       = (double***) CCAMALLOC((fdim*sdim*sizeof(double**)));
 if (!(a->a.d4[0]))       dserror("Allocation of memory failed");
-a->a.d4[0][0]    = (double**)  MALLOC((fdim*sdim*tdim*sizeof(double*)));
+a->a.d4[0][0]    = (double**)  CCAMALLOC((fdim*sdim*tdim*sizeof(double*)));
 if (!(a->a.d4[0][0]))    dserror("Allocation of memory failed");
-a->a.d4[0][0][0] = (double*)   MALLOC((fdim*sdim*tdim*fodim*sizeof(double)));
+a->a.d4[0][0][0] = (double*)   CCAMALLOC((fdim*sdim*tdim*fodim*sizeof(double)));
 if (!(a->a.d4[0][0][0])) dserror("Allocation of memory failed");
 
 for (i=1; i<fdim; i++)    a->a.d4[i]       = &(a->a.d4[0][i*sdim]);
@@ -1169,13 +1169,13 @@ for (i=1; i<endloop; i++) a->a.d4[0][0][i] = &(a->a.d4[0][0][0][i*fodim]);
 break;
 
 case cca_I4: /* ----------------------------------------------int I4 array */
-a->a.i4          = (int****)MALLOC((fdim*sizeof(int***)));
+a->a.i4          = (int****)CCAMALLOC((fdim*sizeof(int***)));
 if (!(a->a.i4))          dserror("Allocation of memory failed");
-a->a.i4[0]       = (int***) MALLOC((fdim*sdim*sizeof(int**)));
+a->a.i4[0]       = (int***) CCAMALLOC((fdim*sdim*sizeof(int**)));
 if (!(a->a.i4[0]))       dserror("Allocation of memory failed");
-a->a.i4[0][0]    = (int**)  MALLOC((fdim*sdim*tdim*sizeof(int*)));
+a->a.i4[0][0]    = (int**)  CCAMALLOC((fdim*sdim*tdim*sizeof(int*)));
 if (!(a->a.i4[0][0]))    dserror("Allocation of memory failed");
-a->a.i4[0][0][0] = (int*)   MALLOC((fdim*sdim*tdim*fodim*sizeof(int)));
+a->a.i4[0][0][0] = (int*)   CCAMALLOC((fdim*sdim*tdim*fodim*sizeof(int)));
 if (!(a->a.i4[0][0][0])) dserror("Allocation of memory failed");
 
 for (i=1; i<fdim; i++)    a->a.i4[i]       = &(a->a.i4[0][i*sdim]);
@@ -1232,26 +1232,26 @@ array->fodim=0;
 switch(array->Typ)
 {
 case cca_D3:
-   FREE(array->a.d3[0][0]);
-   FREE(array->a.d3[0]);
-   array->a.d3=FREE(array->a.d3);
+   CCAFREE(array->a.d3[0][0]);
+   CCAFREE(array->a.d3[0]);
+   array->a.d3=CCAFREE(array->a.d3);
 break;
 case cca_I3:
-   FREE(array->a.i3[0][0]);
-   FREE(array->a.i3[0]);
-   array->a.i3=FREE(array->a.i3);
+   CCAFREE(array->a.i3[0][0]);
+   CCAFREE(array->a.i3[0]);
+   array->a.i3=CCAFREE(array->a.i3);
 break;
 case cca_D4:
-   FREE(array->a.d4[0][0][0]);
-   FREE(array->a.d4[0][0]);
-   FREE(array->a.d4[0]);
-   array->a.d4=FREE(array->a.d4);
+   CCAFREE(array->a.d4[0][0][0]);
+   CCAFREE(array->a.d4[0][0]);
+   CCAFREE(array->a.d4[0]);
+   array->a.d4=CCAFREE(array->a.d4);
 break;
 case cca_I4:
-   FREE(array->a.i4[0][0][0]);
-   FREE(array->a.i4[0][0]);
-   FREE(array->a.i4[0]);
-   array->a.i4=FREE(array->a.i4);
+   CCAFREE(array->a.i4[0][0][0]);
+   CCAFREE(array->a.i4[0][0]);
+   CCAFREE(array->a.i4[0]);
+   array->a.i4=CCAFREE(array->a.i4);
 break;
 default:
 dserror("Unknown type of array given");

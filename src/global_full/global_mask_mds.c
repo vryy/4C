@@ -28,7 +28,7 @@ dstrc_enter("mask_mds");
  amdef("colstr1",&(mds->colstr),numeq,1,"IV");
  amzero(&(mds->colstr));
 /*---------------------------------- calculate dof connectivity list ---*/
- dof_connect = (int**)CALLOC(mds->numeq,sizeof(int*));
+ dof_connect = (int**)CCACALLOC(mds->numeq,sizeof(int*));
  if (!dof_connect) dserror("Allocation of dof_connect failed");
 
  dofconnectivity(actfield,dof_connect,&nnz);
@@ -45,9 +45,9 @@ mds_make_colstr_rowind(actsolv, mds,dof_connect, mds->numeq);
 /*---------------------------------------- delete the array dof_connect */
  for (i=0; i<mds->numeq; i++)
 {
-   if (dof_connect[i]) FREE(dof_connect[i]);
+   if (dof_connect[i]) CCAFREE(dof_connect[i]);
 }
-FREE(dof_connect);
+CCAFREE(dof_connect);
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();

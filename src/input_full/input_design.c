@@ -26,7 +26,7 @@ int  ierr;
 dstrc_enter("inpctrdesign");
 #endif
 
-design = (DESIGN*)CALLOC(1,sizeof(DESIGN));
+design = (DESIGN*)CCACALLOC(1,sizeof(DESIGN));
 if (design==NULL) dserror("Unable to allocate DESIGN");
 /*----------------------- input of design size (number of dnodes etc... */
 inp_designsize();
@@ -82,19 +82,19 @@ design->ndline = numdline;
 design->ndsurf = numdsurf;
 design->ndvol  = numdvol;
 /*----------------------------------------------allocate design vectors */
-design->dnode = (DNODE*)CALLOC(design->ndnode,sizeof(DNODE));
+design->dnode = (DNODE*)CCACALLOC(design->ndnode,sizeof(DNODE));
 if (!design->dnode) dserror("Allocation of design nodes failed");
 for (i=0; i<design->ndnode; i++) design->dnode[i].Id = i;
 
-design->dline = (DLINE*)CALLOC(design->ndline,sizeof(DLINE));
+design->dline = (DLINE*)CCACALLOC(design->ndline,sizeof(DLINE));
 if (!design->dline) dserror("Allocation of design lines failed");
 for (i=0; i<design->ndline; i++) design->dline[i].Id = i;
 
-design->dsurf = (DSURF*)CALLOC(design->ndsurf,sizeof(DSURF));
+design->dsurf = (DSURF*)CCACALLOC(design->ndsurf,sizeof(DSURF));
 if (!design->dsurf) dserror("Allocation of design surfaces failed");
 for (i=0; i<design->ndsurf; i++) design->dsurf[i].Id = i;
 
-design->dvol = (DVOL*)CALLOC(design->ndvol,sizeof(DVOL));
+design->dvol = (DVOL*)CCACALLOC(design->ndvol,sizeof(DVOL));
 if (!design->dvol) dserror("Allocation of design volumes failed");
 for (i=0; i<design->ndvol; i++) design->dvol[i].Id = i;
 /*-------------------------------------------------------------- rewind */

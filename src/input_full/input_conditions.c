@@ -135,7 +135,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    }
    dsassert(actdnode!=NULL,"Cannot read design-nodal dirichlet conditions");
    /*----------- allocate space for a dirichlet condition in this dnode */
-   actdnode->dirich = (DIRICH_CONDITION*)CALLOC(1,sizeof(DIRICH_CONDITION));
+   actdnode->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
    if (!actdnode->dirich) dserror("Allocation of memory failed");
    /*--------------------------------- move pointer behind the "-" sign */
    colptr = strstr(allfiles.actplace,"-");
@@ -241,7 +241,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    }
    dsassert(actdline!=NULL,"Cannot read design-line dirichlet conditions");
    /*----------- allocate space for a dirichlet condition in this dline */
-   actdline->dirich = (DIRICH_CONDITION*)CALLOC(1,sizeof(DIRICH_CONDITION));
+   actdline->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
    if (!actdline->dirich) dserror("Allocation of memory failed");
    /*--------------------------------- move pointer behind the "-" sign */
    colptr = strstr(allfiles.actplace,"-");
@@ -347,7 +347,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    }
    dsassert(actdsurf!=NULL,"Cannot read design-surf dirichlet conditions");
    /*----------- allocate space for a dirichlet condition in this dsurf */
-   actdsurf->dirich = (DIRICH_CONDITION*)CALLOC(1,sizeof(DIRICH_CONDITION));
+   actdsurf->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
    if (!actdsurf->dirich) dserror("Allocation of memory failed");
    /*--------------------------------- move pointer behind the "-" sign */
    colptr = strstr(allfiles.actplace,"-");
@@ -453,7 +453,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    }
    dsassert(actdvol!=NULL,"Cannot read design-vol dirichlet conditions");
    /*------------ allocate space for a dirichlet condition in this dvol */
-   actdvol->dirich = (DIRICH_CONDITION*)CALLOC(1,sizeof(DIRICH_CONDITION));
+   actdvol->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
    if (!actdvol->dirich) dserror("Allocation of memory failed");
    /*--------------------------------- move pointer behind the "-" sign */
    colptr = strstr(allfiles.actplace,"-");
@@ -561,7 +561,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    }
    dsassert(actdnode!=NULL,"Cannot read design-nodal neumann conditions");
    /*----------- allocate space for a neumann condition in this dnode */
-   actdnode->neum = (NEUM_CONDITION*)CALLOC(1,sizeof(NEUM_CONDITION));
+   actdnode->neum = (NEUM_CONDITION*)CCACALLOC(1,sizeof(NEUM_CONDITION));
    if (!actdnode->neum) dserror("Allocation of memory failed");
    /*--------------------------------- move pointer behind the "-" sign */
    colptr = strstr(allfiles.actplace,"-");
@@ -646,7 +646,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    }
    dsassert(actdline!=NULL,"Cannot read design-line neumann conditions");
    /*----------- allocate space for a neumann condition in this dline */
-   actdline->neum = (NEUM_CONDITION*)CALLOC(1,sizeof(NEUM_CONDITION));
+   actdline->neum = (NEUM_CONDITION*)CCACALLOC(1,sizeof(NEUM_CONDITION));
    if (!actdline->neum) dserror("Allocation of memory failed");
    /*--------------------------------- move pointer behind the "-" sign */
    colptr = strstr(allfiles.actplace,"-");
@@ -731,7 +731,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    }
    dsassert(actdsurf!=NULL,"Cannot read design-surf neumann conditions");
    /*----------- allocate space for a neumann condition in this dsurf */
-   actdsurf->neum = (NEUM_CONDITION*)CALLOC(1,sizeof(NEUM_CONDITION));
+   actdsurf->neum = (NEUM_CONDITION*)CCACALLOC(1,sizeof(NEUM_CONDITION));
    if (!actdsurf->neum) dserror("Allocation of memory failed");
    /*--------------------------------- move pointer behind the "-" sign */
    colptr = strstr(allfiles.actplace,"-");
@@ -827,7 +827,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    }
    dsassert(actdvol!=NULL,"Cannot read design-vol neumann conditions");
    /*------------ allocate space for a neumann condition in this dvol */
-   actdvol->neum = (NEUM_CONDITION*)CALLOC(1,sizeof(NEUM_CONDITION));
+   actdvol->neum = (NEUM_CONDITION*)CCACALLOC(1,sizeof(NEUM_CONDITION));
    if (!actdvol->neum) dserror("Allocation of memory failed");
    /*--------------------------------- move pointer behind the "-" sign */
    colptr = strstr(allfiles.actplace,"-");
@@ -931,7 +931,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    }
    dsassert(actdnode!=NULL,"Cannot read design-nodal coupling conditions");
    /*----------- allocate space for a coupling condition in this dnode */
-   actdnode->couple = (COUPLE_CONDITION*)CALLOC(1,sizeof(COUPLE_CONDITION));
+   actdnode->couple = (COUPLE_CONDITION*)CCACALLOC(1,sizeof(COUPLE_CONDITION));
    if (!actdnode->couple) dserror("Allocation of memory failed");
    /*--------------------------------- move pointer behind the "-" sign */
    colptr = strstr(allfiles.actplace,"-");
@@ -1048,7 +1048,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    }
    dsassert(actdline!=NULL,"Cannot read design-line coupling conditions");
    /*----------- allocate space for a coupling condition in this dline */
-   actdline->couple = (COUPLE_CONDITION*)CALLOC(1,sizeof(COUPLE_CONDITION));
+   actdline->couple = (COUPLE_CONDITION*)CCACALLOC(1,sizeof(COUPLE_CONDITION));
    if (!actdline->couple) dserror("Allocation of memory failed");
    /*--------------------------------- move pointer behind the "-" sign */
    colptr = strstr(allfiles.actplace,"-");
@@ -1166,7 +1166,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    }
    dsassert(actdsurf!=NULL,"Cannot read design-nodal coupling conditions");
    /*----------- allocate space for a coupling condition in this dsurf */
-   actdsurf->couple = (COUPLE_CONDITION*)CALLOC(1,sizeof(COUPLE_CONDITION));
+   actdsurf->couple = (COUPLE_CONDITION*)CCACALLOC(1,sizeof(COUPLE_CONDITION));
    if (!actdsurf->couple) dserror("Allocation of memory failed");
    /*--------------------------------- move pointer behind the "-" sign */
    colptr = strstr(allfiles.actplace,"-");
@@ -1284,7 +1284,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    }
    dsassert(actdvol!=NULL,"Cannot read design-nodal coupling conditions");
    /*----------- allocate space for a coupling condition in this dvol */
-   actdvol->couple = (COUPLE_CONDITION*)CALLOC(1,sizeof(COUPLE_CONDITION));
+   actdvol->couple = (COUPLE_CONDITION*)CCACALLOC(1,sizeof(COUPLE_CONDITION));
    if (!actdvol->couple) dserror("Allocation of memory failed");
    /*--------------------------------- move pointer behind the "-" sign */
    colptr = strstr(allfiles.actplace,"-");

@@ -55,10 +55,10 @@ ja          = matrix->ja.a.iv;
 update      = matrix->update.a.iv;
 a           = matrix->a.a.dv;
 /*----------------------------------------------------------------------*/
-(*sizes) = (int*)CALLOC(numeq_total,sizeof(int));
-tmp      = (int*)CALLOC(numeq_total,sizeof(int));
-(*icol)  = (int***)MALLOC(numeq_total*sizeof(int**));
-(*dcol)  = (double***)MALLOC(numeq_total*sizeof(int**));
+(*sizes) = (int*)CCACALLOC(numeq_total,sizeof(int));
+tmp      = (int*)CCACALLOC(numeq_total,sizeof(int));
+(*icol)  = (int***)CCAMALLOC(numeq_total*sizeof(int**));
+(*dcol)  = (double***)CCAMALLOC(numeq_total*sizeof(int**));
 if ( (*sizes)==NULL || (*icol)==NULL || (*dcol)==NULL || !tmp)
    dserror("Allocation of memory failed"); 
 /*--------------------------------------- count the size of the columns */
@@ -79,8 +79,8 @@ for (k=0; k<numeq_total; k++)
       (*dcol)[k]=NULL;
       continue;
    }
-   (*icol)[k] = (int**)MALLOC(counter*sizeof(int*));
-   (*dcol)[k] = (double**)MALLOC(counter*sizeof(double*));
+   (*icol)[k] = (int**)CCAMALLOC(counter*sizeof(int*));
+   (*dcol)[k] = (double**)CCAMALLOC(counter*sizeof(double*));
    if ( (*icol)[k]==NULL || (*dcol)[k]==NULL )
       dserror("Allocation of memory failed");
 }
@@ -98,7 +98,7 @@ for (i=0; i<numeq; i++)
       tmp[actcol]++;
    }
 }
-FREE(tmp);
+CCAFREE(tmp);
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -135,14 +135,14 @@ for (i=0; i<numeq_total; i++)
    if ( (*sizes)[i]==0 )
       continue;
    if ( (*icol)[i] != NULL )
-      FREE((*icol)[i]);
+      CCAFREE((*icol)[i]);
    if ( (*dcol)[i] != NULL )
-      FREE((*dcol)[i]);
+      CCAFREE((*dcol)[i]);
 }
 /*----------------------------------------------------------------------*/
-FREE((*sizes));
-FREE((*icol));
-FREE((*dcol));
+CCAFREE((*sizes));
+CCAFREE((*icol));
+CCAFREE((*dcol));
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -618,18 +618,18 @@ if (matrix->sendbuff.Typ != cca_XX)
 if (matrix->csc)
 {
    mlpcg_csr_destroy(matrix->csc);
-   matrix->csc = FREE(matrix->csc);
+   matrix->csc = CCAFREE(matrix->csc);
 }
 if (matrix->ilu)
 {
    mlpcg_csr_destroy(matrix->ilu);
-   matrix->ilu = FREE(matrix->ilu);
+   matrix->ilu = CCAFREE(matrix->ilu);
 }
 #ifdef PARALLEL
 if (matrix->status != NULL) 
-   FREE(matrix->status);
+   CCAFREE(matrix->status);
 if (matrix->request != NULL) 
-   FREE(matrix->request);
+   CCAFREE(matrix->request);
 #endif   
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -1676,7 +1676,7 @@ a       = matrix->a.a.dv;
 /*------------------------------------------------- allocate csc matrix */
 if (!matrix->csc)
 {
-   matrix->csc = (DBCSR*)CALLOC(1,sizeof(DBCSR));
+   matrix->csc = (DBCSR*)CCACALLOC(1,sizeof(DBCSR));
    if (!(matrix->csc)) dserror("Allocation of memory failed");
 }
 else dserror("CSC matrix already exists in DBCSR matrix");

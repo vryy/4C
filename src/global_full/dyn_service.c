@@ -227,7 +227,7 @@ if (sdyn->damp==1)
 }
 /*----------------------------------------------------------------------*/
 }
-else if (sdyn->Typ = centr_diff)/*----------- central difference method */
+else if (sdyn->Typ == centr_diff)/*----------- central difference method */
 {
 /*----------------------------------------------------------------------*/
 a5 =  dynvar->constants[4];

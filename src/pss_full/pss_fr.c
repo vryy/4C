@@ -82,10 +82,10 @@ if (par.nprocs>1)
 #endif 
 allfiles.numrows=linecount;
 /*--------------------------------------allocate space for copy of file */
-allfiles.input_file_hook=(char*)CALLOC(linecount*(allfiles.numcol),sizeof(char));
+allfiles.input_file_hook=(char*)CCACALLOC(linecount*(allfiles.numcol),sizeof(char));
 if (allfiles.input_file_hook==NULL) dserror("Allocation of memory failed");
 
-allfiles.input_file=(char**)CALLOC(linecount,sizeof(char*));
+allfiles.input_file=(char**)CCACALLOC(linecount,sizeof(char*));
 if (allfiles.input_file==NULL) dserror("Allocation of memory failed");
 
 for (i=0; i<linecount; i++)
@@ -524,8 +524,8 @@ fr-system is freed
 void frend()
 {
 /*----------------------------------------------------------------------*/
-FREE(allfiles.input_file);
-FREE(allfiles.input_file_hook);
+CCAFREE(allfiles.input_file);
+CCAFREE(allfiles.input_file_hook);
 allfiles.input_file=NULL;
 allfiles.input_file_hook=NULL;
 allfiles.actplace = NULL;

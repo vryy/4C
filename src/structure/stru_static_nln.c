@@ -148,7 +148,7 @@ actintra    = &(par.intra[0]);    /*     the field's intra-communicator */
 /*---------------- if we are not parallel, we have to allocate a pseudo */
 /*                                         intra-communicator structure */
 #else
-actintra    = (INTRA*)CALLOC(1,sizeof(INTRA));
+actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
 if (!actintra) dserror("Allocation of INTRA failed");
 actintra->intra_fieldtyp = structure;
 actintra->intra_rank     = 0;
@@ -408,7 +408,7 @@ solserv_del_vec(&(dispi),2);
 /*----------------------------------------------------------------------*/
 end:
 #ifndef PARALLEL 
-FREE(actintra);
+CCAFREE(actintra);
 #endif
 #ifdef DEBUG 
 dstrc_exit();

@@ -71,7 +71,7 @@ pss_write_array(time_a,&(vis.time),out,&ierr);
 
 /*----------------------------------------------------------------------*/
 numnp = actfield->dis[0].numnp;
-vis.node_handles = (long int*)malloc(numnp*sizeof(long int));
+vis.node_handles = (long int*)CCAMALLOC(numnp*sizeof(long int));
 if (!vis.node_handles) dserror("Allocation of memory failed\n");
 node_handles = vis.node_handles;
 
@@ -93,7 +93,7 @@ if (ierr != 1) dserror("Error writing visual data\n");
 /*----------------- delete the vis.node_handles but keep the dimensions */
 vis.node_fdim = numnp;
 vis.node_sdim = 1;
-free(vis.node_handles);
+CCAFREE(vis.node_handles);
 
 /*----------------------------------------------------------------------*/
 /*
@@ -186,7 +186,7 @@ if (numnp != vis.node_fdim)
     dserror("Mismatch in number of nodes on reading visual data from file .pss\n");
 
 /*----------------------------------------- define the array of handles */
-vis.node_handles = (long int*)malloc(numnp*sizeof(long int));
+vis.node_handles = (long int*)CCAMALLOC(numnp*sizeof(long int));
 if (!vis.node_handles) dserror("Allocation of memory failed\n");
 node_handles = vis.node_handles;
 
@@ -214,7 +214,7 @@ for (i=0; i<numnp; i++)
 } 
 
 /*------------------------------- delete the handle array for the nodes */
-free(vis.node_handles);
+CCAFREE(vis.node_handles);
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

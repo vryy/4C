@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*
  |  main_ccarat.c                                        m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void main(int argc, char *argv[]);
+int main(int argc, char *argv[]);
 /*----------------------------------------------------------------------*
  |  global_ass_dof.c                                     m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -337,7 +337,7 @@ void ShiftPointer(void **ptr, PTRSIZE diff);
  | redefinition of malloc FAST version                        m.gee 2/02|
  | bhaves exactly like malloc conform to ansi c standard                |
  *----------------------------------------------------------------------*/
-void *MALLOC(int size);
+void *CCAMALLOC(int size);
 /*----------------------------------------------------------------------*
  | redefinition of calloc DEBUG version                   m.gee 2/02    |
  | bhaves exactly like calloc conform to ansi c standard                |
@@ -346,7 +346,7 @@ void *MALLOC(int size);
  | redefinition of calloc FAST version                    m.gee 2/02    |
  | bhaves exactly like calloc conform to ansi c standard                |
  *----------------------------------------------------------------------*/
-void *CALLOC(int num, int size);
+void *CCACALLOC(int num, int size);
 /*----------------------------------------------------------------------*
  | redefinition of realloc DEBUG version                  m.gee 2/02    |
  | bhaves exactly like realloc conform to ansi c standard               |
@@ -355,7 +355,7 @@ void *CALLOC(int num, int size);
  | redefinition of realloc FAST version                  m.gee 2/02     |
  | bhaves exactly like realloc conform to ansi c standard               |
  *----------------------------------------------------------------------*/
-void *REALLOC(void *oldptr, int size);
+void *CCAREALLOC(void *oldptr, int size);
 /*----------------------------------------------------------------------*
  | redefinition of free DEBUG version                     m.gee 2/02    |
  | bhaves exactly like free conform to ansi c standard                  |
@@ -364,7 +364,7 @@ void *REALLOC(void *oldptr, int size);
  | redefinition of free FAST version                      m.gee 2/02    |
  | bhaves exactly like free conform to ansi c standard                  |
  *----------------------------------------------------------------------*/
-void *FREE(void *oldptr);
+void *CCAFREE(void *oldptr);
 /*----------------------------------------------------------------------*
  | define array                                           m.gee 8/00    |
  | allocate a 1 or 2 - D vector of type INT or DOUBLE in the structure  |

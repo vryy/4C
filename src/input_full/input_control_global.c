@@ -75,7 +75,7 @@ dstrc_enter("inpctr");
    {
       if (genprob.numfld!=3) dserror("numfld != 3 for FSI");
       
-      solv = (SOLVAR*)CALLOC(genprob.numfld,sizeof(SOLVAR));
+      solv = (SOLVAR*)CCACALLOC(genprob.numfld,sizeof(SOLVAR));
       if (!solv) dserror("Allocation of SOLVAR failed");
       
       solv[0].fieldtyp = structure;
@@ -91,7 +91,7 @@ dstrc_enter("inpctr");
    {
       if (genprob.numfld!=1) dserror("numfld != 1 for Structural Problem");
       
-      solv = (SOLVAR*)CALLOC(genprob.numfld,sizeof(SOLVAR));
+      solv = (SOLVAR*)CCACALLOC(genprob.numfld,sizeof(SOLVAR));
       if (!solv) dserror("Allocation of SOLVAR failed");
       
       solv[0].fieldtyp = structure;
@@ -99,7 +99,7 @@ dstrc_enter("inpctr");
    }
    if (genprob.probtyp == prb_fluid)   
    {
-      solv = (SOLVAR*)CALLOC(genprob.numfld,sizeof(SOLVAR));
+      solv = (SOLVAR*)CCACALLOC(genprob.numfld,sizeof(SOLVAR));
       if (!solv) dserror("Allocation of SOLVAR failed");
       
       solv[0].fieldtyp = fluid;
@@ -109,7 +109,7 @@ dstrc_enter("inpctr");
    {
       if (genprob.numfld!=1) dserror("numfld != 1 for Ale Problem");
 
-      solv = (SOLVAR*)CALLOC(genprob.numfld,sizeof(SOLVAR));
+      solv = (SOLVAR*)CCACALLOC(genprob.numfld,sizeof(SOLVAR));
       if (!solv) dserror("Allocation of SOLVAR failed");
 
       solv[0].fieldtyp = ale;
@@ -272,7 +272,7 @@ dstrc_enter("inpctrstat");
 #endif
 /*----------------------------------------------------------------------*/
 /*----------------------------------------- allocate a structure STATIC */
-statvar = (STATIC_VAR*)CALLOC(1,sizeof(STATIC_VAR));
+statvar = (STATIC_VAR*)CCACALLOC(1,sizeof(STATIC_VAR));
 if (!statvar) dserror("Allocation of STATIC failed");
 /*----------------------------- default: results written every loadstep */
 statvar->resevry_disp=1;
@@ -369,7 +369,7 @@ FIELD *actfield;
 dstrc_enter("inpctrdyn");
 #endif
 /*----------------------------------------------------------------------*/
-alldyn = (ALLDYNA*)CALLOC(genprob.numfld,sizeof(ALLDYNA));
+alldyn = (ALLDYNA*)CCACALLOC(genprob.numfld,sizeof(ALLDYNA));
 if (!alldyn) dserror("Allocation of ALLDYNA failed");
 /*----------------------------------------------------------------------*/
 for (i=0; i<genprob.numfld; i++)
@@ -379,7 +379,7 @@ for (i=0; i<genprob.numfld; i++)
    {
    case fluid:
 #ifdef D_FLUID   
-      alldyn[i].fdyn = (FLUID_DYNAMIC*)CALLOC(1,sizeof(FLUID_DYNAMIC));
+      alldyn[i].fdyn = (FLUID_DYNAMIC*)CCACALLOC(1,sizeof(FLUID_DYNAMIC));
       if (!alldyn[i].fdyn) dserror("Allocation of FLUID_DYNAMIC failed");
       inpctr_dyn_fluid(alldyn[i].fdyn);
 #else
@@ -387,12 +387,12 @@ for (i=0; i<genprob.numfld; i++)
 #endif            
    break;
    case ale:
-      alldyn[i].sdyn = (STRUCT_DYNAMIC*)CALLOC(1,sizeof(STRUCT_DYNAMIC));
+      alldyn[i].sdyn = (STRUCT_DYNAMIC*)CCACALLOC(1,sizeof(STRUCT_DYNAMIC));
       if (!alldyn[i].sdyn) dserror("Allocation of STRUCT_DYNAMIC failed");
       inpctr_dyn_struct(alldyn[i].sdyn);
    break;
    case structure:
-      alldyn[i].sdyn = (STRUCT_DYNAMIC*)CALLOC(1,sizeof(STRUCT_DYNAMIC));
+      alldyn[i].sdyn = (STRUCT_DYNAMIC*)CCACALLOC(1,sizeof(STRUCT_DYNAMIC));
       if (!alldyn[i].sdyn) dserror("Allocation of STRUCT_DYNAMIC failed");
       inpctr_dyn_struct(alldyn[i].sdyn);
    break;

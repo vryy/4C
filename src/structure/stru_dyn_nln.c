@@ -156,7 +156,7 @@ if (sdyn->Typ == centr_diff)
 actintra    = &(par.intra[0]);
 /* if we are not parallel, we have to allocate an alibi intra-communicator structure */
 #else
-actintra    = (INTRA*)CALLOC(1,sizeof(INTRA));
+actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
 if (!actintra) dserror("Allocation of INTRA failed");
 actintra->intra_fieldtyp = structure;
 actintra->intra_rank     = 0;
@@ -197,11 +197,11 @@ else
 /* reallocate the vector of sparse matrices and the vector of there types */
 /* formerly lenght 1, now lenght 2 or 3 dependent on presence of damp_array */
 actsolv->sysarray_typ = 
-(SPARSE_TYP*)REALLOC(actsolv->sysarray_typ,actsolv->nsysarray*sizeof(SPARSE_TYP));
+(SPARSE_TYP*)CCAREALLOC(actsolv->sysarray_typ,actsolv->nsysarray*sizeof(SPARSE_TYP));
 if (!actsolv->sysarray_typ) dserror("Allocation of memory failed");
 
 actsolv->sysarray = 
-(SPARSE_ARRAY*)REALLOC(actsolv->sysarray,actsolv->nsysarray*sizeof(SPARSE_ARRAY));
+(SPARSE_ARRAY*)CCAREALLOC(actsolv->sysarray,actsolv->nsysarray*sizeof(SPARSE_ARRAY));
 if (!actsolv->sysarray_typ) dserror("Allocation of memory failed");
 
 /*-copy the matrices sparsity mask from stiff_array to mass_array (and to damp_array) */
@@ -890,7 +890,7 @@ solserv_del_vec(&fie,3);
 solserv_del_vec(&work,3);
 /*----------------------------------------------------------------------*/
 #ifndef PARALLEL 
-FREE(actintra);
+CCAFREE(actintra);
 #endif
 end_expl:
 #ifdef DEBUG 

@@ -43,7 +43,7 @@ CHAR buffer[50];
 dstrc_enter("ale3inp");
 #endif
 /*------------------------------------------------ allocate the element */      
-ele->e.ale3 = (ALE3*)CALLOC(1,sizeof(ALE3));
+ele->e.ale3 = (ALE3*)CCACALLOC(1,sizeof(ALE3));
 if (ele->e.ale3==NULL) dserror("Allocation of element ALE failed");
 /*----------------------------------- read stuff needed for ALE element */
 /*---------------------------------------------- read the element nodes */
@@ -52,7 +52,7 @@ if (ierr==1)
 {
    ele->distyp = hex8;
    ele->numnp=8;
-   ele->lm = (INT*)CALLOC(ele->numnp,sizeof(INT));
+   ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
    frint_n("HEX8",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
@@ -62,7 +62,7 @@ if (ierr==1)
 {
    ele->distyp = hex20;
    ele->numnp=20;
-   ele->lm = (INT*)CALLOC(ele->numnp,sizeof(INT));
+   ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
    frint_n("HEX20",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
@@ -72,7 +72,7 @@ if (ierr==1)
 {
    ele->distyp = tet4;
    ele->numnp=4;
-   ele->lm = (INT*)CALLOC(ele->numnp,sizeof(INT));
+   ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
    frint_n("TET4",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
@@ -86,7 +86,7 @@ if (ierr==1)
 {
    ele->distyp = tet10;
    ele->numnp=10;
-   ele->lm = (INT*)CALLOC(ele->numnp,sizeof(INT));
+   ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
    frint_n("TET10",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");

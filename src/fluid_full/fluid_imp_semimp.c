@@ -170,7 +170,7 @@ container.fieldtyp = actfield->fieldtyp;
 #ifdef PARALLEL 
 actintra    = &(par.intra[0]);
 #else
-actintra    = (INTRA*)CALLOC(1,sizeof(INTRA));
+actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
 if (!actintra) dserror("Allocation of INTRA failed");
 actintra->intra_fieldtyp = fluid;
 actintra->intra_rank     = 0;
@@ -480,7 +480,7 @@ solserv_del_vec(&(actsolv->sol),actsolv->nsol);
 
 /*----------------------------------------------------------------------*/
 #ifndef PARALLEL 
-FREE(actintra);
+CCAFREE(actintra);
 #endif
 
 #ifdef DEBUG 

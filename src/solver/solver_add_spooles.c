@@ -276,14 +276,14 @@ if (spo->couple_d_recv) drecv = spo->couple_d_recv->a.da;
 /*--------------------------------------------- allocate some envelopes */
 if (numrecv)
 {
-   irecv_status = (MPI_Status*)CALLOC(numrecv,sizeof(MPI_Status));
-   drecv_status = (MPI_Status*)CALLOC(numrecv,sizeof(MPI_Status));
+   irecv_status = (MPI_Status*)CCACALLOC(numrecv,sizeof(MPI_Status));
+   drecv_status = (MPI_Status*)CCACALLOC(numrecv,sizeof(MPI_Status));
    if (!irecv_status || !drecv_status) dserror("Allocation of memory failed");
 }
 if (numsend)
 {
-   isendrequest = (MPI_Request*)CALLOC(numsend,sizeof(MPI_Request));
-   dsendrequest = (MPI_Request*)CALLOC(numsend,sizeof(MPI_Request));
+   isendrequest = (MPI_Request*)CCACALLOC(numsend,sizeof(MPI_Request));
+   dsendrequest = (MPI_Request*)CCACALLOC(numsend,sizeof(MPI_Request));
    if ( !isendrequest || !dsendrequest) dserror("Allocation of memory failed");
 }
 /*-------------------------------------------- loop the dofs to be send */
@@ -330,8 +330,8 @@ for (i=0; i<numrecv; i++)
    }
 }/*---------------------------------------------- end of receiving loop */
 /*-------------------------------------------- free allocated MPI-stuff */
-if (numrecv){FREE(irecv_status);FREE(drecv_status);}
-if (numsend){FREE(isendrequest);FREE(dsendrequest);}
+if (numrecv){CCAFREE(irecv_status);CCAFREE(drecv_status);}
+if (numsend){CCAFREE(isendrequest);CCAFREE(dsendrequest);}
 /*----------------------------------------------------------------------
   do a barrier, because this is the end of the assembly, the msr matrix
   is now ready for solve

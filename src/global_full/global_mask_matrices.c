@@ -55,7 +55,6 @@ void mask_global_matrices()
 int i,j,k,l;               /* some counters */
 int actndis;               /* actual number of sysarray=discretisation */
 int isaztec_msr  =0;       /* flag for a certain sparsity pattern */
-int isaztec_vbr  =0;       
 int ishypre      =0;
 int isucchb      =0;
 int isdense      =0;
@@ -85,7 +84,7 @@ for (j=0; j<genprob.numfld; j++)
    actintra = &(par.intra[j]);
 #else
    /* if we are not parallel here, we have to allocate a pseudo-intracommunicator */
-   actintra    = (INTRA*)CALLOC(1,sizeof(INTRA));
+   actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
    if (!actintra) dserror("Allocation of INTRA failed");
    actintra->intra_fieldtyp = actfield->fieldtyp;
    actintra->intra_rank   = 0;
@@ -106,13 +105,6 @@ for (j=0; j<genprob.numfld; j++)
       if (actsolv->parttyp != cut_elements)
       dserror("Partitioning has to be Cut_Elements for solution with Aztec"); 
       else isaztec_msr=1;
-   }
-   /*---------- matrix is distributed variable block row DVBR for Aztec */
-   if (actsolv->solvertyp==aztec_vbr)
-   {
-      if (actsolv->parttyp != cut_elements)
-      dserror("Partitioning has to be Cut_Elements for solution with Aztec"); 
-      else isaztec_vbr=1;
    }
    /*------------------------------------------- matrix is hypre_parcsr */
    if (
@@ -186,14 +178,14 @@ for (j=0; j<genprob.numfld; j++)
    if (ismlib_d_sp==1)
    {      
       actsolv->nsysarray = nsysarray;
-      actsolv->sysarray_typ = (SPARSE_TYP*)  CALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
-      actsolv->sysarray     = (SPARSE_ARRAY*)CALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
+      actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
+      actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
       if (!actsolv->sysarray_typ || !actsolv->sysarray)
          dserror("Allocation of SPARSE_ARRAY failed");
       for (i=0; i<actsolv->nsysarray; i++)
       {
          actsolv->sysarray_typ[i] = mds;
-         actsolv->sysarray[i].mds = (ML_ARRAY_MDS*)CALLOC(1,sizeof(ML_ARRAY_MDS));
+         actsolv->sysarray[i].mds = (ML_ARRAY_MDS*)CCACALLOC(1,sizeof(ML_ARRAY_MDS));
          if (actsolv->sysarray[i].mds==NULL) dserror("Allocation of ML_ARRAY_MDS failed");
       }
       strcpy(actsolv->sysarray[0].mds->arrayname,"gstif1");
@@ -204,52 +196,34 @@ for (j=0; j<genprob.numfld; j++)
    if (isaztec_msr==1)
    {      
       actsolv->nsysarray = nsysarray;
-      actsolv->sysarray_typ = (SPARSE_TYP*)  CALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
-      actsolv->sysarray     = (SPARSE_ARRAY*)CALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
+      actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
+      actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
       if (!actsolv->sysarray_typ || !actsolv->sysarray)
          dserror("Allocation of SPARSE_ARRAY failed");
       for (i=0; i<actsolv->nsysarray; i++)
       {
          actndis=i;
 	 actsolv->sysarray_typ[i] = msr;
-         actsolv->sysarray[i].msr = (AZ_ARRAY_MSR*)CALLOC(1,sizeof(AZ_ARRAY_MSR));
+         actsolv->sysarray[i].msr = (AZ_ARRAY_MSR*)CCACALLOC(1,sizeof(AZ_ARRAY_MSR));
          if (actsolv->sysarray[i].msr==NULL) dserror("Allocation of AZ_ARRAY_MSR failed");
          actsolv->sysarray[i].msr->bins=NULL;      
          mask_msr(actfield,actpart,actsolv,actintra,actsolv->sysarray[i].msr,actndis);
       }
       isaztec_msr=0;
    }
-   /*------------------------- matrix is ditributed variable block row */
-   if (isaztec_vbr==1)
-   {
-      if(nsysarray>1) dserror("different discretisations not possible with SOLVER_TYP 'aztec_vbr'\n");
-      actsolv->nsysarray = nsysarray;
-      actsolv->sysarray_typ = (SPARSE_TYP*)  CALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
-      actsolv->sysarray     = (SPARSE_ARRAY*)CALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
-      if (!actsolv->sysarray_typ || !actsolv->sysarray)
-         dserror("Allocation of SPARSE_ARRAY failed");
-      for (i=0; i<actsolv->nsysarray; i++)
-      {
-         actsolv->sysarray_typ[i] = vbr;
-         actsolv->sysarray[i].vbr = (AZ_ARRAY_VBR*)CALLOC(1,sizeof(AZ_ARRAY_VBR));
-         if (actsolv->sysarray[i].vbr==NULL) dserror("Allocation of AZ_ARRAY_VBR failed");
-      }
-      mask_vbr(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].vbr);
-      isaztec_vbr=0;
-   }
    /*------------------------------------- matrix is Spooles's matrix  */
    if (isspooles==1)
    {
       if(nsysarray>1) dserror("different discretisations not possible with SOLVER_TYP 'SPOOLES'\n");
       actsolv->nsysarray = nsysarray;
-      actsolv->sysarray_typ = (SPARSE_TYP*)  CALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
-      actsolv->sysarray     = (SPARSE_ARRAY*)CALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
+      actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
+      actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
       if (!actsolv->sysarray_typ || !actsolv->sysarray)
          dserror("Allocation of SPARSE_ARRAY failed");
       for (i=0; i<actsolv->nsysarray; i++)
       {
          actsolv->sysarray_typ[i] = spoolmatrix;
-         actsolv->sysarray[i].spo = (SPOOLMAT*)CALLOC(1,sizeof(SPOOLMAT));
+         actsolv->sysarray[i].spo = (SPOOLMAT*)CCACALLOC(1,sizeof(SPOOLMAT));
          if (actsolv->sysarray[i].spo==NULL) dserror("Allocation of SPOOLMAT failed");
       }
       mask_spooles(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].spo);
@@ -260,14 +234,14 @@ for (j=0; j<genprob.numfld; j++)
    {
       if(nsysarray>1) dserror("different discretisations not possible with SOLVER_TYP 'HYPRE'\n");
       actsolv->nsysarray = nsysarray;
-      actsolv->sysarray_typ = (SPARSE_TYP*)  CALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
-      actsolv->sysarray     = (SPARSE_ARRAY*)CALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
+      actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
+      actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
       if (!actsolv->sysarray_typ || !actsolv->sysarray)
          dserror("Allocation of SPARSE_ARRAY failed");
       for (i=0; i<actsolv->nsysarray; i++)
       {
          actsolv->sysarray_typ[i] = parcsr;
-         actsolv->sysarray[i].parcsr = (H_PARCSR*)CALLOC(1,sizeof(H_PARCSR));
+         actsolv->sysarray[i].parcsr = (H_PARCSR*)CCACALLOC(1,sizeof(H_PARCSR));
          if (actsolv->sysarray[i].parcsr==NULL) dserror("Allocation of H_PARCSR failed");
       }
       mask_parcsr(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].parcsr);
@@ -278,14 +252,14 @@ for (j=0; j<genprob.numfld; j++)
    {
       if(nsysarray>1) dserror("different discretisations not possible with SOLVER_TYP 'parsuperlu'\n");
       actsolv->nsysarray = nsysarray;
-      actsolv->sysarray_typ = (SPARSE_TYP*)  CALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
-      actsolv->sysarray     = (SPARSE_ARRAY*)CALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
+      actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
+      actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
       if (!actsolv->sysarray_typ || !actsolv->sysarray)
          dserror("Allocation of SPARSE_ARRAY failed");
       for (i=0; i<actsolv->nsysarray; i++)
       {
          actsolv->sysarray_typ[i] = ucchb;
-         actsolv->sysarray[i].ucchb = (UCCHB*)CALLOC(1,sizeof(UCCHB));
+         actsolv->sysarray[i].ucchb = (UCCHB*)CCACALLOC(1,sizeof(UCCHB));
          if (actsolv->sysarray[i].ucchb==NULL) dserror("Allocation of UCCHB failed");
       }
       mask_ucchb(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].ucchb);
@@ -296,14 +270,14 @@ for (j=0; j<genprob.numfld; j++)
    {
       if(nsysarray>1) dserror("different discretisations not possible with SOLVER_TYP 'Lapack'\n");
       actsolv->nsysarray = nsysarray;
-      actsolv->sysarray_typ = (SPARSE_TYP*)  CALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
-      actsolv->sysarray     = (SPARSE_ARRAY*)CALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
+      actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
+      actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
       if (!actsolv->sysarray_typ || !actsolv->sysarray)
          dserror("Allocation of SPARSE_ARRAY failed");
       for (i=0; i<actsolv->nsysarray; i++)
       {
          actsolv->sysarray_typ[i] = dense;
-         actsolv->sysarray[i].dense = (DENSE*)CALLOC(1,sizeof(DENSE));
+         actsolv->sysarray[i].dense = (DENSE*)CCACALLOC(1,sizeof(DENSE));
          if (actsolv->sysarray[i].dense==NULL) dserror("Allocation of DENSE failed");
       }
       mask_dense(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].dense);
@@ -314,14 +288,14 @@ for (j=0; j<genprob.numfld; j++)
    {
       if(nsysarray>1) dserror("different discretisations not possible with SOLVER_TYP 'Mumps'\n");
       actsolv->nsysarray = nsysarray;
-      actsolv->sysarray_typ = (SPARSE_TYP*)  CALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
-      actsolv->sysarray     = (SPARSE_ARRAY*)CALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
+      actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
+      actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
       if (!actsolv->sysarray_typ || !actsolv->sysarray)
          dserror("Allocation of SPARSE_ARRAY failed");
       for (i=0; i<actsolv->nsysarray; i++)
       {
          actsolv->sysarray_typ[i] = rc_ptr;
-         actsolv->sysarray[i].rc_ptr = (RC_PTR*)CALLOC(1,sizeof(RC_PTR));
+         actsolv->sysarray[i].rc_ptr = (RC_PTR*)CCACALLOC(1,sizeof(RC_PTR));
          if (actsolv->sysarray[i].rc_ptr==NULL) dserror("Allocation of RC_PTR failed");
       }
       mask_rc_ptr(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].rc_ptr);
@@ -332,14 +306,14 @@ for (j=0; j<genprob.numfld; j++)
    {
       if(nsysarray>1) dserror("different discretisations not possible with SOLVER_TYP 'umfpack'\n");
       actsolv->nsysarray = nsysarray;
-      actsolv->sysarray_typ = (SPARSE_TYP*)  CALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
-      actsolv->sysarray     = (SPARSE_ARRAY*)CALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
+      actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
+      actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
       if (!actsolv->sysarray_typ || !actsolv->sysarray)
          dserror("Allocation of SPARSE_ARRAY failed");
       for (i=0; i<actsolv->nsysarray; i++)
       {
          actsolv->sysarray_typ[i] = ccf;
-         actsolv->sysarray[i].ccf = (CCF*)CALLOC(1,sizeof(CCF));
+         actsolv->sysarray[i].ccf = (CCF*)CCACALLOC(1,sizeof(CCF));
          if (actsolv->sysarray[i].ccf==NULL) dserror("Allocation of CCF failed");
       }
       mask_ccf(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].ccf);
@@ -350,14 +324,14 @@ for (j=0; j<genprob.numfld; j++)
    {
       if(nsysarray>1) dserror("different discretisations not possible with SOLVER_TYP 'colsol'\n");
       actsolv->nsysarray = nsysarray;
-      actsolv->sysarray_typ = (SPARSE_TYP*)  CALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
-      actsolv->sysarray     = (SPARSE_ARRAY*)CALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
+      actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
+      actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
       if (!actsolv->sysarray_typ || !actsolv->sysarray)
          dserror("Allocation of SPARSE_ARRAY failed");
       for (i=0; i<actsolv->nsysarray; i++)
       {
          actsolv->sysarray_typ[i] = skymatrix;
-         actsolv->sysarray[i].sky = (SKYMATRIX*)CALLOC(1,sizeof(SKYMATRIX));
+         actsolv->sysarray[i].sky = (SKYMATRIX*)CCACALLOC(1,sizeof(SKYMATRIX));
          if (actsolv->sysarray[i].sky==NULL) dserror("Allocation of SKY failed");
       }
       mask_skyline(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].sky);
@@ -367,14 +341,14 @@ for (j=0; j<genprob.numfld; j++)
    if (ismlpcg==1)
    {
       actsolv->nsysarray = 1;
-      actsolv->sysarray_typ = (SPARSE_TYP*)  CALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
-      actsolv->sysarray     = (SPARSE_ARRAY*)CALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
+      actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
+      actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
       if (!actsolv->sysarray_typ || !actsolv->sysarray)
          dserror("Allocation of SPARSE_ARRAY failed");
       for (i=0; i<actsolv->nsysarray; i++)
       {
          actsolv->sysarray_typ[i] = bdcsr;
-         actsolv->sysarray[i].bdcsr = (DBCSR*)CALLOC(1,sizeof(DBCSR));
+         actsolv->sysarray[i].bdcsr = (DBCSR*)CCACALLOC(1,sizeof(DBCSR));
          if (actsolv->sysarray[i].bdcsr==NULL) dserror("Allocation of DBCSR_ROOT failed");
       }
       mask_bdcsr(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].bdcsr);
@@ -386,7 +360,7 @@ for (j=0; j<genprob.numfld; j++)
 } /* end of loop over numfld fields */
 /*----------------------------------------------------------------------*/
 #ifndef PARALLEL 
-FREE(actintra);
+CCAFREE(actintra);
 #endif
 #ifdef DEBUG 
 dstrc_exit();

@@ -43,11 +43,20 @@
  *----------------------------------------------------------------------*/
 #ifdef PARALLEL 
 #ifdef SPOOLES_PACKAGE
-#ifndef SUN
-#include "/bau/stat16/users/statik/lib/spooles/MPI/spoolesMPI.h"
-#else
+
+#ifdef SUN
 #include "../../../lib_sun/spooles/MPI/spoolesMPI.h"
 #endif
+#ifdef HPUX10
+#include "/bau/stat16/users/statik/lib/spooles/MPI/spoolesMPI.h"
+#endif
+#ifdef HPUX11
+#include "/bau/stat16/users/statik/lib/spooles/MPI/spoolesMPI.h"
+#endif
+#ifdef AZUSA
+#include "../../../../lib_ita1/spooles/MPI/spoolesMPI.h"
+#endif
+
 #endif
 #endif
 
@@ -77,7 +86,6 @@ typedef enum _SPARSE_TYP
      sparse_none,            /* sparse matrix type not specified */
      mds,                    /* mlib - direct - sparse (sym.&nonsym)*/
      msr,                    /* distributed modified sparse row format */
-     vbr,                    /* distributed variable block row format */
      parcsr,                 /* distributed compressed sparse row format */
      ucchb,                  /* unsymmetric column compressed Harwell-Boeing format */
      dense,                  /* dense matrix for Lapack */
@@ -96,7 +104,6 @@ typedef union _SPARSE_ARRAY
 
 struct _ML_ARRAY_MDS   *mds;    /* mlib - symm. - unsymm. - sparse */
 struct _AZ_ARRAY_MSR   *msr;    /* pointer to Aztec's DMSR matrix */
-struct _AZ_ARRAY_VBR   *vbr;    /* pointer to Aztec's DVBR matrix */
 struct _H_PARCSR       *parcsr; /*         to HYPRE's ParCSR matrix */
 struct _UCCHB          *ucchb;  /*         to Superlu's UCCHB matrix */
 struct _DENSE          *dense;  /*         to dense matrix */
@@ -498,59 +505,6 @@ struct _ARRAY          *couple_i_recv;
 } AZ_ARRAY_MSR;
 
 
-/*----------------------------------------------------------------------*
- | a DMSR Matrix (Distributed Modified Sparse Row format) m.gee 5/01    |
- | matrix in dist. modified sparse row format (DMSR) for Aztec2.1       |
- *----------------------------------------------------------------------*/
-typedef struct _AZ_ARRAY_VBR
-{
-int                     is_init;          /* was this matrix initialized ? */
-int                     is_factored;      /* does precond. information exist ? */
-int                     ncall;            /* how often was this matrix solved */
-int                     numeq_total;      /* total number of unknowns */
-int                     numeq;            /* number of unknowns updated on this proc */ 
-int                     nnz;              /* number of nonzeros on this proc */
-
-struct _ARRAY           update;           /* list of dofs updated on this proc */
-struct _ARRAY           bupdate;          /* list of nodal blocks updated on this proc */
-   /* vector of block connectivity */
-   /* block_connect[actnodeId][0] = my own block size */
-   /* block_connect[actnodeId][1] = number off-diagonal blocks in this row */
-   /* block_connect[actnodeId][2..] = id_loc of off-diagonal blocks */
-int                     block_consize;
-int                   **block_connect;
-struct _ARRAY           rpntr;
-struct _ARRAY           cpntr;
-struct _ARRAY           bpntr;
-struct _ARRAY           bindx;
-struct _ARRAY           indx;
-struct _ARRAY           val;
-
-#ifdef AZTEC_PACKAGE
-double                  params[AZ_PARAMS_SIZE];    /* Aztec parameters */
-double                  status[AZ_STATUS_SIZE];    /* Aztec return status */
-int                     proc_config[AZ_PROC_SIZE]; /* MPI-configuration */
-int                     options[AZ_OPTIONS_SIZE];  /* Aztec options */
-int                    *data_org;                  /* Aztec internal data org. */
-int                    *external;                  /* list of external dofs often needed by this proc */
-int                    *update_index;              /* list of dofs updated on this proc */
-int                    *extern_index;              /* list of external related dofs */
-int                     N_external;                /* number of external dofs often needed by this proc */
-
-AZ_MATRIX              *Amat;                      /* the matrix object */
-AZ_PRECOND             *Aprec;                     /* the preconditioner object */
-#endif
-
-/* some arrays that are used for parallel assembly, mainly in the case of inter-proc-coupling conditions */
-#ifdef PARALLEL 
-int                     numcoupsend;     /* number of coupling information to be send by this proc */
-int                     numcouprecv;     /* number of coupling information to be recv. by this proc */
-struct _ARRAY          *couple_d_send;   /* send and receive buffers if necessary */
-struct _ARRAY          *couple_i_send;
-struct _ARRAY          *couple_d_recv;
-struct _ARRAY          *couple_i_recv;
-#endif
-} AZ_ARRAY_VBR;
 
 
 

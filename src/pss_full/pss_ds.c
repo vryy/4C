@@ -98,16 +98,16 @@ int i=0;
 num_byte_allocated=0;
 /*---------------------------------------------- check for memory sizes */
 /*
-the routine CALLOC uses unsigned char to allocate internally, so it is
+the routine CCACALLOC uses unsigned char to allocate internally, so it is
 necessary, that unsigned char is exactly one byte in DEBUG mode 
 */
 if (sizeof(unsigned char) != 1)
 {
-   dserror("unsigned char not 1 byte - will have CALLOC problems !!!");
+   dserror("unsigned char not 1 byte - will have CCACALLOC problems !!!");
 }
 /*================================================tracing of arrays=====*/
 /*--------------------------------- allocate one initial piece of chain */
-trace.arraychain = (TRACEARRAY*)CALLOC(1,sizeof(TRACEARRAY));
+trace.arraychain = (TRACEARRAY*)CCACALLOC(1,sizeof(TRACEARRAY));
 if (!trace.arraychain) dserror("Allocation of memory failed");
 /*----------- set endchain ptr to this initial piece, rest is automatic */
 trace.endarraychain = trace.arraychain;
@@ -242,7 +242,7 @@ default:
 break;   
 }
 /*----------------------- allocate a new piece to the end of the chain */
-trace.endarraychain->next = (TRACEARRAY*)CALLOC(1,sizeof(TRACEARRAY));
+trace.endarraychain->next = (TRACEARRAY*)CCACALLOC(1,sizeof(TRACEARRAY));
 if (!trace.endarraychain->next) dserror("Allocation of memory failed");
 /*---------------------------- set pointer backwards in this new piece */
 trace.endarraychain->next->prev = trace.endarraychain;
@@ -313,7 +313,7 @@ else
    acttracearray->next->prev = NULL;
 }   
 /*---------- delete the actual piece which now is taken out of the chain */
-FREE(acttracearray);
+CCAFREE(acttracearray);
 /*-----------------------------------------------------------------------*/
 #endif
 return;
@@ -476,13 +476,13 @@ return;
 
 <pre>                                                        m.gee 2/02 
 -write a report about all memory allocated to the
- .err file. Memory has to be allocated using the MALLOC CALLOC REALLOC
- and FREE functions
+ .err file. Memory has to be allocated using the CCAMALLOC CCACALLOC CCAREALLOC
+ and CCAFREE functions
 -does nothing if DEBUG is not defined 
 see dsinit()
 </pre>
 \return void                                               
-\sa dsinit()  MALLOC() , CALLOC() , REALLOC() , FREE()                              
+\sa dsinit()  CCAMALLOC() , CCACALLOC() , CCAREALLOC() , CCAFREE()                              
 
 ------------------------------------------------------------------------*/
 void dsmemreport()

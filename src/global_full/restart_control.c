@@ -160,10 +160,10 @@ pss_write_array(dirich_a,&(res.dirich),out,&ierr);
 */
 /*----------------------------------------------------------------------*/
 numnp = actpart->pdis[0].numnp;
-res.node_handles = (long int**)malloc(numnp*sizeof(long int*));
+res.node_handles = (long int**)CCAMALLOC(numnp*sizeof(long int*));
 if (!res.node_handles) dserror("Allocation of memory failed");
 node_handles = res.node_handles;
-res.node_handles[0] = (long int*)malloc(3*numnp*sizeof(long int));
+res.node_handles[0] = (long int*)CCAMALLOC(3*numnp*sizeof(long int));
 if (!res.node_handles[0]) dserror("Allocation of memory failed");
 for (i=1; i<numnp; i++) 
 node_handles[i] = &(node_handles[0][i*3]);
@@ -188,8 +188,8 @@ if (ierr != 1) dserror("Error writing restart data");
 /*----------------- delete the res.node_handles but keep the dimensions */
 res.node_fdim = numnp;
 res.node_sdim = 3;
-free(res.node_handles[0]);
-free(res.node_handles);
+CCAFREE(res.node_handles[0]);
+CCAFREE(res.node_handles);
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /* 
@@ -202,10 +202,10 @@ free(res.node_handles);
 */
 /*----------------------------------------------------------------------*/
 numele = actpart->pdis[0].numele;
-res.ele_handles = (long int**)malloc(numele*sizeof(long int*));
+res.ele_handles = (long int**)CCAMALLOC(numele*sizeof(long int*));
 if (!res.ele_handles) dserror("Allocation of memory failed");
 ele_handles = res.ele_handles;
-res.ele_handles[0] = (long int*)malloc(5*numele*sizeof(long int));
+res.ele_handles[0] = (long int*)CCAMALLOC(5*numele*sizeof(long int));
 if (!res.ele_handles[0]) dserror("Allocation of memory failed");
 for (i=1; i<numele; i++) 
 ele_handles[i] = &(ele_handles[0][i*5]);
@@ -258,8 +258,8 @@ res.ele_sdim = 5;
 pss_write("ele_hand",numele,5,sizeof(long int),ele_handles[0],&(res.handle_of_ele_handles),out,&ierr);
 if (ierr != 1) dserror("Error writing restart data");
 /*------------------ delete the res.ele_handles but keep the dimensions */
-free(res.ele_handles[0]);
-free(res.ele_handles);
+CCAFREE(res.ele_handles[0]);
+CCAFREE(res.ele_handles);
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*
@@ -441,10 +441,10 @@ if (numnp != res.node_fdim || 3 != res.node_sdim)
     dserror("Mismatch in number of nodes on reading restart");
 /*----------------------------------------- define the array of handles */
 numnp = actpart->pdis[0].numnp;
-res.node_handles = (long int**)malloc(numnp*sizeof(long int*));
+res.node_handles = (long int**)CCAMALLOC(numnp*sizeof(long int*));
 if (!res.node_handles) dserror("Allocation of memory failed");
 node_handles = res.node_handles;
-res.node_handles[0] = (long int*)malloc(3*numnp*sizeof(long int));
+res.node_handles[0] = (long int*)CCAMALLOC(3*numnp*sizeof(long int));
 if (!res.node_handles[0]) dserror("Allocation of memory failed");
 for (i=1; i<numnp; i++) 
 node_handles[i] = &(node_handles[0][i*3]);
@@ -495,8 +495,8 @@ for (i=0; i<numnp; i++)
 } /* end of for (i=0; i<numnp; i++) */
 /*------------------------------- delete the handle array for the nodes */
 /*amdel(&(res.node_handles));*/
-free(res.node_handles[0]);
-free(res.node_handles);
+CCAFREE(res.node_handles[0]);
+CCAFREE(res.node_handles);
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*
@@ -507,10 +507,10 @@ numele = actpart->pdis[0].numele;
 if (numele != res.ele_fdim || 5 != res.ele_sdim)
     dserror("Mismatch in number of elements on reading restart");
 /*----------------------------------------- define the array of handles */
-res.ele_handles = (long int**)malloc(numele*sizeof(long int*));
+res.ele_handles = (long int**)CCAMALLOC(numele*sizeof(long int*));
 if (!res.ele_handles) dserror("Allocation of memory failed");
 ele_handles = res.ele_handles;
-res.ele_handles[0] = (long int*)malloc(5*numele*sizeof(long int));
+res.ele_handles[0] = (long int*)CCAMALLOC(5*numele*sizeof(long int));
 if (!res.ele_handles[0]) dserror("Allocation of memory failed");
 for (i=1; i<numele; i++) 
 ele_handles[i] = &(ele_handles[0][i*5]);
@@ -558,8 +558,8 @@ for (i=0; i<actpart->pdis[0].numele; i++)
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------- delete the handle array of the elements */
-free(res.ele_handles[0]);
-free(res.ele_handles);
+CCAFREE(res.ele_handles[0]);
+CCAFREE(res.ele_handles);
 /*----------------------------------------------------------------------*/
 /* 
    now we have to make the arrays node->sol, node->sol_increment, 
@@ -700,10 +700,10 @@ res.dist_vec_dispi[0] = ndis;
 */
 /*----------------------------------------------------------------------*/
 numnp = actpart->pdis[0].numnp;
-res.node_handles = (long int**)malloc(numnp*sizeof(long int*));
+res.node_handles = (long int**)CCAMALLOC(numnp*sizeof(long int*));
 if (!res.node_handles) dserror("Allocation of memory failed");
 node_handles = res.node_handles;
-res.node_handles[0] = (long int*)malloc(3*numnp*sizeof(long int));
+res.node_handles[0] = (long int*)CCAMALLOC(3*numnp*sizeof(long int));
 if (!res.node_handles[0]) dserror("Allocation of memory failed");
 for (i=1; i<numnp; i++) 
 node_handles[i] = &(node_handles[0][i*3]);
@@ -728,8 +728,8 @@ if (ierr != 1) dserror("Error writing restart data");
 /*----------------- delete the res.node_handles but keep the dimensions */
 res.node_fdim = numnp;
 res.node_sdim = 3;
-free(res.node_handles[0]);
-free(res.node_handles);
+CCAFREE(res.node_handles[0]);
+CCAFREE(res.node_handles);
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /* 
@@ -742,10 +742,10 @@ free(res.node_handles);
 */
 /*----------------------------------------------------------------------*/
 numele = actpart->pdis[0].numele;
-res.ele_handles = (long int**)malloc(numele*sizeof(long int*));
+res.ele_handles = (long int**)CCAMALLOC(numele*sizeof(long int*));
 if (!res.ele_handles) dserror("Allocation of memory failed");
 ele_handles = res.ele_handles;
-res.ele_handles[0] = (long int*)malloc(5*numele*sizeof(long int));
+res.ele_handles[0] = (long int*)CCAMALLOC(5*numele*sizeof(long int));
 if (!res.ele_handles[0]) dserror("Allocation of memory failed");
 for (i=1; i<numele; i++) 
 ele_handles[i] = &(ele_handles[0][i*5]);
@@ -798,8 +798,8 @@ res.ele_sdim = 5;
 pss_write("ele_hand",numele,5,sizeof(long int),ele_handles[0],&(res.handle_of_ele_handles),out,&ierr);
 if (ierr != 1) dserror("Error writing restart data");
 /*------------------ delete the res.ele_handles but keep the dimensions */
-free(res.ele_handles[0]);
-free(res.ele_handles);
+CCAFREE(res.ele_handles[0]);
+CCAFREE(res.ele_handles);
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*
@@ -938,10 +938,10 @@ if (numnp != res.node_fdim || 3 != res.node_sdim)
     dserror("Mismatch in number of nodes on reading restart");
 /*----------------------------------------- define the array of handles */
 numnp = actpart->pdis[0].numnp;
-res.node_handles = (long int**)malloc(numnp*sizeof(long int*));
+res.node_handles = (long int**)CCAMALLOC(numnp*sizeof(long int*));
 if (!res.node_handles) dserror("Allocation of memory failed");
 node_handles = res.node_handles;
-res.node_handles[0] = (long int*)malloc(3*numnp*sizeof(long int));
+res.node_handles[0] = (long int*)CCAMALLOC(3*numnp*sizeof(long int));
 if (!res.node_handles[0]) dserror("Allocation of memory failed");
 for (i=1; i<numnp; i++) 
 node_handles[i] = &(node_handles[0][i*3]);
@@ -992,8 +992,8 @@ for (i=0; i<numnp; i++)
 } /* end of for (i=0; i<numnp; i++) */
 /*------------------------------- delete the handle array for the nodes */
 /*amdel(&(res.node_handles));*/
-free(res.node_handles[0]);
-free(res.node_handles);
+CCAFREE(res.node_handles[0]);
+CCAFREE(res.node_handles);
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*
@@ -1004,10 +1004,10 @@ numele = actpart->pdis[0].numele;
 if (numele != res.ele_fdim || 5 != res.ele_sdim)
     dserror("Mismatch in number of elements on reading restart");
 /*----------------------------------------- define the array of handles */
-res.ele_handles = (long int**)malloc(numele*sizeof(long int*));
+res.ele_handles = (long int**)CCAMALLOC(numele*sizeof(long int*));
 if (!res.ele_handles) dserror("Allocation of memory failed");
 ele_handles = res.ele_handles;
-res.ele_handles[0] = (long int*)malloc(5*numele*sizeof(long int));
+res.ele_handles[0] = (long int*)CCAMALLOC(5*numele*sizeof(long int));
 if (!res.ele_handles[0]) dserror("Allocation of memory failed");
 for (i=1; i<numele; i++) 
 ele_handles[i] = &(ele_handles[0][i*5]);
@@ -1055,8 +1055,8 @@ for (i=0; i<actpart->pdis[0].numele; i++)
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------- delete the handle array of the elements */
-free(res.ele_handles[0]);
-free(res.ele_handles);
+CCAFREE(res.ele_handles[0]);
+CCAFREE(res.ele_handles);
 /*----------------------------------------------------------------------*/
 /* 
    now we have to make the arrays node->sol, node->sol_increment, 

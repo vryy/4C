@@ -44,7 +44,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
   if(mat[actele->mat-1].mattyp == m_stvenpor)
   {
     size_i = 1;
-    actele->e.w1->elewa = (W1_ELE_WA*)CALLOC(size_i,sizeof(W1_ELE_WA));
+    actele->e.w1->elewa = (W1_ELE_WA*)CCACALLOC(size_i,sizeof(W1_ELE_WA));
     if (actele->e.w1->elewa==NULL)
     {
       dserror("Allocation of elewa in ELEMENT failed");
@@ -54,7 +54,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
      | actele->e.w1->elewa->matdata[0] = current density value  | 
      *----------------------------------------------------------*/
     size_j = 1;
-    actele->e.w1->elewa->matdata = (double*)calloc(size_j,sizeof(double));
+    actele->e.w1->elewa->matdata = (double*)CCACALLOC(size_j,sizeof(double));
     if (actele->e.w1->elewa->matdata==NULL)
     {
       dserror("Allocation of matdata in ELEMENT failed");
@@ -65,7 +65,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
      | actele->e.w1->elewa->optdata[0] = current opt.var.num.   | 
      *----------------------------------------------------------*/
     size_j = 1;
-    actele->e.w1->elewa->optdata = (int*)calloc(size_j,sizeof(int));
+    actele->e.w1->elewa->optdata = (int*)CCACALLOC(size_j,sizeof(int));
     if (actele->e.w1->elewa->optdata==NULL)
     {
       dserror("Allocation of optdata in ELEMENT failed");
@@ -80,7 +80,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
      mat[actele->mat-1].mattyp == m_pl_epc )
   {/*matplast01*/
     size_i = 1;
-    actele->e.w1->elewa = (W1_ELE_WA*)CALLOC(size_i,sizeof(W1_ELE_WA));
+    actele->e.w1->elewa = (W1_ELE_WA*)CCACALLOC(size_i,sizeof(W1_ELE_WA));
     if (actele->e.w1->elewa==NULL)
     {
       dserror("Allocation of elewa in ELEMENT failed");
@@ -89,7 +89,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
     
     size_j = actele->e.w1->nGP[0] * actele->e.w1->nGP[1];
     actele->e.w1->elewa[0].ipwa = 
-                               (W1_IP_WA*)CALLOC(size_j,sizeof(W1_IP_WA));
+                               (W1_IP_WA*)CCACALLOC(size_j,sizeof(W1_IP_WA));
     if (actele->e.w1->elewa[0].ipwa==NULL)
     {
       dserror("Allocation of ipwa in ELEMENT failed");
@@ -99,25 +99,25 @@ for (i=0; i<actpart->pdis[0].numele; i++)
     {/*matplast02*/
       actele->e.w1->elewa[0].ipwa[k].epstn = 0.;
       actele->e.w1->elewa[0].ipwa[k].yip   = -1;
-      actele->e.w1->elewa[0].ipwa[k].qn = (double*)calloc(4,sizeof(double));
+      actele->e.w1->elewa[0].ipwa[k].qn = (double*)CCACALLOC(4,sizeof(double));
 
       if(mat[actele->mat-1].mattyp == m_pl_epc )
       {
-      actele->e.w1->elewa[0].ipwa[k].sigc = (double*)calloc(4,sizeof(double));
-      actele->e.w1->elewa[0].ipwa[k].grad = (double*)calloc(4,sizeof(double));
-      actele->e.w1->elewa[0].ipwa[k].dlam = (double*)calloc(2,sizeof(double));
+      actele->e.w1->elewa[0].ipwa[k].sigc = (double*)CCACALLOC(4,sizeof(double));
+      actele->e.w1->elewa[0].ipwa[k].grad = (double*)CCACALLOC(4,sizeof(double));
+      actele->e.w1->elewa[0].ipwa[k].dlam = (double*)CCACALLOC(2,sizeof(double));
       actele->e.w1->elewa[0].ipwa[k].dlam[0] = 0.;
       actele->e.w1->elewa[0].ipwa[k].dlam[1] = 0.;
-      actele->e.w1->elewa[0].ipwa[k].sigi = (double*)calloc(4,sizeof(double));
-      actele->e.w1->elewa[0].ipwa[k].epsi = (double*)calloc(4,sizeof(double));
-      actele->e.w1->elewa[0].ipwa[k].di   = (double*)calloc(4,sizeof(double));
+      actele->e.w1->elewa[0].ipwa[k].sigi = (double*)CCACALLOC(4,sizeof(double));
+      actele->e.w1->elewa[0].ipwa[k].epsi = (double*)CCACALLOC(4,sizeof(double));
+      actele->e.w1->elewa[0].ipwa[k].di   = (double*)CCACALLOC(4,sizeof(double));
       
       ncm = mat[actele->mat-1].m.pl_epc->maxreb;
       
-      actele->e.w1->elewa[0].ipwa[k].rsig   = (double*)calloc(ncm,sizeof(double));
-      actele->e.w1->elewa[0].ipwa[k].reps   = (double*)calloc(ncm,sizeof(double));
-      actele->e.w1->elewa[0].ipwa[k].repstn = (double*)calloc(ncm,sizeof(double));
-      actele->e.w1->elewa[0].ipwa[k].ryip   = (int*)calloc(ncm,sizeof(int));
+      actele->e.w1->elewa[0].ipwa[k].rsig   = (double*)CCACALLOC(ncm,sizeof(double));
+      actele->e.w1->elewa[0].ipwa[k].reps   = (double*)CCACALLOC(ncm,sizeof(double));
+      actele->e.w1->elewa[0].ipwa[k].repstn = (double*)CCACALLOC(ncm,sizeof(double));
+      actele->e.w1->elewa[0].ipwa[k].ryip   = (int*)CCACALLOC(ncm,sizeof(int));
       for (j=0; j<ncm; j++)
       {
         actele->e.w1->elewa[0].ipwa[k].rsig[j]   = 0.;

@@ -90,7 +90,7 @@ dstrc_enter("part_assignfield");
 #endif
 /*----------------------------------------------------------------------*/
 /*---------------------------------- every proc alloc numfld PARTITIONs */
-partition = (PARTITION*)CALLOC(genprob.numfld,sizeof(PARTITION));
+partition = (PARTITION*)CCACALLOC(genprob.numfld,sizeof(PARTITION));
 if (partition==NULL) dserror("Allocation of PARTITION failed");
 /*----------------------------------------------------- loop all fields */
 for (i=0; i<genprob.numfld; i++)
@@ -99,14 +99,14 @@ for (i=0; i<genprob.numfld; i++)
    actfield = &(field[i]);
    /*------------------ every partition[i] allocates one discretization */
    partition[i].ndis = actfield->ndis;
-   partition[i].pdis = (PARTDISCRET*)CALLOC(partition[i].ndis,sizeof(PARTDISCRET));
+   partition[i].pdis = (PARTDISCRET*)CCACALLOC(partition[i].ndis,sizeof(PARTDISCRET));
    if (!partition[i].pdis) dserror("Allocation of memory failed");
    /*-------------------------------------------------------------------*/
    actpart  = &(partition[i]);
 #ifdef PARALLEL 
    actintra = &(par.intra[i]);
 #else
-   actintra    = (INTRA*)CALLOC(1,sizeof(INTRA));
+   actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
    if (!actintra) dserror("Allocation of INTRA failed");
    actintra->intra_fieldtyp = actfield->fieldtyp;
    actintra->intra_rank   = 0;
@@ -126,8 +126,8 @@ for (i=0; i<genprob.numfld; i++)
          actpart->pdis[kk].bou_numele  = 0;
          actpart->pdis[kk].bou_element = NULL;
          actpart->pdis[kk].bou_node    = NULL;
-         actpart->pdis[kk].element = (ELEMENT**)CALLOC(actpart->pdis[kk].numele,sizeof(ELEMENT*));
-         actpart->pdis[kk].node    = (NODE**)CALLOC(actpart->pdis[kk].numnp,sizeof(NODE*));
+         actpart->pdis[kk].element = (ELEMENT**)CCACALLOC(actpart->pdis[kk].numele,sizeof(ELEMENT*));
+         actpart->pdis[kk].node    = (NODE**)CCACALLOC(actpart->pdis[kk].numnp,sizeof(NODE*));
          if (actpart->pdis[kk].element==NULL) dserror("Allocation of element pointer in PARTITION failed");
          if (actpart->pdis[kk].node==NULL)    dserror("Allocation of node pointer in PARTITION failed");
          for (j=0; j<actfield->dis[kk].numele; j++) 
@@ -172,7 +172,7 @@ for (i=0; i<genprob.numfld; i++)
             }
          }
          actpart->pdis[kk].numele  = counter;
-         actpart->pdis[kk].element = (ELEMENT**)CALLOC(counter,sizeof(ELEMENT*));
+         actpart->pdis[kk].element = (ELEMENT**)CCACALLOC(counter,sizeof(ELEMENT*));
          if (!actpart->pdis[kk].element) dserror("Allocation of ELEMENT ptr in PARTITION failed");
          counter=0;
          for (j=0; j<actfield->dis[kk].numele; j++)
@@ -194,7 +194,7 @@ for (i=0; i<genprob.numfld; i++)
             if (actfield->dis[kk].node[j].proc == imyrank) counter++;
          }
          actpart->pdis[kk].numnp = counter;
-         actpart->pdis[kk].node = (NODE**)CALLOC(counter,sizeof(NODE*));
+         actpart->pdis[kk].node = (NODE**)CCACALLOC(counter,sizeof(NODE*));
          if (!actpart->pdis[kk].node) dserror("Allocation of NODE ptr in PARTITION failed");
          counter=0;
          for (j=0; j<actfield->dis[kk].numnp; j++)
@@ -232,8 +232,8 @@ for (i=0; i<genprob.numfld; i++)
          }
          actpart->pdis[kk].inner_numele = counter;
          actpart->pdis[kk].bou_numele   = counter2;
-         actpart->pdis[kk].inner_element = (ELEMENT**)CALLOC(counter,sizeof(ELEMENT*));
-         actpart->pdis[kk].bou_element = (ELEMENT**)CALLOC(counter2,sizeof(ELEMENT*));
+         actpart->pdis[kk].inner_element = (ELEMENT**)CCACALLOC(counter,sizeof(ELEMENT*));
+         actpart->pdis[kk].bou_element = (ELEMENT**)CCACALLOC(counter2,sizeof(ELEMENT*));
          if (actpart->pdis[kk].inner_element==NULL || actpart->pdis[kk].bou_element==NULL)
          dserror("Allocation of PARTITION to ELEMENT pointer failed");
          counter=0;
@@ -277,7 +277,7 @@ for (i=0; i<genprob.numfld; i++)
             if (actfield->dis[kk].element[j].proc == imyrank) counter++;
          }
          actpart->pdis[kk].numele = counter;
-         actpart->pdis[kk].element = (ELEMENT**)CALLOC(counter,sizeof(ELEMENT*));
+         actpart->pdis[kk].element = (ELEMENT**)CCACALLOC(counter,sizeof(ELEMENT*));
          if (!actpart->pdis[kk].element) dserror("Allocation of ELEMENT ptr in PARTITION failed");
          counter=0;
          for (j=0; j<actfield->dis[kk].numele; j++)
@@ -304,7 +304,7 @@ for (i=0; i<genprob.numfld; i++)
             }
          }
          actpart->pdis[kk].numnp = counter;
-         actpart->pdis[kk].node = (NODE**)CALLOC(counter,sizeof(NODE*));
+         actpart->pdis[kk].node = (NODE**)CCACALLOC(counter,sizeof(NODE*));
          if (!actpart->pdis[kk].node) dserror("Allocation of NODE ptr in PARTITION failed");
          counter=0;
          for (j=0; j<actfield->dis[kk].numnp; j++)
@@ -347,8 +347,8 @@ for (i=0; i<genprob.numfld; i++)
          }
          actpart->pdis[kk].inner_numnp=counter;
          actpart->pdis[kk].bou_numnp  =counter2;
-         actpart->pdis[kk].inner_node = (NODE**)CALLOC(counter,sizeof(NODE*));
-         actpart->pdis[kk].bou_node   = (NODE**)CALLOC(counter2,sizeof(NODE*));
+         actpart->pdis[kk].inner_node = (NODE**)CCACALLOC(counter,sizeof(NODE*));
+         actpart->pdis[kk].bou_node   = (NODE**)CCACALLOC(counter2,sizeof(NODE*));
          if (actpart->pdis[kk].inner_node==NULL || actpart->pdis[kk].bou_node==NULL)
          dserror("Allocation of NODE ptr in PARTITION failed");
          counter=0;
@@ -384,7 +384,7 @@ for (i=0; i<genprob.numfld; i++)
 
    } /* end of inprocs > 1 */
 #ifndef PARALLEL 
-FREE(actintra);
+CCAFREE(actintra);
 #endif
 }/* end of loop over fields */
 /*----------------------------------------------------------------------*/

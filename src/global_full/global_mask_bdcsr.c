@@ -90,7 +90,7 @@ bdcsr_update(actfield,actpart,actsolv,actintra,bdcsr);
       dof_connect[i][2] = dof
       dof_connect[i][ 3..dof_connect[i][0]-1 ] = connected dofs exluding itself 
    */
-dof_connect = (int**)CALLOC(bdcsr->numeq_total,sizeof(int*));
+dof_connect = (int**)CCACALLOC(bdcsr->numeq_total,sizeof(int*));
 if (!dof_connect) dserror("Allocation of dof_connect failed");
 bdcsr_nnz_topology(actfield,actpart,actsolv,actintra,bdcsr,dof_connect);
 /*--------------------------------------------------- allocate a and ja */
@@ -120,9 +120,9 @@ for (i=0; i<actpart->pdis[0].numnp; i++)
 /*---------------------------------------- delete the array dof_connect */
 for (i=0; i<bdcsr->numeq_total; i++)
 {
-   if (dof_connect[i]) FREE(dof_connect[i]);
+   if (dof_connect[i]) CCAFREE(dof_connect[i]);
 }
-FREE(dof_connect);
+CCAFREE(dof_connect);
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -308,7 +308,7 @@ for (i=0; i<numeq; i++)
       if (dofpatch.a.iv[j] != -1) counter2++;
    }
    /*-------------- allocate the dof_connect vector and put dofs in it */
-   dof_connect[dof] = (int*)CALLOC(counter2+3,sizeof(int));
+   dof_connect[dof] = (int*)CCACALLOC(counter2+3,sizeof(int));
    if (!dof_connect[dof]) dserror("Allocation of dof connect list failed");
    dof_connect[dof][0] = counter2+3;
    dof_connect[dof][1] = 0; 
@@ -392,7 +392,7 @@ for (i=0; i<coupledofs->fdim; i++)
       if (dofpatch.a.iv[j] != -1) counter2++;
    }
    /*-------------- allocate the dof_connect vector and put dofs in it */
-   dof_connect[dof] = (int*)CALLOC(counter2+3,sizeof(int));
+   dof_connect[dof] = (int*)CCACALLOC(counter2+3,sizeof(int));
    if (!dof_connect[dof]) dserror("Allocation of dof connect list failed");
    dof_connect[dof][0] = counter2+3;
    dof_connect[dof][1] = dofflag;
@@ -442,7 +442,7 @@ for (i=0; i<coupledofs->fdim; i++)
             /*----------------------------------- get lenght of message */
             MPI_Get_count(&status,MPI_INT,&recvlenght);
             /*--------------------------------------- realloc the array */
-            dof_connect[dof] = (int*)REALLOC(dof_connect[dof],
+            dof_connect[dof] = (int*)CCAREALLOC(dof_connect[dof],
                                              (dof_connect[dof][0]+recvlenght)*
                                              sizeof(int));
             if (!dof_connect[dof]) dserror("Reallocation of dof_connect failed");
@@ -473,7 +473,7 @@ for (i=0; i<coupledofs->fdim; i++)
                }
             }
             /*--------------------------------------- realloc the array */
-            dof_connect[dof] = (int*)REALLOC(dof_connect[dof],
+            dof_connect[dof] = (int*)CCAREALLOC(dof_connect[dof],
                                              counter2*sizeof(int));
             if (!dof_connect[dof]) dserror("Reallocation of dof_connect failed");
             dof_connect[dof][0] = counter2;
@@ -879,8 +879,8 @@ else /*----------------------------------------------- parallel version */
                                                          coupledofs are */
 #ifdef PARALLEL
 sendsize = (actpart->pdis[0].coupledofs.fdim)*(inprocs);
-sendbuff = (int*)CALLOC(sendsize,sizeof(int));
-recvbuff = (int*)CALLOC(sendsize,sizeof(int));
+sendbuff = (int*)CCACALLOC(sendsize,sizeof(int));
+recvbuff = (int*)CCACALLOC(sendsize,sizeof(int));
 if (sendbuff==NULL || recvbuff==NULL) dserror("Allocation of temporary memory failed");
 counter=0;
 for (i=0; i<actpart->pdis[0].coupledofs.fdim; i++)
@@ -906,7 +906,7 @@ for (i=0; i<actpart->pdis[0].coupledofs.fdim; i++)
       counter++;
    }
 }
-FREE(sendbuff);FREE(recvbuff);
+CCAFREE(sendbuff);CCAFREE(recvbuff);
 #endif
 /*------- count number of equations on partition including coupled dofs */
 /*---------------------------------------- count the coupled ones first */
@@ -965,7 +965,7 @@ for (i=0; i<actpart->pdis[0].numnp; i++)
 */
 if (inprocs > 1)
 {
-   tmp = (int*)CALLOC(inprocs,sizeof(int));
+   tmp = (int*)CCACALLOC(inprocs,sizeof(int));
    if (!tmp) dserror("Allocation of temporary memory failed");
    for (i=0; i<actpart->pdis[0].coupledofs.fdim; i++)/*  loop coupled eqns */
    {
@@ -1003,7 +1003,7 @@ if (inprocs > 1)
          tmp[proc] += 1;
       }
    }/* end loop over coupling eqns */
-   FREE(tmp);
+   CCAFREE(tmp);
 }
 /* procs who have not become owner of a coupling equation have to reduce there
    number of equations */

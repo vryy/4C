@@ -99,7 +99,7 @@ for (i=0; i<design->ndvol; i++)
 for (i=0; i<design->ndline; i++)
 {
    actdline = &(design->dline[i]);
-   actdline->dnode = (DNODE**)CALLOC(2,sizeof(DNODE*));
+   actdline->dnode = (DNODE**)CCACALLOC(2,sizeof(DNODE*));
    if (!actdline->dnode) dserror("Allocation of memory failed");
    for (k=0; k<2; k++)
    {
@@ -121,7 +121,7 @@ for (i=0; i<design->ndline; i++)
       actdnode = actdline->dnode[j];
       if (actdnode->dline==NULL)
       {
-         actdnode->dline = (DLINE**)CALLOC(actdnode->ndline,sizeof(DLINE*));
+         actdnode->dline = (DLINE**)CCACALLOC(actdnode->ndline,sizeof(DLINE*));
          if (!actdnode->dline) dserror("Allocation of memory failed");
          actdnode->dline[0] = actdline;
       }
@@ -139,7 +139,7 @@ for (i=0; i<design->ndline; i++)
 for (i=0; i<design->ndsurf; i++)
 {
    actdsurf = &(design->dsurf[i]);
-   actdsurf->dline = (DLINE**)CALLOC(actdsurf->ndline,sizeof(DLINE*));
+   actdsurf->dline = (DLINE**)CCACALLOC(actdsurf->ndline,sizeof(DLINE*));
    if (!actdsurf->dline) dserror("Allocation of memory failed");
    for (k=0; k<actdsurf->my_dlineId.fdim; k++)
    {
@@ -161,7 +161,7 @@ for (i=0; i<design->ndsurf; i++)
       actdline = actdsurf->dline[j];
       if (actdline->dsurf==NULL)
       {
-         actdline->dsurf = (DSURF**)CALLOC(actdline->ndsurf,sizeof(DSURF*));
+         actdline->dsurf = (DSURF**)CCACALLOC(actdline->ndsurf,sizeof(DSURF*));
          if (!actdline->dsurf) dserror("Allocation of memory failed");
          actdline->dsurf[0] = actdsurf;
       }
@@ -179,7 +179,7 @@ for (i=0; i<design->ndsurf; i++)
 for (i=0; i<design->ndvol; i++)
 {
    actdvol = &(design->dvol[i]);
-   actdvol->dsurf = (DSURF**)CALLOC(actdvol->ndsurf,sizeof(DSURF**));
+   actdvol->dsurf = (DSURF**)CCACALLOC(actdvol->ndsurf,sizeof(DSURF**));
    if (!actdvol->dsurf) dserror("Allocation of memory failed");
    for (k=0; k<actdvol->ndsurf; k++)
    {
@@ -201,7 +201,7 @@ for (i=0; i<design->ndvol; i++)
       actdsurf = actdvol->dsurf[j];
       if (actdsurf->dvol==NULL)
       {
-         actdsurf->dvol = (DVOL**)CALLOC(actdsurf->ndvol,sizeof(DVOL*));
+         actdsurf->dvol = (DVOL**)CCACALLOC(actdsurf->ndvol,sizeof(DVOL*));
          if (!actdsurf->dvol) dserror("Allocation of memory failed");
          actdsurf->dvol[0] = actdvol;
       }
@@ -241,20 +241,20 @@ dstrc_enter("inpdesign_topology_fe");
 #endif
 
 /*--------------------------------------------------read fe-design info */
-ndnode_fenode = (int*)CALLOC(design->ndnode,sizeof(int));
-dnode_fenode  = (int**)CALLOC(design->ndnode,sizeof(int*));
+ndnode_fenode = (int*)CCACALLOC(design->ndnode,sizeof(int));
+dnode_fenode  = (int**)CCACALLOC(design->ndnode,sizeof(int*));
 if (!ndnode_fenode || !dnode_fenode) dserror("Allocation of memory failed");
 
-ndline_fenode = (int*)CALLOC(design->ndline,sizeof(int));;
-dline_fenode  = (int**)CALLOC(design->ndline,sizeof(int*));;
+ndline_fenode = (int*)CCACALLOC(design->ndline,sizeof(int));;
+dline_fenode  = (int**)CCACALLOC(design->ndline,sizeof(int*));;
 if (!ndline_fenode || !dline_fenode) dserror("Allocation of memory failed");
 
-ndsurf_fenode = (int*)CALLOC(design->ndsurf,sizeof(int));;
-dsurf_fenode  = (int**)CALLOC(design->ndsurf,sizeof(int*));;
+ndsurf_fenode = (int*)CCACALLOC(design->ndsurf,sizeof(int));;
+dsurf_fenode  = (int**)CCACALLOC(design->ndsurf,sizeof(int*));;
 if (!ndsurf_fenode || !dsurf_fenode) dserror("Allocation of memory failed");
 
-ndvol_fenode = (int*)CALLOC(design->ndvol,sizeof(int));;
-dvol_fenode  = (int**)CALLOC(design->ndvol,sizeof(int*));;
+ndvol_fenode = (int*)CCACALLOC(design->ndvol,sizeof(int));;
+dvol_fenode  = (int**)CCACALLOC(design->ndvol,sizeof(int*));;
 if (!ndvol_fenode || !dvol_fenode) dserror("Allocation of memory failed");
 /*----------------------------- read the fe-nodes on each design object */
 inpdesign_dpoint_fenode_read();
@@ -271,18 +271,18 @@ for (j=0; j<field[i].ndis; j++)
    inpdesign_dvol_fevol(&(field[i].dis[j]));
 }
 /*------------------------------------------------------------- tidy up */
-for (i=0; i<design->ndnode; i++) FREE(dnode_fenode[i]);
-FREE(dnode_fenode);
-FREE(ndnode_fenode);
-for (i=0; i<design->ndline; i++) FREE(dline_fenode[i]);
-FREE(dline_fenode);
-FREE(ndline_fenode);
-for (i=0; i<design->ndsurf; i++) FREE(dsurf_fenode[i]);
-FREE(dsurf_fenode);
-FREE(ndsurf_fenode);
-for (i=0; i<design->ndvol; i++) FREE(dvol_fenode[i]);
-FREE(dvol_fenode);
-FREE(ndvol_fenode);
+for (i=0; i<design->ndnode; i++) CCAFREE(dnode_fenode[i]);
+CCAFREE(dnode_fenode);
+CCAFREE(ndnode_fenode);
+for (i=0; i<design->ndline; i++) CCAFREE(dline_fenode[i]);
+CCAFREE(dline_fenode);
+CCAFREE(ndline_fenode);
+for (i=0; i<design->ndsurf; i++) CCAFREE(dsurf_fenode[i]);
+CCAFREE(dsurf_fenode);
+CCAFREE(ndsurf_fenode);
+for (i=0; i<design->ndvol; i++) CCAFREE(dvol_fenode[i]);
+CCAFREE(dvol_fenode);
+CCAFREE(ndvol_fenode);
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -318,7 +318,7 @@ for (i=0; i<design->ndnode; i++)
          if (dnode==i+1)
          {
             ndnode_fenode[i]=1;
-            dnode_fenode[i] = (int*)MALLOC(ndnode_fenode[i]*sizeof(int));
+            dnode_fenode[i] = (int*)CCAMALLOC(ndnode_fenode[i]*sizeof(int));
             if (!dnode_fenode[i]) dserror("Allocation of memory failed");
             frint("NODE",&(dnode_fenode[i][0]),&ierr);
             dnode_fenode[i][0]--;
@@ -363,7 +363,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 frrewind();
 for (i=0; i<design->ndline; i++)
 {
-   dline_fenode[i] = (int*)MALLOC(ndline_fenode[i]*sizeof(int));
+   dline_fenode[i] = (int*)CCAMALLOC(ndline_fenode[i]*sizeof(int));
    if (!dline_fenode[i]) dserror("Allocation of memory failed");
 }
 /*------------------------------- find fe-nodes belonging to this dline */
@@ -421,7 +421,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 frrewind();
 for (i=0; i<design->ndsurf; i++)
 {
-   dsurf_fenode[i] = (int*)MALLOC(ndsurf_fenode[i]*sizeof(int));
+   dsurf_fenode[i] = (int*)CCAMALLOC(ndsurf_fenode[i]*sizeof(int));
    if (!dsurf_fenode[i]) dserror("Allocation of memory failed");
 }
 /*------------------------------- find fe-nodes belonging to this dsurf */
@@ -479,7 +479,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 frrewind();
 for (i=0; i<design->ndvol; i++)
 {
-   dvol_fenode[i] = (int*)MALLOC(ndvol_fenode[i]*sizeof(int));
+   dvol_fenode[i] = (int*)CCAMALLOC(ndvol_fenode[i]*sizeof(int));
    if (!dvol_fenode[i]) dserror("Allocation of memory failed");
 }
 /*------------------------------- find fe-nodes belonging to this dvol */

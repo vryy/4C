@@ -61,7 +61,7 @@ actstiff    = actlev->csr;
 /*--------------------------- allocate prolongator, if it doesn't exist */
 if (actlev->P == NULL)
 {
-   actlev->P = (DBCSR*)CALLOC(1,sizeof(DBCSR));
+   actlev->P = (DBCSR*)CCACALLOC(1,sizeof(DBCSR));
    if (!actlev->P) dserror("Allocation of memory failed");
    P = actlev->P;
 /*----------------------------------------------------------------------*/
@@ -111,12 +111,12 @@ for (i=0; i<actlev->nagg; i++)
    mlpcg_precond_oneP0(actagg,aggblock,rindex,cindex,&nrow,&ncol,actstiff);
    if (!(actagg->tentP))
    {
-      actagg->tentP = (ARRAY*)CALLOC(1,sizeof(ARRAY));
+      actagg->tentP = (ARRAY*)CCACALLOC(1,sizeof(ARRAY));
       if (!(actagg->tentP)) dserror("Allocation of memory failed");
       amdef("tentP",actagg->tentP,nrow,ncol,"DA");
    }
    if (!(actagg->tentP_rindex))
-      actagg->tentP_rindex = (int*)MALLOC(nrow*sizeof(int));
+      actagg->tentP_rindex = (int*)CCAMALLOC(nrow*sizeof(int));
    if (!(actagg->tentP_rindex)) dserror("Allocation of memory failed");
    /*------------------------------- put rindex to actagg->tentP_rindex */
    for (j=0; j<nrow; j++) actagg->tentP_rindex[j] = rindex[j];

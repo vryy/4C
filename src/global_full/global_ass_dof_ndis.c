@@ -139,7 +139,7 @@ for (kk=0;kk<actfield->ndis;kk++)
    counter=0;
    for (j=0; j<actfield->dis[kk].numnp; j++)
    {
-      actfield->dis[kk].node[j].dof  = (int*)CALLOC(actfield->dis[kk].node[j].numdf,sizeof(int));
+      actfield->dis[kk].node[j].dof  = (int*)CCACALLOC(actfield->dis[kk].node[j].numdf,sizeof(int));
       if (!(actfield->dis[kk].node[j].dof)) 
          dserror("Allocation of dof in NODE failed");
       /*------------------------- allocate the arrays to hold solutions */

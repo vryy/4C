@@ -79,7 +79,7 @@ for (i=0; i<design->ndvol; i++)
       /*-------- if actdsurf has its own dirichlet condition do nothing */
       if (actdsurf->dirich != NULL) continue;
       /*------ inherit the dirichlet condition from actdvol to actdsurf */
-      actdsurf->dirich = (DIRICH_CONDITION*)CALLOC(1,sizeof(DIRICH_CONDITION));
+      actdsurf->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
       if (!actdsurf->dirich) dserror("Allocation of memory failed");
       actdsurf->dirich->curve = actdvol->dirich->curve;
       am_alloc_copy(&(actdvol->dirich->dirich_onoff),&(actdsurf->dirich->dirich_onoff));  
@@ -117,7 +117,7 @@ for (i=0; i<design->ndsurf; i++)
       /*-------- if actdline has its own dirichlet condition do nothing */
       if (actdline->dirich != NULL) continue;
       /*------ inherit the dirichlet condition from actdsurf to actdline */
-      actdline->dirich = (DIRICH_CONDITION*)CALLOC(1,sizeof(DIRICH_CONDITION));
+      actdline->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
       if (!actdline->dirich) dserror("Allocation of memory failed");
       actdline->dirich->curve = actdsurf->dirich->curve;
       am_alloc_copy(&(actdsurf->dirich->dirich_onoff),&(actdline->dirich->dirich_onoff));  
@@ -155,7 +155,7 @@ for (i=0; i<design->ndline; i++)
       /*-------- if actdnode has its own dirichlet condition do nothing */
       if (actdnode->dirich != NULL) continue;
       /*------ inherit the dirichlet condition from actdline to actdnode */
-      actdnode->dirich = (DIRICH_CONDITION*)CALLOC(1,sizeof(DIRICH_CONDITION));
+      actdnode->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
       if (!actdnode->dirich) dserror("Allocation of memory failed");
       actdnode->dirich->curve = actdline->dirich->curve;
       am_alloc_copy(&(actdline->dirich->dirich_onoff),&(actdnode->dirich->dirich_onoff));  
@@ -200,7 +200,7 @@ for (i=0; i<design->ndvol; i++)
       /*-------- if actdsurf has its own couple condition do nothing */
       if (actdsurf->couple != NULL) continue;
       /*------ inherit the couple condition from actdvol to actdsurf */
-      actdsurf->couple = (COUPLE_CONDITION*)CALLOC(1,sizeof(COUPLE_CONDITION));
+      actdsurf->couple = (COUPLE_CONDITION*)CCACALLOC(1,sizeof(COUPLE_CONDITION));
       if (!actdsurf->couple) dserror("Allocation of memory failed");
       actdsurf->couple->fieldtyp      = actdvol->couple->fieldtyp;
       actdsurf->couple->fsi_iscoupled = actdvol->couple->fsi_iscoupled;
@@ -238,7 +238,7 @@ for (i=0; i<design->ndsurf; i++)
       /*-------- if actdline has its own couple condition do nothing */
       if (actdline->couple != NULL) continue;
       /*------ inherit the couple condition from actdsurf to actdline */
-      actdline->couple = (COUPLE_CONDITION*)CALLOC(1,sizeof(COUPLE_CONDITION));
+      actdline->couple = (COUPLE_CONDITION*)CCACALLOC(1,sizeof(COUPLE_CONDITION));
       if (!actdline->couple) dserror("Allocation of memory failed");
       actdline->couple->fieldtyp      = actdsurf->couple->fieldtyp;
       actdline->couple->fsi_iscoupled = actdsurf->couple->fsi_iscoupled;
@@ -276,7 +276,7 @@ for (i=0; i<design->ndline; i++)
       /*-------- if actdnode has its own couple condition do nothing */
       if (actdnode->couple != NULL) continue;
       /*------ inherit the couple condition from actdline to actdnode */
-      actdnode->couple = (COUPLE_CONDITION*)CALLOC(1,sizeof(COUPLE_CONDITION));
+      actdnode->couple = (COUPLE_CONDITION*)CCACALLOC(1,sizeof(COUPLE_CONDITION));
       if (!actdnode->couple) dserror("Allocation of memory failed");
       actdnode->couple->fieldtyp       = actdline->couple->fieldtyp;
        actdnode->couple->fsi_iscoupled = actdline->couple->fsi_iscoupled;

@@ -41,7 +41,7 @@ char buffer[50];
 dstrc_enter("c1inp");
 #endif
 /*------------------------------------------------ allocate the element */      
-ele->e.c1 = (BRICK1*)CALLOC(1,sizeof(BRICK1));
+ele->e.c1 = (BRICK1*)CCACALLOC(1,sizeof(BRICK1));
 if (ele->e.c1==NULL) dserror("Allocation of element failed");
 /*---------------------------------------------- read elements topology */
 frchk("HEX8",&ierr);
@@ -49,7 +49,7 @@ if (ierr==1)
 {
    ele->distyp = hex8;
    ele->numnp=8;
-   ele->lm = (int*)CALLOC(ele->numnp,sizeof(int));
+   ele->lm = (int*)CCACALLOC(ele->numnp,sizeof(int));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
    frint_n("HEX8",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
@@ -59,7 +59,7 @@ if (ierr==1)
 {
    ele->distyp = hex20;
    ele->numnp=20;
-   ele->lm = (int*)CALLOC(ele->numnp,sizeof(int));
+   ele->lm = (int*)CCACALLOC(ele->numnp,sizeof(int));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
    frint_n("HEX20",&(ele->lm[0]),ele->numnp,&ierr);
    /*
@@ -91,7 +91,7 @@ if (ierr==1)
 {
    ele->numnp=27;
    ele->distyp = hex27;
-   ele->lm = (int*)CALLOC(ele->numnp,sizeof(int));
+   ele->lm = (int*)CCACALLOC(ele->numnp,sizeof(int));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
    frint_n("HEX27",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
@@ -100,7 +100,7 @@ frchk("TET4",&ierr);
 if (ierr==1) 
 {
    ele->numnp=4;
-   ele->lm = (int*)CALLOC(ele->numnp,sizeof(int));
+   ele->lm = (int*)CCACALLOC(ele->numnp,sizeof(int));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
    frint_n("TET4",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
@@ -109,7 +109,7 @@ frchk("TET10",&ierr);
 if (ierr==1) 
 {
    ele->numnp=10;
-   ele->lm = (int*)CALLOC(ele->numnp,sizeof(int));
+   ele->lm = (int*)CCACALLOC(ele->numnp,sizeof(int));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
    frint_n("TET10",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");

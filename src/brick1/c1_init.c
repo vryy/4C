@@ -51,32 +51,32 @@ for (i=0; i<actpart->pdis[0].numele; i++)
   ngp = actele->e.c1->nGP[0]*actele->e.c1->nGP[1]*actele->e.c1->nGP[2];
   /*----------------------------------------- init stress structures ---*/
   size_i = 1;
-  actele->e.c1->stress = (C1_ELE_STRESS*)CALLOC(size_i,sizeof(C1_ELE_STRESS));
+  actele->e.c1->stress = (C1_ELE_STRESS*)CCACALLOC(size_i,sizeof(C1_ELE_STRESS));
 
   size_i = nnp;
   size_j = 26;
 
-  actele->e.c1->stress[0].npstrs = (double**)CALLOC(size_i,sizeof(double*));
+  actele->e.c1->stress[0].npstrs = (double**)CCACALLOC(size_i,sizeof(double*));
   for (k=0; k<size_i; k++)
   {
-    actele->e.c1->stress[0].npstrs[k]=(double*)CALLOC(size_j,sizeof(double)); 
+    actele->e.c1->stress[0].npstrs[k]=(double*)CCACALLOC(size_j,sizeof(double)); 
     for (j=0; j<size_j; j++) actele->e.c1->stress[0].npstrs[k][j] = 0.;
   }
 
   size_i = ngp;
   size_j = 26;
 
-  actele->e.c1->stress[0].gpstrs = (double**)CALLOC(size_i,sizeof(double*));
+  actele->e.c1->stress[0].gpstrs = (double**)CCACALLOC(size_i,sizeof(double*));
   for (k=0; k<size_i; k++)
   {
-    actele->e.c1->stress[0].gpstrs[k]=(double*)CALLOC(size_j,sizeof(double)); 
+    actele->e.c1->stress[0].gpstrs[k]=(double*)CCACALLOC(size_j,sizeof(double)); 
     for (j=0; j<size_j; j++) actele->e.c1->stress[0].gpstrs[k][j] = 0.;
   }
   size_j = 3;
-  actele->e.c1->stress[0].gpcoor = (double**)CALLOC(size_i,sizeof(double*));
+  actele->e.c1->stress[0].gpcoor = (double**)CCACALLOC(size_i,sizeof(double*));
   for (k=0; k<size_i; k++)
   {
-    actele->e.c1->stress[0].gpcoor[k]=(double*)CALLOC(size_j,sizeof(double)); 
+    actele->e.c1->stress[0].gpcoor[k]=(double*)CCACALLOC(size_j,sizeof(double)); 
     for (j=0; j<size_j; j++) actele->e.c1->stress[0].gpcoor[k][j] = 0.;
   }
   /*--------------------------------------------- init working array ---*/
@@ -89,7 +89,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
      actele->e.c1->nhyb>0)
   {
     size_i = 1;
-    actele->e.c1->elewa = (C1_ELE_WA*)CALLOC(size_i,sizeof(C1_ELE_WA));
+    actele->e.c1->elewa = (C1_ELE_WA*)CCACALLOC(size_i,sizeof(C1_ELE_WA));
     if (actele->e.c1->elewa==NULL)
     {
       dserror("Allocation of elewa in ELEMENT failed");
@@ -103,7 +103,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
      | actele->e.c1->elewa->matdata[0] = current density value  | 
      *----------------------------------------------------------*/
     size_j = 1;
-    actele->e.c1->elewa->matdata = (double*)calloc(size_j,sizeof(double));
+    actele->e.c1->elewa->matdata = (double*)CCACALLOC(size_j,sizeof(double));
     if (actele->e.c1->elewa->matdata==NULL)
     {
       dserror("Allocation of matdata in ELEMENT failed");
@@ -114,7 +114,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
      | actele->e.c1->elewa->optdata[0] = current opt.var.num.   | 
      *----------------------------------------------------------*/
     size_j = 1;
-    actele->e.c1->elewa->optdata = (int*)calloc(size_j,sizeof(int));
+    actele->e.c1->elewa->optdata = (int*)CCACALLOC(size_j,sizeof(int));
     if (actele->e.c1->elewa->optdata==NULL)
     {
       dserror("Allocation of optdata in ELEMENT failed");
@@ -129,7 +129,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
      | actele->e.c1->elewa->matdata[0] = current density value  | 
      *----------------------------------------------------------*/
     size_j = 1;
-    actele->e.c1->elewa->matdata = (double*)calloc(size_j,sizeof(double));
+    actele->e.c1->elewa->matdata = (double*)CCACALLOC(size_j,sizeof(double));
     if (actele->e.c1->elewa->matdata==NULL)
     {
       dserror("Allocation of matdata in ELEMENT failed");
@@ -140,7 +140,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
      | actele->e.c1->elewa->optdata[0] = current opt.var.num.   | 
      *----------------------------------------------------------*/
     size_j = 1;
-    actele->e.c1->elewa->optdata = (int*)calloc(size_j,sizeof(int));
+    actele->e.c1->elewa->optdata = (int*)CCACALLOC(size_j,sizeof(int));
     if (actele->e.c1->elewa->optdata==NULL)
     {
       dserror("Allocation of optdata in ELEMENT failed");
@@ -154,7 +154,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
      | actele->e.c1->elewa->matdata[0] = current density value  | 
      *----------------------------------------------------------*/
     size_j = 1;
-    actele->e.c1->elewa->matdata = (double*)calloc(size_j,sizeof(double));
+    actele->e.c1->elewa->matdata = (double*)CCACALLOC(size_j,sizeof(double));
     if (actele->e.c1->elewa->matdata==NULL)
     {
       dserror("Allocation of matdata in ELEMENT failed");
@@ -165,7 +165,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
      | actele->e.c1->elewa->optdata[0] = current opt.var.num.   | 
      *----------------------------------------------------------*/
     size_j = 1;
-    actele->e.c1->elewa->optdata = (int*)calloc(size_j,sizeof(int));
+    actele->e.c1->elewa->optdata = (int*)CCACALLOC(size_j,sizeof(int));
     if (actele->e.c1->elewa->optdata==NULL)
     {
       dserror("Allocation of optdata in ELEMENT failed");
@@ -179,26 +179,26 @@ for (i=0; i<actpart->pdis[0].numele; i++)
     /* */
     size_i = 1;
     actele->e.c1->elewa[0].eas = 
-                             (C1_EASDAT*)CALLOC(size_i,sizeof(C1_EASDAT));
+                             (C1_EASDAT*)CCACALLOC(size_i,sizeof(C1_EASDAT));
     /* */
     size_j = actele->e.c1->nhyb*3;
     actele->e.c1->elewa[0].eas[0].ehdis 
-                                  = (double*)CALLOC(size_j,sizeof(double));
+                                  = (double*)CCACALLOC(size_j,sizeof(double));
     for (k=0; k<size_j; k++) actele->e.c1->elewa[0].eas[0].ehdis[k]=0.;
     /* */
     size_j = 24; /* 8noded element only!*/
     actele->e.c1->elewa[0].eas[0].disl
-                                  = (double*)CALLOC(size_j,sizeof(double));
+                                  = (double*)CCACALLOC(size_j,sizeof(double));
     for (k=0; k<size_j; k++) actele->e.c1->elewa[0].eas[0].disl[k]=0.;
     /* */
     size_j = 24*actele->e.c1->nhyb*3; 
     actele->e.c1->elewa[0].eas[0].hil
-                                  = (double*)CALLOC(size_j,sizeof(double));
+                                  = (double*)CCACALLOC(size_j,sizeof(double));
     for (k=0; k<size_j; k++) actele->e.c1->elewa[0].eas[0].hil[k]=0.;
     /* */
     size_j = actele->e.c1->nhyb*3; 
     actele->e.c1->elewa[0].eas[0].hih
-                                  = (double*)CALLOC(size_j,sizeof(double));
+                                  = (double*)CCACALLOC(size_j,sizeof(double));
     for (k=0; k<size_j; k++) actele->e.c1->elewa[0].eas[0].hih[k]=0.;
     /* */
   }
@@ -208,7 +208,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
   {
     size_j = actele->e.c1->nGP[0]*actele->e.c1->nGP[1]*actele->e.c1->nGP[2];
     actele->e.c1->elewa[0].ipwa = 
-                               (C1_IP_WA*)CALLOC(size_j,sizeof(C1_IP_WA));
+                               (C1_IP_WA*)CCACALLOC(size_j,sizeof(C1_IP_WA));
     if (actele->e.c1->elewa[0].ipwa==NULL)
     {
       dserror("Allocation of ipwa in ELEMENT failed");
@@ -234,7 +234,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
   {
     size_j = actele->e.c1->nGP[0]*actele->e.c1->nGP[1]*actele->e.c1->nGP[2];
     actele->e.c1->elewa[0].ipwa = 
-                               (C1_IP_WA*)CALLOC(size_j,sizeof(C1_IP_WA));
+                               (C1_IP_WA*)CCACALLOC(size_j,sizeof(C1_IP_WA));
     if (actele->e.c1->elewa[0].ipwa==NULL)
     {
       dserror("Allocation of ipwa in ELEMENT failed");

@@ -346,47 +346,47 @@ dstrc_enter("solserv_alloc_cp_sparsemask");
 switch (*typfrom)
 {
 case mds:
-   matto->mds = (ML_ARRAY_MDS*)CALLOC(1,sizeof(ML_ARRAY_MDS));
+   matto->mds = (ML_ARRAY_MDS*)CCACALLOC(1,sizeof(ML_ARRAY_MDS));
    if (!matto->mds) dserror("Allocation of memory failed");
    dserror("Copy of msd matrix not yet implemented ");
 break;
 case msr:
-   matto->msr = (AZ_ARRAY_MSR*)CALLOC(1,sizeof(AZ_ARRAY_MSR));
+   matto->msr = (AZ_ARRAY_MSR*)CCACALLOC(1,sizeof(AZ_ARRAY_MSR));
    if (!matto->msr) dserror("Allocation of memory failed");
    solserv_cp_msrmask(matfrom->msr,matto->msr);
 break;
 case parcsr:
-   matto->parcsr = (H_PARCSR*)CALLOC(1,sizeof(H_PARCSR));
+   matto->parcsr = (H_PARCSR*)CCACALLOC(1,sizeof(H_PARCSR));
    if (!matto->parcsr) dserror("Allocation of memory failed");
    dserror("Copy of parcsr matrix not yet implemented ");
 break;
 case ucchb:
-   matto->ucchb = (UCCHB*)CALLOC(1,sizeof(UCCHB));
+   matto->ucchb = (UCCHB*)CCACALLOC(1,sizeof(UCCHB));
    if (!matto->ucchb) dserror("Allocation of memory failed");
    solserv_cp_ucchbmask(matfrom->ucchb,matto->ucchb);
 break;
 case dense:
-   matto->dense = (DENSE*)CALLOC(1,sizeof(DENSE));
+   matto->dense = (DENSE*)CCACALLOC(1,sizeof(DENSE));
    if (!matto->dense) dserror("Allocation of memory failed");
    solserv_cp_densemask(matfrom->dense,matto->dense);
 break;
 case rc_ptr:
-   matto->rc_ptr = (RC_PTR*)CALLOC(1,sizeof(RC_PTR));
+   matto->rc_ptr = (RC_PTR*)CCACALLOC(1,sizeof(RC_PTR));
    if (!matto->rc_ptr) dserror("Allocation of memory failed");
    solserv_cp_rc_ptrmask(actintra,matfrom->rc_ptr,matto->rc_ptr);
 break;
 case ccf:
-   matto->ccf = (CCF*)CALLOC(1,sizeof(CCF));
+   matto->ccf = (CCF*)CCACALLOC(1,sizeof(CCF));
    if (!matto->ccf) dserror("Allocation of memory failed");
    solserv_cp_ccfmask(actintra,matfrom->ccf,matto->ccf);
 break;
 case skymatrix:
-   matto->sky = (SKYMATRIX*)CALLOC(1,sizeof(SKYMATRIX));
+   matto->sky = (SKYMATRIX*)CCACALLOC(1,sizeof(SKYMATRIX));
    if (!matto->sky) dserror("Allocation of memory failed");
    solserv_cp_skymask(matfrom->sky,matto->sky);
 break;
 case spoolmatrix:
-   matto->spo = (SPOOLMAT*)CALLOC(1,sizeof(SPOOLMAT));
+   matto->spo = (SPOOLMAT*)CCACALLOC(1,sizeof(SPOOLMAT));
    if (!matto->spo) dserror("Allocation of memory failed");
    solserv_cp_spomask(matfrom->spo,matto->spo);
 break;

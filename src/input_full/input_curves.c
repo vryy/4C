@@ -68,7 +68,7 @@ if (ierr==0) (numcurve)++;
 
 
 /*------------------------------------------------- allocate the curves */
-curve = (CURVE*)CALLOC(numcurve,sizeof(CURVE));
+curve = (CURVE*)CCACALLOC(numcurve,sizeof(CURVE));
 if (curve==NULL) dserror("Allocation of CURVE failed");
 for (i=0; i<numcurve; i++) curve[i].Id=0;
 /*----------------------------------------------------- read the curves */

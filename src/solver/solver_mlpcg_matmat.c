@@ -397,7 +397,7 @@ for (n=0; n<nproc; n++)
    if (sendtor[myrank][n] != rcounter[n]) dserror("Number of lines wrong");
 }
 /*--------------------------------------------------- allocate requests */
-request = (MPI_Request*)CALLOC(2*nsend,sizeof(MPI_Request));
+request = (MPI_Request*)CCACALLOC(2*nsend,sizeof(MPI_Request));
 if (!request) dserror("Allocation of memory failed");
 /*-------------------------------------------------- now make the sends */
 counter=0;
@@ -532,7 +532,7 @@ for (n=0; n<nproc; n++)
 }
 amdel(&irbuff);
 amdel(&drbuff);
-FREE(request);
+CCAFREE(request);
 t2 = ds_cputime();
 if (myrank==0) printf("work = Pt*incsr inter II : %20.10f\n",t2-t1);
 #endif
@@ -597,7 +597,7 @@ t1 = ds_cputime();
 nsend = nproc-1;
 nrecv = nproc-1;
 /*--------------------------------------------------- allocate requests */
-request = (MPI_Request*)CALLOC(4*nsend,sizeof(MPI_Request));
+request = (MPI_Request*)CCACALLOC(4*nsend,sizeof(MPI_Request));
 if (!request) dserror("Allocation of memory failed");
 counter=0;
 for (n=0; n<nproc; n++)
@@ -730,7 +730,7 @@ if (myrank==0) printf("out  = work * P inter II : %20.10f\n",t2-t1);
 /*======================================================================*/
 /*                                                       tidy up        */
 /*======================================================================*/
-FREE(request);
+CCAFREE(request);
 amdel(&rupdate);
 amdel(&ria);
 amdel(&rja);

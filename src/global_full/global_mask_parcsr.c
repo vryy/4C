@@ -43,7 +43,7 @@ parcsr_update(actfield,actpart,actsolv,actintra,parcsr);
       dof_connect[i][2] = dof
       dof_connect[i][ 2..dof_connect[i][0]-1 ] = connected dofs exluding itself 
    */
-dof_connect = (int**)CALLOC(parcsr->numeq_total,sizeof(int*));
+dof_connect = (int**)CCACALLOC(parcsr->numeq_total,sizeof(int*));
 if (!dof_connect) dserror("Allocation of dof_connect failed");
 parcsr_nnz_topology(actfield,actpart,actsolv,actintra,parcsr,dof_connect);
 /*---------------------------------------------- allocate bindx and val */
@@ -56,9 +56,9 @@ parcsr_update_perm(actintra,parcsr);
 /*---------------------------------------- delete the array dof_connect */
 for (i=0; i<parcsr->numeq_total; i++)
 {
-   if (dof_connect[i]) FREE(dof_connect[i]);
+   if (dof_connect[i]) CCAFREE(dof_connect[i]);
 }
-FREE(dof_connect);
+CCAFREE(dof_connect);
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -200,11 +200,11 @@ p_sizes = amdef("p_sizes",&(parcsr->perm_sizes),inprocs,1,"IV");
           amzero(&(parcsr->perm_sizes));
 p_sizes[imyrank] = parcsr->numeq;
 #ifdef PARALLEL
-recvbuff = (int*)CALLOC(inprocs,sizeof(int));
+recvbuff = (int*)CCACALLOC(inprocs,sizeof(int));
 if (!recvbuff) dserror("Allocation of memory failed");
 MPI_Allreduce(p_sizes,recvbuff,inprocs,MPI_INT,MPI_SUM,actintra->MPI_INTRA_COMM);
 for (i=0; i<inprocs; i++) p_sizes[i] = recvbuff[i];
-FREE(recvbuff);
+CCAFREE(recvbuff);
 #endif
 /*--------now every proc knows the sizes of all procs and can calculate */
 /*                                    the range of permuted dof numbers */
@@ -357,7 +357,7 @@ for (i=0; i<numeq; i++)
       if (dofpatch.a.iv[j] != -1) counter2++;
    }
    /*-------------- allocate the dof_connect vector and put dofs in it */
-   dof_connect[dof] = (int*)CALLOC(counter2+3,sizeof(int));
+   dof_connect[dof] = (int*)CCACALLOC(counter2+3,sizeof(int));
    if (!dof_connect[dof]) dserror("Allocation of dof connect list failed");
    dof_connect[dof][0] = counter2+3;
    dof_connect[dof][1] = 0; 
@@ -442,7 +442,7 @@ for (i=0; i<coupledofs->fdim; i++)
       if (dofpatch.a.iv[j] != -1) counter2++;
    }
    /*-------------- allocate the dof_connect vector and put dofs in it */
-   dof_connect[dof] = (int*)CALLOC(counter2+3,sizeof(int));
+   dof_connect[dof] = (int*)CCACALLOC(counter2+3,sizeof(int));
    if (!dof_connect[dof]) dserror("Allocation of dof connect list failed");
    dof_connect[dof][0] = counter2+3;
    dof_connect[dof][1] = dofflag;
@@ -492,7 +492,7 @@ for (i=0; i<coupledofs->fdim; i++)
             /*----------------------------------- get lenght of message */
             MPI_Get_count(&status,MPI_INT,&recvlenght);
             /*--------------------------------------- realloc the array */
-            dof_connect[dof] = (int*)REALLOC(dof_connect[dof],
+            dof_connect[dof] = (int*)CCAREALLOC(dof_connect[dof],
                                              (dof_connect[dof][0]+recvlenght)*
                                              sizeof(int));
             if (!dof_connect[dof]) dserror("Reallocation of dof_connect failed");
@@ -523,7 +523,7 @@ for (i=0; i<coupledofs->fdim; i++)
                }
             }
             /*--------------------------------------- realloc the array */
-            dof_connect[dof] = (int*)REALLOC(dof_connect[dof],
+            dof_connect[dof] = (int*)CCAREALLOC(dof_connect[dof],
                                              counter2*sizeof(int));
             if (!dof_connect[dof]) dserror("Reallocation of dof_connect failed");
             dof_connect[dof][0] = counter2;

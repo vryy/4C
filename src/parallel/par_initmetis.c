@@ -9,7 +9,14 @@
 #ifdef PARALLEL 
 #ifdef SUN
 #include "../../../lib_sun/metis-4.0/Lib/metis.h"
-#else
+#endif
+#ifdef AZUSA
+#include "../../../../lib_ita1/metis/metis.h"
+#endif
+#ifdef HPUX10
+#include "/bau/stat33/users/statik/lib/METIS/metis.h"
+#endif
+#ifdef HPUX11
 #include "/bau/stat33/users/statik/lib/METIS/metis.h"
 #endif
 #endif

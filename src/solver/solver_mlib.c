@@ -116,7 +116,7 @@ case 2:/*======================= INITIALIZE THE SPARSE MATRIX WITH ZERO */
     firstsolve=2;
     break;
   }
-  vz = (double*)CALLOC(mds->nnz ,sizeof(double));
+  vz = (double*)CCACALLOC(mds->nnz ,sizeof(double));
   if (!vz)  dserror("Allocation of memory int 'add_mds' failed");
   vzh = vz;
   for (i=0; i<mds->nnz; i++) *(vzh++) = 0.0;
@@ -125,7 +125,7 @@ case 2:/*======================= INITIALIZE THE SPARSE MATRIX WITH ZERO */
   dslevm (&mds->colstr.a.iv[0],&mds->rowind.a.iv[0]  ,
           vz                  ,mds->global,&mds->ierr);
 #endif          
-  FREE(vz);
+  CCAFREE(vz);
 break;
 case 0:/*============================================ calculation phase */
 /**/

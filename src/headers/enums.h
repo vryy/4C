@@ -163,7 +163,6 @@ typedef enum _SOLVER_TYP
 {
                        mlib_d_sp,     /* solver package, hp's mlib, direct-sparse-symmetric-unsymmetric*/
                        aztec_msr,     /* solver package aztec 2.1, matrix in dmsr format */
-                       aztec_vbr,     /* solver package aztec 2.1, matrix in dvbr format */
                        hypre_amg,     /* solver package hypre, amg-solver, matrix in parcsr format */
                        hypre_pcg,     /* solver package hypre, cg, matrix in parcsr format */
                        hypre_gmres,   /* solver package hypre, gmres, matrix in parcsr format */

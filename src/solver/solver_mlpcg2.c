@@ -251,7 +251,7 @@ mlprecond.partdis  = mlpcgvars->partdis;
 mlprecond.omega    = mlpcgvars->p_omega;
 /*----------------------------------------------------- allocate levels */
 mlprecond.numlev = mlpcgvars->numlev;
-mlprecond.level = (MLLEVEL*)CALLOC(mlprecond.numlev,sizeof(MLLEVEL));
+mlprecond.level = (MLLEVEL*)CCACALLOC(mlprecond.numlev,sizeof(MLLEVEL));
 if (!mlprecond.level) dserror("Allocation of MLPRECOND failed");
 /*-------------- loop levels and set smoothers and prolongation damping */
 for (i=0; i<mlprecond.numlev-1; i++)
@@ -275,7 +275,7 @@ for (i=0; i<mlprecond.numlev-1; i++)
 for (i=1; i<mlprecond.numlev; i++)
 {
    actlev               = &(mlprecond.level[i]);
-   actlev->csr = (DBCSR*)CALLOC(1,sizeof(DBCSR));
+   actlev->csr = (DBCSR*)CCACALLOC(1,sizeof(DBCSR));
    if (!actlev->csr) dserror("Allocation of DBCSR failed");
 }
 /*--------------------- set pointer in lowest level to the bdcsr matrix */
@@ -576,7 +576,7 @@ mlpcg_csr_open(nextlev->csr,startdof,enddof,numeq_total,nnz_guess,actintra);
    The size can be estimated to nnz_guess from actlev->csr
    The splitting of the dofs on the processores correponds to nextlev->csr
 */
-work = (DBCSR*)CALLOC(1,sizeof(DBCSR));
+work = (DBCSR*)CCACALLOC(1,sizeof(DBCSR));
 if (!work) dserror("Allocation of memory failed");
 mlpcg_csr_open(work,startdof,enddof,numeq_total,nnz_guess,actintra);
 /*------------------------------------- we can now make the restriction */
@@ -584,7 +584,7 @@ mlpcg_precond_PtKP(actlev->P,actlev->csr,nextlev->csr,work,actlev->agg,
                    actlev->nagg,actintra);
 /*------------------------------------ destroy the temporary csr matrix */
 mlpcg_csr_destroy(work);
-work = FREE(work);
+work = CCAFREE(work);
 /*----------------------------------------------------------------------*/
 /* 
   due to boundary conditions there may be empty columns in the prolongator.
@@ -768,7 +768,7 @@ actpdis = mlprecond.partdis;
 if (mlprecond.director.Typ==cca_XX)
 {
    director = amdef("direct",&(mlprecond.director),actpdis->numnp,3,"DA");
-   mlprecond.node      = (NODE**)MALLOC((actpdis->numnp)*sizeof(NODE*));
+   mlprecond.node      = (NODE**)CCAMALLOC((actpdis->numnp)*sizeof(NODE*));
 }   
 if (!(mlprecond.node)) 
 dserror("Allocation of memory failed");

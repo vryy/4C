@@ -421,8 +421,8 @@ for (i=0; i<coupledofs->fdim; i++)
 */
 if (numsend) /*-------- I have to send couple dof entries to other proc */
 {
-   *couple_d_send_ptr = (ARRAY*)CALLOC(1,sizeof(ARRAY));
-   *couple_i_send_ptr = (ARRAY*)CALLOC(1,sizeof(ARRAY));
+   *couple_d_send_ptr = (ARRAY*)CCACALLOC(1,sizeof(ARRAY));
+   *couple_i_send_ptr = (ARRAY*)CCACALLOC(1,sizeof(ARRAY));
 
    if (!(*couple_d_send_ptr) || !(*couple_i_send_ptr))
    dserror("Allocation of send/recv buffers for coupled dofs failed");
@@ -452,8 +452,8 @@ else /*----------------------------------------- I have nothing to send */
 
 if (numrecv) /* I am master of a coupled dof and expect entries from other procs */
 {
-   *couple_d_recv_ptr = (ARRAY*)CALLOC(1,sizeof(ARRAY));
-   *couple_i_recv_ptr = (ARRAY*)CALLOC(1,sizeof(ARRAY));
+   *couple_d_recv_ptr = (ARRAY*)CCACALLOC(1,sizeof(ARRAY));
+   *couple_i_recv_ptr = (ARRAY*)CCACALLOC(1,sizeof(ARRAY));
 
    if (!(*couple_d_recv_ptr) || !(*couple_i_recv_ptr))
    dserror("Allocation of send/recv buffers for coupled dofs failed");

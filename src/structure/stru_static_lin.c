@@ -124,7 +124,7 @@ action      = &(calc_action[0]);
 #ifdef PARALLEL 
 actintra    = &(par.intra[0]);
 #else
-actintra    = (INTRA*)CALLOC(1,sizeof(INTRA));
+actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
 if (!actintra) dserror("Allocation of INTRA failed");
 actintra->intra_fieldtyp = structure;
 actintra->intra_rank   = 0;
@@ -231,7 +231,7 @@ if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1)
 /*----------------------------------------------------------------------*/
 end:
 #ifndef PARALLEL 
-FREE(actintra);
+CCAFREE(actintra);
 #endif
 #ifdef DEBUG 
 dstrc_exit();
