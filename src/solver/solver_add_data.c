@@ -103,9 +103,11 @@ if (assemble_action==assemble_two_matrix)
    case spoolmatrix:
       add_spo(actpart,actsolv,actintra,actele,sysa1->spo,sysa2->spo);
    break;
+#ifdef MLPCG
    case bdcsr:
       add_bdcsr(actpart,actsolv,actintra,actele,sysa1->bdcsr,sysa2->bdcsr);
    break;
+#endif
    case oll:
       add_oll(actpart,actintra,actele,sysa1->oll,sysa2->oll);
    break;
@@ -149,9 +151,11 @@ if (assemble_action==assemble_one_matrix)
    case spoolmatrix:
       add_spo(actpart,actsolv,actintra,actele,sysa1->spo,NULL);
    break;
+#ifdef MLPCG
    case bdcsr:
       add_bdcsr(actpart,actsolv,actintra,actele,sysa1->bdcsr,NULL);
    break;
+#endif
    case oll:
       add_oll(actpart,actintra,actele,sysa1->oll,NULL);
    break;

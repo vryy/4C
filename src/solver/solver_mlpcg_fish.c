@@ -1,3 +1,5 @@
+#ifdef MLPCG
+
 /*!---------------------------------------------------------------------
 \file
 \brief contains the multilevel preconditioner for shells
@@ -290,3 +292,4 @@ return;
 
 
 /*! @} (documentation module close)*/
+#endif

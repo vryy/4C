@@ -54,11 +54,15 @@ LAPACKVARS   *lapackvars = NULL;
 MUMPSVARS    *mumpsvars = NULL;
 #endif
 COLSOLVARS   *colsolvars = NULL;
+
+#ifdef MLPCG
 MLPCGVARS    *mlpcgvars = NULL;
+#endif
+
 #ifdef DEBUG  
 dstrc_enter("inpctrsol");
 #endif
-/*----------------------------------------------------------------------*/
+
 solv->matrixtyp = matrix_none;
 switch(solv->fieldtyp)
 {
@@ -235,9 +239,13 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       /*--------------------------------------------------- solver MLPCG */
       if (strncmp("MLPCG",buffer,5)==0) 
       {
-         solv->solvertyp = MLPCG;
+#ifndef MLPCG
+        dserror("MLPCG package is not compiled in");
+#else
+         solv->solvertyp = mlpcg;
          solv->mlpcgvars = (MLPCGVARS*)CCACALLOC(1,sizeof(MLPCGVARS));
          mlpcgvars = solv->mlpcgvars;
+#endif
       }
    }/* end of (ierr==1) */
 /*------------------------------------------- read solver specific data */
@@ -472,7 +480,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    break;
    case SPOOLES_sym:/*----------------------------- read solver Spooles */
    break;
-   case MLPCG:/*------------------------------------- read solver MLPCG */
+
+#ifdef MLPCG
+   case mlpcg:/*------------------------------------- read solver MLPCG */
       frint("NUMLEV"      ,&(mlpcgvars->numlev)   ,&ierr);
       /*------------------------ there is a minimum of a 2-level method */
       if (ierr==1 && mlpcgvars->numlev < 2)
@@ -524,6 +534,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          if (strncmp("Fish",buffer,4)==0)   mlpcgvars->typ=1;
       }
    break;
+#endif
+
    default:/*-------------------------------------------- reading error */
       dserror("Unknown solvertyp - error in reading");
    break;

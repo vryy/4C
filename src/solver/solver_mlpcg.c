@@ -1,3 +1,5 @@
+#ifdef MLPCG
+
 /*!---------------------------------------------------------------------
 \file
 \brief contains the multilevel cg solver for shells
@@ -117,14 +119,6 @@ return;
 } /* end of solver_mlpcg */
 
 
-
-
-
-
-
-
-
-
-
 /*! @} (documentation module close)*/
+#endif
 

@@ -1,3 +1,5 @@
+#ifdef MLPCG
+
 /*!---------------------------------------------------------------------
 \file
 \brief data types for multilevel preconditioned cg
@@ -94,60 +96,7 @@ INT                     postsweep;   /*!< number of postsmoothing sweeps */
 struct _DISCRET        *fielddis;    /*!< warning: this is a pointer to the field original, not a copy! */
 struct _PARTDISCRET    *partdis;     /*!< warning: this is a pointer to the partition original, not a copy! */
 } MLPCGVARS;
-/*!------------------------------------------------------------------------
-\brief matrix needed by the MLPCG solver on the finest grid only   
 
-m.gee 6/01  
-
-matrix needed by the MLPCG solver on the finest grid only      
-
--------------------------------------------------------------------------*/
-typedef struct _DBCSR
-{
-INT                     is_init;       /*!< was this matrix initialized ? */
-INT                     is_factored;   /*!< is this matrix already factored ? */
-INT                     ncall;         /*!< how often was this matrix solved */
-
-INT                     numeq_total;   /*!< total number of unknowns */
-INT                     numeq;         /*!< number of unknowns updated on this proc */ 
-INT                     nnz;           /*!< number of nonzeros on this proc */
-
-INT                     owner[MAXPROC][2]; /*!< contains for each proc the lowest and highest
-                                                dof number 
-                                                owner[proc][0] lowest dof on proc 
-                                                owner[proc][1] highest dof on proc */
-struct _ARRAY           update;        /*!< list of dofs updated on this proc */
-struct _ARRAY           a;             /*!< the values of the sparse matrix */
-struct _ARRAY           ja;            /*!< the column indizes of the sparse matrix */
-struct _ARRAY           ia;            /*!< the row indizes of the sparse matrix */
-struct _ARRAY           blocks;        /*!< nodal block information of csr matrix 
-                                            block[i][0] = size of nodal block
-                                            block[i][1..block[i][0]] = dofs to this block */
-struct _ARRAY           gdofrecv;      /*!< ghost dof list to receive 
-                                            gdofrecv.a.ia[0..fdim-1]    = dof numbers of external dofs needed 
-                                            sorted in ascending order */
-struct _ARRAY           recvbuff;
-struct _ARRAY           computebuff;   /*!< after receiving all messages they are sorted to computebuff */
-#ifdef PARALLEL
-MPI_Status             *status;        /*!< receive status */
-#endif
-struct _ARRAY           gdofsend;      /*!< ghost dof list to send to other procs (3D integer)
-                                            gdofsend.a.ia[proc][0] = number of values to send to proc proc 
-                                            gdofsend.a.ia[proc][ 1..gdofsend.a.i3[proc][0] ] = 
-                                            dof numbers to be send to proc proc in ascending order */
-struct _ARRAY           sendbuff;
-#ifdef PARALLEL
-MPI_Request            *request;       /*!< send request */
-#endif
-INT                     firstcoupledof;/*!< dof number of the first dof that has interproc coupling */
-
-struct _DBCSR          *csc;           /*!< the treansposed matrix in compressed sparse column format */
-struct _DBCSR          *ilu;           /*!< the ilu-decomposed asm - matrix */
-struct _DBCSR          *asm;           /*!< the asm splitted matrix */
-ARRAY                  *dense;         /*!< for dense solve on coarsest grid */
-ARRAY                  *ipiv;          /*!< for dense solve on coarsest grid */
-
-} DBCSR;
 /*!------------------------------------------------------------------------
 \brief one level of the multilevel preconditioner
 
@@ -249,3 +198,5 @@ struct _ARRAY              q;           /*!< iterate vector of the cg-algorithm 
 
 
 #endif
+
+#endif /* MLPCG */

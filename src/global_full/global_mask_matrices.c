@@ -195,7 +195,7 @@ for (j=0; j<genprob.numfld; j++)
     else isspooles=1;
   }
   /*------------------------------ matrix is block distributed csr format for mlpcg */
-  if (actsolv->solvertyp==MLPCG)
+  if (actsolv->solvertyp==mlpcg)
   {
     if (actsolv->parttyp != cut_elements)
       dserror("Partitioning has to be Cut_Elements for solution with MLPCG"); 
@@ -342,6 +342,8 @@ for (j=0; j<genprob.numfld; j++)
     mask_skyline(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].sky);
     iscolsol=0;
   }
+
+#ifdef MLPCG
   /*---------------------------------------- matrix is skyline format  */
   if (ismlpcg==1)
   {
@@ -358,6 +360,8 @@ for (j=0; j<genprob.numfld; j++)
     actsolv->mlpcgvars->partdis  = &(actpart->pdis[0]);
     ismlpcg=0;
   }
+#endif
+
   /*----------------------------------------------------------------------*/
 } /* end of loop over numfld fields */
 /*----------------------------------------------------------------------*/

@@ -929,9 +929,11 @@ case spoolmatrix:
    solserv_matvec_spo(actintra,mat->spo,work1,work2);
    solserv_distribdistvec(result,mat,mattyp,work2,vec->numeq_total,actintra);
 break;
+#ifdef MLPCG
 case bdcsr:
    mlpcg_matvec(result->vec.a.dv,mat->bdcsr,vec->vec.a.dv,1.0,1,actintra);
 break;
+#endif
 case ccf:
    solserv_reddistvec(vec,mat,mattyp,work1,vec->numeq_total,actintra);
    solserv_matvec_ccf(actintra,mat->ccf,work1,work2);

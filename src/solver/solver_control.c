@@ -84,9 +84,11 @@ break;
 case spoolmatrix:/*-------------------- system matrix is spooles matrix */
    solver_spooles(actsolv,actintra,sysarray->spo,sol,rhs,option);
 break;
+#ifdef MLPCG
 case bdcsr:/*------------------------------ system matrix is csr matrix */
    solver_mlpcg(actsolv,actintra,sysarray->bdcsr,sol,rhs,option);
 break;
+#endif
 case oll:/*------------------------------ system matrix is csr matrix */
    solver_oll(actsolv,actintra,sysarray->oll,sol,rhs,option);
 break;

@@ -1,3 +1,5 @@
+#ifdef MLPCG
+
 /*!---------------------------------------------------------------------
 \file
 \brief contains the multilevel preconditioner for shells
@@ -1438,3 +1440,4 @@ return;
 } /* end of mlpcg_precond_getdirs */
 
 /*! @} (documentation module close)*/
+#endif

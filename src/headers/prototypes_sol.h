@@ -1124,6 +1124,8 @@ void dyn_ale(void);
 void ale_rhs(FIELD *actfield, SOLVAR *actsolv, PARTITION *actpart,
              INTRA *actintra, INT sysarray1, INT sysarray2, DOUBLE *dirich,
              INT global_numeq, INT kstep, CONTAINER *container, CALC_ACTION *action);
+
+#ifdef MLPCG
 /*----------------------------------------------------------------------*
  | mlpcg prototypes                                          m.gee9/02  |
  *----------------------------------------------------------------------*/
@@ -1134,15 +1136,15 @@ void solver_mlpcg(struct _SOLVAR         *actsolv,
                   struct _DIST_VECTOR    *sol,
                   struct _DIST_VECTOR    *rhs,
                   INT                     option);
-void mlpcg_solver_create(DBCSR       *bdcsr, 
+void mlpcg_solver_create(struct _DBCSR       *bdcsr, 
                          DIST_VECTOR *sol,
                          DIST_VECTOR *rhs,
                          MLPCGVARS   *mlpcgvars);
-void mlpcg_pcg(DBCSR       *bdcsr, 
+void mlpcg_pcg(struct _DBCSR       *bdcsr, 
                DIST_VECTOR *sol,
                DIST_VECTOR *rhs,
                INTRA       *actintra);
-void mlpcg_solver_init(DBCSR       *bdcsr, 
+void mlpcg_solver_init(struct _DBCSR       *bdcsr, 
                        DIST_VECTOR *sol,
                        DIST_VECTOR *rhs,
                        INTRA       *actintra);
@@ -1150,23 +1152,23 @@ void mask_bdcsr(FIELD         *actfield,
                 PARTITION     *actpart, 
                 SOLVAR        *actsolv,
                 INTRA         *actintra, 
-                DBCSR         *bdcsr);
+                struct _DBCSR         *bdcsr);
 void bdcsr_make_csr(FIELD         *actfield, 
                     PARTITION     *actpart, 
                     SOLVAR        *actsolv,
-                    DBCSR         *bdcsr,
+                    struct _DBCSR         *bdcsr,
                     INT          **dof_connect);
 void  bdcsr_nnz_topology(FIELD         *actfield, 
                          PARTITION     *actpart, 
                          SOLVAR        *actsolv,
                          INTRA         *actintra,
-                         DBCSR         *bdcsr,
+                         struct _DBCSR         *bdcsr,
                          INT          **dof_connect);
 void bdcsr_update(FIELD          *actfield, 
                   PARTITION      *actpart, 
                   SOLVAR         *actsolv,
                   INTRA          *actintra,
-                  DBCSR          *bdcsr);
+                  struct _DBCSR          *bdcsr);
 void bdcsr_numeq(FIELD         *actfield, 
                  PARTITION     *actpart, 
                  SOLVAR        *actsolv,
@@ -1178,13 +1180,14 @@ void  add_bdcsr(struct _PARTITION     *actpart,
                 struct _ELEMENT       *actele,
                 struct _DBCSR         *bdcsr1,
                 struct _DBCSR         *bdcsr2);
+#endif
 /*----------------------------------------------------------------------*
  | solver_copy_matrices                                      genk 11/02 |
  *----------------------------------------------------------------------*/
 void solver_copy_csr(
                        SPARSE_ARRAY  *amatrix,
                        SPARSE_TYP    *amatrix_typ,
-                       DBCSR         *amatrix_csr,
+                       struct _DBCSR         *amatrix_csr,
 		       INT            numeq_total
                      );
 

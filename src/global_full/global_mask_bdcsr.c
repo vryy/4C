@@ -1,3 +1,5 @@
+#ifdef MLPCG
+
 /*!----------------------------------------------------------------------
 \file
 \brief mask of dbcsr sparse format
@@ -1066,3 +1068,4 @@ return;
 
 
 /*! @} (documentation module close)*/
+#endif
