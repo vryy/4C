@@ -70,6 +70,10 @@ void f3_calgalexfv(
 DOUBLE  facsl, facsr;
 INT     inode,irow,isd;
 
+#ifdef DEBUG
+dstrc_enter("f3_calgalexfv");
+#endif
+
 fdyn    = alldyn[genprob.numff].fdyn;
 /*--------------------------------------------------- set some factors */
 facsl = fac*fdyn->thsl;
@@ -322,6 +326,10 @@ INT    inode;
 DOUBLE c;
 DOUBLE taump;
 DOUBLE fact[3];
+
+#ifdef DEBUG
+dstrc_enter("f3_calstabexfp");
+#endif
 
 if (gls->ipres==0) goto end; /* no pressure stabilisation */
 fdyn    = alldyn[genprob.numff].fdyn;

@@ -200,6 +200,7 @@ if (trace.trace_on==1)
 trace.actroutine->dsroutcontrol=dsout;
 trace.actroutine = trace.actroutine->prev;
 trace.deepness--;
+dsassert(trace.deepness >= 0, "trace stack underflow");
 }
 return;
 #endif

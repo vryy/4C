@@ -178,7 +178,10 @@ else {
    * it's exactly what we want: SIGFPE just for the given
    * exceptions. We don't care about FE_INEXACT. (It happens all the
    * time.) */
-  feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_UNDERFLOW | FE_OVERFLOW);
+  /* Over- and underflow seem to happen sometimes. Does it worry us?
+   * Will that spoil the results? */
+  /*feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_UNDERFLOW | FE_OVERFLOW);*/
+  feenableexcept(FE_INVALID | FE_DIVBYZERO);
 
   /* The hard GNU way. But it does too much. */
   /*fesetenv((fenv_t*)-2);*/
@@ -190,7 +193,8 @@ else {
    * Don't ask me why they want this. The man page said it's needed on
    * itanium maschines. */
 #pragma STDC FENV_ACCESS ON
-  fesettrapenable(FE_INVALID | FE_DIVBYZERO | FE_UNDERFLOW | FE_OVERFLOW);
+  /*fesettrapenable(FE_INVALID | FE_DIVBYZERO | FE_UNDERFLOW | FE_OVERFLOW);*/
+  fesettrapenable(FE_INVALID | FE_DIVBYZERO);
 #endif
 
 #ifdef HPUXITA

@@ -382,6 +382,10 @@ dstrc_exit();
 #endif
 return;
 } /* end of math_matmattrndense */
+
+/* used by math_sym_inv and math_unsym_inv */
+static DOUBLE   Inverse[4000000];
+
 /*----------------------------------------------------------------------*
  |  do inverse of sym matrix A[n][n]                         m.gee 7/01 |
  |                                                                      |
@@ -397,7 +401,7 @@ char     uplo[5];
 INT      ipiv[500];
 INT      lwork;
 DOUBLE   work[5000];
-DOUBLE   Inverse[250000];
+/*DOUBLE   Inverse[250000];*/
 INT      info;
 
 #ifdef DEBUG
@@ -450,7 +454,6 @@ return;
  |            uses LAPACKS dgetrf and dgetri routines                   |
  |                                                                      |
  *----------------------------------------------------------------------*/
-static DOUBLE   Inverse[4000000];
 void math_unsym_inv(DOUBLE **A, INT dimr, INT dimc)
 {
 INT      i,j;

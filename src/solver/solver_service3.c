@@ -98,7 +98,7 @@ void solserv_sol_copy(FIELD *actfield, INT disnum, NODE_ARRAY arrayfrom, NODE_AR
                       INT from, INT to)
 {
 INT               i,j;
-INT               diff,max;
+INT               diff,max, min;
 ARRAY            *arrayf,*arrayt;
 NODE             *actnode;
 DISCRET          *actdis;
@@ -159,8 +159,16 @@ for (i=0; i<actdis->numnp; i++)
       max = diff;
       amredef(arrayt,arrayt->fdim+max+1,arrayt->sdim,"DA");
    }
-   for (j=0; j<arrayt->sdim; j++)
+
+   /* There are strange cases where the source array has less columns
+    * than the destination. (sol_mf to sol in fluid/ale) */
+   min = MIN(arrayt->sdim, arrayf->sdim);
+   for (j=0; j<min; j++)
       arrayt->a.da[to][j] = arrayf->a.da[from][j];
+
+   /* In this case zero the remaining fields. */
+   for (j=0; j<arrayt->sdim-min; j++)
+      arrayt->a.da[to][min+j] = 0;
 }
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG

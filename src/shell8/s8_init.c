@@ -52,6 +52,7 @@ for (i=0; i<actfield->dis[0].numele; i++)
    s8a3(actele,&data,0);
    /*---------------------------------- allocate the space for stresses */
    am4def("forces",&(actele->e.s8->forces),1,18,MAXGAUSS,0,"D3");
+   am4zero(&(actele->e.s8->forces));
 }
 /*--- loop elements in partition to allocate space for material history */
 for (i=0; i<actpart->pdis[0].numele; i++)

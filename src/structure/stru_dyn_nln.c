@@ -230,15 +230,8 @@ actintra->intra_nprocs   = 1;
 /* intracommunicator (in case of nonlinear struct. dyn., this should be all) */
 if (actintra->intra_fieldtyp != structure) goto end;
 /*-------------------------------- init the variables in dynvar to zero */
-dynvar.rldfac       = 0.0;
-dynvar.rnorm        = 0.0;
-dynvar.epot         = 0.0;
-dynvar.eout         = 0.0;
-dynvar.etot         = 0.0;
-dynvar.ekin         = 0.0;
-dynvar.dinorm       = 0.0;
-dynvar.dnorm        = 0.0;
-for (i=0; i<20; i++) dynvar.constants[i] = 0.0;
+/* Set all variables to zero. No matter what changes in future. */
+memset(&dynvar, 0, sizeof(STRUCT_DYN_CALC));
 acttime=0.0;
 
 /*------------------------------------ check presence of damping matrix */

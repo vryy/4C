@@ -322,6 +322,9 @@ A[3]=stress[1];
 
 /*------calculate eigenvalues in ascending order and corresponding------*/
 /*------orthonormal eigenvectors with LAPACK FORTRAN ROUTINE------------*/
+
+/* We've got a symmetric 2x2 matrix. We can do this by hand. */
+/*
 dsyev(jobz,
       uplo,
       &n,
@@ -331,6 +334,27 @@ dsyev(jobz,
       &(work[0]),
       &lwork,
       &info);
+*/
+
+/* eigenvalues */
+work[0] = sqrt(A[0]*A[0] - 2*A[0]*A[3] + 4*A[1]*A[1] + A[3]*A[3]);
+W[0] = .5*(A[0] + A[3] - work[0]);
+W[1] = .5*(A[0] + A[3] + work[0]);
+
+/* eigenvectors */
+/* first component of both eigenvectors */
+work[1] = -.5/A[1]*(-A[0] + A[3] + work[0]);
+work[2] = -.5/A[1]*(-A[0] + A[3] - work[0]);
+
+/* lengths for normalization */
+work[3] = sqrt(work[1]*work[1] + 1);
+work[4] = sqrt(work[2]*work[2] + 1);
+
+/* fill result in A. fortran style: colunm wise */
+A[0] = work[1]/work[3];
+A[1] = 1./work[3];
+A[2] = work[2]/work[4];
+A[3] = 1./work[4];
 
   if (rad == 0.)
   {

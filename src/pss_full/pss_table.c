@@ -1288,10 +1288,11 @@ static void symbol_print(FILE* f, CHAR* key, SYMBOL* symbol, INT indent)
     case sym_int:
       fprintf(f, "%s = %d\n", key, symbol->s.integer);
       break;
-    case sym_real:
-      /* we don't care for beauty but we need many digits. */
+    case sym_real: {
+      /* We don't care for beauty but we need many digits. */
       fprintf(f, "%s = %.20e\n", key, symbol->s.real);
       break;
+    }
     case sym_map:
       fprintf(f, "%s:\n", key);
       map_print(f, symbol->s.dir, indent+4);

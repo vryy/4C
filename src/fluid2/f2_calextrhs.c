@@ -327,6 +327,10 @@ DOUBLE c;
 DOUBLE taump;
 DOUBLE fact[2];
 
+#ifdef DEBUG
+dstrc_enter("f2_calstabexfp");
+#endif
+
 if (gls->ipres==0) goto end; /* no pressure stabilisation */
 
 /*--------------------------------------------------- set some factors */

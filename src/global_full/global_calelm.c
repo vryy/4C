@@ -249,7 +249,9 @@ dstrc_enter("calelm");
     /*------------------------------------ set pointer to active element */
     actele = actpart->pdis[kk].element[i];
     /* if present, init the element vectors intforce_global and dirich_global */
-    if (container->dvec)
+    /* Do it if it's there. Shell8 depends on it. */
+    /*if (container->dvec)*/
+    if (intforce_global.Typ != cca_XX)
     {
       amzero(&intforce_global);
     }

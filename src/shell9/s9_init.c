@@ -96,6 +96,7 @@ for (i=0; i<actfield->dis[0].numele; i++)
 /*   am4def("forces",&(actele->e.s9->forces),1,18,MAXGAUSS,0,"D3");*/
    /*------------------------- allocate the space for physical stresses */
    am4def("stresses",&(actele->e.s9->stresses),1,6,MAXNODESTRESS_SHELL9,0,"D3");
+   am4zero(&(actele->e.s9->stresses));
 
    /*amdef("energy",&(actele->e.s9->energy),MAXGAUSS,6,"DA");*/
 
@@ -123,6 +124,7 @@ for (i=0; i<actfield->dis[0].numele; i++)
     * here. */
    amdef("stresses", &(actele->e.s9->gp_stress), 6,
          actele->e.s9->nGP[0]*actele->e.s9->nGP[1]*actele->e.s9->nGP[2]*sumlay, "DA");
+   amzero(&(actele->e.s9->gp_stress));
 
   /*--- allocate memory for wa if wa_flag == 1 ; for each layer ----------*/
   if (wa_flag == 1)

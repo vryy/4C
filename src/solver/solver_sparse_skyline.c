@@ -576,6 +576,9 @@ void  skyline_make_sparsity(
   maxa[i]=counter;
   /*-----------------------------------------------------------allocate A */
   amdef("A",&(sky->A),maxa[i],1,"DV");
+  /* It does not hurt to initialize the array and it stops random
+   * floating point exceptions while copying the sparse mask. */
+  amzero(&(sky->A));
   /*----------------------------------------------------------------------*/
 
 #ifdef DEBUG

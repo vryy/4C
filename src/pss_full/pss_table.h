@@ -88,13 +88,14 @@ typedef enum _SYMBOL_TYPES {
 */
 /*----------------------------------------------------------------------*/
 typedef struct _SYMBOL {
-  SYMBOL_TYPES type;
+  /* put the union first to have the double value properly aligned */
   union {
     CHAR* string;
     INT integer;
     DOUBLE real;
     struct _MAP* dir;
   } s;
+  SYMBOL_TYPES type;
   struct _SYMBOL* next;
 } SYMBOL;
 

@@ -220,7 +220,7 @@ if (fdyn->hf_stab==1) /* stabparameter at element centre */
 switch(typ)
 {
 case quad4:    /* --> quad - element */
-   f3_rec(funct,deriv,NULL,ZERO,ZERO,typ,1);
+   f3_rec(funct,deriv,NULL,ZERO,ZERO,typ,2);
 break;
 default:
       dserror("typ unknown!");
