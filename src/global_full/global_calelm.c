@@ -242,9 +242,6 @@ dstrc_enter("calelm");
 #ifdef PERF
     perf_begin(16);
 #endif
-#ifdef SX6
-    ftrace_region_begin("calc_matrices");
-#endif
 
     /*------------------------------------ set pointer to active element */
     actele = actpart->pdis[kk].element[i];
@@ -353,9 +350,6 @@ dstrc_enter("calelm");
 
 #ifdef D_FLUID3_F
       case el_fluid3_fast:
-#ifdef SX6
-        ftrace_region_end("calc_matrices");
-#endif
         continue;
         break;
 #endif
@@ -423,9 +417,6 @@ dstrc_enter("calelm");
 #ifdef PERF
     perf_end(16);
 #endif
-#ifdef SX6
-    ftrace_region_end("calc_matrices");
-#endif
 
 
    switch(*action)/*=== call assembly dependent on calculation-flag */
@@ -473,9 +464,6 @@ dstrc_enter("calelm");
 #ifdef PERF
     perf_begin(17);
 #endif
-#ifdef SX6
-    ftrace_region_begin("assemble_matrices");
-#endif
     assemble(sysarray1,
         &estif_global,
         sysarray2,
@@ -486,9 +474,6 @@ dstrc_enter("calelm");
         actele,
         assemble_action,
         container);
-#ifdef SX6
-    ftrace_region_end("assemble_matrices");
-#endif
 #ifdef PERF
     perf_end(17);
 #endif

@@ -129,9 +129,6 @@ dstrc_enter("calelm_fast");
 #ifdef PERF
     perf_begin(40);
 #endif
-#ifdef SX6
-    ftrace_region_begin("calc_matrices_fast");
-#endif
 
     /* perform integration for a group of elements*/
     fluid3_fast(
@@ -149,9 +146,6 @@ dstrc_enter("calelm_fast");
         container,
         act_fast_eles->aloopl);
 
-#ifdef SX6
-    ftrace_region_end("calc_matrices_fast");
-#endif
 #ifdef PERF
     perf_end(40);
 #endif
