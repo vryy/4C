@@ -1,6 +1,9 @@
 
 # This is a sample defines file
 
+# fancy things first (there are terminals that don't like colors)
+#COLOROUTPUT
+
 # even though we never make mistakes debugging is an option
 #DEBUG
 
