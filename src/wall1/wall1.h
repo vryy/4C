@@ -143,7 +143,8 @@ void wall1(PARTITION   *actpart,
            ARRAY       *emass_global,
            ARRAY       *intforce_global,
            CALC_ACTION *action,
-           CONTAINER   *container);   /*!< contains variables defined in container.h */
+           CONTAINER   *container);   /* contains variables defined in container.h */
+
 /*----------------------------------------------------------------------*
  | read wall element                                         al 9/01    |
  *----------------------------------------------------------------------*/
