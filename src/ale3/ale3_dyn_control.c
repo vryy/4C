@@ -178,10 +178,12 @@ ale_calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,action);
 for (actcurve = 0;actcurve<numcurve;actcurve++)
    dyn_init_curve(actcurve,sdyn->nstep,sdyn->dt,sdyn->maxtime);   
 /*------------------------------------------- print out results to .out */
+#ifdef PARALLEL 
 if (ioflags.struct_disp_file==1)
 {
   if (par.myrank==0)  out_gid_domains(actfield);
 }
+#endif
 /*===================================================================== */
 /*                      T I M E L O O P                                 */
 /*===================================================================== */
