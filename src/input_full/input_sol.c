@@ -431,10 +431,12 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frint("POSTSWEEP"   ,&(mlpcgvars->postsweep),&ierr);
       frint("MAXITER"     ,&(mlpcgvars->maxiter)  ,&ierr);
       frint("COARSENUMDF" ,&(mlpcgvars->numdf)    ,&ierr);
-      frint("OVERLAP"     ,&(mlpcgvars->overlap)    ,&ierr);
-
+      frint("OVERLAP"     ,&(mlpcgvars->overlap)  ,&ierr);
+      frint("REUSE"       ,&(mlpcgvars->reuse)    ,&ierr);
+      
       frdouble("PROLONGSMODAMP",&(mlpcgvars->p_omega),&ierr);
       frdouble("TOLERANCE"     ,&(mlpcgvars->tol)    ,&ierr);
+      frdouble("GAMMA"         ,&(mlpcgvars->gamma)  ,&ierr);
 
       frchar("COARSESOLV" ,buffer,&ierr);
       if (ierr==1)

@@ -50,7 +50,7 @@ typedef char      CHAR;
 #ifdef SUN 
 #define CCA_APPEND_U (1)
 #endif
-/* append underslash for SIXTYFOUR */
+/* append underslash for SIXTYFOUR flag */
 #ifdef SIXTYFOUR 
 #define CCA_APPEND_U (1)
 #endif
@@ -66,12 +66,13 @@ typedef char      CHAR;
 #define dsygv               dsygv_
 #define dsyevd              dsyevd_
 #define dsyev               dsyev_
+#define mydsyevx            mydsyevx_
 #define colsol              colsol_
 #define c1inv6              c1inv6_
 #define c1ab                c1ab_
 #define mxmatb              mxmatb_
 #define mxmabt              mxmabt_
-#define fortranpow         fortranpow_
+#define fortranpow          fortranpow_
 #define mxmab               mxmab_
 #define c1invf              c1invf_
 #define solveq              solveq_
@@ -96,6 +97,7 @@ void dgetrs(char *trans, int *n, int *nrhs, double *a, int *lda, int *ipiv, doub
 void dsygv(int *itype, char *jobz, char *uplo, int *n, double *a, int *lda, double *b, int *ldb, double *w, double *work, int *lwork, int *info);
 void dsyevd(char *jobz, char *uplo, int *n, double *a, int *lda, double *w, double *work, int *lwork, int *iwork, int *liwork, int *info);
 void dsyev(char *jobz, char *uplo, int *n, double *a, int *lda, double *w, double *work, int *lwork, int *info);
+#endif
 void colsol(double *a, double *v, int *maxa, int *nn, int *nrr, int *nrc, int *nwa, int *nqm, int *nr1, int *nr2, int *kkk, double *det, int *isc, int *nsch, int *ipr, int *info);
 void iluk(int *n, double *a, int *ja, int *ia, int *lfil, double *alu, int *jlu, int *ju, int *levs, int *iwk, double *w, int *jw, int *ierr);
 void lusol(int *n, double *y, double *x, double *alu, int *jlu, int *ju);
@@ -105,7 +107,7 @@ void mlpcgupdupdvec(double *a, double *y, double *facy, double *x, double *facx,
 void mlpcgupdvec(double *y, double *x, double *fac, int *init, int *n);
 void dveczero(double *x, int *n);
 void iveczero(int *x, int *n);
-#endif
+void mydsyevx(char *jobz,char *range,char *uplo,int *n,double *a,int *lda,double *vl,double *vu,int *il,int *iu,double *abstol,int *m,double *w,double *z,int *ldz,double *work,int *lwork,int *iwork,int *ifail,int *info);
 /*----------------------------------------------------------------------*
  | absolut value of an integer                                          |
  *----------------------------------------------------------------------*/
@@ -149,7 +151,7 @@ static INT iminarg1,iminarg2;
 /*----------------------------------------------------------------------*
  | max number of processors                                             |
  *----------------------------------------------------------------------*/
-#define MAXPROC          (32)
+#define MAXPROC          (16)
 
 /*----------------------------------------------------------------------*
  | size of buffer to attach to intra-communicator in byte               |

@@ -114,7 +114,7 @@ for (i=0; i<genprob.numfld; i++)
                if (actele->node[j] == actnode) break;
             if (j==4) dserror("Cannot find matching node in element");
             thick = actele->e.s8->thick;
-            scal  = 100.0;
+            scal  = 1.0;
             a1 = actele->e.s8->a3ref.a.da[0][j]*thick*scal/2.0;
             a2 = actele->e.s8->a3ref.a.da[1][j]*thick*scal/2.0;
             a3 = actele->e.s8->a3ref.a.da[2][j]*thick*scal/2.0;

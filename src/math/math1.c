@@ -381,47 +381,41 @@ return;
  *----------------------------------------------------------------------*/
 void math_sym_inv(double **A, int dim)
 {
-int      i,j;
-char     uplo = 'L';
-int      ipiv[2000];
-int      lwork=2000;
-double   work[2000];
-double   Inverse[4000000];
-int      info=0;
+int      i,j,k,n;
+char     uplo[5];
+int      ipiv[500];
+int      lwork;
+double   work[5000];
+double   Inverse[250000];
+int      info;
 
 #ifdef DEBUG 
 dstrc_enter("math_sym_inv");
 #endif
+lwork   = 5000;
+info    = 0;
+k       = 0;
+strncpy(uplo,"L ",2);
 /*----------------------------------------------------------------------*/
-if (dim>=2000) dserror("This routine only sym dense matrices upto size 2000");
+if (dim>=500) dserror("This routine only sym dense matrices upto size 500");
 
 for (i=0; i<dim; i++) 
 for (j=0; j<dim; j++)
 {
-   Inverse[info] = A[i][j];
-   info++;
+   Inverse[k] = A[i][j];
+   k++;
 }
 
-dsytrf(&uplo,
-       &dim,
-       &(Inverse[0]),
-       &dim,
-       &(ipiv[0]),
-       &(work[0]),
-       &lwork,
-       &info);
+n = dim;
+dsytrf(uplo,&dim,&(Inverse[0]),&n,&(ipiv[0]),&(work[0]),&lwork,&info);
 
-if (info) dserror("Inversion of dense matrix failed");
+if (info) 
+   dserror("Inversion of dense matrix failed");
 
-dsytri(&uplo,
-       &dim,
-       &(Inverse[0]),  
-       &dim,
-       &(ipiv[0]),
-       &(work[0]),
-       &info);
+dsytri(uplo,&dim,&(Inverse[0]),&n,&(ipiv[0]),&(work[0]),&info);
 
-if (info) dserror("Inversion of dense matrix failed");
+if (info) 
+   dserror("Inversion of dense matrix failed");
 
 /*--------------------------------------------------- symmetrize result */
 for (i=0; i<dim; i++) 
@@ -448,7 +442,6 @@ return;
 void math_unsym_inv(double **A, int dimr, int dimc)
 {
 int      i,j;
-char     uplo = 'L';
 int      ipiv[2000];
 int      lwork=2000;
 double   work[2000];
@@ -459,7 +452,6 @@ int      info=0;
 dstrc_enter("math_unsym_inv");
 #endif
 /*----------------------------------------------------------------------*/
-
 if (dimr>=2000 || dimc>=2000) 
    dserror("This routine only unsym dense matrices upto size 2000");
 

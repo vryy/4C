@@ -952,7 +952,7 @@ if (strncmp(string,"displacement",stringlenght)==0)
    if (actfield->dis[0].element[0].eltyp == el_shell8 && actfield->dis[0].element[0].distyp == quad4)
    {
       tot_numnp = genprob.nnode;
-      scal = 100.0;
+      scal = 1.0;
       sdc  = actfield->dis[0].element[0].e.s8->sdc;
       for (i=0; i<actfield->dis[0].numnp; i++)
       {

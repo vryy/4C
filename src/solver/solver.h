@@ -602,7 +602,7 @@ double             cond;        /* condition number                     */
 struct _ARRAY      colstr;      /* gives the index in rowind of the
                                    first nonzero in the lower triangular
                                    part of column j of the matrix       */
-struct _ARRAY      rowind;      /* list of row indices for all nonzeros
+struct _ARRAY      rowind;      /* list of row indices for all nonzeros */
 /* output */
 double             rcond;       /* estimate the reciprocal of the l-norm
                                    condition number                     */
