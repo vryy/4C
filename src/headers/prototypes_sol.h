@@ -978,9 +978,9 @@ void solver_psuperlu_ucchb(
 void inpctrsol(SOLVAR *solv);
 
 /*----------------------------------------------------------------------*
- |  restart_control.c                                    m.gee 05/02    |
+ |  restart_control.c                                    m.gee 02/02    |
  *----------------------------------------------------------------------*/
-void restart_write_nlnstructdyn(STRUCT_DYNAMIC  *sdyn,
+void restart_write_nlnstructdyn(STRUCT_DYNAMIC  *sdyn,                  
                                 STRUCT_DYN_CALC *dynvar,
                                 FIELD           *actfield,
                                 PARTITION       *actpart,
@@ -995,7 +995,7 @@ void restart_write_nlnstructdyn(STRUCT_DYNAMIC  *sdyn,
                                 INT nwork, DIST_VECTOR *work,
                                 ARRAY *intforce_a,
                                 ARRAY *dirich_a,
-                                CONTAINER    *container);     /*!< contains variables defined in container.h */
+                                CONTAINER    *container);
 void restart_read_nlnstructdyn(INT restart,
                                STRUCT_DYNAMIC  *sdyn,
                                STRUCT_DYN_CALC *dynvar,
@@ -1012,29 +1012,53 @@ void restart_read_nlnstructdyn(INT restart,
                                INT nwork, DIST_VECTOR *work,
                                ARRAY *intforce_a,
                                ARRAY *dirich_a,
-                               CONTAINER    *container);     /*!< contains variables defined in container.h */ 
-void restart_write_nlnstructstat(STATIC_VAR     *statvar,/*------------ static input --*/                  
-             STANLN          *nln_data,  /*-- control variables for global NR-Iterat --*/
-             FIELD           *actfield,  /*---------------------------- actual field --*/
-             PARTITION       *actpart,   /*------------------------ actual partition --*/
-             INTRA           *actintra,  /*---------------- actual intra comunicator --*/
-             CALC_ACTION     *action,    /*---------- element action = write-restart --*/
-             INT kstep,                  /*------------------------ actual load step --*/
-             INT nrhs,  DIST_VECTOR *rhs,/*-- Fext processorpart of actual load step --*/
-             INT nsol,  DIST_VECTOR *sol,/* solution processorpart of actual load step */
-             INT ndis,  DIST_VECTOR *dispi,/*- displacement processorpart  --"--     --*/
-             CONTAINER    *container);     /*!< contains variables defined in container.h */
-void restart_read_nlnstructstat(INT restart,   /*------------------------ restart step ??? --*/
-                STATIC_VAR     *statvar,       /*---------------------------- static input --*/                  
-                STANLN          *nln_data,     /*-- control variables for global NR-Iterat --*/
-                FIELD           *actfield,     /*---------------------------- actual field --*/
-                PARTITION       *actpart,      /*------------------------ actual partition --*/
-                INTRA           *actintra,     /*---------------- actual intra comunicator --*/
-                CALC_ACTION     *action,       /*---------- element action = write-restart --*/
-                INT nrhs,  DIST_VECTOR *rhs,   /*-- Fext processorpart of actual load step --*/
-                INT nsol,  DIST_VECTOR *sol,   /*-- solution processorpart     --"--       --*/
-                INT ndis,  DIST_VECTOR *dispi, /*-- displacement processorpart  --"--     --*/
-                 CONTAINER    *container);       /*!< contains variables defined in container.h */
+                               CONTAINER    *container);
+void restart_write_nlnstructstat(STATIC_VAR     *statvar, 
+                FIELD           *actfield,  
+                PARTITION       *actpart,   
+                INTRA           *actintra,  
+                CALC_ACTION     *action,    
+                INT kstep,                  
+                INT nrhs,  DIST_VECTOR *rhs,
+                INT nsol,  DIST_VECTOR *sol,
+                INT ndis,  DIST_VECTOR *dispi,
+                CONTAINER    *container);	
+void restart_read_nlnstructstat(INT restart,   
+                STATIC_VAR     *statvar,                         
+                STANLN          *nln_data,     
+                FIELD           *actfield,     
+                PARTITION       *actpart,      
+                INTRA           *actintra,     
+                CALC_ACTION     *action,       
+                INT nrhs,  DIST_VECTOR *rhs,   
+                INT nsol,  DIST_VECTOR *sol,   
+                INT ndis,  DIST_VECTOR *dispi, 
+                CONTAINER    *container);
+void restart_write_fluiddyn(FLUID_DYNAMIC   *fdyn,                  
+                            FIELD	    *actfield,
+                            PARTITION	    *actpart,
+                            INTRA	    *actintra,
+			    CALC_ACTION     *action,
+			    CONTAINER       *container);
+void restart_read_fluiddyn(INT restart,
+                           FLUID_DYNAMIC   *fdyn,
+                           FIELD	   *actfield,
+                           PARTITION	   *actpart,
+                           INTRA	   *actintra,
+			   CALC_ACTION     *action,
+			   CONTAINER       *container);
+void restart_write_aledyn(ALE_DYNAMIC       *adyn,                  
+                            FIELD	    *actfield,
+                            PARTITION	    *actpart,
+                            INTRA	    *actintra);
+void restart_read_aledyn(INT restart,
+                           ALE_DYNAMIC   *adyn,
+                           FIELD	   *actfield,
+                           PARTITION	   *actpart,
+                           INTRA	   *actintra);
+void restart_write_fsidyn(FSI_DYNAMIC       *fsidyn);
+void restart_read_fsidyn(INT restart,
+                         FSI_DYNAMIC   *fsidyn);
 /*---------------------------------------------------------------------*
  | routine to find the maximum value of a distributed vector           |
  | ab =  0 absolut maximum value                                       |
