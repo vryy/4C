@@ -499,7 +499,10 @@ If the initial fluid fuild comes from the input-file 'fluid-start-data',
 these data are copied to sol_increment.
 
 </pre>
-\param *actfield   FIELD           (i)
+\param *actpart    PARTITION       (i)     partition in this field
+\param *actintra   INTRA           (i)
+\param *actfield   FIELD           (i)     the fluid field
+\param  disnum     INT             (i)     discretization number
 \param *fdyn	   FLUID_DYNAMIC   (i)
 \param  numr	   INT             (i/o)   number of rows in sol_incr
 \param  str        FLUID_STRESS    (i)     flag for stress calculation

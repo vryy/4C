@@ -373,6 +373,7 @@ amdef("time",&time_a,1000,1,"DV");
 
 /*---------------------------------------------- initialise fluid field */
 fluid_init(actpart,actintra,actfield, 0,action,&container,4,str);
+fluid_init(actpart,actintra,actfield, 1,action,&container,4,str);
 actpos=0;
 
 /*---------------------------------------- init all applied time curves */
