@@ -960,345 +960,824 @@ void inp_detailed_topology(DISCRET   *actdis)
     {
       case line2:
         actgline = actele->g.gline;
-        actgline->gnode[0] = actgline->element->node[0]->gnode;
-        actgline->gnode[0]->ngline++;
-        actgline->gnode[1] = actgline->element->node[1]->gnode;
-        actgline->gnode[1]->ngline++;
+        /* link and count new gline at gnond only, if not yet pointered */
+        /* 1st gnode */
+        if(actgline->gnode[0] == NULL)
+        {
+          actgline->gnode[0] = actgline->element->node[0]->gnode;
+          actgline->gnode[0]->ngline++;
+        }
+        /* 2nd gnode */
+        if(actgline->gnode[1] == NULL)
+        {
+          actgline->gnode[1] = actgline->element->node[1]->gnode;
+          actgline->gnode[1]->ngline++;
+        }
         break;
       case line3:
         actgline = actele->g.gline;
-        actgline->gnode[0] = actgline->element->node[0]->gnode;
-        actgline->gnode[0]->ngline++;
-        actgline->gnode[1] = actgline->element->node[1]->gnode;
-        actgline->gnode[1]->ngline++;
-        actgline->gnode[2] = actgline->element->node[2]->gnode;
-        actgline->gnode[2]->ngline++;
+        /* link and count new gline at gnond only, if not yet pointered */
+        /* 1st gnode */
+        if(actgline->gnode[0] == NULL)
+        {
+          actgline->gnode[0] = actgline->element->node[0]->gnode;
+          actgline->gnode[0]->ngline++;
+        }
+        /* 2nd gnode */
+        if(actgline->gnode[1] == NULL)
+        {
+          actgline->gnode[1] = actgline->element->node[1]->gnode;
+          actgline->gnode[1]->ngline++;
+        }
+        /* 3rd gnode */
+        if(actgline->gnode[2] == NULL)
+        {
+          actgline->gnode[2] = actgline->element->node[2]->gnode;
+          actgline->gnode[2]->ngline++;
+        }
         break;
       case quad4:
         actgsurf = actele->g.gsurf;
-        /* line 0 */
-        actgsurf->gline[0]->gnode[0] = actgsurf->element->node[0]->gnode;
-        actgsurf->gline[0]->gnode[0]->ngline++;
-        actgsurf->gline[0]->gnode[1] = actgsurf->element->node[1]->gnode;
-        actgsurf->gline[0]->gnode[1]->ngline++;
-        /* line 1 */
-        actgsurf->gline[1]->gnode[0] = actgsurf->element->node[1]->gnode;
-        actgsurf->gline[1]->gnode[0]->ngline++;
-        actgsurf->gline[1]->gnode[1] = actgsurf->element->node[2]->gnode;
-        actgsurf->gline[1]->gnode[1]->ngline++;
-        /* line 2 */
-        actgsurf->gline[2]->gnode[0] = actgsurf->element->node[2]->gnode;
-        actgsurf->gline[2]->gnode[0]->ngline++;
-        actgsurf->gline[2]->gnode[1] = actgsurf->element->node[3]->gnode;
-        actgsurf->gline[2]->gnode[1]->ngline++;
-        /* line 3 */
-        actgsurf->gline[3]->gnode[0] = actgsurf->element->node[3]->gnode;
-        actgsurf->gline[3]->gnode[0]->ngline++;
-        actgsurf->gline[3]->gnode[1] = actgsurf->element->node[0]->gnode;
-        actgsurf->gline[3]->gnode[1]->ngline++;
+        /* link and count new gline at gnond only, if not yet pointered */
+        /* line 0: 1st gnode */
+        if(actgsurf->gline[0]->gnode[0] == NULL)
+        {
+          actgsurf->gline[0]->gnode[0] = actgsurf->element->node[0]->gnode;
+          actgsurf->gline[0]->gnode[0]->ngline++;
+        }
+        /*         2nd gnode */
+        if(actgsurf->gline[0]->gnode[1] == NULL)
+        {
+          actgsurf->gline[0]->gnode[1] = actgsurf->element->node[1]->gnode;
+          actgsurf->gline[0]->gnode[1]->ngline++;
+        }
+        /* line 1: 1st gnode */
+        if(actgsurf->gline[1]->gnode[0] == NULL)
+        {
+          actgsurf->gline[1]->gnode[0] = actgsurf->element->node[1]->gnode;
+          actgsurf->gline[1]->gnode[0]->ngline++;
+        }
+        /*         2nd gnode */
+        if(actgsurf->gline[1]->gnode[1] == NULL)
+        {
+          actgsurf->gline[1]->gnode[1] = actgsurf->element->node[2]->gnode;
+          actgsurf->gline[1]->gnode[1]->ngline++;
+        }
+        /* line 2: 1st gnode */
+        if(actgsurf->gline[2]->gnode[0] == NULL)
+        {
+          actgsurf->gline[2]->gnode[0] = actgsurf->element->node[2]->gnode;
+          actgsurf->gline[2]->gnode[0]->ngline++;
+        }
+        /*         2nd gnode */
+        if(actgsurf->gline[2]->gnode[1] == NULL)
+        {
+          actgsurf->gline[2]->gnode[1] = actgsurf->element->node[3]->gnode;
+          actgsurf->gline[2]->gnode[1]->ngline++;
+        }
+        /* line 3: 1st gnode */
+        if(actgsurf->gline[3]->gnode[0] == NULL)
+        {
+          actgsurf->gline[3]->gnode[0] = actgsurf->element->node[3]->gnode;
+          actgsurf->gline[3]->gnode[0]->ngline++;
+        }
+        /*         2nd gnode */
+        if(actgsurf->gline[3]->gnode[1] == NULL)
+        {
+          actgsurf->gline[3]->gnode[1] = actgsurf->element->node[0]->gnode;
+          actgsurf->gline[3]->gnode[1]->ngline++;
+        }
         break;
       case quad8:
       case quad9:
         actgsurf = actele->g.gsurf;
-        /* line 0 */
-        actgsurf->gline[0]->gnode[0] = actgsurf->element->node[0]->gnode;
-        actgsurf->gline[0]->gnode[0]->ngline++;
-        actgsurf->gline[0]->gnode[1] = actgsurf->element->node[4]->gnode;
-        actgsurf->gline[0]->gnode[1]->ngline++;
-        actgsurf->gline[0]->gnode[2] = actgsurf->element->node[1]->gnode;
-        actgsurf->gline[0]->gnode[2]->ngline++;
-        /* line 1 */
-        actgsurf->gline[1]->gnode[0] = actgsurf->element->node[1]->gnode;
-        actgsurf->gline[1]->gnode[0]->ngline++;
-        actgsurf->gline[1]->gnode[1] = actgsurf->element->node[5]->gnode;
-        actgsurf->gline[1]->gnode[1]->ngline++;
-        actgsurf->gline[1]->gnode[2] = actgsurf->element->node[2]->gnode;
-        actgsurf->gline[1]->gnode[2]->ngline++;
-        /* line 2 */
-        actgsurf->gline[2]->gnode[0] = actgsurf->element->node[2]->gnode;
-        actgsurf->gline[2]->gnode[0]->ngline++;
-        actgsurf->gline[2]->gnode[1] = actgsurf->element->node[6]->gnode;
-        actgsurf->gline[2]->gnode[1]->ngline++;
-        actgsurf->gline[2]->gnode[2] = actgsurf->element->node[3]->gnode;
-        actgsurf->gline[2]->gnode[2]->ngline++;
-        /* line 3 */
-        actgsurf->gline[3]->gnode[0] = actgsurf->element->node[3]->gnode;
-        actgsurf->gline[3]->gnode[0]->ngline++;
-        actgsurf->gline[3]->gnode[1] = actgsurf->element->node[7]->gnode;
-        actgsurf->gline[3]->gnode[1]->ngline++;
-        actgsurf->gline[3]->gnode[2] = actgsurf->element->node[0]->gnode;
-        actgsurf->gline[3]->gnode[2]->ngline++;
+        /* link and count new gline at gnond only, if not yet pointered */
+        /* line 0: 1st gnode */
+        if(actgsurf->gline[0]->gnode[0] == NULL)
+        {
+          actgsurf->gline[0]->gnode[0] = actgsurf->element->node[0]->gnode;
+          actgsurf->gline[0]->gnode[0]->ngline++;
+        }
+        /* line 0: 2nd gnode */
+        if(actgsurf->gline[0]->gnode[1] == NULL)
+        {
+          actgsurf->gline[0]->gnode[1] = actgsurf->element->node[4]->gnode;
+          actgsurf->gline[0]->gnode[1]->ngline++;
+        }
+        /* line 0: 3rd gnode */
+        if(actgsurf->gline[0]->gnode[2] == NULL)
+        {
+          actgsurf->gline[0]->gnode[2] = actgsurf->element->node[1]->gnode;
+          actgsurf->gline[0]->gnode[2]->ngline++;
+        }
+        /* line 1: 1st gnode */
+        if(actgsurf->gline[1]->gnode[0] == NULL)
+        {
+          actgsurf->gline[1]->gnode[0] = actgsurf->element->node[1]->gnode;
+          actgsurf->gline[1]->gnode[0]->ngline++;
+        }
+        /* line 1: 2nd gnode */
+        if(actgsurf->gline[1]->gnode[1] == NULL)
+        {
+          actgsurf->gline[1]->gnode[1] = actgsurf->element->node[5]->gnode;
+          actgsurf->gline[1]->gnode[1]->ngline++;
+        }
+        /* line 1: 3rd gnode */
+        if(actgsurf->gline[1]->gnode[2] == NULL)
+        {
+          actgsurf->gline[1]->gnode[2] = actgsurf->element->node[2]->gnode;
+          actgsurf->gline[1]->gnode[2]->ngline++;
+        }
+        /* line 2: 1st gnode */
+        if(actgsurf->gline[2]->gnode[0] == NULL)
+        {
+          actgsurf->gline[2]->gnode[0] = actgsurf->element->node[2]->gnode;
+          actgsurf->gline[2]->gnode[0]->ngline++;
+        }
+        /* line 2: 2nd gnode */
+        if(actgsurf->gline[2]->gnode[1] == NULL)
+        {
+          actgsurf->gline[2]->gnode[1] = actgsurf->element->node[6]->gnode;
+          actgsurf->gline[2]->gnode[1]->ngline++;
+        }
+        /* line 2: 3rd gnode */
+        if(actgsurf->gline[2]->gnode[2] == NULL)
+        {
+          actgsurf->gline[2]->gnode[2] = actgsurf->element->node[3]->gnode;
+          actgsurf->gline[2]->gnode[2]->ngline++;
+        }
+        /* line 3: 1st gnode */
+        if(actgsurf->gline[3]->gnode[0] == NULL)
+        {
+          actgsurf->gline[3]->gnode[0] = actgsurf->element->node[3]->gnode;
+          actgsurf->gline[3]->gnode[0]->ngline++;
+        }
+        /* line 3: 2nd gnode */
+        if(actgsurf->gline[3]->gnode[1] == NULL)
+        {
+          actgsurf->gline[3]->gnode[1] = actgsurf->element->node[7]->gnode;
+          actgsurf->gline[3]->gnode[1]->ngline++;
+        }
+        /* line 3: 3rd gnode */
+        if(actgsurf->gline[3]->gnode[2] == NULL)
+        {
+          actgsurf->gline[3]->gnode[2] = actgsurf->element->node[0]->gnode;
+          actgsurf->gline[3]->gnode[2]->ngline++;
+        }
         break;
       case tri3:
         actgsurf = actele->g.gsurf;
-        /* line 0 */
-        actgsurf->gline[0]->gnode[0] = actgsurf->element->node[0]->gnode;
-        actgsurf->gline[0]->gnode[0]->ngline++;
-        actgsurf->gline[0]->gnode[1] = actgsurf->element->node[1]->gnode;
-        actgsurf->gline[0]->gnode[1]->ngline++;
-        /* line 1 */
-        actgsurf->gline[1]->gnode[0] = actgsurf->element->node[1]->gnode;
-        actgsurf->gline[1]->gnode[0]->ngline++;
-        actgsurf->gline[1]->gnode[1] = actgsurf->element->node[2]->gnode;
-        actgsurf->gline[1]->gnode[1]->ngline++;
-        /* line 2 */
+        /* link and count new gline at gnond only, if not yet pointered */
+        /* line 0: 1st gnode */
+        if(actgsurf->gline[0]->gnode[0] == NULL)
+        {
+          actgsurf->gline[0]->gnode[0] = actgsurf->element->node[0]->gnode;
+          actgsurf->gline[0]->gnode[0]->ngline++;
+        }
+        /* line 0: 2nd gnode */
+        if(actgsurf->gline[0]->gnode[1] == NULL)
+        {
+          actgsurf->gline[0]->gnode[1] = actgsurf->element->node[1]->gnode;
+          actgsurf->gline[0]->gnode[1]->ngline++;
+        }
+        /* line 1: 1st gnode */
+        if(actgsurf->gline[1]->gnode[0] == NULL)
+        {
+          actgsurf->gline[1]->gnode[0] = actgsurf->element->node[1]->gnode;
+          actgsurf->gline[1]->gnode[0]->ngline++;
+        }
+        /* line 1: 2nd gnode */
+        if(actgsurf->gline[1]->gnode[1] == NULL)
+        {
+          actgsurf->gline[1]->gnode[1] = actgsurf->element->node[2]->gnode;
+          actgsurf->gline[1]->gnode[1]->ngline++;
+        }
+        /* line 2: 1st gnode */
+        if(actgsurf->gline[2]->gnode[0] == NULL)
+        {
         actgsurf->gline[2]->gnode[0] = actgsurf->element->node[2]->gnode;
         actgsurf->gline[2]->gnode[0]->ngline++;
-        actgsurf->gline[2]->gnode[1] = actgsurf->element->node[0]->gnode;
-        actgsurf->gline[2]->gnode[1]->ngline++;
+        }
+        /* line 2: 2nd gnode */
+        if(actgsurf->gline[2]->gnode[1] == NULL)
+        {
+          actgsurf->gline[2]->gnode[1] = actgsurf->element->node[0]->gnode;
+          actgsurf->gline[2]->gnode[1]->ngline++;
+        }
         break;
       case tri6:
         actgsurf = actele->g.gsurf;
-        /* line 0 */
-        actgsurf->gline[0]->gnode[0] = actgsurf->element->node[0]->gnode;
-        actgsurf->gline[0]->gnode[0]->ngline++;
-        actgsurf->gline[0]->gnode[1] = actgsurf->element->node[3]->gnode;
-        actgsurf->gline[0]->gnode[1]->ngline++;
-        actgsurf->gline[0]->gnode[2] = actgsurf->element->node[1]->gnode;
-        actgsurf->gline[0]->gnode[2]->ngline++;
-        /* line 1 */
-        actgsurf->gline[1]->gnode[0] = actgsurf->element->node[1]->gnode;
-        actgsurf->gline[1]->gnode[0]->ngline++;
-        actgsurf->gline[1]->gnode[1] = actgsurf->element->node[4]->gnode;
-        actgsurf->gline[1]->gnode[1]->ngline++;
-        actgsurf->gline[1]->gnode[2] = actgsurf->element->node[2]->gnode;
-        actgsurf->gline[1]->gnode[2]->ngline++;
-        /* line 2 */
-        actgsurf->gline[2]->gnode[0] = actgsurf->element->node[2]->gnode;
-        actgsurf->gline[2]->gnode[0]->ngline++;
-        actgsurf->gline[2]->gnode[1] = actgsurf->element->node[5]->gnode;
-        actgsurf->gline[2]->gnode[1]->ngline++;
-        actgsurf->gline[2]->gnode[2] = actgsurf->element->node[0]->gnode;
-        actgsurf->gline[2]->gnode[2]->ngline++;
+        /* link and count new gline at gnond only, if not yet pointered */
+        /* line 0: 1st gnode */
+        if(actgsurf->gline[0]->gnode[0] == NULL)
+        {
+          actgsurf->gline[0]->gnode[0] = actgsurf->element->node[0]->gnode;
+          actgsurf->gline[0]->gnode[0]->ngline++;
+        }
+        /* line 0: 2nd gnode */
+        if(actgsurf->gline[0]->gnode[1] == NULL)
+        {
+          actgsurf->gline[0]->gnode[1] = actgsurf->element->node[3]->gnode;
+          actgsurf->gline[0]->gnode[1]->ngline++;
+        }
+        /* line 0: 3rd gnode */
+        if(actgsurf->gline[0]->gnode[2] == NULL)
+        {
+          actgsurf->gline[0]->gnode[2] = actgsurf->element->node[1]->gnode;
+          actgsurf->gline[0]->gnode[2]->ngline++;
+        }
+        /* line 1: 1st gnode */
+        if(actgsurf->gline[1]->gnode[0] == NULL)
+        {
+          actgsurf->gline[1]->gnode[0] = actgsurf->element->node[1]->gnode;
+          actgsurf->gline[1]->gnode[0]->ngline++;
+        }
+        /* line 1: 2nd gnode */
+        if(actgsurf->gline[1]->gnode[1] == NULL)
+        {
+          actgsurf->gline[1]->gnode[1] = actgsurf->element->node[4]->gnode;
+          actgsurf->gline[1]->gnode[1]->ngline++;
+        }
+        /* line 1: 3rd gnode */
+        if(actgsurf->gline[1]->gnode[2] == NULL)
+        {
+          actgsurf->gline[1]->gnode[2] = actgsurf->element->node[2]->gnode;
+          actgsurf->gline[1]->gnode[2]->ngline++;
+        }
+        /* line 2: 1st gnode */
+        if(actgsurf->gline[2]->gnode[0] == NULL)
+        {
+          actgsurf->gline[2]->gnode[0] = actgsurf->element->node[2]->gnode;
+          actgsurf->gline[2]->gnode[0]->ngline++;
+        }
+        /* line 2: 2nd gnode */
+        if(actgsurf->gline[2]->gnode[1] == NULL)
+        {
+          actgsurf->gline[2]->gnode[1] = actgsurf->element->node[5]->gnode;
+          actgsurf->gline[2]->gnode[1]->ngline++;
+        }
+        /* line 2: 3rd gnode */
+        if(actgsurf->gline[2]->gnode[2] == NULL)
+        {
+          actgsurf->gline[2]->gnode[2] = actgsurf->element->node[0]->gnode;
+          actgsurf->gline[2]->gnode[2]->ngline++;
+        }
         break;
       case hex8:
         actgvol = actele->g.gvol;
-        /* line 0 */
-        actgvol->gline[0]->gnode[0] = actgvol->element->node[0]->gnode;
-        actgvol->gline[0]->gnode[0]->ngline++;
-        actgvol->gline[0]->gnode[1] = actgvol->element->node[1]->gnode;
-        actgvol->gline[0]->gnode[1]->ngline++;
-        /* line 1 */
-        actgvol->gline[1]->gnode[0] = actgvol->element->node[1]->gnode;
-        actgvol->gline[1]->gnode[0]->ngline++;
-        actgvol->gline[1]->gnode[1] = actgvol->element->node[2]->gnode;
-        actgvol->gline[1]->gnode[1]->ngline++;
-        /* line 2 */
-        actgvol->gline[2]->gnode[0] = actgvol->element->node[2]->gnode;
-        actgvol->gline[2]->gnode[0]->ngline++;
-        actgvol->gline[2]->gnode[1] = actgvol->element->node[3]->gnode;
-        actgvol->gline[2]->gnode[1]->ngline++;
-        /* line 3 */
-        actgvol->gline[3]->gnode[0] = actgvol->element->node[3]->gnode;
-        actgvol->gline[3]->gnode[0]->ngline++;
-        actgvol->gline[3]->gnode[1] = actgvol->element->node[0]->gnode;
-        actgvol->gline[3]->gnode[1]->ngline++;
-        /* line 4 */
-        actgvol->gline[4]->gnode[0] = actgvol->element->node[0]->gnode;
-        actgvol->gline[4]->gnode[0]->ngline++;
-        actgvol->gline[4]->gnode[1] = actgvol->element->node[4]->gnode;
-        actgvol->gline[4]->gnode[1]->ngline++;
-        /* line 5 */
-        actgvol->gline[5]->gnode[0] = actgvol->element->node[1]->gnode;
-        actgvol->gline[5]->gnode[0]->ngline++;
-        actgvol->gline[5]->gnode[1] = actgvol->element->node[5]->gnode;
-        actgvol->gline[5]->gnode[1]->ngline++;
-        /* line 6 */
-        actgvol->gline[6]->gnode[0] = actgvol->element->node[2]->gnode;
-        actgvol->gline[6]->gnode[0]->ngline++;
-        actgvol->gline[6]->gnode[1] = actgvol->element->node[6]->gnode;
-        actgvol->gline[6]->gnode[1]->ngline++;
-        /* line 7 */
-        actgvol->gline[7]->gnode[0] = actgvol->element->node[3]->gnode;
-        actgvol->gline[7]->gnode[0]->ngline++;
-        actgvol->gline[7]->gnode[1] = actgvol->element->node[7]->gnode;
-        actgvol->gline[7]->gnode[1]->ngline++;
-        /* line 8 */
-        actgvol->gline[8]->gnode[0] = actgvol->element->node[4]->gnode;
-        actgvol->gline[8]->gnode[0]->ngline++;
-        actgvol->gline[8]->gnode[1] = actgvol->element->node[5]->gnode;
-        actgvol->gline[8]->gnode[1]->ngline++;
-        /* line 9 */
-        actgvol->gline[9]->gnode[0] = actgvol->element->node[5]->gnode;
-        actgvol->gline[9]->gnode[0]->ngline++;
-        actgvol->gline[9]->gnode[1] = actgvol->element->node[6]->gnode;
-        actgvol->gline[9]->gnode[1]->ngline++;
-        /* line 10 */
-        actgvol->gline[10]->gnode[0] = actgvol->element->node[6]->gnode;
-        actgvol->gline[10]->gnode[0]->ngline++;
-        actgvol->gline[10]->gnode[1] = actgvol->element->node[7]->gnode;
-        actgvol->gline[10]->gnode[1]->ngline++;
-        /* line 11 */
-        actgvol->gline[11]->gnode[0] = actgvol->element->node[7]->gnode;
-        actgvol->gline[11]->gnode[0]->ngline++;
-        actgvol->gline[11]->gnode[1] = actgvol->element->node[4]->gnode;
-        actgvol->gline[11]->gnode[1]->ngline++;
+        /* link and count new gline at gnond only, if not yet pointered */
+        /* line 0: 1st gnode */
+        if(actgvol->gline[0]->gnode[0] == NULL)
+        {
+          actgvol->gline[0]->gnode[0] = actgvol->element->node[0]->gnode;
+          actgvol->gline[0]->gnode[0]->ngline++;
+        }
+        /* line 0: 2nd gnode */
+        if(actgvol->gline[0]->gnode[1] == NULL)
+        {
+          actgvol->gline[0]->gnode[1] = actgvol->element->node[1]->gnode;
+          actgvol->gline[0]->gnode[1]->ngline++;
+        }
+        /* line 1: 1st gnode */
+        if(actgvol->gline[1]->gnode[0] == NULL)
+        {
+          actgvol->gline[1]->gnode[0] = actgvol->element->node[1]->gnode;
+          actgvol->gline[1]->gnode[0]->ngline++;
+        }
+        /* line 1: 2nd gnode */
+        if(actgvol->gline[1]->gnode[1] == NULL)
+        {
+          actgvol->gline[1]->gnode[1] = actgvol->element->node[2]->gnode;
+          actgvol->gline[1]->gnode[1]->ngline++;
+        }
+        /* line 2: 1st gnode */
+        if(actgvol->gline[2]->gnode[0] == NULL)
+        {
+          actgvol->gline[2]->gnode[0] = actgvol->element->node[2]->gnode;
+          actgvol->gline[2]->gnode[0]->ngline++;
+        }
+        /* line 2: 2nd gnode */
+        if(actgvol->gline[2]->gnode[1] == NULL)
+        {
+          actgvol->gline[2]->gnode[1] = actgvol->element->node[3]->gnode;
+          actgvol->gline[2]->gnode[1]->ngline++;
+        }
+        /* line 3: 1st gnode */
+        if(actgvol->gline[3]->gnode[0] == NULL)
+        {
+          actgvol->gline[3]->gnode[0] = actgvol->element->node[3]->gnode;
+          actgvol->gline[3]->gnode[0]->ngline++;
+        }
+        /* line 3: 2nd gnode */
+        if(actgvol->gline[3]->gnode[1] == NULL)
+        {
+          actgvol->gline[3]->gnode[1] = actgvol->element->node[0]->gnode;
+          actgvol->gline[3]->gnode[1]->ngline++;
+        }
+        /* line 4: 1st gnode */
+        if(actgvol->gline[4]->gnode[0] == NULL)
+        {
+          actgvol->gline[4]->gnode[0] = actgvol->element->node[0]->gnode;
+          actgvol->gline[4]->gnode[0]->ngline++;
+        }
+        /* line 4: 2nd gnode */
+        if(actgvol->gline[4]->gnode[1] == NULL)
+        {
+          actgvol->gline[4]->gnode[1] = actgvol->element->node[4]->gnode;
+          actgvol->gline[4]->gnode[1]->ngline++;
+        }
+        /* line 5: 1st gnode */
+        if(actgvol->gline[5]->gnode[0] == NULL)
+        {
+          actgvol->gline[5]->gnode[0] = actgvol->element->node[1]->gnode;
+          actgvol->gline[5]->gnode[0]->ngline++;
+        }
+        /* line 5: 2nd gnode */
+        if(actgvol->gline[5]->gnode[1] == NULL)
+        {
+          actgvol->gline[5]->gnode[1] = actgvol->element->node[5]->gnode;
+          actgvol->gline[5]->gnode[1]->ngline++;
+        }
+        /* line 6: 1st gnode */
+        if(actgvol->gline[6]->gnode[0] == NULL)
+        {
+          actgvol->gline[6]->gnode[0] = actgvol->element->node[2]->gnode;
+          actgvol->gline[6]->gnode[0]->ngline++;
+        }
+        /* line 6: 2nd gnode */
+        if(actgvol->gline[6]->gnode[1] == NULL)
+        {
+          actgvol->gline[6]->gnode[1] = actgvol->element->node[6]->gnode;
+          actgvol->gline[6]->gnode[1]->ngline++;
+        }
+        /* line 7: 1st gnode */
+        if(actgvol->gline[7]->gnode[0] == NULL)
+        {
+          actgvol->gline[7]->gnode[0] = actgvol->element->node[3]->gnode;
+          actgvol->gline[7]->gnode[0]->ngline++;
+        }
+        /* line 7: 2nd gnode */
+        if(actgvol->gline[7]->gnode[1] == NULL)
+        {
+          actgvol->gline[7]->gnode[1] = actgvol->element->node[7]->gnode;
+          actgvol->gline[7]->gnode[1]->ngline++;
+        }
+        /* line 8: 1st gnode */
+        if(actgvol->gline[8]->gnode[0] == NULL)
+        {
+          actgvol->gline[8]->gnode[0] = actgvol->element->node[4]->gnode;
+          actgvol->gline[8]->gnode[0]->ngline++;
+        }
+        /* line 8: 2nd gnode */
+        if(actgvol->gline[8]->gnode[1] == NULL)
+        {
+          actgvol->gline[8]->gnode[1] = actgvol->element->node[5]->gnode;
+          actgvol->gline[8]->gnode[1]->ngline++;
+        }
+        /* line 9: 1st gnode */
+        if(actgvol->gline[9]->gnode[0] == NULL)
+        {
+          actgvol->gline[9]->gnode[0] = actgvol->element->node[5]->gnode;
+          actgvol->gline[9]->gnode[0]->ngline++;
+        }
+        /* line 9: 2nd gnode */
+        if(actgvol->gline[9]->gnode[1] == NULL)
+        {
+          actgvol->gline[9]->gnode[1] = actgvol->element->node[6]->gnode;
+          actgvol->gline[9]->gnode[1]->ngline++;
+        }
+        /* line 10: 1st gnode */
+        if(actgvol->gline[10]->gnode[0] == NULL)
+        {
+          actgvol->gline[10]->gnode[0] = actgvol->element->node[6]->gnode;
+          actgvol->gline[10]->gnode[0]->ngline++;
+        }
+        /* line 10: 2nd gnode */
+        if(actgvol->gline[10]->gnode[1] == NULL)
+        {
+          actgvol->gline[10]->gnode[1] = actgvol->element->node[7]->gnode;
+          actgvol->gline[10]->gnode[1]->ngline++;
+        }
+        /* line 11: 1st gnode */
+        if(actgvol->gline[11]->gnode[0] == NULL)
+        {
+          actgvol->gline[11]->gnode[0] = actgvol->element->node[7]->gnode;
+          actgvol->gline[11]->gnode[0]->ngline++;
+        }
+        /* line 11: 2nd gnode */
+        if(actgvol->gline[11]->gnode[1] == NULL)
+        {
+          actgvol->gline[11]->gnode[1] = actgvol->element->node[4]->gnode;
+          actgvol->gline[11]->gnode[1]->ngline++;
+        }
         break;
       case hex20:
       case hex27:
         actgvol = actele->g.gvol;
-        /* line 0 */
-        actgvol->gline[0]->gnode[0] = actgvol->element->node[0]->gnode;
-        actgvol->gline[0]->gnode[0]->ngline++;
-        actgvol->gline[0]->gnode[1] = actgvol->element->node[8]->gnode;
-        actgvol->gline[0]->gnode[1]->ngline++;
-        actgvol->gline[0]->gnode[2] = actgvol->element->node[1]->gnode;
-        actgvol->gline[0]->gnode[2]->ngline++;
-        /* line 1 */
-        actgvol->gline[1]->gnode[0] = actgvol->element->node[1]->gnode;
-        actgvol->gline[1]->gnode[0]->ngline++;
-        actgvol->gline[1]->gnode[1] = actgvol->element->node[9]->gnode;
-        actgvol->gline[1]->gnode[1]->ngline++;
-        actgvol->gline[1]->gnode[2] = actgvol->element->node[2]->gnode;
-        actgvol->gline[1]->gnode[2]->ngline++;
-        /* line 2 */
-        actgvol->gline[2]->gnode[0] = actgvol->element->node[2]->gnode;
-        actgvol->gline[2]->gnode[0]->ngline++;
-        actgvol->gline[2]->gnode[1] = actgvol->element->node[10]->gnode;
-        actgvol->gline[2]->gnode[1]->ngline++;
-        actgvol->gline[2]->gnode[2] = actgvol->element->node[3]->gnode;
-        actgvol->gline[2]->gnode[2]->ngline++;
-        /* line 3 */
-        actgvol->gline[3]->gnode[0] = actgvol->element->node[3]->gnode;
-        actgvol->gline[3]->gnode[0]->ngline++;
-        actgvol->gline[3]->gnode[1] = actgvol->element->node[11]->gnode;
-        actgvol->gline[3]->gnode[1]->ngline++;
-        actgvol->gline[3]->gnode[2] = actgvol->element->node[0]->gnode;
-        actgvol->gline[3]->gnode[2]->ngline++;
-        /* line 4 */
-        actgvol->gline[4]->gnode[0] = actgvol->element->node[0]->gnode;
-        actgvol->gline[4]->gnode[0]->ngline++;
-        actgvol->gline[4]->gnode[1] = actgvol->element->node[12]->gnode;
-        actgvol->gline[4]->gnode[1]->ngline++;
-        actgvol->gline[4]->gnode[2] = actgvol->element->node[4]->gnode;
-        actgvol->gline[4]->gnode[2]->ngline++;
-        /* line 5 */
-        actgvol->gline[5]->gnode[0] = actgvol->element->node[1]->gnode;
-        actgvol->gline[5]->gnode[0]->ngline++;
-        actgvol->gline[5]->gnode[1] = actgvol->element->node[13]->gnode;
-        actgvol->gline[5]->gnode[1]->ngline++;
-        actgvol->gline[5]->gnode[2] = actgvol->element->node[5]->gnode;
-        actgvol->gline[5]->gnode[2]->ngline++;
-        /* line 6 */
-        actgvol->gline[6]->gnode[0] = actgvol->element->node[2]->gnode;
-        actgvol->gline[6]->gnode[0]->ngline++;
-        actgvol->gline[6]->gnode[1] = actgvol->element->node[14]->gnode;
-        actgvol->gline[6]->gnode[1]->ngline++;
-        actgvol->gline[6]->gnode[2] = actgvol->element->node[6]->gnode;
-        actgvol->gline[6]->gnode[2]->ngline++;
-        /* line 7 */
-        actgvol->gline[7]->gnode[0] = actgvol->element->node[3]->gnode;
-        actgvol->gline[7]->gnode[0]->ngline++;
-        actgvol->gline[7]->gnode[1] = actgvol->element->node[15]->gnode;
-        actgvol->gline[7]->gnode[1]->ngline++;
-        actgvol->gline[7]->gnode[2] = actgvol->element->node[7]->gnode;
-        actgvol->gline[7]->gnode[2]->ngline++;
-        /* line 8 */
-        actgvol->gline[8]->gnode[0] = actgvol->element->node[4]->gnode;
-        actgvol->gline[8]->gnode[0]->ngline++;
-        actgvol->gline[8]->gnode[1] = actgvol->element->node[16]->gnode;
-        actgvol->gline[8]->gnode[1]->ngline++;
-        actgvol->gline[8]->gnode[2] = actgvol->element->node[5]->gnode;
-        actgvol->gline[8]->gnode[2]->ngline++;
-        /* line 9 */
-        actgvol->gline[9]->gnode[0] = actgvol->element->node[5]->gnode;
-        actgvol->gline[9]->gnode[0]->ngline++;
-        actgvol->gline[9]->gnode[1] = actgvol->element->node[17]->gnode;
-        actgvol->gline[9]->gnode[1]->ngline++;
-        actgvol->gline[9]->gnode[2] = actgvol->element->node[6]->gnode;
-        actgvol->gline[9]->gnode[2]->ngline++;
-        /* line 10 */
-        actgvol->gline[10]->gnode[0] = actgvol->element->node[6]->gnode;
-        actgvol->gline[10]->gnode[0]->ngline++;
-        actgvol->gline[10]->gnode[1] = actgvol->element->node[18]->gnode;
-        actgvol->gline[10]->gnode[1]->ngline++;
-        actgvol->gline[10]->gnode[2] = actgvol->element->node[7]->gnode;
-        actgvol->gline[10]->gnode[2]->ngline++;
-        /* line 11 */
-        actgvol->gline[11]->gnode[0] = actgvol->element->node[7]->gnode;
-        actgvol->gline[11]->gnode[0]->ngline++;
-        actgvol->gline[11]->gnode[1] = actgvol->element->node[19]->gnode;
-        actgvol->gline[11]->gnode[1]->ngline++;
-        actgvol->gline[11]->gnode[2] = actgvol->element->node[4]->gnode;
-        actgvol->gline[11]->gnode[2]->ngline++;
+        /* link and count new gline at gnond only, if not yet pointered */
+        /* line 0: 1st gnode */
+        if(actgvol->gline[0]->gnode[0] == NULL)
+        {
+          actgvol->gline[0]->gnode[0] = actgvol->element->node[0]->gnode;
+          actgvol->gline[0]->gnode[0]->ngline++;
+        }
+        /* line 0: 2nd gnode */
+        if(actgvol->gline[0]->gnode[1] == NULL)
+        {
+          actgvol->gline[0]->gnode[1] = actgvol->element->node[8]->gnode;
+          actgvol->gline[0]->gnode[1]->ngline++;
+        }
+        /* line 0: 3rd gnode */
+        if(actgvol->gline[0]->gnode[2] == NULL)
+        {
+          actgvol->gline[0]->gnode[2] = actgvol->element->node[1]->gnode;
+          actgvol->gline[0]->gnode[2]->ngline++;
+        }
+        /* line 1: 1st gnode */
+        if(actgvol->gline[1]->gnode[0] == NULL)
+        {
+          actgvol->gline[1]->gnode[0] = actgvol->element->node[1]->gnode;
+          actgvol->gline[1]->gnode[0]->ngline++;
+        }
+        /* line 1: 2nd gnode */
+        if(actgvol->gline[1]->gnode[1] == NULL)
+        {
+          actgvol->gline[1]->gnode[1] = actgvol->element->node[9]->gnode;
+          actgvol->gline[1]->gnode[1]->ngline++;
+        }
+        /* line 1: 3rd gnode */
+        if(actgvol->gline[1]->gnode[2] == NULL)
+        {
+          actgvol->gline[1]->gnode[2] = actgvol->element->node[2]->gnode;
+          actgvol->gline[1]->gnode[2]->ngline++;
+        }
+        /* line 2: 1st gnode */
+        if(actgvol->gline[2]->gnode[0] == NULL)
+        {
+          actgvol->gline[2]->gnode[0] = actgvol->element->node[2]->gnode;
+          actgvol->gline[2]->gnode[0]->ngline++;
+        }
+        /* line 2: 2nd gnode */
+        if(actgvol->gline[2]->gnode[1] == NULL)
+        {
+          actgvol->gline[2]->gnode[1] = actgvol->element->node[10]->gnode;
+          actgvol->gline[2]->gnode[1]->ngline++;
+        }
+        /* line 2: 3rd gnode */
+        if(actgvol->gline[2]->gnode[2] == NULL)
+        {
+          actgvol->gline[2]->gnode[2] = actgvol->element->node[3]->gnode;
+          actgvol->gline[2]->gnode[2]->ngline++; 
+        }
+        /* line 3: 1st gnode */
+        if(actgvol->gline[3]->gnode[0] == NULL)
+        {
+          actgvol->gline[3]->gnode[0] = actgvol->element->node[3]->gnode;
+          actgvol->gline[3]->gnode[0]->ngline++;
+        }
+        /* line 3: 2nd gnode */
+        if(actgvol->gline[3]->gnode[1] == NULL)
+        {
+          actgvol->gline[3]->gnode[1] = actgvol->element->node[11]->gnode;
+          actgvol->gline[3]->gnode[1]->ngline++;
+        }
+        /* line 3: 3rd gnode */
+        if(actgvol->gline[3]->gnode[2] == NULL)
+        {
+          actgvol->gline[3]->gnode[2] = actgvol->element->node[0]->gnode;
+          actgvol->gline[3]->gnode[2]->ngline++;
+        }
+        /* line 4: 1st gnode */
+        if(actgvol->gline[4]->gnode[0] == NULL)
+        {
+          actgvol->gline[4]->gnode[0] = actgvol->element->node[0]->gnode;
+          actgvol->gline[4]->gnode[0]->ngline++;
+        }
+        /* line 4: 2nd gnode */
+        if(actgvol->gline[4]->gnode[1] == NULL)
+        {
+          actgvol->gline[4]->gnode[1] = actgvol->element->node[12]->gnode;
+          actgvol->gline[4]->gnode[1]->ngline++;
+        }
+        /* line 4: 3rd gnode */
+        if(actgvol->gline[4]->gnode[2] == NULL)
+        {
+          actgvol->gline[4]->gnode[2] = actgvol->element->node[4]->gnode;
+          actgvol->gline[4]->gnode[2]->ngline++;
+        }
+        /* line 5: 1st gnode */
+        if(actgvol->gline[5]->gnode[0] == NULL)
+        {
+          actgvol->gline[5]->gnode[0] = actgvol->element->node[1]->gnode;
+          actgvol->gline[5]->gnode[0]->ngline++;
+        }
+        /* line 5: 2nd gnode */
+        if(actgvol->gline[5]->gnode[1] == NULL)
+        {
+          actgvol->gline[5]->gnode[1] = actgvol->element->node[13]->gnode;
+          actgvol->gline[5]->gnode[1]->ngline++;
+        }
+        /* line 5: 3rd gnode */
+        if(actgvol->gline[5]->gnode[2] == NULL)
+        {
+          actgvol->gline[5]->gnode[2] = actgvol->element->node[5]->gnode;
+          actgvol->gline[5]->gnode[2]->ngline++;
+        }
+        /* line 6: 1st gnode */
+        if(actgvol->gline[6]->gnode[0] == NULL)
+        {
+          actgvol->gline[6]->gnode[0] = actgvol->element->node[2]->gnode;
+          actgvol->gline[6]->gnode[0]->ngline++;
+        }
+        /* line 6: 2nd gnode */
+        if(actgvol->gline[6]->gnode[1] == NULL)
+        {
+          actgvol->gline[6]->gnode[1] = actgvol->element->node[14]->gnode;
+          actgvol->gline[6]->gnode[1]->ngline++;
+        }
+        /* line 6: 3rd gnode */
+        if(actgvol->gline[6]->gnode[2] == NULL)
+        {
+          actgvol->gline[6]->gnode[2] = actgvol->element->node[6]->gnode;
+          actgvol->gline[6]->gnode[2]->ngline++;
+        }
+        /* line 7: 1st gnode */
+        if(actgvol->gline[7]->gnode[0] == NULL)
+        {
+          actgvol->gline[7]->gnode[0] = actgvol->element->node[3]->gnode;
+          actgvol->gline[7]->gnode[0]->ngline++;
+        }
+        /* line 7: 2nd gnode */
+        if(actgvol->gline[7]->gnode[1] == NULL)
+        {
+          actgvol->gline[7]->gnode[1] = actgvol->element->node[15]->gnode;
+          actgvol->gline[7]->gnode[1]->ngline++;
+        }
+        /* line 7: 3rd gnode */
+        if(actgvol->gline[7]->gnode[2] == NULL)
+        {
+          actgvol->gline[7]->gnode[2] = actgvol->element->node[7]->gnode;
+          actgvol->gline[7]->gnode[2]->ngline++;
+        }
+        /* line 8: 1st gnode */
+        if(actgvol->gline[8]->gnode[0] == NULL)
+        {
+          actgvol->gline[8]->gnode[0] = actgvol->element->node[4]->gnode;
+          actgvol->gline[8]->gnode[0]->ngline++;
+        }
+        /* line 8: 2nd gnode */
+        if(actgvol->gline[8]->gnode[1] == NULL)
+        {
+          actgvol->gline[8]->gnode[1] = actgvol->element->node[16]->gnode;
+          actgvol->gline[8]->gnode[1]->ngline++;
+        }
+        /* line 8: 3rd gnode */
+        if(actgvol->gline[8]->gnode[2] == NULL)
+        {
+          actgvol->gline[8]->gnode[2] = actgvol->element->node[5]->gnode;
+          actgvol->gline[8]->gnode[2]->ngline++;
+        }
+        /* line 9: 1st gnode */
+        if(actgvol->gline[9]->gnode[0] == NULL)
+        {
+          actgvol->gline[9]->gnode[0] = actgvol->element->node[5]->gnode;
+          actgvol->gline[9]->gnode[0]->ngline++;
+        }
+        /* line 9: 2nd gnode */
+        if(actgvol->gline[9]->gnode[1] == NULL)
+        {
+          actgvol->gline[9]->gnode[1] = actgvol->element->node[17]->gnode;
+          actgvol->gline[9]->gnode[1]->ngline++;
+        }
+        /* line 9: 3rd gnode */
+        if(actgvol->gline[9]->gnode[2] == NULL)
+        {
+          actgvol->gline[9]->gnode[2] = actgvol->element->node[6]->gnode;
+          actgvol->gline[9]->gnode[2]->ngline++;
+        }
+        /* line 10: 1st gnode */
+        if(actgvol->gline[10]->gnode[0] == NULL)
+        {
+          actgvol->gline[10]->gnode[0] = actgvol->element->node[6]->gnode;
+          actgvol->gline[10]->gnode[0]->ngline++;
+        }
+        /* line 10: 2nd gnode */
+        if(actgvol->gline[10]->gnode[1] == NULL)
+        {
+          actgvol->gline[10]->gnode[1] = actgvol->element->node[18]->gnode;
+          actgvol->gline[10]->gnode[1]->ngline++;
+        }
+        /* line 10: 3rd gnode */
+        if(actgvol->gline[10]->gnode[2] == NULL)
+        {
+          actgvol->gline[10]->gnode[2] = actgvol->element->node[7]->gnode;
+          actgvol->gline[10]->gnode[2]->ngline++;
+        }
+        /* line 11: 1st gnode */
+        if(actgvol->gline[11]->gnode[0] == NULL)
+        {
+          actgvol->gline[11]->gnode[0] = actgvol->element->node[7]->gnode;
+          actgvol->gline[11]->gnode[0]->ngline++;
+        }
+        /* line 11: 2nd gnode */
+        if(actgvol->gline[11]->gnode[1] == NULL)
+        {
+          actgvol->gline[11]->gnode[1] = actgvol->element->node[19]->gnode;
+          actgvol->gline[11]->gnode[1]->ngline++;
+        }
+        /* line 11: 3rd gnode */
+        if(actgvol->gline[11]->gnode[2] == NULL)
+        {
+          actgvol->gline[11]->gnode[2] = actgvol->element->node[4]->gnode;
+          actgvol->gline[11]->gnode[2]->ngline++;
+        }
         break;
       case tet4:
         actgvol = actele->g.gvol;
-        /* line 0 */
-        actgvol->gline[0]->gnode[0] = actgvol->element->node[0]->gnode;
-        actgvol->gline[0]->gnode[0]->ngline++;
-        actgvol->gline[0]->gnode[1] = actgvol->element->node[1]->gnode;
-        actgvol->gline[0]->gnode[1]->ngline++;
-        /* line 1 */
-        actgvol->gline[1]->gnode[0] = actgvol->element->node[1]->gnode;
-        actgvol->gline[1]->gnode[0]->ngline++;
-        actgvol->gline[1]->gnode[1] = actgvol->element->node[2]->gnode;
-        actgvol->gline[1]->gnode[1]->ngline++;
-        /* line 2 */
-        actgvol->gline[2]->gnode[0] = actgvol->element->node[2]->gnode;
-        actgvol->gline[2]->gnode[0]->ngline++;
-        actgvol->gline[2]->gnode[1] = actgvol->element->node[0]->gnode;
-        actgvol->gline[2]->gnode[1]->ngline++;
-        /* line 3 */
-        actgvol->gline[3]->gnode[0] = actgvol->element->node[0]->gnode;
-        actgvol->gline[3]->gnode[0]->ngline++;
-        actgvol->gline[3]->gnode[1] = actgvol->element->node[3]->gnode;
-        actgvol->gline[3]->gnode[1]->ngline++;
-        /* line 4 */
-        actgvol->gline[4]->gnode[0] = actgvol->element->node[1]->gnode;
-        actgvol->gline[4]->gnode[0]->ngline++;
-        actgvol->gline[4]->gnode[1] = actgvol->element->node[3]->gnode;
-        actgvol->gline[4]->gnode[1]->ngline++;
-        /* line 5 */
-        actgvol->gline[5]->gnode[0] = actgvol->element->node[2]->gnode;
-        actgvol->gline[5]->gnode[0]->ngline++;
-        actgvol->gline[5]->gnode[1] = actgvol->element->node[3]->gnode;
-        actgvol->gline[5]->gnode[1]->ngline++;
+        /* line 0: 1st gnode */
+        if(actgvol->gline[0]->gnode[0] == NULL)
+        {
+          actgvol->gline[0]->gnode[0] = actgvol->element->node[0]->gnode;
+          actgvol->gline[0]->gnode[0]->ngline++;
+        }
+        /* line 0: 2nd gnode */
+        if(actgvol->gline[0]->gnode[1] == NULL)
+        {
+          actgvol->gline[0]->gnode[1] = actgvol->element->node[1]->gnode;
+          actgvol->gline[0]->gnode[1]->ngline++;
+        }
+        /* line 1: 1st gnode */
+        if(actgvol->gline[1]->gnode[0] == NULL)
+        {
+          actgvol->gline[1]->gnode[0] = actgvol->element->node[1]->gnode;
+          actgvol->gline[1]->gnode[0]->ngline++;
+        }
+        /* line 1: 2nd gnode */
+        if(actgvol->gline[1]->gnode[1] == NULL)
+        {
+          actgvol->gline[1]->gnode[1] = actgvol->element->node[2]->gnode;
+          actgvol->gline[1]->gnode[1]->ngline++;
+        }
+        /* line 2: 1st gnode */
+        if(actgvol->gline[2]->gnode[0] == NULL)
+        {
+          actgvol->gline[2]->gnode[0] = actgvol->element->node[2]->gnode;
+          actgvol->gline[2]->gnode[0]->ngline++;
+        }
+        /* line 2: 2nd gnode */
+        if(actgvol->gline[2]->gnode[1] == NULL)
+        {
+          actgvol->gline[2]->gnode[1] = actgvol->element->node[0]->gnode;
+          actgvol->gline[2]->gnode[1]->ngline++;
+        }
+        /* line 3: 1st gnode */
+        if(actgvol->gline[3]->gnode[0] == NULL)
+        {
+          actgvol->gline[3]->gnode[0] = actgvol->element->node[0]->gnode;
+          actgvol->gline[3]->gnode[0]->ngline++;
+        }
+        /* line 3: 2nd gnode */
+        if(actgvol->gline[3]->gnode[1] == NULL)
+        {
+          actgvol->gline[3]->gnode[1] = actgvol->element->node[3]->gnode;
+          actgvol->gline[3]->gnode[1]->ngline++;
+        }
+        /* line 4: 1st gnode */
+        if(actgvol->gline[4]->gnode[0] == NULL)
+        {
+          actgvol->gline[4]->gnode[0] = actgvol->element->node[1]->gnode;
+          actgvol->gline[4]->gnode[0]->ngline++;
+        }
+        /* line 4: 2nd gnode */
+        if(actgvol->gline[4]->gnode[1] == NULL)
+        {
+          actgvol->gline[4]->gnode[1] = actgvol->element->node[3]->gnode;
+          actgvol->gline[4]->gnode[1]->ngline++;
+        }
+        /* line 5: 1st gnode */
+        if(actgvol->gline[5]->gnode[0] == NULL)
+        {
+          actgvol->gline[5]->gnode[0] = actgvol->element->node[2]->gnode;
+          actgvol->gline[5]->gnode[0]->ngline++;
+        }
+        /* line 5: 2nd gnode */
+        if(actgvol->gline[5]->gnode[1] == NULL)
+        {
+          actgvol->gline[5]->gnode[1] = actgvol->element->node[3]->gnode;
+          actgvol->gline[5]->gnode[1]->ngline++;
+        }
         break;
       case tet10:
         actgvol = actele->g.gvol;
-        /* line 0 */
-        actgvol->gline[0]->gnode[0] = actgvol->element->node[0]->gnode;
-        actgvol->gline[0]->gnode[0]->ngline++;
-        actgvol->gline[0]->gnode[1] = actgvol->element->node[4]->gnode;
-        actgvol->gline[0]->gnode[1]->ngline++;
-        actgvol->gline[0]->gnode[2] = actgvol->element->node[1]->gnode;
-        actgvol->gline[0]->gnode[2]->ngline++;
-        /* line 1 */
-        actgvol->gline[1]->gnode[0] = actgvol->element->node[1]->gnode;
-        actgvol->gline[1]->gnode[0]->ngline++;
-        actgvol->gline[1]->gnode[1] = actgvol->element->node[5]->gnode;
-        actgvol->gline[1]->gnode[1]->ngline++;
-        actgvol->gline[1]->gnode[2] = actgvol->element->node[2]->gnode;
-        actgvol->gline[1]->gnode[2]->ngline++;
-        /* line 2 */
-        actgvol->gline[2]->gnode[0] = actgvol->element->node[2]->gnode;
-        actgvol->gline[2]->gnode[0]->ngline++;
-        actgvol->gline[2]->gnode[1] = actgvol->element->node[6]->gnode;
-        actgvol->gline[2]->gnode[1]->ngline++;
-        actgvol->gline[2]->gnode[2] = actgvol->element->node[0]->gnode;
-        actgvol->gline[2]->gnode[2]->ngline++;
-        /* line 3 */
-        actgvol->gline[3]->gnode[0] = actgvol->element->node[0]->gnode;
-        actgvol->gline[3]->gnode[0]->ngline++;
-        actgvol->gline[3]->gnode[1] = actgvol->element->node[7]->gnode;
-        actgvol->gline[3]->gnode[1]->ngline++;
-        actgvol->gline[3]->gnode[2] = actgvol->element->node[3]->gnode;
-        actgvol->gline[3]->gnode[2]->ngline++;
-        /* line 4 */
-        actgvol->gline[4]->gnode[0] = actgvol->element->node[1]->gnode;
-        actgvol->gline[4]->gnode[0]->ngline++;
-        actgvol->gline[4]->gnode[1] = actgvol->element->node[8]->gnode;
-        actgvol->gline[4]->gnode[1]->ngline++;
-        actgvol->gline[4]->gnode[2] = actgvol->element->node[3]->gnode;
-        actgvol->gline[4]->gnode[2]->ngline++;
-        /* line 5 */
-        actgvol->gline[5]->gnode[0] = actgvol->element->node[2]->gnode;
-        actgvol->gline[5]->gnode[0]->ngline++;
-        actgvol->gline[5]->gnode[1] = actgvol->element->node[9]->gnode;
-        actgvol->gline[5]->gnode[1]->ngline++;
-        actgvol->gline[5]->gnode[2] = actgvol->element->node[3]->gnode;
-        actgvol->gline[5]->gnode[2]->ngline++;
+        /* link and count new gline at gnond only, if not yet pointered */
+        /* line 0: 1st gnode */
+        if(actgvol->gline[0]->gnode[0] == NULL)
+        {
+          actgvol->gline[0]->gnode[0] = actgvol->element->node[0]->gnode;
+          actgvol->gline[0]->gnode[0]->ngline++;
+        }
+        /* line 0: 2nd gnode */
+        if(actgvol->gline[0]->gnode[1] == NULL)
+        {
+          actgvol->gline[0]->gnode[1] = actgvol->element->node[4]->gnode;
+          actgvol->gline[0]->gnode[1]->ngline++;
+        }
+        /* line 0: 3rd gnode */
+        if(actgvol->gline[0]->gnode[2] == NULL)
+        {
+          actgvol->gline[0]->gnode[2] = actgvol->element->node[1]->gnode;
+          actgvol->gline[0]->gnode[2]->ngline++;
+        }
+        /* line 1: 1st gnode */
+        if(actgvol->gline[1]->gnode[0] == NULL)
+        {
+          actgvol->gline[1]->gnode[0] = actgvol->element->node[1]->gnode;
+          actgvol->gline[1]->gnode[0]->ngline++;
+        }
+        /* line 1: 2nd gnode */
+        if(actgvol->gline[1]->gnode[1] == NULL)
+        {
+          actgvol->gline[1]->gnode[1] = actgvol->element->node[5]->gnode;
+          actgvol->gline[1]->gnode[1]->ngline++;
+        }
+        /* line 1: 3rd gnode */
+        if(actgvol->gline[1]->gnode[2] == NULL)
+        {
+          actgvol->gline[1]->gnode[2] = actgvol->element->node[2]->gnode;
+          actgvol->gline[1]->gnode[2]->ngline++;
+        }
+        /* line 2: 1st gnode */
+        if(actgvol->gline[2]->gnode[0] == NULL)
+        {
+          actgvol->gline[2]->gnode[0] = actgvol->element->node[2]->gnode;
+          actgvol->gline[2]->gnode[0]->ngline++;
+        }
+        /* line 2: 2nd gnode */
+        if(actgvol->gline[2]->gnode[1] == NULL)
+        {
+          actgvol->gline[2]->gnode[1] = actgvol->element->node[6]->gnode;
+          actgvol->gline[2]->gnode[1]->ngline++;
+        }
+        /* line 2: 3rd gnode */
+        if(actgvol->gline[2]->gnode[2] == NULL)
+        {
+          actgvol->gline[2]->gnode[2] = actgvol->element->node[0]->gnode;
+          actgvol->gline[2]->gnode[2]->ngline++;
+        }
+        /* line 3: 1st gnode */
+        if(actgvol->gline[3]->gnode[0] == NULL)
+        {
+          actgvol->gline[3]->gnode[0] = actgvol->element->node[0]->gnode;
+          actgvol->gline[3]->gnode[0]->ngline++;
+        }
+        /* line 3: 2nd gnode */
+        if(actgvol->gline[3]->gnode[1] == NULL)
+        {
+          actgvol->gline[3]->gnode[1] = actgvol->element->node[7]->gnode;
+          actgvol->gline[3]->gnode[1]->ngline++;
+        }
+        /* line 3: 3rd gnode */
+        if(actgvol->gline[3]->gnode[2] == NULL)
+        {
+          actgvol->gline[3]->gnode[2] = actgvol->element->node[3]->gnode;
+          actgvol->gline[3]->gnode[2]->ngline++;
+        }
+        /* line 4: 1st gnode */
+        if(actgvol->gline[4]->gnode[0] == NULL)
+        {
+          actgvol->gline[4]->gnode[0] = actgvol->element->node[1]->gnode;
+          actgvol->gline[4]->gnode[0]->ngline++;
+        }
+        /* line 4: 2nd gnode */
+        if(actgvol->gline[4]->gnode[1] == NULL)
+        {
+          actgvol->gline[4]->gnode[1] = actgvol->element->node[8]->gnode;
+          actgvol->gline[4]->gnode[1]->ngline++;
+        }
+        /* line 4: 3rd gnode */
+        if(actgvol->gline[4]->gnode[2] == NULL)
+        {
+          actgvol->gline[4]->gnode[2] = actgvol->element->node[3]->gnode;
+          actgvol->gline[4]->gnode[2]->ngline++;
+        }
+        /* line 5: 1st gnode */
+        if(actgvol->gline[5]->gnode[0] == NULL)
+        {
+          actgvol->gline[5]->gnode[0] = actgvol->element->node[2]->gnode;
+          actgvol->gline[5]->gnode[0]->ngline++;
+        }
+        /* line 5: 2nd gnode */
+        if(actgvol->gline[5]->gnode[1] == NULL)
+        {
+          actgvol->gline[5]->gnode[1] = actgvol->element->node[9]->gnode;
+          actgvol->gline[5]->gnode[1]->ngline++;
+        }
+        /* line 5: 3rd gnode */
+        if(actgvol->gline[5]->gnode[2] == NULL)
+        {
+          actgvol->gline[5]->gnode[2] = actgvol->element->node[3]->gnode;
+          actgvol->gline[5]->gnode[2]->ngline++;
+        }
         break;
       default: dserror("Unknown type of discretization 9"); break;
     }
