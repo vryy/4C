@@ -136,7 +136,7 @@ for (i=0; i<actlev->nagg; i++)
 {
    for (j=0; j<actlev->agg[i].numdf; j++) /* column loop */
    for (k=0; k<actlev->agg[i].tentP_nrow; k++) /* row loop */
-   if (actlev->agg[i].tentP->a.da[k][j]!=0.00000000000000000000)
+   if (FABS(actlev->agg[i].tentP->a.da[k][j])>EPS15)
    mlpcg_csr_setentry(P,
                       actlev->agg[i].tentP->a.da[k][j],
                       actlev->agg[i].tentP_rindex[k],
@@ -161,7 +161,7 @@ for (i=0; i<actlev->nagg; i++)
 #endif
 /*------------------------------- make the smoothing of the prolongator */
 if (mlprecond.omega>0.0)
-   mlpcg_smoothP(P,aggblock,rindex,cindex,&nrow,&ncol,actlev->csr,actlev->agg,actlev->nagg,actintra);
+   mlpcg_smoothP(P,actlev->csr,actintra);
 /*------------------------ tent. prolongator is ready, close the matrix */
 mlpcg_csr_close(P);
 /*----------------------------------------------------------------------*/
@@ -290,7 +290,7 @@ for (i=0; i<actlev->nagg; i++)
 {
    for (j=0; j<actlev->agg[i].numdf; j++) /* column loop */
    for (k=0; k<actlev->agg[i].tentP_nrow; k++) /* row loop */
-   if (actlev->agg[i].tentP->a.da[k][j]!=0.00000000000000000000)
+   if (FABS(actlev->agg[i].tentP->a.da[k][j])>EPS15)
    mlpcg_csr_setentry(P,
                       actlev->agg[i].tentP->a.da[k][j],
                       actlev->agg[i].tentP_rindex[k],
@@ -315,7 +315,7 @@ for (i=0; i<actlev->nagg; i++)
 #endif
 /*------------------------------- make the smoothing of the prolongator */
 if (mlprecond.omega>0.0)
-   mlpcg_smoothP(P,aggblock,rindex,cindex,&nrow,&ncol,actlev->csr,actlev->agg,actlev->nagg,actintra);
+   mlpcg_smoothP(P,actlev->csr,actintra);
 /*------------------------ tent. prolongator is ready, close the matrix */
 mlpcg_csr_close(P);
 /*----------------------------------------------------------------------*/
@@ -766,9 +766,7 @@ return;
 \return void                                               
 
 ------------------------------------------------------------------------*/
-void mlpcg_smoothP(DBCSR *P, double block[][500], int *rindex, int *cindex,
-                  int *nrow, int *ncol, DBCSR *actstiff, 
-                  AGG *agg, int nagg, INTRA *actintra)
+void mlpcg_smoothP(DBCSR *P, DBCSR *actstiff, INTRA *actintra)
 {
 int           i,j,k,l,n,m,counter;
 int           myrank,nproc,flag,tag;
@@ -825,6 +823,20 @@ update      = actstiff->update.a.iv;
 ia          = actstiff->ia.a.iv;
 ja          = actstiff->ja.a.iv;
 /*----------------------------------------------------------------------*/
+/*
+for (i=0; i<numeq; i++)
+{
+   actrow = P->update.a.iv[i];
+   for (j = P->ia.a.iv[i]; j<P->ia.a.iv[i+1]; j++)
+   {
+      if (P->ja.a.iv[j]==-1)
+         continue;
+      actcol = P->ja.a.iv[j];
+      printf("actrow %d actcol %d val %E\n",actrow,actcol,P->a.a.dv[j]);
+   }
+}
+*/
+/*----------------------------------------------------------------------*/
 mlpcg_matvec_init(actstiff,actintra);
 /*--------------------------------- build the smoother stiffness matrix */
 /* copy the values array */
@@ -870,6 +882,8 @@ for (i=0; i<P->ia.a.iv[P->numeq]; i++)
    if (actcol<firstcol) firstcol = actcol;
    if (actcol>lastcol)  lastcol  = actcol;
 }
+i = lastcol;/* this is a dummy operation with lastcol necessary, because */
+lastcol = i;/* otherwise the compiler strangely eliminates the value of lastcol (??) */
 mincol = 0;
 #ifdef PARALLEL
 MPI_Allreduce(&lastcol,&maxcol,1,MPI_INT,MPI_MAX,actintra->MPI_INTRA_COMM);
@@ -944,15 +958,14 @@ for (n=0; n<nproc; n++)
 /*----------------------- allocate sendbuffers for my interproc columns */
 /* number of interproc columns */
 nc    = lastcol - intercol + 1;
-isend = amdef("tmp",&isend_a,nc,5,"IA");
-dsend = amdef("tmp",&dsend_a,nc,5,"DA");
+isend = amdef("tmp",&isend_a,nc,50,"IA");
+dsend = amdef("tmp",&dsend_a,nc,50,"DA");
 /* fill the sendbuffers */
 counter=0;
 for (i=intercol; i<=lastcol; i++)
 {
    actcolP = i;
    mlpcg_extractcollocal(P,actcolP,col,rcol,&nr);
-   dsassert(nr>0,"zero length sendcol detected");
    if (nr > isend_a.sdim-1)
    {
       isend = amredef(&isend_a,nc,nr+1,"IA");
@@ -1043,8 +1056,19 @@ for (i=firstcol; i<=lastcol; i++)
 }
 /*======================================================================*/
 
-
-
+/*
+for (i=0; i<numeq; i++)
+{
+   actrow = P->update.a.iv[i];
+   for (j = P->ia.a.iv[i]; j<P->ia.a.iv[i+1]; j++)
+   {
+      if (P->ja.a.iv[j]==-1)
+         continue;
+      actcol = P->ja.a.iv[j];
+      printf("actrow %d actcol %d val %E\n",actrow,actcol,P->a.a.dv[j]);
+   }
+}
+*/
 
 
 /*=====================================make interproc smoothing part II */
@@ -1053,11 +1077,6 @@ if (nproc > 1) {
 /* make receive */
 while (nrecv != 0)
 {
-/*
-   flag=0;
-   while (!flag)
-      MPI_Iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,actintra->MPI_INTRA_COMM,&flag,&status);
-*/
    MPI_Probe(MPI_ANY_SOURCE,MPI_ANY_TAG,actintra->MPI_INTRA_COMM,&status);
    /* get the sender , size and tag */
    n   = status.MPI_SOURCE;
@@ -1147,9 +1166,19 @@ if (nproc > 1)
 }
 #endif
 /*======================================================================*/
-
-
-
+/*
+for (i=0; i<numeq; i++)
+{
+   actrow = P->update.a.iv[i];
+   for (j = P->ia.a.iv[i]; j<P->ia.a.iv[i+1]; j++)
+   {
+      if (P->ja.a.iv[j]==-1)
+         continue;
+      actcol = P->ja.a.iv[j];
+      printf("actrow %d actcol %d val %E\n",actrow,actcol,P->a.a.dv[j]);
+   }
+}
+*/
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();

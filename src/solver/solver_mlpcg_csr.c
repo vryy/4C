@@ -175,7 +175,7 @@ return;
 \sa mlpcg_extractcollocal_init mlpcg_extractcollocal_uninit
 ------------------------------------------------------------------------*/
 void mlpcg_extractcollocal_fast(DBCSR *matrix, int actcol, 
-                                double *col,int *rcol, int *nrow,
+                                double **col,int **rcol, int *size, int *nrow,
                                 int *sizes, int ***icol, double ***dcol)
 {
 int           i,j,counter;
@@ -191,17 +191,23 @@ if (sizes[actcol]==0)
    *nrow=0;
    goto exit;
 }
-
-if (sizes[actcol]>1000) dserror("col row dimension too small (=1000)"); 
-
 *nrow   = counter = sizes[actcol];
 ic      = icol[actcol];
 dc      = dcol[actcol];
-
+if (*nrow > *size)
+{
+   printf("enlargment to *nrow = %d\n",*nrow);
+   fflush(stdout);
+   *size = *nrow;
+   CCAFREE(*rcol);
+   CCAFREE(*col);
+   (*rcol) = (int*)   CCAMALLOC((*size)*sizeof(int));
+   (*col)  = (double*)CCAMALLOC((*size)*sizeof(double));
+}
 for (i=0; i<counter; i++)
 {
-   rcol[i] = *(ic[i]);
-   col[i]  = *(dc[i]);
+   (*rcol)[i] = *(ic[i]);
+   (*col)[i]  = *(dc[i]);
 }
 /*----------------------------------------------------------------------*/
 exit:
@@ -291,14 +297,15 @@ there must not be any ellbow room in the matrix!
 \return void                                               
 
 ------------------------------------------------------------------------*/
-void mlpcg_extractcolcsc(int     col,
-                         int     numeq,
-                         int    *update,
-                         int    *ia,
-                         int    *ja,
-                         double *a,
-                         double  col_out[],
-                         int     rcol_out[],
+void mlpcg_extractcolcsc(int      col,
+                         int      numeq,
+                         int     *update,
+                         int     *ia,
+                         int     *ja,
+                         double  *a,
+                         double **col_out,
+                         int    **rcol_out,
+                         int     *size,
                          int     *nrow)
 {
 int           i,j,k;
@@ -318,18 +325,27 @@ if (index==-1)
 rowstart = ia[index];
 rowend   = ia[index+1];
 *nrow    = rowend-rowstart;
-if (*nrow > 1000) dserror("Column too large to extract (>1000)");
+if (*nrow > *size)
+{
+   printf("enlargment to *nrow = %d\n",*nrow);
+   fflush(stdout);
+   *size = *nrow;
+   CCAFREE(*rcol_out);
+   CCAFREE(*col_out);
+   (*rcol_out) = (int*)   CCAMALLOC((*size)*sizeof(int));
+   (*col_out)  = (double*)CCAMALLOC((*size)*sizeof(double));
+}
 k=0;
 for (i=rowstart; i<rowend; i++)
 {
-   col_out[k] = a[i];
-   rcol_out[k] = ja[i];
+   (*col_out)[k]  = a[i];
+   (*rcol_out)[k] = ja[i];
    k++;
 }
 /*----------------------------------------------------------------------*/
 exit:
 #ifdef DEBUG 
-dstrc_exit();
+dstrc_exit(); 
 #endif
 return;
 } /* end of mlpcg_extractcolcsc */
@@ -350,14 +366,15 @@ there must not be any ellbow room in the matrix!
 \return void                                               
 
 ------------------------------------------------------------------------*/
-void mlpcg_extractrowcsr(int     row,
-                         int     numeq,
-                         int    *update,
-                         int    *ia,
-                         int    *ja,
-                         double *a,
-                         double  row_out[],
-                         int     rrow_out[],
+void mlpcg_extractrowcsr(int      row,
+                         int      numeq,
+                         int     *update,
+                         int     *ia,
+                         int     *ja,
+                         double  *a,
+                         double **row_out,
+                         int    **rrow_out,
+                         int     *size,
                          int     *ncol)
 {
 int           i,j,k;
@@ -377,12 +394,21 @@ if (index==-1)
 rowstart = ia[index];
 rowend   = ia[index+1];
 *ncol    = rowend-rowstart;
-if (*ncol > 1000) dserror("Column too large to extract (>1000)");
+if (*ncol > *size)
+{
+   printf("enlargment to *ncol = %d\n",*ncol);
+   fflush(stdout);
+   *size = *ncol;
+   CCAFREE(*rrow_out);
+   CCAFREE(*row_out);
+   (*rrow_out) = (int*)   CCAMALLOC((*size)*sizeof(int));
+   (*row_out)  = (double*)CCAMALLOC((*size)*sizeof(double));
+}
 k=0;
 for (i=rowstart; i<rowend; i++)
 {
-   row_out[k] = a[i];
-   rrow_out[k] = ja[i];
+   (*row_out)[k]  = a[i];
+   (*rrow_out)[k] = ja[i];
    k++;
 }
 /*----------------------------------------------------------------------*/
@@ -757,15 +783,13 @@ return;
 \brief extract a block from a csr matrix to an open csr matrix                                         
 
 <pre>                                                        m.gee 12/02 
-extract a block from a csr matrix to an open csr matrix   
-the matrix to must be opened and empty
+extract a block from a csr matrix to a dense matrix   
+the matrix to must be sufficient in size
 </pre>
 \param from      DBCSR*       (i) the csr to be extracted from
-\param to        double*[200] (o) the csr to be extracted to
-\param rstart    int          (i) rowstart of the block
-\param rend      int          (i) rowend of the block 
-\param cstart    int          (i) columnstart of the block
-\param cend      int          (i) columnend of the block
+\param A         double**     (o) the dense matrix to be extracted to
+\param index     int*         (i) list of indizes the square matrix shall be extracted
+\param nindex    int          (i) length of index 
 \param actintra  INTRA*       (i)   the intra-communicator of this field  
 \return void                                               
 
@@ -986,12 +1010,13 @@ for (i=0; i<nrow; i++)
          }
          else /*--- no, there is no room, row is full, needs enlargment */
          {
-/*
-            printf("RANK %d: Enlargment of csr matrix\n",actintra->intra_rank);
-*/
-            new_nnz_guess = (int)(2.0*nnz_guess);
-            new_row_guess = (int)(new_nnz_guess/numeq);
-            new_nnz_guess = new_row_guess*numeq;
+            /* find the largest row and make a guess for a new size */
+            new_row_guess=0;
+            for (k=0; k<numeq; k++)
+               if (new_row_guess<ia[k+1]-ia[k]) 
+                  new_row_guess = ia[k+1]-ia[k];
+            new_row_guess = (int)(new_row_guess*2.0);
+            new_nnz_guess = (int)(new_row_guess*numeq);
             ja = amredef(&(matrix->ja),new_nnz_guess,1,"IV");
             a  = amredef(&(matrix->a) ,new_nnz_guess,1,"DV");
             /*------------------------- have to init the new part of ja */
@@ -1007,8 +1032,9 @@ for (i=0; i<nrow; i++)
                st_col =   k    * new_row_guess;
                et_col =  (k+1) * new_row_guess;
                /* make sure, the new rowsize is larger then the old one */
-               dsassert(et_col-st_col>ef_col-sf_col,"row enlargment failed");
-               /*------------ loop the old row and copy to new location */
+               if (et_col-st_col<=ef_col-sf_col)
+	       dserror("source row larger then target row in enlargment");
+	       /*------------ loop the old row and copy to new location */
                counter  = 0;
                hasmoved = 0;
                for (l=sf_col; l<ef_col; l++)
@@ -1187,12 +1213,13 @@ for (i=0; i<nrow; i++)
          }
          else /*--- no, there is no room, row is full, needs enlargment */
          {
-/*
-            printf("RANK %d: Enlargment of csr matrix\n",actintra->intra_rank);
-*/
-            new_nnz_guess = (int)(2.0*nnz_guess);
-            new_row_guess = (int)(new_nnz_guess/numeq);
-            new_nnz_guess = new_row_guess*numeq;
+            /* find the largest row and make a guess for a new size */
+            new_row_guess=0;
+            for (k=0; k<numeq; k++)
+               if (new_row_guess<ia[k+1]-ia[k]) 
+                  new_row_guess = ia[k+1]-ia[k];
+            new_row_guess = (int)(new_row_guess*2.0);
+            new_nnz_guess = (int)(new_row_guess*numeq);
             ja = amredef(&(matrix->ja),new_nnz_guess,1,"IV");
             a  = amredef(&(matrix->a) ,new_nnz_guess,1,"DV");
             /*------------------------- have to init the new part of ja */
@@ -1209,7 +1236,8 @@ for (i=0; i<nrow; i++)
                st_col =   k    * new_row_guess;
                et_col =  (k+1) * new_row_guess;
                /* make sure, the new rowsize is larger then the old one */
-               dsassert(et_col-st_col>ef_col-sf_col,"row enlargment failed");
+               if (et_col-st_col<=ef_col-sf_col)
+	       dserror("source row larger then target row in enlargment");
                /*------------ loop the old row and copy to new location */
                counter  = 0;
                hasmoved = 0;
@@ -1381,12 +1409,13 @@ nnz_guess = ia[numeq];
          }
          else /*--- no, there is no room, row is full, needs enlargment */
          {
-/*
-            printf("RANK %d: Enlargment of csr matrix\n",actintra->intra_rank);
-*/
-            new_nnz_guess = (int)(2.0*nnz_guess);
-            new_row_guess = (int)(new_nnz_guess/numeq);
-            new_nnz_guess = new_row_guess*numeq;
+            /* find the largest row and make a guess for a new size */
+            new_row_guess=0;
+            for (k=0; k<numeq; k++)
+               if (new_row_guess<ia[k+1]-ia[k]) 
+                  new_row_guess = ia[k+1]-ia[k];
+            new_row_guess = (int)(new_row_guess*2.0);
+            new_nnz_guess = (int)(new_row_guess*numeq);
             ja = amredef(&(matrix->ja),new_nnz_guess,1,"IV");
             a  = amredef(&(matrix->a) ,new_nnz_guess,1,"DV");
             /*------------------------- have to init the new part of ja */
@@ -1403,7 +1432,8 @@ nnz_guess = ia[numeq];
                st_col =   k    * new_row_guess;
                et_col =  (k+1) * new_row_guess;
                /* make sure, the new rowsize is larger then the old one */
-               dsassert(et_col-st_col>ef_col-sf_col,"row enlargment failed");
+               if (et_col-st_col<=ef_col-sf_col)
+	       dserror("source row larger then target row in enlargment");
                /*------------ loop the old row and copy to new location */
                counter  = 0;
                hasmoved = 0;
@@ -1573,12 +1603,13 @@ nnz_guess = ia[numeq];
          }
          else /*--- no, there is no room, row is full, needs enlargment */
          {
-/*
-            printf("RANK %d: Enlargment of csr matrix\n",actintra->intra_rank);
-*/
-            new_nnz_guess = (int)(2.0*nnz_guess);
-            new_row_guess = (int)(new_nnz_guess/numeq);
-            new_nnz_guess = new_row_guess*numeq;
+            /* find the largest row and make a guess for a new size */
+            new_row_guess=0;
+            for (k=0; k<numeq; k++)
+               if (new_row_guess<ia[k+1]-ia[k]) 
+                  new_row_guess = ia[k+1]-ia[k];
+            new_row_guess = (int)(new_row_guess*2.0);
+            new_nnz_guess = (int)(new_row_guess*numeq);
             ja = amredef(&(matrix->ja),new_nnz_guess,1,"IV");
             a  = amredef(&(matrix->a) ,new_nnz_guess,1,"DV");
             /*------------------------- have to init the new part of ja */
@@ -1595,7 +1626,8 @@ nnz_guess = ia[numeq];
                st_col =   k    * new_row_guess;
                et_col =  (k+1) * new_row_guess;
                /* make sure, the new rowsize is larger then the old one */
-               dsassert(et_col-st_col>ef_col-sf_col,"row enlargment failed");
+               if (et_col-st_col<=ef_col-sf_col)
+	       dserror("source row larger then target row in enlargment");
                /*------------ loop the old row and copy to new location */
                counter  = 0;
                hasmoved = 0;
@@ -1765,12 +1797,13 @@ nnz_guess = ia[numeq];
          }
          else /*--- no, there is no room, row is full, needs enlargment */
          {
-/*
-            printf("RANK %d: Enlargment of csr matrix\n",actintra->intra_rank);
-*/
-            new_nnz_guess = (int)(2.0*nnz_guess);
-            new_row_guess = (int)(new_nnz_guess/numeq);
-            new_nnz_guess = new_row_guess*numeq;
+            /* find the largest row and make a guess for a new size */
+            new_row_guess=0;
+            for (k=0; k<numeq; k++)
+               if (new_row_guess<ia[k+1]-ia[k]) 
+                  new_row_guess = ia[k+1]-ia[k];
+            new_row_guess = (int)(new_row_guess*2.0);
+            new_nnz_guess = (int)(new_row_guess*numeq);
             ja = amredef(&(matrix->ja),new_nnz_guess,1,"IV");
             a  = amredef(&(matrix->a) ,new_nnz_guess,1,"DV");
             /*------------------------- have to init the new part of ja */
@@ -1787,7 +1820,8 @@ nnz_guess = ia[numeq];
                st_col =   k    * new_row_guess;
                et_col =  (k+1) * new_row_guess;
                /* make sure, the new rowsize is larger then the old one */
-               dsassert(et_col-st_col>ef_col-sf_col,"row enlargment failed");
+               if (et_col-st_col<=ef_col-sf_col)
+	       dserror("source row larger then target row in enlargment");
                /*------------ loop the old row and copy to new location */
                counter  = 0;
                hasmoved = 0;
@@ -1965,12 +1999,13 @@ for (j=0; j<ncol; j++)
       }
       else /*--- no, there is no room, row is full, needs enlargment */
       {
-/*
-         printf("RANK %d: Enlargment of csr matrix\n",actintra->intra_rank);
-*/
-         new_nnz_guess = (int)(2.0*nnz_guess);
-         new_row_guess = (int)(new_nnz_guess/numeq);
-         new_nnz_guess = new_row_guess*numeq;
+         /* find the largest row and make a guess for a new size */
+         new_row_guess=0;
+         for (k=0; k<numeq; k++)
+            if (new_row_guess<ia[k+1]-ia[k]) 
+               new_row_guess = ia[k+1]-ia[k];
+         new_row_guess = (int)(new_row_guess*2.0);
+         new_nnz_guess = (int)(new_row_guess*numeq);
          ja = amredef(&(matrix->ja),new_nnz_guess,1,"IV");
          a  = amredef(&(matrix->a) ,new_nnz_guess,1,"DV");
          /*------------------------- have to init the new part of ja */
@@ -1987,7 +2022,8 @@ for (j=0; j<ncol; j++)
             st_col =   k    * new_row_guess;
             et_col =  (k+1) * new_row_guess;
             /* make sure, the new rowsize is larger then the old one */
-            dsassert(et_col-st_col>ef_col-sf_col,"row enlargment failed");
+            if (et_col-st_col<=ef_col-sf_col)
+            dserror("source row larger then target row in enlargment");
             /*------------ loop the old row and copy to new location */
             counter  = 0;
             hasmoved = 0;
@@ -2103,7 +2139,7 @@ for (i=0; i<num; i++)
 {
    actcol = ja[i];
    /* look, whether actcol was found before */
-   foundit = 0;
+   foundit = -1;
    foundit = find_index(actcol,csc_update,counter);
    /* this column already exists, continue */
    if (foundit!=-1) continue;

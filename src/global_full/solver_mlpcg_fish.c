@@ -131,14 +131,14 @@ if (mlprecond.ncall==0)
                   actstiff->numeq_total,counter, actintra);
 }/* end of if (mlprecond.ncall==0) */
 else
-   mlpcg_csr_zero(actlev->P,actintra);
+   mlpcg_csr_zero(P,actintra);
 /*--------------- loop all aggregates again and fill the DBCSR matrix P */   
 for (i=0; i<actlev->nagg; i++)
 {
    for (j=0; j<actlev->agg[i].numdf; j++) /* column loop */
    for (k=0; k<actlev->agg[i].tentP_nrow; k++) /* row loop */
    aggblock[k][j] = actlev->agg[i].tentP->a.da[k][j];
-   mlpcg_csr_setblock(actlev->P,
+   mlpcg_csr_setblock(P,
                       aggblock,
                       actlev->agg[i].tentP_rindex,
                       actlev->agg[i].dof,
@@ -152,7 +152,7 @@ if (mlprecond.omega>0.0)
    mlpcg_smoothP(P,aggblock,rindex,cindex,&nrow,&ncol,actlev->csr,actlev->agg,actlev->nagg,actintra);
 */
 /*------------------------ tent. prolongator is ready, close the matrix */
-mlpcg_csr_close(actlev->P);
+mlpcg_csr_close(P);
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();

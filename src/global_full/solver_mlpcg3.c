@@ -607,7 +607,8 @@ if (index_fcd==-1) dserror("cannot find dof in update");
 for (i=0; i<ia[index_fcd]; i++)
 {
    j = mlpcg_getindex(ja[i],update,numeq);
-   if (j==-1) dserror("Interprocessor coupled rows are not sorted correctly");
+   if (j==-1) 
+      dserror("Interprocessor coupled rows are not sorted correctly");
 }
 /* check sizes of rows */
 for (i=0; i<numeq; i++)

@@ -97,7 +97,7 @@ ARRAY      ra;   double *aP;
 int        rcounter[MAXPROC];
 int       *isend,*irecv;
 double    *dsend,*drecv;
-
+ 
 int        actrow,actcol;
 int        colstart,colend;
 
@@ -105,8 +105,9 @@ double     block[500][500];
 int        rindex[500];
 int        cindex[500];
 
-double     col[1000],colP[1000];
-int        rcol[1000],rcolP[1000];
+double     *col,*colP;
+int        *rcol,*rcolP;
+int        scol = 5000, scolP = 5000;
 int        nrow,ncol;
 
  /* these are tricky column pointers to the incsr matrix */
@@ -142,6 +143,11 @@ ARRAY      so,ro;
 dstrc_enter("mlpcg_precond_PtKP");
 #endif
 /*----------------------------------------------------------------------*/
+/*--------------------------- allocate row and column extractor buffers */
+rcol  = (int*)   CCAMALLOC(scol*sizeof(int));
+col   = (double*)CCAMALLOC(scol*sizeof(double));
+rcolP = (int*)   CCAMALLOC(scolP*sizeof(int));
+colP  = (double*)CCAMALLOC(scolP*sizeof(double));
 /*----------------------------------------------------------------------*/
 myrank = actintra->intra_rank;
 nproc  = actintra->intra_nprocs;
@@ -397,7 +403,7 @@ for (i=0; i<numeq_cscP; i++)/* loop remote columns in P */
    dsend[0] = (double)actrow;
    rcounter[owner]++;
    mlpcg_extractcolcsc(actrow,numeq_cscP,update_cscP,ia_cscP,ja_cscP,a_cscP,
-                       colP,rcolP,&ncol);
+                       &colP,&rcolP,&scolP,&ncol);
    if (ncol==0) 
       continue;
    min2 = rcolP[0];
@@ -405,7 +411,7 @@ for (i=0; i<numeq_cscP; i++)/* loop remote columns in P */
    for (j=0; j<incsr->numeq_total; j++) /* loop all columns in incsr */
    {
       actcol = j;
-      mlpcg_extractcollocal_fast(incsr,actcol,col,rcol,&nrow,colsize,icol,dcol);
+      mlpcg_extractcollocal_fast(incsr,actcol,&col,&rcol,&scol,&nrow,colsize,icol,dcol);
       if (nrow==0)
          continue;
       init_quick_find(rcol,nrow,&shift,bins);
@@ -479,7 +485,7 @@ for (i=0; i<incsr->numeq_total; i++)/* loop all columns of work */
 {
    actcol = i;
    /* extract the column from incsr */
-   mlpcg_extractcollocal_fast(incsr,actcol,col,rcol,&nrow,colsize,icol,dcol);
+   mlpcg_extractcollocal_fast(incsr,actcol,&col,&rcol,&scol,&nrow,colsize,icol,dcol);
    if (nrow==0) continue;
    min1 = rcol[0];
    max1 = rcol[nrow-1];
@@ -489,7 +495,7 @@ for (i=0; i<incsr->numeq_total; i++)/* loop all columns of work */
       actrow = work->update.a.iv[j];
       /* extract the column from P */
       mlpcg_extractcolcsc(actrow,numeq_cscP,update_cscP,ia_cscP,ja_cscP,a_cscP,
-                          colP,rcolP,&ncol);
+                          &colP,&rcolP,&scolP,&ncol);
       if (ncol==0) continue;
       min2    = rcolP[0];
       max2    = rcolP[ncol-1];
@@ -523,7 +529,7 @@ fflush(stdout);
 t1 = ds_cputime();
 */
 irecv = amdef("irbuff",&irbuff,1000,1,"IV");
-drecv = amdef("drbuff",&drbuff,1000,1,"IV");
+drecv = amdef("drbuff",&drbuff,1000,1,"DV");
 for (n=0; n<nproc; n++)
 {
    if (n==myrank)
@@ -544,7 +550,7 @@ for (n=0; n<nproc; n++)
       amdel(&irbuff);
       amdel(&drbuff);
       irecv = amdef("irbuff",&irbuff,ilength+10,1,"IV");
-      drecv = amdef("drbuff",&drbuff,ilength+10,1,"IV");
+      drecv = amdef("drbuff",&drbuff,ilength+10,1,"DV");
    }
    /*-------------------------------------- receive the integer message */
    MPI_Recv(irecv,ilength,MPI_INT,n,tag,actintra->MPI_INTRA_COMM,&status);
@@ -690,7 +696,7 @@ for (i=0; i<work->numeq; i++)/* loop all my rows of work */
 {
    actrow = work->update.a.iv[i];
    mlpcg_extractrowcsr(actrow,work->numeq,work->update.a.iv,work->ia.a.iv,
-                       work->ja.a.iv,work->a.a.dv,col,rcol,&nrow);
+                       work->ja.a.iv,work->a.a.dv,&col,&rcol,&scol,&nrow);
    if (nrow==0) continue;
    init_quick_find(rcol,nrow,&shift,bins);
    min1 = rcol[0];
@@ -699,7 +705,7 @@ for (i=0; i<work->numeq; i++)/* loop all my rows of work */
    {
       actcol = update_cscP[j];
       mlpcg_extractcolcsc(actcol,numeq_cscP,update_cscP,ia_cscP,ja_cscP,a_cscP,
-                          colP,rcolP,&ncol);
+                          &colP,&rcolP,&scolP,&ncol);
       if (ncol==0) continue; 
       min2 = rcolP[0];
       max2 = rcolP[ncol-1];
@@ -777,7 +783,7 @@ while(nrecv!=0)
    {
       actrow = work->update.a.iv[i];
       mlpcg_extractrowcsr(actrow,work->numeq,work->update.a.iv,work->ia.a.iv,
-                          work->ja.a.iv,work->a.a.dv,col,rcol,&ncol);
+                          work->ja.a.iv,work->a.a.dv,&col,&rcol,&scol,&ncol);
       if (ncol==0) continue;
       min1 = rcol[0];
       max1 = rcol[ncol-1];
@@ -785,7 +791,7 @@ while(nrecv!=0)
       for (j=0; j<numeq; j++) /* loop all columns in received P */
       {
          actcol = updateP[j];
-         mlpcg_extractcolcsc(actcol,numeq,updateP,iaP,jaP,aP,colP,rcolP,&nrow);
+         mlpcg_extractcolcsc(actcol,numeq,updateP,iaP,jaP,aP,&colP,&rcolP,&scolP,&nrow);
          if (nrow==0) continue;
          /* make the multiplication */
          min2    = rcolP[0];
@@ -813,12 +819,12 @@ while(nrecv!=0)
    {
       actrow = work->update.a.iv[i];
       mlpcg_extractrowcsr(actrow,work->numeq,work->update.a.iv,work->ia.a.iv,
-                          work->ja.a.iv,work->a.a.dv,col,rcol,&ncol);
+                          work->ja.a.iv,work->a.a.dv,&col,&rcol,&scol,&ncol);
       if (ncol==0) continue;
       for (j=0; j<numeq; j++) /* loop all columns in received P */
       {
          actcol = updateP[j];
-         mlpcg_extractcolcsc(actcol,numeq,updateP,iaP,jaP,aP,colP,rcolP,&nrow);
+         mlpcg_extractcolcsc(actcol,numeq,updateP,iaP,jaP,aP,&colP,&rcolP,&scolP,&nrow);
          if (nrow==0) continue;
          /* make the multiplication */
          foundit = 0;
@@ -862,6 +868,12 @@ mlpcg_extractcollocal_uninit(incsr,colsize,icol,dcol);
 CCAFREE(colsize);
 CCAFREE(icol);
 CCAFREE(dcol);
+
+CCAFREE(rcol);
+CCAFREE(col);
+CCAFREE(rcolP);
+CCAFREE(colP);
+
 /*----------------------------------------------------------------------*/
 /*------------------------------debugging */
 #if 0 /* make dense printout from work */

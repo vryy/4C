@@ -593,7 +593,10 @@ if (mlprecond.ncall==0 && mlprecond.typ==2)
 t2 = ds_cputime();
 /*------------------------------------------ print time for aggregation */
 if (actintra->intra_rank==0 && mlprecond.ncall==0)
-printf("Time aggregation : %20.10f\n",t2-t1);
+{
+   printf("Time aggregation : %20.10f\n",t2-t1);
+   fflush(stdout);
+}
 /*------------------------------------------------------------take time */
 t1 = ds_cputime();
 /*---------------------------------- create prolongator for finest grid */
@@ -605,7 +608,10 @@ if (mlprecond.mod==0 && mlprecond.typ==1) /* prolongator fish-style */
 t2 = ds_cputime();
 /*------------------------------------------ print time for prolongator */
 if (actintra->intra_rank==0 && mlprecond.ncall==0)
-printf("Time P lev 0     : %20.10f\n",t2-t1);
+{
+   printf("Time P lev 0     : %20.10f\n",t2-t1);
+   fflush(stdout);
+}
 /*------------------------------------------------------------take time */
 t1 = ds_cputime();
 /*------------------------------- restrict the matrix to the next level */
@@ -615,11 +621,17 @@ if (mlprecond.mod==0)
 t2 = ds_cputime();
 /*------------------------------------------------- print time for PTKP */
 if (actintra->intra_rank==0 && mlprecond.ncall==0)
-printf("Time PTKP        : %20.10f\n",t2-t1);
+{
+   printf("Time PTKP        : %20.10f\n",t2-t1);
+   fflush(stdout);
+}
 /*------------------------------------------------------- make printout */
 if (actintra->intra_rank==0 && mlprecond.ncall==0)
-printf("level 0: size %d nnz %d\n",mlprecond.level[0].csr->numeq_total,
-                                   mlprecond.level[0].csr->ja.fdim);
+{
+   printf("level 0: size %d nnz %d\n",mlprecond.level[0].csr->numeq_total,
+                                      mlprecond.level[0].csr->ja.fdim);
+   fflush(stdout);
+}				   
 #if 0
 mlpcg_printfmatrix(mlprecond.level[0].csr,actintra);
 #endif                                   
@@ -639,7 +651,10 @@ for (i=1; i<mlprecond.numlev-1; i++)
    t2 = ds_cputime();
    /*--------------------------------------- print time for aggregation */
    if (actintra->intra_rank==0 && mlprecond.ncall==0)
-   printf("Time aggregation : %20.10f\n",t2-t1);
+   {
+      printf("Time aggregation : %20.10f\n",t2-t1);
+      fflush(stdout);
+   }
    /*---------------------------------------------------------take time */
    t1 = ds_cputime();
    /*----------------------------------------------- create prolongator */
@@ -651,7 +666,10 @@ for (i=1; i<mlprecond.numlev-1; i++)
    t2 = ds_cputime();
    /*--------------------------------------- print time for prolongator */
    if (actintra->intra_rank==0 && mlprecond.ncall==0)
-   printf("Time P lev %d     : %20.10f\n",i,t2-t1);
+   {
+      printf("Time P lev %d     : %20.10f\n",i,t2-t1);
+      fflush(stdout);
+   }
    /*---------------------------------------------------------take time */
    t1 = ds_cputime();
    /*-------------------------------- restrict matrix to the next level */
@@ -661,11 +679,17 @@ for (i=1; i<mlprecond.numlev-1; i++)
    t2 = ds_cputime();
    /*---------------------------------------------- print time for PTKP */
    if (actintra->intra_rank==0 && mlprecond.ncall==0)
-   printf("Time PTKP        : %20.10f\n",t2-t1);
+   {
+      printf("Time PTKP        : %20.10f\n",t2-t1);
+      fflush(stdout);
+   }
    /*---------------------------------------------------- make printout */
    if (actintra->intra_rank==0 && mlprecond.ncall==0)
-   printf("level %d: size %d nnz %d\n",i,mlprecond.level[i].csr->numeq_total,
-                                         mlprecond.level[i].csr->ja.fdim);
+   {
+      printf("level %d: size %d nnz %d\n",i,mlprecond.level[i].csr->numeq_total,
+                                            mlprecond.level[i].csr->ja.fdim);
+      fflush(stdout);
+   }					    
 #if 0
    mlpcg_printfmatrix(mlprecond.level[i].csr,actintra);
 #endif                                   
@@ -673,8 +697,11 @@ for (i=1; i<mlprecond.numlev-1; i++)
 /*------------------------ make level numlev-1 (coarse grid) separately */
 /*------------------------------------------------------- make printout */
 if (actintra->intra_rank==0 && mlprecond.ncall==0)
-printf("level %d: size %d nnz %d\n",i,mlprecond.level[i].csr->numeq_total,
-                                      mlprecond.level[i].csr->ja.fdim);
+{
+   printf("level %d: size %d nnz %d\n",i,mlprecond.level[i].csr->numeq_total,
+                                         mlprecond.level[i].csr->ja.fdim);
+   fflush(stdout);
+}					 
 #if 0
 mlpcg_printfmatrix(mlprecond.level[i].csr,actintra);
 #endif                                   
@@ -1248,7 +1275,7 @@ for (i=0; i<numeq; i++)
    for (j=ia[i]; j<ia[i+1]; j++)
    {
       /* most times i am the owner myself */
-      if (matrix->owner[myrank][0]<=ja[j] && matrix->owner[myrank][1]>= a[j])
+      if (matrix->owner[myrank][0]<=ja[j] && matrix->owner[myrank][1]>= ja[j])
          continue;
       else
       {
