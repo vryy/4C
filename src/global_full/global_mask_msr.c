@@ -8,10 +8,10 @@ double cmp_double(const void *a, const void *b );
  |  calculate the mask of an msr matrix                  m.gee 5/01     |
  *----------------------------------------------------------------------*/
 void mask_msr(FIELD         *actfield, 
-                 PARTITION     *actpart, 
-                 SOLVAR        *actsolv,
-                 INTRA         *actintra, 
-                 AZ_ARRAY_MSR  *msr)
+              PARTITION     *actpart, 
+              SOLVAR        *actsolv,
+              INTRA         *actintra, 
+              AZ_ARRAY_MSR  *msr)
 {
 int       i,j,k,l;
 int       numeq;
@@ -74,10 +74,10 @@ return;
  |  count processor local and global number of equations    m.gee 5/01  |
  *----------------------------------------------------------------------*/
 void msr_numeq(FIELD         *actfield, 
-                  PARTITION    *actpart, 
-                  SOLVAR       *actsolv,
-                  INTRA        *actintra,
-                  int          *numeq)
+               PARTITION    *actpart, 
+               SOLVAR       *actsolv,
+               INTRA        *actintra,
+               int          *numeq)
 {
 int       i,j,k,l;
 int       counter;
@@ -307,6 +307,7 @@ if (inprocs > 1)
       }
       else/*----------------------------- eqn is an inter-proc equation */
       {
+         /* there won't be more than a million procs in the near future....*/
          min=1000000;
          proc=-1;
          for (j=0; j<inprocs; j++)
@@ -338,7 +339,7 @@ if (inprocs > 1)
          (*numeq) = (*numeq)-1;
       }
       /* master owner of equation do nothing, 'cause the equation has been
-        counted anyway */
+        counted already */
    }
 }
 /*----------------------------------------------------------------------*/
@@ -357,10 +358,10 @@ return;
  |  allocate update put dofs in update in ascending order   m.gee 5/01  |
  *----------------------------------------------------------------------*/
 void msr_update(FIELD         *actfield, 
-                   PARTITION     *actpart, 
-                   SOLVAR        *actsolv,
-                   INTRA         *actintra,
-                   AZ_ARRAY_MSR  *msr)
+                PARTITION     *actpart, 
+                SOLVAR        *actsolv,
+                INTRA         *actintra,
+                AZ_ARRAY_MSR  *msr)
 {
 int       i,j,k,l;
 int       counter;
@@ -379,9 +380,10 @@ imyrank = actintra->intra_rank;
 inprocs = actintra->intra_nprocs;
 /*------------------ make a local copy of the array actpart->coupledofs */
 am_alloc_copy(&(actpart->coupledofs),&coupledofs);
-/*------------------------------------- loop the nodes on the partition */
+/*----------------------------------------------------------------------*/
 update = msr->update.a.iv;
 counter=0;
+/*------------------------------------- loop the nodes on the partition */
 for (i=0; i<actpart->numnp; i++)
 {
    actnode = actpart->node[i];
@@ -442,7 +444,7 @@ for (i=0; i<actpart->numnp; i++)
       
    }
 }
-/*---------- check whether the correct number of dofs have been counted */
+/*----------- check whether the correct number of dofs has been counted */
 if (counter != msr->numeq) dserror("Number of dofs in MSR-vector update wrong");
 /*---------------------------- sort the vector update just to make sure */
 qsort((int*) update, counter, sizeof(int), cmp_int);
@@ -462,11 +464,11 @@ return;
  |  calculate number of nonzero entries and dof topology    m.gee 6/01  |
  *----------------------------------------------------------------------*/
 void msr_nnz_topology(FIELD         *actfield, 
-                         PARTITION    *actpart, 
-                         SOLVAR       *actsolv,
-                         INTRA        *actintra,
-                         AZ_ARRAY_MSR *msr,
-                         int         **dof_connect)
+                      PARTITION     *actpart, 
+                      SOLVAR        *actsolv,
+                      INTRA         *actintra,
+                      AZ_ARRAY_MSR  *msr,
+                      int          **dof_connect)
 {
 int        i,j,k,l,m,n;
 int        counter,counter2;
@@ -504,7 +506,7 @@ msr->nnz=0;
 numeq  = msr->numeq;
 update = msr->update.a.iv;
 for (i=0; i<msr->numeq_total; i++) dof_connect[i]=NULL;
-amdef("tmp",&dofpatch,1000,1,"IV");
+amdef("tmp",&dofpatch,MAX_NNZPERROW,1,"IV");
 amzero(&dofpatch);
 /*----------------------------------------------------------------------*/
 for (i=0; i<numeq; i++)

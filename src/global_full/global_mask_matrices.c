@@ -3,23 +3,27 @@
 
 /*----------------------------------------------------------------------*
  |  calculate the storage mask of the global matrices    m.gee 5/01     |
+ |  for various kinds of distributed sparsity patterns                  |
+ |  the sparsity pattern implemented at the moment can be found in      |
+ |  solution.h                                                          |
  *----------------------------------------------------------------------*/
 void mask_global_matrices()
 {
-int i,j,k,l;
-int isaztec_msr  =0;
+int i,j,k,l;               /* some counters */
+int isaztec_msr  =0;       /* flag for a certain sparsity pattern */
 int ishypre      =0;
 int isucchb      =0;
 int isdense      =0;
 int isrc_ptr     =0;
-FIELD      *actfield;
-PARTITION  *actpart;
-SOLVAR     *actsolv;
-INTRA      *actintra;
+FIELD      *actfield;      /* the active field */
+PARTITION  *actpart;       /* my partition of the active field */
+SOLVAR     *actsolv;       /* the active SOLVAR */
+INTRA      *actintra;      /* the field's intra-communicator */
 #ifdef DEBUG 
 dstrc_enter("mask_global_matrices");
 #endif
 /*----------------------------------------------------------------------*/
+/*------------------------------------------------ loop over all fields */
 for (i=0; i<genprob.numfld; i++)
 {
    actfield = &(field[i]);
@@ -28,6 +32,7 @@ for (i=0; i<genprob.numfld; i++)
 #ifdef PARALLEL 
    actintra = &(par.intra[i]);
 #else
+   /* if we are not parallel here, we have to allocate a pseudo-intracommunicator */
    actintra    = (INTRA*)calloc(1,sizeof(INTRA));
    if (!actintra) dserror("Allocation of INTRA failed");
    actintra->intra_fieldtyp = actfield->fieldtyp;
@@ -38,7 +43,7 @@ for (i=0; i<genprob.numfld; i++)
    if (actintra->intra_fieldtyp==none) continue;
 /*--------------------------------------------- first check some values */
    /*----------------------------- check solver and typ of partitioning */
-   /*------------------------ matrix is distributed modified sparse row */
+   /*--------- matrix is distributed modified sparse row DMSR for Aztec */
    if (actsolv->solvertyp==aztec_msr)
    {
       if (actsolv->parttyp != cut_elements)
@@ -57,14 +62,14 @@ for (i=0; i<genprob.numfld; i++)
       dserror("Partitioning has to be Cut_Elements for solution with Aztec"); 
       else ishypre=1;
    }
-   /*---------------- matrix is unsym. column compressed Harwell Boeing */
+   /*---- matrix is unsym. column compressed Harwell Boeing for superLU */
    if (actsolv->solvertyp==parsuperlu)
    {
       if (actsolv->parttyp != cut_elements)
       dserror("Partitioning has to be Cut_Elements for solution with HYPRE"); 
       else isucchb=1;
    }
-   /*----------------------------------- matrix is (non)symmetric dense */
+   /*------------------------ matrix is (non)symmetric dense for Lapack */
    if (actsolv->solvertyp==lapack_nonsym ||
        actsolv->solvertyp==lapack_sym)
    {
@@ -72,15 +77,14 @@ for (i=0; i<genprob.numfld; i++)
       dserror("Partitioning has to be Cut_Elements for solution with LAPACK"); 
       else isdense=1;
    }
-   /*----------------------------- matrix is row-column pointer format  */
+   /*-------------------- matrix is row-column pointer format for Mumps */
    if (actsolv->solvertyp==mumps_sym || actsolv->solvertyp==mumps_nonsym)
    {
       if (actsolv->parttyp != cut_elements)
       dserror("Partitioning has to be Cut_Elements for solution with HYPRE"); 
       else isrc_ptr=1;
    }
-   /* allocate only one sparse matrice for each field, eq stiffness matrice
-      for structure/fluid/ale, no mass or damping matrices. The sparsity
+   /* allocate only one sparse matrix for each field. The sparsity
       pattern of the matrices for mass and damping and stiffness are  
       supposed to be the same, so they are calculated only once (expensive!) */
    /*------------------------- matrix is ditributed modified sparse row */
@@ -170,7 +174,7 @@ for (i=0; i<genprob.numfld; i++)
       isrc_ptr=0;
    }
 /*----------------------------------------------------------------------*/
-} /* end of loop over numfld */
+} /* end of loop over numfld fields */
 /*----------------------------------------------------------------------*/
 #ifndef PARALLEL 
 free(actintra);

@@ -4,6 +4,10 @@
  *----------------------------------------------------------------------*/
 void ntainp()
 {
+/* 
+   the input of the tracing option has not been done yet, so
+   we have to make the dstrc_enter 'by hand' 
+*/
 #ifdef DEBUG 
 trace.actroutine = trace.actroutine->next;
 strncpy(trace.actroutine->name,"ntainp",49);
@@ -15,6 +19,7 @@ trace.deepness++;
 #ifdef DEBUG 
 inptrace();
 #endif
+/*=========================== tracing is active and working from now on */
 /*----------------------- input of not mesh or time based problem data  */
 inpctr();
 /*----------------------------------- input of design data if necessary */
@@ -28,7 +33,6 @@ inp_conditions();
 /*-------------------------------------------------- input of materials */
 inp_material();
 /*--------------------------------------------- all reading is over here*/
-
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();

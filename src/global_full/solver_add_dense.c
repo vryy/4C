@@ -174,7 +174,7 @@ dstrc_enter("redundant_dense");
                         MPI_SUM,
                         actintra->MPI_INTRA_COMM);
           
-          But there is no MPI2 in here, yet.
+          But there is no MPI2 in for HP, yet.
 */
 /*----------------------------------------------------------------------*/
 #ifdef PARALLEL 

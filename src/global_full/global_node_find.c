@@ -5,14 +5,14 @@
  | find a partner coupling compatible node                m.gee 8/00    |
  *----------------------------------------------------------------------*/
 void iscouple_find_node_comp(NODE  *actnode, 
-                                FIELD *searchfield, 
-                                NODE **partnernode,
-                                int    coupleID,
-                                int    dof)
+                             FIELD *searchfield, 
+                             NODE **partnernode,
+                             int    coupleID,
+                             int    dof)
 {
 int i,j,l;
 int ierr;
-double tol = 1.0E-08;
+double tol = EPS8;
 #ifdef DEBUG 
 dstrc_enter("iscouple_find_node_comp");
 #endif
@@ -20,21 +20,29 @@ dstrc_enter("iscouple_find_node_comp");
 *partnernode=NULL;
    for (i=0; i<searchfield->numnp; i++)
    {
-            if (searchfield->node[i].c==NULL) continue;
-            if (searchfield->node[i].c->iscoupled==0) continue;
-            if (searchfield->node[i].Id_loc == actnode->Id_loc) continue;
-               if (searchfield->node[i].c->couple.a.ia[dof][0]==coupleID)
-               {
-                  cheque_distance(actnode->x,searchfield->node[i].x,tol,&ierr);
-                  if (ierr==0) continue;
-                  else
-                  {
-                     *partnernode = &(searchfield->node[i]);
-                     goto finish;
-                  }
-               }
-             
-            
+      /* no conditions on this node */
+      if (searchfield->node[i].c==NULL) continue;
+      /* no coupling conditions on this node */
+      if (searchfield->node[i].c->iscoupled==0) continue;
+      /* I do not find myself */
+      if (searchfield->node[i].Id_loc == actnode->Id_loc) continue;
+         /* check for the right coupling set */
+         /*
+         Note: At the moment only the given dof is checked here */
+         */
+         if (searchfield->node[i].c->couple.a.ia[dof][0]==coupleID)
+         {
+            /* check geometrical distance */
+            cheque_distance(actnode->x,searchfield->node[i].x,tol,&ierr);
+            /* distance is too large ( > 1.0E-08 ) */
+            if (ierr==0) continue;
+            /* I found the correct node */
+            else
+            {
+               *partnernode = &(searchfield->node[i]);
+               goto finish;
+            }
+         }
    }
 finish:
 /*----------------------------------------------------------------------*/
@@ -48,7 +56,7 @@ return;
 
 
 /*----------------------------------------------------------------------*
- | check distanxe between nodes                           m.gee 8/00    |
+ | check distance between nodes                           m.gee 8/00    |
  *----------------------------------------------------------------------*/
 void cheque_distance(double *x1, double *x2, double tol, int *ierr)
 {
@@ -90,6 +98,10 @@ dstrc_enter("find_assign_coupset");
 #endif
 /*----------------------------------------------------------------------*/
 /*----- check in couple set for already given dof / dirichlet condition */
+/*
+   if there is one dof in the coupling set which is dirichlet-conditioned, then the
+   whole coupling set has to be dirichlet-conditioned 
+*/
 dof = -2;
 /*------------------------ check for a dirichlet condition in coupleset */
 for (i=0; i<actfield->numnp; i++)

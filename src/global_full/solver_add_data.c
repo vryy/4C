@@ -13,16 +13,32 @@ extern struct _ARRAY emass_global;
  |  routine to assemble element arrays to global sparse arrays m.gee 9/01|
  *----------------------------------------------------------------------*/
 void assemble(
-                 int                sysarray1,
-                 struct _ARRAY     *elearray1,
-                 int                sysarray2,
-                 struct _ARRAY     *elearray2,
-                 struct _PARTITION *actpart,
-                 struct _SOLVAR    *actsolv,
-                 struct _INTRA     *actintra,
-                 struct _ELEMENT   *actele,
-                 int                option
+                 int                sysarray1, /* number of first sparse system matrix */
+                 struct _ARRAY     *elearray1, /* pointer to first dense element matrix */
+                 int                sysarray2, /* number of first sparse system matrix or -1 if not given */
+                 struct _ARRAY     *elearray2, /* pointer to second dense element matrix or NULL is not present*/
+                 struct _PARTITION *actpart,   /* my partition of theactive field */
+                 struct _SOLVAR    *actsolv,   /* the active SOLVAR */
+                 struct _INTRA     *actintra,  /* the active intracommunicator */
+                 struct _ELEMENT   *actele,    /* the element to assemble */
+                 int                option     /* the assembly option */
                 )
+/*----------------------------------------------------------------------*/
+/*
+   option:
+   option=0 perform assembly of one or two dense element matrices to 
+            one or two given sparse matrices
+
+   option=1 only in parallel (no effect in seq. or on one proc only):
+            dependent of the type of the sparse system matrix an exchange of
+            buffers is performed to add entries to the system matrix which
+            come from another proc due to coupling conditions
+            This is only done in those sparsity types which truly hold the
+            system matrix in a distributed manner. Those holding redundant
+            system matrices do not exchange entries from coupled dofs, because
+            the matrix is alreduced anyway before solution.
+*/   
+/*----------------------------------------------------------------------*/
 {
 int         i,j,k;
 enum  _SPARSE_TYP    sysa1_typ;
@@ -75,14 +91,14 @@ if (!option)/*------------------------- option=0 is the normal assembly */
       dserror("Simultanous assembly of 2 system matrices not yet impl.");
    break;
    case sparse_none:
-      dserror("Unspecified typ of system matrix");
+      dserror("Unspecified type of system matrix");
    break;
    default:
-      dserror("Unspecified typ of system matrix");
+      dserror("Unspecified type of system matrix");
    break;
    }
 /*--------------------------------------------- add to 1 system matrix */
-   if (sysarray1>=0) 
+   if (sysarray1>=0 && sysarray2<0) 
    switch(sysa1_typ)
    {
    case msr:
@@ -108,7 +124,7 @@ if (!option)/*------------------------- option=0 is the normal assembly */
 /*-------------- option==1 is exchange of coupled dofs among processors */
 /*                    (which, of course, only occures in parallel case) */
 #ifdef PARALLEL 
-else
+else if (option==1)
 {
 /*------------------------------------------------ switch typ of matrix */
 /*----------------------------------------exchange of 2 system matrices */
@@ -125,14 +141,14 @@ else
          dserror("Simultanous assembly of 2 system matrices not yet impl.");
       break;
       case sparse_none:
-         dserror("Unspecified typ of system matrix");
+         dserror("Unspecified type of system matrix");
       break;
       default:
-         dserror("Unspecified typ of system matrix");
+         dserror("Unspecified type of system matrix");
       break;
       }
 /*-------------------------------------------exchange of 1 system matrix */
-      if (sysarray1>=0) 
+      if (sysarray1>=0 && sysarray2<0) 
       switch(sysa1_typ)
       {
       case msr:
@@ -148,12 +164,16 @@ else
          redundant_dense(actpart,actsolv,actintra,sysa1->dense);
       break;
       case sparse_none:
-         dserror("Unspecified typ of system matrix");
+         dserror("Unspecified type of system matrix");
       break;
       default:
-         dserror("Unspecified typ of system matrix");
+         dserror("Unspecified type of system matrix");
       break;
       }
+}
+else
+{
+   dserror("Unknown assembly option, has to be option = 0 or 1");
 }
 #endif
 /*----------------------------------------------------------------------*/
@@ -278,16 +298,16 @@ numeq   = actfield->numeq;
 /* calculate the number of sends and receives to expect during assemblage */
 for (i=0; i<coupledofs->fdim; i++)
 {
-   /*------------------------------------ check for master owner of dof */
+   /*--------------------------- check whether I am master owner of dof */
    if (coupledofs->a.ia[i][imyrank+1]==2)
    {
-      /*------------------------- check whether other procs have slaves */
+      /*-------------------------- check whether other procs are slaves */
       for (j=1; j<coupledofs->sdim; j++)
       {
          if (coupledofs->a.ia[i][j]==1) numrecv++;
       }
    }
-   /*------------------------------------ check for slave owners of dof */
+   /*---------------------------- check whether I am slave owner of dof */
    if (coupledofs->a.ia[i][imyrank+1]==1) numsend++;
 }
 *numcoupsend=numsend;
@@ -330,6 +350,8 @@ else /*----------------------------------------- I have nothing to send */
    *couple_d_send_ptr = NULL;
    *couple_i_send_ptr = NULL;
 }
+
+
 if (numrecv) /* I am master of a coupled dof and expect entries from other procs */
 {
    *couple_d_recv_ptr = (ARRAY*)calloc(1,sizeof(ARRAY));
@@ -360,7 +382,7 @@ return;
 
 
 /*----------------------------------------------------------------------*
- |  routine to assemble nodal neumann conditions         m.gee 10/01    |
+ |  routine to assemble a global vector to a dist. vector   m.gee 10/01 |
  |  irhs & drhs are vectors of global lenght, rhs is a DIST_VECTOR      |
  |  and is filled in a style, which is very much dependent on the       |
  |  typ of system matrix it belongs to                                  |
