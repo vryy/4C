@@ -140,7 +140,6 @@ void xfem_f2_calelesize(
   INT         igc   = 0;      /* evaluation flag			*/
   INT         istrnint;       /* evaluation flag			*/
   INT         isharea;        /* evaluation flag			*/
-  INT         ntyp;           /* element type (TRI or QUAD)  		*/
   INT         actmat;         /* number of actual material		*/
   INT         iel;            /* number of nodes of actual element      */
   DOUBLE      area;           /* element area                           */
@@ -178,7 +177,6 @@ void xfem_f2_calelesize(
   /* access to the nodal values of level set profile */
   ls2_calset1(ele->e.f2->my_ls,1,lset01);
   /* initialize */
-  ntyp   = ele->e.f2->ntyp;
   iel    = ele->numnp;
   typ    = ele->distyp;
 
@@ -205,16 +203,16 @@ if (ele->e.f2->stab_type != stab_gls)
     area  = ZERO;
     strle = ZERO;
     /* shape functions and derivatives at the center of the element */
-    switch(ntyp)
+    switch(typ)
     {
-        case 1:    /* --> quad - element */
+        case quad4: case quad8: case quad9:    /* --> quad - element */
           e1   = data->qxg[0][0];
           facr = data->qwgt[0][0];
           e2   = data->qxg[0][0];
           facs = data->qwgt[0][0];
           xfem_f2_funct(funct,deriv,deriv2,e1,e2,typ,lset01,iel,is_elcut);
           break;
-        case 2:
+        case tri3: case tri6:
           e1   = data->txgr[0][0];
           facr = ONE;
           e2   = data->txgs[0][0];
@@ -222,7 +220,7 @@ if (ele->e.f2->stab_type != stab_gls)
           xfem_f2_funct(funct,deriv,deriv2,e1,e2,typ,lset01,iel,is_elcut);
           break;
         default:
-          dserror("ntyp unknown!\n");      
+          dserror("typ unknown!\n");      
     }
     ieval++;
     /* compute Jacobian matrix */
@@ -236,13 +234,13 @@ if (ele->e.f2->stab_type != stab_gls)
       ieval++;
       f2_gcoor(xyze,funct,iel,gcoor);
       igc++;
-      f2_calstrlen(&strle,xyze,velint,ele,gcoor,cutp,ntyp);            
+      f2_calstrlen(&strle,xyze,velint,ele,gcoor,typ);            
     }
     if (gls->idiaxy==1) /* compute diagonal based diameter */
     {
-      switch(ntyp)
+      switch(typ)
       {
-          case 1:
+          case quad4: case quad8: case quad9:
             dx = xyze[0][0] - xyze[0][2];
             dy = xyze[1][0] - xyze[1][2];
             dia1 = sqrt(dx*dx+dy*dy);
@@ -252,7 +250,7 @@ if (ele->e.f2->stab_type != stab_gls)
             /* dia=sqrt(2)*area/(1/2*(dia1+dia2))=sqrt(8)*area/(dia1+dia2) */
             dia = sqrt(EIGHT)*area/(dia1+dia2); 
             break;
-          case 2: /* get global coordinate of element center */
+          case tri3: case tri6: /* get global coordinate of element center */
             if (igc==0)
               f2_gcoor(xyze,funct,iel,gcoor);
             dia = ZERO;
@@ -265,7 +263,7 @@ if (ele->e.f2->stab_type != stab_gls)
             dia = FOUR*area/sqrt(THREE*dia);
             break;
           default:
-            dserror("ntyp unknown!\n");
+            dserror("typ unknown!\n");
       }
     }
     /* set element sizes loop over 3 different element sizes: vel/pre/cont */
@@ -293,7 +291,7 @@ if (ele->e.f2->stab_type != stab_gls)
       get values of integration parameters, shape functions
       and their derivatives
     */
-    switch(ntyp)
+    switch(typ)
     {
         case 1: /* quadrilateral element */
           e1   = data->qxg[0][0];
@@ -310,7 +308,7 @@ if (ele->e.f2->stab_type != stab_gls)
           xfem_f2_funct(funct,deriv,deriv2,e1,e2,typ,lset01,iel,is_elcut);
           break;
         default:
-          dserror("ntyp unknown!\n");
+          dserror("typ unknown!\n");
     }
     ieval++;
     /* compute Jacobian matrix */
@@ -320,7 +318,7 @@ if (ele->e.f2->stab_type != stab_gls)
     ieval++;
     f2_gcoor(xyze,funct,iel,gcoor);
     igc++;
-    f2_calstrlen(&strle,xyze,velint,ele,gcoor,cutp,ntyp);
+    f2_calstrlen(&strle,xyze,velint,ele,gcoor,typ);
     /* set element sizes loop over 3 different element sizes: vel/pre/cont */
     for (ilen=0;ilen<3;ilen++)
     {
@@ -339,16 +337,16 @@ if (ele->e.f2->stab_type != stab_gls)
             get only values of integration parameters
             and shape functions no derivatives
           */
-          switch(ntyp)
+          switch(typ)
           {
-              case 1:    /* --> quad - element */
+              case quad4: case quad8: case quad9:    /* --> quad - element */
                 e1   = data->qxg[0][0];
                 facr = data->qwgt[0][0];
                 e2   = data->qxg[0][0];
                 facs = data->qwgt[0][0];
                 xfem_f2_funct(funct,deriv,deriv2,e1,e2,typ,lset01,iel,is_elcut);
                 break;
-              case 2:
+              case tri3: case tri6:
                 e1   = data->txgr[0][0];
                 facr = ONE;
                 e2   = data->txgs[0][0];
@@ -356,7 +354,7 @@ if (ele->e.f2->stab_type != stab_gls)
                 xfem_f2_funct(funct,deriv,deriv2,e1,e2,typ,lset01,iel,is_elcut);
                 break;
               default:
-                dserror("ntyp unknown!\n");
+                dserror("typ unknown!\n");
           }
           xfem_f2_veli(velint,funct,evel,iel);
           break;
@@ -372,7 +370,7 @@ if (ele->e.f2->stab_type != stab_gls)
     actmat=ele->mat-1;
     if (actmat==-2) actmat = 0;
     visc = mat[actmat].m.fluid->viscosity;
-    f2_calstabpar(ele,velint,visc,iel,ntyp,-1); 
+    f2_calstabpar(ele,velint,visc,iel,typ,-1); 
   }
   
 /*----------------------------------------------------------------------*/

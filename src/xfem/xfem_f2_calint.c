@@ -115,7 +115,6 @@ void xfem_f2_calint(
 { 
   INT       i;
   INT       iel;
-  INT       ntyp;       /* element type: 1 - quad; 2 - tri */
   INT       nir,nis;
   INT       actmat;     /* material number of the element */
   INT       ihoel=0;    /* flag for higher order elements */
@@ -162,7 +161,6 @@ void xfem_f2_calint(
 
   /* initialization */
   iel    = ele->numnp;
-  ntyp   = ele->e.f2->ntyp; 
   typ    = ele->distyp;
 
   gls    = ele->e.f2->stabi.gls;
@@ -208,21 +206,12 @@ void xfem_f2_calint(
     polygonmat[0] = polydata->polygonmat[0];
     polygonmat[1] = polydata->polygonmat[1];    
     /* set icode and ihoel */    
-    if (ntyp==1)
-    {
-      ihoel = 1;
-    }
-    else if (ntyp==2)
-    {
-      ihoel=0;
-    }
-    else
-    {
-      dserror("ntyp not set properly!");
-    }
-    /********************************************************************/
-    /* START LOOP OVER INTEGRATION POINTS (MODIFIED INTEGRATION SCHEME) */
-    /********************************************************************/
+    if (typ==quad4 || typ== quad8 || typ== quad9) ihoel = 1;
+    else if (typ== tri3 || typ==tri6) ihoel=0;
+    else dserror("typ not set properly!");
+    /**************************************/
+    /* START LOOP OVER INTEGRATION POINTS */
+    /**************************************/
     /* loop over triangles */
     for (ntri=0; ntri<2; ntri++)
     {
@@ -268,81 +257,73 @@ void xfem_f2_calint(
            Standard Galerkin matrices are stored in one matrix "estif"
            Standard Galerkin mass matrix is stored in "emass"
         */
-        if(fdyn->nik>0)
-        {
           /* compute matrix Kvv */      
-          xfem_f2_calkvv(
-            ele,estif,velint,NULL,vderxy,funct,derxy,
-            fac,visc,iel,index,DENS
+        xfem_f2_calkvv(
+          ele,estif,velint,NULL,vderxy,funct,derxy,
+          fac,visc,iel,index,DENS
+          );
+        /* compute matrix Kvp and Kpv */
+        xfem_f2_calkvp(
+          estif,funct,derxy,fac,iel,index
+          );
+        /* compute matrix Mvv */
+        if (fdyn->nis==0)
+          xfem_f2_calmvv(
+            emass,funct,fac,iel,index,DENS
             );
-          /* compute matrix Kvp and Kpv */
-          xfem_f2_calkvp(
-            estif,funct,derxy,fac,iel,index
-            );
-          /* compute matrix Mvv */
-          if (fdyn->nis==0)
-            xfem_f2_calmvv(
-              emass,funct,fac,iel,index,DENS
-              );
-        }
         /*
            compute Stabilization matrices
            NOTE =>
            Stabilization matrices are all stored in one matrix "estif" 
            Stabilization mass matrices are stored in one matrix "emass"
         */
-        if (gls->istabi>0)
-        { 
-          /* compute stabilization parameter during integration loop */
-          if (gls->iduring!=0)
-            f2_calelesize2(ele,xyze,funct,velint,wa1,visc,iel,ntyp);
-          /* compute second global derivative */
-          if (ihoel!=0)
-            xfem_f2_derxy2(
-              xyze,xjm,wa1,wa2,derxy,derxy2,deriv2,iel,funct,
-              lset01,is_elcut
-              );
-          if (fdyn->nie==0)
-          {
-            /* stabilization for matrix Kvv */
-            xfem_f2_calstabkvv(
-              ele,estif,velint,velint,NULL,vderxy,funct,
-              derxy,derxy2,fac,visc,iel,ihoel,index,DENS
-              );
-            /* stabilization for matrix Kvp */
-            xfem_f2_calstabkvp(
-              ele,estif,velint,funct,derxy,derxy2,fac,
-              visc,iel,ihoel,index,DENS
-              );
-            /* stabilization for matrix Mvv */
-            if (fdyn->nis==0)
-              xfem_f2_calstabmvv(
-                ele,emass,velint,funct,derxy,derxy2,
-                fac,visc,iel,ihoel,index,DENS
-                );              
-            if (gls->ipres!=0)	        
-            {
-              /* stabilization for matrix Kpv */
-              xfem_f2_calstabkpv(
-                ele,estif,velint,NULL,vderxy,funct,derxy,
-                derxy2,fac,visc,iel,ihoel,index,DENS
-                );              
-              /* stabilization for matrix Mpv */
-              if (fdyn->nis==0)
-                xfem_f2_calstabmpv(
-                  emass,funct,derxy,fac,iel,index,DENS
-                  );                
-            }
-          }
-          /* stabilization for matrix Kpp */
-          if (gls->ipres!=0)
-            f2_calstabkpp(
-              estif,derxy,fac,iel
+        /* compute stabilization parameter during integration loop */
+        if (gls->iduring!=0)
+          f2_calelesize2(ele,xyze,funct,velint,visc,iel,typ);
+        /* compute second global derivative */
+        if (ihoel!=0)
+          xfem_f2_derxy2(
+            xyze,xjm,wa1,wa2,derxy,derxy2,deriv2,iel,funct,
+            lset01,is_elcut
+            );
+          /* stabilization for matrix Kvv */
+          xfem_f2_calstabkvv(
+            ele,estif,velint,velint,NULL,vderxy,funct,
+            derxy,derxy2,fac,visc,iel,ihoel,index,DENS
+            );
+          /* stabilization for matrix Kvp */
+          xfem_f2_calstabkvp(
+            ele,estif,velint,funct,derxy,derxy2,fac,
+            visc,iel,ihoel,index,DENS
+            );
+          /* stabilization for matrix Mvv */
+          if (fdyn->nis==0)
+            xfem_f2_calstabmvv(
+              ele,emass,velint,funct,derxy,derxy2,
+              fac,visc,iel,ihoel,index,DENS
               );              
-        }
+          if (gls->ipres!=0)          
+          {
+            /* stabilization for matrix Kpv */
+            xfem_f2_calstabkpv(
+              ele,estif,velint,NULL,vderxy,funct,derxy,
+              derxy2,fac,visc,iel,ihoel,index,DENS
+              );              
+            /* stabilization for matrix Mpv */
+            if (fdyn->nis==0)
+              xfem_f2_calstabmpv(
+                emass,funct,derxy,fac,iel,index,DENS
+                );                
+          }
+        /* stabilization for matrix Kpp */
+        if (gls->ipres!=0)
+          f2_calstabkpp(
+            gls,estif,derxy,fac,iel
+            );              
+        
 
         /* compute "external" Force Vector (b) => */
-        if (*hasext != 0 && gls->istabi > 0)
+        if (*hasext != 0)
         {
           /*  compute stabilisation part of external RHS (vel dofs) at (n+1) */
           xfem_f2_calstabexfv(
@@ -362,8 +343,8 @@ void xfem_f2_calint(
           if (fdyn->iprerhs>0)
           {
             /* get pressure (n) at integration point */
-            f2_prei(
-              &preint,funct,epren,iel
+            preint=f2_scali(
+              funct,epren,iel
               );
             /* get pressure derivatives (n) at integration point */
             f2_pder(
@@ -399,21 +380,18 @@ void xfem_f2_calint(
           f2_calgaltfp(
             &(etforce[2*iel]),funct,vderxy,fac,iel
             );
-          if (gls->istabi>0)
-          {
             /* calculate stabilization for "Time-RHS" (vel-dofs) */
-            xfem_f2_calstabtfv(
-              ele,etforce,velint,vel2int,covint,derxy,
-              derxy2,vderxy,vderxy2,pderxy,fac,visc,ihoel,
-              iel,index,DENS
+          xfem_f2_calstabtfv(
+            ele,etforce,velint,vel2int,covint,derxy,
+            derxy2,vderxy,vderxy2,pderxy,fac,visc,ihoel,
+            iel,index,DENS
+            );
+          /* calculate stabilization for "Time-RHS" (pre-dofs) */
+          if (gls->ipres!=0)
+            xfem_f2_calstabtfp(
+              &(etforce[2*iel]),derxy,vderxy2,
+              vel2int,covint,pderxy,visc,fac,ihoel,iel,DENS
               );
-            /* calculate stabilization for "Time-RHS" (pre-dofs) */
-            if (gls->ipres!=0)
-              xfem_f2_calstabtfp(
-                &(etforce[2*iel]),derxy,vderxy2,
-                vel2int,covint,pderxy,visc,fac,ihoel,iel,DENS
-                );
-          }
 
           if (*hasext!=0)
           {
@@ -421,19 +399,16 @@ void xfem_f2_calint(
             xfem_f2_calgalexfv(
               etforce,funct,edeadn,edeadng,fac,iel,index,DENS
               );
-            if (gls->istabi>0)
-            {
               /*  compute stabilization part of external RHS (vel dofs) at (n) */
-              xfem_f2_calstabexfv(
-                ele,etforce,derxy,derxy2,edeadn,velint,fac,visc,
-                iel,ihoel,0,index,DENS
+            xfem_f2_calstabexfv(
+              ele,etforce,derxy,derxy2,edeadn,velint,fac,visc,
+              iel,ihoel,0,index,DENS
+              );
+            /*  compute stabilization part of external RHS (pre dofs) */
+            if (gls->ipres != 0)
+              xfem_f2_calstabexfp(
+                &(etforce[2*iel]),derxy,edeadn,fac,iel,0,DENS
                 );
-              /*  compute stabilization part of external RHS (pre dofs) */
-              if (gls->ipres != 0)
-                xfem_f2_calstabexfp(
-                  &(etforce[2*iel]),derxy,edeadn,fac,iel,0,DENS
-                  );
-            }
           }
         } 
       }
@@ -449,23 +424,23 @@ void xfem_f2_calint(
     visc   = mat[actmat].m.fluid->viscosity;
     DENS   = mat[actmat].m.fluid->density;
     /* get integration data and check if elements are "higher order" */
-    switch (ntyp)
+    switch (typ)
     {
-        case 1:
+        case quad4: case quad8: case quad9:
           ihoel   = 1;
           /* initialize integration */
           nir = ele->e.f2->nGP[0];
           nis = ele->e.f2->nGP[1];
           break;
-        case 2:
+        case tri3: case tri6:
           if (ele->e.f2->nGP[0]!=4) dserror("nGP not set properly!");
           ihoel = 0;
           /* initialize integration */
           nir = 1;
-          nis = ele->e.ls2->nGP[1];
+          nis = ele->e.f2->nGP[1];
           break;
         default:
-          dserror("ntyp unknown!");
+          dserror("typ unknown!");
     }
     /********************************************************************/
     /* START LOOP OVER INTEGRATION POINTS (STANDARD INTEGRATION SCHEME) */
@@ -475,9 +450,9 @@ void xfem_f2_calint(
       for (ls=0; ls<nis; ls++)
       {
         /* get values of shape functions and their derivatives */
-        switch(ntyp)  
+        switch(typ)  
         {
-            case 1:   /* --> quad - element */
+            case quad4: case quad8: case quad9:   /* --> quad - element */
               e1   = data->qxg[lr][nir-1];
               facr = data->qwgt[lr][nir-1];
               e2   = data->qxg[ls][nis-1];
@@ -487,7 +462,7 @@ void xfem_f2_calint(
                 is_elcut
                 );
               break;
-            case 2:
+            case tri3: case tri6:
               e1   = data->txgr[ls][nis-1];
               facr = ONE;
               e2   = data->txgs[ls][nis-1];
@@ -498,7 +473,7 @@ void xfem_f2_calint(
                 );
               break;
             default:
-              dserror("ntyp unknown!");
+              dserror("typ unknown!");
         }
         /* Jacobian matrix */
         f2_jaco(
@@ -523,35 +498,30 @@ void xfem_f2_calint(
            Standard Galerkin matrices are stored in one matrix "estif"
            Standard Galerkin mass matrix is stored in "emass"         
         */
-        if(fdyn->nik>0)
-        {
-          /* compute matrix Kvv */      
-          xfem_f2_calkvv(
-            ele,estif,velint,NULL,vderxy,funct,derxy,
-            fac,visc,iel,index,DENS
+        /* compute matrix Kvv */      
+        xfem_f2_calkvv(
+          ele,estif,velint,NULL,vderxy,funct,derxy,
+          fac,visc,iel,index,DENS
+          );
+        /* compute matrix Kvp and Kpv */
+        xfem_f2_calkvp(
+          estif,funct,derxy,fac,iel,index
+          );
+        /* compute matrix Mvv */
+        if (fdyn->nis==0)                         
+          xfem_f2_calmvv(
+            emass,funct,fac,iel,index,DENS
             );
-          /* compute matrix Kvp and Kpv */
-          xfem_f2_calkvp(
-            estif,funct,derxy,fac,iel,index
-            );
-          /* compute matrix Mvv */
-          if (fdyn->nis==0)	  	 	    
-            xfem_f2_calmvv(
-              emass,funct,fac,iel,index,DENS
-              );
-        }
         /*
           compute Stabilization matrices =>
           NOTE =>
           Stabilization matrices are all stored in one matrix "estif"
           Stabilization mass matrices are stored in one matrix "emass"
         */
-        if (gls->istabi>0)
-        { 
           /* compute stabilization parameter during integration loop */
           if (gls->iduring!=0)
             f2_calelesize2(
-              ele,xyze,funct,velint,wa1,visc,iel,ntyp
+              ele,xyze,funct,velint,visc,iel,typ
               );
           /* compute second global derivative */
           if (ihoel!=0)
@@ -560,48 +530,45 @@ void xfem_f2_calint(
               lset01,is_elcut
               );
           
-          if (fdyn->nie==0)
-          {
-            /* stabilization for matrix Kvv */
-            xfem_f2_calstabkvv(
-              ele,estif,velint,velint,NULL,vderxy,
-              funct,derxy,derxy2,fac,visc,iel,
-              ihoel,index,DENS
-              );
-            /* stabilization for matrix Kvp */
-            xfem_f2_calstabkvp(
-              ele,estif,velint,funct,derxy,derxy2,
+          /* stabilization for matrix Kvv */
+          xfem_f2_calstabkvv(
+            ele,estif,velint,velint,NULL,vderxy,
+            funct,derxy,derxy2,fac,visc,iel,
+            ihoel,index,DENS
+            );
+          /* stabilization for matrix Kvp */
+          xfem_f2_calstabkvp(
+            ele,estif,velint,funct,derxy,derxy2,
+            fac,visc,iel,ihoel,index,DENS
+            );
+          /* stabilization for matrix Mvv */
+          if (fdyn->nis==0) 
+            xfem_f2_calstabmvv(
+              ele,emass,velint,funct,derxy,derxy2,
               fac,visc,iel,ihoel,index,DENS
+              ); 
+          if (gls->ipres!=0)          
+          {
+            /* stabilization for matrix Kpv */
+            xfem_f2_calstabkpv(
+              ele,estif,velint,NULL,vderxy,funct,derxy,
+              derxy2,fac,visc,iel,ihoel,index,DENS
               );
-            /* stabilization for matrix Mvv */
-            if (fdyn->nis==0) 
-              xfem_f2_calstabmvv(
-                ele,emass,velint,funct,derxy,derxy2,
-                fac,visc,iel,ihoel,index,DENS
-                ); 
-            if (gls->ipres!=0)	        
-            {
-              /* stabilization for matrix Kpv */
-              xfem_f2_calstabkpv(
-                ele,estif,velint,NULL,vderxy,funct,derxy,
-                derxy2,fac,visc,iel,ihoel,index,DENS
+            /* stabilization for matrix Mpv */
+            if (fdyn->nis==0)
+              xfem_f2_calstabmpv(
+                emass,funct,derxy,fac,iel,index,DENS
                 );
-              /* stabilization for matrix Mpv */
-              if (fdyn->nis==0)
-                xfem_f2_calstabmpv(
-                  emass,funct,derxy,fac,iel,index,DENS
-                  );
-            }
           }
+          
           /* stabilization for matrix Kpp */
           if (gls->ipres!=0)
             f2_calstabkpp(
-              estif,derxy,fac,iel
+              gls,estif,derxy,fac,iel
               );
-        }
 
         /* compute "external" Force Vector (b) => */
-        if (*hasext != 0 && gls->istabi > 0)
+        if (*hasext != 0)
         {
           /*  compute stabilisation part of external RHS (vel dofs) at (n+1) */
           xfem_f2_calstabexfv(
@@ -621,8 +588,8 @@ void xfem_f2_calint(
           if (fdyn->iprerhs>0)
           {
             /* get pressure (n) at integration point */
-            f2_prei(
-              &preint,funct,epren,iel
+            preint=f2_scali(
+              funct,epren,iel
               );
             /* get pressure derivatives (n) at integration point */
             f2_pder(
@@ -658,20 +625,17 @@ void xfem_f2_calint(
           f2_calgaltfp(
             &(etforce[2*iel]),funct,vderxy,fac,iel
             );
-          if (gls->istabi>0)
-          {
             /* calculate stabilization for "Time-RHS" (vel-dofs) */
-            xfem_f2_calstabtfv(
-              ele,etforce,velint,vel2int,covint,derxy,
-              derxy2,vderxy,vderxy2,pderxy,fac,visc,ihoel,iel,index,DENS
+          xfem_f2_calstabtfv(
+            ele,etforce,velint,vel2int,covint,derxy,
+            derxy2,vderxy,vderxy2,pderxy,fac,visc,ihoel,iel,index,DENS
+            );
+          /* calculate stabilization for "Time-RHS" (pre-dofs) */
+          if (gls->ipres!=0)
+            xfem_f2_calstabtfp(
+              &(etforce[2*iel]),derxy,vderxy2,
+              vel2int,covint,pderxy,visc,fac,ihoel,iel,DENS
               );
-            /* calculate stabilization for "Time-RHS" (pre-dofs) */
-            if (gls->ipres!=0)
-              xfem_f2_calstabtfp(
-                &(etforce[2*iel]),derxy,vderxy2,
-                vel2int,covint,pderxy,visc,fac,ihoel,iel,DENS
-                );
-          }
 
           if (*hasext!=0)
           {
@@ -679,19 +643,16 @@ void xfem_f2_calint(
             xfem_f2_calgalexfv(
               etforce,funct,edeadn,edeadng,fac,iel,index,DENS
               );
-            if (gls->istabi>0)
-            {
               /*  compute stabilization part of external RHS (vel dofs) at (n) */
-              xfem_f2_calstabexfv(
-                ele,etforce,derxy,derxy2,edeadn,velint,fac,visc,
-                iel,ihoel,0,index,DENS
-                );
-              /*  compute stabilization part of external RHS (pre dofs) */
-              if (gls->ipres != 0)
-                xfem_f2_calstabexfp(
-                  &(etforce[2*iel]),derxy,edeadn,fac,iel,0,DENS
-                  );
-            }
+            xfem_f2_calstabexfv(
+             ele,etforce,derxy,derxy2,edeadn,velint,fac,visc,
+             iel,ihoel,0,index,DENS
+             );
+           /*  compute stabilization part of external RHS (pre dofs) */
+            if (gls->ipres != 0)
+              xfem_f2_calstabexfp(
+               &(etforce[2*iel]),derxy,edeadn,fac,iel,0,DENS
+               );
           }
         }
       }
