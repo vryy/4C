@@ -1,0 +1,61 @@
+# -*- shell-script -*-
+PLATFORM=HPUXITA
+PARALLEL=no
+
+F77=g77
+CC=gcc
+LD=gcc
+
+BASEDIR="/bau/stat16/users/statik/ccarat/lib/hpux_ita2_gnu"
+
+INCLUDEDIRS="-I/opt/mlib/include -I/bau/stat16/users/statik/ccarat/include"
+LIBDIRS="-L/usr/lib -L/opt/mlib/lib/pa2.0" 
+
+# aztec
+AZTEC_INC=""
+AZTEC_LIB="-L$BASEDIR/aztec21 -laztec_ita2_gnu"
+
+# spooles
+if grep '^SPOOLES_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
+  echo $0: Error: SPOOLES not possible in sequentiel version.
+  exit 1
+fi
+SPOOLES_INC=""
+SPOOLES_LIB=""
+
+# umfpack
+UMFPACK_INC=""
+UMFPACK_LIB="-L$BASEDIR/umfpack -lumfpack_ita2_gnu"
+
+# visual2
+if grep '^VISUAL2_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
+  echo $0: Error: VISUAL2 not possible on platform HPUX11ita2.
+  exit 1
+fi
+VISUAL2_INC=""
+VISUAL2_LIB=""
+
+# visual3
+if grep '^VISUAL3_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
+  echo $0: Error: VISUAL3 not possible on platform HPUX11ita2.
+  exit 1
+fi
+VISUAL3_INC=""
+VISUAL3_LIB=""
+
+LIBS="-lcl -lc -lm -lg2c -lveclib -llapack"
+
+# FAST
+PROGRAMNAME=cca_ita2_gnu
+CFLAGS_OPT="-O"
+FFLAGS_OPT="-O"
+LDFLAGS_OPT="-O"
+CFLAGS="-ansi -DHPUX_GNU -Wall"
+FFLAGS="-Wall"
+LDFLAGS=""
+
+#if [ x$BIT = "x32" ] ; then
+#    echo $0: Warning: Only 64 bit executable on platform HPUXita2.
+#    BIT=64
+#    CFLAGS=" -DSIXTYFOUR $CFLAGS"
+#fi
