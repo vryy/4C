@@ -226,11 +226,14 @@ OBJS15        = src/fluid_full/fluid_dyn.o \
                 src/fluid_full/fluid_service.o \
                 src/fluid_full/fluid_visual.o \
 		src/fluid_full/inp_fluid_start_data.o
-#                fortran
-OBJS13	      = src/fortran/colsol.o \
-		src/fortran/vis2_qat2v2.o
+#--------------- fortran parallel and sequentiell on HPUX10.20 / Linux / Sun
+OBJS13           = src/fortran/colsol.o \
+                   src/fortran/mpcg_futils.o \
+                   src/fortran/vis2_qat2v2.o
+
 #---------------------------------------------  fortran parallel on HPUX11.0
 #            
 #OBJS13         = src/fortran/mumps_interface.o \
 #                 src/fortran/bi_f77_get_constants.o \
-#                 src/fortran/colsol.o
+#                 src/fortran/colsol.o \
+#                 src/fortran/mpcg_futils.o
