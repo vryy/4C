@@ -71,6 +71,10 @@ static ARRAY tmpnodes2;
 void inp_ls_field(FIELD *lsfield);
 #endif
 
+#ifdef D_SSI
+void inp_struct_field_ssi(FIELD *masterfield, FIELD *slavefield);
+#endif
+
 /*----------------------------------------------------------------------*
  | input of fields                                        m.gee 4/01    |
  *----------------------------------------------------------------------*/
@@ -111,6 +115,22 @@ if (genprob.probtyp == prb_fsi)
 
 /*--- ale and fluid field are supposed to be compatible, so inherit info */
 }
+
+#ifdef D_SSI
+if (genprob.probtyp == prb_ssi)
+{
+   if (genprob.numfld!=2) dserror("numfld != 2 for FSI");
+   
+   field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
+
+   field[0].fieldtyp = structure;   
+   field[1].fieldtyp = structure;
+   field[0].ndis=1;
+   field[1].ndis=1;
+   inp_struct_field_ssi(&(field[0]),&(field[1]));
+}
+#endif
+
 /*------------------------------------------- structure type of problem */
 if (genprob.probtyp==prb_structure)
 {
@@ -121,6 +141,7 @@ if (genprob.probtyp==prb_structure)
    inpdis(&(field[genprob.numsf]));
    inp_struct_field(&(field[genprob.numsf]));
 }
+
 /*---------------------------------------- Optimisation type of problem */
 if (genprob.probtyp == prb_opt)
 {  /*-- structure type of problem */
@@ -131,6 +152,7 @@ if (genprob.probtyp == prb_opt)
    inpdis(&(field[0]));
    inp_struct_field(&(field[0]));
 }
+
 /*----------------------------------------------- fluid type of problem */
 if (genprob.probtyp==prb_fluid)
 {
@@ -156,6 +178,7 @@ if (genprob.probtyp==prb_fluid)
    }
    else dserror("NUMFLD>2 not allowed for Problemtype FLUID\n");
 }
+
 /*------------------------------------------------- ale type of problem */
 if (genprob.probtyp==prb_ale)
 {
@@ -616,8 +639,154 @@ return;
 } /* end of inp_struct_field */
 
 
+/*----------------------------------------------------------------------*
+ | input of structure field for ssi                      chfoe 07/04    |
+ *----------------------------------------------------------------------*/
+#ifdef D_SSI
+void inp_struct_field_ssi(FIELD *masterfield, FIELD *slavefield)
+{
+INT  ierr,ierr_s,ierr_m;
+INT  slavecounter=0;
+INT  mastercounter=0;
+INT  counter=0;
+INT  elenumber;
+char *colpointer;
+INT  *flag;
+ARRAY flag_a;
 
+#ifdef DEBUG 
+dstrc_enter("inp_struct_field_ssi");
+#endif
+/*----------------------------------------- allocate one discretization */
+if (masterfield->ndis>1)
+   dserror("different discretisations not implemented yet for structural elements\n");
+if (slavefield->ndis>1)
+   dserror("different discretisations not implemented yet for structural elements\n");
+masterfield->dis = (DISCRET*)CCACALLOC(masterfield->ndis,sizeof(DISCRET));
+slavefield->dis  = (DISCRET*)CCACALLOC(slavefield->ndis,sizeof(DISCRET));
+/*-------------------------------------------- count number of elements */
+#ifndef D_WALL1 
+      dserror("WALL1 needed but not defined in Makefile");
+#endif
 
+if (frfind("--STRUCTURE ELEMENTS")==1)
+{
+  frread();
+  while(strncmp(allfiles.actplace,"------",6)!=0)
+  {
+    counter++;
+    frread();
+  }
+}
+
+flag = amdef("flag",&flag_a,counter,1,"IV");
+counter=0;
+
+if (frfind("--STRUCTURE ELEMENTS")==1)
+{
+  frread();
+  while(strncmp(allfiles.actplace,"------",6)!=0)
+  {
+    frchk("WALL",&ierr);
+    if (ierr!=1)
+    dserror("SSI only possible with wall elements!");
+    frchk("Master",&ierr_m);
+    frchk("Slave",&ierr_s);
+    if (ierr_s==1) 
+    {
+       slavecounter++;
+       flag[counter]=1;
+    }
+    else if (ierr_m==1) 
+    {   
+       mastercounter++;
+       flag[counter]=0;
+    }
+    else dserror("SSI_COUPTYP not possible for wall element!");    
+    counter++;
+    frread();
+  }
+}
+masterfield->dis[0].numele = mastercounter;
+slavefield->dis[0].numele = slavecounter;
+/*--------------------------------------------------- allocate elements */
+masterfield->dis[0].element=(ELEMENT*)CCACALLOC(masterfield->dis[0].numele,sizeof(ELEMENT));
+slavefield->dis[0].element=(ELEMENT*)CCACALLOC(slavefield->dis[0].numele,sizeof(ELEMENT));
+/*------------------------------------------------------- read elements */
+if (frfind("--STRUCTURE ELEMENTS")==0) goto end;
+frread();
+counter=0;
+mastercounter=0;
+slavecounter=0;
+while(strncmp(allfiles.actplace,"------",6)!=0)
+{
+   switch (flag[counter])
+   {
+   case 0: /*master field */
+      colpointer = allfiles.actplace;
+      elenumber  = strtol(colpointer,&colpointer,10);
+      masterfield->dis[0].element[mastercounter].Id = --elenumber;
+/*---------- read the typ of element and call element readning function */
+/*------------------------------------------------ elementtyp is SHELL8 */
+
+/*------------------------------------------------ elementtyp is WALL  */
+      frchk("WALL",&ierr);
+      if (ierr==1)
+      {
+#ifndef D_WALL1 
+         dserror("WALL1 needed but not defined in Makefile");
+#endif
+      }
+#ifdef D_WALL1 
+      if (ierr==1) 
+      {
+         masterfield->dis[0].element[mastercounter].eltyp=el_wall1;
+         w1inp(&(masterfield->dis[0].element[mastercounter]));
+      }
+#endif
+      mastercounter++;
+   break;
+   case 1:
+      colpointer = allfiles.actplace;
+      elenumber  = strtol(colpointer,&colpointer,10);
+      slavefield->dis[0].element[slavecounter].Id = --elenumber;
+/*---------- read the typ of element and call element readning function */
+/*------------------------------------------------ elementtyp is SHELL8 */
+
+/*------------------------------------------------ elementtyp is WALL  */
+      frchk("WALL",&ierr);
+      if (ierr==1)
+      {
+#ifndef D_WALL1 
+         dserror("WALL1 needed but not defined in Makefile");
+#endif
+      }
+#ifdef D_WALL1 
+      if (ierr==1) 
+      {
+         slavefield->dis[0].element[slavecounter].eltyp=el_wall1;
+         w1inp(&(slavefield->dis[0].element[slavecounter]));
+      }
+#endif
+      slavecounter++;
+   break;
+   default:
+      dserror("flag out of range!\n");
+   }
+/*--------------------------------------------other structural elements */
+   counter++;
+   frread();
+}
+frrewind();
+/*----------------------------------------------------------------------*/
+
+end:
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of inp_struct_field_ssi */
+#endif
 
 
 
