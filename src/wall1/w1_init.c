@@ -15,9 +15,9 @@ W1_DATA      data;
 dstrc_enter("w1init");
 #endif
 /*----------------------------------------------------------------------*/
-for (i=0; i<actpart->numele; i++)
+for (i=0; i<actpart->pdis[0].numele; i++)
 {
-  actele = actpart->element[i];
+  actele = actpart->pdis[0].element[i];
   if (actele->eltyp != el_wall1) continue;
   /*---------------------------------------- init integration points ---*/
   w1intg(actele,&data,0);

@@ -62,8 +62,8 @@ numeq      = msr->numeq;
 update     = msr->update.a.iv;
 bindx      = msr->bindx.a.iv;
 val        = msr->val.a.dv;
-cdofs      = actpart->coupledofs.a.ia;
-ncdofs     = actpart->coupledofs.fdim;
+cdofs      = actpart->pdis[0].coupledofs.a.ia;
+ncdofs     = actpart->pdis[0].coupledofs.fdim;
 /*------ allocate and calculate shifts and bins for quick_find routines */
 if (!(msr->bins))
 {

@@ -134,9 +134,9 @@ if (sysarray2 != -1)
 #endif
 /* =======================================================call elements */
 /*---------------------------------------------- loop over all elements */
-for (i=0; i<actpart->numele; i++)
+for (i=0; i<actpart->pdis[0].numele; i++)
 {
-   actele = actpart->element[i];
+   actele = actpart->pdis[0].element[i];
    switch(actele->eltyp)/*======================= call element routines */
    {
    case el_shell8:

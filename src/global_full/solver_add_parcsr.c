@@ -73,8 +73,8 @@ estif            = estif_global.a.da;
 nd               = actele->numnp * actele->node[0]->numdf;
 numeq_total      = parcsr->numeq_total;
 numeq            = parcsr->numeq;
-cdofs            = actpart->coupledofs.a.ia;
-ncdofs           = actpart->coupledofs.fdim;
+cdofs            = actpart->pdis[0].coupledofs.a.ia;
+ncdofs           = actpart->pdis[0].coupledofs.fdim;
 
 perm             = parcsr->perm.a.ia;
 perm_sizes       = parcsr->perm_sizes.a.iv;

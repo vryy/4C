@@ -301,7 +301,7 @@ default:
 break;
 }
 /*---------------- now check for coupling dofs and interdomain coupling */
-coupledofs = &(actpart->coupledofs);
+coupledofs = &(actpart->pdis[0].coupledofs);
 numsend = 0;
 numrecv = 0;
 numeq   = actfield->dis[0].numeq;

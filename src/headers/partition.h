@@ -30,8 +30,20 @@ MPI_Group           MPI_INTRA_GROUP;     /* not needed, but for some reason you 
  *----------------------------------------------------------------------*/
 typedef struct _PARTITION
 {
-enum   _FIELDTYP    fieldtyp;            /* type of field */
 
+enum   _FIELDTYP     fieldtyp;            /* type of field */
+
+int                  ndis;                /* number of discretization in this field */
+
+struct _PARTDISCRET *pdis;                /* vector of partitions of discretizations of this field */
+
+} PARTITION;
+
+/*----------------------------------------------------------------------*
+ | one proc's info about his partition of one discretization  m.gee 2/02|
+ *----------------------------------------------------------------------*/
+typedef struct _PARTDISCRET
+{
 int                 numnp;               /* total number of nodes on this parition including boundary nodes */
 int                 numele;              /* total number of elements on this partition */
 struct _NODE      **node;                /* ptrs to nodes on this part. */
@@ -48,9 +60,7 @@ int                 bou_numele;          /* number of boundary elements */
 struct _ELEMENT   **bou_element;         /* ptrs to boundary elements */
 
 struct _ARRAY       coupledofs;          /* number of coupled dofs, which dofs, */
-                                         /* who is master owner and who is slave owner */ 
-                                         /* for details, see global_mask_matrices.c */ 
-} PARTITION;
 
+} PARTDISCRET;
 
 

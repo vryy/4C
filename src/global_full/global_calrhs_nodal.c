@@ -30,13 +30,13 @@ case structure:
    /*                                                             m.gee 01/02 */
    /***************************************************************************/
    /*--------------------------------------------------- start assembly */
-   for (i=0; i<actpart->numnp; i++)
+   for (i=0; i<actpart->pdis[0].numnp; i++)
    {
       /*---------------------------------- check presence of conditions */
-      if (!actpart->node[i]->c) continue;
+      if (!actpart->pdis[0].node[i]->c) continue;
       /*-------------------------- check presence of neumann conditions */
-      if (!actpart->node[i]->c->isneum) continue;
-      actnode = actpart->node[i];
+      if (!actpart->pdis[0].node[i]->c->isneum) continue;
+      actnode = actpart->pdis[0].node[i];
       actcond = actnode->c;
       /*--------------------------------------- loop neumann conditions */
       for (j=0; j<actcond->neum_onoff.fdim; j++)

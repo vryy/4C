@@ -64,8 +64,8 @@ A_loc      = rc_ptr->A_loc.a.dv;
 irn        = rc_ptr->irn_loc.a.iv;
 jcn        = rc_ptr->jcn_loc.a.iv;
 rowptr     = rc_ptr->rowptr.a.iv;
-cdofs      = actpart->coupledofs.a.ia;
-ncdofs     = actpart->coupledofs.fdim;
+cdofs      = actpart->pdis[0].coupledofs.a.ia;
+ncdofs     = actpart->pdis[0].coupledofs.fdim;
 /*---------------------------------- put pointers to sendbuffers if any */
 #ifdef PARALLEL 
 if (rc_ptr->couple_i_send) 

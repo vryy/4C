@@ -90,13 +90,13 @@ dstrc_enter("parcsr_update");
 imyrank = actintra->intra_rank;
 inprocs = actintra->intra_nprocs;
 /*------------------ make a local copy of the array actpart->coupledofs */
-am_alloc_copy(&(actpart->coupledofs),&coupledofs);
+am_alloc_copy(&(actpart->pdis[0].coupledofs),&coupledofs);
 /*------------------------------------- loop the nodes on the partition */
 update = parcsr->update.a.iv;
 counter=0;
-for (i=0; i<actpart->numnp; i++)
+for (i=0; i<actpart->pdis[0].numnp; i++)
 {
-   actnode = actpart->node[i];
+   actnode = actpart->pdis[0].node[i];
    for (l=0; l<actnode->numdf; l++)
    {
       dof = actnode->dof[l];
@@ -383,7 +383,7 @@ for (i=0; i<numeq; i++)
    }
 }  /* end of loop over numeq */ 
 /*--------------------------------------------- now do the coupled dofs */
-coupledofs = &(actpart->coupledofs);
+coupledofs = &(actpart->pdis[0].coupledofs);
 for (i=0; i<coupledofs->fdim; i++)
 {
    dof = coupledofs->a.ia[i][0];
@@ -393,14 +393,14 @@ for (i=0; i<coupledofs->fdim; i++)
    if (dofflag==0) continue;
    /*------------------------------------- find all patches to this dof */
    counter=0;
-   for (j=0; j<actpart->numnp; j++)
+   for (j=0; j<actpart->pdis[0].numnp; j++)
    {
       centernode=NULL;
-      for (l=0; l<actpart->node[j]->numdf; l++)
+      for (l=0; l<actpart->pdis[0].node[j]->numdf; l++)
       {
-         if (dof == actpart->node[j]->dof[l])
+         if (dof == actpart->pdis[0].node[j]->dof[l])
          {
-            centernode = actpart->node[j];
+            centernode = actpart->pdis[0].node[j];
             break;
          }
       }
