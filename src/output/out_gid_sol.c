@@ -1302,7 +1302,7 @@ return;
  |  routine to write solution of a step to GID           m.gee 12/01    |
  *----------------------------------------------------------------------*/
 void out_gid_sol(char string[], FIELD *actfield, INTRA  *actintra, INT step,
-                 INT place)
+                 INT place, DOUBLE time)
 {
 INT           i,j;
 
@@ -2516,6 +2516,8 @@ if (strncmp(string,"velocity",stringlenght)==0)
    /*-------------------------------------------------------------------*/
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"# RESULT %s on FIELD %s\n",string,actgid->fieldname);
+   fprintf(out,"# TIME %18.5E \n",time);   
+   fprintf(out,"# STEP %6d    \n",step);   
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"RESULT %c%s%c %cccarat%c %d %s %s\n",
                                                              sign,string,sign,
@@ -2553,7 +2555,7 @@ if (strncmp(string,"velocity",stringlenght)==0)
       switch (genprob.ndim)
       {
 	case 3:
-        fprintf(out," %6d %18.5E %18.5E %18.5E\n",
+        fprintf(out," %6d %22.9E %22.9E %22.9E\n",
                                                    actnode->Id+1,
                                                    actnode->sol.a.da[place][0],
                                                    actnode->sol.a.da[place][1],
@@ -2561,7 +2563,7 @@ if (strncmp(string,"velocity",stringlenght)==0)
                                                    );
 	break;
 	case 2:
-        fprintf(out," %6d %18.5E %18.5E \n",
+        fprintf(out," %6d %22.9E %22.9E \n",
                                                    actnode->Id+1,
                                                    actnode->sol.a.da[place][0],
                                                    actnode->sol.a.da[place][1]
@@ -2586,6 +2588,8 @@ if (strncmp(string,"pressure",stringlenght)==0)
    /*-------------------------------------------------------------------*/
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"# RESULT %s on FIELD %s\n",string,actgid->fieldname);
+   fprintf(out,"# TIME %18.5E \n",time);   
+   fprintf(out,"# STEP %6d    \n",step);   
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"RESULT %c%s%c %cccarat%c %d %s %s\n",
                                                              sign,string,sign,
@@ -2620,13 +2624,13 @@ if (strncmp(string,"pressure",stringlenght)==0)
       switch (genprob.ndim)
       {
 	case 3:
-        fprintf(out," %6d %18.5E \n",
+        fprintf(out," %6d %22.9E \n",
                                                    actnode->Id+1,
                                                    actnode->sol.a.da[place][3]
                                                    );
 	break;
 	case 2:
-        fprintf(out," %6d %18.5E \n",
+        fprintf(out," %6d %22.9E \n",
                                                    actnode->Id+1,
                                                    actnode->sol.a.da[place][2]
                                                    );
