@@ -47,9 +47,10 @@ stress values calculated
 
 ------------------------------------------------------------------------*/
 
-void f2_calliftdrag(	ELEMENT       *ele,
-			FLUID_DATA    *data,
-			CONTAINER     *container)
+void f2_calliftdrag(
+    ELEMENT       *ele,
+    FLUID_DATA    *data,
+    CONTAINER     *container)
 {
 INT		lr,ls;		/* INTegration directions		*/
 INT		i,j,jj,k;	/* some loopers				*/
@@ -71,6 +72,7 @@ DOUBLE		facr;		/* integration factor  GP-info		*/
 DOUBLE		det;		/* det of jacobian matrix		*/
 DOUBLE          xy[2];		/* GP-global coordinates		*/
 DOUBLE		center[2];	/* center of body in fluid		*/
+INT             ld_id;
 
 GLINE		*gline[4];	/* geometrylines of the element		*/
 GLINE		*actgline;
@@ -87,13 +89,13 @@ static ARRAY	xjm_a;
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
-dstrc_enter("f2_calinta");
+dstrc_enter("f2_calliftdrag");
 #endif
 
 /*--------------------------------------------------- initialization ---*/
- funct   = amdef("funct"  ,&funct_a,MAXNOD_F2,1            ,"DV");       
- deriv   = amdef("deriv"  ,&deriv_a,2            ,MAXNOD_F2,"DA");       
- xjm     = amdef("xjm_a"  ,&xjm_a  ,numdf     ,numdf       ,"DA");
+funct   = amdef("funct"  ,&funct_a ,MAXNOD_F2 ,1         ,"DV");       
+deriv   = amdef("deriv"  ,&deriv_a ,2         ,MAXNOD_F2 ,"DA");       
+xjm     = amdef("xjm_a"  ,&xjm_a   ,numdf     ,numdf     ,"DA");
 
 amzero(&funct_a);
 amzero(&deriv_a);
@@ -102,11 +104,11 @@ amzero(&xjm_a);
 /*-------------------------------------------- init the gaussian points */
 f2_intg(data,1);
 
-nir     = ele->e.f2->nGP[0];
-nir = IMAX(nir,2);
+nir    = ele->e.f2->nGP[0];
+nir    = IMAX(nir,2);
 
-ngline=ele->g.gsurf->ngline;
-typ=ele->distyp;
+ngline = ele->g.gsurf->ngline;
+typ    = ele->distyp;
 
 /*-------------------------------------------------- loop over Gline ---*/
 for (line=0; line<ngline; line++) 
@@ -114,7 +116,7 @@ for (line=0; line<ngline; line++)
    actgline = ele->g.gsurf->gline[line];
    /*- confirm that the gline is the right one that lies on the body ---*/
    if (actgline->dline==NULL) continue;
-   if (actgline->dline->liftdrag==0) continue;
+   if (actgline->dline->liftdrag == NULL) continue;
 
    /*------------- interpolate the stress tensor to the Gauss points ---*/
    /*------------------------------------------------ get edge nodes ---*/
@@ -133,8 +135,10 @@ for (line=0; line<ngline; line++)
    }
    
    /*--------------------- get center of area exposed to lift & drag ---*/
-   center[0] = actgline->dline->ld_center[0];
-   center[1] = actgline->dline->ld_center[1];
+   center[0] = actgline->dline->liftdrag->ld_center[0];
+   center[1] = actgline->dline->liftdrag->ld_center[1];
+
+   ld_id     = actgline->dline->liftdrag->liftdrag;
 
    /*======================= integration loop ==========================*/
    /*------------- over liftdrag edge of actual element ----------------*/
@@ -177,12 +181,12 @@ for (line=0; line<ngline; line++)
       for (j=0; j<ngnode; j++)
       {
          /*-- TOTAL Lift and Drag forces in global coordinate system ---*/
-         container->liftdrag[0] -= funct[j] * forceline[0] * facr;
-         container->liftdrag[1] += funct[j] * forceline[1] * facr;
+         container->liftdrag[ld_id*6+0] -= funct[j] * forceline[0] * facr;
+         container->liftdrag[ld_id*6+1] += funct[j] * forceline[1] * facr;
       }/*----------------------------------------- end loop over ngnode */
       
       /*----------------------------------------------- add momentum ---*/
-      container->liftdrag[2] += ( forceline[0]*xy[1] 
+      container->liftdrag[ld_id*6+3] += ( forceline[0]*xy[1] 
                                 - forceline[1]*xy[0] ) * facr;
       
    }/*==================================== end integration loop over lr */
