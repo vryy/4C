@@ -13,7 +13,7 @@ void  mask_parcsr(FIELD         *actfield,
                     INTRA         *actintra, 
                     H_PARCSR  *parcsr)
 {
-int       i,j,k,l;
+int       i;
 int       numeq;
 int     **dof_connect;
 #ifdef DEBUG 
@@ -24,6 +24,7 @@ dstrc_enter("mask_parcsr");
    PARTITION is different on every proc.
    H_PARCSR will be different on every proc
    FIELD is the same everywhere
+*/
 /*------------------------------------------- put total size of problem */
 parcsr->numeq_total = actfield->dis[0].numeq;
 /* count number of eqns on proc and build processor-global couplingdof 
@@ -75,7 +76,7 @@ void parcsr_update(FIELD         *actfield,
                      INTRA         *actintra,
                      H_PARCSR      *parcsr)
 {
-int       i,j,k,l;
+int       i,k,l;
 int       counter;
 int      *update;
 int       dof;
@@ -269,7 +270,7 @@ void  parcsr_nnz_topology(FIELD         *actfield,
                             H_PARCSR     *parcsr,
                             int         **dof_connect)
 {
-int        i,j,k,l,m,n;
+int        i,j,k,l,m;
 int        counter,counter2;
 int        dof;
 int        nnz;
@@ -280,8 +281,7 @@ int        actdof;
 int        dofflag;
 int        dofmaster;
 int        dofslave;
-int        sendlenght,recvlenght;
-int        recvflag;
+int        recvlenght;
 NODE      *centernode;
 NODE      *actnode;
 ELEMENT   *actele;
@@ -578,7 +578,7 @@ void parcsr_make_bindx(FIELD         *actfield,
                           H_PARCSR      *parcsr,
                           int          **dof_connect)
 {
-int        i,j,k,l;
+int        i,j;
 int        count1,count2;
 int        dof;
 

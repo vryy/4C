@@ -14,7 +14,7 @@ void mask_ccf(FIELD         *actfield,
               INTRA         *actintra, 
               CCF           *ccf)
 {
-int       i,j,k,l;
+int       i;
 int       numeq;
 int     **dof_connect;
 ARRAY     bindx_a;
@@ -31,6 +31,7 @@ dstrc_enter("mask_ccf");
    In this routine, the vectors update and bindx and val are determined
    in size and allocated, the contents of the vectors update and bindx 
    are calculated
+*/
 /*------------------------------------------- put size of problem */
 ccf->numeq_total = actfield->dis[0].numeq;
 /* count number of eq_totalns on proc and build processor-global couplingdof 
@@ -99,7 +100,7 @@ void  ccf_update(FIELD         *actfield,
                  INTRA       *actintra,
                  CCF         *ccf)
 {
-int       i,j,k,l;
+int       i,k,l;
 int       counter;
 int      *update;
 int       dof;
@@ -197,7 +198,7 @@ void  ccf_nnz_topology(FIELD         *actfield,
                          CCF          *ccf,
                          int         **dof_connect)
 {
-int        i,j,k,l,m,n;
+int        i,j,k,l,m;
 int        counter,counter2;
 int        dof;
 int        nnz;
@@ -208,8 +209,7 @@ int        actdof;
 int        dofflag;
 int        dofmaster;
 int        dofslave;
-int        sendlenght,recvlenght;
-int        recvflag;
+int        recvlenght;
 NODE      *centernode;
 NODE      *actnode;
 ELEMENT   *actele;
@@ -584,9 +584,8 @@ void  ccf_make_bindx(FIELD         *actfield,
                      int           *bindx,
                      ARRAY         *red_dof_connect)
 {
-int        i,j,k,l;
+int        i,j;
 int        count1,count2;
-int        dof;
 int      **reddof;
 
 #ifdef DEBUG 
@@ -626,8 +625,8 @@ return;
 void  ccf_make_sparsity(CCF *ccf,
                         int *bindx)
 {
-int        i,j,k,l;
-int        start,end,issmaller;
+int        i,j;
+int        start,end;
 int        counter;
 int        numeq;
 int        numeq_total;

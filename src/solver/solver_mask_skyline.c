@@ -14,7 +14,7 @@ void mask_skyline(FIELD         *actfield,
                   INTRA         *actintra, 
                   SKYMATRIX     *sky)
 {
-int       i,j,k,l;
+int       i;
 int       numeq;
 int     **dof_connect;
 ARRAY     red_dof_connect;
@@ -29,6 +29,7 @@ dstrc_enter("mask_skyline");
    In this routine, the vectors update and bindx and val are determined
    in size and allocated, the contents of the vectors update and bindx 
    are calculated
+*/
 /*------------------------------------------- put total size of problem */
 sky->numeq_total = actfield->dis[0].numeq;
 /* count number of eqns on proc and build processor-global couplingdof 
@@ -93,7 +94,7 @@ void  skyline_update(FIELD         *actfield,
                     INTRA         *actintra,
                     SKYMATRIX     *sky)
 {
-int       i,j,k,l;
+int       i,k,l;
 int       counter;
 int      *update;
 int       dof;
@@ -191,7 +192,7 @@ void  skyline_nnz_topology(FIELD      *actfield,
                          SKYMATRIX    *sky,
                          int         **dof_connect)
 {
-int        i,j,k,l,m,n;
+int        i,j,k,l,m;
 int        counter,counter2;
 int        dof;
 int        nnz;
@@ -202,8 +203,7 @@ int        actdof;
 int        dofflag;
 int        dofmaster;
 int        dofslave;
-int        sendlenght,recvlenght;
-int        recvflag;
+int        recvlenght;
 NODE      *centernode;
 NODE      *actnode;
 ELEMENT   *actele;
@@ -501,13 +501,7 @@ void   skyline_make_red_dof_connect(FIELD         *actfield,
                                    int          **dof_connect,
                                    ARRAY         *red_dof_connect)
 {
-int        i,j,counter;
-int        actdof;
-int        colheight;
-
-double    *a;
-int       *asub;
-int       *xa;
+int        i,j;
 
 int        imyrank;
 int        inprocs;
@@ -591,7 +585,7 @@ return;
  *----------------------------------------------------------------------*/
 void  skyline_make_sparsity(SKYMATRIX  *sky, ARRAY *red_dof_connect)
 {
-int        i,j,k,l;
+int        i,j;
 int      **reddof;
 int       *maxa;
 int        actdof;

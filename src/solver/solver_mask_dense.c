@@ -14,7 +14,6 @@ void mask_dense(FIELD         *actfield,
                   INTRA         *actintra, 
                   DENSE         *dense)
 {
-int       i,j,k,l;
 int       numeq;
 #ifdef DEBUG 
 dstrc_enter("mask_dense");
@@ -26,6 +25,7 @@ dstrc_enter("mask_dense");
    In this routine, the vector update is determined
    in size and allocated, the contents of the vector update 
    are calculated
+*/
 /*------------------------------------------- put total size of problem */
 dense->numeq_total = actfield->dis[0].numeq;
 /* count number of eqns on proc and build processor-global couplingdof 
@@ -341,7 +341,7 @@ void  dense_update(FIELD         *actfield,
                      INTRA         *actintra,
                      DENSE         *dense)
 {
-int       i,j,k,l;
+int       i,k,l;
 int       counter;
 int      *update;
 int       dof;

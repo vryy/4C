@@ -489,7 +489,6 @@ void dyn_eout(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, INTRA *actintra, SO
               DIST_VECTOR *work0)
            
 {
-double deltae;
 double deltaa;
 #ifdef DEBUG 
 dstrc_enter("dyn_eout");
@@ -562,10 +561,6 @@ return;
 void dyn_setconstants_expl(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, double dt)
 {
 double *constants;
-double  beta;
-double  gamma;
-double  alpham;
-double  alphaf;
 #ifdef DEBUG 
 dstrc_enter("dyn_setconstants_expl");
 #endif
@@ -815,9 +810,7 @@ void assemble_dirich_dyn(ELEMENT *actele, ARRAY *estif_global,
 {
 int                   i,j;
 int                   counter,hasdirich;
-int                   dof;
 int                   numdf;
-int                   iel;
 int                   nd=0;
 int                   idamp=0;
 double                mdamp,kdamp;

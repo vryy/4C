@@ -493,7 +493,6 @@ void conpre(  /*!< rueckgabe int da kein prototyp definiert wurde! */
             CONTAINER     *container 	 /* contains variables defined in container.h */
            )
 {
-int                  i;                /* a counter */
 int                  init;             /* solver flag */
 double               prenorm;          /* norm of predictor step */
 double               controldisp;      /* displacment value at controled dof */ 
@@ -636,7 +635,6 @@ void conequ( /*!< rueckgabe int da kein prototyp definiert wurde! */
             CONTAINER     *container	  /* contains variables defined in container.h */
            )
 {
-int                  i;                      /* counter variable */
 int                  init;                   /* init flag for solver */
 int                  itemax;                 /* max. number of corrector steps allowed */
 double               stepsize;               /* stepsize */
@@ -652,8 +650,6 @@ double               dinorm;
 double               told;
 double               disval;
 double               rli;
-double               rsd1;
-double               rsd2;
 
 ARRAY                intforce_a;             /* global redundant vector of internal forces */
 double              *intforce;               /* pointer to intforce_a.a.dv */
@@ -880,7 +876,6 @@ nln_data->rlold = nln_data->rlnew;
 /*--------------- update of parameters for material law and eas etc.... */
 /* nothing needed yet..... */
 /*----------------------------------------------------------------------*/
-end:
 amdel(&intforce_a);
 #ifdef DEBUG 
 dstrc_exit();

@@ -19,7 +19,7 @@ void dyn_init_curve(int actcurve,
 {
 int      i;
 int      numtstep;
-int      fdim,sdim;
+int      fdim;
 ARRAY    time_a;
 ARRAY    rlcurve_a;
 

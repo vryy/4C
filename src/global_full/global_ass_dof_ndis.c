@@ -31,7 +31,7 @@ extern struct _GENPROB     genprob;
  *----------------------------------------------------------------------*/
 void assign_dof_ndis(FIELD *actfield)
 {
-int i,j,k,l,kk;                    /* some counters */
+int j,k,l,kk;                    /* some counters */
 int counter;                       
 int cpro;
 int coupleID;                      /* Id of a coupling set from gid */

@@ -50,14 +50,13 @@ void mask_bdcsr(FIELD         *actfield,
                 INTRA         *actintra, 
                 DBCSR         *bdcsr)
 {
-int            i,j,k,l,counter;
+int            i,j,counter;
 int            imyrank;
 int            inproc;
 int            numeq;
 int            numdf;
 int          **dof_connect;
 int            actdof; 
-int            actdofindex;
 int          **blocks;
 PARTDISCRET   *actpdiscret;
 NODE          *actnode;
@@ -219,7 +218,7 @@ void  bdcsr_nnz_topology(FIELD         *actfield,
                          DBCSR         *bdcsr,
                          int          **dof_connect)
 {
-int        i,j,k,l,m,n;
+int        i,j,k,l,m;
 int        counter,counter2;
 int        dof;
 int        nnz;
@@ -230,8 +229,7 @@ int        actdof;
 int        dofflag;
 int        dofmaster;
 int        dofslave;
-int        sendlenght,recvlenght;
-int        recvflag;
+int        recvlenght;
 NODE      *centernode;
 NODE      *actnode;
 ELEMENT   *actele;
@@ -543,11 +541,10 @@ void bdcsr_update(FIELD          *actfield,
                   INTRA          *actintra,
                   DBCSR          *bdcsr)
 {
-int       i,j,k,l;
+int       i,l;
 int       counter;
 int      *update;
 int       dof;
-int       foundit;
 int       imyrank;
 int       inprocs;
 NODE     *actnode;
@@ -624,13 +621,11 @@ void mlpcg_renumberdofs(int            myrank,
                         DBCSR         *bdcsr)
 {
 #ifdef PARALLEL
-int            i,j,k,l;
+int            i,j,k;
 ELEMENT       *actele;
 NODE          *actnode;
 ARRAY          dofflag_a;
 int           *dofflag;
-ARRAY          dofnum_a;
-int           *dofnum;
 ARRAY          newdof_a;
 int           *newdof;
 ARRAY          newdofrecv_a;

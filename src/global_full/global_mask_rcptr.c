@@ -14,7 +14,7 @@ void mask_rc_ptr(FIELD         *actfield,
                  INTRA         *actintra, 
                  RC_PTR        *rc_ptr)
 {
-int       i,j,k,l;
+int       i;
 int       numeq;
 int     **dof_connect;
 ARRAY     bindx_a;
@@ -30,6 +30,7 @@ dstrc_enter("mask_rc_ptr");
    In this routine, the vectors update and bindx and val are determined
    in size and allocated, the contents of the vectors update and bindx 
    are calculated
+*/
 /*------------------------------------------- put total size of problem */
 rc_ptr->numeq_total = actfield->dis[0].numeq;
 /* count number of eqns on proc and build processor-global couplingdof 
@@ -94,7 +95,7 @@ void rc_ptr_red_dof_connect(FIELD        *actfield,
                             RC_PTR       *rc_ptr,
                             int         **dof_connect)
 {
-int        i,j,k,counter;
+int        i,j,counter;
 int        imyrank;
 int        inprocs;
 int        max_dof_connect_send;
@@ -229,7 +230,7 @@ void  rc_ptr_update(FIELD         *actfield,
                    INTRA         *actintra,
                    RC_PTR        *rc_ptr)
 {
-int       i,j,k,l;
+int       i,k,l;
 int       counter;
 int      *update;
 int       dof;
@@ -327,7 +328,7 @@ void  rc_ptr_nnz_topology(FIELD         *actfield,
                          RC_PTR       *rc_ptr,
                          int         **dof_connect)
 {
-int        i,j,k,l,m,n;
+int        i,j,k,l,m;
 int        counter,counter2;
 int        dof;
 int        nnz;
@@ -338,8 +339,7 @@ int        actdof;
 int        dofflag;
 int        dofmaster;
 int        dofslave;
-int        sendlenght,recvlenght;
-int        recvflag;
+int        recvlenght;
 NODE      *centernode;
 NODE      *actnode;
 ELEMENT   *actele;
@@ -635,7 +635,7 @@ void  rc_ptr_make_bindx(FIELD         *actfield,
                        int          **dof_connect,
                        int           *bindx)
 {
-int        i,j,k,l;
+int        i,j;
 int        count1,count2;
 int        dof;
 
@@ -673,8 +673,8 @@ return;
 void  rc_ptr_make_sparsity(RC_PTR        *rc_ptr,
                            int           *bindx)
 {
-int        i,j,k,l;
-int        start,end,issmaller;
+int        i,j;
+int        start,end;
 int        counter;
 int        actdof;
 int        numeq;

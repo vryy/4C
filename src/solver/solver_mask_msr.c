@@ -15,7 +15,7 @@ void mask_msr(FIELD         *actfield,
               AZ_ARRAY_MSR  *msr,
 	      int            actndis)
 {
-int       i,j,k,l;
+int       i;
 int       numeq;
 int     **dof_connect;
 #ifdef DEBUG 
@@ -32,6 +32,7 @@ kk=actndis;
    In this routine, the vectors update and bindx and val are determined
    in size and allocated, the contents of the vectors update and bindx 
    are calculated
+*/
 /*------------------------------------------- put total size of problem */
 msr->numeq_total = actfield->dis[kk].numeq;
 /* count number of eqns on proc and build processor-global couplingdof 
@@ -370,7 +371,7 @@ void msr_update(FIELD         *actfield,
                 INTRA         *actintra,
                 AZ_ARRAY_MSR  *msr)
 {
-int       i,j,k,l;
+int       i,k,l;
 int       counter;
 int      *update;
 int       dof;
@@ -470,7 +471,7 @@ void msr_nnz_topology(FIELD         *actfield,
                       AZ_ARRAY_MSR  *msr,
                       int          **dof_connect)
 {
-int        i,j,k,l,m,n;
+int        i,j,k,l,m;
 int        counter,counter2;
 int        dof;
 int        nnz;
@@ -481,8 +482,7 @@ int        actdof;
 int        dofflag;
 int        dofmaster;
 int        dofslave;
-int        sendlenght,recvlenght;
-int        recvflag;
+int        recvlenght;
 NODE      *centernode;
 NODE      *actnode;
 ELEMENT   *actele;
@@ -847,7 +847,7 @@ void msr_make_bindx(FIELD         *actfield,
                        AZ_ARRAY_MSR  *msr,
                        int          **dof_connect)
 {
-int        i,j,k,l;
+int        i,j;
 int        count1,count2;
 int        dof;
 

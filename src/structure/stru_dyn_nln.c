@@ -84,8 +84,7 @@ double acttime;
  *----------------------------------------------------------------------*/
 void dyn_nln_structural() 
 {
-int             i,j,k;                  /* simply a counter */
-int             counter=0;
+int             i;                  /* simply a counter */
 int             numeq;              /* number of equations on this proc */
 int             numeq_total;        /* total number of equations */
 int             init;               /* flag for solver_control call */
@@ -109,7 +108,6 @@ double          dmax;               /* infinity norm of residual displacements *
 int             stiff_array;        /* indice of the active system sparse matrix */
 int             mass_array;         /* indice of the active system sparse matrix */
 int             damp_array;         /* indice of the active system sparse matrix */
-int             num_array;          /* indice of global stiffness matrices */
 int             actcurve;           /* indice of active time curve */
 
 SOLVAR         *actsolv;            /* pointer to active solution structure */
@@ -653,11 +651,13 @@ solserv_add_vec(&dispi[0],&(actsolv->sol[1]),1.0);
 solserv_result_total(actfield,actintra, &(actsolv->sol[1]),0,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
 
 /*--------------------------------------- make testprintout for contact */
-/*if (par.myrank==0 && ioflags.struct_disp_gid) 
+/*
+if (par.myrank==0 && ioflags.struct_disp_gid) 
 {
    out_gid_sol("displacement",actfield,actintra,counter,0);
    counter++;
 }
+*/
 /*----------------------- return incremental displacements to the nodes */
 solserv_result_incre(actfield,actintra,&dispi[0],0,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
 
@@ -776,11 +776,13 @@ solserv_add_vec(&dispi[0],&(actsolv->sol[1]),1.0);
 solserv_result_total(actfield,actintra, &(actsolv->sol[1]),0,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
 
 /*--------------------------------------- make testprintout for contact */
-/*if (par.myrank==0 && ioflags.struct_disp_gid)
+/*
+if (par.myrank==0 && ioflags.struct_disp_gid)
 {
    out_gid_sol("displacement",actfield,actintra,counter,0);
    counter++;
 }
+*/
 /*----------------------- return incremental displacements to the nodes */
 solserv_result_incre(actfield,actintra,&dispi[0],0,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
 
@@ -834,7 +836,9 @@ if (contact)
       itnum = itstore;
    }
 /*---------------------------- make contact history for frictional case */
-/*s8_contact_history(actintra);
+/*
+s8_contact_history(actintra);
+*/
 /*------------------------ write contact forces to the nodes in place 9 */
 solserv_result_total(actfield,actintra, &(con[0]),9,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
 /*-------------------------------- set the augmenation flag back to off */

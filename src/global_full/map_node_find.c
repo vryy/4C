@@ -22,7 +22,7 @@ void iscouple_find_node_comp(NODE  *actnode,
                              int    coupleID,
                              int    dof)
 {
-int i,j,l;
+int i;
 int ierr;
 double tol = EPS8;
 #ifdef DEBUG 
@@ -69,7 +69,7 @@ return;
  *----------------------------------------------------------------------*/
 void cheque_distance(double *x1, double *x2, double tol, int *ierr)
 {
-int i,j;
+int i;
 double v[3];
 double lenght;
 #ifdef DEBUG 
@@ -100,7 +100,7 @@ void find_assign_coupset(FIELD *actfield,
                             int    coupleID, 
                             int   *counter)
 {
-int i,j,k,l;
+int i,l;
 int dof;
 #ifdef DEBUG 
 dstrc_enter("find_assign_coupset");

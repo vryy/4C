@@ -70,8 +70,6 @@ and the type is in partition.h
  *----------------------------------------------------------------------*/
 void ntam(int argc, char *argv[])
 {
-int      ierr;
-long int handle;
 double   t0,ti,tc;
 /*---------------------------------------- init devices, tracing, etc...*/
 ntaini(argc,argv);

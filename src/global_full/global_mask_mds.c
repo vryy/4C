@@ -15,8 +15,7 @@ void mask_mds(FIELD        *actfield,
               INTRA        *actintra, 
               ML_ARRAY_MDS *mds)
 {
-int       i,j,k,l;
-int       numeq;
+int       i;
 int       nnz;
 int     **dof_connect;
 #ifdef DEBUG 

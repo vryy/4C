@@ -14,7 +14,7 @@ void mask_spooles(FIELD         *actfield,
                   INTRA         *actintra, 
                   SPOOLMAT      *spo)
 {
-int       i,j,k,l;
+int       i;
 int       numeq;
 int     **dof_connect;
 ARRAY     bindx_a;
@@ -30,6 +30,7 @@ dstrc_enter("mask_spooles");
    In this routine, the vectors update and bindx and val are determined
    in size and allocated, the contents of the vectors update and bindx 
    are calculated
+*/
 /*------------------------------------------- put total size of problem */
 spo->numeq_total = actfield->dis[0].numeq;
 /* count number of eqns on proc and build processor-global couplingdof 
@@ -86,8 +87,8 @@ return;
 void     spo_make_sparsity(SPOOLMAT        *spo,
                            int           *bindx)
 {
-int        i,j,k,l;
-int        start,end,issmaller;
+int        i,j;
+int        start,end;
 int        counter;
 int        actdof;
 int        numeq;
@@ -159,7 +160,7 @@ void    spo_make_bindx(FIELD         *actfield,
                        int          **dof_connect,
                        int           *bindx)
 {
-int        i,j,k,l;
+int        i,j;
 int        count1,count2;
 int        dof;
 
@@ -200,7 +201,7 @@ void  spo_nnz_topology(FIELD         *actfield,
                        SPOOLMAT     *spo,
                        int         **dof_connect)
 {
-int        i,j,k,l,m,n;
+int        i,j,k,l,m;
 int        counter,counter2;
 int        dof;
 int        nnz;
@@ -211,8 +212,7 @@ int        actdof;
 int        dofflag;
 int        dofmaster;
 int        dofslave;
-int        sendlenght,recvlenght;
-int        recvflag;
+int        recvlenght;
 NODE      *centernode;
 NODE      *actnode;
 ELEMENT   *actele;
@@ -511,7 +511,7 @@ void spo_update(FIELD         *actfield,
                 INTRA         *actintra,
                 SPOOLMAT      *spo)
 {
-int       i,j,k,l;
+int       i,k,l;
 int       counter;
 int      *update;
 int       dof;

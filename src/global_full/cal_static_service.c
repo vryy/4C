@@ -32,7 +32,6 @@ for (i=0; i<actfield->dis[0].numnp; i++)
 }
 if (!(*node)) dserror("Cannot find control node");
 /*----------------------------------------------------------------------*/
-end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif

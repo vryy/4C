@@ -14,7 +14,7 @@ void  mask_ucchb(FIELD     *actfield,
                    INTRA     *actintra, 
                    UCCHB     *ucchb)
 {
-int       i,j,k,l;
+int       i;
 int       numeq;
 int     **dof_connect;
 #ifdef DEBUG 
@@ -28,6 +28,7 @@ dstrc_enter("mask_ucchb");
    In this routine, the vectors update and bindx and val are determined
    in size and allocated, the contents of the vectors update and bindx 
    are calculated
+*/
 /*------------------------------------------- put total size of problem */
 ucchb->numeq_total = actfield->dis[0].numeq;
 /* count number of eqns on proc and build processor-global couplingdof 
@@ -361,7 +362,7 @@ void  ucchb_update(FIELD     *actfield,
                      INTRA     *actintra,
                      UCCHB     *ucchb)
 {
-int       i,j,k,l;
+int       i,k,l;
 int       counter;
 int       imyrank;
 int       inprocs;
@@ -460,7 +461,7 @@ void  ucchb_nnz_topology(FIELD      *actfield,
                            UCCHB      *ucchb,
                            int       **dof_connect)
 {
-int        i,j,k,l,m,n;
+int        i,j,k,l,m;
 int        counter,counter2;
 int        dof;
 int        nnz;
@@ -471,8 +472,7 @@ int        actdof;
 int        dofflag;
 int        dofmaster;
 int        dofslave;
-int        sendlenght,recvlenght;
-int        recvflag;
+int        recvlenght;
 NODE      *centernode;
 NODE      *actnode;
 ELEMENT   *actele;

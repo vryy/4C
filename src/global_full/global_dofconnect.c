@@ -95,7 +95,7 @@ void delete_single_dof(int dof1,int **dof_dof)
 {
 /*----------------------------------------------------------------------*/
   int m=0, k=0;
-  int dof11, dof22;
+  int dof22;
 /*----------------------------------------------------------------------*/
   #ifdef DEBUG 
   dstrc_enter("delete_single_dof");
@@ -128,21 +128,16 @@ void dofconnectivity(FIELD        *actfield,
                         int       *nnz)
 {
 /*----------------------------------------------------------------------*/
-  int i=0, j=0, k=0, l=0, m=0, n=0, o=0;
+  int j=0, k=0, l=0, n=0;
   int dof1       = 0;
   int dof2       = 0;
   int nel        = 0;
   int nod        = 0;
-  int hc1        = 0;
-  int hc2        = 0;
   int hnod       = 0;
   int cc         = 0;
   int numdofconected    = 100;
 
   NODE    *actnode, *partnernode;
-
-  FILE *filep      ;
-  char filename[50];
 /*----------------------------------------------------------------------*/
   #ifdef DEBUG 
   dstrc_enter("dofconnectivity");
@@ -250,8 +245,7 @@ void mds_make_colstr_rowind(SOLVAR       *actsolv,
                             int       **dof_dof,
                             int         numeq)
 {
-  int        i,j,k,l;
-  int        count1,count2; 
+  int        i,j;
   int        count;
   int        dof1, dof2;
   int        ncdof;

@@ -92,8 +92,6 @@ int             i;                  /* simply a counter */
 int             numeq;              /* number of equations on this proc */
 int             numeq_total;        /* total number of equations */
 int             init;               /* flag for solver_control call */
-int             itnum;              /* counter for NR-Iterations */
-int             convergence;        /* convergence flag */
 int             mod_disp,mod_stress;
 int             mod_res_write;
 int             restart;
@@ -105,12 +103,9 @@ int             nstep;
 
 double          t0,t1;
 
-double          dmax;               /* infinity norm of residual displacements */
-
 int             stiff_array;        /* indice of the active system sparse matrix */
 int             mass_array;         /* indice of the active system sparse matrix */
 int             damp_array;         /* indice of the active system sparse matrix */
-int             num_array;          /* indice of global stiffness matrices */
 int             actcurve;           /* indice of active time curve */
 
 SOLVAR         *actsolv;            /* pointer to active solution structure */
@@ -130,7 +125,6 @@ ARRAY           intforce_a;         /* redundant vector of full length for inter
 double         *intforce;
 ARRAY           dirich_a;           /* redundant vector of full length for dirichlet-part of rhs */
 double         *dirich;
-double          dirichfacs[10];      /* factors needed for dirichlet-part of rhs */
  
 STRUCT_DYN_CALC dynvar;             /* variables to perform dynamic structural simulation */              
 
@@ -325,6 +319,7 @@ container.dirichfacs   = NULL;
 container.kstep        = 0;
 calelm(actfield,actsolv,actpart,actintra,stiff_array,mass_array,&container,action);
 
+
 /*------------------------------- make eigenvalue analysis if requested */
 if (sdyn->eigen==1)
 {
@@ -348,6 +343,8 @@ if (damp_array>0)
                    &(actsolv->sysarray[mass_array]),
                    sdyn->m_damp);  
 }
+
+
 /*-------------------------------------- create the original rhs vector */
 /*-------------------------- the approbiate action is set inside calrhs */
 /*---------------------- this vector holds loads due to external forces */
@@ -392,6 +389,7 @@ solserv_zero_mat(actintra,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_
 dyn_keff_expl(actintra,actsolv->sysarray_typ,actsolv->sysarray,
               stiff_array, mass_array, damp_array,
               &dynvar, sdyn);
+
 /*-------------------------------- make triangulation of left hand side */
 init=0;
 solver_control(actsolv, actintra,
@@ -460,7 +458,7 @@ if (restart)
    restart=0;
    /*----------------------------------------------------- measure time */
    t1_res = ds_cputime();
-   fprintf(allfiles.out_err,"TIME for restart reading is %f sec\n",sdyn->step,t1_res-t0_res);
+   fprintf(allfiles.out_err,"TIME for restart reading of step %d is %f sec\n",sdyn->step,t1_res-t0_res);
 }
 /*--------------------------------------------- increment step and time */
 sdyn->step++;
