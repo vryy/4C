@@ -14,6 +14,7 @@ int isaztec_msr  =0;       /* flag for a certain sparsity pattern */
 int ishypre      =0;
 int isucchb      =0;
 int isdense      =0;
+int ismlib_d_sp  =0; /*mlib direct solver  - sparse */
 int isrc_ptr     =0;
 FIELD      *actfield;      /* the active field */
 PARTITION  *actpart;       /* my partition of the active field */
@@ -43,6 +44,11 @@ for (i=0; i<genprob.numfld; i++)
    if (actintra->intra_fieldtyp==none) continue;
 /*--------------------------------------------- first check some values */
    /*----------------------------- check solver and typ of partitioning */
+   /*-------- column pointer, row index sparse matrix representation ---*/
+   if (actsolv->solvertyp == mlib_d_sp)
+   {
+      ismlib_d_sp=1;
+   }
    /*--------- matrix is distributed modified sparse row DMSR for Aztec */
    if (actsolv->solvertyp==aztec_msr)
    {
@@ -87,6 +93,24 @@ for (i=0; i<genprob.numfld; i++)
    /* allocate only one sparse matrix for each field. The sparsity
       pattern of the matrices for mass and damping and stiffness are  
       supposed to be the same, so they are calculated only once (expensive!) */
+   /*-------------------------- for the lower triangle of the matrix ---*/
+   if (ismlib_d_sp==1)
+   {
+      actsolv->nsysarray = 2;
+      actsolv->sysarray_typ = (SPARSE_TYP*)  calloc(actsolv->nsysarray,sizeof(SPARSE_TYP));
+      actsolv->sysarray     = (SPARSE_ARRAY*)calloc(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
+      if (!actsolv->sysarray_typ || !actsolv->sysarray)
+         dserror("Allocation of SPARSE_ARRAY failed");
+      for (i=0; i<actsolv->nsysarray; i++)
+      {
+         actsolv->sysarray_typ[i] = mds;
+         actsolv->sysarray[i].mds = (ML_ARRAY_MDS*)calloc(1,sizeof(ML_ARRAY_MDS));
+         if (actsolv->sysarray[i].mds==NULL) dserror("Allocation of ML_ARRAY_MDS failed");
+      }
+      strcpy(actsolv->sysarray[0].mds->arrayname,"gstif1");
+      mask_mds(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].mds); 
+      ismlib_d_sp=0;
+   }
    /*------------------------- matrix is ditributed modified sparse row */
    if (isaztec_msr==1)
    {
@@ -184,6 +208,7 @@ dstrc_exit();
 #endif
 return;
 } /* end of mask_global_matrices */
+
 
 
 

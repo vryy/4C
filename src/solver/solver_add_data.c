@@ -78,6 +78,9 @@ if (!option)/*------------------------- option=0 is the normal assembly */
    if (sysarray1>=0 && sysarray2>=0) 
    switch(sysa1_typ)
    {
+   case mds:
+      dserror("Simultanous assembly of 2 system matrices not yet impl.");
+   break;
    case msr:
       dserror("Simultanous assembly of 2 system matrices not yet impl.");
    break;
@@ -101,6 +104,9 @@ if (!option)/*------------------------- option=0 is the normal assembly */
    if (sysarray1>=0 && sysarray2<0) 
    switch(sysa1_typ)
    {
+   case mds:
+      add_mds(actpart,actsolv,actele,sysa1->mds);
+   break;
    case msr:
       add_msr(actpart,actsolv,actintra,actele,sysa1->msr);
    break;
@@ -397,6 +403,7 @@ void assemble_vec(INTRA        *actintra,
 int                   i;
 int                   dof;
 int                   imyrank;
+ML_ARRAY_MDS         *mds_array;
 AZ_ARRAY_MSR         *msr_array;
 H_PARCSR             *parcsr_array;
 UCCHB                *ucchb_array;
@@ -409,6 +416,13 @@ imyrank = actintra->intra_rank;
 /*----------------------------------------------------------------------*/
 switch(*sysarraytyp)
 {
+case mds:
+    mds_array = sysarray->mds;
+    for (i=0; i<rhs->numeq; i++)
+    {
+       rhs->vec.a.dv[i] += drhs[i]*factor;
+    }
+break;
 case msr:
     msr_array = sysarray->msr;
     for (i=0; i<rhs->numeq; i++)
