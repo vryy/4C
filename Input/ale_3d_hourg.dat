@@ -16,11 +16,13 @@ TIMETYP      Dynamic
 TRACE        secure
 RESTART      0
 ----------------------------------------------------------------IO
-STRUCT_DISP_FILE   Yes
+STRUCT_DISP_FILE   No
 STRUCT_STRESS_FILE No
-STRUCT_DISP_GID    Yes
+STRUCT_DISP_GID    No
 STRUCT_STRESS_GID  No
 FLUID_SOL_FILE     No
+ALE_DISP_FILE      yes
+ALE_DISP_GID       yes
 ------------------------------------------------------------STATIC
 GEOLINEAR
 ------------------------------------------------STRUCTURAL DYNAMIC
