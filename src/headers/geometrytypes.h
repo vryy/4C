@@ -47,6 +47,11 @@ typedef struct _NODE
      DOUBLE                     x_cr[3];       /* current coordinates (for contact only) */
      DOUBLE                     x_mid[3];      /* mid_configuration  coordinates(contact and EM Int. Scheme)*/
 #endif
+#ifdef D_MORTAR
+     struct _ARRAY              mtr_coeff;     /* mortar coefficients */
+     INT                        nmb_zeros;     /* nmb of nodal basis fct*/
+                                               /* with a zero intersect.*/
+#endif
      INT                        locsysId;
 } NODE;
 
@@ -156,7 +161,12 @@ typedef struct _GNODE
      struct _SLIPDIRICH_CONDITION     *slipdirich;
      struct _NODE                **mfcpnode;    /* ptrs to multi-field coupling nodes */
 #endif
-
+#ifdef D_SSI
+     struct _SSI_COUPLE_CONDITION *ssicouple;
+  #ifndef D_FSI
+     struct _NODE                **mfcpnode;    /* ptrs to multi-field coupling nodes */
+  #endif
+#endif
 #ifdef WALLCONTACT
      enum   _CONTACTTYPE       contype;
      enum   _CONTACTFLAG   contactflag;
@@ -206,7 +216,9 @@ typedef struct _GLINE
 #ifdef WALLCONTACT
      enum   _CONTACTTYPE       contype;
 #endif
-
+#ifdef D_SSI
+     struct _SSI_COUPLE_CONDITION *ssicouple;
+#endif
 } GLINE;
 /*----------------------------------------------------------------------*
  | 1 GSURF                                                 m.gee 3/02   |
@@ -233,10 +245,16 @@ typedef struct _GSURF
 
    /*----------- boundary conditions */
      struct _NEUM_CONDITION       *neum;        /* neumann conditions to this GSURF, else NULL */
+
+#ifdef D_SSI
+     struct _SSI_COUPLE_CONDITION *ssicouple;
+#endif
+
 #ifdef D_FSI
      struct _FSI_COUPLE_CONDITION *fsicouple;
      struct _FLUID_FREESURF_CONDITION *freesurf;
 #endif
+
 } GSURF;
 /*----------------------------------------------------------------------*
  | 1 GVOL                                                  m.gee 3/02   |
@@ -261,7 +279,6 @@ typedef struct _GVOL
    /*----------- boundary conditions */
      struct _NEUM_CONDITION       *neum;        /* neumann conditions to this GVOL, else NULL */
 } GVOL;
-
 
 
 
