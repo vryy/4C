@@ -187,6 +187,79 @@ dstrc_exit();
 #endif
 return;
 } /* end of s9intg */
+
+
+/*!----------------------------------------------------------------------
+\brief integration points for stress extrapolation                                     
+
+<pre>                                                            sh 07/03
+This routine gets the natural coordinates of the integration points and
+their weights for a numerical integration  -> for stress extrapolation
+</pre>
+\param  S9_DATA       *data   (o) coordinates and weights at GP
+\param  INT            option (i) 4 (Q4) 9 (Q8/9)
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa calling: ---; called by: s9_stress()     [s9_stress.c]
+
+*----------------------------------------------------------------------*/
+void s9intg_str(S9_DATA         *data,
+                INT              option)
+{
+DOUBLE b;
+#ifdef DEBUG 
+dstrc_enter("s9intg_str");
+#endif
+/*----------------------------------------------------------------------*/
+
+/*---------------- thickness direction t is always 2 */
+b   = 1.0/3.0;
+b   = sqrt(b);
+data->xgpt[0] = -b;
+data->xgpt[1] =  b;
+data->xgpt[2] =  0.0;
+
+if (option == 4) /*2x2*/
+{
+   /* direction r */
+   b   = 1.0/3.0;
+   b   = sqrt(b);
+   data->xgpr[0] = -b;
+   data->xgpr[1] =  b;
+   data->xgpr[2] =  0.0;
+
+   /* direction s */
+   b   = 1.0/3.0;
+   b   = sqrt(b);
+   data->xgps[0] = -b;
+   data->xgps[1] =  b;
+   data->xgps[2] =  0.0;
+}
+else if (option == 9) /*3x3*/
+{
+   /* direction r */
+   b    = 3.0/5.0;
+   b    = sqrt(b);
+   data->xgpr[0] = -b;
+   data->xgpr[1] =  0.0;
+   data->xgpr[2] =  b;
+
+   /* direction s */
+   b    = 3.0/5.0;
+   b    = sqrt(b);
+   data->xgps[0] = -b;
+   data->xgps[1] =  0.0;
+   data->xgps[2] =  b;
+}
+else dserror("wrong option for s9_intg_str");
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of s9intg_str */
 /*----------------------------------------------------------------------*/
 #endif /*D_SHELL9*/
 /*! @} (documentation module close)*/
