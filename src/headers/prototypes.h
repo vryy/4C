@@ -14,10 +14,11 @@ Maintainer: Malte Neumann
 #include "../solver/solver.h"
 
 /* include all the other prototypes */
-#include "../pss_full/pss.h"
-#include "../output/output.h"
-#include "../math/math.h"
-#include "../parallel/parallel.h"
+#include "../pss_full/pss_prototypes.h"
+#include "../output/output_prototypes.h"
+#include "../math/math_prototypes.h"
+#include "../parallel/parallel_prototypes.h"
+#include "../visual/visual_prototypes.h"
 
 
 /*----------------------------------------------------------------------*
@@ -88,25 +89,6 @@ void get_stepsize(
  *----------------------------------------------------------------------*/
 void ntam(INT argc, char *argv[]);
 
-
-/*----------------------------------------------------------------------*
- | global_visual.c                                       genk  07/02    |
- *----------------------------------------------------------------------*/
-/*!---------------------------------------------------------------------                                         
-\brief call of Visualisation tools
-
-<pre>                                                         genk 07/02       
-
-This routine checks the type of problem and based on the program  options
-a visualisation tool is called.
-At the moment implemented:
-VISUAL2
-
-</pre>  
-\return void                                                                       
-
-------------------------------------------------------------------------*/
-void ntavisual(void); 
 
 /*----------------------------------------------------------------------*
  | global_init_control.c                                 m.gee 11/01    |
@@ -473,66 +455,6 @@ void calrhs(FIELD        *actfield,     /* the active field */
             CALC_ACTION  *action,       /* action to be passed to element routines */
             CONTAINER    *container);    /*!< contains variables defined in container.h */
 void rhs_point_neum(DOUBLE *rhs, INT dimrhs, PARTITION *actpart);     
-/*----------------------------------------------------------------------*
- | ccarat_visual2.c                                        genk 07/02   |
- *----------------------------------------------------------------------*/
-void vis2caf(
-    INT      numf,
-    INT      numa,
-    INT      nums);
-
-void v2movie(void);
-
-void v2cell(
-    FIELD   *actfield);
-
-void v2_init(
-    char     *titl,
-    INT      *iopt,
-    INT      *cmncol,
-    char     *cmfile,
-    INT      *cmunit,
-    INT      *xypix,
-    float    *xymin,
-    float    *xymax,
-    INT      *nkeys,
-    INT      *ikeys,
-    INT      *tkeys,
-    INT      *fkeys,
-    float   **flims,
-    INT      *mnode,
-    INT      *mptri,
-    INT      *mpptri,
-    INT      *mface,
-    INT      *mpface,
-    INT      *medge,
-    INT      *mpedge);
-
-
-
-
-/*----------------------------------------------------------------------*
- | ccarat_visual3.c                                        genk 01/04   |
- *----------------------------------------------------------------------*/
-void vis3caf(
-    INT     numff,
-    INT     numaf,
-    INT     numsf);
-
-
-
-/*----------------------------------------------------------------------*
- | visual_readflaviares.c                                  genk 01/04   |
- *----------------------------------------------------------------------*/
-void visual_readflaviares(
-    FIELD   *actfield, 
-    INT     *ntsteps,  
-    ARRAY   *time_a,
-    ARRAY   *step_a,
-    INT     *FIRSTSTEP,
-    INT     *LASTSTEP,
-    INT     *DSTEP);
-
 /*!---------------------------------------------------------------------                                         
 \brief input of optimization data 
 
