@@ -36,7 +36,14 @@ INT inode;
 #ifdef DEBUG 
 dstrc_enter("w1_defgrad");
 #endif
-/*------------------calculate defgrad --------- (Summenschleife->+=) ---*/
+/*------------------calculate defgrad --------- (Summenschleife->+=) ---*
+defgrad looks like:
+
+      |  1 + Ux,x  |
+      |  1 + Uy,y  |
+      |      Ux,y  |
+      |      Uy,x  |
+*/
 F[0]=1;
 F[1]=1;
 for (inode=0; inode<iel; inode++)
@@ -47,8 +54,8 @@ for (inode=0; inode<iel; inode++)
    F[3] += boplin[3][2*inode+1] * (xcure[1][inode] - xrefe[1][inode]);
 } /* end of loop over nodes */
 /*-----------------------calculate Green-Lagrange strain ---------------*/
-strain[0]=0.5 * (F[0] * F[0] + F[3] * F[3] - 1);
-strain[1]=0.5 * (F[2] * F[2] + F[1] * F[1] - 1);
+strain[0]=0.5 * (F[0] * F[0] + F[3] * F[3] - ONE);
+strain[1]=0.5 * (F[2] * F[2] + F[1] * F[1] - ONE);
 strain[2]=0.5 * (F[0] * F[2] + F[3] * F[1]);
 strain[3]=strain[2];
 /*----------------------------------------------------------------------*/

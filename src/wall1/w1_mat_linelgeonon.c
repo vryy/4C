@@ -25,8 +25,8 @@ Maintainer: Andrea Hund
  | constitutive matrix - linear elastic - 2D              ah   06/02    |
  | plane stress, plane strain,                                          |
  *----------------------------------------------------------------------*/
-void w1_mat_linelgeonon(DOUBLE ym, 
-                        DOUBLE pv, 
+void w1_mat_linelgeonon(DOUBLE ym,   /* youngs modolus */
+                        DOUBLE pv,   /* poisson's ratio */
                         WALL_TYPE wtype,
                         DOUBLE *strain, 
                         DOUBLE **d,
@@ -39,6 +39,16 @@ INT i,k;
 #ifdef DEBUG 
 dstrc_enter("w1_mat_linelgeonon");
 #endif
+/*-------------- some comments, so that even fluid people are able to
+   understand this quickly :-)
+   the "strain" vector looks like:
+
+       | EPS_xx |
+       | EPS_yy |
+       | EPS_xy |
+       | EPS_yx |
+      
+*/
 /*---------------------------------material-tangente-- plane stress ---*/
   switch(wtype)
   {
@@ -95,10 +105,10 @@ dstrc_enter("w1_mat_linelgeonon");
   break;
   }
 /*-------------------------- evaluate 2.PK-stresses -------------------*/ 
-/*------------------ Summenschleife -> += (2.PK stored as vecor) ------*/ 
+/*------------------ Summenschleife -> += (2.PK stored as vecor) ------*/    
 for (k=0; k<3; k++)
 { 
-  svector[k]=0;
+  svector[k]=ZERO;
   for (i=0; i<numeps; i++)
   { 
      svector[k] += d[k][i] * strain[i];                     
