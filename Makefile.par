@@ -1,0 +1,101 @@
+#
+#SRC       = /bau/statik/<USER>/wdir/ccarat/src
+#
+#--------------------------------------------------------------------
+#
+# parallel part
+#--------------------------------------------------------------------
+#
+# list of possible defines:
+#  
+# -DD_BRICK1    defines element brick1
+# -DD_FLUID1    defines element fluid1
+# -DD_SHELL8    defines element shell8
+# -DD_FLUID3    defines element fluid3
+# -DD_ALE       defines element ale
+#
+# -DDEBUG     defines debug mode: routine and array tracing 
+# -DPARALLEL  defines parallel version of programm
+# 
+# -DHYPRE_PACKAGE      defines interface to solver library HYPRE (not yet impl.)
+# -DAZTEC_PACKAGE      defines interface to solver library AZTEC
+# -DPARSUPERLU_PACKAGE defines interface to solver library ParSuperLU
+# -DSUPERLU_PACKAGE    defines interface to solver library SuperLU 
+# -DMUMPS_PACKAGE      defines interface to solver library Mumps (only in parallel HPUX11)
+#--------------------------------------------------------------------
+#
+FXX=/opt/mpi/bin/mpif90
+CCX=/opt/mpi/bin/mpicc 
+LDX=/opt/mpi/bin/mpicc 
+PFL= -DPARALLEL -DD_SHELL8 -DD_FLUID3 -DD_ALE -DD_BRICK1 \
+     -DAZTEC_PACKAGE \
+     -DMUMPS_PACKAGE \
+     -DPARSUPERLU_PACKAGE
+#PFL= -DPARALLEL -DD_SHELL8 -DD_FLUID3 -DD_ALE -DD_BRICK1 \
+#     -DPARSUPERLU_PACKAGE -DHYPRE_PACKAGE -DAZTEC_PACKAGE
+#
+#--------------------------------------------------------------------
+#
+CC	 = $(CCX)
+LD       = $(FXX)
+RM	 = /bin/rm -f
+#
+#------------------------------------------------ this is debug-32bit
+PROGRAM_NAME  = cca_par_32_debg.exe
+CFLAGS        = -D__HP__ -Aa -Ae -g ${PFL} -DDEBUG
+FFLAGS        = -g
+LDFLAGS       = -v
+AZTEC         = -laztec_par21_32
+METIS         = -lmetis_32
+SUPLU         = -lsuperlu_par32
+MUMPS         = -lmumps_par_32  -lscalapack_par_32 -lblacs_MPI-HPPA-0_par_32 -lblacsCinit_MPI-HPPA-0_par_32 -lblacsF77init_MPI-HPPA-0_par_32  
+FORTLIBS      = -L/opt/fortran90/lib/pa2.0 -lF90 -L/opt/fortran90/lib  -lU77 -lisamstub -lisamstubs 
+#------------------------------------------------- this is fast-32bit
+#PROGRAM_NAME  = cca_par_32_fast.exe
+#CFLAGS        = -D__HP__ -Aa -Ae -O ${PFL} -DDEBUG
+#FFLAGS        = -O
+#LDFLAGS       = -v
+#AZTEC         = -laztec_par21_32
+#METIS         = -lmetis_32
+#SUPLU         = -lsuperlu_par32
+#MUMPS         = -lblacs_MPI-HPPA-0_par_32 -lblacsCinit_MPI-HPPA-0_par_32 -lblacsF77init_MPI-HPPA-0_par_32 -lscalapack_par_32 -lmumps_par_32
+#FORTLIBS      = -L/opt/fortran90/lib/pa2.0 -lF90 -L/opt/fortran90/lib  -lU77 -lisamstub -lisamstubs 
+#------------------------------------------------ this is debug-64bit
+#PROGRAM_NAME  = cca_par_64_debg.exe
+#CFLAGS        = -D__HP__ -Aa -Ae +DD64 -g ${PFL} -DDEBUG
+#FFLAGS        = +DA2.0W -g
+#LDFLAGS       = -v +DD64
+#AZTEC         = -laztec_par21_64
+#METIS         = -lmetis_64
+#SUPLU         = -lsuperlu_par64
+#MUMPS         = -lblacs_MPI-HPPA-0_par_64 -lblacsCinit_MPI-HPPA-0_par_64 -lblacsF77init_MPI-HPPA-0_par_64 -lscalapack_par_64 -lmumps_par_64
+#------------------------------------------------- this is fast-64bit
+#PROGRAM_NAME  = cca_par_64_fast.exe
+#CFLAGS        = -D__HP__ -Aa -Ae +DD64 -O ${PFL} -DDEBUG
+#FFLAGS        = +DA2.0W -O
+#LDFLAGS       = -v +DD64
+#AZTEC         = -laztec_par21_64
+#METIS         = -lmetis_64
+#SUPLU         = -lsuperlu_par64
+#MUMPS         = -lblacs_MPI-HPPA-0_par_64 -lblacsCinit_MPI-HPPA-0_par_64 -lblacsF77init_MPI-HPPA-0_par_64 -lscalapack_par_64 -lmumps_par_64
+#--------------------------------------------------------------------
+INCLUDES = -I/bau/stat16/users/statik/lib/SULUDIST0210/SuperLU_DIST/SRC
+
+LDOPTS        = -a archive -v
+
+
+LIBS	      =  -L/usr/lib \
+                 -L/opt/mlib/lib/pa2.0 \
+                 -L/bau/stat16/users/statik/lib/METIS \
+                 -L/bau/stat16/users/statik/lib/AZTEC21\
+                 -L/bau/stat16/users/statik/lib/SULUDIST0210/SuperLU_DIST \
+                 -L/bau/stat16/users/statik/lib/SCALAPACK/ \
+                 -L/bau/stat16/users/statik/lib/BLACS/LIB \
+                 -L/bau/stat16/users/statik/lib/MUMPS4.1.6/lib \
+                 $(METIS) \
+                 $(AZTEC) \
+                 $(SUPLU) \
+                 $(MUMPS) \
+                 $(FORTLIBS) -lcl -lc -lm \
+                 -lveclib -llapack -lblas -Wl,-aarchive_shared -lmpi
+

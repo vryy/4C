@@ -1,0 +1,283 @@
+#include "../headers/standardtypes.h"
+#include "metis.h"
+
+/*----------------------------------------------------------------------*
+ | Prototypes                                            m.gee 5/01     |
+ *----------------------------------------------------------------------*/
+void assign_dof();
+
+/*----------------------------------------------------------------------*
+ |  put dofs to nodes                                    m.gee 5/01     |
+ *----------------------------------------------------------------------*/
+void assign_dof()
+{
+int i,j,k,l;
+int counter;
+int minnumdf;
+int coupleID;
+int dof;
+MESH    *actmesh;
+ELEMENT *actele;
+NODE    *actnode, *partnernode;
+/*ARRAY xadj_tmp, adjncy_tmp;*/
+/*----------------------------------------------------- metis variables */
+int n;
+int numflag=0;
+int options[8];
+
+#ifdef DEBUG 
+mg_dstrc_enter("assign_dof");
+#endif
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------- loop the meshes */
+for (i=0; i<genprob.numfld; i++)
+{
+   actmesh = &(mesh[i]);
+   n = actmesh->numnp;
+   options[0]=1;
+   options[1]=3;
+   options[2]=1;
+   options[3]=1;
+   options[4]=0;
+   options[5]=3;
+   options[6]=0;
+   options[7]=5;
+   amdef("perm", &(actmesh->perm) ,n,1,"IV");
+   amdef("iperm",&(actmesh->iperm),n,1,"IV");
+/*--------------------------------------------- find new node numbering */
+/* nested dissection algorithm - could be non-deterministic - so it
+   cannot be performed by several procs - has to be broadcasted to have 
+   same result on every proc                                            */
+   
+   if (par.myrank==0)
+   {
+      METIS_NodeND(
+                   &n,
+                   &(actmesh->xadj.a.iv[0]),
+                   &(actmesh->adjncy.a.iv[0]),
+                   &numflag,
+                   options,
+                   &(actmesh->perm.a.iv[0]),
+                   &(actmesh->iperm.a.iv[0])
+                  );
+   }
+                  
+/*----------------------------------------- broadcast numbering results */
+#ifdef PARALLEL 
+   MPI_Bcast(&(actmesh->perm.a.iv[0]) ,actmesh->perm.fdim,MPI_INT,0,MPI_COMM_WORLD);
+   MPI_Bcast(&(actmesh->iperm.a.iv[0]),actmesh->perm.fdim,MPI_INT,0,MPI_COMM_WORLD);
+#endif
+/*----------------- perform the permutation on the graph stored in MESH */
+/*-------------------------------------------- make a copy of the graph */
+/*
+   am_alloc_copy(&(actmesh->xadj),&xadj_tmp);
+   am_alloc_copy(&(actmesh->adjncy),&adjncy_tmp);
+   not yet implemented 
+   amdel(&xadj_tmp);
+   amdel(adjncy_tmp);
+*/
+/*----------------------------------- put new node numbers to the nodes */   
+   for (j=0; j<actmesh->numnp; j++)
+   {
+      actmesh->node[j].Id_loc = actmesh->perm.a.iv[j];
+      actmesh->node[j].numdf  = 0;
+   }
+/* loop all elements and put numdf to their nodes depending on kind of
+   element. Notice that nodes which couple different kind of elements have
+   the higher number of dofs */
+   for (j=0; j<actmesh->numele; j++)
+   {
+      actele = &(actmesh->element[j]);
+      switch(actele->eltyp)
+      {
+      case el_shell8:
+         for (k=0; k<actele->numnp; k++)
+         {
+            if (actele->node[k]->numdf < 6) actele->node[k]->numdf=6;
+         }
+         break;
+      case el_brick1:
+         for (k=0; k<actele->numnp; k++)
+         {
+            if (actele->node[k]->numdf < 3) actele->node[k]->numdf=3;
+         }
+         break;
+      case el_fluid1:
+         for (k=0; k<actele->numnp; k++)
+         {
+            if (actele->node[k]->numdf < 3) actele->node[k]->numdf=3;
+         }
+         break;
+      case el_fluid3:
+         for (k=0; k<actele->numnp; k++)
+         {
+            if (actele->node[k]->numdf < 4) actele->node[k]->numdf=4;
+         }
+         break;
+      case el_ale:
+         for (k=0; k<actele->numnp; k++)
+         {
+            if (actele->node[k]->numdf < 3) actele->node[k]->numdf=3;
+         }
+         break;
+      default:
+         dserror("Unknown type of element, cannot assign number of dofs");
+         break;
+      }
+   }
+/*---------------------------------------- assign the dofs to the nodes */
+   counter=0;
+   for (j=0; j<actmesh->numnp; j++)
+   {
+      actmesh->node[j].dof = (int*)calloc(actmesh->node[j].numdf,sizeof(int));
+      if (actmesh->node[j].dof==NULL) dserror("Allocation of dof in NODE failed");
+      for (l=0; l<actmesh->node[j].numdf; l++) actmesh->node[j].dof[l]=-2;
+   }   
+   for (j=0; j<actmesh->numnp; j++)
+   {
+      k = actmesh->iperm.a.iv[j];
+      actnode = &(actmesh->node[k]);
+/*------------------------------- the node does not have any conditions */
+      if (actnode->c==NULL)
+      {
+         for (l=0; l<actnode->numdf; l++)
+         {
+            actnode->dof[l] = counter;
+            counter++;
+         }
+      }
+/*--------------------------------------- the node does have conditions */
+      else
+      {
+            /*--- the node has neither coupling nor dirichlet condition */
+            if (actnode->c->iscoupled==0 && actnode->c->isdirich==0)
+            {
+               for (l=0; l<actnode->numdf; l++)
+               {
+                  if (actnode->dof[l]==-2)
+                  {
+                     actnode->dof[l] = counter;
+                     counter++;
+                  }
+                  else dserror("Error in assigning dofs");
+               }
+            }
+            /*------------------------------------- dirichlet condition */
+            if (actnode->c->isdirich==1)
+            {
+               for (l=0; l<actnode->numdf; l++)
+               {
+                  if (actnode->c->dirich_onoff.a.iv[l]!=0)
+                  {
+                     if (actnode->dof[l]==-2)
+                     actnode->dof[l] = -1;
+                  }
+                  else
+                  {
+                     if (actnode->dof[l]==-2)
+                     {
+                        actnode->dof[l] = counter; 
+                        counter++;
+                     }
+                  }
+               }
+            }
+            /*-------------------------------------- coupling condition */
+            if (actnode->c->iscoupled==1)
+            {
+               /*----------------------- do dofcoupling if there is any */
+               for (l=0; l<actnode->numdf; l++)
+               {
+                  if (actnode->c->couple.a.ia[l][1]!=0)
+                  {
+                     /*------------------------ Id of this coupling set */
+                     coupleID = actnode->c->couple.a.ia[l][1];
+                     /*- this coupling set has not been assigned before */
+                     mg_find_assign_coupset(actmesh,coupleID,&counter);
+                  }
+                  else
+                  {
+                     if (actnode->dof[l]==-2)
+                     {
+                        actnode->dof[l] = counter; counter++;
+                     } 
+                  }
+               }
+               /*---------------------------- do geostationary coupling */
+               /*------------- find a compatible node with iscoupled==1 */
+               for (l=0; l<actnode->numdf; l++)
+               {
+                  if (actnode->c->couple.a.ia[l][0]!=0)
+                  {
+                     /*------------------------ Id of this coupling set */
+                     coupleID = actnode->c->couple.a.ia[l][0];
+                     mg_iscouple_find_node_comp(actnode,actmesh,&partnernode,coupleID,l);
+                     if (partnernode==NULL) dserror("Cannot find node pairs for geostationary coupling");
+                     if (actnode->dof[l]==-2 && partnernode->dof[l]==-2)
+                     {
+                        if (partnernode->c->isdirich==0)
+                        {
+                           actnode->dof[l]=counter;
+                           partnernode->dof[l]=counter;
+                           counter++;
+                        }
+                        else
+                        {
+                           if (partnernode->c->dirich_onoff.a.iv[l]!=0) 
+                           {
+                              partnernode->dof[l]=-1;
+                              actnode->dof[l]=-1;
+                           }
+                           else
+                           {
+                              actnode->dof[l]=counter;
+                              partnernode->dof[l]=counter;
+                              counter++;
+                           }
+                        }
+                     }
+                     else if (actnode->dof[l]==-2 && partnernode->dof[l]!=-2)
+                     {
+                        if (actnode->dof[l]==-2)
+                        actnode->dof[l] = partnernode->dof[l];
+                        else dserror("Error in assigning dofs");
+                     }
+                     else if (actnode->dof[l]!=-2 && partnernode->dof[l]==-2)
+                     {
+                        if (partnernode->dof[l]==-2)
+                        partnernode->dof[l] = actnode->dof[l];
+                        else dserror("Error in assigning dofs");
+                     }
+                  }
+               }
+            }
+      }
+   } /* end of loop over nodes */
+   /* Now all free dofs are numbered, so now number the dirichlet conditioned
+      dofs from here on */
+   actmesh->numeq = counter;
+   for (j=0; j<actmesh->numnp; j++)
+   {
+      actnode = &(actmesh->node[j]);
+      if (actnode->c==NULL) continue;
+      for (l=0; l<actnode->numdf; l++)
+      {
+         if (actnode->dof[l]==-1)
+         {
+            actnode->dof[l] = counter;
+            counter++;
+         }
+      }
+   }
+   actmesh->numdf = counter;   
+      
+} /* end of loop over meshes */
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+mg_dstrc_exit();
+#endif
+return;
+} /* end of assign_dof */
+
+
+

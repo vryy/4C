@@ -1,0 +1,784 @@
+/*----------------------------------------------------------------------*
+ | Prototypes                                            m.gee 09/01    |
+ *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | ale_inpele.c                                                         |
+ *----------------------------------------------------------------------*/
+void mg_ale3inp(ELEMENT *ele);
+void mg_fluid_to_ale(const FIELD *fluidfield, const FIELD *alefield);
+void mg_find_compatible_ele(const ELEMENT *ele1, const ELEMENT *ele2, int *ierr);
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | b1_inpele.c                                                          |
+ *----------------------------------------------------------------------*/
+void mg_b1inp(ELEMENT *ele);
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | f3_inpele.c                                                          |
+ *----------------------------------------------------------------------*/
+void mg_f3inp(ELEMENT *ele);
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | main_carat_test.c                                                    |
+ *----------------------------------------------------------------------*/
+void main(int argc, char *argv[]);
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | cal_dyn_control.c                                                    |
+ *----------------------------------------------------------------------*/
+void mg_caldyn();
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | cal_static_control.c                                                 |
+ *----------------------------------------------------------------------*/
+void mg_calsta();
+void mg_stalin();
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | global_ass_dof.c                                                     |
+ *----------------------------------------------------------------------*/
+void mg_assign_dof();
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | global_bunker_init.c                                                 |
+ *----------------------------------------------------------------------*/
+void mg_bunker_init();
+void mg_part_bunker_access();
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | global_cal_control.c                                                 |
+ *----------------------------------------------------------------------*/
+void mg_ntacal();
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | global_calelm.c                                                      |
+ *----------------------------------------------------------------------*/
+void mg_calelm(FIELD      *actfield, 
+               SOLVAR     *actsolv, 
+               PARTITION  *actpart, 
+               INTRA      *actintra,
+               int         sysarray1,
+               int         sysarray2,
+               double     *dvec,
+               int         global_numeq,
+               int         calc_option);
+void mg_calinit(FIELD      *actfield, 
+                PARTITION  *actpart);
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | global_control.c                                                     |
+ *----------------------------------------------------------------------*/
+void mg_ntam(int argc, char *argv[]);
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | global_init_control.c                                                |
+ *----------------------------------------------------------------------*/
+void mg_ntaini(int argc, char *argv[]);
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | global_inp_control.c                                                 |
+ *----------------------------------------------------------------------*/
+void mg_ntainp();
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | global_mask_matrices.c                                               |
+ *----------------------------------------------------------------------*/
+void mg_mask_global_matrices();
+void mg_mask_msr(FIELD         *actfield, 
+                 PARTITION    *actpart, 
+                 SOLVAR       *actsolv,
+                 INTRA        *actintra, 
+                 AZ_ARRAY_MSR *msr);
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | global_numeq_count.c                                                 |
+ *----------------------------------------------------------------------*/
+void mg_msr_numeq(FIELD         *actfield, 
+                  PARTITION    *actpart, 
+                  SOLVAR       *actsolv,
+                  INTRA        *actintra,
+                  int          *numeq);
+void mg_msr_update(FIELD         *actfield, 
+                   PARTITION     *actpart, 
+                   SOLVAR        *actsolv,
+                   INTRA         *actintra,
+                   AZ_ARRAY_MSR  *msr);
+void mg_msr_nnz_topology(FIELD         *actfield, 
+                         PARTITION    *actpart, 
+                         SOLVAR       *actsolv,
+                         INTRA        *actintra,
+                         AZ_ARRAY_MSR *msr,
+                         int         **dof_connect);
+void mg_dof_in_coupledofs(int dof, PARTITION *actpart, int *iscoupled);
+void mg_dof_find_centernode(int dof, PARTITION *actpart, NODE **centernode);
+void mg_msr_make_bindx(FIELD         *actfield, 
+                       PARTITION     *actpart, 
+                       SOLVAR        *actsolv,
+                       AZ_ARRAY_MSR  *msr,
+                       int          **dof_connect);
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | machine_hpux.c                                                       |
+ *----------------------------------------------------------------------*/
+void mg_ntadev(int argc, char *argv[]);
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | map_node_find.c                                                      |
+ *----------------------------------------------------------------------*/
+void mg_iscouple_find_node_comp(NODE  *actnode, 
+                                FIELD *searchfield, 
+                                NODE **partnernode,
+                                int    coupleID,
+                                int    dof);
+void mg_cheque_distance(double *x1, double *x2, double tol, int *ierr);
+void mg_find_assign_coupset(FIELD *actfield, 
+                            int    coupleID, 
+                            int   *counter);
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | solver_add_data.c                                                    |
+ *----------------------------------------------------------------------*/
+void mg_assemble(
+                 int                sysarray1,
+                 struct _ARRAY     *elearray1,
+                 int                sysarray2,
+                 struct _ARRAY     *elearray2,
+                 struct _PARTITION *actpart,
+                 struct _SOLVAR    *actsolv,
+                 struct _INTRA     *actintra,
+                 struct _ELEMENT   *actele,
+                 int                option
+                );
+void mg_init_assembly(
+                       struct _PARTITION      *actpart,
+                       struct _SOLVAR         *actsolv,
+                       struct _INTRA          *actintra,
+                       struct _FIELD          *actfield,
+                       int                     actsysarray
+                     );
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | solver_add_msr.c                                                     |
+ *----------------------------------------------------------------------*/
+int  mg_add_msr(struct _PARTITION     *actpart,
+                struct _SOLVAR        *actsolv,
+                struct _INTRA         *actintra,
+                struct _ELEMENT       *actele,
+                struct _AZ_ARRAY_MSR  *msr);
+int mg_add_msr_checkcouple(int ii,int **cdofs,int ncdofs,int *iscouple,
+                           int *isowner, int nprocs);
+int mg_add_msr_sendbuff(int ii,int jj,int i,int j,int ii_owner,int **isend,
+                    double **dsend,double **estif, int numsend);
+void mg_exchange_coup_msr(
+                         PARTITION     *actpart,
+                         SOLVAR        *actsolv,
+                         INTRA         *actintra,
+                         AZ_ARRAY_MSR  *msr
+                        );
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | solver_aztec.c                                                       |
+ *----------------------------------------------------------------------*/
+void mg_solver_az_msr( 
+                      struct _SOLVAR         *actsolv,
+                      struct _INTRA          *actintra,
+                      struct _AZ_ARRAY_MSR   *msr_array,
+                      struct _DIST_VECTOR    *sol,
+                      struct _DIST_VECTOR    *rhs,
+                      int                     option
+                     );
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 10/01    |
+ |                                                                      |
+ | solver_control.c                                                     |
+ *----------------------------------------------------------------------*/
+void mg_solver_control(
+                       struct _SOLVAR         *actsolv,
+                       struct _INTRA          *actintra,
+                       enum   _SPARSE_TYP     *sysarray_typ,
+                       union  _SPARSE_ARRAY   *sysarray,
+                       struct _DIST_VECTOR    *sol,
+                       struct _DIST_VECTOR    *rhs,
+                       int                     option
+                      );
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 10/01    |
+ |                                                                      |
+ | solver_service.c                                                     |
+ *----------------------------------------------------------------------*/
+void mg_solserv_create_vec(
+                           DIST_VECTOR         **vector,
+                           int                   numvectors,
+                           int                   numeq_total,
+                           int                   numeq,
+                           char                  typstr[]);
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | input_cond_couple.c                                                  |
+ *----------------------------------------------------------------------*/
+void mg_inp_couple(FIELD *field);
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | input_cond_fluid.c                                                   |
+ *----------------------------------------------------------------------*/
+void mg_inp_cond_nodal_fluid(FIELD *field);
+void mg_inp_cond_nodal_ale(FIELD *field);
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | input_cond_struct.c                                                  |
+ *----------------------------------------------------------------------*/
+void mg_inp_cond_nodal_struct(FIELD *field);
+void mg_inp_cond_ele_struct(FIELD *field);
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | input_conditions.c                                                   |
+ *----------------------------------------------------------------------*/
+void mg_inp_conditions();
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | input_control_global.c                                               |
+ *----------------------------------------------------------------------*/
+void mg_inpctr();
+void mg_inpctrprob();
+void mg_inpctrdyn();
+void mg_inpctrstat();
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | input_ctr_head.c                                                     |
+ *----------------------------------------------------------------------*/
+void mg_inpctrhed();
+void mg_inptrace();
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | input_curves.c                                                       |
+ *----------------------------------------------------------------------*/
+void mg_inp_cond_curve();
+void mg_inp_read_curve(char *string);
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | input_design.c                                                       |
+ *----------------------------------------------------------------------*/
+void mg_inpdesign();
+void mg_inp_dnode();
+void mg_inp_dline();
+void mg_inp_dsurface();
+void mg_inp_dvolume();
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | input_design_top.c                                                   |
+ *----------------------------------------------------------------------*/
+void mg_inpdesign_topology();
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | input_material.c                                                     |
+ *----------------------------------------------------------------------*/
+void mg_inp_material();
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | input_mesh.c                                                         |
+ *----------------------------------------------------------------------*/
+void mg_inpfield();
+void mg_inp_assign_nodes(FIELD *field);
+void mg_inpnodes();
+void mg_inp_struct_field(FIELD *structfield);
+void mg_inp_fluid_field(FIELD *fluidfield);
+void mg_inp_ale_field(FIELD *alefield);
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | input_sol.c                                                          |
+ *----------------------------------------------------------------------*/
+void mg_inpctrsol(SOLVAR *solv);
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | input_topology.c                                                     |
+ *----------------------------------------------------------------------*/
+void mg_inp_topology(FIELD *field);
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | math1.c                                                              |
+ *----------------------------------------------------------------------*/
+void mg_math_array_copy(double **from, int n, int m, double **to);
+void mg_math_inv3(double **a, double *det);
+void mg_math_tran(double **a, int n);
+void mg_math_unvc(double *enorm,double *vec, int n);
+void mg_math_matvecdense(double  *r,
+                         double **A,
+                         double  *b,
+                         int      ni,
+                         int      nk,
+                         int      init,
+                         double   factor);
+void mg_math_mattrnvecdense(double  *r,
+                         double **A,
+                         double  *b,
+                         int      ni,
+                         int      nk,
+                         int      init,
+                         double   factor);
+void mg_math_matmatdense(double **R,
+                         double **A,
+                         double **B,
+                         int      ni,
+                         int      nk,
+                         int      nj,
+                         int      init,
+                         double   factor);
+void mg_math_mattrnmatdense(double **R,
+                            double **A,
+                            double **B,
+                            int      ni,
+                            int      nk,
+                            int      nj,
+                            int      init,
+                            double   factor);
+void mg_math_matmattrndense(double **R,
+                            double **A,
+                            double **B,
+                            int      ni,
+                            int      nk,
+                            int      nj,
+                            int      init,
+                            double   factor);
+void mg_math_sym_inv(double **A, int dim);
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | sort.c                                                               |
+ *----------------------------------------------------------------------*/
+int cmp_int(const void *a, const void *b );
+double cmp_double(const void *a, const void *b );
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | par_assignmesh.c                                                     |
+ *----------------------------------------------------------------------*/
+void mg_part_assignfield();
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | par_initmetis.c                                                      |
+ *----------------------------------------------------------------------*/
+void mg_part_fields();
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | pss_am.c                                                             |
+ *----------------------------------------------------------------------*/
+void* amdef(char *namstr,ARRAY *a,int fdim, int sdim, char typstr[]);
+void* amredef(ARRAY *a,int newfdim, int newsdim, char newtypstr[]);
+void amdel(ARRAY *array);
+void amzero(ARRAY *array);
+void aminit(ARRAY *array, void *value);
+void* am_alloc_copy(ARRAY *array_from, ARRAY *array_to);
+void* amcopy(ARRAY *array_from, ARRAY *array_to);
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | pss_bunk1.c                                                          |
+ *----------------------------------------------------------------------*/
+void mg_db(
+           int      option,
+           int     *bunker_Id,
+           int     *access,
+           int     *handle,
+           ARRAY   *array,
+           int     *fdim,
+           int     *sdim,
+           char     name[],
+           char     typ[],
+           void    *data,
+           int     *pss_handle,
+           int     *ierr
+          );
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | pss_bunk2.c                                                          |
+ *----------------------------------------------------------------------*/
+void mg_db_init();
+void mg_db_create(int *bunker_Id);
+void mg_db_content_init(BUNKER *bptr);
+void mg_db_create_access(int bunker_Id, int *access);
+void mg_db_bunker_enlarge(BUNKER *bptr, int addaccess);
+void mg_db_put_dat_new(int   bunker_Id,
+                       int   access,
+                       int  *handle,
+                       char  string[],
+                       void *startadress,
+                       int   fdim,
+                       int   sdim,
+                       char  typ[]);
+void mg_db_put_array_new(int    bunker_Id,
+                         int    access,
+                         int   *handle,
+                         ARRAY *array);
+void mg_db_put_array_overwrite(int    bunker_Id,
+                               int    access,
+                               int    handle,
+                               ARRAY *array);
+void mg_db_probe_array(int bunker_Id,
+                       int  access,
+                       int  handle,
+                       char name[],
+                       int *fdim,
+                       int *sdim,
+                       char typ[],
+                       int *ierr);
+void mg_db_check_existence(BUNKER *bunker,
+                           int     bunker_Id,
+                           int     numbunker,
+                           int     access,
+                           int     handle,
+                           int    *ierr);
+void mg_db_get_array_alloc(int    bunker_Id,
+                           int    access,
+                           int    handle,
+                           ARRAY *array,
+                           int   *ierr);
+void mg_db_get_array(int    bunker_Id,
+                     int    access,
+                     int    handle,
+                     ARRAY *array,
+                     int   *ierr);
+void mg_db_get_dat(int bunker_Id,
+                   int  access,
+                   int  handle,
+                   void *data,
+                   int  *fdim,
+                   int  *sdim,
+                   int  *ierr);
+void mg_db_del_entry(int  bunker_Id,
+                     int  access,
+                     int *handle);
+void mg_db_del_access(int  bunker_Id,
+                      int *access);
+void mg_db_del_bunker(int *bunker_Id);
+void mg_db_bunker_to_pss(int bunker_Id, int *pss_handle);
+void mg_db_bunker_from_pss(int bunker_Id, int pss_handle, int *err);
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | pss_ds.c                                                             |
+ *----------------------------------------------------------------------*/
+void dserror(char string[]);
+void mg_dsinit();
+void mg_dstrc_enter(char string[]);
+void mg_dstrc_exit();
+void mg_dstracesize();
+void mg_dstracereport(ARRAY *array);
+void mg_dstrace_to_err();
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | pss_fr.c                                                             |
+ *----------------------------------------------------------------------*/
+void mg_frinit();
+void mg_frrewind();
+void mg_frfind(char string[]);
+void mg_frread();
+void mg_frint_n(char string[],int *var,int num, int *ierr);
+void mg_frint(char string[],int *var, int *ierr);
+void mg_frdouble_n(char string[],double *var,int num, int *ierr);
+void mg_frdouble(char string[],double *var, int *ierr);
+void mg_frchar(char string[],char *var, int *ierr);
+void mg_frchk(char string[], int *ierr);
+void mg_frend();
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | pss_pss.c                                                            |
+ *----------------------------------------------------------------------*/
+void mg_pss_write(char          *name, 
+                  int            fdim, 
+                  int            sdim,
+                  int            byte,
+                  const void    *startaddress,
+                  int           *handle, 
+                  int           *ierr);
+void mg_pss_write_array(const ARRAY *array, 
+                        int         *handle, 
+                        int         *ierr);
+void mg_pss_read_name(char       *name, 
+                      int        *fdim, 
+                      int        *sdim,
+                      int        *byte,
+                      void       *ziel,
+                      int        *handle, 
+                      int        *ierr);
+void mg_pss_read_name_handle(char       *name, 
+                             int        *fdim, 
+                             int        *sdim,
+                             int        *byte,
+                             void       *ziel, 
+                             int        *handle, 
+                             int        *ierr);
+void mg_pss_read_array_name(char       *name, 
+                            ARRAY      *array,
+                            int        *handle,
+                            int        *ierr);
+void mg_pss_read_array_name_handle(char       *name, 
+                                   ARRAY      *array,
+                                   int        *handle,
+                                   int        *ierr);
+void mg_pss_read_array_handle(ARRAY      *array,
+                              int        *handle,
+                              int        *ierr);
+void mg_pss_chck(char       *name,
+                 int        *handle, 
+                 int        *ierr);
+void mg_pss_chck_handle(char       *name,
+                        int        *handle, 
+                        int        *ierr);
+void mg_pss_getdims_name(char       *name, 
+                         int        *fdim,
+                         int        *sdim,
+                         int        *byte,
+                         int        *handle,
+                         int        *ierr);
+void mg_pss_getdims_name_handle(char       *name, 
+                                int        *fdim,
+                                int        *sdim,
+                                int        *byte,
+                                int        *handle,
+                                int        *ierr);
+void mg_pss_status_to_err();
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | s8_a3.c                                                              |
+ *----------------------------------------------------------------------*/
+void mg_s8a3(ELEMENT           *ele,
+             struct _S8_DATA   *data,
+             int                option);
+void mg_s8averdir(double **dir_list, int numa3, double *a3);
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | s8_btdb.c                                                            |
+ *----------------------------------------------------------------------*/
+void mg_s8_BtDB(double **estif, double **bop, double **D, int iel,
+                int numdf, double weight, double **work);
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | s8_eas.c                                                             |
+ *----------------------------------------------------------------------*/
+void mg_s8_eas(const int    nhyb,
+               const double e1,
+               const double e2,
+               const int    iel, 
+               const int   *eas, 
+               double     **P);
+void mg_s8_transeas(double      **P, 
+                    double      **transP,
+                    double      **T,
+                    double      **akovr,
+                    double      **akonr0,
+                    double        detr,
+                    double        detr0,
+                    int           nhyb);
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | s8_eps.c                                                             |
+ *----------------------------------------------------------------------*/
+void mg_s8_eps(double *strain,double **gmkovc, double **gmkovr);
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | s8_funcderiv.c                                                       |
+ *----------------------------------------------------------------------*/
+void mg_s8_funct_deriv(double     *funct, 
+                       double    **deriv, 
+                       double      r, 
+                       double      s,
+                       ELEMENT_TYP typ,
+                       int         option);
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | s8_init.c                                                            |
+ *----------------------------------------------------------------------*/
+void mg_s8init(PARTITION *actpart);
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | s8_inpele.c                                                          |
+ *----------------------------------------------------------------------*/
+void mg_s8inp(ELEMENT *ele);
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | s8_intg.c                                                            |
+ *----------------------------------------------------------------------*/
+void mg_s8intg(const ELEMENT   *ele,
+               struct _S8_DATA *data,
+               int              option);
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | s8_loccoordnode.c                                                    |
+ *----------------------------------------------------------------------*/
+double mg_s8_local_coord_node(int node, int flag, ELEMENT_TYP typ);
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | s8_main.c                                                            |
+ *----------------------------------------------------------------------*/
+void mg_shell8(      PARTITION *actpart,
+                     INTRA     *actintra,
+                     ELEMENT   *ele,
+                     ARRAY     *estif_global,
+                     ARRAY     *emass_global,
+                     double    *global_vec,
+                     int        global_numeq,
+               const int        option
+              );
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | s8_mat_linel.c                                                       |
+ *----------------------------------------------------------------------*/
+void mg_s8_mat_linel(LINEAR_ELASTIC *mat, double **g, double **CC);
+void mg_s8_mat_stress1(double *stress, double *strain, double **C);
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | s8_static_ke.c                                                       |
+ *----------------------------------------------------------------------*/
+void mg_s8static_ke(ELEMENT           *ele, 
+                    struct _S8_DATA   *data, 
+                    MATERIAL          *mat,
+                    ARRAY             *estif_global, 
+                    int                init);
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | s8_tmat.c                                                            |
+ *----------------------------------------------------------------------*/
+void mg_s8_tmat(ELEMENT    *ele,
+                MATERIAL   *mat,
+                double     *stress,
+                double     *strain,
+                double    **C,
+                double    **gmkovc,
+                double    **gmkonc,
+                double    **gmkovr,
+                double    **gmkonr,
+                double    **gkovc,
+                double    **gkonc,
+                double    **gkovr,
+                double    **gkonr,
+                double      detc,
+                double      detr,
+                double      e3,
+                int         option);
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | s8_tmtr.c                                                            |
+ *----------------------------------------------------------------------*/
+void mg_s8_tmtr(double   **x,
+                double   **a3,
+                double     e3,
+                double   **gkov,
+                double   **gkon,
+                double   **gmkov,
+                double   **gmkon,
+                double    *det,
+                double    *funct,
+                double   **deriv,
+                int        iel,
+                double     condfac,
+                int        flag);
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | s8_tvbo.c                                                            |
+ *----------------------------------------------------------------------*/
+void mg_s8_tvbo(double      e1,
+                double      e2,
+                double    **bop,
+                double     *funct,
+                double    **deriv,
+                int         iel,
+                int         numdf,
+                double    **akov,
+                double    **a3kvp);
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | s8_tvhe_linear.c                                                     |
+ *----------------------------------------------------------------------*/
+void mg_s8_tvhe_linear(double **gmkovr,
+                       double **gmkovc,
+                       double **gmkonr,
+                       double **gmkonc,
+                       double **gkovr,
+                       double **gkovc,
+                       double  *detr,
+                       double  *detc);
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | s8_tvma.c                                                            |
+ *----------------------------------------------------------------------*/
+void mg_s8_tvma(double **D, double **C, double *stress, double *stress_r,
+                double e3, double fact, double condfac);
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | s8_tvmr.c                                                            |
+ *----------------------------------------------------------------------*/
+void mg_s8_tvmr(double   **x,
+                double   **a3,
+                double   **akov,
+                double   **akon,
+                double   **amkov,
+                double   **amkon,
+                double    *det,
+                double    *funct,
+                double   **deriv,
+                int        iel,
+                double   **a3kvp,
+                int        flag);
+/*----------------------------------------------------------------------*
+ | Prototypes from                                       m.gee 09/01    |
+ |                                                                      |
+ | .c                                                    |
+ *----------------------------------------------------------------------*/

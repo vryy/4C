@@ -1,0 +1,23 @@
+TO SET SHELL TO DEBUG WITH DDE (CONFLICTS WITH TOTALVIEW!):
+MPI_FLAGS=edde
+export MPI_FLAGS
+
+TO UNSET SHELL FROM DEBUG:
+MPI_FLAGS=f
+export MPI_FLAGS
+
+TO ENTER IN EACH DDE COMMAND LINE:
+set  mpi_debug_cont=1
+bre ntam
+go
+
+PARALLEL:
+mpirun -np 1 <executablename> <inputfilename> <outputname>
+
+PARALLEL WITH TOTALVIEW:
+mpirun -np 2 -tv <executablename> <inputfilename> <outputname>
+SEQUENTIELL WITH TOTALVIEW:
+totalview  <executablename> -a <inputfilename> <outputname>
+
+
+

@@ -1,0 +1,37 @@
+----------------------------------------------------------------------------------
+The Makefiles
+
+Makefile.HPUX11
+Makefile.par
+Makefile.seq
+
+are HPUX11.0 Makefiles for parallel/sequentiell
+and 32bit/64bit (not tested!) makefiles for stat16 (and later stat25)
+
+To run the Makefile.HPUX11 type make -f Makefile.HPUX11
+or create a link 
+ln -s Makefile.HPUX11 Makefile
+and then type 
+make
+
+They use the libs placed in /bau/stat16/users/statik/lib
+----------------------------------------------------------------------------------
+The Makefile 
+
+Makefile.HPUX10
+
+is for all other machines
+
+To run the Makefile.HPUX10 type make -f Makefile.HPUX10
+or create a link 
+ln -s Makefile.HPUX10 Makefile
+and then type 
+make
+
+It uses the libs in /bau/stat33/users/statik/lib
+----------------------------------------------------------------------------------
+
+NOTE: Not all solver packages are present
+on each machine. Till now, there is no HYPRE on HPUX11
+and there is no (and never will be) MUMPS on HPUX10
+
