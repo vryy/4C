@@ -5,6 +5,7 @@
 ------------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "../shell8/shell8.h"
+#include "../shell9/shell9.h"
 #include "../wall1/wall1.h"
 #include "../brick1/brick1.h"
 #include "../fluid3/fluid3.h"
@@ -384,6 +385,21 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    {
       structfield->dis[0].element[counter].eltyp=el_shell8;
       s8inp(&(structfield->dis[0].element[counter]));
+   }
+#endif
+/*------------------------------------------------ elementtyp is SHELL9 */
+   frchk("SHELL9",&ierr);
+   if (ierr==1)
+   {
+#ifndef D_SHELL9 
+      dserror("SHELL9 needed but not defined in Makefile");
+#endif
+   }
+#ifdef D_SHELL9 
+   if (ierr==1) 
+   {
+      structfield->dis[0].element[counter].eltyp=el_shell9;
+      s9inp(&(structfield->dis[0].element[counter]));
    }
 #endif
 /*------------------------------------------------ elementtyp is BRICK1 */
