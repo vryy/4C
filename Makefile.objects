@@ -120,7 +120,6 @@ OBJS_FLUID3   = src/fluid3/f3_calele.o \
                 src/fluid3/f3_calstabmat.o \
                 src/fluid3/f3_calstabpar.o \
                 src/fluid3/f3_calstress.o \
-                src/fluid3/f3_caltimerhs.o \
                 src/fluid3/f3_inpele.o \
                 src/fluid3/f3_intg.o \
                 src/fluid3/f3_massrhs.o \
@@ -245,6 +244,7 @@ OBJS_BRICK1   = src/brick1/c1_out.o \
 #               math
 OBJS_MATH     = src/math/sort_find.o \
                 src/math/math1.o \
+                src/math/geometry.o \
                 src/math/arcline.o
 #               output
 OBJS_OUTPUT   = src/output/out_global.o \
@@ -343,6 +343,7 @@ OBJS_FLUID2   = src/fluid2/f2_calcurvature.o \
                 src/fluid2/f2_calgalmat.o \
                 src/fluid2/f2_calgalmat_tu.o \
                 src/fluid2/f2_calgalmat_tu_1.o \
+                src/fluid2/f2_calmatvec_usfem.o \
                 src/fluid2/f2_calservice.o \
                 src/fluid2/f2_calservice_tu.o \
                 src/fluid2/f2_calservice_tu_1.o \
@@ -354,13 +355,14 @@ OBJS_FLUID2   = src/fluid2/f2_calcurvature.o \
                 src/fluid2/f2_calstabmat_tu_1.o \
                 src/fluid2/f2_calstress.o \
                 src/fluid2/f2_calsurfrhs.o \
-                src/fluid2/f2_caltimerhs.o \
+                src/fluid2/f2_caltau.o \
                 src/fluid2/f2_caltimerhs_tu.o \
                 src/fluid2/f2_caltimerhs_tu_1.o \
                 src/fluid2/f2_caltimerhspro_tu.o \
                 src/fluid2/f2_caltimerhspro_tu_1.o \
                 src/fluid2/f2_caltuvisc.o \
                 src/fluid2/f2_calvort.o \
+                src/fluid2/f2_int_usfem.o \
                 src/fluid2/f2_inpele.o \
                 src/fluid2/f2_inpele_tu.o \
                 src/fluid2/f2_intg.o \
@@ -374,6 +376,7 @@ OBJS_FLUID2   = src/fluid2/f2_calcurvature.o \
 #               fluid_full
 OBJS_FLUID    = src/fluid_full/fluid_adapt_service.o \
                 src/fluid_full/fluid_curvature.o \
+                src/fluid_full/fluid_consistbf.o \
                 src/fluid_full/fluid_dyn.o \
                 src/fluid_full/fluid_dirich.o \
                 src/fluid_full/fluid_dirich_tu.o \
@@ -550,6 +553,7 @@ OBJS_F2PRO    = src/fluid2_pro/f2pro_inpele.o \
                 src/fluid2_pro/f2pro_caltimerhs.o \
                 src/fluid2_pro/f2pro_calservice.o \
                 src/fluid2_pro/f2pro_main.o
+#
 #                interf
 OBJS_IF       = src/interf/if_inpele.o \
                 src/interf/if_main.o \
