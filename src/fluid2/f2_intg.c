@@ -422,6 +422,7 @@ if (option==0)
 } /* endif (option==0) */                                                
 else
 {
+   dserror("don't know what to do!\n");
 /* do nothing at the moment --------------------------------------------*/       
 }
 
