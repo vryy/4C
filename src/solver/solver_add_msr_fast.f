@@ -353,9 +353,11 @@ c     check for dirichlet conditions !!
 
         if (dirich(i).eq.1) then
           do mm=1,nd
-            estif(ele+1,mm,i) = 0.0
-            estif(ele+1,i,mm) = 0.0
+            if (mm .ne. i) then
+              estif(ele+1,mm,i) = 0.0
+              estif(ele+1,i,mm) = 0.0
 C            estif(ele+1,i,i)  = 1.0
+            endif
           enddo
         endif
       enddo
@@ -808,9 +810,11 @@ c     check for dirichlet conditions !!
 
         if (dirich(i).eq.1) then
           do mm=1,nd
-            estif(ele+1,mm,i) = 0.0
-            estif(ele+1,i,mm) = 0.0
+            if (mm .ne. i) then
+              estif(ele+1,mm,i) = 0.0
+              estif(ele+1,i,mm) = 0.0
 C            estif(ele+1,i,i)  = 1.0
+            endif
           enddo
         endif
       enddo

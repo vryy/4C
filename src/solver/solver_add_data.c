@@ -91,14 +91,17 @@ if (assemble_action==assemble_two_matrix || assemble_action==assemble_one_matrix
         {
           for (jj=0; jj<actele->node[ii]->numdf; jj++)
           {
-            estif[counter2][counter] = 0.0;
-            estif[counter][counter2] = 0.0;
-            estif[counter][counter]  = 1.0;
-            if (sysarray2>=0)
+            if (counter2 != counter)
             {
-              emass[counter2][counter] = 0.0;
-              emass[counter][counter2] = 0.0;
-              /*emass[counter][counter]  = 1.0;*/
+              estif[counter2][counter] = 0.0;
+              estif[counter][counter2] = 0.0;
+              /*estif[counter][counter]  = 1.0;*/
+              if (sysarray2>=0)
+              {
+                emass[counter2][counter] = 0.0;
+                emass[counter][counter2] = 0.0;
+                /*emass[counter][counter]  = 1.0;*/
+              }
             }
             counter2++;
           }
