@@ -47,6 +47,7 @@ VISUAL2
 ------------------------------------------------------------------------*/
 void ntavisual()
 {
+int    i;        /* simply a counter                                    */
 int    numfld;   /* number of fields                                    */
 int    numf;     /* number of fluid field                               */
 int    nums;     /* number of structural field                          */
@@ -58,8 +59,19 @@ FIELD *actfield; /* actual field                                        */
 dstrc_enter("ntavisual");
 #endif
 
+/*------------------------do initial partitioning of nodes and elements */
+part_fields();
+
 /*------------------------------------------------ assign dofs to nodes */
-assign_dof();
+for(i=0; i<genprob.numfld; i++)
+{
+   actfield = &(field[i]);
+   if (actfield->ndis==1) assign_dof(actfield);
+   if (actfield->ndis>1) assign_dof_ndis(actfield);
+}
+/*--------make the procs know their own nodes and elements a bit better */
+part_assignfield();
+
 
 switch(genprob.visual)
 {
