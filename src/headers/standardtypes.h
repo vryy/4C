@@ -56,6 +56,10 @@ Maintainer: Malte Neumann
 #include "../wall1/wallcontact.h"
 #endif
 /*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | structures used by local co-sys                        genk 04/04    |
+ *----------------------------------------------------------------------*/
+#include "locsys.h"
 
 /*----------------------------------------------------------------------*
  | Nodes and Elements on finite element level             m.gee 8/00    |
@@ -66,9 +70,7 @@ Maintainer: Malte Neumann
  *----------------------------------------------------------------------*/
 #include "design.h"
  
- 
-  
-/*----------------------------------------------------------------------*
+ /*----------------------------------------------------------------------*
  | structures used by load curves                         m.gee 8/00    |
  *----------------------------------------------------------------------*/
 #include "curve.h"
@@ -148,7 +150,10 @@ FILE             *out_err;                /* file-pointer .err  file     */
 FILE             *out_cur;                /* file-pointer .cur  file     */
 FILE             *out_pss;                /* file ptr to restart-pss file */
 FILE             *in_pss;                 /* file-pointer .pss  file     */
-FILE             *out_mon;                /* file-pointer .mon file     */
+FILE             *out_smoni;              /* file-pointer .mon file      */
+FILE             *out_fmoni;              /* file-pointer .mon file      */
+FILE             *out_amoni;              /* file-pointer .mon file      */
+FILE             *out_monarea;            /* file-pointer area of fluid  */
 #ifdef GEMM
 FILE             *out_gemm;               /* file-pointer .gemm file*/
 #endif
@@ -292,11 +297,9 @@ typedef struct _MONITOR
 {
 INT              numnp;
 INT              numval;
-INT              numstep;
 ARRAY            onoff;
 ARRAY            monnodes;
 ARRAY            val;
-ARRAY            time;
 } MONITOR;
 
 
