@@ -61,8 +61,8 @@ INT                turbu;
 INT                fs_on;   /*! element belongs to free surface           */
 
 /*------------------------------------------------- structure for submesh */
-int                smisal;        /* flag for element submesh creation    */
-double             smcml;         /* charact. mesh length for submesh     */
+INT                smisal;        /* flag for element submesh creation    */
+DOUBLE             smcml;         /* charact. mesh length for submesh     */
 struct _ARRAY      xyzsm;         /* coordinates of submesh nodes         */
 struct _ARRAY      solsm;         /* sol. of current timestep             */
 struct _ARRAY      solsmn;        /* sol. of last timestep                */
