@@ -18,6 +18,25 @@ Maintainer: Steffen Genkinger
 \addtogroup FLUID
 *//*! @{ (documentation module open)*/
 /************************************************************************
+ | fluid_adapt_service.c                                                |
+ ************************************************************************/
+void fluid_acceleration(	FIELD 		*actfield,
+				INT 	 	iop
+			);
+void fluid_prep_rhs( FIELD *actfield );
+void fluid_predictor( FIELD *actfield, INT iop );
+void fluid_lte(	FIELD	 	*actfield,
+		INT 		 iop );
+void fluid_lte_norm(
+			PARTITION 	*actpart,
+			INTRA		*actintra,
+			INT		*iststep,
+			INT		*repeat,
+			INT		*repeated,
+			INT		 itnum
+			);
+
+/************************************************************************
  | fluid_curvature.c                                                       |
  ************************************************************************/
 void fluid_curvature(FIELD        *actfield,    
@@ -114,6 +133,21 @@ void dyn_fluid(void);
 void fluid_createfreesurf(void);
 void fluid_freesurf_setdofs(void);
 void fluid_modcoor(void);
+void fluid_updfscoor(FIELD *fluidfield, FLUID_DYNAMIC *fdyn,
+                     DOUBLE dt, INT flag);
+
+/************************************************************************
+ | fluid_heightfunction.c                                               |
+ ************************************************************************/
+void fluid_heightfunc(INT                  hctrl,
+                      DOUBLE              *grat, 
+		      FIELD               *actfield,
+                      PARTITION           *actpart,
+                      INTRA               *actintra,
+                      CALC_ACTION         *action,
+                      CONTAINER           *container,
+                      INT                  converged);
+		      
 /************************************************************************
  | fluid_imp_semimp.c                                                   |
  ************************************************************************/
@@ -128,6 +162,22 @@ void fluid_isi_tu(void);
  | fluid_imp_semimp_tu_1.c                                              |
  ************************************************************************/
 void fluid_isi_tu_1(void);
+
+/************************************************************************
+ | fluid_liftdrag.c                                                     |
+ ************************************************************************/
+void fluid_liftdrag(INT            init,
+                    CALC_ACTION   *action,
+		    CONTAINER     *container,
+		    FIELD         *actfield,
+		    SOLVAR        *actsolv,
+		    PARTITION     *actpart,
+		    INTRA         *actintra);
+
+/************************************************************************
+ | fluid_locsys.c                                                       |
+ ************************************************************************/
+void fluid_locsys(FIELD *actfield, FLUID_DYNAMIC *fdyn);
 
 /************************************************************************
  | fluid_mf.c                                                           |
@@ -207,24 +257,18 @@ void fluid_mlcaldirich(
                        DOUBLE   **estif,   
 		       INT       *hasdirich
 		      );  
+
 /************************************************************************
- | fluid_adapt_service.c                                                |
+ | fluid_normal.c                                                       |
  ************************************************************************/
-void fluid_acceleration(	FIELD 		*actfield,
-				INT 	 	iop
-			);
-void fluid_prep_rhs( FIELD *actfield );
-void fluid_predictor( FIELD *actfield, INT iop );
-void fluid_lte(	FIELD	 	*actfield,
-		INT 		 iop );
-void fluid_lte_norm(
-			PARTITION 	*actpart,
-			INTRA		*actintra,
-			INT		*iststep,
-			INT		*repeat,
-			INT		*repeated,
-			INT		 itnum
-			);
+void fluid_cal_normal(FIELD *actfield, FLUID_DYNAMIC *fdyn, INT init,
+                      CALC_ACTION *action         );
+
+/************************************************************************
+ | fluid_pseudofsi.c                                                    |
+ ************************************************************************/
+void fluid_createpseudofsi(void);
+
 /************************************************************************
  | fluid_service.c                                                      |
  ************************************************************************/
@@ -240,9 +284,9 @@ void fluid_init(
                           INTRA	            *actintra,
 			  FIELD             *actfield, 
                           CALC_ACTION       *action,
-			  CONTAINER         *container,
-		          INT                numr,
-		          FLUID_STRESS       str	
+                          CONTAINER         *container,
+                          INT                numr,
+                          FLUID_STRESS       str	
 	       );
 void fluid_norm(          
                           FIELD             *actfield,    
@@ -287,6 +331,7 @@ void fluid_nullshstr(INTRA             *actintra,
                         FIELD             *actfield);
 void fluid_reducestress(  
                           INTRA             *actintra,
+                          PARTITION         *actpart,
                           FIELD             *actfield,
 			  INT                numdf, 
 			  FLUID_STRESS       str
@@ -295,7 +340,6 @@ void fluid_cal_error(
     FIELD             *actfield,
     INT                index
     );
-
 
 /************************************************************************
  | fluid_service_tu.c                                                   |
