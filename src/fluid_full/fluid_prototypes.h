@@ -264,40 +264,6 @@ void fluid_init(
                 FLUID_DYNAMIC *fdyn	
 	       );
 /*!---------------------------------------------------------------------                                         
-\brief storing results in solution history
-
-<pre>                                                         genk 05/02
-
-in this routine the results in the DIST_VECTOR are put to the nodes in
-a certain place in ARRAY sol_increment.
-Result has to be allreduced and is put to the whole field on each proc.
-If necassary the norms for the iteration check of the nonlinear iteration
-scheme are calculated	   
-			     
-</pre>   
-\param **actfield      FIELD	      (i)    actual field       
-\param  *actintra      INTRA	      (i)    actual intra comm.
-\param	*sol 	       DIST_VECTOR    (i)    solution vector
-\param	 place         int	      (i)    place in sol_incr.
-\param	*sysarray      SPARSE_ARRAY   (i)
-\param	*sysarray_typ  SPARSE_TYP     (i)
-\param	*vrat          double	      (o)    vel.  conv. ratio
-\param	*prat          double	      (o)    pre.  conv. ratio
-\param	*fdyn	       FLUID_DYNAMIC	     	
-\return void 
-
-------------------------------------------------------------------------*/
-void fluid_result_incre(FIELD         *actfield,    
-                        INTRA         *actintra,   
-			DIST_VECTOR   *sol,        
-                        int            place,      
-			SPARSE_ARRAY  *sysarray,      
-			SPARSE_TYP    *sysarray_typ,
-			double        *vrat,        
-			double        *prat,       
-			FLUID_DYNAMIC *fdyn           
-		       );
-/*!---------------------------------------------------------------------                                         
 \brief calculating norms for steady state check
 
 <pre>                                                         genk 05/02
@@ -407,26 +373,6 @@ time-integration parameters are printed out to the screen
 void fluid_algoout(FLUID_DYNAMIC  *fdyn, 
                    FLUID_DYN_CALC *dynvar
 		  );		   		     		  
-/*!---------------------------------------------------------------------                                         
-\brief extract digits from integer number
-
-<pre>                                                         genk 04/02		     
-</pre>   
-\param  num	 int   (i)    integer number
-\param *it	 int   (o)    integer on position "thousand"
-\param *ih       int   (o)    integer on position "hundred"
-\param *id       int   (o)    integer on position "ten"
-\param *id       int   (o)    integer on position "one"
-\return void 
-
-------------------------------------------------------------------------*/
-void intextract(
-                int num,    
-                int *it,    
-		int *ih,    
-		int *id,    
-		int *io     
-	       );
 	       
 /************************************************************************
  | fluid_stationary.c                                                   |
