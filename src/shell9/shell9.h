@@ -234,6 +234,8 @@ void s9_intforce(DOUBLE *intforce, DOUBLE *stress_r, DOUBLE **bop,
 void s9intg(const ELEMENT   *ele,
             S9_DATA         *data,
             INT              option);
+void s9intg_str(S9_DATA         *data,
+                INT              option);
 /*----------------------------------------------------------------------*
  |  s9_jaco.c                                            m.gee 11/01    |
  *----------------------------------------------------------------------*/
