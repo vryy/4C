@@ -14,7 +14,6 @@ Maintainer: Andrea Hund
 #include "../headers/standardtypes.h"
 #include "wall1.h"
 #include "wall1_prototypes.h"
-#include "wall1_prototypes.h"
 
 /*! 
 \addtogroup WALL1
@@ -28,7 +27,6 @@ void w1init(PARTITION *actpart,MATERIAL *mat)
 INT          i,j,k,l,m,ncm;
 INT          size_i, size_j;
 ELEMENT     *actele;
-NODE        *actnode;
 W1_DATA      data;
 
 ARRAY    funct_a_h;  /* shape functions */    
@@ -136,8 +134,8 @@ for (i=0; i<actpart->pdis[0].numele; i++)
   if(mat[actele->mat-1].mattyp == m_pl_mises || 
      mat[actele->mat-1].mattyp == m_pl_mises_3D ||  /*Stefan's mises 3D*/ 
      mat[actele->mat-1].mattyp == m_pl_dp || 
-     mat[actele->mat-1].mattyp == m_pl_epc || 
-     mat[actele->mat-1].mattyp == m_damage)
+     mat[actele->mat-1].mattyp == m_pl_epc ||
+     mat[actele->mat-1].mattyp == m_damage )
   {/*matplast01*/
     size_i = 1;
     actele->e.w1->elewa = (W1_ELE_WA*)CCACALLOC(size_i,sizeof(W1_ELE_WA));
@@ -166,8 +164,9 @@ for (i=0; i<actpart->pdis[0].numele; i++)
       actele->e.w1->elewa[0].ipwa[k].qn = (DOUBLE*)CCACALLOC(4,sizeof(DOUBLE));
 
       /*additional values needed for condensation       sh 08/02*/
-      if(mat[actele->mat-1].mattyp == m_pl_mises_3D )
+      if(mat[actele->mat-1].mattyp == m_pl_mises_3D)
       {
+      actele->e.w1->elewa[0].ipwa[k].sigc = (DOUBLE*)CCACALLOC(4,sizeof(DOUBLE));
       actele->e.w1->elewa[0].ipwa[k].sigi = (DOUBLE*)CCACALLOC(4,sizeof(DOUBLE));
       actele->e.w1->elewa[0].ipwa[k].epsi = (DOUBLE*)CCACALLOC(4,sizeof(DOUBLE));
       actele->e.w1->elewa[0].ipwa[k].di   = (DOUBLE*)CCACALLOC(4,sizeof(DOUBLE));
@@ -210,13 +209,14 @@ for (i=0; i<actpart->pdis[0].numele; i++)
         actele->e.w1->elewa[0].ipwa[k].eps_esz[j] = 0.;
         actele->e.w1->elewa[0].ipwa[k].d4_esz[j]  = 0.;
         actele->e.w1->elewa[0].ipwa[k].qn[ j] = 0.;
-        if(mat[actele->mat-1].mattyp == m_pl_mises_3D )
+        if(mat[actele->mat-1].mattyp == m_pl_mises_3D  )
         {
+        actele->e.w1->elewa[0].ipwa[k].sigc[j] = 0.;
         actele->e.w1->elewa[0].ipwa[k].sigi[j] = 0.;
         actele->e.w1->elewa[0].ipwa[k].epsi[j] = 0.;
         actele->e.w1->elewa[0].ipwa[k].di[  j] = 0.;
         }
-        if(mat[actele->mat-1].mattyp == m_pl_epc )
+        if(mat[actele->mat-1].mattyp == m_pl_epc  )
         {
         actele->e.w1->elewa[0].ipwa[k].sigc[j] = 0.;
         actele->e.w1->elewa[0].ipwa[k].grad[j] = 0.;
@@ -234,7 +234,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
     {
        w1cdia(actele, &data, funct_h, deriv_h, xjm_h);
     }
-    else if(mat[actele->mat-1].mattyp == m_pl_epc)
+    else if(mat[actele->mat-1].mattyp == m_pl_epc  )
     {
        w1cdia(actele, &data, funct_h, deriv_h, xjm_h);
     }
