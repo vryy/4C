@@ -158,6 +158,7 @@ void inpctrdyn(void);
 void inpctrstat(void);
 void inpctr_dyn_struct(STRUCT_DYNAMIC *sdyn);
 void inpctr_dyn_ale(ALE_DYNAMIC *adyn);
+void inpctr_eig_struct(ALLEIG *alleig);
 /*!---------------------------------------------------------------------                                         
 \brief input of the FLUID DYNAMIC block in the input-file
 
