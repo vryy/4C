@@ -1,0 +1,58 @@
+
+# This is a sample defines file
+
+# even though we never make mistakes debugging is an option
+DEBUG
+
+# all possible elements
+D_ALE              # defines element ale (2D+3D)
+D_AXISHELL         # defines axisymmetric shell element
+D_BEAM3            # defines element beam3
+D_BRICK1           # defines element brick1
+D_FLUID2           # defines element fluid2
+D_FLUID2_PRO       # defines element fluid2 with projection method
+FLUID2_ML          # defines element fluid2 with multilevel 
+D_FLUID3           # defines element fluid3
+FLUID3_ML          # defines element fluid3 with multilevel 
+D_SHELL8           # defines element shell8
+D_SHELL9           # defines element shell9
+D_WALL1            # defines element wall1
+D_INTERF           # defines interface element
+D_WALLGE           # defines gradient enhanced wall element
+
+
+# problem types
+D_FLUID            # defines general fluid problem
+D_FSI              # defines general FSI problem
+D_OPTIM            # defines optimization
+D_CONTACT          # defines contact problems
+
+# additional features
+D_MAT              # defines materials
+S8CONTACT          # defines contact algorithms for shell8 contact
+#WALLCONTACT        # defines contact algorithms for wall contact
+#GEMM               # defines Generalized Energy-Momentum Int. Scheme
+
+
+# tools
+RESULTTEST         # defines defines result testing
+PERF               # defines routines for exact time measurements 
+
+
+# possible solver packages
+AZTEC_PACKAGE      # defines interface to solver library AZTEC
+UMFPACK            # defines interface to solver library Umfpack
+#SPOOLES_PACKAGE    # defines interface to solver library Spooles (only in parallel)
+
+# inactive solvers
+#PARSUPERLU_PACKAGE # defines interface to solver library ParSuperLU
+#SUPERLU_PACKAGE    # defines interface to solver library SuperLU 
+#MUMPS_PACKAGE      # defines interface to solver library Mumps
+#HYPRE_PACKAGE      # defines interface to solver library HYPRE 
+#MLIB_PACKAGE       # defines interface to solver library MLIB
+
+
+# visual packages (only in seriell)
+#VISUAL2_PACKAGE    # defines visualisation tool VISUAL2
+VISUAL3_PACKAGE    # defines visualisation tool VISUAL3
+
