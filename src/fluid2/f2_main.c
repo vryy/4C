@@ -56,8 +56,7 @@ extern struct _FIELD      *field;
 \param	*ele		 ELEMENT      (i)    actual element
 \param	*estif_global	 ARRAY        (o)    element stiffness matrix
 \param  *emass_global	 ARRAY        (o)    element mass matrix
-\param	*etforce_global  ARRAY        (o)    element time force vector
-\param  *eiforce_global  ARRAY        (o)    element iter force vecotr
+\param  *eforce_global   ARRAY        (o)    element internal force vector
 \param	*edforce_global  ARRAY        (o)    ele dirichl. force vector
 \param	*action	         CALC_ACTION  (i)
 \param	*hasdirich	 INT          (o)    flag
@@ -72,8 +71,7 @@ void fluid2(PARTITION   *actpart,
             ELEMENT     *eleke,
             ARRAY       *estif_global,
             ARRAY       *emass_global,
-	    ARRAY       *etforce_global,
-	    ARRAY       *eiforce_global,
+	    ARRAY       *eforce_global,
 	    ARRAY       *edforce_global,
             CALC_ACTION *action,
 	    INT         *hasdirich,
@@ -111,7 +109,7 @@ case calc_fluid_init:
    f2_intg(0);
    f2_calele(NULL,NULL,
              estif_global,emass_global,
-	     etforce_global,eiforce_global,edforce_global,
+	     eforce_global,edforce_global,
 	     NULL,NULL,0,0,1);
    f2_iedg(NULL,ele,-1,1);
 /*---------------------------------------------------- multi-level FEM? */
@@ -134,8 +132,10 @@ case calc_fluid_init:
       f2_pdsubmesh(ssmesh,xele,yele,mlvar->ssmorder,1);
     }
 /*----------------------- init the element routines for multi-level FEM */
-    f2_lsele(fdyn->data,mlvar,submesh,ssmesh,ele,estif_global,emass_global,
-             etforce_global,eiforce_global,edforce_global,hasdirich,hasext,1);
+    dserror("etforce has been removed, this has to be checked by Dr. Gravemeier");
+/*    f2_lsele(fdyn->data,mlvar,submesh,ssmesh,ele,estif_global,emass_global,
+             etforce_global,eforce_global,edforce_global,hasdirich,hasext,1);
+             */
   }
 #endif
 break;
@@ -160,14 +160,16 @@ if (fdyn->mlfem==1)
 /*-------------------------- create element sub-submesh if not yet done */
     if (mlvar->smsgvi>2) f2_elesubmesh(ele,ssmesh,1);
   }
-  f2_lsele(fdyn->data,mlvar,submesh,ssmesh,ele,estif_global,emass_global,
-           etforce_global,eiforce_global,edforce_global,hasdirich,hasext,0);
+  dserror("etforce has been removed, this has to be checked by Dr. Gravemeier");
+/*  f2_lsele(fdyn->data,mlvar,submesh,ssmesh,ele,estif_global,emass_global,
+           etforce_global,eforce_global,edforce_global,hasdirich,hasext,0);
+           */
 }
 else
 #endif
    f2_calele(ele,eleke,
              estif_global,emass_global,
-	     etforce_global,eiforce_global,edforce_global,
+	     eforce_global,edforce_global,
 	     hasdirich,hasext,actintra->intra_rank,container->is_relax,0);
 break;
 
@@ -192,6 +194,11 @@ case calc_fluid_liftdrag:
    }
 break;
 
+/*-------------------- do stress projection for lower order elements ---*/
+case calc_fluid_stressprojection:
+   f2_calstresspro(ele,hasext,estif_global,eforce_global);
+break;
+
 /*--------------------------------- calculate curvature at free surface */
 case calc_fluid_curvature:
    f2_curvature(ele,actintra->intra_rank);
@@ -200,17 +207,12 @@ break;
 /*--------------------------------- calculate height function matrices */
 case calc_fluid_heightfunc:
    f2_heightfunc(ele,estif_global,
-                 eiforce_global,container);
+                 eforce_global,container);
 break;
 
 /*---------------------------------------- calculate the shear stresses */
 case calc_fluid_shearvelo:
    f2_shearstress(ele);
-break;
-
-/*--------------------------- calculate element stabilisation parameter */
-case calc_fluid_stab:
-   f2_calstab(ele);
 break;
 
 case calc_fluid_normal:
