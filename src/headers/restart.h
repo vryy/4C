@@ -57,3 +57,50 @@ long int                   **ele_handles;
 
 } RESTART_STATSTRUCT;
 
+
+/*----------------------------------------------------------------------*
+ | control structure                                      genk 09/03    |
+ | for fluid dynamics                                                   |           
+ *----------------------------------------------------------------------*/
+typedef struct _RESTART_DYNFLUID
+{
+INT                          step;     
+DOUBLE                       time;
+
+long int                     handle_of_node_handles;
+INT                          node_fdim;
+INT                          node_sdim;
+long int                   **node_handles;
+
+long int                     handle_of_ele_handles;
+INT                          ele_fdim;
+INT                          ele_sdim;
+long int                   **ele_handles;
+
+} RESTART_DYNFLUID;
+
+/*----------------------------------------------------------------------*
+ | control structure                                      genk 09/03    |
+ | for ale dynamics                                                     |           
+ *----------------------------------------------------------------------*/
+typedef struct _RESTART_DYNALE
+{
+INT                          step;     
+DOUBLE                       time;
+long int                     handle_of_node_handles;
+INT                          node_fdim;
+INT                          node_sdim;
+long int                   **node_handles;
+
+} RESTART_DYNALE;
+
+/*----------------------------------------------------------------------*
+ | control structure                                      genk 09/03    |
+ | for fsi dynamics                                                     |           
+ *----------------------------------------------------------------------*/
+typedef struct _RESTART_DYNFSI
+{
+INT                          step;     
+DOUBLE                       time;
+DOUBLE                       relax;
+} RESTART_DYNFSI;

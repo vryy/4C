@@ -156,6 +156,7 @@ void inpctrprob()
 {
 INT  ierr;
 INT  i;
+INT  restart;
 char buffer[50];
 #ifdef DEBUG 
 dstrc_enter("inpctrprob");
@@ -227,7 +228,13 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
     if (strncmp("Yes" ,buffer,3)==0) genprob.multidis=1;
   }      
 
-  frint("RESTART"    ,&(genprob.restart),&ierr);
+  frint("RESTART"    ,&(restart),&ierr);
+  if (ierr==1)
+  {
+     if (genprob.restart==0 && restart>0)
+     dserror("Restart defined in input file but not as program argument!\n");
+     genprob.restart=restart;
+  }
 
   frint("NUMFIELD",&(genprob.numfld),&ierr);
 
@@ -771,6 +778,8 @@ fdyn->numdf=3;
 fdyn->numcont=0;
 fdyn->uppss=1;  
 fdyn->upout=1;  
+fdyn->upres=1;  
+fdyn->res_write_evry=20;
 fdyn->nstep=1;
 fdyn->stchk=5;  
 fdyn->nums=0;
@@ -977,12 +986,15 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    }   
 
 /*--------------read INT */
-   frint("NUMDF"     ,&(fdyn->numdf)  ,&ierr);
-   frint("NUMCONT"   ,&(fdyn->numcont),&ierr);
-   frint("UPPSS"     ,&(fdyn->uppss)  ,&ierr);
-   frint("UPOUT"     ,&(fdyn->upout)  ,&ierr);
-   frint("NUMSTEP"   ,&(fdyn->nstep)  ,&ierr);
-   frint("STEADYSTEP",&i              ,&ierr);   
+   frint("NUMDF"      ,&(fdyn->numdf)         ,&ierr);
+   frint("NUMCONT"    ,&(fdyn->numcont)       ,&ierr);
+   frint("UPPSS"      ,&(fdyn->uppss)         ,&ierr);
+   frint("UPOUT"      ,&(fdyn->upout)         ,&ierr);
+   frint("UPRES"      ,&(fdyn->upres)         ,&ierr);
+   frint("RESSTEP"    ,&(fdyn->resstep)       ,&ierr);
+   frint("RESTARTEVRY",&(fdyn->res_write_evry),&ierr);
+   frint("NUMSTEP"    ,&(fdyn->nstep)         ,&ierr);
+   frint("STEADYSTEP" ,&i                     ,&ierr);   
    if (ierr==1)
    {
       if (fdyn->stchk==-1)
@@ -1049,6 +1061,7 @@ void inpctr_dyn_fsi(FSI_DYNAMIC *fsidyn)
 INT    ierr;
 INT    i;
 INT    length;
+INT    mod_res_write;
 char   buffer[50];
 #ifdef DEBUG 
 dstrc_enter("inpctr_dyn_fsi");
@@ -1069,10 +1082,12 @@ fsidyn->nstep=1;
 fsidyn->itemax=1;  
 fsidyn->iale=1;    
 fsidyn->uppss=1;
-fsidyn->dt=0.1;	
+fsidyn->upres=1;
+fsidyn->res_write_evry=1;
+fsidyn->dt=ONE/TEN;	
 fsidyn->maxtime=1000.0;
 fsidyn->entol=EPS6;  
-fsidyn->relax=1.0;  
+fsidyn->relax=ONE;  
 fsidyn->convtol=EPS6;
     
 if (frfind("-FSI DYNAMIC")==0) goto end;
@@ -1178,12 +1193,14 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          dserror("Parameter unknown: IALE");
    }
 /*--------------read INT */
-   frint("ITECHAPP"  ,&(fsidyn->itechapp),&ierr);
-   frint("ICHMAX"    ,&(fsidyn->ichmax)  ,&ierr);
-   frint("ISDMAX"    ,&(fsidyn->isdmax)  ,&ierr);
-   frint("NUMSTEP"   ,&(fsidyn->nstep)   ,&ierr);
-   frint("ITEMAX"    ,&(fsidyn->itemax)  ,&ierr);
-   frint("UPPSS"     ,&(fsidyn->uppss)   ,&ierr);
+   frint("ITECHAPP"   ,&(fsidyn->itechapp)         ,&ierr);
+   frint("ICHMAX"     ,&(fsidyn->ichmax)           ,&ierr);
+   frint("ISDMAX"     ,&(fsidyn->isdmax)           ,&ierr);
+   frint("NUMSTEP"    ,&(fsidyn->nstep)            ,&ierr);
+   frint("ITEMAX"     ,&(fsidyn->itemax)           ,&ierr);
+   frint("UPPSS"      ,&(fsidyn->uppss)            ,&ierr);
+   frint("UPRES"      ,&(fsidyn->upres)            ,&ierr);
+   frint("RESTARTEVRY",&(fsidyn->res_write_evry)   ,&ierr);
 /*--------------read DOUBLE */
    frdouble("TIMESTEP"   ,&(fsidyn->dt)     ,&ierr);
    frdouble("MAXTIME"    ,&(fsidyn->maxtime),&ierr);
@@ -1196,6 +1213,19 @@ frrewind();
 /*----------------------------------------------------------------------*/
 
 end:
+/*------------------------------------------------ check restart option */
+if (fsidyn->res_write_evry >= fsidyn->upres)
+{
+   mod_res_write = fsidyn->res_write_evry % fsidyn->upres;
+   if (mod_res_write!=0)
+   dserror("RESTARTEVRY and UPRES have to be multiple of each other!\n");
+}
+else
+{
+   mod_res_write =  fsidyn->upres % fsidyn->res_write_evry;
+   if (mod_res_write!=0)
+   dserror("RESTARTEVRY and UPRES have to be multiple of each other!\n");   
+}
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -1230,7 +1260,12 @@ dstrc_enter("inpctr_dyn_ale");
 /*---------------------------------------------------- some defaults ---*/
 adyn->num_initstep = 0;
 adyn->step = 0;
+adyn->nstep = 10;
+adyn->dt = 0.1;
+adyn->maxtime = 1000.0;
+adyn->updevry_disp = 20;
 adyn->measure_quality = no_quality;
+adyn->typ = classic_lin;
 
 if (frfind("-ALE DYNAMIC")==0) goto end;
 frread();
