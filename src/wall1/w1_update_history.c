@@ -135,7 +135,7 @@ for (lr=0; lr<nir; lr++)
       w1_funct_deriv(funct,deriv,e1,e2,ele->distyp,1);
       
       /*-------------------------------------- compute jacobian matrix --*/       
-      w1_jaco (funct,deriv,xjm,&det,ele,iel); 
+      w1_jaco (deriv,xjm,&det,ele,iel); 
       /*------------------------------------------- integration factor --*/ 
       fac = facr * facs * det * thick;  
       /*------------------------------------------ compute mass matrix---*/
