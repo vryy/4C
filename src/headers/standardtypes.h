@@ -30,6 +30,13 @@
  | and intra-communicators                                              |
  *----------------------------------------------------------------------*/
 #include "partition.h"
+
+/*----------------------------------------------------------------------*/
+#ifdef WALLCONTACT
+#include "../wall1/wallcontact.h"
+#endif
+/*----------------------------------------------------------------------*/
+
 /*----------------------------------------------------------------------*
  | Nodes and Elements on finite element level             m.gee 8/00    |
  *----------------------------------------------------------------------*/
@@ -38,6 +45,9 @@
  | Points, Lines, Surfaces and Volumes on design level    m.gee 8/00    |
  *----------------------------------------------------------------------*/
 #include "design.h"
+ 
+ 
+  
 /*----------------------------------------------------------------------*
  | structures used by load curves                         m.gee 8/00    |
  *----------------------------------------------------------------------*/
@@ -114,6 +124,9 @@ FILE             *out_err;                /* file-pointer .err  file     */
 FILE             *out_pss;                /* file ptr to restart-pss file */
 FILE             *in_pss;                 /* file-pointer .pss  file     */
 FILE             *out_mon;                /* file-pointer .mon file     */
+#ifdef GEMM
+FILE             *out_gemm;               /* file-pointer .gemm file*/
+#endif
 FILE             *out_tur;                /* file-pointer .tur  file     */
 
 FILE             *gidmsh;                 /* file pointer .flavia.msh    */
