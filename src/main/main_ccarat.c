@@ -57,21 +57,28 @@ par.nprocs=1;
 if (par.myrank==0)
 {
    printf("\n");
-   printf("************************\n");
-   printf("*  CARAT TEST VERSION  *\n");
-   printf("*                      *\n");
+   printf("****************************************\n");
+   printf("*                                      *\n");
+   printf("*             C C A R A T              *\n");
+   printf("*                                      *\n");
+   printf("*                                      *\n");
 #ifdef PARALLEL 
-   printf("*   parallel version   *\n");
-#else /* SEQUENTIEL */
-   printf("*  sequentiel version  *\n");
+   printf("*           parallel version           *\n");
+#else
+   printf("*          sequential version          *\n");
 #endif
-   printf("*                      *\n");
-   printf("*                      *\n");
-   printf("************************\n");
+   printf("*                                      *\n");
+   printf("*       Institut fuer Baustatik        *\n");
+   printf("*        Universitaet Stuttgart        *\n");
+   printf("*                                      *\n");
+   printf("*  Lehrstuhl fuer Numerische Mechanik  *\n");
+   printf("*   Technische Universitaet Muenchen   *\n");
+   printf("*                                      *\n");
+   printf("*    (c) 2004 All Rights Reserved.     *\n");
+   printf("*                                      *\n");
+   printf("****************************************\n\n");
 #ifdef PARALLEL 
    printf("number of processors: %d\n",par.nprocs);
-#else
-   printf("-sequentiell executable-\n");
 #endif
 }
 
