@@ -132,7 +132,9 @@ if (par.nprocs>1)
                 MPI_COMM_WORLD);
 }
 #endif
+
 /*---------------------give a copy of the "cleaned" input file on .err */
+#ifdef DEBUG
 if (par.myrank==0)
 {
    fprintf(allfiles.out_err,"===========================================\n");
@@ -146,9 +148,13 @@ if (par.myrank==0)
    fprintf(allfiles.out_err,"end of broadcasted copy of input file      \n");
    fprintf(allfiles.out_err,"===========================================\n");
    fflush(allfiles.out_err);
-/*---------------------------close input file, 'cause no longer needed */
-   fclose(allfiles.in_input);
 }
+#endif /* ifdef DEBUG */
+
+/*---------------------------close input file, 'cause no longer needed */
+if (par.myrank==0)
+   fclose(allfiles.in_input);
+
 /*--------------------------------set fr-system to begin of input_file */
 allfiles.actrow=0;
 allfiles.actplace=&(allfiles.input_file[0][0]);
