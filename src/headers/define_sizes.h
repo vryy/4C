@@ -68,6 +68,13 @@ Maintainer: Malte Neumann
 #endif
 
 
+/*
+ * The maximum number of matrices per field. Needed for aztec's reuse
+ * feature.
+ */
+#ifndef MAXNUMMATRICES
+#define MAXNUMMATRICES  10
+#endif
 
 /*----------------------------------------------------------------------*
  *                                                                      *
