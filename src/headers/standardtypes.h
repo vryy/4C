@@ -113,10 +113,14 @@ char             *outputfile_kenner;      /* output file kenner          */
 char              outputfile_name[100];   /* output file name            */
 char             *vispssfile_kenner;
 char              vispssfile_name[100];
+char             *visresfile_kenner;
+char              visresfile_name[100];
 size_t            outlenght;              /* lenght of output file kenner*/
 size_t            vispsslength;
+size_t            visreslength;
 INT               num_outputfiles;        /* number of output files      */
 INT               pss_counter;            /* number of records on pss-file */
+INT               num_flaviaresfiles;     /*                               */
 
 FILE             *in_input;               /* file-pointer input file     */
 FILE             *out_out;                /* file-pointer .out  file     */

@@ -61,7 +61,9 @@ static INT      IOPT;                 /* program mode                   */
 static INT      IVORT;                /* flag for vorticity calculation */
 static INT      ITURBU;               /* flag for turbulence calc.      */
 static INT      DSTEP;                /* increment of visualised steps  */
+static INT      INCRE;                /* increment of visualised steps  */
 static INT      NUMA;                 /* number of ALE-FIELD            */
+static INT      DATAFILE;             /* file-flag for results          */
 static INT      CMNCOL=300;           /* see VISUAL2 manual             */
 static INT      CMUNIT=37;            /* see VISUAL2 manual             */
 static INT      MNODE;                /* maximum number of nodes        */
@@ -88,6 +90,9 @@ static INT     ncols=1;         /* number of sol steps stored in sol	*/
 static INT     nacols=1;        /* number of sol steps of ALE field     */
 static INT     isstr=0;         /* flag for streamline calculation	*/
 static INT     icol=-1;         /* act. num. of sol step to be visual.  */
+static INT     FIRSTSTEP;
+static INT     LASTSTEP;
+static INT     ACTSTEP;
 static INT     hsize, vsize;    /* size for VISUAL2 window		*/
 static INT     true=-1;         /* flag for v2_cursor			*/
 static INT     false=0;         /* flag for v2_cursor			*/
@@ -106,8 +111,9 @@ static DOUBLE  vort;            /*                                      */
 static DOUBLE  kappa;	        /*					*/
 static DOUBLE  dissi;	        /*					*/
 static DOUBLE  visco;	        /*					*/
-static DOUBLE  xy;
+static DOUBLE  xy;              /*					*/
 static DOUBLE  minxy,maxxy;     /*					*/
+static DOUBLE  centerx,centery; /*                                      */
 static DOUBLE  minpre,maxpre;   /*					*/
 static DOUBLE  minvx,maxvx;     /*					*/
 static DOUBLE  minvy,maxvy;     /*					*/
@@ -157,8 +163,26 @@ actfieldtyp=fluid;
 actpart= &(partition[numff]);
 action = &(calc_action[numff]);
 NUMA=numaf;
-/*------------------------- read solution data from pss-file of proc 0 */
-visual_readpss(actfield,&ncols,&time_a);
+/*------ read solution data from pss-file or flavia.res-file of proc 0 */
+input0:
+printf("\n");
+printf("   Where are the visualisation data stored?\n");
+printf("      0:   pss-file\n");
+printf("      1:   flavia.res-file\n");
+scanf("%d",&DATAFILE);
+if (DATAFILE==0)
+{
+   visual_readpss(actfield,&ncols,&time_a);
+   FIRSTSTEP=0;
+   LASTSTEP=ncols;
+}
+else if (DATAFILE==1)
+{
+   visual_readflaviares(actfield,&ncols,&time_a,&FIRSTSTEP,&LASTSTEP,&DSTEP);
+   INCRE=1;
+}
+else 
+   goto input0;
 
 /*---------------------------------------------------------------------*
  * input from the screen                                               *
@@ -255,7 +279,10 @@ if (IOPT==2) /*-------------------------- read ALE field from pss-file */
       alefield=&(field[numaf]);
       structfield=&(field[numsf]);
       fsi_initcoupling(structfield,actfield,alefield);
-      visual_readpss(alefield,&nacols,NULL);
+      if (DATAFILE==0)
+         visual_readpss(alefield,&nacols,NULL);
+      else if (DATAFILE==1)
+         visual_readflaviares(alefield,&nacols,NULL,&FIRSTSTEP,&LASTSTEP,&DSTEP);
       if (ncols!=nacols)
       {
          printf("\n");
@@ -269,7 +296,10 @@ if (IOPT==2) /*-------------------------- read ALE field from pss-file */
       if (numaf<0) dserror("ALE-field does not exist!");
       alefield=&(field[numaf]);
       fluid_initmfcoupling(actfield,alefield);
-      visual_readpss(alefield,&nacols,NULL);
+      if (DATAFILE==0)
+         visual_readpss(alefield,&nacols,NULL);
+      else if (DATAFILE==1)
+         visual_readflaviares(alefield,&nacols,NULL,&FIRSTSTEP,&LASTSTEP,&DSTEP);
       if (ncols!=nacols)
       {
          printf("\n");
@@ -286,15 +316,18 @@ scanf("%lf",&yscale);
 
 /*--------------------------------------------------------- increment */
 input3:
-printf("\n");
-printf("   Increment step number by ...? (<%d)\n",ncols);
-scanf("%d",&DSTEP);
-if (DSTEP>ncols-1)
+if (DATAFILE==0)
 {
-   printf("   Increment too large --> Try again!\n");
-   goto input3;
+   printf("\n");
+   printf("   Increment step number by ...? (<%d)\n",ncols);
+   scanf("%d",&INCRE);
+   DSTEP=INCRE;
+   if (INCRE>ncols-1)
+   {
+      printf("   Increment too large --> Try again!\n");
+      goto input3;
+   }
 }
-
 /*------------------------------------------------- background colour */
 printf("\n");
 printf("   Background colour? (0: black   1: white)\n",bgcolour);
@@ -451,40 +484,42 @@ vsize = 525;
 ratio = 700.0/525.0;
 
 /*------------------------ modify x/y - limits to window aspect ratio */
+centerx =XYMIN[0]+dx/TWO;
+centery =XYMIN[1]+dy/TWO;
 if (dx>=dy)
 {
    XYPIX[0] = hsize;
    XYPIX[1] = vsize;
-   if (dx>ratio*dy)
-   {
-      dy = dx/ratio;
-      XYMIN[1] = 0.5*(XYMIN[1]+XYMAX[1]) - 0.5*dy;
-      XYMAX[1] = XYMIN[1] + dx;
-   }
-   else
+   if (dx/dy<ratio)
    {
       dx = dy*ratio;
-      XYMIN[0] = 0.5*(XYMIN[0]+XYMAX[0]) - 0.5*dx;
-      XYMAX[0] = XYMIN[0] + dx;
-   }         
-} /*endif (dx>=dy) */
-else 
-{
-   XYPIX[0] = vsize;
-   XYPIX[1] = hsize;
-   if (dy>ratio*dx)
-   {
-      dx = dy/ratio;
-      XYMIN[0] = 0.5*(XYMIN[0]+XYMAX[0]) - 0.5*dx;
-      XYMAX[0] = XYMIN[0] + dy;
+      XYMIN[0] = centerx - dx/TWO;
+      XYMAX[0] = centerx + dx/TWO;           
    }
    else
    {
+      dy = dx/ratio;
+      XYMIN[1] = centery - dy/TWO;
+      XYMAX[1] = centery + dy/TWO;
+   }
+}
+else
+{
+   XYPIX[0]=vsize;
+   XYPIX[1]=hsize;
+   if (dy/dx<ratio)
+   {
       dy = dx*ratio;
-      XYMIN[1] = 0.5*(XYMIN[1]+XYMAX[1]) - 0.5*dy;
-      XYMAX[1] = XYMIN[1] + dy;
-   }   
-} /* endif else */
+      XYMIN[1] = centery - dy/TWO;
+      XYMAX[1] = centery + dy/TWO;
+   }
+   else
+   {
+      dx = dy/ratio;
+      XYMIN[0] = centerx - dx/TWO;
+      XYMAX[0] = centerx + dx/TWO;
+   }
+}
 XYMIN[1] = XYMIN[1]/yscale;
 XYMAX[1] = XYMAX[1]/yscale;
 
@@ -936,6 +971,7 @@ case fluid:
 	 printf("\n");
          IMOVIE=1;
       }      
+   break;
    /*-------------------------------------------------------------------*/   
    case 12: /* kappa */
       if (ITURBU==1)
@@ -1134,8 +1170,16 @@ if (IMOVIE==2) v2movie();
 switch(actfieldtyp)
 {
 case fluid: 
-   if (icol==-1 || icol+DSTEP > ncols-1) icol=0;
-   else icol+=DSTEP;
+   if (icol==-1 || icol+INCRE > ncols-1) 
+   {
+      icol=0;
+      ACTSTEP=FIRSTSTEP;
+   }
+   else
+   { 
+      icol+=INCRE;
+      ACTSTEP+=DSTEP;
+   }
    *TIME = time_a.a.dv[icol];
 break;   
 case structure:
@@ -1185,11 +1229,11 @@ case fluid:
    charpointer=STRING+strlen(STRING);
    strcpy(charpointer,"    Step: ");
    charpointer=STRING+strlen(STRING);
-   sprintf(charpointer,"%5d",icol);  
+   sprintf(charpointer,"%5d",ACTSTEP);  
    charpointer=STRING+strlen(STRING); 
    strcpy(charpointer,"/");
    charpointer=STRING+strlen(STRING); 
-   sprintf(charpointer,"%-5d",ncols-1); 
+   sprintf(charpointer,"%-5d",LASTSTEP); 
    charpointer=STRING+strlen(STRING);      
    strcpy(charpointer,"                                             ");      
 break;   
@@ -1374,6 +1418,8 @@ xwd -out ...)
 converts the xwd-file into a .gif file via system command (convert)
 deletes the xwd-file via system command (rm)			   
 
+see also /bau/statik/info/README.visual2_ccarat_movie
+
 </pre>  
 
 \return void                                                                       
@@ -1392,10 +1438,15 @@ dstrc_enter("v2movie");
 #endif
 
 /*--------------------------------------- add file counter to filenames */
-sprintf(&string[27] ,"%-d" ,icol);
-sprintf(&convert[11],"%-d" ,icol);
-sprintf(&remove[6]  ,"%-d" ,icol);
-sprintf(&screen[11 ],"%-d" ,icol);
+#ifdef HPUX11
+printf("movie creation ony possible under HPUX 10.20\n");
+goto end;
+#endif
+
+sprintf(&string[27] ,"%-d" ,ACTSTEP);
+sprintf(&convert[11],"%-d" ,ACTSTEP);
+sprintf(&remove[6]  ,"%-d" ,ACTSTEP);
+sprintf(&screen[11 ],"%-d" ,ACTSTEP);
 
 /*---------------------------------------- add extensions to file names */
 charpointer = string+strlen(&string[0]);
@@ -1422,6 +1473,7 @@ system(&convert[0]);
 system(&remove[0]);
 
 /*----------------------------------------------------------------------*/
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
