@@ -332,7 +332,7 @@ solserv_result_total(
 if (ioflags.ale_disp_file==1)
    out_sol(actfield,actpart,actintra,adyn->step,0);
 if (par.myrank==0 && ioflags.ale_disp_gid==1) 
-   out_gid_sol("displacement",actfield,actintra,adyn->step,0);
+   out_gid_sol("displacement",actfield,actintra,adyn->step,0,adyn->time);
 /*--------------------------------------------------------------------- */
 /*------------------------------------------ measure time for this step */
 t1 = ds_cputime();
@@ -574,10 +574,11 @@ solserv_sol_copy(actfield,0,1,0,1,0);
 if (ioflags.ale_disp_file==1)
 {
     out_sol(actfield,actpart,actintra,adyn->step,0);
-    if (par.myrank==0) out_gid_sol("displacement",actfield,actintra,adyn->step,0);
+    if (par.myrank==0) 
+    out_gid_sol("displacement",actfield,actintra,adyn->step,0,adyn->time);
 }
 /*--------------------------------------- do mesh quality statistics ---*/
-ale_quality(actfield,adyn->step);
+ale_quality(actfield,adyn->step,actintra,actpart);
 /*------------------------------------------ measure time for this step */
 t1 = ds_cputime();
 if (par.myrank==0)
@@ -869,10 +870,11 @@ solserv_sol_copy(actfield,0,1,0,1,0);
 if (ioflags.ale_disp_file==1)
 {
     out_sol(actfield,actpart,actintra,adyn->step,0);
-    if (par.myrank==0) out_gid_sol("displacement",actfield,actintra,adyn->step,0);
+    if (par.myrank==0) 
+    out_gid_sol("displacement",actfield,actintra,adyn->step,0,adyn->time);
 }
 /*--------------------------------------- do mesh quality statistics ---*/
-ale_quality(actfield,adyn->step);
+ale_quality(actfield,adyn->step,actintra,actpart);
 /*------------------------------------------ measure time for this step */
 t1 = ds_cputime();
 if (par.myrank==0)
@@ -1110,10 +1112,11 @@ solserv_sol_copy(actfield,0,1,0,1,0);
 if (ioflags.ale_disp_file==1)
 {
     out_sol(actfield,actpart,actintra,adyn->step,0);
-    if (par.myrank==0) out_gid_sol("displacement",actfield,actintra,adyn->step,0);
+    if (par.myrank==0) 
+    out_gid_sol("displacement",actfield,actintra,adyn->step,0,adyn->time);
 }
 /*--------------------------------------- do mesh quality statistics ---*/
-ale_quality(actfield,adyn->step);
+ale_quality(actfield,adyn->step,actintra,actpart);
 /*------------------------------------------ measure time for this step */
 t1 = ds_cputime();
 if (par.myrank==0)
@@ -1353,10 +1356,11 @@ solserv_sol_copy(actfield,0,1,0,1,0);
 if (ioflags.ale_disp_file==1)
 {
     out_sol(actfield,actpart,actintra,adyn->step,0);
-    if (par.myrank==0) out_gid_sol("displacement",actfield,actintra,adyn->step,0);
+    if (par.myrank==0) 
+    out_gid_sol("displacement",actfield,actintra,adyn->step,0,adyn->time);
 }
 /*--------------------------------------- do mesh quality statistics ---*/
-ale_quality(actfield,adyn->step);
+ale_quality(actfield,adyn->step,actintra,actpart);
 /*------------------------------------------ measure time for this step */
 t1 = ds_cputime();
 if (par.myrank==0)
