@@ -76,6 +76,7 @@ extern struct _MATERIAL  *mat;
    dynvar->tau[2]: stability parameter continuity (tau_c)
 </pre>
 \param  *ele     ELEMENT	       (i)   actual element
+\param  *eleke   ELEMENT	       (i)   actual element (only for turbulence)
 \param  *data    FLUID_DATA	       (i)
 \param  *dynvar  FLUID_DYN_CALC        (i/o)
 \param **xzye    double                (-)   nodal coordinates
@@ -83,14 +84,19 @@ extern struct _MATERIAL  *mat;
 \param **deriv   double 	       (-)   deriv. of shape funcs
 \param **deriv2  double 	       (-)   2nd deriv. of sh. funcs
 \param **xjm     double 	       (-)   jacobian matrix
+\param **derxy   double 	       (-)   global derivatives
+\param **vderxy  double 	       (-)   global derivatives of velocity
 \param **evel    double 	       (i)   element velocities
 \param  *velint  double 	       (-)   vel. at integr. point
+\param  *eddyint  double 	       (-)   eddy-visc. at integr. point (only for turbulence)
+\param  *visc     double 	       (-)   viscosity
 \param **cutp    double 	       (-)   cutting points
 \return void             
 
 ------------------------------------------------------------------------*/
 void f2_calelesize(			     
 	           ELEMENT         *ele,    
+                 ELEMENT         *eleke,    
 		   FLUID_DATA      *data, 
 		   FLUID_DYN_CALC  *dynvar,
 	           double         **xyze,
@@ -98,9 +104,13 @@ void f2_calelesize(
 	           double         **deriv,  
 	           double         **deriv2,  		 
 		   double         **xjm,    
+               double         **derxy, 
+               double         **vderxy,
 		   double         **evel,    		  
 		   double          *velint, 
-		   double         **cutp    
+		   double         **cutp,    
+               double          *eddy,
+               double          *visc    
                   )
 {
 
@@ -112,7 +122,6 @@ int     isharea;        /* evaluation flag			        */
 int     ntyp;           /* element type (TRI or QUAD)  		        */
 int     actmat;         /* number of actual material		        */
 int     iel;            /* number of nodes of actual element            */
-double  visc;           /* fluid viscosity                              */
 double  area;           /* element area                                 */
 double  det;            /* determinant of jacobian                      */
 double  strle;          /* streamlength                                 */
@@ -121,6 +130,7 @@ double  fac,facr,facs;  /* factors                                      */
 double  dia,dia1,dia2;  /* values used for calculation of element size  */
 double  dx,dy;          /* values used for calculation of element size  */
 double  gcoor[2];       /* global coordinates                           */
+double  eddyint;        /* eddy-viscosity                               */
 DIS_TYP typ;
 
 #ifdef DEBUG 
@@ -320,8 +330,25 @@ if(ele->e.f2->istapc==1 || istrnint==1)
    } /* end swtich(ieval) */
 /*----------------------------------- calculate stabilisation parameter */               
    actmat=ele->mat-1;
-   visc = mat[actmat].m.fluid->viscosity;
-   f2_calstabpar(ele,dynvar,velint,visc,iel,ntyp,-1); 
+   (*visc) = mat[actmat].m.fluid->viscosity;
+
+  if (ele->e.f2->turbu == 1)
+  {
+   /*------------------------------------------- compute global derivates */
+      f2_gder(derxy,deriv,xjm,det,iel);
+   /*---------------------------------- compute global derivates for vel. */
+      f2_vder(vderxy,derxy,evel,iel);	
+
+     (*visc) += f2_calvisc(ele,vderxy);
+  } 
+
+  if (ele->e.f2->turbu == 2 || ele->e.f2->turbu == 3)
+  {
+   f2_eddyirans(eleke,&eddyint,funct,eddy,iel);
+   (*visc) += eddyint;
+  }
+   
+   f2_calstabpar(ele,dynvar,velint,(*visc),iel,ntyp,-1); 
 } /* endif (ele->e.f2->istapc==1 || istrnint==1) */
 
 /*----------------------------------------------------------------------*/

@@ -577,6 +577,20 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    {
       fluidfield->dis[0].element[counter].eltyp=el_fluid2;
       f2_inp(&(fluidfield->dis[0].element[counter]),counter);
+
+      if (fluidfield->dis[0].element[counter].e.f2->turbu == 2 || 
+          fluidfield->dis[0].element[counter].e.f2->turbu == 3 )
+      {
+       if(cpro==0)
+       {
+        fluidfield->dis[1].numele = fluidfield->dis[0].numele;
+	  fluidfield->dis[1].element=(ELEMENT*)CCACALLOC(fluidfield->dis[1].numele,sizeof(ELEMENT));
+         if (fluidfield->dis[1].element==NULL) dserror("Allocation of ELEMENT failed");
+         cpro++;
+       } /* endif (cpro==0) */      
+       fluidfield->dis[1].element[counter].eltyp=el_fluid2_tu;
+       f2tu_dis(&(fluidfield->dis[0].element[counter]),&(fluidfield->dis[1].element[counter]));       
+      } /* endif (e.f2->turbu == 2 || 3) */      
    }
 #endif
 /*----------------------------------------------------------------------*/

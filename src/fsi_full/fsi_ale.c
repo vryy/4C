@@ -149,7 +149,8 @@ adyn->maxtime=fsidyn->maxtime;
 adyn->nstep=fsidyn->nstep;
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-container.isdyn = 0;  
+container.isdyn   = 0;  
+container.actndis = 0;    
 actpos=1;
 outstep=0;
 pssstep=0;

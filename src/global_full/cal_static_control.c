@@ -106,8 +106,9 @@ CONTAINER     container;        /* contains variables defined in container.h */
 
 SPARSE_TYP    array_typ;        /* type of psarse system matrix */
 
-container.isdyn  = 0;           /* static calculation */
-container.kintyp = 0;           /* kintyp = 0: geo_lin*/
+container.isdyn   = 0;           /* static calculation */
+container.kintyp  = 0;           /* kintyp  = 0: geo_lin*/
+container.actndis = 0;           /* actndis = 0: only one discretisation*/
 
 #ifdef DEBUG 
 dstrc_enter("stalin");

@@ -142,6 +142,7 @@ actpart            = &(partition[0]);
 action             = &(calc_action[0]);
 sdyn               =   alldyn[0].sdyn;
 container.fieldtyp = actfield->fieldtyp;
+container.actndis  = 0;
 /*----------------------------------------------------------------------*/
 #ifdef PARALLEL 
 actintra    = &(par.intra[0]);

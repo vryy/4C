@@ -335,6 +335,23 @@ if (ierr!=1) dserror("Reading of FLUID2 element failed: IHELEM\n");
 frdouble("C_LAMB",&(ele->e.f2->clamb),&ierr); 
 if (ierr!=1) dserror("Reading of FLUID2 element failed: C_LAMB\n");
 
+/*-------------------------------------------- read flag for turbulence */
+frchar("TURBULENCE",buffer,&ierr);
+if (ierr==1)
+{
+   if (strncmp(buffer,"No",2)==0)
+      ele->e.f2->turbu=0;
+   else if (strncmp(buffer,"algebraic",9)==0)
+      ele->e.f2->turbu=1;
+   else if (strncmp(buffer,"kappa-eps",9)==0)
+      ele->e.f2->turbu=2;
+   else if (strncmp(buffer,"kappa-omega",11)==0)
+      ele->e.f2->turbu=3;
+   else
+      dserror("Reading of FLUID2 element failed: TURBULENCE\n"); 
+}
+else 
+  dserror("Reading of FLUID2 element failed: TURBULENCE\n");
 /*----------------------------- her now read all the other stuff needed */
 
 /*-------------------------------------------- set some additional data */

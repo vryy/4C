@@ -59,6 +59,7 @@ time-RHS for one fluid2 element is calculated
 \param **vderxy2   double	   (-)    2nd global vel. deriv.
 \param **wa1	   double	   (-)    working array
 \param **wa2	   double	   (-)    working array
+\param   visc        double	   (-)    viscosity
 \return void                                                   
 
 ------------------------------------------------------------------------*/
@@ -90,7 +91,8 @@ void f2_calint(
 	       double          *pderxy,  
 	       double         **vderxy2, 
 	       double         **wa1,     
-	       double         **wa2      
+	       double         **wa2,      
+             double           visc      
 	      )
 { 
 int       iel;        /* number of nodes                                */
@@ -103,7 +105,6 @@ int       ihoel=0;    /* flag for higher order elements                 */
 int       icode=2;    /* flag for eveluation of shape functions         */     
 int       lr, ls;     /* counter for integration                        */
 double    dens;       /* density                                        */
-double    visc;       /* viscosity                                      */
 double    fac;
 double    facr, facs; /* integration weights                            */
 double    det;        /* determinant of jacobian matrix                 */
@@ -119,7 +120,6 @@ dstrc_enter("f2_calint");
 iel=ele->numnp;
 actmat=ele->mat-1;
 dens = mat[actmat].m.fluid->density;
-visc = mat[actmat].m.fluid->viscosity;
 ntyp = ele->e.f2->ntyp; 
 typ  = ele->distyp;
 

@@ -54,6 +54,7 @@ void fluid2(
             PARTITION   *actpart,
             INTRA       *actintra,
             ELEMENT     *ele,             
+            ELEMENT     *eleke,             
             ARRAY       *estif_global,   
             ARRAY       *emass_global,   
 	    ARRAY       *etforce_global, 
@@ -95,10 +96,10 @@ case calc_fluid_init:
    viscstr= alldyn[numff].fdyn->viscstr;
 /*------------------------------------------- init the element routines */   
    f2_intg(data,0);
-   f2_calele(data,dynvar,NULL,
+   f2_calele(data,dynvar,NULL,NULL,
              estif_global,emass_global,
 	     etforce_global,eiforce_global,edforce_global,
-	     NULL,NULL,0,1);
+	     NULL,NULL,0,0,1);
    f2_iedg(NULL,ele,-1,1);
 break;
 
@@ -119,10 +120,10 @@ break;
 
 /*------------------------------------------- call the element routines */
 case calc_fluid:
-   f2_calele(data,dynvar,ele,
+   f2_calele(data,dynvar,ele,eleke,
              estif_global,emass_global,
 	     etforce_global,eiforce_global,edforce_global,
-	     hasdirich,hasext,actintra->intra_rank,0);
+	     hasdirich,hasext,actintra->intra_rank,0,0);
 break;
 
 /*------------------------------------------- calculate fluid vorticity */
@@ -138,6 +139,14 @@ break;
 /*--------------------------------- calculate curvature at free surface */
 case calc_fluid_curvature:
    f2_curvature(data,dynvar,ele,actintra->intra_rank);
+break;
+
+/*---------------------------------------- calculate the shear stresses */
+case calc_fluid_shearvelo:
+   f2_calele(data,dynvar,ele,eleke,
+             estif_global,emass_global,
+	       etforce_global,eiforce_global,edforce_global,
+	       hasdirich,hasext,actintra->intra_rank,1,0);
 break;
 
 /*----------------------------------------------------------------------*/

@@ -108,7 +108,8 @@ CONTAINER     container;        /* contains variables defined in container.h */
 
 SPARSE_TYP    array_typ;        /* type of psarse system matrix */
 
-container.isdyn = 0;            /* static calculation */
+container.isdyn   = 0;            /* static calculation */
+container.actndis = 0;            /* only one discretisation */
 
 #ifdef DEBUG 
 dstrc_enter("opt_stalin");

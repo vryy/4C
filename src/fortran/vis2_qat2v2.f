@@ -23,7 +23,7 @@ c			   quad cells the pointers must be filled either
 c			   clockwise or counter-clockwise (i.e. the 
 c			   diagonals must be pcell(1,n)-pcell(3,n) and
 c			   pcell(2,n)-pcell(4,n).  This array must be 
-c			   atleast kcell in length.
+c			   atleast kcell in length. 
 c		wcell  - work array (atleast kcell in length).
 c		kcell  - the total number of cells.
 c		wnode  - work array (atleast knode in length).
@@ -919,11 +919,11 @@ C       *                                                              *
 C       ****************************************************************
         
 	INTEGER IOPT,CMNCOL,CMUNIT
-	INTEGER XYPIX(2),NKEYS,IKEYS(11),FKEYS(11)
+	INTEGER XYPIX(2),NKEYS,IKEYS(14),FKEYS(14)
 	INTEGER MNODE,MPTRI,MPPTRI,MFACE,MPFACE,MEDGE,MPEDGE
-	REAL    XYMIN(2), XYMAX(2),FLIMS(2,11)
+	REAL    XYMIN(2), XYMAX(2),FLIMS(2,14)
         CHARACTER CMFILE*37
-	CHARACTER*16 TKEYS(11)
+	CHARACTER*16 TKEYS(14)
 	CHARACTER*80 TITL
 	
 	DATA TKEYS / 'PRESSURE        ',
@@ -936,7 +936,10 @@ C       ****************************************************************
      &		     'STRL./STAT.STRL.',
      &		     'GRID-VEL. VECT. ',
      &		     'STOPPING TIME   ',
-     &		     'MOVIE CREATION  ' /
+     &		     'MOVIE CREATION  ',
+     &                 'TURB. KIN. ENERGY',
+     &                 'TURB. DISS. RATE',
+     &                 'TURB. VISCOSITY' /
 
        TITL='HOT PICS!!!!'
        IF(BGCOLOUR.EQ.0) THEN

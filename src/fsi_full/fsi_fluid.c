@@ -163,6 +163,8 @@ actpart     = &(partition[numff]);
 action      = &(calc_action[numff]);
 dynvar      = &(fdyn->dynvar);
 container.fieldtyp = actfield->fieldtyp;
+container.actndis  = 0;
+container.turbu    = fdyn->turbu;
 str         = str_fsicoupling;
 dynvar->acttime=ZERO;
 /*---------------- if we are not parallel, we have to allocate an alibi * 

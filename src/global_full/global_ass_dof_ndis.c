@@ -109,6 +109,13 @@ for (kk=0;kk<actfield->ndis;kk++)
             if (actele->node[k]->numdf < 3) actele->node[k]->numdf=3;
          }
          break;         
+      case el_fluid2_tu:
+         for (k=0; k<actele->numnp; k++)
+         {
+            nodeflag[actele->node[k]->Id_loc]=20+kk;       
+            if (actele->node[k]->numdf < 1) actele->node[k]->numdf=1;
+         }
+         break;         
       case el_fluid3:
          for (k=0; k<actele->numnp; k++)
          {
@@ -133,8 +140,10 @@ for (kk=0;kk<actfield->ndis;kk++)
       } /* end switch (actele->eltyp) */
    } /* end of loop over elements */
 /*------------------------------------------------------ do some checke */
+#ifdef D_FLUID2_PRO
    if (cpro!=actfield->dis[kk].numele)
       dserror("FLUID2_PRO elements can not be mixed with other fluid elements!\n");
+#endif
 /*---------------------------------------- assign the dofs to the nodes */
    counter=0;
    for (j=0; j<actfield->dis[kk].numnp; j++)
@@ -231,6 +240,9 @@ for (kk=0;kk<actfield->ndis;kk++)
 	       f2pro_ass_dof_q2q1(actnode,&counter,0);
 #endif             
 	    break;
+	    case 21:   
+	       f2tu_ass_dof(actnode,&counter,0);
+          break;
 	    default:
                for (l=0; l<actnode->numdf; l++)
                {

@@ -74,8 +74,11 @@ fdyn->step=0;
  *----------------------------------------------------------------------*/
 if      (iop ==0) fluid_stat();     /* stationary solution algorithm         */
 else if (iop ==1) fluid_pm();       /* predictor-multicorrector algorithm    */
-else if (iop >=2 && freesurf==0) 
-                  fluid_isi(fdyn);  /* implicit and semi-implicit algorithms */
+else if (iop >=2 && freesurf==0){
+ if(fdyn->turbu == 0 || fdyn->turbu ==1) fluid_isi(fdyn);      /* implicit and semi-implicit algorithms */
+ if(fdyn->turbu == 2)                    fluid_isi_tu(fdyn);   /* implicit and semi-implicit algorithms with turbulence-model*/
+ if(fdyn->turbu == 3)                    fluid_isi_tu_1(fdyn); /* implicit and semi-implicit algorithms with turbulence-model*/
+} 
 else if (iop == 4 && freesurf>0)
                   fluid_mf(0);      /* fluid multiefield algorithm      */
 else     dserror("unknown time algorithm"); 

@@ -89,6 +89,7 @@ FIELD   *actfield;
 GNODE   *actgnode;
 GLINE   *actgline;
 ELEMENT *actele;
+ELEMENT *actele2;
 #if D_FLUID2_PRO
 ELEMENT *actvele, *actpele;
 #endif
@@ -480,6 +481,31 @@ if (inprocs>1)
 	 actpele->node[k]->proc = actvele->node[k]->proc;	 	 
       }
    }
+}
+#endif
+#ifndef D_FLUID2_PRO
+/*------------------------------------------------------------------------
+  for solving the turbulence-models we need a 2nd discretisation. 
+  discretisation 0 was partitioned by METIS and this is no copied to
+  discretisation 1:
+*/
+if (inprocs>1)
+{
+ if (actfield->fieldtyp==fluid && actfield->ndis>1) 
+/*----------------------------------- loop fluid elements for TURBULENCE*/   
+ {
+   for (j=0; j<actfield->dis[1].numele; j++)
+   {
+      actele  = &(actfield->dis[1].element[j]);
+      actele2 = &(actfield->dis[0].element[j]);
+      actele->proc = actele2->proc;
+/*----------------------------------------------- loop nodes of element */
+      for (k=0; k<actele->numnp; k++)
+      {
+         actele->node[k]->proc = actele2->node[k]->proc;
+      }
+   }
+ }
 }
 #endif
 /*----------------------------------------------------------------------*/

@@ -1332,6 +1332,107 @@ dstrc_exit();
 return;
 } /* end of fluid_algoout*/
 /*!---------------------------------------------------------------------
+\brief reduce shearstresses in parallel case
+
+<pre>                                                       he 03/03
+
+shearstress is calcuted within a parellel loop over the elements.
+So the result is not available on all procs. Here they are reduced by
+MPI to all procs!
+			     
+</pre>   
+\param *actintra         INTRA           (i)   
+\param *actfield	       FIELD           (i)    the actual field
+\param  *dynvar          FLUID_DYN_CALC  (i)
+\return void 
+
+------------------------------------------------------------------------*/
+void fluid_reduceshstr(INTRA             *actintra,
+                         FIELD             *actfield,
+                         FLUID_DYN_CALC    *dynvar)
+{
+#ifdef PARALLEL
+int      numnp_total;
+int      i;
+NODE    *actnode;
+
+
+#ifdef DEBUG 
+dstrc_enter("fluid_reduceshstr");
+#endif
+
+/*------------------------------------------- get total number of nodes */
+numnp_total = actfield->dis[0].numnp;  
+for (i=0; i<numnp_total; i++) /* loop nodes */
+{
+   actnode = &(actfield->dis[0].node[i]);
+   MPI_Bcast(&(actnode->c_f_shear),1,MPI_DOUBLE,actnode->proc,
+             actintra->MPI_INTRA_COMM);
+/*------------------- compute shearvelocity for the scaned coordinates */
+   if (FABS(actnode->x[0]-dynvar->coord_scale[0])<EPS7 && FABS(actnode->x[1]-dynvar->coord_scale[1])<EPS15)
+   MPI_Bcast(&(dynvar->washvel),1,MPI_DOUBLE,actnode->proc,
+             actintra->MPI_INTRA_COMM);
+} 
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+#endif
+return;
+} /* end of fluid_reduceshstr*/
+/*!---------------------------------------------------------------------
+\brief reduce shearstresses in parallel case
+
+<pre>                                                       he 03/03
+
+shearstress is calcuted within a parellel loop over the elements.
+So the result is not available on all procs. Here they are reduced by
+MPI to all procs!
+			     
+</pre>   
+\param *actintra         INTRA           (i)   
+\param *actfield	       FIELD           (i)    the actual field
+\return void 
+
+------------------------------------------------------------------------*/
+void fluid_nullshstr(INTRA             *actintra,
+                        PARTITION         *actpart,
+                        FIELD             *actfield)
+{
+#ifdef PARALLEL
+int      numnp_total;
+int      i;
+int      myrank,imyrank;
+NODE    *actnode;
+
+
+#ifdef DEBUG 
+dstrc_enter("fluid_nullshstr");
+#endif
+
+/*------------------------------------------- get total number of nodes */
+myrank = par.myrank;
+imyrank= actintra->intra_rank;
+numnp_total = actfield->dis[0].numnp;  
+
+if (imyrank!=0 || myrank!=0)
+for (i=0; i<actfield->dis[0].numnp; i++)
+{
+ actnode = &(actfield->dis[0].node[i]);
+ actnode->c_f_shear = ZERO;
+}
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+#endif
+return;
+} /* end of fluid_nullshstr*/
+/*!---------------------------------------------------------------------
 \brief reduce fluid stresses
 
 <pre>                                                         genk 05/02

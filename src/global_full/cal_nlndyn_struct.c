@@ -154,7 +154,8 @@ int             ilow,iup;
 double          tau,tau2,tau3,fac;
 
 CONTAINER       container;          /* contains variables defined in container.h */
-container.isdyn = 1;                /* dynamic calculation */
+container.isdyn   = 1;                /* dynamic calculation */
+container.actndis = 0;                /* only one discretisation */
 
 #ifdef DEBUG 
 dstrc_enter("dyn_nln_structural");

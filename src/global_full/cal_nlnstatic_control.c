@@ -112,7 +112,8 @@ STANLN        nln_data;           /* structure to store and pass data for stanln
 CALC_ACTION  *action;             /* pointer to the structures cal_action enum */
 
 CONTAINER     container;          /* contains variables defined in container.h */
-container.isdyn = 0;              /* static computation */
+container.isdyn   = 0;              /* static computation */
+container.actndis = 0;              /* only one discretisation */
 
 #ifdef DEBUG 
 dstrc_enter("stanln");

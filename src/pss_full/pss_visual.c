@@ -36,7 +36,7 @@ void visual_writepss(FIELD  *actfield,
 		       ARRAY  *time_a	 
 		    )
 {
-int                  i;             /* simply a counter                 */
+int                  i,kk;          /* simply a counter                 */
 int                  ierr;          /* error flag                       */
 int                  numnp;         /* number of fluid nodes            */
 long int            *node_handles;  /* handles for writing pss-file     */
@@ -68,7 +68,9 @@ pss_write_array(time_a,&(vis.time),out,&ierr);
 /*----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*/
-numnp = actfield->dis[0].numnp;
+for (kk=0;kk<actfield->ndis;kk++)
+{
+numnp = actfield->dis[kk].numnp;
 vis.node_handles = (long int*)malloc(numnp*sizeof(long int));
 if (!vis.node_handles) dserror("Allocation of memory failed\n");
 node_handles = vis.node_handles;
@@ -76,7 +78,7 @@ node_handles = vis.node_handles;
 /*--------------- now we loop the nodes and each node writes his ARRAYs */
 for (i=0; i<numnp; i++)
 {
-   actnode=&(actfield->dis[0].node[i]);
+   actnode=&(actfield->dis[kk].node[i]);
    pss_write_array(&(actnode->sol),&(node_handles[i]),out,&ierr);
    if (ierr != 1) dserror("Error writing visual data\n");
 }
@@ -103,8 +105,27 @@ free(vis.node_handles);
 switch (actfield->fieldtyp)
 {
 case fluid:  
+if (actfield->ndis==1)
+{   
    pss_write("fluidvis",1,1,sizeof(VISUAL_DATA),&vis,&longdummy,out,&ierr);
    if (ierr != 1) dserror("Error writing visual data\n");
+}
+else
+{
+   switch(kk)
+   {
+   case 0:
+      pss_write("fluidvis",1,1,sizeof(VISUAL_DATA),&vis,&longdummy,out,&ierr);
+      if (ierr != 1) dserror("Error writing visual data\n");      
+   break;
+   case 1:
+      pss_write("kapeps",1,1,sizeof(VISUAL_DATA),&vis,&longdummy,out,&ierr);
+      if (ierr != 1) dserror("Error writing visual data\n");      
+   break;
+   default:
+      dserror("more than 2 discrtetistions not possible with VISUAL2\n");
+   }
+}
 break;
 case structure:
 break;
@@ -114,6 +135,7 @@ case ale:
 break;
 default:
    dserror("fieldtyp unknown!\n");
+}
 }
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -238,6 +260,60 @@ for (i=0; i<numnp; i++)
    /*-------------------------------------------------------------------*/
 } 
 
+if (actfield->ndis==2)
+{
+/*------------------------------ check if data exist that shall be read */
+pss_chck("kapeps",&vishandle,in,&ierr);
+if (ierr != 1) dserror("Cannot visualise fluid, data don't exist in vis.pss-file\n");
+
+/*------------------------ the structure fluidvis exists, so we read it */
+pss_read_name_handle("kapeps",&i,&i,&byte,&vis,&vishandle,in,&ierr);
+if (ierr != 1) dserror("Restart structure exists, but cannot read it\n");
+*ntsteps=vis.step;
+
+/*----------------------------------------------------------------------*/
+/*
+   now read the data that is stored in the nodes: 
+
+   actnode->sol
+
+   so we need to read an array of numnp handles first
+*/
+/*----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*/
+numnp = actfield->dis[1].numnp;
+if (numnp != vis.node_fdim)
+    dserror("Mismatch in number of nodes on reading visual data from file .pss\n");
+
+/*----------------------------------------- define the array of handles */
+vis.node_handles = (long int*)malloc(numnp*sizeof(long int));
+if (!vis.node_handles) dserror("Allocation of memory failed\n");
+node_handles = vis.node_handles;
+
+/*------------------------------------------- read the array of handles */
+pss_read_name_handle("nod_hand",&(vis.node_fdim),&(vis.node_sdim),&i,
+                     node_handles,&vis.handle_of_node_handles,in,&ierr);
+if (ierr != 1) dserror("Cannot read visual data\n");
+
+/*---------------- now we loop the nodes and each node reads his ARRAYs */
+for (i=0; i<numnp; i++)
+{
+   actnode = &(actfield->dis[1].node[i]);
+   /*------------------------- check for the dimensions of actnode->sol */
+   pss_getdims_name_handle(actnode->sol.name,&dims[0],&dims[1],&dims[2],&(node_handles[i]),in,&ierr);
+   if (ierr != 1) dserror("Cannot read visual data\n");
+   if (dims[2] != sizeof(double)) dserror("Cannot read visual data\n");
+   /*------------------------ redefine it, if dimension mismatch occurs */
+   if (dims[0] != actnode->sol.fdim ||
+       dims[1] != actnode->sol.sdim)
+   amredef(&(actnode->sol),dims[0],dims[1],"DA");
+   /*---------------------------------------------------------- read it */
+   pss_read_array_name_handle(actnode->sol.name,&(actnode->sol),&(node_handles[i]),in,&ierr);
+   if (ierr != 1) dserror("Cannot read visual data\n");
+   /*-------------------------------------------------------------------*/
+} 
+}
 /*------------------------------- delete the handle array for the nodes */
 free(vis.node_handles);
 

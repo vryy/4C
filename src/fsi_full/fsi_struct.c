@@ -174,7 +174,8 @@ case 1:
 sdyn->dt=fsidyn->dt;
 sdyn->maxtime=fsidyn->maxtime;
 sdyn->nstep=fsidyn->nstep;
-container.isdyn = 1;    
+container.isdyn   = 1;    
+container.actndis = 0;    
 outstep=0;
 
 /*----------------------------------------------------------------------*/

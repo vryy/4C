@@ -171,7 +171,8 @@ dstrc_enter("opteqc");
   actintra->intra_nprocs   = 1;
   #endif
   container.fieldtyp  = actfield->fieldtyp;
-  container.isdyn = 0;            /* static calculation */
+  container.isdyn   = 0;            /* static calculation */
+  container.actndis = 0;            /* only one discretisation */
 /*--------------------------- volume and weight equality constraints ---*/
   if(opt->oeqc[0].oeqc_type == volume)
   {
@@ -278,7 +279,8 @@ dstrc_enter("optupd");
   actintra->intra_rank   = 0;
   actintra->intra_nprocs   = 1;
   #endif
-  container.isdyn = 0;            /* static calculation */
+  container.isdyn   = 0;            /* static calculation */
+  container.actndis = 0;            /* only one discretisation */
   container.fieldtyp  = actfield->fieldtyp;
 /*--------------------------- initialize update of element materials ---*/
   if(init==1)
@@ -423,7 +425,8 @@ dstrc_enter("optobj");
   actintra->intra_nprocs   = 1;
   #endif
 
-  container.isdyn = 0;            /* static calculation */
+  container.isdyn   = 0;            /* static calculation */
+  container.actndis = 0;            /* only one discretisation */
 /*------------------------- set values of objective functions = zero ---*/
   objective[0] = 0.0; /* only one value, right now */
   container.fieldtyp  = actfield->fieldtyp;

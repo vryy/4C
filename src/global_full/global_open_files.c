@@ -137,6 +137,18 @@ if (par.myrank==0)
      }
     if (par.myrank==0)
     printf("errors are reported to     %s\n",allfiles.outputfile_name);
+/*------------------------------------------------------open .tur file */
+
+     strncpy(charpointer,".tur",4);
+     if ( (allfiles.out_tur=fopen(allfiles.outputfile_name,"w"))==NULL)
+     {
+        printf("Opening of output file .tur failed\n");
+#ifdef PARALLEL 
+        MPI_Finalize();
+#endif 
+        exit(1);
+     }
+    printf("turbulence is written to   %s\n",allfiles.outputfile_name);
 /*-----------------------------------------------------open .mon file */
 if (par.myrank==0)
 {     

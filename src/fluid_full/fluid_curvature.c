@@ -54,7 +54,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    case el_fluid2: 
 #ifdef D_FLUID2   
       if (actele->e.f2->fs_on==0) break;
-      fluid2(actpart,actintra,actele,
+      fluid2(actpart,actintra,actele,NULL,
              NULL,NULL,
              NULL,NULL,NULL,
 	     action,NULL,NULL,NULL);

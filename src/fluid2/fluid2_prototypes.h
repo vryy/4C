@@ -38,7 +38,8 @@ void f2_calq8curv( GLINE                        **actgline,
 void f2_calele(
                 FLUID_DATA     *data, 
                 FLUID_DYN_CALC *dynvar, 
-	        ELEMENT        *ele,             
+	          ELEMENT        *ele,             
+                ELEMENT        *eleke, 
                 ARRAY          *estif_global,   
                 ARRAY          *emass_global,   
 	        ARRAY          *etforce_global,       
@@ -47,6 +48,7 @@ void f2_calele(
 		int            *hasdirich,      
                 int            *hasext,
                 int             imyrank,
+		    int             velgrad,            
 		int             init            
 	       );
 void f2_stress(FLUID_STRESS str, int viscstr ,FLUID_DATA     *data, 
@@ -58,10 +60,48 @@ void f2_curvature(
 		   int             imyrank
 		 );
 /************************************************************************
+ | f2_calele_tu.c                                                          |
+ ************************************************************************/
+void f2_calele_tu(
+                FLUID_DATA     *data, 
+                FLUID_DYN_CALC *dynvar, 
+	          ELEMENT        *eleke,             
+                ELEMENT        *elev,          
+                ARRAY          *estif_global,   
+                ARRAY          *emass_global,   
+	          ARRAY          *etforce_global,       
+	          ARRAY          *eiforce_global, 
+                ARRAY          *edforce_global,		
+                ARRAY          *eproforce_global,		
+                int            *hasdirich,      
+                int            *hasext,
+		    int             init            
+                );
+
+/************************************************************************
+ | f2_calele_tu_1.c                                                          |
+ ************************************************************************/
+void f2_calele_tu_1(
+                FLUID_DATA     *data, 
+                FLUID_DYN_CALC *dynvar, 
+	          ELEMENT        *eleke,             
+                ELEMENT        *elev,          
+                ARRAY          *estif_global,   
+                ARRAY          *emass_global,   
+	          ARRAY          *etforce_global,       
+	          ARRAY          *eiforce_global, 
+                ARRAY          *edforce_global,		
+                ARRAY          *eproforce_global,		
+                int            *hasdirich,      
+                int            *hasext,
+		    int             init            
+	         );
+/************************************************************************
  | f2_calelesize.c                                                      |
  ************************************************************************/
 void f2_calelesize(			     
 	           ELEMENT         *ele,    
+                 ELEMENT         *eleke,    
 		   FLUID_DATA      *data, 
 		   FLUID_DYN_CALC  *dynvar,
 	           double         **xyze,
@@ -69,9 +109,13 @@ void f2_calelesize(
 	           double         **deriv,  
 	           double         **deriv2,  		 
 		   double         **xjm,    
+               double         **derxy, 
+               double         **vderxy, 
 		   double         **evel,    		  
 		   double          *velint, 
-		   double         **cutp    
+		   double         **cutp,    
+               double          *eddy,
+               double          *visc    
                   );
 void f2_calelesize2(			       
 	             ELEMENT         *ele,    
@@ -94,6 +138,59 @@ void f2_calstrlen(
 		   int       ntyp      
                  );
 
+/************************************************************************
+ | f2_calelesize_tu.c                                                      |
+ ************************************************************************/
+void f2_calelesize_tu(			     
+	           ELEMENT         *ele,    
+		     ELEMENT         *elev,    
+                 FLUID_DYN_CALC  *dynvar,
+		     FLUID_DATA      *data, 
+	           double          *funct,  
+	           double         **deriv,  
+	           double         **deriv2,  
+                 double         **evel, 
+                 double          *eddyg, 
+                 double          *velint, 
+                 double          *velint_dc, 
+                 double          *kapepsn, 
+	           double         **xjm,     
+	           double         **xyze,     
+	           double         **derxy,   
+                 double          *kapepsderxy,  
+                 double         **cutp
+                 );
+		   		    
+void f2_calstrlen_tu(
+		   double   *velint_dc,   
+		   ELEMENT  *ele,      
+               double   *gcoor,    
+		   double  **cutp,             
+		   int       ntyp      
+                 );
+                 
+/************************************************************************
+ | f2_calelesize_tu_1.c                                                  |
+ ************************************************************************/
+void f2_calelesize_tu_1(			     
+	           ELEMENT         *ele,    
+		     ELEMENT         *elev,    
+                 FLUID_DYN_CALC  *dynvar,
+		     FLUID_DATA      *data, 
+	           double          *funct,  
+	           double         **deriv,  
+	           double         **deriv2,  		 
+                 double         **evel, 
+                 double          *eddyg, 
+                 double          *velint, 
+                 double          *velint_dc, 
+                 double          *kapomen, 
+	           double         **xjm,     
+	           double         **xyze,     
+	           double         **derxy,   
+                 double          *kapomederxy,  
+                 double         **cutp
+                 );
 /************************************************************************
  | f2_calelesize.c                                                      |
  ************************************************************************/
@@ -275,6 +372,56 @@ void f2_calkgedge(
                 );
 		
 /************************************************************************
+ | f2_calgalmat_tu.c                                                       |
+ ************************************************************************/
+void f2_calkkapeps(
+                FLUID_DYN_CALC  *dynvar,
+		    double         **estif,   
+		    double           kapepsint, 
+	          double          *velint,
+                double           eddyint, 
+                double          *kapepsderxy, 
+                double          *funct,  
+		    double         **derxy,  
+		    double           fac,    
+		    double           visc,   
+		    double           factor,
+		    double           sig,
+                int              iel     
+              );
+void f2_calmkapeps(
+		double         **emass,  
+		double          *funct, 
+		double           fac,   
+		int              iel    
+              );
+
+/************************************************************************
+ | f2_calgalmat_tu_1.c                                                       |
+ ************************************************************************/
+void f2_calkkapome(
+                FLUID_DYN_CALC  *dynvar,
+		    double         **estif,   
+		    double           kapomeint, 
+	          double          *velint,
+                double           eddyint, 
+                double          *funct,  
+		    double         **derxy,  
+		    double           fac,    
+		    double           visc,   
+		    double           factor,
+		    double           sig,
+                int              iel     
+              );
+
+void f2_calmkapome(
+		double         **emass,  
+		double          *funct, 
+		double           fac,   
+		int              iel    
+              );
+
+/************************************************************************
  | f2_calint.c                                                          |
  ************************************************************************/
 void f2_calint(
@@ -305,7 +452,8 @@ void f2_calint(
 	       double          *pderxy,  
 	       double         **vderxy2, 
 	       double         **wa1,     
-	       double         **wa2      
+	       double         **wa2,      
+             double           visc      
 	      );	      	      	      	     	     	    	   	   
 void f2_calinta(
                 FLUID_DATA      *data,     
@@ -347,6 +495,83 @@ void f2_calinta(
 	      );
 	      
 /************************************************************************
+ | f2_calint_tu.c                                                          |
+ ************************************************************************/
+void f2_calint_tu(
+               FLUID_DATA      *data,     
+	         ELEMENT         *eleke,     
+	         ELEMENT         *elev, 
+               FLUID_DYN_CALC  *dynvar, 
+	         double         **estif,   
+	         double         **emass,   
+	         double          *etforce, 
+	         double          *eiforce, 
+	         double          *eproforce, 
+	         double          *funct,   
+	         double         **deriv,   
+	         double         **deriv2,  
+	         double         **xjm,     
+	         double         **xyze,
+	         double         **derxy,   
+	         double         **derxy2,  
+	         double          *kapepsn,   
+	         double          *kapepsg,   
+               double          *eddyg, 
+               double          *eddypro, 
+               double          *kappa, 
+               double          *kappan, 
+               double          *epsilon,    
+               double          *kapepspro,    
+               double          *kapepsderxy,  
+               double          *kapepsderxy2, 
+	         double          *velint,  
+	         double          *velint_dc,  
+               double         **evel,
+               double         **vderxy,
+               double         **vderxy2,
+               double         **wa1,     
+	         double         **wa2      
+               );	      	      	      	     	     	    	   	   
+
+/************************************************************************
+ | f2_calint_tu_1.c                                                          |
+ ************************************************************************/
+void f2_calint_tu_1(
+               FLUID_DATA      *data,     
+	         ELEMENT         *ele,     
+	         ELEMENT         *elev, 
+               FLUID_DYN_CALC  *dynvar, 
+               double         **estif,   
+	         double         **emass,   
+	         double          *etforce, 
+	         double          *eiforce, 
+	         double          *eproforce, 
+	         double          *funct,   
+	         double         **deriv,   
+	         double         **deriv2,  
+	         double         **xjm,     
+	         double         **xyze,
+	         double         **derxy,   
+	         double         **derxy2,  
+	         double          *kapomen,   
+	         double          *kapomeg,   
+               double          *eddyg, 
+               double          *eddypro, 
+               double          *kappan, 
+               double          *omega,    
+               double          *kapomepro,    
+               double          *omegaderxy,  
+               double          *kapomederxy,  
+               double          *kapomederxy2, 
+	         double          *velint,  
+	         double          *velint_dc,  
+               double         **evel,
+               double         **vderxy,
+               double         **vderxy2,
+               double         **wa1,     
+	         double         **wa2      
+	        );
+/************************************************************************
  | f2_caliterrhs.c                                                      |
  ************************************************************************/ 
 void f2_calgalifv(
@@ -380,6 +605,137 @@ void f2_calstabifp(
 		   int              iel        
                  );
 
+/************************************************************************
+ | f2_caliterrhs_tu.c                                                      |
+ ************************************************************************/ 
+/*!--------------------------------------------------------------------- 
+\brief galerkin part of iteration forces for kapeps dofs
+
+<pre>                                                        he  12/02
+
+In this routine the galerkin part of the iteration forces for kapeps dofs
+is calculated:
+
+                    / 
+          THETA*dt | factor * (kapeps_old)^2 * psi  d_omega
+                  /  
+
+
+LOW-REYNOLD's MODEL only for epsilon:
+    
+                   / 
+   (+)   THETA*dt | 2.0*visc*nue_t* (vderxy2_12)^2 * psi  d_omega
+                 /  
+
+      
+</pre>
+\param  *dynvar      FLUID_DYN_CALC  (i)
+\param  *eforce      double	    (i/o)   element force vector
+\param   eddyint     double	     (i)    eddy-visc at integr. point
+\param   kapepsint   double	     (i)    kapeps at integr. point
+\param  *funct       double	     (i)    nat. shape funcs
+\param   fac 	   double	     (i)    weighting factor
+\param   factor2 	   double	     (i)    factor
+\param   vderxy_12   double	     (i)    factor
+\param   visc 	   double	     (i)    viscosity
+\param   iel	   int           (i)	num. of nodes of act. ele
+\return void                                                                       
+
+------------------------------------------------------------------------*/
+void f2_calgalifkapeps(
+                  FLUID_DYN_CALC  *dynvar, 
+                  double          *eforce,
+		      double           eddyint,  
+                  double           kapepsint,  
+                  double          *funct,   
+		      double           fac,     
+                  double           factor2,  
+                  double           vderxy_12,  
+                  double           visc,  
+                  int              iel      
+                 );  
+/*!---------------------------------------------------------------------  
+\brief stabilisation part of iteration forces for kapeps dofs
+
+<pre>                                                         he  12/02
+
+In this routine the stabilisation part of the iteration forces for kapeps
+
+
+           /
+ THETA*dt | tau_tu * factor * (kapeps_old)^2 * grad(psi) * u  d_omega
+         /
+
+
+LOW-REYNOLD's MODEL only for epsilon:
+
+
+              / 
+(+) THETA*dt | tau_tu * 2.0*visc*nue_t* (vderxy2_12)^2 *  grad(psi) * u  d_omega
+            /  
+
+      
+</pre>
+\param   *dynvar   FLUID_DYN_CALC  (i)
+\param   *ele      ELEMENT	   (i)    actual element
+\param   *eforce   double	   (i/o)  element force vector
+\param    kapepsint double	   (i)    kapeps at integr. point
+\param   *velint   double	   (i)    vel at integr. point
+\param   *velint_dc double	   (i)    vel at integr. point for D.C.
+\param    eddyint  double	   (i)    eddy-visc. at integr. point
+\param   *funct    double	   (i)    nat. shape funcs
+\param  **derxy    double	   (i)    global derivative
+\param    fac 	 double	   (i)    weighting factor
+\param    factor2  double	   (i)    factor
+\param    vderxy_12 double	   (i)    factor
+\param    visc     double	   (i)    fluid viscosity
+\param    iel	   int	   (i)    num. of nodes of act. ele
+\return void                                                                       
+
+------------------------------------------------------------------------*/
+void f2_calstabifkapeps(
+                  FLUID_DYN_CALC  *dynvar, 
+                  ELEMENT         *ele,      
+	            double          *eforce,  
+		      double           kapepsint,  
+                  double          *velint,  
+                  double          *velint_dc,  
+		      double           eddyint,  
+                  double          *funct,   
+		      double         **derxy,   
+		      double           fac,     
+                  double           factor2, 
+                  double           vderxy_12, 
+                  double           visc, 
+                  int              iel      
+                  );  
+
+/************************************************************************
+ | f2_caliterrhs_tu_1.c                                                  |
+ ************************************************************************/ 
+void f2_calgalifkapome(
+                  FLUID_DYN_CALC  *dynvar, 
+                  double          *eforce,
+                  double           kapomeint,  
+                  double          *funct,   
+		      double           fac,     
+                  double           factor2,    
+                  int              iel      
+                 );  
+
+void f2_calstabifkapome(
+                  FLUID_DYN_CALC  *dynvar, 
+                  ELEMENT         *ele,      
+	            double          *eforce,  
+		      double           kapomeint,  
+                  double          *velint,  
+                  double          *velint_dc,  
+                  double          *funct,   
+		      double         **derxy,   
+		      double           fac,     
+                  double           factor2,    
+		      int              iel      
+                  );  
 /************************************************************************
  | f2_calservice.c                                                      |
  ************************************************************************/
@@ -488,6 +844,234 @@ void f2_iedg(
 	     );
 	     
 /************************************************************************
+| f2_calservice_tu.c                                                    |
+************************************************************************/
+void f2_calset_tu( 
+                  FLUID_DYN_CALC  *dynvar, 
+                  FLUID_DATA      *data,     
+	            ELEMENT         *ele,     
+                  ELEMENT         *elev,
+                  double          *kapepsn,    
+	            double          *kapepsg,
+	            double          *kapepspro,
+                  double          *eddyg,
+                  double          *eddypro,
+	            double          *kappa,    
+	            double          *kappan,    
+	            double          *epsilon,    
+	            double         **evel,   
+	            double         **xyze
+	           );
+
+void f2_shearstress(
+	           ELEMENT    *ele,
+                 FLUID_DYN_CALC  *dynvar, 
+                 double     **evel,
+                 double     **vderxy,
+	           double     **xjm,     
+                 double     **xyze,
+	           double     **deriv,   
+	           double     **deriv2,  
+	           double     **derxy,   
+	           double      *funct
+                 );
+
+void f2_kapepsi(
+             double  *kapepsint,     
+             double  *funct,    
+	       double  *kapeps,     
+             int      iel       
+	     ); 
+void f2_eddyi(
+             double  *eddyint,     
+             double  *funct,    
+	       double  *eddy,     
+             int      iel       
+	     ); 
+void f2_kappai_tu(	          
+             double     *kappaint,     
+             double     *kappanint,     
+             double     *eps_proint,     
+             double     *funct,    
+             double     *kappa,    
+             double     *kappan,    
+             double     *eps_pro,    
+             int         iel       
+	     ); 
+
+void f2_C_kappa(	          
+             double      kapepsint,     
+             double     *epsilon,
+             double     *funct, 
+             double      visc,    
+             double     *C_u,
+             int         iel       
+	     );
+void f2_C_eps(	          
+             double      kapepsint,     
+             double      kappaint,
+             double      visc,    
+             double     *C_2,
+             int         iel       
+	     ); 
+
+void f2_v(	          
+             double    **vderxy2,
+             double     *vderxy_12 
+	   ); 
+            
+void f2_fac_kappa(
+                  double   C_u,     
+                  double   eddyint,    
+	            double  *factor,     
+	            double  *factor1,     
+	            double  *factor2,     
+	            double  *sig     
+	           );
+                  
+void f2_fac_eps(
+                  double   C_2,     
+                  double   eps_proint,    
+                  double   kappaint,    
+                  double   kappanint,    
+	            double  *factor,     
+	            double  *factor1,     
+	            double  *factor2,     
+	            double  *sig     
+	           );
+void f2_production(
+	            double  **vderxy,     
+	            double  *production    
+	           );
+                  
+void f2_eddyirans(	          
+             ELEMENT    *eleke,     
+             double     *eddyint,     
+             double     *funct,    
+             double     *eddy,    
+             int         iel       
+	     ); 
+void f2_vel_dc(
+		       FLUID_DYN_CALC  *dynvar,
+                   double  *velint,    
+                   double  *velint_dc,    
+	             double  *kapepsderxy      
+	         ); 
+
+void f2_kapepsder(
+             double  *kapepsderxy,     
+             double **derxy,    
+	       double  *kapeps,     
+             int      iel       
+	       ); 
+void f2_kapepsder2(
+                   double  *kapepsderxy2,    
+                   double **derxy2,    
+	             double  *kapepsn,      
+	             int      iel        
+	           ); 
+
+void f2_estifadd_tu(                  
+		   double         **estif,   
+		   double         **emass, 
+		   double         **tmp,   
+		   int              iel,   
+		   FLUID_DYN_CALC  *dynvar		   		    
+	          ); 
+                
+/************************************************************************
+| f2_calservice_tu_1.c                                                  |
+************************************************************************/
+void f2_calset_tu_1( 
+                    FLUID_DYN_CALC  *dynvar, 
+                    FLUID_DATA      *data,     
+	              ELEMENT         *ele,     
+                    ELEMENT         *elev,
+                    double          *kapomen,    
+	              double          *kapomeg,
+	              double          *kapomepro,
+                    double          *eddyg,
+                    double          *eddypro,
+	              double          *kappan,    
+	              double          *omega,    
+	              double         **evel,
+	              double         **xyze
+                   );
+
+void f2_kapomei(
+             double  *kapomeint,     
+             double  *funct,    
+	       double  *kapome,     
+             int      iel       
+	     );
+            
+void f2_kapomeder(
+             double  *kapomederxy,     
+             double **derxy,    
+	       double  *kapome,    
+             int      iel       
+	       ); 
+
+void f2_kapomeder2(
+                   double  *kapomederxy2,    
+                   double **derxy2,    
+	             double  *kapomen,      
+	             int      iel        
+	           ); 
+
+void f2_xi_kappa(
+                  double  *kapomederxy,     
+                  double  *omegaderxy,    
+	            double   omegaint,     
+	            double  *xi     
+	           ); 
+
+void f2_fac_kappa_1(
+                  double   xi,     
+                  double   eddyint,    
+                  double   kapomeint,    
+                  double   omegaint,    
+                  double   visc,    
+                  double  *factor,    
+                  double  *factor1,    
+                  double  *factor2,    
+	            double  *sig    
+	           ); 
+
+void f2_xi_ome(
+                  double  **vderxy,     
+	            double   kapomeint,     
+	            double  *xi     
+	           ); 
+
+void f2_fac_ome(
+                  double   xi,     
+                  double   ome_proint,    
+                  double   kappanint,    
+                  double   visc,    
+                  double  *factor,    
+                  double  *factor1,    
+                  double  *factor2,    
+	            double  *sig    
+	           ); 
+
+void f2_vel_dc_1(
+		       FLUID_DYN_CALC  *dynvar,
+                   double  *velint,    
+                   double  *velint_dc,    
+	             double  *kapomederxy      
+	         ); 
+
+void f2_kappain(	          
+             double     *kappanint,     
+             double     *ome_proint,     
+             double     *funct,    
+             double     *kappan,    
+             double     *kapomepro,    
+             int         iel       
+	     );
+
+/************************************************************************
  | f2_calstabmat.c                                                      |
  ************************************************************************/
 void f2_calstabkvv(			      
@@ -587,6 +1171,75 @@ void f2_calstabmpv(
                    );
 
 /************************************************************************
+ | f2_calstabmat_tu.c                                                      |
+ ************************************************************************/
+void f2_calstabkkapeps(			      
+                ELEMENT         *ele,    
+		    ELEMENT         *elev,    
+                FLUID_DYN_CALC  *dynvar,
+		    double         **estif,  
+		    double           kapepsint, 
+		    double          *velint, 
+		    double          *velint_dc, 
+                double           eddyint, 
+                double          *kapepsderxy, 
+                double          *funct,  
+		    double         **derxy,  
+		    double         **derxy2, 
+		    double           fac,    
+		    double           visc,   
+		    double           factor, 
+		    double           sig, 
+                int              iel    
+                 );
+void f2_calstabmkapeps(
+                    ELEMENT         *ele,     
+		        FLUID_DYN_CALC  *dynvar,
+		        double         **emass,  
+    		        double          *velint, 
+    		        double          *velint_dc, 
+                    double          *funct,  
+		        double         **derxy,  
+		        double           fac,    
+		        int              iel    
+                    );
+                 
+/************************************************************************
+ | f2_calstabmat_tu_1.c                                                  |
+ ************************************************************************/
+void f2_calstabkkapome(			      
+                ELEMENT         *ele,    
+		    ELEMENT         *elev,    
+                FLUID_DYN_CALC  *dynvar,
+		    double         **estif,  
+		    double           kapomeint, 
+		    double          *velint, 
+		    double          *velint_dc, 
+                double           eddyint, 
+                double          *funct,  
+		    double         **derxy,  
+		    double         **derxy2, 
+		    double           fac,    
+		    double           visc,   
+		    double           factor,
+		    double           sig,
+                int              iel    
+                   );
+                   
+
+void f2_calstabmkapome(
+                    ELEMENT         *ele,     
+		        FLUID_DYN_CALC  *dynvar,
+		        double         **emass,  
+    		        double          *velint, 
+    		        double          *velint_dc, 
+                    double          *funct,  
+		        double         **derxy,  
+		        double           fac,    
+		        int              iel    
+                     );
+
+/************************************************************************
  | f2_calstabpar.c                                                      |
  ************************************************************************/ 
 void f2_calstabpar(
@@ -599,6 +1252,31 @@ void f2_calstabpar(
 		    int              iflag    
                   );
 		  
+/************************************************************************
+ | f2_calstabpar_tu.c                                                      |
+ ************************************************************************/
+void f2_calstabpar_tu(
+	            ELEMENT         *ele,      
+		      ELEMENT         *elev,
+                  FLUID_DYN_CALC  *dynvar,
+		      double           eddyint, 
+                  double          *velint, 
+                  double          *velint_dc, 
+                  double           visc    
+                  );
+
+/************************************************************************
+ | f2_calstabpar_tu_1.c                                                  |
+ ************************************************************************/
+void f2_calstabpar_tu_1(
+	            ELEMENT         *ele,      
+		      ELEMENT         *elev,
+                  FLUID_DYN_CALC  *dynvar,
+		      double           eddyint, 
+                  double          *velint, 
+                  double          *velint_dc, 
+                  double           visc    
+                  );
 /************************************************************************
  | f2_calstress.c                                                       |
  ************************************************************************/
@@ -686,6 +1364,162 @@ void f2_calstabtfp(
                   );
 
 /************************************************************************
+ | f2_caltimerhs_tu.c                                                      |
+ ************************************************************************/
+void f2_calgaltfkapeps(
+                  FLUID_DYN_CALC  *dynvar, 
+                  double          *eforce,    
+		      double           kapepsint,  
+                  double          *velint,   
+		      double           eddyint,
+                  double          *funct,    
+		      double         **derxy,    
+		      double         **vderxy,   
+		      double          *kapepsderxy,   
+                  double           visc,     
+		      double           fac,      
+                  double           factor,  
+                  double           factor1,  
+                  double           factor2,  
+                  double           sig,  
+                  double           vderxy_12,  
+                  double           production,  
+                  int              iel       
+                  );  
+void f2_calstabtfkapeps(
+                   FLUID_DYN_CALC  *dynvar,
+                   ELEMENT         *ele,      
+	            double          *eforce,  
+	 	      double           kapepsint,  
+       	      double          *velint,  
+       	      double          *velint_dc,  
+		      double           eddyint, 
+                  double         **derxy,   
+		      double          *kapepsderxy2,   
+                  double         **vderxy,  
+		      double          *kapepsderxy,
+                  double           fac,     
+		      double           visc,    
+		      double           factor,
+                  double           factor1,
+                  double           factor2,
+                  double           sig,
+                  double           vderxy_12,  
+                  double           production,  
+                  int              iel      
+                  );
+/************************************************************************
+ | f2_caltimerhs_tu_1.c                                                  |
+ ************************************************************************/
+void f2_calgaltfkapome(
+                  FLUID_DYN_CALC  *dynvar, 
+                  double          *eforce,    
+		      double           kapomeint,  
+                  double          *velint,   
+		      double           eddyint,
+                  double          *funct,    
+		      double         **derxy,    
+		      double         **vderxy,   
+		      double          *kapomederxy,   
+                  double           visc,     
+		      double           fac,      
+                  double           factor,  
+                  double           factor1,  
+                  double           factor2,  
+                  double           sig,  
+                  double           production,  
+                  int              iel       
+                  );  
+
+void f2_calstabtfkapome(
+                   FLUID_DYN_CALC  *dynvar,
+                   ELEMENT         *ele,      
+	            double          *eforce,  
+	 	      double           kapomeint,  
+       	      double          *velint,  
+       	      double          *velint_dc,  
+		      double           eddyint, 
+                  double         **derxy,   
+		      double          *kapomederxy2,   
+                  double         **vderxy,  
+		      double          *kapomederxy,
+                  double           visc,     
+                  double           fac,     
+                  double           factor,
+                  double           factor1,
+                  double           factor2,
+                  double           sig,
+                  double           production,  
+                  int              iel      
+                  );
+
+/************************************************************************
+ | f2_caltimerhspro_tu.c                                                      |
+ ************************************************************************/
+void f2_calgalprofkapeps(
+                  FLUID_DYN_CALC  *dynvar, 
+                  double          *eforce,    
+		      double           eddynint,
+                  double          *funct,    
+                  double           visc,     
+		      double           fac,      
+                  double           factor1,  
+                  double           production,  
+                  int              iel       
+                  );  
+
+void f2_calstabprofkapeps(
+                   FLUID_DYN_CALC  *dynvar,
+                   ELEMENT         *ele,      
+	            double          *eforce,  
+		      double           eddynint, 
+                  double          *funct,    
+                  double           visc,     
+                  double           fac,     
+                  double           factor1,
+                  double           production,  
+                  double           *velint,  
+                  double           *velint_dc,  
+                  double          **derxy,  
+                  int              iel      
+                  );
+           
+/************************************************************************
+ | f2_caltimerhspro_tu_1.c                                               |
+ ************************************************************************/
+void f2_calgalprofkapome(
+                  FLUID_DYN_CALC  *dynvar, 
+                  double          *eforce,    
+		      double           eddynint,
+                  double          *funct,    
+		      double           fac,      
+                  double           factor1,  
+                  double           production,  
+                  int              iel       
+                  );
+                  
+void f2_calstabprofkapome(
+                   FLUID_DYN_CALC  *dynvar,
+                   ELEMENT         *ele,      
+	            double          *eforce,  
+		      double           eddynint, 
+                  double          *funct,    
+                  double           fac,     
+                  double           factor1,
+                  double           production,  
+                  double           *velint,  
+                  double           *velint_dc,  
+                  double          **derxy,  
+                  int              iel      
+                  );
+/************************************************************************
+ | f2_caltuvisc.c                                                        |
+ ************************************************************************/
+double f2_calvisc(
+	           ELEMENT    *ele,
+                 double     **vderxy
+                );
+/************************************************************************
  | f2_calvort.c                                                         |
  ************************************************************************/
 void f2_calvort(
@@ -699,6 +1533,11 @@ void f2_calvort(
  | f2_inpele.c                                                          |
  ************************************************************************/
 void f2_inp(ELEMENT *ele, int counter);
+
+/************************************************************************
+ | f2_inpele_tu.c                                                          |
+ ************************************************************************/
+void f2tu_dis(ELEMENT *ele0, ELEMENT *ele1);
 
 /************************************************************************
  | f2_intg.c                                                            |
@@ -719,6 +1558,7 @@ void fluid2(
             PARTITION   *actpart,
             INTRA       *actintra,
             ELEMENT     *ele,             
+            ELEMENT     *eleke,             
             ARRAY       *estif_global,   
             ARRAY       *emass_global,   
 	    ARRAY       *etforce_global, 
@@ -729,4 +1569,23 @@ void fluid2(
 	    int         *hasext,       
 	    CONTAINER   *container
             );
+/************************************************************************
+ | f2_main_tu.c                                                            |
+ ************************************************************************/
+void fluid2_tu(
+            PARTITION   *actpart,
+            INTRA       *actintra,
+            ELEMENT     *eleke,  
+            ELEMENT     *elev,            
+            ARRAY       *estif_global,   
+            ARRAY       *emass_global,   
+	      ARRAY       *etforce_global, 
+	      ARRAY       *eiforce_global, 
+            ARRAY       *edforce_global, 
+            ARRAY       *eproforce_global, 
+            CALC_ACTION *action,
+	      int         *hasdirich,
+	      int         *hasext,
+            CONTAINER   *container
+	   );
 /*! @} (documentation module close)*/	    

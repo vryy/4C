@@ -54,6 +54,9 @@ int                itau[3];  /*!< flags for tau_? calculation
 /*--------------------------------- element sizes for stability parameter */
 double             hk[3];    /*!< vel/pres/cont                           */
 
+/*-------------------------- flag for turbulence  1=algebraic, 2=ke-model, 3=ko-model */
+int                turbu;
+
 /*------------------------------------------------ free surface parameter */
 int                fs_on;   /*! element belongs to free surface           */
 

@@ -820,6 +820,30 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       else
          dserror("CHECKAREA unknown!\n");	 
    }
+   frchar("TURBULENCE"  ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      if (strncmp(buffer,"No",2)==0) 
+         fdyn->turbu=0;
+      else if (strncmp(buffer,"algebraic",9)==0) 
+         fdyn->turbu=1;
+      else if (strncmp(buffer,"kappa-eps",9)==0) 
+         fdyn->turbu=2;                      
+      else if (strncmp(buffer,"kappa-omega",11)==0) 
+         fdyn->turbu=3;                      
+      else
+         dserror("TURBULENCE unknown!");
+   }   
+   frchar("DISC_CAPT"  ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      if (strncmp(buffer,"No",2)==0) 
+         fdyn->dis_capt=0;
+      else if (strncmp(buffer,"Yes",3)==0) 
+         fdyn->dis_capt=1;
+      else
+         dserror("DISC_CAPT unknown!");
+   }   
 
 /*--------------read INT */
    frint("NUMDF"     ,&(fdyn->numdf)  ,&ierr);
@@ -855,6 +879,10 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frdouble("CONVTOL"  ,&(fdyn->ittol)  ,&ierr);
    frdouble("STEADYTOL",&(fdyn->sttol) ,&ierr);
    frdouble("START_THETA",&(fdyn->thetas),&ierr);
+   frdouble("INT_LENGHT",&(fdyn->lenght),&ierr);
+   frdouble("ROUGHTNESS",&(fdyn->rought),&ierr);
+   frdouble("SC_COORD_X",&(fdyn->coord_scale[0]),&ierr);
+   frdouble("SC_COORD_Y",&(fdyn->coord_scale[1]),&ierr);
 
    frread();
 }

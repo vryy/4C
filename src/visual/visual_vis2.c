@@ -59,16 +59,17 @@ static int      KCELL;                /* number of visualised cells -
                                  different from number of elements!     */
 static int      IOPT;                 /* program mode                   */
 static int      IVORT;                /* flag for vorticity calculation */
+static int      ITURBU;               /* flag for turbulence calc.      */
 static int      DSTEP;                /* increment of visualised steps  */
 static int      NUMA;                 /* number of ALE-FIELD            */
 static int      CMNCOL=300;           /* see VISUAL2 manual             */
 static int      CMUNIT=37;            /* see VISUAL2 manual             */
 static int      MNODE;                /* maximum number of nodes        */
-static int      NKEYS=11;              /* see VISUAL2 manual             */
+static int      NKEYS=14;              /* see VISUAL2 manual             */
 static int      XYPIX[2];             /* size of VISUAL2 window         */
-static int      IKEYS[]={112,115,118,102,120,121,97,116,102,92,109};
-static int      FKEYS[]={1,1,1,3,1,1,1,1,3,1,1};             
-static float    FLIMS[11][2];          /* data limits                    */
+static int      IKEYS[]={112,115,118,102,120,121,97,116,102,92,109,107,100,110};
+static int      FKEYS[]={1,1,1,3,1,1,1,1,3,1,1,1,1,1};             
+static float    FLIMS[14][2];          /* data limits                    */
 static float    XYMIN[2], XYMAX[2];   /* min. and max. coordinates      */
 static struct  _ARRAY PCELL_A;
 static struct  _ARRAY WCELL_A;
@@ -102,6 +103,9 @@ static double  vely;	        /*					*/
 static double  pres;	        /*					*/
 static double  absv;	        /*					*/
 static double  vort;            /*                                      */
+static double  kappa;	        /*					*/
+static double  dissi;	        /*					*/
+static double  visco;	        /*					*/
 static double  xy;
 static double  minxy,maxxy;     /*					*/
 static double  minpre,maxpre;   /*					*/
@@ -109,6 +113,9 @@ static double  minvx,maxvx;     /*					*/
 static double  minvy,maxvy;     /*					*/
 static double  minabsv,maxabsv; /*					*/
 static double  minvort,maxvort; /*					*/
+static double  minkappa,maxkappa; /*					*/
+static double  mindissi,maxdissi; /*					*/
+static double  minvisco,maxvisco; /*					*/
 static double  mingv,maxgv;     /* for determination of data limits	*/
 static double  minvort,maxvort; /*					*/
 ELEMENT       *actele;          /* actual element			*/
@@ -535,6 +542,37 @@ for (i=0;i<numnp;i++) /* loop nodes */
    } /* end of loop over columns */
 } /* end of loop over nodes */
 
+if (actfield->ndis==2)
+{
+ ITURBU = 1;
+ for (i=0;i<numnp;i++) /* loop nodes */
+ {
+   actnode=&(actfield->dis[1].node[i]);
+   for (j=0;j<ncols;j++) /* loop columns in sol-history */
+   {
+      kappa      = actnode->sol.a.da[j][0];
+      dissi      = actnode->sol.a.da[j][2];
+      visco      = actnode->sol.a.da[j][1];
+
+      minkappa   = DMIN(minkappa   ,kappa);
+      maxkappa   = DMAX(maxkappa   ,kappa);
+      mindissi   = DMIN(mindissi   ,dissi);
+      maxdissi   = DMAX(maxdissi   ,dissi); 
+      minvisco   = DMIN(minvisco   ,visco);
+      maxvisco   = DMAX(maxvisco   ,visco); 
+   } /* end of loop over columns */
+ } /* end of loop over nodes */
+} /* end of container.turbu==2 || container.turbu==3 */
+else
+{
+ ITURBU = 0;
+      minkappa   = 0.0;
+      maxkappa   = 1.0;
+      mindissi   = 0.0;
+      maxdissi   = 1.0; 
+      minvisco   = 0.0;
+      maxvisco   = 1.0; 
+}
 /* grid velocity not available yet !!!! */
 mingv = 0.0;
 maxgv = 1.0;
@@ -577,6 +615,17 @@ FLIMS[9][1]=ZERO;
 FLIMS[10][0]=ZERO;
 FLIMS[10][1]=ZERO;
 
+if (minkappa==maxkappa) maxkappa=minkappa+1.0;
+FLIMS[11][0]=minkappa;
+FLIMS[11][1]=maxkappa;
+
+if (mindissi==maxdissi) maxdissi=mindissi+1.0;
+FLIMS[12][0]=mindissi;
+FLIMS[12][1]=maxdissi;
+
+if (minvisco==maxvisco) maxvisco=minvisco+1.0;
+FLIMS[13][0]=minvisco;
+FLIMS[13][1]=maxvisco;
 /*-------------------------- call Fortran routine which calls VISUAL2 */
 v2call(&IOPT,&CMNCOL,&CMUNIT,
         XYPIX,XYMIN,XYMAX,
@@ -887,6 +936,57 @@ case fluid:
 	 printf("\n");
          IMOVIE=1;
       }      
+   /*-------------------------------------------------------------------*/   
+   case 12: /* kappa */
+      if (ITURBU==1)
+      {
+       for (i=0;i<numnp;i++)
+       {
+        actnode=&(actfield->dis[1].node[i]);
+	  S[i]=actnode->sol.a.da[icol][0];
+       }
+      }        
+      else
+      {
+       printf("kappa not calculated!!!! --> ZERO-field\n");
+	 for (i=0;i<numnp;i++)
+	 S[i]=ZERO;
+      }        
+   break;
+   /*-------------------------------------------------------------------*/  
+   case 13: /* dissi */
+      if (ITURBU==1)
+      {
+       for (i=0;i<numnp;i++)
+       {
+        actnode=&(actfield->dis[1].node[i]);
+	  S[i] = actnode->sol.a.da[icol][2];
+       }       
+      }        
+      else
+      {
+       printf("dissipation not calculated!!!! --> ZERO-field\n");
+	 for (i=0;i<numnp;i++)
+	 S[i]=ZERO;
+      }        
+   break;
+   /*-------------------------------------------------------------------*/  
+   case 14: /* visco */
+      if (ITURBU==1)
+      {
+       for (i=0;i<numnp;i++)
+       {
+        actnode=&(actfield->dis[1].node[i]);
+	  S[i] = actnode->sol.a.da[icol][1];
+       }       
+      }        
+      else
+      {
+       printf("eddy-viscosity with ke- or kw-model not calculated!!!! --> ZERO-field\n");
+	 for (i=0;i<numnp;i++)
+	 S[i]=ZERO;
+      }        
+   break;
    /*-------------------------------------------------------------------*/                 
    } /* end switch(*JKEY) */
 break;

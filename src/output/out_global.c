@@ -23,6 +23,13 @@ struct _IO_FLAGS        ioflags;
 extern struct _DYNAMIC *dyn;   
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA         *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
  *----------------------------------------------------------------------*/
 extern struct _FIELD      *field;
@@ -32,6 +39,12 @@ extern struct _FIELD      *field;
  | global variable GENPROB genprob is defined in global_control.c       |
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | vector of material laws                                              |
+ | defined in global_control.c
+ *----------------------------------------------------------------------*/
+extern struct _MATERIAL  *mat;
 /*!----------------------------------------------------------------------
 \brief file pointers
 
@@ -325,11 +338,13 @@ int        nprocs;
 int        imyrank;
 int        inprocs;
 int        ngauss;
-int	   numnp;
+int	     numnp;
+int	     numff;
+double     visc;
+static FLUID_DYN_CALC  *dynvar;
 #ifdef DEBUG 
 dstrc_enter("out_sol");
 #endif
-
 /*----------------------------------------------------------------------*/
 myrank = par.myrank;
 nprocs = par.nprocs;
@@ -890,3 +905,111 @@ dstrc_exit();
 return;
 } /* end of out_fluidmf */
 
+/*----------------------------------------------------------------------*
+ |  print out solution of turbulence of a certain step      he    05/03 |
+ *----------------------------------------------------------------------*/
+void out_fluidtu(FIELD *actfield, INTRA *actintra, int step, int place)
+{
+int        i,j,k,l;
+FILE      *out = allfiles.out_tur;
+NODE      *actnode;
+NODE      *actnode2;
+GNODE     *actgnode2;	            
+ELEMENT   *actele;
+int        myrank;
+int        nprocs;
+int        imyrank;
+int        inprocs;
+int	     numnp;
+int	     numff;
+double     visc;
+static FLUID_DYN_CALC  *dynvar;
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_enter("out_fluidmtu");
+#endif
+/*----------------------------------------------------------------------*/
+
+for (numff=0;numff<genprob.numfld;numff++)
+{
+ actfield=&(field[numff]);
+ if (actfield->fieldtyp==fluid)
+ break;
+} /* end loop over numff */
+dynvar = &(alldyn[numff].fdyn->dynvar);
+
+for(i=0; i<genprob.nmat; i++)
+{
+ if (mat[i].mattyp == m_fluid) visc=mat->m.fluid->viscosity;
+}
+/*----------------------------------------------------------------------*/
+myrank = par.myrank;
+nprocs = par.nprocs;
+imyrank= actintra->intra_rank;
+inprocs= actintra->intra_nprocs;
+/*----------------------------------------------------------------------*/
+if (imyrank==0 && myrank==0)
+{
+/*-------------------------------------------------------- print header */
+fprintf(out,"================================================================================\n");
+fprintf(out,"Converged Solution in step %d\n",step); 
+fprintf(out,"================================================================================\n");
+fprintf(out,"________________________________________________________________________________\n\n");
+for (j=0; j<actfield->dis[1].numnp; j++)
+{
+   actnode = &(actfield->dis[1].node[j]);
+   fprintf(out,"NODE glob_Id %6d loc_Id %6d    ",actnode->Id,actnode->Id_loc);
+   for (k=0; k<actnode->numdf; k++) 
+   {
+      if (place >= actnode->sol.fdim) dserror("Cannot print solution step");
+      fprintf(out,"%20.7E %20.7E %20.7E",actnode->sol.a.da[place][k],actnode->sol.a.da[place][k+2],actnode->sol.a.da[place][k+1]);
+   }
+   fprintf(out,"\n");
+}
+fprintf(out,"________________________________________________________________________________\n\n");
+for (j=0; j<actfield->dis[1].numnp; j++)
+{
+   actnode  = &(actfield->dis[1].node[j]);
+   actnode2 = &(actfield->dis[0].node[j]);
+   actgnode2 = actnode2->gnode;      
+   if (FABS(actnode2->x[0]-dynvar->coord_scale[0])<EPS7)
+   {
+    fprintf(out,"COORD X %20.3E  Y+ %20.7E ",actnode2->x[0],dynvar->washvel*actnode->x[1]/visc);
+    for (k=0; k<actnode->numdf; k++) 
+    {
+     if (place >= actnode->sol.fdim) dserror("Cannot print solution step");
+     fprintf(out,"%20.7E %20.7E %20.7E",actnode->sol.a.da[place][k],actnode->sol.a.da[place][k+2],actnode2->sol.a.da[place][k]/dynvar->washvel);
+    }
+     fprintf(out,"\n");
+   }
+}
+fprintf(out,"________________________________________________________________________________\n\n");
+fprintf(out,"________________________________________________________________________________\n\n");
+for (j=0; j<actfield->dis[0].numnp; j++)
+{
+   actnode2 = &(actfield->dis[0].node[j]);
+   actgnode2 = actnode2->gnode;      
+   if(actgnode2->dirich->dirich_onoff.a.iv[0]==1 && actgnode2->dirich->dirich_onoff.a.iv[1]==1)
+   {
+    if(actnode2->sol_increment.a.da[3][0] == 0.0 && actnode2->sol_increment.a.da[3][1] == 0.0)
+    {
+     fprintf(out,"COORD_X %20.3E C_F %20.7E",actnode2->x[0],actnode2->c_f_shear);
+     actnode2->c_f_shear = ZERO;
+     fprintf(out,"\n");
+    }
+   }
+}
+fprintf(out,"________________________________________________________________________________\n\n");
+
+/*----------------------------------------------------------------------*/
+} /* end of if (myrank==0 && imyrank==0) */
+/*----------------------------------------------------------------------*/
+if (myrank==0 && imyrank==0) fflush(out);
+/*----------------------------------------------------------------------*/
+
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of out_fluidmtu */
