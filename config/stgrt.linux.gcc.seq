@@ -29,7 +29,7 @@ UMFPACK_INC=""
 UMFPACK_LIB="-L$BASEDIR/umfpack/ -lumfpack"
 
 # visual2
-if grep '^VISUAL2_PACKAGE' "$2" 2>&1 > /dev/null ; then
+if grep '^VISUAL2_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
  echo $0: Error: VISUAL2 not possible on platform Linux.
  exit 1
 fi
@@ -37,7 +37,7 @@ VISUAL2_INC=""
 VISUAL2_LIB=""
 
 # visual3
-if grep '^VISUAL3_PACKAGE' "$2" 2>&1 > /dev/null ; then
+if grep '^VISUAL3_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
  echo $0: Error: VISUAL3 not possible on platform Linux.
  exit 1
 fi

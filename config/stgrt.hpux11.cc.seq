@@ -16,7 +16,7 @@ AZTEC_INC=""
 AZTEC_LIB="-L$BASEDIR/aztec21 -laztec_seq21_$BIT"
 
 # spooles
-if grep '^SPOOLES_PACKAGE' "$2" 2>&1 > /dev/null ; then
+if grep '^SPOOLES_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
   echo $0: Error: SPOOLES not possible in sequentiel version.
  exit 1
 fi
@@ -32,7 +32,7 @@ VISUAL2_INC=""
 VISUAL2_LIB="-L$BASEDIR/visual -lVisual2 -lX11"
 
 # visual3
-if grep '^VISUAL3_PACKAGE' "$2" 2>&1 > /dev/null ; then
+if grep '^VISUAL3_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
  echo $0: Error: VISUAL3 not possible on platform HPUX11.
  exit 1
 fi

@@ -16,7 +16,7 @@ AZTEC_INC=""
 AZTEC_LIB="-L$BASEDIR/aztec21 -laztec_ita2_64_seq"
 
 # spooles
-if grep '^SPOOLES_PACKAGE' "$2" 2>&1 > /dev/null ; then
+if grep '^SPOOLES_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
   echo $0: Error: SPOOLES not possible in sequentiel version.
   exit 1
 fi
@@ -24,7 +24,7 @@ SPOOLES_INC=""
 SPOOLES_LIB=""
 
 # umfpack
-if grep '^UMFPACK' "$2" 2>&1 > /dev/null ; then
+if grep '^UMFPACK' "$definefile" 2>&1 > /dev/null ; then
   echo $0: Error: UMFPACK not possible on platform HPUX11ita2.
   exit 1
 fi
@@ -32,7 +32,7 @@ UMFPACK_INC=""
 UMFPACK_LIB=""
 
 # visual2
-if grep '^VISUAL2_PACKAGE' "$2" 2>&1 > /dev/null ; then
+if grep '^VISUAL2_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
   echo $0: Error: VISUAL2 not possible on platform HPUX11ita2.
   exit 1
 fi
@@ -40,7 +40,7 @@ VISUAL2_INC=""
 VISUAL2_LIB=""
 
 # visual3
-if grep '^VISUAL3_PACKAGE' "$2" 2>&1 > /dev/null ; then
+if grep '^VISUAL3_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
   echo $0: Error: VISUAL3 not possible on platform HPUX11ita2.
   exit 1
 fi
