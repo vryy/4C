@@ -5,8 +5,8 @@
 #--------------------------------------------------------------------
 #  
 # -DD_BRICK1    defines element brick1
-# -DD_FLUID1    defines element fluid1
 # -DD_SHELL8    defines element shell8
+# -DD_FLUID2    defines element fluid2
 # -DD_FLUID3    defines element fluid3
 # -DD_ALE       defines element ale
 # -DD_WALL1     defines element wall1
@@ -15,7 +15,7 @@
 # -DPARALLEL  defines parallel version of programm
 # -DSIXTYFOUR defines 64bit compilation and linkage
 # -DSUSE73    defines for compilation and linkage with gcc and g77 on Suselinux
-# -DSUN       defines for compilation and linkage with gcc and g77 on Suselinux
+# -DSUN       defines for compilation and linkage on CUSS Sunfire machine
 # 
 # -DMLIB_PACKAGE       defines interface to solver library MLIB (HPUX11, sequentiell)
 # -DHYPRE_PACKAGE      defines interface to solver library HYPRE
@@ -26,7 +26,7 @@
 # -DSPOOLES_PACKAGE    defines interface to solver library Spooles (only in parallel)
 #
 # 
-PFL       =  -DSUN -DD_BRICK1 -DD_FLUID1 -DD_SHELL8 -DD_ALE -DD_WALL1 \
+PFL       =  -DSUN -DD_FLUID2 -DD_FLUID3 -DD_ALE -DD_BRICK1 -DD_SHELL8 -DD_WALL1 \
              -DPARALLEL -DSPOOLES_PACKAGE
 #
 # set correct paths
@@ -59,14 +59,14 @@ RM	 = /bin/rm -f
 #---------------------------------------------------------------
 #                                            this is debug 32bit
 #---------------------------------------------------------------
-#CFLAGS   = -g $(PFL) -DDEBUG
-#FFLAGS   = -g -dalign
-#LDFLAGS  = -g 
-#LDOPTS   = -g
-#NAGCDIR  = $(NAGCDIR32)
-#LIBPATHS = -L/usr/lib -L$(NAGCDIR) -R$(NAGCDIR) -L$(METISDIR) -L$(SPOOLESDIR)
-#LIBS     = $(LIBPATHS) -lm -lmetis_sun32 -lspoolesMPI_sun32 -lspooles_sun32 -lnagc -lm -mt -lmpi
-#PROGRAM  = cca_sun_debg.exe
+CFLAGS   = -g $(PFL) -xlic_lib=sunperf -DDEBUG
+FFLAGS   = -g -dalign -xlic_lib=sunperf
+LDFLAGS  = -g -xlic_lib=sunperf
+LDOPTS   = -g -xlic_lib=sunperf
+NAGCDIR  = $(NAGCDIR32)
+LIBPATHS = -L/usr/lib -L$(NAGCDIR) -R$(NAGCDIR) -L$(METISDIR) -L$(SPOOLESDIR)
+LIBS	 = $(LIBPATHS) -lm -lmetis_sun32 -lspoolesMPI_sun32 -lspooles_sun32 -lnagc -lm -mt -lmpi
+PROGRAM  = cca_sun_debg.exe
 #----------------------------------------------------------------
 #                                             this is fast 32 bit
 #----------------------------------------------------------------
@@ -81,14 +81,14 @@ RM	 = /bin/rm -f
 #----------------------------------------------------------------
 #                                             this is fast 64 bit
 #----------------------------------------------------------------
-CFLAGS   = -fast -xtarget=ultra3 -xarch=v9b -xlic_lib=sunperf -xvector=s $(PFL)
-FFLAGS   = -fast -xtarget=ultra3 -xarch=v9b -dalign -xlic_lib=sunperf -xvector
-LDFLAGS	 = -fast -xtarget=ultra3 -xarch=v9b -xlic_lib=sunperf -xvector=s
-LDOPTS   = -fast -xtarget=ultra3 -xarch=v9b -dalign -xlic_lib=sunperf -xvector=s
-NAGCDIR  = $(NAGCDIR64)
-LIBPATHS = -L/usr/lib -L$(NAGCDIR) -R$(NAGCDIR) -L$(METISDIR) -L$(SPOOLESDIR)
-LIBS     = $(LIBPATHS) -lm -lmetis_sun64 -lspoolesMPI_sun64 -lspooles_sun64 -lnagc -lm -mt -lmpi
-PROGRAM  = cca_sun_fast64.exe
+#CFLAGS   = -fast -xtarget=ultra3 -xarch=v9b -xlic_lib=sunperf -xvector=s $(PFL)
+#FFLAGS   = -fast -xtarget=ultra3 -xarch=v9b -dalign -xlic_lib=sunperf -xvector
+#LDFLAGS  = -fast -xtarget=ultra3 -xarch=v9b -xlic_lib=sunperf -xvector=s
+#LDOPTS   = -fast -xtarget=ultra3 -xarch=v9b -dalign -xlic_lib=sunperf -xvector=s
+#NAGCDIR  = $(NAGCDIR64)
+#LIBPATHS = -L/usr/lib -L$(NAGCDIR) -R$(NAGCDIR) -L$(METISDIR) -L$(SPOOLESDIR)
+#LIBS	  = $(LIBPATHS) -lm -lmetis_sun64 -lspoolesMPI_sun64 -lspooles_sun64 -lnagc -lm -mt -lmpi
+#PROGRAM  = cca_sun_fast64.exe
 #
 #
 #
@@ -114,6 +114,7 @@ OBJS2	      = ${SRC}/global_full/global_control.o \
                 ${SRC}/global_full/map_node_find.o \
                 ${SRC}/global_full/global_mask_matrices.o \
                 ${SRC}/global_full/global_mask_msr.o \
+                ${SRC}/global_full/global_mask_vbr.o \
                 ${SRC}/global_full/global_mask_mds.o \
                 ${SRC}/global_full/global_dofconnect.o \
                 ${SRC}/global_full/global_mask_parcsr.o \
@@ -171,6 +172,7 @@ OBJS5	      = ${SRC}/fluid3/f3_inpele.o
 #                shell8
 OBJS6	      = ${SRC}/shell8/s8_main.o \
                 ${SRC}/shell8/s8_inpele.o \
+                ${SRC}/shell8/s8_restart.o \
                 ${SRC}/shell8/s8_intg.o \
                 ${SRC}/shell8/s8_jaco.o \
                 ${SRC}/shell8/s8_a3.o \
@@ -349,13 +351,12 @@ $(OBJS12):
 #
 $(OBJS14):     
 		@echo "Making $@ ..."
-		cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  $<
-		@echo "MainMake is back."
+		cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $*.c $<
 		@echo "MainMake is back."
 #
 $(OBJS15):     
 		@echo "Making $@ ..."
-		cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  $<
+		cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $*.c $<
 		@echo "MainMake is back."
 # fortran
 $(OBJS13):     
