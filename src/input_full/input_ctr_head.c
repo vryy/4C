@@ -32,7 +32,7 @@ dstrc_enter("inpctrhed");
 #endif
 
 frrewind();
-frfind("-TITLE");
+if (frfind("-TITLE")==0) dserror("frfind: TITLE not in input file");
 /*--------------------set input_file to next line */
 allfiles.actrow+=1;
 i=allfiles.actrow;
@@ -48,11 +48,15 @@ while ( strncmp(allfiles.input_file[i],"------",6) != 0)
 }
 frrewind();
 
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
 return;
 } /* end of inpctrhed */
+
+
+
 /*----------------------------------------------------------------------*
  | input of tracing variable                              m.gee 8/00    |
  *----------------------------------------------------------------------*/
@@ -65,7 +69,7 @@ int  ierr=0;
 #ifdef DEBUG 
 
 frrewind();
-frfind("TRACE");
+if (frfind("TRACE")==0) return;
 frchar("TRACE",buffer,&ierr);
 
 if (

@@ -308,7 +308,7 @@ frrewind();
 for (i=0; i<design->ndnode; i++)
 {
    design->dnode[i].Id=i;
-   frfind("--DNODE-NODE TOPOLOGY");
+   if (frfind("--DNODE-NODE TOPOLOGY")==0) goto end;
    frread();
    while(strncmp(allfiles.actplace,"------",6)!=0)
    {
@@ -331,11 +331,15 @@ for (i=0; i<design->ndnode; i++)
    frrewind();
 }
 /*----------------------------------------------------------------------*/
+
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
 return;
 } /* end of inpdesign_dpoint_fenode_read */
+
+
 /*----------------------------------------------------------------------*
  | input of design line  to fe-node topology             m.gee 3/02    |
  *----------------------------------------------------------------------*/
@@ -348,10 +352,8 @@ int    dline;
 dstrc_enter("inpdesign_dline_fenode_read");
 #endif
 /*----------------------------------------------------------------------*/
-/*-------------------------------------------------------------- rewind */
-frrewind();
 /*---------------------------------- count number of nodes on this line */
-frfind("--DLINE-NODE TOPOLOGY");
+if (frfind("--DLINE-NODE TOPOLOGY")==0) goto end;
 frread();
 while(strncmp(allfiles.actplace,"------",6)!=0)
 {
@@ -389,11 +391,15 @@ for (i=0; i<design->ndline; i++)
    }
 }
 /*----------------------------------------------------------------------*/
+
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
 return;
 } /* end of inpdesign_dline_fenode_read */
+
+
 /*----------------------------------------------------------------------*
  | input of design surface to fe-node topology             m.gee 3/02    |
  *----------------------------------------------------------------------*/
@@ -406,10 +412,8 @@ int    dsurf;
 dstrc_enter("inpdesign_dsurf_fenode_read");
 #endif
 /*----------------------------------------------------------------------*/
-/*-------------------------------------------------------------- rewind */
-frrewind();
 /*---------------------------------- count number of nodes on this surf */
-frfind("--DSURF-NODE TOPOLOGY");
+if (frfind("--DSURF-NODE TOPOLOGY")==0) goto end;
 frread();
 while(strncmp(allfiles.actplace,"------",6)!=0)
 {
@@ -447,11 +451,15 @@ for (i=0; i<design->ndsurf; i++)
    }
 }
 /*----------------------------------------------------------------------*/
+
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
 return;
 } /* end of inpdesign_dsurf_fenode_read */
+
+
 /*----------------------------------------------------------------------*
  | input of design volumes to fe-node topology            m.gee 3/02    |
  *----------------------------------------------------------------------*/
@@ -464,10 +472,8 @@ int    dvol;
 dstrc_enter("inpdesign_dvol_fenode_read");
 #endif
 /*----------------------------------------------------------------------*/
-/*-------------------------------------------------------------- rewind */
-frrewind();
 /*---------------------------------- count number of nodes on this vol */
-frfind("--DVOL-NODE TOPOLOGY");
+if (frfind("--DVOL-NODE TOPOLOGY")==0) goto end;
 frread();
 while(strncmp(allfiles.actplace,"------",6)!=0)
 {
@@ -505,6 +511,8 @@ for (i=0; i<design->ndvol; i++)
    }
 }
 /*----------------------------------------------------------------------*/
+
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif

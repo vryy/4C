@@ -63,7 +63,7 @@ dstrc_enter("inp_designsize");
 #endif
 
 /*-------------------------------------- count number of design objects */
-frfind("--DESIGN DESCRIPTION");
+if (frfind("--DESIGN DESCRIPTION")==0) dserror("frfind: DESIGN DESCRIPTION is not in input file");
 frread();
 frint("NDPOINT",&numdnode,&ierr);
 if (!ierr) dserror("Cannot read design");
@@ -100,6 +100,8 @@ for (i=0; i<design->ndvol; i++) design->dvol[i].Id = i;
 /*-------------------------------------------------------------- rewind */
 frrewind();
 /*----------------------------------------------------------------------*/
+
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -127,7 +129,7 @@ dstrc_enter("inp_dnode");
 /*-------------------------------------------------------------- rewind */
 frrewind();
 /*------------------------ now read the description of the design nodes */
-frfind("--DESIGN POINTS");
+if (frfind("--DESIGN POINTS")==0) dserror("frfind: DESIGN POINTS is not in input file");
 frread();
 for (i=0; i<design->ndnode; i++)
 {
@@ -138,6 +140,8 @@ for (i=0; i<design->ndnode; i++)
    read_1_dnode(actdnode,readID);
 }
 /*----------------------------------------------------------------------*/
+
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -205,7 +209,7 @@ dstrc_enter("inp_dline");
 #endif
 
 /*------------------------ now read the description of the design lines */
-frfind("--DESIGN LINES");
+if (frfind("--DESIGN LINES")==0) dserror("frfind: DESIGN LINES is not in input file");
 frread();
 
 for (i=0; i<design->ndline; i++)
@@ -217,6 +221,8 @@ for (i=0; i<design->ndline; i++)
    read_1_dline(actdline,readID);
 }
 /*----------------------------------------------------------------------*/
+
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -286,7 +292,7 @@ int    readId;
 dstrc_enter("inp_dsurface");
 #endif
 /*------------------------ now read the description of the design lines */
-frfind("--DESIGN SURFACES");
+if (frfind("--DESIGN SURFACES")==0) dserror("frfind: DESIGN SURFACES is not in input file");
 frread();
 for (i=0; i<design->ndsurf; i++)
 {
@@ -297,6 +303,8 @@ for (i=0; i<design->ndsurf; i++)
    read_1_dsurf(actdsurf,readId);
 }
 /*----------------------------------------------------------------------*/
+
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -377,7 +385,7 @@ dstrc_enter("inp_dvolume");
 #endif
 
 /*---------------------- now read the description of the design volumes */
-frfind("--DESIGN VOLUMES");
+if (frfind("--DESIGN VOLUMES")==0) dserror("frfind: DESIGN VOLUMES is not in input file");
 frread();
 for (i=0; i<design->ndvol; i++)
 {
@@ -388,6 +396,8 @@ for (i=0; i<design->ndvol; i++)
    read_1_dvol(actdvol,readId);
 }
 /*----------------------------------------------------------------------*/
+
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif

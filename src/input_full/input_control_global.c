@@ -160,17 +160,17 @@ genprob.numsf=-1;
 genprob.numff=-1;
 genprob.numaf=-1;
 
-frfind("-PROBLEM SIZE");
+if (frfind("-PROBLEM SIZE")==0) dserror("frfind: PROBLEM SIZE not in input file");
 frread();
 while(strncmp(allfiles.actplace,"------",6)!=0)
 {
-   frint("ELEMENTS", &(genprob.nele),&ierr);
-   frint("NODES",    &(genprob.nnode),&ierr);
-   frint("DIM",      &(genprob.ndim),&ierr);
-   frint("MATERIALS",&(genprob.nmat),&ierr);
-   frint("NUMDF",    &(genprob.numdf),&ierr);
+  frint("ELEMENTS", &(genprob.nele),&ierr);
+  frint("NODES",    &(genprob.nnode),&ierr);
+  frint("DIM",      &(genprob.ndim),&ierr);
+  frint("MATERIALS",&(genprob.nmat),&ierr);
+  frint("NUMDF",    &(genprob.numdf),&ierr);
 
-   frread();
+  frread();
 }
 /*------------------------------------------------------ check values */
 if (genprob.nmat<=0)
@@ -190,44 +190,42 @@ ioflags.fluid_vis_file     =0;
 ioflags.ale_disp_file      =0;
 ioflags.ale_disp_gid       =0;
 
-frrewind();
 
-frfind("-PROBLEM TYP");
+if (frfind("-PROBLEM TYP")==0) dserror("frfind: PROBLEM TYP not in input file");
 frread();
 while(strncmp(allfiles.actplace,"------",6)!=0)
 {
-   frchar("PROBLEMTYP",buffer,   &ierr);
-   if (ierr==1)
-   {
-      if (strncmp("Structure"                  ,buffer, 9)==0) genprob.probtyp = prb_structure;
-      if (strncmp("Fluid"                      ,buffer, 5)==0) genprob.probtyp = prb_fluid;
-      if (strncmp("Fluid_Structure_Interaction",buffer,24)==0) genprob.probtyp = prb_fsi;
-      if (strncmp("Optimisation"               ,buffer,12)==0) genprob.probtyp = prb_opt;
-      if (strncmp("Ale"                        ,buffer, 3)==0) genprob.probtyp = prb_ale;
-   }
+  frchar("PROBLEMTYP",buffer,   &ierr);
+  if (ierr==1)
+  {
+    if (strncmp("Structure"                  ,buffer, 9)==0) genprob.probtyp = prb_structure;
+    if (strncmp("Fluid"                      ,buffer, 5)==0) genprob.probtyp = prb_fluid;
+    if (strncmp("Fluid_Structure_Interaction",buffer,24)==0) genprob.probtyp = prb_fsi;
+    if (strncmp("Optimisation"               ,buffer,12)==0) genprob.probtyp = prb_opt;
+    if (strncmp("Ale"                        ,buffer, 3)==0) genprob.probtyp = prb_ale;
+  }
 
-   frchar("TIMETYP"   ,buffer,            &ierr);
-   if (ierr==1)
-   {
-      if (strncmp("Static" ,buffer,6)==0) genprob.timetyp=time_static;
-      if (strncmp("Dynamic",buffer,7)==0) genprob.timetyp=time_dynamic;
-   }
+  frchar("TIMETYP"   ,buffer,            &ierr);
+  if (ierr==1)
+  {
+    if (strncmp("Static" ,buffer,6)==0) genprob.timetyp=time_static;
+    if (strncmp("Dynamic",buffer,7)==0) genprob.timetyp=time_dynamic;
+  }
 
-   frchar("MULTIDIS"   ,buffer,            &ierr);
-   if (ierr==1)
-   {
-      if (strncmp("yes" ,buffer,3)==0) genprob.multidis=1;
-      if (strncmp("YES" ,buffer,3)==0) genprob.multidis=1;
-      if (strncmp("Yes" ,buffer,3)==0) genprob.multidis=1;
-   }      
+  frchar("MULTIDIS"   ,buffer,            &ierr);
+  if (ierr==1)
+  {
+    if (strncmp("yes" ,buffer,3)==0) genprob.multidis=1;
+    if (strncmp("YES" ,buffer,3)==0) genprob.multidis=1;
+    if (strncmp("Yes" ,buffer,3)==0) genprob.multidis=1;
+  }      
 
-   frint("RESTART"    ,&(genprob.restart),&ierr);
-   
-   frint("NUMFIELD",&(genprob.numfld),&ierr);
+  frint("RESTART"    ,&(genprob.restart),&ierr);
 
-   frread();
+  frint("NUMFIELD",&(genprob.numfld),&ierr);
+
+  frread();
 }
-frrewind();
 
 /*----------------- set field numbers depending on problem type and numfld */
 if (genprob.probtyp==prb_fsi)
@@ -245,84 +243,84 @@ if (genprob.probtyp==prb_ale) genprob.numaf=0;
 if (genprob.probtyp==prb_structure) genprob.numsf=0;
 
 
-frfind("---IO");
-frread();
-while(strncmp(allfiles.actplace,"------",6)!=0)
+if (frfind("---IO")==1)
 {
-   frchar("STRUCT_DISP_FILE",buffer,&ierr);
-   if (ierr)
-   {
+  frread();
+  while(strncmp(allfiles.actplace,"------",6)!=0)
+  {
+    frchar("STRUCT_DISP_FILE",buffer,&ierr);
+    if (ierr)
+    {
       if (strncmp(buffer,"yes",3)==0) ioflags.struct_disp_file=1;
       if (strncmp(buffer,"YES",3)==0) ioflags.struct_disp_file=1;
       if (strncmp(buffer,"Yes",3)==0) ioflags.struct_disp_file=1;
-   }
-   frchar("STRUCT_STRESS_FILE",buffer,&ierr);
-   if (ierr)
-   {
+    }
+    frchar("STRUCT_STRESS_FILE",buffer,&ierr);
+    if (ierr)
+    {
       if (strncmp(buffer,"yes",3)==0) ioflags.struct_stress_file=1;
       if (strncmp(buffer,"YES",3)==0) ioflags.struct_stress_file=1;
       if (strncmp(buffer,"Yes",3)==0) ioflags.struct_stress_file=1;
-   }
-   frchar("STRUCT_DISP_GID",buffer,&ierr);
-   if (ierr)
-   {
+    }
+    frchar("STRUCT_DISP_GID",buffer,&ierr);
+    if (ierr)
+    {
       if (strncmp(buffer,"yes",3)==0) ioflags.struct_disp_gid=1;
       if (strncmp(buffer,"YES",3)==0) ioflags.struct_disp_gid=1;
       if (strncmp(buffer,"Yes",3)==0) ioflags.struct_disp_gid=1;
-   }
-   frchar("STRUCT_STRESS_GID",buffer,&ierr);
-   if (ierr)
-   {
+    }
+    frchar("STRUCT_STRESS_GID",buffer,&ierr);
+    if (ierr)
+    {
       if (strncmp(buffer,"yes",3)==0) ioflags.struct_stress_gid=1;
       if (strncmp(buffer,"YES",3)==0) ioflags.struct_stress_gid=1;
       if (strncmp(buffer,"Yes",3)==0) ioflags.struct_stress_gid=1;
-   }
-   frchar("FLUID_SOL_GID",buffer,&ierr);
-   if (ierr)
-   {
+    }
+    frchar("FLUID_SOL_GID",buffer,&ierr);
+    if (ierr)
+    {
       if (strncmp(buffer,"yes",3)==0) ioflags.fluid_sol_gid=1;
       if (strncmp(buffer,"YES",3)==0) ioflags.fluid_sol_gid=1;
       if (strncmp(buffer,"Yes",3)==0) ioflags.fluid_sol_gid=1;
-   }     
-   frchar("FLUID_SOL_FILE",buffer,&ierr);
-   if (ierr)
-   {
+    }     
+    frchar("FLUID_SOL_FILE",buffer,&ierr);
+    if (ierr)
+    {
       if (strncmp(buffer,"yes",3)==0) ioflags.fluid_sol_file=1;
       if (strncmp(buffer,"YES",3)==0) ioflags.fluid_sol_file=1;
       if (strncmp(buffer,"Yes",3)==0) ioflags.fluid_sol_file=1;
-   }     
-   frchar("FLUID_VIS_FILE",buffer,&ierr);
-   if (ierr)
-   {
+    }     
+    frchar("FLUID_VIS_FILE",buffer,&ierr);
+    if (ierr)
+    {
       if (strncmp(buffer,"yes",3)==0) ioflags.fluid_vis_file=1;
       if (strncmp(buffer,"YES",3)==0) ioflags.fluid_vis_file=1;
       if (strncmp(buffer,"Yes",3)==0) ioflags.fluid_vis_file=1;
-   } 
-   frchar("ALE_DISP_FILE",buffer,&ierr);
-   if (ierr)
-   {
+    } 
+    frchar("ALE_DISP_FILE",buffer,&ierr);
+    if (ierr)
+    {
       if (strncmp(buffer,"yes",3)==0) ioflags.ale_disp_file=1;
       if (strncmp(buffer,"YES",3)==0) ioflags.ale_disp_file=1;
       if (strncmp(buffer,"Yes",3)==0) ioflags.ale_disp_file=1;
-   }
-   frchar("ALE_DISP_GID",buffer,&ierr);
-   if (ierr)
-   {
+    }
+    frchar("ALE_DISP_GID",buffer,&ierr);
+    if (ierr)
+    {
       if (strncmp(buffer,"yes",3)==0) ioflags.ale_disp_gid=1;
       if (strncmp(buffer,"YES",3)==0) ioflags.ale_disp_gid=1;
       if (strncmp(buffer,"Yes",3)==0) ioflags.ale_disp_gid=1;
-   }
-   frchar("MONITOR"   ,buffer,            &ierr);
-   if (ierr==1)
-   {
+    }
+    frchar("MONITOR"   ,buffer,            &ierr);
+    if (ierr==1)
+    {
       if (strncmp("yes" ,buffer,3)==0) ioflags.monitor=1;
       if (strncmp("YES" ,buffer,3)==0) ioflags.monitor=1;
       if (strncmp("Yes" ,buffer,3)==0) ioflags.monitor=1;
-   }
-   frread();
+    }
+    frread();
+  }
 }
-frrewind();
-
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -354,82 +352,85 @@ statvar->resevry_disp=1;
 statvar->resevry_stress=1;
 statvar->resevery_restart=1;
 /*------------------------------------------------------- start reading */
-frfind("-STATIC");
-frread();
-while(strncmp(allfiles.actplace,"------",6)!=0)
+if (frfind("-STATIC")==1)
 {
-   frchk("LINEAR",&ierr);
-   if (ierr==1) {statvar->linear=1;statvar->nonlinear=0;}
-   frchk("NONLINEAR",&ierr);
-   if (ierr==1) {statvar->nonlinear=1;statvar->linear=0;}
-   /*------------------------- read for typ of kinematic sh 03/03 */   
-   frchar("KINTYP",buffer,&ierr);
-   if (ierr==1)
-   {
+  frread();
+  while(strncmp(allfiles.actplace,"------",6)!=0)
+  {
+    frchk("LINEAR",&ierr);
+    if (ierr==1) {statvar->linear=1;statvar->nonlinear=0;}
+    frchk("NONLINEAR",&ierr);
+    if (ierr==1) {statvar->nonlinear=1;statvar->linear=0;}
+    /*------------------------- read for typ of kinematic sh 03/03 */   
+    frchar("KINTYP",buffer,&ierr);
+    if (ierr==1)
+    {
       if (strncmp(buffer,"Geo_Lin",7)==0) 
-      statvar->kintyp = geo_linear;
+        statvar->kintyp = geo_linear;
       if (strncmp(buffer,"Upd_Lagr",8)==0)
-      statvar->kintyp = upd_lagr;
+        statvar->kintyp = upd_lagr;
       if (strncmp(buffer,"Tot_Lagr",8)==0)
-      statvar->kintyp = tot_lagr;
-   }
-   /*------------------------- read for typ of pathfollowing technique */   
-   frchar("NEWTONRAPHSO",buffer,&ierr);
-   if (ierr==1)
-   {
+        statvar->kintyp = tot_lagr;
+    }
+    /*------------------------- read for typ of pathfollowing technique */   
+    frchar("NEWTONRAPHSO",buffer,&ierr);
+    if (ierr==1)
+    {
       if (strncmp(buffer,"Displacement_Control",20)==0) 
-      statvar->nr_controltyp = control_disp;
+        statvar->nr_controltyp = control_disp;
       if (strncmp(buffer,"Load_Control",12)==0)
-      statvar->nr_controltyp = control_load;
+        statvar->nr_controltyp = control_load;
       if (strncmp(buffer,"Arc_Control",11)==0)
-      statvar->nr_controltyp = control_arc;
+        statvar->nr_controltyp = control_arc;
       if (strncmp(buffer,"none",4)==0)
-      statvar->nr_controltyp = control_none;
-   }
-   /*---------------------------------------- read for arcscaling flag */
-   frchar("IARC"   ,buffer,&ierr);
-   if (ierr)
-   {
+        statvar->nr_controltyp = control_none;
+    }
+    /*---------------------------------------- read for arcscaling flag */
+    frchar("IARC"   ,buffer,&ierr);
+    if (ierr)
+    {
       if (strncmp(buffer,"Yes",3)==0) statvar->iarc=1;
       else                            statvar->iarc=0;
-   }  
-   /*------------------------------ read for sign-changing-by-csp flag */
-   frchar("SIGNCHCSP"   ,buffer,&ierr);
-   if (ierr)
-   {
+    }  
+    /*------------------------------ read for sign-changing-by-csp flag */
+    frchar("SIGNCHCSP"   ,buffer,&ierr);
+    if (ierr)
+    {
       if (strncmp(buffer,"Yes",3)==0) statvar->signchcsp=1;
       else                            statvar->signchcsp=0;
-   }  
-   /*-------------------------------------------------- read variables */
-   frint("NUMSTEP",&(statvar->nstep)  ,&ierr);
-   frint("MAXITER",&(statvar->maxiter),&ierr);
-   frint("RESEVRYDISP",&(statvar->resevry_disp)  ,&ierr);
-   frint("RESEVRYSTRS",&(statvar->resevry_stress),&ierr);
-   frint("RESTARTEVRY",&(statvar->resevery_restart),&ierr);
+    }  
+    /*-------------------------------------------------- read variables */
+    frint("NUMSTEP",&(statvar->nstep)  ,&ierr);
+    frint("MAXITER",&(statvar->maxiter),&ierr);
+    frint("RESEVRYDISP",&(statvar->resevry_disp)  ,&ierr);
+    frint("RESEVRYSTRS",&(statvar->resevry_stress),&ierr);
+    frint("RESTARTEVRY",&(statvar->resevery_restart),&ierr);
 
-   frdouble("TOLRESID",&(statvar->tolresid),&ierr);
-   frdouble("TOLDISP" ,&(statvar->toldisp) ,&ierr);
-   frdouble("STEPSIZE",&(statvar->stepsize),&ierr);
-   frdouble("ARCSCL"  ,&(statvar->arcscl)  ,&ierr);
-   /*-------------------------------------------------------------------*/
-   frread();
+    frdouble("TOLRESID",&(statvar->tolresid),&ierr);
+    frdouble("TOLDISP" ,&(statvar->toldisp) ,&ierr);
+    frdouble("STEPSIZE",&(statvar->stepsize),&ierr);
+    frdouble("ARCSCL"  ,&(statvar->arcscl)  ,&ierr);
+    /*-------------------------------------------------------------------*/
+    frread();
+  }
 }
-frrewind();
 /*--------------------------------- in nonlinear case find control node */
 if (statvar->nonlinear)
 {
-   /*---------------------------------------------------- start reading */
-   frfind("-CONTROL NODE");
-   frread();
-   while(strncmp(allfiles.actplace,"------",6)!=0)
-   {
+  /*---------------------------------------------------- start reading */
+  if (frfind("-CONTROL NODE")==1)
+  {
+    frread();
+    while(strncmp(allfiles.actplace,"------",6)!=0)
+    {
       frint("NODE",&(statvar->control_node_global),&ierr);
       if (ierr) statvar->control_node_global--;
       frint("DOF",&(statvar->control_dof),&ierr);
       /*----------------------------------------------------------------*/
       frread();
-   }
-frrewind();
+    }
+  }
+  frrewind();
 }
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -495,7 +496,7 @@ char   buffer[50];
 dstrc_enter("inpctr_eig_struct");
 #endif
 
-frfind("--EIGENVALUE ANALYSIS");
+if (frfind("--EIGENVALUE ANALYSIS")==0) goto end;
 frread();
 while(strncmp(allfiles.actplace,"------",6)!=0)
 {
@@ -527,6 +528,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frread();
 }
 frrewind();
+
+end:
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -631,7 +634,7 @@ sdyn->updevry_stress=1;
 sdyn->res_write_evry=1;
 sdyn->eigen=0;
 
-frfind("-STRUCTURAL DYNAMIC");
+if (frfind("-STRUCTURAL DYNAMIC")==0) goto end;
 frread();
 while(strncmp(allfiles.actplace,"------",6)!=0)
 {
@@ -695,6 +698,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 }
 frrewind();
 /*----------------------------------------------------------------------*/
+
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -755,7 +760,7 @@ fdyn->theta=0.5;
 fdyn->ittol=EPS6; 
 fdyn->sttol=EPS6; 
  
-frfind("-FLUID DYNAMIC");
+if (frfind("-FLUID DYNAMIC")==0) goto end;
 frread();
 while(strncmp(allfiles.actplace,"------",6)!=0)
 {
@@ -989,6 +994,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 }
 frrewind();
 /*----------------------------------------------------------------------*/
+
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -1043,7 +1050,7 @@ fsidyn->entol=EPS6;
 fsidyn->relax=1.0;  
 fsidyn->convtol=EPS6;
     
-frfind("-FSI DYNAMIC");
+if (frfind("-FSI DYNAMIC")==0) goto end;
 frread();
 while(strncmp(allfiles.actplace,"------",6)!=0)
 {
@@ -1162,6 +1169,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 }
 frrewind();
 /*----------------------------------------------------------------------*/
+
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -1198,7 +1207,7 @@ adyn->num_initstep = 0;
 adyn->step = 0;
 adyn->measure_quality = no_quality;
 
-frfind("-ALE DYNAMIC");
+if (frfind("-ALE DYNAMIC")==0) goto end;
 frread();
 while(strncmp(allfiles.actplace,"------",6)!=0)
 {
@@ -1238,8 +1247,10 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 }
 frrewind();
 
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
+return;
 } /* end of inpctr_dyn_ale */
 #endif

@@ -179,16 +179,16 @@ return;
 <pre>                                                        m.gee 8/00 
 searches for a given character string in allfiles.input_file
 and sets allfiles.actplace to it
-If string is not found it terminates the programm with an error message
+If string is not found it returns 0 otherwise 1.
 </pre>
 \param string   char[]   (i)   string to search for in input                                
-\return void                                               
+\return INT                                               
 
 ------------------------------------------------------------------------*/
-void frfind(char string[])
+INT frfind(char string[])
 {
 char message[100];
-int  i=0;
+INT  i=0;
 
 #ifdef DEBUG 
 dstrc_enter("frfind");
@@ -201,7 +201,10 @@ while ( strstr(allfiles.input_file[i],string) == NULL )
    {
       
       sprintf(message,"frfind:  String %s is not in input file",string);
-      dserror(message);
+      /*dserror(message);*/
+      printf("%s\n",message);
+      frrewind();
+      return 0;
    }
    i++;
 }
@@ -211,7 +214,7 @@ allfiles.actplace=strstr(allfiles.input_file[i],string);
 #ifdef DEBUG 
 dstrc_exit();
 #endif
-return;
+return 1;
 } /* end of frfind */
 
 

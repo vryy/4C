@@ -48,7 +48,7 @@ if (opt==NULL) dserror("Allocation of OPTIMIZATION failed");
   opt->strategy  = os_none;
   opt->objective = oj_none;
 /*----------------------------------------------------------------------*/
-frfind("--OPTIMIZATION");
+if (frfind("--OPTIMIZATION")==0) goto end;
 frread();
 i=0;
 while(strncmp(allfiles.actplace,"------",6)!=0)
@@ -292,6 +292,8 @@ OC_ECO 1                  : global equality constraints
   frread();
 } /* loop optimization data */
 /*----------------------------------------------------------------------*/
+
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif

@@ -76,18 +76,19 @@ numff=genprob.numff;
 numaf=genprob.numaf;
 
 /*--------------------------------------------------- first count nodes */
-frrewind();
-frfind("--MONITORING");
-frread();
-while(strncmp(allfiles.actplace,"------",6)!=0)
+if (frfind("--MONITORING")==1)
 {
-   frchk("STRUCTURE",&ierr);
-   if (ierr==1) cs++;
-   frchk("FLUID",&ierr);
-   if (ierr==1) cf++;
-   frchk("ALE",&ierr);
-   if (ierr==1) ca++;
-   frread();
+  frread();
+  while(strncmp(allfiles.actplace,"------",6)!=0)
+  {
+    frchk("STRUCTURE",&ierr);
+    if (ierr==1) cs++;
+    frchk("FLUID",&ierr);
+    if (ierr==1) cf++;
+    frchk("ALE",&ierr);
+    if (ierr==1) ca++;
+    frread();
+  }
 }
 
 
@@ -151,51 +152,52 @@ cf=0;
 ca=0;
 
 /*---------------------------------------------- read in global node Ids*/
-frrewind();
-frfind("--MONITORING");
-frread();
-while(strncmp(allfiles.actplace,"------",6)!=0)
+if (frfind("--MONITORING")==1)
 {
-   frint("STRUCTURE",&actnum,&ierr);
-   if (ierr==1)
-   {
+  frread();
+  while(strncmp(allfiles.actplace,"------",6)!=0)
+  {
+    frint("STRUCTURE",&actnum,&ierr);
+    if (ierr==1)
+    {
       actnum--;
       snode[cs][0] = actnum;
-     /*------------------------------ move pointer behind the "-" sign */
-     colptr = strstr(allfiles.actplace,"-");
-     dsassert(colptr!=NULL,"Cannot read monitoring ");
-     colptr++;      
-     for (i=0; i<MAXDOFPERNODE; i++)     
-     sonoff[cs][i] = strtol(colptr,&colptr,10);
-     cs++;
-   }
-   frint("FLUID",&actnum,&ierr);
-   if (ierr==1)
-   {
+      /*------------------------------ move pointer behind the "-" sign */
+      colptr = strstr(allfiles.actplace,"-");
+      dsassert(colptr!=NULL,"Cannot read monitoring ");
+      colptr++;      
+      for (i=0; i<MAXDOFPERNODE; i++)     
+        sonoff[cs][i] = strtol(colptr,&colptr,10);
+      cs++;
+    }
+    frint("FLUID",&actnum,&ierr);
+    if (ierr==1)
+    {
       actnum--;
       fnode[cf][0] = actnum;
-     /*------------------------------ move pointer behind the "-" sign */
-     colptr = strstr(allfiles.actplace,"-");
-     dsassert(colptr!=NULL,"Cannot read monitoring ");
-     colptr++;      
-     for (i=0; i<MAXDOFPERNODE; i++)     
-     fonoff[cf][i] = strtol(colptr,&colptr,10);
-     cf++;
-   }
-   frint("ALE",&actnum,&ierr);
-   if (ierr==1)
-   {
+      /*------------------------------ move pointer behind the "-" sign */
+      colptr = strstr(allfiles.actplace,"-");
+      dsassert(colptr!=NULL,"Cannot read monitoring ");
+      colptr++;      
+      for (i=0; i<MAXDOFPERNODE; i++)     
+        fonoff[cf][i] = strtol(colptr,&colptr,10);
+      cf++;
+    }
+    frint("ALE",&actnum,&ierr);
+    if (ierr==1)
+    {
       actnum--;
       anode[ca][0] = actnum;
-     /*------------------------------ move pointer behind the "-" sign */
-     colptr = strstr(allfiles.actplace,"-");
-     dsassert(colptr!=NULL,"Cannot read monitoring ");
-     colptr++;      
-     for (i=0; i<MAXDOFPERNODE; i++)     
-     aonoff[ca][i] = strtol(colptr,&colptr,10);
-     ca++;
-   }
-   frread();
+      /*------------------------------ move pointer behind the "-" sign */
+      colptr = strstr(allfiles.actplace,"-");
+      dsassert(colptr!=NULL,"Cannot read monitoring ");
+      colptr++;      
+      for (i=0; i<MAXDOFPERNODE; i++)     
+        aonoff[ca][i] = strtol(colptr,&colptr,10);
+      ca++;
+    }
+    frread();
+  }
 }
 
 /*-------------------------------------------------------- count values */

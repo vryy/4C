@@ -42,7 +42,7 @@ dstrc_enter("inp_material");
 mat = (MATERIAL*)CCACALLOC(genprob.nmat,sizeof(MATERIAL));
 if (mat==NULL) dserror("Allocation of MATERIAL failed");
 /*----------------------------------------------------------------------*/
-frfind("--MATERIALS");
+if (frfind("--MATERIALS")==0) dserror("frfind: MATERIALS is not in input file");
 frread();
 i=0;
 while(strncmp(allfiles.actplace,"------",6)!=0)
@@ -353,6 +353,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frread();
 }
 /*----------------------------------------------------------------------*/
+
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -381,13 +383,14 @@ for (i=0; i<genprob.nmat; i++)
 }
 if (check == 0 ) goto end;
 /*--------------------------------- count number of multilayer materials */
-frrewind();
-frfind("--MULTILAYER MATERIALS");
-frread();
-while(strncmp(allfiles.actplace,"------",6)!=0)
+if (frfind("--MULTILAYER MATERIALS")==1)
 {
-   counter++;
-   frread();
+  frread();
+  while(strncmp(allfiles.actplace,"------",6)!=0)
+  {
+    counter++;
+    frread();
+  }
 }
 if (counter == 0) goto end;       /* no multilayer material set */
 
@@ -395,8 +398,7 @@ if (counter == 0) goto end;       /* no multilayer material set */
 multimat = (MULTIMAT*)CCACALLOC(counter,sizeof(MULTIMAT));
 if (multimat==NULL) dserror("Allocation of MULTIMAT failed");
 /*----------------------------------------------------------------------*/
-frrewind();
-frfind("--MULTILAYER MATERIALS");
+if (frfind("--MULTILAYER MATERIALS")==0) goto end;
 frread();
 i=0;
 while(strncmp(allfiles.actplace,"------",6)!=0)

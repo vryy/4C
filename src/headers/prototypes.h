@@ -669,7 +669,7 @@ void frrewind(void);
  | char string[] (input) character string to search for copy of inputfil|
  |                       terminates programm if not found               |
  *----------------------------------------------------------------------*/
-void frfind(char string[]);
+INT frfind(char string[]);
 /*----------------------------------------------------------------------*
  |                                                        m.gee 8/00    |
  | sets a pointer to the next line in thecopy of input file on all procs|

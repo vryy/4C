@@ -40,31 +40,40 @@ dstrc_enter("inp_cond_curve");
 /*----------------------------------------------------------------------*/
 /*------------------------ count the number of different curves (max=5) */
 numcurve=0;
-frfind("--CURVE1");
-frread();
-frchk("---",&ierr);
-if (ierr==0) (numcurve)++;
+if (frfind("--CURVE1")==1)
+{
+  frread();
+  frchk("---",&ierr);
+  if (ierr==0) (numcurve)++;
+}
 
-frfind("--CURVE2");
-frread();
-frchk("---",&ierr);
-if (ierr==0) (numcurve)++;
+if (frfind("--CURVE2")==1)
+{
+  frread();
+  frchk("---",&ierr);
+  if (ierr==0) (numcurve)++;
+}
 
-frfind("--CURVE3");
-frread();
-frchk("---",&ierr);
-if (ierr==0) (numcurve)++;
+if (frfind("--CURVE3")==1)
+{
+  frread();
+  frchk("---",&ierr);
+  if (ierr==0) (numcurve)++;
+}
 
-frfind("--CURVE4");
-frread();
-frchk("---",&ierr);
-if (ierr==0) (numcurve)++;
+if (frfind("--CURVE4")==1)
+{
+  frread();
+  frchk("---",&ierr);
+  if (ierr==0) (numcurve)++;
+}
 
-frfind("--CURVE5");
-frread();
-frchk("---",&ierr);
-if (ierr==0) (numcurve)++;
-
+if (frfind("--CURVE5")==1)
+{
+  frread();
+  frchk("---",&ierr);
+  if (ierr==0) (numcurve)++;
+}
 
 
 /*------------------------------------------------- allocate the curves */
@@ -105,7 +114,7 @@ dstrc_enter("inp_read_curve");
 #endif
 /*----------------------------------------------------------------------*/
 /*--------------------------- check whether there is info on this curve */
-frfind(string);
+if (frfind(string)==0) goto end;
 frread();
 frchk("---",&ierr);
 if (ierr==1) goto end;
@@ -126,7 +135,7 @@ while (ierr==0)
    frchk("---",&ierr);
 }
 /*-------------------------------------- allocate space to store values */
-frfind(string);
+if (frfind(string)==0) goto end;
 frread();
 frchar("BYSTEP",buffer,&ierr);
 if (strncmp(buffer,"Yes",3)==0 ||
@@ -144,7 +153,7 @@ else
    amdef("curve_value",&(actcurve->value),counter,2,"DA");
 }
 /*------------------------------------------------------- start reading */
-frfind(string);
+if (frfind(string)==0) goto end;
 for (i=0; i<counter; i++)
 {
    frread();

@@ -130,7 +130,7 @@ dstrc_enter("inpdesign_nodal_dirich");
 #endif
 /*----------------------------------------------------------------------*/
 /*-------------------- find the beginning of nodal dirichlet conditions */
-frfind("--DESIGN POINT DIRICH CONDITIONS");
+if (frfind("--DESIGN POINT DIRICH CONDITIONS")==0) goto end;
 frread();
 /*------------------------ read number of design points with conditions */
 frint("DPOINT",&ndnode,&ierr);
@@ -221,6 +221,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frread();
 }
 /*----------------------------------------------------------------------*/
+
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -246,7 +248,7 @@ dstrc_enter("inpdesign_line_dirich");
 #endif
 /*----------------------------------------------------------------------*/
 /*-------------------- find the beginning of line dirichlet conditions */
-frfind("--DESIGN LINE DIRICH CONDITIONS");
+if (frfind("--DESIGN LINE DIRICH CONDITIONS")==0) goto end;
 frread();
 /*------------------------- read number of design lines with conditions */
 frint("DLINE",&ndline,&ierr);
@@ -337,6 +339,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frread();
 }
 /*----------------------------------------------------------------------*/
+
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -362,7 +366,7 @@ dstrc_enter("inpdesign_surf_dirich");
 #endif
 /*----------------------------------------------------------------------*/
 /*------------------ find the beginning of surface dirichlet conditions */
-frfind("--DESIGN SURF DIRICH CONDITIONS");
+if (frfind("--DESIGN SURF DIRICH CONDITIONS")==0) goto end;
 frread();
 /*------------------------- read number of design surfs with conditions */
 frint("DSURF",&ndsurf,&ierr);
@@ -453,6 +457,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frread();
 }
 /*----------------------------------------------------------------------*/
+
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -478,7 +484,7 @@ dstrc_enter("inpdesign_vol_dirich");
 #endif
 /*----------------------------------------------------------------------*/
 /*------------------ find the beginning of surface dirichlet conditions */
-frfind("--DESIGN VOL DIRICH CONDITIONS");
+if (frfind("--DESIGN VOL DIRICH CONDITIONS")==0) goto end;
 frread();
 /*----------------------- read number of design volumes with conditions */
 frint("DVOL",&ndvol,&ierr);
@@ -569,6 +575,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frread();
 }
 /*----------------------------------------------------------------------*/
+
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -596,7 +604,7 @@ dstrc_enter("inpdesign_nodal_neum");
 #endif
 /*----------------------------------------------------------------------*/
 /*-------------------- find the beginning of nodal neumann conditions */
-frfind("--DESIGN POINT NEUMANN CONDITIONS");
+if (frfind("--DESIGN POINT NEUMANN CONDITIONS")==0) goto end;
 frread();
 /*------------------------ read number of design points with conditions */
 frint("DPOINT",&ndnode,&ierr);
@@ -672,6 +680,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frread();
 }
 /*----------------------------------------------------------------------*/
+
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -697,7 +707,7 @@ dstrc_enter("inpdesign_line_neum");
 #endif
 /*----------------------------------------------------------------------*/
 /*-------------------- find the beginning of line neumann conditions */
-frfind("--DESIGN LINE NEUMANN CONDITIONS");
+if (frfind("--DESIGN LINE NEUMANN CONDITIONS")==0) goto end;
 frread();
 /*------------------------- read number of design lines with conditions */
 frint("DLINE",&ndline,&ierr);
@@ -773,6 +783,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frread();
 }
 /*----------------------------------------------------------------------*/
+
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -798,7 +810,7 @@ dstrc_enter("inpdesign_surf_neum");
 #endif
 /*----------------------------------------------------------------------*/
 /*------------------ find the beginning of surface neumann conditions */
-frfind("--DESIGN SURF NEUMANN CONDITIONS");
+if (frfind("--DESIGN SURF NEUMANN CONDITIONS")==0) goto end;
 frread();
 /*------------------------- read number of design surfs with conditions */
 frint("DSURF",&ndsurf,&ierr);
@@ -887,6 +899,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frread();
 }
 /*----------------------------------------------------------------------*/
+
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -912,7 +926,7 @@ dstrc_enter("inpdesign_vol_neum");
 #endif
 /*----------------------------------------------------------------------*/
 /*------------------ find the beginning of surface neumann conditions */
-frfind("--DESIGN VOL NEUMANN CONDITIONS");
+if (frfind("--DESIGN VOL NEUMANN CONDITIONS")==0) goto end;
 frread();
 /*----------------------- read number of design volumes with conditions */
 frint("DVOL",&ndvol,&ierr);
@@ -984,6 +998,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frread();
 }
 /*----------------------------------------------------------------------*/
+
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -1025,7 +1041,7 @@ dstrc_enter("inpdesign_nodal_couple");
 #endif
 /*----------------------------------------------------------------------*/
 /*-------------------- find the beginning of nodal coupling conditions */
-frfind("--DESIGN COUPLING POINT CONDITIONS");
+if (frfind("--DESIGN COUPLING POINT CONDITIONS")==0) goto end;
 frread();
 /*------------------------ read number of design points with conditions */
 frint("DPOINT",&ndnode,&ierr);
@@ -1109,11 +1125,13 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       actdnode->couple->couple.a.ia[i][0]=geocouple;
    }
    /*------------------------------------------------ read the fsi flag */   
-/*   actdnode->couple->fsi_iscoupled = strtol(colptr,&colptr,10);
+/*   actdnode->couple->fsi_iscoupled = strtol(colptr,&colptr,10);*/
    /*--------------------------------------------------- read next line */
    frread();
 }
 /*----------------------------------------------------------------------*/
+
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -1144,7 +1162,7 @@ dstrc_enter("inpdesign_line_couple");
 #endif
 /*----------------------------------------------------------------------*/
 /*--------------------- find the beginning of line coupling conditions */
-frfind("--DESIGN COUPLING LINE CONDITIONS");
+if (frfind("--DESIGN COUPLING LINE CONDITIONS")==0) goto end;
 frread();
 /*------------------------ read number of design lines with conditions */
 frint("DLINE",&ndline,&ierr);
@@ -1228,11 +1246,13 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       actdline->couple->couple.a.ia[i][0]=geocouple;
    }
    /*------------------------------------------------ read the fsi flag */   
-/*   actdline->couple->fsi_iscoupled = strtol(colptr,&colptr,10);
+/*   actdline->couple->fsi_iscoupled = strtol(colptr,&colptr,10);*/
    /*--------------------------------------------------- read next line */
    frread();
 }
 /*----------------------------------------------------------------------*/
+
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -1264,7 +1284,7 @@ dstrc_enter("inpdesign_surf_couple");
 #endif
 /*----------------------------------------------------------------------*/
 /*-------------------- find the beginning of surf coupling conditions */
-frfind("--DESIGN COUPLING SURF CONDITIONS");
+if (frfind("--DESIGN COUPLING SURF CONDITIONS")==0) goto end;
 frread();
 /*------------------------ read number of design points with conditions */
 frint("DSURF",&ndsurf,&ierr);
@@ -1348,11 +1368,13 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       actdsurf->couple->couple.a.ia[i][0]=geocouple;
    }
    /*------------------------------------------------ read the fsi flag */   
-/*   actdsurf->couple->fsi_iscoupled = strtol(colptr,&colptr,10);
+/*   actdsurf->couple->fsi_iscoupled = strtol(colptr,&colptr,10);*/
    /*--------------------------------------------------- read next line */
    frread();
 }
 /*----------------------------------------------------------------------*/
+
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -1384,7 +1406,7 @@ dstrc_enter("inpdesign_vol_couple");
 #endif
 /*----------------------------------------------------------------------*/
 /*-------------------- find the beginning of volume coupling conditions */
-frfind("--DESIGN COUPLING VOL CONDITIONS");
+if (frfind("--DESIGN COUPLING VOL CONDITIONS")==0) goto end;
 frread();
 /*------------------------ read number of design points with conditions */
 frint("DVOL",&ndvol,&ierr);
@@ -1468,11 +1490,13 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       actdvol->couple->couple.a.ia[i][0]=geocouple;
    }
    /*------------------------------------------------ read the fsi flag */   
-/*   actdvol->couple->fsi_iscoupled = strtol(colptr,&colptr,10);
+/*   actdvol->couple->fsi_iscoupled = strtol(colptr,&colptr,10);*/
    /*--------------------------------------------------- read next line */
    frread();
 }
 /*----------------------------------------------------------------------*/
+
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -1500,7 +1524,7 @@ dstrc_enter("inpdesign_line_fsicouple");
 
 /*----------------------------------------------------------------------*/
 /*------------------ find the beginning of line fsi coupling conditions */
-frfind("--DESIGN FSI COUPLING LINE CONDITIONS");
+if (frfind("--DESIGN FSI COUPLING LINE CONDITIONS")==0) goto end;
 frread();
 /*------------------------ read number of design lines with conditions */
 frint("DLINE",&ndline,&ierr);
@@ -1581,12 +1605,16 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frread();
 }
 /*----------------------------------------------------------------------*/
+
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
 return;
 } /* end of inpdesign_line_couple */
 #endif
+
+
 #ifdef D_FLUID
 /*----------------------------------------------------------------------*
  | input of nodal fluid freesurface conditions on design     genk 01/03 |
@@ -1608,7 +1636,7 @@ dstrc_enter("inpdesign_nodal_freesurf");
 
 /*----------------------------------------------------------------------*/
 /*---- find the beginning of line fluid freesurface coupling conditions */
-frfind("--DESIGN FLUID FREE SURFACE POINT CONDITIONS");
+if (frfind("--DESIGN FLUID FREE SURFACE POINT CONDITIONS")==0) goto end;
 frread();
 /*------------------------ read number of design lines with conditions */
 frint("DPOINT",&ndnode,&ierr);
@@ -1665,11 +1693,16 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frread();
 }
 /*----------------------------------------------------------------------*/
+
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
 return;
 } /* end of inpdesign_line_freesurf */
+
+
+
 /*----------------------------------------------------------------------*
  | input of line  fluid freesurface conditions on design     genk 01/03 |
  *----------------------------------------------------------------------*/
@@ -1690,7 +1723,7 @@ dstrc_enter("inpdesign_line_freesurf");
 
 /*----------------------------------------------------------------------*/
 /*---- find the beginning of line fluid freesurface coupling conditions */
-frfind("--DESIGN FLUID FREE SURFACE LINE CONDITIONS");
+if (frfind("--DESIGN FLUID FREE SURFACE LINE CONDITIONS")==0) goto end;
 frread();
 /*------------------------ read number of design lines with conditions */
 frint("DLINE",&ndline,&ierr);
@@ -1748,6 +1781,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frread();
 }
 /*----------------------------------------------------------------------*/
+
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif

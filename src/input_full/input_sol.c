@@ -35,13 +35,13 @@ solv->matrixtyp = matrix_none;
 switch(solv->fieldtyp)
 {
 case structure:
-frfind("-STRUCT SOLVER");
+if (frfind("-STRUCT SOLVER")==0) goto end;
 break;
 case fluid:
-frfind("-FLUID SOLVER");
+if (frfind("-FLUID SOLVER")==0) goto end;
 break;
 case ale:
-frfind("-ALE SOLVER");
+if (frfind("-ALE SOLVER")==0) goto end;
 break;
 default:
    dserror("Unknown field typ in reading solver");
@@ -496,6 +496,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 }
 frrewind();
 /*----------------------------------------------------------------------*/
+
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif

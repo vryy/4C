@@ -260,10 +260,8 @@ char buffer[50];
 dstrc_enter("inpdis");
 #endif
 
-/*--------------------------------------------------------- rewind file */
-frrewind();
 /*------------------------------------------------- read discretisation */
-frfind("--DISCRETISATION");
+if (frfind("--DISCRETISATION")==0) goto end;
 frread();
 switch(actfield->fieldtyp)
 {
@@ -291,6 +289,8 @@ break;
 }   
 frrewind();
 /*----------------------------------------------------------------------*/
+
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -312,10 +312,8 @@ dstrc_enter("inpnodes");
 /*--------------- allocate temporary array for coordinates of all nodes */
 amdef("tempnod1",&tmpnodes1,(genprob.nnode),3,"DA");
 amdef("tempnod2",&tmpnodes2,(genprob.nnode),1,"IV");
-/*--------------------------------------------------------- rewind file */
-frrewind();
 /*---------------------------------------------------------- read nodes */
-frfind("--NODE COORDS");
+if (frfind("--NODE COORDS")==0) dserror("frfind: NODE COORDS is not in input file");
 frread();
 counter=0;
 while(strncmp(allfiles.actplace,"------",6)!=0)
@@ -333,6 +331,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 }
 frrewind();
 /*----------------------------------------------------------------------*/
+
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -362,21 +362,20 @@ if (structfield->ndis>1)
    dserror("different discretisations not implemented yet for structural elements\n");
 structfield->dis = (DISCRET*)CCACALLOC(structfield->ndis,sizeof(DISCRET));
 /*-------------------------------------------- count number of elements */
-frrewind();
-frfind("--STRUCTURE ELEMENTS");
-frread();
-while(strncmp(allfiles.actplace,"------",6)!=0)
+if (frfind("--STRUCTURE ELEMENTS")==1)
 {
-   counter++;
-   frread();
+  frread();
+  while(strncmp(allfiles.actplace,"------",6)!=0)
+  {
+    counter++;
+    frread();
+  }
 }
-frrewind();
 structfield->dis[0].numele = counter;
 /*--------------------------------------------------- allocate elements */
 structfield->dis[0].element=(ELEMENT*)CCACALLOC(structfield->dis[0].numele,sizeof(ELEMENT));
 /*------------------------------------------------------- read elements */
-frrewind();
-frfind("--STRUCTURE ELEMENTS");
+if (frfind("--STRUCTURE ELEMENTS")==0) goto end;
 frread();
 counter=0;
 while(strncmp(allfiles.actplace,"------",6)!=0)
@@ -451,6 +450,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 }
 frrewind();
 /*----------------------------------------------------------------------*/
+
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -485,23 +486,22 @@ fluidfield->dis = (DISCRET*)CCACALLOC(fluidfield->ndis,sizeof(DISCRET));
 /*
 remarks about different discretisations:
 we asume to read in one "global" discretisation from the input file.
-from this discretisation all the other ones can be directly derived!!!
+from this discretisation all the other ones can be directly derived!!!  */
 /*-------------------------------------------- count number of elements */
-frrewind();
-frfind("--FLUID ELEMENTS");
-frread();
-while(strncmp(allfiles.actplace,"------",6)!=0)
+if (frfind("--FLUID ELEMENTS")==1)
 {
-   counter++;
-   frread();
+  frread();
+  while(strncmp(allfiles.actplace,"------",6)!=0)
+  {
+    counter++;
+    frread();
+  }
 }
-frrewind();
 fluidfield->dis[0].numele = counter;
 /*--------------------------------------------------- allocate elements */
 fluidfield->dis[0].element=(ELEMENT*)CCACALLOC(fluidfield->dis[0].numele,sizeof(ELEMENT));
 /*------------------------------------------------------- read elements */
-frrewind();
-frfind("--FLUID ELEMENTS");
+if (frfind("--FLUID ELEMENTS")==0) goto end;
 frread();
 counter=0;
 while(strncmp(allfiles.actplace,"------",6)!=0)
@@ -587,6 +587,8 @@ read:
 }
 frrewind();
 /*----------------------------------------------------------------------*/
+
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -620,13 +622,14 @@ if (alefield->ndis>1)
    dserror("different discretisations not implemented yet for structural elements\n");
 alefield->dis = (DISCRET*)CCACALLOC(alefield->ndis,sizeof(DISCRET));
 /*-------------------------------------------- count number of elements */
-frrewind();
-frfind("--ALE ELEMENTS");
-frread();
-while(strncmp(allfiles.actplace,"------",6)!=0)
+if (frfind("--ALE ELEMENTS")==1)
 {
-   counter++;
-   frread();
+  frread();
+  while(strncmp(allfiles.actplace,"------",6)!=0)
+  {
+    counter++;
+    frread();
+  }
 }
 frrewind();
 alefield->dis[0].numele = counter;
@@ -634,7 +637,7 @@ alefield->dis[0].numele = counter;
 alefield->dis[0].element=(ELEMENT*)CCACALLOC(alefield->dis[0].numele,sizeof(ELEMENT));
 /*------------------------------------------------------- read elements */
 frrewind();
-frfind("--ALE ELEMENTS");
+if (frfind("--ALE ELEMENTS")==0) goto end;
 frread();
 counter=0;
 while(strncmp(allfiles.actplace,"------",6)!=0)
@@ -679,6 +682,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 }
 frrewind();
 /*----------------------------------------------------------------------*/
+
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
