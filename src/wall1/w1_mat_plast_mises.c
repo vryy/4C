@@ -1,7 +1,19 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'w1_mat_plast_mises' which calculates the 
+       constitutive matrix - forces - linear elastic - von Mises - 2D
+       (plane stress, plane strain)
+
+*----------------------------------------------------------------------*/
 #ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
 #include "wall1_prototypes.h"
+
+/*! 
+\addtogroup WALL1
+*//*! @{ (documentation module open)*/
+
 /*----------------------------------------------------------------------*
  | constitutive matrix - forces - linear elastic- von Mises - 2D al 9/01|
  | plane stress, plane strain, rotational symmetry                      |
@@ -12,6 +24,7 @@ void w1_mat_plast_mises(double ym,
                         double sigy,
                         double hard,
                         double gf,
+                        double betah,
                         ELEMENT   *ele,
                         WALL_TYPE wtype,
                         double **bop,
@@ -40,6 +53,8 @@ double qn[4];
 double tol = 1.0E-10;
 double dlam;
 double dia;
+
+double tauc[4];
 #ifdef DEBUG 
 dstrc_enter("w1_mat_plast_mises");
 #endif
@@ -101,7 +116,7 @@ for (i=0; i<4; i++)
         else
         {
           dlam=0.;
-          w1mapl(ym, hard, sigy, pv, dia, tau, isoft, &epstn, &dlam, d, wtype);
+          w1mapl(ym, hard, betah, sigy, pv, dia, tau, isoft, &epstn, &dlam, d, wtype);
           yip=-yip;
         }
         iupd=1;
@@ -131,7 +146,7 @@ for (i=0; i<4; i++)
     goto end;
   }
 /*-------------------------------------------------- yield condition ---*/
-  w1yilcr(ym, hard, sigy, epstn, isoft, dia, tau, &ft);
+  w1yilcr(ym, hard, betah, sigy, epstn, isoft, dia, tau, &ft);
 /*------------- state of stress within yield surface - E L A S T I C ---*/
   if (ft<tol) 
   {
@@ -142,9 +157,21 @@ for (i=0; i<4; i++)
   else 
   {
     yip = 2;
-    w1radi(ym, hard, sigy, pv, dia, tau, qn, isoft, &epstn, &dlam, wtype);
-    w1mapl(ym, hard, sigy, pv, dia, tau, isoft, &epstn, &dlam, d, wtype);
-    
+
+    for (i=0; i<4; i++) tauc[i]=tau[i]; /*praedictor stresses -> tauc*/
+
+    w1radi(ym, hard, betah, sigy, pv, dia, tau, qn, isoft, &epstn, &dlam, wtype);
+
+    switch(wtype)
+    {
+    case plane_stress:/*new stresses*/
+       w1mapl(ym, hard, betah, sigy, pv, dia, tau, isoft, &epstn, &dlam, d, wtype);
+    break;
+    case plane_strain:/*praedictor stresses*/
+       w1mapl(ym, hard, betah, sigy, pv, dia, tauc, isoft, &epstn, &dlam, d, wtype);
+    break;
+    }
+
     for (i=0; i<4; i++) stress[i] = tau[i] + qn[i];
   }
 /*----------------------------- put new values -> sig, eps,epstn,yip ---*/
@@ -167,4 +194,6 @@ dstrc_exit();
 #endif
 return;
 } /* end of w1_mat_plast_mises */
-#endif
+/*----------------------------------------------------------------------*/
+#endif /*D_WALL1*/
+/*! @} (documentation module close)*/
