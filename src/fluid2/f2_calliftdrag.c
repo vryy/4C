@@ -146,12 +146,16 @@ for (line=0; line<ngline; line++)
       }
       else                     /* multi field problem                   */
       {
+#ifdef D_FSI
          GNODE *actfgnode;
          NODE  *actanode;
          actfgnode = actnode->gnode;
          actanode = actfgnode->mfcpnode[genprob.numaf];
          xyzl[0][j] = actnode->x[0] + actanode->sol_mf.a.da[1][0];
          xyzl[1][j] = actnode->x[1] + actanode->sol_mf.a.da[1][1];
+#else
+         dserror("multifield requires FSI");
+#endif
       }
    }
 
