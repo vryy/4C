@@ -223,7 +223,6 @@ DOUBLE xr[2];
 DOUBLE xs[2];
 DOUBLE xc[2];
 DOUBLE x3n;
-DOUBLE zero=0.;
 DOUBLE one=1.;
 DOUBLE length;
 

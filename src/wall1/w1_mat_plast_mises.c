@@ -176,6 +176,10 @@ for (i=0; i<4; i++)
     case plane_strain:/*praedictor stresses*/
        w1mapl(ym, hard, betah, sigy, pv, dia, tauc, isoft, &epstn, &dlam, d, wtype);
     break;
+   /*============================================== rotational symmetry ===*/
+    default:
+      dserror("ROTATIONAL SYMMETRY FOR PLASTICITY NOT IMPLEMENTED");
+    break;
     }
 
     for (i=0; i<4; i++) stress[i] = tau[i] + qn[i];

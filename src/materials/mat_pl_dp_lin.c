@@ -423,8 +423,6 @@ void mat_pl_dp_lin_mapl(DOUBLE   hards,
 {
 /*----------------------------------------------------------------------*/
 INT    i,j, cc, irc;
-INT    isix=6, ione=1;
-DOUBLE dzero = 0.;
 DOUBLE ro23,q13,q23;
 DOUBLE fac;
 DOUBLE df2dss[36];
@@ -716,8 +714,6 @@ void mat_pl_dp_lin_mapl_apex(DOUBLE   hards,
 {
 /*----------------------------------------------------------------------*/
 INT    i,j,k,cc,irc;
-INT    isix=6, ione=1;
-DOUBLE dzero = 0.;
 DOUBLE alpha2;
 DOUBLE det;
 DOUBLE ro23,q12,q13,q23;

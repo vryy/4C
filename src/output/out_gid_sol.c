@@ -1607,7 +1607,6 @@ DOUBLE        pv,ph,pw,px;
 DOUBLE        thick;
 #endif
 
-INT           numele;   /*for shell9/shell8*/
 /* 
    gausspoint permutation :
    On the Gausspoint number i in Gid, the results of Carats GP number gausspermn[i]
@@ -1615,9 +1614,9 @@ INT           numele;   /*for shell9/shell8*/
 */   
 
 INT           gaussperm4[4] = {3,1,0,2};
-INT           gaussperm8[8] = {0,4,2,6,1,5,3,7};
+/*INT           gaussperm8[8] = {0,4,2,6,1,5,3,7};*/
 INT           gaussperm9[9] = {8,2,0,6,5,1,3,7,4};
-INT           gaussperm27[27] = {0,9,18,3,12,21,6,15,24,1,10,19,4,13,22,7,16,25,2,11,20,5,14,23,8,17,26};
+/*INT           gaussperm27[27] = {0,9,18,3,12,21,6,15,24,1,10,19,4,13,22,7,16,25,2,11,20,5,14,23,8,17,26};*/
 
 #ifdef DEBUG 
 dstrc_enter("out_gid_sol");

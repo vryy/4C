@@ -312,12 +312,7 @@ actnode = &(actfield->dis[0].node[j]);
    is_shell9 = 0;
    for (k=0; k<actnode->numele; k++)
    {
-     switch(actnode->element[k]->eltyp)
-     {
-     case el_shell9:
-       is_shell9 = 1;    
-     break;
-     }
+      if (actnode->element[k]->eltyp == el_shell9) is_shell9 = 1;
    }
    /* write dofs for shell9 */
    if (is_shell9 == 1) 
@@ -385,7 +380,7 @@ void out_sol(FIELD *actfield, PARTITION *actpart, INTRA *actintra,
 INT        i,j,k,kk;
 #ifdef D_SHELL9
 INT        is_shell9;    /*->shell9*/
-INT        num_klay,kl;  /*->shell9*/
+/*INT        num_klay,kl;*/  /*->shell9*/
 #endif
 FILE      *out = allfiles.out_out;
 NODE      *actnode;
@@ -441,12 +436,7 @@ case structure:
          is_shell9 = 0;
          for (k=0; k<actnode->numele; k++)
          {
-           switch(actnode->element[k]->eltyp)
-           {
-           case el_shell9:
-             is_shell9 = 1;
-           break;
-           }
+            if (actnode->element[k]->eltyp == el_shell9) is_shell9 = 1;
          }
          /* print nodal values for shell9 */
          if (is_shell9 == 1)

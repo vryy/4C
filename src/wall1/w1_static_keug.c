@@ -39,7 +39,6 @@ INT                 nd;               /* dof of this element       */
 INT                 ip;
 INT                 intc;                /* "integration case" for tri-element     */
 INT                 istore = 0;          /* controls storing of new stresses to wa */
-INT                 newval = 0;          /* controls evaluation of new stresses    */
 const INT           numdf  = 2;          /* number dof per node                    */
 const INT           numeps = 4;          /* number of strain components            */
 

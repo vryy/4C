@@ -34,7 +34,6 @@ void w1_funct_deriv(DOUBLE     *funct,
 INT            i, ii;
 const DOUBLE   q12 = ONE/TWO;
 const DOUBLE   q14 = ONE/FOUR;
-const DOUBLE   q16 = ONE/SIX;
 DOUBLE         rr,ss,rp,rm,sp,sm,r2,s2;
 DOUBLE         rh,sh,rs,rhp,rhm,shp,shm;
 #ifdef DEBUG 
@@ -194,8 +193,6 @@ void w1_degfuncderiv(DOUBLE     *funct,
                       INT         option)
 {
 const DOUBLE   q12 = ONE/TWO;
-const DOUBLE   q14 = ONE/FOUR;
-const DOUBLE   q16 = ONE/SIX;
 DOUBLE         rr,rp,rm,r2;
 #ifdef DEBUG 
 dstrc_enter("w1_edgefuncderiv");

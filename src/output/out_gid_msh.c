@@ -58,9 +58,9 @@ FIELD        *actfield;
 GIDSET       *actgid;
 ELEMENT      *actele;
 ELEMENT      *firstele;
-NODE         *actnode = NULL;
 
 #ifdef D_SHELL8
+NODE         *actnode = NULL;
 DOUBLE        a1,a2,a3,thick,scal;
 INT           tot_numnp;
 #endif

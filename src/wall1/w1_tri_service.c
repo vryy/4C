@@ -80,8 +80,7 @@ return;
 In this routine the jacobian matrix and its determinant is calculated
 		     
 </pre>
-\param  *ele       ELEMENT	 (i)   actual element
-\param  *funct     double   (i)    natural shape functions
+\param  *ele       ELEMENT  (i)    actual element
 \param **deriv     double   (i)    natural deriv. of shape funcs
 \param **xjm       double   (o)    jacobian matrix
 \param  *det       double   (o)    determinant of jacobian matrix
@@ -94,16 +93,13 @@ In this routine the jacobian matrix and its determinant is calculated
 /*----------------------------------------------------------------------*
  | BESTIMMUNG DER JACOBI-MATRIX f. Linienintegr. der Trian.  he 04/03   |
  *----------------------------------------------------------------------*/
-void w1_edgejaco(
-                 ELEMENT    *ele, 
-                 DOUBLE     *funct,    
+void w1_edgejaco(ELEMENT    *ele, 
                  DOUBLE    **deriv,   
                  DOUBLE    **xjm,     
                  DOUBLE     *det,          
                  INT         iel,
                  INT        *iedgnod
-	        )
-
+	           )
 {
 INT k;
 INT node;

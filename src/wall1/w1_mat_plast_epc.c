@@ -103,11 +103,7 @@ DOUBLE tol2= 1.0E-5 ;
 DOUBLE dlam[2];
 DOUBLE dlamc;
 DOUBLE rad;
-DOUBLE hard = 0.;
-DOUBLE phi = 0.;
-DOUBLE dia = 0.;
 DOUBLE pr  = 0.;
-INT    isoft = 0;
 WALL_TYPE local_wtype;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -115,7 +111,6 @@ dstrc_enter("w1_mat_plast_epc");
 #endif
 /*----------------------------------------------------------------------*/
   rad   = atan(1.)/45.;
-/*  phi   = phi * rad;          
 /*------------ original global elastic matrix for current point -> D ---*/
   /* look at horst's work (pp.30): in case of plane stress ->
      switch to plane strain and condense stress and material 

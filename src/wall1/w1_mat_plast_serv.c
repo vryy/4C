@@ -612,8 +612,6 @@ void w1radi_dp(DOUBLE e,
 {
 /*----------------------------------------------------------------------*/
 INT i=0;
-INT isoft1 = 0;
-INT nsoft  = 1;
 DOUBLE half, ro23, q13, g, c1, c2, g1, xsi1, xsi2, xsi3, hard2, hards;
 DOUBLE f, f1, f2, f3, f4, dfdl, esig, epst, fr, det, df; 
 DOUBLE dum, xsi4, stps, dlf, dlfi, coh, y, alpha, devinv, alph, fac;
@@ -846,7 +844,6 @@ INT                 lr, ls;           /* loopers over GP */
 INT                 iel;              /* numnp to this element */
 INT                 nd;
 const INT           numdf  = 2;
-const INT           numeps = 3;
 
 DOUBLE              fac;
 DOUBLE              e1,e2;         /*GP-coords*/
@@ -1281,7 +1278,7 @@ static DOUBLE half, fact, vect[4], stps, fact1,dum;
 static INT i, j;
 static DOUBLE x[4];
 static DOUBLE stpsi, dm[4][4], hm[4][4], q13, q23; 
-static DOUBLE dalpha, add, fac, fkg, fki, ro23; 
+static DOUBLE dalpha, add, fkg, fki, ro23; 
 static DOUBLE xsi1, xsi2, xsi3, xsi4;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -1757,7 +1754,7 @@ void w1maplg(DOUBLE *tau,      /* current stresses (local)              */
     static DOUBLE fact[2][2], ghme[4][2], stps;
     static DOUBLE e[2][2];
     static DOUBLE e2[2][2], stpsi, dm[4][4];
-    static DOUBLE  hm[4][4], q13, q23, dalpha, facmin;
+    static DOUBLE  hm[4][4], q13, q23, facmin;
     static DOUBLE fak, fkg, fki, ghm[4][2], det, ro23; 
     static DOUBLE tra[4][4], xsi1, xsi2, xsi3, xsi4;
 /*----------------------------------------------------------------------*/
@@ -2152,7 +2149,7 @@ void w1mplcap(DOUBLE *tau,      /* current stresses (local)              */
 /*----------------------------------------------------------------------*/
     DOUBLE dum;               
 /*----------------------------------------------------------------------*/
-    static INT i, j ,k;
+    static INT i, j;
     
     static DOUBLE diag[4][4], half, hard, dkkf, hinv[4][4];
     static DOUBLE hydr[4], fack1, quot, a[2][2];

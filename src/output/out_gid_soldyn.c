@@ -75,7 +75,6 @@ DOUBLE        a1,a2,a3,thick,scal,sdc;
 INT           tot_numnp;
 #endif
 
-INT           numele;   /*for shell9*/
 /* 
    gausspoint permutation :
    On the Gausspoint number i in Gid, the results of Carats GP number gausspermn[i]
@@ -83,9 +82,9 @@ INT           numele;   /*for shell9*/
 */   
 
 INT           gaussperm4[4] = {3,1,0,2};
-INT           gaussperm8[8] = {0,4,2,6,1,5,3,7};
+/*INT           gaussperm8[8] = {0,4,2,6,1,5,3,7};*/
 INT           gaussperm9[9] = {8,2,0,6,5,1,3,7,4};
-INT           gaussperm27[27] = {0,9,18,3,12,21,6,15,24,1,10,19,4,13,22,7,16,25,2,11,20,5,14,23,8,17,26};
+/*INT           gaussperm27[27] = {0,9,18,3,12,21,6,15,24,1,10,19,4,13,22,7,16,25,2,11,20,5,14,23,8,17,26};*/
 
 #ifdef DEBUG 
 dstrc_enter("out_gid_soldyn");
@@ -449,17 +448,23 @@ if (strncmp(string,"stress",stringlenght)==0)
    /*---------------|| actele->numnp !=4--- */
          if (actele->eltyp != el_wall1 ) continue;
          stress=actele->e.w1->stress_GP.a.d3[place];
-	 fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",actele->Id+1,
+	   fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",actele->Id+1,
 			     stress[0][gaussperm4[0]],
 			     stress[1][gaussperm4[0]],
 			     stress[2][gaussperm4[0]],
-			     stress[3][gaussperm4[0]]);
+			     stress[3][gaussperm4[0]],
+                       0.0,
+	          	     0.0
+                       );
          for (j=1; j<ngauss; j++)
-         fprintf(out,"        %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
-                             stress[0][gaussperm4[j]],
+         fprintf(out,"     %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                       stress[0][gaussperm4[j]],
 			     stress[1][gaussperm4[j]],
 			     stress[2][gaussperm4[j]],
-			     stress[3][gaussperm4[j]]);
+			     stress[3][gaussperm4[j]],
+                       0.0,
+	          	     0.0
+                       );
       }
       fprintf(out,"END VALUES\n");
       
@@ -488,16 +493,22 @@ if (strncmp(string,"stress",stringlenght)==0)
          if (actele->eltyp != el_wall1 ) continue;
          stress=actele->e.w1->stress_GP.a.d3[place];
 	 fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",actele->Id+1,
-			     stress[0][gaussperm9[0]],
-			     stress[1][gaussperm9[0]],
-			     stress[2][gaussperm9[0]],
-			     stress[3][gaussperm9[0]]);
+			   stress[0][gaussperm9[0]],
+			   stress[1][gaussperm9[0]],
+			   stress[2][gaussperm9[0]],
+			   stress[3][gaussperm9[0]],
+                     0.0,
+	          	   0.0
+                     );
          for (j=1; j<ngauss; j++)
-	 fprintf(out,"        %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
-                             stress[0][gaussperm9[j]],
-			     stress[1][gaussperm9[j]],
-			     stress[2][gaussperm9[j]],
-			     stress[3][gaussperm9[j]]);
+	 fprintf(out,"     %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                     stress[0][gaussperm9[j]],
+			   stress[1][gaussperm9[j]],
+			   stress[2][gaussperm9[j]],
+			   stress[3][gaussperm9[j]],
+                     0.0,
+	          	   0.0
+                     );
       }
       fprintf(out,"END VALUES\n");
 /*----------------------------------------------------------------------*/      

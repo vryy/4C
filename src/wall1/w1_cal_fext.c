@@ -39,7 +39,6 @@ static ARRAY xjm_a;   static DOUBLE **xjm;    /* jacobian matrix            */
 
 
 /*----------------------------------------------------------------------*
-/*----------------------------------------------------------------------*
  | integration of element loads                              ah 07/02   |
  | in here, line and surface loads are integrated                       |
  *----------------------------------------------------------------------*/
@@ -61,7 +60,6 @@ static ARRAY xjm_a;   static DOUBLE **xjm;    /* jacobian matrix            */
  |                 s                            s                        |
  *----------------------------------------------------------------------*/
 
-/*----------------------------------------------------------------------*
 /*----------------------------------------------------------------------*
  | integration of element loads                              he 05/03   |
  | in here, line and surface loads are integrated                       |
@@ -376,7 +374,7 @@ for (line=0; line<ngline; line++)
 	 facr = data->qwgt[lr][nil-1];
 	 w1_degrectri(funct,deriv,e1,ele->distyp,1);
       /*---------------------------------- compute jacobian determinant */
-     	 w1_edgejaco(ele,funct,deriv,xjm,&det,ngnode,iedgnod);
+     	 w1_edgejaco(ele,deriv,xjm,&det,ngnode,iedgnod);
      	 fac = det*facr;
       /*-------------------------------------------------------------*/
       /*                                uniform prescribed line load */
@@ -396,6 +394,9 @@ for (line=0; line<ngline; line++)
                  }
              }
        }
+ break;
+ default:
+    dserror("ele->distyp unknown in 'w1_eleload'");
  break;
  } /* end switch */
 
