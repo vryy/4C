@@ -4,21 +4,21 @@
 # commented input file, run the file and
 # analyze the output.
 #
-#                           (C) by mn 02/04
+#                           (C) by mn 06/04
 #==========================================
-#
-# 
-# change the following three variables 
-# according to the target machine:
-#
-# use the following config-file
-#------------------------------
-#conf="stgrt.hpux11.gcc.seq"
-conf="stgrt.hpuxita2.cc.seq"
-#conf="muench.linux.gcc.seq"
-#
-#==========================================
-#
+
+# some usability tests
+if [ "x$1" = "x" ]; then
+  echo usage: $0 config-file-name
+  exit 1
+fi
+
+if [ ! -s "$1" ]; then
+  echo $0: file not found: $1
+  exit 1
+fi
+
+
 # initialize some counters
 fail2=0
 pass2=0
@@ -26,8 +26,7 @@ total=0
 
 # variables used for creating the makefile
 makefile="Makefile.test"
-#inputfile="Input/$file"
-configfile="config/$conf"
+configfile="$1"
 definefile="config/release_defs"
 #specialargs="$pfl"
 NODEPS=yes

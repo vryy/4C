@@ -6,20 +6,19 @@
 #
 #                           (C) by mn 02/04
 #==========================================
-#
-# 
-# change the following three variables 
-# according to the target machine:
-#
-# use the following config-file
-#------------------------------
-conf="stgrt.hpux11.cc.seq"
-#conf="stgrt.hpux11.cc.par"
-#conf="muench.linux.gcc.par"
-#conf="muench.linux.gcc.seq"
-#
-#==========================================
-#
+
+# some usability tests
+if [ "x$1" = "x" ]; then
+  echo usage: $0 config-file-name
+  exit 1
+fi
+
+if [ ! -s "$1" ]; then
+  echo $0: file not found: $1
+  exit 1
+fi
+
+
 # initialize some counters
 fail1=0
 pass1=0
@@ -29,8 +28,7 @@ total=0
 
 # variables used for creating the makefile
 makefile="Makefile.test"
-#inputfile="Input/$file"
-configfile="config/$conf"
+configfile="$1"
 definefile="config/defines.test"
 #specialargs="$pfl"
 NODEPS=yes
@@ -132,7 +130,7 @@ else
   '
 fi
  
-#liste='xfem_ls_risingbubble.dat xfem_ls_joggedchannel.dat'
+liste=' ale2_nln.dat '
 
 # loop this list
 for file in $liste; do 
@@ -205,6 +203,8 @@ for file in $liste; do
   if [ $count -ge 1 ]; then
     echo '    OK'
     pass2=`expr $pass2 + 1`
+    # copy screen output to $file.scr
+    #cp test.tmp $file.scr
   else
     echo '    Failed!!'
     fail2=`expr $fail2 + 1`
