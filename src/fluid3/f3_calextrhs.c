@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief external RHS for fluid2 element
+\brief external RHS for fluid3 element
 
 <pre>
 Maintainer: Steffen Genkinger
@@ -113,10 +113,17 @@ return;
 In this routine the stabilisation part of the time forces for vel dofs
 is calculated:
 
+EULER:
                      /
-   + thetas(l,r)*dt |  taum_mu * u * grad(v) * b^   d_omega
+   + thetas(l,r)*dt |  tau_mu * u * grad(v) * b^   d_omega
                    /  
 
+ALE:
+                     /
+   + thetas(l,r)*dt |  tau_mu * c * grad(v) * b^   d_omega
+                   /
+
+EULER/ALE:
                        /
    -/+ thetas(l,r)*dt |  tau_mp * 2*nue * div( eps(v) ) * b^  d_omega
                      /      	  		      
@@ -133,6 +140,7 @@ see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
      
       
 </pre>
+\param   *gls         STAB_PAR_GLS    (i)    stabilisation
 \param   *ele         ELEMENT	      (i)    actual element
 \param   *eforce      DOUBLE	      (i/o)  element force vector
 \param  **derxy,      DOUBLE	      (i)    global derivatives
@@ -148,37 +156,37 @@ see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
 
 ------------------------------------------------------------------------*/
 void f3_calstabexfv(
-                    ELEMENT         *ele,  
-                    DOUBLE          *eforce,     
-		    DOUBLE         **derxy,
-		    DOUBLE         **derxy2,      
-                    DOUBLE          *edead,
-	 	    DOUBLE          *velint,  
-		    DOUBLE           fac,      
-                    DOUBLE           visc,
-		    INT              iel,
-		    INT              ihoel,
-		    INT              flag      
+                     STAB_PAR_GLS    *gls,  
+                     ELEMENT         *ele,  
+                     DOUBLE          *eforce,     
+                     DOUBLE         **derxy,
+                     DOUBLE         **derxy2,      
+                     DOUBLE          *edead,
+                     DOUBLE          *velint,  
+                     DOUBLE           fac,      
+                     DOUBLE           visc,
+                     INT              iel,
+                     INT              ihoel,
+                     INT              flag      
                    ) 
 {
 
 INT    irow,inode,isd;
-DOUBLE sign,aux;
+DOUBLE sign=ONE;
+DOUBLE aux;
 DOUBLE taumu,taump;
 DOUBLE c,fvts; 
 DOUBLE fact[3];
-STAB_PAR_GLS *gls;	/* pointer to GLS stabilisation parameters	*/
 
 #ifdef DEBUG 
 dstrc_enter("f3_calstabexfv");
 #endif		
 
 /*---------------------------------------------------------- initialise */
-gls    = ele->e.f3->stabi.gls;
 fdyn   = alldyn[genprob.numff].fdyn;
 
-if (ele->e.f3->stab_type != stab_gls) 
-   dserror("routine with no or wrong stabilisation called");
+dsassert(ele->e.f3->stab_type == stab_gls, 
+         "routine with no or wrong stabilisation called");
 
 /*--------------------------------------------------- set some factors */
 taumu = fdyn->tau[0];
@@ -198,8 +206,13 @@ default:
 
 /*----------------------------------------------------------------------*
    Calculate external/convective stab-forces of time force vector:
+EULER:
                      /
-   + thetas(l,r)*dt |  tau_mu * u * grad(v) * b  d_omega
+   + thetas(l,r)*dt |  tau_mu * u * grad(v) * b^   d_omega
+                   /  
+ALE:
+                     /
+   + thetas(l,r)*dt |  tau_mu * c * grad(v) * b^   d_omega
                    /
  *----------------------------------------------------------------------*/
 if (gls->iadvec!=0)
@@ -215,7 +228,7 @@ if (gls->iadvec!=0)
       for (isd=0;isd<3;isd++)
       {
          irow++;
-	 eforce[irow] += aux*fact[isd];
+         eforce[irow] += aux*fact[isd];
       } /* end loop over isd */
    } /* end loop over inode */
 } /* endif (ele->e.f3->iadvec!=0) */
@@ -228,18 +241,7 @@ if (gls->iadvec!=0)
  *----------------------------------------------------------------------*/
 if (gls->ivisc!=0 && ihoel!=0)
 {
-   switch (gls->ivisc) /* choose stabilisation type --> sign */
-   {
-   case 1: /* GLS- */
-      sign = ONE;
-   break;
-   case 2: /* GLS+ */
-      sign = -ONE;
-   break;
-   default:
-      sign = 0;
-      dserror("viscous stabilisation parameter unknown: IVISC");
-   } /* end switch (ele->e.f3->ivisc) */
+   if (gls->ivisc==2) sign*=-ONE; /* GLS+ stabilisation */
 
    fvts = fac*visc*taump*sign*c;
    irow = 0;
@@ -248,13 +250,13 @@ if (gls->ivisc!=0 && ihoel!=0)
       aux = derxy2[0][inode] + derxy2[1][inode] + derxy2[2][inode];
       eforce[irow]   -= ( derxy2[0][inode]*edead[0]  \
                         + derxy2[3][inode]*edead[1]  \
-		        + derxy2[4][inode]*edead[2] + aux*edead[0])*fvts;
+                        + derxy2[4][inode]*edead[2] + aux*edead[0])*fvts;
       eforce[irow+1] -= ( derxy2[3][inode]*edead[0]  \
                         + derxy2[1][inode]*edead[1]  \
-		        + derxy2[5][inode]*edead[2] + aux*edead[1])*fvts;
+                        + derxy2[5][inode]*edead[2] + aux*edead[1])*fvts;
       eforce[irow+2] -= ( derxy2[4][inode]*edead[0]  \
                         + derxy2[5][inode]*edead[1]  \
-		        + derxy2[2][inode]*edead[2] + aux*edead[2])*fvts;
+                        + derxy2[2][inode]*edead[2] + aux*edead[2])*fvts;
       irow += 3;			 
    } /* end loop over inode */
 } /* endif (ele->e.f3->ivisc!=0 && ihoel!=0) */
@@ -295,6 +297,7 @@ NOTE:
     eforce[2*iel]     
       
 </pre>
+\param   *gls      STAB_PAR_GLS    (i)    stabilisation
 \param   *eforce      DOUBLE	      (i/o)  element force vector
 \param  **derxy,      DOUBLE	      (i)    global derivatives    
 \param   *edead       DOUBLE          (i)    ele dead load at n or n+1
@@ -306,12 +309,13 @@ NOTE:
 
 ------------------------------------------------------------------------*/
 void f3_calstabexfp(
-                    DOUBLE          *eforce,     
-		    DOUBLE         **derxy,       
-                    DOUBLE          *edead,  
-		    DOUBLE           fac,      
-		    INT              iel,
-		    INT              flag      
+                     STAB_PAR_GLS    *gls,  
+                     DOUBLE          *eforce,     
+                     DOUBLE         **derxy,       
+                     DOUBLE          *edead,  
+                     DOUBLE           fac,      
+                     INT              iel,
+                     INT              flag      
                    ) 
 {
 INT    inode;
@@ -319,7 +323,9 @@ DOUBLE c;
 DOUBLE taump;
 DOUBLE fact[2];
 
+if (gls->ipres==0) goto end; /* no pressure stabilisation */
 fdyn    = alldyn[genprob.numff].fdyn;
+
 /*--------------------------------------------------- set some factors */
 taump = fdyn->tau[1];
 switch (flag)
@@ -351,6 +357,7 @@ for (inode=0;inode<iel;inode++)
 }
 
 /*----------------------------------------------------------------------*/ 
+end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
