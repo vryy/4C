@@ -118,6 +118,7 @@ OBJS5	      = src/fluid3/f3_calele.o \
                 src/fluid3/f3_caltimerhs.o \
                 src/fluid3/f3_inpele.o \
                 src/fluid3/f3_intg.o \
+                src/fluid3/f3_massrhs.o \
                 src/fluid3/f3_main.o 
 #                shell8
 OBJS6	      = src/shell8/s8_main.o \
