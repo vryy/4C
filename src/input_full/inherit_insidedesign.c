@@ -49,12 +49,16 @@ inherit_dlinednode_couple();
 fsi coupling conditions are inherited as follows:
 DLINE inherits to its DNODEs if the DNODE does not have its own 
 */
+#ifdef D_FSI
 inherit_dlinednode_fsicouple();
+#endif
 /* 
 freesruface conditions are inherited as follows:
 DLINE inherits to its DNODEs if the DNODE does not have its own 
 */
+#ifdef D_FLUID
 inherit_dlinednode_freesurf(); 
+#endif
 inherit_dlinednode_thickness(); 
 inherit_dlinednode_axishellload(); 
 /*----------------------------------------------------------------------*/
@@ -175,7 +179,6 @@ for (i=0; i<design->ndline; i++)
       if (actdnode->dirich != NULL) continue;
       /*------ inherit the dirichlet condition from actdline to actdnode */
       actdnode->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
-      if (!actdnode->dirich) dserror("Allocation of memory failed");
 /*      actdnode->dirich->curve = actdline->dirich->curve;*/
       am_alloc_copy(&(actdline->dirich->dirich_onoff),&(actdnode->dirich->dirich_onoff));  
       am_alloc_copy(&(actdline->dirich->dirich_val),&(actdnode->dirich->dirich_val));  
