@@ -46,7 +46,7 @@ LIBS="-lc -lm -lF77ext -lf2c -lg2c -llapack -lblas"
 PROGRAMNAME=cca_seq
 CFLAGS_OPT="-O"
 FFLAGS_OPT="-O"
-CFLAGS="-v -ansi"
-FFLAGS=""
+CFLAGS="-v -ansi -Wall"
+FFLAGS="-Wall"
 LDFLAGS="-Xlinker -defsym -Xlinker MAIN__=main"
 
