@@ -27,6 +27,14 @@ Maintainer: Malte Neumann
 #include <fenv.h>
 #endif
 
+#ifdef HPUXITA
+#include <fenv.h>
+#endif
+
+#ifdef HPUX11
+#include <fenv.h>
+#endif
+
 #endif /* TRAP_FE */
 
 /* In case the settings header is brocken */
@@ -181,6 +189,16 @@ else {
   /*
    * Don't ask me why they want this. The man page said it's needed on
    * itanium maschines. */
+#pragma STDC FENV_ACCESS ON
+  fesettrapenable(FE_INVALID | FE_DIVBYZERO | FE_UNDERFLOW | FE_OVERFLOW);
+#endif
+
+#ifdef HPUXITA
+#pragma STDC FENV_ACCESS ON
+  fesettrapenable(FE_INVALID | FE_DIVBYZERO | FE_UNDERFLOW | FE_OVERFLOW);
+#endif
+
+#ifdef HPUX11
 #pragma STDC FENV_ACCESS ON
   fesettrapenable(FE_INVALID | FE_DIVBYZERO | FE_UNDERFLOW | FE_OVERFLOW);
 #endif
