@@ -8,7 +8,7 @@ void b1_funct_deriv(double     *funct,
                        double      r, 
                        double      s,
                        double      t,
-                       ELEMENT_TYP typ,
+                       DIS_TYP     typ,
                        int         option)
 {
 int            i, ii;
