@@ -452,4 +452,157 @@ C
       RETURN
       END
 C
+C=======================================================================
+      SUBROUTINE C1PRDR (TENSOR,T1,T2,T3,FACTOR)
+C     ******************************************************************
+C     *                                                                *
+C     *                       C 1 P R D R                              *
+C     *                                                                *
+C     * SUBROUTINE TO CALCULATE THE EIGENVALUES (T1,T2,T3) OF A SECOND *
+C     * ORDER TENSOR "TENSOR"                                          *
+C     ******************************************************************
+C     *   PARAMETER LIST :                                             *
+C     *   TENSOR   ===> TENSOR                                    (I/O)*
+C     *   T1,T2,T3 ===> PRINCIPAL VALUES                           (I) *
+C     *   FACTOR   ===> FACTOR THAT CLASSIFIES A SPECIFIC STATE    (I) *
+C     ******************************************************************
+C
+      IMPLICIT REAL*8 (A-H,O-Z)
+      CHARACTER SNAME*6
+      DIMENSION TENSOR(6),DEVIAT(6)
+      PARAMETER (SNAME='C1PRDR',ZERO=0.0D0,ONE=1.0D0,TWO=2.0D0)
+      PARAMETER (THREE=3.0D0,TOL=1.E-5)
+C
+      FAC1 = - THREE*SQRT(THREE)/TWO
+      TR = TENSOR(1)+TENSOR(2)+TENSOR(3)
+C
+      sh1 = TENSOR(4)/(tr/three)
+      sh2 = TENSOR(5)/(tr/three)
+      sh3 = TENSOR(6)/(tr/three) 
+      if (sh1.lt.tol .and. sh2.lt.tol .and. sh3.lt.tol )then
+        t1 = TENSOR(1)
+        t2 = TENSOR(2)
+        t3 = TENSOR(3)
+        goto 900 
+      endif
+C
+      DO 5 I=1,6
+        DEVIAT(I) = TENSOR(I)
+ 5    CONTINUE
+CC      CALL MXCR8 (TENSOR,6,1,DEVIAT)
+      DO 10 I=1,3
+        DEVIAT(I) = DEVIAT(I)-TR/THREE
+ 10   CONTINUE
+C
+      DJ2 =     (DEVIAT(1)**2 + DEVIAT(2)**2 + DEVIAT(3)**2 + 
+     +     TWO *(DEVIAT(4)**2 + DEVIAT(5)**2 + DEVIAT(6)**2 ))/TWO
+C
+      DJ3 = DEVIAT(1)*DEVIAT(2)*DEVIAT(3)+DEVIAT(4)*DEVIAT(5)*DEVIAT(6)+
+     +      DEVIAT(4)*DEVIAT(5)*DEVIAT(6)-DEVIAT(2)*DEVIAT(6)*DEVIAT(6)-
+     +      DEVIAT(1)*DEVIAT(5)*DEVIAT(5)-DEVIAT(3)*DEVIAT(4)*DEVIAT(4)
+C
+      IF (DJ2.LE.TOL) THEN
+       T1 = TENSOR(1)
+       T2 = TENSOR(2)
+       T3 = TENSOR(3)
+       GOTO 900
+      ENDIF 
+C
+      FAC1 = (FAC1*DJ3/(DJ2*SQRT(DJ2)))
+      PI  = ACOS (-ONE)
+C
+      IF (ABS(FAC1).GT.ONE) THEN
+        ANG = PI/TWO
+      ELSE   
+        ANG = ASIN (FAC1)
+      ENDIF
+C
+      ANG = ANG/THREE 
+C
+      FAC = TWO*SQRT(DJ2/THREE)
+C
+      T1 = FAC*SIN(ANG+TWO*PI/THREE) + TR/THREE
+      T2 = FAC*SIN(ANG) + TR/THREE
+      T3 = FAC*SIN(ANG+TWO*TWO*PI/THREE) + TR/THREE
+C
+ 900  FACTOR = (T1 + ABS(T1) + T2 + ABS(T2) + T3 + ABS(T3))/TWO
+      DEN = ABS(T1)+ABS(T2)+ABS(T3)
+      IF (DEN.EQ.ZERO) GOTO 950
+      FACTOR = FACTOR/DEN
+C
+ 950  CONTINUE      
+C
+      RETURN
+      END
+c=======================================================================
+      subroutine c1inv3det (a,det)                                                 
+c-----------------------------------------------------------------------        
+c!    inversion of unsymmetric  3x3  matrix  a                                  
+c-----------------------------------------------------------------------        
+      implicit real*8 (a-h,o-z)                                                 
+      dimension a(3,3)                                                          
+c                                                                               
+      b11 = a(1,1)                                                              
+      b12 = a(1,2)                                                              
+      b13 = a(1,3)                                                              
+      b21 = a(2,1)                                                              
+      b22 = a(2,2)                                                              
+      b23 = a(2,3)                                                              
+      b31 = a(3,1)                                                              
+      b32 = a(3,2)                                                              
+      b33 = a(3,3)                                                              
+c                                                                               
+      a(1,1) =   b22*b33 - b32*b23                                              
+      a(2,1) = - b21*b33 + b31*b23                                              
+      a(3,1) =   b21*b32 - b31*b22                                              
+      a(1,2) = - b12*b33 + b32*b13                                              
+      a(2,2) =   b11*b33 - b31*b13                                              
+      a(3,2) = - b11*b32 + b31*b12                                              
+      a(1,3) =   b12*b23 - b22*b13                                              
+      a(2,3) = - b11*b23 + b21*b13                                              
+      a(3,3) =   b11*b22 - b21*b12                                              
+c                                                                               
+      det = b11*a(1,1) + b12*a(2,1) + b13*a(3,1)                                
+      do 10 i=1,3                                                               
+       do 10 j=1,3                                                              
+   10   a(i,j) = a(i,j)/det                                                     
+c                                                                               
+      return                                                                    
+      end                                                                       
+c=======================================================================
+      subroutine c1inv3 (a)
+c-----------------------------------------------------------------------
+c     inversion of unsymmetric  3x3  matrix  a
+c-----------------------------------------------------------------------
+      implicit real*8 (a-h,o-z)
+      dimension a(3,3)
+c
+      b11 = a(1,1)
+      b12 = a(1,2)
+      b13 = a(1,3)
+      b21 = a(2,1)
+      b22 = a(2,2)
+      b23 = a(2,3)
+      b31 = a(3,1)
+      b32 = a(3,2)
+      b33 = a(3,3)
+c
+      a(1,1) =   b22*b33 - b32*b23
+      a(2,1) = - b21*b33 + b31*b23
+      a(3,1) =   b21*b32 - b31*b22
+      a(1,2) = - b12*b33 + b32*b13
+      a(2,2) =   b11*b33 - b31*b13
+      a(3,2) = - b11*b32 + b31*b12
+      a(1,3) =   b12*b23 - b22*b13
+      a(2,3) = - b11*b23 + b21*b13
+      a(3,3) =   b11*b22 - b21*b12
+c
+      det = b11*a(1,1) + b12*a(2,1) + b13*a(3,1)
+      do 10 i=1,3
+       do 10 j=1,3
+   10   a(i,j) = a(i,j)/det
+c
+      return
+      end
+      
 
