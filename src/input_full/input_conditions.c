@@ -223,13 +223,11 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    amdef("curve",&(actdnode->dirich->curve),MAXDOFPERNODE,1,"IV");
    amdef("function",&(actdnode->dirich->funct),MAXDOFPERNODE,1,"IV");
 
-   /* Initialize some arrays to ZERO if MAXDOFPERNODE != 6 -> shell9 */
-#ifdef D_SHELL9
+   /* Initialize some arrays to ZERO if MAXDOFPERNODE != 6 */
    amzero(&(actdnode->dirich->dirich_onoff));
    amzero(&(actdnode->dirich->dirich_val));
    amzero(&(actdnode->dirich->curve));
    amzero(&(actdnode->dirich->funct));
-#endif /*D_SHELL9*/
 
    /* NOTE: number of read values = 6  does not need to be */
    /*       equivalent to the MAXDOFPERNODE -> e.g. for shell9! sh 12/02 */
@@ -342,13 +340,11 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    amdef("curve",&(actdline->dirich->curve),MAXDOFPERNODE,1,"IV");
    amdef("function",&(actdline->dirich->funct),MAXDOFPERNODE,1,"IV");
 
-   /* Initialize some arrays to ZERO if MAXDOFPERNODE != 6 -> shell9 */
-#ifdef D_SHELL9
+   /* Initialize some arrays to ZERO if MAXDOFPERNODE != 6 */
    amzero(&(actdline->dirich->dirich_onoff));
    amzero(&(actdline->dirich->dirich_val));
    amzero(&(actdline->dirich->curve));
    amzero(&(actdline->dirich->funct));
-#endif /*D_SHELL9*/
 
    /* NOTE: number of read values = 6  does not need to be */
    /*       equivalent to the MAXDOFPERNODE -> e.g. for shell9! sh 12/02 */
@@ -460,13 +456,11 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    amdef("curve",&(actdsurf->dirich->curve),MAXDOFPERNODE,1,"IV");
    amdef("function",&(actdsurf->dirich->funct),MAXDOFPERNODE,1,"IV");
 
-   /* Initialize some arrays to ZERO if MAXDOFPERNODE != 6 -> shell9 */
-#ifdef D_SHELL9
+   /* Initialize some arrays to ZERO if MAXDOFPERNODE != 6 */
    amzero(&(actdsurf->dirich->dirich_onoff));
    amzero(&(actdsurf->dirich->dirich_val));
    amzero(&(actdsurf->dirich->curve));
    amzero(&(actdsurf->dirich->funct));
-#endif /*D_SHELL9*/
 
    /* NOTE: number of read values = 6  does not need to be */
    /*       equivalent to the MAXDOFPERNODE -> e.g. for shell9! sh 12/02 */
@@ -578,13 +572,11 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    amdef("curve",&(actdvol->dirich->curve),MAXDOFPERNODE,1,"IV"); 
    amdef("function",&(actdvol->dirich->funct),MAXDOFPERNODE,1,"IV");
 
-   /* Initialize some arrays to ZERO if MAXDOFPERNODE != 6 -> shell9 */
-#ifdef D_SHELL9
+   /* Initialize some arrays to ZERO if MAXDOFPERNODE != 6 */
    amzero(&(actdvol->dirich->dirich_onoff));
    amzero(&(actdvol->dirich->dirich_val));
    amzero(&(actdvol->dirich->curve));
    amzero(&(actdvol->dirich->funct));
-#endif /*D_SHELL9*/
 
    /* NOTE: number of read values = 6  does not need to be */
    /*       equivalent to the MAXDOFPERNODE -> e.g. for shell9! sh 12/02 */
@@ -712,11 +704,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    amdef("onoff",&(actdnode->neum->neum_onoff),MAXDOFPERNODE,1,"IV");
    amdef("val",&(actdnode->neum->neum_val),MAXDOFPERNODE,1,"DV");
 
-   /* Initialize some arrays to ZERO if MAXDOFPERNODE != 6 -> shell9 */
-#ifdef D_SHELL9
+   /* Initialize some arrays to ZERO if MAXDOFPERNODE != 6 */
    amzero(&(actdnode->neum->neum_onoff));
    amzero(&(actdnode->neum->neum_val));
-#endif /*D_SHELL9*/
 
    /* NOTE: number of read values = 6  does not need to be */
    /*       equivalent to the MAXDOFPERNODE -> e.g. for shell9! sh 12/02 */
@@ -821,11 +811,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    amdef("onoff",&(actdline->neum->neum_onoff),MAXDOFPERNODE,1,"IV");
    amdef("val",&(actdline->neum->neum_val),MAXDOFPERNODE,1,"DV");
 
-   /* Initialize some arrays to ZERO if MAXDOFPERNODE != 6 -> shell9 */
-#ifdef D_SHELL9
+   /* Initialize some arrays to ZERO if MAXDOFPERNODE != 6  */
    amzero(&(actdline->neum->neum_onoff));
    amzero(&(actdline->neum->neum_val));
-#endif /*D_SHELL9*/
 
    /* NOTE: number of read values = 6  does not need to be */
    /*       equivalent to the MAXDOFPERNODE -> e.g. for shell9! sh 12/02 */
@@ -930,11 +918,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    amdef("onoff",&(actdsurf->neum->neum_onoff),MAXDOFPERNODE,1,"IV");
    amdef("val",&(actdsurf->neum->neum_val),MAXDOFPERNODE,1,"DV");
 
-   /* Initialize some arrays to ZERO if MAXDOFPERNODE != 6 -> shell9 */
-#ifdef D_SHELL9
+   /* Initialize some arrays to ZERO if MAXDOFPERNODE != 6  */
    amzero(&(actdsurf->neum->neum_onoff));
    amzero(&(actdsurf->neum->neum_val));
-#endif /*D_SHELL9*/
 
    /* NOTE: number of read values = 6  does not need to be */
    /*       equivalent to the MAXDOFPERNODE -> e.g. for shell9! sh 12/02 */
@@ -1052,11 +1038,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    amdef("onoff",&(actdvol->neum->neum_onoff),MAXDOFPERNODE,1,"IV");
    amdef("val",&(actdvol->neum->neum_val),MAXDOFPERNODE,1,"DV");
 
-   /* Initialize some arrays to ZERO if MAXDOFPERNODE != 6 -> shell9 */
-#ifdef D_SHELL9
+   /* Initialize some arrays to ZERO if MAXDOFPERNODE != 6 */
    amzero(&(actdvol->neum->neum_onoff));
    amzero(&(actdvol->neum->neum_val));
-#endif /*D_SHELL9*/
 
    /* NOTE: number of read values = 6  does not need to be */
    /*       equivalent to the MAXDOFPERNODE -> e.g. for shell9! sh 12/02 */
