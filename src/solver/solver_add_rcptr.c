@@ -17,10 +17,12 @@ void  add_rc_ptr(struct _PARTITION     *actpart,
                 struct _SOLVAR        *actsolv,
                 struct _INTRA         *actintra,
                 struct _ELEMENT       *actele,
-                struct _RC_PTR        *rc_ptr)
+                struct _RC_PTR        *rc_ptr1,
+                struct _RC_PTR        *rc_ptr2)
 {
 #ifdef MUMPS_PACKAGE
 int         i,j,k,l,counter;          /* some counter variables */
+int         istwo=0;
 int         start,index,lenght;       /* some more special-purpose counters */
 int         ii,jj;                    /* counter variables for system matrix */
 int         ii_iscouple;              /* flag whether ii is a coupled dof */
@@ -36,43 +38,57 @@ int         owner[MAXDOFPERELE];      /* the owner of every dof */
 int         myrank;                   /* my intra-proc number */
 int         nprocs;                   /* my intra- number of processes */
 double    **estif;                    /* element matrix to be added to system matrix */
+double    **emass;                    /* element matrix to be added to system matrix */
 int        *update;                   /* vector update see AZTEC manual */
 double     *A_loc;                    /*    "       A_loc see MUMPS manual */
+double     *B_loc;                    /*    "       A_loc see MUMPS manual */
 int        *irn;                      /*    "       irn see MUMPS manual */
 int        *jcn;                      /*    "       jcn see MUMPS manual */
 int        *rowptr;                   /*    "       rowptr see rc_ptr structure */
 int       **cdofs;                    /* list of coupled dofs and there owners, see init_assembly */
 int         ncdofs;                   /* total number of coupled dofs */
-int       **isend;                    /* pointer to sendbuffer to communicate coupling conditions */
-double    **dsend;                    /* pointer to sendbuffer to communicate coupling conditions */
+int       **isend1;                   /* pointer to sendbuffer to communicate coupling conditions */
+double    **dsend1;                   /* pointer to sendbuffer to communicate coupling conditions */
+int       **isend2;                   /* pointer to sendbuffer to communicate coupling conditions */
+double    **dsend2;                   /* pointer to sendbuffer to communicate coupling conditions */
 int         nsend;
 #ifdef DEBUG 
 dstrc_enter("add_rc_ptr");
 #endif
 /*----------------------------------------------------------------------*/
+/*----------------------- check whether to assemble one or two matrices */
+if (rc_ptr2) istwo=1;
 /*------------------------------------- set some pointers and variables */
 myrank     = actintra->intra_rank;
 nprocs     = actintra->intra_nprocs;
 estif      = estif_global.a.da;
+emass      = emass_global.a.da;
 nd         = actele->numnp * actele->node[0]->numdf;
 ndnd       = nd*nd;
-nnz        = rc_ptr->nnz;
-numeq_total= rc_ptr->numeq_total;
-numeq      = rc_ptr->numeq;
-update     = rc_ptr->update.a.iv;
-A_loc      = rc_ptr->A_loc.a.dv;
-irn        = rc_ptr->irn_loc.a.iv;
-jcn        = rc_ptr->jcn_loc.a.iv;
-rowptr     = rc_ptr->rowptr.a.iv;
+nnz        = rc_ptr1->nnz;
+numeq_total= rc_ptr1->numeq_total;
+numeq      = rc_ptr1->numeq;
+update     = rc_ptr1->update.a.iv;
+A_loc      = rc_ptr1->A_loc.a.dv;
+if (istwo)
+B_loc      = rc_ptr2->A_loc.a.dv;
+irn        = rc_ptr1->irn_loc.a.iv;
+jcn        = rc_ptr1->jcn_loc.a.iv;
+rowptr     = rc_ptr1->rowptr.a.iv;
 cdofs      = actpart->pdis[0].coupledofs.a.ia;
 ncdofs     = actpart->pdis[0].coupledofs.fdim;
 /*---------------------------------- put pointers to sendbuffers if any */
 #ifdef PARALLEL 
-if (rc_ptr->couple_i_send) 
+if (rc_ptr1->couple_i_send) 
 {
-   isend = rc_ptr->couple_i_send->a.ia;
-   dsend = rc_ptr->couple_d_send->a.da;
-   nsend = rc_ptr->couple_i_send->fdim;
+   isend1 = rc_ptr1->couple_i_send->a.ia;
+   dsend1 = rc_ptr1->couple_d_send->a.da;
+   nsend  = rc_ptr1->couple_i_send->fdim;
+   if (istwo)
+   {
+      isend2 = rc_ptr2->couple_i_send->a.ia;
+      dsend2 = rc_ptr2->couple_d_send->a.da;
+   }
 }
 #endif
 /*---------------------------------------------- make location vector lm*/
@@ -139,12 +155,16 @@ for (i=0; i<nd; i++)
          if (index==-1) dserror("dof jj not found in this row ii");
          index        += start;
          A_loc[index] += estif[i][j];
+         if (istwo)
+         B_loc[index] += emass[i][j];
       }
       /*======================================== do main-diagonal entry */
       /*                           (a coupled dof and I am slave owner) */
       else
       {
-         add_rcptr_sendbuff(ii,jj,i,j,ii_owner,isend,dsend,estif,nsend);
+         add_rcptr_sendbuff(ii,jj,i,j,ii_owner,isend1,dsend1,estif,nsend);
+         if (istwo)
+         add_rcptr_sendbuff(ii,jj,i,j,ii_owner,isend2,dsend2,emass,nsend);
       }
 
 

@@ -438,7 +438,8 @@ void  add_rc_ptr(struct _PARTITION     *actpart,
                 struct _SOLVAR        *actsolv,
                 struct _INTRA         *actintra,
                 struct _ELEMENT       *actele,
-                struct _RC_PTR        *rc_ptr);
+                struct _RC_PTR        *rc_ptr1,
+                struct _RC_PTR        *rc_ptr2);
 void add_rcptr_sendbuff(int ii,int jj,int i,int j,int ii_owner,int **isend,
                     double **dsend,double **estif, int numsend);
 void exchange_coup_rc_ptr(

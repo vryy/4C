@@ -10,6 +10,7 @@ static void solserv_cp_ucchbmask(UCCHB *from, UCCHB *to);
 static void solserv_cp_skymask(SKYMATRIX *from, SKYMATRIX *to);
 static void solserv_cp_msrmask(AZ_ARRAY_MSR *from, AZ_ARRAY_MSR *to);
 static void solserv_cp_densemask(DENSE *from, DENSE *to);
+static void solserv_matvec_rc_ptr(INTRA  *actintra,RC_PTR *rcptr,double *work1,double *work2);
 static void solserv_matvec_msr(INTRA *actintra,AZ_ARRAY_MSR *msr,double *work1,double *work2);
 static void solserv_matvec_sky(INTRA *actintra,SKYMATRIX *sky,double *work1,double *work2);
 static void solserv_matvec_dense(INTRA *actintra,DENSE *dense,double *work1,double *work2);
@@ -595,8 +596,8 @@ case dense:
 break;
 case rc_ptr:
    solserv_reddistvec(vec,mat,mattyp,work1,vec->numeq_total,actintra);
+   solserv_matvec_rc_ptr(actintra,mat->rc_ptr,work1,work2);
    solserv_distribdistvec(result,mat,mattyp,work2,vec->numeq_total,actintra);
-   dserror("Matrix-Vector Product for MUMPS not implemented");
 break;
 case skymatrix:
    solserv_reddistvec(vec,mat,mattyp,work1,vec->numeq_total,actintra);
@@ -619,9 +620,71 @@ return;
 
 
 
+/*----------------------------------------------------------------------*
+ |  make matrix vector multiplication with rc_ptr matrix     m.gee 04/02|
+ |  called by solserv_sparsematvec only !                               |
+ *----------------------------------------------------------------------*/
+static void solserv_matvec_rc_ptr(INTRA        *actintra,
+                                  RC_PTR       *rcptr,
+                                  DOUBLE       *work1,
+                                  DOUBLE       *work2)/* work2 is the result */
+{
+#ifdef MUMPS_PACKAGE
+INT         i,j,dof;
+INT         start,end,lenght,j_index;
+INT         myrank;
+INT         nprocs;
+INT         numeq;
+INT         numeq_total;
+INT        *update;
+INT        *row,*irn,*jcn;
+DOUBLE     *A;
+INT         rowstart,rowend;
+INT         col;
+
+#ifdef DEBUG 
+dstrc_enter("solserv_matvec_rc_ptr");
+#endif
+/*----------------------------------------------------------------------*/
+myrank     = actintra->intra_rank;
+nprocs     = actintra->intra_nprocs;
+numeq_total= rcptr->numeq_total;
+numeq      = rcptr->numeq;
+update     = rcptr->update.a.iv;
+row        = rcptr->rowptr.a.iv;
+irn        = rcptr->irn_loc.a.iv;
+jcn        = rcptr->jcn_loc.a.iv;
+A          = rcptr->A_loc.a.dv;
+/*------------------------------------------- now loop my own equations */
+for (i=0; i<numeq; i++)
+{
+   dof = update[i];
+   work2[dof]=0.0;
+   rowstart  = row[i];
+   rowend    = row[i+1];
+   for (j=rowstart; j<rowend;j++)
+   {
+      col = jcn[j];
+      work2[dof] += A[j] * work1[col];
+   }
+}
+/* every proc added his complete part to the full-sized vector work2.
+   There is no need to alreduce this vector here, because it will anyway
+   bre distributed to a DIS_VECTOR */
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+# endif /* end of #ifdef MUMPS_PACKAGE */
+return;
+} /* end of solserv_matvec_rc_ptr */
+
+
+
+
 
 /*----------------------------------------------------------------------*
- |  make matrix vector multiplication with dense matrix      m.gee 02/02|
+ |  make matrix vector multiplication with msr matrix        m.gee 02/02|
  |  called by solserv_sparsematvec only !                               |
  *----------------------------------------------------------------------*/
 static void solserv_matvec_msr(INTRA        *actintra,
