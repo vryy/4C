@@ -45,7 +45,7 @@ DOUBLE         max_stiff;
                                                    
 INT            pos;          /*<! sol_increment[pos] contains dbc in ale */
 
-#ifdef D_FLUID               /*!< ab hier fuer fluid */ 
+#ifdef D_FLUID               /* ab hier fuer fluid */ 
 DOUBLE        *ftimerhs;       
 DOUBLE        *fiterhs;
 DOUBLE        *liftdrag;

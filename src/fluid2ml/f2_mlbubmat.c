@@ -3,7 +3,6 @@
 \brief evaluate bubble parts of large-scale matrices for fluid2
 <pre>                                                       gravem 07/03
 
-<pre>
 Maintainer: Volker Gravemeier
             vgravem@stanford.edu
             

@@ -15,6 +15,11 @@ Maintainer: Andrea Hund
 #include "../headers/standardtypes.h"
 #include "wall1.h"
 #include "wall1_prototypes.h"
+
+/*! 
+\addtogroup WALL1 
+*//*! @{ (documentation module open)*/
+
 /*----------------------------------------------------------------------------*
  | Calculation of kinetic energy and lin. and angular momentum for an element /                              |
  *---------------------------------------------------------------------------*/

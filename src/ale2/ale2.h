@@ -19,13 +19,6 @@ Maintainer: Christiane Foerster
 /*!----------------------------------------------------------------------
 \brief 2D ale element
 
-<pre>
-Maintainer: Christiane Foerster
-            foerster@statik.uni-stuttgart.de
-            http://www.uni-stuttgart.de/ibs/members/foerster/
-            0711 - 685-6127
-</pre>
-
 <pre>                                                              mn 06/02
 This structure contains all specific information for a 2D ale element
 </pre>

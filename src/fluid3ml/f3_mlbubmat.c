@@ -1,14 +1,15 @@
 /*!----------------------------------------------------------------------
 \file
 \brief evaluate bubble parts of large-scale matrices for fluid3
+
 <pre>                                                       gravem 07/03
 
-<pre>
 Maintainer: Volker Gravemeier
             vgravem@stanford.edu
             
             
 </pre>
+
 ------------------------------------------------------------------------*/
 #ifdef FLUID3_ML 
 #include "../headers/standardtypes.h"
@@ -24,8 +25,8 @@ In this routine, the bubble part of the matrix Kvv is calculated.
 
 NOTE: there's only one elestif
       --> Kvv is stored in estif[0..(3*iel-1)][0..(3*iel-1)]
-      
 </pre>
+
 \param  *dynvar    FLUID_DYN_CALC  (i)
 \param **estif     DOUBLE	   (i/o)  element stiffness matrix
 \param  *velint    DOUBLE	   (i)    velocity at int point
@@ -275,6 +276,7 @@ NOTE: there's only one elestif
       --> Kvp is stored in estif[(0..(3*iel-1)][(3*iel)..(4*iel-1)]
       
 </pre>
+
 \param  *dynvar    FLUID_DYN_CALC  (i)
 \param **estif     DOUBLE	   (i/o)  element stiffness matrix
 \param  *velint    DOUBLE	   (i)    velocity at int point
@@ -501,6 +503,7 @@ NOTE: there's only one elestif
       --> Kpv is stored in estif[(3*iel)..(4*iel-1)][0..(3*iel-1)]
       
 </pre>
+
 \param **estif     DOUBLE	   (i/o)  element stiffness matrix
 \param  *funct     DOUBLE	   (i)    natural shape functions
 \param **vbubderxy DOUBLE	   (i)    global deriv. of vel. bub. fun.
@@ -568,6 +571,7 @@ NOTE: there's only one elestif
       --> Kpp is stored in estif[(3*iel)..(4*iel-1)][(3*iel)..(4*iel-1)]
       
 </pre>
+
 \param **estif     DOUBLE	   (i/o)  element stiffness matrix
 \param  *funct     DOUBLE	   (i)    natural shape functions
 \param***pbubderxy DOUBLE	   (i)    global deriv. of pre. bub. fun.
@@ -631,6 +635,7 @@ NOTE: there's only one elemass
       --> Mvv is stored in emass[0..(3*iel-1)][0..(3*iel-1)]  
       
 </pre>
+
 \param **emass     DOUBLE	   (i/o)  element mass matrix
 \param  *funct     DOUBLE	   (i)    natural shape functions
 \param  *vbubint   DOUBLE	   (i)    velocity bubble functions
@@ -702,6 +707,7 @@ NOTE: there's only one elemass
       --> Mvp is stored in emass[0..(3*iel-1)][(3*iel)..(4*iel-1)]  
       
 </pre>
+
 \param **emass     DOUBLE	   (i/o)  element mass matrix
 \param  *funct     DOUBLE	   (i)    natural shape functions
 \param **pbubint   DOUBLE	   (i)    pressure bubble functions

@@ -151,15 +151,15 @@ case m_pl_hoff:/*--- anisotropic plasticity model based on hoffman-criterion */
    s9_Ecama(strain, T);
 
    /*von "Hoffman" Plasticity, formulated in cartesian coordinate system, sorting: [11,22,33,12,23,13] */
-   s9_mat_plast_hoff(multimat->m.pl_hoff,  /*!< material properties          */
-                     ele,                  /*!< actual element               */
-                     ip,                   /*!< integration point Id         */
-                     actlay,               /*!< actual layer                 */
-                     stress,               /*!< vector of stresses [11,22,33,12,23,13]  */
-                     strain,               /*!< vector of strains  [11,22,33,12,23,13]  */
-                     C,                    /*!< constitutive matrix          */
-                     istore,               /*!< controls storing of stresses */
-                     newval);              /*!< controls eval. of stresses   */
+   s9_mat_plast_hoff(multimat->m.pl_hoff,  /* material properties          */
+                     ele,                  /* actual element               */
+                     ip,                   /* integration point Id         */
+                     actlay,               /* actual layer                 */
+                     stress,               /* vector of stresses [11,22,33,12,23,13]  */
+                     strain,               /* vector of strains  [11,22,33,12,23,13]  */
+                     C,                    /* constitutive matrix          */
+                     istore,               /* controls storing of stresses */
+                     newval);              /* controls eval. of stresses   */
                 
 
    /*transform C from orthonormal material coord. sys. to global cartesian*/

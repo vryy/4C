@@ -14,6 +14,11 @@ Maintainer: Michael Gee
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
+
+/*! 
+\addtogroup WALL1 
+*//*! @{ (documentation module open)*/
+
 /*!----------------------------------------------------------------------
 \brief file pointers
 

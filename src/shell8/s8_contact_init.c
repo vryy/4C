@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief contains init phase of the shell contact routines
 
 <pre>
 Maintainer: Michael Gee
@@ -10,11 +10,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-/*!---------------------------------------------------------------------
-\file
-\brief contains init phase of the shell contact routines
-
----------------------------------------------------------------------*/
 #ifdef S8CONTACT
 #include "../headers/standardtypes.h"
 #include "s8contact.h"

@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief contains functions to handle oll matrices
 
 <pre>
 Maintainer: Malte Neumann
@@ -10,11 +10,6 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
-/*!---------------------------------------------------------------------
-\file
-\brief contains functions to handle oll matrices 
-
----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"

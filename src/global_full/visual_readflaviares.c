@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief read data from flavia.res and make them available for VISUAL2
 
 <pre>
 Maintainer: Steffen Genkinger
@@ -10,11 +10,6 @@ Maintainer: Steffen Genkinger
 </pre>
 
 *----------------------------------------------------------------------*/
-/*!----------------------------------------------------------------------
-\file
-\brief read data from flavia.res and make them available for VISUAL2
-
-------------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #ifdef VISUAL2_PACKAGE
 /*----------------------------------------------------------- prototype */

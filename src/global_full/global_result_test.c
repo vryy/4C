@@ -10,12 +10,6 @@ Maintainer: Steffen Genkinger
 </pre>
 
 *----------------------------------------------------------------------*/
-/*!----------------------------------------------------------------------
-\file
-\brief Testing of results
-
-
-------------------------------------------------------------------------*/
 #ifdef RESULTTEST
 #include "../headers/standardtypes.h"
 #include "../axishell/axishell.h"

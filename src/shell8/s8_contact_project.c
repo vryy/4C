@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief contains projection routines for 3d shell contact
 
 <pre>
 Maintainer: Michael Gee
@@ -10,11 +10,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-/*!---------------------------------------------------------------------
-\file
-\brief contains projection routines for 3d shell contact
-
----------------------------------------------------------------------*/
 #ifdef S8CONTACT
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"

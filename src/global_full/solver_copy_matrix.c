@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief routines to copy matricex to another storage format
 
 <pre>
 Maintainer: Malte Neumann
@@ -10,17 +10,13 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
-/*!----------------------------------------------------------------------
-\file
-\brief routines to copy matricex to another storage format
-
-------------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
 
 /*!---------------------------------------------------------------------  
 \brief copy matrix csr-format to a other format
+
 <pre>                                                        genk  11/02
                                                              basol 12/02   
 In this routine a matrix in CSR-format is copied to the actual matrix

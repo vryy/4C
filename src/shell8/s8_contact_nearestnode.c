@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief contains search algorithms for contact detection
 
 <pre>
 Maintainer: Michael Gee
@@ -10,11 +10,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-/*!---------------------------------------------------------------------
-\file
-\brief contains search algorithms for contact detection
-
----------------------------------------------------------------------*/
 #ifdef S8CONTACT
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"

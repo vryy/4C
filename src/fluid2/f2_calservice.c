@@ -47,6 +47,7 @@ NOTE: if there is no classic time rhs (as described in WAW) the array
 	 but rather a linear combination of old velocities and 
 	 accelerations depending upon the time integration scheme!!!!!
 </pre>
+
 \param   *dynvar   FLUID_DYN_CALC  (i)
 \param   *ele      ELEMENT	   (i)  actual element
 \param  **xyze     DOUBLE          (o)  nodal coordinates
@@ -186,6 +187,7 @@ NOTE: in contradiction to the old programm the kinematic pressure
       transformation in every time step 			 
 				      
 </pre>
+
 \param   *dynvar    FLUID_DYN_CALC  (i)
 \param   *ele       ELEMENT	    (i)    actual element
 \param  **xyze      DOUBLE          (o)    nodal coordinates at time n+theta
@@ -345,6 +347,7 @@ return;
 			 
 				      
 </pre>
+
 \param   *dynvar    FLUID_DYN_CALC  (i)
 \param   *ele       ELEMENT	    (i)    actual element
 \param  **xyze      DOUBLE          (o)    nodal coordinates at time n+theta
@@ -424,6 +427,7 @@ parameter of steepest descent method
 			 
 				      
 </pre>
+
 \param   *dynvar    FLUID_DYN_CALC  (i)
 \param   *ele       ELEMENT	    (i)    actual element
 \param  **xyze      DOUBLE          (o)    nodal coordinates at time n+theta
@@ -502,6 +506,7 @@ return;
 <pre>                                                         genk 04/02
 				      
 </pre>
+
 \param   *velint   DOUBLE        (o)   velocities at integration point
 \param   *funct    DOUBLE        (i)   shape functions
 \param  **evel     DOUBLE        (i)   velocites at element nodes
@@ -545,6 +550,7 @@ return;
 <pre>                                                         genk 04/02
 				      
 </pre>
+
 \param  *preint    DOUBLE        (o)   pressure at integration point
 \param  *funct     DOUBLE        (i)   shape functions
 \param  *epre      DOUBLE        (i)   pressure at element nodes
@@ -585,6 +591,7 @@ return;
 <pre>                                                         genk 02/03
 				      
 </pre>
+
 \param  *funct     DOUBLE        (i)   shape functions
 \param  *ekappa    DOUBLE        (i)   nodal kappa
 \param   iedgnod   INT           (i)   local node numbers of actual line
@@ -628,6 +635,7 @@ return (kappaint);
 In this routine the derivatives of the velocity w.r.t x/y are calculated
 				      
 </pre>
+
 \param  **vderxy   DOUBLE        (o)   velocity derivativs
 \param  **derxy    DOUBLE        (i)   globael derivatives
 \param  **evel     DOUBLE        (i)   velocites at element nodes
@@ -676,6 +684,7 @@ In this routine the 2nd derivatives of the velocity
 w.r.t x/y are calculated
 				      
 </pre>
+
 \param  **vderxy2  DOUBLE        (o)   2nd velocity derivativs
 \param  **derxy2   DOUBLE        (i)   2nd global derivatives
 \param  **evel     DOUBLE        (i)   velocites at element nodes
@@ -723,6 +732,7 @@ return;
 In this routine derivatives of the pressure w.r.t x/y are calculated
 				      
 </pre>
+
 \param   *pderxy   DOUBLE        (o)   pressure derivativs
 \param  **derxy    DOUBLE        (i)   globael derivatives
 \param   *epre     DOUBLE        (i)   pressure at element nodes
@@ -771,6 +781,7 @@ integration point:
  e.g. 2D: COVx = Ux*Ux,x + Uy*Ux,y
 
 </pre>
+
 \param  **vderxy   DOUBLE        (i)   velocity derivativs
 \param   *velint   DOUBLE        (i)   velocity at integration point
 \param   *covint   DOUBLE        (o)   convective velocity at INT point
@@ -819,6 +830,7 @@ is not possible any more!!!!
 
 
 </pre>
+
 \param   *eforce   DOUBLE        (i/o) element force vector
 \param  **tmp      DOUBLE        (i)   working array
 \param    iel	   DOUBLE        (i)   number of nodes in this ele
@@ -887,6 +899,7 @@ is not possible any more!!!!
 
 
 </pre>
+
 \param   *eforce   DOUBLE        (i/o) element force vector
 \param  **tmp      DOUBLE        (i)   working array
 \param   *ele      ELEMENT       (i)   actual element
@@ -968,6 +981,7 @@ routines for the stiffness matrix
 hence a splitting of vel- and pre dofs is not possible any more!!!!
 
 </pre>
+
 \param  **estif   DOUBLE	 (i/o) ele stiffnes matrix
 \param  **emass   DOUBLE	 (i)   ele mass matrix
 \param  **tmp     DOUBLE	 (-)   working array		
@@ -1102,6 +1116,7 @@ routines for the stiffness matrix
 hence a splitting of vel- pre-  and grid dofs is not possible any more!!!!
 
 </pre>
+
 \param  **estif   DOUBLE	 (i/o) ele stiffnes matrix
 \param  **emass   DOUBLE	 (i)   ele mass matrix
 \param  **tmp     DOUBLE	 (-)   working array		

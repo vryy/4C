@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief contains history relevant routines of the shell contact
 
 <pre>
 Maintainer: Michael Gee
@@ -10,11 +10,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-/*!---------------------------------------------------------------------
-\file
-\brief contains history relevant routines of the shell contact
-
----------------------------------------------------------------------*/
 #ifdef S8CONTACT
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"

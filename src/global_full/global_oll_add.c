@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief contains functions to assemble oll matrices
 
 <pre>
 Maintainer: Malte Neumann
@@ -8,11 +8,6 @@ Maintainer: Malte Neumann
             http://www.uni-stuttgart.de/ibs/members/neumann/
             0711 - 685-6121
 </pre>
-
-*----------------------------------------------------------------------*/
-/*!----------------------------------------------------------------------
-\file
-\brief contains functions to assemble oll matrices 
 
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
