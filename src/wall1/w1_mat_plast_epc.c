@@ -35,6 +35,8 @@ void w1_mat_plast_epc(  double dens      ,
                         ELEMENT   *ele,
                         WALL_TYPE wtype,
                         double **bop,
+                        double  *gop,
+                        double  *alph,
                         double **xjm,
                         int ip,
                         double *stressc,       
@@ -118,7 +120,7 @@ dstrc_enter("w1_mat_plast_epc");
   if(wtype==plane_stress) pr = 0.;
   else                    pr = vnu;
 /*--------------------------------- compute displacement derivatives ---*/        
-  w1_disd (ele,bop,wtype,disd) ;                  
+  w1_disd (ele,bop,gop,alph,wtype,disd) ;                  
 /*------------------------------------- get actual strains -> strain ---*/
   w1_eps (disd,local_wtype,strain);
 /*----------------------------- get old values -> sig, eps,epstn,yip ---*/

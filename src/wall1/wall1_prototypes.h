@@ -13,6 +13,8 @@ void w1_bop(double    **bop,   /* derivative operator                   */
 *-----------------------------------------------------------------------*/
 void w1_disd(ELEMENT   *ele,  /* actual element                         */
              double   **bop,  /* derivative operator                    */
+             double    *gop,  /* additional derivative operator         */
+             double    *alpha,/*internal dof                            */
              WALL_TYPE wtype, /* plane stress/strain...                 */
              double    *disd);/* displacement derivatives               */
 /*-----------------------------------------------------------------------*
@@ -82,6 +84,8 @@ void w1_call_mat(ELEMENT   *ele, /* actual element                      */
                  MATERIAL  *mat, /* actual material                     */
                  WALL_TYPE wtype,/* plane stress/strain...              */  
                  double **bop,   /* derivative operator                 */
+                 double  *gop,   /* additional derivative operator      */
+                 double  *alpha, /* internal dof                        */
                  double **xjm,   /* jacobian matrix                     */
                  int ip,         /* integration point Id                */
                  double *stress, /* vector of stresses                  */
@@ -167,6 +171,8 @@ void w1_mat_plast_dp(double ym,      /* young's modulus                 */
                      ELEMENT   *ele, /* actual element                  */ 
                      WALL_TYPE wtype,/* plane stress/strain...          */      
                      double **bop,   /* derivative operator             */  
+                     double  *gop,   /* add. derivative operator        */  
+                     double  *alpha, /* internal dof                    */  
                      int ip,         /* integration point Id            */         
                      double *stress, /* vector of stresses              */
                      double **d,     /* constitutive matrix             */    
@@ -206,6 +212,8 @@ void w1_mat_plast_epc(double dens      , /* density                     */
                       ELEMENT   *ele,    /* actual element              */
                       WALL_TYPE wtype,   /* plane stress/strain...      */          
                       double **bop,      /* derivative operator         */
+                      double  *gop,      /* add derivative operator     */
+                      double  *alpha,    /* internal dof                */
                       double **xjm,      /* jacobian matrix             */
                       int ip,            /* integration point Id        */
                       double *stressc,   /* vector of stresses          */
@@ -276,6 +284,8 @@ void w1_mat_plast_mises(double ym,      /* young's modulus              */
                         ELEMENT   *ele, /* actual element               */
                         WALL_TYPE wtype,/* plane stress/strain...       */         
                         double **bop,   /* derivative operator          */
+                        double  *gop,   /* add. derivative operator     */
+                        double  *alpha, /* internal dof                 */
                         int ip,         /* integration point Id         */
                         double *stress, /* vector of stresses           */
                         double **d,     /* constitutive matrix          */
@@ -627,6 +637,8 @@ void w1_AaddB_44(double a[4][4], double b[4][4], double r[4][4]);
 void w1_mat_rebar(ELEMENT   *ele, /* actual element                     */
                   MATERIAL  *mat, /* actual material                    */
                   double   **bop, /* derivative operator                */
+                  double    *gop, /* add. derivative operator           */
+                  double    *alpha,/* internal dof                      */
                   double   **xjm, /* jacobian matrix                    */
                   double *stress, /* vector of stresses                 */
                   double     **d, /* constitutive matrix                */
@@ -665,6 +677,7 @@ void w1static_ke(ELEMENT   *ele,    /* actual element                   */
                  W1_DATA   *data,   /* wall1 data                       */
                  MATERIAL  *mat,    /* actual material                  */
                  ARRAY     *estif_global, /* element stiffness matrix   */
+                 ARRAY     *emass_global, /* element mass matrix        */
                  double    *force,  /* global vector for internal forces*/  
                  int        init);  /* initialize this function         */
 /*-----------------------------------------------------------------------*
@@ -691,163 +704,27 @@ void w1fi( double  *F,    /* element stresses                           */
 /*  w1_call_mat.c                                         ah 06/02      */
 /* get density out of material law                                      */
 /*----------------------------------------------------------------------*/
-#if 1
 void w1_getdensity(MATERIAL  *mat,        /* actual material            */
                    double *density);      /* density of actual material */
-#endif
 /*----------------------------------------------------------------------*/
 /*  w1_boplin.c                                           ah 06/02      */
 /* evaluation of linear B-operator                                      */
 /*----------------------------------------------------------------------*/
-#if 1
 void w1_boplin(double    **boplin,        /* Blin                       */
                double    **deriv,     /* derivatives of ansatzfunctions */
                double    **xjm,           /* jacobian matrix            */
                double      det,           /* det of jacobian matrix     */
                int         iel);          /* nodenumber of element      */
-#endif               
 /*----------------------------------------------------------------------*/
 /*  w1_defgrad.c                                          ah 06/02      */
 /*  evaluation of deformation gradient F                                */
 /*----------------------------------------------------------------------*/
-#if 1
 void w1_defgrad(double    *F,        /* Deformation gradient            */
                 double    *strain,   /* Green-Lagrange-strains          */
                 double    **xrefe,   /* coordinates in referenz-config. */
                 double    **xcure,   /* coordinates in current-config.  */
                 double    **boplin,  /* Blin                            */
                 int         iel);    /* nodenumber of element           */
-#endif
-/*----------------------------------------------------------------------*
- | Transform stress and strain local-global                  fh 7/02    |
- | Local 3-direction is zero                                            |
- *----------------------------------------------------------------------*/ 
-void w1_lss(double    *a,    /* vector to be transformed                */
-            double    **G,   /* elements of transformation matrix       */
-            double    **GI,  /* inverse of G                            */
-	    int         it); /* flag for local/global strains/stresses  */                                                                                                                                              
-/*----------------------------------------------------------------------*
- | Set Transformation Matrices G and GI                      fh 7/02    |
- *----------------------------------------------------------------------*/
-void w1_sett(double   **A,   /* matrix of direction cosines             */
-            double    **B,   /* G-Matrix     (L=1)                      */
-            double    **C);  /* inverse of G (L=2)                      */                                                         
-/*----------------------------------------------------------------------*
- | Calculate Transformation Matrices G and G(Inv)            fh 7/02    |
- *----------------------------------------------------------------------*/
-void w1_tram(double   **xjm, /* Elements of Jacobian Matrix             */
-            double    **G,   /* G-Matrix                                */
-            double    **GI,  /* inverse of G                            */
-	    double    **dum);/* matrix of direction cosines             */                                                                     
-/*----------------------------------------------------------------------*
-|  w1_call_matgeononl.c                                     ah 06/02     |
-|  select proper material law for large deformations                     |
-*-----------------------------------------------------------------------*/
-void w1_call_matgeononl(ELEMENT   *ele,   /* actual element             */
-                        MATERIAL  *mat,   /* material of actual element */
-                        WALL_TYPE wtype,/*Info about actual wall element*/
-                        double **boplin,  /* linear B-operator          */
-                        double **xjm,     /* jacobian matrix            */
-                        int ip,           /* integration point Id       */
-                        double *strain,  /*strain at act. gaussian point*/
-                        double **stress, /*stress at act. gaussian point*/
-                        double **d,       /* material tangent           */
-                        int istore,
-                        int numeps);     /* number of strain components */
-/*----------------------------------------------------------------------*
-|  w1_mat_linelgeonon.c                                     ah 06/02     |
-|  linear elastic material law for large deformations                    |
-*-----------------------------------------------------------------------*/
-void w1_mat_linelgeonon(double ym,       /* Young's modulus             */
-                        double pv,       /* poisson's ratio             */
-                        WALL_TYPE wtype,/*Info about actual wall element*/
-                        double *strain,  /*strain at act. gaussian point*/
-                        double **d,      /* material tangent            */
-                        double **stress, /*stress at act. gaussian point*/
-                        int numeps);     /* number of strain components */
-/*-----------------------------------------------------------------------*
-|  w1_cal_kg.c                                              ah 06/02     |
-|  evaluation of geometric part of stiffness matrix in geononl. case     |
-*-----------------------------------------------------------------------*/
-void w1_kg(double  **kg,                 /* geometric stiffness matrix  */
-           double  **boplin,             /* linear B-operator           */
-           double  **stress,             /*stress at act. gaussian point*/
-           double    fac,                /* integration factor          */
-           int       nd,                 /* dof's of element            */
-           int       neps);              /* number of strain components */
-/*-----------------------------------------------------------------------*
-|  w1_cal_keu.c                                              ah 06/02    |
-|  evaluation of elast+init. disp. part of stiffness in geononl. case    |
-*-----------------------------------------------------------------------*/
-void w1_keu(double  **keu,    /* elastic + initial deformation stiffness*/
-            double  **boplin,            /* linear B-operator           */
-            double  **D,                 /* material tangente           */
-            double   *F,                 /* deformation gradient        */
-            double    fac,               /* integration factor          */
-            int       nd,                /* dof's of element            */
-            int       neps);             /* number of strain components */
- /*----------------------------------------------------------------------*
- |  w1_cal_fint.c                                              ah 06/02   |
- | evaluate internal element forces for large def (total Lagr)           |
- *----------------------------------------------------------------------*/
-void w1_fint( double **stress,           /* 2.PK stresses               */ 
-              double  *F,                /* Deformation gradient        */ 
-              double **boplin,           /* B-lin-operator              */ 
-              double  *fint,             /* internal forces             */ 
-              double   fac,              /* detJ*wr*ws*thickness        */ 
-              int      nd);              /* Element-DOF                 */
-/*----------------------------------------------------------------------*/
-/*  w1_call_mat.c                                         ah 06/02      */
-/* get density out of material law                                      */
-/*----------------------------------------------------------------------*/
-#if 1
-void w1_getdensity(MATERIAL  *mat,        /* actual material            */
-                   double *density);      /* density of actual material */
-#endif
-/*----------------------------------------------------------------------*/
-/*  w1_boplin.c                                           ah 06/02      */
-/* evaluation of linear B-operator                                      */
-/*----------------------------------------------------------------------*/
-#if 1
-void w1_boplin(double    **boplin,        /* Blin                       */
-               double    **deriv,     /* derivatives of ansatzfunctions */
-               double    **xjm,           /* jacobian matrix            */
-               double      det,           /* det of jacobian matrix     */
-               int         iel);          /* nodenumber of element      */
-#endif               
-/*----------------------------------------------------------------------*/
-/*  w1_defgrad.c                                          ah 06/02      */
-/*  evaluation of deformation gradient F                                */
-/*----------------------------------------------------------------------*/
-#if 1
-void w1_defgrad(double    *F,        /* Deformation gradient            */
-                double    *strain,   /* Green-Lagrange-strains          */
-                double    **xrefe,   /* coordinates in referenz-config. */
-                double    **xcure,   /* coordinates in current-config.  */
-                double    **boplin,  /* Blin                            */
-                int         iel);    /* nodenumber of element           */
-#endif
-/*----------------------------------------------------------------------*
- | Transform stress and strain local-global                  fh 7/02    |
- | Local 3-direction is zero                                            |
- *----------------------------------------------------------------------*/ 
-void w1_lss(double    *a,    /* vector to be transformed                */
-            double    **G,   /* elements of transformation matrix       */
-            double    **GI,  /* inverse of G                            */
-	    int         it); /* flag for local/global strains/stresses  */                                                                                                                                              
-/*----------------------------------------------------------------------*
- | Set Transformation Matrices G and GI                      fh 7/02    |
- *----------------------------------------------------------------------*/
-void w1_sett(double   **A,   /* matrix of direction cosines             */
-            double    **B,   /* G-Matrix     (L=1)                      */
-            double    **C);  /* inverse of G (L=2)                      */                                                         
-/*----------------------------------------------------------------------*
- | Calculate Transformation Matrices G and G(Inv)            fh 7/02    |
- *----------------------------------------------------------------------*/
-void w1_tram(double   **xjm, /* Elements of Jacobian Matrix             */
-            double    **G,   /* G-Matrix                                */
-            double    **GI,  /* inverse of G                            */
-	    double    **dum);/* matrix of direction cosines             */                                                                     
 /*----------------------------------------------------------------------*
 |  w1_call_matgeononl.c                                     ah 06/02     |
 |  select proper material law for large deformations                     |
@@ -906,22 +783,133 @@ void w1_fint( double **stress,           /* 2.PK stresses               */
               double   fac,              /* detJ*wr*ws*thickness        */ 
               int      nd);              /* Element-DOF                 */
 /*----------------------------------------------------------------------*
- | integration of element loads                              ah 07/02   |
- | in here, line and surface loads are integrated                       |
+ | Transform stress and strain local-global                  fh 7/02    |
+ | Local 3-direction is zero                                            |
+ *----------------------------------------------------------------------*/ 
+void w1_lss(double    *a,    /* vector to be transformed                */
+            double    **G,   /* elements of transformation matrix       */
+            double    **GI,  /* inverse of G                            */
+	    int         it); /* flag for local/global strains/stresses  */                                                                                                                                              
+/*----------------------------------------------------------------------*
+ | Set Transformation Matrices G and GI                      fh 7/02    |
+ *----------------------------------------------------------------------*/
+void w1_sett(double   **A,   /* matrix of direction cosines             */
+            double    **B,   /* G-Matrix     (L=1)                      */
+            double    **C);  /* inverse of G (L=2)                      */                                                         
+/*----------------------------------------------------------------------*
+ | Calculate Transformation Matrices G and G(Inv)            fh 7/02    |
+ *----------------------------------------------------------------------*/
+void w1_tram(double   **xjm, /* Elements of Jacobian Matrix             */
+            double    **G,   /* G-Matrix                                */
+            double    **GI,  /* inverse of G                            */
+	    double    **dum);/* matrix of direction cosines             */                                                                     
+/*----------------------------------------------------------------------*
+ | w1_cal_fext.c                                             ah 07/02   |
+ | element line and surface loads                                       |
  *----------------------------------------------------------------------*/
 void w1_eleload(ELEMENT  *ele,           /* actuell element             */
                 W1_DATA  *data,          /* wall1-data                  */
                 double	*loadvec,        /* loadvector                  */
                 int	 init);          /* flag -> init or calculation */
 /*----------------------------------------------------------------------*
- | integration of element loads                             ah 07/02    |
+ | w1_cal_fext.c                                             ah 07/02   |
+ | integration of element loads                                         |
  *----------------------------------------------------------------------*/
 void w1_fextsurf(ELEMENT    *ele,        /* actuell element             */
                  double    **eload,      /* element load vector         */
                  double     *funct,      /* ansatz-functions            */
                  double      fac,        /* integration factor          */
                  int         iel);       /* element DOF                 */
-                                                                        
+/*----------------------------------------------------------------------*
+ | w1_bop.c                                                  ah 9/02    |
+ | additional operator matrix gop at r,s for incomp modes               |
+ *----------------------------------------------------------------------*/
+void w1_gop(double    *gop,            /* operator matrix G             */
+            double    **xjm0,          /* jacobian matrix at r,s=0      */
+            double      det0,          /* det J at r,s=0                */
+            double      det,           /* det J at actual r,s           */
+            double      e1,            /* actual GP coordinate r        */
+            double      e2);           /* actual GP coordinate s        */
+/*----------------------------------------------------------------------*
+ | w1_incompmode.c                                              ah 9/02 |
+ | stiffness matrix due to incompatible modes                           |
+ *----------------------------------------------------------------------*/
+void w1_knc(double  **knc,             /* stiffness knc= BT C G         */
+            double  **bop,             /* operator matrix               */
+            double   *gop,             /* additional opperator matrix   */
+            double  **d,               /* constitutive matrix           */
+            double    fac);            /* integration factor            */
+/*----------------------------------------------------------------------*
+ | w1_incompmode.c                                              ah 9/02 |
+ | stiffness matrix  knn      (4*4)                                     |
+ *----------------------------------------------------------------------*/
+void w1_knn(double  **knn,             /* stiffness knn= GT C G         */
+            double   *gop,             /* additional opperator matrix   */
+            double  **d,               /* constitutive matrix           */
+            double    fac);            /* integration factor            */
+/*----------------------------------------------------------------------*
+ | w1_incompmode.c                                              ah 9/02 |
+ | evaluate internal element forces due to incomp. modes                |
+ *----------------------------------------------------------------------*/
+void w1_fintn(double  *F,              /* stress                        */
+              double   fac,            /* integration factor            */
+              double  *gop,            /* additional opperator matrix   */
+              double  *fintn);          /* int forces due to inc modes  */
+/*----------------------------------------------------------------------*
+ | w1_math.c                                                    ah 9/02 |
+ | calculate inverse of arbitrary NxN matrix                            |
+ *----------------------------------------------------------------------*/
+void w1_inverse_matrix
+ (int N,          /* I: size of matrix: N x N                           */
+  double **A,     /* I: Original Matrix                                 */
+  double **Y);    /* O: Inverse Matrix                                  */
+/*----------------------------------------------------------------------*
+ | w1_math.c                                                    ah 9/02 |
+ | LU-Decomposition of  NxN - matrix ->"numerical recipes in C"         |
+ *----------------------------------------------------------------------*/
+void w1_ludcmp(double **a,  /* I: Original Matrix (will be rearanged)   */
+               int n,       /* I: size of matrix: N x N                 */
+               int *indx,   /* O:row premutation pf pivoting            */
+               double *d);/* O:+1/-1,depending on even or odd row permut*/
+/*----------------------------------------------------------------------*
+ | w1_math.c                                                    ah 9/02 |
+ | solving AX=B, A is LU decomposed  ->"numerical recipes in C"         |
+ *----------------------------------------------------------------------*/
+void w1_lubksb(double **a,   /* I: LU-decomposed matrix                 */
+               int n,        /* I: size of matrix: N x N                */
+               int *indx,    /* I:row premutation pf pivoting           */
+               double *b);   /* In:B will be changed-> Out:Solution X   */
+/*----------------------------------------------------------------------*
+ | w1_math.c                                                    ah 9/02 |
+ |   allocate a double vector with subscript range v[nl..nh]            |
+ *----------------------------------------------------------------------*/
+double *w1_vector(int nl, int nh);
+/*----------------------------------------------------------------------*
+ | w1_math.c                                                    ah 9/02 |
+ |   free a double vector allocated with w1_vector()                    |
+ *----------------------------------------------------------------------*/
+void w1_free_vector(double *v, int nl, int nh);
+/*----------------------------------------------------------------------*
+ | w1_incompmode.c                                              ah 9/02 |
+ | static kondensation:     Kele =   K  - knc*inverse(knn)*kcn,         |
+ |                      Fint ele = Fint - knc*inverse(knn)*fintn,       |
+ *----------------------------------------------------------------------*/
+void  w1_stat_cond(double **knninv,/*I:stiffness inverse(knn) (4x4)     */
+                   double **knc,   /*I: knc = BT C G (8x4)              */
+                   double **deltak,/*O: knc*inverse(knn)*kcn            */ 
+                   double  *fintn, /*I: fintn=GT*singma                 */
+                   double  *deltaf,/*O: knc*inverse(knn)*fintn          */ 
+                   ELEMENT *ele); /*I: actual element                  */
+/*----------------------------------------------------------------------*
+ | w1_incompmode.c                                              ah 9/02 |
+ | update of internal dof alpha                                         |
+ *----------------------------------------------------------------------*/
+void  w1_updalpha(double  *alpha,  /*O: internal dof for incomp modes   */
+                  ELEMENT *ele,    /*I:actual element                   */
+                  double **knc,    /*I: mixed stiffness                 */
+                  double **knninv, /*I: inverse of incomp. stiffness    */
+                  double  *fintn,  /*I: int. forces of inc. modes       */
+                  int      istore);/*I: update after loadstep->istore=1 */
                                                                         
                                                                         
                                                                         

@@ -12,6 +12,13 @@ double        wgts[13];
 /*----------------------------------------------------------------------*
  | working array                                             al 6/01    |
  *----------------------------------------------------------------------*/
+typedef struct _W1_IMODE_WA
+{
+double      knninv[4][4]; /* inverse of stiffness of incomp modes   */
+double      knc[8][4];    /* mixed stiffness compat. - incompatible */
+double      fintn[4];     /* internal forces of incomp modes        */
+double      alpha[4];     /* int.dof for inc modes of last loadst k */
+} W1_IMODE_WA;
 typedef struct _W1_IP_WA
 {
 double      sig[4]; /* global stresses                              */
@@ -38,12 +45,13 @@ double       stcappaut; /* fracture strain of the concrete         */
 double       stalpha;   /* angle of the principal concrete stress  */         
 double       stthick ;  /* thickness ot the structure              */        
 double       stfbd;     /* tension stiffening stress               */
-
-
+/* incompatible mode method */
+double       D[3];   /* material tangente:D0=C11,D1=C22,D2=C12=C21 */
 } W1_IP_WA;
 typedef struct _W1_ELE_WA
 {
 W1_IP_WA      *ipwa;
+W1_IMODE_WA   *imodewa;
 double         dia;
 double        *matdata; /* element material data, actual density ... */
 int           *optdata; /* optimization variable number ... */
@@ -68,13 +76,21 @@ typedef enum _KINEMATIK_TYPE
                        updated_lagr  
 } KINEMATIK_TYPE;
 /*----------------------------------------------------------------------*
+ | type of model (displacem. or mixed) for QUAD4            ah 08/02    |
+ *----------------------------------------------------------------------*/
+typedef enum _MODEL_TYPE
+{
+                       displ_model,   /* normal QUAD4, diplacem. model  */
+                       incomp_mode    /* Q1 with incompatible modes     */
+} MODEL_TYPE;
+/*----------------------------------------------------------------------*
  | wall                                                     al 01/02    |
  *----------------------------------------------------------------------*/
 typedef struct _WALL1
 {
 enum _WALL_TYPE    wtype;             /* type of 2D problem, see above */
-
 enum _KINEMATIK_TYPE  kintype;	  /* type of Kinematik             */
+enum _MODEL_TYPE modeltype;	        /* type of model for QUAD4       */
 
 int           nGP[4];
 

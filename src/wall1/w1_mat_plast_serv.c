@@ -181,7 +181,7 @@ L500:
 	*dlam -= f / dfdl;
 /*------------------------------------------------- Abbruchkriterium ---*/
 	if ((dum = f / esig, fabs(dum)) > 1e-5) {
-	    if (i > 30) dserror("i>30!");         
+	    if (i > 100) dserror("i>100!");         
 	    goto L500;
 	} else {
 	    *epstn = epst;
@@ -2690,6 +2690,8 @@ return;
 void w1_mat_rebar(ELEMENT   *ele,
                   MATERIAL  *mat, 
                   double   **bop, /*derivative operator */
+                  double    *gop, /*derivative operator */
+                  double    *alpha, /*derivative operator */
                   double   **xjm, /* jacobian matrix    */
                   double *stress,       
                   double     **d,   
@@ -2714,7 +2716,7 @@ double eccappaet, dcappaet, roh, ecappaut, dcappaut;
 dstrc_enter("w1_mat_rebar");
 #endif
 /*--------------------------------- compute displacement derivatives ---*/        
-  w1_disd (ele,bop,ele->e.w1->wtype,disd) ;                  
+  w1_disd (ele,bop,gop,alpha,ele->e.w1->wtype,disd) ;                  
 /*------------------------------------- get actual strains -> strain ---*/
   w1_eps (disd,ele->e.w1->wtype,strain);
 /*----------------------------- get old values -> stressrb, strainrb ---*/

@@ -15,6 +15,8 @@ void w1_mat_plast_mises(double ym,
                         ELEMENT   *ele,
                         WALL_TYPE wtype,
                         double **bop,
+                        double  *gop,
+                        double  *alpha,
                         int ip,
                         double *stress,       
                         double **d,
@@ -54,7 +56,7 @@ dstrc_enter("w1_mat_plast_mises");
 /*------------ original global elastic matrix for current point -> D ---*/
   w1_mat_linel(ym, pv, wtype, d);
 /*--------------------------------- compute displacement derivatives ---*/        
-  w1_disd (ele,bop,wtype,disd) ;                  
+  w1_disd (ele,bop,gop,alpha,wtype,disd) ;                  
 /*------------------------------------- get actual strains -> strain ---*/
   w1_eps (disd,wtype,strain);
 /*----------------------------- get old values -> sig, eps,epstn,yip ---*/
@@ -121,6 +123,7 @@ for (i=0; i<4; i++)
   
   sum = 0.0;
   for (i=0; i<4; i++) sum += sig[i] * delsig[i];
+
   if(sum<0.0)
   {
     for (i=0; i<4; i++) stress[i] = tau[i] + qn[i];
