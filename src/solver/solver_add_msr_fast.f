@@ -308,7 +308,7 @@ c     check for dirichlet conditions !!
           do mm=1,nd
             estif(ele+1,mm,i) = 0.0
             estif(ele+1,i,mm) = 0.0
-            estif(ele+1,i,i)  = 1.0
+C            estif(ele+1,i,i)  = 1.0
           enddo
         endif
       enddo
@@ -715,7 +715,7 @@ c     check for dirichlet conditions !!
           do mm=1,nd
             estif(ele+1,mm,i) = 0.0
             estif(ele+1,i,mm) = 0.0
-            estif(ele+1,i,i)  = 1.0
+C            estif(ele+1,i,i)  = 1.0
           enddo
         endif
       enddo

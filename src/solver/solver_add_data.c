@@ -98,7 +98,7 @@ if (assemble_action==assemble_two_matrix || assemble_action==assemble_one_matrix
             {
               emass[counter2][counter] = 0.0;
               emass[counter][counter2] = 0.0;
-              emass[counter][counter]  = 1.0;
+              /*emass[counter][counter]  = 1.0;*/
             }
             counter2++;
           }
