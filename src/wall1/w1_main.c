@@ -40,7 +40,7 @@ switch (*action)
 /*-init the element routines(geolin and geononlin,no matter if I need both)*/
 case calc_struct_init:
    w1init(actpart, mat);
-   w1static_ke(NULL,NULL,NULL,NULL,NULL,1);
+   w1static_ke(NULL,NULL,NULL,NULL,NULL,NULL,1);
    w1static_keug(NULL,NULL,NULL,NULL,NULL,NULL,1);
    w1_cal_stress(NULL,NULL,NULL,NULL,NULL,0,1);
    w1_eleload(ele,&actdata,intforce,1);
@@ -48,7 +48,7 @@ break;/*----------------------------------------------------------------*/
 /*----------------------------------- calculate linear stiffness matrix */
 case calc_struct_linstiff:
    actmat = &(mat[ele->mat-1]);
-   w1static_ke(ele,&actdata,actmat,estif_global,NULL,0);
+   w1static_ke(ele,&actdata,actmat,estif_global,NULL,NULL,0);
 break;/*----------------------------------------------------------------*/
 /*---------------------------------calculate nonlinear stiffness matrix */
 case calc_struct_nlnstiff:
@@ -59,7 +59,7 @@ case calc_struct_nlnstiff:
    }
    else if(ele->e.w1->kintype==geo_lin)
    {
-      w1static_ke(ele,&actdata,actmat,estif_global,intforce,0);
+      w1static_ke(ele,&actdata,actmat,estif_global,NULL,intforce,0);
    }
    else
    {
@@ -69,6 +69,8 @@ case calc_struct_nlnstiff:
 break;/*----------------------------------------------------------------*/
 /*-------------------------- calculate linear stiffness and mass matrix */
 case calc_struct_linstiffmass:
+      actmat = &(mat[ele->mat-1]);
+      w1static_ke(ele,&actdata,actmat,estif_global,emass_global,intforce,0);
 break;/*----------------------------------------------------------------*/
 /*----------------------- calculate nonlinear stiffness and mass matrix */
 case calc_struct_nlnstiffmass:
@@ -95,7 +97,7 @@ case calc_struct_update_istep:
    actmat = &(mat[ele->mat-1]);
    if(ele->e.w1->kintype == geo_lin)
    {
-   w1static_ke(ele,&actdata,actmat,estif_global,intforce,2);
+   w1static_ke(ele,&actdata,actmat,estif_global,NULL,intforce,2);
    }
    else
    {
