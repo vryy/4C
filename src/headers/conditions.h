@@ -11,6 +11,14 @@ typedef struct _NEUM_CONDITION
 
      struct _ARRAY             neum_onoff;   /* array of on-off flags */
      struct _ARRAY             neum_val;     /* values of this condition */    
+     
+     enum
+     {
+     neum_none,
+     neum_live,
+     neum_consthydro_z,
+     neum_increhydro_z
+     }                         neum_type;
 
 } NEUM_CONDITION;
 /*----------------------------------------------------------------------*

@@ -674,6 +674,13 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    actdsurf->neum->neum_onoff.a.iv[i] = strtol(colptr,&colptr,10);
    for (i=0; i<MAXDOFPERNODE; i++)
    actdsurf->neum->neum_val.a.dv[i] = strtod(colptr,&colptr);
+   /*----------------------------------- read type of neumann condition */
+   frchk("Live",&ierr);
+   if (ierr) actdsurf->neum->neum_type = neum_live;
+   frchk("constHydro_z",&ierr);
+   if (ierr) actdsurf->neum->neum_type = neum_consthydro_z;
+   frchk("increaseHydro_z",&ierr);
+   if (ierr) actdsurf->neum->neum_type = neum_increhydro_z;
    /*--------------------------------------------------- read next line */
    frread();
 }
