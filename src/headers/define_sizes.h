@@ -31,6 +31,7 @@ Maintainer: Malte Neumann
 #define MAXELE           (4)
 #endif
 
+
 /*----------------------------------------------------------------------*
  | maximum number of dofs to a node -> can be more than 6 for shell9    |
  *----------------------------------------------------------------------*/
@@ -127,6 +128,11 @@ Maintainer: Malte Neumann
 #endif
 #ifndef FLUID_NUM_LD
 #define FLUID_NUM_LD     (4)  /* number of lift and drag conditions */
+#endif
+
+#ifndef FLUID_NUM_BNODE
+#define FLUID_NUM_BNODE  (10)  /* max. number of fluid boundary nodes with 
+                                * lift & drag condition or FSI coupling */
 #endif
 
 /*----------------------------------------------------------------------*
