@@ -24,6 +24,8 @@ typedef struct _MATERIAL
      struct _EL_ORTH          *el_orth;      /* elastic orthotropic material */
      struct _MFOC             *mfoc;         /* metal foam, open cell  */
      struct _MFCC             *mfcc;         /* metal foam, closed cell  */
+     struct _MULTI_LAYER      *multi_layer;  /* multi layer material*/
+     struct _ORTHOTROPIC      *orthotropic;  /* linear elastic, orthotropic material*/
      }                         m;            /* union pointer to material specific structure */
 
 } MATERIAL;
@@ -87,6 +89,7 @@ typedef struct _PL_MISES
      double                    Sigy;
      double                    Hard;
      double                    GF;
+     double                    betah;
 } PL_MISES;
 
 /*----------------------------------------------------------------------*
@@ -251,4 +254,61 @@ typedef struct _MFCC
      double                    cce;            /* exponent  */
      double                    ccf;            /* factor    */
 } MFCC;
+/*----------------------------------------------------------------------*
+ | multi layer material  -> shell9                          sh 10/02    |
+ | material, that can have differnt materials in different layers       |
+ | in here is just the definition of the cross section                  |
+ *----------------------------------------------------------------------*/
+typedef struct _MULTI_LAYER
+{
+     int                       num_klay;      /* number of kinematic layers */
+     double                   *klayhgt;       /* hgt of a kinematic layer in % of total thickness of the shell */
+     struct _KINLAY           *kinlay;        /* one kinematic layer */
 
+} MULTI_LAYER;
+/*----------------------------------------------------------------------*
+ | for multi layer material  -> shell9                      sh 10/02    |
+ | information about one kinematic layer                                |
+ *----------------------------------------------------------------------*/
+typedef struct _KINLAY
+{
+     int                       num_mlay;     /* number of material layer to this kinematic layer*/
+     double                   *mlayhgt;      /* hgt of a material layer in % of thickness of the adjacent kinematic layer*/ 
+     int                      *mmatID;       /* ID of multilayer material in every material layer */
+     double                   *phi;          /* rotation of the material in one material layer */
+     int                      *rot;          /* axis of rotation of the material: x=1, y=2, z=3*/
+} KINLAY;
+/*----------------------------------------------------------------------*
+ | multilayer materials                                     sh 10/02    |
+ | structure to hold all types of material laws                         |
+ | is equivalent to the struct MATERIAL but is used for shell9 only     |
+ *----------------------------------------------------------------------*/
+typedef struct _MULTIMAT
+{
+     int                       Id;           /* Id of the material */
+
+     enum _MATERIAL_TYP        mattyp;       /* type of material */
+
+     union
+     {
+     struct _STVENANT         *stvenant;     /* St. Venant-Kirchhoff material */
+     struct _NEO_HOOKE        *neohooke;     /* Neo-Hooke material */
+     struct _ORTHOTROPIC      *orthotropic;  /* linear elastic, orthotropic material*/
+     }                         m;            /* union pointer to material specific structure */
+
+} MULTIMAT;
+/*----------------------------------------------------------------------*
+ | linear elastic, orthotropic material                     sh 02/03    |
+ *----------------------------------------------------------------------*/
+typedef struct _ORTHOTROPIC
+{
+     double                    emod1;         
+     double                    emod2;         
+     double                    emod3;         
+     double                    gmod12;         
+     double                    gmod13;         
+     double                    gmod23;         
+     double                    xnue12;         
+     double                    xnue13;         
+     double                    xnue23;         
+} ORTHOTROPIC;
