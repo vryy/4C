@@ -15,8 +15,12 @@ Maintainer: Steffen Genkinger
 *//*! @{ (documentation module open)*/
 #ifdef D_FLUID
 #include "../headers/standardtypes.h"
+#include "fluid_prototypes.h"
 #include "../solver/solver.h"
-#include "fluid_prototypes.h" 
+/*-------------------------------------------- prototypes for this file */
+#ifdef D_FSI
+static DOUBLE fluid_usd(DOUBLE r, DOUBLE alpha);
+#endif
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -40,6 +44,12 @@ and the type is in partition.h
 
 *----------------------------------------------------------------------*/
  extern struct _PAR   par; 
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of material laws                                              |
@@ -101,6 +111,14 @@ DOUBLE     funct_fac;	             /* factor from spatial function */
 GNODE     *actgnode;	              /* actual GNODE		        */
 NODE      *actnode;	              /* actual NODE		        */
 ELEMENT   *actele;	              /* actual ELEMENT		        */
+#ifdef D_FSI
+NODE      *firstnode, *lastnode;
+NODE      *actanode,*alnode,*afnode;
+DOUBLE     ract,rtotal,r;
+DOUBLE     rtotalv[3],ractv[3];
+DOUBLE     alpha,length;
+DOUBLE     uact,u10;
+#endif
 
 INT counter=0;
 
@@ -128,7 +146,7 @@ for (i=0;i<numnp_total;i++) /* loop all nodes */
    actgnode = actnode->gnode; 
    if (actgnode->dirich==NULL)
       continue;
-   if (actgnode->dirich->dirich_type==dirich_FSI)
+   if (actgnode->dirich->dirich_type==dirich_FSI)      
       counter++;
    if (actgnode->dirich->dirich_type==dirich_none)
    { 
@@ -140,6 +158,13 @@ for (i=0;i<numnp_total;i++) /* loop all nodes */
 	    if(actcurve>numcurve)
 	       dserror("Load curve: actual curve > number defined curves\n");   
       } /* end of loop over all dofs */
+#ifdef D_FSI
+      if (fdyn->freesurf==5 && actnode->xfs!=NULL)
+      {
+         if (actgnode->dirich->dirich_onoff.a.iv[numdf]!=0)
+	    dserror("No DBC for height function dof allowed!\n");
+      }
+#endif      
       /* transform real pressure from input to kinematic pressure ---*/
       if (actgnode->dirich->dirich_onoff.a.iv[predof]!=0)      
           actgnode->dirich->dirich_val.a.dv[predof] /= dens; 
@@ -161,6 +186,9 @@ if (fdyn->init==0)
    {
      dyn_facfromcurve(actcurve,T,&timefac[actcurve]) ;
    }/* end loop over active timecurves */   
+   /*--------------------- before applying DBC transform to xyz* co-sys */
+   locsys_trans_sol_dirich(actfield,0,0,0,0);
+   locsys_trans_sol_dirich(actfield,0,1,1,0);   
 /*------------------------------------------------- loop over all nodes */
    for (i=0;i<numnp_total;i++)
    {
@@ -170,22 +198,23 @@ if (fdyn->init==0)
          continue;
       switch(actgnode->dirich->dirich_type)
       {
-        case dirich_none:
-          for (j=0;j<actnode->numdf;j++) /* loop all dofs */
-          {
+      case dirich_none:
+         for (j=0;j<actnode->numdf;j++) /* loop all dofs */
+         {
             if (actgnode->dirich->dirich_onoff.a.iv[j]==0)
-              continue;
+               continue;
             actcurve = actgnode->dirich->curve.a.iv[j]-1;
             if (actcurve<0)
-              acttimefac = ONE;
+               acttimefac = ONE;
             else
-              acttimefac = timefac[actcurve];
+               acttimefac = timefac[actcurve];
             initval   = actgnode->dirich->dirich_val.a.dv[j];               
             funct_fac = actgnode->d_funct[j];
             actnode->sol_increment.a.da[1][j] = initval*acttimefac*funct_fac;
             actnode->sol.a.da[0][j] = initval*acttimefac*funct_fac;
-          } /* end loop over dofs */
-          break;
+         } /* end loop over dofs */
+      break;
+#ifdef D_FSI
       case dirich_FSI: /* FSI --> dirichvalues = grid velocity!!! */
 	 for (j=0;j<numveldof;j++) /* loop vel-dofs */
 	 {
@@ -193,11 +222,80 @@ if (fdyn->init==0)
 	    actnode->sol_increment.a.da[1][j] = initval; 
 	    actnode->sol.a.da[0][j] = initval;
 	 }
+      break;      
+      case dirich_FSI_pseudo: /* FSI --> dirichvalues = grid velocity!!! */
+	 for (j=0;j<numveldof;j++) /* loop vel-dofs */
+	 {
+	    initval = actnode->sol_increment.a.da[4][j];  
+	    actnode->sol_increment.a.da[1][j] = initval; 
+	    actnode->sol.a.da[0][j] = initval;
+	 }
       break;
+      case dirich_slip:
+         /*------------------------------------ get values and pointers */
+         dsassert(numveldof==2,"slip-dirich only for 2D up to now!\n");
+         firstnode=actgnode->slipdirich->firstnode;
+         lastnode =actgnode->slipdirich->lastnode;
+         afnode = firstnode->gnode->mfcpnode[genprob.numaf];
+         alnode = lastnode->gnode->mfcpnode[genprob.numaf];
+         actanode=actgnode->mfcpnode[genprob.numaf];
+         dsassert(actanode!=NULL,"cannot read from NULL-pointer!\n");
+         dsassert(afnode!=NULL,"cannot read from NULL-pointer!\n");
+         dsassert(alnode!=NULL,"cannot read from NULL-pointer!\n");
+         length=actgnode->slipdirich->length;
+         alpha =actgnode->slipdirich->alpha;
+         actcurve = actgnode->slipdirich->curve-1;
+         /*------------------------------------- evaluate time function */
+         if (actcurve<0)
+            acttimefac = ONE;
+         else
+            acttimefac = timefac[actcurve];
+         initval = actgnode->slipdirich->dirich_val;
+      
+         /*------------------------ actual total length of slip BC line */
+         for(j=0;j<3;j++)
+            rtotalv[j]= (lastnode->x[j]+alnode->sol_mf.a.da[1][j])
+                       -(firstnode->x[j]+afnode->sol_mf.a.da[1][j]);
+         rtotal=sqrt(DSQR(rtotalv[0])+DSQR(rtotalv[1])+DSQR(rtotalv[2]));
+      
+         /*---------------------------- actual position on slip BC line */
+         for(j=0;j<3;j++)
+            ractv[j]= (actnode->x[j]+actanode->sol_mf.a.da[1][j])
+                     -(firstnode->x[j]+afnode->sol_mf.a.da[1][j]);      
+         ract=sqrt(DSQR(ractv[0])+DSQR(ractv[1])+DSQR(ractv[2]));
+         if (rtotal<length)
+         {
+            length=rtotal;
+            printf("WARNING: SLIP BC LINE shorter than given length!\n");
+         }
+         if (ract<length) /* evaluate slip model function */
+         {
+            r=ract/length*TEN;
+            uact = fluid_usd(r,alpha);
+            u10  = fluid_usd(TEN,alpha);
+            actnode->sol_increment.a.da[1][1]=uact/u10*initval*acttimefac;
+            actnode->sol_increment.a.da[1][0]=ZERO;
+            actnode->sol.a.da[0][1]=uact/u10*initval*acttimefac;
+            actnode->sol.a.da[0][0]=ZERO;
+         }
+         else
+         {
+            actnode->sol_increment.a.da[1][1]=initval*acttimefac;
+            actnode->sol_increment.a.da[1][0]=ZERO;         
+            actnode->sol.a.da[0][1]=uact/u10*initval*acttimefac;
+            actnode->sol.a.da[0][0]=ZERO;
+         }         
+      break;
+#endif      
       default:
          dserror("dirch_type unknown!\n");
       } /* end switch */
    } /*end loop over nodes */   
+
+   /*------------------------------------- transform back to XYZ co-sys */
+   locsys_trans_sol_dirich(actfield,0,0,0,1);
+   locsys_trans_sol_dirich(actfield,0,1,1,1);   
+
 } /* endif fdyn->init */
 
 
@@ -247,6 +345,14 @@ DOUBLE     initval;	             /* intial dirichlet value	        */
 DOUBLE     funct_fac;	             /* factor from spatial function */
 GNODE     *actgnode;	             /* actual GNODE		        */
 NODE      *actnode;                  /* actual NODE                     */
+#ifdef D_FSI
+NODE      *firstnode, *lastnode;
+NODE      *actanode,*alnode,*afnode;
+DOUBLE     ract,rtotal,r;
+DOUBLE     rtotalv[3],ractv[3];
+DOUBLE     alpha,length;
+DOUBLE     uact,u10;
+#endif
 
 #ifdef DEBUG 
 dstrc_enter("fluid_setdirich");
@@ -266,6 +372,10 @@ for (actcurve=0;actcurve<numcurve;actcurve++)
 {
   dyn_facfromcurve(actcurve,T,&timefac[actcurve]) ;
 } /* end loop over active timecurves */ 
+
+/*------------------------ dirichlet values are applied in the xyz* co-sys
+   so transform nodal values with dirichlet conditions                   */
+locsys_trans_sol_dirich(actfield,0,1,pos,0);   
 
 /*-------------------- loop all nodes and set actual dirichlet condition */
 for (i=0;i<numnp_total;i++) 
@@ -291,6 +401,7 @@ for (i=0;i<numnp_total;i++)
          actnode->sol_increment.a.da[pos][j] = initval*acttimefac*funct_fac;
       } /* end loop over dofs */
    break;
+#ifdef D_FSI
    case dirich_FSI: /* dirichvalues = grid velocity!!! */     
       for (j=0;j<numveldof;j++)  /* loop vel-dofs */
          actnode->sol_increment.a.da[pos][j]
@@ -301,10 +412,70 @@ for (i=0;i<numnp_total;i++)
          actnode->sol_increment.a.da[pos][j]
 	=actnode->sol_increment.a.da[4][j];
    break;
+   case dirich_slip: /* slip boundary condition */
+      /*--------------------------------------- get values and pointers */
+      dsassert(numveldof==2,"slip-dirich only for 2D up to now!\n");
+      firstnode=actgnode->slipdirich->firstnode;
+      lastnode =actgnode->slipdirich->lastnode;
+      afnode = firstnode->gnode->mfcpnode[genprob.numaf];
+      alnode = lastnode->gnode->mfcpnode[genprob.numaf];
+      actanode=actgnode->mfcpnode[genprob.numaf];
+      dsassert(actanode!=NULL,"cannot read from NULL-pointer!\n");
+      dsassert(afnode!=NULL,"cannot read from NULL-pointer!\n");
+      dsassert(alnode!=NULL,"cannot read from NULL-pointer!\n");
+      length=actgnode->slipdirich->length;
+      alpha =actgnode->slipdirich->alpha;
+      actcurve = actgnode->slipdirich->curve-1;
+      /*---------------------------------------- evaluate time function */
+#if 0      
+      if (actcurve<0)
+         acttimefac = ONE;
+      else
+         acttimefac = timefac[actcurve];
+
+      initval = actgnode->slipdirich->dirich_val;
+#endif
+      acttimefac=ONE;
+      initval = lastnode->sol_increment.a.da[4][1];      
+      /*--------------------------- actual total length of slip BC line */
+      for(j=0;j<3;j++)
+         rtotalv[j]= (lastnode->x[j]+alnode->sol_mf.a.da[1][j])
+                    -(firstnode->x[j]+afnode->sol_mf.a.da[1][j]);
+      rtotal=sqrt(DSQR(rtotalv[0])+DSQR(rtotalv[1])+DSQR(rtotalv[2]));
+      
+      /*------------------------------- actual position on slip BC line */
+      for(j=0;j<3;j++)
+         ractv[j]= (actnode->x[j]+actanode->sol_mf.a.da[1][j])
+                  -(firstnode->x[j]+afnode->sol_mf.a.da[1][j]);      
+      ract=sqrt(DSQR(ractv[0])+DSQR(ractv[1])+DSQR(ractv[2]));
+      if (rtotal<length)
+      {
+         length=rtotal;
+         printf("WARNING: SLIP BC LINE shorter than given length!\n");
+      }
+      if (ract<length) /* evaluate slip model function */
+      {
+         r=ract/length*TEN;
+         uact = fluid_usd(r,alpha);
+         u10  = fluid_usd(TEN,alpha);
+         actnode->sol_increment.a.da[pos][1]=uact/u10*initval*acttimefac;
+         actnode->sol_increment.a.da[pos][0]=ZERO;
+      }
+      else
+      {
+         actnode->sol_increment.a.da[pos][1]=initval*acttimefac;
+         actnode->sol_increment.a.da[pos][0]=ZERO;         
+      }   
+   break;
+#endif   
    default:
-      dserror("dirch_type unknown!\n");
+      dserror("dirich_type unknown!\n");
    } /* end switch */
 } /*end loop over nodes */
+
+/*------------------------ dirichlet values are applied in the xyz* co-sys
+   so transform back nodal values with dirichlet conditions             */
+locsys_trans_sol_dirich(actfield,0,1,pos,1);   
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -343,7 +514,7 @@ INT        numnp_total;              /* total number of fluid nodes     */
 INT        numele_total;             /* total number of fluid elements  */
 INT        numdf;	             /* number of fluid dofs    	*/
 INT        actcurve;	             /* actual timecurve		*/
-DOUBLE     timefac[MAXTIMECURVE];   /* factors from time-curve         */
+DOUBLE     timefac[MAXTIMECURVE];    /* factors from time-curve         */
 DOUBLE     T;		            /* actual time		       */
 DOUBLE     acttimefac;              /* actual factor from timecurve    */
 DOUBLE     L=ONE;
@@ -378,6 +549,7 @@ for (actcurve=0;actcurve<numcurve;actcurve++)
 for (i=0;i<numnp_total;i++) 
 {
    actnode  = &(actfield->dis[0].node[i]); 
+   dsassert(actnode->locsysId==0,"locsys not implemented yet!\n");
    actgnode = actnode->gnode;      
    if (actgnode->dirich==NULL) continue;
    for (j=0;j<numdf;j++) /* loop dofs */
@@ -482,6 +654,7 @@ for (actcurve=0;actcurve<numcurve;actcurve++)
 for (i=0;i<numnp_total;i++) 
 {
    actnode  = &(actfield->dis[0].node[i]); 
+   dsassert(actnode->locsysId==0,"locsys not implemented yet!\n");
    actgnode = actnode->gnode;      
    if (actgnode->dirich==NULL)
          continue;
@@ -575,6 +748,7 @@ numveldof    = numdf-1;
 for (i=0;i<numnp_total;i++) 
 {
    actnode  = &(actfield->dis[0].node[i]); 
+   dsassert(actnode->locsysId==0,"locsys not implemented yet!\n");
    actgnode = actnode->gnode;      
    if (actgnode->dirich==NULL)
          continue;
@@ -674,6 +848,7 @@ numveldof    = numdf-1;
 for (i=0;i<numnp_total;i++) 
 {
    actnode  = &(actfield->dis[0].node[i]); 
+   dsassert(actnode->locsysId==0,"locsys not implemented yet!\n");
    actgnode = actnode->gnode;      
    if (actgnode->dirich==NULL)
          continue;
@@ -737,15 +912,17 @@ void fluid_caldirich(
                         DOUBLE         **estif,   
 		        INT             *hasdirich,
 			INT		 readfrom
-		    )     
+                     )     
 {
 
 INT         i,j;
+INT         ilocsys;
 INT         nrow;
 INT         numdf;                      /* number of fluid dofs         */
 INT         nd=0;                      
 DOUBLE      dirich[MAXDOFPERELE];       /* dirichlet values of act. ele */
 INT         dirich_onoff[MAXDOFPERELE]; /* dirichlet flags of act. ele  */ 
+DOUBLE      val[MAXDOFPERNODE];
 GNODE      *actgnode;	                /* actual GNODE                 */
 NODE       *actnode;	                /* actual NODE                  */
 
@@ -774,7 +951,7 @@ for (i=0; i<actele->numnp; i++) nd += actele->node[i]->numdf;
 /*---------------------------- init the vectors dirich and dirich_onoff */
 for (i=0; i<nd; i++)
 {
-   dirich[i] = 0.0;
+   dirich[i] = ZERO;
    dirich_onoff[i] = 0;
 }
 
@@ -784,17 +961,38 @@ for (i=0; i<nd; i++)
 nrow=0;
 for (i=0; i<actele->numnp; i++) /* loop nodes */
 {
-   numdf    = actele->node[i]->numdf;
    actnode  = actele->node[i];   
+   numdf    = actnode->numdf;
    actgnode = actnode->gnode;
-   for (j=0; j<numdf; j++) /* loop dofs */
+   if (actgnode->dirich==NULL) 
    {
-      if (actgnode->dirich==NULL) continue;
-      dirich_onoff[nrow+j] = actgnode->dirich->dirich_onoff.a.iv[j];
-      dirich[nrow+j] = actnode->sol_increment.a.da[readfrom][j];
-   } /* end loop over dofs */
+      nrow+=numdf;  
+      continue;
+   }
+   ilocsys=actnode->locsysId-1;
+   if (ilocsys>=0) /* local co-sys */
+   {
+      /*----------------------- transform values at from XYZ to xyz* */
+      for (j=0;j<numdf;j++) 
+         val[j]=actnode->sol_increment.a.da[readfrom][j];
+      locsys_trans_nodval(actele,&(val[0]),numdf,ilocsys,0);
+      for (j=0;j<numdf;j++) 
+      {
+         dirich_onoff[nrow+j] = actgnode->dirich->dirich_onoff.a.iv[j];
+         dirich[nrow+j] = val[j];         
+      }
+   }
+   else
+   {
+      for (j=0; j<numdf; j++) /* loop dofs */
+      {
+         dirich_onoff[nrow+j] = actgnode->dirich->dirich_onoff.a.iv[j];
+         dirich[nrow+j] = actnode->sol_increment.a.da[readfrom][j];
+      } /* end loop over dofs */
+   }
    nrow+=numdf;
 } /* end loop over nodes */
+
 dsassert(nrow==nd,"failure during calculation of dirich forces\n");
 /*----------------------------------------- loop rows of element matrix */
 for (i=0; i<nd; i++)
@@ -1111,6 +1309,7 @@ DOUBLE   H=0.41;                       /* height of the channel        */
 #ifdef DEBUG 
 dstrc_enter("fluid_pm_caldirich_cyl");
 #endif  
+
 /*======================================================================*
 * REMARK: the profile is formulated according to the parabolic formula below
 * FOUR*Um*actnode->x[1]*(H-actnode->x[1])/(H*H);
@@ -1185,6 +1384,40 @@ dstrc_exit();
 #endif
 return;
 } /* end of fluid_pm_caldirich_parabolic*/ 
+/*----------------------------------------------------------------------*
+ | function for slip BC                                                 |
+ *----------------------------------------------------------------------*/
+#ifdef D_FSI
+static DOUBLE fluid_usd(DOUBLE r, DOUBLE alpha) 
+{
+DOUBLE twoa;
+DOUBLE rpi;
+DOUBLE ur;
+DOUBLE fac1,fac2,fac3,fac4;
 
+#ifdef DEBUG 
+dstrc_enter("fluid_usd");
+#endif  
+
+twoa=TWO*alpha;
+rpi = pow(r,PI/twoa);
+
+if (FABS(rpi)<EPS8)
+   dserror("cannot evaluate slip BC function at r=0.0");
+
+fac1=twoa*rpi/(twoa-sin(twoa));
+fac2=(-rpi+ONE+log(rpi))*sin(twoa);
+fac3=twoa*DSQR(rpi-ONE);
+fac4=ONE/(rpi+ONE);
+
+ur=fac1*(fac2/fac3+fac4);
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return(ur);
+}
 #endif
 /*! @} (documentation module close)*/
+#endif

@@ -80,24 +80,104 @@ FLUID  - no boundary condition at all
 ------------------------------------------------------------------------*/
 void fluid_createfreesurf()
 {
-
 #ifdef D_FSI
-INT       i;                              /* simply some counters       */
-INT       hasdirich,hascouple;
-INT       hasfsi,hasneum;                 /* different flags            */
+INT	  i,j;				  /* simply some counters	*/
+INT	  freesurf;
+INT       dim;
+INT       numdf;
+INT	  hasdirich,hascouple;
+INT	  hasfsi,hasneum;		  /* different flags		*/
 INT       hasfreesurf;
 DLINE    *actdline;                       /* actual DLINE               */
 DNODE    *actdnode;                       /* actual DNODE               */
+DSURF    *actdsurf;                       /* actual DSURF               */
 FIELDTYP  fieldtyp;                       
 
 #ifdef DEBUG 
 dstrc_enter("fluid_createfreesurf");
 #endif
 
+/* quit if there's no ALE field */
+if (genprob.numaf==-1 || genprob.numfld==1) goto end;
+
 
 dsassert(genprob.numff>=0,"No fluid field in fluid function!\n");
 dsassert(genprob.numaf>=0,"No ale field in fluid freesurf function!\n");
 
+freesurf = alldyn[genprob.numff].fdyn->freesurf;
+numdf = alldyn[genprob.numff].fdyn->numdf;
+dim = numdf-1;
+
+if (freesurf==0) goto end;
+
+/*--------------------------------------------------------- loop dsurfs */
+for (i=0; i<design->ndsurf; i++)
+{ 
+   hasdirich=0;
+   hascouple=0;
+   hasfsi   =0;
+   hasneum  =0;
+   hasfreesurf=0;
+   actdsurf = &(design->dsurf[i]);
+   /*--------------------------------------------- check for conditions */
+   if (actdsurf->dirich!=NULL)
+   {
+      hasdirich++;
+      /*--------------- for implicit free surface copy dirich condition 
+                                                       to the grid dofs */
+      if (freesurf==2 || freesurf==6)
+      for (j=0;j<dim;j++)
+      {
+         dsassert(actdsurf->dirich->dirich_onoff.fdim>j+numdf,
+            "index not allowed for array!\n");
+         actdsurf->dirich->dirich_onoff.a.iv[j+numdf]
+            =actdsurf->dirich->dirich_onoff.a.iv[j];
+         dsassert(actdsurf->dirich->dirich_val.fdim>j+numdf,
+            "index not allowed for array!\n");
+         actdsurf->dirich->dirich_val.a.dv[j+numdf]
+            =actdsurf->dirich->dirich_val.a.dv[j];
+      }
+   }
+   if (actdsurf->couple!=NULL) hascouple++;
+   if (actdsurf->fsicouple!=NULL) hasfsi++;
+   if (actdsurf->neum!=NULL) hasneum++;
+   if (actdsurf->freesurf!=NULL) hasfreesurf++;
+   if (hasfreesurf==0) continue;
+   fieldtyp=actdsurf->freesurf->fieldtyp;
+   
+   switch (fieldtyp)
+   {
+   case fluid:
+      /*------------------ just check if this is really a free surface! */
+      dsassert(hasdirich==0,"dirich- and freesurface condition defined on same DSURF\n");
+      dsassert(hascouple==0,"coupling- and freesurface condition defined on same DSURF\n");   
+      dsassert(hasfsi==0,"fsi- and freesurface condition defined on same DSURF\n");
+      dsassert(hasneum==0,"neumann- and freesurface condition defined on same DSURF\n");
+   break;
+   case ale:
+      dsassert(hasdirich==0,"dirich- and freesurface condition defined on same DSURF\n");
+      dsassert(hascouple==0,"coupling- and freesurface condition defined on same DSURF\n");   
+      dsassert(hasfsi==0,"fsi- and freesurface condition defined on same DSURF\n");
+      dsassert(hasneum==0,"neumann- and freesurface condition defined on same DSURF\n");
+      /*-------- allocate space for a dirichlet condition in this dsurf */
+      actdsurf->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
+      amdef("onoff",&(actdsurf->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
+      amzero(&(actdsurf->dirich->dirich_onoff));
+      amdef("val",&(actdsurf->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
+      amdef("curve",&(actdsurf->dirich->curve),MAXDOFPERNODE,1,"IV"); 
+      amzero(&(actdsurf->dirich->dirich_val));
+      amzero(&(actdsurf->dirich->curve));
+      /*----------------------------------- initialise for free surface */
+      for (j=0;j<dim;j++)
+         actdsurf->dirich->dirich_onoff.a.iv[j]=1;
+      actdsurf->dirich->dirich_type=dirich_freesurf;  
+   break;
+   case structure:
+   break;
+   default:
+       dserror("fieldtyp unknown!");
+   }
+} /* end of loops over dsurfs */
 /*--------------------------------------------------------- loop dlines */
 for (i=0; i<design->ndline; i++)
 { 
@@ -108,7 +188,24 @@ for (i=0; i<design->ndline; i++)
    hasfreesurf=0;
    actdline = &(design->dline[i]);
    /*--------------------------------------------- check for conditions */
-   if (actdline->dirich!=NULL) hasdirich++;
+   if (actdline->dirich!=NULL) 
+   {
+      hasdirich++;
+      /*--------------- for implicit free surface copy dirich condition 
+                                                       to the grid dofs */
+      if (freesurf==2 || freesurf==6)
+      for (j=0;j<dim;j++)
+      {
+         dsassert(actdline->dirich->dirich_onoff.fdim>j+numdf,
+            "index not allowed for array!\n");
+         actdline->dirich->dirich_onoff.a.iv[j+numdf]
+            =actdline->dirich->dirich_onoff.a.iv[j];
+         dsassert(actdline->dirich->dirich_val.fdim>j+numdf,
+            "index not allowed for array!\n");
+         actdline->dirich->dirich_val.a.dv[j+numdf]
+            =actdline->dirich->dirich_val.a.dv[j];
+      }
+   }
    if (actdline->couple!=NULL) hascouple++;
    if (actdline->fsicouple!=NULL) hasfsi++;
    if (actdline->neum!=NULL) hasneum++;
@@ -132,7 +229,6 @@ for (i=0; i<design->ndline; i++)
       dsassert(hasneum==0,"neumann- and freesurface condition defined on same DLINE\n");
       /*-------- allocate space for a dirichlet condition in this dline */
       actdline->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
-      if (!actdline->dirich) dserror("Allocation of memory failed");  
       amdef("onoff",&(actdline->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
       amzero(&(actdline->dirich->dirich_onoff));
       amdef("val",&(actdline->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
@@ -142,8 +238,8 @@ for (i=0; i<design->ndline; i++)
       amdef("funct",&(actdline->dirich->funct),MAXDOFPERNODE,1,"IV"); 
       amzero(&(actdline->dirich->funct));
       /*----------------------------------- initialise for free surface */
-      actdline->dirich->dirich_onoff.a.iv[0]=1;
-      actdline->dirich->dirich_onoff.a.iv[1]=1;
+      for (j=0;j<dim;j++)
+         actdline->dirich->dirich_onoff.a.iv[j]=1;
       actdline->dirich->dirich_type=dirich_freesurf;  
    break;
    case structure:
@@ -153,7 +249,7 @@ for (i=0; i<design->ndline; i++)
    break;
    }
 } /* end of loops over dlines */
-/*--------------------------------------------------------- loop dlines */
+/*--------------------------------------------------------- loop dnodes */
 for (i=0; i<design->ndnode; i++)
 { 
    hasdirich=0;
@@ -163,7 +259,24 @@ for (i=0; i<design->ndnode; i++)
    hasfreesurf=0;
    actdnode = &(design->dnode[i]);
    /*--------------------------------------------- check for conditions */
-   if (actdnode->dirich!=NULL) hasdirich++;
+   if (actdnode->dirich!=NULL) 
+   {
+      hasdirich++;
+      /*--------------- for implicit free surface copy dirich condition 
+                                                       to the grid dofs */
+      if (freesurf==2 || freesurf==6)
+      for (j=0;j<dim;j++)
+      {
+         dsassert(actdnode->dirich->dirich_onoff.fdim>j+numdf,
+            "index not allowed for array!\n");
+         actdnode->dirich->dirich_onoff.a.iv[j+numdf]
+            =actdnode->dirich->dirich_onoff.a.iv[j];
+         dsassert(actdnode->dirich->dirich_val.fdim>j+numdf,
+            "index not allowed for array!\n");
+         actdnode->dirich->dirich_val.a.dv[j+numdf]
+            =actdnode->dirich->dirich_val.a.dv[j];
+      }
+   }
    if (actdnode->couple!=NULL) hascouple++;
    if (actdnode->fsicouple!=NULL) hasfsi++;
    if (actdnode->neum!=NULL) hasneum++;
@@ -187,7 +300,6 @@ for (i=0; i<design->ndnode; i++)
       dsassert(hasneum==0,"neumann- and freesurface condition defined on same DNODE\n");
       /*-------- allocate space for a dirichlet condition in this dline */
       actdnode->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
-      if (!actdnode->dirich) dserror("Allocation of memory failed");  
       amdef("onoff",&(actdnode->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
       amzero(&(actdnode->dirich->dirich_onoff));
       amdef("val",&(actdnode->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
@@ -197,9 +309,9 @@ for (i=0; i<design->ndnode; i++)
       amdef("funct",&(actdnode->dirich->funct),MAXDOFPERNODE,1,"IV"); 
       amzero(&(actdnode->dirich->funct));
       /*----------------------------------- initialise for free surface */
-      actdnode->dirich->dirich_onoff.a.iv[0] = 1;
-      actdnode->dirich->dirich_onoff.a.iv[1] = 1; 
-      actdnode->dirich->dirich_type=dirich_freesurf;   
+      for (j=0;j<dim;j++)
+         actdnode->dirich->dirich_onoff.a.iv[j]=1;
+      actdnode->dirich->dirich_type=dirich_freesurf;  
    break;
    case structure:
    break;
@@ -208,7 +320,7 @@ for (i=0; i<design->ndnode; i++)
    break;
    }
 }
-
+end:
 #else
 dserror("FSI-functions not compiled in!\n");
 #endif
@@ -220,15 +332,16 @@ dstrc_exit();
 return;
 } /* end of fluid_createfreesurf*/
 
+
 /*!--------------------------------------------------------------------- 
 \brief dofs at free surface
 
 <pre>                                                         genk 01/03
 
 set the dof numbers at the free surface:
-2D explicit: numdf=3
-2D implicit: numdf=5
-
+2D local lagrange explicit:       numdf=3
+2D local lagrange part. implicit: numdf=5
+2D heightfunction separate:       numdf=3 + hfdof
 </pre>
 
 
@@ -238,12 +351,20 @@ set the dof numbers at the free surface:
 void fluid_freesurf_setdofs()
 {
 #ifdef D_FSI
-INT i,j;
-FIELD *fluidfield;
-FLUID_DYNAMIC *fdyn;
-ELEMENT *actele;
-NODE *actnode;
-GNODE *actgnode;
+INT               i,j;
+FIELD            *fluidfield;
+FLUID_DYNAMIC    *fdyn;
+ELEMENT          *actele;
+NODE             *actnode;
+GNODE            *actgnode;
+DISCRET          *actdis;
+INT               numdf;
+INT               numnp;
+INT               numele;
+INT               counter=0;
+INT               counter2=0;
+INT               myrank;
+INT               tmp;
 
 #ifdef DEBUG 
 dstrc_enter("fluid_freesurf_setdofs");
@@ -254,14 +375,45 @@ dsassert(genprob.numff>=0,"No fluid field in fluid function!\n");
 
 fluidfield = &(field[genprob.numff]);
 fdyn = alldyn[genprob.numff].fdyn;
+numdf = fdyn->numdf;
+actdis = &(fluidfield->dis[0]);
+numnp  = actdis->numnp;
+numele = actdis->numele;
+myrank = par.myrank;
+
+
+/*------------------------------------------------- plausability checks */
+if (fdyn->freesurf==2 || fdyn->freesurf==6)
+{
+   tmp = MAXDOFPERNODE-5;
+   if (numdf==3)
+   {
+      tmp = MAXDOFPERNODE-5;
+      if (tmp<0)
+         dserror("MAXDOF PER NODE < 5 !!!\n");
+   }  
+   if (numdf==4)
+   {
+      tmp = MAXDOFPERNODE-7;
+      if (tmp<0)
+         dserror("MAXDOF PER NODE < 7 !!!\n");
+   }
+}
+
+/*-------------------------------------- initialise heightfunction dofs */
+for (i=0;i<numnp;i++)
+{
+   actnode = &(actdis->node[i]);
+   actnode->hfdof=NULL;
+}
 
 /*-------------------------------------------------------- free surface */
 if (fdyn->freesurf>0)
 {
    /*---------------------------------------------------- loop elements */
-   for (i=0;i<fluidfield->dis[0].numele;i++)
+   for (i=0;i<numele;i++)
    {
-      actele = &(fluidfield->dis[0].element[i]);   
+      actele = &(actdis->element[i]);   
       for (j=0;j<actele->numnp;j++)
       {
          actnode=actele->node[j];
@@ -272,41 +424,84 @@ if (fdyn->freesurf>0)
             {
             case el_fluid2:   
 #ifdef D_FLUID2
-               if(fdyn->freesurf==1)
-	       actele->e.f2->fs_on=1;
-	       else
+               if(fdyn->freesurf==1) /* loc. lag. expl. */
+	          actele->e.f2->fs_on=1;
+	       else if (fdyn->freesurf==2) /* loc. lag. part. impl. */
 	       {	 
                   actnode->numdf=5;
 	          actele->e.f2->fs_on=2;
                }
+	       else if (fdyn->freesurf==3)
+	       {
+	          if (actnode->hfdof==NULL)
+		  {
+		     actnode->hfdof=(INT*)CCACALLOC(1,sizeof(INT));
+                     actnode->hfdof[0]=counter;
+		     actele->e.f2->fs_on=3;
+		     counter++;
+		     if (actnode->proc==myrank)
+		     counter2++;
+		  }
+	       }
+	       else if (fdyn->freesurf==5)
+	       {
+	          actnode->numdf=4;
+		  actele->e.f2->fs_on=5;
+	       }
+               else if (fdyn->freesurf==6)
+               {
+                  actnode->numdf=5;
+	          actele->e.f2->fs_on=6;                  
+               }
+	       else
+	          dserror("Parameter freesurf out of range\n");
 #endif
 	    break;
             case el_fluid3:
 #ifdef D_FLUID3	
-               dserror("implicit free surface not implemented yet for fluid3\n");
                if (fdyn->freesurf==1)
-	       actele->e.f3->fs_on=1;
-	       else 
+	          actele->e.f3->fs_on=1;
+	       else if (fdyn->freesurf==2)
 	       {
-	          actnode->numdf=7;
+   	          actnode->numdf=7;
                   actele->e.f3->fs_on=2;
-	       }	       
+	       }
+	       else if (fdyn->freesurf==3)
+	       {
+	          if (actnode->hfdof==NULL)
+		  {
+		     actnode->hfdof=(INT*)CCACALLOC(1,sizeof(INT));
+                     actnode->hfdof[0]=counter;
+		     actele->e.f3->fs_on=3;
+		     counter++;
+		     if (actnode->proc==myrank)
+		     counter2++;
+		  }
+	       }
+               else
+	          dserror("Parameter freesurf out of range\n");	       
 #endif
             break;
             default:
-            dserror("no fluid element in fluid field!\n");
+               dserror("no fluid element in fluid field!\n");
             }         
          }
       }
    }
+   fdyn->hf_numeq_total=counter;
+   fdyn->hf_numeq=counter2;
 }
+
 /*----------------------------------------------------------------------*/
+
 #ifdef DEBUG 
 dstrc_exit();
 #endif
 #endif
 return;
 } /* end of fluid_createfreesurf*/
+
+
 /*!--------------------------------------------------------------------- 
 \brief set coordinates at free surface
 
@@ -326,7 +521,7 @@ void fluid_modcoor()
 #ifdef D_FSI
 INT     j;                              /* simply some counters       */
 DOUBLE  a;
-DOUBLE  y,x;
+DOUBLE  y,x,z;
 FIELD  *fluidfield;
 FIELD  *alefield;
 NODE   *actnode;
@@ -366,7 +561,7 @@ if (strncmp(allfiles.title[0],"freeosz",7)==0)
      	y-coordinate: 0<=y<=1					       */ 
       actnode->x[1]=y-y*a*sin(PI*x);
    }   
-   /*---------------------------------------- loop nodes of fluidfield */
+   /*------------------------------------------ loop nodes of alefield */
    for (j=0;j<alefield->dis[0].numnp;j++)
    {
       actnode  = &(alefield->dis[0].node[j]);
@@ -378,6 +573,46 @@ if (strncmp(allfiles.title[0],"freeosz",7)==0)
       actnode->x[1]=y-y*a*sin(PI*x);
    } 
 }
+
+if (strncmp(allfiles.title[0],"f3_freeosz",10)==0)
+{
+   dsassert(genprob.numff>=0,"No fluid field in freesurf fluid function!\n");
+   dsassert(genprob.numaf>=0,"No ale field in fluid freesurf function!\n");
+   
+   if (par.myrank==0)
+   {
+      printf("\n");
+      printf("Modifying coordinates at free surface ...\n");  
+      printf("\n");
+   }
+   a=ONE/TEN/TEN;
+   /*----------------------------------------------------- loop fields */
+   fluidfield=&(field[genprob.numff]);
+   alefield  =&(field[genprob.numaf]);
+   /*---------------------------------------- loop nodes of fluidfield */
+   for (j=0;j<fluidfield->dis[0].numnp;j++)
+   {
+      actnode  = &(fluidfield->dis[0].node[j]);
+      x=actnode->x[0];
+      z=actnode->x[2];
+      /*----------------------------------------------- modification:
+     	modify all z-coordinates; amplitude depends on old
+     	z-coordinate: 0<=z<=1					       */ 
+      actnode->x[2]=z-z*a*sin(PI*x);
+   }   
+   /*------------------------------------------ loop nodes of alefield */
+   for (j=0;j<alefield->dis[0].numnp;j++)
+   {
+      actnode  = &(alefield->dis[0].node[j]);
+      x=actnode->x[0];
+      z=actnode->x[2];
+      /*----------------------------------------------- modification:
+     	modify all y-coordinates; amplitude depends on old
+     	y-coordinate: 0<=z<=1					       */ 
+      actnode->x[2]=z-z*a*sin(PI*x);
+   } 
+}
+
 
 /*----------------------------- modify coordinates for solitary wave */
 /*                              (Ramaswamy 1990)                     */
@@ -449,14 +684,14 @@ if (strncmp(allfiles.title[0],"wavebreak",9)==0)
    alefield =&(field[genprob.numaf]);
    /*--------------------------------------------- set some constants */
    d	  = TEN;
-   H	  = FIVE;
+   H	  = ONE/FIVE*d;
    fac1    = sqrt((THREE*H)/(FOUR*d*d*d));
    /*-------------------------------------- loop nodes of fluid field */
    for (j=0;j<fluidfield->dis[0].numnp;j++)
    {
       actnode=&(fluidfield->dis[0].node[j]);
       x   = actnode->x[0];
-      if (x > 50.0) continue;
+      if (x > 80.0) continue;
       y   = actnode->x[1];
       fac = fac1*x;
       /* sech = sech(fac*xct)**2 = 1/cosh(fac*xct)**2 where xct=x!    */ 
@@ -472,7 +707,7 @@ if (strncmp(allfiles.title[0],"wavebreak",9)==0)
    {
       actnode=&(alefield->dis[0].node[j]);
       x   = actnode->x[0];
-      if (x > 50.0) continue;
+      if (x > 80.0) continue;
       y   = actnode->x[1];
       fac = fac1*x;
       /* sech = sech(fac*xct)**2 = 1/cosh(fac*xct)**2 where xct=x!    */ 
@@ -483,6 +718,220 @@ if (strncmp(allfiles.title[0],"wavebreak",9)==0)
       y = y/d*eta;
       actnode->x[1] = y;       
    }
+}
+
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+#endif
+return;
+} /* end of fluid_modcoor*/
+
+/*!--------------------------------------------------------------------- 
+\brief update coordinates at free surface
+
+<pre>                                                         genk 01/04
+
+   In this routine the position of the free surface is determined:
+   flag = 0: predictor for next time step
+   flag = 1: update during the nonlinear iteration
+
+</pre>
+\param *fluidfield FIELD          actual field               (i)
+\param *fdyn	   FLUID_DYNAMIC                             (i)
+\param  dt         DOUBLE         time increment             (i)
+\param  flag       INT            evaluation flag            (i)
+
+\return void                                            
+
+------------------------------------------------------------------------*/
+void fluid_updfscoor(FIELD *fluidfield, FLUID_DYNAMIC *fdyn,
+                     DOUBLE dt, INT flag)
+{
+#ifdef D_FSI
+INT    j,k;
+INT    numnp_total;
+INT    numdf;
+INT    dim;
+INT    phipos;
+DOUBLE pred;
+NODE  *actfnode, *actanode;
+GNODE *actfgnode;
+static ARRAY   val1_a,val2_a;
+static DOUBLE *val1,*val2;
+
+#ifdef DEBUG 
+dstrc_enter("fluid_updfscoor");
+#endif
+
+numdf = fdyn->numdf;
+dim   = numdf-1;
+phipos= dim-1;
+numnp_total = fluidfield->dis[0].numnp;
+
+switch (flag)
+{
+case -1: /* predict coordinates at the very beginning */
+   val1=amdef("val1",&val1_a,MAXDOFPERNODE,1,"DV");
+   val2=amdef("val2",&val2_a,MAXDOFPERNODE,1,"DV");
+   switch (fdyn->freesurf)
+   {
+   case 1: case 2: case 6:
+      for (j=0;j<numnp_total;j++)
+      {
+         actfnode=&(fluidfield->dis[0].node[j]);
+         if (actfnode->xfs==NULL) continue;         
+         actfgnode = actfnode->gnode;
+         actanode = actfgnode->mfcpnode[genprob.numaf];
+         for (k=0;k<dim;k++)
+         {            
+            actfnode->xfs[k] = actfnode->x[k] + actanode->sol_mf.a.da[1][k] 
+	                      + actfnode->sol_increment.a.da[3][k]*dt;            
+         }
+      }
+   break;
+   case 3: case 5:
+      for (j=0;j<numnp_total;j++)
+      {
+         actfnode=&(fluidfield->dis[0].node[j]);
+         if (actfnode->xfs==NULL) continue;
+         dsassert(actfnode->locsysId==0,
+          "no local co-system at free surface allowed!\n");
+         actfgnode = actfnode->gnode;
+         actanode = actfgnode->mfcpnode[genprob.numaf];
+         actfnode->xfs[phipos] = actfnode->x[phipos] + actanode->sol_mf.a.da[1][phipos] 
+	                       + actfnode->sol_increment.a.da[3][phipos]*dt;            
+      }   
+   break;
+   default:
+      dserror("don't know how to predict free surface!\n");
+   }
+break;
+case 0: /* predict coordinates for the next step                         */
+   switch (fdyn->freesurf)
+   {
+   case 1: /* local lagrange, explicit  */
+      /*-------------------------------------- loop nodes of fluid field */
+      for (j=0;j<numnp_total;j++)
+      {
+         actfnode=&(fluidfield->dis[0].node[j]);
+         if (actfnode->xfs==NULL) continue;
+         actfgnode = actfnode->gnode;
+         actanode = actfgnode->mfcpnode[genprob.numaf];
+         for (k=0;k<dim;k++)
+         {            
+            actfnode->xfs[k] = actfnode->x[k] + actanode->sol_mf.a.da[1][k] 
+	                      + actfnode->sol_increment.a.da[3][k]*dt;            
+         } 
+      }      
+   break;	    
+   case 2: case 6: /* local lagrange, part. implicit */
+      /*-------------------------------------- loop nodes of fluid field */
+      for (j=0;j<numnp_total;j++)
+      {
+         actfnode=&(fluidfield->dis[0].node[j]);
+         if (actfnode->xfs==NULL) continue;
+         actfgnode = actfnode->gnode;
+         actanode = actfgnode->mfcpnode[genprob.numaf];
+         for (k=0;k<dim;k++)
+         {
+            /*------------------- correct ALE solution at free surface */
+            actanode->sol_mf.a.da[1][k] = actfnode->xfs[k]-actfnode->x[k];
+            /*------- predict free surface position for next time step */
+	    actfnode->xfs[k] += actfnode->sol_increment.a.da[3][k+numdf]*dt;
+
+/*------------------------------------------------------------- old stuff  
+#if 0
+             actfnode->xfs[k] = actfnode->x[k] + actanode->sol_mf.a.da[1][k]
+	                     + actfnode->sol_increment.a.da[3][k+numdf]*dt;    
+#endif
+#if 0	               
+            actfnode->xfs[k] += actfnode->sol_increment.a.da[3][k+numdf]*dt;
+#endif
+*/
+         }
+      }
+   break;   
+   case 3: case 5:/* height function separat & implicit */
+      for (j=0;j<numnp_total;j++)
+      {
+         actfnode=&(fluidfield->dis[0].node[j]);
+         if (actfnode->xfs==NULL) continue;
+         dsassert(actfnode->locsysId==0,
+          "no local co-system at free surface allowed!\n");
+         actfgnode = actfnode->gnode;
+         actanode = actfgnode->mfcpnode[genprob.numaf];
+         /*------------------------- correct ALE solution at free surface */
+         actanode->sol_mf.a.da[1][phipos] = actfnode->xfs[phipos]-actfnode->x[phipos];
+         /*------------- predict free surface position for next time step */
+#if 0
+         /*------------- precitor based on fluid velocity leads to local instabilities in the
+            velocity field if the velocity at the free surface is tangential to the
+            heightfunction */
+	 actfnode->xfs[phipos] += actfnode->sol_increment.a.da[3][phipos]*dt;                  
+
+         /* better: predictor based on phi, however this only reduces the effect */
+         actfnode->xfs[phipos] += (actfnode->sol_increment.a.da[3][numdf]-
+                                   actfnode->sol_increment.a.da[1][numdf]);
+#endif         
+         /* predictor of second order: */
+         pred = (THREE/TWO*actfnode->sol_increment.a.da[3][numdf]
+               - TWO*actfnode->sol_increment.a.da[1][numdf]
+               +ONE/TWO*actfnode->sol_increment.a.da[0][numdf]);
+         actfnode->xfs[phipos] += pred;
+        
+      }
+   break;
+   default:
+      dserror("don't know how to update free surface!\n");
+   }
+break;
+case 1: /* update coordinates: correction during the fluid iteration */
+   switch (fdyn->freesurf)
+   {
+   case 2: case 6: /* local lagrange, partitioned implicit */
+      /*-------------------------------------- loop nodes of fluid field */
+      for (j=0;j<numnp_total;j++)
+      {
+         actfnode=&(fluidfield->dis[0].node[j]);
+         if (actfnode->xfs==NULL) continue;
+         actfgnode = actfnode->gnode; 
+         actanode = actfgnode->mfcpnode[genprob.numaf];
+         for (k=0;k<dim;k++)
+         {
+/*------------------------------------------------------------ old stuff 
+#if 0
+            ---------- first order correction of free surface position 
+            actfnode->xfs[k] = actfnode->x[k] + actanode->sol_mf.a.da[0][k] 
+	                  + actfnode->sol_increment.a.da[3][k+numdf]*dt;
+#endif
+*/
+             /*------ second order correction of free surface position */
+             actfnode->xfs[k] = actfnode->x[k] + actanode->sol_mf.a.da[0][k] 
+	                + (actfnode->sol_increment.a.da[3][k+numdf]
+	                +  actfnode->sol_increment.a.da[1][k+numdf])/TWO*dt;
+         }
+      }
+   break;   
+   case 3: case 5: /* height function separat & implicit */
+      /*-------------------------------------- loop nodes of fluid field */
+      for (j=0;j<numnp_total;j++)
+      {
+         actfnode=&(fluidfield->dis[0].node[j]);
+         if (actfnode->xfs==NULL) continue;
+         dsassert(actfnode->locsysId==0,
+          "no local co-system at free surface allowed!\n");
+	 actfnode->xfs[phipos] = actfnode->sol_increment.a.da[3][numdf];      
+      }   
+   break;   
+   default:
+      dserror("don't know how to update free surface!\n");
+   }
+break;
+default:
+   dserror("flag out of range!\n");
 }
 
 /*----------------------------------------------------------------------*/
