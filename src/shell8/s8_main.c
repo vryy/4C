@@ -136,6 +136,13 @@ case calc_struct_update_istep:
    s8static_mass(ele,&actdata,actmat,estif_global,emass_global,NULL,container->kstep,0);
    dyn_ekin_local(ele,emass_global,container);
    }
+   for (i=0; i<ele->e.s8->nhyb; i++)
+   ele->e.s8->oldalfa.a.da[0][i] = ele->e.s8->alfa.a.da[0][i];
+break;/*----------------------------------------------------------------*/
+/*--------------------------------------set variables back to last step */
+case calc_struct_update_stepback:
+   for (i=0; i<ele->e.s8->nhyb; i++)
+   ele->e.s8->alfa.a.da[0][i] = ele->e.s8->oldalfa.a.da[0][i];
 break;/*----------------------------------------------------------------*/
 /*--------------------------------------------------------write restart */
 case write_restart:

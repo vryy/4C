@@ -31,66 +31,6 @@ defined in s8_contact_init.c
 
 *----------------------------------------------------------------------*/
 extern struct _SHELLCONTACT shellcontact;
-/*!---------------------------------------------------------------------
-\brief store converged contact variables                                              
-
-<pre>                                                        m.gee 2/03 
-</pre>
-\param  actintra        *INTRA        (i) the intracommunicator
-\return void                                               
-
-------------------------------------------------------------------------*/
-void s8_contact_history(INTRA *actintra)
-{
-int              i,j,k,l,m,n;
-SHELLNODE       *actcnode,*cnode;                  /* the active contact node */
-int              myrank,nproc;                     /* parallel stuff */
-int              numnp;                            /* number of slave nodes (ususally all nodes) */
-#ifdef DEBUG 
-dstrc_enter("s8_contact_history");
-#endif
-/*----------------------------------------------------------------------*/
-numnp       = shellcontact.numnp;
-cnode       = shellcontact.cnode;
-myrank      = actintra->intra_rank;
-nproc       = actintra->intra_nprocs;
-/*--------------------------------------- loop nodes which belong to me */
-for (i=0; i<numnp; i++)
-{
-   actcnode = &(cnode[i]);
-   if (actcnode->node->proc != myrank) continue;
-   /* this is converged state, so store values */
-   /* top */
-   actcnode->histopflag    = actcnode->topflag;
-   actcnode->histopproj    = actcnode->topproj;
-   actcnode->histopele     = actcnode->topele;
-   actcnode->hisxitop[0]   = actcnode->xitop[0];
-   actcnode->hisxitop[1]   = actcnode->xitop[1];
-   actcnode->histopgap     = actcnode->topgap;
-   actcnode->his_top_tT[0] = actcnode->top_tT[0];
-   actcnode->his_top_tT[1] = actcnode->top_tT[1];
-   /* bot */
-   actcnode->hisbotflag    = actcnode->botflag;
-   actcnode->hisbotproj    = actcnode->botproj;
-   actcnode->hisbotele     = actcnode->botele;
-   actcnode->hisxibot[0]   = actcnode->xibot[0];
-   actcnode->hisxibot[1]   = actcnode->xibot[1];
-   actcnode->hisbotgap     = actcnode->botgap;
-   actcnode->his_bot_tT[0] = actcnode->bot_tT[0];
-   actcnode->his_bot_tT[1] = actcnode->bot_tT[1];
-   /*
-    current confiuration of this converged step is needed,
-    when the node is sliding from one element to another
-   */
-   for (j=0; j<6; j++)
-   actcnode->xc_his[j] = actcnode->xr[j] + actcnode->node->sol.a.da[0][j];
-}
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG 
-dstrc_exit();
-#endif
-return;
-} /* end of s8_contact_history */
 
 
 /*!---------------------------------------------------------------------
@@ -350,6 +290,133 @@ dstrc_exit();
 #endif
 return;
 } /* end of s8_contact_updlagr */
+/*!---------------------------------------------------------------------
+\brief store converged contact variables                                              
+
+<pre>                                                        m.gee 2/03 
+</pre>
+\param  actintra        *INTRA        (i) the intracommunicator
+\return void                                               
+
+------------------------------------------------------------------------*/
+void s8_contact_history(INTRA *actintra)
+{
+int              i,j,k,l,m,n;
+SHELLNODE       *actcnode,*cnode;                  /* the active contact node */
+int              myrank,nproc;                     /* parallel stuff */
+int              numnp;                            /* number of slave nodes (ususally all nodes) */
+#ifdef DEBUG 
+dstrc_enter("s8_contact_history");
+#endif
+/*----------------------------------------------------------------------*/
+numnp       = shellcontact.numnp;
+cnode       = shellcontact.cnode;
+myrank      = actintra->intra_rank;
+nproc       = actintra->intra_nprocs;
+/*--------------------------------------- loop nodes which belong to me */
+for (i=0; i<numnp; i++)
+{
+   actcnode = &(cnode[i]);
+   if (actcnode->node->proc != myrank) continue;
+   /* this is converged state, so store values */
+   /* top */
+   actcnode->histopflag    = actcnode->topflag;
+   actcnode->histopproj    = actcnode->topproj;
+   actcnode->histopele     = actcnode->topele;
+   actcnode->oldhisxitop[0]= actcnode->hisxitop[0];
+   actcnode->oldhisxitop[1]= actcnode->hisxitop[1];
+   actcnode->hisxitop[0]   = actcnode->xitop[0];
+   actcnode->hisxitop[1]   = actcnode->xitop[1];
+   actcnode->histopgap     = actcnode->topgap;
+   actcnode->his_top_ln    = actcnode->top_ln;
+   actcnode->his_top_lt[0] = actcnode->top_lt[0];
+   actcnode->his_top_lt[1] = actcnode->top_lt[1];
+   /* bot */
+   actcnode->hisbotflag    = actcnode->botflag;
+   actcnode->hisbotproj    = actcnode->botproj;
+   actcnode->hisbotele     = actcnode->botele;
+   actcnode->oldhisxibot[0]= actcnode->hisxibot[0];
+   actcnode->oldhisxibot[1]= actcnode->hisxibot[1];
+   actcnode->hisxibot[0]   = actcnode->xibot[0];
+   actcnode->hisxibot[1]   = actcnode->xibot[1];
+   actcnode->hisbotgap     = actcnode->botgap;
+   actcnode->his_bot_ln    = actcnode->bot_ln;
+   actcnode->his_bot_lt[0] = actcnode->bot_lt[0];
+   actcnode->his_bot_lt[1] = actcnode->bot_lt[1];
+   /*
+    current confiuration of this converged step is needed,
+    when the node is sliding from one element to another
+   */
+   for (j=0; j<6; j++)
+   actcnode->xc_his[j] = actcnode->xr[j] + actcnode->node->sol.a.da[0][j];
+}
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of s8_contact_history */
+
+
+/*!---------------------------------------------------------------------
+\brief set contact variables back to last converged step                                              
+
+<pre>                                                        m.gee 2/03 
+</pre>
+\param  actintra        *INTRA        (i) the intracommunicator
+\return void                                               
+
+------------------------------------------------------------------------*/
+int s8_contact_historyback(INTRA *actintra)
+{
+int              i,j,k,l,m,n;
+SHELLNODE       *actcnode,*cnode;                  /* the active contact node */
+int              myrank,nproc;                     /* parallel stuff */
+int              numnp;                            /* number of slave nodes (ususally all nodes) */
+#ifdef DEBUG 
+dstrc_enter("s8_contact_historyback");
+#endif
+/*----------------------------------------------------------------------*/
+numnp       = shellcontact.numnp;
+cnode       = shellcontact.cnode;
+myrank      = actintra->intra_rank;
+nproc       = actintra->intra_nprocs;
+/*--------------------------------------- loop nodes which belong to me */
+for (i=0; i<numnp; i++)
+{
+   actcnode = &(cnode[i]);
+   if (actcnode->node->proc != myrank) continue;
+   /* top */
+   actcnode->topflag     =  actcnode->histopflag     ;
+   actcnode->topproj     =  actcnode->histopproj     ; 
+   actcnode->topele      =  actcnode->histopele      ; 
+   actcnode->xitop[0]    =  actcnode->hisxitop[0]    ; 
+   actcnode->xitop[1]    =  actcnode->hisxitop[1]    ;
+   actcnode->hisxitop[0] =  actcnode->oldhisxitop[0] ;
+   actcnode->hisxitop[1] =  actcnode->oldhisxitop[1] ;
+   actcnode->topgap      =  actcnode->histopgap      ; 
+   actcnode->top_ln      =  actcnode->his_top_ln     ; 
+   actcnode->top_lt[0]   =  actcnode->his_top_lt[0]  ; 
+   actcnode->top_lt[1]   =  actcnode->his_top_lt[1]  ; 
+   /* bot */
+   actcnode->botflag     =  actcnode->hisbotflag     ;
+   actcnode->botproj     =  actcnode->hisbotproj     ; 
+   actcnode->botele      =  actcnode->hisbotele      ;
+   actcnode->xibot[0]    =  actcnode->hisxibot[0]    ;
+   actcnode->xibot[1]    =  actcnode->hisxibot[1]    ;
+   actcnode->hisxibot[0] =  actcnode->oldhisxibot[0] ;
+   actcnode->hisxibot[1] =  actcnode->oldhisxibot[1] ;
+   actcnode->botgap      =  actcnode->hisbotgap      ;
+   actcnode->bot_ln      =  actcnode->his_bot_ln     ;
+   actcnode->bot_lt[0]   =  actcnode->his_bot_lt[0]  ;
+   actcnode->bot_lt[1]   =  actcnode->his_bot_lt[1]  ;
+}
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of s8_contact_historyback */
 
 
 

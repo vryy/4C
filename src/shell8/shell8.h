@@ -26,6 +26,7 @@ struct _ARRAY    intforce;
 int              eas[5];
 int              nhyb; 
 struct _ARRAY    alfa;
+struct _ARRAY    oldalfa;
 struct _ARRAY    Dtildinv;
 struct _ARRAY    Lt;
 struct _ARRAY    Rtilde;

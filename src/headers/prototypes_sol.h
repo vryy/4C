@@ -596,8 +596,8 @@ void exchange_coup_spo(
                          INTRA         *actintra,
                          SPOOLMAT      *spo
                         );
-void add_val_spo(int ii,int jj, struct _SPOOLMAT *spo, double val, INTRA *actintra);
-void set_val_spo(int ii,int jj, struct _SPOOLMAT *spo, double val, INTRA *actintra);
+void add_val_spo(int ii,int index, int jj, struct _SPOOLMAT *spo, double val, INTRA *actintra);
+void set_val_spo(int ii,int index, int jj, struct _SPOOLMAT *spo, double val, INTRA *actintra);
 void close_spooles_matrix(struct _SPOOLMAT *spo, INTRA *actintra);
 void add_spooles_matrix(struct _SPOOLMAT *to, struct _SPOOLMAT *from,
                        double factor, int init, INTRA *actintra);

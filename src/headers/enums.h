@@ -136,6 +136,7 @@ typedef enum _CALC_ACTION
                        calc_struct_stressreduce,
                        calc_struct_eleload,
                        calc_struct_update_istep,
+                       calc_struct_update_stepback,
                        write_restart,
                        read_restart,
 		       calc_fluid_init,

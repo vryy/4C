@@ -1031,7 +1031,7 @@ for (k=0; k<numnp; k++)
             {
                jj = actcnode->lmtop.a.iv[j];
                if (jj>=numeq_total) continue;
-               add_val_spo(ii,jj,K,actcnode->stifftop.a.da[i][j],actintra);
+               add_val_spo(ii,index,jj,K,actcnode->stifftop.a.da[i][j],actintra);
             }
          }
          /* delete all memory of top */
@@ -1100,7 +1100,7 @@ for (k=0; k<numnp; k++)
             {
                jj = actcnode->lmbot.a.iv[j];
                if (jj>=numeq_total) continue;
-               add_val_spo(ii,jj,K,actcnode->stiffbot.a.da[i][j],actintra);
+               add_val_spo(ii,index,jj,K,actcnode->stiffbot.a.da[i][j],actintra);
             }
          }
          /* delete all memory of bot */

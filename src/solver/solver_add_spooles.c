@@ -133,13 +133,13 @@ for (i=0; i<nd; i++)
    if (!ii_iscouple || ii_owner==myrank)
    {
 
-      ii_index      = find_index(ii,update,numeq);
       if (ii_index==-1) dserror("dof ii not found on this proc");
       start         = rowptr[ii_index];
       lenght        = rowptr[ii_index+1]-rowptr[ii_index];
 
    }
 #endif   
+      ii_index      = find_index(ii,update,numeq);
    /*================================= loop over j (the element column) */
    /*                            This is the full unsymmetric version ! */
    for (j=0; j<nd; j++)
@@ -157,9 +157,9 @@ for (i=0; i<nd; i++)
       if (!ii_iscouple || ii_owner==myrank)
       {
 #ifdef D_CONTACT
-         add_val_spo(ii,jj,spo1,estif[i][j],actintra);
+         add_val_spo(ii,ii_index,jj,spo1,estif[i][j],actintra);
          if (istwo)
-         add_val_spo(ii,jj,spo2,emass[i][j],actintra);
+         add_val_spo(ii,ii_index,jj,spo2,emass[i][j],actintra);
 #else
          index         = find_index(jj,&(jcn[start]),lenght);
          if (index==-1) dserror("dof jj not found in this row ii");
@@ -193,10 +193,10 @@ return;
 /*----------------------------------------------------------------------*
  |  add value to spooles matrix (with enlargment)            m.gee 11/02|
  *----------------------------------------------------------------------*/
-void add_val_spo(int ii,int jj, struct _SPOOLMAT *spo, double val, INTRA *actintra)
+void add_val_spo(int ii,int index, int jj, struct _SPOOLMAT *spo, double val, INTRA *actintra)
 {
 #ifdef SPOOLES_PACKAGE
-int     i,j,k,l,index,colstart,colend,foundit;
+int     i,j,k,l,colstart,colend,foundit;
 int     counter,hasmoved;
 int    *irn,*jcn,*update,*rptr,numeq;
 double *A;
@@ -215,7 +215,7 @@ numeq  = spo->numeq;
 rptr   = spo->rowptr.a.iv;
 A      = spo->A_loc.a.dv;
 /*----------------------------------------------------------------------*/
-index  = find_index(ii,update,numeq);
+/*index  = find_index(ii,update,numeq);*/
 if (index==-1) dserror("Cannot find local dof");
 colstart = rptr[index];
 colend   = rptr[index+1];
@@ -240,7 +240,7 @@ else
    {
       startenlarge:
       nnz = spo->A_loc.fdim;
-      nnz_new = (int)(2.5*nnz);
+      nnz_new = (int)(1.5*nnz);
       rsize   = (int)(nnz_new/numeq);
       nnz_new = rsize*numeq;
       irn = amredef(&(spo->irn_loc),nnz_new,1,"IV");
@@ -318,10 +318,10 @@ return;
 /*----------------------------------------------------------------------*
  |  set value to spooles matrix (with enlargment)            m.gee 11/02|
  *----------------------------------------------------------------------*/
-void set_val_spo(int ii,int jj, struct _SPOOLMAT *spo, double val, INTRA *actintra)
+void set_val_spo(int ii,int index, int jj, struct _SPOOLMAT *spo, double val, INTRA *actintra)
 {
 #ifdef SPOOLES_PACKAGE
-int     i,j,k,l,index,colstart,colend,foundit;
+int     i,j,k,l,colstart,colend,foundit;
 int     counter,hasmoved;
 int    *irn,*jcn,*update,*rptr,numeq;
 double *A;
@@ -340,7 +340,7 @@ numeq  = spo->numeq;
 rptr   = spo->rowptr.a.iv;
 A      = spo->A_loc.a.dv;
 /*----------------------------------------------------------------------*/
-index  = find_index(ii,update,numeq);
+/*index  = find_index(ii,update,numeq);*/
 if (index==-1) dserror("Cannot find local dof");
 colstart = rptr[index];
 colend   = rptr[index+1];
@@ -366,7 +366,7 @@ else
       startenlarge:
       printf("MESSAGE: Enlargment of system matrix\n");
       nnz = spo->A_loc.fdim;
-      nnz_new = (int)(2.5*nnz);
+      nnz_new = (int)(1.5*nnz);
       rsize   = (int)(nnz_new/numeq);
       nnz_new = rsize*numeq;
       irn = amredef(&(spo->irn_loc),nnz_new,1,"IV");
@@ -555,10 +555,11 @@ for (i=0; i<numeq_to; i++)
    colend_from   = rptr_from[actrow+1];
    for (j=colstart_from; j<colend_from; j++)
    {
+       index = find_index(irn_from[j],update_to,numeq_to);
        if (!init)
-       add_val_spo(irn_from[j],jcn_from[j],to,A_from[j]*factor,actintra);
+       add_val_spo(irn_from[j],index,jcn_from[j],to,A_from[j]*factor,actintra);
        else
-       set_val_spo(irn_from[j],jcn_from[j],to,A_from[j]*factor,actintra);
+       set_val_spo(irn_from[j],index,jcn_from[j],to,A_from[j]*factor,actintra);
    }
 }
 close_spooles_matrix(to,actintra);
@@ -740,7 +741,7 @@ for (i=0; i<numrecv; i++)
       jj            = jcn[index];
       if (jj==-1) continue;
 #ifdef D_CONTACT
-      add_val_spo(ii,jj,spo,drecv[i][jj],actintra);
+      add_val_spo(ii,ii_index,jj,spo,drecv[i][jj],actintra);
 #else
       A_loc[index] += drecv[i][jj];
 #endif

@@ -55,8 +55,8 @@ typedef enum _SHELLPROJECTON
 } SHELLPROJECTON;
 /*----------------------------------------------------------------------*/
 #define EPSN (1.0E+03)
-#define EPST (1.0E+02)
-#define NU   (0.5)
+#define EPST (1.0E+03)
+#define NU   (0.4)
 /*----------------------------------------------------------------------*/
 /*!------------------------------------------------------------------------
 \brief one special contact node for shell contact
@@ -82,18 +82,21 @@ ARRAY                     lmtop;    /*!< location matrix for stiffness contribut
 ELEMENT                  *topele;   /*!< the element this node is contacting to, otherwise NULL */
 double                    xitop[2]; /*!< local coordinates of projection point */
 double                    topgap;   /*!< gap function value of the top of this node */
-double                    top_tn;
-double                    top_ln;
-double                    top_lt[2];
-double                    top_tT[2];
+double                    top_tn;   /*!< contact normal force */
+double                    top_ln;   /*!< augmented langrangian normal contact parameter (== contact force) */
+double                    top_lt[2];/*!< augmented langrangian normal frictional parameter (== frictional force) */
+double                    top_tT[2];/*!< contact frictional force */
+
+
 /* history of the top */
 enum _SHELLCONTACTFLAG    histopflag;  /*!< flag to indicate active contact */
 enum _SHELLPROJECTON      histopproj;  /*!< flag to indicate projection onto a top or bottom surface */
 ELEMENT                  *histopele;   /*!< the element this node is contacting to, otherwise NULL */
 double                    hisxitop[2]; /*!< local coordinates of projection point */
+double                    oldhisxitop[2]; /*!< local coordinates of projection point */
 double                    histopgap;   /*!< gap function value of the top of this node */
+double                    his_top_ln;
 double                    his_top_lt[2];
-double                    his_top_tT[2];
 
 
 enum _SHELLCONTACTFLAG    botflag;  /*!< flag to indicate active contact */
@@ -113,9 +116,10 @@ enum _SHELLCONTACTFLAG    hisbotflag;  /*!< flag to indicate active contact */
 enum _SHELLPROJECTON      hisbotproj;  /*!< flag to indicate projection onto a top or bottom surface */
 ELEMENT                  *hisbotele;   /*!< the element this node is contacting to, otherwise NULL */
 double                    hisxibot[2]; /*!< local coordinates of projection point */
+double                    oldhisxibot[2]; /*!< local coordinates of projection point */
 double                    hisbotgap;   /*!< gap function value of the bot of this node */
+double                    his_bot_ln;
 double                    his_bot_lt[2];
-double                    his_bot_tT[2];
 
 int                       nneigh;
 struct _NODE             *neighbours[30];

@@ -241,23 +241,24 @@ for (i=0; i<actpart->pdis[0].numele; i++)
 
    switch(*action)/*=== call assembly dependent on calculation-flag */
    {
-   case calc_struct_linstiff     : assemble_action = assemble_one_matrix; break;
-   case calc_struct_nlnstiff     : assemble_action = assemble_one_matrix; break;
-   case calc_struct_nlnstiffmass : assemble_action = assemble_two_matrix; break;
-   case calc_struct_internalforce: assemble_action = assemble_do_nothing; break;
-   case calc_struct_eleload      : assemble_action = assemble_do_nothing; break;
-   case calc_struct_stress       : assemble_action = assemble_do_nothing; break;
-   case calc_struct_ste          : assemble_action = assemble_do_nothing; break;
-   case calc_struct_stm          : assemble_action = assemble_do_nothing; break;
-   case calc_struct_stv          : assemble_action = assemble_do_nothing; break;
-   case calc_struct_dee          : assemble_action = assemble_do_nothing; break;
-   case calc_struct_dmc          : assemble_action = assemble_do_nothing; break;
-   case update_struct_odens      : assemble_action = assemble_do_nothing; break;
-   case calc_struct_update_istep : assemble_action = assemble_do_nothing; break;
-   case calc_ale_stiff           : assemble_action = assemble_one_matrix; break;
-   case calc_ale_rhs             : assemble_action = assemble_do_nothing; break;
-   case calc_fluid               : assemble_action = assemble_one_matrix; break;
-   default: dserror("Unknown type of assembly"); break;
+   case calc_struct_linstiff        : assemble_action = assemble_one_matrix; break;
+   case calc_struct_nlnstiff        : assemble_action = assemble_one_matrix; break;
+   case calc_struct_nlnstiffmass    : assemble_action = assemble_two_matrix; break;
+   case calc_struct_internalforce   : assemble_action = assemble_do_nothing; break;
+   case calc_struct_eleload         : assemble_action = assemble_do_nothing; break;
+   case calc_struct_stress          : assemble_action = assemble_do_nothing; break;
+   case calc_struct_ste             : assemble_action = assemble_do_nothing; break;
+   case calc_struct_stm             : assemble_action = assemble_do_nothing; break;
+   case calc_struct_stv             : assemble_action = assemble_do_nothing; break;
+   case calc_struct_dee             : assemble_action = assemble_do_nothing; break;
+   case calc_struct_dmc             : assemble_action = assemble_do_nothing; break;
+   case update_struct_odens         : assemble_action = assemble_do_nothing; break;
+   case calc_struct_update_istep    : assemble_action = assemble_do_nothing; break;
+   case calc_struct_update_stepback : assemble_action = assemble_do_nothing; break;
+   case calc_ale_stiff              : assemble_action = assemble_one_matrix; break;
+   case calc_ale_rhs                : assemble_action = assemble_do_nothing; break;
+   case calc_fluid                  : assemble_action = assemble_one_matrix; break;
+   default: dserror("Unknown type of assembly 1"); break;
    }
    /*--------------------------- assemble one or two system matrices */
    assemble(sysarray1,
@@ -317,23 +318,24 @@ for (i=0; i<actpart->pdis[0].numele; i++)
 #ifdef PARALLEL 
 switch(*action)
 {
-case calc_struct_linstiff      : assemble_action = assemble_one_exchange; break;
-case calc_struct_nlnstiff      : assemble_action = assemble_one_exchange; break;
-case calc_struct_internalforce : assemble_action = assemble_do_nothing; break;
-case calc_struct_nlnstiffmass  : assemble_action = assemble_two_exchange; break;
-case calc_struct_eleload       : assemble_action = assemble_do_nothing; break;
-case calc_struct_stress        : assemble_action = assemble_do_nothing; break;
-case calc_struct_ste           : assemble_action = assemble_do_nothing; break;
-case calc_struct_stm           : assemble_action = assemble_do_nothing; break;
-case calc_struct_stv           : assemble_action = assemble_do_nothing; break;
-case calc_struct_dmc           : assemble_action = assemble_do_nothing; break;
-case update_struct_odens       : assemble_action = assemble_do_nothing; break;
-case calc_struct_dee           : assemble_action = assemble_do_nothing; break;
-case calc_struct_update_istep  : assemble_action = assemble_do_nothing; break;
-case calc_ale_stiff            : assemble_action = assemble_one_exchange; break;
-case calc_ale_rhs              : assemble_action = assemble_do_nothing; break;
-case calc_fluid                : assemble_action = assemble_one_exchange; break;
-default: dserror("Unknown type of assembly"); break;
+case calc_struct_linstiff        : assemble_action = assemble_one_exchange; break;
+case calc_struct_nlnstiff        : assemble_action = assemble_one_exchange; break;
+case calc_struct_internalforce   : assemble_action = assemble_do_nothing;   break;
+case calc_struct_nlnstiffmass    : assemble_action = assemble_two_exchange; break;
+case calc_struct_eleload         : assemble_action = assemble_do_nothing;   break;
+case calc_struct_stress          : assemble_action = assemble_do_nothing;   break;
+case calc_struct_ste             : assemble_action = assemble_do_nothing;   break;
+case calc_struct_stm             : assemble_action = assemble_do_nothing;   break;
+case calc_struct_stv             : assemble_action = assemble_do_nothing;   break;
+case calc_struct_dmc             : assemble_action = assemble_do_nothing;   break;
+case update_struct_odens         : assemble_action = assemble_do_nothing;   break;
+case calc_struct_dee             : assemble_action = assemble_do_nothing;   break;
+case calc_struct_update_istep    : assemble_action = assemble_do_nothing;   break;
+case calc_struct_update_stepback : assemble_action = assemble_do_nothing;   break;
+case calc_ale_stiff              : assemble_action = assemble_one_exchange; break;
+case calc_ale_rhs                : assemble_action = assemble_do_nothing;   break;
+case calc_fluid                  : assemble_action = assemble_one_exchange; break;
+default: dserror("Unknown type of assembly 2"); break;
 }
 /*------------------------------ exchange coupled dofs, if there are any */
 assemble(sysarray1,
@@ -355,16 +357,17 @@ assemble(sysarray1,
 #ifdef D_CONTACT
 switch(*action)
 {
-case calc_struct_linstiff      : assemble_action = assemble_close_1matrix; break;
-case calc_struct_nlnstiff      : assemble_action = assemble_close_1matrix; break;
-case calc_struct_nlnstiffmass  : assemble_action = assemble_close_2matrix; break;
-case calc_struct_eleload       : assemble_action = assemble_do_nothing;    break;
-case calc_struct_stress        : assemble_action = assemble_do_nothing;    break;
-case calc_struct_update_istep  : assemble_action = assemble_do_nothing;    break;
-case calc_ale_stiff            : assemble_action = assemble_close_1matrix; break;
-case calc_ale_rhs              : assemble_action = assemble_do_nothing;    break;
-case calc_fluid                : assemble_action = assemble_close_1matrix; break;
-default: dserror("Unknown type of assembly"); break;
+case calc_struct_linstiff        : assemble_action = assemble_close_1matrix; break;
+case calc_struct_nlnstiff        : assemble_action = assemble_close_1matrix; break;
+case calc_struct_nlnstiffmass    : assemble_action = assemble_close_2matrix; break;
+case calc_struct_eleload         : assemble_action = assemble_do_nothing;    break;
+case calc_struct_stress          : assemble_action = assemble_do_nothing;    break;
+case calc_struct_update_istep    : assemble_action = assemble_do_nothing;    break;
+case calc_struct_update_stepback : assemble_action = assemble_do_nothing;    break;
+case calc_ale_stiff              : assemble_action = assemble_close_1matrix; break;
+case calc_ale_rhs                : assemble_action = assemble_do_nothing;    break;
+case calc_fluid                  : assemble_action = assemble_close_1matrix; break;
+default: dserror("Unknown type of assembly 3"); break;
 }
 assemble(sysarray1,
          NULL,

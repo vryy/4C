@@ -176,6 +176,8 @@ if (nhyb>0)
 {
    amdef("alfa",&(ele->e.s8->alfa),1,nhyb,"DA");
    amzero(&(ele->e.s8->alfa));
+   amdef("oalfa",&(ele->e.s8->oldalfa),1,nhyb,"DA");
+   amzero(&(ele->e.s8->oldalfa));
 
    amdef("Dtildinv",&(ele->e.s8->Dtildinv),nhyb,nhyb,"DA");
    amzero(&(ele->e.s8->Dtildinv));

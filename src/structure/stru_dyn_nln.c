@@ -148,6 +148,7 @@ double          resultdt;
 double          newdt;
 double          olddt;
 double          eta;
+int             repeatcount;
 double          lowtime,uptime,writetime;
 double          remain;
 double          low,up;
@@ -498,6 +499,7 @@ if (restart)
 }
 /*--------------------------------------------- increment step and time */
 sdyn->step++;
+repeatcount = 0;
 /*------------------- modifications to time steps size can be done here */
 adapt_top:
 /*------------------------------------------------ set new absolue time */
@@ -800,10 +802,7 @@ else
 {
    itnum++;
    if (itnum==sdyn->maxiter && timeadapt)
-   { 
-      if (par.myrank==0) printf("No convergence in maxiter steps - repeat step\n");
       goto adapt_bot;
-   }
    if (itnum==sdyn->maxiter && !timeadapt)
       dserror("No convergence in maxiter steps");
    goto iterloop;
@@ -842,7 +841,7 @@ solserv_result_total(actfield,actintra, &(con[0]),9,&(actsolv->sysarray[stiff_ar
 augon = 0;
 }/* end of if (contact) */
 #endif
-/*----------------------- make time adaption with xie (1991) indicator */
+/*------------------------------ make time adaption iteration indicator */
 #if 1
 adapt_bot:
 if (timeadapt)
@@ -854,14 +853,43 @@ if (timeadapt)
       newdt = 1.5*(sdyn->dt);
    if (newdt>maxdt)
       newdt = maxdt;
-   /* repeat step, if maxiter was reached */
-   if (itnum==sdyn->maxiter)
+   /* repeat step, if no convergence was reached */
+   if (convergence==0)
    {
+      repeatcount++;
+      if (repeatcount >= 10) dserror("No convergence after repeating step 10 times");
+      if (par.myrank==0) printf("No convergence in maxiter steps - repeat step\n");
+      /* reduce the step size drastically */
+      eta         = ((double)itwant)/40.0; 
+      newdt       = sdyn->dt * pow(eta,0.3333333);
       sdyn->time -= sdyn->dt;
       sdyn->dt    = newdt;
-      solserv_result_total(actfield,actintra, &(actsolv->sol[0]),0,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
+      /* zero the incremental displacements */
+      solserv_zero_vec(&dispi[0]);
+      /* zero the residual displacements */
+      solserv_result_incre(actfield,actintra,&dispi[0],0,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
+      /* set old total displacements */
+      solserv_result_total(actfield,actintra,&(actsolv->sol[0]),0,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
+      /* set element internal variables bacl to the last step */
+      *action = calc_struct_update_stepback;
+      container.dvec          = NULL;
+      container.dirich        = NULL;
+      container.global_numeq  = 0;
+      container.dirichfacs    = NULL;
+      container.kstep         = 0;
+      container.ekin          = 0.0;
+      calelm(actfield,actsolv,actpart,actintra,stiff_array,mass_array,&container,action);
+      /* set contact augmented lagrangian multipliers back to last step */
+      #ifdef S8CONTACT
+      if (contact)
+      s8_contact_historyback(actintra);
+      #endif
+      /* go back to the predictor */
       goto adapt_top;
    }
+#ifdef PARALLEL
+   MPI_Bcast(&newdt,1,MPI_DOUBLE,0,actintra->MPI_INTRA_COMM);
+#endif
    sdyn->dt = newdt;
 }
 #endif
