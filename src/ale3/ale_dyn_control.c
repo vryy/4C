@@ -381,7 +381,8 @@ determinant.
 
 \warning There is nothing special to this routine
 \return void                                               
-\sa   calling: ale_calelm(), ale_setdirich(), ale_rhs(), ale_quality(); 
+\sa   calling: ale_calelm(), ale_setdirich(), ale_rhs(), 
+               plot_ale_quality(); 
       called by: caldyn()
 
 *----------------------------------------------------------------------*/
@@ -585,7 +586,7 @@ if (ioflags.ale_disp_file==1)
     out_gid_sol("displacement",actfield,actintra,adyn->step,0,adyn->time);
 }
 /*--------------------------------------- do mesh quality statistics ---*/
-ale_quality(actfield,adyn->step,actintra,actpart);
+plot_ale_quality(actfield,adyn->step,actintra,actpart);
 /*------------------------------------------ measure time for this step */
 t1 = ds_cputime();
 if (par.myrank==0)
@@ -628,7 +629,7 @@ spatially variying stiffness.
 \warning There is nothing special to this routine
 \return void                                               
 \sa   calling: ale_calelm(), ale_setdirich_increment(), ale_rhs(), 
-               ale_quality(); 
+               plot_ale_quality(); 
       called by: caldyn()
 
 *----------------------------------------------------------------------*/
@@ -881,7 +882,7 @@ if (ioflags.ale_disp_file==1)
     out_gid_sol("displacement",actfield,actintra,adyn->step,0,adyn->time);
 }
 /*--------------------------------------- do mesh quality statistics ---*/
-ale_quality(actfield,adyn->step,actintra,actpart);
+plot_ale_quality(actfield,adyn->step,actintra,actpart);
 /*------------------------------------------ measure time for this step */
 t1 = ds_cputime();
 if (par.myrank==0)
@@ -921,7 +922,8 @@ Engrg. 163 (1998) 231-245
 
 \warning There is nothing special to this routine
 \return void                                               
-\sa   calling: ale_calelm(), ale_setdirich(), ale_rhs(), ale_quality(); 
+\sa   calling: ale_calelm(), ale_setdirich(), ale_rhs(), 
+               plot_ale_quality(); 
       called by: caldyn()
 
 *----------------------------------------------------------------------*/
@@ -1123,7 +1125,7 @@ if (ioflags.ale_disp_file==1)
     out_gid_sol("displacement",actfield,actintra,adyn->step,0,adyn->time);
 }
 /*--------------------------------------- do mesh quality statistics ---*/
-ale_quality(actfield,adyn->step,actintra,actpart);
+plot_ale_quality(actfield,adyn->step,actintra,actpart);
 /*------------------------------------------ measure time for this step */
 t1 = ds_cputime();
 if (par.myrank==0)
@@ -1166,7 +1168,8 @@ there.
 
 \warning There is nothing special to this routine
 \return void                                               
-\sa   calling: ale_calelm(), ale_setdirich(), ale_rhs(), ale_quality(); 
+\sa   calling: ale_calelm(), ale_setdirich(), ale_rhs(), 
+               plot_ale_quality(); 
       called by: caldyn()
 
 *----------------------------------------------------------------------*/
@@ -1367,7 +1370,7 @@ if (ioflags.ale_disp_file==1)
     out_gid_sol("displacement",actfield,actintra,adyn->step,0,adyn->time);
 }
 /*--------------------------------------- do mesh quality statistics ---*/
-ale_quality(actfield,adyn->step,actintra,actpart);
+plot_ale_quality(actfield,adyn->step,actintra,actpart);
 /*------------------------------------------ measure time for this step */
 t1 = ds_cputime();
 if (par.myrank==0)
@@ -1390,6 +1393,5 @@ dstrc_exit();
 #endif
 return;
 } /* end of dyn_ale_laplace */
-
 
 /*! @} (documentation module close)*/
