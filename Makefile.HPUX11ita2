@@ -67,7 +67,7 @@ MPI     = -lmpi
 #PROGRAM_NAME  = cca_$(NAME)_32_debg.11i
 #CFLAGS        = +DSitanium -Aa -Ae -g +w1 -z \
 #                ${PFL} -DDEBUG
-#FFLAGS        = -g
+#FFLAGS        = +DSitanium -g
 #LDFLAGS       = -g -v +A
 #AZTEC         =
 #METIS         = -lmetis_ita2_32
@@ -75,9 +75,9 @@ MPI     = -lmpi
 #SPOOLES       = -lspooles_ita2_32
 #------------------------------------------------- this is fast-32bit
 PROGRAM_NAME  = cca_$(NAME)_32_fast.11i
-CFLAGS        = +DSitanium -Aa -Ae +O2 +Onolimit +Optrs_to_globals +Odataprefetch  \
+CFLAGS        = +DSitanium -Aa -Ae +O3 +Onolimit +Optrs_to_globals +Odataprefetch  \
                 +Onoinitcheck +Oinline +Oclone +w1 -z ${PFL} 
-FFLAGS        = +O2 +Onolimit
+FFLAGS        = +DSitanium +O3 +Onolimit +Onoptrs_to_globals +Oinline
 LDFLAGS       = +O -v +A 
 AZTEC         =
 METIS         = -lmetis_ita2_32
@@ -87,7 +87,7 @@ SPOOLES       = -lspooles_ita2_32
 #PROGRAM_NAME  = cca_$(NAME)_64_debg.11i
 #CFLAGS        = +DSitanium -Aa -Ae +DD64 -g +w1 -z \
 #                ${PFL} -DSIXTYFOUR -DDEBUG 
-#FFLAGS        = +DD64 -g
+#FFLAGS        = +DSitanium +DD64 -g
 #LDFLAGS       = +DD64 -v +A
 #AZTEC         = 
 #METIS         = -lmetis_ita2_64
@@ -95,9 +95,9 @@ SPOOLES       = -lspooles_ita2_32
 #SPOOLES       = -lspooles_ita2_64
 #------------------------------------------------- this is fast-64bit
 #PROGRAM_NAME  = cca_$(NAME)_64_fast.11i
-#CFLAGS        = +DSitanium -Aa -Ae +DD64 +O2 +Onolimit +Optrs_to_globals +Odataprefetch \
+#CFLAGS        = +DSitanium -Aa -Ae +DD64 +O3 +Onolimit +Optrs_to_globals +Odataprefetch \
 #                +Onoinitcheck +Oinline +Oclone +w1 -z ${PFL} -DSIXTYFOUR 
-#FFLAGS        = +DD64 +O2
+#FFLAGS        = +DSitanium +DD64 +O3 +Onolimit +Onoptrs_to_globals +Oinline
 #LDFLAGS       = +DD64 -O -v +A
 #AZTEC         = 
 #METIS         = -lmetis_ita2_64
