@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief Call and control VISUAL3
+\brief Call and control VISUAL3 
 
 <pre>
 Maintainer: Steffen Genkinger
@@ -76,18 +76,16 @@ extern ALLDYNA      *alldyn;
  *----------------------------------------------------------------------*/
 static INT      KSURF;              
 static INT      KCEL1,KCEL2,KCEL3,KCEL4;
-static INT      WIN3D,HWIN3D;
+static INT      WIN3D;
 static INT      MIRROR;
 static INT      LIMITS;
 static INT      IOPT;                 /* program mode                   */
+static INT      SCAL;
 static INT      DSTEP;                /* increment of visualised steps  */
 static INT      INCRE;                /* increment of visualised steps  */
 static INT      NUMA;                 /* number of ALE-FIELD            */
-static INT      DATAFILE;             /* file-flag for results          */
-static INT      CMNCOL=300;           /* see VISUAL2 manual             */
-static INT      CMUNIT=37;            /* see VISUAL2 manual             */
-static INT      MNODE;                /* maximum number of nodes        */
-static INT      NKEYS=5;              /* see VISUAL2 manual             */
+static INT      CMUNIT=99;            /* see VISUAL3 manual             */
+static INT      NKEYS=7;              /* see VISUAL3 manual             */
 static INT      IKEYS[]={120,121,122,112,102,97,109};
 static INT      FKEYS[]={1,1,1,1,2,1,1};             
 static float    FLIMS[7][2];          /* data limits                    */
@@ -96,12 +94,10 @@ static INT     numnp;	        /* number of nodes of actual field	*/
 static INT     numele;	        /* number of elements of actual field	*/
 static INT     ncols=1;         /* number of sol steps stored in sol	*/
 static INT     nacols=1;        /* number of sol steps of ALE field     */
-static INT     isstr=0;         /* flag for streamline calculation	*/
 static INT     icol=-1;         /* act. num. of sol step to be visual.  */
 static INT     FIRSTSTEP;
 static INT     LASTSTEP;
 static INT     ACTSTEP;
-static INT     hsize, vsize;    /* size for VISUAL2 window		*/
 static INT     true=-1;         /* flag for v2_cursor			*/
 static INT     false=0;         /* flag for v2_cursor			*/
 static INT     STSTEP=-2;       /* stopping step                        */
@@ -112,7 +108,6 @@ static DOUBLE  vely;	        /*					*/
 static DOUBLE  velz;	        /*					*/
 static DOUBLE  pres;	        /*					*/
 static DOUBLE  absv;	        /*					*/
-static DOUBLE  vort;            /*                                      */
 static DOUBLE  minpre,maxpre;   /*					*/
 static DOUBLE  minvx,maxvx;     /*					*/
 static DOUBLE  minvy,maxvy;     /*					*/
@@ -129,6 +124,7 @@ FIELD         *actfield;        /* actual field  			*/
 FIELD         *alefield;
 FIELD         *structfield;
 ARRAY          time_a ;         /* time array				*/
+ARRAY          step_a ;         /* time array				*/
 FLUID_DYNAMIC *fdyn;                /* pointer to fluid dyn. inp.data   */
 FLUID_DYN_CALC *dynvar;             /* pointer to fluid_dyn_calc        */ 
 /*!---------------------------------------------------------------------                                         
@@ -148,7 +144,9 @@ CALC_ACTION    *action;             /* pointer to the cal_action enum   */
 INTRA          *actintra;           /* pointer to active intra-communic.*/
 PARTITION      *actpart;            /* pointer to active partition      */
 CONTAINER       container;          /* contains variables defined in container.h */
-FLUID_DYNAMIC *fdyn;                /* pointer to fluid dyn. inp.data   */
+FLUID_DYNAMIC  *fdyn;               /* pointer to fluid dyn. inp.data   */
+INT             screen;
+INT             dummy;
 
 #ifdef DEBUG 
 dstrc_enter("vis3caf");
@@ -176,7 +174,6 @@ for (i=1;i<numele;i++) /* loop all elements */
       dserror ("up to now, all elements have to be the same distyp!\n");
 } /* end loop over all elements */
 
-/*---------------- all element types are cut to 3- or 4-node elements */
 switch (distyp)
 {
 case hex8:
@@ -191,74 +188,165 @@ default:
 } /* end switch(distyp) */
 
 /*-------------------- read solution data from flavia.res-file of proc 0 */
-visual_readflaviares(actfield,&ncols,&time_a,&FIRSTSTEP,&LASTSTEP,&DSTEP);
+visual_readflaviares(actfield,&ncols,&time_a,&step_a,
+                     &FIRSTSTEP,&LASTSTEP,&DSTEP);
 INCRE=1;
 
-input2:
+input1:
 printf("\n");
-printf("     Please give the mode in which you want to run VISUAL2:\n");
-printf("     0: steady data structure, grid and variables\n");
-printf("     1: steady data structure and grid, unsteady variables\n");
-printf("     2: steady data structure, unsteady grid and variables\n");
-scanf("%d",&IOPT);
+printf("     Please give the mode in which you want to run VISUAL3:\n");
+printf("      0 : steady data structure, grid and variables\n");
+printf("      1 : steady data structure and grid, unsteady variables\n");
+printf("     [2]: steady data structure, unsteady grid and variables\n");
+
+screen=getchar();
+switch(screen)
+{
+case 10: IOPT=2; break;
+case 48: IOPT=0; dummy=getchar(); break;
+case 49: IOPT=1; dummy=getchar(); break;
+case 50: IOPT=2; dummy=getchar(); break;
+default: 
+   printf("\nTry again!\n");
+   goto input1;
+}
+
 if (IOPT==0) icol++;
 
+if (IOPT==2) /*-------------------------- read ALE field from pss-file */
+{
+#ifdef D_FSI
+   if (genprob.probtyp==prb_fsi)
+   {
+      if (numaf<0) dserror("ALE-field does not exist!");
+      if (numsf<0) dserror("STRUCTURE-field does not exist!");
+      alefield=&(field[numaf]);
+      structfield=&(field[numsf]);
+      fsi_initcoupling(structfield,actfield,alefield);
+      visual_readflaviares(alefield,&nacols,NULL,NULL,&FIRSTSTEP,&LASTSTEP,&DSTEP);
+      if (ncols!=nacols)
+      {
+         printf("\n");
+	 printf("WARNING:number of columns different in ALE and FLUID field \n");
+         printf("\n");
+	 ncols=IMIN(ncols,nacols);
+      }
+   }
+   if (genprob.probtyp==prb_fluid)
+   {
+      if (numaf<0) dserror("ALE-field does not exist!");
+      alefield=&(field[numaf]);
+      fluid_initmfcoupling(actfield,alefield);
+      visual_readflaviares(alefield,&nacols,NULL,NULL,&FIRSTSTEP,&LASTSTEP,&DSTEP);
+      if (ncols!=nacols)
+      {
+         printf("\n");
+	 printf("WARNING:number of columns different in ALE and FLUID field \n");
+         printf("\n");
+         ncols=IMIN(ncols,nacols);
+      }
+   }
+#else
+dserror("FSI functions not compiled in!\n");
+#endif
+}
+
 /*----------------------------------------------------- get window size */
-WIN3D = true;
+input2:
 printf("\n");
 printf("     Size of Windows:\n");
-printf("\n");
-printf("     0: 3D window bigger than 2D window\n");
-printf("     1: 2D window bigger than 3D window\n");
-scanf("%d",&HWIN3D);
-if (HWIN3D==0) WIN3D = false;
+printf("     [0]: 3D window bigger than 2D window\n");
+printf("      1 : 2D window bigger than 3D window\n");
+
+screen=getchar();
+switch(screen)
+{
+case 10: WIN3D=0; break;
+case 48: WIN3D=0; dummy=getchar(); break;
+case 49: WIN3D=1; dummy=getchar(); break;
+default: 
+   printf("\nTry again!\n");
+   goto input2;
+}
+
 
 /*----------------------------------------------------- get mirror flag */
 input3:
 printf("\n");
 printf("     Mirroring:\n");
-printf("\n");
-printf("     0: no mirroring\n");
-printf("     1: mirroring about the plane x=0.0\n");
-printf("     2: mirroring about the plane y=0.0\n");
-printf("     3: mirroring about the plane z=0.0\n");
-scanf("%d",&MIRROR);
-if (MIRROR<0 || MIRROR>3)
+printf("     [0]: no mirroring\n");
+printf("      1 : mirroring about the plane x=0.0\n");
+printf("      2 : mirroring about the plane y=0.0\n");
+printf("      3 : mirroring about the plane z=0.0\n");
+
+screen=getchar();
+switch(screen)
 {
-   printf("Input out of range! - Try again!\n");
+case 10: MIRROR=0; break;
+case 48: MIRROR=0; dummy=getchar(); break;
+case 49: MIRROR=1; dummy=getchar(); break;
+case 50: MIRROR=2; dummy=getchar(); break;
+case 51: MIRROR=3; dummy=getchar(); break;
+default: 
+   printf("\nTry again!\n");
    goto input3;
 }
-
-/* ----------------------------------------------------- get limits flag */
-LIMITS=1;
-printf("\n");
-printf("     Limits:\n");
-printf("\n");
-printf("     0: no calculation of limits\n");
-printf("     1: calculation of limits\n");
-scanf("%d",&LIMITS);
-
 /* --------------------------------------------------- get scaling facs */
+input4:
 printf("\n");
-printf("     Scaling Factors:\n");
-printf("\n");
-printf("     factor in x-direction:\n");
-scanf("%lf",&FACX);
-printf("     factor in y-direction:\n");
-scanf("%lf",&FACY);
-printf("     factor in z-direction:\n");
-scanf("%lf",&FACZ);
+printf("     Scaling Geometry?\n");
+printf("     [0]: no \n");
+printf("      1 : yes\n");
+
+screen=getchar();
+switch(screen)
+{
+case 10: SCAL=0; break;
+case 48: SCAL=0; dummy=getchar(); break;
+case 49: SCAL=1; dummy=getchar(); break;
+default: 
+   printf("\nTry again!\n");
+   goto input4;
+}
+
+if (SCAL==1)
+{
+   printf("\n");
+   printf("     Scaling Factors:\n\n");
+   printf("     factor in x-direction:\n");
+   scanf("%lf",&FACX);
+   printf("     factor in y-direction:\n");
+   scanf("%lf",&FACY);
+   printf("     factor in z-direction:\n");
+   scanf("%lf",&FACZ);
+   dummy=getchar();
+}
+else
+   FACX=FACY=FACZ=ONE;
+
 
 /*------------------------------------------------- background colour */
-bgcolour=0;
+input5:
 printf("\n");
-printf("   Background colour? (0: black   1: white)\n");
-scanf("%d",&bgcolour);
+printf("     Colours? \n");
+printf("     [0]: colours    - black background\n");
+printf("      1 : colours    - white background\n");
+printf("      2 : grey scale - white background\n");
+screen=getchar();
+switch(screen)
+{
+case 10: bgcolour=0; break;
+case 48: bgcolour=0; dummy=getchar(); break;
+case 49: bgcolour=1; dummy=getchar(); break;
+case 50: bgcolour=2; dummy=getchar(); break;
+default: 
+   printf("\nTry again!\n");
+   goto input5;
+}
 #ifdef SUSE73
 bgcolour+=10;
 #endif
 
-/*---------------------------------------------------- get data limits */
 /*----------------------------------------------- get the data limits */
 actnode=&(actfield->dis[0].node[0]);
 velx    = actnode->sol.a.da[0][0];
@@ -302,32 +390,47 @@ for (i=0;i<numnp;i++) /* loop nodes */
 } /* end of loop over nodes */
 
 /*--------------------------------------- store max/min data in FLIMS */
-if (minvx==maxvx) maxvx=minvx+ONE;
 FLIMS[0][0]=minvx;
 FLIMS[0][1]=maxvx;
 
-if (minvy==maxvy) maxvy=minvy+ONE;
 FLIMS[1][0]=minvy;
 FLIMS[1][1]=maxvy;
 
-if (minvz==maxvz) maxvz=minvz+ONE;
 FLIMS[2][0]=minvz;
 FLIMS[2][1]=maxvz;
 
-if (maxpre==minpre) maxpre=minpre+ONE;
 FLIMS[3][0]=minpre;
 FLIMS[3][1]=maxpre;
 
-if (minabsv==maxabsv) maxabsv=minabsv+ONE;
-FLIMS[5][0]=maxabsv;
-FLIMS[5][1]=ZERO;
+FLIMS[5][0]=minabsv;
+FLIMS[5][1]=maxabsv;
 
-FLIMS[4][0]=maxabsv;
-FLIMS[4][1]=ZERO;
+FLIMS[4][0]=0.000000001;
+FLIMS[4][1]=1.000000001;
 
+FLIMS[6][0]=0.000000001;
+FLIMS[6][1]=1.000000001;
 
+/*------------------------------------------------------ check limits */
+for (i=0;i<NKEYS;i++)
+{
+   for (j=0;j<2;j++)
+   {
+      if (FABS(FLIMS[i][j])<EPS9) 
+      {
+         if (FLIMS[i][j]<ZERO) FLIMS[i][j] = -0.000000001;
+         else                  FLIMS[i][j] =  0.000000001;
+      }      
+   }
+   if (FLIMS[i][0]==FLIMS[i][1]) FLIMS[i][1] += ONE;
+}
+
+/*-------------------------------------- set real number of last step */
+LASTSTEP=step_a.a.iv[ncols-1];
+
+printf("bgcolour %d",bgcolour);
 /*-------------------------- call Fortran routine which calls VISUAL2 */
-v3call(&IOPT,&WIN3D,
+v3call(&IOPT,&WIN3D,&CMUNIT,
        &NKEYS,IKEYS,FKEYS,FLIMS,
        &MIRROR,&numnp,&KCEL1,&KCEL2,&KCEL3,&KCEL4,
        &KSURF,&bgcolour);
@@ -456,15 +559,15 @@ case fluid:
          actanode=actgnode->mfcpnode[NUMA];
 	 if (actanode==NULL)
 	 {
-            XYZ[i][0] = actnode->x[0];
-            XYZ[i][1] = actnode->x[1];	 
-            XYZ[i][2] = actnode->x[2];	 
+            XYZ[i][0] = actnode->x[0]*FACX;
+            XYZ[i][1] = actnode->x[1]*FACY;   
+            XYZ[i][2] = actnode->x[2]*FACZ;   
          }
 	 else
 	 {
-	    XYZ[i][0] = actanode->x[0] + actanode->sol.a.da[icol][0];
-	    XYZ[i][1] = actanode->x[1] + actanode->sol.a.da[icol][1];	   
-	    XYZ[i][2] = actanode->x[2] + actanode->sol.a.da[icol][2];	   
+	    XYZ[i][0] = (actanode->x[0]+actanode->sol.a.da[icol][0])*FACX;
+	    XYZ[i][1] = (actanode->x[1]+actanode->sol.a.da[icol][1])*FACY;    
+	    XYZ[i][2] = (actanode->x[2]+actanode->sol.a.da[icol][2])*FACZ;    
          }
       }
 #else
@@ -476,9 +579,9 @@ case fluid:
       for (i=0;i<numnp;i++)
       {
          actnode=&(actfield->dis[0].node[i]);
-         XYZ[i][0] = actnode->x[0];
-         XYZ[i][1] = actnode->x[1];
-         XYZ[i][2] = actnode->x[2];
+         XYZ[i][0] = actnode->x[0]*FACX;
+         XYZ[i][1] = actnode->x[1]*FACY;
+         XYZ[i][2] = actnode->x[2]*FACZ;
       }
    }
 break;
@@ -729,12 +832,12 @@ case fluid:
    if (icol==-1 || icol+INCRE > ncols-1) 
    {
       icol=0;
-      ACTSTEP=FIRSTSTEP;
+      ACTSTEP=step_a.a.iv[icol];
    }
    else
    { 
       icol+=INCRE;
-      ACTSTEP+=DSTEP;
+      ACTSTEP=step_a.a.iv[icol];
    }
    *TIME = time_a.a.dv[icol];
 break;   
@@ -822,6 +925,16 @@ VIS2-routines are not compiled into the program
 
 ------------------------------------------------------------------------*/
 void v3_init()   
+{
+dserror("VISUAL3 PACKAGE not compiled into programm\n");
+return;
+}
+void v3_init_()   
+{
+dserror("VISUAL3 PACKAGE not compiled into programm\n");
+return;
+}
+void v3_init__()   
 {
 dserror("VISUAL3 PACKAGE not compiled into programm\n");
 return;

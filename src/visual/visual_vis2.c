@@ -81,6 +81,7 @@ static INT      KCELL;                /* number of visualised cells -
 static INT      IOPT;                 /* program mode                   */
 static INT      IVORT;                /* flag for vorticity calculation */
 static INT      ITURBU;               /* flag for turbulence calc.      */
+static INT      SCAL;
 static INT      DSTEP;                /* increment of visualised steps  */
 static INT      INCRE;                /* increment of visualised steps  */
 static INT      NUMA;                 /* number of ALE-FIELD            */
@@ -155,6 +156,7 @@ FIELD         *actfield;        /* actual field  			*/
 FIELD         *alefield;
 FIELD         *structfield;
 ARRAY          time_a ;         /* time array				*/
+ARRAY          step_a ;         /* time array				*/
 FLUID_DYNAMIC *fdyn;                /* pointer to fluid dyn. inp.data   */
 FLUID_DYN_CALC *dynvar;             /* pointer to fluid_dyn_calc        */ 
 /*!---------------------------------------------------------------------                                         
@@ -170,6 +172,7 @@ void vis2caf(INT numff, INT numaf, INT numsf)
 {
 
 INT iscan, i,j,k;
+INT screen, dummy;
 CALC_ACTION    *action;             /* pointer to the cal_action enum   */
 INTRA          *actintra;           /* pointer to active intra-communic.*/
 PARTITION      *actpart;            /* pointer to active partition      */
@@ -191,10 +194,20 @@ NUMA=numaf;
 /*------ read solution data from pss-file or flavia.res-file of proc 0 */
 input0:
 printf("\n");
-printf("   Where are the visualisation data stored?\n");
-printf("      0:   pss-file\n");
-printf("      1:   flavia.res-file\n");
-scanf("%d",&DATAFILE);
+printf("     Where are the visualisation data stored?\n");
+printf("      0 :   pss-file\n");
+printf("     [1]:   flavia.res-file\n");
+screen=getchar();
+switch(screen)
+{
+case 10: DATAFILE=1; break;
+case 48: DATAFILE=0; dummy=getchar(); break;
+case 49: DATAFILE=1; dummy=getchar(); break;
+default: 
+   printf("\nTry again!\n");
+   goto input0;
+}
+
 if (DATAFILE==0)
 {
    visual_readpss(actfield,&ncols,&time_a);
@@ -203,7 +216,8 @@ if (DATAFILE==0)
 }
 else if (DATAFILE==1)
 {
-   visual_readflaviares(actfield,&ncols,&time_a,&FIRSTSTEP,&LASTSTEP,&DSTEP);
+   visual_readflaviares(actfield,&ncols,&time_a,&step_a,
+                        &FIRSTSTEP,&LASTSTEP,&DSTEP);
    INCRE=1;
 }
 else 
@@ -224,7 +238,7 @@ MNODE  = actfield->dis[0].numnp;
 
 input1:
 printf("\n");
-printf("   Actual size of data structures:\n");
+printf("     Actual size of data structures:\n");
 printf("      MNODE  = %d\n",MNODE);
 printf("      MPTRI  = %d\n",MPTRI);
 printf("      MPPTRI = %d\n",MPPTRI);
@@ -233,8 +247,20 @@ printf("      MPFACE = %d\n",MPFACE);
 printf("      MEDGE  = %d\n",MEDGE);
 printf("      MPEDGE = %d\n",MPEDGE);
 printf("\n");
-printf("   New size of data structures? (0: no; 1: yes)\n");
-scanf("%d",&iscan);
+printf("     New size of data structures?\n");
+printf("     [0]:   no\n");
+printf("      1 :   yes\n");
+screen=getchar();
+switch(screen)
+{
+case 10: iscan=0; break;
+case 48: iscan=0; dummy=getchar(); break;
+case 49: iscan=1; dummy=getchar(); break;
+default: 
+   printf("\nTry again!\n");
+   goto input1;
+}
+
 if (iscan!=0)
 {
    printf("MPTRI  =\n");  
@@ -253,9 +279,21 @@ if (iscan!=0)
 } /* endif (iscan!=0) */
 
 /*----------------------------------------------- calculate vorticity */
+input2:
 printf("\n");
-printf("   Do you want to calculate the vorticity? (0: no; 1: yes)\n");
-scanf("%d",&IVORT);
+printf("     Do you want to calculate the vorticity?\n");
+printf("     [0]:   no\n");
+printf("      1 :   yes\n");
+screen=getchar();
+switch(screen)
+{
+case 10: IVORT=0; break;
+case 48: IVORT=0; dummy=getchar(); break;
+case 49: IVORT=1; dummy=getchar(); break;
+default: 
+   printf("\nTry again!\n");
+   goto input2;
+}
 
 if (IVORT==1)
 {
@@ -282,19 +320,31 @@ if (IVORT==1)
           &container,action); 
 } /* endif (IVORT==1) */
 
-input2:
+input3:
 printf("\n");
 printf("     Please give the mode in which you want to run VISUAL2:\n");
-printf("     0: steady data structure, grid and variables\n");
-printf("     1: steady data structure and grid, unsteady variables\n");
-printf("     2: steady data structure, unsteady grid and variables\n");
-printf("     3: unsteady data structure, grid and variables\n");
-scanf("%d",&IOPT);
+printf("      0 : steady data structure, grid and variables\n");
+printf("      1 : steady data structure and grid, unsteady variables\n");
+printf("     [2]: steady data structure, unsteady grid and variables\n");
+printf("      3 : unsteady data structure, grid and variables\n");
+screen=getchar();
+switch(screen)
+{
+case 10: IOPT=2; break;
+case 48: IOPT=0; dummy=getchar(); break;
+case 49: IOPT=1; dummy=getchar(); break;
+case 50: IOPT=2; dummy=getchar(); break;
+case 51: IOPT=3; dummy=getchar(); break;
+default: 
+   printf("\nTry again!\n");
+   goto input3;
+}
+
 if (IOPT==0) icol++;
 if (IOPT==3)
 {
    printf("   sorry, mode not implemented yet - new input!\n");
-   goto input2;
+   goto input3;
 }
 if (IOPT==2) /*-------------------------- read ALE field from pss-file */
 {
@@ -309,7 +359,7 @@ if (IOPT==2) /*-------------------------- read ALE field from pss-file */
       if (DATAFILE==0)
          visual_readpss(alefield,&nacols,NULL);
       else if (DATAFILE==1)
-         visual_readflaviares(alefield,&nacols,NULL,&FIRSTSTEP,&LASTSTEP,&DSTEP);
+         visual_readflaviares(alefield,&nacols,NULL,NULL,&FIRSTSTEP,&LASTSTEP,&DSTEP);
       if (ncols!=nacols)
       {
          printf("\n");
@@ -326,7 +376,7 @@ if (IOPT==2) /*-------------------------- read ALE field from pss-file */
       if (DATAFILE==0)
          visual_readpss(alefield,&nacols,NULL);
       else if (DATAFILE==1)
-         visual_readflaviares(alefield,&nacols,NULL,&FIRSTSTEP,&LASTSTEP,&DSTEP);
+         visual_readflaviares(alefield,&nacols,NULL,NULL,&FIRSTSTEP,&LASTSTEP,&DSTEP);
       if (ncols!=nacols)
       {
          printf("\n");
@@ -340,13 +390,33 @@ dserror("FSI functions not compiled in!\n");
 #endif
 }
 /*--------------------------------------------------------- y-scaling */
+input4:
 printf("\n");
-printf("   Scaling parameter for y-coordinates?\n");
-scanf("%lf",&yscale);
+printf("     Scaling Geometry?\n");
+printf("     [0]: no \n");
+printf("      1 : yes\n");
 
+screen=getchar();
+switch(screen)
+{
+case 10: SCAL=0; break;
+case 48: SCAL=0; dummy=getchar(); break;
+case 49: SCAL=1; dummy=getchar(); break;
+default: 
+   printf("\nTry again!\n");
+   goto input4;
+}
+if (SCAL==1)
+{
+   printf("\n");
+   printf("     Scaling parameter for y-coordinates?\n");
+   scanf("%lf",&yscale);
+}
+else
+   yscale=ONE;
 
 /*--------------------------------------------------------- increment */
-input3:
+input5:
 if (DATAFILE==0)
 {
    printf("\n");
@@ -356,17 +426,31 @@ if (DATAFILE==0)
    if (INCRE>ncols-1)
    {
       printf("   Increment too large --> Try again!\n");
-      goto input3;
+      goto input5;
    }
 }
+/*--------------------------------------------------- modiy last step */
+else
+   LASTSTEP=step_a.a.iv[ncols-1];
+
 /*------------------------------------------------- background colour */
-bgcolour=0;
+input6:
 printf("\n");
-printf("   Colours? \n");
-printf("   0: colours black background\n");
-printf("   1: colours white background\n");
-printf("   2: grey    white background\n");
-scanf("%d",&bgcolour);
+printf("     Colours? \n");
+printf("     [0]: colours    - black background\n");
+printf("      1 : colours    - white background\n");
+printf("      2 : grey scale - white background\n");
+screen=getchar();
+switch(screen)
+{
+case 10: bgcolour=0; break;
+case 48: bgcolour=0; dummy=getchar(); break;
+case 49: bgcolour=1; dummy=getchar(); break;
+case 50: bgcolour=2; dummy=getchar(); break;
+default: 
+   printf("\nTry again!\n");
+   goto input6;
+}
 #ifdef SUSE73
 bgcolour+=10;
 #endif
@@ -1222,12 +1306,18 @@ case fluid:
    if (icol==-1 || icol+INCRE > ncols-1) 
    {
       icol=0;
-      ACTSTEP=FIRSTSTEP;
+      if (DATAFILE==0)
+         ACTSTEP=FIRSTSTEP;
+      else         
+         ACTSTEP=step_a.a.iv[icol];
    }
    else
    { 
       icol+=INCRE;
-      ACTSTEP+=DSTEP;
+      if (DATAFILE==0)
+         ACTSTEP+=DSTEP;
+      else
+         ACTSTEP=step_a.a.iv[icol];
    }
    *TIME = time_a.a.dv[icol];
 break;   
@@ -1462,7 +1552,7 @@ return;
 <pre>                                                         genk 03/03      
 
 this function							   
-creates the file vis<icol>.xwd via system command (screen-shot     
+creates the file vis<ACTSTEP>.xwd via system command (screen-shot     
 xwd -out ...)							   
 converts the xwd-file into a .gif file via system command (convert)
 deletes the xwd-file via system command (rm)			   
@@ -1544,6 +1634,28 @@ VIS2-routines are not compiled into the program
 
 ------------------------------------------------------------------------*/
 void v2_init(
+             char *titl, INT *iopt, INT *cmncol, char *cmfile, INT *cmunit,
+	     INT *xypix, float *xymin, float *xymax,
+	     INT *nkeys, INT *ikeys, INT *tkeys, INT *fkeys, float **flims,
+	     INT *mnode, INT *mptri, INT *mpptri,
+	     INT *mface, INT *mpface, INT *medge, INT *mpedge
+	    )   
+{
+dserror("VISUAL2 PACKAGE not compiled into programm\n");
+return;
+}
+void v2_init_(
+             char *titl, INT *iopt, INT *cmncol, char *cmfile, INT *cmunit,
+	     INT *xypix, float *xymin, float *xymax,
+	     INT *nkeys, INT *ikeys, INT *tkeys, INT *fkeys, float **flims,
+	     INT *mnode, INT *mptri, INT *mpptri,
+	     INT *mface, INT *mpface, INT *medge, INT *mpedge
+	    )   
+{
+dserror("VISUAL2 PACKAGE not compiled into programm\n");
+return;
+}
+void v2_init__(
              char *titl, INT *iopt, INT *cmncol, char *cmfile, INT *cmunit,
 	     INT *xypix, float *xymin, float *xymax,
 	     INT *nkeys, INT *ikeys, INT *tkeys, INT *fkeys, float **flims,

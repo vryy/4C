@@ -10,6 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
+
 #include "../headers/standardtypes.h"
 #if defined VISUAL2_PACKAGE || defined VISUAL3_PACKAGE
 /*----------------------------------------------------------- prototype */
@@ -68,12 +69,15 @@ to visualise it with VISUAL2/VISUAL3
 void visual_readflaviares(FIELD   *actfield, 
                           INT     *ntsteps,  
 		          ARRAY   *time_a,
+			  ARRAY   *step_a,
 			  INT     *FIRSTSTEP,
 			  INT     *LASTSTEP,
 			  INT     *DSTEP	 
-		         ) 
+		         )  
 {
 INT             i,j,k;            /* simply some counters	        */
+INT             screen;
+INT             dummy;
 INT             stepin=0;         /* number of result steps read        */
 INT             num;              /* nodenumber                         */
 INT             numnp;            /* number of nodes in actfield        */
@@ -82,6 +86,8 @@ INT             numnp_ale;
 INT             numdf;            /* number of fluid dofs               */
 INT             mone=-1;
 INT             numsf,numff;
+INT             ALL;
+INT             var;
 static INT      firststep;
 static INT      laststep;
 static INT      ncols;
@@ -137,27 +143,52 @@ case fluid:
    stepin--;
    input1:
    printf("\n");
-   printf("   There are %d set of results in .flavia.res\n",stepin);
-   printf("   At which step shall the visualisation start? (min = 0) \n");
-   scanf("%d",&firststep);
-   printf("   At which step shall the visualisation end? (max = %d)\n",
-              stepin-1);   
-   scanf("%d",&laststep);
-   if (laststep<=firststep || firststep<0 || laststep >= stepin)
+   printf("     There are %d set of results in .flavia.res\n",stepin);
+   printf("     Do you want to see all of them?\n");
+   printf("      0 : no \n");
+   printf("     [1]: yes\n");
+
+   screen=getchar();
+   switch(screen)
    {
-      printf("   Input out of range --> try again!\n");
+   case 10: ALL=1; break;
+   case 48: ALL=0; dummy=getchar(); break;
+   case 49: ALL=1; dummy=getchar(); break;
+   default: 
+      printf("\nTry again!\n");
       goto input1;
    }
-   ncols = laststep - firststep + 1;
-   /*--------------------------------------------------------- increment */
-   input2:
-   printf("\n");
-   printf("   Increment step number by ...? (<%d)\n",ncols-1);
-   scanf("%d",&incre);
-   if (incre>ncols-1 || incre==0)
+   if (ALL==0)
    {
-      printf("   Increment out of range --> Try again!\n");
-      goto input2;
+      input2:
+      printf("     At which step shall the visualisation start? (min = 0) \n");
+      scanf("%d",&firststep);
+      printf("     At which step shall the visualisation end? (max = %d)\n",
+                stepin-1);   
+      scanf("%d",&laststep);
+      if (laststep<=firststep || firststep<0 || laststep >= stepin)
+      {
+         printf("   Input out of range --> try again!\n");
+         goto input2;
+      }
+      ncols = laststep - firststep + 1;
+      /*------------------------------------------------------ increment */
+      input3:
+      printf("\n");
+      printf("     Increment step number by ...? (<%d)\n",ncols-1);
+      scanf("%d",&incre);
+      if (incre>ncols-1 || incre==0)
+      {
+         printf("   Increment out of range --> Try again!\n");
+         goto input2;
+      }
+      dummy=getchar();
+   }
+   else
+   {
+      firststep  = 0;
+      laststep = stepin-1;
+      incre    = 1;
    }
    /*-------------------------------------------------- determine ncols */
    counter = firststep;
@@ -174,12 +205,14 @@ case fluid:
    val = amdef("val",&val_a,numnp,numdf,"DA");
    /*------------------------------------------------ create time array */
    amdef("time",time_a,ncols,1,"DV");
+   /*------------------------------------------------ create step array */
+   amdef("step",step_a,ncols,1,"IV");   
    /*----------------------------------------- allocate nodal sol field */
    for (i=0;i<numnp;i++)
    {
       actnode=&(actfield->dis[0].node[i]);      
       amredef(&(actnode->sol),ncols,numdf,"DA");
-   }  
+   }
    /*------------------------------------ find firststep in .flavia.res */
    rewind(in);
    stepin=-1;
@@ -196,14 +229,19 @@ case fluid:
    stepin = firststep;
    counter = 0;
    eof = 0;
-   printf("\n   Reading FLUID results ... \n");
+   printf("\n     Reading FLUID results ... \n");
    while (stepin<=laststep && eof==0)
    {
-      printf("   Reading STEP %d\n",stepin);
+      printf("        STEP %d\n",stepin);
       /*---------------------------------------------- find & read time */
       vis_frfind("# TIME");
       foundit=strpbrk(line,"-.1234567890");
       time_a->a.dv[counter] = strtod(foundit,&end);
+      /*---------------------------------------------- find & read step */
+      vis_frfind("# STEP");
+      foundit=strpbrk(line,"1234567890");
+      sscanf(foundit," %d ",&var);
+      step_a->a.iv[counter]= var;
       /*---------------------------------- find & read velocity results */
       vis_frfind("VALUES");
       for (i=0;i<numnp;i++)
@@ -294,11 +332,12 @@ case ale:
    numnp = fluidfield->dis[0].numnp;
    if (numsf != -1) numnp_struct = structfield->dis[0].numnp;
    numnp_ale = actfield->dis[0].numnp;
-   for (i=0;i<fluidfield->dis[0].numnp;i++)
+   /*----------------------------------------------- create index array */
+   for (i=0;i<numnp;i++)
    {
       actnode = &(fluidfield->dis[0].node[i]);  
       globloc.a.iv[actnode->Id] = actnode->Id_loc;
-   }   
+   }
    /* ---------------------------------------------------initialisation */
    fdyn = alldyn[genprob.numff].fdyn;
    numdf = fdyn->numdf-1;
@@ -309,7 +348,7 @@ case ale:
    {
       actnode=&(actfield->dis[0].node[i]);      
       amredef(&(actnode->sol),ncols,numdf,"DA");
-   }  
+   }
    /*------------------------------------ find firststep in .flavia.res */
    rewind(in);
    stepin=-1;
@@ -326,10 +365,10 @@ case ale:
    stepin = firststep;
    counter = 0;
    eof = 0;
-   printf("\n   Reading ALE results ... \n");
+   printf("\n     Reading ALE results ... \n");
    while (stepin<=laststep && eof==0)
    {
-      printf("   Reading STEP %d\n",stepin);
+      printf("        STEP %d\n",stepin);
       /*------------------------------ find & read displacement results */
       vis_frfind("VALUES");
       /*------------ skip results of structural field if there are some */

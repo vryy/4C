@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief postprocessing 
+\brief postprocessing
 
 <pre>
 Maintainer: Steffen Genkinger
@@ -9,7 +9,7 @@ Maintainer: Steffen Genkinger
             0711 - 685-6127
 </pre>
 
-------------------------------------------------------------------------*/
+-----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "../fluid_full/fluid_prototypes.h"
 /*----------------------------------------------------------------------*
@@ -57,6 +57,8 @@ void ntavisual()
 {
 INT    i;        /* simply a counter                                    */
 INT    actnum;   /* field number to visualise                           */
+INT    screen;
+INT    dummy;
 FIELD *actfield; /* actual field                                        */
 
 #ifdef DEBUG 
@@ -92,8 +94,9 @@ case 2: /* 2D - Problem: Visualisation with VISUAL2*/
 #ifdef VISUAL2_PACKAGE
 /*----------------------------------------------------------------------*/
    printf("\n");
-   printf("   Starting Visual2 filter ... \n");
-   printf("   ----------------------------\n");      
+   printf("     Starting Visual2 filter ... \n");
+   printf("     ----------------------------\n\n");      
+   printf("     [ ] = DEFAULT = RETURN \n\n");
 /*---------------------------------------------- check number of fields */
    switch (genprob.numfld)
    {
@@ -101,7 +104,7 @@ case 2: /* 2D - Problem: Visualisation with VISUAL2*/
       actfield=&(field[0]);
       if (actfield->fieldtyp==fluid)
       {
-         printf("   Visualisation of a single field problem: FLUID\n");
+         printf("     Visualisation of a single field problem: FLUID\n");
 	 vis2caf(0,-1,-1); 
       }
       else if (actfield->fieldtyp==structure)
@@ -115,19 +118,30 @@ case 2: /* 2D - Problem: Visualisation with VISUAL2*/
    break;
    default: /* multi field problem */
       printf("\n");
-      printf("   Visualisation of a multi field problem:\n");
-      printf("   Number of fields: %d\n",genprob.numfld);
+      printf("     Visualisation of a multi field problem:\n");
+      printf("     Number of fields: %d\n",genprob.numfld);
       printf("\n");
             
+      input2:
       if (genprob.numsf>=0)
-      printf("   Actual number of STRUCTURE field:  %d\n",genprob.numsf); 
+      printf("     Actual number of STRUCTURE field:   %d\n",genprob.numsf); 
       if (genprob.numff>=0)
-      printf("   Actual number of FLUID field:      %d\n",genprob.numff);
+      printf("     Actual number of FLUID field:      [%d]\n",genprob.numff);
       if (genprob.numaf>=0)
-      printf("   Actual number of ALE field:        %d\n",genprob.numaf);            
+      printf("     Actual number of ALE field:         %d\n",genprob.numaf);            
       printf("\n");
-      printf("   Which field do you want to visualise?\n");
-      scanf("%d",&actnum);
+      printf("     Which field do you want to visualise?\n");
+      screen=getchar();
+      switch(screen)
+      {
+      case 10: actnum=genprob.numff; break;
+      case 48: actnum=0; dummy=getchar(); break;
+      case 49: actnum=1; dummy=getchar(); break;
+      case 50: actnum=2; dummy=getchar(); break;
+      default: 
+         printf("\nTry again!\n");
+         goto input2;
+      }      
       if(actnum==genprob.numff) 
          vis2caf(genprob.numff,genprob.numaf,genprob.numsf);
       else
@@ -144,8 +158,10 @@ case 3: /* 3D - Problem : Visualisation with VISUAL3 */
 #ifdef VISUAL3_PACKAGE
 /*----------------------------------------------------------------------*/
    printf("\n");
-   printf("   Starting Visual3 filter ... \n");
-   printf("   ----------------------------\n");      
+   printf("     Starting Visual3 filter ... \n");
+   printf("     ----------------------------\n\n");   
+   printf("     [ ] = DEFAULT = RETURN \n\n");
+      
 /*---------------------------------------------- check number of fields */
    switch (genprob.numfld)
    {
@@ -153,7 +169,7 @@ case 3: /* 3D - Problem : Visualisation with VISUAL3 */
       actfield=&(field[0]);
       if (actfield->fieldtyp==fluid)
       {
-         printf("   Visualisation of a single field problem: FLUID\n");
+         printf("     Visualisation of a single field problem: FLUID\n");
 	 vis3caf(0,-1,-1); 
       }
       else if (actfield->fieldtyp==structure)
@@ -167,19 +183,30 @@ case 3: /* 3D - Problem : Visualisation with VISUAL3 */
    break;
    default: /* multi field problem */
       printf("\n");
-      printf("   Visualisation of a multi field problem:\n");
-      printf("   Number of fields: %d\n",genprob.numfld);
+      printf("     Visualisation of a multi field problem:\n");
+      printf("     Number of fields: %d\n",genprob.numfld);
       printf("\n");
             
+      input1:
       if (genprob.numsf>=0)
-      printf("   Actual number of STRUCTURE field:  %d\n",genprob.numsf); 
+      printf("     Actual number of STRUCTURE field:   %d\n",genprob.numsf); 
       if (genprob.numff>=0)
-      printf("   Actual number of FLUID field:      %d\n",genprob.numff);
+      printf("     Actual number of FLUID field:      [%d]\n",genprob.numff);
       if (genprob.numaf>=0)
-      printf("   Actual number of ALE field:        %d\n",genprob.numaf);            
+      printf("     Actual number of ALE field:         %d\n",genprob.numaf);            
       printf("\n");
-      printf("   Which field do you want to visualise?\n");
-      scanf("%d",&actnum);
+      printf("     Which field do you want to visualise?\n");
+      screen=getchar();
+      switch(screen)
+      {
+      case 10: actnum=genprob.numff; break;
+      case 48: actnum=0; dummy=getchar(); break;
+      case 49: actnum=1; dummy=getchar(); break;
+      case 50: actnum=2; dummy=getchar(); break;
+      default: 
+         printf("\nTry again!\n");
+         goto input1;
+      }
       if(actnum==genprob.numff) 
          vis3caf(genprob.numff,genprob.numaf,genprob.numsf);
       else
