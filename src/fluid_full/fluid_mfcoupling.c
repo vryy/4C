@@ -56,6 +56,10 @@ INT     numff,numaf;
 DOUBLE  tol=EPS8;                            /* tolerance for node dist */
 NODE   *actfnode, *actanode;                 /* actual nodes            */
 GNODE  *actfgnode,*actagnode;                /* actual gnodes           */
+ARRAY   aindex_a;
+INT    *aindex;
+DLINE  *actdline;
+DNODE  *actdnode;
 
 #ifdef DEBUG 
 dstrc_enter("fluid_initmfcoupling");
@@ -81,8 +85,6 @@ for (i=0;i<numfnp;i++)
    amdef("sol_mf",&actfnode->sol_mf,1,actfnode->numdf,"DA");
    amzero(&(actfnode->sol_mf));
    actfgnode->mfcpnode=(NODE**)CCACALLOC(numfld,sizeof(NODE*));
-   if (actfgnode->mfcpnode==NULL) 
-      dserror("Allocation of coupling node pointers failed");
    for (j=0;j<numfld;j++) actfgnode->mfcpnode[j]=NULL;
 } /* end of loop over fluid nodes */
 
@@ -98,10 +100,12 @@ for (i=0;i<numanp;i++)
    amdef("sol_mf",&actanode->sol_mf,2,actanode->numdf,"DA");
    amzero(&(actanode->sol_mf));
    actagnode->mfcpnode=(NODE**)CCACALLOC(numfld,sizeof(NODE*));
-   if (actagnode->mfcpnode==NULL) 
-      dserror("Allocation of coupling node pointers failed");
    for (j=0;j<numfld;j++) actagnode->mfcpnode[j]=NULL;
 } /* end of loop over ale nodes */
+
+/*------------------------------- create and initialsise index arrays */
+aindex = amdef("aindex",&aindex_a,numanp,1,"IV");
+for (i=0;i<numanp;i++) aindex[i]=1;
 
 /* find multifield coupled nodes and set ptrs to the corresponding  
    nodes of  the other fields ------------------------------------------*/
@@ -114,19 +118,24 @@ for (i=0;i<numfnp;i++)
    /*----------------------- loop ale nodes and find corresponding node */
    for (j=0;j<numanp;j++)
    {
+      if (aindex[j]==0) continue;
       actanode  = &(alefield->dis[0].node[j]);
       cheque_distance(&(actfnode->x[0]),&(actanode->x[0]),tol,&ierr);
       if(ierr==0) continue;
       afound++;
       actagnode = actanode->gnode;
+      aindex[j]=0;
       break;          
    } /* end of loop over ale nodes */      
    
    /*------------------------------ set pointers to corresponding nodes */
-                 actfgnode->mfcpnode[numff]=actfnode;
-   if(afound>0)  actfgnode->mfcpnode[numaf]=actanode;   
-   if(afound>0)  actagnode->mfcpnode[numff]=actfnode;
-   if(afound>0)  actagnode->mfcpnode[numaf]=actanode;	    
+   actfgnode->mfcpnode[numff]=actfnode;
+   if(afound>0)  
+   {
+      actfgnode->mfcpnode[numaf]=actanode;   
+      actagnode->mfcpnode[numff]=actfnode;
+      actagnode->mfcpnode[numaf]=actanode;	    
+   }
 }/* end of loop over fluidnodes */   
    
 /*------------------------------------------------- plausibility checks */
@@ -134,17 +143,84 @@ for (i=0;i<numanp;i++)
 {
    actanode  = &(alefield->dis[0].node[i]); 
    actagnode = actanode->gnode;
+   dsassert(actagnode->mfcpnode!=NULL,"No fluid node for ale node!\n");
    if (actagnode->freesurf==NULL) continue; 
    dsassert(actagnode->dirich!=NULL,"No dirich condition for freesurf ale node!\n"); 
    dsassert(actagnode->dirich->dirich_type==dirich_freesurf,
    "wrong dirch_type at freesurface for ale node!\n");      
+   if (actanode->locsysId>0)
+   {
+      actfnode = actagnode->mfcpnode[genprob.numff];
+      dsassert(actfnode!=NULL,"cannot read from NULL pointer\n");
+      if (actfnode->locsysId != actanode->locsysId)
+         dserror("locsysId at free surface not the same for ale and fluid!\n");
+   }
 }   
 
 /*-------------------------------------------------- print out coupling */
 if (genprob.visual==0)
 out_fluidmf(fluidfield);   
 
-   
+/*--------------------------------------------- init the slip dirich BC */
+for (i=0;i<numfnp;i++)
+{
+   actfnode  = &(fluidfield->dis[0].node[i]);
+   actfgnode = actfnode->gnode;
+   /*-------------------------------- we are looking for a design nodes */
+   if (actfgnode->ondesigntyp==ondnode)
+   {   
+      actdnode=actfgnode->d.dnode;
+      /*-------------------------------------- find dline with slip DBC */
+      ierr=0;
+      for(j=0;j<actdnode->ndline;j++)
+      {
+         actdline=actdnode->dline[j];
+         if(actdline->slipdirich!=NULL)
+         {
+            ierr++;
+            break;
+         }
+      }
+      if (ierr==0) continue;
+      /*------ check if actual node is first or last node on this dline */
+      actdnode=actdline->dnode[0];   
+      cheque_distance(&(actdnode->x[0]),&(actfnode->x[0]),tol,&ierr);
+      if (ierr!=0)
+      {
+         if (actfgnode->freesurf!=NULL)
+         {
+            dsassert(actfgnode->slipdirich->firstnode==NULL,
+               "lastnode already set for slipdirich!\n");
+            actdline->slipdirich->firstnode=actfnode;
+         }
+         else
+         {
+            dsassert(actfgnode->slipdirich->lastnode==NULL,
+               "lastnode already set for slipdirich!\n");
+            actdline->slipdirich->lastnode=actfnode;
+         }
+         continue;
+      }
+      actdnode=actdline->dnode[1];
+      cheque_distance(&(actdnode->x[0]),&(actfnode->x[0]),tol,&ierr);
+      if (ierr!=0)
+      {
+         if (actfgnode->freesurf!=NULL)
+         {
+            dsassert(actfgnode->slipdirich->firstnode==NULL,
+             "lastnode already set for slipdirich!\n");
+            actdline->slipdirich->firstnode=actfnode;
+         }
+         else
+         {
+            dsassert(actfgnode->slipdirich->lastnode==NULL,
+               "lastnode already set for slipdirich!\n");
+            actdline->slipdirich->lastnode=actfnode;
+         }
+         continue;
+      }
+   }
+}   
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
