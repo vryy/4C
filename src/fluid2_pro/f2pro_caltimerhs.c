@@ -1,6 +1,14 @@
 /*!----------------------------------------------------------------------
 \file
 \brief time RHS for fluid2_pro element
+
+<pre>
+Maintainer: Steffen Genkinger
+            genkinger@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/genkinger/
+            0711 - 685-6127
+</pre>
+
 ------------------------------------------------------------------------*/
 /*! 
 \addtogroup FLUID2_PRO 
@@ -11,13 +19,6 @@
 #include "fluid2pro.h"
 /*!--------------------------------------------------------------------- 
 \brief galerkin part of time forces for vel dofs
-
-<pre>
-Maintainer: Steffen Genkinger
-            genkinger@statik.uni-stuttgart.de
-            http://www.uni-stuttgart.de/ibs/members/genkinger/
-            0711 - 685-6127
-</pre>
 
 <pre>                                                        basol 11/02
 

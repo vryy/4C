@@ -2,6 +2,13 @@
 \file
 \brief all data types for solver packages
 
+<pre>
+Maintainer: Malte Neumann
+            neumann@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/neumann/
+            0711 - 685-6121
+</pre>
+
 ---------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*
  | includes for solver package AZTEC 2.1                 m.gee 10/01    |

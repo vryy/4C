@@ -2,6 +2,13 @@
 \file
 \brief 
 
+<pre>
+Maintainer: Malte Neumann
+            neumann@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/neumann/
+            0711 - 685-6121
+</pre>
+
 ---------------------------------------------------------------------*/
 
 /*--------------------------------------- check plausibility of defines */

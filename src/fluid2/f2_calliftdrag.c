@@ -1,3 +1,15 @@
+/*!---------------------------------------------------------------------
+\file
+\brief 
+
+<pre>
+Maintainer: Steffen Genkinger
+            genkinger@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/genkinger/
+            0711 - 685-6127
+</pre>
+
+---------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 #ifdef D_FLUID2
 #include "../headers/standardtypes.h"
@@ -6,13 +18,6 @@
 #include "../fluid2/fluid2_prototypes.h"
 /*!----------------------------------------------------------------------
 \brief file pointers
-
-<pre>
-Maintainer: Steffen Genkinger
-            genkinger@statik.uni-stuttgart.de
-            http://www.uni-stuttgart.de/ibs/members/genkinger/
-            0711 - 685-6127
-</pre>
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c

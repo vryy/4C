@@ -1,6 +1,13 @@
 /*!----------------------------------------------------------------------
 \brief file pointers
 
+<pre>
+Maintainer: Malte Neumann
+            neumann@statik.uni-stuttgart.de
+            http://www.uni-stuttgart.de/ibs/members/neumann/
+            0711 - 685-6121
+</pre>
+
 <pre>                                                         m.gee 10/02
 This Container is used to transport variables from the 'steuerroutinen' 
 to the 'Elementroutinen'

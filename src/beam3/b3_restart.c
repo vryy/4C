@@ -1,8 +1,6 @@
-#ifdef D_BEAM3
-#include "../headers/standardtypes.h"
-#include "beam3.h"
-/*!----------------------------------------------------------------------
-\brief file pointers
+/*!---------------------------------------------------------------------
+\file
+\brief 
 
 <pre>
 Maintainer: Frank Huber
@@ -10,6 +8,13 @@ Maintainer: Frank Huber
             http://www.uni-stuttgart.de/ibs/members/huber/
             0771 - 685-6120
 </pre>
+
+---------------------------------------------------------------------*/
+#ifdef D_BEAM3
+#include "../headers/standardtypes.h"
+#include "beam3.h"
+/*!----------------------------------------------------------------------
+\brief file pointers
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
