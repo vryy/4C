@@ -283,22 +283,22 @@ if (maxgauss > MAXGAUSS)
 if (maxnod < MAXNOD)
 {
   printf("[37;1mMAXNOD is too large!![m\n");
-  dswarning(1,7);
+  dswarning(1,8);
 }
 if (maxele < MAXELE)
 {
   printf("[37;1mMAXELE is too large!![m\n");
-  dswarning(1,8);
+  dswarning(1,9);
 }
 if (maxdofpernode < MAXDOFPERNODE)
 {
   printf("[37;1mMAXDOFPERNODE is too large!![m\n");
-  dswarning(1,9);
+  dswarning(1,10);
 }
 if (maxgauss < MAXGAUSS)
 {
   printf("[37;1mMAXGAUSS is too large!![m\n");
-  dswarning(1,10);
+  dswarning(1,11);
 }
 
 printf("\n");
