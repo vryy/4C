@@ -141,8 +141,6 @@ void xfem_f2_calkvv(
    |  v * u_old * grad(u)     d_omega
   /
  *----------------------------------------------------------------------*/
-  if(fdyn->nic!=0) /* evaluate for Newton- and fixed-point-like-iteration */
-  {
     for (icn=0; icn<TWO*iel; icn++)
     {
       icol = index[icn];  
@@ -155,7 +153,6 @@ void xfem_f2_calkvv(
         estif[irow+1][icol+1] += aux;
       }
     }
-  }
   
 /*----------------------------------------------------------------------*
    Calculate full Galerkin part of matrix Nr(u):

@@ -193,8 +193,6 @@ EULER:
    |  tau_mu * u_old * grad(v) * u_old * grad(u)   d_omega   
   /
  *----------------------------------------------------------------------*/    
-    if (fdyn->nic!=0) /* evaluate for Newton- and fixed-point-like-iteration */
-    {
       for (icn=0; icn<TWO*iel; icn++)
       {
         auxc = (velint[0]*derxy[0][icn] + velint[1]*derxy[1][icn])*cc;
@@ -207,7 +205,6 @@ EULER:
           estif[irow+1][icol+1] += aux*DENS*DENS;
         }
       }
-    }
     
 /*----------------------------------------------------------------------*
    Calculate advection stabilisation part Nr(u):
@@ -316,8 +313,6 @@ EULER:
  *----------------------------------------------------------------------*/
     cc = fac * taump * visc * sign;
     
-    if (fdyn->nic!=0) /* evaluate for Newton- and fixed-point-like-iteration */
-    {
       for (icn=0; icn<TWO*iel; icn++)
       {
         icol = index[icn];              
@@ -332,7 +327,6 @@ EULER:
           estif[irow+1][icol+1] -= (derxy2[1][irn]+auxr)*aux*cc*DENS;
         }
       }
-    }
 
 /*----------------------------------------------------------------------*
    Calculate viscous stabilisation part Nr(u) for higher order elements:
@@ -796,8 +790,6 @@ void xfem_f2_calstabkpv(
   /
  *----------------------------------------------------------------------*/
   /* evaluate for Newton- and fixed-point-like-iteration */
-  if (fdyn->nic!=0)
-  {
     for (icn=0; icn<TWO*iel; icn++)
     {
       icol = index[icn];
@@ -809,7 +801,6 @@ void xfem_f2_calstabkpv(
         estif[posr][icol+1] -= derxy[1][irow]*aux*DENS;
       }
     }
-  }
 
   /*----------------------------------------------------------------------*
    Calculate stabilisation part Nr(u):
