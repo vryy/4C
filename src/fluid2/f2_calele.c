@@ -25,9 +25,13 @@ extern struct _GENPROB     genprob;
  *----------------------------------------------------------------------*/
 extern struct _MATERIAL  *mat;
 
-/*----------------------------------------------------------------------*/		    
+/*----------------------------------------------------------------------*/
 static ARRAY     eveln_a;  /* element velocities at (n)                 */
 static DOUBLE  **eveln;
+/*NOTE: if there is no classic time rhs (as described in WAW) the array
+         eveln is misused and does NOT contain the velocity at time (n)
+	 but rather a linear combination of old velocities and 
+	 accelerations depending upon the time integration scheme!!!!! */
 static ARRAY     evelng_a; /* element velocities at (n+gamma)           */
 static DOUBLE  **evelng;
 static ARRAY     ealecovn_a;  /* element ale-convective velocities      */
@@ -143,6 +147,7 @@ void f2_calele(
 		INT             init            
 	       )
 {
+INT		readfrom;	/* where to read dbc from 		*/
 
 #ifdef DEBUG 
 dstrc_enter("f2_calele");
@@ -211,9 +216,9 @@ case 0:
 /*                                            and element force vectors */
    f2_calint(data,ele,dynvar,hasext,
              estif,emass,etforce,eiforce,
-	     xyze,funct,deriv,deriv2,xjm,derxy,derxy2,
+             xyze,funct,deriv,deriv2,xjm,derxy,derxy2,
 	     eveln,evelng,epren,edeadn,edeadng,
-	     velint,vel2int,covint,vderxy,pderxy,vderxy2,
+   	     velint,vel2int,covint,vderxy,pderxy,vderxy2,
 	     wa1,wa2,visc);
 break;
 case 1:
@@ -264,8 +269,16 @@ default:
 }
 
 /*------------------------------- calculate element load vector edforce */
-fluid_caldirich(ele,edforce,estif,hasdirich,is_relax);
+if (is_relax)			/* calculation for relaxation parameter	*/
+   readfrom = 7;
+else				/* standard case			*/
+   readfrom = 3;		
 
+fluid_caldirich(ele,edforce,estif,hasdirich,readfrom);
+   
+/*------------------------- calculate emass * vel(n) for BDF2 method ---*/
+if (dynvar->nim)
+   f2_massrhs(ele,emass,eveln,eiforce); 
 end:
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -300,7 +313,11 @@ INT       i;        /* simply a counter                                 */
 INT       coupled;  /* flag for fsi interface element                   */
 INT       iel;      /* number of nodes per element                      */
 INT       actmat;   /* actual material number                           */
+INT       ldflag;
 GNODE    *actgnode; /* actual gnode                                     */
+GSURF    *actgsurf;
+GLINE    *actgline;
+DLINE    *actdline;
 
 #ifdef DEBUG 
 dstrc_enter("f2_stress");
@@ -329,7 +346,22 @@ case str_fsicoupling:
 break;
 #endif
 case str_liftdrag:
-   dserror("lift&drag computation not implemented yet\n");
+   /* check if element is on liftdrag-dline */
+   actgsurf=ele->g.gsurf;
+   ldflag=0;
+   for (i=0;i<actgsurf->ngline;i++)
+   {
+      actgline=actgsurf->gline[i];
+      actdline=actgline->dline;
+      if (actdline==NULL) continue;
+      if (actdline->liftdrag==0) continue;
+      ldflag++;
+      break;
+   }
+   if (ldflag>0)
+   /* calculate element stresses for selected elements */
+   f2_calelestress(viscstr,data,ele,eveln,epren,funct,
+                   deriv,derxy,vderxy,xjm,xyze,sigmaint);      
 break;
 case str_all:
    dserror("stress computation for all elements not implemented yet\n");
