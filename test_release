@@ -128,8 +128,6 @@ else
   xfem_ls_joggedchannel.dat
   '
 fi
- 
-liste=' ale2_nln.dat '
 
 
   # create Makefile
