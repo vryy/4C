@@ -36,7 +36,7 @@ STRUCT_DISP_GID    No
 STRUCT_STRESS_GID  No
 FLUID_SOL_FILE     Yes
 FLUID_SOL_GID      Yes
-FLUID_VIS_FILE     Yes
+FLUID_VIS_FILE     No
 ------------------------------------------------------------STATIC
 GEOLINEAR
 -----------------------------------------------EIGENVALUE ANALYSIS
@@ -838,5 +838,10 @@ CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 1000.0 FACTOR 0.0 100.
 ------------------------------------------------------------CURVE3
 ------------------------------------------------------------CURVE4
 ------------------------------------------------------------CURVE5
+------------------------------------------------RESULT DESCRIPTION
+FLUID DIS 1 NODE 24 POSITION sol(1,1) NAME velocity_x VALUE  0.1295048124434910 TOLERANCE 1e-6
+FLUID DIS 1 NODE 24 POSITION sol(1,2) NAME velocity_y VALUE -0.0060083036753977TOLERANCE 1e-6
+FLUID DIS 1 NODE 24 POSITION sol(1,3) NAME velocity_z VALUE -0.0060083036753930 TOLERANCE 1e-6
+FLUID DIS 1 NODE 24 POSITION sol(1,4) NAME pressure VALUE 0.6087209026950140 TOLERANCE 1e-6
 ---------------------------------------------------------------END
 // END
