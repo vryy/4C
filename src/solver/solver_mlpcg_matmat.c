@@ -1088,7 +1088,9 @@ fprintf(out,"RESULT %cdisplacement%c %cpcarat%c %d VECTOR ONNODES\n",sign,sign,s
 fprintf(out,"RESULTRANGESTABLE %cstandard_structure%c\n",sign,sign);
 fprintf(out,"COMPONENTNAMES %cx-displ%c,%cy-displ%c,%cz-displ%c\n",sign,sign,sign,sign,sign,sign);
 fprintf(out,"VALUES\n");
+#ifdef D_SHELL8
 sdc = fielddis->element[0].e.s8->sdc;
+#endif
 for (i=0; i<fielddis->numnp; i++)
 {
 actnode = &(fielddis->node[i]);
