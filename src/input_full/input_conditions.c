@@ -102,6 +102,8 @@ static void inpdesign_point_axishellcos(void);
 static void inpdesign_line_contact(void);
 #endif
 
+static void inpdesign_line_ssi(void);
+
 /*----------------------------------------------------------------------*
  | input of conditions                                    m.gee 4/01    |
  *----------------------------------------------------------------------*/
@@ -145,7 +147,11 @@ inpdesign_vol_couple();
 #ifdef WALLCONTACT
 inpdesign_line_contact();
 #endif
-
+/*------------------------------- input of line SSi coupling conditions */
+#ifdef D_SSI
+inpdesign_line_ssi();
+#endif
+/*------------------------------- input of line FSI coupling conditions */
 #ifdef D_FSI
 if (genprob.probtyp==prb_fluid || genprob.probtyp==prb_fsi)
 {
@@ -3742,5 +3748,110 @@ dstrc_exit();
 #endif
 return;
 } /* end of inpdesign_line_contact */
+#endif
+
+#ifdef D_SSI
+/*----------------------------------------------------------------------*
+ | input of line ssi conditions on design                mfirl 02/04    |
+ *----------------------------------------------------------------------*/
+static void inpdesign_line_ssi()
+{
+
+INT    i;
+INT    ierr;
+INT    ndline;
+INT    dlineId;
+char  *colptr;
+char   buffer[200];
+DLINE *actdline;
+INT    coupleId;
+
+#ifdef DEBUG 
+dstrc_enter("inpdesign_line_ssi");
+#endif
+
+/*----------------------------------------------------------------------*/
+/*------------------ find the beginning of line ssi coupling conditions */
+if (frfind("--DESIGN SSI COUPLING LINE CONDITIONS")==0) goto end;
+frread();
+/*------------------------ read number of design lines with conditions */
+frint("DLINE",&ndline,&ierr);
+dsassert(ierr==1,"Cannot read design-line ssi coupling conditions");
+frread();
+/*-------------------------------------- start reading the design lines */
+while(strncmp(allfiles.actplace,"------",6)!=0)
+{
+   /*------------------------------------------ read the design line Id */
+   frint("E",&dlineId,&ierr);
+   dsassert(ierr==1,"Cannot read design-line ssi coupling conditions");
+   dlineId--;
+   /*--------------------------------------------------- find the dline */
+   actdline=NULL;
+   for (i=0; i<design->ndline; i++)
+   {
+      if (design->dline[i].Id ==  dlineId) 
+      {
+         actdline = &(design->dline[i]);
+         break;
+      }
+   }
+   dsassert(actdline!=NULL,"Cannot read design-line ssi coupling conditions");
+   /*----------- allocate space for a coupling condition in this dline */
+   actdline->ssicouple = (SSI_COUPLE_CONDITION*)CCACALLOC(1,sizeof(SSI_COUPLE_CONDITION));
+   if (!actdline->ssicouple) dserror("Allocation of memory failed");
+   /*--------------------------------- move pointer behind the "-" sign */
+   colptr = strstr(allfiles.actplace,"-");
+   dsassert(colptr!=NULL,"Cannot read design-line ssi coupling conditions");
+   colptr++;
+   /*----------------------------------------- read the  ssi couplingId */
+   coupleId=-1;
+   coupleId = strtol(colptr,&colptr,10);
+   dsassert(coupleId>0,"Cannot read ssi coupling conditions");
+   actdline->ssicouple->ssi_coupleId=coupleId;
+   /*------------------------------------------------ read the fieldtyp */
+   ierr=sscanf(colptr," %s ",buffer);
+   dsassert(ierr==1,"Cannot read ssi  coupling conditions");
+   if (strncmp(buffer,"Master",6)==0) 
+   {
+       actdline->ssicouple->ssi_couptyp=ssi_master;
+       colptr = strstr(colptr,"Master");
+       dsassert(colptr!=NULL,"Cannot read ssi coupling conditions");
+       colptr+=6;
+   }
+   if (strncmp(buffer,"Slave",5)==0) 
+   {
+      actdline->ssicouple->ssi_couptyp=ssi_slave;
+       colptr = strstr(colptr,"Slave");
+       dsassert(colptr!=NULL,"Cannot read ssi coupling conditions");
+       colptr+=5;
+   }
+   /*-------------------------------------------------- read the mesh */
+   ierr=sscanf(colptr," %s ",buffer);
+   dsassert(ierr==1,"Cannot read ssi coupling conditions");
+   if (strncmp(buffer,"conforming",10)==0) 
+   {
+       actdline->ssicouple->ssi_mesh=conform;
+       colptr = strstr(colptr,"conforming");
+       dsassert(colptr!=NULL,"Cannot read ssi coupling conditions");
+       colptr+=10;
+   }
+   if (strncmp(buffer,"non_conforming",14)==0) 
+   {
+       actdline->ssicouple->ssi_mesh=non_conform;
+       colptr = strstr(colptr,"non_conforming");
+       dsassert(colptr!=NULL,"Cannot read ssi coupling conditions");
+       colptr+=14;
+   }
+
+   frread();
+}
+/*----------------------------------------------------------------------*/
+
+end:
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of inpdesign_line_ssi */
 #endif
 /*! @} (documentation module close)*/
