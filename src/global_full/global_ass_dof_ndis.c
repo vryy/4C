@@ -1,5 +1,7 @@
 #include "../headers/standardtypes.h"
 #include "../fluid2_pro/fluid2pro.h"
+#include "../fluid2_pro/fluid2pro_prototypes.h"
+#include "../fluid2/fluid2_prototypes.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
@@ -141,6 +143,7 @@ for (kk=0;kk<actfield->ndis;kk++)
    } /* end of loop over elements */
 /*------------------------------------------------------ do some checke */
 #ifdef D_FLUID2_PRO
+   if (cpro!=0)
    if (cpro!=actfield->dis[kk].numele)
       dserror("FLUID2_PRO elements can not be mixed with other fluid elements!\n");
 #endif
@@ -240,12 +243,12 @@ for (kk=0;kk<actfield->ndis;kk++)
 	    {
 	    case 11:
 #ifdef D_FLUID2_PRO          
-	       f2pro_ass_dof_q2q1(actnode,&counter,0);
+	       f2pro_ass_dof_q2q1(actnode,&counter);
 #endif             
 	    break;
 	    case 21:   
 #ifdef D_FLUID
-	       f2tu_ass_dof(actnode,&counter,0);
+	       f2tu_ass_dof(actnode,&counter);
 #endif
           break;
 	    default:
