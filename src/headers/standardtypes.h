@@ -10,6 +10,10 @@ Maintainer: Malte Neumann
 </pre>
 
 ---------------------------------------------------------------------*/
+
+#ifndef STANDARDTYPES_H
+#define STANDARDTYPES_H
+
 /*----------------------------------------------------------------------*
  | includes of Ansi C standard headers                   m.gee 8/00    |
  *----------------------------------------------------------------------*/
@@ -468,3 +472,5 @@ defined in pss_ds.c, declared in tracing.h
  | defined in out_global.c                                              |
  | struct _IO_FLAGS        ioflags;                                     |
  *----------------------------------------------------------------------*/
+
+#endif

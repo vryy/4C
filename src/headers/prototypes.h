@@ -10,6 +10,9 @@ Maintainer: Malte Neumann
 </pre>
 
 ---------------------------------------------------------------------*/
+
+#include "standardtypes.h"
+
 /*----------------------------------------------------------------------*
  |  main_ccarat.c                                        m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -662,10 +665,10 @@ void dsmemreport(void);
  | can therefor be excessively used to develop a secure code, without   |
  | making it slow when running as fast-exe                              |
  | parameter list                                                       |
- | true - (input) boolean criterium                                     |
+ | test - (input) boolean criterium                                     |
  | string - (input) error message                                       |
  *----------------------------------------------------------------------*/
-void dsassert(INT true, char string[]);
+void dsassert(INT test, char string[]);
 /*----------------------------------------------------------------------*
  | report an error and stop program                       m.gee 8/00    |
  | prints error message string to console and *.err                     |
