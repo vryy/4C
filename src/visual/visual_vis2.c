@@ -50,6 +50,20 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 *----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
 /*----------------------------------------------------------------------*
+ | enum _CALC_ACTION                                      m.gee 1/02    |
+ | command passed from control routine to the element level             |
+ | to tell element routines what to do                                  |
+ | defined globally in global_calelm.c                                  |
+ *----------------------------------------------------------------------*/
+extern enum _CALC_ACTION calc_action[MAXFIELD];
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn; 
+/*----------------------------------------------------------------------*
  |                                                        genk 07/02    |
  | all variables needed by VISUAL2 are defined extern                   |
  *----------------------------------------------------------------------*/
@@ -153,6 +167,7 @@ CALC_ACTION    *action;             /* pointer to the cal_action enum   */
 INTRA          *actintra;           /* pointer to active intra-communic.*/
 PARTITION      *actpart;            /* pointer to active partition      */
 CONTAINER       container;          /* contains variables defined in container.h */
+FLUID_DYNAMIC *fdyn;                /* pointer to fluid dyn. inp.data   */
 
 #ifdef DEBUG 
 dstrc_enter("vis2caf");
@@ -160,9 +175,12 @@ dstrc_enter("vis2caf");
 
 actfield=&(field[numff]);
 actfieldtyp=fluid;
+fdyn = alldyn[genprob.numff].fdyn;
+
 actpart= &(partition[numff]);
 action = &(calc_action[numff]);
 NUMA=numaf;
+
 /*------ read solution data from pss-file or flavia.res-file of proc 0 */
 input0:
 printf("\n");
@@ -233,6 +251,7 @@ if (iscan!=0)
 /* idea for storing of vorticity:
    amredef of node->sol and then store it there! *gg*                 */
 
+
 printf("\n");
 printf("   Do you want to calculate the vorticity? (0: no; 1: yes)\n");
 scanf("%d",&IVORT);
@@ -252,13 +271,16 @@ if (IVORT==1)
    container.nii=0;
    container.fieldtyp=fluid;
    container.dvec=NULL;
+   container.is_relax     = 0;
+   container.dvec         = NULL;
+   container.actndis  = 0;   
    calelm(actfield,NULL,actpart,NULL,0,0,
           &container,action); 
 } /* endif (IVORT==1) */
 
 input2:
 printf("\n");
-printf("   Please give the mode in which you want to run VISUAL2:\n");
+printf("     Please give the mode in which you want to run VISUAL2:\n");
 printf("     0: steady data structure, grid and variables\n");
 printf("     1: steady data structure and grid, unsteady variables\n");
 printf("     2: steady data structure, unsteady grid and variables\n");
@@ -272,6 +294,7 @@ if (IOPT==3)
 }
 if (IOPT==2) /*-------------------------- read ALE field from pss-file */
 {
+#ifdef D_FSI
    if (genprob.probtyp==prb_fsi)
    {
       if (numaf<0) dserror("ALE-field does not exist!");
@@ -308,11 +331,15 @@ if (IOPT==2) /*-------------------------- read ALE field from pss-file */
          ncols=IMIN(ncols,nacols);
       }
    }
+#else
+dserror("FSI functions not compiled in!\n");
+#endif
 }
 /*--------------------------------------------------------- y-scaling */
 printf("\n");
 printf("   Scaling parameter for y-coordinates?\n");
 scanf("%lf",&yscale);
+
 
 /*--------------------------------------------------------- increment */
 input3:
@@ -389,6 +416,7 @@ v2cell(actfield);
 /* find maximum x-coordinate */
 if (IOPT>=2)
 {
+#ifdef D_FSI
    actnode=&(actfield->dis[0].node[0]);
    minxy=actnode->x[0];
    maxxy=actnode->x[0];
@@ -413,6 +441,9 @@ if (IOPT>=2)
          }
       }
    }
+#else
+   dserror("FSI-functions not compiled in!\n");
+#endif   
 }
 else
 {
@@ -433,6 +464,7 @@ XYMAX[0] = maxxy + (maxxy-minxy)*0.1;
 /* find maximum y-coordinate */
 if (IOPT>=2)
 {
+#ifdef D_FSI
    actnode=&(actfield->dis[0].node[0]);
    minxy=actnode->x[1];
    maxxy=actnode->x[1];
@@ -457,6 +489,9 @@ if (IOPT>=2)
          }
       }
    }
+#else
+   dserror("FSI-functions not compiled in!\n");
+#endif   
 }
 else
 {
@@ -577,7 +612,7 @@ for (i=0;i<numnp;i++) /* loop nodes */
    } /* end of loop over columns */
 } /* end of loop over nodes */
 
-if (actfield->ndis==2)
+if (fdyn->turbu == 2 || fdyn->turbu == 3)
 {
  ITURBU = 1;
  for (i=0;i<numnp;i++) /* loop nodes */
@@ -661,6 +696,7 @@ FLIMS[12][1]=maxdissi;
 if (minvisco==maxvisco) maxvisco=minvisco+1.0;
 FLIMS[13][0]=minvisco;
 FLIMS[13][1]=maxvisco;
+
 /*-------------------------- call Fortran routine which calls VISUAL2 */
 v2call(&IOPT,&CMNCOL,&CMUNIT,
         XYPIX,XYMIN,XYMAX,
@@ -789,6 +825,7 @@ case fluid:
    }
    if (IOPT>=2)
    {
+#ifdef D_FSI
       for (i=0;i<numnp;i++)
       {
          actnode=&(actfield->dis[0].node[i]);
@@ -805,6 +842,9 @@ case fluid:
 	    XY[i][1] = actanode->x[1] + actanode->sol.a.da[icol][1];	   
          }
       }
+#else
+   dserror("FSI-functions not compiled in!\n");
+#endif   
    }
    else
    {
@@ -1467,7 +1507,7 @@ strncpy(charpointer,".gif",4);
 
 printf(screen);
 
-/*---------------------------------------------------- call UNIX-system */
+/*--------------------------------------------------- call UNIX-system */
 system(&string[0]);
 system(&convert[0]);
 system(&remove[0]);

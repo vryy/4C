@@ -12,7 +12,9 @@
 #include "../fluid2/fluid2_prototypes.h"
 #include "../ale3/ale3.h"
 #include "../ale2/ale2.h"
+#include "../fluid_full/fluid_pm_prototypes.h"
 #include "../beam3/beam3.h"
+#include "../fluid2_pro/fluid2pro_prototypes.h"
 
 /*----------------------------------------------------------------------*
  | enum _CALC_ACTION                                      m.gee 1/02    |
@@ -24,13 +26,17 @@ enum _CALC_ACTION calc_action[MAXFIELD];
 /*----------------------------------------------------------------------*
  | global dense matrices for element routines             m.gee 7/01    |
  *----------------------------------------------------------------------*/
-struct _ARRAY estif_global;    /* element stiffness matrix              */
-struct _ARRAY emass_global;    /* element mass matrix                   */  
-struct _ARRAY etforce_global;  /* element Time RHS                      */
-struct _ARRAY eproforce_global;  /* element Time RHS                    */
-struct _ARRAY eiforce_global;  /* element Iteration RHS                 */
-struct _ARRAY edforce_global;  /* element dirichlet RHS                 */
-struct _ARRAY intforce_global;
+struct _ARRAY estif_global;    /* element stiffness matrix                */
+struct _ARRAY emass_global;    /* element mass matrix                     */  
+struct _ARRAY lmass_global;    /* element mass matrix                     */
+struct _ARRAY gradopr_global;  /* gradient operator                       */
+struct _ARRAY etforce_global;  /* element Time RHS                        */
+struct _ARRAY eiforce_global;  /* element Iteration RHS                   */
+struct _ARRAY edforce_global;  /* element dirichlet RHS                   */
+struct _ARRAY gforce_global;   /* element dirich for pressure  RHS (g_n+1)*/
+struct _ARRAY intforce_global;  
+struct _ARRAY eproforce_global;  
+
 /*----------------------------------------------------------------------*
  |  routine to call elements                             m.gee 6/01     |
  *----------------------------------------------------------------------*/
@@ -237,14 +243,12 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
             action, container);
    break;
    case el_fluid2: 
-#ifdef D_FLUID
       if(container->turbu==2 || container->turbu==3) actele2 = actpart->pdis[1].element[i];
       else                                           actele2 = NULL;
       fluid2(actpart,actintra,actele,actele2,
              &estif_global,&emass_global,
              &etforce_global,&eiforce_global,&edforce_global,
 	       action,&hasdirich,&hasext,container);
-#endif
    break;
    case el_fluid2_tu: 
       actele2 = actpart->pdis[0].element[i];
@@ -252,6 +256,13 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
                 &estif_global,&emass_global,
                 &etforce_global,&eiforce_global,&edforce_global,&eproforce_global,
 	          action,&hasdirich,&hasext,container);
+   break;
+   case el_fluid2_pro:
+      actele2 = actpart->pdis[1].element[i];
+      fluid2_pro(actpart,actintra,actele,actele2,
+             &estif_global,&emass_global,&lmass_global,&gradopr_global,
+	     &etforce_global,&eiforce_global,
+	     &edforce_global,&gforce_global,action,&hasdirich);
    break;
    case el_fluid3: 
       fluid3(actpart,actintra,actele,
@@ -315,6 +326,9 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
    case calc_fluid_vort             : assemble_action = assemble_do_nothing; break;
    case calc_fluid_stress           : assemble_action = assemble_do_nothing; break;
    case calc_fluid_shearvelo        : assemble_action = assemble_do_nothing; break;
+   case calc_fluid_f2pro         : assemble_action = assemble_two_matrix; break;
+   case calc_fluid_amatrix       : assemble_action = assemble_do_nothing; break;
+   case calc_fluid_f2pro_rhs_both : assemble_action = assemble_two_matrix; break;
    default: dserror("Unknown type of assembly 1"); break;
    }
    /*--------------------------- assemble one or two system matrices */
@@ -328,7 +342,7 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
             actele,
             assemble_action,
             container);
-   /*---------------------------- assemble the vector intforce_global */
+   /*----------------------------------- do further assembly operations */
    switch(container->fieldtyp)
    {
    case structure:
@@ -362,6 +376,10 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
          container->dvec = container->fiterhs;
          assemble_intforce(actele,&edforce_global,container,actintra);
       }
+#ifdef D_FLUID2_PRO      
+      if (*action==calc_fluid_amatrix)
+      assemble_fluid_amatrix(container,actele,actele2,actintra);
+#endif
       if (container->actndis==1 && (container->turbu==2 || container->turbu==3))
       {
          if (container->niturbu_pro!=0)
@@ -432,6 +450,9 @@ case calc_fluid                  : assemble_action = assemble_one_exchange; brea
 case calc_fluid_vort             : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_stress           : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_shearvelo        : assemble_action = assemble_do_nothing;   break;
+case calc_fluid_f2pro	         : assemble_action = assemble_do_nothing;   break;
+case calc_fluid_amatrix          : assemble_action = assemble_do_nothing;   break;
+case calc_fluid_f2pro_rhs_both   : assemble_action = assemble_two_exchange; break;
 default: dserror("Unknown type of assembly 2"); break;
 }
 /*------------------------------ exchange coupled dofs, if there are any */
@@ -456,7 +477,7 @@ switch(*action)
 {
 case calc_struct_linstiff        : assemble_action = assemble_close_1matrix; break;
 case calc_struct_nlnstiff        : assemble_action = assemble_close_1matrix; break;
-case calc_struct_internalforce   : assemble_action = assemble_do_nothing;   break;
+case calc_struct_internalforce   : assemble_action = assemble_do_nothing;    break;
 case calc_struct_nlnstiffmass    : assemble_action = assemble_close_2matrix; break;
 case calc_struct_linstifflmass   : assemble_action = assemble_close_1matrix; break;
 case calc_struct_eleload         : assemble_action = assemble_do_nothing;    break;
@@ -478,11 +499,14 @@ case calc_ale_stiff_nln          : assemble_action = assemble_close_1matrix; bre
 case calc_ale_stiff_stress       : assemble_action = assemble_close_1matrix; break;
 case calc_ale_stiff_step2        : assemble_action = assemble_close_1matrix; break;
 case calc_ale_stiff_spring       : assemble_action = assemble_close_1matrix; break;
-case calc_ale_stiff_laplace      : assemble_action = assemble_one_matrix; break;
+case calc_ale_stiff_laplace      : assemble_action = assemble_one_matrix;    break;
 case calc_fluid                  : assemble_action = assemble_close_1matrix; break;
 case calc_fluid_vort             : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_stress           : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_shearvelo        : assemble_action = assemble_do_nothing;   break;
+case calc_fluid_f2pro	         : assemble_action = assemble_do_nothing;   break;
+case calc_fluid_amatrix          : assemble_action = assemble_do_nothing;   break;
+case calc_fluid_f2pro_rhs_both   : assemble_action = assemble_do_nothing;   break;
 default: dserror("Unknown type of assembly 3"); break;
 }
 assemble(sysarray1,
@@ -516,6 +540,7 @@ if(actsolv->sysarray_typ[sysarray1]==oll)
     case calc_struct_dee             :
     case calc_deriv_self_adj         : 
     case calc_struct_dmc             :
+    case calc_fluid_shearvelo        :
     case update_struct_odens         :
     case calc_struct_update_istep    :
     case calc_struct_update_stepback : break;
@@ -524,7 +549,7 @@ if(actsolv->sysarray_typ[sysarray1]==oll)
     case calc_ale_rhs                : break;
     case calc_fluid                  :
       actsolv->sysarray[sysarray1].oll->is_masked = 1; break;
-    default: dserror("Unknown type of assembly 1"); break;
+    default: dserror("Unknown type of assembly 4"); break;
   }
 }
 /*----------------------------------------------------------------------*/
@@ -554,6 +579,7 @@ INT is_shell9=0;
 INT is_brick1=0;
 INT is_wall1 =0;
 INT is_fluid2=0;
+INT is_fluid2_pro=0;
 INT is_fluid2_tu=0;
 INT is_fluid3=0;
 INT is_ale3=0;
@@ -570,11 +596,14 @@ if (estif_global.Typ != cca_DA)
 {
 amdef("estif",&estif_global,(MAXNOD*MAXDOFPERNODE),(MAXNOD*MAXDOFPERNODE),"DA");
 amdef("emass",&emass_global,(MAXNOD*MAXDOFPERNODE),(MAXNOD*MAXDOFPERNODE),"DA");
+amdef("lmass",&lmass_global,(MAXNOD*MAXDOFPERNODE),(MAXNOD*MAXDOFPERNODE),"DA");
+amdef("gradopr",&gradopr_global,(MAXNOD*MAXDOFPERNODE),(MAXNOD*MAXDOFPERNODE),"DA");
 amdef("etforce",&etforce_global,(MAXNOD*MAXDOFPERNODE),1,"DV");
 amdef("eproforce",&eproforce_global,(MAXNOD*MAXDOFPERNODE),1,"DV");
 amdef("eiforce",&eiforce_global,(MAXNOD*MAXDOFPERNODE),1,"DV");
 amdef("edforce",&edforce_global,(MAXNOD*MAXDOFPERNODE),1,"DV");
 amdef("inforce",&intforce_global,(MAXNOD*MAXDOFPERNODE),1,"DV");
+amdef("gforce",&gforce_global,(MAXNOD*MAXDOFPERNODE),1,"DV");
 }
 /*--------------------what kind of elements are there in this example ? */
 for (kk=0;kk<actfield->ndis;kk++)
@@ -603,6 +632,9 @@ for (i=0; i<actfield->dis[kk].numele; i++)
    break;
    case el_fluid2:
       is_fluid2=1;
+   break;
+   case el_fluid2_pro:
+      is_fluid2_pro=1;
    break;
    case el_fluid2_tu:
       is_fluid2_tu=1;
@@ -667,6 +699,14 @@ if (is_fluid2==1)
           &estif_global,&emass_global,
           &etforce_global,&eiforce_global,&edforce_global,
           action,NULL,NULL,container);
+}
+/*----------------------------- init all kind of routines for fluid2_pro */
+if (is_fluid2_pro==1)
+{
+   fluid2_pro(actpart,NULL,NULL,NULL,
+             &estif_global,&emass_global,&lmass_global,&gradopr_global,
+	     &etforce_global,&eiforce_global,
+	     &edforce_global,&gforce_global,action,NULL);
 }
 /*-------------------------------- init all kind of routines for fluid2_tu */
 if (is_fluid2_tu==1)
