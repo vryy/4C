@@ -57,6 +57,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
   if(mat[actele->mat-1].mattyp == m_pl_mises    ||
      mat[actele->mat-1].mattyp == m_pl_mises_ls ||
      mat[actele->mat-1].mattyp == m_pl_foam     ||
+     mat[actele->mat-1].mattyp == m_nhmfcc      ||
      mat[actele->mat-1].mattyp == m_stvenpor    ||
      mat[actele->mat-1].mattyp == m_mfoc        ||
      mat[actele->mat-1].mattyp == m_mfcc        ||
@@ -136,6 +137,31 @@ for (i=0; i<actpart->pdis[0].numele; i++)
       break;
     } 
     actele->e.c1->elewa->matdata[0] = mat[actele->mat-1].m.mfcc->dens;
+    /*----------------------------------------------------------*
+     | actele->e.c1->elewa->optdata[0] = current opt.var.num.   | 
+     *----------------------------------------------------------*/
+    size_j = 1;
+    actele->e.c1->elewa->optdata = (INT*)CCACALLOC(size_j,sizeof(INT));
+    if (actele->e.c1->elewa->optdata==NULL)
+    {
+      dserror("Allocation of optdata in ELEMENT failed");
+      break;
+    } 
+    actele->e.c1->elewa->optdata[0] = 0;
+  }
+  if(mat[actele->mat-1].mattyp == m_nhmfcc)
+  {
+    /*----------------------------------------------------------*
+     | actele->e.c1->elewa->matdata[0] = current density value  | 
+     *----------------------------------------------------------*/
+    size_j = 1;
+    actele->e.c1->elewa->matdata = (DOUBLE*)CCACALLOC(size_j,sizeof(DOUBLE));
+    if (actele->e.c1->elewa->matdata==NULL)
+    {
+      dserror("Allocation of matdata in ELEMENT failed");
+      break;
+    } 
+    actele->e.c1->elewa->matdata[0] = mat[actele->mat-1].m.nhmfcc->dens;
     /*----------------------------------------------------------*
      | actele->e.c1->elewa->optdata[0] = current opt.var.num.   | 
      *----------------------------------------------------------*/
