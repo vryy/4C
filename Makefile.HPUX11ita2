@@ -31,6 +31,8 @@ include ./Makefile.personal_path
 # -DRESULTTEST   defines defines result testing before checking in a new version
 # -DS8CONTACT    defines contact algorithms for shell8 contact
 # -DWALLCONTACT  defines contact algorithms for wall contact
+# -DD_INTERF     defines interface element
+# -DD_WALLGE     defines gradient enhanced wall element
 #
 # -DDEBUG        defines debug mode: routine and array tracing 
 # -DPARALLEL     defines parallel version of programm
@@ -151,12 +153,12 @@ PROGRAM       = $(PROGRAM_NAME)
 $(PROGRAM):     $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) $(OBJS7) $(OBJS8) \
                 $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) $(OBJS14) $(OBJS15) \
                 $(OBJS16) $(OBJS17) $(OBJS18) $(OBJS19) $(OBJS20) $(OBJS_OPT) \
-		$(OBJS_AXISHELL) $(OBJS_MAT) $(OBJS_F2PRO)
+		$(OBJS_AXISHELL) $(OBJS_MAT) $(OBJS_F2PRO) $(OBJS_IF) $(OBJS_WALLGE)
 		@echo "Linking $(PROGRAM) ..."
 		@$(LD) $(LDFLAGS) $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) \
                 $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) \
                 $(OBJS14) $(OBJS15) $(OBJS16) $(OBJS17) $(OBJS18) $(OBJS19) $(OBJS20) \
-		$(OBJS_OPT) $(OBJS_AXISHELL)  $(OBJS_MAT) $(OBJS_F2PRO) \
+		$(OBJS_OPT) $(OBJS_AXISHELL)  $(OBJS_MAT) $(OBJS_F2PRO) $(OBJS_IF) $(OBJS_WALLGE) \
 		$(LIBS) $(INCLUDES) -o $(PROGRAM)
 		@echo "done"
 
@@ -275,6 +277,16 @@ $(OBJS_F2PRO):
 		@echo "Making $@ ..."
 		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
 		@echo "MainMake is back."
+#
+$(OBJS_IF):     
+		@echo "Making $@ ..."
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
+		@echo "MainMake is back."
+#
+$(OBJS_WALLGE):     
+		@echo "Making $@ ..."
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
+		@echo "MainMake is back."
 # FORTRAN90
 $(OBJS13):     
 		@echo "Making $@ ..."
@@ -294,5 +306,5 @@ clean:
                 $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) \
                 $(OBJS13) $(OBJS14) $(OBJS15) $(OBJS16) $(OBJS17) $(OBJS18) \
 		$(OBJS19) $(OBJS20) $(OBJS_OPT) $(OBJS_AXISHELL) $(OBJS_MAT) \
-		$(OBJS_F2PRO)
+		$(OBJS_F2PRO) $(OBJS_WALLGE) $(OBJS_F2PRO)
 $

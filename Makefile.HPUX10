@@ -20,8 +20,6 @@ include ./Makefile.personal_path
 #--------------------------------------------------------------------
 # list of possible defines:
 #--------------------------------------------------------------------
-#
-# list of possible defines:
 #  
 #  
 # -DD_ALE        defines element ale (2D+3D)
@@ -45,6 +43,8 @@ include ./Makefile.personal_path
 # -DRESULTTEST   defines defines result testing before checking in a new version
 # -DS8CONTACT    defines contact algorithms for shell8 contact
 # -DWALLCONTACT  defines contact algorithms for wall contact
+# -DD_INTERF     defines interface element
+# -DD_WALLGE     defines gradient enhanced wall element
 #
 # -DDEBUG        defines debug mode: routine and array tracing 
 # -DPARALLEL     defines parallel version of programm
@@ -75,13 +75,15 @@ include ./Makefile.personal_path
 # sequentiell part
 #--------------------------------------------------------------------
 PROGRAM_NAME  = cca_seq_10.20.
-FXX   = f77
-CCX   = cc
-LDX   = cc
-PFL  = -DHPUX10 -DD_FSI -DD_FLUID -DD_OPTIM -DS8CONTACT -DD_CONTACT  \
-       -DD_FLUID2 -DD_FLUID3 -DD_WALL1 -DD_BRICK1 -DD_BEAM3 -DD_SHELL8 -DD_SHELL9 -DD_ALE \
-       -DD_AXISHELL -DD_MAT -DAZTEC_PACKAGE -DUMFPACK
-AZTEC = -laztec_seriell21
+FXX     = f77
+CCX     = cc
+LDX     = cc
+PFL   = -DHPUX10 -DD_FLUID -DD_FSI -DD_BRICK1 -DD_SHELL8 -DS8CONTACT \
+        -DD_SHELL9 -DD_FLUID2 -DD_FLUID3 -DD_ALE -DD_WALL1 \
+        -DD_CONTACT -DD_OPTIM  -DD_AXISHELL -DD_MAT -DAZTEC_PACKAGE \
+        -DUMFPACK
+
+#AZTEC   = -laztec_seriell21
 UMFPACK = -lumfpack40_hpux10_32
 SPOOLES = 
 ##--------------------------------------------------------------------
@@ -93,11 +95,12 @@ SPOOLES =
 #CCX   = /opt/mpi/bin/mpicc
 #LDX   = /opt/mpi/bin/mpicc
 #PFL   = -DPARALLEL -DHPUX10 -DD_FLUID -DD_FSI -DD_OPTIM -DS8CONTACT -DD_CONTACT  \
-#        -DD_FLUID2 -DD_FLUID3 -DD_WALL1 -DD_BEAM3 -DD_SHELL9 -DD_BRICK1 -DD_SHELL8 -DD_ALE \
-#        -DD_AXISHELL -DD_MAT -DAZTEC_PACKAGE -DUMFPACK -DSPOOLES_PACKAGE 
+#        -DD_FLUID2 -DD_FLUID3 -DD_WALL1 -DD_SHELL9 -DD_BRICK1 -DD_SHELL8 -DD_ALE \
+#        -DAZTEC_PACKAGE -DUMFPACK -DSPOOLES_PACKAGE 
 #AZTEC   = -laztec_par21
 #UMFPACK = -lumfpack40_hpux10_32
 #SPOOLES = -lspoolesMPI_10.20  -lspooles_10.20
+#
 #--------------------------------------------------------------------
 #
 CC	 = $(CCX)
@@ -190,11 +193,13 @@ PROGRAM       = $(PROGRAMM)
 #
 $(PROGRAM):     $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) $(OBJS7) $(OBJS8) \
                 $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) $(OBJS14) $(OBJS15) \
-                $(OBJS16) $(OBJS17) $(OBJS18) $(OBJS19) $(OBJS20) $(OBJS_OPT) $(OBJS_AXISHELL) $(OBJS_MAT) $(OBJS_F2PRO)
+                $(OBJS16) $(OBJS17) $(OBJS18) $(OBJS19) $(OBJS20) $(OBJS_OPT) $(OBJS_AXISHELL) $(OBJS_MAT) $(OBJS_F2PRO) \
+                $(OBJS_IF) $(OBJS_WALLGE)
 		@echo "Linking $(PROGRAM) ..."
 		@$(LD) $(LDFLAGS) $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) \
                 $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) $(OBJS14) \
                 $(OBJS15) $(OBJS16) $(OBJS17) $(OBJS18) $(OBJS19) $(OBJS20) $(OBJS_OPT) $(OBJS_AXISHELL) $(OBJS_MAT) $(OBJS_F2PRO) \
+                $(OBJS_IF) $(OBJS_WALLGE) \
 		$(LIBS) $(INCLUDES) -o $(PROGRAM)
 		@echo "done"
 
@@ -309,7 +314,17 @@ $(OBJS_MAT):
 		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
 		@echo "MainMake is back."
 #
+$(OBJS_IF):     
+		@echo "Making $@ ..."
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
+		@echo "MainMake is back."
+#
 $(OBJS_F2PRO):     
+		@echo "Making $@ ..."
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
+		@echo "MainMake is back."
+#
+$(OBJS_WALLGE):     
 		@echo "Making $@ ..."
 		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
 		@echo "MainMake is back."
@@ -332,5 +347,5 @@ clean:
                 $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) \
                 $(OBJS13) $(OBJS14) $(OBJS15) $(OBJS16) $(OBJS17) $(OBJS18) \
 		$(OBJS19) $(OBJS20) $(OBJS_OPT) $(OBJS_AXISHELL) $(OBJS_MAT) \
-		$(OBJS_F2PRO)
+		$(OBJS_IF) $(OBJS_WALLGE) $(OBJS_F2PRO)
 $

@@ -282,7 +282,10 @@ OBJS12	      = src/wall1/w1_bop.o \
 		src/wall1/w1_history.o \
 		src/wall1/w1_kinetic_energy.o \
 		src/wall1/w1_strain_energy.o \
-		src/wall1/w1_update_history.o		
+		src/wall1/w1_update_history.o	\
+                src/wall1/w1_mat_dam_mp.o \
+                src/wall1/w1_mat_damage.o \
+                src/wall1/w1_dam_service.o
 #                fluid2
 OBJS14        = src/fluid2/f2_calcurvature.o \
                 src/fluid2/f2_calelesize.o \
@@ -490,6 +493,36 @@ OBJS_F2PRO    = src/fluid2_pro/f2pro_inpele.o \
                 src/fluid2_pro/f2pro_calservice.o \
                 src/fluid2_pro/f2pro_main.o
 #
+#                interf
+OBJS_IF       = src/interf/if_inpele.o \
+                src/interf/if_main.o \
+                src/interf/if_init.o \
+                src/interf/if_intg.o \
+                src/interf/if_static_ke.o \
+                src/interf/if_bop.o \
+                src/interf/if_mat.o \
+                src/interf/if_cal_deltau.o \
+                src/interf/if_stiff_fint.o \
+                src/interf/if_stress.o \
+                src/interf/if_mat_dyn.o \
+                src/interf/if_service.o \
+                src/interf/if_funcderiv.o
+#                gradient enhanced wall
+OBJS_WALLGE   = src/wallge/wge_setdof.o \
+                src/wallge/wge_inpele.o \
+                src/wallge/wge_main.o \
+                src/wallge/wge_init.o \
+                src/wallge/wge_intg.o \
+                src/wallge/wge_static_ke.o \
+                src/wallge/wge_bope.o \
+                src/wallge/wge_call_mat.o \
+                src/wallge/wge_mat_damage.o \
+                src/wallge/wge_strain.o \
+                src/wallge/wge_damage_serv.o \
+                src/wallge/wge_stiff.o \
+                src/wallge/wge_stress.o \
+                src/wallge/wge_fext.o
+#            
 #--------------- fortran parallel and sequentiell on HPUX10.20 / Linux / Sun
 OBJS13        = src/fortran/colsol.o \
                 src/fortran/mpcg_futils.o \
