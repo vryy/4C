@@ -14,6 +14,7 @@ OBJS_GLOBAL   = src/global_full/global_control.o \
                 src/global_full/global_node_find.o \
                 src/global_full/global_dofconnect.o \
                 src/global_full/global_monitoring.o \
+                src/global_full/global_locsys.o \
                 src/global_full/global_result_test.o \
                 src/global_full/global_calelm.o \
                 src/global_full/global_calrhs.o \
@@ -102,6 +103,7 @@ OBJS_INPUT    = src/input_full/input_control_global.o \
                 src/input_full/input_curves.o \
                 src/input_full/input_material.o \
                 src/input_full/input_monitor.o \
+                src/input_full/input_locsys.o \
                 src/input_full/inherit_insidedesign.o \
                 src/input_full/inherit_design_dis.o \
                 src/input_full/inherit_design_ele.o \
@@ -115,17 +117,18 @@ OBJS_FLUID3   = src/fluid3/f3_calele.o \
                 src/fluid3/f3_calextrhs.o \
                 src/fluid3/f3_calfuncderiv.o \
                 src/fluid3/f3_calgalmat.o \
+                src/fluid3/f3_calheightfunc_sep.o \
 		src/fluid3/f3_calint.o \
 		src/fluid3/f3_caliterrhs.o \
                 src/fluid3/f3_calservice.o \
 		src/fluid3/f3_calstabmat.o \
                 src/fluid3/f3_calstabpar.o \
+                src/fluid3/f3_calstress.o \
                 src/fluid3/f3_caltimerhs.o \
                 src/fluid3/f3_inpele.o \
                 src/fluid3/f3_intg.o \
                 src/fluid3/f3_massrhs.o \
                 src/fluid3/f3_main.o \
-		src/fluid3/f3_calstress.o \
 		src/fluid3/f3_liftdrag.o \
 		src/fluid3/f3_out.o
 #                shell8
@@ -307,6 +310,9 @@ OBJS_FLUID2   = src/fluid2/f2_calcurvature.o \
                 src/fluid2/f2_calelesize_tu_1.o \
                 src/fluid2/f2_calextrhs.o \
                 src/fluid2/f2_calfuncderiv.o \
+                src/fluid2/f2_calheightfunc_sep.o \
+                src/fluid2/f2_calheightfuncmat.o \
+                src/fluid2/f2_calheightfuncrhs.o \
                 src/fluid2/f2_calint.o \
                 src/fluid2/f2_calint_tu.o \
                 src/fluid2/f2_calint_tu_1.o \
@@ -341,6 +347,7 @@ OBJS_FLUID2   = src/fluid2/f2_calcurvature.o \
                 src/fluid2/f2_main_tu.o \
                 src/fluid2/f2_massrhs.o \
                 src/fluid2/f2_calliftdrag.o \
+                src/fluid2/f2_calmat_gfs.o \
                 src/fluid2/f2_ass_dof_ndis_tu.o \
                 src/fluid2/f2_restart.o 
 #                fluid_full
@@ -351,6 +358,7 @@ OBJS_FLUID    = src/fluid_full/fluid_adapt_service.o \
                 src/fluid_full/fluid_dirich_tu.o \
                 src/fluid_full/fluid_dirich_tu_1.o \
                 src/fluid_full/fluid_freesurf.o \
+                src/fluid_full/fluid_heightfunc.o \
                 src/fluid_full/fluid_imp_semimp.o \
                 src/fluid_full/fluid_liftdrag.o \
                 src/fluid_full/fluid_pm_calamatrix.o \
@@ -360,9 +368,12 @@ OBJS_FLUID    = src/fluid_full/fluid_adapt_service.o \
                 src/fluid_full/fluid_mf.o \
                 src/fluid_full/fluid_mfcoupling.o \
                 src/fluid_full/fluid_mlservice.o \
+		src/fluid_full/fluid_pm_service.o \
+		src/fluid_full/fluid_pseudofsi.o \
                 src/fluid_full/fluid_stationary.o \
                 src/fluid_full/fluid_service.o \
-		src/fluid_full/fluid_pm_service.o \
+                src/fluid_full/fluid_normal.o \
+                src/fluid_full/fluid_locsys.o \
                 src/fluid_full/fluid_service_tu.o\
                 src/fluid_full/fluid_service_tu_1.o\
 		src/fluid_full/inp_fluid_start_data.o
@@ -374,6 +385,7 @@ OBJS_FSI      = src/fsi_full/fsi_aitken.o \
                 src/fsi_full/fsi_ale_2step.o \
                 src/fsi_full/fsi_ale_spring.o \
                 src/fsi_full/fsi_ale_laplace.o \
+                src/fsi_full/fsi_ale_LAS.o \
                 src/fsi_full/fsi_coupling.o \
                 src/fsi_full/fsi_dyn.o \
                 src/fsi_full/fsi_energy.o \
