@@ -5,11 +5,8 @@
 ------------------------------------------------------------------------*/
 #ifdef D_FLUID3 
 #include "../headers/standardtypes.h"
-#include "../headers/solution_mlpcg.h"
-#include "../headers/solution.h"
 #include "fluid3.h"
 #include "fluid3_prototypes.h"
-#include "../fluid_full/fluid_prototypes.h"
 /*!---------------------------------------------------------------------
 \brief read fluid3 element from input-file
 
@@ -310,8 +307,8 @@ itaumu  = 0;
 itaump  = 0;
 itauc	= 0;
 
-intextract(ihelem,&ndum,
-           &(ele->e.f3->ihele[0]),&(ele->e.f3->ihele[1]),&(ele->e.f3->ihele[2]));
+math_intextract(ihelem,&ndum,
+               &(ele->e.f3->ihele[0]),&(ele->e.f3->ihele[1]),&(ele->e.f3->ihele[2]));
 
 for(i=0;i<3;i++)
 {
