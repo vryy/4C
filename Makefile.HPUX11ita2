@@ -80,7 +80,7 @@ MPI	= -lmpi
 #		 ${PFL} -DDEBUG
 #FFLAGS        = +DSitanium -g
 #LDFLAGS       = +DSitanium -g -v +A
-#AZTEC         =
+#AZTEC         = -laztec_ita2_32_$(NAME)
 #METIS         = -lmetis_ita2_32
 #UMFPACK       =
 #SPOOLES       = -lspooles_ita2_32
@@ -90,7 +90,7 @@ MPI	= -lmpi
 #		 +Onoinitcheck +Oinline +Oclone +w1 -z ${PFL} 
 #FFLAGS        = +DSitanium +O3 +Onolimit +Onoptrs_to_globals +Oinline
 #LDFLAGS       = +DSitanium +O -v +A 
-#AZTEC         =
+#AZTEC         = -laztec_ita2_32_$(NAME)
 #METIS         = -lmetis_ita2_32
 #UMFPACK       =
 #SPOOLES       = -lspooles_ita2_32
@@ -100,7 +100,7 @@ MPI	= -lmpi
 #                ${PFL} -DSIXTYFOUR -DDEBUG 
 #FFLAGS        = +DSitanium +DD64 -g
 #LDFLAGS       = +DSitanium +DD64 -v +A
-#AZTEC         = -laztec_ita2_64
+#AZTEC         = -laztec_ita2_64_$(NAME)
 #METIS         = -lmetis_ita2_64
 #UMFPACK       = 
 #SPOOLES       = -lspooles_ita2_64
@@ -110,7 +110,7 @@ CFLAGS        = +DSitanium -Aa -Ae +DD64 +O3 +Onolimit +Optrs_to_globals +Odatap
 		+Onoinitcheck +Oinline +Oclone +w1 -z ${PFL} -DSIXTYFOUR 
 FFLAGS        = +DSitanium +DD64 +O3 +Onolimit +Onoptrs_to_globals +Oinline
 LDFLAGS       = +DSitanium +DD64 -O -v +A
-AZTEC	      = -laztec_ita2_64
+AZTEC	      = -laztec_ita2_64_$(NAME)
 METIS	      = -lmetis_ita2_64
 UMFPACK       = 
 SPOOLES       = -lspooles_ita2_64
