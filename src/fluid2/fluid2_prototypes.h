@@ -498,7 +498,7 @@ void f2_calinta(
 	        DOUBLE         **wa1,     
 	        DOUBLE         **wa2      
 	      );
-	      
+
 /************************************************************************
  | f2_calint_tu.c                                                       |
  ************************************************************************/
@@ -676,7 +676,7 @@ void f2_calset(
 	        ELEMENT         *ele,     
                 DOUBLE         **xyze,
                 DOUBLE         **eveln,    
-	        DOUBLE         **evelng,     
+	        DOUBLE         **evelng, 
 	        DOUBLE          *epren,
 		DOUBLE          *edeadn,
 		DOUBLE          *edeadng,
@@ -1521,10 +1521,17 @@ void fluid2_tu(
 	   );
 
 /************************************************************************
+ | f2_massrhs.c                                            chfoe 09/03  |
+ ************************************************************************/
+ void f2_massrhs( ELEMENT	 *ele,
+                  DOUBLE 	**emass, 
+		  DOUBLE 	**eaccn, 
+		  DOUBLE 	 *eiforce);
+
+/************************************************************************
  | f2_restart.c                                                         |
  ************************************************************************/
 void f2_write_restart(ELEMENT *actele, INT nhandle, long int *handles);
 void f2_read_restart( ELEMENT *actele, INT nhandle, long int *handles);
-
 
 /*! @} (documentation module close)*/	    
