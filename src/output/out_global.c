@@ -11,11 +11,7 @@ struct _IO_FLAGS        ioflags;
  | pointer to allocate dynamic variables if needed                      |
  | dedfined in global_control.c                                         |
  *----------------------------------------------------------------------*/
-#ifdef SUSE73
-extern DYNAMIC *dyn;   
-#else
 extern struct _DYNAMIC *dyn;   
-#endif
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
