@@ -879,7 +879,7 @@ return;
  |  Functionality is the same as in solserv_result_total                |
  *----------------------------------------------------------------------*/
 void solserv_result_incre(FIELD *actfield,INTRA *actintra,DIST_VECTOR *sol,
-                          int place,SPARSE_ARRAY *sysarray,SPARSE_TYP *sysarray_typ,int ndis)
+                          INT place,SPARSE_ARRAY *sysarray,SPARSE_TYP *sysarray_typ,INT ndis)
 {
 INT      i,j;
 INT      max;
