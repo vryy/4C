@@ -406,6 +406,13 @@ for (i=0; i<actdis->numnp; i++)
    {
       if (dirich->dirich_onoff.a.iv[j]==0) continue;
       array->a.da[place][j] = dirich->dirich_val.a.dv[j] * scale;
+
+#ifdef D_SSI      
+      /* special approach for ssi - problems mfirl 03/04 */
+    if (actnode->gnode->ssicouple != NULL)
+      if(actnode->gnode->ssicouple->ssi_couptyp == ssi_slave)
+        array->a.da[place][j] = dirich->dirich_val.a.dv[j];
+#endif
 /* this is special for the ortiz example m.gee*/
 /*      array->a.da[place][j] *= actnode->x[j];*/
    }
