@@ -1,3 +1,8 @@
+/*!----------------------------------------------------------------------
+\file
+\brief input of control information and general problem data
+
+------------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "../headers/solution.h"
 /*!----------------------------------------------------------------------
@@ -91,7 +96,7 @@ dstrc_enter("inpctr");
       solv[0].fieldtyp = structure;
       inpctrsol(&(solv[0]));
    }
-   if (genprob.probtyp == prb_fluid)   /* in progress !!! genk */
+   if (genprob.probtyp == prb_fluid)   
    {
       solv = (SOLVAR*)CALLOC(genprob.numfld,sizeof(SOLVAR));
       if (!solv) dserror("Allocation of SOLVAR failed");
@@ -212,6 +217,12 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       if (strncmp(buffer,"Yes",3)==0) ioflags.fluid_sol_file=1;
       else                            ioflags.fluid_sol_file=0;
    }     
+   frchar("FLUID_VIS_FILE",buffer,&ierr);
+   if (ierr)
+   {
+      if (strncmp(buffer,"Yes",3)==0) ioflags.fluid_vis_file=1;
+      else                            ioflags.fluid_vis_file=0;
+   } 
 
    frread();
 }
@@ -351,9 +362,13 @@ for (i=0; i<genprob.numfld; i++)
    switch(actfield->fieldtyp)
    {
    case fluid:
+#ifdef D_FLUID   
       alldyn[i].fdyn = (FLUID_DYNAMIC*)CALLOC(1,sizeof(FLUID_DYNAMIC));
       if (!alldyn[i].fdyn) dserror("Allocation of FLUID_DYNAMIC failed");
-      inpctr_dyn_fluid(alldyn[i].fdyn);   
+      inpctr_dyn_fluid(alldyn[i].fdyn);
+#else
+      dserror("General FLUID problem not defined in Makefile!!!");
+#endif            
    break;
    case ale:
       alldyn[i].sdyn = (STRUCT_DYNAMIC*)CALLOC(1,sizeof(STRUCT_DYNAMIC));
@@ -462,10 +477,21 @@ dstrc_exit();
 return;
 } /* end of inpctr_dyn_struct */
 
+#ifdef D_FLUID
 
-/*----------------------------------------------------------------------*
- | input of dynamic problem data  for field fluid          genk 3/02    |
- *----------------------------------------------------------------------*/
+/*!---------------------------------------------------------------------                                         
+\brief input of the FLUID DYNAMIC block in the input-file
+
+<pre>                                                         genk 03/02
+
+In this routine the data in the FLUID DYNAMIC block of the input file
+are read and stored in fdyn	       
+
+</pre>
+\param  *data 	  FLUID_DATA       (o)	   
+\return void                                                                       
+
+------------------------------------------------------------------------*/
 void inpctr_dyn_fluid(FLUID_DYNAMIC *fdyn)
 {
 int    ierr;
@@ -485,17 +511,17 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    if (ierr==1)
    {
       if (strncmp(buffer,"Stationary",10)==0) 
-         fdyn->iopfsi=0;
+         fdyn->iop=0;
       else if (strncmp(buffer,"PM",2)==0) 
-         fdyn->iopfsi=1;
+         fdyn->iop=1;
       else if (strncmp(buffer,"Semi_Impl_One_Step",18)==0) 
-         fdyn->iopfsi=2;                  
+         fdyn->iop=2;                  
       else if (strncmp(buffer,"Semi_Impl_Two_Step",18)==0) 
-         fdyn->iopfsi=3;
+         fdyn->iop=3;
       else if (strncmp(buffer,"One_Step_Theta",14)==0) 
-         fdyn->iopfsi=4;
+         fdyn->iop=4;
       else if (strncmp(buffer,"Fract_Step_Theta",16)==0) 
-         fdyn->iopfsi=5;      
+         fdyn->iop=5;      
       else
          dserror("TIMEINTEGR-Type unknown");
    }
@@ -503,13 +529,13 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    if (ierr==1)
    {
       if (strncmp(buffer,"Semi_Impl_One_Step",18)==0) 
-         fdyn->iopfss=2;                  
+         fdyn->iops=2;                  
       else if (strncmp(buffer,"Semi_Impl_Two_Step",18)==0) 
-         fdyn->iopfss=3;
+         fdyn->iops=3;
       else if (strncmp(buffer,"One_Step_Theta",14)==0) 
-         fdyn->iopfss=4;
+         fdyn->iops=4;
       else if (strncmp(buffer,"Fract_Step_Theta",16)==0) 
-         fdyn->iopfss=5;      
+         fdyn->iops=5;      
       else
          dserror("STARTINGALGO unknown");
    }   
@@ -593,7 +619,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       if (fdyn->stchk==-1)
           fdyn->stchk=i;
    }
-   frint("NUMSTASTEPS"  ,&(fdyn->numfss),&ierr);
+   frint("NUMSTASTEPS"  ,&(fdyn->nums),&ierr);
    frint("STARTFUNCNO"  ,&i             ,&ierr);
    if (ierr==1)
    {
@@ -621,3 +647,5 @@ dstrc_exit();
 #endif
 return;
 } /* end of inpctr_dyn_fluid */
+
+#endif
