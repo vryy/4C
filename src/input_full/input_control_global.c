@@ -242,6 +242,10 @@ dstrc_enter("inpctrstat");
 /*----------------------------------------- allocate a structure STATIC */
 statvar = (STATIC_VAR*)CALLOC(1,sizeof(STATIC_VAR));
 if (!statvar) dserror("Allocation of STATIC failed");
+/*----------------------------- default: results written every loadstep */
+statvar->resevry_disp=1;
+statvar->resevry_stress=1;
+statvar->resevery_restart=1;
 /*------------------------------------------------------- start reading */
 frfind("-STATIC");
 frread();
@@ -271,9 +275,19 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       if (strncmp(buffer,"Yes",3)==0) statvar->iarc=1;
       else                            statvar->iarc=0;
    }  
+   /*------------------------------ read for sign-changing-by-csp flag */
+   frchar("SIGNCHCSP"   ,buffer,&ierr);
+   if (ierr)
+   {
+      if (strncmp(buffer,"Yes",3)==0) statvar->signchcsp=1;
+      else                            statvar->signchcsp=0;
+   }  
    /*-------------------------------------------------- read variables */
    frint("NUMSTEP",&(statvar->nstep)  ,&ierr);
    frint("MAXITER",&(statvar->maxiter),&ierr);
+   frint("RESEVRYDISP",&(statvar->resevry_disp)  ,&ierr);
+   frint("RESEVRYSTRS",&(statvar->resevry_stress),&ierr);
+   frint("RESTARTEVRY",&(statvar->resevery_restart),&ierr);
 
    frdouble("TOLRESID",&(statvar->tolresid),&ierr);
    frdouble("TOLDISP" ,&(statvar->toldisp) ,&ierr);
