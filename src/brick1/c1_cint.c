@@ -62,6 +62,7 @@ void c1_cint(
              C1_DATA   *data, 
              MATERIAL  *mat,
              ARRAY     *estif_global, 
+             ARRAY     *emass_global,
              DOUBLE    *force, 
              INT        init
              )
@@ -124,6 +125,11 @@ static DOUBLE **bop;
 static ARRAY    bnop_a;   /* BN-operator */   
 static DOUBLE **bn;       
 static DOUBLE **estif;    /* element stiffness matrix ke */
+static DOUBLE **emass;     /* element mass matrix */
+DOUBLE          lmvec[ 60]; /* lumped     mass vector */
+DOUBLE          consm[400]; /* consistent mass matrix */
+DOUBLE emasdg;  /* factor for lumped mass matrix */
+DOUBLE              density, facm, totmas;
 DOUBLE det;
 /*----------------------------------------------------------------------*/
 INT    iform;             /* index for nonlinear formulation of element */
@@ -173,6 +179,21 @@ amzero(&estiflo_a);
 
 
 for (i=0; i<81; i++) fielo[i] = 0.0;
+/*------------------------------------ check calculation of mass matrix */
+if (init==4 || init==5) 
+{
+  /*---------------------------------------------------- get density ---*/
+  #ifdef D_OPTIM                   /* include optimization code to ccarat */
+   if(ele->e.c1->elewa->matdata==NULL) c1_getdensity(mat, &density);
+   else density = ele->e.c1[0].elewa[0].matdata[0];   
+  #else
+  c1_getdensity(mat, &density);
+  #endif /* stop including optimization code to ccarat :*/
+  for (i=0; i<60; i++)  lmvec[i] = 0.0;
+  for (i=0; i<400; i++) consm[i] = 0.0;
+  if(emass_global!=NULL) amzero(emass_global);
+  emass     = emass_global->a.da;
+} 
 /*------------------------------------------- integration parameters ---*/
 nir     = ele->e.c1->nGP[0];
 nis     = ele->e.c1->nGP[1];
@@ -329,6 +350,9 @@ nd      = numdf * iel;
     c1_jaco (deriv,xjm,&det0,xyze,iel);
     c1t0 (fi,ff,xjm);
   }
+/*-------------------------------------------  initialize total mass ---*/
+totmas = 0.0;
+emasdg = 0.0;
 /*================================================ integration loops ===*/
 ip = -1;
 for (lr=0; lr<nir; lr++)
@@ -353,6 +377,13 @@ for (lr=0; lr<nir; lr++)
       c1_jaco (deriv,xjm,&det,xyze,iel);
       fac = facr * facs *  fact * det;
       amzero(&bop_a);
+      /*------------------------------------------------ mass matrix ---*/
+      if (init==4) 
+      {
+        facm = fac * density;
+        totmas += facm;
+        c1cptp (funct,lmvec,consm,&emasdg,iel,1,facm);
+      }
       /*-- local element coordinate system for anisotropic materials ---*/
       c1tram (xjm,g,gi);
       /*----------------------------------  eas element (small def.) ---*/
@@ -456,6 +487,18 @@ for (lr=0; lr<nir; lr++)
   if(ihyb>0)
   {
     c1rkefi(ele, estif9, estiflo, fieh, fielo, l1);
+  }
+/*----------------------------------------------------------------------*/
+  /*---------------------------------------------------- mass matrix ---*/
+  if (init==4) 
+  {
+    fac=3.0*totmas/emasdg;
+    for (i=0; i<nd; i++) fielo[i] = lmvec[i]*fac;
+  }
+  if (init==5) 
+  {
+    cc=0;
+    for (i=0; i<nd; i++) for (j=0; j<nd; j++) emass[i][j] = consm[cc++];
   }
 /*----------------------------------------------------------------------*/
 /* reorder stiffness and element forces for 'gid' element-node topo...  */
@@ -865,6 +908,86 @@ dstrc_exit();
 #endif
 return;
 } /* end of c1trss2global */
+/*----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief consistent mass matrix for brick1
+
+<pre>                                                              al 06/02
+This routine evaluates mass matrix for a 3D-hex-element.
+
+</pre>
+\param  *funct   DOUBLE  (i)   shape functions  
+\param  *emass   DOUBLE  (o)   mass vector  
+\param  *emasdg  DOUBLE  (o)   factor for lumped mass  
+\param  iel      INT     (i)   number of nodes  
+\param  ilmp     INT     (i)   flag for lumped/consistent matrix  
+
+\warning There is nothing special to this routine
+\return void                                               
+\sa calling: ---; called by: c1_cint()
+
+*----------------------------------------------------------------------*/
+void c1cptp(
+            DOUBLE     *funct, 
+            DOUBLE     *lmass, 
+            DOUBLE     *consm, 
+            DOUBLE     *emasdg,
+            INT         iel,   
+            INT         ilmp,  
+            DOUBLE      fac
+            )  
+{
+/*----------------------------------------------------------------------*/
+INT i,j,k,l,cc;
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG  
+dstrc_enter("c1cptp");
+#endif
+/*----------------------------------------------------------------------*/
+switch (ilmp)
+{
+/*------------------------------------------- consistent mass (full) ---*/
+case 2:
+  cc = 0;
+  for (i=0; i<iel; i++) 
+  {
+    for (k=0; k<3; k++) 
+    {
+      for (j=0; j<iel; j++) 
+      {
+        for (l=0; l<3; l++) 
+        {
+           if(k==l) consm[cc] += fac*funct[i]*funct[j];
+           cc++;
+        }
+      }
+    }
+  }
+break;/*----------------------------------------------------------------*/
+/*------------------------------------------------------ lumped mass ---*/
+case 1:
+  cc = 0;
+  for (i=0; i<iel; i++) 
+  {
+    for (l=0; l<3; l++) 
+    {
+            (*emasdg) += fac*funct[i]*funct[i];
+            lmass[cc] += fac*funct[i]*funct[i];
+            cc++;
+    }
+  }
+break;/*----------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+default:
+   dserror("unknown type of mass matrix for hex element");
+break;
+}
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of c1cptp */
 /*----------------------------------------------------------------------*/
 #endif
 /*! @} (documentation module close)*/
