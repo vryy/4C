@@ -118,6 +118,7 @@ FILE             *out_tur;                /* file-pointer .tur  file     */
 
 FILE             *gidmsh;                 /* file pointer .flavia.msh    */
 FILE             *gidres;                 /* file pointer .flavia.res    */
+FILE             *gnu;                    /* file pointer .plt */
 
 /*---------------------- variables needed by the free-field-input system */
 char              title[5][500];          /* problem title                */

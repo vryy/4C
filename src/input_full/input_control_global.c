@@ -82,7 +82,6 @@ dstrc_enter("inpctr");
       if (genprob.numfld!=3) dserror("numfld != 3 for FSI");
       
       solv = (SOLVAR*)CCACALLOC(genprob.numfld,sizeof(SOLVAR));
-      if (!solv) dserror("Allocation of SOLVAR failed");
       
       solv[genprob.numsf].fieldtyp = structure;
       inpctrsol(&(solv[genprob.numsf]));
@@ -98,7 +97,6 @@ dstrc_enter("inpctr");
       if (genprob.numfld!=1) dserror("numfld != 1 for Structural Problem");
       
       solv = (SOLVAR*)CCACALLOC(genprob.numfld,sizeof(SOLVAR));
-      if (!solv) dserror("Allocation of SOLVAR failed");
       
       solv[genprob.numsf].fieldtyp = structure;
       inpctrsol(&(solv[genprob.numsf]));
@@ -108,7 +106,6 @@ dstrc_enter("inpctr");
       if (genprob.numfld!=1) dserror("numfld != 1 for Structural Problem");
       
       solv = (SOLVAR*)CCACALLOC(genprob.numfld,sizeof(SOLVAR));
-      if (!solv) dserror("Allocation of SOLVAR failed");
       
       solv[0].fieldtyp = structure;
       inpctrsol(&(solv[0]));
@@ -116,7 +113,6 @@ dstrc_enter("inpctr");
    if (genprob.probtyp == prb_fluid)   
    {
       solv = (SOLVAR*)CCACALLOC(genprob.numfld,sizeof(SOLVAR));
-      if (!solv) dserror("Allocation of SOLVAR failed");
       
       solv[genprob.numff].fieldtyp = fluid;
       inpctrsol(&(solv[genprob.numff]));
@@ -133,7 +129,6 @@ dstrc_enter("inpctr");
       if (genprob.numfld!=1) dserror("numfld != 1 for Ale Problem");
 
       solv = (SOLVAR*)CCACALLOC(genprob.numfld,sizeof(SOLVAR));
-      if (!solv) dserror("Allocation of SOLVAR failed");
 
       solv[genprob.numaf].fieldtyp = ale;
       inpctrsol(&(solv[genprob.numaf]));
@@ -581,7 +576,9 @@ for (i=0; i<genprob.numfld; i++)
       alldyn[i].adyn = (ALE_DYNAMIC*)CCACALLOC(1,sizeof(ALE_DYNAMIC));
       if (!alldyn[i].adyn) dserror("Allocation of STRUCT_DYNAMIC failed");
       inpctr_dyn_ale(alldyn[i].adyn);
-#endif
+#else
+      dserror("General ALE problem not defined in Makefile!!!");
+#endif      
    break;
    case structure:
       alldyn[i].sdyn = (STRUCT_DYNAMIC*)CCACALLOC(1,sizeof(STRUCT_DYNAMIC));
@@ -1196,6 +1193,10 @@ char buffer[50];
 #ifdef DEBUG 
 dstrc_enter("inpctr_dyn_ale");
 #endif
+/*---------------------------------------------------- some defaults ---*/
+adyn->num_initstep = 0;
+adyn->step = 0;
+adyn->measure_quality = no_quality;
 
 frfind("-ALE DYNAMIC");
 frread();
@@ -1206,10 +1207,29 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    if (ierr==1)
    {
       if (strncmp(buffer,"classic_lin",11)==0) adyn->typ = classic_lin;
+      else if (strncmp(buffer,"min_Je_stiff",12)==0) adyn->typ = min_Je_stiff;
+      else if (strncmp(buffer,"two_step",8)==0) adyn->typ = two_step;
+      else if (strncmp(buffer,"springs",7)==0) adyn->typ = springs;
+      else if (strncmp(buffer,"laplace",7)==0) adyn->typ = laplace;
+      else dserror("unknown ALE_TYPE");
+   }
+   frchar("QUALITY",buffer,&ierr);
+   if (ierr==1)
+   {
+      if (strncmp(buffer,"aspect_ratio",12)==0) adyn->measure_quality = aspect_ratio;
+      else if (strncmp(buffer,"ASPECT_RATIO",12)==0) adyn->measure_quality = aspect_ratio;
+      else if (strncmp(buffer,"corner_angle",12)==0) adyn->measure_quality = corner_angle;
+      else if (strncmp(buffer,"CORNER_ANGLE",12)==0) adyn->measure_quality = corner_angle;
+      else if (strncmp(buffer,"min_J",5)==0) adyn->measure_quality = min_detF;
+      else if (strncmp(buffer,"MIN_J",5)==0) adyn->measure_quality = min_detF;
+      else if (strncmp(buffer,"none",4)==0) adyn->measure_quality = no_quality;
+      else if (strncmp(buffer,"NONE",4)==0) adyn->measure_quality = no_quality;
+      else dserror("unknown ALE_TYPE");
    }
 /*--------------read int */
    frint("NUMSTEP" ,   &(adyn->nstep) ,       &ierr);
    frint("RESEVRYDISP",&(adyn->updevry_disp), &ierr);
+   frint("NUM_INITSTEP",&(adyn->num_initstep), &ierr);
 /*--------------read double */
    frdouble("TIMESTEP", &(adyn->dt)     , &ierr);
    frdouble("MAXTIME" , &(adyn->maxtime), &ierr);

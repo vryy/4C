@@ -107,11 +107,26 @@ typedef struct _ALE_DYNAMIC
 {
 enum
    {
-                  classic_lin
+                  classic_lin,   /* classic linear calculation */
+		  min_Je_stiff,  /* incremental calculation 
+		                    stiffened with min J_element^2 */
+                  two_step,      /* calculation in 2 steps per timestep */
+		  springs,       /* springs rather than continous pseudo material */
+		  laplace        /* Laplace smoothing algorithm */
    } typ;                        /* switch dynamic algorithm */
+
+enum
+   {
+             no_quality,         /* no element quality monitoring */
+             aspect_ratio,       /* aspect ratio element quality criterion */
+             corner_angle,       /* corner angle element quality criterion */
+	     min_detF            /* minimal elemental Jacobian determinant */
+   } measure_quality;            /* switch, which quality measure to watch */
+
 INT                nstep;        /* number of steps */
 INT                step;         /* actual step */
 INT                updevry_disp; /* write result very updevry step */
+INT                num_initstep; /* number of initial steps with prestress */
 DOUBLE             dt;           /* stepsize */
 DOUBLE             maxtime;      /* maximum total time */
 DOUBLE             time;         /* actual time */
