@@ -17,6 +17,15 @@ matrix and the load vectors for both the 2D and 3D elements.
 For 2D 4 noded quadrilateral elements are implemented as well as linear
 triangles, for 3D a 8 noded brick element is used.
 
+The ALE has been enlarged to treat quadratic 2D elements (quad8 and quad9) as
+well. Nevertheless it is somewhat cumbersome to accurately obtain the minimal
+Jacobian of a higher order element. So an estimation based on the assumption of
+stright sides with central placed mid nodes is used.
+It is strongly recommended to ensure that there is no jump in Dirichlet boundary
+conditions within the nodes of one side of a higher order element. ie. the nodes
+sharing one gline should all take part at the same dbc and include also the end
+nodes of a line.
+
 For two-dimensional problems a variety of different elements is available
 which include stiffened and nonstiffened pseudo structure elements as well
 as elements based on springs and laplacian smoothing. The different ale
@@ -63,6 +72,8 @@ The implemented ALE_TYPEs are the following:
    distribution. The elemental stiffness factor within the second step is
    calculated using the square norm of element principal strain criterion, which
    is eq. (13) in the mentioned paper.
+   The two_step calculation has been extended to treat quadratic elements as
+   well.
 
 - springs
 
@@ -72,6 +83,12 @@ The implemented ALE_TYPEs are the following:
    The stiffness is obtained from springs connecting every pair of nodes
    within an element as well as torsional springs at the nodes.
    It works for linear triangles and quadrilaterals.
+   The spring treatment of quadratic elements is somewhat special. The elemental
+   corner nodes are connected by springs just like the linear case. The
+   stiffnesses for the edge and mid nodes are determined such that these nodes
+   remain on the middle of the respective geometric element.
+   Note that this causes non-symmetric stiffness matrices and calls for adequate
+   solvers!
 
 - laplace
 
@@ -88,7 +105,8 @@ The implemented ALE_TYPEs are the following:
    the need for body search algorithms) but rather
    k = 1/(min_det_J)^2, which increases the diffusion coefficient in regions
    where large displacement has already taken place.
-
+   The laplace treatment works for higher order elements without significant
+   changes.
 
 There are no loads possible for these elements. Only Dirichlet Boundary
 Conditions are considered. They are accounted for as an additional load
@@ -114,4 +132,6 @@ quality.
 
 At the moment quality monitoring is implemented for quad4-elements only.
 
+Quality monitoring has been extended to higher order elements but is in this
+case based on estimated values rather than exact ones.
 */
