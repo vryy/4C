@@ -10,7 +10,7 @@ Maintainer: Thomas Hettich
 </pre>
 
 ------------------------------------------------------------------------*/
-#ifdef D_FLUID
+#ifdef D_FLUID2TU
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 #include "fluid_prototypes.h"
@@ -84,6 +84,19 @@ extern struct _CURVE *curve;
  | defined globally in global_calelm.c                                  |
  *----------------------------------------------------------------------*/
 extern enum _CALC_ACTION calc_action[MAXFIELD];
+/*!----------------------------------------------------------------------
+\brief positions of physical values in node arrays
+
+<pre>                                                        chfoe 11/04
+
+This structure contains the positions of the various fluid solutions 
+within the nodal array of sol_increment.a.da[ipos][dim].
+
+extern variable defined in fluid_service.c
+</pre>
+
+------------------------------------------------------------------------*/
+extern struct _FLUID_POSITION ipos;
 
 static FLUID_DYNAMIC *fdyn;
 /*----------------------------------------------------------------------*
@@ -173,8 +186,6 @@ FIELD          *actfield;           /* pointer to active field          */
 INTRA          *actintra;           /* pointer to active intra-communic.*/
 CALC_ACTION    *action;             /* pointer to the cal_action enum   */
 
-ARRAY           ftimerhs_a;
-DOUBLE         *ftimerhs;	    /* time - RHS			*/
 ARRAY           ftimerhs_ko_a;
 DOUBLE         *ftimerhs_ko;	    /* time - RHS			*/
 ARRAY           ftimerhs_kappa_a;
@@ -188,8 +199,8 @@ DOUBLE         *ftimerhs_pro_kappa; /* time - RHS			*/
 ARRAY           ftimerhs_pro_omega_a;
 DOUBLE         *ftimerhs_pro_omega; /* time - RHS			*/
 
-ARRAY           fiterhs_a;
-DOUBLE         *fiterhs;	    /* iteration - RHS  		*/
+ARRAY           frhs_a;
+DOUBLE         *frhs;	            /* iteration - RHS                  */
 ARRAY           fiterhs_ko_a;
 DOUBLE         *fiterhs_ko;	    /* iteration - RHS  		*/
 
@@ -336,7 +347,6 @@ solserv_zero_vec(sol_ko);
 
 /*--------------- allocate one redundant vector ftimerhs of full lenght */
 /*        this is used by the element routines to assemble the  Time RHS*/
-ftimerhs         = amdef("ftimerhs",   &ftimerhs_a,numeq_total[rans],1,"DV");
 ftimerhs_ko      = amdef("ftimerhs_ko",&ftimerhs_ko_a,numeq_total[kapomega],1,"DV");
 ftimerhs_kappa   = amdef("ftimerhs_kappa",&ftimerhs_kappa_a,numeq_total[kapomega],1,"DV");
 ftimerhs_omega   = amdef("ftimerhs_omega",&ftimerhs_omega_a,numeq_total[kapomega],1,"DV");
@@ -346,7 +356,7 @@ ftimerhs_pro_omega   = amdef("ftimerhs_pro_omega",&ftimerhs_pro_omega_a,numeq_to
 
 /*---------------  allocate one redundant vector fiterhs of full lenght */
 /*   this is used by the element routines to assemble the  Iteration RHS*/
-fiterhs    = amdef("fiterhs",&fiterhs_a,numeq_total[rans],1,"DV");
+frhs       = amdef("frhs",&frhs_a,numeq_total[rans],1,"DV");
 fiterhs_ko = amdef("fiterhs_ko",&fiterhs_ko_a,numeq_total[kapomega],1,"DV");
 
 /*--------------------------- allocate one vector for storing the time */
@@ -356,6 +366,7 @@ amdef("time",&time_a,1000,1,"DV");
 fluid_init(actpart,actintra,actfield, 0,action,&container,4,str);
 fluid_init_tu(actfield);
 actpos=0;
+fluid_init_pos_euler_tu();
 
 /*--------------------------------------- init all applied time curves */
 for (actcurve=0; actcurve<numcurve; actcurve++)
@@ -409,10 +420,14 @@ fluid_cons();
 /* nodal solution history fluid field:                                  *
  * sol[0][j]           ... initial data 				*
  * sol[1...actpos][j]  ... solution for visualisation (real pressure)	*
- * sol_increment[0][j] ... solution at time (n-1)			*
- * sol_increment[1][j] ... solution at time (n) 			*
- * sol_increment[2][j] ... solution at time (n+g)			*
- * sol_increment[3][j] ... solution at time (n+1)			*
+ * sol_increment[ipos][j] ... solution at time (n-1)			*
+ *               ipos.velnp .. velocity at time n+1                     *
+ *               ipos.veln  .. velocity at time n                       *
+ *               ipos.velnm .. velocity at time n-1                     *
+ *               ipos.eddy  .. ??                                       *
+ *               ipos.accn  .. acceleration at time n                   *
+ *               ipos.accnm .. acceleration at time n-1                 *
+ *               ipos.hist  .. history data needed for rhs              *
  *======================================================================*/
 timeloop:
 fdyn->step++;
@@ -437,10 +452,10 @@ container.actndis=0;
 if (par.myrank==0) fluid_algoout();
 
 /*--------------------- set dirichlet boundary conditions for  timestep */
-fluid_setdirich(actfield,3);
+fluid_setdirich(actfield,ipos.velnp);
 
-/*-------------------------------------------------- initialise timerhs */
-amzero(&ftimerhs_a);
+/*------------------------------------ prepare time rhs in mass form ---*/
+fluid_prep_rhs(actfield);
 
 if (fdyn->itnorm!=fncc_no && par.myrank==0)
 {
@@ -462,17 +477,14 @@ solserv_zero_mat(actintra,&(actsolv->sysarray[k_array]),
                  &(actsolv->sysarray_typ[k_array]));
 
 /*------------------------------------------- initialise iterations-rhs */
-amzero(&fiterhs_a);
+amzero(&frhs_a);
 
 /*-------------- form incremental matrices, residual and element forces */
 *action = calc_fluid;
 t1=ds_cputime();
-container.ftimerhs     = ftimerhs;
-container.fiterhs      = fiterhs;
+container.frhs         = frhs;
 container.global_numeq = numeq_total[rans];
 container.nii          = fdyn->nii;
-container.nif          = fdyn->nif;
-container.nim          = 0;
 container.kstep        = 0;
 calelm(actfield,actsolv,actpart,actintra,k_array,-1,
        &container,action);
@@ -481,22 +493,13 @@ tes+=te;
 
 /*--------------------------------------------------------------------- *
  | build the actual rhs-vector:                                         |
- |        rhs = ftimerhs + fiterhs                                      |
  *----------------------------------------------------------------------*/
-/* add time-rhs: */
-assemble_vec(actintra,
-             &(actsolv->sysarray_typ[k_array]),
-             &(actsolv->sysarray[k_array]),
-             &(actsolv->rhs[0]),
-             ftimerhs,
-             1.0
-             );
 /* add iteration-rhs: */
 assemble_vec(actintra,
              &(actsolv->sysarray_typ[k_array]),
              &(actsolv->sysarray[k_array]),
              &(actsolv->rhs[0]),
-             fiterhs,
+             frhs,
              1.0
              );
 
@@ -516,7 +519,7 @@ tss+=ts;
 fdyn->ishape=0;
 
 /*--- return solution to the nodes and calculate the convergence ratios */
-fluid_result_incre(actfield, 0,actintra,&(actsolv->sol[k_array]),3,
+fluid_result_incre(actfield, 0,actintra,&(actsolv->sol[k_array]),ipos.velnp,
                      &(actsolv->sysarray[k_array]),
                      &(actsolv->sysarray_typ[k_array]),
 		         &vrat,&prat,NULL);
@@ -534,6 +537,34 @@ if (converged==0)
 /*----------------------------------------------------------------------*
  | -->  end of nonlinear iteration   for rans                           |
  *----------------------------------------------------------------------*/
+
+/*---------------------------------------------- update acceleration ---*/
+if (fdyn->iop==4)    /* mass rhs with 1S-Theta */ 
+{
+/* copy solution from sol_increment[accn][j] to sol_increment[accnm][j] */
+  /*--- -> prev. acceleration becomes (n-1)-accel. of next time step ---*/
+  if (fdyn->step > 1)
+     solserv_sol_copy(actfield,0,node_array_sol_increment,
+                                 node_array_sol_increment,
+                                 ipos.accn,ipos.accnm);
+  /*------------------------ evaluate acceleration in this time step ---*
+   *-------------------------------- depending on integration method ---*/
+  if (fdyn->step == 1)
+  { /* do just a linear interpolation within the first timestep */
+    solserv_sol_zero(actfield,0,node_array_sol_increment,ipos.accnm);
+    solserv_sol_add(actfield,0,node_array_sol_increment,
+                               node_array_sol_increment,
+                               ipos.velnp,ipos.accn, 1.0/fdyn->dta);
+    solserv_sol_add(actfield,0,node_array_sol_increment,
+                               node_array_sol_increment,
+                               ipos.veln,ipos.accn,-1.0/fdyn->dta);
+    solserv_sol_copy(actfield,0,node_array_sol_increment,
+                                node_array_sol_increment,
+                                ipos.accn,ipos.accnm);
+  }
+  else
+    fluid_acceleration(actfield,fdyn->iop);
+}
 
 /*======================================================================*
                         K A P P A - O M E G A
@@ -629,13 +660,11 @@ if(fdyn->kapomega_flag==1)
  container.ftimerhs     = ftimerhs_omega;
  container.ftimerhs_pro = ftimerhs_pro_omega;
 }
-container.fiterhs      = fiterhs_ko;
+container.frhs         = fiterhs_ko;
 container.global_numeq = numeq_total[kapomega];
 container.niturbu_pro  = fdyn->niturbu_pro;
 container.niturbu_n    = fdyn->niturbu_n;
 container.nii          = 0;
-container.nim          = 0;
-container.nif          = 0;
 container.kstep        = 0;
 calelm(actfield,kosolv,actpart,actintra,0,-1,
        &container,action);
@@ -694,7 +723,7 @@ ts=ds_cputime()-t1;
 tss+=ts;
 
 /*--- return solution to the nodes and calculate the convergence ratios */
-fluid_result_incre_tu_1(actfield,actintra,sol_ko,3,
+fluid_result_incre_tu_1(actfield,actintra,sol_ko,ipos.velnp,
                      &(kosolv->sysarray[0]),
                      &(kosolv->sysarray_typ[0]),
 		         &kapomegarat,lower_limit_kappa,lower_limit_omega);
@@ -765,7 +794,7 @@ if (conv_check_rans == 1)
  {
 /*--------------------------------- copy solution at (n+1) to place (n) *
                                       in solution history sol_increment */
-  fluid_copysol_tu(actfield,3,1,0);
+  fluid_copysol_tu(actfield,ipos.velnp,ipos.veln,0);
 
 /*------------------------------------------- counter for timerhs terms */
   itnum_n = 1;
@@ -783,7 +812,7 @@ if (conv_check_rans == 1)
 }
 /*------------------------------ copy solution from rans for conv-check *
                                  for rans due to kappa-omega            */
-fluid_copysol_test(actfield,3,1);
+fluid_copysol_test(actfield,ipos.velnp,1);
 
 conv_check_rans = 1;
 
@@ -805,7 +834,9 @@ if (fdyn->stchk==iststep)
 
 /*--------------------------------- copy solution at (n+1) to place (n) *
                                       in solution history sol_increment */
-solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol_increment,3,1);
+solserv_sol_copy(actfield,0,node_array_sol_increment,
+                            node_array_sol_increment,
+                            ipos.velnp,ipos.veln);
 
 /*---------------------------------------------- finalise this timestep */
 outstep++;
@@ -813,24 +844,23 @@ pssstep++;
 
 /*-------- copy solution from sol_increment[3][j] to sol_[actpos][j]
            and transform kinematic to real pressure --------------------*/
-solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol,3,actpos);
+solserv_sol_copy(actfield,0,node_array_sol_increment,
+                            node_array_sol,ipos.velnp,actpos);
 fluid_transpres(actfield,0,0,actpos,fdyn->numdf-1,0);
 
-fluid_copysol_tu(actfield,3,actpos,1);
+fluid_copysol_tu(actfield,ipos.velnp,actpos,1);
 
 if (outstep==fdyn->upout && ioflags.output_out==1 && ioflags.fluid_sol==1)
 {
   outstep=0;
 
-  /*-------- calculate wall shear velocity and c_f (for TURBULENCE MODEL) */
-  fdyn->washvel  = ZERO;
-  container.actndis=0;
-  *action = calc_fluid_shearvelo;
-  container.nii= 0;
-  container.nim= 0;
-  container.nif= 0;
-  calelm(actfield,actsolv,actpart,actintra,k_array,-1,
-      &container,action);
+/*-------- calculate wall shear velocity and c_f (for TURBULENCE MODEL) */
+   fdyn->washvel  = ZERO;
+   container.actndis=0;
+   *action = calc_fluid_shearvelo;
+   container.nii= 0;
+   calelm(actfield,actsolv,actpart,actintra,k_array,-1,
+          &container,action);
 #ifdef PARALLEL
   fluid_reduceshstr(actintra,actfield);
 #endif
@@ -932,14 +962,13 @@ MPI_Barrier(actintra->MPI_INTRA_COMM);
 end:
 
 /*--------------------------------------------------- cleaning up phase */
-amdel(&ftimerhs_a);
 amdel(&ftimerhs_ko_a);
 amdel(&ftimerhs_kappa_a);
 amdel(&ftimerhs_omega_a);
 amdel(&ftimerhs_pro_a);
 amdel(&ftimerhs_pro_kappa_a);
 amdel(&ftimerhs_pro_omega_a);
-amdel(&fiterhs_a);
+amdel(&frhs_a);
 
 if (par.myrank==0 && ioflags.fluid_vis==1)
 amdel(&time_a);

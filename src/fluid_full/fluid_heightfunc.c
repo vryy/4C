@@ -27,8 +27,7 @@ void fluid_calelm_hf(
  | global dense matrices for element routines             m.gee 7/01    |
  *----------------------------------------------------------------------*/
 extern struct _ARRAY estif_global;    /* element stiffness matrix       */
-extern struct _ARRAY etforce_global;  /* element Time RHS               */
-extern struct _ARRAY eiforce_global;  /* element Iter RHS               */
+extern struct _ARRAY eforce_global;   /* element RHS                    */
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -36,6 +35,19 @@ extern struct _ARRAY eiforce_global;  /* element Iter RHS               */
  | global variable GENPROB genprob is defined in global_control.c       |
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
+/*!----------------------------------------------------------------------
+\brief positions of physical values in node arrays
+
+<pre>                                                        chfoe 11/04
+
+This structure contains the positions of the various fluid solutions 
+within the nodal array of sol_increment.a.da[ipos][dim].
+
+extern variable defined in fluid_service.c
+</pre>
+
+------------------------------------------------------------------------*/
+extern struct _FLUID_POSITION ipos;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate dynamic variables if needed                      |
@@ -226,7 +238,7 @@ for (i=0;i<numnp_total;i++)
    actnode = &(actdis->node[i]);
    if (actnode->hfdof==NULL) continue;
    dof = actnode->hfdof[0];
-   result[dof]= actnode->sol_increment.a.da[3][numdf];
+   result[dof]= actnode->sol_increment.a.da[ipos.velnp][numdf];
 }
 break; /* break for initialisation phase */
 
@@ -243,13 +255,9 @@ solserv_zero_mat(actintra,&(hfsolv->sysarray[0]),
 /*--------------------------------------------------- call the elements */
 *action = calc_fluid_heightfunc;
 container->dvec         = NULL;
-container->ftimerhs     = NULL;
-container->fiterhs      = NULL;
+container->frhs         = NULL;
 container->global_numeq = 0;
 container->nii          = 0;
-container->nif          = 0;
-container->nif          = 0;
-container->nim          = 0;
 container->kstep        = 0;
 container->fieldtyp     = fluid;
 fluid_calelm_hf(actpart,actintra,action,container,hfmat_oll,rhs,1);
@@ -277,7 +285,7 @@ for (i=0;i<numnp_total;i++)
    actnode = &(actdis->node[i]);
    if (actnode->hfdof==NULL) continue;
    dof = actnode->hfdof[0];
-   actnode->sol_increment.a.da[3][numdf] = result[dof];
+   actnode->sol_increment.a.da[ipos.velnp][numdf] = result[dof];
 }
 
 /*-------------------------------------------------- check convergence */
@@ -359,8 +367,7 @@ INT                  lm[MAXDOFPERELE];         /* location vector for this eleme
 INT                  owner[MAXDOFPERELE];      /* the owner of every dof */
 #endif
 static DOUBLE        **estif;
-static DOUBLE         *etforce;
-static DOUBLE         *eiforce;
+static DOUBLE         *eforce;
 ELEMENT               *actele;
 MATENTRY             **row;          /* matrix column                               */
 MATENTRY              *actentry;     /* actual matrix entry                         */
@@ -378,8 +385,7 @@ if (init==0)
    numeq        = hfmat_oll->numeq;
    myrank       = actintra->intra_rank;
    estif        = estif_global.a.da;
-   etforce      = etforce_global.a.dv;
-   eiforce      = eiforce_global.a.dv;
+   eforce       = eforce_global.a.dv;
    goto end;
 }
 
@@ -395,7 +401,7 @@ for (i=0;i<numele;i++)
       if (actele->e.f2->fs_on!=3) continue;
       fluid2(actpart,actintra,actele,NULL,
              &estif_global,NULL,
-             &etforce_global,&eiforce_global,NULL,
+             &eforce_global,NULL,
 	     action,NULL,NULL,container);
    break;
 #endif
@@ -405,7 +411,7 @@ for (i=0;i<numele;i++)
       if (actele->e.f3->fs_on!=3) continue;
       fluid3(actpart,actintra,actele,
              &estif_global,NULL,
-             &etforce_global,&eiforce_global,NULL,
+             &eforce_global,NULL,
              action,NULL,NULL,container);
    break;
 #endif
@@ -415,7 +421,7 @@ for (i=0;i<numele;i++)
       if (actele->e.f3->fs_on!=3) continue;
       fluid3_fast(actpart,actintra,actele,
              &estif_global,NULL,
-             &etforce_global,&eiforce_global,NULL,
+             &eforce_global,NULL,
              action,NULL,NULL,container);
    break;
 #endif
@@ -450,7 +456,7 @@ for (i=0;i<numele;i++)
       /*-------------------------------------------------- assemble rhs */
       rindex = find_index(jj,update,numeq);
       dsassert(rindex>=0,"dof does not exist in update\n");
-      rhs[0].vec.a.dv[rindex]+=eiforce[j];
+      rhs[0].vec.a.dv[rindex]+=eforce[j];
    }/* end loop over i */
 }
 
