@@ -1250,7 +1250,6 @@ void oll_to_ccf(
 CCF	   *ccf;         /* a sparse matrix in compressed column format */
 INT	   *Ap;          /* column pointer vector			*/
 INT	   *Ai;          /* row pointer vector			        */
-INT        *update;      /* dofs updated on this proc                   */
 DOUBLE     *Ax;          /* values of the matrix			*/
 MATENTRY **col;          /* matrix column                               */
 MATENTRY  *actentry;     /* actual matrix entry                         */

@@ -226,6 +226,7 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
    if (container->dvec) amzero(&intforce_global);
    switch(actele->eltyp)/*======================= call element routines */
    {
+#ifdef D_AXISHELL
    case el_axishell:
       container->handsize = 0;
       container->handles  = NULL;
@@ -233,6 +234,9 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
                &estif_global,&intforce_global,
                action,container);
    break;
+#endif
+
+#ifdef D_SHELL8
    case el_shell8:
       container->handsize = 0;
       container->handles  = NULL;
@@ -240,6 +244,9 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
              &estif_global,&emass_global,&intforce_global,
              action,container);
    break;
+#endif
+
+#ifdef D_SHELL9
    case el_shell9:
       container->handsize = 0;
       container->handles  = NULL;
@@ -247,11 +254,17 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
              &estif_global,&emass_global,&intforce_global,
              action,container);
    break;
+#endif
+
+#ifdef D_BRICK1
    case el_brick1:
       brick1(actpart,actintra,actele,
              &estif_global,&emass_global,&intforce_global,
              action,container);
    break;
+#endif
+
+#ifdef D_WALL1
    case el_wall1:
       container->handsize = 0;
       container->handles  = NULL;
@@ -259,10 +272,14 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
             &estif_global,&emass_global,&intforce_global,
             action, container);
    break;
+#endif
+
 #ifdef D_FLUID
    case el_fluid2: 
-      if(container->turbu==2 || container->turbu==3) actele2 = actpart->pdis[1].element[i];
-      else                                           actele2 = NULL;
+      if(container->turbu==2 || container->turbu==3)
+        actele2 = actpart->pdis[1].element[i];
+      else
+        actele2 = NULL;
       fluid2(actpart,actintra,actele,actele2,
              &estif_global,&emass_global,
              &etforce_global,&eiforce_global,&edforce_global,
@@ -289,6 +306,8 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
           action,&hasdirich,&hasext,container); 
    break;
 #endif   
+
+#ifdef D_ALE
    case el_ale3:
 	ale3(actpart,actintra,actele,
         &estif_global,
@@ -299,6 +318,9 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
         &estif_global,
         action,container);
    break;
+#endif
+
+#ifdef D_BEAM3
    case el_beam3:
         container->handsize = 0;
       	container->handles  = NULL;
@@ -306,20 +328,26 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
 	      &estif_global,&emass_global,&intforce_global,
 	      action,container);
    break;
+#endif
+
+#ifdef INTERF
    case el_interf:
       container->handsize = 0;
       container->handles  = NULL;
       if (sysarray2 == -1)
-	{
+      {
         interf(actpart,actintra,actele,&estif_global,NULL,
                &intforce_global,action,container);
       }
       else
-	{
+      {
         interf(actpart,actintra,actele,&estif_global,&emass_global,
                &intforce_global,action,container);
       }
    break;
+#endif
+
+#ifdef D_WALLGE
    case el_wallge:
       container->handsize = 0;
       container->handles  = NULL;
@@ -327,6 +355,8 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
             &estif_global,&emass_global,&intforce_global,
             action, container);
    break;
+#endif
+
    case el_none:
       dserror("Typ of element unknown");
    break;
@@ -735,6 +765,7 @@ for (i=0; i<actfield->dis[kk].numele; i++)
 /*--------------------- init the element routines for all present types */
 container->kstep = 0;  
 /*----------------------------- init all kind of routines for axishell  */
+#ifdef D_AXISHELL
 if (is_axishell==1)
 {
    container->handsize = 0;
@@ -742,7 +773,9 @@ if (is_axishell==1)
    axishell(actpart,NULL,NULL,&estif_global,&intforce_global,
             action,container);
 }
+#endif
 /*------------------------------- init all kind of routines for shell8  */
+#ifdef D_SHELL8
 if (is_shell8==1)
 {
    container->handsize = 0;
@@ -750,7 +783,9 @@ if (is_shell8==1)
    shell8(actfield,actpart,NULL,NULL,&estif_global,&emass_global,&intforce_global,
           action,container);
 }
+#endif
 /*------------------------------- init all kind of routines for shell9  */
+#ifdef D_SHELL9
 if (is_shell9==1)
 {
    container->handsize = 0;
@@ -758,12 +793,16 @@ if (is_shell9==1)
    shell9(actfield,NULL,NULL,&estif_global,&emass_global,&intforce_global,
           action,container);
 }
+#endif
 /*-------------------------------- init all kind of routines for brick1 */
+#ifdef D_BRICK1
 if (is_brick1==1)
 {
    brick1(actpart,NULL,NULL,&estif_global,&emass_global,NULL,action,container);
 }
+#endif
 /*-------------------------------- init all kind of routines for wall1  */
+#ifdef D_WALL1
 if (is_wall1==1)
 {
    container->handsize = 0;
@@ -771,7 +810,9 @@ if (is_wall1==1)
    wall1(actpart,NULL,NULL,&estif_global,&emass_global,&intforce_global,
          action,container);
 }
+#endif
 /*-------------------------------- init all kind of routines for fluid2 */
+#ifdef D_FLUID2
 if (is_fluid2==1)
 {
    fluid2(actpart,NULL,NULL,NULL,
@@ -779,7 +820,9 @@ if (is_fluid2==1)
           &etforce_global,&eiforce_global,&edforce_global,
           action,NULL,NULL,container);
 }
+#endif
 /*----------------------------- init all kind of routines for fluid2_pro */
+#ifdef D_FLUID2_PRO
 if (is_fluid2_pro==1)
 {
    fluid2_pro(actpart,NULL,NULL,NULL,
@@ -787,7 +830,9 @@ if (is_fluid2_pro==1)
 	     &etforce_global,&eiforce_global,
 	     &edforce_global,&gforce_global,action,NULL);
 }
+#endif
 /*-------------------------------- init all kind of routines for fluid2_tu */
+#ifdef D_FLUID2
 if (is_fluid2_tu==1)
 {
    fluid2_tu(actpart,NULL,NULL,NULL,
@@ -795,7 +840,9 @@ if (is_fluid2_tu==1)
              &etforce_global,&eiforce_global,&edforce_global,
              &eproforce_global,action,NULL,NULL,container);
 }
+#endif
 /*-------------------------------- init all kind of routines for fluid3 */
+#ifdef D_FLUID3
 if (is_fluid3==1)
 {
    fluid3(actpart,NULL,NULL,
@@ -803,17 +850,23 @@ if (is_fluid3==1)
           &etforce_global,&eiforce_global,&edforce_global,
           action,NULL,NULL,container);
 }
+#endif
 /*----------------------------------- init all kind of routines for ale */
+#ifdef D_ALE
 if (is_ale3==1)
 {
    ale3(actpart,NULL,NULL,&estif_global,action,container);
 }
+#endif
 /*----------------------------------- init all kind of routines for ale */
+#ifdef D_ALE
 if (is_ale2==1)
 {
    ale2(actpart,NULL,NULL,&estif_global,action,container);
 }
+#endif
 /*--------------------------------- init all kind of routines for beam3 */
+#ifdef D_BEAM3
 if (is_beam3==1)
 {
    container->handsize = 0;
@@ -821,7 +874,9 @@ if (is_beam3==1)
    beam3(actfield,actpart,NULL,NULL,&estif_global,&emass_global,&intforce_global,
          action,container);
 }
+#endif
 /*----------------------------- init all kind of routines for interface */
+#ifdef D_INTERF
 if (is_interf==1)
 {
    container->handsize = 0;
@@ -829,7 +884,9 @@ if (is_interf==1)
    interf(actpart,NULL,NULL,&estif_global,&emass_global,&intforce_global, 
            action,container);                                
 }
+#endif
 /*----------------------------- init all kind of routines for interface */
+#ifdef D_WALLGE
 if (is_wallge==1)
 {
    container->handsize = 0;
@@ -837,6 +894,7 @@ if (is_wallge==1)
    wallge(actpart,NULL,NULL,&estif_global,&emass_global,&intforce_global, 
            action,container);                                
 }
+#endif
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -926,19 +984,23 @@ if (is_axishell==1)
 {
 }
 /*-------------------------------------------reduce results for shell8  */
+#ifdef D_SHELL8
 if (is_shell8==1)
 {
    container->handsize = 0;
    container->handles  = NULL;
    shell8(actfield,actpart,actintra,NULL,NULL,NULL,NULL,action,container);
 }
+#endif
 /*-------------------------------------------reduce results for shell9  */
+#ifdef D_SHELL9
 if (is_shell9==1)
 {
    container->handsize = 0;
    container->handles  = NULL;
    shell9(actfield,actintra,NULL,NULL,NULL,NULL,action,container);
 }
+#endif
 /*--------------------------------------------reduce results for brick1 */
 if (is_brick1==1)
 {

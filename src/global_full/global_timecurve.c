@@ -269,7 +269,7 @@ break;
    
 default:
    dserror("Number of explicit timecurve (NUMEX) unknown\n");
-} /* end switch(numex)  
+} /* end switch(numex) */
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

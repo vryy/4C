@@ -74,8 +74,6 @@ return;
  *----------------------------------------------------------------------*/
 void inptrace()
 {
-INT  linecount=0;
-INT  i=0;
 char buffer[40];
 INT  ierr=0;
 #ifdef DEBUG 
@@ -85,9 +83,9 @@ if (frfind("TRACE")==0) return;
 frchar("TRACE",buffer,&ierr);
 
 if (
-    strncmp(buffer,"secure",6)==NULL ||
-    strncmp(buffer,"Secure",6)==NULL ||
-    strncmp(buffer,"SECURE",6)==NULL 
+    strncmp(buffer,"secure",6)==0 ||
+    strncmp(buffer,"Secure",6)==0 ||
+    strncmp(buffer,"SECURE",6)==0 
    )
     trace.trace_on=1;
 else

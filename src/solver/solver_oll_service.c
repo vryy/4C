@@ -20,6 +20,17 @@ DOUBLE cmp_double(const void *a, const void *b );
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
+\brief file pointers
+
+<pre>                                                         m.gee 8/00
+This structure struct _FILES allfiles is defined in input_control_global.c
+and the type is in standardtypes.h                                                  
+It holds all file pointers and some variables needed for the FRSYSTEM
+</pre>
+*----------------------------------------------------------------------*/
+extern struct _FILES  allfiles;
+
+/*!----------------------------------------------------------------------
 \brief numeq for oll matrices 
 
 <pre>                                                              mn 02/03
@@ -1031,6 +1042,72 @@ void oll_pattern(
 #endif
   return;
 /*----------------------------------------------------------------------*/
+}  /* END of oll_pattern */
+
+
+
+
+/*!---------------------------------------------------------------------
+  \brief  prints the pattern of an oll matrix for gnuplot
+
+  <pre>                                                        mn 03/04
+  This function prints the sparsety pattern of an oll matrix to the plt file.
+  </pre>
+  \param *oll      OLL    (i)    the oll matrix to print
+  \return void
+  \sa                                        
+
+  ------------------------------------------------------------------------*/
+void oll_gnupattern(
+    OLL *oll
+    )
+{
+  MATENTRY  **row;
+  MATENTRY   *actentry;
+  INT         i,j;
+  INT         nn;
+  FILE        *gnu = allfiles.gnu;
+
+#ifdef DEBUG 
+  dstrc_enter("oll_gnupattern");
+#endif
+
+#ifdef PARALLEL
+if (par.myrank != 0) goto end;
+#endif
+
+  nn =0;
+  row = oll->row;
+
+  fprintf(gnu,"# dense System matrix written from oll format: \n");
+  fprintf(gnu,"# ============================================ \n");
+  fprintf(gnu,"# rdim =  %4d \n", oll->rdim);
+  fprintf(gnu,"# cdim =  %4d \n", oll->cdim);
+  fprintf(gnu,"# nnz  =  %4d \n", oll->nnz);
+
+  for (i=0; i<oll->rdim; i++)
+  {
+    actentry = row[i];
+    while(actentry != NULL )
+    {
+      if( FABS(actentry->val) > EPS12 ) 
+      {
+        fprintf(gnu,"%9d  %9d \n",actentry->c,actentry->r);
+        nn++;
+      }
+      actentry = actentry->rnext;
+    } /* end while row i */
+  } /* end for all rows */
+
+  fprintf(gnu,"# nn:   %4d \n",nn);
+  fprintf(gnu,"# ============================================ \n");
+
+end:
+#ifdef DEBUG 
+  dstrc_exit();
+#endif
+
+  return;
 }  /* END of oll_pattern */
 
 

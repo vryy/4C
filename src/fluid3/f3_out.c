@@ -55,7 +55,6 @@ void f3_out_gid_sol_str(
   INT                 i,j,k;         /* counter */
   INT                 numnp;         /* number of nodal points in actfield */
   INT                numele;
-  INT                   nnp;
   INT                 count;
   DOUBLE           invcount;
   DOUBLE           **stress;

@@ -46,13 +46,18 @@ DOUBLE perf_time ()
   ret = t1;
 #endif
 
-#ifdef HPUX11
+#if defined(HPUX11) && !defined(HPUX_GNU)
   DOUBLE time;
   DOUBLE cputime_thread() , zero=0.0;
 
   time = cputime_thread( zero );
   ret = time;
 #endif
+
+#if defined(HPUX11) && defined(HPUX_GNU)
+  ret = 0.0;
+#endif
+
 
 #ifdef HPUXITA
   DOUBLE time;
@@ -309,7 +314,7 @@ void perf_out ()
 
 
 
-#if defined(HPUX11) || defined(HPUXITA)
+#if (defined(HPUX11) || defined(HPUXITA)) && !defined(HPUX_GNU)
 /*
  * A lightweight and thread-safe procedure to return the thread time
  * on the HP V2250 with 1 microsec resolution.

@@ -47,9 +47,7 @@ void ntadev(INT argc, char *argv[])
 char  *charpointer; 
 char  *resptr;  
 char  *vismode;
-INT    isrestart;
 INT    length;
-INT    lasthandle,nrecords;
 /*------------ cannot use dserror here, because .err files not yet open */
 /*--------------------------------------------------cheque command line */
    if (argc <= 1)

@@ -203,6 +203,7 @@ void inpctr(void);
 void inpctrprob(void);
 void inpctrdyn(void);
 void inpctrstat(void);
+void inpctreig(void);
 void inpctr_dyn_struct(STRUCT_DYNAMIC *sdyn);
 void inpctr_dyn_ale(ALE_DYNAMIC *adyn);
 void inpctr_eig_struct(ALLEIG *alleig);
@@ -244,6 +245,13 @@ void inptrace(void);
  *----------------------------------------------------------------------*/
 void inp_cond_curve(void);
 void inp_read_curve(char *string);
+
+/*----------------------------------------------------------------------*
+    input_funct.c
+ *----------------------------------------------------------------------*/
+void inp_cond_funct(void);
+
+
 /*----------------------------------------------------------------------*
  |  input_design.c                                  m.gee 11/01         |
  *----------------------------------------------------------------------*/

@@ -96,7 +96,6 @@ void f3_calint(
 	       DOUBLE         **wa2
 	      )
 { 
-INT      i,j;
 INT      iel;	      /* number of nodes 			        */
 INT      ntyp;        /* element type: 1 - hex; 2 - tet  	        */
 INT      intc;        /* "integration case" for tet for further infos
@@ -359,7 +358,7 @@ for (lt=0;lt<nit;lt++)
 	    |  the whole domain --> no interpolation with shape funcs   |
             |  parts staying constant during nonlinear iteration are    |
             |  add to Time Force Vector                                 |
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
       if (*hasext!=0)
       {
 /*--- compute galerkin part of external RHS (vel dofs) at (n) and (n+1) */
@@ -383,8 +382,9 @@ for (lt=0;lt<nit;lt++)
 /* output to the screen for testing */
 #ifdef DEBUG
 
-/* if (ele->Id==0)
-/*{
+#if 0
+if (ele->Id==0)
+{
 printf("\n");
 printf("ELEMENT NUMBER ===== %d \n",ele->Id_loc);
 printf("\n");
@@ -394,12 +394,14 @@ genkout(estif,NULL,"EKPV",4,3*iel,4*iel,0    ,3*iel,0);
 genkout(estif,NULL,"EKPP",4,3*iel,4*iel,3*iel,4*iel,0);
 genkout(emass,NULL,"EMVV",4,0    ,3*iel,0    ,3*iel,0);
 genkout(emass,NULL,"EMPV",4,3*iel,4*iel,0    ,3*iel,0);
-/*genkout(NULL,etforce,"EFTV",4,0    ,3*iel,0,0,1);
+genkout(NULL,etforce,"EFTV",4,0    ,3*iel,0,0,1);
 genkout(NULL,etforce,"EFTP",4,3*iel,4*iel,0,0,1);
 genkout(NULL,eiforce,"EFIV",4,0    ,3*iel,0,0,1);
 genkout(NULL,eiforce,"EFIP",4,3*iel,4*iel,0,0,1);
 exit(EXIT_FAILURE);
-}*/
+}
+#endif
+
 #endif
 
 /*----------------------------------------------------------------------*/

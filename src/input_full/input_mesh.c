@@ -59,7 +59,7 @@ static ARRAY tmpnodes2;
 void inpfield()
 {
 INT  i,j,k;
-INT  ierr,node_id;
+INT  node_id;
 INT  numnd;
 INT  nnode_total = 0;
 
@@ -231,12 +231,10 @@ return;
 void inp_assign_nodes(DISCRET *actdis)
 {
 INT  i,j,k;
-INT  ierr;
 INT  node_Id;
 INT counter;
 INT minusone=-1;
 ARRAY nodeflag;
-ARRAY coords;
 ELEMENT *actele;
 #ifdef DEBUG 
 dstrc_enter("inp_assign_nodes");
@@ -303,7 +301,6 @@ return;
 void inpdis(FIELD *actfield)
 {
 INT  ierr=0;
-char buffer[50];
 #ifdef DEBUG 
 dstrc_enter("inpdis");
 #endif
@@ -401,7 +398,6 @@ void inp_struct_field(FIELD *structfield)
 INT  ierr;
 INT  counter=0;
 INT  elenumber;
-INT  isquad;
 char *colpointer;
 #ifdef DEBUG 
 dstrc_enter("inp_struct_field");
@@ -584,7 +580,6 @@ INT  ierr;
 INT  counter=0;
 INT  cpro=0;
 INT  elenumber;
-INT  isquad;
 char *colpointer;
 
 #ifdef DEBUG 
@@ -727,7 +722,6 @@ void inp_ale_field(FIELD *alefield)
 INT  ierr;
 INT  counter=0;
 INT  elenumber;
-INT  isquad;
 char *colpointer;
 #ifdef DEBUG 
 dstrc_enter("inp_ale_field");

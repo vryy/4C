@@ -15,7 +15,6 @@ Maintainer: Steffen Genkinger
 #include "fluid3_prototypes.h"
 #include "fluid3.h"
 static DOUBLE Q12  = ONE/TWO;
-static DOUBLE Q13  = ONE/THREE;
 static DOUBLE Q14  = ONE/FOUR;
 static DOUBLE Q16  = ONE/SIX;
 static DOUBLE Q124 = ONE/SIX/FOUR;

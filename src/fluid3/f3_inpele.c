@@ -34,16 +34,8 @@ void f3inp(ELEMENT *ele,INT counter)
 {
 INT  i;
 INT  ierr=0;
-INT  quad;
 INT  lmtmp;
-long int  topology[100];
-char *colpointer;
 char buffer[50];
-INT  ndum;       /* dummy value */
-INT  ihelem;
-INT  itaumu;
-INT  itaump;
-INT  itauc;
 static INT cmat;
 
 #ifdef DEBUG 

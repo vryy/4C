@@ -196,7 +196,7 @@ typedef struct _FLUID_DYNAMIC
 INT                dyntyp;       /*!< dynamictype */
 INT                mlfem;        /*!< multilevel algorithm? */
 INT                numdf;        /*!< number of dofs of the fluid elements */
-INT                iop;          /* !<time integration method */
+INT                iop;          /*!< time integration method */
 INT                numcont;      /*!< number of continuation steps */
 INT                uppss;        /*!< update pss file every n steps */
 INT                upout;        /*!< store results every n steps */      

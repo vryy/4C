@@ -57,11 +57,9 @@ void f3_liftdrag(
 {
 
 
-  INT              init;
   INT              i,j,cc;              /* some loopers and counters */
   INT              nir,nis,nit;         /* num GP in r/s/t direction */
   INT              iel;                 /* numnp to this element */
-  const INT        numdf =4;
   static DOUBLE    funct[MAXNOD_F3];     
   static DOUBLE    deriv[3][MAXNOD_F3];     
   static DOUBLE    xjm[3][3];         
@@ -75,28 +73,16 @@ void f3_liftdrag(
   DOUBLE           forceline[6];         /* traction vector */
   DOUBLE           xyz[3];
   INT              ld_id;
-  INT              idof,inode;
   INT              ngsurf;
-  INT              ngline;
   INT              ngnode;
   INT              surf;
-  INT              line;
-  INT              foundline;
-  INT              foundsurf;
-  INT              foundvolu;
   GSURF           *gsurf[6];
-  NEUM_CONDITION  *surfneum[6];
-  GLINE           *gline[12];
-  NEUM_CONDITION  *lineneum[12];
   INT              ngr, ngs, ngt;
   DOUBLE           xgp[3], ygp[3], zgp[3];
   DOUBLE           wgx[3], wgy[3], wgz[3];
   INT  gpr, gps, gpt;
   DOUBLE e1, e2, e3, facr, facs, fact, fac;
-  DOUBLE det0, ds;
-  DOUBLE ap[3], ar[3];
-
-  static INT h20perm[8]  = {16, 17, 18, 19, 12, 13, 14, 15};
+  DOUBLE det0;
 
   static INT shnod[6][8] = {
     0, 1, 2, 3,  8,  9, 10, 11,  /* 1st surf nodes */
@@ -378,7 +364,6 @@ end:
 
 static DOUBLE Q12 = ONE/TWO;
 static DOUBLE Q14 = ONE/FOUR;
-static DOUBLE Q16 = ONE/SIX;
 static DOUBLE Q18 = ONE/EIGHT;
 /*!--------------------------------------------------------------------- 
   \brief shape functions and their natural derivatives for hexaeder
@@ -411,7 +396,6 @@ void f3_hex2(
     DIS_TYP     typ
     )
 {
-  INT    i,ii;
   DOUBLE rp,rm,sp,sm,tp,tm;
   DOUBLE rrm,ssm,ttm;
   DOUBLE drm1,dr00,drp1,dsm1,ds00,dsp1,dtm1,dt00,dtp1;

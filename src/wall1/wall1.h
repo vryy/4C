@@ -24,7 +24,7 @@ This structure contains the coordinates and weights for numerical
 integration of a wall element
 </pre>
 
-/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*
  | wall1 data                                                al 6/01    |
  *----------------------------------------------------------------------*/
 typedef struct _W1_DATA

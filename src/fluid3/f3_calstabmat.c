@@ -92,14 +92,13 @@ void f3_calstabkvv(
  |   icol - column number in element matrix                             |
  |   irn  - row node: number of node considered for matrix-row          |
  |   ird  - row dim.: number of spatial dimension at row node           |  
-/*----------------------------------------------------------------------*/
-INT    irow,icol,irn,icn,ird;
+ *----------------------------------------------------------------------*/
+INT    irow,icol,irn,icn;
 DOUBLE taumu;
 DOUBLE taump;
 DOUBLE tauc;
 DOUBLE c,cc;
 DOUBLE aux,auxr,auxc;
-DOUBLE auxx, auxy, auxz;
 DOUBLE sign;
 STAB_PAR_GLS *gls;	/* pointer to GLS stabilisation parameters	*/
 
@@ -484,8 +483,8 @@ void f3_calstabkvp(
  |   ird  - row dim.: number of spatial dimension at row node           |
  |   posc - since there's only one full element stiffness matrix the    |
  |          column number has to be changed!                            |   
-/*----------------------------------------------------------------------*/
-INT    irow,icol,irn,ird,posc;
+ *----------------------------------------------------------------------*/
+INT    irow,icol,irn,posc;
 DOUBLE taumu;
 DOUBLE taump;
 DOUBLE c;
@@ -643,8 +642,8 @@ void f3_calstabmvv(
  |   icol - column number in element matrix                             |
  |   irn  - row node: number of node considered for matrix-row          |
  |   ird  - row dim.: number of spatial dimension at row node           |   
-/*----------------------------------------------------------------------*/
-INT    irow,icol,irn,icn,ird;
+ *----------------------------------------------------------------------*/
+INT    irow,icol,irn,icn;
 DOUBLE taumu;
 DOUBLE taump;
 DOUBLE c,cc;
@@ -812,11 +811,10 @@ void f3_calstabkpv(
  |   ird  - row dim.: number of spatial dimension at row node           |
  |   posr - since there's only one full element stiffness matrix the    |
  |          row number has to be changed!                               |
-/*----------------------------------------------------------------------*/
-INT    irow,icol,irn,ird,icn,posr;
+ *----------------------------------------------------------------------*/
+INT    irow,icol,icn,posr;
 DOUBLE c;
 DOUBLE aux;
-DOUBLE sign;
 DOUBLE taump;
 
 #ifdef DEBUG 
@@ -964,7 +962,7 @@ void f3_calstabkpp(
  |          row number has to be changed!                               |
  |   posc - since there's only one full element stiffness matrix the    |
  |          column number has to be changed!                            |
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 INT    irow,icol,posc,posr;
 DOUBLE c;
 DOUBLE taump;
@@ -1048,7 +1046,7 @@ void f3_calstabmpv(
  |   ird  - row dim.: number of spatial dimension at row node           |
  |   posr - since there's only one full element stiffness matrix the    |
  |          row number has to be changed!                               |
-/*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 INT    irow,icol,icn,posr;
 DOUBLE c;
 DOUBLE taump;

@@ -15,7 +15,6 @@ Maintainer: Steffen Genkinger
 #include "fluid3_prototypes.h"
 static DOUBLE Q12 = ONE/TWO;
 static DOUBLE Q14 = ONE/FOUR;
-static DOUBLE Q16 = ONE/SIX;
 static DOUBLE Q18 = ONE/EIGHT;
 /*!--------------------------------------------------------------------- 
 \brief shape functions and their natural derivatives for hexaeder
@@ -89,7 +88,6 @@ derivatives with respect to r/s/t are evaluated for
             INT         icode     
 	   )
 {
-INT    i,ii;
 DOUBLE rp,rm,sp,sm,tp,tm;
 DOUBLE rrm,ssm,ttm;
 DOUBLE drm1,dr00,drp1,dsm1,ds00,dsp1,dtm1,dt00,dtp1;
@@ -662,7 +660,6 @@ void f3_tet(
             INT         icode     
 	   )
 {
-INT    i;
 DOUBLE t1,t2,t3,t4;
 
 
@@ -707,7 +704,8 @@ case tet10: /*  QUADRATIC shape functions and their natural derivatives */
 			 
    dserror("shape functions for tet10 not implemented yet!\n"); 
 /*--------------------------------------------------- form basic values */
-/*   t1=r;
+#if 0
+   t1=r;
    t2=s;
    t3=t;
    t4=ONE-r-s-t;
@@ -725,8 +723,8 @@ case tet10: /*  QUADRATIC shape functions and their natural derivatives */
 
 
    if(icode>1) /* --> first derivative evaluation */
-/*   {
-/*      deriv[0][0] = ;
+   {
+      deriv[0][0] = ;
       deriv[1][0] = ;
       deriv[2][0] = ;
 
@@ -768,7 +766,7 @@ case tet10: /*  QUADRATIC shape functions and their natural derivatives */
    
    }   
    if(icode==3) /* --> second derivative evaluation  */
-/*   {
+   {
       deriv2[0][0] =  ;
       deriv2[1][0] =  ;
       deriv2[2][0] =  ;
@@ -838,8 +836,9 @@ case tet10: /*  QUADRATIC shape functions and their natural derivatives */
       deriv2[3][9]= ;
       deriv2[4][9]= ;
       deriv2[5][9]=  ;
+   }
+#endif
 
-   }*/
 break;
    
 /*----------------------------------------------------------------------*/   

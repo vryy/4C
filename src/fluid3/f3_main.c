@@ -89,7 +89,6 @@ INT smisal;
   INT       ldflag;
   GVOL     *actgvol;
   GSURF    *actgsurf;
-  GLINE    *actgline;
   DSURF    *actdsurf;
 
 #ifdef DEBUG 

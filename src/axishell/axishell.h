@@ -78,7 +78,7 @@ void axishell(PARTITION *actpart, INTRA *actintra, ELEMENT *ele,
 /*----------------------------------------------------------------------*
  | read shell element                                       mn 05/03    |
  *----------------------------------------------------------------------*/
-void saxiinp(ELEMENT *ele);
+void saxi_inp(ELEMENT *ele);
 /*----------------------------------------------------------------------*/
 #endif /*D_AXISHELL*/
 /*! @} (documentation module close)*/

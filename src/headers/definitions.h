@@ -54,25 +54,35 @@ typedef char      CHAR;
  *----------------------------------------------------------------------*/
 /* append underslashs, if necessary */
 #undef CCA_APPEND_U
+
 /* append underslash for gnu's linux compiler gcc and g77 */
 #ifdef SUSE73 
 #define CCA_APPEND_U (1)
 #endif
+
 #ifdef LINUX_MUENCH
 #define CCA_APPEND_U (1)
 #endif
+
+#ifdef HPUX_GNU
+#define CCA_APPEND_U (1)
+#endif
+
 /* append underslash for CUSS Sunfire */
 #ifdef SUN 
 #define CCA_APPEND_U (1)
 #endif
+
 /* append underslash for SIXTYFOUR flag */
 #ifdef SIXTYFOUR 
 #define CCA_APPEND_U (1)
 #endif
+
 /* append underslash for HPUX11i flag */
 #ifdef HPUXITA 
 #define CCA_APPEND_U (1)
 #endif
+
 #ifdef HPUX_MUENCH
 #define CCA_APPEND_U (1)
 #endif

@@ -21,13 +21,7 @@ Maintainer: Malte Neumann
 #include "../fluid3/fluid3.h"
 #include "ale3.h"
 #include "../ale2/ale2.h"
-/*----------------------------------------------------------------------*
- | enum _CALC_ACTION                                      m.gee 1/02    |
- | command passed from control routine to the element level             |
- | to tell element routines what to do                                  |
- | defined globally in global_calelm.c                                  |
- *----------------------------------------------------------------------*/
-enum _CALC_ACTION calc_action[MAXFIELD];
+
 /*----------------------------------------------------------------------*
  | global dense matrices for element routines             m.gee 7/01    |
  *----------------------------------------------------------------------*/

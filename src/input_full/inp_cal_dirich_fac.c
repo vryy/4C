@@ -44,12 +44,13 @@ gnode
 \sa calling: ---; called by: inherit_design_dis_dirichlet()
 
 *----------------------------------------------------------------------*/
-void cal_dirich_fac(GNODE *gnode, INT index)
+void cal_dirich_fac(
+    GNODE *gnode,
+    INT index
+    )
 {
-INT  i;
 
 DOUBLE  xi;
-DOUBLE  xp1,xp2,xp3;
 DOUBLE  length,length_1,length_2;
 
 INT     funct_num;

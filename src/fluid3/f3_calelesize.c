@@ -109,7 +109,7 @@ void f3_calelesize(
                   )
 {
 INT ieval = 0;       /* evaluation flag			                */
-INT i,ilen, inod;    /* simply a counter	        		*/
+INT ilen, inod;    /* simply a counter	        		*/
 INT istrnint;        /* evaluation flag		     	                */
 INT ishvol;          /* evaluation flag		        	        */
 INT ntyp;            /* element type (TET or HEX)  		        */

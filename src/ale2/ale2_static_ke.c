@@ -231,7 +231,6 @@ const INT           numeps = 3;
 DOUBLE              fac;
 DOUBLE              e1,e2;         /* GP-coords */
 DOUBLE              facr,facs;   /* weights at GP */
-INT                 stepswitch = 0;
 
 DOUBLE              min_detF;         /* minimal Jacobian determinant */
 
@@ -816,7 +815,7 @@ for (lr=0; lr<nir; lr++)
 /*        stiff = (1.0-pv)/2.0/(1.0-2.0*pv)/(1+pv) * ( strain[0]*strain[0]
               + strain[1]*strain[1] + 2.0*pv/(1.0-pv)*strain[0]*strain[1]); */
         /* elemental distortion energy density criterion: eq. (17) */
-/*        stiff = (strain[0]-strain[1])*(strain[0]-strain[1])/12.0/(1.0 + pv);
+/*        stiff = (strain[0]-strain[1])*(strain[0]-strain[1])/12.0/(1.0 + pv); */
         /* square norm of element principal strain criterion: eq. (13) */
         stiff = (strain[0]*strain[0] + strain[1]*strain[1]) / 2.0;
         *min_stiff = (stiff < *min_stiff) ? stiff:*min_stiff;
@@ -1021,12 +1020,10 @@ INT                 iel;             /* numnp to this element */
 INT                 nd;
 
 const INT           numdf  = 2;
-const INT           numeps = 3;
 
 DOUBLE              fac;
 DOUBLE              e1,e2;            /* GP-coords */
 DOUBLE              facr,facs;        /* weights at GP */
-INT                 stepswitch = 0;
 
 DOUBLE              min_detF;         /* minimal Jacobian determinant */
 

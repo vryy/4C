@@ -275,7 +275,6 @@ INT           err=0;
 INT           foundit=0;
 INT           name_size=0;
 INT           sizename=0;
-INT           write_error=0;
 INT           dimensions[3];
 char          test_name[200];
 long int      handle_dummy;
@@ -379,12 +378,10 @@ void pss_read_name_handle(char       *name,
                           INT	     *ierr)
 {
 long int      cur_pos=0;
-long int      offset=0;
 INT           err=0;
 INT           foundit=0;
 INT           name_size=0;
 INT           sizename=0;
-INT           write_error=0;
 INT           dimensions[3];
 long int      handle_dummy;
 char          test_name[200];
@@ -483,7 +480,6 @@ INT          err=0;
 INT          foundit=0;
 INT          name_size=0; 
 INT          sizename=0;
-INT          write_error=0;
 INT          dimensions[3];
 long int     handle_dummy;
 char         test_name[200];
@@ -615,12 +611,10 @@ void pss_read_array_name_handle(char       *name,
                                 INT	   *ierr)
 {
 long int    cur_pos = 0;
-long int    offset = 0;
 INT         err=0; 
 INT         foundit=0;
 unsigned int name_size=0; 
 INT         sizename=0;
-INT         write_error=0;
 INT         dimensions[3];
 long int    handle_dummy;
 char        test_name[200];
@@ -733,12 +727,10 @@ void pss_read_array_handle(ARRAY      *array,
                            INT        *ierr)
 {
 long int    cur_pos = 0;
-long int    offset = 0;
 INT         err=0; 
 INT         foundit=0;
 unsigned int name_size=0; 
 INT         sizename=0;
-INT         write_error=0;
 INT         dimensions[3];
 long int    handle_dummy;
 char        test_name[200];
@@ -931,7 +923,6 @@ void pss_chck_handle(char       *name,
                      INT        *ierr)
 {
 long int    cur_pos=0;
-long int    offset=0;
 INT         foundit=0;
 INT         sizename=0;
 INT         err=0;
@@ -1089,7 +1080,6 @@ void pss_getdims_name_handle(char       *name,
                              INT	*ierr)
 {
 long int      cur_pos=0;
-long int      offset=0;
 INT           foundit=0;
 INT           sizename=0;
 INT           err=0;

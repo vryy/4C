@@ -56,21 +56,21 @@ case m_stvenant:/*------------------------ st.venant-kirchhoff-material */
    
    
    /*----------------------------------- transform strains to cartesian */
-   /*s8_kov_cuca(strain,gkonr); 
+   /*s8_kov_cuca(strain,gkonr);  */
    
    /*=========================== in here is material in cartesian bases */
    /*-------------------------------------------------- do material law */
-   /*s8_mat_linel_cart(mat->m.stvenant,C4,C,strain);
+   /*s8_mat_linel_cart(mat->m.stvenant,C4,C,strain); */
    /*----------------------------------------------- cartesian stresses */
-   /*s8_mat_stress1(stress,strain,C);
+   /*s8_mat_stress1(stress,strain,C); */
    /*===================================================================*/
    
    /*------------------------------ return strains to curvilinear bases */
-   /*s8_kov_cacu(strain,gkovr);
+   /*s8_kov_cacu(strain,gkovr); */
    /*----------------------------------- return C4 to curvilinear bases */
-   /*s8_4kon_cacu(C4,gkonr);
+   /*s8_4kon_cacu(C4,gkonr); */
    /*-------------------- return material tangent from tensor to matrix */
-   /*s8_c4_to_C2(C4,C);
+   /*s8_c4_to_C2(C4,C); */
    /*----------------------------- return stresses to curvilinear bases */
    /*s8_kon_cacu(stress,gkonr);*/
 
@@ -87,7 +87,7 @@ case m_compogden:/*--------------------------------- kompressible ogden */
    /*================================== temporary calculating st.venant */
    /*E = 0.0;
    for (i=0; i<3; i++) E += (mat->m.compogden->alfap[i])*(mat->m.compogden->mup[i]);
-   E *= (1.0+(mat->m.compogden->nue));
+   E *= (1.0+(mat->m.compogden->nue)); */
 
 
    /* This is venant in curvilinear coodinates 
@@ -97,21 +97,21 @@ case m_compogden:/*--------------------------------- kompressible ogden */
 
 
    /*----------------------------------- transform strains to cartesian */
-   /*s8_kov_cuca(strain,gkonr); 
+   /*s8_kov_cuca(strain,gkonr);  */
    /*-------------------------------------------------- do material law */
-   /*s8_mat_linel_carttmp(E,mat->m.compogden->nue,C4);
+   /*s8_mat_linel_carttmp(E,mat->m.compogden->nue,C4); */
    /*-------------------- return material tangent from tensor to matrix */
-   /*s8_c4_to_C2(C4,C);
+   /*s8_c4_to_C2(C4,C); */
    /*----------------------------------------------- cartesian stresses */
-   /*s8_mat_stress1(stress,strain,C);
+   /*s8_mat_stress1(stress,strain,C); */
    /*------------------------------ return strains to curvilinear bases */
-   /*s8_kov_cacu(strain,gkovr);
+   /*s8_kov_cacu(strain,gkovr); */
    /*----------------------------------- return C4 to curvilinear bases */
-   /*s8_4kon_cacu(C4,gkonr);
+   /*s8_4kon_cacu(C4,gkonr); */
    /*-------------------- return material tangent from tensor to matrix */
-   /*s8_c4_to_C2(C4,C);
+   /*s8_c4_to_C2(C4,C); */
    /*----------------------------- return stresses to curvilinear bases */
-   /*s8_kon_cacu(stress,gkonr);
+   /*s8_kon_cacu(stress,gkonr); */
    
    /*===================================================================*/
    

@@ -529,7 +529,7 @@ dstrc_enter("c1_dmat_nhmfcc");
   denmin  =  mat->m.nhmfcc->denmin;
   denmax  =  mat->m.nhmfcc->denmax;
 /*----------------------------------------------------------------------*/
-/*  ym = ccf *( 0.5 * pow((dens/denss),cce) + 0.3 * dens/denss)*es;
+/*  ym = ccf *( 0.5 * pow((dens/denss),cce) + 0.3 * dens/denss)*es; */
 /*----------------------------------------------------------------------*/
   ym = ccf *( 0.5 * pow((dens/denss),cce) + 0.3 * dens/denss)*es;
 /*----------------------------------- evaluate basic material values ---*/

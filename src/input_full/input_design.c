@@ -33,7 +33,6 @@ extern struct _DESIGN *design;
  *----------------------------------------------------------------------*/
 void inpdesign()
 {
-INT  ierr;
 #ifdef DEBUG 
 dstrc_enter("inpctrdesign");
 #endif
@@ -130,9 +129,7 @@ return;
  *----------------------------------------------------------------------*/
 void inp_dnode()
 {
-INT    i,ierr;
-INT    maxdnode=0;
-INT    dnode=0;  
+INT    i;
 INT    readID;
 DNODE *actdnode;
 #ifdef DEBUG 
@@ -211,9 +208,7 @@ return;
  *----------------------------------------------------------------------*/
 void inp_dline()
 {
-INT    i,ierr,counter;
-INT    maxdline=0;
-INT    dline=0;  
+INT    i;
 DLINE *actdline;
 INT    readID;
 #ifdef DEBUG 
@@ -240,6 +235,8 @@ dstrc_exit();
 #endif
 return;
 } /* end of inp_dline */
+
+
 /*----------------------------------------------------------------------*
  | input of one design line                               m.gee 1/02    |
  *----------------------------------------------------------------------*/
@@ -332,9 +329,7 @@ return;
  *----------------------------------------------------------------------*/
 void inp_dsurface()
 {
-INT    i,ierr,counter;
-INT    maxdsurf=0;
-INT    dsurf=0;  
+INT    i;
 DSURF *actdsurf;
 INT    readId;
 #ifdef DEBUG 
@@ -359,6 +354,8 @@ dstrc_exit();
 #endif
 return;
 } /* end of inp_dsurface */
+
+
 
 /*----------------------------------------------------------------------*
  | input of one design surface                            m.gee 1/02    |
@@ -424,9 +421,7 @@ return;
  *----------------------------------------------------------------------*/
 void inp_dvolume()
 {
-INT   i,ierr,counter;
-INT   maxdvol=0;
-INT   dvol=0;  
+INT   i;
 DVOL *actdvol;
 INT   readId;
 #ifdef DEBUG 

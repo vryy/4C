@@ -130,7 +130,7 @@ strain[1] = GL[0][1];
 strain[2] = GL[0][2];   
 strain[3] = GL[1][1];   
 strain[4] = GL[1][2];   
-strain[5] = GL[2][2]; 
+strain[5] = GL[2][2];  */
 /*----------------------------------------------------------------------*/
 /* make spectral decomposition and principal axes of right Cauchy Green */
 /*
@@ -402,10 +402,12 @@ PK2[1][2] += PK2main[2] * N[1][2]*N[2][2];
 PK2[2][0] += PK2main[2] * N[2][2]*N[0][2];
 PK2[2][1] += PK2main[2] * N[2][2]*N[1][2];
 PK2[2][2] += PK2main[2] * N[2][2]*N[2][2];
+*/
 /* make symmetry 
 PK2[1][0] = PK2[0][1];
 PK2[2][0] = PK2[0][2]; 
-PK2[2][1] = PK2[1][2];*/
+PK2[2][1] = PK2[1][2];
+*/
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();

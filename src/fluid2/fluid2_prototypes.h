@@ -1545,4 +1545,44 @@ void fluid2_tu(
 void f2_write_restart(ELEMENT *actele, INT nhandle, long int *handles);
 void f2_read_restart( ELEMENT *actele, INT nhandle, long int *handles);
 
+/************************************************************************
+ | f2_calstress.c                                                       |
+ ************************************************************************/
+void f2_calfsistress(
+    INT             viscstr,
+    FLUID_DATA     *data, 
+    ELEMENT        *ele,
+    DOUBLE        **evel, 
+    DOUBLE         *epre,
+    DOUBLE         *funct,
+    DOUBLE        **deriv,
+    DOUBLE        **derxy,
+    DOUBLE        **vderxy,
+    DOUBLE        **xjm,
+    DOUBLE        **xyze,
+    DOUBLE        **sigmaint,
+    INT             is_relax
+    );
+void f2_calelestress(
+    int             viscstr,
+    FLUID_DATA     *data, 
+    ELEMENT        *ele,
+    double        **evel, 
+    double         *epre,
+    double         *funct,
+    double        **deriv,
+    double        **derxy,
+    double        **vderxy,
+    double        **xjm,
+    double        **xyze,
+    double        **sigmaint
+    );
+/************************************************************************
+ | f2_calliftdrag.c                                                     |
+ ************************************************************************/
+void f2_calliftdrag(
+    ELEMENT       *ele,
+    FLUID_DATA    *data,
+    CONTAINER     *container);
+
 /*! @} (documentation module close)*/	    

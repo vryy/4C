@@ -23,6 +23,15 @@ and the type is in partition.h
 
 *----------------------------------------------------------------------*/
  extern struct _PAR   par;                      
+
+
+/*----------------------------------------------------------------------*
+ | prototypes of functions callable only in this file                   |
+ *----------------------------------------------------------------------*/
+void dofdof_realloc(INT dof1,INT **dof_dof);
+INT cmp(const void *a, const void *b );
+
+
 /*----------------------------------------------------------------------*
  |  put dofs in update in ascending order                 a.lipka 5/01  |
  *----------------------------------------------------------------------*/

@@ -596,7 +596,7 @@ case 0:
    /* NOTE: before adding to the matrix parcsr->ij_matrix again,
             there has to be a call to HYPRE_IJMatrixInitialize.
             This call is done by the routine solserv_zero_mat
-            in solver_service.c
+            in solver_service.c */
    /*-------------------------------------------------------- set flags */
    parcsr->is_factored=1;
    parcsr->ncall++;

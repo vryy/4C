@@ -741,6 +741,8 @@ typedef struct _OLL
   INT                     is_masked;     /*!< was this matrix masked ? */
   INT                     is_copied;     /*!< was this matrix copied ? */
 
+  INT                     sparsepat;     /*!< sparsepattern was printed to gnu */
+
   INT                     numeq_total;   /*!< total number of unknowns */
   INT                     numeq;         /*!< number of unknowns updated on this proc */ 
   INT                     nnz;           /*!< number of nonzeros on this proc */

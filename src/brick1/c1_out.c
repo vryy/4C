@@ -39,7 +39,7 @@ versions of "Gid" for integration point value visualization!
          If it is possible change this code!
 \return void                                               
 \sa calling: ---; called by: out_gid_sol()
-/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*
  |  routine to calcualate and to write gp stresses of a brick1          |
  |  element to visualize in gid -> Hexahedra elements        al 1/03    |
  *----------------------------------------------------------------------*/

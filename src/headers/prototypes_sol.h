@@ -478,6 +478,15 @@ void exchange_coup_msr(
                          INTRA         *actintra,
                          AZ_ARRAY_MSR  *msr);
 /*----------------------------------------------------------------------*
+ |  solver_add_mlib.c                                    m.gee 11/01    |
+ *----------------------------------------------------------------------*/
+INT  add_mds(
+    struct _PARTITION     *actpart,
+    struct _SOLVAR        *actsolv,
+    struct _ELEMENT       *actele,
+    struct _ML_ARRAY_MDS  *mds);
+
+/*----------------------------------------------------------------------*
  | solver_add_parcsr.c                                   m.gee 11/01    |
  *----------------------------------------------------------------------*/
 void  add_parcsr(struct _PARTITION     *actpart,
@@ -586,6 +595,18 @@ void solver_colsol(struct _SOLVAR         *actsolv,
                    struct _DIST_VECTOR    *sol,
                    struct _DIST_VECTOR    *rhs,
                    INT                     option);
+/*----------------------------------------------------------------------*
+ |  solver_mlib.c                                         m.gee 02/02    |
+ *----------------------------------------------------------------------*/
+void solver_mlib( 
+    struct _SOLVAR         *actsolv,
+    struct _INTRA          *actintra,
+    struct _ML_ARRAY_MDS   *mds,
+    struct _DIST_VECTOR    *sol,
+    struct _DIST_VECTOR    *rhs,
+    INT                     option
+    );
+
 /*----------------------------------------------------------------------*
  |  solver_hypre.c                                       m.gee 02/02    |
  *----------------------------------------------------------------------*/
@@ -1191,6 +1212,19 @@ void fluid_result_incre(
 		       );		        
 
 /************************************************************************
+ | fluid_liftdrag.c                                                     |
+ ************************************************************************/
+void fluid_liftdrag(
+    INT            init,
+    CALC_ACTION   *action,
+    CONTAINER     *container,
+    FIELD         *actfield,
+    SOLVAR        *actsolv,
+    PARTITION     *actpart,
+    INTRA         *actintra,
+    FLUID_DYNAMIC *fdyn);
+
+/************************************************************************
  | fluid_service_tu.c                                                   |
  ************************************************************************/
 void fluid_result_incre_tu(FIELD         *actfield,    
@@ -1340,6 +1374,10 @@ void oll_print(
 void oll_pattern(
     struct _OLL            *oll,
     INT                     n_max);
+void oll_gnupattern(
+    struct _OLL            *oll
+    );
+
 /* -------------------------------------------------------------------- *
  *   global_oll_service2.c                                     mn 05/03 *
  * -------------------------------------------------------------------- */

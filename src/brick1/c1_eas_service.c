@@ -453,7 +453,7 @@ dstrc_enter("c1rkefi");
       }}
 /*      do 35 i=1,3*iel
       do 35 j=1,l1
- 35    fie(i) = fie(i) + sab(i,j)*fiehi(j)
+ 35    fie(i) = fie(i) + sab(i,j)*fiehi(j) */
 
 /*----------------------------------------------------------------------*
  |  compute modified stiffness matrix                                   |

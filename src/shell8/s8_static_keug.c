@@ -594,7 +594,7 @@ for (lr=0; lr<nir; lr++)
       strain_t[2]  = strain_r[2];
       strain_t[4]  = strain_r[4];
       strain_t[8]  = strain_r[8];
-      strain_t[10] = strain_r[10];
+      strain_t[10] = strain_r[10]; */
       /* membrane energy on energy.a.da[ngauss][0] */
       /*for (i=0; i<12; i++) strain_work[i]=0.0;
       for (i=0; i<12; i++)
@@ -606,7 +606,7 @@ for (lr=0; lr<nir; lr++)
       sum = 0.0;
       for (i=0; i<12; i++) sum += strain_m[i] * strain_work[i];
       ele->e.s8->energy.a.da[ngauss][0] += sum;
-      ele->e.s8->energy.a.da[0][4] += sum*weight;
+      ele->e.s8->energy.a.da[0][4] += sum*weight; */
       /* bending energy on energy.a.da[ngauss][1] */
       /*for (i=0; i<12; i++) strain_work[i]=0.0;
       for (i=0; i<12; i++)
@@ -618,7 +618,7 @@ for (lr=0; lr<nir; lr++)
       sum = 0.0;
       for (i=0; i<12; i++) sum += strain_b[i] * strain_work[i];
       ele->e.s8->energy.a.da[ngauss][1] += sum;
-      ele->e.s8->energy.a.da[0][5] += sum*weight;
+      ele->e.s8->energy.a.da[0][5] += sum*weight; */
       /* shear energy on energy.a.da[ngauss][2] */
       /*for (i=0; i<12; i++) strain_work[i]=0.0;
       for (i=0; i<12; i++)
@@ -630,7 +630,7 @@ for (lr=0; lr<nir; lr++)
       sum = 0.0;
       for (i=0; i<12; i++) sum += strain_t[i] * strain_work[i];
       ele->e.s8->energy.a.da[ngauss][2] += sum;
-      ele->e.s8->energy.a.da[0][6] += sum*weight;
+      ele->e.s8->energy.a.da[0][6] += sum*weight; */
       /*----------------------------------- elastic stiffness matrix ke */
       s8_BtDB(estif,bop,D,iel,numdf,weight,work);
       /*--------------------------------- geometric stiffness matrix kg */
@@ -654,21 +654,21 @@ for (lr=0; lr<nir; lr++)
       if (nhyb>0)
       {
          /*=============================================================*/
-         /*  Ltrans(nhyb,nd) = Mtrans(nhyb,12) * D(12,12) * B(12,nd)
+         /*  Ltrans(nhyb,nd) = Mtrans(nhyb,12) * D(12,12) * B(12,nd) */
          /*=============================================================*/
          /*----------------------------------------------------- DB=D*B */
          math_matmatdense(workeas,D,bop,12,12,nd,0,0.0);
          /*----------------------------------- Ltransposed = Mt * D * B */
          math_mattrnmatdense(Lt,transP,workeas,nhyb,12,nd,1,weight);
          /*=============================================================*/
-         /*  Dtilde(nhyb,nhyb) = Mtrans(nhyb,12) * D(12,12) * M(12,nhyb)
+         /*  Dtilde(nhyb,nhyb) = Mtrans(nhyb,12) * D(12,12) * M(12,nhyb) */
          /*=============================================================*/
          /*----------------------------------------------------DM = D*M */
          math_matmatdense(workeas,D,transP,12,12,nhyb,0,0.0);
          /*-------------------------------------------- Dtilde = Mt*D*M */
          math_mattrnmatdense(Dtild,transP,workeas,nhyb,12,nhyb,1,weight);
          /*=============================================================*/
-         /*  Rtilde(nhyb) = Mtrans(nhyb,12) * Forces(12)
+         /*  Rtilde(nhyb) = Mtrans(nhyb,12) * Forces(12) */
          /*=============================================================*/
          /*------------------------- eas part of internal forces Rtilde */
          math_mattrnvecdense(Rtild,transP,stress_r,nhyb,12,1,weight);
@@ -683,14 +683,14 @@ if (nhyb>0)
    amcopy(&Dtild_a,&Dtildinv_a);
    math_sym_inv(Dtildinv,nhyb);
    /*===================================================================*/
-   /* estif(nd,nd) = estif(nd,nd) - Ltrans(nhyb,nd) * Dtilde^-1(nhyb,nhyb) * L(nd,nhyb)
+   /* estif(nd,nd) = estif(nd,nd) - Ltrans(nhyb,nd) * Dtilde^-1(nhyb,nhyb) * L(nd,nhyb) */
    /*===================================================================*/
    /*------------------------------------------- make Ltrans * Dtildinv */
    math_mattrnmatdense(workeas2,Lt,Dtildinv,nd,nhyb,nhyb,0,0.0);
    /*---------------------------------- make estif -= Lt * Dtildinv * L */
    math_matmatdense(estif,workeas2,Lt,nd,nhyb,nd,1,-1.0);
    /*===================================================================*/
-   /* R(nd) = R(nd) - Ltrans(nhyb,nd) * Dtilde^-1(nhyb,nhyb) * Rtilde(nhyb)
+   /* R(nd) = R(nd) - Ltrans(nhyb,nd) * Dtilde^-1(nhyb,nhyb) * Rtilde(nhyb) */
    /*===================================================================*/
    /*--------------------------- make intforce -= Lt * Dtildinv * Rtild */
    math_matvecdense(intforce,workeas2,Rtild,nd,nhyb,1,-1.0);

@@ -65,7 +65,6 @@ and the type is in partition.h
 void mask_global_matrices()
 {
 INT i,j;               /* some counters */
-INT actndis;               /* actual number of sysarray=discretisation */
 INT isaztec_msr  =0;       /* flag for a certain sparsity pattern */
 INT ishypre      =0;
 INT isucchb      =0;

@@ -14,6 +14,7 @@ Maintainer: Steffen Genkinger
 #include "../headers/standardtypes.h"
 #include "../axishell/axishell.h"
 #include "../shell9/shell9.h"
+#include "../fluid_full/fluid_prototypes.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -88,7 +89,7 @@ case prb_fluid:
       /*---------------------------------------------------- check velx */
       actresult   = actnode->sol.a.da[0][0];
       givenresult = -0.01144271046249421;
-      fprintf(err,"actual = %24.16lf, given = %24.16lf\n",actresult,givenresult);
+      fprintf(err,"actual = %24.16f, given = %24.16f\n",actresult,givenresult);
       if (!(FABS(actresult-givenresult)==FABS(actresult-givenresult)))
          dserror("RESULTCHECK: velx is NAN!");
       if (FABS(actresult-givenresult)>EPS6)
@@ -96,7 +97,7 @@ case prb_fluid:
       /*---------------------------------------------------- check vely */
       actresult   = actnode->sol.a.da[0][1];
       givenresult = 0.0001027305751481696;
-      fprintf(err,"actual = %24.16lf, given = %24.16lf\n",actresult,givenresult);
+      fprintf(err,"actual = %24.16f, given = %24.16f\n",actresult,givenresult);
       if (!(FABS(actresult-givenresult)==FABS(actresult-givenresult)))
          dserror("RESULTCHECK: vely is NAN!");
       if (FABS(actresult-givenresult)>EPS6)
@@ -104,7 +105,7 @@ case prb_fluid:
       /*---------------------------------------------------- check pres */
       actresult   = actnode->sol.a.da[0][2];
       givenresult = 0.001862187203092821;
-      fprintf(err,"actual = %24.16lf, given = %24.16lf\n",actresult,givenresult);
+      fprintf(err,"actual = %24.16f, given = %24.16f\n",actresult,givenresult);
       if (!(FABS(actresult-givenresult)==FABS(actresult-givenresult)))
          dserror("RESULTCHECK: pressure is NAN!");
       if (FABS(actresult-givenresult)>EPS6)
@@ -119,7 +120,7 @@ case prb_fluid:
       /*---------------------------------------------------- check velx */
       actresult   = actnode->sol.a.da[0][0];
       givenresult = 0.06307272483594084;
-      fprintf(err,"actual = %24.16lf, given = %24.16lf\n",actresult,givenresult);
+      fprintf(err,"actual = %24.16f, given = %24.16f\n",actresult,givenresult);
       if (!(FABS(actresult-givenresult)==FABS(actresult-givenresult)))
          dserror("RESULTCHECK: velx is NAN!");
       if (FABS(actresult-givenresult)>EPS6)
@@ -127,7 +128,7 @@ case prb_fluid:
       /*---------------------------------------------------- check vely */
       actresult   = actnode->sol.a.da[0][1];
       givenresult = -0.00031073969819614;
-      fprintf(err,"actual = %24.16lf, given = %24.16lf\n",actresult,givenresult);
+      fprintf(err,"actual = %24.16f, given = %24.16f\n",actresult,givenresult);
       if (!(FABS(actresult-givenresult)==FABS(actresult-givenresult)))
          dserror("RESULTCHECK: vely is NAN!");
       if (FABS(actresult-givenresult)>EPS6)
@@ -135,7 +136,7 @@ case prb_fluid:
       /*---------------------------------------------------- check pres */
       actresult   = actnode->sol.a.da[0][2];
       givenresult = 489.9264285641417;
-      fprintf(err,"actual = %24.16lf, given = %24.16lf\n",actresult,givenresult);
+      fprintf(err,"actual = %24.16f, given = %24.16f\n",actresult,givenresult);
       if (!(FABS(actresult-givenresult)==FABS(actresult-givenresult)))
          dserror("RESULTCHECK: pressure is NAN!");
       if (FABS(actresult-givenresult)>EPS6)
@@ -150,7 +151,7 @@ case prb_fluid:
       /*---------------------------------------------------- check velx */
       actresult   = actnode->sol.a.da[0][0];
       givenresult = 0.09770648919466481;
-      fprintf(err,"actual = %24.16lf, given = %24.16lf\n",actresult,givenresult);
+      fprintf(err,"actual = %24.16f, given = %24.16f\n",actresult,givenresult);
       if (!(FABS(actresult-givenresult)==FABS(actresult-givenresult)))
          dserror("RESULTCHECK: velx is NAN!");
       if (FABS(actresult-givenresult)>EPS6)
@@ -158,7 +159,7 @@ case prb_fluid:
       /*---------------------------------------------------- check vely */
       actresult   = actnode->sol.a.da[0][1];
       givenresult = 0.0007473681392594219;
-      fprintf(err,"actual = %24.16lf, given = %24.16lf\n",actresult,givenresult);
+      fprintf(err,"actual = %24.16f, given = %24.16f\n",actresult,givenresult);
       if (!(FABS(actresult-givenresult)==FABS(actresult-givenresult)))
          dserror("RESULTCHECK: vely is NAN!");
       if (FABS(actresult-givenresult)>EPS6)
@@ -166,7 +167,7 @@ case prb_fluid:
       /*---------------------------------------------------- check pres */
       actresult   = actnode->sol.a.da[0][2];
       givenresult = 0.02664107119660589;
-      fprintf(err,"actual = %24.16lf, given = %24.16lf\n",actresult,givenresult);
+      fprintf(err,"actual = %24.16f, given = %24.16f\n",actresult,givenresult);
       if (!(FABS(actresult-givenresult)==FABS(actresult-givenresult)))
          dserror("RESULTCHECK: pressure is NAN!");
       if (FABS(actresult-givenresult)>EPS6)
@@ -196,7 +197,7 @@ case prb_fsi:
       /*---------------------------------------------------- check vely */
       actresult   = actnode->sol.a.da[0][1];
       givenresult = -0.0002498596571028341;
-      fprintf(err,"actual = %24.16lf, given = %24.16lf\n",actresult,givenresult);
+      fprintf(err,"actual = %24.16f, given = %24.16f\n",actresult,givenresult);
       if (!(FABS(actresult-givenresult)==FABS(actresult-givenresult)))
          dserror("RESULTCHECK: vely is NAN!");
       if (FABS(actresult-givenresult)>EPS6)
@@ -204,7 +205,7 @@ case prb_fsi:
       /*---------------------------------------------------- check pres */
       actresult   = actnode->sol.a.da[0][2];
       givenresult = 244.996442716119;
-      fprintf(err,"actual = %24.16lf, given = %24.16lf\n",actresult,givenresult);
+      fprintf(err,"actual = %24.16f, given = %24.16f\n",actresult,givenresult);
       if (!(FABS(actresult-givenresult)==FABS(actresult-givenresult)))
          dserror("RESULTCHECK: pressure is NAN!");
       if (FABS(actresult-givenresult)>EPS6)
@@ -219,7 +220,7 @@ case prb_fsi:
       /*---------------------------------------------------- check vely */
       actresult   = actnode->sol.a.da[0][1];
       givenresult = -0.0001088850381827999;
-      fprintf(err,"actual = %24.16lf, given = %24.16lf\n",actresult,givenresult);
+      fprintf(err,"actual = %24.16f, given = %24.16f\n",actresult,givenresult);
       if (!(FABS(actresult-givenresult)==FABS(actresult-givenresult)))
          dserror("RESULTCHECK: vely is NAN!");
       if (FABS(actresult-givenresult)>EPS6)
@@ -227,7 +228,7 @@ case prb_fsi:
       /*---------------------------------------------------- check pres */
       actresult   = actnode->sol.a.da[0][2];
       givenresult = 0.0002240443391469128;
-      fprintf(err,"actual = %24.16lf, given = %24.16lf\n",actresult,givenresult);
+      fprintf(err,"actual = %24.16f, given = %24.16f\n",actresult,givenresult);
       if (!(FABS(actresult-givenresult)==FABS(actresult-givenresult)))
          dserror("RESULTCHECK: pressure is NAN!");
       if (FABS(actresult-givenresult)>EPS6)
@@ -237,7 +238,7 @@ case prb_fsi:
       /*------------------------------------------------------ check dy */
       actresult   = actnode->sol.a.da[0][1];
       givenresult = -4.573526776331859e-05;
-      fprintf(err,"actual = %24.16lf, given = %24.16lf\n",actresult,givenresult);
+      fprintf(err,"actual = %24.16f, given = %24.16f\n",actresult,givenresult);
       if (!(FABS(actresult-givenresult)==FABS(actresult-givenresult)))
          dserror("RESULTCHECK: dy is NAN!");
       if (FABS(actresult-givenresult)>EPS6)
@@ -254,7 +255,7 @@ case prb_structure:
       /*-------------------------------------------- check displacement */
       actresult   = structfield->dis[0].node[123].sol.a.da[0][0];
       givenresult = -0.02778858368483676;
-      fprintf(err,"actual = %24.16lf, given = %24.16lf\n",actresult,givenresult);
+      fprintf(err,"actual = %24.16f, given = %24.16f\n",actresult,givenresult);
       if (!(FABS(actresult-givenresult)==FABS(actresult-givenresult)))
          dserror("RESULTCHECK: vely is NAN!");
       if (FABS(actresult-givenresult)>EPS6)
@@ -263,7 +264,7 @@ case prb_structure:
       /*actresult   = structfield->dis[0].element[123].e.saxi.stress_GP;*/
       actresult   = structfield->dis[0].element[123].e.saxi->stress_GP.a.d3[0][2][0];
       givenresult = -169.4900467515912;
-      fprintf(err,"actual = %24.16lf, given = %24.16lf\n",actresult,givenresult);
+      fprintf(err,"actual = %24.16f, given = %24.16f\n",actresult,givenresult);
       if (!(FABS(actresult-givenresult)==FABS(actresult-givenresult)))
          dserror("RESULTCHECK: pressure is NAN!");
       if (FABS(actresult-givenresult)>EPS6)
@@ -279,7 +280,7 @@ case prb_structure:
       /*-------------------------------------------- check displacement */
       actresult   = structfield->dis[0].node[6].sol.a.da[0][1];
       givenresult = 0.004085462018049922;
-      fprintf(err,"actual = %24.16lf, given = %24.16lf\n",actresult,givenresult);
+      fprintf(err,"actual = %24.16f, given = %24.16f\n",actresult,givenresult);
       if (!(FABS(actresult-givenresult)==FABS(actresult-givenresult)))
          dserror("RESULTCHECK: displacement is NAN!");
       if (FABS(actresult-givenresult)>EPS6)
@@ -287,7 +288,7 @@ case prb_structure:
       /*-------------------------------------------------- check stresses */
       actresult   = structfield->dis[0].element[3].e.s9->stresses.a.d3[0][2][0];
       givenresult = 1.323600311248807;
-      fprintf(err,"actual = %24.16lf, given = %24.16lf\n",actresult,givenresult);
+      fprintf(err,"actual = %24.16f, given = %24.16f\n",actresult,givenresult);
       if (!(FABS(actresult-givenresult)==FABS(actresult-givenresult)))
          dserror("RESULTCHECK: stresses are NAN!");
       if (FABS(actresult-givenresult)>EPS6)
@@ -301,7 +302,7 @@ case prb_structure:
       /*-------------------------------------------- check displacement */
       actresult   = structfield->dis[0].node[48].sol.a.da[0][1];
       givenresult = -0.01117777927876936;
-      fprintf(err,"actual = %24.16lf, given = %24.16lf\n",actresult,givenresult);
+      fprintf(err,"actual = %24.16f, given = %24.16f\n",actresult,givenresult);
       if (!(FABS(actresult-givenresult)==FABS(actresult-givenresult)))
          dserror("RESULTCHECK: displacement is NAN!");
       if (FABS(actresult-givenresult)>EPS6)
@@ -309,7 +310,7 @@ case prb_structure:
       /*-------------------------------------------------- check stresses */
       actresult   = structfield->dis[0].element[8].e.s9->stresses.a.d3[0][0][3];
       givenresult = 95.62657876539751;
-      fprintf(err,"actual = %24.16lf, given = %24.16lf\n",actresult,givenresult);
+      fprintf(err,"actual = %24.16f, given = %24.16f\n",actresult,givenresult);
       if (!(FABS(actresult-givenresult)==FABS(actresult-givenresult)))
          dserror("RESULTCHECK: stresses are NAN!");
       if (FABS(actresult-givenresult)>EPS6)
@@ -328,7 +329,7 @@ case prb_structure:
       /*-------------------------------------------- check displacement */
       actresult   = structfield->dis[0].node[11].sol.a.da[0][2];
       givenresult = 0.006214781874804086;
-      fprintf(err,"actual = %24.16lf, given = %24.16lf\n",actresult,givenresult);
+      fprintf(err,"actual = %24.16f, given = %24.16f\n",actresult,givenresult);
       if (!(FABS(actresult-givenresult)==FABS(actresult-givenresult)))
          dserror("RESULTCHECK: displacement is NAN!");
       if (FABS(actresult-givenresult)>EPS6)
@@ -336,7 +337,7 @@ case prb_structure:
       /*-------------------------------------------------- check stresses */
       actresult   = structfield->dis[0].element[11].e.s9->stresses.a.d3[0][0][1];
       givenresult = 0.3065420533487162;
-      fprintf(err,"actual = %24.16lf, given = %24.16lf\n",actresult,givenresult);
+      fprintf(err,"actual = %24.16f, given = %24.16f\n",actresult,givenresult);
       if (!(FABS(actresult-givenresult)==FABS(actresult-givenresult)))
          dserror("RESULTCHECK: stresses are NAN!");
       if (FABS(actresult-givenresult)>EPS6)
@@ -356,7 +357,7 @@ case prb_ale:
       /*-------------------------------------------- check displacement */
       actresult   = alefield->dis[0].node[123].sol.a.da[0][1];
       givenresult = -0.5152044455551235;
-      fprintf(err,"actual = %24.16lf, given = %24.16lf\n",actresult,givenresult);
+      fprintf(err,"actual = %24.16f, given = %24.16f\n",actresult,givenresult);
       if (!(FABS(actresult-givenresult)==FABS(actresult-givenresult)))
          dserror("RESULTCHECK: vely is NAN!");
       if (FABS(actresult-givenresult)>EPS6)
@@ -371,7 +372,7 @@ case prb_ale:
       actresult   = alefield->dis[0].node[123].sol.a.da[0][1];
       givenresult = 1.6274434734043111;
       fprintf(err,"result test\n");
-      fprintf(err,"actual = %24.16lf, given = %24.16lf\n",actresult,givenresult);
+      fprintf(err,"actual = %24.16f, given = %24.16f\n",actresult,givenresult);
       if (FABS(actresult/givenresult-ONE)>EPS6)
          dserror("RESULTCHECK: disp-y not correct!");
    }

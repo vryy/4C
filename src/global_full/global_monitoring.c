@@ -52,7 +52,6 @@ extern struct _MONITOR *moni;
 void monitoring(FIELD *actfield,INT numf, INT actpos, INT actstep, DOUBLE time)
 {
 INT i,j;
-INT actnum;
 INT numnp;
 INT numr;
 INT nodepos;

@@ -170,10 +170,9 @@ These are:
 void calc_arc_props(DLINE *dline)
 {
   DOUBLE    radius;
-  DOUBLE    initang,endang;
+  DOUBLE    initang;
   DOUBLE    t;
   DOUBLE    point[2];
-  DOUBLE    xi;
 
 #ifdef DEBUG 
 dstrc_enter("calc_arc_props");

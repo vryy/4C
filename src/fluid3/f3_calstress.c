@@ -69,20 +69,19 @@ void f3_calelestress(
     DOUBLE        **sigmaint
     )
 {
-  INT     i,j,node,lr,ls,lt;   /* some counters */
+  INT     i,j,lr,ls,lt;   /* some counters */
   INT     iel,nir,nis,nit;     /* number of nodes/integr. points */
   INT     intc,icode;          /* flags */
   INT     actmat;              /* actual material number */
   INT     ntyp;                /* flag for element type */
   INT     iv;                  /* counter for GAUSS points */
-  DOUBLE  preint,det,val;      /* element values */
-  DOUBLE  e1,e2,e3,r,s,t;         
+  DOUBLE  preint,det;          /* element values */
+  DOUBLE  e1,e2,e3;         
   DOUBLE  xgr[MAXGAUSS];       /* local r coords of gauss points */
   DOUBLE  xgs[MAXGAUSS];       /* local s coords of gauss points */
   DOUBLE  xgt[MAXGAUSS];       /* local t coords of gauss points */
   DIS_TYP typ;	               /* element displacement type  */
   DOUBLE  dens,visc,twovisc;   /* material parameters */
-  DOUBLE  fpar[MAXGAUSS];      /* working array */
   NODE   *actnode;             /* actual node */
 
 
@@ -489,7 +488,7 @@ void f3_sext(
 {
 
   INT        nn,i,j,ngp;
-  DOUBLE     cnp1, cnp2, cnp3, det;
+  DOUBLE     cnp1, cnp2, cnp3;
   /* gausspoint stresses */
   DOUBLE     fgp[6][27];
 

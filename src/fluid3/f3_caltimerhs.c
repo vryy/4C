@@ -350,7 +350,7 @@ void f3_calstabtfv(
 		   INT              iel
                   ) 
 {
-INT    j,irow,isd,inode;
+INT    irow,isd,inode;
 DOUBLE c,cc;
 DOUBLE aux;
 DOUBLE taumu,taump,tauc; 
@@ -702,7 +702,6 @@ void f3_calstabtfp(
                   ) 
 {
 INT      inode;
-DOUBLE   aux;
 DOUBLE   fact[3];
 DOUBLE   facsr,facpr;
 DOUBLE   taump;

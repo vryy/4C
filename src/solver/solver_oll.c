@@ -185,6 +185,13 @@ void solver_oll(
         oll->is_copied = 1;
       }
 
+      /* print sparsity pattern to gnuplot */
+      if (oll->sparsepat == 0)
+      {
+        oll_gnupattern(oll);
+        oll->sparsepat = 1;
+      }
+
       /* dann loesen */
       switch(oll->sysarray_typ[0])
       {

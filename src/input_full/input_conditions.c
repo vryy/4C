@@ -183,11 +183,10 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_nodal_dirich()
 {
-INT    i,j;
+INT    i;
 INT    ierr;
 INT    ndnode;
 INT    dnodeId;
-INT    foundit;
 char  *colptr;
 char   buffer[200];
 DNODE *actdnode;
@@ -299,11 +298,10 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_line_dirich()
 {
-INT    i,j;
+INT    i;
 INT    ierr;
 INT    ndline;
 INT    dlineId;
-INT    foundit;
 char  *colptr;
 char   buffer[200];
 DLINE *actdline;
@@ -416,11 +414,10 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_surf_dirich()
 {
-INT    i,j;
+INT    i;
 INT    ierr;
 INT    ndsurf;
 INT    dsurfId;
-INT    foundit;
 char  *colptr;
 char   buffer[200];
 DSURF *actdsurf;
@@ -532,11 +529,10 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_vol_dirich()
 {
-INT    i,j;
+INT    i;
 INT    ierr;
 INT    ndvol;
 INT    dvolId;
-INT    foundit;
 char  *colptr;
 char   buffer[200];
 DVOL  *actdvol;
@@ -650,11 +646,10 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_nodal_neum()
 {
-INT    i,j;
+INT    i;
 INT    ierr;
 INT    ndnode;
 INT    dnodeId;
-INT    foundit;
 char  *colptr;
 char   buffer[200];
 DNODE *actdnode;
@@ -757,11 +752,10 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_line_neum()
 {
-INT    i,j;
+INT    i;
 INT    ierr;
 INT    ndline;
 INT    dlineId;
-INT    foundit;
 char  *colptr;
 char   buffer[200];
 DLINE *actdline;
@@ -864,11 +858,10 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_surf_neum()
 {
-INT    i,j;
+INT    i;
 INT    ierr;
 INT    ndsurf;
 INT    dsurfId;
-INT    foundit;
 char  *colptr;
 char   buffer[200];
 DSURF *actdsurf;
@@ -984,11 +977,10 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_vol_neum()
 {
-INT    i,j;
+INT    i;
 INT    ierr;
 INT    ndvol;
 INT    dvolId;
-INT    foundit;
 char  *colptr;
 char   buffer[200];
 DVOL  *actdvol;
@@ -1098,11 +1090,10 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_nodal_couple()
 {
-INT    i,j;
+INT    i;
 INT    ierr;
 INT    ndnode;
 INT    dnodeId;
-INT    foundit;
 char  *colptr;
 char   buffer[200];
 DNODE *actdnode;
@@ -1227,11 +1218,10 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_line_couple()
 {
-INT    i,j;
+INT    i;
 INT    ierr;
 INT    ndline;
 INT    dlineId;
-INT    foundit;
 char  *colptr;
 char   buffer[200];
 DLINE *actdline;
@@ -1357,11 +1347,10 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_surf_couple()
 {
-INT    i,j;
+INT    i;
 INT    ierr;
 INT    ndsurf;
 INT    dsurfId;
-INT    foundit;
 char  *colptr;
 char   buffer[200];
 DSURF *actdsurf;
@@ -1487,11 +1476,10 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_vol_couple()
 {
-INT    i,j;
+INT    i;
 INT    ierr;
 INT    ndvol;
 INT    dvolId;
-INT    foundit;
 char  *colptr;
 char   buffer[200];
 DVOL *actdvol;
@@ -1616,7 +1604,7 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_line_fsicouple()
 {
-INT    i,j;
+INT    i;
 INT    ierr;
 INT    ndline;
 INT    dlineId;
@@ -1745,7 +1733,7 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_nodal_freesurf()
 {
-INT    i,j;
+INT    i;
 INT    ierr;
 INT    ndnode;
 INT    dnodeId;
@@ -1832,7 +1820,7 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_line_freesurf()
 {
-INT    i,j;
+INT    i;
 INT    ierr;
 INT    ndline;
 INT    dlineId;
@@ -1929,7 +1917,7 @@ This routine reads an line lift&drag definition on design.
 *----------------------------------------------------------------------*/
 static void inpdesign_line_liftdrag()
 {
-  INT    i,j;
+  INT    i;
   INT    ierr;
   INT    ndline;
   INT    dlineId;
@@ -2020,7 +2008,7 @@ This routine reads an surface lift&drag definition on design.
 *----------------------------------------------------------------------*/
 static void inpdesign_surf_liftdrag()
 {
-  INT    i,j;
+  INT    i;
   INT    ierr;
   INT    ndsurf;
   INT    dsurfId;
@@ -2902,7 +2890,7 @@ This routine reads an axishell thickness conditions.
 *----------------------------------------------------------------------*/
 static void inpdesign_line_thickness()
 {
-INT    i,j;
+INT    i;
 INT    ierr;
 INT    ndline;
 INT    dlineId;
@@ -2981,7 +2969,7 @@ This routine reads an axishell load conditions.
 *----------------------------------------------------------------------*/
 static void inpdesign_line_axishellload()
 {
-INT    i,j;
+INT    i;
 INT    ierr;
 INT    ndline;
 INT    dlineId;
@@ -3135,7 +3123,7 @@ This routine reads an axishell coordinate system conditions.
 *----------------------------------------------------------------------*/
 static void inpdesign_point_axishellcos()
 {
-INT     i,j;
+INT     i;
 INT     ierr;
 INT     ndnode;
 INT     dnodeId;
@@ -3222,11 +3210,10 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_line_contact()
 {
-INT    i,j,counter=0;
+INT    i,counter=0;
 INT    ierr;
 INT    ndline;
 INT    dlineId;
-INT    foundit;
 char  *colptr;
 char   buffer[200];
 DLINE *actdline;

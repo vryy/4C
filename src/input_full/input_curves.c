@@ -44,8 +44,6 @@ void inp_cond_curve()
 {
 INT  ierr;
 INT  i;
-INT  counter;
-char buffer[50];
 #ifdef DEBUG 
 dstrc_enter("inp_cond_curve");
 #endif

@@ -447,7 +447,7 @@ for (i=0;i<numnp_total;i++)
       }
    }
 /*=====================================================================*/
-/*	 actnode->sol_increment.a.da[actpos][j] = initval*(acttimefac-prevtimefac);
+/*	 actnode->sol_increment.a.da[actpos][j] = initval*(acttimefac-prevtimefac); */
 /*=====================================================================*/
 } /* end loop over nodes */
 
@@ -513,7 +513,7 @@ for (i=0; i<nd; i++)
 }
 /*-------------------------------- fill vectors dirich and dirich_onoff */
 /*                                 dirichlet values at (n) were already *
-/*                            written to the nodes (sol_icrement[0][j]) */
+ *                            written to the nodes (sol_icrement[0][j]) */
 for (i=0; i<actele->numnp; i++)
 {
    numdf    = actele->node[i]->numdf;
@@ -609,7 +609,7 @@ for (i=0; i<nd; i++)
 }
 /*-------------------------------- fill vectors dirich and dirich_onoff */
 /*                                 dirichlet values at (n) were already *
-/*                       written to the nodes (sol_increment[place][j]) */
+ *                       written to the nodes (sol_increment[place][j]) */
 for (i=0; i<actele->numnp; i++)
 {
    numdf    = actele->node[i]->numdf;

@@ -18,8 +18,13 @@ Maintainer: Malte Neumann
  *----------------------------------------------------------------------*/
 extern struct _DESIGN *design;
 /*----------------------------------------------------------------------*
- | functions only accessible in this file                    m.gee 3/02 |
+ | functions only accessible in this file                               |
  *----------------------------------------------------------------------*/
+void cal_dirich_fac(
+    GNODE *gnode,
+    INT index
+    );
+
 /*----------------------------------------------------------------------*
  | inherit boundary conditions from design to GNODEs         m.gee 3/02 |
  *----------------------------------------------------------------------*/
@@ -180,9 +185,6 @@ void inherit_design_dis_neum(DISCRET *actdis)
 {
 INT     i;
 GNODE  *actgnode;
-GLINE  *actgline;
-GSURF  *actgsurf;
-GVOL   *actgvol;
 #ifdef DEBUG 
 dstrc_enter("inherit_design_dis_neum");
 #endif

@@ -238,13 +238,7 @@ return;
  *----------------------------------------------------------------------*/
 void inpdesign_topology_fe()
 {
-INT i,j,k,l;
-DNODE *actdnode;
-DLINE *actdline;
-DSURF *actdsurf;
-DVOL  *actdvol;
-FIELD *actfield;
-NODE  *actnode;
+INT i,j;
 
 #ifdef DEBUG 
 dstrc_enter("inpdesign_topology_fe");
@@ -546,7 +540,7 @@ return;
  *----------------------------------------------------------------------*/
 static void inpdesign_dpoint_fenode()
 {
-INT           i,j,k;
+INT           i;
 INT           nodeId;
 DNODE        *actdnode;
 GNODE        *actgnode;

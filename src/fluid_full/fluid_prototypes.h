@@ -253,7 +253,8 @@ void fluid_lte_norm(
  ************************************************************************/
 void fluid_startproc(
                           FLUID_DYNAMIC     *fdyn,
-		          INT               *nfrastep 
+		          INT               *nfrastep,
+                          INT                init
 		    );
 void fluid_cons(         
                           FLUID_DYNAMIC     *fdyn,
@@ -332,6 +333,12 @@ void fluid_reducestress(
 			  INT                numdf, 
 			  FLUID_STRESS       str
 		       );
+void fluid_cal_error(
+    FIELD             *actfield,
+    INT                index
+    );
+
+
 /************************************************************************
  | fluid_service_tu.c                                                   |
  ************************************************************************/
@@ -407,7 +414,6 @@ void fluid_stat(void);
  ************************************************************************/
 void inp_fluid_start_data( FIELD   *actfield,
                            FLUID_DYNAMIC *fdyn
-			 )
-;
+			 );
 
 /*! @} (documentation module close)*/

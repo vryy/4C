@@ -237,6 +237,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    actele = actpart->pdis[0].element[i];
    switch(actele->eltyp)/*======================= call element routines */
    {
+#ifdef D_SHELL8
    case el_shell8:
       container->kstep    = 0;      
       container->handsize = MAXRECORDPERELE;
@@ -244,18 +245,21 @@ for (i=0; i<actpart->pdis[0].numele; i++)
       shell8(actfield,actpart,actintra,actele,
              NULL,NULL,NULL,action,container);
    break;
+#endif
    case el_shell9:
        dserror("Restart 'nlnstructdyn' for shell9 not yet impl.");
    break;
    case el_brick1:
 
    break;
+#ifdef D_WALL1
    case el_wall1:
       container->handsize = MAXRECORDPERELE;
       container->handles  = ele_handles[i];
       wall1(actpart,actintra,actele,NULL,NULL,NULL,
             action,container);
    break;
+#endif
    case el_fluid2: 
        dserror("Restart for fluid2 not yet impl.");
    break;
@@ -265,12 +269,14 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    case el_ale3:
        dserror("Restart for ale not yet impl.");
    break;
+#ifdef D_BEAM3
    case el_beam3:
       container->handsize = MAXRECORDPERELE;
       container->handles  = ele_handles[i];
       beam3(actfield,actpart,actintra,actele,
             NULL,NULL,NULL,action,container);     
    break;
+#endif
    case el_interf:
    break;
    case el_wallge:
@@ -573,6 +579,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    actele = actpart->pdis[0].element[i];
    switch(actele->eltyp)/*======================= call element routines */
    {
+#ifdef D_SHELL8
    case el_shell8:
       container->kstep    = 0;  
       container->handsize = MAXRECORDPERELE;
@@ -580,17 +587,20 @@ for (i=0; i<actpart->pdis[0].numele; i++)
       shell8(actfield,actpart,actintra,actele,
              NULL,NULL,NULL,action,container);
    break;
+#endif
    case el_shell9:
       dserror("Restart 'nlnstructdyn' for shell9 not yet impl.");
    break;
    case el_brick1:
        dserror("Restart for brick not yet impl.");
    break;
+#ifdef D_WALL1
    case el_wall1:
        container->handsize = MAXRECORDPERELE;
        container->handles  = ele_handles[i];
        wall1(actpart,actintra,actele,NULL,NULL,NULL,action,container);
    break;
+#endif
    case el_fluid2: 
        dserror("Restart for fluid2 not yet impl.");
    break;
@@ -813,6 +823,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    actele = actpart->pdis[0].element[i];
    switch(actele->eltyp)/*======================= call element routines */
    {
+#ifdef D_SHELL8
    case el_shell8:
       container->kstep    = 0;   
       container->handsize = MAXRECORDPERELE;
@@ -820,6 +831,9 @@ for (i=0; i<actpart->pdis[0].numele; i++)
       shell8(actfield,actpart,actintra,actele,
              NULL,NULL,NULL,action,container);
    break;
+#endif
+
+#ifdef D_SHELL9
    case el_shell9:
       container->kstep    = 0;   
       container->handsize = MAXRECORDPERELE;
@@ -827,15 +841,17 @@ for (i=0; i<actpart->pdis[0].numele; i++)
       shell9(actfield,actintra,actele,
              NULL,NULL,NULL,action,container);
    break;
+#endif
    case el_brick1:
-
    break;
+#ifdef D_WALL1
    case el_wall1:
       container->handsize = MAXRECORDPERELE;
       container->handles  = ele_handles[i];
       wall1(actpart,actintra,actele,
             NULL,NULL,NULL,action,container);
    break;
+#endif
    case el_fluid2: 
        dserror("Restart for fluid2 not yet impl.");
    break;
@@ -845,12 +861,14 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    case el_ale3:
        dserror("Restart for ale not yet impl.");
    break;
+#ifdef D_BEAM3
    case el_beam3:
        container->handsize = MAXRECORDPERELE;
        container->handles = ele_handles[i];
        beam3(actfield,actpart,actintra,actele,
              NULL,NULL,NULL,action,container);
    break;
+#endif
    case el_interf:
    
    break;
@@ -1094,6 +1112,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    actele = actpart->pdis[0].element[i];
    switch(actele->eltyp)/*======================= call element routines */
    {
+#ifdef D_SHELL8
    case el_shell8:
       container->kstep    = 0;    
       container->handsize = MAXRECORDPERELE;
@@ -1101,6 +1120,9 @@ for (i=0; i<actpart->pdis[0].numele; i++)
       shell8(actfield,actpart,actintra,actele,
              NULL,NULL,NULL,action,container);
    break;
+#endif
+
+#ifdef D_SHELL9
    case el_shell9:
       container->kstep    = 0;    
       container->handsize = MAXRECORDPERELE;
@@ -1108,14 +1130,16 @@ for (i=0; i<actpart->pdis[0].numele; i++)
       shell9(actfield,actintra,actele,
              NULL,NULL,NULL,action,container);
    break;
+#endif
    case el_brick1:
-
    break;
+#ifdef D_WALL1
    case el_wall1:
        container->handsize = MAXRECORDPERELE;
        container->handles  = ele_handles[i];
        wall1(actpart,actintra,actele,NULL,NULL,NULL,action,container);
    break;
+#endif
    case el_fluid2: 
        dserror("Restart for fluid2 not yet impl.");
    break;
@@ -1125,6 +1149,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    case el_ale3:
        dserror("Restart for ale not yet impl.");
    break;
+#ifdef D_BEAM3
    case el_beam3:
        container->kstep = 0;
        container->handsize = MAXRECORDPERELE;
@@ -1132,6 +1157,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
        beam3(actfield,actpart,actintra,actele,
              NULL,NULL,NULL,action,container);       
    break;
+#endif
    case el_none:
       dserror("Typ of element unknown");
    break;

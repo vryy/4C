@@ -1864,3 +1864,16 @@ void f3_jaco2(
     INT         iel
     );
 
+void f3_liftdrag(
+    ELEMENT       *ele,
+    FLUID_DATA    *data,
+    CONTAINER     *container
+    );
+
+void f3_out_gid_sol_str(
+    FILE       *out,
+    FIELD *actfield,
+    INT        type,
+    INT         init
+    );
+

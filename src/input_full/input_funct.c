@@ -51,9 +51,6 @@ struct _FUNCT      *funct;
 void inp_cond_funct()
 {
 INT  ierr;
-INT  i;
-INT  counter;
-char buffer[50];
 #ifdef DEBUG 
 dstrc_enter("inp_cond_funct");
 #endif
@@ -131,11 +128,8 @@ return;
 void inp_read_funct(char *string, INT id)
 {
 INT      ierr;
-INT      counter=0;
-char     buffer[50];
 FUNCT   *actfunct;
 DOUBLE   tmp[20];
-DOUBLE   length;
 #ifdef DEBUG 
 dstrc_enter("inp_read_funct");
 #endif

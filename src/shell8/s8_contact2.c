@@ -502,7 +502,7 @@ else
    tT_kov[1] = tTtrial_kov[1];
 }
 /*printf("lt[0] %15.10f lt[1] %15.10f tT_kov[0] %15.10f tT_kov[1] %15.10f tTabs %15.10f dxi[0] %15.10f dxi[1] %15.10f  ",
-        lT[0],lT[1],tT_kov[0],tT_kov[1],tTabs,dxi[0],dxi[1]);
+        lT[0],lT[1],tT_kov[0],tT_kov[1],tTabs,dxi[0],dxi[1]); */
 /*------------------------------- put frictional tractions back to node */
 /* from there they will be copied to the history in the converged status */  
 if (ssurf==1)

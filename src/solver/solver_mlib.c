@@ -82,16 +82,16 @@ case 1:/*========================= INITIALIZE THE SPARSE MATRIX PACKAGE */
 switch(mlvar->order)
 {
 /* default by DSLEIN: use multiple minimum degree ordering */
-/*     ORDER='MMD'
+/*     ORDER='MMD'*/
 /* Use natural ordering */
-/*     ORDER='NAT'
+/*     ORDER='NAT'*/
 /* use constrained minimum degree ordering */
-/*      ORDER='CMD'
-/* geht nicht:
-/*      ORDER='RCM'
-/*      ORDER='1WD'
-/*      ORDER='GND'
-/*      ORDER='MET'
+/*      ORDER='CMD'*/
+/* geht nicht:*/
+/*      ORDER='RCM'*/
+/*      ORDER='1WD'*/
+/*      ORDER='GND'*/
+/*      ORDER='MET'*/
 /* */
 case 0:
 break;

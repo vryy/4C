@@ -18,6 +18,20 @@ DOUBLE cmp_double(const void *a, const void *b );
 
 
 /*----------------------------------------------------------------------*
+ | prototypes of functions callable only in this file                   |
+ *----------------------------------------------------------------------*/
+void dofconnectivity(
+    FIELD        *actfield, 
+    INT      **dof_dof,
+    INT       *nnz);
+void mds_make_colstr_rowind(
+    SOLVAR       *actsolv,
+    ML_ARRAY_MDS  *mds,
+    INT       **dof_dof,
+    INT         numeq);
+
+
+/*----------------------------------------------------------------------*
  |                                                            al  10/01 |
  |  calculate the mask of a column pointer, row index sparse  matrix    |
  *----------------------------------------------------------------------*/

@@ -58,7 +58,7 @@ void f3_calset(
 		INT             *hasext		
 	      )
 {
-INT i,j,irow;
+INT    i;
 INT    actmat  ;    /* material number of the element                   */
 DOUBLE dens;        /* density                                          */
 NODE  *actnode;     /* actual node                                      */
@@ -558,7 +558,7 @@ if (dynvar->nis==0)
          tmp[i][j] += emass[i][j];
       } /* end of loop over j */
    } /* end of loop over i */
-} /* endif (dynvar->nis==0) *
+} /* endif (dynvar->nis==0) */
 
 /*--------------------------------------------------------- compute Kvv */
 irow = 0;
@@ -670,8 +670,6 @@ void f3_iedg(
      { 0, 0, 0, 0, 0, 0, 0, 0 },   /* surf 4                    */ 
      { 0, 0, 0, 0, 0, 0, 0, 0 }}}; /* surf 5                    */ 
 
-
-  static INT iegt[1][4][6];
 
 #ifdef DEBUG 
   dstrc_enter("f3_iedg");
