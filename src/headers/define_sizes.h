@@ -148,6 +148,9 @@ Maintainer: Malte Neumann
 #ifndef NUM_F3_VELDOF
 #define NUM_F3_VELDOF    (3)  /* number of velocity dofs per node */
 #endif
+#ifndef NUMDOF_FLUID3
+#define NUMDOF_FLUID3    (4)  /* number of dofs per node */
+#endif
 #ifndef MAXNOD_F3
 #define MAXNOD_F3        (27) /* max. number of nodes per element */
 #endif
