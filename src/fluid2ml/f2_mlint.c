@@ -296,13 +296,13 @@ for (lr=0;lr<nir;lr++)
          dserror("nsmtyp unknown!");
       } /* end switch(nsmtyp) */
 /*-------------------------------- compute Jacobian matrix for submesh */
-      f2_jaco3(smxyze,smfunct,smderiv,smxjm,&det,smiel,ele);
+      f2_mljaco3(smxyze,smfunct,smderiv,smxjm,&det,smiel,ele);
       fac = facr*facs*det;
 /*------------------------------- compute global derivates for submesh */
       f2_gder(smderxy,smderiv,smxjm,det,smiel);
 
 /*- get coordinates of current int. p. on parent domain of l-s element */
-      f2_gcoor2(smfunct,smxyzep,smiel,coor);
+      f2_mlgcoor2(smfunct,smxyzep,smiel,coor);
 
 /*---- get values of large-scale shape functions and their derivatives */
       switch(ntyp)
@@ -317,11 +317,11 @@ for (lr=0;lr<nir;lr++)
         dserror("ntyp unknown!\n");      
       } /*end switch(ntyp) */
 /*------------ compute Jacobian matrix for large-scale shape functions */
-      f2_jaco(funct,deriv,xjm,&det,ele,iel);
+      f2_mljaco(funct,deriv,xjm,&det,ele,iel);
 /*----------- compute global derivates for large-scale shape functions */
       f2_gder(derxy,deriv,xjm,det,iel);
 /*------- compute 2nd global derivates for large-scale shape functions */
-      if (ihoel!=0) f2_gder2(ele,xjm,wa1,wa2,derxy,derxy2,deriv2,iel);
+      if (ihoel!=0) f2_mlgder2(ele,xjm,wa1,wa2,derxy,derxy2,deriv2,iel);
 
 /*------------ get large-scale velocities (n+1,i) at integration point */
       f2_veli(velint,funct,evel,iel);
@@ -383,7 +383,7 @@ for (lr=0;lr<nir;lr++)
       { 
 /*----------------------- compute second global derivatives for submesh */ 
         if (ihoelsm!=0) 
-	  f2_cogder2(smxyze,smxjm,wa1,wa2,smderxy,smderxy2,smderiv2,smiel);
+	  f2_mlcogder2(smxyze,smxjm,wa1,wa2,smderxy,smderxy2,smderiv2,smiel);
 /*---------------------------------------- stabilization for matrix SMK */
         f2_calstabsmk(dynvar,mlvar,smestif,velint,vderxy,smfunct,smderxy,
                       smderxy2,fac,visc,smiel,ihoelsm);
@@ -757,13 +757,13 @@ for (lr=0;lr<nir;lr++)
          dserror("nsmtyp unknown!");
       } /* end switch(nsmtyp) */
 /*-------------------------------- compute Jacobian matrix for submesh */
-      f2_jaco3(smxyze,smfunct,smderiv,smxjm,&det,smiel,ele);
+      f2_mljaco3(smxyze,smfunct,smderiv,smxjm,&det,smiel,ele);
       fac = facr*facs*det;
 /*------------------------------- compute global derivates for submesh */
       f2_gder(smderxy,smderiv,smxjm,det,smiel);
 
 /*- get coordinates of current int. p. on parent domain of l-s element */
-      f2_gcoor2(smfunct,smxyzep,smiel,coor);
+      f2_mlgcoor2(smfunct,smxyzep,smiel,coor);
 
 /*---- get values of large-scale shape functions and their derivatives */
       switch(ntyp)
@@ -778,7 +778,7 @@ for (lr=0;lr<nir;lr++)
         dserror("ntyp unknown!\n");      
       } /*end switch(ntyp) */
 /*------------ compute Jacobian matrix for large-scale shape functions */
-      f2_jaco(funct,deriv,xjm,&det,ele,iel);
+      f2_mljaco(funct,deriv,xjm,&det,ele,iel);
 /*----------- compute global derivates for large-scale shape functions */
       f2_gder(derxy,deriv,xjm,det,iel);
 
@@ -834,7 +834,7 @@ for (lr=0;lr<nir;lr++)
       if (dynvar->nik>0 && mlvar->convel==0)
       {
 /*------------------------ compute standard Galerkin part of matrix Kvv */      
-        f2_calkvv(dynvar,estif,velint,vderxy,funct,derxy,fac,visc,iel);
+        f2_lscalkvv(dynvar,estif,velint,vderxy,funct,derxy,fac,visc,iel);
       }	 
 
 /*----------------------------------------------------------------------*
@@ -903,7 +903,7 @@ for (lr=0;lr<nir;lr++)
 /*-------------- get convective velocities (n+1,i) at integration point */
         f2_covi(vderxy,velint,covint);
 /*- calculate "Iteration" force vector for velocity dofs (no pre. dofs) */
-        f2_calgalifv(dynvar,eiforce,covint,velint,vderxy,funct,fac,iel);
+        f2_lscalgalifv(dynvar,eiforce,covint,velint,vderxy,funct,fac,iel);
       } /* endif (dynvar->nii!=0) */
    } /* end of loop over integration points ls*/
 } /* end of loop over integration points lr */
@@ -1070,7 +1070,7 @@ for (lr=0;lr<nir;lr++)
          dserror("ntyp unknown!");
       } /* end switch(ntyp) */
 /*-------------------------------------------- compute Jacobian matrix */
-      f2_jaco(funct,deriv,xjm,&det,ele,iel);
+      f2_mljaco(funct,deriv,xjm,&det,ele,iel);
       fac = facr*facs*det;
 /*------------------------------------------- compute global derivates */
       f2_gder(derxy,deriv,xjm,det,iel);
@@ -1083,7 +1083,7 @@ for (lr=0;lr<nir;lr++)
  /*--- compute stab. par. or subgrid viscosity during integration loop */
       if (ele->e.f2->istabi>0 && ele->e.f2->iduring!=0 || 
           dynvar->sgvisc>0    && ele->e.f2->iduring!=0)
-        f2_calelesize2(ele,dynvar,funct,velint,vderxy,wa1,visc,iel,ntyp);
+        f2_mlcalelesize2(ele,dynvar,funct,velint,vderxy,wa1,visc,iel,ntyp);
 	
 /*----------------------------------------------------------------------*
  |         compute "Standard Galerkin" matrices                         |
@@ -1095,11 +1095,11 @@ for (lr=0;lr<nir;lr++)
       {
 /*------------------------ compute standard Galerkin part of matrix Kvv */      
          if (mlvar->convel!=0)
-	   f2_calkvv(dynvar,estif,velint,vderxy,funct,derxy,fac,visc,iel);
+	   f2_lscalkvv(dynvar,estif,velint,vderxy,funct,derxy,fac,visc,iel);
 /*-------------- compute standard Galerkin part of matrices Kvp and Kpv */      
-	 f2_calkvp(estif,funct,derxy,fac,iel);
+	 f2_lscalkvp(estif,funct,derxy,fac,iel);
 /*------------------------ compute standard Galerkin part of matrix Mvv */      
-	 if (dynvar->nis==0) f2_calmvv(emass,funct,fac,iel);
+	 if (dynvar->nis==0) f2_lscalmvv(emass,funct,fac,iel);
       } /* endif (dynvar->nik>0) */
       
 /*----------------------------------------------------------------------*
@@ -1112,33 +1112,33 @@ for (lr=0;lr<nir;lr++)
       if (ele->e.f2->istabi>0)
       { 
 /*----------------------------------- compute second global derivatives */ 
-         if (ihoel!=0) f2_gder2(ele,xjm,wa1,wa2,derxy,derxy2,deriv2,iel);
+         if (ihoel!=0) f2_mlgder2(ele,xjm,wa1,wa2,derxy,derxy2,deriv2,iel);
    
          if (dynvar->nie==0)
          {
 /*---------------------------------------- stabilization for matrix Kvv */
-            f2_calstabkvv(ele,dynvar,estif,velint,vderxy,
+            f2_lscalstabkvv(ele,dynvar,estif,velint,vderxy,
                           funct,derxy,derxy2,fac,visc,iel,ihoel);
 /*---------------------------------------- stabilization for matrix Kvp */
-            f2_calstabkvp(ele,dynvar,estif,velint,vderxy,
+            f2_lscalstabkvp(ele,dynvar,estif,velint,vderxy,
                           funct,derxy,derxy2,fac,visc,iel,ihoel);
 /*---------------------------------------- stabilization for matrix Mvv */
             if (dynvar->nis==0) 
-               f2_calstabmvv(ele,dynvar,emass,velint,vderxy, 
+               f2_lscalstabmvv(ele,dynvar,emass,velint,vderxy, 
 	                     funct,derxy,derxy2,fac,visc,iel,ihoel); 
             if (ele->e.f2->ipres!=0)	        
             {
 /*---------------------------------------- stabilization for matrix Kpv */
-               f2_calstabkpv(dynvar,estif,velint,vderxy,
+               f2_lscalstabkpv(dynvar,estif,velint,vderxy,
 	                     funct,derxy,derxy2,fac,visc,iel,ihoel);
 /*---------------------------------------- stabilization for matrix Mpv */
 	       if (dynvar->nis==0)
-		  f2_calstabmpv(dynvar,emass,funct,derxy,fac,iel);
+		  f2_lscalstabmpv(dynvar,emass,funct,derxy,fac,iel);
             } /* endif (ele->e.f2->ipres!=0) */
          } /* endif (dynvar->nie==0) */
 /*---------------------------------------- stabilization for matrix Kpp */
          if (ele->e.f2->ipres!=0)
-	    f2_calstabkpp(dynvar,estif,derxy,fac,iel);  
+	    f2_lscalstabkpp(dynvar,estif,derxy,fac,iel);  
       } /* endif (ele->e.f2->istabi>0) */
 
 /*----------------------------------------------------------------------*
@@ -1149,7 +1149,7 @@ for (lr=0;lr<nir;lr++)
 /*-------------- get convective velocities (n+1,i) at integration point */
         f2_covi(vderxy,velint,covint);
 /*- calculate "Iteration" force vector for velocity dofs (no pre. dofs) */
-        f2_calgalifv(dynvar,eiforce,covint,velint,vderxy,funct,fac,iel);
+        f2_lscalgalifv(dynvar,eiforce,covint,velint,vderxy,funct,fac,iel);
       } /* endif (dynvar->nii!=0) */
 
 /*----------------------------------------------------------------------*
@@ -1166,11 +1166,11 @@ for (lr=0;lr<nir;lr++)
 /*------------------ get convective velocities (n) at integration point */
         f2_covi(vderxyn,velintn,covintn);        	    
 /*--------------------- calculate "Time" force vector for velocity dofs */
-	f2_calgaltfv(dynvar,etforce,velintn,velintn,covintn,funct,derxy,
+	f2_lscalgaltfv(dynvar,etforce,velintn,velintn,covintn,funct,derxy,
 	             vderxyn,preintn,visc,fac,iel);		       
 /*--------------------- calculate "Time" force vector for pressure dofs */
         if (dynvar->thsr!=ZERO) 
-	  f2_calgaltfp(dynvar,&(etforce[2*iel]),funct,vderxyn,fac,iel);
+	  f2_lscalgaltfp(dynvar,&(etforce[2*iel]),funct,vderxyn,fac,iel);
       }  
 
 /*----------------------------------------------------------------------*
@@ -1178,7 +1178,7 @@ for (lr=0;lr<nir;lr++)
  *----------------------------------------------------------------------*/
       if (*hasext!=0)
 /*----------------- calculate "External" force vector for velocity dofs */
-        f2_calgalexfv(dynvar,etforce,funct,edeadn,edead,fac,iel);
+        f2_lscalgalexfv(dynvar,etforce,funct,edeadn,edead,fac,iel);
    } /* end of loop over integration points ls*/
 } /* end of loop over integration points lr */
  
@@ -1290,7 +1290,7 @@ for (lr=0;lr<nir;lr++)
          dserror("nsmtyp unknown!");
       } /* end switch(nsmtyp) */
 /*--------------------------------- compute Jacobian matrix for submesh */
-      f2_jaco3(smxyze,smfunct,smderiv,smxjm,&det,smiel,ele);
+      f2_mljaco3(smxyze,smfunct,smderiv,smxjm,&det,smiel,ele);
       fac = facr*facs*det;
 /*-------------------------------- compute global derivates for submesh */
       f2_gder(smderxy,smderiv,smxjm,det,smiel);
@@ -1440,13 +1440,13 @@ for (lr=0;lr<nir;lr++)
          dserror("nsstyp unknown!");
       } /* end switch(nsstyp) */
 /*---------------------------- compute Jacobian matrix for sub-submesh */
-      f2_jaco3(ssxyze,ssfunct,ssderiv,ssxjm,&det,ssiel,ele);
+      f2_mljaco3(ssxyze,ssfunct,ssderiv,ssxjm,&det,ssiel,ele);
       fac = facr*facs*det;
 /*--------------------------- compute global derivates for sub-submesh */
       f2_gder(ssderxy,ssderiv,ssxjm,det,ssiel);
 
 /*- get coordinates of current int. p. on parent domain of l-s element */
-      f2_gcoor2(ssfunct,ssxyzep,ssiel,coor);
+      f2_mlgcoor2(ssfunct,ssxyzep,ssiel,coor);
       
 /*---- get values of large-scale shape functions and their derivatives */
       switch(ntyp)
@@ -1461,7 +1461,7 @@ for (lr=0;lr<nir;lr++)
         dserror("ntyp unknown!\n");      
       } /*end switch(ntyp) */
 /*------------ compute Jacobian matrix for large-scale shape functions */
-      f2_jaco(funct,deriv,xjm,&det,ele,iel);
+      f2_mljaco(funct,deriv,xjm,&det,ele,iel);
 /*----------- compute global derivates for large-scale shape functions */
       f2_gder(derxy,deriv,xjm,det,iel);
 
@@ -1589,7 +1589,7 @@ for (lr=0;lr<nir;lr++)
          dserror("nsstyp unknown!");
       } /* end switch(nsstyp) */
 /*---------------------------- compute Jacobian matrix for sub-submesh */
-      f2_jaco3(ssxyze,ssfunct,ssderiv,ssxjm,&det,ssiel,ele);
+      f2_mljaco3(ssxyze,ssfunct,ssderiv,ssxjm,&det,ssiel,ele);
       fac = facr*facs*det;
 
 /*------------ compute normalized bubble function at integration point */
@@ -1611,630 +1611,5 @@ dstrc_exit();
 
 return; 
 } /* end of f2_inbu */
-
-/*!---------------------------------------------------------------------
-\brief error calculation integration loop for submesh element for fluid2
-
-<pre>                                                       gravem 07/03
-
-In this routine, the element stiffness matrix and VMM-RHS for one 
-submesh element is calculated for error calculation.
-      
-</pre>
-\param  *data        FLUID_DATA	   (i)    integration data
-\param  *ele	     ELEMENT	   (i)    actual element
-\param  *dynvar      FLUID_DYN_CALC(i)
-\param  *mlvar       FLUID_DYN_ML  (i)
-\param  *submesh     FLUID_ML_SMESH(i)   
-\param **smestif      DOUBLE       (o)	sm element stiffness matrix
-\param  *smevfor      DOUBLE       (o)	sm element VMM force vector
-\param  *smxyze       DOUBLE       (i)	submesh element coordinates
-\param  *smxyzep      DOUBLE       (i)	sm ele. coord. on parent dom.
-\param  *funct        DOUBLE       (-)	natural shape functions
-\param **deriv        DOUBLE       (-)	deriv. of nat. shape funcs
-\param **deriv2       DOUBLE       (-)	2nd deriv. of nat. shape f.
-\param **xjm	      DOUBLE       (-)	jacobian matrix
-\param **derxy        DOUBLE       (-)	global derivatives
-\param **derxy2       DOUBLE       (-)	2nd global derivatives
-\param  *smfunct      DOUBLE       (-)	sm natural shape functions
-\param **smderiv      DOUBLE       (-)  sm deriv. of nat. shape funcs
-\param **smderiv2     DOUBLE       (-)  sm 2nd deriv. of nat. shape f.
-\param **smxjm	      DOUBLE       (-)  sm jacobian matrix
-\param **smderxy      DOUBLE       (-)  sm global derivatives
-\param **smderxy2     DOUBLE       (-)  sm 2nd global derivatives
-\param **evel         DOUBLE       (i)  ele vel. at time step n+1
-\param  *epre         DOUBLE       (i)  ele pres. at time step n+1
-\param **evbub        DOUBLE       (i)  sm ele vel. bubble functions
-\param **epbub        DOUBLE       (i)  sm ele pre. bubble functions
-\param **efbub        DOUBLE       (i)  sm ele rhs bubble functions
-\param  *vbubint      DOUBLE       (-)  vel. bubble fun. at int. p.
-\param  *vbubderxy    DOUBLE       (-)  vel. bub. fun. der. at int. p.
-\param  *vbubderxy2   DOUBLE       (-)  2nd vel. bub. fun. der. at i.p.
-\param  *pbubint      DOUBLE       (-)  pre. bubble fun. at int. p.
-\param  *pbubderxy    DOUBLE       (-)  pre. bub. fun. der. at int. p.
-\param  *pbubderxy2   DOUBLE       (-)  2nd pre. bub. fun. der. at i.p.
-\param  *velint       DOUBLE       (-)  vel at integration point
-\param **vderxy       DOUBLE       (-)  global vel. derivatives
-\param  *smvelint     DOUBLE       (-)  sm vel at integration point
-\param **smvderxy     DOUBLE       (-)  sm global vel. derivatives
-\param  *smpreint     DOUBLE       (-)  sm pre at integration point
-\param **smpderxy     DOUBLE       (-)  sm global pre. derivatives
-\param  *smfint       DOUBLE       (-)  sm rhs at integration point
-\param **smfderxy     DOUBLE       (-)  sm global rhs. derivatives
-\param **wa1	      DOUBLE       (-)  working array
-\param **wa2	      DOUBLE       (-)  working array
-\return void                                                   
-
-------------------------------------------------------------------------*/
-void f2_sminterr(FLUID_DATA      *data,     
-	         ELEMENT	 *ele,	
-	         FLUID_DYN_CALC  *dynvar, 
-	         FLUID_DYN_ML    *mlvar, 
-	         FLUID_ML_SMESH  *submesh, 
-                 DOUBLE	        **smestif,   
-	         DOUBLE	        **smevfor, 
-	         DOUBLE	        **smxyze, 
-	         DOUBLE	        **smxyzep, 
-	         DOUBLE	         *funct,	
-	         DOUBLE	        **deriv,	
-	         DOUBLE	        **deriv2,  
-	         DOUBLE	        **xjm,	
-	         DOUBLE	        **derxy,	
-	         DOUBLE	        **derxy2,  
-	         DOUBLE	         *smfunct,   
-	         DOUBLE	        **smderiv,   
-	         DOUBLE	        **smderiv2,  
-	         DOUBLE	        **smxjm,	  
-	         DOUBLE	        **smderxy,   
-	         DOUBLE	        **smderxy2,  
-	         DOUBLE	        **evel,  
-	         DOUBLE	         *epre,
-	         DOUBLE	        **evbub,	
-	         DOUBLE	        **epbub,	
-	         DOUBLE	        **efbub,	
-                 DOUBLE	         *vbubint,    
-                 DOUBLE	        **vbubderxy,  
-                 DOUBLE	        **vbubderxy2, 
-                 DOUBLE	        **pbubint,    
-                 DOUBLE	       ***pbubderxy,  
-                 DOUBLE	       ***pbubderxy2, 
-	         DOUBLE	         *velint,  
-	         DOUBLE	        **vderxy,  
-                 DOUBLE	         *smvelint,  
-                 DOUBLE	        **smvderxy,  
-                 DOUBLE	         *smpreint,  
-                 DOUBLE	        **smpderxy,  
-                 DOUBLE	         *smfint,	 
-                 DOUBLE	        **smfderxy,  
-	         DOUBLE	        **wa1,	
-	         DOUBLE	        **wa2)
-{ 
-INT       i,j;        /* simply some counters                           */
-INT       iel,smiel;  /* large-scale and submesh number of nodes        */
-INT       ntyp,nsmtyp;/* l-s and submesh element type: 1-quad; 2-tri    */
-INT       intc;       /* "integration case" for tri for further infos
-                          see f2_inpele.c and f2_intg.c                 */
-INT       nir,nis;    /* number of integration nodes in r,s direction   */
-INT       actmat;     /* material number of the element                 */
-INT       ihoel=0;    /* flag for higher order large-scale elements     */
-INT       ihoelsm=0;  /* flag for higher order submesh elements         */
-INT       icode=2;    /* flag for eveluation of l-s shape functions     */     
-INT       icodesm=2;  /* flag for eveluation of sm shape functions      */     
-INT       lr, ls;     /* counter for integration                        */
-DOUBLE    dens;       /* density                                        */
-DOUBLE    visc;       /* viscosity                                      */
-DOUBLE    fac;
-DOUBLE    facr, facs; /* integration weights                            */
-DOUBLE    det;        /* determinant of jacobian matrix                 */
-DOUBLE    e1,e2;      /* natural coordinates of integr. point           */
-DOUBLE    coor[2];    /* coordinates                                    */
-DIS_TYP   typ,smtyp;  /* large-scale and submesh element type           */
-
-#ifdef DEBUG 
-dstrc_enter("f2_sminterr");
-#endif
-
-/*----------------------------------------------------- initialization */
-iel    = ele->numnp;
-smiel  = submesh->numen;
-actmat = ele->mat-1;
-dens   = mat[actmat].m.fluid->density;
-visc   = mat[actmat].m.fluid->viscosity;
-ntyp   = ele->e.f2->ntyp; 
-typ    = ele->distyp;
-nsmtyp = submesh->ntyp; 
-smtyp  = submesh->typ;
-
-/*--- get integration data and check if sm-elements are "higher order" */
-switch (nsmtyp)
-{
-case 1:  /* --> quad - element */
-   if (smiel>4)
-   {
-     icodesm = 3;
-     ihoelsm = 1;
-   }  
-   /* initialize integration */
-   nir = submesh->ngpr;
-   nis = submesh->ngps;
-break;
-case 2: /* --> tri - element */  
-   if (smiel>3)
-   {
-      icodesm = 3;
-      ihoelsm = 1;
-   }
-   /* initialize integration */
-   nir  = submesh->ngpr;
-   nis  = 1;
-   intc = submesh->ngps;  
-break;
-default:
-   dserror("nsmtyp unknown!");
-} /* end switch(nsmtyp) */
-
-/*---------------------------- check if ls-elements are "higher order" */
-switch (ntyp)
-{
-case 1:  /* --> quad - element */
-   icode   = 3;
-   ihoel   = 1;
-break;
-case 2: /* --> tri - element */  
-   if (iel>3)
-   {
-     icode   = 3;
-     ihoel   = 1;
-   }
-break;
-default:
-   dserror("ntyp unknown!");
-} /* end switch(ntyp) */
-
-/*----------------------------------------------------------------------*
- |               start loop over integration points                     |
- *----------------------------------------------------------------------*/
-for (lr=0;lr<nir;lr++)
-{    
-   for (ls=0;ls<nis;ls++)
-   {
-/*-------- get values of submesh shape functions and their derivatives */
-      switch(nsmtyp)  
-      {
-      case 1:   /* --> quad - element */
-	 e1   = data->qxg[lr][nir-1];
-         facr = data->qwgt[lr][nir-1];
-	 e2   = data->qxg[ls][nis-1];
-	 facs = data->qwgt[ls][nis-1];
-         f2_rec(smfunct,smderiv,smderiv2,e1,e2,smtyp,icodesm);
-      break;
-      case 2:   /* --> tri - element */              
-	 e1   = data->txgr[lr][intc];
-	 facr = data->twgt[lr][intc];
-	 e2   = data->txgs[lr][intc];
-	 facs = ONE;
-	 f2_tri(smfunct,smderiv,smderiv2,e1,e2,smtyp,icodesm);
-      break;
-      default:
-         dserror("nsmtyp unknown!");
-      } /* end switch(nsmtyp) */
-/*-------------------------------- compute Jacobian matrix for submesh */
-      f2_jaco3(smxyze,smfunct,smderiv,smxjm,&det,smiel,ele);
-      fac = facr*facs*det;
-/*------------------------------- compute global derivates for submesh */
-      f2_gder(smderxy,smderiv,smxjm,det,smiel);
-
-/*- get coordinates of current int. p. on parent domain of l-s element */
-      f2_gcoor2(smfunct,smxyzep,smiel,coor);
-
-/*---- get values of large-scale shape functions and their derivatives */
-      switch(ntyp)
-      {
-      case 1:    /* --> quad - element */
-        f2_rec(funct,deriv,deriv2,coor[0],coor[1],typ,icode);
-      break;
-      case 2:	/* --> tri - element */ 	     
-        f2_tri(funct,deriv,deriv2,coor[0],coor[1],typ,icode);   
-      break;
-      default:
-        dserror("ntyp unknown!\n");      
-      } /*end switch(ntyp) */
-/*------------ compute Jacobian matrix for large-scale shape functions */
-      f2_jaco(funct,deriv,xjm,&det,ele,iel);
-/*----------- compute global derivates for large-scale shape functions */
-      f2_gder(derxy,deriv,xjm,det,iel);
-/*------- compute 2nd global derivates for large-scale shape functions */
-      if (ihoel!=0) f2_gder2(ele,xjm,wa1,wa2,derxy,derxy2,deriv2,iel);
-
-/*------------ get large-scale velocities (n+1,i) at integration point */
-      f2_veli(velint,funct,evel,iel);
-/*-- get large-scale velocity (n+1,i) derivatives at integration point */
-      f2_vder(vderxy,derxy,evel,iel);
-      
-      if (mlvar->convel==0)
-      { 
-/*-----------------------------------------------------------------------
-     get values of bubble functions and their derivatives 
------------------------------------------------------------------------ */
-/*------------------- get velocity bubble functions at integraton point */
-        fluid_bubint (vbubint,smfunct,evbub,smiel,mlvar->nvbub);            
-/*-------- get velocity bubble function derivatives at integraton point */
-        fluid_bubder (vbubderxy,smderxy,evbub,smiel,mlvar->nvbub,2);            
-/*----------------- get 'pressure' bubble functions at integraton point */
-        fluid_pbubint (pbubint,smfunct,epbub,smiel,iel,2);            
-/*------ get 'pressure' bubble function derivatives at integraton point */
-        fluid_pbubder (pbubderxy,smderxy,epbub,smiel,iel,2,2);            
-/*--------------------------- get small-scale 'rhs' at integraton point */
-        fluid_bubint (smfint,smfunct,efbub,smiel,2);            
-/*--------------- get small-scale 'rhs' derivatives at integraton point */
-        fluid_bubder (smfderxy,smderxy,efbub,smiel,2,2);            
-	 
-/*---------------------- get small-scale velocities at integraton point */
-        f2_veli (smvelint,vbubint,evel,iel);	      
-/*------------ get small-scale velocity derivatives at integraton point */
-        f2_vder (smvderxy,vbubderxy,evel,iel);	      
-/*--------------------- get small-scale 'pressures' at integraton point */
-        f2_smprei (smpreint,pbubint,epre,iel);	      
-/*---------- get small-scale 'pressure' derivatives at integraton point */
-        f2_smpder (smpderxy,pbubderxy,epre,iel);	      
-
-/*--- calculate velocities and velocity derivatives at integraton point */
-        for (i=0; i<2; i++)
-	{
-	  velint[i] += smvelint[i] + smpreint[i] + smfint[i];
-	  for (j=0; j<2; j++)
-	  {
-	    vderxy[i][j] += smvderxy[i][j] + smpderxy[i][j] + smfderxy[j][i];
-	  }
-	}
-      }	    
-
-/*----------------------------------------------------------------------*
- |         compute "Standard Galerkin" matrix for submesh               |
- *----------------------------------------------------------------------*/
-/*-------------------------------------------------  compute matrix SMK */      
-      f2_calsmk(dynvar,mlvar,smestif,velint,vderxy,smfunct,smderxy,fac,
-                visc,smiel);
-      
-/*----------------------------------------------------------------------*
- |         compute Stabilization matrix for submesh                     |
- *----------------------------------------------------------------------*/
-      if (mlvar->smstabi>0)
-      { 
-/*----------------------- compute second global derivatives for submesh */ 
-        if (ihoelsm!=0) 
-	  f2_cogder2(smxyze,smxjm,wa1,wa2,smderxy,smderxy2,smderiv2,smiel);
-/*---------------------------------------- stabilization for matrix SMK */
-        f2_calstabsmk(dynvar,mlvar,smestif,velint,vderxy,smfunct,smderxy,
-                      smderxy2,fac,visc,smiel,ihoelsm);
-      } /* endif (mlvar->smstabi>0) */
-
-/*----------------------------------------------------------------------*
- |         compute "VMM" Force Vectors                                  |
- *----------------------------------------------------------------------*/ 
-/*----------------------- standard Galerkin part for "VMM" force vector */
-      f2_calsmfv(dynvar,mlvar,smevfor,velint,vderxy,smfunct,funct,derxy,
-                 derxy2,fac,visc,smiel,iel,ihoel); 
-/*--------------------------- stabilization part for "VMM" force vector */
-      if (mlvar->smstabi>0)
-        f2_calstabsmfv(dynvar,mlvar,smevfor,velint,vderxy,smfunct,smderxy,
-	               smderxy2,funct,derxy,derxy2,fac,visc,smiel,iel,
-		       ihoelsm,ihoel);
-   } /* end of loop over integration points ls*/
-} /* end of loop over integration points lr */
- 
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG 
-dstrc_exit();
-#endif
-
-return; 
-} /* end of f2_sminterr */
-
-/*!---------------------------------------------------------------------
-\brief error calc. integr. loop for bubble funct. on sm ele. for fluid2
-
-<pre>                                                       gravem 07/03
-
-In this routine, the bubble function part of the large-scale element 
-stiffness matrix and VMM-RHS for one submesh element is calculated for
-error calculation.
-      
-</pre>
-\param  *data        FLUID_DATA	   (i)    integration data
-\param  *fdyn        FLUID_DYNAMIC (i)
-\param  *ele	     ELEMENT	   (i)    actual element
-\param  *mlvar       FLUID_DYN_ML  (i)
-\param  *submesh     FLUID_ML_SMESH(i)   
-\param  *smxyze	      DOUBLE	   (i)  submesh element coordinates
-\param  *smxyzep      DOUBLE	   (i)  sm ele. coord. on parent dom.
-\param  *funct        DOUBLE       (-)	natural shape functions
-\param **deriv        DOUBLE       (-)	deriv. of nat. shape funcs
-\param **deriv2       DOUBLE       (-)	2nd deriv. of nat. shape f.
-\param **xjm	      DOUBLE       (-)	jacobian matrix
-\param **derxy        DOUBLE       (-)	global derivatives
-\param  *smfunct      DOUBLE       (-)	sm natural shape functions
-\param **smderiv      DOUBLE       (-)  sm deriv. of nat. shape funcs
-\param **smderiv2     DOUBLE       (-)  sm 2nd deriv. of nat. shape f.
-\param **smxjm	      DOUBLE       (-)  sm jacobian matrix
-\param **smderxy      DOUBLE       (-)  sm global derivatives
-\param **evel         DOUBLE       (i)  ele vel. at time step n+1
-\param  *epre         DOUBLE       (i)  ele pres. at time step n+1
-\param **evbub        DOUBLE       (i)  sm ele vel. bubble functions
-\param **epbub        DOUBLE       (i)  sm ele pre. bubble functions
-\param **efbub        DOUBLE       (i)  sm ele rhs bubble functions
-\param  *vbubint      DOUBLE       (-)  vel. bubble fun. at int. p.
-\param  *vbubderxy    DOUBLE       (-)  vel. bub. fun. der. at int. p.
-\param  *pbubint      DOUBLE       (-)  pre. bubble fun. at int. p.
-\param  *pbubderxy    DOUBLE       (-)  pre. bub. fun. der. at int. p.
-\param  *velint       DOUBLE       (-)  vel at integration point
-\param **vderxy       DOUBLE       (-)  global vel. derivatives
-\param  *smvelint     DOUBLE       (-)  sm vel at integration point
-\param **smvderxy     DOUBLE       (-)  sm global vel. derivatives
-\param  *smpreint     DOUBLE       (-)  sm pre at integration point
-\param **smpderxy     DOUBLE       (-)  sm global pre. derivatives
-\param  *smfint       DOUBLE       (-)  sm rhs at integration point
-\param **smfderxy     DOUBLE       (-)  sm global rhs. derivatives
-\param **wa1	      DOUBLE       (-)  working array
-\param **wa2	      DOUBLE       (-)  working array
-\param  *dulinf       DOUBLE	   (o)  vel error in Linf-norm
-\param  *dplinf       DOUBLE	   (o)  pre error in Linf-norm
-\param  *dul2         DOUBLE	   (o)  vel error in L2-norm
-\param  *dpl2         DOUBLE	   (o)  pre error in L2-norm
-\param  *duh1         DOUBLE	   (o)  vel error in H1-norm
-\param  *ul2          DOUBLE	   (o)  analytical vel in L2-norm
-\param  *pl2          DOUBLE	   (o)  analytical pre in L2-norm
-\param  *uh1          DOUBLE	   (o)  analytical vel in H1-norm
-\return void                                                   
-
-------------------------------------------------------------------------*/
-void f2_bubinterr(FLUID_DATA      *data,     
-                  FLUID_DYNAMIC   *fdyn, 
-	          ELEMENT         *ele,     
-	          FLUID_DYN_ML    *mlvar, 
-	          FLUID_ML_SMESH  *submesh, 
-   	          DOUBLE         **smxyze, 
-	          DOUBLE         **smxyzep, 
-	          DOUBLE          *funct,   
-	          DOUBLE         **deriv,   
-	          DOUBLE         **deriv2,   
-	          DOUBLE         **xjm,     
-	          DOUBLE         **derxy,   
-	          DOUBLE          *smfunct,   
-	          DOUBLE         **smderiv,   
-	          DOUBLE         **smderiv2,   
-	          DOUBLE         **smxjm,     
-	          DOUBLE         **smderxy,   
-	          DOUBLE         **evel,  
-	          DOUBLE          *epre,
-	          DOUBLE         **evbub,   
-	          DOUBLE         **epbub,   
-	          DOUBLE         **efbub,   
-                  DOUBLE          *vbubint,    
-                  DOUBLE         **vbubderxy,  
-                  DOUBLE         **pbubint,    
-                  DOUBLE        ***pbubderxy,  
-	          DOUBLE          *velint,  
-	          DOUBLE         **vderxy,  
-                  DOUBLE          *smvelint,  
-                  DOUBLE         **smvderxy,  
-                  DOUBLE          *smpreint,  
-                  DOUBLE         **smpderxy,  
-                  DOUBLE          *smfint,    
-                  DOUBLE         **smfderxy,  
-	          DOUBLE         **wa1,     
-	          DOUBLE         **wa2,
-		  DOUBLE          *dulinf,  
-		  DOUBLE          *dplinf,  
-		  DOUBLE          *dul2,  
-		  DOUBLE          *dpl2,  
-		  DOUBLE          *duh1,  
-		  DOUBLE          *ul2,  
-		  DOUBLE          *pl2,  
-		  DOUBLE          *uh1)  
-{ 
-INT       i,j;        /* simply some counters                           */
-INT       iel,smiel;  /* number of nodes                                */
-INT       ntyp,nsmtyp;/* l-s and submesh element type: 1-quad; 2-tri    */
-INT       intc;       /* "integration case" for tri for further infos
-                          see f2_inpele.c and f2_intg.c                 */
-INT       nir,nis;    /* number of integration nodesin r,s direction    */
-INT       actmat;     /* material number of the element                 */
-INT       lr, ls;     /* counter for integration                        */
-DOUBLE    dens;       /* density                                        */
-DOUBLE    visc;       /* viscosity                                      */
-DOUBLE    fac;
-DOUBLE    facr, facs; /* integration weights                            */
-DOUBLE    det;        /* determinant of jacobian matrix                 */
-DOUBLE    e1,e2;      /* natural coordinates of integr. point           */
-DOUBLE    preint;     /* pressure at integration point                  */
-DOUBLE    coor[2],gcoor[2]; /* coordinates                              */
-DOUBLE    u=0.0;      /* absolute value of velocity			*/
-DOUBLE    ux=0.0;     /* velocity in x-direction			*/
-DOUBLE    uy=0.0;     /* velocity in y-direction			*/
-DOUBLE    uxx=0.0;    /* velocity x derivative in x-direction		*/
-DOUBLE    uyy=0.0;    /* velocity y derivative in y-direction		*/
-DOUBLE    p=0.0;      /* pressure					*/
-DOUBLE    du=0.0;     /* error in absolute value of velocity		*/
-DOUBLE    dux=0.0;    /* error in velocity in x-direction		*/
-DOUBLE    duy=0.0;    /* error in velocity in y-direction		*/
-DOUBLE    duxx=0.0;   /* error in velocity x derivative in x-direction  */
-DOUBLE    duyy=0.0;   /* error in velocity y derivative in y-direction  */
-DOUBLE    dp=0.0;     /* error in pressure				*/
-DIS_TYP   typ,smtyp;  /* large-scale and submesh element type           */
-
-#ifdef DEBUG 
-dstrc_enter("f2_bubinterr");
-#endif
-
-/*----------------------------------------------------- initialization */
-iel    = ele->numnp;
-smiel  = submesh->numen;
-actmat = ele->mat-1;
-dens   = mat[actmat].m.fluid->density;
-visc   = mat[actmat].m.fluid->viscosity;
-ntyp   = ele->e.f2->ntyp; 
-typ    = ele->distyp;
-nsmtyp = submesh->ntyp; 
-smtyp  = submesh->typ;
-
-/*--- get integration data and check if sm-elements are "higher order" */
-switch (nsmtyp)
-{
-case 1:  /* --> quad - element */
-   nir = submesh->ngpr;
-   nis = submesh->ngps;
-break;
-case 2: /* --> tri - element */  
-   nir  = submesh->ngpr;
-   nis  = 1;
-   intc = submesh->ngps;  
-break;
-default:
-   dserror("nsmtyp unknown!");
-} /* end switch(nsmtyp) */
-
-/*----------------------------------------------------------------------*
- |               start loop over integration points                     |
- *----------------------------------------------------------------------*/
-for (lr=0;lr<nir;lr++)
-{    
-   for (ls=0;ls<nis;ls++)
-   {
-/*-------- get values of submesh shape functions and their derivatives */
-      switch(nsmtyp)  
-      {
-      case 1:   /* --> quad - element */
-	 e1   = data->qxg[lr][nir-1];
-         facr = data->qwgt[lr][nir-1];
-	 e2   = data->qxg[ls][nis-1];
-	 facs = data->qwgt[ls][nis-1];
-         f2_rec(smfunct,smderiv,smderiv2,e1,e2,smtyp,2);
-      break;
-      case 2:   /* --> tri - element */              
-	 e1   = data->txgr[lr][intc];
-	 facr = data->twgt[lr][intc];
-	 e2   = data->txgs[lr][intc];
-	 facs = ONE;
-	 f2_tri(smfunct,smderiv,smderiv2,e1,e2,smtyp,2);
-      break;
-      default:
-         dserror("nsmtyp unknown!");
-      } /* end switch(nsmtyp) */
-/*-------------------------------- compute Jacobian matrix for submesh */
-      f2_jaco3(smxyze,smfunct,smderiv,smxjm,&det,smiel,ele);
-      fac = facr*facs*det;
-/*------------------------------- compute global derivates for submesh */
-      f2_gder(smderxy,smderiv,smxjm,det,smiel);
-
-/*- get coordinates of current int. p. on parent domain of l-s element */
-      f2_gcoor2(smfunct,smxyzep,smiel,coor);
-
-/*---- get values of large-scale shape functions and their derivatives */
-      switch(ntyp)
-      {
-      case 1:    /* --> quad - element */
-        f2_rec(funct,deriv,deriv2,coor[0],coor[1],typ,2);
-      break;
-      case 2:	/* --> tri - element */ 	     
-        f2_tri(funct,deriv,deriv2,coor[0],coor[1],typ,2);   
-      break;
-      default:
-        dserror("ntyp unknown!\n");      
-      } /*end switch(ntyp) */
-/*------------ compute Jacobian matrix for large-scale shape functions */
-      f2_jaco(funct,deriv,xjm,&det,ele,iel);
-/*----------- compute global derivates for large-scale shape functions */
-      f2_gder(derxy,deriv,xjm,det,iel);
-
-/*------------ get large-scale velocities (n+1,i) at integration point */
-      f2_veli(velint,funct,evel,iel);
-/*-- get large-scale velocity (n+1,i) derivatives at integration point */
-      f2_vder(vderxy,derxy,evel,iel);
-/*------------- get large-scale pressures (n+1,i) at integration point */
-      f2_prei(&preint,funct,epre,iel);
-      
-/*-----------------------------------------------------------------------
-     get values of bubble functions and their derivatives 
------------------------------------------------------------------------ */
-/*------------------- get velocity bubble functions at integraton point */
-      fluid_bubint (vbubint,smfunct,evbub,smiel,mlvar->nvbub);            
-/*-------- get velocity bubble function derivatives at integraton point */
-      fluid_bubder (vbubderxy,smderxy,evbub,smiel,mlvar->nvbub,2);            
-/*----------------- get 'pressure' bubble functions at integraton point */
-      fluid_pbubint (pbubint,smfunct,epbub,smiel,iel,2);            
-/*------ get 'pressure' bubble function derivatives at integraton point */
-      fluid_pbubder (pbubderxy,smderxy,epbub,smiel,iel,2,2);            
-/*--------------------------- get small-scale 'rhs' at integraton point */
-      fluid_bubint (smfint,smfunct,efbub,smiel,2);            
-/*--------------- get small-scale 'rhs' derivatives at integraton point */
-      fluid_bubder (smfderxy,smderxy,efbub,smiel,2,2);            
-	 
-/*---------------------- get small-scale velocities at integraton point */
-      f2_veli (smvelint,vbubint,evel,iel);	      
-/*------------ get small-scale velocity derivatives at integraton point */
-      f2_vder (smvderxy,vbubderxy,evel,iel);	      
-/*--------------------- get small-scale 'pressures' at integraton point */
-      f2_smprei (smpreint,pbubint,epre,iel);	      
-/*---------- get small-scale 'pressure' derivatives at integraton point */
-      f2_smpder (smpderxy,pbubderxy,epre,iel);	      
-
-/*--- calculate velocities and velocity derivatives at integraton point */
-      for (i=0; i<2; i++)
-      {
-        velint[i] += smvelint[i] + smpreint[i] + smfint[i];
-	for (j=0; j<2; j++)
-	{
-	  vderxy[i][j] += smvderxy[i][j] + smpderxy[i][j] + smfderxy[j][i];
-	}
-      }
-
-/*----------------------------------------------------------------------*
- |         Get analytical reference values for velocity and pressure    |
- *----------------------------------------------------------------------*/
-/*------------- compute global coordinates of actual integration point */
-      f2_gcoor2(smfunct,smxyze,smiel,gcoor);
-      
-/*---- compute analytical reference values at actual integration point */
-      ux  = fluid_velx(gcoor[0],gcoor[1],ZERO,fdyn,visc,'e');
-      uy  = fluid_vely(gcoor[0],gcoor[1],ZERO,fdyn,visc,'e');
-      uxx = fluid_velxx(gcoor[0],gcoor[1],ZERO,fdyn,visc);
-      uyy = fluid_velyy(gcoor[0],gcoor[1],ZERO,fdyn,visc);
-      p   = fluid_pres(gcoor[0],gcoor[1],ZERO,fdyn,visc,dens,'e');
-
-/*------------------------- compute errors at actual integration point */
-      dux = ux-velint[0];
-      duy = uy-velint[1];
-      du  = dux*dux+duy*duy;    
-      u   = ux*ux+uy*uy;   
-      dp  = p-preint;
-      duxx= uxx-vderxy[0][0];
-      duyy= uyy-vderxy[1][1];
-
-/*---------------------------------------- compute errors in Linf-norm */
-      *dulinf = DMAX(*dulinf,FABS(dux));
-      *dulinf = DMAX(*dulinf,FABS(duy));
-      *dplinf = DMAX(*dplinf,FABS(dp));
-	  
-/*------ compute errors in L2-norm and L2-norm of analytical reference */
-      *dul2 += du*fac;
-      *dpl2 += dp*dp*fac;
-      *ul2  += u*fac;
-      *pl2  += p*p*fac;
-	  
-/* compute velocity error in H1-norm and H1-norm of analytical reference */
-      *duh1 += (du + duxx*duxx + duyy*duyy)*fac;
-      *uh1  += (u + uxx*uxx + uyy*uyy)*fac; 
-   } /* end of loop over integration points ls*/
-} /* end of loop over integration points lr */
- 
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG 
-dstrc_exit();
-#endif
-
-return; 
-} /* end of f2_bubinterr */
-
 
 #endif

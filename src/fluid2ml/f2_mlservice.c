@@ -124,29 +124,6 @@ if (actgsurf->neum!=NULL)
    }
 }
 
-/*------------ check for prescribed pressure gradient for channel flow */
-if(dynvar->pregrad!=0)
-{
-/*--------------------------------------------- mean pressure gradient */
-  if (dynvar->pregrad==1)
-  {
-    actmat=ele->mat-1;
-    dens = mat[actmat].m.fluid->density;
-    visc = mat[actmat].m.fluid->viscosity*dens;/* here we need dyn. visc.! */
-    edeadn[0] = TWO*visc;
-    edead[0]  = TWO*visc;
-  }  
-/*------------------------------------------ dynamic pressure gradient */
-  else if (dynvar->pregrad==2)
-  {
-    edeadn[0] = dynvar->washstr;
-    edead[0]  = dynvar->washstr;
-  }  
-  edeadn[1] = ZERO;
-  edead[1]  = ZERO;
-  (*hasext)++;
-}
-
 /*---------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -716,5 +693,442 @@ dstrc_exit();
 return;
 } /* end of f2_cgsbub */ 
 
+void f2_mlpermestif(DOUBLE         **estif,   
+		    DOUBLE	 **emass, 
+		    DOUBLE	 **tmp,   
+		    INT		   iel,   
+		    FLUID_DYN_CALC  *dynvar) 
+{
+INT    i,j,icol,irow;     /* simply some counters                       */
+INT    nvdof;             /* number of vel dofs                         */
+INT    npdof;             /* number of pre dofs                         */
+INT    totdof;            /* total number of dofs                       */
+DOUBLE thsl,thpl;         /* factor for LHS (THETA*DT)                  */
+
+#ifdef DEBUG 
+dstrc_enter("f2_mlpermestif");
+#endif
+
+/*----------------------------------------------------- set some values */
+nvdof  = NUM_F2_VELDOF*iel;
+npdof  = iel;
+totdof = (NUM_F2_VELDOF+1)*iel;
+thsl   = dynvar->thsl;
+thpl   = dynvar->thpl;
+
+/*--------------------------------------------- copy estif to tmp-array *
+                and multitply stiffness matrix with respective THETA*DT */
+for (i=0;i<totdof;i++)
+{
+/*--------------------------------------------------------- Kvv and Kpv */
+   for (j=0;j<nvdof;j++)
+   {
+      tmp[i][j] = estif[i][j] * thsl;
+   } /* end of loop over j */
+/*--------------------------------------------------------- Kvp and Kpp */
+   for (j=nvdof;j<totdof;j++)
+   {
+      tmp[i][j] = estif[i][j] * thpl;
+   } /* end of loop over j */
+} /* end of loop over i */
+/*------------------------------- add mass matrix for instationary case */
+if (dynvar->nis==0)
+{
+   for (i=0;i<totdof;i++)
+   {
+      for (j=0;j<nvdof;j++)
+      {
+         tmp[i][j] += emass[i][j];
+      } /* end of loop over j */
+   } /* end of loop over i */
+} /* endif (dynvar->nis==0) */
+
+/*------------------------------------------------------- rearrange Kvv */
+irow = 0;
+for (i=0;i<nvdof;i+=2)
+{   
+   icol = 0;
+   for (j=0;j<nvdof;j+=2) 
+   {
+      estif[irow][icol]     = tmp[i][j];
+      estif[irow+1][icol]   = tmp[i+1][j];
+      estif[irow][icol+1]   = tmp[i][j+1];
+      estif[irow+1][icol+1] = tmp[i+1][j+1];
+      icol += 3;
+   } /* end of loop over j */
+   irow += 3;   
+} /* end of loop over i */
+
+/*------------------------------------------------------- rearrange Kvp */
+irow = 0;
+for (i=0;i<nvdof;i+=2)
+{
+   icol = 2;
+   for (j=nvdof;j<totdof;j++)
+   {
+      estif[irow][icol]   = tmp[i][j];
+      estif[irow+1][icol] = tmp[i+1][j];
+      icol += 3;     
+   } /* end of loop over j */
+   irow += 3;   
+} /* end of loop over i */
+
+/*------------------------------------------------------- rearrange Kpv */
+irow = 2;
+for (i=nvdof;i<totdof;i++)
+{
+   icol = 0;
+   for (j=0;j<nvdof;j+=2)
+   {
+      estif[irow][icol]   = tmp[i][j];
+      estif[irow][icol+1] = tmp[i][j+1];
+      icol += 3;     
+   } /* end of loop over j */
+   irow += 3;   
+} /* end of loop over i */
+
+/*------------------------------------------------------- rearrange Kpp */
+irow = 2;
+for (i=nvdof;i<totdof;i++)
+{
+   icol = 2;
+   for (j=nvdof;j<totdof;j++)
+   {
+      estif[irow][icol] = tmp[i][j];
+      icol += 3;
+   } /* end of loop over j */
+   irow += 3;
+} /* end of loop over i */
+
+/*---------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return; 
+} /* end of f2_mlpermestif */
+
+void f2_mljaco(DOUBLE     *funct,    
+               DOUBLE    **deriv,   
+               DOUBLE    **xjm,     
+               DOUBLE     *det,     
+               ELEMENT    *ele,     
+               INT         iel)
+
+{
+INT k;
+
+#ifdef DEBUG 
+dstrc_enter("f2_mljaco");
+#endif	 
+
+/*---------------------------------- determine jacobian at point r,s ---*/       
+xjm[0][0] = 0.0 ;
+xjm[0][1] = 0.0 ;
+xjm[1][0] = 0.0 ;
+xjm[1][1] = 0.0 ;
+
+for (k=0; k<iel; k++) /* loop all nodes of the element */
+{
+     xjm[0][0] += deriv[0][k] * ele->node[k]->x[0] ;
+     xjm[0][1] += deriv[0][k] * ele->node[k]->x[1] ;
+     xjm[1][0] += deriv[1][k] * ele->node[k]->x[0] ;
+     xjm[1][1] += deriv[1][k] * ele->node[k]->x[1] ;
+} /* end loop over iel */
+
+/*------------------------------------------ determinant of jacobian ---*/        
+*det = xjm[0][0]* xjm[1][1] - xjm[1][0]* xjm[0][1];
+    
+if(*det<0.0)
+{   
+   printf("\n");
+   printf("GLOBAL ELEMENT %i\n",ele->Id);
+   dserror("NEGATIVE JACOBIAN DETERMINANT\n");
+}
+   
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return;
+} /* end of f2_mljaco */
+
+void f2_mljaco3(DOUBLE    **xyze,
+                DOUBLE	 *funct,    
+                DOUBLE	**deriv,   
+                DOUBLE	**xjm,     
+                DOUBLE	 *det,  	
+                INT	  iel,	
+                ELEMENT	 *ele)
+{
+INT k;        /* just a counter                                         */
+
+#ifdef DEBUG 
+dstrc_enter("f2_mljaco3");
+#endif	 
+
+/*---------------------------------- determine jacobian at point r,s ---*/       
+xjm[0][0] = ZERO ;
+xjm[0][1] = ZERO ;
+xjm[1][0] = ZERO ;
+xjm[1][1] = ZERO ;
+
+for (k=0; k<iel; k++) /* loop all nodes of the submesh element */
+{
+     xjm[0][0] += deriv[0][k] * xyze[0][k] ;
+     xjm[0][1] += deriv[0][k] * xyze[1][k] ;
+     xjm[1][0] += deriv[1][k] * xyze[0][k] ;
+     xjm[1][1] += deriv[1][k] * xyze[1][k] ;
+} /* end loop over all nodes of the submesh element */
+
+/*------------------------------------------ determinant of jacobian ---*/        
+*det = xjm[0][0]* xjm[1][1] - xjm[1][0]* xjm[0][1];
+      
+/*------------------------------------- check if determinant is zero ---*/        
+if(*det<0.0)
+{   
+   printf("\n");
+   printf("GLOBAL ELEMENT %i\n",ele->Id);
+   dserror("NEGATIVE JACOBIAN DETERMINANT\n");
+}
+   
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return;
+} /* end of f2_mljaco3 */
+
+void f2_mlgcoor(DOUBLE     *funct,      
+                ELEMENT    *ele,      
+	        INT         iel,      
+	        DOUBLE     *gcoor)
+{
+INT i;
+
+#ifdef DEBUG 
+dstrc_enter("f2_mlgcoor");
+#endif
+
+gcoor[0]=ZERO;
+gcoor[1]=ZERO;
+
+for(i=0;i<iel;i++) /* loop all nodes of the element */
+{
+   gcoor[0] += funct[i] * ele->node[i]->x[0];
+   gcoor[1] += funct[i] * ele->node[i]->x[1];
+} /* end of loop over iel */
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return;
+} /* end of f2_mlgcoor */
+
+void f2_mlgcoor2(DOUBLE     *funct,      
+                 DOUBLE    **xyze,      
+	         INT         iel,      
+	         DOUBLE     *gcoor)
+{
+INT i;
+
+#ifdef DEBUG 
+dstrc_enter("f2_mlgcoor2");
+#endif
+
+gcoor[0]=ZERO;
+gcoor[1]=ZERO;
+
+for(i=0;i<iel;i++) /* loop all nodes of the element */
+{
+   gcoor[0] += funct[i] * xyze[0][i];
+   gcoor[1] += funct[i] * xyze[1][i];
+} /* end of loop over iel */
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return;
+} /* end of f2_mlgcoor2 */
+
+void f2_mlgder2(ELEMENT     *ele,     
+	        DOUBLE	 **xjm,      
+                DOUBLE	 **bi,     
+	        DOUBLE	 **xder2,  
+	        DOUBLE	 **derxy,  
+	        DOUBLE	 **derxy2, 
+                DOUBLE	 **deriv2, 
+	        INT	   iel)
+{
+INT i;
+DOUBLE x00,x01,x02,x10,x11,x12,x20,x21,x22;
+DOUBLE det,dum;
+DOUBLE r0,r1,r2;
+
+#ifdef DEBUG 
+dstrc_enter("f2_mlgder2");
+#endif
+
+/*--------------------------- calculate elements of jacobian_bar matrix */
+x00 = xjm[0][0]*xjm[0][0];
+x01 = xjm[0][1]*xjm[0][1];
+x02 = TWO*xjm[0][0]*xjm[0][1];
+x10 = xjm[1][0]*xjm[1][0];
+x11 = xjm[1][1]*xjm[1][1];
+x12 = TWO*xjm[1][0]*xjm[1][1];
+x20 = xjm[0][0]*xjm[1][0];
+x21 = xjm[0][1]*xjm[1][1];
+x22 = xjm[0][0]*xjm[1][1] + xjm[0][1]*xjm[1][0];
+
+/*-------------------------------------- inverse of jacobian_bar matrix */
+det =   x00*x11*x22 + x01*x12*x20 + x10*x21*x02 \
+      - x20*x11*x02 - x00*x12*x21 - x01*x10*x22 ;
+dum = ONE/det;         
+bi[0][0] =   dum*(x11*x22 - x12*x21);
+bi[1][0] =  -dum*(x10*x22 - x20*x12);
+bi[2][0] =   dum*(x10*x21 - x20*x11);
+bi[0][1] =  -dum*(x01*x22 - x21*x02);
+bi[1][1] =   dum*(x00*x22 - x02*x20);
+bi[2][1] =  -dum*(x00*x21 - x20*x01);
+bi[0][2] =   dum*(x01*x12 - x11*x02);
+bi[1][2] =  -dum*(x00*x12 - x10*x02);
+bi[2][2] =   dum*(x00*x11 - x01*x10);
+
+/*---------------------------------------------------------- initialise*/
+for (i=0;i<3;i++)
+{
+   xder2[i][0]=ZERO;
+   xder2[i][1]=ZERO;
+} /* end loop over i */
+for (i=0;i<iel;i++)
+{
+   derxy2[0][i]=ZERO;
+   derxy2[1][i]=ZERO;
+   derxy2[2][i]=ZERO;
+} /* end loop over iel */
+
+/*----------------------- determine 2nd derivatives of coord.-functions */
+for (i=0;i<iel;i++) /* loop all nodes of the element */
+{
+   xder2[0][0] += deriv2[0][i] * ele->node[i]->x[0];
+   xder2[1][0] += deriv2[1][i] * ele->node[i]->x[0];
+   xder2[2][0] += deriv2[2][i] * ele->node[i]->x[0];
+   xder2[0][1] += deriv2[0][i] * ele->node[i]->x[1];
+   xder2[1][1] += deriv2[1][i] * ele->node[i]->x[1];
+   xder2[2][1] += deriv2[2][i] * ele->node[i]->x[1];
+} /* end loop over iel */
+
+/*--------------------------------- calculate second global derivatives */
+for (i=0;i<iel;i++) /* loop all nodes of the element */
+{
+   r0 = deriv2[0][i] - xder2[0][0]*derxy[0][i] - xder2[0][1]*derxy[1][i];
+   r1 = deriv2[1][i] - xder2[1][0]*derxy[0][i] - xder2[1][1]*derxy[1][i];
+   r2 = deriv2[2][i] - xder2[2][0]*derxy[0][i] - xder2[2][1]*derxy[1][i];
+   
+   derxy2[0][i] += bi[0][0]*r0 + bi[0][1]*r1 + bi[0][2]*r2;
+   derxy2[1][i] += bi[1][0]*r0 + bi[1][1]*r1 + bi[1][2]*r2;
+   derxy2[2][i] += bi[2][0]*r0 + bi[2][1]*r1 + bi[2][2]*r2;
+} /* end of loop over iel */
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return;
+} /* end of f2_mlgder2 */
+
+void f2_mlcogder2(DOUBLE     **xyze,     
+	          DOUBLE     **xjm,      
+                  DOUBLE     **bi,     
+	          DOUBLE     **xder2,  
+	          DOUBLE     **derxy,  
+	          DOUBLE     **derxy2, 
+                  DOUBLE     **deriv2, 
+	          INT          iel)
+{
+INT i;
+DOUBLE x00,x01,x02,x10,x11,x12,x20,x21,x22;
+DOUBLE det,dum;
+DOUBLE r0,r1,r2;
+
+#ifdef DEBUG 
+dstrc_enter("f2_mlcogder2");
+#endif
+
+/*--------------------------- calculate elements of jacobian_bar matrix */
+x00 = xjm[0][0]*xjm[0][0];
+x01 = xjm[0][1]*xjm[0][1];
+x02 = TWO*xjm[0][0]*xjm[0][1];
+x10 = xjm[1][0]*xjm[1][0];
+x11 = xjm[1][1]*xjm[1][1];
+x12 = TWO*xjm[1][0]*xjm[1][1];
+x20 = xjm[0][0]*xjm[1][0];
+x21 = xjm[0][1]*xjm[1][1];
+x22 = xjm[0][0]*xjm[1][1] + xjm[0][1]*xjm[1][0];
+
+/*-------------------------------------- inverse of jacobian_bar matrix */
+det =   x00*x11*x22 + x01*x12*x20 + x10*x21*x02 \
+      - x20*x11*x02 - x00*x12*x21 - x01*x10*x22 ;
+dum = ONE/det;         
+bi[0][0] =   dum*(x11*x22 - x12*x21);
+bi[1][0] =  -dum*(x10*x22 - x20*x12);
+bi[2][0] =   dum*(x10*x21 - x20*x11);
+bi[0][1] =  -dum*(x01*x22 - x21*x02);
+bi[1][1] =   dum*(x00*x22 - x02*x20);
+bi[2][1] =  -dum*(x00*x21 - x20*x01);
+bi[0][2] =   dum*(x01*x12 - x11*x02);
+bi[1][2] =  -dum*(x00*x12 - x10*x02);
+bi[2][2] =   dum*(x00*x11 - x01*x10);
+
+/*---------------------------------------------------------- initialise*/
+for (i=0;i<3;i++)
+{
+   xder2[i][0]=ZERO;
+   xder2[i][1]=ZERO;
+} /* end loop over i */
+for (i=0;i<iel;i++)
+{
+   derxy2[0][i]=ZERO;
+   derxy2[1][i]=ZERO;
+   derxy2[2][i]=ZERO;
+} /* end loop over iel */
+
+/*----------------------- determine 2nd derivatives of coord.-functions */
+for (i=0;i<iel;i++) /* loop all nodes of the element */
+{
+   xder2[0][0] += deriv2[0][i] * xyze[0][i];
+   xder2[1][0] += deriv2[1][i] * xyze[0][i];
+   xder2[2][0] += deriv2[2][i] * xyze[0][i];
+   xder2[0][1] += deriv2[0][i] * xyze[1][i];
+   xder2[1][1] += deriv2[1][i] * xyze[1][i];
+   xder2[2][1] += deriv2[2][i] * xyze[1][i];
+} /* end loop over iel */
+
+/*--------------------------------- calculate second global derivatives */
+for (i=0;i<iel;i++) /* loop all nodes of the element */
+{
+   r0 = deriv2[0][i] - xder2[0][0]*derxy[0][i] - xder2[0][1]*derxy[1][i];
+   r1 = deriv2[1][i] - xder2[1][0]*derxy[0][i] - xder2[1][1]*derxy[1][i];
+   r2 = deriv2[2][i] - xder2[2][0]*derxy[0][i] - xder2[2][1]*derxy[1][i];
+   
+   derxy2[0][i] += bi[0][0]*r0 + bi[0][1]*r1 + bi[0][2]*r2;
+   derxy2[1][i] += bi[1][0]*r0 + bi[1][1]*r1 + bi[1][2]*r2;
+   derxy2[2][i] += bi[2][0]*r0 + bi[2][1]*r1 + bi[2][2]*r2;
+} /* end of loop over iel */
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return;
+} /* end of f2_mlcogder2 */
 
 #endif

@@ -398,8 +398,8 @@ f2_bubele(data,dynvar,mlvar,submesh,ele);
 
 /*- calculate charact. l-s element length and stab. param. if necessary */
 if (ele->e.f2->istabi!=0) 
-  f2_calelesize(ele,data,dynvar,funct,deriv,deriv2,derxy,xjm,evel,velint,
-                vderxy,wa1);
+  f2_mlcalelesize(ele,data,dynvar,funct,deriv,deriv2,derxy,xjm,evel,velint,
+                  vderxy,wa1);
 /*------------------ calculate large-scale part of element matrices and 
                                                   element force vectors */
 f2_lsint(data,ele,dynvar,mlvar,hasext,estif,emass,eiforce,etforce,funct,
@@ -407,7 +407,7 @@ f2_lsint(data,ele,dynvar,mlvar,hasext,estif,emass,eiforce,etforce,funct,
 	 velint,velintn,covint,covintn,vderxy,vderxyn,wa1,wa2);
 
 /*----------------- add emass and estif to estif and permute the matrix */
-f2_permestif(estif,emass,wa1,ele->numnp,dynvar);
+f2_mlpermestif(estif,emass,wa1,ele->numnp,dynvar);
 
 /*--------------------------------- permute element load vector etforce */
 if (dynvar->nif!=0) f2_permeforce(etforce,wa1,ele->numnp);
@@ -416,7 +416,7 @@ if (dynvar->nif!=0) f2_permeforce(etforce,wa1,ele->numnp);
 if (dynvar->nii+(*hasext)!=0) f2_permeforce(eiforce,wa1,ele->numnp);
 
 /*------------------------------- calculate element load vector edforce */
-fluid_caldirich(ele,edforce,estif,hasdirich);
+fluid_mlcaldirich(ele,edforce,estif,hasdirich);
 
 end:
 /*----------------------------------------------------------------------*/
@@ -962,273 +962,5 @@ dstrc_exit();
 
 return; 
 } /* end of f2_ssintele */
-
-/*!---------------------------------------------------------------------                                         
-\brief control routine for l-s element-based error calculat. for fluid2
-
-<pre>                                                       gravem 07/03
-
-This routine controls the element-based error calculation of the 
-large-scale element:
--final vel. and pres. variables are set
--for 3-level: control routine for dynamic subgrid viscosity is called
--the control routine for the small-scale solution is called
--the small-scale problem is solved
--the error calculation incorp. the small scales is done on the submesh
-			     
-</pre>
-\param  *data	         FLUID_DATA     (i)
-\param  *fdyn	         FLUID_DYNAMIC  (i)
-\param  *dynvar	         FLUID_DYN_CALC (i)
-\param  *mlvar	         FLUID_DYN_ML   (i)
-\param  *submesh	 FLUID_ML_SMESH (i)
-\param  *ssmesh	         FLUID_ML_SMESH (i)
-\param  *ele	         ELEMENT	(i) actual large-scale element
-\param   actpos          INT            (i) final position in sol. vector
-\param  *dulinf  	 DOUBLE         (-) velocity error in Linf-norm 
-\param  *dplinf  	 DOUBLE         (-) pressure error in Linf-norm 
-\param  *dul2  	         DOUBLE         (-) velocity error in L2-norm 
-\param  *dpl2  	         DOUBLE         (-) pressure error in L2-norm 
-\param  *duh1  	         DOUBLE         (-) velocity error in H1-norm 
-\param  *ul2  	         DOUBLE         (-) analytical velocity in L2-norm 
-\param  *pl2  	         DOUBLE         (-) analytical pressure in L2-norm 
-\param  *uh1  	         DOUBLE         (-) analytical velocity in H1-norm 
-\return void                                               
-                                 
-------------------------------------------------------------------------*/
-void f2_lselerror(FLUID_DATA     *data,
-                  FLUID_DYNAMIC  *fdyn, 
-                  FLUID_DYN_CALC *dynvar, 
-                  FLUID_DYN_ML   *mlvar, 
-                  FLUID_ML_SMESH *submesh, 
-                  FLUID_ML_SMESH *ssmesh, 
-                  ELEMENT        *ele,
-                  int		  actpos, 
-                  DOUBLE	 *dulinf, 
-                  DOUBLE	 *dplinf, 
-                  DOUBLE	 *dul2,   
-                  DOUBLE	 *dpl2,   
-                  DOUBLE         *duh1,   
-                  DOUBLE	 *ul2,	 
-                  DOUBLE	 *pl2,	 
-                  DOUBLE	 *uh1)	 
-{
-INT              info=0;
-INT              infrhs=0;
-INT              i,j;
-DOUBLE           matvec[7000],rhsvec[2000]; 
- 
-#ifdef DEBUG 
-dstrc_enter("f2_lselerror");
-#endif
-
-/*----------------- set final large-scale element velocity and pressure */
-f2_calseterr(ele,actpos,evel,epre);
-
-/*------------------------------- dynamic subgrid viscosity calculation */
-if (mlvar->smsgvi>2) f2_dynsgv(data,dynvar,mlvar,submesh,ssmesh,ele);
-
-/*------------------ initialize submesh global matrix and rhs with ZERO */
-amzero(&(submesh->mat));
-amzero(&(submesh->rhs));
-/* s-s solution for error calculat. on submesh: element control routine */
-f2_smelerror(data,dynvar,mlvar,submesh,ele);
-
-/*--------------------- change order in matrix and rhs array for solver */
-for (i=0; i<submesh->numeq; i++)
-{ 
-  for (j=0; j<submesh->numeq; j++)
-  {
-    matvec[info] = submesh->mat.a.da[j][i];
-    info++;
-  }
-}
-for (i=0; i<mlvar->nelbub; i++)
-{
-  for (j=0; j<submesh->numeq; j++)
-  { 
-    rhsvec[infrhs] = submesh->rhs.a.da[j][i];
-    infrhs++;
-  }
-}
-/*-------------------------------------------- solve small-scale system */
-dgesv(&(submesh->numeq),&(mlvar->nelbub),&(matvec[0]),&(submesh->numeq),
-      submesh->ipiv.a.iv,&(rhsvec[0]),&(submesh->numeq),&info);  
-/*---------------------------------------- error in solution procedure? */
-if (info<0)      dserror("illegal value in small-scale solution");
-else if (info>0) dserror("small-scale solution could not be computed");
-
-/*----------------------------------- re-change order in solution array */
-infrhs=0;
-for (i=0; i<mlvar->nelbub; i++)
-{
-  for (j=0; j<submesh->numeq; j++)
-  { 
-    submesh->rhs.a.da[j][i] = rhsvec[infrhs];
-    infrhs++;
-  }
-} 
-
-/*-------------------------- copy small-scale solution to element array */
-f2_smcopy(smrhs,ele,submesh->numeq,mlvar->nelbub);
-
-/*-- calculate errors on submesh including small-scale bubble functions */
-f2_bubelerror(data,fdyn,dynvar,mlvar,submesh,ele,dulinf,dplinf,dul2,dpl2,
-              duh1,ul2,pl2,uh1);
-
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG 
-dstrc_exit();
-#endif
-
-return; 
-} /* end of f2_lselerror */
-
-/*!---------------------------------------------------------------------                                         
-\brief control routine for sm elem. integrat. for error cal. for fluid2
-
-<pre>                                                       gravem 07/03
-
-This routine controls the element evaluation of the submesh element:
--element data is set
--stabilization parameter or subgrid viscosity is calculated if necessary
--element integration is performed --> element stiffness matrix and 
-                                  --> element load vectors
-			     
-</pre>
-\param  *data	         FLUID_DATA     (i)
-\param  *dynvar	         FLUID_DYN_CALC (i)
-\param  *mlvar	         FLUID_DYN_ML   (i)
-\param  *submesh	 FLUID_ML_SMESH (i)
-\param  *ele	         ELEMENT	(i)   actual large-scale element
-\return void                                               
-                                 
-------------------------------------------------------------------------*/
-void f2_smelerror(FLUID_DATA     *data, 
-                  FLUID_DYN_CALC *dynvar, 
-                  FLUID_DYN_ML   *mlvar, 
-                  FLUID_ML_SMESH *submesh, 
-	          ELEMENT        *ele)
-{
-INT              iele;    /* submesh element counter                   */
-
-#ifdef DEBUG 
-dstrc_enter("f2_smelerror");
-#endif
-
-for (iele=0; iele<submesh->numele; iele++)/* loop over submesh elements */
-{
-/*---------------------------------------------------- set element data */
-  f2_smset(submesh,ele,smlme,smitope,smxyze,smxyzep,iele,0);
-
-/*----------------- set iterative bubble functions at current time step */
-  if (mlvar->convel==0) f2_bubset(mlvar,submesh,ele,smlme,evbub,epbub,efbub,0);
-
-/*--- calculate charact. element length and stab. param. / subgr. visc. */
-  if (mlvar->smstabi>0 || mlvar->smsgvi==1 || mlvar->smsgvi==2)
-    f2_smelesize(ele,data,dynvar,mlvar,funct,deriv,deriv2,smfunct,smderiv,
-                 smderiv2,derxy,xjm,evel,velint,vderxy,smxyze,smxyzep,wa1);
-
-/*--------------- initialize submesh global matrix and vector with ZERO */
-  amzero(&smestif_a);
-  amzero(&smevfor_a);
-
-/*----------- calculate submesh element matrix and element force vector */
-  f2_sminterr(data,ele,dynvar,mlvar,submesh,smestif,smevfor,smxyze,smxyzep,
-	      funct,deriv,deriv2,xjm,derxy,derxy2,smfunct,smderiv,smderiv2,
-	      smxjm,smderxy,smderxy2,evel,epre,evbub,epbub,efbub,vbubint,
-	      vbubderxy,vbubderxy2,pbubint,pbubderxy,pbubderxy2,velint,
-	      vderxy,smvelint,smvderxy,smpreint,smpderxy,smfint,smfderxy,
-	      wa1,wa2);
-
-/*------------- add element stiffness matrix to global stiffness matrix */
-  fluid_add_smat(smmat,smestif,submesh->numen,smlme,ONE);
-
-/*------------------------------- add element vmm rhs to global vmm rhs */
-  fluid_add_smrhs(smrhs,smevfor,mlvar->nelbub,submesh->numen,smlme);
-}  
-
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG 
-dstrc_exit();
-#endif
-
-return; 
-} /* end of f2_smelerror */
-
-/*!---------------------------------------------------------------------                                         
-\brief control routine for bubble-enhan. error calc. on subm. for fluid2
-
-<pre>                                                       gravem 07/03
-
-This routine controls the error calculation including the small-scale
-bubble functions on the submesh element:
--element data is set
--stabilization parameter or subgrid viscosity is calculated if necessary
--element integration is performed --> element stiffness matrix and 
-                                  --> element load vectors
-			     
-</pre>
-\param  *data	         FLUID_DATA     (i)
-\param  *fdyn	         FLUID_DYNAMIC  (i)
-\param  *dynvar	         FLUID_DYN_CALC (i)
-\param  *mlvar	         FLUID_DYN_ML   (i)
-\param  *submesh	 FLUID_ML_SMESH (i)
-\param  *ele	         ELEMENT	(i)   actual large-scale element
-\param  *dulinf  	 DOUBLE         (-) velocity error in Linf-norm 
-\param  *dplinf  	 DOUBLE         (-) pressure error in Linf-norm 
-\param  *dul2  	         DOUBLE         (-) velocity error in L2-norm 
-\param  *dpl2  	         DOUBLE         (-) pressure error in L2-norm 
-\param  *duh1  	         DOUBLE         (-) velocity error in H1-norm 
-\param  *ul2  	         DOUBLE         (-) analytical velocity in L2-norm 
-\param  *pl2  	         DOUBLE         (-) analytical pressure in L2-norm 
-\param  *uh1  	         DOUBLE         (-) analytical velocity in H1-norm 
-\return void                                               
-                                 
-------------------------------------------------------------------------*/
-void f2_bubelerror(FLUID_DATA     *data, 
-                   FLUID_DYNAMIC  *fdyn, 
-                   FLUID_DYN_CALC *dynvar, 
-                   FLUID_DYN_ML   *mlvar, 
-                   FLUID_ML_SMESH *submesh, 
-	           ELEMENT        *ele,
-                   DOUBLE         *dulinf, 
-                   DOUBLE         *dplinf, 
-                   DOUBLE         *dul2,   
-                   DOUBLE         *dpl2,   
-                   DOUBLE         *duh1,   
-                   DOUBLE         *ul2,    
-                   DOUBLE         *pl2,    
-                   DOUBLE         *uh1)    
-{
-INT              iele;    /* submesh element counter                   */
-
-#ifdef DEBUG 
-dstrc_enter("f2_bubelerror");
-#endif
-
-for (iele=0; iele<submesh->numele; iele++)/* loop over submesh elements */
-{
-/*---------------------------------------------------- set element data */
-  f2_smset(submesh,ele,smlme,smitope,smxyze,smxyzep,iele,0);
-
-/*----------------- set iterative bubble functions at current time step */
-  f2_bubset(mlvar,submesh,ele,smlme,evbub,epbub,efbub,0);
-
-/*----- calculate error integrals on submesh including bubble functions */
-  f2_bubinterr(data,fdyn,ele,mlvar,submesh,smxyze,smxyzep,funct,deriv,deriv2,
-               xjm,derxy,smfunct,smderiv,smderiv2,smxjm,smderxy,evel,epre,evbub,
-	       epbub,efbub,vbubint,vbubderxy,pbubint,pbubderxy,velint,vderxy,
-	       smvelint,smvderxy,smpreint,smpderxy,smfint,smfderxy,wa1,wa2,
-	       dulinf,dplinf,dul2,dpl2,duh1,ul2,pl2,uh1); 
-}
-
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG 
-dstrc_exit();
-#endif
-
-return; 
-} /* end of f2_bubelerror */
 
 #endif

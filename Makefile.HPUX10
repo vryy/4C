@@ -77,7 +77,7 @@ FXX   = f77
 CCX   = cc
 LDX   = cc
 PFL  = -DHPUX10 -DD_FSI -DD_FLUID -DD_OPTIM -DS8CONTACT -DD_CONTACT  \
-       -DD_FLUID2 -DD_FLUID3 -DD_WALL1 -DD_BEAM3 -DD_SHELL9 -DD_BRICK1 -DD_SHELL8 -DD_ALE \
+       -DD_FLUID2 -DD_FLUID3 -DD_WALL1 -DD_BRICK1 -DD_BEAM3 -DD_SHELL8 -DD_SHELL9 -DD_ALE \
        -DD_AXISHELL -DD_MAT -DAZTEC_PACKAGE -DUMFPACK
 AZTEC = -laztec_seriell21
 UMFPACK = -lumfpack40_hpux10_32
@@ -106,13 +106,13 @@ RM	 = /bin/rm -f
 # switch between fast and debug compilation by uncommenting 
 # the approbiate flags:
 #------------------------------------------------ this is debug-32bit
-#PROGRAMM      =  $(PROGRAM_NAME)debg
-#CFLAGS        = -D__HP__ +w1 +e -Aa -Ae  -g ${PFL} -DDEBUG
-#FFLAGS        = -g -I/opt/mpi/include/
+PROGRAMM      =  $(PROGRAM_NAME)debg
+CFLAGS        = -D__HP__ +w1 +e -Aa -Ae  -g ${PFL} -DDEBUG
+FFLAGS        = -g -I/opt/mpi/include/
 #------------------------------------------------- this is fast-32bit
-PROGRAMM      =  $(PROGRAM_NAME)fast
-CFLAGS        = -D__HP__  +w1 +e -Aa -Ae -O +Onolimit  ${PFL}
-FFLAGS        = +O2 +Onolimit -I/opt/mpi/include/
+#PROGRAMM      =  $(PROGRAM_NAME)fast
+#CFLAGS        = -D__HP__  +w1 +e -Aa -Ae -O +Onolimit  ${PFL}
+#FFLAGS        = +O2 +Onolimit -I/opt/mpi/include/
 #--------------------------------------------------------------------
 LDFLAGS	 = -L/usr/lib -L/opt/fortran/lib -lcl -lc -lM -lm 
 INCLUDES = -I/opt/mpi/include/ \

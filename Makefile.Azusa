@@ -57,7 +57,7 @@ HOMEDIR      =  /crossi/rus/rus/stati/azusa
 SRC          =  $(HOMEDIR)/<name>/ccarat/
 METISDIR     =  $(HOMEDIR)/lib_ita1/metis
 SPOOLESDIR   =  $(HOMEDIR)/lib_ita1/spooles
-AZTECDIR     =  $(HOMEDIR)/lib_ita1/aztec
+AZTECDIR     =  $(HOMEDIR)/lib_ita1/aztec21/lib/
 COMPILER     =  /opt/NECcomp/compiler70/ia64
 MPI          =  /opt/NECmpi
 LAPACK       =  /opt/intel/mkl/lib/64
@@ -76,7 +76,7 @@ RM	 = /bin/rm -f
 #LDFLAGS  = -g 
 #LDOPTS   = -g 
 #LIBPATHS = -L$(COMPILER)/lib -L$(LAPACK) -L$(METISDIR) -L$(SPOOLESDIR) -L$(AZTECDIR)
-#LIBS	 = $(LIBPATHS) -lF90 -lIEPCF90 -lc -lm -lspooles_Ita1_64 -lmetis_azusa \
+#LIBS	 = $(LIBPATHS) -lF90 -lIEPCF90 -lc -lm -lspooles_Ita1_64 -lmetis_azusa -laztec_ita1_64 \
 #	   $(LAPACK)/libguide.so $(LAPACK)/libmkl_lapack.a $(LAPACK)/libmkl_itp.a -lmpi
 #PROGRAM  = cca_ita1_debg.exe
 #----------------------------------------------------------------
@@ -87,14 +87,14 @@ FFLAGS   = -O3  -parallel -tpp1
 LDFLAGS  = -O 
 LDOPTS   =  
 LIBPATHS = -L$(COMPILER)/lib -L$(LAPACK) -L$(METISDIR) -L$(SPOOLESDIR) -L$(AZTECDIR)
-LIBS	 = $(LIBPATHS) -lF90 -lIEPCF90 -lc -lm -lspooles_Ita1_64 -lmetis_azusa \
+LIBS	 = $(LIBPATHS) -lF90 -lIEPCF90 -lc -lm -lspooles_Ita1_64 -lmetis_azusa -laztec_ita1_64 \
 	   $(LAPACK)/libguide.so $(LAPACK)/libmkl_lapack.a $(LAPACK)/libmkl_itp.a -lmpi
 PROGRAM  = cca_ita1_fast.exe
 #----------------------------------------------------------------
 #
 #
 #
-INCLUDES  =  -I/opt/NECcomp/glibc-2.2.4/include/ 
+INCLUDES  =  -I/opt/NECcomp/glibc-2.2.4/include/  -I$(AZTECDIR)
 #
 #----------------------- binaries -----------------------------------
 include ./Makefile.objects

@@ -149,6 +149,74 @@ void fluid_initmfcoupling(
 		         );
 
 /************************************************************************
+ | fluid_mlservice.c                                                   |
+ ************************************************************************/
+void fluid_ml_init(FIELD         *actfield,  
+                   FLUID_DYNAMIC *fdyn);      
+void fluid_smcopy(PARTITION       *actpart,      
+                  FLUID_DYNAMIC   *fdyn);      
+void fluid_prgmr(DOUBLE    **smmat,
+                 DOUBLE    **smrhs,
+		 INT         numeq,
+                 INT         numrhs);      
+void fluid_add_smat(DOUBLE  **smat,
+		    DOUBLE  **semat,
+		    INT       numen,
+		    INT      *slme,  
+                    DOUBLE    fac);      
+void fluid_add_smrhs(DOUBLE  **smrhs,
+		     DOUBLE  **smerhs,
+                     INT       numrhs,
+		     INT       numen,
+		     INT      *smlme);	  
+void fluid_add_ssrhs(DOUBLE   *ssrhs,
+		     DOUBLE   *sserhs,
+		     INT       numen,
+		     INT      *sslme);	  
+void fluid_add_intlhs(DOUBLE   *smidiff,
+		      DOUBLE  **smiediff,
+		      INT       numen,
+		      INT      *smlme);      
+void fluid_add_intrhs(DOUBLE   *smirhs,
+		      DOUBLE   *smierhs,
+		      INT       numen,
+		      INT      *smlme);      
+void fluid_bubint(DOUBLE  *bubint,     
+                  DOUBLE  *smfunct,    
+	          DOUBLE **ebub,
+		  INT      smiel,     
+	          INT      nbub); 
+void fluid_pbubint(DOUBLE **pbubint,     
+                   DOUBLE  *smfunct,    
+	           DOUBLE **epbub,
+		   INT      smiel,     
+		   INT      iel,     
+		   INT      nsd); 
+void fluid_bubder(DOUBLE **bubderxy,     
+                  DOUBLE **smderxy,    
+	          DOUBLE **ebub,
+		  INT      smiel,     
+	          INT      nbub,
+		  INT      nder); 
+void fluid_pbubder(DOUBLE ***pbubderxy,     
+                   DOUBLE  **smderxy,    
+	           DOUBLE  **epbub,
+		   INT       smiel,     
+		   INT       iel,     
+	           INT       nsd,
+		   INT       nder); 
+void fluid_calnofo(DOUBLE       *erhs,  
+		   DOUBLE  	*funct,  
+		   DOUBLE  	 fac,	 
+		   INT		 iel);
+void fluid_mlcaldirich(
+                       ELEMENT   *actele,  
+		       DOUBLE    *dforces, 
+                       DOUBLE   **estif,   
+		       INT       *hasdirich
+		      );     
+
+/************************************************************************
  | fluid_service.c                                                      |
  ************************************************************************/
 void fluid_startproc(
