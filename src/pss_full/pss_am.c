@@ -664,6 +664,77 @@ return((void*)(array_to->a.iv));
 
 
 
+/*----------------------------------------------------------------------*
+ |                                                        m.gee 2/02    |
+ | makes array_to += array_from * factor                                |
+ | if init==1 array_to is initialized to zero                           |
+ *----------------------------------------------------------------------*/
+void amadd(ARRAY *array_to, ARRAY *array_from, double factor, int init)
+{
+register int i,j;
+int          fdim, sdim;
+double     **dafrom,**dato;
+double      *dvfrom, *dvto;
+int        **iafrom,**iato;
+int         *ivfrom, *ivto;
+#ifdef DEBUG 
+dstrc_enter("amadd");
+#endif
+/*----------------------------------------------------------------------*/
+if (array_to->Typ != array_from->Typ) dserror("Mismatch of Types");
+/*----------------------------------------------------------------------*/
+if (init==1) amzero(array_to);
+/*----------------------------------------------------------------------*/
+switch (array_from->Typ)
+{
+case DA:
+   fdim = DMIN(array_to->fdim,array_from->fdim);
+   sdim = DMIN(array_to->sdim,array_from->sdim);
+   dafrom = array_from->a.da;
+   dato   = array_to->a.da;
+   for (i=0; i<fdim; i++)
+   for (j=0; j<sdim; j++)
+   dato[i][j] += dafrom[i][j] * factor;
+break; 
+case DV:
+   fdim   = array_to->fdim * array_to->sdim;
+   sdim   = array_from->fdim * array_from->sdim;
+   fdim   = DMIN(fdim,sdim);
+   dvfrom = array_from->a.dv;
+   dvto   = array_to->a.dv;
+   for (i=0; i<fdim; i++)
+   dvto[i] += dvfrom[i] * factor;
+break;
+case IA:
+   fdim = DMIN(array_to->fdim,array_from->fdim);
+   sdim = DMIN(array_to->sdim,array_from->sdim);
+   iafrom = array_from->a.ia;
+   iato   = array_to->a.ia;
+   for (i=0; i<fdim; i++)
+   for (j=0; j<sdim; j++)
+   iato[i][j] += (int)((double)iafrom[i][j] * factor);
+break; 
+   fdim   = array_to->fdim * array_to->sdim;
+   sdim   = array_from->fdim * array_from->sdim;
+   fdim   = DMIN(fdim,sdim);
+   ivfrom = array_from->a.iv;
+   ivto   = array_to->a.iv;
+   for (i=0; i<fdim; i++)
+   ivto[i] += (int)((double)ivfrom[i] * factor);
+case IV:
+break; 
+default:
+   dserror("Unknown type of array given");
+}  
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of amadd */
+
+
+
 
 /*----------------------------------------------------------------------*
  | define 4D array                                       m.gee 12/01    |
