@@ -988,5 +988,9 @@ NODE    97 DOF 2
 ------------------------------------------------------------CURVE3
 ------------------------------------------------------------CURVE4
 ------------------------------------------------------------CURVE5
+------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS 1 NODE 77 POSITION sol(1,1) NAME ux VALUE 0.0085777542744281 TOLERANCE 1e-9
+STRUCTURE DIS 1 NODE 77 POSITION sol(1,2) NAME uy VALUE -0.0022004306579900 TOLERANCE 1e-9
+STRUCTURE DIS 1 NODE 77 POSITION sol(1,3) NAME uz VALUE 0.0000000072457661 TOLERANCE 1e-9
 ---------------------------------------------------------------END
 // END
