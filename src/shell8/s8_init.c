@@ -63,7 +63,7 @@ for (i=0; i<actfield->dis[0].numnp; i++)
             collaverdir[1][numa3] = actele->e.s8->a3ref.a.da[1][k];
             collaverdir[2][numa3] = actele->e.s8->a3ref.a.da[2][k];
             numa3++;
-            if (numa3 == MAXELE) dserror("Too many elements to a node, MAXELE too small");
+            if (numa3 > MAXELE) dserror("Too many elements to a node, MAXELE too small");
             break;
          }
       }
