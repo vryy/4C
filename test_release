@@ -23,6 +23,7 @@ fi
 fail2=0
 pass2=0
 total=0
+total=0
 number=0
 s_time=0
 e_time=0
@@ -133,7 +134,7 @@ else
   '
 fi
  
-#liste=' xfem_ls_joggedchannel.dat '
+liste=' xfem_ls_joggedchannel.dat  ale2_nln.dat'
 
 
 # get the start-time in seconds:
@@ -208,12 +209,12 @@ done
 for file in $liste; do 
 
   # write time and filename to the srceen
+  number=`expr $number + 1`
   echo ' '
   echo '========================================'
   date
   echo ' '
-  echo 'Testing ' $file
-  total=`expr $total + 1`
+  echo 'Testing ' $file'    ('$number'/'$total')'
 
   inputfile="Input/$file"
 
