@@ -628,6 +628,7 @@ container.global_numeq = numeq_total[kapeps];
 container.niturbu_pro  = dynvar->niturbu_pro; 
 container.niturbu_n    = dynvar->niturbu_n; 
 container.nii          = 0;
+container.nim          = 0;
 container.nif          = 0;
 container.kstep        = 0;
 calelm(actfield,kesolv,actpart,actintra,0,-1,
@@ -820,6 +821,7 @@ if (outstep==fdyn->upout && ioflags.fluid_sol_file==1)
    container.actndis=0;
    *action = calc_fluid_shearvelo;
    container.nii= 0;
+   container.nim= 0;
    container.nif= 0;
    calelm(actfield,actsolv,actpart,actintra,k_array,-1,
           &container,action);
