@@ -29,7 +29,7 @@ Maintainer: Steffen Genkinger
 This routine performs the multiplication emass*acc(n) and writes its
 negative result on the elemental iteration force vector. This gives a 
 part of the rhs required in the generalised alpha time integration scheme
-for fluids in its implementation 1.
+for fluids.
 			     
 </pre>
 \param	 *ele		ELEMENT		(i)	actual element
