@@ -293,7 +293,6 @@ for (i=0; i<genprob.numfld; i++)
       fprintf(out,"END ELEMENTS\n");
    }
 
-
    if (actgid->is_ale_22)
    {
       fprintf(out,"#-------------------------------------------------------------------------------\n");
@@ -315,6 +314,36 @@ for (i=0; i<genprob.numfld; i++)
       {
          actele = &(actfield->dis[0].element[j]);
          if (actele->eltyp != el_ale2 || actele->numnp !=4) continue;
+         fprintf(out," %6d ",actele->Id+1);
+         for (k=0; k<actele->numnp; k++)
+         fprintf(out,"%6d ",actele->node[k]->Id+1);
+         fprintf(out,"\n");
+      }
+      fprintf(out,"END ELEMENTS\n");
+   }
+
+
+   if (actgid->is_ale_t3)
+   {
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"# MESH %s FOR FIELD %s ALE 3 GP\n",actgid->ale_22_name,actgid->fieldname);
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"MESH %s DIMENSION 2 ELEMTYPE Triangle NNODE 3\n",actgid->ale_22_name);
+      /*-------------- if this is first mesh, print coodinates of nodes */
+      if (is_firstmesh)
+      {
+         is_firstmesh=0;
+         fprintf(out,"# printout ALL nodal coordinates of ALL fields in first mesh only\n");
+         fprintf(out,"COORDINATES\n");
+         out_gid_allcoords(out);
+         fprintf(out,"END COORDINATES\n");
+      }
+      /*------------------------------------------------ print elements */
+      fprintf(out,"ELEMENTS\n");
+      for (j=0; j<actfield->dis[0].numele; j++)
+      {
+         actele = &(actfield->dis[0].element[j]);
+         if (actele->eltyp != el_ale2 || actele->numnp !=3) continue;
          fprintf(out," %6d ",actele->Id+1);
          for (k=0; k<actele->numnp; k++)
          fprintf(out,"%6d ",actele->node[k]->Id+1);
@@ -352,6 +381,36 @@ for (i=0; i<genprob.numfld; i++)
       }
       fprintf(out,"END ELEMENTS\n");
    }
+
+   if (actgid->is_ale_t4)
+   {
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"# MESH %s FOR FIELD %s ALE 4 GP\n",actgid->ale_22_name,actgid->fieldname);
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"MESH %s DIMENSION 3 ELEMTYPE Tetrahedra NNODE 4\n",actgid->ale_22_name);
+      /*-------------- if this is first mesh, print coodinates of nodes */
+      if (is_firstmesh)
+      {
+         is_firstmesh=0;
+         fprintf(out,"# printout ALL nodal coordinates of ALL fields in first mesh only\n");
+         fprintf(out,"COORDINATES\n");
+         out_gid_allcoords(out);
+         fprintf(out,"END COORDINATES\n");
+      }
+      /*------------------------------------------------ print elements */
+      fprintf(out,"ELEMENTS\n");
+      for (j=0; j<actfield->dis[0].numele; j++)
+      {
+         actele = &(actfield->dis[0].element[j]);
+         if (actele->eltyp != el_ale3 || actele->numnp !=4) continue;
+         fprintf(out," %6d ",actele->Id+1);
+         for (k=0; k<actele->numnp; k++)
+         fprintf(out,"%6d ",actele->node[k]->Id+1);
+         fprintf(out,"\n");
+      }
+      fprintf(out,"END ELEMENTS\n");
+   }
+
 
 /*---------------------------------------------------------fh 06/02------*/     
    if (actgid->is_wall1_22)

@@ -32,6 +32,12 @@ typedef struct _GIDSET
      char                      *ale_22_name;
      int                        is_ale_222;             /* 8-noded ale 2x2x2 GP */
      char                      *ale_222_name;
+     int                        is_ale_t3;              /* 3-noded tri ale 3 GP */
+     char                      *ale_t3_name;
+     int                        is_ale_t4;              /* 4-noded tet ale 4 GP */
+     char                      *ale_t4_name;
+     int                        is_ale_t1;              /* 3-noded tri ale 1 GP */
+     char                      *ale_t1_name;
      
 
 } GIDSET;
