@@ -1,6 +1,6 @@
 # -*- shell-script -*-
 
-PLATFORM="HPUX_MUENCH +DD64 -DSIXTYFOUR"
+PLATFORM="HPUX_MUENCH -DSIXTYFOUR"
 PARALLEL=yes
 
 # just for convenience
@@ -24,10 +24,10 @@ SPOOLES_LIB="-lspoolesMPI64 -lspooles64"
 
 # umfpack
 UMFPACK_INC=
-UMFPACK_LIB="-lumfpack -lamd"
+UMFPACK_LIB="-lumfpack64 -lamd64"
 
 LIBS="-llapack -lmetis64"
 
-CFLAGS=
-FFLAGS=
+CFLAGS=+DD64
+FFLAGS=+DD64
 LDFLAGS=+DD64
