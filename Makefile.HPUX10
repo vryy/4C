@@ -14,7 +14,7 @@
 #
 # enter path to your source directory here
 #--------------------------------------------------------------------
-SRC       = /bau/statik/cvsadmin/wdir/ccarat/src
+#SRC       = /bau/statik/<USER>/wdir/ccarat/src
 #
 #
 #--------------------------------------------------------------------
@@ -43,23 +43,23 @@ SRC       = /bau/statik/cvsadmin/wdir/ccarat/src
 #
 # sequentiell part
 #--------------------------------------------------------------------
-PROGRAM_NAME  = cca_seq_10.20.exe
-FXX   = f77
-CCX   = cc
-LDX   = cc
-PFL   = -DD_SHELL8 -DD_FLUID3 -DD_ALE -DD_BRICK1 -DAZTEC_PACKAGE
-AZTEC = -laztec_seriell21
+#PROGRAM_NAME  = cca_seq_10.20.exe
+#FXX   = f77
+#CCX   = cc
+#LDX   = cc
+#PFL   = -DD_SHELL8 -DD_FLUID3 -DD_ALE -DD_BRICK1 -DAZTEC_PACKAGE
+#AZTEC = -laztec_seriell21
 #--------------------------------------------------------------------
 #
 # parallel part
 #--------------------------------------------------------------------
-#PROGRAM_NAME  = cca_par_10.20.exe
-#FXX   = /opt/mpi/bin/mpif77
-#CCX   = /opt/mpi/bin/mpicc
-#LDX   = /opt/mpi/bin/mpicc
-#PFL   = -DPARALLEL -DD_SHELL8 -DD_FLUID3 -DD_ALE -DD_BRICK1 \
-#	 -DPARSUPERLU_PACKAGE -DHYPRE_PACKAGE -DAZTEC_PACKAGE
-#AZTEC = -laztec_par21
+PROGRAM_NAME  = cca_par_10.20.exe
+FXX   = /opt/mpi/bin/mpif77
+CCX   = /opt/mpi/bin/mpicc
+LDX   = /opt/mpi/bin/mpicc
+PFL   = -DPARALLEL -DD_SHELL8 -DD_FLUID3 -DD_ALE -DD_BRICK1 \
+        -DPARSUPERLU_PACKAGE -DHYPRE_PACKAGE -DAZTEC_PACKAGE 
+AZTEC = -laztec_par21
 #
 #--------------------------------------------------------------------
 #
