@@ -1,6 +1,12 @@
 #include "../headers/standardtypes.h"
 #include "../headers/solution.h"
 /*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | structure allfiles, which holds all file pointers                    |
+ | is defined in input_control_global.c
+ *----------------------------------------------------------------------*/
+extern struct _FILES  allfiles;
+/*----------------------------------------------------------------------*
  | define the global structure solv                                     |
  |                                                                      |
  | global variable *solv, vector of lenght numfld of structures SOLVAR  |
@@ -20,10 +26,13 @@ void solver_control(
                        int                     option
                       )
 {
+double t0,t1;
 #ifdef DEBUG 
 dstrc_enter("solver_control");
 #endif
 
+/*----------------------------------------------------------------------*/
+t0=ds_cputime();
 /*----------------------------------------------------------------------*/
 switch(*sysarray_typ)
 {
@@ -55,6 +64,11 @@ default:
    dserror("Unknown format typ of system matrix");
 break;   
 }
+/*----------------------------------------------------------------------*/
+t1=ds_cputime();
+t1 -= t0;
+fprintf(allfiles.out_err,"Time for this solver call: %f\n",t1);
+fflush(allfiles.out_err);
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
