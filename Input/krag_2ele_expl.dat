@@ -2,7 +2,7 @@
                         General Data File C_CARAT
 ==================================================================
 -------------------------------------------------------------TITLE
-2 elements explizit
+2 shell8 elements explizit
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS           2 
 NODES              6
@@ -19,18 +19,18 @@ RESTART      0
 STRUCT_DISP_FILE   No
 STRUCT_STRESS_FILE No
 STRUCT_DISP_GID    Yes
-STRUCT_STRESS_GID  Yes
+STRUCT_STRESS_GID  No
 FLUID_SOL_FILE     No
 ------------------------------------------------------------STATIC
 GEOLINEAR
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Centr_Diff
-EIGEN        0
-RESEVRYDISP  5
-RESEVRYSTRS  250
-RESTARTEVRY  250
+EIGEN        1
+RESEVRYDISP  25
+RESEVRYSTRS  25000
+RESTARTEVRY  25000
 TIMESTEP     0.0000001 
-NUMSTEP      500 
+NUMSTEP      2000 
 MAXTIME      0.016
 BETA         0.25 
 GAMMA        0.5 
@@ -86,9 +86,9 @@ AZPOLY         5
 //MATRIXTYP      OLL
 PARTITION      Cut_Elements
 -----------------------------------------------------STRUCT SOLVER
-//SOLVER         UMFPACK
+SOLVER         Colsol
 //SOLVER         SPOOLES_nonsym
-SOLVER         Aztec_MSR
+//SOLVER         Aztec_MSR
 AZSOLVE        CG
 AZPREC         ILU
 AZREUSE        0  
@@ -264,8 +264,8 @@ NODE 5  COORD 10.000000  0.000000  0.000000
 NODE 6  COORD 10.000000  1.000000  0.000000
 ----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
-      1 SHELL8 QUAD4       1      3      4      2 MAT       1 THICK 0.002 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS  none none none none none ANS  none SDC  1.0 
-      2 SHELL8 QUAD4       3      5      6      4 MAT       1 THICK 0.002 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS  none none none none none ANS  none SDC  1.0 
+      1 SHELL8 QUAD4       1      3      4      2 MAT       1 THICK 0.002 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS  none N4_4 N_4 none none ANS  Q SDC  1.0 
+      2 SHELL8 QUAD4       3      5      6      4 MAT       1 THICK 0.002 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS  none N4_4 N_4 none none ANS  Q SDC  1.0 
 ----------------------------------------------------FLUID ELEMENTS
 ------------------------------------------------------ALE ELEMENTS
 ---------------------------------------------------------MATERIALS
