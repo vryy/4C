@@ -292,6 +292,16 @@ out_sol(actfield,actpart,actintra,adyn->step,actpos);
 out_gid_domains(actfield);*/
 #endif
 
+#ifdef D_MORTAR
+if(adyn->coupmethod == 0) /* mortar method */
+{
+  /*------- redefine the size of sol_mf from 2 to 4, the fourth field is */
+  /*------------- necessary to store the nodal displacements due to fsi */
+  solserv_sol_zero(actfield, 0, 3, 3);
+}
+#endif
+  
+
 break;
 
 /*======================================================================*
@@ -300,7 +310,9 @@ break;
  * nodal solution history ale field:                                    *
  * sol[1...actpos][j]  ... solution for visualisation (real pressure)	*
  * sol_mf[0][i]        ... displacements at (n)			        *
- * sol_mf[1][i]        ... displacements at (n+1) 		        *
+ * sol_mf[1][i]        ... displacements at (n+1) 		        * 
+ * sol_mf[2][i]        ... used in fsi_gradient.c                       * 
+ * sol_mf[3][i]        ... displacements at (n+1) stored in fsi_calc_disp4ale* 
  *======================================================================*/
 case 2:
 /*- there are only procs allowed in here, that belong to the fluid -----*/
@@ -435,6 +447,7 @@ break;
  * sol_mf[0][i]        ... displacements at (n)			        *
  * sol_mf[1][i]        ... displacements at (n+1) 		        *
  * sol_mf[2][i]        ... grid position in relaxation parameter calc.  *
+ * sol_mf[3][i]        ... displacements at (n+1) stored in fsi_calc_disp4ale* 
  * sol_increment[0][i] ... displacement used to determine omega_RELAX   *
  *======================================================================*/
 case 6:
