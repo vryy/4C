@@ -46,20 +46,19 @@ EOF
 cat Makefile.in >> $makefile
 #awk '$1 !~ /include/ { print $0 } $1 ~ /include/ { system("cat " $2)}' Makefile.in >> Makefile
 
-# step 3: build dependencies if cpp can be found
-# (this can begin done using gcc, too)
-# 
+# step 3: build dependencies if gcc can be found
+#
 # you can skip this step by saying
 # $ NODEPS=yes ./configure ...
 #
 if [ x$NODEPS != "xyes" ] ; then
   # hopefully nobody translates which's messages...
-  if which cpp | grep '^no ' 2>&1 > /dev/null ; then
-     echo $0: cpp not found. No dependencies generated. Use Makefile with care.
+  if which gcc | grep '^no ' 2>&1 > /dev/null ; then
+     echo $0: gcc not found. No dependencies generated. Use Makefile with care.
   else
     for file in `find src -name "*.c"` ; do
       echo "build deps for" $file
-      cpp -D$PLATFORM $DEFINES -MM -MT `echo $file|sed -e 's/c$/o/'` $INCLUDEDIRS $file >> $makefile
+      gcc -D$PLATFORM $DEFINES -MM -MT `echo $file|sed -e 's/c$/o/'` $INCLUDEDIRS $file >> $makefile
     done
   fi
 fi
