@@ -177,6 +177,7 @@ for (i=0;i<numnp_total;i++)
          actfnode = actagnode->mfcpnode[numff];
          for (j=0;j<actanode->numdf;j++)
          {
+            dsassert(actfnode->xfs != NULL, "actfnode->xfs[j] == NULL");
             delta = actfnode->xfs[j]-actanode->x[j];
             actanode->sol_increment.a.da[0][j]=delta;
          }
