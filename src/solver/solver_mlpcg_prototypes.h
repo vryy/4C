@@ -34,15 +34,10 @@ void mlpcg_matvec_init(DBCSR       *bdcsr,
                        INTRA       *actintra);
 void mlpcg_matvec_uninit(DBCSR       *bdcsr);
 void mlpcg_vecvec(double *scalar, double *x, double *y, const int dim, INTRA *actintra);
-void mlpcg_updupdvec(double *a, 
-                    double *y, const double facy,
-                    double *x, const double facx,
-                    const int init, 
-                    const int dim);
-void mlpcg_updvec(double *y, double *x, double fac, const int init, const int dim);
 int mlpcg_getindex(int dof, int *update, int length);
 int mlpcg_getowner(int dof, int owner[][2], int nproc);
 void mlpcg_precond_P0(MLLEVEL  *actlev, INTRA *actintra);
+void mlpcg_precond_P(MLLEVEL  *actlev, INTRA *actintra);
 void mlpcg_smoothP(DBCSR *P, double block[][500], int *rindex, int *cindex,
                   int *nrow, int *ncol, DBCSR *actstiff, 
                   AGG *agg, int nagg, INTRA *actintra);
@@ -53,6 +48,14 @@ void mlpcg_precond_oneP0(AGG     *actagg,
                          int     *nrow,
                          int     *ncol,
                          DBCSR   *actstiff);
+void mlpcg_precond_oneP(AGG     *actagg,
+                        double   aggblock[][500],
+                        int      rindex[],
+                        int      cindex[],
+                        int     *nrow,
+                        int     *ncol,
+                        DBCSR   *actstiff,
+                        MLLEVEL *prevlevel);
 void mlpcg_csr_open(DBCSR*  csr,
                     int     firstdof,
                     int     lastdof,
@@ -119,10 +122,35 @@ void mlpcg_extractrowcsr(int     row,
                          double  row_out[],
                          int     rrow_out[],
                          int     *ncol);
+void mlpcg_csr_setentry(DBCSR*   matrix,
+                        double  val,
+                        int     rindex,
+                        int     cindex,
+                        INTRA   *actintra);
+void mlpcg_csr_getdinv(double *Dinv, DBCSR *csr, int numeq);
+void mlpcg_csr_extractsubblock(DBCSR *from, DBCSR *to,
+                               int    rstart,
+                               int    rend,
+                               int    cstart,
+                               int    cend,
+                               INTRA *actintra);
+void mlpcg_csr_localnumsf(DBCSR *matrix);
+
+void mlpcg_extractcollocal_init(DBCSR    *matrix,
+                                int      *sizes,
+                                int    ***icol,
+                                double ***dcol);
+void mlpcg_extractcollocal_fast(DBCSR *matrix, int actcol, 
+                                double *col,int *rcol, int *nrow,
+                                int *sizes, int ***icol, double ***dcol);
+void mlpcg_extractcollocal_uninit(DBCSR    *matrix,
+                                  int      *sizes,
+                                  int    ***icol,
+                                  double ***dcol);
 void mlpcg_precond_PtKP(DBCSR *P, DBCSR *incsr, DBCSR *outcsr, DBCSR *work,
                         AGG *agg, int nagg, INTRA *actintra);
-void mlpcg_precond_presmo(double *z, double *r, DBCSR *csr, MLLEVEL *lev, INTRA *actintra);
-void mlpcg_precond_postsmo(double *z, double *r, DBCSR *csr, MLLEVEL *lev, INTRA *actintra);
+void mlpcg_precond_presmo(double *z, double *r, DBCSR *csr, MLLEVEL *lev, INTRA *actintra, int level);
+void mlpcg_precond_postsmo(double *z, double *r, DBCSR *csr, MLLEVEL *lev, INTRA *actintra, int level);
 void mlpcg_precond_coarsesolv(double *z, double *r, MLLEVEL *lev, INTRA *actintra);
 void mlpcg_precond_prolongz(double *zc, double *z, DBCSR *P, DBCSR *coarsecsr, 
                             INTRA *actintra);
@@ -132,4 +160,12 @@ void mlpcg_precond_check_fcd(DBCSR *matrix, INTRA *actintra);
 void mlpcg_precond_checkdirich(DBCSR *matrix, INTRA *actintra);
 void mlpcg_precond_smoJacobi(double *z, double *r, DBCSR *csr, int nsweep, INTRA *actintra);
 void mlpcg_precond_lapacksolve(double *z, double *r, DBCSR *csr, INTRA *actintra);
+void mlpcg_precond_smo_ILUn(double *z, double *r, DBCSR *csr, int nsweep, INTRA *actintra);
+void mlpcg_precond_gramschmidt(double **P, double **R,const int nrow,const int ncol);
+void mlpcg_precond_spoolessolve(double *z, double *r, DBCSR *csr, INTRA *actintra);
+void mlpcg_precond_amgVW(int    level,
+                         ARRAY *z_a,
+                         ARRAY *r_a,
+                         INTRA *actintra,
+                         int   *gamma);
 
