@@ -209,6 +209,15 @@ case calc_fluid_stab:
    f3_calstab(ele);
 break;
 
+/*------------------------------------------------------- write restart */
+case write_restart:
+   f3_write_restart(ele,container->handsize,container->handles);
+break;
+/*-------------------------------------------------------- read restart */
+case read_restart:
+   f3_read_restart(ele,container->handsize,container->handles);
+break;
+
 /*----------------------------------------------------------------------*/
 default:
    dserror("action unknown\n");

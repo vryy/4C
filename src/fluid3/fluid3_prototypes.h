@@ -853,3 +853,9 @@ void f3_pdsubmesh(FLUID_ML_SMESH *smesh,
 void f3_elesubmesh(ELEMENT        *ele,
                    FLUID_ML_SMESH *smesh,
 		   INT             flag);
+
+/************************************************************************
+ | f3_restart.c                                                         |
+ ************************************************************************/
+void f3_write_restart(ELEMENT *actele, INT nhandle, long int *handles);
+void f3_read_restart(ELEMENT *actele, INT nhandle, long int *handles);
