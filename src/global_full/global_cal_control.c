@@ -22,6 +22,10 @@ Maintainer: Malte Neumann
 #include "../fsi_full/fsi_prototypes.h"
 #endif
 
+#ifdef D_SSI
+#include "../ssi_full/ssi_prototypes.h"
+#endif
+
 #ifdef D_LS
 #include "../ls/ls_prototypes.h"
 #endif
@@ -168,6 +172,12 @@ case prb_fluid:
 case prb_fsi:
   dyn_fsi(0);
   break;
+#endif
+
+#ifdef D_SSI
+case prb_ssi:
+  dyn_ssi();
+  break;    
 #endif
 
 #ifdef D_ALE
