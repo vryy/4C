@@ -87,6 +87,7 @@ DOUBLE     timefac[MAXTIMECURVE];     /* factors from time-curve        */
 DOUBLE     T=0.0;	              /* starting time		        */
 DOUBLE     acttimefac;                /* actual factor from timecurve   */
 DOUBLE     initval;	              /* intial dirichlet value	        */
+DOUBLE     funct_fac;	             /* factor from spatial function */
 GNODE     *actgnode;	              /* actual GNODE		        */
 NODE      *actnode;	              /* actual NODE		        */
 ELEMENT   *actele;	              /* actual ELEMENT		        */
@@ -157,21 +158,22 @@ if (fdyn->init==0)
          continue;
       switch(actgnode->dirich->dirich_type)
       {
-      case dirich_none:
-         for (j=0;j<actnode->numdf;j++) /* loop all dofs */
-         {
+        case dirich_none:
+          for (j=0;j<actnode->numdf;j++) /* loop all dofs */
+          {
             if (actgnode->dirich->dirich_onoff.a.iv[j]==0)
-               continue;
+              continue;
             actcurve = actgnode->dirich->curve.a.iv[j]-1;
             if (actcurve<0)
-               acttimefac = ONE;
+              acttimefac = ONE;
             else
-               acttimefac = timefac[actcurve];
-            initval  = actgnode->dirich->dirich_val.a.dv[j];               
-            actnode->sol_increment.a.da[1][j] = initval*acttimefac;
-	    actnode->sol.a.da[0][j] = initval*acttimefac;
-         } /* end loop over dofs */
-      break;
+              acttimefac = timefac[actcurve];
+            initval   = actgnode->dirich->dirich_val.a.dv[j];               
+            funct_fac = actgnode->d_funct[j];
+            actnode->sol_increment.a.da[1][j] = initval*acttimefac*funct_fac;
+            actnode->sol.a.da[0][j] = initval*acttimefac*funct_fac;
+          } /* end loop over dofs */
+          break;
       case dirich_FSI: /* FSI --> dirichvalues = grid velocity!!! */
 	 for (j=0;j<numveldof;j++) /* loop vel-dofs */
 	 {
@@ -232,6 +234,7 @@ DOUBLE     timefac[MAXTIMECURVE];    /* factors from time-curve         */
 DOUBLE     T;		             /* actual time		        */
 DOUBLE     acttimefac;               /* actual factor from timecurve    */
 DOUBLE     initval;	             /* intial dirichlet value	        */
+DOUBLE     funct_fac;	             /* factor from spatial function */
 GNODE     *actgnode;	             /* actual GNODE		        */
 NODE      *actnode;                  /* actual NODE                     */
 
@@ -271,8 +274,9 @@ for (i=0;i<numnp_total;i++)
             acttimefac = ONE;
          else
             acttimefac = timefac[actcurve];
-         initval  = actgnode->dirich->dirich_val.a.dv[j];               
-         actnode->sol_increment.a.da[pos][j] = initval*acttimefac;	 
+         initval   = actgnode->dirich->dirich_val.a.dv[j];               
+         funct_fac = actgnode->d_funct[j];
+         actnode->sol_increment.a.da[pos][j] = initval*acttimefac*funct_fac;
       } /* end loop over dofs */
    break;
    case dirich_FSI: /* dirichvalues = grid velocity!!! */     
