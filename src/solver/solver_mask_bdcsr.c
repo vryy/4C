@@ -74,7 +74,7 @@ numdf              = actfield->dis[0].node[0].numdf;
 actpdiscret = actpart->pdis;
 imyrank     = actintra->intra_rank;
 inproc      = actintra->intra_nprocs;
-if (inproc>1) mlpcg_renumberdofs(imyrank,inproc,actfield,actpdiscret,actintra,bdcsr);
+if (inproc>1) mlpcg_renumberdofs(imyrank,inproc,actfield,actpdiscret,actintra,bdcsr,0);
 #endif
 /*---------------------------------------------- allocate vector update */
 amdef("update",&(bdcsr->update),numeq,1,"IV");
@@ -618,7 +618,8 @@ void mlpcg_renumberdofs(INT            myrank,
                         FIELD         *actfield, 
                         PARTDISCRET   *actpdiscret, 
                         INTRA         *actintra,
-                        DBCSR         *bdcsr)
+                        DBCSR         *bdcsr,
+			INT            dis)
 {
 #ifdef PARALLEL
 INT            i,j,k;
@@ -704,9 +705,9 @@ dserror("Local nuber of equations wrong");
 /*--------------------------------------- allreduce the new dof numbers */
 MPI_Allreduce(newdof,newdofrecv,bdcsr->numeq_total,MPI_INT,MPI_SUM,actintra->MPI_INTRA_COMM);
 /*----------------------- now put new dofnumbers to the node structures */
-for (i=0; i<actfield->dis[0].numnp; i++)
+for (i=0; i<actfield->dis[dis].numnp; i++)
 {
-   actnode = &(actfield->dis[0].node[i]);
+   actnode = &(actfield->dis[dis].node[i]);
    for (j=0; j<actnode->numdf; j++)
    {
       actdof = actnode->dof[j];
