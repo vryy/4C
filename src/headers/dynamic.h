@@ -19,6 +19,7 @@ typedef struct _STRUCT_DYNAMIC
 char               dyntyp[50]; /* type of algorithm */
 int                updevry_disp;/* write result very updevry step */
 int                updevry_stress;/* write result very updevry step */
+int                res_write_evry;/* write restart every res_write_evry step */
 int                nstep;      /* number of steps */
 int                step;       /* actual step */
 int                damp;       /* flag to switch damping on/off */

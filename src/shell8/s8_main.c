@@ -18,6 +18,8 @@ void shell8(FIELD      *actfield,
             ARRAY      *emass_global,
             ARRAY      *intforce_global,
             int         kstep,
+            int         handsize,
+            int        *handles,
             CALC_ACTION *action)
 {
 int          i;
@@ -112,6 +114,14 @@ case calc_struct_stressreduce:
 break;/*----------------------------------------------------------------*/
 /*-----------------------------------------------------update variables */
 case calc_struct_update_istep:
+break;/*----------------------------------------------------------------*/
+/*--------------------------------------------------------write restart */
+case write_restart:
+   s8_write_restart(ele,handsize,handles);
+break;/*----------------------------------------------------------------*/
+/*---------------------------------------------------------read restart */
+case read_restart:
+   s8_read_restart(ele,handsize,handles);
 break;/*----------------------------------------------------------------*/
 default:
    dserror("action unknown");

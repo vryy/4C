@@ -27,11 +27,8 @@ struct _ARRAY    alfa;
 struct _ARRAY    Dtildinv;
 struct _ARRAY    Lt;
 struct _ARRAY    Rtilde;
-
-
 /*-------------------------------------------- variables needed for ans */
 int              ans;
-
 } SHELL8;
 
 /*----------------------------------------------------------------------*
@@ -162,6 +159,8 @@ void shell8(FIELD      *actfield,
             ARRAY      *emass_global,
             ARRAY      *intforce_global,
             int         kstep,
+            int         handsize,
+            int        *handles,
             CALC_ACTION *action);
 /*----------------------------------------------------------------------*
  |  s8_mat_linel.c                                       m.gee 11/01    |

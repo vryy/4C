@@ -175,7 +175,7 @@ int               ndim;          /* dimension of problem (2 or 3) */
 int               nmat;          /* total number of material laws */
 int               numfld;        /* number of fields */
 int               numdf;         /* maximum number of dofs to one node (not used, in progress)*/
-int               restart;       /* is restart or not (not used yet) */
+int               restart;       /* is restart or not */
 
 enum _PROBLEM_TYP probtyp;       /* type of problem, see enum.h */
 enum _TIME_TYP    timetyp;       /* type of time, see enum.h */

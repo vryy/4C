@@ -66,7 +66,7 @@ t0=ds_cputime();
 ntainp();
 ti=ds_cputime()-t0;
 /*------------------------ write output of all preprocessor information */
-if (par.myrank==0 && genprob.restart==0)
+if (genprob.restart==0)
 {
    pss_write("input_file",allfiles.numrows,allfiles.numcol,sizeof(char),
                 allfiles.input_file_hook,&handle,&ierr);
@@ -79,11 +79,6 @@ frend();
 #ifdef PARALLEL 
 create_communicators();
 #endif
-/*----------------------------------------- read information of restart */
-if (genprob.restart!=0)
-{
-   /* nothing implemented yet */
-}
 /*----------------------------------------------------calculation phase */
 t0=ds_cputime();
 ntacal();
@@ -98,8 +93,7 @@ if (par.myrank==0)
  printf("Total CPU Time for CALCULATION: %10.3#E sec \n",tc);
  printf("\n"); 
 }
- 
-
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
 #endif

@@ -12,13 +12,23 @@ extern struct _FILES  allfiles;
  *----------------------------------------------------------------------*/
  extern struct _PAR   par;                      
 /*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | struct _GENPROB       genprob; defined in global_control.c           |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB  genprob;
+/*----------------------------------------------------------------------*
  | open all files                                                       |
  |                                                                      |
  |                                                        m.gee 8/00    |
  *----------------------------------------------------------------------*/
 void ntadev(int argc, char *argv[])
 {
-char  *charpointer;   
+char  *charpointer; 
+char  *resptr;  
+int    isrestart;
+int    length;
+int    lasthandle,nrecords;
 /*------------ cannot use dserror here, because .err files not yet open */
 /*--------------------------------------------------cheque command line */
    if (argc <= 1)
@@ -104,6 +114,42 @@ if (par.myrank==0)
 /*------------------------------------------------------open .pss file */
 /* is opened on all procs */     
      strncpy(charpointer,".pss",4);
+/*-------------------------------------------------- check for restart */
+     genprob.restart=0;
+     if (argc > 3)
+     {
+       resptr = argv[3];
+       length = strlen(argv[3]);
+       if (length == 7)
+       if (strncmp("restart",resptr,length)==0) genprob.restart++;
+     } 
+/*----------------- in case of restart open the pss-file to apend mode */
+if (genprob.restart)
+{
+     if ( (allfiles.out_pss=fopen(allfiles.outputfile_name,"a+b"))==NULL)
+     {
+        printf("Opening of restart file .pss failed\n");
+#ifdef PARALLEL 
+        MPI_Finalize();
+#endif 
+        exit(1);
+     }
+    if (par.myrank==0)
+    printf("binary is written   to     %s\n",allfiles.outputfile_name);
+    printf("restart           from     %s\n",allfiles.outputfile_name);
+    /*----------------------- set file pointer to the end of pss file */
+    fseek(allfiles.out_pss,0,SEEK_END);
+    /*---------------- write status report about pss-file to err file */
+#ifdef DEBUG 
+    pss_status_to_err();
+#endif
+    /*----------------------------------- get the last handle in file */
+    pss_last_handle_in_file(&lasthandle,&nrecords);
+    /*--- the initial value for the next record on file is therefore :*/
+    allfiles.pss_counter = lasthandle + 1;
+}
+else/*------------------------------- no restart, open a new pss-file */
+{
      if ( (allfiles.out_pss=fopen(allfiles.outputfile_name,"w+b"))==NULL)
      {
         printf("Opening of output file .pss failed\n");
@@ -124,6 +170,7 @@ if (par.myrank==0)
 */   
     /* initial values: */
     allfiles.pss_counter = par.myrank*100000;
+}
 /*-----------------------------------------------open .flavia.msh file */
 if (par.myrank==0)
 {     

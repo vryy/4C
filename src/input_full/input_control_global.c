@@ -398,6 +398,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frint("MAXITER",&(sdyn->maxiter),&ierr);
    frint("RESEVRYDISP",&(sdyn->updevry_disp),&ierr);
    frint("RESEVRYSTRS",&(sdyn->updevry_stress),&ierr);
+   frint("RESTARTEVRY",&(sdyn->res_write_evry),&ierr);
    
 /*--------------read double */
    frdouble("TIMESTEP",&(sdyn->dt)     ,&ierr);

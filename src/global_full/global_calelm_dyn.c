@@ -165,7 +165,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    case el_shell8:
       shell8(actfield,actpart,actintra,actele,
              &estif_global,&emass_global,&intforce_global,
-             kstep,action);
+             kstep,0,NULL,action);
    break;
    case el_brick1:
       brick1(actpart,actintra,actele,
