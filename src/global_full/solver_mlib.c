@@ -23,6 +23,9 @@ void solver_mlib(
 |-----------------------------------------------------------------------*/
 #ifdef MLIB_PACKAGE
   int i,j,k;
+  static int firstsolve;
+  static int usedmatrix;
+  int localnrhs = 1;
   int symm;
   char order[4];
   char usymm[3];
@@ -33,12 +36,18 @@ void solver_mlib(
   dstrc_enter("solver_mlib");
   #endif
 /*----------------------------------------------------------------------*/
-  mlvar = actsolv->mlvar;
-  symm = mlvar->symm;
+  if(actsolv!=NULL) 
+  {
+    mlvar = actsolv->mlvar;
+    symm = mlvar->symm;
+  }
 /*----------------------------------------------------------------------*/
 switch(option)
 { 
 case 1:/*========================= INITIALIZE THE SPARSE MATRIX PACKAGE */
+  
+  firstsolve = 1;
+  usedmatrix = 0;
   
   mds->output = 6;
   mds->ierr   = 0;
@@ -99,6 +108,13 @@ if(mlvar->order>0)   dsleop (order, mds->global, &mds->ierr,mds->numeq);
 #endif
 break;
 case 2:/*======================= INITIALIZE THE SPARSE MATRIX WITH ZERO */
+  
+  usedmatrix = 0;
+  if(firstsolve==1)
+  {
+    firstsolve=2;
+    break;
+  }
   vz = (double*)calloc(mds->nnz ,sizeof(double));
   if (!vz)  dserror("Allocation of memory int 'add_mds' failed");
   vzh = vz;
@@ -112,29 +128,38 @@ case 2:/*======================= INITIALIZE THE SPARSE MATRIX WITH ZERO */
 break;
 case 0:/*============================================ calculation phase */
 /**/
+  
+  firstsolve = 2;
 /*-------------- FACTOR THE MATRIX AND ESTIMATE ITS CONDITION NUMBER ---*/
 #ifdef MLIB_PACKAGE
-  if(!symm) dslefa (&mlvar->pvttol, mds->inrtia, mds->global, &mds->ierr);
-  else
-  dsleco (&mlvar->pvttol, &mds->cond, mds->inrtia,mds->global,&mds->ierr);
+  if(!usedmatrix)
+  {
+    if(!symm) dslefa (&mlvar->pvttol, mds->inrtia, mds->global, &mds->ierr);
+    else
+    dsleco (&mlvar->pvttol, &mds->cond, mds->inrtia,mds->global,&mds->ierr);
+    usedmatrix = 1;
+  }
 /*-- print additional information, depends on the stage of execution ---*/
   if(mlvar->msglvl==4) dsleps (mds->global);
 #endif
 /*-------------------------------- SOLVE FOR A GIVEN RIGHT HAND SIDE ---*/
+/*-------------------------------------- COPY RHS to SOLUTION VECTOR ---*/
+   for (i=0; i<rhs->numeq; i++)
+   {
+      sol->vec.a.dv[i] = rhs->vec.a.dv[i];
+   }
 #ifdef MLIB_PACKAGE
-  dslesl(&actsolv->nrhs, &(rhs->vec.a.dv[0]), &mds->numeq,
+  dslesl(&localnrhs, &(sol->vec.a.dv[0]), &mds->numeq,
                                                  mds->global, &mds->ierr);
+/*  dslesl(&actsolv->nrhs, &(rhs->vec.a.dv[0]), &mds->numeq,
+                                                 mds->global, &mds->ierr);
+*/
 #endif
   if(mds->ierr!=0) exit; 
 /*-- print additional information, depends on the stage of execution ---*/
 #ifdef MLIB_PACKAGE
    if(mlvar->msglvl==4) dsleps (mds->global);
 #endif
-/*----------------------------- USE THE SOLUTION STORED IN ARRAY RHS ---*/
-   for (i=0; i<rhs->numeq; i++)
-   {
-      sol->vec.a.dv[i] = rhs->vec.a.dv[i];
-   }
 break;/*=============================================================== */
 default:
    dserror("Unknown option for solver call to hp's mlib");
