@@ -23,6 +23,7 @@ Maintainer: Andrea Hund
 \addtogroup WALLGE 
 *//*! @{ (documentation module open)*/
 
+#ifdef D_WALLGE
 
 /*!----------------------------------------------------------------------
 \brief routine 'wge_damvar' -> calculates actual damage 
@@ -53,7 +54,6 @@ void wge_damvar(INT     damtyp,        /*  Damage law                   */
                 DOUBLE *damage,        /* actual damage variable        */
                 DOUBLE *dam_deriv)     /* (partial D)/(partial eps_equi)*/       
 {
-#ifdef D_WALLGE
 /*----------------------------------------------------------------------*/
 
 #ifdef DEBUG 
@@ -96,10 +96,11 @@ break;
 #ifdef DEBUG 
 dstrc_exit();
 #endif
-
-#endif /*D_WALLGE*/
 return; 
 } /* end of wge_damvar */
+
+
+
 
 /*!----------------------------------------------------------------------
 \brief routine 'wge_epsequiv' -> calculates local equivalent strains and
@@ -129,7 +130,6 @@ void wge_epsequiv(INT     equival,     /* definition of equiv. strains */
                   DOUBLE *eps_vl,        /* local equiv. strains       */
                   DOUBLE  F_ed[3][3])    /* equ. strain derivative     */         
 {
-#ifdef D_WALLGE
 /*----------------------------------------------------------------------*/
 INT    i,j;
 DOUBLE I1,J2;
@@ -182,10 +182,11 @@ break;
 #ifdef DEBUG 
 dstrc_exit();
 #endif
-
-#endif /*D_WALLGE*/
 return; 
 } /* end of wge_epsequiv */
+
+
+
 
 /*!----------------------------------------------------------------------
 \brief routine 'wge_stress' -> calculates elastic and damaged stresses 
@@ -210,7 +211,6 @@ void wge_stress(DOUBLE   youngs,           /*  youngs modulus          */
                 DOUBLE   sigma_el[3][3],   /*  elastic stress tensor   */ 
                 DOUBLE   sigma[3][3])      /*  stress tensor           */      
 {
-#ifdef D_WALLGE
 /*----------------------------------------------------------------------*/
 INT    i,j;
 DOUBLE mu,lambda,trace;
@@ -237,10 +237,9 @@ for (i=0; i<3; i++)
 #ifdef DEBUG 
 dstrc_exit();
 #endif
-
-#endif /*D_WALLGE*/
 return; 
 } /* end of wge_stress */
+
 
 
 /*!----------------------------------------------------------------------
@@ -262,7 +261,6 @@ void wge_tangent(DOUBLE   youngs,           /*  youngs modulus         */
                  DOUBLE   damage,           /*  damaage variable       */
                  DOUBLE   C_ed[3][3][3][3]) /*  elasto-damage-tangent  */         
 {
-#ifdef D_WALLGE
 /*----------------------------------------------------------------------*/
 INT    i,j,k,l;
 DOUBLE mu,lambda;
@@ -294,9 +292,11 @@ for (i=0; i<3; i++)
 dstrc_exit();
 #endif
 
-#endif /*D_WALLGE*/
 return; 
 } /* end of wge_tangent */
+
+
+
 
 /*!----------------------------------------------------------------------
 \brief routine 'wge_condense' condenses the 3-3 component of the tangents
@@ -318,7 +318,6 @@ void wge_condense(DOUBLE    **D,     /* 1.elasto-damage-tangent-matrix */
                   WALLGE_TYPE wtype, /* plane-stress or plane strain   */
                   DOUBLE      nue)   /* poisson ratio                  */         
 {
-#ifdef D_WALLGE
 /*----------------------------------------------------------------------*/
 INT  i,j;
 DOUBLE D_con[4][4];
@@ -388,10 +387,10 @@ break;
 dstrc_exit();
 #endif
 
-#endif /*D_WALLGE*/
 return; 
 } /* end of wge_condense */
 
+#endif /*D_WALLGE*/
 
 
 

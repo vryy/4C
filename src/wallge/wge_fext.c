@@ -23,6 +23,7 @@ static ARRAY xjm_a;    static DOUBLE **xjm;    /* jacobian matrix            */
 \addtogroup WALLGE 
 *//*! @{ (documentation module open)*/
 
+#ifdef D_WALLGE
 
 /*!----------------------------------------------------------------------
 \brief  calculates element load
@@ -52,7 +53,6 @@ void wge_eleload(ELEMENT     *ele,       /* actual element              */
                  DOUBLE      *loadvec,   /* external element forces     */
                  INT          init) 
 {
-#ifdef D_WALLGE
 
 INT          i,j;                /* element Diplacement-DOF         */
 INT          lr,ls;              /* integration directions          */
@@ -294,9 +294,10 @@ end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
-
-#endif /*D_WALLGE*/
 return; 
 } /* end of wge_eleload */
+
+#endif /*D_WALLGE*/
+
 /*----------------------------------------------------------------------*/
 /*! @} (documentation module close)*/

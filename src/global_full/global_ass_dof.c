@@ -128,6 +128,7 @@ for (j=0; j<actfield->dis[0].numele; j++)
 	 if (actele->node[k]->numdf < 2) actele->node[k]->numdf=3;
       }
       break;
+#ifdef D_INTERF
    case el_interf:
       for (k=0; k<actele->numnp; k++)
       {
@@ -135,6 +136,7 @@ for (j=0; j<actfield->dis[0].numele; j++)
       }
       if (actele->distyp == quad8)  if_dirichnode(actele);
       break;
+#endif
    case el_wallge:
       for (k=0; k<actele->numnp; k++)
       {
