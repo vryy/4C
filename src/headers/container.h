@@ -60,6 +60,8 @@ INT            turbu;
 INT            niturbu_pro;
 INT            niturbu_n;
 enum _FLUID_STRESS str;         
+INT           *iedgnod;
+INT            ngnode;
 INT            is_relax;      /*!< flag, if calculation is for relaxation parameter */
                               /*!< is_relax = 0 -> fluid results are read from sol_increment[3][i] */
 			      /*!< is_relax = 1 -> fluid results are read from sol_increment[7][i] */
