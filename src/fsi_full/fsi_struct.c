@@ -938,18 +938,6 @@ if (outstep==sdyn->updevry_disp)
    }
    if (ioflags.struct_stress_file==1 || ioflags.struct_disp_file==1)
       out_sol(actfield,actpart,actintra,sdyn->step,0);
-/*--------------------------------------------- printout results to gid */
-   if (par.myrank==0) 
-   {
-      if (ioflags.struct_disp_gid==1)
-      {
-         out_gid_sol("displacement",actfield,actintra,sdyn->step,0);
-         out_gid_sol("velocities",actfield,actintra,sdyn->step,1);
-         out_gid_sol("accelerations",actfield,actintra,sdyn->step,2);
-      }
-      if (ioflags.struct_stress_gid==1)
-         out_gid_sol("stress"      ,actfield,actintra,sdyn->step,0);
-   }
 }
 /*-------------------------------------- write restart data to pss file */
 /* not implemented at the moment */
@@ -993,18 +981,6 @@ if (outstep!=0)
    }
    if (ioflags.struct_stress_file==1 || ioflags.struct_disp_file==1)
       out_sol(actfield,actpart,actintra,sdyn->step,0);
-/*--------------------------------------------- printout results to gid */
-   if (par.myrank==0) 
-   {
-      if (ioflags.struct_disp_gid==1)
-      {
-         out_gid_sol("displacement",actfield,actintra,sdyn->step,0);
-         out_gid_sol("velocities",actfield,actintra,sdyn->step,1);
-         out_gid_sol("accelerations",actfield,actintra,sdyn->step,2);
-      }
-      if (ioflags.struct_stress_gid==1)
-         out_gid_sol("stress"      ,actfield,actintra,sdyn->step,0);
-   }
 }
 
 amdel(&intforce_a);

@@ -524,6 +524,7 @@ if (pssstep==fsidyn->uppss && ioflags.fluid_vis_file==1 && par.myrank==0)
       amredef(&(time_a),time_a.fdim+100,1,"DV");
    time_a.a.dv[actpos] = fdyn->time;   
    actpos++;
+   fsidyn->actpos = actpos;
 } 
 /*--------------------------------------------------------------------- */
 break;   
@@ -543,16 +544,6 @@ out_monitor(actfield,numff);
 /*------------------------------------- print out solution to .out file */
 if (outstep!=0 && ioflags.fluid_sol_file==1)
 out_sol(actfield,actpart,actintra,fdyn->step,actpos);
-
-/*----------------------------- print out solution to 0.flavia.res file */
-if (ioflags.fluid_sol_gid==1 && par.myrank==0) 
-{
-    for(i=0;i<actpos+1;i++)
-    {
-        out_gid_sol("velocity",actfield,actintra,i,i);
-        out_gid_sol("pressure",actfield,actintra,i,i);
-    }
-}
 
 /*------------------------------------ print out solution to 0.pss file */
 if (ioflags.fluid_vis_file==1 && par.myrank==0)

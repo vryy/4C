@@ -230,7 +230,10 @@ if (fsidyn->ifsi>=4)
       fsi_struct(fsidyn,sdyn,structfield,mctrl,numsf,itnum);
    }
 }
-
+/*--------------------------------------- write current solution to gid */
+/*----------------------------- print out solution to 0.flavia.res file */
+if (par.myrank==0) 
+  out_gid_sol_fsi(fluidfield,structfield);
 /*-------------------------------------------------------- energy check */
 if (fsidyn->ichecke>0) fsi_energycheck(fsidyn);
 
@@ -246,6 +249,8 @@ mctrl=99;
 fsi_fluid(fsidyn,fdyn,fluidfield,mctrl,numff);
 fsi_struct(fsidyn,sdyn,structfield,mctrl,numsf,itnum);
 fsi_ale(fsidyn,adyn,alefield,mctrl,numaf);   
+
+out_gid_msh();
 
 /*----------------------------------------------------------------------*/
 #else

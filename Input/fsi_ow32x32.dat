@@ -18,11 +18,12 @@ RESTART      0
 ----------------------------------------------------------------IO
 STRUCT_DISP_FILE   Yes
 STRUCT_STRESS_FILE No
-STRUCT_DISP_GID    No
+STRUCT_DISP_GID    Yes
 STRUCT_STRESS_GID  No
 FLUID_SOL_FILE     Yes
+FLUID_SOL_GID      Yes
 FLUID_VIS_FILE     Yes
-ALE_DISP_FILE      Yes
+ALE_DISP_FILE      No
 ALE_DISP_GID       No
 ------------------------------------------------------------STATIC
 GEOLINEAR
@@ -56,7 +57,7 @@ NUMCONT      1
 UPPSS        1
 UPOUT        1
 MAXTIME      1000.0
-NUMSTEP      5  
+NUMSTEP      1000
 TIMESTEP     0.05
 ALPHA        1.00
 THETA        1.00
@@ -76,7 +77,7 @@ STARTFUNCNO  2
 -------------------------------------------------------FSI DYNAMIC
 MAXTIME      1000.0
 TIMESTEP     0.1
-NUMSTEP      5
+NUMSTEP      10000
 IALE         Pseudo_Structure
 UPPSS        1
 COUPALGO     iter_stagg_AITKEN_rel_param

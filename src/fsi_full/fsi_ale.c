@@ -392,12 +392,6 @@ out_monitor(actfield,numfa);
 if (outstep!=0 && ioflags.ale_disp_file==1)
 out_sol(actfield,actpart,actintra,sdyn->step,actpos);
 
-/*----------------------------- print out solution to 0.flavia.res file */
-if (ioflags.ale_disp_gid==1 && par.myrank==0) 
-{    
-    for(i=0;i<=actpos;i++)
-    out_gid_sol("displacement",actfield,actintra,i,i);
-}
 /*------------------------------------------- print out result to 0.pss */
 if (ioflags.fluid_vis_file==1 && par.myrank==0)
 {

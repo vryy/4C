@@ -96,4 +96,5 @@ double             convtol;         /* tolerance for iteration over fields */
 double             deltaeint;       /* energy production at the interface */
 ARRAY              sid;             /* structural interface dofs */
 int                numsid;          /* number of structural interface dofs */
+int                actpos;          /*  */
 } FSI_DYNAMIC;
