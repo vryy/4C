@@ -258,6 +258,36 @@ if (par.myrank==0)
 /*======================================================================*/
 /*                     START LOOP OVER ALL STEPS                        */
 /*======================================================================*/
+/*===================== predictor variables:============================*/
+/* actsolv->rhs[actsysarray]      = Fext (will be changed)              */
+/* actsolv->rhs[actsysarray+1]    = Fext (all the time)                 */
+/* actsolv->sysarray[actsysarray] = Keug (nonl. Stiffness Matrix)       */
+/* statvar->stepsize              = Delta l (control presc.deformation) */
+/* rldiff                         = Delta mu                            */
+/* nln_data->rlnew                = mu (actuel step)                    */
+/* nln_data->rlold                = mu (last step)                      */
+/* rsd[0]                         = first:Delta df / later:Delta d      */
+/* dispi[0]                       = Delta d                             */
+/* cdof                           = controled DOF                       */
+/*===================== corrector variables:============================*/
+/* actsolv->rhs[actsysarray]      = first:Fext / later:mu*Fext          */
+/* actsolv->rhs[actsysarray+1]    = Fext (all the time)                 */
+/* re[0]                          = Fext / mu*Fext / mu*Fext - Fint     */
+/* actsolv->sysarray[actsysarray] = Keug (nonl. Stiffness Matrix)       */
+/* intforce                       = Fint                                */
+/* nln_data->rlnew                = mu (actuel step)                    */
+/* nln_data->rlold                = mu (last step)                      */
+/* rli                            = delta mu                            */
+/* rsd[0]                         = delta d =delta d0+delta mu*delta df */
+/* rsd[1]                         = delta df                            */
+/* rsd[2]                         = delta d0                            */
+/* dispi[0]                       = Delta d =Delta d + sum (delta d)    */
+/* actsolv->sol[0]                = d act. (is as well known at nodes)  */
+/* cdof                           = controled DOF*/
+/*======================================================================*/
+/* d=displacement, mu=load factor, Delta=incremental, delta= residual   */
+/*======================================================================*/
+
 for (kstep=0; kstep<nstep; kstep++)
 {
    /*---------------------------------------------- write memory report */

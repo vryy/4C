@@ -222,12 +222,12 @@ for (i=0; i<genprob.numfld; i++)
 #endif
 /*---------------------------------------------------------fh 06/02----*/
       case el_wall1:    
-         if (actele->numnp==4)  
+         if (actele->e.w1->nGP[0]==2)  
          {
             actgid->is_wall1_22    = 1;
             actgid->wall1_22_name  = "wall1_22";
          }
-         if (actele->numnp==8 | actele->numnp==9)  
+         if (actele->e.w1->nGP[0]==3)  
          {
             actgid->is_wall1_33   = 1;
             actgid->wall1_33_name = "wall1_33";
@@ -804,7 +804,7 @@ if (actgid->is_wall1_22)
    for (i=0; i<actfield->dis[0].numele; i++)
    {
       actele = &(actfield->dis[0].element[i]);
-      if (actele->eltyp != el_wall1 || actele->numnp != 4) continue;
+      if (actele->eltyp != el_wall1) continue;
       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
       for (j=1; j<4; j++)
       fprintf(out,"            %18.5E\n",(double)actele->proc); 
@@ -824,7 +824,7 @@ if (actgid->is_wall1_33)
    for (i=0; i<actfield->dis[0].numele; i++)
    {
       actele = &(actfield->dis[0].element[i]);
-      if (actele->eltyp != el_wall1 || actele->numnp < 8) continue;
+      if (actele->eltyp != el_wall1) continue;
       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
       for (j=1; j<9; j++)
       fprintf(out,"            %18.5E\n",(double)actele->proc); 
@@ -1300,7 +1300,8 @@ if (strncmp(string,"stress",stringlenght)==0)
       for (i=0; i<actfield->dis[0].numele; i++)
       {
          actele = &(actfield->dis[0].element[i]);
-         if (actele->eltyp != el_wall1 || actele->numnp !=4) continue;
+   /*---------------|| actele->numnp !=4--- */
+         if (actele->eltyp != el_wall1 ) continue;
          stress=actele->e.w1->stress_GP.a.d3[place];
 	 fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
                              actele->Id+1,
@@ -1320,7 +1321,7 @@ if (strncmp(string,"stress",stringlenght)==0)
       fprintf(out,"END VALUES\n");
       
    }
-   /*--------- ---------now go through the meshes and print the results */
+   /*-------------------now go through the meshes and print the results */
    /*===============================wall1 element with 3x3 gausspoints */
    /* these walls have 4 stresses, do 1D Matrix */
    if (actgid->is_wall1_33)
@@ -1352,7 +1353,8 @@ if (strncmp(string,"stress",stringlenght)==0)
       for (i=0; i<actfield->dis[0].numele; i++)
       {
          actele = &(actfield->dis[0].element[i]);
-         if (actele->eltyp != el_wall1 || actele->numnp < 8) continue;
+/*---------------|| actele->numnp < 8--- */
+         if (actele->eltyp != el_wall1 ) continue;
          stress=actele->e.w1->stress_GP.a.d3[place];
 	 fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
                              actele->Id+1,
