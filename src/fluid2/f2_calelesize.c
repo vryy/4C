@@ -219,7 +219,7 @@ if (isharea==1)
    } /*end switch(typ) */
    ieval++;
 /* -------------------------------------------- compute jacobian matrix */
-   f2_jaco(xyze,funct,deriv,xjm,&det,iel,ele);
+   f2_jaco(xyze,deriv,xjm,&det,iel,ele);
    fac=facr*facs*det;
    area += fac;
    fdyn->totarea += area;
@@ -311,7 +311,7 @@ else if (istrnint==1 && isharea !=1)
    } /* end switch(typ) */
    ieval++;
 /* ------------------------------------------- compute jacobian matrix */
-   f2_jaco(xyze,funct,deriv,xjm,&det,iel,ele);
+   f2_jaco(xyze,deriv,xjm,&det,iel,ele);
 /*----------------------------------------------- compute streamlength */
    f2_veci(velint,funct,evel,iel);
    ieval++;

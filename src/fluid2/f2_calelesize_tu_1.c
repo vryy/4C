@@ -132,7 +132,7 @@ typ    = ele->distyp;
    } /*end switch(typ) */
 
 /*-------------------------------------------- compute Jacobian matrix */
-   f2_jaco(xyze,funct,deriv,xjm,&det,iel,ele);
+   f2_jaco(xyze,deriv,xjm,&det,iel,ele);
 
 /*------------------------------------------- compute global derivates */
    f2_gder(derxy,deriv,xjm,det,iel);
