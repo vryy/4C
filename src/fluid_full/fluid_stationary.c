@@ -3,6 +3,9 @@
 \brief stationary solution algorithm for fluid
 
 ------------------------------------------------------------------------*/
+/*! 
+\addtogroup FLUID
+*//*! @{ (documentation module open)*/
 #ifdef D_FLUID
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"
@@ -33,3 +36,4 @@ return;
 
 
 #endif
+/*! @} (documentation module close)*/

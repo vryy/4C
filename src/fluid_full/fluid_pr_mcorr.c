@@ -3,6 +3,9 @@
 \brief predictor-multicorrector time integration algorithm for fluid
 
 ------------------------------------------------------------------------*/
+/*! 
+\addtogroup FLUID
+*//*! @{ (documentation module open)*/
 #ifdef D_FLUID
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"
@@ -29,3 +32,4 @@ dstrc_exit();
 return;
 } /* end of fluid_pm */ 
 #endif
+/*! @} (documentation module close)*/

@@ -42,7 +42,7 @@ and stored in the array 'start'
 void inp_fluid_start_data()
 {
 int irc=1;                        /* flag for file opening              */
-int j,k;                          /* counters                           */
+int k;                            /* counters                           */
 int ierr1=0;                      /* flag for reading form file         */
 int ierr2=0;                      /* flag for reading form file         */
 int ierr3=0;                      /* flag for reading form file         */
@@ -188,17 +188,6 @@ if(fdyn->init==1)                     /* read from file fluid_start.data */
    }            
 }    
 
-/*--------------------------- generate initial data by function init  */
-if (fdyn->init>1) 
-{
-  if (par.myrank==0)
-     printf("initialisation of starting field by function not implemented yet");
-#ifdef PARALLEL
-   MPI_Finalize();
-#else               
-   exit(1);
-#endif
-}
 /*----------------------------------------------- broadcast array start */
 #ifdef PARALLEL
 /* MPI_Bcas(start,numnp*numdf,MPI_DOUBLE,0,MPI_COMM_WORLD); */

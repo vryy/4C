@@ -3,6 +3,9 @@
 \brief implicit and semi-implicit time integration algorithm for fluid
 
 ------------------------------------------------------------------------*/
+/*! 
+\addtogroup FLUID
+*//*! @{ (documentation module open)*/
 #ifdef D_FLUID
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"
@@ -26,7 +29,7 @@ extern struct _SOLVAR  *solv;
 <pre>                                                         m.gee 8/00
 -the partition of one proc (all discretizations)
 -the type is in partition.h                                                  
-</pre>
+</pre> 
 
 *----------------------------------------------------------------------*/
 extern struct _PARTITION  *partition;
@@ -118,9 +121,11 @@ int             i;                  /* simply a counter                 */
 int             numeq;              /* number of equations on this proc */
 int             numeq_total;        /* total number of equations        */
 int             init;               /* flag for solver_control call     */
+int             calstress=0;        /* flag for stress calculation      */
 int             nsysarray=1;        /* one system matrix                */
 int             actsysarray=0;      /* number of actual sysarray        */
-int             istep=0;            /* counter for time integration     */
+int             outstep=0;          /* counter for time integration     */
+int             pssstep=0;
 int             iststep=0;          /* counter for time integration     */
 int             nfrastep;           /* number of steps for fractional-
                                        step-theta procedure             */
@@ -130,13 +135,9 @@ int             steady=0;           /* flag for steady state            */
 int             actpos;             /* actual position in sol. history  */
 double          vrat,prat;          /* convergence ratios               */
 double          t1,ts,te;	    /*					*/
-double          tfs=0.0;            /*					*/
 double          tes=0.0;            /*					*/
-double          tas=0.0;            /*					*/
 double          tss=0.0;            /*					*/
-double          tds=0.0;            /*					*/
-double          tcs=0.0;            /*					*/
-double          tsts=0.0;           /* variables for time tracing	*/
+FLUID_STRESS    str;           
 
 SOLVAR         *actsolv;            /* pointer to active sol. structure */
 PARTITION      *actpart;            /* pointer to active partition      */
@@ -157,6 +158,10 @@ CONTAINER       container;          /* contains variables defined in container.h
 dstrc_enter("fluid_isi");
 #endif
 
+
+/*======================================================================* 
+ |                    I N I T I A L I S A T I O N                       |
+ *======================================================================*/
 /*--------------------------------------------------- set some pointers */
 /*---------------------------- only valid for single field problem !!!! */
 actfield    = &(field[0]);
@@ -165,6 +170,8 @@ actpart     = &(partition[0]);
 action      = &(calc_action[0]);
 dynvar      = &(fdyn->dynvar);
 container.fieldtyp = actfield->fieldtyp;
+str         = str_none;
+dynvar->acttime=ZERO;
 /*---------------- if we are not parallel, we have to allocate an alibi * 
   ---------------------------------------- intra-communicator structure */
 #ifdef PARALLEL 
@@ -196,13 +203,16 @@ solserv_getmatdims(actsolv->sysarray[actsysarray],
 
 /*------------------------------------------------ output to the screen */
 #ifdef PARALLEL
-printf("number of eqations on PROC %3d : %10d \n", 
-        par.myrank,numeq);
-if (par.myrank==0)
-   printf("total number of equations: %10d \n",numeq_total);	
-#else
-printf("total number of equations: %10d \n",numeq_total);
+MPI_Barrier(actintra->MPI_INTRA_COMM);
 #endif
+printf("PROC  %3d | FIELD FLUID     | number of equations      : %10d \n", 
+        par.myrank,numeq);
+#ifdef PARALLEL
+MPI_Barrier(actintra->MPI_INTRA_COMM);
+#endif
+if (par.myrank==0)
+printf("          | FIELD FLUID     | total number of equations: %10d \n",numeq_total);
+if (par.myrank==0) printf("\n\n");
 
 /*--------------------------------------- allocate 1 dist. vector 'rhs' */
 actsolv->nrhs = 1;
@@ -223,15 +233,16 @@ ftimerhs = amdef("ftimerhs",&ftimerhs_a,numeq_total,1,"DV");
 fiterhs = amdef("fiterhs",&fiterhs_a,numeq_total,1,"DV");
 
 /*--------------------------- allocate one vector for storing the time */
+if (par.myrank==0 && ioflags.fluid_vis_file==1 )
 amdef("time",&time_a,1000,1,"DV");
 
 /*--------------------------------------------- initialise fluid field */
-fluid_init(actfield, fdyn);		     
+fluid_init(actfield,fdyn,4,str);		     
 actpos=0;
 
 /*--------------------------------------- init all applied time curves */
 for (actcurve=0; actcurve<numcurve; actcurve++)
-   dyn_init_curve(actcurve,fdyn->nstep,fdyn->dt,fdyn->maxtime);   
+dyn_init_curve(actcurve,fdyn->nstep,fdyn->dt,fdyn->maxtime);   
 
 /*-------------------------------------- init the dirichlet-conditions */
 fluid_initdirich(actfield, fdyn);
@@ -262,42 +273,50 @@ calinit(actfield,actpart,action,&container);
 
 /*-------------------------------------- print out initial data to .out */
 out_sol(actfield,actpart,actintra,fdyn->step,actpos);
+actpos++;
 
-/*----------------------------------------------------------------------* 
- | do the time loop                                                     |
- *----------------------------------------------------------------------*/
+
+/*======================================================================* 
+ |                         T I M E L O O P                              |
+ *======================================================================*/
+/* nodal solution history fluid field:                                  *
+ * sol[0][j]           ... initial data 				*
+ * sol[1...actpos][j]  ... solution for visualisation (real pressure)	*
+ * sol_increment[0][j] ... solution at time (n-1)			*
+ * sol_increment[1][j] ... solution at time (n) 			*
+ * sol_increment[2][j] ... solution at time (n+g)			*
+ * sol_increment[3][j] ... solution at time (n+1)			*
+ *======================================================================*/
 timeloop:
 fdyn->step++;
 iststep++;
 
 /*------------------------------------------ check (starting) algorithm */
-if (fdyn->step<=(fdyn->nums+1))
-   fluid_startproc(fdyn,&nfrastep);
+if (fdyn->step<=(fdyn->nums+1)) fluid_startproc(fdyn,&nfrastep);
 
 /*------------------------------ calculate constants for time algorithm */
 fluid_tcons(fdyn,dynvar);
 fdyn->time += dynvar->dta; 
+dynvar->acttime=fdyn->time;
 
 /*------------------------------------------------ output to the screen */
 if (par.myrank==0) fluid_algoout(fdyn,dynvar);
 
 /*--------------------- set dirichlet boundary conditions for  timestep */
-t1=ds_cputime();
 fluid_setdirich(actfield,fdyn);
-tds+=ds_cputime()-t1;
 
 /*-------------------------------------------------- initialise timerhs */
 amzero(&ftimerhs_a);
 
 if (fdyn->itchk!=0 && par.myrank==0)
 {
-   printf(" _____________________________________________________________ \n");
-   printf("|- step/max -|-  tol     [norm] -|- vel. error -|- pre. error-| \n");
+   printf("----------------------------------------------------------------\n");
+   printf("|- step/max -|-  tol     [norm] -|- vel. error -|- pre. error -| \n");
 }
 itnum=1;
-/*----------------------------------------------------------------------*
- | do the nonlinear iteration                                           |
- *----------------------------------------------------------------------*/
+/*======================================================================* 
+ |           N O N L I N E A R   I T E R A T I O N                      |
+ *======================================================================*/
 nonlniter:
 
 /*------------------------- calculate constants for nonlinear iteration */
@@ -314,6 +333,7 @@ amzero(&fiterhs_a);
 /*-------------- form incremental matrices, residual and element forces */
 *action = calc_fluid;
 t1=ds_cputime();
+container.dvec         = NULL;
 container.ftimerhs     = ftimerhs;
 container.fiterhs      = fiterhs;
 container.global_numeq = numeq_total;
@@ -330,7 +350,6 @@ tes+=te;
  |        rhs = ftimerhs + fiterhs                                      |
  *----------------------------------------------------------------------*/
 /* add time-rhs: */
-t1=ds_cputime();
 assemble_vec(actintra,
              &(actsolv->sysarray_typ[actsysarray]),
              &(actsolv->sysarray[actsysarray]),
@@ -346,7 +365,6 @@ assemble_vec(actintra,
              fiterhs,
              1.0
              );
-tas+=ds_cputime()-t1;
 
 /*-------------------------------------------------------- solve system */
 init=0;
@@ -364,15 +382,13 @@ tss+=ts;
 dynvar->ishape=0;
 
 /*--- return solution to the nodes and calculate the convergence ratios */
-t1=ds_cputime();
 fluid_result_incre(actfield,actintra,&(actsolv->sol[0]),3,
                      &(actsolv->sysarray[actsysarray]),
                      &(actsolv->sysarray_typ[actsysarray]),
-		     &vrat,&prat,fdyn);
-tcs+=ds_cputime()-t1;		     
+		     &vrat,&prat,NULL,fdyn);    
 
 /*----------------------------------------- iteration convergence check */
-converged = fluid_convcheck(fdyn,vrat,prat,itnum,te,ts);
+converged = fluid_convcheck(fdyn,vrat,prat,ZERO,itnum,te,ts);
 
 /*--------------------- check if nonlinear iteration has to be finished */
 if (converged==0)
@@ -380,75 +396,81 @@ if (converged==0)
    itnum++;
    goto nonlniter;
 }
-
 /*----------------------------------------------------------------------*
  | -->  end of nonlinear iteration                                      |
  *----------------------------------------------------------------------*/
-if (fdyn->itchk!=0 && par.myrank==0)
-{
-   printf("|____________|___________________|______________|_____________| \n");
-   printf("\n"); 
-}   
 
 /*-------------------------------------------------- steady state check */
-t1=ds_cputime();
 if (fdyn->stchk==iststep)
 {
    iststep=0;
    steady = fluid_steadycheck(fdyn,actfield,numeq_total);
 }
-tsts+=ds_cputime()-t1;
 
-/*--------------------------------- copy solution at (n+1) to place (n) *
-                                      in solution history sol_increment */
-fluid_copysol(fdyn,actfield,3,1,0);
+/*-------- copy solution from sol_increment[3][j] to sol_increment[1[j] */
+solserv_sol_copy(actfield,0,1,1,3,1);
 /*---------------------------------------------- finalise this timestep */
-istep++;
-t1=ds_cputime();
+outstep++;
+pssstep++;
 
-/*------------------------------------------ store results in node->sol *
- * on position actpos; actpos=0: initial data;                          *
- *                     actpos=1... stored timesteps --------------------*/
-/*#######################################################################
-  at the moment kinematic pressure is stored and written to output file
-  this has to be changed!!!!!
-  maybe the whole element formulation will be
-  transformed to real pressure!!!
-  #####################################################################*/
+/*-------- copy solution from sol_increment[3][j] to sol_[actpos][j]   
+           and transform kinematic to real pressure --------------------*/
+fluid_sol_copy(actfield,0,1,0,3,actpos,fdyn->numdf);
 
-if (istep==fdyn->idisp)
+if (outstep==fdyn->upout && ioflags.fluid_sol_file==1)
 {
-   istep=0;
-   actpos++;
-   fluid_copysol(fdyn,actfield,3,actpos,1);
+   outstep=0;
+   out_sol(actfield,actpart,actintra,fdyn->step,actpos);
+}
+if (pssstep==fdyn->uppss && ioflags.fluid_vis_file==1 && par.myrank==0)
+{
+   pssstep=0;   
    /*--------------------------------------------- store time in time_a */
    if (actpos >= time_a.fdim)
-   {
-      amredef(&(time_a),time_a.fdim+1000,1,"DV");
-   }
-   time_a.a.dv[actpos] = fdyn->time;
-   /*------------------------------------------------ print out to .out */
-   out_sol(actfield,actpart,actintra,fdyn->step,actpos);
-} 
-tfs+=ds_cputime()-t1;  
+   amredef(&(time_a),time_a.fdim+1000,1,"DV");
+   time_a.a.dv[actpos] = fdyn->time;   
+   actpos++;
+}
 
 /*--------------------- check time and number of steps and steady state */
 if (fdyn->step < fdyn->nstep && fdyn->time <= fdyn->maxtime && steady==0)
    goto timeloop;
-
-/*------------------------------------ print out solution to 0.pss file */
-if (ioflags.fluid_vis_file==1 && par.myrank==0) 
-   fluid_writevispss(actfield,actpos+1,&time_a);
+/*----------------------------------------------------------------------*
+ | -->  end of timeloop                                                 |
+ *----------------------------------------------------------------------*/
+ 
+/*======================================================================* 
+ |                      F I N A L I S I N G                             |
+ *======================================================================*/
+if (pssstep==0) actpos--;
+/*------------------------------------- print out solution to .out file */
+if (outstep!=0 && ioflags.fluid_sol_file==1)
+out_sol(actfield,actpart,actintra,fdyn->step,actpos);
 
 /*----------------------------- print out solution to 0.flavia.res file */
 if (ioflags.fluid_sol_gid==1 && par.myrank==0) 
 {
-    for(i=0;i<actpos+1;i++)
+    for(i=0;i<=actpos;i++)
     {
         out_gid_sol("velocity",actfield,actintra,i,i);
         out_gid_sol("pressure",actfield,actintra,i,i);
     }
 }
+
+/*------------------------------------ print out solution to 0.pss file */
+if (ioflags.fluid_vis_file==1 && par.myrank==0)
+{
+   if (pssstep!=0)
+   {
+      /*------------------------------------------ store time in time_a */
+      if (actpos >= time_a.fdim)
+      amredef(&(time_a),time_a.fdim+1000,1,"DV");
+      time_a.a.dv[actpos] = fdyn->time;   
+   }   
+   visual_writepss(actfield,actpos+1,&time_a);
+}
+
+
 /*---------------------------------- print total CPU-time to the screen */
 #ifdef PARALLEL
 MPI_Barrier(actintra->MPI_INTRA_COMM);
@@ -458,13 +480,10 @@ for (i=0;i<par.nprocs;i++)
 if (par.myrank==i)
 {
 printf("\n");
-printf("PROC %3d: TOTAL TIME for setting dirichlet values: %10.3E \n", par.myrank,tds);
-printf("PROC %3d: TOTAL TIME for element calculations: %10.3E \n", par.myrank,tes);
-printf("PROC %3d: TOTAL TIME for assembly of RHS: %10.3E \n", par.myrank,tas);
-printf("PROC %3d: TOTAL TIME for SOLVER: %10.3E \n", par.myrank,tss);
-printf("PROC %3d: TOTAL TIME for calculation of convergence ratios: %10.3E \n", par.myrank,tcs);
-printf("PROC %3d: TOTAL TIME for steady state check: %10.3E \n", par.myrank,tsts);
-printf("PROC %3d: TOTAL TIME finalising of time step: %10.3E \n", par.myrank,tfs);
+printf("PROC  %3d | FIELD FLUID     | total time element for calculations: %10.3E \n", 
+        par.myrank,tes);
+printf("PROC  %3d | FIELD FLUID     | total time for solver              : %10.3E \n", 
+        par.myrank,tss);
 }
 }
 #ifdef PARALLEL
@@ -475,6 +494,8 @@ end:
 /*--------------------------------------------------- cleaning up phase */
 amdel(&ftimerhs_a);
 amdel(&fiterhs_a);
+if (par.myrank==0 && ioflags.fluid_vis_file==1 )
+amdel(&time_a);
 solserv_del_vec(&(actsolv->rhs),actsolv->nrhs);
 solserv_del_vec(&(actsolv->sol),actsolv->nsol);
 
@@ -490,3 +511,4 @@ return;
 } /* end of fluid_isi */ 
 
 #endif
+/*! @} (documentation module close)*/
