@@ -487,6 +487,7 @@ if (restart)
 }
 /*------------------------------------------------------- printout head */
 /* if (par.myrank==0) dyn_nlnstruct_outhead(&dynvar,sdyn);*/
+
 break;
 
 /*======================================================================*
@@ -509,7 +510,8 @@ break;
  * sol_mf[2][j]        ... converged relaxed displ. at time (t-dt)      *
  * sol_mf[3][j]        ... actual dispi                                 *
  * sol_mf[4][j]        ... FSI coupl.-forces at the end of the timestep *
- * sol_mf[5][j]        ... FSI coupl.-forces at beginning of the timest.*
+ * sol_mf[5][j]        ... FSI coupl.-forces at beginning of the timest.* 
+ * sol_mf[6][j]        ... used in fsi_gradient.c                       * 
  *======================================================================*/
 
 /*
@@ -623,13 +625,30 @@ dyn_facfromcurve(actcurve,sdyn->time,&(dynvar.rldfac));
 /*------------------------ multiply rhs[1] by actual load factor rldfac */
 solserv_scalarprod_vec(&(actsolv->rhs[1]),dynvar.rldfac);
 
-/*----------------------- calculate external forces due to fsi coupling */
-solserv_zero_vec(&(actsolv->rhs[4]));
-container.inherit = 0;
-container.point_neum = 0;
-*action = calc_struct_fsiload;
-calrhs(actfield,actsolv,actpart,actintra,stiff_array,
-       &(actsolv->rhs[4]),action,&container);
+/*----------------------- calculate external forces due to fsi coupling */ 
+if (fsidyn->coupmethod == 1) 
+/* conforming discretization, take values from coincodent nodes         */
+{
+  solserv_zero_vec(&(actsolv->rhs[4]));
+  container.inherit = 0;
+  container.point_neum = 0;
+  *action = calc_struct_fsiload;
+  calrhs(actfield,actsolv,actpart,actintra,stiff_array,
+         &(actsolv->rhs[4]),action,&container);
+}
+/* mortar method (mtr) */ 
+else if(fsidyn->coupmethod == 0) 
+{
+  solserv_zero_vec(&(actsolv->rhs[4]));
+  container.inherit = 0;
+  container.point_neum = 0;
+  *action = calc_struct_fsiload_mtr;
+  calrhs(actfield,actsolv,actpart,actintra,stiff_array,
+         &(actsolv->rhs[4]),action,&container);
+ 
+}
+else
+  dserror("fsidyn->coupmethod unknown in fsi_struct! ");
 
 /*------------------------ add up the two parts of the external forces
                            and store them in rhs[1]                     */
