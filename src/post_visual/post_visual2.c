@@ -485,7 +485,7 @@ void v2scal(INT *JKEY, float *S)
       }
       else
       {
-        printf("eddy-viscosity with ke- or kw-model not calculated!!!! --> ZERO-field\n");
+        printf("eddy-viscosity with ke- or kw-model not calculated!!! --> ZERO-field\n");
         for (i=0;i<fluid_field->numnp;i++)
           S[i]=ZERO;
       }

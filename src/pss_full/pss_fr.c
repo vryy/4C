@@ -99,7 +99,7 @@ for (i=0; i<linecount; i++)
 {
    allfiles.input_file[i] = &(allfiles.input_file_hook[i*(allfiles.numcol)]);
 }
-/*-------------------know read the input file into allfiles.input_file */
+/*------------------- now read the input file into allfiles.input_file */
 if (par.myrank==0)
 {
    rewind(allfiles.in_input);

@@ -113,12 +113,17 @@ if (sizeof(unsigned char) != (unsigned)1)
 {
    dserror("unsigned char not 1 byte - will have CCACALLOC problems !!!");
 }
+
+
 /*================================================tracing of arrays=====*/
 /*--------------------------------- allocate one initial piece of chain */
 trace.arraychain = (TRACEARRAY*)CCACALLOC(1,sizeof(TRACEARRAY));
 if (!trace.arraychain) dserror("Allocation of memory failed");
+
 /*----------- set endchain ptr to this initial piece, rest is automatic */
 trace.endarraychain = trace.arraychain;
+
+
 /*==================================================tracing of routines */
 /*------------------------------------------------------- init the ring */
 trace.routine[0].prev = &(trace.routine[99]);
@@ -136,8 +141,10 @@ trace.routine[99].prev = &(trace.routine[98]);
 trace.routine[99].next = &(trace.routine[0]);
 trace.routine[99].dsroutcontrol = dsnone;
 trace.routine[99].name = "xxxxxxxxxxxxxxxxx";
+
 /*------------------------------------------------- set starting values */
 trace.deepness=2;
+
 /*-------------------------------------------------------- this routine */
 trace.routine[0].name = "main";
 trace.routine[0].dsroutcontrol = dsin;
@@ -147,6 +154,8 @@ trace.routine[2].name = "ntaini";
 trace.routine[2].dsroutcontrol = dsin;
 
 trace.actroutine = &(trace.routine[2]);
+
+
 /*======================================================tracing of time */
 /*----------------------------------------- initialise CPU-time tracing */
 ds_cputime_init();
