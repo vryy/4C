@@ -12,6 +12,12 @@ extern struct _FIELD      *field;
  *----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
 /*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | struct _GENPROB       genprob; defined in global_control.c           |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+/*----------------------------------------------------------------------*
  | global variable *solv, vector of lenght numfld of structures SOLVAR  |
  | defined in solver_control.c                                          |
  |                                                                      |
@@ -66,6 +72,14 @@ int           kstep;              /* active step in nonlinear analysis */
 int           nstep;              /* total number of steps */
 int           itnum;              /* number of iterations taken by corrector */
 int           maxiter;            /* max. number of iterations allowed */
+double        stepsi;             /* load step size for temp. storage*/
+
+int           mod_displ;          /* write or not dicplacements of this step in output */
+int           mod_stress;         /* write or not stresses of this step in output */
+
+int           mod_restart;        /* write or not valuesof this step needed for restart in output */
+int           restart;            /* if this is a restart calc -> restart =!0 elseif ==0*/
+int           restartevery;       /* how often to write restart (temp. storage) */
 
 NR_CONTROLTYP controltyp;         /* type of path following technic */
 
@@ -87,6 +101,8 @@ CALC_ACTION  *action;             /* pointer to the structures cal_action enum *
 #ifdef DEBUG 
 dstrc_enter("stanln");
 #endif
+/*--------------- check wether this calculation is a restart or not ---*/
+restart = genprob.restart;
 /*----------------------------------------------------------------------*/
 /*------------ the distributed system matrix, which is used for solving */
 /* 
@@ -232,6 +248,34 @@ for (kstep=0; kstep<nstep; kstep++)
    if (par.myrank==0) dsmemreport();
    /*---------- write report about all ARRAYs and ARRAY4Ds to .err file */
    /*dstrace_to_err();*/
+   /*---- if this is a restart calc. get necessary info about last step */
+   if (restart)
+   {
+   /*- tempor storage of new input (will be overwritten in rest._read_.)*/
+   /*- (nstep and maxiter are already stored)                           */
+     stepsi=statvar->stepsize;
+     restartevery = statvar->resevery_restart;
+   /*------------------------------------ read restart from pss- file --*/
+     restart_read_nlnstructstat(restart,
+                           statvar,
+                           &nln_data,
+                           actfield,
+                           actpart,
+                           actintra,
+                           action,
+                           actsolv->nrhs, actsolv->rhs,
+                           actsolv->nsol, actsolv->sol,
+                           1            , dispi);
+   /*--------------- give the restartinfo to the associated variables --*/
+     kstep = restart; 
+   /*--------------------------------------------- switch restart off --*/
+     restart = 0; 
+   /*----------------------- give back temporary storage of new input --*/
+     statvar->stepsize = stepsi;
+     statvar->nstep = nstep; 
+     statvar->maxiter = maxiter;
+     statvar->resevery_restart = restartevery;
+   }
    /*--------------------------------------------------- make predictor */
    conpre(actfield,
           actsolv,
@@ -263,30 +307,71 @@ for (kstep=0; kstep<nstep; kstep++)
    /*-- update for nonlinear material models - new stress/strain values */  
    *action = calc_struct_update_istep;
    calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,NULL,NULL,0,0,action);
-    /*-------------------------------------- perform stress calculation */
-    if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1)
-    {
-       *action = calc_struct_stress;
-       calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,NULL,NULL,0,0,action);
-       /*---------------------- reduce stresses, so they can be written */
-       /*- this makes the result of the stress calculation redundant on */
-       /*                                                         procs */
-       *action = calc_struct_stressreduce;
-       calreduce(actfield,actpart,actintra,action,0);
-    }
-    /*--------------------------------------- print out results to .out */
-    if (ioflags.struct_stress_file==1 && ioflags.struct_disp_file==1)
-    {
-      out_sol(actfield,actpart,actintra,kstep,0);
-    }
-    /*----------------------------------------- printout results to gid */
-    if (par.myrank==0) 
-    {
-       if (ioflags.struct_disp_gid==1)
+   /*-------------- check, if output is to be written is this loadstep */
+   mod_displ =    kstep  % statvar->resevry_disp;        
+   mod_stress =   kstep  % statvar->resevry_stress;
+   mod_restart =  kstep  % statvar->resevery_restart;
+   /*-------------------------------------- perform stress calculation */
+   if (mod_stress==0 || mod_displ==0)
+   {
+      if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1)
+      {
+         *action = calc_struct_stress;
+         calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,NULL,NULL,0,0,action);
+         /*---------------------- reduce stresses, so they can be written */
+         /*- this makes the result of the stress calculation redundant on */
+         /*                                                         procs */
+         *action = calc_struct_stressreduce;
+         calreduce(actfield,actpart,actintra,action,0);
+      }
+   }
+   /*--------------------------------------- print out results to .out */
+   if (mod_stress==0 || mod_displ==0)
+   {
+      if (ioflags.struct_stress_file==1 && ioflags.struct_disp_file==1)
+      {
+        out_sol(actfield,actpart,actintra,kstep,0);
+      }
+   }
+   /*----------------------------------------- printout results to gid */
+   if (par.myrank==0) 
+   {
+       if (ioflags.struct_disp_gid==1 && mod_displ==0)
        out_gid_sol("displacement",actfield,actintra,kstep,0);
-       if (ioflags.struct_stress_gid==1)
+       if (ioflags.struct_stress_gid==1 && mod_stress)
        out_gid_sol("stress"      ,actfield,actintra,kstep,0);
+   }
+   /*----------------------------------- printout results to pss file */
+   if(mod_restart==0)
+  { 
+   switch(controltyp)
+    {
+    case control_disp:                        /* displacement control */
+      restart_write_nlnstructstat(statvar,
+                           &nln_data,
+                           actfield,
+                           actpart,
+                           actintra,
+                           action,
+                           kstep,
+                           actsolv->nrhs, actsolv->rhs,
+                           actsolv->nsol, actsolv->sol,
+                           1            , dispi);
+    break;
+    case control_arc:                            /* arclenght control */
+      dserror("restart for arclengh not yet impl.");
+    break;
+    case control_load:
+      dserror("load control not yet impl.");
+    break;
+    case control_none:
+      dserror("Unknown typ of path following technique");
+    break;
+    default:
+      dserror("Unknown typ of path following technique");
+    break;
     }
+  }
 } /* end of (kstep=0; kstep<nstep; kstep++) */
 /*----------------------------------------------------------------------*/
 /*---------------------------------------------------- make cleaning up */
@@ -318,7 +403,7 @@ void conpre(
             CALC_ACTION   *action,       /* calculation flag */
             int            kstep,        /* the load or time step we are in */
             int            actsysarray,  /* number of the system matrix in actsolv->sysarray[actsysarray] to be used */
-            DIST_VECTOR   *rsd,          /* dist. vector of incremental residual forces used for iteration in conequ */
+            DIST_VECTOR   *rsd,          /* dist. vector of incremental residual displ. used for iteration in conequ */
             DIST_VECTOR   *dispi,        /* dist. vector of incremental displacements */
             int            cdof,         /* number of the dof to be controlled */
             STANLN        *nln_data,     /* data of the Newton-Raphson method */
@@ -347,29 +432,29 @@ solserv_zero_mat(
 /*----------------------- calculate tangential stiffness in actsysarray */
 /*----- calculate the rhs resulting from dirichlet conditions in dirich */
 *action = calc_struct_nlnstiff;
-calelm(actfield,
-       actsolv,
-       actpart,
-       actintra,
-       actsysarray,
-       -1,
-       NULL,
-       NULL,
-       0,
-       kstep,
-       action);
+calelm(actfield,        /* active field                          */
+       actsolv,         /* active solver typ                     */
+       actpart,         /* my partition of this field            */
+       actintra,        /* my intra-comunicators                 */
+       actsysarray,     /* system-stiffness matrix               */
+       -1,              /*system-mass matrix (there is no)       */
+       NULL,            /* system - internal force               */
+       NULL,            /* system - Fint-part by dirichlet cond. */
+       0,               /* system DOF                            */
+       kstep,           /* actual step number                    */
+       action);         /* what to do                            */
 /*----- copy original load vector from [actsysarray+1] to [actsysarray] */
 solserv_copy_vec(&(actsolv->rhs[actsysarray+1]),&(actsolv->rhs[actsysarray]));
-/*------------------------------------------ solve for incremental load */
+/*---------- LGS: K*u=F -------------------- solve for incremental load */
 init=0;
 solver_control(  
-                 actsolv,
-                 actintra,
-               &(actsolv->sysarray_typ[actsysarray]),
-               &(actsolv->sysarray[actsysarray]),
-               &(rsd[0]),
-               &(actsolv->rhs[actsysarray]),
-                 init
+                 actsolv,                             /* active solver typ        */
+                 actintra,                            /* my intra-comunicators    */
+               &(actsolv->sysarray_typ[actsysarray]), /* Systemmatrixtyp          */
+               &(actsolv->sysarray[actsysarray]),     /* Systemstema K of LGS     */
+               &(rsd[0]),                             /* solution vector u of LGS */
+               &(actsolv->rhs[actsysarray]),          /* RHS F of LGS             */
+                 init                                 /* option                   */
               );
 /*--------------------------- calculate euclidian norm of displacements */
 solserv_vecnorm_euclid(actintra,&(rsd[0]),&prenorm);
@@ -377,12 +462,13 @@ solserv_vecnorm_euclid(actintra,&(rsd[0]),&prenorm);
 switch(controltyp)
 {
 case control_disp:
-   solserv_getele_vec( actintra,
-                      &(actsolv->sysarray_typ[actsysarray]),
-                      &(actsolv->sysarray[actsysarray]),
-                      &(rsd[0]),
-                       cdof,
-                      &controldisp);
+/*---------------------------------- get control dof from distr. vector */
+   solserv_getele_vec( actintra,                         /* my intra-comunicators */
+                      &(actsolv->sysarray_typ[actsysarray]),    /* sparsity typ   */
+                      &(actsolv->sysarray[actsysarray]),        /* sparse matrix  */
+                      &(rsd[0]),         /* vector the value shall be taken from  */
+                       cdof,             /* field-local (unsupported) dof number  */
+                      &controldisp);     /* value in vector at the given dof      */
    rldiff = (statvar->stepsize)/controldisp;
 break;
 case control_arc:
@@ -401,7 +487,10 @@ default:
 break;
 }
 /*---------------------------------- create current stiffness parameter */
-solserv_dot_vec(actintra,&(actsolv->rhs[actsysarray]),&(rsd[0]),&spi);
+solserv_dot_vec(actintra,                    /* my intra-comunicators           */
+                &(actsolv->rhs[actsysarray]),/* first vector a to be multiplied */
+                &(rsd[0]),                   /* secnd vector b to be multiplied */
+                &spi);                       /* result a*b                      */
 if (ABS(nln_data->sp1) <= EPS14) nln_data->sp1 = spi;
 if (ABS(spi)           <= EPS14) nln_data->csp = 1.0;
 else                             nln_data->csp = nln_data->sp1 / spi;
@@ -418,9 +507,12 @@ csp takes negative values we are on a branch which is going downwards
 Dependent on the type of constraint that it used (e.g. displacement/arclenght control)
 there is no sign to the predictor, so the predictor is always positive,
 that means pointing upwards. To get a better predictor on a descending path
-rldiff takes the sign of csp:
+rldiff takes the sign of csp if flag signchcsp is set:
 */
-rldiff *= nln_data->csp/ABS(nln_data->csp);
+if (statvar->signchcsp==1)
+{
+  rldiff *= nln_data->csp/ABS(nln_data->csp);
+}
 /*--------------------------------------------------------- save values */
 nln_data->rlnew = nln_data->rlold + rldiff;
 /*---------- create the correct displacmements after predictor solution */
@@ -669,6 +761,8 @@ solserv_getele_vec(actintra,
                    &disval);
 if (actintra->intra_rank==0)
 conequ_printiter(*itnum,disval,rlnew,dinorm,renorm,energy,dnorm,nln_data->rrnorm);
+if (convergence)
+fprintf(allfiles.out_err,"final state: disval %20.10f rlnew %20.10f\n",disval,rlnew);
 /*----------------------------- decide for or against another iteration */
 if (convergence)/*------------------------------------------convergence */
 {
