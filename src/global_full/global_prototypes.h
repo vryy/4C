@@ -119,6 +119,11 @@ void out_gid_sol(char string[], FIELD *actfield, INTRA  *actintra, int step,
                  int place);
 void out_fsi(FIELD *fluidfield);
 /*----------------------------------------------------------------------*
+ |  out_gid_soldyn.c                                     m.gee 5/03     |
+ *----------------------------------------------------------------------*/
+void out_gid_soldyn(char string[], FIELD *actfield, INTRA  *actintra, int step,
+                   int place, double totaltime);
+/*----------------------------------------------------------------------*
  |  out_gid_msh.c                                        m.gee 12/01    |
  *----------------------------------------------------------------------*/
 void out_gid_msh(void);

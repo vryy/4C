@@ -80,6 +80,7 @@ typedef char      CHAR;
 #define c1invf              c1invf_
 #define solveq              solveq_
 #define c1jacb              c1jacb_
+#define s8jacb              s8jacb_
 #define mumps_interface     mumps_interface_
 #define iluk                iluk_
 #define lusol               lusol_
@@ -113,6 +114,7 @@ void mlpcgupdvec(double *y, double *x, double *fac, int *init, int *n);
 void dveczero(double *x, int *n);
 void iveczero(int *x, int *n);
 void mydsyevx(char *jobz,char *range,char *uplo,int *n,double *a,int *lda,double *vl,double *vu,int *il,int *iu,double *abstol,int *m,double *w,double *z,int *ldz,double *work,int *lwork,int *iwork,int *ifail,int *info);
+void fortranpow(double *V,double *R,double *RE);
 /*----------------------------------------------------------------------*
  | absolut value of an integer                                          |
  *----------------------------------------------------------------------*/
@@ -126,8 +128,7 @@ void mydsyevx(char *jobz,char *range,char *uplo,int *n,double *a,int *lda,double
 /*----------------------------------------------------------------------*
  | square of a double                                                   |
  *----------------------------------------------------------------------*/
-static DOUBLE dsqrarg;
-#define DSQR(a) (a*a)
+#define DSQR(a) ((a)*(a))
 
 /*----------------------------------------------------------------------*
  | the larger of two doubles (fast version)                             |
