@@ -1,7 +1,18 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'w1_eps' which evaluates the linear/nonlinear
+       strains from displacement derivatives for a wall element
+
+*----------------------------------------------------------------------*/
 #ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
 #include "wall1_prototypes.h"
+
+/*! 
+\addtogroup WALL1 
+*//*! @{ (documentation module open)*/
+
 /*----------------------------------------------------------------------*
  | evaluates linear/nonlinear strains from               al    9/01     |
  | displacement derivatives                                             |
@@ -50,4 +61,5 @@ dstrc_exit();
 return;
 } /* end of w1_eps */
 /*----------------------------------------------------------------------*/
-#endif
+#endif /*D_WALL1*/
+/*! @} (documentation module close)*/

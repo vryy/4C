@@ -1,13 +1,32 @@
+/*!----------------------------------------------------------------------
+\file
+\brief headerfile for wall element, containing structures and prototypes
+
+*----------------------------------------------------------------------*/
+#ifdef D_WALL1
+
+/*! 
+\addtogroup WALL1
+*//*! @{ (documentation module open)*/
+
+/*!----------------------------------------------------------------------
+\brief 2D ale element data
+
+<pre>                                                              al 06/01
+This structure contains the coordinates and weights for numerical
+integration of a wall element
+</pre>
+
 /*----------------------------------------------------------------------*
  | wall1 data                                                al 6/01    |
  *----------------------------------------------------------------------*/
 typedef struct _W1_DATA
 {
-double        xgrr[13];
-double        wgtr[13];
+double        xgrr[13];         /*!< natural coordinates r of gaussian points */
+double        wgtr[13];         /*!< weights at natural coordinates r */
 
-double        xgss[13];
-double        wgts[13];
+double        xgss[13];         /*!< natural coordinates s of gaussian points */
+double        wgts[13];         /*!< weights at natural coordinates s */
 } W1_DATA;
 /*----------------------------------------------------------------------*
  | working array                                             al 6/01    |
@@ -129,3 +148,6 @@ void wall1(PARTITION   *actpart,
  | read wall element                                         al 9/01    |
  *----------------------------------------------------------------------*/
 void w1inp(ELEMENT *ele);
+/*----------------------------------------------------------------------*/
+#endif /*D_WALL1*/
+/*! @} (documentation module close)*/

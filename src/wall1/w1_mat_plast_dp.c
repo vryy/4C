@@ -1,7 +1,19 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'w1_mat_plast_dp' which calculates the 
+       constitutive matrix - forces - Drucker Prager - 2D 
+       (planes stress, planes strain, rotational symmetry)
+
+*----------------------------------------------------------------------*/
 #ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
 #include "wall1_prototypes.h"
+
+/*! 
+\addtogroup WALL1 
+*//*! @{ (documentation module open)*/
+
 /*----------------------------------------------------------------------*
  | constitutive matrix - forces - Drucker Prager - 2D     al    9/01    |
  | plane stress, plane strain, rotational symmetry                      |
@@ -42,6 +54,8 @@ double sigym;
 double rad;
 double dia = 0.;
 int    isoft = 0;
+double betah = 1.;
+
 #ifdef DEBUG 
 dstrc_enter("w1_mat_plast_dp");
 #endif
@@ -98,7 +112,7 @@ for (i=0; i<4; i++)
         else
         {
           dlam=0.;
-          w1mapl(ym, hard, sigy, pv, dia, tau, isoft, &epstn, &dlam, d, wtype);
+          w1mapl(ym, hard, betah, sigy, pv, dia, tau, isoft, &epstn, &dlam, d, wtype);
           yip=-yip;
         }
         iupd=1;
@@ -139,7 +153,7 @@ for (i=0; i<4; i++)
   {
     yip = 2;
     w1radi_dp(ym, hard, phi, sigy, pv, tau, qn, &epstn, &sigym, &dlam, wtype);
-    w1mapl(ym, hard, sigy, pv, dia, tau, isoft, &epstn, &dlam, d, wtype);
+    w1mapl(ym, hard, betah, sigy, pv, dia, tau, isoft, &epstn, &dlam, d, wtype);
     
     for (i=0; i<4; i++) stress[i] = tau[i] + qn[i];
   }
@@ -163,4 +177,6 @@ dstrc_exit();
 #endif
 return;
 } /* end of w1_mat_plast_dp */
-#endif
+/*----------------------------------------------------------------------*/
+#endif /*D_WALL1*/
+/*! @} (documentation module close)*/

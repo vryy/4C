@@ -1,9 +1,20 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'w1_boplin' which calculates the 
+       linear operator matrix for a wall element at point r,s
+
+*----------------------------------------------------------------------*/
 #ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
 #include "wall1_prototypes.h"
 
 #if 1
+
+/*! 
+\addtogroup WALL1 
+*//*! @{ (documentation module open)*/
+
 /*----------------------------------------------------------------------*
  | calculate linear operator matrix at point r,s            ah 06/02    |
  *----------------------------------------------------------------------*/
@@ -43,5 +54,6 @@ dstrc_exit();
 return;
 } /* end of w1_boplin */
 #endif
-
-#endif
+/*----------------------------------------------------------------------*/
+#endif /*D_WALL1*/
+/*! @} (documentation module close)*/

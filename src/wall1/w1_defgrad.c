@@ -1,6 +1,18 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'w1_defgrad' which calculates the deformation
+       gradient and GL strain at gausian point r,s for a wall element
+
+*----------------------------------------------------------------------*/
+#ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
 #include "wall1_prototypes.h"
+#include "wall1_prototypes.h"
+
+/*! 
+\addtogroup WALL1
+*//*! @{ (documentation module open)*/
 
 /*----------------------------------------------------------------------*
  | calc deformation gradient and GL strain  at gausian point r,s  ah06/02|
@@ -39,3 +51,5 @@ dstrc_exit();
 return;
 } /* end of w1_defgrad */
 /*----------------------------------------------------------------------*/
+#endif /*D_WALL1*/
+/*! @} (documentation module close)*/

@@ -1,11 +1,25 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'w1_eleload' which integrates the line and
+       surface loads for a wall element
+       contains the routine 'w1_fextsurf' which integrates the element
+       loads for a wall element
+
+*----------------------------------------------------------------------*/
 #ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
 #include "wall1_prototypes.h"
+
 typedef enum _RSF
 { /* r..r-dir., s..s-dir., n..-1.0, p..+1.0 */
   rp, rn, ps, ns 
 } RSF;
+
+/*! 
+\addtogroup WALL1
+*//*! @{ (documentation module open)*/
+
 
 /*----------------------------------------------------------------------*
 /*----------------------------------------------------------------------*
@@ -342,5 +356,6 @@ dstrc_exit();
 #endif
 return; 
 } /* end of  w1_fextsurf*/
-
-#endif
+/*----------------------------------------------------------------------*/
+#endif /*D_WALL1*/
+/*! @} (documentation module close)*/

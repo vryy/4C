@@ -1,7 +1,22 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'w1consig' which condenses the stress vector
+       plane strain --> plane stress
+ contains the routine 'w1concep' which condeses the constitutive tensor
+       plane strain --> plane stress 
+ contains the routine 'w1de33' which evaluates the incremental strain
+       in thickness direction for wall element (planes stress)
+
+*----------------------------------------------------------------------*/
 #ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
 #include "wall1_prototypes.h"
+
+/*! 
+\addtogroup WALL1
+*//*! @{ (documentation module open)*/
+
 /*-----------------------------------------------------------------------|
 |      topic: condensed stress vector                                    |
 |             plane strain --> plane stress                              |
@@ -101,4 +116,6 @@ void w1de33(double *sigi,  /* stresses from last iteration step         */
 /*----------------------------------------------------------------------*/
     return ;
 } /* end of w1de33 */
-#endif
+/*----------------------------------------------------------------------*/
+#endif /*D_WALL1*/
+/*! @} (documentation module close)*/

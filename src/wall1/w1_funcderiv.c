@@ -1,7 +1,18 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'w1_funct_deriv' which calculates the shape
+       functions and derivatives for a wall element
+
+*----------------------------------------------------------------------*/
 #ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
 #include "wall1_prototypes.h"
+
+/*! 
+\addtogroup WALL1
+*//*! @{ (documentation module open)*/
+
 
 /*----------------------------------------------------------------------*
  | shape functions and derivatives                               al 9/01|
@@ -150,7 +161,9 @@ dstrc_exit();
 #endif
 return;
 } /* end of w1_funct_deriv */
-#endif
+/*----------------------------------------------------------------------*/
+#endif /*D_WALL1*/
+/*! @} (documentation module close)*/
 
 
 

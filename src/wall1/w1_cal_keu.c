@@ -1,7 +1,17 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'w1_keu' which calculates the elastic and
+       initaial displacement stiffness (total Lagr) for a wall element
+
+*----------------------------------------------------------------------*/
 #ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
 #include "wall1_prototypes.h"
+
+/*! 
+\addtogroup WALL1 
+*//*! @{ (documentation module open)*/
 
 /*----------------------------------------------------------------------*
  | elastic and initial displacement stiffness (total lagrange)  ah 06/02|
@@ -90,6 +100,6 @@ dstrc_exit();
 #endif
 return;
 } /* end of w1_keu */
-
-
-#endif
+/*----------------------------------------------------------------------*/
+#endif /*D_WALL1*/
+/*! @} (documentation module close)*/

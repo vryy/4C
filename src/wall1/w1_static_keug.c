@@ -1,7 +1,18 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'w1static_keug' which forms the nonlinear
+       stiffnes keug for wall1 element
+
+*----------------------------------------------------------------------*/
 #ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
 #include "wall1_prototypes.h"
+
+/*! 
+\addtogroup WALL1
+*//*! @{ (documentation module open)*/
+
 /*----------------------------------------------------------------------*
  | integration of nonlinear stiffness keug for wall1 element ah 06/02    |
  *----------------------------------------------------------------------*/
@@ -243,6 +254,6 @@ dstrc_exit();
 #endif
 return; 
 } /* end of w1static_keug */
-
-
-#endif
+/*----------------------------------------------------------------------*/
+#endif /*D_WALL1*/
+/*! @} (documentation module close)*/

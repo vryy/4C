@@ -1,6 +1,16 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'wall1' the main routine for the wall element
+
+*----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "wall1.h"
 #include "wall1_prototypes.h"
+
+/*! 
+\addtogroup WALL1 
+*//*! @{ (documentation module open)*/
+
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of material laws                                              |
@@ -206,6 +216,8 @@ break;
 #ifdef DEBUG 
 dstrc_exit();
 #endif
-#endif
+#endif /*D_WALL1*/
 return; 
 } /* end of wall1 */
+/*----------------------------------------------------------------------*/
+/*! @} (documentation module close)*/

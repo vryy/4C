@@ -1,6 +1,18 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'w1_call_matgeononl' which selects the proper
+       material law for a wall element
+
+*----------------------------------------------------------------------*/
+#ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
 #include "wall1_prototypes.h"
+
+/*! 
+\addtogroup WALL1
+*//*! @{ (documentation module open)*/
+
 /*----------------------------------------------------------------------*
  | select proper material law                               ah 06/02    |
  *----------------------------------------------------------------------*/
@@ -43,4 +55,6 @@ dstrc_exit();
 return; 
 } /* end of w1_call_matgeononl */
 /*----------------------------------------------------------------------*/
+#endif /*D_WALL1*/
+/*! @} (documentation module close)*/
 

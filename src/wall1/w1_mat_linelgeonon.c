@@ -1,6 +1,19 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'w1_mat_linelgeonon' which calculates the
+       constitutive matrix - linear elastic - 2D
+       (plane stress, plane strain)
+
+*----------------------------------------------------------------------*/
+#ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
 #include "wall1_prototypes.h"
+
+/*! 
+\addtogroup WALL1
+*//*! @{ (documentation module open)*/
+
 /*----------------------------------------------------------------------*
  | constitutive matrix - linear elastic - 2D              ah   06/02    |
  | plane stress, plane strain,                                          |
@@ -100,4 +113,7 @@ dstrc_exit();
 #endif
 return;
 } /* end of w1_mat_linelgeonon */
+/*----------------------------------------------------------------------*/
+#endif /*D_WALL1*/
+/*! @} (documentation module close)*/
 

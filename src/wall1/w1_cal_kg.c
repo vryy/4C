@@ -1,7 +1,17 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'w1_kg' which calculates the geometric
+       stiffness part (total Lagr) for a wall element
+
+*----------------------------------------------------------------------*/
 #ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
 #include "wall1_prototypes.h"
+
+/*! 
+\addtogroup WALL1
+*//*! @{ (documentation module open)*/
 
 /*----------------------------------------------------------------------*
  | geometric stiffness part (total lagrange)                    ah 06/02|
@@ -55,6 +65,6 @@ dstrc_exit();
 #endif
 return;
 } /* end of w1_kg */
-
-
-#endif
+/*----------------------------------------------------------------------*/
+#endif /*D_WALL1*/
+/*! @} (documentation module close)*/

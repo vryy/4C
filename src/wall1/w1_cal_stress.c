@@ -1,7 +1,24 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'w1_cal_stress' which evaluates the element
+       stresses for 2D isoparametric degenerated element
+       contains the routine 'w1_mami' which evaluates the principal 
+       stresses and directions for 2D isoparametric degenerated element
+       contains the routine 'w1rsn' which returns R/S coordinates of
+       gauss integration points 2D isoparametric degenerated element
+       contains the routine 'w1recs' which extrapolates from gauss 
+       points for rectangles
+
+/*----------------------------------------------------------------------*/
 #ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
 #include "wall1_prototypes.h"
+
+/*! 
+\addtogroup WALL1 
+*//*! @{ (documentation module open)*/
+
 /*----------------------------------------------------------------------*
  | evaluate element stresses                                 al 9/01    |
  | 2-D isoparametric degenerated element                                |
@@ -595,4 +612,5 @@ dstrc_exit();
     return ;
 } /* w1recs */
 /*----------------------------------------------------------------------*/
-#endif
+#endif /*D_WALL1*/
+/*! @} (documentation module close)*/

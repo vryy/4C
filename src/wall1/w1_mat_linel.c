@@ -1,7 +1,23 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'w1_mat_linel' which calculates the 
+       constitutive matrix - linear elastic - 2D 
+       (plane stress, plane strain, rotational symmetry)
+       contains the routine 'w1_mat_stvpor' which calculates the
+       constitutive matrix - linear elastic porous -2D 
+       (plane stress, plane strain, roational symmetry)
+
+*----------------------------------------------------------------------*/
 #ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
 #include "wall1_prototypes.h"
+#include "wall1_prototypes.h"
+
+/*! 
+\addtogroup WALL1 
+*//*! @{ (documentation module open)*/
+
 /*----------------------------------------------------------------------*
  | constitutive matrix - linear elastic - 2D              al    9/01    |
  | plane stress, plane strain, rotational symmetry                      |
@@ -140,4 +156,6 @@ dstrc_exit();
 #endif
 return;
 } /* end of w1_mat_stvpor */
-#endif
+/*----------------------------------------------------------------------*/
+#endif /*D_WALL1*/
+/*! @} (documentation module close)*/

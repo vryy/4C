@@ -1,7 +1,18 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'w1_bop' which calculates the operator
+       matrix for a wall element
+
+*----------------------------------------------------------------------*/
 #ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
 #include "wall1_prototypes.h"
+
+/*! 
+\addtogroup WALL1 
+*//*! @{ (documentation module open)*/
+
 /*----------------------------------------------------------------------*
  | calculate operator matrix at point r,s                    al 9/01    |
  *----------------------------------------------------------------------*/
@@ -79,5 +90,5 @@ dstrc_exit();
 return;
 } /* end of w1_gop */
 /*----------------------------------------------------------------------*/
-
-#endif
+#endif /*D_WALL1*/
+/*! @} (documentation module close)*/

@@ -1,7 +1,24 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'w1_gld' which transforms local material 
+       matrix to global axes
+       contains the routine 'w1_lss' which transforms stress and strain
+       local-global
+       contains the routine 'w1_sett' which sets the Transformation 
+       matrices G and GI
+       contains the routine 'w1_tram' which calculates the Transformation
+       matrices G and G(Inv)
+
+*----------------------------------------------------------------------*/
 #ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
 #include "wall1_prototypes.h"
+
+/*! 
+\addtogroup WALL1
+*//*! @{ (documentation module open)*/
+
 /*----------------------------------------------------------------------*
  | Transform local material matrix to global axes            fh 08/02   |
  *----------------------------------------------------------------------*/
@@ -255,6 +272,7 @@ w1_sett(dum,G,GI);
 dstrc_exit();
 #endif
 return;
-} /* end of w1_sett */
+} /* end of w1_tram */
 /*----------------------------------------------------------------------*/
-#endif
+#endif /*D_WALL1*/
+/*! @} (documentation module close)*/

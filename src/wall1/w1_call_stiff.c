@@ -1,7 +1,17 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'w1_keku' which calculates the usual
+       stiffness matrix for a wall element (total Lagr)
+
+*----------------------------------------------------------------------*/
 #ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
 #include "wall1_prototypes.h"
+
+/*! 
+\addtogroup WALL1
+*//*! @{ (documentation module open)*/
 
 /*----------------------------------------------------------------------*
  | usual stiffness matrix total lagrangian formulation           al 9/01|
@@ -59,7 +69,9 @@ dstrc_exit();
 #endif
 return;
 } /* end of w1_keku */
-#endif
+/*----------------------------------------------------------------------*/
+#endif /*D_WALL1*/
+/*! @} (documentation module close)*/
 
 
 

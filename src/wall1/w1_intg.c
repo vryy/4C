@@ -1,6 +1,16 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'w1intg' which calculates the needed values
+       for the integration points
+
+*----------------------------------------------------------------------*/
 #ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
+
+/*! 
+\addtogroup WALL1
+*//*! @{ (documentation module open)*/
 
 /*----------------------------------------------------------------------*
  | integration points                                        al 6/01    |
@@ -412,4 +422,5 @@ dstrc_exit();
 return;
 } /* end of w1intg */
 /*----------------------------------------------------------------------*/
-#endif
+#endif /*D_WALL1*/
+/*! @} (documentation module close)*/

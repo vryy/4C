@@ -1,7 +1,19 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'w1_mat_plast_epc' which calculates the 
+       constitutive matrix - forces - elastoplastic concrete - 2D 
+       (planes stress, plane strain)
+
+*----------------------------------------------------------------------*/
 #ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
 #include "wall1_prototypes.h"
+
+/*! 
+\addtogroup WALL1 
+*//*! @{ (documentation module open)*/
+
 /*----------------------------------------------------------------------*
  | const. matrix - forces - elastoplastic concrete - 2D     al  9/01    |
  | plane stress, plane strain                                           |
@@ -652,4 +664,6 @@ dstrc_exit();
 #endif
 return;
 } /* end of w1_mat_plast_epc */
-#endif
+/*----------------------------------------------------------------------*/
+#endif /*D_WALL1*/
+/*! @} (documentation module close)*/

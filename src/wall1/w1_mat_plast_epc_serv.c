@@ -1,7 +1,26 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'w1iwadi' which initializes d-components
+       d[0][3], d[1][3], d[2][3], d[3][3] on elastic
+       contains the routine 'w1yicsr' which calculates the yield 
+       criterion for planes strain - Drucker Prager
+       contains the routine 'w1yiccap' which calculates the yield
+       criterion in the cap-region of the cap-model
+       contains the routine 'w1preds' which calculates the gradients of
+       the elastic predictor deviatoric/hydrostatic stresses
+       contains the routine 'w1pres' which calculates the deviatoric/
+       hydrostatic stress components of the elastic predictor
+
+*----------------------------------------------------------------------*/
 #ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
 #include "wall1_prototypes.h"
+
+/*! 
+\addtogroup WALL1 
+*//*! @{ (documentation module open)*/
+
 /*-----------------------------------------------------------------------|
 |      initialize d-components d[0][3], d[1][3], d[2][3], d[3][3]        |
 |      on elastic                                                        |
@@ -219,4 +238,5 @@ void w1pres (double *sigma ,    /*  elastic predictor projected         */
     return ;
 } /* end of w1pres */
 /*----------------------------------------------------------------------*/
-#endif
+#endif /*D_WALL1*/
+/*! @} (documentation module close)*/
