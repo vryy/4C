@@ -84,7 +84,6 @@ OBJS2	      = ${SRC}/global_full/global_control.o \
                 ${SRC}/global_full/global_calelm.o \
                 ${SRC}/global_full/global_calelm_dyn.o \
                 ${SRC}/global_full/global_calrhs.o \
-                ${SRC}/global_full/global_calrhs_nodal.o \
                 ${SRC}/global_full/solver_control.o \
                 ${SRC}/global_full/solver_service.o \
                 ${SRC}/global_full/solver_service2.o \
