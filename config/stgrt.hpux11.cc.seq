@@ -6,12 +6,14 @@ F77=f90
 CC=cc
 LD=f90
 
-INCLUDEDIRS="-I/opt/mlib/include"
+BASEDIR="/bau/stat16/users/statik/ccarat/lib/hpux_11"
+
+INCLUDEDIRS="-I/opt/mlib/include -I/bau/stat16/users/statik/ccarat/include"
 LIBDIRS="-L/usr/lib -L/opt/mlib/lib/pa2.0 -L/bau/stat16/users/statik/lib" 
 
 # aztec
 AZTEC_INC=""
-AZTEC_LIB="-L/bau/stat16/users/statik/lib/AZTEC21 -laztec_seq21_32"
+AZTEC_LIB="-L$BASEDIR/aztec21 -laztec_seq21_32"
 
 # spooles
 SPOOLES_INC=""
@@ -19,14 +21,16 @@ SPOOLES_LIB=""
 
 # umfpack
 UMFPACK_INC=""
-UMFPACK_LIB="-L/bau/stat16/users/statik/lib/UMFPACK/lib -lumfpack40_hpux11_32"
+UMFPACK_LIB="-L$BASEDIR/umfpack -lumfpack40_hpux11_32"
 
 
 LIBS="-lcl -lc -lm -lveclib -llapack"
 
 # FAST
 PROGRAMNAME=cca_seq_32
-CFLAGS="-D__HP__  +e -Ae +w1 -v -O +Onolimit"
-FFLAGS="-O"
+CFLAGS_OPT="-O +Onolimit"
+FFLAGS_OPT="-O"
+CFLAGS="-D__HP__  +e -Ae +w1 -v"
+FFLAGS=""
 LDFLAGS=""
 

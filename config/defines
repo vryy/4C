@@ -54,5 +54,5 @@ UMFPACK            # defines interface to solver library Umfpack
 
 # visual packages (only in seriell)
 #VISUAL2_PACKAGE    # defines visualisation tool VISUAL2
-VISUAL3_PACKAGE    # defines visualisation tool VISUAL3
+#VISUAL3_PACKAGE    # defines visualisation tool VISUAL3
 

@@ -6,20 +6,22 @@ F77=/opt/mpi/bin/mpif90
 CC=/opt/mpi/bin/mpicc
 LD=/opt/mpi/bin/mpicc
 
-INCLUDEDIRS="-I/opt/mpi/include"
+BASEDIR="/bau/stat16/users/statik/ccarat/lib/hpux_11"
+
+INCLUDEDIRS="-I/opt/mpi/include -I/bau/stat16/users/statik/ccarat/include"
 LIBDIRS="-L/usr/lib -L/opt/mlib/lib/pa2.0 -L/bau/stat16/users/statik/lib/METIS " 
 
 # aztec
 AZTEC_INC=""
-AZTEC_LIB="-L/bau/stat16/users/statik/lib/AZTEC21 -laztec_par21_32"
+AZTEC_LIB="-L$BASEDIR/aztec21 -laztec_par21_32"
 
 # spooles
 SPOOLES_INC=""
-SPOOLES_LIB="-L/bau/stat16/users/statik/lib/spooles -lspoolesMPI_32  -lspooles_32"
+SPOOLES_LIB="-L$BASEDIR/spooles -lspoolesMPI_32 -lspooles_32"
 
 # umfpack
 UMFPACK_INC=""
-UMFPACK_LIB="-L/bau/stat16/users/statik/lib/UMFPACK/lib -lumfpack40_hpux11_32"
+UMFPACK_LIB="-L$BASEDIR/umfpack -lumfpack40_hpux11_32"
 
 
 LIBS="-lmetis_32 -L/opt/fortran90/lib/pa2.0 -lF90 -L/opt/fortran90/lib  -lU77 -lcl -lc -lm -lveclib -llapack -Wl,-aarchive_shared -lmpi "
