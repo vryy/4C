@@ -141,6 +141,7 @@ liste=' ale2_nln.dat '
   . ./scripts/setup-variables.sh
   . ./scripts/setup-libraries.sh
   . ./scripts/setup-objects.sh
+  . ./scripts/build-define-header.sh
   . ./scripts/build-makefile.sh
    
   exe=$PROGRAMNAME
@@ -162,6 +163,7 @@ liste=' ale2_nln.dat '
     chmod 755 $exe
   else
     echo '    Making executable failed!!!'
+    mv make.log make.err
     exit
   fi
 
