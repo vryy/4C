@@ -233,26 +233,46 @@ void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield)
     {
       actnode = &(fluidfield->dis[0].node[i]);
       actanode = (fluidfield->dis[0].node[i].gnode->mfcpnode[genprob.numaf]);
-      switch (genprob.ndim)
+      /* ALE Gebiet */
+      if (actanode != NULL)
       {
-        case 3:
-          fprintf(out," %6d %18.5E %18.5E %18.5E\n",
-              actnode->Id+1,
-              actanode->sol.a.da[fsidyn->actpos][0],
-              actanode->sol.a.da[fsidyn->actpos][1],
-              actanode->sol.a.da[fsidyn->actpos][2]
-              );
-          break;
-        case 2:
-          fprintf(out," %6d %18.5E %18.5E \n",
-              actnode->Id+1,
-              actanode->sol.a.da[fsidyn->actpos][0],
-              actanode->sol.a.da[fsidyn->actpos][1]
-              );
-          break;
-        default:
-          dserror("Unknown number of dimensions");
-          break;
+        switch (genprob.ndim)
+        {
+          case 3:
+            fprintf(out," %6d %18.5E %18.5E %18.5E\n",
+                actnode->Id+1,
+                actanode->sol.a.da[fsidyn->actpos][0],
+                actanode->sol.a.da[fsidyn->actpos][1],
+                actanode->sol.a.da[fsidyn->actpos][2]
+                );
+            break;
+          case 2:
+            fprintf(out," %6d %18.5E %18.5E \n",
+                actnode->Id+1,
+                actanode->sol.a.da[fsidyn->actpos][0],
+                actanode->sol.a.da[fsidyn->actpos][1]
+                );
+            break;
+          default:
+            dserror("Unknown number of dimensions");
+            break;
+        }
+      }
+      /* EULER GEBIET */
+      else
+      {
+        switch (genprob.ndim)
+        {
+          case 3:
+            fprintf(out," %6d %18.5E %18.5E %18.5E\n", actnode->Id+1, 0.0, 0.0, 0.0);
+            break;
+          case 2:
+            fprintf(out," %6d %18.5E %18.5E \n", actnode->Id+1, 0.0, 0.0);
+            break;
+          default:
+            dserror("Unknown number of dimensions");
+            break;
+        }
       }
     }
   }
