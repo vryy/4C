@@ -1,3 +1,14 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains all prototypes for wall1 element
+
+*----------------------------------------------------------------------*/
+#ifdef D_WALL1
+
+/*! 
+\addtogroup WALL1
+*//*! @{ (documentation module open)*/
+
 /*-----------------------------------------------------------------------*
 |  w1_bop.c                                                  al 9/01     |
 |  calculate operator matrix at point r,s                                |
@@ -281,6 +292,7 @@ void w1_mat_plast_mises(double ym,      /* young's modulus              */
                         double sigy,    /* yield stresse                */
                         double hard,    /* hardening modulus            */       
                         double gf,      /* fracture energy              */
+                        double betah,
                         ELEMENT   *ele, /* actual element               */
                         WALL_TYPE wtype,/* plane stress/strain...       */         
                         double **bop,   /* derivative operator          */
@@ -302,6 +314,7 @@ void w1_mat_plast_mises(double ym,      /* young's modulus              */
 *-----------------------------------------------------------------------*/
 void w1yilcr(double E,    /* young's modulus                            */
              double Eh,   /* hardening modulus                          */
+             double betah,
              double sigy, /* yield stresse                              */
              double epstn,/* equivalent uniaxial plastic strain         */    
              int    isoft,/* softening                                  */
@@ -314,6 +327,7 @@ void w1yilcr(double E,    /* young's modulus                            */
 *-----------------------------------------------------------------------*/
 void w1radi(double e,        /* young's modulus                         */
             double eh,       /* hardening modulus                       */
+            double betah,
             double sigy,     /* yield stresse                           */
             double vnu,      /* poisson's ratio                         */
             double dia,      /* equivalent element length               */
@@ -329,6 +343,7 @@ void w1radi(double e,        /* young's modulus                         */
 *-----------------------------------------------------------------------*/
 void w1mapl(double e,        /* young's modulus                         */
             double eh,       /* hardening modulus                       */
+            double betah,
             double sigy,     /* yield stresse                           */
             double vnu,      /* poisson's ratio                         */
             double dia,      /* equivalent element length               */
@@ -920,14 +935,165 @@ void w1_oint(
              double    *retval,  /* return value */
              int        init     /* ==2 calc.strain energy */
              );
-                                                                        
-                                                                        
-                                                                        
-                                                                        
-                                                                        
-                                                                        
-                                                                        
-                                                                        
-                                                                        
-                                                                        
+/*-----------------------------------------------------------------------*
+|  w1_mat_plast_mises3D.c                                      sh 8/02   |
+|  constitutive matrix - forces - linear elastic- von Mises - 3D         |
+|  uses a 3D-Material formulation; constitutive matrix and stresses      |
+|  are condensed back to 2D conditions (plane stress, plane strain)      |
+|  (rotational symmetry is not implemented)                              |
+*-----------------------------------------------------------------------*/
+void w1_mat_plast_mises_3D(double    ym,     /* young's modulus              */
+                           double    pv,     /* poisson's ratio              */
+                           double    ALFAT,  /* temperature expansion factor */
+                           double    sigy,   /* yield stresse                */
+                           double    hard,   /* hardening modulus            */
+                           double    gf,     /* fracture energy              */
+                           double    betah,
+                           ELEMENT  *ele,    /* actual element               */
+                           WALL_TYPE wtype,  /* plane stress/strain...       */
+                           double  **bop,    /* derivative operator          */
+                           double   *gop,    /* add. derivative operator     */
+                           double   *alpha,  /* internal dof                 */
+                           int       ip,     /* integration point Id         */
+                           double   *stress, /* vector of stresses           */
+                           double  **d,      /* constitutive matrix          */
+                           int       istore, /* controls storing of stresses */
+                           int       newval);/* controls eval. of stresses   */
+/*----------------------------------------------------------------------*
+ | w1_mat_plast_mises3D.c                                               |
+ | constitutive matrix - forces - linear elastic- von Mises - 3D sh 7/02|
+ |                Test for 3D Materialmodell in Wall-Element            |
+ *----------------------------------------------------------------------*/
+void mat_plast_mises_3D(double ym,       /* young's modulus               */
+                        double pv,       /* poisson's ration              */
+                        double ALFAT,    /* temperature expansion factor  */
+                        double sigy,     /* uniaxial yield stress         */
+                        double hard,     /* hardening modulus             */
+                        double gf,       /* fracture energy               */
+                        double betah,
+                        double *stress,  /* ele stress (-resultant) vector*/      
+                        double **d,      /* material matrix               */
+                        int   *iupd,     /* controls update of new stresses to WA */
+                                         /* additional parameters         */
+                        int    *yip,     /* stress state  1=el;2=pl       */
+                        double *epstn,   /* uniaxial plastic strai        */
+                        double strain[6],/* current strains from displacements */
+                        double sig[6],   /* stresse from last update -> WA     */
+                        double eps[6],   /* strains from last update -> WA     */
+                        double qn[6],    /* backstress vector from last update -> WA */
+                        double dia);     /* internal length parameter from WA  */
+/*----------------------------------------------------------------------*
+ | w1_mat_plast_mises3D.c                                               |
+ | constitutive matrix - linear elastic - 3D [11,22,33,12,23,13] sh 7/02|
+ *----------------------------------------------------------------------*/
+void mat_linel3D(double ym,       /* young's modulus                    */
+                 double pv,       /* poisson's ration                   */
+                 double **d);     /* material matrix 3D                 */
+/*----------------------------------------------------------------------*
+ | w1_mat_plast_mises3D.c                                               |
+ | yield criterion for mises plasticity - 3D                     sh 7/02|
+ *----------------------------------------------------------------------*/
+void yilcr_mises_lin(double E,    /* young's modulus                    */
+                     double Eh,   /* hardening modulus                  */
+                     double betah,
+                     double sigy, /* uniaxial yield stress              */
+                     double epstn,/* equivalent uniaxial plastic strain */
+                     int    isoft,/* ??                                 */
+                     double dia,  /* internal length parameter          */
+                     double *tau, /* current stress (lokal)             */
+                     double *ft); /* yield function                     */
+/*----------------------------------------------------------------------*
+ | w1_mat_plast_mises3D.c                                               |
+ | radial return for mises plasticity with combined linear              |
+ |               isotropic/kinematic hardening law - 3D          sh 7/02|
+ *----------------------------------------------------------------------*/
+void radi_mises_lin(double e,     /* young's modulus                    */
+                    double eh,    /* hardening modulus                  */
+                    double betah,
+                    double sigy,  /* uniaxial yield stress              */
+                    double vnu,   /* poisson's ration                   */
+                    double dia,   /* internal length parameter          */
+                    double *sigma,/* stress to be projected             */
+                    double *qn,   /* backstress vector                  */
+                    int    isoft, /* ??                                 */
+                    double *epstn,/* uniaxial plastic strain            */
+                    double *dlam);/* plastic multiplier                 */
+/*----------------------------------------------------------------------*
+ | w1_mat_plast_mises3D.c                                               |
+ | forms the consistent material tangent for mises plasticity with      |
+ | combined linear isotropic/kinematic hardening law - 3D        sh 7/02|
+ *----------------------------------------------------------------------*/
+void mapl_mises_lin(double e,     /* young's modulus                    */
+                    double eh,    /* hardening modulus                  */
+                    double betah,
+                    double sigy,  /* uniaxial yield stress              */
+                    double vnu,   /* poisson's ration                   */
+                    double dia,   /* internal length parameter          */
+                    double *tau,  /* stresses: predictor (plane_strain) */
+                                  /*           projected (plane_stress) */ 
+                    int    isoft, /* ??                                 */
+                    double *epstn,/* uniaxial plastic strain            */
+                    double dlam,  /* plastic multiplier                 */
+                    double **d);  /* material matrix 3D                 */
+/*-----------------------------------------------------------------------|
+| w1_mat_trans.c                                                         |
+|      topic: blowing up plane stress/strain conditions           sh 7/02|
+|             to 3D --> 3D-Material Law                                  |
+|-----------------------------------------------------------------------*/
+void w1mat_trans_up (double     ym,        /* Young's modulus               */
+                     double     pv,        /* poissons ratio                */
+                     ELEMENT   *ele,       /* current element               */                                 
+                     WALL_TYPE  wtype,     /* Info about actual wall element*/
+                     double   **bop,       /* B-operator                    */
+                     double    *gop,
+                     double    *alpha,
+                     int        ip,        /* integration point ID          */ 
+                     double    *stress,    /* current stress condensed      */
+                     double    *stress3D,  /* current stress condensed [6]  */
+                     double    *strain3D,  /* strains to be calculated [6]  */
+                     double    *sig3D,     /* stresses from last update [6] */ 
+                     double    *eps3D,     /* strains from last update [6]  */
+                     double    *qn3D,      /* backstress vektor [6]         */
+                     int        newval);   /* controls evaluation of new stresses */           
+/*-----------------------------------------------------------------------|
+| w1_mat_trans.c                                                         |
+|      topic: kondense 3D conditions                              sh 7/02|
+|             to plane stress/strain conditions                          |
+|-----------------------------------------------------------------------*/
+void w1mat_trans_down (double   **d,        /*current material matrix 3D -> 2D */
+                       ELEMENT   *ele,      /* current element                 */ 
+                       WALL_TYPE  wtype,    /* Info about actual wall element  */
+                       int        ip,       /* integration point ID            */
+                       int        yipc,     /* stress state  1=el;2=pl -> copy of yip for correct saving */
+                       double    *stressc,  /* condensed stresses              */
+                       double    *sig,      /* stresses from last update       */
+                       double    *eps,      /* strains from last update        */
+                       double    *stress,   /* current stresses                */
+                       double    *strain,   /* current strains                 */
+                       double    *qn);      /* backstress vector               */
+/*-----------------------------------------------------------------------*
+| w1_mat_trans.c                                                         |
+|     changes 2 rows of a vector                               sh 8/02   |
+|  vec[x,x,a,x,b,x,...] -> vec[x,x,b,x,a,x,...]                          |
+*-----------------------------------------------------------------------*/
+void w1_vec_switch(double *vec,      /* vector do be modified           */
+                   int a,            /* row to be changed to b          */
+                   int b);           /* row to be changed to a          */
+
+/*-----------------------------------------------------------------------*
+| w1_mat_trans.c                                                         |
+|     changes 2 rows & columns of a square matrix              sh 8/02   |
+|     [-,a,-,b,-]        [-,b,-,a,-]                                     |
+|     [a,a,a,c,a]        [b,b,b,c,b]                                     |
+|  mat[-,a,-,b,-] ->  mat[-,b,-,a,-]                                     |
+|     [b,c,b,b,b]        [a,c,a,a,a]                                     |
+|     [-,a,-,b,-]        [-,b,-,a,-]                                     |
+*-----------------------------------------------------------------------*/
+void w1_matrix_switch(double **mat,   /* matrix do be modified          */
+                      int a,          /* row & colum to be changed to b */     
+                      int b,          /* row & colum to be changed to a */
+                      int l);         /* length of row/column of matrix */
+/*----------------------------------------------------------------------*/
+#endif /*D_WALL1*/
+/*! @} (documentation module close)*/
                                                                         
