@@ -267,6 +267,15 @@ case -8: /* f(t)=(C2/2PI*C1)*cos(2PI*C1*t) +s0*/
    s0   = -c2/val1;
    fac = c2/val1*cos(val1*T)+s0;
 break;
+case -9: /* f(t)=t:2-C1:(2PI)*cos(PI*t:C1-PI:2) */
+   if (T<=c1)
+   {
+      val1 = PI / c1;
+      fac = T*0.5 - 0.5/val1 * cos(val1*T-PI*0.5);
+   }
+   else
+      fac = T - c1 * 0.5;
+break;
 default:
    dserror("Number of explicit timecurve (NUMEX) unknown\n");
 } /* end switch(numex) */
