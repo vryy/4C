@@ -63,37 +63,37 @@ void f2_calliftdrag(
     ELEMENT       *ele,
     CONTAINER     *container)
 {
-INT		lr;		/* INTegration directions		*/
-INT		i,j;	        /* some loopers				*/
-INT		nir;		/* number of GP's in r direction 	*/
-INT		ngline;		/* number of geometrylines at element 	*/
-INT		line;		/* looper over lines			*/
-INT		ngnode;		/* number of geometry-nodes on g-line	*/
-INT		iegnod[MAXNOD_F2]; /* (o)   edge nodes*/
-const INT	numdf  = 3;	/* dof per node				*/
+INT		lr;             /* integration direction                */
+INT		i,j;            /* some loopers	                        */
+INT		nir;            /* number of GP's in r direction        */
+INT		ngline;         /* number of geometrylines at element   */
+INT		line;           /* looper over lines                    */
+INT		ngnode;         /* number of geometry-nodes on g-line   */
+INT		iegnod[MAXNOD_F2]; /* (o)   edge nodes                  */
+const INT       numdf  = 3;     /* dof per node                         */
 
-DOUBLE		vnx,vny;	/* comp, of normal vector at int point	*/
-DOUBLE		forceline[2];/* lineload value in x and y direct.(inp)	*/
-DOUBLE		sigmaint[3]; /* fluid stresses at integration point	*/
-DOUBLE		nsigma[3][MAXNOD_F2]; /* nodal fluid stresses		*/
-DOUBLE		xyzl[2][MAXNOD_F2]; /* nodal coordinates		*/
-DOUBLE		e1;		/* GP-koordinates in r-s-system		*/
-DOUBLE		facr;		/* integration factor  GP-info		*/
-DOUBLE          xy[2];		/* GP-global coordinates		*/
-DOUBLE		center[2];	/* center of body in fluid		*/
+DOUBLE		vnx,vny;        /* comp, of normal vector at int point  */
+DOUBLE		forceline[2]; /* lineload value in x and y direct.(inp) */
+DOUBLE		sigmaint[3];    /* fluid stresses at integration point  */
+DOUBLE		nsigma[3][MAXNOD_F2]; /* nodal fluid stresses           */
+DOUBLE		xyzl[2][MAXNOD_F2]; /* nodal coordinates                */
+DOUBLE		e1;             /* GP-koordinates in r-s-system         */
+DOUBLE		facr;           /* integration factor  GP-info          */
+DOUBLE          xy[2];          /* GP-global coordinates                */
+DOUBLE          center[2];      /* center of body in fluid              */
 INT             ld_id;
 
 GLINE		*actgline;
-DIS_TYP		typ;		/* element type				*/
+DIS_TYP		typ;            /* element type                         */
 NODE		*actnode;
 FLUID_DYNAMIC *fdyn;
 FLUID_DATA    *data;
 
-static DOUBLE	*funct;		/* ansatz-functions			*/
+static DOUBLE	*funct;         /* ansatz-functions                     */
 static ARRAY	funct_a;
-static DOUBLE	**deriv;	/* derivatives of ansatz-funct		*/
+static DOUBLE	**deriv;        /* derivatives of ansatz-funct          */
 static ARRAY	deriv_a;
-static DOUBLE	**xjm;		/* jacobian matrix			*/
+static DOUBLE	**xjm;          /* jacobian matrix                      */
 static ARRAY	xjm_a;
 
 /*----------------------------------------------------------------------*/
