@@ -181,7 +181,7 @@ int                     tentP_nrow;  /*!< number of rows in this piece of tent. 
 int                    *tentP_rindex;/*!< the row indizes of this piece of tentative prolongator */
                                      /*   (the column indizes are the dofs) */
 double                  x[3];
-/*struct _ARRAY          *R;*/           /*!<  The R-part of the P=QR factorization */
+/*struct _ARRAY          *R;*/           /*  The R-part of the P=QR factorization */
 enum
    {
     mlpcg_aggnone,
