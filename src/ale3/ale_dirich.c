@@ -71,53 +71,55 @@ void ale_setdirich(
     INT           readstructpos
     )
 {
-
-  GNODE                *actagnode;
-  NODE                 *actanode;
-
-#ifdef D_FSI
-  NODE                 *actsnode;
-  NODE                 *actfnode;
-#endif
-
-  INT                   i,j;
-  INT                   numnp_total;
-  INT                   numele_total;
-  INT                   actcurve;
-  INT                   diff,max;
-  INT                   numff,numsf;
-  DOUBLE                timefac[ALENUMTIMECURVE];
-  DOUBLE                T;
-  DOUBLE                dt;
-  DOUBLE                acttimefac;
-  DOUBLE                initval;
-
-  DOUBLE                cx,cy,win,wino,dd;
+GNODE                *actagnode;
+NODE                 *actsnode;
+NODE                 *actanode;
+NODE                 *actfnode;
+ELEMENT              *actele;
+INT                   i,j;
+INT                   numnp_total;
+INT                   numele_total;
+INT                   actcurve;
+INT                   diff,max;
+INT                   numff,numsf;
+INT                   dim;
+DOUBLE                timefac[ALENUMTIMECURVE];
+DOUBLE                T;
+DOUBLE                dt;
+DOUBLE                acttimefac;
+DOUBLE                initval;
+DOUBLE                delta, deltav[MAXDOFPERNODE];
+DOUBLE                cx,cy,win,wino,dd;
 
 #ifdef DEBUG 
-  dstrc_enter("ale_setdirich");
+dstrc_enter("ale_setdirich");
 #endif 
 
-  numnp_total  = actfield->dis[0].numnp;
-  numele_total = actfield->dis[0].numele;
-  T            = adyn->time;
-  dt           = adyn->dt;
-  numff        = genprob.numff;
-  numsf        = genprob.numsf;
+numnp_total  = actfield->dis[0].numnp;
+numele_total = actfield->dis[0].numele;
+T            = adyn->time;
+dt           = adyn->dt;
+numff        = genprob.numff;
+numsf        = genprob.numsf;
+dim          = genprob.ndim;
 
-  /* get values from time curve */
-  for (actcurve=0;actcurve<numcurve;actcurve++)
-  {
-    dyn_facfromcurve(actcurve,T,&timefac[actcurve]) ;
-  }
+/*------------------------------------------ get values from time curve */
+for (actcurve=0;actcurve<numcurve;actcurve++)
+{
+  dyn_facfromcurve(actcurve,T,&timefac[actcurve]) ;
+}
 
-  /* loop over all nodes */
-  for (i=0;i<numnp_total;i++)
-  {
-    actanode  = &(actfield->dis[0].node[i]); 
-    actagnode = actanode->gnode;      
-    if (actpos >= actanode->sol.fdim)
-    {
+/*------------------------ dirichlet values are applied in the xyz* co-sys
+   so transform nodal values with dirichlet conditions                   */
+locsys_trans_sol_dirich(actfield,0,1,0,0);   
+
+/*------------------------------------------------- loop over all nodes */
+for (i=0;i<numnp_total;i++)
+{
+   actanode  = &(actfield->dis[0].node[i]); 
+   actagnode = actanode->gnode;      
+   if (actpos >= actanode->sol.fdim)
+   {
       diff = actpos - actanode->sol.fdim;
       max  = IMAX(diff,5);
       amredef(&(actanode->sol),actanode->sol.fdim+max+1,actanode->sol.sdim,"DA");
@@ -172,51 +174,67 @@ void ale_setdirich(
         break;
 
 #ifdef D_FSI
-      case dirich_FSI: /* dirichvalues = displacements of structure */
-        actsnode = actagnode->mfcpnode[numsf];
-        for (j=0;j<actanode->numdf;j++)
-        {
-          actanode->sol_increment.a.da[0][j] =
-            actsnode->sol_mf.a.da[readstructpos][j];  
-          if (readstructpos != 6) /* 'ordinary' calculation */
-            actanode->sol.a.da[actpos][j] = 
-              actsnode->sol_mf.a.da[readstructpos][j]; 
-        } /* readstructpos = 0 for 'ordinary' calculation *
-             = 6 for calculation for Relaxation parameter via
-             steepest descent method */
-        break;
+   case dirich_FSI: /* dirichvalues = displacements of structure -------*/
+      dsassert(actanode->locsysId==0,"no locsys for ALE dirich_FSI!\n");
+      actsnode = actagnode->mfcpnode[numsf];
+      for (j=0;j<actanode->numdf;j++)
+      {
+         actanode->sol_increment.a.da[0][j] =
+	    actsnode->sol_mf.a.da[readstructpos][j];  
+	 if (readstructpos != 6) /* 'ordinary' calculation */
+	    actanode->sol.a.da[actpos][j] = 
+	       actsnode->sol_mf.a.da[readstructpos][j]; 
+      } /* readstructpos = 0 for 'ordinary' calculation *
+                         = 6 for calculation for Relaxation parameter via
+			     steepest descent method */
+   break;
+   case dirich_freesurf: /* dirichvalues = displacement of fluid
+                               free surface                             */
+      if (actanode->locsysId==0)
+      {
+         actfnode = actagnode->mfcpnode[numff];                            
+         for (j=0;j<actanode->numdf;j++)
+         {
+            delta = actfnode->xfs[j]-actanode->x[j];
+            actanode->sol_increment.a.da[0][j]=delta;   
+         }
+      }
+      else /* local co-system */
+           /* NOTE: given is the position of the free surface from which 
+                    we get the prescribed displacement for this node
+                    in the XYZ co-system. So the displacement vector
+                    has to be tranformed to the xyz* co-system          */
+      {
+         actfnode = actagnode->mfcpnode[numff];                            
+         actele = actanode->element[0];
+         for (j=0;j<actanode->numdf;j++)
+            deltav[j]=actfnode->xfs[j]-actanode->x[j];         
+         locsys_trans_nodval(actele,&(deltav[0]),actanode->numdf,
+                             actanode->locsysId-1,0);
+         for (j=0;j<actanode->numdf;j++)
+            actanode->sol_increment.a.da[0][j]=deltav[j];   
+         
+      }    
+   break;  
 
-      case dirich_freesurf: /* dirichvalues = displacement of fluid
-                               free surface */
-        actfnode = actagnode->mfcpnode[numff];                            
-        for (j=0;j<actanode->numdf;j++)
-        {
-          if (actagnode->freesurf->fixed_onoff.a.iv[j]==0)
-          {
-            actanode->sol_increment.a.da[0][j] 
-              = actanode->sol_mf.a.da[0][j] + actfnode->sol_mf.a.da[0][j]*dt;
-            actanode->sol.a.da[actpos][j] 
-              = actanode->sol_increment.a.da[0][j];
-          }
-          else 
-          {
-            actanode->sol_increment.a.da[0][j] = ZERO;
-            actanode->sol.a.da[actpos][j] = ZERO;
-          }
-        }    
-        break;  
 #endif   
+   default:
+      dserror("dirich type unknown!\n");
+   }
+}
 
-      default:
-        dserror("dirich type unknown!\n");
-    }
-  }
+/*------------------------ dirichlet values are applied in the xyz* co-sys
+   so transform back nodal values with dirichlet conditions             */
+locsys_trans_sol_dirich(actfield,0,1,0,1);   
+
+
+/*----------------------------------------------------------------------*/
 
 #ifdef DEBUG 
-  dstrc_exit();
+dstrc_exit();
 #endif
 
-  return;
+return;
 } /* end of ale_setdirich*/
 
 
@@ -243,58 +261,54 @@ void ale_setdirich(
   fsi_ale_laplace()
 
  *----------------------------------------------------------------------*/
-void ale_setdirich_increment_fsi(
-    FIELD        *actfield, 
-    ALE_DYNAMIC  *adyn, 
-    INT           actpos
-    )
+void ale_setdirich_increment_fsi(FIELD        *actfield, 
+                                 ALE_DYNAMIC  *adyn, 
+				 INT           actpos)
 {
-
-  GNODE                *actagnode;
-  NODE                 *actanode;
-
-#ifdef D_FSI
-  NODE                 *actsnode;
-  NODE                 *actfnode;
-#endif
-
-  INT                   i,j;
-  INT                   numnp_total;
-  INT                   numele_total;
-  INT                   actcurve;
-  INT                   diff,max;
-  INT                   numff,numsf;
-  DOUBLE                timefac[ALENUMTIMECURVE];
-  DOUBLE                T;
-  DOUBLE                dt;
-  DOUBLE                acttimefac;
-  DOUBLE                initval;
+GNODE                *actagnode;
+NODE                 *actsnode;
+NODE                 *actanode;
+NODE                 *actfnode;
+INT                   i,j;
+INT                   numnp_total;
+INT                   numele_total;
+INT                   actcurve;
+INT                   diff,max;
+INT                   numff,numsf;
+INT                   dim;
+DOUBLE                timefac[ALENUMTIMECURVE];
+DOUBLE                T;
+DOUBLE                dt;
+DOUBLE                acttimefac;
+DOUBLE                initval;
 
 
 #ifdef DEBUG 
   dstrc_enter("ale_setdirich_increment_fsi");
 #endif 
 
-  numnp_total  = actfield->dis[0].numnp;
-  numele_total = actfield->dis[0].numele;
-  T            = adyn->time;
-  dt           = adyn->dt;
-  numff        = genprob.numff;
-  numsf        = genprob.numsf;
+numnp_total  = actfield->dis[0].numnp;
+numele_total = actfield->dis[0].numele;
+T            = adyn->time;
+dt           = adyn->dt;
+numff        = genprob.numff;
+numsf        = genprob.numsf;
+dim          = genprob.ndim;
 
-  /* get values from time curve */
-  for (actcurve=0;actcurve<numcurve;actcurve++)
-  {
-    dyn_facfromcurve(actcurve,T,&timefac[actcurve]) ;
-  }
+/*------------------------------------------ get values from time curve */
+for (actcurve=0;actcurve<numcurve;actcurve++)
+{
+  dyn_facfromcurve(actcurve,T,&timefac[actcurve]) ;
+}
 
-  /* loop over all nodes */
-  for (i=0;i<numnp_total;i++)
-  {
-    actanode  = &(actfield->dis[0].node[i]); 
-    actagnode = actanode->gnode;      
-    if (actpos >= actanode->sol.fdim)
-    {
+/*------------------------------------------------- loop over all nodes */
+for (i=0;i<numnp_total;i++)
+{
+   actanode  = &(actfield->dis[0].node[i]); 
+   dsassert(actanode->locsysId==0,"locsys not implemented yet!\n");
+   actagnode = actanode->gnode;      
+   if (actpos >= actanode->sol.fdim)
+   {
       diff = actpos - actanode->sol.fdim;
       max  = IMAX(diff,5);
       amredef(&(actanode->sol),actanode->sol.fdim+max+1,actanode->sol.sdim,"DA");
@@ -323,35 +337,23 @@ void ale_setdirich_increment_fsi(
         break;
 
 #ifdef D_FSI
-      case dirich_FSI: /* dirichvalues = displacements of structure */
-        actsnode = actagnode->mfcpnode[numsf];
-        for (j=0;j<actanode->numdf;j++)
-        {
-          actanode->sol_increment.a.da[0][j] = actsnode->sol_mf.a.da[0][j]
-            - actanode->sol_increment.a.da[1][j];  
-          /*	 actanode->sol.a.da[actpos][j] = actsnode->sol_mf.a.da[0][j]; */
-        }
-        break;
-
-      case dirich_freesurf: /* dirichvalues = displacement of fluid
-                               free surface                                */
-        actfnode = actagnode->mfcpnode[numff];                            
-        for (j=0;j<actanode->numdf;j++)
-        {
-          if (actagnode->freesurf->fixed_onoff.a.iv[j]==0)
-          {
+   case dirich_FSI: /* dirichvalues = displacements of structure -------*/
+      actsnode = actagnode->mfcpnode[numsf];
+      for (j=0;j<actanode->numdf;j++)
+      {
+         actanode->sol_increment.a.da[0][j] = actsnode->sol_mf.a.da[0][j]
+	                                    - actanode->sol_increment.a.da[1][j];  
+      }
+   break;
+   case dirich_freesurf: /* dirichvalues = displacement of fluid
+                            free surface                                */
+      actfnode = actagnode->mfcpnode[numff];                            
+      for (j=0;j<actanode->numdf;j++)
+      {
             actanode->sol_increment.a.da[0][j] 
-              = actfnode->sol_mf.a.da[0][j]*dt;
-            /*	    actanode->sol.a.da[actpos][j] 
-                    = actanode->sol_mf.a.da[0][j] + actfnode->sol_mf.a.da[0][j]*dt;*/
-          }
-          else 
-          {
-            actanode->sol_increment.a.da[0][j] = ZERO;
-            /*	    actanode->sol.a.da[actpos][j] = ZERO; */
-          }
-        }    
-        break;  
+	       = actfnode->xfs[j]-actanode->x[j]-actanode->sol_increment.a.da[1][j];
+      }    
+   break;  
 #endif   
 
       default:
@@ -360,7 +362,7 @@ void ale_setdirich_increment_fsi(
   }
 
 #ifdef DEBUG 
-  dstrc_exit();
+dstrc_exit();
 #endif
 
   return;
@@ -414,27 +416,28 @@ void ale_setdirich_increment(
   dstrc_enter("ale_setdirich_increment");
 #endif 
 
-  numnp_total  = actfield->dis[0].numnp;
-  numele_total = actfield->dis[0].numele;
-  T            = adyn->time;
-  T_prev       = T - adyn->dt;
+numnp_total  = actfield->dis[0].numnp;
+numele_total = actfield->dis[0].numele;
+T            = adyn->time;
+T_prev       = T - adyn->dt;
 
-  /* get values from time curve */
-  for (actcurve=0;actcurve<numcurve;actcurve++)
-  {
-    dyn_facfromcurve(actcurve,T     ,&timefac[0][actcurve]);
-    dyn_facfromcurve(actcurve,T_prev,&timefac[1][actcurve]);
-  }
+/*------------------------------------------ get values from time curve */
+for (actcurve=0;actcurve<numcurve;actcurve++)
+{
+  dyn_facfromcurve(actcurve,T     ,&timefac[0][actcurve]);
+  dyn_facfromcurve(actcurve,T_prev,&timefac[1][actcurve]);
+}
 
-  /* loop over all nodes */
-  for (i=0;i<numnp_total;i++)
-  {
-    actnode  = &(actfield->dis[0].node[i]); 
-    actgnode = actnode->gnode; 
-    if (actgnode->dirich==NULL)
-      continue;
-    for (j=0;j<actnode->numdf;j++)
-    {
+/*------------------------------------------------- loop over all nodes */
+for (i=0;i<numnp_total;i++)
+{
+   actnode  = &(actfield->dis[0].node[i]); 
+   dsassert(actnode->locsysId==0,"locsys not implemented yet!\n");
+   actgnode = actnode->gnode; 
+   if (actgnode->dirich==NULL)
+         continue;
+   for (j=0;j<actnode->numdf;j++)
+   {
       if (actgnode->dirich->dirich_onoff.a.iv[j]==0)
         continue;
       actcurve = actgnode->dirich->curve.a.iv[j]-1;
@@ -480,7 +483,7 @@ void ale_setdirich_increment(
   } /* end loop over nodes */
 
 #ifdef DEBUG 
-  dstrc_exit();
+dstrc_exit();
 #endif
 
   return;
@@ -506,81 +509,100 @@ void ale_setdirich_increment(
 
  *----------------------------------------------------------------------*/
 void ale_caldirich(
-    ELEMENT   *actele, 
-    DOUBLE    *fullvec,
-    INT        dim,
-    ARRAY     *estif_global
-    )     
+                     ELEMENT   *actele, 
+		     DOUBLE    *fullvec,
+		     INT        dim,
+                     ARRAY     *estif_global
+		    )     
 {
 
-  INT                   i,j;
-  INT                   numdf;
-  INT                   nd=0;
-  DOUBLE              **estif;
-  DOUBLE                dirich[MAXDOFPERELE];
-  INT                   dirich_onoff[MAXDOFPERELE];
-  DOUBLE                dforces[MAXDOFPERELE];
-  GNODE                *actgnode;
-  NODE                 *actnode;
-  INT                   lm[MAXDOFPERELE];
+INT                   i,j;
+INT                   numdf;
+INT                   nd=0;
+INT                   ilocsys;
+DOUBLE              **estif;
+DOUBLE                dirich[MAXDOFPERELE];
+INT                   dirich_onoff[MAXDOFPERELE];
+DOUBLE                val[MAXDOFPERNODE];
+DOUBLE                dforces[MAXDOFPERELE];
+GNODE                *actgnode;
+NODE                 *actnode;
+INT                   lm[MAXDOFPERELE];
 
 #ifdef DEBUG 
-  dstrc_enter("ale_caldirich");
+dstrc_enter("ale_caldirich");
 #endif  
 
-  estif  = estif_global->a.da;
+/*----------------------------------------------------------------------*/
+estif  = estif_global->a.da;
+/*---------------------------------- set number of dofs on this element */
+for (i=0; i<actele->numnp; i++) nd += actele->node[i]->numdf;
 
-  /* set number of dofs on this element */
-  for (i=0; i<actele->numnp; i++) nd += actele->node[i]->numdf;
-
-  /* init the vectors dirich and dirich_onoff */
-  for (i=0; i<nd; i++)
-  {
-    dirich[i] = 0.0;
-    dirich_onoff[i] = 0;
-    dforces[i] = 0.0;
-  }
-
-  /* fill vectors dirich and dirich_onoff */
-  /* dirichlet values at (n) were already written to the nodes (sol_increment[0][j]) */
-  for (i=0; i<actele->numnp; i++)
-  {
-    numdf    = actele->node[i]->numdf;
-    actnode  = actele->node[i];   
-    actgnode = actnode->gnode;
-    for (j=0; j<numdf; j++)
-    {
-      lm[i*numdf+j] = actele->node[i]->dof[j];
-      if (actgnode->dirich==NULL) continue;
-      dirich_onoff[i*numdf+j] = actgnode->dirich->dirich_onoff.a.iv[j];
-      dirich[i*numdf+j] = actnode->sol_increment.a.da[0][j];
-    }
-  }
-
-  /* loop rows of element matrix */
-  for (i=0; i<nd; i++)
-  {
-    /* do nothing for supported row */
-    if (dirich_onoff[i]!=0) continue;
-
-    /* loop columns of unsupported row */
-    for (j=0; j<nd; j++)
-    {
-      /* do nothing for unsupported columns */
+/*---------------------------- init the vectors dirich and dirich_onoff */
+for (i=0; i<nd; i++)
+{
+   dirich[i] = 0.0;
+   dirich_onoff[i] = 0;
+   dforces[i] = 0.0;
+}
+/*-------------------------------- fill vectors dirich and dirich_onoff */
+/*                                 dirichlet values at (n) were already */
+/*                            written to the nodes (sol_icrement[0][j]) */
+for (i=0; i<actele->numnp; i++)
+{
+   numdf    = actele->node[i]->numdf;
+   actnode  = actele->node[i];   
+   actgnode = actnode->gnode;
+   ilocsys=actnode->locsysId-1;
+   if (ilocsys>=0) /* local co-sys */
+   {
+      /*------------------------- transform values at from XYZ to xyz* */
+      for (j=0;j<numdf;j++) 
+         val[j]=actnode->sol_increment.a.da[0][j];
+      locsys_trans_nodval(actele,&(val[0]),actnode->numdf,ilocsys,0);
+      for (j=0; j<numdf; j++)
+      {
+         lm[i*numdf+j] = actele->node[i]->dof[j];
+         if (actgnode->dirich==NULL) continue;
+         dirich_onoff[i*numdf+j] = actgnode->dirich->dirich_onoff.a.iv[j];
+         dirich[i*numdf+j] = val[j];
+      }
+   }
+   else
+   {
+      for (j=0; j<numdf; j++)
+      {
+         lm[i*numdf+j] = actele->node[i]->dof[j];
+         if (actgnode->dirich==NULL) continue;
+         dirich_onoff[i*numdf+j] = actgnode->dirich->dirich_onoff.a.iv[j];
+         dirich[i*numdf+j] = actnode->sol_increment.a.da[0][j];
+      }
+   }
+}
+/*----------------------------------------- loop rows of element matrix */
+for (i=0; i<nd; i++)
+{
+   /*------------------------------------- do nothing for supported row */
+   if (dirich_onoff[i]!=0) continue;
+   /*---------------------------------- loop columns of unsupported row */
+   for (j=0; j<nd; j++)
+   {
+      /*---------------------------- do nothing for unsupported columns */
       if (dirich_onoff[j]==0) continue;
       dforces[i] -= estif[i][j] * dirich[j];
-    }/* loop j over columns */
-  }/* loop i over rows */
+   }/* loop j over columns */
+}/* loop i over rows */
+/*-------- now assemble the vector dforces to the global vector fullvec */
+for (i=0; i<nd; i++)
+{
+   if (lm[i] >= dim) continue;
+   fullvec[lm[i]] += dforces[i];
+}
 
-  /* now assemble the vector dforces to the global vector fullvec */
-  for (i=0; i<nd; i++)
-  {
-    if (lm[i] >= dim) continue;
-    fullvec[lm[i]] += dforces[i];
-  }
 
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
-  dstrc_exit();
+dstrc_exit();
 #endif
 
   return;
