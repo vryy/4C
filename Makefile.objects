@@ -129,7 +129,6 @@ OBJS6	      = src/shell8/s8_main.o \
                 src/shell8/s8_init.o 
 #                ale
 OBJS7 = \
-                src/ale3/ale_calelm.o \
                 src/ale3/ale_call_stiff.o \
                 src/ale3/ale_dirich.o \
                 src/ale3/ale_dyn_control.o \
