@@ -187,19 +187,22 @@ char             *actplace;               /* pointer to actual place in input-fi
  *----------------------------------------------------------------------*/
 typedef struct _IO_FLAGS
 {
-INT               struct_disp_file;       /* write displacements to .out */
-INT               struct_stress_file;     /* write structural stress to .out */
-INT               struct_disp_gid;        /* write structural displacements to .flavia.res */
-INT               struct_stress_gid;      /* write structural stresses to .flavia.res */
-INT               struct_stress_gid_smo;  /* write structural smoothed/unsmoothed stresses to .flavia.res */
-INT               struct_sm_disp_gid;     /* write structural submesh displacements to .microres */
-INT               struct_sm_stress_gid;   /* write structural submesh stresses to .microres */
-INT               fluid_sol_file;         /* write vel/pre to .out */
-INT               fluid_sol_gid;          /* write vel/pre to .flavia.res */
-INT               fluid_stress_gid;       /* write stresses to .flavia.res */
-INT               fluid_vis_file;         /* write solution to pss-file for VISUAL2 */
-INT               ale_disp_file;          /* write ale displacements to .out */
-INT               ale_disp_gid;           /* write ale displacement to .flavia.res */
+INT               output_out;         /* write output to *.out */
+INT               output_gid;         /* write output to *.flavia.res */
+INT               output_bin;         /* write output to binary */
+
+INT               struct_disp;        /* write structural displacements */
+INT               struct_stress;      /* write structural stress */
+INT               struct_stress_smo;  /* write structural smoothed/unsmoothed stresses */
+INT               struct_sm_disp;     /* write structural submesh displacements to .microres */
+INT               struct_sm_stress;   /* write structural submesh stresses to .microres */
+
+INT               fluid_sol;          /* write fluid vel/pre */
+INT               fluid_stress;       /* write fluid stresses */
+INT               fluid_vis;          /* write fluid solution to pss-file for VISUAL2 */
+
+INT               ale_disp;           /* write ale displacements */
+
 INT               monitor;
 INT               relative_displ;         /* write relative displacements to .err */
 INT               steps_per_file;         /* number of result steps per binary file */

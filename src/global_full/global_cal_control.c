@@ -166,15 +166,11 @@ locsys_inherit_to_node();
 /*------------------------------------------------ write general output */
 out_general();
 /*--------------------------------------------------- write mesh to gid */
-if (par.myrank==0)
+if (par.myrank==0 && ioflags.output_gid)
 {
-   if (ioflags.struct_disp_gid||ioflags.struct_stress_gid||ioflags.fluid_sol_gid
-       ||ioflags.ale_disp_gid||ioflags.fluid_stress_gid)
-   {
-      out_gid_sol_init();
-      if (genprob.probtyp != prb_structure && genprob.probtyp != prb_fsi)
-         out_gid_msh();
-   }
+  out_gid_sol_init();
+  if (genprob.probtyp != prb_structure && genprob.probtyp != prb_fsi)
+    out_gid_msh();
 }
 /*------------------------ program to control execution of optimization */
 /*------------------ call control programs of static or dynamic control */

@@ -205,20 +205,19 @@ if (genprob.nmat<=0)
 /*-------------------------------------- default value for monitoring */
 ioflags.monitor=0;
 /*----------------------------------------- defualt values for output */
-ioflags.struct_disp_file      =0;
-ioflags.struct_stress_file    =0;
-ioflags.struct_disp_gid       =0;
-ioflags.struct_stress_gid     =0;
-ioflags.struct_stress_gid_smo =0;
-ioflags.struct_sm_disp_gid    =0;
-ioflags.struct_sm_stress_gid  =0;
-ioflags.fluid_sol_gid         =0;
-ioflags.fluid_stress_gid      =0;
-ioflags.fluid_sol_file        =0;
-ioflags.fluid_vis_file        =0;
-ioflags.ale_disp_file         =0;
-ioflags.ale_disp_gid          =0;
-ioflags.relative_displ        =0;
+ioflags.output_out          =0;
+ioflags.output_gid          =0;
+ioflags.output_bin          =0;
+ioflags.struct_disp         =0;
+ioflags.struct_stress       =0;
+ioflags.struct_stress_smo   =0;
+ioflags.struct_sm_disp      =0;
+ioflags.struct_sm_stress    =0;
+ioflags.fluid_sol           =0;
+ioflags.fluid_stress        =0;
+ioflags.fluid_vis           =0;
+ioflags.ale_disp            =0;
+ioflags.relative_displ      =0;
 
 
 if (frfind("-PROBLEM TYP")==0) dserror("frfind: PROBLEM TYP not in input file");
@@ -285,97 +284,235 @@ if (frfind("---IO")==1)
   ioflags.steps_per_file = 1000;
   while(strncmp(allfiles.actplace,"------",6)!=0)
   {
+
+    frchar("OUTPUT_OUT",buffer,&ierr);
+    if (ierr)
+    {
+      if (strncmp(buffer,"yes",3)==0) ioflags.output_out=1;
+      if (strncmp(buffer,"YES",3)==0) ioflags.output_out=1;
+      if (strncmp(buffer,"Yes",3)==0) ioflags.output_out=1;
+    }
+
+    frchar("OUTPUT_GID",buffer,&ierr);
+    if (ierr)
+    {
+      if (strncmp(buffer,"yes",3)==0) ioflags.output_gid=1;
+      if (strncmp(buffer,"YES",3)==0) ioflags.output_gid=1;
+      if (strncmp(buffer,"Yes",3)==0) ioflags.output_gid=1;
+    }
+
+    frchar("OUTPUT_BIN",buffer,&ierr);
+    if (ierr)
+    {
+      if (strncmp(buffer,"yes",3)==0) ioflags.output_bin=1;
+      if (strncmp(buffer,"YES",3)==0) ioflags.output_bin=1;
+      if (strncmp(buffer,"Yes",3)==0) ioflags.output_bin=1;
+    }
+
+    frchar("STRUCT_DISP",buffer,&ierr);
+    if (ierr)
+    {
+      if (strncmp(buffer,"yes",3)==0) ioflags.struct_disp=1;
+      if (strncmp(buffer,"YES",3)==0) ioflags.struct_disp=1;
+      if (strncmp(buffer,"Yes",3)==0) ioflags.struct_disp=1;
+    }
+
+    frchar("STRUCT_STRESS",buffer,&ierr);
+    if (ierr)
+    {
+      if (strncmp(buffer,"yes",3)==0) ioflags.struct_stress=1;
+      if (strncmp(buffer,"YES",3)==0) ioflags.struct_stress=1;
+      if (strncmp(buffer,"Yes",3)==0) ioflags.struct_stress=1;
+    }
+
+    frchar("STRUCT_STRESS_SMO",buffer,&ierr);
+    if (ierr)
+    {
+      if (strncmp(buffer,"yes",3)==0) ioflags.struct_stress_smo=1;
+      if (strncmp(buffer,"YES",3)==0) ioflags.struct_stress_smo=1;
+      if (strncmp(buffer,"Yes",3)==0) ioflags.struct_stress_smo=1;
+    }
+
+    frchar("STRUCT_SM_DISP",buffer,&ierr);
+    if (ierr)
+    {
+      if (strncmp(buffer,"yes",3)==0) ioflags.struct_sm_disp=1;
+      if (strncmp(buffer,"YES",3)==0) ioflags.struct_sm_disp=1;
+      if (strncmp(buffer,"Yes",3)==0) ioflags.struct_sm_disp=1;
+    }
+
+    frchar("STRUCT_SM_STRESS",buffer,&ierr);
+    if (ierr)
+    {
+      if (strncmp(buffer,"yes",3)==0) ioflags.struct_sm_stress=1;
+      if (strncmp(buffer,"YES",3)==0) ioflags.struct_sm_stress=1;
+      if (strncmp(buffer,"Yes",3)==0) ioflags.struct_sm_stress=1;
+    }
+
+    frchar("FLUID_SOL",buffer,&ierr);
+    if (ierr)
+    {
+      if (strncmp(buffer,"yes",3)==0) ioflags.fluid_sol=1;
+      if (strncmp(buffer,"YES",3)==0) ioflags.fluid_sol=1;
+      if (strncmp(buffer,"Yes",3)==0) ioflags.fluid_sol=1;
+    }
+
+    frchar("FLUID_STRESS",buffer,&ierr);
+    if (ierr)
+    {
+      if (strncmp(buffer,"yes",3)==0) ioflags.fluid_stress=1;
+      if (strncmp(buffer,"YES",3)==0) ioflags.fluid_stress=1;
+      if (strncmp(buffer,"Yes",3)==0) ioflags.fluid_stress=1;
+    }
+
+    frchar("FLUID_VIS",buffer,&ierr);
+    if (ierr)
+    {
+      if (strncmp(buffer,"yes",3)==0) ioflags.fluid_vis=1;
+      if (strncmp(buffer,"YES",3)==0) ioflags.fluid_vis=1;
+      if (strncmp(buffer,"Yes",3)==0) ioflags.fluid_vis=1;
+    }
+
+    frchar("ALE_DISP",buffer,&ierr);
+    if (ierr)
+    {
+      if (strncmp(buffer,"yes",3)==0) ioflags.ale_disp=1;
+      if (strncmp(buffer,"YES",3)==0) ioflags.ale_disp=1;
+      if (strncmp(buffer,"Yes",3)==0) ioflags.ale_disp=1;
+    }
+
+    /* the old keywords (only for backwards compatibility) */
     frchar("STRUCT_DISP_FILE",buffer,&ierr);
     if (ierr)
     {
-      if (strncmp(buffer,"yes",3)==0) ioflags.struct_disp_file=1;
-      if (strncmp(buffer,"YES",3)==0) ioflags.struct_disp_file=1;
-      if (strncmp(buffer,"Yes",3)==0) ioflags.struct_disp_file=1;
+      if (strncmp(buffer,"yes",3)==0 || strncmp(buffer,"YES",3)==0 || strncmp(buffer,"Yes",3)==0)
+      {
+        ioflags.output_out=1;
+        ioflags.struct_disp=1;
+      }
     }
     frchar("STRUCT_STRESS_FILE",buffer,&ierr);
     if (ierr)
     {
-      if (strncmp(buffer,"yes",3)==0) ioflags.struct_stress_file=1;
-      if (strncmp(buffer,"YES",3)==0) ioflags.struct_stress_file=1;
-      if (strncmp(buffer,"Yes",3)==0) ioflags.struct_stress_file=1;
+      if (strncmp(buffer,"yes",3)==0 || strncmp(buffer,"YES",3)==0 || strncmp(buffer,"Yes",3)==0)
+      {
+        ioflags.output_out=1;
+        ioflags.struct_stress=1;
+      }
     }
     frchar("STRUCT_DISP_GID",buffer,&ierr);
+
     if (ierr)
     {
-      if (strncmp(buffer,"yes",3)==0) ioflags.struct_disp_gid=1;
-      if (strncmp(buffer,"YES",3)==0) ioflags.struct_disp_gid=1;
-      if (strncmp(buffer,"Yes",3)==0) ioflags.struct_disp_gid=1;
+      if (strncmp(buffer,"yes",3)==0 || strncmp(buffer,"YES",3)==0 || strncmp(buffer,"Yes",3)==0)
+      {
+        ioflags.output_gid=1;
+        ioflags.struct_disp=1;
+      }
     }
     frchar("STRUCT_STRESS_GID",buffer,&ierr);
+
     if (ierr)
     {
-      if (strncmp(buffer,"yes",3)==0) ioflags.struct_stress_gid=1;
-      if (strncmp(buffer,"YES",3)==0) ioflags.struct_stress_gid=1;
-      if (strncmp(buffer,"Yes",3)==0) ioflags.struct_stress_gid=1;
+      if (strncmp(buffer,"yes",3)==0 || strncmp(buffer,"YES",3)==0 || strncmp(buffer,"Yes",3)==0)
+      {
+        ioflags.output_gid=1;
+        ioflags.struct_stress=1;
+      }
     }
     frchar("STRUCT_STRESS_GID_SMO",buffer,&ierr);
+
     if (ierr)
     {
-      if (strncmp(buffer,"yes",3)==0) ioflags.struct_stress_gid_smo=1;
-      if (strncmp(buffer,"YES",3)==0) ioflags.struct_stress_gid_smo=1;
-      if (strncmp(buffer,"Yes",3)==0) ioflags.struct_stress_gid_smo=1;
+      if (strncmp(buffer,"yes",3)==0 || strncmp(buffer,"YES",3)==0 || strncmp(buffer,"Yes",3)==0)
+      {
+        ioflags.output_gid=1;
+        ioflags.struct_stress_smo=1;
+      }
     }
     frchar("STRUCT_SM_DISP_GID",buffer,&ierr);
+
     if (ierr)
     {
-      if (strncmp(buffer,"yes",3)==0) ioflags.struct_sm_disp_gid=1;
-      if (strncmp(buffer,"YES",3)==0) ioflags.struct_sm_disp_gid=1;
-      if (strncmp(buffer,"Yes",3)==0) ioflags.struct_sm_disp_gid=1;
+      if (strncmp(buffer,"yes",3)==0 || strncmp(buffer,"YES",3)==0 || strncmp(buffer,"Yes",3)==0)
+      {
+        ioflags.output_gid=1;
+        ioflags.struct_sm_disp=1;
+      }
     }
     frchar("STRUCT_SM_STRESS_GID",buffer,&ierr);
+
     if (ierr)
     {
-      if (strncmp(buffer,"yes",3)==0) ioflags.struct_sm_stress_gid=1;
-      if (strncmp(buffer,"YES",3)==0) ioflags.struct_sm_stress_gid=1;
-      if (strncmp(buffer,"Yes",3)==0) ioflags.struct_sm_stress_gid=1;
+      if (strncmp(buffer,"yes",3)==0 || strncmp(buffer,"YES",3)==0 || strncmp(buffer,"Yes",3)==0)
+      {
+        ioflags.output_gid=1;
+        ioflags.struct_sm_stress=1;
+      }
     }
     frchar("FLUID_STRESS_GID",buffer,&ierr);
+
     if (ierr)
     {
-      if (strncmp(buffer,"yes",3)==0) ioflags.fluid_stress_gid=1;
-      if (strncmp(buffer,"YES",3)==0) ioflags.fluid_stress_gid=1;
-      if (strncmp(buffer,"Yes",3)==0) ioflags.fluid_stress_gid=1;
+      if (strncmp(buffer,"yes",3)==0 || strncmp(buffer,"YES",3)==0 || strncmp(buffer,"Yes",3)==0)
+      {
+        ioflags.output_gid=1;
+        ioflags.fluid_stress=1;
+      }
     }
     frchar("FLUID_SOL_GID",buffer,&ierr);
+
     if (ierr)
     {
-      if (strncmp(buffer,"yes",3)==0) ioflags.fluid_sol_gid=1;
-      if (strncmp(buffer,"YES",3)==0) ioflags.fluid_sol_gid=1;
-      if (strncmp(buffer,"Yes",3)==0) ioflags.fluid_sol_gid=1;
+      if (strncmp(buffer,"yes",3)==0 || strncmp(buffer,"YES",3)==0 || strncmp(buffer,"Yes",3)==0)
+      {
+        ioflags.output_gid=1;
+        ioflags.fluid_sol=1;
+      }
     }
     frchar("FLUID_SOL_FILE",buffer,&ierr);
+
     if (ierr)
     {
-      if (strncmp(buffer,"yes",3)==0) ioflags.fluid_sol_file=1;
-      if (strncmp(buffer,"YES",3)==0) ioflags.fluid_sol_file=1;
-      if (strncmp(buffer,"Yes",3)==0) ioflags.fluid_sol_file=1;
+      if (strncmp(buffer,"yes",3)==0 || strncmp(buffer,"YES",3)==0 || strncmp(buffer,"Yes",3)==0)
+      {
+        ioflags.output_out=1;
+        ioflags.fluid_sol=1;
+      }
     }
     frchar("FLUID_VIS_FILE",buffer,&ierr);
+
     if (ierr)
     {
-      if (strncmp(buffer,"yes",3)==0) ioflags.fluid_vis_file=1;
-      if (strncmp(buffer,"YES",3)==0) ioflags.fluid_vis_file=1;
-      if (strncmp(buffer,"Yes",3)==0) ioflags.fluid_vis_file=1;
+      if (strncmp(buffer,"yes",3)==0 || strncmp(buffer,"YES",3)==0 || strncmp(buffer,"Yes",3)==0)
+      {
+        ioflags.fluid_vis=1;
+      }
     }
     frchar("ALE_DISP_FILE",buffer,&ierr);
+
     if (ierr)
     {
-      if (strncmp(buffer,"yes",3)==0) ioflags.ale_disp_file=1;
-      if (strncmp(buffer,"YES",3)==0) ioflags.ale_disp_file=1;
-      if (strncmp(buffer,"Yes",3)==0) ioflags.ale_disp_file=1;
+      if (strncmp(buffer,"yes",3)==0 || strncmp(buffer,"YES",3)==0 || strncmp(buffer,"Yes",3)==0)
+      {
+        ioflags.output_out=1;
+        ioflags.ale_disp=1;
+      }
     }
     frchar("ALE_DISP_GID",buffer,&ierr);
+
     if (ierr)
     {
-      if (strncmp(buffer,"yes",3)==0) ioflags.ale_disp_gid=1;
-      if (strncmp(buffer,"YES",3)==0) ioflags.ale_disp_gid=1;
-      if (strncmp(buffer,"Yes",3)==0) ioflags.ale_disp_gid=1;
+      if (strncmp(buffer,"yes",3)==0 || strncmp(buffer,"YES",3)==0 || strncmp(buffer,"Yes",3)==0)
+      {
+        ioflags.output_gid=1;
+        ioflags.ale_disp=1;
+      }
     }
+    /* End of old keywords */
+
+
+
     frint("RELATIVE_DISP_NUM",&(ioflags.relative_displ),&ierr);
     frint("FILESTEPS",&(ioflags.steps_per_file),&ierr);
     frread();

@@ -498,7 +498,7 @@ void out_shell9_setup(struct _BIN_OUT_FIELD *context)
               "    shell9_layers = %d\n"
               "\n"
               "    s9_forcetypes:\n",
-              (ioflags.struct_stress_gid_smo ? "yes" : "no"),
+              (ioflags.struct_stress_smo ? "yes" : "no"),
               context->s9_layers);
       for (j=0; forcetype[j] != NULL; ++j)
       {
@@ -3015,6 +3015,21 @@ static void out_pack_restart_element(BIN_OUT_CHUNK *chunk,
       }
 #endif
 
+#ifdef D_FLUID3_F
+      case el_fluid3_fast:
+      {
+        DOUBLE* src_ptr;
+
+        dsassert(len >= 3, "value item too small");
+        src_ptr = &(actele->e.f3->tau_old.a.dv[0]);
+        for (j=0; j<3; ++j)
+        {
+          *dst_ptr++ = *src_ptr++;
+        }
+        break;
+      }
+#endif
+
       default:
       {
         static CHAR warning[el_count];
@@ -3785,6 +3800,24 @@ static void in_unpack_restart_element(BIN_IN_FIELD *context,
 
 #ifdef D_FLUID3
     case el_fluid3:
+    {
+      DOUBLE* dst_ptr;
+      INT k;
+
+      dsassert(len >= 3, "value item too small");
+      dsassert(actele->e.f3->tau_old.Typ == cca_DV &&
+               actele->e.f3->tau_old.fdim == 3, "uninitialized array");
+      dst_ptr = &(actele->e.f3->tau_old.a.dv[0]);
+      for (k=0; k<3; ++k)
+      {
+        *dst_ptr++ = *src_ptr++;
+      }
+      break;
+    }
+#endif
+
+#ifdef D_FLUID3_F
+    case el_fluid3_fast:
     {
       DOUBLE* dst_ptr;
       INT k;
