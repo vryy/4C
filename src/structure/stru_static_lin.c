@@ -236,7 +236,10 @@ if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1)
    container.kstep = 0;
    calreduce(actfield,actpart,actintra,action,&container);
    out_sol(actfield,actpart,actintra,0,0);
-   if (par.myrank==0) out_gid_sol("stress"      ,actfield,actintra,0,0);
+   if(ioflags.struct_stress_gid==1)
+   {
+     if (par.myrank==0) out_gid_sol("stress"      ,actfield,actintra,0,0);
+   }
 }
 /*----------------------------------------------------------------------*/
 end:
