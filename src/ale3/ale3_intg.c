@@ -31,13 +31,6 @@ integration of a 3D ale element.
 void ale3_intg(const ELEMENT   *ele,
               ALE3_DATA        *data)
 {
-INT i, k;
-
-DOUBLE zero  = 0.0;
-DOUBLE one   = 1.0;
-DOUBLE two   = 2.0;
-DOUBLE three = 3.0;
-
 DOUBLE  q14, q16, q124;
 DOUBLE  palpha,pbeta;
 /*DOUBLE  xgr[13][8],xgs[13][8],wgtt[13][8];

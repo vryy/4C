@@ -30,11 +30,6 @@ void ale2inp(ELEMENT *ele)
 {
 INT  i;
 INT  ierr=0;
-INT  quad;
-INT  counter;
-/* wird nicht gebraucht!  */
-/*long int  topology[100];*/
-CHAR *colpointer;
 CHAR buffer[50];
 #ifdef DEBUG 
 dstrc_enter("ale2inp");

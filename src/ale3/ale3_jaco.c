@@ -38,7 +38,7 @@ void ale3_jaco(DOUBLE    **deriv,
               INT         iel)
 {
 /*----------------------------------------------------------------------*/
-INT i,j,k,l;
+INT i,j,l;
 DOUBLE dum;
 #ifdef DEBUG 
 dstrc_enter("ale3_jaco");

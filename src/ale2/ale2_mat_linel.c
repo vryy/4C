@@ -30,7 +30,7 @@ matrix for a 2D ale element.
 *----------------------------------------------------------------------*/
 void ale2_mat_linel(STVENANT *mat, DOUBLE **d)
 {
-DOUBLE e1, e2, e3, a1, b1, c1;
+DOUBLE a1, b1, c1;
 DOUBLE ym,pv;
 #ifdef DEBUG 
 dstrc_enter("ale2_mat_linel");

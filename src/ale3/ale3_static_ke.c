@@ -40,7 +40,6 @@ void ale3_static_ke(ELEMENT   *ele,
                    ARRAY     *estif_global, 
                    INT        init)
 {
-INT                 i,j,k;            /* some loopers */
 INT                 nir,nis,nit;      /* num GP in r/s/t direction */
 INT                 lr, ls, lt;       /* loopers over GP */
 INT                 iel;              /* numnp to this element */
@@ -51,8 +50,6 @@ const INT           numeps=6;
 DOUBLE              fac;
 DOUBLE              e1,e2,e3;         /*GP-coords*/
 DOUBLE              facr,facs,fact;   /* weights at GP */
-DOUBLE              xnu;              /* value of shell shifter */
-DOUBLE              weight;
 DOUBLE              vol;              /* element volume */
 
 static ARRAY    D_a;      /* material tensor */     

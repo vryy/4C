@@ -55,7 +55,6 @@ MATERIAL      *actmat;
 INT            i,j,k,l;
 INT            l0,l1,l2,l3,l4,l5,l6,l7;
 
-DOUBLE         x1r, x2s, x3t;
 DOUBLE         x[3][8];
 DOUBLE         xc[3][8];
 DOUBLE         b[3][8];

@@ -44,7 +44,6 @@ void ale2(     PARTITION   *actpart,
                CONTAINER   *container)
 {
 #ifdef D_ALE
-INT  i;
 ALE2_DATA     actdata;
 MATERIAL    *actmat;
 

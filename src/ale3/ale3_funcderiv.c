@@ -43,14 +43,8 @@ void ale3_funct_deriv(DOUBLE     *funct,
                        DIS_TYP     typ,
                        INT         option)
 {
-INT            i, ii;
-const DOUBLE   q12 = 1.0/2.0;
-const DOUBLE   q14 = 1.0/4.0;
-const DOUBLE   q16 = 1.0/6.0;
 const DOUBLE   q18 = 1.0/8.0;
-const DOUBLE   q64 = 1.0/64.0;
-const DOUBLE   q964= 9.0/64.0;
-DOUBLE         rr,ss,tt,rp,sp,tp,rm,sm,tm,rrm,ssm,ttm;
+DOUBLE         rp,sp,tp,rm,sm,tm,rrm,ssm,ttm;
 DOUBLE         t1,t2,t3,t4;
 #ifdef DEBUG 
 dstrc_enter("ale3_funct_deriv");
@@ -146,7 +140,8 @@ case tet10: /*  QUADRATIC shape functions and their natural derivatives */
 			 
    dserror("shape functions for tet10 not yet implemented \n"); 
 /*--------------------------------------------------- form basic values */
-/*   t1=r;
+#if 0
+   t1=r;
    t2=s;
    t3=t;
    t4=ONE-r-s-t;
@@ -164,8 +159,8 @@ case tet10: /*  QUADRATIC shape functions and their natural derivatives */
 
 
    if(option==1) /* --> first derivative evaluation */
-/*   {
-/*      deriv[0][0] = ;
+   {
+      deriv[0][0] = ;
       deriv[1][0] = ;
       deriv[2][0] = ;
 
@@ -204,9 +199,9 @@ case tet10: /*  QUADRATIC shape functions and their natural derivatives */
       deriv[0][9] = ;
       deriv[1][9] = ;
       deriv[2][9] = ;
-   }*/
+   }
 break;
-   
+#endif
 default:
    dserror("unknown typ of interpolation");
 break;

@@ -31,14 +31,7 @@ void ale3inp(ELEMENT *ele)
 {
 INT  i;
 INT  ierr=0;
-INT  quad;
-INT  dum[8];
-INT  counter;
 INT  lmtmp;
-/* wird nicht gebraucht!!  */
-/* long int  topology[100];*/
-CHAR *colpointer;
-CHAR buffer[50];
 #ifdef DEBUG 
 dstrc_enter("ale3inp");
 #endif
@@ -138,7 +131,7 @@ return;
 void fluid_to_ale(const FIELD *fluidfield, const FIELD *alefield)
 {
 INT  ierr=0;
-INT  i,j,k;
+INT  i,j;
 ELEMENT *fluid_ele;
 ELEMENT *ale_ele;
 #ifdef DEBUG 
@@ -219,7 +212,7 @@ return;
 *----------------------------------------------------------------------*/
 void find_compatible_ele(const ELEMENT *ele1, const ELEMENT *ele2, INT *ierr)
 {
-INT  i,j,k;
+INT  i;
 DOUBLE tol=1.0E-08;
 DOUBLE x1,y1,z1, x2,y2,z2;
 DOUBLE x,y,z;

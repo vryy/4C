@@ -153,7 +153,6 @@ void ale_caldirich(
 {
 
 INT                   i,j;
-INT                   dof;
 INT                   numdf;
 INT                   nd=0;
 DOUBLE              **estif;
@@ -180,7 +179,7 @@ for (i=0; i<nd; i++)
    dforces[i] = 0.0;
 }
 /*-------------------------------- fill vectors dirich and dirich_onoff */
-/*                                 dirichlet values at (n) were already *
+/*                                 dirichlet values at (n) were already */
 /*                                     written to the nodes (sol[0][j]) */
 for (i=0; i<actele->numnp; i++)
 {
@@ -214,8 +213,6 @@ for (i=0; i<nd; i++)
    if (lm[i] >= dim) continue;
    fullvec[lm[i]] += dforces[i];
 }
-/*----------------------------------------------------------------------*/
-end:
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
