@@ -53,7 +53,7 @@ void frinit()
 int     i=0;
 int     linecount=0;
 char   *remarkpointer;
-allfiles.numcol=300;
+allfiles.numcol=MAXNUMCOL;
 if (par.myrank==0)
 {
 /*--------------------make a copy of the input file without commentars */
