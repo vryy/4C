@@ -90,6 +90,7 @@ extern struct _PARTITION  *partition;
 /*!
  * \brief An array that contains the expected results.
  *
+ * An array that contains the expected results.
  * Along with the real values the position in the mesh ist stored. The
  * data is read from the input file.
  *
@@ -99,20 +100,22 @@ extern struct _PARTITION  *partition;
 struct _RESULTDESCR      *resultdescr;
 
 
+/*----------------------------------------------------------------------*/
 /*!
- * \brief Read a positions description.
- *
- * See if its name equals |name|. If so
- * read |nargs| integer arguments and store them in |args|.
- * 
- * \param position   a string of the form "name(x1,...,xn)" read from the input file
- * \param name       the expected name
- * \param nargs      the expected number of arguments
- * \param args       an array of size |nargs| that is going to be filled
- *
- * \author uk
- * \date 06/04
+ \brief Read a positions description.
+ 
+ Read a positions description. See if its name equals \a name. If so
+ read \a nargs integer arguments and store them in \a args.
+  
+ \param position   a string of the form "name(x1,...,xn)" read from the input file
+ \param name       the expected name
+ \param nargs      the expected number of arguments
+ \param args       an array of size \a nargs that is going to be filled
+
+ \author uk
+ \date 06/04
  */
+/*----------------------------------------------------------------------*/
 static INT parse_position_descr(CHAR* position, CHAR* name, INT nargs, INT* args)
 {
   CHAR* lp;
@@ -159,17 +162,19 @@ static INT parse_position_descr(CHAR* position, CHAR* name, INT nargs, INT* args
 }
 
 
+/*----------------------------------------------------------------------*/
 /*!
- * \brief return the specified value
- * 
- * \param actnode    a node
- * \param position   a string of the form "name(x1,...,xn)" read from the input file
- *                   It describes a value in one of the solution array
- *                   of the given node.
- * 
- * \author uk
- * \date 06/04
+ \brief return the specified value
+ 
+ \param actnode    a node
+ \param position   a string of the form "name(x1,...,xn)" read from the input file
+                   It describes a value in one of the solution array
+                   of the given node.
+ 
+ \author uk
+ \date 06/04
  */
+/*----------------------------------------------------------------------*/
 static DOUBLE get_node_result_value(NODE* actnode, CHAR* position)
 {
   INT args[2];
@@ -216,16 +221,21 @@ static DOUBLE get_node_result_value(NODE* actnode, CHAR* position)
 }
 
 
+/*----------------------------------------------------------------------*/
 /*!
- * \brief Compare |actresult| with |givenresult| and return |0| if they are
- * considered to be equal.
- * 
- * \param err        the file where to document both values
- * \param res        the describtion of the expected result including name and tolerance
- * 
- * \author uk
- * \date 06/04
+ \brief Compare \a actresult with \a givenresult and return 0 if they are
+ considered to be equal.
+
+ Compare \a actresult with \a givenresult and return 0 if they are
+ considered to be equal.
+ 
+ \param err        the file where to document both values
+ \param res        the describtion of the expected result including name and tolerance
+ 
+ \author uk
+ \date 06/04
  */
+/*----------------------------------------------------------------------*/
 static int compare_values(FILE* err, DOUBLE actresult, DOUBLE givenresult, RESULTDESCR *res)
 {
   INT ret = 0;
@@ -252,15 +262,17 @@ static int compare_values(FILE* err, DOUBLE actresult, DOUBLE givenresult, RESUL
 
 
 
+/*----------------------------------------------------------------------*/
 /*!
- * \brief Find node with id |nodenum|.
- *
- * Only the given partition and
- * discretization is searched.
- * 
- * \author uk
- * \date 06/04
+ \brief Find node with id \a nodenum.
+
+ Find node with id \a nodenum. Only the given partition and
+ discretization is searched.
+ 
+ \author uk
+ \date 06/04
  */
+/*----------------------------------------------------------------------*/
 static NODE* find_node(PARTITION* part, INT disnum, INT nodenum)
 {
   INT i;
@@ -286,15 +298,17 @@ static NODE* find_node(PARTITION* part, INT disnum, INT nodenum)
 }
 
 
+/*----------------------------------------------------------------------*/
 /*!
- * \brief Find element with id |elenum|.
- *
- * Only the given partition and
- * discretization is searched.
- * 
- * \author uk
- * \date 06/04
+ \brief Find element with id \a elenum.
+
+ Find element with id \a elenum. Only the given partition and
+ discretization is searched.
+ 
+ \author uk
+ \date 06/04
  */
+/*----------------------------------------------------------------------*/
 static ELEMENT* find_element(PARTITION* part, INT disnum, INT elenum)
 {
   INT i;
@@ -320,18 +334,19 @@ static ELEMENT* find_element(PARTITION* part, INT disnum, INT elenum)
 }
 
 
-/*!---------------------------------------------------------------------  
+/*----------------------------------------------------------------------*/
+/*!
 \brief testing of result 
-
-<pre>                                                         genk 10/03  
 
 Before checking in the latest version it's necessery to check the whole
 program. In this context it seems to be useful to check the numerical
-results, too.
+results, too. This function compares all predefined values with the
+calculated ones. It's called once, after the calculation finished.
 
-</pre>  
-
-------------------------------------------------------------------------*/
+\author genk
+\date 10/03  
+*/
+/*----------------------------------------------------------------------*/
 void global_result_test() 
 {
 #ifndef PARALLEL
