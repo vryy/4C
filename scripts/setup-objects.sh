@@ -32,10 +32,11 @@ if grep '^D_BRICK1' "$definefile" 2>&1 > /dev/null ; then
     OBJECTS="$OBJECTS \$(OBJS_BRICK1)"
 fi
 
-# FLUID2 
+# FLUID2
 if grep '^D_FLUID2' "$definefile" 2>&1 > /dev/null ; then
     if [ "x$OBJ_FLUID" = "x0" ] ; then
         OBJECTS="$OBJECTS \$(OBJS_FLUID2) \$(OBJS_FLUID)"
+        DEFINES="$DEFINES -DD_FLUID"
         OBJ_FLUID=1
     else
         OBJECTS="$OBJECTS \$(OBJS_FLUID2)"
@@ -46,6 +47,7 @@ fi
 if grep '^FLUID2_ML' "$definefile" 2>&1 > /dev/null ; then
     if [ "x$OBJ_FLUID" = "x0" ] ; then
         OBJECTS="$OBJECTS \$(OBJS_F2ML) \$(OBJS_FLUID)"
+        DEFINES="$DEFINES -DD_FLUID"
         OBJ_FLUID=1
     else
         OBJECTS="$OBJECTS \$(OBJS_F2ML)"
@@ -56,6 +58,7 @@ fi
 if grep '^D_FLUID3' "$definefile" 2>&1 > /dev/null ; then
     if [ "x$OBJ_FLUID" = "x0" ] ; then
         OBJECTS="$OBJECTS \$(OBJS_FLUID3) \$(OBJS_FLUID)"
+        DEFINES="$DEFINES -DD_FLUID"
         OBJ_FLUID=1
     else
         OBJECTS="$OBJECTS \$(OBJS_FLUID3)"
@@ -66,6 +69,7 @@ fi
 if grep '^FLUID3_ML' "$definefile" 2>&1 > /dev/null ; then
     if [ "x$OBJ_FLUID" = "x0" ] ; then
         OBJECTS="$OBJECTS \$(OBJS_F3ML) \$(OBJS_FLUID)"
+        DEFINES="$DEFINES -DD_FLUID"
         OBJ_FLUID=1
     else
         OBJECTS="$OBJECTS \$(OBJS_F3ML)"
@@ -76,6 +80,7 @@ fi
 if grep '^D_FLUID2_PR' "$definefile" 2>&1 > /dev/null ; then
     if [ "x$OBJ_FLUID" = "x0" ] ; then
         OBJECTS="$OBJECTS \$(OBJS_F2PRO) \$(OBJS_FLUID)"
+        DEFINES="$DEFINES -DD_FLUID"
         OBJ_FLUID=1
     else
         OBJECTS="$OBJECTS \$(OBJS_F2PRO)"
@@ -110,31 +115,38 @@ if grep '^D_WALLGE' "$definefile" 2>&1 > /dev/null ; then
     OBJ_WGE=1
 fi
 
-# MLSTRUCT 
+# MLSTRUCT
 if grep '^D_MLSTRUCT' "$definefile" 2>&1 > /dev/null ; then
     if [ "x$OBJ_W1" = "x1" -a "x$OBJ_WGE" = "x1" -a "x$OBJ_IF" = "x1" ] ; then
         OBJECTS="$OBJECTS \$(OBJS_S2ML)"
     fi
     if [ "x$OBJ_W1" = "x1" -a "x$OBJ_WGE" = "x1" -a "x$OBJ_IF" = "x0" ] ; then
         OBJECTS="$OBJECTS \$(OBJS_S2ML) \$(OBJS_IF)"
+        DEFINES="$DEFINES -DD_INTERF"
     fi
     if [ "x$OBJ_W1" = "x1" -a "x$OBJ_WGE" = "x0" -a "x$OBJ_IF" = "x1" ] ; then
         OBJECTS="$OBJECTS \$(OBJS_S2ML) \$(OBJS_WALLGE)"
+        DEFINES="$DEFINES -DD_WALLGE"
     fi
     if [ "x$OBJ_W1" = "x0" -a "x$OBJ_WGE" = "x1" -a "x$OBJ_IF" = "x1" ] ; then
         OBJECTS="$OBJECTS \$(OBJS_S2ML) \$(OBJS_WALL1)"
+        DEFINES="$DEFINES -DD_WALL1"
     fi
     if [ "x$OBJ_W1" = "x0" -a "x$OBJ_WGE" = "x0" -a "x$OBJ_IF" = "x1" ] ; then
         OBJECTS="$OBJECTS \$(OBJS_S2ML) \$(OBJS_WALL1) \$(OBJS_WALLGE)"
+        DEFINES="$DEFINES -DD_WALL1 -DD_WALLGE"
     fi
     if [ "x$OBJ_W1" = "x0" -a "x$OBJ_WGE" = "x1" -a "x$OBJ_IF" = "x0" ] ; then
         OBJECTS="$OBJECTS \$(OBJS_S2ML) \$(OBJS_WALL1) \$(OBJS_IF)"
+        DEFINES="$DEFINES -DD_WALL1 -DD_INTERF"
     fi
     if [ "x$OBJ_W1" = "x1" -a "x$OBJ_WGE" = "x0" -a "x$OBJ_IF" = "x0" ] ; then
         OBJECTS="$OBJECTS \$(OBJS_S2ML) \$(OBJS_WALLGE) \$(OBJS_IF)"
+        DEFINES="$DEFINES -DD_WALLGE -DD_INTERF"
     fi
     if [ "x$OBJ_W1" = "x0" -a "x$OBJ_WGE" = "x0" -a "x$OBJ_IF" = "x0" ] ; then
         OBJECTS="$OBJECTS \$(OBJS_S2ML) \$(OBJS_WALL1) \$(OBJS_WALLGE) \$(OBJS_IF)"
+        DEFINES="$DEFINES -DD_WALL1 -DD_WALLGE -DD_INTERF"
     fi
 fi
 
@@ -148,7 +160,7 @@ if grep '^D_SSI' "$definefile" 2>&1 > /dev/null ; then
     OBJECTS="$OBJECTS \$(OBJS_SSI)"
 fi
 
-# OPTIM 
+# OPTIM
 if grep '^D_OPTIM' "$definefile" 2>&1 > /dev/null ; then
     OBJECTS="$OBJECTS \$(OBJS_OPT)"
 fi
