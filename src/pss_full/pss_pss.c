@@ -833,7 +833,7 @@ int         sizename=0;
 int         err=0;
 char        test_name[200];
 int         dimensions[3];
-int         handle_dummy;
+long int    handle_dummy;
 #ifdef DEBUG 
 dstrc_enter("pss_chck");
 #endif
