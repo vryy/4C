@@ -461,6 +461,7 @@ typedef struct _CCF
 {
   INT                     is_init;         /* was this matrix initialized ? */
   INT                     is_factored;     /* is this matrix already factored ? */
+  INT                     reuse;           /* is last factorization to be used again? */
   INT                     ncall;           /* how often was this matrix solved */
 
   INT                     numeq_total;     /* total number of unknowns */

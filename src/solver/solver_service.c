@@ -449,7 +449,8 @@ break;
 #ifdef UMFPACK
 case ccf:
    amzero(&(mat->ccf->Ax));
-   mat->ccf->is_factored=0;
+  /* mat->ccf->is_factored=0; is never used but for struct2_ml, 
+                              and there I need it not to be set to zero */
 break;
 #endif
 
