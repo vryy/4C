@@ -170,7 +170,7 @@ if (numnorm>0) /* calculate nodal normals */
       if (foundit>0)
       {
 #ifdef D_FLUID2
-         fluid2(NULL,NULL,actele,NULL,NULL,NULL,NULL,NULL,NULL,
+         fluid2(NULL,NULL,actele,NULL,NULL,NULL,NULL,NULL,
                 action,NULL,NULL,NULL);
 #else
          dserror("Fluid2 not compiled in!\n");
