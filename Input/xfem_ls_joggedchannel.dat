@@ -180,8 +180,8 @@ OC_ICO 0 global inequality constraints
 OC_ECO 1 global   equality constraints
       DVOLU 1 TYP WEIGHT  SCL 1. 
 --------------------------------------------------LEVELSET DYNAMIC
-NSTEP        20
-NFSTEP       10
+NSTEP        7
+NFSTEP       2
 NFREINIT     1
 NFREPRN      1
 ITEMAX       10
@@ -204,6 +204,7 @@ ISSTAB             yes
 LOCALIZATION       off
 NUMLAYER           8
 REINITIALIZATION   on
+ANCHOR             yes
 NUMREINIT          1
 ALGO               explicit
 NUMCIRC            1
@@ -230,7 +231,7 @@ XS3                0.0
 YS3                0.0
 XE3                0.0
 YE3                0.0
-RDT                0.005 
+RDT                0.012 
 EPSILON            0.025
 ------------------------------------------LS_MATERIAL_SECOND_PHASE
 MAT       2 MAT_fluid VISCOSITY 4.0 DENSITY 4.0 GAMMA 1.0 

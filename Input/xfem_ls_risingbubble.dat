@@ -180,7 +180,7 @@ OC_ICO 0 global inequality constraints
 OC_ECO 1 global   equality constraints
       DVOLU 1 TYP WEIGHT  SCL 1. 
 --------------------------------------------------LEVELSET DYNAMIC
-NSTEP        30
+NSTEP        5
 NFSTEP       0
 NFREINIT     1
 NFREPRN      1
@@ -202,8 +202,9 @@ SETVEL             by_fluid
 FLAGVEL            5
 ISSTAB             yes
 LOCALIZATION       off
-NUMLAYER           8
+NUMLAYER           3
 REINITIALIZATION   on
+ANCHOR             yes
 NUMREINIT          1
 ALGO               explicit
 NUMCIRC            1
@@ -230,26 +231,12 @@ XS3                0.0
 YS3                0.0
 XE3                0.0
 YE3                0.0
-RDT                0.005 
+RDT                0.012 
 EPSILON            0.025
 ------------------------------------------LS_MATERIAL_SECOND_PHASE
 MAT       2 MAT_fluid VISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0 
 ------------------------------------------------------FLUID SOLVER
 SOLVER         UMFPACK
-//SOLVER         SPOOLES_nonsym
-//SOLVER         Aztec_MSR
-//AZSOLVE        BiCGSTAB
-//AZPREC         ILU
-//AZREUSE        0  
-//AZDROP         0.0  
-//AZFILL         1.0  
-//AZGFILL        1  
-//AZTOL          1.0E-15  
-//AZITER         2500  
-//AZSUB          50  
-//AZOMEGA        1.0  
-//AZGRAPH        1  
-//AZPOLY         5  
 PARTITION      Cut_Elements
 -----------------------------------------------------STRUCT SOLVER
 SOLVER         Aztec_MSR
@@ -455,6 +442,8 @@ END NURBSURFACE
 DPOINT 2
 E 1 - 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 E 2 - 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 3 - 1 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 4 - 1 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS 
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE 4
@@ -6746,7 +6735,7 @@ NODE         1550     COORD 1.000000000000000e+00     1.250000000000000e+00     
    2879 LS2 TRI3     873    944    882 MAT       0 GP_TRI 3
    2880 LS2 TRI3     944    949    882 MAT       0 GP_TRI 3
 ---------------------------------------------------------MATERIALS
-MAT       1 MAT_fluid  VISCOSITY 10.0 DENSITY 10.0 GAMMA 1.0
+MAT       1 MAT_fluid  VISCOSITY 7.0 DENSITY 10.0 GAMMA 1.0
 ----------------------------------------------MULTILAYER MATERIALS
 ------------------------------------------------------CONTROL NODE
 -------------------------------------------------------LOAD CURVES
