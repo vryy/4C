@@ -428,7 +428,7 @@ void assemble_vec(INTRA        *actintra,
                     DIST_VECTOR  *rhs,
                     double       *drhs,
                     double        factor);
-void assemble_intforce(ELEMENT *actele, ARRAY *elevec_a, CONTAINER *container);
+void assemble_intforce(ELEMENT *actele, ARRAY *elevec_a, CONTAINER *container, INTRA *actintra);
 void assemble_dirich(ELEMENT *actele,ARRAY *estif_global,CONTAINER *container);
 /*----------------------------------------------------------------------*
  |  solver_add_dense.c                                  m.gee 11/01    |
