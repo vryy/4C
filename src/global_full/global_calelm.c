@@ -310,7 +310,7 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
    case structure:
       /*------------------ assemble internal force or external forces */
       if (container->dvec)
-      assemble_intforce(actele,&intforce_global,container);
+      assemble_intforce(actele,&intforce_global,container,actintra);
       /*--- assemble the rhs vector of condensed dirichlet conditions */
       /* static case */
       if (container->dirich && container->isdyn==0)
@@ -324,34 +324,34 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
       if (container->nif!=0)
       {
          container->dvec = container->ftimerhs;
-         assemble_intforce(actele,&etforce_global,container);
+         assemble_intforce(actele,&etforce_global,container,actintra);
       }
    /*-------------- assemble the vector eiforce_global to iteration rhs */
       if (container->nii+hasext!=0)
       {   
          container->dvec = container->fiterhs;
-         assemble_intforce(actele,&eiforce_global,container); 
+         assemble_intforce(actele,&eiforce_global,container,actintra); 
       }
    /*-------------- assemble the vector edforce_global to iteration rhs */
       if (hasdirich!=0)
       {
          container->dvec = container->fiterhs;
-         assemble_intforce(actele,&edforce_global,container);
+         assemble_intforce(actele,&edforce_global,container,actintra);
       }
       if (container->actndis==1 && (container->turbu==2 || container->turbu==3))
       {
          if (container->niturbu_pro!=0)
          {
           container->dvec = container->ftimerhs_pro;
-          assemble_intforce(actele,&eproforce_global,container);
+          assemble_intforce(actele,&eproforce_global,container,actintra);
          }
          if (container->niturbu_n!=0)
          {
           container->dvec = container->ftimerhs;
-          assemble_intforce(actele,&etforce_global,container);
+          assemble_intforce(actele,&etforce_global,container,actintra);
          }
          container->dvec = container->fiterhs;
-         assemble_intforce(actele,&eiforce_global,container);
+         assemble_intforce(actele,&eiforce_global,container,actintra);
       }   
       container->dvec=NULL;   
    break;
