@@ -71,7 +71,6 @@ if [ "x$PARALLEL" = "xno" ]; then
   ale_3d_umfpack_fastass.dat
   axishell.dat
   b3_elast.dat
-  b3_matnln.dat
   c1_elast.dat
   c1_elast_geonln.dat
   c1_neum_geonln.dat
@@ -116,9 +115,7 @@ else
   liste='
   ale2_nln.dat
   b3_elast.dat
-  b3_matnln.dat
   c1_elast.dat
-  c1_elast_geonln.dat
   c1_neum_geonln.dat
   c1_optfsd.dat
   c1_plast_mises.dat
