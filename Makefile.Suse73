@@ -7,6 +7,7 @@ SRC       =  /home/<name>/wdir/ccarat/
 # -DD_FLUID      defines general fluid problem
 # -DD_BRICK1    defines element brick1
 # -DD_FLUID2    defines element fluid2
+# -DD_FLUID2_PRO defines element fluid2 with projection method
 # -DD_SHELL8    defines element shell8
 # -DD_SHELL9    defines element shell9
 # -DD_FLUID3    defines element fluid3
@@ -54,14 +55,13 @@ SRC       =  /home/<name>/wdir/ccarat/
 #
 #--------------------------------------------------------------------
 PROGRAM_NAME  = cca_par_linux.
-FXX      = /usr/local/mpich-1.2.4/bin/mpif77
-CCX	 = /usr/local/mpich-1.2.4/bin/mpicc
-LDX      = /usr/local/mpich-1.2.4/bin/mpicc
-PFL      =  -DPARALLEL -DSUSE73 -DD_BRICK1 -DD_FLUID -DD_FLUID2 -DD_FLUID3 -DD_SHELL8 -DD_ALE -DD_WALL1 -DAZTEC_PACKAGE -DSPOOLES_PACKAGE
+FXX      = /usr/local/mpich-1.2.5/bin/mpif77
+CCX	 = /usr/local/mpich-1.2.5/bin/mpicc
+LDX      = /usr/local/mpich-1.2.5/bin/mpicc
+PFL      =  -DPARALLEL -DSUSE73 -DD_BRICK1 -DD_FLUID -DD_FLUID2 -DD_FLUID2_PRO -DD_FLUID3 -DD_SHELL8 \
+	    -DD_SHELL9 -DD_ALE -DD_WALL1 -DD_OPTIM -DS8CONTACT -DD_CONTACT -DAZTEC_PACKAGE -DSPOOLES_PACKAGE
 AZTEC      = -laztec_par
 SPOOLES  = -lspoolesMPI -lspooles
-#
-#
 # --------------------------------------------------------------------
 CC	 = $(CCX)
 F77      = $(FXX)
@@ -71,7 +71,7 @@ RM	 = /bin/rm -f
 # this is debug
 # -------------------------------------------------------------------
 PROGRAM  = $(PROGRAM_NAME)debg 
-CFLAGS  = -v -g -ansi $(PFL) -DDEBUG
+CFLAGS  = -v -g -ansi -Wall $(PFL) -DDEBUG
 FFLAGS  = -g -I/usr/local/mpich-1.2.5/include/
 # -------------------------------------------------------------------
 # this is fast 
