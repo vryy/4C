@@ -3,6 +3,14 @@
 ==================================================================
 -------------------------------------------------------------TITLE
 scordelis
+//
+// Minimale Einstellungen in /src/headers/definitions.h
+//
+// MAXDOFPERNODE         (9)
+// MAXGAUSS              (24)
+// MAXRECORDPERELE       (6)
+// MAXNODESTRESS_SHELL9  (24)
+//
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS          16 
 NODES             25
