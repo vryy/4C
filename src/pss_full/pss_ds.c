@@ -685,7 +685,7 @@ void dserror(char string[], ...)
 #ifdef PARALLEL
   MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
 #else
-  exit(EXIT_FAILURE);
+exit(EXIT_FAILURE);
 #endif
   return;
 } /* end of dserror */
@@ -717,7 +717,10 @@ warning	= 1	when trinangular ale elements are monitored with wrong
         = 8     the value givne for MAXELE is too large
         = 9     the value givne for MAXDOFPERNODE is too large
         = 10    the value givne for MAXGAUSS is too large
-        = 11    your new warning issue
+        = 11    ??
+        = 12    ??
+        = 13    more than one liftdrag Id to one element found
+        = 14    your new warning issue
 
 </pre>
 
@@ -747,6 +750,7 @@ static INT max_ele;         /* warning 9 */
 static INT max_dofpernode;  /* warning 10 */
 static INT max_gauss;       /* warning 11 */
 static INT rescheck_nonode; /* warning 12 */
+static INT liftdragId;      /* warning 13 */
 /* DEFINE your new warning flag here!!! */
 
 FILE   *err = allfiles.out_err;
@@ -773,6 +777,7 @@ switch (task)
     max_dofpernode = 0;
     max_gauss      = 0;
     rescheck_nonode= 0;
+    liftdragId     = 0;
     /* INITIALISE your new warning here!!! */
   break;
   /*------------------------------------------------- create warning ---*/
@@ -802,6 +807,8 @@ switch (task)
       max_gauss++;
     else if (warning ==12)
       rescheck_nonode++;
+    else if (warning ==13)
+      liftdragId++;
     else
       dserror("warning out of range!\n");
     /* COUNT your new warning here!!! */
@@ -904,6 +911,11 @@ switch (task)
       {
         printf("\n %d WARNINGS PROC %i: The given node for result check was not found in actual partition.\n", rescheck_nonode,par.myrank);
         fprintf(err,"\n %d WARNINGS PROC %i: The given node for result check was not found in actual partition.\n", rescheck_nonode,par.myrank);
+      }
+      if (liftdragId)
+      {
+        printf("\n %d WARNINGS PROC %i: More than one liftdrag Id to one node. Liftdrag forces may be incorrect.\n", rescheck_nonode,par.myrank);
+        fprintf(err,"\n %d WARNINGS PROC %i: More than one liftdrag Id to one node. Liftdrag forces may be incorrect.\n", rescheck_nonode,par.myrank);
       }
       /* ADD more warning messages here!!! */
   #ifdef PARALLEL
