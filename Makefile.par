@@ -28,6 +28,7 @@
 # -DRESULTTEST   defines defines result testing before checking in a new version
 # -DS8CONTACT    defines contact algorithms for shell8 contact
 # -DWALLCONTACT  defines contact algorithms for wall contact
+# -DPERF         defines routines for exact time measurements 
 #
 # -DDEBUG        defines debug mode: routine and array tracing 
 # -DPARALLEL     defines parallel version of programm
@@ -67,50 +68,35 @@ LD       = $(FXX)
 RM	 = /bin/rm -f
 #
 #------------------------------------------------ this is debug-32bit
-PROGRAM_NAME  = cca_par_32_debg.exe
-CFLAGS        = -D__HP__ -Aa -Ae -g +w1 ${PFL} -DDEBUG
-FFLAGS        = -g 
-LDFLAGS       =
-BLAS	      = -lblas
-AZTEC	      = -laztec_par21_32
-METIS	      = -lmetis_32
-SUPLU	      = 
-SUPLU	      = -lsuperlu_par32
-MUMPS	      = -lmumps_par_32  -lscalapack_par_32 -lblacs_MPI-HPPA-0_par_32 -lblacsCinit_MPI-HPPA-0_par_32 -lblacsF77init_MPI-HPPA-0_par_32  
-UMFPACK       = -lumfpack40_hpux11_32
-SPOOLES       = -lspoolesMPI_32  -lspooles_32 
-FORTLIBS      = -L/opt/fortran90/lib/pa2.0 -lF90 -L/opt/fortran90/lib  -lU77 
-MPILIB        = -L/opt/mlib/lib/pa2.0
+#PROGRAM_NAME  = cca_par_32_debg.exe
+#CFLAGS        = -D__HP__ -Aa -Ae -g +w1 ${PFL} -DDEBUG
+#FFLAGS        = -g 
+#LDFLAGS       =
+#BLAS	       = -lblas
+#AZTEC	       = -laztec_par21_32
+#METIS	       = -lmetis_32
+#SUPLU	       = 
+##SUPLU	       = -lsuperlu_par32
+#MUMPS	       = -lmumps_par_32  -lscalapack_par_32 -lblacs_MPI-HPPA-0_par_32 -lblacsCinit_MPI-HPPA-0_par_32 -lblacsF77init_MPI-HPPA-0_par_32  
+#UMFPACK       = -lumfpack40_hpux11_32
+#SPOOLES       = -lspoolesMPI_32  -lspooles_32 
+#FORTLIBS      = -L/opt/fortran90/lib/pa2.0 -lF90 -L/opt/fortran90/lib  -lU77 
+#MPILIB        = -L/opt/mlib/lib/pa2.0
 #------------------------------------------------- this is fast-32bit
 #PROGRAM_NAME  = cca_par_32_fast.exe
-#CFLAGS        = -D__HP__ -Aa -Ae -O +w1 ${PFL} 
+#CFLAGS        = -D__HP__ -Aa -Ae -O +w1 ${PFL}
 #FFLAGS        = -O
-#LDFLAGS       = 
-#BLAS	     = -lblas
-#AZTEC         = -laztec_par21_32
-#METIS         = -lmetis_32
-#SUPLU         = 
-##SUPLU     = -lsuperlu_par32
-#MUMPS         = -lmumps_par_32  -lscalapack_par_32 -lblacs_MPI-HPPA-0_par_32 -lblacsCinit_MPI-HPPA-0_par_32 -lblacsF77init_MPI-HPPA-0_par_32  
+#LDFLAGS       =
+#BLAS	       = -lblas
+#AZTEC	       = -laztec_par21_32
+#METIS	       = -lmetis_32
+#SUPLU	       =
+##SUPLU         = -lsuperlu_par32
+#MUMPS	       = -lmumps_par_32  -lscalapack_par_32 -lblacs_MPI-HPPA-0_par_32 -lblacsCinit_MPI-HPPA-0_par_32 -lblacsF77init_MPI-HPPA-0_par_32
 #UMFPACK       = -lumfpack40_hpux11_32
 #SPOOLES       = -lspoolesMPI_32  -lspooles_32
 #FORTLIBS      = -L/opt/fortran90/lib/pa2.0 -lF90 -L/opt/fortran90/lib  -lU77
 #MPILIB        = -L/opt/mlib/lib/pa2.0
-#------------------------------------------------- this is fast-32bit
-PROGRAM_NAME  = cca_par_32_fast.exe
-CFLAGS        = -D__HP__ -Aa -Ae -O +w1 ${PFL}
-FFLAGS        = -O
-LDFLAGS       =
-BLAS	     = -lblas
-AZTEC	     = -laztec_par21_32
-METIS	     = -lmetis_32
-SUPLU	     =
-#SUPLU         = -lsuperlu_par32
-MUMPS	     = -lmumps_par_32  -lscalapack_par_32 -lblacs_MPI-HPPA-0_par_32 -lblacsCinit_MPI-HPPA-0_par_32 -lblacsF77init_MPI-HPPA-0_par_32
-UMFPACK       = -lumfpack40_hpux11_32
-SPOOLES       = -lspoolesMPI_32  -lspooles_32
-FORTLIBS      = -L/opt/fortran90/lib/pa2.0 -lF90 -L/opt/fortran90/lib  -lU77
-MPILIB        = -L/opt/mlib/lib/pa2.0
 #------------------------------------------------ this is debug-64bit
 #PROGRAM_NAME  = cca_par_64_debg.exe
 #CFLAGS        = -D__HP__ -Aa -Ae +DD64 -g +w1 ${PFL} -DDEBUG -DSIXTYFOUR
@@ -120,27 +106,27 @@ MPILIB        = -L/opt/mlib/lib/pa2.0
 #AZTEC         = -laztec_par21_64
 #METIS         = -lmetis_64
 #SUPLU         = 
-##SUPLU 	= -lsuperlu_par64
+##SUPLU         = -lsuperlu_par64
 #MUMPS         = -lblacs_MPI-HPPA-0_par_64 -lblacsCinit_MPI-HPPA-0_par_64 -lblacsF77init_MPI-HPPA-0_par_64 -lscalapack_par_64 -lmumps_par_64
 #UMFPACK       = -lumfpack40_hpux11_64
 #SPOOLES       = -lspoolesMPI_64  -lspooles_64
 #FORTLIBS      = -L/opt/fortran90/lib/pa20_64 -lF90 -L/opt/fortran90/lib/pa20_64  -lU77
 #MPILIB        = -L/opt/mlib/lib/pa20_64
 #------------------------------------------------- this is fast-64bit
-#PROGRAM_NAME  = cca_par_64_fast.exe
-#CFLAGS        = -D__HP__ -Aa -Ae +DD64 -O +w1 ${PFL} -DSIXTYFOUR
-#FFLAGS        = +DA2.0W -O
-#LDFLAGS       = -v +DA2.0W
-#BLAS	       = 
-#AZTEC         = -laztec_par21_64
-#METIS         = -lmetis_64
-##SUPLU 	= -lsuperlu_par64
-#SUPLU         = 
-#MUMPS         = -lblacs_MPI-HPPA-0_par_64 -lblacsCinit_MPI-HPPA-0_par_64 -lblacsF77init_MPI-HPPA-0_par_64 -lscalapack_par_64 -lmumps_par_64
-#UMFPACK	= -lumfpack40_hpux11_64
-#SPOOLES       = -lspoolesMPI_64  -lspooles_64 
-#FORTLIBS      = -L/opt/fortran90/lib/pa20_64 -lF90 -L/opt/fortran90/lib/pa20_64  -lU77 
-#MPILIB        = -L/opt/mlib/lib/pa20_64
+PROGRAM_NAME  = cca_par_64_fast.exe
+CFLAGS        = -D__HP__ -Aa -Ae +DD64 -O +w1 ${PFL} -DSIXTYFOUR
+FFLAGS        = +DA2.0W -O
+LDFLAGS       = -v +DA2.0W
+BLAS	      = 
+AZTEC         = -laztec_par21_64
+METIS         = -lmetis_64
+SUPLU         = 
+#SUPLU         = -lsuperlu_par64
+MUMPS         = -lblacs_MPI-HPPA-0_par_64 -lblacsCinit_MPI-HPPA-0_par_64 -lblacsF77init_MPI-HPPA-0_par_64 -lscalapack_par_64 -lmumps_par_64
+UMFPACK	      = -lumfpack40_hpux11_64
+SPOOLES       = -lspoolesMPI_64  -lspooles_64 
+FORTLIBS      = -L/opt/fortran90/lib/pa20_64 -lF90 -L/opt/fortran90/lib/pa20_64  -lU77 
+MPILIB        = -L/opt/mlib/lib/pa20_64
 #--------------------------------------------------------------------
 INCLUDES = -I/bau/stat16/users/statik/lib/SULUDIST0210/SuperLU_DIST/SRC
 
