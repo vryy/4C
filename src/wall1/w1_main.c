@@ -40,6 +40,7 @@ void wall1(PARTITION   *actpart,
 W1_DATA      actdata;
 MATERIAL    *actmat;
 
+INT          i;
 INT          imyrank;
 DOUBLE      *intforce;
 
@@ -98,9 +99,9 @@ case calc_struct_linstiffmass:
 break;/*----------------------------------------------------------------*/
 /*----------------------- calculate nonlinear stiffness and mass matrix */
 case calc_struct_nlnstiffmass:
-     actmat = &(mat[ele->mat-1]);
-     w1static_keug(ele,&actdata,actmat,estif_global,emass_global,intforce,0);
-     if (intforce && container->isdyn && ele->proc == actintra->intra_rank)
+   actmat = &(mat[ele->mat-1]);
+   w1static_keug(ele,&actdata,actmat,estif_global,emass_global,intforce,0);
+   if (intforce && container->isdyn && ele->proc == actintra->intra_rank)
       solserv_sol_localassemble(actintra,ele,intforce,1,2);
 break;/*----------------------------------------------------------------*/
 /*-------------------------------- calculate stresses in a certain step */
@@ -236,6 +237,21 @@ case update_struct_odens:
    ele->e.w1->elewa->matdata[0]   =  getval;
 break;/*----------------------------------------------------------------*/
 #endif /* stop including optimization code to ccarat :*/
+#ifdef D_SSI
+/*------- calculate coupling forces for ssi problems, firl / genk 10/03 */
+case calc_struct_ssi_coup_force:
+   for(i=0; i<ele->numnp; i++)
+   {
+     if (ele->node[i]->gnode->ssicouple == NULL) continue;
+     if (ele->node[i]->gnode->ssicouple->ssi_couptyp == ssi_slave)
+     {
+       actmat = &(mat[ele->mat-1]);
+       w1static_keug(ele,&actdata,actmat,estif_global,emass_global,intforce,0);
+       break;
+     }
+   } 
+break;/*----------------------------------------------------------------*/
+#endif
 default:
    dserror("action unknown");
 break;
