@@ -1,3 +1,7 @@
+/* NOT USED ANY MORE
+   this routine was copied to f2_calfuncderiv.c
+*/
+
 #ifdef D_FLUID2 
 #include "../headers/standardtypes.h"
 /*----------------------------------------------------------------------*
