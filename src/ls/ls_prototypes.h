@@ -388,6 +388,11 @@ void ls_printelinfo(
   );
 
 
+void ls_printelinfo_to_file(
+  ELEMENT*
+  );
+
+
 void ls_printnodeinfo(
   NODE*
   );

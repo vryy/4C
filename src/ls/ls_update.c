@@ -49,7 +49,6 @@ const static DOUBLE           NODETHRESHOLD = 0.001;  /* node threshold (used in
                                                        * the nodes lie on the interface) */
 
 
-
 static  ARRAY                 lset00_a;
 static 	DOUBLE               *lset00;                 /* nodal level set values at time step (n) */
 static 	ARRAY                 lset01_a;
@@ -83,6 +82,7 @@ static  FILE                 *file08;
 static  FILE                 *file09;
 static  FILE                 *file10;
 static  FILE                 *file11;
+static  FILE                 *file12;
 
 
 
@@ -256,6 +256,7 @@ void ls_update(
 } /* end of ls_updt */
 
 
+
 /*!----------------------------------------------------------------------
 \brief initialize front (called only at the beginning of time
 history analysis)
@@ -318,7 +319,6 @@ void ls_initialize()
         ls_printelinfo(actele);
         printf("\n\n**ERROR** in level set initialization!");
         printf("\nsomething is wrong level set initialization!");
-        printf("\n=> LINE 271");
 #ifdef PARALLEL 
         MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
 #else
@@ -330,12 +330,11 @@ void ls_initialize()
         if (lsdyn->lsdata->boundary_on_off==0)
         {
           /*
-           * boundary off the computatonal domain is not allowed
+           * boundary off the computational domain is not allowed
            * to be cut by the interface!
            */
           printf("\n\n**ERROR** in level set initialization!");
           printf("\n\nelement first_in_list is on boundary!");
-          printf("\n=> LINE 288");
           ls_printelinfo(actele);			
 #ifdef PARALLEL 
           MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
@@ -371,9 +370,21 @@ void ls_initialize()
   }
   else if (completionflag==2)
   {
+/*******************************BE CAREFUL*******************************/
+/*******************************BE CAREFUL*******************************/
+/*******************************BE CAREFUL*******************************/
+    /* deactivate the element */
+    actele->e.ls2->is_elcut = 0;
+    actele->e.ls2->is_sedge_set = 0;
+    actele->e.ls2->nlayer = 0;
+    /* reset interface data */
     intdata = &(actele->e.ls2->intdata[intcnt]); 
     ls_resetintdata(intdata);
+    /* construct the front */
     ls_construct(actele);
+/*******************************BE CAREFUL*******************************/
+/*******************************BE CAREFUL*******************************/
+/*******************************BE CAREFUL*******************************/
   }
   lsupdt.numinterface++;
   /* recursive call for other possible interfaces */
@@ -449,12 +460,37 @@ void ls_updt()
         ls_printelinfo(actele);
         printf("\n\n**ERROR** in level set update!");
         printf("\nsomething is wrong level set update!");
-        printf("\n=> LINE 392");
 #ifdef PARALLEL 
         MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
 #else
         exit(EXIT_FAILURE);
 #endif			
+      }
+      if (completionflag==2)
+      {
+        if (lsdyn->lsdata->boundary_on_off==0)
+        {
+          /*
+           * boundary off the computational domain is not allowed
+           * to be cut by the interface!
+           */
+          printf("\n\n**ERROR** in level set initialization!");
+          printf("\n\nelement first_in_list is on boundary!");
+          ls_printelinfo(actele);			
+#ifdef PARALLEL 
+          MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
+#else
+          exit(EXIT_FAILURE);
+#endif
+        }
+        else if (lsdyn->lsdata->boundary_on_off==1)
+        {
+          /**/
+        }
+        else
+        {
+          dserror("lsdyn->lsdata->boundary_on_off set improperly!");
+        }
       }
       /* access to the interface number */
       numint = lsupdt.numinterface;
@@ -475,8 +511,14 @@ void ls_updt()
   }
   else if (completionflag==2)
   {
+    /* deactivate the element */
+    actele->e.ls2->is_elcut = 0;
+    actele->e.ls2->is_sedge_set = 0;
+    actele->e.ls2->nlayer = 0;
+    /* reset interface data */
     intdata = &(actele->e.ls2->intdata[intcnt]); 
     ls_resetintdata(intdata);
+    /* construct the front */
     ls_construct(actele);
   }
   lsupdt.numinterface++;
@@ -540,9 +582,8 @@ void ls_construct(
     if (actele->e.ls2->is_elcut!=1)
     {
       ls_printelinfo(actele);
-      printf("\n\n**ERROR** in level set construction!\n");
-      printf("something is wrong level set construction!\n");
-      printf("\n=> LINE 478");
+      printf("\n\n**ERROR** in level set construction!");
+      printf("\nsomething is wrong level set construction!");
 #ifdef PARALLEL 
       MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
 #else
@@ -597,7 +638,7 @@ void ls_construct(
             Id_first_old = lsupdt.first_in_list[numint].Id;
             /* set new first_in_list which is to be located on the boundary */
             lsupdt.first_in_list[numint] = *actele;
-            /* set ele->e.ls2->recontruct flag */
+            /* set ele->e.ls2->recontruct flag for the elements */
             for (i=0; i<lsupdt.nael[numint]; i++)
             {
               intcnt = actele->e.ls2->intcnt-1;
@@ -609,9 +650,8 @@ void ls_construct(
             if (actele->Id!=Id_first_old)
             {
               ls_printelinfo(actele);
-              printf("\n\n**ERROR** in level set reconstruction!\n");
-              printf("actele->Id!=Id_first_old\n");
-              printf("\n=> LINE 547");
+              printf("\n\n**ERROR** in level set reconstruction!");
+              printf("\nactele->Id!=Id_first_old");
 #ifdef PARALLEL 
               MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
 #else
@@ -629,6 +669,12 @@ void ls_construct(
               /* there are still elements to be processed */
               /* recursive call for ls_construct() */
               ls_construct(actele->e.ls2->intdata[intcnt].nbor_s);
+            }
+            else
+            {
+              /* there are no further elements to be processed */
+              /* turn off lsdyn->lsdata->reconstruct_on_off flag */
+              lsdyn->lsdata->reconstruct_on_off = 0;
             }
             goto end;            
           }
@@ -1122,10 +1168,20 @@ void ls_updateneighbor(
 /*************************BE CAREFUL*************************************/
           if (nbor->e.ls2->is_elcut==1) /* nbor is already cut */
           {
-            printf("**WARNING** in updating the neighbor element!\n");
-            printf("in ls_updateneighbor()\n");
-            printf("neighbor element is cut second times by the interface!\n");
+            /* print to screen */
+            printf("\n**WARNING** in updating the neighbor element!");
+            printf("\nin ls_updateneighbor()");
+            printf("\nneighbor element is cut second times by the interface!");
             ls_printelinfo(nbor);
+            /* print to file */
+            fprintf(file12,"\n**WARNING** in updating the neighbor element!");
+            fprintf(file12,"\nin ls_updateneighbor()");
+            fprintf(file12,"\nneighbor element is cut second times by the interface!");
+            fprintf(file12,"\njunction = %2d",junction);            
+            fprintf(file12,"\nactive element =>");
+            ls_printelinfo_to_file(ele);
+            fprintf(file12,"\nneighbor to active element =>");            
+            ls_printelinfo_to_file(nbor);
           }
         }
       }
@@ -1548,7 +1604,7 @@ void ls_reset()
   for (i=0; i<actfield->dis[0].numele; i++)
   {
     actele = &(actfield->dis[0].element[i]);
-    if (actele->e.ls2->is_elcut==1 || actele->e.ls2->is_elcut==2)
+    if (actele->e.ls2->nlayer!=0)
     {
       actele->e.ls2->is_elsearch = 1;
     }
@@ -1556,12 +1612,18 @@ void ls_reset()
     {
       actele->e.ls2->is_elsearch = 0;
     }
+    /* reset flags and counters */
     actele->e.ls2->is_elcut = 0;
     actele->e.ls2->is_sedge_set = 0;
     actele->e.ls2->nlayer = 0;
+    actele->e.ls2->nenode = 0;
     actele->e.ls2->prncnt = 0;
     actele->e.ls2->rstcnt = 0;
-    
+    /* reset enode */
+    for (j=0; j<actele->numnp; j++)
+    {
+      actele->e.ls2->enode[j] = 0;
+    }
     /* reset interface data */
     for (j=0; j<actele->e.ls2->intcnt; j++)
     {
@@ -1733,7 +1795,8 @@ void ls_finalize()
   fclose(file09);
   fclose(file10);
   fclose(file11);
-  
+  fclose(file12);
+    
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
   dstrc_exit();
@@ -1745,7 +1808,7 @@ void ls_finalize()
 
 
 /*!----------------------------------------------------------------------
-\brief print element data
+\brief print element data onto screen
 
 <pre>                                                            irhan 05/04
 print element data
@@ -1764,7 +1827,7 @@ void ls_printelinfo(
 /*----------------------------------------------------------------------*/
 
   /* print element Id */    
-  printf("Element=%6d\n\n",ele->Id+1);
+  printf("\nElement=%6d\n\n",ele->Id+1);
 
   /* print connectivity */  
   printf("con=\n[\n");
@@ -1795,6 +1858,68 @@ void ls_printelinfo(
       printf("%10.5E ",lset01[i]);
   }
   printf("\n]");
+  
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+  dstrc_exit();
+#endif
+  
+  return;
+} /* end of ls_printelinfo */
+
+
+
+/*!----------------------------------------------------------------------
+\brief print element data into file
+
+<pre>                                                            irhan 15/04
+print element data into file
+</pre>
+
+*----------------------------------------------------------------------*/
+void ls_printelinfo_to_file(
+  ELEMENT *ele
+  )
+{
+  INT     i;
+
+#ifdef DEBUG 
+  dstrc_enter("ls_printelinfo_to_file");
+#endif
+/*----------------------------------------------------------------------*/
+
+  /* print element Id */    
+  fprintf(file12,"\nElement=%6d\n\n",ele->Id+1);
+
+  /* print connectivity */  
+  fprintf(file12,"con=\n[\n");
+  for (i=0; i<ele->numnp; i++)
+  {
+      fprintf(file12,"%3d ",ele->lm[i]+1);
+  }
+  fprintf(file12,"\n]\n");
+
+  /* print coordinates */
+  fprintf(file12,"\nxy=\n[\n");
+  for (i=0; i<ele->numnp; i++)
+  {
+      fprintf(file12,"%10.5E %10.5E\n",ele->node[i]->x[0],ele->node[i]->x[1]);
+  }
+  fprintf(file12,"]\n");  
+
+  /* access to the interface number */
+  for (i=0; i<ele->e.ls2->intcnt; i++)
+  {
+    fprintf(file12,"\nedge=\n[\n%6d %6d\n]\n\n",ele->e.ls2->intdata[i].edge[0],ele->e.ls2->intdata[i].edge[1]);
+  }
+  fprintf(file12,"is_elcut=%6d\n\n",ele->e.ls2->is_elcut);
+  /* print level set profile */  
+  fprintf(file12,"lset01=\n[\n");
+  for (i=0; i<ele->numnp; i++)
+  {
+      fprintf(file12,"%10.5E ",lset01[i]);
+  }
+  fprintf(file12,"\n]");
   
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -1988,7 +2113,9 @@ void ls_setdata()
   file08 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_nseg","w");
   file09 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_firstinlist","w");
   file10 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_layer","w");
-  file11 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_nlayer","w");  
+  file11 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_nlayer","w");
+  /* this file is used for debugging purposes */
+  file12 = fopen("src/ls/to_matlab/ls_to_matlab/ls_to_matlab_debug","w");  
   
   /*initialize the lsupdt */
   lsupdt.nael = (INT*)CCACALLOC(50,sizeof(INT));

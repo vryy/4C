@@ -167,7 +167,7 @@ typedef struct _LS_GEN_DATA
   DOUBLE     ye3;
   
   INT 	     isstab;              /* flag to control stabilization */
-  INT 	     localization;        /* flag to control localization */
+  INT 	     localization;        /* flag to control localization (localization not implemented yet!) */
   INT 	     numlayer;            /* flag to control localization region */
   
   INT 	     reinitialization;    /* flag to control reinitialization */
