@@ -44,7 +44,9 @@ DOUBLE thsl;     /*!< theta-s,l: const. for "stiffness" terms LHS */
 DOUBLE thsr;     /*!< theta-s,r: const. for "stiffness" terms RHS */
 DOUBLE thpl;     /*!< theta-p,l: const. for "pressure" terms LHS  */
 DOUBLE thpr;     /*!< theta-p,r: const. for "pressure" terms RHS  */
+DOUBLE thnr;	 /*!< additional part of thsr needed for gen_alpha*/
 DOUBLE omt;      /*!< ONE-theta                                   */
+DOUBLE alpha;	 /*!< alpha_m of generalised alpha method	  */
 DOUBLE acttime;  /*!< actual time */
 DOUBLE velmax;   /*!< max. velocity, needed for stabilisaton parameter */
 DOUBLE tau[3];   /*!< array for stabilitity parameter */
@@ -56,18 +58,20 @@ DOUBLE totarea;  /*!< total area of fluid field */
 DOUBLE coord_scale[2];  /*!<coordinates for scaling the turbulence variables */   
 INT    itwost;   /*!< control variable for element evaluation */
 INT    isemim;   /*!< control variable for element evaluation */
+INT    gen_alpha; /*!< general alpha time integration */
 INT    iprerhs;  /*!< treatment of pressure in time discr. */
 INT    surftens; /*!< include surface tension effects */
 INT    fsstnif; 
 INT    fsstnii;
-INT    nik; 	 /*!< EVALUATION OF LHS-MATRICES (w/o NONLINEAR TERM)*/
-INT    nic;	 /*!< EVALUATION OF NONLINEAR LHS N-CONVECTIVE       */
-INT    nir;	 /*!< EVALUATION OF NONLINEAR LHS N-REACTION	     */
-INT    nie;	 /*!< EVALUATE ONLY LHS-TERMS FOR EXPLICIT VELOCITY  */
-INT    nil;	 /*!< EVALUATION OF LUMPED MASS MATRIX (Mvv-lumped)  */
-INT    nif;	 /*!< EVALUATION OF "TIME - RHS"           	     */
-INT    nii;	 /*!< EVALUATION OF "ITERATION - RHS"		     */
-INT    nis;	 /*!< STATIONARY CASE (NO TIMEDEPENDENT TERMS)       */
+INT    nik; 	 /*!< EVALUATION OF LHS-MATRICES (w/o NONLINEAR TERM)	*/
+INT    nic;	 /*!< EVALUATION OF NONLINEAR LHS N-CONVECTIVE		*/
+INT    nir;	 /*!< EVALUATION OF NONLINEAR LHS N-REACTION		*/
+INT    nie;	 /*!< EVALUATE ONLY LHS-TERMS FOR EXPLICIT VELOCITY	*/
+INT    nil;	 /*!< EVALUATION OF LUMPED MASS MATRIX (Mvv-lumped)	*/
+INT    nif;	 /*!< EVALUATION OF "TIME - RHS"			*/
+INT    nii;	 /*!< EVALUATION OF "ITERATION - RHS"			*/
+INT    nis;	 /*!< STATIONARY CASE (NO TIMEDEPENDENT TERMS)		*/
+INT    nim;	 /*!< EVALUATION OF "MASS-RHS" for BDF2			*/
 INT    niturbu_pro;  /*!< EVALUATION OF "TIME - RHS" for turbulence-model */
 INT    niturbu_n;    /*!< EVALUATION OF "TIME - RHS" for turbulence-model */
 INT    kapeps_flag;  /*!< kappa or epsilon equation                       */
@@ -130,6 +134,8 @@ DOUBLE             dt;           /*!< time increment */
 DOUBLE             alpha;        /*!< time integration constant */
 DOUBLE             theta;        /*!< time integration constant */
 DOUBLE             gamma;        /*!< time integration constant */
+DOUBLE             alpha_m;      /*!< time integration constant */
+DOUBLE             alpha_f;      /*!< time integration constant */
 DOUBLE             ittol;        /*!< tolerance for iteration convergence check */
 DOUBLE             sttol;        /*!< tolerance for steady state check */
 DOUBLE             thetas;       /*!< constant for starting algorithm) */
