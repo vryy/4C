@@ -166,10 +166,7 @@ if (genprob.probtyp==prb_structure)
 
 /*-------------------------------------------- input of monitoring data */
 inp_monitor();
-/*------------------------------------- input of initial data for fluid */
-#ifdef D_FLUID
-inp_fluid_start_data();
-#endif
+
 /*--------------------------------------------- all reading is over here*/
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
