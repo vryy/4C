@@ -58,6 +58,15 @@ inpdesign();
    pointers connecting DVOL, DSURF, DLINE and DNODE 
 */
 inpdesign_topology_design();
+/*----------------------------------------------------------------------*/
+/* NOTE: the materials have to be read before the input of the elements */
+/*       as these informations are needed for shell9 element            */
+/*                                                             sh 10/02 */
+/*                                                                      */
+/*-------------------------------------------------- input of materials */
+inp_material();
+/*---------------- sh 10/02 --- input of multilayer materials -> shell9 */
+inp_multimat();
 /*------------------------------------------------------input of meshes */
 /* read the fe-nodes in NODE, the fe-elements in ELEMENT and build the 
    topology among ELEMENTs and NODEs. Assign the disctretization to
@@ -101,8 +110,6 @@ inherit_design_dis_dirichlet(&(field[i].dis[j]));
 for (i=0; i<genprob.numfld; i++)
 for (j=0; j<field[i].ndis; j++)
 inherit_design_dis_couple(&(field[i].dis[j]));
-/*-------------------------------------------------- input of materials */
-inp_material();
 /*------------------------------------- input of initial data for fluid */
 #ifdef D_FLUID
 inp_fluid_start_data();
