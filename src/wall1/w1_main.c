@@ -27,7 +27,7 @@ void wall1(PARTITION   *actpart,
            ARRAY       *emass_global,
            ARRAY       *intforce_global,
            CALC_ACTION *action,
-           CONTAINER   *container)   /*!< contains variables defined in container.h */
+           CONTAINER   *container)   /* contains variables defined in container.h */
 {
 #ifdef D_WALL1
 int  i, iloc;
@@ -54,7 +54,8 @@ case calc_struct_init:
    w1static_ke(NULL,NULL,NULL,NULL,NULL,NULL,1);
    w1static_keug(NULL,NULL,NULL,NULL,NULL,NULL,1);
    w1_cal_stress(NULL,NULL,NULL,NULL,NULL,0,1);
-   w1_eleload(ele,&actdata,intforce,1);
+   w1_eleload(ele,&actdata,intforce,1,NULL);
+   w1_iedg(NULL,NULL,0,1);
 break;/*----------------------------------------------------------------*/
 /*----------------------------------- calculate linear stiffness matrix */
 case calc_struct_linstiff:
@@ -98,12 +99,13 @@ break;/*----------------------------------------------------------------*/
 /*------------------------------ calculate load vector of element loads */
 case calc_struct_eleload:
    imyrank = actintra->intra_rank;
-   if (imyrank==ele->proc) 
-   {
-      actmat = &(mat[ele->mat-1]);
-      w1_eleload(ele,&actdata,intforce,0);
-   }
-
+   actmat = &(mat[ele->mat-1]);
+   w1_eleload(ele,&actdata,intforce,0,imyrank);
+break;/*----------------------------------------------------------------*/
+case calc_struct_fsiload:
+   imyrank = actintra->intra_rank;
+   actmat = &(mat[ele->mat-1]);
+   w1_fsiload(ele,&actdata,intforce,0,imyrank);
 break;/*----------------------------------------------------------------*/
 /*--------------------------------------- update after incremental step */
 case calc_struct_update_istep:
