@@ -62,7 +62,7 @@ void oll_numeq(
   /*-------------------------------- loop all nodes and find coupled dofs */
   for (i=0; i<actfield->dis[dis].numnp; i++)
   {
-    actnode = &(actfield->dis[0].node[i]);
+    actnode = &(actfield->dis[dis].node[i]);
     if (actnode->gnode->couple==NULL) continue;
     for (l=0; l<actnode->numdf; l++)
     {
@@ -317,6 +317,7 @@ This function checks whether this dof is in coupled dofs
 \param  dof            INT        (i)   the dof in question
 \param *actpart        PARTITION  (i)   the active partition
 \param *iscoupled      INT        (o)   the answer 
+\param  dis            INT        (i)   actual disnumber
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -326,16 +327,17 @@ This function checks whether this dof is in coupled dofs
 void oll_dof_in_coupledofs(
     INT dof,
     PARTITION *actpart,
-    INT *iscoupled)
+    INT *iscoupled,
+    INT  dis)
 {
   INT       i;
 #ifdef DEBUG 
   dstrc_enter("oll_dof_in_coupledofs");
 #endif
   /*----------------------------------------------------------------------*/
-  for (i=0; i<actpart->pdis[0].coupledofs.fdim; i++)
+  for (i=0; i<actpart->pdis[dis].coupledofs.fdim; i++)
   {
-    if (dof==actpart->pdis[0].coupledofs.a.ia[i][0])
+    if (dof==actpart->pdis[dis].coupledofs.a.ia[i][0])
     {
       *iscoupled = 1;
       break;
@@ -360,9 +362,10 @@ void oll_dof_in_coupledofs(
 <pre>                                                              mn 02/03
 This function finds the node in the active partition the dof belongs to 
 </pre>
-\param   dof            INT    (i)   the dof in question
+\param   dof            INT        (i)   the dof in question
 \param  *actpart        PARTITION  (i)   the active partition
-\param **centernode     NODE   (i)   the node
+\param **centernode     NODE       (i)   the node
+\param   dis            INT        (i)   actual disnumber
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -372,20 +375,21 @@ This function finds the node in the active partition the dof belongs to
 void oll_dof_find_centernode(
     INT dof,
     PARTITION *actpart,
-    NODE **centernode)
+    NODE **centernode,
+    INT dis)
 {
   INT       j,k;
 #ifdef DEBUG 
   dstrc_enter("oll_dof_find_centernode");
 #endif
   /*----------------------------------------------------------------------*/
-  for (j=0; j<actpart->pdis[0].numnp; j++)
+  for (j=0; j<actpart->pdis[dis].numnp; j++)
   {
-    for (k=0; k<actpart->pdis[0].node[j]->numdf; k++)
+    for (k=0; k<actpart->pdis[dis].node[j]->numdf; k++)
     {
-      if (actpart->pdis[0].node[j]->dof[k] == dof)
+      if (actpart->pdis[dis].node[j]->dof[k] == dof)
       {
-        *centernode = actpart->pdis[0].node[j];
+        *centernode = actpart->pdis[dis].node[j];
         goto nodefound1;
       }
     }
@@ -421,7 +425,8 @@ void oll_nnz_topology(
     FIELD         *actfield, 
     PARTITION     *actpart, 
     INTRA         *actintra,
-    OLL           *oll)
+    OLL           *oll,
+    INT            dis)
 {
   INT        i,j,k,l,m;
   INT        counter,counter2;
@@ -469,11 +474,11 @@ void oll_nnz_topology(
     dof = update[i];
     /*------------------------------ check whether this is a coupled dof */
     iscoupled=0;
-    oll_dof_in_coupledofs(dof,actpart,&iscoupled);
+    oll_dof_in_coupledofs(dof,actpart,&iscoupled,dis);
     if (iscoupled==1) continue;
     /*--------------------------------- find the centernode for this dof */
     centernode=NULL;
-    oll_dof_find_centernode(dof,actpart,&centernode);
+    oll_dof_find_centernode(dof,actpart,&centernode,dis);
     dsassert(centernode!=NULL,"Cannot make sparsity pattern for Aztec");
     /*--------------------------------- make dof patch around centernode */
     counter=0;
@@ -485,7 +490,7 @@ void oll_nnz_topology(
         actnode = actele->node[k];
         for (l=0; l<actnode->numdf; l++)
         {
-          if (actnode->dof[l] < actfield->dis[0].numeq)
+          if (actnode->dof[l] < actfield->dis[dis].numeq)
           {
             if (counter>=dofpatch.fdim) amredef(&dofpatch,dofpatch.fdim+500,1,"IV");
             dofpatch.a.iv[counter] = actnode->dof[l];
@@ -517,7 +522,7 @@ void oll_nnz_topology(
     dof_nnz.a.iv[dof] = counter2+1;
   }  /* end of loop over numeq */ 
   /*--------------------------------------------- now do the coupled dofs */
-  coupledofs = &(actpart->pdis[0].coupledofs);
+  coupledofs = &(actpart->pdis[dis].coupledofs);
   for (i=0; i<coupledofs->fdim; i++)
   {
     dof = coupledofs->a.ia[i][0];
@@ -527,14 +532,14 @@ void oll_nnz_topology(
     if (dofflag==0) continue;
     /*------------------------------------- find all patches to this dof */
     counter=0;
-    for (j=0; j<actpart->pdis[0].numnp; j++)
+    for (j=0; j<actpart->pdis[dis].numnp; j++)
     {
       centernode=NULL;
-      for (l=0; l<actpart->pdis[0].node[j]->numdf; l++)
+      for (l=0; l<actpart->pdis[dis].node[j]->numdf; l++)
       {
-        if (dof == actpart->pdis[0].node[j]->dof[l])
+        if (dof == actpart->pdis[dis].node[j]->dof[l])
         {
-          centernode = actpart->pdis[0].node[j];
+          centernode = actpart->pdis[dis].node[j];
           break;
         }
       }
@@ -549,7 +554,7 @@ void oll_nnz_topology(
             actnode = actele->node[m];
             for (l=0; l<actnode->numdf; l++)
             {
-              if (actnode->dof[l] < actfield->dis[0].numeq)
+              if (actnode->dof[l] < actfield->dis[dis].numeq)
               {
                 if (counter>=dofpatch.fdim) amredef(&dofpatch,dofpatch.fdim+500,1,"IV");
                 dofpatch.a.iv[counter] = actnode->dof[l];

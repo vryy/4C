@@ -109,7 +109,8 @@ for (j=0; j<genprob.numfld; j++)
     numeq_total = actfield->dis[actdis].numeq;
     oll_numeq(actfield, actpart, actintra, actdis, &numeq);
 
-    oll_open(actsolv->sysarray[0].oll, numeq, numeq_total, actfield, actpart, actintra);
+    oll_open(actsolv->sysarray[0].oll, numeq, numeq_total, 
+             actfield, actpart, actintra, actdis);
  
     continue;
   }
@@ -191,7 +192,6 @@ for (j=0; j<genprob.numfld; j++)
   }
   /*----------------------------------------- determine number of sysarrays */   
   if (ismlib_d_sp==1) nsysarray = 2;
-  if (isaztec_msr==1 && actfield->fieldtyp==fluid) nsysarray = actfield->ndis;
   /* allocate only one sparse matrix for each field. The sparsity
      pattern of the matrices for mass and damping and stiffness are  
      supposed to be the same, so they are calculated only once (expensive!) */
@@ -213,16 +213,16 @@ for (j=0; j<genprob.numfld; j++)
   /*------------------------- matrix is ditributed modified sparse row */
   if (isaztec_msr==1)
   {      
+    if(nsysarray>1) dserror("different discretisations not possible with SOLVER_TYP 'AZTEC_MSR'\n");
     actsolv->nsysarray = nsysarray;
     actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
     actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
     for (i=0; i<actsolv->nsysarray; i++)
     {
-      actndis=i;
       actsolv->sysarray_typ[i] = msr;
       actsolv->sysarray[i].msr = (AZ_ARRAY_MSR*)CCACALLOC(1,sizeof(AZ_ARRAY_MSR));
       actsolv->sysarray[i].msr->bins=NULL;      
-      mask_msr(actfield,actpart,actsolv,actintra,actsolv->sysarray[i].msr,actndis);
+      mask_msr(actfield,actpart,actsolv,actintra,actsolv->sysarray[i].msr,0);
     }
     isaztec_msr=0;
   }

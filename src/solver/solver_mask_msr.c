@@ -113,7 +113,8 @@ counter=0;
 /*-------------------------------- loop all nodes and find coupled dofs */
 for (i=0; i<actfield->dis[kk].numnp; i++)
 {
-   actnode = &(actfield->dis[0].node[i]);
+   actnode = &(actfield->dis[kk].node[i]);
+   if (actnode->gnode->couple==NULL && actnode->gnode->dirich==NULL) continue;
    if (actnode->gnode->couple==NULL) continue;
    for (l=0; l<actnode->numdf; l++)
    {
