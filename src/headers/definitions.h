@@ -194,12 +194,12 @@ static INT iminarg1,iminarg2;
 /*----------------------------------------------------------------------*
  | maximum number of nodes to an element                                |
  *----------------------------------------------------------------------*/
-#define MAXNOD           (28)
+#define MAXNOD           (4)
 
 /*----------------------------------------------------------------------*
  | maximum number of elements to a node                                 |
  *----------------------------------------------------------------------*/
-#define MAXELE           (30)
+#define MAXELE           (10)
 
 /*----------------------------------------------------------------------*
  | maximum number of conditions (dirich/neumann) to a node              |
@@ -214,7 +214,7 @@ static INT iminarg1,iminarg2;
 /*----------------------------------------------------------------------*
  | maximum number of gaussian points in an element                      |
  *----------------------------------------------------------------------*/
-#define MAXGAUSS         (400)  
+#define MAXGAUSS         (4)  
 
 /*----------------------------------------------------------------------*
  | maximum number of dofs to an element                                 |
