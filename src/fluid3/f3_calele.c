@@ -106,7 +106,7 @@ static DOUBLE   *eiforce;  /* pointer to Iteration RHS  		*/
 static DOUBLE   *edforce;  /* pointer to RHS due to dirichl. conditions */
 
 #ifdef DEBUG 
-dstrc_enter("f2_calele");
+dstrc_enter("f3_calele");
 #endif
 
 if (init==1) /* allocate working arrays and set pointers */
@@ -162,6 +162,7 @@ f3_calint(data,ele,dynvar,hasext,
 	  eveln,evelng,epren,edeadn,edeadng,
 	  velint,vel2int,covint,vderxy,pderxy,vderxy2,
 	  wa1,wa2);
+
 /*----------------- add emass and estif to estif and permute the matrix */
 f3_permestif(estif,emass,wa1,ele->numnp,dynvar);
 
@@ -175,7 +176,7 @@ if (dynvar->nii+(*hasext)!=0)
 
 /*------------------------------- calculate element load vector edforce */
 fluid_caldirich(ele,edforce,estif,hasdirich,3);
-   
+
 /*----------------------------------------- calculate emass * vec(n) ---*/
 if (dynvar->nim)
    f3_massrhs(ele,emass,eveln,eiforce); 
