@@ -61,7 +61,8 @@ if (par.myrank==0)
    if (ioflags.struct_disp_gid||ioflags.struct_stress_gid||ioflags.fluid_sol_gid) 
    {
       out_gid_sol_init();
-      out_gid_msh();
+      if (field[0].fieldtyp != structure)
+         out_gid_msh();
    }
 }
 /*------------------ call control programs of static or dynamic control */

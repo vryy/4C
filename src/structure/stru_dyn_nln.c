@@ -314,6 +314,11 @@ init_assembly(actpart,actsolv,actintra,actfield,mass_array,0);
 *action = calc_struct_init;
 calinit(actfield,actpart,action,&container);
 
+/*----------------------------------------- write output of mesh to gid */
+if (par.myrank==0)
+if (ioflags.struct_disp_gid||ioflags.struct_stress_gid) 
+   out_gid_msh();
+
 /*----------------------- call elements to calculate stiffness and mass */
 *action = calc_struct_nlnstiffmass;
 container.dvec          = NULL;

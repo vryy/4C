@@ -175,6 +175,10 @@ init_assembly(actpart,actsolv,actintra,actfield,actsysarray,0);
 /*------------------------------- init the element calculating routines */
 *action = calc_struct_init;
 calinit(actfield,actpart,action,&container);
+/*----------------------------------------- write output of mesh to gid */
+if (par.myrank==0)
+if (ioflags.struct_disp_gid||ioflags.struct_stress_gid) 
+   out_gid_msh();
 /*------call element routines to calculate & assemble stiffness matrice */
 *action = calc_struct_linstiff;
 container.dvec         = NULL;
