@@ -226,7 +226,7 @@ ftimerhs = amdef("ftimerhs",&ftimerhs_a,numeq_total,1,"DV");
 fiterhs = amdef("fiterhs",&fiterhs_a,numeq_total,1,"DV");
 
 /*--------------------------- allocate one vector for storing the time */
-if (par.myrank==0) amdef("time",&time_a,1000,1,"DV");
+amdef("time",&time_a,1000,1,"DV");
 /*--------------------------- allocate one vector for storing the area */
 if (fdyn->checkarea>0)
 { 
@@ -537,7 +537,7 @@ outstep++;
 pssstep++;
 restartstep++;
 
-if (pssstep==fsidyn->uppss && ioflags.fluid_vis_file==1 && par.myrank==0)
+if (pssstep==fsidyn->uppss && ioflags.fluid_vis_file==1)
 {
    pssstep=0;
    /*--------------------------------------------- store time in time_a */
@@ -549,8 +549,8 @@ if (pssstep==fsidyn->uppss && ioflags.fluid_vis_file==1 && par.myrank==0)
 
 /*-------- copy solution from sol_increment[3][j] to sol_[actpos][j]   
            and transform kinematic to real pressure --------------------*/
-fluid_sol_copy(actfield,0,1,0,3,actpos,fdyn->numdf);
-
+solserv_sol_copy(actfield,0,1,0,3,actpos);
+fluid_transpres(actfield,0,0,actpos,fdyn->numdf-1,0);
 
 if (outstep==fdyn->upout && ioflags.fluid_sol_file==1)
 {
@@ -703,8 +703,8 @@ solserv_result_incre(
 		     &(actsolv->sol[actsysarray]),
 		     7,
 		     &(actsolv->sysarray[actsysarray]),
-		     &(actsolv->sysarray_typ[actsysarray])
-		    );     
+		     &(actsolv->sysarray_typ[actsysarray]),
+		     0);     
 
 /*------------------------- calculate stresses transferred to structure */
 if (fsidyn->ifsi>0)
@@ -747,7 +747,7 @@ if (outstep!=0 && ioflags.fluid_sol_file==1)
 out_sol(actfield,actpart,actintra,fdyn->step,actpos);
 
 /*------------------------------------ print out solution to 0.pss file */
-if (ioflags.fluid_vis_file==1 && par.myrank==0)
+if (ioflags.fluid_vis_file==1)
 {
    if (pssstep!=0)
    {
@@ -756,7 +756,7 @@ if (ioflags.fluid_vis_file==1 && par.myrank==0)
       amredef(&(time_a),time_a.fdim+1000,1,"DV");
       time_a.a.dv[actpos] = fdyn->time;   
    }   
-   visual_writepss(actfield,actpos+1,&time_a);
+   if (par.myrank==0) visual_writepss(actfield,actpos+1,&time_a);
 }
 
 /*-------------------------------------- output of area to monitor file */
@@ -787,7 +787,7 @@ MPI_Barrier(actintra->MPI_INTRA_COMM);
 /*------------------------------------------------------------- tidy up */   
 amdel(&ftimerhs_a);
 amdel(&fiterhs_a);
-if (par.myrank==0) amdel(&time_a);
+amdel(&time_a);
 if (fdyn->checkarea>0) amdel(&totarea_a);
 solserv_del_vec(&(actsolv->rhs),actsolv->nrhs);
 solserv_del_vec(&(actsolv->sol),actsolv->nsol);
