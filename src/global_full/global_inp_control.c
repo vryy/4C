@@ -41,8 +41,12 @@ inpctr();
 if (genprob.design==1) inpdesign();
 /*------------------------------------------------------input of meshes */
 inpfield();
-/*---------------------------------------------------design-fe topology */
-if (genprob.design==1) inpdesign_topology();
+/*-----------------------------------design-design & design-fe topology */
+if (genprob.design==1) 
+{
+   inpdesign_topology_design();
+   inpdesign_topology_fe();
+}
 /*------------------------------------------------- input of conditions */
 inp_conditions();
 /*-------------------------------------------------- input of materials */
