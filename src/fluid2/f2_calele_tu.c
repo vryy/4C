@@ -135,8 +135,8 @@ if (init==1) /* allocate working arrays and set pointers */
    deriv2       = amdef("deriv2" ,&deriv2_a ,3,MAXNOD_F2,"DA");
    xjm          = amdef("xjm"    ,&xjm_a    ,2,2        ,"DA");
    xyze         = amdef("xyze"     ,&xyze_a     ,2,MAXNOD_F2,"DA");
-   velint       = amdef("velint" ,&velint_a ,1,1,"DV");
-   velint_dc    = amdef("velint_dc" ,&velint_dc_a ,1,1,"DV");
+   velint       = amdef("velint" ,&velint_a ,2,1,"DV");
+   velint_dc    = amdef("velint_dc" ,&velint_dc_a ,2,1,"DV");
    kapepsderxy  = amdef("kapepsderxy" ,&kapepsderxy_a ,2,1,"DV");
    kapepsderxy2 = amdef("kapepsderxy2",&kapepsderxy2_a,3,1,"DV");
    derxy   = amdef("derxy"  ,&derxy_a  ,2,MAXNOD_F2,"DA");
