@@ -11,6 +11,7 @@ typedef struct _MATERIAL
      union
      {
      struct _STVENANT         *stvenant;     /* St. Venant-Kirchhoff material */
+     struct _PL_HOFF          *pl_hoff;      /* anisotropic plastic material, based on hoffman-criterion */
      struct _PL_MISES         *pl_mises;     /* von Mises material */
      struct _PL_FOAM          *pl_foam;      /* foam material - large strains */
      struct _PL_MISES_LS      *pl_mises_ls;  /* von Mises material - large strains*/
@@ -27,7 +28,6 @@ typedef struct _MATERIAL
      struct _MFCC             *mfcc;         /* metal foam, closed cell  */
      struct _NHMFCC           *nhmfcc;       /* foam, closed cell, based on modified Neo Hook */
      struct _MULTI_LAYER      *multi_layer;  /* multi layer material*/
-     struct _ORTHOTROPIC      *orthotropic;  /* linear elastic, orthotropic material*/
      }                         m;            /* union pointer to material specific structure */
 
 } MATERIAL;
@@ -108,6 +108,50 @@ typedef struct _PL_MISES
      DOUBLE                    GF;
      DOUBLE                    betah;
 } PL_MISES;
+
+/*----------------------------------------------------------------------*
+ | anisotropic plastic material based on hoffman-criterion    sh 03/03  |
+ *----------------------------------------------------------------------*/
+typedef struct _PL_HOFF
+{
+     double                    emod1;         
+     double                    emod2;         
+     double                    emod3;         
+     double                    gmod12;         
+     double                    gmod13;         
+     double                    gmod23;         
+     double                    xnue12;         
+     double                    xnue13;         
+     double                    xnue23; 
+     double                    s11T;        
+     double                    s11C;        
+     double                    s22T;        
+     double                    s22C;        
+     double                    s33T;        
+     double                    s33C;        
+     double                    s12;        
+     double                    s23;        
+     double                    s13;        
+     double                    uniax;
+     double                    sh11T;        
+     double                    sh11C;        
+     double                    sh22T;        
+     double                    sh22C;        
+     double                    sh33T;        
+     double                    sh33C;        
+     double                    sh12;        
+     double                    sh23;        
+     double                    sh13;        
+     double                    ha11T;        
+     double                    ha11C;        
+     double                    ha22T;        
+     double                    ha22C;        
+     double                    ha33T;        
+     double                    ha33C;        
+     double                    ha12;        
+     double                    ha23;        
+     double                    ha13;        
+} PL_HOFF;
 
 /*----------------------------------------------------------------------*
  | plastic mises material including large strains      a.lipka 17/05    |
@@ -324,23 +368,10 @@ typedef struct _MULTIMAT
      union
      {
      struct _STVENANT         *stvenant;     /* St. Venant-Kirchhoff material */
+     struct _PL_MISES         *pl_mises;     /* von Mises material */
+     struct _PL_HOFF          *pl_hoff;      /* anisotropic plastic material, based on hoffman-criterion */
      struct _NEO_HOOKE        *neohooke;     /* Neo-Hooke material */
-     struct _ORTHOTROPIC      *orthotropic;  /* linear elastic, orthotropic material*/
+     struct _EL_ORTH          *el_orth;      /* linear elastic orthotropic material */
      }                         m;            /* union pointer to material specific structure */
 
 } MULTIMAT;
-/*----------------------------------------------------------------------*
- | linear elastic, orthotropic material                     sh 02/03    |
- *----------------------------------------------------------------------*/
-typedef struct _ORTHOTROPIC
-{
-     DOUBLE                    emod1;         
-     DOUBLE                    emod2;         
-     DOUBLE                    emod3;         
-     DOUBLE                    gmod12;         
-     DOUBLE                    gmod13;         
-     DOUBLE                    gmod23;         
-     DOUBLE                    xnue12;         
-     DOUBLE                    xnue13;         
-     DOUBLE                    xnue23;         
-} ORTHOTROPIC;

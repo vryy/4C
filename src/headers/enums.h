@@ -85,6 +85,7 @@ typedef enum _MATERIAL_TYP
                        m_stvenant,    /* St.Venant Kirchhoff material */
                        m_pl_mises_3D, /* Stefans Mises*/
                        m_pl_mises,    /* von Mises material */
+                       m_pl_hoff,     /* anisotropic plastic material based on hoffman criterion */
                        m_pl_foam,     /* foam material - large strains */
                        m_pl_mises_ls, /* von Mises material - large strains*/
                        m_pl_dp,       /* Drucker Prager material */
@@ -99,8 +100,7 @@ typedef enum _MATERIAL_TYP
                        m_mfoc,        /* open cell metal foam */
                        m_mfcc,        /* closed cell metal foam */
                        m_nhmfcc,      /* foam, closed cell, based on modified Neo Hook */
-                       m_multi_layer, /* multilayer material -> shell9*/
-                       m_orthotropic  /* linear elastic orthotropic material*/
+                       m_multi_layer  /* multilayer material -> shell9*/
 } MATERIAL_TYP;                         
 /*----------------------------------------------------------------------*
  | enum PART_TYP                                          m.gee 7/01    |
