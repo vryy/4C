@@ -94,6 +94,10 @@ MATERIAL    *actmat;
   DOUBLE dens;
   ELEMENT *actele;                  /* active element                   */
 /*----------------------------------------------------------------------*/
+  INT c, c_max, mymat, nemat;
+  INT numvarlin;                    /* AS */
+  INT  *adr;
+/*----------------------------------------------------------------------*/
   #ifdef DEBUG 
   dstrc_enter("opcini");
   #endif
@@ -131,7 +135,11 @@ MATERIAL    *actmat;
          {
            numvar++;
            /* initialize element struct for opti. */
-           actele->optdata = (INT*)CCACALLOC(2,sizeof(INT));
+           if(opt->numlin != 0)                              
+	   {
+	   actele->optdata = (INT*)CCACALLOC(3,sizeof(INT));
+	   }                                                 
+	   else actele->optdata = (INT*)CCACALLOC(2,sizeof(INT));
          }
       }
     
@@ -276,6 +284,7 @@ MATERIAL    *actmat;
            }
            /* element gets position in variable vector */
            actele->optdata[0] = numvar+1;
+	   if(opt->numlin != 0) actele->optdata[2] = numvar+1;
            /* and material Id of porous material */
            actele->optdata[1] = opt->ovar[i].objId;
            /* fill variable vector with initial values */
@@ -362,6 +371,59 @@ MATERIAL    *actmat;
   /*-----------------------------------------------*/
   }/*desmat*/
   /*--------------------------------------------------------------------*/
+/*--- AS ---------------------------------------------------------------*/
+/*---------------------------------------------- initialize opt.var. ---*/
+if(opt->numlin != 0)
+{
+  numvarlin = numvar;
+  adr = (int*)CCACALLOC(actfield->dis[0].numele,sizeof(int));
+  for (i=0; i<opt->numlin; i++)  /* for all linking rules*/
+  {
+    mymat = opt->olin[i].objIds[0];
+    nemat = opt->olin[i].objIds[1];
+    c=0;
+    for (j=0; j<actfield->dis[0].numele; j++)
+    {
+       actele = &(actfield->dis[0].element[j]);
+       if(actele->mat == nemat)
+       {
+       actele->mylinweight = opt->olin[i].neweight;
+       adr[c] = actele->optdata[2];
+       c++;
+       }
+    }
+    c_max = c;
+    c=0;
+    for (j=0; j<actfield->dis[0].numele; j++)
+    {
+       actele = &(actfield->dis[0].element[j]);
+       if(actele->mat == mymat)
+       {
+       actele->mylinweight = opt->olin[i].myweight;
+       actele->optdata[2] = adr[c];
+       c++;
+       }  
+       if(c > c_max) dserror("Linking problem in opt_init.c, sorry!");
+    }
+   if(c != c_max) dserror("problem in opt_init.c: different no. of elements for linking materials!");
+   numvarlin = numvarlin-c;      //angepasste laenge von numvar 
+   }
+   opt->strat.fsd->numvar_lin = numvarlin;
+   CCAFREE(adr);  
+
+/* -------------- allocate memory for resized vectors for linking  --- */
+  opt->strat.fsd->grdobj_lin = (double*)CCACALLOC(numvarlin,sizeof(double));
+  opt->strat.fsd->grdcon_lin = (double*)CCACALLOC(numvarlin,sizeof(double));
+  opt->strat.fsd->var_lin    = (double*)CCACALLOC(numvarlin,sizeof(double));
+
+  for (i=0; i<numvarlin; i++)
+  {
+     opt->strat.fsd->grdobj_lin[i]  =  0.;
+     opt->strat.fsd->grdcon_lin[i]  =  0.;
+     opt->strat.fsd->var_lin[i]     =  0.; 
+  }
+}  
+/*--- AS ENDE ----------------------------------------------------------*/
 /*-------------------- initialize upodate of optimization variables  ---*/
   optupd(1); 
 /*-------------------- initialize evaluation of equality constraints ---*/

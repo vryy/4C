@@ -33,6 +33,7 @@ void inpctropt()
 INT    ierr;
 INT    i, idum, iloop;
 INT    ccdv=0; /* n.of.variables */
+INT    ccdl=0; /* n.of.link.data */
 char   buffer[50]; 
 OSNLP *nlp;
 OSFSD *fsd;
@@ -247,6 +248,43 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       }
     }
   }
+/*------------------------------- input of all variable linking data ---*/
+/*
+  OV_LIN 1                : WIEVIELE LAYER SOLLEN GELINKT WERDEN
+    ELEofMAT 2  WEIGHT 1.0 ELEofMAT 1  WEIGHT 1.0
+*/
+  frint(   "OV_LIN",&(iloop) ,&ierr); /* number of variables */
+  if (ierr==1)
+  {
+    opt->numlin = iloop; /* store n.of.variables    */
+    /* allocate memory */
+    opt->olin  = (OLIN*)CCACALLOC(opt->numlin,sizeof(OLIN));
+    if (opt->olin==NULL) dserror("Allocation for OPT.LINKING failed");
+    
+    for (i=0;i<iloop;i++)
+    {
+      frread(); /* read line */
+      frint(   "ELEofMAT",&(idum) ,&ierr); 
+      if(ierr==1)
+      { /* ELEofMAT 1 TYPE DENS  DL 1.0E-1  DU 1.0E0 SCL 1. */
+        opt->olin[ccdl].olin_type = matl;
+	
+	opt->olin[ccdl].objIds[0]  =  idum;
+        frdouble("WEIGHT"   ,&(opt->olin[ccdl].myweight) ,&ierr); 
+	frint(   "WELEofMAT",&(idum) ,&ierr); 
+        opt->olin[ccdl].objIds[1]  =  idum;
+        frdouble("WWEIGHT"   ,&(opt->olin[ccdl].neweight) ,&ierr); 
+        ccdl++;
+      }
+    }
+  }
+/*------------------------------- input for graphical output at every ? step ---*/
+/*
+GOUTSTEP 5
+*/   
+  frint(   "GOUTSTEP",&(iloop) ,&ierr); /* number of steps */
+  if (ierr==1)  opt->graph_out = iloop; 
+
 /*-------------------------------------- global equality constraints ---*/
 /*
 OC_ECO 1                  : global equality constraints
