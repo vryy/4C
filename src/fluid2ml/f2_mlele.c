@@ -289,9 +289,9 @@ void f2_lsele(FLUID_DATA     *data,
 	      ARRAY	     *etforce_global,	    
 	      ARRAY	     *eiforce_global, 
 	      ARRAY	     *edforce_global,	      
-	      int	     *hasdirich,      
-              int	     *hasext,
-	      int	      init)
+	      INT	     *hasdirich,      
+              INT	     *hasext,
+	      INT	      init)
 {
 INT              hasdead;
 INT              info=0;
@@ -410,10 +410,10 @@ f2_smcopy(smrhs,ele,submesh->numeq,mlvar->nelbub);
 f2_bubele(data,mlvar,submesh,ele);
 
 /*- calculate charact. l-s element length and stab. param. if necessary */
-if (ele->e.f2->stab_type != stab_gls) /* check for proper stabilisation */
-   dserror("wrong stabilisation in mulitlevel case");
-if (ele->e.f2->stabi.gls->istabi!=0) 
-  f2_mlcalelesize(ele,data,funct,deriv,deriv2,derxy,xjm,evel,velint,
+dsassert(ele->e.f2->stab_type == stab_gls, /* check for proper stabilisation */
+     "wrong stabilisation in mulitlevel case");
+
+f2_mlcalelesize(ele,data,funct,deriv,deriv2,derxy,xjm,evel,velint,
                   vderxy,wa1);
 /*------------------ calculate large-scale part of element matrices and 
                                                   element force vectors */
