@@ -15,6 +15,7 @@
 // #define MAXLAY_SHELL9         (9)      /* max. total number of layers */
 // #define MAXKLAY_SHELL9        (5)      /* max. number of kin layers */
 // #define MAXNODESTRESS_SHELL9  (72)     /* Numnod*lt*numlay (Numnod=4 for Quad4 | Numnod=9 for Quad8/9)
+// #define MAXHYB_SHELL9         (4)      /* max. Number of EAS-Parameters */
 //
 ==================================================================
                         General Data File C_CARAT
