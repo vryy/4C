@@ -86,6 +86,7 @@ typedef char      CHAR;
 #define dveczero            dveczero_
 #define iveczero            iveczero_
 #endif
+#ifndef AZTEC_PACKAGE
 void dsytrf(char *uplo, int *n, double *a, int *lda, int *ipiv, double *work, int *lwork, int *info);
 void dsytri(char *uplo, int *n, double *a, int *lda, int *ipiv, double *work, int *info);
 void dsytrs(char *uplo, int *n, int *nrhs, double *a, int *lda, int *ipiv, double *b, int *ldb, int *info);
@@ -104,6 +105,7 @@ void mlpcgupdupdvec(double *a, double *y, double *facy, double *x, double *facx,
 void mlpcgupdvec(double *y, double *x, double *fac, int *init, int *n);
 void dveczero(double *x, int *n);
 void iveczero(int *x, int *n);
+#endif
 /*----------------------------------------------------------------------*
  | absolut value of an integer                                          |
  *----------------------------------------------------------------------*/
