@@ -81,7 +81,9 @@ TIMESTEP     0.1
 NUMSTEP      41 
 MAXTIME      4.0
 ALE_TYPE     classic_lin
+NUM_INITSTEP 0   
 RESEVRYDISP  1
+QUALITY      none
 -------------------------------------------------------FSI DYNAMIC
 MAXTIME      1000.0
 TIMESTEP     0.025
@@ -103,8 +105,8 @@ ICHMAX       0
 ITECHAPP     20
 ICHOPT       no
 ------------------------------------------------------FLUID SOLVER
-//SOLVER         SPOOLES_nonsym
-SOLVER         Aztec_MSR
+SOLVER         SPOOLES_nonsym
+//SOLVER         Aztec_MSR
 AZSOLVE        BiCGSTAB
 AZPREC         ILU
 AZREUSE        0  

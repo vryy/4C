@@ -76,7 +76,9 @@ TIMESTEP     0.1
 NUMSTEP      41 
 MAXTIME      4.0
 ALE_TYPE     classic_lin
+NUM_INITSTEP 0
 RESEVRYDISP  1
+QUALITY      none
 ------------------------------------------------------FLUID SOLVER
 SOLVER         Aztec_MSR
 AZSOLVE        CG

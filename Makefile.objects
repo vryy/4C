@@ -171,6 +171,8 @@ OBJS7 	      = src/ale3/ale_call_stiff.o \
                 src/ale2/ale2_inpele.o \
                 src/ale2/ale2_intg.o \
                 src/ale2/ale2_jaco.o \
+                src/ale2/ale2_elm_geometry.o \
+		src/ale2/ale2_mesh_quality.o \
                 src/ale2/ale2_main.o \
                 src/ale2/ale2_mat_linel.o \
                 src/ale2/ale2_static_ke.o \
@@ -317,6 +319,11 @@ OBJS15        = src/fluid_full/fluid_curvature.o \
 #                fluid_full
 OBJS16        = src/fsi_full/fsi_aitken.o \
                 src/fsi_full/fsi_ale.o \
+                src/fsi_full/fsi_ale_lin.o \
+                src/fsi_full/fsi_ale_nln.o \
+                src/fsi_full/fsi_ale_2step.o \
+                src/fsi_full/fsi_ale_spring.o \
+                src/fsi_full/fsi_ale_laplace.o \
                 src/fsi_full/fsi_coupling.o \
                 src/fsi_full/fsi_dyn.o \
                 src/fsi_full/fsi_energy.o \
