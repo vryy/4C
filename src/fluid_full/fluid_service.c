@@ -645,6 +645,7 @@ for (i=0;i<actfield->dis[0].numnp;i++)
                      INITIALISE ELEMENT ARRAYS
 /*---------------------------------------------------------------------*
 /*------------- allocate array for stabilisation parameter (only pdis) */
+if (fdyn->dyntyp==0)
 for (i=0;i<actpart->pdis[0].numele;i++)
 {
    actele = actpart->pdis[0].element[i];
