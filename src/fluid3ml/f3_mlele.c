@@ -87,8 +87,7 @@ static ARRAY     w2_a;     /* working array of arbitrary chosen size    */
 static DOUBLE  **wa2;      /* used in different element routines        */
 static DOUBLE  **estif;    /* pointer to element stiffness matrix       */
 static DOUBLE  **emass;    /* pointer to element mass matrix            */
-static DOUBLE   *etforce;  /* pointer to element time rhs               */
-static DOUBLE   *eiforce;  /* pointer to element iteration rhs          */
+static DOUBLE   *eforce;   /* pointer to element rhs                    */
 static DOUBLE   *edforce;  /* pointer to element rhs due to dirichl. bc */
 
 /*----------------------------------- static arrays for multi-level FEM */
@@ -271,8 +270,7 @@ This routine controls the element evaluation of the large-scale element:
 \param  *ele	         ELEMENT	(i)   actual element
 \param  *estif_global    ARRAY	        (o)   ele stiffnes matrix
 \param  *emass_global    ARRAY	        (o)   ele mass matrix
-\param  *etforce_global  ARRAY	        (o)   element time force
-\param  *eiforce_global  ARRAY	        (o)   ele iteration force
+\param  *eforce_global   ARRAY	        (o)   ele force
 \param  *edforce_global  ARRAY	        (o)   ele dirichlet force
 \param  *hasdirich       INT	        (o)   element flag
 \param  *hasext          INT	        (o)   element flag
@@ -287,8 +285,7 @@ void f3_lsele(FLUID_DATA     *data,
 	      ELEMENT	     *ele,
               ARRAY	     *estif_global,
               ARRAY	     *emass_global,
-	      ARRAY	     *etforce_global,
-	      ARRAY	     *eiforce_global,
+	      ARRAY	     *eforce_global,
 	      ARRAY	     *edforce_global,
 	      INT	     *hasdirich,
               INT	     *hasext,
@@ -332,8 +329,7 @@ if (init==1) /* allocate working arrays and set pointers */
 /*                                        \- size is arbitrary chosen!  */
    estif   = estif_global->a.da;
    emass   = emass_global->a.da;
-   eiforce = eiforce_global->a.dv;
-   etforce = etforce_global->a.dv;
+   eforce  = eforce_global->a.dv;
    edforce = edforce_global->a.dv;
 
 /*------------------ allocation for submesh of this large-scale element */
@@ -348,14 +344,13 @@ if (init==1) /* allocate working arrays and set pointers */
 /*------------------------------------------------ initialize with ZERO */
 amzero(estif_global);
 amzero(emass_global);
-amzero(eiforce_global);
-amzero(etforce_global);
+amzero(eforce_global);
 amzero(edforce_global);
 *hasdirich=0;
 *hasext=0;
 
 /*---------------------------- set element data for large-scale element */
-f3_lsset(ele,eveln,evel,epren,epre,edeadn,edead,hasext);
+f3_lsset(ele,eveln,evel,epre,edeadn,edead,hasext);
 
 /*------------------------------- dynamic subgrid viscosity calculation */
 if (mlvar->smsgvi>2) f3_dynsgv(data,mlvar,submesh,ssmesh,ele);
@@ -419,18 +414,15 @@ f3_mlcalelesize(ele,data,funct,deriv,deriv2,derxy,xjm,evel,velint,
 
 /*------ calculate large-scale part of element stiffness matrices and
                                                   element force vectors */
-f3_lsint(data,ele,mlvar,hasext,estif,emass,eiforce,etforce,funct,
+f3_lsint(data,ele,mlvar,hasext,estif,emass,eforce,funct,
          deriv,deriv2,xjm,derxy,derxy2,evel,eveln,epren,edeadn,edead,
 	 velint,velintn,covint,covintn,vderxy,vderxyn,wa1,wa2);
 
 /*----------------- add emass and estif to estif and permute the matrix */
 f3_mlpermestif(estif,emass,wa1,ele->numnp);
 
-/*--------------------------------- permute element load vector etforce */
-if (fdyn->nif!=0) f3_permeforce(etforce,wa1,ele->numnp);
-
-/*--------------------------------- permute element load vector eiforce */
-if (fdyn->nii+(*hasext)!=0) f3_permeforce(eiforce,wa1,ele->numnp);
+/*---------------------------------- permute element load vector eforce */
+if (fdyn->nii+(*hasext)!=0) f3_permeforce(eforce,wa1,ele->numnp);
 
 /*------------------------------- calculate element load vector edforce */
 fluid_mlcaldirich(ele,edforce,estif,hasdirich);
@@ -665,7 +657,7 @@ for (iele=0; iele<submesh->numele; iele++)/* loop over submesh elements */
     f3_bubset(mlvar,submesh,ele,smlme,evbubn,epbubn,efbubn,1);
 
 /*---------- calculate submesh bubble matrices and bubble force vectors */
-  f3_bubint(data,ele,mlvar,submesh,estif,emass,eiforce,smxyze,
+  f3_bubint(data,ele,mlvar,submesh,estif,emass,eforce,smxyze,
             smxyzep,funct,deriv,deriv2,xjm,derxy,smfunct,smderiv,smderiv2,
 	    smxjm,smderxy,evel,epre,evbub,epbub,efbub,vbubint,vbubderxy,
 	    pbubint,pbubderxy,covint,velint,vderxy,smvelint,smvderxy,
