@@ -442,7 +442,7 @@ return;
  |                                                                      |
  | important: this routine works only with arrays that are dynamically  |
  |            allocated the way the AM routines do it                   |
- |            uses LAPACKS dsytrf and dsytri routines                   |
+ |            uses LAPACKS dgetrf and dgetri routines                   |
  |                                                                      |
  *----------------------------------------------------------------------*/
 void math_unsym_inv(double **A, int dimr, int dimc)
