@@ -18,7 +18,7 @@ void shell8(FIELD      *actfield,
             ARRAY      *emass_global,
             ARRAY      *intforce_global,    
             CALC_ACTION *action,
-            CONTAINER  *container)    /*!< contains variables defined in container.h */
+            CONTAINER  *container)    /* contains variables defined in container.h */
 {
 #ifdef D_SHELL8
 int          i;

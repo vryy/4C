@@ -21,7 +21,7 @@ void assemble(
                  struct _INTRA         *actintra,  /* the active intracommunicator */
                  struct _ELEMENT       *actele,    /* the element to assemble */
                  enum _ASSEMBLE_ACTION  assemble_action,  /* the assembly option */
-                 CONTAINER             *container  /*!< contains variables defined in container.h */
+                 CONTAINER             *container  /* contains variables defined in container.h */
                 )
 /*----------------------------------------------------------------------*/
 {

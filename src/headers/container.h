@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \brief file pointers
 
-<pre>                                                         lch 10/02
+<pre>                                                         m.gee 10/02
 This Container is used to transport variables from the 'steuerroutinen' 
 to the 'Elementroutinen'
 </pre>
@@ -22,4 +22,9 @@ int            isdyn;        /*!< flag for dynamic or static calculation */
                             /*!< isdyn = 0 for static calculation */
                             /*!< isdyn = 1 for dynamic calculation */
 int            kstep;        /*!< time in increment step we are in */
+
+double        *ftimerhs;     /*!< ab hier fuer fluid */   
+double        *fiterhs;
+int            nii;
+int            nif;
 } CONTAINER;
