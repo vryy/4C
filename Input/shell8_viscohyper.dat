@@ -1,0 +1,390 @@
+//
+// Maintainer: Michael Gee
+//             gee@statik.uni-stuttgart.de
+//             http://www.uni-stuttgart.de/ibs/members/gee/
+//             0711 - 685-6572
+// 
+// necessary defines: D_SHELL8 D_MAT 
+//
+// #define MAXNOD           (4)
+// #define MAXELE           (8)
+// #define MAXDOFPERNODE    (6)
+// #define MAXGAUSS         (4)
+//
+==================================================================
+                        General Data File C_CARAT
+==================================================================
+-------------------------------------------------------------TITLE
+visco-hyperelastic material with shell8 element
+------------------------------------------------------PROBLEM SIZE
+ELEMENTS           1 
+NODES              4
+DIM                3
+MATERIALS          1
+NUMDF        6
+-------------------------------------------------------PROBLEM TYP
+PROBLEMTYP   Structure
+NUMFIELD     1
+MULTIDIS     no
+TIMETYP      Dynamic
+TRACE        secure
+RESTART      0
+----------------------------------------------------------------IO
+STRUCT_DISP_FILE   No
+STRUCT_STRESS_FILE No
+STRUCT_DISP_GID    Yes
+STRUCT_STRESS_GID  No
+STRUCT_STRESS_GID_SMO  No
+FLUID_SOL_FILE         No
+FLUID_SOL_GID          No
+FLUID_VIS_FILE         No
+ALE_DISP_FILE          No
+ALE_DISP_GID           No
+MONITORING             No
+------------------------------------------------------------STATIC
+LINEAR
+-----------------------------------------------EIGENVALUE ANALYSIS
+------------------------------------------------STRUCTURAL DYNAMIC
+DYNAMICTYP   Gen_Alfa
+EIGEN        -1
+RESEVRYDISP  4
+RESEVRYSTRS  200000
+RESTARTEVRY  500
+TIMESTEP     0.05 
+NUMSTEP      1500 
+MAXTIME      400.0
+BETA         0.263 
+GAMMA        0.526 
+ALPHA_M      0.461 
+ALPHA_F      0.487
+XSI          0.0
+DAMPING      Yes 
+M_DAMP       0.000001 
+K_DAMP       0.000001
+ITERATION    full 
+TOLDISP      1.0E-09
+MAXITER      50
+CONTACT      0
+CET_flag      0
+FR_flag      0
+NPP          1.0E+06
+TPP          1.0E+06
+FR_COEF          0.4
+TIMEADAPT    0
+ITWANT       4
+MAXDT        0.07
+RESULTDT     0.05
+-----------------------------------------------------FLUID DYNAMIC
+DYNAMICTYP   Nlin_Time_Int
+TIMEINTEGR   One_Step_Theta
+NUMDF        3
+VISCSTRESS   no
+FREESURFACE  no
+IPRERHS      1
+NUMCONT      1
+UPPSS        1
+UPOUT        1
+MAXTIME      1000.0
+NUMSTEP      200  
+TIMESTEP     0.05
+ALPHA        1.00
+THETA        0.50
+GAMMA        1.00
+NONLINITER   fixed_point_like
+ITEMAX       3
+CONVCHECK    L_2_norm
+CONVTOL      1.0E-6
+STEADYCHECK  L_2_norm
+STEADYSTEP   5
+STEADYTOL    1.0E-6
+STARTINGALGO One_Step_Theta
+NUMSTASTEPS  0
+START_THETA  0.67
+INITIALFIELD zero_field
+STARTFUNCNO  2
+TURBULENCE   No
+INT_LENGHT   1.0
+ROUGHTNESS   1.0
+SC_COORD_X   0.0
+SC_COORD_Y   0.0
+DISC_CAPT    No
+-------------------------------------------------------FSI DYNAMIC
+MAXTIME      1000.0
+TIMESTEP     0.05
+NUMSTEP      200
+UPPSS        1
+IALE         Pseudo_Structure
+COUPALGO     basic_sequ_stagg
+PREDICTOR    d(n)
+CONVCRIT     ||g(i)||:sqrt(neq)
+ENERGYCHECK  yes
+TOLENCHECK   1.0E-6
+RELAX        1.0
+ITEMAX       1
+CONVTOL      1.0E-6
+NESTEDITER   no
+ISDMAX       0
+ICHMAX       0
+ITECHAPP     20
+ICHOPT       no
+-------------------------------------------------------ALE DYNAMIC
+TIMESTEP     0.1
+NUMSTEP      200
+MAXTIME      5.0
+NUM_INITSTEP 0
+ALE_TYPE     classic_lin
+RESEVRYDISP  10
+QUALITY      none
+------------------------------------------------------OPTIMIZATION
+OPT_NUMITER   10 total number of iteration steps
+OPT_TYPE      Topo type of optimization
+OPT_STRATEGY  FSD type of optimization strategy
+//
+FSD_GRAD      Explicit gradientenbestimmung  
+FSD_NUMITER   10 number of iteration steps with fsd
+FSD_ACC       1.0E-07 erforderliche genauigkeit                  
+FSD_ALPHA     1.0E-05 genauigkeit fuer die gleichheitsrestriktion
+FSD_BETA      0.55 schreitweitenfaktor                        
+FSD_DELTA     0.25 schrittweitenbegrenzung                    
+FSD_GAMMA     0.0 gleichheitsrestriktionswert                
+//
+OPT_SMO       ON smooth gradients or other values
+SMO_TYPE      gradient
+SMO_ERAD      1.1 radius
+SMO_EXPO      2.2 exponent
+//
+OPT_OBJ       Stiffness objective
+//
+OV_VAR 1 global opt. variables
+  ELEofMAT 1 TYPE DENS  DL 1.0E-4  DU 1.0E0 SCL 1.
+OV_END
+//
+OC_ICO 0 global inequality constraints
+//
+OC_ECO 1 global   equality constraints
+      DVOLU 1 TYP WEIGHT  SCL 1. 
+------------------------------------------------------FLUID SOLVER
+SOLVER         Aztec_MSR
+AZSOLVE        BiCGSTAB
+AZPREC         ILU
+AZREUSE        0  
+AZDROP         0.0  
+AZFILL         1.0  
+AZGFILL        0  
+AZTOL          1.0E-08  
+AZITER         2500  
+AZSUB          50  
+AZOMEGA        1.0  
+AZGRAPH        1  
+AZPOLY         5  
+PARTITION      Cut_Elements
+-----------------------------------------------------STRUCT SOLVER
+SOLVER         Colsol
+PARTITION      Cut_Elements
+--------------------------------------------------------ALE SOLVER
+SOLVER         Aztec_MSR
+AZSOLVE        CG
+AZPREC         ILU
+AZREUSE        0  
+AZDROP         0.0  
+AZFILL         2.0  
+AZGFILL        0  
+AZTOL          1.0E-08  
+AZITER         2500  
+AZSUB          50  
+AZOMEGA        1.0  
+AZGRAPH        1  
+AZPOLY         5  
+PARTITION      Cut_Elements
+------------------------------------------------DESIGN DESCRIPTION
+NDPOINT 4
+NDLINE  4
+NDSURF  1
+NDVOL   0
+-----------------------------------------------------DESIGN POINTS
+POINT
+Num: 1 HigherEntity: 2 conditions: 6 material: 0
+LAYER: Layer0
+Coord: 0.000000 0.000000 0.000000
+END POINT
+POINT
+Num: 2 HigherEntity: 2 conditions: 4 material: 0
+LAYER: Layer0
+Coord: 0.100000 0.000000 0.000000
+END POINT
+POINT
+Num: 3 HigherEntity: 2 conditions: 4 material: 0
+LAYER: Layer0
+Coord: 0.000000 0.000000 0.100000
+END POINT
+POINT
+Num: 4 HigherEntity: 2 conditions: 4 material: 0
+LAYER: Layer0
+Coord: 0.100000 0.000000 0.100000
+END POINT
+------------------------------------------------------DESIGN LINES
+STLINE
+Num: 1 HigherEntity: 1 conditions: 2 material: 0
+LAYER: Layer0
+Meshing Info: (num=3,NOE=4) Elemtype=1 IsStructured=1 size=1 Meshing=Default
+Points: 3 4
+END STLINE
+STLINE
+Num: 2 HigherEntity: 1 conditions: 2 material: 0
+LAYER: Layer0
+Meshing Info: (num=3,NOE=4) Elemtype=1 IsStructured=1 size=1 Meshing=Default
+Points: 4 2
+END STLINE
+STLINE
+Num: 3 HigherEntity: 1 conditions: 2 material: 0
+LAYER: Layer0
+Meshing Info: (num=3,NOE=4) Elemtype=1 IsStructured=1 size=1 Meshing=Default
+Points: 2 1
+END STLINE
+STLINE
+Num: 4 HigherEntity: 1 conditions: 2 material: 0
+LAYER: Layer0
+Meshing Info: (num=3,NOE=4) Elemtype=1 IsStructured=1 size=1 Meshing=Default
+Points: 1 3
+END STLINE
+---------------------------------------------------DESIGN SURFACES
+NURBSURFACE
+Num: 1 HigherEntity: 0 conditions: 4 material: 7
+LAYER: Layer0
+Meshing Info: (num=2,NOE=1) Elemtype=3 IsStructured=1 size=0 Meshing=Default
+NumLines: 4
+Line: 4 Orientation: DIFF1ST
+Line: 3 Orientation: DIFF1ST
+Line: 2 Orientation: DIFF1ST
+Line: 1 Orientation: DIFF1ST
+Number of Control Points= 2 2 Degree= 1 1
+Point 1,1 coords:0.050000,0.000000,-0.060000
+Point 1,2 coords:0.160000,0.000000,0.050000
+Point 2,1 coords:-0.060000,0.000000,0.050000
+Point 2,2 coords:0.050000,0.000000,0.160000
+Number of knots in U= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Number of knots in V= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Non rational
+IsTrimmed: 1
+Center: 0.050000 0.000000 0.050000
+Normal: 0.000000 -1.000000 0.000000
+END NURBSURFACE
+----------------------------------------------------DESIGN VOLUMES
+------------------------------------DESIGN POINT DIRICH CONDITIONS 
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DPOINT 2
+ E 3 -   0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
+ E 4 -   0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
+-------------------------------------DESIGN LINE DIRICH CONDITIONS 
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DLINE 0
+-------------------------------------DESIGN SURF DIRICH CONDITIONS 
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DSURF 0
+--------------------------------------DESIGN VOL DIRICH CONDITIONS 
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DVOL 0
+-----------------------------------DESIGN POINT NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL  NSURF
+DPOINT 1
+ E 1 -   1 0 0 1 0 0 0 0.0 0.0 -17370.0 0.0 0.0 0.0 Mid 
+------------------------------------DESIGN LINE NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL  NSURF
+DLINE 0
+------------------------------------DESIGN SURF NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL  TYPE  NSURF
+DSURF 0
+-------------------------------------DESIGN VOL NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL   
+DVOL 0
+----------------------------------DESIGN COUPLING POINT CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
+DPOINT 2
+ E 1 -   1 structure 1 0 0 1 0 0 0 0 0 0 0 0 0 0 
+ E 2 -   1 structure 1 0 0 1 0 0 0 0 0 0 0 0 0 0 
+-----------------------------------DESIGN COUPLING LINE CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
+DLINE 0
+-----------------------------------DESIGN COUPLING SURF CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
+DSURF 0
+------------------------------------DESIGN COUPLING VOL CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
+DVOL 0
+-------------------------------DESIGN FSI COUPLING LINE CONDITIONS
+// DOBJECT FSI_ID FIELD MESH
+DLINE 0
+-------------------------DESIGN FLUID FREE SURFACE POINT CONDITIONS
+// DOBJECT FIELD FIXED FIXED FIXED FIXED FIXED FIXED
+DPOINT 0
+-------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
+// DOBJECT
+DLINE 0
+------------------------------------------------CONTACT CONDITIONS
+DLINE 0
+-------------------------DESIGN AXISHELL THICKNESS LINE CONDITIONS
+DLINE 0
+------------------------------DESIGN AXISHELL LOAD LINE CONDITIONS
+DLINE 0
+------------------------------DESIGN AXISHELL COS POINT CONDITIONS
+DPOINT 0
+-----------------------------------------------DNODE-NODE TOPOLOGY
+NODE       1 DNODE 1
+NODE       3 DNODE 2
+NODE       2 DNODE 3
+NODE       4 DNODE 4
+-----------------------------------------------DLINE-NODE TOPOLOGY
+NODE       2 DLINE 1
+NODE       4 DLINE 1
+NODE       4 DLINE 2
+NODE       3 DLINE 2
+NODE       3 DLINE 3
+NODE       1 DLINE 3
+NODE       1 DLINE 4
+NODE       2 DLINE 4
+-----------------------------------------------DSURF-NODE TOPOLOGY
+NODE       1 DSURFACE 1
+NODE       3 DSURFACE 1
+NODE       2 DSURFACE 1
+NODE       4 DSURFACE 1
+-----------------------------------------------DVOL-NODE TOPOLOGY
+-------------------------------------------------------NODE COORDS
+NODE            1     COORD 0.000000000000000e+00     0.000000000000000e+00     0.000000000000000e+00   
+NODE            2     COORD 0.000000000000000e+00     0.000000000000000e+00     1.000000000000000e-01   
+NODE            3     COORD 1.000000000000000e-01     0.000000000000000e+00     0.000000000000000e+00   
+NODE            4     COORD 1.000000000000000e-01     0.000000000000000e+00     1.000000000000000e-01   
+----------------------------------------------------------ELEMENTS
+------------------------------------------------STRUCTURE ELEMENTS
+      1 SHELL8 QUAD4       1      3      4      2 MAT       1 THICK 0.1 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS  none none none none none ANS  none SDC  1.0 
+----------------------------------------------------FLUID ELEMENTS
+------------------------------------------------------ALE ELEMENTS
+---------------------------------------------------------MATERIALS
+MAT       1 MAT_Struct_Viscohyper  NUE 0.485 BETA -2.0 ALFA1 1.3 ALFA2 5.0 ALFA3 -2.0  NU1 6.3E+05 NU2 0.012E+05 NU3 -0.1E+05 DENS 10.0  NMAXW 2 TAU1 30.0 BETA1 1.0 TAU2 20.0 BETA2 1.0  TAU3 10.0 BETA3 0.0 TAU4 10.0 BETA4 0.0
+//MAT       1 MAT_Struct_Ogden       NUE 0.485 BETA -2.0 ALFA1 1.3 ALFA2 5.0 ALFA3 -2.0  NU1 6.3E+05 NU2 0.012E+05 NU3 -0.1E+05 DENS 10.0 
+----------------------------------------------MULTILAYER MATERIALS
+------------------------------------------------------CONTROL NODE
+-------------------------------------------------------LOAD CURVES
+------------------------------------------------------------CURVE1
+CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 0.5 FACTOR 0.0 1.0 
+CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.5 100.0 FACTOR 1.0 1.0 
+CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 100.0 100.5 FACTOR 1.0 0.0 
+CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 100.5 1000.0 FACTOR 0.0 0.0 
+------------------------------------------------------------CURVE2
+------------------------------------------------------------CURVE3
+------------------------------------------------------------CURVE4
+------------------------------------------------------------CURVE5
+--------------------------------------------------------MONITORING
+// FIELD globalId FLAG FLAG FLAG FLAG FLAG FLAG
+// FLUID 1 - 0 0 0 0 0 0 
+// STRUCTURE 2 - 0 0 0 0 0 0 
+// ALE 3 - 0 0 0 0 0 0 
+---------------------------------------------------------------END
+// END
