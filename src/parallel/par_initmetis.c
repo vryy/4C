@@ -101,9 +101,10 @@ FIELD   *actfield = NULL;
 GNODE   *actgnode;
 GLINE   *actgline;
 ELEMENT *actele;
-ELEMENT *actele2;
 #if D_FLUID2_PRO
 ELEMENT *actvele, *actpele;
+#else
+ELEMENT *actele2;
 #endif
 ARRAY    stack;
 
@@ -474,7 +475,7 @@ for (kk=0;kk<actfield->ndis;kk++)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #endif
-#if D_FLUID2_PRO
+#ifdef D_FLUID2_PRO
 /*------------------------------------------------------------------------
   For the FLUID2_PRO element we have two discretisations 
   (velocity=0 and pressure=1):
@@ -499,8 +500,7 @@ if (inprocs>1)
       }
    }
 }
-#endif
-#ifndef D_FLUID2_PRO
+#else
 /*------------------------------------------------------------------------
   for solving the turbulence-models we need a 2nd discretisation. 
   discretisation 0 was partitioned by METIS and this is no copied to

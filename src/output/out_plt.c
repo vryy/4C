@@ -186,8 +186,11 @@ DOUBLE square = 0;
 DOUBLE min, max;    /* minimal and maximal quality */
 DOUBLE stand_degr;  /* standard degression*/
 DOUBLE average;
-DOUBLE recv=ZERO;
 ELEMENT *actele;
+
+#ifdef PARALLEL
+DOUBLE recv=ZERO;
+#endif
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
