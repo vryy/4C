@@ -141,7 +141,7 @@ fdyn->ite=3: fixed-point iteration
 
 see dissertation chapter 4.3 'Linearisierung und Iteratonsverfahren'.
 			     
-<pre>   
+</pre>   
 \param *fdyn	 FLUID_DYNAMIC (i)    
 
 \return void 
