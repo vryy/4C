@@ -79,12 +79,15 @@ static void inpdesign_vol_couple(void);
 #ifdef D_FSI
 static void inpdesign_line_fsicouple(void);
 #endif
+
+#ifdef D_FLUID
 static void inpdesign_nodal_freesurf(void);
 static void inpdesign_line_freesurf(void);
 static void inpdesign_line_liftdrag(void);
 static void inpdesign_surf_liftdrag(void);
 static void inpdesign_surf_stability(void);
 static void inpdesign_vol_stability(void);
+#endif
 
 #ifdef D_AXISHELL
 static void inpdesign_line_thickness(void);
@@ -145,6 +148,7 @@ if (genprob.probtyp==prb_fsi)
    inpdesign_line_fsicouple();
 }
 #endif
+
 #ifdef D_FLUID
 if (genprob.probtyp==prb_fluid || genprob.probtyp==prb_fsi)
 {
@@ -162,12 +166,14 @@ if (genprob.probtyp==prb_fluid || genprob.probtyp==prb_fsi)
    inpdesign_vol_stability();
 }
 #endif
+
 #ifdef D_AXISHELL
-   /* -----------------------input of line axishell thickness condition */
+   /* input of line axishell thickness condition */
    inpdesign_line_thickness();
    inpdesign_line_axishellload();
    inpdesign_point_axishellcos();
 #endif
+
 #ifdef D_LS
 if (genprob.probtyp==prb_twophase)
 {
@@ -2900,7 +2906,6 @@ INT    ierr;
 INT    ndline;
 INT    dlineId;
 char  *colptr;
-char   buffer[200];
 DLINE *actdline;
 
 #ifdef DEBUG 

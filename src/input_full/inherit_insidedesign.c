@@ -29,7 +29,11 @@ static void inherit_dlinednode_couple(void);
 #ifdef D_FSI
 static void inherit_dlinednode_fsicouple(void);
 #endif
+
+#ifdef D_FLUID
 static void inherit_dlinednode_freesurf(void);
+#endif
+
 #ifdef D_AXISHELL
 static void inherit_dlinednode_thickness(void);
 static void inherit_dlinednode_axishellload(void);
@@ -379,12 +383,12 @@ return;
 #endif
 
 
+#ifdef D_FLUID
 /*----------------------------------------------------------------------*
  | inherit freesurface conditions DLINE to DNODE             genk 01/03 |
  *----------------------------------------------------------------------*/
 static void inherit_dlinednode_freesurf()
 {
-#ifdef D_FLUID
 INT             i,j;
 DNODE          *actdnode;
 DLINE          *actdline;
@@ -415,9 +419,9 @@ for (i=0; i<design->ndline; i++)
 #ifdef DEBUG 
 dstrc_exit();
 #endif
-#endif
 return;
 } /* end of inherit_dlinednode_freesurf */
+#endif
 
 
 
