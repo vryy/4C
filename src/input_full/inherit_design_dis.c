@@ -109,13 +109,14 @@ return;
  *----------------------------------------------------------------------*/
 void inherit_design_dis_freesurf(DISCRET *actdis)
 {
+#ifdef D_FSI
 INT     i;
 GNODE  *actgnode;
 
 #ifdef DEBUG 
 dstrc_enter("inherit_design_dis_freesurf");
 #endif
-#ifdef D_FSI
+
 /*-------------------------------------------------------------- GNODES */
 for (i=0; i<actdis->ngnode; i++)
 {
@@ -141,11 +142,9 @@ for (i=0; i<actdis->ngline; i++)
    actdis->gline[i].freesurf = NULL;
 }
 /*----------------------------------------------------------------------*/
-#else
-dserror("FSI-functions not compiled in\n");
-#endif
 #ifdef DEBUG 
 dstrc_exit();
+#endif
 #endif
 return;
 } /* end of inherit_design_dis_freesurf */
