@@ -834,7 +834,7 @@ if (outstep==fdyn->upout && ioflags.fluid_sol_file==1)
    calelm(actfield,actsolv,actpart,actintra,k_array,-1,
           &container,action);
 #ifdef PARALLEL
-fluid_reduceshstr(actintra,actfield,fdyn);
+fluid_reduceshstr(actintra,actfield);
 #endif
 if (par.myrank==0) printf("wall shear velocity: %10.3E \n",fdyn->washvel);
 
