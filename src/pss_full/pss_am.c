@@ -996,8 +996,8 @@ if (init==1) amzero(array_to);
 switch (array_from->Typ)
 {
 case cca_DA:
-   fdim = DMIN(array_to->fdim,array_from->fdim);
-   sdim = DMIN(array_to->sdim,array_from->sdim);
+   fdim = IMIN(array_to->fdim,array_from->fdim);
+   sdim = IMIN(array_to->sdim,array_from->sdim);
    dafrom = array_from->a.da;
    dato   = array_to->a.da;
    for (i=0; i<fdim; i++)
@@ -1007,15 +1007,15 @@ break;
 case cca_DV:
    fdim   = array_to->fdim * array_to->sdim;
    sdim   = array_from->fdim * array_from->sdim;
-   fdim   = DMIN(fdim,sdim);
+   fdim   = IMIN(fdim,sdim);
    dvfrom = array_from->a.dv;
    dvto   = array_to->a.dv;
    for (i=0; i<fdim; i++)
    dvto[i] += dvfrom[i] * factor;
 break;
 case cca_IA:
-   fdim = DMIN(array_to->fdim,array_from->fdim);
-   sdim = DMIN(array_to->sdim,array_from->sdim);
+   fdim = IMIN(array_to->fdim,array_from->fdim);
+   sdim = IMIN(array_to->sdim,array_from->sdim);
    iafrom = array_from->a.ia;
    iato   = array_to->a.ia;
    for (i=0; i<fdim; i++)
@@ -1025,7 +1025,7 @@ break;
 case cca_IV:
    fdim   = array_to->fdim * array_to->sdim;
    sdim   = array_from->fdim * array_from->sdim;
-   fdim   = DMIN(fdim,sdim);
+   fdim   = IMIN(fdim,sdim);
    ivfrom = array_from->a.iv;
    ivto   = array_to->a.iv;
    for (i=0; i<fdim; i++)
