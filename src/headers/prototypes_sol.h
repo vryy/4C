@@ -238,6 +238,14 @@ void parcsr_make_bindx(FIELD         *actfield,
                           H_PARCSR      *parcsr,
                           int          **dof_connect);
 /*----------------------------------------------------------------------*
+ | global_mask_mds.c                                        al 02/03    |
+ *----------------------------------------------------------------------*/
+void mask_mds(FIELD        *actfield, 
+              PARTITION    *actpart, 
+              SOLVAR       *actsolv,
+              INTRA        *actintra, 
+              ML_ARRAY_MDS *mds);
+/*----------------------------------------------------------------------*
  | global_mask_msr.c                                   m.gee 11/01    |
  *----------------------------------------------------------------------*/
 void mask_msr(FIELD         *actfield, 
