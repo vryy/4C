@@ -26,7 +26,7 @@ such that 1 - element with four rectangular corners
 
 \warning There is nothing special to this routine
 \return void                                               
-\sa calling: 
+\sa calling: ---;
              called by: ale2_statik_ke(), ale2_statik_ke_test2()
 
 *----------------------------------------------------------------------*/
@@ -174,10 +174,6 @@ extern struct _FILES  allfiles;
 
 
 
-/*! 
-\addtogroup Ale 
-*//*! @{ (documentation module open)*/
-
 /*!----------------------------------------------------------------------
 \brief  element quality statistics
 
@@ -242,5 +238,5 @@ dstrc_exit();
 return;
 }
 
-#endif
 /*! @} (documentation module close)*/
+#endif
