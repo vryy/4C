@@ -286,7 +286,7 @@ void  add_spo(
     {
       ii_iscouple = 0;
       ii_owner    = -1;
-      add_msr_checkcouple(ii,cdofs,ncdofs,&ii_iscouple,&ii_owner,nprocs);
+      add_spo_checkcouple(ii,cdofs,ncdofs,&ii_iscouple,&ii_owner,nprocs);
     }
 #endif
 
@@ -728,6 +728,50 @@ dstrc_exit();
 #endif
 return;
 } /* end of add_spooles_matrix */
+
+
+
+
+/*----------------------------------------------------------------------*
+ |  checks coupling for the add_spo routine                   m.gee 9/01|
+ *----------------------------------------------------------------------*/
+void add_spo_checkcouple(
+    INT         ii,
+    INT       **cdofs,
+    INT         ncdofs,
+    INT        *iscouple,
+    INT        *isowner,
+    INT         nprocs)
+{
+
+  INT         i,k;
+
+#ifdef DEBUG 
+  dstrc_enter("add_spo_checkcouple");
+#endif
+
+  for (k=0; k<ncdofs; k++)
+  {
+    if (ii==cdofs[k][0])
+    {
+      *iscouple=1;
+      for (i=1; i<=nprocs; i++)
+      {
+        if (cdofs[k][i]==2)
+        {
+          *isowner=i-1;
+          break;
+        }
+      }
+    }
+  }
+
+#ifdef DEBUG 
+  dstrc_exit();
+#endif
+
+  return;
+} /* end of add_spo_checkcouple */
 
 
 
