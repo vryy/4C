@@ -42,14 +42,13 @@ void f2_calele(
                 ELEMENT        *eleke, 
                 ARRAY          *estif_global,   
                 ARRAY          *emass_global,   
-	        ARRAY          *etforce_global,       
-	        ARRAY          *eiforce_global, 
-		ARRAY          *edforce_global,		
-		int            *hasdirich,      
+	          ARRAY          *etforce_global,       
+	          ARRAY          *eiforce_global, 
+		    ARRAY          *edforce_global,		
+		    int            *hasdirich,      
                 int            *hasext,
                 int             imyrank,
-		    int             velgrad,            
-		int             init            
+		    int             init            
 	       );
 void f2_stress(FLUID_STRESS str, int viscstr ,FLUID_DATA     *data, 
 	          ELEMENT        *ele      );
@@ -865,15 +864,7 @@ void f2_calset_tu(
 
 void f2_shearstress(
 	           ELEMENT    *ele,
-                 FLUID_DYN_CALC  *dynvar, 
-                 double     **evel,
-                 double     **vderxy,
-	           double     **xjm,     
-                 double     **xyze,
-	           double     **deriv,   
-	           double     **deriv2,  
-	           double     **derxy,   
-	           double      *funct
+                 FLUID_DYN_CALC  *dynvar 
                  );
 
 void f2_kapepsi(
