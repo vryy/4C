@@ -48,7 +48,7 @@ main is only printing the ccarat head and the finish
 ------------------------------------------------------------------------*/
 INT main(INT argc, char *argv[])
 {
-static char release[13] = "01_20040625*";
+static char release[13] = "01_20040628 ";
 #ifdef PARALLEL 
 static char *buff,*dbuff;
 INT          buffsize=MPIBUFFSIZE;
