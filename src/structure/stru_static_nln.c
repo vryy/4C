@@ -261,19 +261,19 @@ for (kstep=0; kstep<nstep; kstep++)
     /*-------------------------------------- perform stress calculation */
     if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1)
     {
-       calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,NULL,0,kstep,5);
+       calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,NULL,0,0,5);
        /*---------------------- reduce stresses, so they can be written */
-       calreduce(actfield,actpart,actintra,kstep);
+       calreduce(actfield,actpart,actintra,0);
     }
     /*---------------------------------------- print out results to out */
-    out_sol(actfield,actpart,actintra,kstep);
+    out_sol(actfield,actpart,actintra,kstep,0);
     /*----------------------------------------- printout results to gid */
     if (par.myrank==0) 
     {
        if (ioflags.struct_disp_gid==1)
-       out_gid_sol("displacement",actfield,actintra,kstep);
+       out_gid_sol("displacement",actfield,actintra,kstep,0);
        if (ioflags.struct_stress_gid==1)
-       out_gid_sol("stress"      ,actfield,actintra,kstep);
+       out_gid_sol("stress"      ,actfield,actintra,kstep,0);
     }
 } /* end of (kstep=0; kstep<nstep; kstep++) */
 /*----------------------------------------------------------------------*/

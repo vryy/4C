@@ -84,6 +84,12 @@ if (sysarray1 != -1)
       if (actsolv->sysarray[sysarray1].dense->couple_d_recv)
          amzero(actsolv->sysarray[sysarray1].dense->couple_d_recv);
    break;
+   case rc_ptr:
+      if (actsolv->sysarray[sysarray1].rc_ptr->couple_d_send)
+         amzero(actsolv->sysarray[sysarray1].rc_ptr->couple_d_send);
+      if (actsolv->sysarray[sysarray1].rc_ptr->couple_d_recv)
+         amzero(actsolv->sysarray[sysarray1].rc_ptr->couple_d_recv);
+   break;
    default:
       dserror("Unknown typ of system matrix");
    break;
@@ -117,6 +123,12 @@ if (sysarray2 != -1)
          amzero(actsolv->sysarray[sysarray2].dense->couple_d_send);
       if (actsolv->sysarray[sysarray2].dense->couple_d_recv)
          amzero(actsolv->sysarray[sysarray2].dense->couple_d_send);
+   break;
+   case rc_ptr:
+      if (actsolv->sysarray[sysarray2].rc_ptr->couple_d_send)
+         amzero(actsolv->sysarray[sysarray2].rc_ptr->couple_d_send);
+      if (actsolv->sysarray[sysarray2].rc_ptr->couple_d_recv)
+         amzero(actsolv->sysarray[sysarray2].rc_ptr->couple_d_recv);
    break;
    default:
       dserror("Unknown typ of system matrix");
@@ -330,25 +342,24 @@ for (i=0; i<actfield->numele; i++)
    break;   
    }
 }/* end of loop over all elements */
-/*--------------------- init the element routines for all present types */
-/*------------------------------- init all kind of routines for shell8  */
+/*-------------------------------------------reduce results for shell8  */
 if (is_shell8==1)
 {
    shell8(actfield,actpart,actintra,NULL,NULL,NULL,NULL,0,kstep,7);
 }
-/*-------------------------------- init all kind of routines for brick1 */
+/*--------------------------------------------reduce results for brick1 */
 if (is_brick1==1)
 {
 }
-/*-------------------------------- init all kind of routines for fluid1 */
+/*--------------------------------------------reduce results for fluid1 */
 if (is_fluid1==1)
 {
 }
-/*-------------------------------- init all kind of routines for fluid3 */
+/*--------------------------------------------reduce results for fluid3 */
 if (is_fluid3==1)
 {
 }
-/*----------------------------------- init all kind of routines for ale */
+/*-----------------------------------------------reduce results for ale */
 if (is_ale==1)
 {
 }
