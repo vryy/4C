@@ -32,6 +32,7 @@ FILE         *out = allfiles.gidmsh;
 FIELD        *actfield;
 GIDSET       *actgid;
 ELEMENT      *actele;
+ELEMENT      *firstele;
 NODE         *actnode;
 
 int           is_firstmesh;
@@ -324,11 +325,13 @@ for (i=0; i<genprob.numfld; i++)
 
 
    if (actgid->is_wall1_33)
-   {
+   {  
+      /*- NNODE is only checked for first element,if you use different wall-types this will be a problem -*/
+      firstele = &(actfield->dis[0].element[0]);
       fprintf(out,"#-------------------------------------------------------------------------------\n");
       fprintf(out,"# MESH %s FOR FIELD %s WALL1 3x3 GP\n",actgid->wall1_33_name,actgid->fieldname);
       fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"MESH %s DIMENSION 3 ELEMTYPE Quadrilateral NNODE 9\n",actgid->wall1_33_name);
+      fprintf(out,"MESH %s DIMENSION 3 ELEMTYPE Quadrilateral NNODE  %d \n",actgid->wall1_33_name,firstele->numnp);
       /*-------------- if this is first mesh, print coodinates of nodes */
       if (is_firstmesh)
       {
