@@ -112,7 +112,6 @@ void math_unvc(double *enorm,double *vec, int n)
 {
 int i,j;
 double skalar;
-double tol = 1.0E-12;
 #ifdef DEBUG 
 dstrc_enter("math_unvc");
 #endif
@@ -120,7 +119,7 @@ dstrc_enter("math_unvc");
 skalar=0.0;
 for (i=0; i<n; i++) skalar += vec[i]*vec[i];
 *enorm = sqrt(skalar);
-if (*enorm <= tol) dserror("Vector of lenght zero appeared");
+if (*enorm < EPS13) dserror("Vector of lenght < EPS13 appeared");
 for (i=0; i<n; i++) vec[i] /= (*enorm);
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

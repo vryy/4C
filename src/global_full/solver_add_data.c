@@ -820,8 +820,10 @@ for (i=0; i<actele->numnp; i++)
       /* nicht getestet, evt. Konflikt mit Steuerroutinen 
          if (actele->node[i]->gnode->dirich)
          {
-            if (FABS(actele->node[i]->gnode->dirich->dirich_val.a.dv[j])>EPS13)
-            actele->node[i]->sol_increment.a.da[1][j] += elevec[i*numdf+j];
+            if (actele->node[i]->gnode->dirich->dirich_onoff.a.iv[j]!=0)
+            {
+               actele->node[i]->sol_increment.a.da[1][j] += elevec[i*numdf+j];
+            }
          }
       */
          continue;

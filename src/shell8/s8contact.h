@@ -234,7 +234,8 @@ void s8_contact_orthproject(SHELLNODE  *actcnode,
                             ELEMENT    *actele,
                             double      xires[],
                             double     *distance,
-                            int        *success);
+                            int        *success,
+                            double     *nue);
 void s8_contact_functderiv(double     funct[], 
                            double    deriv[][4], 
                            double    deriv2[],
