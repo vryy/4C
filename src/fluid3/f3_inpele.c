@@ -20,12 +20,11 @@
          a local left-system, which leads to a negative determinant 
          of the Jacobian matrix.
 ------------------------------------------------------------------------*/
-void f3inp(ELEMENT *ele)
+void f3inp(ELEMENT *ele,int counter)
 {
 int  i;
 int  ierr=0;
 int  quad;
-int  counter;
 int  lmtmp;
 long int  topology[100];
 char *colpointer;
@@ -35,6 +34,8 @@ int  ihelem;
 int  itaumu;
 int  itaump;
 int  itauc;
+static int cmat;
+
 #ifdef DEBUG 
 dstrc_enter("f3inp");
 #endif
@@ -110,6 +111,8 @@ for (i=0; i<ele->numnp; i++) (ele->lm[i])--;
 frint("MAT",&(ele->mat),&ierr);
 if (ierr!=1) dserror("Reading of FLUID3 element failed\n");
 if (ele->mat==0) dserror("No material defined for FLUID3 element\n");
+if (counter==0) cmat=ele->mat;
+else dsassert(ele->mat==cmat,"no different materials for fluid elements allowed!\n");
 /*-------------------------------------------- read the gaussian points */
 if (ele->numnp==8 || ele->numnp==20 || ele->numnp==27)
 {
@@ -358,6 +361,9 @@ if (ele->e.f3->ivol==1 && ele->e.f3->istapc!=1)
 ele->e.f3->itau[0] = itaumu;
 ele->e.f3->itau[1] = itaump;
 ele->e.f3->itau[2] = itauc;
+
+/*----------------------------- set initial value for free surface flag */
+ele->e.f3->fs_on=0;
 
 #ifdef DEBUG 
 dstrc_exit();
