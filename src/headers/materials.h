@@ -10,7 +10,7 @@ typedef struct _MATERIAL
 
      union
      {
-     struct _LINEAR_ELASTIC   *lin_el;       /* St. Venant-Kirchhoff material */
+     struct _STVENANT         *stvenant;     /* St. Venant-Kirchhoff material */
      struct _PL_MISES         *pl_mises;     /* von Mises material */
      struct _PL_DP            *pl_dp;        /* Drucker Prager material */
      struct _PL_POR_MISES     *pl_por_mises; /* porous von Mises material */
@@ -27,12 +27,12 @@ typedef struct _MATERIAL
 /*----------------------------------------------------------------------*
  | St. Venant-Kirchhoff material                          m.gee 4/01    |
  *----------------------------------------------------------------------*/
-typedef struct _LINEAR_ELASTIC
+typedef struct _STVENANT
 {
      double                    youngs;         /* Young's modulus */
      double                    possionratio;   /* Possion ratio */
-     double                    spec_weight;    /* material specific weight */
-} LINEAR_ELASTIC;
+     double                    density;        /* material specific weight */
+} STVENANT;
 
 
 
@@ -43,7 +43,7 @@ typedef struct _NEO_HOOKE
 {
      double                    youngs;         /* Young's modulus */
      double                    possionratio;   /* Possion ratio */
-     double                    spec_weight;    /* material specific weight */
+     double                    density;        /* material specific weight */
 } NEO_HOOKE;
 
 

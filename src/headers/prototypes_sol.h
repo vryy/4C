@@ -32,7 +32,7 @@ void conequ(
             STANLN        *nln_data,      /* data of the Newton-Raphson method */
             NR_CONTROLTYP  controltyp     /* type of control algorithm */
           );
-void conequ_printhead(int kstep, NR_CONTROLTYP  controltyp, int cdof);
+void conequ_printhead(int kstep, NR_CONTROLTYP  controltyp, int cdof, double csp);
 void conequ_printiter(int itnum, double disval, double rlnew, double dinorm,
                      double renorm, double energy, double dnorm, double rrnorm);
 /*----------------------------------------------------------------------*
