@@ -49,6 +49,7 @@ VISUAL2
 void ntavisual()
 {
 int    i;        /* simply a counter                                    */
+int    actnum;   /* field number to visualise                           */
 FIELD *actfield; /* actual field                                        */
 
 #ifdef DEBUG 
@@ -87,8 +88,7 @@ case 2: /* 2D - Problem: Visualisation with VISUAL2*/
    printf("   Starting Visual2 filter ... \n");
    printf("   ----------------------------\n");      
 /*---------------------------------------------- check number of fields */
-   numfld = genprob.numfld;
-   switch (numfld)
+   switch (genprob.numfld)
    {
    case 1: /* single field problem */
       actfield=&(field[0]);
@@ -109,25 +109,22 @@ case 2: /* 2D - Problem: Visualisation with VISUAL2*/
    default: /* multi field problem */
       printf("\n");
       printf("   Visualisation of a multi field problem:\n");
-      printf("   Number of fields: %d\n",numfld);
+      printf("   Number of fields: %d\n",genprob.numfld);
       printf("\n");
-      
-      numff = genprob.numff;
-      numaf = genprob.numaf;
-      numsf = genprob.numsf;
-      
+            
       if (genprob.numsf>=0)
-      printf("   Actual number of STRUCTURE field:  %d\n",numsf); 
+      printf("   Actual number of STRUCTURE field:  %d\n",genprob.numsf); 
       if (genprob.numff>=0)
-      printf("   Actual number of FLUID field:      %d\n",numff);
+      printf("   Actual number of FLUID field:      %d\n",genprob.numff);
       if (genprob.numaf>=0)
-      printf("   Actual number of ALE field:        %d\n",numaf);            
+      printf("   Actual number of ALE field:        %d\n",genprob.numaf);            
       printf("\n");
       printf("   Which field do you want to visualise?\n");
       scanf("%d",&actnum);
-      if(actnum==numff) vis2caf(numff,numaf,numsf);
+      if(actnum==genprob.numff) 
+         vis2caf(genprob.numff,genprob.numaf,genprob.numsf);
       else
-      dserror("Visualisation of ale/struct problem not implemented yet!\n");
+         dserror("Visualisation of ale/struct problem not implemented yet!\n");
 /*      if(actnum==nums) vis2cas(nums);
       if(actnum==numa) vis2caa(numa);               */
    } /* end switch(numfld) */   
