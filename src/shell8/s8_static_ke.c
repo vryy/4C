@@ -517,6 +517,8 @@ for (i=0; i<nd; i++)
    }
 } 
 */
+/*----------------------------------------------------- local co-system */
+dsassert(ele->locsys==locsys_no,"locsys not implemented for this element!\n");
 /*----------------------------------------------------------------------*/
 end:
 #ifdef DEBUG 

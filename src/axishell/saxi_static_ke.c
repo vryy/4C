@@ -147,6 +147,9 @@ void saxistatic_ke(
      from (7,7) to (6,6) by elemination of the middle node */
   saxi_statcond(ele,estif,estif_7,cosa,sina);
 
+/*----------------------------------------------------- local co-system */
+dsassert(ele->locsys==locsys_no,"locsys not implemented for this element!\n");
+
 end:
 
 #ifdef DEBUG 

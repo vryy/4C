@@ -520,6 +520,8 @@ for (lr=0; lr<nir; lr++)
       for (j=0; j<24; j++){ estif[i][j] = estiflo[i][j];}}
       if (force) for (i=0; i<24; i++) force[i] = fielo[i];
     }
+/*----------------------------------------------------- local co-system */
+dsassert(ele->locsys==locsys_no,"locsys not implemented for this element!\n");
 /*----------------------------------------------------------------------*/
 end:
 /*----------------------------------------------------------------------*/

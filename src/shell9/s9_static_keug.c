@@ -850,6 +850,8 @@ for (i=0; i<ele->numnp; i++)
 for (j=i+1; j<nd; j++)
 if (FABS(estif[i][j]-estif[j][i])>EPS12) printf("i %d j %d not sym with %E\n",
                                          i,j,estif[i][j]-estif[j][i]);*/
+/*----------------------------------------------------- local co-system */
+dsassert(ele->locsys==locsys_no,"locsys not implemented for this element!\n");
 /*----------------------------------------------------------------------*/
 end:
 #ifdef DEBUG 

@@ -529,6 +529,8 @@ default:
    dserror("action unknown");
 break;
 }
+/*----------------------------------------------------- local co-system */
+dsassert(ele->locsys==locsys_no,"locsys not implemented for this element!\n");
 /*----------------------------------------------------------------------*/
 end:
 /*----------------------------------------------------------------------*/

@@ -262,6 +262,8 @@ for (i=0;i<20;i++)
 }
 # endif
 
+/*----------------------------------------------------- local co-system */
+dsassert(ele->locsys==locsys_no,"locsys not implemented for this element!\n");
 
 /*----------------------------------------------------------------------*/
 end:
