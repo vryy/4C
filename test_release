@@ -126,7 +126,6 @@ else
   shell9_matnl.dat
   w1_Eulerstab.dat
   w1_incompmode.dat
-  w1_gemm_contact_emconserv.dat
   w1_mises.dat
   w1dyn.dat
   xfem_ls_risingbubble.dat
@@ -134,7 +133,7 @@ else
   '
 fi
  
-#liste=' ale2_nln.dat '
+#liste=' xfem_ls_joggedchannel.dat '
 
 
 # get the start-time in seconds:
