@@ -9,7 +9,8 @@ LD=/opt/mpi/bin/mpicc
 BASEDIR="/bau/stat16/users/statik/ccarat/lib/hpux_11"
 
 INCLUDEDIRS="-I/opt/mpi/include -I/bau/stat16/users/statik/ccarat/include"
-LIBDIRS="-L/usr/lib -L/opt/mlib/lib/pa2.0 -L/bau/stat16/users/statik/lib/METIS " 
+LIBDIRS="-L/usr/lib -L/opt/mlib/lib/pa2.0 -L/opt/fortran90/lib/pa2.0"
+LIBDIRS="$LIBDIRS -L$BASEDIR/metis -L/opt/fortran90/lib" 
 
 # aztec
 AZTEC_INC=""
@@ -23,12 +24,28 @@ SPOOLES_LIB="-L$BASEDIR/spooles -lspoolesMPI_32 -lspooles_32"
 UMFPACK_INC=""
 UMFPACK_LIB="-L$BASEDIR/umfpack -lumfpack40_hpux11_32"
 
+# visual2
+if grep '^VISUAL2_PACKAGE' "$2" 2>&1 > /dev/null ; then
+  echo $0: Error: VISUAL2 not possible for parallel executable.
+  exit 1
+fi
+VISUAL2_INC=""
+VISUAL2_LIB=""
 
-LIBS="-lmetis_32 -L/opt/fortran90/lib/pa2.0 -lF90 -L/opt/fortran90/lib  -lU77 -lcl -lc -lm -lveclib -llapack -Wl,-aarchive_shared -lmpi "
+# visual3
+if grep '^VISUAL3_PACKAGE' "$2" 2>&1 > /dev/null ; then
+  echo $0: Error: VISUAL3 not possible for parallel executable.
+  exit1 
+fi
+VISUAL3_INC=""
+VISUAL3_LIB=""
+
+LIBS="-lmetis_32 -lF90 -lU77 -lcl -lc -lm -lveclib -llapack -Wl,-aarchive_shared -lmpi"
 
 # FAST
-PROGRAMNAME=cca_par_32
-CFLAGS="-D__HP__  +e -Ae +w1 -v -O +Onolimit"
-FFLAGS="-O"
+PROGRAMNAME=cca_11_par
+CFLAGS_OPT="-O +Onolimit"
+FFLAGS_OPT="-O"
+CFLAGS="-D__HP__  +e -Ae +w1 -v"
+FFLAGS=""
 LDFLAGS=""
-

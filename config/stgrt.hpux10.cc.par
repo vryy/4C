@@ -23,14 +23,28 @@ SPOOLES_LIB="-L$BASEDIR/spooles -lspoolesMPI_10.20  -lspooles_10.20"
 UMFPACK_INC=""
 UMFPACK_LIB="-L$BASEDIR/umfpack -lumfpack40_hpux10_32"
 
+# visual2
+if grep '^VISUAL2_PACKAGE' "$2" 2>&1 > /dev/null ; then
+  echo $0: Error: VISUAL2 not possible for parallel executable.
+  exit 1
+fi
+VISUAL2_INC=""
+VISUAL2_LIB=""
+
+# visual3
+if grep '^VISUAL3_PACKAGE' "$2" 2>&1 > /dev/null ; then
+  echo $0: Error: VISUAL3 not possible for parallel executable.
+  exit 1
+fi
+VISUAL3_INC=""
+VISUAL3_LIB=""
 
 LIBS="-lcl -lc -lM -lm -lmetis -llapack_hppa -lblas"
 
 # FAST
-PROGRAMNAME=cca_par_32
+PROGRAMNAME=cca_10_par
 CFLAGS_OPT="-O +Onolimit"
 FFLAGS_OPT="-O"
 CFLAGS="-D__HP__  +e -Ae +w1 -v"
 FFLAGS=""
 LDFLAGS=""
-

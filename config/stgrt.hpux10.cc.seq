@@ -7,15 +7,21 @@ CC=cc
 LD=cc
 
 BASEDIR="/bau/stat16/users/statik/ccarat/lib/hpux_10"
+OPENGLDIR="/opt/graphics/OpenGL/lib"
+PEX5DIR="/opt/graphics/PEX5/lib"
 
 INCLUDEDIRS="-I/opt/mlib/include -I/bau/stat16/users/statik/ccarat/include"
-LIBDIRS="-L$BASEDIR/lapack" 
+LIBDIRS="-L$BASEDIR/lapack -L/usr/lib -L/opt/fortran/lib" 
 
 # aztec
 AZTEC_INC=""
 AZTEC_LIB="-L$BASEDIR/aztec21 -laztec_seriell21"
 
 # spooles
+if grep '^SPOOLES_PACKAGE' "$2" 2>&1 > /dev/null ; then
+  echo $0: Error: SPOOLES not possible in sequentiel version.
+  exit 1
+fi
 SPOOLES_INC=""
 SPOOLES_LIB=""
 
@@ -23,11 +29,19 @@ SPOOLES_LIB=""
 UMFPACK_INC=""
 UMFPACK_LIB="-L$BASEDIR/umfpack -lumfpack40_hpux10_32"
 
+# visual2
+VISUAL2_INC=""
+VISUAL2_LIB="-L$BASEDIR/visual -lVisual2 -lX11"
+
+# visual3
+VISUAL3_INC=""
+VISUAL3_LIB="-L$BASEDIR/visual -lVisual3 -lX11 -lXext -lXi -L$OPENGLDIR -lGLU -lGL -L$PEX5DIR -LPEX5"
+
 
 LIBS="-lcl -lc -lM -lm -llapack_hppa -lblas"
 
 # FAST
-PROGRAMNAME=cca_seq_32
+PROGRAMNAME=cca_10_seq
 CFLAGS_OPT="-O +Onolimit"
 FFLAGS_OPT="-O"
 CFLAGS="-D__HP__  +e -Ae +w1 -v"
