@@ -1,3 +1,5 @@
+#
+# binaries
 #                main
 OBJS1         = src/main/main_ccarat.o 
 #                global_full
@@ -12,6 +14,7 @@ OBJS2	      = src/global_full/global_control.o \
                 src/global_full/cal_nlndyn_struct.o \
                 src/global_full/cal_nlndyn_stru_expl.o \
                 src/global_full/cal_static_service.o \
+                src/global_full/ccarat_visual2.o \
                 src/global_full/dyn_timecurve.o \
                 src/global_full/dyn_service.o \
                 src/global_full/map_node_find.o \
@@ -31,6 +34,7 @@ OBJS2	      = src/global_full/global_control.o \
                 src/global_full/global_calelm_dyn.o \
                 src/global_full/global_calelm_fluid.o \
                 src/global_full/global_calrhs.o \
+                src/global_full/global_visual.o \
                 src/global_full/solver_control.o \
                 src/global_full/solver_service.o \
                 src/global_full/solver_service2.o \
@@ -74,7 +78,19 @@ OBJS4	      = src/input_full/input_control_global.o \
                 src/input_full/inherit_design_dis.o \
                 src/input_full/input_conditions.o
 #                fluid3
-OBJS5	      = src/fluid3/f3_inpele.o 
+OBJS5	      = src/fluid3/f3_calele.o \
+                src/fluid3/f3_calelesize.o \
+                src/fluid3/f3_calfuncderiv.o \
+                src/fluid3/f3_calgalmat.o \
+		src/fluid3/f3_calint.o \
+		src/fluid3/f3_caliterrhs.o \
+                src/fluid3/f3_calservice.o \
+		src/fluid3/f3_calstabmat.o \
+                src/fluid3/f3_calstabpar.o \
+                src/fluid3/f3_caltimerhs.o \
+                src/fluid3/f3_inpele.o \
+                src/fluid3/f3_intg.o \
+                src/fluid3/f3_main.o 
 #                shell8
 OBJS6	      = src/shell8/s8_main.o \
                 src/shell8/s8_restart.o \
@@ -187,15 +203,13 @@ OBJS12	      = src/wall1/w1_bop.o \
                 src/wall1/w1_cal_fext.o \
                 src/wall1/w1_mat_trans.o \
                 src/wall1/w1_cal_trans.o
-                #                fluid2
-OBJS14        = src/fluid2/f2_caldirich.o \
-                src/fluid2/f2_calelesize.o \
+#                fluid2
+OBJS14        = src/fluid2/f2_calelesize.o \
                 src/fluid2/f2_calele.o \
                 src/fluid2/f2_calfuncderiv.o \
                 src/fluid2/f2_calint.o \
                 src/fluid2/f2_caliterrhs.o \
                 src/fluid2/f2_calgalmat.o \
-                src/fluid2/f2_caljaco.o \
                 src/fluid2/f2_calservice.o \
                 src/fluid2/f2_calstabpar.o \
                 src/fluid2/f2_calstabmat.o \
@@ -204,16 +218,17 @@ OBJS14        = src/fluid2/f2_caldirich.o \
                 src/fluid2/f2_intg.o \
                 src/fluid2/f2_main.o 
 #                fluid_full
-OBJS15        = src/fluid_full/cal_fluid.o \
+OBJS15        = src/fluid_full/fluid_dyn.o \
                 src/fluid_full/fluid_dirich.o \
                 src/fluid_full/fluid_imp_semimp.o \
                 src/fluid_full/fluid_pr_mcorr.o \
                 src/fluid_full/fluid_stationary.o \
                 src/fluid_full/fluid_service.o \
+                src/fluid_full/fluid_visual.o \
 		src/fluid_full/inp_fluid_start_data.o
-#--------------- fortran parallel and sequentiell on HPUX10.20 / Linux / Sun
-OBJS13           = src/fortran/colsol.o
-
+#                fortran
+OBJS13	      = src/fortran/colsol.o \
+		src/fortran/vis2_qat2v2.o
 #---------------------------------------------  fortran parallel on HPUX11.0
 #            
 #OBJS13         = src/fortran/mumps_interface.o \
