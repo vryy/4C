@@ -200,6 +200,7 @@ OBJS9	      = src/brick1/c1_out.o \
                 src/brick1/c1_mat_linel.o \
                 src/brick1/c1_cint.o \
                 src/brick1/c1_cal_deriv.o \
+                src/brick1/c1_mat_neohook.o \
                 src/brick1/c1_mat_plast_mises.o \
                 src/brick1/c1_mat_plast_mises_ls.o \
                 src/brick1/c1_cal_eps.o \
@@ -364,6 +365,8 @@ OBJS_OPT      = src/optimization/opt_cal_main.o \
                 src/optimization/input_optdata.o \
                 src/optimization/opt_init.o \
                 src/optimization/opt_cal_static_control.o \
+                src/optimization/opt_cal_nlnstatic_control.o \
+                src/optimization/opt_cal_eigfrq_struct.o \
                 src/optimization/opt_c1_cint.o \
                 src/optimization/opt_w1_cint.o \
                 src/optimization/opt_fsd.o \
@@ -377,7 +380,8 @@ OBJS13        = src/fortran/colsol.o \
                 src/fortran/vis2_qat2v2.o \
                 src/fortran/hex_fserv.o \
                 src/fortran/s8_fserv.o \
-                src/fortran/opt_ffsd.o
+                src/fortran/opt_ffsd.o \
+                src/fortran/eigen_subspace.o
 #--------------------------------------------  fortran parallel on HPUX11.0
 #            
 #OBJS13         = src/fortran/mumps_interface.o \
@@ -386,4 +390,5 @@ OBJS13        = src/fortran/colsol.o \
 #                 src/fortran/mpcg_futils.o \
 #                 src/fortran/hex_fserv.o \
 #                 src/fortran/s8_fserv.o \
-#                 src/fortran/opt_ffsd.o
+#                 src/fortran/opt_ffsd.o \
+#                 src/fortran/eigen_subspace.o
