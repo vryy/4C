@@ -211,6 +211,7 @@ solserv_result_total(
 if (ioflags.struct_disp_gid==1 && par.myrank==0)
 {
    out_gid_sol("displacement",actfield,actintra,0,0);
+   out_gid_domains(actfield);
 }
 /*------------------------------------------ perform stress calculation */
 if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1)
