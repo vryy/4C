@@ -843,11 +843,11 @@ void xfem_polygon_open()
 /*----------------------------------------------------------------------*/
 
   /* open files to write polygon information */
-  f01 = fopen("../to_matlab/xfem_to_matlab/xfem_to_matlab_xyze","w");
-  f02 = fopen("../to_matlab/xfem_to_matlab/xfem_to_matlab_xyze_int","w");
-  f03 = fopen("../to_matlab/xfem_to_matlab/xfem_to_matlab_polygonxy","w");
-  f04 = fopen("../to_matlab/xfem_to_matlab/xfem_to_matlab_polygonGP","w");
-  f05 = fopen("../to_matlab/xfem_to_matlab/xfem_to_matlab_ind","w");
+  f01 = fopen("src/ls/to_matlab/xfem_to_matlab/xfem_to_matlab_xyze","w");
+  f02 = fopen("src/ls/to_matlab/xfem_to_matlab/xfem_to_matlab_xyze_int","w");
+  f03 = fopen("src/ls/to_matlab/xfem_to_matlab/xfem_to_matlab_polygonxy","w");
+  f04 = fopen("src/ls/to_matlab/xfem_to_matlab/xfem_to_matlab_polygonGP","w");
+  f05 = fopen("src/ls/to_matlab/xfem_to_matlab/xfem_to_matlab_ind","w");
   
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
