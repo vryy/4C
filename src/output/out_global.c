@@ -28,6 +28,12 @@ Maintainer: Malte Neumann
 #ifdef D_BRICK1
   #include "../brick1/brick1.h"
 #endif /*D_BRICK1*/
+#ifdef D_INTERF
+  #include "../interf/interf.h"
+#endif /*D_INTERF*/
+#ifdef D_WALLGE
+  #include "../wallge/wallge.h"
+#endif /*D_WALLGE*/
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | structure of flags to control output                                 |
@@ -257,6 +263,12 @@ fprintf(out,"ELE glob_Id %6d loc_Id %6d BEAM3\n",actele->Id,actele->Id_loc);
 break;
 case el_axishell:
 fprintf(out,"ELE glob_Id %6d loc_Id %6d AXISHELL\n",actele->Id,actele->Id_loc);
+break;
+case el_interf:
+fprintf(out,"ELE glob_Id %6d loc_Id %6d INTERFACE\n",actele->Id,actele->Id_loc);
+break;
+case el_wallge:
+fprintf(out,"ELE glob_Id %6d loc_Id %6d WALLGE\n",actele->Id,actele->Id_loc);
 break;
 default:
 dserror("Cannot print elementtype");
@@ -821,11 +833,74 @@ for (j=0; j<actfield->dis[0].numele; j++)
        actele->e.b3->force_GP.a.d3[place][3][i],
        actele->e.b3->force_GP.a.d3[place][4][i],
        actele->e.b3->force_GP.a.d3[place][5][i]
+
        );
        }                    
 #endif /*D_BEAM3*/   
    break;
-      
+
+   case el_interf:
+#ifdef D_INTERF
+       ngauss = 2;
+       fprintf(out,"________________________________________________________________________________\n");
+       fprintf(out,"Element glob_Id %d loc_Id %d                INTERF\n",actele->Id,actele->Id_loc);
+
+       switch(actele->e.interf->stresstyp)                                             
+       {                                                                               
+       case if_xy:
+       fprintf(out,"Gaussian     stresses-xx     stresses-yy    stresses-xy\n");
+       break;                                                                          
+       case if_tn:
+       fprintf(out,"Gaussian     stresses-tangential     stresses-normal\n");          
+       break;                                                                          
+       default:                                                                        
+          dserror("Unknown type of element stresses");                                 
+       }                                                                               
+       for (i=0; i<ngauss; i++)
+       {
+       fprintf(out,"Gauss %d   %12.3E %12.3E %12.3E\n",
+       i,
+       actele->e.interf->stress_GP.a.d3[place][0][i],
+       actele->e.interf->stress_GP.a.d3[place][1][i],
+       actele->e.interf->stress_GP.a.d3[place][2][i] );
+       }
+#endif /*D_INTERF*/
+   break;
+
+   case el_wallge:
+#ifdef D_WALLGE
+       ngauss = actele->e.wallge->nGP[0] * actele->e.wallge->nGP[1];
+       fprintf(out,"________________________________________________________________________________\n");
+       fprintf(out,"Element glob_Id %d loc_Id %d                WALL1\n",actele->Id,actele->Id_loc);
+       fprintf(out,"\n");
+/* check wether stresses at Gauss Points are presented in global xy- or local rs-coordinate system and write stress type */
+       switch(actele->e.wallge->stresstyp)
+       {
+       case wge_xy:
+       fprintf(out,"Gaussian     Stress-xx    Stress-yy    Stress-xy    Stress-zz    Max. P.S.    Min. P.S.    Angle\n");
+       break;
+       case wge_rs:
+       fprintf(out,"Gaussian     Stress-rr    Stress-ss    Stress-rs    Stress-zz    Max. P.S.    Min. P.S.    Angle\n");
+       break;
+       default:
+       fprintf(out,"Gaussian     Stress-xx    Stress-yy    Stress-xy    Stress-zz    Max. P.S.    Min. P.S.    Angle\n");
+       }
+       for (i=0; i<ngauss; i++)
+       {
+       fprintf(out,"Gauss %d   %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E \n",
+       i,
+       actele->e.wallge->stress_GP.a.d3[place][0][i],
+       actele->e.wallge->stress_GP.a.d3[place][1][i],
+       actele->e.wallge->stress_GP.a.d3[place][2][i],
+       actele->e.wallge->stress_GP.a.d3[place][3][i],
+       actele->e.wallge->stress_GP.a.d3[place][4][i],
+       actele->e.wallge->stress_GP.a.d3[place][5][i],
+       actele->e.wallge->stress_GP.a.d3[place][6][i]
+       );
+       }           
+#endif /*D_WALLGE*/   
+   break;
+
    default:
       dserror("unknown type of element");
    break;

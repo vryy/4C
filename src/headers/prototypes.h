@@ -48,6 +48,19 @@ void calstatserv_findcontroldof(FIELD     *actfield,
                                 NODE     **node,
                                 INT       *cdof); 
 /*----------------------------------------------------------------------*
+ | cal_static_service.c                                  m.gee 11/01    |
+ *----------------------------------------------------------------------*/
+void calstatserv_findreldofs(FIELD     *actfield,
+                             INT       *reldisnode_ID,
+                             INT       *reldis_dof,
+                             INT        num_reldis,
+                             INT       *reldof); 
+/*----------------------------------------------------------------------*
+ | cal_static_service.c                                  m.gee 11/01    |
+ *----------------------------------------------------------------------*/
+void get_stepsize(INT         kstep,
+                  STATIC_VAR *statvar); 
+/*----------------------------------------------------------------------*
  | global_control.c                                      m.gee 11/01    |
  *----------------------------------------------------------------------*/
 void ntam(INT argc, char *argv[]);

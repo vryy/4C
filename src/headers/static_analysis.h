@@ -31,11 +31,20 @@ INT                 signchcsp;          /* flag for singn changing by CSP */
 INT                 resevry_disp;       /* write result very updevry step */
 INT                 resevry_stress;     /* write result very updevry step */
 INT                 resevery_restart;   /* write restart every res_write_evry step */
+INT                 graderw;            /* is gradient damage model */
 				
 
 struct _NODE       *controlnode;        /* ptr to control node */
 INT                 control_node_global;/* global control node Id (redundant) */
 INT                 control_dof;        /* dof of control node to be controlled */
+
+INT                 isrelstepsize;      /* is stepsize constant or variable */
+INT                 actstep[20];        /* number of steps for actual variable stepsize */
+DOUBLE              actstepsize[20];    /* actual variable stepsize */
+INT                 numcurve;           /* number of entries in actstep and actstepsize */
+
+INT                 reldisnode_ID[6];     /* ID's of relative-displacement-output-nodes*/
+INT                 reldis_dof[6];        /* dof we want in output for relative displacement */
 } STATIC_VAR;
 
 /*----------------------------------------------------------------------*

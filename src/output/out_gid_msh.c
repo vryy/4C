@@ -759,10 +759,12 @@ for (i=0; i<genprob.numfld; i++)
 /*---------------------------------------------------------fh 06/02------*/     
    if (actgid->is_wall1_22)
    {
+      /*- NNODE is only checked for first element,if you use different wall-types this will be a problem -*/
+      firstele = &(actfield->dis[0].element[0]);
       fprintf(out,"#-------------------------------------------------------------------------------\n");
       fprintf(out,"# MESH %s FOR FIELD %s WALL1 2x2 GP\n",actgid->wall1_22_name,actgid->fieldname);
       fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"MESH %s DIMENSION 3 ELEMTYPE Quadrilateral NNODE 4\n",actgid->wall1_22_name);
+      fprintf(out,"MESH %s DIMENSION 2 ELEMTYPE Quadrilateral NNODE %d \n",actgid->wall1_22_name,firstele->numnp);
       /*-------------- if this is first mesh, print coodinates of nodes */
       if (is_firstmesh)
       {
@@ -777,7 +779,7 @@ for (i=0; i<genprob.numfld; i++)
       for (j=0; j<actfield->dis[0].numele; j++)
       {
          actele = &(actfield->dis[0].element[j]);
-         if (actele->eltyp != el_wall1 || actele->numnp !=4) continue;
+         if (actele->eltyp != el_wall1 ) continue;
          fprintf(out," %6d ",actele->Id+1);
          for (k=0; k<actele->numnp; k++)
          fprintf(out,"%6d ",actele->node[k]->Id+1);
@@ -964,6 +966,127 @@ for (i=0; i<genprob.numfld; i++)
       {
          actele = &(actfield->dis[0].element[j]);
          if (actele->eltyp != el_axishell || actele->numnp !=2) continue;
+         fprintf(out," %6d ",actele->Id+1);
+         for (k=0; k<actele->numnp; k++)
+         fprintf(out,"%6d ",actele->node[k]->Id+1);
+         fprintf(out,"\n");
+      }
+      fprintf(out,"END ELEMENTS\n");
+   }
+/*----------------------------------------------------------------------*/       
+   if (actgid->is_interf_22)
+   {
+      firstele = &(actfield->dis[0].element[0]);
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"# MESH %s FOR FIELD %s INERFACE 2(+2) GP\n",actgid->interf_22_name,actgid->fieldname);
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"MESH %s DIMENSION 2 ELEMTYPE Quadrilateral NNODE  %d \n",actgid->interf_22_name,firstele->numnp);
+      /*-------------- if this is first mesh, print coodinates of nodes */
+      if (is_firstmesh)
+      {
+         is_firstmesh=0;
+         fprintf(out,"# printout ALL nodal coordinates of ALL fields in first mesh only\n");
+         fprintf(out,"COORDINATES\n");
+         out_gid_allcoords(out);
+         fprintf(out,"END COORDINATES\n");
+      }
+      /*------------------------------------------------ print elements */
+      fprintf(out,"ELEMENTS\n");
+      for (j=0; j<actfield->dis[0].numele; j++)
+      {
+         actele = &(actfield->dis[0].element[j]);
+         if (actele->eltyp != el_interf) continue;
+      /*----------------------------------------- (|| actele->numnp !=4) */
+         fprintf(out," %6d ",actele->Id+1);
+         for (k=0; k<actele->numnp; k++)
+         fprintf(out,"%6d ",actele->node[k]->Id+1);
+         fprintf(out,"\n");
+      }
+      fprintf(out,"END ELEMENTS\n");
+   }
+   if (actgid->is_interf_33)
+   {
+      firstele = &(actfield->dis[0].element[0]);
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"# MESH %s FOR FIELD %s INERFACE 3(+2x3) GP\n",actgid->interf_33_name,actgid->fieldname);
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"MESH %s DIMENSION 2 ELEMTYPE Quadrilateral NNODE  %d \n",actgid->interf_33_name,firstele->numnp);
+      /*-------------- if this is first mesh, print coodinates of nodes */
+      if (is_firstmesh)
+      {
+         is_firstmesh=0;
+         fprintf(out,"# printout ALL nodal coordinates of ALL fields in first mesh only\n");
+         fprintf(out,"COORDINATES\n");
+         out_gid_allcoords(out);
+         fprintf(out,"END COORDINATES\n");
+      }
+      /*------------------------------------------------ print elements */
+      fprintf(out,"ELEMENTS\n");
+      for (j=0; j<actfield->dis[0].numele; j++)
+      {
+         actele = &(actfield->dis[0].element[j]);
+         if (actele->eltyp != el_interf) continue;
+      /*----------------------------------------- (|| actele->numnp !=8) */
+         fprintf(out," %6d ",actele->Id+1);
+         for (k=0; k<actele->numnp; k++)
+         fprintf(out,"%6d ",actele->node[k]->Id+1);
+         fprintf(out,"\n");
+      }
+      fprintf(out,"END ELEMENTS\n");
+   }
+/*----------------------------------------------------------------------*/       
+   if (actgid->is_wallge_22)
+   {
+      firstele = &(actfield->dis[0].element[0]);
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"# MESH %s FOR FIELD %s WALLGE 2x2 GP\n",actgid->wallge_22_name,actgid->fieldname);
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"MESH %s DIMENSION 2 ELEMTYPE Quadrilateral NNODE  %d \n",actgid->wallge_22_name,firstele->numnp);
+      /*-------------- if this is first mesh, print coodinates of nodes */
+      if (is_firstmesh)
+      {
+         is_firstmesh=0;
+         fprintf(out,"# printout ALL nodal coordinates of ALL fields in first mesh only\n");
+         fprintf(out,"COORDINATES\n");
+         out_gid_allcoords(out);
+         fprintf(out,"END COORDINATES\n");
+      }
+      /*------------------------------------------------ print elements */
+      fprintf(out,"ELEMENTS\n");
+      for (j=0; j<actfield->dis[0].numele; j++)
+      {
+         actele = &(actfield->dis[0].element[j]);
+         if (actele->eltyp != el_wallge) continue;
+         fprintf(out," %6d ",actele->Id+1);
+         for (k=0; k<actele->numnp; k++)
+         fprintf(out,"%6d ",actele->node[k]->Id+1);
+         fprintf(out,"\n");
+      }
+      fprintf(out,"END ELEMENTS\n");
+   }
+/*----------------------------------------------------------------------*/       
+   if (actgid->is_wallge_33)
+   {
+      firstele = &(actfield->dis[0].element[0]);
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"# MESH %s FOR FIELD %s WALLGE 3x3 GP\n",actgid->wallge_33_name,actgid->fieldname);
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"MESH %s DIMENSION 2 ELEMTYPE Quadrilateral NNODE  %d \n",actgid->wallge_33_name,firstele->numnp);
+      /*-------------- if this is first mesh, print coodinates of nodes */
+      if (is_firstmesh)
+      {
+         is_firstmesh=0;
+         fprintf(out,"# printout ALL nodal coordinates of ALL fields in first mesh only\n");
+         fprintf(out,"COORDINATES\n");
+         out_gid_allcoords(out);
+         fprintf(out,"END COORDINATES\n");
+      }
+      /*------------------------------------------------ print elements */
+      fprintf(out,"ELEMENTS\n");
+      for (j=0; j<actfield->dis[0].numele; j++)
+      {
+         actele = &(actfield->dis[0].element[j]);
+         if (actele->eltyp != el_wallge) continue;
          fprintf(out," %6d ",actele->Id+1);
          for (k=0; k<actele->numnp; k++)
          fprintf(out,"%6d ",actele->node[k]->Id+1);

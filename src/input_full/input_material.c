@@ -189,6 +189,22 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("GF"   ,&(mat[i].m.pl_mises->GF)            ,&ierr);
       frdouble("BETAH",&(mat[i].m.pl_mises->betah)         ,&ierr);
    }
+   frchk("MAT_Damage",&ierr);
+   if (ierr==1)
+   {
+      mat[i].mattyp = m_damage;
+      mat[i].m.damage = (DAMAGE*)CCACALLOC(1,sizeof(DAMAGE));
+      if (mat[i].m.damage==NULL) dserror("Allocation of DAMAGE material failed");
+      frdouble("YOUNG",&(mat[i].m.damage->youngs)        ,&ierr);
+      frdouble("NUE"  ,&(mat[i].m.damage->possionratio)  ,&ierr);
+      frint("Equival" ,&(mat[i].m.damage->Equival)       ,&ierr);
+      frint("Damtyp"  ,&(mat[i].m.damage->Damtyp)        ,&ierr);
+      frdouble("Kappa_0",&(mat[i].m.damage->Kappa_0)     ,&ierr);
+      frdouble("Kappa_m",&(mat[i].m.damage->Kappa_m)     ,&ierr);
+      frdouble("Alpha",  &(mat[i].m.damage->Alpha)       ,&ierr);
+      frdouble("Beta" ,  &(mat[i].m.damage->Beta)        ,&ierr);
+      frdouble("k_fac" ,  &(mat[i].m.damage->k_fac)      ,&ierr);
+   }
    frchk("MAT_FoamPlastic",&ierr);
    if (ierr==1)
    {
@@ -303,6 +319,47 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("DP_Sigy" ,&(mat[i].m.pl_por_mises->DP_Sigy)       ,&ierr);
       frdouble("Hard"    ,&(mat[i].m.pl_por_mises->Hard)          ,&ierr);
       frdouble("DP_Hard" ,&(mat[i].m.pl_por_mises->DP_Hard)       ,&ierr);
+   }
+   frchk("MAT_IF",&ierr);
+   if (ierr==1)
+   {
+      mat[i].mattyp  = m_ifmat;
+      mat[i].m.ifmat = (IFMAT*)CCACALLOC(1,sizeof(IFMAT));
+      frdouble("EMOD"   ,&(mat[i].m.ifmat->emod)     ,&ierr);
+      frdouble("KMOD"   ,&(mat[i].m.ifmat->kmod )    ,&ierr);
+      frdouble("GMOD"   ,&(mat[i].m.ifmat->gmod )    ,&ierr);
+      frdouble("DICK"   ,&(mat[i].m.ifmat->dick)     ,&ierr);
+      frdouble("QMOD"   ,&(mat[i].m.ifmat->qmod)     ,&ierr);
+      frdouble("DN"     ,&(mat[i].m.ifmat->deltan)   ,&ierr);
+      frdouble("DT"     ,&(mat[i].m.ifmat->deltat)   ,&ierr);
+      frdouble("MU"     ,&(mat[i].m.ifmat->mu)       ,&ierr);
+   }
+   frchk("MAT_DAM_MP",&ierr);
+   if (ierr==1)
+   {
+      mat[i].mattyp   = m_dam_mp;
+      mat[i].m.dam_mp = (DAM_MP*)CCACALLOC(1,sizeof(DAM_MP));
+      frdouble("YOUNG"   ,&(mat[i].m.dam_mp->youngs)     ,&ierr);
+      frdouble("NUE"     ,&(mat[i].m.dam_mp->nue)        ,&ierr);
+      frdouble("KAPPA_0" ,&(mat[i].m.dam_mp->kappa_0)    ,&ierr);
+      frdouble("ALPHA"   ,&(mat[i].m.dam_mp->alpha)      ,&ierr);
+      frdouble("BETA"    ,&(mat[i].m.dam_mp->beta)       ,&ierr);
+   }
+   frchk("MAT_DAMAGE_GE",&ierr);
+   if (ierr==1)
+   {
+      mat[i].mattyp      = m_damage_ge;
+      mat[i].m.damage_ge = (DAMAGE_GE*)CCACALLOC(1,sizeof(DAMAGE_GE));
+      frint("EQU"        ,&(mat[i].m.damage_ge->equival)    ,&ierr);
+      frint("DAMT"       ,&(mat[i].m.damage_ge->damtyp)     ,&ierr);
+      frdouble("CRAD"    ,&(mat[i].m.damage_ge->crad)       ,&ierr);
+      frdouble("YOUNG"   ,&(mat[i].m.damage_ge->youngs)     ,&ierr);
+      frdouble("NUE"     ,&(mat[i].m.damage_ge->nue)        ,&ierr);
+      frdouble("KAPPA_0" ,&(mat[i].m.damage_ge->kappa_0)    ,&ierr);
+      frdouble("KAPPA_M" ,&(mat[i].m.damage_ge->kappa_m)    ,&ierr);
+      frdouble("ALPHA"   ,&(mat[i].m.damage_ge->alpha)      ,&ierr);
+      frdouble("BETA"    ,&(mat[i].m.damage_ge->beta)       ,&ierr);
+      frdouble("K_FAC"   ,&(mat[i].m.damage_ge->k_fac)      ,&ierr);
    }
    /*multi layer material */
    frchk("MAT_Multilayer",&ierr);

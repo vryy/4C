@@ -83,6 +83,14 @@ typedef struct _GIDSET
      char                      *ale_tet_4_name;
      INT                        is_axishell;            /* 2-noded axishell */
      char                      *axishell_name;
+     INT                        is_interf_22;            /* interface 2x2 GP */
+     char                      *interf_22_name;
+     INT                        is_interf_33;            /* interface 3x3 GP */
+     char                      *interf_33_name;
+     INT                        is_wallge_22;            /* gradient enhanced wall 2x2 GP */
+     char                      *wallge_22_name;
+     INT                        is_wallge_33;            /* gradient enhanced wall 3x3 GP */
+     char                      *wallge_33_name;
      
 
 } GIDSET;

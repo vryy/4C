@@ -21,6 +21,8 @@ Maintainer: Malte Neumann
 #include "../ale2/ale2.h"
 #include "../ale3/ale3.h"
 #include "../axishell/axishell.h"
+#include "../interf/interf.h"
+#include "../wallge/wallge.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | structure of flags to control output                                 |
@@ -143,6 +145,10 @@ for (i=0; i<genprob.numfld; i++)
    actgid->is_ale_tet_1 = 0;
    actgid->is_ale_tet_4 = 0;
    actgid->is_axishell  = 0;
+   actgid->is_interf_22  = 0;
+   actgid->is_interf_33  = 0;
+   actgid->is_wallge_22  = 0;
+   actgid->is_wallge_33  = 0;
    /*---------------------------- check for different types of elements */
    for (j=0; j<actfield->dis[0].numele; j++)
    {
@@ -376,6 +382,35 @@ for (i=0; i<genprob.numfld; i++)
             actgid->axishell_name  = "axishell";
       break;
 #endif /*D_AXISHELL*/
+#ifdef D_INTERF
+      case el_interf:    
+         if (actele->e.interf->nGP==2)  
+         {
+            actgid->is_interf_22    = 1;
+            actgid->interf_22_name  = "interf_22";
+         }
+         if (actele->e.interf->nGP==3)  
+         {
+            actgid->is_interf_33    = 1;
+            actgid->interf_33_name  = "interf_33";
+         }
+      break;
+#endif /*D_INTERF*/
+#ifdef D_WALLGE
+      case el_wallge:    
+         if (actele->e.wallge->nGP[0]==2)  
+         {
+            actgid->is_wallge_22    = 1;
+            actgid->wallge_22_name  = "wallge_22";
+         }
+         if (actele->e.wallge->nGP[0]==3)  
+         {
+            actgid->is_wallge_33    = 1;
+            actgid->wallge_33_name  = "wallge_33";
+         }
+     break;
+#endif /*D_WALLGE*/
+
       default:
          dserror("Unknown type of element");
       break;
@@ -778,6 +813,54 @@ for (i=0; i<genprob.numfld; i++)
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Linear\n", sign,actgid->axishell_name,sign);
    fprintf(out,"NUMBER OF GAUSS POINTS: 1\n");
+   fprintf(out,"Nodes not included\n");
+   fprintf(out,"NATURAL COORDINATES: Internal\n");
+   fprintf(out,"END GAUSSPOINTS\n");
+   }
+   /* ---------------------------------------------------------------- */
+   if (actgid->is_interf_22)
+   {
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s INTERFACE 2(+2) GP\n",actgid->fieldname);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Quadrilateral\n", sign,actgid->interf_22_name,sign);
+   fprintf(out,"NUMBER OF GAUSS POINTS: 4\n");
+   fprintf(out,"Nodes not included\n");
+   fprintf(out,"NATURAL COORDINATES: Internal\n");
+   fprintf(out,"END GAUSSPOINTS\n");
+   }
+   /* ---------------------------------------------------------------- */
+   if (actgid->is_interf_33)
+   {
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s INTERFACE 3(+2x3) GP\n",actgid->fieldname);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Quadrilateral\n", sign,actgid->interf_33_name,sign);
+   fprintf(out,"NUMBER OF GAUSS POINTS: 9\n");
+   fprintf(out,"Nodes not included\n");
+   fprintf(out,"NATURAL COORDINATES: Internal\n");
+   fprintf(out,"END GAUSSPOINTS\n");
+   }
+   /* ---------------------------------------------------------------- */
+   if (actgid->is_wallge_22)
+   {
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s WALLGE 2*2 GP\n",actgid->fieldname);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Quadrilateral\n", sign,actgid->wallge_22_name,sign);
+   fprintf(out,"NUMBER OF GAUSS POINTS: 4\n");
+   fprintf(out,"Nodes not included\n");
+   fprintf(out,"NATURAL COORDINATES: Internal\n");
+   fprintf(out,"END GAUSSPOINTS\n");
+   }
+   /* ---------------------------------------------------------------- */
+   if (actgid->is_wallge_33)
+   {
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s WALLGE 3*3 GP\n",actgid->fieldname);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Quadrilateral\n", sign,actgid->wallge_33_name,sign);
+   fprintf(out,"NUMBER OF GAUSS POINTS: 9\n");
    fprintf(out,"Nodes not included\n");
    fprintf(out,"NATURAL COORDINATES: Internal\n");
    fprintf(out,"END GAUSSPOINTS\n");
@@ -2013,7 +2096,7 @@ if (strncmp(string,"stress",stringlenght)==0)
                                                              resultplace,
                                                              sign,gpset,sign
                                                              );
-      fprintf(out,"COMPONENTNAMES %cStress-xx%c,%cStress-yy%c,%cStress-xy%c,%cStress-zz%c,%cdummy%c,%cdummy%c\n",
+      fprintf(out,"COMPONENTNAMES %cStress-xx%c,%cStress-yy%c,%cStress-xy%c,%cStress-zz%c,%cdamage%c,%caequiv_strain%c\n",
              sign,sign,
 	     sign,sign,
 	     sign,sign,
@@ -2026,20 +2109,24 @@ if (strncmp(string,"stress",stringlenght)==0)
          actele = &(actfield->dis[0].element[i]);
    /*---------------|| actele->numnp !=4--- */
          if (actele->eltyp != el_wall1 ) continue;
-         stress=actele->e.w1->stress_GP.a.d3[place];
+         stress =actele->e.w1->stress_GP.a.d3[place];
 	 fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
                              actele->Id+1,
 			     stress[0][gaussperm4[0]],
 			     stress[1][gaussperm4[0]],
 			     stress[2][gaussperm4[0]],
-			     stress[3][gaussperm4[0]]
+			     stress[3][gaussperm4[0]],
+			     actele->e.w1->elewa[0].ipwa[gaussperm4[0]].damage,
+			     actele->e.w1->elewa[0].ipwa[gaussperm4[0]].aequistrain
 			     );
          for (j=1; j<ngauss; j++)
          fprintf(out,"        %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
                              stress[0][gaussperm4[j]],
 			     stress[1][gaussperm4[j]],
 			     stress[2][gaussperm4[j]],
-			     stress[3][gaussperm4[j]]
+			     stress[3][gaussperm4[j]],
+                       actele->e.w1->elewa[0].ipwa[gaussperm4[j]].damage,
+                       actele->e.w1->elewa[0].ipwa[gaussperm4[j]].aequistrain
                              );
       }
       fprintf(out,"END VALUES\n");
@@ -2066,7 +2153,7 @@ if (strncmp(string,"stress",stringlenght)==0)
                                                              resultplace,
                                                              sign,gpset,sign
                                                              );
-      fprintf(out,"COMPONENTNAMES %cStress-xx%c,%cStress-yy%c,%cStress-xy%c,%cStress-zz%c,%cdummy%c,%cdummy%c\n",
+      fprintf(out,"COMPONENTNAMES %cStress-xx%c,%cStress-yy%c,%cStress-xy%c,%cStress-zz%c,%cdamage%c,%caequiv_strain%c\n",
              sign,sign,
 	     sign,sign,
 	     sign,sign,
@@ -2085,14 +2172,18 @@ if (strncmp(string,"stress",stringlenght)==0)
 			     stress[0][gaussperm9[0]],
 			     stress[1][gaussperm9[0]],
 			     stress[2][gaussperm9[0]],
-			     stress[3][gaussperm9[0]]
+			     stress[3][gaussperm9[0]],
+			     actele->e.w1->elewa[0].ipwa[gaussperm9[0]].damage,
+			     actele->e.w1->elewa[0].ipwa[gaussperm9[0]].aequistrain
 			     );
          for (j=1; j<ngauss; j++)
 	 fprintf(out,"        %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
                              stress[0][gaussperm9[j]],
 			     stress[1][gaussperm9[j]],
 			     stress[2][gaussperm9[j]],
-			     stress[3][gaussperm9[j]]
+			     stress[3][gaussperm9[j]],
+			     actele->e.w1->elewa[0].ipwa[gaussperm9[j]].damage,
+			     actele->e.w1->elewa[0].ipwa[gaussperm9[j]].aequistrain
                              );
       }
       fprintf(out,"END VALUES\n");
@@ -2418,6 +2509,7 @@ if (strncmp(string,"stress",stringlenght)==0)
          actele = &(actfield->dis[0].element[i]);
          if (actele->eltyp != el_beam3 ) continue;
          stress=actele->e.b3->force_GP.a.d3[place];
+
 	 fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
                              actele->Id+1,
 			     stress[0][0],
@@ -2440,7 +2532,6 @@ if (strncmp(string,"stress",stringlenght)==0)
       fprintf(out,"END VALUES\n");
       
    }
-
    if (actgid->is_beam3_32)
    {
       ngauss=2;
@@ -2472,6 +2563,7 @@ if (strncmp(string,"stress",stringlenght)==0)
          actele = &(actfield->dis[0].element[i]);
          if (actele->eltyp != el_beam3 ) continue;
          stress=actele->e.b3->force_GP.a.d3[place];
+
 	 fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
                              actele->Id+1,
 			     stress[0][0],
@@ -2525,6 +2617,7 @@ if (strncmp(string,"stress",stringlenght)==0)
          actele = &(actfield->dis[0].element[i]);
          if (actele->eltyp != el_beam3 ) continue;
          stress=actele->e.b3->force_GP.a.d3[place];
+
 	 fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
                              actele->Id+1,
 			     stress[0][0],
@@ -2555,6 +2648,333 @@ if (strncmp(string,"stress",stringlenght)==0)
       }
       fprintf(out,"END VALUES\n");
       
+   }
+#endif
+
+#ifdef D_INTERF   
+   /* STRESS output for INTERFACE */
+   if (actgid->is_interf_22)
+   { 
+     /* ------------------------------------------------ write stresses */
+      ngauss=4;
+      resulttype        = "MATRIX";
+      resultplace       = "ONGAUSSPOINTS";
+      gpset             = actgid->interf_22_name;
+      rangetable        = actgid->standardrangetable;
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"# RESULT INTERFACE on FIELD %s\n",actgid->fieldname);
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"RESULT %cinterface_stresses%c %cccarat%c %d %s %s %c%s%c\n",
+                                                             sign,sign,
+                                                             sign,sign,
+                                                             step,
+                                                             resulttype,
+                                                             resultplace,
+                                                             sign,gpset,sign
+                                                             );
+      actele = &(actfield->dis[0].element[0]);
+      switch(actele->e.interf->stresstyp)
+      {
+      /*---------------------------------- local stresses are asked for ---*/
+        case if_tn:
+         fprintf(out,"COMPONENTNAMES %cstress-tang%c,%cstress-normal%c,%cdummy%c,%cD-nomal%c,%cD-tang%c,%cdummy%c\n",
+                 sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign);
+        break;
+        /*--------------------------- transformation into global stresses ---*/
+        case if_xy:
+         fprintf(out,"COMPONENTNAMES %cstress-sxx%c,%cstress-syy%c,%cstress-sxy%c,%cD-nomal%c,%cD-tang%c,%cdummy%c\n",
+              sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign);
+        break;
+        default:
+        break;
+      }    
+      fprintf(out,"VALUES\n");
+      for (i=0; i<actfield->dis[0].numele; i++)
+      {
+         actele = &(actfield->dis[0].element[i]);
+         if (actele->eltyp != el_interf) continue;
+         /* ------------------------- (|| actele->numnp !=4)  */
+         /* ----------------------- gid's 1.and 4.GP get values of my 1.GP-- */
+         /* ----------------------- gid's 2.and 3.GP get values of my 2.GP-- */
+         stress = actele->e.interf->stress_GP.a.d3[place];
+	 fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                             actele->Id+1,
+			     stress[0][0],
+			     stress[1][0],
+			     stress[2][0],
+                       actele->e.interf->elewa[0].ipwa[0].dn,
+                       actele->e.interf->elewa[0].ipwa[0].dt,
+                             0.0
+			     );
+	 fprintf(out,"        %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+			     stress[0][1],
+			     stress[1][1],
+			     stress[2][1],
+                       actele->e.interf->elewa[0].ipwa[1].dn,
+                       actele->e.interf->elewa[0].ipwa[1].dt,
+                             0.0
+			     );
+	 fprintf(out,"        %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+			     stress[0][1],
+			     stress[1][1],
+			     stress[2][1],
+                       actele->e.interf->elewa[0].ipwa[1].dn,
+                       actele->e.interf->elewa[0].ipwa[1].dt,
+                             0.0
+			     );
+	 fprintf(out,"        %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+			     stress[0][0],
+			     stress[1][0],
+			     stress[2][0],
+                       actele->e.interf->elewa[0].ipwa[0].dn,
+                       actele->e.interf->elewa[0].ipwa[0].dt,
+                             0.0
+			     );
+         /* ------------------------------------------------- */
+      }
+      fprintf(out,"END VALUES\n");
+   }
+   if (actgid->is_interf_33)
+   { 
+     /* ------------------------------------------------ write stresses */
+      ngauss=4;
+      resulttype        = "MATRIX";
+      resultplace       = "ONGAUSSPOINTS";
+      gpset             = actgid->interf_33_name;
+      rangetable        = actgid->standardrangetable;
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"# RESULT INTERFACE on FIELD %s\n",actgid->fieldname);
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"RESULT %cinterface_stresses%c %cccarat%c %d %s %s %c%s%c\n",
+                                                             sign,sign,
+                                                             sign,sign,
+                                                             step,
+                                                             resulttype,
+                                                             resultplace,
+                                                             sign,gpset,sign
+                                                             );
+      actele = &(actfield->dis[0].element[0]);
+      switch(actele->e.interf->stresstyp)
+      {
+      /*---------------------------------- local stresses are asked for ---*/
+        case if_tn:
+         fprintf(out,"COMPONENTNAMES %cstress-tang%c,%cstress-normal%c,%cdummy%c,%cD-normal%c,%cD-tang%c,%cdummy%c\n",
+                 sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign);
+        break;
+        /*--------------------------- transformation into global stresses ---*/
+        case if_xy:
+         fprintf(out,"COMPONENTNAMES %cstress-sxx%c,%cstress-syy%c,%cstress-sxy%c,%cD-normal%c,%cD-tang%c,%cdummy%c\n",
+              sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign);
+        break;
+        default:
+        break;
+      }    
+      fprintf(out,"VALUES\n");
+      for (i=0; i<actfield->dis[0].numele; i++)
+      {
+         actele = &(actfield->dis[0].element[i]);
+         if (actele->eltyp != el_interf) continue;
+         /* -------------------------(|| actele->numnp !=8) */
+         /* ----------------------- gid's 1.and 4.and 8. GP get values of my 1.GP-- */
+         /* ----------------------- gid's 5.and 7.and 9. GP get values of my 2.GP-- */
+         /* ----------------------- gid's 2.and 3.and 6. GP get values of my 3.GP-- */
+         stress=actele->e.interf->stress_GP.a.d3[place];
+	 fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                             actele->Id+1,
+			     stress[0][0],
+			     stress[1][0],
+			     stress[2][0],
+                       actele->e.interf->elewa[0].ipwa[0].dn,
+                       actele->e.interf->elewa[0].ipwa[0].dt,
+                             0.0
+			     );
+	 fprintf(out,"        %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+			     stress[0][2],
+			     stress[1][2],
+			     stress[2][2],
+                       actele->e.interf->elewa[0].ipwa[2].dn,
+                       actele->e.interf->elewa[0].ipwa[2].dt,
+                             0.0
+			     );
+	 fprintf(out,"        %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+			     stress[0][2],
+			     stress[1][2],
+			     stress[2][2],
+                       actele->e.interf->elewa[0].ipwa[2].dn,
+                       actele->e.interf->elewa[0].ipwa[2].dt,
+                             0.0
+			     );
+	 fprintf(out,"        %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+			     stress[0][0],
+			     stress[1][0],
+			     stress[2][0],
+                       actele->e.interf->elewa[0].ipwa[0].dn,
+                       actele->e.interf->elewa[0].ipwa[0].dt,
+                             0.0
+			     );
+	 fprintf(out,"        %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+			     stress[0][1],
+			     stress[1][1],
+			     stress[2][1],
+                       actele->e.interf->elewa[0].ipwa[1].dn,
+                       actele->e.interf->elewa[0].ipwa[1].dt,
+                             0.0
+			     );
+	 fprintf(out,"        %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+			     stress[0][2],
+			     stress[1][2],
+			     stress[2][2],
+                       actele->e.interf->elewa[0].ipwa[2].dn,
+                       actele->e.interf->elewa[0].ipwa[2].dt,
+                             0.0
+			     );
+	 fprintf(out,"        %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+			     stress[0][1],
+			     stress[1][1],
+			     stress[2][1],
+                       actele->e.interf->elewa[0].ipwa[1].dn,
+                       actele->e.interf->elewa[0].ipwa[1].dt,
+                             0.0
+			     );
+	 fprintf(out,"        %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+			     stress[0][0],
+			     stress[1][0],
+			     stress[2][0],
+                       actele->e.interf->elewa[0].ipwa[0].dn,
+                       actele->e.interf->elewa[0].ipwa[0].dt,
+                             0.0
+			     );
+	 fprintf(out,"        %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+			     stress[0][1],
+			     stress[1][1],
+			     stress[2][1],
+                       actele->e.interf->elewa[0].ipwa[1].dn,
+                       actele->e.interf->elewa[0].ipwa[1].dt,
+                             0.0
+			     );
+         /* ------------------------------------------------- */
+      }
+      fprintf(out,"END VALUES\n");
+   }
+
+#endif
+
+#ifdef D_WALLGE   
+   if (actgid->is_wallge_22)
+   {
+      ngauss=4;
+      resulttype        = "MATRIX";
+      resultplace       = "ONGAUSSPOINTS";
+      gpset             = actgid->wallge_22_name;
+      rangetable        = actgid->standardrangetable;
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"# RESULT wallge_forces on FIELD %s\n",actgid->fieldname);
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"RESULT %cwallge_forces%c %cccarat%c %d %s %s %c%s%c\n",
+                                                             sign,sign,
+                                                             sign,sign,
+                                                             step,
+                                                             resulttype,
+                                                             resultplace,
+                                                             sign,gpset,sign
+                                                             );
+      fprintf(out,"COMPONENTNAMES %cStress-xx%c,%cStress-yy%c,%cStress-xy%c,%cdamage%c,%cloc_aequiv_strain%c,%cnonloc_aequiv_strain%c\n",
+             sign,sign,
+	     sign,sign,
+	     sign,sign,
+	     sign,sign,
+	     sign,sign,
+	     sign,sign);
+      fprintf(out,"VALUES\n");
+      for (i=0; i<actfield->dis[0].numele; i++)
+      {
+         actele = &(actfield->dis[0].element[i]);
+   /*---------------|| actele->numnp !=4--- */
+         if (actele->eltyp != el_wallge ) continue;
+         stress =actele->e.wallge->stress_GP.a.d3[place];
+	 fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                             actele->Id+1,
+                        /*     
+			     stress[0][gaussperm4[0]],
+			     stress[1][gaussperm4[0]],
+			     stress[2][gaussperm4[0]],
+                       */
+			     actele->e.wallge->elwa[0].iptwa[gaussperm4[0]].sig[0],
+			     actele->e.wallge->elwa[0].iptwa[gaussperm4[0]].sig[1],
+			     actele->e.wallge->elwa[0].iptwa[gaussperm4[0]].sig[2],
+			     actele->e.wallge->elwa[0].iptwa[gaussperm4[0]].damage,
+			     actele->e.wallge->elwa[0].iptwa[gaussperm4[0]].aequistrain,
+			     actele->e.wallge->elwa[0].iptwa[gaussperm4[0]].aequistrain_nl
+			     );
+         for (j=1; j<ngauss; j++)
+         fprintf(out,"        %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                             /*
+                             stress[0][gaussperm4[j]],
+			     stress[1][gaussperm4[j]],
+			     stress[2][gaussperm4[j]],
+                       */
+			     actele->e.wallge->elwa[0].iptwa[gaussperm4[j]].sig[0],
+			     actele->e.wallge->elwa[0].iptwa[gaussperm4[j]].sig[1],
+			     actele->e.wallge->elwa[0].iptwa[gaussperm4[j]].sig[2],
+                       actele->e.wallge->elwa[0].iptwa[gaussperm4[j]].damage,
+                       actele->e.wallge->elwa[0].iptwa[gaussperm4[j]].aequistrain,
+			     actele->e.wallge->elwa[0].iptwa[gaussperm4[j]].aequistrain_nl
+                             );
+      }
+      fprintf(out,"END VALUES\n");
+   }
+   if (actgid->is_wallge_33)
+   {
+      ngauss=9;
+      resulttype        = "MATRIX";
+      resultplace       = "ONGAUSSPOINTS";
+      gpset             = actgid->wallge_33_name;
+      rangetable        = actgid->standardrangetable;
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"# RESULT wallge_forces on FIELD %s\n",actgid->fieldname);
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"RESULT %cwallge_forces%c %cccarat%c %d %s %s %c%s%c\n",
+                                                             sign,sign,
+                                                             sign,sign,
+                                                             step,
+                                                             resulttype,
+                                                             resultplace,
+                                                             sign,gpset,sign
+                                                             );
+      fprintf(out,"COMPONENTNAMES %cStress-xx%c,%cStress-yy%c,%cStress-xy%c,%cdamage%c,%cloc_aequiv_strain%c,%cnonloc_aequiv_strain%c\n",
+             sign,sign,
+	     sign,sign,
+	     sign,sign,
+	     sign,sign,
+	     sign,sign,
+	     sign,sign);
+      fprintf(out,"VALUES\n");
+      for (i=0; i<actfield->dis[0].numele; i++)
+      {
+         actele = &(actfield->dis[0].element[i]);
+   /*---------------|| actele->numnp !=4--- */
+         if (actele->eltyp != el_wallge ) continue;
+         stress =actele->e.wallge->stress_GP.a.d3[place];
+	 fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                             actele->Id+1,
+			     stress[0][gaussperm9[0]],
+			     stress[1][gaussperm9[0]],
+			     stress[2][gaussperm9[0]],
+			     actele->e.wallge->elwa[0].iptwa[gaussperm9[0]].damage,
+			     actele->e.wallge->elwa[0].iptwa[gaussperm9[0]].aequistrain,
+			     actele->e.wallge->elwa[0].iptwa[gaussperm9[0]].aequistrain_nl
+			     );
+         for (j=1; j<ngauss; j++)
+         fprintf(out,"        %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                             stress[0][gaussperm9[j]],
+			     stress[1][gaussperm9[j]],
+			     stress[2][gaussperm9[j]],
+                       actele->e.wallge->elwa[0].iptwa[gaussperm9[j]].damage,
+                       actele->e.wallge->elwa[0].iptwa[gaussperm9[j]].aequistrain,
+			     actele->e.wallge->elwa[0].iptwa[gaussperm9[j]].aequistrain_nl
+                             );
+      }
+      fprintf(out,"END VALUES\n");
    }
 #endif
 

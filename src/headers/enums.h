@@ -86,7 +86,9 @@ typedef enum _ELEMENT_TYP
                        el_fluid3,      /* 3D fluid element */
                        el_ale2,        /* 2D pseudo structural ale element */
                        el_ale3,        /* 3D pseudo structural ale element */
-                       el_axishell     /* 1D axisymmetrical shell element */
+                       el_axishell,    /* 1D axisymmetrical shell element */
+                       el_interf,      /* 1D interface element (combination only with wall) */
+                       el_wallge       /* gradient enhanced wall element */
 } ELEMENT_TYP;                         
 /*----------------------------------------------------------------------*
  | enum MATERIAL_TYP                                      m.gee 7/01    |
@@ -98,6 +100,7 @@ typedef enum _MATERIAL_TYP
                        m_pl_mises_3D, /* Stefans Mises*/
                        m_pl_mises,    /* von Mises material */
                        m_pl_hoff,     /* anisotropic plastic material based on hoffman criterion */
+                       m_damage,      /* 3D damage matieral */
                        m_pl_foam,     /* foam material - large strains */
                        m_pl_mises_ls, /* von Mises material - large strains*/
                        m_pl_dp,       /* Drucker Prager material */
@@ -112,7 +115,10 @@ typedef enum _MATERIAL_TYP
                        m_mfoc,        /* open cell metal foam */
                        m_mfcc,        /* closed cell metal foam */
                        m_nhmfcc,      /* foam, closed cell, based on modified Neo Hook */
-                       m_multi_layer  /* multilayer material -> shell9*/
+                       m_multi_layer, /* multilayer material -> shell9*/
+                       m_ifmat,        /* interface surface elasto-damage-plasto material*/
+                       m_dam_mp,       /* isotropic damage model -> mazars/pijadier-cabot*/
+                       m_damage_ge     /* isotropic gradient enhanced damage model */
 } MATERIAL_TYP;                         
 /*----------------------------------------------------------------------*
  | enum PART_TYP                                          m.gee 7/01    |

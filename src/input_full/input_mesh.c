@@ -23,6 +23,7 @@ Maintainer: Malte Neumann
 #include "../ale2/ale2.h"
 #include "../axishell/axishell.h"
 #include "../beam3/beam3.h"
+#include "../interf/interf.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
@@ -521,6 +522,36 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    {
       structfield->dis[0].element[counter].eltyp=el_axishell;
       saxi_inp(&(structfield->dis[0].element[counter]));
+   }
+#endif
+/*-------------------------------------------- elementtyp is Interf  */
+   frchk("IF",&ierr);
+   if (ierr==1)
+   {
+#ifndef D_INTERF 
+      dserror("INTERF needed but not defined in Makefile");
+#endif
+   }
+#ifdef D_INTERF
+   if (ierr==1) 
+   {
+      structfield->dis[0].element[counter].eltyp=el_interf;
+      interf_inp(&(structfield->dis[0].element[counter]));
+   }
+#endif
+/*-------------------------------------------- elementtyp is Wallge  */
+   frchk("WGE",&ierr);
+   if (ierr==1)
+   {
+#ifndef D_WALLGE 
+      dserror("WALLGE needed but not defined in Makefile");
+#endif
+   }
+#ifdef D_WALLGE
+   if (ierr==1) 
+   {
+      structfield->dis[0].element[counter].eltyp=el_wallge;
+      wge_inp(&(structfield->dis[0].element[counter]));
    }
 #endif
 /*--------------------------------------------other structural elements */

@@ -25,6 +25,7 @@ typedef struct _MATERIAL
      struct _STVENANT         *stvenant;     /* St. Venant-Kirchhoff material */
      struct _PL_HOFF          *pl_hoff;      /* anisotropic plastic material, based on hoffman-criterion */
      struct _PL_MISES         *pl_mises;     /* von Mises material */
+     struct _DAMAGE           *damage;       /* CDM material */
      struct _PL_FOAM          *pl_foam;      /* foam material - large strains */
      struct _PL_MISES_LS      *pl_mises_ls;  /* von Mises material - large strains*/
      struct _PL_DP            *pl_dp;        /* Drucker Prager material */
@@ -40,6 +41,9 @@ typedef struct _MATERIAL
      struct _MFCC             *mfcc;         /* metal foam, closed cell  */
      struct _NHMFCC           *nhmfcc;       /* foam, closed cell, based on modified Neo Hook */
      struct _MULTI_LAYER      *multi_layer;  /* multi layer material*/
+     struct _IFMAT            *ifmat;        /* interface elasto-damage-plasto surface material*/
+     struct _DAM_MP           *dam_mp;       /* isotropic damage material (mazars-pijadier-cabot)*/
+     struct _DAMAGE_GE        *damage_ge;    /* isotropic gradient enhanced damage material */
      }                         m;            /* union pointer to material specific structure */
 
 } MATERIAL;
@@ -120,7 +124,21 @@ typedef struct _PL_MISES
      DOUBLE                    GF;
      DOUBLE                    betah;
 } PL_MISES;
-
+/*----------------------------------------------------------------------*
+ | Damage material                                     he      04/03    |
+ *----------------------------------------------------------------------*/
+typedef struct _DAMAGE
+{
+     DOUBLE                    youngs;        /* Young's modulus */
+     DOUBLE                    possionratio;  /* Possion ratio */
+     INT                       Equival;
+     INT                       Damtyp;
+     DOUBLE                    Kappa_0;
+     DOUBLE                    Kappa_m;
+     DOUBLE                    Alpha;
+     DOUBLE                    Beta;
+     DOUBLE                    k_fac;
+} DAMAGE;
 /*----------------------------------------------------------------------*
  | anisotropic plastic material based on hoffman-criterion    sh 03/03  |
  *----------------------------------------------------------------------*/
@@ -389,3 +407,59 @@ typedef struct _MULTIMAT
      }                         m;            /* union pointer to material specific structure */
 
 } MULTIMAT;
+/*----------------------------------------------------------------------*
+ | linear elastic, orthotropic material                     sh 02/03    |
+ *----------------------------------------------------------------------*/
+typedef struct _ORTHOTROPIC
+{
+     DOUBLE                    emod1;         
+     DOUBLE                    emod2;         
+     DOUBLE                    emod3;         
+     DOUBLE                    gmod12;         
+     DOUBLE                    gmod13;         
+     DOUBLE                    gmod23;         
+     DOUBLE                    xnue12;         
+     DOUBLE                    xnue13;         
+     DOUBLE                    xnue23;         
+} ORTHOTROPIC;
+/*----------------------------------------------------------------------*
+ | interface elasto-damage-plasto surface material          ah 08/03    |
+ *----------------------------------------------------------------------*/
+typedef struct _IFMAT
+{
+     DOUBLE                    emod;         
+     DOUBLE                    kmod;         
+     DOUBLE                    gmod;         
+     DOUBLE                    dick;         
+     DOUBLE                    qmod;         
+     DOUBLE                    deltan;         
+     DOUBLE                    deltat;         
+     DOUBLE                    mu;         
+} IFMAT;
+/*----------------------------------------------------------------------*
+ | isotropic damage material (mazars-pijadier-cabot)        ah 10/03    |
+ *----------------------------------------------------------------------*/
+typedef struct _DAM_MP
+{
+     DOUBLE                    youngs;         
+     DOUBLE                    nue;         
+     DOUBLE                    kappa_0;         
+     DOUBLE                    alpha;         
+     DOUBLE                    beta;         
+} DAM_MP;
+/*----------------------------------------------------------------------*
+ | isotropic gradient enhanced damage material              ah 10/03    |
+ *----------------------------------------------------------------------*/
+typedef struct _DAMAGE_GE
+{
+     INT                       equival;
+     INT                       damtyp;
+     DOUBLE                    crad;         
+     DOUBLE                    youngs;         
+     DOUBLE                    nue;         
+     DOUBLE                    kappa_0;         
+     DOUBLE                    kappa_m;
+     DOUBLE                    alpha;         
+     DOUBLE                    beta;         
+     DOUBLE                    k_fac;
+} DAMAGE_GE;

@@ -19,6 +19,7 @@ Maintainer: Malte Neumann
 #include "../brick1/brick1.h"
 #include "../ale2/ale2.h"
 #include "../ale3/ale3.h"
+#include "../interf/interf.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
@@ -498,6 +499,91 @@ if (strncmp(string,"stress",stringlenght)==0)
 /*----------------------------------------------------------------------*/      
    }
 #endif   
+#ifdef D_INTERF   
+   /* STRESS output for INTERFACE */
+   if (actgid->is_interf_22)
+   { 
+     /* ------------------------------------------------ write stresses */
+      ngauss=4;
+      resulttype        = "MATRIX";
+      resultplace       = "ONGAUSSPOINTS";
+      gpset             = actgid->interf_22_name;
+      rangetable        = actgid->standardrangetable;
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"# RESULT INTERFACE on FIELD %s\n",actgid->fieldname);
+      fprintf(out,"# TIME %20.10f\n",totaltime);
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"RESULT %cinterface_stresses%c %cpcarat%c %d %s %s %c%s%c\n",
+                                                             sign,sign,
+                                                             sign,sign,
+                                                             step,
+                                                             resulttype,
+                                                             resultplace,
+                                                             sign,gpset,sign
+                                                             );
+      actele = &(actfield->dis[0].element[0]);
+      switch(actele->e.interf->stresstyp)
+      {
+      /*---------------------------------- local stresses are asked for ---*/
+        case if_tn:
+         fprintf(out,"COMPONENTNAMES %cstress-tang%c,%cstress-normal%c,%cdummy%c,%cdummy%c,%cdummy%c,%cdummy%c\n",
+                 sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign);
+        break;
+        /*--------------------------- transformation into global stresses ---*/
+        case if_xy:
+         fprintf(out,"COMPONENTNAMES %cstress-sxx%c,%cstress-syy%c,%cstress-sxy%c,%cdummy%c,%cdummy%c,%cdummy%c\n",
+              sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign);
+        break;
+        default:
+        break;
+      }    
+      fprintf(out,"VALUES\n");
+      for (i=0; i<actfield->dis[0].numele; i++)
+      {
+         actele = &(actfield->dis[0].element[i]);
+         if (actele->eltyp != el_interf || actele->numnp !=4) continue;
+
+         /* ----------------------- gid's 1.and 4.GP get values of my 1.GP-- */
+         /* ----------------------- gid's 2.and 3.GP get values of my 2.GP-- */
+         stress=actele->e.interf->stress_GP.a.d3[place];
+	 fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                             actele->Id+1,
+			     stress[0][0],
+			     stress[1][0],
+			     stress[2][0],
+                             0.0,
+                             0.0,
+                             0.0
+			     );
+	 fprintf(out,"        %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+			     stress[0][1],
+			     stress[1][1],
+			     stress[2][1],
+                             0.0,
+                             0.0,
+                             0.0
+			     );
+	 fprintf(out,"        %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+			     stress[0][1],
+			     stress[1][1],
+			     stress[2][1],
+                             0.0,
+                             0.0,
+                             0.0
+			     );
+	 fprintf(out,"        %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+			     stress[0][0],
+			     stress[1][0],
+			     stress[2][0],
+                             0.0,
+                             0.0,
+                             0.0
+			     );
+         /* ------------------------------------------------- */
+      }
+      fprintf(out,"END VALUES\n");
+   }
+#endif
 } /* end of (strncmp(string,"stress",stringlenght)==0) */
 /*======================================================================*/
 /*========================================= result type is velocity */

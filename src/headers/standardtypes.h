@@ -186,6 +186,7 @@ INT               fluid_vis_file;         /* write solution to pss-file for VISU
 INT               ale_disp_file;          /* write ale displacements to .out */
 INT               ale_disp_gid;           /* write ale displacement to .flavia.res */
 INT               monitor;
+INT               relative_displ;         /* write relative displacements to .err */
 } IO_FLAGS;
 
 
@@ -252,6 +253,7 @@ INT               visual;        /* flag for visualise mode or not */
 INT               numsf;         /* actual number of struct-field */
 INT               numff;         /* actual number of fluid field */
 INT               numaf;         /* actual number of ale field */
+INT               graderw;       /* flag is gradient enhanced material model */
 
 enum _PROBLEM_TYP probtyp;       /* type of problem, see enum.h */
 enum _TIME_TYP    timetyp;       /* type of time, see enum.h */

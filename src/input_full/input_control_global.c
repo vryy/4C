@@ -202,6 +202,7 @@ ioflags.fluid_sol_file        =0;
 ioflags.fluid_vis_file        =0;
 ioflags.ale_disp_file         =0;
 ioflags.ale_disp_gid          =0;
+ioflags.relative_displ        =0;
 
 
 if (frfind("-PROBLEM TYP")==0) dserror("frfind: PROBLEM TYP not in input file");
@@ -234,6 +235,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 
   frint("NUMFIELD",&(genprob.numfld),&ierr);
 
+  frint("GRADERW",&(genprob.graderw),&ierr);
   frread();
 }
 
@@ -335,6 +337,7 @@ if (frfind("---IO")==1)
       if (strncmp("YES" ,buffer,3)==0) ioflags.monitor=1;
       if (strncmp("Yes" ,buffer,3)==0) ioflags.monitor=1;
     }
+    frint("RELATIVE_DISP_NUM",&(ioflags.relative_displ),&ierr);
     frread();
   }
 }
@@ -357,6 +360,7 @@ void inpctrstat()
 INT  ierr;
 INT  i;
 char buffer[50];
+INT  counter;
 #ifdef DEBUG 
 dstrc_enter("inpctrstat");
 #endif
@@ -368,6 +372,7 @@ if (!statvar) dserror("Allocation of STATIC failed");
 statvar->resevry_disp=1;
 statvar->resevry_stress=1;
 statvar->resevery_restart=1;
+statvar->isrelstepsize=0;
 /*------------------------------------------------------- start reading */
 if (frfind("-STATIC")==1)
 {
@@ -422,11 +427,20 @@ if (frfind("-STATIC")==1)
     frint("RESEVRYDISP",&(statvar->resevry_disp)  ,&ierr);
     frint("RESEVRYSTRS",&(statvar->resevry_stress),&ierr);
     frint("RESTARTEVRY",&(statvar->resevery_restart),&ierr);
+    frint("GRADERW",&(statvar->graderw),&ierr);
 
     frdouble("TOLRESID",&(statvar->tolresid),&ierr);
     frdouble("TOLDISP" ,&(statvar->toldisp) ,&ierr);
     frdouble("STEPSIZE",&(statvar->stepsize),&ierr);
     frdouble("ARCSCL"  ,&(statvar->arcscl)  ,&ierr);
+    /*-------------------------------------------------------------------*/
+    frchar("VARSTEPSI",buffer,&ierr);
+    if (ierr)
+    {
+      if (strncmp(buffer,"yes",3)==0) statvar->isrelstepsize=1;
+      if (strncmp(buffer,"YES",3)==0) statvar->isrelstepsize=1;
+      if (strncmp(buffer,"Yes",3)==0) statvar->isrelstepsize=1;
+    }
     /*-------------------------------------------------------------------*/
     frread();
   }
@@ -443,12 +457,47 @@ if (statvar->nonlinear)
       frint("NODE",&(statvar->control_node_global),&ierr);
       if (ierr) statvar->control_node_global--;
       frint("DOF",&(statvar->control_dof),&ierr);
-      /*----------------------------------------------------------------*/
       frread();
     }
   }
   frrewind();
 }
+/*----------------------------------------------------------------*/
+if (ioflags.relative_displ>0)
+{
+  if (frfind("-RELATIVE DISPLACEMENT NODES")==1)
+  {
+    frread();
+    counter=0;
+    while(strncmp(allfiles.actplace,"------",6)!=0)
+    {
+      frint("NODE",&(statvar->reldisnode_ID[counter]),&ierr);
+      if (ierr) statvar->reldisnode_ID[counter]--;
+      frint("DOF",&(statvar->reldis_dof[counter]),&ierr);
+      counter++;
+      frread();
+    }
+  }
+}
+/*----------------------------------------------------------------*/
+if (statvar->isrelstepsize==1)
+{
+  if (frfind("-VARIABLE STEP SIZES")==1)
+  {
+    frread();
+    counter=0;
+    while(strncmp(allfiles.actplace,"------",6)!=0)
+    {
+      frint("NSTEP",&(statvar->actstep[counter]),&ierr);
+      frdouble("ACTSTEPSIZE",&(statvar->actstepsize[counter]),&ierr);
+      counter++;
+      frread();
+    }
+    statvar->numcurve = counter;
+    if(counter>19)  dserror("not more than 20 different stepsizes!");
+  }
+}
+
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();

@@ -44,6 +44,7 @@ void conequ(
             DIST_VECTOR   *dispi,         /* dist. vector of incremental displacements */
             DIST_VECTOR   *re,            /* re[0..2] 3 vectors for residual displacements */
             INT            cdof,          /* number of dof to be controlled */
+            INT           *reldof,        /* numbers of dofs for output */
             STANLN        *nln_data,      /* data of the Newton-Raphson method */
             NR_CONTROLTYP  controltyp,     /* type of control algorithm */
             CONTAINER     *container      /*!< contains variables defined in container.h */

@@ -77,6 +77,8 @@ typedef struct _ELEMENT
      struct _ALE2       *ale2;                  /* pseudo structural 2D ale element */
      struct _ALE3       *ale3;                  /* pseudo structural 3D ale element */
      struct _AXISHELL   *saxi;                  /* axisymmetric shell */
+     struct _INTERF     *interf;                /* 1D interface */
+     struct _WALLGE     *wallge;                /* gradient enhance wall element */
      }                          e;              /* name of union */ 
 
      union
