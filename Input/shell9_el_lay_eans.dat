@@ -3,6 +3,14 @@
 ==================================================================
 -------------------------------------------------------------TITLE
 unregel
+//
+// Minimale Einstellungen in /src/headers/definitions.h
+//
+// MAXDOFPERNODE         (18)
+// MAXGAUSS              (72)
+// MAXRECORDPERELE       (6)
+// MAXNODESTRESS_SHELL9  (72)
+//
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS           4 
 NODES              9
