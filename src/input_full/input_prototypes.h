@@ -33,6 +33,9 @@ void inherit_design_dis_couple(
 void inherit_design_dis_fsicouple(
     DISCRET       *actdis);
 
+void inherit_design_dis_ssicouple(
+    DISCRET       *actdis);
+
 void inherit_design_dis_freesurf(
     DISCRET       *actdis);
 
