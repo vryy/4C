@@ -1252,9 +1252,15 @@ void dyn_ale(void);
 /*----------------------------------------------------------------------*
  | ale_rhs.c                                                  mn 06/02  |
  *----------------------------------------------------------------------*/
-void ale_rhs(FIELD *actfield, SOLVAR *actsolv, PARTITION *actpart,
-             INTRA *actintra, INT sysarray1, INT sysarray2, DOUBLE *dirich,
-             INT global_numeq, INT kstep, CONTAINER *container, CALC_ACTION *action);
+void ale_rhs(SOLVAR       *actsolv, 
+             PARTITION    *actpart,
+             INTRA        *actintra, 
+             INT           sysarray1, 
+             INT           sysarray2, 
+             DOUBLE       *dirich,
+             INT           global_numeq, 
+             CONTAINER    *container, 
+             CALC_ACTION  *action);
 
 
 
