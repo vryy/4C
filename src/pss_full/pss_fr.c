@@ -349,7 +349,8 @@ return;
 
 <pre>                                                        m.gee 8/00 
 reads n doubles from input_file starting in allfiles.actrow
-Searches for the keyword and reads the first thing consisting of -.1234567890 behind it. All values to be read must then be continous
+Searches for the keyword and reads the first thing consisting of -.1234567890 behind it. 
+All values to be read must then be continous
 </pre>
 \param string   char[]   (i)   string to search for in actual line
 \param var      double*  (o)   adress of field to hold values read    
