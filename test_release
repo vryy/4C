@@ -91,6 +91,7 @@ if [ "x$PARALLEL" = "xno" ]; then
   f3_beltrami_fastass.dat
   f3_beltrami_fastass2.dat
   f3_ew_Q1_27x.dat
+  fsi_mtr_dc4x4.dat
   fsi_ow32x32.dat
   fsi_tank20x10.dat
   fsi_tank3D.dat
@@ -100,6 +101,7 @@ if [ "x$PARALLEL" = "xno" ]; then
   shell9_el_lay_eans.dat
   shell9_kreuz_easnl.dat
   shell9_matnl.dat
+  ssi_mortar_canti.dat
   w1_3DmisGF.dat
   w1_epc3D.dat
   w1_Eulerstab.dat
@@ -131,6 +133,7 @@ else
   f3_beltrami_fastass.dat
   f3_beltrami_fastass2.dat
   f3_ew_Q1_27x.dat
+  fsi_mtr_dc4x4.dat
   fsi_ow32x32.dat
   fsi_tank20x10.dat
   shell8_lineload.dat
