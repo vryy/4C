@@ -202,11 +202,6 @@ static INT iminarg1,iminarg2;
 #define MAXELE           (10)
 
 /*----------------------------------------------------------------------*
- | maximum number of conditions (dirich/neumann) to a node              |
- *----------------------------------------------------------------------*/
-#define MAXCONDPERNODE    (6)
-
-/*----------------------------------------------------------------------*
  | maximum number of dofs to a node -> can be more than 6 for shell9    |
  *----------------------------------------------------------------------*/
 #define MAXDOFPERNODE    (6)
