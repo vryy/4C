@@ -3,6 +3,7 @@
 \brief contains init phase of the shell contact routines
 
 ---------------------------------------------------------------------*/
+#ifdef S8CONTACT
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
@@ -11,7 +12,6 @@
 /*! 
 \addtogroup CONTACT 
 *//*! @{ (documentation module open)*/
-#ifdef S8CONTACT
 /*!----------------------------------------------------------------------
 \brief the contact main structure
 
@@ -30,7 +30,7 @@ extern struct _SHELLCONTACT shellcontact;
 \param ssurf       int*          (i)   indicates top or bottom of slave node
 \param msurf       int*          (i)   indicates top or bottom of closest master node
 \param actele      ELEMENT*      (i)   element to be projected on 
-\param xires       double*       (o)   local coodinates of projection point
+\param xires       double*       (o)   local coordinates of projection point
 \param success     int*          (o)   indicates wether projection is inside element
 \return void                                               
 
@@ -41,7 +41,8 @@ void s8_contact_orthproject(SHELLNODE  *actcnode,
                             ELEMENT    *actele,
                             double      xires[],
                             double     *distance,
-                            int        *success)
+                            int        *success,
+                            double     *nue)
 {
 int          i,j,k,l,m,n,iter;
 int          iel;
@@ -264,6 +265,10 @@ if (*success)
    }
    *distance = (xs[0]-xm[0])*(xs[0]-xm[0])+(xs[1]-xm[1])*(xs[1]-xm[1])+(xs[2]-xm[2])*(xs[2]-xm[2]);
    *distance = sqrt(*distance);
+   nue[0] = xs[0] - xm[0];
+   nue[1] = xs[1] - xm[1];
+   nue[2] = xs[2] - xm[2];
+   math_unvc(&l2,nue,3);
 }
 else
    *distance = VERYLARGEREAL;
@@ -533,6 +538,66 @@ dstrc_exit();
 #endif
 return;
 } /* end of s8_contact_deta */
+/*!---------------------------------------------------------------------
+\brief make a guess for the time till contact                                              
+
+<pre>                                                        m.gee 3/03 
+</pre>
+\return void                                               
+
+------------------------------------------------------------------------*/
+int s8_contact_timeguess(SHELLNODE *actcnode,
+                         ELEMENT   *actele,
+                         double    *xi,
+                         double     distance,
+                         double    *nue,
+                         double    *dt)
+{
+int          i,j,k;
+double       funct[4];
+double       deriv[2][4];
+double       deriv2[4];
+double       vs[3],vm[3],vrel[3],v;
+#ifdef DEBUG 
+dstrc_enter("s8_contact_timeguess");
+#endif
+/*----------------------------------------------------------------------*/
+*dt = VERYLARGEREAL;
+/*------------------  interpolate relative velocity at projection point */
+s8_contact_functderiv(funct,deriv,deriv2,xi[0],xi[1]);
+for (i=0; i<3; i++)
+   vs[i] = vm[i] = 0.0;
+/* make velocity of slave node */
+if (actcnode->node->sol.fdim>1)
+   for (i=0; i<3; i++) vs[i] = actcnode->node->sol.a.da[1][i];
+/* make velocity of master surface */
+for (k=0; k<actele->numnp; k++)
+{
+   if (actele->node[k]->sol.fdim>1)
+      for (i=0; i<3; i++) vm[i] += funct[k]*actele->node[k]->sol.a.da[1][i];
+   else
+      for (i=0; i<3; i++) vm[i] += 0.0;
+}
+/*---------------------------------------------- make relative velocity */
+vrel[0] = vs[0] - vm[0];
+vrel[1] = vs[1] - vm[1];
+vrel[2] = vs[2] - vm[2];
+/*------ project the relative velocity vector on to the orthonormal nue */
+v = 0.0;
+for (i=0; i<3; i++) v += vrel[i]*nue[i];
+/*-------------- for v negative, the objects are approaching each other */
+if (v>=-EPS13) goto end;
+/*----- there is signifikant negative gap velocity, calculate time step */
+v = -v;
+*dt = distance / v;
+if (*dt < EPS12) *dt = EPS12;
+/*----------------------------------------------------------------------*/
+end:
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of s8_contact_timeguess */
 
 
 

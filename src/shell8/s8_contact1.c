@@ -3,6 +3,7 @@
 \brief contains init phase of the shell contact routines
 
 ---------------------------------------------------------------------*/
+#ifdef S8CONTACT
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
@@ -11,7 +12,6 @@
 /*! 
 \addtogroup CONTACT 
 *//*! @{ (documentation module open)*/
-#ifdef S8CONTACT
 /*!----------------------------------------------------------------------
 \brief the contact main structure
 
@@ -39,7 +39,8 @@ void s8_contact_detection(FIELD        *actfield,
                           SPARSE_ARRAY *matrix, 
                           SPARSE_TYP   *matrix_type, 
                           double       *cforce,
-                          int          *iscontact)
+                          int          *iscontact,
+                          double       *maxdt)
 {
 int              i,ii,j,jj,k,l,m,n;                /* counters */
 int              myrank,nproc;                     /* parallel stuff */
@@ -88,6 +89,11 @@ int              owners[5];                        /* array to hold owners of a 
 int              takepart[MAXPROC];                /* toggle indicating processors involved in contact of a contact set */
 int              index;                            /* index of a dof in the local update vector of K */
 int              iscrecv;
+
+double           v1[3],v2[3];
+double           nue[3];
+double           dt;
+
 #ifdef PARALLEL
 MPI_Status       status;                           /* parallel stuff */
 #endif
@@ -101,6 +107,7 @@ nproc       = actintra->intra_nprocs;
 K           = matrix->spo;
 numeq       = K->numeq;
 numeq_total = K->numeq_total;
+*maxdt      = VERYLARGEREAL;
 /*--------------------------------------------------- get contact nodes */
 numnp = shellcontact.numnp;
 cnode = shellcontact.cnode;
@@ -134,7 +141,7 @@ for (i=0; i<numnp; i++)
       {
          actele = neartop->node->element[j];
          /* check for a projection on this element on the side neartopside */
-         s8_contact_orthproject(actcnode,&ssurf,&neartopside,actele,xi,&distance,&success);
+         s8_contact_orthproject(actcnode,&ssurf,&neartopside,actele,xi,&distance,&success,nue);
          if (success) 
          {
             if (distance < disttop)
@@ -145,6 +152,8 @@ for (i=0; i<numnp; i++)
                xitop[1]   = xi[1];
                successtop = success;
             }
+            s8_contact_timeguess(actcnode,actele,xi,distance,nue,&dt);
+            if (dt<*maxdt) *maxdt = dt;
          }
       }
    }
@@ -161,7 +170,7 @@ for (i=0; i<numnp; i++)
       {
          actele = nearbot->node->element[j];
          /* check for projection onto this element on the side nearbotside */
-         s8_contact_orthproject(actcnode,&ssurf,&nearbotside,actele,xi,&distance,&success);
+         s8_contact_orthproject(actcnode,&ssurf,&nearbotside,actele,xi,&distance,&success,nue);
          if (success)
          {
             if (distance<distbot)
@@ -172,6 +181,8 @@ for (i=0; i<numnp; i++)
                xibot[1]   = xi[1];
                successbot = success;
             }
+            s8_contact_timeguess(actcnode,actele,xi,distance,nue,&dt);
+            if (dt<*maxdt) *maxdt = dt;
          }
       }
    }
@@ -227,7 +238,7 @@ for (i=0; i<numnp; i++)
       {
          if (neartopside==-1)/* the true projection was made to the bottom surface */
          {
-            s8_contact_orthproject(actcnode,&ssurf,&one,acteletop,xitop,&distance,&success);
+            s8_contact_orthproject(actcnode,&ssurf,&one,acteletop,xitop,&distance,&success,nue);
             if (success) 
             {
                s8_contact_gapfunction(actcnode,&ssurf,&one ,acteletop,xitop,&gtop);
@@ -276,7 +287,7 @@ for (i=0; i<numnp; i++)
                actcnode->topflag = s8_c_on;
                actcnode->topproj = s8_c_project_onbot;
                actcnode->topele  = acteletop;
-               s8_contact_orthproject(actcnode,&ssurf,&mone,acteletop,xitop,&distance,&success);
+               s8_contact_orthproject(actcnode,&ssurf,&mone,acteletop,xitop,&distance,&success,nue);
                if (!success) 
                dserror("Detected trouble in projection 2");
                s8_contact_gapfunction(actcnode,&ssurf,&one ,acteletop,xitop,&gtop);
@@ -307,7 +318,7 @@ for (i=0; i<numnp; i++)
       {
          if (neartopside==1) /* the true projection was made to the top surface */
          {
-            s8_contact_orthproject(actcnode,&ssurf,&mone,acteletop,xitop,&distance,&success);
+            s8_contact_orthproject(actcnode,&ssurf,&mone,acteletop,xitop,&distance,&success,nue);
             if (success) 
             {
                neartopside = -1;
@@ -356,7 +367,7 @@ for (i=0; i<numnp; i++)
                actcnode->topflag = s8_c_on;
                actcnode->topproj = s8_c_project_ontop;
                actcnode->topele  = acteletop;
-               s8_contact_orthproject(actcnode,&ssurf,&one,acteletop,xitop,&distance,&success);
+               s8_contact_orthproject(actcnode,&ssurf,&one,acteletop,xitop,&distance,&success,nue);
                if (!success) 
                dserror("Detected trouble in projection 4");
                s8_contact_gapfunction(actcnode,&ssurf,&one ,acteletop,xitop,&gtop);
@@ -393,7 +404,7 @@ for (i=0; i<numnp; i++)
             if (neartopside==-1)/* the true projection was made to the bottom surface */
             {
                /* project to the correct side */
-               s8_contact_orthproject(actcnode,&ssurf,&one,acteletop,xitop,&distance,&success);
+               s8_contact_orthproject(actcnode,&ssurf,&one,acteletop,xitop,&distance,&success,nue);
                if (success) 
                {
                   neartopside = 1;
@@ -426,7 +437,7 @@ for (i=0; i<numnp; i++)
             if (neartopside==1) /* the true projection was made to the top surface */
             {
                /* project to the correct side */
-               s8_contact_orthproject(actcnode,&ssurf,&mone,acteletop,xitop,&distance,&success);
+               s8_contact_orthproject(actcnode,&ssurf,&mone,acteletop,xitop,&distance,&success,nue);
                if (success) 
                {
                   /* is successfull, make the correct gap functions */
@@ -462,7 +473,7 @@ for (i=0; i<numnp; i++)
 	       if (neartopside==-1)
 	       {
 	          /* project to the correct side */
-		  s8_contact_orthproject(actcnode,&ssurf,&one,acteletop,xitop,&distance,&success);
+		  s8_contact_orthproject(actcnode,&ssurf,&one,acteletop,xitop,&distance,&success,nue);
 		  if (success)
 		  {
 		     neartopside=1;
@@ -493,7 +504,7 @@ for (i=0; i<numnp; i++)
 	       if (neartopside==1)
 	       {
 	          /* project to the correct side */
-		  s8_contact_orthproject(actcnode,&ssurf,&mone,acteletop,xitop,&distance,&success);
+		  s8_contact_orthproject(actcnode,&ssurf,&mone,acteletop,xitop,&distance,&success,nue);
 		  if (success)
 		  {
 		     neartopside=-1;
@@ -579,7 +590,7 @@ for (i=0; i<numnp; i++)
       {
          if (nearbotside==-1)/* the true projection was made to the bottom surface */
          {
-            s8_contact_orthproject(actcnode,&ssurf,&one,actelebot,xibot,&distance,&success);
+            s8_contact_orthproject(actcnode,&ssurf,&one,actelebot,xibot,&distance,&success,nue);
             if (success) 
             {
                nearbotside = 1;
@@ -628,7 +639,7 @@ for (i=0; i<numnp; i++)
                actcnode->botflag = s8_c_on;
                actcnode->botproj = s8_c_project_onbot;
                actcnode->botele  = actelebot;
-               s8_contact_orthproject(actcnode,&ssurf,&mone,actelebot,xibot,&distance,&success);
+               s8_contact_orthproject(actcnode,&ssurf,&mone,actelebot,xibot,&distance,&success,nue);
                if (!success) 
                dserror("Detected trouble in projection 2 bot");
                s8_contact_gapfunction(actcnode,&ssurf,&one ,actelebot,xibot,&gtop);
@@ -659,7 +670,7 @@ for (i=0; i<numnp; i++)
       {
          if (nearbotside==1) /* the true projection was made to the top surface */
          {
-            s8_contact_orthproject(actcnode,&ssurf,&mone,actelebot,xibot,&distance,&success);
+            s8_contact_orthproject(actcnode,&ssurf,&mone,actelebot,xibot,&distance,&success,nue);
             if (success) 
             {
                nearbotside=-1;
@@ -708,7 +719,7 @@ for (i=0; i<numnp; i++)
                actcnode->botflag = s8_c_on;
                actcnode->botproj = s8_c_project_ontop;
                actcnode->botele  = actelebot;
-               s8_contact_orthproject(actcnode,&ssurf,&one,actelebot,xibot,&distance,&success);
+               s8_contact_orthproject(actcnode,&ssurf,&one,actelebot,xibot,&distance,&success,nue);
                if (!success) 
                dserror("Detected trouble in projection 4 bot");
                s8_contact_gapfunction(actcnode,&ssurf,&one ,actelebot,xibot,&gtop);
@@ -745,7 +756,7 @@ for (i=0; i<numnp; i++)
             if (nearbotside==-1)/* the true projection was made to the bottom surface */
             {
                /* project to the correct side */
-               s8_contact_orthproject(actcnode,&ssurf,&one,actelebot,xibot,&distance,&success);
+               s8_contact_orthproject(actcnode,&ssurf,&one,actelebot,xibot,&distance,&success,nue);
                if (success) 
                {
                   nearbotside = 1;
@@ -777,7 +788,7 @@ for (i=0; i<numnp; i++)
          {
             if (nearbotside==1) /* the true projection was made to the top surface */
             {
-               s8_contact_orthproject(actcnode,&ssurf,&mone,actelebot,xibot,&distance,&success);
+               s8_contact_orthproject(actcnode,&ssurf,&mone,actelebot,xibot,&distance,&success,nue);
                if (success) 
                {
                   nearbotside = -1;
@@ -810,7 +821,7 @@ for (i=0; i<numnp; i++)
 	    {
                if (nearbotside==-1)
 	       {
-	          s8_contact_orthproject(actcnode,&ssurf,&one,actelebot,xibot,&distance,&success);
+	          s8_contact_orthproject(actcnode,&ssurf,&one,actelebot,xibot,&distance,&success,nue);
 		  if (success)
 		  {
 		     nearbotside=1;
@@ -839,7 +850,7 @@ for (i=0; i<numnp; i++)
 	    {
                if (nearbotside==1)
 	       {
-	          s8_contact_orthproject(actcnode,&ssurf,&mone,actelebot,xibot,&distance,&success);
+	          s8_contact_orthproject(actcnode,&ssurf,&mone,actelebot,xibot,&distance,&success,nue);
 		  if (success)
 		  {
 		     nearbotside==-1;

@@ -3,6 +3,7 @@
 \brief contains init phase of the shell contact routines
 
 ---------------------------------------------------------------------*/
+#ifdef S8CONTACT
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
@@ -11,7 +12,6 @@
 /*! 
 \addtogroup CONTACT 
 *//*! @{ (documentation module open)*/
-#ifdef S8CONTACT
 /*!----------------------------------------------------------------------
 \brief the contact main structure
 
@@ -78,6 +78,7 @@ double           gkovcab[3];
 
 
 double           nue[3];
+double           nuedum[3];
 
 double           deta,detas,wgt;
 
@@ -429,14 +430,13 @@ if (his_flag == s8_c_on)
    }
    else /* we are slipping, but have been in another element last time */
    {
-      printf("next element!\n");
       /* store the current coodinates of actnode temporary */
       for (j=0; j<6; j++) xctmp[j] = actcnode->xc[j];
       /* put the current coodinates of the last converged step in place */
       for (j=0; j<6; j++) actcnode->xc[j] = actcnode->xc_his[j];
       /* now the nodes has coodinates of last time step, project this onto current element */
       /* this projection will NOT be inside the element, but will give sufficient xi to do friction */
-      s8_contact_orthproject(actcnode,&ssurf,&msurf,actele,xiout,&distance,&success);
+      s8_contact_orthproject(actcnode,&ssurf,&msurf,actele,xiout,&distance,&success,nuedum);
       /* put the current coodinates back into place */
       for (j=0; j<6; j++) actcnode->xc[j] = xctmp[j];
       /* make delta xi */

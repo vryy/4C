@@ -3,6 +3,7 @@
 \brief contains init phase of the shell contact routines
 
 ---------------------------------------------------------------------*/
+#ifdef S8CONTACT
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
@@ -11,7 +12,6 @@
 /*! 
 \addtogroup CONTACT 
 *//*! @{ (documentation module open)*/
-#ifdef S8CONTACT
 /*!----------------------------------------------------------------------
 \brief the contact main structure
 
@@ -83,6 +83,9 @@ dz = zmax - zmin;
 nx = (int)(dx / shellcontact.maxdiag);
 ny = (int)(dy / shellcontact.maxdiag);
 nz = (int)(dz / shellcontact.maxdiag);
+nx = IMAX(1,nx);
+ny = IMAX(1,ny);
+nz = IMAX(1,nz);
 /*---------------------------- determine the exact geometry of a bucket */
 shellcontact.buckdim[0] = dx / nx;
 shellcontact.buckdim[1] = dy / ny;

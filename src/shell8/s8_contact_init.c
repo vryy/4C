@@ -3,13 +3,13 @@
 \brief contains init phase of the shell contact routines
 
 ---------------------------------------------------------------------*/
+#ifdef S8CONTACT
 #include "../headers/standardtypes.h"
 #include "s8contact.h"
 #include "shell8.h"
 /*! 
 \addtogroup CONTACT 
 *//*! @{ (documentation module open)*/
-#ifdef S8CONTACT
 /*!----------------------------------------------------------------------
 \brief the contact main structure
 
