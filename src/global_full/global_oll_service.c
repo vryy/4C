@@ -31,6 +31,17 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 extern struct _FILES  allfiles;
 
 /*!----------------------------------------------------------------------
+\brief ranks and communicators
+
+<pre>                                                         m.gee 8/00
+This structure struct _PAR par; is defined in main_ccarat.c
+and the type is in partition.h                                                  
+</pre>
+
+*----------------------------------------------------------------------*/
+extern struct _PAR   par;                      
+
+/*!----------------------------------------------------------------------
 \brief numeq for oll matrices 
 
 <pre>                                                              mn 02/03
