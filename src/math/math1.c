@@ -504,6 +504,70 @@ dstrc_exit();
 #endif
 return;
 } /* end of math_sym_inv */
+
+/*----------------------------------------------------------------------*
+ |  do inverse of unsymmetric matrix A[m][n]                 genk 05/02 |
+ |                                                                      |
+ | important: this routine works only with arrays that are dynamically  |
+ |            allocated the way the AM routines do it                   |
+ |            uses LAPACKS dgetrf and dgetri routines                   |
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+void math_unsym_inv6x6(DOUBLE **A)
+{
+INT      i,j;
+INT      ipiv[6];
+INT      lwork=6;
+INT      dimr=6;
+INT      dimc=6;
+DOUBLE   work[6];
+DOUBLE   Inverse[36];
+INT      info=0;
+
+#ifdef DEBUG 
+dstrc_enter("math_unsym_inv6x6");
+#endif
+/*----------------------------------------------------------------------*/
+
+for (i=0; i<6; i++) 
+for (j=0; j<6; j++)
+{
+   Inverse[info] = A[i][j];
+   info++;
+}
+
+dgetrf(&dimr,
+       &dimc,
+       &(Inverse[0]),
+       &dimr,
+       &(ipiv[0]),
+       &info);
+
+if (info) dserror("Inversion of dense matrix failed");
+
+dgetri(&dimc,
+       &(Inverse[0]),  
+       &dimc,
+       &(ipiv[0]),
+       &(work[0]),
+       &lwork,
+       &info);
+
+if (info) dserror("Inversion of dense matrix failed");
+
+/*---------------------------------------------------- copy result to A */
+for (i=0; i<6; i++) 
+for (j=0; j<6; j++)
+{
+   A[i][j] = Inverse[info];
+   info++;
+}
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of math_sym_inv6x6 */
+
 /*----------------------------------------------------------------------*
  |  spatproduct  spt = a*(b x c)                            m.gee 10/01 |
  *----------------------------------------------------------------------*/

@@ -62,6 +62,7 @@ void math_matmattrndense(DOUBLE **R,
                             DOUBLE   factor);
 void math_sym_inv(DOUBLE **A, INT dim);
 void math_unsym_inv(DOUBLE **A, INT dimr, INT dimc);
+void math_unsym_inv6x6(DOUBLE **A);
 void math_sppr(DOUBLE *spat, DOUBLE *a, DOUBLE *b, DOUBLE *c);
 void math_addab(DOUBLE **a, DOUBLE **b, INT dim1, INT dim2, DOUBLE fact);
 
