@@ -2,6 +2,15 @@
 \file
 \brief fluid3ml prototypes
 
+<pre>
+Maintainer:  name
+             e-mail
+             homepage
+             telephone number
+
+
+</pre>
+
 ------------------------------------------------------------------------*/
 /* RULE HOW TO ADD NEW FILES AND FUNCTIONS: 
    1.) THE FILENAMES ARE IN ALPHABETICAL ORDER !!!
