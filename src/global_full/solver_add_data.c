@@ -839,15 +839,21 @@ return;
 /*----------------------------------------------------------------------*
  |  assembles an element vector to a redundant global vector m.gee 3/02 |
  *----------------------------------------------------------------------*/
-void assemble_intforce(ELEMENT *actele,ARRAY *elevec_a,CONTAINER *container)
+void assemble_intforce(ELEMENT *actele,ARRAY *elevec_a,CONTAINER *container,
+                       INTRA *actintra)
 {
 int                   i,j;
 int                   dof;
 int                   numdf;
+int                   imyrank;
 int                   irow;
 double               *elevec;
 #ifdef DEBUG 
 dstrc_enter("assemble_intforce");
+#endif
+/*----------------------------------------------------------------------*/
+#ifdef PARALLEL 
+imyrank = actintra->intra_rank;
 #endif
 /*----------------------------------------------------------------------*/
 elevec = elevec_a->a.dv;
@@ -856,12 +862,20 @@ irow=-1;
 for (i=0; i<actele->numnp; i++)
 {
    numdf = actele->node[i]->numdf;
+#ifdef PARALLEL 
+   if(actele->node[i]->proc!= imyrank)
+   {
+     irow+=numdf;
+     continue;
+   }
+#endif
    for (j=0; j<numdf; j++)
    {
       irow++;
       dof = actele->node[i]->dof[j];
       if (dof >= container->global_numeq) continue;
-      container->dvec[dof] += elevec[irow];
+       container->dvec[dof] += elevec[irow];
+/*      container->dvec[dof] += elevec[i*numdf+j]; */
    }
 }
 /*----------------------------------------------------------------------*/
