@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief multilevel element control routine for fluid2
+\brief multilevel element control routine for fluid3
 
 <pre>
 Maintainer:  name
@@ -12,12 +12,12 @@ Maintainer:  name
 </pre>
 
 ------------------------------------------------------------------------*/
-#ifdef D_FLUID2 
+#ifdef D_FLUID3 
 #include "../headers/standardtypes.h"
 #include "../fluid_full/fluid_prototypes.h"
-#include "../fluid2/fluid2_prototypes.h"
-#include "fluid2ml_prototypes.h"
-#include "../fluid2/fluid2.h"
+#include "../fluid3/fluid3_prototypes.h"
+#include "fluid3ml_prototypes.h"
+#include "../fluid3/fluid3.h"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -65,6 +65,8 @@ static ARRAY     derxy2_a; /* 2nd global shape function derivatives     */
 static DOUBLE  **derxy2;
 static ARRAY     xyze_a;   /* (large-scale) element coordinates         */
 static DOUBLE  **xyze;   
+static ARRAY     vefunct_a;/* shape functions for virtual element       */
+static DOUBLE   *vefunct;
 static ARRAY     vderint_a;/* velocity derivatives at integration point */
 static DOUBLE  **vderint;
 static ARRAY     w1_a;     /* working array of arbitrary chosen size    */
@@ -233,7 +235,7 @@ static DOUBLE  **ssmat;    /* pointer to global sub-submesh matrix  	*/
 static DOUBLE   *ssrhs;    /* pointer to global sub-submesh rhs		*/
 
 /*!---------------------------------------------------------------------                                         
-\brief control routine for large-scale element integration of fluid2
+\brief control routine for large-scale element integration of fluid3
 
 <pre>                                                       gravem 07/03
 
@@ -261,13 +263,13 @@ This routine controls the element evaluation of the large-scale element:
 \param  *etforce_global  ARRAY	        (o)   element time force
 \param  *eiforce_global  ARRAY	        (o)   ele iteration force
 \param  *edforce_global  ARRAY	        (o)   ele dirichlet force
-\param  *hasdirich       int	        (o)   element flag
-\param  *hasext          int	        (o)   element flag
-\param   init	         int	        (i)   init flag
+\param  *hasdirich       INT	        (o)   element flag
+\param  *hasext          INT	        (o)   element flag
+\param   init	         INT	        (i)   init flag
 \return void                                               
                                  
 ------------------------------------------------------------------------*/
-void f2_lsele(FLUID_DATA     *data, 
+void f3_lsele(FLUID_DATA     *data, 
               FLUID_DYN_CALC *dynvar, 
               FLUID_DYN_ML   *mlvar, 
               FLUID_ML_SMESH *submesh, 
@@ -278,44 +280,45 @@ void f2_lsele(FLUID_DATA     *data,
 	      ARRAY	     *etforce_global,	    
 	      ARRAY	     *eiforce_global, 
 	      ARRAY	     *edforce_global,	      
-	      int	     *hasdirich,      
-              int	     *hasext,
-	      int	      init)
+	      INT	     *hasdirich,      
+              INT	     *hasext,
+	      INT	      init)
 {
 INT              hasdead;
 INT              info=0;
 INT              infrhs=0;
 INT              i,j;
-DOUBLE           matvec[7000],rhsvec[2000];
+DOUBLE           matvec[7000],rhsvec[2000]; 
  
 #ifdef DEBUG 
-dstrc_enter("f2_lsele");
+dstrc_enter("f3_lsele");
 #endif
 
 if (init==1) /* allocate working arrays and set pointers */
 {
-   eveln   = amdef("eveln"  ,&eveln_a  ,NUM_F2_VELDOF,MAXNOD_F2,"DA");
-   evel    = amdef("evel"   ,&evel_a   ,NUM_F2_VELDOF,MAXNOD_F2,"DA");
-   epren   = amdef("epren"  ,&epren_a  ,MAXNOD_F2,1,"DV");
-   epre    = amdef("epre"   ,&epre_a   ,MAXNOD_F2,1,"DV");
-   edeadn  = amdef("edeadn" ,&edeadn_a ,2,1,"DV");
-   edead   = amdef("edead"  ,&edead_a  ,2,1,"DV");      
-   funct   = amdef("funct"  ,&funct_a  ,MAXNOD_F2,1,"DV");
-   deriv   = amdef("deriv"  ,&deriv_a  ,2,MAXNOD_F2,"DA");
-   deriv2  = amdef("deriv2" ,&deriv2_a ,3,MAXNOD_F2,"DA");
-   xjm     = amdef("xjm"    ,&xjm_a    ,2,2        ,"DA");
-   velint  = amdef("velint" ,&velint_a ,NUM_F2_VELDOF,1,"DV");
-   vel2int = amdef("vel2int",&vel2int_a,NUM_F2_VELDOF,1,"DV");
-   covint  = amdef("covint" ,&covint_a ,NUM_F2_VELDOF,1,"DV");
-   vderxy  = amdef("vderxy" ,&vderxy_a ,2,2,"DA");
-   pderxy  = amdef("pderxy" ,&pderxy_a ,2,1,"DV");
-   vderxy2 = amdef("vderxy2",&vderxy2_a,2,3,"DA");
-   derxy   = amdef("derxy"  ,&derxy_a  ,2,MAXNOD_F2,"DA");
-   derxy2  = amdef("derxy2" ,&derxy2_a ,3,MAXNOD_F2,"DA");
-   xyze    = amdef("xyze"   ,&xyze_a   ,2,MAXNOD_F2,"DA");
-   vderint = amdef("vderint",&vderint_a,4,MAXGAUSS ,"DA");
-   wa1     = amdef("wa1"    ,&w1_a     ,30,30,"DA");
-   wa2     = amdef("wa2"    ,&w2_a     ,30,30,"DA");  
+   eveln   = amdef("eveln"  ,&eveln_a  ,NUM_F3_VELDOF,MAXNOD_F3,"DA");
+   evel    = amdef("evel"   ,&evel_a   ,NUM_F3_VELDOF,MAXNOD_F3,"DA");
+   epren   = amdef("epren"  ,&epren_a  ,MAXNOD_F3,1,"DV");
+   epre    = amdef("epre"   ,&epre_a   ,MAXNOD_F3,1,"DV");
+   edeadn  = amdef("edeadn" ,&edeadn_a ,3,1,"DV");
+   edead   = amdef("edead"  ,&edead_a  ,3,1,"DV");      
+   funct   = amdef("funct"  ,&funct_a  ,MAXNOD_F3,1,"DV");
+   deriv   = amdef("deriv"  ,&deriv_a  ,3,MAXNOD_F3,"DA");
+   deriv2  = amdef("deriv2" ,&deriv2_a ,6,MAXNOD_F3,"DA");
+   xjm     = amdef("xjm"    ,&xjm_a    ,3,3        ,"DA");
+   velint  = amdef("velint" ,&velint_a ,NUM_F3_VELDOF,1,"DV");
+   vel2int = amdef("vel2int",&vel2int_a,NUM_F3_VELDOF,1,"DV");
+   covint  = amdef("covint" ,&covint_a ,NUM_F3_VELDOF,1,"DV");
+   vderxy  = amdef("vderxy" ,&vderxy_a ,3,3,"DA");
+   pderxy  = amdef("pderxy" ,&pderxy_a ,3,1,"DV");
+   vderxy2 = amdef("vderxy2",&vderxy2_a,3,6,"DA");
+   derxy   = amdef("derxy"  ,&derxy_a  ,3,MAXNOD_F3,"DA");
+   derxy2  = amdef("derxy2" ,&derxy2_a ,6,MAXNOD_F3,"DA");
+   xyze    = amdef("xyze"   ,&xyze_a   ,3,MAXNOD_F3,"DA");
+   vderint = amdef("vderint",&vderint_a,9,MAXGAUSS ,"DA");
+   vefunct = amdef("vefunct",&vefunct_a,MAXGAUSS ,1,"DV");
+   wa1     = amdef("wa1"    ,&w1_a     ,300,300,"DA");
+   wa2     = amdef("wa2"    ,&w2_a     ,300,300,"DA");  
 /*                                        \- size is arbitrary chosen!  */
    estif   = estif_global->a.da;
    emass   = emass_global->a.da;
@@ -324,9 +327,9 @@ if (init==1) /* allocate working arrays and set pointers */
    edforce = edforce_global->a.dv;
    
 /*------------------ allocation for submesh of this large-scale element */
-   f2_smele(data,dynvar,mlvar,submesh,ele,init); 
+   f3_smele(data,dynvar,mlvar,submesh,ele,init);
 /*-------------- allocation for sub-submesh of this large-scale element */
-   if (mlvar->smsgvi>2) f2_ssele(data,dynvar,mlvar,ssmesh,ele,init);
+   if (mlvar->smsgvi>2) f3_ssele(data,dynvar,mlvar,ssmesh,ele,init);
    goto end;
 } /* endif (init==1) */
 
@@ -340,18 +343,18 @@ amzero(edforce_global);
 *hasext=0;
 
 /*---------------------------- set element data for large-scale element */
-f2_lsset(dynvar,ele,eveln,evel,epren,epre,edeadn,edead,hasext);
+f3_lsset(dynvar,ele,eveln,evel,epren,epre,edeadn,edead,hasext);
 
 /*------------------------------- dynamic subgrid viscosity calculation */
-if (mlvar->smsgvi>2) f2_dynsgv(data,dynvar,mlvar,submesh,ssmesh,ele);
+if (mlvar->smsgvi>2) f3_dynsgv(data,dynvar,mlvar,submesh,ssmesh,ele);
 
 /*------------------ initialize submesh global matrix and rhs with ZERO */
 amzero(&(submesh->mat));
 amzero(&(submesh->rhs));
 /*------------ small-scale solution on submesh: element control routine */
-f2_smele(data,dynvar,mlvar,submesh,ele,init);
+f3_smele(data,dynvar,mlvar,submesh,ele,init);
 
-/*fluid_prgmr(smmat,smrhs,submesh->numeq,mlvar->nelbub); */ 
+/* fluid_prgmr(smmat,smrhs,submesh->numeq,mlvar->nelbub);  */
 /*--------------------- change order in matrix and rhs array for solver */
 for (i=0; i<submesh->numeq; i++)
 { 
@@ -386,34 +389,34 @@ for (j=0; j<submesh->numeq; j++)
    infrhs++;
 }
 } 
-/*fluid_prgmr(smmat,smrhs,submesh->numeq,mlvar->nelbub);*/   
-/*f2_cgsbub(submesh,smrhs,mlvar->nelbub);*/ 
+/* fluid_prgmr(smmat,smrhs,submesh->numeq,mlvar->nelbub); */    
 
 /*-------------------------- copy small-scale solution to element array */
-f2_smcopy(smrhs,ele,submesh->numeq,mlvar->nelbub);
+f3_smcopy(smrhs,ele,submesh->numeq,mlvar->nelbub);
 
-/*----------------- calculate small-scale part of element matrices and 
+/*------ calculate small-scale part of element stiffness matrices and 
                                element force vectors (bubble functions) */
-f2_bubele(data,dynvar,mlvar,submesh,ele);
+f3_bubele(data,dynvar,mlvar,submesh,ele);
 
 /*- calculate charact. l-s element length and stab. param. if necessary */
-if (ele->e.f2->istabi!=0) 
-  f2_calelesize(ele,data,dynvar,funct,deriv,deriv2,derxy,xjm,evel,velint,
+if (ele->e.f3->istabi!=0) 
+  f3_calelesize(ele,data,dynvar,funct,deriv,deriv2,derxy,xjm,evel,velint,
                 vderxy,wa1);
-/*------------------ calculate large-scale part of element matrices and 
+
+/*------ calculate large-scale part of element stiffness matrices and 
                                                   element force vectors */
-f2_lsint(data,ele,dynvar,mlvar,hasext,estif,emass,eiforce,etforce,funct,
+f3_lsint(data,ele,dynvar,mlvar,hasext,estif,emass,eiforce,etforce,funct,
          deriv,deriv2,xjm,derxy,derxy2,evel,eveln,epren,edeadn,edead,
 	 velint,velintn,covint,covintn,vderxy,vderxyn,wa1,wa2);
 
 /*----------------- add emass and estif to estif and permute the matrix */
-f2_permestif(estif,emass,wa1,ele->numnp,dynvar);
+f3_permestif(estif,emass,wa1,ele->numnp,dynvar);
 
 /*--------------------------------- permute element load vector etforce */
-if (dynvar->nif!=0) f2_permeforce(etforce,wa1,ele->numnp);
+if (dynvar->nif!=0) f3_permeforce(etforce,wa1,ele->numnp);
 
 /*--------------------------------- permute element load vector eiforce */
-if (dynvar->nii+(*hasext)!=0) f2_permeforce(eiforce,wa1,ele->numnp);
+if (dynvar->nii+(*hasext)!=0) f3_permeforce(eiforce,wa1,ele->numnp);
 
 /*------------------------------- calculate element load vector edforce */
 fluid_caldirich(ele,edforce,estif,hasdirich);
@@ -425,10 +428,10 @@ dstrc_exit();
 #endif
 
 return; 
-} /* end of f2_lsele */
+} /* end of f3_lsele */
 
 /*!---------------------------------------------------------------------                                         
-\brief control routine for submesh element integration of fluid2
+\brief control routine for submesh element integration of fluid3
 
 <pre>                                                       gravem 07/03
 
@@ -444,11 +447,11 @@ This routine controls the element evaluation of the submesh element:
 \param  *mlvar	         FLUID_DYN_ML   (i)
 \param  *submesh	 FLUID_ML_SMESH (i)
 \param  *ele	         ELEMENT	(i)   actual large-scale element
-\param   init	         int	        (i)   init flag
+\param   init	         INT	        (i)   init flag
 \return void                                               
                                  
 ------------------------------------------------------------------------*/
-void f2_smele(FLUID_DATA     *data, 
+void f3_smele(FLUID_DATA     *data, 
               FLUID_DYN_CALC *dynvar, 
               FLUID_DYN_ML   *mlvar, 
               FLUID_ML_SMESH *submesh, 
@@ -458,21 +461,21 @@ void f2_smele(FLUID_DATA     *data,
 INT              iele;    /* submesh element counter                   */
 
 #ifdef DEBUG 
-dstrc_enter("f2_smele");
+dstrc_enter("f3_smele");
 #endif
 
 if (init==1) /* allocate working arrays and set pointers */
 {
    smlme    = amdef("smlme"   ,&smlme_a   ,submesh->numen,1,"IV");
    smitope  = amdef("smitope" ,&smitope_a ,submesh->numen,1,"IV");
-   smxyze   = amdef("smxyze"  ,&smxyze_a  ,2,submesh->numen,"DA");
-   smxyzep  = amdef("smxyzep" ,&smxyzep_a ,2,submesh->numen,"DA");
+   smxyze   = amdef("smxyze"  ,&smxyze_a  ,3,submesh->numen,"DA");
+   smxyzep  = amdef("smxyzep" ,&smxyzep_a ,3,submesh->numen,"DA");
    smfunct  = amdef("smfunct" ,&smfunct_a ,submesh->numen,1,"DV");
-   smderiv  = amdef("smderiv" ,&smderiv_a ,2,submesh->numen,"DA");
-   smderxy  = amdef("smderxy" ,&smderxy_a ,2,submesh->numen,"DA");
-   smderiv2 = amdef("smderiv2",&smderiv2_a,3,submesh->numen,"DA");
-   smderxy2 = amdef("smderxy2",&smderxy2_a,3,submesh->numen,"DA");
-   smxjm    = amdef("smxjm"   ,&smxjm_a   ,2,2             ,"DA");
+   smderiv  = amdef("smderiv" ,&smderiv_a ,3,submesh->numen,"DA");
+   smderxy  = amdef("smderxy" ,&smderxy_a ,3,submesh->numen,"DA");
+   smderiv2 = amdef("smderiv2",&smderiv2_a,6,submesh->numen,"DA");
+   smderxy2 = amdef("smderxy2",&smderxy2_a,6,submesh->numen,"DA");
+   smxjm    = amdef("smxjm"   ,&smxjm_a   ,3,3             ,"DA");
    
    smestif = amdef("smestif",&smestif_a,submesh->numen,submesh->numen,"DA");
    smemass = amdef("smemass",&smemass_a,submesh->numen,submesh->numen,"DA");
@@ -481,57 +484,56 @@ if (init==1) /* allocate working arrays and set pointers */
 
    evbub  = amdef("evbub" ,&evbub_a ,submesh->numen,mlvar->nvbub,"DA");
    epbub  = amdef("epbub" ,&epbub_a ,submesh->numen,mlvar->npbub,"DA");
-   efbub  = amdef("efbub" ,&efbub_a ,submesh->numen,2		,"DA");
+   efbub  = amdef("efbub" ,&efbub_a ,submesh->numen,3		,"DA");
    evbubn = amdef("evbubn",&evbubn_a,submesh->numen,mlvar->nvbub,"DA");
    epbubn = amdef("epbubn",&epbubn_a,submesh->numen,mlvar->npbub,"DA");
-   efbubn = amdef("efbubn",&efbubn_a,submesh->numen,2		,"DA");
+   efbubn = amdef("efbubn",&efbubn_a,submesh->numen,3		,"DA");
 
-   vbubint    = amdef("vbubint"    ,&vbubint_a    ,MAXNOD_F2,1,"DV");
-   vbubderxy  = amdef("vbubderxy"  ,&vbubderxy_a  ,2,MAXNOD_F2,"DA");
-   vbubderxy2 = amdef("vbubderxy2" ,&vbubderxy2_a ,3,MAXNOD_F2,"DA");
+   vbubint    = amdef("vbubint"    ,&vbubint_a    ,MAXNOD_F3,1,"DV");
+   vbubderxy  = amdef("vbubderxy"  ,&vbubderxy_a  ,3,MAXNOD_F3,"DA");
+   vbubderxy2 = amdef("vbubderxy2" ,&vbubderxy2_a ,6,MAXNOD_F3,"DA");
 
-   pbubint    = amdef ("pbubint"    ,&pbubint_a    ,2,MAXNOD_F2,"DA");
-   pbubderxy  = am4def("pbubderxy"  ,&pbubderxy_a  ,2,2,MAXNOD_F2,0,"D3");
-   pbubderxy2 = am4def("pbubderxy2" ,&pbubderxy2_a ,3,2,MAXNOD_F2,0,"D3");
+   pbubint    = amdef ("pbubint"    ,&pbubint_a    ,3,MAXNOD_F3,"DA");
+   pbubderxy  = am4def("pbubderxy"  ,&pbubderxy_a  ,3,3,MAXNOD_F3,0,"D3");
+   pbubderxy2 = am4def("pbubderxy2" ,&pbubderxy2_a ,6,3,MAXNOD_F3,0,"D3");
 
-   vbubintn    = amdef("vbubintn"    ,&vbubintn_a    ,MAXNOD_F2,1,"DV");
-   vbubderxyn  = amdef("vbubderxyn"  ,&vbubderxyn_a  ,2,MAXNOD_F2,"DA");
-   vbubderxy2n = amdef("vbubderxy2n" ,&vbubderxy2n_a ,3,MAXNOD_F2,"DA");
+   vbubintn    = amdef("vbubintn"    ,&vbubintn_a    ,MAXNOD_F3,1,"DV");
+   vbubderxyn  = amdef("vbubderxyn"  ,&vbubderxyn_a  ,3,MAXNOD_F3,"DA");
+   vbubderxy2n = amdef("vbubderxy2n" ,&vbubderxy2n_a ,6,MAXNOD_F3,"DA");
 
-   pbubintn    = amdef("pbubintn"    ,&pbubintn_a    ,2,MAXNOD_F2,"DA");
-   pbubderxyn  = am4def("pbubderxyn"  ,&pbubderxyn_a  ,2,2,MAXNOD_F2,0,"D3");
-   pbubderxy2n = am4def("pbubderxy2n" ,&pbubderxy2n_a ,3,2,MAXNOD_F2,0,"D3");
+   pbubintn    = amdef("pbubintn"    ,&pbubintn_a    ,3,MAXNOD_F3,"DA");
+   pbubderxyn  = am4def("pbubderxyn"  ,&pbubderxyn_a  ,3,3,MAXNOD_F3,0,"D3");
+   pbubderxy2n = am4def("pbubderxy2n" ,&pbubderxy2n_a ,6,3,MAXNOD_F3,0,"D3");
 
-   velintn  = amdef("velintn"  ,&velintn_a  ,2,1,"DV");
-   velintnt = amdef("velintnt" ,&velintnt_a ,2,1,"DV");
-   velintnc = amdef("velintnc" ,&velintnc_a ,2,1,"DV");
-   covintn  = amdef("covintn"  ,&covintn_a  ,2,1,"DV");
+   velintn  = amdef("velintn"  ,&velintn_a  ,3,1,"DV");
+   velintnt = amdef("velintnt" ,&velintnt_a ,3,1,"DV");
+   velintnc = amdef("velintnc" ,&velintnc_a ,3,1,"DV");
+   covintn  = amdef("covintn"  ,&covintn_a  ,3,1,"DV");
 
-   vderxyn   = amdef("vderxyn"  ,&vderxyn_a  ,2,2,"DA");
-   vderxync  = amdef("vderxync" ,&vderxync_a ,2,2,"DA");
-   vderxynv  = amdef("vderxynv" ,&vderxynv_a ,2,2,"DA");
-   vderxy2n  = amdef("vderxy2n" ,&vderxy2n_a ,2,3,"DA");
-   vderxy2nv = amdef("vderxy2nv",&vderxy2nv_a,2,3,"DA");
-   pderxyn   = amdef("pderxyn"  ,&pderxyn_a  ,2,1,"DV");
+   vderxyn  = amdef("vderxyn" ,&vderxyn_a ,3,3,"DA");
+   vderxync = amdef("vderxync",&vderxync_a,3,3,"DA");
+   vderxynv = amdef("vderxynv",&vderxynv_a,3,3,"DA");
+   vderxy2n = amdef("vderxy2n",&vderxy2n_a,3,6,"DA");
+   pderxyn  = amdef("pderxyn" ,&pderxyn_a ,3,1,"DV");
 
-   smvelint  = amdef("smvelint" ,&smvelint_a ,2,1,"DV");
-   smvderxy  = amdef("smvderxy" ,&smvderxy_a ,2,2,"DA");
-   smpreint  = amdef("smpreint" ,&smpreint_a ,2,1,"DV");
-   smpderxy  = amdef("smpderxy" ,&smpderxy_a ,2,2,"DA");
+   smvelint  = amdef("smvelint" ,&smvelint_a ,3,1,"DV");
+   smvderxy  = amdef("smvderxy" ,&smvderxy_a ,3,3,"DA");
+   smpreint  = amdef("smpreint" ,&smpreint_a ,3,1,"DV");
+   smpderxy  = amdef("smpderxy" ,&smpderxy_a ,3,3,"DA");
 
-   smvelintn  = amdef("smvelintn" ,&smvelintn_a ,2,1,"DV");
-   smvderxyn  = amdef("smvderxyn" ,&smvderxyn_a ,2,2,"DA");
-   smvderxy2n = amdef("smvderxy2n",&smvderxy2n_a,2,3,"DA");
-   smpreintn  = amdef("smpreintn" ,&smpreintn_a ,2,1,"DV");
-   smpderxyn  = amdef("smpderxyn" ,&smpderxyn_a ,2,2,"DA");
-   smpderxy2n = amdef("smpderxy2n",&smpderxy2n_a,2,3,"DA");
+   smvelintn  = amdef("smvelintn" ,&smvelintn_a ,3,1,"DV");
+   smvderxyn  = amdef("smvderxyn" ,&smvderxyn_a ,3,3,"DA");
+   smvderxy2n = amdef("smvderxy2n",&smvderxy2n_a,3,6,"DA");
+   smpreintn  = amdef("smpreintn" ,&smpreintn_a ,3,1,"DV");
+   smpderxyn  = amdef("smpderxyn" ,&smpderxyn_a ,3,3,"DA");
+   smpderxy2n = amdef("smpderxy2n",&smpderxy2n_a,3,6,"DA");
 
-   smfint   = amdef("smfint"  ,&smfint_a  ,2,1,"DV");
-   smfderxy = amdef("smfderxy",&smfderxy_a,2,2,"DA");
+   smfint   = amdef("smfint"  ,&smfint_a  ,3,1,"DV");
+   smfderxy = amdef("smfderxy",&smfderxy_a,3,3,"DA");
 
-   smfintn    = amdef("smfintn"   ,&smfintn_a   ,2,1,"DV");
-   smfderxyn  = amdef("smfderxyn" ,&smfderxyn_a ,2,2,"DA");
-   smfderxy2n = amdef("smfderxy2n",&smfderxy2n_a,2,3,"DA");
+   smfintn    = amdef("smfintn"   ,&smfintn_a   ,3,1,"DV");
+   smfderxyn  = amdef("smfderxyn" ,&smfderxyn_a ,3,3,"DA");
+   smfderxy2n = amdef("smfderxy2n",&smfderxy2n_a,3,6,"DA");
    
    smiediff = amdef("smiediff",&smiediff_a,submesh->numen,submesh->numen,"DA");
    smierhs  = amdef("smierhs" ,&smierhs_a ,submesh->numen,1             ,"DV");
@@ -544,18 +546,18 @@ if (init==1) /* allocate working arrays and set pointers */
 for (iele=0; iele<submesh->numele; iele++)/* loop over submesh elements */
 {
 /*---------------------------------------------------- set element data */
-  f2_smset(submesh,ele,smlme,smitope,smxyze,smxyzep,iele,0);
+  f3_smset(submesh,ele,smlme,smitope,smxyze,smxyzep,iele,0);
 
 /*----------------- set iterative bubble functions at current time step */
   if (mlvar->convel==0) 
-    f2_bubset(mlvar,submesh,ele,smlme,evbub,epbub,efbub,0);
+    f3_bubset(mlvar,submesh,ele,smlme,evbub,epbub,efbub,0);
 /*------------------------------- set bubble functions at time step (n) */
   if (dynvar->nis==0 && mlvar->quastabub==0) 
-    f2_bubset(mlvar,submesh,ele,smlme,evbubn,epbubn,efbubn,1);
+    f3_bubset(mlvar,submesh,ele,smlme,evbubn,epbubn,efbubn,1);
 
 /*--- calculate charact. element length and stab. param. / subgr. visc. */
   if (mlvar->smstabi>0 || mlvar->smsgvi==1 || mlvar->smsgvi==2)
-    f2_smelesize(ele,data,dynvar,mlvar,funct,deriv,deriv2,smfunct,smderiv,
+    f3_smelesize(ele,data,dynvar,mlvar,funct,deriv,deriv2,smfunct,smderiv,
                  smderiv2,derxy,xjm,evel,velint,vderxy,smxyze,smxyzep,wa1);
 
 /*------------ initialize submesh global matrices and vectors with ZERO */
@@ -565,7 +567,7 @@ for (iele=0; iele<submesh->numele; iele++)/* loop over submesh elements */
   amzero(&smetfor_a);
 
 /*-------- calculate submesh element matrices and element force vectors */
-  f2_smint(data,ele,dynvar,mlvar,submesh,smestif,smemass,smevfor,smetfor,
+  f3_smint(data,ele,dynvar,mlvar,submesh,smestif,smemass,smevfor,smetfor,
 	   smxyze,smxyzep,funct,deriv,deriv2,xjm,derxy,derxy2,smfunct,
 	   smderiv,smderiv2,smxjm,smderxy,smderxy2,eveln,evel,epren,epre,
 	   evbub,epbub,efbub,evbubn,epbubn,efbubn,vbubint,vbubderxy,
@@ -589,7 +591,7 @@ for (iele=0; iele<submesh->numele; iele++)/* loop over submesh elements */
   fluid_add_smrhs(smrhs,smevfor,mlvar->nelbub,submesh->numen,smlme);
 
 /*----------------------------- add element time rhs to global time rhs */
-  if (dynvar->nis==0)
+  if (dynvar->nis==0 && mlvar->quastabub==0)
     fluid_add_smrhs(smrhs,smetfor,mlvar->nelbub,submesh->numen,smlme);
 }  
 
@@ -600,10 +602,10 @@ dstrc_exit();
 #endif
 
 return; 
-} /* end of f2_smele */
+} /* end of f3_smele */
 
 /*!---------------------------------------------------------------------                                         
-\brief control routine for submesh bubble function integration of fluid2
+\brief control routine for submesh bubble function integration of fluid3
 
 <pre>                                                       gravem 07/03
 
@@ -623,7 +625,7 @@ the submesh element:
 \return void                                               
                                  
 ------------------------------------------------------------------------*/
-void f2_bubele(FLUID_DATA     *data, 
+void f3_bubele(FLUID_DATA     *data, 
                FLUID_DYN_CALC *dynvar, 
                FLUID_DYN_ML   *mlvar, 
                FLUID_ML_SMESH *submesh, 
@@ -632,19 +634,21 @@ void f2_bubele(FLUID_DATA     *data,
 INT              iele;    /* submesh element counter                   */
 
 #ifdef DEBUG 
-dstrc_enter("f2_bubele");
+dstrc_enter("f3_bubele");
 #endif
 
 for (iele=0; iele<submesh->numele; iele++)/* loop over submesh elements */
 {
 /*---------------------------------------------------- set element data */
-  f2_smset(submesh,ele,smlme,smitope,smxyze,smxyzep,iele,0);
+  f3_smset(submesh,ele,smlme,smitope,smxyze,smxyzep,iele,0);
 
 /*----------------- set iterative bubble functions at current time step */
-  f2_bubset(mlvar,submesh,ele,smlme,evbub,epbub,efbub,0);
+  f3_bubset(mlvar,submesh,ele,smlme,evbub,epbub,efbub,0);
+  if (dynvar->nis==0 && mlvar->quastabub==0) 
+    f3_bubset(mlvar,submesh,ele,smlme,evbubn,epbubn,efbubn,1);
 
 /*---------- calculate submesh bubble matrices and bubble force vectors */
-  f2_bubint(data,ele,dynvar,mlvar,submesh,estif,emass,eiforce,smxyze,
+  f3_bubint(data,ele,dynvar,mlvar,submesh,estif,emass,eiforce,smxyze,
             smxyzep,funct,deriv,deriv2,xjm,derxy,smfunct,smderiv,smderiv2,
 	    smxjm,smderxy,evel,epre,evbub,epbub,efbub,vbubint,vbubderxy,
 	    pbubint,pbubderxy,covint,velint,vderxy,smvelint,smvderxy,
@@ -657,10 +661,10 @@ dstrc_exit();
 #endif
 
 return; 
-} /* end of f2_bubele */
+} /* end of f3_bubele */
 
 /*!---------------------------------------------------------------------                                         
-\brief control routine for dynamic calc. of subgrid viscosity for fluid2
+\brief control routine for dynamic calc. of subgrid viscosity for fluid3
 
 <pre>                                                       gravem 07/03
 
@@ -681,7 +685,7 @@ on the large-scale element:
 \return void                                               
                                  
 ------------------------------------------------------------------------*/
-void f2_dynsgv(FLUID_DATA     *data, 
+void f3_dynsgv(FLUID_DATA     *data, 
                FLUID_DYN_CALC *dynvar, 
                FLUID_DYN_ML   *mlvar, 
                FLUID_ML_SMESH *submesh, 
@@ -703,7 +707,7 @@ DOUBLE           ssinbu;     /* ssm integral of normalized bubble fun.  */
 DOUBLE           matvec[7000],rhsvec[2000]; 
  
 #ifdef DEBUG 
-dstrc_enter("f2_dynsgv");
+dstrc_enter("f3_dynsgv");
 #endif
 
 /*------------------------------------------------- set some parameters */
@@ -713,7 +717,7 @@ sgtol  = visc/TEN;
 mlvar->smsgvisc = ZERO;   
 
 /*-- calculate global lhs (diffusive part) and rhs integrals on submesh */
-f2_smintele(data,submesh,ele,&smidiff,&smirhs);
+f3_smintele(data,submesh,ele,&smidiff,&smirhs);
 
 /*-----------------------------------------------------------------------
    iterative loop for dynamic subgrid viscosity calculation
@@ -729,7 +733,7 @@ for (ite=0;ite<itemax;ite++)
   amzero(&(ssmesh->mat));
   amzero(&(ssmesh->rhs));
 /*-------------------- solution on sub-submesh: element control routine */
-  f2_ssele(data,dynvar,mlvar,ssmesh,ele,0);
+  f3_ssele(data,dynvar,mlvar,ssmesh,ele,0);
 
 /*----------------------------- change order in matrix array for solver */
   for (i=0; i<ssmesh->numeq; i++)
@@ -748,7 +752,7 @@ for (ite=0;ite<itemax;ite++)
   else if (info>0) dserror("small-scale solution could not be computed");
 
 /*----- calculate integral of normalized bubble function on sub-submesh */
-  f2_ssintele(data,ssmesh,ele,&ssinbu);
+  f3_ssintele(data,ssmesh,ele,&ssinbu);
   
 /*------------------------ calculate updated value of subgrid viscosity */
   mlvar->smsgvisc = smirhs*smirhs/smidiff/ssinbu - visc;
@@ -774,10 +778,10 @@ dstrc_exit();
 #endif
 
 return; 
-} /* end of f2_dynsgv */
+} /* end of f3_dynsgv */
 
 /*!---------------------------------------------------------------------                                         
-\brief submesh global lhs and rhs element integration for fluid2
+\brief submesh global lhs and rhs element integration for fluid4
 
 <pre>                                                       gravem 07/03
 
@@ -793,7 +797,7 @@ This routine controls the elementwise integration of the global lhs
 \return void                                               
                                  
 ------------------------------------------------------------------------*/
-void f2_smintele(FLUID_DATA     *data, 
+void f3_smintele(FLUID_DATA     *data, 
                  FLUID_ML_SMESH *submesh, 
 	         ELEMENT        *ele,
 	         DOUBLE         *smidiff,
@@ -802,20 +806,21 @@ void f2_smintele(FLUID_DATA     *data,
 INT              iele;    /* submesh element counter                   */
 
 #ifdef DEBUG 
-dstrc_enter("f2_smintele");
+dstrc_enter("f3_smintele");
 #endif
 
 for (iele=0; iele<submesh->numele; iele++)/* loop over submesh elements */
 {
 /*---------------------------------------------------- set element data */
-  f2_smset(submesh,ele,smlme,smitope,smxyze,smxyzep,iele,0);
+  f3_smset(submesh,ele,smlme,smitope,smxyze,smxyzep,iele,0);
 
 /*------------------- initialize element lhs and rhs integral with ZERO */
   amzero(&smiediff_a);
   amzero(&smierhs_a);
-/*---------------------- calculate submesh element lhs and rhs integral */
-  f2_smint2(data,ele,submesh,smiediff,smierhs,smxyze,smfunct,smderiv,
-            smderiv2,smxjm,smderxy);
+/*-------------------------------- calculate element stiffness matrices */
+/*                                            and element force vectors */
+  f3_smint2(data,ele,submesh,smiediff,smierhs,smxyze,smfunct,smderiv,
+            smderiv2,smxjm,smderxy,wa1);
 
 /*--------------------- add element lhs integral to global lhs integral */
   fluid_add_intlhs(smidiff,smiediff,submesh->numen,smlme);
@@ -830,10 +835,10 @@ dstrc_exit();
 #endif
 
 return; 
-} /* end of f2_smintele */
+} /* end of f3_smintele */
 
 /*!---------------------------------------------------------------------                                         
-\brief control routine for sub-submesh element integration for fluid2
+\brief control routine for sub-submesh element integration for fluid3
 
 <pre>                                                       gravem 07/03
 
@@ -852,7 +857,7 @@ This routine controls the element evaluation of the sub-submesh element:
 \return void                                               
                                  
 ------------------------------------------------------------------------*/
-void f2_ssele(FLUID_DATA      *data, 
+void f3_ssele(FLUID_DATA      *data, 
               FLUID_DYN_CALC  *dynvar, 
               FLUID_DYN_ML    *mlvar, 
               FLUID_ML_SMESH  *ssmesh, 
@@ -862,21 +867,21 @@ void f2_ssele(FLUID_DATA      *data,
 INT              iele;    /* sub-submesh element counter               */
 
 #ifdef DEBUG 
-dstrc_enter("f2_ssele");
+dstrc_enter("f3_ssele");
 #endif
 
 if (init==1) /* allocate working arrays and set pointers */
 {
    sslme    = amdef("sslme"   ,&sslme_a   ,ssmesh->numen,1,"IV");
    ssitope  = amdef("ssitope" ,&ssitope_a ,ssmesh->numen,1,"IV");
-   ssxyze   = amdef("ssxyze"  ,&ssxyze_a  ,2,ssmesh->numen,"DA");
-   ssxyzep  = amdef("ssxyzep" ,&ssxyzep_a ,2,ssmesh->numen,"DA");
+   ssxyze   = amdef("ssxyze"  ,&ssxyze_a  ,3,ssmesh->numen,"DA");
+   ssxyzep  = amdef("ssxyzep" ,&ssxyzep_a ,3,ssmesh->numen,"DA");
    ssfunct  = amdef("ssfunct" ,&ssfunct_a ,ssmesh->numen,1,"DV");
-   ssderiv  = amdef("ssderiv" ,&ssderiv_a ,2,ssmesh->numen,"DA");
-   ssderxy  = amdef("ssderxy" ,&ssderxy_a ,2,ssmesh->numen,"DA");
-   ssderiv2 = amdef("ssderiv2",&ssderiv2_a,3,ssmesh->numen,"DA");
-   ssderxy2 = amdef("ssderxy2",&ssderxy2_a,3,ssmesh->numen,"DA");
-   ssxjm    = amdef("ssxjm"   ,&ssxjm_a   ,2,2             ,"DA");
+   ssderiv  = amdef("ssderiv" ,&ssderiv_a ,3,ssmesh->numen,"DA");
+   ssderxy  = amdef("ssderxy" ,&ssderxy_a ,3,ssmesh->numen,"DA");
+   ssderiv2 = amdef("ssderiv2",&ssderiv2_a,6,ssmesh->numen,"DA");
+   ssderxy2 = amdef("ssderxy2",&ssderxy2_a,6,ssmesh->numen,"DA");
+   ssxjm    = amdef("ssxjm"   ,&ssxjm_a   ,3,3             ,"DA");
    
    ssestif = amdef("ssestif",&ssestif_a,ssmesh->numen,ssmesh->numen,"DA");
    ssenfor = amdef("ssenfor",&ssenfor_a,ssmesh->numen,1            ,"DV");
@@ -891,16 +896,16 @@ if (init==1) /* allocate working arrays and set pointers */
 for (iele=0; iele<ssmesh->numele; iele++)/* loop over sub-submesh elem. */
 {
 /*---------------------------------------------------- set element data */
-  f2_smset(ssmesh,ele,sslme,ssitope,ssxyze,ssxyzep,iele,1);
+  f3_smset(ssmesh,ele,sslme,ssitope,ssxyze,ssxyzep,iele,1);
 
 /*----------- initialize sub-submesh global matrix and vector with ZERO */
   amzero(&ssestif_a);
   amzero(&ssenfor_a);
 
 /*------- calculate sub-submesh element matrix and element force vector */
-  f2_ssint(data,ele,dynvar,mlvar,ssmesh,ssestif,ssenfor,ssxyze,ssxyzep,
+  f3_ssint(data,ele,dynvar,mlvar,ssmesh,ssestif,ssenfor,ssxyze,ssxyzep,
            funct,deriv,deriv2,xjm,derxy,ssfunct,ssderiv,ssderiv2,ssxjm,
-	   ssderxy,evel,velint,vderxy);
+	   ssderxy,evel,velint,vderxy,wa1);
 
 /*--------------------------------- add element matrix to global matrix */
   fluid_add_smat(ssmat,ssestif,ssmesh->numen,sslme,ONE);
@@ -916,10 +921,10 @@ dstrc_exit();
 #endif
 
 return; 
-} /* end of f2_ssele */
+} /* end of f3_ssele */
 
 /*!---------------------------------------------------------------------                                         
-\brief sub-submesh element integration of normalized bubble for fluid2
+\brief sub-submesh element integration of normalized bubble for fluid3
 
 <pre>                                                       gravem 07/03
 
@@ -934,7 +939,7 @@ bubble function on the sub-submesh.
 \return void                                               
                                  
 ------------------------------------------------------------------------*/
-void f2_ssintele(FLUID_DATA     *data, 
+void f3_ssintele(FLUID_DATA     *data, 
                  FLUID_ML_SMESH *ssmesh, 
 	         ELEMENT        *ele,
 		 DOUBLE         *ssinbu)
@@ -942,16 +947,16 @@ void f2_ssintele(FLUID_DATA     *data,
 INT              iele;    /* sub-submesh element counter               */
 
 #ifdef DEBUG 
-dstrc_enter("f2_ssintele");
+dstrc_enter("f3_ssintele");
 #endif
 
 for (iele=0; iele<ssmesh->numele; iele++)/* loop over sub-submesh elem. */
 {
 /*------------------------------ set element normalized bubble function */
-  f2_ssset(ssmesh,ele,sslme,ssitope,ssxyze,ebub,iele);
+  f3_ssset(ssmesh,ele,sslme,ssitope,ssxyze,ebub,iele);
 
 /* calculate sub-submesh element integral of normalized bubble function */
-  f2_inbu(data,ele,ssmesh,ssinbu,ebub,ssxyze,ssfunct,ssderiv,ssderiv2,
+  f3_inbu(data,ele,ssmesh,ssinbu,ebub,ssxyze,ssfunct,ssderiv,ssderiv2,
           ssxjm);
 }  
 
@@ -961,10 +966,10 @@ dstrc_exit();
 #endif
 
 return; 
-} /* end of f2_ssintele */
+} /* end of f3_ssintele */
 
 /*!---------------------------------------------------------------------                                         
-\brief control routine for l-s element-based error calculat. for fluid2
+\brief control routine for l-s element-based error calculat. for fluid3
 
 <pre>                                                       gravem 07/03
 
@@ -996,14 +1001,14 @@ large-scale element:
 \return void                                               
                                  
 ------------------------------------------------------------------------*/
-void f2_lselerror(FLUID_DATA     *data,
+void f3_lselerror(FLUID_DATA     *data,
                   FLUID_DYNAMIC  *fdyn, 
                   FLUID_DYN_CALC *dynvar, 
                   FLUID_DYN_ML   *mlvar, 
                   FLUID_ML_SMESH *submesh, 
                   FLUID_ML_SMESH *ssmesh, 
                   ELEMENT        *ele,
-                  int		  actpos, 
+                  INT		  actpos, 
                   DOUBLE	 *dulinf, 
                   DOUBLE	 *dplinf, 
                   DOUBLE	 *dul2,   
@@ -1019,20 +1024,20 @@ INT              i,j;
 DOUBLE           matvec[7000],rhsvec[2000]; 
  
 #ifdef DEBUG 
-dstrc_enter("f2_lselerror");
+dstrc_enter("f3_lselerror");
 #endif
 
 /*----------------- set final large-scale element velocity and pressure */
-f2_calseterr(ele,actpos,evel,epre);
+f3_calseterr(ele,actpos,evel,epre);
 
 /*------------------------------- dynamic subgrid viscosity calculation */
-if (mlvar->smsgvi>2) f2_dynsgv(data,dynvar,mlvar,submesh,ssmesh,ele);
+if (mlvar->smsgvi>2) f3_dynsgv(data,dynvar,mlvar,submesh,ssmesh,ele);
 
 /*------------------ initialize submesh global matrix and rhs with ZERO */
 amzero(&(submesh->mat));
 amzero(&(submesh->rhs));
 /* s-s solution for error calculat. on submesh: element control routine */
-f2_smelerror(data,dynvar,mlvar,submesh,ele);
+f3_smelerror(data,dynvar,mlvar,submesh,ele);
 
 /*--------------------- change order in matrix and rhs array for solver */
 for (i=0; i<submesh->numeq; i++)
@@ -1070,10 +1075,10 @@ for (i=0; i<mlvar->nelbub; i++)
 } 
 
 /*-------------------------- copy small-scale solution to element array */
-f2_smcopy(smrhs,ele,submesh->numeq,mlvar->nelbub);
+f3_smcopy(smrhs,ele,submesh->numeq,mlvar->nelbub);
 
 /*-- calculate errors on submesh including small-scale bubble functions */
-f2_bubelerror(data,fdyn,dynvar,mlvar,submesh,ele,dulinf,dplinf,dul2,dpl2,
+f3_bubelerror(data,fdyn,dynvar,mlvar,submesh,ele,dulinf,dplinf,dul2,dpl2,
               duh1,ul2,pl2,uh1);
 
 /*----------------------------------------------------------------------*/
@@ -1082,10 +1087,10 @@ dstrc_exit();
 #endif
 
 return; 
-} /* end of f2_lselerror */
+} /* end of f3_lselerror */
 
 /*!---------------------------------------------------------------------                                         
-\brief control routine for sm elem. integrat. for error cal. for fluid2
+\brief control routine for sm elem. integrat. for error cal. for fluid3
 
 <pre>                                                       gravem 07/03
 
@@ -1104,7 +1109,7 @@ This routine controls the element evaluation of the submesh element:
 \return void                                               
                                  
 ------------------------------------------------------------------------*/
-void f2_smelerror(FLUID_DATA     *data, 
+void f3_smelerror(FLUID_DATA     *data, 
                   FLUID_DYN_CALC *dynvar, 
                   FLUID_DYN_ML   *mlvar, 
                   FLUID_ML_SMESH *submesh, 
@@ -1113,20 +1118,20 @@ void f2_smelerror(FLUID_DATA     *data,
 INT              iele;    /* submesh element counter                   */
 
 #ifdef DEBUG 
-dstrc_enter("f2_smelerror");
+dstrc_enter("f3_smelerror");
 #endif
 
 for (iele=0; iele<submesh->numele; iele++)/* loop over submesh elements */
 {
 /*---------------------------------------------------- set element data */
-  f2_smset(submesh,ele,smlme,smitope,smxyze,smxyzep,iele,0);
+  f3_smset(submesh,ele,smlme,smitope,smxyze,smxyzep,iele,0);
 
 /*----------------- set iterative bubble functions at current time step */
-  if (mlvar->convel==0) f2_bubset(mlvar,submesh,ele,smlme,evbub,epbub,efbub,0);
+  if (mlvar->convel==0) f3_bubset(mlvar,submesh,ele,smlme,evbub,epbub,efbub,0);
 
 /*--- calculate charact. element length and stab. param. / subgr. visc. */
   if (mlvar->smstabi>0 || mlvar->smsgvi==1 || mlvar->smsgvi==2)
-    f2_smelesize(ele,data,dynvar,mlvar,funct,deriv,deriv2,smfunct,smderiv,
+    f3_smelesize(ele,data,dynvar,mlvar,funct,deriv,deriv2,smfunct,smderiv,
                  smderiv2,derxy,xjm,evel,velint,vderxy,smxyze,smxyzep,wa1);
 
 /*--------------- initialize submesh global matrix and vector with ZERO */
@@ -1134,7 +1139,7 @@ for (iele=0; iele<submesh->numele; iele++)/* loop over submesh elements */
   amzero(&smevfor_a);
 
 /*----------- calculate submesh element matrix and element force vector */
-  f2_sminterr(data,ele,dynvar,mlvar,submesh,smestif,smevfor,smxyze,smxyzep,
+  f3_sminterr(data,ele,dynvar,mlvar,submesh,smestif,smevfor,smxyze,smxyzep,
 	      funct,deriv,deriv2,xjm,derxy,derxy2,smfunct,smderiv,smderiv2,
 	      smxjm,smderxy,smderxy2,evel,epre,evbub,epbub,efbub,vbubint,
 	      vbubderxy,vbubderxy2,pbubint,pbubderxy,pbubderxy2,velint,
@@ -1154,10 +1159,10 @@ dstrc_exit();
 #endif
 
 return; 
-} /* end of f2_smelerror */
+} /* end of f3_smelerror */
 
 /*!---------------------------------------------------------------------                                         
-\brief control routine for bubble-enhan. error calc. on subm. for fluid2
+\brief control routine for bubble-enhan. error calc. on subm. for fluid3
 
 <pre>                                                       gravem 07/03
 
@@ -1186,37 +1191,37 @@ bubble functions on the submesh element:
 \return void                                               
                                  
 ------------------------------------------------------------------------*/
-void f2_bubelerror(FLUID_DATA     *data, 
+void f3_bubelerror(FLUID_DATA     *data, 
                    FLUID_DYNAMIC  *fdyn, 
                    FLUID_DYN_CALC *dynvar, 
                    FLUID_DYN_ML   *mlvar, 
                    FLUID_ML_SMESH *submesh, 
 	           ELEMENT        *ele,
-                   DOUBLE         *dulinf, 
-                   DOUBLE         *dplinf, 
-                   DOUBLE         *dul2,   
-                   DOUBLE         *dpl2,   
-                   DOUBLE         *duh1,   
-                   DOUBLE         *ul2,    
-                   DOUBLE         *pl2,    
-                   DOUBLE         *uh1)    
+                   DOUBLE         *dulinf,
+                   DOUBLE         *dplinf,
+                   DOUBLE         *dul2,  
+                   DOUBLE         *dpl2,  
+                   DOUBLE         *duh1,  
+                   DOUBLE         *ul2,   
+                   DOUBLE         *pl2,   
+                   DOUBLE         *uh1)   
 {
 INT              iele;    /* submesh element counter                   */
 
 #ifdef DEBUG 
-dstrc_enter("f2_bubelerror");
+dstrc_enter("f3_bubelerror");
 #endif
 
 for (iele=0; iele<submesh->numele; iele++)/* loop over submesh elements */
 {
 /*---------------------------------------------------- set element data */
-  f2_smset(submesh,ele,smlme,smitope,smxyze,smxyzep,iele,0);
+  f3_smset(submesh,ele,smlme,smitope,smxyze,smxyzep,iele,0);
 
 /*----------------- set iterative bubble functions at current time step */
-  f2_bubset(mlvar,submesh,ele,smlme,evbub,epbub,efbub,0);
+  f3_bubset(mlvar,submesh,ele,smlme,evbub,epbub,efbub,0);
 
 /*----- calculate error integrals on submesh including bubble functions */
-  f2_bubinterr(data,fdyn,ele,mlvar,submesh,smxyze,smxyzep,funct,deriv,deriv2,
+  f3_bubinterr(data,fdyn,ele,mlvar,submesh,smxyze,smxyzep,funct,deriv,deriv2,
                xjm,derxy,smfunct,smderiv,smderiv2,smxjm,smderxy,evel,epre,evbub,
 	       epbub,efbub,vbubint,vbubderxy,pbubint,pbubderxy,velint,vderxy,
 	       smvelint,smvderxy,smpreint,smpderxy,smfint,smfderxy,wa1,wa2,
@@ -1229,6 +1234,6 @@ dstrc_exit();
 #endif
 
 return; 
-} /* end of f2_bubelerror */
+} /* end of f3_bubelerror */
 
 #endif

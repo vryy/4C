@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief Calculate submesh element size and streamlength for fluid2
+\brief calculate submesh element size and streamlength for fluid2
 
 <pre>
 Maintainer:  name

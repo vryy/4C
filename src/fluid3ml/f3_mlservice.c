@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief service routines for multi-level fluid2 element 
+\brief service routines for multilevel fluid3 element 
 
 <pre>
 Maintainer:  name
@@ -12,11 +12,11 @@ Maintainer:  name
 </pre>
 
 ------------------------------------------------------------------------*/
-#ifdef D_FLUID2 
+#ifdef D_FLUID3 
 #include "../headers/standardtypes.h"
-#include "fluid2ml_prototypes.h"
-#include "../fluid2/fluid2.h"
-static INT PREDOF = 2;
+#include "fluid3ml_prototypes.h"
+#include "../fluid3/fluid3.h"
+static INT PREDOF = 3;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of material laws                                              |
@@ -25,7 +25,7 @@ static INT PREDOF = 2;
 extern struct _MATERIAL  *mat;
 
 /*!--------------------------------------------------------------------- 
-\brief set all arrays for large-scale element for multi-level fluid2
+\brief set all arrays for large-scale element for multi-level fluid3
 
 <pre>                                                       gravem 07/03
 
@@ -45,7 +45,7 @@ at time steps (n) and (n+1) are set.
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void f2_lsset(FLUID_DYN_CALC  *dynvar, 
+void f3_lsset(FLUID_DYN_CALC  *dynvar, 
 	      ELEMENT	      *ele,	
               DOUBLE	     **eveln,	 
 	      DOUBLE	     **evel, 
@@ -60,10 +60,10 @@ INT    actmat  ;    /* material number of the element                   */
 DOUBLE dens;        /* density                                          */
 DOUBLE visc;        /* viscosity                                        */
 NODE  *actnode;     /* actual node                                      */
-GSURF *actgsurf;    /* actual g-surface                                 */
+GVOL  *actgvol;     /* actual g-volume                                  */
 
 #ifdef DEBUG 
-dstrc_enter("f2_lsset");
+dstrc_enter("f3_lsset");
 #endif
 
 
@@ -83,6 +83,7 @@ for(i=0;i<ele->numnp;i++) /* loop nodes of large-scale element */
 /*------------------------------------ set element velocities at (n+1) */      
   evel[0][i]=actnode->sol_increment.a.da[3][0];
   evel[1][i]=actnode->sol_increment.a.da[3][1]; 
+  evel[2][i]=actnode->sol_increment.a.da[3][2]; 
 /*------------------------------------- set element pressures at (n+1) */   
   epre[i]   =actnode->sol_increment.a.da[3][PREDOF];      
 } /* end of loop over nodes of large-scale element */
@@ -96,29 +97,30 @@ if(dynvar->nif!=0) /* -> computation if time forces "on" --------------
 /*-------------------------------------- set element velocities at (n) */	 
     eveln[0][i]=actnode->sol_increment.a.da[1][0];
     eveln[1][i]=actnode->sol_increment.a.da[1][1];    
+    eveln[2][i]=actnode->sol_increment.a.da[1][2];    
 /*--------------------------------------- set element pressures at (n) */   
-    epren[i]   =actnode->sol_increment.a.da[1][PREDOF];      
+    epren[i]=actnode->sol_increment.a.da[1][PREDOF];      
   } /* end of loop over nodes of large-scale element */  
 } /* endif (dynvar->nif!=0) */		       
 
 /*------------------------------------------------ check for dead load */
-actgsurf = ele->g.gsurf;
-if (actgsurf->neum!=NULL)
+actgvol = ele->g.gvol;
+if (actgvol->neum!=NULL)
 {
    actmat=ele->mat-1;
    dens = mat[actmat].m.fluid->density;
-   for (i=0;i<2;i++)     
+   for (i=0;i<3;i++)     
    {
-      if (actgsurf->neum->neum_onoff.a.iv[i]==0)
+      if (actgvol->neum->neum_onoff.a.iv[i]==0)
       {
-         edeadn[i]  = ZERO;
-	 edead[i] = ZERO;
+         edeadn[i] = ZERO;
+	 edead[i]  = ZERO;
       }
-      if (actgsurf->neum->neum_type==neum_dead  &&
-          actgsurf->neum->neum_onoff.a.iv[i]!=0)
+      if (actgvol->neum->neum_type==neum_dead  &&
+          actgvol->neum->neum_onoff.a.iv[i]!=0)
       {
-         edeadn[i]  = actgsurf->neum->neum_val.a.dv[i]*dens;
-	 edead[i] = actgsurf->neum->neum_val.a.dv[i]*dens;
+         edeadn[i] = actgvol->neum->neum_val.a.dv[i]*dens;
+	 edead[i]  = actgvol->neum->neum_val.a.dv[i]*dens;
 	 (*hasext)++;
       }
    }
@@ -144,6 +146,8 @@ if(dynvar->pregrad!=0)
   }  
   edeadn[1] = ZERO;
   edead[1]  = ZERO;
+  edeadn[2] = ZERO;
+  edead[2]  = ZERO;
   (*hasext)++;
 }
 
@@ -153,10 +157,10 @@ dstrc_exit();
 #endif
 
 return; 
-} /* end of f2_lsset */
+} /* end of f3_lsset */
 
 /*!--------------------------------------------------------------------- 
-\brief set all arrays for (sub-)submesh element for multi-level fluid2
+\brief set all arrays for (sub-)submesh element for multi-level fluid3
 
 <pre>                                                       gravem 07/03
 
@@ -170,12 +174,12 @@ and location matrix are set.
 \param   *smitope  INT   	   (o)    (sub-)submesh topology array
 \param   *smxyze   DOUBLE   	   (o)    (sub-)submesh coordinates
 \param   *smxyzep  DOUBLE   	   (o)    (s)sm parent domain coordinates
-\param    iele     INT             (i)    actual (sub-)submesh ele. num.
+\param    iele     INT             (i)    actual submesh element number
 \param    flag     INT             (i)    flag: submesh or sub-submesh?
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void f2_smset(FLUID_ML_SMESH  *smesh, 
+void f3_smset(FLUID_ML_SMESH  *smesh, 
 	      ELEMENT	      *ele,	
               INT 	      *smlme,	 
 	      INT	      *smitope, 
@@ -187,7 +191,7 @@ void f2_smset(FLUID_ML_SMESH  *smesh,
 INT i;       /* simply a counter                                       */
 
 #ifdef DEBUG 
-dstrc_enter("f2_smset");
+dstrc_enter("f3_smset");
 #endif
 
 for (i=0; i<smesh->numen; i++)/* loop nodes of (sub-)submesh element */
@@ -196,17 +200,20 @@ for (i=0; i<smesh->numen; i++)/* loop nodes of (sub-)submesh element */
   smlme[i]      = smesh->id.a.iv[smitope[i]];
   smxyzep[0][i] = smesh->xyzpd.a.da[0][smitope[i]];
   smxyzep[1][i] = smesh->xyzpd.a.da[1][smitope[i]];
+  smxyzep[2][i] = smesh->xyzpd.a.da[2][smitope[i]];
   switch (flag)
   {
 /*-------------------------------------------------------- sub-submesh */
   case 1:
-    smxyze[0][i] = ele->e.f2->xyzssm.a.da[0][smitope[i]];
-    smxyze[1][i] = ele->e.f2->xyzssm.a.da[1][smitope[i]];
+    smxyze[0][i] = ele->e.f3->xyzssm.a.da[0][smitope[i]];
+    smxyze[1][i] = ele->e.f3->xyzssm.a.da[1][smitope[i]];
+    smxyze[2][i] = ele->e.f3->xyzssm.a.da[2][smitope[i]];
   break;
 /*------------------------------------------------------------ submesh */
   default:
-    smxyze[0][i] = ele->e.f2->xyzsm.a.da[0][smitope[i]];
-    smxyze[1][i] = ele->e.f2->xyzsm.a.da[1][smitope[i]];
+    smxyze[0][i] = ele->e.f3->xyzsm.a.da[0][smitope[i]];
+    smxyze[1][i] = ele->e.f3->xyzsm.a.da[1][smitope[i]];
+    smxyze[2][i] = ele->e.f3->xyzsm.a.da[2][smitope[i]];
   break;
   }
 }  
@@ -216,10 +223,10 @@ dstrc_exit();
 #endif
 
 return; 
-} /* end of f2_smset */
+} /* end of f3_smset */
 
 /*!--------------------------------------------------------------------- 
-\brief set all bubble functions for submesh element for fluid2
+\brief set all bubble functions for submesh element for fluid3
 
 <pre>                                                       gravem 07/03
 
@@ -238,7 +245,7 @@ functions are set.
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void f2_bubset(FLUID_DYN_ML    *mlvar,  
+void f3_bubset(FLUID_DYN_ML    *mlvar,  
                FLUID_ML_SMESH  *submesh, 
 	       ELEMENT	       *ele,	
                INT	       *smlme,
@@ -251,7 +258,7 @@ INT i,j,ipbub,ifbub;/* simply some counters                            */
 INT km;             /* value in location matrix                        */
 
 #ifdef DEBUG 
-dstrc_enter("f2_bubset");
+dstrc_enter("f3_bubset");
 #endif
 
 /*---- calculate velocity bubble functions at nodes of submesh element */ 	  
@@ -261,48 +268,51 @@ for (i=0;i<mlvar->nvbub;i++)
   {
     km=smlme[j];
     if (km==-1) evbub[j][i]=ZERO;
+    else if (km>=submesh->numeq) continue;
     else 
     {
 /*---------------------------------------------------- time step (n+1) */ 	        
-      if (flag==0) evbub[j][i]= ele->e.f2->solsm.a.da[km][i];
+      if (flag==0) evbub[j][i]= ele->e.f3->solsm.a.da[km][i];
 /*------------------------------------------------------ time step (n) */ 	        
-      else         evbub[j][i]= ele->e.f2->solsmn.a.da[km][i];
+      else         evbub[j][i]= ele->e.f3->solsmn.a.da[km][i];
     }  
   }      
 }      
-
+      
 /*---- calculate pressure bubble functions at nodes of submesh element */ 	        
-for (i=mlvar->nvbub;i<mlvar->nelbub-2;i++)
+for (i=mlvar->nvbub;i<mlvar->nelbub-3;i++)
 {
   ipbub=i-mlvar->nvbub; 
   for (j=0;j<submesh->numen;j++)
   {
     km=smlme[j];
     if (km==-1) epbub[j][ipbub]=ZERO;
+    else if (km>submesh->numeq) continue;
     else 
     {
 /*---------------------------------------------------- time step (n+1) */ 	        
-      if (flag==0) epbub[j][ipbub]= ele->e.f2->solsm.a.da[km][i];
+      if (flag==0) epbub[j][ipbub]= ele->e.f3->solsm.a.da[km][i];
 /*------------------------------------------------------ time step (n) */ 	        
-      else         epbub[j][ipbub]= ele->e.f2->solsmn.a.da[km][i];
+      else         epbub[j][ipbub]= ele->e.f3->solsmn.a.da[km][i];
     }  
   }      
 }      
 
 /*--------- calculate rhs bubble functions at nodes of submesh element */ 	        
-for (i=mlvar->nelbub-2;i<mlvar->nelbub;i++)
+for (i=mlvar->nelbub-3;i<mlvar->nelbub;i++)
 {
   ifbub=i-(mlvar->nvbub+mlvar->npbub); 
   for (j=0;j<submesh->numen;j++)
   {
     km=smlme[j];
     if (km==-1) efbub[j][ifbub]=ZERO;
+    else if (km>submesh->numeq) continue;
     else 
     {
 /*---------------------------------------------------- time step (n+1) */ 	        
-      if (flag==0) efbub[j][ifbub]= ele->e.f2->solsm.a.da[km][i];
+      if (flag==0) efbub[j][ifbub]= ele->e.f3->solsm.a.da[km][i];
 /*------------------------------------------------------ time step (n) */ 	        
-      else         efbub[j][ifbub]= ele->e.f2->solsmn.a.da[km][i];
+      else         efbub[j][ifbub]= ele->e.f3->solsmn.a.da[km][i];
     }  
   }      
 }      
@@ -313,10 +323,10 @@ dstrc_exit();
 #endif
 
 return; 
-} /* end of f2_bubset */
+} /* end of f3_bubset */
 
 /*!--------------------------------------------------------------------- 
-\brief set all arrays for integration of sub-submesh element for fluid2
+\brief set all arrays for integration of sub-submesh element for fluid3
 
 <pre>                                                       gravem 07/03
 
@@ -334,7 +344,7 @@ integration of a normalized bubble function are set.
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void f2_ssset(FLUID_ML_SMESH  *ssmesh, 
+void f3_ssset(FLUID_ML_SMESH  *ssmesh, 
 	      ELEMENT	      *ele,	
               INT 	      *sslme,	 
 	      INT	      *ssitope, 
@@ -346,7 +356,7 @@ INT i;              /* simply a counter                                */
 INT km;             /* value in location matrix                        */
 
 #ifdef DEBUG 
-dstrc_enter("f2_ssset");
+dstrc_enter("f3_ssset");
 #endif
 
 for (i=0; i<ssmesh->numen; i++)/* loop nodes of sub-submesh element */
@@ -354,8 +364,9 @@ for (i=0; i<ssmesh->numen; i++)/* loop nodes of sub-submesh element */
 /*----------------------------------------- sub-submesh element arrays */ 	        
   ssitope[i]   = ssmesh->ien.a.ia[iele][i];
   sslme[i]     = ssmesh->id.a.iv[ssitope[i]];
-  ssxyze[0][i] = ele->e.f2->xyzssm.a.da[0][ssitope[i]];
-  ssxyze[1][i] = ele->e.f2->xyzssm.a.da[1][ssitope[i]];
+  ssxyze[0][i] = ele->e.f3->xyzssm.a.da[0][ssitope[i]];
+  ssxyze[1][i] = ele->e.f3->xyzssm.a.da[1][ssitope[i]];
+  ssxyze[2][i] = ele->e.f3->xyzssm.a.da[2][ssitope[i]];
   
 /*- calculate normalized bubble funct. at nodes of sub-submesh element */ 	        
   km=sslme[i];
@@ -369,10 +380,10 @@ dstrc_exit();
 #endif
 
 return; 
-} /* end of f2_ssset */
+} /* end of f3_ssset */
 
 /*!--------------------------------------------------------------------- 
-\brief copy submesh solution to element array for fluid2
+\brief copy submesh solution to element array for fluid3
 
 <pre>                                                       gravem 07/03
 
@@ -387,7 +398,7 @@ element array.
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void f2_smcopy(DOUBLE  **smrhs,
+void f3_smcopy(DOUBLE  **smrhs,
                ELEMENT  *ele,
                INT       numeq,
                INT       numrhs)      
@@ -395,14 +406,14 @@ void f2_smcopy(DOUBLE  **smrhs,
 INT  i,j;
 
 #ifdef DEBUG 
-dstrc_enter("f2_smcopy");
+dstrc_enter("f3_smcopy");
 #endif
 
 for (i=0;i<numrhs;i++)
 {
   for (j=0;j<numeq;j++)
   {
-    ele->e.f2->solsm.a.da[j][i] = smrhs[j][i];
+    ele->e.f3->solsm.a.da[j][i] = smrhs[j][i];
   }
 }
 
@@ -412,10 +423,10 @@ dstrc_exit();
 #endif
 
 return;
-} /* end of f2_smcopy */ 
+} /* end of f3_smcopy */ 
    
 /*!--------------------------------------------------------------------- 
-\brief copy submesh element solution at (n+1) to (n) for fluid2
+\brief copy submesh element solution at (n+1) to (n) for fluid3
 
 <pre>                                                       gravem 07/03
 
@@ -429,21 +440,21 @@ is copied to the respective array at time step (n).
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void f2_smcopy2(ELEMENT  *ele,
+void f3_smcopy2(ELEMENT  *ele,
                 INT       numeq,
                 INT       numrhs)      
 {
 INT  i,j;
 
 #ifdef DEBUG 
-dstrc_enter("f2_smcopy2");
+dstrc_enter("f3_smcopy2");
 #endif
 
 for (i=0;i<numrhs;i++)
 {
   for (j=0;j<numeq;j++)
   {
-    ele->e.f2->solsmn.a.da[j][i] = ele->e.f2->solsm.a.da[j][i];
+    ele->e.f3->solsmn.a.da[j][i] = ele->e.f3->solsm.a.da[j][i];
   }
 }
 
@@ -453,10 +464,10 @@ dstrc_exit();
 #endif
 
 return;
-} /* end of f2_smcopy2 */ 
+} /* end of f3_smcopy2 */ 
    
 /*!--------------------------------------------------------------------- 
-\brief routine to calculate small-scale pressure at int. p. for fluid2
+\brief routine to calculate small-scale pressure at int. p. for fluid3
 
 <pre>                                                       gravem 07/03
 				      
@@ -464,11 +475,11 @@ return;
 \param   *smpreint  DOUBLE     (o)   small-scale pressure at int. point
 \param  **pbubint   DOUBLE     (i)   pressure bubble functions at int. p.
 \param   *epre      DOUBLE     (i)   pressure at large-scale ele. nodes
-\param    iel	    int        (i)   number of large-scale ele. nodes 
+\param    iel	    INT        (i)   number of large-scale ele. nodes 
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void f2_smprei(DOUBLE  *smpreint,     
+void f3_smprei(DOUBLE  *smpreint,     
                DOUBLE **pbubint,    
 	       DOUBLE  *epre,     
 	       INT      iel) 
@@ -476,10 +487,10 @@ void f2_smprei(DOUBLE  *smpreint,
 INT     i,j;
 
 #ifdef DEBUG 
-dstrc_enter("f2_smprei");
+dstrc_enter("f3_smprei");
 #endif
 
-for (i=0;i<2;i++) /* loop spatial directions i */
+for (i=0;i<3;i++) /* loop spatial directions i */
 {
    smpreint[i]=ZERO; 
    for (j=0;j<iel;j++) /* loop over all nodes j of the l-s element */
@@ -494,25 +505,25 @@ dstrc_exit();
 #endif
 
 return; 
-} /* end of f2_smprei */
+} /* end of f3_smprei */
 
 /*!--------------------------------------------------------------------- 
-\brief routine to calculate s-s pressure deriv. at int. p. for fluid2
+\brief routine to calculate s-s pressure deriv. at int. p. for fluid3
 
 <pre>                                                       gravem 07/03
 				      
-In this routine, the derivatives of the small-scale pressure w.r.t x/y 
+In this routine, the derivatives of the small-scale pressure w.r.t x/y/z 
 are calculated.
 				      
 </pre>
-\param  **smpderxy  DOUBLE     (o)   s-s pressure deriv. at int. point
-\param ***pbubderxy DOUBLE     (i)   pre. bubble fun. deriv. at int. p.
+\param   *smpderxy  DOUBLE     (o)   s-s pressure deriv. at int. point
+\param  **pbubderxy DOUBLE     (i)   pre. bubble fun. deriv. at int. p.
 \param   *epre      DOUBLE     (i)   pressure at large-scale ele. nodes
-\param    iel	    int        (i)   number of large-scale ele. nodes 
+\param    iel	    INT        (i)   number of large-scale ele. nodes 
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void f2_smpder(DOUBLE  **smpderxy,     
+void f3_smpder(DOUBLE  **smpderxy,     
                DOUBLE ***pbubderxy,    
 	       DOUBLE   *epre,     
 	       INT       iel) 
@@ -520,17 +531,19 @@ void f2_smpder(DOUBLE  **smpderxy,
 INT     i,j;
 
 #ifdef DEBUG 
-dstrc_enter("f2_smpder");
+dstrc_enter("f3_smpder");
 #endif
 
-for (i=0;i<2;i++) /* loop spatial directions i */
+for (i=0;i<3;i++) /* loop spatial directions i */
 {
    smpderxy[0][i]=ZERO;
    smpderxy[1][i]=ZERO;
+   smpderxy[2][i]=ZERO;
    for (j=0;j<iel;j++) /* loop over all nodes j of the l-s element */
    {
       smpderxy[0][i] += pbubderxy[i][0][j]*epre[j];
       smpderxy[1][i] += pbubderxy[i][1][j]*epre[j];
+      smpderxy[2][i] += pbubderxy[i][2][j]*epre[j];
    } /* end of loop over j */
 } /* end of loop over i */
 
@@ -540,15 +553,15 @@ dstrc_exit();
 #endif
 
 return; 
-} /* end of f2_smpder */
+} /* end of f3_smpder */
 
 /*!--------------------------------------------------------------------- 
-\brief routine to calc. 2nd s-s pressure deriv. at int. p. for fluid2
+\brief routine to calc. 2nd s-s pressure deriv. at int. p. for fluid3
 
 <pre>                                                       gravem 07/03
 				      
 In this routine, the 2nd derivatives of the small-scale pressure w.r.t 
-x/y are calculated.
+x/y/z are calculated.
 				      
 </pre>
 \param  **smpderxy2  DOUBLE     (o)   2nd s-s pre. deriv. at int. point
@@ -558,7 +571,7 @@ x/y are calculated.
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void f2_smpder2(DOUBLE  **smpderxy2,    
+void f3_smpder2(DOUBLE  **smpderxy2,    
                 DOUBLE ***pbubderxy2,    
 	        DOUBLE   *epre,      
 	        INT       iel) 
@@ -566,17 +579,19 @@ void f2_smpder2(DOUBLE  **smpderxy2,
 INT     i,j;
 
 #ifdef DEBUG 
-dstrc_enter("f2_smpder2");
+dstrc_enter("f3_smpder2");
 #endif
 
-for (i=0;i<3;i++) /* loop spatial directions i */
+for (i=0;i<6;i++) /* loop spatial directions i */
 {
    smpderxy2[0][i]=ZERO;
    smpderxy2[1][i]=ZERO;
+   smpderxy2[2][i]=ZERO;
    for (j=0;j<iel;j++) /* loop over all nodes j of the l-s element */
    {
       smpderxy2[0][i] += pbubderxy2[i][0][j]*epre[j];
       smpderxy2[1][i] += pbubderxy2[i][1][j]*epre[j];
+      smpderxy2[2][i] += pbubderxy2[i][2][j]*epre[j];
    } /* end of loop over j */
 } /* end of loop over i */
 
@@ -586,135 +601,7 @@ dstrc_exit();
 #endif
 
 return; 
-} /* end of f2_smpder2 */
-
-/*!--------------------------------------------------------------------- 
-\brief print out bubble functions for display with CGS
-
-<pre>                                                       gravem 07/03
-				      
-In this routine, the necessary information for displaying bubble 
-functions with CGS is written out in several files 'mesh.*".
-				      
-</pre>
-\param   *submesh    FLUID_ML_SMESH (i)   
-\param  **smrhs      DOUBLE         (i)   bubble function solution array
-\param    iel	     numrhs         (i)   number of bubble functions 
-\return void                                                                       
-
-------------------------------------------------------------------------*/
-void f2_cgsbub(FLUID_ML_SMESH  *submesh,
-	       DOUBLE	      **smrhs,
-               INT              numrhs)      
-{
-INT           i,j,k,count,top;
-DOUBLE        val,null;
-FILE         *meshcoo,*meshbou,*meshtop; /* file identifications        */
-FILE         *meshtem,*meshval;          /* file identifications        */
-
-#ifdef DEBUG 
-dstrc_enter("f2_cgsbub");
-#endif
-
-/*------------------------ write submesh coordinates in file 'mesh.coo' */
-meshcoo = fopen("cgs_f/mesh.coo","w");
-fprintf(meshcoo,"%2d \n",submesh->numnp);
-for (i=0;i<submesh->numnp;i++)
-{
-  k=i+1;
-  null=ZERO;
-  fprintf(meshcoo,"%2d %4.3f %4.3f %4.3f \n",k,submesh->xyzpd.a.da[0][i],
-                                               submesh->xyzpd.a.da[1][i],null);
-}  
-fclose(meshcoo);
-
-/*-------------------------------------- count number of boundary nodes */
-count=0;
-for (i=0;i<submesh->numnp;i++)
-{
-  if(submesh->id.a.iv[i]==-1) count++;
-}
-  
-/*--------------------- write submesh boundary nodes in file 'mesh.bou' */
-meshbou = fopen("cgs_f/mesh.bou","w");
-fprintf(meshbou,"%2d \n",count);
-for (i=0;i<submesh->numnp;i++)
-{
-  k=i+1;
-  if(submesh->id.a.iv[i]==-1) fprintf(meshbou,"%2d 1 1 0 \n",k);
-}  
-fclose(meshbou);
-
-/*--------------------------- write submesh topology in file 'mesh.top' */
-meshtop = fopen("cgs_f/mesh.top","w");
-fprintf(meshtop,"%2d %2d \n",submesh->numele,submesh->numen);
-for (i=0;i<submesh->numele;i++)
-{
-  k=i+1;
-  fprintf(meshtop,"%2d",k);
-  for (j=0;j<submesh->numen;j++)
-  {
-    top=submesh->ien.a.ia[i][j]+1;
-    fprintf(meshtop,"%3d",top);
-  }				      
-  fprintf(meshtop,"\n");
-}  
-fclose(meshcoo);
-
-/*---------------------- write solution information in file 'mesh.tem' */
-meshtem = fopen("cgs_f/mesh.tem","w");
-/*     number of nodes per element */
-fprintf(meshtem,"%1d \n",submesh->numen);
-/*     flag: 1=values per element, 2=? ,3=values per node  */      
-fprintf(meshtem,"3 \n");
-/*     number of different value groups */
-fprintf(meshtem,"%2d \n",numrhs);
-/*     value groups */
-fprintf(meshtem,"VELBUB1 \n");
-fprintf(meshtem,"VELBUB2 \n");
-fprintf(meshtem,"VELBUB3 \n");
-fprintf(meshtem,"VELBUB4 \n");
-fprintf(meshtem,"PREBUB11 \n");
-fprintf(meshtem,"PREBUB12 \n");
-fprintf(meshtem,"PREBUB21 \n");
-fprintf(meshtem,"PREBUB22 \n");
-fprintf(meshtem,"PREBUB31 \n");
-fprintf(meshtem,"PREBUB32 \n");
-fprintf(meshtem,"PREBUB41 \n");
-fprintf(meshtem,"PREBUB42 \n");
-fprintf(meshtem,"FBUB1 \n");
-fprintf(meshtem,"FBUB2 \n");
-/*     number of timesteps */
-fprintf(meshtem,"1 \n");
-/*     number of nodes and elements, respectively */
-fprintf(meshtem,"%2d \n",submesh->numnp);
-fclose(meshtem);
-
-/*--------------------------- write solution values in file 'mesh.tem' */
-meshval = fopen("cgs_f/mesh.val","w");
-for (i=0;i<numrhs;i++)
-{
-  count=0;
-  for (j=0;j<submesh->numnp;j++)
-  {
-    if(submesh->id.a.iv[j]==-1) val=ZERO;
-    else                        
-    {
-      val=smrhs[count][i];;
-      count++;
-    }  
-    fprintf(meshbou,"%25.20f \n",val);
-  }  
-}  
-fclose(meshval);
-
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG 
-dstrc_exit();
-#endif
-
-return;
-} /* end of f2_cgsbub */ 
+} /* end of f3_smpder2 */
 
 
 #endif

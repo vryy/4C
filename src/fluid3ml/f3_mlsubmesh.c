@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief submesh creation for multilevel fluid2 element
+\brief submesh creation for multilevel fluid3 element
 
 <pre>
 Maintainer:  name
@@ -12,16 +12,16 @@ Maintainer:  name
 </pre>
 
 ------------------------------------------------------------------------*/
-#ifdef D_FLUID2 
+#ifdef D_FLUID3 
 #include "../headers/standardtypes.h" 
-#include "../fluid2/fluid2_prototypes.h"
-#include "fluid2ml_prototypes.h"
-#include "../fluid2/fluid2.h"
+#include "../fluid3/fluid3_prototypes.h"
+#include "fluid3ml_prototypes.h"
+#include "../fluid3/fluid3.h"
 
-static INT nhorsm,nversm,nhorss,nverss;
+static int nxsm,nysm,nzsm,nxss,nyss,nzss;
 
 /*!---------------------------------------------------------------------                                         
-\brief creation of (sub-)submesh on parent domain for fluid2
+\brief creation of (sub-)submesh on parent domain for fluid3
 
 <pre>                                                       gravem 07/03
 
@@ -33,29 +33,34 @@ id-array and ien-array are established.
 \param  *smesh      FLUID_ML_SMESH   (i/o)  
 \param   xele       INT              (i)    number of elements in x-dir.  
 \param   yele       INT              (i)    number of elements in y-dir.  
+\param   zele       INT              (i)    number of elements in z-dir.  
 \param   order      INT              (i)    polyn. interpolation order  
 \param   flag       INT              (i)    flag: submesh or sub-submesh?  
 \return void 
 
 ------------------------------------------------------------------------*/
-void f2_pdsubmesh(FLUID_ML_SMESH *smesh,
+void f3_pdsubmesh(FLUID_ML_SMESH *smesh,
                   INT             xele,
                   INT             yele,
+                  INT             zele,
                   INT             order,  
 		  INT             flag)
 {
-DOUBLE hpdx,hpdy;  /* element length in coord. dir. on parent domain   */
-INT    numeq;      /* number of equations                              */
-INT    numnp;      /* number of nodal points                           */
-INT    ihor,iver;  /* counters in horizontal/vertical direction        */
-INT    nhor,nver;  /* number of nodes in horizontal/vertical direction */
-INT    iel;        /* element counter                                  */
-INT    nnglo;      /* counter for global node number                   */
-INT    nnhor;      /* counter for number of nodes in a horizontal row  */
-INT    nrhor;      /* counter for number of horizontal rows            */
+DOUBLE hpdx,hpdy,hpdz;/* element length in coord. dir. on parent domain */
+INT    numeq;         /* number of equations                            */
+INT    numnp;         /* number of nodal points                         */
+INT    ix,iy,iz;      /* counters in coordinate directions              */
+INT    nx,ny,nz;      /* number of nodes in coordinate directions       */
+INT    iel;           /* element counter                                */
+INT    nnglo;         /* counter for global node number                 */
+INT    nnhor;         /* counter for number of nod. in a horizontal row */
+INT    nrhor;         /* counter for number of horizontal rows          */
+INT    nrpla;         /* counter for number of rows in a plane          */
+INT    nnpla;         /* number of nodes in a plane                     */
+INT    npact;         /* actual plane                                   */
 
 #ifdef DEBUG 
-dstrc_enter("f2_pdsubmesh");
+dstrc_enter("f3_pdsubmesh");
 #endif
 
 /*----------------------------------------------------------------------
@@ -64,114 +69,109 @@ dstrc_enter("f2_pdsubmesh");
 /*------------------------------------ divide large-scale element edges */
 hpdx  = ONE/(xele*order);
 hpdy  = ONE/(yele*order);
+hpdz  = ONE/(zele*order);
 switch (flag)
 {
 /*--------------------------------------------------------- sub-submesh */
 case 1:
-  nhorss = order*xele+1;
-  nverss = order*yele+1;
-  nhor = nhorss;
-  nver = nverss;
+  nxss = order*xele+1;
+  nyss = order*yele+1;
+  nzss = order*zele+1;
+  nx = nxss;
+  ny = nyss;
+  nz = nzss;
 break;
 /*------------------------------------------------------------- submesh */
 default:
-  nhorsm = order*xele+1;
-  nversm = order*yele+1;
-  nhor = nhorsm;
-  nver = nversm;
+  nxsm = order*xele+1;
+  nysm = order*yele+1;
+  nzsm = order*zele+1;
+  nx = nxsm;
+  ny = nysm;
+  nz = nzsm;
 break;
 }
 /*--------------------------------------- set node and equation counter */
 numeq = 0;
 numnp = 0;
 
-for (iver=0; iver<nver; iver++)
+for (iz=0; iz<nz; iz++)
 {
-  for (ihor=0; ihor<nhor; ihor++)
+  for (iy=0; iy<ny; iy++)
   {
-/*-------------------------------- compute coordinates on parent domain */
-    smesh->xyzpd.a.da[0][numnp] = ONE-TWO*ihor*hpdx; 
-    smesh->xyzpd.a.da[1][numnp] = ONE-TWO*iver*hpdy; 
-/*--------------------------------------------------- evaluate id-array */
-    if (iver==0 || iver==nver-1 || ihor==0 || ihor==nhor-1) 
-/*------------------------------------------------------- boundary node */
-      smesh->id.a.iv[numnp] = -1;
-    else 
+    for (ix=0; ix<nx; ix++)
     {
+/*-------------------------------- compute coordinates on parent domain */
+      smesh->xyzpd.a.da[0][numnp] = -ONE+TWO*ix*hpdx; 
+      smesh->xyzpd.a.da[1][numnp] = -ONE+TWO*iy*hpdy; 
+      smesh->xyzpd.a.da[2][numnp] = -ONE+TWO*iz*hpdz; 
+/*--------------------------------------------------- evaluate id-array */
+      if (ix==0 || ix==nx-1 || iy==0 || iy==ny-1 || iz==0 || iz==nz-1) 
+/*------------------------------------------------------- boundary node */
+        smesh->id.a.iv[numnp] = -1;
+      else 
+      {
 /*--------------------------------------------------- non-boundary node */
-      smesh->id.a.iv[numnp] = numeq;
-      numeq++;
+        smesh->id.a.iv[numnp] = numeq;
+        numeq++;
+      }  
+      numnp++;
     }  
-    numnp++;
   }
 }
 
 /*----------------------------------------------------------------------
-   evaluate ien-array
-------------------------------------------------------------------------*/
+   evaluate ien-array (only linear elements so far)
+----------------------------------------------------------------------- */
 /*----------------------------------------------------- linear elements */
 if (order==1)
 {
-/*---------------------------------------------------- set row counters */
+/*------------------------------------------ set row and plane counters */
   nnhor = 1;
   nrhor = 1;
-  for (iel=0; iel<smesh->numele; iel++) /* loop over submesh elements */ 
+  npact = 1;
+  nrpla = 1;
+  nnpla = (xele+1)*(yele+1);
+  for (iel=0; iel<smesh->numele; iel++)
   {
-    if (nnhor==nhor)
+    if (nnhor==nx)
     {
 /*-------------------------------------------- start new horizontal row */
       nnhor = 1;
       nrhor++;
+      nrpla++;
+    }
+    if (nrpla==ny)
+    {
+/*----------------------------------------------------- start new plane */
+      nrpla = 1;
+      npact++;
     }
 /*---------------------------------------- evaluate global node counter */
-    nnglo = iel+nrhor-1;
+    nnglo = iel+nrhor-1+nx*(npact-1);
 /*----------------------------------------- assign element node numbers */
     smesh->ien.a.ia[iel][0] = nnglo;
     smesh->ien.a.ia[iel][1] = nnglo+1;
     smesh->ien.a.ia[iel][2] = nnglo+xele+2;
     smesh->ien.a.ia[iel][3] = nnglo+xele+1;
+    smesh->ien.a.ia[iel][4] = nnpla+nnglo;
+    smesh->ien.a.ia[iel][5] = nnpla+nnglo+1;
+    smesh->ien.a.ia[iel][6] = nnpla+nnglo+yele+2;
+    smesh->ien.a.ia[iel][7] = nnpla+nnglo+yele+1;
     nnhor++;
   }
 }
-/*------------------------------------------------- quadratic elements */
-else if (order==2)
-{
-/*------------------------------------ set row and global node counter */
-  nnhor = 1;
-  nnglo = 0;
-  for (iel=0; iel<smesh->numele; iel++) /* loop over submesh elements */ 
-  {
-    if (nnhor==nhor)
-    {
-/*-------------------------------------------- start new horizontal row */
-      nnhor  = 1;
-      nnglo += 2*xele+2;
-    }
-/*----------------------------------------- assign element node numbers */
-    smesh->ien.a.ia[iel][0] = nnglo;
-    smesh->ien.a.ia[iel][1] = nnglo+2;
-    smesh->ien.a.ia[iel][2] = nnglo+4*xele+4;
-    smesh->ien.a.ia[iel][3] = nnglo+4*xele+2;
-    smesh->ien.a.ia[iel][4] = nnglo+1;
-    smesh->ien.a.ia[iel][5] = nnglo+2*xele+3;
-    smesh->ien.a.ia[iel][6] = nnglo+4*xele+3;
-    smesh->ien.a.ia[iel][7] = nnglo+2*xele+1;
-    smesh->ien.a.ia[iel][8] = nnglo+2*xele+2;
-    nnhor += 2;
-    nnglo += 2;
-  }
-}
-
+else dserror("no other than linear submeshes in 3D!\n"); 
 /*--------------------------------------------------------------------- */
 #ifdef DEBUG 
 dstrc_exit();
 #endif
 
 return;
-} /* end of f2_pdsubmesh */
+} /* end of f3_pdsubmesh */
 
 /*!---------------------------------------------------------------------                                         
-\brief creation of (sub-)submesh on individual element for fluid2
+\brief creation of (sub-)submesh on individual element for fluid3
 
 <pre>                                                       gravem 07/03
 
@@ -186,24 +186,24 @@ element are established.
 \return void 
 
 ------------------------------------------------------------------------*/
-void f2_elesubmesh(ELEMENT        *ele,
+void f3_elesubmesh(ELEMENT        *ele,
                    FLUID_ML_SMESH *smesh,
 		   INT             flag)
 {
 INT       k;          /* just a counter                  		*/
 INT       nelbub;     /* number of bubble functions        		*/
 INT       numnp;      /* number of nodal points 			*/   
-INT       ihor,iver;  /* counters in horizontal/vertical direction	*/
-INT       nhor,nver;  /* number of nodes in horizontal/vertical dir.    */
+INT       ix,iy,iz;   /* counters in coordinate directions      	*/
+INT       nx,ny,nz;   /* number of nodes in coordinate directions       */
 INT       iel;        /* number of large-scale element nodes            */
-DOUBLE    r[2];       /* coordinates on parent domain                   */
-DOUBLE    funct[9];   /* large-scale element shape functions            */
-DOUBLE    deriv[2][9];/* large-scale element shape function derivatives */
-DOUBLE    deriv2[3][9];/* l-s element shape function 2nd derivatives    */      
+DOUBLE    r[3];       /* coordinates on parent domain                   */
+DOUBLE    funct[8];   /* large-scale element shape functions            */
+DOUBLE    deriv[3][8];/* large-scale element shape function derivatives */
+DOUBLE    deriv2[6][8];/* l-s element shape function 2nd derivatives    */      
 DIS_TYP   typ;	      /* element type                                   */
 
 #ifdef DEBUG 
-dstrc_enter("f2_elesubmesh");
+dstrc_enter("f3_elesubmesh");
 #endif
 
 /*------------------------------------------------------- define arrays */
@@ -211,18 +211,18 @@ switch (flag)
 {
 /*--------------------------------------------------------- sub-submesh */
 case 1:
-  amdef("xyzssm",&(ele->e.f2->xyzssm),2,smesh->numnp,"DA");
-  amzero(&(ele->e.f2->xyzssm));
+  amdef("xyzssm",&(ele->e.f3->xyzssm),3,smesh->numnp,"DA");
+  amzero(&(ele->e.f3->xyzssm));
 break;
 /*------------------------------------------------------------- submesh */
 default:
-  nelbub = 3*ele->numnp + 2;
-  amdef("xyzsm" ,&(ele->e.f2->xyzsm) ,2,smesh->numnp     ,"DA");
-  amdef("solsm" ,&(ele->e.f2->solsm) ,smesh->numeq,nelbub,"DA");
-  amdef("solsmn",&(ele->e.f2->solsmn),smesh->numeq,nelbub,"DA");
-  amzero(&(ele->e.f2->xyzsm));
-  amzero(&(ele->e.f2->solsm));
-  amzero(&(ele->e.f2->solsmn));
+  nelbub = 4*ele->numnp + 3;
+  amdef("xyzsm",&(ele->e.f3->xyzsm),3,smesh->numnp,"DA");
+  amdef("solsm" ,&(ele->e.f3->solsm) ,smesh->numeq,nelbub,"DA");
+  amdef("solsmn",&(ele->e.f3->solsmn),smesh->numeq,nelbub,"DA");
+  amzero(&(ele->e.f3->xyzsm));
+  amzero(&(ele->e.f3->solsm));
+  amzero(&(ele->e.f3->solsmn));
 break;
 }
 
@@ -233,13 +233,15 @@ switch (flag)
 {
 /*--------------------------------------------------------- sub-submesh */
 case 1:
-  nhor = nhorss;
-  nver = nverss;
+  nx = nxss;
+  ny = nyss;
+  nz = nzss;
 break;
 /*------------------------------------------------------------- submesh */
 default:
-  nhor = nhorsm;
-  nver = nversm;
+  nx = nxsm;
+  ny = nysm;
+  nz = nzsm;
 break;
 }
 /*--- set large-scale element node number/type and submesh node counter */
@@ -247,41 +249,47 @@ iel  = ele->numnp;
 typ  = ele->distyp;
 numnp = 0;
 
-for (iver=0; iver<nver; iver++)
+for (iz=0; iz<nz; iz++)
 {
-  for (ihor=0; ihor<nhor; ihor++)
+  for (iy=0; iy<ny; iy++)
   {
-/*----------------- coordinates of actual submesh node on parent domain */
-    r[0] = smesh->xyzpd.a.da[0][numnp];
-    r[1] = smesh->xyzpd.a.da[1][numnp];
-/*---------------------- evaluate shape functions for this submesh node */
-    f2_rec(funct,deriv,deriv2,r[0],r[1],typ,1);
-/*--------------------------------- compute and store nodal coordinates */
-    switch (flag)
+    for (ix=0; ix<nx; ix++)
     {
+/*----------------- coordinates of actual submesh node on parent domain */
+      r[0] = smesh->xyzpd.a.da[0][numnp];
+      r[1] = smesh->xyzpd.a.da[1][numnp];
+      r[2] = smesh->xyzpd.a.da[2][numnp];
+/*---------------------- evaluate shape functions for this submesh node */
+      f3_hex(funct,deriv,deriv2,r[0],r[1],r[2],typ,1);
+/*--------------------------------- compute and store nodal coordinates */
+      switch (flag)
+      {
 /*--------------------------------------------------------- sub-submesh */
-    case 1:
-      for (k=0; k<iel; k++) /* loop all nodes of the l-s element */
-      {
-        ele->e.f2->xyzssm.a.da[0][numnp] += funct[k]*ele->node[k]->x[0];
-        ele->e.f2->xyzssm.a.da[1][numnp] += funct[k]*ele->node[k]->x[1];
-      } /* end loop over iel */
-    break;
+      case 1:
+        for (k=0; k<iel; k++) /* loop all nodes of the l-s element */
+        {
+          ele->e.f3->xyzssm.a.da[0][numnp] += funct[k]*ele->node[k]->x[0];
+          ele->e.f3->xyzssm.a.da[1][numnp] += funct[k]*ele->node[k]->x[1];
+          ele->e.f3->xyzssm.a.da[2][numnp] += funct[k]*ele->node[k]->x[2];
+        } /* end loop over iel */
+      break;
 /*------------------------------------------------------------- submesh */
-    default:
-      for (k=0; k<iel; k++) /* loop all nodes of the l-s element */
-      {
-        ele->e.f2->xyzsm.a.da[0][numnp] += funct[k]*ele->node[k]->x[0];
-        ele->e.f2->xyzsm.a.da[1][numnp] += funct[k]*ele->node[k]->x[1];
-      } /* end loop over iel */
-    break;
+      default:
+        for (k=0; k<iel; k++) /* loop all nodes of the l-s element */
+        {
+          ele->e.f3->xyzsm.a.da[0][numnp] += funct[k]*ele->node[k]->x[0];
+          ele->e.f3->xyzsm.a.da[1][numnp] += funct[k]*ele->node[k]->x[1];
+          ele->e.f3->xyzsm.a.da[2][numnp] += funct[k]*ele->node[k]->x[2];
+        } /* end loop over iel */
+      break;
+      }
+      numnp++;
     }
-    numnp++;
   }
 }
 
 /*------------- set flag: this element submesh has already been created */
-ele->e.f2->smisal = 1;
+ele->e.f3->smisal = 1;
 
 /*--------------------------------------------------------------------- */
 #ifdef DEBUG 
@@ -289,6 +297,6 @@ dstrc_exit();
 #endif
 
 return;
-} /* end of f2_elesubmesh */
+} /* end of f3_elesubmesh */
 
 #endif
