@@ -1,12 +1,14 @@
-#
 #--------------------------------------------------------------------
 #
 # sequentiel part
 #--------------------------------------------------------------------
 #
+#--------------------------------------------------------------------
 # list of possible defines:
+#--------------------------------------------------------------------
 #  
-#  
+#  ELEMENTS:
+#  =========
 # -DD_ALE        defines element ale (2D+3D)
 # -DD_AXISHELL   defines axishell element
 # -DD_BEAM3      defines element beam3
@@ -19,49 +21,77 @@
 # -DD_SHELL8     defines element shell8
 # -DD_SHELL9     defines element shell9
 # -DD_WALL1      defines element wall1
+# -DD_INTERF     defines interface element
+# -DD_WALLGE     defines gradient enhanced wall element
 #
-# -DGEMM         defines Generalized Energy-Momentum Int. Scheme
+#  PROBLEMTYPES:
+#  =============
 # -DD_FLUID      defines general fluid problem
 # -DD_FSI        defines general FSI problem
-# -DD_MAT        defines materials
 # -DD_OPTIM      defines optimization
-# -DRESULTTEST   defines defines result testing before checking in a new version
+# -DD_CONTACT    defines contact algorithms
+#
+#  ADDITIONAL FEATURES:
+#  ====================
+# -DD_MAT        defines materials
 # -DS8CONTACT    defines contact algorithms for shell8 contact
 # -DWALLCONTACT  defines contact algorithms for wall contact
+# -DGEMM         defines Generalized Energy-Momentum Int. Scheme
+#
+#  TOOLS:
+#  ======
+# -DRESULTTEST   defines defines result testing before checking in a new version
 # -DPERF         defines routines for exact time measurements 
+#
+#  PLATFORMS:
+#  ==========
+# -DHPUX10       defines for compilation on HP-UX 10.20
+# -DHPUX11       defines for compilation on HP-UX 11.0
+# -DHPUXITA      defines compilation for Itanium2 running HP-UX 11.23
+# -DSUSE73       defines for compilation and linkage with gcc and g77 on Linux
+# -DAZUSA        defines for compilation on azusa.hww.de
+# -DSUN          defines for compilation and linkage on CUSS Sunfire machine
 #
 # -DDEBUG        defines debug mode: routine and array tracing 
 # -DPARALLEL     defines parallel version of programm
 # -DSIXTYFOUR    defines 64bit compilation and linkage
-# -DSUSE73       defines for compilation and linkage with gcc and g77 on Suselinux
-# -DSUN          defines for compilation and linkage on CUSS Sunfire machine
-# -DAZUSA        defines for compilation on azusa.hww.de
-# -DHPUX10       defines for compilation on HPUX10
-# -DHPUX11       defines for compilation on HPUX11
-# -DHPUXITA      defines compilation for Itanium2 running HPUX11i
-# 
-# -DMLIB_PACKAGE       defines interface to solver library MLIB (HPUX11, sequentiell)
-# -DHYPRE_PACKAGE      defines interface to solver library HYPRE (not yet impl.)
+#
+#  SOLVERS:
+#  ========
 # -DAZTEC_PACKAGE      defines interface to solver library AZTEC
-# -DPARSUPERLU_PACKAGE defines interface to solver library ParSuperLU
-# -DSUPERLU_PACKAGE    defines interface to solver library SuperLU 
-# -DMUMPS_PACKAGE      defines interface to solver library Mumps (only in parallel HPUX11)
 # -DUMFPACK            defines interface to solver library Umfpack
 # -DSPOOLES_PACKAGE    defines interface to solver library Spooles (only in parallel HPUX11)
 #
+#  INACTIVE SOLVERS:
+#  =================
+# -DMLIB_PACKAGE       defines interface to solver library MLIB (HPUX11, sequentiell)
+# -DHYPRE_PACKAGE      defines interface to solver library HYPRE (not yet impl.)
+# -DPARSUPERLU_PACKAGE defines interface to solver library ParSuperLU
+# -DSUPERLU_PACKAGE    defines interface to solver library SuperLU 
+# -DMUMPS_PACKAGE      defines interface to solver library Mumps (only in parallel HPUX11)
+#
+#  VISUAL:
+#  =======
 # -DVISUAL2_PACKAGE    defines visualisation tool VISUAL2 (only in seriell)
 # -DVISUAL3_PACKAGE    defines visualisation tool VISUAL3 (only in seriell)
+#
+#
+#--------------------------------------------------------------------
+#  use these defines for compilation
+#--------------------------------------------------------------------
+PFL   = -DHPUX11 \
+	-DD_FLUID -DD_FLUID2 -DD_FLUID3 -DD_FSI -DD_ALE \
+	-DD_AXISHELL -DD_BRICK1 -DD_OPTIM -DD_BEAM3 -DD_SHELL9 -DD_MAT \
+	-DD_SHELL8 -DD_CONTACT -DS8CONTACT \
+        -DD_WALL1 -DD_INTERF  -DD_WALLGE\
+        -DRESULTTEST -DPERF \
+        -DUMFPACK -DAZTEC_PACKAGE
+#
 #--------------------------------------------------------------------
 #
 FXX=f90
 CCX=cc
 LDX=f90
-PFL	 = -DHPUX11 -DD_FLUID -DD_FSI -DD_OPTIM -DD_MAT \
-	   -DD_FLUID2 -DD_FLUID3 -DD_ALE -DD_BRICK1 -DD_SHELL8 -DD_SHELL9 \
-	   -DD_FLUID2_PRO -DD_BEAM3 -DD_AXISHELL -DD_WALL1 \
-	   -DAZTEC_PACKAGE -DUMFPACK -DRESULTTEST
-#
-#--------------------------------------------------------------------
 #
 CC	 = $(CCX)
 LD       = $(FXX)
@@ -82,30 +112,34 @@ RM	 = /bin/rm -f
 #AZTEC         = -laztec_seq21_32
 #UMFPACK       = -lumfpack40_hpux11_32
 #------------------------------------------------ this is debug-64bit
-#PROGRAM_NAME	= cca_seq_64_debg.exe
-#CFLAGS 	= -D__HP__ -Aa -Ae +DD64 -g +w1 ${PFL} -DDEBUG -DSIXTYFOUR
-#FFLAGS 	= +DA2.0W -g
-#LDFLAGS	= +DA2.0W -v
-#AZTEC  	= -laztec_seq21_64
-#UMFPACK	= -lumfpack40_hpux11_64
+PROGRAM_NAME	= cca_seq_64_debg.exe
+CFLAGS 	= -D__HP__ -Aa -Ae +DD64 -g +w1 ${PFL} -DDEBUG -DSIXTYFOUR
+FFLAGS 	= +DA2.0W -g
+LDFLAGS	= +DA2.0W -v
+AZTEC  	= -laztec_seq21_64
+UMFPACK	= -lumfpack40_hpux11_64
 #------------------------------------------------- this is fast-64bit
-PROGRAM_NAME   = cca_seq_64_fast.exe					
-CFLAGS         = -D__HP__ -Aa -Ae +DD64 -O +w1 ${PFL} -DSIXTYFOUR	
-FFLAGS         = +DA2.0W -O						
-LDFLAGS        = +DA2.0W -v						
-AZTEC	       = -laztec_seq21_64					
-UMFPACK        = -lumfpack40_hpux11_64 				
+#PROGRAM_NAME   = cca_seq_64_fast.exe
+#CFLAGS         = -D__HP__ -Aa -Ae +DD64 -O +w1 ${PFL} -DSIXTYFOUR
+#FFLAGS         = +DA2.0W -O
+#LDFLAGS        = +DA2.0W -v
+#AZTEC	       = -laztec_seq21_64
+#UMFPACK        = -lumfpack40_hpux11_64
 #--------------------------------------------------------------------
 #---------------------------------------------------- VISUAL2/VISUAL3
 # VISUAL2/VISUAL3 cannot linked together into one executable!!!
-OPENGL          = -L/opt/graphics/OpenGL/lib -lGLU -lGL 
-PEX5            = -L/opt/graphics/PEX5/lib -lPEX5 
+OPENGL          = -L/opt/graphics/OpenGL/lib -lGLU -lGL
+PEX5            = -L/opt/graphics/PEX5/lib -lPEX5
 VISUAL3         = $(OPENGL) $(PEX5) -lVisual3 -lX11 -lXext -lXi
 VISUAL2         = -lVisual2 -lX11
 #VISUAL          = $(VISUAL3)
 VISUAL          =
 #--------------------------------------------------------------------
-INCLUDES        = -I/opt/mlib/include
+LIBDIR = /bau/stat16/users/statik/ccarat/lib/hpux_11
+
+
+INCLUDES        = -I/opt/mlib/include \
+		  -I/bau/stat16/users/statik/ccarat/include
 
 
 LDOPTS          = -a archive -v
@@ -113,9 +147,9 @@ LDOPTS          = -a archive -v
 
 LIBS	        =  -L/usr/lib \
                    -L/opt/mlib/lib/pa2.0 \
-                   -L/bau/stat16/users/statik/lib/AZTEC21\
-                   -L/bau/stat16/users/statik/lib/UMFPACK/lib \
-                   -L/bau/stat16/users/statik/lib \
+                   -L$(LIBDIR)/aztec21\
+                   -L$(LIBDIR)/umfpack \
+                   -L$(LIBDIR)/visual \
                    $(AZTEC) \
                    $(UMFPACK) \
                    $(VISUAL) \

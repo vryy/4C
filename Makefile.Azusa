@@ -1,7 +1,13 @@
 #--------------------------------------------------------------------
+#    Makefile CCARAT (parallel and sequentiel)
+#--------------------------------------------------------------------
+#
+#--------------------------------------------------------------------
 # list of possible defines:
 #--------------------------------------------------------------------
 #  
+#  ELEMENTS:
+#  =========
 # -DD_ALE        defines element ale (2D+3D)
 # -DD_AXISHELL   defines axishell element
 # -DD_BEAM3      defines element beam3
@@ -14,45 +20,72 @@
 # -DD_SHELL8     defines element shell8
 # -DD_SHELL9     defines element shell9
 # -DD_WALL1      defines element wall1
-#
-# -DGEMM         defines Generalized Energy-Momentum Int. Scheme
-# -DD_FLUID      defines general fluid problem
-# -DD_FSI        defines general FSI problem
-# -DD_MAT        defines materials
-# -DD_OPTIM      defines optimization
-# -DRESULTTEST   defines defines result testing before checking in a new version
-# -DS8CONTACT    defines contact algorithms for shell8 contact
-# -DWALLCONTACT  defines contact algorithms for wall contact
 # -DD_INTERF     defines interface element
 # -DD_WALLGE     defines gradient enhanced wall element
+#
+#  PROBLEMTYPES:
+#  =============
+# -DD_FLUID      defines general fluid problem
+# -DD_FSI        defines general FSI problem
+# -DD_OPTIM      defines optimization
+# -DD_CONTACT    defines contact algorithms
+#
+#  ADDITIONAL FEATURES:
+#  ====================
+# -DD_MAT        defines materials
+# -DS8CONTACT    defines contact algorithms for shell8 contact
+# -DWALLCONTACT  defines contact algorithms for wall contact
+# -DGEMM         defines Generalized Energy-Momentum Int. Scheme
+#
+#  TOOLS:
+#  ======
+# -DRESULTTEST   defines defines result testing before checking in a new version
 # -DPERF         defines routines for exact time measurements 
+#
+#  PLATFORMS:
+#  ==========
+# -DHPUX10       defines for compilation on HP-UX 10.20
+# -DHPUX11       defines for compilation on HP-UX 11.0
+# -DHPUXITA      defines compilation for Itanium2 running HP-UX 11.23
+# -DSUSE73       defines for compilation and linkage with gcc and g77 on Linux
+# -DAZUSA        defines for compilation on azusa.hww.de
+# -DSUN          defines for compilation and linkage on CUSS Sunfire machine
 #
 # -DDEBUG        defines debug mode: routine and array tracing 
 # -DPARALLEL     defines parallel version of programm
 # -DSIXTYFOUR    defines 64bit compilation and linkage
-# -DSUSE73       defines for compilation and linkage with gcc and g77 on Suselinux
-# -DSUN          defines for compilation and linkage on CUSS Sunfire machine
-# -DAZUSA        defines for compilation on azusa.hww.de
-# -DHPUX10       defines for compilation on HPUX10
-# -DHPUX11       defines for compilation on HPUX11
-# -DHPUXITA      defines compilation for Itanium2 running HPUX11i
-# 
-# -DMLIB_PACKAGE       defines interface to solver library MLIB (HPUX11, sequentiell)
-# -DHYPRE_PACKAGE      defines interface to solver library HYPRE (not yet impl.)
+#
+#  SOLVERS:
+#  ========
 # -DAZTEC_PACKAGE      defines interface to solver library AZTEC
-# -DPARSUPERLU_PACKAGE defines interface to solver library ParSuperLU
-# -DSUPERLU_PACKAGE    defines interface to solver library SuperLU 
-# -DMUMPS_PACKAGE      defines interface to solver library Mumps (only in parallel HPUX11)
 # -DUMFPACK            defines interface to solver library Umfpack
 # -DSPOOLES_PACKAGE    defines interface to solver library Spooles (only in parallel HPUX11)
 #
+#  INACTIVE SOLVERS:
+#  =================
+# -DMLIB_PACKAGE       defines interface to solver library MLIB (HPUX11, sequentiell)
+# -DHYPRE_PACKAGE      defines interface to solver library HYPRE (not yet impl.)
+# -DPARSUPERLU_PACKAGE defines interface to solver library ParSuperLU
+# -DSUPERLU_PACKAGE    defines interface to solver library SuperLU 
+# -DMUMPS_PACKAGE      defines interface to solver library Mumps (only in parallel HPUX11)
+#
+#  VISUAL:
+#  =======
 # -DVISUAL2_PACKAGE    defines visualisation tool VISUAL2 (only in seriell)
 # -DVISUAL3_PACKAGE    defines visualisation tool VISUAL3 (only in seriell)
 #
+#
 #--------------------------------------------------------------------
-PFL	   =  -DAZUSA -DSIXTYFOUR -DPARALLEL -DD_SHELL8 -DD_BRICK1 -DD_FLUID -DS8CONTACT -DD_CONTACT \
-	      -DD_FLUID2 -DD_FLUID3 -DD_ALE -DD_WALL1 -DD_SHELL9 -DD_BEAM3 -DD_AXISHELL \
-            -DD_MAT -DSPOOLES_PACKAGE
+#  use these defines for compilation
+#--------------------------------------------------------------------
+PFL1  = -DAZUSA -DSIXTYFOUR -DPARALLEL \
+	-DD_FLUID -DD_FLUID2 -DD_FLUID3 -DD_FSI -DD_ALE \
+	-DD_AXISHELL -DD_BRICK1 -DD_OPTIM -DD_BEAM3 -DD_SHELL9 -DD_MAT \
+	-DD_SHELL8 -DD_CONTACT -DS8CONTACT \
+        -DD_WALL1 -DD_INTERF  -DD_WALLGE\
+        -DRESULTTEST -DPERF \
+        -DUMFPACK -DAZTEC_PACKAGE
+#
 #
 # set correct HOMEDIR to the directory where you placed ccarat 
 #place the com director from lib_azusa.tar.gz into your home

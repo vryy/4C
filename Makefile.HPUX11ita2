@@ -1,15 +1,13 @@
 #--------------------------------------------------------------------
-# include path to the source
-#--------------------------------------------------------------------
-include ./Makefile.personal_path
-#
-# Ausschalten der Ausgabe von Kommandos durch Make
-#.SILENT:
-#
+#    Makefile CCARAT (parallel and sequentiel)
 #--------------------------------------------------------------------
 #
+#--------------------------------------------------------------------
 # list of possible defines:
+#--------------------------------------------------------------------
 #  
+#  ELEMENTS:
+#  =========
 # -DD_ALE        defines element ale (2D+3D)
 # -DD_AXISHELL   defines axishell element
 # -DD_BEAM3      defines element beam3
@@ -22,63 +20,90 @@ include ./Makefile.personal_path
 # -DD_SHELL8     defines element shell8
 # -DD_SHELL9     defines element shell9
 # -DD_WALL1      defines element wall1
-#
-# -DGEMM         defines Generalized Energy-Momentum Int. Scheme
-# -DD_FLUID      defines general fluid problem
-# -DD_FSI        defines general FSI problem
-# -DD_MAT        defines materials
-# -DD_OPTIM      defines optimization
-# -DRESULTTEST   defines defines result testing before checking in a new version
-# -DS8CONTACT    defines contact algorithms for shell8 contact
-# -DWALLCONTACT  defines contact algorithms for wall contact
 # -DD_INTERF     defines interface element
 # -DD_WALLGE     defines gradient enhanced wall element
+#
+#  PROBLEMTYPES:
+#  =============
+# -DD_FLUID      defines general fluid problem
+# -DD_FSI        defines general FSI problem
+# -DD_OPTIM      defines optimization
+# -DD_CONTACT    defines contact algorithms
+#
+#  ADDITIONAL FEATURES:
+#  ====================
+# -DD_MAT        defines materials
+# -DS8CONTACT    defines contact algorithms for shell8 contact
+# -DWALLCONTACT  defines contact algorithms for wall contact
+# -DGEMM         defines Generalized Energy-Momentum Int. Scheme
+#
+#  TOOLS:
+#  ======
+# -DRESULTTEST   defines defines result testing before checking in a new version
 # -DPERF         defines routines for exact time measurements 
+#
+#  PLATFORMS:
+#  ==========
+# -DHPUX10       defines for compilation on HP-UX 10.20
+# -DHPUX11       defines for compilation on HP-UX 11.0
+# -DHPUXITA      defines compilation for Itanium2 running HP-UX 11.23
+# -DSUSE73       defines for compilation and linkage with gcc and g77 on Linux
+# -DAZUSA        defines for compilation on azusa.hww.de
+# -DSUN          defines for compilation and linkage on CUSS Sunfire machine
 #
 # -DDEBUG        defines debug mode: routine and array tracing 
 # -DPARALLEL     defines parallel version of programm
 # -DSIXTYFOUR    defines 64bit compilation and linkage
-# -DSUSE73       defines for compilation and linkage with gcc and g77 on Suselinux
-# -DSUN          defines for compilation and linkage on CUSS Sunfire machine
-# -DAZUSA        defines for compilation on azusa.hww.de
-# -DHPUX10       defines for compilation on HPUX10
-# -DHPUX11       defines for compilation on HPUX11
-# -DHPUXITA      defines compilation for Itanium2 running HPUX11i
-# 
-# -DMLIB_PACKAGE       defines interface to solver library MLIB (HPUX11, sequentiell)
-# -DHYPRE_PACKAGE      defines interface to solver library HYPRE (not yet impl.)
+#
+#  SOLVERS:
+#  ========
 # -DAZTEC_PACKAGE      defines interface to solver library AZTEC
-# -DPARSUPERLU_PACKAGE defines interface to solver library ParSuperLU
-# -DSUPERLU_PACKAGE    defines interface to solver library SuperLU 
-# -DMUMPS_PACKAGE      defines interface to solver library Mumps (only in parallel HPUX11)
 # -DUMFPACK            defines interface to solver library Umfpack
 # -DSPOOLES_PACKAGE    defines interface to solver library Spooles (only in parallel HPUX11)
 #
+#  INACTIVE SOLVERS:
+#  =================
+# -DMLIB_PACKAGE       defines interface to solver library MLIB (HPUX11, sequentiell)
+# -DHYPRE_PACKAGE      defines interface to solver library HYPRE (not yet impl.)
+# -DPARSUPERLU_PACKAGE defines interface to solver library ParSuperLU
+# -DSUPERLU_PACKAGE    defines interface to solver library SuperLU 
+# -DMUMPS_PACKAGE      defines interface to solver library Mumps (only in parallel HPUX11)
+#
+#  VISUAL:
+#  =======
 # -DVISUAL2_PACKAGE    defines visualisation tool VISUAL2 (only in seriell)
 # -DVISUAL3_PACKAGE    defines visualisation tool VISUAL3 (only in seriell)
+#
+#
 #--------------------------------------------------------------------
+#  use these defines for compilation
+#--------------------------------------------------------------------
+PFL1  = -DHPUXITA \
+	-DD_FLUID -DD_FLUID2 -DD_FLUID3 -DD_FSI -DD_ALE \
+	-DD_AXISHELL -DD_BRICK1 -DD_OPTIM -DD_BEAM3 -DD_SHELL9 -DD_MAT \
+	-DD_SHELL8 -DD_CONTACT -DS8CONTACT \
+        -DD_WALL1 -DD_INTERF  -DD_WALLGE\
+        -DRESULTTEST -DPERF \
+        -DUMFPACK -DAZTEC_PACKAGE
+#
 #====================================================================
 # parallel part
 #====================================================================
-FXX	= /opt/mpi/bin/mpif90
-CCX	= /opt/mpi/bin/mpicc 
-LDX	= /opt/mpi/bin/mpif90 
-PFL	= -DPARALLEL -DHPUXITA -DD_FLUID\
-	  -DD_FLUID2\
-	  -DSPOOLES_PACKAGE -DAZTEC_PACKAGE
-NAME	= par
-MPI	= -lmpi
+#FXX	= /opt/mpi/bin/mpif90
+#CCX	= /opt/mpi/bin/mpicc 
+#LDX	= /opt/mpi/bin/mpif90 
+#PFL	= $(PFL1) -DPARALLEL
+#NAME	= par
+#MPI	= -lmpi
 #====================================================================
 # sequentiell part
 #====================================================================
-#FXX	 = f90
-#CCX	 = cc 
-#LDX	 = f90 
-#PFL	 = -DHPUXITA -DD_FLUID -DD_FSI -DD_OPTIM -DS8CONTACT -DD_CONTACT  \
-#	   -DD_FLUID2 -DD_FLUID3 -DD_WALL1 -DD_SHELL9 -DD_BRICK1 -DD_SHELL8 \
-#	   -DD_ALE -DD_AXISHELL -DD_MAT -DAZTEC_PACKAGE
-#NAME	 = seq
-#MPI	 = 
+FXX	 = f90
+CCX	 = cc 
+LDX	 = f90 
+PFL	 = $(PFL1)
+NAME	 = seq
+MPI	 = 
 #--------------------------------------------------------------------     
 #------------------------------------------------- this is debg-32bit
 #PROGRAM_NAME  = cca_$(NAME)_32_debg.11i
@@ -128,28 +153,39 @@ F90      = $(FXX)
 LD       = $(LDX)
 RM	 = /bin/rm -f
 #
+#
 #--------------------------------------------------------------------
 # libs
 #--------------------------------------------------------------------
-LIBS	      =  -L/bau/stat16/users/statik/lib/lib_ita2_hpux/metis \
-                 -L/bau/stat16/users/statik/lib/lib_ita2_hpux/aztec21/lib \
-                 -L/bau/stat16/users/statik/lib/lib_ita2_hpux/umfpack/lib \
-                 -L/bau/stat16/users/statik/lib/lib_ita2_hpux/spooles \
+LIBDIR = /bau/stat16/users/statik/ccarat/lib/hpux_ita2
+
+LIBS	      =  -L$(LIBDIR)/metis \
+                 -L$(LIBDIR)/aztec21 \
+                 -L$(LIBDIR)/umfpack \
+                 -L$(LIBDIR)/spooles \
                  $(METIS) \
                  $(AZTEC) \
                  $(UMFPACK) \
                  $(SPOOLES) \
                  -lcl -lc -lm -lveclib -llapack $(MPI)  
+#
+#
+#--------------------------------------------------------------------
+# includes
+#--------------------------------------------------------------------
+INCLUDES = -I/bau/stat16/users/statik/ccarat/include
+#
+#
 #----------------------- binaries -----------------------------------
 include ./Makefile.objects
 #--------------------------------------------------------------------                
 #
 #
-# targets
+SRC=.
+#
 #
 PROGRAM       = $(PROGRAM_NAME)
 #
-# dependencies
 #
 $(PROGRAM):     $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) $(OBJS7) $(OBJS8) \
                 $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) $(OBJS14) $(OBJS15) \
@@ -159,153 +195,128 @@ $(PROGRAM):     $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) $(OBJS7) $
 		@$(LD) $(LDFLAGS) $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) \
                 $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) \
                 $(OBJS14) $(OBJS15) $(OBJS16) $(OBJS17) $(OBJS18) $(OBJS19) $(OBJS20) \
-		$(OBJS_OPT) $(OBJS_AXISHELL)  $(OBJS_MAT) $(OBJS_F2PRO) $(OBJS_IF) $(OBJS_WALLGE) \
+		$(OBJS_OPT) $(OBJS_AXISHELL)  $(OBJS_MAT) $(OBJS_F2PRO) $(OBJS_IF) \
+		$(OBJS_WALLGE) \
 		$(LIBS) $(INCLUDES) -o $(PROGRAM)
 		@echo "done"
 
-#
-$(OBJS1):     
+
+$(OBJS1):
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
-		@echo "MainMake is back."
-#
+		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+
 $(OBJS2):     
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
-		@echo "MainMake is back."
-#
+		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+
 $(OBJS3):     
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
-		@echo "MainMake is back."
-#
+		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+
 $(OBJS4):     
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
-		@echo "MainMake is back."
-#
+		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+
 $(OBJS5):     
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
-		@echo "MainMake is back."
-#
+		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+
 $(OBJS6):     
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
-		@echo "MainMake is back."
-#
+		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+
 $(OBJS7):     
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
-		@echo "MainMake is back."
-#
+		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+
 $(OBJS8):     
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
-		@echo "MainMake is back."
-#
+		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+
 $(OBJS9):     
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
-		@echo "MainMake is back."
-#
+		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+
 $(OBJS10):     
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
-		@echo "MainMake is back."
-#
+		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+
 $(OBJS11):     
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
-		@echo "MainMake is back."
-#
+		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+
 $(OBJS12):     
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
-		@echo "MainMake is back."
-#
+		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+
 $(OBJS14):     
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
-		@echo "MainMake is back."
-#
+		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+
 $(OBJS15):     
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
-		@echo "MainMake is back."
-#
+		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+
 $(OBJS16):     
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
-		@echo "MainMake is back."
-#
+		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+
 $(OBJS17):     
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
-		@echo "MainMake is back."
-#
+		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+
 $(OBJS18):     
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
-		@echo "MainMake is back."
-#
+		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+
 $(OBJS19):     
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
-		@echo "MainMake is back."
-#
+		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+
 $(OBJS20):     
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
-		@echo "MainMake is back."
-#
+		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+
 $(OBJS_OPT):     
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
-		@echo "MainMake is back."
-#
+		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+
 $(OBJS_AXISHELL):     
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
-		@echo "MainMake is back."
-#
+		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+
 $(OBJS_MAT):     
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
-		@echo "MainMake is back."
-#
-$(OBJS_F2PRO):     
+		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+
+$(OBJS_F2PRO):
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
-		@echo "MainMake is back."
-#
-$(OBJS_IF):     
+		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+		
+$(OBJS_IF):
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
-		@echo "MainMake is back."
-#
-$(OBJS_WALLGE):     
+		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+
+$(OBJS_WALLGE):
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
-		@echo "MainMake is back."
-# FORTRAN90
+		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+
+# fortran
 $(OBJS13):     
 		@echo "Making $@ ..."
-		cd ${SRC}; cd ${@D}; $(F90) $(FFLAGS)  -c  ${<F}
-		@echo "MainMake is back."
-#
+		$(F90) $(FFLAGS)  -c ${SRC}/${@D}/$(*F).f -o ${SRC}/$@
 
 .c.o:
-	@ echo "$@ wird kompiliert...."
-	$(CC) $(CFLAGS) $(INCLUDES) -c  $<
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 .f.o:
-	@ echo "$@ wird kompiliert...."
-	$(FXX) $(FFLAGS) $(INCLUDES) -c  $<
+	$(F90) $(FFLAGS) $(INCLUDES) -c $< -o $@
+
 clean:
 	rm -rf  $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) \
                 $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) \
                 $(OBJS13) $(OBJS14) $(OBJS15) $(OBJS16) $(OBJS17) $(OBJS18) \
-		$(OBJS19) $(OBJS20) $(OBJS_OPT) $(OBJS_AXISHELL) $(OBJS_MAT) \
-		$(OBJS_F2PRO) $(OBJS_WALLGE) $(OBJS_F2PRO)
-$
+		$(OBJS19) $(OBJS20) \
+		$(OBJS_OPT) $(OBJS_AXISHELL) $(OBJS_MAT) $(OBJS_F2PRO) \
+		$(OBJS_WALLGE) $(OBJS_IF)
+
