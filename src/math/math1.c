@@ -450,13 +450,13 @@ return;
  |            uses LAPACKS dgetrf and dgetri routines                   |
  |                                                                      |
  *----------------------------------------------------------------------*/
+static DOUBLE   Inverse[4000000];
 void math_unsym_inv(DOUBLE **A, INT dimr, INT dimc)
 {
 INT      i,j;
 INT      ipiv[2000];
 INT      lwork=2000;
 DOUBLE   work[2000];
-DOUBLE   Inverse[4000000];
 INT      info=0;
 
 #ifdef DEBUG 
