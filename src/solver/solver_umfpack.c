@@ -155,7 +155,12 @@ case 0:
 #endif
 
        /* symbolic factorization */
+#if defined(LINUX_MUENCH) || defined(HPUX_MUENCH)
+       status = umfpack_di_symbolic (n, n, Ap, Ai, Ax, &symbolic, control, info);
+#else
        status = umfpack_di_symbolic (n, n, Ap, Ai, &symbolic, control, info);
+#endif
+       
 #ifdef DEBUG 
        if (status < 0)
        {
