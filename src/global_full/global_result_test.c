@@ -116,6 +116,15 @@ DOUBLE get_node_result_value(NODE* actnode, CHAR* position)
   if (parse_position_descr(position, "sol", 2, args) == 1) {
     return actnode->sol.a.da[args[0]][args[1]];
   }
+  else if (parse_position_descr(position, "sol_increment", 2, args) == 1) {
+    return actnode->sol_increment.a.da[args[0]][args[1]];
+  }
+  else if (parse_position_descr(position, "sol_residual", 2, args) == 1) {
+    return actnode->sol_residual.a.da[args[0]][args[1]];
+  }
+  else if (parse_position_descr(position, "sol_mf", 2, args) == 1) {
+    return actnode->sol_mf.a.da[args[0]][args[1]];
+  }
   else {
     dserror("Unknown position specifier");
     return 1234567890;
