@@ -15,6 +15,7 @@ typedef struct _OPTI
      }                    opttype;
 
      INT                  numiter;  /* total number of iteration steps  */
+     INT                  graph_out;/* graphical output every ? step AS */
                                
      enum 
      {                              /* type of optimization strategy    */
@@ -108,6 +109,7 @@ typedef struct _OSFSD
 {
      INT     numiter;   /* number of iteration steps with fsd           */
      INT      numvar;   /* number number of independent opt. variables  */
+     INT  numvar_lin;   /* no. of elements with density as opt. var. when linking. AS */
      DOUBLE   grdinc;   /* forward difference step increment            */
      
      EVGRAD    fgrad;   /* evaluation of function gradients             */
@@ -123,6 +125,9 @@ typedef struct _OSFSD
      DOUBLE    *var   ;
      DOUBLE    *resu  ;
      DOUBLE    *resl  ;
+     DOUBLE    *grdobj_lin;     /* resized grdobj vector for linking AS*/
+     DOUBLE    *grdcon_lin;     /* resized grdcon vector for linking AS*/
+     DOUBLE    *var_lin   ;     /* resized var    vector for linking AS*/
 
 
 } OSFSD;
@@ -228,6 +233,8 @@ typedef struct _OBTV
      DOUBLE blower     ;/*  lower limitation of opt. variable           */
      
      INT    linked     ;/*  prescribed linking                          */
+     DOUBLE  myweight   ;/*  weighting factor for linking               */
+     DOUBLE  neweight   ;/* weighting factor for linking                */
      LINKR olin_type;          /* type of objects to be linked with              */
 } OBTV;
 /*----------------------------------------------------------------------*
@@ -323,6 +330,8 @@ typedef struct _ORES
 typedef struct _OLIN
 {
      INT objIds[2];   /* object Ids (design nodes, material numbers ... */
+     DOUBLE  myweight   ;/* weighting factor for linking                   */
+     DOUBLE  neweight   ;/* weighting factor for linking                   */
      
      LINKR olin_type;          /* type of objects to be linked with              */
 } OLIN;

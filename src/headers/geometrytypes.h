@@ -69,7 +69,8 @@ typedef struct _ELEMENT
 /*----------------------------------------------------------------------*/
 #ifdef D_OPTIM                   /* include optimization code to ccarat */
 /*----------------------------------------------------------------------*/
-     int *optdata;                  /* optimization variable number ... */
+     INT    *optdata;               /* optimization variable number ... */
+     DOUBLE mylinweight;    /*element weighting for material linking AS */  
 /*----------------------------------------------------------------------*/
 #endif                   /* stop including optimization code to ccarat :*/
 /*----------------------------------------------------------------------*/
