@@ -464,6 +464,7 @@ if (dim > recv.fdim)
    amdel(&recv);
    recvbuff = amdef("recvbuff",&recv,dim,1,"DV");
 }
+amzero(&recv);
 #endif
 /*----------------------------------------------------------------------*/
 for (i=0; i<dim; i++) fullvec[i] = 0.0;
