@@ -226,6 +226,7 @@ set the dof numbers at the free surface:
 ------------------------------------------------------------------------*/
 void fluid_freesurf_setdofs()
 {
+#ifdef D_FSI
 INT i,j;
 FIELD *fluidfield;
 FLUID_DYNAMIC *fdyn;
@@ -237,7 +238,6 @@ GNODE *actgnode;
 dstrc_enter("fluid_freesurf_setdofs");
 #endif
 
-#ifdef D_FSI
 /*------------------------------------- leave if there's no fluid field */
 dsassert(genprob.numff>=0,"No fluid field in fluid function!\n");
 
@@ -289,14 +289,11 @@ if (fdyn->freesurf>0)
       }
    }
 }
-#else
-dserror("FSI-functions not compiled in!\n");
-#endif
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
 #endif
-
+#endif
 return;
 } /* end of fluid_createfreesurf*/
 /*!--------------------------------------------------------------------- 
@@ -315,6 +312,7 @@ modifactions are done in this function.
 ------------------------------------------------------------------------*/
 void fluid_modcoor()
 {
+#ifdef D_FSI
 INT     j;                              /* simply some counters       */
 DOUBLE  a;
 DOUBLE  y,x;
@@ -328,7 +326,6 @@ DOUBLE eta,H,d,fac,fac1,sech;
 dstrc_enter("fluid_modcoor");
 #endif
 
-#ifdef D_FSI
 
 /*--------------------------- modify coordinates for free oszillation */ 
 /*                            (Ramaswamy 1990)                        */
@@ -477,14 +474,11 @@ if (strncmp(allfiles.title[0],"wavebreak",9)==0)
    }
 }
 
-#else
-dserror("FSI-functions not compiled in!\n");
-#endif
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
 #endif
-
+#endif
 return;
 } /* end of fluid_modcoor*/
 
