@@ -8,6 +8,7 @@
 *----------------------------------------------------------------------*/
 #ifdef D_SHELL9
 #include "../headers/standardtypes.h"
+#include "../materials/mat_prototypes.h"
 #include "shell9.h"
 
 /*! 
@@ -21,14 +22,18 @@
 This routine calls the different material laws implemented for this 
 element.
 </pre>
-\param  ELEMENT   *ele      (i)  the element structure -> 'ele->e.s9->stresses.a.d3'
-\param  MULTIMAT  *multimat (i)  the material structure (shell9 -> multimat)
-\param  DOUBLE    *stress   (o)  PK_II stresses from constitutive law
-\param  DOUBLE    *strain   (o)  green-lagrange strains from metrics
-\param  DOUBLE   **C        (o)  constitutive matrix
-\param  DOUBLE   **gmkovc,..(i)  all the metrics in ref/cur configuration
-\param  INT        rot_axis (i)  rotation axis of laminat (1=x-; 2=y-; 3=z-axis)
-\param  DOUBLE     phi      (i)  angle of rotation about rot_axis
+\param  ELEMENT   *ele       (i)  the element structure -> 'ele->e.s9->stresses.a.d3'
+\param  MULTIMAT  *multimat  (i)  the material structure (shell9 -> multimat)
+\param  DOUBLE     stress[6] (o)  PK_II stresses from constitutive law
+\param  DOUBLE     strain[6] (o)  green-lagrange strains from metrics
+\param  DOUBLE   **C         (o)  constitutive matrix
+\param  DOUBLE   **gmkovc,.. (i)  all the metrics in ref/cur configuration
+\param  INT        rot_axis  (i)  rotation axis of laminat (1=x-; 2=y-; 3=z-axis)
+\param  DOUBLE     phi       (i)  angle of rotation about rot_axis
+\param  INT        ip        (i)  the actual integration point
+\param  INT        actlay    (i)  the actual layer
+\param  INT        istore    (i)  controls storing of new stresses to wa
+\param  INT        newval    (i)  controls evaluation of new stresses
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -38,20 +43,24 @@ element.
 *----------------------------------------------------------------------*/
 void s9_call_mat(ELEMENT    *ele,
                  MULTIMAT   *multimat,    /* material of actual material layer */
-                 DOUBLE     *stress,
-                 DOUBLE     *strain,
+                 DOUBLE      stress[6],
+                 DOUBLE      strain[6],
                  DOUBLE    **C,
                  DOUBLE    **gmkovc,
-                 DOUBLE    **gmkonc,
                  DOUBLE    **gmkovr,
                  DOUBLE    **gmkonr,
-                 DOUBLE    **gkovc,
-                 DOUBLE    **gkonc,
                  DOUBLE    **gkovr,
                  DOUBLE    **gkonr,
                  INT         rot_axis,
-                 DOUBLE      phi)
+                 DOUBLE      phi,
+                 INT         ip,
+                 INT         actlay,
+                 INT         istore,/* controls storing of new stresses to wa */
+                 INT         newval)/* controls evaluation of new stresses    */
 {
+DOUBLE g1[3],g2[3],g3[3];
+DOUBLE T[6][6];
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9_call_mat");
 #endif
@@ -60,55 +69,137 @@ switch(multimat->mattyp)
 {
 case m_stvenant:/*-------------------------- ST.VENANT-KIRCHHOFF-MATERIAL */
    s9_eps(strain,gmkovc,gmkovr); 
-   s9_mat_linel(multimat->m.stvenant,gmkonr,C);
-   s9_mat_stress1(stress,strain,C);
+   
+   /*get material matrix directly in curvilinear coordsys*/
+/*   s9_mat_linel(multimat->m.stvenant,gmkonr,C);*/
 
-   /********** for TESTING issues ************************/
-   /*calculate C-Matrix and stresses in orthonormal basis*/
-/*   s9_mat_linel3D(multimat->m.stvenant->youngs,
-                  multimat->m.stvenant->possionratio,
-                  C);
-/*   s9_matrix_sort(C,"brick","s9");   
-
-   /*transform strains from curvilinear to cartesian*/ 
-/*   s9tcuca (strain,gkovr,"CUCA","E");
-
-   s9_mat_stress1(stress,strain,C);
-
-   /*transform  strains and stresses from cartesian to curvilinear */
-/*   s9tcuca(strain,gkovr,"CACU","E");
-   s9tcuca(stress,gkovr,"CACU","S");
+/********** for TESTING issues ************************/
+   /*calculate C-Matrix in orthonormal basis*/
+   mat_el_iso(multimat->m.stvenant->youngs,
+              multimat->m.stvenant->possionratio,
+              C);
+   /*sort C-Matrix from "brick" to "shell9" */ 
+   s9_Msort_bs9(C); 
 
    /*transform the C-Matrix from cartesian to curvilinear*/
-/*   s9T4sym(C,gkonr);   
-   s9shear_cor(C,1.2); /*do modification of matrix due to shear correction*/
-
-   /*transform the C-Matrix from cartesian to curvilinear*/
-/*   s9_mat_linel3D(multimat->m.stvenant->youngs,
-                  multimat->m.stvenant->possionratio,
-                  C);
-   s9_Tcacu(gkonr,C);   
-   s9_matrix_sort(C,"brick","s9");   
-/*   s9shear_cor(C,1.2); /*do modification of matrix due to shear correction*/
-
-/*   s9_mat_stress1(stress,strain,C);
- */
+   s9_Ccacu_sym(C,gkonr);
+   
+   /*do modification of matrix due to shear correction*/
+/*   s9shear_cor(C,1.2); */
+/********** for TESTING issues ************************/
+   
+   s9_mat_stress1(stress,strain,C);
 break;
-case m_orthotropic:/*-----------------linear elastic, orthotropic material */
+case m_el_orth:/*-----------------linear elastic, orthotropic material */
    s9_eps(strain,gmkovc,gmkovr); 
-   s9_mat_orth3D(multimat->m.orthotropic,C);
 
+   /*linear elastic, orthotropic material matrix, formulated in cartesian coordinates -> [11,22,33,12,23,13]*/
+   mat_el_orth(multimat->m.el_orth->emod1,
+               multimat->m.el_orth->emod2,
+               multimat->m.el_orth->emod3,
+               multimat->m.el_orth->xnue12,
+               multimat->m.el_orth->xnue23,
+               multimat->m.el_orth->xnue13,
+               multimat->m.el_orth->gmod12,
+               multimat->m.el_orth->gmod23,
+               multimat->m.el_orth->gmod13,
+               C);
+
+   /* get basis vectors of material coord. sys according to cartesian coord. sys*/
+   s9_rot(phi,rot_axis,gkovr,g1,g2,g3);
+   /* get transformation matrix T_sup_epsilon*/
+   s9_Teps(g1,g2,g3,T);
    /*transform C from orthonormal material coord. sys. to global cartesian*/
-   s9_Tmaca (gkovr,phi,rot_axis,C);
+   s9_Cmaca(C, T);
+
    /*change sorting from [11,22,33,12,23,13] -> [11,12,22,13,23,33]*/
-   s9_matrix_sort(C,"brick","s9");  
+   s9_Msort_bs9(C); 
+
    /*transform the C-Matrix from cartesian to curvilinear*/
-   s9T4sym(C,gkonr);   
+   s9_Ccacu_sym(C,gkonr);   
    
    s9_mat_stress1(stress,strain,C);
 break;
 case m_neohooke:/*------------------------------ kompressible neo-hooke */
    dserror("neohooke not yet implemented");
+break;
+case m_pl_hoff:/*--- anisotropic plasticity model based on hoffman-criterion */
+   s9_eps(strain,gmkovc,gmkovr); 
+
+   /* transform strains from curvilinear to cartesian */
+   s9_Ecuca(strain,gkonr);   
+   /* do sorting from "shell9" = [11,12,22,13,23,33] -> "brick" = [11,22,33,12,23,13] */
+   s9_Vsort_s9b(strain);  
+
+   strain[3] = 2. * strain[3];     /*write strains as vector for transformation*/
+   strain[4] = 2. * strain[4];     /*from cartesian coord. sys to material coord. sys*/
+   strain[5] = 2. * strain[5]; 
+
+   /* get basis vectors of material coord. sys according to cartesian coord. sys*/
+   s9_rot(phi,rot_axis,gkovr,g1,g2,g3);
+   /* get transformation matrix T_sup_epsilon*/
+   s9_Teps(g1,g2,g3,T);
+   /* transform strains from cartesian to material/laminat coord. sys.*/
+   s9_Ecama(strain, T);
+
+   /*von "Hoffman" Plasticity, formulated in cartesian coordinate system, sorting: [11,22,33,12,23,13] */
+   s9_mat_plast_hoff(multimat->m.pl_hoff,  /*!< material properties          */
+                     ele,                  /*!< actual element               */
+                     ip,                   /*!< integration point Id         */
+                     actlay,               /*!< actual layer                 */
+                     stress,               /*!< vector of stresses [11,22,33,12,23,13]  */
+                     strain,               /*!< vector of strains  [11,22,33,12,23,13]  */
+                     C,                    /*!< constitutive matrix          */
+                     istore,               /*!< controls storing of stresses */
+                     newval);              /*!< controls eval. of stresses   */
+                
+
+   /*transform C from orthonormal material coord. sys. to global cartesian*/
+   s9_Cmaca(C, T);
+   /*change sorting from [11,22,33,12,23,13] -> [11,12,22,13,23,33]*/
+   s9_Msort_bs9(C); 
+   /*transform the C-Matrix from cartesian to curvilinear*/
+   s9_Ccacu_unsym(C,gkonr);  
+
+   /*transform stresses from orthonormal material coord. sys. to global cartesian*/
+   s9_Smaca(stress, T);
+   /* do sorting from "brick" = [11,22,33,12,23,13] -> "shell9" = [11,12,22,13,23,33] */
+   s9_Vsort_bs9(stress);  
+   /*transform  stresses from cartesian to curvilinear */
+   s9_Scacu(stress,gkonr);
+break;
+case m_pl_mises:/*--------------------- von mises material law ---*/
+   s9_eps(strain,gmkovc,gmkovr);        /* get strains: curvilinear*/
+
+   /* transform strains from curvilinear to cartesian */
+   s9_Ecuca(strain,gkonr);  
+   /* do sorting from "shell9" = [11,12,22,13,23,33] -> "brick" = [11,22,33,12,23,13] */
+   s9_Vsort_s9b(strain); 
+
+   /*von Mises Plasticity, formulated in cartesian coordinate system, sorting: [11,22,33,12,23,13] */
+   s9_mat_plast_mises(multimat->m.pl_mises->youngs,
+                      multimat->m.pl_mises->possionratio,
+                      multimat->m.pl_mises->Sigy,
+                      multimat->m.pl_mises->Hard,
+                      multimat->m.pl_mises->GF,
+                      multimat->m.pl_mises->betah,
+                      ele,
+                      ip,
+                      actlay,
+                      stress,
+                      strain,
+                      C,
+                      istore,
+                      newval);
+
+   /* do sorting from "brick" = [11,22,33,12,23,13] -> "shell9" = [11,12,22,13,23,33] */
+   s9_Msort_bs9(C);
+   /*transform the C-Matrix from cartesian to curvilinear*/
+   s9_Ccacu_sym(C,gkonr);   
+   /* do sorting from "brick" = [11,22,33,12,23,13] -> "shell9" = [11,12,22,13,23,33] */
+   s9_Vsort_bs9(stress);  
+   /*transform  stresses from cartesian to curvilinear */
+   s9_Scacu(stress,gkonr);
 break;
 default:
    dserror("Ilegal typ of material for this element");
