@@ -77,11 +77,18 @@ ntaini(argc,argv);
 /*--------------------------------input phase, input of all information */
 t0=ds_cputime();
 ntainp();
-ti=ds_cputime();
-ti -= t0;
+ti=ds_cputime()-t0;
+if (par.myrank==0)
+{
+ printf("\n");
+ printf("Total CPU Time for INPUT:       %10.3#E sec \n",ti);
+ printf("\n"); 
+}
 /*--------------------------------close the input file, delete the copy */
 /*---------- You cannot read anything from input file beyond this point */
 frend();
+/*---------------------------------------- check for visualisation mode */
+if (genprob.visual!=0) goto visualisation;
 /*--------------------------------- set up field-specific communicators */
 #ifdef PARALLEL 
 create_communicators();
@@ -89,19 +96,23 @@ create_communicators();
 /*----------------------------------------------------calculation phase */
 t0=ds_cputime();
 ntacal();
-tc=ds_cputime();
-tc -= t0;
+tc=ds_cputime()-t0;
 #ifdef PARALLEL 
 MPI_Barrier(MPI_COMM_WORLD);
 #endif
 if (par.myrank==0)
 {
  printf("\n");
- printf("Total CPU Time for INPUT:       %10.3#E sec \n",ti);
  printf("Total CPU Time for CALCULATION: %10.3#E sec \n",tc);
  printf("\n"); 
 }
+goto endcal;
 /*----------------------------------------------------------------------*/
+visualisation:
+if (genprob.visual==2 || genprob.visual==3)
+ntavisual();
+/*----------------------------------------------------------------------*/
+endcal:
 #ifdef DEBUG 
 dstrc_exit();
 #endif
