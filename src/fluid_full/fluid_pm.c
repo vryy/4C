@@ -81,7 +81,7 @@ extern ALLDYNA      *alldyn;
  | INT                   numcurve;                                      |
  | struct _CURVE      *curve;                                           |
  *----------------------------------------------------------------------*/
-extern INT     numcurve=1;            /*set the number of curves to one */
+extern INT     numcurve;              /*set the number of curves to one */
 extern struct _CURVE *curve;
 /*----------------------------------------------------------------------*
  | enum _CALC_ACTION                                      m.gee 1/02    |
@@ -183,6 +183,8 @@ dstrc_enter("fluid_pm");
  *======================================================================*/
 /*--------------------------------------------------- set some pointers */
 /*---------------------------- only valid for single field problem !!!! */
+if (numcurve>1)
+   dserror("only one curve allowed for projection method!\n");
 fdyn        = alldyn[genprob.numff].fdyn;
 actfield    = &(field[0]);
 actpart     = &(partition[0]);
@@ -340,7 +342,7 @@ solserv_zero_vec(sol_pnew);
 lmass = amdef("lmass",&lmass_a,numeq_total[veldis],1,"DV");
 amzero(&lmass_a);
 /*------------------ allocate redundant vectors fvelrhs1 of full lenght 
- *          these are used by the element routines to assemble the  RHS */
+            these are used by the element routines to assemble the  RHS */
 fvelrhs1    = amdef("fvelrhs1",&fvelrhs1_a,numeq_total[veldis],1,"DV");
 amzero(&fvelrhs1_a);
 /*------------------ allocate redundant vectors fvelrhs2 of full lenght */
@@ -536,7 +538,7 @@ amzero(&fdirich_a);
 | Stiffness matrix and Mass matrix are also calculated at every         |
 | time step because K includes the BTD stabilization term which         |
 | is dependent on the velocity and changing at every time step          |
- *----------------------------------------------------------------------*/
+------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------*
  | instead of two times element calculation for LHS and RHS,             |
  | both actions are combined into one action called                      |
