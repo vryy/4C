@@ -144,8 +144,13 @@ OBJS12	      = ${SRC}/wall1/w1_init.o \
                 ${SRC}/wall1/w1_funcderiv.o \
                 ${SRC}/wall1/w1_bop.o \
                 ${SRC}/wall1/w1_jaco.o \
+                ${SRC}/wall1/w1_call_mat.o \
                 ${SRC}/wall1/w1_mat_linel.o \
+                ${SRC}/wall1/w1_mat_plast.o \
                 ${SRC}/wall1/w1_call_stiff.o \
+                ${SRC}/wall1/w1_cal_deriv.o \
+                ${SRC}/wall1/w1_cal_eps.o \
+                ${SRC}/wall1/w1_cal_plast.o \
                 ${SRC}/wall1/w1_main.o
 #  fortran sequentiell              
 #OBJS13	      = ${SRC}/fortran/colsol.o
