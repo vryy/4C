@@ -104,8 +104,8 @@ case curve_polygonal:
       numtstep = curve[actcurve].time.fdim;
       for (i=0; i<numtstep-1; i++)
       {
-         if (curve[actcurve].time.a.dv[i] <= T &&
-             curve[actcurve].time.a.dv[i+1] >= T)
+         if (curve[actcurve].time.a.dv[i]  -EPS13 <= T &&
+             curve[actcurve].time.a.dv[i+1]+EPS13 >= T)
          {
             time1 = curve[actcurve].time.a.dv[i];
             time2 = curve[actcurve].time.a.dv[i+1];
@@ -118,7 +118,8 @@ case curve_polygonal:
             break;
          }
       }
-      if (!success) dserror("Interpolation went wrong");
+      if (!success) 
+      dserror("Interpolation went wrong");
    }
    else/*=============================================== curve in steps */
    {

@@ -31,6 +31,8 @@ return;
 } /* end of solserv_create_vec */
 
 
+
+
 /*----------------------------------------------------------------------*
  |   delete number of distributed vectors - collective call ! m.gee 2/02|
  *----------------------------------------------------------------------*/
@@ -77,6 +79,8 @@ return;
 } /* end of solserv_zero_vec */
 
 
+
+
 /*----------------------------------------------------------------------*
  |  add contents of the vector vec_from to vec_to            m.gee 10/01|
  *----------------------------------------------------------------------*/
@@ -102,6 +106,8 @@ dstrc_exit();
 #endif
 return;
 } /* end of solserv_add_vec */
+
+
 
 
 /*----------------------------------------------------------------------*
@@ -167,6 +173,8 @@ return;
 } /* end of solserv_vecnorm_euclid */
 
 
+
+
 /*----------------------------------------------------------------------*
  |  find  absolute maximum value in a vector (Linf-Norm)     m.gee 02/02|
  *----------------------------------------------------------------------*/
@@ -198,6 +206,7 @@ dstrc_exit();
 #endif
 return;
 } /* end of solserv_vecnorm_Linf */
+
 
 
 
@@ -279,6 +288,9 @@ dstrc_exit();
 return;
 } /* end of solserv_getele_vec */
 
+
+
+
 /*----------------------------------------------------------------------*
  |  make dot product between 2 distr. vectors                m.gee 11/01|
  *----------------------------------------------------------------------*/
@@ -319,6 +331,8 @@ return;
 } /* end of solserv_dot_vec */
 
 
+
+
 /*----------------------------------------------------------------------*
  |  make product between scalar and distr. vector            m.gee 11/01|
  *----------------------------------------------------------------------*/
@@ -343,6 +357,7 @@ dstrc_exit();
 #endif
 return;
 } /* end of solserv_dot_vec */
+
 
 
 
@@ -492,6 +507,7 @@ dstrc_exit();
 #endif
 return;
 } /* end of solserv_reddistvec */
+
 
 
 
@@ -655,6 +671,8 @@ return;
 } /* end of solserv_result_total */
 
 
+
+
 /*----------------------------------------------------------------------*
  |  Put the results of a DIST_VECTOR to the nodes in a       m.gee 11/01|
  |  certain place in ARRAY sol_increment                                |
@@ -717,6 +735,7 @@ dstrc_exit();
 #endif
 return;
 } /* end of solserv_result_incre */
+
 
 
 

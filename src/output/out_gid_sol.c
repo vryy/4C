@@ -551,9 +551,9 @@ if (strncmp(string,"displacement",stringlenght)==0)
       actnode = &(actfield->dis[0].node[i]);
       fprintf(out," %6d %18.5E %18.5E %18.5E\n",
                                                    actnode->Id+1,
-                                                   actnode->sol.a.da[0][0],
-                                                   actnode->sol.a.da[0][1],
-                                                   actnode->sol.a.da[0][2]
+                                                   actnode->sol.a.da[place][0],
+                                                   actnode->sol.a.da[place][1],
+                                                   actnode->sol.a.da[place][2]
                                                    );
    }
    fprintf(out,"END VALUES\n");
