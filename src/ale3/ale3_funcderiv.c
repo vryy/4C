@@ -18,7 +18,7 @@ shape functions for a 3d ale element
 
 <pre>                                                              mn 06/02 
 This routine calcuates the shape functions and their derivatives at a
-point r,s,t for an 3D-ale-element.
+point r,s,t for 3D hex and tet ale-elements.
 
 </pre>
 \param *funct  DOUBLE  (o)   shape functions
@@ -51,6 +51,7 @@ const DOUBLE   q18 = 1.0/8.0;
 const DOUBLE   q64 = 1.0/64.0;
 const DOUBLE   q964= 9.0/64.0;
 DOUBLE         rr,ss,tt,rp,sp,tp,rm,sm,tm,rrm,ssm,ttm;
+DOUBLE         t1,t2,t3,t4;
 #ifdef DEBUG 
 dstrc_enter("ale3_funct_deriv");
 #endif
@@ -110,6 +111,102 @@ case hex8:
       deriv[2][7]=-deriv[2][3];
    }
 break;
+case tet4: /* LINEAR shape functions and their natural derivatives -----*/
+/*--------------------------------------------------- form basic values */
+   t1=r;
+   t2=s;
+   t3=t;
+   t4=ONE-r-s-t;
+      
+   funct[0]= t1;
+   funct[1]= t2;
+   funct[2]= t3;
+   funct[3]= t4;
+   
+   if(option==1) /* --> first derivative evaluation */
+   {         
+      deriv[0][0]= ONE;
+      deriv[0][1]= ZERO;
+      deriv[0][2]= ZERO;
+      deriv[0][3]=-ONE;
+
+      deriv[1][0]= ZERO;
+      deriv[1][1]= ONE;
+      deriv[1][2]= ZERO;
+      deriv[1][3]=-ONE;
+
+      deriv[2][0]= ZERO;
+      deriv[2][1]= ZERO;
+      deriv[2][2]= ONE;
+      deriv[2][3]=-ONE;
+   } /* endif (option==1) */  
+break;
+   
+case tet10: /*  QUADRATIC shape functions and their natural derivatives */
+			 
+   dserror("shape functions for tet10 not yet implemented \n"); 
+/*--------------------------------------------------- form basic values */
+/*   t1=r;
+   t2=s;
+   t3=t;
+   t4=ONE-r-s-t;
+   
+   funct[0] =  ;
+   funct[1] =  ;
+   funct[2] = ;
+   funct[3] = ;
+   funct[4] = ;
+   funct[5] = ;
+   funct[6] = ;
+   funct[7] = ;
+   funct[8] = ;
+   funct[9] = ;
+
+
+   if(option==1) /* --> first derivative evaluation */
+/*   {
+/*      deriv[0][0] = ;
+      deriv[1][0] = ;
+      deriv[2][0] = ;
+
+      deriv[0][1] = ;
+      deriv[1][1] = ;
+      deriv[2][1] = ;
+		
+      deriv[0][2] = ;
+      deriv[1][2] = ;
+      deriv[2][2] = ;
+
+      deriv[0][3] = ;
+      deriv[1][3] = ;
+      deriv[2][3] = ;
+
+      deriv[0][4] = ;
+      deriv[1][4] = ;
+      deriv[2][4] = ;
+
+      deriv[0][5] = ;
+      deriv[1][5] = ;
+      deriv[2][5] = ;
+
+      deriv[0][6] = ;
+      deriv[1][6] = ;
+      deriv[2][6] = ;
+
+      deriv[0][7] = ;
+      deriv[1][7] = ;
+      deriv[2][7] = ;
+
+      deriv[0][8] = ;
+      deriv[1][8] = ;
+      deriv[2][8] = ;
+
+      deriv[0][9] = ;
+      deriv[1][9] = ;
+      deriv[2][9] = ;
+   }*/
+break;
+   
 default:
    dserror("unknown typ of interpolation");
 break;

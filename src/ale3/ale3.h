@@ -64,14 +64,14 @@ of a 3D ale element
 *----------------------------------------------------------------------*/
 typedef struct _ALE3_DATA
 {
-DOUBLE        xgpr[3];         /*!< natural coordinates r of gaussian points */
-DOUBLE        wgtr[3];         /*!< weights at natural coordinates r */
+DOUBLE        xgpr[4];         /*!< natural coordinates r of gaussian points */
+DOUBLE        wgtr[4];         /*!< weights at natural coordinates r */
 
-DOUBLE        xgps[3];         /*!< natural coordinates s of gaussian points */
-DOUBLE        wgts[3];         /*!< weights at natural coordinates r */
+DOUBLE        xgps[4];         /*!< natural coordinates s of gaussian points */
+DOUBLE        wgts[4];         /*!< weights at natural coordinates r */
 
-DOUBLE        xgpt[3];         /*!< natural coordinates t of gaussian points */
-DOUBLE        wgtt[3];         /*!< weights at natural coordinates r */
+DOUBLE        xgpt[4];         /*!< natural coordinates t of gaussian points */
+DOUBLE        wgtt[4];         /*!< weights at natural coordinates r */
 } ALE3_DATA;
 
 

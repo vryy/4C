@@ -34,6 +34,7 @@ INT  ierr=0;
 INT  quad;
 INT  dum[8];
 INT  counter;
+INT  lmtmp;
 /* wird nicht gebraucht!!  */
 /* long int  topology[100];*/
 CHAR *colpointer;
@@ -53,7 +54,7 @@ if (ierr==1)
    ele->numnp=8;
    ele->lm = (INT*)CALLOC(ele->numnp,sizeof(INT));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
-   frint_n("HEX8",&(dum[0]),ele->numnp,&ierr);
+   frint_n("HEX8",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
 }
 frchk("HEX20",&ierr);
@@ -66,22 +67,47 @@ if (ierr==1)
    frint_n("HEX20",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
 }
+frchk("TET4",&ierr);
+if (ierr==1)
+{
+   ele->distyp = tet4;
+   ele->numnp=4;
+   ele->lm = (INT*)CALLOC(ele->numnp,sizeof(INT));
+   if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
+   frint_n("TET4",&(ele->lm[0]),ele->numnp,&ierr);
+   if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
+   /*-------------------------- rearrange element node numbers for tet4 */
+   lmtmp=ele->lm[0];
+   ele->lm[0]=ele->lm[1];
+   ele->lm[1]=lmtmp;
+}
+frchk("TET10",&ierr);
+if (ierr==1)
+{
+   ele->distyp = tet10;
+   ele->numnp=10;
+   ele->lm = (INT*)CALLOC(ele->numnp,sizeof(INT));
+   if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
+   frint_n("TET10",&(ele->lm[0]),ele->numnp,&ierr);
+   if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
+}
 /*------------------------------------------ reduce node numbers by one */
-for (i=0; i<ele->numnp; i++) (dum[i])--;
-/*-------------------------------------------- rearrange order of nodes */
-ele->lm[0] = dum[0];
-ele->lm[1] = dum[1];
-ele->lm[2] = dum[2];
-ele->lm[3] = dum[3];
-ele->lm[4] = dum[4];
-ele->lm[5] = dum[5];
-ele->lm[6] = dum[6];
-ele->lm[7] = dum[7];
+for (i=0; i<ele->numnp; i++) (ele->lm[i])--;
 /*-------------------------------------------- read the material number */
 frint("MAT",&(ele->mat),&ierr);
 if (ierr!=1) dserror("Reading of ALE element failed");
 /*-------------------------------------------- read the gaussian points */
-frint_n("GP",&(ele->e.ale3->nGP[0]),3,&ierr);
+if (ele->numnp==8 || ele->numnp==20 || ele->numnp==27)
+{
+   frint_n("GP",&(ele->e.ale3->nGP[0]),3,&ierr);
+   if (ierr!=1) dserror("Reading of ALE3 element failed\n");
+}   
+/*----------------------- read gaussian points for tetrahedral elements */
+if (ele->numnp==4 || ele->numnp==10)
+{
+   frint("GP_TET",&(ele->e.ale3->nGP[0]),&ierr);
+   if (ierr!=1) dserror("Reading of ALE3 element failed\n");
+}
 /*-------------------------- read gaussian points for triangle elements */
 frint("JAC",&(ele->e.ale3->jacobi),&ierr);
 if (ierr!=1) dserror("Reading of ALE element failed");
