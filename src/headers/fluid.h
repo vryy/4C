@@ -59,7 +59,7 @@ int    nil;	 /*!< EVALUATION OF LUMPED MASS MATRIX (Mvv-lumped)  */
 int    nif;	 /*!< EVALUATION OF "TIME - RHS"           	     */
 int    nii;	 /*!< EVALUATION OF "ITERATION - RHS"		     */
 int    nis;	 /*!< STATIONARY CASE (NO TIMEDEPENDENT TERMS)       */
-int    ishape;   /*!< flag for new element shape 						*/
+int    ishape;   /*!< flag for new element shape                     */
 struct  _FLUID_DATA data;
 } FLUID_DYN_CALC;
 
