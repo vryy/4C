@@ -88,6 +88,7 @@ typedef enum _MATERIAL_TYP
                        m_stvenpor,    /* porous St.Venant Kirchhoff material */
                        m_pl_por_mises,/* porous von Mises material */
                        m_neohooke,    /* Neo-Hooke material */
+                       m_compogden,   /* compressible Ogden material */
                        m_fluid,       /* fluid */
                        m_pl_hash,     /* elpl. hashin delamination material */
                        m_el_orth,     /* elastic orthotropic material */
@@ -148,7 +149,7 @@ typedef enum _CALC_ACTION
                        calc_fluid_vort,
 		       calc_fluid_stress,
 		       calc_fluid_curvature,
-                   calc_fluid_shearvelo,		
+                       calc_fluid_shearvelo,		
 		       calc_ale_init,
 		       calc_ale_stiff,
 		       calc_ale_rhs,

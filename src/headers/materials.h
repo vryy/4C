@@ -19,6 +19,7 @@ typedef struct _MATERIAL
      struct _STVENPOR         *stvenpor;     /* porous St. Ven.-Kirch. material */
      struct _PL_POR_MISES     *pl_por_mises; /* porous von Mises material */
      struct _NEO_HOOKE        *neohooke;     /* Neo-Hooke material */
+     struct _COMPOGDEN        *compogden;    /* compressible ogden hyperelastic material */
      struct _FLUID            *fluid;        /* fluid material */
      struct _PL_HASH          *pl_hash;      /* elpl. hashin delamination material */
      struct _EL_ORTH          *el_orth;      /* elastic orthotropic material */
@@ -68,6 +69,20 @@ typedef struct _NEO_HOOKE
      double                    density;        /* material specific weight */
 } NEO_HOOKE;
 
+/*----------------------------------------------------------------------*
+ | compressible ogden material                            m.gee 6/03    |
+ *----------------------------------------------------------------------*/
+typedef struct _COMPOGDEN
+{
+     INT                       init;           /* init flag */
+     DOUBLE                    nue;            /* Possion ratio */
+     DOUBLE                    beta;           /* the unphysical material constant called beta */
+     DOUBLE                    alfap[3];       /* three parameters alfap */
+     DOUBLE                    mup[3];         /* three parameters nuep */  
+     DOUBLE                    density;        /* material specific weight */
+     DOUBLE                    lambda;         /* 1. lame constant */
+     DOUBLE                    kappa;          /* bulkmodulus */
+} COMPOGDEN;
 
 
 /*----------------------------------------------------------------------*

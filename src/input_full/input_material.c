@@ -55,7 +55,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    {
       mat[i].mattyp = m_fluid;
       mat[i].m.fluid = (FLUID*)CCACALLOC(1,sizeof(FLUID));
-      if (mat[i].m.fluid==NULL) dserror("Alloocation of FLUID material failed");
       frdouble("VISCOSITY",&(mat[i].m.fluid->viscosity),&ierr);
       frdouble("DENS"  ,&(mat[i].m.fluid->density)  ,&ierr);
       frdouble("GAMMA",&(mat[i].m.fluid->gamma)  ,&ierr);
@@ -65,7 +64,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    {
       mat[i].mattyp = m_stvenant;
       mat[i].m.stvenant = (STVENANT*)CCACALLOC(1,sizeof(STVENANT));
-      if (mat[i].m.stvenant==NULL) dserror("Alloocation of STVENANT material failed");
       frdouble("YOUNG"  ,&(mat[i].m.stvenant->youngs)      ,&ierr);
       frdouble("NUE"    ,&(mat[i].m.stvenant->possionratio),&ierr);
       frdouble("DENS",&(mat[i].m.stvenant->density)     ,&ierr);
@@ -75,7 +73,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    {
       mat[i].mattyp = m_stvenpor;
       mat[i].m.stvenpor = (STVENPOR*)CCACALLOC(1,sizeof(STVENPOR));
-      if (mat[i].m.stvenpor==NULL) dserror("Alloocation of Porous StVen. material failed");
       frdouble("YOUNG"  ,&(mat[i].m.stvenpor->youngs)        ,&ierr);
       frdouble("NUE"    ,&(mat[i].m.stvenpor->possionratio)  ,&ierr);
       frdouble("DENS"   ,&(mat[i].m.stvenpor->density)       ,&ierr);
@@ -87,17 +84,30 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    {
       mat[i].mattyp = m_neohooke;
       mat[i].m.neohooke = (NEO_HOOKE*)CCACALLOC(1,sizeof(NEO_HOOKE));
-      if (mat[i].m.neohooke==NULL) dserror("Alloocation of NEO_HOOKE material failed");
       frdouble("YOUNG",&(mat[i].m.neohooke->youngs)        ,&ierr);
       frdouble("NUE"  ,&(mat[i].m.neohooke->possionratio)  ,&ierr);
-      frdouble("DENS",&(mat[i].m.neohooke->density)     ,&ierr);
+      frdouble("DENS",&(mat[i].m.neohooke->density)        ,&ierr);
+   }
+   frchk("MAT_Struct_Ogden",&ierr);
+   if (ierr==1)
+   {
+      mat[i].mattyp = m_compogden;
+      mat[i].m.compogden = (COMPOGDEN*)CCACALLOC(1,sizeof(COMPOGDEN));
+      frdouble("NUE"  ,&(mat[i].m.compogden->nue)     ,&ierr);
+      frdouble("BETA" ,&(mat[i].m.compogden->beta)    ,&ierr);
+      frdouble("ALFA1",&(mat[i].m.compogden->alfap[0]),&ierr);
+      frdouble("ALFA2",&(mat[i].m.compogden->alfap[1]),&ierr);
+      frdouble("ALFA3",&(mat[i].m.compogden->alfap[2]),&ierr);
+      frdouble("NU1"  ,&(mat[i].m.compogden->mup[0])  ,&ierr);
+      frdouble("NU2"  ,&(mat[i].m.compogden->mup[1])  ,&ierr);
+      frdouble("NU3"  ,&(mat[i].m.compogden->mup[2])  ,&ierr);
+      frdouble("DENS" ,&(mat[i].m.compogden->density) ,&ierr);
    }
    frchk("MAT_3DMisesPlastic",&ierr);
    if (ierr==1)
    {
       mat[i].mattyp = m_pl_mises_3D;
       mat[i].m.pl_mises = (PL_MISES*)CCACALLOC(1,sizeof(PL_MISES));
-      if (mat[i].m.pl_mises==NULL) dserror("Allocation of MISES_3D material failed");
       frdouble("YOUNG",&(mat[i].m.pl_mises->youngs)        ,&ierr);
       frdouble("NUE"  ,&(mat[i].m.pl_mises->possionratio)  ,&ierr);
       frdouble("ALFAT",&(mat[i].m.pl_mises->ALFAT)         ,&ierr);
@@ -114,7 +124,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    {
       mat[i].mattyp = m_pl_mises;
       mat[i].m.pl_mises = (PL_MISES*)CCACALLOC(1,sizeof(PL_MISES));
-      if (mat[i].m.pl_mises==NULL) dserror("Alloocation of MISES material failed");
       frdouble("YOUNG",&(mat[i].m.pl_mises->youngs)        ,&ierr);
       frdouble("NUE"  ,&(mat[i].m.pl_mises->possionratio)  ,&ierr);
       frdouble("ALFAT",&(mat[i].m.pl_mises->ALFAT)         ,&ierr);
@@ -131,7 +140,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    {
       mat[i].mattyp = m_pl_foam;
       mat[i].m.pl_foam = (PL_FOAM*)CCACALLOC(1,sizeof(PL_FOAM));
-      if (mat[i].m.pl_foam==NULL) dserror("Alloocation of FOAM material failed");
       frdouble("YOUNG",&(mat[i].m.pl_foam->youngs)        ,&ierr);
       frdouble("NUE"  ,&(mat[i].m.pl_foam->possionratio)  ,&ierr);
       frdouble("ALFAT",&(mat[i].m.pl_foam->ALFAT)         ,&ierr);
@@ -146,7 +154,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    {
       mat[i].mattyp = m_pl_dp;
       mat[i].m.pl_dp = (PL_DP*)CCACALLOC(1,sizeof(PL_DP));
-      if (mat[i].m.pl_dp==NULL) dserror("Alloocation of Drucker Prager material failed");
       frdouble("YOUNG",&(mat[i].m.pl_dp->youngs)        ,&ierr);
       frdouble("NUE"  ,&(mat[i].m.pl_dp->possionratio)  ,&ierr);
       frdouble("ALFAT",&(mat[i].m.pl_dp->ALFAT)         ,&ierr);
@@ -159,7 +166,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    {
       mat[i].mattyp = m_pl_epc;
       mat[i].m.pl_epc = (PL_EPC*)CCACALLOC(1,sizeof(PL_EPC));
-      if (mat[i].m.pl_epc==NULL) dserror("Allocation of elpl-concrete material failed");
       /* initialize */
       mat[i].m.pl_epc->gamma1 = 3.;
       mat[i].m.pl_epc->gamma2 = 6./5.;
@@ -189,20 +195,19 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       /* allocate memory */
       ncm       = mat[i].m.pl_epc->maxreb;
       ierralloc = 0;
-      if ((mat[i].m.pl_epc->rebar=(int*)CCACALLOC(ncm,sizeof(int)))==NULL) ierralloc=1;
-      if ((mat[i].m.pl_epc->reb_area  =(double*)CCACALLOC(ncm,sizeof(double)))==NULL) ierralloc=1;
-      if ((mat[i].m.pl_epc->reb_ang   =(double*)CCACALLOC(ncm,sizeof(double)))==NULL) ierralloc=1;
-      if ((mat[i].m.pl_epc->reb_so    =(double*)CCACALLOC(ncm,sizeof(double)))==NULL) ierralloc=1;
-      if ((mat[i].m.pl_epc->reb_ds    =(double*)CCACALLOC(ncm,sizeof(double)))==NULL) ierralloc=1;
-      if ((mat[i].m.pl_epc->reb_rgamma=(double*)CCACALLOC(ncm,sizeof(double)))==NULL) ierralloc=1;
-      if ((mat[i].m.pl_epc->reb_dens  =(double*)CCACALLOC(ncm,sizeof(double)))==NULL) ierralloc=1;
-      if ((mat[i].m.pl_epc->reb_alfat =(double*)CCACALLOC(ncm,sizeof(double)))==NULL) ierralloc=1;
-      if ((mat[i].m.pl_epc->reb_emod  =(double*)CCACALLOC(ncm,sizeof(double)))==NULL) ierralloc=1;
-      if ((mat[i].m.pl_epc->reb_rebnue=(double*)CCACALLOC(ncm,sizeof(double)))==NULL) ierralloc=1;
-      if ((mat[i].m.pl_epc->reb_sigy  =(double*)CCACALLOC(ncm,sizeof(double)))==NULL) ierralloc=1;
-      if ((mat[i].m.pl_epc->reb_hard  =(double*)CCACALLOC(ncm,sizeof(double)))==NULL) ierralloc=1;
+      mat[i].m.pl_epc->rebar=(int*)CCACALLOC(ncm,sizeof(int));
+      mat[i].m.pl_epc->reb_area  =(double*)CCACALLOC(ncm,sizeof(double)); 
+      mat[i].m.pl_epc->reb_ang   =(double*)CCACALLOC(ncm,sizeof(double));
+      mat[i].m.pl_epc->reb_so    =(double*)CCACALLOC(ncm,sizeof(double)); 
+      mat[i].m.pl_epc->reb_ds    =(double*)CCACALLOC(ncm,sizeof(double)); 
+      mat[i].m.pl_epc->reb_rgamma=(double*)CCACALLOC(ncm,sizeof(double)); 
+      mat[i].m.pl_epc->reb_dens  =(double*)CCACALLOC(ncm,sizeof(double)); 
+      mat[i].m.pl_epc->reb_alfat =(double*)CCACALLOC(ncm,sizeof(double)); 
+      mat[i].m.pl_epc->reb_emod  =(double*)CCACALLOC(ncm,sizeof(double)); 
+      mat[i].m.pl_epc->reb_rebnue=(double*)CCACALLOC(ncm,sizeof(double)); 
+      mat[i].m.pl_epc->reb_sigy  =(double*)CCACALLOC(ncm,sizeof(double)); 
+      mat[i].m.pl_epc->reb_hard  =(double*)CCACALLOC(ncm,sizeof(double)); 
       
-      if (ierralloc) dserror("Allocation of elpl-concrete material failed");
       /* rebar data - next line in input file! */
       if(ncm==0)
       {
@@ -234,7 +239,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    {
       mat[i].mattyp = m_pl_por_mises;
       mat[i].m.pl_por_mises = (PL_POR_MISES*)CCACALLOC(1,sizeof(PL_POR_MISES));
-      if (mat[i].m.pl_por_mises==NULL) dserror("Alloocation of MISES material failed");
       frdouble("YOUNG"   ,&(mat[i].m.pl_por_mises->youngs)        ,&ierr);
       frdouble("DP_YM"   ,&(mat[i].m.pl_por_mises->DP_YM )        ,&ierr);
       frdouble("NUE"     ,&(mat[i].m.pl_por_mises->possionratio)  ,&ierr);
@@ -250,18 +254,13 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    {
       mat[i].mattyp = m_multi_layer;
       mat[i].m.multi_layer = (MULTI_LAYER*)CCACALLOC(1,sizeof(MULTI_LAYER));
-      if (mat[i].m.multi_layer==NULL) dserror("Alloocation of MULTI_LAYER material failed");
       /*read number of kinamtic layer*/
       frint("NUM_KLAY"   ,&(mat[i].m.multi_layer->num_klay)        ,&ierr);
 
       /*allocate memory for the different kinematic layers*/
       num_klay = mat[i].m.multi_layer->num_klay;
-      ierralloc = 0;
-      if ((mat[i].m.multi_layer->klayhgt=(double*)CCACALLOC(num_klay,sizeof(double)))==NULL) ierralloc=1;
-      if (ierralloc) dserror("Allocation of klayhgt in MULTI_LAYER material failed");
-      ierralloc = 0;
-      if ((mat[i].m.multi_layer->kinlay=(KINLAY*)CCACALLOC(num_klay,sizeof(KINLAY)))==NULL) ierralloc=1;
-      if (ierralloc) dserror("Allocation of KINLAYs in MULTI_LAYER material failed");
+      mat[i].m.multi_layer->klayhgt=(double*)CCACALLOC(num_klay,sizeof(double));
+      mat[i].m.multi_layer->kinlay=(KINLAY*)CCACALLOC(num_klay,sizeof(KINLAY));
 
       /*----- read section data  -> hgt of different kinematic layers ---*/
       frdouble_n("SEC_KLAY",mat[i].m.multi_layer->klayhgt,num_klay,&ierr);
@@ -283,17 +282,10 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
         num_mlay = actlay->num_mlay;
         /*allocate memory for different material layers*/
         ierralloc = 0;
-        if ((actlay->mlayhgt=(double*)CCACALLOC(num_mlay,sizeof(double)))==NULL) ierralloc=1;
-        if (ierralloc) dserror("Allocation of mlayhgt in MULTI_LAYER material failed");
-        ierralloc = 0;
-        if ((actlay->mmatID=(int*)CCACALLOC(num_mlay,sizeof(int)))==NULL) ierralloc=1;
-        if (ierralloc) dserror("Allocation of mmatID in MULTI_LAYER material failed");
-        ierralloc = 0;
-        if ((actlay->phi=(double*)CCACALLOC(num_mlay,sizeof(double)))==NULL) ierralloc=1;
-        if (ierralloc) dserror("Allocation of phi in MULTI_LAYER material failed");
-        ierralloc = 0;
-        if ((actlay->rot=(int*)CCACALLOC(num_mlay,sizeof(int)))==NULL) ierralloc=1;
-        if (ierralloc) dserror("Allocation of rot in MULTI_LAYER material failed");
+        actlay->mlayhgt=(double*)CCACALLOC(num_mlay,sizeof(double));
+        actlay->mmatID=(int*)CCACALLOC(num_mlay,sizeof(int));
+        actlay->phi=(double*)CCACALLOC(num_mlay,sizeof(double));
+        actlay->rot=(int*)CCACALLOC(num_mlay,sizeof(int));
 
         /*----- read section data of this kin layer -> hgt of different mat layers ---*/
         frdouble_n("SEC_MLAY",actlay->mlayhgt,num_mlay,&ierr);
