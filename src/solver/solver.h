@@ -40,6 +40,7 @@
 typedef enum _SPARSE_TYP
 {
      sparse_none,            /* sparse matrix type not specified */
+     mds,                    /* mlib - direct - sparse (sym.&nonsym)*/
      msr,                    /* distributed modified sparse row format */
      parcsr,                 /* distributed compressed sparse row format */
      ucchb,                  /* unsymmetric column compressed Harwell-Boeing format */
@@ -53,6 +54,7 @@ typedef enum _SPARSE_TYP
 typedef union _SPARSE_ARRAY
 {
 
+struct _ML_ARRAY_MDS   *mds;    /* mlib - symm. - unsymm. - sparse */
 struct _AZ_ARRAY_MSR   *msr;    /* pointer to Aztec's DMSR matrix */
 struct _H_PARCSR       *parcsr; /*         to HYPRE's ParCSR matrix */
 struct _UCCHB          *ucchb;  /*         to Superlu's UCCHB matrix */
@@ -71,6 +73,9 @@ enum   _FIELDTYP        fieldtyp;          /* type of field */
 enum   _PART_TYP        parttyp;           /* typ of partition */
 enum   _SOLVER_TYP      solvertyp;         /* typ of chosen solver */
 
+
+
+struct _MLVAR          *mlvar;             /* variables needed for hp's mlib solver */
 struct _AZVAR          *azvar;             /* variables needed for solver aztec */
 struct _HYPREVARS      *hyprevar;          /* variables needed for HYPRE EuclidCG */
 struct _PSUPERLUVARS   *psuperluvars;      /* variables needed for Parallel SuperLU */
@@ -86,6 +91,21 @@ struct _DIST_VECTOR    *rhs;               /* vector of distributed rhs-vectors 
 int                     nsol;              /* number of distributed solution vectors */
 struct _DIST_VECTOR    *sol;               /* vector of dist. solution vectors */
 } SOLVAR;
+
+/*----------------------------------------------------------------------*
+ | variables needed for solver mlib                         al 12/01    |
+ *----------------------------------------------------------------------*/
+typedef struct _MLVAR
+{
+int                     symm  ;/* 1 -> symmetric , 0 -> nonsymm.       */
+int                     msglvl;/* 0..4 -> 4 complete debugging output  */
+int                     maxzer;/* additional fill in ,= 0 no fill in   */
+int                     order;
+
+double                  pvttol;/* 0.0 reorder with minim. fill in      */
+                               /* 1.0 best numerical stability         */
+} MLVAR;
+
 
 /*----------------------------------------------------------------------*
  | variables needed for solver MUMPS                     m.gee 01/02    |
@@ -349,6 +369,49 @@ struct _ARRAY          *couple_i_recv;
 #endif
 } AZ_ARRAY_MSR;
 
+
+/*----------------------------------------------------------------------*
+ |  column pointer, row index sparse matrix representation  al  10/01   |
+ |  for the lower triangle of the matrix                                |
+ |                                                                      |
+ |                    - HP's MLIB -                                     |
+ *----------------------------------------------------------------------*/
+typedef struct _ML_ARRAY_MDS
+{
+char               arrayname[50];
+int                is_init;
+
+/* input */
+
+int                numeq;       /* number of equations                  */
+int                nnz;         /* number of nonzeroes                  */
+int                output;      /* fortran unit number =6 -> screen     */
+
+double             cond;        /* condition number                     */
+
+struct _ARRAY      colstr;      /* gives the index in rowind of the
+                                   first nonzero in the lower triangular
+                                   part of column j of the matrix       */
+struct _ARRAY      rowind;      /* list of row indices for all nonzeros
+                                   within each column                   */
+ 
+/* output */
+
+double             rcond;       /* estimate the reciprocal of the l-norm
+                                   condition number                     */
+
+int                inrtia[3];   /* number of positive, negative and 
+                                   an indicator if there are zero
+                                   eigenvalues                          */
+                                   
+double             global[150]; /* global communication array           */
+
+int                ierr;        /* = 0; normal return                   */                                   
+                                                   
+} ML_ARRAY_MDS;
+
+
+
 /*----------------------------------------------------------------------*
  | a distributed vector for solution                      m.gee 6/01    |
  | a vector distributed among processors.                               |
@@ -380,3 +443,7 @@ struct _ARRAY           vec;             /* local piece of distr. vector */
  |                                                       m.gee 11/00    |
  *----------------------------------------------------------------------*/
 SOLVAR            *solv;
+
+
+
+
