@@ -3,6 +3,9 @@
 \brief Calculate stabilisation parameter
 
 ------------------------------------------------------------------------*/
+/*! 
+\addtogroup FLUID2 
+*//*! @{ (documentation module open)*/
 #ifdef D_FLUID2 
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
@@ -75,6 +78,7 @@ extern struct _MATERIAL  *mat;
 \param  *ele     ELEMENT	       (i)   actual element
 \param  *data    FLUID_DATA	       (i)
 \param  *dynvar  FLUID_DYN_CALC        (i/o)
+\param **xzye    double                (-)   nodal coordinates
 \param  *funct   double 	       (-)   shape functions
 \param **deriv   double 	       (-)   deriv. of shape funcs
 \param **deriv2  double 	       (-)   2nd deriv. of sh. funcs
@@ -89,7 +93,8 @@ void f2_calelesize(
 	           ELEMENT         *ele,    
 		   FLUID_DATA      *data, 
 		   FLUID_DYN_CALC  *dynvar,
-	           double          *funct,  
+	           double         **xyze,
+		   double          *funct,  
 	           double         **deriv,  
 	           double         **deriv2,  		 
 		   double         **xjm,    
@@ -166,39 +171,40 @@ if (isharea==1)
    } /*end switch(ntyp) */
    ieval++;
 /* -------------------------------------------- compute jacobian matrix */      
-   f2_jaco(funct,deriv,xjm,&det,ele,iel);
+   f2_jaco(xyze,funct,deriv,xjm,&det,iel,ele);
    fac=facr*facs*det;
    area += fac;
+   dynvar->totarea += area;
    if (istrnint==1)    /* compute streamlength */
    {
       f2_veli(velint,funct,evel,iel);
       ieval++;
-      f2_gcoor(funct,ele,iel,gcoor);
+      f2_gcoor(xyze,funct,iel,gcoor);
       igc++;
-      f2_calstrlen(&strle,velint,ele,gcoor,cutp,ntyp);            
+      f2_calstrlen(&strle,xyze,velint,ele,gcoor,cutp,ntyp);            
    } /* enidf (istrnint==1) */
    if (ele->e.f2->idiaxy==1)    /* compute diagonal based diameter */
    {
       switch(ntyp)
       {
       case 1:
-         dx = ele->node[1]->x[0] - ele->node[3]->x[0];
-	 dy = ele->node[1]->x[1] - ele->node[3]->x[1];
+         dx = xyze[0][0] - xyze[0][2];
+	 dy = xyze[1][0] - xyze[1][2];
 	 dia1 = sqrt(dx*dx+dy*dy);
-	 dx = ele->node[2]->x[0] - ele->node[4]->x[0];
-	 dy = ele->node[2]->x[1] - ele->node[4]->x[1];
-	 dia2 = sqrt(dx*dx+dy*dy);
+	 dx = xyze[0][1] - xyze[0][3];
+	 dy = xyze[1][1] - xyze[1][3];
+	 dia2 = sqrt(dx*dx+dy*dy);	 
 /*------ dia=sqrt(2)*area/(1/2*(dia1+dia2))=sqrt(8)*area/(dia1+dia2) ---*/
 	 dia = sqrt(EIGHT)*area/(dia1+dia2); 
       break;
       case 2:    /* get global coordinate of element center */
          if (igc==0)
-	    f2_gcoor(funct,ele,iel,gcoor);
+	    f2_gcoor(xyze,funct,iel,gcoor);
 	 dia = ZERO;
 	 for (i=0;i<3;i++)
 	 {
-	    dx = gcoor[0] - ele->node[0]->x[i];
-	    dy = gcoor[1] - ele->node[2]->x[i];
+	    dx = gcoor[0] - xyze[0][i];
+	    dy = gcoor[1] - xyze[1][i];
 	    dia += dx*dx + dy*dy;
 	 }
 	 dia = FOUR*area/sqrt(THREE*dia);
@@ -257,13 +263,13 @@ else if (istrnint==1 && isharea !=1)
    } /* end switch(ntyp) */
    ieval++;
 /* ------------------------------------------- compute jacobian matrix */      
-   f2_jaco(funct,deriv,xjm,&det,ele,iel);
+   f2_jaco(xyze,funct,deriv,xjm,&det,iel,ele);
 /*----------------------------------------------- compute streamlength */
    f2_veli(velint,funct,evel,iel);
    ieval++;
-   f2_gcoor(funct,ele,iel,gcoor);
+   f2_gcoor(xyze,funct,iel,gcoor);
    igc++;
-   f2_calstrlen(&strle,velint,ele,gcoor,cutp,ntyp);       
+   f2_calstrlen(&strle,xyze,velint,ele,gcoor,cutp,ntyp);       
 /*--------------------------------------------------- set element sizes *
       loop over 3 different element sizes: vel/pre/cont  ---------------*/
    for (ilen=0;ilen<3;ilen++)
@@ -337,6 +343,7 @@ is calculated for one element during the integration loop
 </pre>
 \param  *ele     ELEMENT	        (i)    actual element
 \param  *dynvar  FLUID_DYN_CALC         (i/o)
+\param  *xyze    double                 (-)    nodal coordinates
 \param  *funct   double 		(-)    natural shape funcs
 \param  *velint  double 		(-)    vel at intpoint
 \param **cutp    double 		(-)    cuttin points
@@ -350,6 +357,7 @@ is calculated for one element during the integration loop
 void f2_calelesize2(			       
 	             ELEMENT         *ele,    
 	  	     FLUID_DYN_CALC  *dynvar, 
+                     double         **xyze,
 	             double          *funct,    		   
 		     double          *velint, 
 		     double         **cutp,   
@@ -373,8 +381,8 @@ istrnint = ele->e.f2->istrle * ele->e.f2->ninths;
 if (istrnint==2)
 {
 /*------------------------------------------------ compute streamlength */
-   f2_gcoor(funct,ele,iel,gcoor);
-   f2_calstrlen(&strle,velint,ele,gcoor,cutp,ntyp);
+   f2_gcoor(xyze,funct,iel,gcoor);
+   f2_calstrlen(&strle,xyze,velint,ele,gcoor,cutp,ntyp);
 /*--------------------------------------------------- set element sizes *
       loop over 3 different element sizes: vel/pre/cont  ---------------*/
    for (ilen=0;ilen<3;ilen++)
@@ -408,6 +416,7 @@ straight.
 </pre>
 \param  *strle     double   (o)    streamlength
 \param  *velint    double   (i)    velocities at integr. point
+\param **xyze      double   (i)    nodal coordinates
 \param  *ele 	   ELEMENT  (i)    actual element
 \param  *gcoor     double   (i)    global coord. of int. point
 \param **cutp      double   (-)    cutting points
@@ -418,6 +427,7 @@ straight.
 ------------------------------------------------------------------------*/
 void f2_calstrlen(
                    double   *strle,     
+                   double  **xyze,
 		   double   *velint,   
 		   ELEMENT  *ele,      
                    double   *gcoor,    
@@ -429,7 +439,6 @@ int     nodcut=-1;
 int     nodmax;
 int     inod;
 double dl,dx,dy,dxh,dyh;
-double x1,y1,x2,y2;
 double dsub,dval;
 
 #ifdef DEBUG 
@@ -439,8 +448,8 @@ dstrc_enter("f2_calstrlen");
 dval = FABS(velint[0])+FABS(velint[1]);
 if (dval == ZERO)  /* no flow at this point - take some arbitr. measure for streamlength */
 {
-   dx = ele->node[2]->x[0] - ele->node[0]->x[0];
-   dy = ele->node[2]->x[1] - ele->node[0]->x[1];
+   dx = xyze[0][2] - xyze[0][0];
+   dy = xyze[1][2] - xyze[1][0];
    goto calc2;   
 } /* enidf (dval == ZERO) */
 
@@ -462,36 +471,35 @@ default:
  /*------------------------------------------------- get cutting points */
 for (inod=0;inod<nodmax;inod++)
 {
-   dxh = ele->node[inod+1]->x[0] - ele->node[inod]->x[0];
-   dyh = ele->node[inod+1]->x[1] - ele->node[inod]->x[1];
+   dxh = xyze[0][inod+1] - xyze[0][inod];
+   dyh = xyze[1][inod+1] - xyze[1][inod];   
    dsub = dxh*velint[1]-dyh*velint[0];
    if (dsub==ZERO)  /* check for parallel vectors */
       continue;
-   dl = ((ele->node[inod]->x[1]-gcoor[1])*velint[0] -	\
-	 (ele->node[inod]->x[0]-gcoor[0])*velint[1])/dsub;
+   dl = ((xyze[1][inod]-gcoor[1])*velint[0] -	\
+	 (xyze[0][inod]-gcoor[0])*velint[1])/dsub;
    if (dl>=ZERO && dl<=ONE)
    {
       nodcut++;
-      cutp[0][nodcut]=ele->node[inod]->x[0]+dl*dxh;
-      cutp[1][nodcut]=ele->node[inod]->x[1]+dl*dyh;
+      cutp[0][nodcut]=xyze[0][inod]+dl*dxh;
+      cutp[1][nodcut]=xyze[1][inod]+dl*dyh;
       if (nodcut==1)
 	 goto calc1;
    } /* endif (dl>=ZERO && dl<=ONE) */
 } /* end loop over inod */
 /*------------------------------------------------- the last boundary */
-dxh = ele->node[0]->x[0]-ele->node[nodmax]->x[0];
-dyh = ele->node[0]->x[1]-ele->node[nodmax]->x[1];
-
+dxh = xyze[0][0]-xyze[0][nodmax];
+dyh = xyze[1][0]-xyze[1][nodmax];
 dsub = dxh*velint[1] - dyh*velint[0];
 if (dsub==ZERO)
    dserror("Couldn't find two cutting points!\n");
-dl = ((ele->node[nodmax]->x[1]-gcoor[1])*velint[0] -	\
-      (ele->node[nodmax]->x[0]-gcoor[0])*velint[1])/dsub;
+dl = ((xyze[1][nodmax]-gcoor[1])*velint[0] -	\
+      (xyze[0][nodmax]-gcoor[0])*velint[1])/dsub;
 if (dl>=ZERO && dl <= ONE)
 {
    nodcut++;
-   cutp[0][nodcut]=ele->node[nodmax]->x[0]+dl*dxh;
-   cutp[1][nodcut]=ele->node[nodmax]->x[1]+dl*dyh; 
+   cutp[0][nodcut]=xyze[0][nodmax]+dl*dxh;
+   cutp[1][nodcut]=xyze[1][nodmax]+dl*dyh; 
    if(nodcut==1)
       goto calc1;
 } /* endif  (dl>=ZERO && dl <= ONE) */
@@ -513,3 +521,4 @@ dstrc_exit();
 return;
 } /* end of f2_calstrlen */		  
 #endif
+/*! @} (documentation module close)*/
