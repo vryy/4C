@@ -860,13 +860,20 @@ for(r=0; r<int_faces->numint; r++)
             nrmdr1_2[1] = r1_2[1] / nr1_2;
             /* --------compute lambda values of the vectors r1_2, r2_1, r2_2 */
             /* x - component */
-            lambdr1_2_xy[0] = r1_2[0] / nrmdr1_2[0];
-            lambdr2_1_xy[0] = r2_1[0] / nrmdr1_2[0];
-            lambdr2_2_xy[0] = r2_2[0] / nrmdr1_2[0];
+            if(FABS(nrmdr1_2[0])>EPS12)
+            {
+               lambdr1_2_xy[0] = r1_2[0] / nrmdr1_2[0];
+               lambdr2_1_xy[0] = r2_1[0] / nrmdr1_2[0];
+               lambdr2_2_xy[0] = r2_2[0] / nrmdr1_2[0];
+            }
             /* y - component */
-            lambdr1_2_xy[1] = r1_2[1] / nrmdr1_2[1];
-            lambdr2_1_xy[1] = r2_1[1] / nrmdr1_2[1];
-            lambdr2_2_xy[1] = r2_2[1] / nrmdr1_2[1];
+            if(FABS(nrmdr1_2[1])>EPS12)
+            {
+               lambdr1_2_xy[1] = r1_2[1] / nrmdr1_2[1];
+               lambdr2_1_xy[1] = r2_1[1] / nrmdr1_2[1];
+               lambdr2_2_xy[1] = r2_2[1] / nrmdr1_2[1];
+            }
+            /* The following two ifs appear rather strange and may be wrong. */
             /* check for a possible intersection */
             if(lambdr2_1_xy[0]/lambdr1_2_xy[0] <= EPS8 &&
                lambdr2_2_xy[0]/lambdr1_2_xy[0] <= EPS8)
@@ -877,7 +884,7 @@ for(r=0; r<int_faces->numint; r++)
             /* look for the best lambda for fsi_detect_intersection(),
                the goal of this choice is to minimize the error due to
                floating point division */
-            if((r1_2[0] > sqrt(r1_2[1]*r1_2[1])) || (r1_2[0]<-sqrt(r1_2[1]*r1_2[1])))
+            if( FABS(r1_2[0]) > FABS(r1_2[1]) )
             {
               lambdr1_2 = lambdr1_2_xy[0];
               lambdr2_1 = lambdr2_1_xy[0];
