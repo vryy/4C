@@ -213,11 +213,6 @@ if (fsidyn->ifsi==1 || fsidyn->ifsi==3)
 /*---------------------------------------------- schemes with predictor */
 else if (fsidyn->ifsi==2 || fsidyn->ifsi>=4)
 {
-   /*------------------------------------------------- nested iteration */
-   if (fsidyn->inest==1 && fsidyn->ifsi>=4)
-      dserror("COUALGO not implemented yet!\n");
-   else if (fsidyn->inest==2 && fsidyn->ifsi>=4)
-     dserror("COUALGO not implemented yet!\n");
    /*----------------- CSD - predictor for itnum==0 --------------------*/
    if (itnum==0)
    {
@@ -280,7 +275,7 @@ if (resstep==fsidyn->upres && par.myrank==0)
 }
 
 /*---------------------------------------------- write fsi-restart data */
-if (restartstep==fsidyn->res_write_evry)
+if (restartstep==fsidyn->uprestart)
 {
    restartstep=0;
    restart_write_fsidyn(fsidyn);

@@ -982,7 +982,7 @@ if (outstep==sdyn->updevry_disp)
 }
 /*-------------------------------------- write restart data to pss file */
 restartstep++;
-if (restartstep==fsidyn->res_write_evry)
+if (restartstep==fsidyn->uprestart)
 {
    restartstep=0;
    restart_write_nlnstructdyn(sdyn,&dynvar,actfield,actpart,actintra,action,

@@ -328,7 +328,7 @@ solserv_zero_vec(&(actsolv->sol[actsysarray]));
 amzero(&dirich_a);
 
 /*-------------------------set dirichlet boundary conditions on at time */
-ale_setdirich(actfield,adyn,actpos,0);
+ale_setdirich(actfield,adyn,0);
 
 /*------------------------------- call element-routines to assemble rhs */
 *action = calc_ale_rhs;
@@ -352,7 +352,9 @@ solver_control(
                     init
                  );
                  
-/*---------------------------- dirchvalues have to be in xyz* co-system */
+/* for nodes with locsys and DBCs the values would become mixed up, since
+   the solution is in the xyz* co-sys, but the sol-array is in the XYZ 
+   co-sys, so transform DBC nodes to xyz*                               */
 locsys_trans_sol_dirich(actfield,0,1,0,0); 
 
 /*---------------------allreduce the result and put it to sol_increment */
@@ -384,7 +386,7 @@ if (fsidyn->ifsi>=4 || fsidyn->ifsi==-1)
    solserv_sol_copy(actfield,0,3,3,1,0);
 /*--------------------- to get the corrected free surface position copy 
   --------------------------------- from sol_mf[1][j] to sol[actpos][j] */
-solserv_sol_copy(actfield,0,3,0,0,actpos);
+solserv_sol_copy(actfield,0,3,0,1,actpos);
 
 /*---------------------------------------------- increment output flags */
 outstep++;
@@ -413,7 +415,7 @@ monitoring(actfield,numaf,actpos,adyn->time);
 
 
 /*------------------------------------------------- write restart data */
-if (restartstep==fsidyn->res_write_evry)
+if (restartstep==fsidyn->uprestart)
 {
    restartstep=0;
    restart_write_aledyn(adyn,actfield,actpart,actintra);
@@ -459,7 +461,7 @@ amzero(&dirich_a);
 	 But there's no test to set all ordinary dbc = 0.0 !!!
 	 The required Dirichlet boundary conditions from fsi coupling 
 	 are calculated here.						*/
-ale_setdirich(actfield,adyn,actpos,6);
+ale_setdirich(actfield,adyn,6);
 
 /*------------------------------- call element-routines to assemble rhs */
 *action = calc_ale_rhs;

@@ -113,9 +113,11 @@ for (i=0; i<design->ndsurf; i++)
       amdef("onoff",&(actdsurf->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
       amdef("val",&(actdsurf->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
       amdef("curve",&(actdsurf->dirich->curve),MAXDOFPERNODE,1,"IV"); 
+      amdef("function",&(actdsurf->dirich->funct),MAXDOFPERNODE,1,"IV");
       amzero(&(actdsurf->dirich->dirich_onoff));
       amzero(&(actdsurf->dirich->dirich_val));
       amzero(&(actdsurf->dirich->curve));
+      amzero(&(actdsurf->dirich->funct));
       /*----------------------------------- initialise for fsi-coupling */
       for (j=0;j<genprob.ndim;j++)
          actdsurf->dirich->dirich_onoff.a.iv[j] = 1;   
@@ -130,8 +132,10 @@ for (i=0; i<design->ndsurf; i++)
       amdef("onoff",&(actdsurf->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
       amdef("val",&(actdsurf->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
       amdef("curve",&(actdsurf->dirich->curve),MAXDOFPERNODE,1,"IV"); 
+      amdef("function",&(actdsurf->dirich->funct),MAXDOFPERNODE,1,"IV");
       amzero(&(actdsurf->dirich->dirich_onoff));
       amzero(&(actdsurf->dirich->dirich_val));
+      amzero(&(actdsurf->dirich->funct));
       amzero(&(actdsurf->dirich->curve));
       /*----------------------------------- initialise for fsi-coupling */
       for (j=0;j<genprob.ndim;j++)
@@ -162,11 +166,8 @@ for (i=0; i<design->ndline; i++)
    switch (fieldtyp)
    {
    case structure:
-      dsassert(hasneum==0,"neumann- and fsi-coupling condition defined on same DLINE\n");
       if (hasdirich!=0) dswarning(1,7);
-#if 0
       dsassert(hasdirich==0,"dirich- and fsi-coupling condition defined on same DLINE\n");
-#endif
       dsassert(hascouple==0,"coupling- and fsi-coupling condition defined on same DLINE\n");      
       actdline->neum = (NEUM_CONDITION*)CCACALLOC(1,sizeof(NEUM_CONDITION));
       if (!actdline->neum) dserror("Allocation of memory failed");
@@ -181,10 +182,10 @@ for (i=0; i<design->ndline; i++)
       amdef("onoff",&(actdline->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
       amdef("val",&(actdline->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
       amdef("curve",&(actdline->dirich->curve),MAXDOFPERNODE,1,"IV"); 
+      amdef("function",&(actdline->dirich->funct),MAXDOFPERNODE,1,"IV");
       amzero(&(actdline->dirich->dirich_onoff));
       amzero(&(actdline->dirich->dirich_val));
       amzero(&(actdline->dirich->curve));
-      amdef("function",&(actdline->dirich->funct),MAXDOFPERNODE,1,"IV");
       amzero(&(actdline->dirich->funct));
       /*----------------------------------- initialise for fsi-coupling */
       for (j=0;j<genprob.ndim;j++)
@@ -200,10 +201,10 @@ for (i=0; i<design->ndline; i++)
       amdef("onoff",&(actdline->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
       amdef("val",&(actdline->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
       amdef("curve",&(actdline->dirich->curve),MAXDOFPERNODE,1,"IV"); 
+      amdef("function",&(actdline->dirich->funct),MAXDOFPERNODE,1,"IV");
       amzero(&(actdline->dirich->dirich_onoff));
       amzero(&(actdline->dirich->dirich_val));
       amzero(&(actdline->dirich->curve));
-      amdef("function",&(actdline->dirich->funct),MAXDOFPERNODE,1,"IV");
       amzero(&(actdline->dirich->funct));
       /*----------------------------------- initialise for fsi-coupling */
       for (j=0;j<genprob.ndim;j++)
@@ -234,7 +235,6 @@ for (i=0; i<design->ndnode; i++)
    switch (fieldtyp)
    {
    case structure:
-      dsassert(hasneum==0,"neumann- and fsi-coupling condition defined on same DNODE\n");
       dsassert(hasdirich==0,"dirich- and fsi-coupling condition defined on same DNODE\n");
       dsassert(hascouple==0,"coupling- and fsi-coupling condition defined on same DNODE\n");      
       actdnode->neum = (NEUM_CONDITION*)CCACALLOC(1,sizeof(NEUM_CONDITION));
@@ -250,10 +250,10 @@ for (i=0; i<design->ndnode; i++)
       amdef("onoff",&(actdnode->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
       amdef("val",&(actdnode->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
       amdef("curve",&(actdnode->dirich->curve),MAXDOFPERNODE,1,"IV"); 
+      amdef("function",&(actdnode->dirich->funct),MAXDOFPERNODE,1,"IV");
       amzero(&(actdnode->dirich->dirich_onoff));
       amzero(&(actdnode->dirich->dirich_val));
       amzero(&(actdnode->dirich->curve));
-      amdef("function",&(actdnode->dirich->funct),MAXDOFPERNODE,1,"IV");
       amzero(&(actdnode->dirich->funct));
       /*----------------------------------- initialise for fsi-coupling */
       for (j=0;j<genprob.ndim;j++)
@@ -269,10 +269,10 @@ for (i=0; i<design->ndnode; i++)
       amdef("onoff",&(actdnode->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
       amdef("val",&(actdnode->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
       amdef("curve",&(actdnode->dirich->curve),MAXDOFPERNODE,1,"IV"); 
+      amdef("function",&(actdnode->dirich->funct),MAXDOFPERNODE,1,"IV");
       amzero(&(actdnode->dirich->dirich_onoff));
       amzero(&(actdnode->dirich->dirich_val));
       amzero(&(actdnode->dirich->curve));
-      amdef("function",&(actdnode->dirich->funct),MAXDOFPERNODE,1,"IV");
       amzero(&(actdnode->dirich->funct));
       /*----------------------------------- initialise for fsi-coupling */
       for (j=0;j<genprob.ndim;j++)

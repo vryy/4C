@@ -284,7 +284,7 @@ monitoring(actfield,numaf,actpos,adyn->time);
 
 
 /*------------------------------------------------- write restart data */
-if (restartstep==fsidyn->res_write_evry)
+if (restartstep==fsidyn->uprestart)
 {
    restartstep=0;
    restart_write_aledyn(adyn,actfield,actpart,actintra);

@@ -486,7 +486,7 @@ if (pssstep==fsidyn->uppss && ioflags.fluid_vis_file==1 && par.myrank==0)
 } 
 
 /*------------------------------------------------- write restart data */
-if (restartstep==fsidyn->res_write_evry)
+if (restartstep==fsidyn->uprestart)
 {
    restartstep=0;
    restart_write_aledyn(adyn,actfield,actpart,actintra);
@@ -535,7 +535,7 @@ amzero(&dirich_a);
 	 But there's no test to set all ordinary dbc = 0.0 !!!
 	 The required Dirichlet boundary conditions from fsi coupling 
 	 are calculated here.						*/
-ale_setdirich(actfield,adyn,actpos,6);
+ale_setdirich(actfield,adyn,6);
 
 /*------------------------------- call element-routines to assemble rhs */
 *action = calc_ale_rhs;
