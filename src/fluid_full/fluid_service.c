@@ -1064,48 +1064,5 @@ dstrc_exit();
 return;
 } /* end of fluid_algoout*/
 
-/*!---------------------------------------------------------------------                                         
-\brief extract digits from integer number
-
-<pre>                                                         genk 04/02		     
-</pre>   
-\param  num	 int   (i)    integer number
-\param *it	 int   (o)    integer on position "thousand"
-\param *ih       int   (o)    integer on position "hundred"
-\param *id       int   (o)    integer on position "ten"
-\param *id       int   (o)    integer on position "one"
-\return void 
-
-------------------------------------------------------------------------*/
-void intextract(
-                int num,    
-                int *it,    
-		int *ih,    
-		int *id,    
-		int *io     
-	       )
-{
-int nit, nih, nid, nio;
-
-#ifdef DEBUG 
-dstrc_enter("intextract");
-#endif
-
-nit = num/1000;
-nih = (num-nit*1000)/100;
-nid = (num-nit*1000-nih*100)/10;
-nio = num -nit*1000-nih*100-nid*10;
-
-*it=nit;
-*ih=nih;
-*id=nid;
-*io=nio;
-
- /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
-dstrc_exit();
-#endif
-return;
-} /* end of intextract*/ 
 
 #endif
