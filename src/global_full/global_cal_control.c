@@ -17,8 +17,6 @@ assign_dof();
 part_assignfield();
 /*-------------------calculate system matrices parallel storage formats */
 mask_global_matrices();
-/*------------------------------- make bunker access for the partitions */
-part_bunker_access();
 /*------------------------------------------------ write general output */
 out_general();
 /*--------------------------------------------------- write mesh to gid */

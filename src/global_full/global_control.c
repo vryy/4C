@@ -29,12 +29,6 @@ if (genprob.restart!=0)
 {
    /* nothing implemented yet */
 }
-else
-{
-/*-create a data bunker for each field and an access for each node and 
-                                                                element */
-bunker_init();
-}
 /*----------------------------------------------------calculation phase */
 ntacal();
 
