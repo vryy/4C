@@ -49,7 +49,12 @@ extern struct _MONITOR *moni;
 /*----------------------------------------------------------------------*
  | input of monitoring data                               genk 01/03    |
  *----------------------------------------------------------------------*/
-void monitoring(FIELD *actfield,INT numf, INT actpos, INT actstep, DOUBLE time)
+void monitoring(
+                  FIELD         *actfield,
+                  INT            numf,
+                  INT            actpos,
+                  DOUBLE         time
+               ) 
 {
 INT i,j;
 INT numnp;
@@ -68,11 +73,6 @@ numnp   = actmoni->numnp;
 
 if (numnp==0) goto end;
 
-/*------------------------------------------------ enlarge if necessary */
-if (actstep >= actmoni->val.sdim)
-   amredef(&(actmoni->val),actmoni->val.fdim,actmoni->val.sdim+5,"DA");
-if (actstep >= actmoni->time.fdim)   
-   amredef(&(actmoni->time),actmoni->time.fdim+5,1,"DV");
 /*-------------------------------------------------------- store values */
 for (i=0;i<numnp;i++)
 {
@@ -82,14 +82,13 @@ for (i=0;i<numnp;i++)
       if (numr==-1) continue;
       nodepos = actmoni->monnodes.a.ia[i][1];
       actnode = &(actfield->dis[0].node[nodepos]);
-      dsassert(j<actnode->numdf,"Monitoring fails!\n");
+      dsassert(j<actnode->sol.sdim,"Monitoring fails!\n");
       actval = actnode->sol.a.da[actpos][j];
-      actmoni->val.a.da[numr][actstep] = actval;
+      actmoni->val.a.dv[numr] = actval;
    }
 }
 
-actmoni->time.a.dv[actstep] = time;
-actmoni->numstep+=1;
+out_monitor(actfield,numf,time,0);
 
 /*----------------------------------------------------------------------*/
 end:
