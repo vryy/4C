@@ -8,16 +8,19 @@
 //
 // #define MAXNOD                (4)
 // #define MAXELE                (4)
-// #define MAXDOFPERNODE         (9)
-// #define MAXGAUSS              (24)
+// #define MAXDOFPERNODE         (9)     /*2 kinematic layers*/
+// #define MAXGAUSS              (24)    /*tot. 3 Layers with 2x2x2 GPs*/
 // #define MAXRECORDPERELE       (6)
-// #define MAXNODESTRESS_SHELL9  (24)
+//
+// #define MAXLAY_SHELL9         (3)     /* max. total number of layers */
+// #define MAXKLAY_SHELL9        (2)     /* max. number of kin layers */
+// #define MAXNODESTRESS_SHELL9  (24)    /* Numnod*lt*numlay (Numnod=4 for Quad4 | Numnod=9 for Quad8/9)
 //
 ==================================================================
                         General Data File C_CARAT
 ==================================================================
 -------------------------------------------------------------TITLE
-scordelis   material nonlinear
+SHELL9_scordelis_matNL
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS          16 
 NODES             25
@@ -33,8 +36,8 @@ RESTART      0
 ----------------------------------------------------------------IO
 STRUCT_DISP_FILE         No
 STRUCT_STRESS_FILE       No
-STRUCT_DISP_GID          No
-STRUCT_STRESS_GID        No
+STRUCT_DISP_GID          Yes
+STRUCT_STRESS_GID        Yes
 STRUCT_STRESS_GID_SMO    No
 FLUID_SOL_FILE           No
 FLUID_SOL_GID            No
@@ -42,9 +45,8 @@ FLUID_VIS_FILE           No
 ------------------------------------------------------------STATIC
 NONLINEAR
 KINTYP       Geo_Lin
-//KINTYP       Tot_Lagr
 NEWTONRAPHSO Displacement_Control
-NUMSTEP      15
+NUMSTEP      3
 MAXITER      20
 TOLRESID     1.0E-07
 TOLDISP      1.0E-07
@@ -466,20 +468,9 @@ NODE           25     COORD 0.000000000000000e+00     0.000000000000000e+00     
 ----------------------------------------------------FLUID ELEMENTS
 ------------------------------------------------------ALE ELEMENTS
 ---------------------------------------------------------MATERIALS 
-//MAT       1 MAT_Multilayer  NUM_KLAY 1 SEC_KLAY 100
 MAT       1 MAT_Multilayer  NUM_KLAY 2 SEC_KLAY 50,50 
-//MAT       1 MAT_Multilayer  NUM_KLAY 3 SEC_KLAY 33.33333,33.33334,33.33333
-//MAT       1 MAT_Multilayer  NUM_KLAY 4 SEC_KLAY 25,25,25,25
-//MAT       1 MAT_Multilayer  NUM_KLAY 5 SEC_KLAY 20,20,20,20,20
-//MAT       1 MAT_Multilayer  NUM_KLAY 8 SEC_KLAY 12.5,12.5,12.5,12.5,12.5,12.5,12.5,12.5
      KINLAY 1 NUM_MLAY 1  SEC_MLAY  100    SEC_MAT  1    SEC_PHI  0.0      SEC_ROT  3
      KINLAY 2 NUM_MLAY 2  SEC_MLAY  50,50  SEC_MAT  2,3  SEC_PHI  0.0,0.0  SEC_ROT  3,3
-//     KINLAY 3 NUM_MLAY 1  SEC_MLAY  100  SEC_MAT  1  SEC_PHI  0.0  SEC_ROT  3
-//     KINLAY 4 NUM_MLAY 1  SEC_MLAY  100  SEC_MAT  1  SEC_PHI  0.0  SEC_ROT  3
-//     KINLAY 5 NUM_MLAY 1  SEC_MLAY  100  SEC_MAT  1  SEC_PHI  0.0  SEC_ROT  3
-//     KINLAY 6 NUM_MLAY 1  SEC_MLAY  100  SEC_MAT  1  SEC_PHI  0.0  SEC_ROT  3
-//     KINLAY 7 NUM_MLAY 1  SEC_MLAY  100  SEC_MAT  1  SEC_PHI  0.0  SEC_ROT  3
-//     KINLAY 8 NUM_MLAY 1  SEC_MLAY  100  SEC_MAT  1  SEC_PHI  0.0  SEC_ROT  3
 ----------------------------------------------MULTILAYER MATERIALS
 //
 //  11=22  &  22=11 -> passt bis auf Fall1 sehr gut
