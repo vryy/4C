@@ -180,8 +180,8 @@ OC_ICO 0 global inequality constraints
 OC_ECO 1 global   equality constraints
       DVOLU 1 TYP WEIGHT  SCL 1. 
 --------------------------------------------------LEVELSET DYNAMIC
-NSTEP        7
-NFSTEP       2
+NSTEP        2
+NFSTEP       0
 NFREINIT     1
 NFREPRN      1
 ITEMAX       10
