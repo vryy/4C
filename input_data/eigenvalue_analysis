@@ -1,0 +1,14 @@
+SOLTYP       SUBSPACE eigenvalue solution process
+STURM        1 perform sturm sequence check  0=no
+SUBTYP       2 subspace: 1 = jacobi rotation 2 = qz-algorithm
+IFSH         0 flag for shift
+ILMP         1 flag for lumped mass matrix 0 = consistent
+RANGE        0 search in a range
+NUMVEC       8 number of iteration vectors
+NROOT        4 number of requested eigenvalues to be converged
+ITEMAX       50 maximum number of iterations
+IFCTR        0 1 = output to console 2 = print iteration on file
+TOLEIG       1.E-10  tolerance to be used in convergence check
+SHIFT        0.0  relative shift (removed after iteration)
+BOULO        0.0  lower boundary
+BOUUP        1.0E10  upper boundary

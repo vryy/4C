@@ -1,0 +1,81 @@
+// Nonlinear Time Integraton Scheme or Projection Method
+DYNAMICTYP   Nlin_Time_Int
+// There are the following time integration schemes implemented:
+//        - One step Theta
+//        - Generalised Alpha
+//        - Second order backward differencing (BDF2)
+// Initial Starting Field
+INITIALFIELD zero_field
+// Restart Step from fluid_start.data if INITIALFIELD=field_from_file
+RESSTEP      -1
+// Function for Initial Starting Field
+STARTFUNCNO  2
+//explicit number directly written in the code
+TIMEINTEGR   One_Step_Theta
+// Time Integration Scheme
+STARTINGALGO One_Step_Theta
+// Nonlinear iteration scheme
+NONLINITER   fixed_point_like
+// max. number of nonlin. iterations
+ITEMAX       5
+// norm for convergence check
+CONVCHECK    L_2_norm
+// Tolerance for convergence check
+CONVTOL      1.0E-6
+// Norm of steady state check
+STEADYCHECK  L_2_norm
+// steady state check every step
+STEADYSTEP   -1
+// Tolerance for steady state check
+STEADYTOL    1.0E-6
+// Increment for writing solution to output file
+UPOUT        1
+// Increment for visualisation via pss-file and VISUAL2
+UPPSS        1
+// Increment for writing solution to .flavia.res
+UPRES        1
+// Increment for writing restart to pss file
+RESTARTEVRY  20
+// Total number of Timesteps
+NUMSTEP      200
+// Number of Steps for Starting Scheme
+NUMSTASTEPS  0
+// Total simulation time
+MAXTIME      1000.0
+// Time increment dt
+TIMESTEP     0.05
+// Maximal Time increment dt_max in adaptive case
+MAX_DT       0.5
+// Minimal Time increment dt_min in adaptive case
+MIN_DT       0.0001
+// Time integration factor
+THETA        0.66
+// Time integraton factor for starting scheme
+START_THETA  0.67
+// Time integration factor
+ALPHA_F      1.00
+// Time integration factor
+ALPHA_M      1.00
+// Local Truncation Error to rule adaptive time stepping
+LOC_TRUN_ERR 0.001
+// when calculating fluid stresses include viscose part
+VISCSTRESS   no
+// Treatment of free surface
+FREESURFACE  no
+// Include surfadce tension effects
+SURFTENSION  no
+// Calculate lift and drag forces along specified lines
+CHECKAREA  no
+// Monitor the size of the fluid domain
+LIFTDRAG     no
+// Flag, if time stepping is adaptive
+ADAPT_TIME   no
+// How to build timerhs?  classic  => as described in diss. Wall
+//                        mass     => by means of mass matrix
+TIME_RHS     classic
+TURBULENCE   No
+INT_LENGHT   1.0
+ROUGHTNESS   1.0
+SC_COORD_X   0.0
+SC_COORD_Y   0.0
+DISC_CAPT    No

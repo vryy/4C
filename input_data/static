@@ -1,0 +1,22 @@
+//-----------------------------------------------
+// Linear
+//-----------------------------------------------
+LINEAR
+
+//-----------------------------------------------
+// Nonlinear
+//-----------------------------------------------
+NONLINEAR
+KINTYP       Geo_Lin
+NEWTONRAPHSO Displacement_Control
+NUMSTEP      50
+MAXITER      20
+TOLRESID     1.0E-06
+TOLDISP      1.0E-07
+STEPSIZE     1.0
+IARC         No
+ARCSCL       1.0
+SIGNCHCSP    No
+RESEVRYDISP  10
+RESEVRYSTRS  20
+RESTARTEVRY  20

@@ -1,0 +1,28 @@
+// Structure-Structure Interaction Problem maximal simulation time
+MAXTIME      1000.0
+// time step size
+TIMESTEP     0.05
+// number of time steps
+NUMSTEP      200
+// Increment for visualisation via pss-file and VISUAL2
+UPPSS        1
+// ALE algorithm
+IALE         Pseudo_Structure
+// Iteration Scheme over the fields
+COUPALGO     sequ_staggerd
+// Convergence criterium for iteration over fields
+CONVCRIT     ||g(i)||:sqrt(neq)
+// Energy check for iteration over fields
+ENERGYCHECK  yes
+// Tolerance for energy check
+TOLENCHECK   1.0E-6
+// fixed relaxation parameter
+RELAX        1.0
+// Maximum number of iterations over fields
+ITEMAX       1
+// Tolerance for iteration over fields
+CONVTOL      1.0E-6
+// not used up to now
+ISDMAX       0
+// Coupling Method Mortar (mtr) or conforming nodes at interface
+COUPMETHOD   conforming

@@ -1,0 +1,78 @@
+//-----------------------------------------------
+// Colsol
+//-----------------------------------------------
+SOLVER         Colsol
+//MATRIXTYP      OLL
+PARTITION      Cut_Elements
+
+
+//-----------------------------------------------
+// Umfpack
+//-----------------------------------------------
+SOLVER         UMFPACK
+//MATRIXTYP      OLL
+PARTITION      Cut_Elements
+
+
+//-----------------------------------------------
+// Spooles
+//-----------------------------------------------
+SOLVER         SPOOLES_nonsym
+//MATRIXTYP      OLL
+PARTITION      Cut_Elements
+
+
+//-----------------------------------------------
+// Aztec defaults
+//-----------------------------------------------
+SOLVER         Aztec_MSR
+// AZSOLVE type of iterative solution procedure:
+//   CG,GMRES,CGS,BiCGSTAB,LU,TFQMR
+// AZPREC  type of preconditioning procedure:
+//   none,ILUT,ILU,Jacobi,Neumann,Least_Squares,SymmGaussSeidel,LU,RILU,ICC
+// AZREUSE offset how many solver calls a preconditioner shall be used
+//  (only structural problems): (<int>)
+// AZDROP drop tolerance for ILUT preconditioner: (<real>)
+// AZFILL fill-in factor for ILU and ILUT: (<real>)
+// AZGFILL fill-in for ilu(k): (<int>)
+// AZTOL desired accuracy of iterative solver: (<real>)
+// AZITER maximum number of solver iterations allowed: (<int>)
+// AZSUB number of subspaces for some types of solvers: (<int>)
+// AZOMEGA relaxation parameter for some types of preconditioners: (<real>)
+// AZGRAPH ?
+// AZPOLY order of polynomials for some types of preconditioners: (<int>)
+AZSOLVE        CG
+AZPREC         ILU
+AZREUSE        0
+AZDROP         0.0
+AZFILL         2.0
+AZGFILL        0
+AZTOL          1.0E-08
+AZITER         2500
+AZSUB          50
+AZOMEGA        1.0
+AZGRAPH        1
+AZPOLY         5
+//MATRIXTYP      OLL
+PARTITION      Cut_Elements
+
+
+//-----------------------------------------------
+// Aztec Fluid
+//-----------------------------------------------
+SOLVER         Aztec_MSR
+AZSOLVE        BiCGSTAB
+AZPREC         ILU
+AZREUSE        0
+AZDROP         0.0
+AZFILL         1.0
+AZGFILL        0
+AZTOL          1.0E-12
+AZITER         2500
+AZSUB          50
+AZOMEGA        1.0
+AZGRAPH        1
+AZPOLY         5
+//MATRIXTYP      OLL
+PARTITION      Cut_Elements
+

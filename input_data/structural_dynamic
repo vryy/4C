@@ -1,0 +1,66 @@
+// DYNAMICTYP type of time integration control:
+//   Gen_Alfa,Centr_Diff,Gen_EMM
+DYNAMICTYP   Gen_Alfa
+// EIGEN make eigenanalysis of the initial dynamic system
+//   (not with every solver): (0,1)
+EIGEN        0
+// RESEVRYDISP save displacements and contact forces every RESEVRYDISP steps:
+//   (<int>)
+RESEVRYDISP  10
+// RESEVRYSTRS save stresses every RESEVRYDISP steps: (<int>)
+RESEVRYSTRS  20
+// RESTARTEVRY write restart possibility to .pss every RESTARTEVRY steps:
+//   (<int>)
+RESTARTEVRY  20
+// TIMESTEP time step size: (<real>)
+TIMESTEP     0.05
+// NUMSTEP maximum number of steps: (<int>)
+NUMSTEP      200
+// MAXTIME maximum time: (<real>)
+MAXTIME      5.0
+// BETA GAMMA ALPHA_M ALPHA_F generalized alfa factors, BETA and GAMMA
+//   also used by explicit time integration: (<real>)
+BETA         0.25
+GAMMA        0.5
+ALPHA_M      0.5
+ALPHA_F      0.5
+// disspipation parameter for gemm time integration: (<real>)
+XSI          0.0
+// DAMPING build raleigh damping matrix and use it from
+//   M_DAMP x M + K_DAMP x K: (No,Yes)
+DAMPING      Yes
+M_DAMP       0.5
+K_DAMP       0.5
+// ITERATION make Newton Iteration
+//   (only full implemented, ignored by explicit time int.): (mod,full,none)
+ITERATION    full
+// TOLDISP tolerance in the displacement norm for the newton iteration:
+//   (<real>)
+TOLDISP      1.0E-08
+// MAXITER maximum number of iterations allowed for newton iteration
+//   before failure: (<int>)
+MAXITER      50
+// CONTACT switch contact algorithms for shell8 and wall1 on/off: (0,1)
+// Have to use SPOOLES_nonsym in parallel as solver for contact problems
+CONTACT      0
+// CET_flag switch enforcment for contact lagr. multipliers on/off: (0,1)
+// 0 -> penalty method, 1-> augm lagrangean
+CET_flag      1
+// FR_flag switch friction in contact on/off: (0,1)
+FR_flag      0
+// NPP penaly parameter for normal contact: (<real>)
+NPP          1.0E+06
+// NPP penaly parameter for tangential (frictional) contact: (<real>)
+TPP          1.0E+06
+// FR_COEF frictional coefficient: (<real>)
+FR_COEF          0.4
+// TIMEADAPT switch time adaptivity dependend on number of newton
+//   iterations on/off (only shell8): (0,1)
+TIMEADAPT    0
+// ITWANT number of newton iterations wanted: (<int>)
+ITWANT       4
+// MAXDT maximum time step size allowed to the time adaptivity: (<real>)
+MAXDT        0.07
+// RESULTDT offset when results shall be written to .flavia.res when
+//   time adaptivity is on: (<real>)
+RESULTDT     0.05
