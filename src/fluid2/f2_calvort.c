@@ -83,7 +83,6 @@ INT ivmax;		     /* index for maximum number of gauss points  */
 INT icode=2;                 /* flag for eveluation of shape functions    */ 
 INT iel=0;		     /* number of nodes                           */
 INT lr,ls;		     /* index to loop over integration points     */
-INT ntyp;		     /* element type: 1 - quad; 2 - tri           */
 INT node;		     /* index to loop over nodal points           */
 INT nir,nis;                 /* number of gauss points in r&s directions  */
 INT intc;
@@ -128,27 +127,26 @@ for (icol=0;icol<ncols;icol++)
 
 /*------------------------------------------------------ initialization */
 iel = ele->numnp;
-ntyp= ele->e.f2->ntyp;
 typ = ele->distyp;
 
 /*------------------------------------------------- get integraton data */
-switch (ntyp)
+switch (typ)
 {
-case 1: /* -----> quad element */
+case quad4: case quad8: case quad9: /* -----> quad element */
    icode = 2;
 	/* initialise integration */
    nir = ele->e.f2->nGP[0];
    nis = ele->e.f2->nGP[1];
 break;
-case 2: /* triangular element */	
+case tri3: case tri6: /* triangular element */	
       icode = 2;
       nir  = ele->e.f2->nGP[0];
       nis  = 1;
       intc = ele->e.f2->nGP[1];  
 break;	
 default:
-   dserror("ntyp unknown!");
-} /* end switch(ntyp) */
+   dserror("typ unknown!");
+} /* end switch(typ) */
 
 
 /*---------------------- set element velocities, and coordinates -------*/
@@ -167,21 +165,21 @@ for (lr=0;lr<nir;lr++)
    for (ls=0;ls<nis;ls++)
       {
 /*---------------- get values of  shape functions and their derivatives */
-      switch(ntyp)
+      switch(typ)
       {
-      case 1:  /* quad element*/
+      case quad4: case quad8: case quad9:  /* quad element*/
          e1 = data->qxg[lr][nir-1];
          e2 = data->qxg[ls][nis-1];
          f2_rec(funct,deriv,NULL,e1,e2,typ,icode);
       break;
-      case 2:   /* --> tri - element */              
+      case tri3: case tri6:   /* --> tri - element */              
 	 e1   = data->txgr[lr][intc];
 	 e2   = data->txgs[lr][intc];
 	 f2_tri(funct,deriv,NULL,e1,e2,typ,icode);
       break;
       default:
-         dserror("ntyp unknown!");
-      }/*end of switch(ntyp) */		
+         dserror("typ unknown!");
+      }/*end of switch(typ) */		
       
 /*--------------------------------------------- compute Jacobian matrix */
       f2_jaco2(xyze,funct,deriv,xjm,&det,iel,ele);
@@ -212,10 +210,17 @@ for (node=0;node<iel;node++)
    r = f2_rsn(node,0,iel);
    s = f2_rsn(node,1,iel);
 /*---------------------------------- extrapolate vorticity to the nodes */   
-   if      (ntyp==1) f2_recex(&f,fpar,r,s,vort,ivmax,1); 
-   else if (ntyp==2) f2_triex(&f,fpar,r,s,vort,ivmax,1); 
-   else dserror("ntyp unknown!\n");
-          
+   switch (typ)
+   {
+   case quad4: case quad8: case quad9:
+      f2_recex(&f,fpar,r,s,vort,ivmax,1); 
+   break;
+   case tri3: case tri6:
+      f2_triex(&f,fpar,r,s,vort,ivmax,1); 
+   break;
+   default:
+      dserror("typ unknown!\n");
+   }       
 /*------------------- store the vorticity value in the solution history-*/   
    actnode->sol.a.da[icol][3] += f/numele;                    
 

@@ -30,11 +30,7 @@ Maintainer: Steffen Genkinger
 void f2_inp(ELEMENT *ele, INT counter)
 {
 INT        i;             /* simply a counter                           */
-INT        ndum;          /* dummy value                                */
 INT        ierr=0;        /* error flag                                 */
-INT        itaumu;        /*                                            */ 
-INT        itaump;	  /*						*/
-INT        itauc;	  /* element flags                              */
 char      buffer[50];
 static INT cmat;
 
@@ -51,7 +47,6 @@ if (ierr==1)
 {
    ele->numnp=4;
    ele->distyp=quad4;
-   ele->e.f2->ntyp=1;
    ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed\n");
    frint_n("QUAD4",&(ele->lm[0]),ele->numnp,&ierr);
@@ -65,7 +60,6 @@ if (ierr==1)
 {
    ele->numnp=9;
    ele->distyp=quad9;
-   ele->e.f2->ntyp=1;
    ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed\n");
    frint_n("QUAD9",&(ele->lm[0]),ele->numnp,&ierr);
@@ -76,7 +70,6 @@ if (ierr==1)
 {
    ele->numnp=8;
    ele->distyp=quad8;
-   ele->e.f2->ntyp=1;
    ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed\n");
    frint_n("QUAD8",&(ele->lm[0]),ele->numnp,&ierr);
@@ -87,7 +80,6 @@ if (ierr==1)
 {
    ele->numnp=3;
    ele->distyp=tri3;
-   ele->e.f2->ntyp=2;
    ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed\n");
    frint_n("TRI3",&(ele->lm[0]),ele->numnp,&ierr);
@@ -101,7 +93,6 @@ if (ierr==1)
 {
    ele->numnp=6;
    ele->distyp=tri6;
-   ele->e.f2->ntyp=2;
    ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed\n");
    frint_n("TRI6",&(ele->lm[0]),ele->numnp,&ierr);
@@ -195,6 +186,9 @@ see /fluid2/f2_intg.c.
    if (ierr!=1) dserror("Reading of FLUID2 element failed: integration\n");
 } /* endif (ele->numnp==3 || ele->numnp==6) */
 
+/*------------------------------------------------ set default velues: */
+ele->e.f2->is_ale=0;
+
 /*------------------------------------------------------ read net algo */
 frchar("NA",buffer,&ierr);
 if (ierr==1)
@@ -230,12 +224,17 @@ if (ierr==1)
 }
 else 
   dserror("Reading of FLUID2 element failed: TURBULENCE\n");
+#ifndef D_FLUID2TU
+dsassert(ele->e.f2->turbu==0,"Turbulence needed but not compiled in!\n");
+#endif
 
 /*----------------------------- set initial value for free surface flag */
 ele->e.f2->fs_on=0;
-   
+    
 /*-------------------------------------------------------- submesh data */
+#ifdef FLUID2_ML
 ele->e.f2->smisal = 0;   
+#endif
 /*--------------------------------------------------------------------- */
 #ifdef DEBUG 
 dstrc_exit();
