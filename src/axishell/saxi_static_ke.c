@@ -201,6 +201,11 @@ void saxi_statcond(
   DOUBLE work[6][6];
   DOUBLE *statcond;          /* pointer to statcond vector of the element */
 
+#ifdef DEBUG
+  dstrc_enter("saxi_statcond");
+#endif
+
+
   /* compute the transformation matrix T */
   for (i=0; i<6; i++)
   {

@@ -56,6 +56,10 @@ void saxiinit(
   ELEMENT     *actele;
   SAXI_DATA      data;
 
+#ifdef DEBUG
+  dstrc_enter("saxiinit");
+#endif
+
   for (i=0; i<actpart->pdis[0].numele; i++)
   {
     actele = actpart->pdis[0].element[i];
@@ -70,7 +74,7 @@ void saxiinit(
   }
 
 #ifdef DEBUG
-  dstrc_enter("saxiinit");
+  dstrc_exit();
 #endif
 
   return;
