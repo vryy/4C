@@ -1,5 +1,5 @@
       SUBROUTINE mumps_interface(job,parproc,comm,sym,icntl,n,nz,nz_loc,
-     *                           irn_loc,jcn_loc,a_loc,b)
+     *                           irn_loc,jcn_loc,irn,jcn,a_loc,b)
       INCLUDE 'mpif.h'
       INCLUDE 'mumps_struc.h'
       TYPE (MUMPS_STRUC) mumps_par
@@ -7,6 +7,7 @@
       integer job,parproc,comm,sym
       integer n,nz,nz_loc
       integer,target :: irn_loc(nz_loc),jcn_loc(nz_loc)
+      integer,target :: irn(nz),jcn(nz)
       integer icntl(20)
       real*8 ,target :: a_loc(nz_loc),b(n)
       save mumps_par
@@ -21,6 +22,8 @@ c----------------------------------------- put values to fortran90 structure
       mumps_par%NZ_loc   = nz_loc
       mumps_par%IRN_loc => irn_loc(1:nz_loc)
       mumps_par%JCN_loc => jcn_loc(1:nz_loc)
+      mumps_par%IRN     => irn(1:nz)
+      mumps_par%JCN     => jcn(1:nz)
       mumps_par%A_loc   => a_loc(1:nz_loc)
       mumps_par%RHS     => b(1:n)
 c-----------------------------------------------------------------------init
@@ -35,8 +38,8 @@ c-------------------------------------put default values of options to icntl
             icntl(i) = mumps_par%ICNTL(i)
          enddo
 c---------------------------------- set type to distributed assembled matrix 
-         mumps_par%ICNTL(18) = 3
-         icntl(18)           = 3 
+         mumps_par%ICNTL(18) = 2
+         icntl(18)           = 2 
 c--------------------------------------------------------------- set I/O off
          mumps_par%ICNTL(3)  = 0
          icntl(3)            = 0 
@@ -58,12 +61,6 @@ c--------------------------------------------------------set default options
          do i=1,20
             mumps_par%ICNTL(i) = icntl(i)
          enddo
-c---------------------------------- set type to distributed assembled matrix 
-         mumps_par%ICNTL(18) = 3
-         icntl(18)           = 3 
-c--------------------------------------------------------------- set I/O off
-         mumps_par%ICNTL(3)  = 0
-         icntl(3)            = 0 
 c----------------------------------------------------call for  factorization 
          mumps_par%JOB     = 2
          call mumps(mumps_par)
@@ -83,12 +80,10 @@ c----------------------------------------- end of factorization and solution
 
 c-------------------------------------------------------- call solution only      
       if (job.eq.3) then
-c------------------------------------------------- set matrix to distributed
-         mumps_par%ICNTL(18) = 3
-         icntl(18)           = 3 
-c--------------------------------------------------------------- set I/O off
-         mumps_par%ICNTL(3)  = 0
-         icntl(3)            = 0 
+c--------------------------------------------------------set default options
+         do i=1,20
+            mumps_par%ICNTL(i) = icntl(i)
+         enddo
 c-------------------------------------------------- set job to solution only         
          mumps_par%JOB      = 3
 c----------------------------------------------------------------call solver          
