@@ -134,6 +134,7 @@ for (i=0; i<nd; i++)
    }
 #endif
    /*-------------------- ii is not a coupled dofs or I am master owner */
+   ii_index      = find_index(ii,update,numeq);
 #ifndef D_CONTACT
    if (!ii_iscouple || ii_owner==myrank)
    {
@@ -144,7 +145,6 @@ for (i=0; i<nd; i++)
 
    }
 #endif   
-      ii_index      = find_index(ii,update,numeq);
    /*================================= loop over j (the element column) */
    /*                            This is the full unsymmetric version ! */
    for (j=0; j<nd; j++)
