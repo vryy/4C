@@ -14,7 +14,7 @@
 #
 # enter path to your source directory here
 #--------------------------------------------------------------------
-#SRC       = /bau/statik/<USER>/wdir/ccarat/src
+include ./Makefile.personal_path
 #
 #
 #--------------------------------------------------------------------
