@@ -96,6 +96,16 @@ extern enum _CALC_ACTION calc_action[MAXFIELD];
  |              only Euler no ALE                                       |
  |                                                          genk  03/02 |
  *----------------------------------------------------------------------*/
+/*!----------------------------------------------------------------------
+\brief file pointers
+
+<pre>                                                         m.gee 8/00
+This structure struct _FILES allfiles is defined in input_control_global.c
+and the type is in standardtypes.h                                                  
+It holds all file pointers and some variables needed for the FRSYSTEM
+</pre>
+*----------------------------------------------------------------------*/
+extern struct _FILES  allfiles;
 /*!---------------------------------------------------------------------                                         
 \brief implicit and semi-implicit algorithms for fluid problems
 
@@ -176,6 +186,7 @@ DOUBLE         *fiterhs;	    /* iteration - RHS  		*/
 ARRAY           time_a;             /* stored time                      */
 
 CONTAINER       container;          /* contains variables defined in container.h */
+FILE           *out = allfiles.out_out;
 
 #ifdef DEBUG 
 dstrc_enter("fluid_isi");
@@ -245,6 +256,17 @@ MPI_Barrier(actintra->MPI_INTRA_COMM);
 if (par.myrank==0)
 printf("          | FIELD FLUID     | total number of equations: %10d \n",numeq_total);
 if (par.myrank==0) printf("\n\n");
+
+/* write general data to .out */
+fprintf(out,"max. values for:\n");
+fprintf(out," step |    time    | ite|   ite tol  | steady tol |\n");
+fprintf(out,"---------------------------------------------------\n");
+fprintf(out,"%5d | %10.3E | %2d | %10.3E | %10.3E |\n", 
+    fdyn->nstep,fdyn->maxtime,fdyn->itemax,fdyn->ittol,fdyn->sttol);
+fprintf(out,"---------------------------------------------------\n");
+fprintf(out,"\n");
+fprintf(out," step |    time    | ite| vel. error | pre. error |\n");
+fprintf(out,"---------------------------------------------------\n");
 
 /*---------------------------------------- allocate dist. vectors 'rhs' */
 if (fdyn->iop == 7) actsolv->nrhs = 2; /* two dist. rhs vecs for BDF2	*/
@@ -700,6 +722,15 @@ printf("PROC  %3d | FIELD FLUID     | total time for solver              : %10.3
         par.myrank,tss);
 printf("PROC  %3d | FIELD FLUID     | total time for time loop           : %10.3E \n", 
         par.myrank,tts);
+}
+
+/* write total cpu-time to .out */
+if (par.myrank==0)
+{
+  fprintf(out,"\n");
+  fprintf(out," total time element for calculations: %10.3E \n", tes);
+  fprintf(out," total time for solver              : %10.3E \n", tss);
+  fprintf(out," total time for time loop           : %10.3E \n", tts);
 }
 }
 #ifdef PARALLEL

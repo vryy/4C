@@ -54,6 +54,16 @@ and the type is in partition.h
 
 *----------------------------------------------------------------------*/
  extern struct _PAR   par; 
+/*!----------------------------------------------------------------------
+\brief file pointers
+
+<pre>                                                         m.gee 8/00
+This structure struct _FILES allfiles is defined in input_control_global.c
+and the type is in standardtypes.h                                                  
+It holds all file pointers and some variables needed for the FRSYSTEM
+</pre>
+*----------------------------------------------------------------------*/
+extern struct _FILES  allfiles;
 /*!--------------------------------------------------------------------- 
 \brief routine to check starting algorithm
 
@@ -1528,6 +1538,7 @@ INT fluid_steadycheck(
 {
 INT         steady=0;   /* flag for steady state                        */
 DOUBLE      vrat,prat;  /* vel. & pres. ratios                          */
+FILE       *out = allfiles.out_out;
 
 #ifdef DEBUG 
 dstrc_enter("fluid_steadycheck");
@@ -1536,7 +1547,9 @@ dstrc_enter("fluid_steadycheck");
 /*------------------------------------------ determine the conv. ratios */
 fluid_norm(fdyn,actfield,numeq_total,&vrat,&prat);
 
-/*------------------------------------------------ output to the screen */
+/*------------------------------------ output to the screen and to .out */
+fprintf(out,"---------------------------------------------------\n");
+
 if (par.myrank==0)
 {
    switch (fdyn->stnorm) 
@@ -1556,8 +1569,8 @@ if (par.myrank==0)
    default:
       dserror("Norm for steady state check unknwon!\n");
    } /* end switch (fdyn->stnorm)  */
-   printf("         velocities: %10.3E	   pressures:   %10.3E  \n", 
-          vrat,prat);
+   printf("         velocities: %10.3E	   pressures:   %10.3E  \n",vrat,prat);
+   fprintf(out," - steady state check:    %10.3E   %10.3E |\n",vrat,prat);
 } /* endif (par.myrank) */
 /* check if the ratios are smaller than the given tolerance and set flag */	  
 if (vrat<fdyn->sttol && prat<fdyn->sttol)    
@@ -1568,8 +1581,10 @@ if (vrat<fdyn->sttol && prat<fdyn->sttol)
       printf("\n");
       printf("    >>>>>> STEADY STATE REACHED <<<<<< \n");
       printf("\n");      
+      fprintf(out,"    >>>>>> STEADY STATE REACHED <<<<<<\n");
    }
 }
+fprintf(out,"---------------------------------------------------\n");
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -1608,6 +1623,7 @@ INT fluid_convcheck(
 		          DOUBLE             ts     
 		   )
 {
+FILE       *out = allfiles.out_out;
 INT         converged=0;  /* flag for convergence check                  */
 
 #ifdef DEBUG 
@@ -1645,11 +1661,16 @@ if (fdyn->itchk!=0)
    {
       printf("---------------------------------------------------------------- \n");
       printf("|          >>>>>> not converged in itemax steps!               | \n");         
+      fprintf(out,"%5d | %10.3E | %2d | %10.3E | %10.3E |\n", 
+          fdyn->step,fdyn->time,itnum,vrat,prat);
+      fprintf(out,"not converged in itemax steps\n");
    }
    if (converged>0 && par.myrank==0)
    {
       printf("---------------------------------------------------------------- \n"); 
       printf("\n");
+      fprintf(out,"%5d | %10.3E | %2d | %10.3E | %10.3E |\n", 
+          fdyn->step,fdyn->time,itnum,vrat,prat);
    }
 } /* endif (fdyn->itchk) */
 else 
