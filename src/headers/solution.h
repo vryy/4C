@@ -244,7 +244,9 @@ struct _ARRAY           jcn_loc;         /* proc-local column pointer vector */
 struct _ARRAY           jcn_locf;        /* fortran style pointer vector of jcn_loc */
 struct _ARRAY           A_loc;           /* values of the matrix */
 struct _ARRAY           rowptr;          /* int vector holding the begin of each row in irn_loc */
-struct _ARRAY           bindx;           /* aztec style proc-local indicee-vector */
+
+struct _ARRAY           irn_glob;        /* on imyrank=0 the global row/column pointer arrays */
+struct _ARRAY           jcn_glob;
 
 /* some arrays that are used for parallel assembly, mainly in the case of inter-proc-coupling conditions */
 #ifdef PARALLEL 

@@ -36,6 +36,8 @@ int            nz;
 int            nz_loc;
 int           *irn_loc;
 int           *jcn_loc;
+int           *irn;
+int           *jcn;
 double        *A_loc;
 int           *icntl;
 
@@ -66,19 +68,10 @@ switch(option)
 /*                                                           init phase */
 /*----------------------------------------------------------------------*/
 case 1:
-   /*------------------------------------------- set some other values */
-   job       = -1;
-   parproc   =  1;
-   /*--------------------------------- input is dist. assembled matrix */
-   icntl     =  rc_ptr->icntl;
-   icntl[17] = 3;
-   icntl[2]  = 0;
    /*------------------------------------- This will only do one HPUX! */
 #ifdef PARALLEL 
    rc_ptr->comm  =  MPI_Comm_c2f(actintra->MPI_INTRA_COMM);
 #endif
-   icntl[17] = 3;                   
-   icntl[2]  = 0;
    /*------------------- copy the pointer vectors to fortran numbering */
    am_alloc_copy(&(rc_ptr->irn_loc),&(rc_ptr->irn_locf));
    am_alloc_copy(&(rc_ptr->jcn_loc),&(rc_ptr->jcn_locf));
@@ -87,17 +80,42 @@ case 1:
       rc_ptr->irn_locf.a.iv[i]++;
       rc_ptr->jcn_locf.a.iv[i]++;
    }
+   if (imyrank==0)
+   {
+      for (i=0; i<rc_ptr->irn_glob.fdim; i++)
+      {
+         rc_ptr->irn_glob.a.iv[i]++;
+         rc_ptr->jcn_glob.a.iv[i]++;
+      }
+   }
    /*------------------------------------------ call the solver to init */
-   parproc   =  1;
-   icntl     =  rc_ptr->icntl;
-   icntl[17] =  3;
-/*   icntl[2]  =  0;*/
+   /*--------------------------------- input is dist. assembled matrix */
+   /*
+   the matrix is rowsum distributed in a_loc, irn_loc and jcn_loc. 
+   for the mumps analysis phase, the complete matrix sparsity pattern is given 
+   on imyrank==0 and is then deallocated
+   */
+   job       = -1;                       /* analysis phase */
+   parproc   =  1;                       /* imyrank=0 takes part in factorization */
+   icntl     =  rc_ptr->icntl;           /* icntl[0..19] are MUMPS options */
+   icntl[17] =  2;                       /* see MUMPS manual */
+   icntl[2]  =  0;                       /* no output to stdout by solver */
    n         =  rc_ptr->numeq_total;
    nz        =  rc_ptr->nnz_total;
    nz_loc    =  rc_ptr->nnz;
    irn_loc   =  rc_ptr->irn_locf.a.iv;
    jcn_loc   =  rc_ptr->jcn_locf.a.iv;
    A_loc     =  rc_ptr->A_loc.a.dv;
+   if (imyrank==0)
+   {
+   irn       =  rc_ptr->irn_glob.a.iv;
+   jcn       =  rc_ptr->jcn_glob.a.iv;
+   }
+   else
+   {
+   irn       =  NULL;
+   jcn       =  NULL;
+   }
    mumps_interface(&job,
                    &parproc,
                    &(rc_ptr->comm),
@@ -108,8 +126,16 @@ case 1:
                    &nz_loc,
                    irn_loc,
                    jcn_loc,
+                   irn,
+                   jcn,
                    A_loc,
                    NULL);
+   /* the global sparsity pattern is no longer needed after analysis phase */
+   if (imyrank==0)
+   {
+   amdel(&(rc_ptr->irn_glob));
+   amdel(&(rc_ptr->jcn_glob));
+   }
    /* set flag, that this matrix has been initialized and is ready for solve */   
    rc_ptr->is_init     = 1;
    rc_ptr->ncall       = 0;
@@ -163,7 +189,7 @@ case 0:
    }
    parproc   =  1;
    icntl     =  rc_ptr->icntl;
-   icntl[17] =  3;
+   icntl[17] =  2;
    icntl[2]  =  0;
    n         =  rc_ptr->numeq_total;
    nz        =  rc_ptr->nnz_total;
@@ -181,6 +207,8 @@ case 0:
                    &nz_loc,
                    irn_loc,
                    jcn_loc,
+                   NULL,
+                   NULL,
                    A_loc,
                    b);
    /*---------- set flag, that this matrix is factored and count solves */

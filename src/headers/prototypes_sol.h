@@ -202,6 +202,12 @@ void mask_rc_ptr(FIELD         *actfield,
                  SOLVAR        *actsolv,
                  INTRA         *actintra, 
                  RC_PTR        *rc_ptr);
+void rc_ptr_red_dof_connect(FIELD        *actfield, 
+                            PARTITION    *actpart, 
+                            SOLVAR       *actsolv,
+                            INTRA        *actintra,
+                            RC_PTR       *rc_ptr,
+                            int         **dof_connect);
 void  rc_ptr_update(FIELD         *actfield, 
                    PARTITION     *actpart, 
                    SOLVAR        *actsolv,
@@ -217,8 +223,10 @@ void  rc_ptr_make_bindx(FIELD         *actfield,
                        PARTITION     *actpart, 
                        SOLVAR        *actsolv,
                        RC_PTR        *rc_ptr,
-                       int          **dof_connect);
-void  rc_ptr_make_sparsity(RC_PTR        *rc_ptr);
+                       int          **dof_connect,
+                       int           *bindx);
+void  rc_ptr_make_sparsity(RC_PTR        *rc_ptr,
+                           int           *bindx);
 /*----------------------------------------------------------------------*
  |  solver_add_data.c                                  m.gee 11/01    |
  *----------------------------------------------------------------------*/

@@ -16,6 +16,8 @@ void mask_rc_ptr(FIELD         *actfield,
 int       i,j,k,l;
 int       numeq;
 int     **dof_connect;
+ARRAY     bindx_a;
+int      *bindx;
 #ifdef DEBUG 
 dstrc_enter("mask_rc_ptr");
 #endif
@@ -48,7 +50,10 @@ rc_ptr_update(actfield,actpart,actsolv,actintra,rc_ptr);
    */
 dof_connect = (int**)calloc(rc_ptr->numeq_total,sizeof(int*));
 if (!dof_connect) dserror("Allocation of dof_connect failed");
+/*---------------------- make the dof_connect list locally on each proc */
 rc_ptr_nnz_topology(actfield,actpart,actsolv,actintra,rc_ptr,dof_connect);
+/*------------------------------------------ make dof_connect redundant */
+rc_ptr_red_dof_connect(actfield,actpart,actsolv,actintra,rc_ptr,dof_connect);
 /*----------------------------------------------------- allocate arrays */
 /*                                                     see MUMPS manual */
 amdef("rowptr" ,&(rc_ptr->rowptr) ,rc_ptr->numeq+1  ,1,"IV");
@@ -56,30 +61,161 @@ amdef("irn_loc",&(rc_ptr->irn_loc),rc_ptr->nnz      ,1,"IV");
 amdef("jcn_loc",&(rc_ptr->jcn_loc),rc_ptr->nnz      ,1,"IV");
 amdef("A"      ,&(rc_ptr->A_loc)  ,rc_ptr->nnz      ,1,"DV");
 /*------------------------------------------------------ allocate bindx */
-amdef("bindx",&(rc_ptr->bindx),(rc_ptr->nnz+1),1,"IV");
+bindx = amdef("bindx",&(bindx_a),(rc_ptr->nnz+1),1,"IV");
 /*---------------------------------------------------------- make bindx */
-rc_ptr_make_bindx(actfield,actpart,actsolv,rc_ptr,dof_connect);
+rc_ptr_make_bindx(actfield,actpart,actsolv,rc_ptr,dof_connect,bindx);
 /*----------------- make rowptr, irn_loc, jcn_loc from bindx and update */
-rc_ptr_make_sparsity(rc_ptr);
-/*------------------------------------------------------ make nnz_total */
-#ifdef PARALLEL
-rc_ptr->nnz_total=0;
-MPI_Allreduce(&(rc_ptr->nnz),&(rc_ptr->nnz_total),1,MPI_INT,MPI_SUM,actintra->MPI_INTRA_COMM);
-#else
-rc_ptr->nnz_total=rc_ptr->nnz;
-#endif
+rc_ptr_make_sparsity(rc_ptr,bindx);
 /*---------------------------------------- delete the array dof_connect */
 for (i=0; i<rc_ptr->numeq_total; i++)
 {
    if (!dof_connect[i]) free(dof_connect[i]);
 }
 free(dof_connect);
+amdel(&bindx_a);
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
 #endif
 return;
 } /* end of mask_rc_ptr */
+
+
+
+
+/*----------------------------------------------------------------------*
+ |  make redundant dof_connect array                        m.gee 1/02  |
+ *----------------------------------------------------------------------*/
+void rc_ptr_red_dof_connect(FIELD        *actfield, 
+                            PARTITION    *actpart, 
+                            SOLVAR       *actsolv,
+                            INTRA        *actintra,
+                            RC_PTR       *rc_ptr,
+                            int         **dof_connect)
+{
+int        i,j,k,counter;
+int        imyrank;
+int        inprocs;
+int        max_dof_connect_send;
+int        max_dof_connect_recv;
+int        dof,actdof,lastdof;
+int        ismaindiag;
+int        lenght;
+
+ARRAY      tmps_a;
+int      **tmps;
+ARRAY      tmpr_a;
+int      **tmpr;
+
+int       *irn;
+int       *jcn;
+
+#ifdef DEBUG 
+dstrc_enter("rc_ptr_red_dof_connect");
+#endif
+/*----------------------------------------------------------------------*/
+imyrank = actintra->intra_rank;
+inprocs = actintra->intra_nprocs;
+/*----------------------- Allreduce the total number of nonzero entries */
+rc_ptr->nnz_total=0;
+#ifdef PARALLEL 
+MPI_Allreduce(&(rc_ptr->nnz),&(rc_ptr->nnz_total),1,MPI_INT,MPI_SUM,actintra->MPI_INTRA_COMM);
+#endif
+/*----------------------------- check for largest row in my dof_connect */
+max_dof_connect_send=0;
+max_dof_connect_recv=0;
+for (i=0; i<rc_ptr->numeq_total; i++)
+{
+   if (dof_connect[i])
+   if (dof_connect[i][0]>max_dof_connect_send)
+   max_dof_connect_send=dof_connect[i][0];
+}
+#ifdef PARALLEL 
+MPI_Allreduce(&max_dof_connect_send,&max_dof_connect_recv,1,MPI_INT,MPI_MAX,actintra->MPI_INTRA_COMM);
+#endif
+/*---------------- allocate temporary array to hold global connectivity */
+tmps = amdef("tmp",&tmps_a,rc_ptr->numeq_total,max_dof_connect_recv,"IA");
+       amzero(&tmps_a);
+tmpr = amdef("tmp",&tmpr_a,rc_ptr->numeq_total,max_dof_connect_recv,"IA");
+       amzero(&tmpr_a);
+/*-------------------------------- put my own dof_connect values to tmp */
+for (i=0; i<rc_ptr->numeq_total; i++)
+{
+   if (dof_connect[i])
+   {
+      for (j=0; j<dof_connect[i][0]; j++) 
+         tmps[i][j] = dof_connect[i][j];
+   }
+}
+/*--------------------------------------------- allreduce the array tmp */
+#ifdef PARALLEL 
+MPI_Allreduce(tmps[0],tmpr[0],(tmps_a.fdim*tmps_a.sdim),MPI_INT,MPI_SUM,actintra->MPI_INTRA_COMM);
+#endif
+/*------------------ allocate the arrays irn_glob jcn_glob on imyrank=0 */
+if (imyrank==0)
+{
+   irn = amdef("irn_g",&(rc_ptr->irn_glob),rc_ptr->nnz_total,1,"IV");
+   jcn = amdef("jcn_g",&(rc_ptr->jcn_glob),rc_ptr->nnz_total,1,"IV");
+   counter=0;
+   for (i=0; i<rc_ptr->numeq_total; i++)
+   {
+      dof        = tmpr[i][2];
+      lenght     = tmpr[i][0]-3;
+      lastdof    = -1;
+      ismaindiag = 0;
+      for (j=0; j<lenght; j++)
+      {
+         actdof = tmpr[i][j+3];
+         if (actdof<dof)
+         {
+            irn[counter] = dof;
+            jcn[counter] = actdof;
+            lastdof      = actdof;
+            counter++;
+            continue;
+         }
+         if (actdof>dof && lastdof<dof)
+         {
+            irn[counter] = dof;
+            jcn[counter] = dof;
+            ismaindiag++;
+            counter++;
+            irn[counter] = dof;
+            jcn[counter] = actdof;
+            lastdof      = actdof;
+            counter++;
+            continue;
+         }
+         if (actdof>dof)
+         {
+            irn[counter] = dof;
+            jcn[counter] = actdof;
+            lastdof      = actdof;
+            counter++;
+            continue;
+         }
+      }
+      if (ismaindiag==0)
+      {
+         irn[counter] = dof;
+         jcn[counter] = dof;
+         counter++;
+      }
+      
+   }
+}/* end of (imyrank==0) */
+/*--------------------------------------------- delete temporary arrays */
+amdel(&tmps_a);
+amdel(&tmpr_a);
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of rc_ptr_red_dof_connect */
+
+
+
 
 
 
@@ -502,7 +638,8 @@ void  rc_ptr_make_bindx(FIELD         *actfield,
                        PARTITION     *actpart, 
                        SOLVAR        *actsolv,
                        RC_PTR        *rc_ptr,
-                       int          **dof_connect)
+                       int          **dof_connect,
+                       int           *bindx)
 {
 int        i,j,k,l;
 int        count1,count2;
@@ -518,15 +655,15 @@ count2=rc_ptr->numeq+1;
 for (i=0; i<rc_ptr->update.fdim; i++)
 {
    dof = rc_ptr->update.a.iv[i];
-   rc_ptr->bindx.a.iv[count1] = count2;
+   bindx[count1] = count2;
    count1++;
    for (j=3; j<dof_connect[dof][0]; j++)
    {
-      rc_ptr->bindx.a.iv[count2] = dof_connect[dof][j];
+      bindx[count2] = dof_connect[dof][j];
       count2++;
    }   
 }
-rc_ptr->bindx.a.iv[rc_ptr->numeq] = rc_ptr->nnz+1;
+bindx[rc_ptr->numeq] = rc_ptr->nnz+1;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -539,7 +676,8 @@ return;
  |  make the vectors                                        m.gee 1/02  |
  | irn_loc, jcn_loc, rowptr from update and bindx                       |
  *----------------------------------------------------------------------*/
-void  rc_ptr_make_sparsity(RC_PTR        *rc_ptr)
+void  rc_ptr_make_sparsity(RC_PTR        *rc_ptr,
+                           int           *bindx)
 {
 int        i,j,k,l;
 int        start,end,issmaller;
@@ -549,7 +687,6 @@ int        numeq;
 int        numeq_total;
 int        nnz;
 int       *update;
-int       *bindx;
 int       *irn;
 int       *jcn;
 int       *rptr;
@@ -562,7 +699,6 @@ numeq       = rc_ptr->numeq;
 numeq_total = rc_ptr->numeq_total;
 nnz         = rc_ptr->nnz;
 update      = rc_ptr->update.a.iv;
-bindx       = rc_ptr->bindx.a.iv;
 irn         = rc_ptr->irn_loc.a.iv;
 jcn         = rc_ptr->jcn_loc.a.iv;
 rptr        = rc_ptr->rowptr.a.iv;
