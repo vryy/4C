@@ -16,7 +16,7 @@ LIBDIRS="-L/lnm/lib"
 
 # aztec
 AZTEC_INC=""
-AZTEC_LIB="-laztec"
+AZTEC_LIB="-laztec_gcc_par"
 
 # spooles
 SPOOLES_INC=""
