@@ -4,7 +4,7 @@
 //             http://www.uni-stuttgart.de/ibs/members/lipka/index.html
 //             0711 - 685-6575
 // 
-// necessary defines: D_BRICK1
+// necessary defines: D_BRICK1 RESULTTEST
 //
 // #define MAXNOD           (27)
 // #define MAXELE           (25)
