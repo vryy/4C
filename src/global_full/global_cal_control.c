@@ -86,7 +86,7 @@ if (par.myrank==0)
        ||ioflags.ale_disp_gid) 
    {
       out_gid_sol_init();
-      if (field[genprob.numsf].fieldtyp != structure)
+      if (genprob.probtyp != prb_structure)
          out_gid_msh();
    }
 }

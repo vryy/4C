@@ -55,6 +55,9 @@ void oll_numeq(
   INT       inprocs;
   INT       imyrank;
   NODE     *actnode;
+
+INT       no_coupling = 0;
+
 #ifdef DEBUG 
   dstrc_enter("oll_numeq");
 #endif
@@ -89,8 +92,18 @@ void oll_numeq(
       }
     }
   }
+
+if (counter ==0)
+  no_coupling = 1;
+else
+  no_coupling = 0;
+
   amredef(&(actpart->pdis[dis].coupledofs),counter,1,"IV");
   /*---------------------------------- delete the doubles in coupledofs */
+
+if (!no_coupling)
+{
+
   for (i=0; i<actpart->pdis[dis].coupledofs.fdim; i++)
   {
     if (actpart->pdis[dis].coupledofs.a.iv[i]==-1) continue;
@@ -116,6 +129,8 @@ void oll_numeq(
     for (j=0; j<actpart->pdis[dis].coupledofs.fdim; j++) 
       actpart->pdis[dis].coupledofs.a.ia[j][i]=0;
 
+} /* end of if(!no_coupling) */
+
   /* processor looks on his own domain whether he has some of these coupdofs, 
      puts this information in the array coupledofs in the column myrank+1, so it 
      can be allreduced 
@@ -133,6 +148,10 @@ void oll_numeq(
      column 1 - inprocs+1 : proc has coupled equation or not
 
 */
+
+if (!no_coupling)
+{
+
   if (inprocs==1) /*--------------------------------- sequentiell version */
   {
     for (k=0; k<actpart->pdis[dis].coupledofs.fdim; k++)
@@ -194,6 +213,9 @@ void oll_numeq(
   }
   CCAFREE(sendbuff);CCAFREE(recvbuff);
 #endif
+
+} /* end of if(!no_coupling) */
+
   /*------- count number of equations on partition including coupled dofs */
   /*---------------------------------------- count the coupled ones first */
   counter=0;
@@ -249,6 +271,10 @@ void oll_numeq(
      column 1 - inprocs+1 : proc has coupled equation or not
      2 indicates owner of equation
      */
+
+if (!no_coupling)
+{
+
   if (inprocs > 1)
   {
     tmp = (INT*)CCACALLOC(inprocs,sizeof(INT));
@@ -306,6 +332,9 @@ void oll_numeq(
          counted already */
     }
   }
+
+} /* end of if(!no_coupling) */
+
   /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
   dstrc_exit();
@@ -636,6 +665,7 @@ void oll_nnz_topology(
   /*----------------------------------------------------------------------*/
   amdel(&dofpatch);
   amdel(&dof_nnz);
+  CCAFREE(node_dof);
   /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
   dstrc_exit();

@@ -146,24 +146,9 @@ while (ierr==0)
    frread();
    frchk("---",&ierr);
 }
-/*-------------------------------------- allocate space to store values */
-if (frfind(string)==0) goto end;
-frread();
-frchar("BYSTEP",buffer,&ierr);
-if (strncmp(buffer,"Yes",3)==0 ||
-    strncmp(buffer,"YES",3)==0 ||
-    strncmp(buffer,"yes",3)==0 )  
-{
-   actcurve->bystep=1;
-   amdef("curve_time" ,&(actcurve->time) ,counter,2,"IA");
-   amdef("curve_value",&(actcurve->value),counter,2,"DA");
-}
-else                              
-{
-   actcurve->bystep=0;
-   amdef("curve_time" ,&(actcurve->time) ,counter,2,"DA");
-   amdef("curve_value",&(actcurve->value),counter,2,"DA");
-}
+/* allocate space to store values */
+amdef("curve_time" ,&(actcurve->time) ,counter,2,"DA");
+amdef("curve_value",&(actcurve->value),counter,2,"DA");
 /*------------------------------------------------------- start reading */
 if (frfind(string)==0) goto end;
 for (i=0; i<counter; i++)
@@ -176,31 +161,18 @@ for (i=0; i<counter; i++)
    frchk("Polygonal",&ierr);
    if (ierr==1) 
    {
-      actcurve->curvetyp = curve_polygonal;
-/*-------------------------------------------- read bystep or byabstime */
-      if (actcurve->bystep==1)
-      {
-          colpointer = strstr(allfiles.actplace,"BYSTEP");
-          colpointer += 10;
-          actcurve->time.a.ia[i][0] = strtol(colpointer,&colpointer,10);
-          actcurve->time.a.ia[i][1] = strtol(colpointer,&colpointer,10);
-          colpointer = strstr(allfiles.actplace,"FACTOR");
-          colpointer += 6;
-          actcurve->value.a.da[i][0] = strtod(colpointer,&colpointer);
-          actcurve->value.a.da[i][1] = strtod(colpointer,&colpointer);
-      }
-      else
-      {
-          colpointer = strstr(allfiles.actplace,"BYABSTIME");
-          colpointer += 13;
-          actcurve->time.a.da[i][0] = strtod(colpointer,&colpointer);
-          actcurve->time.a.da[i][1] = strtod(colpointer,&colpointer);
-          colpointer = strstr(allfiles.actplace,"FACTOR");
-          colpointer += 6;
-          actcurve->value.a.da[i][0] = strtod(colpointer,&colpointer);
-          actcurve->value.a.da[i][1] = strtod(colpointer,&colpointer);
-      }
-      frdouble("T",&(actcurve->T),&ierr);
+     actcurve->curvetyp = curve_polygonal;
+     actcurve->bystep=0;
+     /* read by abstime */
+     colpointer = strstr(allfiles.actplace,"BYABSTIME");
+     colpointer += 13;
+     actcurve->time.a.da[i][0] = strtod(colpointer,&colpointer);
+     actcurve->time.a.da[i][1] = strtod(colpointer,&colpointer);
+     colpointer = strstr(allfiles.actplace,"FACTOR");
+     colpointer += 6;
+     actcurve->value.a.da[i][0] = strtod(colpointer,&colpointer);
+     actcurve->value.a.da[i][1] = strtod(colpointer,&colpointer);
+     frdouble("T",&(actcurve->T),&ierr);
    }   
    frchk("Explicit",&ierr);
    if (ierr==1) 

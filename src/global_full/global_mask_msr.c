@@ -111,6 +111,9 @@ INT       proc;
 INT       inprocs;
 INT       imyrank;
 NODE     *actnode;
+
+INT       no_coupling = 0;
+
 #ifdef DEBUG 
 dstrc_enter("msr_numeq");
 #endif
@@ -146,32 +149,45 @@ for (i=0; i<actfield->dis[kk].numnp; i++)
       }
    }
 }
+
+if (counter ==0)
+  no_coupling = 1;
+else
+  no_coupling = 0;
+
 amredef(&(actpart->pdis[kk].coupledofs),counter,1,"IV");
 /*---------------------------------- delete the doubles in coupledofs */
-for (i=0; i<actpart->pdis[kk].coupledofs.fdim; i++)
-{
-   if (actpart->pdis[kk].coupledofs.a.iv[i]==-1) continue;
-   dof = actpart->pdis[kk].coupledofs.a.iv[i];
-   for (j=i+1; j<actpart->pdis[kk].coupledofs.fdim; j++)
-   {
-      if (actpart->pdis[kk].coupledofs.a.iv[j]==dof) actpart->pdis[kk].coupledofs.a.iv[j]=-1;
-   }
-}
-/*--------- move all remaining coupdofs to the front and redefine again */
-counter=0;
-for (i=0; i<actpart->pdis[kk].coupledofs.fdim; i++)
-{
-   if (actpart->pdis[kk].coupledofs.a.iv[i]!=-1)
-   {
+
+if (!no_coupling)
+{ 
+
+  for (i=0; i<actpart->pdis[kk].coupledofs.fdim; i++)
+  {
+    if (actpart->pdis[kk].coupledofs.a.iv[i]==-1) continue;
+    dof = actpart->pdis[kk].coupledofs.a.iv[i];
+    for (j=i+1; j<actpart->pdis[kk].coupledofs.fdim; j++)
+    {
+      if (actpart->pdis[kk].coupledofs.a.iv[j]==dof) 
+        actpart->pdis[kk].coupledofs.a.iv[j]=-1;
+    }
+  }
+  /*--------- move all remaining coupdofs to the front and redefine again */
+  counter=0;
+  for (i=0; i<actpart->pdis[kk].coupledofs.fdim; i++)
+  {
+    if (actpart->pdis[kk].coupledofs.a.iv[i]!=-1)
+    {
       actpart->pdis[kk].coupledofs.a.iv[counter] = actpart->pdis[kk].coupledofs.a.iv[i];
       counter++;
-   }
-}
-amredef(&(actpart->pdis[kk].coupledofs),counter,inprocs+1,"IA");
-/*------------------- the newly allocated columns have to be initialized */
-for (i=1; i<actpart->pdis[kk].coupledofs.sdim; i++)
-for (j=0; j<actpart->pdis[kk].coupledofs.fdim; j++) 
-actpart->pdis[kk].coupledofs.a.ia[j][i]=0;
+    }
+  }
+  amredef(&(actpart->pdis[kk].coupledofs),counter,inprocs+1,"IA");
+  /*------------------- the newly allocated columns have to be initialized */
+  for (i=1; i<actpart->pdis[kk].coupledofs.sdim; i++)
+    for (j=0; j<actpart->pdis[kk].coupledofs.fdim; j++) 
+      actpart->pdis[kk].coupledofs.a.ia[j][i]=0;
+
+} /* end of if(!no_coupling) */
 
 /* processor looks on his own domain whether he has some of these coupdofs, 
    puts this information in the array coupledofs in the column myrank+1, so it 
@@ -186,71 +202,78 @@ actpart->pdis[kk].coupledofs.a.ia[j][i]=0;
                | 76 | 0 | 1 | 1 | 0 |
                ----------------------
                
-               column 0                : number of the coupled equation
+               column 0             : number of the coupled equation
                column 1 - inprocs+1 : proc has coupled equation or not
                
 */
-if (inprocs==1) /*--------------------------------- sequentiell version */
+
+if (!no_coupling)
 {
-   for (k=0; k<actpart->pdis[kk].coupledofs.fdim; k++)
-   {
+
+  if (inprocs==1) /*--------------------------------- sequentiell version */
+  {
+    for (k=0; k<actpart->pdis[kk].coupledofs.fdim; k++)
+    {
       actpart->pdis[kk].coupledofs.a.ia[k][imyrank+1]=2;
-   }
-}
-else /*----------------------------------------------- parallel version */
-{
-/*
-   actpart->node[i] really loops only nodes with dofs updated on this proc
-*/
-   for (i=0; i<actpart->pdis[kk].numnp; i++) /* now loop only my nodes */
-   {
+    }
+  }
+  else /*----------------------------------------------- parallel version */
+  {
+    /*
+       actpart->node[i] really loops only nodes with dofs updated on this proc
+       */
+    for (i=0; i<actpart->pdis[kk].numnp; i++) /* now loop only my nodes */
+    {
       for (l=0; l<actpart->pdis[kk].node[i]->numdf; l++)
       {
-         dof = actpart->pdis[kk].node[i]->dof[l];
-         for (k=0; k<actpart->pdis[kk].coupledofs.fdim; k++)
-         {
-            if (actpart->pdis[kk].coupledofs.a.ia[k][0]==dof)
-            {
-               actpart->pdis[kk].coupledofs.a.ia[k][imyrank+1]=1;
-               break;
-            }
-         }
+        dof = actpart->pdis[kk].node[i]->dof[l];
+        for (k=0; k<actpart->pdis[kk].coupledofs.fdim; k++)
+        {
+          if (actpart->pdis[kk].coupledofs.a.ia[k][0]==dof)
+          {
+            actpart->pdis[kk].coupledofs.a.ia[k][imyrank+1]=1;
+            break;
+          }
+        }
       }
-   }
-}
-/* ----- Allreduce the whole array, so every proc knows about where all 
-                                                         coupledofs are */
+    }
+  }
+  /* ----- Allreduce the whole array, so every proc knows about where all 
+     coupledofs are */
 #ifdef PARALLEL
-sendsize = (actpart->pdis[kk].coupledofs.fdim)*(inprocs);
-sendbuff = (INT*)CCACALLOC(sendsize,sizeof(INT));
-recvbuff = (INT*)CCACALLOC(sendsize,sizeof(INT));
-if (sendbuff==NULL || recvbuff==NULL) dserror("Allocation of temporary memory failed");
-counter=0;
-for (i=0; i<actpart->pdis[kk].coupledofs.fdim; i++)
-{
-   for (j=0; j<inprocs; j++)
-   {
+  sendsize = (actpart->pdis[kk].coupledofs.fdim)*(inprocs);
+  sendbuff = (INT*)CCACALLOC(sendsize,sizeof(INT));
+  recvbuff = (INT*)CCACALLOC(sendsize,sizeof(INT));
+  if (sendbuff==NULL || recvbuff==NULL) dserror("Allocation of temporary memory failed");
+  counter=0;
+  for (i=0; i<actpart->pdis[kk].coupledofs.fdim; i++)
+  {
+    for (j=0; j<inprocs; j++)
+    {
       sendbuff[counter] = actpart->pdis[kk].coupledofs.a.ia[i][j+1];
       counter++;
-   }
-}
-MPI_Allreduce(sendbuff,
-              recvbuff,
-              sendsize,
-              MPI_INT,
-              MPI_SUM,
-              actintra->MPI_INTRA_COMM);
-counter=0;
-for (i=0; i<actpart->pdis[kk].coupledofs.fdim; i++)
-{
-   for (j=0; j<inprocs; j++)
-   {
+    }
+  }
+  MPI_Allreduce(sendbuff,
+      recvbuff,
+      sendsize,
+      MPI_INT,
+      MPI_SUM,
+      actintra->MPI_INTRA_COMM);
+  counter=0;
+  for (i=0; i<actpart->pdis[kk].coupledofs.fdim; i++)
+  {
+    for (j=0; j<inprocs; j++)
+    {
       actpart->pdis[kk].coupledofs.a.ia[i][j+1] = recvbuff[counter];
       counter++;
-   }
-}
-CCAFREE(sendbuff);CCAFREE(recvbuff);
+    }
+  }
+  CCAFREE(sendbuff);CCAFREE(recvbuff);
 #endif
+
+} /* end of if(!no_coupling) */
+
 /*------- count number of equations on partition including coupled dofs */
 /*---------------------------------------- count the coupled ones first */
 counter=0;
@@ -306,63 +329,70 @@ for (i=0; i<actpart->pdis[kk].numnp; i++)
                column 1 - inprocs+1 : proc has coupled equation or not
                                          2 indicates owner of equation
 */
-if (inprocs > 1)
+
+if (!no_coupling)
 {
-   tmp = (INT*)CCACALLOC(inprocs,sizeof(INT));
-   if (!tmp) dserror("Allocation of temporary memory failed");
-   for (i=0; i<actpart->pdis[kk].coupledofs.fdim; i++)/*  loop coupled eqns */
-   {
-   /*--------------------------------- check whether its inter-proc eqn */
+
+  if (inprocs > 1)
+  {
+    tmp = (INT*)CCACALLOC(inprocs,sizeof(INT));
+    if (!tmp) dserror("Allocation of temporary memory failed");
+    for (i=0; i<actpart->pdis[kk].coupledofs.fdim; i++)/*  loop coupled eqns */
+    {
+      /*--------------------------------- check whether its inter-proc eqn */
       inter_proc=0;
       for (j=0; j<inprocs; j++) inter_proc += actpart->pdis[kk].coupledofs.a.ia[i][j+1];
       if (inter_proc==1)/*----------------- no inter-processor coupling */
       {
-         for (j=0; j<inprocs; j++)
-         {
-            if (actpart->pdis[kk].coupledofs.a.ia[i][j+1]==1) 
-            {
-               actpart->pdis[kk].coupledofs.a.ia[i][j+1]=2;
-               break;
-            }
-         }
+        for (j=0; j<inprocs; j++)
+        {
+          if (actpart->pdis[kk].coupledofs.a.ia[i][j+1]==1) 
+          {
+            actpart->pdis[kk].coupledofs.a.ia[i][j+1]=2;
+            break;
+          }
+        }
       }
       else/*----------------------------- eqn is an inter-proc equation */
       {
-         /* there won't be more than a million procs in the near future....*/
-         min=1000000;
-         proc=-1;
-         for (j=0; j<inprocs; j++)
-         {
-            if (actpart->pdis[kk].coupledofs.a.ia[i][j+1]==1) 
+        /* there won't be more than a million procs in the near future....*/
+        min=1000000;
+        proc=-1;
+        for (j=0; j<inprocs; j++)
+        {
+          if (actpart->pdis[kk].coupledofs.a.ia[i][j+1]==1) 
+          {
+            if (tmp[j]<=min)
             {
-               if (tmp[j]<=min)
-               {
-                  min = tmp[j];
-                  proc = j;
-               }
+              min = tmp[j];
+              proc = j;
             }
-         }
-         actpart->pdis[kk].coupledofs.a.ia[i][proc+1]=2;
-         tmp[proc] += 1;
+          }
+        }
+        actpart->pdis[kk].coupledofs.a.ia[i][proc+1]=2;
+        tmp[proc] += 1;
       }
-   }/* end loop over coupling eqns */
-   CCAFREE(tmp);
-}
-/* procs who have not become owner of a coupling equation have to reduce there
-   number of equations */
-if (inprocs > 1)
-{
-   for (i=0; i<actpart->pdis[kk].coupledofs.fdim; i++)/* loop coupled eqns */
-   {
+    }/* end loop over coupling eqns */
+    CCAFREE(tmp);
+  }
+  /* procs who have not become owner of a coupling equation have to reduce there
+     number of equations */
+  if (inprocs > 1)
+  {
+    for (i=0; i<actpart->pdis[kk].coupledofs.fdim; i++)/* loop coupled eqns */
+    {
       /* ------Yes, I am slave owner of an inter_proc coupling equation */
       if (actpart->pdis[kk].coupledofs.a.ia[i][imyrank+1]==1)
       {
-         (*numeq) = (*numeq)-1;
+        (*numeq) = (*numeq)-1;
       }
       /* master owner of equation do nothing, 'cause the equation has been
-        counted already */
-   }
-}
+         counted already */
+    }
+  }
+
+} /* end of if(!no_coupling) */
+
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();

@@ -102,6 +102,9 @@ INT       proc;
 INT       inprocs;
 INT       imyrank;
 NODE     *actnode;
+
+INT       no_coupling = 0;
+
 #ifdef DEBUG 
 dstrc_enter("ucchb_numeq");
 #endif
@@ -137,32 +140,45 @@ for (i=0; i<actfield->dis[0].numnp; i++)
       }
    }
 }
+
+if (counter ==0)
+  no_coupling = 1;
+else
+  no_coupling = 0;
+
 amredef(&(actpart->pdis[0].coupledofs),counter,1,"IV");
 /*---------------------------------- delete the doubles in coupledofs */
-for (i=0; i<actpart->pdis[0].coupledofs.fdim; i++)
+
+if (!no_coupling)
 {
-   if (actpart->pdis[0].coupledofs.a.iv[i]==-1) continue;
-   dof = actpart->pdis[0].coupledofs.a.iv[i];
-   for (j=i+1; j<actpart->pdis[0].coupledofs.fdim; j++)
-   {
+
+  for (i=0; i<actpart->pdis[0].coupledofs.fdim; i++)
+  {
+    if (actpart->pdis[0].coupledofs.a.iv[i]==-1) continue;
+    dof = actpart->pdis[0].coupledofs.a.iv[i];
+    for (j=i+1; j<actpart->pdis[0].coupledofs.fdim; j++)
+    {
       if (actpart->pdis[0].coupledofs.a.iv[j]==dof) 
-      actpart->pdis[0].coupledofs.a.iv[j]=-1;
-   }
-}
-/*--------- move all remaining coupdofs to the front and redefine again */
-counter=0;
-for (i=0; i<actpart->pdis[0].coupledofs.fdim; i++)
-{
-   if (actpart->pdis[0].coupledofs.a.iv[i]!=-1)
-   {
+        actpart->pdis[0].coupledofs.a.iv[j]=-1;
+    }
+  }
+  /*--------- move all remaining coupdofs to the front and redefine again */
+  counter=0;
+  for (i=0; i<actpart->pdis[0].coupledofs.fdim; i++)
+  {
+    if (actpart->pdis[0].coupledofs.a.iv[i]!=-1)
+    {
       actpart->pdis[0].coupledofs.a.iv[counter] = actpart->pdis[0].coupledofs.a.iv[i];
       counter++;
-   }
-}
-amredef(&(actpart->pdis[0].coupledofs),counter,inprocs+1,"IA");
-/*------------------- the newly allocated columns have to be initialized */
-for (i=1; i<actpart->pdis[0].coupledofs.sdim; i++)
-for (j=0; j<actpart->pdis[0].coupledofs.fdim; j++) actpart->pdis[0].coupledofs.a.ia[j][i]=0;
+    }
+  }
+  amredef(&(actpart->pdis[0].coupledofs),counter,inprocs+1,"IA");
+  /*------------------- the newly allocated columns have to be initialized */
+  for (i=1; i<actpart->pdis[0].coupledofs.sdim; i++)
+    for (j=0; j<actpart->pdis[0].coupledofs.fdim; j++) 
+      actpart->pdis[0].coupledofs.a.ia[j][i]=0;
+
+} /* end of if(!no_coupling) */
 
 /* processor looks on his own domain whether he has some of these coupdofs, 
    puts this information in the array coupledofs in the column myrank+1, so it 
@@ -181,6 +197,10 @@ for (j=0; j<actpart->pdis[0].coupledofs.fdim; j++) actpart->pdis[0].coupledofs.a
                column 1 - inprocs+1    : proc has coupled equation or not
                
 */
+
+if (!no_coupling)
+{
+
 if (inprocs==1) /*--------------------------------- sequentiell version */
 {
    for (k=0; k<actpart->pdis[0].coupledofs.fdim; k++)
@@ -242,6 +262,9 @@ for (i=0; i<actpart->pdis[0].coupledofs.fdim; i++)
 }
 CCAFREE(sendbuff);CCAFREE(recvbuff);
 #endif
+
+} /* end of if(!no_coupling) */
+
 /*------- count number of equations on partition including coupled dofs */
 /*---------------------------------------- count the coupled ones first */
 counter=0;
@@ -297,6 +320,10 @@ for (i=0; i<actpart->pdis[0].numnp; i++)
                column 1 - inprocs+1    : proc has coupled equation or not
                                          2 indicates owner of equation
 */
+
+if (!no_coupling)
+{
+
 if (inprocs > 1)
 {
    tmp = (INT*)CCACALLOC(inprocs,sizeof(INT));
@@ -353,6 +380,9 @@ if (inprocs > 1)
         counted anyway */
    }
 }
+
+} /* end of if(!no_coupling) */
+
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();

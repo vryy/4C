@@ -129,7 +129,7 @@ for (i=0;i<numnp_total;i++)
             acttimefac = 1.0;
          else
             acttimefac = timefac[actcurve];
-            initval  = actagnode->dirich->dirich_val.a.dv[j];               
+         initval  = actagnode->dirich->dirich_val.a.dv[j];               
 /*=====================================================================*
  |    example: rotating hole (dirich_val.a.dv == 90)                   |
  |    sonst: Normalfall:                                               |
@@ -294,10 +294,10 @@ for (i=0;i<numnp_total;i++)
             acttimefac = 1.0;
          else
             acttimefac = timefac[actcurve];
-            initval  = actagnode->dirich->dirich_val.a.dv[j];
-	    actanode->sol_increment.a.da[0][j] = initval*acttimefac
+         initval  = actagnode->dirich->dirich_val.a.dv[j];
+	 actanode->sol_increment.a.da[0][j] = initval*acttimefac
 	                                       - actanode->sol_increment.a.da[1][j];  
-/*	    actanode->sol.a.da[actpos][j] = initval*acttimefac; */
+/*	 actanode->sol.a.da[actpos][j] = initval*acttimefac; */
       }
    break;
 #ifdef D_FSI
@@ -416,15 +416,17 @@ for (i=0;i<numnp_total;i++)
 	 prevtimefac = 1.0;
       }
       else
+      {
 	 acttimefac = timefac[0][actcurve];
      	 prevtimefac = timefac[1][actcurve];
-	 initval  = actgnode->dirich->dirich_val.a.dv[j];		 
+      }
+      initval  = actgnode->dirich->dirich_val.a.dv[j];		 
 /*=====================================================================*
  |    example: rotating hole (dirich_val.a.dv == 90)                   |
  |    sonst: Normalfall:                                               |
  |     actnode->sol.a.da[0][j] = initval*acttimefac;                   |
  *=====================================================================*/
-      if (initval != 90)
+      if (fabs(initval-90.0) > EPS13)
 	actnode->sol_increment.a.da[0][j] = initval*(acttimefac-prevtimefac);
       else
       {
