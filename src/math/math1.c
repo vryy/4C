@@ -516,7 +516,31 @@ dstrc_exit();
 #endif
 return;
 } /* end of math_sppr */
- 
+
+/*-----------------------------------------------------------------------*
+ | add up two matriced A = A+B                                           |
+ *-----------------------------------------------------------------------*/
+void math_addab(DOUBLE **a, DOUBLE **b, INT dim1, INT dim2,DOUBLE fact)
+{
+int i,j;
+#ifdef DEBUG 
+dstrc_enter("math_addab");
+#endif
+
+for (i=0;i<dim1;i++)
+{
+   for (j=0;j<dim2;j++)
+   {
+       a[i][j]+=fact*b[i][j];
+   }
+}
+
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of math_addab */
+
 /*!---------------------------------------------------------------------                                         
 \brief extract digits from integer number
 
@@ -560,3 +584,4 @@ dstrc_exit();
 #endif
 return;
 } /* end of intextract*/  
+
