@@ -85,9 +85,8 @@ typedef enum _DIS_TYP
   Please be careful with this enum. Don't delete any element
   types. New names might only be added at the end just before \a
   el_count, which must always be the last entry (and does not refer to
-  an element). The reason for this is that the numbers defines here
-  are written to the binary output files. Once these numbers are
-  changed old output files cannot be read anymore. :(
+  an element). The reason for this is that the numbers defined here
+  are indices to the element info table.
 
   \author m.gee
   \date 07/01
