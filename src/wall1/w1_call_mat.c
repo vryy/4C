@@ -1,6 +1,28 @@
 #include "../headers/standardtypes.h"
 #include "wall1.h"
 #include "wall1_prototypes.h"
+/*-----------------------------------------------------------------------|
+|      topic: kondense 3D conditions                              sh 7/02|
+|             to plane stress/strain conditions                          |
+|-----------------------------------------------------------------------*/
+void w1mat_trans_down (double **d,/*current material matrix d14-d44     */
+                     ELEMENT   *ele,                                        
+                     WALL_TYPE wtype,
+                     double  *stress,  /*actuel stress [4]              */
+                     double  *strain,  /*actual strain [4]              */
+                     double  *qn,
+                     double  **bop);
+/*-----------------------------------------------------------------------|
+|      topic: blowing up plane stress/strain conditions           sh 7/02|
+|             to 3D --> 3D-Material Law                                  |
+|-----------------------------------------------------------------------*/
+void w1mat_trans_up (double **d,/*current material matrix d14-d44       */
+                     ELEMENT   *ele,                                        
+                     WALL_TYPE wtype,
+                     double  *stress,  /*actuel stress [4]              */
+                     double  *strain,  /*actual strain [4]              */
+                     double  *qn,
+                     double  **bop);
 /*----------------------------------------------------------------------*
  | select proper material law                               al 01/02    |
  *----------------------------------------------------------------------*/
@@ -15,6 +37,9 @@ void w1_call_mat(ELEMENT   *ele,
                  int istore,/* controls storing of new stresses to wa */
                  int newval)/* controls evaluation of new stresses    */
 {
+/*----------------------------------------------------------------------*/
+double strain[6];
+double *qn;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("w1_call_mat");
@@ -46,6 +71,36 @@ dstrc_enter("w1_call_mat");
                        d,
                        istore,
                        newval);
+  break;
+  case m_pl_mises_3D:/*--------------------- von mises material law -> 3D---*/
+    w1mat_trans_up(d,
+                   ele,
+                   wtype,
+                   stress,
+                   strain,
+                   qn,
+                   bop);
+    /*mat_plast_mises_3D(mat->m.pl_mises->youngs,
+                       mat->m.pl_mises->possionratio,
+                       mat->m.pl_mises->ALFAT,
+                       mat->m.pl_mises->Sigy,
+                       mat->m.pl_mises->Hard,
+                       mat->m.pl_mises->GF,
+                       ele,
+                       wtype,
+                       bop,
+                       ip,
+                       stress,
+                       d,
+                       istore,
+                       newval);*/
+    w1mat_trans_down(d,
+                   ele,
+                   wtype,
+                   stress,
+                   strain,
+                   qn,
+                   bop);
   break;
   case m_pl_dp:/*------------------- drucker prager material law ---*/
     w1_mat_plast_dp(   mat->m.pl_dp->youngs,

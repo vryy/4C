@@ -221,7 +221,8 @@ OBJS12	      = ${SRC}/wall1/w1_bop.o \
                 ${SRC}/wall1/w1_cal_kg.o \
                 ${SRC}/wall1/w1_cal_keu.o \
                 ${SRC}/wall1/w1_cal_fint.o \
-                ${SRC}/wall1/w1_cal_fext.o
+                ${SRC}/wall1/w1_cal_fext.o \
+                ${SRC}/wall1/w1_mat_trans.o
 #                fluid2
 OBJS14        = ${SRC}/fluid2/f2_caldirich.o \
                 ${SRC}/fluid2/f2_calelesize.o \
