@@ -1,0 +1,80 @@
+#--------------------------------------------------------------------
+#
+PROGRAM_NAME  = resulter.exe
+FXX=f90
+CCX=cc
+LDX=f90
+PFL	 = 
+#
+#--------------------------------------------------------------------
+#
+CC	 = $(CCX)
+LD       = $(FXX)
+RM	 = /bin/rm -f
+#
+#------------------------------------------------ this is debug-32bit
+#CFLAGS        = -D__HP__ -Aa -Ae -g +w1 ${PFL} -DDEBUG
+#FFLAGS        = -g
+#LDFLAGS       = 
+#------------------------------------------------- this is fast-32bit
+CFLAGS        = -D__HP__  +e -Ae +w1 -v -O +Onolimit ${PFL}
+FFLAGS        = -O
+LDFLAGS       =
+#------------------------------------------------ this is debug-64bit
+#CFLAGS 	= -D__HP__ -Aa -Ae +DD64 -g +w1 ${PFL} -DDEBUG -DSIXTYFOUR
+#FFLAGS 	= +DA2.0W -g
+#LDFLAGS	= +DA2.0W -v
+#------------------------------------------------- this is fast-64bit
+#CFLAGS         = -D__HP__ -Aa -Ae +DD64 -O +w1 ${PFL} -DSIXTYFOUR
+#FFLAGS         = +DA2.0W -O
+#LDFLAGS        = +DA2.0W -v
+#--------------------------------------------------------------------
+INCLUDES        = -I/opt/mlib/include
+
+
+LDOPTS          = -a archive -v
+
+
+LIBS	        =  -L/usr/lib \
+                   -L/opt/mlib/lib/pa2.0 \
+                   -lcl -lc -lm \
+                   -lveclib -llapack
+
+#----------------------- binaries -----------------------------------
+OBJS1         = main.o \
+                read_mesh.o \
+                printf_info.o \
+                take_every.o \
+                merge.o \
+                pss_am.o
+#--------------------------------------------------------------------
+#
+#
+# targets
+#
+PROGRAM       = $(PROGRAM_NAME)
+#
+# dependencies
+#
+$(PROGRAM):     $(OBJS1) 
+		@echo "Linking $(PROGRAM) ..."
+		@$(LD) $(LDFLAGS) $(OBJS1) $(LIBS) $(INCLUDES) -o $(PROGRAM)
+		@echo "done"
+
+#
+$(OBJS1):     
+		@echo "Making $@ ..."
+		cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
+		@echo "MainMake is back."
+#
+
+.c.o:
+	@ echo "$@ wird kompiliert...."
+	$(CC) $(CFLAGS) $(INCLUDES) -c  $<
+
+.f.o:
+	@ echo "$@ wird kompiliert...."
+	$(FXX) $(FFLAGS) $(INCLUDES) -c  $<
+clean:
+	rm -rf  $(OBJS1) 
+$

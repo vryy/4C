@@ -35,7 +35,7 @@ RM	 = /bin/rm -f
 # switch between fast and debug compilation by uncommenting 
 # the approbiate flags:
 #------------------------------------------------ this is debug-32bit
-CFLAGS        = -D__HP__ +w1 +e -Aa -Ae  -g ${PFL} 
+CFLAGS        = -D__HP__ +w1 +e -Aa -Ae  -g ${PFL} -DDEBUG
 FFLAGS        = -g -I/opt/mpi/include/
 #------------------------------------------------- this is fast-32bit
 #CFLAGS       = -D__HP__  +e -Ae +w1  -OAa +Onolimit ${PFL}
@@ -43,46 +43,8 @@ FFLAGS        = -g -I/opt/mpi/include/
 #--------------------------------------------------------------------
 LDFLAGS	 = -L/usr/lib -L/opt/fortran/lib -lcl -lc -lM -lm 
 INCLUDES = -I/opt/mpi/include/ \
-           -I/bau/stat33/users/statik/lib/hypre-1.6.0/src/hypre/include/ \
-           -I/bau/stat33/users/statik/lib/SULUDIST0210/SuperLU_DIST/SRC \
-           -I/bau/stat33/users/statik/lib/METIS/ \
-           -L/bau/stat33/users/statik/lib/METIS/ -lmetis \
-           -L/bau/stat33/users/statik/lib/AZTEC21_MPI/ \
-           -L/bau/stat33/users/statik/lib/AZTEC21/ $(AZTEC) \
            -L/bau/stat33/users/statik/lib \
-           -L/bau/stat33/users/statik/lib/hypre-1.6.0/src/hypre/lib \
-           -L/bau/stat33/users/statik/lib/SULUDIST0210/SuperLU_DIST \
-           -L/bau/stat33/users/statik/lib/SCALAPACK \
-           -L/bau/stat33/users/statik/lib/BLACS/LIB \
-           -L/bau/stat33/users/statik/lib/MUMPS4.1.6/lib \
-           -L/bau/stat33/users/statik/lib/UMFPACK/lib \
-           -llapack_hppa \
-           -lHYPRE_DistributedMatrix \
-           -lHYPRE_DistributedMatrixPilutSolver \
-           -lHYPRE_Euclid \
-           -lHYPRE_FEI \
-           -lHYPRE_IJ_mv \
-           -lHYPRE_LSI \
-           -lHYPRE_MatrixMatrix \
-           -lHYPRE_ParaSails \
-           -lHYPRE_blas \
-           -lHYPRE_parcsr_ls \
-           -lHYPRE_parcsr_mv \
-           -lHYPRE_seq_mv \
-           -lHYPRE_sstruct_ls \
-           -lHYPRE_sstruct_mv \
-           -lHYPRE_struct_ls \
-           -lHYPRE_struct_mv \
-           -lHYPRE_utilities \
-           -lkrylov \
-           -lsuperlu_hppa \
-           -lblacs_MPI-HPPA-0 \
-           -lblacsCinit_MPI-HPPA-0 \
-           -lblacsF77init_MPI-HPPA-0 \
-           -lscalapack_HPPA \
-           -lmumps \
            -lblas \
-           -lumfpack40_hpux10_32
 
 # sparsekit is not used at the moment
 #           -lskit 
