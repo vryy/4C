@@ -21,70 +21,71 @@ OBJS_GLOBAL   = src/global_full/global_control.o \
                 src/global_full/dyn_timecurve.o \
                 src/global_full/dyn_service.o \
                 src/global_full/map_node_find.o \
-                src/global_full/global_mask_matrices.o \
-                src/global_full/global_mask_msr.o \
-                src/global_full/global_mask_mds.o \
                 src/global_full/global_dofconnect.o \
-                src/global_full/global_mask_parcsr.o \
-                src/global_full/global_mask_ucchb.o \
-                src/global_full/global_mask_dense.o \
-                src/global_full/global_mask_rcptr.o \
-                src/global_full/global_mask_ccf.o \
-                src/global_full/global_mask_skyline.o \
-                src/global_full/global_mask_spooles.o \
-                src/global_full/global_mask_bdcsr.o \
                 src/global_full/global_monitoring.o \
                 src/global_full/global_result_test.o \
                 src/global_full/global_calelm.o \
                 src/global_full/global_calrhs.o \
                 src/global_full/global_visual.o \
                 src/global_full/visual_readflaviares.o \
-                src/global_full/solver_control.o \
-                src/global_full/solver_service.o \
-                src/global_full/solver_service2.o \
-                src/global_full/solver_service3.o \
-                src/global_full/solver_add_data.o \
-                src/global_full/solver_add_msr.o \
-                src/global_full/solver_add_mlib.o \
-                src/global_full/solver_add_parcsr.o \
-                src/global_full/solver_add_ucchb.o \
-                src/global_full/solver_add_dense.o \
-                src/global_full/solver_add_rcptr.o \
-                src/global_full/solver_add_ccf.o \
-                src/global_full/solver_add_skyline.o \
-                src/global_full/solver_add_spooles.o \
-                src/global_full/solver_add_bdcsr.o \
-                src/global_full/solver_mlib.o \
-                src/global_full/solver_aztec.o \
-                src/global_full/solver_hypre.o \
-                src/global_full/solver_superlu.o \
-                src/global_full/solver_lapack.o \
-                src/global_full/solver_mumps.o \
-                src/global_full/solver_umfpack.o \
-                src/global_full/solver_colsol.o \
-		src/global_full/solver_copy_matrix.o \
-                src/global_full/solver_spooles.o \
-                src/global_full/solver_mlpcg.o \
-                src/global_full/solver_mlpcg2.o \
-                src/global_full/solver_mlpcg3.o \
-                src/global_full/solver_mlpcg4.o \
-                src/global_full/solver_mlpcg_smo.o \
-                src/global_full/solver_mlpcg_spooles.o \
-                src/global_full/solver_mlpcg_matmat.o \
-                src/global_full/solver_mlpcg_agg.o \
-                src/global_full/solver_mlpcg_csr.o \
-                src/global_full/solver_mlpcg_overlap.o \
-                src/global_full/solver_mlpcg_fish.o \
-                src/global_full/solver_mlpcg_test.o \
                 src/global_full/restart_control.o \
                 src/global_full/machine_hpux.o \
-		src/global_full/global_oll_add.o \
-                src/global_full/solver_oll.o \
-                src/global_full/solver_oll_aztec.o \
-                src/global_full/solver_oll_spooles.o \
-		src/global_full/global_oll_service.o \
-		src/global_full/global_oll_service2.o \
 		src/global_full/check_max_sizes.o
+#                solver
+OBJS_SOLVER   = src/solver/solver_control.o \
+                src/solver/solver_service.o \
+                src/solver/solver_service2.o \
+                src/solver/solver_service3.o \
+                src/solver/solver_add_data.o \
+                src/solver/solver_add_msr.o \
+                src/solver/solver_add_mlib.o \
+                src/solver/solver_add_parcsr.o \
+                src/solver/solver_add_ucchb.o \
+                src/solver/solver_add_dense.o \
+                src/solver/solver_add_rcptr.o \
+                src/solver/solver_add_ccf.o \
+                src/solver/solver_add_skyline.o \
+                src/solver/solver_add_spooles.o \
+                src/solver/solver_add_bdcsr.o \
+                src/solver/solver_mlib.o \
+                src/solver/solver_aztec.o \
+                src/solver/solver_hypre.o \
+                src/solver/solver_superlu.o \
+                src/solver/solver_lapack.o \
+                src/solver/solver_mumps.o \
+                src/solver/solver_umfpack.o \
+                src/solver/solver_colsol.o \
+		src/solver/solver_copy_matrix.o \
+                src/solver/solver_spooles.o \
+                src/solver/solver_mlpcg.o \
+                src/solver/solver_mlpcg2.o \
+                src/solver/solver_mlpcg3.o \
+                src/solver/solver_mlpcg4.o \
+                src/solver/solver_mlpcg_smo.o \
+                src/solver/solver_mlpcg_spooles.o \
+                src/solver/solver_mlpcg_matmat.o \
+                src/solver/solver_mlpcg_agg.o \
+                src/solver/solver_mlpcg_csr.o \
+                src/solver/solver_mlpcg_overlap.o \
+                src/solver/solver_mlpcg_fish.o \
+                src/solver/solver_mlpcg_test.o \
+                src/solver/solver_oll.o \
+                src/solver/solver_oll_aztec.o \
+                src/solver/solver_oll_spooles.o \
+		src/solver/solver_oll_add.o \
+		src/solver/solver_oll_service.o \
+		src/solver/solver_oll_service2.o
+                src/solver/solver_mask_matrices.o \
+                src/solver/solver_mask_msr.o \
+                src/solver/solver_mask_mds.o \
+                src/solver/solver_mask_parcsr.o \
+                src/solver/solver_mask_ucchb.o \
+                src/solver/solver_mask_dense.o \
+                src/solver/solver_mask_rcptr.o \
+                src/solver/solver_mask_ccf.o \
+                src/solver/solver_mask_skyline.o \
+                src/solver/solver_mask_spooles.o \
+                src/solver/solver_mask_bdcsr.o \
 #                pss_full
 OBJS_PSS      = src/pss_full/pss_am.o \
                 src/pss_full/pss_ds.o \

@@ -145,7 +145,7 @@ include ./Makefile.objects
 #
 #
 #
-$(PROGRAM):	$(OBJS_MAIN) $(OBJS_GLOBAL) $(OBJS_PSS) $(OBJS_INPUT) \
+$(PROGRAM):	$(OBJS_MAIN) $(OBJS_GLOBAL) $(OBJS_SOLVER) $(OBJS_PSS) $(OBJS_INPUT) \
 		$(OBJS_PAR) $(OBJS_MATH) $(OBJS_OUTPUT) $(OBJS_FORTRAN) \
 		$(OBJS_FLUID) $(OBJS_FLUID3) $(OBJS_FLUID2) $(OBJS_ALE) \
 		$(OBJS_FSI) $(OBJS_F2PRO) $(OBJS_F2ML) $(OBJS_F3ML) \
@@ -154,7 +154,7 @@ $(PROGRAM):	$(OBJS_MAIN) $(OBJS_GLOBAL) $(OBJS_PSS) $(OBJS_INPUT) \
 		$(OBJS_WALL1) $(OBJS_WALLGE) $(OBJS_IF) $(OBJS_LS) $(OBJS_XFEM)
 		@echo "Linking $(PROGRAM) ..."
 		@$(LD) $(LDFLAGS) \
-		$(OBJS_MAIN) $(OBJS_GLOBAL) $(OBJS_PSS) $(OBJS_INPUT) \
+		$(OBJS_MAIN) $(OBJS_GLOBAL) $(OBJS_SOLVER) $(OBJS_PSS) $(OBJS_INPUT) \
 		$(OBJS_PAR) $(OBJS_MATH) $(OBJS_OUTPUT) $(OBJS_FORTRAN) \
 		$(OBJS_FLUID) $(OBJS_FLUID3) $(OBJS_FLUID2) $(OBJS_ALE) \
 		$(OBJS_FSI) $(OBJS_F2PRO) $(OBJS_F2ML) $(OBJS_F3ML) \
@@ -166,9 +166,13 @@ $(PROGRAM):	$(OBJS_MAIN) $(OBJS_GLOBAL) $(OBJS_PSS) $(OBJS_INPUT) \
 
 
 $(OBJS_MAIN):
+                touch src/headers/compile_settings.h
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
 $(OBJS_GLOBAL):
+		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+
+$(OBJS_SOLVER):
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
 $(OBJS_PSS):
@@ -257,7 +261,7 @@ $(OBJS_FORTRAN):
 	$(F77) $(FFLAGS) $(INCLUDES) -c $< -o $@
 
 clean:
-	rm -rf 	$(OBJS_MAIN) $(OBJS_GLOBAL) $(OBJS_PSS) $(OBJS_INPUT) \
+	rm -rf 	$(OBJS_MAIN) $(OBJS_GLOBAL) $(OBJS_SOLVER) $(OBJS_PSS) $(OBJS_INPUT) \
 		$(OBJS_PAR) $(OBJS_MATH) $(OBJS_OUTPUT) $(OBJS_FORTRAN) \
 		$(OBJS_FLUID) $(OBJS_FLUID3) $(OBJS_FLUID2) $(OBJS_ALE) \
 		$(OBJS_FSI) $(OBJS_F2PRO) $(OBJS_F2ML) $(OBJS_F3ML) \
