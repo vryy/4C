@@ -4,7 +4,7 @@
 //             http://www.uni-stuttgart.de/ibs/members/huber/index.html
 //             0711 - 685-6120
 // 
-// necessary defines: -DD_BEAM3 -DRESULTTEST
+// necessary defines: D_BEAM3 RESULTTEST
 //
 // #define MAXNOD           (2)
 // #define MAXELE           (2)

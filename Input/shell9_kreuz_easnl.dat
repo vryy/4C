@@ -4,7 +4,7 @@
 //             http://www.uni-stuttgart.de/ibs/members/hartmann/index.html
 //             0711 - 685-6120
 // 
-// necessary defines: -DD_SHELL9 -DD_MAT -DRESULTTEST
+// necessary defines: D_SHELL9 D_MAT RESULTTEST
 //
 // #define MAXNOD                (8)
 // #define MAXELE                (4)

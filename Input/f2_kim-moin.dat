@@ -4,7 +4,7 @@
 //             http://www.uni-stuttgart.de/ibs/members/neumann/
 //             0711 - 685-6121
 // 
-// necessary defines: -DRESULTTEST -DD_FLUID -DD_FLUID2 -DAZTEC_PACKAGE
+// necessary defines: RESULTTEST D_FLUID D_FLUID2 AZTEC_PACKAGE
 //
 // #define MAXNOD           (4)
 // #define MAXELE           (4)

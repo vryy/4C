@@ -4,7 +4,7 @@
 //             http://www.uni-stuttgart.de/ibs/members/neumann/
 //             0711 - 685-6121
 // 
-// necessary defines: -DRESULTTEST -DD_FLUID -DD_FLUID3 -DAZTEC_PACKAGE
+// necessary defines: RESULTTEST D_FLUID D_FLUID3 AZTEC_PACKAGE
 //
 // #define MAXNOD           (8)
 // #define MAXELE           (8)
@@ -83,6 +83,7 @@ ROUGHTNESS   1.0
 SC_COORD_X   0.0
 SC_COORD_Y   0.0
 DISC_CAPT    No
+
 -------------------------------------------------------FSI DYNAMIC
 MAXTIME      1000.0
 TIMESTEP     0.05
@@ -113,6 +114,33 @@ ALE_TYPE     classic_lin
 RESEVRYDISP  10
 QUALITY      none
 ------------------------------------------------------OPTIMIZATION
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ------------------------------------------------------FLUID SOLVER
 SOLVER         Aztec_MSR
 AZSOLVE        BiCGSTAB
@@ -129,7 +157,35 @@ AZGRAPH        1
 AZPOLY         5  
 PARTITION      Cut_Elements
 -----------------------------------------------------STRUCT SOLVER
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 --------------------------------------------------------ALE SOLVER
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 8
 NDLINE  12
@@ -2562,518 +2618,518 @@ NODE          729     COORD 1.000000000000000e+000     1.000000000000000e+000   
 ----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
 ----------------------------------------------------FLUID ELEMENTS
-      1 FLUID3 HEX8       8      6      4      5      7      3      1      2 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-      2 FLUID3 HEX8      18      8      5     12     13      7      2      9 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-      3 FLUID3 HEX8      37     18     12     34     32     13      9     25 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-      4 FLUID3 HEX8      69     37     34     57     56     32     25     52 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-      5 FLUID3 HEX8     112     69     57    101    105     56     52     92 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-      6 FLUID3 HEX8     176    112    101    167    166    105     92    160 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-      7 FLUID3 HEX8     255    176    167    241    245    166    160    236 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-      8 FLUID3 HEX8     366    255    241    350    351    245    236    344 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-      9 FLUID3 HEX8      19     16      6      8     17     10      3      7 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     10 FLUID3 HEX8      27     19      8     18     21     17      7     13 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     11 FLUID3 HEX8      46     27     18     37     40     21     13     32 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     12 FLUID3 HEX8      84     46     37     69     76     40     32     56 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     13 FLUID3 HEX8     131     84     69    112    120     76     56    105 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     14 FLUID3 HEX8     186    131    112    176    184    120    105    166 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     15 FLUID3 HEX8     290    186    176    255    275    184    166    245 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     16 FLUID3 HEX8     391    290    255    366    380    275    245    351 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     17 FLUID3 HEX8      36     31     16     19     30     28     10     17 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     18 FLUID3 HEX8      50     36     19     27     45     30     17     21 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     19 FLUID3 HEX8      72     50     27     46     67     45     21     40 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     20 FLUID3 HEX8     110     72     46     84     95     67     40     76 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     21 FLUID3 HEX8     153    110     84    131    151     95     76    120 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     22 FLUID3 HEX8     227    153    131    186    216    151    120    184 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     23 FLUID3 HEX8     310    227    186    290    305    216    184    275 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     24 FLUID3 HEX8     430    310    290    391    413    305    275    380 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     25 FLUID3 HEX8      68     62     31     36     61     54     28     30 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     26 FLUID3 HEX8      79     68     36     50     73     61     30     45 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     27 FLUID3 HEX8     100     79     50     72     94     73     45     67 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     28 FLUID3 HEX8     139    100     72    110    135     94     67     95 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     29 FLUID3 HEX8     201    139    110    153    192    135     95    151 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     30 FLUID3 HEX8     270    201    153    227    263    192    151    216 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     31 FLUID3 HEX8     370    270    227    310    349    263    216    305 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     32 FLUID3 HEX8     472    370    310    430    468    349    305    413 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     33 FLUID3 HEX8     113    106     62     68    103     91     54     61 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     34 FLUID3 HEX8     128    113     68     79    125    103     61     73 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     35 FLUID3 HEX8     155    128     79    100    149    125     73     94 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     36 FLUID3 HEX8     205    155    100    139    193    149     94    135 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     37 FLUID3 HEX8     258    205    139    201    244    193    135    192 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     38 FLUID3 HEX8     340    258    201    270    326    244    192    263 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     39 FLUID3 HEX8     440    340    270    370    435    326    263    349 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     40 FLUID3 HEX8     542    440    370    472    517    435    349    468 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     41 FLUID3 HEX8     173    165    106    113    168    158     91    103 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     42 FLUID3 HEX8     189    173    113    128    182    168    103    125 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     43 FLUID3 HEX8     226    189    128    155    221    182    125    149 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     44 FLUID3 HEX8     276    226    155    205    261    221    149    193 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     45 FLUID3 HEX8     341    276    205    258    318    261    193    244 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     46 FLUID3 HEX8     414    341    258    340    407    318    244    326 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     47 FLUID3 HEX8     513    414    340    440    504    407    326    435 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     48 FLUID3 HEX8     594    513    440    542    582    504    435    517 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     49 FLUID3 HEX8     257    243    165    173    253    234    158    168 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     50 FLUID3 HEX8     283    257    173    189    272    253    168    182 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     51 FLUID3 HEX8     317    283    189    226    304    272    182    221 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     52 FLUID3 HEX8     363    317    226    276    357    304    221    261 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     53 FLUID3 HEX8     438    363    276    341    420    357    261    318 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     54 FLUID3 HEX8     506    438    341    414    500    420    318    407 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     55 FLUID3 HEX8     576    506    414    513    573    500    407    504 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     56 FLUID3 HEX8     636    576    513    594    629    573    504    582 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     57 FLUID3 HEX8     364    356    243    257    360    343    234    253 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     58 FLUID3 HEX8     397    364    257    283    378    360    253    272 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     59 FLUID3 HEX8     433    397    283    317    418    378    272    304 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     60 FLUID3 HEX8     476    433    317    363    467    418    304    357 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     61 FLUID3 HEX8     535    476    363    438    526    467    357    420 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     62 FLUID3 HEX8     592    535    438    506    583    526    420    500 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     63 FLUID3 HEX8     640    592    506    576    632    583    500    573 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     64 FLUID3 HEX8     680    640    576    636    678    632    573    629 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     65 FLUID3 HEX8      20     14     11     15      8      6      4      5 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     66 FLUID3 HEX8      26     20     15     22     18      8      5     12 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     67 FLUID3 HEX8      48     26     22     42     37     18     12     34 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     68 FLUID3 HEX8      81     48     42     75     69     37     34     57 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     69 FLUID3 HEX8     133     81     75    116    112     69     57    101 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     70 FLUID3 HEX8     199    133    116    179    176    112    101    167 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     71 FLUID3 HEX8     284    199    179    269    255    176    167    241 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     72 FLUID3 HEX8     390    284    269    384    366    255    241    350 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     73 FLUID3 HEX8      29     23     14     20     19     16      6      8 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     74 FLUID3 HEX8      39     29     20     26     27     19      8     18 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     75 FLUID3 HEX8      59     39     26     48     46     27     18     37 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     76 FLUID3 HEX8      90     59     48     81     84     46     37     69 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     77 FLUID3 HEX8     137     90     81    133    131     84     69    112 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     78 FLUID3 HEX8     211    137    133    199    186    131    112    176 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     79 FLUID3 HEX8     301    211    199    284    290    186    176    255 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     80 FLUID3 HEX8     408    301    284    390    391    290    255    366 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     81 FLUID3 HEX8      47     44     23     29     36     31     16     19 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     82 FLUID3 HEX8      55     47     29     39     50     36     19     27 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     83 FLUID3 HEX8      86     55     39     59     72     50     27     46 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     84 FLUID3 HEX8     124     86     59     90    110     72     46     84 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     85 FLUID3 HEX8     171    124     90    137    153    110     84    131 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     86 FLUID3 HEX8     235    171    137    211    227    153    131    186 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     87 FLUID3 HEX8     337    235    211    301    310    227    186    290 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     88 FLUID3 HEX8     458    337    301    408    430    310    290    391 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     89 FLUID3 HEX8      80     78     44     47     68     62     31     36 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     90 FLUID3 HEX8      89     80     47     55     79     68     36     50 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     91 FLUID3 HEX8     117     89     55     86    100     79     50     72 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     92 FLUID3 HEX8     162    117     86    124    139    100     72    110 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     93 FLUID3 HEX8     214    162    124    171    201    139    110    153 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     94 FLUID3 HEX8     291    214    171    235    270    201    153    227 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     95 FLUID3 HEX8     388    291    235    337    370    270    227    310 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     96 FLUID3 HEX8     493    388    337    458    472    370    310    430 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     97 FLUID3 HEX8     132    123     78     80    113    106     62     68 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     98 FLUID3 HEX8     142    132     80     89    128    113     68     79 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-     99 FLUID3 HEX8     174    142     89    117    155    128     79    100 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    100 FLUID3 HEX8     222    174    117    162    205    155    100    139 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    101 FLUID3 HEX8     281    222    162    214    258    205    139    201 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    102 FLUID3 HEX8     346    281    214    291    340    258    201    270 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    103 FLUID3 HEX8     462    346    291    388    440    340    270    370 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    104 FLUID3 HEX8     548    462    388    493    542    440    370    472 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    105 FLUID3 HEX8     196    183    123    132    173    165    106    113 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    106 FLUID3 HEX8     209    196    132    142    189    173    113    128 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    107 FLUID3 HEX8     231    209    142    174    226    189    128    155 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    108 FLUID3 HEX8     293    231    174    222    276    226    155    205 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    109 FLUID3 HEX8     354    293    222    281    341    276    205    258 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    110 FLUID3 HEX8     445    354    281    346    414    341    258    340 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    111 FLUID3 HEX8     533    445    346    462    513    414    340    440 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    112 FLUID3 HEX8     605    533    462    548    594    513    440    542 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    113 FLUID3 HEX8     285    278    183    196    257    243    165    173 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    114 FLUID3 HEX8     300    285    196    209    283    257    173    189 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    115 FLUID3 HEX8     338    300    209    231    317    283    189    226 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    116 FLUID3 HEX8     387    338    231    293    363    317    226    276 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    117 FLUID3 HEX8     464    387    293    354    438    363    276    341 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    118 FLUID3 HEX8     523    464    354    445    506    438    341    414 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    119 FLUID3 HEX8     600    523    445    533    576    506    414    513 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    120 FLUID3 HEX8     653    600    533    605    636    576    513    594 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    121 FLUID3 HEX8     395    381    278    285    364    356    243    257 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    122 FLUID3 HEX8     405    395    285    300    397    364    257    283 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    123 FLUID3 HEX8     457    405    300    338    433    397    283    317 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    124 FLUID3 HEX8     498    457    338    387    476    433    317    363 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    125 FLUID3 HEX8     550    498    387    464    535    476    363    438 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    126 FLUID3 HEX8     603    550    464    523    592    535    438    506 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    127 FLUID3 HEX8     658    603    523    600    640    592    506    576 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    128 FLUID3 HEX8     691    658    600    653    680    640    576    636 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    129 FLUID3 HEX8      38     35     24     33     20     14     11     15 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    130 FLUID3 HEX8      49     38     33     43     26     20     15     22 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    131 FLUID3 HEX8      70     49     43     66     48     26     22     42 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    132 FLUID3 HEX8     102     70     66     99     81     48     42     75 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    133 FLUID3 HEX8     154    102     99    146    133     81     75    116 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    134 FLUID3 HEX8     224    154    146    223    199    133    116    179 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    135 FLUID3 HEX8     309    224    223    306    284    199    179    269 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    136 FLUID3 HEX8     426    309    306    411    390    284    269    384 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    137 FLUID3 HEX8      51     41     35     38     29     23     14     20 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    138 FLUID3 HEX8      60     51     38     49     39     29     20     26 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    139 FLUID3 HEX8      87     60     49     70     59     39     26     48 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    140 FLUID3 HEX8     126     87     70    102     90     59     48     81 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    141 FLUID3 HEX8     178    126    102    154    137     90     81    133 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    142 FLUID3 HEX8     237    178    154    224    211    137    133    199 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    143 FLUID3 HEX8     339    237    224    309    301    211    199    284 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    144 FLUID3 HEX8     456    339    309    426    408    301    284    390 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    145 FLUID3 HEX8      71     64     41     51     47     44     23     29 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    146 FLUID3 HEX8      85     71     51     60     55     47     29     39 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    147 FLUID3 HEX8     115     85     60     87     86     55     39     59 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    148 FLUID3 HEX8     145    115     87    126    124     86     59     90 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    149 FLUID3 HEX8     207    145    126    178    171    124     90    137 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    150 FLUID3 HEX8     286    207    178    237    235    171    137    211 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    151 FLUID3 HEX8     375    286    237    339    337    235    211    301 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    152 FLUID3 HEX8     485    375    339    456    458    337    301    408 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    153 FLUID3 HEX8     107     97     64     71     80     78     44     47 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    154 FLUID3 HEX8     121    107     71     85     89     80     47     55 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    155 FLUID3 HEX8     143    121     85    115    117     89     55     86 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    156 FLUID3 HEX8     187    143    115    145    162    117     86    124 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    157 FLUID3 HEX8     254    187    145    207    214    162    124    171 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    158 FLUID3 HEX8     321    254    207    286    291    214    171    235 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    159 FLUID3 HEX8     429    321    286    375    388    291    235    337 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    160 FLUID3 HEX8     531    429    375    485    493    388    337    458 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    161 FLUID3 HEX8     157    148     97    107    132    123     78     80 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    162 FLUID3 HEX8     170    157    107    121    142    132     80     89 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    163 FLUID3 HEX8     208    170    121    143    174    142     89    117 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    164 FLUID3 HEX8     249    208    143    187    222    174    117    162 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    165 FLUID3 HEX8     315    249    187    254    281    222    162    214 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    166 FLUID3 HEX8     400    315    254    321    346    281    214    291 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    167 FLUID3 HEX8     488    400    321    429    462    346    291    388 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    168 FLUID3 HEX8     570    488    429    531    548    462    388    493 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    169 FLUID3 HEX8     228    220    148    157    196    183    123    132 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    170 FLUID3 HEX8     238    228    157    170    209    196    132    142 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    171 FLUID3 HEX8     287    238    170    208    231    209    142    174 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    172 FLUID3 HEX8     329    287    208    249    293    231    174    222 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    173 FLUID3 HEX8     401    329    249    315    354    293    222    281 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    174 FLUID3 HEX8     481    401    315    400    445    354    281    346 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    175 FLUID3 HEX8     556    481    400    488    533    445    346    462 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    176 FLUID3 HEX8     619    556    488    570    605    533    462    548 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    177 FLUID3 HEX8     313    303    220    228    285    278    183    196 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    178 FLUID3 HEX8     334    313    228    238    300    285    196    209 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    179 FLUID3 HEX8     377    334    238    287    338    300    209    231 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    180 FLUID3 HEX8     434    377    287    329    387    338    231    293 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    181 FLUID3 HEX8     491    434    329    401    464    387    293    354 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    182 FLUID3 HEX8     554    491    401    481    523    464    354    445 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    183 FLUID3 HEX8     614    554    481    556    600    523    445    533 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    184 FLUID3 HEX8     666    614    556    619    653    600    533    605 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    185 FLUID3 HEX8     428    417    303    313    395    381    278    285 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    186 FLUID3 HEX8     454    428    313    334    405    395    285    300 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    187 FLUID3 HEX8     484    454    334    377    457    405    300    338 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    188 FLUID3 HEX8     520    484    377    434    498    457    338    387 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    189 FLUID3 HEX8     571    520    434    491    550    498    387    464 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    190 FLUID3 HEX8     621    571    491    554    603    550    464    523 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    191 FLUID3 HEX8     663    621    554    614    658    603    523    600 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    192 FLUID3 HEX8     698    663    614    666    691    658    600    653 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    193 FLUID3 HEX8      65     63     53     58     38     35     24     33 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    194 FLUID3 HEX8      83     65     58     77     49     38     33     43 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    195 FLUID3 HEX8     109     83     77     98     70     49     43     66 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    196 FLUID3 HEX8     140    109     98    134    102     70     66     99 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    197 FLUID3 HEX8     200    140    134    197    154    102     99    146 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    198 FLUID3 HEX8     271    200    197    264    224    154    146    223 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    199 FLUID3 HEX8     365    271    264    347    309    224    223    306 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    200 FLUID3 HEX8     474    365    347    469    426    309    306    411 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    201 FLUID3 HEX8      82     74     63     65     51     41     35     38 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    202 FLUID3 HEX8      88     82     65     83     60     51     38     49 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    203 FLUID3 HEX8     119     88     83    109     87     60     49     70 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    204 FLUID3 HEX8     161    119    109    140    126     87     70    102 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    205 FLUID3 HEX8     212    161    140    200    178    126    102    154 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    206 FLUID3 HEX8     294    212    200    271    237    178    154    224 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    207 FLUID3 HEX8     396    294    271    365    339    237    224    309 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    208 FLUID3 HEX8     494    396    365    474    456    339    309    426 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    209 FLUID3 HEX8     108     93     74     82     71     64     41     51 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    210 FLUID3 HEX8     118    108     82     88     85     71     51     60 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    211 FLUID3 HEX8     147    118     88    119    115     85     60     87 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    212 FLUID3 HEX8     195    147    119    161    145    115     87    126 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    213 FLUID3 HEX8     240    195    161    212    207    145    126    178 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    214 FLUID3 HEX8     319    240    212    294    286    207    178    237 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    215 FLUID3 HEX8     432    319    294    396    375    286    237    339 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    216 FLUID3 HEX8     530    432    396    494    485    375    339    456 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    217 FLUID3 HEX8     138    136     93    108    107     97     64     71 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    218 FLUID3 HEX8     163    138    108    118    121    107     71     85 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    219 FLUID3 HEX8     194    163    118    147    143    121     85    115 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    220 FLUID3 HEX8     230    194    147    195    187    143    115    145 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    221 FLUID3 HEX8     302    230    195    240    254    187    145    207 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    222 FLUID3 HEX8     382    302    240    319    321    254    207    286 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    223 FLUID3 HEX8     478    382    319    432    429    321    286    375 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    224 FLUID3 HEX8     560    478    432    530    531    429    375    485 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    225 FLUID3 HEX8     204    198    136    138    157    148     97    107 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    226 FLUID3 HEX8     219    204    138    163    170    157    107    121 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    227 FLUID3 HEX8     251    219    163    194    208    170    121    143 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    228 FLUID3 HEX8     297    251    194    230    249    208    143    187 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    229 FLUID3 HEX8     367    297    230    302    315    249    187    254 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    230 FLUID3 HEX8     450    367    302    382    400    315    254    321 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    231 FLUID3 HEX8     543    450    382    478    488    400    321    429 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    232 FLUID3 HEX8     607    543    478    560    570    488    429    531 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    233 FLUID3 HEX8     268    265    198    204    228    220    148    157 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    234 FLUID3 HEX8     296    268    204    219    238    228    157    170 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    235 FLUID3 HEX8     322    296    219    251    287    238    170    208 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    236 FLUID3 HEX8     385    322    251    297    329    287    208    249 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    237 FLUID3 HEX8     459    385    297    367    401    329    249    315 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    238 FLUID3 HEX8     515    459    367    450    481    401    315    400 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    239 FLUID3 HEX8     590    515    450    543    556    481    400    488 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    240 FLUID3 HEX8     647    590    543    607    619    556    488    570 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    241 FLUID3 HEX8     368    361    265    268    313    303    220    228 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    242 FLUID3 HEX8     389    368    268    296    334    313    228    238 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    243 FLUID3 HEX8     427    389    296    322    377    334    238    287 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    244 FLUID3 HEX8     480    427    322    385    434    377    287    329 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    245 FLUID3 HEX8     545    480    385    459    491    434    329    401 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    246 FLUID3 HEX8     596    545    459    515    554    491    401    481 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    247 FLUID3 HEX8     646    596    515    590    614    554    481    556 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    248 FLUID3 HEX8     688    646    590    647    666    614    556    619 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    249 FLUID3 HEX8     477    470    361    368    428    417    303    313 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    250 FLUID3 HEX8     497    477    368    389    454    428    313    334 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    251 FLUID3 HEX8     522    497    389    427    484    454    334    377 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    252 FLUID3 HEX8     559    522    427    480    520    484    377    434 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    253 FLUID3 HEX8     612    559    480    545    571    520    434    491 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    254 FLUID3 HEX8     651    612    545    596    621    571    491    554 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    255 FLUID3 HEX8     682    651    596    646    663    621    554    614 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    256 FLUID3 HEX8     708    682    646    688    698    663    614    666 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    257 FLUID3 HEX8     114    104     96    111     65     63     53     58 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    258 FLUID3 HEX8     130    114    111    122     83     65     58     77 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    259 FLUID3 HEX8     156    130    122    144    109     83     77     98 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    260 FLUID3 HEX8     202    156    144    185    140    109     98    134 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    261 FLUID3 HEX8     256    202    185    242    200    140    134    197 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    262 FLUID3 HEX8     336    256    242    327    271    200    197    264 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    263 FLUID3 HEX8     441    336    327    422    365    271    264    347 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    264 FLUID3 HEX8     541    441    422    528    474    365    347    469 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    265 FLUID3 HEX8     129    127    104    114     82     74     63     65 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    266 FLUID3 HEX8     141    129    114    130     88     82     65     83 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    267 FLUID3 HEX8     177    141    130    156    119     88     83    109 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    268 FLUID3 HEX8     215    177    156    202    161    119    109    140 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    269 FLUID3 HEX8     288    215    202    256    212    161    140    200 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    270 FLUID3 HEX8     359    288    256    336    294    212    200    271 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    271 FLUID3 HEX8     463    359    336    441    396    294    271    365 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    272 FLUID3 HEX8     552    463    441    541    494    396    365    474 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    273 FLUID3 HEX8     152    150    127    129    108     93     74     82 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    274 FLUID3 HEX8     175    152    129    141    118    108     82     88 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    275 FLUID3 HEX8     206    175    141    177    147    118     88    119 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    276 FLUID3 HEX8     248    206    177    215    195    147    119    161 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    277 FLUID3 HEX8     311    248    215    288    240    195    161    212 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    278 FLUID3 HEX8     399    311    288    359    319    240    212    294 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    279 FLUID3 HEX8     489    399    359    463    432    319    294    396 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    280 FLUID3 HEX8     566    489    463    552    530    432    396    494 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    281 FLUID3 HEX8     203    191    150    152    138    136     93    108 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    282 FLUID3 HEX8     213    203    152    175    163    138    108    118 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    283 FLUID3 HEX8     252    213    175    206    194    163    118    147 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    284 FLUID3 HEX8     298    252    206    248    230    194    147    195 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    285 FLUID3 HEX8     371    298    248    311    302    230    195    240 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    286 FLUID3 HEX8     448    371    311    399    382    302    240    319 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    287 FLUID3 HEX8     538    448    399    489    478    382    319    432 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    288 FLUID3 HEX8     610    538    489    566    560    478    432    530 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    289 FLUID3 HEX8     260    250    191    203    204    198    136    138 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    290 FLUID3 HEX8     289    260    203    213    219    204    138    163 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    291 FLUID3 HEX8     316    289    213    252    251    219    163    194 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    292 FLUID3 HEX8     373    316    252    298    297    251    194    230 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    293 FLUID3 HEX8     439    373    298    371    367    297    230    302 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    294 FLUID3 HEX8     511    439    371    448    450    367    302    382 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    295 FLUID3 HEX8     577    511    448    538    543    450    382    478 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    296 FLUID3 HEX8     643    577    538    610    607    543    478    560 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    297 FLUID3 HEX8     331    323    250    260    268    265    198    204 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    298 FLUID3 HEX8     353    331    260    289    296    268    204    219 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    299 FLUID3 HEX8     403    353    289    316    322    296    219    251 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    300 FLUID3 HEX8     449    403    316    373    385    322    251    297 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    301 FLUID3 HEX8     509    449    373    439    459    385    297    367 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    302 FLUID3 HEX8     563    509    439    511    515    459    367    450 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    303 FLUID3 HEX8     623    563    511    577    590    515    450    543 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    304 FLUID3 HEX8     671    623    577    643    647    590    543    607 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    305 FLUID3 HEX8     443    431    323    331    368    361    265    268 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    306 FLUID3 HEX8     465    443    331    353    389    368    268    296 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    307 FLUID3 HEX8     492    465    353    403    427    389    296    322 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    308 FLUID3 HEX8     536    492    403    449    480    427    322    385 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    309 FLUID3 HEX8     579    536    449    509    545    480    385    459 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    310 FLUID3 HEX8     627    579    509    563    596    545    459    515 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    311 FLUID3 HEX8     669    627    563    623    646    596    515    590 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    312 FLUID3 HEX8     701    669    623    671    688    646    590    647 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    313 FLUID3 HEX8     544    519    431    443    477    470    361    368 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    314 FLUID3 HEX8     551    544    443    465    497    477    368    389 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    315 FLUID3 HEX8     568    551    465    492    522    497    389    427 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    316 FLUID3 HEX8     611    568    492    536    559    522    427    480 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    317 FLUID3 HEX8     635    611    536    579    612    559    480    545 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    318 FLUID3 HEX8     675    635    579    627    651    612    545    596 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    319 FLUID3 HEX8     705    675    627    669    682    651    596    646 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    320 FLUID3 HEX8     719    705    669    701    708    682    646    688 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    321 FLUID3 HEX8     172    169    159    164    114    104     96    111 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    322 FLUID3 HEX8     190    172    164    181    130    114    111    122 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    323 FLUID3 HEX8     229    190    181    218    156    130    122    144 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    324 FLUID3 HEX8     274    229    218    262    202    156    144    185 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    325 FLUID3 HEX8     333    274    262    320    256    202    185    242 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    326 FLUID3 HEX8     412    333    320    409    336    256    242    327 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    327 FLUID3 HEX8     512    412    409    502    441    336    327    422 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    328 FLUID3 HEX8     588    512    502    585    541    441    422    528 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    329 FLUID3 HEX8     188    180    169    172    129    127    104    114 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    330 FLUID3 HEX8     210    188    172    190    141    129    114    130 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    331 FLUID3 HEX8     232    210    190    229    177    141    130    156 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    332 FLUID3 HEX8     295    232    229    274    215    177    156    202 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    333 FLUID3 HEX8     345    295    274    333    288    215    202    256 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    334 FLUID3 HEX8     446    345    333    412    359    288    256    336 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    335 FLUID3 HEX8     521    446    412    512    463    359    336    441 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    336 FLUID3 HEX8     602    521    512    588    552    463    441    541 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    337 FLUID3 HEX8     225    217    180    188    152    150    127    129 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    338 FLUID3 HEX8     233    225    188    210    175    152    129    141 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    339 FLUID3 HEX8     282    233    210    232    206    175    141    177 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    340 FLUID3 HEX8     325    282    232    295    248    206    177    215 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    341 FLUID3 HEX8     404    325    295    345    311    248    215    288 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    342 FLUID3 HEX8     482    404    345    446    399    311    288    359 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    343 FLUID3 HEX8     557    482    446    521    489    399    359    463 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    344 FLUID3 HEX8     618    557    521    602    566    489    463    552 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    345 FLUID3 HEX8     277    266    217    225    203    191    150    152 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    346 FLUID3 HEX8     292    277    225    233    213    203    152    175 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    347 FLUID3 HEX8     328    292    233    282    252    213    175    206 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    348 FLUID3 HEX8     386    328    282    325    298    252    206    248 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    349 FLUID3 HEX8     455    386    325    404    371    298    248    311 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    350 FLUID3 HEX8     516    455    404    482    448    371    311    399 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    351 FLUID3 HEX8     589    516    482    557    538    448    399    489 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    352 FLUID3 HEX8     648    589    557    618    610    538    489    566 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    353 FLUID3 HEX8     330    324    266    277    260    250    191    203 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    354 FLUID3 HEX8     355    330    277    292    289    260    203    213 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    355 FLUID3 HEX8     402    355    292    328    316    289    213    252 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    356 FLUID3 HEX8     451    402    328    386    373    316    252    298 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    357 FLUID3 HEX8     508    451    386    455    439    373    298    371 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    358 FLUID3 HEX8     562    508    455    516    511    439    371    448 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    359 FLUID3 HEX8     626    562    516    589    577    511    448    538 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    360 FLUID3 HEX8     672    626    589    648    643    577    538    610 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    361 FLUID3 HEX8     419    406    324    330    331    323    250    260 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    362 FLUID3 HEX8     447    419    330    355    353    331    260    289 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    363 FLUID3 HEX8     483    447    355    402    403    353    289    316 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    364 FLUID3 HEX8     514    483    402    451    449    403    316    373 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    365 FLUID3 HEX8     564    514    451    508    509    449    373    439 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    366 FLUID3 HEX8     616    564    508    562    563    509    439    511 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    367 FLUID3 HEX8     659    616    562    626    623    563    511    577 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    368 FLUID3 HEX8     696    659    626    672    671    623    577    643 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    369 FLUID3 HEX8     505    503    406    419    443    431    323    331 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    370 FLUID3 HEX8     524    505    419    447    465    443    331    353 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    371 FLUID3 HEX8     553    524    447    483    492    465    353    403 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    372 FLUID3 HEX8     593    553    483    514    536    492    403    449 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    373 FLUID3 HEX8     628    593    514    564    579    536    449    509 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    374 FLUID3 HEX8     661    628    564    616    627    579    509    563 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    375 FLUID3 HEX8     694    661    616    659    669    627    563    623 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    376 FLUID3 HEX8     715    694    659    696    701    669    623    671 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    377 FLUID3 HEX8     586    581    503    505    544    519    431    443 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    378 FLUID3 HEX8     604    586    505    524    551    544    443    465 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    379 FLUID3 HEX8     620    604    524    553    568    551    465    492 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    380 FLUID3 HEX8     650    620    553    593    611    568    492    536 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    381 FLUID3 HEX8     673    650    593    628    635    611    536    579 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    382 FLUID3 HEX8     697    673    628    661    675    635    579    627 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    383 FLUID3 HEX8     712    697    661    694    705    675    627    669 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    384 FLUID3 HEX8     723    712    694    715    719    705    669    701 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    385 FLUID3 HEX8     259    246    239    247    172    169    159    164 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    386 FLUID3 HEX8     280    259    247    267    190    172    164    181 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    387 FLUID3 HEX8     314    280    267    308    229    190    181    218 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    388 FLUID3 HEX8     369    314    308    348    274    229    218    262 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    389 FLUID3 HEX8     442    369    348    424    333    274    262    320 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    390 FLUID3 HEX8     507    442    424    501    412    333    320    409 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    391 FLUID3 HEX8     575    507    501    567    512    412    409    502 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    392 FLUID3 HEX8     637    575    567    631    588    512    502    585 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    393 FLUID3 HEX8     279    273    246    259    188    180    169    172 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    394 FLUID3 HEX8     299    279    259    280    210    188    172    190 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    395 FLUID3 HEX8     335    299    280    314    232    210    190    229 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    396 FLUID3 HEX8     398    335    314    369    295    232    229    274 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    397 FLUID3 HEX8     461    398    369    442    345    295    274    333 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    398 FLUID3 HEX8     527    461    442    507    446    345    333    412 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    399 FLUID3 HEX8     598    527    507    575    521    446    412    512 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    400 FLUID3 HEX8     657    598    575    637    602    521    512    588 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    401 FLUID3 HEX8     312    307    273    279    225    217    180    188 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    402 FLUID3 HEX8     332    312    279    299    233    225    188    210 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    403 FLUID3 HEX8     376    332    299    335    282    233    210    232 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    404 FLUID3 HEX8     437    376    335    398    325    282    232    295 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    405 FLUID3 HEX8     490    437    398    461    404    325    295    345 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    406 FLUID3 HEX8     558    490    461    527    482    404    345    446 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    407 FLUID3 HEX8     615    558    527    598    557    482    446    521 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    408 FLUID3 HEX8     662    615    598    657    618    557    521    602 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    409 FLUID3 HEX8     374    352    307    312    277    266    217    225 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    410 FLUID3 HEX8     393    374    312    332    292    277    225    233 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    411 FLUID3 HEX8     436    393    332    376    328    292    233    282 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    412 FLUID3 HEX8     479    436    376    437    386    328    282    325 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    413 FLUID3 HEX8     546    479    437    490    455    386    325    404 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    414 FLUID3 HEX8     587    546    490    558    516    455    404    482 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    415 FLUID3 HEX8     644    587    558    615    589    516    482    557 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    416 FLUID3 HEX8     685    644    615    662    648    589    557    618 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    417 FLUID3 HEX8     444    421    352    374    330    324    266    277 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    418 FLUID3 HEX8     460    444    374    393    355    330    277    292 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    419 FLUID3 HEX8     487    460    393    436    402    355    292    328 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    420 FLUID3 HEX8     539    487    436    479    451    402    328    386 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    421 FLUID3 HEX8     578    539    479    546    508    451    386    455 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    422 FLUID3 HEX8     625    578    546    587    562    508    455    516 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    423 FLUID3 HEX8     670    625    587    644    626    562    516    589 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    424 FLUID3 HEX8     706    670    644    685    672    626    589    648 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    425 FLUID3 HEX8     510    499    421    444    419    406    324    330 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    426 FLUID3 HEX8     529    510    444    460    447    419    330    355 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    427 FLUID3 HEX8     555    529    460    487    483    447    355    402 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    428 FLUID3 HEX8     595    555    487    539    514    483    402    451 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    429 FLUID3 HEX8     624    595    539    578    564    514    451    508 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    430 FLUID3 HEX8     660    624    578    625    616    564    508    562 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    431 FLUID3 HEX8     692    660    625    670    659    616    562    626 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    432 FLUID3 HEX8     716    692    670    706    696    659    626    672 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    433 FLUID3 HEX8     574    569    499    510    505    503    406    419 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    434 FLUID3 HEX8     599    574    510    529    524    505    419    447 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    435 FLUID3 HEX8     613    599    529    555    553    524    447    483 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    436 FLUID3 HEX8     638    613    555    595    593    553    483    514 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    437 FLUID3 HEX8     668    638    595    624    628    593    514    564 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    438 FLUID3 HEX8     693    668    624    660    661    628    564    616 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    439 FLUID3 HEX8     710    693    660    692    694    661    616    659 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    440 FLUID3 HEX8     721    710    692    716    715    694    659    696 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    441 FLUID3 HEX8     645    633    569    574    586    581    503    505 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    442 FLUID3 HEX8     654    645    574    599    604    586    505    524 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    443 FLUID3 HEX8     667    654    599    613    620    604    524    553 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    444 FLUID3 HEX8     686    667    613    638    650    620    553    593 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    445 FLUID3 HEX8     704    686    638    668    673    650    593    628 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    446 FLUID3 HEX8     711    704    668    693    697    673    628    661 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    447 FLUID3 HEX8     720    711    693    710    712    697    661    694 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    448 FLUID3 HEX8     728    720    710    721    723    712    694    715 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    449 FLUID3 HEX8     372    362    342    358    259    246    239    247 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    450 FLUID3 HEX8     392    372    358    379    280    259    247    267 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    451 FLUID3 HEX8     423    392    379    415    314    280    267    308 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    452 FLUID3 HEX8     475    423    415    471    369    314    308    348 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    453 FLUID3 HEX8     540    475    471    525    442    369    348    424 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    454 FLUID3 HEX8     597    540    525    584    507    442    424    501 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    455 FLUID3 HEX8     642    597    584    630    575    507    501    567 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    456 FLUID3 HEX8     683    642    630    679    637    575    567    631 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    457 FLUID3 HEX8     394    383    362    372    279    273    246    259 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    458 FLUID3 HEX8     410    394    372    392    299    279    259    280 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    459 FLUID3 HEX8     452    410    392    423    335    299    280    314 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    460 FLUID3 HEX8     496    452    423    475    398    335    314    369 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    461 FLUID3 HEX8     547    496    475    540    461    398    369    442 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    462 FLUID3 HEX8     606    547    540    597    527    461    442    507 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    463 FLUID3 HEX8     655    606    597    642    598    527    507    575 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    464 FLUID3 HEX8     690    655    642    683    657    598    575    637 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    465 FLUID3 HEX8     425    416    383    394    312    307    273    279 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    466 FLUID3 HEX8     453    425    394    410    332    312    279    299 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    467 FLUID3 HEX8     486    453    410    452    376    332    299    335 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    468 FLUID3 HEX8     534    486    452    496    437    376    335    398 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    469 FLUID3 HEX8     572    534    496    547    490    437    398    461 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    470 FLUID3 HEX8     617    572    547    606    558    490    461    527 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    471 FLUID3 HEX8     665    617    606    655    615    558    527    598 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    472 FLUID3 HEX8     699    665    655    690    662    615    598    657 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    473 FLUID3 HEX8     473    466    416    425    374    352    307    312 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    474 FLUID3 HEX8     495    473    425    453    393    374    312    332 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    475 FLUID3 HEX8     532    495    453    486    436    393    332    376 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    476 FLUID3 HEX8     561    532    486    534    479    436    376    437 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    477 FLUID3 HEX8     608    561    534    572    546    479    437    490 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    478 FLUID3 HEX8     649    608    572    617    587    546    490    558 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    479 FLUID3 HEX8     681    649    617    665    644    587    558    615 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    480 FLUID3 HEX8     707    681    665    699    685    644    615    662 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    481 FLUID3 HEX8     537    518    466    473    444    421    352    374 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    482 FLUID3 HEX8     549    537    473    495    460    444    374    393 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    483 FLUID3 HEX8     565    549    495    532    487    460    393    436 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    484 FLUID3 HEX8     609    565    532    561    539    487    436    479 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    485 FLUID3 HEX8     641    609    561    608    578    539    479    546 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    486 FLUID3 HEX8     676    641    608    649    625    578    546    587 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    487 FLUID3 HEX8     703    676    649    681    670    625    587    644 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    488 FLUID3 HEX8     718    703    681    707    706    670    644    685 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    489 FLUID3 HEX8     591    580    518    537    510    499    421    444 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    490 FLUID3 HEX8     601    591    537    549    529    510    444    460 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    491 FLUID3 HEX8     622    601    549    565    555    529    460    487 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    492 FLUID3 HEX8     652    622    565    609    595    555    487    539 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    493 FLUID3 HEX8     674    652    609    641    624    595    539    578 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    494 FLUID3 HEX8     695    674    641    676    660    624    578    625 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    495 FLUID3 HEX8     713    695    676    703    692    660    625    670 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    496 FLUID3 HEX8     724    713    703    718    716    692    670    706 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    497 FLUID3 HEX8     639    634    580    591    574    569    499    510 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    498 FLUID3 HEX8     656    639    591    601    599    574    510    529 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    499 FLUID3 HEX8     664    656    601    622    613    599    529    555 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    500 FLUID3 HEX8     684    664    622    652    638    613    555    595 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    501 FLUID3 HEX8     702    684    652    674    668    638    595    624 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    502 FLUID3 HEX8     714    702    674    695    693    668    624    660 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    503 FLUID3 HEX8     722    714    695    713    710    693    660    692 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    504 FLUID3 HEX8     726    722    713    724    721    710    692    716 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    505 FLUID3 HEX8     687    677    634    639    645    633    569    574 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    506 FLUID3 HEX8     689    687    639    656    654    645    574    599 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    507 FLUID3 HEX8     700    689    656    664    667    654    599    613 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    508 FLUID3 HEX8     709    700    664    684    686    667    613    638 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    509 FLUID3 HEX8     717    709    684    702    704    686    638    668 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    510 FLUID3 HEX8     725    717    702    714    711    704    668    693 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    511 FLUID3 HEX8     727    725    714    722    720    711    693    710 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
-    512 FLUID3 HEX8     729    727    722    726    728    720    710    721 MAT       1 NA Euler GP 2 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0 
+      1 FLUID3 HEX8       8      6      4      5      7      3      1      2 MAT       1 NA Euler GP 2 2 2
+      2 FLUID3 HEX8      18      8      5     12     13      7      2      9 MAT       1 NA Euler GP 2 2 2
+      3 FLUID3 HEX8      37     18     12     34     32     13      9     25 MAT       1 NA Euler GP 2 2 2
+      4 FLUID3 HEX8      69     37     34     57     56     32     25     52 MAT       1 NA Euler GP 2 2 2
+      5 FLUID3 HEX8     112     69     57    101    105     56     52     92 MAT       1 NA Euler GP 2 2 2
+      6 FLUID3 HEX8     176    112    101    167    166    105     92    160 MAT       1 NA Euler GP 2 2 2
+      7 FLUID3 HEX8     255    176    167    241    245    166    160    236 MAT       1 NA Euler GP 2 2 2
+      8 FLUID3 HEX8     366    255    241    350    351    245    236    344 MAT       1 NA Euler GP 2 2 2
+      9 FLUID3 HEX8      19     16      6      8     17     10      3      7 MAT       1 NA Euler GP 2 2 2
+     10 FLUID3 HEX8      27     19      8     18     21     17      7     13 MAT       1 NA Euler GP 2 2 2
+     11 FLUID3 HEX8      46     27     18     37     40     21     13     32 MAT       1 NA Euler GP 2 2 2
+     12 FLUID3 HEX8      84     46     37     69     76     40     32     56 MAT       1 NA Euler GP 2 2 2
+     13 FLUID3 HEX8     131     84     69    112    120     76     56    105 MAT       1 NA Euler GP 2 2 2
+     14 FLUID3 HEX8     186    131    112    176    184    120    105    166 MAT       1 NA Euler GP 2 2 2
+     15 FLUID3 HEX8     290    186    176    255    275    184    166    245 MAT       1 NA Euler GP 2 2 2
+     16 FLUID3 HEX8     391    290    255    366    380    275    245    351 MAT       1 NA Euler GP 2 2 2
+     17 FLUID3 HEX8      36     31     16     19     30     28     10     17 MAT       1 NA Euler GP 2 2 2
+     18 FLUID3 HEX8      50     36     19     27     45     30     17     21 MAT       1 NA Euler GP 2 2 2
+     19 FLUID3 HEX8      72     50     27     46     67     45     21     40 MAT       1 NA Euler GP 2 2 2
+     20 FLUID3 HEX8     110     72     46     84     95     67     40     76 MAT       1 NA Euler GP 2 2 2
+     21 FLUID3 HEX8     153    110     84    131    151     95     76    120 MAT       1 NA Euler GP 2 2 2
+     22 FLUID3 HEX8     227    153    131    186    216    151    120    184 MAT       1 NA Euler GP 2 2 2
+     23 FLUID3 HEX8     310    227    186    290    305    216    184    275 MAT       1 NA Euler GP 2 2 2
+     24 FLUID3 HEX8     430    310    290    391    413    305    275    380 MAT       1 NA Euler GP 2 2 2
+     25 FLUID3 HEX8      68     62     31     36     61     54     28     30 MAT       1 NA Euler GP 2 2 2
+     26 FLUID3 HEX8      79     68     36     50     73     61     30     45 MAT       1 NA Euler GP 2 2 2
+     27 FLUID3 HEX8     100     79     50     72     94     73     45     67 MAT       1 NA Euler GP 2 2 2
+     28 FLUID3 HEX8     139    100     72    110    135     94     67     95 MAT       1 NA Euler GP 2 2 2
+     29 FLUID3 HEX8     201    139    110    153    192    135     95    151 MAT       1 NA Euler GP 2 2 2
+     30 FLUID3 HEX8     270    201    153    227    263    192    151    216 MAT       1 NA Euler GP 2 2 2
+     31 FLUID3 HEX8     370    270    227    310    349    263    216    305 MAT       1 NA Euler GP 2 2 2
+     32 FLUID3 HEX8     472    370    310    430    468    349    305    413 MAT       1 NA Euler GP 2 2 2
+     33 FLUID3 HEX8     113    106     62     68    103     91     54     61 MAT       1 NA Euler GP 2 2 2
+     34 FLUID3 HEX8     128    113     68     79    125    103     61     73 MAT       1 NA Euler GP 2 2 2
+     35 FLUID3 HEX8     155    128     79    100    149    125     73     94 MAT       1 NA Euler GP 2 2 2
+     36 FLUID3 HEX8     205    155    100    139    193    149     94    135 MAT       1 NA Euler GP 2 2 2
+     37 FLUID3 HEX8     258    205    139    201    244    193    135    192 MAT       1 NA Euler GP 2 2 2
+     38 FLUID3 HEX8     340    258    201    270    326    244    192    263 MAT       1 NA Euler GP 2 2 2
+     39 FLUID3 HEX8     440    340    270    370    435    326    263    349 MAT       1 NA Euler GP 2 2 2
+     40 FLUID3 HEX8     542    440    370    472    517    435    349    468 MAT       1 NA Euler GP 2 2 2
+     41 FLUID3 HEX8     173    165    106    113    168    158     91    103 MAT       1 NA Euler GP 2 2 2
+     42 FLUID3 HEX8     189    173    113    128    182    168    103    125 MAT       1 NA Euler GP 2 2 2
+     43 FLUID3 HEX8     226    189    128    155    221    182    125    149 MAT       1 NA Euler GP 2 2 2
+     44 FLUID3 HEX8     276    226    155    205    261    221    149    193 MAT       1 NA Euler GP 2 2 2
+     45 FLUID3 HEX8     341    276    205    258    318    261    193    244 MAT       1 NA Euler GP 2 2 2
+     46 FLUID3 HEX8     414    341    258    340    407    318    244    326 MAT       1 NA Euler GP 2 2 2
+     47 FLUID3 HEX8     513    414    340    440    504    407    326    435 MAT       1 NA Euler GP 2 2 2
+     48 FLUID3 HEX8     594    513    440    542    582    504    435    517 MAT       1 NA Euler GP 2 2 2
+     49 FLUID3 HEX8     257    243    165    173    253    234    158    168 MAT       1 NA Euler GP 2 2 2
+     50 FLUID3 HEX8     283    257    173    189    272    253    168    182 MAT       1 NA Euler GP 2 2 2
+     51 FLUID3 HEX8     317    283    189    226    304    272    182    221 MAT       1 NA Euler GP 2 2 2
+     52 FLUID3 HEX8     363    317    226    276    357    304    221    261 MAT       1 NA Euler GP 2 2 2
+     53 FLUID3 HEX8     438    363    276    341    420    357    261    318 MAT       1 NA Euler GP 2 2 2
+     54 FLUID3 HEX8     506    438    341    414    500    420    318    407 MAT       1 NA Euler GP 2 2 2
+     55 FLUID3 HEX8     576    506    414    513    573    500    407    504 MAT       1 NA Euler GP 2 2 2
+     56 FLUID3 HEX8     636    576    513    594    629    573    504    582 MAT       1 NA Euler GP 2 2 2
+     57 FLUID3 HEX8     364    356    243    257    360    343    234    253 MAT       1 NA Euler GP 2 2 2
+     58 FLUID3 HEX8     397    364    257    283    378    360    253    272 MAT       1 NA Euler GP 2 2 2
+     59 FLUID3 HEX8     433    397    283    317    418    378    272    304 MAT       1 NA Euler GP 2 2 2
+     60 FLUID3 HEX8     476    433    317    363    467    418    304    357 MAT       1 NA Euler GP 2 2 2
+     61 FLUID3 HEX8     535    476    363    438    526    467    357    420 MAT       1 NA Euler GP 2 2 2
+     62 FLUID3 HEX8     592    535    438    506    583    526    420    500 MAT       1 NA Euler GP 2 2 2
+     63 FLUID3 HEX8     640    592    506    576    632    583    500    573 MAT       1 NA Euler GP 2 2 2
+     64 FLUID3 HEX8     680    640    576    636    678    632    573    629 MAT       1 NA Euler GP 2 2 2
+     65 FLUID3 HEX8      20     14     11     15      8      6      4      5 MAT       1 NA Euler GP 2 2 2
+     66 FLUID3 HEX8      26     20     15     22     18      8      5     12 MAT       1 NA Euler GP 2 2 2
+     67 FLUID3 HEX8      48     26     22     42     37     18     12     34 MAT       1 NA Euler GP 2 2 2
+     68 FLUID3 HEX8      81     48     42     75     69     37     34     57 MAT       1 NA Euler GP 2 2 2
+     69 FLUID3 HEX8     133     81     75    116    112     69     57    101 MAT       1 NA Euler GP 2 2 2
+     70 FLUID3 HEX8     199    133    116    179    176    112    101    167 MAT       1 NA Euler GP 2 2 2
+     71 FLUID3 HEX8     284    199    179    269    255    176    167    241 MAT       1 NA Euler GP 2 2 2
+     72 FLUID3 HEX8     390    284    269    384    366    255    241    350 MAT       1 NA Euler GP 2 2 2
+     73 FLUID3 HEX8      29     23     14     20     19     16      6      8 MAT       1 NA Euler GP 2 2 2
+     74 FLUID3 HEX8      39     29     20     26     27     19      8     18 MAT       1 NA Euler GP 2 2 2
+     75 FLUID3 HEX8      59     39     26     48     46     27     18     37 MAT       1 NA Euler GP 2 2 2
+     76 FLUID3 HEX8      90     59     48     81     84     46     37     69 MAT       1 NA Euler GP 2 2 2
+     77 FLUID3 HEX8     137     90     81    133    131     84     69    112 MAT       1 NA Euler GP 2 2 2
+     78 FLUID3 HEX8     211    137    133    199    186    131    112    176 MAT       1 NA Euler GP 2 2 2
+     79 FLUID3 HEX8     301    211    199    284    290    186    176    255 MAT       1 NA Euler GP 2 2 2
+     80 FLUID3 HEX8     408    301    284    390    391    290    255    366 MAT       1 NA Euler GP 2 2 2
+     81 FLUID3 HEX8      47     44     23     29     36     31     16     19 MAT       1 NA Euler GP 2 2 2
+     82 FLUID3 HEX8      55     47     29     39     50     36     19     27 MAT       1 NA Euler GP 2 2 2
+     83 FLUID3 HEX8      86     55     39     59     72     50     27     46 MAT       1 NA Euler GP 2 2 2
+     84 FLUID3 HEX8     124     86     59     90    110     72     46     84 MAT       1 NA Euler GP 2 2 2
+     85 FLUID3 HEX8     171    124     90    137    153    110     84    131 MAT       1 NA Euler GP 2 2 2
+     86 FLUID3 HEX8     235    171    137    211    227    153    131    186 MAT       1 NA Euler GP 2 2 2
+     87 FLUID3 HEX8     337    235    211    301    310    227    186    290 MAT       1 NA Euler GP 2 2 2
+     88 FLUID3 HEX8     458    337    301    408    430    310    290    391 MAT       1 NA Euler GP 2 2 2
+     89 FLUID3 HEX8      80     78     44     47     68     62     31     36 MAT       1 NA Euler GP 2 2 2
+     90 FLUID3 HEX8      89     80     47     55     79     68     36     50 MAT       1 NA Euler GP 2 2 2
+     91 FLUID3 HEX8     117     89     55     86    100     79     50     72 MAT       1 NA Euler GP 2 2 2
+     92 FLUID3 HEX8     162    117     86    124    139    100     72    110 MAT       1 NA Euler GP 2 2 2
+     93 FLUID3 HEX8     214    162    124    171    201    139    110    153 MAT       1 NA Euler GP 2 2 2
+     94 FLUID3 HEX8     291    214    171    235    270    201    153    227 MAT       1 NA Euler GP 2 2 2
+     95 FLUID3 HEX8     388    291    235    337    370    270    227    310 MAT       1 NA Euler GP 2 2 2
+     96 FLUID3 HEX8     493    388    337    458    472    370    310    430 MAT       1 NA Euler GP 2 2 2
+     97 FLUID3 HEX8     132    123     78     80    113    106     62     68 MAT       1 NA Euler GP 2 2 2
+     98 FLUID3 HEX8     142    132     80     89    128    113     68     79 MAT       1 NA Euler GP 2 2 2
+     99 FLUID3 HEX8     174    142     89    117    155    128     79    100 MAT       1 NA Euler GP 2 2 2
+    100 FLUID3 HEX8     222    174    117    162    205    155    100    139 MAT       1 NA Euler GP 2 2 2
+    101 FLUID3 HEX8     281    222    162    214    258    205    139    201 MAT       1 NA Euler GP 2 2 2
+    102 FLUID3 HEX8     346    281    214    291    340    258    201    270 MAT       1 NA Euler GP 2 2 2
+    103 FLUID3 HEX8     462    346    291    388    440    340    270    370 MAT       1 NA Euler GP 2 2 2
+    104 FLUID3 HEX8     548    462    388    493    542    440    370    472 MAT       1 NA Euler GP 2 2 2
+    105 FLUID3 HEX8     196    183    123    132    173    165    106    113 MAT       1 NA Euler GP 2 2 2
+    106 FLUID3 HEX8     209    196    132    142    189    173    113    128 MAT       1 NA Euler GP 2 2 2
+    107 FLUID3 HEX8     231    209    142    174    226    189    128    155 MAT       1 NA Euler GP 2 2 2
+    108 FLUID3 HEX8     293    231    174    222    276    226    155    205 MAT       1 NA Euler GP 2 2 2
+    109 FLUID3 HEX8     354    293    222    281    341    276    205    258 MAT       1 NA Euler GP 2 2 2
+    110 FLUID3 HEX8     445    354    281    346    414    341    258    340 MAT       1 NA Euler GP 2 2 2
+    111 FLUID3 HEX8     533    445    346    462    513    414    340    440 MAT       1 NA Euler GP 2 2 2
+    112 FLUID3 HEX8     605    533    462    548    594    513    440    542 MAT       1 NA Euler GP 2 2 2
+    113 FLUID3 HEX8     285    278    183    196    257    243    165    173 MAT       1 NA Euler GP 2 2 2
+    114 FLUID3 HEX8     300    285    196    209    283    257    173    189 MAT       1 NA Euler GP 2 2 2
+    115 FLUID3 HEX8     338    300    209    231    317    283    189    226 MAT       1 NA Euler GP 2 2 2
+    116 FLUID3 HEX8     387    338    231    293    363    317    226    276 MAT       1 NA Euler GP 2 2 2
+    117 FLUID3 HEX8     464    387    293    354    438    363    276    341 MAT       1 NA Euler GP 2 2 2
+    118 FLUID3 HEX8     523    464    354    445    506    438    341    414 MAT       1 NA Euler GP 2 2 2
+    119 FLUID3 HEX8     600    523    445    533    576    506    414    513 MAT       1 NA Euler GP 2 2 2
+    120 FLUID3 HEX8     653    600    533    605    636    576    513    594 MAT       1 NA Euler GP 2 2 2
+    121 FLUID3 HEX8     395    381    278    285    364    356    243    257 MAT       1 NA Euler GP 2 2 2
+    122 FLUID3 HEX8     405    395    285    300    397    364    257    283 MAT       1 NA Euler GP 2 2 2
+    123 FLUID3 HEX8     457    405    300    338    433    397    283    317 MAT       1 NA Euler GP 2 2 2
+    124 FLUID3 HEX8     498    457    338    387    476    433    317    363 MAT       1 NA Euler GP 2 2 2
+    125 FLUID3 HEX8     550    498    387    464    535    476    363    438 MAT       1 NA Euler GP 2 2 2
+    126 FLUID3 HEX8     603    550    464    523    592    535    438    506 MAT       1 NA Euler GP 2 2 2
+    127 FLUID3 HEX8     658    603    523    600    640    592    506    576 MAT       1 NA Euler GP 2 2 2
+    128 FLUID3 HEX8     691    658    600    653    680    640    576    636 MAT       1 NA Euler GP 2 2 2
+    129 FLUID3 HEX8      38     35     24     33     20     14     11     15 MAT       1 NA Euler GP 2 2 2
+    130 FLUID3 HEX8      49     38     33     43     26     20     15     22 MAT       1 NA Euler GP 2 2 2
+    131 FLUID3 HEX8      70     49     43     66     48     26     22     42 MAT       1 NA Euler GP 2 2 2
+    132 FLUID3 HEX8     102     70     66     99     81     48     42     75 MAT       1 NA Euler GP 2 2 2
+    133 FLUID3 HEX8     154    102     99    146    133     81     75    116 MAT       1 NA Euler GP 2 2 2
+    134 FLUID3 HEX8     224    154    146    223    199    133    116    179 MAT       1 NA Euler GP 2 2 2
+    135 FLUID3 HEX8     309    224    223    306    284    199    179    269 MAT       1 NA Euler GP 2 2 2
+    136 FLUID3 HEX8     426    309    306    411    390    284    269    384 MAT       1 NA Euler GP 2 2 2
+    137 FLUID3 HEX8      51     41     35     38     29     23     14     20 MAT       1 NA Euler GP 2 2 2
+    138 FLUID3 HEX8      60     51     38     49     39     29     20     26 MAT       1 NA Euler GP 2 2 2
+    139 FLUID3 HEX8      87     60     49     70     59     39     26     48 MAT       1 NA Euler GP 2 2 2
+    140 FLUID3 HEX8     126     87     70    102     90     59     48     81 MAT       1 NA Euler GP 2 2 2
+    141 FLUID3 HEX8     178    126    102    154    137     90     81    133 MAT       1 NA Euler GP 2 2 2
+    142 FLUID3 HEX8     237    178    154    224    211    137    133    199 MAT       1 NA Euler GP 2 2 2
+    143 FLUID3 HEX8     339    237    224    309    301    211    199    284 MAT       1 NA Euler GP 2 2 2
+    144 FLUID3 HEX8     456    339    309    426    408    301    284    390 MAT       1 NA Euler GP 2 2 2
+    145 FLUID3 HEX8      71     64     41     51     47     44     23     29 MAT       1 NA Euler GP 2 2 2
+    146 FLUID3 HEX8      85     71     51     60     55     47     29     39 MAT       1 NA Euler GP 2 2 2
+    147 FLUID3 HEX8     115     85     60     87     86     55     39     59 MAT       1 NA Euler GP 2 2 2
+    148 FLUID3 HEX8     145    115     87    126    124     86     59     90 MAT       1 NA Euler GP 2 2 2
+    149 FLUID3 HEX8     207    145    126    178    171    124     90    137 MAT       1 NA Euler GP 2 2 2
+    150 FLUID3 HEX8     286    207    178    237    235    171    137    211 MAT       1 NA Euler GP 2 2 2
+    151 FLUID3 HEX8     375    286    237    339    337    235    211    301 MAT       1 NA Euler GP 2 2 2
+    152 FLUID3 HEX8     485    375    339    456    458    337    301    408 MAT       1 NA Euler GP 2 2 2
+    153 FLUID3 HEX8     107     97     64     71     80     78     44     47 MAT       1 NA Euler GP 2 2 2
+    154 FLUID3 HEX8     121    107     71     85     89     80     47     55 MAT       1 NA Euler GP 2 2 2
+    155 FLUID3 HEX8     143    121     85    115    117     89     55     86 MAT       1 NA Euler GP 2 2 2
+    156 FLUID3 HEX8     187    143    115    145    162    117     86    124 MAT       1 NA Euler GP 2 2 2
+    157 FLUID3 HEX8     254    187    145    207    214    162    124    171 MAT       1 NA Euler GP 2 2 2
+    158 FLUID3 HEX8     321    254    207    286    291    214    171    235 MAT       1 NA Euler GP 2 2 2
+    159 FLUID3 HEX8     429    321    286    375    388    291    235    337 MAT       1 NA Euler GP 2 2 2
+    160 FLUID3 HEX8     531    429    375    485    493    388    337    458 MAT       1 NA Euler GP 2 2 2
+    161 FLUID3 HEX8     157    148     97    107    132    123     78     80 MAT       1 NA Euler GP 2 2 2
+    162 FLUID3 HEX8     170    157    107    121    142    132     80     89 MAT       1 NA Euler GP 2 2 2
+    163 FLUID3 HEX8     208    170    121    143    174    142     89    117 MAT       1 NA Euler GP 2 2 2
+    164 FLUID3 HEX8     249    208    143    187    222    174    117    162 MAT       1 NA Euler GP 2 2 2
+    165 FLUID3 HEX8     315    249    187    254    281    222    162    214 MAT       1 NA Euler GP 2 2 2
+    166 FLUID3 HEX8     400    315    254    321    346    281    214    291 MAT       1 NA Euler GP 2 2 2
+    167 FLUID3 HEX8     488    400    321    429    462    346    291    388 MAT       1 NA Euler GP 2 2 2
+    168 FLUID3 HEX8     570    488    429    531    548    462    388    493 MAT       1 NA Euler GP 2 2 2
+    169 FLUID3 HEX8     228    220    148    157    196    183    123    132 MAT       1 NA Euler GP 2 2 2
+    170 FLUID3 HEX8     238    228    157    170    209    196    132    142 MAT       1 NA Euler GP 2 2 2
+    171 FLUID3 HEX8     287    238    170    208    231    209    142    174 MAT       1 NA Euler GP 2 2 2
+    172 FLUID3 HEX8     329    287    208    249    293    231    174    222 MAT       1 NA Euler GP 2 2 2
+    173 FLUID3 HEX8     401    329    249    315    354    293    222    281 MAT       1 NA Euler GP 2 2 2
+    174 FLUID3 HEX8     481    401    315    400    445    354    281    346 MAT       1 NA Euler GP 2 2 2
+    175 FLUID3 HEX8     556    481    400    488    533    445    346    462 MAT       1 NA Euler GP 2 2 2
+    176 FLUID3 HEX8     619    556    488    570    605    533    462    548 MAT       1 NA Euler GP 2 2 2
+    177 FLUID3 HEX8     313    303    220    228    285    278    183    196 MAT       1 NA Euler GP 2 2 2
+    178 FLUID3 HEX8     334    313    228    238    300    285    196    209 MAT       1 NA Euler GP 2 2 2
+    179 FLUID3 HEX8     377    334    238    287    338    300    209    231 MAT       1 NA Euler GP 2 2 2
+    180 FLUID3 HEX8     434    377    287    329    387    338    231    293 MAT       1 NA Euler GP 2 2 2
+    181 FLUID3 HEX8     491    434    329    401    464    387    293    354 MAT       1 NA Euler GP 2 2 2
+    182 FLUID3 HEX8     554    491    401    481    523    464    354    445 MAT       1 NA Euler GP 2 2 2
+    183 FLUID3 HEX8     614    554    481    556    600    523    445    533 MAT       1 NA Euler GP 2 2 2
+    184 FLUID3 HEX8     666    614    556    619    653    600    533    605 MAT       1 NA Euler GP 2 2 2
+    185 FLUID3 HEX8     428    417    303    313    395    381    278    285 MAT       1 NA Euler GP 2 2 2
+    186 FLUID3 HEX8     454    428    313    334    405    395    285    300 MAT       1 NA Euler GP 2 2 2
+    187 FLUID3 HEX8     484    454    334    377    457    405    300    338 MAT       1 NA Euler GP 2 2 2
+    188 FLUID3 HEX8     520    484    377    434    498    457    338    387 MAT       1 NA Euler GP 2 2 2
+    189 FLUID3 HEX8     571    520    434    491    550    498    387    464 MAT       1 NA Euler GP 2 2 2
+    190 FLUID3 HEX8     621    571    491    554    603    550    464    523 MAT       1 NA Euler GP 2 2 2
+    191 FLUID3 HEX8     663    621    554    614    658    603    523    600 MAT       1 NA Euler GP 2 2 2
+    192 FLUID3 HEX8     698    663    614    666    691    658    600    653 MAT       1 NA Euler GP 2 2 2
+    193 FLUID3 HEX8      65     63     53     58     38     35     24     33 MAT       1 NA Euler GP 2 2 2
+    194 FLUID3 HEX8      83     65     58     77     49     38     33     43 MAT       1 NA Euler GP 2 2 2
+    195 FLUID3 HEX8     109     83     77     98     70     49     43     66 MAT       1 NA Euler GP 2 2 2
+    196 FLUID3 HEX8     140    109     98    134    102     70     66     99 MAT       1 NA Euler GP 2 2 2
+    197 FLUID3 HEX8     200    140    134    197    154    102     99    146 MAT       1 NA Euler GP 2 2 2
+    198 FLUID3 HEX8     271    200    197    264    224    154    146    223 MAT       1 NA Euler GP 2 2 2
+    199 FLUID3 HEX8     365    271    264    347    309    224    223    306 MAT       1 NA Euler GP 2 2 2
+    200 FLUID3 HEX8     474    365    347    469    426    309    306    411 MAT       1 NA Euler GP 2 2 2
+    201 FLUID3 HEX8      82     74     63     65     51     41     35     38 MAT       1 NA Euler GP 2 2 2
+    202 FLUID3 HEX8      88     82     65     83     60     51     38     49 MAT       1 NA Euler GP 2 2 2
+    203 FLUID3 HEX8     119     88     83    109     87     60     49     70 MAT       1 NA Euler GP 2 2 2
+    204 FLUID3 HEX8     161    119    109    140    126     87     70    102 MAT       1 NA Euler GP 2 2 2
+    205 FLUID3 HEX8     212    161    140    200    178    126    102    154 MAT       1 NA Euler GP 2 2 2
+    206 FLUID3 HEX8     294    212    200    271    237    178    154    224 MAT       1 NA Euler GP 2 2 2
+    207 FLUID3 HEX8     396    294    271    365    339    237    224    309 MAT       1 NA Euler GP 2 2 2
+    208 FLUID3 HEX8     494    396    365    474    456    339    309    426 MAT       1 NA Euler GP 2 2 2
+    209 FLUID3 HEX8     108     93     74     82     71     64     41     51 MAT       1 NA Euler GP 2 2 2
+    210 FLUID3 HEX8     118    108     82     88     85     71     51     60 MAT       1 NA Euler GP 2 2 2
+    211 FLUID3 HEX8     147    118     88    119    115     85     60     87 MAT       1 NA Euler GP 2 2 2
+    212 FLUID3 HEX8     195    147    119    161    145    115     87    126 MAT       1 NA Euler GP 2 2 2
+    213 FLUID3 HEX8     240    195    161    212    207    145    126    178 MAT       1 NA Euler GP 2 2 2
+    214 FLUID3 HEX8     319    240    212    294    286    207    178    237 MAT       1 NA Euler GP 2 2 2
+    215 FLUID3 HEX8     432    319    294    396    375    286    237    339 MAT       1 NA Euler GP 2 2 2
+    216 FLUID3 HEX8     530    432    396    494    485    375    339    456 MAT       1 NA Euler GP 2 2 2
+    217 FLUID3 HEX8     138    136     93    108    107     97     64     71 MAT       1 NA Euler GP 2 2 2
+    218 FLUID3 HEX8     163    138    108    118    121    107     71     85 MAT       1 NA Euler GP 2 2 2
+    219 FLUID3 HEX8     194    163    118    147    143    121     85    115 MAT       1 NA Euler GP 2 2 2
+    220 FLUID3 HEX8     230    194    147    195    187    143    115    145 MAT       1 NA Euler GP 2 2 2
+    221 FLUID3 HEX8     302    230    195    240    254    187    145    207 MAT       1 NA Euler GP 2 2 2
+    222 FLUID3 HEX8     382    302    240    319    321    254    207    286 MAT       1 NA Euler GP 2 2 2
+    223 FLUID3 HEX8     478    382    319    432    429    321    286    375 MAT       1 NA Euler GP 2 2 2
+    224 FLUID3 HEX8     560    478    432    530    531    429    375    485 MAT       1 NA Euler GP 2 2 2
+    225 FLUID3 HEX8     204    198    136    138    157    148     97    107 MAT       1 NA Euler GP 2 2 2
+    226 FLUID3 HEX8     219    204    138    163    170    157    107    121 MAT       1 NA Euler GP 2 2 2
+    227 FLUID3 HEX8     251    219    163    194    208    170    121    143 MAT       1 NA Euler GP 2 2 2
+    228 FLUID3 HEX8     297    251    194    230    249    208    143    187 MAT       1 NA Euler GP 2 2 2
+    229 FLUID3 HEX8     367    297    230    302    315    249    187    254 MAT       1 NA Euler GP 2 2 2
+    230 FLUID3 HEX8     450    367    302    382    400    315    254    321 MAT       1 NA Euler GP 2 2 2
+    231 FLUID3 HEX8     543    450    382    478    488    400    321    429 MAT       1 NA Euler GP 2 2 2
+    232 FLUID3 HEX8     607    543    478    560    570    488    429    531 MAT       1 NA Euler GP 2 2 2
+    233 FLUID3 HEX8     268    265    198    204    228    220    148    157 MAT       1 NA Euler GP 2 2 2
+    234 FLUID3 HEX8     296    268    204    219    238    228    157    170 MAT       1 NA Euler GP 2 2 2
+    235 FLUID3 HEX8     322    296    219    251    287    238    170    208 MAT       1 NA Euler GP 2 2 2
+    236 FLUID3 HEX8     385    322    251    297    329    287    208    249 MAT       1 NA Euler GP 2 2 2
+    237 FLUID3 HEX8     459    385    297    367    401    329    249    315 MAT       1 NA Euler GP 2 2 2
+    238 FLUID3 HEX8     515    459    367    450    481    401    315    400 MAT       1 NA Euler GP 2 2 2
+    239 FLUID3 HEX8     590    515    450    543    556    481    400    488 MAT       1 NA Euler GP 2 2 2
+    240 FLUID3 HEX8     647    590    543    607    619    556    488    570 MAT       1 NA Euler GP 2 2 2
+    241 FLUID3 HEX8     368    361    265    268    313    303    220    228 MAT       1 NA Euler GP 2 2 2
+    242 FLUID3 HEX8     389    368    268    296    334    313    228    238 MAT       1 NA Euler GP 2 2 2
+    243 FLUID3 HEX8     427    389    296    322    377    334    238    287 MAT       1 NA Euler GP 2 2 2
+    244 FLUID3 HEX8     480    427    322    385    434    377    287    329 MAT       1 NA Euler GP 2 2 2
+    245 FLUID3 HEX8     545    480    385    459    491    434    329    401 MAT       1 NA Euler GP 2 2 2
+    246 FLUID3 HEX8     596    545    459    515    554    491    401    481 MAT       1 NA Euler GP 2 2 2
+    247 FLUID3 HEX8     646    596    515    590    614    554    481    556 MAT       1 NA Euler GP 2 2 2
+    248 FLUID3 HEX8     688    646    590    647    666    614    556    619 MAT       1 NA Euler GP 2 2 2
+    249 FLUID3 HEX8     477    470    361    368    428    417    303    313 MAT       1 NA Euler GP 2 2 2
+    250 FLUID3 HEX8     497    477    368    389    454    428    313    334 MAT       1 NA Euler GP 2 2 2
+    251 FLUID3 HEX8     522    497    389    427    484    454    334    377 MAT       1 NA Euler GP 2 2 2
+    252 FLUID3 HEX8     559    522    427    480    520    484    377    434 MAT       1 NA Euler GP 2 2 2
+    253 FLUID3 HEX8     612    559    480    545    571    520    434    491 MAT       1 NA Euler GP 2 2 2
+    254 FLUID3 HEX8     651    612    545    596    621    571    491    554 MAT       1 NA Euler GP 2 2 2
+    255 FLUID3 HEX8     682    651    596    646    663    621    554    614 MAT       1 NA Euler GP 2 2 2
+    256 FLUID3 HEX8     708    682    646    688    698    663    614    666 MAT       1 NA Euler GP 2 2 2
+    257 FLUID3 HEX8     114    104     96    111     65     63     53     58 MAT       1 NA Euler GP 2 2 2
+    258 FLUID3 HEX8     130    114    111    122     83     65     58     77 MAT       1 NA Euler GP 2 2 2
+    259 FLUID3 HEX8     156    130    122    144    109     83     77     98 MAT       1 NA Euler GP 2 2 2
+    260 FLUID3 HEX8     202    156    144    185    140    109     98    134 MAT       1 NA Euler GP 2 2 2
+    261 FLUID3 HEX8     256    202    185    242    200    140    134    197 MAT       1 NA Euler GP 2 2 2
+    262 FLUID3 HEX8     336    256    242    327    271    200    197    264 MAT       1 NA Euler GP 2 2 2
+    263 FLUID3 HEX8     441    336    327    422    365    271    264    347 MAT       1 NA Euler GP 2 2 2
+    264 FLUID3 HEX8     541    441    422    528    474    365    347    469 MAT       1 NA Euler GP 2 2 2
+    265 FLUID3 HEX8     129    127    104    114     82     74     63     65 MAT       1 NA Euler GP 2 2 2
+    266 FLUID3 HEX8     141    129    114    130     88     82     65     83 MAT       1 NA Euler GP 2 2 2
+    267 FLUID3 HEX8     177    141    130    156    119     88     83    109 MAT       1 NA Euler GP 2 2 2
+    268 FLUID3 HEX8     215    177    156    202    161    119    109    140 MAT       1 NA Euler GP 2 2 2
+    269 FLUID3 HEX8     288    215    202    256    212    161    140    200 MAT       1 NA Euler GP 2 2 2
+    270 FLUID3 HEX8     359    288    256    336    294    212    200    271 MAT       1 NA Euler GP 2 2 2
+    271 FLUID3 HEX8     463    359    336    441    396    294    271    365 MAT       1 NA Euler GP 2 2 2
+    272 FLUID3 HEX8     552    463    441    541    494    396    365    474 MAT       1 NA Euler GP 2 2 2
+    273 FLUID3 HEX8     152    150    127    129    108     93     74     82 MAT       1 NA Euler GP 2 2 2
+    274 FLUID3 HEX8     175    152    129    141    118    108     82     88 MAT       1 NA Euler GP 2 2 2
+    275 FLUID3 HEX8     206    175    141    177    147    118     88    119 MAT       1 NA Euler GP 2 2 2
+    276 FLUID3 HEX8     248    206    177    215    195    147    119    161 MAT       1 NA Euler GP 2 2 2
+    277 FLUID3 HEX8     311    248    215    288    240    195    161    212 MAT       1 NA Euler GP 2 2 2
+    278 FLUID3 HEX8     399    311    288    359    319    240    212    294 MAT       1 NA Euler GP 2 2 2
+    279 FLUID3 HEX8     489    399    359    463    432    319    294    396 MAT       1 NA Euler GP 2 2 2
+    280 FLUID3 HEX8     566    489    463    552    530    432    396    494 MAT       1 NA Euler GP 2 2 2
+    281 FLUID3 HEX8     203    191    150    152    138    136     93    108 MAT       1 NA Euler GP 2 2 2
+    282 FLUID3 HEX8     213    203    152    175    163    138    108    118 MAT       1 NA Euler GP 2 2 2
+    283 FLUID3 HEX8     252    213    175    206    194    163    118    147 MAT       1 NA Euler GP 2 2 2
+    284 FLUID3 HEX8     298    252    206    248    230    194    147    195 MAT       1 NA Euler GP 2 2 2
+    285 FLUID3 HEX8     371    298    248    311    302    230    195    240 MAT       1 NA Euler GP 2 2 2
+    286 FLUID3 HEX8     448    371    311    399    382    302    240    319 MAT       1 NA Euler GP 2 2 2
+    287 FLUID3 HEX8     538    448    399    489    478    382    319    432 MAT       1 NA Euler GP 2 2 2
+    288 FLUID3 HEX8     610    538    489    566    560    478    432    530 MAT       1 NA Euler GP 2 2 2
+    289 FLUID3 HEX8     260    250    191    203    204    198    136    138 MAT       1 NA Euler GP 2 2 2
+    290 FLUID3 HEX8     289    260    203    213    219    204    138    163 MAT       1 NA Euler GP 2 2 2
+    291 FLUID3 HEX8     316    289    213    252    251    219    163    194 MAT       1 NA Euler GP 2 2 2
+    292 FLUID3 HEX8     373    316    252    298    297    251    194    230 MAT       1 NA Euler GP 2 2 2
+    293 FLUID3 HEX8     439    373    298    371    367    297    230    302 MAT       1 NA Euler GP 2 2 2
+    294 FLUID3 HEX8     511    439    371    448    450    367    302    382 MAT       1 NA Euler GP 2 2 2
+    295 FLUID3 HEX8     577    511    448    538    543    450    382    478 MAT       1 NA Euler GP 2 2 2
+    296 FLUID3 HEX8     643    577    538    610    607    543    478    560 MAT       1 NA Euler GP 2 2 2
+    297 FLUID3 HEX8     331    323    250    260    268    265    198    204 MAT       1 NA Euler GP 2 2 2
+    298 FLUID3 HEX8     353    331    260    289    296    268    204    219 MAT       1 NA Euler GP 2 2 2
+    299 FLUID3 HEX8     403    353    289    316    322    296    219    251 MAT       1 NA Euler GP 2 2 2
+    300 FLUID3 HEX8     449    403    316    373    385    322    251    297 MAT       1 NA Euler GP 2 2 2
+    301 FLUID3 HEX8     509    449    373    439    459    385    297    367 MAT       1 NA Euler GP 2 2 2
+    302 FLUID3 HEX8     563    509    439    511    515    459    367    450 MAT       1 NA Euler GP 2 2 2
+    303 FLUID3 HEX8     623    563    511    577    590    515    450    543 MAT       1 NA Euler GP 2 2 2
+    304 FLUID3 HEX8     671    623    577    643    647    590    543    607 MAT       1 NA Euler GP 2 2 2
+    305 FLUID3 HEX8     443    431    323    331    368    361    265    268 MAT       1 NA Euler GP 2 2 2
+    306 FLUID3 HEX8     465    443    331    353    389    368    268    296 MAT       1 NA Euler GP 2 2 2
+    307 FLUID3 HEX8     492    465    353    403    427    389    296    322 MAT       1 NA Euler GP 2 2 2
+    308 FLUID3 HEX8     536    492    403    449    480    427    322    385 MAT       1 NA Euler GP 2 2 2
+    309 FLUID3 HEX8     579    536    449    509    545    480    385    459 MAT       1 NA Euler GP 2 2 2
+    310 FLUID3 HEX8     627    579    509    563    596    545    459    515 MAT       1 NA Euler GP 2 2 2
+    311 FLUID3 HEX8     669    627    563    623    646    596    515    590 MAT       1 NA Euler GP 2 2 2
+    312 FLUID3 HEX8     701    669    623    671    688    646    590    647 MAT       1 NA Euler GP 2 2 2
+    313 FLUID3 HEX8     544    519    431    443    477    470    361    368 MAT       1 NA Euler GP 2 2 2
+    314 FLUID3 HEX8     551    544    443    465    497    477    368    389 MAT       1 NA Euler GP 2 2 2
+    315 FLUID3 HEX8     568    551    465    492    522    497    389    427 MAT       1 NA Euler GP 2 2 2
+    316 FLUID3 HEX8     611    568    492    536    559    522    427    480 MAT       1 NA Euler GP 2 2 2
+    317 FLUID3 HEX8     635    611    536    579    612    559    480    545 MAT       1 NA Euler GP 2 2 2
+    318 FLUID3 HEX8     675    635    579    627    651    612    545    596 MAT       1 NA Euler GP 2 2 2
+    319 FLUID3 HEX8     705    675    627    669    682    651    596    646 MAT       1 NA Euler GP 2 2 2
+    320 FLUID3 HEX8     719    705    669    701    708    682    646    688 MAT       1 NA Euler GP 2 2 2
+    321 FLUID3 HEX8     172    169    159    164    114    104     96    111 MAT       1 NA Euler GP 2 2 2
+    322 FLUID3 HEX8     190    172    164    181    130    114    111    122 MAT       1 NA Euler GP 2 2 2
+    323 FLUID3 HEX8     229    190    181    218    156    130    122    144 MAT       1 NA Euler GP 2 2 2
+    324 FLUID3 HEX8     274    229    218    262    202    156    144    185 MAT       1 NA Euler GP 2 2 2
+    325 FLUID3 HEX8     333    274    262    320    256    202    185    242 MAT       1 NA Euler GP 2 2 2
+    326 FLUID3 HEX8     412    333    320    409    336    256    242    327 MAT       1 NA Euler GP 2 2 2
+    327 FLUID3 HEX8     512    412    409    502    441    336    327    422 MAT       1 NA Euler GP 2 2 2
+    328 FLUID3 HEX8     588    512    502    585    541    441    422    528 MAT       1 NA Euler GP 2 2 2
+    329 FLUID3 HEX8     188    180    169    172    129    127    104    114 MAT       1 NA Euler GP 2 2 2
+    330 FLUID3 HEX8     210    188    172    190    141    129    114    130 MAT       1 NA Euler GP 2 2 2
+    331 FLUID3 HEX8     232    210    190    229    177    141    130    156 MAT       1 NA Euler GP 2 2 2
+    332 FLUID3 HEX8     295    232    229    274    215    177    156    202 MAT       1 NA Euler GP 2 2 2
+    333 FLUID3 HEX8     345    295    274    333    288    215    202    256 MAT       1 NA Euler GP 2 2 2
+    334 FLUID3 HEX8     446    345    333    412    359    288    256    336 MAT       1 NA Euler GP 2 2 2
+    335 FLUID3 HEX8     521    446    412    512    463    359    336    441 MAT       1 NA Euler GP 2 2 2
+    336 FLUID3 HEX8     602    521    512    588    552    463    441    541 MAT       1 NA Euler GP 2 2 2
+    337 FLUID3 HEX8     225    217    180    188    152    150    127    129 MAT       1 NA Euler GP 2 2 2
+    338 FLUID3 HEX8     233    225    188    210    175    152    129    141 MAT       1 NA Euler GP 2 2 2
+    339 FLUID3 HEX8     282    233    210    232    206    175    141    177 MAT       1 NA Euler GP 2 2 2
+    340 FLUID3 HEX8     325    282    232    295    248    206    177    215 MAT       1 NA Euler GP 2 2 2
+    341 FLUID3 HEX8     404    325    295    345    311    248    215    288 MAT       1 NA Euler GP 2 2 2
+    342 FLUID3 HEX8     482    404    345    446    399    311    288    359 MAT       1 NA Euler GP 2 2 2
+    343 FLUID3 HEX8     557    482    446    521    489    399    359    463 MAT       1 NA Euler GP 2 2 2
+    344 FLUID3 HEX8     618    557    521    602    566    489    463    552 MAT       1 NA Euler GP 2 2 2
+    345 FLUID3 HEX8     277    266    217    225    203    191    150    152 MAT       1 NA Euler GP 2 2 2
+    346 FLUID3 HEX8     292    277    225    233    213    203    152    175 MAT       1 NA Euler GP 2 2 2
+    347 FLUID3 HEX8     328    292    233    282    252    213    175    206 MAT       1 NA Euler GP 2 2 2
+    348 FLUID3 HEX8     386    328    282    325    298    252    206    248 MAT       1 NA Euler GP 2 2 2
+    349 FLUID3 HEX8     455    386    325    404    371    298    248    311 MAT       1 NA Euler GP 2 2 2
+    350 FLUID3 HEX8     516    455    404    482    448    371    311    399 MAT       1 NA Euler GP 2 2 2
+    351 FLUID3 HEX8     589    516    482    557    538    448    399    489 MAT       1 NA Euler GP 2 2 2
+    352 FLUID3 HEX8     648    589    557    618    610    538    489    566 MAT       1 NA Euler GP 2 2 2
+    353 FLUID3 HEX8     330    324    266    277    260    250    191    203 MAT       1 NA Euler GP 2 2 2
+    354 FLUID3 HEX8     355    330    277    292    289    260    203    213 MAT       1 NA Euler GP 2 2 2
+    355 FLUID3 HEX8     402    355    292    328    316    289    213    252 MAT       1 NA Euler GP 2 2 2
+    356 FLUID3 HEX8     451    402    328    386    373    316    252    298 MAT       1 NA Euler GP 2 2 2
+    357 FLUID3 HEX8     508    451    386    455    439    373    298    371 MAT       1 NA Euler GP 2 2 2
+    358 FLUID3 HEX8     562    508    455    516    511    439    371    448 MAT       1 NA Euler GP 2 2 2
+    359 FLUID3 HEX8     626    562    516    589    577    511    448    538 MAT       1 NA Euler GP 2 2 2
+    360 FLUID3 HEX8     672    626    589    648    643    577    538    610 MAT       1 NA Euler GP 2 2 2
+    361 FLUID3 HEX8     419    406    324    330    331    323    250    260 MAT       1 NA Euler GP 2 2 2
+    362 FLUID3 HEX8     447    419    330    355    353    331    260    289 MAT       1 NA Euler GP 2 2 2
+    363 FLUID3 HEX8     483    447    355    402    403    353    289    316 MAT       1 NA Euler GP 2 2 2
+    364 FLUID3 HEX8     514    483    402    451    449    403    316    373 MAT       1 NA Euler GP 2 2 2
+    365 FLUID3 HEX8     564    514    451    508    509    449    373    439 MAT       1 NA Euler GP 2 2 2
+    366 FLUID3 HEX8     616    564    508    562    563    509    439    511 MAT       1 NA Euler GP 2 2 2
+    367 FLUID3 HEX8     659    616    562    626    623    563    511    577 MAT       1 NA Euler GP 2 2 2
+    368 FLUID3 HEX8     696    659    626    672    671    623    577    643 MAT       1 NA Euler GP 2 2 2
+    369 FLUID3 HEX8     505    503    406    419    443    431    323    331 MAT       1 NA Euler GP 2 2 2
+    370 FLUID3 HEX8     524    505    419    447    465    443    331    353 MAT       1 NA Euler GP 2 2 2
+    371 FLUID3 HEX8     553    524    447    483    492    465    353    403 MAT       1 NA Euler GP 2 2 2
+    372 FLUID3 HEX8     593    553    483    514    536    492    403    449 MAT       1 NA Euler GP 2 2 2
+    373 FLUID3 HEX8     628    593    514    564    579    536    449    509 MAT       1 NA Euler GP 2 2 2
+    374 FLUID3 HEX8     661    628    564    616    627    579    509    563 MAT       1 NA Euler GP 2 2 2
+    375 FLUID3 HEX8     694    661    616    659    669    627    563    623 MAT       1 NA Euler GP 2 2 2
+    376 FLUID3 HEX8     715    694    659    696    701    669    623    671 MAT       1 NA Euler GP 2 2 2
+    377 FLUID3 HEX8     586    581    503    505    544    519    431    443 MAT       1 NA Euler GP 2 2 2
+    378 FLUID3 HEX8     604    586    505    524    551    544    443    465 MAT       1 NA Euler GP 2 2 2
+    379 FLUID3 HEX8     620    604    524    553    568    551    465    492 MAT       1 NA Euler GP 2 2 2
+    380 FLUID3 HEX8     650    620    553    593    611    568    492    536 MAT       1 NA Euler GP 2 2 2
+    381 FLUID3 HEX8     673    650    593    628    635    611    536    579 MAT       1 NA Euler GP 2 2 2
+    382 FLUID3 HEX8     697    673    628    661    675    635    579    627 MAT       1 NA Euler GP 2 2 2
+    383 FLUID3 HEX8     712    697    661    694    705    675    627    669 MAT       1 NA Euler GP 2 2 2
+    384 FLUID3 HEX8     723    712    694    715    719    705    669    701 MAT       1 NA Euler GP 2 2 2
+    385 FLUID3 HEX8     259    246    239    247    172    169    159    164 MAT       1 NA Euler GP 2 2 2
+    386 FLUID3 HEX8     280    259    247    267    190    172    164    181 MAT       1 NA Euler GP 2 2 2
+    387 FLUID3 HEX8     314    280    267    308    229    190    181    218 MAT       1 NA Euler GP 2 2 2
+    388 FLUID3 HEX8     369    314    308    348    274    229    218    262 MAT       1 NA Euler GP 2 2 2
+    389 FLUID3 HEX8     442    369    348    424    333    274    262    320 MAT       1 NA Euler GP 2 2 2
+    390 FLUID3 HEX8     507    442    424    501    412    333    320    409 MAT       1 NA Euler GP 2 2 2
+    391 FLUID3 HEX8     575    507    501    567    512    412    409    502 MAT       1 NA Euler GP 2 2 2
+    392 FLUID3 HEX8     637    575    567    631    588    512    502    585 MAT       1 NA Euler GP 2 2 2
+    393 FLUID3 HEX8     279    273    246    259    188    180    169    172 MAT       1 NA Euler GP 2 2 2
+    394 FLUID3 HEX8     299    279    259    280    210    188    172    190 MAT       1 NA Euler GP 2 2 2
+    395 FLUID3 HEX8     335    299    280    314    232    210    190    229 MAT       1 NA Euler GP 2 2 2
+    396 FLUID3 HEX8     398    335    314    369    295    232    229    274 MAT       1 NA Euler GP 2 2 2
+    397 FLUID3 HEX8     461    398    369    442    345    295    274    333 MAT       1 NA Euler GP 2 2 2
+    398 FLUID3 HEX8     527    461    442    507    446    345    333    412 MAT       1 NA Euler GP 2 2 2
+    399 FLUID3 HEX8     598    527    507    575    521    446    412    512 MAT       1 NA Euler GP 2 2 2
+    400 FLUID3 HEX8     657    598    575    637    602    521    512    588 MAT       1 NA Euler GP 2 2 2
+    401 FLUID3 HEX8     312    307    273    279    225    217    180    188 MAT       1 NA Euler GP 2 2 2
+    402 FLUID3 HEX8     332    312    279    299    233    225    188    210 MAT       1 NA Euler GP 2 2 2
+    403 FLUID3 HEX8     376    332    299    335    282    233    210    232 MAT       1 NA Euler GP 2 2 2
+    404 FLUID3 HEX8     437    376    335    398    325    282    232    295 MAT       1 NA Euler GP 2 2 2
+    405 FLUID3 HEX8     490    437    398    461    404    325    295    345 MAT       1 NA Euler GP 2 2 2
+    406 FLUID3 HEX8     558    490    461    527    482    404    345    446 MAT       1 NA Euler GP 2 2 2
+    407 FLUID3 HEX8     615    558    527    598    557    482    446    521 MAT       1 NA Euler GP 2 2 2
+    408 FLUID3 HEX8     662    615    598    657    618    557    521    602 MAT       1 NA Euler GP 2 2 2
+    409 FLUID3 HEX8     374    352    307    312    277    266    217    225 MAT       1 NA Euler GP 2 2 2
+    410 FLUID3 HEX8     393    374    312    332    292    277    225    233 MAT       1 NA Euler GP 2 2 2
+    411 FLUID3 HEX8     436    393    332    376    328    292    233    282 MAT       1 NA Euler GP 2 2 2
+    412 FLUID3 HEX8     479    436    376    437    386    328    282    325 MAT       1 NA Euler GP 2 2 2
+    413 FLUID3 HEX8     546    479    437    490    455    386    325    404 MAT       1 NA Euler GP 2 2 2
+    414 FLUID3 HEX8     587    546    490    558    516    455    404    482 MAT       1 NA Euler GP 2 2 2
+    415 FLUID3 HEX8     644    587    558    615    589    516    482    557 MAT       1 NA Euler GP 2 2 2
+    416 FLUID3 HEX8     685    644    615    662    648    589    557    618 MAT       1 NA Euler GP 2 2 2
+    417 FLUID3 HEX8     444    421    352    374    330    324    266    277 MAT       1 NA Euler GP 2 2 2
+    418 FLUID3 HEX8     460    444    374    393    355    330    277    292 MAT       1 NA Euler GP 2 2 2
+    419 FLUID3 HEX8     487    460    393    436    402    355    292    328 MAT       1 NA Euler GP 2 2 2
+    420 FLUID3 HEX8     539    487    436    479    451    402    328    386 MAT       1 NA Euler GP 2 2 2
+    421 FLUID3 HEX8     578    539    479    546    508    451    386    455 MAT       1 NA Euler GP 2 2 2
+    422 FLUID3 HEX8     625    578    546    587    562    508    455    516 MAT       1 NA Euler GP 2 2 2
+    423 FLUID3 HEX8     670    625    587    644    626    562    516    589 MAT       1 NA Euler GP 2 2 2
+    424 FLUID3 HEX8     706    670    644    685    672    626    589    648 MAT       1 NA Euler GP 2 2 2
+    425 FLUID3 HEX8     510    499    421    444    419    406    324    330 MAT       1 NA Euler GP 2 2 2
+    426 FLUID3 HEX8     529    510    444    460    447    419    330    355 MAT       1 NA Euler GP 2 2 2
+    427 FLUID3 HEX8     555    529    460    487    483    447    355    402 MAT       1 NA Euler GP 2 2 2
+    428 FLUID3 HEX8     595    555    487    539    514    483    402    451 MAT       1 NA Euler GP 2 2 2
+    429 FLUID3 HEX8     624    595    539    578    564    514    451    508 MAT       1 NA Euler GP 2 2 2
+    430 FLUID3 HEX8     660    624    578    625    616    564    508    562 MAT       1 NA Euler GP 2 2 2
+    431 FLUID3 HEX8     692    660    625    670    659    616    562    626 MAT       1 NA Euler GP 2 2 2
+    432 FLUID3 HEX8     716    692    670    706    696    659    626    672 MAT       1 NA Euler GP 2 2 2
+    433 FLUID3 HEX8     574    569    499    510    505    503    406    419 MAT       1 NA Euler GP 2 2 2
+    434 FLUID3 HEX8     599    574    510    529    524    505    419    447 MAT       1 NA Euler GP 2 2 2
+    435 FLUID3 HEX8     613    599    529    555    553    524    447    483 MAT       1 NA Euler GP 2 2 2
+    436 FLUID3 HEX8     638    613    555    595    593    553    483    514 MAT       1 NA Euler GP 2 2 2
+    437 FLUID3 HEX8     668    638    595    624    628    593    514    564 MAT       1 NA Euler GP 2 2 2
+    438 FLUID3 HEX8     693    668    624    660    661    628    564    616 MAT       1 NA Euler GP 2 2 2
+    439 FLUID3 HEX8     710    693    660    692    694    661    616    659 MAT       1 NA Euler GP 2 2 2
+    440 FLUID3 HEX8     721    710    692    716    715    694    659    696 MAT       1 NA Euler GP 2 2 2
+    441 FLUID3 HEX8     645    633    569    574    586    581    503    505 MAT       1 NA Euler GP 2 2 2
+    442 FLUID3 HEX8     654    645    574    599    604    586    505    524 MAT       1 NA Euler GP 2 2 2
+    443 FLUID3 HEX8     667    654    599    613    620    604    524    553 MAT       1 NA Euler GP 2 2 2
+    444 FLUID3 HEX8     686    667    613    638    650    620    553    593 MAT       1 NA Euler GP 2 2 2
+    445 FLUID3 HEX8     704    686    638    668    673    650    593    628 MAT       1 NA Euler GP 2 2 2
+    446 FLUID3 HEX8     711    704    668    693    697    673    628    661 MAT       1 NA Euler GP 2 2 2
+    447 FLUID3 HEX8     720    711    693    710    712    697    661    694 MAT       1 NA Euler GP 2 2 2
+    448 FLUID3 HEX8     728    720    710    721    723    712    694    715 MAT       1 NA Euler GP 2 2 2
+    449 FLUID3 HEX8     372    362    342    358    259    246    239    247 MAT       1 NA Euler GP 2 2 2
+    450 FLUID3 HEX8     392    372    358    379    280    259    247    267 MAT       1 NA Euler GP 2 2 2
+    451 FLUID3 HEX8     423    392    379    415    314    280    267    308 MAT       1 NA Euler GP 2 2 2
+    452 FLUID3 HEX8     475    423    415    471    369    314    308    348 MAT       1 NA Euler GP 2 2 2
+    453 FLUID3 HEX8     540    475    471    525    442    369    348    424 MAT       1 NA Euler GP 2 2 2
+    454 FLUID3 HEX8     597    540    525    584    507    442    424    501 MAT       1 NA Euler GP 2 2 2
+    455 FLUID3 HEX8     642    597    584    630    575    507    501    567 MAT       1 NA Euler GP 2 2 2
+    456 FLUID3 HEX8     683    642    630    679    637    575    567    631 MAT       1 NA Euler GP 2 2 2
+    457 FLUID3 HEX8     394    383    362    372    279    273    246    259 MAT       1 NA Euler GP 2 2 2
+    458 FLUID3 HEX8     410    394    372    392    299    279    259    280 MAT       1 NA Euler GP 2 2 2
+    459 FLUID3 HEX8     452    410    392    423    335    299    280    314 MAT       1 NA Euler GP 2 2 2
+    460 FLUID3 HEX8     496    452    423    475    398    335    314    369 MAT       1 NA Euler GP 2 2 2
+    461 FLUID3 HEX8     547    496    475    540    461    398    369    442 MAT       1 NA Euler GP 2 2 2
+    462 FLUID3 HEX8     606    547    540    597    527    461    442    507 MAT       1 NA Euler GP 2 2 2
+    463 FLUID3 HEX8     655    606    597    642    598    527    507    575 MAT       1 NA Euler GP 2 2 2
+    464 FLUID3 HEX8     690    655    642    683    657    598    575    637 MAT       1 NA Euler GP 2 2 2
+    465 FLUID3 HEX8     425    416    383    394    312    307    273    279 MAT       1 NA Euler GP 2 2 2
+    466 FLUID3 HEX8     453    425    394    410    332    312    279    299 MAT       1 NA Euler GP 2 2 2
+    467 FLUID3 HEX8     486    453    410    452    376    332    299    335 MAT       1 NA Euler GP 2 2 2
+    468 FLUID3 HEX8     534    486    452    496    437    376    335    398 MAT       1 NA Euler GP 2 2 2
+    469 FLUID3 HEX8     572    534    496    547    490    437    398    461 MAT       1 NA Euler GP 2 2 2
+    470 FLUID3 HEX8     617    572    547    606    558    490    461    527 MAT       1 NA Euler GP 2 2 2
+    471 FLUID3 HEX8     665    617    606    655    615    558    527    598 MAT       1 NA Euler GP 2 2 2
+    472 FLUID3 HEX8     699    665    655    690    662    615    598    657 MAT       1 NA Euler GP 2 2 2
+    473 FLUID3 HEX8     473    466    416    425    374    352    307    312 MAT       1 NA Euler GP 2 2 2
+    474 FLUID3 HEX8     495    473    425    453    393    374    312    332 MAT       1 NA Euler GP 2 2 2
+    475 FLUID3 HEX8     532    495    453    486    436    393    332    376 MAT       1 NA Euler GP 2 2 2
+    476 FLUID3 HEX8     561    532    486    534    479    436    376    437 MAT       1 NA Euler GP 2 2 2
+    477 FLUID3 HEX8     608    561    534    572    546    479    437    490 MAT       1 NA Euler GP 2 2 2
+    478 FLUID3 HEX8     649    608    572    617    587    546    490    558 MAT       1 NA Euler GP 2 2 2
+    479 FLUID3 HEX8     681    649    617    665    644    587    558    615 MAT       1 NA Euler GP 2 2 2
+    480 FLUID3 HEX8     707    681    665    699    685    644    615    662 MAT       1 NA Euler GP 2 2 2
+    481 FLUID3 HEX8     537    518    466    473    444    421    352    374 MAT       1 NA Euler GP 2 2 2
+    482 FLUID3 HEX8     549    537    473    495    460    444    374    393 MAT       1 NA Euler GP 2 2 2
+    483 FLUID3 HEX8     565    549    495    532    487    460    393    436 MAT       1 NA Euler GP 2 2 2
+    484 FLUID3 HEX8     609    565    532    561    539    487    436    479 MAT       1 NA Euler GP 2 2 2
+    485 FLUID3 HEX8     641    609    561    608    578    539    479    546 MAT       1 NA Euler GP 2 2 2
+    486 FLUID3 HEX8     676    641    608    649    625    578    546    587 MAT       1 NA Euler GP 2 2 2
+    487 FLUID3 HEX8     703    676    649    681    670    625    587    644 MAT       1 NA Euler GP 2 2 2
+    488 FLUID3 HEX8     718    703    681    707    706    670    644    685 MAT       1 NA Euler GP 2 2 2
+    489 FLUID3 HEX8     591    580    518    537    510    499    421    444 MAT       1 NA Euler GP 2 2 2
+    490 FLUID3 HEX8     601    591    537    549    529    510    444    460 MAT       1 NA Euler GP 2 2 2
+    491 FLUID3 HEX8     622    601    549    565    555    529    460    487 MAT       1 NA Euler GP 2 2 2
+    492 FLUID3 HEX8     652    622    565    609    595    555    487    539 MAT       1 NA Euler GP 2 2 2
+    493 FLUID3 HEX8     674    652    609    641    624    595    539    578 MAT       1 NA Euler GP 2 2 2
+    494 FLUID3 HEX8     695    674    641    676    660    624    578    625 MAT       1 NA Euler GP 2 2 2
+    495 FLUID3 HEX8     713    695    676    703    692    660    625    670 MAT       1 NA Euler GP 2 2 2
+    496 FLUID3 HEX8     724    713    703    718    716    692    670    706 MAT       1 NA Euler GP 2 2 2
+    497 FLUID3 HEX8     639    634    580    591    574    569    499    510 MAT       1 NA Euler GP 2 2 2
+    498 FLUID3 HEX8     656    639    591    601    599    574    510    529 MAT       1 NA Euler GP 2 2 2
+    499 FLUID3 HEX8     664    656    601    622    613    599    529    555 MAT       1 NA Euler GP 2 2 2
+    500 FLUID3 HEX8     684    664    622    652    638    613    555    595 MAT       1 NA Euler GP 2 2 2
+    501 FLUID3 HEX8     702    684    652    674    668    638    595    624 MAT       1 NA Euler GP 2 2 2
+    502 FLUID3 HEX8     714    702    674    695    693    668    624    660 MAT       1 NA Euler GP 2 2 2
+    503 FLUID3 HEX8     722    714    695    713    710    693    660    692 MAT       1 NA Euler GP 2 2 2
+    504 FLUID3 HEX8     726    722    713    724    721    710    692    716 MAT       1 NA Euler GP 2 2 2
+    505 FLUID3 HEX8     687    677    634    639    645    633    569    574 MAT       1 NA Euler GP 2 2 2
+    506 FLUID3 HEX8     689    687    639    656    654    645    574    599 MAT       1 NA Euler GP 2 2 2
+    507 FLUID3 HEX8     700    689    656    664    667    654    599    613 MAT       1 NA Euler GP 2 2 2
+    508 FLUID3 HEX8     709    700    664    684    686    667    613    638 MAT       1 NA Euler GP 2 2 2
+    509 FLUID3 HEX8     717    709    684    702    704    686    638    668 MAT       1 NA Euler GP 2 2 2
+    510 FLUID3 HEX8     725    717    702    714    711    704    668    693 MAT       1 NA Euler GP 2 2 2
+    511 FLUID3 HEX8     727    725    714    722    720    711    693    710 MAT       1 NA Euler GP 2 2 2
+    512 FLUID3 HEX8     729    727    722    726    728    720    710    721 MAT       1 NA Euler GP 2 2 2
 ------------------------------------------------------ALE ELEMENTS
 ---------------------------------------------------------MATERIALS
 MAT       1 MAT_fluid  VISCOSITY 0.001 DENSITY 1.0 GAMMA 1.0

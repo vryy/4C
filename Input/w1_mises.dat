@@ -4,7 +4,7 @@
 //             http://www.uni-stuttgart.de/ibs/members/hund/
 //             0711 - 685-6122
 // 
-// necessary defines: -DD_WALL1
+// necessary defines: D_WALL1
 //
 // #define MAXNOD           (9)
 // #define MAXELE           (9)

@@ -4,7 +4,7 @@
 //             http://www.uni-stuttgart.de/ibs/members/neumann/
 //             0711 - 685-6121
 // 
-// necessary defines: -DD_ALE -DRESULTTEST
+// necessary defines: D_ALE RESULTTEST
 //
 // #define MAXNOD           (8)
 // #define MAXELE           (8)

@@ -1,3 +1,16 @@
+//
+// Maintainer: Michael Gee
+//             gee@statik.uni-stuttgart.de
+//             http://www.uni-stuttgart.de/ibs/members/gee/
+//             0711 - 685-6572
+// 
+// necessary defines: D_SHELL8
+//
+// #define MAXNOD           (4)
+// #define MAXELE           (4)
+// #define MAXDOFPERNODE    (6)
+// #define MAXGAUSS         (8)
+//
 ==================================================================
                         General Data File C_CARAT
 ==================================================================
