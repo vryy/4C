@@ -46,7 +46,7 @@ typedef char      CHAR;
 #define dsytri dsytri_
 #define dsytrs dsytrs_
 #define dgetrf dgetrf_
-#define dgetrf dgetri_
+#define dgetri dgetri_
 #define dgetrs dgetrs_
 #define dsygv  dsygv_
 #define dsyevd dsyevd_
@@ -58,7 +58,7 @@ typedef char      CHAR;
 #define dsytri dsytri_
 #define dsytrs dsytrs_
 #define dgetrf dgetrf_
-#define dgetrf dgetri_
+#define dgetri dgetri_
 #define dgetrs dgetrs_
 #define dsygv  dsygv_
 #define dsyevd dsyevd_
@@ -119,6 +119,11 @@ static INT iminarg1,iminarg2;
  | max number of processors                                             |
  *----------------------------------------------------------------------*/
 #define MAXPROC          (32)
+
+/*----------------------------------------------------------------------*
+ | size of buffer to attach to intra-communicator in byte               |
+ *----------------------------------------------------------------------*/
+#define MPIBUFFSIZE      (52428800) /* this is 50 MB */
 
 /*----------------------------------------------------------------------*
  | exact one RAD                                                        |

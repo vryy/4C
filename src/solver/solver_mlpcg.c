@@ -20,11 +20,20 @@ defined in solver_mlpcg.c
 
 *----------------------------------------------------------------------*/
 struct _MLPRECOND mlprecond;
+/*!----------------------------------------------------------------------
+\brief the multilevel preconditioned solver main structure
+
+<pre>                                                         m.gee 09/02    
+defined in solver_mlpcg.c
+</pre>
+
+*----------------------------------------------------------------------*/
+struct _MLSOLVER mlsolver;
 
 /*!---------------------------------------------------------------------
 \brief multilevel preconditioned iterative solver                                              
 
-<pre>                                                        m.gee 6/02 
+<pre>                                                        m.gee 9/02 
 </pre>
 \param actsolv    SOLVAR*      (i)   general structure of solver informations                   
 \param actintra   INTRA*       (i)   the intra-communicator of this field                  
@@ -35,14 +44,12 @@ struct _MLPRECOND mlprecond;
 \return void                                               
 
 ------------------------------------------------------------------------*/
-void solver_mlpcg( 
-                      struct _SOLVAR         *actsolv,
-                      struct _INTRA          *actintra,
-                      struct _DBCSR_ROOT     *bdcsr,
-                      struct _DIST_VECTOR    *sol,
-                      struct _DIST_VECTOR    *rhs,
-                      int                     option
-                     )
+void solver_mlpcg(struct _SOLVAR         *actsolv,
+                  struct _INTRA          *actintra,
+                  struct _DBCSR          *bdcsr,
+                  struct _DIST_VECTOR    *sol,
+                  struct _DIST_VECTOR    *rhs,
+                  int                     option)
 {
 MLPCGVARS           *mlpcgvars;
 /*----------------------------------------------------------------------*/
@@ -58,14 +65,12 @@ switch(option)
 /*                                                           init phase */
 /*----------------------------------------------------------------------*/
 case 1:
-   mlpcg_precond_init(mlpcgvars);
-
-
-
-
-
-
-
+   mlpcg_precond_create(bdcsr,mlpcgvars,actintra);
+   mlpcg_solver_create(bdcsr,sol,rhs,mlpcgvars);
+   /*------------------------------------- set initial values to matrix */
+   bdcsr->ncall       = 0;
+   bdcsr->is_factored = 0;
+   bdcsr->is_init     = 1;
 break;
 /*----------------------------------------------------------------------*/
 /*                                                    end of init phase */
@@ -74,17 +79,21 @@ break;
 /*                                                    calculation phase */
 /*----------------------------------------------------------------------*/
 case 0:
+   /*----------------------------- create the multilevel preconditioner */
+   mlpcg_precond_init(bdcsr,mlpcgvars,actintra);
+   /*-------------------------------------------------- init the solver */
+   mlpcg_solver_init(bdcsr,sol,rhs,actintra);
+   /*-------------------------------------------------- call the solver */
+   mlpcg_pcg(bdcsr,sol,rhs,actintra);
 
 
 
 
 
 
-
-
-
-
-
+   /*--------------------------------- increment number of solver calls */
+   bdcsr->ncall++;
+   bdcsr->is_factored = 1;
 break;
 /*----------------------------------------------------------------------*/
 /*                                             end of calculation phase */

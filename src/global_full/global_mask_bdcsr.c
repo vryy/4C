@@ -25,8 +25,8 @@ double cmp_double(const void *a, const void *b );
 
 <pre>                                                        m.gee 6/02 
 calculates the mask of a block distributed csr matrix
-in structure DBCSR_ROOT.
-DBCSR_ROOT contains a rectangular part of a distributed square
+in structure DBCSR.
+DBCSR contains a rectangular part of a distributed square
 compressed sparse row matrix with additional information about
 the dofs belonging to one node
 It is supposed to serve as the finest grid matrix in an mulitlevel environment
@@ -39,7 +39,7 @@ In the one processor or sequentiell case this is not done
 \param actpart    PARTITION*  (i)   this processors partition
 \param actsolv    SOLVAR      (i)   general structure of solver informations                   
 \param actintra   INTRA       (i)   the intra-communicator of this field                  
-\param bdcsr      DBCSR_ROOT  (o)   the empty dbcsr matrix                 
+\param bdcsr      DBCSR       (o)   the empty dbcsr matrix                 
 \warning this routine renumbers the dofs!
 \return void                                               
 
@@ -48,7 +48,7 @@ void mask_bdcsr(FIELD         *actfield,
                 PARTITION     *actpart, 
                 SOLVAR        *actsolv,
                 INTRA         *actintra, 
-                DBCSR_ROOT    *bdcsr)
+                DBCSR         *bdcsr)
 {
 int            i,j,k,l,counter;
 int            imyrank;
@@ -59,8 +59,6 @@ int          **dof_connect;
 int            actdof; 
 int            actdofindex;
 int          **blocks;
-double        *wk;
-int           *iwk;
 PARTDISCRET   *actpdiscret;
 NODE          *actnode;
 /*----------------------------------------------------------------------*/
@@ -96,21 +94,10 @@ dof_connect = (int**)CALLOC(bdcsr->numeq_total,sizeof(int*));
 if (!dof_connect) dserror("Allocation of dof_connect failed");
 bdcsr_nnz_topology(actfield,actpart,actsolv,actintra,bdcsr,dof_connect);
 /*--------------------------------------------------- allocate a and ja */
-amdef("a"  ,&(bdcsr->a)  ,(bdcsr->nnz),1,"DV");
+amdef("a"  ,&(bdcsr->a)  ,(bdcsr->nnz+1),1,"DV");
 amdef("ja" ,&(bdcsr->ja) ,(bdcsr->nnz+1),1,"IV");
 amdef("ia" ,&(bdcsr->ia) ,(bdcsr->numeq+1),1,"IV");
-bdcsr_make_bindx(actfield,actpart,actsolv,bdcsr,dof_connect);
-/*------------------------------------------------ make ja in msr style */
-wk    = (double*)MALLOC(bdcsr->numeq*sizeof(double));
-iwk   = (int*)   MALLOC((bdcsr->numeq+1)*sizeof(int));
-if (!wk || !iwk) dserror("Alloction of memory failed");
-for (i=0; i<bdcsr->ja.fdim; i++) bdcsr->ja.a.iv[i]++;
-mpcg_msrcsr(&(bdcsr->numeq),bdcsr->a.a.dv,bdcsr->ja.a.iv,bdcsr->a.a.dv,
-            bdcsr->ja.a.iv,bdcsr->ia.a.iv,wk,iwk);
-for (i=0; i<bdcsr->ja.fdim; i++) bdcsr->ja.a.iv[i]--;
-for (i=0; i<bdcsr->ia.fdim; i++) bdcsr->ia.a.iv[i]--;
-FREE(wk);
-FREE(iwk);
+bdcsr_make_csr(actfield,actpart,actsolv,bdcsr,dof_connect);
 /*--------------------------------------------------- make nodal blocks */
 blocks=amdef("blocks",&(bdcsr->blocks),actpart->pdis[0].numnp,numdf+1,"IA");
 for (i=0; i<actpart->pdis[0].numnp; i++)
@@ -121,9 +108,12 @@ for (i=0; i<actpart->pdis[0].numnp; i++)
    {
       actdof = actnode->dof[j];
       if (actdof>=bdcsr->numeq_total) continue;
+/*
       actdofindex = find_index(actdof,bdcsr->update.a.iv,bdcsr->update.fdim);
       dsassert(actdofindex!=-1,"error in local dof numbering");
       blocks[i][1+counter++] = actdofindex;
+*/
+      blocks[i][1+counter++] = actdof;
    }
    blocks[i][0] = counter;
 }
@@ -145,12 +135,10 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief make msr matrix in aztec style                                              
+\brief make csr matrix                                              
 
 <pre>                                                        m.gee 6/02 
-make msr matrix in aztec style (see aztec manual)
-this msr matrix can then be transformed in place in a csr matrix in the 
-saad style using routines from sparskit
+make csr matrix (see book of Y.Saad)
 </pre>
 \param actfield    FIELD*      (i)   catual physical field (structure)                                
 \param actpart     PARTITION*  (i)   this processors partition
@@ -160,41 +148,43 @@ saad style using routines from sparskit
 \return void                                               
 
 ------------------------------------------------------------------------*/
-void bdcsr_make_bindx(FIELD         *actfield, 
-                      PARTITION     *actpart, 
-                      SOLVAR        *actsolv,
-                      DBCSR_ROOT    *bdcsr,
-                      int          **dof_connect)
+void bdcsr_make_csr(FIELD         *actfield, 
+                    PARTITION     *actpart, 
+                    SOLVAR        *actsolv,
+                    DBCSR         *bdcsr,
+                    int          **dof_connect)
 {
-int        i,j,k,l;
-int        count1,count2;
+int        i,j;
+int        count;
 int        dof;
-
+int        *ja,*ia,*update;
 #ifdef DEBUG 
-dstrc_enter("bdcsr_make_bindx");
+dstrc_enter("bdcsr_make_csr");
 #endif
 /*----------------------------------------------------------------------*/
-/*-------------------------------------------------------------do bindx */
-count1=0;
-count2=bdcsr->numeq+1;
+ja     = bdcsr->ja.a.iv;
+ia     = bdcsr->ia.a.iv;
+update = bdcsr->update.a.iv;
+/*----------------------------------------------------------------------*/
+count=0;
+ia[0] =0;
 for (i=0; i<bdcsr->update.fdim; i++)
 {
-   dof = bdcsr->update.a.iv[i];
-   bdcsr->ja.a.iv[count1] = count2;
-   count1++;
-   for (j=3; j<dof_connect[dof][0]; j++)
+   dof = update[i];
+   qsort((int*)(&(dof_connect[dof][2])), dof_connect[dof][0]-2, sizeof(int), cmp_int);
+   for (j=2; j<dof_connect[dof][0]; j++)
    {
-      bdcsr->ja.a.iv[count2] = dof_connect[dof][j];
-      count2++;
-   }   
+      ja[count] = dof_connect[dof][j];
+      count++;
+   }
+   ia[i+1] = count;
 }
-bdcsr->ja.a.iv[bdcsr->numeq] = bdcsr->nnz+1;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
 #endif
 return;
-} /* end of bdcsr_make_bindx */
+} /* end of bdcsr_make_csr */
 
 
 
@@ -226,7 +216,7 @@ void  bdcsr_nnz_topology(FIELD         *actfield,
                          PARTITION     *actpart, 
                          SOLVAR        *actsolv,
                          INTRA         *actintra,
-                         DBCSR_ROOT    *bdcsr,
+                         DBCSR         *bdcsr,
                          int          **dof_connect)
 {
 int        i,j,k,l,m,n;
@@ -547,11 +537,11 @@ make list of dofs on each proc (sorted in ascending order)
 \return void                                               
 
 ------------------------------------------------------------------------*/
-void bdcsr_update(FIELD         *actfield, 
-                 PARTITION      *actpart, 
-                 SOLVAR         *actsolv,
-                 INTRA          *actintra,
-                 DBCSR_ROOT     *bdcsr)
+void bdcsr_update(FIELD          *actfield, 
+                  PARTITION      *actpart, 
+                  SOLVAR         *actsolv,
+                  INTRA          *actintra,
+                  DBCSR          *bdcsr)
 {
 int       i,j,k,l;
 int       counter;
@@ -631,7 +621,7 @@ void mlpcg_renumberdofs(int            myrank,
                         FIELD         *actfield, 
                         PARTDISCRET   *actpdiscret, 
                         INTRA         *actintra,
-                        DBCSR_ROOT    *bdcsr)
+                        DBCSR         *bdcsr)
 {
 #ifdef PARALLEL
 int            i,j,k,l;

@@ -100,7 +100,7 @@ struct _RC_PTR         *rc_ptr; /*         to Mump's row/column ptr matrix */
 struct _CCF            *ccf;    /*         to Umfpack compressed column matrix */
 struct _SKYMATRIX      *sky;    /*         to Colsol's skyline matrix */
 struct _SPOOLMAT       *spo;    /*         to Spoole's matrix */
-struct _DBCSR_ROOT     *bdcsr;  /* matrix needed by the MLPCG solver on the finest grid only */
+struct _DBCSR          *bdcsr;  /* matrix needed by the MLPCG solver on the finest grid only */
 } SPARSE_ARRAY;
 
 /*----------------------------------------------------------------------*

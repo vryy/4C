@@ -478,11 +478,14 @@ case msr:
    for (i=0; i<sysarray->msr->numeq; i++)
    {
       dof = sysarray->msr->update.a.iv[i];
+#ifdef PARALLEL 
+      recvbuff[dof] = distvec->vec.a.dv[i];
+#else
       fullvec[dof] = distvec->vec.a.dv[i];
+#endif
    }
 #ifdef PARALLEL 
-   MPI_Allreduce(fullvec,recvbuff,dim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
-   for (i=0; i<dim; i++) fullvec[i] = recvbuff[i];
+   MPI_Allreduce(recvbuff,fullvec,dim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
 #endif
 break;
 
@@ -555,11 +558,14 @@ case spoolmatrix:
    for (i=0; i<sysarray->spo->numeq; i++)
    {
       dof = sysarray->spo->update.a.iv[i];
+#ifdef PARALLEL 
+      recvbuff[dof] = distvec->vec.a.dv[i];
+#else
       fullvec[dof] = distvec->vec.a.dv[i];
+#endif
    }
 #ifdef PARALLEL 
-   MPI_Allreduce(fullvec,recvbuff,dim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
-   for (i=0; i<dim; i++) fullvec[i] = recvbuff[i];
+   MPI_Allreduce(recvbuff,fullvec,dim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
 #endif
 break;
 
@@ -589,6 +595,23 @@ case skymatrix:
    for (i=0; i<dim; i++) fullvec[i] = recvbuff[i];
 #endif
 break;
+
+
+case bdcsr:
+   for (i=0; i<sysarray->bdcsr->numeq; i++)
+   {
+      dof = sysarray->bdcsr->update.a.iv[i];
+#ifdef PARALLEL 
+      recvbuff[dof] = distvec->vec.a.dv[i];
+#else
+      fullvec[dof] = distvec->vec.a.dv[i];
+#endif
+   }
+#ifdef PARALLEL 
+   MPI_Allreduce(recvbuff,fullvec,dim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
+#endif
+break;
+
 
 
 

@@ -354,10 +354,12 @@ for (j=0; j<genprob.numfld; j++)
       for (i=0; i<actsolv->nsysarray; i++)
       {
          actsolv->sysarray_typ[i] = bdcsr;
-         actsolv->sysarray[i].bdcsr = (DBCSR_ROOT*)CALLOC(1,sizeof(DBCSR_ROOT));
+         actsolv->sysarray[i].bdcsr = (DBCSR*)CALLOC(1,sizeof(DBCSR));
          if (actsolv->sysarray[i].bdcsr==NULL) dserror("Allocation of DBCSR_ROOT failed");
       }
       mask_bdcsr(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].bdcsr);
+      actsolv->mlpcgvars->fielddis = &(actfield->dis[0]);
+      actsolv->mlpcgvars->partdis  = &(actpart->pdis[0]);
       ismlpcg=0;
    }
 /*----------------------------------------------------------------------*/

@@ -447,10 +447,15 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    break;
    case MLPCG:/*------------------------------------- read solver MLPCG */
       frint("NUMLEV"      ,&(mlpcgvars->numlev)   ,&ierr);
+      /*------------------------ there is a minimum of a 2-level method */
+      if (ierr==1 && mlpcgvars->numlev < 2)
+      dserror("Minimum number of levels to MLPCG is two");
       frint("ILU_N"       ,&(mlpcgvars->ilu_n)    ,&ierr);
       frint("COARSEILULEV",&(mlpcgvars->co_ilu_n) ,&ierr);
       frint("PRESWEEP"    ,&(mlpcgvars->presweep) ,&ierr);
       frint("POSTSWEEP"   ,&(mlpcgvars->postsweep),&ierr);
+      frint("MAXITER"     ,&(mlpcgvars->maxiter)  ,&ierr);
+      frint("COARSENUMDF" ,&(mlpcgvars->numdf)    ,&ierr);
 
       frdouble("PROLONGSMODAMP",&(mlpcgvars->p_omega),&ierr);
       frdouble("TOLERANCE"     ,&(mlpcgvars->tol)    ,&ierr);

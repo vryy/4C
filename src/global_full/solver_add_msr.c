@@ -165,7 +165,7 @@ for (i=0; i<nd; i++)
             start       = bindx[ii_index];
             lenght      = bindx[ii_index+1]-bindx[ii_index];
             index       = AZ_find_index(jj,&(bindx[start]),lenght);
-            if (ii_index==-1) dserror("dof jj not found in this row ii");
+            if (index==-1) dserror("dof jj not found in this row ii");
             index      += start;
             val1[index] += estif[i][j];
             if (msr2)

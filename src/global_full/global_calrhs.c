@@ -72,6 +72,10 @@ assemble_vec(actintra,sysarraytyp,sysarray,rhs1,rhsrecv,1.0);
 #else
 assemble_vec(actintra,sysarraytyp,sysarray,rhs1,rhs,1.0);
 #endif
+/*
+m.gee
+testen, ob linienlasten ueber prozessorengrenzen hinweg richtig assembliert werden!
+*/
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();

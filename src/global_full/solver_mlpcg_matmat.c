@@ -1,0 +1,734 @@
+/*!---------------------------------------------------------------------
+\file
+\brief contains the multilevel preconditioner for shells
+
+---------------------------------------------------------------------*/
+#include "../headers/standardtypes.h"
+#include "../headers/solution_mlpcg.h"
+#include "../headers/prototypes_mlpcg.h"
+int cmp_int(const void *a, const void *b );
+double cmp_double(const void *a, const void *b );
+/*! 
+\addtogroup MLPCG 
+*//*! @{ (documentation module open)*/
+/*!----------------------------------------------------------------------
+\brief the multilevel preconditioner main structure
+
+<pre>                                                         m.gee 09/02    
+defined in solver_mlpcg.c
+</pre>
+
+*----------------------------------------------------------------------*/
+extern struct _MLPRECOND mlprecond;
+
+#if 1 /* debugging */
+extern struct _FILES  allfiles;
+#endif
+/*!---------------------------------------------------------------------
+\brief make the parallel matrix-matrix-matrix product                                         
+
+<pre>                                                        m.gee 10/02 
+make the parallel matrix-matrix-matrix product
+- outcsr = P(transposed) * incsr * P
+- outcsr gets the proc partitioning from P
+- P      is a closed matrix with no 'ellbow-space'
+- incsr  is a closed matrix with no 'ellbow-space'
+- outcsr is an open matrix with 'ellbow-space'
+- work   is an open matrix with 'ellbow-space'
+- incsr is symmetric !
+- P is not symmetric !
+
+After the product 
+work = P(transposed) * incsr
+is done, the matrix work is closed by call to mlpcg_csr_close
+Then the product 
+outcsr = work * P 
+is done, afterwards the matrix outcsr is closed.
+
+THIS IS NOT AN ALL PUPOSE ROUTINE, IT MAKES USE OF SPECIAL KNOWLEDGE
+ABOUT THE PROLONGATOR!
+</pre>
+\param P           DBCSR*    (i) the matrix P of the product                   
+\param incsr       DBCSR*    (i) the matrix incsr of the product                   
+\param outcsr      DBCSR*    (o) the matrix outcsr of the product                   
+\param work        DBCSR*    (o) the working matrix                   
+\param actintra    INTRA*    (i) the communicator                 
+\warning the matrix incsr has to be symmetric!!
+\return void                                               
+------------------------------------------------------------------------*/
+void mlpcg_precond_PtKP(DBCSR *P, DBCSR *incsr, DBCSR *outcsr, DBCSR *work,
+                        AGG *agg, int nagg, INTRA *actintra)
+{
+int        i,j,k,l,m,n,counter,foundit,flag,ilength,dlength,tag;
+int        nproc,myrank;
+double     sum;
+int        index;
+int        owner;
+int        nsend,nrecv;
+int        numeq;
+
+int        sendtos[MAXPROC][MAXPROC],sendtor[MAXPROC][MAXPROC];
+ARRAY      isbuff[MAXPROC];
+ARRAY      dsbuff[MAXPROC];
+ARRAY      irbuff;
+ARRAY      drbuff;
+ARRAY      rupdate; int *updateP;
+ARRAY      ria;     int *iaP;
+ARRAY      rja;     int *jaP;
+ARRAY      ra;   double *aP;
+int        rcounter[MAXPROC];
+int       *isend,*irecv;
+double    *dsend,*drecv;
+
+int        actrow,actcol;
+int        colstart,colend;
+
+double     block[500][500];
+int        rindex[500];
+int        cindex[500];
+
+double     col[1000],colP[1000];
+int        rcol[1000],rcolP[1000];
+int        nrow,ncol;
+
+int        numeq_cscP,*update_cscP,*ia_cscP,*ja_cscP;
+double    *a_cscP;
+int        numeq_in,*update_in,*ia_in,*ja_in;
+double    *a_in;
+
+#ifdef PARALLEL 
+MPI_Status   status;  
+MPI_Request  *request;   
+#endif
+
+#if 1 /* for development and debugging */
+ARRAY      sdense_in, rdense_in, sdense_P, rdense_P, dense_work, dense_out;
+ARRAY      sw,rw;
+ARRAY      so,ro;
+#endif
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_enter("mlpcg_precond_PtKP");
+#endif
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+myrank = actintra->intra_rank;
+nproc  = actintra->intra_nprocs;
+/*----------------------------------------------------------------------*/
+#if 1 /*------------------- debugging, make dense copies of P and incsr */
+amdef("tmp",&sdense_in,incsr->numeq_total,incsr->numeq_total,"DA");
+amdef("tmp",&rdense_in,incsr->numeq_total,incsr->numeq_total,"DA");
+amzero(&sdense_in);
+amzero(&rdense_in);
+amdef("tmp",&sdense_P,incsr->numeq_total,work->numeq_total,"DA");
+amdef("tmp",&rdense_P,incsr->numeq_total,work->numeq_total,"DA");
+amzero(&sdense_P);
+amzero(&rdense_P);
+amdef("tmp",&dense_work,work->numeq_total,incsr->numeq_total,"DA");
+amzero(&dense_work);
+amdef("tmp",&dense_out,work->numeq_total,work->numeq_total,"DA");
+amzero(&dense_out);
+/* fill sdense_in */
+for (i=0; i<incsr->numeq; i++)
+{
+   actrow = incsr->update.a.iv[i];
+   colstart = incsr->ia.a.iv[i];
+   colend   = incsr->ia.a.iv[i+1];
+   for (j=colstart; j<colend; j++)
+   {
+      actcol = incsr->ja.a.iv[j];
+      sdense_in.a.da[actrow][actcol] = incsr->a.a.dv[j];
+   }
+}
+#ifdef PARALLEL 
+MPI_Allreduce(sdense_in.a.da[0],rdense_in.a.da[0],sdense_in.fdim*sdense_in.sdim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
+#endif
+/* check symmetry */
+for (i=0; i<sdense_in.fdim; i++)
+{
+   for (j=i+1; j<sdense_in.sdim; j++)
+     if (FABS(rdense_in.a.da[i][j]-rdense_in.a.da[j][i])>EPS12)
+      fprintf(allfiles.out_err,"K not symmetric in ij %d %d %20.10f ji %d %d %20.10f\n",i,j,rdense_in.a.da[i][j],j,i,rdense_in.a.da[j][i]); 
+}
+/* print to err */
+fprintf(allfiles.out_err,"in-Matrix\n");
+for (i=0; i<rdense_in.fdim; i++)
+{
+   for (j=0; j<rdense_in.sdim; j++)
+   {
+    /*  fprintf(allfiles.out_err,"%8.2f ",rdense_in.a.da[i][j]);*/
+        if (FABS(rdense_in.a.da[i][j])>EPS14)
+        fprintf(allfiles.out_err,"X ");
+        else
+        fprintf(allfiles.out_err,"* ");
+   }
+   fprintf(allfiles.out_err," \n");
+}
+/* fill sdense_P */
+for (i=0; i<P->numeq; i++)
+{
+   actrow = P->update.a.iv[i];
+   colstart = P->ia.a.iv[i];
+   colend   = P->ia.a.iv[i+1];
+   for (j=colstart; j<colend; j++)
+   {
+      actcol = P->ja.a.iv[j];
+      sdense_P.a.da[actrow][actcol] = P->a.a.dv[j];
+   }
+}
+#ifdef PARALLEL 
+MPI_Allreduce(sdense_P.a.da[0],rdense_P.a.da[0],sdense_P.fdim*sdense_P.sdim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
+#endif
+/* print to err */
+fprintf(allfiles.out_err,"P-Matrix\n");
+for (i=0; i<rdense_P.fdim; i++)
+{
+   for (j=0; j<rdense_P.sdim; j++)
+   {
+    /*  fprintf(allfiles.out_err,"%8.2f ",rdense_P.a.da[i][j]);*/
+        if (FABS(rdense_P.a.da[i][j])>EPS14)
+        fprintf(allfiles.out_err,"X ");
+        else
+        fprintf(allfiles.out_err,"* ");
+   }
+   fprintf(allfiles.out_err," \n");
+}
+/*-------------------- multiply work = Ptransposed * in */
+for (i=0; i<dense_work.fdim; i++)/* row of work */
+{
+   for (j=0; j<dense_work.sdim; j++)/* cols of work */
+   {
+      sum = 0.0;
+      for (k=0; k<rdense_P.fdim; k++)
+         sum += rdense_P.a.da[k][i] * rdense_in.a.da[k][j];
+      dense_work.a.da[i][j] = sum;
+   }
+}
+/* print to err */
+fprintf(allfiles.out_err,"work-Matrix\n");
+for (i=0; i<dense_work.fdim; i++)
+{
+   for (j=0; j<dense_work.sdim; j++)
+   {
+    /*  fprintf(allfiles.out_err,"%8.2f ",dense_work.a.da[i][j]);*/
+        if (FABS(dense_work.a.da[i][j])>EPS14)
+        fprintf(allfiles.out_err,"X ");
+        else
+        fprintf(allfiles.out_err,"* ");
+   }
+   fprintf(allfiles.out_err," \n");
+}
+/*------------------------------- multiply out = work * P */
+for (i=0; i<dense_out.fdim; i++)/* rows of out */
+{
+   for (j=0; j<dense_out.sdim; j++)/* columns of work */
+   {
+      sum = 0.0;
+      for (k=0; k<dense_work.sdim; k++)
+         sum += dense_work.a.da[i][k] * rdense_P.a.da[k][j];
+      dense_out.a.da[i][j] = sum;
+   }
+}
+/* print to err */
+fprintf(allfiles.out_err,"out-Matrix\n");
+/* check symmetry */
+for (i=0; i<dense_out.fdim; i++)
+{
+   for (j=i+1; j<dense_out.sdim; j++)
+     if (FABS(dense_out.a.da[i][j]-dense_out.a.da[j][i])>EPS12)
+      fprintf(allfiles.out_err,"K not symmetric in ij %d %d %20.10f ji %d %d %20.10f\n",i,j,dense_out.a.da[i][j],j,i,dense_out.a.da[j][i]); 
+}
+for (i=0; i<dense_out.fdim; i++)
+{
+   for (j=0; j<dense_out.sdim; j++)
+   {
+    /*  fprintf(allfiles.out_err,"%8.2f ",dense_out.a.da[i][j]);*/
+        if (FABS(dense_out.a.da[i][j])>EPS14)
+        fprintf(allfiles.out_err,"X ");
+        else
+        fprintf(allfiles.out_err,"* ");
+   }
+   fprintf(allfiles.out_err," \n");
+}
+fflush(allfiles.out_err);
+#endif
+/*------------------------------------------------------end of debugging*/
+
+
+
+/*- do a distributed compressed sparse column copy of the prolongator P */
+mlpcg_csr_csrtocsc(P,actintra);
+/*--------------------------------------------------- set some pointers */
+numeq_cscP  = P->csc->numeq;
+update_cscP = P->csc->update.a.iv;
+ia_cscP     = P->csc->ia.a.iv;
+ja_cscP     = P->csc->ja.a.iv;
+a_cscP      = P->csc->a.a.dv;
+
+numeq_in    = incsr->numeq;
+update_in   = incsr->update.a.iv;
+ia_in       = incsr->ia.a.iv;
+ja_in       = incsr->ja.a.iv;
+a_in        = incsr->a.a.dv;
+/*---------------------------------------- create the ownership of work */
+for (n=0; n<nproc; n++) 
+{ 
+   work->owner[n][0] = 0; 
+   work->owner[n][1] = 0;
+   rcounter[n]       = 0;
+}
+for (n=0; n<nproc; n++)
+for (m=0; m<nproc; m++) sendtos[n][m] = 0;
+work->owner[myrank][0] = work->update.a.iv[0];
+work->owner[myrank][1] = work->update.a.iv[work->numeq-1];
+#ifdef PARALLEL 
+for (n=0; n<nproc; n++)
+   MPI_Bcast(work->owner[n],2,MPI_INT,n,actintra->MPI_INTRA_COMM);
+/*======================================================================*/
+/* do interproc computation work = Ptransposed * incsr   part I         */
+/*======================================================================*/
+/*--------- loop columns in P which as rows in work do not belong to me */
+/*-------------------------- make a list of the owners of these columns */
+/*---------------------- count how many rows I have to send to somebody */
+nsend=0;
+for (i=0; i<numeq_cscP; i++)
+{
+   actcol = update_cscP[i];
+   owner  = mlpcg_getowner(actcol,work->owner,nproc);
+   if (owner==myrank) continue;
+   sendtos[myrank][owner]++;
+   nsend++;
+}
+MPI_Allreduce(&(sendtos[0][0]),&(sendtor[0][0]),MAXPROC*MAXPROC,MPI_INT,MPI_SUM,actintra->MPI_INTRA_COMM);
+/*--------------------------------------------------- count my receives */
+nrecv=0;
+for (n=0; n<nproc; n++) 
+{
+   if (n==myrank) continue;
+   nrecv += sendtor[n][myrank];
+}
+/*------------------------------- loop sendtor and allocate sendbuffers */
+for (n=0; n<nproc; n++)
+{
+   if (n==myrank) continue;
+   if (sendtor[myrank][n] != 0) /* I have to send to n */
+   {
+      amdef("isbuff",&(isbuff[n]),sendtor[myrank][n],50,"IA");
+      amzero(&(isbuff[n]));
+      amdef("dsbuff",&(dsbuff[n]),sendtor[myrank][n],50,"DA");
+   }
+}
+/*--------- loop columns in P which as rows in work do not belong to me */
+/*------------------- make remote multiplication and put to sendbuffers */
+for (i=0; i<numeq_cscP; i++)/* loop remote columns in P */
+{
+   actrow = update_cscP[i];
+   owner  = mlpcg_getowner(actrow,work->owner,nproc);
+   if (owner==myrank) 
+      continue;
+   dsassert(rcounter[owner]<isbuff[owner].fdim,"sendbuffer not enough rows");
+   isend    = &(isbuff[owner].a.ia[rcounter[owner]][0]);   
+   dsend    = &(dsbuff[owner].a.da[rcounter[owner]][0]);
+   dsend[0] = (double)actrow;
+   rcounter[owner]++;
+   mlpcg_extractcolcsc(actrow,numeq_cscP,update_cscP,ia_cscP,ja_cscP,a_cscP,
+                       colP,rcolP,&ncol);
+   if (ncol==0) 
+      continue;
+   for (j=0; j<incsr->numeq_total; j++) /* loop all columns in incsr */
+   {
+      actcol = j;
+      mlpcg_extractcollocal(incsr,actcol,col,rcol,&nrow);
+      if (nrow==0)
+         continue;
+      foundit = 0;
+      sum     = 0.0;
+      for (k=0; k<ncol; k++)
+      {
+         index = find_index(rcolP[k],rcol,nrow);
+         if (index==-1) continue;
+         foundit=1;
+         sum += colP[k]*col[index];
+      }
+      if (foundit)
+      {
+         isend[isend[0]+1] = actcol;
+         dsend[isend[0]+1] = sum;
+         isend[0]++;
+         if (isend[0]+1 >= isbuff[owner].sdim)
+         {
+            amredef(&(isbuff[owner]),isbuff[owner].fdim,isbuff[owner].sdim+500,"IA");
+            amredef(&(dsbuff[owner]),dsbuff[owner].fdim,dsbuff[owner].sdim+500,"DA");
+            isend = &(isbuff[owner].a.ia[rcounter[owner]-1][0]);   
+            dsend = &(dsbuff[owner].a.da[rcounter[owner]-1][0]);   
+         }
+      }
+   }
+}
+/*----------------------------------------------- check number of lines */
+for (n=0; n<nproc; n++)
+{
+   if (myrank==n) continue;
+   if (sendtor[myrank][n] != rcounter[n]) dserror("Number of lines wrong");
+}
+/*--------------------------------------------------- allocate requests */
+request = (MPI_Request*)CALLOC(2*nsend,sizeof(MPI_Request));
+if (!request) dserror("Allocation of memory failed");
+/*-------------------------------------------------- now make the sends */
+counter=0;
+for (n=0; n<nproc; n++)
+{
+   if (myrank==n) continue;
+   for (k=0; k<rcounter[n]; k++)
+   {
+      isend = &(isbuff[n].a.ia[k][0]);
+      dsend = &(dsbuff[n].a.da[k][0]);
+      MPI_Isend(isend,isend[0]+1,MPI_INT,n,counter,actintra->MPI_INTRA_COMM,&(request[counter]));
+      counter++;
+      MPI_Isend(dsend,isend[0]+1,MPI_DOUBLE,n,counter,actintra->MPI_INTRA_COMM,&(request[counter]));
+      counter++;
+   }
+}
+dsassert(counter==2*nsend,"number of sends wrong");
+#endif
+/*======================================================================*/
+/*                   do local computation of work = Ptransposed * incsr */
+/*======================================================================*/
+for (i=0; i<incsr->numeq_total; i++)/* loop all columns of work */
+{
+   actcol = i;
+   /* extract the column from incsr */
+   mlpcg_extractcollocal(incsr,actcol,col,rcol,&nrow);
+   if (nrow==0) continue;
+   for (j=0; j<work->numeq; j++) /* loop the local rows */
+   {
+      actrow = work->update.a.iv[j];
+      /* extract the column from P */
+      mlpcg_extractcolcsc(actrow,numeq_cscP,update_cscP,ia_cscP,ja_cscP,a_cscP,
+                          colP,rcolP,&ncol);
+      if (ncol==0) continue;
+      /* make the multiplication */
+      foundit = 0;
+      sum     = 0.0;
+      for (k=0; k<ncol; k++)
+      {
+         index = find_index(rcolP[k],rcol,nrow);
+         if (index==-1) continue;
+         foundit=1;
+         sum += colP[k]*col[index];
+      }
+      if (foundit)
+         mlpcg_csr_addentry(work,sum,actrow,actcol,actintra);
+   }
+}
+/*======================================================================*/
+/* do interproc computation work = Ptransposed * incsr   part II        */
+/*======================================================================*/
+#ifdef PARALLEL 
+irecv = amdef("irbuff",&irbuff,1000,1,"IV");
+drecv = amdef("drbuff",&drbuff,1000,1,"IV");
+while (nrecv!=0)
+{
+   flag = 0;
+   while(!flag)
+      MPI_Iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,actintra->MPI_INTRA_COMM,&flag,&status);
+   /*--------------------------------------------------- get the sender */
+   n = status.MPI_SOURCE;
+   /*-------------------------------------------------------- check tag */
+   tag = status.MPI_TAG;
+   /*------------------------------------------------- get message size */
+   MPI_Get_count(&status,MPI_INT,&ilength);
+   /*------------------------------------ check size of receive buffers */
+   if (ilength > irbuff.fdim)
+   {
+      amdel(&irbuff);
+      amdel(&drbuff);
+      irecv = amdef("irbuff",&irbuff,ilength,1,"IV");
+      drecv = amdef("drbuff",&drbuff,ilength,1,"IV");
+   }
+   /*-------------------------------------- receive the integer message */
+   MPI_Recv(irecv,ilength,MPI_INT,n,tag,actintra->MPI_INTRA_COMM,&status);
+   /*---------------------------------- receive matching double-message */
+   MPI_Recv(drecv,ilength,MPI_DOUBLE,n,tag+1,actintra->MPI_INTRA_COMM,&status);
+   /*--------------------------- decrease number of unreceived messages */
+   nrecv--;
+   /*---------------------------------------------- check for right row */
+   actrow = (int)drecv[0];
+   owner = mlpcg_getowner(actrow,work->owner,nproc);
+   if (owner != myrank) dserror("Received message does not fit my piece of matrix");
+   /*------------------------------------ put row to my piece of matrix */
+   ncol = irecv[0];
+   mlpcg_csr_addrow(work,actrow,&(drecv[1]),&(irecv[1]),ncol,actintra);
+}
+/*------------------------------------------ wait for all sent messages */
+for (i=0; i<2*nsend; i++) MPI_Wait(&(request[i]),&status);
+/*======================================================================*/
+/*                                                       tidy up        */
+/*======================================================================*/
+for (n=0; n<nproc; n++)
+{
+   if (n==myrank) continue;
+   if (sendtor[myrank][n] != 0) /* I had to send to n */
+   {
+      amdel(&(isbuff[n]));
+      amdel(&(dsbuff[n]));
+   }
+}
+amdel(&irbuff);
+amdel(&drbuff);
+FREE(request);
+#endif
+/*======================================================================*/
+/*                                         close the work matrix        */
+/*======================================================================*/
+mlpcg_csr_close(work);
+/*------------------------------debugging */
+#if 1/* make dense printout from work */
+amdef("sw",&sw,work->numeq_total,incsr->numeq_total,"DA");
+amzero(&sw);
+amdef("rw",&rw,work->numeq_total,incsr->numeq_total,"DA");
+for (i=0; i<work->numeq; i++)
+{
+   actrow   = work->update.a.iv[i];
+   colstart = work->ia.a.iv[i]; 
+   colend   = work->ia.a.iv[i+1];
+   for (j=colstart; j<colend; j++)
+      sw.a.da[actrow][work->ja.a.iv[j]] =  work->a.a.dv[j];
+}
+#ifdef PARALLEL 
+MPI_Allreduce(sw.a.da[0],rw.a.da[0],sw.fdim*sw.sdim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
+#endif
+fprintf(allfiles.out_err,"work-Matrix from sparse multiplication\n");
+for (i=0; i<rw.fdim; i++)
+{
+   for (j=0; j<rw.sdim; j++)
+   {
+    /*  fprintf(allfiles.out_err,"%8.2f ",dense_work.a.da[i][j]);*/
+        if (FABS(rw.a.da[i][j])>EPS14)
+        fprintf(allfiles.out_err,"X ");
+        else
+        fprintf(allfiles.out_err,"* ");
+   }
+   fprintf(allfiles.out_err," \n");
+}
+fprintf(allfiles.out_err,"work-Matrix from sparse multiplication minus work matrix from seq. dense mult.\n");
+for (i=0; i<rw.fdim; i++)
+{
+   for (j=0; j<rw.sdim; j++)
+   {
+    /*  fprintf(allfiles.out_err,"%8.2f ",dense_work.a.da[i][j]);*/
+        if (FABS(rw.a.da[i][j]-dense_work.a.da[i][j])>EPS12)
+        fprintf(allfiles.out_err,"X ");
+        else
+        fprintf(allfiles.out_err,"* ");
+   }
+   fprintf(allfiles.out_err," \n");
+}
+fflush(allfiles.out_err);
+#endif
+/*-------------------------------debugging */
+/*======================================================================*/
+/*             do interproc computation out = work * P   part I         */
+/*======================================================================*/
+#ifdef PARALLEL 
+/*------------------------------ send my prolongator to all other procs */
+nsend = nproc-1;
+nrecv = nproc-1;
+/*--------------------------------------------------- allocate requests */
+request = (MPI_Request*)CALLOC(4*nsend,sizeof(MPI_Request));
+if (!request) dserror("Allocation of memory failed");
+counter=0;
+for (n=0; n<nproc; n++)
+{
+   if (n==myrank) continue;
+   MPI_Isend(update_cscP,numeq_cscP,MPI_INT,n,counter,actintra->MPI_INTRA_COMM,&(request[counter]));
+   counter++;
+   MPI_Isend(ia_cscP,numeq_cscP+1,MPI_INT,n,counter,actintra->MPI_INTRA_COMM,&(request[counter]));
+   counter++;
+   MPI_Isend(ja_cscP,ia_cscP[numeq_cscP],MPI_INT,n,counter,actintra->MPI_INTRA_COMM,&(request[counter]));
+   counter++;
+   MPI_Isend(a_cscP,ia_cscP[numeq_cscP],MPI_DOUBLE,n,counter,actintra->MPI_INTRA_COMM,&(request[counter]));
+   counter++;
+}
+dsassert(counter==4*nsend,"Number of sends wrong");
+#endif
+/*======================================================================*/
+/*                               do local computation of out = work * P */
+/*======================================================================*/
+for (i=0; i<work->numeq; i++)/* loop all my rows of work */
+{
+   actrow = work->update.a.iv[i];
+   mlpcg_extractrowcsr(actrow,work->numeq,work->update.a.iv,work->ia.a.iv,
+                       work->ja.a.iv,work->a.a.dv,col,rcol,&nrow);
+   if (nrow==0) continue;
+   for (j=0; j<numeq_cscP; j++)/* loop all columns in P */
+   {
+      actcol = update_cscP[j];
+      mlpcg_extractcolcsc(actcol,numeq_cscP,update_cscP,ia_cscP,ja_cscP,a_cscP,
+                          colP,rcolP,&ncol);
+      if (ncol==0) continue; 
+      /* make the multiplication */
+      foundit = 0;
+      sum     = 0.0;
+      for (k=0; k<ncol; k++)
+      {
+         index = find_index(rcolP[k],rcol,nrow);
+         if (index==-1) continue;
+         foundit=1;
+         sum += colP[k]*col[index];
+      }
+      if (foundit)
+         mlpcg_csr_addentry(outcsr,sum,actrow,actcol,actintra);
+   }
+}
+/*======================================================================*/
+/*             do interproc computation out = work * P   part II        */
+/*======================================================================*/
+/*-------------------------------------------- allocate receive buffers */
+#ifdef PARALLEL 
+amdef("upd",&rupdate,1,1,"IV");
+amdef("ia" ,&ria    ,1,1,"IV");
+amdef("ja" ,&rja    ,1,1,"IV");
+amdef("a"  ,&ra     ,1,1,"DV");
+while(nrecv!=0)
+{
+   flag=0;
+   while(!flag)
+      MPI_Iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,actintra->MPI_INTRA_COMM,&flag,&status);
+   /*--------------------------------------------------- get the sender */
+   n = status.MPI_SOURCE;
+   /*-------------------------------------------------------- check tag */
+   tag = status.MPI_TAG;
+   /*------------------------------------------------- get message size */
+   MPI_Get_count(&status,MPI_INT,&numeq);
+   if (numeq>rupdate.fdim) 
+   {
+      amdel(&rupdate);
+      amdel(&ria);
+      updateP = amdef("upd",&rupdate,numeq  ,1,"IV");
+      iaP     = amdef("upd",&ria    ,numeq+1,1,"IV");
+   }
+   /*--------------------------------------------------- receive update */  
+   MPI_Recv(updateP,numeq,MPI_INT,n,tag,actintra->MPI_INTRA_COMM,&status);
+   /*------------------------------------------------------- receive ia */
+   MPI_Recv(iaP    ,numeq+1,MPI_INT,n,tag+1,actintra->MPI_INTRA_COMM,&status);
+   /*------------------------------------------- get length of ja and a */
+   if (iaP[numeq] > rja.fdim)
+   {
+      amdel(&rja);
+      amdel(&ra);
+      jaP = amdef("ja" ,&rja    ,iaP[numeq],1,"IV");
+      aP  = amdef("a"  ,&ra     ,iaP[numeq],1,"DV");
+   } 
+   /*------------------------------------------------------- receive ja */
+   MPI_Recv(jaP,iaP[numeq],MPI_INT,n,tag+2,actintra->MPI_INTRA_COMM,&status);
+   /*-------------------------------------------------------- receive a */
+   MPI_Recv(aP,iaP[numeq],MPI_DOUBLE,n,tag+3,actintra->MPI_INTRA_COMM,&status);
+   /*--------------------------- decrease number of unreceived messages */
+   nrecv--;
+   /*---------------- make multiplication and add to my piece of outcsr */
+   for (i=0; i<work->numeq; i++)
+   {
+      actrow = work->update.a.iv[i];
+      mlpcg_extractrowcsr(actrow,work->numeq,work->update.a.iv,work->ia.a.iv,
+                          work->ja.a.iv,work->a.a.dv,col,rcol,&ncol);
+      if (ncol==0) continue;
+      for (j=0; j<numeq; j++) /* loop all columns in received P */
+      {
+         actcol = updateP[j];
+         mlpcg_extractcolcsc(actcol,numeq,updateP,iaP,jaP,aP,colP,rcolP,&nrow);
+         if (nrow==0) continue;
+         /* make the multiplication */
+         foundit = 0;
+         sum     = 0.0;
+         for (k=0; k<ncol; k++)
+         {
+            index = find_index(rcol[k],rcolP,nrow);
+            if (index==-1) continue;
+            foundit=1;
+            sum += col[k]*colP[index]; 
+         }
+         if (foundit)
+            mlpcg_csr_addentry(outcsr,sum,actrow,actcol,actintra);
+      }
+   }
+}
+/*----------------------------------------------- wait for all messages */
+for (n=0; n<(nproc-1)*4; n++) MPI_Wait(&(request[n]),&status);
+/*======================================================================*/
+/*                                                       tidy up        */
+/*======================================================================*/
+FREE(request);
+amdel(&rupdate);
+amdel(&ria);
+amdel(&rja);
+amdel(&ra);
+#endif
+/*------------------------------debugging */
+#if 1/* make dense printout from work */
+mlpcg_csr_close(outcsr);
+amdef("so",&so,outcsr->numeq_total,outcsr->numeq_total,"DA");
+amzero(&so);
+amdef("rw",&ro,outcsr->numeq_total,outcsr->numeq_total,"DA");
+for (i=0; i<outcsr->numeq; i++)
+{
+   actrow   = outcsr->update.a.iv[i];
+   colstart = outcsr->ia.a.iv[i]; 
+   colend   = outcsr->ia.a.iv[i+1];
+   for (j=colstart; j<colend; j++)
+      so.a.da[actrow][outcsr->ja.a.iv[j]] =  outcsr->a.a.dv[j];
+}
+#ifdef PARALLEL 
+MPI_Allreduce(so.a.da[0],ro.a.da[0],so.fdim*so.sdim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
+#endif
+fprintf(allfiles.out_err,"out-Matrix from sparse multiplication\n");
+for (i=0; i<ro.fdim; i++)
+{
+   for (j=0; j<ro.sdim; j++)
+   {
+    /*  fprintf(allfiles.out_err,"%8.2f ",dense_work.a.da[i][j]);*/
+        if (FABS(ro.a.da[i][j])>EPS14)
+        fprintf(allfiles.out_err,"X ");
+        else
+        fprintf(allfiles.out_err,"* ");
+   }
+   fprintf(allfiles.out_err," \n");
+}
+fprintf(allfiles.out_err,"out-Matrix from sparse multiplication minus out matrix from seq. dense mult.\n");
+for (i=0; i<ro.fdim; i++)
+{
+   for (j=0; j<ro.sdim; j++)
+   {
+    /*  fprintf(allfiles.out_err,"%8.2f ",dense_work.a.da[i][j]);*/
+        if (FABS(ro.a.da[i][j]-dense_out.a.da[i][j])>EPS12)
+        fprintf(allfiles.out_err,"X ");
+        else
+        fprintf(allfiles.out_err,"* ");
+   }
+   fprintf(allfiles.out_err," \n");
+}
+fflush(allfiles.out_err);
+/* tidy up debugging */
+amdel(&sdense_in);
+amdel(&rdense_in);
+amdel(&sdense_P);
+amdel(&rdense_P);
+amdel(&dense_work);
+amdel(&dense_out);
+amdel(&sw);
+amdel(&rw);
+amdel(&so);
+amdel(&ro);
+#endif
+/*-------------------------------debugging */
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of mlpcg_precond_PtKP */
+
+
+
+/*! @} (documentation module close)*/

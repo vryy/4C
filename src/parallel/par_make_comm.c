@@ -127,11 +127,11 @@ for (i=0; i<par.numfld; i++)
    MPI_Comm_rank(par.intra[i].MPI_INTRA_COMM,&(par.intra[i].intra_rank));
 /*------------------ now get the size of newly created intracommunicator */   
    MPI_Comm_size(par.intra[i].MPI_INTRA_COMM,&(par.intra[i].intra_nprocs));
-
+   if (par.intra[i].intra_nprocs>MAXPROC) dserror("Define of MAXPROC too small");
+/*-----------------------------------------------------------------------*/   
 }/* end of loop over fields */
 /*--------------------------- free the MPI_WORLD_GROUP, no longer needed */
    MPI_Group_free(&MPI_WORLD_GROUP);
-
 
 
 

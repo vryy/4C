@@ -280,6 +280,10 @@ case skymatrix:
    amzero(&(mat->sky->A));
    mat->sky->is_factored=0;
 break;
+case bdcsr:
+   amzero(&(mat->bdcsr->a));
+   mat->bdcsr->is_factored=0;
+break;
 case spoolmatrix:
    amzero(&(mat->spo->A_loc));
    mat->spo->is_factored=0;

@@ -92,6 +92,9 @@ if (assemble_action==assemble_two_matrix)
    case spoolmatrix:
       add_spo(actpart,actsolv,actintra,actele,sysa1->spo,sysa2->spo);
    break;
+   case bdcsr:
+      add_bdcsr(actpart,actsolv,actintra,actele,sysa1->bdcsr,sysa2->bdcsr);
+   break;
    case sparse_none:
       dserror("Unspecified type of system matrix");
    break;
@@ -131,6 +134,9 @@ if (assemble_action==assemble_one_matrix)
    break;
    case spoolmatrix:
       add_spo(actpart,actsolv,actintra,actele,sysa1->spo,NULL);
+   break;
+   case bdcsr:
+      add_bdcsr(actpart,actsolv,actintra,actele,sysa1->bdcsr,NULL);
    break;
    case sparse_none:
       dserror("Unspecified typ of system matrix");
@@ -176,6 +182,8 @@ if (assemble_action==assemble_two_exchange)
       case skymatrix:
          redundant_skyline(actpart,actsolv,actintra,sysa1->sky,sysa2->sky);
       break;
+      case bdcsr:;
+      break;
       case sparse_none:
          dserror("Unspecified type of system matrix");
       break;
@@ -212,6 +220,8 @@ if (assemble_action==assemble_one_exchange)
       break;
       case ccf:
          redundant_ccf(actpart,actsolv,actintra,sysa1->ccf,NULL);
+      break;
+      case bdcsr:;
       break;
       case sparse_none:
          dserror("Unspecified type of system matrix");
@@ -264,6 +274,7 @@ ARRAY     **couple_d_send_ptr;
 ARRAY     **couple_i_send_ptr;
 ARRAY     **couple_d_recv_ptr;
 ARRAY     **couple_i_recv_ptr;
+ARRAY      *dummyarray;
 
 #ifdef DEBUG 
 dstrc_enter("init_assembly");
@@ -341,6 +352,8 @@ case spoolmatrix:
    couple_d_recv_ptr = &(actsolv->sysarray[actsysarray].spo->couple_d_recv);
    couple_i_recv_ptr = &(actsolv->sysarray[actsysarray].spo->couple_i_recv);
 break;
+case bdcsr:
+   goto end; /* coupled dofs are not supported in bdcsr */
 default:
    dserror("Unknown typ of sparse array");
 break;
@@ -447,6 +460,7 @@ else /*----------------------- I do not expect entries from other procs */
    *couple_i_recv_ptr = NULL;
 }
 /*----------------------------------------------------------------------*/
+end:
 #endif /* end of PARALLEL */
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -484,6 +498,7 @@ RC_PTR               *rcptr_array;
 CCF                  *ccf_array;
 SKYMATRIX            *sky_array;
 SPOOLMAT             *spo;
+DBCSR                *bdcsr_array;
 #ifdef DEBUG 
 dstrc_enter("assemble_vec");
 #endif
@@ -560,6 +575,14 @@ case spoolmatrix:
     for (i=0; i<rhs->numeq; i++)
     {
        dof = spo->update.a.iv[i];
+       rhs->vec.a.dv[i] += drhs[dof]*factor;
+    }
+break;
+case bdcsr:
+    bdcsr_array = sysarray->bdcsr;
+    for (i=0; i<rhs->numeq; i++)
+    {
+       dof = bdcsr_array->update.a.iv[i];
        rhs->vec.a.dv[i] += drhs[dof]*factor;
     }
 break;
