@@ -695,7 +695,7 @@ for (lr=0; lr<nir; lr++)   /* loop in r-direction */
                s9_tmtr(e3,gkovc,gkonc,gmkovc,gmkonc,&detc,akovc,a3kvpc,hgt,
                        klayhgt,mlayhgt,num_klay,kl,ml,condfac);
 
-               /*--------------------------------- metric at gp in shell body */
+               /*---------- metric at gp in shell body -> for geo_lin/geo_nl --*/
                if (ansq==0)
                s9_tvhe(gmkovr,gmkovc,gmkonr,gmkonc,gkovr,gkovc,&detr,&detc,
                        amkovc,amkovr,akovc,akovr,a3kvpc,a3kvpr,e3,kintyp,hgt,
@@ -720,7 +720,8 @@ for (lr=0; lr<nir; lr++)   /* loop in r-direction */
                rot_axis = mat->m.multi_layer->kinlay[kl].rot[ml];
                phi = mat->m.multi_layer->kinlay[kl].phi[ml];
 
-               ip = 2 * ngauss + lt;
+/*               ip = 2 * ngauss + lt;   if 2 GP per thickness !!*/
+               ip = nit * ngauss + lt;
                s9_call_mat(ele,actmultimat,stress,strain,C,gmkovc,gmkovr,gmkonr,
                            gkovr,gkonr,rot_axis,phi,ip,actlay,istore,newval);
                /*---------------- do thickness integration of material tensor */

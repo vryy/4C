@@ -387,7 +387,8 @@ for (lr=0; lr<nir; lr++)
                rot_axis = mat->m.multi_layer->kinlay[kl].rot[ml];
                phi = mat->m.multi_layer->kinlay[kl].phi[ml];
                
-               ip = 2* ngauss + lt;
+/*               ip = 2 * ngauss + lt;   if 2 GP per thickness !!*/
+               ip = nit * ngauss + lt;
                s9_call_mat(ele,actmultimat,stress,strain,C,gmkovc,gmkovr,gmkonr,
                            gkovr,gkonr,rot_axis,phi,ip,actlay,istore,newval);
                /*- calculates physical stresses at gaussian point in respect to local/global coordinat system */
