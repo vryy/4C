@@ -14,6 +14,16 @@ extern struct _DESIGN *design;
 
 
 /*!----------------------------------------------------------------------
+\brief prototypes callable only in this file  
+
+*-----------------------------------------------------------------------*/
+void arcline_xi(DLINE    *dline, NODE     *node, DOUBLE   *xi);
+void stline_xi(DLINE    *dline, NODE     *node, DOUBLE   *xi);
+void calc_arc_props(DLINE *dline);
+
+
+
+/*!----------------------------------------------------------------------
 \brief calculates xi for a node on a arcline 
 
 <pre>                                                              mn 05/03
@@ -201,8 +211,7 @@ a dline onto the nodes on this dline.
 \sa
 
 *----------------------------------------------------------------------*/
-void interpolate_axishell_conds(
-    DISCRET      *actdis )
+void interpolate_axishell_conds(DISCRET  *actdis)
 {
 #ifdef D_AXISHELL
 /*----------------------------------------------------------------------*/
