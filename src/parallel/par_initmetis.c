@@ -1,7 +1,9 @@
 #include "../headers/standardtypes.h"
-#include "/bau/stat33/users/statik/lib/METIS/metis.h"
 #include "../fluid3/fluid3.h"
 #include "../ale/ale.h"
+#ifdef PARALLEL 
+#include "/bau/stat33/users/statik/lib/METIS/metis.h"
+#endif
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
@@ -210,6 +212,7 @@ for (i=0; i<genprob.numfld; i++)
    {
       if (nparts < 8) /*----- better for a smaller number of partitions */
       {
+#ifdef PARALLEL 
       METIS_PartGraphRecursive(
                                &(actfield->dis[0].numnp),
                                &(xadj[i].a.iv[0]),
@@ -223,9 +226,11 @@ for (i=0; i<genprob.numfld; i++)
                                &edgecut,
                                &(part.a.iv[0])
                               );
+#endif
       }
       else /*----------------- better for a larger number of partitions */
       {
+#ifdef PARALLEL 
       METIS_PartGraphKway(
                           &(actfield->dis[0].numnp),
                           &(xadj[i].a.iv[0]),
@@ -239,6 +244,7 @@ for (i=0; i<genprob.numfld; i++)
                           &edgecut,
                           &(part.a.iv[0])
                          );
+#endif
       }
    }
 /*-------------------------------------- broadcast partitioning results */
