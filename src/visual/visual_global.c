@@ -35,6 +35,13 @@ struct _PARTITION    *partition;
 extern struct _FILES  allfiles;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
  | ranks and communicators                                              |
  | This structure struct _PAR par; is defined in main_ccarat.c
  *----------------------------------------------------------------------*/
@@ -88,7 +95,9 @@ for(i=0; i<genprob.numfld; i++)
 /*--------make the procs know their own nodes and elements a bit better */
 part_assignfield();
 
-
+/*---------------------------------- allocate fluid integration data ---*/
+alldyn[genprob.numff].fdyn->data = (FLUID_DATA*)CCACALLOC(1,sizeof(FLUID_DATA));
+ 
 switch(genprob.visual)
 {
 case 2: /* 2D - Problem: Visualisation with VISUAL2*/

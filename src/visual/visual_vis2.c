@@ -459,6 +459,9 @@ default:
 #ifdef SUSE73
 bgcolour+=10;
 #endif
+#ifdef LINUX_MUENCH
+bgcolour+=20;
+#endif
 /*--------------------------------------------------- set some values */
 numele = actfield->dis[0].numele;
 numnp  = actfield->dis[0].numnp;

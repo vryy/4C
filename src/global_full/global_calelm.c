@@ -718,7 +718,8 @@ assemble(sysarray1,
          container);
 #endif
   /*----------------------------------------------------------------------*/
-  if(actsolv->sysarray_typ[sysarray1]==oll)
+if(actsolv != NULL)
+if(actsolv->sysarray_typ[sysarray1]==oll)
   {
     switch(*action)/*=== set flag dependent on calculation-flag */
     {
