@@ -70,8 +70,9 @@ dstrc_enter("c1_out_gid_sol_str");
 /*----------------------------------------------------------------------*/
   if (init==1)
   {
-    tmpnodval     = amdef("tmpnodval"  ,&tmpnodval_a,numnp,8 ,"DA");
-    goto end;
+    if (tmpnodval == NULL)
+      tmpnodval     = amdef("tmpnodval"  ,&tmpnodval_a,numnp,8 ,"DA");
+    goto end;      
   }
 /*----------------------------------------------------------------------*/
   if (init==2)
