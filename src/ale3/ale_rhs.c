@@ -279,7 +279,8 @@ assemble(sysarray1,
          actsolv,
          actintra,
          actele,
-         assemble_action);
+         assemble_action,
+         container);
 #endif
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
