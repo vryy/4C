@@ -616,8 +616,8 @@ if (trace.trace_on==1)
 {
 dstracereport(a);
 } 
-dstrc_exit();
 */
+dstrc_exit();
 #endif
 /*----------------------------------------------------------------------*/
 return((void*)(a->a.d3));
