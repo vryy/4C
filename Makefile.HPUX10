@@ -34,6 +34,10 @@ include ./Makefile.personal_path
 # -DPARALLEL  defines parallel version of programm
 # -DSIXTYFOUR defines 64bit compilation and linkage
 # -DSUSE73    defines for compilation and linkage with gcc and g77 on Suselinux
+# -DSUN       defines for compilation and linkage on CUSS Sunfire machine
+# -DAZUSA     defines for compilation on azusa.hww.de
+# -DHPUX10    defines for compilation on HPUX10
+# -DHPUX11    defines for compilation on HPUX11
 # 
 # -DMLIB_PACKAGE       defines interface to solver library MLIB (HPUX11, sequentiell)
 # -DHYPRE_PACKAGE      defines interface to solver library HYPRE
@@ -53,28 +57,28 @@ include ./Makefile.personal_path
 #
 # sequentiell part
 #--------------------------------------------------------------------
-PROGRAM_NAME  = cca_seq_10.20.
-FXX     = f77
-CCX     = cc
-LDX     = cc
-PFL     = -DD_FLUID -DD_FLUID2 -DD_FLUID3 -DD_BRICK1 -DD_ALE -DD_SHELL8 \
-          -DD_WALL1 -DAZTEC_PACKAGE -DUMFPACK
-AZTEC   = -laztec_seriell21
-UMFPACK = -lumfpack40_hpux10_32
-SPOOLES = 
+#PROGRAM_NAME  = cca_seq_10.20.
+#FXX     = f77
+#CCX     = cc
+#LDX     = cc
+#PFL     = -DHPUX10 -DD_FLUID -DD_FLUID2 -DD_FLUID3 -DD_BRICK1 -DD_ALE -DD_SHELL8 \
+#          -DD_WALL1 -DAZTEC_PACKAGE -DUMFPACK 
+#AZTEC   = -laztec_seriell21
+#UMFPACK = -lumfpack40_hpux10_32
+#SPOOLES = 
 ##--------------------------------------------------------------------
 #
 # parallel part
 #--------------------------------------------------------------------
-#PROGRAM_NAME  = cca_par_10.20.
-#FXX     = /opt/mpi/bin/mpif77
-#CCX     = /opt/mpi/bin/mpicc
-#LDX     = /opt/mpi/bin/mpicc
-#PFL     = -DPARALLEL -DD_FLUID -DD_FLUID2 -DD_FLUID3 -DD_BRICK1 -DD_ALE \
-#          -DD_SHELL8 -DD_WALL1 -DAZTEC_PACKAGE -DUMFPACK -DSPOOLES_PACKAGE  
-#AZTEC   = -laztec_par21
-#UMFPACK = -lumfpack40_hpux10_32
-#SPOOLES = -lspoolesMPI_10.20  -lspooles_10.20
+PROGRAM_NAME  = cca_par_10.20.
+FXX     = /opt/mpi/bin/mpif77
+CCX     = /opt/mpi/bin/mpicc
+LDX     = /opt/mpi/bin/mpicc
+PFL     = -DPARALLEL -DHPUX10 -DD_FLUID -DD_FLUID2 -DD_FLUID3 -DD_BRICK1 -DD_ALE \
+          -DD_SHELL8 -DD_WALL1 -DAZTEC_PACKAGE -DUMFPACK -DSPOOLES_PACKAGE  
+AZTEC   = -laztec_par21
+UMFPACK = -lumfpack40_hpux10_32
+SPOOLES = -lspoolesMPI_10.20  -lspooles_10.20
 #
 #--------------------------------------------------------------------
 #

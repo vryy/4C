@@ -21,7 +21,6 @@ OBJS2	      = src/global_full/global_control.o \
                 src/global_full/map_node_find.o \
                 src/global_full/global_mask_matrices.o \
                 src/global_full/global_mask_msr.o \
-                src/global_full/global_mask_vbr.o \
                 src/global_full/global_mask_mds.o \
                 src/global_full/global_dofconnect.o \
                 src/global_full/global_mask_parcsr.o \

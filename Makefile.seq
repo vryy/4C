@@ -19,6 +19,10 @@
 # -DPARALLEL  defines parallel version of programm
 # -DSIXTYFOUR defines 64bit compilation and linkage
 # -DSUSE73    defines for compilation and linkage with gcc and g77 on Suselinux
+# -DSUN       defines for compilation and linkage on CUSS Sunfire machine
+# -DAZUSA     defines for compilation on azusa.hww.de
+# -DHPUX10    defines for compilation on HPUX10
+# -DHPUX11    defines for compilation on HPUX11
 # 
 # -DMLIB_PACKAGE       defines interface to solver library MLIB (HPUX11, sequentiell)
 # -DHYPRE_PACKAGE      defines interface to solver library HYPRE (not yet impl.)
@@ -33,7 +37,7 @@
 FXX=f90
 CCX=cc
 LDX=cc
-PFL=   -DD_SHELL8 -DD_FLUID -DD_FLUID2 -DD_FLUID3 -DD_ALE -DD_BRICK1 -DD_WALL1 \
+PFL=   -DHPUX11 -DD_SHELL8 -DD_FLUID -DD_FLUID2 -DD_FLUID3 -DD_ALE -DD_BRICK1 -DD_WALL1 \
        -DAZTEC_PACKAGE -DMLIB_PACKAGE -DUMFPACK
 #
 #--------------------------------------------------------------------

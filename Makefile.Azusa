@@ -1,5 +1,3 @@
-#
-#
 #--------------------------------------------------------------------
 # list of possible defines:
 #--------------------------------------------------------------------
@@ -31,74 +29,58 @@
 # -DSPOOLES_PACKAGE    defines interface to solver library Spooles (only in parallel)
 #
 # 
-PFL       =  -DSUN -DD_SHELL8 -DD_BRICK1 -DD_FLUID2 -DD_FLUID3 -DD_ALE -DD_WALL1  \
-             -DPARALLEL -DSPOOLES_PACKAGE -DAZTEC_PACKAGE
+#PFL	   =  -DAZUSA -DSIXTYFOUR -DPARALLEL -DD_SHELL8 -DD_BRICK1 -DD_FLUID \
+#	       -DD_FLUID2 -DD_FLUID3 -DD_ALE -DD_WALL1 -DSPOOLES_PACKAGE
+PFL	  =  -DAZUSA -DSIXTYFOUR -DD_SHELL8 -DPARALLEL -DSPOOLES_PACKAGE
 #
-# set correct paths
-# the library lib_sun.tar.gz is in /bau/stat16/users/statik/lib
-#                                  /bau/stat33/users/statik/lib
-# put the lib_sun.tar.gz in the same directory as the ccarat, 
-# for example
-# /users/stgt/<name>/ccarat
-# /users/stgt/<name>/lib_sun.tar.gz
-# make 
-# gunzip lib_sun.tar.gz
-# tar -xvf lib_sun.tar
-# compile on the andromeda !!!!!!!!!!!!!!!!!!!!
-# set correct HOMEDIR to the directory where you placed ccarat and lib_sun
-HOMEDIR      =  /users/stgt/<name>
-SRC          =  $(HOMEDIR)/ccarat/
-METISDIR     =  $(HOMEDIR)/lib_sun/metis-4.0/Lib
-SPOOLESDIR   =  $(HOMEDIR)/lib_sun/spooles
-AZTECDIR     =  $(HOMEDIR)/lib_sun/aztec21/lib
-NAGCDIR32      =  /soft/local/lpp/nagc/clsol06da 
-NAGCDIR64      =  /soft/local/lpp/nagc/clso606da
-
-
+# set correct HOMEDIR to the directory where you placed ccarat 
+#place the com director from lib_azusa.tar.gz into your home
+#place .profile from lib_azusa.tar.gz into your home
+#place ccarat in a subdirectory of your home named <Name>
+HOMEDIR      =  /crossi/rus/rus/stati/azusa
+SRC          =  $(HOMEDIR)/<name>/ccarat/
+METISDIR     =  $(HOMEDIR)/lib_ita1/metis
+SPOOLESDIR   =  $(HOMEDIR)/lib_ita1/spooles
+AZTECDIR     =  $(HOMEDIR)/lib_ita1/aztec
+COMPILER     =  /opt/NECcomp/compiler70/ia64
+MPI          =  /opt/NECmpi
+LAPACK       =  /opt/intel/mkl/lib/64
 #
 # compilers
 #
-CC	 = mpcc
-F77      = mpf90
+CC	 = /opt/NECmpi/bin/mpicc
+F77      = /opt/NECmpi/bin/mpif90
 LD       = $(CC)
 RM	 = /bin/rm -f
 #---------------------------------------------------------------
-#                                            this is debug 32bit
+#                                            this is debug 64bit
 #---------------------------------------------------------------
-CFLAGS   = -g $(PFL) -xlic_lib=sunperf -DDEBUG
-FFLAGS   = -g -dalign -xlic_lib=sunperf
-LDFLAGS  = -g -xlic_lib=sunperf
-LDOPTS   = -g -xlic_lib=sunperf
-NAGCDIR  = $(NAGCDIR32)
-LIBPATHS = -L/usr/lib -L$(NAGCDIR) -R$(NAGCDIR) -L$(METISDIR) -L$(SPOOLESDIR) -L$(AZTECDIR)
-LIBS	 = $(LIBPATHS) -lm -lmetis_sun32 -lspoolesMPI_sun32 -lspooles_sun32 -laztec_sun_par21_32 -lnagc -lm -mt -lmpi
-PROGRAM  = cca_sun_debg.exe
-#----------------------------------------------------------------
-#                                             this is fast 32 bit
-#----------------------------------------------------------------
-#CFLAGS   = -fast -xtarget=ultra3 -xarch=v8plusb -xlic_lib=sunperf -xvector=s $(PFL)
-#FFLAGS   = -fast -xtarget=ultra3 -xarch=v8plusb -dalign -xlic_lib=sunperf -xvector
-#LDFLAGS  = -fast -xtarget=ultra3 -xarch=v8plusb -xlic_lib=sunperf -xvector=s
-#LDOPTS   = -fast -xtarget=ultra3 -xarch=v8plusb -dalign -xlic_lib=sunperf -xvector
-#NAGCDIR  = $(NAGCDIR32)
-#LIBPATHS = -L/usr/lib -L$(NAGCDIR) -R$(NAGCDIR) -L$(METISDIR) -L$(SPOOLESDIR) -L$(AZTECDIR)
-#LIBS	  = $(LIBPATHS) -lm -lmetis_sun32 -lspoolesMPI_sun32 -lspooles_sun32 -laztec_sun_par21_32 -lnagc -lm -mt -lmpi
-#PROGRAM  = cca_sun_fast32.exe
+#CFLAGS   = -g -ansi $(PFL) -DDEBUG
+#FFLAGS   = -g 
+#LDFLAGS  = -g 
+#LDOPTS   = -g 
+#LIBPATHS = -L$(COMPILER)/lib -L$(LAPACK) -L$(METISDIR) -L$(SPOOLESDIR) -L$(AZTECDIR)
+#LIBS	  = $(LIBPATHS) -lF90 -lIEPCF90 -lc -lm -lspooles_Ita1_64 -lmetis_azusa \
+#	    $(LAPACK)/libguide.so $(LAPACK)/libmkl_lapack.a $(LAPACK)/libmkl_itp.a \
+#	    -lmpi
+#PROGRAM  = cca_ita1_debg.exe
 #----------------------------------------------------------------
 #                                             this is fast 64 bit
 #----------------------------------------------------------------
-#CFLAGS   = -fast -xtarget=ultra3 -xarch=v9b -xlic_lib=sunperf -xvector=s $(PFL)
-#FFLAGS   = -fast -xtarget=ultra3 -xarch=v9b -dalign -xlic_lib=sunperf -xvector
-#LDFLAGS  = -fast -xtarget=ultra3 -xarch=v9b -xlic_lib=sunperf -xvector=s
-#LDOPTS   = -fast -xtarget=ultra3 -xarch=v9b -dalign -xlic_lib=sunperf -xvector=s
-#NAGCDIR  = $(NAGCDIR64)
-#LIBPATHS = -L/usr/lib -L$(NAGCDIR) -R$(NAGCDIR) -L$(METISDIR) -L$(SPOOLESDIR) 
-#LIBS	  = $(LIBPATHS) -lm -lmetis_sun64 -lspoolesMPI_sun64 -lspooles_sun64 -lnagc -lm -mt -lmpi
-#PROGRAM  = cca_sun_fast64.exe
+CFLAGS   = -O4 -ansi $(PFL) 
+FFLAGS   = -O 
+LDFLAGS  = -O 
+LDOPTS   =  
+LIBPATHS = -L$(COMPILER)/lib -L$(LAPACK) -L$(METISDIR) -L$(SPOOLESDIR) -L$(AZTECDIR)
+LIBS	 = $(LIBPATHS) -lF90 -lIEPCF90 -lc -lm -lspooles_Ita1_64 -lmetis_azusa \
+	   $(LAPACK)/libguide.so $(LAPACK)/libmkl_lapack.a $(LAPACK)/libmkl_itp.a \
+	   -lmpi
+PROGRAM  = cca_ita1_fast.exe
+#----------------------------------------------------------------
 #
 #
 #
-INCLUDES  =  -I/usr/include/ -I$(NAGCDIR)/include
+INCLUDES  =  -I$(COMPILER)/include/ 
 #
 #----------------------- binaries -----------------------------------
 include ./Makefile.objects
