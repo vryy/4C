@@ -66,10 +66,11 @@ especially fluid problems with free surfaces
 ------------------------------------------------------------------------*/
 void fluid_mf(INT mctrl)
 {
-static INT      numfld;      /* number of fiels                        */
+static INT      numfld;       /* number of fiels                        */
 static INT      numff;
 static INT      numaf;        /* actual number of fields                */
-INT             mctrlpre=4;   /* control flag                           */
+INT             resstep=0;    /* counter to control output              */
+const  INT      mctrlpre=4;   /* control flag                           */
 INT             actcurve;     /* actual curve                           */
 static FIELD          *fluidfield;   
 static FIELD          *alefield;
@@ -115,6 +116,9 @@ fsidyn->step=0;
 fsidyn->ichecke=0;
 fsidyn->ifsi=-1;
 
+fdyn->dt=fsidyn->dt;
+adyn->dt=fsidyn->dt;
+
 /*--------------------- initialise fluid multifield coupling conditions */
 fluid_initmfcoupling(fluidfield,alefield);
 
@@ -122,10 +126,27 @@ fluid_initmfcoupling(fluidfield,alefield);
 for (actcurve = 0;actcurve<numcurve;actcurve++)
    dyn_init_curve(actcurve,fsidyn->nstep,fsidyn->dt,fsidyn->maxtime);
    
-/*---------------------------------------------------- initialise fluid */
-fsi_fluid(fsidyn,fdyn,fluidfield,mctrl,numff);   
 /*------------------------------------------------------ initialise ale */
 fsi_ale(fsidyn,adyn,alefield,mctrl,numaf);
+/*---------------------------------------------------- initialise fluid */
+fsi_fluid(fsidyn,fdyn,fluidfield,mctrl,numff);   
+
+if (genprob.restart>0)
+{
+   if (fdyn->time != adyn->time)
+   dserror("Restart problem: Time not identical in fields!\n");
+   if (fdyn->step != adyn->step)
+   dserror("Restart problem: Step not identical in fields!\n");
+   fsidyn->time = fdyn->time;
+   fsidyn->step = fdyn->step;
+}
+
+/*----------------------------------------------------------------------*/
+out_gid_msh();
+/*--------------------------------------- write initial solution to gid */
+/*----------------------------- print out solution to 0.flavia.res file */
+if (par.myrank==0)
+  out_gid_sol_fsi(fluidfield,NULL);
 
 /*======================================================================*
                               T I M E L O O P
@@ -133,11 +154,6 @@ fsi_ale(fsidyn,adyn,alefield,mctrl,numaf);
 timeloop:
 mctrl=2;
 fsidyn->step++;
-
-fdyn->dt=fsidyn->dt;
-adyn->dt=fsidyn->dt;
-
-
 fsidyn->time += fsidyn->dt; 
 fdyn->step=fsidyn->step;
 adyn->step=fsidyn->step;
@@ -154,6 +170,16 @@ printf("\n");
 fsi_ale(fsidyn,adyn,alefield,mctrl,numaf);
 /*------------------------------- CFD ----------------------------------*/
 fsi_fluid(fsidyn,fdyn,fluidfield,mctrl,numff);
+
+/*--------------------------------------- write current solution to gid */
+/*----------------------------- print out solution to 0.flavia.res file */
+resstep++;
+if (resstep==fsidyn->upres && par.myrank==0)
+{
+   resstep=0;
+   out_checkfilesize(1);
+   out_gid_sol_fsi(fluidfield,NULL);
+}
 
 /*------------------------------------------- finalising this time step */
 if (fsidyn->step < fsidyn->nstep && fsidyn->time <= fsidyn->maxtime)
