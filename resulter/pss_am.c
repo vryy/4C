@@ -51,9 +51,6 @@ am-allocated 2D arrays therefore operate on the transpose of the array.
 void* amdef(char *namstr,ARRAY *a,int fdim, int sdim, char typstr[])
 {
 register int i=0;
-#ifdef DEBUG 
-dstrc_enter("amdef");
-#endif
 /*----------------------------------------------------------------------*/
 strncpy(a->name,namstr,9);
 a->fdim = fdim;
@@ -152,9 +149,6 @@ int size1,size2;
 ARRAY copyarray;                    
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
-dstrc_enter("amredef");
-#endif
 /*--------------------------------------- find out the new typ of array */
 if (strncmp("IV",newtypstr,2)==0){ newtyp =  newIV; goto next; }
 if (strncmp("IA",newtypstr,2)==0){ newtyp =  newIA; goto next; }
@@ -309,9 +303,6 @@ goto end;
 }
 /*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG 
-dstrc_exit();
-#endif
 return((void*)(a->a.iv));
 } /* end of amredef */
 
@@ -341,9 +332,6 @@ void amdel(ARRAY *array)
 int i=0;
 int size;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
-dstrc_enter("amdel");
-#endif
 /*-------------------------------------------------delete name of array */
 strncpy(array->name,"DELETED",9);
 /*-------------------------------------------------------free the space */
@@ -399,9 +387,6 @@ register int i;
 int          dim;
 int         *iptr;
 double      *dptr;
-#ifdef DEBUG 
-dstrc_enter("amzero");
-#endif
 /*----------------------------------------------------------------------*/
 dim = (array->fdim) * (array->sdim);
 switch (array->Typ)
@@ -426,9 +411,6 @@ default:
    dserror("Unknown type of array given");
 }  
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
-dstrc_exit();
-#endif
 return;
 } /* end of amzero */
 
@@ -461,9 +443,6 @@ int             *ivalue;
 double          *dvalue;
 int             *iptr;
 double          *dptr;
-#ifdef DEBUG 
-dstrc_enter("amscal");
-#endif
 /*----------------------------------------------------------------------*/
 dim = (array->fdim) * (array->sdim);
 switch (array->Typ)
@@ -492,9 +471,6 @@ default:
    dserror("Unknown type of array given");
 }  
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
-dstrc_exit();
-#endif
 return;
 } /* end of amscal */
 
@@ -524,9 +500,6 @@ int             *ivalue;
 double          *dvalue;
 int             *iptr;
 double          *dptr;
-#ifdef DEBUG 
-dstrc_enter("aminit");
-#endif
 /*----------------------------------------------------------------------*/
 dim = (array->fdim) * (array->sdim);
 switch (array->Typ)
@@ -555,9 +528,6 @@ default:
    dserror("Unknown type of array given");
 }  
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
-dstrc_exit();
-#endif
 return;
 } /* end of aminit */
 
@@ -583,9 +553,6 @@ register int i;
 int          dim;
 int         *iptr_from, *iptr_to;
 double      *dptr_from, *dptr_to;
-#ifdef DEBUG 
-dstrc_enter("am_alloc_copy");
-#endif
 /*----------------------------------------------------------------------*/
 dim = array_from->fdim * array_from->sdim;
 switch (array_from->Typ)
@@ -618,9 +585,6 @@ default:
    dserror("Unknown type of array given");
 }  
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
-dstrc_exit();
-#endif
 return((void*)(array_to->a.iv));
 } /* end of am_alloc_copy */
 
@@ -647,9 +611,6 @@ register int i;
 int          dim1, dim2;
 int         *iptr_from, *iptr_to;
 double      *dptr_from, *dptr_to;
-#ifdef DEBUG 
-dstrc_enter("amcopy");
-#endif
 /*----------------------------------------------------------------------*/
 dim1 = array_from->fdim * array_from->sdim;
 dim2 = array_to->fdim   * array_to->sdim;
@@ -684,9 +645,6 @@ default:
    dserror("Unknown type of array given");
 }  
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
-dstrc_exit();
-#endif
 return((void*)(array_to->a.iv));
 } /* end of amcopy */
 
@@ -718,9 +676,6 @@ double     **dafrom,**dato;
 double      *dvfrom, *dvto;
 int        **iafrom,**iato;
 int         *ivfrom, *ivto;
-#ifdef DEBUG 
-dstrc_enter("amadd");
-#endif
 /*----------------------------------------------------------------------*/
 if (array_to->Typ != array_from->Typ) dserror("Mismatch of Types");
 /*----------------------------------------------------------------------*/
@@ -768,9 +723,6 @@ default:
    dserror("Unknown type of array given");
 }  
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
-dstrc_exit();
-#endif
 return;
 } /* end of amadd */
 
@@ -826,9 +778,6 @@ void* am4def(char    *namstr,
 {
 register int i;
 int          endloop;
-#ifdef DEBUG 
-dstrc_enter("am4def");
-#endif
 /*----------------------------------------------------------------------*/
 strncpy(a->name,namstr,9);
 a->fdim =  fdim;
@@ -932,9 +881,6 @@ array->mytracer = NULL
 void am4del(ARRAY4D *array)
 {
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
-dstrc_enter("am4del");
-#endif
 /*-------------------------------------------------delete name of array */
 strncpy(array->name,"DELETED",9);
 /*---------------------------------------------------deletes dimensions */
@@ -996,9 +942,6 @@ register int i;
 int          dim;
 int         *iptr;
 double      *dptr;
-#ifdef DEBUG 
-dstrc_enter("am4zero");
-#endif
 /*----------------------------------------------------------------------*/
 switch (array->Typ)
 {
@@ -1026,9 +969,6 @@ default:
    dserror("Unknown type of array given");
 }  
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
-dstrc_exit();
-#endif
 return;
 } /* end of am4zero */
 
@@ -1060,9 +1000,6 @@ int             *ivalue;
 double          *dvalue;
 int             *iptr;
 double          *dptr;
-#ifdef DEBUG 
-dstrc_enter("am4init");
-#endif
 /*----------------------------------------------------------------------*/
 switch (array->Typ)
 {
@@ -1094,9 +1031,6 @@ default:
    dserror("Unknown type of array given");
 }  
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
-dstrc_exit();
-#endif
 return;
 } /* end of am4init */
 
@@ -1122,9 +1056,6 @@ register int i;
 int          dim;
 int         *iptr_from, *iptr_to;
 double      *dptr_from, *dptr_to;
-#ifdef DEBUG 
-dstrc_enter("am4_alloc_copy");
-#endif
 /*----------------------------------------------------------------------*/
 switch (array_from->Typ)
 {
@@ -1184,9 +1115,6 @@ default:
    dserror("Unknown type of array given");
 }  
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
-dstrc_exit();
-#endif
 return((void*)(array_to->a.d3));
 } /* end of am4_alloc_copy */
 
@@ -1212,9 +1140,6 @@ register int i;
 int          dim,dimnew;
 int         *iptr_from, *iptr_to;
 double      *dptr_from, *dptr_to;
-#ifdef DEBUG 
-dstrc_enter("am4copy");
-#endif
 /*--------------------------------------------------------- check types */
 if (array_from->Typ != array_to->Typ)
    dserror("mismatching typ of ARRAY4Ds, cannot copy ARRAY4Ds");
@@ -1257,9 +1182,6 @@ default:
    dserror("Unknown type of array given");
 }  
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
-dstrc_exit();
-#endif
 return((void*)(array_to->a.d3));
 } /* end of am4copy */
 
@@ -1312,9 +1234,6 @@ void* am4redef(ARRAY4D *array,
 register int i,j,k,l;
 int          size1,size2,size3,size4;
 ARRAY4D copyarray;
-#ifdef DEBUG 
-dstrc_enter("am4redef");
-#endif
 /*----------------------------------------------------------------------*/
 switch (array->Typ)
 {
@@ -1383,9 +1302,6 @@ default:
 break;
 }  
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
-dstrc_exit();
-#endif
 return((void*)(array->a.d3));
 } /* end of am4redef */
 
