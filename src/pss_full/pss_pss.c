@@ -867,7 +867,7 @@ if (err != sizename) dserror("error reading pss-file");
 if ( strncmp(name,test_name,strlen(name)) != 0 )
 {
 /*-------------------- not the right record, so jump it and start again */
-   err = fread(&handle_dummy,sizeof(int),1,allfiles.out_pss);
+   err = fread(&handle_dummy,sizeof(long int),1,allfiles.out_pss);
    if (err != 1) dserror("error reading pss-file");
    err=fread(dimensions,sizeof(int),3,allfiles.out_pss);
    if (err != 3) dserror("error reading pss-file");
