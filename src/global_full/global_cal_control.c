@@ -93,6 +93,13 @@ part_assignfield();
   perf_end(14);
 #endif
  
+
+  /* check the values of the defines for MAXNODE etc. */
+#ifdef CHECK_MAX
+  check_max_sizes();
+#endif
+
+
 /*-------------------calculate system matrices parallel storage formats */
 #ifdef PERF
   perf_begin(15);
