@@ -68,6 +68,11 @@ void math_addab(DOUBLE **a, DOUBLE **b, INT dim1, INT dim2, DOUBLE fact);
 
 
 
+/*----------------------------------------------------------------------*
+ |  geometry.c                                           chfoe 09/04    |
+ *----------------------------------------------------------------------*/
+DOUBLE area_lin_2d(ELEMENT *ele, DOUBLE xyz[2][MAXNOD]);
+ 
 /*!---------------------------------------------------------------------
 \brief extract digits from integer number
 
