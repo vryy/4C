@@ -942,8 +942,8 @@ solserv_result_incre(
                      &(dispi[0]),
                      0,
                      &(actsolv->sysarray[actsysarray]),
-                     &(actsolv->sysarray_typ[actsysarray])
-                    );
+                     &(actsolv->sysarray_typ[actsysarray]),
+		     0);
 /*---------------------------------------------initialize system matrix */
 solserv_zero_mat(
                  actintra,
