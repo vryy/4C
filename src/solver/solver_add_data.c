@@ -83,7 +83,17 @@ if (assemble_action==assemble_two_matrix)
 
 #ifdef AZTEC_PACKAGE
    case msr:
+#if defined(FAST_ASS2) && !defined(FAST_ASS)
+      add_msr_fast2(actpart,actsolv,actintra,actele,sysa1->msr,sysa2->msr);
+#endif
+
+#if defined(FAST_ASS) && !defined(FAST_ASS2)
+      add_msr_fast(actpart,actsolv,actintra,actele,sysa1->msr,sysa2->msr);
+#endif 
+
+#if !defined(FAST_ASS) && !defined(FAST_ASS2)
       add_msr(actpart,actsolv,actintra,actele,sysa1->msr,sysa2->msr);
+#endif
    break;
 #endif
 
@@ -111,7 +121,11 @@ if (assemble_action==assemble_two_matrix)
 
 #ifdef UMFPACK
    case ccf:
+#ifdef FAST_ASS
+      add_ccf_fast(actpart,actsolv,actintra,actele,sysa1->ccf,sysa2->ccf);
+#else
       add_ccf(actpart,actsolv,actintra,actele,sysa1->ccf,sysa2->ccf);
+#endif
    break;
 #endif
 
@@ -121,7 +135,11 @@ if (assemble_action==assemble_two_matrix)
 
 #ifdef SPOOLES_PACKAGE
    case spoolmatrix:
+#ifdef FAST_ASS
+      add_spo_fast(actpart,actsolv,actintra,actele,sysa1->spo,sysa2->spo);
+#else
       add_spo(actpart,actsolv,actintra,actele,sysa1->spo,sysa2->spo);
+#endif
    break;
 #endif
 
@@ -158,7 +176,17 @@ if (assemble_action==assemble_one_matrix)
 
 #ifdef AZTEC_PACKAGE
    case msr:
+#if defined(FAST_ASS2) && !defined(FAST_ASS)
+      add_msr_fast2(actpart,actsolv,actintra,actele,sysa1->msr,NULL);
+#endif
+
+#if defined(FAST_ASS) && !defined(FAST_ASS2)
+      add_msr_fast(actpart,actsolv,actintra,actele,sysa1->msr,NULL);
+#endif 
+
+#if !defined(FAST_ASS) && !defined(FAST_ASS2)
       add_msr(actpart,actsolv,actintra,actele,sysa1->msr,NULL);
+#endif
    break;
 #endif
 
@@ -186,7 +214,11 @@ if (assemble_action==assemble_one_matrix)
 
 #ifdef UMFPACK
    case ccf:
+#ifdef FAST_ASS
+      add_ccf_fast(actpart,actsolv,actintra,actele,sysa1->ccf,NULL);
+#else
       add_ccf(actpart,actsolv,actintra,actele,sysa1->ccf,NULL);
+#endif
    break;
 #endif
 
@@ -196,7 +228,11 @@ if (assemble_action==assemble_one_matrix)
 
 #ifdef SPOOLES_PACKAGE
    case spoolmatrix:
+#ifdef FAST_ASS
+      add_spo_fast(actpart,actsolv,actintra,actele,sysa1->spo,NULL);
+#else
       add_spo(actpart,actsolv,actintra,actele,sysa1->spo,NULL);
+#endif
    break;
 #endif
 

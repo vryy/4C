@@ -30,7 +30,9 @@ INT       numeq;
 INT     **dof_connect;
 ARRAY     red_dof_connect;
 
+#ifdef FAST_ASS
 ELEMENT  *actele;
+#endif
 
 #ifdef DEBUG 
 dstrc_enter("mask_skyline");
@@ -709,5 +711,5 @@ void sky_make_index(
   return;
 } /* end of sky_make_index */
 
-#endif FAST_ASS /* ifdef FAST_ASS */
+#endif /* ifdef FAST_ASS */
 

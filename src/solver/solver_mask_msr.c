@@ -56,7 +56,9 @@ INT       i;
 INT       numeq;
 INT     **dof_connect;
 
+#ifdef FAST_ASS
 ELEMENT  *actele;
+#endif
 
 #ifdef DEBUG 
 dstrc_enter("mask_msr");

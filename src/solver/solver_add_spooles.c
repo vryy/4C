@@ -23,13 +23,28 @@ Maintainer: Malte Neumann
 extern struct _ARRAY estif_global;
 extern struct _ARRAY emass_global;
 
-/*----------------------------------------------------------------------*
-  |  routine to assemble element array to global rcptr-matrix          |
-  |  in parallel,taking care of coupling conditions                    |
-  |                                                                    |
-  |                                                                    |
-  |                                                         m.gee 4/02 |
- *----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*/
+/*!
+ \brief assemble into a msr matrix (original version)
+
+ This routine assembles one or two element matrices (estiff_global and 
+ emass_global) into the global matrices in the spooles format.  
+ It makes extensive use of the searchs provided by the function 
+ 'find_index'.
+  
+ \param actpart   *PARTITION    (i)  the partition we are working on
+ \param actsolv   *SOLVAR       (i)  the solver we are using
+ \param actintra  *INTRA        (i)  the intra-communicator we do not need
+ \param actele    *ELEMENT      (i)  the element we would like to work with
+ \param spo1      *SPOOLMAT     (i)  one sparse matrix we will assemble into
+ \param spo2      *SPOOLMAT     (i)  the other sparse matrix we will assemble into
+
+ \author mn
+ \date 07/04
+
+ */
+/*----------------------------------------------------------------------*/
 void  add_spo(
     struct _PARTITION     *actpart,
     struct _SOLVAR        *actsolv,
@@ -38,133 +53,6 @@ void  add_spo(
     struct _SPOOLMAT      *spo1,
     struct _SPOOLMAT      *spo2)
 {
-
-#ifdef FAST_ASS
-
-  INT         i,j,k,l,counter;          /* some counter variables */
-  INT         istwo=0;
-  INT         start,index,lenght;       /* some more special-purpose counters */
-  INT         ii,jj;                    /* counter variables for system matrix */
-  INT         ii_iscouple;              /* flag whether ii is a coupled dof */
-  INT         ii_owner;                 /* who is owner of dof ii -> procnumber */
-  INT         ii_index;                 /* place of ii in dmsr format */
-  INT         jj_index;                 /* place of jj in dmsr format */
-  INT         nd,ndnd;                  /* size of estif */
-  INT         nnz;                      /* number of nonzeros in sparse system matrix */
-  INT         numeq_total;              /* total number of equations */
-  INT         numeq;                    /* number of equations on this proc */
-  INT         lm[MAXDOFPERELE];         /* location vector for this element */
-  INT         owner[MAXDOFPERELE];      /* the owner of every dof */
-  INT         myrank;                   /* my intra-proc number */
-  INT         nprocs;                   /* my intra- number of processes */
-  DOUBLE    **estif;                    /* element matrix to be added to system matrix */
-  DOUBLE    **emass;                    /* element matrix to be added to system matrix */
-  INT        *update;                   /* vector update see AZTEC manual */
-  DOUBLE     *A_loc;                    /*    "       A_loc see MUMPS manual */
-  DOUBLE     *B_loc;                    /*    "       A_loc see MUMPS manual */
-  INT        *irn;                      /*    "       irn see MUMPS manual */
-  INT        *jcn;                      /*    "       jcn see MUMPS manual */
-  INT        *rowptr;                   /*    "       rowptr see rc_ptr structure */
-  INT       **cdofs;                    /* list of coupled dofs and there owners, see init_assembly */
-  INT         ncdofs;                   /* total number of coupled dofs */
-  INT       **isend1;                   /* pointer to sendbuffer to communicate coupling conditions */
-  DOUBLE    **dsend1;                   /* pointer to sendbuffer to communicate coupling conditions */
-  INT       **isend2;                   /* pointer to sendbuffer to communicate coupling conditions */
-  DOUBLE    **dsend2;                   /* pointer to sendbuffer to communicate coupling conditions */
-  INT         nsend;
-
-#ifdef DEBUG 
-  dstrc_enter("add_spo");
-#endif
-
-  /* check whether to assemble one or two matrices */
-  if (spo2) istwo=1;
-
-  /* set some pointers and variables */
-  myrank     = actintra->intra_rank;
-  nprocs     = actintra->intra_nprocs;
-  estif      = estif_global.a.da;
-  emass      = emass_global.a.da;
-  nd         = actele->nd;
-  ndnd       = nd*nd;
-  nnz        = spo1->nnz;
-  numeq_total= spo1->numeq_total;
-  numeq      = spo1->numeq;
-  update     = spo1->update.a.iv;
-  A_loc      = spo1->A_loc.a.dv;
-  if (istwo)
-    B_loc      = spo2->A_loc.a.dv;
-  irn        = spo1->irn_loc.a.iv;
-  jcn        = spo1->jcn_loc.a.iv;
-  rowptr     = spo1->rowptr.a.iv;
-  cdofs      = actpart->pdis[0].coupledofs.a.ia;
-  ncdofs     = actpart->pdis[0].coupledofs.fdim;
-
-  /* put pointers to sendbuffers if any */
-#ifdef PARALLEL 
-  if (spo1->couple_i_send) 
-  {
-    isend1 = spo1->couple_i_send->a.ia;
-    dsend1 = spo1->couple_d_send->a.da;
-    nsend  = spo1->couple_i_send->fdim;
-    if (istwo)
-    {
-      isend2 = spo2->couple_i_send->a.ia;
-      dsend2 = spo2->couple_d_send->a.da;
-    }
-  }
-#endif
-
-
-  /* loop over i (the element row) */
-  ii_iscouple = 0;
-  ii_owner    = myrank;
-
-  for (i=0; i<nd; i++)
-  {
-    ii = actele->locm[i];
-#ifdef D_CONTACT
-    ii_index = find_index(ii,update,numeq);
-#endif
-
-    /* loop over j (the element column) */
-    for (j=0; j<nd; j++)
-    {
-      jj = actele->locm[j];
-      index = actele->index[i][j];
-
-      if(index >= 0)  /* normal dof */
-      {
-#ifdef D_CONTACT
-        ii_index      = find_index(ii,update,numeq);
-        add_val_spo(ii,ii_index,jj,spo1,estif[i][j],actintra);
-        if (istwo)
-          add_val_spo(ii,ii_index,jj,spo2,emass[i][j],actintra);
-#else
-        A_loc[index] += estif[i][j];
-        if (istwo)
-          B_loc[index] += emass[i][j];
-#endif
-      }
-
-
-      if(index == -1)  /* boundary condition dof */
-        continue;
-
-
-      if(index == -2)  /* coupled dof */
-      {
-        add_spo_sendbuff(ii,jj,i,j,ii_owner,isend1,dsend1,estif,nsend);
-        if (istwo)
-          add_spo_sendbuff(ii,jj,i,j,ii_owner,isend2,dsend2,emass,nsend);
-      }
-
-    } /* end loop over j */
-  }/* end loop over i */
-
-
-#else  /* ifdef FAST_ASS */
-
 
   INT         i,j,k,l,counter;    /* some counter variables */
   INT         istwo=0;
@@ -343,15 +231,179 @@ void  add_spo(
   }/* end loop over i */
 
 
-#endif  /* ifdef FAST_ASS */
-  
-
 #ifdef DEBUG 
   dstrc_exit();
 #endif
 
   return;
 } /* end of add_spo */
+
+
+
+
+#ifdef FAST_ASS
+
+/*----------------------------------------------------------------------*/
+/*!
+ \brief assemble into a spooles matrix (faster version)
+
+ This routine assembles one or two element matrices (estiff_global and 
+ emass_global) into the global matrices in the spooles format.  
+ It makes use of the information saved in actele->index to determine the 
+ correct position in the sparse matrix.  
+ This is faster then searching every time, but consumes a lot of memory!!
+
+ \param actpart   *PARTITION    (i)  the partition we are working on
+ \param actsolv   *SOLVAR       (i)  the solver we are using
+ \param actintra  *INTRA        (i)  the intra-communicator we do not need
+ \param actele    *ELEMENT      (i)  the element we would like to work with
+ \param spo1      *SPOOLMAT     (i)  one sparse matrix we will assemble into
+ \param spo2      *SPOOLMAT     (i)  the other sparse matrix we will assemble into
+
+ \author mn
+ \date 07/04
+
+ */
+/*----------------------------------------------------------------------*/
+void  add_spo_fast(
+    struct _PARTITION     *actpart,
+    struct _SOLVAR        *actsolv,
+    struct _INTRA         *actintra,
+    struct _ELEMENT       *actele,
+    struct _SPOOLMAT      *spo1,
+    struct _SPOOLMAT      *spo2)
+{
+
+  INT         i,j,k,l,counter;          /* some counter variables */
+  INT         istwo=0;
+  INT         start,index,lenght;       /* some more special-purpose counters */
+  INT         ii,jj;                    /* counter variables for system matrix */
+  INT         ii_iscouple;              /* flag whether ii is a coupled dof */
+  INT         ii_owner;                 /* who is owner of dof ii -> procnumber */
+  INT         ii_index;                 /* place of ii in dmsr format */
+  INT         jj_index;                 /* place of jj in dmsr format */
+  INT         nd,ndnd;                  /* size of estif */
+  INT         nnz;                      /* number of nonzeros in sparse system matrix */
+  INT         numeq_total;              /* total number of equations */
+  INT         numeq;                    /* number of equations on this proc */
+  INT         lm[MAXDOFPERELE];         /* location vector for this element */
+  INT         owner[MAXDOFPERELE];      /* the owner of every dof */
+  INT         myrank;                   /* my intra-proc number */
+  INT         nprocs;                   /* my intra- number of processes */
+  DOUBLE    **estif;                    /* element matrix to be added to system matrix */
+  DOUBLE    **emass;                    /* element matrix to be added to system matrix */
+  INT        *update;                   /* vector update see AZTEC manual */
+  DOUBLE     *A_loc;                    /*    "       A_loc see MUMPS manual */
+  DOUBLE     *B_loc;                    /*    "       A_loc see MUMPS manual */
+  INT        *irn;                      /*    "       irn see MUMPS manual */
+  INT        *jcn;                      /*    "       jcn see MUMPS manual */
+  INT        *rowptr;                   /*    "       rowptr see rc_ptr structure */
+  INT       **cdofs;                    /* list of coupled dofs and there owners, see init_assembly */
+  INT         ncdofs;                   /* total number of coupled dofs */
+  INT       **isend1;                   /* pointer to sendbuffer to communicate coupling conditions */
+  DOUBLE    **dsend1;                   /* pointer to sendbuffer to communicate coupling conditions */
+  INT       **isend2;                   /* pointer to sendbuffer to communicate coupling conditions */
+  DOUBLE    **dsend2;                   /* pointer to sendbuffer to communicate coupling conditions */
+  INT         nsend;
+
+#ifdef DEBUG 
+  dstrc_enter("add_spo_fast");
+#endif
+
+  /* check whether to assemble one or two matrices */
+  if (spo2) istwo=1;
+
+  /* set some pointers and variables */
+  myrank     = actintra->intra_rank;
+  nprocs     = actintra->intra_nprocs;
+  estif      = estif_global.a.da;
+  emass      = emass_global.a.da;
+  nd         = actele->nd;
+  ndnd       = nd*nd;
+  nnz        = spo1->nnz;
+  numeq_total= spo1->numeq_total;
+  numeq      = spo1->numeq;
+  update     = spo1->update.a.iv;
+  A_loc      = spo1->A_loc.a.dv;
+  if (istwo)
+    B_loc      = spo2->A_loc.a.dv;
+  irn        = spo1->irn_loc.a.iv;
+  jcn        = spo1->jcn_loc.a.iv;
+  rowptr     = spo1->rowptr.a.iv;
+  cdofs      = actpart->pdis[0].coupledofs.a.ia;
+  ncdofs     = actpart->pdis[0].coupledofs.fdim;
+
+  /* put pointers to sendbuffers if any */
+#ifdef PARALLEL 
+  if (spo1->couple_i_send) 
+  {
+    isend1 = spo1->couple_i_send->a.ia;
+    dsend1 = spo1->couple_d_send->a.da;
+    nsend  = spo1->couple_i_send->fdim;
+    if (istwo)
+    {
+      isend2 = spo2->couple_i_send->a.ia;
+      dsend2 = spo2->couple_d_send->a.da;
+    }
+  }
+#endif
+
+
+  /* loop over i (the element row) */
+  ii_iscouple = 0;
+  ii_owner    = myrank;
+
+  for (i=0; i<nd; i++)
+  {
+    ii = actele->locm[i];
+#ifdef D_CONTACT
+    ii_index = find_index(ii,update,numeq);
+#endif
+
+    /* loop over j (the element column) */
+    for (j=0; j<nd; j++)
+    {
+      jj = actele->locm[j];
+      index = actele->index[i][j];
+
+      if(index >= 0)  /* normal dof */
+      {
+#ifdef D_CONTACT
+        ii_index      = find_index(ii,update,numeq);
+        add_val_spo(ii,ii_index,jj,spo1,estif[i][j],actintra);
+        if (istwo)
+          add_val_spo(ii,ii_index,jj,spo2,emass[i][j],actintra);
+#else
+        A_loc[index] += estif[i][j];
+        if (istwo)
+          B_loc[index] += emass[i][j];
+#endif
+      }
+
+
+      if(index == -1)  /* boundary condition dof */
+        continue;
+
+
+      if(index == -2)  /* coupled dof */
+      {
+        add_spo_sendbuff(ii,jj,i,j,ii_owner,isend1,dsend1,estif,nsend);
+        if (istwo)
+          add_spo_sendbuff(ii,jj,i,j,ii_owner,isend2,dsend2,emass,nsend);
+      }
+
+    } /* end loop over j */
+  }/* end loop over i */
+
+
+#ifdef DEBUG 
+  dstrc_exit();
+#endif
+
+  return;
+} /* end of add_spo_fast */
+
+#endif  /* ifdef FAST_ASS */
 
 
 

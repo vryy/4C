@@ -37,7 +37,9 @@ ARRAY     bindx_a;
 INT      *bindx;
 ARRAY     red_dof_connect;
 
+#ifdef FAST_ASS
 ELEMENT  *actele;
+#endif
 
 #ifdef DEBUG 
 dstrc_enter("mask_ccf");

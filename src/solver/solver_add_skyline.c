@@ -21,13 +21,26 @@ Maintainer: Malte Neumann
 extern struct _ARRAY estif_global;
 extern struct _ARRAY emass_global;
 
-/*----------------------------------------------------------------------*
-  |  routine to assemble element array to global skyline-matrix          |
-  |  in parallel and sequentiell,taking care of coupling conditions      |
-  |                                                                      |
-  |                                                                      |
-  |                                                         m.gee 9/01   |
- *----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*/
+/*!
+ \brief assemble into a skyline matrix (original version)
+
+ This routine assembles one or two element matrices (estiff_global and 
+ emass_global) into the global matrices in the skyline format.
+  
+ \param actpart   *PARTITION    (i)  the partition we are working on
+ \param actsolv   *SOLVAR       (i)  the solver we are using
+ \param actintra  *INTRA        (i)  the intra-communicator we do not need
+ \param actele    *ELEMENT      (i)  the element we would like to work with
+ \param sky1      *SKYMATRIX    (i)  one sparse matrix we will assemble into
+ \param sky2      *SKYMATRIX    (i)  the other sparse matrix we will assemble into
+
+ \author mn
+ \date 07/04
+
+ */
+/*----------------------------------------------------------------------*/
 void  add_skyline(
     struct _PARTITION     *actpart,
     struct _SOLVAR        *actsolv,
@@ -36,70 +49,6 @@ void  add_skyline(
     struct _SKYMATRIX     *sky1,
     struct _SKYMATRIX     *sky2)
 {
-
-#ifdef FAST_ASS
-  
-  INT               i,j;                   /* some counter variables */
-  INT               ii,jj;                 /* counter variables for system matrix */
-  INT               nd;                    /* size of estif */
-  INT               numeq_total;           /* total number of equations */
-  INT               numeq;                 /* number of equations on this proc */
-  INT               myrank;                /* my intra-proc number */
-  INT               nprocs;                /* my intra- number of processes */
-  DOUBLE          **estif;                  /* element matrix 1 to be added to system matrix */
-  DOUBLE          **emass;                  /* element matrix 2 to be added to system matrix */
-  DOUBLE           *A;                      /* the skyline matrix 1 */
-  DOUBLE           *B;                      /* the skyline matrix 2 */
-  INT              *maxa;
-
-  INT               index;
-
-#ifdef DEBUG 
-  dstrc_enter("add_skyline");
-#endif
-
-  /* set some pointers and variables */
-  myrank     = actintra->intra_rank;
-  nprocs     = actintra->intra_nprocs;
-  estif      = estif_global.a.da;
-  emass      = emass_global.a.da;
-  nd         = actele->nd;
-  numeq_total= sky1->numeq_total;
-  numeq      = sky1->numeq;
-  A          = sky1->A.a.dv;
-  maxa       = sky1->maxa.a.iv;
-  if (sky2)
-    B          = sky2->A.a.dv;
-  else
-    B          = NULL;
-
-  /* loop over i (the element row) */
-  for (i=0; i<nd; i++)
-  {
-    ii = actele->locm[i];
-
-    /* loop over j (the element column) */
-    for (j=0; j<nd; j++)
-    {
-      jj = actele->locm[j];
-      index = actele->index[i][j];
-
-      if(index >= 0)  /* normal dof */
-      {
-        A[index] += estif[i][j];
-        if (B)
-          B[index] += emass[i][j];
-      }
-
-      if(index == -1)  /* boundary condition dof */
-        continue;
-
-    } /* end loop over j */
-  }/* end loop over i */
-
-
-#else  /* ifdef FAST_ASS */
-
 
   INT               i,j,counter;           /* some counter variables */
   INT               ii,jj;                 /* counter variables for system matrix */
@@ -209,9 +158,6 @@ is then allreduced. This makes things very comfortable for the moment.
   }/* end loop over i */
 
 
-#endif  /* ifdef FAST_ASS */
-  
-
 #ifdef DEBUG 
   dstrc_exit();
 #endif
@@ -219,17 +165,16 @@ is then allreduced. This makes things very comfortable for the moment.
 } /* end of add_skyline */
 
 
-
 /*----------------------------------------------------------------------*
  |  make redundant skyline matrix on all procs               m.gee 01/02|
  *----------------------------------------------------------------------*/
 void redundant_skyline(
-                        PARTITION     *actpart,
-                        SOLVAR        *actsolv,
-                        INTRA         *actintra,
-                        SKYMATRIX     *sky1,
-                        SKYMATRIX     *sky2
-                        )
+    PARTITION     *actpart,
+    SOLVAR        *actsolv,
+    INTRA         *actintra,
+    SKYMATRIX     *sky1,
+    SKYMATRIX     *sky2
+    )
 {
 
 #ifdef PARALLEL

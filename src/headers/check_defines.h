@@ -89,4 +89,12 @@ Maintainer: Malte Neumann
 #if defined(VISUAL2_PACKAGE) && defined(VISUAL3_PACKAGE)
 #error "VISUAL2 not possible with VISUAL3."
 #endif
+
+
+/* solver and assembling */
+/* fast_ass together with fast_ass2 */
+#if defined(FAST_ASS) && defined(FAST_ASS2)
+#error "FAST_ASS and FAST_ASS2 are not possible together."
+#endif
+
 /*----------------------------------------------------------------------*/

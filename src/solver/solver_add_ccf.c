@@ -22,13 +22,29 @@ Maintainer: Malte Neumann
  *----------------------------------------------------------------------*/
 extern struct _ARRAY estif_global;
 extern struct _ARRAY emass_global;
-/*----------------------------------------------------------------------*
- |  routine to assemble element array to global rcptr-matrix            |
- |  in parallel,taking care of coupling conditions                      |
- |                                                                      |
- |                                                                      |
- |                                                         m.gee 1/02   |
- *----------------------------------------------------------------------*/
+
+
+/*----------------------------------------------------------------------*/
+/*!
+ \brief assemble into a ccf matrix (original version)
+
+ This routine assembles one or two element matrices (estiff_global and 
+ emass_global) into the global matrices in the ccf format.  
+ It makes extensive use of the searchs provided by the function 
+ 'find_index'.
+  
+ \param actpart   *PARTITION    (i)  the partition we are working on
+ \param actsolv   *SOLVAR       (i)  the solver we are using
+ \param actintra  *INTRA        (i)  the intra-communicator we do not need
+ \param actele    *ELEMENT      (i)  the element we would like to work with
+ \param ccf1      *CCF          (i)  one sparse matrix we will assemble into
+ \param ccf2      *CCF          (i)  the other sparse matrix we will assemble into
+
+ \author mn
+ \date 07/04
+
+ */
+/*----------------------------------------------------------------------*/
 void  add_ccf(
     struct _PARTITION     *actpart,
     struct _SOLVAR        *actsolv,
@@ -38,108 +54,7 @@ void  add_ccf(
     struct _CCF           *ccf2)
 {
 
-#ifdef FAST_ASS
-
-  INT         i,j;                      /* some counter variables */
-  INT         istwo=0;
-  INT         start,index,lenght;       /* some more special-purpose counters */
-  INT         ii,jj;                    /* counter variables for system matrix */
-  INT         nd;                       /* size of estif */
-  INT         nnz;                      /* number of nonzeros in sparse system matrix */
-  INT         numeq_total;              /* total number of equations */
-  INT         numeq;                    /* number of equations on this proc */
-  INT         myrank;                   /* my intra-proc number */
-  INT         nprocs;                   /* my intra- number of processes */
-  INT        *Ai;                       /*    "       Ap (column pointer) see UMFPACK manual */
-  INT        *Ap;                       /*    "       Ai see UMFPACK manual */
-  DOUBLE     *Ax;                       /*    "       Ax see UMFPACK manual */
-  DOUBLE     *Bx;                       /*    "       Ax see UMFPACK manual */
-  DOUBLE    **estif;                    /* element matrix to be added to system matrix */
-  DOUBLE    **emass;                    /* element matrix to be added to system matrix */
-  INT        *update;                   /* vector update see AZTEC manual */
-  INT       **cdofs;                    /* list of coupled dofs and there owners, see init_assembly */
-  INT         ncdofs;                   /* total number of coupled dofs */
-
-#ifdef PARALLEL
-  INT       **isend1;                   /* pointer to sendbuffer to communicate coupling conditions */
-  DOUBLE    **dsend1;                   /* pointer to sendbuffer to communicate coupling conditions */
-  INT       **isend2;                   /* pointer to sendbuffer to communicate coupling conditions */
-  DOUBLE    **dsend2;                   /* pointer to sendbuffer to communicate coupling conditions */
-  INT         nsend;
-#endif
-
-#ifdef DEBUG 
-  dstrc_enter("add_ccf");
-#endif
-
-  /* check whether to assemble one or two matrices */
-  if (ccf2) istwo=1;
-
-  /* set some pointers and variables */
-  myrank     = actintra->intra_rank;
-  nprocs     = actintra->intra_nprocs;
-  estif      = estif_global.a.da;
-  emass      = emass_global.a.da;
-  nd         = actele->nd;
-  nnz        = ccf1->nnz;
-  numeq_total= ccf1->numeq_total;
-  numeq      = ccf1->numeq;
-  update     = ccf1->update.a.iv;
-  Ax         = ccf1->Ax.a.dv;
-  if (istwo)
-    Bx         = ccf2->Ax.a.dv;
-  Ai         = ccf1->Ai.a.iv;
-  Ap         = ccf1->Ap.a.iv;
-  cdofs      = actpart->pdis[0].coupledofs.a.ia;
-  ncdofs     = actpart->pdis[0].coupledofs.fdim;
-
-  /* put pointers to sendbuffers if any */
-#ifdef PARALLEL 
-  if (ccf1->couple_i_send) 
-  {
-    isend1 = ccf1->couple_i_send->a.ia;
-    dsend1 = ccf1->couple_d_send->a.da;
-    nsend  = ccf1->couple_i_send->fdim;
-    if (istwo)
-    {
-      isend2 = ccf2->couple_i_send->a.ia;
-      dsend2 = ccf2->couple_d_send->a.da;
-    }
-  }
-#endif
-
-
-  /* loop over i (the element column) */
-  for (i=0; i<nd; i++)
-  {
-    ii = actele->locm[i];
-    
-    /* loop over j (the element row) */
-    start         = Ap[ii];
-    lenght        = Ap[ii+1]-Ap[ii];
-    for (j=0; j<nd; j++)
-    {
-      jj = actele->locm[j];
-      index = actele->index[i][j];
-
-      if(index >= 0)  /* normal dof */
-      {
-        Ax[index] += estif[i][j];
-        if (istwo)
-          Bx[index] += emass[i][j];
-      }
-
-      if(index == -1)  /* boundary condition dof */
-        continue;
-
-    } /* end loop over j */
-  }/* end loop over i */
-
-
-#else  /* ifdef FAST_ASS */
-
-
-  INT         i,j,k,l,counter;    /* some counter variables */
+  INT         i,j,counter;        /* some counter variables */
   INT         istwo=0;
   INT         start,index,lenght; /* some more special-purpose counters */
   INT         ii,jj;              /* counter variables for system matrix */
@@ -148,7 +63,6 @@ void  add_ccf(
   INT         numeq_total;        /* total number of equations */
   INT         numeq;              /* number of equations on this proc */
   INT         lm[MAXDOFPERELE];   /* location vector for this element */
-  INT         owner[MAXDOFPERELE];/* the owner of every dof */
   INT         myrank;             /* my intra-proc number */
   INT         nprocs;             /* my intra- number of processes */
   INT        *Ai;                 /*    "       Ap (column pointer) see UMFPACK manual */
@@ -160,11 +74,15 @@ void  add_ccf(
   INT        *update;             /* vector update see AZTEC manual */
   INT       **cdofs;              /* list of coupled dofs and there owners, see init_assembly */
   INT         ncdofs;             /* total number of coupled dofs */
+
+#ifdef PARALLEL
+  INT         owner[MAXDOFPERELE];/* the owner of every dof */
   INT       **isend1;             /* pointer to sendbuffer to communicate coupling conditions */
   DOUBLE    **dsend1;             /* pointer to sendbuffer to communicate coupling conditions */
   INT       **isend2;             /* pointer to sendbuffer to communicate coupling conditions */
   DOUBLE    **dsend2;             /* pointer to sendbuffer to communicate coupling conditions */
   INT         nsend;
+#endif
 
 #ifdef DEBUG 
   dstrc_enter("add_ccf");
@@ -186,7 +104,9 @@ void  add_ccf(
   update     = ccf1->update.a.iv;
   Ax         = ccf1->Ax.a.dv;
   if (istwo)
-    Bx         = ccf2->Ax.a.dv;
+    Bx       = ccf2->Ax.a.dv;
+  else
+    Bx       = NULL;
   Ai         = ccf1->Ai.a.iv;
   Ap         = ccf1->Ap.a.iv;
   cdofs      = actpart->pdis[0].coupledofs.a.ia;
@@ -262,7 +182,144 @@ void  add_ccf(
   }/* end loop over i */
 
 
-#endif /* ifdef FAST_ASS */
+#ifdef DEBUG 
+  dstrc_exit();
+#endif
+  return;
+}
+
+
+
+
+#ifdef FAST_ASS
+
+/*----------------------------------------------------------------------*/
+/*!
+ \brief assemble into a ccf matrix (original version)
+
+ This routine assembles one or two element matrices (estiff_global and 
+ emass_global) into the global matrices in the ccf format.  
+ It makes use of the information saved in actele->index to determine the 
+ correct position in the sparse matrix.  
+ This is faster then searching every time, but consumes a lot of memory!!
+  
+ \param actpart   *PARTITION    (i)  the partition we are working on
+ \param actsolv   *SOLVAR       (i)  the solver we are using
+ \param actintra  *INTRA        (i)  the intra-communicator we do not need
+ \param actele    *ELEMENT      (i)  the element we would like to work with
+ \param ccf1      *CCF          (i)  one sparse matrix we will assemble into
+ \param ccf2      *CCF          (i)  the other sparse matrix we will assemble into
+
+ \author mn
+ \date 07/04
+
+ */
+/*----------------------------------------------------------------------*/
+void  add_ccf_fast(
+    struct _PARTITION     *actpart,
+    struct _SOLVAR        *actsolv,
+    struct _INTRA         *actintra,
+    struct _ELEMENT       *actele,
+    struct _CCF           *ccf1,
+    struct _CCF           *ccf2)
+{
+
+  INT         i,j;                      /* some counter variables */
+  INT         istwo=0;
+  INT         start,index,lenght;       /* some more special-purpose counters */
+  INT         ii,jj;                    /* counter variables for system matrix */
+  INT         nd;                       /* size of estif */
+  INT         nnz;                      /* number of nonzeros in sparse system matrix */
+  INT         numeq_total;              /* total number of equations */
+  INT         numeq;                    /* number of equations on this proc */
+  INT         myrank;                   /* my intra-proc number */
+  INT         nprocs;                   /* my intra- number of processes */
+  INT        *Ai;                       /*    "       Ap (column pointer) see UMFPACK manual */
+  INT        *Ap;                       /*    "       Ai see UMFPACK manual */
+  DOUBLE     *Ax;                       /*    "       Ax see UMFPACK manual */
+  DOUBLE     *Bx;                       /*    "       Ax see UMFPACK manual */
+  DOUBLE    **estif;                    /* element matrix to be added to system matrix */
+  DOUBLE    **emass;                    /* element matrix to be added to system matrix */
+  INT        *update;                   /* vector update see AZTEC manual */
+  INT       **cdofs;                    /* list of coupled dofs and there owners, see init_assembly */
+  INT         ncdofs;                   /* total number of coupled dofs */
+
+#ifdef PARALLEL
+  INT       **isend1;                   /* pointer to sendbuffer to communicate coupling conditions */
+  DOUBLE    **dsend1;                   /* pointer to sendbuffer to communicate coupling conditions */
+  INT       **isend2;                   /* pointer to sendbuffer to communicate coupling conditions */
+  DOUBLE    **dsend2;                   /* pointer to sendbuffer to communicate coupling conditions */
+  INT         nsend;
+#endif
+
+#ifdef DEBUG 
+  dstrc_enter("add_ccf");
+#endif
+
+  /* check whether to assemble one or two matrices */
+  if (ccf2) istwo=1;
+
+  /* set some pointers and variables */
+  myrank     = actintra->intra_rank;
+  nprocs     = actintra->intra_nprocs;
+  estif      = estif_global.a.da;
+  emass      = emass_global.a.da;
+  nd         = actele->nd;
+  nnz        = ccf1->nnz;
+  numeq_total= ccf1->numeq_total;
+  numeq      = ccf1->numeq;
+  update     = ccf1->update.a.iv;
+  Ax         = ccf1->Ax.a.dv;
+  if (istwo)
+    Bx       = ccf2->Ax.a.dv;
+  else
+    Bx       = NULL;
+  Ai         = ccf1->Ai.a.iv;
+  Ap         = ccf1->Ap.a.iv;
+  cdofs      = actpart->pdis[0].coupledofs.a.ia;
+  ncdofs     = actpart->pdis[0].coupledofs.fdim;
+
+  /* put pointers to sendbuffers if any */
+#ifdef PARALLEL 
+  if (ccf1->couple_i_send) 
+  {
+    isend1 = ccf1->couple_i_send->a.ia;
+    dsend1 = ccf1->couple_d_send->a.da;
+    nsend  = ccf1->couple_i_send->fdim;
+    if (istwo)
+    {
+      isend2 = ccf2->couple_i_send->a.ia;
+      dsend2 = ccf2->couple_d_send->a.da;
+    }
+  }
+#endif
+
+
+  /* loop over i (the element column) */
+  for (i=0; i<nd; i++)
+  {
+    ii = actele->locm[i];
+    
+    /* loop over j (the element row) */
+    start         = Ap[ii];
+    lenght        = Ap[ii+1]-Ap[ii];
+    for (j=0; j<nd; j++)
+    {
+      jj = actele->locm[j];
+      index = actele->index[i][j];
+
+      if(index >= 0)  /* normal dof */
+      {
+        Ax[index] += estif[i][j];
+        if (istwo)
+          Bx[index] += emass[i][j];
+      }
+
+      if(index == -1)  /* boundary condition dof */
+        continue;
+
+    } /* end loop over j */
+  }/* end loop over i */
 
 
 #ifdef DEBUG 
@@ -270,6 +327,8 @@ void  add_ccf(
 #endif
   return;
 }
+
+#endif /* ifdef FAST_ASS */
 
 
 
