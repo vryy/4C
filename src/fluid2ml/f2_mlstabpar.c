@@ -49,7 +49,7 @@ is calculated.
 \param   *velint      DOUBLE	      (i)    l-s velocity at ele. center
 \param    visc        DOUBLE	      (i)    viscosity
 \param    iel         INT	      (i)    number of nodes	     
-\param	  ntyp        INT	      (i)    element type
+\param	  typ         DIS_TYP	      (i)    element type
 \return void                                                                       
 
 ------------------------------------------------------------------------*/ 
@@ -58,7 +58,7 @@ void f2_smstabpar(ELEMENT         *ele,
 		  DOUBLE	  *velint,  
 		  DOUBLE	   visc,    
 		  INT		   iel,     
-		  INT		   ntyp)
+		  DIS_TYP          typ)
 {
 DOUBLE hdiv=ONE;   /* element length quotient for higher-order elements */  
 DOUBLE velno;      /* velocity norm                                     */
@@ -79,14 +79,14 @@ switch(mlvar->smstamk)
 {
 case -1:
    c_mk = Q13;
-   if (ntyp==1 && iel>4)
+   if (typ==quad8 || typ == quad9)
    {
       if (iel<10)
          hdiv = TWO;
       else
          hdiv = THREE;               
    }
-   else if (ntyp==2 && iel>3)
+   else if (typ==tri6)
    {
       if (iel==6)
          hdiv = TWO;
@@ -168,7 +168,7 @@ is calculated.
 \param  **vderxy      DOUBLE	      (i)    l-s vel. der. at ele. center
 \param    visc        DOUBLE	      (i)    viscosity
 \param    iel         INT	      (i)    number of nodes	     
-\param	  ntyp        INT	      (i)    element type
+\param	  typ         DIS_TYP	      (i)    element type
 \return void                                                                       
 
 ------------------------------------------------------------------------*/ 
@@ -178,7 +178,7 @@ void f2_smsgvisc(ELEMENT         *ele,
 		 DOUBLE 	**vderxy,  
 		 DOUBLE 	  visc,    
 		 INT		  iel,     
-		 INT		  ntyp)
+		 DIS_TYP          typ)
 {
 DOUBLE hdiv=ONE;   /* element length quotient for higher-order elements */
 DOUBLE velno;      /* velocity norm                                     */
@@ -193,14 +193,14 @@ dstrc_enter("f2_smsgvisc");
 
 
 /*----------------------- higher order element diameter modifications ? */
-if (ntyp==1 && iel>4)
+if (typ==quad8 || typ==quad9)
 {
    if (iel<10)
       hdiv = TWO;
    else
       hdiv = THREE;		  
 }
-else if (ntyp==2 && iel>3)
+else if (typ==tri6)
 {
    if (iel==6)
       hdiv = TWO;
@@ -251,7 +251,7 @@ void f2_mlcalstabpar(ELEMENT         *ele,
 		     DOUBLE	   *velint,  
 		     DOUBLE	    visc,    
 		     INT  	    iel,     
-		     INT  	    ntyp,    
+		     DIS_TYP 	    typ,    
 		     INT  	    iflag)
 {
 INT    isp;
@@ -281,14 +281,14 @@ switch(gls->mk)
 {
 case -1:
    c_mk = Q13;
-   if (ntyp==1 && iel>4)
+   if (typ == quad8 || typ == quad9)
    {
       if (iel<10)
          hdiv = TWO;
       else
          hdiv = THREE;               
    }
-   else if (ntyp==2 && iel>3)
+   else if (typ==tri6)
    {
       if (iel==6)
          hdiv = TWO;
@@ -416,7 +416,7 @@ element Peclet number or the Smagorinsky version) may be calculated.
 \param  **vderxy      DOUBLE	      (i)    vel. der. at center
 \param    visc        DOUBLE	      (i)    viscosity
 \param    iel,        int	      (i)    number of nodes	     
-\param	  ntyp        int	      (i)    element type
+\param	  typ         DIS_TYP	      (i)    element type
 \return void                                                                       
 
 ------------------------------------------------------------------------*/ 
@@ -425,7 +425,7 @@ void f2_calsgvisc(ELEMENT         *ele,
 		  DOUBLE         **vderxy,  
 		  DOUBLE           visc,    
 		  INT              iel,     
-		  INT              ntyp)
+		  DIS_TYP          typ)
 {
 INT    isp;
 DOUBLE hdiv=ONE; 
@@ -442,14 +442,14 @@ dstrc_enter("f2_calsgvisc");
 fdyn = alldyn[genprob.numff].fdyn;
 
 /*----------------------- higher order element diameter modifications ? */
-if (ntyp==1 && iel>4)
+if (typ==quad8 || typ==quad9)
 {
    if (iel<10)
       hdiv = TWO;
    else
       hdiv = THREE;		  
 }
-else if (ntyp==2 && iel>3)
+else if (typ==tri6)
 {
    if (iel==6)
       hdiv = TWO;
