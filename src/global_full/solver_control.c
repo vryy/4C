@@ -71,6 +71,9 @@ break;
 case bdcsr:/*------------------------------ system matrix is csr matrix */
    solver_mlpcg(actsolv,actintra,sysarray->bdcsr,sol,rhs,option);
 break;
+case oll:/*------------------------------ system matrix is csr matrix */
+   solver_oll(actsolv,actintra,sysarray->oll,sol,rhs,option);
+break;
 default:
    dserror("Unknown format typ of system matrix");
 break;   

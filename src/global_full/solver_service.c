@@ -20,7 +20,7 @@ static void solserv_matvec_ccf(INTRA  *actintra,CCF *ccf,double *work1,double *w
 static void solserv_matvec_msr(INTRA *actintra,AZ_ARRAY_MSR *msr,double *work1,double *work2);
 static void solserv_matvec_sky(INTRA *actintra,SKYMATRIX *sky,double *work1,double *work2);
 static void solserv_matvec_dense(INTRA *actintra,DENSE *dense,double *work1,double *work2);
-
+static void oll_matvec(INTRA *actintra, OLL *oll, double *work1, double *work2);
 /*----------------------------------------------------------------------*
  |  make A = A * factor                                      m.gee 02/02|
  | SPARSE_TYP *Atyp (i)        type of sparse matrix                    |
@@ -66,6 +66,9 @@ case ccf:
 break;
 case skymatrix:
    amscal(&(A->sky->A),&factor);
+break;
+case oll:
+   oll_scal(A->oll,factor);
 break;
 case sparse_none:
    dserror("Unknown typ of sparse distributed system matrix");
@@ -140,7 +143,19 @@ case ccf:
 break;
 case skymatrix:
    amadd(&(A->sky->A),&(B->sky->A),factor,0);
-break;
+   break;
+case oll:
+   if(B->oll->is_masked==0) break;
+   if(A->oll->is_masked==0) 
+   {
+     oll_copy(B->oll,A->oll);
+     oll_scal(B->oll,factor);
+   }
+   else
+   {
+     oll_add(A->oll,B->oll,factor);
+   }
+   break;
 case sparse_none:
    dserror("Unknown typ of sparse distributed system matrix");
 break;
@@ -211,6 +226,10 @@ break;
 case bdcsr:
    *numeq       = mat.bdcsr->numeq;
    *numeq_total = mat.bdcsr->numeq_total;
+break;
+case oll:
+   *numeq       = mat.oll->numeq;
+   *numeq_total = mat.oll->numeq_total;
 break;
 case sparse_none:
    dserror("Unknown typ of sparse distributed system matrix");
@@ -322,6 +341,10 @@ case spoolmatrix:
    }
 #endif
 break;
+case oll:
+   oll_zero(mat->oll);
+   /*solserv_zero_mat(actintra,&(mat->oll->sysarray[0]),&(mat->oll->sysarray_typ[0]));*/
+break;
 case sparse_none:
    dserror("Unknown typ of sparse distributed system matrix");
 break;
@@ -400,6 +423,10 @@ break;
 case bdcsr:
    matto->bdcsr = (DBCSR*)CCACALLOC(1,sizeof(DBCSR));
    solserv_cp_bdcsrmask(matfrom->bdcsr,matto->bdcsr);
+break;
+case oll:
+   matto->oll = (OLL*)CCACALLOC(1,sizeof(OLL));
+   oll_cp_mask(matfrom->oll,matto->oll);
 break;
 case sparse_none:
    dserror("Unknown typ of sparse distributed system matrix");
@@ -791,6 +818,11 @@ case skymatrix:
    solserv_matvec_sky(actintra,mat->sky,work1,work2);
    solserv_distribdistvec(result,mat,mattyp,work2,vec->numeq_total,actintra);
 break;
+case oll:
+   solserv_reddistvec(vec,mat,mattyp,work1,vec->numeq_total,actintra);
+   oll_matvec(actintra,mat->oll,work1,work2);
+   solserv_distribdistvec(result,mat,mattyp,work2,vec->numeq_total,actintra);
+break;
 case sparse_none:
    dserror("Unknown typ of sparse distributed system matrix");
 break;
@@ -1136,3 +1168,56 @@ dstrc_exit();
 #endif
 return;
 } /* end of solserv_matvec_dense */
+
+
+/*----------------------------------------------------------------------*
+ |  make matrix vector multiplication with oll     matrix      m.n 04/03|
+ |  called by solserv_sparsematvec only !                               |
+ *----------------------------------------------------------------------*/
+static void oll_matvec(
+    INTRA        *actintra,
+    OLL          *oll,
+    double       *work1,
+    double       *work2)        /* work2 is the result */
+{
+  int         i,j,dof;
+  int         numeq;
+  int         numeq_total;
+  int        *update;
+  MATENTRY  **row;
+  MATENTRY   *actentry;
+
+#ifdef DEBUG 
+  dstrc_enter("oll_matvec");
+#endif
+  /*----------------------------------------------------------------------*/
+  numeq_total= oll->numeq_total;
+  numeq      = oll->numeq;
+  update     = oll->update.a.iv;
+  row = oll->row;
+
+  /*------------------------------------------- now loop my own equations */
+  for (i=0; i<oll->rdim; i++)
+  {
+    dof = update[i];
+    work2[dof]=0.0;
+    actentry = row[i];
+    while(actentry != NULL )
+    {
+      work2[dof] += actentry->val * work1[actentry->c];
+      actentry = actentry->rnext;
+    } /* end while row i */
+  } /* end for all rows */
+
+  /* every proc added his complete part to the full-sized vector work2.
+     There is no need to alreduce this vector here, because it will anyway
+     be distributed to a DIS_VECTOR */
+  /*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+  dstrc_exit();
+#endif
+  return;
+} /* end of oll_matvec */
+
+
+

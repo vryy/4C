@@ -71,7 +71,13 @@ OBJS2	      = src/global_full/global_control.o \
                 src/global_full/solver_mlpcg_fish.o \
                 src/global_full/solver_mlpcg_test.o \
                 src/global_full/restart_control.o \
-                src/global_full/machine_hpux.o 
+                src/global_full/machine_hpux.o \
+		src/global_full/global_oll_add.o \
+                src/global_full/solver_oll.o \
+                src/global_full/solver_oll_aztec.o \
+                src/global_full/solver_oll_spooles.o \
+		src/global_full/global_oll_service.o \
+		src/global_full/global_oll_service2.o
 #                pss_full
 OBJS3	      = src/pss_full/pss_am.o \
                 src/pss_full/pss_ds.o \

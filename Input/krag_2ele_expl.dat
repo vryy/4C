@@ -25,6 +25,7 @@ FLUID_SOL_FILE     No
 GEOLINEAR
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Centr_Diff
+EIGEN        0
 RESEVRYDISP  5
 RESEVRYSTRS  250
 RESTARTEVRY  250
@@ -82,10 +83,12 @@ AZSUB          50
 AZOMEGA        1.0  
 AZGRAPH        1  
 AZPOLY         5  
+//MATRIXTYP      OLL
 PARTITION      Cut_Elements
 -----------------------------------------------------STRUCT SOLVER
-SOLVER         Colsol
-//SOLVER         Aztec_MSR
+//SOLVER         UMFPACK
+//SOLVER         SPOOLES_nonsym
+SOLVER         Aztec_MSR
 AZSOLVE        CG
 AZPREC         ILU
 AZREUSE        0  
@@ -98,6 +101,7 @@ AZSUB          50
 AZOMEGA        1.0  
 AZGRAPH        1  
 AZPOLY         5  
+//MATRIXTYP      OLL
 PARTITION      Cut_Elements
 --------------------------------------------------------ALE SOLVER
 SOLVER         Aztec_MSR
@@ -113,6 +117,7 @@ AZSUB          50
 AZOMEGA        1.0  
 AZGRAPH        1  
 AZPOLY         5  
+//MATRIXTYP      OLL
 PARTITION      Cut_Elements
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 4

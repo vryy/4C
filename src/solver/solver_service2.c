@@ -301,6 +301,9 @@ break;
 case mds:
    index = indiz;
 break;
+case oll:
+   update = sysarray->oll->update.a.iv;
+break;
 default:
    dserror("Unknown typ of system matrix given");
 break;
@@ -617,6 +620,22 @@ case bdcsr:
 break;
 
 
+case oll:
+   for (i=0; i<sysarray->oll->numeq; i++)
+   {
+      dof = sysarray->oll->update.a.iv[i];
+#ifdef PARALLEL 
+      recvbuff[dof] = distvec->vec.a.dv[i];
+#else
+      fullvec[dof] = distvec->vec.a.dv[i];
+#endif
+   }
+#ifdef PARALLEL 
+   MPI_Allreduce(recvbuff,fullvec,dim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
+#endif
+break;
+
+
 
 
 default:
@@ -742,6 +761,14 @@ case skymatrix:
    for (i=0; i<sysarray->sky->numeq; i++)
    {
       dof = sysarray->sky->update.a.iv[i];
+      distvec->vec.a.dv[i] = fullvec[dof];
+   }
+break;
+
+case oll:
+   for (i=0; i<sysarray->oll->numeq; i++)
+   {
+      dof = sysarray->oll->update.a.iv[i];
       distvec->vec.a.dv[i] = fullvec[dof];
    }
 break;

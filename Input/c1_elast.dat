@@ -95,12 +95,15 @@ MERIT        2
 OPTVART      sinmat 1
 ------------------------------------------------------FLUID SOLVER
 SOLVER         Colsol
+//MATRIXTYP      OLL
 PARTITION      Cut_Elements
 -----------------------------------------------------STRUCT SOLVER
 SOLVER         Colsol
+//MATRIXTYP      OLL
 PARTITION      Cut_Elements
 --------------------------------------------------------ALE SOLVER
 SOLVER         Colsol
+//MATRIXTYP      OLL
 PARTITION      Cut_Elements
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 8

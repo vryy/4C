@@ -82,11 +82,9 @@ AZSUB          50
 AZOMEGA        1.0  
 AZGRAPH        1  
 AZPOLY         5  
+//MATRIXTYP      OLL
 PARTITION      Cut_Elements
 -----------------------------------------------------STRUCT SOLVER
-SOLVER         Colsol
-PARTITION      Cut_Elements
---------------------------------------------------------ALE SOLVER
 SOLVER         Aztec_MSR
 AZSOLVE        CG
 AZPREC         ILU
@@ -100,6 +98,12 @@ AZSUB          50
 AZOMEGA        1.0  
 AZGRAPH        1  
 AZPOLY         5  
+//MATRIXTYP      OLL
+PARTITION      Cut_Elements
+--------------------------------------------------------ALE SOLVER
+//SOLVER         SPOOLES_nonsym
+SOLVER         Colsol
+MATRIXTYP      OLL
 PARTITION      Cut_Elements
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 32

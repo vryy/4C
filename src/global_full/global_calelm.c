@@ -105,6 +105,12 @@ if (sysarray1 != -1)
       if (actsolv->sysarray[sysarray1].spo->couple_d_recv)
          amzero(actsolv->sysarray[sysarray1].spo->couple_d_recv);
    break;
+   case oll:
+      if (actsolv->sysarray[sysarray1].oll->couple_d_send)
+         amzero(actsolv->sysarray[sysarray1].oll->couple_d_send);
+      if (actsolv->sysarray[sysarray1].oll->couple_d_recv)
+         amzero(actsolv->sysarray[sysarray1].oll->couple_d_recv);
+   break;
    case bdcsr:;
    break;
    default:
@@ -164,6 +170,12 @@ if (sysarray2 != -1)
          amzero(actsolv->sysarray[sysarray2].spo->couple_d_send);
       if (actsolv->sysarray[sysarray2].spo->couple_d_recv)
          amzero(actsolv->sysarray[sysarray2].spo->couple_d_recv);
+   break;
+   case oll:
+      if (actsolv->sysarray[sysarray2].oll->couple_d_send)
+         amzero(actsolv->sysarray[sysarray2].oll->couple_d_send);
+      if (actsolv->sysarray[sysarray2].oll->couple_d_recv)
+         amzero(actsolv->sysarray[sysarray2].oll->couple_d_recv);
    break;
    case bdcsr:;
    break;
@@ -380,6 +392,35 @@ assemble(sysarray1,
          assemble_action,
          container);
 #endif
+/*----------------------------------------------------------------------*/
+if(actsolv->sysarray_typ[sysarray1]==oll)
+{
+  switch(*action)/*=== set flag dependent on calculation-flag */
+  {
+    case calc_struct_nlnstiffmass    : 
+      actsolv->sysarray[sysarray2].oll->is_masked = 1;
+    case calc_struct_linstiff        :
+    case calc_struct_nlnstiff        : 
+      actsolv->sysarray[sysarray1].oll->is_masked = 1; break;
+    case calc_struct_internalforce   :
+    case calc_struct_eleload         :
+    case calc_struct_stress          :
+    case calc_struct_ste             :
+    case calc_struct_stm             :
+    case calc_struct_stv             :
+    case calc_struct_dee             :
+    case calc_struct_dmc             :
+    case update_struct_odens         :
+    case calc_struct_update_istep    :
+    case calc_struct_update_stepback : break;
+    case calc_ale_stiff              : 
+      actsolv->sysarray[sysarray1].oll->is_masked = 1; break;
+    case calc_ale_rhs                : break;
+    case calc_fluid                  :
+      actsolv->sysarray[sysarray1].oll->is_masked = 1; break;
+    default: dserror("Unknown type of assembly 1"); break;
+  }
+}
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();

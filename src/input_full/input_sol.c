@@ -31,6 +31,7 @@ MLPCGVARS    *mlpcgvars;
 dstrc_enter("inpctrsol");
 #endif
 /*----------------------------------------------------------------------*/
+solv->matrixtyp = matrix_none;
 switch(solv->fieldtyp)
 {
 case structure:
@@ -476,6 +477,12 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       dserror("Unknown solvertyp - error in reading");
    break;
    }/*------------------------------------ end of switch ofer solvertyp */
+   /*------------------------------------------- read for typ of matrix */
+   frchar("MATRIXTYP" ,buffer,&ierr);
+   if (ierr==1)
+   {
+      if (strncmp("OLL",buffer,3)==0) solv->matrixtyp = oll_matrix;
+   }
 
    /*------------------------------------- read for typ of partitioning */
    frchar("PARTITION" ,buffer,&ierr);

@@ -122,7 +122,8 @@ typedef enum _SPARSE_TYP
      skymatrix,              /* skyline format for solver colsol */  
      spoolmatrix,            /* matrix object for solver spooles */
      ccf,                    /* compressed column format for umfpack */
-     bdcsr                   /* block distributed compressed sparse row format */
+     bdcsr,                  /* block distributed compressed sparse row format */
+     oll                     /* orthogonal linked list matrix */
 } SPARSE_TYP;
 
 /*----------------------------------------------------------------------*
@@ -141,6 +142,7 @@ struct _CCF            *ccf;    /*         to Umfpack compressed column matrix *
 struct _SKYMATRIX      *sky;    /*         to Colsol's skyline matrix */
 struct _SPOOLMAT       *spo;    /*         to Spoole's matrix */
 struct _DBCSR          *bdcsr;  /* matrix needed by the MLPCG solver on the finest grid only */
+struct _OLL            *oll;    /* pointer to orthogonal linked list matrix */
 } SPARSE_ARRAY;
 
 /*----------------------------------------------------------------------*
@@ -152,7 +154,7 @@ typedef struct _SOLVAR
 enum   _FIELDTYP        fieldtyp;          /* type of field */
 enum   _PART_TYP        parttyp;           /* typ of partition */
 enum   _SOLVER_TYP      solvertyp;         /* typ of chosen solver */
-
+enum   _MATRIX_TYP      matrixtyp;         /* typ of chosen matrix */
 
 
 struct _MLVAR          *mlvar;             /* variables needed for hp's mlib solver */
@@ -661,45 +663,86 @@ struct _ARRAY           vec;             /* local piece of distr. vector */
  *----------------------------------------------------------------------*/
 
 
-/*!------------------------------------------------------------------OLL---
-\brief a OLL Matrix (orthogonal linked list)
+/*!---------------------------------------------------------------------
+\brief a OLL Matrix
 
-mn 02/03  
+
+<pre>                                                              mn 02/03
+This structure contains a matrix in OLL Format (orthopgonal linked list)
+</pre>
+
 
 -------------------------------------------------------------------------*/
 typedef struct _OLL
 {
-int                     is_init;       /*!< was this matrix initialized ? */
-int                     is_factored;   /*!< is this matrix already factored ? */
-int                     ncall;         /*!< how often was this matrix solved */
+  INT                     is_init;       /*!< was this matrix initialized ? */
+  INT                     is_masked;     /*!< was this matrix masked ? */
+  INT                     is_copied;     /*!< was this matrix copied ? */
 
-int                     numeq_total;   /*!< total number of unknowns */
-int                     numeq;         /*!< number of unknowns updated on this proc */ 
-int                     nnz;           /*!< number of nonzeros on this proc */
+  INT                     numeq_total;   /*!< total number of unknowns */
+  INT                     numeq;         /*!< number of unknowns updated on this proc */ 
+  INT                     nnz;           /*!< number of nonzeros on this proc */
 
-struct _ARRAY           update;        /*!< list of dofs updated on this proc */
+  struct _ARRAY           update;        /*!< list of dofs updated on this proc */
 
-int                     rdim;          /*!< the local row dimension */
-int                     cdim;          /*!< the local col dimension */
-struct _MATENTRY      **row;           /*!< pointer vectore to the rows */
-struct _MATENTRY      **col;           /*!< pointer vectore to the rows */
+  INT                     rdim;          /*!< the local row dimension */
+  INT                     cdim;          /*!< the local col dimension */
+  struct _MATENTRY      **row;           /*!< pointer vector to the rows */
+  struct _MATENTRY      **col;           /*!< pointer vector to the rows */
 
+  INT                     total;         /*!< total size of spare */
+  INT                     used;          /*!< used entries of spare */
+  struct _MATENTRY       *spare;         /*!< vectore of spare MATENTRIES */
 
-struct _ARRAY           gdofrecv;      /*!< ghost dof list to receive 
-                                            gdofrecv.a.ia[0..fdim-1]    = dof numbers of external dofs needed 
-                                            sorted in ascending order */
-struct _ARRAY           recvbuff;
-struct _ARRAY           computebuff;   /*!< after receiving all messages they are sorted to computebuff */
+  union _SPARSE_ARRAY    *sysarray;      /*!< sparse array in solver format */
+  enum  _SPARSE_TYP      *sysarray_typ;  /*!< typ for sparse array */
+
+  struct _ARRAY           gdofrecv;      /*!< ghost dof list to receive 
+                                           gdofrecv.a.ia[0..fdim-1]    = dof numbers of external dofs needed 
+                                           sorted in ascending order */
+  struct _ARRAY           recvbuff;
+  struct _ARRAY           computebuff;   /*!< after receiving all messages they are sorted to computebuff */
 #ifdef PARALLEL
-MPI_Status             *status;        /*!< receive status */
+  MPI_Status             *status;        /*!< receive status */
 #endif
-struct _ARRAY           gdofsend;      /*!< ghost dof list to send to other procs (3D integer)
-                                            gdofsend.a.ia[proc][0] = number of values to send to proc proc 
-                                            gdofsend.a.ia[proc][ 1..gdofsend.a.i3[proc][0] ] = 
-                                            dof numbers to be send to proc proc in ascending order */
-struct _ARRAY           sendbuff;
+  struct _ARRAY           gdofsend;      /*!< ghost dof list to send to other procs (3D integer)
+                                           gdofsend.a.ia[proc][0] = number of values to send to proc proc 
+                                           gdofsend.a.ia[proc][ 1..gdofsend.a.i3[proc][0] ] = 
+                                           dof numbers to be send to proc proc in ascending order */
+  struct _ARRAY           sendbuff;
 #ifdef PARALLEL
-MPI_Request            *request;       /*!< send request */
+  MPI_Request            *request;       /*!< send request */
 #endif
 
+  /* some arrays that are used for parallel assembly, mainly in the case of inter-proc-coupling conditions */
+#ifdef PARALLEL 
+  INT                     numcoupsend;   /*!< number of coupling information to be send by this proc */
+  INT                     numcouprecv;   /*!< number of coupling information to be recv. by this proc */
+  struct _ARRAY          *couple_d_send; /*!< send and receive buffers if necessary */
+  struct _ARRAY          *couple_i_send;
+  struct _ARRAY          *couple_d_recv;
+  struct _ARRAY          *couple_i_recv;
+#endif
 } OLL;
+
+
+
+/*!----------------------------------------------------------------------
+\brief one entry to the oll-matrix
+
+
+<pre>                                                              mn 02/03
+This structure contains one non-zero entry of an OLL-matrix
+</pre>
+
+
+-------------------------------------------------------------------------*/
+typedef struct _MATENTRY
+{
+  INT          r;             /*!< the true row index */
+  INT          c;             /*!< the true col index */
+  DOUBLE       val;           /*!< value at place r/c */
+  struct _MATENTRY *rnext;    /*!< pointer to next value in row */
+  struct _MATENTRY *cnext;    /*!< pointer to next value in column */
+} MATENTRY;
+

@@ -1163,3 +1163,161 @@ void s8_contact_detection(FIELD        *actfield,
                           double       *maxdt);
 #endif
 /*! @} (documentation module close)*/
+
+
+
+/* -------------------------------------------------------------------- *
+ *   global_oll_add.c                                          mn 05/03 *
+ * -------------------------------------------------------------------- */
+void add_oll_sendbuff(
+    INT                   ii,
+    INT                   jj,
+    INT                   i,
+    INT                   j,
+    INT                   ii_owner,
+    INT                 **isend,
+    double              **dsend,
+    double              **estif,
+    INT                   numsend);
+void add_oll_checkcouple(
+    INT                   ii,
+    INT                 **cdofs,
+    INT                   ncdofs,
+    INT                  *iscouple,
+    INT                  *isowner,
+    INT                   nprocs);
+void  add_oll(
+    struct _PARTITION     *actpart,
+    struct _INTRA         *actintra,
+    struct _ELEMENT       *actele,
+    struct _OLL           *oll1,
+    struct _OLL           *oll2);
+void exchange_coup_oll(
+    PARTITION             *actpart,
+    INTRA                 *actintra,
+    struct _OLL           *oll);
+/* -------------------------------------------------------------------- *
+ *   solver_oll.c                                              mn 05/03 *
+ * -------------------------------------------------------------------- */
+void solver_oll(
+    struct _SOLVAR         *actsolv,
+    struct _INTRA          *actintra,
+    struct _OLL            *oll,
+    struct _DIST_VECTOR    *sol,
+    struct _DIST_VECTOR    *rhs,
+    INT                     option);
+/* -------------------------------------------------------------------- *
+ *   solver_oll_aztec.c                                        mn 05/03 *
+ * -------------------------------------------------------------------- */
+void solver_az_oll( 
+    struct _SOLVAR         *actsolv,
+    struct _INTRA          *actintra,
+    struct _AZ_ARRAY_MSR   *msr_array,
+    struct _DIST_VECTOR    *sol,
+    struct _DIST_VECTOR    *rhs,
+    INT                     option);
+/* -------------------------------------------------------------------- *
+ *   solver_oll_spooles.c                                      mn 05/03 *
+ * -------------------------------------------------------------------- */
+void solver_spo_oll( 
+    struct _SOLVAR         *actsolv,
+    struct _INTRA          *actintra,
+    struct _OLL            *oll,
+    struct _SPOOLMAT       *spo,
+    struct _DIST_VECTOR    *sol,
+    struct _DIST_VECTOR    *rhs,
+    INT                     option);
+/* -------------------------------------------------------------------- *
+ *   global_oll_service.c                                      mn 05/03 *
+ * -------------------------------------------------------------------- */
+void oll_numeq(
+    struct _FIELD          *actfield, 
+    struct _PARTITION      *actpart, 
+    struct _INTRA          *actintra,
+    INT                     dis,
+    INT                    *numeq);
+void oll_dof_in_coupledofs(
+    INT                     dof,
+    struct _PARTITION      *actpart,
+    INT                    *iscoupled);
+void oll_dof_find_centernode(
+    INT                     dof,
+    struct _PARTITION      *actpart,
+    struct _NODE          **centernode);
+void oll_nnz_topology(
+    struct _FIELD          *actfield, 
+    struct _PARTITION      *actpart, 
+    struct _INTRA          *actintra,
+    struct _OLL            *oll);
+void oll_update(
+    struct _FIELD          *actfield, 
+    struct _PARTITION      *actpart, 
+    struct _INTRA          *actintra,
+    INT                     dis,
+    struct _OLL            *oll);
+INT oll_getindex(
+    INT                     dof,
+    INT                    *update,
+    INT                     length);
+void oll_print(
+    struct _OLL            *oll,
+    INT                     n_max);
+void oll_pattern(
+    struct _OLL            *oll,
+    INT                     n_max);
+/* -------------------------------------------------------------------- *
+ *   global_oll_service2.c                                     mn 05/03 *
+ * -------------------------------------------------------------------- */
+void oll_open(
+    struct _OLL            *matrix,
+    INT                     numeq,
+    INT                     numeq_total,
+    struct _FIELD          *actfield,
+    struct _PARTITION      *actpart,
+    struct _INTRA          *actintra);
+/*void oll_getentry(
+    struct _OLL            *matrix,
+    struct _MATENTRY      **ret);*/
+void oll_zero(
+    struct _OLL            *oll);
+void oll_add(
+    struct _OLL            *oll1,
+    struct _OLL            *oll2,
+    DOUBLE                  factor);
+void oll_scal(
+    struct _OLL            *oll,
+    DOUBLE                  factor);
+void oll_cp_mask(
+    struct _OLL            *from,
+    struct _OLL            *to);
+void oll_delete(
+    struct _OLL            *matrix);
+void oll_setval(
+    struct _OLL            *matrix,
+    INT                     actrow,
+    INT                     actcol,
+    DOUBLE val);
+void oll_addval(
+    struct _OLL            *matrix,
+    INT                     actrow,
+    INT                     actcol,
+    DOUBLE                  val);
+void oll_addrow(
+    struct _OLL            *matrix, 
+    INT                     actrow,
+    INT                     lm[],
+    DOUBLE                  val[],
+    INT                     nd);
+void oll_to_sky(
+    struct _OLL            *oll,
+    union  _SPARSE_ARRAY   *sysarray);
+void oll_to_spo(
+    struct _OLL            *oll,
+    union  _SPARSE_ARRAY   *sysarray);
+void oll_to_msr(
+    struct _OLL            *oll,
+    union  _SPARSE_ARRAY   *sysarray);
+void oll_copy(
+    struct _OLL            *from,
+    struct _OLL            *to);
+

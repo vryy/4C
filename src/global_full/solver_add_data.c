@@ -95,6 +95,9 @@ if (assemble_action==assemble_two_matrix)
    case bdcsr:
       add_bdcsr(actpart,actsolv,actintra,actele,sysa1->bdcsr,sysa2->bdcsr);
    break;
+   case oll:
+      add_oll(actpart,actintra,actele,sysa1->oll,sysa2->oll);
+   break;
    case sparse_none:
       dserror("Unspecified type of system matrix");
    break;
@@ -138,6 +141,9 @@ if (assemble_action==assemble_one_matrix)
    case bdcsr:
       add_bdcsr(actpart,actsolv,actintra,actele,sysa1->bdcsr,NULL);
    break;
+   case oll:
+      add_oll(actpart,actintra,actele,sysa1->oll,NULL);
+   break;
    case sparse_none:
       dserror("Unspecified typ of system matrix");
    break;
@@ -170,6 +176,8 @@ if (assemble_action==assemble_close_1matrix)
    case spoolmatrix:
       close_spooles_matrix(sysa1->spo,actintra);
    break;
+   case oll:
+   break;
    case sparse_none:
       dserror("Unspecified typ of system matrix");
    break;
@@ -201,6 +209,8 @@ if (assemble_action==assemble_close_2matrix)
    case spoolmatrix:
       close_spooles_matrix(sysa1->spo,actintra);
       close_spooles_matrix(sysa2->spo,actintra);
+   break;
+   case oll:
    break;
    case sparse_none:
       dserror("Unspecified typ of system matrix");
@@ -248,6 +258,10 @@ if (assemble_action==assemble_two_exchange)
       break;
       case bdcsr:;
       break;
+      case oll:
+         exchange_coup_oll(actpart,actintra,sysa1->oll);
+         exchange_coup_oll(actpart,actintra,sysa2->oll);
+      break;
       case sparse_none:
          dserror("Unspecified type of system matrix");
       break;
@@ -286,6 +300,9 @@ if (assemble_action==assemble_one_exchange)
          redundant_ccf(actpart,actsolv,actintra,sysa1->ccf,NULL);
       break;
       case bdcsr:;
+      break;
+      case oll:
+         exchange_coup_oll(actpart,actintra,sysa1->oll);
       break;
       case sparse_none:
          dserror("Unspecified type of system matrix");
@@ -423,6 +440,14 @@ case spoolmatrix:
    couple_i_send_ptr = &(actsolv->sysarray[actsysarray].spo->couple_i_send);
    couple_d_recv_ptr = &(actsolv->sysarray[actsysarray].spo->couple_d_recv);
    couple_i_recv_ptr = &(actsolv->sysarray[actsysarray].spo->couple_i_recv);
+break;
+case oll:
+   numcoupsend       = &(actsolv->sysarray[actsysarray].oll->numcoupsend);
+   numcouprecv       = &(actsolv->sysarray[actsysarray].oll->numcouprecv);
+   couple_d_send_ptr = &(actsolv->sysarray[actsysarray].oll->couple_d_send);
+   couple_i_send_ptr = &(actsolv->sysarray[actsysarray].oll->couple_i_send);
+   couple_d_recv_ptr = &(actsolv->sysarray[actsysarray].oll->couple_d_recv);
+   couple_i_recv_ptr = &(actsolv->sysarray[actsysarray].oll->couple_i_recv);
 break;
 case bdcsr:
    goto end; /* coupled dofs are not supported in bdcsr */
@@ -571,6 +596,7 @@ CCF                  *ccf_array;
 SKYMATRIX            *sky_array;
 SPOOLMAT             *spo;
 DBCSR                *bdcsr_array;
+OLL                  *oll_array;
 #ifdef DEBUG 
 dstrc_enter("assemble_vec");
 #endif
@@ -658,6 +684,14 @@ case bdcsr:
        rhs->vec.a.dv[i] += drhs[dof]*factor;
     }
 break;
+case oll:
+    oll_array = sysarray->oll;
+    for (i=0; i<rhs->numeq; i++)
+    {
+       dof = oll_array->update.a.iv[i];
+       rhs->vec.a.dv[i] += drhs[dof]*factor;
+    }
+break;
 default:
    dserror("Unknown typ of system matrix");
 break;
@@ -693,6 +727,7 @@ RC_PTR               *rcptr_array;
 CCF                  *ccf_array;
 SKYMATRIX            *sky_array;
 SPOOLMAT             *spo;
+OLL                  *oll_array;
 #ifdef DEBUG 
 dstrc_enter("sum_vec");
 #endif
@@ -771,6 +806,14 @@ case spoolmatrix:
     for (i=0; i<numeq; i++)
     {
        dof = spo->update.a.iv[i];
+       *sum += drhs[dof];
+    }
+break;
+case oll:
+    oll_array = sysarray->oll;
+    for (i=0; i<numeq; i++)
+    {
+       dof = oll_array->update.a.iv[i];
        *sum += drhs[dof];
     }
 break;
