@@ -58,6 +58,10 @@ typedef struct _DNODE
                                                  0: global (default)
                                                  1: local */
 #endif
+#ifdef D_SSI
+   /*enum _SSI_COUPTYP         ssi_couptyp;*/
+   struct _SSI_COUPLE_CONDITION *ssicouple;
+#endif
    INT                     locsysId;
 } DNODE;
 
@@ -110,6 +114,9 @@ typedef struct _DLINE
 
 #ifdef WALLCONTACT
    enum   _CONTACTTYPE       contype;
+#endif
+#ifdef D_SSI
+   struct _SSI_COUPLE_CONDITION *ssicouple;
 #endif
    INT                     locsysId;
 } DLINE;
