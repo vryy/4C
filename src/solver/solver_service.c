@@ -76,6 +76,7 @@ inprocs = actintra->intra_nprocs;
 switch (*mattyp)
 {
 case mds:
+   solver_mlib(NULL,NULL,mat->mds,NULL,NULL,2);
 break;
 case msr:
    amzero(&(mat->msr->val));
@@ -268,11 +269,17 @@ break;
 case skymatrix:
    update = sysarray->sky->update.a.iv;
 break;
+case mds:
+   index = indiz;
+break;
 default:
    dserror("Unknown typ of system matrix given");
 break;
 }
-index = find_index(indiz,update,numeq);
+if(*sysarray_typ!=mds)
+{
+   index = find_index(indiz,update,numeq);
+}
 #ifndef PARALLEL /* this is sequentiell */
 if (index==-1) dserror("Cannot find indize in distributed vector");
 *result = dist_vec->vec.a.dv[index]; 
