@@ -29,6 +29,7 @@ include ./Makefile.personal_path
 # -DD_FLUID3     defines element fluid3
 # -DD_ALE        defines element ale
 # -DD_WALL1      defines element wall1
+# -DD_OPTIM      defines optimization
 #
 # -DDEBUG     defines debug mode: routine and array tracing 
 # -DPARALLEL  defines parallel version of programm
@@ -62,7 +63,7 @@ FXX     = f77
 CCX     = cc
 LDX     = cc
 PFL     = -DHPUX10 -DD_FLUID -DD_FLUID2 -DD_FLUID3 -DD_BRICK1 -DD_ALE -DD_SHELL8 \
-          -DD_WALL1 -DAZTEC_PACKAGE -DUMFPACK 
+          -DD_WALL1 -DD_OPTIM -DAZTEC_PACKAGE -DUMFPACK 
 AZTEC   = -laztec_seriell21
 UMFPACK = -lumfpack40_hpux10_32
 SPOOLES = 
