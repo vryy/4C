@@ -15,6 +15,21 @@ Maintainer: Thomas Hettich
 #include "fluid2_prototypes.h"
 #include "fluid2.h"
 #include "fluid2_tu.h"
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+static FLUID_DYNAMIC *fdyn;
 /*!---------------------------------------------------------------------
 \brief evaluate stabilisaton part of Kkapome
 
@@ -42,7 +57,6 @@ NOTE: there's only one elestif
 </pre>
 \param  *ele	     ELEMENT	   (i)	   actual element
 \param  *elev	     ELEMENT	   (i)	   actual element for vel.
-\param  *dynvar        FLUID_DYN_CALC  (i)
 \param **estif          DOUBLE	   (i/o)   ele stiffness matrix
 \param   kapomeint      DOUBLE	   (i)     kapome at integr. point
 \param  *velint         DOUBLE	   (i)     vel. at integr. point
@@ -62,7 +76,6 @@ NOTE: there's only one elestif
 void f2_calstabkkapome(			      
                 ELEMENT         *ele,    
 		    ELEMENT         *elev,    
-                FLUID_DYN_CALC  *dynvar,
 		    DOUBLE         **estif,  
 		    DOUBLE           kapomeint, 
 		    DOUBLE          *velint, 
@@ -95,8 +108,10 @@ dstrc_enter("f2_calstabkkapome");
 #endif
 
 /*---------------------------------------- set stabilisation parameter */
-taumu     = dynvar->tau_tu;
-taumu_dc  = dynvar->tau_tu_dc;
+fdyn      = alldyn[genprob.numff].fdyn;
+
+taumu     = fdyn->tau_tu;
+taumu_dc  = fdyn->tau_tu_dc;
 c    = fac*taumu;
 c_dc = fac*taumu_dc;
 /*----------------------------------------------------------------------*
@@ -190,7 +205,6 @@ NOTE: there's only one elestif
       
 </pre>
 \param  *ele	 ELEMENT	     (i)	   actual element
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param **emass     DOUBLE	   (i/o)   ele mass matrix
 \param  *velint    DOUBLE	   (i)     vel. at integr. point
 \param  *velint_dc DOUBLE	   (i)     vel. at integr. point for D.C.
@@ -203,7 +217,6 @@ NOTE: there's only one elestif
 ------------------------------------------------------------------------*/
 void f2_calstabmkapome(
                     ELEMENT         *ele,     
-		        FLUID_DYN_CALC  *dynvar,
 		        DOUBLE         **emass,  
     		        DOUBLE          *velint, 
     		        DOUBLE          *velint_dc, 
@@ -230,8 +243,10 @@ dstrc_enter("f2_calstabmkapome");
 #endif
 
 /*---------------------------------------- set stabilisation parameter */
-taumu      = dynvar->tau_tu;
-taumu_dc   = dynvar->tau_tu_dc;
+fdyn       = alldyn[genprob.numff].fdyn;
+
+taumu      = fdyn->tau_tu;
+taumu_dc   = fdyn->tau_tu_dc;
 
 c    = fac * taumu;
 c_dc = fac * taumu_dc;

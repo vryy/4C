@@ -30,7 +30,6 @@ extern struct _MATERIAL  *mat;
 </pre>
 \param  *ele     ELEMENT	       (i)   actual element
 \param  *elev    ELEMENT	       (i)   actual element for vel.
-\param  *dynvar  FLUID_DYN_CALC      (i/o)
 \param  *data    FLUID_DATA	       (i)
 \param  *funct   DOUBLE 	       (-)   shape functions
 \param **deriv   DOUBLE 	       (-)   deriv. of shape funcs
@@ -51,7 +50,6 @@ extern struct _MATERIAL  *mat;
 void f2_calelesize_tu_1(			     
 	           ELEMENT         *ele,    
 		     ELEMENT         *elev,    
-                 FLUID_DYN_CALC  *dynvar,
 		     FLUID_DATA      *data, 
 	           DOUBLE          *funct,  
 	           DOUBLE         **deriv,  
@@ -134,14 +132,14 @@ typ    = ele->distyp;
 
 /*------------------- calculate stabilisation parameter for DISC. CAPT. */
    f2_kapomeder(kapomederxy,derxy,kapomen,iel);
-   f2_vel_dc_1(dynvar,velint,velint_dc,kapomederxy);
+   f2_vel_dc_1(velint,velint_dc,kapomederxy);
 
 /*---------------- get streamlenght for elementlenght for DISC. CAPT.  */
    f2_gcoor(xyze,funct,iel,gcoor);
    f2_calstrlen_tu(velint_dc,ele,gcoor,cutp,ntyp);       
 
 /*----------------------------------- calculate stabilisation parameter */               
-   f2_calstabpar_tu_1(ele,elev,dynvar,eddyint,velint,velint_dc,visc); 
+   f2_calstabpar_tu_1(ele,elev,eddyint,velint,velint_dc,visc); 
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

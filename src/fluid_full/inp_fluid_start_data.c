@@ -244,7 +244,7 @@ MPI_Bcast(&time,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 MPI_Bcast(&step,1,MPI_DOUBLE,0,MPI_COMM_WORLD); 
 #endif
 /*------------------------------------------ copy values to the nodes  */
-fdyn->time=time;
+fdyn->acttime=time;
 fdyn->step=step;
 actele = &(actfield->dis[0].element[0]);
 dens  = mat[actele->mat-1].m.fluid->density;

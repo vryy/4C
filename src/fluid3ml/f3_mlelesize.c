@@ -17,6 +17,22 @@ Maintainer: Volker Gravemeier
 #include "../fluid3/fluid3.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+static FLUID_DYNAMIC *fdyn;
+
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
  | vector of material laws                                              |
  | defined in global_control.c
  *----------------------------------------------------------------------*/
@@ -34,7 +50,6 @@ the subgrid viscosity (depending on the respective flag) is called.
 </pre>
 \param  *ele       ELEMENT	     (i)   actual element
 \param  *data      FLUID_DATA	     (i)
-\param  *dynvar    FLUID_DYN_CALC    (i/o)
 \param  *mlvar     FLUID_DYN_ML      (i)
 \param  *funct     DOUBLE 	     (-)   l-s shape functions
 \param **deriv     DOUBLE 	     (-)   deriv. of l-s shape funcs
@@ -55,7 +70,6 @@ the subgrid viscosity (depending on the respective flag) is called.
 ------------------------------------------------------------------------*/
 void f3_smelesize(ELEMENT         *ele,    
 		  FLUID_DATA	  *data, 
-		  FLUID_DYN_CALC  *dynvar,
 		  FLUID_DYN_ML    *mlvar,
 	          DOUBLE	  *funct,  
 	          DOUBLE	 **deriv,  
@@ -210,7 +224,7 @@ if (mlvar->smesize<5)     /* compute l-s velocity */
 }  
 
 /*----------------------------------- calculate stabilization parameter */               
-if (mlvar->smstabi>0) f3_smstabpar(ele,dynvar,mlvar,velint,visc,smiel,ntyp); 
+if (mlvar->smstabi>0) f3_smstabpar(ele,mlvar,velint,visc,smiel,ntyp); 
 
 /*--------------------------------------------------- subgrid viscosity */               
 if (mlvar->smsgvi==1 || mlvar->smsgvi==2)
@@ -234,7 +248,6 @@ return;
 
 void f3_mlcalelesize(ELEMENT         *ele,
 		     FLUID_DATA      *data,
-		     FLUID_DYN_CALC  *dynvar,
 	             DOUBLE          *funct,
 	             DOUBLE         **deriv,
 	             DOUBLE         **deriv2,	       
@@ -270,6 +283,8 @@ dstrc_enter("f3_mlcalelesize");
 #endif		
 
 /*---------------------------------------------------------- initialise */
+fdyn = alldyn[genprob.numff].fdyn;
+
 ntyp   = ele->e.f3->ntyp;
 iel    = ele->numnp;
 typ    = ele->distyp;
@@ -279,7 +294,7 @@ if (ele->e.f3->stab_type != stab_gls)
    dserror("routine with no or wrong stabilisation called");
 
 istrnint = gls->istrle * gls->ninths;
-ishvol  = dynvar->ishape * gls->iareavol;
+ishvol  = fdyn->ishape * gls->iareavol;
 
 /*----------------------------------------------------------------------*
  | calculations at element center: area & streamlength                  |
@@ -478,7 +493,7 @@ if(gls->istapc==1 || istrnint==1)
          dserror("ntyp unknown!");
       } /* end switch (ntyp) */
       f3_veli(velint,funct,evel,iel);
-      if (dynvar->sgvisc>0) f3_mljaco(funct,deriv,xjm,&det,ele,iel);
+      if (fdyn->sgvisc>0) f3_mljaco(funct,deriv,xjm,&det,ele,iel);
    break;
    case 1:            
       f3_veli(velint,funct,evel,iel);
@@ -491,16 +506,16 @@ if(gls->istapc==1 || istrnint==1)
 /*----------------------------------- calculate stabilisation parameter */               
    actmat=ele->mat-1;
    visc = mat[actmat].m.fluid->viscosity;
-   f3_mlcalstabpar(ele,dynvar,velint,visc,iel,ntyp,-1);    
+   f3_mlcalstabpar(ele,velint,visc,iel,ntyp,-1);    
 /*--------------------------------------------------- subgrid viscosity */               
-   if (dynvar->sgvisc>0)
+   if (fdyn->sgvisc>0)
    { 
 /*------------------------------------------- compute global derivates */
      f3_gder(derxy,deriv,xjm,wa1,det,iel);
 /*---------------------- get velocity derivatives at integration point */
      f3_vder(vderxy,derxy,evel,iel);
 /*---------------------------------------- calculate subgrid viscosity */               
-     f3_calsgvisc(ele,dynvar,velint,vderxy,visc,iel,ntyp);
+     f3_calsgvisc(ele,velint,vderxy,visc,iel,ntyp);
    }
 } /* endif (ele->e.f3->istapc==1 || istrnint==1) */
 
@@ -514,7 +529,6 @@ return;
 
 
 void f3_mlcalelesize2(ELEMENT         *ele,
-		      FLUID_DYN_CALC  *dynvar,
                       DOUBLE	    *velint,	      
 		      DOUBLE	   **vderxy, 
                       DOUBLE	   **derxy,	       
@@ -535,6 +549,8 @@ dstrc_enter("f3_mlcalelesize2");
 #endif		
 
 /*---------------------------------------------------------- initialise */
+fdyn = alldyn[genprob.numff].fdyn;
+
 gls    = ele->e.f3->stabi.gls;
 istrnint = gls->istrle * gls->ninths;
 val = ZERO;
@@ -577,10 +593,10 @@ if (istrnint==2)
    } /* end of loop over ilen */
 } /* endif (istrnint==2) */
 /*----------------------------------- calculate stabilisation parameter */               
-f3_mlcalstabpar(ele,dynvar,velint,visc,iel,ntyp,1); 
+f3_mlcalstabpar(ele,velint,visc,iel,ntyp,1); 
    
 /*----------------------------------------- calculate subgrid viscosity */               
-if (dynvar->sgvisc>0) f3_calsgvisc(ele,dynvar,velint,vderxy,visc,iel,ntyp);
+if (fdyn->sgvisc>0) f3_calsgvisc(ele,velint,vderxy,visc,iel,ntyp);
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

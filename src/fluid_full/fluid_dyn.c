@@ -76,13 +76,13 @@ dyntyp = fdyn->dyntyp;
 freesurf = fdyn->freesurf;
 
 /*------------------------------------------------------ initialisation */
-if (fdyn->init!=1) fdyn->time=0.0;
+if (fdyn->init!=1) fdyn->acttime=0.0;
 fdyn->step=0;
 
 /*----------------------------------------------------------------------*
 |  call algorithms                                                      |
  *----------------------------------------------------------------------*/
-if (dyntyp==1) fluid_pm(fdyn);
+if (dyntyp==1) fluid_pm();
 else if (dyntyp==0)
 {
    switch (iop)
@@ -93,25 +93,25 @@ else if (dyntyp==0)
    
    case 1:		/* Generalised alpha time integration		*/
       fdyn->time_rhs = 0;
-      fluid_isi(fdyn);
+      fluid_isi();
    break;
 
    case 4:		/* One step Theta 				*/
       if(freesurf==0 && fdyn->adaptive==0)
       {
 	/* implicit and semi-implicit algorithms 			*/
-         if(fdyn->turbu == 0 || fdyn->turbu ==1) fluid_isi(fdyn);
+         if(fdyn->turbu == 0 || fdyn->turbu ==1) fluid_isi();
 	/* implicit and semi-implicit algorithms with turbulence-model	*/
-         if(fdyn->turbu == 2)                    fluid_isi_tu(fdyn);	
+         if(fdyn->turbu == 2)                    fluid_isi_tu();	
 	/* implicit and semi-implicit algorithms with turbulence-model	*/
-         if(fdyn->turbu == 3)                    fluid_isi_tu_1(fdyn);
+         if(fdyn->turbu == 3)                    fluid_isi_tu_1();
       }
       else
       {
 	/* fluid multiefield algorithm      				*/
          if(freesurf && fdyn->adaptive==0)		fluid_mf(0);	
    	/* for adaptive time stepping 					*/
-         else if(freesurf==0 && fdyn->adaptive)	fluid_isi(fdyn);   
+         else if(freesurf==0 && fdyn->adaptive)	fluid_isi();   
 	/* adaptive time stepping fuer multifield 			*/
          else if(freesurf && fdyn->adaptive)
             dserror("free surface and adaptive time stepping not yet combined");
@@ -119,7 +119,7 @@ else if (dyntyp==0)
    break;
 
    case 7:		/* 2nd order backward differencing (BDF2)	*/
-      fluid_isi(fdyn);
+      fluid_isi();
    break;
 
    default:

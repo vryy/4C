@@ -29,7 +29,6 @@ This routine controls the element evaluation:
 			     
 </pre>
 \param  *data	       FLUID_DATA         (i)
-\param  *dynvar	       FLUID_DYN_CALC     (i)
 \param  *eleke	       ELEMENT	        (i)   actual element
 \param  *elev	       ELEMENT	        (i)   actual element for velocity
 \param  *estif_global    ARRAY	        (o)   ele stiffnes matrix
@@ -46,7 +45,6 @@ This routine controls the element evaluation:
 ------------------------------------------------------------------------*/
 void f2_calele_tu_1(
                 FLUID_DATA     *data, 
-                FLUID_DYN_CALC *dynvar, 
 	          ELEMENT        *eleke,             
                 ELEMENT        *elev,          
                 ARRAY          *estif_global,   
@@ -170,25 +168,25 @@ amzero(eproforce_global);
 *hasext=0;
 
 /*---------------------------------------------------- set element data */
-f2_calset_tu_1(dynvar,data,eleke,elev,kapomen,kapomeg,kapomepro,eddyg,eddypro,
+f2_calset_tu_1(data,eleke,elev,kapomen,kapomeg,kapomepro,eddyg,eddypro,
                kappan,omega,evel,xyze);
 
 /*-------------- calculate stab-parameter and parameter for DISC. CAPT. */
-f2_calelesize_tu_1(eleke,elev,dynvar,data,funct,deriv,deriv2,evel,eddyg,
+f2_calelesize_tu_1(eleke,elev,data,funct,deriv,deriv2,evel,eddyg,
                    velint,velint_dc,kapomen,xjm,xyze,derxy,kapomederxy,wa1);
 
 /*-------------------------------- calculate element stiffness matrices */
 /*                                            and element force vectors */
-f2_calint_tu_1(data,eleke,elev,dynvar,estif,emass,etforce,eiforce,eproforce,
+f2_calint_tu_1(data,eleke,elev,estif,emass,etforce,eiforce,eproforce,
 	         funct,deriv,deriv2,xjm,xyze,derxy,derxy2,kapomen,kapomeg,eddyg,eddypro,
                kappan,omega,kapomepro,omegaderxy,kapomederxy,kapomederxy2,
                velint,velint_dc,evel,vderxy,vderxy2,wa1,wa2);
 
 /*--------------------------------------- add emass and estif to estif  */
-f2_estifadd_tu(estif,emass,wa1,eleke->numnp,dynvar);
+f2_estifadd_tu(estif,emass,wa1,eleke->numnp);
 
 /*------------------------------- calculate element load vector edforce */
-fluid_caldirich_tu_1(dynvar,eleke,edforce,estif,hasdirich);
+fluid_caldirich_tu_1(eleke,edforce,estif,hasdirich);
 
 end:
 /*----------------------------------------------------------------------*/

@@ -14,6 +14,21 @@ Maintainer: Thomas Hettich
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #include "fluid2_tu.h"
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+static FLUID_DYNAMIC *fdyn;
 /*!--------------------------------------------------------------------- 
 \brief galerkin part of time forces for kapome dof
 
@@ -49,7 +64,6 @@ is calculated:
 
 
 </pre>
-\param   *dynvar      FLUID_DYN_CALC  (i)
 \param   *eforce      DOUBLE	      (i/o)  element force vector
 \param    kapomeint   DOUBLE	      (i)    kapome at integr. point
 \param   *velint      DOUBLE	      (i)    vel. at integr. point
@@ -70,7 +84,6 @@ is calculated:
 
 ------------------------------------------------------------------------*/
 void f2_calgaltfkapome(
-                  FLUID_DYN_CALC  *dynvar, 
                   DOUBLE          *eforce,    
 		      DOUBLE           kapomeint,  
                   DOUBLE          *velint,   
@@ -100,7 +113,8 @@ dstrc_enter("f2_calgaltfkapome");
 
 
 /*--------------------------------------------------- set some factors */
-facsr = fac * dynvar->thsr;
+fdyn  = alldyn[genprob.numff].fdyn;
+facsr = fac * fdyn->thsr;
 
 /*----------------------------------------------------------------------*
    Calculate intertia forces of time force vector:
@@ -238,7 +252,6 @@ is calculated:
 		 	   		
        
 </pre>
-\param   *dynvar        FLUID_DYN_CALC    (i)
 \param   *ele           ELEMENT	      (i)    actual element
 \param   *eforce        DOUBLE	      (i/o)  element force vector
 \param    kapomeint     DOUBLE	      (i)    kapome at integr. point
@@ -261,7 +274,6 @@ is calculated:
 
 ------------------------------------------------------------------------*/
 void f2_calstabtfkapome(
-                   FLUID_DYN_CALC  *dynvar,
                    ELEMENT         *ele,      
 	            DOUBLE          *eforce,  
 	 	      DOUBLE           kapomeint,  
@@ -292,10 +304,12 @@ dstrc_enter("f2_calstabtfkapome");
 #endif
 
 /*--------------------------------------------------- set some factors */
-taumu    = dynvar->tau_tu;
-taumu_dc = dynvar->tau_tu_dc;
-facsr    = fac * dynvar->thsr * taumu;
-facsr_dc = fac * dynvar->thsr * taumu_dc;
+fdyn     = alldyn[genprob.numff].fdyn;
+
+taumu    = fdyn->tau_tu;
+taumu_dc = fdyn->tau_tu_dc;
+facsr    = fac * fdyn->thsr * taumu;
+facsr_dc = fac * fdyn->thsr * taumu_dc;
 
 /*----------------------------------------------------------------------*
    Calculate forces of time force vector:

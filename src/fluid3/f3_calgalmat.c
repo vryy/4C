@@ -13,6 +13,19 @@ Maintainer: Steffen Genkinger
 #ifdef D_FLUID3 
 #include "../headers/standardtypes.h"
 #include "fluid3_prototypes.h"
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
 /*!---------------------------------------------------------------------                                         
 \brief evaluate galerkin part of Kvv
 
@@ -38,7 +51,6 @@ NOTE: there's only one elestif
       --> Kvv is stored in estif[0..(3*iel-1)][0..(3*iel-1)]
       
 </pre>
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param **estif     DOUBLE	   (i/o)  ele stiffness matrix
 \param  *velint    DOUBLE	   (i)    vel at INT point
 \param **vderxy    DOUBLE	   (i)    global vel derivatives
@@ -51,7 +63,6 @@ NOTE: there's only one elestif
 
 ------------------------------------------------------------------------*/
 void f3_calkvv(
-                FLUID_DYN_CALC  *dynvar,
 		DOUBLE         **estif,
 		DOUBLE          *velint,
 		DOUBLE         **vderxy,
@@ -72,10 +83,13 @@ void f3_calkvv(
 INT     irow, icol,irn,icn;
 DOUBLE  c,aux;
 
+FLUID_DYNAMIC   *fdyn;
+
 #ifdef DEBUG 
 dstrc_enter("f3_calkvv");
 #endif	
 
+fdyn    = alldyn[genprob.numff].fdyn;
 c=fac*visc;
 
 /*----------------------------------------------------------------------*
@@ -118,7 +132,7 @@ for (icn=0;icn<iel;icn++)
   /
  *----------------------------------------------------------------------*/
 
-if(dynvar->nic != 0) /* evaluate for Newton- and fixed-point-like-iteration */
+if(fdyn->nic != 0) /* evaluate for Newton- and fixed-point-like-iteration */
 {
    icol=0;
    for (icn=0;icn<iel;icn++)
@@ -135,7 +149,7 @@ if(dynvar->nic != 0) /* evaluate for Newton- and fixed-point-like-iteration */
       } /* end of loop over irn */
       icol += 3;
    } /* end of loop over icn */
-} /* endif (dynvar->nic != 0) */
+} /* endif (fdyn->nic != 0) */
 
 /*----------------------------------------------------------------------*
    Calculate full Galerkin part of matrix Nr(u):
@@ -144,7 +158,7 @@ if(dynvar->nic != 0) /* evaluate for Newton- and fixed-point-like-iteration */
   /
  *----------------------------------------------------------------------*/
 
-if (dynvar->nir != 0) /* evaluate for Newton iteraton */
+if (fdyn->nir != 0) /* evaluate for Newton iteraton */
 {
    icol=0;
    for (icn=0;icn<iel;icn++)
@@ -168,7 +182,7 @@ if (dynvar->nir != 0) /* evaluate for Newton iteraton */
       } /* end of loop over irn */
       icol += 3;
    } /* end of loop over icn */
-} /* endif (dynvar->nir != 0) */
+} /* endif (fdyn->nir != 0) */
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

@@ -14,6 +14,21 @@ Maintainer: Thomas Hettich
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #include "fluid2_tu.h"
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+static FLUID_DYNAMIC *fdyn;
 /*!--------------------------------------------------------------------- 
 \brief galerkin part of time forces for kapome dof
 
@@ -29,7 +44,6 @@ PRODUKTIONSTERM:
 
 
 </pre>
-\param   *dynvar      FLUID_DYN_CALC  (i)
 \param   *eforce      DOUBLE	      (i/o)  element force vector
 \param    eddynint     DOUBLE	      (i)    eddy-visc. at integr. point
 \param   *funct       DOUBLE	      (i)    nat. shape functions      
@@ -41,7 +55,6 @@ PRODUKTIONSTERM:
 
 ------------------------------------------------------------------------*/
 void f2_calgalprofkapome(
-                  FLUID_DYN_CALC  *dynvar, 
                   DOUBLE          *eforce,    
 		      DOUBLE           eddynint,
                   DOUBLE          *funct,    
@@ -62,7 +75,8 @@ dstrc_enter("f2_calgaltfkapeps");
 
 
 /*--------------------------------------------------- set some factors */
-facsl = fac * dynvar->thsl;
+fdyn  = alldyn[genprob.numff].fdyn;
+facsl = fac * fdyn->thsl;
 
 /*----------------------------------------------------------------------*
    Calculate forces of time force vector:
@@ -105,7 +119,6 @@ PRODUKTIONSTERM:
 
        
 </pre>
-\param   *dynvar      FLUID_DYN_CALC(i)
 \param   *ele         ELEMENT	      (i)    actual element
 \param   *eforce      DOUBLE	      (i/o)  element force vector
 \param    eddynint    DOUBLE	      (i)    eddy-visc. at integr. point
@@ -121,7 +134,6 @@ PRODUKTIONSTERM:
 
 ------------------------------------------------------------------------*/
 void f2_calstabprofkapome(
-                   FLUID_DYN_CALC  *dynvar,
                    ELEMENT         *ele,      
 	            DOUBLE          *eforce,  
 		      DOUBLE           eddynint, 
@@ -145,10 +157,12 @@ dstrc_enter("f2_calstabtfkapome");
 #endif
 
 /*--------------------------------------------------- set some factors */
-taumu    = dynvar->tau_tu;
-taumu_dc = dynvar->tau_tu_dc;
-facsl    = fac * dynvar->thsl * taumu;
-facsl_dc = fac * dynvar->thsl * taumu_dc;
+fdyn     = alldyn[genprob.numff].fdyn;
+
+taumu    = fdyn->tau_tu;
+taumu_dc = fdyn->tau_tu_dc;
+facsl    = fac * fdyn->thsl * taumu;
+facsl_dc = fac * fdyn->thsl * taumu_dc;
 
 /*----------------------------------------------------------------------*
    Calculate forces of time force vector:

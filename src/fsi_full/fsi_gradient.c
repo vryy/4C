@@ -20,10 +20,29 @@ Maintainer: Steffen Genkinger
 #ifdef D_FSI
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;    
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
  | ranks and communicators                                              |
  | This structure struct _PAR par; is defined in main_ccarat.c
  *----------------------------------------------------------------------*/
- extern struct _PAR   par;  
+extern struct _PAR   par;  
+
+static FSI_DYNAMIC    *fsidyn;
+
+/*------------------------------------- prototypes used in here only ---*/
+void fsi_omega_sg( FIELD *actfield );
+
 /*!---------------------------------------------------------------------*
 \brief compute relaxation parameter via steepest descent method
 
@@ -44,11 +63,7 @@ see Dissertation of D.P.MOK, p. 125 ff
 void fsi_gradient(  
                   FIELD          *alefield, 
                   FIELD          *structfield, 
-                  FIELD          *fluidfield, 
-                  FSI_DYNAMIC    *fsidyn, 
-		  ALE_DYNAMIC    *adyn,
-		  FLUID_DYNAMIC  *fdyn,
-		  STRUCT_DYNAMIC *sdyn,
+                  FIELD          *fluidfield,
 		  INT             numfa,
 		  INT             numff,
 		  INT             numfs
@@ -64,11 +79,20 @@ DOUBLE    dt;            /* time step size                              */
 
 NODE     *actfnode;      /* actual fluid node                           */
 GNODE    *actfgnode;     /* actual fluid gnode                          */
-NODE     *actanode;      /* actual ale node                             */
+NODE     *actanode;      /* actual ale node                             */ 
+ALE_DYNAMIC    *adyn;
+FLUID_DYNAMIC  *fdyn;
+STRUCT_DYNAMIC *sdyn;
 
 #ifdef DEBUG 
 dstrc_enter("fsi_gradient");
 #endif
+
+/*--------------------------------------------- set dynamics pointer ---*/
+adyn   = alldyn[genprob.numaf].adyn;
+fdyn   = alldyn[genprob.numff].fdyn;
+sdyn   = alldyn[genprob.numsf].sdyn;
+fsidyn = alldyn[3].fsidyn;
 
 numnp_fluid  = fluidfield->dis[0].numnp;
 numveldof    = fdyn->numdf - 1;
@@ -86,7 +110,7 @@ solserv_sol_add(structfield, 0, 3, 3, 1, 6,-1.0);
 
 /*=== 5.b ===*/
 /*--------------------- solve Ale mesh with sol_mf[6][i] used as DBC ---*/
-fsi_ale(fsidyn, adyn, alefield, 6, numfa);
+fsi_ale(alefield, 6, numfa);
 /* note: The ale solution of the auxiliary problem is always performed 
          linear. */
 
@@ -115,15 +139,15 @@ for (i=0;i<numnp_fluid;i++) /*----------------------- loop all nodes ---*/
 
 /*=== 5.e,f,g ===*/
 /*------------------------------------------------------ solve fluid ---*/
-fsi_fluid(fsidyn,fdyn,fluidfield,6,numff);
+fsi_fluid(fluidfield,6,numff);
 
 /*=== 5.h ===*/
 /*-------------------------------------------------- solve structure ---*/
-fsi_struct(fsidyn,sdyn,structfield,6,numfs,0);
+fsi_struct(structfield,6,numfs,0);
 
 /*=== 5.i ===*/
 /*----------------------------------- determine relaxation parameter ---*/
-fsi_omega_sg(structfield,fsidyn);
+fsi_omega_sg(structfield);
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -144,15 +168,17 @@ omega = (g_i^T * g_i) / (g_i^T * (-d_Gamma + g_i) )
 
 g_i 		stored on node->sol_mf.a.da[6][i]
 d_Gamma		stored on node->sol.a.da[8][i]
-		     
+
+NOTE: This routine is called by 'fsi_gradient()' above only, where the 
+      static pointer fsidyn is set appropriately.
+
 </pre>
 
 \param *actfield   FIELD	     (i)   structural field
 \return void     
 
 ------------------------------------------------------------------------*/
-void fsi_omega_sg(FIELD          *actfield,
-                  FSI_DYNAMIC    *fsidyn  )
+void fsi_omega_sg( FIELD *actfield )
 {
 INT       i,j;           /* counters                                    */
 INT       numdf;         /* degrees of freedom per node                 */

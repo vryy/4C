@@ -14,6 +14,21 @@ Maintainer: Volker Gravemeier
 #include "../headers/standardtypes.h"
 #include "fluid2ml_prototypes.h"
 #include "../fluid2/fluid2.h"
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+static FLUID_DYNAMIC *fdyn;
 /*!---------------------------------------------------------------------                                         
 \brief evaluate stabilization part of sm stiffness matrix SMK for fluid2
 
@@ -23,7 +38,6 @@ In this routine, the stabilization part of the submesh stiffness matrix
 SMK is calculated.
 
 </pre>
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param  *mlvar     FLUID_DYN_ML    (i)
 \param **smestif   DOUBLE	   (i/o)  submesh ele stiffness matrix
 \param  *velint    DOUBLE	   (i)    velocity at int. point
@@ -38,8 +52,7 @@ SMK is calculated.
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void f2_calstabsmk(FLUID_DYN_CALC  *dynvar,
-	           FLUID_DYN_ML    *mlvar, 
+void f2_calstabsmk(FLUID_DYN_ML    *mlvar, 
 		   DOUBLE         **smestif,  
 		   DOUBLE          *velint, 
 		   DOUBLE         **vderxy, 
@@ -67,10 +80,12 @@ dstrc_enter("f2_calstabsmk");
 #endif
 
 /*---------------------------------------- set stabilization parameter */
+fdyn = alldyn[genprob.numff].fdyn;
+
 tau = mlvar->smtau;
 con = fac*tau;
 
-switch (dynvar->conte) /* determine parameter beta of convective term */
+switch (fdyn->conte) /* determine parameter beta of convective term */
 {
 case 0: 
   beta = ZERO;
@@ -85,7 +100,7 @@ case 2:
 break;
 default:
    dserror("unknown form of convective term");
-} /* end switch (dynvar->conte) */
+} /* end switch (fdyn->conte) */
 
 if (mlvar->smstado<0) sign = -ONE;  /* USFEM */
 else                  sign = ONE;   /* GLS- */
@@ -108,7 +123,7 @@ for (icol=0;icol<smiel;icol++)
   } /* end of loop over irow */
 } /* end of loop over icol */
 
-if (dynvar->conte!=0)  
+if (fdyn->conte!=0)  
 {
   cb  = con*beta;
   cbb = cb*beta*sign;
@@ -176,7 +191,7 @@ if (ihoelsm!=0)
     } /* end of loop over irow */
   } /* end of loop over icol */
   
-  if (dynvar->conte!=0)  
+  if (fdyn->conte!=0)  
   {
     ccb  = ccon*beta*sign;
 /*----------------------------------------------------------------------*
@@ -230,7 +245,7 @@ if (ihoelsm!=0)
     } /* end of loop over irow */
   } /* end of loop over icol */
 
-  if (dynvar->conte!=0)  
+  if (fdyn->conte!=0)  
   {
     ccb  = ccon*beta;
 /*----------------------------------------------------------------------*
@@ -267,7 +282,6 @@ In this routine, the stabilization part of the submesh mass matrix SMM
 is calculated.
 
 </pre>
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param  *mlvar     FLUID_DYN_ML    (i)
 \param **smemass   DOUBLE	   (i/o)  submesh element mass matrix
 \param  *velint    DOUBLE	   (i)    velocity at int. point
@@ -282,8 +296,7 @@ is calculated.
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void f2_calstabsmm(FLUID_DYN_CALC  *dynvar,
-	           FLUID_DYN_ML    *mlvar, 
+void f2_calstabsmm(FLUID_DYN_ML    *mlvar, 
 		   DOUBLE         **smemass,  
 		   DOUBLE          *velint, 
 		   DOUBLE         **vderxy, 
@@ -310,10 +323,11 @@ DOUBLE sign;
 dstrc_enter("f2_calstabsmm");
 #endif
 
+fdyn = alldyn[genprob.numff].fdyn;
 /*---------------------------------------- set stabilization parameter */
 tau = mlvar->smtau;
 
-switch (dynvar->conte) /* determine parameter beta of convective term */
+switch (fdyn->conte) /* determine parameter beta of convective term */
 {
 case 0: 
   beta = ZERO;
@@ -328,7 +342,7 @@ case 2:
 break;
 default:
    dserror("unknown form of convective term");
-} /* end switch (dynvar->conte) */
+} /* end switch (fdyn->conte) */
 
 if (mlvar->smstado<0) sign = -ONE;  /* USFEM */
 else                  sign = ONE;   /* GLS- */
@@ -347,7 +361,7 @@ if (ABS(mlvar->smstado)<3)
  *----------------------------------------------------------------------*/
   for (icol=0;icol<smiel;icol++)
   {
-    auxc = smfunct[icol]*con*(ONE/dynvar->thsl);
+    auxc = smfunct[icol]*con*(ONE/fdyn->thsl);
     for (irow=0;irow<smiel;irow++)
     {
       aux = smfunct[irow]*auxc;
@@ -370,7 +384,7 @@ if (ABS(mlvar->smstado)<3)
     } /* end loop over irow */
   } /* end loop over icol */
 
-  if (dynvar->conte!=0)  
+  if (fdyn->conte!=0)  
   {
     cb = con*beta;
 /*---------------------------------------------------------------------*
@@ -430,7 +444,7 @@ for (icol=0;icol<smiel;icol++)
   } /* end loop over irow */
 } /* end loop over icol */
     
-if (dynvar->conte!=0)  
+if (fdyn->conte!=0)  
 {
   cb = con*beta*sign;
 /*----------------------------------------------------------------------*
@@ -522,7 +536,6 @@ NOTE: there's only one elestif
       
 </pre>
 \param  *ele	   ELEMENT	   (i)	   actual element
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param **estif     DOUBLE	   (i/o)   ele stiffness matrix
 \param  *velint    DOUBLE	   (i)     vel. at integr. point
 \param **vderxy    DOUBLE	   (i)     global vel. deriv.
@@ -537,7 +550,6 @@ NOTE: there's only one elestif
 
 ------------------------------------------------------------------------*/
 void f2_lscalstabkvv(ELEMENT         *ele,    
-		   FLUID_DYN_CALC  *dynvar,
 		   DOUBLE	  **estif,  
 		   DOUBLE	   *velint, 
 		   DOUBLE	  **vderxy, 
@@ -570,17 +582,19 @@ dstrc_enter("f2_lscalstabkvv");
 #endif
 
 /*---------------------------------------------------------- initialise */
+fdyn = alldyn[genprob.numff].fdyn;
+
 gls    = ele->e.f2->stabi.gls;
 
 if (ele->e.f2->stab_type != stab_gls) 
    dserror("routine with no or wrong stabilisation called");
 
 /*---------------------------------------- set stabilisation parameter */
-taumu = dynvar->tau[0];
-taump = dynvar->tau[1];
-tauc  = dynvar->tau[2];
+taumu = fdyn->tau[0];
+taump = fdyn->tau[1];
+tauc  = fdyn->tau[2];
 
-switch (dynvar->conte) /* determine parameter beta of convective term */
+switch (fdyn->conte) /* determine parameter beta of convective term */
 {
 case 0: 
   beta = ZERO;
@@ -595,7 +609,7 @@ case 2:
 break;
 default:
    dserror("unknown form of convective term");
-} /* end switch (dynvar->conte) */
+} /* end switch (fdyn->conte) */
 
 switch (gls->ivisc) /* determine type of stabilization */
 {
@@ -654,7 +668,7 @@ if (gls->iadvec!=0)
 /*----------------------------------------------------------------------*
    Calculate convection stabilisation part Nc(u):
  *----------------------------------------------------------------------*/
-  if (dynvar->nic!=0) /* evaluate for Newton- and fixed-point-like-iteration */
+  if (fdyn->nic!=0) /* evaluate for Newton- and fixed-point-like-iteration */
   {
 /*----------------------------------------------------------------------*
     /
@@ -676,7 +690,7 @@ if (gls->iadvec!=0)
       icol += 2;
     } /* end of loop over icn */
 
-    if (dynvar->conte!=0)  
+    if (fdyn->conte!=0)  
     {
       cb  = con*beta;
       cbb = cb*beta*signre;
@@ -737,12 +751,12 @@ if (gls->iadvec!=0)
         icol += 2;
       } /* end of loop over icn */
     }
-  } /* endif (dynvar->nic!=0) */
+  } /* endif (fdyn->nic!=0) */
 
 /*----------------------------------------------------------------------*
    Calculate convection stabilisation part Nr(u):
  *----------------------------------------------------------------------*/
-  if (dynvar->nir!=0)  /* evaluate for Newton iteraton */
+  if (fdyn->nir!=0)  /* evaluate for Newton iteraton */
   {
 /*----------------------------------------------------------------------*
     /
@@ -766,7 +780,7 @@ if (gls->iadvec!=0)
       icol += 2;
     } /* end of loop over icn */
 
-    if (dynvar->conte!=0)  
+    if (fdyn->conte!=0)  
     {
       cb  = con*beta;
       cbb = cb*beta*signre;
@@ -833,7 +847,7 @@ if (gls->iadvec!=0)
         icol += 2;
       } /* end of loop over icn */
     }
-  } /* endif (dynvar->nir!=0) */
+  } /* endif (fdyn->nir!=0) */
 
 /*----------------------------------------------------------------------*
    Calculate convection stabilisation part for higher order elements:
@@ -842,7 +856,7 @@ if (gls->iadvec!=0)
   {
     ccon = con*visc;
     
-    if (dynvar->vite==0)
+    if (fdyn->vite==0)
     {
 /*----------------------------------------------------------------------*
     /
@@ -864,7 +878,7 @@ if (gls->iadvec!=0)
         icol += 2;
       } /* end of loop over icn */
       
-      if (dynvar->conte!=0)  
+      if (fdyn->conte!=0)  
       {
         ccb  = ccon*beta*signre;
 /*----------------------------------------------------------------------*
@@ -912,7 +926,7 @@ if (gls->iadvec!=0)
         icol += 2;
       } /* end of loop over icn */
       
-      if (dynvar->conte!=0)  
+      if (fdyn->conte!=0)  
       {
         ccb  = ccon*beta*signre;
 /*----------------------------------------------------------------------*
@@ -948,7 +962,7 @@ if (ihoel!=0 && gls->ivisc>0)
 {   
   ccon = fac * taump * visc * visc * signvi;
   
-  if (dynvar->vite==0)
+  if (fdyn->vite==0)
   {
 /*----------------------------------------------------------------------*
     /
@@ -978,7 +992,7 @@ if (ihoel!=0 && gls->ivisc>0)
  *----------------------------------------------------------------------*/
     ccon = fac * taump * visc * signvi;
    
-    if (dynvar->nic!=0) /* evaluate for Newton- and fixed-point-like-iteration */
+    if (fdyn->nic!=0) /* evaluate for Newton- and fixed-point-like-iteration */
     {
       icol=0;
       for (icn=0;icn<iel;icn++)
@@ -995,7 +1009,7 @@ if (ihoel!=0 && gls->ivisc>0)
 	icol += 2;
       } /* end of loop over icn */
 
-      if (dynvar->conte!=0)  
+      if (fdyn->conte!=0)  
       {
         ccb  = ccon*beta;
 /*----------------------------------------------------------------------*
@@ -1018,7 +1032,7 @@ if (ihoel!=0 && gls->ivisc>0)
 	  icol += 2;
         } /* end of loop over icn */
       }
-    } /* endif (dynvar->nic!=0) */
+    } /* endif (fdyn->nic!=0) */
    
 /*----------------------------------------------------------------------*
    Calculate viscous stabilisation part Nr(u) for higher order elements:
@@ -1026,7 +1040,7 @@ if (ihoel!=0 && gls->ivisc>0)
    |  -/+ tau_mp  * nue * delta(v) * u * grad(u_old) d_omega
   /
  *----------------------------------------------------------------------*/   
-    if (dynvar->nir!=0)  /* evaluate for Newton iteraton */
+    if (fdyn->nir!=0)  /* evaluate for Newton iteraton */
     {
       icol=0;
       for (icn=0;icn<iel;icn++)
@@ -1045,7 +1059,7 @@ if (ihoel!=0 && gls->ivisc>0)
 	icol += 2;
       } /* end of loop over icn */
 
-      if (dynvar->conte!=0)  
+      if (fdyn->conte!=0)  
       {
         ccb  = ccon*beta;
 /*----------------------------------------------------------------------*
@@ -1069,7 +1083,7 @@ if (ihoel!=0 && gls->ivisc>0)
 	  icol += 2;
         } /* end of loop over icn */
       }
-    } /* endif (dynvar->nir!=0) */
+    } /* endif (fdyn->nir!=0) */
   }
   else
   {
@@ -1112,7 +1126,7 @@ if (ihoel!=0 && gls->ivisc>0)
  *----------------------------------------------------------------------*/
     ccon = fac * taump * visc * signvi;
    
-    if (dynvar->nic!=0) /* evaluate for Newton- and fixed-point-like-iteration */
+    if (fdyn->nic!=0) /* evaluate for Newton- and fixed-point-like-iteration */
     {
       icol=0;
       for (icn=0;icn<iel;icn++)
@@ -1131,7 +1145,7 @@ if (ihoel!=0 && gls->ivisc>0)
 	icol += 2;
       } /* end of loop over icn */
 
-      if (dynvar->conte!=0)  
+      if (fdyn->conte!=0)  
       {
         ccb  = ccon*beta;
 /*----------------------------------------------------------------------*
@@ -1156,7 +1170,7 @@ if (ihoel!=0 && gls->ivisc>0)
 	  icol += 2;
         } /* end of loop over icn */
       }
-    } /* endif (dynvar->nic!=0) */
+    } /* endif (fdyn->nic!=0) */
    
 /*----------------------------------------------------------------------*
    Calculate viscous stabilisation part Nr(u) for higher order elements:
@@ -1164,7 +1178,7 @@ if (ihoel!=0 && gls->ivisc>0)
    |  -/+ tau_mp  * 2 * nue * div(eps(v)) * u * grad(u_old) d_omega
   /
  *----------------------------------------------------------------------*/   
-    if (dynvar->nir!=0)  /* evaluate for Newton iteraton */
+    if (fdyn->nir!=0)  /* evaluate for Newton iteraton */
     {
       icol=0;
       for (icn=0;icn<iel;icn++)
@@ -1191,7 +1205,7 @@ if (ihoel!=0 && gls->ivisc>0)
 	icol += 2;
       } /* end of loop over icn */
 
-      if (dynvar->conte!=0)  
+      if (fdyn->conte!=0)  
       {
         ccb  = ccon*beta;
 /*----------------------------------------------------------------------*
@@ -1223,7 +1237,7 @@ if (ihoel!=0 && gls->ivisc>0)
 	  icol += 2;
         } /* end of loop over icn */
       }
-    } /* endif (dynvar->nir!=0) */
+    } /* endif (fdyn->nir!=0) */
   }
 } /* end of viscous stabilisation for higher order elments */
 
@@ -1257,7 +1271,6 @@ see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
       
 </pre>
 \param  *ele	   ELEMENT	   (i)	   actual element
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param **estif     DOUBLE	   (i/o)   ele stiffness matrix
 \param  *velint    DOUBLE	   (i)     vel. at integr. point
 \param **vderxy    DOUBLE	   (i)     global vel. deriv.
@@ -1272,7 +1285,6 @@ see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
 
 ------------------------------------------------------------------------*/
 void f2_lscalstabkvp(ELEMENT         *ele,    
-		   FLUID_DYN_CALC  *dynvar,
 		   DOUBLE	  **estif, 
 		   DOUBLE	   *velint,
 		   DOUBLE	  **vderxy,
@@ -1306,18 +1318,20 @@ dstrc_enter("f2_lscalstabkvp");
 #endif
 
 /*---------------------------------------------------------- initialise */
+fdyn = alldyn[genprob.numff].fdyn;
+
 gls    = ele->e.f2->stabi.gls;
 
 if (ele->e.f2->stab_type != stab_gls) 
    dserror("routine with no or wrong stabilisation called");
 
 /*---------------------------------------- set stabilisation parameter */
-taumu = dynvar->tau[0];
-taump = dynvar->tau[1];
+taumu = fdyn->tau[0];
+taump = fdyn->tau[1];
 
 con = fac * taumu;
 
-switch (dynvar->conte) /* determine parameter beta of convective term */
+switch (fdyn->conte) /* determine parameter beta of convective term */
 {
 case 0: 
   beta = ZERO;
@@ -1332,7 +1346,7 @@ case 2:
 break;
 default:
    dserror("unknown form of convective term");
-} /* end switch (dynvar->conte) */
+} /* end switch (fdyn->conte) */
 
 switch (gls->ivisc) /* determine type of stabilization */
 {
@@ -1381,7 +1395,7 @@ if (gls->iadvec!=0)
     } /* end loop over irn */
   } /* end loop over icol */
     
-  if (dynvar->conte!=0)  
+  if (fdyn->conte!=0)  
   {
     cb = con*beta*signre;
 /*----------------------------------------------------------------------*
@@ -1412,7 +1426,7 @@ if (gls->ivisc>0 && ihoel!=0)
 {
   con = fac * taump * visc * signvi;
   
-  if (dynvar->vite==0)
+  if (fdyn->vite==0)
   {
 /*----------------------------------------------------------------------*
     /
@@ -1488,7 +1502,6 @@ NOTE: there's only one elestif
       
 </pre>
 \param  *ele	   ELEMENT	   (i)	   actual element
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param **emass     DOUBLE	   (i/o)   ele mass matrix
 \param  *velint    DOUBLE	   (i)     vel. at integr. point
 \param **vderxy    DOUBLE	   (i)     global vel. deriv.
@@ -1503,7 +1516,6 @@ NOTE: there's only one elestif
 
 ------------------------------------------------------------------------*/
 void f2_lscalstabmvv(ELEMENT         *ele,     
-		   FLUID_DYN_CALC  *dynvar,
 		   DOUBLE	  **emass,  
 		   DOUBLE	   *velint, 
 		   DOUBLE	  **vderxy,
@@ -1535,18 +1547,20 @@ dstrc_enter("f2_lscalstabmvv");
 #endif
 
 /*---------------------------------------------------------- initialise */
+fdyn = alldyn[genprob.numff].fdyn;
+
 gls    = ele->e.f2->stabi.gls;
 
 if (ele->e.f2->stab_type != stab_gls) 
    dserror("routine with no or wrong stabilisation called");
 
 /*---------------------------------------- set stabilisation parameter */
-taumu = dynvar->tau[0];
-taump = dynvar->tau[1];
+taumu = fdyn->tau[0];
+taump = fdyn->tau[1];
 
 con = fac * taumu;
 
-switch (dynvar->conte) /* determine parameter beta of convective term */
+switch (fdyn->conte) /* determine parameter beta of convective term */
 {
 case 0: 
   beta = ZERO;
@@ -1561,7 +1575,7 @@ case 2:
 break;
 default:
    dserror("unknown form of convective term");
-} /* end switch (dynvar->conte) */
+} /* end switch (fdyn->conte) */
 
 switch (gls->ivisc) /* determine type of stabilization */
 {
@@ -1612,7 +1626,7 @@ if (gls->iadvec!=0)
     icol += 2;      
   } /* end loop over icn */
     
-  if (dynvar->conte!=0)  
+  if (fdyn->conte!=0)  
   {
     cb = con*beta*signre;
 /*----------------------------------------------------------------------*
@@ -1646,7 +1660,7 @@ if (ele->e.f2->stabi.gls->ivisc>0 && ihoel!=0)
      dserror("wrong stabilisation within ml context");
   con = fac * taump * visc * signvi;
   
-  if (dynvar->vite==0)
+  if (fdyn->vite==0)
   {
 /*----------------------------------------------------------------------*
     /
@@ -1726,7 +1740,6 @@ NOTE: there's only one elestif
       --> Kpv is stored in estif[((2*iel)..(3*iel-1)][0..(2*iel-1)] 
       
 </pre>
-\param  *dynvar    FLUID_DYN_CALC  (i)      
 \param **estif     DOUBLE	   (i/o)   ele stiffness matrix
 \param  *velint    DOUBLE	   (i)     vel. at integr. point
 \param **vderxy    DOUBLE	   (i)     global vel. deriv.
@@ -1740,17 +1753,16 @@ NOTE: there's only one elestif
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void f2_lscalstabkpv(FLUID_DYN_CALC  *dynvar,
-		   DOUBLE	  **estif,   
-		   DOUBLE	   *velint, 
-		   DOUBLE	  **vderxy, 
-		   DOUBLE	   *funct,  
-		   DOUBLE	  **derxy,  
-		   DOUBLE	  **derxy2, 
-		   DOUBLE	    fac,    
-		   DOUBLE	    visc,   
-		   INT  	    iel,    
-		   INT  	    ihoel)
+void f2_lscalstabkpv(DOUBLE	  **estif,   
+		     DOUBLE	   *velint, 
+		     DOUBLE	  **vderxy, 
+		     DOUBLE	   *funct,  
+		     DOUBLE	  **derxy,  
+		     DOUBLE	  **derxy2, 
+		     DOUBLE	    fac,    
+		     DOUBLE	    visc,   
+		     INT  	    iel,    
+		     INT  	    ihoel)
 {
 /*----------------------------------------------------------------------*
  | NOTATION:                                                            |
@@ -1770,12 +1782,13 @@ DOUBLE taump;
 dstrc_enter("f2_lscalstabkpv");
 #endif
 
+fdyn = alldyn[genprob.numff].fdyn;
 /*---------------------------------------- set stabilisation parameter */
-taump = dynvar->tau[1];
+taump = fdyn->tau[1];
 
 con = fac * taump;
 
-switch (dynvar->conte) /* determine parameter beta of convective term */
+switch (fdyn->conte) /* determine parameter beta of convective term */
 {
 case 0: 
   beta = ZERO;
@@ -1790,12 +1803,12 @@ case 2:
 break;
 default:
    dserror("unknown form of convective term");
-} /* end switch (dynvar->conte) */
+} /* end switch (fdyn->conte) */
 
 /*----------------------------------------------------------------------*
    Calculate stabilisation part Nc(u):
  *----------------------------------------------------------------------*/
-if (dynvar->nic!=0) /* evaluate for Newton- and fixed-point-like-iteration */
+if (fdyn->nic!=0) /* evaluate for Newton- and fixed-point-like-iteration */
 {
 /*----------------------------------------------------------------------*
     /
@@ -1815,7 +1828,7 @@ if (dynvar->nic!=0) /* evaluate for Newton- and fixed-point-like-iteration */
     icol += 2;
   } /* end loop over icn */
   
-  if (dynvar->conte!=0)  
+  if (fdyn->conte!=0)  
   {
     cb = con*beta;
 /*----------------------------------------------------------------------*
@@ -1836,12 +1849,12 @@ if (dynvar->nic!=0) /* evaluate for Newton- and fixed-point-like-iteration */
       icol += 2;
     } /* end loop over icn */
   }
-} /* endif (dynvar->nic!=0) */ 
+} /* endif (fdyn->nic!=0) */ 
 
 /*----------------------------------------------------------------------*
    Calculate stabilisation part Nr(u):
  *----------------------------------------------------------------------*/
-if (dynvar->nir!=0) /* evaluate for Newton iteration */
+if (fdyn->nir!=0) /* evaluate for Newton iteration */
 {
 /*----------------------------------------------------------------------*
     /
@@ -1863,7 +1876,7 @@ if (dynvar->nir!=0) /* evaluate for Newton iteration */
     icol += 2;
   } /* end loop over icn */
   
-  if (dynvar->conte!=0)  
+  if (fdyn->conte!=0)  
   {
     cb = con*beta;
 /*----------------------------------------------------------------------*
@@ -1884,7 +1897,7 @@ if (dynvar->nir!=0) /* evaluate for Newton iteration */
       icol += 2;
     } /* end loop over icn */
   }
-} /* endif (dynvar->nir!=0) */
+} /* endif (fdyn->nir!=0) */
 
 /*----------------------------------------------------------------------*
    Calculate viscous stabilisation parts for higher order elements:
@@ -1893,7 +1906,7 @@ if (ihoel!=0)
 {
   con = con * visc;
   
-  if (dynvar->vite==0)
+  if (fdyn->vite==0)
   {
 /*----------------------------------------------------------------------*
     /
@@ -1963,7 +1976,6 @@ NOTE: there's only one elestif
 	      estif[((2*iel)..(3*iel-1)][((2*iel)..(3*iel-1)] 
       
 </pre>
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param **estif     DOUBLE	   (i/o)   ele stiffness matrix
 \param **derxy     DOUBLE	   (i)     global derivatives
 \param   fac	   DOUBLE	   (i)     weighting factor
@@ -1971,11 +1983,10 @@ NOTE: there's only one elestif
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void f2_lscalstabkpp(FLUID_DYN_CALC  *dynvar,
-		   DOUBLE	  **estif,   
-		   DOUBLE	  **derxy,  
-		   DOUBLE	    fac,    
-		   INT  	    iel)
+void f2_lscalstabkpp(DOUBLE	  **estif,   
+		     DOUBLE	  **derxy,  
+		     DOUBLE	    fac,    
+		     INT  	    iel)
 {
 /*----------------------------------------------------------------------*
  | NOTATION:                                                            |
@@ -1994,8 +2005,9 @@ DOUBLE taump;
 dstrc_enter("f2_lscalstabkpp");
 #endif
 
+fdyn = alldyn[genprob.numff].fdyn;
 /*---------------------------------------- set stabilisation parameter */
-taump = dynvar->tau[1];
+taump = fdyn->tau[1];
 
 con = fac * taump;
 
@@ -2041,7 +2053,6 @@ NOTE: there's only one elemass
       --> Mpv is stored in emass[((2*iel)..(3*iel-1)][0..(2*iel-1)] 
       
 </pre>
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param **emass     DOUBLE	   (i/o)   ele mass matrix
 \param  *funct     DOUBLE	   (i)     nat. shape functions
 \param **derxy     DOUBLE	   (i)     global derivatives
@@ -2051,12 +2062,11 @@ NOTE: there's only one elemass
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void f2_lscalstabmpv(FLUID_DYN_CALC  *dynvar,
-		   DOUBLE	  **emass,   
-		   DOUBLE	   *funct,  
-		   DOUBLE	  **derxy,  
-		   DOUBLE	    fac,    
-		   INT  	    iel)
+void f2_lscalstabmpv(DOUBLE	  **emass,   
+		     DOUBLE	   *funct,  
+		     DOUBLE	  **derxy,  
+		     DOUBLE	    fac,    
+		     INT  	    iel)
 {
 /*----------------------------------------------------------------------*
  | NOTATION:                                                            |
@@ -2076,8 +2086,9 @@ DOUBLE auxc;
 dstrc_enter("f2_lscalstabmpv");
 #endif
 
+fdyn = alldyn[genprob.numff].fdyn;
 /*---------------------------------------- set stabilisation parameter */
-taump = dynvar->tau[1];
+taump = fdyn->tau[1];
 
 con = fac * taump;
 

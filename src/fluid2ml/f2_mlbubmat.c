@@ -14,6 +14,21 @@ Maintainer: Volker Gravemeier
 #include "../headers/standardtypes.h"
 #include "../fluid2/fluid2_prototypes.h"
 #include "fluid2ml_prototypes.h"
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+static FLUID_DYNAMIC *fdyn;
 /*!---------------------------------------------------------------------                                         
 \brief evaluate bubble part of matrix Kvv for fluid2
 
@@ -26,7 +41,6 @@ NOTE: there's only one elestif
       --> Kvv is stored in estif[0..(2*iel-1)][0..(2*iel-1)]
       
 </pre>
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param **estif     DOUBLE	   (i/o)  element stiffne matrix
 \param  *velint    DOUBLE	   (i)    velocity at int point
 \param **vderxy    DOUBLE	   (i)    global velocity derivatives
@@ -40,8 +54,7 @@ NOTE: there's only one elestif
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void f2_calbkvv(FLUID_DYN_CALC  *dynvar,
-		DOUBLE         **estif,   
+void f2_calbkvv(DOUBLE         **estif,   
 		DOUBLE          *velint, 
 		DOUBLE         **vderxy, 
 		DOUBLE          *funct,  
@@ -67,9 +80,10 @@ dstrc_enter("f2_calbkvv");
 #endif		
 
 /*--------------------------------------------------------------------- */
+fdyn = alldyn[genprob.numff].fdyn;
 con=fac*visc;
 
-if (dynvar->vite==0) 
+if (fdyn->vite==0) 
 {
 /*----------------------------------------------------------------------*
    Calculate velocity bubble part of matrix K:
@@ -121,7 +135,7 @@ else
 /*----------------------------------------------------------------------*
    Calculate velocity bubble part of matrix Nc(u)
  *----------------------------------------------------------------------*/
-if(dynvar->nic != 0) /* evaluate for Newton- and fixed-point-like-iteration */
+if(fdyn->nic != 0) /* evaluate for Newton- and fixed-point-like-iteration */
 {
 /*----------------------------------------------------------------------*
     /
@@ -143,14 +157,14 @@ if(dynvar->nic != 0) /* evaluate for Newton- and fixed-point-like-iteration */
      icol += 2;
   } /* end loop over icn */
   
-  if (dynvar->conte!=0)  
+  if (fdyn->conte!=0)  
   {
 /*----------------------------------------------------------------------*
     /
    | beta * v * u_bub * div(u_old)   d_omega
   /
  *----------------------------------------------------------------------*/
-    if (dynvar->conte==1) beta = ONE;
+    if (fdyn->conte==1) beta = ONE;
     else beta = ONE/TWO;
     divv= vderxy[0][0]+vderxy[1][1]; 
     icol=0;
@@ -167,12 +181,12 @@ if(dynvar->nic != 0) /* evaluate for Newton- and fixed-point-like-iteration */
       icol += 2;
     } /* end loop over icn */
   }
-} /* endif (dynvar->nic != 0) */
+} /* endif (fdyn->nic != 0) */
 
 /*----------------------------------------------------------------------*
    Calculate velocity bubble part of matrix Nr(u):
  *----------------------------------------------------------------------*/
-if (dynvar->nir != 0) /* evaluate for Newton iteraton */
+if (fdyn->nir != 0) /* evaluate for Newton iteraton */
 {
 /*----------------------------------------------------------------------*
     /
@@ -195,14 +209,14 @@ if (dynvar->nir != 0) /* evaluate for Newton iteraton */
     icol += 2;
   } /* end loop over icn */
   
-  if (dynvar->conte!=0)  
+  if (fdyn->conte!=0)  
   {
 /*----------------------------------------------------------------------*
     /
    |  beta * v * u_old * div(u_bub)     d_omega
   /
  *----------------------------------------------------------------------*/
-    if (dynvar->conte==1) beta = ONE;
+    if (fdyn->conte==1) beta = ONE;
     else beta = ONE/TWO;
     icol=0;
     for (icn=0;icn<iel;icn++)
@@ -220,7 +234,7 @@ if (dynvar->nir != 0) /* evaluate for Newton iteraton */
       icol += 2;
     } /* end loop over icn */
   }  
-} /* endif (dynvar->nir != 0) */
+} /* endif (fdyn->nir != 0) */
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
@@ -241,7 +255,6 @@ NOTE: there's only one elestif
       --> Kvp is stored in estif[(0..(2*iel-1)][(2*iel)..(3*iel-1)]
       
 </pre>
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param **estif     DOUBLE	   (i/o)  element stiffness matrix
 \param  *velint    DOUBLE	   (i)    velocity at INT point
 \param **vderxy    DOUBLE	   (i)    global velocity derivatives
@@ -255,8 +268,7 @@ NOTE: there's only one elestif
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void f2_calbkvp(FLUID_DYN_CALC  *dynvar,
-		DOUBLE         **estif,   
+void f2_calbkvp(DOUBLE         **estif,   
 		DOUBLE          *velint, 
 		DOUBLE         **vderxy, 
 		DOUBLE          *funct,  
@@ -281,9 +293,11 @@ dstrc_enter("f2_calbkvp");
 #endif		
 
 /*--------------------------------------------------------------------- */
+fdyn = alldyn[genprob.numff].fdyn;
+
 con=fac*visc;
 
-if (dynvar->vite==0) 
+if (fdyn->vite==0) 
 {
 /*----------------------------------------------------------------------*
    Calculate pressure bubble part of matrix K:
@@ -331,7 +345,7 @@ else
 /*----------------------------------------------------------------------*
    Calculate pressure bubble part of matrix Nc(u)
  *----------------------------------------------------------------------*/
-if(dynvar->nic != 0) /* evaluate for Newton- and fixed-point-like-iteration */
+if(fdyn->nic != 0) /* evaluate for Newton- and fixed-point-like-iteration */
 {
 /*----------------------------------------------------------------------*
                   /
@@ -354,14 +368,14 @@ if(dynvar->nic != 0) /* evaluate for Newton- and fixed-point-like-iteration */
     } /* end loop over irn */
   } /* end loop over icn */
   
-  if (dynvar->conte!=0)  
+  if (fdyn->conte!=0)  
   {
 /*----------------------------------------------------------------------*
                    /
   sum over j=1,2  | beta * v * p_bub(j) * div(u_old)   d_omega
                  /
  *----------------------------------------------------------------------*/
-    if (dynvar->conte==1) beta = ONE;
+    if (fdyn->conte==1) beta = ONE;
     else beta = ONE/TWO;
     divv= vderxy[0][0]+vderxy[1][1]; 
     for (icol=0;icol<iel;icol++)
@@ -377,12 +391,12 @@ if(dynvar->nic != 0) /* evaluate for Newton- and fixed-point-like-iteration */
       } /* end loop over irn */
     } /* end loop over icn */
   }
-} /* endif (dynvar->nic != 0) */
+} /* endif (fdyn->nic != 0) */
 
 /*----------------------------------------------------------------------*
    Calculate pressure bubble part of matrix Nr(u):
  *----------------------------------------------------------------------*/
-if (dynvar->nir != 0) /* evaluate for Newton iteraton */
+if (fdyn->nir != 0) /* evaluate for Newton iteraton */
 {
 /*----------------------------------------------------------------------*
                    /
@@ -403,14 +417,14 @@ if (dynvar->nir != 0) /* evaluate for Newton iteraton */
     } /* end loop over irn */
   } /* end loop over icn */
   
-  if (dynvar->conte!=0)  
+  if (fdyn->conte!=0)  
   {
 /*----------------------------------------------------------------------*
                    /
   sum over j=1,2  |  beta * v * u_old * div(p_bub(j))     d_omega
                  /
  *----------------------------------------------------------------------*/
-    if (dynvar->conte==1) beta = ONE;
+    if (fdyn->conte==1) beta = ONE;
     else beta = ONE/TWO;
     for (icol=0;icol<iel;icol++)
     {
@@ -425,7 +439,7 @@ if (dynvar->nir != 0) /* evaluate for Newton iteraton */
       } /* end loop over irn */
     } /* end loop over icn */
   }  
-} /* endif (dynvar->nir != 0) */
+} /* endif (fdyn->nir != 0) */
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

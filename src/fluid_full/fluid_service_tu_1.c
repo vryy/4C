@@ -36,7 +36,21 @@ and the type is in partition.h
  | defined in global_control.c
  *----------------------------------------------------------------------*/
 extern struct _MATERIAL  *mat;
-   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+static FLUID_DYNAMIC *fdyn;
 /*!---------------------------------------------------------------------                                         
 \brief storing results in solution history
 
@@ -56,22 +70,20 @@ nonlinear iteration scheme are calculated.
 \param	*sysarray      SPARSE_ARRAY   (i)
 \param	*sysarray_typ  SPARSE_TYP     (i)
 \param	*kapomegarat   DOUBLE	      (o)    kapomega  conv. ratio
-\param	*fdyn	       FLUID_DYNAMIC	     	
 \param lower_limit_kappa  DOUBLE	      (i)    lower limit for kappa
 \param lower_limit_omega  DOUBLE	      (i)    lower limit for omega
 \return void 
 
 ------------------------------------------------------------------------*/
-void fluid_result_incre_tu_1(FIELD       *actfield,    
-                           INTRA         *actintra,   
-			         DIST_VECTOR   *sol,        
-                           INT            place,      
-			         SPARSE_ARRAY  *sysarray,      
-			         SPARSE_TYP    *sysarray_typ,
-			         DOUBLE        *kapomegarat,        
-		               FLUID_DYNAMIC *fdyn,
-                           DOUBLE         lower_limit_kappa,
-                           DOUBLE         lower_limit_omega         
+void fluid_result_incre_tu_1( FIELD       *actfield,    
+                              INTRA         *actintra,   
+                              DIST_VECTOR   *sol,        
+                              INT            place,      
+                              SPARSE_ARRAY  *sysarray,      
+                              SPARSE_TYP    *sysarray_typ,
+                              DOUBLE        *kapomegarat,        
+                              DOUBLE         lower_limit_kappa,
+                              DOUBLE         lower_limit_omega         
 		              )
 {
 INT      i,j;
@@ -84,13 +96,12 @@ DOUBLE   dkapomenorm=ZERO;
 DOUBLE    kapomenorm=ZERO;
 NODE    *actnode;
 ARRAY    result_a;
-FLUID_DYN_CALC *dynvar;             /* pointer to fluid_dyn_calc        */
 
 #ifdef DEBUG 
 dstrc_enter("fluid_result_incre_tu");
 #endif
 
-dynvar      = &(fdyn->dynvar);
+fdyn = alldyn[genprob.numff].fdyn;
 /*----------------------------------------------------------------------*/
 numeq_total = sol->numeq_total;
 
@@ -126,7 +137,7 @@ solserv_reddistvec(
          {
 	    dof = actnode->dof[j];
             if (dof>=numeq_total) continue;
-	       if(dynvar->kapomega_flag==0)
+	       if(fdyn->kapomega_flag==0)
              {
               if (result[dof]<lower_limit_kappa) result[dof]=lower_limit_kappa;
               result[dof]=0.5*result[dof]+0.5*actnode->sol_increment.a.da[place][j];
@@ -134,7 +145,7 @@ solserv_reddistvec(
 	        kapomenorm  = DMAX(kapomenorm, FABS(result[dof]));
               actnode->sol_increment.a.da[place][j] = result[dof];
              }
-             if(dynvar->kapomega_flag==1)
+             if(fdyn->kapomega_flag==1)
              {
               if (result[dof]<lower_limit_omega) result[dof]=lower_limit_omega;
               result[dof]=0.5*result[dof]+0.5*actnode->sol_increment.a.da[place][j+2];
@@ -162,7 +173,7 @@ solserv_reddistvec(
          {
 	    dof = actnode->dof[j];
             if (dof>=numeq_total) continue;
- 	       if(dynvar->kapomega_flag==0)
+ 	       if(fdyn->kapomega_flag==0)
              {
               if (result[dof]<lower_limit_kappa) result[dof]=lower_limit_kappa;
               result[dof]=0.5*result[dof]+0.5*actnode->sol_increment.a.da[place][j];
@@ -170,7 +181,7 @@ solserv_reddistvec(
 	        kapomenorm  += FABS(result[dof]);
               actnode->sol_increment.a.da[place][j] = result[dof];
              }
-             if(dynvar->kapomega_flag==1)
+             if(fdyn->kapomega_flag==1)
              {
               if (result[dof]<lower_limit_omega) result[dof]=lower_limit_omega;
               result[dof]=0.5*result[dof]+0.5*actnode->sol_increment.a.da[place][j+2];
@@ -199,7 +210,7 @@ solserv_reddistvec(
          {
 	    dof = actnode->dof[j];
             if (dof>=numeq_total) continue;
-             if(dynvar->kapomega_flag==0)
+             if(fdyn->kapomega_flag==0)
              { 
               if (result[dof]<lower_limit_kappa) result[dof]=lower_limit_kappa;
               result[dof]=0.5*result[dof]+0.5*actnode->sol_increment.a.da[place][j];
@@ -207,7 +218,7 @@ solserv_reddistvec(
 	        kapomenorm  += pow(result[dof],2);
               actnode->sol_increment.a.da[place][j] = result[dof];   
              }
-             if(dynvar->kapomega_flag==1)
+             if(fdyn->kapomega_flag==1)
              { 
               if (result[dof]<lower_limit_omega) result[dof]=lower_limit_omega;
               result[dof]=0.5*result[dof]+0.5*actnode->sol_increment.a.da[place][j+2];
@@ -258,7 +269,6 @@ nodes:
                                      
 </pre>
 \param *actfield    FIELD         (i)  actual field (fluid)   
-\param *fdyn	  FLUID_DYNAMIC (i)  
 \param *lower_limit_kappa  DOUBLE (o) lower limit for kappa  
 \param *lower_limit_omega  DOUBLE (o) lower limit for omega  
 
@@ -267,7 +277,6 @@ nodes:
 ------------------------------------------------------------------------*/
 void fluid_set_check_tu_1(
                        FIELD  *actfield, 
-                       FLUID_DYNAMIC *fdyn, 
                        DOUBLE lower_limit_kappa,
                        DOUBLE lower_limit_omega
                        )
@@ -285,6 +294,8 @@ dstrc_enter("fluid_set_check_tu");
 #endif 
 
 /*----------------------------------------------------- set some values */
+fdyn = alldyn[genprob.numff].fdyn;
+
 numnp_total  = actfield->dis[1].numnp;
 numele_total = actfield->dis[1].numele;
 numdf        = 1;
@@ -388,8 +399,7 @@ and calculate norms for the iteration convergence check
 ------------------------------------------------------------------------*/
 void fluid_lenght_update_1(FIELD         *actfield, 
                           DIST_VECTOR   *sol,   
-		              DOUBLE        *lenghtrat, 
-                          FLUID_DYNAMIC *fdyn      
+		              DOUBLE        *lenghtrat
                          )
 {
 NODE    *actnode;
@@ -402,6 +412,9 @@ INT  numeq_total;
 #ifdef DEBUG 
 dstrc_enter("fluid_lenght_update_1");
 #endif
+
+
+fdyn = alldyn[genprob.numff].fdyn;
 /*----------------------------------------------------------------------*/
 numeq_total = sol->numeq_total;  
   

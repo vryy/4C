@@ -21,6 +21,21 @@ Maintainer: Thomas Hettich
  | defined in global_control.c                                          |
  *----------------------------------------------------------------------*/
 extern struct _MATERIAL  *mat;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+static FLUID_DYNAMIC *fdyn;
 /*!--------------------------------------------------------------------- 
 \brief set all arrays for element calculation
 
@@ -28,7 +43,6 @@ extern struct _MATERIAL  *mat;
 
 				      
 </pre>
-\param   *dynvar   FLUID_DYN_CALC  (i)
 \param   *data     FLUID_DATA	     (i)
 \param   *ele      ELEMENT	     (i)    actual element
 \param   *elev     ELEMENT	     (i)    actual element for velocity
@@ -46,7 +60,6 @@ extern struct _MATERIAL  *mat;
 
 ------------------------------------------------------------------------*/
 void f2_calset_tu( 
-                  FLUID_DYN_CALC  *dynvar, 
                   FLUID_DATA      *data,     
 	            ELEMENT         *ele,     
                   ELEMENT         *elev,
@@ -69,6 +82,7 @@ NODE  *actnode;     /* actual node                                      */
 dstrc_enter("f2_calset_tu");
 #endif
 
+fdyn = alldyn[genprob.numff].fdyn;
 /*-------------------------------------------- set element coordinates */
 for(i=0;i<ele->numnp;i++)
 {
@@ -88,8 +102,8 @@ for(i=0;i<ele->numnp;i++)
  |	                  i=2 : epsilon                                  |
  |	                  i=3 : charact. lenght                          |
  *---------------------------------------------------------------------*/
- if (dynvar->kapeps_flag==0) kap_eps=0;
- if (dynvar->kapeps_flag==1) kap_eps=2;
+ if (fdyn->kapeps_flag==0) kap_eps=0;
+ if (fdyn->kapeps_flag==1) kap_eps=2;
    
    for(i=0;i<ele->numnp;i++) /* loop nodes of element */
    {
@@ -104,22 +118,22 @@ for(i=0;i<ele->numnp;i++)
       eddypro[i] =actnode->sol_increment.a.da[2][1];
 
 /*--------------------- for kappa equation: epsilon is needed for R_t  */
-    if (dynvar->kapeps_flag==0)
+    if (fdyn->kapeps_flag==0)
     {
      epsilon[i] = actnode->sol_increment.a.da[3][2];
 
-     if (dynvar->kappan==2)
+     if (fdyn->kappan==2)
      {
       actnode->sol_increment.a.da[2][0] = actnode->sol_increment.a.da[3][0];
      }
     }
 
 /*-------- for epsilon equation: kappan is needed for production term  */
-    if (dynvar->kapeps_flag==1) 
+    if (fdyn->kapeps_flag==1) 
     { 
      kappa[i]  =actnode->sol_increment.a.da[3][0];
 
-     if (dynvar->kappan==2)
+     if (fdyn->kappan==2)
      {
       actnode->sol_increment.a.da[2][2] = actnode->sol_increment.a.da[3][2];
       kappan[i] =actnode->sol_increment.a.da[2][0];
@@ -702,7 +716,6 @@ return;
 In this routine velint_dc for DISC. CAPT. is calc.
 				      
 </pre>
-\param   *dynvar    FLUID_DYN_CALC    (i)
 \param   *velint        DOUBLE        (i)   2nd kapeps derivativs
 \param   *velint_dc     DOUBLE        (o)   2nd global derivatives
 \param   *kapepsderxy   DOUBLE        (i)   kapepsderiv.
@@ -710,7 +723,6 @@ In this routine velint_dc for DISC. CAPT. is calc.
 
 ------------------------------------------------------------------------*/
 void f2_vel_dc(
-		       FLUID_DYN_CALC  *dynvar,
                    DOUBLE  *velint,    
                    DOUBLE  *velint_dc,    
 	             DOUBLE  *kapepsderxy      
@@ -730,7 +742,7 @@ if(FABS(kapepsderxy[1])<0.001) kapepsderxy[1] = 0.0;
 skalar = velint[0]*kapepsderxy[0] + velint[1]*kapepsderxy[1];
 square = pow(kapepsderxy[0],2) + pow(kapepsderxy[1],2);
 
-if(square != 0.0 && dynvar->dis_capt == 1)
+if(square != 0.0 && fdyn->dis_capt == 1)
 {
  velint_dc[0] = skalar*kapepsderxy[0]/square;
  velint_dc[1] = skalar*kapepsderxy[1]/square;
@@ -766,15 +778,13 @@ routines for the stiffness matrix
 \param  **emass   DOUBLE	 (i)   ele mass matrix
 \param  **tmp     DOUBLE	 (-)   working array		
 \param    iel	  INT		 (i)   number of nodes in ele
-\param   *dynvar  FLUID_DYN_CALC
 \return void                                                                       
 ------------------------------------------------------------------------*/
 void f2_estifadd_tu(                  
 		   DOUBLE         **estif,   
 		   DOUBLE         **emass, 
 		   DOUBLE         **tmp,   
-		   INT              iel,   
-		   FLUID_DYN_CALC  *dynvar		   		    
+		   INT              iel
 	          ) 
 {
 INT    i,j,icol,irow;     /* simply some counters                       */
@@ -785,9 +795,10 @@ DOUBLE thsl;              /* factor for LHS (THETA*DT)                  */
 dstrc_enter("f2_estifadd_tu");
 #endif
 
+fdyn = alldyn[genprob.numff].fdyn;
 /*----------------------------------------------------- set some values */
 nkapepsdof  = iel;
-thsl   = dynvar->thsl;
+thsl   = fdyn->thsl;
 
 /*--------------------------------------------- copy estif to tmp-array *
                            and mutlitply stiffniss matrix with THETA*DT */
@@ -799,7 +810,7 @@ for (i=0;i<nkapepsdof;i++)
    } /* end of loop over j */
 } /* end of loop over i */
 /*------------------------------- add mass matrix for instationary case */
-if (dynvar->nis==0)
+if (fdyn->nis==0)
 {
    for (i=0;i<nkapepsdof;i++)
    {
@@ -808,7 +819,7 @@ if (dynvar->nis==0)
          tmp[i][j] += emass[i][j];
       } /* end of loop over j */
    } /* end of loop over i */
-} /* endif (dynvar->nis==0) */
+} /* endif (fdyn->nis==0) */
 
 /*---------------------------------------- estif=emass+(theta*dt)*estif */
 for (i=0;i<nkapepsdof;i++)

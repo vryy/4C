@@ -16,6 +16,19 @@ Maintainer: Steffen Genkinger
 #ifdef D_FLUID2_PRO
 #include "../headers/standardtypes.h"
 #include "fluid2pro_prototypes.h"
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
 
 /*!---------------------------------------------------------------------
 \brief calculate the balancing diffusivity tensor
@@ -28,7 +41,6 @@ Maintainer: Steffen Genkinger
   
 </pre>
 \param  *ele	   ELEMENT	   (i)	   actual element
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param **estif     DOUBLE	   (i/o)   ele stiffness matrix
 \param  *velint    DOUBLE	   (i)     vel. at integr. point
 \param **derxy     DOUBLE	   (i)     global derivatives
@@ -40,8 +52,7 @@ Maintainer: Steffen Genkinger
 
 ------------------------------------------------------------------------*/
 void f2pro_calbdt(			      
-                    ELEMENT         *ele,    
-		    FLUID_DYN_CALC  *dynvar,
+                    ELEMENT         *ele, 
 		    DOUBLE         **estif,  
 		    DOUBLE          *velint, 
 		    DOUBLE         **derxy,  
@@ -62,14 +73,18 @@ INT    irow,icol,irn,icn;
 DOUBLE taumu;
 DOUBLE c;
 DOUBLE aux,auxc;
+FLUID_DYNAMIC *fdyn;    /* pointer to fluid dynamic variables           */
+
 #ifdef DEBUG 
 dstrc_enter("f2pro_calbtd");
 #endif
 
 /*---------------------------------------- set stabilisation parameter */
 /*---stabilization parameter is taken to be dt/2 for the BTD method----*/
-taumu = dynvar->dta/TWO;
+fdyn = alldyn[genprob.numff].fdyn;
+taumu = fdyn->dta/TWO;
 c = fac*taumu;
+
 /*----------------------------------------------------------------------*
    Calculate advection stabilisation part Nc(u):
     /

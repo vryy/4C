@@ -14,6 +14,21 @@ Maintainer: Steffen Genkinger
 #include "../headers/standardtypes.h"
 #include "fluid3_prototypes.h"
 #include "fluid3.h"
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+static FLUID_DYNAMIC *fdyn;
 /*!--------------------------------------------------------------------- 
 \brief galerkin part of time forces for vel dofs
 
@@ -46,7 +61,6 @@ NOTE:
    in TWOSTEP methods: vel2int = U(n)	     
       
 </pre>
-\param   *dynvar      FLUID_DYN_CALC  (i)
 \param   *eforce      DOUBLE	      (i/o)  element force vector
 \param   *velint      DOUBLE	      (i)    vel. at integr. point
 \param   *vel2int     DOUBLE	      (i)    vel. at integr. point
@@ -61,8 +75,7 @@ NOTE:
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void f3_calgaltfv(
-                  FLUID_DYN_CALC  *dynvar, 
+void f3_calgaltfv( 
                   DOUBLE          *eforce,    
 		  DOUBLE          *velint,
 		  DOUBLE          *vel2int,
@@ -88,8 +101,10 @@ dstrc_enter("f3_calgaltfv");
 #endif
 
 /*--------------------------------------------------- set some factors */
-facsr = fac * dynvar->thsr;
-facpr = fac * dynvar->thpr;
+fdyn  = alldyn[genprob.numff].fdyn;
+
+facsr = fac * fdyn->thsr;
+facpr = fac * fdyn->thpr;
 c     = facsr * visc;
 
 /*----------------------------------------------------------------------*
@@ -153,7 +168,7 @@ for (inode=0;inode<iel;inode++)
    + (1-THETA)*dt  |  div(v) * p  d_omega
                   /
  *----------------------------------------------------------------------*/ 
-if (dynvar->iprerhs>0)
+if (fdyn->iprerhs>0)
 {
    aux = preint * facpr;
    irow=-1;
@@ -165,7 +180,7 @@ if (dynvar->iprerhs>0)
          eforce[irow] += derxy[isd][inode]*aux;
       } /* end of loop over isd */
    } /* end of loop over inode */
-} /*endif (dynvar->iprerhs>0) */
+} /*endif (fdyn->iprerhs>0) */
 /*----------------------------------------------------------------------*
    Calculate external forces of time force vector (due to self-weight):
                     /
@@ -214,7 +229,6 @@ NOTE:
     eforce[3*iel]				        	    
       
 </pre>
-\param   *dynvar      FLUID_DYN_CALC  (i)
 \param   *eforce      DOUBLE	      (i/o)  element force vector
 \param   *funct       DOUBLE	      (i)    nat. shape functions
 \param  **vderxy      DOUBLE	      (i)    global vel. deriv.
@@ -224,7 +238,6 @@ NOTE:
 
 ------------------------------------------------------------------------*/
 void f3_calgaltfp(
-                   FLUID_DYN_CALC  *dynvar, 
                    DOUBLE          *eforce,    
 		   DOUBLE          *funct,
 		   DOUBLE         **vderxy,
@@ -241,7 +254,8 @@ dstrc_enter("f3_calgaltfp");
 #endif
 
 /*--------------------------------------------------- set some factors */
-facsr = fac * dynvar->thsr;
+fdyn  = alldyn[genprob.numff].fdyn;
+facsr = fac * fdyn->thsr;
 
 /*----------------------------------------------------------------------*
    Calculate continuity forces of time force vector:
@@ -314,7 +328,6 @@ is calculated:
 see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
       
 </pre>
-\param   *dynvar     FLUID_DYN_CALC   (i)
 \param   *ele        ELEMENT	      (i)    actual element
 \param   *eforce     DOUBLE	      (i/o)  element force vector
 \param   *velint     DOUBLE	      (i)    vel. at integr. point
@@ -333,7 +346,6 @@ see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
 
 ------------------------------------------------------------------------*/
 void f3_calstabtfv(
-                   FLUID_DYN_CALC  *dynvar, 
                    ELEMENT         *ele,
 	           DOUBLE          *eforce,    
 	 	   DOUBLE          *velint,
@@ -366,18 +378,19 @@ dstrc_enter("f3_calstabtfv");
 #endif	
 
 /*---------------------------------------------------------- initialise */
+fdyn  = alldyn[genprob.numff].fdyn;
 gls    = ele->e.f3->stabi.gls;
 
 if (ele->e.f3->stab_type != stab_gls) 
    dserror("routine with no or wrong stabilisation called");
   
 /*--------------------------------------------------- set some factors */
-taumu = dynvar->tau[0];
-taump = dynvar->tau[1];
-tauc  = dynvar->tau[2];
+taumu = fdyn->tau[0];
+taump = fdyn->tau[1];
+tauc  = fdyn->tau[2];
 
-facsr = fac * dynvar->thsr;
-facpr = fac * dynvar->thpr;
+facsr = fac * fdyn->thsr;
+facpr = fac * fdyn->thpr;
 c     = facsr * visc;
 
 /*----------------------------------------------------------------------*
@@ -474,7 +487,7 @@ if (gls->iadvec!=0)
  *----------------------------------------------------------------------*/
 if (gls->ivisc!=0 && ihoel!=0)
 {
-   fvtsr = fvts * dynvar->thsr;
+   fvtsr = fvts * fdyn->thsr;
    irow = 0;
    for (inode=0;inode<iel;inode++)
    {
@@ -577,7 +590,7 @@ if (gls->icont!=0)
   - (1-THETA)*dt | tau_mu * u * grad(v) * grad(p)   d_omega
                 /
  *----------------------------------------------------------------------*/  
-if (gls->iadvec!=0 && dynvar->iprerhs>0)
+if (gls->iadvec!=0 && fdyn->iprerhs>0)
 {
    fact[0] = taumu*pderxy[0]*facpr;
    fact[1] = taumu*pderxy[1]*facpr;
@@ -593,7 +606,7 @@ if (gls->iadvec!=0 && dynvar->iprerhs>0)
 	 eforce[irow] -= aux*fact[isd];	 
       } /* end of loop over isd */
    } /* end of loop over inode */
-} /* endif (ele->e.f3->iadvec!=0 && dynvar->iprerhs>0) */
+} /* endif (ele->e.f3->iadvec!=0 && fdyn->iprerhs>0) */
 
 /*----------------------------------------------------------------------*
    Calculate pressure/viscous stab-forces of time force vector:
@@ -601,7 +614,7 @@ if (gls->iadvec!=0 && dynvar->iprerhs>0)
   -/+ (1-THETA)*dt | tau_mp * 2*nue * div( eps(v) ) * grad(p)    d_omega
                   /
  *----------------------------------------------------------------------*/  
-if (gls->ivisc!=0 && ihoel!=0 && dynvar->iprerhs>0)
+if (gls->ivisc!=0 && ihoel!=0 && fdyn->iprerhs>0)
 {
    cc = facpr*visc*taump*sign;
    irow=0;
@@ -619,7 +632,7 @@ if (gls->ivisc!=0 && ihoel!=0 && dynvar->iprerhs>0)
 		       + derxy2[2][inode]*pderxy[2] + aux*pderxy[2])*cc;
       irow += 3;		
    } /* end of loop over inode */
-} /* endif (ele->e.f3->ivisc!=0 && ihoel!=0 && dynvar->iprerhs>0) */
+} /* endif (ele->e.f3->ivisc!=0 && ihoel!=0 && fdyn->iprerhs>0) */
  
 /*----------------------------------------------------------------------*
    Calculate external load/convective stab-forces of time force vector:
@@ -673,7 +686,6 @@ NOTE:
     eforce[3*iel]				       
       
 </pre>
-\param   *dynvar,     FLUID_DYN_CALC   (i)
 \param   *eforce,     DOUBLE	       (i/o)  element force vector
 \param  **derxy,      DOUBLE	       (i)    global derivatives
 \param  **vderxy2,    DOUBLE	       (i)    2nd global vel. deriv.
@@ -688,7 +700,6 @@ NOTE:
 
 ------------------------------------------------------------------------*/
 void f3_calstabtfp(
-                   FLUID_DYN_CALC  *dynvar, 
                    DOUBLE          *eforce,    
      		   DOUBLE         **derxy,
 		   DOUBLE         **vderxy2,
@@ -711,9 +722,11 @@ dstrc_enter("f3_calstabtfp");
 #endif
 
 /*--------------------------------------------------- set some factors */
-facsr = fac * dynvar->thsr;
-facpr = fac * dynvar->thpr;
-taump = dynvar->tau[1];
+fdyn  = alldyn[genprob.numff].fdyn;
+
+facsr = fac * fdyn->thsr;
+facpr = fac * fdyn->thpr;
+taump = fdyn->tau[1];
 
 /*----------------------------------------------------------------------*
    Calculate inertia/pressure stab forces of time force vector:
@@ -773,7 +786,7 @@ if (ihoel!=0)
    + (1-THETA)*dt   |  tau_mp * grad(q) * grad(p)  d_omega
                    /
  *----------------------------------------------------------------------*/
-if (dynvar->iprerhs!=0)
+if (fdyn->iprerhs!=0)
 {
    fact[0] = taump*pderxy[0]*facpr;
    fact[1] = taump*pderxy[1]*facpr;
@@ -783,7 +796,7 @@ if (dynvar->iprerhs!=0)
       eforce[inode] += (derxy[0][inode]*fact[0] + derxy[1][inode]*fact[1] \
                       + derxy[2][inode]*fact[2]);
    } /* end of loop over inode */
-} /* endif (dynvar->iprerhs!=0) */
+} /* endif (fdyn->iprerhs!=0) */
 
 /*----------------------------------------------------------------------*
    Calculate external load/pressure stab forces of time force vector:

@@ -21,6 +21,13 @@ Maintainer: Steffen Genkinger
 static DOUBLE done = 1.0E20;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;    
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
  | general problem data                                                 |
  | struct _GENPROB       genprob; defined in global_control.c           |
  *----------------------------------------------------------------------*/
@@ -49,14 +56,12 @@ see also Dissertation of D.P.MOK, chapter 6.4
 </pre>
 
 \param *structfield   FIELD	     (i)   structural field
-\param *fsidyn 	      FSI_DYNAMIC    (i)   
 \param  itnum         INT            (i)   actual iteration step
 \return void     
 
 ------------------------------------------------------------------------*/
 void fsi_aitken(  
-                 FIELD          *structfield, 
-                 FSI_DYNAMIC    *fsidyn, 
+                 FIELD          *structfield,
 		 INT             itnum,
                  INT             init
 	       )
@@ -74,7 +79,8 @@ DOUBLE         del2;
 DOUBLE       **sol_mf;        /* multifield nodal solution array        */
 static ARRAY   del_a;      
 static DOUBLE *del;           /* DELTAd(i)                              */
-NODE          *actsnode;      /* actual structural node                 */
+NODE          *actsnode;      /* actual structural node                 */ 
+static FSI_DYNAMIC *fsidyn;
 
 #ifdef DEBUG 
 dstrc_enter("fsi_aitken");
@@ -83,6 +89,8 @@ dstrc_enter("fsi_aitken");
 switch (init)
 {
 case 0: /* initialisation */
+   fsidyn = alldyn[3].fsidyn;
+   
    if (genprob.restart==0)
       nu       = ZERO;
    else      

@@ -17,6 +17,19 @@ Maintainer: Steffen Genkinger
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
  | vector of material laws                                              |
  | defined in global_control.c
  *----------------------------------------------------------------------*/
@@ -76,13 +89,12 @@ extern struct _MATERIAL  *mat;
    ele->e.f3->stabi.gls->itau[2]: flag for tau_c calc. (-1: before, 1:during)	
    ele->e.f3->hk[i]: "element sizes" (vel / pre / cont) 		  
    ele->e.f3->stabi.gls->idiaxy: has diagonals to be computed			
-   dynvar->tau[0]: stability parameter momentum / velocity (tau_mu)	
-   dynvar->tau[1]: stability parameter momentum / pressure (tau_mp)	
-   dynvar->tau[2]: stability parameter continuity (tau_c)
+   fdyn->tau[0]: stability parameter momentum / velocity (tau_mu)	
+   fdyn->tau[1]: stability parameter momentum / pressure (tau_mp)	
+   fdyn->tau[2]: stability parameter continuity (tau_c)
 </pre>
 \param  *ele     ELEMENT	       (i)   actual element
 \param  *data    FLUID_DATA	       (i)
-\param  *dynvar  FLUID_DYN_CALC        (i/o)
 \param  *funct   DOUBLE 	       (-)   shape functions
 \param **deriv   DOUBLE 	       (-)   deriv. of shape funcs
 \param **deriv2  DOUBLE 	       (-)   2nd deriv. of sh. funcs
@@ -97,7 +109,6 @@ extern struct _MATERIAL  *mat;
 void f3_calelesize(
 	           ELEMENT         *ele,
 		   FLUID_DATA      *data,
-		   FLUID_DYN_CALC  *dynvar,
 	           DOUBLE          *funct,
 	           DOUBLE         **deriv,
 	           DOUBLE         **deriv2,	       
@@ -126,7 +137,8 @@ DOUBLE fac,facr;     /* factors                                         */
 DOUBLE facs,fact;    /* factors                                         */
 DOUBLE velino[3];    /* normed velocity vector at integration point     */
 DIS_TYP typ;
-STAB_PAR_GLS *gls;	/* pointer to GLS stabilisation parameters	*/
+STAB_PAR_GLS *gls;   /* pointer to GLS stabilisation parameters	        */
+FLUID_DYNAMIC *fdyn;
 
 #ifdef DEBUG 
 dstrc_enter("f3_calelesize");
@@ -137,12 +149,13 @@ ntyp   = ele->e.f3->ntyp;
 iel    = ele->numnp;
 typ    = ele->distyp;
 gls    = ele->e.f3->stabi.gls;
+fdyn   = alldyn[genprob.numff].fdyn;
 
 if (ele->e.f3->stab_type != stab_gls) 
    dserror("routine with no or wrong stabilisation called");
 
 istrnint = gls->istrle * gls->ninths;
-ishvol  = dynvar->ishape * gls->iareavol;
+ishvol  = fdyn->ishape * gls->iareavol;
 
 /*----------------------------------------------------------------------*
  | calculations at element center: area & streamlength                  |
@@ -353,7 +366,7 @@ if(gls->istapc==1 || istrnint==1)
 /*----------------------------------- calculate stabilisation parameter */               
    actmat=ele->mat-1;
    visc = mat[actmat].m.fluid->viscosity;
-   f3_calstabpar(ele,dynvar,velint,visc,iel,ntyp,-1);    
+   f3_calstabpar(ele,velint,visc,iel,ntyp,-1);    
 } /* endif (ele->e.f3->istapc==1 || istrnint==1) */
 
 /*----------------------------------------------------------------------*/
@@ -374,7 +387,6 @@ is calculated for one element during the integration loop
 		     
 </pre>
 \param  *ele     ELEMENT	        (i)    actual element
-\param  *dynvar  FLUID_DYN_CALC         (i/o)
 \param  *velint  DOUBLE 		(-)    vel at intpoint
 \param  *derxy   DOUBLE 		(-)    global derivatives
 \param   visc    DOUBLE 		(i)    fluid viscosity
@@ -386,7 +398,6 @@ is calculated for one element during the integration loop
 ------------------------------------------------------------------------*/
 void f3_calelesize2(
 	             ELEMENT         *ele,
-		     FLUID_DYN_CALC  *dynvar,
                      DOUBLE          *velint,	       
                      DOUBLE         **derxy,	       	
 		     DOUBLE           visc,
@@ -448,7 +459,7 @@ if (istrnint==2)
    } /* end of loop over ilen */
 } /* endif (istrnint==2) */
 /*----------------------------------- calculate stabilisation parameter */               
-f3_calstabpar(ele,dynvar,velint,visc,iel,ntyp,1); 
+f3_calstabpar(ele,velint,visc,iel,ntyp,1); 
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

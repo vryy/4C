@@ -21,6 +21,21 @@ Maintainer: Thomas Hettich
  *----------------------------------------------------------------------*/
 extern struct _MATERIAL  *mat;
 /*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+static FLUID_DYNAMIC   *fdyn;
+/*----------------------------------------------------------------------*
  | integration loop for one fluid element                               |
  |                                                                      |
  |                                                          he    12/02 |
@@ -37,7 +52,6 @@ time-RHS for one fluid2 element is calculated
 \param  *data      FLUID_DATA	   (i)	  integration data
 \param  *ele	 ELEMENT	   (i)    actual element
 \param  *elev	 ELEMENT	   (i)    actual rans-element
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param **estif     DOUBLE	   (o)    element stiffness matrix
 \param **emass     DOUBLE	   (o)    element mass matrix
 \param  *etforce   DOUBLE	   (o)    element time force vector
@@ -74,7 +88,6 @@ void f2_calint_tu_1(
                FLUID_DATA      *data,     
 	         ELEMENT         *ele,     
 	         ELEMENT         *elev, 
-               FLUID_DYN_CALC  *dynvar, 
                DOUBLE         **estif,   
 	         DOUBLE         **emass,   
 	         DOUBLE          *etforce, 
@@ -145,6 +158,8 @@ dens = mat[actmat].m.fluid->density;
 visc = mat[actmat].m.fluid->viscosity;
 ntyp = ele->e.f2_tu->ntyp; 
 typ  = ele->distyp;
+
+fdyn   = alldyn[genprob.numff].fdyn;
 
 /*------- get integraton data and check if elements are "higher order" */
 switch (ntyp)
@@ -220,10 +235,10 @@ for (lr=0;lr<nir;lr++)
 
 /*------------------ calculate stabilisation parameter for DISC. CAPT. */               
       f2_kapomeder(kapomederxy,derxy,kapomen,iel);
-      f2_vel_dc_1(dynvar,velint,velint_dc,kapomederxy);
+      f2_vel_dc_1(velint,velint_dc,kapomederxy);
 
 /*------------------------------- calculate factors for kappa equation */       
-      if(dynvar->kapomega_flag==0)
+      if(fdyn->kapomega_flag==0)
       {
 /*----------------- get kappa (n+1,i) derivatives at integration point */
        f2_kapomeder(kapomederxy,derxy,kapomeg,iel);
@@ -236,7 +251,7 @@ for (lr=0;lr<nir;lr++)
                       &factor1,&factor2,&sig);
       }
 /*------------------------------- calculate factors for omega equation */
-      if(dynvar->kapomega_flag==1)
+      if(fdyn->kapomega_flag==1)
       {
        f2_kappain(&kappanint,&ome_proint,funct,kappan,kapomepro,iel); 
        f2_xi_ome(vderxy,kapomeint,&xi);
@@ -252,11 +267,11 @@ for (lr=0;lr<nir;lr++)
  *----------------------------------------------------------------------*/
  
  /*--------------------------------------------- compute matrix Kkapome */      
-       f2_calkkapome(dynvar,estif,kapomeint,velint,eddyint,
+       f2_calkkapome(estif,kapomeint,velint,eddyint,
                      funct,derxy,fac,visc,factor,sig,iel);
        
 /*---------------------------------------------- compute matrix Mkapome */
-	 if (dynvar->nis==0)	  	 	    
+	 if (fdyn->nis==0)	  	 	    
           f2_calmkapome(emass,funct,fac,iel);
   
 /*----------------------------------------------------------------------*
@@ -266,28 +281,28 @@ for (lr=0;lr<nir;lr++)
  |  Stabilisation mass matrices are all stored in one matrix "emass"    |
  *----------------------------------------------------------------------*/
 /*------------------------------------ stabilisation for matrix Kkapome */
-       f2_calstabkkapome(ele,elev,dynvar,estif,kapomeint,velint,velint_dc,
+       f2_calstabkkapome(ele,elev,estif,kapomeint,velint,velint_dc,
                          eddyint,funct,derxy,derxy2,fac,visc,factor,sig,iel); 
 
 /*------------------------------------ stabilisation for matrix Mkapome */
-       if (dynvar->nis==0) 
-          f2_calstabmkapome(ele,dynvar,emass,velint,velint_dc,funct,derxy,
+       if (fdyn->nis==0) 
+          f2_calstabmkapome(ele,emass,velint,velint_dc,funct,derxy,
                             fac,iel); 
 /*----------------------------------------------------------------------*
  |         compute "Iteration" Force Vectors                            |
  *----------------------------------------------------------------------*/ 
 
 /*------------- calculate galerkin part of "Iter-RHS" (kapome dof) */
-         f2_calgalifkapome(dynvar,eiforce,kapomeint,funct,fac,factor2,iel);
+         f2_calgalifkapome(eiforce,kapomeint,funct,fac,factor2,iel);
 
 /*---------------- calculate stabilisation for "Iter-RHS" (kapome dof) */
-         f2_calstabifkapome(dynvar,ele,eiforce,kapomeint,velint,velint_dc,
+         f2_calstabifkapome(ele,eiforce,kapomeint,velint,velint_dc,
                             funct,derxy,fac,factor2,iel); 
 
 /*----------------------------------------------------------------------*
  |         compute Production "Time" Force Vector                        |
  *----------------------------------------------------------------------*/ 
-      if (dynvar->niturbu_pro!=0) 
+      if (fdyn->niturbu_pro!=0) 
       {
 /*--------------------------------- get eddy-visc. at integration point */               
         f2_eddyi(&eddynint,funct,eddypro,iel);
@@ -296,17 +311,17 @@ for (lr=0;lr<nir;lr++)
         f2_production(vderxy,&production);
 
 /*--------------- calculate galerkin part of "PROTime-RHS" (kapome-dofs)*/
-        f2_calgalprofkapome(dynvar,eproforce,eddynint,funct,fac,factor1,
+        f2_calgalprofkapome(eproforce,eddynint,funct,fac,factor1,
                             production,iel);
 
 /*------------- calculate stabilisation for "PROTime-RHS" (kapome-dofs) */
-        f2_calstabprofkapome(dynvar,ele,eproforce,eddynint,funct,fac,
+        f2_calstabprofkapome(ele,eproforce,eddynint,funct,fac,
                              factor1,production,velint,velint_dc,derxy,iel);
       }
 /*----------------------------------------------------------------------*
  |         compute "Time" Force Vector                                  |
  *----------------------------------------------------------------------*/ 
-      if (dynvar->niturbu_n!=0) 
+      if (fdyn->niturbu_n!=0) 
       {
 /*-------------------------------- get kapome (n) at integration point */
 	    f2_kapomei(&kapomeint,funct,kapomen,iel);
@@ -318,15 +333,15 @@ for (lr=0;lr<nir;lr++)
           f2_kapomeder2(kapomederxy2,derxy2,kapomen,iel);
 
 /*----------------- calculate galerkin part of "Time-RHS" (kapome-dofs)*/
-          f2_calgaltfkapome(dynvar,etforce,kapomeint,velint,eddynint,funct,
+          f2_calgaltfkapome(etforce,kapomeint,velint,eddynint,funct,
                             derxy,vderxy,kapomederxy,visc,fac,factor,factor1,
                             factor2,sig,production,iel);
 
 /*--------------- calculate stabilisation for "Time-RHS" (kapome-dofs) */
-          f2_calstabtfkapome(dynvar,ele,etforce,kapomeint,velint,velint_dc,
+          f2_calstabtfkapome(ele,etforce,kapomeint,velint,velint_dc,
                              eddynint,derxy,kapomederxy2,vderxy,kapomederxy,
                              visc,fac,factor,factor1,factor2,sig,production,iel);
-     } /* endif dynvar->niturbu_n */
+     } /* endif fdyn->niturbu_n */
    } /* end of loop over integration points ls*/
 } /* end of loop over integration points lr */
  

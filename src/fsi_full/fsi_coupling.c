@@ -28,6 +28,13 @@ Maintainer: Steffen Genkinger
 extern struct _GENPROB     genprob;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
  | pointer to allocate design if needed                                 |
  | defined in global_control.c                                          |
  *----------------------------------------------------------------------*/
@@ -406,8 +413,7 @@ return;
 
 ------------------------------------------------------------------------*/
 void fsi_struct_intdofs(
-                          FIELD       *structfield, 
-			  FSI_DYNAMIC *fsidyn
+                          FIELD       *structfield
 		       )
 {
 INT    i,j;                    /* some counters                         */
@@ -418,10 +424,13 @@ INT    numaf;
 INT   *sid;                    /* structural interface dofs             */
 NODE  *actsnode, *actanode;    /* actual nodes                          */
 GNODE *actsgnode, *actagnode;  /* actual gnodes                         */
+FSI_DYNAMIC *fsidyn;
 
 #ifdef DEBUG 
 dstrc_enter("fsi_struct_intdofs");
 #endif
+
+fsidyn = alldyn[3].fsidyn;
 
 numnp_total = structfield->dis[0].numnp;
 numaf       = genprob.numaf;

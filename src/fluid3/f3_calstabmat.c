@@ -14,6 +14,21 @@ Maintainer: Steffen Genkinger
 #include "../headers/standardtypes.h"
 #include "fluid3_prototypes.h"
 #include "fluid3.h"
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+static FLUID_DYNAMIC   *fdyn;
 /*!---------------------------------------------------------------------
 \brief evaluate stabilisaton part of Kvv
 
@@ -57,7 +72,6 @@ NOTE: there's only one elestif
       
 </pre>
 \param  *ele	   ELEMENT	   (i)	   actual element
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param **estif     DOUBLE	   (i/o)   ele stiffness matrix
 \param  *velint    DOUBLE	   (i)     vel. at integr. point
 \param **vderxy    DOUBLE	   (i)     global vel. deriv.
@@ -73,7 +87,6 @@ NOTE: there's only one elestif
 ------------------------------------------------------------------------*/
 void f3_calstabkvv(
                     ELEMENT         *ele,
-		    FLUID_DYN_CALC  *dynvar,
 		    DOUBLE         **estif,
 		    DOUBLE          *velint,
 		    DOUBLE         **vderxy,
@@ -107,15 +120,16 @@ dstrc_enter("f3_calstabkvv");
 #endif
 
 /*---------------------------------------------------------- initialise */
+fdyn    = alldyn[genprob.numff].fdyn;
 gls    = ele->e.f3->stabi.gls;
 
 if (ele->e.f3->stab_type != stab_gls) 
    dserror("routine with no or wrong stabilisation called");
 
 /*---------------------------------------- set stabilisation parameter */
-taumu = dynvar->tau[0];
-taump = dynvar->tau[1];
-tauc  = dynvar->tau[2];
+taumu = fdyn->tau[0];
+taump = fdyn->tau[1];
+tauc  = fdyn->tau[2];
 
 /*----------------------------------------------------------------------*
    Calculate continuity stabilisation part:
@@ -161,7 +175,7 @@ if (gls->iadvec!=0)
    |  tau_mu * u_old * grad(v) * u_old * grad(u)   d_omega
   /
  *----------------------------------------------------------------------*/
-   if (dynvar->nic!=0) /* evaluate for Newton- and fixed-point-like-iteration */
+   if (fdyn->nic!=0) /* evaluate for Newton- and fixed-point-like-iteration */
    {
       icol=0;
       for (icn=0;icn<iel;icn++)
@@ -180,7 +194,7 @@ if (gls->iadvec!=0)
 	 } /* end of loop over irn */
 	 icol += 3;
       } /* end of loop over icn */
-   } /* endif (dynvar->nic!=0) */
+   } /* endif (fdyn->nic!=0) */
 
 /*----------------------------------------------------------------------*
    Calculate advection stabilisation part Nr(u):
@@ -188,7 +202,7 @@ if (gls->iadvec!=0)
    |  tau_mu * u_old * grad(v) * u * grad(u_old)   d_omega
   /
  *----------------------------------------------------------------------*/
-   if (dynvar->nir!=0)  /* evaluate for Newton iteraton */
+   if (fdyn->nir!=0)  /* evaluate for Newton iteraton */
    {
       icol=0;
       for (icn=0;icn<iel;icn++)
@@ -215,7 +229,7 @@ if (gls->iadvec!=0)
 	 } /* end of loop over irn */
 	 icol += 3;
       } /* end of loop over icn */
-   } /* endif (dynvar->nir!=0) */
+   } /* endif (fdyn->nir!=0) */
 
 /*----------------------------------------------------------------------*
    Calculate advection stabilisation part for higher order elements:
@@ -330,7 +344,7 @@ if (ihoel!=0 && gls->ivisc!=0)
  *----------------------------------------------------------------------*/
    cc = fac * taump * visc * sign;
 
-   if (dynvar->nic!=0) /* evaluate for Newton- and fixed-point-like-iteration */
+   if (fdyn->nic!=0) /* evaluate for Newton- and fixed-point-like-iteration */
    {
       icol=0;
       for (icn=0;icn<iel;icn++)
@@ -356,14 +370,14 @@ if (ihoel!=0 && gls->ivisc!=0)
 	 } /* end of loop over irn */
 	 icol += 3;
       } /* end of loop over icn */
-   } /* endif (dynvar->nic!=0) */
+   } /* endif (fdyn->nic!=0) */
 /*----------------------------------------------------------------------*
    Calculate viscous stabilisation part Nr(u) for higher order elements:
     /
    |  -/+ tau_mp  * 2 * nue * div(eps(v)) * u * grad(u_old) d_omega
   /
  *----------------------------------------------------------------------*/   
-   if (dynvar->nir!=0)  /* evaluate for Newton iteraton */
+   if (fdyn->nir!=0)  /* evaluate for Newton iteraton */
    {
       icol=0;
       for (icn=0;icn<iel;icn++)
@@ -415,7 +429,7 @@ if (ihoel!=0 && gls->ivisc!=0)
 	 } /* end of loop over irn */
 	 icol += 3;
       } /* end of loop over icn */
-   } /* endif (dynvar->nir!=0) */
+   } /* endif (fdyn->nir!=0) */
 } /* end of viscous stabilisation for higher order elments */
 
 /*----------------------------------------------------------------------*/
@@ -448,7 +462,6 @@ NOTE: there's only one elestif
       
 </pre>
 \param  *ele	   ELEMENT	   (i)	   actual element
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param **estif     DOUBLE	   (i/o)   ele stiffness matrix
 \param  *velint    DOUBLE	   (i)     vel. at integr. point
 \param  *funct     DOUBLE	   (i)     nat. shape functions
@@ -463,7 +476,6 @@ NOTE: there's only one elestif
 ------------------------------------------------------------------------*/
 void f3_calstabkvp(
                     ELEMENT         *ele,
-		    FLUID_DYN_CALC  *dynvar,
 		    DOUBLE         **estif,
 		    DOUBLE          *velint,
 		    DOUBLE          *funct,
@@ -497,14 +509,15 @@ dstrc_enter("f3_calstabkvp");
 #endif	
 
 /*---------------------------------------------------------- initialise */
+fdyn   = alldyn[genprob.numff].fdyn;
 gls    = ele->e.f3->stabi.gls;
 
 if (ele->e.f3->stab_type != stab_gls) 
    dserror("routine with no or wrong stabilisation called");
 
 /*---------------------------------------- set stabilisation parameter */
-taumu = dynvar->tau[0];
-taump = dynvar->tau[1];
+taumu = fdyn->tau[0];
+taump = fdyn->tau[1];
 
 c = fac * taumu;
 
@@ -609,7 +622,6 @@ NOTE: there's only one elestif
       
 </pre>
 \param  *ele	   ELEMENT	   (i)	   actual element
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param **emass     DOUBLE	   (i/o)   ele mass matrix
 \param  *velint    DOUBLE	   (i)     vel. at integr. point
 \param  *funct     DOUBLE	   (i)     nat. shape functions
@@ -624,7 +636,6 @@ NOTE: there's only one elestif
 ------------------------------------------------------------------------*/
 void f3_calstabmvv(
                     ELEMENT         *ele,
-		    FLUID_DYN_CALC  *dynvar,
 		    DOUBLE         **estif,
 		    DOUBLE          *velint,
     		    DOUBLE          *funct,
@@ -656,14 +667,15 @@ dstrc_enter("f3_calstabmvv");
 #endif
 
 /*---------------------------------------------------------- initialise */
+fdyn   = alldyn[genprob.numff].fdyn;
 gls    = ele->e.f3->stabi.gls;
 
 if (ele->e.f3->stab_type != stab_gls) 
    dserror("routine with no or wrong stabilisation called");
 
 /*---------------------------------------- set stabilisation parameter */
-taumu = dynvar->tau[0];
-taump = dynvar->tau[1];
+taumu = fdyn->tau[0];
+taump = fdyn->tau[1];
 
 c = fac * taumu;
 cc = c;
@@ -775,7 +787,6 @@ NOTE: there's only one elestif
       --> Kpv is stored in estif[((3*iel)..(4*iel-1)][0..(3*iel-1)] 
       
 </pre>
-\param  *dynvar    FLUID_DYN_CALC  (i)      
 \param **estif     DOUBLE	   (i/o)   ele stiffness matrix
 \param  *velint    DOUBLE	   (i)     vel. at integr. point
 \param **vderxy    DOUBLE	   (i)     global vel. deriv.
@@ -790,7 +801,6 @@ NOTE: there's only one elestif
 
 ------------------------------------------------------------------------*/
 void f3_calstabkpv(
-		    FLUID_DYN_CALC  *dynvar,
 		    DOUBLE         **estif,
 		    DOUBLE          *velint,
 		    DOUBLE         **vderxy,
@@ -822,7 +832,8 @@ dstrc_enter("f3_calstabkpv");
 #endif
 
 /*---------------------------------------- set stabilisation parameter */
-taump = dynvar->tau[1];
+fdyn  = alldyn[genprob.numff].fdyn;
+taump = fdyn->tau[1];
 
 c = fac * taump;
 
@@ -832,7 +843,7 @@ c = fac * taump;
    |  - tau_mp * grad(q) * u_old * grad(u) d_omega
   /
  *----------------------------------------------------------------------*/
-if (dynvar->nic!=0) /* evaluate for Newton- and fixed-point-like-iteration */
+if (fdyn->nic!=0) /* evaluate for Newton- and fixed-point-like-iteration */
 {
    icol=0;
    for (icn=0;icn<iel;icn++)
@@ -848,7 +859,7 @@ if (dynvar->nic!=0) /* evaluate for Newton- and fixed-point-like-iteration */
       } /* end of loop over irow */
       icol += 3;
    } /* end of loop over icn */
-} /* endif (dynvar->nic!=0) */
+} /* endif (fdyn->nic!=0) */
 
 /*----------------------------------------------------------------------*
    Calculate stabilisation part Nr(u):
@@ -856,7 +867,7 @@ if (dynvar->nic!=0) /* evaluate for Newton- and fixed-point-like-iteration */
    |  - tau_mp * grad(q) * u * grad(u_old) d_omega
   /
  *----------------------------------------------------------------------*/
-if (dynvar->nir!=0) /* evaluate for Newton iteration */
+if (fdyn->nir!=0) /* evaluate for Newton iteration */
 {
    icol=0;
    for (icn=0;icn<iel;icn++)
@@ -877,7 +888,7 @@ if (dynvar->nir!=0) /* evaluate for Newton iteration */
       } /* end of loop over irow */
       icol += 3;
    } /* end of loop over icn */
-} /* endif (dynvar->nir!=0) */
+} /* endif (fdyn->nir!=0) */
 
 /*----------------------------------------------------------------------*
    Calculate stabilisation part for higher order elements:
@@ -938,7 +949,6 @@ NOTE: there's only one elestif
 	      estif[((3*iel)..(4*iel-1)][((3*iel)..(4*iel-1)] 
       
 </pre>
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param **estif     DOUBLE	   (i/o)   ele stiffness matrix
 \param **derxy     DOUBLE	   (i)     global derivatives
 \param   fac	   DOUBLE	   (i)     weighting factor
@@ -947,7 +957,6 @@ NOTE: there's only one elestif
 
 ------------------------------------------------------------------------*/
 void f3_calstabkpp(
-		    FLUID_DYN_CALC  *dynvar,
 		    DOUBLE         **estif,
 		    DOUBLE         **derxy,
 		    DOUBLE           fac,
@@ -972,7 +981,8 @@ dstrc_enter("f3_calstabkpp");
 #endif
 
 /*---------------------------------------- set stabilisation parameter */
-taump = dynvar->tau[1];
+fdyn  = alldyn[genprob.numff].fdyn;
+taump = fdyn->tau[1];
 
 c = fac * taump;
 
@@ -1019,7 +1029,6 @@ NOTE: there's only one elestif
       --> Mpv is stored in estif[((3*iel)..(4*iel-1)][0..(3*iel-1)]
       
 </pre>
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param **emass     DOUBLE	   (i/o)   ele mass matrix
 \param  *funct     DOUBLE	   (i)     nat. shape functions
 \param **derxy     DOUBLE	   (i)     global derivatives
@@ -1030,7 +1039,6 @@ NOTE: there's only one elestif
 
 ------------------------------------------------------------------------*/
 void f3_calstabmpv(
-		    FLUID_DYN_CALC  *dynvar,
 		    DOUBLE         **estif,
 		    DOUBLE          *funct,
 		    DOUBLE         **derxy,
@@ -1057,7 +1065,8 @@ dstrc_enter("f3_calstabmpv");
 #endif
 
 /*---------------------------------------- set stabilisation parameter */
-taump = dynvar->tau[1];
+fdyn  = alldyn[genprob.numff].fdyn;
+taump = fdyn->tau[1];
 
 c = fac * taump;
 

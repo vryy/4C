@@ -376,7 +376,6 @@ INT        nprocs;
 INT        imyrank;
 INT        inprocs;
 INT        ngauss;
-static FLUID_DYN_CALC  *dynvar;
 #ifdef DEBUG 
 dstrc_enter("out_sol");
 #endif
@@ -1193,13 +1192,14 @@ INT        imyrank;
 INT        inprocs;
 INT	     numff;
 DOUBLE     visc;
-static FLUID_DYN_CALC  *dynvar;
+FLUID_DYNAMIC *fdyn;
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("out_fluidmtu");
 #endif
 /*----------------------------------------------------------------------*/
+fdyn   = alldyn[genprob.numff].fdyn;
 
 for (numff=0;numff<genprob.numfld;numff++)
 {
@@ -1207,7 +1207,6 @@ for (numff=0;numff<genprob.numfld;numff++)
  if (actfield->fieldtyp==fluid)
  break;
 } /* end loop over numff */
-dynvar = &(alldyn[numff].fdyn->dynvar);
 
 for(i=0; i<genprob.nmat; i++)
 {
@@ -1243,13 +1242,13 @@ for (j=0; j<actfield->dis[1].numnp; j++)
    actnode  = &(actfield->dis[1].node[j]);
    actnode2 = &(actfield->dis[0].node[j]);
    actgnode2 = actnode2->gnode;      
-   if (FABS(actnode2->x[0]-dynvar->coord_scale[0])<EPS7)
+   if (FABS(actnode2->x[0]-fdyn->coord_scale[0])<EPS7)
    {
-    fprintf(out,"COORD X %20.3E  Y+ %20.7E ",actnode2->x[0],dynvar->washvel*actnode->x[1]/visc);
+    fprintf(out,"COORD X %20.3E  Y+ %20.7E ",actnode2->x[0],fdyn->washvel*actnode->x[1]/visc);
     for (k=0; k<actnode->numdf; k++) 
     {
      if (place >= actnode->sol.fdim) dserror("Cannot print solution step");
-     fprintf(out,"%20.7E %20.7E %20.7E",actnode->sol.a.da[place][k],actnode->sol.a.da[place][k+2],actnode2->sol.a.da[place][k]/dynvar->washvel);
+     fprintf(out,"%20.7E %20.7E %20.7E",actnode->sol.a.da[place][k],actnode->sol.a.da[place][k+2],actnode2->sol.a.da[place][k]/fdyn->washvel);
     }
      fprintf(out,"\n");
    }

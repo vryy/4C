@@ -14,6 +14,22 @@ Maintainer: Volker Gravemeier
 #include "../headers/standardtypes.h"
 #include "fluid3ml_prototypes.h"
 #include "../fluid3/fluid3.h"
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+static FLUID_DYNAMIC *fdyn;
+
 static INT PREDOF = 3;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -31,7 +47,6 @@ In this routine, the element velocities, pressure and external loads
 at time steps (n) and (n+1) are set. 
 
 </pre>
-\param   *dynvar   FLUID_DYN_CALC  (i)
 \param   *ele      ELEMENT	   (i)    actual element
 \param  **eveln    DOUBLE	   (o)    ele vels at time step n
 \param  **evel     DOUBLE	   (o)    ele vels at time step n+1
@@ -43,8 +58,7 @@ at time steps (n) and (n+1) are set.
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void f3_lsset(FLUID_DYN_CALC  *dynvar, 
-	      ELEMENT	      *ele,	
+void f3_lsset(ELEMENT	      *ele,	
               DOUBLE	     **eveln,	 
 	      DOUBLE	     **evel, 
 	      DOUBLE	      *epren,
@@ -73,7 +87,7 @@ dstrc_enter("f3_lsset");
  |	 sol_increment[2][i]: solution at (n+g)                        |
  |	 sol_increment[3][i]: solution at (n+1)                        |
  *---------------------------------------------------------------------*/
-
+fdyn = alldyn[genprob.numff].fdyn;
 
 for(i=0;i<ele->numnp;i++) /* loop nodes of large-scale element */
 {
@@ -86,7 +100,7 @@ for(i=0;i<ele->numnp;i++) /* loop nodes of large-scale element */
   epre[i]   =actnode->sol_increment.a.da[3][PREDOF];      
 } /* end of loop over nodes of large-scale element */
 
-if(dynvar->nif!=0) /* -> computation if time forces "on" --------------
+if(fdyn->nif!=0) /* -> computation if time forces "on" --------------
                       -> velocities and pressure at (n) are needed ----*/
 {
   for(i=0;i<ele->numnp;i++) /* loop nodes of large-scale element */
@@ -99,7 +113,7 @@ if(dynvar->nif!=0) /* -> computation if time forces "on" --------------
 /*--------------------------------------- set element pressures at (n) */   
     epren[i]=actnode->sol_increment.a.da[1][PREDOF];      
   } /* end of loop over nodes of large-scale element */  
-} /* endif (dynvar->nif!=0) */		       
+} /* endif (fdyn->nif!=0) */		       
 
 /*------------------------------------------------ check for dead load */
 actgvol = ele->g.gvol;
@@ -579,8 +593,7 @@ return;
 void f3_mlpermestif(DOUBLE         **estif,
 		    DOUBLE	 **emass,
 		    DOUBLE	 **tmp,
-		    INT		   iel,
-		    FLUID_DYN_CALC  *dynvar) 
+		    INT		   iel) 
 {
 INT i,j,icol,irow;          /* simply some counters  	        	*/
 INT nvdof;                  /* number of vel dofs 			*/
@@ -592,11 +605,13 @@ DOUBLE thsl,thpl;	    /* factor for LHS (THETA*DT)		*/
 dstrc_enter("f3_mlpermestif");
 #endif
 
+fdyn = alldyn[genprob.numff].fdyn;
+
 nvdof  = NUM_F3_VELDOF*iel;
 npdof  = iel;
 totdof = (NUM_F3_VELDOF+1)*iel;
-thsl   = dynvar->thsl;
-thpl   = dynvar->thpl;
+thsl   = fdyn->thsl;
+thpl   = fdyn->thpl;
 
 /*--------------------------------------------- copy estif to tmp-array *
                 and multitply stiffness matrix with respective THETA*DT */
@@ -614,7 +629,7 @@ for (i=0;i<totdof;i++)
    } /* end of loop over j */
 } /* end of loop over i */
 /*------------------------------- add mass matrix for instationary case */
-if (dynvar->nis==0)
+if (fdyn->nis==0)
 {
    for (i=0;i<totdof;i++)
    {
@@ -623,7 +638,7 @@ if (dynvar->nis==0)
          tmp[i][j] += emass[i][j];
       } /* end of loop over j */
    } /* end of loop over i */
-} /* endif (dynvar->nis==0) *
+} /* endif (fdyn->nis==0) *
 
 /*--------------------------------------------------------- compute Kvv */
 irow = 0;

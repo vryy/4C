@@ -14,6 +14,21 @@ Maintainer: Volker Gravemeier
 #include "../headers/standardtypes.h"
 #include "fluid3ml_prototypes.h"
 #include "../fluid3/fluid3.h"
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+static FLUID_DYNAMIC *fdyn;
 /*!---------------------------------------------------------------------                                         
 \brief evaluate Galerkin part of submesh "VMM" force vector for fluid3
 
@@ -23,7 +38,6 @@ In this routine, the Galerkin part of the submesh "VMM" force vector on
 the rhs is calculated.
 
 </pre>
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param  *mlvar     FLUID_DYN_ML    (i)
 \param **smevfor   DOUBLE	   (i/o)  submesh element vmm force vec.
 \param  *velint    DOUBLE	   (i)    velocity at int. point
@@ -40,8 +54,7 @@ the rhs is calculated.
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void f3_calsmfv(FLUID_DYN_CALC  *dynvar,
-	        FLUID_DYN_ML	*mlvar, 
+void f3_calsmfv(FLUID_DYN_ML	*mlvar, 
 		DOUBLE         **smevfor,  
 		DOUBLE  	*velint, 
 		DOUBLE         **vderxy, 
@@ -69,11 +82,13 @@ DOUBLE sign;
 dstrc_enter("f3_calsmfv");
 #endif
 
-facsl = fac*dynvar->thsl;
-facpl = fac*dynvar->thpl;
+fdyn = alldyn[genprob.numff].fdyn;
+
+facsl = fac*fdyn->thsl;
+facpl = fac*fdyn->thpl;
 con   = facsl*visc;
 
-switch (dynvar->conte) /* determine parameter beta of convective term */
+switch (fdyn->conte) /* determine parameter beta of convective term */
 {
 case 0: 
   beta = ZERO;
@@ -88,12 +103,12 @@ case 2:
 break;
 default:
    dserror("unknown form of convective term");
-} /* end switch (dynvar->conte) */
+} /* end switch (fdyn->conte) */
 
 /*----------------------------------------------------------------------*
    Calculate temporal forces for velocity bubble function:
  *----------------------------------------------------------------------*/
-if (dynvar->nis==0 && mlvar->transterm<2)
+if (fdyn->nis==0 && mlvar->transterm<2)
 { 
 /*---------------------------------------------------------------------*
     /
@@ -129,7 +144,7 @@ for (icol=0;icol<iel;icol++)
   } /* end loop over irow */
 } /* end loop over icol */
     
-if (dynvar->conte!=0)  
+if (fdyn->conte!=0)  
 {
   cb = beta*divv*facsl;
 /*----------------------------------------------------------------------*
@@ -206,7 +221,6 @@ In this routine, the stabilization part of the submesh "VMM" force
 vector on the rhs is calculated.
 
 </pre>
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param  *mlvar     FLUID_DYN_ML    (i)
 \param **smevfor   DOUBLE	   (i/o)  submesh element vmm force vec.
 \param  *velint    DOUBLE	   (i)    velocity at int. point
@@ -226,8 +240,7 @@ vector on the rhs is calculated.
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void f3_calstabsmfv(FLUID_DYN_CALC  *dynvar,
-	            FLUID_DYN_ML    *mlvar, 
+void f3_calstabsmfv(FLUID_DYN_ML    *mlvar, 
 		    DOUBLE         **smevfor,  
 		    DOUBLE  	    *velint, 
 		    DOUBLE         **vderxy, 
@@ -258,11 +271,12 @@ DOUBLE sign,tau;
 dstrc_enter("f3_calstabsmfv");
 #endif
 
+fdyn = alldyn[genprob.numff].fdyn;
 /*---------------------------------------- set stabilization parameter */
 tau = mlvar->smtau;
 con = fac*tau;
 
-switch (dynvar->conte) /* determine parameter beta of convective term */
+switch (fdyn->conte) /* determine parameter beta of convective term */
 {
 case 0: 
   beta = ZERO;
@@ -277,7 +291,7 @@ case 2:
 break;
 default:
    dserror("unknown form of convective term");
-} /* end switch (dynvar->conte) */
+} /* end switch (fdyn->conte) */
 
 if (mlvar->smstado<0) sign = -ONE;  /* USFEM */
 else                  sign = ONE;   /* GLS- */
@@ -285,7 +299,7 @@ else                  sign = ONE;   /* GLS- */
 /*----------------------------------------------------------------------*
    Calculate temporal stabilization:
  *----------------------------------------------------------------------*/
-if (dynvar->nis==0)
+if (fdyn->nis==0)
 { 
   if (mlvar->quastabub==0 && ABS(mlvar->smstado)<3)
   { 
@@ -301,7 +315,7 @@ if (dynvar->nis==0)
  *----------------------------------------------------------------------*/
       for (icol=0;icol<iel;icol++)
       {
-        aux = funct[icol]*con*(ONE/dynvar->thsl);
+        aux = funct[icol]*con*(ONE/fdyn->thsl);
         for (irow=0;irow<smiel;irow++)
         {
           smevfor[irow][icol] -= smfunct[irow]*aux;
@@ -324,7 +338,7 @@ if (dynvar->nis==0)
       } /* end loop over irow */
     } /* end loop over icol */
 
-    if (dynvar->conte!=0)  
+    if (fdyn->conte!=0)  
     {
       cb = con*beta;
 /*---------------------------------------------------------------------*
@@ -402,7 +416,7 @@ if (dynvar->nis==0)
       } /* end loop over irow */
     } /* end loop over icol */  
     
-    if (dynvar->conte!=0)  
+    if (fdyn->conte!=0)  
     {
       cb = con*beta*sign;
 /*----------------------------------------------------------------------*
@@ -444,7 +458,7 @@ if (dynvar->nis==0)
   } /* end of stabilization for temporal forces */
 }    
 
-con = fac*tau*dynvar->thsl;
+con = fac*tau*fdyn->thsl;
 
 /*----------------------------------------------------------------------*
    Calculate convective stabilisation for convective forces of vel. bub.:
@@ -466,7 +480,7 @@ for (icol=0;icol<iel;icol++)
   } /* end of loop over irow */
 } /* end of loop over icol */
 
-if (dynvar->conte!=0)  
+if (fdyn->conte!=0)  
 {
   cb  = con*beta;
   cbb = cb*beta*sign;
@@ -539,7 +553,7 @@ if (ihoel!=0)
     } /* end of loop over irow */
   } /* end of loop over icol */
   
-  if (dynvar->conte!=0)  
+  if (fdyn->conte!=0)  
   {
     ccb  = ccon*beta*sign;
 /*----------------------------------------------------------------------*
@@ -597,7 +611,7 @@ if (ihoelsm!=0)
     } /* end of loop over irow */
   } /* end of loop over icol */
 
-  if (dynvar->conte!=0)  
+  if (fdyn->conte!=0)  
   {
     ccb  = ccon*beta;
 /*----------------------------------------------------------------------*
@@ -620,7 +634,7 @@ if (ihoelsm!=0)
 /*----------------------------------------------------------------------*
    Calculate stabilization for forces of pressure bubble function:
  *----------------------------------------------------------------------*/
-con = fac*tau*dynvar->thpl;
+con = fac*tau*fdyn->thpl;
 /*----------------------------------------------------------------------*
     /
    |  - tau * (theta*dt) * u_old * grad(w) * d/dxi(ls_s_f) d_omega
@@ -642,7 +656,7 @@ for (icn=0;icn<iel;icn++)
   }  
 } /* end loop over icol */
     
-if (dynvar->conte!=0)  
+if (fdyn->conte!=0)  
 {
   cb = con*beta*sign;
 /*----------------------------------------------------------------------*
@@ -709,7 +723,6 @@ In this routine, the bubble part of the large-scale rhs for the
 velocity dofs is calculated.
 
 </pre>
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param  *mlvar     FLUID_DYN_ML    (i)
 \param **eiforce   DOUBLE	   (i/o)  element iterative rhs
 \param  *velint    DOUBLE	   (i)    velocity at int point
@@ -724,8 +737,7 @@ velocity dofs is calculated.
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void f3_calbfv(FLUID_DYN_CALC  *dynvar,
-	       FLUID_DYN_ML    *mlvar,
+void f3_calbfv(FLUID_DYN_ML    *mlvar,
 	       DOUBLE          *eiforce,   
 	       DOUBLE          *velint, 
 	       DOUBLE         **vderxy, 
@@ -750,8 +762,9 @@ DOUBLE  con,facsl,aux,auxc,beta,divv;
 dstrc_enter("f3_calbfv");
 #endif		
 
+fdyn = alldyn[genprob.numff].fdyn;
 /*--------------------------------------------------------------------- */
-facsl=fac*dynvar->thsl;
+facsl=fac*fdyn->thsl;
 con=facsl*visc;
 
 /*-----------------------------------------------------------------------
@@ -760,8 +773,8 @@ con=facsl*visc;
    |  - v * f_bub   d_omega
    /
 ----------------------------------------------------------------------- */
-if (dynvar->nis==0 && mlvar->transterm==0 || 
-    dynvar->nis==0 && mlvar->transterm==2)
+if (fdyn->nis==0 && mlvar->transterm==0 || 
+    fdyn->nis==0 && mlvar->transterm==2)
 {
   irow=-1;
   for (inode=0;inode<iel;inode++)
@@ -778,7 +791,7 @@ if (dynvar->nis==0 && mlvar->transterm==0 ||
 /*-----------------------------------------------------------------------
    Calculate bubble part of convective forces (convective part):                           
 ----------------------------------------------------------------------- */
-if(dynvar->nic != 0) /* evaluate for Newton- and fixed-point-like-iteration */
+if(fdyn->nic != 0) /* evaluate for Newton- and fixed-point-like-iteration */
 {
 /*-----------------------------------------------------------------------
     /
@@ -798,14 +811,14 @@ if(dynvar->nic != 0) /* evaluate for Newton- and fixed-point-like-iteration */
     } /* end loop over irn */
   } /* end loop over icn */
 
-  if (dynvar->conte!=0)  
+  if (fdyn->conte!=0)  
   {
 /*----------------------------------------------------------------------*
     /
    |  - beta * v * f_bub * div(u_old)   d_omega
    /
 *----------------------------------------------------------------------*/
-    if (dynvar->conte==1) beta = ONE;
+    if (fdyn->conte==1) beta = ONE;
     else beta = ONE/TWO;
     divv= vderxy[0][0]+vderxy[1][1]+vderxy[2][2]; 
     irow=-1;
@@ -824,7 +837,7 @@ if(dynvar->nic != 0) /* evaluate for Newton- and fixed-point-like-iteration */
 /*-----------------------------------------------------------------------
    Calculate bubble part of convective forces (reactive part):                           
 ----------------------------------------------------------------------- */
-if(dynvar->nir != 0)
+if(fdyn->nir != 0)
 {
 /*-----------------------------------------------------------------------
     /
@@ -844,14 +857,14 @@ if(dynvar->nir != 0)
     } /* end loop over irn */
   } /* end loop over icn */
 
-  if (dynvar->conte!=0)  
+  if (fdyn->conte!=0)  
   {
 /*----------------------------------------------------------------------*
     /
    |  - beta * v * u_old * div(f_bub)   d_omega
    /
 *----------------------------------------------------------------------*/
-    if (dynvar->conte==1) beta = ONE;
+    if (fdyn->conte==1) beta = ONE;
     else beta = ONE/TWO;
     irow=-1;
     auxc= smfderxy[0][0]+smfderxy[1][1]+smfderxy[2][2]; 
@@ -870,7 +883,7 @@ if(dynvar->nir != 0)
 /*-----------------------------------------------------------------------
    Calculate bubble part of viscous forces:                           
 ----------------------------------------------------------------------- */
-if (dynvar->vite==0) 
+if (fdyn->vite==0) 
 {
 /*-----------------------------------------------------------------------
     /
@@ -928,7 +941,6 @@ In this routine, the bubble part of the large-scale rhs for the
 pressure dofs is calculated.
 
 </pre>
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param **eiforce   DOUBLE	   (i/o)  element iterative rhs
 \param  *funct     DOUBLE	   (i)    natural shape functions
 \param **smfderxy  DOUBLE	   (i)    global deriv. of rhs bub. fun.
@@ -937,8 +949,7 @@ pressure dofs is calculated.
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void f3_calbfp(FLUID_DYN_CALC  *dynvar,
-	       DOUBLE          *eiforce,   
+void f3_calbfp(DOUBLE          *eiforce,   
 	       DOUBLE          *funct,  
 	       DOUBLE         **smfderxy,  
 	       DOUBLE           fac,    
@@ -957,8 +968,9 @@ DOUBLE  facsl,aux;
 dstrc_enter("f3_calbfp");
 #endif		
 
+fdyn = alldyn[genprob.numff].fdyn;
 /*--------------------------------------------------------------------- */
-facsl=fac*dynvar->thsl;
+facsl=fac*fdyn->thsl;
 
 /*-----------------------------------------------------------------------
    Calculate bubble part of continuity forces:                           
@@ -1002,7 +1014,6 @@ see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
      
       
 </pre>
-\param   *dynvar      FLUID_DYN_CALC  (i)
 \param   *eforce      DOUBLE	      (i/o)  element force vector
 \param	 *funct       DOUBLE	      (i)    nat. shape functions      
 \param   *edeadn      DOUBLE          (i)    ele dead load at n
@@ -1012,8 +1023,7 @@ see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void f3_lscalgalexfv(FLUID_DYN_CALC  *dynvar, 
-                   DOUBLE          *eforce,     
+void f3_lscalgalexfv(DOUBLE          *eforce,     
 		   DOUBLE          *funct,       
                    DOUBLE          *edeadn,
 		   DOUBLE          *edeadng,
@@ -1023,9 +1033,11 @@ void f3_lscalgalexfv(FLUID_DYN_CALC  *dynvar,
 DOUBLE  facsl, facsr;
 INT     inode,irow,isd;
 
+fdyn = alldyn[genprob.numff].fdyn;
+
 /*--------------------------------------------------- set some factors */
-facsl = fac*dynvar->thsl;
-facsr = fac*dynvar->thsr;
+facsl = fac*fdyn->thsl;
+facsr = fac*fdyn->thsr;
 /*----------------------------------------------------------------------*
    Calculate galerkin part of external forces:
    
@@ -1073,7 +1085,6 @@ is calculated:
 see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
       
 </pre>
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param  *eforce    DOUBLE	   (i/o)  element force vector
 \param  *covint    DOUBLE	   (i)	  conv. vels at int. point
 \param  *velint    DOUBLE	   (i)    vel. at integr. point
@@ -1084,8 +1095,7 @@ see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void f3_lscalgalifv(FLUID_DYN_CALC  *dynvar, 
-                  DOUBLE          *eforce,    
+void f3_lscalgalifv(DOUBLE          *eforce,    
 		  DOUBLE          *covint,
 		  DOUBLE          *velint,  
 		  DOUBLE         **vderxy,  
@@ -1101,10 +1111,11 @@ DOUBLE facsl,beta,betsl,divv;
 dstrc_enter("f3_lscalgalifv");
 #endif
 
+fdyn = alldyn[genprob.numff].fdyn;
 /*--------------------------------------------------- set some factors */
-facsl = fac * dynvar->thsl * dynvar->sigma;
+facsl = fac * fdyn->thsl * fdyn->sigma;
 
-switch (dynvar->conte) /* determine parameter beta of convective term */
+switch (fdyn->conte) /* determine parameter beta of convective term */
 {
 case 0: 
   beta = ZERO;
@@ -1119,7 +1130,7 @@ case 2:
 break;
 default:
    dserror("unknown form of convective term");
-} /* end switch (dynvar->conte) */
+} /* end switch (fdyn->conte) */
 
 /*----------------------------------------------------------------------*
    Calculate convective forces of iteration force vector:
@@ -1128,7 +1139,7 @@ default:
                    /
    (+/-) THETA*dt |  v * u_old * grad(u_old)  d_omega
     |            /  
-    |-> signs due to nonlin. iteration scheme (dynvar->sigma) 
+    |-> signs due to nonlin. iteration scheme (fdyn->sigma) 
  *----------------------------------------------------------------------*/ 
 irow = -1;
 for (inode=0;inode<iel;inode++)
@@ -1140,14 +1151,14 @@ for (inode=0;inode<iel;inode++)
    } /* end of loop over isd */
 } /* end of loop over inode */
 
-if (dynvar->conte!=0)  
+if (fdyn->conte!=0)  
 {
   betsl = facsl * beta;
 /*----------------------------------------------------------------------*
                    /
    (+/-) THETA*dt |  v * u_old * div(u_old)  d_omega
     |            /  
-    |-> signs due to nonlin. iteration scheme (dynvar->sigma) 
+    |-> signs due to nonlin. iteration scheme (fdyn->sigma) 
  *----------------------------------------------------------------------*/ 
   irow = -1;
   for (inode=0;inode<iel;inode++)
@@ -1200,7 +1211,6 @@ NOTE:
    in TWOSTEP methods: vel2int = U(n)	     
       
 </pre>
-\param   *dynvar      FLUID_DYN_CALC  (i)
 \param   *eforce      DOUBLE	      (i/o)  element force vector
 \param   *velint      DOUBLE	      (i)    vel. at integr. point
 \param   *vel2int     DOUBLE	      (i)    vel. at integr. point
@@ -1215,8 +1225,7 @@ NOTE:
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void f3_lscalgaltfv(FLUID_DYN_CALC  *dynvar, 
-                  DOUBLE          *eforce,    
+void f3_lscalgaltfv(DOUBLE          *eforce,    
 		  DOUBLE          *velint,
 		  DOUBLE          *vel2int,
 		  DOUBLE          *covint,
@@ -1239,12 +1248,14 @@ DOUBLE fact[3];
 dstrc_enter("f3_lscalgaltfv");
 #endif
 
+fdyn = alldyn[genprob.numff].fdyn;
+
 /*--------------------------------------------------- set some factors */
-facsr = fac * dynvar->thsr;
-facpr = fac * dynvar->thpr;
+facsr = fac * fdyn->thsr;
+facpr = fac * fdyn->thpr;
 con   = facsr * visc;
 
-switch (dynvar->conte) /* determine parameter beta of convective term */
+switch (fdyn->conte) /* determine parameter beta of convective term */
 {
 case 0: 
   beta = ZERO;
@@ -1259,7 +1270,7 @@ case 2:
 break;
 default:
    dserror("unknown form of convective term");
-} /* end switch (dynvar->conte) */
+} /* end switch (fdyn->conte) */
 
 /*----------------------------------------------------------------------*
    Calculate intertia forces of time force vector:
@@ -1297,7 +1308,7 @@ for (inode=0;inode<iel;inode++)
    } /* end of loop over isd */
 } /* end of loop over inode */
 
-if (dynvar->conte!=0)  
+if (fdyn->conte!=0)  
 {
   betsr = facsr * beta;
 /*----------------------------------------------------------------------*
@@ -1319,7 +1330,7 @@ if (dynvar->conte!=0)
 /*----------------------------------------------------------------------*
    Calculate viscous forces of time force vector:
  *----------------------------------------------------------------------*/ 
-if (dynvar->vite==0)
+if (fdyn->vite==0)
 {
 /*----------------------------------------------------------------------*
                     /
@@ -1365,7 +1376,7 @@ else
    + (1-THETA)*dt  |  div(v) * p  d_omega
                   /
  *----------------------------------------------------------------------*/ 
-if (dynvar->iprerhs>0)
+if (fdyn->iprerhs>0)
 {
    aux = preint * facpr;
    irow=-1;
@@ -1377,7 +1388,7 @@ if (dynvar->iprerhs>0)
          eforce[irow] += derxy[isd][inode]*aux;
       } /* end of loop over isd */
    } /* end of loop over inode */
-} /*endif (dynvar->iprerhs>0) */
+} /*endif (fdyn->iprerhs>0) */
 /*----------------------------------------------------------------------*
    Calculate external forces of time force vector (due to self-weight):
                     /
@@ -1426,7 +1437,6 @@ NOTE:
     eforce[3*iel]				        	    
       
 </pre>
-\param   *dynvar      FLUID_DYN_CALC  (i)
 \param   *eforce      DOUBLE	      (i/o)  element force vector
 \param   *funct       DOUBLE	      (i)    nat. shape functions
 \param  **vderxy      DOUBLE	      (i)    global vel. deriv.
@@ -1435,8 +1445,7 @@ NOTE:
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void f3_lscalgaltfp(FLUID_DYN_CALC  *dynvar, 
-                  DOUBLE	  *eforce,    
+void f3_lscalgaltfp(DOUBLE	  *eforce,    
 		  DOUBLE	  *funct,
 		  DOUBLE	 **vderxy,
 		  DOUBLE	   fac,
@@ -1450,8 +1459,9 @@ DOUBLE   facsr;
 dstrc_enter("f3_lscalgaltfp");
 #endif
 
+fdyn = alldyn[genprob.numff].fdyn;
 /*--------------------------------------------------- set some factors */
-facsr = fac * dynvar->thsr;
+facsr = fac * fdyn->thsr;
 
 /*----------------------------------------------------------------------*
    Calculate continuity forces of time force vector:

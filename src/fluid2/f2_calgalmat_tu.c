@@ -13,6 +13,21 @@ Maintainer: Thomas Hettich
 #ifdef D_FLUID2 
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+static FLUID_DYNAMIC *fdyn;
 /*!---------------------------------------------------------------------                                         
 \brief evaluate galerkin part of Kkapeps
 
@@ -45,7 +60,6 @@ NOTE: there's only one elestif
       --> Kkapeps is stored in estif[0..(iel-1)][0..(iel-1)]
       
 </pre>
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param **estif        DOUBLE	   (i/o)  ele stiffness matrix
 \param   kapepsint    DOUBLE	   (i)    kapeps at INT point
 \param  *velint       DOUBLE	   (i)    velocity at INT point
@@ -62,7 +76,6 @@ NOTE: there's only one elestif
 
 ------------------------------------------------------------------------*/
 void f2_calkkapeps(
-                FLUID_DYN_CALC  *dynvar,
 		    DOUBLE         **estif,   
 		    DOUBLE           kapepsint, 
 	          DOUBLE          *velint,
@@ -91,6 +104,7 @@ DOUBLE  auxc;
 dstrc_enter("f2_calkkapeps");
 #endif		
 
+fdyn = alldyn[genprob.numff].fdyn;
 /*----------------------------------------------------------------------*
    Calculate full Galerkin part of matrix K:
     /
@@ -152,7 +166,7 @@ icol=0;
    } /* end loop over icn */
 
 
-if(dynvar->kapeps_flag==0) 
+if(fdyn->kapeps_flag==0) 
 {
 /*----------------------------------------------------------------------*
    Calculate full Galerkin part of matrix K for LOW-REYNOLD's MODEL:

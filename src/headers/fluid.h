@@ -106,49 +106,64 @@ struct _FLUID_ML_SMESH submesh;
 struct _FLUID_ML_SMESH ssmesh;
 } FLUID_DYN_ML;
 
+
 /*!----------------------------------------------------------------------
-\brief calculation parameter                                              
+\brief fluid dynamic parameter, flags and variables
 
 <pre>                                                         genk 03/02  
 
-In this structure all parameters used during the element evaluation are
-stored.
+In this structure all fluid-dynamic variables from the input file as well
+as flags and other dynamic information are stored. 
 
 </pre>
 
 ------------------------------------------------------------------------*/
-typedef struct _FLUID_DYN_CALC                
+typedef struct _FLUID_DYNAMIC               
 {
-DOUBLE dta;      /*!< actual time increment dt(n)			*/
-DOUBLE dtp;	 /*!< previous time increment dt(n-1)			*/
-DOUBLE dt_prop;	 /*!< proposed new time increment dt(n+1)		*/
-DOUBLE thsl;     /*!< theta-s,l: const. for "stiffness" terms LHS */
-DOUBLE thsr;     /*!< theta-s,r: const. for "stiffness" terms RHS */
-DOUBLE thpl;     /*!< theta-p,l: const. for "pressure" terms LHS  */
-DOUBLE thpr;     /*!< theta-p,r: const. for "pressure" terms RHS  */
-DOUBLE thnr;	 /*!< additional part of thsr needed for gen_alpha*/
-DOUBLE omt;      /*!< ONE-theta                                   */
-DOUBLE alpha;	 /*!< alpha_m of generalised alpha method	  */
-DOUBLE acttime;  /*!< actual time */
-DOUBLE velmax;   /*!< max. velocity, needed for stabilisaton parameter */
-DOUBLE tau[3];   /*!< array for stabilitity parameter */
-DOUBLE tau_tu;   /*!< array for stabilitity parameter for turbulence*/
-DOUBLE tau_tu_dc;/*!< array for DISCONTINUITY CAPTURING for turbulence*/
-DOUBLE sigma;    /*!< const. for nonlinear iteration */   
-DOUBLE theta;    /*!< integration parameter */
-DOUBLE washvel;  /*!< wall shear velocity */   
-DOUBLE totarea;  /*!< total area of fluid field */
-DOUBLE coord_scale[2];  /*!<coordinates for scaling the turbulence variables */   
-DOUBLE sugrvisc; /*!< subgrid viscosity       */
-DOUBLE smagcon;  /*!< Smagorinsky constant       */
+/* general control variables of fluid dynamics */
+INT    dyntyp;       /*!< dynamictype                                   */
+INT    iop;          /*!< time integration method                       */
+INT    mlfem;        /*!< multilevel algorithm?                         */
+INT    numdf;        /*!< number of dofs of the fluid elements          */
+INT    numcont;      /*!< number of continuation steps (?)              */
+INT    ite;          /*!< nonlinear iteration scheme                    */
+INT    itchk;        /*!< convergence check during nonlin. iteration    */
+INT    itnorm;       /*!< norm for conv. check d. nonlin. iteration     */
+INT    stchk;        /*!< steady state check every n steps              */
+INT    stnorm;       /*!< norm for steady state check                   */
+INT    iops;         /*!< starting algorithm                            */
+INT    init;         /*!< initialisation of starting field              */
+INT    iprerhs;      /*!< treatment of pressure in time discr.          */
+/* output flags */
+INT    uppss;        /*!< update pss file every n steps                 */
+INT    upout;        /*!< store results every n steps                   */      
+INT    upres;        /*!< store results in .flavia.res every n steps    */      
+INT    res_write_evry; /*!< write restart every n steps                 */
+INT    resstep;      /*!< restart step                                  */
+/* time stepping flags and variables */
+INT    nstep;        /*!< number of timesteps                           */
+INT    step;         /*!< the actual step                               */
+INT    itemax;       /*!< number of nonlin. iterations                  */
+INT    nums;         /*!< number of starting algorithm steps            */
+INT    itemax_ke;    /*!< number of nonlin. iterations for kappa-eps    */
+INT    stepke;       /*!< the actual step for kappa-epsilon             */
+/* special facilities flags */
+INT    viscstr;      /*!< flag for calculation of viscos stresses       */
+INT    freesurf;     /*!< treatment of free surface                     */
+INT    surftens;     /*!< include surface tension effects               */
+INT    checkarea;    /*!< check total area of fluid field               */
+INT    liftdrag;     /*!< calculate lift&drag */
+INT    turbu;        /*!< the type of turbulence-model */
+INT    dis_capt;     /*!< flag for DISCONTINUITY CAPTURING for turbulence model */
+INT    adaptive;     /*!< flag if adaptive time stepping    */
+INT    time_rhs;     /*!< flag if classic or mass time rhs  */
+/* control flags from ml fluid (presumably) */
 INT    conte;    /*!< form of convective term                        */
 INT    vite;     /*!< form of viscous term                           */
 INT    sgvisc;   /*!< type of subgrid viscosity                      */
-INT    gen_alpha; /*!< general alpha time integration */
-INT    iprerhs;  /*!< treatment of pressure in time discr. */
-INT    surftens; /*!< include surface tension effects */
 INT    fsstnif; 
 INT    fsstnii;
+/* evaluation flags for left and right hand side */
 INT    nik; 	 /*!< EVALUATION OF LHS-MATRICES (w/o NONLINEAR TERM)	*/
 INT    nic;	 /*!< EVALUATION OF NONLINEAR LHS N-CONVECTIVE		*/
 INT    nir;	 /*!< EVALUATION OF NONLINEAR LHS N-REACTION		*/
@@ -158,10 +173,10 @@ INT    nif;	 /*!< EVALUATION OF "TIME - RHS"			*/
 INT    nii;	 /*!< EVALUATION OF "ITERATION - RHS"			*/
 INT    nis;	 /*!< STATIONARY CASE (NO TIMEDEPENDENT TERMS)		*/
 INT    nim;	 /*!< EVALUATION OF "TIME - RHS" in mass form 		*/
-/*------------------------------------------------ projection method */
+/* projection method variables */
 INT    pro_calmat;  /*!< a flag that switches matrix calc.           */
 INT    pro_calrhs;  /*!< a flag that switches rhs calculation        */
-INT    pro_calveln; /*!< a flag that switches calculation of vel at time level n     */
+INT    pro_calveln; /*!< a flag that switches calculation of vel at time level n*/
 INT    pro_kvv;     /*!< a flag that switches calculation of Kvv     */
 INT    pro_mvv;     /*!< a flag that switches calculation of Mvv     */
 INT    pro_gra;     /*!< a flag that switches calculation of C       */
@@ -169,81 +184,56 @@ INT    pro_lum;     /*!< a flag that switches lumping of Mvv         */
 INT    pro_gra_opt; /*!< a flag that switches for grad. calculation  */
 INT    pro_profile; /*!< a flag that switches for velocity profile   */
 INT    pro_caldirich;
-INT    niturbu_pro;  /*!< EVALUATION OF "TIME - RHS" for turbulence-model */
-INT    niturbu_n;    /*!< EVALUATION OF "TIME - RHS" for turbulence-model */
-INT    kapeps_flag;  /*!< kappa or epsilon equation                       */
-INT    kapomega_flag;/*!< kappa or omega equation                         */
-INT    kappan;       /*!< kappan for production-term                      */
-INT    dis_capt;     /*!< flag for DISCONTINUITY CAPTURING for turbulence model */
-INT    ishape;   /*!< flag for new element shape                     */
-INT    ncols;        /*!< number of columns in solution history */
-struct  _FLUID_DATA data;
-} FLUID_DYN_CALC;
-
-/*!----------------------------------------------------------------------
-\brief fluid input parameter                                              
-
-<pre>                                                         genk 03/02  
-
-In this structure all fluid-dynamic variables from the input file are
-stored. 
-
-</pre>
-
-------------------------------------------------------------------------*/
-typedef struct _FLUID_DYNAMIC               
-{
-INT                dyntyp;       /*!< dynamictype */
-INT                mlfem;        /*!< multilevel algorithm? */
-INT                numdf;        /*!< number of dofs of the fluid elements */
-INT                iop;          /*!< time integration method */
-INT                numcont;      /*!< number of continuation steps */
-INT                uppss;        /*!< update pss file every n steps */
-INT                upout;        /*!< store results every n steps */      
-INT                upres;        /*!< store results in .flavia.res every n steps */      
-INT                res_write_evry; /*!< write restart every n steps */
-INT                nstep;        /*!< number of timesteps */
-INT                resstep;      /*!< restart step */
-INT                step;         /*!< the actual step */
-INT                stepke;       /*!< the actual step for kappa-epsilon*/
-INT                ite;          /*!< nonlinear iteration scheme */
-INT                itemax;       /*!< number of nonlin. iterations */
-INT                itemax_ke;    /*!< number of nonlin. iterations for kappa-eps */
-INT                itchk;        /*!< convergence check during nonlin. iteration */
-INT                itnorm;       /*!< norm for conv. check d. nonlin. iteration */
-INT                stchk;        /*!< steady state check every n steps */
-INT                stnorm;       /*!< norm for steady state check */
-INT                iops;         /*!< starting algorithm */
-INT                nums;         /*!< number of starting algorithm steps */
-INT                init;         /*!< initialisation of starting field */
-INT                iprerhs;      /*!< treatment of pressure in time discr. */
-INT                viscstr;      /*!< flag for calculation of viscos stresses */
-INT                freesurf;     /*!< treatment of free surface */
-INT                surftens;     /*!< include surface tension effects */
-INT                checkarea;    /*!< check total area of fluid field */
-INT                liftdrag;     /*!< calculate lift&drag */
-INT                turbu;        /*!< the type of turbulence-model */
-INT                dis_capt;     /*!< flag for DISCONTINUITY CAPTURING for turbulence model */
-INT		   adaptive;	 /*!< flag if adaptive time stepping 	*/
-INT		   time_rhs;	 /*!< flag if classic or mass time rhs	*/
-DOUBLE             lenght;       /*!< internal lenght of problem */
-DOUBLE             rought;       /*!< roughtness of solid boundaries */
-DOUBLE      coord_scale[2];      /*!< coordinates for scaling the turbulence variables */   
-DOUBLE             maxtime;      /*!< maximal simulation time */
-DOUBLE             time;         /*!< actual time */
-DOUBLE             dt;           /*!< time increment */
-DOUBLE             max_dt;       /*!< maximal time increment for adaptive */
-DOUBLE             min_dt;       /*!< minimal time increment for adaptive */
-DOUBLE		   lte;		 /*!< local truncation error for adaptive */
-DOUBLE             alpha;        /*!< time integration constant */
-DOUBLE             theta;        /*!< time integration constant */
-DOUBLE             alpha_m;      /*!< time integration constant */
-DOUBLE             alpha_f;      /*!< time integration constant */
-DOUBLE             ittol;        /*!< tolerance for iteration convergence check */
-DOUBLE             sttol;        /*!< tolerance for steady state check */
-DOUBLE             thetas;       /*!< constant for starting algorithm) */
-struct _FLUID_DYN_CALC dynvar;
-struct _FLUID_DYN_ML   mlvar;
+/* turbulence flags */
+INT  niturbu_pro;  /*!< EVALUATION OF "TIME - RHS" for turbulence-model */
+INT  niturbu_n;    /*!< EVALUATION OF "TIME - RHS" for turbulence-model */
+INT  kapeps_flag;  /*!< kappa or epsilon equation                       */
+INT  kapomega_flag;/*!< kappa or omega equation                         */
+INT  kappan;       /*!< kappan for production-term                      */
+INT  ishape;       /*!< flag for new element shape                      */
+INT  ncols;        /*!< number of columns in solution history */
+/* time integration variables */
+DOUBLE  maxtime;   /*!< maximal simulation time                         */
+DOUBLE  acttime;   /*!< actual time                                     */
+DOUBLE  dt;        /*!< prescribed time increment from input            */
+DOUBLE  dta;       /*!< actual time increment dt(n)                     */
+DOUBLE  dtp;	   /*!< previous time increment dt(n-1)                 */
+DOUBLE  dt_prop;   /*!< proposed new time increment dt(n+1)		*/
+DOUBLE  max_dt;    /*!< maximal time increment for adaptive             */
+DOUBLE  min_dt;    /*!< minimal time increment for adaptive             */
+/*DOUBLE  alpha;     /*!< time integration constant                       */
+DOUBLE  theta;     /*!< time integration constant                       */
+DOUBLE  thetas;    /*!< constant for starting algorithm)                */
+DOUBLE  alpha_m;   /*!< time integration constant                       */
+DOUBLE  alpha_f;   /*!< time integration constant                       */
+DOUBLE  lte;       /*!< local truncation error for adaptive             */
+/* coefficients within integration */
+DOUBLE thsl;     /*!< theta-s,l: const. for "stiffness" terms LHS       */
+DOUBLE thsr;     /*!< theta-s,r: const. for "stiffness" terms RHS       */
+DOUBLE thpl;     /*!< theta-p,l: const. for "pressure" terms LHS        */
+DOUBLE thpr;     /*!< theta-p,r: const. for "pressure" terms RHS        */
+DOUBLE thnr;	 /*!< additional part of thsr needed for gen_alpha      */
+DOUBLE sigma;    /*!< const. for nonlinear iteration                    */ 
+/* tolerances */
+DOUBLE  ittol;     /*!< tolerance for iteration convergence check       */
+DOUBLE  sttol;     /*!< tolerance for steady state check                */
+/* DOUBLEs related to turbulence*/
+DOUBLE  lenght;         /*!< internal lenght of problem                 */
+DOUBLE  rought;         /*!< roughtness of solid boundaries             */
+DOUBLE  coord_scale[2]; /*!< coordinates for scaling the turbulence variables */   
+/*!< variables related to stabilisation                                 */
+DOUBLE velmax;   /*!< max. velocity, needed for stabilisaton parameter  */
+DOUBLE tau[3];   /*!< array for stabilitity parameter */
+DOUBLE tau_tu;   /*!< array for stabilitity parameter for turbulence*/
+DOUBLE tau_tu_dc;/*!< array for DISCONTINUITY CAPTURING for turbulence*/
+/*!< variables related to ml or turbulence (?) */
+DOUBLE washvel;  /*!< wall shear velocity */   
+DOUBLE totarea;  /*!< total area of fluid field */
+DOUBLE sugrvisc; /*!< subgrid viscosity       */
+DOUBLE smagcon;  /*!< Smagorinsky constant       */
+/**/
+struct _FLUID_DYN_ML  *mlvar; /* pointer to fluid ml information        */
+struct _FLUID_DATA    *data;  /* pointer to integration data            */
 } FLUID_DYNAMIC;
 
 /*!----------------------------------------------------------------------

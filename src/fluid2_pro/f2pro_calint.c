@@ -24,6 +24,19 @@ Maintainer: Steffen Genkinger
  | defined in global_control.c
  *----------------------------------------------------------------------*/
 extern struct _MATERIAL  *mat;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*
  | integration loop for one fluid element                               |
@@ -42,7 +55,6 @@ time-RHS for one fluid2pro element is calculated
 \param  *data      FLUID_DATA	   (i)	  integration data
 \param  *elev	   ELEMENT	   (i)    actual element for velocity
 \param  *elep	   ELEMENT	   (i)    actual element for pressure
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param **estif     DOUBLE	   (o)    element stiffness matrix
 \param **emass     DOUBLE	   (o)    element mass matrix
 \param **gradopr    DOUBLE	   (o)    gradient operator
@@ -72,8 +84,7 @@ time-RHS for one fluid2pro element is calculated
 void f2pro_calint(
                FLUID_DATA      *data,     
 	       ELEMENT         *elev,
-	       ELEMENT         *elep,     
-	       FLUID_DYN_CALC  *dynvar, 
+	       ELEMENT         *elep, 
                DOUBLE         **estif,   
 	       DOUBLE         **emass,
 	       DOUBLE         **gradopr,
@@ -119,12 +130,14 @@ DOUBLE    preint;       /* pressure at integration point                  */
 DIS_TYP   typ1;	        /* element type 1 (quad9)                         */
 DIS_TYP   typ2;	        /* element type 2 (quad4)                         */
 DISMODE   mode;         /* element discretization mode q2q1 or none       */
-
+FLUID_DYNAMIC *fdyn;    /* pointer to fluid dynamic variables             */
 #ifdef DEBUG 
 dstrc_enter("f2pro_calint");
 #endif
 
 /*----------------------------------------------------- initialisation */
+fdyn = alldyn[genprob.numff].fdyn;
+
 iel =elev->numnp;
 ielp=elep->numnp;                             
 actmat=elev->mat-1;
@@ -175,28 +188,28 @@ for (lr=0;lr<nir;lr++)
       /*----------- get velocity (n,i) derivatives at integration point */
       f2_vder(vderxy,derxy,eveln,iel);
       /*----------------------------------------------------------------*/
-      if (dynvar->pro_calmat==1)
+      if (fdyn->pro_calmat==1)
       {
       /*---------------------------- compute standard Galerkin matrices */
       /*-------------- standard Galerkin mass matrix is stored in emass */
       /*--------------------- element stiffness matrix is stored in kvv */
-         if (dynvar->pro_kvv==1) 
-	 f2pro_calkvv(estif,derxy,fac,visc,dynvar->dta,iel);
+         if (fdyn->pro_kvv==1) 
+	 f2pro_calkvv(estif,derxy,fac,visc,fdyn->dta,iel);
          /*-- calculate the Balancing Diffusivity Tensor and add to the */
          /*-------------------------------------------------- estif term*/
-         f2pro_calbdt(elev,dynvar,estif,velint,derxy,vderxy,funct,fac,visc,iel);
+         f2pro_calbdt(elev,estif,velint,derxy,vderxy,funct,fac,visc,iel);
          /*-------------------------------- get the gradient operator C */
-         if (dynvar->pro_gra==1)
+         if (fdyn->pro_gra==1)
 	 f2pro_gradopr(gradopr,derxy,functpr,fac,ielp,iel); 
          /*-------------------------- calculate the element mass matrix */
-         if (dynvar->pro_mvv==1)
+         if (fdyn->pro_mvv==1)
 	 f2_calmvv(emass,funct,fac,iel);         
          /*---- end of Galerkin matrices calculation for left hand side * 
 	  |                           (M+dt*K)u~(n+1)                   | 
          /*-------------------------------------------------------------*/
       }/*end of if(cal_mat==1)*/
       /*----------------------------------------------------------------*/
-      if (dynvar->pro_calrhs==1) 
+      if (fdyn->pro_calrhs==1) 
       {
          /*---------------------- get pressure (n) at integration point */
          f2_prei(&preint,functpr,epren,ielp);
@@ -207,9 +220,9 @@ for (lr=0;lr<nir;lr++)
          /*--------- get convective velocities (n) at integration point */
          f2_covi(vderxy,velint,covint); 
          /*------------ calculate galerkin part of "Time-RHS" (vel-dofs)*/
-         f2pro_calgaltfv(dynvar,etforce,eiforce,velint,covint,vderxy,
-	                 funct,derxy,preint,visc,fac,dynvar->dta,iel);
-      }/*end of if(dynvar->pro_calrhs==1)*/
+         f2pro_calgaltfv(etforce,eiforce,velint,covint,vderxy,
+	                 funct,derxy,preint,visc,fac,fdyn->dta,iel);
+      }/*end of if(fdyn->pro_calrhs==1)*/
    } /* end of loop over integration points ls*/
 } /* end of loop over integration points lr */
  

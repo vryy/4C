@@ -81,7 +81,6 @@ static INT              numff;      /* actual number of fluid field     */
 MATERIAL               *actmat;     /* actual material                  */
 static FLUID_DATA      *data;      
 FLUID_DYNAMIC          *fdyn;
-static FLUID_DYN_CALC  *dynvar;
 FIELD                  *actfield;   /* actual field                     */
 INT                    start;
 #ifdef DEBUG 
@@ -104,18 +103,17 @@ case calc_fluid_init:
       if (actfield->fieldtyp==fluid)
       break;
    } /* end loop over numff */
-   dynvar = &(alldyn[numff].fdyn->dynvar);
-   data   = &(alldyn[numff].fdyn->dynvar.data); 
+   data   = alldyn[numff].fdyn->data;
 /*------------------------------------------- init the element routines */   
    f2_intg(data,0);
-   f2_calele_tu(data,dynvar,NULL,NULL,
+   f2_calele_tu(data,NULL,NULL,
                 estif_global,emass_global,
-	          etforce_global,eiforce_global,edforce_global,eproforce_global,
-	          NULL,NULL,1);
+	        etforce_global,eiforce_global,edforce_global,eproforce_global,
+	        NULL,NULL,1);
 break;
 /*------------------------------------------- call the element routines */
 case calc_fluid:
-   f2_calele_tu(data,dynvar,eleke,elev,
+   f2_calele_tu(data,eleke,elev,
                 estif_global,emass_global,
 	          etforce_global,eiforce_global,edforce_global,eproforce_global,
 	          hasdirich,hasext,0);
@@ -145,18 +143,17 @@ case calc_fluid_init:
       if (actfield->fieldtyp==fluid)
       break;
    } /* end loop over numff */
-   dynvar = &(alldyn[numff].fdyn->dynvar);
-   data   = &(alldyn[numff].fdyn->dynvar.data); 
+   data   = alldyn[numff].fdyn->data; 
 /*------------------------------------------- init the element routines */   
    f2_intg(data,0);
-   f2_calele_tu_1(data,dynvar,NULL,NULL,
+   f2_calele_tu_1(data,NULL,NULL,
                   estif_global,emass_global,
 	            etforce_global,eiforce_global,edforce_global,eproforce_global,
 	            NULL,NULL,1);
 break;
 /*------------------------------------------- call the element routines */
 case calc_fluid:
-   f2_calele_tu_1(data,dynvar,eleke,elev,
+   f2_calele_tu_1(data,eleke,elev,
                   estif_global,emass_global,
 	            etforce_global,eiforce_global,edforce_global,eproforce_global,
 	            hasdirich,hasext,0);

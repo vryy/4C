@@ -20,7 +20,21 @@ Maintainer: Christiane Foerster
 #include "fluid_prototypes.h"
 /*#include "../fluid2/fluid2.h"
 #include "../fluid3/fluid3.h"
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
 
+static FLUID_DYNAMIC *fdyn;
 /*!----------------------------------------------------------------------
 \brief ranks and communicators
 
@@ -70,15 +84,11 @@ acc(n+1) = --------------------- vel(n+1) - --------------- vel(n)
 </pre>   
 \param *actfield	FIELD		(i)	the actual field
 \param  iop		INT		(i)	flag, which scheme
-\param *dynvar		FLUID_DYN_CALC	(i)
-\param *fdyn		FLUID_DYNAMIC	(i)
 \return void 
 
 ------------------------------------------------------------------------*/
 void fluid_acceleration(	FIELD 		*actfield, 
-				INT 	 	iop, 
-				FLUID_DYN_CALC 	*dynvar,
-				FLUID_DYNAMIC	*fdyn
+				INT 	 	iop
 			)
 {
 DOUBLE fact1, fact2, fact3, dta, dtp, sum;
@@ -86,11 +96,12 @@ DOUBLE fact1, fact2, fact3, dta, dtp, sum;
 dstrc_enter("fluid_acceleration");
 #endif
 
+fdyn = alldyn[genprob.numff].fdyn;
 switch (iop)
 {
 case 1:	/* Generalised Alpha time integration 				*/
 case 4:	/* One step Theta time integration 				*/
-   fact1 = 1.0 / (fdyn->theta*dynvar->dta);
+   fact1 = 1.0 / (fdyn->theta*fdyn->dta);
    fact2 =-1.0 / fdyn->theta + 1.0;	/* = -1/Theta + 1		*/
    solserv_sol_zero(actfield,0,1,5);
    solserv_sol_add(actfield,0,1,1,3,5, fact1);
@@ -98,8 +109,8 @@ case 4:	/* One step Theta time integration 				*/
    solserv_sol_add(actfield,0,1,1,4,5, fact2); 
 break;
 case 7:	/* 2nd order backward differencing BDF2				*/
-   dta = dynvar->dta;
-   dtp = dynvar->dtp;
+   dta = fdyn->dta;
+   dtp = fdyn->dtp;
    if (dta*dtp < EPS15)
       dserror("Zero time step size!!!!!");
    sum = dta + dtp;
@@ -174,9 +185,7 @@ for adaptive time step:
 \return void 
 
 ------------------------------------------------------------------------*/
-void fluid_prep_rhs(FIELD 		*actfield, 
-		    FLUID_DYN_CALC 	*dynvar,
-		    FLUID_DYNAMIC	*fdyn)
+void fluid_prep_rhs(FIELD *actfield)
 {
 DOUBLE 	fact;
 
@@ -184,21 +193,23 @@ DOUBLE 	fact;
 dstrc_enter("fluid_prep_rhs");
 #endif
 
+fdyn = alldyn[genprob.numff].fdyn;
+
 switch (fdyn->iop)
 {
 case 1:	/* Generalised Alpha time integration 				*/
-   fact = -dynvar->dta * fdyn->alpha_f * 
+   fact = -fdyn->dta * fdyn->alpha_f * 
           (fdyn->theta - fdyn->alpha_m) / fdyn->alpha_m; 
    solserv_sol_copy(actfield,0,1,1,1,2);
    solserv_sol_add(actfield,0,1,1,5,2,fact);
 break;
 case 4:	/* One step Theta time integration 				*/
-   fact = dynvar->dta * dynvar->omt;	/* = dt*(1-Theta)		*/
+   fact = fdyn->dta * (1.0 -fdyn->theta);     /* = dt*(1-Theta)         */
    solserv_sol_copy(actfield,0,1,1,1,2);
    solserv_sol_add(actfield,0,1,1,5,2,fact);
 break;
 case 7:	/* 2nd order backward differencing BDF2				*/
-   fact = DSQR(dynvar->dta)/(dynvar->dtp*(2.0*dynvar->dta+dynvar->dtp));
+   fact = DSQR(fdyn->dta)/(fdyn->dtp*(2.0*fdyn->dta+fdyn->dtp));
    solserv_sol_zero(actfield,0,1,2);
    solserv_sol_add(actfield,0,1,1,1,2,1+fact);
    solserv_sol_add(actfield,0,1,1,0,2,-fact);
@@ -255,11 +266,10 @@ vel_P(n+1) = vel(n) + dt(n) | 1 + ------- |*acc(n)-|-------| * [u(n)-u(n-1)]
 </pre>   
 \param *actfield	FIELD		(i)	the actual field
 \param  iop		INT		(i)	flag, which scheme
-\param *dynvar		FLUID_DYN_CALC	(i)	
 \return void 
 
 ------------------------------------------------------------------------*/
-void fluid_predictor(FIELD *actfield, INT iop, FLUID_DYN_CALC *dynvar)
+void fluid_predictor(FIELD *actfield, INT iop)
 {
 DOUBLE 	fact1, fact2;
 
@@ -267,17 +277,19 @@ DOUBLE 	fact1, fact2;
 dstrc_enter("fluid_predictor");
 #endif
 
-if(dynvar->dtp < EPS15)
+fdyn = alldyn[genprob.numff].fdyn;
+
+if(fdyn->dtp < EPS15)
    dserror("'zero' previous time step size!");
 
 switch (iop)
 {
 case 1:
 case 4:	/* One step Theta time integration (including TR)		*/
-   if (dynvar->theta == 0.5)	/* TR */
+   if (fdyn->theta == 0.5)	/* TR */
    {
-      fact1 = dynvar->dta*0.5 * (2.0 + dynvar->dta/dynvar->dtp);
-      fact2 =-dynvar->dta*0.5 * dynvar->dta/dynvar->dtp;
+      fact1 = fdyn->dta*0.5 * (2.0 + fdyn->dta/fdyn->dtp);
+      fact2 =-fdyn->dta*0.5 * fdyn->dta/fdyn->dtp;
       solserv_sol_copy(actfield,0,1,1,1,6);
       solserv_sol_add(actfield,0,1,1,5,6,fact1);
       solserv_sol_add(actfield,0,1,1,4,6,fact2);
@@ -285,12 +297,12 @@ case 4:	/* One step Theta time integration (including TR)		*/
    else
    {
       solserv_sol_copy(actfield,0,1,1,1,6);
-      solserv_sol_add(actfield,0,1,1,5,6,dynvar->dta);
+      solserv_sol_add(actfield,0,1,1,5,6,fdyn->dta);
    }
 break;
 case 7:	/* 2nd order backward differencing BDF2				*/
-   fact1 = dynvar->dta*(1.0+dynvar->dta/dynvar->dtp);
-   fact2 = DSQR(dynvar->dta/dynvar->dtp);
+   fact1 = fdyn->dta*(1.0+fdyn->dta/fdyn->dtp);
+   fact2 = DSQR(fdyn->dta/fdyn->dtp);
    solserv_sol_copy(actfield,0,1,1,1,6);
    solserv_sol_add(actfield,0,1,1,5,6, fact1);
    solserv_sol_add(actfield,0,1,1,1,6,-fact2);
@@ -364,14 +376,11 @@ LTE = -------------------------------------  * [ vel(n+1) - vel_P(n+1) ]
 </pre>   
 \param *actfield	FIELD		(i)	the actual field
 \param  iop		INT		(i)	flag, which scheme
-\param *dynvar		FLUID_DYN_CALC	(i)	
 \return void 
 
 ------------------------------------------------------------------------*/
 void fluid_lte(	FIELD	 	*actfield, 
-		INT 		 iop, 
-		FLUID_DYN_CALC 	*dynvar,
-		FLUID_DYNAMIC	*fdyn )
+		INT 		 iop)
 {
 DOUBLE 	fact, ratio;
 
@@ -379,33 +388,35 @@ DOUBLE 	fact, ratio;
 dstrc_enter("fluid_lte");
 #endif
 
+fdyn = alldyn[genprob.numff].fdyn;
+
 switch (iop)
 {
 case 1:	/* Generalised Alpha time integration                           */
-   fact = (6.0 * fdyn->alpha_f - 2.0) / ( 3.0*( dynvar->dtp/dynvar->dta 
+   fact = (6.0 * fdyn->alpha_f - 2.0) / ( 3.0*( fdyn->dtp/fdyn->dta 
            + 2.0*fdyn->alpha_f ) );
    solserv_sol_zero(actfield,0,1,7);
    solserv_sol_add(actfield,0,1,1,3,7, fact);
    solserv_sol_add(actfield,0,1,1,6,7,-fact); 
 break;
 case 4:	/* One step Theta time integration                              */
-   if (dynvar->theta == 0.5) 	/* TR! */
+   if (fdyn->theta == 0.5) 	/* TR! */
    {
-      fact = 1.0/3.0*(1.0+dynvar->dtp/dynvar->dta);
+      fact = 1.0/3.0*(1.0+fdyn->dtp/fdyn->dta);
       solserv_sol_zero(actfield,0,1,7);
       solserv_sol_add(actfield,0,1,1,3,7, fact);
       solserv_sol_add(actfield,0,1,1,6,7,-fact);     
    }
    else
    {
-      fact = 1.0 - 1.0/( 2.0*dynvar->theta );
+      fact = 1.0 - 1.0/( 2.0*fdyn->theta );
       solserv_sol_zero(actfield,0,1,7);
       solserv_sol_add(actfield,0,1,1,3,7, fact);
       solserv_sol_add(actfield,0,1,1,6,7,-fact);   
    }
 break;
 case 7:	/* 2nd order backward differencing BDF2                         */
-   ratio = dynvar->dtp/dynvar->dta;
+   ratio = fdyn->dtp/fdyn->dta;
    fact  = DSQR(1.0+ratio)/
            ( 1.0 + 3.0*ratio + 4.0*DSQR(ratio) + 2.0*DSQR(ratio)*ratio );
    solserv_sol_zero(actfield,0,1,7);
@@ -448,7 +459,6 @@ NOTE: The repeat-timestep/don't-repeat-timestep-decision follows the
 \param *actpart		PARTITION	(i) 	actual partition
 \param *actfield	FIELD		(i)	the actual field
 \param *actintra	INTRA		(i)
-\param *dynvar		FLUID_DYN_CALC	(i/o)	
 \param *fdyn		FLUID_DYNAMIC	(i/o)
 \param *iststep		INT		(i/o)
 \param *repeat		INT		(o)	flag, if to repeat
@@ -460,8 +470,6 @@ NOTE: The repeat-timestep/don't-repeat-timestep-decision follows the
 void fluid_lte_norm(	
 			PARTITION 	*actpart,
 			INTRA		*actintra,
-			FLUID_DYN_CALC	*dynvar,
-                        FLUID_DYNAMIC	*fdyn,
 			INT		*iststep,
 			INT		*repeat,
 			INT		*repeated,
@@ -491,6 +499,8 @@ GNODE   *actgnode;      /* the corresponding gnode                      */
 dstrc_enter("fluid_lte_norm");
 #endif
 /*------------------------------------------- initialise some values ---*/
+fdyn = alldyn[genprob.numff].fdyn;
+
 numveldof = fdyn->numdf - 1;
 nvel = 0;
 sum = ZERO;
@@ -561,7 +571,7 @@ if (par.myrank == 0)
     {
     case 4: 	/* One step Theta					*/
       {
-        if (dynvar->theta == 0.5) /* TR */
+        if (fdyn->theta == 0.5) /* TR */
           ratio = pow((fdyn->lte/d_norm),0.33333333333333333333333);
 	  else
           ratio = pow((fdyn->lte/d_norm),0.49);
@@ -585,21 +595,21 @@ if (*repeated)       /* step has already been repeated                  */
    if (ratio < 0.5)   ratio = 0.5;    /* truncate time step size change */
    else if (ratio > 1.5)   ratio = 1.5;
    *repeat = 0; 		      /* don't repeat time step         */
-   proposed_dt = dynvar->dta * ratio;
+   proposed_dt = fdyn->dta * ratio;
    proposed_dt = DMIN(proposed_dt,fdyn->max_dt);
    proposed_dt = DMAX(proposed_dt,fdyn->min_dt);
-   dynvar->dt_prop = proposed_dt;
+   fdyn->dt_prop = proposed_dt;
    *repeated = 0;
    goto end;
 }
 
-proposed_dt = dynvar->dta * ratio;    /* set up new proposed dt */
+proposed_dt = fdyn->dta * ratio;    /* set up new proposed dt */
 
 /* upper step size limit reached     */
 if (proposed_dt > fdyn->max_dt && ratio < 5.0)
 {
   *repeat = 0;
-  dynvar->dt_prop = fdyn->max_dt;
+  fdyn->dt_prop = fdyn->max_dt;
   if (par.myrank == 0) printf("Time step size is cut to MAX_DT!\n");
   goto end;
 }
@@ -608,7 +618,7 @@ if (proposed_dt > fdyn->max_dt && ratio < 5.0)
 if (proposed_dt < fdyn->min_dt && ratio < 0.1)
 {
   *repeat = 0;
-  dynvar->dt_prop = fdyn->min_dt;
+  fdyn->dt_prop = fdyn->min_dt;
   if (par.myrank == 0) printf("Time step size is cut to MIN_DT!\n");
   goto end;
 }
@@ -619,58 +629,54 @@ if (ratio <= 0.1)    /* massive reduction of time step -> warning    */
   *repeat = 1; 		     /* repeat time step again       */
   if (par.myrank == 0)
      printf("Warning: massive reduction in time step size, something's wrong!!\n");
-  fdyn->time -= dynvar->dta;	     /* reset old time values	     */
-  dynvar->acttime=fdyn->time;
+  fdyn->acttime -= fdyn->dta;	     /* reset old time values	     */
   fdyn->step--;
   (*iststep)--;
-  dynvar->dta = proposed_dt;	     /* set smaller step size	     */
+  fdyn->dta = proposed_dt;	     /* set smaller step size	     */
 }
 else if (ratio > 0.1 && ratio <= 0.8)/* significant reduction	     */
 {
   *repeat = 1; 		     /* repeat time step again       */
   if (par.myrank == 0)
     printf("Significant time step size reduction. Step is repeated\n");
-  fdyn->time -= dynvar->dta;	     /* reset old time values	     */
-  dynvar->acttime=fdyn->time;
+  fdyn->acttime -= fdyn->dta;	     /* reset old time values	     */
   fdyn->step--;
   (*iststep)--;
-  dynvar->dta = proposed_dt;	     /* set smaller step size	     */
+  fdyn->dta = proposed_dt;	     /* set smaller step size	     */
 }
 else if (ratio > 0.8 && ratio <= 1.5)/* about the same  	     */
 {
   *repeat = 0; 		     /* don't repeat time step       */
   proposed_dt = DMIN(proposed_dt,fdyn->max_dt);
-  dynvar->dt_prop = proposed_dt;
+  fdyn->dt_prop = proposed_dt;
 }
 else if (ratio > 1.5 && ratio <= 5.0)/* significant enlargement      */
 {
   *repeat = 1; 		     /* repeat time step again       */
   if (par.myrank == 0)
     printf("Significant time step size enlargement. Step is repeated\n");
-  fdyn->time -= dynvar->dta;	     /* reset old time values	     */
-  dynvar->acttime=fdyn->time;
+  fdyn->acttime -= fdyn->dta;	     /* reset old time values	     */
   fdyn->step--;
   (*iststep)--;
-  dynvar->dta = proposed_dt;
+  fdyn->dta = proposed_dt;
 }
 else if (ratio > 5.0)		     /* huge enlargement	     */
 {
-  if (dynvar->dta == fdyn->max_dt)  /* max timestep already reached */
+  if (fdyn->dta == fdyn->max_dt)  /* max timestep already reached */
   {
   *repeat = 0; 		     /* don't repeat time step       */
   proposed_dt = fdyn->max_dt;
-  dynvar->dt_prop = proposed_dt;
+  fdyn->dt_prop = proposed_dt;
   }
   else
   {
      *repeat = 1;                   /* repeat time step again       */
   if (par.myrank == 0)
     printf("Huge time step size enlargement. Step is repeated\n");
-    fdyn->time -= dynvar->dta;     /* reset old time values        */
-    dynvar->acttime=fdyn->time;
+    fdyn->acttime -= fdyn->dta;     /* reset old time values        */
     fdyn->step--;
     (*iststep)--;
-    dynvar->dta = DMIN(5.0 * dynvar->dta,fdyn->max_dt);
+    fdyn->dta = DMIN(5.0 * fdyn->dta,fdyn->max_dt);
   }
 }
 else
@@ -680,7 +686,7 @@ end:
 /*----------------------------------------------------------------------*/
 if (par.myrank == 0)
   if (*repeat == 0)
-    plot_lte(fdyn->time,fdyn->step,d_norm,dynvar->dta,itnum);
+    plot_lte(fdyn->acttime,fdyn->step,d_norm,fdyn->dta,itnum);
       
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

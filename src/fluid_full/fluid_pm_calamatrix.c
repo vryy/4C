@@ -70,7 +70,6 @@ matrix is also created. Finally The A-matrix is copied to OLL-format.
 \param  *actsolv          SOLVAR         (i) the actual solver		 
 \param  *amatrix_oll      SPARSE_ARRAY   (o) A-matrix OLL format
 \param  *fdyn             FLUID_DYNAMIC  (-) fluid dynamic parameters	 
-\param  *dynvar           FLUID_DYN_CALC (i) 				 
 \param  *gradmatrix_oll   OLL            (o) gradient matrix (OLL-format)	 
 \param  *rgradmatrix_oll  OLL            (o) reduced gradient matrix (OLL-format)	 
 \param  *lmass            DOUBLE         (o) lumped mass matrix (redundant)		 
@@ -90,7 +89,6 @@ void fluid_pm_calamatrix(
 			  SOLVAR          *actsolv,
 			  SPARSE_ARRAY    *amatrix_oll,
 			  FLUID_DYNAMIC   *fdyn,
-			  FLUID_DYN_CALC  *dynvar,
 			  OLL             *gradmatrix_oll,
 			  OLL             *rgradmatrix_oll,
 			  DOUBLE          *lmass,
@@ -217,13 +215,13 @@ container->nim = 0;
 container->gradmatrix  = gradmatrix_csr;
 container->lumpedmass  = lumpedmass_csr;
 container->actndis = veldis;
-dynvar->pro_calmat = 1;
-dynvar->pro_calrhs = 0;
-dynvar->pro_calveln = 1;
-dynvar->pro_mvv = 1;
-dynvar->pro_kvv = 0;
-dynvar->pro_gra = 1;
-dynvar->pro_lum = 1;
+fdyn->pro_calmat = 1;
+fdyn->pro_calrhs = 0;
+fdyn->pro_calveln = 1;
+fdyn->pro_mvv = 1;
+fdyn->pro_kvv = 0;
+fdyn->pro_gra = 1;
+fdyn->pro_lum = 1;
 t0 = ds_cputime();
 calelm(actfield,actsolv,actpart,actintra,-1,-1,container,action);
 t1 = ds_cputime()-t0;

@@ -134,17 +134,17 @@ for (actcurve = 0;actcurve<numcurve;actcurve++)
    dyn_init_curve(actcurve,fsidyn->nstep,fsidyn->dt,fsidyn->maxtime);
    
 /*------------------------------------------------------ initialise ale */
-fsi_ale(fsidyn,adyn,alefield,mctrl,numaf);
+fsi_ale(alefield,mctrl,numaf);
 /*---------------------------------------------------- initialise fluid */
-fsi_fluid(fsidyn,fdyn,fluidfield,mctrl,numff);   
+fsi_fluid(fluidfield,mctrl,numff);   
 
 if (genprob.restart>0)
 {
-   if (fdyn->time != adyn->time)
+   if (fdyn->acttime != adyn->time)
    dserror("Restart problem: Time not identical in fields!\n");
    if (fdyn->step != adyn->step)
    dserror("Restart problem: Step not identical in fields!\n");
-   fsidyn->time = fdyn->time;
+   fsidyn->time = fdyn->acttime;
    fsidyn->step = fdyn->step;
 }
 
@@ -164,7 +164,7 @@ fsidyn->step++;
 fsidyn->time += fsidyn->dt; 
 fdyn->step=fsidyn->step;
 adyn->step=fsidyn->step;
-fdyn->time = fsidyn->time;
+fdyn->acttime = fsidyn->time;
 adyn->time = fsidyn->time;
 /*------------------------------------------------ output to the screen */
 if (par.myrank==0)
@@ -174,9 +174,9 @@ printf("TIME: %11.4E/%11.4E   DT = %11.4E   STEP = %4d/%4d \n",
 printf("\n");
 }
 /*------------------------------- CMD ----------------------------------*/
-fsi_ale(fsidyn,adyn,alefield,mctrl,numaf);
+fsi_ale(alefield,mctrl,numaf);
 /*------------------------------- CFD ----------------------------------*/
-fsi_fluid(fsidyn,fdyn,fluidfield,mctrl,numff);
+fsi_fluid(fluidfield,mctrl,numff);
 
 /*--------------------------------------- write current solution to gid */
 /*----------------------------- print out solution to 0.flavia.res file */
@@ -197,8 +197,8 @@ if (fsidyn->step < fsidyn->nstep && fsidyn->time <= fsidyn->maxtime)
  *======================================================================*/
 cleaningup:
 mctrl=99;
-fsi_fluid(fsidyn,fdyn,fluidfield,mctrl,numff);
-fsi_ale(fsidyn,adyn,alefield,mctrl,numaf); 
+fsi_fluid(fluidfield,mctrl,numff);
+fsi_ale(alefield,mctrl,numaf); 
 
 #else
 dserror("FSI-functions not compiled in!\n");

@@ -1207,8 +1207,7 @@ void fluid_result_incre(
 			  SPARSE_TYP        *sysarray_typ,
 			  DOUBLE            *vrat,        
 			  DOUBLE            *prat,
-                          DOUBLE            *grat,
-			  FLUID_DYNAMIC     *fdyn           
+                          DOUBLE            *grat          
 		       );		        
 
 /************************************************************************
@@ -1221,8 +1220,7 @@ void fluid_liftdrag(
     FIELD         *actfield,
     SOLVAR        *actsolv,
     PARTITION     *actpart,
-    INTRA         *actintra,
-    FLUID_DYNAMIC *fdyn);
+    INTRA         *actintra);
 
 /************************************************************************
  | fluid_service_tu.c                                                   |
@@ -1245,22 +1243,20 @@ void fluid_eddy_update(FIELD         *actfield,
 
 void fluid_lenght_update(FIELD         *actfield, 
                          DIST_VECTOR   *sol,   
-		             DOUBLE        *lenghtrat, 
-                         FLUID_DYNAMIC *fdyn      
+		             DOUBLE        *lenghtrat
                         );
 /************************************************************************
  | fluid_service_tu_1.c                                                 |
  ************************************************************************/
-void fluid_result_incre_tu_1(FIELD       *actfield,    
-                           INTRA         *actintra,   
-			         DIST_VECTOR   *sol,        
-                           INT            place,      
-			         SPARSE_ARRAY  *sysarray,      
-			         SPARSE_TYP    *sysarray_typ,
-			         DOUBLE        *kapomegarat,        
-		               FLUID_DYNAMIC *fdyn,
-                           DOUBLE         lower_limit_kappa,
-                           DOUBLE         lower_limit_omega         
+void fluid_result_incre_tu_1( FIELD       *actfield,    
+                              INTRA         *actintra,   
+                              DIST_VECTOR   *sol,        
+                              INT            place,      
+                              SPARSE_ARRAY  *sysarray,      
+                              SPARSE_TYP    *sysarray_typ,
+                              DOUBLE        *kapomegarat,
+                              DOUBLE         lower_limit_kappa,
+                              DOUBLE         lower_limit_omega         
 		              );
 
 void fluid_eddy_update_1(FIELD         *actfield, 
@@ -1269,8 +1265,7 @@ void fluid_eddy_update_1(FIELD         *actfield,
 
 void fluid_lenght_update_1(FIELD         *actfield, 
                           DIST_VECTOR   *sol,   
-		              DOUBLE        *lenghtrat, 
-                          FLUID_DYNAMIC *fdyn      
+		              DOUBLE        *lenghtrat
                          );
 /* -------------------------------------------------------------------- *
  *   global_oll_add.c                                          mn 05/03 *

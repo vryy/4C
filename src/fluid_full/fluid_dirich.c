@@ -17,7 +17,20 @@ Maintainer: Steffen Genkinger
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
-#include "fluid_prototypes.h"
+#include "fluid_prototypes.h" 
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;                     
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn; 
 /*!----------------------------------------------------------------------
 \brief ranks and communicators
 
@@ -45,6 +58,7 @@ extern struct _MATERIAL  *mat;
 extern INT            numcurve;
 extern struct _CURVE *curve;
 
+static FLUID_DYNAMIC *fdyn;
 /*!--------------------------------------------------------------------- 
 \brief routine to initialise the dirichlet boundary conditions
 
@@ -66,14 +80,11 @@ elements are initialised:
 
 </pre>
 \param *actfield FIELD         (i)  actual field (fluid)   
-\param *fdyn	 FLUID_DYNAMIC (i)    
 
 \return void                                            
 
 ------------------------------------------------------------------------*/
-void fluid_initdirich(  FIELD          *actfield, 
-                        FLUID_DYNAMIC  *fdyn
-		     )
+void fluid_initdirich(  FIELD          *actfield )
 {
 INT        i,j;
 INT        numnp_total;               /* total number of fluid nodes    */
@@ -97,6 +108,8 @@ INT counter=0;
 #ifdef DEBUG 
 dstrc_enter("fluid_initdirich");
 #endif  
+
+fdyn = alldyn[genprob.numff].fdyn;
 
 numnp_total  = actfield->dis[0].numnp;
 numele_total = actfield->dis[0].numele; 
@@ -203,7 +216,7 @@ return;
 <pre>                                                         genk 04/02
                                                              
 in this routine the dirichlet boundary conditions for fluid2 and fluid3
-elements are set at time <T=fdyn->time>.
+elements are set at time <T=fdyn->acttime>.
 the actual dirichlet values are written to the solution history of the
 nodes:
     'actnode->sol_increment.a.da[pos][j] = initval*acttimefac'
@@ -213,14 +226,12 @@ nodes:
                                          factor from timecurve
 </pre>
 \param *actfield FIELD		(i)  actual field (fluid)   
-\param *fdyn	 FLUID_DYNAMIC	(i)  
 \param  pos	 INT		(i)	position, where to write dbc
 
 \return void     
 
 ------------------------------------------------------------------------*/
 void fluid_setdirich(   FIELD           *actfield, 
-                        FLUID_DYNAMIC   *fdyn,
 			INT		 pos
 	            )
 {
@@ -243,9 +254,11 @@ dstrc_enter("fluid_setdirich");
 #endif 
 
 /*----------------------------------------------------- set some values */
+fdyn = alldyn[genprob.numff].fdyn;
+
 numnp_total  = actfield->dis[0].numnp;
 numele_total = actfield->dis[0].numele;
-T            = fdyn->time;
+T            = fdyn->acttime;
 numdf        = fdyn->numdf;
 numveldof    = numdf-1;
 
@@ -310,7 +323,7 @@ profile modified for projection algorithm
                                                               basol 03/03
 
 in this routine the dirichlet boundary conditions for fluid2pro
-elements are set at time <T=fdyn->time>.
+elements are set at time <T=fdyn->acttime>.
 the actual dirichlet values are written to the solution history of the
 nodes:
     'actnode->sol_increment.a.da[3][j] = initval*acttimefac'
@@ -320,12 +333,11 @@ nodes:
                                        factor from timecurve			     
 </pre>
 \param *actfield FIELD         (i)  actual field (fluid)   
-\param *fdyn	 FLUID_DYNAMIC (i)  
 
 \return void                                                                             
 
 ------------------------------------------------------------------------*/
-void fluid_setdirich_parabolic(FIELD  *actfield, FLUID_DYNAMIC *fdyn)
+void fluid_setdirich_parabolic(FIELD  *actfield)
 {
 INT        i,j;
 INT        numnp_total;              /* total number of fluid nodes     */
@@ -350,9 +362,11 @@ dstrc_enter("fluid_setdirich_parabolic");
 /*a better way of doing this would be implementing the velocity profile into
 /*preprocessor code "GID"
 /*----------------------------------------------------- set some values */
+fdyn = alldyn[genprob.numff].fdyn;
+
 numnp_total  = actfield->dis[0].numnp;
 numele_total = actfield->dis[0].numele;
-T            = fdyn->time;
+T            = fdyn->acttime;
 numdf        = fdyn->numdf;
 
 /*------------------------------------------ get values from time curve */
@@ -411,7 +425,7 @@ return;
 <pre>                                                         basol 05/03
 
 in this routine the dirichlet boundary conditions for fluid2 and fluid3
-elements are set at time <T=fdyn->time>.
+elements are set at time <T=fdyn->acttime>.
 the actual dirichlet values are written to the solution history of the
 nodes:
     'actnode->sol_increment.a.da[3][j] = initval*acttimefac'
@@ -421,12 +435,11 @@ nodes:
                                        factor from timecurve			     
 </pre>
 \param *actfield FIELD         (i)  actual field (fluid)   
-\param *fdyn	 FLUID_DYNAMIC (i)  
 
 \return void                                                                             
 
 ------------------------------------------------------------------------*/
-void fluid_setdirich_cyl(FIELD  *actfield, FLUID_DYNAMIC *fdyn)
+void fluid_setdirich_cyl(FIELD  *actfield)
 {
 INT        i,j;
 INT        numnp_total;                /* total number of fluid nodes     */
@@ -454,9 +467,11 @@ dstrc_enter("fluid_setdirich_cyl");
 /*a better way of doing this would be implementing the velocity profile into
 /*preprocessor code "GID"
 /*----------------------------------------------------- set some values */
+fdyn = alldyn[genprob.numff].fdyn;
+
 numnp_total  = actfield->dis[0].numnp;
 numele_total = actfield->dis[0].numele;
-T            = fdyn->time;
+T            = fdyn->acttime;
 numdf        = fdyn->numdf;
 /*------------------------------------------ get values from time curve */
 for (actcurve=0;actcurve<numcurve;actcurve++)
@@ -531,15 +546,11 @@ nodes:
 					      grid velocity
 </pre>
 \param *actfield FIELD         (i)  actual field (fluid)   
-\param *fdyn	 FLUID_DYNAMIC (i)  
 
 \return void     
 
 ------------------------------------------------------------------------*/
-void fluid_setdirich_sd(
-                        FIELD           *actfield, 
-                        FLUID_DYNAMIC   *fdyn
-	               )
+void fluid_setdirich_sd( FIELD *actfield )
 {
 INT        i,j;
 INT        numnp_total;              /* total number of fluid nodes     */
@@ -554,6 +565,8 @@ dstrc_enter("fluid_setdirich_sd");
 #endif 
 
 /*----------------------------------------------------- set some values */
+fdyn = alldyn[genprob.numff].fdyn;
+
 numnp_total  = actfield->dis[0].numnp;
 numele_total = actfield->dis[0].numele;
 numdf        = fdyn->numdf;
@@ -616,7 +629,6 @@ sol_increment[pos_to][i] = fac1 * sol_increment[pos_from1][i]
 
 </pre>
 \param *actfield	FIELD		(i)	actual field (fluid)   
-\param *fdyn	 	FLUID_DYNAMIC	(i)	fluid dynamic
 \param  pos_to		INT		(i)	pos in sol_increment to write to
 \param  pos1_from	INT		(i)	1st pos to read from
 \param  pos2_from	INT		(i)	2nd pos to read from
@@ -630,7 +642,6 @@ sol_increment[pos_to][i] = fac1 * sol_increment[pos_from1][i]
 ------------------------------------------------------------------------*/
 void fluid_setdirich_acc(
                          FIELD		*actfield, 
-                         FLUID_DYNAMIC	*fdyn,
 			 INT		 pos_to,
 			 INT		 pos1_from,
 			 INT		 pos2_from,
@@ -653,6 +664,8 @@ dstrc_enter("fluid_setdirich_acc");
 #endif 
 
 /*----------------------------------------------------- set some values */
+fdyn = alldyn[genprob.numff].fdyn;
+
 numnp_total  = actfield->dis[0].numnp;
 numele_total = actfield->dis[0].numele;
 numdf        = fdyn->numdf;

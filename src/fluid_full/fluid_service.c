@@ -64,6 +64,8 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
+
+static FLUID_DYNAMIC *fdyn;
 /*!--------------------------------------------------------------------- 
 \brief routine to check starting algorithm
 
@@ -73,16 +75,15 @@ this routine conrols the starting algorithms schemes. For the first 'nums'
 iteration steps a different time integration scheme may be used then 
 during the rest of the simulation.
 			     
-</pre>   
-\param *fdyn		FLUID_DYNAMIC (i)  
+</pre> 
 \param *nfrastep 	INT           (o)  number of fract. steps
+\param  init            INT           (i)  init flag
 
 \return void 
 \warning this routine is not completely tested yet!
 
 ------------------------------------------------------------------------*/
 void fluid_startproc(
-                          FLUID_DYNAMIC     *fdyn,
 		          INT               *nfrastep,
                           INT                init
 		    )
@@ -96,6 +97,8 @@ static DOUBLE  thetas_s;
 #ifdef DEBUG 
 dstrc_enter("fluid_startproc");
 #endif 
+
+fdyn = alldyn[genprob.numff].fdyn;
 
 if (init==1)  /* save parameter from input */
 {
@@ -111,7 +114,6 @@ if (fdyn->step<=fdyn->nums) /* set parameter for starting phase */
 {
    fdyn->iop    = iops_s;
    fdyn->theta  = thetas_s;
-   fdyn->dynvar.omt  = 1.0 - thetas_s;
    *nfrastep    = 1;
    if (iops_s==5)
       *nfrastep = 3;
@@ -125,7 +127,6 @@ else if (fdyn->step==(fdyn->nums+1)) /* set original parameter */
 {
    fdyn->iop    = iop_s;
    fdyn->theta  = theta_s;
-   fdyn->dynvar.omt  = 1.0 - theta_s;
    *nfrastep    = 1;
    if (iop_s==5)
       *nfrastep = 3;
@@ -154,25 +155,21 @@ in this routine the constants for the time integration algorithms are
 calculated as far as they are independent of the time
 			     
 </pre>   
-\param *fdyn		FLUID_DYNAMIC   (i)  
-\param *dynvar	        FLUID_DYN_CALC  (i/o)  
 
 \return void 
 \warning only ONE-STEP-THETA implemented up to now!
 
 ------------------------------------------------------------------------*/
-void fluid_cons(         
-                          FLUID_DYNAMIC     *fdyn,
-                          FLUID_DYN_CALC    *dynvar
-		)
+void fluid_cons( void )
 {
 
 #ifdef DEBUG 
 dstrc_enter("fluid_cons");
 #endif
 /*----------------------------------------------------------------------*/
-dynvar->dtp = fdyn->dt;
-fluid_startproc(fdyn, NULL,1);
+fdyn = alldyn[genprob.numff].fdyn;
+fdyn->dtp = fdyn->dt;
+fluid_startproc(NULL,1);
 /*----------------------------------------------------- check algorithm */
 switch(fdyn->iop)
 {
@@ -185,21 +182,15 @@ case 1:		/* gen alpha implementation 1 */
        printf("         Theta is recalculated.\n");
        printf("\n Theta = Alpha_m / (2 Alpha_f) = %6.4f \n\n", fdyn->theta);
    }
-   dynvar->dta = 0.0;
-   dynvar->gen_alpha = 1;
-   dynvar->omt = ONE-fdyn->theta;
+   fdyn->dta = 0.0;
 break;
 
 case 4:		/* one step theta */
-   dynvar->dta = 0.0;
-   dynvar->omt = ONE-fdyn->theta;
-   dynvar->gen_alpha = 0;
+   fdyn->dta = 0.0;
 break;
 
 case 7:		/* 2nd order backward differencing BDF2 */
-   dynvar->dta = 0.0;
-   dynvar->omt = ONE-fdyn->theta;	
-   dynvar->gen_alpha = 0;
+   fdyn->dta = 0.0;
 
    /* set number of starting steps for restarts */
    if (genprob.restart != 0) /* restart using the pss-file */
@@ -236,23 +227,20 @@ return;
 in this routine the constants for the time integration algorithms are 
 calculated, here time dependent values only are calculated
 			     
-</pre>   
-\param *fdyn		FLUID_DYNAMIC   (i)  
-\param *dynvar	        FLUID_DYN_CALC  (i/o)  
+</pre> 
 
 \return void 
 \warning only ONE-STEP-THETA implemented up to now!
 
 ------------------------------------------------------------------------*/
-void fluid_tcons(         
-                          FLUID_DYNAMIC     *fdyn,
-                          FLUID_DYN_CALC    *dynvar
-		)
+void fluid_tcons( void )
 {
 
 #ifdef DEBUG 
 dstrc_enter("fluid_tcons");
 #endif
+
+fdyn = alldyn[genprob.numff].fdyn;
 
 /*----------------------------------------------------- check algorithm */
 switch (fdyn->iop)
@@ -260,59 +248,55 @@ switch (fdyn->iop)
 case 1:		/* generalised alpha */
    if (fdyn->adaptive)
    {
-      if(dynvar->dta == 0.0) dynvar->dta = fdyn->dt;   
+      if(fdyn->dta == 0.0) fdyn->dta = fdyn->dt;   
    }
    else if (fdyn->adaptive==0)
    {
-      dynvar->dta  = fdyn->dt;    
+      fdyn->dta  = fdyn->dt;    
    }
-   dynvar->thsl = dynvar->dta * fdyn->theta * fdyn->alpha_f / fdyn->alpha_m;
-   dynvar->thpl = dynvar->thsl;
-   dynvar->thsr = ZERO;
-   dynvar->thpr = dynvar->thsr;
-   dynvar->thnr = 0.0;	/* a factor of an addend needed for gen alpha 2 */
-   dynvar->alpha = 1.0;	/* a factor needed for gen alpha 2 */
+   fdyn->thsl = fdyn->dta * fdyn->theta * fdyn->alpha_f / fdyn->alpha_m;
+   fdyn->thpl = fdyn->thsl;
+   fdyn->thsr = ZERO;
+   fdyn->thpr = fdyn->thsr;
+   fdyn->thnr = 0.0;	/* a factor of an addend needed for gen alpha 2 */
 break;
 case 4:		/* one step theta */
    if (fdyn->adaptive)
    {
-      if(dynvar->dta == 0.0) dynvar->dta = fdyn->dt;   
+      if(fdyn->dta == 0.0) fdyn->dta = fdyn->dt;   
    }
    else if (fdyn->adaptive==0)
    {
-      dynvar->dta  = fdyn->dt;    
+      fdyn->dta  = fdyn->dt;    
    }
-   dynvar->thsl = dynvar->dta*fdyn->theta;
-   dynvar->thpl = dynvar->thsl;
-   dynvar->thsr = (ONE - fdyn->theta)*dynvar->dta;
-   dynvar->thpr = dynvar->thsr;
-   dynvar->thnr = 0.0;	/* a factor of an addend needed for gen alpha 2 */
-   dynvar->alpha = 1.0;	/* a factor needed for gen alpha 2 */
-   dynvar->theta = fdyn->theta;
+   fdyn->thsl = fdyn->dta*fdyn->theta;
+   fdyn->thpl = fdyn->thsl;
+   fdyn->thsr = (ONE - fdyn->theta)*fdyn->dta;
+   fdyn->thpr = fdyn->thsr;
+   fdyn->thnr = 0.0;	/* a factor of an addend needed for gen alpha 2 */
+   fdyn->theta = fdyn->theta;
 break;
 case 7:		/* 2nd order backward differencing BDF2 */
    fdyn->time_rhs = 0;	/* use mass rhs */
    if (fdyn->adaptive)
    {
-      if(dynvar->dta == 0.0) dynvar->dta = fdyn->dt;
-      dynvar->thsl = (DSQR(dynvar->dta) + dynvar->dta*dynvar->dtp) 
-                     / (2.0*dynvar->dta + dynvar->dtp);
-      dynvar->thpl = dynvar->thsl;
-      dynvar->thsr = 0.0;
-      dynvar->thpr = dynvar->thsr; 
-      dynvar->thnr = 0.0;	/* a factor of an addend needed for gen alpha 2 */
-      dynvar->alpha = 1.0;	/* a factor needed for gen alpha 2 	*/
+      if(fdyn->dta == 0.0) fdyn->dta = fdyn->dt;
+      fdyn->thsl = (DSQR(fdyn->dta) + fdyn->dta*fdyn->dtp) 
+                     / (2.0*fdyn->dta + fdyn->dtp);
+      fdyn->thpl = fdyn->thsl;
+      fdyn->thsr = 0.0;
+      fdyn->thpr = fdyn->thsr; 
+      fdyn->thnr = 0.0;	/* a factor of an addend needed for gen alpha 2 */
 
    }
    else if (fdyn->adaptive==0)
    {
-      dynvar->dta  = fdyn->dt;    
-      dynvar->thsl = dynvar->dta*2.0/3.0;
-      dynvar->thpl = dynvar->thsl;
-      dynvar->thsr = 0.0;
-      dynvar->thpr = dynvar->thsr;
-      dynvar->thnr = 0.0;	/* a factor of an addend needed for gen alpha 2 */
-      dynvar->alpha = 1.0;	/* a factor needed for gen alpha 2 	*/
+      fdyn->dta  = fdyn->dt;    
+      fdyn->thsl = fdyn->dta*2.0/3.0;
+      fdyn->thpl = fdyn->thsl;
+      fdyn->thsr = 0.0;
+      fdyn->thpr = fdyn->thsr;
+      fdyn->thnr = 0.0;	/* a factor of an addend needed for gen alpha 2 */
    }
 break;
 default:
@@ -350,129 +334,124 @@ nif <->  EVALUATION OF "TIME - RHS" (F-hat)
 nii <->  EVALUATION OF "ITERATION - RHS"		    
 nis <->  STATIONARY CASE (NO TIMEDEPENDENT TERMS)	   
 			     
-</pre>   
-\param *fdyn	   FLUID_DYNAMIC   (i)  
-\param *dynvar	   FLUID_DYN_CALC  (i/o)  
+</pre> 
 \param  itnum      INT  	   (i)     actual number of iterations
 \return void 
 \warning up to now, only fixed-point like iteration checked!!!
 
 ------------------------------------------------------------------------*/
-void fluid_icons(         
-                          FLUID_DYNAMIC     *fdyn,
-                          FLUID_DYN_CALC    *dynvar,
-		          INT                itnum           
-		)
+void fluid_icons( INT itnum )
 {
 
 #ifdef DEBUG 
 dstrc_enter("fluid_icons");
 #endif
 
+fdyn = alldyn[genprob.numff].fdyn;
 /*----------------------------------------------------- initialisation */
-dynvar->nik=0;
-dynvar->nic=0;
-dynvar->nir=0;
-dynvar->nie=0;
-dynvar->nil=0;
-dynvar->nif=0;
-dynvar->nii=0;
-dynvar->nis=0;
-dynvar->nim=0;
-dynvar->totarea=ZERO;
+fdyn->nik=0;
+fdyn->nic=0;
+fdyn->nir=0;
+fdyn->nie=0;
+fdyn->nil=0;
+fdyn->nif=0;
+fdyn->nii=0;
+fdyn->nis=0;
+fdyn->nim=0;
+fdyn->totarea=ZERO;
 
 switch (fdyn->ite)
 {
 case 0:		/* no iteration */
-   dynvar->sigma=ZERO;
+   fdyn->sigma=ZERO;
    if(fdyn->time_rhs)	/* 'classic' time rhs as in W.A. Wall */
    {
-      dynvar->nik=1;       
-      dynvar->nic=2; 
-      dynvar->nif=3;      /* KCF */
+      fdyn->nik=1;       
+      fdyn->nic=2; 
+      fdyn->nif=3;      /* KCF */
    }
    else if (fdyn->time_rhs == 0)	/* mass formulation of time rhs */
    {
-      dynvar->nik=1;       
-      dynvar->nic=2; 
-      dynvar->nim=1;      /* KC(F) */
+      fdyn->nik=1;       
+      fdyn->nic=2; 
+      fdyn->nim=1;      /* KC(F) */
    }
    dserror("results with no nonlin. iteration not checked yet!\n");
 break;
 case 1:		/* fixed point like iteration */
-   dynvar->sigma=ZERO;
+   fdyn->sigma=ZERO;
    if(fdyn->time_rhs)	/* 'classic' time rhs as in W.A. Wall */
    {
       if (itnum>1)
       {
-         dynvar->nik=1;  
-         dynvar->nic=2;   /* KC */  
+         fdyn->nik=1;  
+         fdyn->nic=2;   /* KC */  
       }
       else
       {
-         dynvar->nik=1;
-         dynvar->nic=2;
-         dynvar->nif=3;   /* KCF */
+         fdyn->nik=1;
+         fdyn->nic=2;
+         fdyn->nif=3;   /* KCF */
       }
    }
    else if (fdyn->time_rhs == 0)	/* mass formulation of time rhs */
    {
-      dynvar->nik=1;  
-      dynvar->nic=2;
-      dynvar->nim=1;	/* KC(F) */
+      fdyn->nik=1;  
+      fdyn->nic=2;
+      fdyn->nim=1;	/* KC(F) */
    }
 break;
 case 2:		/* Newton iteration */
-   dynvar->sigma=ONE;
+   fdyn->sigma=ONE;
    if(fdyn->time_rhs)	/* 'classic' time rhs as in W.A. Wall */
    {
       if (itnum>1 || fdyn->iop==7) 	/* no time rhs for BDF2 */
       {
-         dynvar->nik=1;
-         dynvar->nic=2;
-         dynvar->nir=3;
-         dynvar->nii=4;  /* KCRI */
+         fdyn->nik=1;
+         fdyn->nic=2;
+         fdyn->nir=3;
+         fdyn->nii=4;  /* KCRI */
       }
       else
       {
-         dynvar->nik=1;
-         dynvar->nic=2;
-         dynvar->nir=3;
-         dynvar->nif=4;
-         dynvar->nii=5;  /* KCRFI */
+         fdyn->nik=1;
+         fdyn->nic=2;
+         fdyn->nir=3;
+         fdyn->nif=4;
+         fdyn->nii=5;  /* KCRFI */
       }
    }
    else if (fdyn->time_rhs == 0)	/* mass formulation of time rhs */
    {
-      dynvar->nik=1;
-      dynvar->nic=2;
-      dynvar->nir=3;
-      dynvar->nii=4;
-      dynvar->nim=1;	/* KCR(F)I */
+      fdyn->nik=1;
+      fdyn->nic=2;
+      fdyn->nir=3;
+      fdyn->nii=4;
+      fdyn->nim=1;	/* KCR(F)I */
    }
 break;
 case 3:		/* fixed point iteration */
    dserror("fixed point iteration not checked yet!!!\n");
-   dynvar->sigma=-ONE;
+   fdyn->sigma=-ONE;
    if(fdyn->time_rhs)	/* 'classic' time rhs as in W.A. Wall */
    {
       if (itnum>1)
       {
-         dynvar->nik=1;
-         dynvar->nii=2;  /* KI */     
+         fdyn->nik=1;
+         fdyn->nii=2;  /* KI */     
       }
       else
       {
-         dynvar->nik=1;
-         dynvar->nif=2;      
-         dynvar->nii=3;  /* KFI */      
+         fdyn->nik=1;
+         fdyn->nif=2;      
+         fdyn->nii=3;  /* KFI */      
       }
    }
    else if (fdyn->time_rhs == 0)	/* mass formulation of time rhs */
    {
-      dynvar->nik=1;
-      dynvar->nim=1;      
-      dynvar->nii=3;  /* K(F)I */   
+      fdyn->nik=1;
+      fdyn->nim=1;      
+      fdyn->nii=3;  /* K(F)I */   
    }
 break;
 default:
@@ -487,29 +466,29 @@ break;
 case 1: /* explicit: include only for first iteration step in "time rhs" */
    if (itnum>1)
    {
-      dynvar->surftens= 0;
-      dynvar->fsstnif = 0; 
-      dynvar->fsstnii = 0;
+      fdyn->surftens= 0;
+      fdyn->fsstnif = 0; 
+      fdyn->fsstnii = 0;
    }
    else
    {
-      dynvar->surftens=fdyn->surftens;
-      dynvar->fsstnif = fdyn->surftens; 
-      dynvar->fsstnii = fdyn->surftens;
+      fdyn->surftens=fdyn->surftens;
+      fdyn->fsstnif = fdyn->surftens; 
+      fdyn->fsstnii = fdyn->surftens;
    }
 break;
 case 2:
    if (itnum>1)
    {
-      dynvar->surftens=fdyn->surftens;
-      dynvar->fsstnif = 0; 
-      dynvar->fsstnii = fdyn->surftens;
+      fdyn->surftens=fdyn->surftens;
+      fdyn->fsstnif = 0; 
+      fdyn->fsstnii = fdyn->surftens;
    }
    else
    {
-      dynvar->surftens=fdyn->surftens;
-      dynvar->fsstnif = fdyn->surftens;
-      dynvar->fsstnii = fdyn->surftens;
+      fdyn->surftens=fdyn->surftens;
+      fdyn->fsstnif = fdyn->surftens;
+      fdyn->fsstnii = fdyn->surftens;
    }
 break;
 default:
@@ -557,8 +536,7 @@ these data are copied to sol_increment.
 void fluid_init(
                           PARTITION	    *actpart,
                           INTRA	            *actintra,
-			  FIELD             *actfield,  
-                          FLUID_DYNAMIC     *fdyn,
+			  FIELD             *actfield,
                           CALC_ACTION       *action,
 			  CONTAINER         *container,
 		          INT                numr,
@@ -594,8 +572,10 @@ dstrc_enter("fluid_init");
 #endif
 
 /*----------------------- set control variables for element evaluation */
-fdyn->dynvar.ishape = 1;
-fdyn->dynvar.iprerhs= fdyn->iprerhs;
+fdyn = alldyn[genprob.numff].fdyn;
+
+fdyn->ishape = 1;
+fdyn->iprerhs= fdyn->iprerhs;
   
 numdf = fdyn->numdf;
 numele_total = actfield->dis[0].numele;
@@ -743,7 +723,7 @@ for (k=0; k<actfield->ndis; k++) inherit_design_dis_neum(&(actfield->dis[k]));
 if (fdyn->init>=1)
 {
    if (fdyn->init==1) /*------------ initial data from fluid_start.data */
-      inp_fluid_start_data(actfield,fdyn);
+      inp_fluid_start_data(actfield);
 
    if (fdyn->init==2) /*-------------------- initial data from pss file */
       restart_read_fluiddyn(fdyn->resstep,fdyn,actfield,actpart,actintra,
@@ -941,7 +921,6 @@ nonlinear iteration scheme are calculated.
 \param	*vrat          DOUBLE	      (o)    vel.  conv. ratio
 \param	*prat          DOUBLE	      (o)    pre.  conv. ratio
 \param  *grat          DOUBLE         (o)    grid  conv. ratio
-\param	*fdyn	       FLUID_DYNAMIC	     	
 \return void 
 
 ------------------------------------------------------------------------*/
@@ -954,8 +933,7 @@ void fluid_result_incre(
 			  SPARSE_TYP        *sysarray_typ,
 			  DOUBLE            *vrat,        
 			  DOUBLE            *prat,
-                          DOUBLE            *grat,
-			  FLUID_DYNAMIC     *fdyn           
+                          DOUBLE            *grat          
 		       )
 {
 INT      i,j;          /* simply some counters                         */
@@ -978,6 +956,7 @@ DOUBLE  *result;       /* redundandent result vector                   */
 dstrc_enter("fluid_result_incre");
 #endif
 
+fdyn = alldyn[genprob.numff].fdyn;
 /*----------------------------------------------------------------------*/
 numeq_total = sol->numeq_total;
 predof      = fdyn->numdf-1;
@@ -1211,8 +1190,7 @@ check are calculated:
 \return void 
 
 ------------------------------------------------------------------------*/
-void fluid_norm(          
-                          FLUID_DYNAMIC     *fdyn, 	     
+void fluid_norm(
                           FIELD             *actfield,    
 		          INT                numeq_total, 
                           DOUBLE            *vrat,        
@@ -1236,6 +1214,8 @@ dstrc_enter("fluid_norm");
 #endif
 
 /*---------------------------------------------------- set some values */
+fdyn = alldyn[genprob.numff].fdyn;
+
 numdf        = fdyn->numdf;
 numnp_total  = actfield->dis[0].numnp;
 predof       = numdf-1;
@@ -1503,7 +1483,6 @@ ARRAY      *array;	/* pointer to solution array			*/
 dstrc_enter("fluid_transpres");
 #endif
 
-
 /* since different materials are not allowed  one can work with the 
    material parameters of any element ---------------------------------*/
 actele = &(actfield->dis[disnum].element[0]);
@@ -1565,15 +1544,13 @@ return;
 in this routine the convergence ratios for the steady state check are 
 calculated and the result is printed to the screen.
 			     
-</pre>   
-\param *fdyn 	      FLUID_DYNAMIC  (i)   
+</pre> 
 \param *actfield      FIELD	     (i)  actual field
 \param  numeq_total   INT	     (i)  total number of equations
 \return INT steady  
 
 ------------------------------------------------------------------------*/
-INT fluid_steadycheck(    
-                          FLUID_DYNAMIC     *fdyn, 	  
+INT fluid_steadycheck(
                           FIELD             *actfield,   
 		          INT                numeq_total 
 		     )
@@ -1586,8 +1563,9 @@ FILE       *out = allfiles.out_out;
 dstrc_enter("fluid_steadycheck");
 #endif
 
+fdyn = alldyn[genprob.numff].fdyn;
 /*------------------------------------------ determine the conv. ratios */
-fluid_norm(fdyn,actfield,numeq_total,&vrat,&prat);
+fluid_norm(actfield,numeq_total,&vrat,&prat);
 
 /*------------------------------------ output to the screen and to .out */
 if (par.myrank==0)
@@ -1644,8 +1622,7 @@ return (steady);
 in this routine the iteration convergence ratios are compared with
 the given tolerance. The result is printed out to the screen.
 			     
-</pre>   
-\param *fdyn 	      FLUID_DYNAMIC  (i)   
+</pre> 
 \param  vrat          DOUBLE  	     (i)  vel. conv. ratio
 \param  prat          DOUBLE         (i)  pres. conv. ratio
 \param  grat          DOUBLE         (i)  grid. conv. ratio
@@ -1655,8 +1632,7 @@ the given tolerance. The result is printed out to the screen.
 \return INT converged  
 
 ------------------------------------------------------------------------*/
-INT fluid_convcheck(      
-                          FLUID_DYNAMIC     *fdyn,   
+INT fluid_convcheck(
                           DOUBLE             vrat,  
 		          DOUBLE             prat,
 			  DOUBLE             grat,  
@@ -1671,6 +1647,8 @@ INT         converged=0;  /* flag for convergence check                  */
 #ifdef DEBUG 
 dstrc_enter("fluid_convcheck");
 #endif
+
+fdyn = alldyn[genprob.numff].fdyn;
 
 if (fdyn->itchk!=0)
 {
@@ -1704,7 +1682,7 @@ if (fdyn->itchk!=0)
       printf("---------------------------------------------------------------- \n");
       printf("|          >>>>>> not converged in itemax steps!               | \n");         
       fprintf(out,"%5d | %10.3E | %2d | %10.3E | %10.3E |\n", 
-          fdyn->step,fdyn->time,itnum,vrat,prat);
+          fdyn->step,fdyn->acttime,itnum,vrat,prat);
       fprintf(out,"not converged in itemax steps\n");
    }
    if (converged>0 && par.myrank==0)
@@ -1712,7 +1690,7 @@ if (fdyn->itchk!=0)
       printf("---------------------------------------------------------------- \n"); 
       printf("\n");
       fprintf(out,"%5d | %10.3E | %2d | %10.3E | %10.3E |\n", 
-          fdyn->step,fdyn->time,itnum,vrat,prat);
+          fdyn->step,fdyn->acttime,itnum,vrat,prat);
    }
 } /* endif (fdyn->itchk) */
 else 
@@ -1743,21 +1721,18 @@ return (converged);
 
 time-integration parameters are printed out to the screen
 			     
-</pre>   
-\param *fdyn 	        FLUID_DYNAMIC   (i)   
-\param *dynvar	        FLUID_DYN_CALC  (i/o) 
+</pre> 
 \return void 
 
 ------------------------------------------------------------------------*/
-void fluid_algoout(       
-                          FLUID_DYNAMIC     *fdyn, 
-                          FLUID_DYN_CALC    *dynvar
-		  )
+void fluid_algoout( void )
 {
 
 #ifdef DEBUG 
 dstrc_enter("fluid_algoout");
 #endif
+
+fdyn = alldyn[genprob.numff].fdyn;
 
 printf("\n");
 
@@ -1765,15 +1740,15 @@ switch(fdyn->iop)
 {
 case 1:
    printf("TIME: %11.4E/%11.4E  DT = %11.4E  Generalised-Alpha1  STEP = %4d/%4d \n",
-          fdyn->time,fdyn->maxtime,dynvar->dta,fdyn->step,fdyn->nstep);
+          fdyn->acttime,fdyn->maxtime,fdyn->dta,fdyn->step,fdyn->nstep);
 break;                  
 case 4:
    printf("TIME: %11.4E/%11.4E  DT = %11.4E  One-Step-Theta  STEP = %4d/%4d \n",
-          fdyn->time,fdyn->maxtime,dynvar->dta,fdyn->step,fdyn->nstep);
+          fdyn->acttime,fdyn->maxtime,fdyn->dta,fdyn->step,fdyn->nstep);
 break;
 case 7:
    printf("TIME: %11.4E/%11.4E  DT = %11.4E     BDF2         STEP = %4d/%4d \n",
-          fdyn->time,fdyn->maxtime,dynvar->dta,fdyn->step,fdyn->nstep);
+          fdyn->acttime,fdyn->maxtime,fdyn->dta,fdyn->step,fdyn->nstep);
 break;         
 default:
    dserror("parameter out of range: IOP\n");
@@ -1796,15 +1771,13 @@ So the result is not available on all procs. Here they are reduced by
 MPI to all procs!
 			     
 </pre>   
-\param *actintra         INTRA           (i)   
-\param *actfield	       FIELD           (i)    the actual field
-\param  *dynvar          FLUID_DYN_CALC  (i)
+\param *actintra          INTRA         (i)   
+\param *actfield          FIELD         (i)   the actual field
 \return void 
 
 ------------------------------------------------------------------------*/
 void fluid_reduceshstr(INTRA             *actintra,
-                         FIELD             *actfield,
-                         FLUID_DYN_CALC    *dynvar)
+                         FIELD             *actfield)
 {
 #ifdef PARALLEL
 INT      numnp_total;
@@ -1816,6 +1789,8 @@ NODE    *actnode;
 dstrc_enter("fluid_reduceshstr");
 #endif
 
+fdyn = alldyn[genprob.numff].fdyn;
+
 /*------------------------------------------- get total number of nodes */
 numnp_total = actfield->dis[0].numnp;  
 for (i=0; i<numnp_total; i++) /* loop nodes */
@@ -1824,8 +1799,8 @@ for (i=0; i<numnp_total; i++) /* loop nodes */
    MPI_Bcast(&(actnode->fluid_varia->c_f_shear),1,MPI_DOUBLE,actnode->proc,
              actintra->MPI_INTRA_COMM);
 /*------------------- compute shearvelocity for the scaned coordinates */
-   if (FABS(actnode->x[0]-dynvar->coord_scale[0])<EPS7 && FABS(actnode->x[1]-dynvar->coord_scale[1])<EPS15)
-   MPI_Bcast(&(dynvar->washvel),1,MPI_DOUBLE,actnode->proc,
+   if (FABS(actnode->x[0]-fdyn->coord_scale[0])<EPS7 && FABS(actnode->x[1]-fdyn->coord_scale[1])<EPS15)
+   MPI_Bcast(&(fdyn->washvel),1,MPI_DOUBLE,actnode->proc,
              actintra->MPI_INTRA_COMM);
 } 
 
@@ -1866,6 +1841,8 @@ NODE    *actnode;
 #ifdef DEBUG 
 dstrc_enter("fluid_nullshstr");
 #endif
+
+fdyn = alldyn[genprob.numff].fdyn;
 
 /*------------------------------------------- get total number of nodes */
 myrank = par.myrank;
@@ -2060,7 +2037,7 @@ void fluid_cal_error(
         visc   = mat[actmat].m.fluid->viscosity;
         a      = PI/4.0;
         d      = PI/2.0;
-        t      = fdyn->time;
+        t      = fdyn->acttime;
         x1   = actnode->x[0];
         x2   = actnode->x[1];
         x3   = actnode->x[2];
@@ -2199,7 +2176,7 @@ void fluid_cal_error(
         /* set some constants */
         visc   = mat[actmat].m.fluid->viscosity;
         a      = 2.0;
-        t      = fdyn->time;
+        t      = fdyn->acttime;
         x1   = actnode->x[0];
         x2   = actnode->x[1];
         /* calculate analytical values */ 	 

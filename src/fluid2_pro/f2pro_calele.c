@@ -19,6 +19,20 @@ Maintainer: Steffen Genkinger
 #include "fluid2pro_prototypes.h"
 #include "../fluid_full/fluid_prototypes.h"
 #include "fluid2pro.h"
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
 /*!---------------------------------------------------------------------                                         
 \brief control routine for element integration of fluid2pro
 
@@ -32,7 +46,6 @@ This routine controls the element evaluation:
 			     
 </pre>
 \param  *data	         FLUID_DATA     (i)
-\param  *dynvar	         FLUID_DYN_CALC (i)
 \param  *elev	         ELEMENT	(i)   actual velocity element
 \param  *elep	         ELEMENT	(i)   actual pressure element
 \param  *estif_global    ARRAY	        (o)   ele stiffnes matrix
@@ -49,7 +62,6 @@ This routine controls the element evaluation:
 ------------------------------------------------------------------------*/
 void f2pro_calele(
                 FLUID_DATA     *data, 
-                FLUID_DYN_CALC *dynvar, 
 	        ELEMENT        *elev, 
 	        ELEMENT        *elep,            
                 ARRAY          *estif_global,   
@@ -102,6 +114,7 @@ static DOUBLE  **gradopr;      /* pointer to gradient operator               */
 static DOUBLE  *etforce ;      /* pointer to Time RHS                        */
 static DOUBLE  *eiforce;       /* pointer to Iteration RHS                   */
 static DOUBLE  *edforce;       /* pointer to RHS due to dirichl. conditions  */
+static FLUID_DYNAMIC *fdyn;    /* pointer to fluid dynamic variables         */
 DOUBLE  dirich[MAXDOFPERELE];  /* dirichlet values of act. ele               */
 INT dirich_onoff[MAXDOFPERELE]; /* dirichlet flags of act. ele               */ 
 INT i,j,iel;
@@ -134,6 +147,8 @@ if (init==1) /* allocate working arrays and set pointers */
    eiforce = eiforce_global->a.dv;
    etforce = etforce_global->a.dv;
    edforce = edforce_global->a.dv;
+   
+   fdyn = alldyn[genprob.numff].fdyn;
    goto end;
 } /* endif (init==1) */
 
@@ -148,37 +163,37 @@ amzero(etforce_global);
 amzero(edforce_global);
 *hasdirich=0;
 /*---------------------------------------------------- set element data */
-if (dynvar->pro_calveln==1) 
+if (fdyn->pro_calveln==1) 
    f2pro_calset(elev,elep,xyze,eveln,epren);
 /*-------------------------------- calculate element stiffness matrices */
 /*                                            and element force vectors */
-f2pro_calint(data,elev,elep,dynvar,
+f2pro_calint(data,elev,elep,
              estif,emass,gradopr,etforce,eiforce,
              xyze,funct,functpr,deriv,derivpr,xjm,derxy,derxypr,
              eveln,epren,
              velint,covint,vderxy,pderxy,wa1,
              dirich,deriv2,dirich_onoff);     
 /*-------------- calculate the element lumped mass matrix just one time */
-if (dynvar->pro_lum==1)	  
+if (fdyn->pro_lum==1)	  
    f2pro_lmass(lmass,emass,elev->numnp);
 /*------------------------------- calculate element load vector edforce */
-if (dynvar->pro_caldirich==1)
+if (fdyn->pro_caldirich==1)
 {
-   switch (dynvar->pro_profile)
+   switch (fdyn->pro_profile)
    { 
    case 1:
-      fluid_pm_caldirich_parabolic(elev,edforce,estif,emass,dynvar->dta,dynvar->theta,hasdirich);
+      fluid_pm_caldirich_parabolic(elev,edforce,estif,emass,fdyn->dta,fdyn->theta,hasdirich);
    break;
    case 2:
-      fluid_pm_caldirich(elev,edforce,estif,emass,dynvar->dta,dynvar->theta,hasdirich);
+      fluid_pm_caldirich(elev,edforce,estif,emass,fdyn->dta,fdyn->theta,hasdirich);
    break;
    case 3:
-      fluid_pm_caldirich_cyl(elev,edforce,estif,emass,dynvar->dta,dynvar->theta,hasdirich);
+      fluid_pm_caldirich_cyl(elev,edforce,estif,emass,fdyn->dta,fdyn->theta,hasdirich);
    break;
    default:
       dserror("unknown velocity profile!\n");
-   } /*end of switch (dynvar->pro_profile)*/
-}/*end of if (dynvar->pro_kvv==1)*/
+   } /*end of switch (fdyn->pro_profile)*/
+}/*end of if (fdyn->pro_kvv==1)*/
 end:
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

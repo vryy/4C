@@ -14,6 +14,19 @@ Maintainer: Steffen Genkinger
 #include "../headers/standardtypes.h"
 #include "fluid3_prototypes.h"
 #include "fluid3.h"
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
 
 #ifdef DEBUG
 void genkout(DOUBLE **matrix, DOUBLE *vector, char *title, INT ntitle,
@@ -38,7 +51,6 @@ time-RHS for one fluid2 element is calculated
 </pre>
 \param  *data      FLUID_DATA	   (i)	  integration data
 \param  *ele	   ELEMENT	   (i)    actual element
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param  *hasext    INT             (i)    element flag
 \param **estif     DOUBLE	   (o)    element stiffness matrix
 \param **emass     DOUBLE	   (o)    element mass matrix
@@ -69,7 +81,6 @@ time-RHS for one fluid2 element is calculated
 void f3_calint(
                FLUID_DATA      *data, 
 	       ELEMENT         *ele,
-	       FLUID_DYN_CALC  *dynvar,
                INT             *hasext,
                DOUBLE         **estif,
 	       DOUBLE         **emass,
@@ -114,6 +125,8 @@ DOUBLE   e1,e2,e3;    /* natural coordinates of integr. point           */
 DOUBLE   preint;      /*pressure at integration point */
 DIS_TYP  typ;         /* element type                                   */
 
+FLUID_DYNAMIC   *fdyn;
+
 STAB_PAR_GLS *gls;	/* pointer to GLS stabilisation parameters	*/
 
 #ifdef DEBUG 
@@ -121,6 +134,7 @@ dstrc_enter("f3_calint");
 #endif		
 
 /*----------------------------------------------------- initialisation -*/
+fdyn   = alldyn[genprob.numff].fdyn;
 gls    = ele->e.f3->stabi.gls;
 iel=ele->numnp;
 actmat=ele->mat-1;
@@ -209,16 +223,16 @@ for (lt=0;lt<nit;lt++)
  |  Standard Galerkin matrices are all stored in one matrix "estif"     |
  |  Standard Galerkin mass matrix is stored in "emass"                  |
  *----------------------------------------------------------------------*/
-   if(dynvar->nik>0)
+   if(fdyn->nik>0)
    {
 /*-------------------------------------------------- compute matrix Kvv */
-      f3_calkvv(dynvar,estif,velint,vderxy,funct,derxy,fac,visc,iel);
+      f3_calkvv(estif,velint,vderxy,funct,derxy,fac,visc,iel);
 /*------------------------------------------ compute matrix Kvp and Kpv */
       f3_calkvp(estif,funct,derxy,fac,iel);
 /*-------------------------------------------------- compute matrix Mvv */
-      if (dynvar->nis==0)	  	 	    
+      if (fdyn->nis==0)	  	 	    
          f3_calmvv(emass,funct,fac,iel);
-   } /* endif (dynvar->nik>0) */
+   } /* endif (fdyn->nik>0) */
 /*----------------------------------------------------------------------*
  |         compute Stabilisation matrices                               |
  | NOTE:                                                                |
@@ -229,58 +243,58 @@ for (lt=0;lt<nit;lt++)
    { 
  /*-------------- compute stabilisation parameter during ntegration loop*/
       if (gls->iduring!=0)
-         f3_calelesize2(ele,dynvar,velint,wa1,visc,iel,ntyp);
+         f3_calelesize2(ele,velint,wa1,visc,iel,ntyp);
 /*------------------------------------ compute second global derivative */ 
       if (ihoel!=0)
          f3_gder2(ele,xjm,wa1,wa2,derxy,derxy2,deriv2,iel);
    
-      if (dynvar->nie==0)
+      if (fdyn->nie==0)
       {
 /*---------------------------------------- stabilisation for matrix Kvv */
-         f3_calstabkvv(ele,dynvar,estif,velint,vderxy,
+         f3_calstabkvv(ele,estif,velint,vderxy,
                           funct,derxy,derxy2,fac,visc,iel,ihoel);
 /*---------------------------------------- stabilisation for matrix Kvp */
-         f3_calstabkvp(ele,dynvar,estif,velint,
+         f3_calstabkvp(ele,estif,velint,
                        funct,derxy,derxy2,fac,visc,iel,ihoel); 
 /*---------------------------------------- stabilisation for matrix Mvv */
-         if (dynvar->nis==0) 
-            f3_calstabmvv(ele,dynvar,emass,velint,
+         if (fdyn->nis==0) 
+            f3_calstabmvv(ele,emass,velint,
 	                     funct,derxy,derxy2,fac,visc,iel,ihoel);
          if (gls->ipres!=0)	        
          {
 /*---------------------------------------- stabilisation for matrix Kpv */ 
-            f3_calstabkpv(dynvar,estif,velint,vderxy,
+            f3_calstabkpv(estif,velint,vderxy,
 	                  funct,derxy,derxy2,fac,visc,iel,ihoel);
 /*---------------------------------------- stabilisation for matrix Mpv */
-	    if (dynvar->nis==0)
-	       f3_calstabmpv(dynvar,emass,funct,derxy,fac,iel);
+	    if (fdyn->nis==0)
+	       f3_calstabmpv(emass,funct,derxy,fac,iel);
          } /* endif (ele->e.f3->ipres!=0) */
-      } /* endif (dynvar->nie==0) */
+      } /* endif (fdyn->nie==0) */
 /*---------------------------------------- stabilisation for matrix Kpp */ 
       if (gls->ipres!=0)
-	 f3_calstabkpp(dynvar,estif,derxy,fac,iel);  
+	 f3_calstabkpp(estif,derxy,fac,iel);  
    } /* endif (ele->e.f3->istabi>0) */ 
 
 /*----------------------------------------------------------------------*
  |         compute "Iteration" Force Vectors                            |
  |      (for Newton iteration and for fixed-point iteration)            |
  *----------------------------------------------------------------------*/
-   if (dynvar->nii!=0)
+   if (fdyn->nii!=0)
    {
 /*-------------- get convective velocities (n+1,i) at integration point */
       f3_covi(vderxy,velint,covint);
 /*-------------------- calculate galerkin part of "Iter-RHS" (vel dofs) */
-      f3_calgalifv(dynvar,eiforce,covint,funct,fac,iel);
+      f3_calgalifv(eiforce,covint,funct,fac,iel);
       if (gls->istabi>0)
       {
 /*------------------- calculate stabilisation for "Iter-RHS" (vel dofs) */
-         f3_calstabifv(dynvar,ele,eiforce,covint,velint,funct,
+         f3_calstabifv(ele,eiforce,covint,velint,funct,
 	               derxy,derxy2,fac,visc,ihoel,iel);
 /*------------------- calculate stabilisation for "Iter-RHS" (pre dofs) */
          if (gls->ipres!=0)
-            f3_calstabifp(dynvar,&(eiforce[3*iel]),covint,derxy,fac,iel);
+            f3_calstabifp(&(eiforce[3*iel]),covint,derxy,fac,iel);
       } /* endif (ele->e.f3->istabi>0) */
-   } /* endif (dynvar->nii!=0) */
+   } /* endif (fdyn->nii!=0) */
 
 /*----------------------------------------------------------------------*
  |       compute "external" Force Vector                                |
@@ -294,25 +308,25 @@ for (lt=0;lt<nit;lt++)
    if (*hasext!=0 && gls->istabi>0)
    {
 /*------- compute stabilisation part of external RHS (vel dofs) at (n+1)*/
-      f3_calstabexfv(dynvar,ele,eiforce,derxy,derxy2,edeadng,
+      f3_calstabexfv(ele,eiforce,derxy,derxy2,edeadng,
 	              velint,fac,visc,iel,ihoel,1); 
 /*------ compute stabilisation part of external RHS (pre dofs) at (n+1) */
       if (gls->ipres!=0)
-          f3_calstabexfp(dynvar,&(eiforce[3*iel]),derxy,edeadng,fac,iel,1); 
+          f3_calstabexfp(&(eiforce[3*iel]),derxy,edeadng,fac,iel,1); 
    } /* endif (*hasext!=0 && ele->e.f3->istabi>0) */
 
 /*----------------------------------------------------------------------*
  |         compute "Time" Force Vectors                                 |
  *----------------------------------------------------------------------*/
-   if (dynvar->nif!=0)
+   if (fdyn->nif!=0)
    {
-      if (dynvar->iprerhs>0)
+      if (fdyn->iprerhs>0)
       {
 /*------------------------------- get pressure (n) at integration point */
          f3_prei(&preint,funct,epren,iel);
 /*------------------- get pressure derivatives (n) at integration point */
          f3_pder(pderxy,derxy,epren,iel);
-      } /* endif (dynvar->iprerhs>0) */
+      } /* endif (fdyn->iprerhs>0) */
 
       /* in all but semi-implicit cases (n+gamma_bar) = (n)
 	 --> hence we need the values according to u(n)
@@ -335,19 +349,19 @@ for (lt=0;lt<nit;lt++)
 /*------------------ get convective velocities (n) at integration point */
       f3_covi(vderxy,velint,covint);        	    
 /*--------------------- calculate galerkin part of "Time-RHS" (vel-dofs)*/
-      f3_calgaltfv(dynvar,etforce,velint,vel2int,covint,
+      f3_calgaltfv(etforce,velint,vel2int,covint,
 	           funct,derxy,vderxy,preint,visc,fac,iel);
 /*-------------------- calculate galerkin part of "Time-RHS" (pre-dofs) */
-      f3_calgaltfp(dynvar,&(etforce[3*iel]),funct,vderxy,fac,iel);
+      f3_calgaltfp(&(etforce[3*iel]),funct,vderxy,fac,iel);
       if (gls->istabi>0)
       {
 /*------------------- calculate stabilisation for "Time-RHS" (vel-dofs) */
-         f3_calstabtfv(dynvar,ele,etforce,velint,vel2int,
+         f3_calstabtfv(ele,etforce,velint,vel2int,
 	               covint,derxy,derxy2,vderxy,vderxy2,
 		       pderxy,fac,visc,ihoel,iel);
 /*------------------- calculate stabilisation for "Time-RHS" (pre-dofs) */
          if (gls->ipres!=0)
-	    f3_calstabtfp(dynvar,&(etforce[3*iel]),derxy,vderxy2,
+	    f3_calstabtfp(&(etforce[3*iel]),derxy,vderxy2,
 	                  velint,covint,pderxy,visc,fac,ihoel,iel);
       } /* endif (ele->e.f3->istabi>0) */
 /*----------------------------------------------------------------------*
@@ -362,18 +376,18 @@ for (lt=0;lt<nit;lt++)
       if (*hasext!=0)
       {
 /*--- compute galerkin part of external RHS (vel dofs) at (n) and (n+1) */
-         f3_calgalexfv(dynvar,etforce,funct,edeadn,edeadng,fac,iel);
+         f3_calgalexfv(etforce,funct,edeadn,edeadng,fac,iel);
 	 if (gls->istabi>0)
 	 {
 /*-------- compute stabilisation part of external RHS (vel dofs) at (n) */
-            f3_calstabexfv(dynvar,ele,etforce,derxy,derxy2,edeadn,
+            f3_calstabexfv(ele,etforce,derxy,derxy2,edeadn,
 	                   velint,fac,visc,iel,ihoel,0);
 /*--------------- compute stabilistaion part of external RHS (pre dofs) */
             if (gls->ipres!=0)
-               f3_calstabexfp(dynvar,&(etforce[3*iel]),derxy,edeadn,fac,iel,0); 
+               f3_calstabexfp(&(etforce[3*iel]),derxy,edeadn,fac,iel,0); 
          } /* endif (ele->e.f3->istabi>0) */
       } /* endif (*hasext!=0) */
-   } /* endif (dynvar->nif!=0)   */
+   } /* endif (fdyn->nif!=0)   */
 }
 }
 } /* end of loop over integration points */

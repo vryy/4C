@@ -17,6 +17,21 @@ Maintainer: Steffen Genkinger
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #include "fluid2.h"
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+static FLUID_DYNAMIC   *fdyn;
 /*!--------------------------------------------------------------------- 
 \brief galerkin part of iteration forces for vel dofs
 
@@ -42,7 +57,6 @@ NOTE:
 see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
       
 </pre>
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param  *eforce    DOUBLE	   (i/o)  element force vector
 \param  *covint    DOUBLE	   (i)	  conv. vels at INT. point
 \param  *funct     DOUBLE	   (i)    nat. shape funcs
@@ -52,7 +66,6 @@ see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
 
 ------------------------------------------------------------------------*/
 void f2_calgalifv(
-                  FLUID_DYN_CALC  *dynvar, 
                   DOUBLE          *eforce,   
 		  DOUBLE          *covint,  
 		  DOUBLE          *funct,   
@@ -69,7 +82,8 @@ dstrc_enter("f2_calgalifv");
 #endif
 
 /*--------------------------------------------------- set some factors */
-facsl = fac * dynvar->thsl * dynvar->sigma;
+fdyn  = alldyn[genprob.numff].fdyn;
+facsl = fac * fdyn->thsl * fdyn->sigma;
 
 /*----------------------------------------------------------------------*
    Calculate convective forces of iteration force vector:
@@ -78,7 +92,7 @@ EULER:
                    /
    (+/-) THETA*dt |  v * u * grad(u)  d_omega
     |            /  
-    |-> signs due to nonlin. iteration scheme (dynvar->sigma) 
+    |-> signs due to nonlin. iteration scheme (fdyn->sigma) 
 
 ALE:
                    /
@@ -137,7 +151,6 @@ NOTE:
 see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
       
 </pre>
-\param   *dynvar   FLUID_DYN_CALC  (i)
 \param   *ele      ELEMENT	   (i)    actual element
 \param   *eforce   DOUBLE	   (i/o)  element force vector
 \param   *covint   DOUBLE	   (i)    conv. vels at INT. point
@@ -153,7 +166,6 @@ see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
 
 ------------------------------------------------------------------------*/
 void f2_calstabifv(
-                  FLUID_DYN_CALC  *dynvar, 
                   ELEMENT         *ele,      
 		  DOUBLE          *eforce,  
 		  DOUBLE          *covint,  
@@ -180,15 +192,16 @@ dstrc_enter("f2_calgalifv");
 #endif
 
 /*---------------------------------------------------------- initialise */
-gls    = ele->e.f2->stabi.gls;
+gls   = ele->e.f2->stabi.gls;
+fdyn  = alldyn[genprob.numff].fdyn;
 
 if (ele->e.f2->stab_type != stab_gls) 
    dserror("routine with no or wrong stabilisation called");
  
 /*--------------------------------------------------- set some factors */
-facsl = fac * dynvar->thsl * dynvar->sigma;
-taumu = dynvar->tau[0];
-taump = dynvar->tau[1];
+facsl = fac * fdyn->thsl * fdyn->sigma;
+taumu = fdyn->tau[0];
+taump = fdyn->tau[1];
 
 /*----------------------------------------------------------------------*
    Calculate convective/convective stabilastion of iteration force vector:
@@ -197,7 +210,7 @@ EULER:
    (+/-) THETA*dt |  tau_mu * u * grad(v) * u * grad(u)  d_omega
     |            /  
     |           
-    |-> signs due to nonlin. iteration scheme (dynvar->sigma)
+    |-> signs due to nonlin. iteration scheme (fdyn->sigma)
 
 ALE:
                    /
@@ -227,7 +240,7 @@ EULER:
    (-/+) -/+ THETA*dt |  tau_mp * 2*nue * div( eps(v) ) * u * grad(u)  d_omega
     |                /  
     |           
-    |-> signs due to nonlin. iteration scheme (dynvar->sigma)
+    |-> signs due to nonlin. iteration scheme (fdyn->sigma)
 
 ALE:
                        /
@@ -299,7 +312,6 @@ NOTE:
     eforce[2*iel]					
       
 </pre>
-\param   *dynvar   FLUID_DYN_CALC  (i)
 \param   *eforce   DOUBLE	   (i/o)  element force vector
 \param   *covint   DOUBLE	   (i)    conv. vels at INT. point
 \param  **derxy    DOUBLE	   (i)    global derivative
@@ -309,7 +321,6 @@ NOTE:
 
 ------------------------------------------------------------------------*/
 void f2_calstabifp(
-                   FLUID_DYN_CALC  *dynvar, 
                    DOUBLE          *eforce,   
 		   DOUBLE          *covint,  
 		   DOUBLE         **derxy,   
@@ -327,15 +338,16 @@ dstrc_enter("f2_calgstabifp");
 #endif
 
 /*--------------------------------------------------- set some factors */
-facsl = fac * dynvar->thsl * dynvar->sigma;
-taump = dynvar->tau[1];
+fdyn  = alldyn[genprob.numff].fdyn;
+facsl = fac * fdyn->thsl * fdyn->sigma;
+taump = fdyn->tau[1];
 
 /*----------------------------------------------------------------------*
    Calculate convective pressure stabilisation iteration force vector:
                    /
    (-/+) THETA*dt |  tau_mp * grad(q) * u * grad(u)  d_omega
     |            /  
-    |-> signs due to nonlin. iteration scheme (dynvar->sigma) 
+    |-> signs due to nonlin. iteration scheme (fdyn->sigma) 
  *----------------------------------------------------------------------*/ 
 fact[0] = covint[0]*taump*facsl;
 fact[1] = covint[1]*taump*facsl;

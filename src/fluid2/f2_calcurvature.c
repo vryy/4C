@@ -18,6 +18,7 @@ Maintainer: Steffen Genkinger
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #include "fluid2.h"
+
 static INT NUMDF = 3;
 /*!---------------------------------------------------------------------
 \brief curvature at free surface for fluid2 element
@@ -31,7 +32,6 @@ with linear shape functions is calculated.
 \param  *funct     DOUBLE          (o)    shape functions
 \param  **actgline GLINE           (i)    glines to actual element
 \param  *actlinefs                 (i)    free surface conditions
-\param  *dynvar    FLUID_DYN_CALC  (i)    
 \param   foundline INT             (i)    flag
 \param   actngline INT             (i)    num. of glines to element
 \param **xyze      DOUBLE          (-)    nodal coordinates
@@ -42,7 +42,6 @@ with linear shape functions is calculated.
 ------------------------------------------------------------------------*/
 void f2_calq4curv( GLINE                        **actgline, 
                      FLUID_FREESURF_CONDITION   **actlinefs,
-		     FLUID_DYN_CALC             *dynvar,
 		     ELEMENT                    *actele,
 		     INT                         foundline,
 		     INT                         actngline,
@@ -84,7 +83,7 @@ dstrc_enter("f2_calq4curv");
 #endif
 
 /*--------------------------------------------- set element coordinates */
-f2_alecoor(dynvar,actele,xyze);
+f2_alecoor(actele,xyze);
 
 dsassert(foundline<3,"element with 3 free surface lines not possible!\n");
 
@@ -170,7 +169,7 @@ for (line=0;line<actngline;line++)
          }
 	 if (nbline==nbngline) continue;    
          /*------------------------ get coordinates of neigbour element */
-         f2_alecoor(dynvar,nbele,xyze);
+         f2_alecoor(nbele,xyze);
          /*------------------------------ check number of nodes on line */
          nbngnode = nbgline[nbline]->ngnode;     
          dsassert(nbngnode==2,"more than 2 nodes per edge for quad4!\n");
@@ -280,7 +279,6 @@ functions is calculated.
 
 \param  **actgline    GLINE   (i)         glines to actual element
 \param  *actlinefs            (i)         free surface conditions
-\param  *dynvar              
 \param  *actele               (i)         actual element
 \param   actngline            (i)         number of glines to element
 \param **xyze                 (-)         element coordinates
@@ -290,7 +288,6 @@ functions is calculated.
 ------------------------------------------------------------------------*/
 void f2_calq8curv( GLINE                        **actgline, 
                      FLUID_FREESURF_CONDITION   **actlinefs,
-		     FLUID_DYN_CALC             *dynvar,
 		     ELEMENT                    *actele,
 		     INT                         actngline,
 		     DOUBLE                    **xyze,
@@ -309,7 +306,7 @@ dstrc_enter("f2_calq8curv");
 #endif
 
 /*-------------------------------------------- set element coordinates */ 
-f2_alecoor(dynvar,actele,xyze);
+f2_alecoor(actele,xyze);
 iel = actele->numnp;
 /*---------------------------------------------------------------------*
   there are different cases:

@@ -18,6 +18,19 @@ Maintainer: Steffen Genkinger
 #include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
 #include "fsi_prototypes.h"    
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | struct _GENPROB       genprob; defined in global_control.c           |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;                     
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn; 
 /*!---------------------------------------------------------------------
 \brief relaxation of structural interface displacements
 
@@ -46,10 +59,7 @@ Relaxation of structural interface displacements:
 \return void                                                                             
 
 ------------------------------------------------------------------------*/
-void fsi_relax_intdisp(
-                            FIELD          *structfield, 
-			    FSI_DYNAMIC    *fsidyn
-		      )
+void fsi_relax_intdisp( FIELD *structfield )
 {
 INT     i,j;              /* simply some counters		        */
 INT     numdf;            /* actual number of dofs		        */
@@ -60,12 +70,15 @@ INT    *sid;              /* structural interface dofs                  */
 DOUBLE  relax;            /* actual relaxation parameter omega	        */
 DOUBLE  fac;             
 NODE   *actsnode;	  /* the actual struct	node 			*/
+FSI_DYNAMIC    *fsidyn;
 
 #ifdef DEBUG 
 dstrc_enter("fsi_relax_intdisp");
 #endif
 
 /*----------------------------------------------------- set some values */
+fsidyn      = alldyn[3].fsidyn;
+
 relax       = fsidyn->relax;
 fac         = ONE-relax;
 numnp_total = structfield->dis[0].numnp;

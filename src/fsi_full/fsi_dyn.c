@@ -136,24 +136,24 @@ fsidyn->step=0;
 /*---------------------------------- initialise fsi coupling conditions */
 fsi_initcoupling(structfield,fluidfield,alefield);
 /*--------------------------------- determine structural interface dofs */
-fsi_struct_intdofs(structfield,fsidyn);
+fsi_struct_intdofs(structfield);
 /*---------------------------------------- init all applied time curves */
 for (actcurve = 0;actcurve<numcurve;actcurve++)
    dyn_init_curve(actcurve,fsidyn->nstep,fsidyn->dt,fsidyn->maxtime);
 
 /*---------------------------------------------------- initialise fluid */
-fsi_fluid(fsidyn,fdyn,fluidfield,mctrl,numff);
+fsi_fluid(fluidfield,mctrl,numff);
 /*------------------------------------------------ initialise structure */
-fsi_struct(fsidyn,sdyn,structfield,mctrl,numsf,itnum);
+fsi_struct(structfield,mctrl,numsf,itnum);
 /*------------------------------------------------------ initialise ale */
-fsi_ale(fsidyn,adyn,alefield,mctrl,numaf);
+fsi_ale(alefield,mctrl,numaf);
 
 if (genprob.restart!=0)
 {
    restart_read_fsidyn(genprob.restart,fsidyn);
    /*----------------------------------------------- plausibility check */
    if (fsidyn->time != adyn->time ||
-       fsidyn->time != fdyn->time ||
+       fsidyn->time != fdyn->acttime ||
        fsidyn->time != sdyn->time   )
        dserror("Restart problem: Time not identical in fields!\n");
    if (fsidyn->step != fdyn->step ||
@@ -165,7 +165,7 @@ if (genprob.restart!=0)
 /*----------------------------------------- initialise AITKEN iteration */
 if (fsidyn->ifsi==5)
 {
-   fsi_aitken(structfield,fsidyn,itnum,0);   
+   fsi_aitken(structfield,itnum,0);   
 }
     
 /*----------------------------------------------------------------------*/
@@ -183,7 +183,7 @@ fsidyn->time += fsidyn->dt;
 fdyn->step=fsidyn->step;
 sdyn->step=fsidyn->step;
 adyn->step=fsidyn->step;
-fdyn->time = fsidyn->time;
+fdyn->acttime = fsidyn->time;
 sdyn->time = fsidyn->time;
 adyn->time = fsidyn->time;
 
@@ -193,7 +193,7 @@ adyn->time = fsidyn->time;
 itnum=0;
 fielditer:
 /*------------------------------------------------ output to the screen */
-if (par.myrank==0) fsi_algoout(fsidyn,itnum);
+if (par.myrank==0) fsi_algoout(itnum);
 /*----------------------------------- basic sequential staggered scheme */
 if (fsidyn->ifsi==1 || fsidyn->ifsi==3)
 {
@@ -201,11 +201,11 @@ if (fsidyn->ifsi==1 || fsidyn->ifsi==3)
    dsassert(fsidyn->ifsi!=3,"Scheme with DT/2-shift not implemented yet!\n");
 
    /*------------------------------- CFD -------------------------------*/
-   fsi_fluid(fsidyn,fdyn,fluidfield,mctrl,numff);
+   fsi_fluid(fluidfield,mctrl,numff);
    /*------------------------------- CSD -------------------------------*/
-   fsi_struct(fsidyn,sdyn,structfield,mctrl,numsf,itnum);
+   fsi_struct(structfield,mctrl,numsf,itnum);
    /*------------------------------- CMD -------------------------------*/
-   fsi_ale(fsidyn,adyn,alefield,mctrl,numaf);
+   fsi_ale(alefield,mctrl,numaf);
 } /* endif (fsidyn->ifsi==1 || fsidyn->ifsi==3) */
 
 /*---------------------------------------------- schemes with predictor */
@@ -219,39 +219,38 @@ else if (fsidyn->ifsi==2 || fsidyn->ifsi>=4)
    /*----------------- CSD - predictor for itnum==0 --------------------*/
    if (itnum==0)
    {
-      fsi_struct(fsidyn,sdyn,structfield,mctrlpre,numsf,itnum);
+      fsi_struct(structfield,mctrlpre,numsf,itnum);
    }
    /*------------------------------- CMD -------------------------------*/
-   fsi_ale(fsidyn,adyn,alefield,mctrl,numaf);
+   fsi_ale(alefield,mctrl,numaf);
    /*------------------------------- CFD -------------------------------*/
-   fsi_fluid(fsidyn,fdyn,fluidfield,mctrl,numff);
+   fsi_fluid(fluidfield,mctrl,numff);
    /*------------------------------- CSD -------------------------------*/
-   fsi_struct(fsidyn,sdyn,structfield,mctrl,numsf,itnum);
+   fsi_struct(structfield,mctrl,numsf,itnum);
 }
 /*--------------------------------------------- strong coupling schemes */
 if (fsidyn->ifsi>=4)
 {
    /*-------------------------------------- iteration convergence check */
-   converged=fsi_convcheck(structfield, fsidyn, itnum);   
+   converged=fsi_convcheck(structfield, itnum);   
 
    if (converged==0) /*--------------------------------- no convergence */
    {
    /*----------------------------- compute optimal relaxation parameter */
       if (fsidyn->ifsi==5)
       {
-         fsi_aitken(structfield,fsidyn,itnum,1);   
+         fsi_aitken(structfield,itnum,1);   
       }
       else if (fsidyn->ifsi==6)
       {
-         fsi_gradient(alefield,structfield,fluidfield,fsidyn,adyn,
-	              fdyn,sdyn,numaf,numff,numsf);
+         fsi_gradient(alefield,structfield,fluidfield,numaf,numff,numsf);
       }
       else if (fsidyn->ifsi==7)
       {
          dserror("RELAX via CHEBYCHEV not implemented yet!\n");
       }   
       /*-------------- relaxation of structural interface displacements */
-      fsi_relax_intdisp(structfield,fsidyn);
+      fsi_relax_intdisp(structfield);
       itnum++;
       goto fielditer;
    }
@@ -259,11 +258,11 @@ if (fsidyn->ifsi>=4)
    {
       mctrl=3;
       /*--------------------- update MESH data -------------------------*/
-      fsi_ale(fsidyn,adyn,alefield,mctrl,numaf);
+      fsi_ale(alefield,mctrl,numaf);
       /*-------------------- update FLUID data -------------------------*/
-      fsi_fluid(fsidyn,fdyn,fluidfield,mctrl,numff);      
+      fsi_fluid(fluidfield,mctrl,numff);      
       /*------------------ update STRUCTURE data -----------------------*/
-      fsi_struct(fsidyn,sdyn,structfield,mctrl,numsf,itnum);
+      fsi_struct(structfield,mctrl,numsf,itnum);
    }
 }
 /*--------------------------------------- write current solution to gid */
@@ -286,7 +285,7 @@ if (restartstep==fsidyn->res_write_evry)
 }
 
 /*-------------------------------------------------------- energy check */
-if (fsidyn->ichecke>0) fsi_energycheck(fsidyn);
+if (fsidyn->ichecke>0) fsi_energycheck();
 
 /*------------------------------------------- finalising this time step */
 if (fsidyn->step < fsidyn->nstep && fsidyn->time <= fsidyn->maxtime)
@@ -297,9 +296,9 @@ if (fsidyn->step < fsidyn->nstep && fsidyn->time <= fsidyn->maxtime)
  *======================================================================*/
 cleaningup:
 mctrl=99;
-fsi_fluid(fsidyn,fdyn,fluidfield,mctrl,numff);
-fsi_struct(fsidyn,sdyn,structfield,mctrl,numsf,itnum);
-fsi_ale(fsidyn,adyn,alefield,mctrl,numaf);   
+fsi_fluid(fluidfield,mctrl,numff);
+fsi_struct(structfield,mctrl,numsf,itnum);
+fsi_ale(alefield,mctrl,numaf);   
 
 
 /*----------------------------------------------------------------------*/

@@ -17,7 +17,22 @@ Maintainer: Steffen Genkinger
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
-#include "fsi_prototypes.h"     
+#include "fsi_prototypes.h"    
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;
+
+static FSI_DYNAMIC *fsidyn;    
 /*!---------------------------------------------------------------------                                         
 \brief interface energy
 
@@ -56,9 +71,6 @@ compute increment of energy transported across the fs - interface
 ------------------------------------------------------------------------*/
 void fsi_dyneint( 
                        FIELD          *structfield, 
-                       FSI_DYNAMIC    *fsidyn,
-                       STRUCT_DYNAMIC *sdyn,
-		       FLUID_DYNAMIC  *fdyn,
 		       INT             init
 		)
 {
@@ -77,10 +89,16 @@ static DOUBLE   oma;            /* 1-alpha                              */
 static DOUBLE   theta;          /* fluid time integr. factor            */
 static DOUBLE   omt;            /* 1-theta                              */
 NODE           *actsnode;       /* actual structure node                */
+static STRUCT_DYNAMIC *sdyn;
+static FLUID_DYNAMIC  *fdyn;
 
 #ifdef DEBUG 
 dstrc_enter("fsi_dyneint");
 #endif
+
+fsidyn      = alldyn[3].fsidyn;
+sdyn        = alldyn[genprob.numsf].sdyn;
+fdyn        = alldyn[genprob.numff].fdyn;
 
 /*----------------------------------------------------- set some values */
 if (init==1) /* initialisation called by structure */
@@ -156,12 +174,14 @@ check energy production at the fs-interface
 \return void                                                                             
 
 ------------------------------------------------------------------------*/
-void fsi_energycheck(FSI_DYNAMIC  *fsidyn) 
+void fsi_energycheck(void) 
 {
 
 #ifdef DEBUG 
 dstrc_enter("fsi_energycheck");
 #endif
+
+fsidyn = alldyn[3].fsidyn;
 
 if (fsidyn->deltaeint>fsidyn->entol)
 {

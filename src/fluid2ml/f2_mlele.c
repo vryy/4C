@@ -16,6 +16,21 @@ Maintainer: Volker Gravemeier
 #include "../fluid2/fluid2_prototypes.h"
 #include "fluid2ml_prototypes.h"
 #include "../fluid2/fluid2.h"
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+static FLUID_DYNAMIC *fdyn;
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -249,7 +264,6 @@ This routine controls the element evaluation of the large-scale element:
 			     
 </pre>
 \param  *data	         FLUID_DATA     (i)
-\param  *dynvar	         FLUID_DYN_CALC (i)
 \param  *mlvar	         FLUID_DYN_ML   (i)
 \param  *submesh	 FLUID_ML_SMESH (i)
 \param  *ssmesh	         FLUID_ML_SMESH (i)
@@ -266,7 +280,6 @@ This routine controls the element evaluation of the large-scale element:
                                  
 ------------------------------------------------------------------------*/
 void f2_lsele(FLUID_DATA     *data, 
-              FLUID_DYN_CALC *dynvar, 
               FLUID_DYN_ML   *mlvar, 
               FLUID_ML_SMESH *submesh, 
               FLUID_ML_SMESH *ssmesh, 
@@ -292,6 +305,8 @@ dstrc_enter("f2_lsele");
 
 if (init==1) /* allocate working arrays and set pointers */
 {
+   fdyn = alldyn[genprob.numff].fdyn;
+   
    eveln   = amdef("eveln"  ,&eveln_a  ,NUM_F2_VELDOF,MAXNOD_F2,"DA");
    evel    = amdef("evel"   ,&evel_a   ,NUM_F2_VELDOF,MAXNOD_F2,"DA");
    epren   = amdef("epren"  ,&epren_a  ,MAXNOD_F2,1,"DV");
@@ -322,9 +337,9 @@ if (init==1) /* allocate working arrays and set pointers */
    edforce = edforce_global->a.dv;
    
 /*------------------ allocation for submesh of this large-scale element */
-   f2_smele(data,dynvar,mlvar,submesh,ele,init); 
+   f2_smele(data,mlvar,submesh,ele,init); 
 /*-------------- allocation for sub-submesh of this large-scale element */
-   if (mlvar->smsgvi>2) f2_ssele(data,dynvar,mlvar,ssmesh,ele,init);
+   if (mlvar->smsgvi>2) f2_ssele(data,mlvar,ssmesh,ele,init);
    goto end;
 } /* endif (init==1) */
 
@@ -338,16 +353,16 @@ amzero(edforce_global);
 *hasext=0;
 
 /*---------------------------- set element data for large-scale element */
-f2_lsset(dynvar,ele,eveln,evel,epren,epre,edeadn,edead,hasext);
+f2_lsset(ele,eveln,evel,epren,epre,edeadn,edead,hasext);
 
 /*------------------------------- dynamic subgrid viscosity calculation */
-if (mlvar->smsgvi>2) f2_dynsgv(data,dynvar,mlvar,submesh,ssmesh,ele);
+if (mlvar->smsgvi>2) f2_dynsgv(data,mlvar,submesh,ssmesh,ele);
 
 /*------------------ initialize submesh global matrix and rhs with ZERO */
 amzero(&(submesh->mat));
 amzero(&(submesh->rhs));
 /*------------ small-scale solution on submesh: element control routine */
-f2_smele(data,dynvar,mlvar,submesh,ele,init);
+f2_smele(data,mlvar,submesh,ele,init);
 
 /*fluid_prgmr(smmat,smrhs,submesh->numeq,mlvar->nelbub); */ 
 /*--------------------- change order in matrix and rhs array for solver */
@@ -392,28 +407,28 @@ f2_smcopy(smrhs,ele,submesh->numeq,mlvar->nelbub);
 
 /*----------------- calculate small-scale part of element matrices and 
                                element force vectors (bubble functions) */
-f2_bubele(data,dynvar,mlvar,submesh,ele);
+f2_bubele(data,mlvar,submesh,ele);
 
 /*- calculate charact. l-s element length and stab. param. if necessary */
 if (ele->e.f2->stab_type != stab_gls) /* check for proper stabilisation */
    dserror("wrong stabilisation in mulitlevel case");
 if (ele->e.f2->stabi.gls->istabi!=0) 
-  f2_mlcalelesize(ele,data,dynvar,funct,deriv,deriv2,derxy,xjm,evel,velint,
+  f2_mlcalelesize(ele,data,funct,deriv,deriv2,derxy,xjm,evel,velint,
                   vderxy,wa1);
 /*------------------ calculate large-scale part of element matrices and 
                                                   element force vectors */
-f2_lsint(data,ele,dynvar,mlvar,hasext,estif,emass,eiforce,etforce,funct,
+f2_lsint(data,ele,mlvar,hasext,estif,emass,eiforce,etforce,funct,
          deriv,deriv2,xjm,derxy,derxy2,evel,eveln,epren,edeadn,edead,
 	 velint,velintn,covint,covintn,vderxy,vderxyn,wa1,wa2);
 
 /*----------------- add emass and estif to estif and permute the matrix */
-f2_mlpermestif(estif,emass,wa1,ele->numnp,dynvar);
+f2_mlpermestif(estif,emass,wa1,ele->numnp);
 
 /*--------------------------------- permute element load vector etforce */
-if (dynvar->nif!=0) f2_permeforce(etforce,wa1,ele->numnp);
+if (fdyn->nif!=0) f2_permeforce(etforce,wa1,ele->numnp);
 
 /*--------------------------------- permute element load vector eiforce */
-if (dynvar->nii+(*hasext)!=0) f2_permeforce(eiforce,wa1,ele->numnp);
+if (fdyn->nii+(*hasext)!=0) f2_permeforce(eiforce,wa1,ele->numnp);
 
 /*------------------------------- calculate element load vector edforce */
 fluid_mlcaldirich(ele,edforce,estif,hasdirich);
@@ -440,7 +455,6 @@ This routine controls the element evaluation of the submesh element:
 			     
 </pre>
 \param  *data	         FLUID_DATA     (i)
-\param  *dynvar	         FLUID_DYN_CALC (i)
 \param  *mlvar	         FLUID_DYN_ML   (i)
 \param  *submesh	 FLUID_ML_SMESH (i)
 \param  *ele	         ELEMENT	(i)   actual large-scale element
@@ -449,7 +463,6 @@ This routine controls the element evaluation of the submesh element:
                                  
 ------------------------------------------------------------------------*/
 void f2_smele(FLUID_DATA     *data, 
-              FLUID_DYN_CALC *dynvar, 
               FLUID_DYN_ML   *mlvar, 
               FLUID_ML_SMESH *submesh, 
 	      ELEMENT        *ele,             
@@ -463,6 +476,8 @@ dstrc_enter("f2_smele");
 
 if (init==1) /* allocate working arrays and set pointers */
 {
+   fdyn = alldyn[genprob.numff].fdyn;
+   
    smlme    = amdef("smlme"   ,&smlme_a   ,submesh->numen,1,"IV");
    smitope  = amdef("smitope" ,&smitope_a ,submesh->numen,1,"IV");
    smxyze   = amdef("smxyze"  ,&smxyze_a  ,2,submesh->numen,"DA");
@@ -550,12 +565,12 @@ for (iele=0; iele<submesh->numele; iele++)/* loop over submesh elements */
   if (mlvar->convel==0) 
     f2_bubset(mlvar,submesh,ele,smlme,evbub,epbub,efbub,0);
 /*------------------------------- set bubble functions at time step (n) */
-  if (dynvar->nis==0 && mlvar->quastabub==0) 
+  if (fdyn->nis==0 && mlvar->quastabub==0) 
     f2_bubset(mlvar,submesh,ele,smlme,evbubn,epbubn,efbubn,1);
 
 /*--- calculate charact. element length and stab. param. / subgr. visc. */
   if (mlvar->smstabi>0 || mlvar->smsgvi==1 || mlvar->smsgvi==2)
-    f2_smelesize(ele,data,dynvar,mlvar,funct,deriv,deriv2,smfunct,smderiv,
+    f2_smelesize(ele,data,mlvar,funct,deriv,deriv2,smfunct,smderiv,
                  smderiv2,derxy,xjm,evel,velint,vderxy,smxyze,smxyzep,wa1);
 
 /*------------ initialize submesh global matrices and vectors with ZERO */
@@ -565,7 +580,7 @@ for (iele=0; iele<submesh->numele; iele++)/* loop over submesh elements */
   amzero(&smetfor_a);
 
 /*-------- calculate submesh element matrices and element force vectors */
-  f2_smint(data,ele,dynvar,mlvar,submesh,smestif,smemass,smevfor,smetfor,
+  f2_smint(data,ele,mlvar,submesh,smestif,smemass,smevfor,smetfor,
 	   smxyze,smxyzep,funct,deriv,deriv2,xjm,derxy,derxy2,smfunct,
 	   smderiv,smderiv2,smxjm,smderxy,smderxy2,eveln,evel,epren,epre,
 	   evbub,epbub,efbub,evbubn,epbubn,efbubn,vbubint,vbubderxy,
@@ -578,18 +593,18 @@ for (iele=0; iele<submesh->numele; iele++)/* loop over submesh elements */
 
 /*------------- add element stiffness matrix to global stiffness matrix */
   if (mlvar->quastabub!=0) 
-    fluid_add_smat(smmat,smestif,submesh->numen,smlme,dynvar->dta);
-  else fluid_add_smat(smmat,smestif,submesh->numen,smlme,dynvar->thsl);
+    fluid_add_smat(smmat,smestif,submesh->numen,smlme,fdyn->dta);
+  else fluid_add_smat(smmat,smestif,submesh->numen,smlme,fdyn->thsl);
 
 /*----------------------- add element mass matrix to global mass matrix */
-  if (dynvar->nis==0 && mlvar->quastabub==0)
+  if (fdyn->nis==0 && mlvar->quastabub==0)
     fluid_add_smat(smmat,smemass,submesh->numen,smlme,ONE);
 
 /*------------------------------- add element vmm rhs to global vmm rhs */
   fluid_add_smrhs(smrhs,smevfor,mlvar->nelbub,submesh->numen,smlme);
 
 /*----------------------------- add element time rhs to global time rhs */
-  if (dynvar->nis==0)
+  if (fdyn->nis==0)
     fluid_add_smrhs(smrhs,smetfor,mlvar->nelbub,submesh->numen,smlme);
 }  
 
@@ -616,7 +631,6 @@ the submesh element:
 			     
 </pre>
 \param  *data	         FLUID_DATA     (i)
-\param  *dynvar	         FLUID_DYN_CALC (i)
 \param  *mlvar	         FLUID_DYN_ML   (i)
 \param  *submesh	 FLUID_ML_SMESH (i)
 \param  *ele	         ELEMENT	(i)   actual large-scale element
@@ -624,7 +638,6 @@ the submesh element:
                                  
 ------------------------------------------------------------------------*/
 void f2_bubele(FLUID_DATA     *data, 
-               FLUID_DYN_CALC *dynvar, 
                FLUID_DYN_ML   *mlvar, 
                FLUID_ML_SMESH *submesh, 
 	       ELEMENT        *ele)
@@ -644,7 +657,7 @@ for (iele=0; iele<submesh->numele; iele++)/* loop over submesh elements */
   f2_bubset(mlvar,submesh,ele,smlme,evbub,epbub,efbub,0);
 
 /*---------- calculate submesh bubble matrices and bubble force vectors */
-  f2_bubint(data,ele,dynvar,mlvar,submesh,estif,emass,eiforce,smxyze,
+  f2_bubint(data,ele,mlvar,submesh,estif,emass,eiforce,smxyze,
             smxyzep,funct,deriv,deriv2,xjm,derxy,smfunct,smderiv,smderiv2,
 	    smxjm,smderxy,evel,epre,evbub,epbub,efbub,vbubint,vbubderxy,
 	    pbubint,pbubderxy,covint,velint,vderxy,smvelint,smvderxy,
@@ -673,7 +686,6 @@ on the large-scale element:
 			     
 </pre>
 \param  *data	         FLUID_DATA     (i)
-\param  *dynvar	         FLUID_DYN_CALC (i)
 \param  *mlvar	         FLUID_DYN_ML   (i)
 \param  *submesh	 FLUID_ML_SMESH (i)
 \param  *ssmesh	         FLUID_ML_SMESH (i)
@@ -682,7 +694,6 @@ on the large-scale element:
                                  
 ------------------------------------------------------------------------*/
 void f2_dynsgv(FLUID_DATA     *data, 
-               FLUID_DYN_CALC *dynvar, 
                FLUID_DYN_ML   *mlvar, 
                FLUID_ML_SMESH *submesh, 
                FLUID_ML_SMESH *ssmesh, 
@@ -729,7 +740,7 @@ for (ite=0;ite<itemax;ite++)
   amzero(&(ssmesh->mat));
   amzero(&(ssmesh->rhs));
 /*-------------------- solution on sub-submesh: element control routine */
-  f2_ssele(data,dynvar,mlvar,ssmesh,ele,0);
+  f2_ssele(data,mlvar,ssmesh,ele,0);
 
 /*----------------------------- change order in matrix array for solver */
   for (i=0; i<ssmesh->numeq; i++)
@@ -844,7 +855,6 @@ This routine controls the element evaluation of the sub-submesh element:
 			     
 </pre>
 \param  *data	         FLUID_DATA     (i)
-\param  *dynvar	         FLUID_DYN_CALC (i)
 \param  *mlvar	         FLUID_DYN_ML   (i)
 \param  *ssmesh	         FLUID_ML_SMESH (i)
 \param  *ele	         ELEMENT	(i)   actual large-scale element
@@ -853,7 +863,6 @@ This routine controls the element evaluation of the sub-submesh element:
                                  
 ------------------------------------------------------------------------*/
 void f2_ssele(FLUID_DATA      *data, 
-              FLUID_DYN_CALC  *dynvar, 
               FLUID_DYN_ML    *mlvar, 
               FLUID_ML_SMESH  *ssmesh, 
 	      ELEMENT         *ele,
@@ -898,7 +907,7 @@ for (iele=0; iele<ssmesh->numele; iele++)/* loop over sub-submesh elem. */
   amzero(&ssenfor_a);
 
 /*------- calculate sub-submesh element matrix and element force vector */
-  f2_ssint(data,ele,dynvar,mlvar,ssmesh,ssestif,ssenfor,ssxyze,ssxyzep,
+  f2_ssint(data,ele,mlvar,ssmesh,ssestif,ssenfor,ssxyze,ssxyzep,
            funct,deriv,deriv2,xjm,derxy,ssfunct,ssderiv,ssderiv2,ssxjm,
 	   ssderxy,evel,velint,vderxy);
 

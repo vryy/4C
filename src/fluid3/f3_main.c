@@ -76,7 +76,6 @@ static INT              viscstr;
 DOUBLE                 *intforce;
 MATERIAL               *actmat;     /* actual material                  */
 FLUID_DYNAMIC          *fdyn;
-static FLUID_DYN_CALC  *dynvar;
 static FLUID_DYN_ML    *mlvar;
 static FLUID_ML_SMESH  *submesh;
 static FLUID_ML_SMESH  *ssmesh;
@@ -108,20 +107,19 @@ case calc_fluid_init:
      if (actfield->fieldtyp==fluid)
      break;
   }
-  dynvar = &(alldyn[numff].fdyn->dynvar);
-  data   = &(alldyn[numff].fdyn->dynvar.data);
+  data   = alldyn[numff].fdyn->data;
   viscstr= alldyn[genprob.numff].fdyn->viscstr;
 /*------------------------------------------- init the element routines */   
   f3_intg(data,0);
-  f3_calele(data,dynvar,NULL,estif_global,emass_global,etforce_global,
+  f3_calele(data,NULL,estif_global,emass_global,etforce_global,
             eiforce_global,edforce_global,NULL,NULL,1);
 /*---------------------------------------------------- multi-level FEM? */   
 #ifdef FLUID3_ML
   if (fdyn->mlfem==1) 
   {  
-    mlvar   = &(alldyn[numff].fdyn->mlvar);
-    submesh = &(alldyn[numff].fdyn->mlvar.submesh);
-    ssmesh  = &(alldyn[numff].fdyn->mlvar.ssmesh);
+    mlvar   = alldyn[numff].fdyn->mlvar;
+    submesh = &(alldyn[numff].fdyn->mlvar->submesh);
+    ssmesh  = &(alldyn[numff].fdyn->mlvar->ssmesh);
 /*------- determine number of submesh elements in coordinate directions */   
     math_intextract(mlvar->smelenum,&ndum,&xele,&yele,&zele);
 /*------------------------------------- create submesh on parent domain */   
@@ -135,7 +133,7 @@ case calc_fluid_init:
       f3_pdsubmesh(ssmesh,xele,yele,zele,mlvar->ssmorder,1);
     }
 /*----------------------- init the element routines for multi-level FEM */   
-    f3_lsele(data,dynvar,mlvar,submesh,ssmesh,ele,estif_global,emass_global,
+    f3_lsele(data,mlvar,submesh,ssmesh,ele,estif_global,emass_global,
           etforce_global,eiforce_global,edforce_global,hasdirich,hasext,1); 
   }     	    
 #endif
@@ -157,12 +155,12 @@ if (fdyn->mlfem==1)
 /* create element sub-submesh if not yet done */   
     if (mlvar->smsgvi>2) f3_elesubmesh(ele,ssmesh,1);
   }  
-  f3_lsele(data,dynvar,mlvar,submesh,ssmesh,ele,estif_global,emass_global,
+  f3_lsele(data,mlvar,submesh,ssmesh,ele,estif_global,emass_global,
            etforce_global,eiforce_global,edforce_global,hasdirich,hasext,0);
 }	      
 else  
 #endif
-  f3_calele(data,dynvar,ele,estif_global,emass_global,etforce_global,
+  f3_calele(data,ele,estif_global,emass_global,etforce_global,
                  eiforce_global,edforce_global,hasdirich,hasext,0);
 break;
 

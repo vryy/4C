@@ -15,6 +15,21 @@ Maintainer: Thomas Hettich
 #include "fluid2_prototypes.h"
 #include "fluid2.h"
 #include "fluid2_tu.h"
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+static FLUID_DYNAMIC   *fdyn;
 /*!--------------------------------------------------------------------- 
 \brief routine to calculate stability parameter                
 
@@ -25,7 +40,6 @@ Maintainer: Thomas Hettich
 
 \param   *ele,        ELEMENT	      (i)    actual element
 \param   *elev,       ELEMENT	      (i)    element with velocity-infos
-\param   *dynvar,     FLUID_DYN_CALC(i/o)  
 \param   *eddyint,    DOUBLE	      (i)    eddyint at center
 \param   *velint,     DOUBLE	      (i)    vel at center
 \param   *velint_dc,  DOUBLE	      (i)    vel at center for D.C.
@@ -36,7 +50,6 @@ Maintainer: Thomas Hettich
 void f2_calstabpar_tu_1(
 	            ELEMENT         *ele,      
 		      ELEMENT         *elev,
-                  FLUID_DYN_CALC  *dynvar,
 		      DOUBLE           eddyint, 
                   DOUBLE          *velint, 
                   DOUBLE          *velint_dc, 
@@ -53,12 +66,13 @@ dstrc_enter("f2_calstabpar_tu_1");
 
 
 /*----------------------------------- calculate peclet number           */  
+fdyn   = alldyn[genprob.numff].fdyn;
 ele->e.f2_tu->strom = elev->e.f2->hk[0];
 
 vel_abs = sqrt(pow(velint[0],2) + pow(velint[1],2));      /*norm of vel */
 
-if (dynvar->kapomega_flag == 0) kappa = visc+eddyint*0.5;
-if (dynvar->kapomega_flag == 1) kappa = visc+eddyint*0.5;
+if (fdyn->kapomega_flag == 0) kappa = visc+eddyint*0.5;
+if (fdyn->kapomega_flag == 1) kappa = visc+eddyint*0.5;
 
 peclet  = ele->e.f2_tu->strom * vel_abs / (2*kappa);
 
@@ -66,11 +80,11 @@ xi_Pe = DMIN(peclet/3, 1);
 
 /*----------------------------------- calculate stabilisation parameter */  
 if(vel_abs!=0.0)
-dynvar->tau_tu      = (ele->e.f2_tu->strom*xi_Pe) / (2*vel_abs); 
+fdyn->tau_tu      = (ele->e.f2_tu->strom*xi_Pe) / (2*vel_abs); 
 else
-dynvar->tau_tu      = dynvar->dta; 
+fdyn->tau_tu      = fdyn->dta; 
   
-dynvar->tau_tu      = DMIN(dynvar->tau_tu,dynvar->dta);   
+fdyn->tau_tu      = DMIN(fdyn->tau_tu,fdyn->dta);   
 
 /*------------------- calculate stabilisation parameter for DISC. CAPT. */
 vel_abs = sqrt(pow(velint_dc[0],2) + pow(velint_dc[1],2));      
@@ -80,15 +94,15 @@ peclet  = ele->e.f2_tu->strom_dc * vel_abs / (2*kappa);
 xi_Pe  = DMIN(peclet/3, 1);
 
 if(vel_abs != 0.0)
-dynvar->tau_tu_dc  = (ele->e.f2_tu->strom_dc*xi_Pe) / (2*vel_abs); 
+fdyn->tau_tu_dc  = (ele->e.f2_tu->strom_dc*xi_Pe) / (2*vel_abs); 
 else
-dynvar->tau_tu_dc  = dynvar->dta; 
+fdyn->tau_tu_dc  = fdyn->dta; 
   
 /*------------------------------------- VERSION: DC1 -------------------*/                  
-dynvar->tau_tu_dc  = DMIN(dynvar->tau_tu_dc,dynvar->dta);  
+fdyn->tau_tu_dc  = DMIN(fdyn->tau_tu_dc,fdyn->dta);  
 
 /*------------------------------------- VERSION: DC2 -------------------*/                  
-/*dynvar->tau_tu_dc  = DMAX(0,dynvar->tau_tu_dc-dynvar->tau_tu);*/  
+/*fdyn->tau_tu_dc  = DMAX(0,fdyn->tau_tu_dc-fdyn->tau_tu);*/  
 
 /*----------------------------------------------------------------------*/
 

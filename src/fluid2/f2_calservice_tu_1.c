@@ -17,10 +17,25 @@ Maintainer: Thomas Hettich
 #include "fluid2.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
  | vector of material laws                                              |
  | defined in global_control.c                                          |
  *----------------------------------------------------------------------*/
 extern struct _MATERIAL  *mat;
+
+static FLUID_DYNAMIC *fdyn;
 /*!--------------------------------------------------------------------- 
 \brief set all arrays for element calculation
 
@@ -28,7 +43,6 @@ extern struct _MATERIAL  *mat;
 
 				      
 </pre>
-\param   *dynvar   FLUID_DYN_CALC  (i)
 \param   *data     FLUID_DATA	     (i)
 \param   *ele      ELEMENT	     (i)    actual element
 \param   *elev     ELEMENT	     (i)    actual element for velocity
@@ -45,7 +59,6 @@ extern struct _MATERIAL  *mat;
 
 ------------------------------------------------------------------------*/
 void f2_calset_tu_1( 
-                    FLUID_DYN_CALC  *dynvar, 
                     FLUID_DATA      *data,     
 	              ELEMENT         *ele,     
                     ELEMENT         *elev,
@@ -67,6 +80,8 @@ NODE  *actnode;     /* actual node                                      */
 dstrc_enter("f2_calset_tu_1");
 #endif
 
+fdyn = alldyn[genprob.numff].fdyn;
+
 /*-------------------------------------------- set element coordinates */
 for(i=0;i<ele->numnp;i++)
 {
@@ -86,8 +101,8 @@ for(i=0;i<ele->numnp;i++)
  |	                  i=2 : omega                                    |
  |	                  i=3 : charact. lenght                          |
  *---------------------------------------------------------------------*/
- if (dynvar->kapomega_flag==0) kap_ome=0;
- if (dynvar->kapomega_flag==1) kap_ome=2;
+ if (fdyn->kapomega_flag==0) kap_ome=0;
+ if (fdyn->kapomega_flag==1) kap_ome=2;
    
    for(i=0;i<ele->numnp;i++) /* loop nodes of element */
    {
@@ -102,17 +117,17 @@ for(i=0;i<ele->numnp;i++)
       eddypro[i]  =actnode->sol_increment.a.da[2][1];
 
 /*------------------- for kappa equation: omega is needed for factors  */
-    if (dynvar->kapomega_flag==0)
+    if (fdyn->kapomega_flag==0)
     {
      omega[i] = actnode->sol_increment.a.da[3][2];
     
-     if (dynvar->kappan==2)
+     if (fdyn->kappan==2)
      {
       actnode->sol_increment.a.da[2][0] = actnode->sol_increment.a.da[3][0];
      }
     }
 /*---------- for omega equation: kappan is needed for production term  */
-    if (dynvar->kapomega_flag==1 && dynvar->kappan==2) 
+    if (fdyn->kapomega_flag==1 && fdyn->kappan==2) 
     { 
       actnode->sol_increment.a.da[2][2] = actnode->sol_increment.a.da[3][2];
       kappan[i] = actnode->sol_increment.a.da[2][0];
@@ -464,7 +479,6 @@ return;
 In this routine velint_dc for DISC. CAPT. is calc.
 				      
 </pre>
-\param   *dynvar    FLUID_DYN_CALC    (i)
 \param   *velint        DOUBLE        (i)   2nd kapeps derivativs
 \param   *velint_dc     DOUBLE        (o)   2nd global derivatives
 \param   *kapomederxy   DOUBLE        (i)   kapomederiv.
@@ -472,7 +486,6 @@ In this routine velint_dc for DISC. CAPT. is calc.
 
 ------------------------------------------------------------------------*/
 void f2_vel_dc_1(
-		       FLUID_DYN_CALC  *dynvar,
                    DOUBLE  *velint,    
                    DOUBLE  *velint_dc,    
 	             DOUBLE  *kapomederxy      
@@ -492,7 +505,7 @@ if(FABS(kapomederxy[1])<0.001) kapomederxy[1] = 0.0;
 skalar = velint[0]*kapomederxy[0] + velint[1]*kapomederxy[1];
 square = pow(kapomederxy[0],2) + pow(kapomederxy[1],2);
 
-if(square != 0.0 && dynvar->dis_capt == 1)
+if(square != 0.0 && fdyn->dis_capt == 1)
 {
  velint_dc[0] = skalar*kapomederxy[0]/square;
  velint_dc[1] = skalar*kapomederxy[1]/square;

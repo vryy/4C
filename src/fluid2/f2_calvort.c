@@ -17,6 +17,21 @@ Maintainer: Steffen Genkinger
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #include "fluid2.h"
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+static FLUID_DYNAMIC *fdyn;
 
 static DOUBLE Q12=(ONE/TWO);
 
@@ -34,7 +49,6 @@ static DOUBLE Q12=(ONE/TWO);
 </pre>
 
 \param  *data	            FLUID_DATA       (i)
-\param  *dynvar	            FLUID_DYN_CALC   (i)
 \param  *ele	            ELEMENT	     (i)   actual element
 \param   init	            INT              (i)   init flag
 \return void                                               
@@ -42,7 +56,6 @@ static DOUBLE Q12=(ONE/TWO);
 ------------------------------------------------------------------------*/
 void f2_calvort(
                 FLUID_DATA     *data, 
-                FLUID_DYN_CALC *dynvar, 
 	        ELEMENT        *ele,                
        	        INT             init            
                )
@@ -99,6 +112,8 @@ if (init==1) /* allocate working arrays and set pointers */
    derxy   = amdef("derxy"  ,&derxy_a  ,2,MAXNOD_F2,"DA");
    vort    = amdef("vort"   ,&vort_a   ,MAXGAUSS,1 ,"DV");   
    xyze    = amdef("xyze"   ,&xyze_a   ,2,MAXNOD_F2,"DA");
+   
+   fdyn    = alldyn[genprob.numff].fdyn;
    goto end;
 } /* endif (init==1) */
 
@@ -107,7 +122,7 @@ if (init==1) /* allocate working arrays and set pointers */
 /*----------------------------------------------------------------------*/
 
 /*-------------------------------------------- loop over each time step */
-ncols = dynvar->ncols;
+ncols = fdyn->ncols;
 for (icol=0;icol<ncols;icol++)  
 {
 

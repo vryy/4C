@@ -18,8 +18,7 @@ Maintainer: Steffen Genkinger
  | f2pro_calbdt.c                                                       |
  ************************************************************************/
 void f2pro_calbdt(			      
-                    ELEMENT         *ele,    
-		    FLUID_DYN_CALC  *dynvar,
+                    ELEMENT         *ele, 
 		    DOUBLE         **estif,  
 		    DOUBLE          *velint, 
 		    DOUBLE         **derxy,  
@@ -36,8 +35,7 @@ void f2pro_calbdt(
 void f2pro_calint(
                FLUID_DATA      *data,     
 	       ELEMENT         *elev,
-	       ELEMENT         *elep,     
-	       FLUID_DYN_CALC  *dynvar, 
+	       ELEMENT         *elep, 
                DOUBLE         **estif,   
 	       DOUBLE         **emass,
 	       DOUBLE         **gradopr,
@@ -68,7 +66,6 @@ void f2pro_calint(
  ************************************************************************/
 void f2pro_calele(
                 FLUID_DATA     *data, 
-                FLUID_DYN_CALC *dynvar, 
 	        ELEMENT        *elev, 
 	        ELEMENT        *elep,            
                 ARRAY          *estif_global,   
@@ -126,7 +123,6 @@ void pro_putdirich_parabolic_to_dof(FIELD *actfield, INT disnum, DOUBLE scale, I
 | f2pro_caltimerhs.c                                                    |
  ************************************************************************/
 void f2pro_calgaltfv(
-                  FLUID_DYN_CALC  *dynvar, 
                   DOUBLE          *etforce,
 		  DOUBLE          *eiforce,
 		  DOUBLE          *velint,   

@@ -116,8 +116,6 @@ conditions.
 
 </pre>
 
-\param  *fsidyn     FSI_DYNAMIC    (i)  			  
-\param  *adyn       STRUCT_DYNAMIC (i)  			  
 \param  *actfield   FIELD          (i)     ale field 			  
 \param   mctrl      INT            (i)     control flag		  
 \param   numfa      INT            (i)     number of ale field	  
@@ -130,8 +128,6 @@ conditions.
 
 *----------------------------------------------------------------------*/
 void fsi_ale_2step(
-                    FSI_DYNAMIC      *fsidyn,
-                    ALE_DYNAMIC      *adyn,
                     FIELD            *actfield,
                     INT               mctrl,
                     INT               numfa
@@ -158,6 +154,9 @@ static ARRAY         time_a;      /* stored time                                
 static CONTAINER     container;   /* contains variables defined in container.h          */
 static SPARSE_TYP    array_typ;   /* type of psarse system matrix                       */
 
+static FSI_DYNAMIC  *fsidyn;
+static ALE_DYNAMIC  *adyn;
+
 #ifdef DEBUG 
 dstrc_enter("fsi_ale_2step");
 #endif
@@ -168,6 +167,9 @@ switch (mctrl)
  |                      I N I T I A L I S A T I O N                     |
  *======================================================================*/
 case 1: 
+adyn   = alldyn[genprob.numaf].adyn;
+fsidyn = alldyn[genprob.numaf+1].fsidyn;
+
 adyn->dt=fsidyn->dt;
 adyn->maxtime=fsidyn->maxtime;
 adyn->nstep=fsidyn->nstep;

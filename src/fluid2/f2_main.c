@@ -78,14 +78,13 @@ static INT              numff;      /* actual number of fluid field     */
 static INT              viscstr;
 static FLUID_DATA      *data;      
 static FLUID_DYNAMIC   *fdyn;
-static FLUID_DYN_CALC  *dynvar;
 static FLUID_DYN_ML    *mlvar;
 static FLUID_ML_SMESH  *submesh;
 static FLUID_ML_SMESH  *ssmesh;
 static INT              ndum;       /* dummy variable                   */
 static INT              xele,yele,zele;/* numb. of subm. ele. in x,y,z  */
 FIELD                  *actfield;   /* actual field                     */
-int smisal;
+INT smisal;
 
 #ifdef DEBUG 
 dstrc_enter("fluid2");
@@ -98,12 +97,11 @@ switch (*action)
 case calc_fluid_init:
 /* ----------------------------------------- find number of fluid field */
    fdyn   = alldyn[genprob.numff].fdyn;
-   dynvar = &(alldyn[genprob.numff].fdyn->dynvar);
-   data   = &(alldyn[genprob.numff].fdyn->dynvar.data);
+   data   = alldyn[genprob.numff].fdyn->data;
    viscstr= alldyn[genprob.numff].fdyn->viscstr;
 /*------------------------------------------- init the element routines */   
    f2_intg(data,0);
-   f2_calele(data,dynvar,NULL,NULL,
+   f2_calele(data,NULL,NULL,
              estif_global,emass_global,
 	     etforce_global,eiforce_global,edforce_global,
 	     NULL,NULL,0,0,1);
@@ -112,9 +110,9 @@ case calc_fluid_init:
 #ifdef FLUID2_ML
   if (fdyn->mlfem==1) 
   {  
-    mlvar   = &(alldyn[numff].fdyn->mlvar);
-    submesh = &(alldyn[numff].fdyn->mlvar.submesh);
-    ssmesh  = &(alldyn[numff].fdyn->mlvar.ssmesh);
+    mlvar   = alldyn[numff].fdyn->mlvar;
+    submesh = &(alldyn[numff].fdyn->mlvar->submesh);
+    ssmesh  = &(alldyn[numff].fdyn->mlvar->ssmesh);
 /*------- determine number of submesh elements in coordinate directions */   
     math_intextract(mlvar->smelenum,&ndum,&xele,&yele,&zele);
 /*------------------------------------- create submesh on parent domain */   
@@ -128,7 +126,7 @@ case calc_fluid_init:
       f2_pdsubmesh(ssmesh,xele,yele,mlvar->ssmorder,1);
     }
 /*----------------------- init the element routines for multi-level FEM */   
-    f2_lsele(data,dynvar,mlvar,submesh,ssmesh,ele,estif_global,emass_global,
+    f2_lsele(data,mlvar,submesh,ssmesh,ele,estif_global,emass_global,
              etforce_global,eiforce_global,edforce_global,hasdirich,hasext,1); 
   }     	    
 #endif
@@ -136,11 +134,10 @@ break;
 
 case calc_fluid_initvort:
 /* ----------------------------------------- find number of fluid field */
-   dynvar = &(alldyn[genprob.numff].fdyn->dynvar);
-   data   = &(alldyn[genprob.numff].fdyn->dynvar.data);
+   data   = alldyn[genprob.numff].fdyn->data;
 /*------------------------------------------- init the element routines */
    f2_intg(data,0); 
-   f2_calvort(data,dynvar,ele,1);  
+   f2_calvort(data,ele,1);  
 break;
 
 /*------------------------------------------- call the element routines */
@@ -157,12 +154,12 @@ if (fdyn->mlfem==1)
 /*-------------------------- create element sub-submesh if not yet done */   
     if (mlvar->smsgvi>2) f2_elesubmesh(ele,ssmesh,1);
   }  
-  f2_lsele(data,dynvar,mlvar,submesh,ssmesh,ele,estif_global,emass_global,
+  f2_lsele(data,mlvar,submesh,ssmesh,ele,estif_global,emass_global,
            etforce_global,eiforce_global,edforce_global,hasdirich,hasext,0);
 }	      
 else  
 #endif
-   f2_calele(data,dynvar,ele,eleke,
+   f2_calele(data,ele,eleke,
              estif_global,emass_global,
 	     etforce_global,eiforce_global,edforce_global,
 	     hasdirich,hasext,actintra->intra_rank,container->is_relax,0);
@@ -170,7 +167,7 @@ break;
 
 /*------------------------------------------- calculate fluid vorticity */
 case calc_fluid_vort:
-   f2_calvort(data,dynvar,ele,0);
+   f2_calvort(data,ele,0);
 break;
 
 /*-------------------------------------------- calculate fluid stresses */
@@ -189,12 +186,12 @@ break;
 
 /*--------------------------------- calculate curvature at free surface */
 case calc_fluid_curvature:
-   f2_curvature(data,dynvar,ele,actintra->intra_rank);
+   f2_curvature(data,ele,actintra->intra_rank);
 break;
 
 /*---------------------------------------- calculate the shear stresses */
 case calc_fluid_shearvelo:
-   f2_shearstress(ele,dynvar);
+   f2_shearstress(ele);
 break;
 
 /*------------------------------------------------------- write restart */

@@ -14,6 +14,21 @@ Maintainer: Volker Gravemeier
 #include "../headers/standardtypes.h"
 #include "fluid2ml_prototypes.h"
 #include "../fluid2/fluid2.h"
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+static FLUID_DYNAMIC *fdyn;
 /*!---------------------------------------------------------------------                                         
 \brief evaluate Galerkin part of submesh "Time" force vector for fluid2
 
@@ -23,7 +38,6 @@ In this routine, the Galerkin part of the submesh "Time" force vector
 on the rhs is calculated.
 
 </pre>
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param  *mlvar     FLUID_DYN_ML    (i)
 \param **smetfor   DOUBLE	   (i/o)  submesh element time force vec.
 \param  *velintn   DOUBLE          (i)    velocity at int. point at n
@@ -45,8 +59,7 @@ on the rhs is calculated.
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void f2_calsmft(FLUID_DYN_CALC  *dynvar,
-	        FLUID_DYN_ML	*mlvar, 
+void f2_calsmft(FLUID_DYN_ML	*mlvar, 
 		DOUBLE         **smetfor,  
 		DOUBLE  	*velintn, 
 		DOUBLE  	*velintnt, 
@@ -79,11 +92,13 @@ DOUBLE sign;
 dstrc_enter("f2_calsmft");
 #endif
 
-facsr = fac*dynvar->thsr;
-facpr = fac*dynvar->thpr;
+fdyn = alldyn[genprob.numff].fdyn;
+
+facsr = fac*fdyn->thsr;
+facpr = fac*fdyn->thpr;
 con   = facsr*visc;
 
-switch (dynvar->conte) /* determine parameter beta of convective term */
+switch (fdyn->conte) /* determine parameter beta of convective term */
 {
 case 0: 
   beta = ZERO;
@@ -98,7 +113,7 @@ case 2:
 break;
 default:
    dserror("unknown form of convective term");
-} /* end switch (dynvar->conte) */
+} /* end switch (fdyn->conte) */
 
 /*----------------------------------------------------------------------*
    Calculate temporal forces (u_transient = u_n or ls_u_n or sm_u_n):
@@ -119,7 +134,7 @@ for (icn=0;icn<2;icn++)
   icol++;
 } /* end loop over icol */
 
-if (dynvar->thsr!=ZERO)
+if (fdyn->thsr!=ZERO)
 {
 /*----------------------------------------------------------------------*
    Calculate convective forces (u_convective = u_n or ls_u_n):
@@ -140,7 +155,7 @@ if (dynvar->thsr!=ZERO)
     icol++;
   } /* end loop over icol */
 
-  if (dynvar->conte!=0)  
+  if (fdyn->conte!=0)  
   {
     cb = beta*divvc*facsr;
 /*----------------------------------------------------------------------*
@@ -206,7 +221,7 @@ if (dynvar->thsr!=ZERO)
 /*----------------------------------------------------------------------*
    Calculate pressure forces:
  *----------------------------------------------------------------------*/
-if (dynvar->thpr!=ZERO && dynvar->iprerhs>0)
+if (fdyn->thpr!=ZERO && fdyn->iprerhs>0)
 {
 /*----------------------------------------------------------------------*
     /
@@ -242,7 +257,6 @@ In this routine, the stabilization part of the submesh "Time" force
 vector on the rhs is calculated.
 
 </pre>
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param  *mlvar     FLUID_DYN_ML    (i)
 \param **smetfor   DOUBLE	   (i/o)  submesh element time force vec.
 \param  *velintn   DOUBLE          (i)    velocity at int. point at n
@@ -265,8 +279,7 @@ vector on the rhs is calculated.
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void f2_calstabsmft(FLUID_DYN_CALC  *dynvar,
-	            FLUID_DYN_ML    *mlvar, 
+void f2_calstabsmft(FLUID_DYN_ML    *mlvar, 
 		    DOUBLE         **smetfor,  
 		    DOUBLE  	    *velintn, 
 		    DOUBLE  	    *velintnt, 
@@ -300,10 +313,11 @@ DOUBLE sign,tau;
 dstrc_enter("f2_calstabsmft");
 #endif
 
+fdyn = alldyn[genprob.numff].fdyn;
 /*---------------------------------------- set stabilization parameter */
 tau = mlvar->smtau;
 
-switch (dynvar->conte) /* determine parameter beta of convective term */
+switch (fdyn->conte) /* determine parameter beta of convective term */
 {
 case 0: 
   beta = ZERO;
@@ -318,7 +332,7 @@ case 2:
 break;
 default:
    dserror("unknown form of convective term");
-} /* end switch (dynvar->conte) */
+} /* end switch (fdyn->conte) */
 
 if (mlvar->smstado<0) sign = -ONE;  /* USFEM */
 else                  sign = ONE;   /* GLS- */
@@ -338,7 +352,7 @@ if (ABS(mlvar->smstado)<3)
   icol=mlvar->nelbub-2;
   for (icn=0;icn<2;icn++)
   {
-    aux = velintnt[icn]*con*(ONE/dynvar->thsl);
+    aux = velintnt[icn]*con*(ONE/fdyn->thsl);
     for (irow=0;irow<smiel;irow++)
     {
       smetfor[irow][icol] += smfunct[irow]*aux;
@@ -346,7 +360,7 @@ if (ABS(mlvar->smstado)<3)
     icol++;
   } /* end loop over icol */
       
-  ccon = con*(dynvar->thsr/dynvar->thsl);
+  ccon = con*(fdyn->thsr/fdyn->thsl);
 /*---------------------------------------------------------------------*
     /
    |  -/+  tau * ((1-theta)*dt/(theta*dt)) * w * u_convective * grad(u_n)
@@ -363,7 +377,7 @@ if (ABS(mlvar->smstado)<3)
     icol++;
   } /* end loop over icol */
 
-  if (dynvar->conte!=0)  
+  if (fdyn->conte!=0)  
   {
     cb = beta*divvc*ccon;
 /*----------------------------------------------------------------------*
@@ -403,9 +417,9 @@ if (ABS(mlvar->smstado)<3)
     } /* end loop over icol */
   }
   
-  if (dynvar->thpr!=ZERO && dynvar->iprerhs>0)
+  if (fdyn->thpr!=ZERO && fdyn->iprerhs>0)
   {
-    ccon = con*(dynvar->thpr/dynvar->thpl);
+    ccon = con*(fdyn->thpr/fdyn->thpl);
 /*----------------------------------------------------------------------*
     /
    |  -/+ tau * ((1-theta)*dt/(theta*dt)) * w * grad(p_n) d_omega
@@ -445,7 +459,7 @@ for (icn=0;icn<2;icn++)
   icol++;
 } /* end loop over icol */
       
-if (dynvar->conte!=0)  
+if (fdyn->conte!=0)  
 {
   cb = con*beta;
 /*----------------------------------------------------------------------*
@@ -465,9 +479,9 @@ if (dynvar->conte!=0)
   } /* end loop over icol */
 }  
 
-if (dynvar->thsr!=ZERO)
+if (fdyn->thsr!=ZERO)
 {
-  ccon = con*dynvar->thsr;
+  ccon = con*fdyn->thsr;
 /*----------------------------------------------------------------------*
     /
    |  - tau * ((1-theta)*dt) * u_con. * grad(w) * u_con. * grad(u_n) d_omega
@@ -485,7 +499,7 @@ if (dynvar->thsr!=ZERO)
     icol++;
   } /* end loop over icol */
       
-  if (dynvar->conte!=0)  
+  if (fdyn->conte!=0)  
   {
     cb  = ccon*beta;
     cbb = cb*beta*sign;
@@ -543,7 +557,7 @@ if (dynvar->thsr!=ZERO)
 
   if (ihoel!=0 && ihoelsm!=0)
   {
-    ccon = con*dynvar->thsr*visc;
+    ccon = con*fdyn->thsr*visc;
 /*----------------------------------------------------------------------*
     /
    |  tau * ((1-theta)*dt) * u_con. * grad(w) * nue * delta(u_n) d_omega
@@ -561,7 +575,7 @@ if (dynvar->thsr!=ZERO)
       icol++;
     } /* end loop over icol */
       
-    if (dynvar->conte!=0)  
+    if (fdyn->conte!=0)  
     {
       cb = ccon*beta*sign;
 /*----------------------------------------------------------------------*
@@ -583,9 +597,9 @@ if (dynvar->thsr!=ZERO)
   }
 }      
   
-if (dynvar->thpr!=ZERO && dynvar->iprerhs>0)
+if (fdyn->thpr!=ZERO && fdyn->iprerhs>0)
 {
-  ccon = con*dynvar->thpr;
+  ccon = con*fdyn->thpr;
 /*----------------------------------------------------------------------*
     /
    |  - tau * ((1-theta)*dt) * u_convective * grad(w) * grad(p_n) d_omega
@@ -603,7 +617,7 @@ if (dynvar->thpr!=ZERO && dynvar->iprerhs>0)
     icol++;
   }  
 
-  if (dynvar->conte!=0)  
+  if (fdyn->conte!=0)  
   {
     cb = ccon*beta*sign;
 /*----------------------------------------------------------------------*
@@ -647,9 +661,9 @@ if (ihoelsm!=0)
     icol++;
   } /* end loop over icol */
 
-  if (dynvar->thsr!=ZERO)
+  if (fdyn->thsr!=ZERO)
   {
-    ccon = con*dynvar->thsr*visc*sign;
+    ccon = con*fdyn->thsr*visc*sign;
 /*---------------------------------------------------------------------*
     /
    |  +/- tau * ((1-theta)*dt) * nue * delta(w) * u_convective * grad(u_n)
@@ -667,7 +681,7 @@ if (ihoelsm!=0)
       icol++;
     } /* end loop over icol */
 
-    if (dynvar->conte!=0)  
+    if (fdyn->conte!=0)  
     {
       cb = beta*ccon;
 /*----------------------------------------------------------------------*
@@ -710,9 +724,9 @@ if (ihoelsm!=0)
     }  
   }  
  
-  if (dynvar->thpr!=ZERO && dynvar->iprerhs>0)
+  if (fdyn->thpr!=ZERO && fdyn->iprerhs>0)
   {
-    ccon = con*dynvar->thpr*visc*sign;
+    ccon = con*fdyn->thpr*visc*sign;
 /*----------------------------------------------------------------------*
     /
    |  +/- tau * ((1-theta)*dt) * nue * delta(w) * grad(p_n) d_omega

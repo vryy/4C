@@ -41,7 +41,16 @@ extern struct _MATERIAL  *mat;
  | general problem data                                                 |
  | global variable GENPROB genprob is defined in global_control.c       |
  *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
+extern struct _GENPROB     genprob;                     
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn; 
+
+static FLUID_DYNAMIC *fdyn;
 /*!---------------------------------------------------------------------                                         
 \brief initialisation of solution history
 
@@ -61,15 +70,12 @@ are written to the output-file and the pss-file.
 If the initial fluid fuild comes from the input-file 'fluid-start-data',
 these data are copied to sol_increment.
 			     
-</pre>   
-\param *fdyn	   FLUID_DYNAMIC   (i)  
-\param *dynvar	   FLUID_DYN_CALC  (i/o)  
+</pre> 
+\param *actfield FIELD   
 \return void 
 
 ------------------------------------------------------------------------*/
-void fluid_init_tu(
-		        FIELD  *actfield,  
-                    FLUID_DYNAMIC *fdyn	
+void fluid_init_tu(        FIELD  *actfield
 	            )      
 {
 INT    i;            /* simply counter                                  */
@@ -82,6 +88,7 @@ NODE  *actnode;      /* the actual node                                 */
 dstrc_enter("fluid_init_tu");
 #endif
 
+fdyn = alldyn[genprob.numff].fdyn;
 /*---------------------------------------------------- set some values */
 numdf        = 1;
 numnp_total  = actfield->dis[1].numnp;
@@ -163,13 +170,12 @@ DOUBLE   dkapepsnorm=ZERO;
 DOUBLE    kapepsnorm=ZERO;
 NODE    *actnode;
 ARRAY    result_a;
-FLUID_DYN_CALC *dynvar;             /* pointer to fluid_dyn_calc        */
 
 #ifdef DEBUG 
 dstrc_enter("fluid_result_incre_tu");
 #endif
 
-dynvar      = &(fdyn->dynvar);
+fdyn = alldyn[genprob.numff].fdyn;
 /*----------------------------------------------------------------------*/
 numeq_total = sol->numeq_total;
 
@@ -205,7 +211,7 @@ solserv_reddistvec(
          {
 	    dof = actnode->dof[j];
             if (dof>=numeq_total) continue;
-	       if(dynvar->kapeps_flag==0)
+	       if(fdyn->kapeps_flag==0)
              {
               if (result[dof]<lower_limit_kappa) result[dof]=lower_limit_kappa;
               result[dof]=0.5*result[dof]+0.5*actnode->sol_increment.a.da[place][j];
@@ -213,7 +219,7 @@ solserv_reddistvec(
 	        kapepsnorm  = DMAX(kapepsnorm, FABS(result[dof]));
               actnode->sol_increment.a.da[place][j] = result[dof];
              }
-             if(dynvar->kapeps_flag==1)
+             if(fdyn->kapeps_flag==1)
              {
               if (result[dof]<lower_limit_eps) result[dof]=lower_limit_eps;
               result[dof]=0.5*result[dof]+0.5*actnode->sol_increment.a.da[place][j+2];
@@ -241,7 +247,7 @@ solserv_reddistvec(
          {
 	    dof = actnode->dof[j];
             if (dof>=numeq_total) continue;
- 	       if(dynvar->kapeps_flag==0)
+ 	       if(fdyn->kapeps_flag==0)
              {
               if (result[dof]<lower_limit_kappa) result[dof]=lower_limit_kappa;
               result[dof]=0.5*result[dof]+0.5*actnode->sol_increment.a.da[place][j];
@@ -249,7 +255,7 @@ solserv_reddistvec(
 	        kapepsnorm  += FABS(result[dof]);
               actnode->sol_increment.a.da[place][j] = result[dof];
              }
-             if(dynvar->kapeps_flag==1)
+             if(fdyn->kapeps_flag==1)
              {
               if (result[dof]<lower_limit_eps) result[dof]=lower_limit_eps;
               result[dof]=0.5*result[dof]+0.5*actnode->sol_increment.a.da[place][j+2];
@@ -278,7 +284,7 @@ solserv_reddistvec(
          {
 	    dof = actnode->dof[j];
             if (dof>=numeq_total) continue;
-             if(dynvar->kapeps_flag==0)
+             if(fdyn->kapeps_flag==0)
              { 
               if (result[dof]<lower_limit_kappa) result[dof]=lower_limit_kappa;
               result[dof]=0.5*result[dof]+0.5*actnode->sol_increment.a.da[place][j];
@@ -286,7 +292,7 @@ solserv_reddistvec(
 	        kapepsnorm  += pow(result[dof],2);
               actnode->sol_increment.a.da[place][j] = result[dof];   
              }
-             if(dynvar->kapeps_flag==1)
+             if(fdyn->kapeps_flag==1)
              { 
               if (result[dof]<lower_limit_eps) result[dof]=lower_limit_eps;
               result[dof]=0.5*result[dof]+0.5*actnode->sol_increment.a.da[place][j+2];
@@ -328,7 +334,7 @@ return;
 <pre>                                                         he  12/02
 
 in this routine the dirichlet boundary conditions for fluid2 and fluid3
-elements are set at time <T=fdyn->time>.
+elements are set at time <T=fdyn->acttime>.
 the actual dirichlet values are written to the solution history of the
 nodes:
     'actnode->sol_increment.a.da[3][j] 
@@ -336,8 +342,7 @@ nodes:
                             time (n+1)                
                                      
 </pre>
-\param *actfield    FIELD         (i)  actual field (fluid)   
-\param *fdyn	  FLUID_DYNAMIC (i)  
+\param *actfield    FIELD         (i)  actual field (fluid) 
 \param *lower_limit_kappa  DOUBLE (o) lower limit for kappa  
 
 \return void                                                                             
@@ -345,7 +350,6 @@ nodes:
 ------------------------------------------------------------------------*/
 void fluid_set_check_tu(
                        FIELD  *actfield, 
-                       FLUID_DYNAMIC *fdyn, 
                        DOUBLE lower_limit_kappa)
 {
 INT        i,j;
@@ -360,6 +364,7 @@ NODE      *actnode;	             /* actual NODE		            */
 dstrc_enter("fluid_set_check_tu");
 #endif 
 
+fdyn = alldyn[genprob.numff].fdyn;
 /*----------------------------------------------------- set some values */
 numnp_total  = actfield->dis[1].numnp;
 numele_total = actfield->dis[1].numele;
@@ -496,17 +501,15 @@ and calculate norms for the iteration convergence check
 <pre>                                                        he  12/02
 
 </pre>   
-\param **actfield      FIELD	            (i)    actual field       
-\param	*sol 	     DIST_VECTOR        (i)    solution vector
-\param  lenghtrat	     DOUBLE             (o)    conv. ratio
-\param     *fdyn 	     FLUID_DYNAMIC      (i)   
+\param  **actfield      FIELD	            (i)    actual field       
+\param	 *sol 	        DIST_VECTOR         (i)    solution vector
+\param    lenghtrat	DOUBLE              (o)    conv. ratio
 \return void 
 
 ------------------------------------------------------------------------*/
-void fluid_lenght_update(FIELD         *actfield, 
-                         DIST_VECTOR   *sol,   
-		             DOUBLE        *lenghtrat, 
-                         FLUID_DYNAMIC *fdyn      
+void fluid_lenght_update( FIELD         *actfield, 
+                          DIST_VECTOR   *sol,   
+                          DOUBLE        *lenghtrat
                         )
 {
 NODE    *actnode;
@@ -521,6 +524,8 @@ ELEMENT *actele;
 #ifdef DEBUG 
 dstrc_enter("fluid_lenght_update");
 #endif
+
+fdyn = alldyn[genprob.numff].fdyn;
 /*----------------------------------------------------------------------*/
 numeq_total = sol->numeq_total;  
   
@@ -610,7 +615,7 @@ the given tolerance. The result is printed out to the screen.
 \return INT converged  
 
 ------------------------------------------------------------------------*/
-INT fluid_convcheck_tu(FLUID_DYNAMIC *fdyn,   
+INT fluid_convcheck_tu(
                        DOUBLE         kapepsrat,  
                        INT            itnum1, 
 		           DOUBLE         te,    
@@ -622,6 +627,8 @@ INT         converged=0;  /* flag for convergence check                  */
 #ifdef DEBUG 
 dstrc_enter("fluid_convcheck_tu");
 #endif
+
+fdyn = alldyn[genprob.numff].fdyn;
 
    if (par.myrank==0) /* output to the screen */
    { 
@@ -682,7 +689,6 @@ the given tolerance for rans.
 
 ------------------------------------------------------------------------*/
 INT fluid_convcheck_test(
-                     FLUID_DYNAMIC *fdyn, 
                      FIELD         *actfield, 
                      INT            itnum_check 
 		         )
@@ -701,6 +707,8 @@ INT       numdf;
 #ifdef DEBUG 
 dstrc_enter("fluid_convcheck_test");
 #endif
+
+fdyn = alldyn[genprob.numff].fdyn;
 /*----------------------------------------------------------------------*/
 predof      = fdyn->numdf-1;  
 numdf       = fdyn->numdf;
@@ -785,19 +793,16 @@ return ((INT)(converged));
 nikapeps <->  EVALUATION OF "TIME - RHS" (F-hat)		    
 
 </pre>   
-\param *fdyn	   FLUID_DYNAMIC   (i)  
-\param *dynvar	   FLUID_DYN_CALC  (i/o)  
 \param  itnum1       INT  	       (i)     actual number of iterations
 \param  itnumke      INT  	       (i)     actual number of iterations
 \param  itnum_n      INT  	       (i)     actual number of iterations
 \return void 
 
 ------------------------------------------------------------------------*/
-void fluid_icons_tu(FLUID_DYNAMIC *fdyn,
-                    FLUID_DYN_CALC *dynvar,
+void fluid_icons_tu(
 		        INT itnum1,
 		        INT itnumke,
-                    INT itnum_n
+                        INT itnum_n
 		        )
 {
 
@@ -805,20 +810,21 @@ void fluid_icons_tu(FLUID_DYNAMIC *fdyn,
 dstrc_enter("fluid_icons_tu");
 #endif
 
+fdyn = alldyn[genprob.numff].fdyn;
 /*----------------------------------------------------- initialisation */
-dynvar->nis     = 0;
-dynvar->kappan  = itnum1 + itnumke;  
+fdyn->nis     = 0;
+fdyn->kappan  = itnum1 + itnumke;  
 
-dynvar->niturbu_n = 1;
+fdyn->niturbu_n = 1;
 if ((itnum1+itnum_n)>2)
 {
- dynvar->niturbu_n=0;  
+ fdyn->niturbu_n=0;  
 }
 
-dynvar->niturbu_pro = 1;
+fdyn->niturbu_pro = 1;
 if ((itnum1+itnumke)>2)
 {
- dynvar->niturbu_pro=0;  
+ fdyn->niturbu_pro=0;  
 }
 
 /*----------------------------------------------------------------------*/
@@ -847,7 +853,7 @@ history is copied to the positon 'to'.
 \return void 
 
 ------------------------------------------------------------------------*/
-void fluid_copysol_tu(FLUID_DYNAMIC *fdyn, 
+void fluid_copysol_tu(
                        FIELD         *actfield,  
                        INT            from,     
 		           INT            to,       
@@ -860,13 +866,12 @@ INT         diff,max;     /* integers for amredef                       */
 INT         numdf;        /* number of fluid dofs                       */
 DOUBLE     visc;
 NODE       *actnode;      /* actual node                                */
-FLUID_DYN_CALC *dynvar;   /* pointer to fluid_dyn_calc                   */
 
 #ifdef DEBUG 
 dstrc_enter("fluid_copysol_tu");
 #endif
 
-dynvar       = &(fdyn->dynvar);
+fdyn = alldyn[genprob.numff].fdyn;
 
 for(i=0; i<genprob.nmat; i++)
 {
@@ -899,7 +904,7 @@ case 0: /* copy from sol_increment[from] to sol_increment[to] */
 break;
 /*----------------------------------------------------------------------*/   
 case 1: /* copy from sol_increment[from] to sol[to]*/
-  if (dynvar->washvel == 0.0) dynvar->washvel=1.0;
+  if (fdyn->washvel == 0.0) fdyn->washvel=1.0;
 
   if(fdyn->turbu==2)
   {
@@ -915,9 +920,9 @@ case 1: /* copy from sol_increment[from] to sol[to]*/
       } /* endif enlargement */
       for (j=0; j<numdf; j++) /* loop dofs */
       {
-        actnode->sol.a.da[to][j]  =actnode->sol_increment.a.da[from][j]/pow(dynvar->washvel,2);
+        actnode->sol.a.da[to][j]  =actnode->sol_increment.a.da[from][j]/pow(fdyn->washvel,2);
         actnode->sol.a.da[to][j+1]=actnode->sol_increment.a.da[from][j+1];
-        actnode->sol.a.da[to][j+2]=actnode->sol_increment.a.da[from][j+2]*visc/pow(dynvar->washvel,4);
+        actnode->sol.a.da[to][j+2]=actnode->sol_increment.a.da[from][j+2]*visc/pow(fdyn->washvel,4);
       } /* end of loop over dofs */
    } /* end of loop over nodes */
   }
@@ -935,9 +940,9 @@ case 1: /* copy from sol_increment[from] to sol[to]*/
       } /* endif enlargement */
       for (j=0; j<numdf; j++) /* loop dofs */
       {
-        actnode->sol.a.da[to][j]  =actnode->sol_increment.a.da[from][j]/pow(dynvar->washvel,2);
+        actnode->sol.a.da[to][j]  =actnode->sol_increment.a.da[from][j]/pow(fdyn->washvel,2);
         actnode->sol.a.da[to][j+1]=actnode->sol_increment.a.da[from][j+1];
-        actnode->sol.a.da[to][j+2]=actnode->sol_increment.a.da[from][j+2]*visc/pow(dynvar->washvel,2);
+        actnode->sol.a.da[to][j+2]=actnode->sol_increment.a.da[from][j+2]*visc/pow(fdyn->washvel,2);
       } /* end of loop over dofs */
    } /* end of loop over nodes */
   }
@@ -965,7 +970,6 @@ history is copied to the positon 'to' and the result from is copied
 due to convergence check for RANS.	
 			     
 </pre>   
-\param *fdyn 	    FLUID_DYNAMIC (i)   
 \param *actfield      FIELD	     (i)  actual field
 \param  from          INT	     (i)  pos. in sol(_increment)
 \param  to   	    INT	     (i)  pos. in sol(_increment)
@@ -973,7 +977,7 @@ due to convergence check for RANS.
 
 ------------------------------------------------------------------------*/
 
-void fluid_copysol_test(FLUID_DYNAMIC *fdyn, 
+void fluid_copysol_test(
                    FIELD         *actfield,  
                    INT            from,     
                    INT            to     
@@ -989,6 +993,7 @@ NODE       *actnode;      /* actual node                                */
 dstrc_enter("fluid_copysol_test");
 #endif
 
+fdyn = alldyn[genprob.numff].fdyn;
 /*----------------------------------------------------- set some values */
 numdf        = fdyn->numdf;
 numnp_total  = actfield->dis[0].numnp;
@@ -1026,14 +1031,10 @@ return;
 time-integration parameters are printed out to the screen
 			     
 </pre>   
-\param *fdyn 	        FLUID_DYNAMIC   (i)   
-\param *dynvar	        FLUID_DYN_CALC  (i/o) 
 \return void 
 
 ------------------------------------------------------------------------*/
-void fluid_algoout_tu(FLUID_DYNAMIC  *fdyn, 
-                      FLUID_DYN_CALC *dynvar
-		         )
+void fluid_algoout_tu( void )
 {
 
 #ifdef DEBUG 
@@ -1041,24 +1042,26 @@ dstrc_enter("fluid_algoout_tu");
 #endif
 
 printf("\n");
+/*-------------------------- set pointer to fluid dynamics variables ---*/
+fdyn = alldyn[genprob.numff].fdyn;
 
 switch(fdyn->iop)
 {
 case 2:
    printf("TIME: %11.4E/%11.4E  DT = %11.4E  Semi-Impl-One-Step  STEP = %4d/%4d \n",
-          fdyn->time,fdyn->maxtime,dynvar->dta,fdyn->stepke,fdyn->nstep);
+          fdyn->acttime,fdyn->maxtime,fdyn->dta,fdyn->stepke,fdyn->nstep);
 break;
 case 3:
    printf("TIME: %11.4E/%11.4E  DT = %11.4E  Semi-Impl-Two-Step  STEP = %4d/%4d \n",
-          fdyn->time,fdyn->maxtime,dynvar->dta,fdyn->stepke,fdyn->nstep);
+          fdyn->acttime,fdyn->maxtime,fdyn->dta,fdyn->stepke,fdyn->nstep);
 break;
 case 4:
    printf("TIME: %11.4E/%11.4E  DT = %11.4E  One-Step-Theta  STEP = %4d/%4d \n",
-          fdyn->time,fdyn->maxtime,dynvar->dta,fdyn->stepke,fdyn->nstep);
+          fdyn->acttime,fdyn->maxtime,fdyn->dta,fdyn->stepke,fdyn->nstep);
 break;
 case 5:
    printf("TIME: %11.4E/%11.4E  DT = %11.4E  Fract-Step-Theta  STEP = %4d/%4d \n",
-          fdyn->time,fdyn->maxtime,dynvar->dta,fdyn->stepke,fdyn->nstep);
+          fdyn->acttime,fdyn->maxtime,fdyn->dta,fdyn->stepke,fdyn->nstep);
 break;         
 default:
    dserror("parameter out of range: IOP\n");
@@ -1081,29 +1084,29 @@ in this routine the constants for the time integration algorithms are
 calculated
 			     
 </pre>   
-\param *fdyn		FLUID_DYNAMIC   (i)  
-\param *dynvar	        FLUID_DYN_CALC  (i/o)  
 
 \return void 
 \warning only ONE-STEP-THETA implemented up to now!
 
 ------------------------------------------------------------------------*/
-void fluid_tcons_tu(FLUID_DYNAMIC *fdyn,
-                    FLUID_DYN_CALC *dynvar)
+void fluid_tcons_tu( void )
 {
 
 #ifdef DEBUG 
 dstrc_enter("fluid_tcons_tu");
 #endif
 
+/*-------------------------- set pointer to fluid dynamics variables ---*/
+fdyn = alldyn[genprob.numff].fdyn;
+
 /*----------------------------------------------------- check algorithm */
 if (fdyn->iop==4)   /* one step theta */
 {
-    dynvar->dta  = fdyn->dt*0.05;
-    dynvar->thsl = fdyn->dt*0.05*fdyn->theta;
-    dynvar->thpl = dynvar->thsl;
-    dynvar->thsr = (ONE - fdyn->theta)*fdyn->dt*0.05;
-    dynvar->thpr = dynvar->thsr;
+    fdyn->dta  = fdyn->dt*0.05;
+    fdyn->thsl = fdyn->dt*0.05*fdyn->theta;
+    fdyn->thpl = fdyn->thsl;
+    fdyn->thsr = (ONE - fdyn->theta)*fdyn->dt*0.05;
+    fdyn->thpr = fdyn->thsr;
 }
 else
    dserror ("constants for time algorithm not implemented yet!\n");

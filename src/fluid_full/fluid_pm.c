@@ -91,7 +91,8 @@ extern struct _CURVE *curve;
  | defined globally in global_calelm.c                                  |
  *----------------------------------------------------------------------*/
 extern enum _CALC_ACTION calc_action[MAXFIELD];
- 
+
+static FLUID_DYNAMIC *fdyn;
 
 /*!---------------------------------------------------------------------  
 \brief projection method algorithm for fluid problems
@@ -110,14 +111,13 @@ part 1 & part 2 "
 International Journal for Numerical Methods in Fluids, 
 VOL 11, pp. 587-659, (1990)
 
-</pre>   
-\param *fdyn	 FLUID_DYNAMIC (i)    
+</pre>     
 
 \return void 
 \warning this is all in progress 
 
 ------------------------------------------------------------------------*/
-void fluid_pm(FLUID_DYNAMIC *fdyn)
+void fluid_pm(void)
 {
 INT             actcurve;           /* actual timecurve                 */
 INT             i;                  /* simply a counter                 */
@@ -171,7 +171,6 @@ PARTITION      *actpart;            /* pointer to active partition      */
 FIELD          *actfield;           /* pointer to active field          */
 INTRA          *actintra;           /* pointer to active intra-communic.*/
 CALC_ACTION    *action;             /* pointer to the cal_action enum   */
-FLUID_DYN_CALC *dynvar;             /* pointer to fluid_dyn_calc        */
 CONTAINER       container;          /* contains variables defined in container.h */      
 OLL            *gradmatrix_oll;     /* full gradient matrix             */
 OLL            *rgradmatrix_oll;    /* reduced gradient matrix          */
@@ -186,10 +185,10 @@ dstrc_enter("fluid_pm");
 /*======================================================================*/
 /*--------------------------------------------------- set some pointers */
 /*---------------------------- only valid for single field problem !!!! */
+fdyn        = alldyn[genprob.numff].fdyn;
 actfield    = &(field[0]);
 actpart     = &(partition[0]);
 action      = &(calc_action[0]);
-dynvar      = &(fdyn->dynvar);
 str         = str_none;
 container.fieldtyp = fluid;
 numeq_full[veldis] = actpart->pdis[veldis].numnp*2;
@@ -373,7 +372,7 @@ if (ioflags.fluid_vis_file==1 )
 amdef("time",&time_a,1000,1,"DV");
 
 /*---------------------------------------------- initialise fluid field */
-fluid_init(actpart,actintra,actfield,fdyn,action,&container,4,str);		     
+fluid_init(actpart,actintra,actfield,action,&container,4,str);		     
 actpos=0;
 
 /*---------------------------------------- init all applied time curves */
@@ -381,7 +380,7 @@ for (actcurve=0; actcurve<numcurve; actcurve++)
    dyn_init_curve(actcurve,fdyn->nstep,fdyn->dt,fdyn->maxtime); 
 
 /*--------------------------------------- init the dirichlet-conditions */
-fluid_initdirich(actfield, fdyn);
+fluid_initdirich(actfield);
 
 /*----------------------------------- initialize solver on all matrices */
 /*
@@ -410,6 +409,9 @@ solver_control(presolv, actintra,
 init_assembly(actpart,actsolv,actintra,actfield,k_array,veldis);
 init_assembly(actpart,presolv,actintra,actfield,0,predis);
 
+/*---------------------------------- allocate fluid integration data ---*/
+alldyn[genprob.numff].fdyn->data = (FLUID_DATA*)CCACALLOC(1,sizeof(FLUID_DATA));
+
 /*------------------------------- init the element calculating routines */
 *action = calc_fluid_init;
 calinit(actfield,actpart,action,&container);
@@ -420,18 +422,18 @@ out_sol(actfield,actpart,actintra,fdyn->step,actpos);
 /*------------------------------- print out initial data to .flavia.res */
 if (ioflags.fluid_sol_gid==1 && par.myrank==0) 
 {
-   out_gid_sol("velocity",actfield,actintra,fdyn->step,actpos,fdyn->time);
-   out_gid_sol("pressure",actfield,actintra,fdyn->step,actpos,fdyn->time);
+   out_gid_sol("velocity",actfield,actintra,fdyn->step,actpos,fdyn->acttime);
+   out_gid_sol("pressure",actfield,actintra,fdyn->step,actpos,fdyn->acttime);
 }
 
 /*----------------------------------------------------------------------*
 /*                    END OF THE INITIALISATION       
 /*----------------------------------------------------------------------*/
 
-dynvar->theta = ONE;
-dynvar->pro_profile = 1;  /* parabolic profile              */
-/*dynvar->pro_profile = 2 ; /* constant profile               */
-/*dynvar->pro_profile = 3;    /* parabolic profile for cylinder */
+fdyn->theta = ONE;
+fdyn->pro_profile = 1;  /* parabolic profile              */
+/*fdyn->pro_profile = 2 ; /* constant profile               */
+/*fdyn->pro_profile = 3;    /* parabolic profile for cylinder */
 
 /*======================================================================*
  |                         A  -  M A T R I X                            |   
@@ -447,7 +449,6 @@ fluid_pm_calamatrix( actfield,
 		      actsolv,
 		      &(presolv->sysarray[0]),
 		      fdyn,
-		      dynvar,
 		      gradmatrix_oll,
 		      rgradmatrix_oll,
 		      lmass,
@@ -475,9 +476,9 @@ solver_control(presolv, actintra,
                init);	 
 
 /*----------------------------------------------------------------------*/
-fdyn->time=ZERO;
+fdyn->acttime=ZERO;
 fdyn->step=0;
-dynvar->dta = fdyn->dt;
+fdyn->dta = fdyn->dt;
 
 /*======================================================================*
  |                         T I M E   L O O P                            |   
@@ -485,11 +486,11 @@ dynvar->dta = fdyn->dt;
 if (par.myrank==0) printf("\nTIMELOOP:\n\n");
 timeloop:
 fdyn->step++; 
-fdyn->time += dynvar->dta;
+fdyn->acttime += fdyn->dta;
 /*----------------------------------------------- output to the screen */
 if (par.myrank==0)
 printf("TIME: %11.4E/%11.4E  DT = %11.4E  Projection Method  STEP = %4d/%4d \n",
-        fdyn->time,fdyn->maxtime,dynvar->dta,fdyn->step,fdyn->nstep);
+        fdyn->acttime,fdyn->maxtime,fdyn->dta,fdyn->step,fdyn->nstep);
 
 /*--------------------------- intitialise global matrix and global rhs */
 solserv_zero_mat(actintra,&(actsolv->sysarray[k_array]),
@@ -506,16 +507,16 @@ solserv_zero_vec(rhs_p);
 solserv_zero_vec(sol_p);
 
 /*--------------------- set dirichlet boundary conditions for  timestep */
-switch (dynvar->pro_profile)
+switch (fdyn->pro_profile)
 {
 case 1:
-   fluid_setdirich_parabolic(actfield,fdyn);
+   fluid_setdirich_parabolic(actfield);
 break;
 case 2:
-   fluid_setdirich(actfield,fdyn,3);
+   fluid_setdirich(actfield,3);
 break;
 case 3:
-   fluid_setdirich_cyl(actfield,fdyn);
+   fluid_setdirich_cyl(actfield);
 break;
 default:
    dserror("unknown velocity profile!\n");
@@ -546,19 +547,19 @@ container.fidrichrhs   = fdirich;
 container.global_numeq = numeq_total[veldis]; 
 container.kstep        = 0;
 container.actndis      = veldis;
-dynvar->pro_calmat     = 1;
-dynvar->pro_caldirich  = 1;
-dynvar->pro_kvv        = 1;
-dynvar->pro_calrhs     = 1;
-dynvar->pro_mvv        = 1;
-dynvar->pro_calveln    = 1;
-dynvar->pro_lum        = 0;
+fdyn->pro_calmat     = 1;
+fdyn->pro_caldirich  = 1;
+fdyn->pro_kvv        = 1;
+fdyn->pro_calrhs     = 1;
+fdyn->pro_mvv        = 1;
+fdyn->pro_calveln    = 1;
+fdyn->pro_lum        = 0;
 calelm(actfield,actsolv,actpart,actintra,k_array,m_array,&container,action);
 
 /*--------------------------------------------- scale K-matrix K = K*dt */
 solserv_scal_mat(&(actsolv->sysarray_typ[k_array]),
                    &(actsolv->sysarray[k_array]),
-		   dynvar->dta*dynvar->theta);
+		   fdyn->dta*fdyn->theta);
 /*-------------------------------------------------------- K = M + dt*K */
 solserv_add_mat(actintra,
                &(actsolv->sysarray_typ[k_array]),
@@ -705,7 +706,7 @@ solserv_result_incre(actfield,actintra,sol_v,3,
 
 
 /*----------------------- update the pressure values-->Pn+1=Pn+2*phi/dt */
-solserv_add_vec(sol_p,sol_pnew,TWO/dynvar->dta);
+solserv_add_vec(sol_p,sol_pnew,TWO/fdyn->dta);
 
 /*--------------------------------- return pressure values to the nodes */
 solserv_result_incre(actfield,actintra,sol_pnew,3,
@@ -742,8 +743,8 @@ if (outstep==fdyn->upout && ioflags.fluid_sol_file==1)
 if (resstep==fdyn->upres &&ioflags.fluid_sol_gid==1 && par.myrank==0) 
 {
    resstep=0;
-   out_gid_sol("velocity",actfield,actintra,fdyn->step,actpos,fdyn->time);
-   out_gid_sol("pressure",actfield,actintra,fdyn->step,actpos,fdyn->time);
+   out_gid_sol("velocity",actfield,actintra,fdyn->step,actpos,fdyn->acttime);
+   out_gid_sol("pressure",actfield,actintra,fdyn->step,actpos,fdyn->acttime);
 }
 
 /*---------------------------------------------- write solution to .pss */
@@ -753,12 +754,12 @@ if (pssstep==fdyn->uppss && ioflags.fluid_vis_file==1)
    /*--------------------------------------------- store time in time_a */
    if (actpos >= time_a.fdim)
    amredef(&(time_a),time_a.fdim+1000,1,"DV");
-   time_a.a.dv[actpos] = fdyn->time;   
+   time_a.a.dv[actpos] = fdyn->acttime;   
    actpos++;
 }
 
 /*--------------------- check time and number of steps and steady state */
-if (fdyn->step < fdyn->nstep && fdyn->time <= fdyn->maxtime)
+if (fdyn->step < fdyn->nstep && fdyn->acttime <= fdyn->maxtime)
    goto timeloop; 
 /*----------------------------------------------------------------------*
  | -->  end of timeloop                                                 |
@@ -781,7 +782,7 @@ if (ioflags.fluid_vis_file==1 && par.myrank==0)
       /*------------------------------------------ store time in time_a */
       if (actpos >= time_a.fdim)
       amredef(&(time_a),time_a.fdim+1000,1,"DV");
-      time_a.a.dv[actpos] = fdyn->time;   
+      time_a.a.dv[actpos] = fdyn->acttime;   
    }   
    visual_writepss(actfield,actpos+1,&time_a);
 }

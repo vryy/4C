@@ -13,6 +13,21 @@ Maintainer: Volker Gravemeier
 #ifdef FLUID3_ML 
 #include "../headers/standardtypes.h"
 #include "fluid3ml_prototypes.h"
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+static FLUID_DYNAMIC *fdyn;
 /*!---------------------------------------------------------------------                                         
 \brief evaluate Galerkin part of submesh stiffness matrix SMK for fluid3
 
@@ -22,7 +37,6 @@ In this routine, the Galerkin part of the submesh stiffness matrix SMK
 is calculated.
 
 </pre>
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param  *mlvar     FLUID_DYN_ML    (i)
 \param **smestif   DOUBLE	   (i/o)  submesh ele stiffness matrix
 \param  *velint    DOUBLE	   (i)    velocity at int. point
@@ -35,8 +49,7 @@ is calculated.
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void f3_calsmk(FLUID_DYN_CALC  *dynvar,
-	       FLUID_DYN_ML    *mlvar, 
+void f3_calsmk(FLUID_DYN_ML    *mlvar, 
 	       DOUBLE         **smestif,   
 	       DOUBLE          *velint, 
 	       DOUBLE         **vderxy, 
@@ -58,6 +71,7 @@ DOUBLE  con,aux,beta,divv;
 dstrc_enter("f3_calsmk");
 #endif		
 
+fdyn = alldyn[genprob.numff].fdyn;
 /*-------------------------------------------------- subgrid viscosity */
 if (mlvar->smsgvi>0) con=fac*(visc+mlvar->smsgvisc);
 else con=fac*visc;
@@ -96,14 +110,14 @@ for (icol=0;icol<smiel;icol++)
   } /* end loop over irow */
 }/* end loop over icol */ 
   
-if (dynvar->conte!=0)  
+if (fdyn->conte!=0)  
 {
 /*----------------------------------------------------------------------*
     /
    | beta * w * bub * div(u_old[ls_u_old])   d_omega
   /
  *----------------------------------------------------------------------*/
-  if (dynvar->conte==1) beta = ONE;
+  if (fdyn->conte==1) beta = ONE;
   else beta = ONE/TWO;
 /*---------------------------------------------- divergence of velocity */
   divv= vderxy[0][0]+vderxy[1][1]+vderxy[2][2]; 
@@ -261,7 +275,6 @@ NOTE: there's only one elestif
       --> Kvv is stored in estif[0..(3*iel-1)][0..(3*iel-1)]
       
 </pre>
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param **estif     DOUBLE	   (i/o)  ele stiffness matrix
 \param  *velint    DOUBLE	   (i)    vel at int point
 \param **vderxy    DOUBLE	   (i)    global vel derivatives
@@ -273,8 +286,7 @@ NOTE: there's only one elestif
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
-void f3_lscalkvv(FLUID_DYN_CALC  *dynvar,
-	       DOUBLE	      **estif,
+void f3_lscalkvv(DOUBLE	      **estif,
 	       DOUBLE	       *velint,
 	       DOUBLE	      **vderxy,
 	       DOUBLE	       *funct,
@@ -295,13 +307,14 @@ DOUBLE  con,aux,beta,divv;
 
 #ifdef DEBUG 
 dstrc_enter("f3_lscalkvv");
-#endif	
+#endif
 
+fdyn = alldyn[genprob.numff].fdyn;
 /*------------------------------------------------- subgrid viscosity? */
-if (dynvar->sgvisc>0) con=fac*(visc+dynvar->sugrvisc);
+if (fdyn->sgvisc>0) con=fac*(visc+fdyn->sugrvisc);
 else con=fac*visc;
 
-if (dynvar->vite==0) 
+if (fdyn->vite==0) 
 {
 /*----------------------------------------------------------------------*
    Calculate full Galerkin part of matrix K (including subgrid visc.):
@@ -369,7 +382,7 @@ else
 /*----------------------------------------------------------------------*
    Calculate full Galerkin part of matrix Nc(u)
  *----------------------------------------------------------------------*/
-if(dynvar->nic != 0) /* evaluate for Newton- and fixed-point-like-iteration */
+if(fdyn->nic != 0) /* evaluate for Newton- and fixed-point-like-iteration */
 {
 /*----------------------------------------------------------------------*
     /
@@ -392,14 +405,14 @@ if(dynvar->nic != 0) /* evaluate for Newton- and fixed-point-like-iteration */
     icol += 3;
   } /* end of loop over icn */
   
-  if (dynvar->conte!=0)  
+  if (fdyn->conte!=0)  
   {
 /*----------------------------------------------------------------------*
     /
    | beta * v * u * div(u_old)   d_omega
   /
  *----------------------------------------------------------------------*/
-    if (dynvar->conte==1) beta = ONE;
+    if (fdyn->conte==1) beta = ONE;
     else beta = ONE/TWO;
     divv= vderxy[0][0]+vderxy[1][1]+vderxy[2][2]; 
     icol=0;
@@ -417,12 +430,12 @@ if(dynvar->nic != 0) /* evaluate for Newton- and fixed-point-like-iteration */
       icol += 3;
     } /* end loop over icn */
   }
-} /* endif (dynvar->nic != 0) */
+} /* endif (fdyn->nic != 0) */
 
 /*----------------------------------------------------------------------*
    Calculate full Galerkin part of matrix Nr(u):
  *----------------------------------------------------------------------*/
-if (dynvar->nir != 0) /* evaluate for Newton iteraton */
+if (fdyn->nir != 0) /* evaluate for Newton iteraton */
 {
 /*----------------------------------------------------------------------*
     /
@@ -452,14 +465,14 @@ if (dynvar->nir != 0) /* evaluate for Newton iteraton */
     icol += 3;
   } /* end of loop over icn */
 
-  if (dynvar->conte!=0)  
+  if (fdyn->conte!=0)  
   {
 /*----------------------------------------------------------------------*
     /
    |  beta * v * u_old * div(u)     d_omega
   /
  *----------------------------------------------------------------------*/
-    if (dynvar->conte==1) beta = ONE;
+    if (fdyn->conte==1) beta = ONE;
     else beta = ONE/TWO;
     icol=0;
     for (icn=0;icn<iel;icn++)
@@ -484,7 +497,7 @@ if (dynvar->nir != 0) /* evaluate for Newton iteraton */
       icol += 2;
     } /* end loop over icn */
   }  
-} /* endif (dynvar->nir != 0) */
+} /* endif (fdyn->nir != 0) */
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

@@ -18,6 +18,21 @@ Maintainer: Volker Gravemeier
 #include "../fluid3/fluid3_prototypes.h"
 #include "fluid3ml_prototypes.h"
 #include "../fluid3/fluid3.h"
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+static FLUID_DYNAMIC *fdyn;
 
 static DOUBLE Q13  = ONE/THREE;
 static DOUBLE Q112 = ONE/TWELVE;
@@ -33,7 +48,6 @@ is calculated.
 </pre>
 
 \param   *ele         ELEMENT	      (i)    actual element
-\param   *dynvar      FLUID_DYN_CALC  (i)
 \param   *mlvar       FLUID_DYN_ML    (i/o)
 \param   *velint      DOUBLE	      (i)    l-s velocity at ele. center
 \param    visc        DOUBLE	      (i)    viscosity
@@ -42,8 +56,7 @@ is calculated.
 \return void                                                                       
 
 ------------------------------------------------------------------------*/ 
-void f3_smstabpar(ELEMENT         *ele,      
-		  FLUID_DYN_CALC  *dynvar,
+void f3_smstabpar(ELEMENT         *ele,
 		  FLUID_DYN_ML    *mlvar,
 		  DOUBLE	  *velint,  
 		  DOUBLE	   visc,    
@@ -63,7 +76,7 @@ DOUBLE aux1;       /* auxiliary parameter                               */
 dstrc_enter("f3_smstabpar");
 #endif
 
-
+fdyn = alldyn[genprob.numff].fdyn;
 /*----------------------- higher order element diameter modifications ? */
 switch(mlvar->smstamk)
 {
@@ -101,7 +114,7 @@ case 35: /*-------------------------- version diss. Wall - instationary */
   velno = sqrt(velint[0]*velint[0] \
              + velint[1]*velint[1] \
 	     + velint[2]*velint[2]); /*norm of vel */
-  dt = dynvar->dta;	/* check if dta or dt has to be chosen!!!!!!!! */
+  dt = fdyn->dta;	/* check if dta or dt has to be chosen!!!!!!!! */
   hk = ele->e.f3->smcml/hdiv;
   if (velno>EPS15)
   { 
@@ -127,7 +140,7 @@ case 37: /*------------------------------- version Franca/Valentin (2000) */
   velno = sqrt(velint[0]*velint[0] \
              + velint[1]*velint[1] \
 	     + velint[2]*velint[2]); /*norm of vel */
-  rc = dynvar->thsl;	 /* reaction coefficient = theta times dt */
+  rc = fdyn->thsl;	 /* reaction coefficient = theta times dt */
   hk = ele->e.f3->smcml/hdiv;
   re1 = TWO*visc*rc/c_mk/hk/hk; /* first element reynolds number */
   if (re1<ONE) re1 = ONE;
@@ -246,8 +259,7 @@ dstrc_exit();
 return;
 } /* end of f3_smsgvisc*/	
 
-void f3_mlcalstabpar(ELEMENT         *ele,      
-		     FLUID_DYN_CALC  *dynvar,
+void f3_mlcalstabpar(ELEMENT         *ele,
 		     DOUBLE	   *velint,  
 		     DOUBLE	    visc,    
 		     INT  	    iel,     
@@ -269,6 +281,7 @@ dstrc_enter("f3_mlcalstabpar");
 #endif
 
 /*---------------------------------------------------------- initialise */
+fdyn = alldyn[genprob.numff].fdyn;
 gls    = ele->e.f3->stabi.gls;
 
 if (ele->e.f3->stab_type != stab_gls) 
@@ -310,7 +323,7 @@ case 35: /*-------------------------- version diss. Wall - instationary */
    velno = sqrt(velint[0]*velint[0] \
                +velint[1]*velint[1] \
 	       +velint[2]*velint[2]); /*norm of vel */
-   dt = dynvar->dta;     /* check if dta or dt has to be chosen!!!!!!!! */
+   dt = fdyn->dta;     /* check if dta or dt has to be chosen!!!!!!!! */
    for (isp=0;isp<3;isp++)
    {
       if (gls->itau[isp]!=iflag)
@@ -320,16 +333,16 @@ case 35: /*-------------------------- version diss. Wall - instationary */
       {
       case 2:/* continiuty stabilisation */
          re = c_mk*hk*velno/TWO/visc;  /* element reynolds number */
-	 dynvar->tau[isp] = (gls->clamb)*velno*hk/TWO*DMIN(ONE,re);         
+	 fdyn->tau[isp] = (gls->clamb)*velno*hk/TWO*DMIN(ONE,re);         
       break;
       default: /* velocity / pressure stabilisation */
          if (velno>EPS15)
 	 { 
 	    aux1 = DMIN(hk/TWO/velno , c_mk*hk*hk/FOUR/visc);
-            dynvar->tau[isp] = DMIN(dt , aux1);
+            fdyn->tau[isp] = DMIN(dt , aux1);
          }
 	 else
-            dynvar->tau[isp] = DMIN(dt , c_mk*hk*hk/FOUR/visc);
+            fdyn->tau[isp] = DMIN(dt , c_mk*hk*hk/FOUR/visc);
        break;
       } /* end switch (isp) */
    } /* end of loop over isp */
@@ -349,14 +362,14 @@ case 36: /*---------------------------- version diss. Wall - stationary */
       switch(isp)
       {
       case 2: /* continuity stabilisation */
-         dynvar->tau[isp] = (gls->clamb)*velno*hk/TWO*DMIN(ONE,re);
-/*         dynvar->tau[isp] = velno*hk/TWO*DMIN(ONE,re);*/
+         fdyn->tau[isp] = (gls->clamb)*velno*hk/TWO*DMIN(ONE,re);
+/*         fdyn->tau[isp] = velno*hk/TWO*DMIN(ONE,re);*/
          break;
       default: /* velocity / pressure stabilisation */
          if (re<ONE)
-	    dynvar->tau[isp] = c_mk*hk*hk/FOUR/visc;
+	    fdyn->tau[isp] = c_mk*hk*hk/FOUR/visc;
 	 else
-	    dynvar->tau[isp] = hk/TWO/velno;
+	    fdyn->tau[isp] = hk/TWO/velno;
       break;
       }  /* end switch (isp) */
    } /* end loop over isp */   
@@ -366,7 +379,7 @@ case 37: /*------------------------------- version Franca/Valentin (2000) */
    velno = sqrt(velint[0]*velint[0] \
                +velint[1]*velint[1] \
 	       +velint[2]*velint[2]); /*norm of vel */
-   rc = dynvar->thsl;     /* reaction coefficient = theta times dt */
+   rc = fdyn->thsl;     /* reaction coefficient = theta times dt */
    for (isp=0;isp<3;isp++)
    {
      if (gls->itau[isp]!=iflag)
@@ -376,7 +389,7 @@ case 37: /*------------------------------- version Franca/Valentin (2000) */
      {
      case 2:/* continuity stabilisation */
        re = c_mk*hk*velno/TWO/visc;  /* element reynolds number */
-       dynvar->tau[isp] = (gls->clamb)*velno*hk/TWO*DMIN(ONE,re);         
+       fdyn->tau[isp] = (gls->clamb)*velno*hk/TWO*DMIN(ONE,re);         
      break;
      default: /* velocity / pressure stabilisation */
        re1 = TWO*visc*rc/c_mk/hk/hk; /* first element reynolds number */
@@ -387,7 +400,7 @@ case 37: /*------------------------------- version Franca/Valentin (2000) */
        if (re2<ONE)
 	 re2 = ONE;
        
-       dynvar->tau[isp] = hk*hk/(hk*hk*re1/rc+TWO*visc*re2/c_mk);
+       fdyn->tau[isp] = hk*hk/(hk*hk*re1/rc+TWO*visc*re2/c_mk);
      break;
      } /* end switch (isp) */
    } /* end of loop over isp */
@@ -416,7 +429,6 @@ element Peclet number or the Smagorinsky version) may be calculated.
 </pre>
 
 \param   *ele,        ELEMENT	      (i)    actual element
-\param   *dynvar      FLUID_DYN_CALC  (i/o)
 \param   *velint      DOUBLE	      (i)    vel. at center
 \param  **vderxy      DOUBLE	      (i)    vel. der. at center
 \param    visc        DOUBLE	      (i)    viscosity
@@ -426,7 +438,6 @@ element Peclet number or the Smagorinsky version) may be calculated.
 
 ------------------------------------------------------------------------*/ 
 void f3_calsgvisc(ELEMENT         *ele,
-                  FLUID_DYN_CALC  *dynvar,
 		  DOUBLE          *velint,  
 		  DOUBLE         **vderxy,  
 		  DOUBLE           visc,    
@@ -444,6 +455,7 @@ DOUBLE auxfu;
 dstrc_enter("f3_calstabpar");
 #endif
 
+fdyn = alldyn[genprob.numff].fdyn;
 
 /*----------------------- higher order element diameter modifications ? */
 if (ntyp==1 && iel>8)
@@ -463,7 +475,7 @@ else if (ntyp==2 && iel>4)
 hk = ele->e.f3->hk[2]/hdiv;
 
 /*---------------------------------- choose type of subgrid viscosity */
-switch(dynvar->sgvisc)
+switch(fdyn->sgvisc)
 {
 case 1: /*-------- element Peclet number version Brooks/Hughes (1982) */
 /*-------------------------------------------------- norm of velocity */
@@ -474,7 +486,7 @@ case 1: /*-------- element Peclet number version Brooks/Hughes (1982) */
    if (pek>EPS15) auxfu=ONE/((exp(pek)-exp(-pek))/(exp(pek)+exp(-pek)))-ONE/pek;
    else auxfu = ZERO;
 /*-------------------------------------------------- subgrid viscosity */
-   dynvar->sugrvisc = pek*visc*auxfu;
+   fdyn->sugrvisc = pek*visc*auxfu;
 break;
 
 case 2: /*--------------------------------- Smagorinsky version (1963) */
@@ -486,12 +498,12 @@ case 2: /*--------------------------------- Smagorinsky version (1963) */
 		     +vderxy[0][2]*vderxy[0][2]+vderxy[2][0]*vderxy[2][0]\
                      +vderxy[1][2]*vderxy[1][2]+vderxy[2][1]*vderxy[2][1]); 
 /*-------------------------------------------------- subgrid viscosity */
-   dynvar->sugrvisc = dynvar->smagcon*dynvar->smagcon*hk*hk*norovt;
+   fdyn->sugrvisc = fdyn->smagcon*fdyn->smagcon*hk*hk*norovt;
 break;
    
 default:
    dserror("subgrid viscosity version unknown!\n");   
-} /* end switch (dynvar->sgvisc) */
+} /* end switch (fdyn->sgvisc) */
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

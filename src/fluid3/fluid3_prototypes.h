@@ -34,7 +34,6 @@ This routine controls the element evaluation:
 			     
 </pre>
 \param  *data	         FLUID_DATA     (i)
-\param  *dynvar	         FLUID_DYN_CALC (i)
 \param  *ele	         ELEMENT	(i)   actual element
 \param  *estif_global    ARRAY	        (o)   ele stiffnes matrix
 \param  *emass_global    ARRAY	        (o)   ele mass matrix
@@ -49,7 +48,6 @@ This routine controls the element evaluation:
 ------------------------------------------------------------------------*/
 void f3_calele(
                 FLUID_DATA     *data, 
-                FLUID_DYN_CALC *dynvar, 
 	        ELEMENT        *ele,
                 ARRAY          *estif_global,
                 ARRAY          *emass_global, 
@@ -118,13 +116,12 @@ void f3_calele(
    ele->e.f3->itau[2]: flag for tau_c calc. (-1: before, 1:during)	
    ele->e.f3->hk[i]: "element sizes" (vel / pre / cont) 		  
    ele->e.f3->idiaxy: has diagonals to be computed			
-   dynvar->tau[0]: stability parameter momentum / velocity (tau_mu)	
-   dynvar->tau[1]: stability parameter momentum / pressure (tau_mp)	
-   dynvar->tau[2]: stability parameter continuity (tau_c)
+   fdyn->tau[0]: stability parameter momentum / velocity (tau_mu)	
+   fdyn->tau[1]: stability parameter momentum / pressure (tau_mp)	
+   fdyn->tau[2]: stability parameter continuity (tau_c)
 </pre>
 \param  *ele     ELEMENT	       (i)   actual element
 \param  *data    FLUID_DATA	       (i)
-\param  *dynvar  FLUID_DYN_CALC        (i/o)
 \param  *funct   DOUBLE 	       (-)   shape functions
 \param **deriv   DOUBLE 	       (-)   deriv. of shape funcs
 \param **deriv2  DOUBLE 	       (-)   2nd deriv. of sh. funcs
@@ -139,7 +136,6 @@ void f3_calele(
 void f3_calelesize(
 	           ELEMENT         *ele,
 		   FLUID_DATA      *data,
-		   FLUID_DYN_CALC  *dynvar,
 	           DOUBLE          *funct,
 	           DOUBLE         **deriv,
 	           DOUBLE         **deriv2,	       
@@ -159,7 +155,6 @@ is calculated for one element during the integration loop
 		     
 </pre>
 \param  *ele     ELEMENT	        (i)    actual element
-\param  *dynvar  FLUID_DYN_CALC         (i/o)
 \param  *velint  DOUBLE 		(-)    vel at intpoint
 \param  *derxy   DOUBLE 		(-)    global derivatives
 \param   visc    DOUBLE 		(i)    fluid viscosity
@@ -171,7 +166,6 @@ is calculated for one element during the integration loop
 ------------------------------------------------------------------------*/
 void f3_calelesize2(
 	             ELEMENT         *ele,
-		     FLUID_DYN_CALC  *dynvar,
                      DOUBLE          *velint,	       
                      DOUBLE         **derxy,	       	
 		     DOUBLE           visc,
@@ -202,7 +196,6 @@ see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
      
       
 </pre>
-\param   *dynvar      FLUID_DYN_CALC  (i)
 \param   *eforce      DOUBLE	      (i/o)  element force vector
 \param	 *funct       DOUBLE	      (i)    nat. shape functions      
 \param   *edeadn      DOUBLE          (i)    ele dead load at n
@@ -213,7 +206,6 @@ see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
 
 ------------------------------------------------------------------------*/
 void f3_calgalexfv(
-                  FLUID_DYN_CALC  *dynvar, 
                   DOUBLE          *eforce,     
 		  DOUBLE          *funct,       
                   DOUBLE          *edeadn,
@@ -249,7 +241,6 @@ see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
      
       
 </pre>
-\param   *dynvar      FLUID_DYN_CALC  (i)
 \param   *ele         ELEMENT	      (i)    actual element
 \param   *eforce      DOUBLE	      (i/o)  element force vector
 \param  **derxy,      DOUBLE	      (i)    global derivatives
@@ -265,7 +256,6 @@ see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
 
 ------------------------------------------------------------------------*/
 void f3_calstabexfv(
-                    FLUID_DYN_CALC  *dynvar, 
                     ELEMENT         *ele,  
                     DOUBLE          *eforce,     
 		    DOUBLE         **derxy,
@@ -306,7 +296,6 @@ NOTE:
     eforce[2*iel]     
       
 </pre>
-\param   *dynvar      FLUID_DYN_CALC  (i)
 \param   *eforce      DOUBLE	      (i/o)  element force vector
 \param  **derxy,      DOUBLE	      (i)    global derivatives    
 \param   *edead       DOUBLE          (i)    ele dead load at n or n+1
@@ -318,7 +307,6 @@ NOTE:
 
 ------------------------------------------------------------------------*/
 void f3_calstabexfp(
-                    FLUID_DYN_CALC  *dynvar, 
                     DOUBLE          *eforce,     
 		    DOUBLE         **derxy,       
                     DOUBLE          *edead,  
@@ -563,7 +551,6 @@ NOTE: there's only one elestif
       --> Kvv is stored in estif[0..(3*iel-1)][0..(3*iel-1)]
       
 </pre>
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param **estif     DOUBLE	   (i/o)  ele stiffness matrix
 \param  *velint    DOUBLE	   (i)    vel at INT point
 \param **vderxy    DOUBLE	   (i)    global vel derivatives
@@ -576,7 +563,6 @@ NOTE: there's only one elestif
 
 ------------------------------------------------------------------------*/
 void f3_calkvv(
-                FLUID_DYN_CALC  *dynvar,
 		DOUBLE         **estif,
 		DOUBLE          *velint,
 		DOUBLE         **vderxy,
@@ -669,7 +655,6 @@ time-RHS for one fluid2 element is calculated
 </pre>
 \param  *data      FLUID_DATA	   (i)	  integration data
 \param  *ele	   ELEMENT	   (i)    actual element
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param  *hasext    INT             (i)    element flag
 \param **estif     DOUBLE	   (o)    element stiffness matrix
 \param **emass     DOUBLE	   (o)    element mass matrix
@@ -700,7 +685,6 @@ time-RHS for one fluid2 element is calculated
 void f3_calint(
                FLUID_DATA      *data, 
 	       ELEMENT         *ele,
-	       FLUID_DYN_CALC  *dynvar,
                INT             *hasext,
                DOUBLE         **estif,
 	       DOUBLE         **emass,
@@ -746,7 +730,6 @@ is calculated:
 see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
       
 </pre>
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param  *eforce    DOUBLE	   (i/o)  element force vector
 \param  *covint    DOUBLE	   (i)	  conv. vels at INT. point
 \param  *funct     DOUBLE	   (i)    nat. shape funcs
@@ -756,7 +739,6 @@ see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
 
 ------------------------------------------------------------------------*/
 void f3_calgalifv(
-                  FLUID_DYN_CALC  *dynvar, 
                   DOUBLE          *eforce,    
 		  DOUBLE          *covint,
 		  DOUBLE          *funct,
@@ -784,7 +766,6 @@ is calculated:
 see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
       
 </pre>
-\param   *dynvar   FLUID_DYN_CALC  (i)
 \param   *ele      ELEMENT	   (i)    actual element
 \param   *eforce   DOUBLE	   (i/o)  element force vector
 \param   *covint   DOUBLE	   (i)    conv. vels at INT. point
@@ -800,7 +781,6 @@ see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
 
 ------------------------------------------------------------------------*/
 void f3_calstabifv(
-                  FLUID_DYN_CALC  *dynvar, 
                   ELEMENT         *ele,
 		  DOUBLE          *eforce,   /* element force vector */
 		  DOUBLE          *covint,
@@ -833,7 +813,6 @@ NOTE:
     eforce[3*iel]					
       
 </pre>
-\param   *dynvar   FLUID_DYN_CALC  (i)
 \param   *eforce   DOUBLE	   (i/o)  element force vector
 \param   *covint   DOUBLE	   (i)    conv. vels at INT. point
 \param  **derxy    DOUBLE	   (i)    global derivative
@@ -843,7 +822,6 @@ NOTE:
 
 ------------------------------------------------------------------------*/
 void f3_calstabifp(
-                  FLUID_DYN_CALC  *dynvar, 
                   DOUBLE          *eforce,    
 		  DOUBLE          *covint,
 		  DOUBLE          **derxy,
@@ -866,7 +844,6 @@ NOTE: in contradiction to the old programm the kinematic pressure
       transformation in every time step 			 
 				      
 </pre>
-\param   *dynvar   FLUID_DYN_CALC  (i)
 \param   *ele      ELEMENT	   (i)    actual element
 \param  **eveln    DOUBLE	   (o)    ele vels at time n
 \param  **evelng   DOUBLE	   (o)    ele vels at time n+g
@@ -878,7 +855,6 @@ NOTE: in contradiction to the old programm the kinematic pressure
 
 ------------------------------------------------------------------------*/
 void f3_calset( 
-                FLUID_DYN_CALC  *dynvar, 
 	        ELEMENT         *ele,
                 DOUBLE         **eveln,
 	        DOUBLE         **evelng,
@@ -1063,7 +1039,6 @@ hence a splitting of vel- and pre dofs is not possible any more!!!!
 \param  **emass   DOUBLE	 (i)   ele mass matrix
 \param  **tmp     DOUBLE	 (-)   working array		
 \param	  iel	  INT		 (i)   number of nodes in ele
-\param	 *dynvar  FLUID_DYN_CALC
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
@@ -1071,8 +1046,7 @@ void f3_permestif(
 		   DOUBLE         **estif,
 		   DOUBLE         **emass,
 		   DOUBLE         **tmp,
-		   INT              iel,
-		   FLUID_DYN_CALC  *dynvar		   		   
+		   INT              iel
 	          );
 		  		  	    	    	    	    	    	    	      
 /************************************************************************
@@ -1121,7 +1095,6 @@ NOTE: there's only one elestif
       
 </pre>
 \param  *ele	   ELEMENT	   (i)	   actual element
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param **estif     DOUBLE	   (i/o)   ele stiffness matrix
 \param  *velint    DOUBLE	   (i)     vel. at integr. point
 \param **vderxy    DOUBLE	   (i)     global vel. deriv.
@@ -1137,7 +1110,6 @@ NOTE: there's only one elestif
 ------------------------------------------------------------------------*/
 void f3_calstabkvv(
                     ELEMENT         *ele,
-		    FLUID_DYN_CALC  *dynvar,
 		    DOUBLE         **estif,
 		    DOUBLE          *velint,
 		    DOUBLE         **vderxy,
@@ -1171,7 +1143,6 @@ NOTE: there's only one elestif
       
 </pre>
 \param  *ele	   ELEMENT	   (i)	   actual element
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param **estif     DOUBLE	   (i/o)   ele stiffness matrix
 \param  *velint    DOUBLE	   (i)     vel. at integr. point
 \param  *funct     DOUBLE	   (i)     nat. shape functions
@@ -1186,7 +1157,6 @@ NOTE: there's only one elestif
 ------------------------------------------------------------------------*/
 void f3_calstabkvp(
                     ELEMENT         *ele,
-		    FLUID_DYN_CALC  *dynvar,
 		    DOUBLE         **estif,
 		    DOUBLE          *velint,
 		    DOUBLE          *funct,
@@ -1219,7 +1189,6 @@ NOTE: there's only one elestif
       
 </pre>
 \param  *ele	   ELEMENT	   (i)	   actual element
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param **emass     DOUBLE	   (i/o)   ele mass matrix
 \param  *velint    DOUBLE	   (i)     vel. at integr. point
 \param  *funct     DOUBLE	   (i)     nat. shape functions
@@ -1234,7 +1203,6 @@ NOTE: there's only one elestif
 ------------------------------------------------------------------------*/
 void f3_calstabmvv(
                     ELEMENT         *ele,
-		    FLUID_DYN_CALC  *dynvar,
 		    DOUBLE         **estif,
 		    DOUBLE          *velint,
     		    DOUBLE          *funct,
@@ -1270,7 +1238,6 @@ NOTE: there's only one elestif
       --> Kpv is stored in estif[((3*iel)..(4*iel-1)][0..(3*iel-1)] 
       
 </pre>
-\param  *dynvar    FLUID_DYN_CALC  (i)      
 \param **estif     DOUBLE	   (i/o)   ele stiffness matrix
 \param  *velint    DOUBLE	   (i)     vel. at integr. point
 \param **vderxy    DOUBLE	   (i)     global vel. deriv.
@@ -1285,7 +1252,6 @@ NOTE: there's only one elestif
 
 ------------------------------------------------------------------------*/
 void f3_calstabkpv(
-		    FLUID_DYN_CALC  *dynvar,
 		    DOUBLE         **estif,
 		    DOUBLE          *velint,
 		    DOUBLE         **vderxy,
@@ -1315,7 +1281,6 @@ NOTE: there's only one elestif
 	      estif[((3*iel)..(4*iel-1)][((3*iel)..(4*iel-1)] 
       
 </pre>
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param **estif     DOUBLE	   (i/o)   ele stiffness matrix
 \param **derxy     DOUBLE	   (i)     global derivatives
 \param   fac	   DOUBLE	   (i)     weighting factor
@@ -1324,7 +1289,6 @@ NOTE: there's only one elestif
 
 ------------------------------------------------------------------------*/
 void f3_calstabkpp(
-		    FLUID_DYN_CALC  *dynvar,
 		    DOUBLE         **estif,
 		    DOUBLE         **derxy,
 		    DOUBLE           fac,
@@ -1347,7 +1311,6 @@ NOTE: there's only one elestif
       --> Mpv is stored in estif[((3*iel)..(4*iel-1)][0..(3*iel-1)]
       
 </pre>
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param **emass     DOUBLE	   (i/o)   ele mass matrix
 \param  *funct     DOUBLE	   (i)     nat. shape functions
 \param **derxy     DOUBLE	   (i)     global derivatives
@@ -1358,7 +1321,6 @@ NOTE: there's only one elestif
 
 ------------------------------------------------------------------------*/
 void f3_calstabmpv(
-		    FLUID_DYN_CALC  *dynvar,
 		    DOUBLE         **estif,
 		    DOUBLE          *funct,
 		    DOUBLE         **derxy,
@@ -1423,14 +1385,13 @@ void f3_calstabmpv(
    ele->e.f3->itau[2]: flag for tau_c calc. (-1: before, 1:during)	
    ele->e.f3->hk[i]: element sizes (vel / pre / cont)			
    ele->e.f3->idiaxy: has diagonals to be computed			
-   dynvar->tau[0]: stability parameter momentum / velocity (tau_mu)	
-   dynvar->tau[1]: stability parameter momentum / pressure (tau_mp)	
-   dynvar->tau[2]: stability parameter continuity (tau_c)		
+   fdyn->tau[0]: stability parameter momentum / velocity (tau_mu)	
+   fdyn->tau[1]: stability parameter momentum / pressure (tau_mp)	
+   fdyn->tau[2]: stability parameter continuity (tau_c)		
 
 </pre>
 
 \param   *ele,        ELEMENT	      (i)    actual element
-\param   *dynvar,     FLUID_DYN_CALC  (i/o)
 \param   *velint,     DOUBLE	      (i)    vel at center
 \param    visc,       DOUBLE	      (i)    viscosity
 \param    iel,        INT	      (i)    number of nodes	     
@@ -1441,7 +1402,6 @@ void f3_calstabmpv(
 ------------------------------------------------------------------------*/ 
 void f3_calstabpar(
 	            ELEMENT         *ele,      
-		    FLUID_DYN_CALC  *dynvar,
 		    DOUBLE          *velint,  
 		    DOUBLE           visc,    
 		    INT              iel,     
@@ -1484,7 +1444,6 @@ NOTE:
    in TWOSTEP methods: vel2int = U(n)	     
       
 </pre>
-\param   *dynvar      FLUID_DYN_CALC  (i)
 \param   *eforce      DOUBLE	      (i/o)  element force vector
 \param   *velint      DOUBLE	      (i)    vel. at integr. point
 \param   *vel2int     DOUBLE	      (i)    vel. at integr. point
@@ -1500,7 +1459,6 @@ NOTE:
 
 ------------------------------------------------------------------------*/
 void f3_calgaltfv(
-                  FLUID_DYN_CALC  *dynvar, 
                   DOUBLE          *eforce,    
 		  DOUBLE          *velint,
 		  DOUBLE          *vel2int,
@@ -1533,7 +1491,6 @@ NOTE:
     eforce[3*iel]				        	    
       
 </pre>
-\param   *dynvar      FLUID_DYN_CALC  (i)
 \param   *eforce      DOUBLE	      (i/o)  element force vector
 \param   *funct       DOUBLE	      (i)    nat. shape functions
 \param  **vderxy      DOUBLE	      (i)    global vel. deriv.
@@ -1543,7 +1500,6 @@ NOTE:
 
 ------------------------------------------------------------------------*/
 void f3_calgaltfp(
-                   FLUID_DYN_CALC  *dynvar, 
                    DOUBLE          *eforce,    
 		   DOUBLE          *funct,
 		   DOUBLE         **vderxy,
@@ -1601,7 +1557,6 @@ is calculated:
 see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
       
 </pre>
-\param   *dynvar     FLUID_DYN_CALC   (i)
 \param   *ele        ELEMENT	      (i)    actual element
 \param   *eforce     DOUBLE	      (i/o)  element force vector
 \param   *velint     DOUBLE	      (i)    vel. at integr. point
@@ -1620,7 +1575,6 @@ see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
 
 ------------------------------------------------------------------------*/
 void f3_calstabtfv(
-                   FLUID_DYN_CALC  *dynvar, 
                    ELEMENT         *ele,
 	           DOUBLE          *eforce,    
 	 	   DOUBLE          *velint,
@@ -1664,7 +1618,6 @@ NOTE:
     eforce[3*iel]				       
       
 </pre>
-\param   *dynvar,     FLUID_DYN_CALC   (i)
 \param   *eforce,     DOUBLE	       (i/o)  element force vector
 \param  **derxy,      DOUBLE	       (i)    global derivatives
 \param  **vderxy2,    DOUBLE	       (i)    2nd global vel. deriv.
@@ -1679,7 +1632,6 @@ NOTE:
 
 ------------------------------------------------------------------------*/
 void f3_calstabtfp(
-                   FLUID_DYN_CALC  *dynvar, 
                    DOUBLE          *eforce,    
      		   DOUBLE         **derxy,
 		   DOUBLE         **vderxy2,

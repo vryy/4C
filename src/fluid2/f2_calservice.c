@@ -27,10 +27,19 @@ static INT NUMDF = 3;
 extern struct _MATERIAL  *mat;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
  | general problem data                                                 |
  | global variable GENPROB genprob is defined in global_control.c       |
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
+
+static FLUID_DYNAMIC *fdyn;
 /*!--------------------------------------------------------------------- 
 \brief set all arrays for element calculation
 
@@ -48,7 +57,6 @@ NOTE: if there is no classic time rhs (as described in WAW) the array
 	 accelerations depending upon the time integration scheme!!!!!
 </pre>
 
-\param   *dynvar   FLUID_DYN_CALC  (i)
 \param   *ele      ELEMENT	   (i)  actual element
 \param  **xyze     DOUBLE          (o)  nodal coordinates
 \param  **eveln    DOUBLE	   (o)  ele vels at time n
@@ -61,7 +69,6 @@ NOTE: if there is no classic time rhs (as described in WAW) the array
 
 ------------------------------------------------------------------------*/
 void f2_calset( 
-                FLUID_DYN_CALC  *dynvar, 
 	        ELEMENT         *ele,     
                 DOUBLE         **xyze,
                 DOUBLE         **eveln,    
@@ -83,6 +90,8 @@ GSURF *actgsurf;
 #ifdef DEBUG 
 dstrc_enter("f2_calset");
 #endif
+
+fdyn = alldyn[genprob.numff].fdyn;
 
 /*-------------------------------------------- set element coordinates */
 for(i=0;i<ele->numnp;i++)
@@ -112,7 +121,7 @@ for(i=0;i<ele->numnp;i++) /* loop nodes of element */
 } /* end of loop over nodes of element */
    
 
-if(dynvar->nif!=0) /* -> computation of time forces "on" --------------
+if(fdyn->nif!=0) /* -> computation of time forces "on" --------------
                       -> velocities and pressure at (n) are needed ----*/
 {
       for(i=0;i<ele->numnp;i++) /* loop nodes of element */
@@ -124,9 +133,9 @@ if(dynvar->nif!=0) /* -> computation of time forces "on" --------------
 /*------------------------------------------------- set pressures (n) */   
          epren[i]   =actnode->sol_increment.a.da[1][PREDOF];      
       } /* end of loop over nodes of element */  
-} /* endif (dynvar->nif!=0) */		       
+} /* endif (fdyn->nif!=0) */		       
 
-if(dynvar->nim!=0) /* -> computation of mass rhs "on" ------------------
+if(fdyn->nim!=0) /* -> computation of mass rhs "on" ------------------
                       -> vel(n)+a*acc(n) are needed --------------------*/
 /* NOTE: if there is no classic time rhs (as described in WAW) the array
          eveln is misused and does NOT contain the velocity at time (n)
@@ -139,7 +148,7 @@ if(dynvar->nim!=0) /* -> computation of mass rhs "on" ------------------
          eveln[0][i] = actnode->sol_increment.a.da[2][0];
 	 eveln[1][i] = actnode->sol_increment.a.da[2][1];
       } /* end of loop over nodes of element */  
-} /* endif (dynvar->nim!=0) */		       
+} /* endif (fdyn->nim!=0) */		       
 
 /*------------------------------------------------ check for dead load */
 actgsurf = ele->g.gsurf;
@@ -149,7 +158,7 @@ if (actgsurf->neum!=NULL)
    dens = mat[actmat].m.fluid->density;
    actcurve = actgsurf->neum->curve-1;
    if (actcurve<0) acttimefac=ONE;
-   else  dyn_facfromcurve(actcurve,dynvar->acttime,&acttimefac) ;    
+   else  dyn_facfromcurve(actcurve,fdyn->acttime,&acttimefac) ;    
    for (i=0;i<2;i++)     
    {
       if (actgsurf->neum->neum_onoff.a.iv[i]==0)
@@ -188,7 +197,6 @@ NOTE: in contradiction to the old programm the kinematic pressure
 				      
 </pre>
 
-\param   *dynvar    FLUID_DYN_CALC  (i)
 \param   *ele       ELEMENT	    (i)    actual element
 \param  **xyze      DOUBLE          (o)    nodal coordinates at time n+theta
 \param  **eveln     DOUBLE	    (o)    ele vels at time n
@@ -207,7 +215,6 @@ NOTE: in contradiction to the old programm the kinematic pressure
 
 ------------------------------------------------------------------------*/
 void f2_calseta( 
-                FLUID_DYN_CALC  *dynvar, 
 	        ELEMENT         *ele,     
                 DOUBLE         **xyze,
                 DOUBLE         **eveln,    
@@ -236,13 +243,15 @@ GSURF *actgsurf;    /* actual gsurf                                     */
 dstrc_enter("f2_calseta");
 #endif
 
+fdyn  = alldyn[genprob.numff].fdyn;
+
 /*-------------------------------------------- set element coordinates */ 
 if (is_relax)
 {
-   f2_alecoor_sd(dynvar,ele,xyze);
+   f2_alecoor_sd(ele,xyze);
 }
 else
-   f2_alecoor(dynvar,ele,xyze);
+   f2_alecoor(ele,xyze);
 
 /*----------------------------------------------------------------------*
  | position of the different solutions:                                 |
@@ -270,7 +279,7 @@ for(i=0;i<ele->numnp;i++) /* loop nodes of element */
    egridv[1][i]   =actfnode->sol_increment.a.da[4][1];     
 } /* end of loop over nodes of element */
 
-if(dynvar->nif!=0) /* -> computation if time forces "on" --------------
+if(fdyn->nif!=0) /* -> computation if time forces "on" --------------
                       -> velocities and pressure at (n) are needed ----*/
 {
       for(i=0;i<ele->numnp;i++) /* loop nodes of element */
@@ -284,7 +293,7 @@ if(dynvar->nif!=0) /* -> computation if time forces "on" --------------
 /*------------------------------------------------- set pressures (n) */   
          epren[i]    =actfnode->sol_increment.a.da[1][PREDOF];      
       } /* end of loop over nodes of element */  
-} /* endif (dynvar->nif!=0) */		       
+} /* endif (fdyn->nif!=0) */		       
 
 /*----------------------------------------------- check for dead load */
 actgsurf = ele->g.gsurf;
@@ -294,7 +303,7 @@ if (actgsurf->neum!=NULL)
    dens = mat[actmat].m.fluid->density;
    actcurve = actgsurf->neum->curve-1;
    if (actcurve<0) acttimefac=ONE;
-   else  dyn_facfromcurve(actcurve,dynvar->acttime,&acttimefac) ;    
+   else  dyn_facfromcurve(actcurve,fdyn->acttime,&acttimefac) ;    
    for (i=0;i<2;i++)     
    {
       if (actgsurf->neum->neum_onoff.a.iv[i]==0)
@@ -313,16 +322,16 @@ if (actgsurf->neum!=NULL)
 }
 
 /*------------------------------------------ curvature at free surface */
-if (ele->e.f2->fs_on>0 && dynvar->surftens!=0)
+if (ele->e.f2->fs_on>0 && fdyn->surftens!=0)
 {
-   if (dynvar->fsstnif!=0)
+   if (fdyn->fsstnif!=0)
    {
       for (i=0;i<ele->numnp;i++)
       {
          ekappan[i]=ele->e.f2->kappa_ND.a.da[i][0];
       }
    }
-   if (dynvar->fsstnii!=0)
+   if (fdyn->fsstnii!=0)
    {
       for (i=0;i<ele->numnp;i++)
       {
@@ -348,14 +357,12 @@ return;
 				      
 </pre>
 
-\param   *dynvar    FLUID_DYN_CALC  (i)
 \param   *ele       ELEMENT	    (i)    actual element
 \param  **xyze      DOUBLE          (o)    nodal coordinates at time n+theta
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f2_alecoor( 
-                FLUID_DYN_CALC  *dynvar, 
 	        ELEMENT         *ele,     
                 DOUBLE         **xyze
 	       )
@@ -375,9 +382,11 @@ dstrc_enter("f2_alecoor");
 
 #ifdef D_FSI
 
-omt = dynvar->omt;
-theta = ONE-omt;
-dt = dynvar->dta;
+fdyn  = alldyn[genprob.numff].fdyn;
+
+theta = fdyn->theta;
+omt = 1.0 - theta;
+dt = fdyn->dta;
 
 /*-------------------------------------------- set element coordinates */ 
 for(i=0;i<ele->numnp;i++)
@@ -428,14 +437,12 @@ parameter of steepest descent method
 				      
 </pre>
 
-\param   *dynvar    FLUID_DYN_CALC  (i)
 \param   *ele       ELEMENT	    (i)    actual element
 \param  **xyze      DOUBLE          (o)    nodal coordinates at time n+theta
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
 void f2_alecoor_sd( 
-                   FLUID_DYN_CALC  *dynvar, 
    	           ELEMENT         *ele,     
                    DOUBLE         **xyze
 	          )
@@ -454,8 +461,10 @@ dstrc_enter("f2_alecoor_sd");
 
 #ifdef D_FSI
 
-omt = dynvar->omt;
-theta = ONE-omt;
+fdyn  = alldyn[genprob.numff].fdyn;
+
+theta = fdyn->theta;
+omt = 1.0 - theta;
 
 /*-------------------------------------------- set element coordinates */ 
 
@@ -986,7 +995,6 @@ hence a splitting of vel- and pre dofs is not possible any more!!!!
 \param  **emass   DOUBLE	 (i)   ele mass matrix
 \param  **tmp     DOUBLE	 (-)   working array		
 \param	  iel	  INT		 (i)   number of nodes in ele
-\param	 *dynvar  FLUID_DYN_CALC
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
@@ -994,8 +1002,7 @@ void f2_permestif(
 		   DOUBLE         **estif,   
 		   DOUBLE         **emass, 
 		   DOUBLE         **tmp,   
-		   ELEMENT         *ele,   
-		   FLUID_DYN_CALC  *dynvar		   		    
+		   ELEMENT         *ele
 	          ) 
 {
 INT    i,j,icol,irow;     /* simply some counters                       */
@@ -1010,11 +1017,12 @@ dstrc_enter("f2_permestif");
 #endif
 
 /*----------------------------------------------------- set some values */
+fdyn   = alldyn[genprob.numff].fdyn;
 iel    = ele->numnp;
 nvdof  = NUM_F2_VELDOF*iel;
 npdof  = iel;
 totdof = NUMDOF_FLUID2*iel;
-thsl   = dynvar->thsl;
+thsl   = fdyn->thsl;
 
 /*--------------------------------------------- copy estif to tmp-array *
                            and mutlitply stiffniss matrix with THETA*DT */
@@ -1026,7 +1034,7 @@ for (i=0;i<totdof;i++)
    } /* end of loop over j */
 } /* end of loop over i */
 /*------------------------------- add mass matrix for instationary case */
-if (dynvar->nis==0)
+if (fdyn->nis==0)
 {
    for (i=0;i<totdof;i++)
    {
@@ -1035,7 +1043,7 @@ if (dynvar->nis==0)
          tmp[i][j] += emass[i][j];
       } /* end of loop over j */
    } /* end of loop over i */
-} /* endif (dynvar->nis==0) */
+} /* endif (fdyn->nis==0) */
 
 /*------------------------------------------------------- rearrange Kvv */
 irow = 0;
@@ -1121,7 +1129,6 @@ hence a splitting of vel- pre-  and grid dofs is not possible any more!!!!
 \param  **emass   DOUBLE	 (i)   ele mass matrix
 \param  **tmp     DOUBLE	 (-)   working array		
 \param	  iel	  INT		 (i)   number of nodes in ele
-\param	 *dynvar  FLUID_DYN_CALC
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
@@ -1129,8 +1136,7 @@ void f2_permestif_ifs(
 		      DOUBLE         **estif,   
 		      DOUBLE         **emass, 
 		      DOUBLE         **tmp,   
-		      ELEMENT         *ele,   
-		      FLUID_DYN_CALC  *dynvar		   		    
+		      ELEMENT         *ele
 	             ) 
 {
 INT    i,j,icol,irow;     /* simply some counters                       */
@@ -1151,7 +1157,7 @@ iel    = ele->numnp;
 nvdof  = NUM_F2_VELDOF*iel;
 nvpdof = NUMDOF_FLUID2*iel;
 totdof = (NUMDOF_FLUID2+NUM_F2_VELDOF)*iel;
-thsl   = dynvar->thsl;
+thsl   = fdyn->thsl;
 
 /*--------------------------------------------- copy estif to tmp-array *
                            and mutlitply stiffniss matrix with THETA*DT */
@@ -1163,7 +1169,7 @@ for (i=0;i<totdof;i++)
    } /* end of loop over j */
 } /* end of loop over i */
 /*------------------------------- add mass matrix for instationary case */
-if (dynvar->nis==0)
+if (fdyn->nis==0)
 {
    for (i=0;i<totdof;i++)
    {
@@ -1172,7 +1178,7 @@ if (dynvar->nis==0)
          tmp[i][j] += emass[i][j];
       } /* end of loop over j */
    } /* end of loop over i */
-} /* endif (dynvar->nis==0) */
+} /* endif (fdyn->nis==0) */
 
 /*--------------------------------------------------------------------- */
 icol=0;

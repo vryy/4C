@@ -14,6 +14,21 @@ Maintainer: Thomas Hettich
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #include "fluid2_tu.h"
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+static FLUID_DYNAMIC *fdyn;
 /*!--------------------------------------------------------------------- 
 \brief galerkin part of time forces for kapeps dof
 
@@ -61,7 +76,6 @@ LOW-REYNOLD's MODEL only for epsilon:
                    /
 
 </pre>
-\param   *dynvar      FLUID_DYN_CALC  (i)
 \param   *eforce      DOUBLE	      (i/o)  element force vector
 \param    kapepsint   DOUBLE	      (i)    vel. at integr. point
 \param   *velint      DOUBLE	      (i)    vel. at integr. point
@@ -83,7 +97,6 @@ LOW-REYNOLD's MODEL only for epsilon:
 
 ------------------------------------------------------------------------*/
 void f2_calgaltfkapeps(
-                  FLUID_DYN_CALC  *dynvar, 
                   DOUBLE          *eforce,    
 		      DOUBLE           kapepsint,  
                   DOUBLE          *velint,   
@@ -114,7 +127,8 @@ dstrc_enter("f2_calgaltfkapeps");
 
 
 /*--------------------------------------------------- set some factors */
-facsr = fac * dynvar->thsr;
+fdyn  = alldyn[genprob.numff].fdyn;
+facsr = fac * fdyn->thsr;
 
 /*----------------------------------------------------------------------*
    Calculate intertia forces of time force vector:
@@ -179,7 +193,7 @@ for (inode=0;inode<iel;inode++)
       eforce[irow] -= factor*funct[inode]*pow(kapepsint,2)*facsr;
    } /* end of loop over inode */
 
-if(dynvar->kapeps_flag==0) 
+if(fdyn->kapeps_flag==0) 
 {
 /*----------------------------------------------------------------------*
    Calculate  forces of time force vector:
@@ -225,7 +239,7 @@ for (inode=0;inode<iel;inode++)
          eforce[irow] += factor2*funct[inode]*pow(kapepsint,2)*facsr;
    } /* end of loop over inode */
 
-if(dynvar->kapeps_flag==1) 
+if(fdyn->kapeps_flag==1) 
 {
 /*------------------------------------------------------------------*
    Calculate forces of iteration force vector:
@@ -304,7 +318,6 @@ LOW-REYNOLD's MODEL only for epsilon:
                    /  
        
 </pre>
-\param   *dynvar        FLUID_DYN_CALC    (i)
 \param   *ele           ELEMENT	      (i)    actual element
 \param   *eforce        DOUBLE	      (i/o)  element force vector
 \param    kapepsint     DOUBLE	      (i)    kapeps at integr. point
@@ -328,7 +341,6 @@ LOW-REYNOLD's MODEL only for epsilon:
 
 ------------------------------------------------------------------------*/
 void f2_calstabtfkapeps(
-                   FLUID_DYN_CALC  *dynvar,
                    ELEMENT         *ele,      
 	            DOUBLE          *eforce,  
 	 	      DOUBLE           kapepsint,  
@@ -360,10 +372,12 @@ dstrc_enter("f2_calstabtfkapeps");
 #endif
 
 /*--------------------------------------------------- set some factors */
-taumu    = dynvar->tau_tu;
-taumu_dc = dynvar->tau_tu_dc;
-facsr    = fac * dynvar->thsr * taumu;
-facsr_dc = fac * dynvar->thsr * taumu_dc;
+fdyn     = alldyn[genprob.numff].fdyn;
+
+taumu    = fdyn->tau_tu;
+taumu_dc = fdyn->tau_tu_dc;
+facsr    = fac * fdyn->thsr * taumu;
+facsr_dc = fac * fdyn->thsr * taumu_dc;
 
 /*----------------------------------------------------------------------*
    Calculate forces of time force vector:
@@ -451,7 +465,7 @@ facsr_dc = fac * dynvar->thsr * taumu_dc;
    irow++;
    } /* end loop ove inode */
 
-if(dynvar->kapeps_flag==0) 
+if(fdyn->kapeps_flag==0) 
 {
 /*----------------------------------------------------------------------*
    Calculate forces of time force vector:
@@ -518,7 +532,7 @@ LOW-REYNOLD's MODEL:
    } /* end loop ove inode */
 
 
-if(dynvar->kapeps_flag==1) 
+if(fdyn->kapeps_flag==1) 
 {
 /*---------------------------------------------------------------------- 
    Calculate  stabilastion of iteration force vector:

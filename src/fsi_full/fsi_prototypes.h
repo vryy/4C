@@ -23,7 +23,6 @@ Maintainer: Steffen Genkinger
  ************************************************************************/
 void fsi_aitken(  
                  FIELD          *structfield, 
-                 FSI_DYNAMIC    *fsidyn, 
 		 INT             itnum,
                  INT             init
 	       );
@@ -32,8 +31,6 @@ void fsi_aitken(
  | fsi_ale.c                                                            |
  ************************************************************************/
 void fsi_ale(
-               FSI_DYNAMIC      *fsidyn,
-               ALE_DYNAMIC      *sdyn,
                FIELD            *actfield,
                INT               mctrl,
                INT               numfa
@@ -43,8 +40,6 @@ void fsi_ale(
  | fsi_ale_2step.c                                                            |
  ************************************************************************/
 void fsi_ale_2step(
-                    FSI_DYNAMIC      *fsidyn,
-                    ALE_DYNAMIC      *sdyn,
                     FIELD            *actfield,
                     INT               mctrl,
                     INT               numfa
@@ -54,8 +49,6 @@ void fsi_ale_2step(
  | fsi_ale_laplace.c                                                            |
  ************************************************************************/
 void fsi_ale_laplace(
-                     FSI_DYNAMIC      *fsidyn,
-                     ALE_DYNAMIC      *sdyn,
                      FIELD            *actfield,
                      INT               mctrl,
                      INT               numfa
@@ -65,8 +58,6 @@ void fsi_ale_laplace(
  | fsi_ale_lin.c                                                            |
  ************************************************************************/
 void fsi_ale_lin(
-                  FSI_DYNAMIC      *fsidyn,
-                  ALE_DYNAMIC      *sdyn,
                   FIELD            *actfield,
                   INT               mctrl,
                   INT               numfa
@@ -76,8 +67,6 @@ void fsi_ale_lin(
  | fsi_ale_nln.c                                                            |
  ************************************************************************/
 void fsi_ale_nln(
-                   FSI_DYNAMIC      *fsidyn,
-                   ALE_DYNAMIC      *sdyn,
                    FIELD            *actfield,
                    INT               mctrl,
                    INT               numfa
@@ -87,8 +76,6 @@ void fsi_ale_nln(
  | fsi_ale_spring.c                                                            |
  ************************************************************************/
 void fsi_ale_spring(
-                    FSI_DYNAMIC      *fsidyn,
-                    ALE_DYNAMIC      *sdyn,
                     FIELD            *actfield,
                     INT               mctrl,
                     INT               numfa
@@ -104,8 +91,7 @@ void fsi_initcoupling(
 		          FIELD       *alefield
 		      );
 void fsi_struct_intdofs(
-                          FIELD       *structfield, 
-			  FSI_DYNAMIC *fsidyn
+                          FIELD       *structfield
 		       );
 		       
 /************************************************************************
@@ -118,21 +104,14 @@ void dyn_fsi(INT mctrl);
  ************************************************************************/
 void fsi_dyneint( 
                        FIELD          *structfield, 
-                       FSI_DYNAMIC    *fsidyn,
-                       STRUCT_DYNAMIC *sdyn,
-		       FLUID_DYNAMIC  *fdyn,
 		       INT             init
 		);
-void fsi_energycheck(
-                        FSI_DYNAMIC   *fsidyn
-		    );
+void fsi_energycheck( void );
 		 
 /************************************************************************
  | fsi_fluid.c                                                          |
  ************************************************************************/ 
 void fsi_fluid(
-                       FSI_DYNAMIC    *fsidyn,
-		       FLUID_DYNAMIC  *fdyn, 
 		       FIELD          *actfield, 
 		       INT             mctrl,
 		       INT             numff
@@ -143,31 +122,23 @@ void fsi_fluid(
 void fsi_gradient(  
                   FIELD          *alefield, 
                   FIELD          *structfield, 
-                  FIELD          *fluidfield, 
-                  FSI_DYNAMIC    *fsidyn, 
-		  ALE_DYNAMIC    *adyn,
-		  FLUID_DYNAMIC  *fdyn,
-		  STRUCT_DYNAMIC *sdyn,
+                  FIELD          *fluidfield,
 		  INT             numfa,
 		  INT             numff,
  		  INT             numfs
 	         );
-void fsi_omega_sg(FIELD          *actfield,
-                  FSI_DYNAMIC    *fsidyn  );
 /************************************************************************
  | fsi_relax_intdisp.c                                                  |
  ************************************************************************/
 void fsi_relax_intdisp(
-                            FIELD          *structfield, 
-			    FSI_DYNAMIC    *fsidyn
+                            FIELD          *structfield
 		      );
  
 /************************************************************************
  | fsi_service.c                                                        |
  ************************************************************************/
 void fsi_alecp(
-		             FIELD           *fluidfield,  
-                             FLUID_DYN_CALC  *dynvar,
+		             FIELD           *fluidfield, 
 		             INT               numdf,
 		             INT               phase
 	       );
@@ -188,16 +159,13 @@ void fsi_fluidstress_result(
                               INT              numdf
 			   );
 void fsi_algoout(             
-                              FSI_DYNAMIC      *fsidyn, 
 			      INT               itnum
 	        );
 void fsi_structpredictor(
-                              FSI_DYNAMIC      *fsidyn, 
                               FIELD            *actfield, 
                               INT               init
 		         );
 INT fsi_convcheck(            FIELD            *structfield, 
-                              FSI_DYNAMIC      *fsidyn, 
 			      INT               itnum
 		 );
 void fsi_init_ale(FIELD *actfield,INT numr);
@@ -205,9 +173,7 @@ void fsi_init_ale(FIELD *actfield,INT numr);
 /************************************************************************
  | fsi_struct.c                                                         |
  ************************************************************************/
-void fsi_struct(   
-                   FSI_DYNAMIC       *fsidyn,
-                   STRUCT_DYNAMIC    *sdyn, 
+void fsi_struct(
 		   FIELD             *actfield, 
 		   INT                mctrl, 
 		   INT                numfs,

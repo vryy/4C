@@ -93,7 +93,6 @@ extern struct _CURVE *curve;
  *----------------------------------------------------------------------*/
 extern enum _CALC_ACTION calc_action[MAXFIELD];
 
-
 DOUBLE acttime;
 
 /*!---------------------------------------------------------------------                                         
@@ -117,8 +116,6 @@ as Neumann boundary conditions
 
 ------------------------------------------------------------------------*/
 void fsi_struct(   
-                   FSI_DYNAMIC       *fsidyn,
-                   STRUCT_DYNAMIC    *sdyn, 
 		   FIELD             *actfield, 
 		   INT                mctrl, 
 		   INT                numfs,
@@ -168,6 +165,8 @@ static DOUBLE        dirichfacs[10];	 /* factors needed for dirichlet-part of rh
 static STRUCT_DYN_CALC dynvar;           /* variables to perform dynamic structural simulation  */              
 static CONTAINER       container;        /* contains variables defined in container.h           */
 
+static FSI_DYNAMIC       *fsidyn;
+static STRUCT_DYNAMIC    *sdyn;
 #ifdef DEBUG 
 dstrc_enter("fsi_struct");
 #endif
@@ -178,6 +177,8 @@ switch (mctrl)
  |                      I N I T I A L I S A T I O N                     |
  *======================================================================*/
 case 1: 
+fsidyn = alldyn[genprob.numaf+1].fsidyn;
+sdyn   = alldyn[genprob.numsf].sdyn;
 
 sdyn->dt=fsidyn->dt;
 sdyn->maxtime=fsidyn->maxtime;
@@ -442,10 +443,10 @@ dyne(&dynvar,actintra,actsolv,mass_array,&vel[0],&work[0]);
 
 /*-------------------------------------------- initialise FSI-predictor */
 if (fsidyn->ifsi==2 || fsidyn->ifsi>=4)
-fsi_structpredictor(fsidyn,actfield,1);
+fsi_structpredictor(actfield,1);
 /*-------------------------------------------- initialise energey check */
 if (fsidyn->ichecke>0)
-fsi_dyneint(actfield,fsidyn,sdyn,NULL,1);
+fsi_dyneint(actfield,1);
 /*----------------------------------------- output to GID postprozessor */
 if (ioflags.struct_disp_gid==1 || ioflags.struct_stress_gid==1)
 if (par.myrank==0) 
@@ -945,7 +946,7 @@ if (fsidyn->ichecke>0)
                         &(actsolv->sysarray[stiff_array]),
                         &(actsolv->sysarray_typ[stiff_array]));
    /*---------------------------- energy transported over the interface */
-   fsi_dyneint(actfield,fsidyn,NULL,NULL,0);
+   fsi_dyneint(actfield,0);
    
    /*------ copy old fsi-forces from nodal sol_mf[4][j] to sol_mf[5][j] */
    solserv_sol_copy(actfield,0,3,3,4,5);
@@ -1058,7 +1059,7 @@ break;
  |               F S I - P R E D I C T O R   P H A S E                  |
  *======================================================================*/ 
 case 4:
-   fsi_structpredictor(fsidyn,actfield,0);
+   fsi_structpredictor(actfield,0);
 break;
 
 

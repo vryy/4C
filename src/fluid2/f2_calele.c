@@ -20,6 +20,13 @@ Maintainer: Steffen Genkinger
 #include "../fluid_full/fluid_prototypes.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
  | general problem data                                                 |
  | global variable GENPROB genprob is defined in global_control.c       |
  *----------------------------------------------------------------------*/
@@ -104,7 +111,9 @@ static DOUBLE   *edforce;  /* pointer to RHS due to dirichl. conditions */
 static ARRAY     eddy_a;       /* element turbulent ken. energy  at (n+gamma)*/
 static DOUBLE   *eddy;
 
-static DOUBLE    visc;
+static DOUBLE    visc;  
+    
+static FLUID_DYNAMIC   *fdyn;
 /*!--------------------------------------------------------------------- 
 \brief control routine for element integration of fluid2
 
@@ -120,7 +129,6 @@ This routine controls the element evaluation:
 			     
 </pre>
 \param  *data	         FLUID_DATA     (i)
-\param  *dynvar	         FLUID_DYN_CALC (i)
 \param  *ele	         ELEMENT	(i)   actual element
 \param  *eleke	         ELEMENT	(i)   element for turbulence-model
 \param  *estif_global    ARRAY	        (o)   ele stiffnes matrix
@@ -139,7 +147,6 @@ This routine controls the element evaluation:
 ------------------------------------------------------------------------*/
 void f2_calele(
                 FLUID_DATA     *data, 
-                FLUID_DYN_CALC *dynvar, 
 	        ELEMENT        *ele,             
                 ELEMENT        *eleke, 
                 ARRAY          *estif_global,   
@@ -198,6 +205,8 @@ if (init==1) /* allocate working arrays and set pointers */
    eiforce = eiforce_global->a.dv;
    etforce = etforce_global->a.dv;
    edforce = edforce_global->a.dv;
+   
+   fdyn   = alldyn[genprob.numff].fdyn;
    goto end;
 } /* endif (init==1) */
 
@@ -214,14 +223,14 @@ switch(ele->e.f2->is_ale)
 {
 case 0:
 /*---------------------------------------------------- set element data */
-   f2_calset(dynvar,ele,xyze,eveln,evelng,epren,edeadn,edeadng,hasext);
+   f2_calset(ele,xyze,eveln,evelng,epren,edeadn,edeadng,hasext);
 
 /*-------------------------- calculate element size and stab-parameter: */
-   f2_calelesize(ele,eleke,data,dynvar,xyze,funct,deriv,deriv2,xjm,derxy,
+   f2_calelesize(ele,eleke,data,xyze,funct,deriv,deriv2,xjm,derxy,
                  vderxy,evelng,velint,wa1,eddy,&visc);
 /*-------------------------------- calculate element stiffness matrices */
 /*                                            and element force vectors */
-   f2_calint(data,ele,dynvar,hasext,
+   f2_calint(data,ele,hasext,
              estif,emass,etforce,eiforce,
              xyze,funct,deriv,deriv2,xjm,derxy,derxy2,
 	     eveln,evelng,epren,edeadn,edeadng,
@@ -230,15 +239,15 @@ case 0:
 break;
 case 1:
 /*---------------------------------------------------- set element data */
-   f2_calseta(dynvar,ele,xyze,eveln,evelng,ealecovn,
+   f2_calseta(ele,xyze,eveln,evelng,ealecovn,
                ealecovng,egridv,epren,edeadn,edeadng,ekappan,ekappang,hasext,
 	       is_relax);
 /*-------------------------- calculate element size and stab-parameter: */   
-   f2_calelesize(ele,eleke,data,dynvar,xyze,funct,deriv,deriv2,xjm,derxy,
+   f2_calelesize(ele,eleke,data,xyze,funct,deriv,deriv2,xjm,derxy,
                  vderxy,ealecovng,velint,wa1,eddy,&visc);
 /*-------------------------------- calculate element stiffness matrices */
 /*                                            and element force vectors */
-   f2_calinta(data,ele,dynvar,hasext,imyrank,
+   f2_calinta(data,ele,hasext,imyrank,
               estif,emass,etforce,eiforce,
 	      xyze,funct,deriv,deriv2,xjm,derxy,derxy2,
 	      eveln,evelng,ealecovn,ealecovng,egridv,epren,edeadn,edeadng,
@@ -253,22 +262,22 @@ switch(ele->e.f2->fs_on)
 {
 case 0: case 1: /* no or explict free surface */
    /*-------------- add emass and estif to estif and permute the matrix */
-   f2_permestif(estif,emass,wa1,ele,dynvar);
+   f2_permestif(estif,emass,wa1,ele);
    /*------------------------------ permute element load vector etforce */
-   if (dynvar->nif!=0)
+   if (fdyn->nif!=0)
       f2_permeforce(etforce,wa1,ele->numnp);   
    /*------------------------------ permute element load vector eiforce */
-   if (dynvar->nii+(*hasext)!=0)
+   if (fdyn->nii+(*hasext)!=0)
       f2_permeforce(eiforce,wa1,ele->numnp);
 break;
 case 2: /* implict free surface */
    dsassert(ele->e.f2->is_ale!=0,"element at free surface has to be ALE!\n");
-   f2_permestif_ifs(estif,emass,wa1,ele,dynvar);
+   f2_permestif_ifs(estif,emass,wa1,ele);
    /*------------------------------ permute element load vector etforce */
-   if (dynvar->nif!=0)
+   if (fdyn->nif!=0)
       f2_permeforce_ifs(etforce,wa1,ele);
    /*------------------------------ permute element load vector eiforce */
-   if (dynvar->nii+(*hasext)!=0)
+   if (fdyn->nii+(*hasext)!=0)
       f2_permeforce_ifs(eiforce,wa1,ele);
 break;   
 default:
@@ -284,7 +293,7 @@ else				/* standard case			*/
 fluid_caldirich(ele,edforce,estif,hasdirich,readfrom);
    
 /*------------------------- calculate emass * vel(n) for BDF2 method ---*/
-if (dynvar->nim)
+if (fdyn->nim)
    f2_massrhs(ele,emass,eveln,eiforce); 
 end:
 /*----------------------------------------------------------------------*/
@@ -393,7 +402,6 @@ return;
 				      
 </pre>
 \param   *ele      ELEMENT	     (i)    actual element
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param  **evel     DOUBLE	     (i)    vel. at nodes
 \param  **vderxy    DOUBLE	     (-)    vel. derivates
 \param  **xjm       DOUBLE	     (-)    jacobi matrix
@@ -405,8 +413,7 @@ return;
 
 ------------------------------------------------------------------------*/
 void f2_shearstress(
-	           ELEMENT    *ele,
-                 FLUID_DYN_CALC  *dynvar 
+	           ELEMENT    *ele
                  )
 {
 DOUBLE           det;    
@@ -429,6 +436,7 @@ ntyp = ele->e.f2->ntyp;
 typ  = ele->distyp;
 actmat  = ele->mat-1;
 visc    = mat[actmat].m.fluid->viscosity;
+fdyn    = alldyn[genprob.numff].fdyn;
 /*-------------------------------------------------------------------------*/
 
 for (node=0; node<iel; node++) 
@@ -489,8 +497,8 @@ for (node=0; node<iel; node++)
       actnode->fluid_varia->c_f_shear += 2*visc*(vderxy[0][1]+vderxy[1][0])/actnode->numele;       
 
 /*------------------- compute shearvelocity for the scaned coordinates */
-      if (FABS(actnode->x[0]-dynvar->coord_scale[0])<EPS7 && FABS(actnode->x[1]-dynvar->coord_scale[1])<EPS15)
-       dynvar->washvel += sqrt(visc*FABS(vderxy[0][1]+vderxy[1][0]))/actnode->numele;       
+      if (FABS(actnode->x[0]-fdyn->coord_scale[0])<EPS7 && FABS(actnode->x[1]-fdyn->coord_scale[1])<EPS15)
+       fdyn->washvel += sqrt(visc*FABS(vderxy[0][1]+vderxy[1][0]))/actnode->numele;       
     }
    }
  }
@@ -510,7 +518,6 @@ return;
 			     			
 </pre>
 \param    *data    FLUID_DATA     (i)
-\param    *dynvar  FLUID_DYN_CALC (i)
 \param    *ele     ELEMENt        (i)    actual element 
 \param     imyrank INT            (i)    proc number
 \return void                                               
@@ -518,7 +525,6 @@ return;
 ------------------------------------------------------------------------*/
 void f2_curvature(
 	           FLUID_DATA     *data,
-		   FLUID_DYN_CALC *dynvar,  
 	           ELEMENT        *ele,
 		   INT             imyrank
 		 )
@@ -534,9 +540,11 @@ FLUID_FREESURF_CONDITION *linefs[4];
 dstrc_enter("f2_curvature");
 #endif
 
+fdyn  = alldyn[genprob.numff].fdyn;
+
 kappa=ele->e.f2->kappa_ND.a.da;
 /*-------------------------------------------------- store old solution */
-if (dynvar->fsstnif!=0)
+if (fdyn->fsstnif!=0)
 for (i=0;i<ele->numnp;i++) kappa[i][0]=kappa[i][1];
 
 /*------------------------------------- number of lines to this element */
@@ -556,11 +564,11 @@ if (foundline==0) goto end;
 switch(ele->distyp)
 {
 case quad4: case tri3:
-   f2_calq4curv(gline,linefs,dynvar,ele,foundline,ngline,xyze,deriv,
+   f2_calq4curv(gline,linefs,ele,foundline,ngline,xyze,deriv,
                 kappa);
 break;
 case quad8: case quad9:
-   f2_calq8curv(gline,linefs,dynvar,ele,ngline,xyze,kappa);
+   f2_calq8curv(gline,linefs,ele,ngline,xyze,kappa);
 break;
 case tri6:
    dserror("calculation of curvature not implemented for tri elements!\n");

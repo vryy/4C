@@ -17,6 +17,21 @@ Maintainer: Steffen Genkinger
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #include "fluid2.h"
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+static FLUID_DYNAMIC   *fdyn;
 /*!--------------------------------------------------------------------- 
 \brief galerkin part of external forces for vel dofs
 
@@ -37,7 +52,6 @@ see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
      
       
 </pre>
-\param   *dynvar      FLUID_DYN_CALC  (i)
 \param   *eforce      DOUBLE	      (i/o)  element force vector
 \param	 *funct       DOUBLE	      (i)    nat. shape functions      
 \param   *edeadn      DOUBLE          (i)    ele dead load at n
@@ -48,7 +62,6 @@ see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
 
 ------------------------------------------------------------------------*/
 void f2_calgalexfv(
-                  FLUID_DYN_CALC  *dynvar, 
                   DOUBLE          *eforce,     
 		  DOUBLE          *funct,       
                   DOUBLE          *edeadn,
@@ -65,8 +78,10 @@ dstrc_enter("f2_calgalexfv");
 #endif		
 
 /*--------------------------------------------------- set some factors */
-facsl = fac*dynvar->thsl;
-facsr = fac*dynvar->thsr;
+fdyn  = alldyn[genprob.numff].fdyn;
+
+facsl = fac*fdyn->thsl;
+facsr = fac*fdyn->thsr;
 
 /*----------------------------------------------------------------------*
    Calculate galerkin part of external forces:
@@ -139,7 +154,6 @@ NOTE: for ALE
       velint = C (ale-convective velocity)           
       
 </pre>
-\param   *dynvar      FLUID_DYN_CALC  (i)
 \param   *ele         ELEMENT	      (i)    actual element
 \param   *eforce      DOUBLE	      (i/o)  element force vector
 \param  **derxy,      DOUBLE	      (i)    global derivatives
@@ -155,7 +169,6 @@ NOTE: for ALE
 
 ------------------------------------------------------------------------*/
 void f2_calstabexfv(
-                    FLUID_DYN_CALC  *dynvar, 
                     ELEMENT         *ele,  
                     DOUBLE          *eforce,     
 		    DOUBLE         **derxy,
@@ -182,21 +195,23 @@ dstrc_enter("f2_calstabexfv");
 #endif		
 
 /*---------------------------------------------------------- initialise */
-gls    = ele->e.f2->stabi.gls;
+gls   = ele->e.f2->stabi.gls;
+fdyn  = alldyn[genprob.numff].fdyn;
+
 
 if (ele->e.f2->stab_type != stab_gls) 
    dserror("routine with no or wrong stabilisation called");
 
 /*--------------------------------------------------- set some factors */
-taumu = dynvar->tau[0];
-taump = dynvar->tau[1];
+taumu = fdyn->tau[0];
+taump = fdyn->tau[1];
 switch (flag)
 {
 case 0: /* evaluation at n */
-   c = dynvar->thsr;
+   c = fdyn->thsr;
 break;
 case 1: /* evaluation at n+1 */
-   c = dynvar->thsl;
+   c = fdyn->thsl;
 break;
 default:
    dserror("value of flag not valid!!!\n");
@@ -297,7 +312,6 @@ NOTE:
     eforce[2*iel]     
       
 </pre>
-\param   *dynvar      FLUID_DYN_CALC  (i)
 \param   *eforce      DOUBLE	      (i/o)  element force vector
 \param  **derxy,      DOUBLE	      (i)    global derivatives    
 \param   *edead       DOUBLE          (i)    ele dead load at n or n+1
@@ -309,7 +323,6 @@ NOTE:
 
 ------------------------------------------------------------------------*/
 void f2_calstabexfp(
-                    FLUID_DYN_CALC  *dynvar, 
                     DOUBLE          *eforce,     
 		    DOUBLE         **derxy,       
                     DOUBLE          *edead,  
@@ -324,14 +337,14 @@ DOUBLE taump;
 DOUBLE fact[2];
 
 /*--------------------------------------------------- set some factors */
-taump = dynvar->tau[1];
+taump = fdyn->tau[1];
 switch (flag)
 {
 case 0: /* evaluation at n */
-   c = dynvar->thpr;
+   c = fdyn->thpr;
 break;
 case 1: /* evaluation at n+1 */
-   c = dynvar->thpl;
+   c = fdyn->thpl;
 break;
 default:
    dserror("value of flag not valid!!!\n");

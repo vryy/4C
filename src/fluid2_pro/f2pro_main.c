@@ -81,8 +81,6 @@ void fluid2_pro(     PARTITION     *actpart,
 /*----------------------------------------------------------------------*/
 MATERIAL              *actmat;     /* actual material                   */
 static FLUID_DATA      *data;      
-FLUID_DYNAMIC         *fdyn;
-static FLUID_DYN_CALC  *dynvar;
 FIELD                 *actfield;   /* actual field                      */
 
 #ifdef DEBUG 
@@ -93,30 +91,29 @@ switch (*action)
 {
 /*------------------------------------------------------ initialisation */
 case calc_fluid_init:
-   dynvar = &(alldyn[genprob.numff].fdyn->dynvar);
-   data   = &(alldyn[genprob.numff].fdyn->dynvar.data);
+   data   = alldyn[genprob.numff].fdyn->data;
    /*---------------------------------------- init the element routines */   
    f2_intg(data,0); 
    /*----------- f2_pro element is initialized, some arrays are defined */
-   f2pro_calele(data,dynvar,NULL,NULL,estif_global,emass_global,
+   f2pro_calele(data,NULL,NULL,estif_global,emass_global,
                lmass_global,gradopr_global,etforce_global,eiforce_global,
 	       edforce_global,NULL,1);                                        
 break;                    
 /*---------------------------------------- calculate the A=(Ct)(Ml-1)(C)*/
 case calc_fluid_amatrix:
-   f2pro_calele(data,dynvar,elev,elep,estif_global,emass_global, 
+   f2pro_calele(data,elev,elep,estif_global,emass_global, 
                 lmass_global,gradopr_global,etforce_global,eiforce_global,
 		edforce_global,hasdirich,0);
 break;                        
 /*------------------------------------------- call the element routines */
 case calc_fluid_f2pro:
-   f2pro_calele(data,dynvar,elev,elep,estif_global,emass_global,
+   f2pro_calele(data,elev,elep,estif_global,emass_global,
                 lmass_global,gradopr_global,etforce_global,eiforce_global,
 		edforce_global,hasdirich,0);   
 break;                        
 /*------------------------------------------- call the element routines */
 case calc_fluid_f2pro_rhs_both:
-   f2pro_calele(data,dynvar,elev,elep,estif_global,emass_global,
+   f2pro_calele(data,elev,elep,estif_global,emass_global,
                 lmass_global,gradopr_global,etforce_global,eiforce_global,
 		edforce_global,hasdirich,0); 
 break; 

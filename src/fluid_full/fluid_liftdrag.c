@@ -55,6 +55,8 @@ extern struct _DESIGN *design;
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
 extern ALLDYNA      *alldyn;  
+
+static FLUID_DYNAMIC *fdyn;
 /*!--------------------------------------------------------------------- 
 \brief controlling lift and drag calculation
 
@@ -72,8 +74,7 @@ void fluid_liftdrag(INT            init,
 		    FIELD         *actfield,
 		    SOLVAR        *actsolv,
 		    PARTITION     *actpart,
-		    INTRA         *actintra,
-		    FLUID_DYNAMIC *fdyn)
+		    INTRA         *actintra)
 {
 INT           i,j,k;
 INT           actcurve,numline;
@@ -93,7 +94,7 @@ DOUBLE        recv[(FLUID_NUM_LD+1)*12];          /*  receive buffer            
 dstrc_enter("fluid_liftdrag");
 #endif
 
-
+fdyn = alldyn[genprob.numff].fdyn;
 /*****************************************************************
  *
  * W A R N I N G ! ! !
@@ -264,7 +265,7 @@ if (init>0)
      printf("\n\n");
    }
    if (par.myrank == 0)
-     plot_liftdrag(fdyn->time, liftdrag);
+     plot_liftdrag(fdyn->acttime, liftdrag);
 }
 
 

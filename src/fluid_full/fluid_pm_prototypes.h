@@ -20,7 +20,7 @@ Maintainer: Steffen Genkinger
 /************************************************************************
  | fluid_pm.c                                                           |
  ************************************************************************/
-void fluid_pm(FLUID_DYNAMIC *fdyn);
+void fluid_pm(void);
 
 /************************************************************************
  | fluid_pm_calamatrx.c                                                 |
@@ -32,7 +32,6 @@ void fluid_pm_calamatrix(
 			  SOLVAR          *actsolv,
 			  SPARSE_ARRAY    *amatrix_oll,
 			  FLUID_DYNAMIC   *fdyn,
-			  FLUID_DYN_CALC  *dynvar,
 			  OLL             *gradmatrix_oll,
 			  OLL             *rgradmatrix_oll,
 			  DOUBLE          *lmass,

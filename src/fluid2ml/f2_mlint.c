@@ -18,6 +18,21 @@ Maintainer: Volker Gravemeier
 #include "../fluid2/fluid2.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+static FLUID_DYNAMIC *fdyn;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
  | vector of material laws                                              |
  | defined in global_control.c
  *----------------------------------------------------------------------*/
@@ -34,7 +49,6 @@ Time-RHS for one submesh element is calculated.
 </pre>
 \param  *data        FLUID_DATA	   (i)    integration data
 \param  *ele	     ELEMENT	   (i)    actual element
-\param  *dynvar      FLUID_DYN_CALC(i)
 \param  *mlvar       FLUID_DYN_ML  (i)
 \param  *submesh     FLUID_ML_SMESH(i)   
 \param **smestif      DOUBLE       (o)	sm element stiffness matrix
@@ -110,8 +124,7 @@ Time-RHS for one submesh element is calculated.
 
 ------------------------------------------------------------------------*/
 void f2_smint(FLUID_DATA      *data,     
-	      ELEMENT	      *ele,	
-	      FLUID_DYN_CALC  *dynvar, 
+	      ELEMENT	      *ele,
 	      FLUID_DYN_ML    *mlvar, 
 	      FLUID_ML_SMESH  *submesh, 
               DOUBLE	     **smestif,   
@@ -210,6 +223,8 @@ dstrc_enter("f2_smint");
 #endif
 
 /*----------------------------------------------------- initialization */
+fdyn = alldyn[genprob.numff].fdyn;
+
 iel    = ele->numnp;
 smiel  = submesh->numen;
 actmat = ele->mat-1;
@@ -368,10 +383,10 @@ for (lr=0;lr<nir;lr++)
  |         compute "Standard Galerkin" matrices for submesh             |
  *----------------------------------------------------------------------*/
 /*-------------------------------------------------  compute matrix SMK */      
-      f2_calsmk(dynvar,mlvar,smestif,velint,vderxy,smfunct,smderxy,fac,
+      f2_calsmk(mlvar,smestif,velint,vderxy,smfunct,smderxy,fac,
                 visc,smiel);
 /*-------------------------------------------------- compute matrix SMM */
-      if (dynvar->nis==0 && mlvar->quastabub==0) 
+      if (fdyn->nis==0 && mlvar->quastabub==0) 
         f2_calsmm(smemass,smfunct,fac,smiel);
       
 /*----------------------------------------------------------------------*
@@ -383,11 +398,11 @@ for (lr=0;lr<nir;lr++)
         if (ihoelsm!=0) 
 	  f2_mlcogder2(smxyze,smxjm,wa1,wa2,smderxy,smderxy2,smderiv2,smiel);
 /*---------------------------------------- stabilization for matrix SMK */
-        f2_calstabsmk(dynvar,mlvar,smestif,velint,vderxy,smfunct,smderxy,
+        f2_calstabsmk(mlvar,smestif,velint,vderxy,smfunct,smderxy,
                       smderxy2,fac,visc,smiel,ihoelsm);
 /*---------------------------------------- stabilization for matrix SMM */
-        if (dynvar->nis==0 && mlvar->quastabub==0) 
-	  f2_calstabsmm(dynvar,mlvar,smemass,velint,vderxy,smfunct,smderxy,
+        if (fdyn->nis==0 && mlvar->quastabub==0) 
+	  f2_calstabsmm(mlvar,smemass,velint,vderxy,smfunct,smderxy,
 	                smderxy2,fac,visc,smiel,ihoelsm); 
       } /* endif (mlvar->smstabi>0) */
 
@@ -395,11 +410,11 @@ for (lr=0;lr<nir;lr++)
  |         compute "VMM" Force Vectors                                  |
  *----------------------------------------------------------------------*/ 
 /*----------------------- standard Galerkin part for "VMM" force vector */
-      f2_calsmfv(dynvar,mlvar,smevfor,velint,vderxy,smfunct,funct,derxy,
+      f2_calsmfv(mlvar,smevfor,velint,vderxy,smfunct,funct,derxy,
                  derxy2,fac,visc,smiel,iel,ihoel); 
 /*--------------------------- stabilization part for "VMM" force vector */
       if (mlvar->smstabi>0)
-        f2_calstabsmfv(dynvar,mlvar,smevfor,velint,vderxy,smfunct,smderxy,
+        f2_calstabsmfv(mlvar,smevfor,velint,vderxy,smfunct,smderxy,
 	               smderxy2,funct,derxy,derxy2,fac,visc,smiel,iel,
 		       ihoelsm,ihoel);
 
@@ -407,13 +422,13 @@ for (lr=0;lr<nir;lr++)
  |         compute "Time" Force Vector                                  |
  *----------------------------------------------------------------------*/
 /*------- cancel "Time" force vector calculation for certain parameters */
-      if (mlvar->transterm>1 && dynvar->thsr==ZERO && mlvar->quastabub!=0) 
+      if (mlvar->transterm>1 && fdyn->thsr==ZERO && mlvar->quastabub!=0) 
         continue;
 	
-      if (dynvar->nis==0)
+      if (fdyn->nis==0)
       {
 /*------- get large-scale pressure derivatives (n) at integration point */
-        if (dynvar->iprerhs>0) f2_pder(pderxyn,derxy,epren,iel);
+        if (fdyn->iprerhs>0) f2_pder(pderxyn,derxy,epren,iel);
 /*------------------ get large-scale velocities (n) at integraton point */
         f2_veli(velintn,funct,eveln,iel);
 /*------- get large-scale velocity derivatives (n) at integration point */
@@ -531,12 +546,12 @@ for (lr=0;lr<nir;lr++)
 	}
 	
 /*---------------------- standard Galerkin part for "Time" force vector */
-        f2_calsmft(dynvar,mlvar,smetfor,velintn,velintnt,velintnc,vderxyn, 
+        f2_calsmft(mlvar,smetfor,velintn,velintnt,velintnc,vderxyn, 
 		   vderxync,vderxynv,vderxy2nv,pderxyn,smfunct,smderxy,fac,
 		   visc,smiel,iel,ihoelsm,ihoel);
 /*-------------------------- stabilization part for "Time" force vector */
         if (mlvar->smstabi>0)
-          f2_calstabsmft(dynvar,mlvar,smetfor,velintn,velintnt,velintnc,
+          f2_calstabsmft(mlvar,smetfor,velintn,velintnt,velintnc,
 	                 vderxyn,vderxync,vderxynv,vderxy2n,pderxyn,smfunct,
 			 smderxy,smderxy2,fac,visc,smiel,iel,ihoelsm,ihoel);
       }  
@@ -563,7 +578,6 @@ element is calculated.
 </pre>
 \param  *data        FLUID_DATA	   (i)    integration data
 \param  *ele	     ELEMENT	   (i)    actual element
-\param  *dynvar      FLUID_DYN_CALC(i)
 \param  *mlvar       FLUID_DYN_ML  (i)
 \param  *submesh     FLUID_ML_SMESH(i)   
 \param **estif        DOUBLE	   (o)  element stiffness matrix
@@ -605,8 +619,7 @@ element is calculated.
 
 ------------------------------------------------------------------------*/
 void f2_bubint(FLUID_DATA      *data,     
-	       ELEMENT         *ele,     
-	       FLUID_DYN_CALC  *dynvar, 
+	       ELEMENT         *ele,
 	       FLUID_DYN_ML    *mlvar, 
 	       FLUID_ML_SMESH  *submesh, 
                DOUBLE	      **estif,	
@@ -671,6 +684,8 @@ dstrc_enter("f2_bubint");
 #endif
 
 /*----------------------------------------------------- initialization */
+fdyn = alldyn[genprob.numff].fdyn;
+
 iel    = ele->numnp;
 smiel  = submesh->numen;
 actmat = ele->mat-1;
@@ -829,10 +844,10 @@ for (lr=0;lr<nir;lr++)
  |  Standard Galerkin matrices are all stored in one matrix "estif"     |
  |  Standard Galerkin mass matrix is stored in "emass"                  |
  *----------------------------------------------------------------------*/
-      if (dynvar->nik>0 && mlvar->convel==0)
+      if (fdyn->nik>0 && mlvar->convel==0)
       {
 /*------------------------ compute standard Galerkin part of matrix Kvv */      
-        f2_lscalkvv(dynvar,estif,velint,vderxy,funct,derxy,fac,visc,iel);
+        f2_lscalkvv(estif,velint,vderxy,funct,derxy,fac,visc,iel);
       }	 
 
 /*----------------------------------------------------------------------*
@@ -842,18 +857,18 @@ for (lr=0;lr<nir;lr++)
  |  Bubble mass matrix is stored in "emass"                             |
  *----------------------------------------------------------------------*/
 /*-------------------------- compute bubble function part of matrix Kvv */      
-      f2_calbkvv(dynvar,estif,velint,vderxy,funct,derxy,vbubint,vbubderxy,
+      f2_calbkvv(estif,velint,vderxy,funct,derxy,vbubint,vbubderxy,
                  fac,visc,iel);
 /*-------------------------- compute bubble function part of matrix Kvp */      
-     f2_calbkvp(dynvar,estif,velint,vderxy,funct,derxy,pbubint,pbubderxy,
+     f2_calbkvp(estif,velint,vderxy,funct,derxy,pbubint,pbubderxy,
                  fac,visc,iel);
 /*-------------------------- compute bubble function part of matrix Kpv */      
       f2_calbkpv(estif,funct,vbubderxy,fac,iel);
 /*-------------------------- compute bubble function part of matrix Kpp */      
       f2_calbkpp(estif,funct,pbubderxy,fac,iel);
 	
-      if (dynvar->nis==0 && mlvar->transterm==0 || 
-          dynvar->nis==0 && mlvar->transterm==2)
+      if (fdyn->nis==0 && mlvar->transterm==0 || 
+          fdyn->nis==0 && mlvar->transterm==2)
       {	   
 /*-------------------------- compute bubble function part of matrix Mvv */      
 	f2_calbmvv(emass,funct,vbubint,fac,iel);
@@ -863,19 +878,19 @@ for (lr=0;lr<nir;lr++)
 /*----------------------------------------------------------------------*
  |         compute "VMM" Force Vectors                                  |
  *----------------------------------------------------------------------*/ 
-      if (dynvar->nis==0)
+      if (fdyn->nis==0)
       {
 /*------------------------ compute "VMM" force vector for velocity dofs */      
-        f2_calbfv(dynvar,mlvar,eiforce,velint,vderxy,funct,derxy,smfint,
+        f2_calbfv(mlvar,eiforce,velint,vderxy,funct,derxy,smfint,
                   smfderxy,fac,visc,iel); 
 /*------------------------ compute "VMM" force vector for pressure dofs */      
-        f2_calbfp(dynvar,eiforce,funct,smfderxy,fac,iel); 
+        f2_calbfp(eiforce,funct,smfderxy,fac,iel); 
       }
       
 /*----------------------------------------------------------------------*
  |        compute "Iteration" Force Vectors                             |
  *----------------------------------------------------------------------*/ 
-      if (dynvar->nii!=0)
+      if (fdyn->nii!=0)
       {
         if (mlvar->convel!=0)
         {
@@ -901,8 +916,8 @@ for (lr=0;lr<nir;lr++)
 /*-------------- get convective velocities (n+1,i) at integration point */
         f2_covi(vderxy,velint,covint);
 /*- calculate "Iteration" force vector for velocity dofs (no pre. dofs) */
-        f2_lscalgalifv(dynvar,eiforce,covint,velint,vderxy,funct,fac,iel);
-      } /* endif (dynvar->nii!=0) */
+        f2_lscalgalifv(eiforce,covint,velint,vderxy,funct,fac,iel);
+      } /* endif (fdyn->nii!=0) */
    } /* end of loop over integration points ls*/
 } /* end of loop over integration points lr */
  
@@ -926,7 +941,6 @@ large-scale element is calculated
 </pre>
 \param  *data      FLUID_DATA	   (i)	  integration data
 \param  *ele	   ELEMENT	   (i)    actual element
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param  *mlvar     FLUID_DYN_ML    (i)
 \param  *hasext    INT             (i)    element flag
 \param **estif     DOUBLE	   (o)    element stiffness matrix
@@ -957,8 +971,7 @@ large-scale element is calculated
 
 ------------------------------------------------------------------------*/
 void f2_lsint(FLUID_DATA      *data,     
-	      ELEMENT	      *ele,	
-	      FLUID_DYN_CALC  *dynvar,
+	      ELEMENT	      *ele,
 	      FLUID_DYN_ML    *mlvar, 
               INT             *hasext,
               DOUBLE	     **estif,	
@@ -1009,6 +1022,8 @@ dstrc_enter("f2_lsint");
 #endif
 
 /*----------------------------------------------------- initialization */
+fdyn = alldyn[genprob.numff].fdyn;
+
 iel=ele->numnp;
 actmat=ele->mat-1;
 dens = mat[actmat].m.fluid->density;
@@ -1085,8 +1100,8 @@ for (lr=0;lr<nir;lr++)
       
  /*--- compute stab. par. or subgrid viscosity during integration loop */
       if (gls->istabi>0 && gls->iduring!=0 || 
-          dynvar->sgvisc>0    && gls->iduring!=0)
-        f2_mlcalelesize2(ele,dynvar,funct,velint,vderxy,wa1,visc,iel,ntyp);
+          fdyn->sgvisc>0    && gls->iduring!=0)
+        f2_mlcalelesize2(ele,funct,velint,vderxy,wa1,visc,iel,ntyp);
 	
 /*----------------------------------------------------------------------*
  |         compute "Standard Galerkin" matrices                         |
@@ -1094,16 +1109,16 @@ for (lr=0;lr<nir;lr++)
  |  Standard Galerkin matrices are all stored in one matrix "estif"     |
  |  Standard Galerkin mass matrix is stored in "emass"                  |
  *----------------------------------------------------------------------*/
-      if(dynvar->nik>0)
+      if(fdyn->nik>0)
       {
 /*------------------------ compute standard Galerkin part of matrix Kvv */      
          if (mlvar->convel!=0)
-	   f2_lscalkvv(dynvar,estif,velint,vderxy,funct,derxy,fac,visc,iel);
+	   f2_lscalkvv(estif,velint,vderxy,funct,derxy,fac,visc,iel);
 /*-------------- compute standard Galerkin part of matrices Kvp and Kpv */      
 	 f2_lscalkvp(estif,funct,derxy,fac,iel);
 /*------------------------ compute standard Galerkin part of matrix Mvv */      
-	 if (dynvar->nis==0) f2_lscalmvv(emass,funct,fac,iel);
-      } /* endif (dynvar->nik>0) */
+	 if (fdyn->nis==0) f2_lscalmvv(emass,funct,fac,iel);
+      } /* endif (fdyn->nik>0) */
       
 /*----------------------------------------------------------------------*
  |         compute Stabilization matrices                               |
@@ -1117,51 +1132,51 @@ for (lr=0;lr<nir;lr++)
 /*----------------------------------- compute second global derivatives */ 
          if (ihoel!=0) f2_mlgder2(ele,xjm,wa1,wa2,derxy,derxy2,deriv2,iel);
    
-         if (dynvar->nie==0)
+         if (fdyn->nie==0)
          {
 /*---------------------------------------- stabilization for matrix Kvv */
-            f2_lscalstabkvv(ele,dynvar,estif,velint,vderxy,
+            f2_lscalstabkvv(ele,estif,velint,vderxy,
                           funct,derxy,derxy2,fac,visc,iel,ihoel);
 /*---------------------------------------- stabilization for matrix Kvp */
-            f2_lscalstabkvp(ele,dynvar,estif,velint,vderxy,
+            f2_lscalstabkvp(ele,estif,velint,vderxy,
                           funct,derxy,derxy2,fac,visc,iel,ihoel);
 /*---------------------------------------- stabilization for matrix Mvv */
-            if (dynvar->nis==0) 
-               f2_lscalstabmvv(ele,dynvar,emass,velint,vderxy, 
+            if (fdyn->nis==0) 
+               f2_lscalstabmvv(ele,emass,velint,vderxy, 
 	                     funct,derxy,derxy2,fac,visc,iel,ihoel); 
             if (gls->ipres!=0)	        
             {
 /*---------------------------------------- stabilization for matrix Kpv */
-               f2_lscalstabkpv(dynvar,estif,velint,vderxy,
+               f2_lscalstabkpv(estif,velint,vderxy,
 	                     funct,derxy,derxy2,fac,visc,iel,ihoel);
 /*---------------------------------------- stabilization for matrix Mpv */
-	       if (dynvar->nis==0)
-		  f2_lscalstabmpv(dynvar,emass,funct,derxy,fac,iel);
+	       if (fdyn->nis==0)
+		  f2_lscalstabmpv(emass,funct,derxy,fac,iel);
             } /* endif (ele->e.f2->ipres!=0) */
-         } /* endif (dynvar->nie==0) */
+         } /* endif (fdyn->nie==0) */
 /*---------------------------------------- stabilization for matrix Kpp */
          if (gls->ipres!=0)
-	    f2_lscalstabkpp(dynvar,estif,derxy,fac,iel);  
+	    f2_lscalstabkpp(estif,derxy,fac,iel);  
       } /* endif (ele->e.f2->istabi>0) */
 
 /*----------------------------------------------------------------------*
  |         compute "Iteration" Force Vectors                            |
  *----------------------------------------------------------------------*/ 
-      if (dynvar->nii!=0 && mlvar->convel!=0)
+      if (fdyn->nii!=0 && mlvar->convel!=0)
       {
 /*-------------- get convective velocities (n+1,i) at integration point */
         f2_covi(vderxy,velint,covint);
 /*- calculate "Iteration" force vector for velocity dofs (no pre. dofs) */
-        f2_lscalgalifv(dynvar,eiforce,covint,velint,vderxy,funct,fac,iel);
-      } /* endif (dynvar->nii!=0) */
+        f2_lscalgalifv(eiforce,covint,velint,vderxy,funct,fac,iel);
+      } /* endif (fdyn->nii!=0) */
 
 /*----------------------------------------------------------------------*
  |         compute "Time" Force Vector                                  |
  *----------------------------------------------------------------------*/
-      if (dynvar->nis==0)
+      if (fdyn->nis==0)
       {
  /*------------------------------ get pressure (n) at integration point */
-        if (dynvar->iprerhs>0) f2_prei(&preintn,funct,epren,iel);
+        if (fdyn->iprerhs>0) f2_prei(&preintn,funct,epren,iel);
 /*----------------------------- get velocities (n) at integration point */
         f2_veli(velintn,funct,eveln,iel);
 /*------------------- get velocity derivatives (n) at integration point */
@@ -1169,11 +1184,11 @@ for (lr=0;lr<nir;lr++)
 /*------------------ get convective velocities (n) at integration point */
         f2_covi(vderxyn,velintn,covintn);        	    
 /*--------------------- calculate "Time" force vector for velocity dofs */
-	f2_lscalgaltfv(dynvar,etforce,velintn,velintn,covintn,funct,derxy,
+	f2_lscalgaltfv(etforce,velintn,velintn,covintn,funct,derxy,
 	             vderxyn,preintn,visc,fac,iel);		       
 /*--------------------- calculate "Time" force vector for pressure dofs */
-        if (dynvar->thsr!=ZERO) 
-	  f2_lscalgaltfp(dynvar,&(etforce[2*iel]),funct,vderxyn,fac,iel);
+        if (fdyn->thsr!=ZERO) 
+	  f2_lscalgaltfp(&(etforce[2*iel]),funct,vderxyn,fac,iel);
       }  
 
 /*----------------------------------------------------------------------*
@@ -1181,7 +1196,7 @@ for (lr=0;lr<nir;lr++)
  *----------------------------------------------------------------------*/
       if (*hasext!=0)
 /*----------------- calculate "External" force vector for velocity dofs */
-        f2_lscalgalexfv(dynvar,etforce,funct,edeadn,edead,fac,iel);
+        f2_lscalgalexfv(etforce,funct,edeadn,edead,fac,iel);
    } /* end of loop over integration points ls*/
 } /* end of loop over integration points lr */
  
@@ -1324,7 +1339,6 @@ one sub-submesh element is calculated.
 </pre>
 \param  *data        FLUID_DATA	   (i)    integration data
 \param  *ele	     ELEMENT	   (i)    actual element
-\param  *dynvar      FLUID_DYN_CALC(i)
 \param  *mlvar       FLUID_DYN_ML  (i)
 \param  *ssmesh      FLUID_ML_SMESH(i)   
 \param **ssestif      DOUBLE       (o)	ssm element stiffness matrix
@@ -1348,8 +1362,7 @@ one sub-submesh element is calculated.
 
 ------------------------------------------------------------------------*/
 void f2_ssint(FLUID_DATA      *data,     
-	      ELEMENT	      *ele,	
-	      FLUID_DYN_CALC  *dynvar, 
+	      ELEMENT	      *ele,
 	      FLUID_DYN_ML    *mlvar, 
 	      FLUID_ML_SMESH  *ssmesh, 
               DOUBLE	     **ssestif,   
@@ -1477,7 +1490,7 @@ for (lr=0;lr<nir;lr++)
  |       compute matrix and rhs for sub-submesh                         |
  *----------------------------------------------------------------------*/
 /*------------------------------------------------  compute matrix SSK */      
-      f2_calsmk(dynvar,mlvar,ssestif,velint,vderxy,ssfunct,ssderxy,fac,
+      f2_calsmk(mlvar,ssestif,velint,vderxy,ssfunct,ssderxy,fac,
                 visc,ssiel);
 /*--------------------------------------------- compute normalized rhs */
       fluid_calnofo(ssenfor,ssfunct,fac,ssiel); 

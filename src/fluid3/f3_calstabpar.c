@@ -14,8 +14,23 @@ Maintainer: Steffen Genkinger
 #include "../headers/standardtypes.h"
 #include "fluid3_prototypes.h"
 #include "fluid3.h"
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
 static DOUBLE Q13  = ONE/THREE;
 static DOUBLE Q112 = ONE/TWELVE;
+static FLUID_DYNAMIC *fdyn;
 /*!--------------------------------------------------------------------- 
 \brief routine to calculate stability parameter                
 
@@ -70,14 +85,13 @@ static DOUBLE Q112 = ONE/TWELVE;
    ele->e.f3->stabi.gls->itau[2]: flag for tau_c calc. (-1: before, 1:during)	
    ele->e.f3->hk[i]: element sizes (vel / pre / cont)			
    ele->e.f3->stabi.gls->idiaxy: has diagonals to be computed			
-   dynvar->tau[0]: stability parameter momentum / velocity (tau_mu)	
-   dynvar->tau[1]: stability parameter momentum / pressure (tau_mp)	
-   dynvar->tau[2]: stability parameter continuity (tau_c)		
+   fdyn->tau[0]: stability parameter momentum / velocity (tau_mu)	
+   fdyn->tau[1]: stability parameter momentum / pressure (tau_mp)	
+   fdyn->tau[2]: stability parameter continuity (tau_c)		
 
 </pre>
 
 \param   *ele,        ELEMENT	      (i)    actual element
-\param   *dynvar,     FLUID_DYN_CALC  (i/o)
 \param   *velint,     DOUBLE	      (i)    vel at center
 \param    visc,       DOUBLE	      (i)    viscosity
 \param    iel,        INT	      (i)    number of nodes	     
@@ -88,7 +102,6 @@ static DOUBLE Q112 = ONE/TWELVE;
 ------------------------------------------------------------------------*/ 
 void f3_calstabpar(
 	            ELEMENT         *ele,      
-		    FLUID_DYN_CALC  *dynvar,
 		    DOUBLE          *velint,  
 		    DOUBLE           visc,    
 		    INT              iel,     
@@ -111,7 +124,8 @@ dstrc_enter("f3_calstabpar");
 #endif		
 
 /*---------------------------------------------------------- initialise */
-gls    = ele->e.f3->stabi.gls;
+gls   = ele->e.f3->stabi.gls;
+fdyn  = alldyn[genprob.numff].fdyn;
 
 if (ele->e.f3->stab_type != stab_gls) 
    dserror("routine with no or wrong stabilisation called");
@@ -152,7 +166,7 @@ case 35: /*-------------------------- version diss. Wall - instationary */
    velno = sqrt(velint[0]*velint[0] \
                +velint[1]*velint[1] \
 	       +velint[2]*velint[2]); /*norm of vel */
-   dt = dynvar->dta;     /* check if dta or dt has to be chosen!!!!!!!! */
+   dt = fdyn->dta;     /* check if dta or dt has to be chosen!!!!!!!! */
    for (isp=0;isp<3;isp++)
    {
       if (gls->itau[isp]!=iflag)
@@ -162,16 +176,16 @@ case 35: /*-------------------------- version diss. Wall - instationary */
       {
       case 2:/* continiuty stabilisation */
          re = c_mk*hk*velno/TWO/visc;  /* element reynolds number */
-	 dynvar->tau[isp] = (gls->clamb)*velno*hk/TWO*DMIN(ONE,re);         
+	 fdyn->tau[isp] = (gls->clamb)*velno*hk/TWO*DMIN(ONE,re);         
       break;
       default: /* velocity / pressure stabilisation */
          if (velno>EPS15)
 	 { 
 	    aux1 = DMIN(hk/TWO/velno , c_mk*hk*hk/FOUR/visc);
-            dynvar->tau[isp] = DMIN(dt , aux1);
+            fdyn->tau[isp] = DMIN(dt , aux1);
          }
 	 else
-            dynvar->tau[isp] = DMIN(dt , c_mk*hk*hk/FOUR/visc);
+            fdyn->tau[isp] = DMIN(dt , c_mk*hk*hk/FOUR/visc);
        break;
       } /* end switch (isp) */
    } /* end of loop over isp */
@@ -192,14 +206,14 @@ case 36: /*---------------------------- version diss. Wall - stationary */
       switch(isp)
       {
       case 2: /* continiuty stabilisation ### TWO VERSIONS ??? ###*/
-         dynvar->tau[isp] = (gls->clamb)*velno*hk/TWO*DMIN(ONE,re);
-/*         dynvar->tau[isp] = velno*hk/TWO*DMIN(ONE,re);*/
+         fdyn->tau[isp] = (gls->clamb)*velno*hk/TWO*DMIN(ONE,re);
+/*         fdyn->tau[isp] = velno*hk/TWO*DMIN(ONE,re);*/
          break;
       default: /* velocity / pressure stabilisation */
          if (re<ONE)
-	    dynvar->tau[isp] = c_mk*hk*hk/FOUR/visc;
+	    fdyn->tau[isp] = c_mk*hk*hk/FOUR/visc;
 	 else
-	    dynvar->tau[isp] = hk/TWO/velno;
+	    fdyn->tau[isp] = hk/TWO/velno;
       break;
       }  /* end switch (isp) */
    } /* end loop over isp */   

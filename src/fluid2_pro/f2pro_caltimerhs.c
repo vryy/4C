@@ -17,6 +17,19 @@ Maintainer: Steffen Genkinger
 #include "../headers/standardtypes.h"
 #include "fluid2pro_prototypes.h"
 #include "fluid2pro.h"
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
 /*!--------------------------------------------------------------------- 
 \brief galerkin part of time forces for vel dofs
 
@@ -41,7 +54,6 @@ is calculated:
 etforce = MUn+dt*(fn-N(Un)Un) 
 eiforce = -dt*CPn     
 </pre>
-\param   *dynvar      FLUID_DYN_CALC  (i)
 \param   *etforce     DOUBLE	      (i/o)  element force vector part1
 \param   *eiforce     DOUBLE	      (i/o)  element force vector part2
 \param   *velint      DOUBLE	      (i)    vel. at integr. point
@@ -57,7 +69,6 @@ eiforce = -dt*CPn
 \return void                                                                       
 ------------------------------------------------------------------------*/
 void f2pro_calgaltfv(
-                  FLUID_DYN_CALC  *dynvar, 
                   DOUBLE          *etforce,
 		  DOUBLE          *eiforce,
 		  DOUBLE          *velint,   
@@ -75,12 +86,15 @@ void f2pro_calgaltfv(
 INT    j,irow,isd,inode;  
 DOUBLE aux,c;
 DOUBLE fact[2];
-DOUBLE dta=dynvar->dta;
-
+DOUBLE dta;
+FLUID_DYNAMIC *fdyn;
 #ifdef DEBUG 
 dstrc_enter("f2pro_calgaltfv");
 #endif
 
+fdyn = alldyn[genprob.numff].fdyn;
+
+dta=fdyn->dta;
 /*----------------------------------------------------------------------*
 Calculate intertia forces of time force vector:
            /
@@ -106,10 +120,10 @@ for (inode=0;inode<iel;inode++)
    - (1-THETA)*dt  |  2*nue * eps(v) : eps(u)  d_omega
                   /  
    It is needed when the viscous term is integrated via trapezoidal rule
-   dynvar->theta = 0.5 		  
+   fdyn->theta = 0.5 		  
  *----------------------------------------------------------------------*/ 
 irow=-1;
-aux = dta*(ONE-dynvar->theta);
+aux = dta*(ONE-fdyn->theta);
 for (inode=0;inode<iel;inode++)
 {
    for (isd=0;isd<2;isd++)

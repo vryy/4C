@@ -14,6 +14,21 @@ Maintainer: Thomas Hettich
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #include "fluid2_tu.h"
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+static FLUID_DYNAMIC   *fdyn;
 /*!--------------------------------------------------------------------- 
 \brief galerkin part of iteration forces for kapome dofs
 
@@ -28,7 +43,6 @@ is calculated:
                
 
 </pre>
-\param  *dynvar      FLUID_DYN_CALC  (i)
 \param  *eforce      DOUBLE	    (i/o)   element force vector
 \param   kapomeint   DOUBLE	     (i)    kapome at integr. point
 \param  *funct       DOUBLE	     (i)    nat. shape funcs
@@ -39,7 +53,6 @@ is calculated:
 
 ------------------------------------------------------------------------*/
 void f2_calgalifkapome(
-                  FLUID_DYN_CALC  *dynvar, 
                   DOUBLE          *eforce,
                   DOUBLE           kapomeint,  
                   DOUBLE          *funct,   
@@ -57,7 +70,8 @@ dstrc_enter("f2_calgalifkapome");
 #endif
 
 /*----------------------------------------------- set some factors */
-facsl = fac * dynvar->thsl;
+fdyn  = alldyn[genprob.numff].fdyn;
+facsl = fac * fdyn->thsl;
 
 /*------------------------------------------------------------------*
    Calculate forces of iteration force vector:
@@ -96,7 +110,6 @@ In this routine the stabilisation part of the iteration forces for kapome
 
 
 </pre>
-\param   *dynvar   FLUID_DYN_CALC  (i)
 \param   *ele      ELEMENT	   (i)    actual element
 \param   *eforce   DOUBLE	   (i/o)  element force vector
 \param    kapomeint DOUBLE	   (i)    kapome at integr. point
@@ -111,18 +124,17 @@ In this routine the stabilisation part of the iteration forces for kapome
 
 ------------------------------------------------------------------------*/
 void f2_calstabifkapome(
-                  FLUID_DYN_CALC  *dynvar, 
-                  ELEMENT         *ele,      
-	            DOUBLE          *eforce,  
-		      DOUBLE           kapomeint,  
-                  DOUBLE          *velint,  
-                  DOUBLE          *velint_dc,  
-                  DOUBLE          *funct,   
-		      DOUBLE         **derxy,   
-		      DOUBLE           fac,     
-                  DOUBLE           factor2,    
-		      INT              iel      
-                  )  
+                        ELEMENT         *ele,      
+	                DOUBLE          *eforce,  
+		        DOUBLE           kapomeint,  
+                        DOUBLE          *velint,  
+                        DOUBLE          *velint_dc,  
+                        DOUBLE          *funct,   
+		        DOUBLE         **derxy,   
+		        DOUBLE           fac,     
+                        DOUBLE           factor2,    
+		        INT              iel      
+                      )  
 {
 INT    inode,isd;
 INT    irow;  
@@ -135,10 +147,11 @@ dstrc_enter("f2_calstabifkapome");
 #endif
 
 /*--------------------------------------------------- set some factors */
-taumu    = dynvar->tau_tu;
-taumu_dc = dynvar->tau_tu_dc;
-facsl    = fac * dynvar->thsl * taumu;
-facsl_dc = fac * dynvar->thsl * taumu_dc;
+fdyn     = alldyn[genprob.numff].fdyn;
+taumu    = fdyn->tau_tu;
+taumu_dc = fdyn->tau_tu_dc;
+facsl    = fac * fdyn->thsl * taumu;
+facsl_dc = fac * fdyn->thsl * taumu_dc;
 /*---------------------------------------------------------------------- 
    Calculate  stabilastion of iteration force vector:
 

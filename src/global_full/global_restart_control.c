@@ -1254,7 +1254,7 @@ dstrc_enter("restart_write_fluiddyn");
 out = allfiles.out_pss;
 /*-------- check the step we are in and create the name "res<step>" */
 res.step = fdyn->step;
-res.time = fdyn->time;
+res.time = fdyn->acttime;
 sprintf(resname,"fres%d",res.step);
 
 /*----------------------------------------------------------------------*/
@@ -1465,7 +1465,7 @@ if (ierr != 1) dserror("Cannot restart, step doesn't exist in pss-file");
 pss_read_name_handle(resname,&i,&i,&byte,&res,&reshandle,in,&ierr);
 if (ierr != 1) dserror("Restart structure exists, but cannot read it");
 fdyn->step=res.step;
-fdyn->time=res.time;
+fdyn->acttime=res.time;
 
 /*----------------------------------------------------------------------*/
 /*

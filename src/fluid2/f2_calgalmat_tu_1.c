@@ -39,7 +39,6 @@ NOTE: there's only one elestif
       --> Kkapome is stored in estif[0..(iel-1)][0..(iel-1)]
       
 </pre>
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param **estif        DOUBLE	   (i/o)  ele stiffness matrix
 \param   kapomeint    DOUBLE	   (i)    kapome at INT point
 \param  *velint       DOUBLE	   (i)    velocity at INT point
@@ -55,7 +54,6 @@ NOTE: there's only one elestif
 
 ------------------------------------------------------------------------*/
 void f2_calkkapome(
-                FLUID_DYN_CALC  *dynvar,
 		    DOUBLE         **estif,   
 		    DOUBLE           kapomeint, 
 	          DOUBLE          *velint,

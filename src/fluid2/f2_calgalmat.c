@@ -17,6 +17,21 @@ Maintainer: Steffen Genkinger
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #include "fluid2.h"
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+static FLUID_DYNAMIC *fdyn;
 /*!---------------------------------------------------------------------
 \brief evaluate galerkin part of Kvv
 
@@ -64,7 +79,6 @@ NOTE: there's only one elestif
       
 </pre>
 \param  *ele       ELEMENT         (i)    actual element
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param **estif     DOUBLE	   (i/o)  ele stiffness matrix
 \param  *velint    DOUBLE	   (i)    vel at INT point
 \param  *gridvint  DOUBLE          (i)    gridvel at INT point
@@ -78,7 +92,6 @@ NOTE: there's only one elestif
 
 ------------------------------------------------------------------------*/
 void f2_calkvv( ELEMENT         *ele,
-                FLUID_DYN_CALC  *dynvar,
 		DOUBLE         **estif,   
 		DOUBLE          *velint,
 		DOUBLE          *gridvint,
@@ -104,6 +117,7 @@ DOUBLE  c,aux;
 dstrc_enter("f2_calkvv");
 #endif		
 
+fdyn = alldyn[genprob.numff].fdyn;
 c=fac*visc;
 
 /*----------------------------------------------------------------------*
@@ -135,7 +149,7 @@ for (icn=0;icn<iel;icn++)
    |  v * u_old * grad(u)     d_omega
   /
  *----------------------------------------------------------------------*/
-if(dynvar->nic != 0) /* evaluate for Newton- and fixed-point-like-iteration */
+if(fdyn->nic != 0) /* evaluate for Newton- and fixed-point-like-iteration */
 {
    icol=0;
    for (icn=0;icn<iel;icn++)
@@ -151,7 +165,7 @@ if(dynvar->nic != 0) /* evaluate for Newton- and fixed-point-like-iteration */
       } /* end loop over irn */
       icol += 2;
    } /* end loop over icn */
-} /* endif (dynvar->nic != 0) */
+} /* endif (fdyn->nic != 0) */
 
 /*----------------------------------------------------------------------*
    Calculate full Galerkin part of matrix Nr(u):
@@ -159,7 +173,7 @@ if(dynvar->nic != 0) /* evaluate for Newton- and fixed-point-like-iteration */
    |  v * u * grad(u_old)     d_omega
   /
  *----------------------------------------------------------------------*/
-if (dynvar->nir != 0) /* evaluate for Newton iteraton */
+if (fdyn->nir != 0) /* evaluate for Newton iteraton */
 {
    icol=0;
    for (icn=0;icn<iel;icn++)
@@ -176,7 +190,7 @@ if (dynvar->nir != 0) /* evaluate for Newton iteraton */
       } /* end loop over irn */
       icol += 2;
    } /* end loop over icn */
-} /* endif (dynvar->nir != 0) */
+} /* endif (fdyn->nir != 0) */
 
 /*----------------------------------------------------------------------*
    Calculate full Galerkin part due to split of ALE-convective velocity:
@@ -194,7 +208,7 @@ if (dynvar->nir != 0) /* evaluate for Newton iteraton */
  *----------------------------------------------------------------------*/
 if(ele->e.f2->is_ale !=0) /* evaluate only for ALE */
 {
-   if(ele->e.f2->fs_on!=2 || (dynvar->nic!=0 && ele->e.f2->fs_on==2))
+   if(ele->e.f2->fs_on!=2 || (fdyn->nic!=0 && ele->e.f2->fs_on==2))
    {
       dsassert(gridvint!=NULL,"no grid velocity calculated!\n");
       icol=0;
@@ -211,7 +225,7 @@ if(ele->e.f2->is_ale !=0) /* evaluate only for ALE */
          } /* end loop over irn */
          icol += 2;
       } /* end loop over icn */
-   } /* endif (dynvar->nic != 0) */
+   } /* endif (fdyn->nic != 0) */
    else
       dserror("implicit free surface for fixpoint iteration not implemented yet!");
 } /* endif (is_ale !=0)
@@ -330,7 +344,6 @@ NOTE: there's only one elestif
       --> Kvg is stored in estif[0..(2*iel-1)](3*iel)..(5*iel-1)]
       
 </pre>
-\param  *dynvar    FLUID_DYN_CALC  (i)
 \param **estif     DOUBLE	   (i/o)  ele stiffness matrix
 \param **vderxy    DOUBLE	   (i)    global vel derivatives
 \param  *funct     DOUBLE	   (i)    nat. shape funcs
@@ -340,7 +353,6 @@ NOTE: there's only one elestif
 
 ------------------------------------------------------------------------*/
 void f2_calkvg( 
-                FLUID_DYN_CALC  *dynvar,
 		DOUBLE         **estif,   
 		DOUBLE         **vderxy, 
 		DOUBLE          *funct,  
@@ -373,7 +385,7 @@ dstrc_enter("f2_calkvg");
    (u_G is unknown in this case) which is only evlueated for 
    Newton iteration
  *----------------------------------------------------------------------*/
-if (dynvar->nir != 0) /* evaluate for Newton iteraton */
+if (fdyn->nir != 0) /* evaluate for Newton iteraton */
 {
    icol=NUMDOF_FLUID2*iel;
    for (icn=0;icn<iel;icn++)
@@ -390,7 +402,7 @@ if (dynvar->nir != 0) /* evaluate for Newton iteraton */
       } /* end loop over irn */
       icol += 2;
    } /* end loop over icn */
-} /* endif (dynvar->nir != 0) */
+} /* endif (fdyn->nir != 0) */
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

@@ -17,13 +17,26 @@ Maintainer: Steffen Genkinger
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
  | vector of material laws                                              |
  | defined in global_control.c
  *----------------------------------------------------------------------*/
 extern struct _MATERIAL  *mat;
 
 static INT PREDOF = 3;
-
+static FLUID_DYNAMIC   *fdyn;
 /*!---------------------------------------------------------------------
 \brief set all arrays for element calculation
 
@@ -36,7 +49,6 @@ NOTE: in contradiction to the old programm the kinematic pressure
       transformation in every time step 			 
 				      
 </pre>
-\param   *dynvar   FLUID_DYN_CALC  (i)
 \param   *ele      ELEMENT	   (i)    actual element
 \param  **eveln    DOUBLE	   (o)    ele vels at time n
 \param  **evelng   DOUBLE	   (o)    ele vels at time n+g
@@ -48,7 +60,6 @@ NOTE: in contradiction to the old programm the kinematic pressure
 
 ------------------------------------------------------------------------*/
 void f3_calset( 
-                FLUID_DYN_CALC  *dynvar, 
 	        ELEMENT         *ele,
                 DOUBLE         **eveln,
 	        DOUBLE         **evelng,
@@ -68,7 +79,7 @@ GVOL  *actgvol;
 dstrc_enter("f3_calset");
 #endif
 
-
+fdyn    = alldyn[genprob.numff].fdyn;
 /*---------------------------------------------------------------------*
  | position of the different solutions:                                |
  | node->sol_incement: solution history used for calculations          |
@@ -89,7 +100,7 @@ for(i=0;i<ele->numnp;i++) /* loop nodes */
 } /* end of loop over nodes */
    
 
-if(dynvar->nif!=0) /* -> computation if time forces "on" --------------
+if(fdyn->nif!=0) /* -> computation if time forces "on" --------------
                       -> velocities and pressure at (n) are needed ----*/
 {
       for(i=0;i<ele->numnp;i++) /* loop nodes */
@@ -102,9 +113,9 @@ if(dynvar->nif!=0) /* -> computation if time forces "on" --------------
 /*------------------------------------------------- set pressures (n) */   
          epren[i]   =actnode->sol_increment.a.da[1][PREDOF];      
       } /* end of loop over nodes */
-} /* endif (dynvar->nif!=0) */
+} /* endif (fdyn->nif!=0) */
 
-if(dynvar->nim!=0) /* -> computation of mass rhs "on" ------------------
+if(fdyn->nim!=0) /* -> computation of mass rhs "on" ------------------
                       -> vel(n)+a*acc(n) are needed --------------------*/
 /* NOTE: if there is no classic time rhs (as described in WAW) the array
          eveln is misused and does NOT contain the velocity at time (n)
@@ -118,7 +129,7 @@ if(dynvar->nim!=0) /* -> computation of mass rhs "on" ------------------
 	 eveln[1][i] = actnode->sol_increment.a.da[2][1];
 	 eveln[2][i] = actnode->sol_increment.a.da[2][2];
       } /* end of loop over nodes of element */  
-} /* endif (dynvar->nim!=0) */		       
+} /* endif (fdyn->nim!=0) */		       
 /*------------------------------------------------ check for dead load */
 actgvol = ele->g.gvol;
 if (actgvol->neum!=NULL)
@@ -512,7 +523,6 @@ hence a splitting of vel- and pre dofs is not possible any more!!!!
 \param  **emass   DOUBLE	 (i)   ele mass matrix
 \param  **tmp     DOUBLE	 (-)   working array		
 \param	  iel	  INT		 (i)   number of nodes in ele
-\param	 *dynvar  FLUID_DYN_CALC
 \return void                                                                       
 
 ------------------------------------------------------------------------*/
@@ -520,8 +530,7 @@ void f3_permestif(
 		   DOUBLE         **estif,
 		   DOUBLE         **emass,
 		   DOUBLE         **tmp,
-		   INT              iel,
-		   FLUID_DYN_CALC  *dynvar		   		   
+		   INT              iel
 	          ) 
 {
 INT i,j,icol,irow;          /* simply some counters  	        	*/
@@ -534,10 +543,12 @@ DOUBLE thsl;	            /* factor for LHS (THETA*DT)		*/
 dstrc_enter("f3_permestif");
 #endif
 
+fdyn    = alldyn[genprob.numff].fdyn;
+
 nvdof  = NUM_F3_VELDOF*iel;
 npdof  = iel;
 totdof = (NUM_F3_VELDOF+1)*iel;
-thsl   = dynvar->thsl;
+thsl   = fdyn->thsl;
 
 /*--------------------------------------------- copy estif to tmp-array *
                            and mutlitply stiffniss matrix with THETA*DT */
@@ -549,7 +560,7 @@ for (i=0;i<totdof;i++)
    } /* end of loop over j */
 } /* end of loop over i */
 /*------------------------------- add mass matrix for instationary case */
-if (dynvar->nis==0)
+if (fdyn->nis==0)
 {
    for (i=0;i<totdof;i++)
    {
@@ -558,7 +569,7 @@ if (dynvar->nis==0)
          tmp[i][j] += emass[i][j];
       } /* end of loop over j */
    } /* end of loop over i */
-} /* endif (dynvar->nis==0) */
+} /* endif (fdyn->nis==0) */
 
 /*--------------------------------------------------------- compute Kvv */
 irow = 0;

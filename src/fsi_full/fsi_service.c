@@ -33,16 +33,17 @@ extern struct _GENPROB     genprob;
 extern struct _FIELD      *field;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
  | vector of material laws                                              |
  | defined in global_control.c
  *----------------------------------------------------------------------*/
-extern struct _MATERIAL  *mat;
+extern struct _MATERIAL  *mat;                     
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
 /*!----------------------------------------------------------------------
 \brief ranks and communicators
 
@@ -63,6 +64,8 @@ and the type is in partition.h
  *----------------------------------------------------------------------*/
 extern INT            numcurve;
 extern struct _CURVE *curve;
+
+static FSI_DYNAMIC  *fsidyn;               /* fluid dynamic variables   */
 /*!---------------------------------------------------------------------                                         
 \brief calculate the grid velocity 
 
@@ -72,15 +75,13 @@ extern struct _CURVE *curve;
 
 </pre>   
 \param *fdyn	   FLUID_DYNAMIC       (i)                              
-\param *dynvar	   FLUID_DYN_CALC      (i/o)                             
 \param  numdf      INT                 (i)       number of dofs         
 \param  phse       INT                 (i)       flag for ale-phase
 \return void 
 
 ------------------------------------------------------------------------*/
 void fsi_alecp(
-		             FIELD           *fluidfield,  
-                             FLUID_DYN_CALC  *dynvar,
+		             FIELD           *fluidfield, 
 		             INT               numdf,
 		             INT               phase
 	       )      
@@ -95,14 +96,17 @@ DOUBLE  dxyz;          /* ale-displement at (n+1)                       */
 NODE   *actfnode;      /* actual fluid node                             */
 NODE   *actanode;      /* actual ale node                               */
 GNODE  *actfgnode;     /* actual fluid gnode                            */
+FLUID_DYNAMIC *fdyn;
 
 
 #ifdef DEBUG 
 dstrc_enter("fsi_alecp");
 #endif
 
+fdyn = alldyn[genprob.numff].fdyn;
+
 numnp_total  = fluidfield->dis[0].numnp;
-dt           = dynvar->dta;
+dt           = fdyn->dta;
 numveldof    = numdf-1;
 numaf        = genprob.numaf;
 
@@ -173,7 +177,6 @@ return;
 
 </pre>   
 \param *fdyn	   FLUID_DYNAMIC     (i)  			  
-\param *dynvar	   FLUID_DYN_CALC    (i/o)			  
 \param  numdf      INT               (i)     number of dofs	  
 \param  pos1       INT               (i)     position in sol_incr    
 \param  pos2       INT               (i)     position in sol_incr     
@@ -327,14 +330,14 @@ return;
 \return void 
 
 ------------------------------------------------------------------------*/
-void fsi_algoout(             
-                              FSI_DYNAMIC      *fsidyn, 
-			      INT               itnum
-	        )
+void fsi_algoout( INT itnum )
 {
 #ifdef DEBUG 
 dstrc_enter("fsi_algoout");
 #endif
+
+/*-------------------------------------------set fsi dynamic pointer ---*/
+fsidyn = alldyn[3].fsidyn;
 
 printf("\n");
 
@@ -394,7 +397,6 @@ return;
 
 ------------------------------------------------------------------------*/
 void fsi_structpredictor(
-                              FSI_DYNAMIC      *fsidyn, 
                               FIELD            *actfield, 
                               INT                init
 		         )
@@ -415,6 +417,7 @@ NODE   *actnode;	       /* actual NODE		                */
 dstrc_enter("fsi_structpredictor");
 #endif
 
+fsidyn = alldyn[3].fsidyn;
 /*======================================================================*
  * nodal solution history structural field:                             * 
  * sol[0][j]           ... total displacements at time (t)              * 
@@ -628,7 +631,7 @@ where g(i) = d~(i+1) - d(i);
 \return INT                                                                             
 
 ------------------------------------------------------------------------*/
-INT fsi_convcheck(FIELD *structfield, FSI_DYNAMIC *fsidyn, INT itnum)
+INT fsi_convcheck(FIELD *structfield, INT itnum)
 {
 INT     i,j;           /* some counters                                 */
 INT     converged=0;   /* flag for convergence                          */
@@ -646,6 +649,8 @@ static DOUBLE g0norm;  /* norm of first iteration                       */
 #ifdef DEBUG 
 dstrc_enter("fsi_convcheck");
 #endif
+
+fsidyn = alldyn[3].fsidyn;
 
 if (itnum==0)
 {

@@ -15,6 +15,19 @@ Maintainer: Steffen Genkinger
 #include "../fluid_full/fluid_prototypes.h"
 #include "fluid3_prototypes.h"
 #include "fluid3.h"
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*/
 static ARRAY     eveln_a;  /* element velocities at (n) 		*/
@@ -68,7 +81,8 @@ static DOUBLE  **emass;    /* pointer to galerkin ele-stif		*/
 static DOUBLE   *etforce;  /* pointer to Time RHS			*/
 static DOUBLE   *eiforce;  /* pointer to Iteration RHS  		*/
 static DOUBLE   *edforce;  /* pointer to RHS due to dirichl. conditions */
-
+     
+static FLUID_DYNAMIC   *fdyn;
 /*!---------------------------------------------------------------------                                         
 \brief control routine for element integration of fluid3
 
@@ -84,7 +98,6 @@ This routine controls the element evaluation:
 			     
 </pre>
 \param  *data	         FLUID_DATA     (i)
-\param  *dynvar	         FLUID_DYN_CALC (i)
 \param  *ele	         ELEMENT	(i)   actual element
 \param  *estif_global    ARRAY	        (o)   ele stiffnes matrix
 \param  *emass_global    ARRAY	        (o)   ele mass matrix
@@ -99,7 +112,6 @@ This routine controls the element evaluation:
 ------------------------------------------------------------------------*/
 void f3_calele(
                 FLUID_DATA     *data, 
-                FLUID_DYN_CALC *dynvar, 
 	        ELEMENT        *ele,
                 ARRAY          *estif_global,
                 ARRAY          *emass_global, 
@@ -145,6 +157,8 @@ if (init==1) /* allocate working arrays and set pointers */
    eiforce = eiforce_global->a.dv;
    etforce = etforce_global->a.dv;
    edforce = edforce_global->a.dv;
+   
+   fdyn    = alldyn[genprob.numff].fdyn;
    goto end;
 } /* endif (init==1) */
 
@@ -158,14 +172,14 @@ amzero(edforce_global);
 *hasext=0;
 
 /*---------------------------------------------------- set element data */
-f3_calset(dynvar,ele,eveln,evelng,epren,edeadn,edeadng,hasext);
+f3_calset(ele,eveln,evelng,epren,edeadn,edeadng,hasext);
 
 /*------------------------- calculate element size and stab-parameter: */
-f3_calelesize(ele,data,dynvar,funct,deriv,deriv2,derxy,xjm,evelng,velint,wa1);
+f3_calelesize(ele,data,funct,deriv,deriv2,derxy,xjm,evelng,velint,wa1);
 
 /*------------------------------- calculate element stiffness matrices */
 /*                                           and element force vectors */
-f3_calint(data,ele,dynvar,hasext,
+f3_calint(data,ele,hasext,
           estif,emass,etforce,eiforce,
 	  funct,deriv,deriv2,xjm,derxy,derxy2,
 	  eveln,evelng,epren,edeadn,edeadng,
@@ -173,21 +187,21 @@ f3_calint(data,ele,dynvar,hasext,
 	  wa1,wa2);
 
 /*----------------- add emass and estif to estif and permute the matrix */
-f3_permestif(estif,emass,wa1,ele->numnp,dynvar);
+f3_permestif(estif,emass,wa1,ele->numnp);
 
 /*--------------------------------- permute element load vector etforce */
-if (dynvar->nif!=0)
+if (fdyn->nif!=0)
    f3_permeforce(etforce,wa1,ele->numnp);
 
 /*--------------------------------- permute element load vector eiforce */
-if (dynvar->nii+(*hasext)!=0)
+if (fdyn->nii+(*hasext)!=0)
    f3_permeforce(eiforce,wa1,ele->numnp);
 
 /*------------------------------- calculate element load vector edforce */
 fluid_caldirich(ele,edforce,estif,hasdirich,3);
 
 /*----------------------------------------- calculate emass * vec(n) ---*/
-if (dynvar->nim)
+if (fdyn->nim)
    f3_massrhs(ele,emass,eveln,eiforce); 
    
 end:

@@ -14,6 +14,21 @@ Maintainer: Thomas Hettich
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #include "fluid2_tu.h"
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+static FLUID_DYNAMIC *fdyn;
 /*!--------------------------------------------------------------------- 
 \brief galerkin part of iteration forces for kapeps dofs
 
@@ -35,7 +50,6 @@ LOW-REYNOLD's MODEL only for epsilon:
 
 
 </pre>
-\param  *dynvar      FLUID_DYN_CALC  (i)
 \param  *eforce      DOUBLE	    (i/o)   element force vector
 \param   eddyint     DOUBLE	     (i)    eddy-visc at integr. point
 \param   kapepsint   DOUBLE	     (i)    kapeps at integr. point
@@ -49,7 +63,6 @@ LOW-REYNOLD's MODEL only for epsilon:
 
 ------------------------------------------------------------------------*/
 void f2_calgalifkapeps(
-                  FLUID_DYN_CALC  *dynvar, 
                   DOUBLE          *eforce,
 		      DOUBLE           eddyint,  
                   DOUBLE           kapepsint,  
@@ -70,7 +83,8 @@ dstrc_enter("f2_calgalifkapeps");
 #endif
 
 /*----------------------------------------------- set some factors */
-facsl = fac * dynvar->thsl;
+fdyn  = alldyn[genprob.numff].fdyn;
+facsl = fac * fdyn->thsl;
 
 /*------------------------------------------------------------------*
    Calculate forces of iteration force vector:
@@ -86,7 +100,7 @@ for (inode=0;inode<iel;inode++)
 } /* end loop over inode */
 
 
-if(dynvar->kapeps_flag==1) 
+if(fdyn->kapeps_flag==1) 
 {
 /*------------------------------------------------------------------*
    Calculate forces of iteration force vector:
@@ -136,7 +150,6 @@ LOW-REYNOLD's MODEL only for epsilon:
 
 
 </pre>
-\param   *dynvar   FLUID_DYN_CALC  (i)
 \param   *ele      ELEMENT	   (i)    actual element
 \param   *eforce   DOUBLE	   (i/o)  element force vector
 \param    kapepsint DOUBLE	   (i)    kapeps at integr. point
@@ -154,7 +167,6 @@ LOW-REYNOLD's MODEL only for epsilon:
 
 ------------------------------------------------------------------------*/
 void f2_calstabifkapeps(
-                  FLUID_DYN_CALC  *dynvar, 
                   ELEMENT         *ele,      
 	            DOUBLE          *eforce,  
 		      DOUBLE           kapepsint,  
@@ -181,10 +193,11 @@ dstrc_enter("f2_calstabifkapeps");
 #endif
 
 /*--------------------------------------------------- set some factors */
-taumu    = dynvar->tau_tu;
-taumu_dc = dynvar->tau_tu_dc;
-facsl    = fac * dynvar->thsl * taumu;
-facsl_dc = fac * dynvar->thsl * taumu_dc;
+fdyn     = alldyn[genprob.numff].fdyn;
+taumu    = fdyn->tau_tu;
+taumu_dc = fdyn->tau_tu_dc;
+facsl    = fac * fdyn->thsl * taumu;
+facsl_dc = fac * fdyn->thsl * taumu_dc;
 /*---------------------------------------------------------------------- 
    Calculate  stabilastion of iteration force vector:
 
@@ -206,7 +219,7 @@ facsl_dc = fac * dynvar->thsl * taumu_dc;
    } /* end loop over inode */
 
 
-if(dynvar->kapeps_flag==1) 
+if(fdyn->kapeps_flag==1) 
 {
 /*---------------------------------------------------------------------- 
    Calculate  stabilastion of iteration force vector:

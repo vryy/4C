@@ -13,6 +13,21 @@ Maintainer: Volker Gravemeier
 #if defined(FLUID2_ML) || defined(FLUID3_ML)
 #include "../headers/standardtypes.h"
 #include "fluid_prototypes.h"
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;   
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+static FLUID_DYNAMIC *fdyn;
 
 /*!---------------------------------------------------------------------                                         
 \brief initialization of (sub-)submesh for multi-level fluid
@@ -29,8 +44,7 @@ hexaeders so far).
 \return void 
 
 ------------------------------------------------------------------------*/
-void fluid_ml_init(FIELD         *actfield,  
-                   FLUID_DYNAMIC *fdyn)      
+void fluid_ml_init(FIELD         *actfield)      
 {
 INT              numsd;        /* number of spatial dimensions          */
 INT              numen;        /* number of element nodes               */
@@ -48,9 +62,11 @@ dstrc_enter("fluid_ml_init");
 #endif
 
 /*---------------------------------------------------- set some values */
+fdyn = alldyn[genprob.numff].fdyn;
+
 numsd   = fdyn->numdf-1;
 numen   = actfield->dis[0].element[0].numnp;
-mlvar   = &(fdyn->mlvar);
+mlvar   = fdyn->mlvar;
 submesh = &(mlvar->submesh);
 if (mlvar->smsgvi>2) ssmesh = &(mlvar->ssmesh);
 
@@ -186,8 +202,7 @@ copied to the place (n) in the solution history.
 \return void 
 
 ------------------------------------------------------------------------*/
-void fluid_smcopy(PARTITION       *actpart,      
-                  FLUID_DYNAMIC   *fdyn)      
+void fluid_smcopy(PARTITION       *actpart)      
 {
 INT           i;
 INT           numrhs,numeq;
@@ -199,7 +214,8 @@ dstrc_enter("fluid_smcopy");
 #endif
 
 /*---------------------------- check for quasi-static bubble assumption */
-mlvar = &(fdyn->mlvar);
+fdyn = alldyn[genprob.numff].fdyn;
+mlvar = fdyn->mlvar;
 if (mlvar->quastabub!=0) goto end;
 /*----------------------------- set number of equations and rhs vectors */
 numrhs  = mlvar->nelbub;
@@ -212,12 +228,16 @@ for (i=0; i<actpart->pdis[0].numele; i++)
 /*--------------------------------- go to specific element copy routine */
    switch(actele->eltyp)
    {
+#ifdef FLUID2_ML
      case el_fluid2: 
        f2_smcopy2(actele,numeq,numrhs);
      break;
+#endif
+#ifdef FLUID3_ML
      case el_fluid3: 
        f3_smcopy2(actele,numeq,numrhs);
      break; 
+#endif
      default:
       dserror("Type of element unknown");
    }

@@ -14,7 +14,22 @@ Maintainer: Thomas Hettich
 #include "../headers/standardtypes.h"
 #include "../headers/solution_mlpcg.h"
 #include "../headers/solution.h"
-#include "fluid_prototypes.h"
+#include "fluid_prototypes.h"    
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;                
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;
+
+static FLUID_DYNAMIC *fdyn;
 /*!---------------------------------------------------------------------                                         
 \brief routine to set dirichlet boundary conditions at time <time>
 
@@ -30,14 +45,12 @@ nodes:
                                      
 </pre>
 \param *actfield    FIELD         (i)  actual field (fluid)   
-\param *fdyn	  FLUID_DYNAMIC (i)  
 \param *lower_limit_kappa  DOUBLE (o) lower limit for kappa  
 \param *lower_limit_kappa  DOUBLE (o) lower limit for epsilon
 \return void                                                                              
 ------------------------------------------------------------------------*/
 void fluid_setdirich_tu(
                        FIELD  *actfield, 
-                       FLUID_DYNAMIC *fdyn, 
                        DOUBLE   *lower_limit_kappa,
                        DOUBLE   *lower_limit_eps
                        )
@@ -56,6 +69,8 @@ dstrc_enter("fluid_setdirich_tu");
 #endif 
 
 /*----------------------------------------------------- set some values */
+fdyn = alldyn[genprob.numff].fdyn;
+
 numnp_total  = actfield->dis[1].numnp;
 numele_total = actfield->dis[1].numele;
 numdf        = 1;
@@ -111,7 +126,6 @@ the element load vector 'dforce' is calculated by eveluating
       dforces[i] -= estif[i][j] * dirich[j];
 \endcode			     
 
-\param  *dynvar	 FLUID_DYN_CALC  (i)  
 \param  *actele    ELEMENT   (i)   actual element	  
 \param  *dforces   DOUBLE    (o)   dirichlet force vector
 \param **estif     DOUBLE    (i)   element stiffness matrix
@@ -121,7 +135,6 @@ the element load vector 'dforce' is calculated by eveluating
 
 ------------------------------------------------------------------------*/
 void fluid_caldirich_tu( 
-                    FLUID_DYN_CALC  *dynvar, 
                     ELEMENT   *actele,  
 		        DOUBLE    *dforces, 
                     DOUBLE   **estif,   
@@ -180,9 +193,9 @@ for (i=0; i<actele->numnp; i++) /* loop nodes */
       if (actgnode->dirich==NULL || actgnode->dirich->dirich_onoff.a.iv[0]==0 ||
           actgnode->dirich->dirich_onoff.a.iv[1]==0) continue;
       dirich_onoff[i*numdf+j] = actgnode->dirich->dirich_onoff.a.iv[j];
-      if(dynvar->kapeps_flag==0)
+      if(fdyn->kapeps_flag==0)
       dirich[i*numdf+j] = actnode->sol_increment.a.da[3][j];
-      if(dynvar->kapeps_flag==1)
+      if(fdyn->kapeps_flag==1)
       dirich[i*numdf+j] = actnode->sol_increment.a.da[3][j+2];
    } /* end loop over dofs */
 } /* end loop over nodes */
