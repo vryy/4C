@@ -26,9 +26,12 @@ include ./Makefile.personal_path
 # -DD_SHELL8    defines element shell8
 # -DD_FLUID3    defines element fluid3
 # -DD_ALE       defines element ale
+# -DD_WALL1     defines element wall1
 #
 # -DDEBUG     defines debug mode: routine and array tracing 
 # -DPARALLEL  defines parallel version of programm
+# -DSIXTYFOUR defines 64bit compilation and linkage
+# -DSUSE73    defines for compilation and linkage with gcc and g77 on Suselinux
 # 
 # -DMLIB_PACKAGE       defines interface to solver library MLIB (HPUX11, sequentiell)
 # -DHYPRE_PACKAGE      defines interface to solver library HYPRE
@@ -44,23 +47,23 @@ include ./Makefile.personal_path
 #
 # sequentiell part
 #--------------------------------------------------------------------
-#PROGRAM_NAME  = cca_seq_10.20.exe
-#FXX   = f77
-#CCX   = cc
-#LDX   = cc
-#PFL   = -DD_SHELL8 -DD_FLUID3 -DD_ALE -DD_BRICK1 -DAZTEC_PACKAGE
-#AZTEC = -laztec_seriell21
+PROGRAM_NAME  = cca_seq_10.20.exe
+FXX   = f77
+CCX   = cc
+LDX   = cc
+PFL   = -DD_SHELL8 -DD_FLUID3 -DD_ALE -DD_BRICK1 -DD_WALL1 -DAZTEC_PACKAGE
+AZTEC = -laztec_seriell21
 #--------------------------------------------------------------------
 #
 # parallel part
 #--------------------------------------------------------------------
-PROGRAM_NAME  = cca_par_10.20.exe
-FXX   = /opt/mpi/bin/mpif77
-CCX   = /opt/mpi/bin/mpicc
-LDX   = /opt/mpi/bin/mpicc
-PFL   = -DPARALLEL -DD_SHELL8 -DD_FLUID3 -DD_ALE -DD_BRICK1 \
-        -DPARSUPERLU_PACKAGE -DHYPRE_PACKAGE -DAZTEC_PACKAGE 
-AZTEC = -laztec_par21
+#PROGRAM_NAME  = cca_par_10.20.exe
+#FXX   = /opt/mpi/bin/mpif77
+#CCX   = /opt/mpi/bin/mpicc
+#LDX   = /opt/mpi/bin/mpicc
+#PFL   = -DPARALLEL -DD_SHELL8 -DD_FLUID3 -DD_ALE -DD_BRICK1 -DD_WALL1 \
+#        -DPARSUPERLU_PACKAGE -DHYPRE_PACKAGE -DAZTEC_PACKAGE 
+#AZTEC = -laztec_par21
 #
 #--------------------------------------------------------------------
 #
@@ -228,6 +231,7 @@ OBJS6	      = ${SRC}/shell8/s8_main.o \
                 ${SRC}/shell8/s8_mat_linel.o \
                 ${SRC}/shell8/s8_btdb.o \
                 ${SRC}/shell8/s8_eas.o \
+                ${SRC}/shell8/s8_ans.o \
                 ${SRC}/shell8/s8_vthv.o \
                 ${SRC}/shell8/s8_xint.o \
                 ${SRC}/shell8/s8_init.o 

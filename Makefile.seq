@@ -11,10 +11,12 @@
 # -DD_SHELL8    defines element shell8
 # -DD_FLUID3    defines element fluid3
 # -DD_ALE       defines element ale
+# -DD_WALL1     defines element wall1
 #
 # -DDEBUG     defines debug mode: routine and array tracing 
 # -DPARALLEL  defines parallel version of programm
 # -DSIXTYFOUR defines 64bit compilation and linkage
+# -DSUSE73    defines for compilation and linkage with gcc and g77 on Suselinux
 # 
 # -DMLIB_PACKAGE       defines interface to solver library MLIB (HPUX11, sequentiell)
 # -DHYPRE_PACKAGE      defines interface to solver library HYPRE (not yet impl.)

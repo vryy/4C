@@ -116,6 +116,7 @@ OBJS6	      = ${SRC}/shell8/s8_main.o \
                 ${SRC}/shell8/s8_mat_linel.o \
                 ${SRC}/shell8/s8_btdb.o \
                 ${SRC}/shell8/s8_eas.o \
+                ${SRC}/shell8/s8_ans.o \
                 ${SRC}/shell8/s8_vthv.o \
                 ${SRC}/shell8/s8_xint.o \
                 ${SRC}/shell8/s8_init.o 

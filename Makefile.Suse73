@@ -9,6 +9,7 @@ SRC       =  /home/gee/wdir/ccarat/src
 # -DD_SHELL8    defines element shell8
 # -DD_FLUID3    defines element fluid3
 # -DD_ALE       defines element ale
+# -DD_WALL1     defines element wall1
 #
 # -DDEBUG     defines debug mode: routine and array tracing 
 # -DPARALLEL  defines parallel version of programm
@@ -23,7 +24,7 @@ SRC       =  /home/gee/wdir/ccarat/src
 # -DMUMPS_PACKAGE      defines interface to solver library Mumps (only in parallel HPUX11)
 #
 # 
-PFL       =  -DSUSE73 -DD_BRICK1 -DD_FLUID1 -DD_SHELL8 -DD_ALE
+PFL       =  -DSUSE73 -DD_BRICK1 -DD_FLUID1 -DD_SHELL8 -DD_ALE -DD_WALL1
 #
 # utilities
 #
@@ -153,6 +154,7 @@ OBJS6	      = ${SRC}/shell8/s8_main.o \
                 ${SRC}/shell8/s8_mat_linel.o \
                 ${SRC}/shell8/s8_btdb.o \
                 ${SRC}/shell8/s8_eas.o \
+                ${SRC}/shell8/s8_ans.o \
                 ${SRC}/shell8/s8_vthv.o \
                 ${SRC}/shell8/s8_xint.o \
                 ${SRC}/shell8/s8_init.o 
