@@ -36,16 +36,16 @@ OBJS_SOLVER   = src/solver/solver_control.o \
                 src/solver/solver_service2.o \
                 src/solver/solver_service3.o \
                 src/solver/solver_add_data.o \
-                src/solver/solver_add_msr.o \
                 src/solver/solver_add_mlib.o \
-                src/solver/solver_add_parcsr.o \
-                src/solver/solver_add_ucchb.o \
-                src/solver/solver_add_dense.o \
-                src/solver/solver_add_rcptr.o \
-                src/solver/solver_add_ccf.o \
-                src/solver/solver_add_skyline.o \
-                src/solver/solver_add_spooles.o \
-                src/solver/solver_add_bdcsr.o \
+                src/solver/solver_sparse_parcsr.o \
+                src/solver/solver_sparse_dense.o \
+                src/solver/solver_sparse_bdcsr.o \
+                src/solver/solver_sparse_ccf.o \
+                src/solver/solver_sparse_msr.o \
+                src/solver/solver_sparse_rcptr.o \
+                src/solver/solver_sparse_skyline.o \
+                src/solver/solver_sparse_spooles.o \
+                src/solver/solver_sparse_ucchb.o \
                 src/solver/solver_mlib.o \
                 src/solver/solver_aztec.o \
                 src/solver/solver_hypre.o \
@@ -75,16 +75,7 @@ OBJS_SOLVER   = src/solver/solver_control.o \
 		src/solver/solver_oll_service.o \
 		src/solver/solver_oll_service2.o \
                 src/solver/solver_mask_matrices.o \
-                src/solver/solver_mask_msr.o \
                 src/solver/solver_mask_mds.o \
-                src/solver/solver_mask_parcsr.o \
-                src/solver/solver_mask_ucchb.o \
-                src/solver/solver_mask_dense.o \
-                src/solver/solver_mask_rcptr.o \
-                src/solver/solver_mask_ccf.o \
-                src/solver/solver_mask_skyline.o \
-                src/solver/solver_mask_spooles.o \
-                src/solver/solver_mask_bdcsr.o \
 		src/solver/solver_mask_service.o
 #                pss_full
 OBJS_PSS      = src/pss_full/pss_am.o \
@@ -200,14 +191,10 @@ OBJS_ALE      = src/ale3/ale_call_stiff.o \
                 src/ale2/ale2_main.o \
                 src/ale2/ale2_mat_linel.o \
                 src/ale2/ale2_static_ke.o \
-                src/ale3/ale3_bop.o \
                 src/ale3/ale3_funcderiv.o \
-                src/ale3/ale3_hourglass.o \
+                src/ale3/ale3_service.o \
                 src/ale3/ale3_inpele.o \
-                src/ale3/ale3_intg.o \
-                src/ale3/ale3_jaco.o \
                 src/ale3/ale3_main.o \
-                src/ale3/ale3_mat_linel.o \
                 src/ale3/ale3_static_ke.o
 #                parallel
 OBJS_PAR      = src/parallel/par_initmetis.o \
@@ -512,15 +499,9 @@ OBJS_OPT      = src/optimization/opt_cal_main.o \
                 src/optimization/opt_vsa.o \
                 src/optimization/opt_smo.o \
                 src/optimization/opt_g_out.o
-#                optimization
-OBJS_AXISHELL = src/axishell/saxi_B.o \
-                src/axishell/saxi_cal_fext.o \
-                src/axishell/saxi_cal_stress.o \
-                src/axishell/saxi_call_mat.o \
-                src/axishell/saxi_call_stiff.o \
-                src/axishell/saxi_init.o \
+#                axishell
+OBJS_AXISHELL = src/axishell/saxi_service.o \
                 src/axishell/saxi_inpele.o \
-                src/axishell/saxi_intg.o \
                 src/axishell/saxi_main.o \
                 src/axishell/saxi_static_ke.o
 #                materials
@@ -623,3 +604,4 @@ OBJS_POST_GID_TXT = src/post_gid/gid_out_txt.o
 
 #                 post_out
 OBJS_POST_OUT = src/post_out/post_out.o
+
