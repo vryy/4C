@@ -87,6 +87,8 @@ break;/*----------------------------------------------------------------*/
 case calc_struct_nlnstiffmass:
      actmat = &(mat[ele->mat-1]);
      w1static_keug(ele,&actdata,actmat,estif_global,emass_global,intforce,0);
+     if (intforce && container->isdyn && ele->proc == actintra->intra_rank)
+      solserv_sol_localassemble(actintra,ele,intforce,1,2);
 break;/*----------------------------------------------------------------*/
 /*-------------------------------- calculate stresses in a certain step */
 case calc_struct_stress:
@@ -113,6 +115,15 @@ case calc_struct_update_istep:
    else
    {
    w1static_keug(ele,&actdata,actmat,estif_global,NULL,intforce,2);
+   }
+   /* calculate mass matrix and kinetic energy (m.gee 4/03) */
+   /* only mass matrix needed, it would be efficient to have a separate */
+   /* routine w1static_mass */
+   if (container->isdyn && ele->proc == actintra->intra_rank)
+   {
+   actmat = &(mat[ele->mat-1]);
+   w1static_keug(ele,&actdata,actmat,estif_global,emass_global,NULL,0);
+   dyn_ekin_local(ele,emass_global,container);
    }
 break;/*----------------------------------------------------------------*/
 /*------------------------------------------------------- write restart */

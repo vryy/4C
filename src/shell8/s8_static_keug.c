@@ -695,6 +695,7 @@ if (nhyb>0)
 }
 /*- add internal forces to global vector, if a global vector was passed */
 /*                                                      to this routine */
+if (force)
 for (i=0; i<ele->numnp; i++)
 {
    for (j=0; j<ele->node[i]->numdf; j++)

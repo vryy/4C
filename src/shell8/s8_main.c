@@ -46,6 +46,7 @@ case calc_struct_init:
    s8init(actfield);
    s8static_ke(NULL,NULL,NULL,NULL,NULL,0,0,1);
    s8static_keug(NULL,NULL,NULL,NULL,NULL,NULL,0,1);
+   s8static_mass(NULL,NULL,NULL,NULL,NULL,NULL,0,1);
    s8eleload(NULL,NULL,NULL,NULL,1);
    s8jaco(NULL,NULL,NULL,NULL,NULL,NULL,0.0,0,NULL,NULL,1);
    s8_stress(NULL,NULL,NULL,0,1);
@@ -100,6 +101,8 @@ case calc_struct_nlnstiffmass:
                  intforce,
                  container->kstep,
                  0);
+   if (intforce && container->isdyn)
+      solserv_sol_localassemble(actintra,ele,intforce,1,2);
 break;/*----------------------------------------------------------------*/
 /*-------------------------------- calculate stresses in a certain step */
 case calc_struct_stress:
@@ -127,6 +130,12 @@ case calc_struct_stressreduce:
 break;/*----------------------------------------------------------------*/
 /*-----------------------------------------------------update variables */
 case calc_struct_update_istep:
+   if (container->isdyn && ele->proc == actintra->intra_rank)
+   {
+   actmat = &(mat[ele->mat-1]);
+   s8static_mass(ele,&actdata,actmat,estif_global,emass_global,NULL,container->kstep,0);
+   dyn_ekin_local(ele,emass_global,container);
+   }
 break;/*----------------------------------------------------------------*/
 /*--------------------------------------------------------write restart */
 case write_restart:
