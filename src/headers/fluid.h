@@ -53,7 +53,7 @@ DOUBLE tau[3];   /*!< array for stabilitity parameter */
 DOUBLE tau_tu;   /*!< array for stabilitity parameter for turbulence*/
 DOUBLE tau_tu_dc;/*!< array for DISCONTINUITY CAPTURING for turbulence*/
 DOUBLE sigma;    /*!< const. for nonlinear iteration */   
-DOUBLE theta;    /*  a parameter for integration used by f2pro */
+DOUBLE theta;    /*!< integration parameter */
 DOUBLE washvel;  /*!< wall shear velocity */   
 DOUBLE totarea;  /*!< total area of fluid field */
 DOUBLE coord_scale[2];  /*!<coordinates for scaling the turbulence variables */   
