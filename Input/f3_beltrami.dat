@@ -490,6 +490,10 @@ DLINE 0
 DLINE 0
 ------------------------------DESIGN AXISHELL COS POINT CONDITIONS
 DPOINT 0
+------------------------DESIGN FLUID VOLUME STABILISING CONDITIONS
+// DOBJECT STABTYPE ISTABI IADVEC IPRES IVISC ICONT ISTAPA NORM_P MK IHELEM NINTHS ISTAPC C_LAMB
+DVOL 1
+ E 1 -   GLS yes yes  yes  GLS-  yes  35  L_2  -1  533  at_center  at_center  1.0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE       1 DNODE 1
 NODE     344 DNODE 2

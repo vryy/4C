@@ -270,6 +270,10 @@ DPOINT 0
 -------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
 // DOBJECT
 DLINE 0
+------------------------DESIGN FLUID SURFACE STABILISING CONDITIONS
+// DOBJECT STABTYPE ISTABI IADVEC IPRES IVISC ICONT ISTAPA NORM_P MK IHELEM NINTHS ISTAPC C_LAMB
+DSURF 1
+ E 1 -   GLS yes yes yes GLS- yes 35 L_2 -1 533 at_center at_center 1.0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE       1 DNODE 1
 NODE      16 DNODE 2
@@ -352,22 +356,22 @@ NODE 25  COORD 0.500000  0.500000  0.000000
 ----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
 ----------------------------------------------------FLUID ELEMENTS
-      1 FLUID2 QUAD4      11     12     19     17 MAT       1 NA Euler GP 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0  TURBULENCE algebraic                    
-      2 FLUID2 QUAD4       6      8     12     11 MAT       1 NA Euler GP 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0  TURBULENCE algebraic
-      3 FLUID2 QUAD4       3      4      8      6 MAT       1 NA Euler GP 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0  TURBULENCE algebraic
-      4 FLUID2 QUAD4       1      2      4      3 MAT       1 NA Euler GP 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0  TURBULENCE algebraic
-      5 FLUID2 QUAD4      12     14     22     19 MAT       1 NA Euler GP 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0  TURBULENCE algebraic
-      6 FLUID2 QUAD4       8      9     14     12 MAT       1 NA Euler GP 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0  TURBULENCE algebraic
-      7 FLUID2 QUAD4       4      7      9      8 MAT       1 NA Euler GP 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0  TURBULENCE algebraic
-      8 FLUID2 QUAD4       2      5      7      4 MAT       1 NA Euler GP 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0  TURBULENCE algebraic
-      9 FLUID2 QUAD4      14     20     24     22 MAT       1 NA Euler GP 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0  TURBULENCE algebraic
-     10 FLUID2 QUAD4       9     15     20     14 MAT       1 NA Euler GP 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0  TURBULENCE algebraic
-     11 FLUID2 QUAD4       7     13     15      9 MAT       1 NA Euler GP 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0  TURBULENCE algebraic
-     12 FLUID2 QUAD4       5     10     13      7 MAT       1 NA Euler GP 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0  TURBULENCE algebraic
-     13 FLUID2 QUAD4      20     23     25     24 MAT       1 NA Euler GP 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0  TURBULENCE algebraic
-     14 FLUID2 QUAD4      15     21     23     20 MAT       1 NA Euler GP 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0  TURBULENCE algebraic
-     15 FLUID2 QUAD4      13     18     21     15 MAT       1 NA Euler GP 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0  TURBULENCE algebraic
-     16 FLUID2 QUAD4      10     16     18     13 MAT       1 NA Euler GP 2 2 ISTABI yes IADVEC yes IPRES yes IVISC GLS- ICONT yes ISTAPA 35 NORM_P L_2 MK -1 IHELEM 533 NINTHS at_center ISTAPC at_center C_LAMB 1.0  TURBULENCE algebraic
+      1 FLUID2 QUAD4      11     12     19     17 MAT       1 NA Euler GP 2 2  TURBULENCE algebraic                    
+      2 FLUID2 QUAD4       6      8     12     11 MAT       1 NA Euler GP 2 2  TURBULENCE algebraic
+      3 FLUID2 QUAD4       3      4      8      6 MAT       1 NA Euler GP 2 2  TURBULENCE algebraic
+      4 FLUID2 QUAD4       1      2      4      3 MAT       1 NA Euler GP 2 2  TURBULENCE algebraic
+      5 FLUID2 QUAD4      12     14     22     19 MAT       1 NA Euler GP 2 2  TURBULENCE algebraic
+      6 FLUID2 QUAD4       8      9     14     12 MAT       1 NA Euler GP 2 2  TURBULENCE algebraic
+      7 FLUID2 QUAD4       4      7      9      8 MAT       1 NA Euler GP 2 2  TURBULENCE algebraic
+      8 FLUID2 QUAD4       2      5      7      4 MAT       1 NA Euler GP 2 2  TURBULENCE algebraic
+      9 FLUID2 QUAD4      14     20     24     22 MAT       1 NA Euler GP 2 2  TURBULENCE algebraic
+     10 FLUID2 QUAD4       9     15     20     14 MAT       1 NA Euler GP 2 2  TURBULENCE algebraic
+     11 FLUID2 QUAD4       7     13     15      9 MAT       1 NA Euler GP 2 2  TURBULENCE algebraic
+     12 FLUID2 QUAD4       5     10     13      7 MAT       1 NA Euler GP 2 2  TURBULENCE algebraic
+     13 FLUID2 QUAD4      20     23     25     24 MAT       1 NA Euler GP 2 2  TURBULENCE algebraic
+     14 FLUID2 QUAD4      15     21     23     20 MAT       1 NA Euler GP 2 2  TURBULENCE algebraic
+     15 FLUID2 QUAD4      13     18     21     15 MAT       1 NA Euler GP 2 2  TURBULENCE algebraic
+     16 FLUID2 QUAD4      10     16     18     13 MAT       1 NA Euler GP 2 2  TURBULENCE algebraic
 ------------------------------------------------------ALE ELEMENTS
 ---------------------------------------------------------MATERIALS
 MAT       1 MAT_fluid  VISCOSITY 0.000003 DENSITY 1.0  
