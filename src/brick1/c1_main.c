@@ -56,7 +56,6 @@ INT  kstep, iloc;
 C1_DATA      actdata;
 MATERIAL    *actmat;
 
-INT          imyrank;
 DOUBLE      *intforce;
 DOUBLE       getval;
 
@@ -76,21 +75,28 @@ switch (*action)
 /*------------------------------------------- init the element routines */
 case calc_struct_init:
    c1init(actpart, mat);
-   c1_cint(NULL,NULL,NULL,NULL,NULL,1);
+   c1_cint(NULL,NULL,NULL,NULL,NULL,NULL,1);
    c1_eleload(NULL,NULL,NULL,1);
 break;/*----------------------------------------------------------------*/
 /*----------------------------------- calculate linear stiffness matrix */
 case calc_struct_linstiff:
    actmat = &(mat[ele->mat-1]);
-   c1_cint(ele,&actdata,actmat,estif_global,NULL,0);
+   c1_cint(ele,&actdata,actmat,estif_global,NULL,NULL,0);
 break;/*----------------------------------------------------------------*/
 /*---------------------------------calculate nonlinear stiffness matrix */
 case calc_struct_nlnstiff:
    actmat = &(mat[ele->mat-1]);
-   c1_cint(ele,&actdata,actmat,estif_global,intforce,0);
+   c1_cint(ele,&actdata,actmat,estif_global,NULL,intforce,0);
 break;/*----------------------------------------------------------------*/
-/*-------------------------- calculate linear stiffness and mass matrix */
+/*--------------- calculate linear stiffness and consistent mass matrix */
 case calc_struct_linstiffmass:
+   actmat = &(mat[ele->mat-1]);
+   c1_cint(ele,&actdata,actmat,estif_global,emass_global,intforce,5);
+break;/*----------------------------------------------------------------*/
+/*-------------------- calculate linear stiffness and lumpedmass matrix */
+case calc_struct_linstifflmass:
+   actmat = &(mat[ele->mat-1]);
+   c1_cint(ele,&actdata,actmat,estif_global,NULL,intforce,4);
 break;/*----------------------------------------------------------------*/
 /*----------------------- calculate nonlinear stiffness and mass matrix */
 case calc_struct_nlnstiffmass:
@@ -98,25 +104,22 @@ break;/*----------------------------------------------------------------*/
 /*-------------------------------- calculate stresses in a certain step */
 case calc_struct_stress:
    actmat = &(mat[ele->mat-1]);
-   c1_cint(ele,&actdata,actmat,estif_global,NULL,3);
+   c1_cint(ele,&actdata,actmat,estif_global,NULL,NULL,3);
 break;/*----------------------------------------------------------------*/
 /*------------------------------ calculate load vector of element loads */
 case calc_struct_eleload:
-   imyrank = actintra->intra_rank;
-/*   if (imyrank==ele->proc) 
-   {*/
-      actmat = &(mat[ele->mat-1]);
-      c1_eleload(ele,&actdata,intforce,0);
-/*   }*/
+   actmat = &(mat[ele->mat-1]);
+   c1_eleload(ele,&actdata,intforce,0);
 break;/*----------------------------------------------------------------*/
 /*--------------------------------------- update after incremental step */
 case calc_struct_update_istep:
    actmat = &(mat[ele->mat-1]);
    if(actmat->mattyp == m_stvenant) break;
    if(actmat->mattyp == m_stvenpor) break;
+   if(actmat->mattyp == m_nhmfcc)   break;
    if(actmat->mattyp == m_neohooke) break;
    if(actmat->mattyp == m_fluid)    break;
-   c1_cint(ele,&actdata,actmat,estif_global,intforce,2);
+   c1_cint(ele,&actdata,actmat,estif_global,NULL,intforce,2);
 break;/*----------------------------------------------------------------*/
 #ifdef D_OPTIM                   /* include optimization code to ccarat */
 /*-------------- init the element integration routines for optimization */
@@ -167,7 +170,45 @@ case calc_struct_dee:
            &getval,
            4 /* flag for derivative of strain energy */
            );
+   iloc = ele->Id;
+   (*container).getvector[iloc] += getval;
+break;/*----------------------------------------------------------------*/
+/*----------------------------- evaluate derivative of eigen frequencies*/
+case calc_struct_def:
+#ifdef PARALLEL 
+   if(ele->proc!=actintra->intra_rank) break;
+#endif
+   if(ele->optdata==NULL) break; /* element does not take part in opt. */
+   if(ele->optdata[0]==0) break; /* position in variable vector        */
+   iloc = ele->optdata[0];
+   
+   actmat = &(mat[ele->mat-1]);
+   c1_oint(ele,
+           &actdata,
+           actmat,
+           &getval,
+           7 /* flag for derivative of eigen frequencies */
+           );
    (*container).getvector[iloc-1] += getval;
+break;/*----------------------------------------------------------------*/
+/*------------------------ evaluate derivative for selfadjoint problems */
+case calc_deriv_self_adj:
+#ifdef PARALLEL 
+   if(ele->proc!=actintra->intra_rank) break;
+#endif
+   if(ele->optdata==NULL) break; /* element does not take part in opt. */
+   if(ele->optdata[0]==0) break; /* position in variable vector        */
+   iloc = ele->optdata[0];
+   
+   actmat = &(mat[ele->mat-1]);
+   c1_oint(ele,
+           &actdata,
+           actmat,
+           &getval,
+           6 /* flag for selfadjoint problem */
+           );
+   iloc = ele->Id;
+   (*container).getvector[iloc] += getval;
 break;/*----------------------------------------------------------------*/
 /*------------------------------ evaluate derivative of mass constraint */
 case calc_struct_dmc:
@@ -185,7 +226,8 @@ case calc_struct_dmc:
            &getval,
            5 /* flag for volume */
            );
-   (*container).getvector[iloc-1] += getval;
+   iloc = ele->Id;
+   (*container).getvector[iloc] += getval;
 break;/*----------------------------------------------------------------*/
 /*---------------------------------------------------- update densities */
 case update_struct_odens:
