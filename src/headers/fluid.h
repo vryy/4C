@@ -232,7 +232,8 @@ DOUBLE      coord_scale[2];      /*!< coordinates for scaling the turbulence var
 DOUBLE             maxtime;      /*!< maximal simulation time */
 DOUBLE             time;         /*!< actual time */
 DOUBLE             dt;           /*!< time increment */
-DOUBLE		   max_dt;	 /*!< maximal time increment for adaptive */
+DOUBLE             max_dt;       /*!< maximal time increment for adaptive */
+DOUBLE             min_dt;       /*!< minimal time increment for adaptive */
 DOUBLE		   lte;		 /*!< local truncation error for adaptive */
 DOUBLE             alpha;        /*!< time integration constant */
 DOUBLE             theta;        /*!< time integration constant */
