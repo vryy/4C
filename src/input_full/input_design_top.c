@@ -75,7 +75,7 @@ static INT **dvol_fenode;
  *----------------------------------------------------------------------*/
 void inpdesign_topology_design()
 {
-INT       i,j,k,l;
+INT       i,j,k;
 DNODE    *actdnode;
 DLINE    *actdline;
 DSURF    *actdsurf;
@@ -98,7 +98,7 @@ for (i=0; i<design->ndline; i++)
 {
    design->dline[i].ndsurf = 0;
    design->dline[i].dsurf  = NULL;
-   design->dline[i].dnode  = NULL;
+/*   design->dline[i].dnode  = NULL;*/
 }
 for (i=0; i<design->ndsurf; i++) 
 {
@@ -114,10 +114,11 @@ for (i=0; i<design->ndvol; i++)
 for (i=0; i<design->ndline; i++)
 {
    actdline = &(design->dline[i]);
-   actdline->dnode = (DNODE**)CCACALLOC(2,sizeof(DNODE*));
+   /*actdline->dnode = (DNODE**)CCACALLOC(2,sizeof(DNODE*));*/
    for (k=0; k<2; k++)
    {
       nodeid=actdline->my_dnodeId[k];
+      /* j = nodeid; ??? */
       for (j=0; j<design->ndnode; j++)
       {
          if (design->dnode[j].Id==nodeid) break;
@@ -135,6 +136,8 @@ for (i=0; i<design->ndline; i++)
       actdnode = actdline->dnode[j];
       if (actdnode->dline==NULL)
       {
+        /* when there are many nodes it would be better to allocate
+         * just one junk of memory. */
          actdnode->dline = (DLINE**)CCACALLOC(actdnode->ndline,sizeof(DLINE*));
          actdnode->dline[0] = actdline;
       }
@@ -143,7 +146,7 @@ for (i=0; i<design->ndline; i++)
          k=0;
          while (k<actdnode->ndline && actdnode->dline[k]!=NULL) k++;
          if (k==actdnode->ndline-1 && actdnode->dline[k]!=NULL)
-         dserror("Cannot make dnode to dline topology");
+           dserror("Cannot make dnode to dline topology");
          actdnode->dline[k] = actdline;
       }
    }
@@ -181,7 +184,7 @@ for (i=0; i<design->ndsurf; i++)
          k=0;
          while (k<actdline->ndsurf && actdline->dsurf[k]!=NULL) k++;
          if (k==actdline->ndsurf-1 && actdline->dsurf[k]!=NULL)
-         dserror("Cannot make dline to dsurf topology");
+           dserror("Cannot make dline to dsurf topology");
          actdline->dsurf[k] = actdsurf;
       }
    }
@@ -219,7 +222,7 @@ for (i=0; i<design->ndvol; i++)
          k=0;
          while (k<actdsurf->ndvol && actdsurf->dvol[k]!=NULL) k++;
          if (k==actdsurf->ndvol-1 && actdsurf->dvol[k]!=NULL)
-         dserror("Cannot make dsurf to dvol topology");
+           dserror("Cannot make dsurf to dvol topology");
          actdsurf->dvol[k] = actdvol;
       }
    }

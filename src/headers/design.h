@@ -80,7 +80,8 @@ typedef struct _DLINE
    INT                       my_dnodeId[2]; /* IDs of design nodes to me */
 
    INT                       ndnode;        /* number of design nodes to this line (=2)*/
-   struct _DNODE           **dnode;         /* vector of pointers to these design nodes */
+  /*struct _DNODE           **dnode;*/
+   struct _DNODE            *dnode[2];      /* vector of pointers to these design nodes */
 
    INT                       ndsurf;        /* number of surfaces connected to me */
    struct _DSURF           **dsurf;         /* vector of pointers to these surfaces */
