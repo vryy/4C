@@ -14,8 +14,10 @@ fluid element fluid2 are stored.
 </pre>
 
 --------------------------------------------------------------------------*/
+#ifdef D_FLUID3
 typedef struct _FLUID3
 {
+
 int                ntyp;     /*!< flag for element type: 1=quad; 2=tri    */
 int                nGP[3];   /*!< number of gaussian points in rs direct. */
 int                is_ale;   /*!< flag whether there is ale to me or not  */
@@ -49,5 +51,13 @@ int                idiaxy;   /*!< flags for tau_? calculation
 
 /*--------------------------------- element sizes for stability parameter */
 double             hk[3];    /*!< vel/pres/cont                           */
+
+/*------------------------------------------------ free surface parameter */
+int                fs_on;    /*! element belongs to free surface          */
+
+/*-------------------------------------------------------- stress results */
+struct _ARRAY      stress_ND; /*!< nodal stresses                         */
+
 } FLUID3;
 
+#endif
