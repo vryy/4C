@@ -93,7 +93,7 @@ $(OBJS_MAT):
 
 $(OBJS_F2PRO):
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
-		
+
 $(OBJS_IF):
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 

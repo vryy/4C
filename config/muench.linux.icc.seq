@@ -5,12 +5,15 @@ PARALLEL=no
 
 # just for convenience
 MPIDIR=/opt/mpich
-INTELDIR=/lnm/intel/compiler70/ia32
+INTELDIR=/lnm/intel/compiler80
 MKLDIR=/lnm/intel/mkl61
 
-PROGRAMNAME=cca_seq_linux
-CC="$MPIDIR/bin/mpiCC -CC=$INTELDIR/bin/icc"
-F77="$MPIDIR/bin/mpif77 -fc=$INTELDIR/bin/ifc"
+PROGRAMNAME=cca_icc_seq_linux
+#CC="$MPIDIR/bin/mpiCC -CC=$INTELDIR/bin/icc"
+#F77="$MPIDIR/bin/mpif77 -fc=$INTELDIR/bin/ifc"
+#LD=$F77
+CC="$INTELDIR/bin/icc"
+F77="$INTELDIR/bin/ifort"
 LD=$F77
 
 INCLUDEDIRS="-I$MPIDIR/include -I$MKLDIR/include -I/lnm/include"
@@ -18,7 +21,7 @@ LIBDIRS="-L$MPIDIR/lib -L$MKLDIR/lib/32 -L/lnm/lib"
 
 # aztec
 AZTEC_INC=""
-AZTEC_LIB="-laztec"
+AZTEC_LIB="-laztec_icc_ser"
 
 # spooles
 SPOOLES_INC=""
@@ -30,6 +33,6 @@ UMFPACK_LIB="-lumfpack -lamd"
 
 LIBS="-lc -lm -lmkl_lapack64 -lmkl -lguide -lmetis"
 
-CFLAGS="-Wall -ansi -w2 -O3 -tpp7 -ip -p -vec_report3 -opt_report_levelmin"
-FFLAGS="-Wall"
-LDFLAGS=
+CFLAGS="-Wall -ansi -w2 -O3 -tpp7 -xW -ip -p -vec_report3 -opt_report_levelmin"
+FFLAGS="-Wall -w2 -O3 -tpp7 -xW -ip -p -vec_report3 -opt_report_levelmin"
+LDFLAGS="-Xlinker -defsym -Xlinker MAIN__=main -nofor_main -O3 -tpp7 -xW -ip -p -vec_report3 -opt_report_levelmin"
