@@ -6,6 +6,9 @@
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "shell9.h"
+/*! 
+\addtogroup SHELL9 
+*//*! @{ (documentation module open)*/
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of material laws                                              |
