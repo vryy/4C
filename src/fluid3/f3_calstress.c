@@ -25,6 +25,13 @@ Maintainer: Malte Neumann
  *----------------------------------------------------------------------*/
 extern struct _MATERIAL  *mat;
 
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
 /*!--------------------------------------------------------------------- 
   \brief calculation of fluid stresses for fluid3
 
@@ -74,7 +81,6 @@ void f3_calelestress(
   INT     intc;                /* flags */
   INT     icode = 0;           /* flags */
   INT     actmat;              /* actual material number */
-  INT     ntyp;                /* flag for element type */
   INT     iv;                  /* counter for GAUSS points */
   DOUBLE  preint,det;          /* element values */
   DOUBLE  e1,e2,e3;         
@@ -84,6 +90,9 @@ void f3_calelestress(
   DIS_TYP typ;	               /* element displacement type  */
   DOUBLE  dens,visc,twovisc;   /* material parameters */
   NODE   *actnode;             /* actual node */
+  NODE   *actfnode;             /* actual node */
+  NODE   *actanode;             /* actual node */
+  GNODE  *actfgnode;             /* actual node */
 
 
 #ifdef DEBUG 
@@ -96,31 +105,33 @@ void f3_calelestress(
   actmat=ele->mat-1;
   dens = mat[actmat].m.fluid->density;
   visc = mat[actmat].m.fluid->viscosity*dens; /* here we need dynamic viscosity! */
-  ntyp = ele->e.f3->ntyp; 
   typ  = ele->distyp;
 
 
+switch(viscstr)
+{
+case 0: /* only real pressure */
   /* only real pressure */
   /* use the rear part of stress_ND */
   for (i=0;i<iel;i++)
   {
     actnode=ele->node[i];
-    ele->e.f3->stress_ND.a.da[i][6]=-actnode->sol_increment.a.da[3][3]*dens;
-    ele->e.f3->stress_ND.a.da[i][7]=-actnode->sol_increment.a.da[3][3]*dens;
-    ele->e.f3->stress_ND.a.da[i][8]=-actnode->sol_increment.a.da[3][3]*dens;
-    ele->e.f3->stress_ND.a.da[i][9]= ZERO;
-    ele->e.f3->stress_ND.a.da[i][10]= ZERO;
-    ele->e.f3->stress_ND.a.da[i][11]= ZERO;
+    ele->e.f3->stress_ND.a.da[i][0]=-actnode->sol_increment.a.da[3][3]*dens;
+    ele->e.f3->stress_ND.a.da[i][1]=-actnode->sol_increment.a.da[3][3]*dens;
+    ele->e.f3->stress_ND.a.da[i][2]=-actnode->sol_increment.a.da[3][3]*dens;
+    ele->e.f3->stress_ND.a.da[i][3]= ZERO;
+    ele->e.f3->stress_ND.a.da[i][4]= ZERO;
+    ele->e.f3->stress_ND.a.da[i][5]= ZERO;
   }
-
-
+break;
+case 1: /* real pressure + viscose stresses */
   /* real pressure + viscose stresses */
   /* sigma = -p_real*I + 2*nue * eps(u) */ 
 
   /* get integraton data  */
-  switch (ntyp)
+  switch (typ)
   {
-    case 1:  /* hex - element */
+  case hex8: case hex20: case hex27:   /* --> hex - element */
       icode = 2;
       nir = ele->e.f3->nGP[0];
       nis = ele->e.f3->nGP[1];
@@ -128,7 +139,7 @@ void f3_calelestress(
       intc = 0;
       break;
 
-    case 2: /* tet - element */  
+   case tet4: case tet10:   /* --> tet - element */		  	
       if (iel>4)
         icode   = 2;
       /* initialise integration */
@@ -140,8 +151,8 @@ void f3_calelestress(
     default:
       nir = nis = nit = 0.0;
       intc = icode = 0;
-      dserror("ntyp unknown!");
-  } /* end switch(ntyp) */
+      dserror("typ unknown!");
+  } /* end switch(typ) */
 
 
   /* set element velocities, real pressure and coordinates */
@@ -151,10 +162,32 @@ void f3_calelestress(
     evel[1][j] = ele->node[j]->sol_increment.a.da[3][1];
     evel[2][j] = ele->node[j]->sol_increment.a.da[3][2];
     epre[j]    = ele->node[j]->sol_increment.a.da[3][3]*dens;
-    xyze[0][j] = ele->node[j]->x[0];
-    xyze[1][j] = ele->node[j]->x[1];
-    xyze[2][j] = ele->node[j]->x[2];
   }/*end for (j=0;j<iel;j++) */
+   switch (ele->e.f3->is_ale)
+   {
+   case 0:
+      for (j=0;j<iel;j++)
+      {
+         xyze[0][j] = ele->node[j]->x[0];
+         xyze[1][j] = ele->node[j]->x[1];
+         xyze[2][j] = ele->node[j]->x[2];
+      }
+#ifdef D_FSI      
+   case 1:
+      for (j=0;j<iel;j++)
+      {
+         actfnode = ele->node[j];
+         actfgnode = actfnode->gnode;
+         actanode = actfgnode->mfcpnode[genprob.numaf];
+         xyze[0][j] = ele->node[j]->x[0]+ actanode->sol_mf.a.da[1][0];
+         xyze[1][j] = ele->node[j]->x[1]+ actanode->sol_mf.a.da[1][1];
+         xyze[2][j] = ele->node[j]->x[2]+ actanode->sol_mf.a.da[1][2];
+      }       
+   break;
+#endif      
+   default:
+      dserror("elment flag is_ale out of range!");
+   }
 
 
   /* loop over integration points */
@@ -168,9 +201,9 @@ void f3_calelestress(
       {
 
         /* get values of  shape functions and their derivatives */
-        switch(ntyp)  
+        switch(typ)  
         {
-          case 1:   /* --> hex - element */
+         case hex8: case hex20: case hex27:   /* --> hex - element */
             e1   = data->qxg[lr][nir-1];
             e2   = data->qxg[ls][nis-1];
             e3   = data->qxg[lt][nit-1];
@@ -179,19 +212,19 @@ void f3_calelestress(
             xgs[ls] = e2;
             xgt[lt] = e3;
             break;
-          case 2:   /* --> tet - element */		  	
+         case tet4: case tet10:   /* --> tet - element */		  	
             e1   = data->txgr[lr][intc];
             e2   = data->txgs[lr][intc];
             e3   = data->txgt[lr][intc]; 
             f3_tet(funct,deriv,NULL,e1,e2,e3,typ,icode); 
             break;
           default:
-            dserror("ntyp unknown!");
-        } /* end switch (ntyp) */
+            dserror("typ unknown!");
+        } /* end switch (typ) */
 
 
         /* compute Jacobian matrix */
-        f3_jaco(funct,deriv,xjm,&det,ele,iel);
+        f3_jaco(xyze,funct,deriv,xjm,&det,ele,iel);
 
         /* compute global derivates */
         f3_gder(derxy,deriv,xjm,wa1,det,iel);
@@ -200,7 +233,7 @@ void f3_calelestress(
         f3_vder(vderxy,derxy,evel,iel);
 
         /* get pressure at integration point */         
-        f3_prei(&preint,funct,epre,iel);
+        preint=f3_scali(funct,epre,iel);
 
 
         /*
@@ -248,7 +281,10 @@ void f3_calelestress(
       nit,
       iel);
 
-
+break;
+default:
+   dserror("parameter viscstr out of range!\n");
+}
 #ifdef DEBUG 
   dstrc_exit();
 #endif
