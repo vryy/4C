@@ -245,6 +245,14 @@ if (fdyn->checkarea>0)
    totarea = amdef("area",&totarea_a,fdyn->itemax,1,"DV");
    amzero(&totarea_a);
 }
+
+/*------------------------- init lift&drag calculation real FSI-problem */
+if (fdyn->liftdrag)
+{
+   str         = str_liftdrag;
+   fluid_liftdrag(0,NULL,NULL,NULL,NULL,NULL,NULL);
+}
+
 /*--------------------------------------------- initialise fluid field */
 if (restart>0)
 {
@@ -330,10 +338,6 @@ fluid_locsys(actfield,fdyn);
 /*------------------------- predictor for free surface at the beginning */
 if (fdyn->freesurf>0)
 fluid_updfscoor(actfield, fdyn, fdyn->dt, -1);
-
-/*------------------------- init lift&drag calculation real FSI-problem */
-if (fdyn->liftdrag==3)
-fluid_liftdrag(0,NULL,NULL,NULL,NULL,NULL,NULL);
 
 /*---------------------------------------------------------- monitoring */
 if (ioflags.monitor==1)
