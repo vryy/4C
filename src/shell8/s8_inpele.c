@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Michael Gee
@@ -18,7 +18,7 @@ Maintainer: Michael Gee
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -34,15 +34,15 @@ INT  ierr=0;
 char *colpointer;
 char buffer[50];
 INT  nhyb=0;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8inp");
 #endif
-/*------------------------------------------------ allocate the element */      
+/*------------------------------------------------ allocate the element */
 ele->e.s8 = (SHELL8*)CCACALLOC(1,sizeof(SHELL8));
 if (ele->e.s8==NULL) dserror("Allocation of element failed");
 /*---------------------------------------------- read elements topology */
 frchk("QUAD4",&ierr);
-if (ierr==1) 
+if (ierr==1)
 {
    ele->distyp = quad4;
    ele->numnp=4;
@@ -52,7 +52,7 @@ if (ierr==1)
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
 }
 frchk("QUAD8",&ierr);
-if (ierr==1) 
+if (ierr==1)
 {
    ele->distyp = quad8;
    ele->numnp=8;
@@ -62,7 +62,7 @@ if (ierr==1)
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
 }
 frchk("QUAD9",&ierr);
-if (ierr==1) 
+if (ierr==1)
 {
    ele->distyp = quad9;
    ele->numnp=9;
@@ -72,7 +72,7 @@ if (ierr==1)
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
 }
 frchk("TRI3",&ierr);
-if (ierr==1) 
+if (ierr==1)
 {
    ele->distyp = tri3;
    ele->numnp=3;
@@ -82,7 +82,7 @@ if (ierr==1)
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
 }
 frchk("TRI6",&ierr);
-if (ierr==1) 
+if (ierr==1)
 {
    ele->distyp = tri6;
    ele->numnp=6;
@@ -115,12 +115,12 @@ if (ierr)
    if (strncmp(buffer,"RST",3)==0)       ele->e.s8->forcetyp = s8_rst;
    if (strncmp(buffer,"RST_ortho",9)==0) ele->e.s8->forcetyp = s8_rst_ortho;
 }
-/*------------------------------------------------------------ read EAS */    
+/*------------------------------------------------------------ read EAS */
 colpointer = strstr(allfiles.actplace,"EAS");
 colpointer+=3;
 
 colpointer = strpbrk(colpointer,"Nn");
-ierr = sscanf(colpointer," %s ",buffer);    
+ierr = sscanf(colpointer," %s ",buffer);
 if (ierr!=1) dserror("Reading of shell8 eas failed");
 if (strncmp(buffer,"none",4)==0)  ele->e.s8->eas[0]=0;
 if (strncmp(buffer,"N4_1",4)==0)  ele->e.s8->eas[0]=1;
@@ -132,10 +132,10 @@ if (strncmp(buffer,"N4_7",4)==0)  ele->e.s8->eas[0]=7;
 if (strncmp(buffer,"N9_7",4)==0)  ele->e.s8->eas[0]=7;
 if (strncmp(buffer,"N9_9",4)==0)  ele->e.s8->eas[0]=9;
 if (strncmp(buffer,"N9_11",4)==0) ele->e.s8->eas[0]=11;
-colpointer += strlen(buffer);    
-    
+colpointer += strlen(buffer);
+
 colpointer = strpbrk(colpointer,"Nn");
-ierr = sscanf(colpointer," %s ",buffer);    
+ierr = sscanf(colpointer," %s ",buffer);
 if (ierr!=1) dserror("Reading of shell8 eas failed");
 if (strncmp(buffer,"none",4)==0)  ele->e.s8->eas[1]=0;
 if (strncmp(buffer,"N4_4",4)==0)  ele->e.s8->eas[1]=4;
@@ -144,10 +144,10 @@ if (strncmp(buffer,"N4_6",4)==0)  ele->e.s8->eas[1]=6;
 if (strncmp(buffer,"N4_7",4)==0)  ele->e.s8->eas[1]=7;
 if (strncmp(buffer,"N9_9",4)==0)  ele->e.s8->eas[1]=9;
 if (strncmp(buffer,"N9_11",4)==0) ele->e.s8->eas[1]=11;
-colpointer += strlen(buffer);    
-    
+colpointer += strlen(buffer);
+
 colpointer = strpbrk(colpointer,"Nn");
-ierr = sscanf(colpointer," %s ",buffer);    
+ierr = sscanf(colpointer," %s ",buffer);
 if (ierr!=1) dserror("Reading of shell8 eas failed");
 if (strncmp(buffer,"none",4)==0)  ele->e.s8->eas[2]=0;
 if (strncmp(buffer,"N_1",4)==0)   ele->e.s8->eas[2]=1;
@@ -156,10 +156,10 @@ if (strncmp(buffer,"N_4",4)==0)   ele->e.s8->eas[2]=4;
 if (strncmp(buffer,"N_6",4)==0)   ele->e.s8->eas[2]=6;
 if (strncmp(buffer,"N_8",4)==0)   ele->e.s8->eas[2]=8;
 if (strncmp(buffer,"N_9",4)==0)   ele->e.s8->eas[2]=9;
-colpointer += strlen(buffer);    
+colpointer += strlen(buffer);
 
 colpointer = strpbrk(colpointer,"Nn");
-ierr = sscanf(colpointer," %s ",buffer);    
+ierr = sscanf(colpointer," %s ",buffer);
 if (ierr!=1) dserror("Reading of shell8 eas failed");
 if (strncmp(buffer,"none",4)==0)  ele->e.s8->eas[3]=0;
 if (strncmp(buffer,"N4_2",4)==0)  ele->e.s8->eas[3]=2;
@@ -167,10 +167,10 @@ if (strncmp(buffer,"N4_4",4)==0)  ele->e.s8->eas[3]=4;
 if (strncmp(buffer,"N9_2",4)==0)  ele->e.s8->eas[3]=2;
 if (strncmp(buffer,"N9_4",4)==0)  ele->e.s8->eas[3]=4;
 if (strncmp(buffer,"N9_6",4)==0)  ele->e.s8->eas[3]=6;
-colpointer += strlen(buffer);    
+colpointer += strlen(buffer);
 
 colpointer = strpbrk(colpointer,"Nn");
-ierr = sscanf(colpointer," %s ",buffer);    
+ierr = sscanf(colpointer," %s ",buffer);
 if (ierr!=1) dserror("Reading of shell8 eas failed");
 if (strncmp(buffer,"none",4)==0)  ele->e.s8->eas[4]=0;
 if (strncmp(buffer,"N4_2",4)==0)  ele->e.s8->eas[4]=2;
@@ -190,10 +190,10 @@ if (nhyb>0)
 
    amdef("Dtildinv",&(ele->e.s8->Dtildinv),nhyb,nhyb,"DA");
    amzero(&(ele->e.s8->Dtildinv));
-   
+
    amdef("Lt",&(ele->e.s8->Lt),nhyb,ele->numnp*NUMDOF_SHELL8,"DA");
    amzero(&(ele->e.s8->Lt));
-   
+
    amdef("Rtilde",&(ele->e.s8->Rtilde),nhyb,1,"DV");
    amzero(&(ele->e.s8->Rtilde));
 }
@@ -208,8 +208,8 @@ if (strncmp(buffer,"TQ",4)==0)    ele->e.s8->ans=3;
 /*------------------------------------------------------------ read sdc */
 frdouble("SDC",&(ele->e.s8->sdc),&ierr);
 if (ierr!=1) dserror("Reading of shell8 sdc failed");
-    
-#ifdef DEBUG 
+
+#ifdef DEBUG
 dstrc_exit();
 #endif
 

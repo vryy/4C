@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -18,7 +18,7 @@ Maintainer: Malte Neumann
 #include "../solver/solver.h"
 /*----------------------------------------------------------------------*
  | global dense matrices for element routines             m.gee 10/01   |
- | (defined in global_calelm.c, so they are extern here)                |                
+ | (defined in global_calelm.c, so they are extern here)                |
  *----------------------------------------------------------------------*/
 extern struct _ARRAY estif_global;
 extern struct _ARRAY emass_global;
@@ -77,7 +77,7 @@ INT       **perm;
 INT        *perm_sizes;
 INT       **update;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("add_parcsr");
 #endif
 /*----------------------------------------------------------------------*/
@@ -96,8 +96,8 @@ perm             = parcsr->perm.a.ia;
 perm_sizes       = parcsr->perm_sizes.a.iv;
 update           = parcsr->update.a.ia;
 /*---------------------------------- put pointers to sendbuffers if any */
-#ifdef PARALLEL 
-if (parcsr->couple_i_send) 
+#ifdef PARALLEL
+if (parcsr->couple_i_send)
 {
    isend = parcsr->couple_i_send->a.ia;
    dsend = parcsr->couple_d_send->a.da;
@@ -233,10 +233,10 @@ for (i=0; i<nd; i++)
          add_parcsr_sendbuff(ii,jj,i,j,ii_owner,isend,dsend,estif,nsend);
       }/* end loop over j */
    }/* end of ii is coupled and I am slave owner */
-   /*-------------------------------------------------------------------*/                         
+   /*-------------------------------------------------------------------*/
 }/* end loop over i */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -250,7 +250,7 @@ void add_parcsr_sendbuff(INT ii,INT jj,INT i,INT j,INT ii_owner,INT **isend,
                     DOUBLE **dsend,DOUBLE **estif, INT numsend)
 {
 INT         k;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("add_parcsr_sendbuff");
 #endif
 /*----------------------------------------------------------------------*/
@@ -261,7 +261,7 @@ for (k=0; k<numsend; k++)
 isend[k][1]  = ii_owner;
 dsend[k][jj]+= estif[i][j];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -274,7 +274,7 @@ return;
 void add_parcsr_checkcouple(INT ii,INT **cdofs,INT ncdofs,INT *iscouple,INT *isowner, INT nprocs)
 {
 INT         i,k;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("add_parcsr_checkcouple");
 #endif
 /*----------------------------------------------------------------------*/
@@ -294,7 +294,7 @@ for (k=0; k<ncdofs; k++)
    }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -313,7 +313,7 @@ void exchange_coup_parcsr(
                             )
 {
 
-#ifdef PARALLEL 
+#ifdef PARALLEL
 INT            i,j,k;
 INT            ii,ii_index;
 INT            jj,jj_index;
@@ -356,11 +356,11 @@ MPI_Request   *dsendrequest;
 MPI_Comm      *ACTCOMM;
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("exchange_coup_parcsr");
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef PARALLEL 
+#ifdef PARALLEL
 /*----------------------------------------------------------------------*/
 imyrank = actintra->intra_rank;
 inprocs = actintra->intra_nprocs;
@@ -401,7 +401,7 @@ for (i=0; i<numsend; i++)
    MPI_Isend(&(dsend[i][0]),numeq_total,MPI_DOUBLE,isend[i][1],isend[i][0],(*ACTCOMM),&(dsendrequest[i]));
 }/*------------------------------------------------ end of sending loop */
 /*------------------------------- now loop over the dofs to be received */
-/* 
+/*
    do blocking receives, 'cause one can't add something to the system
    matrix, which has not yet arrived, easy, isn't it?
 */
@@ -416,9 +416,9 @@ for (i=0; i<numrecv; i++)
    tag    = irecv_status[i].MPI_TAG;
    if (tag != irecv[i][0]) dserror("MPI messages somehow got mixed up");
    source = irecv_status[i].MPI_SOURCE;
-   
+
    /* do not use wildcards for second recv, we know now where it should come from */
-   MPI_Recv(&(drecv[i][0]),numeq_total,MPI_DOUBLE,source,tag,(*ACTCOMM),&(drecv_status[i]));   
+   MPI_Recv(&(drecv[i][0]),numeq_total,MPI_DOUBLE,source,tag,(*ACTCOMM),&(drecv_status[i]));
    if (drecv_status[i].MPI_ERROR) dserror("An error in MPI - communication occured !");
 
    /* now add the received data properly to my own piece of sparse matrix */
@@ -439,10 +439,10 @@ for (i=0; i<numrecv; i++)
    for (j=0; j<lenght; j++)
    {
       jj                 = bindx[start+j];
-      jj_index           = find_index(jj,update[imyrank],perm_sizes[imyrank]); 
+      jj_index           = find_index(jj,update[imyrank],perm_sizes[imyrank]);
       owner              = imyrank;
       /*------------------------ the dof jj is not updated on this proc */
-      if (jj_index==-1) 
+      if (jj_index==-1)
       {
          for (k=0; k<inprocs; k++)
          {
@@ -480,11 +480,11 @@ if (numsend){CCAFREE(isendrequest);CCAFREE(dsendrequest);}
 /*----------------------------------------------------------------------
   do a barrier, because this is the end of the assembly, the msr matrix
   is now ready for solve
-*/ 
+*/
 MPI_Barrier(*ACTCOMM);
-#endif /*---------------------------------------------- end of PARALLEL */ 
+#endif /*---------------------------------------------- end of PARALLEL */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

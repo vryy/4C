@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 'b3_boplin3D' and 'b3_boplin' which 
+\brief contains the routine 'b3_boplin3D' and 'b3_boplin' which
 calculates the B-Operator matrix for a 3d / 1d spatial beam element
 
 <pre>
@@ -16,7 +16,7 @@ Maintainer: Frank Huber
 #include "beam3.h"
 #include "beam3_prototypes.h"
 
-/*! 
+/*!
 \addtogroup BEAM3
 *//*! @{ (documentation module open)*/
 
@@ -31,8 +31,8 @@ Maintainer: Frank Huber
 </pre>
 
 <pre>                                                              fh 02/03
-This routine calculates the B-Operator matrix for a 3D-beam element with 3 
-coordinates r,s,t. 
+This routine calculates the B-Operator matrix for a 3D-beam element with 3
+coordinates r,s,t.
 
 </pre>
 \param **bop    DOUBLE  (o)   B-Operator
@@ -47,28 +47,28 @@ coordinates r,s,t.
 \param a        DOUBLE  (i)   height of beam cross section
 \param iel      INT     (i)   number of element nodes
 \param init     INT     (i)   flag if initialization (init=1) or not
-               
+
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: b3_cal_ele()
 
 *----------------------------------------------------------------------*/
-void b3_boplin3D(DOUBLE    **bop,    
-                 DOUBLE    **deriv,  
-                 DOUBLE     *func,   
-	         DOUBLE    **xjm,    
-                 DOUBLE    **ijm,    
-	         DOUBLE    **V,      
-	         DOUBLE      s,      
-	         DOUBLE      t,      
-	         DOUBLE      b,      
-	         DOUBLE      a,      
+void b3_boplin3D(DOUBLE    **bop,
+                 DOUBLE    **deriv,
+                 DOUBLE     *func,
+	         DOUBLE    **xjm,
+                 DOUBLE    **ijm,
+	         DOUBLE    **V,
+	         DOUBLE      s,
+	         DOUBLE      t,
+	         DOUBLE      b,
+	         DOUBLE      a,
                  INT         iel,
-	         INT         init)    
+	         INT         init)
 {
 /*----------------------------------------------------------------------*/
-INT i,j;         /* some counters */ 
+INT i,j;         /* some counters */
 INT inode;       /* counter */
 DOUBLE GT[3][3]; /* temporate matrix GT = (g-)k*/
 DOUBLE GS[3][3]; /* temporate matrix GS = (g^)k*/
@@ -78,28 +78,28 @@ DOUBLE q,fac1,fac2,hs,ht,hs2,ht2,st,s2,t2; /* values for cross section warping *
 DOUBLE N; /* value for shape function at actual node */
 DOUBLE dN; /* value for shape function derivative at actual node */
 
-static ARRAY    bwa_a;    /* B-operator working array */   
-static DOUBLE **bwa;       
+static ARRAY    bwa_a;    /* B-operator working array */
+static DOUBLE **bwa;
 static ARRAY    R_a;      /* Matrix for strain transformation */
 static DOUBLE **R;
 static ARRAY    epswa_a;  /* Working array for transformation of strains */
 static DOUBLE **epswa;
 static ARRAY    epswa2_a; /* Working array 2 for transformation of strains */
 static DOUBLE **epswa2;
-static ARRAY    uderiv_a; /* !!! Working Array --> not used */   
-static DOUBLE **uderiv;       
-static ARRAY    vderiv_a; /* !!! Working Array --> not used */   
-static DOUBLE **vderiv;       
-static ARRAY    wderiv_a; /* !!! Working Array --> not used */   
-static DOUBLE **wderiv;     
+static ARRAY    uderiv_a; /* !!! Working Array --> not used */
+static DOUBLE **uderiv;
+static ARRAY    vderiv_a; /* !!! Working Array --> not used */
+static DOUBLE **vderiv;
+static ARRAY    wderiv_a; /* !!! Working Array --> not used */
+static DOUBLE **wderiv;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("b3_boplin3D");
 #endif
 
 if (init==1)
 {
-   bwa       = amdef("bwa"     ,&bwa_a     ,3,4                      ,"DA");           
+   bwa       = amdef("bwa"     ,&bwa_a     ,3,4                      ,"DA");
    epswa     = amdef("epswa"   ,&epswa_a   ,6,6                      ,"DA");
    epswa2    = amdef("epswa2"  ,&epswa2_a  ,6,6                      ,"DA");
    R         = amdef("R"       ,&R_a       ,6,6                      ,"DA");
@@ -119,11 +119,11 @@ amzero(&wderiv_a);
 hs=b;
 ht=a;
 
-if (ht<hs) 
+if (ht<hs)
 {
-  q=-1.; 
+  q=-1.;
 }
-else 
+else
 {
   q=1.;
 }
@@ -224,7 +224,7 @@ for (inode=0; inode<iel; inode++)
     amzero(&epswa2_a);
     dN=deriv[0][inode];
     N =func[inode];
-/*---- element is linear -> Vt1 = Vt2 = Vtn, Vs1 = Vs2 = Vsn -----------*/ 
+/*---- element is linear -> Vt1 = Vt2 = Vtn, Vs1 = Vs2 = Vsn -----------*/
     uderiv[0][0]=dN;
     uderiv[0][1]=dN*G[0][0];
     uderiv[0][2]=dN*G[1][0];
@@ -237,7 +237,7 @@ for (inode=0; inode<iel; inode++)
     uderiv[2][1]=N*GT[0][0];
     uderiv[2][2]=N*GT[1][0];
     uderiv[2][3]=N*GT[2][0];
-    
+
     vderiv[0][0]=dN;
     vderiv[0][1]=dN*G[0][1];
     vderiv[0][2]=dN*G[1][1];
@@ -250,7 +250,7 @@ for (inode=0; inode<iel; inode++)
     vderiv[2][1]=N*GT[0][1];
     vderiv[2][2]=N*GT[1][1];
     vderiv[2][3]=N*GT[2][1];
-    
+
     wderiv[0][0]=dN;
     wderiv[0][1]=dN*G[0][2];
     wderiv[0][2]=dN*G[1][2];
@@ -264,16 +264,16 @@ for (inode=0; inode<iel; inode++)
     wderiv[2][2]=N*GT[1][2];
     wderiv[2][3]=N*GT[2][2];
 
-/*------ calculate d/dx = J-1 * d/dr -----------------------------------*/ 
+/*------ calculate d/dx = J-1 * d/dr -----------------------------------*/
 /*------ in the matrix bwa the product j-1*d/dr is stored temporarily --*/
 /*------ in the matrix epswa the product B~k * uk is stored ------------*/
-    math_matmatdense(bwa,ijm,uderiv,3,3,4,0,1.);	 
+    math_matmatdense(bwa,ijm,uderiv,3,3,4,0,1.);
     /* du/dx */
     epswa[0][0]+=bwa[0][0];
     epswa[0][3]+=bwa[0][1];
     epswa[0][4]+=bwa[0][2];
     epswa[0][5]+=bwa[0][3];
-    
+
     /* du/dz */
     epswa[4][0]+=bwa[2][0];
     epswa[4][3]+=bwa[2][1];
@@ -292,13 +292,13 @@ for (inode=0; inode<iel; inode++)
     epswa[1][3]+=bwa[1][1];
     epswa[1][4]+=bwa[1][2];
     epswa[1][5]+=bwa[1][3];
-    
+
     /* dv/dz */
     epswa[3][1]+=bwa[2][0];
     epswa[3][3]+=bwa[2][1];
     epswa[3][4]+=bwa[2][2];
     epswa[3][5]+=bwa[2][3];
-    
+
     /* dv/dx */
     epswa[5][1]+=bwa[0][0];
     epswa[5][3]+=bwa[0][1];
@@ -311,13 +311,13 @@ for (inode=0; inode<iel; inode++)
     epswa[2][3]+=bwa[2][1];
     epswa[2][4]+=bwa[2][2];
     epswa[2][5]+=bwa[2][3];
-    
+
     /* dw/dy */
     epswa[3][2]+=bwa[1][0];
     epswa[3][3]+=bwa[1][1];
     epswa[3][4]+=bwa[1][2];
     epswa[3][5]+=bwa[1][3];
-    
+
     /* dw/dx */
     epswa[4][2]+=bwa[0][0];
     epswa[4][3]+=bwa[0][1];
@@ -333,7 +333,7 @@ for (inode=0; inode<iel; inode++)
        bop[0][i+6*inode]   = epswa2[0][i];
        bop[1][i+6*inode]   = epswa2[5][i];
        bop[2][i+6*inode]   = epswa2[4][i];
-/* additional epsilon_yy, epsilon_zz, gamma_yz for nonlinear computation */ 
+/* additional epsilon_yy, epsilon_zz, gamma_yz for nonlinear computation */
        bop[3][i+6*inode]   = epswa2[1][i];
        bop[4][i+6*inode]   = epswa2[2][i];
        bop[5][i+6*inode]   = epswa2[3][i];
@@ -352,7 +352,7 @@ for (inode=0; inode<iel; inode++)
 /*----------------------------------------------------------------------*/
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -370,33 +370,33 @@ beam element w.r.t. coordinate r.
 \param **deriv  DOUBLE  (i)   the derivatives of the shape functions
 \param *func    DOUBLE  (i)   the shape functions
 \param iel      INT     (i)   number of element nodes
-\param l2       DOUBLE  (i)   dx/dr transformation x -> r               
+\param l2       DOUBLE  (i)   dx/dr transformation x -> r
 
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling: ---; 
+\return void
+\sa calling: ---;
     called by: b3_cal_ele()
 
 *----------------------------------------------------------------------*/
-void b3_boplin(DOUBLE    **bop,    
-               DOUBLE    **deriv,  
-               DOUBLE     *func,   
-               INT         iel,    
-	       DOUBLE      l2)     
+void b3_boplin(DOUBLE    **bop,
+               DOUBLE    **deriv,
+               DOUBLE     *func,
+               INT         iel,
+	       DOUBLE      l2)
 {
 /*----------------------------------------------------------------------*/
 INT i;       /* counter */
 DOUBLE dN,N; /* derivative of shape function and shape function */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("b3_boplin");
 #endif
 /*--------------B-Operator for spatial Timoshenko beam element----------*/
 for (i=0; i<iel; i++)
 {   dN=1./l2*deriv[0][i];
     N=func[i];
-    
+
     bop[0][6*i]=dN;
     bop[1][1+6*i]=dN;
     bop[1][5+6*i]=-N;
@@ -404,10 +404,10 @@ for (i=0; i<iel; i++)
     bop[2][4+6*i]=N;
     bop[3][3+6*i]=dN;
     bop[4][4+6*i]=dN;
-    bop[5][5+6*i]=dN;        
-}  
+    bop[5][5+6*i]=dN;
+}
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

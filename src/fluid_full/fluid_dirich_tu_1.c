@@ -25,7 +25,7 @@ extern struct _MATERIAL  *mat;
  | general problem data                                                 |
  | global variable GENPROB genprob is defined in global_control.c       |
  *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;               
+extern struct _GENPROB     genprob;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate dynamic variables if needed                      |
@@ -35,7 +35,7 @@ extern struct _GENPROB     genprob;
 extern ALLDYNA      *alldyn;
 
 static FLUID_DYNAMIC *fdyn;
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief routine to set dirichlet boundary conditions at time <time>
 
 <pre>                                                         he  12/02
@@ -44,21 +44,21 @@ in this routine the dirichlet boundary conditions for fluid2 and fluid3
 elements are set at time <T=fdyn->time>.
 the actual dirichlet values are written to the solution history of the
 nodes:
-    'actnode->sol_increment.a.da[3][j] 
-                                 |        
-                            time (n+1)                
-                                     
+    'actnode->sol_increment.a.da[3][j]
+                                 |
+                            time (n+1)
+
 </pre>
-\param *actfield    FIELD         (i)  actual field (fluid)   
-\param *fdyn	  FLUID_DYNAMIC (i)  
-\param *lower_limit_kappa  DOUBLE (o) lower limit for kappa  
+\param *actfield    FIELD         (i)  actual field (fluid)
+\param *fdyn	  FLUID_DYNAMIC (i)
+\param *lower_limit_kappa  DOUBLE (o) lower limit for kappa
 \param *lower_limit_omega  DOUBLE (o) lower limit for epsilon
 
-\return void                                                                              
+\return void
 
 ------------------------------------------------------------------------*/
 void fluid_setdirich_tu_1(
-                       FIELD  *actfield, 
+                       FIELD  *actfield,
                        DOUBLE   *lower_limit_kappa,
                        DOUBLE   *lower_limit_omega
                        )
@@ -72,11 +72,11 @@ DOUBLE     visc = 0.0;
 DOUBLE     int_lenght;
 GNODE     *actgnode;	             /* actual GNODE		            */
 NODE      *actnode;	             /* actual NODE		            */
-NODE      *actnode2;	             /* NODE from RANS                  */    
+NODE      *actnode2;	             /* NODE from RANS                  */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_setdirich_tu_1");
-#endif 
+#endif
 
 /*----------------------------------------------------- set some values */
 fdyn = alldyn[genprob.numff].fdyn;
@@ -93,13 +93,13 @@ int_lenght   = fdyn->lenght;
 for(i=0; i<genprob.nmat; i++)
 {
  if (mat[i].mattyp == m_fluid) visc=mat->m.fluid->viscosity;
-} 
+}
 /*-------------------- loop all nodes and set actual dirichlet condition */
-for (i=0;i<numnp_total;i++) 
+for (i=0;i<numnp_total;i++)
 {
-   actnode  = &(actfield->dis[1].node[i]); 
+   actnode  = &(actfield->dis[1].node[i]);
    actnode2 = &(actfield->dis[0].node[i]);
-   actgnode = actnode->gnode;      
+   actgnode = actnode->gnode;
    if (actgnode->dirich==NULL)
    continue;
    for (j=0;j<numdf;j++) /* loop dofs */
@@ -108,7 +108,7 @@ for (i=0;i<numnp_total;i++)
          continue;
       else
       k_2 = 0.0000375*(pow(actnode2->sol_increment.a.da[3][j],2)+pow(actnode2->sol_increment.a.da[3][j+1],2));
- 
+
       actnode->sol_increment.a.da[3][j]   = k_2 ;
       actnode->sol_increment.a.da[1][j]   = actnode->sol_increment.a.da[3][j];
       *lower_limit_kappa = DMAX(*lower_limit_kappa,actnode->sol_increment.a.da[3][j]*0.0001);
@@ -124,19 +124,19 @@ for (i=0;i<numnp_total;i++)
        actnode->sol_increment.a.da[1][j+2] = actnode->sol_increment.a.da[3][j+2];
       *lower_limit_omega = DMAX(*lower_limit_omega,actnode->sol_increment.a.da[3][j+2]*0.0001);
       }
-      
+
       actnode->sol_increment.a.da[3][j+1] = actnode->sol_increment.a.da[3][j]/actnode->sol_increment.a.da[3][j+2];
       actnode->sol_increment.a.da[2][j+1] = actnode->sol_increment.a.da[3][j+1];
    } /*end loop over nodes */
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of fluid_settdirich*/
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief routine to calculate the element dirichlet load vector
 
 <pre>                                                         he 12/02
@@ -148,33 +148,33 @@ the element load vector 'dforce' is calculated by eveluating
 </pre>
 \code
       dforces[i] -= estif[i][j] * dirich[j];
-\endcode			     
+\endcode
 
-\param  *actele    ELEMENT   (i)   actual element	  
+\param  *actele    ELEMENT   (i)   actual element
 \param  *dforces   DOUBLE    (o)   dirichlet force vector
 \param **estif     DOUBLE    (i)   element stiffness matrix
 \param  *hasdirich INT       (o)   flag if s.th. was written to dforces
 
-\return void                                                                             
+\return void
 
 ------------------------------------------------------------------------*/
-void fluid_caldirich_tu_1( 
-                         ELEMENT   *actele,  
-		             DOUBLE    *dforces, 
-                         DOUBLE   **estif,   
+void fluid_caldirich_tu_1(
+                         ELEMENT   *actele,
+		             DOUBLE    *dforces,
+                         DOUBLE   **estif,
 		             INT       *hasdirich
-		             )     
+		             )
 {
 
 INT         i,j;
 INT         numdf;                      /* number of fluid dofs         */
-INT         nd=0;                      
+INT         nd=0;
 DOUBLE      dirich[MAXDOFPERELE];       /* dirichlet values of act. ele */
-INT         dirich_onoff[MAXDOFPERELE]; /* dirichlet flags of act. ele  */ 
+INT         dirich_onoff[MAXDOFPERELE]; /* dirichlet flags of act. ele  */
 GNODE      *actgnode;	                /* actual GNODE                 */
 NODE       *actnode;	                /* actual NODE                  */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_caldirich_tu_1");
 #endif
 
@@ -183,13 +183,13 @@ fdyn = alldyn[genprob.numff].fdyn;
                                           for the nodes of this element */
 for (i=0; i<actele->numnp; i++)
 {
-   actgnode = actele->node[i]->gnode;   
-   if (actgnode->dirich==NULL) 
+   actgnode = actele->node[i]->gnode;
+   if (actgnode->dirich==NULL)
       continue;
    else
       *hasdirich=1;
       break;
-} /* end loop over nodes */					  
+} /* end loop over nodes */
 
 if (*hasdirich==0) /* --> no nodes with DBC for this element */
    goto end;
@@ -210,7 +210,7 @@ for (i=0; i<nd; i++)
 for (i=0; i<actele->numnp; i++) /* loop nodes */
 {
    numdf    = actele->node[i]->numdf;
-   actnode  = actele->node[i];   
+   actnode  = actele->node[i];
    actgnode = actnode->gnode;
    for (j=0; j<numdf; j++) /* loop dofs */
    {
@@ -239,10 +239,10 @@ for (i=0; i<nd; i++)
 
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
-} /* end of fluid_caldirich_tu_1*/ 
+} /* end of fluid_caldirich_tu_1*/
 
 #endif

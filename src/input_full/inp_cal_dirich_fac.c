@@ -13,8 +13,8 @@ Maintainer: Malte Neumann
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 
-/*! 
-\addtogroup Ale 
+/*!
+\addtogroup Ale
 *//*! @{ (documentation module open)*/
 
 /*----------------------------------------------------------------------*
@@ -31,7 +31,7 @@ extern struct _FUNCT      *funct;
 /*!----------------------------------------------------------------------
 \brief calculates the value of a given spatial function for a given gnode
 
-<pre>                                                              mn 06/02 
+<pre>                                                              mn 06/02
 This routine calculates the value of a given spatial function for a given
 gnode
 
@@ -40,7 +40,7 @@ gnode
 \param  index  INT    (i)   the index of dirich condition
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: inherit_design_dis_dirichlet()
 
 *----------------------------------------------------------------------*/
@@ -64,7 +64,7 @@ FUNCT_LIN  *f_lin;
 FUNCT_QUA  *f_qua;
 FUNCT_CYL  *f_cyl;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("cal_dirich_fac");
 #endif
 /*----------------------------------------------------------------------*/
@@ -80,7 +80,7 @@ switch (funct[funct_num].functtyp)
     f_lin = funct[funct_num].typ.funct_lin;
 
     length = f_lin->length;
-    
+
     /* x1: vector along the line */
     x1[0] = f_lin->x2[0] - f_lin->x1[0];
     x1[1] = f_lin->x2[1] - f_lin->x1[1];
@@ -95,12 +95,12 @@ switch (funct[funct_num].functtyp)
     length_1 = ( x1[0]*x2[0] + x1[1]*x2[1] + x1[2]*x2[2] ) / length;
     /* length_2 = length of the vector x2 */
     length_2 = sqrt( x2[0]*x2[0] + x2[1]*x2[1] + x2[2]*x2[2] );
-    
+
     /* check for a point not on the line */
     if ( FABS(length_1 - length_2) > 10e-6 )
       dswarning(1,6);
-    
-    /* calculate xi and check for a point outside the range of the funct */ 
+
+    /* calculate xi and check for a point outside the range of the funct */
     xi =  length_1/length;
     if (xi < 0.0 || xi > 1.0)
       dswarning(1,5);
@@ -114,7 +114,7 @@ switch (funct[funct_num].functtyp)
     f_qua = funct[funct_num].typ.funct_qua;
 
     length = f_qua->length;
-    
+
     /* x1: vector along the line */
     x1[0] = f_qua->x2[0] - f_qua->x1[0];
     x1[1] = f_qua->x2[1] - f_qua->x1[1];
@@ -129,12 +129,12 @@ switch (funct[funct_num].functtyp)
     length_1 = ( x1[0]*x2[0] + x1[1]*x2[1] + x1[2]*x2[2] ) / length;
     /* length_2 = length of the vector x2 */
     length_2 = sqrt( x2[0]*x2[0] + x2[1]*x2[1] + x2[2]*x2[2] );
-    
+
     /* check for a point not on the line */
     if ( FABS(length_1 - length_2) > 10e-6 )
       dswarning(1,6);
-     
-    /* calculate xi and check for a point outside the range of the funct */ 
+
+    /* calculate xi and check for a point outside the range of the funct */
     xi =  length_1/length;
     if (xi < 0.0 || xi > 1.0)
       dswarning(1,5);
@@ -148,7 +148,7 @@ switch (funct[funct_num].functtyp)
     /* set some constants */
     a    = PI/4.0;
     d    = PI/2.0;
-    /* calculate values */ 	 
+    /* calculate values */
     switch (index)
     {
       case 0:
@@ -164,7 +164,7 @@ switch (funct[funct_num].functtyp)
             exp(a*xp[1]) * cos(a*xp[2] + d*xp[0]) );
         break;
       case 3:
-        fac  = -a*a/2 * ( exp(2*a*xp[0]) + exp(2*a*xp[1]) + exp(2*a*xp[2]) 
+        fac  = -a*a/2 * ( exp(2*a*xp[0]) + exp(2*a*xp[1]) + exp(2*a*xp[2])
             + 2 * sin(a*xp[0] + d*xp[1]) * cos(a*xp[2] + d*xp[0]) * exp(a*(xp[1]+xp[2]))
             + 2 * sin(a*xp[1] + d*xp[2]) * cos(a*xp[0] + d*xp[1]) * exp(a*(xp[2]+xp[0]))
             + 2 * sin(a*xp[2] + d*xp[0]) * cos(a*xp[1] + d*xp[2]) * exp(a*(xp[0]+xp[1])) );
@@ -179,7 +179,7 @@ switch (funct[funct_num].functtyp)
   case funct_kim:  /* spatial function for kim-moin flow */
     /* set some constants */
     a    = 2.0;
-    /* calculate values */ 	 
+    /* calculate values */
     switch (index)
     {
       case 0:
@@ -204,8 +204,8 @@ switch (funct[funct_num].functtyp)
     /* set some constants */
     h    = 0.41;
     um = f_cyl->um;
-    
-    /* calculate values */ 	 
+
+    /* calculate values */
     fac = 16*um*xp[1]*xp[2]*(h-xp[1])*(h-xp[2]) / (h*h*h*h);
     break;
 
@@ -219,7 +219,7 @@ switch (funct[funct_num].functtyp)
 /* write the factor to the gnode */
 gnode->d_funct[index] = fac;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

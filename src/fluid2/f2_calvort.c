@@ -10,10 +10,10 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
-\addtogroup FLUID2 
+/*!
+\addtogroup FLUID2
 *//*! @{ (documentation module open)*/
-#ifdef D_FLUID2 
+#ifdef D_FLUID2
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #include "fluid2.h"
@@ -23,7 +23,7 @@ Maintainer: Steffen Genkinger
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -45,17 +45,17 @@ static DOUBLE Q12=(ONE/TWO);
    the results are averaged with the number of elements the actual node
    belongs to.
    An alternative would be to average with the element areas;
-   smaller elements = better values!     
+   smaller elements = better values!
 </pre>
 
 \param  *ele	            ELEMENT	     (i)   actual element
 \param   init	            INT              (i)   init flag
-\return void                                               
-                                 
+\return void
+
 ------------------------------------------------------------------------*/
 void f2_calvort(
-	        ELEMENT        *ele,                
-       	        INT             init            
+	        ELEMENT        *ele,
+       	        INT             init
                )
 {
 static ARRAY     evel_a;     /* element velocities at (n)                 */
@@ -71,14 +71,14 @@ static DOUBLE  **vderxy;
 static ARRAY     derxy_a;    /* coordinate - derivatives                  */
 static DOUBLE  **derxy;
 static ARRAY     vort_a;     /* vorticity                                 */
-static DOUBLE   *vort;      
+static DOUBLE   *vort;
 static ARRAY     xyze_a;     /* element coordinates                       */
-static DOUBLE  **xyze;   
+static DOUBLE  **xyze;
 
 INT j,icol,kk;
-INT iv=0;		     /* index for gauss points                    */ 	
+INT iv=0;		     /* index for gauss points                    */
 INT ivmax;		     /* index for maximum number of gauss points  */
-INT icode=2;                 /* flag for eveluation of shape functions    */ 
+INT icode=2;                 /* flag for eveluation of shape functions    */
 INT iel=0;		     /* number of nodes                           */
 INT lr,ls;		     /* index to loop over integration points     */
 INT node;		     /* index to loop over nodal points           */
@@ -89,14 +89,14 @@ INT numele;                  /* number of elements to the actual element  */
 DOUBLE det;                  /* determinant                               */
 DOUBLE e1,e2;                /* coordinates of the current gauss points   */
 DOUBLE r;                    /* local coord. of gauss points in r-dir.    */
-DOUBLE s;                    /* local coord. of gauss points in s-dir     */ 
+DOUBLE s;                    /* local coord. of gauss points in s-dir     */
 DOUBLE f;                    /* vorticity value at the nodes              */
 DOUBLE fpar[MAXGAUSS];
 NODE *actnode;               /* actual node                               */
 DIS_TYP typ;                 /* element type                              */
-static FLUID_DATA     *data; 
+static FLUID_DATA     *data;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_calvort");
 #endif
 
@@ -108,21 +108,21 @@ if (init==1) /* allocate working arrays and set pointers */
    xjm     = amdef("xjm"    ,&xjm_a    ,2,2        ,"DA");
    vderxy  = amdef("vderxy" ,&vderxy_a ,2,2        ,"DA");
    derxy   = amdef("derxy"  ,&derxy_a  ,2,MAXNOD_F2,"DA");
-   vort    = amdef("vort"   ,&vort_a   ,MAXGAUSS,1 ,"DV");   
+   vort    = amdef("vort"   ,&vort_a   ,MAXGAUSS,1 ,"DV");
    xyze    = amdef("xyze"   ,&xyze_a   ,2,MAXNOD_F2,"DA");
-   
+
    fdyn    = alldyn[genprob.numff].fdyn;
    data    = fdyn->data;
    goto end;
 } /* endif (init==1) */
 
 /*------------------------------------------------- calculate vorticity */
-/*	                vort = 1/2*(Ux,y - Uy,x)                        */ 
+/*	                vort = 1/2*(Ux,y - Uy,x)                        */
 /*----------------------------------------------------------------------*/
 
 /*-------------------------------------------- loop over each time step */
 ncols = fdyn->ncols;
-for (icol=0;icol<ncols;icol++)  
+for (icol=0;icol<ncols;icol++)
 {
 
 /*------------------------------------------------------ initialization */
@@ -138,12 +138,12 @@ case quad4: case quad8: case quad9: /* -----> quad element */
    nir = ele->e.f2->nGP[0];
    nis = ele->e.f2->nGP[1];
 break;
-case tri3: case tri6: /* triangular element */	
+case tri3: case tri6: /* triangular element */
       icode = 2;
       nir  = ele->e.f2->nGP[0];
       nis  = 1;
-      intc = ele->e.f2->nGP[1];  
-break;	
+      intc = ele->e.f2->nGP[1];
+break;
 default:
    dserror("typ unknown!");
 } /* end switch(typ) */
@@ -172,15 +172,15 @@ for (lr=0;lr<nir;lr++)
          e2 = data->qxg[ls][nis-1];
          f2_rec(funct,deriv,NULL,e1,e2,typ,icode);
       break;
-      case tri3: case tri6:   /* --> tri - element */              
+      case tri3: case tri6:   /* --> tri - element */
 	 e1   = data->txgr[lr][intc];
 	 e2   = data->txgs[lr][intc];
 	 f2_tri(funct,deriv,NULL,e1,e2,typ,icode);
       break;
       default:
          dserror("typ unknown!");
-      }/*end of switch(typ) */		
-      
+      }/*end of switch(typ) */
+
 /*--------------------------------------------- compute Jacobian matrix */
       f2_jaco2(xyze,funct,deriv,xjm,&det,iel,ele);
 /*--------------------------------- compute global derivative ----------*/
@@ -188,9 +188,9 @@ for (lr=0;lr<nir;lr++)
 /*-------- compute velocity derivatives at integration points ----------*/
       f2_vder(vderxy,derxy,evel,iel);
 /*----------------------- calculate vorticity --------------------------*/
-      vort[iv] = Q12*(vderxy[0][1]-vderxy[1][0]); 
+      vort[iv] = Q12*(vderxy[0][1]-vderxy[1][0]);
       iv++;
-   }/* end of for (ls=0;ls<nis;ls++) */	
+   }/* end of for (ls=0;ls<nis;ls++) */
 }/* end of for (lr=0;lr<nir;lr++) */
 
 ivmax = iv;
@@ -198,43 +198,43 @@ ivmax = iv;
 /*------------------------------start loop over nodal points------------*/
 for (node=0;node<iel;node++)
 {
-   actnode = ele->node[node];                          /*--actual node--*/ 
+   actnode = ele->node[node];                          /*--actual node--*/
    numele  = actnode->numele; /*--number of elements to the actual node-*/
    if (actnode->sol.sdim < 4)
    {
-       amredef(&(actnode->sol),actnode->sol.fdim,4,"DA"); 
+       amredef(&(actnode->sol),actnode->sol.fdim,4,"DA");
        for (kk=0;kk<ncols;kk++)
        actnode->sol.a.da[kk][3] = ZERO;
    }
 /*------ --------get local coordinates of nodes-------------------------*/
    r = f2_rsn(node,0,iel);
    s = f2_rsn(node,1,iel);
-/*---------------------------------- extrapolate vorticity to the nodes */   
+/*---------------------------------- extrapolate vorticity to the nodes */
    switch (typ)
    {
    case quad4: case quad8: case quad9:
-      f2_recex(&f,fpar,r,s,vort,ivmax,1); 
+      f2_recex(&f,fpar,r,s,vort,ivmax,1);
    break;
    case tri3: case tri6:
-      f2_triex(&f,fpar,r,s,vort,ivmax,1); 
+      f2_triex(&f,fpar,r,s,vort,ivmax,1);
    break;
    default:
       dserror("typ unknown!\n");
-   }       
-/*------------------- store the vorticity value in the solution history-*/   
-   actnode->sol.a.da[icol][3] += f/numele;                    
+   }
+/*------------------- store the vorticity value in the solution history-*/
+   actnode->sol.a.da[icol][3] += f/numele;
 
 }/* end of loop for (node=0;node<iel;node++) */
 }/* end of loop over columns of solution history */
-  
+
 
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of f2_calvort */
 
 #endif

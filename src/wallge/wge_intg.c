@@ -8,7 +8,7 @@
 #include "../headers/standardtypes.h"
 #include "wallge.h"
 
-/*! 
+/*!
 \addtogroup WALLGE
 *//*! @{ (documentation module open)*/
 
@@ -32,7 +32,7 @@ DOUBLE one   = 1.0;
 DOUBLE two   = 2.0;
 
 static DOUBLE xg[6][6],wgt[6][6];
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1intg");
 #endif
 /*----------------------------------------------------------------------*/
@@ -46,13 +46,13 @@ if (option==0)
        wgt[i][k] = 0.;
     }
   }
-/*----------------------------------------------------------------------*  
- |     INTEGRATION PARAMETERS FOR    R E C T A N G U L A R   ELEMENTS   |        
- |     GAUSS SAMPLING POINTS  AT     R/S-COORDINATES     RESPECTIVELY   |      
- |                            AND    CORRESPONDING WEIGHTING  FACTORS   |      
- *----------------------------------------------------------------------*/       
-     
-      xg[0][1]  =  -0.5773502691896;                                            
+/*----------------------------------------------------------------------*
+ |     INTEGRATION PARAMETERS FOR    R E C T A N G U L A R   ELEMENTS   |
+ |     GAUSS SAMPLING POINTS  AT     R/S-COORDINATES     RESPECTIVELY   |
+ |                            AND    CORRESPONDING WEIGHTING  FACTORS   |
+ *----------------------------------------------------------------------*/
+
+      xg[0][1]  =  -0.5773502691896;
       xg[1][1]  =  -xg[0][1]       ;
       xg[0][2]  =  -0.7745966692415;
       xg[2][2]  =  -xg[0][2]       ;
@@ -64,13 +64,13 @@ if (option==0)
       xg[1][4]  =  -0.5384693101057;
       xg[3][4]  =  -xg[1][4]       ;
       xg[4][4]  =  -xg[0][4]       ;
-      xg[0][5]  =  -0.9324695142032;                                            
-      xg[1][5]  =  -0.6612093864663;                                            
-      xg[2][5]  =  -0.2386191860832;                                            
+      xg[0][5]  =  -0.9324695142032;
+      xg[1][5]  =  -0.6612093864663;
+      xg[2][5]  =  -0.2386191860832;
       xg[3][5]  =  -xg[2][5]       ;
       xg[4][5]  =  -xg[1][5]       ;
       xg[5][5]  =  -xg[0][5]       ;
-                                 
+
       wgt[0][0] =  two             ;
       wgt[0][1] =  one             ;
       wgt[1][1] =  one             ;
@@ -93,8 +93,8 @@ if (option==0)
       wgt[4][5] =  wgt[1][5]       ;
       wgt[5][5] =  wgt[0][5]       ;
 
-/* 
-      xg[0][1]  =  -1.0/sqrt(3.0);                                            
+/*
+      xg[0][1]  =  -1.0/sqrt(3.0);
       xg[1][1]  =  -xg[0][1]       ;
       xg[0][2]  =  -sqrt(3.0/5.0);
       xg[2][2]  =  -xg[0][2]       ;
@@ -106,13 +106,13 @@ if (option==0)
       xg[1][4]  =  -0.5384693101057;
       xg[3][4]  =  -xg[1][4]       ;
       xg[4][4]  =  -xg[0][4]       ;
-      xg[0][5]  =  -0.9324695142032;                                            
-      xg[1][5]  =  -0.6612093864663;                                            
-      xg[2][5]  =  -0.2386191860832;                                            
+      xg[0][5]  =  -0.9324695142032;
+      xg[1][5]  =  -0.6612093864663;
+      xg[2][5]  =  -0.2386191860832;
       xg[3][5]  =  -xg[2][5]       ;
       xg[4][5]  =  -xg[1][5]       ;
       xg[5][5]  =  -xg[0][5]       ;
-                                 
+
       wgt[0][0] =  two             ;
       wgt[0][1] =  one             ;
       wgt[1][1] =  one             ;
@@ -136,7 +136,7 @@ if (option==0)
       wgt[5][5] =  wgt[0][5]       ;
 */
 /*----------------------------------------------------------------------*/
-}                                                 
+}
 else
 {
 /*-------------------------------------- rectangualar element values ---*/
@@ -144,17 +144,17 @@ else
       {
         data->xgrr[i] = xg[ i][ele->e.wallge->nGP[0]-1];
         data->wgtr[i] = wgt[i][ele->e.wallge->nGP[0]-1];
-      }                                                       
+      }
 
       for(i=0;i<ele->e.wallge->nGP[1] ;i++)
       {
         data->xgss[i] = xg[ i][ele->e.wallge->nGP[1]-1];
         data->wgts[i] = wgt[i][ele->e.wallge->nGP[1]-1];
-      }                                                       
+      }
 /*----------------------------------------------------------------------*/
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

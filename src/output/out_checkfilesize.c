@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Steffen Genkinger
@@ -17,7 +17,7 @@ Maintainer: Steffen Genkinger
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -27,11 +27,11 @@ extern struct _FILES  allfiles;
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par; 
+ extern struct _PAR   par;
 
 
 /*!---------------------------------------------------------------------
@@ -46,11 +46,11 @@ This function checks the size of the .flavia.res file by several system
 commands, compares it with MAXFILESIZE of definitions.h. If the file
 is bigger than allowed, .flavia.res is closed, renamed and a new file
 is opened.
-		     
+
 </pre>
 
 \param    opt         INT          (i)          evaluation option
-\return void                                                                             
+\return void
 \warning this function is relatively slow
 
 ------------------------------------------------------------------------*/
@@ -63,14 +63,14 @@ char *charpointer;
 char  command[120]=("du -sk                                               ");
 char  remove[]=("rm resfilesize");
 char  rename[120]=("mv                                                    ");
-char  line [500]; 
+char  line [500];
 char           *end;
 long int   length;
 INT   i,j;
 long int   size;
 FILE *resfilesize;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("out_checkfilesize");
 #endif
 
@@ -100,7 +100,7 @@ case 1: /* flavia.res file */
       length+=20;
    }
 
-   /*--------------- determine the size of the actual .flavia.res file 
+   /*--------------- determine the size of the actual .flavia.res file
      via a system command and pipe the result in the file "resfilesize" */
    for (i=0;i<length;i++)
    command[7+i] = filename[i];
@@ -139,7 +139,7 @@ case 1: /* flavia.res file */
          rename[4+i+j] = kenner[j];
          system(&rename[0]);
       }
-      /*------------------------------ get name of the next .flavia.res */ 
+      /*------------------------------ get name of the next .flavia.res */
       strcpy(filename,allfiles.outputfile_kenner);
       length = strlen(&filename[0]);
       charpointer=filename+length;
@@ -156,10 +156,10 @@ case 1: /* flavia.res file */
    break;
    default:
       dserror("parameter opt out of range!\n");
-}   
+}
 /*----------------------------------------------------------------------*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 #endif

@@ -15,19 +15,19 @@ Maintainer: Malte Neumann
 /* #include "../headers/prototypes_sol.h" */
 INT cmp_int(const void *a, const void *b );
 DOUBLE cmp_double(const void *a, const void *b );
-/*! 
-\addtogroup OLL 
+/*!
+\addtogroup OLL
 *//*! @{ (documentation module open)*/
 
 
 /*!---------------------------------------------------------------------
-\brief opens a matrix in oll format                                          
+\brief opens a matrix in oll format
 
-<pre>                                                         mn 02/03 
+<pre>                                                         mn 02/03
 This function creates an oll matrix for the given number of equations,
 building the update vector and allocating the spare vector.
 </pre>
-\param *matrix       OLL  (i/o) the matrix object to be created 
+\param *matrix       OLL  (i/o) the matrix object to be created
 \param  numeq        INT  (i)   local number of equations
 \param  numeq_total  INT  (i)   global number of equations
 \param *actfield     FIELD  (i)   the active field
@@ -35,8 +35,8 @@ building the update vector and allocating the spare vector.
 \param *actintra     INTRA  (i)   the active communicator
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling: ---; called by: --- 
+\return void
+\sa calling: ---; called by: ---
 
 ------------------------------------------------------------------------*/
 void oll_open(OLL       *matrix,
@@ -49,11 +49,11 @@ void oll_open(OLL       *matrix,
 {
   INT       *update;
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("oll_open");
 #endif
   /*----------------------------------------------------------------------*/
-  matrix->numeq       = numeq; 
+  matrix->numeq       = numeq;
   matrix->numeq_total = numeq_total;
   matrix->nnz         =0;
   matrix->is_copied   =0;
@@ -74,13 +74,13 @@ void oll_open(OLL       *matrix,
     matrix->used  = 0;
     matrix->spare = (MATENTRY*)CCACALLOC(matrix->total,sizeof(MATENTRY));
 
-  } 
+  }
   else
   {
     dserror("matrix already exists");
   }
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return;
@@ -89,9 +89,9 @@ void oll_open(OLL       *matrix,
 
 
 /*!---------------------------------------------------------------------
-\brief fetches a matrix entry out of the spare vector 
+\brief fetches a matrix entry out of the spare vector
 
-<pre>                                                        mn 02/03 
+<pre>                                                        mn 02/03
 This function fetches a matrix entry from the spare vector if there are
 still unused entries. It allocates an new entry otherwise.
 </pre>
@@ -99,8 +99,8 @@ still unused entries. It allocates an new entry otherwise.
 \param *ret          MATENTRY  (o)   the matrix entry
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling: ---; called by: --- 
+\return void
+\sa calling: ---; called by: ---
 
 ------------------------------------------------------------------------*/
 void oll_getentry(
@@ -108,7 +108,7 @@ void oll_getentry(
     MATENTRY** ret)
 {
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("oll_getentry");
 #endif
   /*----------------------------------------------------------------------*/
@@ -124,7 +124,7 @@ void oll_getentry(
   }
 
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return;
@@ -135,15 +135,15 @@ void oll_getentry(
 /*!---------------------------------------------------------------------
 \brief zeros an oll matrix
 
-<pre>                                                        mn 03/03 
-This functions sets all entries in the given oll matrix to zero, the 
+<pre>                                                        mn 03/03
+This functions sets all entries in the given oll matrix to zero, the
 poiter structure is preserved.
 </pre>
 \param *matrix       OLL  (i)   the oll matrix
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling: ---; called by: --- 
+\return void
+\sa calling: ---; called by: ---
 
 ------------------------------------------------------------------------*/
 void oll_zero(OLL*  oll)
@@ -153,7 +153,7 @@ void oll_zero(OLL*  oll)
   INT         i;
   DOUBLE      null = 0.0;
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("oll_zero");
 #endif
   /*----------------------------------------------------------------------*/
@@ -171,7 +171,7 @@ void oll_zero(OLL*  oll)
 
   oll->is_copied = 0;
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return;
@@ -183,7 +183,7 @@ void oll_zero(OLL*  oll)
 /*!---------------------------------------------------------------------
 \brief adds two oll matrices
 
-<pre>                                                        mn 03/03 
+<pre>                                                        mn 03/03
 This function performs
 oll1 = oll1 + oll2 * factor
 for two oll matrices.  These must have the same mask.
@@ -193,8 +193,8 @@ for two oll matrices.  These must have the same mask.
 \param  factor       DOUBLE (i)   the multiplication factor
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling: ---; called by: --- 
+\return void
+\sa calling: ---; called by: ---
 
 ------------------------------------------------------------------------*/
 void oll_add(
@@ -209,7 +209,7 @@ void oll_add(
   MATENTRY   *actentry2;
 
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("oll_add");
 #endif
   /*----------------------------------------------------------------------*/
@@ -229,7 +229,7 @@ void oll_add(
     } /* end while row i */
   } /* end for all rows */
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return;
@@ -238,18 +238,18 @@ void oll_add(
 
 
 /*!---------------------------------------------------------------------
-\brief scales an oll matrix 
+\brief scales an oll matrix
 
-<pre>                                                        mn 03/03 
-This function multiplies all entries of the oll matrix with the given 
+<pre>                                                        mn 03/03
+This function multiplies all entries of the oll matrix with the given
 factor.
 </pre>
 \param *oll          OLL    (i)   the second oll matrix
 \param  factor       DOUBLE (i)   the multiplication factor
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling: ---; called by: --- 
+\return void
+\sa calling: ---; called by: ---
 
 ------------------------------------------------------------------------*/
 void oll_scal(
@@ -261,7 +261,7 @@ void oll_scal(
   MATENTRY   *actentry;
 
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("oll_scal");
 #endif
   /*----------------------------------------------------------------------*/
@@ -277,7 +277,7 @@ void oll_scal(
     } /* end while row i */
   } /* end for all rows */
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return;
@@ -287,10 +287,10 @@ void oll_scal(
 
 
 /*!---------------------------------------------------------------------
-\brief copies the structure of an oll matrix 
+\brief copies the structure of an oll matrix
 
-<pre>                                                        mn 03/03 
-This function copies the structure of an oll matrix, not the values or 
+<pre>                                                        mn 03/03
+This function copies the structure of an oll matrix, not the values or
 the pointers. Only the update vector is copied and the row- and column
 pointer vectors and the spare vector are allocated.
 </pre>
@@ -298,8 +298,8 @@ pointer vectors and the spare vector are allocated.
 \param *to          OLL    (i)   the oll matrix copied to
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling: ---; called by: --- 
+\return void
+\sa calling: ---; called by: ---
 
 ------------------------------------------------------------------------*/
 void oll_cp_mask(
@@ -308,7 +308,7 @@ void oll_cp_mask(
 {
 
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("oll_cp_mask");
 #endif
   /*----------------------------------------------------------------------*/
@@ -322,7 +322,7 @@ void oll_cp_mask(
   to->spare = (MATENTRY*)CCACALLOC(to->total,sizeof(MATENTRY));
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return;
@@ -331,16 +331,16 @@ void oll_cp_mask(
 
 
 /*!---------------------------------------------------------------------
-\brief deletes an oll matrix 
+\brief deletes an oll matrix
 
-<pre>                                                        mn 03/03 
+<pre>                                                        mn 03/03
 This function deletes the contents of the structure OLL
 </pre>
 \param *matrix        OLL    (i)   the oll matrix to be deleted
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling: ---; called by: --- 
+\return void
+\sa calling: ---; called by: ---
 
 ------------------------------------------------------------------------*/
 void oll_delete(OLL*  matrix)
@@ -348,29 +348,29 @@ void oll_delete(OLL*  matrix)
   INT        i,dim;
   MATENTRY  *rowptr,*nextptr;
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("oll_delete");
 #endif
   /*----------------------------------------------------------------------*/
   /*-------------------------------------------- destroy the general part */
-  if (matrix->update.Typ != cca_XX) 
+  if (matrix->update.Typ != cca_XX)
     amdel(&(matrix->update));
-  if (matrix->gdofrecv.Typ != cca_XX) 
+  if (matrix->gdofrecv.Typ != cca_XX)
     amdel(&(matrix->gdofrecv));
-  if (matrix->recvbuff.Typ != cca_XX) 
+  if (matrix->recvbuff.Typ != cca_XX)
     amdel(&(matrix->recvbuff));
-  if (matrix->computebuff.Typ != cca_XX) 
+  if (matrix->computebuff.Typ != cca_XX)
     amdel(&(matrix->computebuff));
-  if (matrix->gdofsend.Typ != cca_XX) 
+  if (matrix->gdofsend.Typ != cca_XX)
     amdel(&(matrix->gdofsend));
-  if (matrix->sendbuff.Typ != cca_XX) 
+  if (matrix->sendbuff.Typ != cca_XX)
     amdel(&(matrix->sendbuff));
 #ifdef PARALLEL
-  if (matrix->status != NULL) 
+  if (matrix->status != NULL)
     CCAFREE(matrix->status);
-  if (matrix->request != NULL) 
+  if (matrix->request != NULL)
     CCAFREE(matrix->request);
-#endif   
+#endif
   /*------------------------------------------- destroy the matrix itself */
   if (matrix->col != NULL) matrix->col = CCAFREE(matrix->col);
   if (matrix->row != NULL)
@@ -392,7 +392,7 @@ void oll_delete(OLL*  matrix)
   }
   matrix->row = CCAFREE(matrix->row);
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return;
@@ -401,21 +401,21 @@ void oll_delete(OLL*  matrix)
 
 
 /*!---------------------------------------------------------------------
-\brief sets a value in an oll matrix 
+\brief sets a value in an oll matrix
 
-<pre>                                                        mn 02/03 
+<pre>                                                        mn 02/03
 This function sets a value in an oll matrix. If the matrix entry already
-exists, the existing value is overwritten, otherwise a new entry is 
+exists, the existing value is overwritten, otherwise a new entry is
 fetched.
 </pre>
 \param *matrix    OLL    (i/o)   the matrix
 \param  actrow    INT      (i)   the true row index
 \param  actcol    INT      (i)   the true col index
-\param  val       DOUBLE   (i)   the value to set 
+\param  val       DOUBLE   (i)   the value to set
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling: ---; called by: --- 
+\return void
+\sa calling: ---; called by: ---
 
 ------------------------------------------------------------------------*/
 void oll_setval(
@@ -432,7 +432,7 @@ void oll_setval(
   MATENTRY   *cptr;
   INT         success;
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("oll_setval");
 #endif
   /*----------------------------------------------------------------------*/
@@ -487,7 +487,7 @@ startrow:
       actptr->c     = actcol;
       actptr->val   = val;
       success++;
-      goto endrow;      
+      goto endrow;
     }
     if (actptr->rnext->c == actcol) /* next element correct element */
     {
@@ -566,7 +566,7 @@ endcol:;
   }
   if (!success) dserror("Failed to set entry");
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return;
@@ -576,21 +576,21 @@ endcol:;
 
 
 /*!---------------------------------------------------------------------
-\brief adds a value in an oll matrix 
+\brief adds a value in an oll matrix
 
-<pre>                                                        mn 02/03 
+<pre>                                                        mn 02/03
 This function adds a value in an oll matrix. If the matrix entry already
-exists, the values are added together, otherwise a new entry is 
+exists, the values are added together, otherwise a new entry is
 fetched.
 </pre>
 \param *matrix    OLL    (i/o)   the matrix
 \param  actrow    INT      (i)   the true row index
 \param  actcol    INT      (i)   the true col index
-\param  val       DOUBLE   (i)   the value to set 
+\param  val       DOUBLE   (i)   the value to set
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling: ---; called by: --- 
+\return void
+\sa calling: ---; called by: ---
 
 ------------------------------------------------------------------------*/
 void oll_addval(
@@ -607,7 +607,7 @@ void oll_addval(
   MATENTRY   *cptr;
   INT         success;
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("oll_addval");
 #endif
   /*----------------------------------------------------------------------*/
@@ -665,7 +665,7 @@ startrow:
       actptr->c     = actcol;
       actptr->val   = val;
       success++;
-      goto endrow;      
+      goto endrow;
     }
     if (actptr->rnext->c == actcol) /* next element correct element */
     {
@@ -745,7 +745,7 @@ endcol:;
   }
   if (!success) dserror("Failed to set entry");
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return;
@@ -755,26 +755,26 @@ endcol:;
 
 
 /*!---------------------------------------------------------------------
-\brief adds a row in an oll matrix 
+\brief adds a row in an oll matrix
 
-<pre>                                                        mn 02/03 
+<pre>                                                        mn 02/03
 This function adds a row of values in an oll matrix. If one matrix entry
-already exists, the values are added together, otherwise a new entry is 
+already exists, the values are added together, otherwise a new entry is
 fetched.
 </pre>
 \param *matrix    OLL    (i/o)   the matrix
 \param  actrow    INT      (i)   the true row index
 \param  lm        INT[]    (i)   the location vactor
-\param  val       DOUBLE[] (i)   the values to set 
+\param  val       DOUBLE[] (i)   the values to set
 \param  nd        INT      (i)   the length of the row
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling: ---; called by: --- 
+\return void
+\sa calling: ---; called by: ---
 
 ------------------------------------------------------------------------*/
 void oll_addrow(
-    OLL*  matrix, 
+    OLL*  matrix,
     INT actrow,
     INT lm[],
     DOUBLE val[],
@@ -791,7 +791,7 @@ void oll_addrow(
   INT         lastcol;
   INT         actcol;
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("oll_addrow");
 #endif
   /*----------------------------------------------------------------------*/
@@ -830,7 +830,7 @@ startrow1:
 endrow1:;
     } /* -- END OF for all element dofs */
   } /* -- END OF mask already exists */
-  else 
+  else
     /* ------------------------------------------------ mask does not exist */
   {
     /* ----------------------------------------------for all element dofs */
@@ -879,7 +879,7 @@ startrow:
           actptr->r     = actrow;
           actptr->c     = actcol;
           actptr->val   = val[i];
-          goto endrow;      
+          goto endrow;
         }
         if (actptr->rnext->c == actcol) /* next element correct element */
         {
@@ -956,7 +956,7 @@ endcol:;
     } /* -- END OF for all element dofs */
   } /* -- END OF mask does not exist */
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return;
@@ -965,9 +965,9 @@ endcol:;
 
 
 /*!---------------------------------------------------------------------
-\brief copies an oll matrix to the skyline format 
+\brief copies an oll matrix to the skyline format
 
-<pre>                                                        mn 02/03 
+<pre>                                                        mn 02/03
 This function copies an oll matrix to a matrix in skyline format. The maxa
 vector is already in fortran convention.
 </pre>
@@ -975,8 +975,8 @@ vector is already in fortran convention.
 \param *sysarray  SPARSE_ARRAY (o)   the sysarry matrix
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling: ---; called by: --- 
+\return void
+\sa calling: ---; called by: ---
 
 ------------------------------------------------------------------------*/
 void oll_to_sky(
@@ -999,15 +999,15 @@ void oll_to_sky(
   INT            counter,height,lastrow,gap;
 
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("oll_to_sky");
 #endif
   /*----------------------------------------------------------------------*/
   sky = sysarray->sky;
 
-  sky->nnz = oll->nnz; 
-  sky->numeq_total = oll->numeq_total; 
-  sky->numeq = oll->numeq; 
+  sky->nnz = oll->nnz;
+  sky->numeq_total = oll->numeq_total;
+  sky->numeq = oll->numeq;
   sky->is_init = 1;
   sky->is_factored = 0;
   sky->ncall = 0;
@@ -1065,7 +1065,7 @@ void oll_to_sky(
   maxaf[i] = counter + 1;
 
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return;
@@ -1075,18 +1075,18 @@ void oll_to_sky(
 
 
 /*!---------------------------------------------------------------------
-\brief copies an oll matrix to the spooles format 
+\brief copies an oll matrix to the spooles format
 
-<pre>                                                        mn 02/03 
-This function copies an oll matrix to a matrix in spooles format. The 
+<pre>                                                        mn 02/03
+This function copies an oll matrix to a matrix in spooles format. The
 values are not copied!!
 </pre>
 \param *oll       OLL          (i)   the oll matrix
 \param *sysarray  SPARSE_ARRAY (o)   the sysarry matrix
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling: ---; called by: --- 
+\return void
+\sa calling: ---; called by: ---
 
 ------------------------------------------------------------------------*/
 void oll_to_spo(
@@ -1097,15 +1097,15 @@ void oll_to_spo(
   SPOOLMAT      *spo;
 
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("oll_to_spo");
 #endif
   /*----------------------------------------------------------------------*/
   spo = sysarray->spo;
 
-  spo->nnz = oll->nnz; 
-  spo->numeq_total = oll->numeq_total; 
-  spo->numeq = oll->numeq; 
+  spo->nnz = oll->nnz;
+  spo->numeq_total = oll->numeq_total;
+  spo->numeq = oll->numeq;
   spo->is_init = 1;
   spo->is_factored = 0;
   spo->ncall = 0;
@@ -1113,7 +1113,7 @@ void oll_to_spo(
   am_alloc_copy(&(oll->update),&(spo->update));
 
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return;
@@ -1122,17 +1122,17 @@ void oll_to_spo(
 
 
 /*!---------------------------------------------------------------------
-\brief copies an oll matrix to the msr format 
+\brief copies an oll matrix to the msr format
 
-<pre>                                                        mn 02/03 
-This function copies an oll matrix to a matrix in msr format. 
+<pre>                                                        mn 02/03
+This function copies an oll matrix to a matrix in msr format.
 </pre>
 \param *oll       OLL          (i)   the oll matrix
 \param *sysarray  SPARSE_ARRAY (o)   the sysarry matrix
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling: ---; called by: --- 
+\return void
+\sa calling: ---; called by: ---
 
 ------------------------------------------------------------------------*/
 void oll_to_msr(
@@ -1155,15 +1155,15 @@ void oll_to_msr(
   INT            rindex;
   INT            nnz, numeq, counter;
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("oll_to_msr");
 #endif
   /*----------------------------------------------------------------------*/
   msr     = sysarray->msr;
 
-  msr->nnz = oll->nnz; 
-  msr->numeq_total = oll->numeq_total; 
-  msr->numeq = oll->numeq; 
+  msr->nnz = oll->nnz;
+  msr->numeq_total = oll->numeq_total;
+  msr->numeq = oll->numeq;
   msr->is_init = 1;
   msr->is_factored = 0;
   msr->ncall = 0;
@@ -1221,7 +1221,7 @@ void oll_to_msr(
   am_alloc_copy(&(msr->val),&(msr->val_backup));
 
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return;
@@ -1229,16 +1229,16 @@ void oll_to_msr(
 
 
 /*!---------------------------------------------------------------------
-\brief copies an oll matrix to the ccf format 
+\brief copies an oll matrix to the ccf format
 
-<pre>                                                       genk 10/03 
+<pre>                                                       genk 10/03
 
-This function copies an oll matrix to a matrix in ccf format. 
+This function copies an oll matrix to a matrix in ccf format.
 
 </pre>
 \param *oll       OLL          (i)   the oll matrix
 \param *sysarray  SPARSE_ARRAY (o)   the sysarry matrix
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void oll_to_ccf(
@@ -1256,11 +1256,11 @@ INT	   i;            /* simply a counter                            */
 INT	   nnz;          /* number of nonzero matrix entries            */
 INT        numeq;        /* number of equations on this proc            */
 INT        numeq_total;  /* total number of equations                   */
-INT        counter;     
+INT        counter;
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
-dstrc_enter("oll_to_ccf"); 
+#ifdef DEBUG
+dstrc_enter("oll_to_ccf");
 #endif
 #ifdef PARALLEL
 dserror("No UMFPACK for parallel OLL!\n");
@@ -1292,8 +1292,8 @@ for (i=0; i<oll->cdim; i++)
    while (actentry!=NULL)
    {
       Ax[counter] = actentry->val;
-      Ai[counter] = actentry->r; 
-      counter++;     
+      Ai[counter] = actentry->r;
+      counter++;
       actentry = actentry->cnext;
    } /* END OF while col */
    Ap[i+1]=counter;
@@ -1303,7 +1303,7 @@ if (counter!=oll->nnz)
 dserror("Error in copying oll to ccf!\n");
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1312,14 +1312,14 @@ return;
 /*!---------------------------------------------------------------------
 \brief copy a matrix in oll format
 
-<pre>                                                        mn 03/03 
-copy a matrix in oll format, the matrix to has to be correcly opened 
-using oll_open 
+<pre>                                                        mn 03/03
+copy a matrix in oll format, the matrix to has to be correcly opened
+using oll_open
 </pre>
 \param from    OLL*    (i/o)   the matrix copied from
 \param to      OLL*    (i/o)   the matrix copied to
-\return void 
-\sa  mlpcg_ll_open                                       
+\return void
+\sa  mlpcg_ll_open
 ------------------------------------------------------------------------*/
 void oll_copy(
               OLL   *from,
@@ -1328,7 +1328,7 @@ void oll_copy(
 INT        i;
 MATENTRY  *actptr;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("oll_copy");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1347,7 +1347,7 @@ for (i=0; i<from->rdim; i++)
 
 to->is_masked = 1;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -18,32 +18,32 @@ Maintainer: Stefan Hartmann
 #include "../headers/standardtypes.h"
 #include "shell9.h"
 
-/*! 
-\addtogroup SHELL9 
+/*!
+\addtogroup SHELL9
 *//*! @{ (documentation module open)*/
 
 
 /*!----------------------------------------------------------------------
-\brief transforms strains (E) from cartesian to curvilinear coordinate system                                   
+\brief transforms strains (E) from cartesian to curvilinear coordinate system
 
 <pre>                                                            sh 05/03
-This routine transforms the strains (E) from cartesian to curvilinear 
-coordinate system. This is very useful in order to use general material laws, 
+This routine transforms the strains (E) from cartesian to curvilinear
+coordinate system. This is very useful in order to use general material laws,
 which are written in orthonormal coordinate systems.
 </pre>
 \param  DOUBLE  *str    (i/o) stresses or strains to be modified
 \param  DOUBLE **gkov    (i)  kovariant basis vectors
 
-\warning Always call this routine with the kovariant basis vectors (gkov). 
-\return void                                               
-\sa calling: ---; called by: 
-                             
+\warning Always call this routine with the kovariant basis vectors (gkov).
+\return void
+\sa calling: ---; called by:
+
 *-----------------------------------------------------------------------*/
 void s9_Ecacu (DOUBLE E[6], DOUBLE **gkov)
 {
 DOUBLE   help[6];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9_Ecacu");
 #endif
 /*----------------------------------------------------------------------*/
@@ -113,7 +113,7 @@ E[4] = help[4];
 E[5] = help[5];
 
 /*----------------------------------------------------------------
-This is better to understand, but not as fast 
+This is better to understand, but not as fast
 
 A[0][0] = E[0];
 A[1][1] = E[2];
@@ -126,13 +126,13 @@ A[1][2] = E[4];
 A[2][1] = E[4];
 
 B[0][0] =  0.0;
-B[1][1] =  0.0; 
-B[2][2] =  0.0; 
-B[0][1] =  0.0; 
-B[0][2] =  0.0; 
-B[1][2] =  0.0; 
+B[1][1] =  0.0;
+B[2][2] =  0.0;
+B[0][1] =  0.0;
+B[0][2] =  0.0;
+B[1][2] =  0.0;
 
-for (k=0; k<3; k++) 
+for (k=0; k<3; k++)
 for (l=0; l<3; l++)
 {
    B[0][0] += gkov[k][0] * gkov[l][0] * A[k][l];
@@ -150,7 +150,7 @@ E[1] = B[0][1];
 E[3] = B[0][2];
 E[4] = B[1][2];
 ------------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -159,26 +159,26 @@ return;
 
 
 /*!----------------------------------------------------------------------
-\brief transforms strains (E) from curvilinear to cartesian coordinate system                                   
+\brief transforms strains (E) from curvilinear to cartesian coordinate system
 
 <pre>                                                            sh 05/03
-This routine transforms the strains (E) from curvilinear to cartesian 
-coordinate system. This is very useful in order to use general material laws, 
+This routine transforms the strains (E) from curvilinear to cartesian
+coordinate system. This is very useful in order to use general material laws,
 which are written in orthonormal coordinate systems.
 </pre>
 \param  DOUBLE  *str    (i/o) stresses or strains to be modified
 \param  DOUBLE **gkon    (i)  kontravariant basis vectors
 
-\warning Always call this routine with the kontravariant basis vectors (gkon). 
-\return void                                               
-\sa calling: ---; called by: 
-                             
+\warning Always call this routine with the kontravariant basis vectors (gkon).
+\return void
+\sa calling: ---; called by:
+
 *-----------------------------------------------------------------------*/
 void s9_Ecuca (DOUBLE E[6], DOUBLE **gkon)
 {
 DOUBLE   help[6];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9_Ecuca");
 #endif
 /*----------------------------------------------------------------------*/
@@ -248,7 +248,7 @@ E[4] = help[4];
 E[5] = help[5];
 
 /*----------------------------------------------------------------
-This is better to understand, but not as fast 
+This is better to understand, but not as fast
 
 A[0][0] = E[0];
 A[1][1] = E[2];
@@ -261,13 +261,13 @@ A[1][2] = E[4];
 A[2][1] = E[4];
 
 B[0][0] =  0.0;
-B[1][1] =  0.0; 
-B[2][2] =  0.0; 
-B[0][1] =  0.0; 
-B[0][2] =  0.0; 
-B[1][2] =  0.0; 
+B[1][1] =  0.0;
+B[2][2] =  0.0;
+B[0][1] =  0.0;
+B[0][2] =  0.0;
+B[1][2] =  0.0;
 
-for (k=0; k<3; k++) 
+for (k=0; k<3; k++)
 for (l=0; l<3; l++)
 {
    B[0][0] += gkon[0][k] * gkon[0][l] * A[k][l];
@@ -286,33 +286,33 @@ E[3] = B[0][2];
 E[4] = B[1][2];
 
 ------------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of s9_Ecuca */
 
 /*!----------------------------------------------------------------------
-\brief transforms stresses (S) from cartesian to curvilinear coordinate system                                   
+\brief transforms stresses (S) from cartesian to curvilinear coordinate system
 
 <pre>                                                            sh 05/03
-This routine transforms the stresses (S) from cartesian to curvilinear 
-coordinate system. This is very useful in order to use general material laws, 
+This routine transforms the stresses (S) from cartesian to curvilinear
+coordinate system. This is very useful in order to use general material laws,
 which are written in orthonormal coordinate systems.
 </pre>
 \param  DOUBLE  *str    (i/o) stresses or strains to be modified
 \param  DOUBLE **gkon    (i)  kontravariant basis vectors
 
-\warning Always call this routine with the kontravariant basis vectors (gkon). 
-\return void                                               
-\sa calling: ---; called by: 
-                             
+\warning Always call this routine with the kontravariant basis vectors (gkon).
+\return void
+\sa calling: ---; called by:
+
 *-----------------------------------------------------------------------*/
 void s9_Scacu (DOUBLE S[6], DOUBLE **gkon)
 {
 DOUBLE   help[6];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9_Scacu");
 #endif
 /*----------------------------------------------------------------------*/
@@ -383,7 +383,7 @@ S[5] = help[5];
 
 
 /*----------------------------------------------------------------
-This is better to understand, but not as fast 
+This is better to understand, but not as fast
 
 A[0][0] = S[0];
 A[1][1] = S[2];
@@ -396,13 +396,13 @@ A[1][2] = S[4];
 A[2][1] = S[4];
 
 B[0][0] =  0.0;
-B[1][1] =  0.0; 
-B[2][2] =  0.0; 
-B[0][1] =  0.0; 
-B[0][2] =  0.0; 
-B[1][2] =  0.0; 
+B[1][1] =  0.0;
+B[2][2] =  0.0;
+B[0][1] =  0.0;
+B[0][2] =  0.0;
+B[1][2] =  0.0;
 
-for (k=0; k<3; k++) 
+for (k=0; k<3; k++)
 for (l=0; l<3; l++)
 {
    B[0][0] += gkon[k][0] * gkon[l][0] * A[k][l];
@@ -421,7 +421,7 @@ S[3] = B[0][2];
 S[4] = B[1][2];
 
 ------------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -429,26 +429,26 @@ return;
 
 
 /*!----------------------------------------------------------------------
-\brief transforms stresses (S) from curvilinear to cartesian coordinate system                                   
+\brief transforms stresses (S) from curvilinear to cartesian coordinate system
 
 <pre>                                                            sh 05/03
-This routine transforms the stresses (S) from curvilinear to cartesian 
-coordinate system. This is very useful in order to use general material laws, 
+This routine transforms the stresses (S) from curvilinear to cartesian
+coordinate system. This is very useful in order to use general material laws,
 which are written in orthonormal coordinate systems.
 </pre>
 \param  DOUBLE  *str    (i/o) stresses or strains to be modified
 \param  DOUBLE **gkov    (i)  kovariant basis vectors
 
-\warning Always call this routine with the kovariant basis vectors (gkov). 
-\return void                                               
-\sa calling: ---; called by: 
-                             
+\warning Always call this routine with the kovariant basis vectors (gkov).
+\return void
+\sa calling: ---; called by:
+
 *-----------------------------------------------------------------------*/
 void s9_Scuca (DOUBLE S[6], DOUBLE **gkov)
 {
 DOUBLE   help[6];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9_Scuca");
 #endif
 /*----------------------------------------------------------------------*/
@@ -518,7 +518,7 @@ S[4] = help[4];
 S[5] = help[5];
 
 /*----------------------------------------------------------------
-This is better to understand, but not as fast 
+This is better to understand, but not as fast
 
 A[0][0] = S[0];
 A[1][1] = S[2];
@@ -531,13 +531,13 @@ A[1][2] = S[4];
 A[2][1] = S[4];
 
 B[0][0] =  0.0;
-B[1][1] =  0.0; 
-B[2][2] =  0.0; 
-B[0][1] =  0.0; 
-B[0][2] =  0.0; 
-B[1][2] =  0.0; 
+B[1][1] =  0.0;
+B[2][2] =  0.0;
+B[0][1] =  0.0;
+B[0][2] =  0.0;
+B[1][2] =  0.0;
 
-for (k=0; k<3; k++) 
+for (k=0; k<3; k++)
 for (l=0; l<3; l++)
 {
    B[0][0] += gkov[0][k] * gkov[0][l] * A[k][l];
@@ -556,7 +556,7 @@ S[3] = B[0][2];
 S[4] = B[1][2];
 
 ------------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

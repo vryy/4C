@@ -16,7 +16,7 @@ void opt_stanln(CALSTA_EXEC stalact) ;
 /*----------------------------------------------------------------------*
  |  routine to control dynamic eigenvalue analysis              al 08/02|
  *----------------------------------------------------------------------*/
-void calfrq(INT init); 
+void calfrq(INT init);
 /*----------------------------------------------------------------------*
  |                                                      a.lipka 5/01    |
  | control program for update of fem-arrays for act. variable           |
@@ -87,7 +87,7 @@ void objeig(DOUBLE *objctval);
 /*----------------------------------------------------------------------*
  | control program for eigenvalue analysis                  al 05/01    |
  *----------------------------------------------------------------------*/
-void sspace(DOUBLE *A, 
+void sspace(DOUBLE *A,
             DOUBLE *ACOP,
             DOUBLE *B,
             INT *MAXA,

@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 'ale2_hourglass' which calculates the 
+\brief contains the routine 'ale2_hourglass' which calculates the
 hourglass stabilization matrix for a 2D ale element
 
 <pre>
@@ -21,35 +21,35 @@ Maintainer: Christiane Foerster
 *----------------------------------------------------------------------*/
 extern struct _MATERIAL  *mat;
 
-/*! 
-\addtogroup Ale 
+/*!
+\addtogroup Ale
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
 \brief calculates the additional stiffness matrix for hourglass stabilization
 
-<pre>                                                              mn 06/02 
+<pre>                                                              mn 06/02
 This routine calcuates the additional stiffness matrix for hourglass
 stabilization for a 2D element.
-  
-see also:                                                             
-   T. Belytschko and L.P. Bindeman:                                      
-   Assumed strain stabilization of the 4-node quadrilateral with 1-point 
-   quadrature for nonlinear problems.                                    
-   Comp. Meth. Appl. Mech. Eng. 88 (1991) p. 311-340.                    
-        
+
+see also:
+   T. Belytschko and L.P. Bindeman:
+   Assumed strain stabilization of the 4-node quadrilateral with 1-point
+   quadrature for nonlinear problems.
+   Comp. Meth. Appl. Mech. Eng. 88 (1991) p. 311-340.
+
 </pre>
 \param *ele  ELEMENT  (i)   the element
 \param **s   DOUBLE   (i/o) (i) the one point quadrature matrix
                             (o) the complete, stabilized stiffness matrix
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: ale2_static_ke()
 
 *----------------------------------------------------------------------*/
 void ale2_hourglass(ELEMENT  *ele,
-		    DOUBLE  **s) 
+		    DOUBLE  **s)
 {
 
 MATERIAL      *actmat;
@@ -78,7 +78,7 @@ DOUBLE         gg[4][4];
 DOUBLE         aa;
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ale2_hourglass");
 #endif
 /*----------------------------------------------------------------------*
@@ -180,7 +180,7 @@ for(i=0; i<4; i++)
 }
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -1,10 +1,10 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 
+\brief contains the routine
  - s9_mat_plast_hoff: which calculates the constitutive matrix for an
                       anisotropic plastic material model, based on the
-                      hoffman yield criterion 
-                      -> Dis. Hoermann 
+                      hoffman yield criterion
+                      -> Dis. Hoermann
 
 
 <pre>
@@ -20,34 +20,34 @@ Maintainer: Stefan Hartmann
 #include "../materials/mat_prototypes.h"
 #include "shell9.h"
 
-/*! 
-\addtogroup SHELL9 
-*//*! @{ (documentation module open)*/ 
+/*!
+\addtogroup SHELL9
+*//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
 \brief  shell9 element: consitutive matrix for von Anisotropic-Plasticity,
-based on the Hoffman-criterion (see Dis. Hoermann p.57f)                                    
+based on the Hoffman-criterion (see Dis. Hoermann p.57f)
 
 <pre>                                                            sh 03/03
-This routine calculates the constitutive matrix and forces for an 
+This routine calculates the constitutive matrix and forces for an
 Anisotropic-Plasticity model with a linear hardening law, based on the
-Hoffman-criterion. 
+Hoffman-criterion.
 Within this routine, everything is done in a cartesian coordinate system
 with the following sorting of stresses and strains:
 "brick" [11,22,33,12,23,13]
 </pre>
-\param  PL_HOFF   *mat       (i)  material properties for hoffman material 
-\param  ELEMENT   *ele       (i)  actual element               
-\param  INT        ip        (i)  integration point Id         
-\param  INT        actlay    (i)  actual layer                 
+\param  PL_HOFF   *mat       (i)  material properties for hoffman material
+\param  ELEMENT   *ele       (i)  actual element
+\param  INT        ip        (i)  integration point Id
+\param  INT        actlay    (i)  actual layer
 \param  DOUBLE     stress[6] (o)  vector of stresses [11,22,33,12,23,13]
 \param  DOUBLE     strain[6] (i)  vector of strains  [11,22,33,12,23,13]
-\param  DOUBLE   **d         (o)  constitutive matrix          
-\param  INT        istore    (i)  controls storing of stresses 
-\param  INT        newval    (i)  controls eval. of stresses   
+\param  DOUBLE   **d         (o)  constitutive matrix
+\param  INT        istore    (i)  controls storing of stresses
+\param  INT        newval    (i)  controls eval. of stresses
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: s9_call_mat()     [s9_call_mat.c]
 
 *----------------------------------------------------------------------*/
@@ -74,7 +74,7 @@ DOUBLE dhard;
 INT iupd=0;
 INT yip;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9_mat_plast_hoff");
 #endif
 /*----------------------------------------------------------------------*/
@@ -110,8 +110,8 @@ dstrc_enter("s9_mat_plast_hoff");
                      stress,   /*stress*/
                      d,        /*Material-Matrix to be calculated 3D*/
                     &iupd,    /*to be modified*/
-             /*zusaetzliche Parameter*/                       
-                    &yip,     /*to be modified*/ 
+             /*zusaetzliche Parameter*/
+                    &yip,     /*to be modified*/
                     &dhard,   /*to be modified*/
                      strain,
                      sig,
@@ -128,7 +128,7 @@ end:
   {
     for (i=0; i<6; i++)
     {
-      ele->e.s9->elewa[actlay].ipwa[ip].sig[i]    = stress[i]; 
+      ele->e.s9->elewa[actlay].ipwa[ip].sig[i]    = stress[i];
       ele->e.s9->elewa[actlay].ipwa[ip].eps[i]    = strain[i];
       ele->e.s9->elewa[actlay].ipwa[ip].dkappa[i] = dkappa[i];
       ele->e.s9->elewa[actlay].ipwa[ip].gamma[i]  = gamma[i] ;
@@ -141,7 +141,7 @@ end:
     ele->e.s9->elewa[actlay].ipwa[ip].dhard = dhard ;
   }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

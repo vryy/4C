@@ -7,8 +7,8 @@
 #include "wallge.h"
 #include "wallge_prototypes.h"
 
-/*! 
-\addtogroup WALLGE 
+/*!
+\addtogroup WALLGE
 *//*! @{ (documentation module open)*/
 
 
@@ -24,7 +24,7 @@ void wge_stiff_de(DOUBLE  **Kde,      /* stiffnes displ - equiv,strain */
                   DOUBLE    fac,      /* integration factor            */
                   INT       numdfd,   /* element displacement DOF      */
                   INT       iele,     /* element equiv.strain DOF      */
-                  INT       neps)     /* number of strain components   */       
+                  INT       neps)     /* number of strain components   */
 {
 #ifdef D_WALLGE
 
@@ -33,7 +33,7 @@ DOUBLE         dum;
 DOUBLE         EN[3];
 /*----------------------------------------------------------------------*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("wge_stiff_de");
 #endif
 /*----------------------------------------------------------------------*/
@@ -41,11 +41,11 @@ for (j=0; j<iele; j++)
 {
   for (k=0; k<neps; k++)
   {
-   EN[k] = E[k]*functe[j]*fac;                                                              
+   EN[k] = E[k]*functe[j]*fac;
   }
   for (i=0; i<numdfd; i++)
   {
-    dum = 0.0;                                                                
+    dum = 0.0;
     for (m=0; m<neps; m++)
     {
      dum = dum + bopd[m][i]*EN[m];
@@ -54,12 +54,12 @@ for (j=0; j<iele; j++)
   }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 #endif /*D_WALLGE*/
-return; 
+return;
 } /* end of wge_stiff_de */
 
 
@@ -75,7 +75,7 @@ void wge_stiff_ed(DOUBLE  **Ked,      /* stiffnes equiv,strain - disp  */
                   DOUBLE    fac,      /* integration factor            */
                   INT       numdfd,   /* element displacement DOF      */
                   INT       iele,     /* element equiv.strain DOF      */
-                  INT       neps)     /* number of strain components   */       
+                  INT       neps)     /* number of strain components   */
 {
 #ifdef D_WALLGE
 
@@ -83,7 +83,7 @@ INT            i,j,k;
 DOUBLE         dum,FB;
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("wge_stiff_ed");
 #endif
 /*----------------------------------------------------------------------*/
@@ -92,21 +92,21 @@ for (j=0; j<numdfd; j++)
   FB = 0.0;
   for (k=0; k<neps; k++)
   {
-   FB = FB + F[k] * bopd[k][j] * (-fac);                                                              
+   FB = FB + F[k] * bopd[k][j] * (-fac);
   }
   for (i=0; i<iele; i++)
   {
-    dum = functe[i] * FB;                                                                
+    dum = functe[i] * FB;
     Ked[i][j] = Ked[i][j] + dum;
   }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 #endif /*D_WALLGE*/
-return; 
+return;
 } /* end of wge_stiff_ed */
 
 
@@ -120,7 +120,7 @@ void wge_stiff_ee(DOUBLE  **Kee,      /* stiffnes equiv,strain - disp  */
                   DOUBLE    crad,     /* influenceradius nonloc.strain */
                   DOUBLE   *functe,   /* Anatzfunc. for equiv.strain   */
                   DOUBLE    fac,      /* integration factor            */
-                  INT       iele)      /* element equiv.strain DOF      */      
+                  INT       iele)      /* element equiv.strain DOF      */
 {
 #ifdef D_WALLGE
 
@@ -128,7 +128,7 @@ INT            i,j,k;
 DOUBLE         dum1,dum2;
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("wge_stiff_ee");
 #endif
 /*----------------------------------------------------------------------*/
@@ -136,7 +136,7 @@ for (j=0; j<iele; j++)
 {
   for (i=0; i<iele; i++)
   {
-    dum1 = 0.0;                                                                
+    dum1 = 0.0;
     for (k=0; k<2; k++)
     {
       dum1 = dum1 + bope[k][i]*bope[k][j]*fac*crad;
@@ -146,12 +146,12 @@ for (j=0; j<iele; j++)
   }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 #endif /*D_WALLGE*/
-return; 
+return;
 } /* end of wge_stiff_ee */
 
 
@@ -160,12 +160,12 @@ return;
        DOF's as sum over gauss points
 
 *----------------------------------------------------------------------*/
-void wge_fintd(DOUBLE    *stress,      /* stresses                      */ 
+void wge_fintd(DOUBLE    *stress,      /* stresses                      */
                DOUBLE     fac,         /* integration factor            */
                DOUBLE   **bopd,       /* B-operator for displacements  */
                INT        numdfd,     /* element-displacement DOF      */
                INT        neps,       /* number of strain components   */
-               DOUBLE    *fintd)      /* int. force(displacementDOF)   */      
+               DOUBLE    *fintd)      /* int. force(displacementDOF)   */
 {
 
 INT            i,k;
@@ -173,13 +173,13 @@ DOUBLE         dum;
 
 #ifdef D_WALLGE
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("wge_fintd");
 #endif
 /*----------------------------------------------------------------------*/
 for (i=0; i<numdfd; i++)
 {
-  dum = 0.0;                                                                
+  dum = 0.0;
   for (k=0; k<neps; k++)
   {
     dum = dum + bopd[k][i]*stress[k]*fac;
@@ -187,12 +187,12 @@ for (i=0; i<numdfd; i++)
   fintd[i] = fintd[i] + dum;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 #endif /*D_WALLGE*/
-return; 
+return;
 } /* end of wge_fintd */
 
 
@@ -209,7 +209,7 @@ void wge_finte(DOUBLE     eps_vl,       /* local equiv. strain         */
                DOUBLE   **bope,         /* B-operator for equiv.strain */
                DOUBLE    *functe,       /* Ansatz-fun for equiv.strain */
                INT        iele,         /* eleDOF for equiv.strain     */
-               DOUBLE    *finte)        /* int. force(equiv.strainDOF) */      
+               DOUBLE    *finte)        /* int. force(equiv.strainDOF) */
 {
 
 INT            i,k;
@@ -217,13 +217,13 @@ DOUBLE         dum1,dum2;
 
 #ifdef D_WALLGE
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("wge_finte");
 #endif
 /*----------------------------------------------------------------------*/
 for (i=0; i<iele; i++)
 {
-  dum1 = 0.0;                                                                
+  dum1 = 0.0;
   for (k=0; k<2; k++)
   {
     dum1 = dum1 + bope[k][i]*grad_eps_vnl[k]*fac*crad;
@@ -232,12 +232,12 @@ for (i=0; i<iele; i++)
   finte[i] = finte[i] + dum1 + dum2;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 #endif /*D_WALLGE*/
-return; 
+return;
 } /* end of wge_finte */
 
 
@@ -253,7 +253,7 @@ void wge_permstiff(DOUBLE    **Kdd,     /* 1.stiffness part            */
                    INT         iele,    /* node-number of equiv.strain */
                    INT         ield,    /* node-number of displacement */
                    INT         numdf,   /* total DOF                   */
-                   DOUBLE    **estif)   /* "mixed" element stiffness   */      
+                   DOUBLE    **estif)   /* "mixed" element stiffness   */
 {
 
 INT            i,j;
@@ -263,7 +263,7 @@ INT            dofi,dofj;
 
 #ifdef D_WALLGE
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("wge_permstiff");
 #endif
 /*-------------------- (upper left part of estif) node 1-4 * node1-4 ---*/
@@ -337,12 +337,12 @@ if(ield>iele)
 } /*-----endif-*/
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 #endif /*D_WALLGE*/
-return; 
+return;
 } /* end of wge_permstiff */
 
 
@@ -357,7 +357,7 @@ void wge_permforce(DOUBLE     *fintd,   /* 1.part int. force           */
                    INT         iele,    /* num.of equiv.strain nodes   */
                    INT         ield,    /* num.of displacement nodes   */
                    INT         numdf,   /* total element DOF           */
-                   DOUBLE     *force)   /* "mixed" element int. force  */      
+                   DOUBLE     *force)   /* "mixed" element int. force  */
 {
 
 INT            i;
@@ -367,7 +367,7 @@ INT            dofi;
 
 #ifdef D_WALLGE
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("wge_permforce");
 #endif
 /*----------------------------------- (upper part of force) node 1-4 ---*/
@@ -392,12 +392,12 @@ if(ield>iele)
 } /*-----endif-*/
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 #endif /*D_WALLGE*/
-return; 
+return;
 } /* end of wge_permforce */
 
 

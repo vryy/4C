@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -10,8 +10,8 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
-/*! 
-\addtogroup INPUT 
+/*!
+\addtogroup INPUT
 *//*! @{ (documentation module open)*/
 #include "../headers/standardtypes.h"
 /*----------------------------------------------------------------------*
@@ -36,7 +36,7 @@ extern struct _DESIGN *design;
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -45,7 +45,7 @@ extern struct _FILES  allfiles;
 
 
 /*!----------------------------------------------------------------------
-\brief 
+\brief
 
 <pre>                                                         oezdem 8/03
 </pre>
@@ -107,7 +107,7 @@ static void inpdesign_line_contact(void);
  *----------------------------------------------------------------------*/
 void inp_conditions()
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inp_conditions");
 #endif
 /*----------------------------------------------------------------------*/
@@ -164,18 +164,18 @@ if (genprob.probtyp==prb_fluid || genprob.probtyp==prb_fsi)
 #ifdef D_FSI
 /*------------------------------ input of nodal free surface conditions */
    inpdesign_nodal_freesurf();
-/*------------------------------- input of line free surface conditions */   
+/*------------------------------- input of line free surface conditions */
    inpdesign_line_freesurf();
-/*---------------------------- input of surface free surface conditions */   
+/*---------------------------- input of surface free surface conditions */
    inpdesign_surf_freesurf();
 #endif
-/*---------------------------------- input of line lift&drag definition */   
+/*---------------------------------- input of line lift&drag definition */
    inpdesign_line_liftdrag();
-/*---------------------------------- input of surf lift&drag definition */   
+/*---------------------------------- input of surf lift&drag definition */
    inpdesign_surf_liftdrag();
-/*------------------------------- input of surface stability definition */   
+/*------------------------------- input of surface stability definition */
    inpdesign_surf_stability();
-/*-------------------------------- input of volume stability definition */   
+/*-------------------------------- input of volume stability definition */
    inpdesign_vol_stability();
 /*------------------------------ input of line slip dirichlet condition */
 #ifdef D_FSI
@@ -194,12 +194,12 @@ if (genprob.probtyp==prb_fluid || genprob.probtyp==prb_fsi)
 #ifdef D_LS
 if (genprob.probtyp==prb_twophase)
 {
-/*------------------------------- input of surface stability definition */   
+/*------------------------------- input of surface stability definition */
    inpdesign_surf_stability();
 }
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -224,7 +224,7 @@ INT    dnodeId;
 char  *colptr;
 char   buffer[200];
 DNODE *actdnode;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpdesign_nodal_dirich");
 #endif
 /*----------------------------------------------------------------------*/
@@ -246,7 +246,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    actdnode=NULL;
    for (i=0; i<design->ndnode; i++)
    {
-      if (design->dnode[i].Id ==  dnodeId) 
+      if (design->dnode[i].Id ==  dnodeId)
       {
          actdnode = &(design->dnode[i]);
          break;
@@ -259,7 +259,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    colptr = strstr(allfiles.actplace,"-");
    dsassert(colptr!=NULL,"Cannot read design-nodal dirichlet conditions");
    colptr++;
-   /*--- now read the 6 flags for the dirichlet conditions */ 
+   /*--- now read the 6 flags for the dirichlet conditions */
    /*---------------------------- and the 6 values of them */
 
    amdef("onoff",&(actdnode->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
@@ -288,9 +288,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    /*---------------------------------- read the curvenumbers or "none" */
    for (i=0; i<6; i++)
    {
-     ierr=sscanf(colptr," %s ",buffer);   
+     ierr=sscanf(colptr," %s ",buffer);
      dsassert(ierr==1,"Cannot read design-nodal dirichlet conditions");
-     if (strncmp(buffer,"none",4)==0) 
+     if (strncmp(buffer,"none",4)==0)
      {
        if (i < MAXDOFPERNODE)
          actdnode->dirich->curve.a.iv[i] = 0;
@@ -305,8 +305,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
        dsassert(ierr==1,"Cannot read design-nodal dirichlet conditions");
        colptr = strpbrk(colptr,"1234567890");
        colptr++;
-     }   
-   } 
+     }
+   }
    /* read function number */
    for (i=0; i<6; i++)
      if (i < MAXDOFPERNODE)
@@ -319,7 +319,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 /*----------------------------------------------------------------------*/
 
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -338,7 +338,7 @@ INT    dlineId;
 char  *colptr;
 char   buffer[200];
 DLINE *actdline;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpdesign_line_dirich");
 #endif
 /*----------------------------------------------------------------------*/
@@ -360,7 +360,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    actdline=NULL;
    for (i=0; i<design->ndline; i++)
    {
-      if (design->dline[i].Id ==  dlineId) 
+      if (design->dline[i].Id ==  dlineId)
       {
          actdline = &(design->dline[i]);
          break;
@@ -374,7 +374,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    dsassert(colptr!=NULL,"Cannot read design-line dirichlet conditions");
    colptr++;
    /*----------------------------------- read the curvenumber or "none" */
-   /*--- now read the 6 flags for the dirichlet conditions */ 
+   /*--- now read the 6 flags for the dirichlet conditions */
    /*---------------------------- and the 6 values of them */
 
    amdef("onoff",&(actdline->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
@@ -405,7 +405,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    {
      ierr=sscanf(colptr," %s ",buffer);
      dsassert(ierr==1,"Cannot read design-line dirichlet conditions");
-     if (strncmp(buffer,"none",4)==0) 
+     if (strncmp(buffer,"none",4)==0)
      {
        if (i < MAXDOFPERNODE)
          actdline->dirich->curve.a.iv[i] = 0;
@@ -421,7 +421,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
        colptr = strpbrk(colptr,"1234567890");
        colptr++;
      }
-   }   
+   }
    /* read function number */
    for (i=0; i<6; i++)
      if (i < MAXDOFPERNODE)
@@ -434,7 +434,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 /*----------------------------------------------------------------------*/
 
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -453,7 +453,7 @@ INT    dsurfId;
 char  *colptr;
 char   buffer[200];
 DSURF *actdsurf;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpdesign_surf_dirich");
 #endif
 /*----------------------------------------------------------------------*/
@@ -475,7 +475,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    actdsurf=NULL;
    for (i=0; i<design->ndsurf; i++)
    {
-      if (design->dsurf[i].Id ==  dsurfId) 
+      if (design->dsurf[i].Id ==  dsurfId)
       {
          actdsurf = &(design->dsurf[i]);
          break;
@@ -488,7 +488,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    colptr = strstr(allfiles.actplace,"-");
    dsassert(colptr!=NULL,"Cannot read design-surf dirichlet conditions");
    colptr++;
-   /*--- now read the 6 flags for the dirichlet conditions */ 
+   /*--- now read the 6 flags for the dirichlet conditions */
    /*---------------------------- and the 6 values of them */
 
    amdef("onoff",&(actdsurf->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
@@ -511,15 +511,15 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
        strtol(colptr,&colptr,10);
    for (i=0; i<6; i++)
      if (i < MAXDOFPERNODE)
-       actdsurf->dirich->dirich_val.a.dv[i] = strtod(colptr,&colptr);   
+       actdsurf->dirich->dirich_val.a.dv[i] = strtod(colptr,&colptr);
      else
-       strtod(colptr,&colptr);   
+       strtod(colptr,&colptr);
    /*----------------------------------- read the curvenumber or "none" */
    for (i=0; i<6; i++)
    {
      ierr=sscanf(colptr," %s ",buffer);
      dsassert(ierr==1,"Cannot read design-surf dirichlet conditions");
-     if (strncmp(buffer,"none",4)==0) 
+     if (strncmp(buffer,"none",4)==0)
      {
        if (i < MAXDOFPERNODE)
          actdsurf->dirich->curve.a.iv[i] = 0;
@@ -535,7 +535,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
        colptr = strpbrk(colptr,"1234567890");
        colptr++;
      }
-   } 
+   }
    /* read function number */
    for (i=0; i<6; i++)
      if (i < MAXDOFPERNODE)
@@ -548,7 +548,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 /*----------------------------------------------------------------------*/
 
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -567,7 +567,7 @@ INT    dvolId;
 char  *colptr;
 char   buffer[200];
 DVOL  *actdvol;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpdesign_vol_dirich");
 #endif
 /*----------------------------------------------------------------------*/
@@ -589,7 +589,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    actdvol=NULL;
    for (i=0; i<design->ndvol; i++)
    {
-      if (design->dvol[i].Id ==  dvolId) 
+      if (design->dvol[i].Id ==  dvolId)
       {
          actdvol = &(design->dvol[i]);
          break;
@@ -602,12 +602,12 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    colptr = strstr(allfiles.actplace,"-");
    dsassert(colptr!=NULL,"Cannot read design-vol dirichlet conditions");
    colptr++;
-   /*--- now read the 6 flags for the dirichlet conditions */ 
+   /*--- now read the 6 flags for the dirichlet conditions */
    /*---------------------------- and the 6 values of them */
 
    amdef("onoff",&(actdvol->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
    amdef("val",&(actdvol->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
-   amdef("curve",&(actdvol->dirich->curve),MAXDOFPERNODE,1,"IV"); 
+   amdef("curve",&(actdvol->dirich->curve),MAXDOFPERNODE,1,"IV");
    amdef("function",&(actdvol->dirich->funct),MAXDOFPERNODE,1,"IV");
 
    /* Initialize some arrays to ZERO if MAXDOFPERNODE != 6 */
@@ -625,15 +625,15 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
        strtol(colptr,&colptr,10);
    for (i=0; i<6; i++)
      if (i < MAXDOFPERNODE)
-       actdvol->dirich->dirich_val.a.dv[i] = strtod(colptr,&colptr);   
+       actdvol->dirich->dirich_val.a.dv[i] = strtod(colptr,&colptr);
      else
-       strtod(colptr,&colptr);   
+       strtod(colptr,&colptr);
    /*----------------------------------- read the curvenumber or "none" */
    for (i=0; i<6; i++)
    {
      ierr=sscanf(colptr," %s ",buffer);
      dsassert(ierr==1,"Cannot read design-vol dirichlet conditions");
-     if (strncmp(buffer,"none",4)==0) 
+     if (strncmp(buffer,"none",4)==0)
      {
        if (i < MAXDOFPERNODE)
          actdvol->dirich->curve.a.iv[i] = 0;
@@ -648,8 +648,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
        dsassert(ierr==1,"Cannot read design-vol dirichlet conditions");
        colptr = strpbrk(colptr,"1234567890");
        colptr++;
-     }  
-   }   
+     }
+   }
    /* read function number */
    for (i=0; i<6; i++)
      if (i < MAXDOFPERNODE)
@@ -662,7 +662,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 /*----------------------------------------------------------------------*/
 
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -683,7 +683,7 @@ INT    dnodeId;
 char  *colptr;
 char   buffer[200];
 DNODE *actdnode;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpdesign_nodal_neum");
 #endif
 /*----------------------------------------------------------------------*/
@@ -705,7 +705,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    actdnode=NULL;
    for (i=0; i<design->ndnode; i++)
    {
-      if (design->dnode[i].Id ==  dnodeId) 
+      if (design->dnode[i].Id ==  dnodeId)
       {
          actdnode = &(design->dnode[i]);
          break;
@@ -721,7 +721,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    /*----------------------------------- read the curvenumber or "none" */
    ierr=sscanf(colptr," %s ",buffer);
    dsassert(ierr==1,"Cannot read design-nodal neumann conditions");
-   if (strncmp(buffer,"none",4)==0) 
+   if (strncmp(buffer,"none",4)==0)
    {
       actdnode->neum->curve = 0;
       colptr = strstr(allfiles.actplace,"none");
@@ -735,7 +735,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       colptr = strpbrk(colptr,"1234567890");
       colptr++;
    }
-   /*--- now read the 6 flags for the neumann conditions */ 
+   /*--- now read the 6 flags for the neumann conditions */
    /*-------------------------- and the 6 values of them */
    amdef("onoff",&(actdnode->neum->neum_onoff),MAXDOFPERNODE,1,"IV");
    amdef("val",&(actdnode->neum->neum_val),MAXDOFPERNODE,1,"DV");
@@ -761,7 +761,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    if (ierr) actdnode->neum->neum_surf = mid;
    frchk("Top",&ierr);
    if (ierr) actdnode->neum->neum_surf = top;
-   frchk("Bot",&ierr);   
+   frchk("Bot",&ierr);
    if (ierr) actdnode->neum->neum_surf = bot;
    /*--------------------------------------------------- read next line */
    frread();
@@ -769,7 +769,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 /*----------------------------------------------------------------------*/
 
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -788,7 +788,7 @@ INT    dlineId;
 char  *colptr;
 char   buffer[200];
 DLINE *actdline;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpdesign_line_neum");
 #endif
 /*----------------------------------------------------------------------*/
@@ -810,7 +810,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    actdline=NULL;
    for (i=0; i<design->ndline; i++)
    {
-      if (design->dline[i].Id ==  dlineId) 
+      if (design->dline[i].Id ==  dlineId)
       {
          actdline = &(design->dline[i]);
          break;
@@ -826,7 +826,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    /*----------------------------------- read the curvenumber or "none" */
    ierr=sscanf(colptr," %s ",buffer);
    dsassert(ierr==1,"Cannot read design-line neumann conditions");
-   if (strncmp(buffer,"none",4)==0) 
+   if (strncmp(buffer,"none",4)==0)
    {
       actdline->neum->curve = 0;
       colptr = strstr(allfiles.actplace,"none");
@@ -840,7 +840,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       colptr = strpbrk(colptr,"1234567890");
       colptr++;
    }
-   /*--- now read the 6 flags for the neumann conditions */ 
+   /*--- now read the 6 flags for the neumann conditions */
    /*-------------------------- and the 6 values of them */
    amdef("onoff",&(actdline->neum->neum_onoff),MAXDOFPERNODE,1,"IV");
    amdef("val",&(actdline->neum->neum_val),MAXDOFPERNODE,1,"DV");
@@ -866,7 +866,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    if (ierr) actdline->neum->neum_surf = mid;
    frchk("Top",&ierr);
    if (ierr) actdline->neum->neum_surf = top;
-   frchk("Bot",&ierr);   
+   frchk("Bot",&ierr);
    if (ierr) actdline->neum->neum_surf = bot;
    /*--------------------------------------------------- read next line */
    frread();
@@ -874,7 +874,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 /*----------------------------------------------------------------------*/
 
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -893,7 +893,7 @@ INT    dsurfId;
 char  *colptr;
 char   buffer[200];
 DSURF *actdsurf;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpdesign_surf_neum");
 #endif
 /*----------------------------------------------------------------------*/
@@ -915,7 +915,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    actdsurf=NULL;
    for (i=0; i<design->ndsurf; i++)
    {
-      if (design->dsurf[i].Id ==  dsurfId) 
+      if (design->dsurf[i].Id ==  dsurfId)
       {
          actdsurf = &(design->dsurf[i]);
          break;
@@ -931,7 +931,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    /*----------------------------------- read the curvenumber or "none" */
    ierr=sscanf(colptr," %s ",buffer);
    dsassert(ierr==1,"Cannot read design-surf neumann conditions");
-   if (strncmp(buffer,"none",4)==0) 
+   if (strncmp(buffer,"none",4)==0)
    {
       actdsurf->neum->curve = 0;
       colptr = strstr(allfiles.actplace,"none");
@@ -945,7 +945,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       colptr = strpbrk(colptr,"1234567890");
       colptr++;
    }
-   /*--- now read the 6 flags for the neumann conditions */ 
+   /*--- now read the 6 flags for the neumann conditions */
    /*-------------------------- and the 6 values of them */
    amdef("onoff",&(actdsurf->neum->neum_onoff),MAXDOFPERNODE,1,"IV");
    amdef("val",&(actdsurf->neum->neum_val),MAXDOFPERNODE,1,"DV");
@@ -971,14 +971,14 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    if (ierr) actdsurf->neum->neum_surf = mid;
    frchk("Top",&ierr);
    if (ierr) actdsurf->neum->neum_surf = top;
-   frchk("Bot",&ierr);   
+   frchk("Bot",&ierr);
    if (ierr) actdsurf->neum->neum_surf = bot;
    /*----------------------------------- read type of neumann condition */
    frchk("Live",&ierr);
    if (ierr) actdsurf->neum->neum_type = neum_live;
    frchk("Dead",&ierr);
    if (ierr) actdsurf->neum->neum_type = neum_dead;
-   frchk("PrescribedDomainLoad",&ierr);   
+   frchk("PrescribedDomainLoad",&ierr);
    if (ierr) actdsurf->neum->neum_type = pres_domain_load;
    frchk("constHydro_z",&ierr);
    if (ierr) actdsurf->neum->neum_type = neum_consthydro_z;
@@ -994,7 +994,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 /*----------------------------------------------------------------------*/
 
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1013,7 +1013,7 @@ INT    dvolId;
 char  *colptr;
 char   buffer[200];
 DVOL  *actdvol;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpdesign_vol_neum");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1035,7 +1035,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    actdvol=NULL;
    for (i=0; i<design->ndvol; i++)
    {
-      if (design->dvol[i].Id ==  dvolId) 
+      if (design->dvol[i].Id ==  dvolId)
       {
          actdvol = &(design->dvol[i]);
          break;
@@ -1051,7 +1051,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    /*----------------------------------- read the curvenumber or "none" */
    ierr=sscanf(colptr," %s ",buffer);
    dsassert(ierr==1,"Cannot read design-vol neumann conditions");
-   if (strncmp(buffer,"none",4)==0) 
+   if (strncmp(buffer,"none",4)==0)
    {
       actdvol->neum->curve = 0;
       colptr = strstr(allfiles.actplace,"none");
@@ -1065,7 +1065,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       colptr = strpbrk(colptr,"1234567890");
       colptr++;
    }
-   /*--- now read the 6 flags for the neumann conditions */ 
+   /*--- now read the 6 flags for the neumann conditions */
    /*-------------------------- and the 6 values of them */
    amdef("onoff",&(actdvol->neum->neum_onoff),MAXDOFPERNODE,1,"IV");
    amdef("val",&(actdvol->neum->neum_val),MAXDOFPERNODE,1,"DV");
@@ -1088,7 +1088,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
        strtod(colptr,&colptr);
    /*----------------------------------- read type of neumann condition */
    frchk("Dead",&ierr);
-   if (ierr) actdvol->neum->neum_type = neum_dead;   
+   if (ierr) actdvol->neum->neum_type = neum_dead;
    frchk("LAS",&ierr);
    if (ierr) actdvol->neum->neum_type = neum_LAS;
    /*--------------------------------------------------- read next line */
@@ -1097,7 +1097,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 /*----------------------------------------------------------------------*/
 
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1132,7 +1132,7 @@ INT    dofcouple;
 INT    dofflags[MAXDOFPERNODE];
 INT    geocouple;
 INT    geoflags[MAXDOFPERNODE];
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpdesign_nodal_couple");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1154,7 +1154,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    actdnode=NULL;
    for (i=0; i<design->ndnode; i++)
    {
-      if (design->dnode[i].Id ==  dnodeId) 
+      if (design->dnode[i].Id ==  dnodeId)
       {
          actdnode = &(design->dnode[i]);
          break;
@@ -1174,21 +1174,21 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    /*------------------------------------------------ read the fieldtyp */
    ierr=sscanf(colptr," %s ",buffer);
    dsassert(ierr==1,"Cannot reading coupling conditions");
-   if (strncmp(buffer,"structure",9)==0) 
+   if (strncmp(buffer,"structure",9)==0)
    {
        actdnode->couple->fieldtyp=structure;
        colptr = strstr(colptr,"structure");
        dsassert(colptr!=NULL,"Cannot reading coupling conditions");
        colptr+=9;
    }
-   if (strncmp(buffer,"fluid",5)==0) 
+   if (strncmp(buffer,"fluid",5)==0)
    {
       actdnode->couple->fieldtyp=fluid;
        colptr = strstr(colptr,"fluid");
        dsassert(colptr!=NULL,"Cannot reading coupling conditions");
        colptr+=5;
    }
-   if (strncmp(buffer,"ale",3)==0) 
+   if (strncmp(buffer,"ale",3)==0)
    {
       actdnode->couple->fieldtyp=ale;
        colptr = strstr(colptr,"ale");
@@ -1211,7 +1211,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    for (i=0; i<6; i++)
    {
      if (i < MAXDOFPERNODE)
-       if (dofflags[i]!=0) 
+       if (dofflags[i]!=0)
          actdnode->couple->couple.a.ia[i][1]=dofcouple;
    }
    /*------------------------------------------ read the geocouple flag */
@@ -1224,10 +1224,10 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    for (i=0; i<6; i++)
    {
      if (i < MAXDOFPERNODE)
-       if (geoflags[i]!=0) 
+       if (geoflags[i]!=0)
          actdnode->couple->couple.a.ia[i][0]=geocouple;
    }
-   /*------------------------------------------------ read the fsi flag */   
+   /*------------------------------------------------ read the fsi flag */
 /*   actdnode->couple->fsi_iscoupled = strtol(colptr,&colptr,10);*/
    /*--------------------------------------------------- read next line */
    frread();
@@ -1235,7 +1235,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 /*----------------------------------------------------------------------*/
 
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1259,7 +1259,7 @@ INT    dofcouple;
 INT    dofflags[MAXDOFPERNODE];
 INT    geocouple;
 INT    geoflags[MAXDOFPERNODE];
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpdesign_line_couple");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1281,7 +1281,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    actdline=NULL;
    for (i=0; i<design->ndline; i++)
    {
-      if (design->dline[i].Id ==  dlineId) 
+      if (design->dline[i].Id ==  dlineId)
       {
          actdline = &(design->dline[i]);
          break;
@@ -1301,21 +1301,21 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    /*------------------------------------------------ read the fieldtyp */
    ierr=sscanf(colptr," %s ",buffer);
    dsassert(ierr==1,"Cannot reading coupling conditions");
-   if (strncmp(buffer,"structure",9)==0) 
+   if (strncmp(buffer,"structure",9)==0)
    {
        actdline->couple->fieldtyp=structure;
        colptr = strstr(colptr,"structure");
        dsassert(colptr!=NULL,"Cannot reading coupling conditions");
        colptr+=9;
    }
-   if (strncmp(buffer,"fluid",5)==0) 
+   if (strncmp(buffer,"fluid",5)==0)
    {
       actdline->couple->fieldtyp=fluid;
        colptr = strstr(colptr,"fluid");
        dsassert(colptr!=NULL,"Cannot reading coupling conditions");
        colptr+=5;
    }
-   if (strncmp(buffer,"ale",3)==0) 
+   if (strncmp(buffer,"ale",3)==0)
    {
       actdline->couple->fieldtyp=ale;
        colptr = strstr(colptr,"ale");
@@ -1338,7 +1338,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    for (i=0; i<6; i++)
    {
      if (i < MAXDOFPERNODE)
-       if (dofflags[i]!=0) 
+       if (dofflags[i]!=0)
          actdline->couple->couple.a.ia[i][1]=dofcouple;
    }
    /*------------------------------------------ read the geocouple flag */
@@ -1351,10 +1351,10 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    for (i=0; i<6; i++)
    {
      if (i < MAXDOFPERNODE)
-       if (geoflags[i]!=0) 
+       if (geoflags[i]!=0)
          actdline->couple->couple.a.ia[i][0]=geocouple;
    }
-   /*------------------------------------------------ read the fsi flag */   
+   /*------------------------------------------------ read the fsi flag */
 /*   actdline->couple->fsi_iscoupled = strtol(colptr,&colptr,10);*/
    /*--------------------------------------------------- read next line */
    frread();
@@ -1362,7 +1362,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 /*----------------------------------------------------------------------*/
 
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1387,7 +1387,7 @@ INT    dofcouple;
 INT    dofflags[MAXDOFPERNODE];
 INT    geocouple;
 INT    geoflags[MAXDOFPERNODE];
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpdesign_surf_couple");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1409,7 +1409,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    actdsurf=NULL;
    for (i=0; i<design->ndsurf; i++)
    {
-      if (design->dsurf[i].Id ==  dsurfId) 
+      if (design->dsurf[i].Id ==  dsurfId)
       {
          actdsurf = &(design->dsurf[i]);
          break;
@@ -1429,21 +1429,21 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    /*------------------------------------------------ read the fieldtyp */
    ierr=sscanf(colptr," %s ",buffer);
    dsassert(ierr==1,"Cannot reading coupling conditions");
-   if (strncmp(buffer,"structure",9)==0) 
+   if (strncmp(buffer,"structure",9)==0)
    {
        actdsurf->couple->fieldtyp=structure;
        colptr = strstr(colptr,"structure");
        dsassert(colptr!=NULL,"Cannot reading coupling conditions");
        colptr+=9;
    }
-   if (strncmp(buffer,"fluid",5)==0) 
+   if (strncmp(buffer,"fluid",5)==0)
    {
       actdsurf->couple->fieldtyp=fluid;
        colptr = strstr(colptr,"fluid");
        dsassert(colptr!=NULL,"Cannot reading coupling conditions");
        colptr+=5;
    }
-   if (strncmp(buffer,"ale",3)==0) 
+   if (strncmp(buffer,"ale",3)==0)
    {
       actdsurf->couple->fieldtyp=ale;
        colptr = strstr(colptr,"ale");
@@ -1466,7 +1466,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    for (i=0; i<6; i++)
    {
      if (i < MAXDOFPERNODE)
-       if (dofflags[i]!=0) 
+       if (dofflags[i]!=0)
          actdsurf->couple->couple.a.ia[i][1]=dofcouple;
    }
    /*------------------------------------------ read the geocouple flag */
@@ -1479,10 +1479,10 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    for (i=0; i<6; i++)
    {
      if (i < MAXDOFPERNODE)
-       if (geoflags[i]!=0) 
+       if (geoflags[i]!=0)
          actdsurf->couple->couple.a.ia[i][0]=geocouple;
    }
-   /*------------------------------------------------ read the fsi flag */   
+   /*------------------------------------------------ read the fsi flag */
 /*   actdsurf->couple->fsi_iscoupled = strtol(colptr,&colptr,10);*/
    /*--------------------------------------------------- read next line */
    frread();
@@ -1490,7 +1490,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 /*----------------------------------------------------------------------*/
 
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1515,7 +1515,7 @@ INT    dofcouple;
 INT    dofflags[MAXDOFPERNODE];
 INT    geocouple;
 INT    geoflags[MAXDOFPERNODE];
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpdesign_vol_couple");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1537,7 +1537,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    actdvol=NULL;
    for (i=0; i<design->ndvol; i++)
    {
-      if (design->dvol[i].Id ==  dvolId) 
+      if (design->dvol[i].Id ==  dvolId)
       {
          actdvol = &(design->dvol[i]);
          break;
@@ -1557,21 +1557,21 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    /*------------------------------------------------ read the fieldtyp */
    ierr=sscanf(colptr," %s ",buffer);
    dsassert(ierr==1,"Cannot reading coupling conditions");
-   if (strncmp(buffer,"structure",9)==0) 
+   if (strncmp(buffer,"structure",9)==0)
    {
        actdvol->couple->fieldtyp=structure;
        colptr = strstr(colptr,"structure");
        dsassert(colptr!=NULL,"Cannot reading coupling conditions");
        colptr+=9;
    }
-   if (strncmp(buffer,"fluid",5)==0) 
+   if (strncmp(buffer,"fluid",5)==0)
    {
       actdvol->couple->fieldtyp=fluid;
        colptr = strstr(colptr,"fluid");
        dsassert(colptr!=NULL,"Cannot reading coupling conditions");
        colptr+=5;
    }
-   if (strncmp(buffer,"ale",3)==0) 
+   if (strncmp(buffer,"ale",3)==0)
    {
       actdvol->couple->fieldtyp=ale;
        colptr = strstr(colptr,"ale");
@@ -1594,7 +1594,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    for (i=0; i<6; i++)
    {
      if (i < MAXDOFPERNODE)
-       if (dofflags[i]!=0) 
+       if (dofflags[i]!=0)
          actdvol->couple->couple.a.ia[i][1]=dofcouple;
    }
    /*------------------------------------------ read the geocouple flag */
@@ -1607,10 +1607,10 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    for (i=0; i<6; i++)
    {
      if (i < MAXDOFPERNODE)
-       if (geoflags[i]!=0) 
+       if (geoflags[i]!=0)
          actdvol->couple->couple.a.ia[i][0]=geocouple;
    }
-   /*------------------------------------------------ read the fsi flag */   
+   /*------------------------------------------------ read the fsi flag */
 /*   actdvol->couple->fsi_iscoupled = strtol(colptr,&colptr,10);*/
    /*--------------------------------------------------- read next line */
    frread();
@@ -1618,7 +1618,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 /*----------------------------------------------------------------------*/
 
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1641,7 +1641,7 @@ char   buffer[200];
 DNODE *actdnode;
 INT    coupleId;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpdesign_nodal_fsicouple");
 #endif
 
@@ -1669,7 +1669,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    actdnode=NULL;
    for (i=0; i<design->ndnode; i++)
    {
-      if (design->dnode[i].Id ==  dnodeId) 
+      if (design->dnode[i].Id ==  dnodeId)
       {
          actdnode = &(design->dnode[i]);
          break;
@@ -1690,21 +1690,21 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    /*------------------------------------------------ read the fieldtyp */
    ierr=sscanf(colptr," %s ",buffer);
    dsassert(ierr==1,"Cannot readingfsi  coupling conditions");
-   if (strncmp(buffer,"structure",9)==0) 
+   if (strncmp(buffer,"structure",9)==0)
    {
        actdnode->fsicouple->fieldtyp=structure;
        colptr = strstr(colptr,"structure");
        dsassert(colptr!=NULL,"Cannot reading fsi coupling conditions");
        colptr+=9;
    }
-   if (strncmp(buffer,"fluid",5)==0) 
+   if (strncmp(buffer,"fluid",5)==0)
    {
       actdnode->fsicouple->fieldtyp=fluid;
        colptr = strstr(colptr,"fluid");
        dsassert(colptr!=NULL,"Cannot reading fsi coupling conditions");
        colptr+=5;
    }
-   if (strncmp(buffer,"ale",3)==0) 
+   if (strncmp(buffer,"ale",3)==0)
    {
       actdnode->fsicouple->fieldtyp=ale;
        colptr = strstr(colptr,"ale");
@@ -1714,14 +1714,14 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    /*-------------------------------------------------- read the mesh */
    ierr=sscanf(colptr," %s ",buffer);
    dsassert(ierr==1,"Cannot reading fsi coupling conditions");
-   if (strncmp(buffer,"conforming",10)==0) 
+   if (strncmp(buffer,"conforming",10)==0)
    {
        actdnode->fsicouple->fsi_mesh=conforming;
        colptr = strstr(colptr,"conforming");
        dsassert(colptr!=NULL,"Cannot reading coupling conditions");
        colptr+=10;
    }
-   if (strncmp(buffer,"non-conforming",14)==0) 
+   if (strncmp(buffer,"non-conforming",14)==0)
    {
        actdnode->fsicouple->fsi_mesh=non_conforming;
        colptr = strstr(colptr,"non-conforming");
@@ -1731,14 +1731,14 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    /*----------------------------------------------------- read the typ */
    ierr=sscanf(colptr," %s ",buffer);
    dsassert(ierr==1,"Cannot reading fsi coupling conditions");
-   if (strncmp(buffer,"fsi_real",10)==0) 
+   if (strncmp(buffer,"fsi_real",10)==0)
    {
        actdnode->fsicouple->fsi_typ=fsi_real;
        colptr = strstr(colptr,"fsi_real");
        dsassert(colptr!=NULL,"Cannot reading coupling conditions");
        colptr+=8;
    }
-   if (strncmp(buffer,"fsi_pseudo",14)==0) 
+   if (strncmp(buffer,"fsi_pseudo",14)==0)
    {
        actdnode->fsicouple->fsi_typ=fsi_pseudo;
        colptr = strstr(colptr,"fsi_pseudo");
@@ -1751,7 +1751,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 /*----------------------------------------------------------------------*/
 
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1773,7 +1773,7 @@ char   buffer[200];
 DLINE *actdline;
 INT    coupleId;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpdesign_line_fsicouple");
 #endif
 
@@ -1801,7 +1801,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    actdline=NULL;
    for (i=0; i<design->ndline; i++)
    {
-      if (design->dline[i].Id ==  dlineId) 
+      if (design->dline[i].Id ==  dlineId)
       {
          actdline = &(design->dline[i]);
          break;
@@ -1822,21 +1822,21 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    /*------------------------------------------------ read the fieldtyp */
    ierr=sscanf(colptr," %s ",buffer);
    dsassert(ierr==1,"Cannot readingfsi  coupling conditions");
-   if (strncmp(buffer,"structure",9)==0) 
+   if (strncmp(buffer,"structure",9)==0)
    {
        actdline->fsicouple->fieldtyp=structure;
        colptr = strstr(colptr,"structure");
        dsassert(colptr!=NULL,"Cannot reading fsi coupling conditions");
        colptr+=9;
    }
-   if (strncmp(buffer,"fluid",5)==0) 
+   if (strncmp(buffer,"fluid",5)==0)
    {
       actdline->fsicouple->fieldtyp=fluid;
        colptr = strstr(colptr,"fluid");
        dsassert(colptr!=NULL,"Cannot reading fsi coupling conditions");
        colptr+=5;
    }
-   if (strncmp(buffer,"ale",3)==0) 
+   if (strncmp(buffer,"ale",3)==0)
    {
       actdline->fsicouple->fieldtyp=ale;
        colptr = strstr(colptr,"ale");
@@ -1846,14 +1846,14 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    /*-------------------------------------------------- read the mesh */
    ierr=sscanf(colptr," %s ",buffer);
    dsassert(ierr==1,"Cannot reading fsi coupling conditions");
-   if (strncmp(buffer,"conforming",10)==0) 
+   if (strncmp(buffer,"conforming",10)==0)
    {
        actdline->fsicouple->fsi_mesh=conforming;
        colptr = strstr(colptr,"conforming");
        dsassert(colptr!=NULL,"Cannot reading coupling conditions");
        colptr+=10;
    }
-   if (strncmp(buffer,"non-conforming",14)==0) 
+   if (strncmp(buffer,"non-conforming",14)==0)
    {
        actdline->fsicouple->fsi_mesh=non_conforming;
        colptr = strstr(colptr,"non-conforming");
@@ -1863,14 +1863,14 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    /*----------------------------------------------------- read the typ */
    ierr=sscanf(colptr," %s ",buffer);
    dsassert(ierr==1,"Cannot reading fsi coupling conditions");
-   if (strncmp(buffer,"fsi_real",10)==0) 
+   if (strncmp(buffer,"fsi_real",10)==0)
    {
        actdline->fsicouple->fsi_typ=fsi_real;
        colptr = strstr(colptr,"fsi_real");
        dsassert(colptr!=NULL,"Cannot reading coupling conditions");
        colptr+=8;
    }
-   if (strncmp(buffer,"fsi_pseudo",14)==0) 
+   if (strncmp(buffer,"fsi_pseudo",14)==0)
    {
        actdline->fsicouple->fsi_typ=fsi_pseudo;
        colptr = strstr(colptr,"fsi_pseudo");
@@ -1883,7 +1883,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 /*----------------------------------------------------------------------*/
 
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1905,7 +1905,7 @@ char   buffer[200];
 DSURF *actdsurf;
 INT    coupleId;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpdesign_surf_fsicouple");
 #endif
 
@@ -1934,7 +1934,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    actdsurf=NULL;
    for (i=0; i<design->ndsurf; i++)
    {
-      if (design->dsurf[i].Id ==  dsurfId) 
+      if (design->dsurf[i].Id ==  dsurfId)
       {
          actdsurf = &(design->dsurf[i]);
          break;
@@ -1955,21 +1955,21 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    /*------------------------------------------------ read the fieldtyp */
    ierr=sscanf(colptr," %s ",buffer);
    dsassert(ierr==1,"Cannot reading fsi  coupling conditions");
-   if (strncmp(buffer,"structure",9)==0) 
+   if (strncmp(buffer,"structure",9)==0)
    {
        actdsurf->fsicouple->fieldtyp=structure;
        colptr = strstr(colptr,"structure");
        dsassert(colptr!=NULL,"Cannot reading fsi coupling conditions");
        colptr+=9;
    }
-   if (strncmp(buffer,"fluid",5)==0) 
+   if (strncmp(buffer,"fluid",5)==0)
    {
       actdsurf->fsicouple->fieldtyp=fluid;
        colptr = strstr(colptr,"fluid");
        dsassert(colptr!=NULL,"Cannot reading fsi coupling conditions");
        colptr+=5;
    }
-   if (strncmp(buffer,"ale",3)==0) 
+   if (strncmp(buffer,"ale",3)==0)
    {
       actdsurf->fsicouple->fieldtyp=ale;
        colptr = strstr(colptr,"ale");
@@ -1979,14 +1979,14 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    /*-------------------------------------------------- read the mesh */
    ierr=sscanf(colptr," %s ",buffer);
    dsassert(ierr==1,"Cannot reading fsi coupling conditions");
-   if (strncmp(buffer,"conforming",10)==0) 
+   if (strncmp(buffer,"conforming",10)==0)
    {
        actdsurf->fsicouple->fsi_mesh=conforming;
        colptr = strstr(colptr,"conforming");
        dsassert(colptr!=NULL,"Cannot reading coupling conditions");
        colptr+=10;
    }
-   if (strncmp(buffer,"non-conforming",14)==0) 
+   if (strncmp(buffer,"non-conforming",14)==0)
    {
        actdsurf->fsicouple->fsi_mesh=non_conforming;
        colptr = strstr(colptr,"non-conforming");
@@ -1999,7 +1999,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 /*----------------------------------------------------------------------*/
 
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -2022,7 +2022,7 @@ char  *colptr;
 char   buffer[200];
 DNODE *actdnode;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpdesign_nodal_freesurf");
 #endif
 
@@ -2030,7 +2030,7 @@ dstrc_enter("inpdesign_nodal_freesurf");
 for (i=0; i<design->ndnode; i++)
 {
    actdnode = &(design->dnode[i]);
-   actdnode->freesurf = NULL; 
+   actdnode->freesurf = NULL;
 }
 /*---- find the beginning of point fluid freesurface coupling conditions */
 if (frfind("--DESIGN FLUID FREE SURFACE POINT CONDITIONS")==0) goto end;
@@ -2050,7 +2050,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    actdnode=NULL;
    for (i=0; i<design->ndnode; i++)
    {
-      if (design->dnode[i].Id ==  dnodeId) 
+      if (design->dnode[i].Id ==  dnodeId)
       {
          actdnode = &(design->dnode[i]);
          break;
@@ -2067,14 +2067,14 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    /*------------------------------------------------ read the fieldtyp */
    ierr=sscanf(colptr," %s ",buffer);
    dsassert(ierr==1,"Cannot reading freesurface  coupling conditions");
-   if (strncmp(buffer,"fluid",5)==0) 
+   if (strncmp(buffer,"fluid",5)==0)
    {
        actdnode->freesurf->fieldtyp=fluid;
        colptr = strstr(colptr,"fluid");
        dsassert(colptr!=NULL,"Cannot reading freesurface coupling conditions");
        colptr+=5;
    }
-   if (strncmp(buffer,"ale",3)==0) 
+   if (strncmp(buffer,"ale",3)==0)
    {
        actdnode->freesurf->fieldtyp=ale;
        colptr = strstr(colptr,"ale");
@@ -2094,7 +2094,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 /*----------------------------------------------------------------------*/
 
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -2116,7 +2116,7 @@ char  *colptr;
 char   buffer[200];
 DLINE *actdline;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpdesign_line_freesurf");
 #endif
 
@@ -2145,7 +2145,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    actdline=NULL;
    for (i=0; i<design->ndline; i++)
    {
-      if (design->dline[i].Id ==  dlineId) 
+      if (design->dline[i].Id ==  dlineId)
       {
          actdline = &(design->dline[i]);
          break;
@@ -2162,21 +2162,21 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    /*------------------------------------------------ read the fieldtyp */
    ierr=sscanf(colptr," %s ",buffer);
    dsassert(ierr==1,"Cannot read freesurface conditions");
-   if (strncmp(buffer,"fluid",5)==0) 
+   if (strncmp(buffer,"fluid",5)==0)
    {
        actdline->freesurf->fieldtyp=fluid;
        colptr = strstr(colptr,"fluid");
        dsassert(colptr!=NULL,"Cannot reading free surface conditions");
        colptr+=5;
    }
-   if (strncmp(buffer,"ale",3)==0) 
+   if (strncmp(buffer,"ale",3)==0)
    {
        actdline->freesurf->fieldtyp=ale;
        colptr = strstr(colptr,"ale");
        dsassert(colptr!=NULL,"Cannot reading free surface conditions");
        colptr+=3;
    }
-  
+
 #if 0
    /*---- now read the MAXDOFPERNODE flags for the local slippage conditions */
    /* this is not used at the moment */
@@ -2184,13 +2184,13 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    for (i=0; i<MAXDOFPERNODE; i++)
    actdline->freesurf->fixed_onoff.a.iv[i] = strtol(colptr,&colptr,10);
 #endif
-   
+
    frread();
 }
 /*----------------------------------------------------------------------*/
 
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -2211,14 +2211,14 @@ char  *colptr;
 char   buffer[200];
 DSURF *actdsurf;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpdesign_surf_freesurf");
 #endif
 
 /*----------------------------------------------------------------------*/
 for (i=0; i<design->ndsurf; i++)
 {
-  actdsurf = &(design->dsurf[i]); 
+  actdsurf = &(design->dsurf[i]);
   actdsurf->freesurf = NULL;
 }
 
@@ -2240,7 +2240,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    actdsurf=NULL;
    for (i=0; i<design->ndsurf; i++)
    {
-      if (design->dsurf[i].Id ==  dsurfId) 
+      if (design->dsurf[i].Id ==  dsurfId)
       {
          actdsurf = &(design->dsurf[i]);
          break;
@@ -2257,21 +2257,21 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    /*------------------------------------------------ read the fieldtyp */
    ierr=sscanf(colptr," %s ",buffer);
    dsassert(ierr==1,"Cannot read freesurface conditions");
-   if (strncmp(buffer,"fluid",5)==0) 
+   if (strncmp(buffer,"fluid",5)==0)
    {
        actdsurf->freesurf->fieldtyp=fluid;
        colptr = strstr(colptr,"fluid");
        dsassert(colptr!=NULL,"Cannot reading free surface conditions");
        colptr+=5;
    }
-   if (strncmp(buffer,"ale",3)==0) 
+   if (strncmp(buffer,"ale",3)==0)
    {
        actdsurf->freesurf->fieldtyp=ale;
        colptr = strstr(colptr,"ale");
        dsassert(colptr!=NULL,"Cannot reading free surface conditions");
        colptr+=3;
    }
-  
+
 #if 0
    /*---- now read the MAXDOFPERNODE flags for the local slippage conditions */
    /* this is not used at the moment */
@@ -2279,13 +2279,13 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    for (i=0; i<MAXDOFPERNODE; i++)
    actdline->freesurf->fixed_onoff.a.iv[i] = strtol(colptr,&colptr,10);
 #endif
-   
+
    frread();
 }
 /*----------------------------------------------------------------------*/
 
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -2302,7 +2302,7 @@ This routine reads an line lift&drag definition on design.
 </pre>
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa
 
 *----------------------------------------------------------------------*/
@@ -2315,7 +2315,7 @@ static void inpdesign_line_liftdrag()
   char  *colptr;
   DLINE *actdline;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("inpdesign_line_liftdrag");
 #endif
 
@@ -2341,7 +2341,7 @@ static void inpdesign_line_liftdrag()
     actdline=NULL;
     for (i=0; i<design->ndline; i++)
     {
-      if (design->dline[i].Id ==  dlineId) 
+      if (design->dline[i].Id ==  dlineId)
       {
         actdline = &(design->dline[i]);
         break;
@@ -2375,7 +2375,7 @@ static void inpdesign_line_liftdrag()
   }
 end:
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return;
@@ -2391,7 +2391,7 @@ This routine reads an surface lift&drag definition on design.
 </pre>
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa
 
 *----------------------------------------------------------------------*/
@@ -2404,7 +2404,7 @@ static void inpdesign_surf_liftdrag()
   char  *colptr;
   DSURF *actdsurf;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("inpdesign_surf_liftdrag");
 #endif
 
@@ -2430,7 +2430,7 @@ static void inpdesign_surf_liftdrag()
     actdsurf=NULL;
     for (i=0; i<design->ndsurf; i++)
     {
-      if (design->dsurf[i].Id ==  dsurfId) 
+      if (design->dsurf[i].Id ==  dsurfId)
       {
         actdsurf = &(design->dsurf[i]);
         break;
@@ -2464,7 +2464,7 @@ static void inpdesign_surf_liftdrag()
   }
 end:
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return;
@@ -2487,7 +2487,7 @@ DOUBLE xloc[3];
 DOUBLE norm;
 DLINE *actdline;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpdesign_line_slipdirich");
 #endif
 /*----------------------------------------------------------------------*/
@@ -2511,7 +2511,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    actdline=NULL;
    for (i=0; i<design->ndline; i++)
    {
-      if (design->dline[i].Id ==  dlineId) 
+      if (design->dline[i].Id ==  dlineId)
       {
          actdline = &(design->dline[i]);
          break;
@@ -2530,12 +2530,12 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    /*----------------------------------- read the curvenumber or "none" */
    ierr=sscanf(colptr," %s ",buffer);
    dsassert(ierr==1,"Cannot read design-line slip dirichlet conditions");
-   if (strncmp(buffer,"none",4)==0) 
+   if (strncmp(buffer,"none",4)==0)
    {
      actdline->slipdirich->curve = 0;
      colptr = strstr(colptr,"none");
      dsassert(colptr!=NULL,"Cannot read design-line dirichlet conditions");
-     colptr += 4; 
+     colptr += 4;
    }
    else
    {
@@ -2562,22 +2562,22 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    amzero(&(actdline->dirich->curve));
    amzero(&(actdline->dirich->funct));
    actdline->dirich->dirich_type=dirich_slip;
-   
+
    /*---------------------------- slip dirichlet conditions means:
        prescribed value in local x-direction, ZERO in local y-direction */
    dsassert(genprob.ndim==2,"slip dirichlet condition only in 2D!\n");
    actdline->dirich->dirich_onoff.a.iv[0]=1;
-   actdline->dirich->dirich_onoff.a.iv[1]=1;   
+   actdline->dirich->dirich_onoff.a.iv[1]=1;
    /*-------------------------------------------------- determine alpha */
    for (i=0;i<3;i++)
       xloc[i] = actdline->dnode[1]->x[i] - actdline->dnode[0]->x[i];
-   /* NOTE: xloc has to point into the fluid domain, so first point has 
-            to be at the free surface - 
+   /* NOTE: xloc has to point into the fluid domain, so first point has
+            to be at the free surface -
             this is checked later in the program                        */
    dsassert(FABS(xloc[2])<EPS15,"slip DLINE not in xy-plane!\n");
    /*-------------------------------------------------------- normalise */
    norm = sqrt(DSQR(xloc[0])+DSQR(xloc[1])+DSQR(xloc[2]));
-   /*------------------------------------------ angle by scalar product */   
+   /*------------------------------------------ angle by scalar product */
    actdline->slipdirich->alpha=acos(xloc[0]/norm);
    if (FABS(FABS(actdline->slipdirich->alpha)-ONE)<EPS2)
       dserror("angle too small for slip dirichlet condition \n");
@@ -2598,7 +2598,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 /*----------------------------------------------------------------------*/
 
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -2615,12 +2615,12 @@ The single parameters within one condition line have to be in prescribed
 order while additional free spaces do not matter.
 
 The parameters accociated with gls stabilisation as well as the way they
-are stored is due to genk (as it was converted from elemental input 
+are stored is due to genk (as it was converted from elemental input
 'f2_inp') and previous historical developments.
 </pre>
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa
 
 *-----------------------------------------------------------------------*/
@@ -2632,7 +2632,7 @@ INT      ndsurf;
 INT      dsurfId;
 INT      ndum;          /* dummy value                                  */
 INT      ihelem;        /* temporary variable for ihelem                */
-INT      itaumu;        /*                                              */ 
+INT      itaumu;        /*                                              */
 INT      itaump;        /*                                              */
 INT      itauc;         /* element flags                                */
 char    *colptr;
@@ -2640,7 +2640,7 @@ char     buffer[200];
 DSURF   *actdsurf;
 STAB_PAR_GLS *gls;      /* pointer to GLS stabilisation parameters      */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpdesign_surf_stability");
 #endif
 
@@ -2659,12 +2659,12 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
   frint("E",&dsurfId,&ierr);
   dsassert(ierr==1,"Cannot read design surface within stabilistation condition");
   dsurfId--;
-  
+
   /*--------------------------------------------------- find the dsurf */
-  actdsurf=NULL; 
+  actdsurf=NULL;
   for (i=0; i<design->ndsurf; i++)
   {
-    if (design->dsurf[i].Id ==  dsurfId) 
+    if (design->dsurf[i].Id ==  dsurfId)
     {
       actdsurf = &(design->dsurf[i]);
       break;
@@ -2676,11 +2676,11 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
   colptr = strstr(allfiles.actplace,"-");
   dsassert(colptr!=NULL,"Cannot read design surface stabilisation definition");
   colptr++;
-  
+
   /*-------------------------------- read the type of stabilisation ---*/
   ierr=sscanf(colptr," %s ",buffer);
   dsassert(ierr==1,"Cannot read design surface stabilisation conditions");
-  if (strncmp(buffer,"GLS",3)==0) 
+  if (strncmp(buffer,"GLS",3)==0)
   {
     actdsurf->stab_type = stab_gls;
     /* move pointer after "GLS" */
@@ -2696,7 +2696,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       colptr++;
     colptr += 7;
   }
-  else dserror("Unknown stabilisation type!");  
+  else dserror("Unknown stabilisation type!");
 
   /*---- All the following is done for eigther stabilisation type! ----*/
   switch (actdsurf->stab_type)
@@ -2705,7 +2705,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
     /*-- allocate space for stabilisation parameters at this dsurf ---*/
     actdsurf->stabi.gls = (STAB_PAR_GLS*)CCACALLOC(1,sizeof(STAB_PAR_GLS));
     gls = actdsurf->stabi.gls;
-        
+
     /*------------------------------------------------ read IADVEC ---*/
     ierr=sscanf(colptr," %s ",buffer);
     dsassert(ierr==1,"Cannot read design surface stabilisation IADVEC");
@@ -2726,8 +2726,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       colptr += 2;
     }
     else
-      dserror("Cannot read design surface stabilisation IADVEC");     
-    
+      dserror("Cannot read design surface stabilisation IADVEC");
+
     /*------------------------------------------------- read IPRES ---*/
     ierr=sscanf(colptr," %s ",buffer);
     dsassert(ierr==1,"Cannot read design surface stabilisation IPRES");
@@ -2749,7 +2749,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
     }
     else
       dserror("Cannot read design surface stabilisation IPRES");
-       
+
     /*------------------------------------------------- read IVISC ---*/
     ierr=sscanf(colptr," %s ",buffer);
     dsassert(ierr==1,"Cannot read design surface stabilisation IVISC");
@@ -2794,8 +2794,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       colptr += 8;
     }
     else
-      dserror("Cannot read design surface stabilisation IVISC");     
-    
+      dserror("Cannot read design surface stabilisation IVISC");
+
     /*------------------------------------------------- read ICONT ---*/
     ierr=sscanf(colptr," %s ",buffer);
     dsassert(ierr==1,"Cannot read design surface stabilisation ICONT");
@@ -2817,10 +2817,10 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
     }
     else
       dserror("Cannot read design surface stabilisation ICONT");
-       
+
     /*------------------------------------------------ read ISTAPA ---*/
     gls->istapa = strtol(colptr,&colptr,10);
-    
+
     /*------------------------------------------------ read NORM_P ---*/
     ierr=sscanf(colptr," %s ",buffer);
     dsassert(ierr==1,"Cannot read design surface stabilisation NORM_P");
@@ -2842,13 +2842,13 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
     }
     else
       dserror("Cannot read design surface stabilisation NORM_P");
-       
+
     /*---------------------------------------------------- read MK ---*/
     gls->mk = strtol(colptr,&colptr,10);
-     
+
     /*------------------------------------------------ read IHELEM ---*/
     ihelem = strtol(colptr,&colptr,10);
-    
+
     /*------------------------------------------------ read NINTHS ---*/
     ierr=sscanf(colptr," %s ",buffer);
     dsassert(ierr==1,"Cannot read design surface stabilisation NINTHS");
@@ -2870,7 +2870,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
     }
     else
       dserror("Cannot read design surface stabilisation NINTHS");
-       
+
     /*------------------------------------------------ read ISTAPC ---*/
     ierr=sscanf(colptr," %s ",buffer);
     dsassert(ierr==1,"Cannot read design surface stabilisation ISTAPC");
@@ -2895,7 +2895,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 
     /*------------------------------------- read stab const C_LAMB ---*/
     gls->clamb = strtod(colptr,&colptr);
-    
+
     /*------------------------ initialise some stabilisation flags ---*/
     gls->istrle   = 0;
     gls->iareavol = 0;
@@ -2905,8 +2905,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
     itaump        = 0;
     itauc         = 0;
 
-    math_intextract(ihelem,&ndum, 
-                    &(gls->ihele[0]), 
+    math_intextract(ihelem,&ndum,
+                    &(gls->ihele[0]),
 		    &(gls->ihele[1]),
 	            &(gls->ihele[2]));
 
@@ -2926,7 +2926,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
         if (gls->icont!=0 && gls->ninths==1)
           itauc = -1;
         if (gls->icont!=0 && gls->ninths!=1)
-          itauc = 1;     
+          itauc = 1;
       }
       else if (gls->ihele[i]!=0)
       {
@@ -2943,9 +2943,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
           itauc = -1;
         if (gls->icont!=0 && gls->istapc!=1)
           itauc = 1;
-	 
+
         if (gls->ihele[i]==4)
-          gls->idiaxy = 1;         
+          gls->idiaxy = 1;
       }
     }
 
@@ -2970,7 +2970,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 }
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -2987,12 +2987,12 @@ The single parameters within one condition line have to be in prescribed
 order while additional free spaces do not matter.
 
 The parameters accociated with gls stabilisation as well as the way they
-are stored is due to genk (as it was converted from elemental input 
+are stored is due to genk (as it was converted from elemental input
 'f3_inp') and previous historical developments.
 </pre>
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa
 
 *-----------------------------------------------------------------------*/
@@ -3005,7 +3005,7 @@ INT      ndvol;
 INT      dvolId;
 INT      ndum;          /* dummy value                                  */
 INT      ihelem;        /* temporary variable for ihelem                */
-INT      itaumu;        /*                                              */ 
+INT      itaumu;        /*                                              */
 INT      itaump;        /*                                              */
 INT      itauc;         /* element flags                                */
 char    *colptr;
@@ -3013,7 +3013,7 @@ char     buffer[200];
 DVOL   *actdvol;
 STAB_PAR_GLS *gls;      /* pointer to GLS stabilisation parameters      */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpdesign_vol_stability");
 #endif
 /*----------------------------------------------------------------------*/
@@ -3031,12 +3031,12 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
   frint("E",&dvolId,&ierr);
   dsassert(ierr==1,"Cannot read design volume within stabilistation condition");
   dvolId--;
-  
+
   /*--------------------------------------------------- find the dsurf */
-  actdvol=NULL; 
+  actdvol=NULL;
   for (i=0; i<design->ndvol; i++)
   {
-    if (design->dvol[i].Id == dvolId) 
+    if (design->dvol[i].Id == dvolId)
     {
       actdvol = &(design->dvol[i]);
       break;
@@ -3048,11 +3048,11 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
   colptr = strstr(allfiles.actplace,"-");
   dsassert(colptr!=NULL,"Cannot read design volume stabilisation definition");
   colptr++;
-  
+
   /*-------------------------------- read the type of stabilisation ---*/
   ierr=sscanf(colptr," %s ",buffer);
   dsassert(ierr==1,"Cannot read design volume stabilisation conditions");
-  if (strncmp(buffer,"GLS",3)==0) 
+  if (strncmp(buffer,"GLS",3)==0)
   {
     actdvol->stab_type = stab_gls;
     /* move pointer after "GLS" */
@@ -3068,8 +3068,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       colptr++;
     colptr += 7;
   }
-  else dserror("Unknown stabilisation type!");  
-  
+  else dserror("Unknown stabilisation type!");
+
   /*---- All the following is done for eigther stabilisation type! ----*/
   switch (actdvol->stab_type)
   {
@@ -3077,7 +3077,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
     /*-- allocate space for stabilisation parameters at this dsurf ---*/
     actdvol->stabi.gls = (STAB_PAR_GLS*)CCACALLOC(1,sizeof(STAB_PAR_GLS));
     gls = actdvol->stabi.gls;
-       
+
     /*------------------------------------------------ read IADVEC ---*/
     ierr=sscanf(colptr," %s ",buffer);
     dsassert(ierr==1,"Cannot read design volume stabilisation IADVEC");
@@ -3098,8 +3098,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       colptr += 2;
     }
     else
-      dserror("Cannot read design volume stabilisation IADVEC");     
-    
+      dserror("Cannot read design volume stabilisation IADVEC");
+
     /*------------------------------------------------- read IPRES ---*/
     ierr=sscanf(colptr," %s ",buffer);
     dsassert(ierr==1,"Cannot read design volume stabilisation IPRES");
@@ -3121,7 +3121,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
     }
     else
       dserror("Cannot read design volume stabilisation IPRES");
-       
+
     /*------------------------------------------------- read IVISC ---*/
     ierr=sscanf(colptr," %s ",buffer);
     dsassert(ierr==1,"Cannot read design volume stabilisation IVISC");
@@ -3166,8 +3166,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       colptr += 8;
     }
     else
-      dserror("Cannot read design volume stabilisation IVISC");     
-    
+      dserror("Cannot read design volume stabilisation IVISC");
+
     /*------------------------------------------------- read ICONT ---*/
     ierr=sscanf(colptr," %s ",buffer);
     dsassert(ierr==1,"Cannot read design volume stabilisation ICONT");
@@ -3189,10 +3189,10 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
     }
     else
       dserror("Cannot read design volume stabilisation ICONT");
-       
+
     /*------------------------------------------------ read ISTAPA ---*/
     gls->istapa = strtol(colptr,&colptr,10);
-    
+
     /*------------------------------------------------ read NORM_P ---*/
     ierr=sscanf(colptr," %s ",buffer);
     dsassert(ierr==1,"Cannot read design volume stabilisation NORM_P");
@@ -3214,13 +3214,13 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
     }
     else
       dserror("Cannot read design volume stabilisation NORM_P");
-       
+
     /*---------------------------------------------------- read MK ---*/
     gls->mk = strtol(colptr,&colptr,10);
-     
+
     /*------------------------------------------------ read IHELEM ---*/
     ihelem = strtol(colptr,&colptr,10);
-    
+
     /*------------------------------------------------ read NINTHS ---*/
     ierr=sscanf(colptr," %s ",buffer);
     dsassert(ierr==1,"Cannot read design volume stabilisation NINTHS");
@@ -3242,7 +3242,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
     }
     else
       dserror("Cannot read design volume stabilisation NINTHS");
-       
+
     /*------------------------------------------------ read ISTAPC ---*/
     ierr=sscanf(colptr," %s ",buffer);
     dsassert(ierr==1,"Cannot read design volume stabilisation ISTAPC");
@@ -3267,7 +3267,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 
     /*------------------------------------- read stab const C_LAMB ---*/
     gls->clamb = strtod(colptr,&colptr);
-    
+
     /*------------------------ initialise some stabilisation flags ---*/
     gls->istrle   = 0;
     gls->iareavol = 0;
@@ -3277,8 +3277,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
     itaump        = 0;
     itauc         = 0;
 
-    math_intextract(ihelem,&ndum, 
-                    &(gls->ihele[0]), 
+    math_intextract(ihelem,&ndum,
+                    &(gls->ihele[0]),
 		    &(gls->ihele[1]),
 	            &(gls->ihele[2]));
 
@@ -3298,7 +3298,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
         if (gls->icont!=0 && gls->ninths==1)
           itauc = -1;
         if (gls->icont!=0 && gls->ninths!=1)
-          itauc = 1;     
+          itauc = 1;
       }
       else if (gls->ihele[i]!=0)
       {
@@ -3315,9 +3315,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
           itauc = -1;
         if (gls->icont!=0 && gls->istapc!=1)
           itauc = 1;
-	 
+
         if (gls->ihele[i]==4)
-          gls->idiaxy = 1;         
+          gls->idiaxy = 1;
       }
     }
 
@@ -3340,10 +3340,10 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
   }
   frread();
 }
- 
+
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -3361,7 +3361,7 @@ This routine reads an axishell thickness conditions.
 </pre>
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa
 
 *----------------------------------------------------------------------*/
@@ -3374,7 +3374,7 @@ INT    dlineId;
 char  *colptr;
 DLINE *actdline;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpdesign_line_thickness");
 #endif
 
@@ -3397,7 +3397,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    actdline=NULL;
    for (i=0; i<design->ndline; i++)
    {
-      if (design->dline[i].Id ==  dlineId) 
+      if (design->dline[i].Id ==  dlineId)
       {
          actdline = &(design->dline[i]);
          break;
@@ -3412,17 +3412,17 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    dsassert(colptr!=NULL,"Cannot read design-line thickness conditions");
    colptr++;
    /*------------------------------------------------ read the fieldtyp */
-  
-   /*---- now read the MAXDOFPERNODE flags for the local slippage conditions */ 
+
+   /*---- now read the MAXDOFPERNODE flags for the local slippage conditions */
    for (i=0; i<2; i++)
    actdline->thickness->value[i] = strtod(colptr,&colptr);
-   
+
    frread();
 }
 /*----------------------------------------------------------------------*/
 
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -3438,7 +3438,7 @@ This routine reads an axishell load conditions.
 </pre>
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa
 
 *----------------------------------------------------------------------*/
@@ -3452,7 +3452,7 @@ char  *colptr;
 char   buffer[200];
 DLINE *actdline;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpdesign_line_axishellload");
 #endif
 
@@ -3475,7 +3475,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    actdline=NULL;
    for (i=0; i<design->ndline; i++)
    {
-      if (design->dline[i].Id ==  dlineId) 
+      if (design->dline[i].Id ==  dlineId)
       {
          actdline = &(design->dline[i]);
          break;
@@ -3490,20 +3490,20 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    dsassert(colptr!=NULL,"Cannot read design-line axishell-load conditions");
    colptr++;
    /*------------------------------------------------ read the fieldtyp */
-  
-   /*---- now read the MAXDOFPERNODE flags for the local slippage conditions */ 
+
+   /*---- now read the MAXDOFPERNODE flags for the local slippage conditions */
    for (i=0; i<2; i++)
      actdline->axishellload->pv[i]     = strtod(colptr,&colptr);
    ierr=sscanf(colptr," %s ",buffer);
    dsassert(ierr==1,"Cannot read axishell interpolation type");
-   if (strncmp(buffer,"arclength",9)==0) 
+   if (strncmp(buffer,"arclength",9)==0)
    {
      actdline->axishellload->interpol_pv = 0;
      colptr = strstr(colptr,"arclength");
      dsassert(colptr!=NULL,"Cannot read axishell interpolation type");
      colptr+=9;
    }
-   if (strncmp(buffer,"vert._axis",10)==0) 
+   if (strncmp(buffer,"vert._axis",10)==0)
    {
      actdline->axishellload->interpol_pv = 1;
      colptr = strstr(colptr,"vert._axis");
@@ -3516,14 +3516,14 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
      actdline->axishellload->ph[i]     = strtod(colptr,&colptr);
    ierr=sscanf(colptr," %s ",buffer);
    dsassert(ierr==1,"Cannot read axishell interpolation type");
-   if (strncmp(buffer,"arclength",9)==0) 
+   if (strncmp(buffer,"arclength",9)==0)
    {
      actdline->axishellload->interpol_ph = 0;
      colptr = strstr(colptr,"arclength");
      dsassert(colptr!=NULL,"Cannot read axishell interpolation type");
      colptr+=9;
    }
-   if (strncmp(buffer,"vert._axis",10)==0) 
+   if (strncmp(buffer,"vert._axis",10)==0)
    {
      actdline->axishellload->interpol_ph = 1;
      colptr = strstr(colptr,"vert._axis");
@@ -3536,14 +3536,14 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
      actdline->axishellload->px[i]     = strtod(colptr,&colptr);
    ierr=sscanf(colptr," %s ",buffer);
    dsassert(ierr==1,"Cannot read axishell interpolation type");
-   if (strncmp(buffer,"arclength",9)==0) 
+   if (strncmp(buffer,"arclength",9)==0)
    {
      actdline->axishellload->interpol_px = 0;
      colptr = strstr(colptr,"arclength");
      dsassert(colptr!=NULL,"Cannot read axishell interpolation type");
      colptr+=9;
    }
-   if (strncmp(buffer,"vert._axis",10)==0) 
+   if (strncmp(buffer,"vert._axis",10)==0)
    {
      actdline->axishellload->interpol_px = 1;
      colptr = strstr(colptr,"vert._axis");
@@ -3556,14 +3556,14 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
      actdline->axishellload->pw[i]     = strtod(colptr,&colptr);
    ierr=sscanf(colptr," %s ",buffer);
    dsassert(ierr==1,"Cannot read axishell interpolation type");
-   if (strncmp(buffer,"arclength",9)==0) 
+   if (strncmp(buffer,"arclength",9)==0)
    {
      actdline->axishellload->interpol_pw = 0;
      colptr = strstr(colptr,"arclength");
      dsassert(colptr!=NULL,"Cannot read axishell interpolation type");
      colptr+=9;
    }
-   if (strncmp(buffer,"vert._axis",10)==0) 
+   if (strncmp(buffer,"vert._axis",10)==0)
    {
      actdline->axishellload->interpol_pw = 1;
      colptr = strstr(colptr,"vert._axis");
@@ -3576,7 +3576,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 /*----------------------------------------------------------------------*/
 
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -3591,7 +3591,7 @@ This routine reads an axishell coordinate system conditions.
 </pre>
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa
 
 *----------------------------------------------------------------------*/
@@ -3604,7 +3604,7 @@ INT     dnodeId;
 char   *colptr;
 char    buffer[200];
 DNODE *actdnode;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpdesign_point_axishellcos");
 #endif
 
@@ -3630,7 +3630,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    actdnode=NULL;
    for (i=0; i<design->ndnode; i++)
    {
-      if (design->dnode[i].Id ==  dnodeId) 
+      if (design->dnode[i].Id ==  dnodeId)
       {
          actdnode = &(design->dnode[i]);
          break;
@@ -3644,21 +3644,21 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    /*------------------------------------------------ read the fieldtyp */
    ierr=sscanf(colptr," %s ",buffer);
    dsassert(ierr==1,"Cannot read axishell cos type");
-   if (strncmp(buffer,"global",6)==0) 
+   if (strncmp(buffer,"global",6)==0)
    {
      actdnode->cos_type = 0;
      colptr = strstr(colptr,"global");
      dsassert(colptr!=NULL,"Cannot read axishell cos type");
      colptr+=6;
    }
-   if (strncmp(buffer,"local",5)==0) 
+   if (strncmp(buffer,"local",5)==0)
    {
      actdnode->cos_type = 1;
      colptr = strstr(colptr,"local");
      dsassert(colptr!=NULL,"Cannot read axishell cos type");
      colptr+=5;
    }
-  
+
 
 
    frread();
@@ -3666,7 +3666,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 /*----------------------------------------------------------------------*/
 
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -3691,7 +3691,7 @@ INT    dlineId;
 char  *colptr;
 char   buffer[200];
 DLINE *actdline;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpdesign_line_contact");
 #endif
 /*----------------------------------------------------------------------*/
@@ -3715,7 +3715,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    actdline=NULL;
    for (i=0; i<design->ndline; i++)
    {
-      if (design->dline[i].Id ==  dlineId) 
+      if (design->dline[i].Id ==  dlineId)
       {
          actdline = &(design->dline[i]);
          break;
@@ -3737,7 +3737,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frread();
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

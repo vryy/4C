@@ -17,15 +17,15 @@ Maintainer: Stefan Hartmann
 #include "../headers/standardtypes.h"
 #include "shell9.h"
 
-/*! 
-\addtogroup SHELL9 
+/*!
+\addtogroup SHELL9
 *//*! @{ (documentation module open)*/
 
 extern DOUBLE acttime;
 
 
 /*!----------------------------------------------------------------------
-\brief integration of element loads                                       
+\brief integration of element loads
 
 <pre>                     m.gee 10/01             modified by    sh 11/02
 This routine performs the integration of line and surface loads for a
@@ -37,7 +37,7 @@ shell9 element
 \param  INT	      init    (i)  flag for initializing some arrays
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: shell9()   [s9_main.c]
 
 *----------------------------------------------------------------------*/
@@ -58,7 +58,7 @@ INT          foundsurface;
 
 DOUBLE      *klayhgt;                           /* hight of kinematic layer in percent of total thicknes of element*/
 DOUBLE      *mlayhgt;                           /* hight of material layer in percent of adjacent kinematic layer*/
-DOUBLE       h2; 
+DOUBLE       h2;
 DOUBLE       condfac;
 
 DOUBLE       hte[MAXNOD_SHELL9];                /* element thickness at nodal points */
@@ -105,7 +105,7 @@ DOUBLE          ds;
 DOUBLE          ar[3];
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9eleload");
 #endif
 /*----------------------------------------------------------------------*/
@@ -120,23 +120,23 @@ funct     = amdef("funct" ,&funct_a ,MAXNOD_SHELL9,1            ,"DV");
 deriv     = amdef("deriv" ,&deriv_a ,2            ,MAXNOD_SHELL9,"DA");
 xjm       = amdef("xjm_a" ,&xjm_a   ,3            ,3            ,"DA");
 a3ref     = amdef("a3ref" ,&a3ref_a ,3            ,MAXNOD_SHELL9,"DA");
-a3r       = am4def("a3r"  ,&a3r_a   ,3            ,MAXNOD_SHELL9,MAXKLAY_SHELL9,0,"D3");         
-a3c       = am4def("a3c"  ,&a3c_a   ,3            ,MAXNOD_SHELL9,MAXKLAY_SHELL9,0,"D3");         
+a3r       = am4def("a3r"  ,&a3r_a   ,3            ,MAXNOD_SHELL9,MAXKLAY_SHELL9,0,"D3");
+a3c       = am4def("a3c"  ,&a3c_a   ,3            ,MAXNOD_SHELL9,MAXKLAY_SHELL9,0,"D3");
 goto end;
 }
 else if (init==-1)/*--------------------- delete phase for this routine */
 {
 amdel(&eload1_a);
 amdel(&eload_a);
-amdel(&x_a);   
-amdel(&xc_a);   
+amdel(&x_a);
+amdel(&xc_a);
 amdel(&funct_a);
 amdel(&deriv_a);
 amdel(&xjm_a);
 amdel(&a3ref_a);
 am4del(&a3r_a);
 am4del(&a3c_a);
-goto end;  
+goto end;
 }
 num_klay = ele->e.s9->num_klay;    /* number of kinematic layers to this element*/
 numdf  = ele->e.s9->numdf;         /* number of dofs per node to this element */
@@ -175,7 +175,7 @@ break;
 /*------------------------------------- calculate element's coordinates */
 condfac = 1.0;
 for (kl=0; kl<num_klay; kl++) /*loop over all kinematic layers*/
-{  
+{
   klayhgt = ele->e.s9->klayhgt;   /* hgt of kinematic layer on percent of total thickness of shell */
   mlayhgt = ele->e.s9->kinlay[kl].mlayhgt;   /* hgt of material layer in percent of this kin layer */
   for (k=0; k<iel; k++)           /*loop over all nodes per layer*/
@@ -187,7 +187,7 @@ for (kl=0; kl<num_klay; kl++) /*loop over all kinematic layers*/
      h2 = A3FAC_SHELL9 * h2;
      /*else if (ele->e.s9->dfield == 1)*/ /*half of shell thickness, norm(a3) = H/2*/
      /*  h2 = ele->e.s9->thick_node.a.dv[k]/2. * condfac;*/
- 
+
      x[0][k] = ele->node[k]->x[0];
      x[1][k] = ele->node[k]->x[1];
      x[2][k] = ele->node[k]->x[2];
@@ -199,11 +199,11 @@ for (kl=0; kl<num_klay; kl++) /*loop over all kinematic layers*/
      xc[0][k] = x[0][k] + ele->node[k]->sol.a.da[0][0];
      xc[1][k] = x[1][k] + ele->node[k]->sol.a.da[0][1];
      xc[2][k] = x[2][k] + ele->node[k]->sol.a.da[0][2];
- 
+
      a3c[0][k][kl] = a3r[0][k][kl]  + ele->node[k]->sol.a.da[0][3*kl+3];
      a3c[1][k][kl] = a3r[1][k][kl]  + ele->node[k]->sol.a.da[0][3*kl+4];
      a3c[2][k][kl] = a3r[2][k][kl]  + ele->node[k]->sol.a.da[0][3*kl+5];
-     
+
      a3c[0][k][kl] = a3c[0][k][kl] / h2;
      a3c[1][k][kl] = a3c[1][k][kl] / h2;
      a3c[2][k][kl] = a3c[2][k][kl] / h2;
@@ -239,15 +239,15 @@ for (lr=0; lr<nir; lr++)/*---------------------------- loop r-direction */
          s9jaco(funct,deriv,xc,xjm,hte,a3c,+1.0,iel,&detao,0,num_klay,klayhgt);
          s9jaco(funct,deriv,xc,xjm,hte,a3c,  e3,iel,&deta ,0,num_klay,klayhgt);
       }
-      /*------------------ evaluate determinant of shell shifter ------ */         
+      /*------------------ evaluate determinant of shell shifter ------ */
       detzto = detao/deta;
       detzbo = detau/deta;
       /*--------------------------- make total weight at gaussian point */
       wgt = facr*facs;
-      /*------------------------------ coordinates of integration point */ 
+      /*------------------------------ coordinates of integration point */
       xi=yi=zi=0.0;
       if (ele->g.gsurf->neum->neum_type!=neum_live)
-      for (i=0; i<iel; i++)  
+      for (i=0; i<iel; i++)
       {
          xi += xc[0][i]*funct[i];
          yi += xc[1][i]*funct[i];
@@ -326,8 +326,8 @@ for (line=0; line<ngline; line++)
    /*                                       and weights at these points */
    switch (line)
    {
-   case 0:                       
-      for (i=0; i<ngp; i++)       
+   case 0:
+      for (i=0; i<ngp; i++)
       {
          xgp[i] = data->xgpr[i];
          wgp[i] = data->wgtr[i];
@@ -340,7 +340,7 @@ for (line=0; line<ngline; line++)
       gnode[2] = 4;
    break;
    case 2:
-      for (i=0; i<ngp; i++) 
+      for (i=0; i<ngp; i++)
       {
          xgp[i] = data->xgpr[i];
          wgp[i] = data->wgtr[i];
@@ -353,7 +353,7 @@ for (line=0; line<ngline; line++)
       gnode[2] = 6;
    break;
    case 1:
-      for (i=0; i<ngp; i++) 
+      for (i=0; i<ngp; i++)
       {
          xgp[i] = data->xgps[i];
          wgp[i] = data->wgts[i];
@@ -366,7 +366,7 @@ for (line=0; line<ngline; line++)
       gnode[2] = 5;
    break;
    case 3:
-      for (i=0; i<ngp; i++) 
+      for (i=0; i<ngp; i++)
       {
          xgp[i] = data->xgps[i];
          wgp[i] = data->wgts[i];
@@ -400,14 +400,14 @@ for (line=0; line<ngline; line++)
          for (j=0; j<3; j++)
          {
             xjm[i][j] = 0.0;
-            for (k=0; k<iel; k++) 
+            for (k=0; k<iel; k++)
             xjm[i][j] += deriv[i][k] * x[j][k];
          }
       }
-         for (j=0; j<3; j++) 
+         for (j=0; j<3; j++)
          {
             xjm[2][j] = 0.0;
-            for (k=0; k<iel; k++) 
+            for (k=0; k<iel; k++)
             xjm[2][j] += funct[k] * (hte[k]/2.0) * a3ref[j][k];
          }
       /*------------------- ds = |g1| in dir=0 and ds = |g2| in dir=1 */
@@ -420,9 +420,9 @@ for (line=0; line<ngline; line++)
       /*----- ar[i] = ar[i] * facr * ds * onoffflag[i] * loadvalue[i] */
       for (i=0; i<3; i++)
       {
-         ar[i] = ar[i] * 
+         ar[i] = ar[i] *
                  facr  *
-                 ds    * 
+                 ds    *
                  (DOUBLE)(lineneum[line]->neum_onoff.a.iv[i]) *
                  (lineneum[line]->neum_val.a.dv[i]);
       }
@@ -478,16 +478,16 @@ for (inode=0; inode<iel; inode++)
 }
 /*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of s9eleload */
 
 
 
 /*!----------------------------------------------------------------------
-\brief integration of element loads                                       
+\brief integration of element loads
 
 <pre>                     m.gee 10/01             modified by    sh 11/02
 This routine performs the integration surface loads for a shell9 element
@@ -503,7 +503,7 @@ This routine performs the integration surface loads for a shell9 element
 \param  DOUBLE    shift   (i)  value of shell shifter (->surface loads)
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: s9eleload()   [s9_load1.c]
 
 *----------------------------------------------------------------------*/
@@ -523,7 +523,7 @@ DOUBLE       val;
 DOUBLE       pressure;
 DOUBLE       height;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9loadGP");
 #endif
 /*----------------------------------------------------------------------*/
@@ -553,9 +553,9 @@ case neum_live:
 */
    for (i=0; i<3; i++)
    {
-      ar[i] = wgt   * 
-              ar[i] * 
-              (DOUBLE)(ele->g.gsurf->neum->neum_onoff.a.iv[i]) * 
+      ar[i] = wgt   *
+              ar[i] *
+              (DOUBLE)(ele->g.gsurf->neum->neum_onoff.a.iv[i]) *
               (ele->g.gsurf->neum->neum_val.a.dv[i]);
    }
 /*-------------------- add load vector component to element load vector */
@@ -600,9 +600,9 @@ case neum_increhydro_z:
    height = acttime * 0.1;
    if (zi <= height)
    pressure = -val * (height-zi);
-   else 
+   else
    pressure = 0.0;
-   
+
    ar[0] = ap[0] * pressure * wgt;
    ar[1] = ap[1] * pressure * wgt;
    ar[2] = ap[2] * pressure * wgt;
@@ -615,7 +615,7 @@ case neum_increhydro_z:
          eload1[j][i] += shift * funct[i] * ar[j];
       }
    }
-   
+
 break;
 /*----------------------------------------------------------------------*/
 
@@ -625,10 +625,10 @@ break;
 
 }/* end of switch(ele->g.gsurf->neum->neum_type)*/
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of s9loadGP */
 /*----------------------------------------------------------------------*/
 #endif /*D_SHELL9*/

@@ -10,7 +10,7 @@ Maintainer: Thomas Hettich
 </pre>
 
 ------------------------------------------------------------------------*/
-#ifdef D_FLUID2TU 
+#ifdef D_FLUID2TU
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #include "fluid2_tu.h"
@@ -26,7 +26,7 @@ extern struct _MATERIAL  *mat;
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -47,7 +47,7 @@ static FLUID_DYNAMIC   *fdyn;
 
 In this routine the element stiffness matrix, iteration-RHS and
 time-RHS for one fluid2 element is calculated
-      
+
 </pre>
 \param  *ele	 ELEMENT	   (i)    actual element
 \param  *elev	 ELEMENT	   (i)    actual rans-element
@@ -80,50 +80,50 @@ time-RHS for one fluid2 element is calculated
 \param **vderxy2	 DOUBLE	   (-)    velocity 2nd derivates
 \param **wa1	 DOUBLE	   (-)    working array
 \param **wa2	 DOUBLE	   (-)    working array
-\return void                                                   
+\return void
 
 ------------------------------------------------------------------------*/
 void f2_calint_tu_1(
-	         ELEMENT         *ele,     
-	         ELEMENT         *elev, 
-               DOUBLE         **estif,   
-	         DOUBLE         **emass,   
-	         DOUBLE          *etforce, 
-	         DOUBLE          *eiforce, 
-	         DOUBLE          *eproforce, 
-	         DOUBLE          *funct,   
-	         DOUBLE         **deriv,   
-	         DOUBLE         **deriv2,  
-	         DOUBLE         **xjm,     
+	         ELEMENT         *ele,
+	         ELEMENT         *elev,
+               DOUBLE         **estif,
+	         DOUBLE         **emass,
+	         DOUBLE          *etforce,
+	         DOUBLE          *eiforce,
+	         DOUBLE          *eproforce,
+	         DOUBLE          *funct,
+	         DOUBLE         **deriv,
+	         DOUBLE         **deriv2,
+	         DOUBLE         **xjm,
 	         DOUBLE         **xyze,
-	         DOUBLE         **derxy,   
-	         DOUBLE         **derxy2,  
-	         DOUBLE          *kapomen,   
-	         DOUBLE          *kapomeg,   
-               DOUBLE          *eddyg, 
-               DOUBLE          *eddypro, 
-               DOUBLE          *kappan, 
-               DOUBLE          *omega,    
-               DOUBLE          *kapomepro,    
-               DOUBLE          *omegaderxy,  
-               DOUBLE          *kapomederxy,  
-               DOUBLE          *kapomederxy2, 
-	         DOUBLE          *velint,  
-	         DOUBLE          *velint_dc,  
+	         DOUBLE         **derxy,
+	         DOUBLE         **derxy2,
+	         DOUBLE          *kapomen,
+	         DOUBLE          *kapomeg,
+               DOUBLE          *eddyg,
+               DOUBLE          *eddypro,
+               DOUBLE          *kappan,
+               DOUBLE          *omega,
+               DOUBLE          *kapomepro,
+               DOUBLE          *omegaderxy,
+               DOUBLE          *kapomederxy,
+               DOUBLE          *kapomederxy2,
+	         DOUBLE          *velint,
+	         DOUBLE          *velint_dc,
                DOUBLE         **evel,
                DOUBLE         **vderxy,
                DOUBLE         **vderxy2,
-               DOUBLE         **wa1,     
-	         DOUBLE         **wa2      
+               DOUBLE         **wa1,
+	         DOUBLE         **wa2
 	        )
-{ 
+{
 INT       i,j;        /* simply a counter                               */
 INT       iel;        /* number of nodes                                */
 INT       intc;       /* "integration case" for tri for further infos
                           see f2_inpele.c and f2_intg.c                 */
 INT       nir,nis;    /* number of integration nodesin r,s direction    */
 INT       actmat;     /* material number of the element                 */
-INT       icode=2;    /* flag for eveluation of shape functions         */     
+INT       icode=2;    /* flag for eveluation of shape functions         */
 INT       ihoel=0;    /* flag for higher order elements                 */
 INT       lr, ls;     /* counter for integration                        */
 DOUBLE    dens;       /* density                                        */
@@ -144,7 +144,7 @@ DOUBLE    kapomenint;
 DOUBLE    ome_proint;
 DIS_TYP   typ;	    /* element type                                   */
 FLUID_DATA *data;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_calint_tu_1");
 #endif
 
@@ -168,7 +168,7 @@ case quad4: case quad8: case quad9:  /* --> quad - element */
    nir = ele->e.f2_tu->nGP[0];
    nis = ele->e.f2_tu->nGP[1];
 break;
-case tri3: case tri6: /* --> tri - element */  
+case tri3: case tri6: /* --> tri - element */
    if (iel>3)
    {
       icode   = 3;
@@ -177,7 +177,7 @@ case tri3: case tri6: /* --> tri - element */
    /* initialise integration */
    nir  = ele->e.f2_tu->nGP[0];
    nis  = 1;
-   intc = ele->e.f2_tu->nGP[1];  
+   intc = ele->e.f2_tu->nGP[1];
 break;
 default:
    dserror("typ unknown!");
@@ -187,11 +187,11 @@ default:
  |               start loop over integration points                     |
  *----------------------------------------------------------------------*/
 for (lr=0;lr<nir;lr++)
-{    
+{
    for (ls=0;ls<nis;ls++)
    {
 /*--------------- get values of  shape functions and their derivatives */
-      switch(typ)  
+      switch(typ)
       {
       case quad4: case quad8: case quad9:   /* --> quad - element */
 	 e1   = data->qxg[lr][nir-1];
@@ -200,13 +200,13 @@ for (lr=0;lr<nir;lr++)
 	 facs = data->qwgt[ls][nis-1];
        f2_rec(funct,deriv,deriv2,e1,e2,typ,icode);
       break;
-      case tri3: case tri6:   /* --> tri - element */              
+      case tri3: case tri6:   /* --> tri - element */
 	 e1   = data->txgr[lr][intc];
 	 facr = data->twgt[lr][intc];
 	 e2   = data->txgs[lr][intc];
 	 facs = ONE;
 	 f2_tri(funct,deriv,deriv2,e1,e2,typ,icode);
-      break; 
+      break;
       default:
          dserror("typ unknown!");
       } /* end switch(typ) */
@@ -218,23 +218,23 @@ for (lr=0;lr<nir;lr++)
       f2_gder(derxy,deriv,xjm,det,iel);
       f2_gder2(xyze,xjm,wa1,wa2,derxy,derxy2,deriv2,iel);
 
-/*-------------------------------------- get vel. at integration point */               
-      f2_veci(velint,funct,evel,iel);    
+/*-------------------------------------- get vel. at integration point */
+      f2_veci(velint,funct,evel,iel);
 
-/*-------------------------------- get eddy-visc. at integration point */               
+/*-------------------------------- get eddy-visc. at integration point */
       f2_eddyi(&eddyint,funct,eddyg,iel);
 
 /*---------------------------------- compute global derivates for vel. */
-      f2_vder(vderxy,derxy,evel,iel);	
+      f2_vder(vderxy,derxy,evel,iel);
 
 /*---------------------------- get kapome (n+1,i)  at integraton point */
       f2_kapomei(&kapomeint,funct,kapomeg,iel);
 
-/*------------------ calculate stabilisation parameter for DISC. CAPT. */               
+/*------------------ calculate stabilisation parameter for DISC. CAPT. */
       f2_kapomeder(kapomederxy,derxy,kapomen,iel);
       f2_vel_dc_1(velint,velint_dc,kapomederxy);
 
-/*------------------------------- calculate factors for kappa equation */       
+/*------------------------------- calculate factors for kappa equation */
       if(fdyn->kapomega_flag==0)
       {
 /*----------------- get kappa (n+1,i) derivatives at integration point */
@@ -250,7 +250,7 @@ for (lr=0;lr<nir;lr++)
 /*------------------------------- calculate factors for omega equation */
       if(fdyn->kapomega_flag==1)
       {
-       f2_kappain(&kappanint,&ome_proint,funct,kappan,kapomepro,iel); 
+       f2_kappain(&kappanint,&ome_proint,funct,kappan,kapomepro,iel);
        f2_xi_ome(vderxy,kapomeint,&xi);
        f2_fac_ome(xi,ome_proint,kappanint,visc,&factor,&factor1,
                   &factor2,&sig);
@@ -262,15 +262,15 @@ for (lr=0;lr<nir;lr++)
  |  Standard Galerkin matrices are all stored in one matrix "estif"     |
  |  Standard Galerkin mass matrix is stored in "emass"                  |
  *----------------------------------------------------------------------*/
- 
- /*--------------------------------------------- compute matrix Kkapome */      
+
+ /*--------------------------------------------- compute matrix Kkapome */
        f2_calkkapome(estif,kapomeint,velint,eddyint,
                      funct,derxy,fac,visc,factor,sig,iel);
-       
+
 /*---------------------------------------------- compute matrix Mkapome */
-	 if (fdyn->nis==0)	  	 	    
+	 if (fdyn->nis==0)
           f2_calmkapome(emass,funct,fac,iel);
-  
+
 /*----------------------------------------------------------------------*
  |         compute Stabilisation matrices                               |
  | NOTE:                                                                |
@@ -279,29 +279,29 @@ for (lr=0;lr<nir;lr++)
  *----------------------------------------------------------------------*/
 /*------------------------------------ stabilisation for matrix Kkapome */
        f2_calstabkkapome(ele,elev,estif,kapomeint,velint,velint_dc,
-                         eddyint,funct,derxy,derxy2,fac,visc,factor,sig,iel); 
+                         eddyint,funct,derxy,derxy2,fac,visc,factor,sig,iel);
 
 /*------------------------------------ stabilisation for matrix Mkapome */
-       if (fdyn->nis==0) 
+       if (fdyn->nis==0)
           f2_calstabmkapome(ele,emass,velint,velint_dc,funct,derxy,
-                            fac,iel); 
+                            fac,iel);
 /*----------------------------------------------------------------------*
  |         compute "Iteration" Force Vectors                            |
- *----------------------------------------------------------------------*/ 
+ *----------------------------------------------------------------------*/
 
 /*------------- calculate galerkin part of "Iter-RHS" (kapome dof) */
          f2_calgalifkapome(eiforce,kapomeint,funct,fac,factor2,iel);
 
 /*---------------- calculate stabilisation for "Iter-RHS" (kapome dof) */
          f2_calstabifkapome(ele,eiforce,kapomeint,velint,velint_dc,
-                            funct,derxy,fac,factor2,iel); 
+                            funct,derxy,fac,factor2,iel);
 
 /*----------------------------------------------------------------------*
  |         compute Production "Time" Force Vector                        |
- *----------------------------------------------------------------------*/ 
-      if (fdyn->niturbu_pro!=0) 
+ *----------------------------------------------------------------------*/
+      if (fdyn->niturbu_pro!=0)
       {
-/*--------------------------------- get eddy-visc. at integration point */               
+/*--------------------------------- get eddy-visc. at integration point */
         f2_eddyi(&eddynint,funct,eddypro,iel);
 
 /*------------ calculate production-term for "PROTime-RHS" (kapome-dofs)*/
@@ -317,8 +317,8 @@ for (lr=0;lr<nir;lr++)
       }
 /*----------------------------------------------------------------------*
  |         compute "Time" Force Vector                                  |
- *----------------------------------------------------------------------*/ 
-      if (fdyn->niturbu_n!=0) 
+ *----------------------------------------------------------------------*/
+      if (fdyn->niturbu_n!=0)
       {
 /*-------------------------------- get kapome (n) at integration point */
 	    f2_kapomei(&kapomeint,funct,kapomen,iel);
@@ -341,13 +341,13 @@ for (lr=0;lr<nir;lr++)
      } /* endif fdyn->niturbu_n */
    } /* end of loop over integration points ls*/
 } /* end of loop over integration points lr */
- 
+
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of f2_calint_tu_1 */
 
 

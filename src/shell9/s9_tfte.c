@@ -3,7 +3,7 @@
 \brief contains the routine
  - s9_tfte: calculates forces (stress resultants -> "Schnittgroessen"
             from stresses for each kinematic layer
-            NOTE: not in use!! 
+            NOTE: not in use!!
 
 
 <pre>
@@ -18,17 +18,17 @@ Maintainer: Stefan Hartmann
 #include "../headers/standardtypes.h"
 #include "shell9.h"
 
-/*! 
-\addtogroup SHELL9 
+/*!
+\addtogroup SHELL9
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief calculates forces from stresses                                      
+\brief calculates forces from stresses
 
 <pre>                     m.gee 12/01             modified by    sh 01/03
 This routine calculates forces (stress resultants -> "Schnittgroessen")
 from stresses.
-NOTE: this routine is not in use right now, as the interpretation of 
+NOTE: this routine is not in use right now, as the interpretation of
       these results is not very easy -> rather stresses than forces
       for multilayer shell element!
 ......................................................................
@@ -48,7 +48,7 @@ NOTE: this routine is not in use right now, as the interpretation of
 \param  DOUBLE    *stress  (i) stresses at GP
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: not in use!!
 
 *----------------------------------------------------------------------*/
@@ -87,7 +87,7 @@ DOUBLE xu33=0.0;
 DOUBLE deltah, h_mlay, h_kl,zeta_kl;
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9_tfte");
 #endif
 /*----------------------------------------------------------------------*/
@@ -164,7 +164,7 @@ force[14][ngauss] += (s21*xu11+s22*xu21+s23*xu31) * wgthe3;
 /*..................................................................M33 */
 force[15][ngauss] += (s31*xu13+s32*xu23+s33*xu33) * wgthe3;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

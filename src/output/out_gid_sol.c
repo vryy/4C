@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -56,7 +56,7 @@ extern struct _GENPROB     genprob;
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -75,7 +75,7 @@ FILE             *out       = allfiles.gidres;
 char              sign='"';
 char             *charptr;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("out_gid_sol_init");
 #endif
 /*----------------------------------------------------------------------*/
@@ -111,7 +111,7 @@ for (i=0; i<genprob.numfld; i++)
    case levelset:
       actgid->fieldnamelenght = 8;
       actgid->fieldname       = "levelset";
-   break;   
+   break;
    default:
       dserror("Unknown type of field");
    break;
@@ -175,21 +175,21 @@ for (i=0; i<genprob.numfld; i++)
       actele = &(actfield->dis[0].element[j]);
       switch(actele->eltyp)
       {
-      case el_shell8: 
-         if (actele->numnp==4)  
+      case el_shell8:
+         if (actele->numnp==4)
          {
             actgid->is_shell8_22   = 1;
             actgid->shell8_22_name = "shell8_22";
          }
-         if (actele->numnp==8 || actele->numnp==9)  
+         if (actele->numnp==8 || actele->numnp==9)
          {
             actgid->is_shell8_33   = 1;
             actgid->shell8_33_name = "shell8_33";
          }
       break;
 #ifdef D_SHELL9
-      case el_shell9: 
-         if (actele->numnp==4)  
+      case el_shell9:
+         if (actele->numnp==4)
          {
              if (actele->e.s9->nGP[0]==2 && actele->e.s9->nGP[1]==2)
              {
@@ -202,7 +202,7 @@ for (i=0; i<genprob.numfld; i++)
                  actgid->shell9_4_33_name = "shell9_4_33";
              }
          }
-         if (actele->numnp==8)  
+         if (actele->numnp==8)
          {
              if (actele->e.s9->nGP[0]==2 && actele->e.s9->nGP[1]==2)
              {
@@ -215,7 +215,7 @@ for (i=0; i<genprob.numfld; i++)
                  actgid->shell9_8_33_name = "shell9_8_33";
              }
          }
-         if (actele->numnp==9)  
+         if (actele->numnp==9)
          {
              if (actele->e.s9->nGP[0]==2 && actele->e.s9->nGP[1]==2)
              {
@@ -230,31 +230,31 @@ for (i=0; i<genprob.numfld; i++)
          }
       break;
 #endif /*D_SHELL9*/
-      case el_brick1: 
+      case el_brick1:
          /*--- initialize stress output for hex ---*/
-#ifdef D_BRICK1   
+#ifdef D_BRICK1
          c1_out_gid_sol_str(NULL, actfield, 0, 1);
 #endif
          /*----------------------------------------*/
-         if (actele->numnp==8)  
+         if (actele->numnp==8)
          {
             actgid->is_brick1_222   = 1;
             actgid->brick1_222_name = "brick1_222";
          }
-         if (actele->numnp==20 || actele->numnp==27) 
+         if (actele->numnp==20 || actele->numnp==27)
          {
             actgid->is_brick1_333   = 1;
-            actgid->brick1_333_name = "brick1_333"; 
+            actgid->brick1_333_name = "brick1_333";
          }
       break;
 #ifdef D_FLUID2
-      case el_fluid2: 
-         if (actele->numnp==4)  
+      case el_fluid2:
+         if (actele->numnp==4)
          {
             actgid->is_fluid2_22    = 1;
             actgid->fluid2_22_name  = "fluid2_22";
          }
-         if (actele->numnp==8  || actele->numnp==9) 
+         if (actele->numnp==8  || actele->numnp==9)
          {
             actgid->is_fluid2_33    = 1;
             actgid->fluid2_33_name  = "fluid2_33";
@@ -262,50 +262,50 @@ for (i=0; i<genprob.numfld; i++)
       break;
 #endif
 #ifdef D_XFEM
-      case el_fluid2_xfem: 
-         if (actele->numnp==4)  
+      case el_fluid2_xfem:
+         if (actele->numnp==4)
          {
             actgid->is_fluid2_xfem_22    = 1;
             actgid->fluid2_xfem_22_name  = "fluid2_xfem_22";
          }
-         if (actele->numnp==3) 
+         if (actele->numnp==3)
          {
             actgid->is_fluid2_xfem_33    = 1;
             actgid->fluid2_xfem_33_name  = "fluid2_xfem_33";
          }
       break;
-#endif      
+#endif
 #ifdef D_FLUID2_PRO
       case el_fluid2_pro:
-         if (actele->numnp==4)  
+         if (actele->numnp==4)
          {
             actgid->is_fluid2_pro_22    = 1;
             actgid->fluid2_pro_22_name  = "fluid2_pro_22";
          }
-         if (actele->numnp==8  || actele->numnp==9) 
+         if (actele->numnp==8  || actele->numnp==9)
          {
             actgid->is_fluid2_pro_33    = 1;
             actgid->fluid2_pro_33_name  = "fluid2_pro_33";
          }
-      break;      
+      break;
 #endif
-#ifdef D_FLUID3      
-      case el_fluid3: 
-         if (actele->numnp==8)  
+#ifdef D_FLUID3
+      case el_fluid3:
+         if (actele->numnp==8)
          {
             actgid->is_fluid3_222   = 1;
             actgid->fluid3_222_name = "fluid3_222";
          }
-         if (actele->numnp==20 || actele->numnp==27) 
+         if (actele->numnp==20 || actele->numnp==27)
          {
             actgid->is_fluid3_333   = 1;
             actgid->fluid3_333_name = "fluid3_333";
          }
       break;
-#endif      
+#endif
 #ifdef D_ALE
-      case el_ale2:    
-         if (actele->numnp==4)  
+      case el_ale2:
+         if (actele->numnp==4)
          {
              if (actele->e.ale2->nGP[0]==1 && actele->e.ale2->nGP[1]==1 )
              {
@@ -318,7 +318,7 @@ for (i=0; i<genprob.numfld; i++)
                  actgid->ale_22_name  = "ale_22";
              }
          }
-         if (actele->numnp==3)  
+         if (actele->numnp==3)
          {
              if ( actele->e.ale2->nGP[0] == 1)
              {
@@ -332,8 +332,8 @@ for (i=0; i<genprob.numfld; i++)
              }
          }
       break;
-      case el_ale3:    
-         if (actele->numnp==8)  
+      case el_ale3:
+         if (actele->numnp==8)
          {
              if (actele->e.ale3->nGP[0]==1 && actele->e.ale3->nGP[1]==1 && actele->e.ale3->nGP[2]==1 )
              {
@@ -346,7 +346,7 @@ for (i=0; i<genprob.numfld; i++)
                  actgid->ale_222_name = "ale_222";
              }
          }
-         if (actele->numnp==4)  
+         if (actele->numnp==4)
          {
              if ( actele->e.ale3->nGP[0] == 1)
              {
@@ -363,18 +363,18 @@ for (i=0; i<genprob.numfld; i++)
 #endif /*D_ALE*/
 /*---------------------------------------------------------fh 06/02----*/
 #ifdef D_WALL1
-      case el_wall1:    
-         if (actele->e.w1->nGP[0]==1)  
+      case el_wall1:
+         if (actele->e.w1->nGP[0]==1)
          {
             actgid->is_wall1_11    = 1;
             actgid->wall1_11_name  = "wall1_11";
          }
-         if (actele->e.w1->nGP[0]==2)  
+         if (actele->e.w1->nGP[0]==2)
          {
             actgid->is_wall1_22    = 1;
             actgid->wall1_22_name  = "wall1_22";
          }
-         if (actele->e.w1->nGP[0]==3)  
+         if (actele->e.w1->nGP[0]==3)
          {
             actgid->is_wall1_33   = 1;
             actgid->wall1_33_name = "wall1_33";
@@ -383,15 +383,15 @@ for (i=0; i<genprob.numfld; i++)
 #endif /*D_WALL1*/
 #ifdef D_BEAM3
 /*---------------------------------------------------------fh 10/02----*/
-      case el_beam3:    
+      case el_beam3:
          if (actele->numnp==2)
 	 {
-	    if (actele->e.b3->nGP[0]==1) 
+	    if (actele->e.b3->nGP[0]==1)
 	    {
 	       actgid->is_beam3_21 = 1;
 	       actgid->beam3_21_name  = "beam3_21";
 	    }
-	    if (actele->e.b3->nGP[0]==2) 
+	    if (actele->e.b3->nGP[0]==2)
 	    {
 	       actgid->is_beam3_22 = 1;
 	       actgid->beam3_22_name  = "beam3_22";
@@ -399,36 +399,36 @@ for (i=0; i<genprob.numfld; i++)
 	 }
 	 if (actele->numnp==3)
 	 {
-	    if (actele->e.b3->nGP[0]==2) 
+	    if (actele->e.b3->nGP[0]==2)
 	    {
 	       actgid->is_beam3_32 = 1;
 	       actgid->beam3_32_name  = "beam3_32";
 	    }
-	    if (actele->e.b3->nGP[0]==3) 
+	    if (actele->e.b3->nGP[0]==3)
 	    {
 	       actgid->is_beam3_33 = 1;
 	       actgid->beam3_33_name  = "beam3_33";
 	    }
-	 }	  	  
+	 }
       break;
 
 #endif /*D_BEAM3*/
 
 /*---------------------------------------------------------fh 06/02----*/
 #ifdef D_AXISHELL
-      case el_axishell:    
+      case el_axishell:
             actgid->is_axishell    = 1;
             actgid->axishell_name  = "axishell";
       break;
 #endif /*D_AXISHELL*/
 #ifdef D_INTERF
-      case el_interf:    
-         if (actele->e.interf->nGP==2)  
+      case el_interf:
+         if (actele->e.interf->nGP==2)
          {
             actgid->is_interf_22    = 1;
             actgid->interf_22_name  = "interf_22";
          }
-         if (actele->e.interf->nGP==3)  
+         if (actele->e.interf->nGP==3)
          {
             actgid->is_interf_33    = 1;
             actgid->interf_33_name  = "interf_33";
@@ -436,13 +436,13 @@ for (i=0; i<genprob.numfld; i++)
       break;
 #endif /*D_INTERF*/
 #ifdef D_WALLGE
-      case el_wallge:    
-         if (actele->e.wallge->nGP[0]==2)  
+      case el_wallge:
+         if (actele->e.wallge->nGP[0]==2)
          {
             actgid->is_wallge_22    = 1;
             actgid->wallge_22_name  = "wallge_22";
          }
-         if (actele->e.wallge->nGP[0]==3)  
+         if (actele->e.wallge->nGP[0]==3)
          {
             actgid->is_wallge_33    = 1;
             actgid->wallge_33_name  = "wallge_33";
@@ -450,19 +450,19 @@ for (i=0; i<genprob.numfld; i++)
      break;
 #endif /*D_WALLGE*/
 #ifdef D_LS
-      case el_ls2:    
-         if (actele->e.ls2->nGP[0]==2)  
+      case el_ls2:
+         if (actele->e.ls2->nGP[0]==2)
          {
             actgid->is_ls2_22    = 1;
             actgid->ls2_22_name  = "ls2_22";
          }
-         if (actele->e.ls2->nGP[1]==3)  
+         if (actele->e.ls2->nGP[1]==3)
          {
             actgid->is_ls2_33   = 1;
             actgid->ls2_33_name  = "ls2_33";
          }
      break;
-#endif /*D_LS*/     
+#endif /*D_LS*/
 
       default:
          dserror("Unknown type of element");
@@ -892,7 +892,7 @@ for (i=0; i<genprob.numfld; i++)
    fprintf(out,"NODES NOT INCLUDED\n");
    fprintf(out,"NATURAL COORDINATES: Internal\n");
    fprintf(out,"END GAUSSPOINTS\n");
-   }   
+   }
 #endif /*D_BEAM3*/
    /* ---------------------------------------------------------------- */
    if (actgid->is_axishell)
@@ -977,12 +977,12 @@ for (i=0; i<genprob.numfld; i++)
    fprintf(out,"Nodes not included\n");
    fprintf(out,"NATURAL COORDINATES: Internal\n");
    fprintf(out,"END GAUSSPOINTS\n");
-   }      
+   }
 /*----------------------------------------------------------------------*/
 } /* end of (i=0; i<genprob.numfld; i++) */
 /*----------------------------------------------------------------------*/
 fflush(out);
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1002,7 +1002,7 @@ ELEMENT      *actele;
 GIDSET       *actgid = NULL;
 char          sign='"';
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("out_gid_domains");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1017,7 +1017,7 @@ for (i=0; i<genprob.numfld; i++)
 }
 if (!actgid) dserror("Cannot find correct field");
 /*----------------------------------------------------------------------*/
-if (actgid->is_shell8_22) 
+if (actgid->is_shell8_22)
 {
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"# RESULT Domains on MESH %s\n",actgid->shell8_22_name);
@@ -1034,7 +1034,7 @@ if (actgid->is_shell8_22)
       for (j=1; j<4; j++)/* quadrilateral version */
 #endif
       for (j=1; j<8; j++)/* hexahedra version */
-      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
    }
    fprintf(out,"END VALUES\n");
 }
@@ -1053,7 +1053,7 @@ if (actgid->is_shell8_33)
       if (actele->eltyp != el_shell8 || actele->numnp != 9) continue;
       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
       for (j=1; j<9; j++)
-      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
    }
    fprintf(out,"END VALUES\n");
 }
@@ -1062,7 +1062,7 @@ if (actgid->is_shell8_33)
 
 #ifdef D_SHELL9
 /*4-noded*/
-if (actgid->is_shell9_4_22) 
+if (actgid->is_shell9_4_22)
 {
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"# RESULT Domains on MESH %s\n",actgid->shell9_4_22_name);
@@ -1077,11 +1077,11 @@ if (actgid->is_shell9_4_22)
       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
    /* for (j=1; j<4; j++) */    /* quadrilateral version */
       for (j=1; j<8; j++)       /* hexahedra version */
-      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
    }
    fprintf(out,"END VALUES\n");
 }
-if (actgid->is_shell9_4_33) 
+if (actgid->is_shell9_4_33)
 {
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"# RESULT Domains on MESH %s\n",actgid->shell9_4_33_name);
@@ -1096,7 +1096,7 @@ if (actgid->is_shell9_4_33)
       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
    /* for (j=1; j<9; j++) */     /* quadrilateral version */
       for (j=1; j<27; j++)       /* hexahedra version */
-      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
    }
    fprintf(out,"END VALUES\n");
 }
@@ -1116,7 +1116,7 @@ if (actgid->is_shell9_8_22)
       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
    /* for (j=1; j<4; j++) */     /* quadrilateral version */
       for (j=1; j<8; j++)        /* hexahedra version */
-      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
    }
    fprintf(out,"END VALUES\n");
 }
@@ -1135,7 +1135,7 @@ if (actgid->is_shell9_8_33)
       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
    /* for (j=1; j<9; j++) */    /* quadrilateral version */
       for (j=1; j<27; j++)      /* hexahedra version */
-      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
    }
    fprintf(out,"END VALUES\n");
 }
@@ -1155,7 +1155,7 @@ if (actgid->is_shell9_9_22)
       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
    /* for (j=1; j<4; j++) */     /* quadrilateral version */
       for (j=1; j<8; j++)        /* hexahedra version */
-      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
    }
    fprintf(out,"END VALUES\n");
 }
@@ -1174,7 +1174,7 @@ if (actgid->is_shell9_9_33)
       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
    /* for (j=1; j<9; j++) */      /* quadrilateral version */
       for (j=1; j<27; j++)      /* hexahedra version */
-      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
    }
    fprintf(out,"END VALUES\n");
 }
@@ -1194,7 +1194,7 @@ if (actgid->is_brick1_222)
       if (actele->eltyp != el_brick1 || actele->numnp != 8) continue;
       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
       for (j=1; j<8; j++)
-      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
    }
    fprintf(out,"END VALUES\n");
 }
@@ -1214,7 +1214,7 @@ if (actgid->is_brick1_333)
       if (actele->eltyp != el_brick1 || (actele->numnp != 20 || actele->numnp != 27)) continue;
       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
       for (j=1; j<27; j++)
-      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
    }
    fprintf(out,"END VALUES\n");
 }
@@ -1234,7 +1234,7 @@ if (actgid->is_fluid3_222)
       if (actele->eltyp != el_fluid3 || actele->numnp != 8) continue;
       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
       for (j=1; j<8; j++)
-      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
    }
    fprintf(out,"END VALUES\n");
 }
@@ -1254,7 +1254,7 @@ if (actgid->is_fluid3_333)
       if (actele->eltyp != el_fluid3 || (actele->numnp != 20 || actele->numnp != 27)) continue;
       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
       for (j=1; j<27; j++)
-      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
    }
    fprintf(out,"END VALUES\n");
 }
@@ -1274,7 +1274,7 @@ if (actgid->is_ale_11)
       if (actele->eltyp != el_ale2 || actele->numnp != 4) continue;
       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
       for (j=1; j<4; j++)
-      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
    }
    fprintf(out,"END VALUES\n");
 }
@@ -1294,7 +1294,7 @@ if (actgid->is_ale_22)
       if (actele->eltyp != el_ale2 || actele->numnp != 4) continue;
       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
       for (j=1; j<4; j++)
-      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
    }
    fprintf(out,"END VALUES\n");
 }
@@ -1314,7 +1314,7 @@ if (actgid->is_ale_tri_1)
       if (actele->eltyp != el_ale2 || actele->numnp != 3) continue;
       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
       for (j=1; j<3; j++)
-      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
    }
    fprintf(out,"END VALUES\n");
 }
@@ -1334,7 +1334,7 @@ if (actgid->is_ale_tri_3)
       if (actele->eltyp != el_ale2 || actele->numnp != 3) continue;
       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
       for (j=1; j<3; j++)
-      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
    }
    fprintf(out,"END VALUES\n");
 }
@@ -1354,7 +1354,7 @@ if (actgid->is_ale_111)
       if (actele->eltyp != el_ale3 || actele->numnp != 8) continue;
       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
       for (j=1; j<8; j++)
-      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
    }
    fprintf(out,"END VALUES\n");
 }
@@ -1374,7 +1374,7 @@ if (actgid->is_ale_222)
       if (actele->eltyp != el_ale3 || actele->numnp != 8) continue;
       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
       for (j=1; j<8; j++)
-      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
    }
    fprintf(out,"END VALUES\n");
 }
@@ -1394,7 +1394,7 @@ if (actgid->is_ale_tet_1)
       if (actele->eltyp != el_ale3 || actele->numnp != 4) continue;
       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
       for (j=1; j<4; j++)
-      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
    }
    fprintf(out,"END VALUES\n");
 }
@@ -1414,7 +1414,7 @@ if (actgid->is_ale_tet_4)
       if (actele->eltyp != el_ale3 || actele->numnp != 4) continue;
       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
       for (j=1; j<4; j++)
-      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
    }
    fprintf(out,"END VALUES\n");
 }
@@ -1452,7 +1452,7 @@ if (actgid->is_wall1_22)
       if (actele->eltyp != el_wall1) continue;
       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
       for (j=1; j<4; j++)
-      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
    }
    fprintf(out,"END VALUES\n");
 }
@@ -1472,7 +1472,7 @@ if (actgid->is_wall1_33)
       if (actele->eltyp != el_wall1) continue;
       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
       for (j=1; j<9; j++)
-      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
    }
    fprintf(out,"END VALUES\n");
 }
@@ -1492,7 +1492,7 @@ if (actgid->is_beam3_21)
       if (actele->eltyp != el_beam3) continue;
       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
       for (j=1; j<4; j++)
-      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
    }
    fprintf(out,"END VALUES\n");
 }
@@ -1512,7 +1512,7 @@ if (actgid->is_beam3_22)
       if (actele->eltyp != el_beam3) continue;
       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
       for (j=1; j<9; j++)
-      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
    }
    fprintf(out,"END VALUES\n");
 }
@@ -1530,7 +1530,7 @@ if (actgid->is_beam3_32)
       if (actele->eltyp != el_beam3) continue;
       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
       for (j=1; j<4; j++)
-      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
    }
    fprintf(out,"END VALUES\n");
 }
@@ -1550,14 +1550,14 @@ if (actgid->is_beam3_22)
       if (actele->eltyp != el_beam3) continue;
       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
       for (j=1; j<9; j++)
-      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); 
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
    }
    fprintf(out,"END VALUES\n");
 }
 #endif
 /*----------------------------------------------------------------------*/
 fflush(out);
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1607,18 +1607,18 @@ DOUBLE        pv,ph,pw,px;
 DOUBLE        thick;
 #endif
 
-/* 
+/*
    gausspoint permutation :
    On the Gausspoint number i in Gid, the results of Carats GP number gausspermn[i]
    have to be written
-*/   
+*/
 
 INT           gaussperm4[4] = {3,1,0,2};
 /*INT           gaussperm8[8] = {0,4,2,6,1,5,3,7};*/
 INT           gaussperm9[9] = {8,2,0,6,5,1,3,7,4};
 /*INT           gaussperm27[27] = {0,9,18,3,12,21,6,15,24,1,10,19,4,13,22,7,16,25,2,11,20,5,14,23,8,17,26};*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("out_gid_sol");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1639,7 +1639,7 @@ if (strncmp(string,"displacement",stringlenght)==0)
 {
    resulttype        = "VECTOR";
    resultplace       = "ONNODES";
-   gpset             = ""; 
+   gpset             = "";
    rangetable        = actgid->standardrangetable;
    ncomponent        = 3;
    componentnames[0] = "x-displ";
@@ -1667,21 +1667,21 @@ if (strncmp(string,"displacement",stringlenght)==0)
    /*if shell9, the displacement have to be written in 3 components */
    /*NOTE: only first element is tested, as it is assumed that there
            is no coupling of different element types            sh 12/02 */
-   if (actfield->dis[0].element[0].eltyp == el_shell9)   
+   if (actfield->dis[0].element[0].eltyp == el_shell9)
    {
        fprintf(out,"COMPONENTNAMES %c%s%c,%c%s%c,%c%s%c\n",
                                                        sign,componentnames[0],sign,
                                                        sign,componentnames[1],sign,
                                                        sign,componentnames[2],sign
                                                        );
-         
+
        if (ioflags.struct_stress_gid_smo == 0 ) s9_out_gid_sol_dis_unsmo(out,actfield,place);    /*unsmoothed stresses to gid*/
        if (ioflags.struct_stress_gid_smo == 1 ) s9_out_gid_sol_dis(out,actfield,place);          /*  smoothed stresses to gid*/
 
     goto next;
    }
 #endif /*D_SHELL9*/
-   
+
    switch (genprob.ndim)
    {
      case 3:
@@ -1730,7 +1730,7 @@ if (strncmp(string,"displacement",stringlenght)==0)
    }
    else
 #endif
-#endif   
+#endif
    for (i=0; i<actfield->dis[0].numnp; i++)
    {
       actnode = &(actfield->dis[0].node[i]);
@@ -1770,7 +1770,7 @@ if (strncmp(string,"contact",stringlenght)==0)
 {
    resulttype        = "VECTOR";
    resultplace       = "ONNODES";
-   gpset             = ""; 
+   gpset             = "";
    rangetable        = actgid->standardrangetable;
    ncomponent        = 3;
    componentnames[0] = "x-con";
@@ -1870,7 +1870,7 @@ if (strncmp(string,"eigenmodes",stringlenght)==0)
 {
    resulttype        = "VECTOR";
    resultplace       = "ONNODES";
-   gpset             = ""; 
+   gpset             = "";
    rangetable        = actgid->standardrangetable;
    ncomponent        = 3;
    componentnames[0] = "x-mode";
@@ -1972,7 +1972,7 @@ if (strncmp(string,"stress",stringlenght)==0)
                              forces[4][gaussperm4[j]],
                              forces[3][gaussperm4[j]]
                              );
- 
+
       }
       fprintf(out,"END VALUES\n");
       /*--- print the linear-in-thickness direction forces */
@@ -2018,7 +2018,7 @@ if (strncmp(string,"stress",stringlenght)==0)
                              forces[11][gaussperm4[j]],
                              forces[10][gaussperm4[j]]
                              );
- 
+
       }
       fprintf(out,"END VALUES\n");
    }
@@ -2076,7 +2076,7 @@ if (strncmp(string,"stress",stringlenght)==0)
                              forces[4][gaussperm9[j]],
                              forces[3][gaussperm9[j]]
                              );
- 
+
       }
       fprintf(out,"END VALUES\n");
       /*--- print the linear-in-thickness direction forces */
@@ -2122,7 +2122,7 @@ if (strncmp(string,"stress",stringlenght)==0)
                              forces[11][gaussperm9[j]],
                              forces[10][gaussperm9[j]]
                              );
- 
+
       }
       fprintf(out,"END VALUES\n");
    }
@@ -2160,7 +2160,7 @@ if (strncmp(string,"stress",stringlenght)==0)
                                                              sign,gpset,sign
                                                              );
       /*check only first element and assume, that the others are the same*/
-      actele = &(actfield->dis[0].element[0]); 
+      actele = &(actfield->dis[0].element[0]);
       switch(actele->e.s9->forcetyp)
       {
       case s9_xyz:
@@ -2194,9 +2194,9 @@ if (strncmp(string,"stress",stringlenght)==0)
       fprintf(out,"VALUES\n");
 
   /*NOTE: it is assumed that there is no coupling of different element types      sh 01/03 */
-     
+
       /*write stresses at gp*/
-         
+
       if (ioflags.struct_stress_gid_smo == 0 ) s9_out_gid_sol_str_unsmo(out,actfield,place);    /*unsmoothed stresses to gid*/
       if (ioflags.struct_stress_gid_smo == 1 ) s9_out_gid_sol_str(out,actfield,place);          /*  smoothed stresses to gid*/
 
@@ -2290,7 +2290,7 @@ if (strncmp(string,"stress",stringlenght)==0)
          }
       }
       fprintf(out,"END VALUES\n");
-      
+
    }
 /*---------------------------------------------------------he  04/03----*/
    /*------------------ now go through the meshes and print the results */
@@ -2338,7 +2338,7 @@ if (strncmp(string,"stress",stringlenght)==0)
                        );
       }
       fprintf(out,"END VALUES\n");
-      
+
    }
    /*-------------------now go through the meshes and print the results */
    /*===============================wall1 element with 3x3 gausspoints */
@@ -2419,15 +2419,15 @@ if (strncmp(string,"stress",stringlenght)==0)
          }
       }
       fprintf(out,"END VALUES\n");
-/*----------------------------------------------------------------------*/      
+/*----------------------------------------------------------------------*/
    }
-#endif   
-#ifdef D_BRICK1   
+#endif
+#ifdef D_BRICK1
    /* bricks have 6 stress - use 3D matrix */
    if (actgid->is_brick1_222)
-   {  
+   {
       /*check only first element and assume, that the others are the same*/
-     actele = &(actfield->dis[0].element[0]); 
+     actele = &(actfield->dis[0].element[0]);
      switch(actele->e.c1->stresstyp)
      {
      case c1_npeqs:
@@ -2482,11 +2482,11 @@ if (strncmp(string,"stress",stringlenght)==0)
        fprintf(out,"no stresses available\n");
      break;
      }
-   }   
+   }
    if (actgid->is_brick1_333)
-   {  
+   {
       /*check only first element and assume, that the others are the same*/
-     actele = &(actfield->dis[0].element[0]); 
+     actele = &(actfield->dis[0].element[0]);
      switch(actele->e.c1->stresstyp)
      {
      case c1_npeqs:
@@ -2543,10 +2543,10 @@ if (strncmp(string,"stress",stringlenght)==0)
      }
    }
 #endif
-#ifdef D_FLUID3   
+#ifdef D_FLUID3
    /* bricks have 6 stress - use 3D matrix */
    if (actgid->is_fluid3_222)
-   {  
+   {
      resulttype                             = "MATRIX";
      resultplace                            = "ONNODES";                 /*extrapolated to nodal points!*/
      gpset             = actgid->fluid3_222_name;
@@ -2555,8 +2555,8 @@ if (strncmp(string,"stress",stringlenght)==0)
      /* pressure stresses */
      fprintf(out,"#-------------------------------------------------------------------------------\n");
      fprintf(out,"# RESULT %s on FIELD %s\n",string,actgid->fieldname);
-     fprintf(out,"# TIME %18.5E \n",time);   
-     fprintf(out,"# STEP %6d    \n",step);   
+     fprintf(out,"# TIME %18.5E \n",time);
+     fprintf(out,"# STEP %6d    \n",step);
      fprintf(out,"#-------------------------------------------------------------------------------\n");
      fprintf(out,"RESULT %cfluid_stresses%c %cccarat%c %d %s %s %c%s%c\n",
          sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,sign );
@@ -2570,8 +2570,8 @@ if (strncmp(string,"stress",stringlenght)==0)
      /* viscous stresses */
      fprintf(out,"#-------------------------------------------------------------------------------\n");
      fprintf(out,"# RESULT %s on FIELD %s\n",string,actgid->fieldname);
-     fprintf(out,"# TIME %18.5E \n",time);   
-     fprintf(out,"# STEP %6d    \n",step);   
+     fprintf(out,"# TIME %18.5E \n",time);
+     fprintf(out,"# STEP %6d    \n",step);
      fprintf(out,"#-------------------------------------------------------------------------------\n");
      fprintf(out,"RESULT %cviscous_fluid_stresses%c %cccarat%c %d %s %s %c%s%c\n",
          sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,sign );
@@ -2580,9 +2580,9 @@ if (strncmp(string,"stress",stringlenght)==0)
      fprintf(out,"VALUES\n");
      f3_out_gid_sol_str(out,actfield,1,0); /*extrapolated to nodal points!*/
      fprintf(out,"END VALUES\n");
-   }   
+   }
    if (actgid->is_fluid3_333)
-   {  
+   {
      resulttype                             = "MATRIX";
      resultplace                            = "ONNODES";                 /*extrapolated to nodal points!*/
      gpset             = actgid->fluid3_333_name;
@@ -2592,8 +2592,8 @@ if (strncmp(string,"stress",stringlenght)==0)
      /* pressure stresses */
      fprintf(out,"#-------------------------------------------------------------------------------\n");
      fprintf(out,"# RESULT %s on FIELD %s\n",string,actgid->fieldname);
-     fprintf(out,"# TIME %18.5E \n",time);   
-     fprintf(out,"# STEP %6d    \n",step);   
+     fprintf(out,"# TIME %18.5E \n",time);
+     fprintf(out,"# STEP %6d    \n",step);
      fprintf(out,"#-------------------------------------------------------------------------------\n");
      fprintf(out,"RESULT %cbrick1_forces%c %cccarat%c %d %s %s %c%s%c\n",
          sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,sign );
@@ -2607,8 +2607,8 @@ if (strncmp(string,"stress",stringlenght)==0)
      /* viscous stresses */
      fprintf(out,"#-------------------------------------------------------------------------------\n");
      fprintf(out,"# RESULT %s on FIELD %s\n",string,actgid->fieldname);
-     fprintf(out,"# TIME %18.5E \n",time);   
-     fprintf(out,"# STEP %6d    \n",step);   
+     fprintf(out,"# TIME %18.5E \n",time);
+     fprintf(out,"# STEP %6d    \n",step);
      fprintf(out,"#-------------------------------------------------------------------------------\n");
      fprintf(out,"RESULT %cviscous_fluid_stresses%c %cccarat%c %d %s %s %c%s%c\n",
          sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,sign );
@@ -2619,14 +2619,14 @@ if (strncmp(string,"stress",stringlenght)==0)
      fprintf(out,"END VALUES\n");
    }
 #endif
-#ifdef D_AXISHELL   
+#ifdef D_AXISHELL
    /* STRESS output for AXISHELL */
    if (actgid->is_axishell)
-   { 
+   {
      /* -------------------------------- write lokale diaplcements first */
      resulttype        = "VECTOR";
      resultplace       = "ONNODES";
-     gpset             = ""; 
+     gpset             = "";
      rangetable        = actgid->standardrangetable;
      ncomponent        = 3;
      componentnames[0] = "u";
@@ -2781,11 +2781,11 @@ if (strncmp(string,"stress",stringlenght)==0)
 			     stress[3][0],
 			     stress[4][0],
 			     stress[5][0]
-			     );      
+			     );
       }
       fprintf(out,"END VALUES\n");
    }
-   
+
    if (actgid->is_beam3_22)
    {
       ngauss=2;
@@ -2835,10 +2835,10 @@ if (strncmp(string,"stress",stringlenght)==0)
 			     stress[3][1],
 			     stress[4][1],
 			     stress[5][1]
-			     );	 		     
+			     );
       }
       fprintf(out,"END VALUES\n");
-      
+
    }
    if (actgid->is_beam3_32)
    {
@@ -2880,7 +2880,7 @@ if (strncmp(string,"stress",stringlenght)==0)
 			     stress[3][0],
 			     stress[4][0],
 			     stress[5][0]
-			     );      
+			     );
 	 fprintf(out,"     %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
                              actele->Id+1,
 			     stress[0][1],
@@ -2889,11 +2889,11 @@ if (strncmp(string,"stress",stringlenght)==0)
 			     stress[3][1],
 			     stress[4][1],
 			     stress[5][1]
-			     );      
+			     );
       }
       fprintf(out,"END VALUES\n");
    }
-   
+
    if (actgid->is_beam3_33)
    {
       ngauss=2;
@@ -2943,7 +2943,7 @@ if (strncmp(string,"stress",stringlenght)==0)
 			     stress[3][1],
 			     stress[4][1],
 			     stress[5][1]
-			     );	 		     
+			     );
 	 fprintf(out,"     %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
                              actele->Id+1,
 			     stress[0][2],
@@ -2952,17 +2952,17 @@ if (strncmp(string,"stress",stringlenght)==0)
 			     stress[3][2],
 			     stress[4][2],
 			     stress[5][2]
-			     );	 		     
+			     );
       }
       fprintf(out,"END VALUES\n");
-      
+
    }
 #endif
 
-#ifdef D_INTERF   
+#ifdef D_INTERF
    /* STRESS output for INTERFACE */
    if (actgid->is_interf_22)
-   { 
+   {
      /* ------------------------------------------------ write stresses */
       ngauss=4;
       resulttype        = "MATRIX";
@@ -2995,7 +2995,7 @@ if (strncmp(string,"stress",stringlenght)==0)
         break;
         default:
         break;
-      }    
+      }
       fprintf(out,"VALUES\n");
       for (i=0; i<actfield->dis[0].numele; i++)
       {
@@ -3043,7 +3043,7 @@ if (strncmp(string,"stress",stringlenght)==0)
       fprintf(out,"END VALUES\n");
    }
    if (actgid->is_interf_33)
-   { 
+   {
      /* ------------------------------------------------ write stresses */
       ngauss=4;
       resulttype        = "MATRIX";
@@ -3076,7 +3076,7 @@ if (strncmp(string,"stress",stringlenght)==0)
         break;
         default:
         break;
-      }    
+      }
       fprintf(out,"VALUES\n");
       for (i=0; i<actfield->dis[0].numele; i++)
       {
@@ -3167,7 +3167,7 @@ if (strncmp(string,"stress",stringlenght)==0)
 
 #endif
 
-#ifdef D_WALLGE   
+#ifdef D_WALLGE
    if (actgid->is_wallge_22)
    {
       ngauss=4;
@@ -3202,7 +3202,7 @@ if (strncmp(string,"stress",stringlenght)==0)
          stress =actele->e.wallge->stress_GP.a.d3[place];
 	 fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
                              actele->Id+1,
-                        /*     
+                        /*
 			     stress[0][gaussperm4[0]],
 			     stress[1][gaussperm4[0]],
 			     stress[2][gaussperm4[0]],
@@ -3292,7 +3292,7 @@ if (strncmp(string,"velocity",stringlenght)==0)
 {
    resulttype        = "VECTOR";
    resultplace       = "ONNODES";
-   gpset             = ""; 
+   gpset             = "";
    rangetable        = actgid->standardrangetable;
    ncomponent        = 3;
    componentnames[0] = "x-vel";
@@ -3301,8 +3301,8 @@ if (strncmp(string,"velocity",stringlenght)==0)
    /*-------------------------------------------------------------------*/
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"# RESULT %s on FIELD %s\n",string,actgid->fieldname);
-   fprintf(out,"# TIME %18.5E \n",time);   
-   fprintf(out,"# STEP %6d    \n",step);   
+   fprintf(out,"# TIME %18.5E \n",time);
+   fprintf(out,"# STEP %6d    \n",step);
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"RESULT %c%s%c %cccarat%c %d %s %s\n",
                                                              sign,string,sign,
@@ -3366,15 +3366,15 @@ if (strncmp(string,"pressure",stringlenght)==0)
 {
    resulttype        = "SCALAR";
    resultplace       = "ONNODES";
-   gpset             = ""; 
+   gpset             = "";
    rangetable        = actgid->standardrangetable;
    ncomponent        = 3;
    componentnames[0] = "pressure";
    /*-------------------------------------------------------------------*/
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"# RESULT %s on FIELD %s\n",string,actgid->fieldname);
-   fprintf(out,"# TIME %18.5E \n",time);   
-   fprintf(out,"# STEP %6d    \n",step);   
+   fprintf(out,"# TIME %18.5E \n",time);
+   fprintf(out,"# STEP %6d    \n",step);
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"RESULT %c%s%c %cccarat%c %d %s %s\n",
                                                              sign,string,sign,
@@ -3435,7 +3435,7 @@ if (strncmp(string,"thickness",stringlenght)==0)
   {
     resulttype        = "SCALAR";
     resultplace       = "ONNODES";
-    gpset             = ""; 
+    gpset             = "";
     rangetable        = actgid->standardrangetable;
     ncomponent        = 1;
     componentnames[0] = "thickness";
@@ -3484,7 +3484,7 @@ if (strncmp(string,"axi_loads",stringlenght)==0)
   {
     resulttype        = "MATRIX";
     resultplace       = "ONNODES";
-    gpset             = ""; 
+    gpset             = "";
     rangetable        = actgid->standardrangetable;
     ncomponent        = 4;
     componentnames[0] = "pv";
@@ -3549,7 +3549,7 @@ if (strncmp(string,"axi_loads",stringlenght)==0)
 #endif
 /*----------------------------------------------------------------------*/
 fflush(out);
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -16,16 +16,16 @@ Maintainer: Andrea Hund
 #include "wall1.h"
 #include "wall1_prototypes.h"
 
-/*! 
-\addtogroup WALL1 
+/*!
+\addtogroup WALL1
 *//*! @{ (documentation module open)*/
 
 /*--------------------------------------------------------------------------*
  | Update of state variables related with E-M algorithm                     |
  *-------------------------------------------------------------------------*/
-void w1_update_history (ELEMENT   *ele, 
+void w1_update_history (ELEMENT   *ele,
                         W1_DATA   *data,
-			MATERIAL  *mat)                   
+			MATERIAL  *mat)
 {
 INT                 i,j,k,a,b;        /* some loopers              */
 INT                 nir,nis;          /* num GP in r/s/t direction */
@@ -43,34 +43,34 @@ DOUBLE              facr,facs,fact;   /* weights at GP                  */
 DOUBLE              thick,density;    /* for calculation of mass matrix */
 DOUBLE det;
 
-static ARRAY    D_a;      /* material matrix */     
-static DOUBLE **D; 
-static ARRAY    stress_a; /* stress matrix (2.PK for total lagr.) */     
-static DOUBLE  **stress; 
-static ARRAY    xcure_a;  /* coords in current config. */     
-static DOUBLE **xcure; 
-static ARRAY    xrefe_a;  /* coords in referenz config. */     
-static DOUBLE **xrefe; 
-static ARRAY    funct_a;  /* shape functions */    
-static DOUBLE  *funct;     
-static ARRAY    deriv_a;  /* derivatives of shape functions */   
-static DOUBLE **deriv;     
-static ARRAY    xjm_a;    /* jacobian matrix */     
-static DOUBLE **xjm;         
-static ARRAY    boplin_a; /* linear B-operator */   
+static ARRAY    D_a;      /* material matrix */
+static DOUBLE **D;
+static ARRAY    stress_a; /* stress matrix (2.PK for total lagr.) */
+static DOUBLE  **stress;
+static ARRAY    xcure_a;  /* coords in current config. */
+static DOUBLE **xcure;
+static ARRAY    xrefe_a;  /* coords in referenz config. */
+static DOUBLE **xrefe;
+static ARRAY    funct_a;  /* shape functions */
+static DOUBLE  *funct;
+static ARRAY    deriv_a;  /* derivatives of shape functions */
+static DOUBLE **deriv;
+static ARRAY    xjm_a;    /* jacobian matrix */
+static DOUBLE **xjm;
+static ARRAY    boplin_a; /* linear B-operator */
 static DOUBLE **boplin;
 static ARRAY    b_bar_a;  /* B_bar operator*/
-static DOUBLE **b_bar; 
+static DOUBLE **b_bar;
 static ARRAY    mass_a;   /* Mass matrix*/
 static DOUBLE **mass;
-static ARRAY    F_a;      /* deformation gradient */   
-static DOUBLE  *F; 
-static ARRAY    strain_a; /* strain (Green-Lagr for total lagr.) */   
-static DOUBLE  *strain; 
+static ARRAY    F_a;      /* deformation gradient */
+static DOUBLE  *F;
+static ARRAY    strain_a; /* strain (Green-Lagr for total lagr.) */
+static DOUBLE  *strain;
 
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_update_history");
 #endif
 /*----------------------------------------------------------------------*/
@@ -78,18 +78,18 @@ dstrc_enter("w1_update_history");
 /*----------------------------------------------------------------------*/
   istore = 0;
   xrefe     = amdef("xrefe"  ,&xrefe_a,2,MAXNOD_WALL1,"DA");
-  xcure     = amdef("xcure"  ,&xcure_a,2,MAXNOD_WALL1,"DA");       
-  funct     = amdef("funct"  ,&funct_a,MAXNOD_WALL1,1,"DV");       
-  deriv     = amdef("deriv"  ,&deriv_a,2,MAXNOD_WALL1,"DA");       
-  D         = amdef("D"      ,&D_a   ,6,6             ,"DA");           
-  xjm       = amdef("xjm"    ,&xjm_a ,numdf,numdf     ,"DA");           
-  boplin    = amdef("boplin" ,&boplin_a ,numeps,(numdf*MAXNOD_WALL1),"DA"); 
+  xcure     = amdef("xcure"  ,&xcure_a,2,MAXNOD_WALL1,"DA");
+  funct     = amdef("funct"  ,&funct_a,MAXNOD_WALL1,1,"DV");
+  deriv     = amdef("deriv"  ,&deriv_a,2,MAXNOD_WALL1,"DA");
+  D         = amdef("D"      ,&D_a   ,6,6             ,"DA");
+  xjm       = amdef("xjm"    ,&xjm_a ,numdf,numdf     ,"DA");
+  boplin    = amdef("boplin" ,&boplin_a ,numeps,(numdf*MAXNOD_WALL1),"DA");
   b_bar     = amdef("b_bar"  ,&b_bar_a , numeps,(numdf*MAXNOD_WALL1),"DA");
-  mass      = amdef("mass"   ,&mass_a ,(numdf*MAXNOD_WALL1),(numdf*MAXNOD_WALL1),"DA" );  
-  F         = amdef("F"      ,&F_a ,numeps,1,"DV"); 
-  strain    = amdef("strain" ,&strain_a ,numeps,1,"DV"); 
-  stress    = amdef("stress" ,&stress_a ,numeps,numeps,"DA"); 
-  
+  mass      = amdef("mass"   ,&mass_a ,(numdf*MAXNOD_WALL1),(numdf*MAXNOD_WALL1),"DA" );
+  F         = amdef("F"      ,&F_a ,numeps,1,"DV");
+  strain    = amdef("strain" ,&strain_a ,numeps,1,"DV");
+  stress    = amdef("stress" ,&stress_a ,numeps,numeps,"DA");
+
 /*--------------------------------------- get integration parameters ---*/
 w1intg(ele,data,1);
 w1_getdensity(mat,&density);
@@ -130,14 +130,14 @@ for (lr=0; lr<nir; lr++)
       /*============================= gaussian point and weight at it ===*/
       e2   = data->xgss[ls];
       facs = data->wgts[ls];
-      
+
       /*-------------------------- shape functions and their derivatives */
       w1_funct_deriv(funct,deriv,e1,e2,ele->distyp,1);
-      
-      /*-------------------------------------- compute jacobian matrix --*/       
-      w1_jaco (deriv,xjm,&det,ele,iel); 
-      /*------------------------------------------- integration factor --*/ 
-      fac = facr * facs * det * thick;  
+
+      /*-------------------------------------- compute jacobian matrix --*/
+      w1_jaco (deriv,xjm,&det,ele,iel);
+      /*------------------------------------------- integration factor --*/
+      fac = facr * facs * det * thick;
       /*------------------------------------------ compute mass matrix---*/
       facm = fac * density;
        for (a=0; a<iel; a++)
@@ -151,33 +151,33 @@ for (lr=0; lr<nir; lr++)
       /*------------------------------------- calculate operator Blin ---*/
       amzero(&boplin_a);
       w1_boplin(boplin,deriv,xjm,det,iel);
-      
+
       /*------------------ calculate defgrad F, Green-Lagrange-strain ---*/
       amzero(&F_a);
       amzero(&strain_a);
       w1_defgrad(F,strain,xrefe,xcure,boplin,iel);
-      
+
       /*------------------------------------------- call material law ---*/
       amzero(&stress_a);
       amzero(&D_a);
       w1_call_matgeononl(mat,ele->e.w1->wtype,strain,stress,D,numeps);
-      
+
       /*----------------------------------- update b_bar and 2PK stresses*/
 #ifdef GEMM
       amzero(&b_bar_a);
-      w1_history(ele,b_bar,boplin,stress,F,numeps,nd,ip);      
+      w1_history(ele,b_bar,boplin,stress,F,numeps,nd,ip);
 #endif
       /*----------------------------------------- calculate strain energy*/
       w1_strain_energy(ele,stress,strain,fac);
-      /*-----------------------------------------------------------------*/                   
-   }/*============================================== end of loop over ls */ 
+      /*-----------------------------------------------------------------*/
+   }/*============================================== end of loop over ls */
 }/*================================================= end of loop over lr */
       /*---------------------------- calculate kinetic energy and momenta*/
      w1_kinetic_energy(ele,mass);
 
 /*------------------------------------------------------cleaning-up phase*/
-   amdel(&xrefe_a);   
-   amdel(&xcure_a); 
+   amdel(&xrefe_a);
+   amdel(&xcure_a);
    amdel(&funct_a);
    amdel(&deriv_a);
    amdel(&D_a);
@@ -189,10 +189,10 @@ for (lr=0; lr<nir; lr++)
    amdel(&strain_a);
    amdel(&stress_a);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of w1_update_history */
 #endif /*GEMM*/
 /*! @} (documentation module close)*/

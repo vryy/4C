@@ -10,7 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
+/*!
 \addtogroup FSI
 *//*! @{ (documentation module open)*/
 #ifdef D_FSI
@@ -35,24 +35,24 @@ extern struct _FIELD      *field;
  | vector of material laws                                              |
  | defined in global_control.c
  *----------------------------------------------------------------------*/
-extern struct _MATERIAL  *mat;                     
+extern struct _MATERIAL  *mat;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate dynamic variables if needed                      |
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*!----------------------------------------------------------------------
 \brief ranks and communicators
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par; 
+ extern struct _PAR   par;
 /*!----------------------------------------------------------------------*
  |                                                       m.gee 02/02    |
  | number of load curves numcurve                                       |
@@ -65,8 +65,8 @@ extern INT            numcurve;
 extern struct _CURVE *curve;
 
 static FSI_DYNAMIC  *fsidyn;               /* fluid dynamic variables   */
-/*!---------------------------------------------------------------------                                         
-\brief calculate the grid velocity 
+/*!---------------------------------------------------------------------
+\brief calculate the grid velocity
 
 <pre>                                                         genk 10/02
 
@@ -75,20 +75,20 @@ static FSI_DYNAMIC  *fsidyn;               /* fluid dynamic variables   */
   phase=1: ALE PHASE I
   phase=2: ALE PHASE II: update during the nonlinear iteration
            local lagrange part. impl.: use solution for u_grid
-</pre>   
-\param *fdyn	   FLUID_DYNAMIC       (i)                              
-\param  dt	   DOUBLE              (i)       time increment                            
-\param  numdf      INT                 (i)       number of dofs         
+</pre>
+\param *fdyn	   FLUID_DYNAMIC       (i)
+\param  dt	   DOUBLE              (i)       time increment
+\param  numdf      INT                 (i)       number of dofs
 \param  phase      INT                 (i)       flag for ale-phase
-\return void 
+\return void
 
 ------------------------------------------------------------------------*/
 void fsi_alecp(
-		             FIELD           *fluidfield,  
+		             FIELD           *fluidfield,
                              DOUBLE           dt,
 		             INT              numdf,
 		             INT              phase
-	       )      
+	       )
 {
 INT     i,j;             /* some counters                               */
 INT     numnp_total;     /* total number of nodes                       */
@@ -103,7 +103,7 @@ NODE   *actanode;        /* actual ale node                             */
 GNODE  *actfgnode;       /* actual fluid gnode                          */
 FLUID_DYNAMIC *fdyn;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fsi_alecp");
 #endif
 
@@ -126,7 +126,7 @@ numaf        = genprob.numaf;
  *======================================================================*
  * nodal solution history ale field:                                    *
  * sol_mf[0][i]        ... displacements at (n)			        *
- * sol_mf[1][i]        ... displacements at (n+1) 		        * 
+ * sol_mf[1][i]        ... displacements at (n+1) 		        *
  *======================================================================*/
 
 switch (phase)
@@ -135,96 +135,96 @@ case 1: /* ALE-PHASE I: get grid velocity from mesh displacements ------*/
    /*--------------------------------------------------- loop all nodes */
    for (i=0;i<numnp_total;i++)
    {
-      actfnode  = &(fluidfield->dis[0].node[i]); 
-      actfgnode = actfnode->gnode;   
+      actfnode  = &(fluidfield->dis[0].node[i]);
+      actfgnode = actfnode->gnode;
       actanode  = actfgnode->mfcpnode[numaf];
       if (actanode==NULL) continue;
       for (j=0;j<numveldof;j++)
       {
           dxyzn  = actanode->sol_mf.a.da[0][j];
           dxyz   = actanode->sol_mf.a.da[1][j];
-          actfnode->sol_increment.a.da[4][j] = (dxyz-dxyzn)/dt; 
-  
+          actfnode->sol_increment.a.da[4][j] = (dxyz-dxyzn)/dt;
+
       } /* end of loop over vel dofs */
    } /* end of loop over all nodes */
 break;
-case 2: case 6: /* ALE-PHASE II: update grid velocity at free surface 
+case 2: case 6: /* ALE-PHASE II: update grid velocity at free surface
            (local lagrange) --------------------------------------------*/
    /*--------------------------------------------------- loop all nodes */
    for (i=0;i<numnp_total;i++)
-   {   
-      actfnode  = &(fluidfield->dis[0].node[i]); 
+   {
+      actfnode  = &(fluidfield->dis[0].node[i]);
       if (actfnode->xfs==NULL) continue;
       for (j=0;j<numveldof;j++)
       actfnode->sol_increment.a.da[4][j]
-         = actfnode->sol_increment.a.da[3][j+numdf];    
+         = actfnode->sol_increment.a.da[3][j+numdf];
 
    } /* end of loop over nodes */
 break;
 case 3: case 5: /* ALE-PHASE II: update grid velocity at free surface
            (height function separat & implicit) ------------------------*/
    for (i=0;i<numnp_total;i++)
-   {   
-      actfnode  = &(fluidfield->dis[0].node[i]); 
+   {
+      actfnode  = &(fluidfield->dis[0].node[i]);
       if (actfnode->xfs==NULL) continue;
       phi  = actfnode->xfs[phipos];
       phin = actfnode->sol_increment.a.da[1][numdf];
-      actfnode->sol_increment.a.da[4][phipos] = (phi-phin)/dt;  
-   }  /* end of loop over nodes */ 
+      actfnode->sol_increment.a.da[4][phipos] = (phi-phin)/dt;
+   }  /* end of loop over nodes */
 break;
 default:
    dserror("ale phase out of range!\n");
-}   
+}
 
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
-} /* end of fsi_alecp */ 
+} /* end of fsi_alecp */
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief  calculate ale-convective velocity
 
 <pre>                                                         genk 10/02
 
    c(n+1) = u(n+1) - u_grid(n->n+1)
-   c(n)   = u(n)   - u_grid(n->n+1) 
+   c(n)   = u(n)   - u_grid(n->n+1)
 
    NOTE: local co-system
          u is given in the xyz* co-system
          u_grid is given in the XYZ co-system
-         Thus we have to transform the u-vector from xyz* to XYZ       
+         Thus we have to transform the u-vector from xyz* to XYZ
 
-</pre>   
-\param *fdyn	   FLUID_DYNAMIC     (i)  			  
-\param  numdf      INT               (i)     number of dofs	  
-\param  pos1       INT               (i)     position in sol_incr    
-\param  pos2       INT               (i)     position in sol_incr     
-\param  pos3       INT               (i)     position in sol_incr   
-\return void 
+</pre>
+\param *fdyn	   FLUID_DYNAMIC     (i)
+\param  numdf      INT               (i)     number of dofs
+\param  pos1       INT               (i)     position in sol_incr
+\param  pos2       INT               (i)     position in sol_incr
+\param  pos3       INT               (i)     position in sol_incr
+\return void
 
 ------------------------------------------------------------------------*/
 void fsi_aleconv(
 		 FIELD  *fluidfield,
-		 INT     numdf,  
-                 INT     pos1, 
+		 INT     numdf,
+                 INT     pos1,
 		 INT     pos2
-	        )      
+	        )
 {
 INT    i,j;           /* some counters                                  */
 INT    numnp_total;   /* total number of nodes                          */
 INT    numc;          /* number of veldofs                              */
 NODE  *actfnode;      /* actual fluid node                              */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fsi_aleconv");
 #endif
 
 numnp_total  = fluidfield->dis[0].numnp;
-numc         = numdf-1;  
+numc         = numdf-1;
 
 /*======================================================================*
  * nodal solution history fluid field:                                  *
@@ -242,19 +242,19 @@ numc         = numdf-1;
 /*------------------------------------------------------ loop all nodes */
 for (i=0;i<numnp_total;i++)
 {
-   actfnode  = &(fluidfield->dis[0].node[i]); 
+   actfnode  = &(fluidfield->dis[0].node[i]);
    for (j=0;j<numc;j++)
    {
       actfnode->sol_increment.a.da[pos1][j]
-         =   actfnode->sol_increment.a.da[pos2][j] 
-         - actfnode->sol_increment.a.da[4][j]; 
+         =   actfnode->sol_increment.a.da[pos2][j]
+         - actfnode->sol_increment.a.da[4][j];
    }
 }
 
 #if 0
 for (i=0;i<numnp_total;i++)
 {
-   actfnode  = &(fluidfield->dis[0].node[i]); 
+   actfnode  = &(fluidfield->dis[0].node[i]);
    if (actfnode->xfs==NULL) continue;
    printf(" %12.10lf   %12.10lf\n", actfnode->sol_increment.a.da[pos1][0],
                                     actfnode->sol_increment.a.da[pos1][1]);
@@ -262,14 +262,14 @@ for (i=0;i<numnp_total;i++)
 #endif
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
-} /* end of fsi_aleconv */ 
+} /* end of fsi_aleconv */
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief reduce stresses
 
 <pre>                                                         genk 10/02
@@ -279,15 +279,15 @@ stress field of the element to the sol_mf structure in order to transfer
 them to the structure as Neumann conditions.
 At the moment the element results are averaged only by the corresponding
 number of elements belonging to this node.
-			     
-</pre>   
-\param *actfield      FIELD	     (i)  actual field        
-\param  numdf         INT	     (i)  number of dofs      
-\return void 
+
+</pre>
+\param *actfield      FIELD	     (i)  actual field
+\param  numdf         INT	     (i)  number of dofs
+\return void
 
 ------------------------------------------------------------------------*/
-void fsi_fluidstress_result(  
-                              FIELD           *actfield, 
+void fsi_fluidstress_result(
+                              FIELD           *actfield,
                               INT              numdf
 			   )
 {
@@ -299,7 +299,7 @@ NODE       *actnode;      /* actual node                                */
 GNODE      *actgnode;     /* actual gnode                               */
 ELEMENT    *actele;       /* actual element                             */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fsi_fluidstress_result");
 #endif
 
@@ -324,48 +324,48 @@ for (i=0;i<numnp_total;i++) /* loop nodes */
    {
       actele=actnode->element[j];
       numnp=actele->numnp;
-      for (k=0;k<numnp;k++) 
-      if(actele->node[k]==actnode) break; 
+      for (k=0;k<numnp;k++)
+      if(actele->node[k]==actnode) break;
 #ifdef D_FLUID2
       if (numdf==3)
       {
-         for(l=0;l<3;l++) 
+         for(l=0;l<3;l++)
          actnode->sol_mf.a.da[1][l]+=actele->e.f2->stress_ND.a.da[k][l]/numele;
       }
 #endif
-#ifdef D_FLUID3	 
+#ifdef D_FLUID3
       if (numdf==4)
       {
-         for(l=0;l<6;l++) 
+         for(l=0;l<6;l++)
          actnode->sol_mf.a.da[1][l]+=actele->e.f3->stress_ND.a.da[k][l]/numele;
       }
-#endif	 
-   } 
+#endif
+   }
 } /* end of loop over nodes */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of  fsi_fluidstress_result*/
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief output of fsi-algorithm data to the screen
 
 <pre>                                                         genk 10/02
-			     
-</pre>   
 
-\param *fsidyn      FSI_DYNAMIC	     (i)          
-\param  itnum       INT	             (i)  actual number of iteration      
-\return void 
+</pre>
+
+\param *fsidyn      FSI_DYNAMIC	     (i)
+\param  itnum       INT	             (i)  actual number of iteration
+\return void
 
 ------------------------------------------------------------------------*/
 void fsi_algoout( INT itnum )
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fsi_algoout");
 #endif
 
@@ -386,51 +386,51 @@ case 2:
    printf("SEQUENTIAL STAGGERED SCHEME WITH PREDICTOR\n");
    printf("TIME: %10.3E/%10.3E   DT=%10.3E   STEP=%4d/%4d\n",
       fsidyn->time,fsidyn->maxtime,fsidyn->dt,fsidyn->step,fsidyn->nstep);
-   printf("\n");   
+   printf("\n");
 break;
 case 4:
    printf("ITERATIVE STAGGERED SCHEME WITH FIXED RELAXATION PARAMETER\n");
    printf("TIME: %10.3E/%10.3E   DT=%10.3E   STEP=%4d/%4d   ITNUM=%4d/%4d\n",
       fsidyn->time,fsidyn->maxtime,fsidyn->dt,fsidyn->step,fsidyn->nstep,itnum,fsidyn->itemax);
-   printf("\n");  
+   printf("\n");
 break;
 case 5:
    printf("ITERATIVE STAGGERED SCHEME WITH RELAXATION PARAMETER VIA AITKEN ITERATION\n");
    printf("TIME: %10.3E/%10.3E   DT=%10.3E   STEP=%4d/%4d   ITNUM=%4d/%4d\n",
       fsidyn->time,fsidyn->maxtime,fsidyn->dt,fsidyn->step,fsidyn->nstep,itnum,fsidyn->itemax);
-   printf("\n");  
-break;  
+   printf("\n");
+break;
 case 6:
    printf("ITERATIVE STAGGERED SCHEME WITH RELAXATION PARAMETER VIA STEEPEST DESCENT METHOD\n");
    printf("TIME: %10.3E/%10.3E   DT=%10.3E   STEP=%4d/%4d   ITNUM=%4d/%4d\n",
       fsidyn->time,fsidyn->maxtime,fsidyn->dt,fsidyn->step,fsidyn->nstep,itnum,fsidyn->itemax);
-   printf("\n");  
-break;  
+   printf("\n");
+break;
 default:
    dserror("algoout not implemented yet\n");
 }
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of  fsi_algoout*/
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief output of fsi-algorithm data to the screen
 
 <pre>                                                         genk 01/03
-			     
-</pre>   
 
-\param *fsidyn        FSI_DYNAMIC    (i) 
-\param *actfield      FIELD	     (i)  actual field        
-\param  INT           INT	     (i)  flag      
-\return void 
+</pre>
+
+\param *fsidyn        FSI_DYNAMIC    (i)
+\param *actfield      FIELD	     (i)  actual field
+\param  INT           INT	     (i)  flag
+\return void
 
 ------------------------------------------------------------------------*/
 void fsi_structpredictor(
-                              FIELD            *actfield, 
+                              FIELD            *actfield,
                               INT                init
 		         )
 {
@@ -442,34 +442,34 @@ DOUBLE T,dt;                   /* actual time, time increment           */
 DOUBLE **sol;                  /* nodal solution history                */
 DOUBLE **sol_mf;               /* nodal multifield solution history     */
 DOUBLE timefac[MAXTIMECURVE];  /* timefactors from time curve           */
-DOUBLE acttimefac, initval;   
+DOUBLE acttimefac, initval;
 GNODE  *actgnode;	       /* actual GNODE		                */
 NODE   *actnode;	       /* actual NODE		                */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fsi_structpredictor");
 #endif
 
 fsidyn = alldyn[3].fsidyn;
 /*======================================================================*
- * nodal solution history structural field:                             * 
- * sol[0][j]           ... total displacements at time (t)              * 
+ * nodal solution history structural field:                             *
+ * sol[0][j]           ... total displacements at time (t)              *
  * sol[1][j]           ... velocities at time (t)		        *
- * sol[2][j]           ... accels at time (t)         		        * 
- * sol[3][j]           ... prescribed displacements at time (t-dt)      * 
+ * sol[2][j]           ... accels at time (t)         		        *
+ * sol[3][j]           ... prescribed displacements at time (t-dt)      *
  * sol[4][j]           ... prescribed displacements at time (t)	        *
  * sol[5][j]           ... place 4 - place 3                	        *
  * sol[6][j]           ... the  velocities of prescribed dofs  	        *
  * sol[7][j]           ... the  accels of prescribed dofs  	        *
- * sol[8][j]           ... working space   	                        * 
+ * sol[8][j]           ... working space   	                        *
  * sol[9][j]           ... total displacements at time (t-dt)  	        *
- * sol[10][j]          ... velocities at time (t-dt)        	        * 
+ * sol[10][j]          ... velocities at time (t-dt)        	        *
  * sol_mf[0][j]        ... latest struct-displacements                  *
  * sol_mf[1][j]        ... (relaxed) displ. of the last iteration step  *
  * sol_mf[2][j]        ... converged relaxed displ. at time (t-dt)      *
  * sol_mf[3][j]        ... actual dispi                                 *
  * sol_mf[4][j]        ... FSI coupl.-forces at the end of the timestep *
- * sol_mf[5][j]        ... FSI coupl.-forces at beginning of the timest.* 
+ * sol_mf[5][j]        ... FSI coupl.-forces at beginning of the timest.*
  *======================================================================*/
 
 numnp_total  = actfield->dis[0].numnp;
@@ -484,7 +484,7 @@ if (init==1)
          amredef(&(actnode->sol),FDIM,actnode->sol.sdim,"DA");
 	 amzero(&(actnode->sol));
       } /* endif enlargement */
-   }   
+   }
 goto end;
 }
 
@@ -494,10 +494,10 @@ dt = fsidyn->dt;
 /* WHAT DO WE HAVE TO DO IF WE HAVE PRESCRIBED DISPLACEMENTS AT THE NODES???
    ask MICHAEL of this is correct! */
 /*------------------------------------------ get values from time curve */
-for (actcurve=0;actcurve<numcurve;actcurve++) 
+for (actcurve=0;actcurve<numcurve;actcurve++)
 {
   dyn_facfromcurve(actcurve,T,&timefac[actcurve]) ;
-} /* end loop over active timecurves */ 
+} /* end loop over active timecurves */
 
 /*---------------------------------------- calculate predictor velocity */
 
@@ -513,14 +513,14 @@ case 1: /* dp(n+1) = d(n) */
       /*--------------------------------- check for dirichlet condition */
       if (actgnode->dirich==NULL)
       {
-	 for (j=0;j<actnode->numdf;j++)   
+	 for (j=0;j<actnode->numdf;j++)
 	 sol_mf[0][j] = sol[0][j];
       }
       else /* if there are dirichlet values at n+1 use them!!! */
       {
 	 for (j=0;j<actnode->numdf;j++)
 	 {
-	    if (actgnode->dirich->dirich_onoff.a.iv[j]==0) 
+	    if (actgnode->dirich->dirich_onoff.a.iv[j]==0)
 	    {
      	       sol_mf[0][j]= sol[0][j];
      	       continue;
@@ -528,9 +528,9 @@ case 1: /* dp(n+1) = d(n) */
 	    actcurve = actgnode->dirich->curve.a.iv[j]-1;
 	    if (actcurve<0) acttimefac = ONE;
 	    else acttimefac = timefac[actcurve];
-	    initval  = actgnode->dirich->dirich_val.a.dv[j]; 
-	    sol_mf[0][j] = initval*acttimefac;	 
-	 }	
+	    initval  = actgnode->dirich->dirich_val.a.dv[j];
+	    sol_mf[0][j] = initval*acttimefac;
+	 }
       }
    }
 break;
@@ -545,13 +545,13 @@ case 2: /* dp(n+1) = d(n) + dt * ( 3/2*vg(n)-1/2*vg(n-1) ) */
       if (actgnode->dirich==NULL)
       {
 	 for (j=0;j<actnode->numdf;j++)
-         sol_mf[0][j]= sol[0][j] + dt/TWO*(THREE*sol[1][j] - sol[10][j]);  
+         sol_mf[0][j]= sol[0][j] + dt/TWO*(THREE*sol[1][j] - sol[10][j]);
       }
       else /* if there are dirichlet values at n+1 use them!!! */
       {
 	 for (j=0;j<actnode->numdf;j++)
 	 {
-	    if (actgnode->dirich->dirich_onoff.a.iv[j]==0) 
+	    if (actgnode->dirich->dirich_onoff.a.iv[j]==0)
 	    {
      	       sol_mf[0][j]= sol[0][j] + dt/TWO*(THREE*sol[1][j]- sol[9][j]);
      	       continue;
@@ -559,9 +559,9 @@ case 2: /* dp(n+1) = d(n) + dt * ( 3/2*vg(n)-1/2*vg(n-1) ) */
      	    actcurve = actgnode->dirich->curve.a.iv[j]-1;
 	    if (actcurve<0) acttimefac = ONE;
 	    else acttimefac = timefac[actcurve];
-	    initval  = actgnode->dirich->dirich_val.a.dv[j]; 
-     	    sol_mf[0][j] = initval*acttimefac;  	 	 
-	 }	
+	    initval  = actgnode->dirich->dirich_val.a.dv[j];
+     	    sol_mf[0][j] = initval*acttimefac;
+	 }
       }
    }
 break;
@@ -575,26 +575,26 @@ case 3: /* dp(n+1) = d(n) + dt * vg(n) */
       /*--------------------------------- check for dirichlet condition */
       if (actgnode->dirich==NULL)
       {
-	 for (j=0;j<actnode->numdf;j++)   
-	 sol_mf[0][j]= sol[0][j] + dt*sol[1][j];  
+	 for (j=0;j<actnode->numdf;j++)
+	 sol_mf[0][j]= sol[0][j] + dt*sol[1][j];
       }
       else /* if there are dirichlet values at n+1 use them!!! */
       {
 	 for (j=0;j<actnode->numdf;j++)
 	 {
-	    if (actgnode->dirich->dirich_onoff.a.iv[j]==0) 
+	    if (actgnode->dirich->dirich_onoff.a.iv[j]==0)
 	    {
-     	       sol_mf[0][j]= sol[0][j] + dt*sol[1][j];			 
+     	       sol_mf[0][j]= sol[0][j] + dt*sol[1][j];
 	       continue;
      	    }
      	    actcurve = actgnode->dirich->curve.a.iv[j]-1;
 	    if (actcurve<0) acttimefac = ONE;
 	    else acttimefac = timefac[actcurve];
-	    initval  = actgnode->dirich->dirich_val.a.dv[j]; 
-     	    sol_mf[0][j] = initval*acttimefac;  	 
-	 }	
+	    initval  = actgnode->dirich->dirich_val.a.dv[j];
+     	    sol_mf[0][j] = initval*acttimefac;
+	 }
       }
-   }   
+   }
 break;
 case 4: /* dp(n+1) = d(n) + dt * vg(n) + 1/2* dt**2 * ag(n) */
    for (i=0;i<numnp_total;i++)
@@ -606,25 +606,25 @@ case 4: /* dp(n+1) = d(n) + dt * vg(n) + 1/2* dt**2 * ag(n) */
       /*--------------------------------- check for dirichlet condition */
       if (actgnode->dirich==NULL)
       {
-	 for (j=0;j<actnode->numdf;j++)    
-	 sol_mf[0][j]= sol[0][j] + dt*(sol[1][j] + (dt/TWO)*sol[2][j]); 
+	 for (j=0;j<actnode->numdf;j++)
+	 sol_mf[0][j]= sol[0][j] + dt*(sol[1][j] + (dt/TWO)*sol[2][j]);
       }
       else /* if there are dirichlet values at n+1 use them!!! */
       {
 	 for (j=0;j<actnode->numdf;j++)
 	 {
-	    if (actgnode->dirich->dirich_onoff.a.iv[j]==0) 
+	    if (actgnode->dirich->dirich_onoff.a.iv[j]==0)
 	    {
-     	       sol_mf[0][j]= sol[0][j] + dt*sol[1][j] + dt*dt/TWO*sol[2][j];	
+     	       sol_mf[0][j]= sol[0][j] + dt*sol[1][j] + dt*dt/TWO*sol[2][j];
 	       continue;
      	    }
      	    actcurve = actgnode->dirich->curve.a.iv[j]-1;
 	    if (actcurve<0) acttimefac = ONE;
 	    else acttimefac = timefac[actcurve];
-	    initval  = actgnode->dirich->dirich_val.a.dv[j]; 
-     	    sol_mf[0][j] = initval*acttimefac;  	 
- 	 
-	 }	
+	    initval  = actgnode->dirich->dirich_val.a.dv[j];
+     	    sol_mf[0][j] = initval*acttimefac;
+
+	 }
       }
    }
 break;
@@ -633,13 +633,13 @@ default:
 }
 
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of  fsi_structpredictor*/
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief convergence check for FSI-iteration
 
 <pre>                                                         genk 01/03
@@ -652,16 +652,16 @@ There are two possibility to check the convergence:
 - scaled_2-norm_of_residual (inrmfsi=1):
    || g(i) || / sqrt(neq) <= TOL
 
--  2-norm_of_residual_of_1st_iter (inrmfsi=2):  
+-  2-norm_of_residual_of_1st_iter (inrmfsi=2):
    || g(i) || / || g(0) || <= TOL
 
 where g(i) = d~(i+1) - d(i);
       neq ... number of structural inteface dofs
-		     
+
 </pre>
 \param *structfield   FIELD	     (i)   structural field
-\param *fsidyn 	      FSI_DYNAMIC    (i)   
-\return INT                                                                             
+\param *fsidyn 	      FSI_DYNAMIC    (i)
+\return INT
 
 ------------------------------------------------------------------------*/
 INT fsi_convcheck(FIELD *structfield, INT itnum)
@@ -672,14 +672,14 @@ INT     numnp_total;   /* total number of nodes                         */
 INT     numdf_total;   /* total number of dofs                          */
 INT     numdf,dof;     /* actual number of dofs, actual dof             */
 INT    *sid;           /* structural interface dofs                     */
-DOUBLE  fac; 
-DOUBLE  gnorm=ZERO;    
+DOUBLE  fac;
+DOUBLE  gnorm=ZERO;
 DOUBLE  g;
 DOUBLE  grat;
 NODE   *actsnode;      /* actual struct node                            */
 static DOUBLE g0norm;  /* norm of first iteration                       */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fsi_convcheck");
 #endif
 
@@ -690,7 +690,7 @@ if (itnum==0)
    grat=ONE;
    goto check;
 }
-    
+
 /*----------------------------------------------------- set some values */
 numnp_total = structfield->dis[0].numnp;
 sid         = fsidyn->sid.a.iv;
@@ -701,17 +701,17 @@ for (i=0;i<numnp_total;i++)
 {
    actsnode  = &(structfield->dis[0].node[i]);
    /*----------------------------------------- check for coupling nodes */
-   numdf = actsnode->numdf; 
+   numdf = actsnode->numdf;
    /*-------------------------------------------------------- loop dofs */
    for (j=0;j<numdf;j++)
-   {   
+   {
       dof = actsnode->dof[j];
       dsassert(dof<numdf_total,"dofnumber not valid!\n");
       if (sid[dof]==0) continue;
       g = actsnode->sol_mf.a.da[0][j] - actsnode->sol_mf.a.da[1][j];
       gnorm += g*g;
-   } /* end of loop over dofs */  
-} /* end of loop over nodes */   
+   } /* end of loop over dofs */
+} /* end of loop over nodes */
 
 /*-------------------------------------- determine the convegence ratio */
 gnorm = sqrt(gnorm);
@@ -722,12 +722,12 @@ case 1: /* scaled_2-norm_of_residual */
    grat = gnorm/fac;
 break;
 case 2: /* 2-norm_of_residual_of_1st_iter */
-   if (itnum==1) 
+   if (itnum==1)
    {
       g0norm = gnorm;
       if (g0norm<EPS5) g0norm=ONE;
    }
-   grat = gnorm/g0norm;   
+   grat = gnorm/g0norm;
 break;
 default:
    dserror("parameter out of range: inrmfsi\n");
@@ -760,7 +760,7 @@ case 1:
               grat,fsidyn->convtol);
       printf("NO CONVERGENCE OF ITERATION OVER FIELDS AFTER ITEMAX STEPS!\n");
       printf("                ***** CONTINUING ****\n\n");
-   }    	
+   }
    if (converged>=2)
    {
       printf("|| g(i) || / sqrt(neq) = %10.3E < TOL = %10.3E \n",
@@ -768,7 +768,7 @@ case 1:
       printf("CONVERGENCE OF ITERATION OVER FIELDS!\n\n");
    }
 break;
-case 2:   
+case 2:
    if (converged==0)
    {
       printf("|| g(i) || / || g(0) || = %10.3E >= TOL = %10.3E \n",
@@ -781,7 +781,7 @@ case 2:
               grat,fsidyn->convtol);
       printf("NO CONVERGENCE OF ITERATION OVER FIELDS AFTER ITEMAX STEPS!\n");
       printf("                ***** CONTINUING ****\n\n");
-   }    	
+   }
    if (converged>=2)
    {
       printf("|| g(i) || / || g(0) || = %10.3E < TOL = %10.3E \n",
@@ -790,11 +790,11 @@ case 2:
    }
 break;
 default:
-   dserror("parameter out of range: inrmfsi\n");   
+   dserror("parameter out of range: inrmfsi\n");
 }/* end switch (fsidyn->inrmfsi) */
 }/* end if (par.myrank==0)*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return (converged);
@@ -802,20 +802,20 @@ return (converged);
 
 
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief initialisation of ale field
 
 <pre>                                                        chfoe 11/03
 
-in this routine the ale field is initialised. The solution history is 
+in this routine the ale field is initialised. The solution history is
 enlarged to numr entities at the sol_increment.
-		     
+
 </pre>
 \param *acttfield   FIELD	(i)  ale field
 \param  numr 	    INT		(i)  number of sol_increment places needed
-\return void                                                                             
+\return void
 
-\sa   calling: 
+\sa   calling:
       called by: fsi_ale_nln(), fsi_ale_spring, fsi_ale_laplace,
                  fsi_ale_2step
 ------------------------------------------------------------------------*/
@@ -825,7 +825,7 @@ INT 	 i, k;
 INT 	 numnp_total;
 NODE 	*actnode;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fsi_init_ale");
 #endif
 
@@ -840,7 +840,7 @@ for (k=0;k<actfield->ndis;k++)
    }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

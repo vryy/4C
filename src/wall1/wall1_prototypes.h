@@ -12,7 +12,7 @@ Maintainer: Andrea Hund
 *----------------------------------------------------------------------*/
 #ifdef D_WALL1
 
-/*! 
+/*!
 \addtogroup WALL1
 *//*! @{ (documentation module open)*/
 
@@ -64,9 +64,9 @@ void w1_cal_stress(ELEMENT   *ele, /* actual element                    */
 |                                           (SIGMA X - SIGMA Y)          |
 *-----------------------------------------------------------------------*/
 void w1_mami(DOUBLE *stress, /* vector of stresses                      */
-             DOUBLE *fps,    /* first  principal stress                 */ 
-             DOUBLE *sps,    /* second principal stress                 */ 
-             DOUBLE *aps);   /* angle of principal direction            */ 
+             DOUBLE *fps,    /* first  principal stress                 */
+             DOUBLE *sps,    /* second principal stress                 */
+             DOUBLE *aps);   /* angle of principal direction            */
 /*-----------------------------------------------------------------------*
 |  w1_cal_stress.c                                           al 9/01     |
 |       returns R/S coordinates of gauss integration points              |
@@ -91,14 +91,14 @@ void w1recs(DOUBLE *funval,/* function value                            */
             DOUBLE *fpar,  /* function parameters                       */
             INT     igauss,/* number of gauss points                    */
             INT     icode);/* ==1 initialize function parameters        */
-                           /* > 1            function evaluation        */      
+                           /* > 1            function evaluation        */
 /*-----------------------------------------------------------------------*
 |  w1_call_mat.c                                             al 9/01     |
 |  select proper material law                                            |
 *-----------------------------------------------------------------------*/
 void w1_call_mat(ELEMENT   *ele, /* actual element                      */
                  MATERIAL  *mat, /* actual material                     */
-                 WALL_TYPE wtype,/* plane stress/strain...              */  
+                 WALL_TYPE wtype,/* plane stress/strain...              */
                  DOUBLE **bop,   /* derivative operator                 */
                  DOUBLE  *gop,   /* additional derivative operator      */
                  DOUBLE  *alpha, /* internal dof                        */
@@ -106,7 +106,7 @@ void w1_call_mat(ELEMENT   *ele, /* actual element                      */
                  DOUBLE *stress, /* vector of stresses                  */
                  DOUBLE **d,     /* constitutive matrix                 */
                  INT istore,     /* controls storing of new stresses    */
-                 INT newval);    /* controls evaluation of new stresses */   
+                 INT newval);    /* controls evaluation of new stresses */
 /*-----------------------------------------------------------------------*
 |  w1_call_stiff.c                                           al 9/01     |
 |  usual stiffness matrix total lagrangian formulation                   |
@@ -126,10 +126,10 @@ void w1_funct_deriv(DOUBLE     *funct,  /* shape function values        */
                     DOUBLE      r,      /* r/s coordinates              */
                     DOUBLE      s,      /* r/s coordinates              */
                     DIS_TYP     typ,    /* quad4, quad8, quad9 ...      */
-                    INT         option);/* index for function evaluation*/ 
-void w1_degfuncderiv(DOUBLE     *funct, 
-                      DOUBLE    **deriv, 
-                      DOUBLE      r, 
+                    INT         option);/* index for function evaluation*/
+void w1_degfuncderiv(DOUBLE     *funct,
+                      DOUBLE    **deriv,
+                      DOUBLE      r,
                       DIS_TYP     typ,
                       INT         option);
 /*-----------------------------------------------------------------------*
@@ -172,10 +172,10 @@ void w1_jaco(DOUBLE    **deriv,/* shape function derivatives            */
 |  constitutive matrix - linear elastic - 2D                             |
 |  plane stress, plane strain, rotational symmetry                       |
 *-----------------------------------------------------------------------*/
-void w1_mat_linel(DOUBLE ym,      /* young's modulus                    */     
-                  DOUBLE pv,      /* poisson's ratio                    */     
-                  WALL_TYPE wtype,/* plane stress/strain...             */   
-                  DOUBLE **d);    /* constitutive matrix                */   
+void w1_mat_linel(DOUBLE ym,      /* young's modulus                    */
+                  DOUBLE pv,      /* poisson's ratio                    */
+                  WALL_TYPE wtype,/* plane stress/strain...             */
+                  DOUBLE **d);    /* constitutive matrix                */
 void w1_mat_stvpor(MATERIAL  *mat,
                    DOUBLE *matdata,
                    WALL_TYPE wtype,/* plane stress/strain...            */
@@ -185,21 +185,21 @@ void w1_mat_stvpor(MATERIAL  *mat,
 |  constitutive matrix - forces - Drucker Prager - 2D                    |
 |  plane stress, plane strain, rotational symmetry                       |
 *-----------------------------------------------------------------------*/
-void w1_mat_plast_dp(DOUBLE ym,      /* young's modulus                 */     
-                     DOUBLE pv,      /* poisson's ratio                 */     
-                     DOUBLE sigy,    /* yield stresse                   */    
-                     DOUBLE hard,    /* hardening modulus               */    
-                     DOUBLE phi,     /* angle - drucker prager          */    
-                     ELEMENT   *ele, /* actual element                  */ 
-                     WALL_TYPE wtype,/* plane stress/strain...          */      
-                     DOUBLE **bop,   /* derivative operator             */  
-                     DOUBLE  *gop,   /* add. derivative operator        */  
-                     DOUBLE  *alpha, /* internal dof                    */  
-                     INT ip,         /* integration point Id            */         
+void w1_mat_plast_dp(DOUBLE ym,      /* young's modulus                 */
+                     DOUBLE pv,      /* poisson's ratio                 */
+                     DOUBLE sigy,    /* yield stresse                   */
+                     DOUBLE hard,    /* hardening modulus               */
+                     DOUBLE phi,     /* angle - drucker prager          */
+                     ELEMENT   *ele, /* actual element                  */
+                     WALL_TYPE wtype,/* plane stress/strain...          */
+                     DOUBLE **bop,   /* derivative operator             */
+                     DOUBLE  *gop,   /* add. derivative operator        */
+                     DOUBLE  *alpha, /* internal dof                    */
+                     INT ip,         /* integration point Id            */
                      DOUBLE *stress, /* vector of stresses              */
-                     DOUBLE **d,     /* constitutive matrix             */    
-                     INT istore,     /* controls storing of new stresses*/    
-                     INT newval);    /* controls evaluation of stresses */ 
+                     DOUBLE **d,     /* constitutive matrix             */
+                     INT istore,     /* controls storing of new stresses*/
+                     INT newval);    /* controls evaluation of stresses */
 /*-----------------------------------------------------------------------*
 |  w1_mat_plast_epc.c                                        al 9/01     |
 |  const. matrix - forces - elastoplastic concrete - 2D                  |
@@ -207,21 +207,21 @@ void w1_mat_plast_dp(DOUBLE ym,      /* young's modulus                 */
 *-----------------------------------------------------------------------*/
 void w1_mat_plast_epc(DOUBLE emod      , /* young's modulus             */
                       DOUBLE vnu       , /* poisson's ratio             */
-                      DOUBLE ftm       , /* tensile strenght            */                    
-                      DOUBLE fcm       , /* compressive strenght        */        
-                      DOUBLE gt        , /* tensile fracture energy     */        
-                      DOUBLE gc        , /* compression fracture energy */        
-                      DOUBLE gamma1    , /* fitting factor yield funct 1*/     
-                      DOUBLE gamma2    , /* fitting factor yield funct 2*/     
+                      DOUBLE ftm       , /* tensile strenght            */
+                      DOUBLE fcm       , /* compressive strenght        */
+                      DOUBLE gt        , /* tensile fracture energy     */
+                      DOUBLE gc        , /* compression fracture energy */
+                      DOUBLE gamma1    , /* fitting factor yield funct 1*/
+                      DOUBLE gamma2    , /* fitting factor yield funct 2*/
                       INT    nstiff    , /* flag for tension stiffening */
-                      INT    maxreb    , /* max. number of rebars       */             
+                      INT    maxreb    , /* max. number of rebars       */
                       DOUBLE *reb_area  ,/* rebar area                  */
                       DOUBLE *reb_ang   ,/* rebar angle                 */
                       DOUBLE *reb_so    ,/* minimum bond length         */
                       DOUBLE *reb_ds    ,/* diameter                    */
                       DOUBLE *reb_rgamma,/* 4=deformed bars 2=plane bar */
                       ELEMENT   *ele,    /* actual element              */
-                      WALL_TYPE wtype,   /* plane stress/strain...      */          
+                      WALL_TYPE wtype,   /* plane stress/strain...      */
                       DOUBLE **bop,      /* derivative operator         */
                       DOUBLE  *gop,      /* add derivative operator     */
                       DOUBLE  *alpha,    /* internal dof                */
@@ -229,39 +229,39 @@ void w1_mat_plast_epc(DOUBLE emod      , /* young's modulus             */
                       DOUBLE *stressc,   /* vector of stresses          */
                       DOUBLE **d,        /* constitutive matrix         */
                       INT istore,        /* controls storing of stresses*/
-                      INT newval);       /* controls eval. of stresses  */  
+                      INT newval);       /* controls eval. of stresses  */
 /*-----------------------------------------------------------------------*
 |  w1_mat_plast_epc3D.c                                        sh 12/03  |
 |  const. matrix - forces - elastoplastic concrete - 3D                  |
 |  condensed to plane stress, plane strain                               |
 *-----------------------------------------------------------------------*/
-void w1_mat_plast_epc3D(DOUBLE     Ec,     
-                        DOUBLE     vc,     
-                        DOUBLE     ftm,    
-                        DOUBLE     fcm,    
-                        DOUBLE     gt,     
-                        DOUBLE     gc, 
-                        DOUBLE     gamma1, 
-                        DOUBLE     gamma2, 
-                        DOUBLE     gamma3, 
-                        DOUBLE     gamma4, 
-                        ELEMENT   *ele,    
-                        WALL_TYPE  wtype,  
-                        DOUBLE   **bop,    
+void w1_mat_plast_epc3D(DOUBLE     Ec,
+                        DOUBLE     vc,
+                        DOUBLE     ftm,
+                        DOUBLE     fcm,
+                        DOUBLE     gt,
+                        DOUBLE     gc,
+                        DOUBLE     gamma1,
+                        DOUBLE     gamma2,
+                        DOUBLE     gamma3,
+                        DOUBLE     gamma4,
+                        ELEMENT   *ele,
+                        WALL_TYPE  wtype,
+                        DOUBLE   **bop,
                         DOUBLE    *gop,
                         DOUBLE    *alpha,
-                        INT        ip,     
-                        DOUBLE    *stressc, 
-                        DOUBLE   **d,      
-                        INT        istore, 
-                        INT        newval); 
+                        INT        ip,
+                        DOUBLE    *stressc,
+                        DOUBLE   **d,
+                        INT        istore,
+                        INT        newval);
 /*-----------------------------------------------------------------------|
 | w1_mat_plast_epc_serv.c                                     al 9/01    |
 |      initialize d-components d[0][3], d[1][3], d[2][3], d[3][3]        |
 |      on elastic                                                        |
 |-----------------------------------------------------------------------*/
-void w1iwadi (DOUBLE ym,   /* young's modulus                           */                           
-              DOUBLE pv,   /* poisson's ratio                           */ 
+void w1iwadi (DOUBLE ym,   /* young's modulus                           */
+              DOUBLE pv,   /* poisson's ratio                           */
               DOUBLE *di); /* components of constitutive matrix         */
 /*-----------------------------------------------------------------------|
 | w1_mat_plast_epc_serv.c                                     al 9/01    |
@@ -272,7 +272,7 @@ void w1yicsr (DOUBLE dev,      /* norm der deviatorischen spannungen    */
               DOUBLE hyd,      /* 1. invariante                         */
               DOUBLE sigym,    /* uniaxial yield stress                 */
               DOUBLE alpha,    /* neigungswinkel im invariantenraum     */
-              DOUBLE *ft);     /* yield condition                       */ 
+              DOUBLE *ft);     /* yield condition                       */
 /*-----------------------------------------------------------------------|
 | w1_mat_plast_epc_serv.c                                     al 9/01    |
 |      topic : wall1 - yield criterion (cap - region)                    |
@@ -285,7 +285,7 @@ void w1yiccap (DOUBLE dev,   /* norm of deviatoric predictor stresses   */
                DOUBLE *ft);  /* yield function                          */
 /*-----------------------------------------------------------------------|
 | w1_mat_plast_epc_serv.c                                     al 9/01    |
-|    topic: calculate the gradients of the elastic predictor             |              
+|    topic: calculate the gradients of the elastic predictor             |
 |           deviatoric/hydrostatic stresses                              |
 |-----------------------------------------------------------------------*/
 void w1preds(DOUBLE *sigma, /* elastic predictor projected              */
@@ -313,11 +313,11 @@ void w1pres (DOUBLE *sigma ,    /*  elastic predictor projected         */
 void w1_mat_plast_mises(DOUBLE ym,      /* young's modulus              */
                         DOUBLE pv,      /* poisson's ratio              */
                         DOUBLE sigy,    /* yield stresse                */
-                        DOUBLE hard,    /* hardening modulus            */       
+                        DOUBLE hard,    /* hardening modulus            */
                         DOUBLE gf,      /* fracture energy              */
                         DOUBLE betah,
                         ELEMENT   *ele, /* actual element               */
-                        WALL_TYPE wtype,/* plane stress/strain...       */         
+                        WALL_TYPE wtype,/* plane stress/strain...       */
                         DOUBLE **bop,   /* derivative operator          */
                         DOUBLE  *gop,   /* add. derivative operator     */
                         DOUBLE  *alpha, /* internal dof                 */
@@ -325,7 +325,7 @@ void w1_mat_plast_mises(DOUBLE ym,      /* young's modulus              */
                         DOUBLE *stress, /* vector of stresses           */
                         DOUBLE **d,     /* constitutive matrix          */
                         INT istore,     /* controls storing of stresses */
-                        INT newval);    /* controls eval. of stresses   */ 
+                        INT newval);    /* controls eval. of stresses   */
 /*-----------------------------------------------------------------------*
 |  w1_mat_plast_serv.c                                       al 9/01     |
 |                                                                        |
@@ -339,11 +339,11 @@ void w1yilcr(DOUBLE E,    /* young's modulus                            */
              DOUBLE Eh,   /* hardening modulus                          */
              DOUBLE betah,
              DOUBLE sigy, /* yield stresse                              */
-             DOUBLE epstn,/* equivalent uniaxial plastic strain         */    
+             DOUBLE epstn,/* equivalent uniaxial plastic strain         */
              INT    isoft,/* softening                                  */
              DOUBLE dia,  /* equivalent element length                  */
              DOUBLE *tau, /* current stresses (local)                   */
-             DOUBLE *ft); /* yield condition                            */     
+             DOUBLE *ft); /* yield condition                            */
 /*-----------------------------------------------------------------------*
 |  w1_mat_plast_serv.c                                       al 9/01     |
 |  radial return for elements with mises material model                  |
@@ -357,7 +357,7 @@ void w1radi(DOUBLE e,        /* young's modulus                         */
             DOUBLE *sigma,   /* elastic predicor projected onto yield   */
             DOUBLE *qn,      /* backstress vector                       */
             INT    isoft,    /* softening                               */
-            DOUBLE *epstn,   /* equivalent uniaxial plastic strain      */       
+            DOUBLE *epstn,   /* equivalent uniaxial plastic strain      */
             DOUBLE *dlam,    /* increment of plastic multiplier         */
             WALL_TYPE wtype);/* plane stress/strain...                  */
 /*-----------------------------------------------------------------------*
@@ -372,7 +372,7 @@ void w1mapl(DOUBLE e,        /* young's modulus                         */
             DOUBLE dia,      /* equivalent element length               */
             DOUBLE *tau,     /* current stresses (local)                */
             INT    isoft,    /* softening                               */
-            DOUBLE *epstn,   /* equivalent uniaxial plastic strain      */       
+            DOUBLE *epstn,   /* equivalent uniaxial plastic strain      */
             DOUBLE *dlam,    /* increment of plastic multiplier         */
             DOUBLE **d,      /* constitutive matrix                     */
             WALL_TYPE wtype);/* plane stress/strain...                  */
@@ -388,9 +388,9 @@ void w1yilcr_dp(DOUBLE E,      /* young's modulus                       */
                 DOUBLE phi,    /* angle - drucker prager                */
                 DOUBLE sigy,   /* yield stresse                         */
                 DOUBLE *sigym, /* uniaxial yield stress                 */
-                DOUBLE epstn,  /* equivalent uniaxial plastic strain    */         
+                DOUBLE epstn,  /* equivalent uniaxial plastic strain    */
                 DOUBLE *tau,   /* current stresses (local)              */
-                DOUBLE *ft);   /* yield condition                       */          
+                DOUBLE *ft);   /* yield condition                       */
 /*-----------------------------------------------------------------------*
 |  w1_mat_plast_serv.c                                       al 9/01     |
 |    radial return for elements with mises material model                |
@@ -403,13 +403,13 @@ void w1radi_dp(DOUBLE e,        /* young's modulus                      */
                DOUBLE vnu,      /* poisson's ratio                      */
                DOUBLE *sigma,   /* elastic predicor projected onto yield*/
                DOUBLE *qn,      /* backstress vector                    */
-               DOUBLE *epstn,   /* equivalent uniaxial plastic strain   */          
-               DOUBLE *sigym,   /* uniaxial yield stress                */ 
+               DOUBLE *epstn,   /* equivalent uniaxial plastic strain   */
+               DOUBLE *sigym,   /* uniaxial yield stress                */
                DOUBLE *dlam,    /* increment of plastic multiplier      */
-               WALL_TYPE wtype);/* plane stress/strain...               */ 
+               WALL_TYPE wtype);/* plane stress/strain...               */
 /*-----------------------------------------------------------------------*
 |  w1_mat_plast_serv.c                                       al 9/01     |
-|     calculate element diameter (equivalent length) for one element     |            
+|     calculate element diameter (equivalent length) for one element     |
 *-----------------------------------------------------------------------*/
 void w1cdia(ELEMENT   *ele,    /* actual element                        */
             W1_DATA   *data,   /* wall1 data                            */
@@ -455,31 +455,31 @@ void w1cpreva (DOUBLE *epst,     /* equivalent uniaxial plastic strain  */
 |       topic : radial return for elements with elastoplastic material   |
 |               (concrete)                                               |
 |-----------------------------------------------------------------------*/
-void w1cradi (DOUBLE *sigma,  /* elastic predictor projected onto yield */ 
-              DOUBLE *epstn,  /* equivalent uniaxial plastic strain     */ 
-              DOUBLE *dlam,   /* incremental plastic multiplier         */ 
+void w1cradi (DOUBLE *sigma,  /* elastic predictor projected onto yield */
+              DOUBLE *epstn,  /* equivalent uniaxial plastic strain     */
+              DOUBLE *dlam,   /* incremental plastic multiplier         */
               WALL_TYPE wtype,/* plane stress/strain...                 */
-              INT    yip,     /* stress state   1 =elastic >=2 =plastic */ 
-              DOUBLE *alpha,  /* factor for the first invariants        */ 
-              DOUBLE *ft,     /* yield condition                        */ 
-              DOUBLE *e,      /* young modulus                          */ 
-              DOUBLE *g,      /* shear modulus                          */ 
-	        DOUBLE *com,    /* bulk modulus                           */ 
-              DOUBLE *sigym,  /* uniaxial predictor yield stress        */ 
-              DOUBLE *hards,  /* plastic modulus                        */ 
-              DOUBLE *sigy,   /* actual uniaxial yield stress           */ 
-              DOUBLE *dn,     /* gradient components in deviatoric dir  */ 
-              DOUBLE *dcom,   /* gradient components in hdrostatic dir  */ 
-              DOUBLE *devsig, /* deviatoric predictor stresses          */ 
-              DOUBLE *sm,     /* hydrostatic predictor stresses         */ 
-              DOUBLE *fcm,    /* compressive strenght                   */ 
-              DOUBLE *gc,     /* compression fracture energy            */ 
-              DOUBLE *ftm,    /* tensile strenght                       */ 
-	        DOUBLE *gt,     /* tensile fracture energy                */ 
-              DOUBLE *gamma1, /* fitting factor yield function 1        */ 
-              DOUBLE *gamma2, /* fitting factor yield function 2        */ 
-              DOUBLE *dia,    /* equivalent element length              */ 
-              DOUBLE *acrs);  /* average crack spacing                  */ 
+              INT    yip,     /* stress state   1 =elastic >=2 =plastic */
+              DOUBLE *alpha,  /* factor for the first invariants        */
+              DOUBLE *ft,     /* yield condition                        */
+              DOUBLE *e,      /* young modulus                          */
+              DOUBLE *g,      /* shear modulus                          */
+	        DOUBLE *com,    /* bulk modulus                           */
+              DOUBLE *sigym,  /* uniaxial predictor yield stress        */
+              DOUBLE *hards,  /* plastic modulus                        */
+              DOUBLE *sigy,   /* actual uniaxial yield stress           */
+              DOUBLE *dn,     /* gradient components in deviatoric dir  */
+              DOUBLE *dcom,   /* gradient components in hdrostatic dir  */
+              DOUBLE *devsig, /* deviatoric predictor stresses          */
+              DOUBLE *sm,     /* hydrostatic predictor stresses         */
+              DOUBLE *fcm,    /* compressive strenght                   */
+              DOUBLE *gc,     /* compression fracture energy            */
+              DOUBLE *ftm,    /* tensile strenght                       */
+	        DOUBLE *gt,     /* tensile fracture energy                */
+              DOUBLE *gamma1, /* fitting factor yield function 1        */
+              DOUBLE *gamma2, /* fitting factor yield function 2        */
+              DOUBLE *dia,    /* equivalent element length              */
+              DOUBLE *acrs);  /* average crack spacing                  */
 /*-----------------------------------------------------------------------*
 |  w1_mat_plast_serv.c                                       al 9/01     |
 |                                                                        |
@@ -500,44 +500,44 @@ void w1mapl2(DOUBLE *tau,      /* current stresses (local)              */
 |       topic : radial return for multisurface problems                  |
 |               (material model: concrete)                               |
 |-----------------------------------------------------------------------*/
-void w1cradms(DOUBLE *sigma,  /* elastic predictor projected onto yield */ 
-              DOUBLE *epstn,  /* equivalent uniaxial plastic strain     */ 
-              DOUBLE *dlam,   /* incremental plastic multiplier         */ 
+void w1cradms(DOUBLE *sigma,  /* elastic predictor projected onto yield */
+              DOUBLE *epstn,  /* equivalent uniaxial plastic strain     */
+              DOUBLE *dlam,   /* incremental plastic multiplier         */
               WALL_TYPE wtype,/* plane stress/strain...                 */
-              INT     yip,    /* stress state   1 =elastic >=2 =plastic */ 
-              DOUBLE *alpha,  /* factor for the first invariants        */ 
-              DOUBLE *ft,     /* yield condition                        */ 
-              DOUBLE  e,      /* young modulus                          */ 
-              DOUBLE  g,      /* shear modulus                          */ 
-	      DOUBLE  com,    /* bulk modulus                           */ 
-              DOUBLE *sigym,  /* uniaxial predictor yield stress        */ 
-              DOUBLE *hards,  /* plastic modulus                        */ 
-              DOUBLE  dn[3][4],  /*gradient components in deviatoric dir*/ 
-              DOUBLE  dcom[3][4],/*gradient components in hdrostatic dir*/ 
-              DOUBLE *devsig, /* deviatoric predictor stresses          */ 
-              DOUBLE *sm,     /* hydrostatic predictor stresses         */ 
-              DOUBLE  fcm,    /* compressive strenght                   */ 
-              DOUBLE  gc,     /* compression fracture energy            */ 
-              DOUBLE  ftm,    /* tensile strenght                       */ 
-	      DOUBLE  gt,     /* tensile fracture energy                */ 
-              DOUBLE  gamma1, /* fitting factor yield function 1        */ 
-              DOUBLE  gamma2, /* fitting factor yield function 2        */ 
-              DOUBLE  dia,    /* equivalent element length              */ 
-              DOUBLE  acrs);  /* average crack spacing                  */ 
+              INT     yip,    /* stress state   1 =elastic >=2 =plastic */
+              DOUBLE *alpha,  /* factor for the first invariants        */
+              DOUBLE *ft,     /* yield condition                        */
+              DOUBLE  e,      /* young modulus                          */
+              DOUBLE  g,      /* shear modulus                          */
+	      DOUBLE  com,    /* bulk modulus                           */
+              DOUBLE *sigym,  /* uniaxial predictor yield stress        */
+              DOUBLE *hards,  /* plastic modulus                        */
+              DOUBLE  dn[3][4],  /*gradient components in deviatoric dir*/
+              DOUBLE  dcom[3][4],/*gradient components in hdrostatic dir*/
+              DOUBLE *devsig, /* deviatoric predictor stresses          */
+              DOUBLE *sm,     /* hydrostatic predictor stresses         */
+              DOUBLE  fcm,    /* compressive strenght                   */
+              DOUBLE  gc,     /* compression fracture energy            */
+              DOUBLE  ftm,    /* tensile strenght                       */
+	      DOUBLE  gt,     /* tensile fracture energy                */
+              DOUBLE  gamma1, /* fitting factor yield function 1        */
+              DOUBLE  gamma2, /* fitting factor yield function 2        */
+              DOUBLE  dia,    /* equivalent element length              */
+              DOUBLE  acrs);  /* average crack spacing                  */
 /*-----------------------------------------------------------------------|
 |  w1_mat_plast_serv.c                                       al 9/01     |
 |     topic: convert some arrays                                         |
 |-----------------------------------------------------------------------*/
-      void w1conver(DOUBLE *dlam,       /*  incr. of plastic multiplier */             
-                    DOUBLE *alpha,      /*  factor for the first inv.   */             
-                    DOUBLE *hards,      /* hardening modulus            */             
-                    DOUBLE dn[3][4],    /*  gradient comp. in dev. dir. */  
-                    DOUBLE grad[3][4],  /*  total gradient              */             
-                    DOUBLE *dlamc,      /*  -|                          */             
-                    DOUBLE *alphac,     /*   |                          */             
-                    DOUBLE *hardsc,     /*   |-  converted arrays       */             
-                    DOUBLE dnc[2][4],   /*   |                          */             
-                    DOUBLE gradc[2][4]);/*  -|                          */             
+      void w1conver(DOUBLE *dlam,       /*  incr. of plastic multiplier */
+                    DOUBLE *alpha,      /*  factor for the first inv.   */
+                    DOUBLE *hards,      /* hardening modulus            */
+                    DOUBLE dn[3][4],    /*  gradient comp. in dev. dir. */
+                    DOUBLE grad[3][4],  /*  total gradient              */
+                    DOUBLE *dlamc,      /*  -|                          */
+                    DOUBLE *alphac,     /*   |                          */
+                    DOUBLE *hardsc,     /*   |-  converted arrays       */
+                    DOUBLE dnc[2][4],   /*   |                          */
+                    DOUBLE gradc[2][4]);/*  -|                          */
 /*---------------------------------------------------------------------- |
 |  w1_mat_plast_serv.c                                       al 9/01     |
 |    forms the elasto-plastic consistent tangent material tensor         |
@@ -560,25 +560,25 @@ void w1maplg(DOUBLE *tau,      /* current stresses (local)              */
 |       topic : radial return for elements with elastoplastic material   |
 |               (concrete)      CAP-REGION                               |
 |-----------------------------------------------------------------------*/
-void w1radcap(DOUBLE *sigma,  /* elastic predictor projected onto yield */ 
-              DOUBLE *epstn,  /* equivalent uniaxial plastic strain     */ 
-              DOUBLE *dlam,   /* incremental plastic multiplier         */ 
+void w1radcap(DOUBLE *sigma,  /* elastic predictor projected onto yield */
+              DOUBLE *epstn,  /* equivalent uniaxial plastic strain     */
+              DOUBLE *dlam,   /* incremental plastic multiplier         */
               WALL_TYPE wtype,/* plane stress/strain...                 */
-              DOUBLE *alpha,  /* factor for the first invariants        */ 
-              DOUBLE *e,      /* young modulus                          */ 
-              DOUBLE *g,      /* shear modulus                          */ 
-	        DOUBLE *com,    /* bulk modulus                           */ 
-              DOUBLE *sigym,  /* uniaxial predictor yield stress        */ 
-              DOUBLE *hards,  /* plastic modulus                        */ 
-              DOUBLE *grad,   /* total gradient                         */ 
-              DOUBLE *devsig, /* deviatoric predictor stresses          */ 
-              DOUBLE *dev,    /* norm of the dev. predictor stresses    */ 
-              DOUBLE *hyd,    /* 1st invariant  of the predictor stress.*/ 
-              DOUBLE *hydn,   /* 1st invariant  of the new stresses     */ 
-              DOUBLE *fcm,    /* compressive strenght                   */ 
-              DOUBLE *gc,     /* compression fracture energy            */ 
-              DOUBLE *gamma2, /* fitting factor yield function 2        */ 
-              DOUBLE *dia);   /* equivalent element length              */ 
+              DOUBLE *alpha,  /* factor for the first invariants        */
+              DOUBLE *e,      /* young modulus                          */
+              DOUBLE *g,      /* shear modulus                          */
+	        DOUBLE *com,    /* bulk modulus                           */
+              DOUBLE *sigym,  /* uniaxial predictor yield stress        */
+              DOUBLE *hards,  /* plastic modulus                        */
+              DOUBLE *grad,   /* total gradient                         */
+              DOUBLE *devsig, /* deviatoric predictor stresses          */
+              DOUBLE *dev,    /* norm of the dev. predictor stresses    */
+              DOUBLE *hyd,    /* 1st invariant  of the predictor stress.*/
+              DOUBLE *hydn,   /* 1st invariant  of the new stresses     */
+              DOUBLE *fcm,    /* compressive strenght                   */
+              DOUBLE *gc,     /* compression fracture energy            */
+              DOUBLE *gamma2, /* fitting factor yield function 2        */
+              DOUBLE *dia);   /* equivalent element length              */
 /*-----------------------------------------------------------------------|
 |  w1_mat_plast_serv.c                                        al 9/01    |
 |       topic: forms the  e l a s t o - p l a s t i c                    |
@@ -603,21 +603,21 @@ void w1mplcap(DOUBLE *tau,      /* current stresses (local)             */
 |  w1_mat_plast_serv.c                                        al 9/01    |
 | compute average crack spacing for element wall1     (model: concrete)  |
 |-----------------------------------------------------------------------*/
-void w1acrs(DOUBLE  hte,       /* section properties                    */   
-               INT  maxreb,    /* max. number of rebars                 */   
-            DOUBLE *stress,    /* element stresses                      */   
-            DOUBLE *angle,     /* angle of the principal concrete stress*/   
+void w1acrs(DOUBLE  hte,       /* section properties                    */
+               INT  maxreb,    /* max. number of rebars                 */
+            DOUBLE *stress,    /* element stresses                      */
+            DOUBLE *angle,     /* angle of the principal concrete stress*/
             DOUBLE *reb_area,  /* rebar area                            */
             DOUBLE *reb_ang,   /* rebar angle                           */
             DOUBLE *reb_so,    /* minimum bond length                   */
             DOUBLE *reb_ds,    /* diameter                              */
             DOUBLE *reb_rgamma,/* 4 := deformed bars = 2 := plane bar   */
-            DOUBLE *thick,     /* thickness ot the structure            */   
-            DOUBLE dia,        /* equivalent element length             */   
-            DOUBLE *acrs);     /* average crack spacing                 */   
+            DOUBLE *thick,     /* thickness ot the structure            */
+            DOUBLE dia,        /* equivalent element length             */
+            DOUBLE *acrs);     /* average crack spacing                 */
 /*-----------------------------------------------------------------------|
 |  w1_mat_plast_serv.c                                        al 9/01    |
-|    topic: calculate the gradients of the elastic predictor             |              
+|    topic: calculate the gradients of the elastic predictor             |
 |           deviatoric/hydrostatic stresses                              |
 |-----------------------------------------------------------------------*/
 void w1cpreds(DOUBLE *sigym, /* uniaxial predictor yield stress         */
@@ -691,7 +691,7 @@ void w1consig (DOUBLE **d,/* current material matrix components d14-d44 */
 void w1concep (DOUBLE **d);  /* material matrix to be calculated        */
 /*-----------------------------------------------------------------------|
 |  w1_mat_serv.c                                              al 9/01    |
-|    topic: evaluate the incremental strain in thickness direction       |              
+|    topic: evaluate the incremental strain in thickness direction       |
 |           for wall element (plane stress)                              |
 |-----------------------------------------------------------------------*/
 void w1de33(DOUBLE *sigi,  /* stresses from last iteration step         */
@@ -708,7 +708,7 @@ void w1static_ke(ELEMENT   *ele,    /* actual element                   */
                  MATERIAL  *mat,    /* actual material                  */
                  ARRAY     *estif_global, /* element stiffness matrix   */
                  ARRAY     *emass_global, /* element mass matrix        */
-                 DOUBLE    *force,  /* global vector for internal forces*/  
+                 DOUBLE    *force,  /* global vector for internal forces*/
                  INT        init);  /* initialize this function         */
 /*-----------------------------------------------------------------------*
 |  w1_static_keug.c                                        ah 06/02      |
@@ -729,7 +729,7 @@ void w1fi( DOUBLE  *F,    /* element stresses                           */
            DOUBLE   fac,  /* integration factor                         */
            DOUBLE **bop,  /* derivative operator                        */
            INT      nd,   /* total number degrees of freedom of element */
-           DOUBLE  *fie); /* nodal forces                               */           
+           DOUBLE  *fie); /* nodal forces                               */
 /*----------------------------------------------------------------------*/
 /*  w1_call_mat.c                                         ah 06/02      */
 /* get density out of material law                                      */
@@ -752,7 +752,7 @@ void w1_boplin(DOUBLE    **boplin,        /* Blin                       */
 /*----------------------------------------------------------------------*/
 void w1_b_barop(ELEMENT *ele,                          /* actual element*/
                 DOUBLE **b_bar,                        /* b_bar operator*/
-		DOUBLE **int_b_bar, /*interpolated b-bar op.(E-M scheme)*/    
+		DOUBLE **int_b_bar, /*interpolated b-bar op.(E-M scheme)*/
 		DOUBLE **boplin,                       /*boplin operator*/
                 DOUBLE *F,                        /*Deformation gradient*/
 		INT numeps,               /* number of strain components*/
@@ -794,60 +794,60 @@ void w1_mat_linelgeonon(DOUBLE ym,       /* Young's modulus             */
 |  evaluation of geometric part of stiffness matrix in geononl. case     |
 *-----------------------------------------------------------------------*/
 void w1_kg(
-           
-	   ELEMENT  *ele,                /* active element pointer      */ 	   
+
+	   ELEMENT  *ele,                /* active element pointer      */
            DOUBLE  **kg,                 /* geometric stiffness matrix  */
            DOUBLE  **boplin,             /* linear B-operator           */
            DOUBLE  **stress,             /*stress at act. gaussian point*/
            DOUBLE    fac,                /* integration factor          */
            INT       nd,                 /* dof's of element            */
-           INT       neps,               /* number of strain components */ 
+           INT       neps,               /* number of strain components */
 	   INT       ip);                /* active Gauss point          */
-	                
+
 /*-----------------------------------------------------------------------*
 |  w1_cal_keu.c                                              ah 06/02    |
 |  evaluation of elast+init. disp. part of stiffness in geononl. case    |
 *-----------------------------------------------------------------------*/
 void w1_keu(DOUBLE  **keu,    /* elastic + initial deformation stiffness*/
-            DOUBLE  **b_bar,             /* b_bar operator              */            
+            DOUBLE  **b_bar,             /* b_bar operator              */
             DOUBLE  **int_b_bar,         /* interpolated b_bar(for GEMM)*/
             DOUBLE  **D,                 /* material tangente           */
             DOUBLE    fac,               /* integration factor          */
             INT       nd,                /* dof's of element            */
             INT       neps);             /* number of strain components */
-	                 
+
  /*----------------------------------------------------------------------*
  |  w1_cal_fint.c                                              ah 06/02   |
  | evaluate internal element forces for large def (total Lagr)           |
  *----------------------------------------------------------------------*/
 void w1_fint(ELEMENT *ele,             /* active element pointer       */
-             DOUBLE **stress,          /* 2.PK stresses                */ 
-             DOUBLE **int_b_bar,       /* interpolated b_bar (for GEMM)*/ 
-             DOUBLE  *fint,            /* internal forces              */ 
-             DOUBLE   fac,             /* detJ*wr*ws*thickness         */ 
+             DOUBLE **stress,          /* 2.PK stresses                */
+             DOUBLE **int_b_bar,       /* interpolated b_bar (for GEMM)*/
+             DOUBLE  *fint,            /* internal forces              */
+             DOUBLE   fac,             /* detJ*wr*ws*thickness         */
              INT      nd,              /* Element-DOF                  */
-	       INT      ip);             /* Active Gauss point           */  
+	       INT      ip);             /* Active Gauss point           */
 /*----------------------------------------------------------------------*
  | Transform stress and strain local-global                  fh 7/02    |
  | Local 3-direction is zero                                            |
- *----------------------------------------------------------------------*/ 
+ *----------------------------------------------------------------------*/
 void w1_lss(DOUBLE    *a,    /* vector to be transformed                */
             DOUBLE    **G,   /* elements of transformation matrix       */
             DOUBLE    **GI,  /* inverse of G                            */
-	    INT         it); /* flag for local/global strains/stresses  */                                                                                                                                              
+	    INT         it); /* flag for local/global strains/stresses  */
 /*----------------------------------------------------------------------*
  | Set Transformation Matrices G and GI                      fh 7/02    |
  *----------------------------------------------------------------------*/
 void w1_sett(DOUBLE   **A,   /* matrix of direction cosines             */
             DOUBLE    **B,   /* G-Matrix     (L=1)                      */
-            DOUBLE    **C);  /* inverse of G (L=2)                      */                                                         
+            DOUBLE    **C);  /* inverse of G (L=2)                      */
 /*----------------------------------------------------------------------*
  | Calculate Transformation Matrices G and G(Inv)            fh 7/02    |
  *----------------------------------------------------------------------*/
 void w1_tram(DOUBLE   **xjm, /* Elements of Jacobian Matrix             */
             DOUBLE    **G,   /* G-Matrix                                */
             DOUBLE    **GI,  /* inverse of G                            */
-	    DOUBLE    **dum);/* matrix of direction cosines             */                                                                     
+	    DOUBLE    **dum);/* matrix of direction cosines             */
 /*----------------------------------------------------------------------*
  | w1_cal_fext.c                                             ah 07/02   |
  | element line and surface loads                                       |
@@ -856,13 +856,13 @@ void w1_eleload(ELEMENT  *ele,     /* actual element                  */
                 W1_DATA  *data,    /* wall1- Data                     */
                 DOUBLE	 *loadvec, /* global element load vector fext */
                 INT	  init,    /* flag if init or calculation     */
-                INT       imyrank);        
+                INT       imyrank);
 void w1_fsiload(ELEMENT  *ele,     /* actual element                  */
                 W1_DATA  *data,    /* wall1- Data                     */
                 DOUBLE	 *loadvec, /* global element load vector fext */
                 INT	  init,    /* flag if init or calculation     */
                 INT       imyrank);
-void w1_iedg(INT *iegnod, ELEMENT *ele, INT line, INT init);		
+void w1_iedg(INT *iegnod, ELEMENT *ele, INT line, INT init);
 /*----------------------------------------------------------------------*
  | w1_cal_fext.c                                             ah 07/02   |
  | integration of element loads                                         |
@@ -948,9 +948,9 @@ void w1_free_vector(DOUBLE *v, INT nl);
  *----------------------------------------------------------------------*/
 void  w1_stat_cond(DOUBLE **knninv,/*I:stiffness inverse(knn) (4x4)     */
                    DOUBLE **knc,   /*I: knc = BT C G (8x4)              */
-                   DOUBLE **deltak,/*O: knc*inverse(knn)*kcn            */ 
+                   DOUBLE **deltak,/*O: knc*inverse(knn)*kcn            */
                    DOUBLE  *fintn, /*I: fintn=GT*singma                 */
-                   DOUBLE  *deltaf,/*O: knc*inverse(knn)*fintn          */ 
+                   DOUBLE  *deltaf,/*O: knc*inverse(knn)*fintn          */
                    ELEMENT *ele); /*I: actual element                  */
 /*----------------------------------------------------------------------*
  | w1_incompmode.c                                              ah 9/02 |
@@ -966,8 +966,8 @@ void  w1_updalpha(DOUBLE  *alpha,  /*O: internal dof for incomp modes   */
  |  integration routine for WALL1 element                      al 6/01  |
  *----------------------------------------------------------------------*/
 void w1_oint(
-             ELEMENT   *ele, 
-             W1_DATA   *data, 
+             ELEMENT   *ele,
+             W1_DATA   *data,
              MATERIAL  *mat,
              DOUBLE    *retval,  /* return value */
              INT        init     /* ==2 calc.strain energy */
@@ -1004,23 +1004,23 @@ void w1_mat_plast_mises_3D(DOUBLE     ym,
 |-----------------------------------------------------------------------*/
 void w1mat_trans_up (DOUBLE     ym,
                      DOUBLE     pv,
-                     ELEMENT   *ele,                                        
+                     ELEMENT   *ele,
                      WALL_TYPE  wtype,
                      DOUBLE   **bop,
                      DOUBLE    *gop,
                      DOUBLE    *alpha,
                      INT        ip,
-                     DOUBLE     strain[4]); 
-void w1mat_trans_down (DOUBLE   **d, 
+                     DOUBLE     strain[4]);
+void w1mat_trans_down (DOUBLE   **d,
                        ELEMENT   *ele,
                        WALL_TYPE  wtype,
                        INT        ip,
                        INT        yipc,
-                       DOUBLE    *stressc, 
+                       DOUBLE    *stressc,
                        DOUBLE    *sig3D,
                        DOUBLE    *eps3D,
                        DOUBLE    *stress3D,
-                       DOUBLE    *strain,  
+                       DOUBLE    *strain,
                        DOUBLE    *qn3D);
 /*-----------------------------------------------------------------------*
 | w1_mat_trans.c                                                         |
@@ -1040,7 +1040,7 @@ void w1_vec_switch(DOUBLE *vec,      /* vector do be modified           */
 |     [-,a,-,b,-]        [-,b,-,a,-]                                     |
 *-----------------------------------------------------------------------*/
 void w1_matrix_switch(DOUBLE **mat,   /* matrix do be modified          */
-                      INT a,          /* row & colum to be changed to b */     
+                      INT a,          /* row & colum to be changed to b */
                       INT b,          /* row & colum to be changed to a */
                       INT l);         /* length of row/column of matrix */
 /*----------------------------------------------------------------------*/
@@ -1058,7 +1058,7 @@ void w1_mat_dam_mp(DOUBLE     youngs,
                    DOUBLE    *stress,
                    DOUBLE   **D,
                    INT        istore,
-                   INT        newval); 
+                   INT        newval);
 /*----------------------------------------------------------------------*
  | constitutive matrix - forces - linear elastic- Damage - 2D   he 04/03|
  | plane stress, plane strain, rotational symmetry                      |
@@ -1069,11 +1069,11 @@ void w1_mat_damage(DOUBLE ym,      /* young's modulus                   */
                    INT    Damtyp,  /* flag for Damage-Typ               */
                    DOUBLE Kappa_0, /* initial damage equivalent strain  */
                    DOUBLE Kappa_m, /* factor for damage-law             */
-                   DOUBLE Alpha,   /* factor for expon. damage-function */       
+                   DOUBLE Alpha,   /* factor for expon. damage-function */
                    DOUBLE Beta,    /* factor for expon. damage-function */
-                   DOUBLE k_fac,   /* factor for de Vree                */       
+                   DOUBLE k_fac,   /* factor for de Vree                */
                    ELEMENT   *ele, /* actual element                    */
-                   WALL_TYPE wtype,/* plane stress/strain...            */         
+                   WALL_TYPE wtype,/* plane stress/strain...            */
                    DOUBLE **bop,   /* derivative operator               */
                    DOUBLE  *gop,
                    DOUBLE  *alpha,
@@ -1081,11 +1081,11 @@ void w1_mat_damage(DOUBLE ym,      /* young's modulus                   */
                    DOUBLE *stress, /* vector of stresses                */
                    DOUBLE **d,     /* constitutive matrix               */
                    INT istore,     /* controls storing of stresses      */
-                   INT newval);     /* controls eval. of stresses        */ 
+                   INT newval);     /* controls eval. of stresses        */
 /*----------------------------------------------------------------------*
  | create tensor from vector !!!!!!only for strains!!!!   he    04/03   |
  *----------------------------------------------------------------------*/
-void w1_4to9(DOUBLE  *vector, 
+void w1_4to9(DOUBLE  *vector,
              DOUBLE   tensor[3][3]);
 /*----------------------------------------------------------------------*
  | compute Kroneker-Delta (2-stufiger Einheitstensor)      he    04/03   |
@@ -1094,9 +1094,9 @@ void w1_kroneker(DOUBLE delta[3][3]);
 /*----------------------------------------------------------------------*
  | compute ela. stresses with Hook                        he    04/03   |
  *----------------------------------------------------------------------*/
-void w1_stress_ela(DOUBLE ym, 
-                   DOUBLE pv, 
-                   DOUBLE epsilon[3][3], 
+void w1_stress_ela(DOUBLE ym,
+                   DOUBLE pv,
+                   DOUBLE epsilon[3][3],
                    DOUBLE sigma_el[3][3],
                    DOUBLE delta[3][3]);
 /*----------------------------------------------------------------------*
@@ -1107,11 +1107,11 @@ void w1_stress_ela(DOUBLE ym,
  | Equival = 3 -  JU (1989)                                             |
  | Equival = 4 -  de VREE (1995)                                        |
  *----------------------------------------------------------------------*/
-void w1_equi_eps(DOUBLE   epsilon[3][3], 
-                 DOUBLE   sigma_el[3][3],       
-                 DOUBLE   delta[3][3], 
+void w1_equi_eps(DOUBLE   epsilon[3][3],
+                 DOUBLE   sigma_el[3][3],
+                 DOUBLE   delta[3][3],
                  INT      Equival,
-                 DOUBLE   *eta, 
+                 DOUBLE   *eta,
                  DOUBLE   eta_der[3][3],
                  DOUBLE   pv,
                  DOUBLE   k);
@@ -1121,7 +1121,7 @@ void w1_equi_eps(DOUBLE   epsilon[3][3],
  | DAMTYPE=1 - LINEAR-ENTFESTIGENDES DAMAGING                           |
  | DAMTYPE=2 - EXPONENTIELLES DAMAGING                                  |
  *----------------------------------------------------------------------*/
-void w1_dam_typ(DOUBLE *damage, 
+void w1_dam_typ(DOUBLE *damage,
                 DOUBLE *dam_deriv,
                 DOUBLE kappa,
                 DOUBLE Kappa_0,
@@ -1132,57 +1132,57 @@ void w1_dam_typ(DOUBLE *damage,
 /*----------------------------------------------------------------------*
  | compute ela. stiffness tensor                           he    04/03   |
  *----------------------------------------------------------------------*/
-void w1_mat_ela(DOUBLE   ym, 
+void w1_mat_ela(DOUBLE   ym,
                 DOUBLE   pv,
-                DOUBLE   delta[3][3], 
+                DOUBLE   delta[3][3],
                 DOUBLE   c_el[3][3][3][3]);
 /*----------------------------------------------------------------------*
  | BESTIMMUNG DES SEKANTENTENSORS                         he    04/03   |
  *----------------------------------------------------------------------*/
-void w1_sec(DOUBLE damage, 
+void w1_sec(DOUBLE damage,
             DOUBLE c_el[3][3][3][3],
             DOUBLE c_sec[3][3][3][3]);
 /*----------------------------------------------------------------------*
  | BESTIMMUNG DES SPANNUNGSTENSORS                        he    04/03   |
  *----------------------------------------------------------------------*/
-void w1_stress(DOUBLE c_sec[3][3][3][3], 
+void w1_stress(DOUBLE c_sec[3][3][3][3],
                DOUBLE epsilon[3][3],
                DOUBLE sigma[3][3]);
 /*----------------------------------------------------------------------*
  | reduce tensor to vector                                 he    04/03   |
  *----------------------------------------------------------------------*/
-void w1_9to4(DOUBLE   tensor[3][3], 
+void w1_9to4(DOUBLE   tensor[3][3],
              DOUBLE  *vector);
 /*----------------------------------------------------------------------*
  | reduce 4-stufigen tensor to 2-stufigen tensor           he    04/03   |
  *----------------------------------------------------------------------*/
-void w1_81to16(DOUBLE   tensor4[3][3][3][3], 
+void w1_81to16(DOUBLE   tensor4[3][3][3][3],
                DOUBLE **tensor2);
 /*----------------------------------------------------------------------*
  | reduce 4-stufigen tensor to 2-stufigen tensor           he    04/03   |
  *----------------------------------------------------------------------*/
-void w1_81to16_1(DOUBLE   tensor4[3][3][3][3], 
+void w1_81to16_1(DOUBLE   tensor4[3][3][3][3],
                  DOUBLE   tensor2[4][4]);
 /*----------------------------------------------------------------------*
  | BESTIMMUNG DER SPANNUNGSKOMPONENTEN sig                he    04/03   |
  *----------------------------------------------------------------------*/
-void w1_cond(DOUBLE sig[4], 
+void w1_cond(DOUBLE sig[4],
              DOUBLE **d);
 /*----------------------------------------------------------------------*/
 void w1_strain_energy(ELEMENT *ele,                   /* actual element */
                       DOUBLE **stress,   /* 2PK str. at act. Gauss point*/
 		      DOUBLE *strain,   /* Strains at actual Gauss point*/
-		      DOUBLE  fac);        /* Int. factor at Gauss point*/		      		                                                                       
+		      DOUBLE  fac);        /* Int. factor at Gauss point*/
 /*----------------------------------------------------------------------*/
 /*  w1_kinetic_energy.c                                                 */
 /*  Calculation of kinetic energy of an element                         */
-/*----------------------------------------------------------------------*/                                                           
+/*----------------------------------------------------------------------*/
 void w1_kinetic_energy(ELEMENT *ele,                  /* actual element */
-                       DOUBLE **mass);                   /* mass matrix */                    		      		                                                                       
-/*----------------------------------------------------------------------*/		      
+                       DOUBLE **mass);                   /* mass matrix */
+/*----------------------------------------------------------------------*/
 /*  w1_update_history.c                                                 */
 /*  Update of state variables for E-M Int. Scheme                       */
-/*----------------------------------------------------------------------*/                                                           
+/*----------------------------------------------------------------------*/
 void w1_update_history(ELEMENT *ele,                   /* actual element*/
                        W1_DATA *data,                      /* wall1 data*/
 	               MATERIAL *mat);                 /*actual material*/
@@ -1190,7 +1190,7 @@ void w1_update_history(ELEMENT *ele,                   /* actual element*/
 /*  w1_history.c                                                        */
 /*  Update of state variables for E-M Int. Scheme                       */
 /* (called by w1_update_history)                                        */
-/*----------------------------------------------------------------------*/                                                           
+/*----------------------------------------------------------------------*/
 void w1_history(ELEMENT *ele,                           /*actual element*/
            DOUBLE **b_bar,                              /*b_bar operator*/
 	   DOUBLE **boplin,                            /*boplin operator*/
@@ -1198,28 +1198,28 @@ void w1_history(ELEMENT *ele,                           /*actual element*/
 	   DOUBLE  *F,                     /*Deformation gradient tensor*/
 	   INT      numeps,               /* number of strain components*/
 	   INT      nd,       /* total number degrees of freedom of ele.*/
-	   INT      ip);                     /*Integration point counter*/	   
+	   INT      ip);                     /*Integration point counter*/
 /*----------------------------------------------------------------------*
  |  w1_restart.c                                            sh 03/04    |
  *----------------------------------------------------------------------*/
 void w1_write_restart(ELEMENT *actele, MATERIAL  *mat, INT nhandle, long int *handles, INT init);
 void w1_read_restart(ELEMENT *actele, MATERIAL  *mat, long int *handles, INT init);
-/*----------------------------------------------------------------------*/                                             
+/*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*  w1_tri_service.c                                                    */
-/*----------------------------------------------------------------------*/                                                           
-void w1_degrectri(DOUBLE     *funct, 
-                  DOUBLE    **deriv, 
-                  DOUBLE      r, 
+/*----------------------------------------------------------------------*/
+void w1_degrectri(DOUBLE     *funct,
+                  DOUBLE    **deriv,
+                  DOUBLE      r,
                   DIS_TYP     typ,
                   INT         option);
-void w1_edgejaco(ELEMENT    *ele, 
-                 DOUBLE    **deriv,   
-                 DOUBLE    **xjm,     
-                 DOUBLE     *det,          
+void w1_edgejaco(ELEMENT    *ele,
+                 DOUBLE    **deriv,
+                 DOUBLE    **xjm,
+                 DOUBLE     *det,
                  INT         iel,
                  INT        *iedgnod);
-/*----------------------------------------------------------------------*/                                             
+/*----------------------------------------------------------------------*/
 #endif /*D_WALL1*/
 /*! @} (documentation module close)*/
-                                                                        
+

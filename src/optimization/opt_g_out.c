@@ -23,8 +23,8 @@ Maintainer: Andreas Lipka
 #include "../wall1/wall1.h"
 #include "../brick1/brick1.h"
 #include "opt_prototypes.h"
-/*! 
-\addtogroup OPTIMIZATION 
+/*!
+\addtogroup OPTIMIZATION
 *//*! @{ (documentation module open)*/
 
 
@@ -41,17 +41,17 @@ extern struct _PARTITION  *partition;
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par;                      
+ extern struct _PAR   par;
 /*!----------------------------------------------------------------------
 \brief file pointers
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -76,7 +76,7 @@ extern struct _SOLVAR  *solv;
 extern struct _FIELD      *field;
 /*!----------------------------------------------------------------------
 \brief the optimization main structure
-<pre>                                                            al 06/01   
+<pre>                                                            al 06/01
 defined in opt_cal_main.c
 </pre>
 *----------------------------------------------------------------------*/
@@ -92,7 +92,7 @@ void opt_g_out(OPT_GR_OUT gract)
   static INT numdataw;       /* local Id of data, which will be written */
   static INT numdispw;       /* local Id of data, which will be written */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("opt_g_out");
 #endif
 /*----------------------------------------------------------------------*/
@@ -117,7 +117,7 @@ dstrc_enter("opt_g_out");
   break;
   }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -152,7 +152,7 @@ char         *line2="=";
 actfield    = &(field[0]);
 actsolv     = &(solv[0]);
 actpart     = &(partition[0]);
-#ifdef PARALLEL 
+#ifdef PARALLEL
 actintra    = &(par.intra[0]);
 #else
 actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
@@ -162,7 +162,7 @@ actintra->intra_rank   = 0;
 actintra->intra_nprocs   = 1;
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("og_write_mesh");
 #endif
 /*----------------------------------------------------------------------*/
@@ -180,8 +180,8 @@ dstrc_enter("og_write_mesh");
   endopen0:;
 /*----------------------------------------------------------------------*/
  }/* proc 0 */
-    
-    
+
+
  if (par.myrank==0)
  {/* proc 0 */
 /*----------------------------------------------------------------------*/
@@ -218,7 +218,7 @@ dstrc_enter("og_write_mesh");
     {
       actele = &(actfield->dis[0].element[j]);
       fprintf(out,"%-6d %-6d ",actele->Id+1,actele->Id_loc+1);
-      
+
       switch(actele->eltyp)
       {
       case el_shell8:
@@ -258,15 +258,15 @@ dstrc_enter("og_write_mesh");
 
     }
 endopen01:;
- }/* proc 0 */ 
+ }/* proc 0 */
    /*------------------------------------------------------------ loads */
    /*------------------------- allreduce rhs */
 
-    #ifdef PARALLEL 
+    #ifdef PARALLEL
     rhspv = amdef("rhspv",&rhspv_a,solv->rhs[0].numeq_total,1,"DV");
     /*       amdel(&rhspv_a);*/
-   
-    
+
+
     solserv_reddistvec(&solv->rhs[0],
                       &(solv->sysarray[0]),&(solv->sysarray_typ[0]),
                       rhspv, solv->rhs[0].numeq_total,actintra);
@@ -277,8 +277,8 @@ endopen01:;
 /*----------------------------------------------------------------------*/
   if(out==NULL) goto endopen02;
     for (l=0; l<200; l++)fprintf(out,"%s",line1);fprintf(out,"\n\n");
-     
-    
+
+
     for (j=0; j<actfield->dis[0].numnp; j++)
     {
       actnode = &(actfield->dis[0].node[j]);
@@ -287,7 +287,7 @@ endopen01:;
       {
         dof = actnode->dof[k];
         /* neumann condition on dof */
-    #ifdef PARALLEL 
+    #ifdef PARALLEL
         if (dof >= actfield->dis[0].numeq) continue;
         if(fabs(rhspv[dof])>0.00000001) lnodeflag=1;
     #else
@@ -295,15 +295,15 @@ endopen01:;
         if(fabs(solv->rhs[0].vec.a.dv[dof])>0.00000001) lnodeflag=1;
     #endif
      }
-      
+
       if(!lnodeflag) continue;
-     
+
       fprintf(out,"%-6d %-6d ", actnode->Id+1, actnode->numdf);
-      
+
       for (k=0; k<actnode->numdf; k++)
       {
           dof = actnode->dof[k];
-    #ifdef PARALLEL 
+    #ifdef PARALLEL
           if (dof >= actfield->dis[0].numeq) continue;
           else lval = rhspv[dof];
     #else
@@ -311,22 +311,22 @@ endopen01:;
           else lval = solv->rhs[0].vec.a.dv[dof];
     #endif
           fprintf(out," %-18.5#f",lval);
-      } 
+      }
       fprintf(out,"\n");
-      
+
     }
    /*--------------------------------------------------------- boundary */
     for (l=0; l<200; l++)fprintf(out,"%s",line1);fprintf(out,"\n\n");
     for (j=0; j<actfield->dis[0].numnp; j++)
     {
       actnode = &(actfield->dis[0].node[j]);
-      
+
       bnodeflag=0;
       for (k=0; k<actnode->numdf; k++)
       {
         dof = actnode->dof[k];
         /* dirichlet condition on dof */
-        if (dof >= actfield->dis[0].numeq) /* boundary condition ... */ 
+        if (dof >= actfield->dis[0].numeq) /* boundary condition ... */
         {
            bnodeflag=1;
         }
@@ -352,13 +352,13 @@ for (l=0; l<200; l++)fprintf(out,"%s",line2);fprintf(out,"\n");
 /*----------------------------------------------------------------------*/
 endopen02:;
 /*----------------------------------------------------------------------*/
- }/* proc 0 */ 
+ }/* proc 0 */
 /*----------------------------------------------------------------------*/
-    #ifdef PARALLEL 
+    #ifdef PARALLEL
     amdel(&rhspv_a);
     #endif
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -370,7 +370,7 @@ void og_write_eledens(INT ndataofmesh)
 {
 /*----------------------------------------------------------------------*/
   INT i;
-#ifdef PARALLEL 
+#ifdef PARALLEL
   static  DOUBLE *svec;   /* vector with sensitivities on element level */
   static  DOUBLE *sveh;   /* necsessary for allreducing element values  */
 #endif
@@ -385,13 +385,13 @@ FILE    *fp_tmp;
 char    *appf="a";
 char    *newf="w";
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("og_write_eledens");
 #endif
 /*----------------------------------------------------------------------*/
 actfield    = &(field[0]);
 actpart     = &(partition[0]);
-#ifdef PARALLEL 
+#ifdef PARALLEL
 actintra    = &(par.intra[0]);
 #else
 actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
@@ -401,12 +401,12 @@ actintra->intra_rank   = 0;
 actintra->intra_nprocs   = 1;
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef PARALLEL 
+#ifdef PARALLEL
   svec  = (DOUBLE*)CCACALLOC(actfield->dis[0].numele,sizeof(DOUBLE));
   sveh  = (DOUBLE*)CCACALLOC(actfield->dis[0].numele,sizeof(DOUBLE));
   for (i=0; i<actfield->dis[0].numele; i++) svec[i]=0.;
   for (i=0; i<actfield->dis[0].numele; i++) sveh[i]=0.;
-  
+
   for (i=0; i<actfield->dis[0].numele; i++)
   {
      actele = &(actfield->dis[0].element[i]);
@@ -443,7 +443,7 @@ actintra->intra_nprocs   = 1;
   fprintf(fp_tmp," %d number of data (elements ...)\n",
                                                  actfield->dis[0].numele);
   fprintf(fp_tmp,"2            [1 val-n-e 2 v-e 3 v-n]\n");
-   
+
   /*--------------------------------------------------------------------*/
   fclose(fp_tmp);
 /*----------------------------------------------------------------------*/
@@ -457,12 +457,12 @@ if(ndataofmesh >1) fp_out=fopen("zgout/cgs.vval","a");/* open and add   */
   {
     fprintf(fp_out,
              "[time step] [obj] [data_set]  [numval] [numval x value]\n");
-  } 
+  }
 
   for (i=0; i<actfield->dis[0].numele; i++)
   {
      actele = &(actfield->dis[0].element[i]);
-#ifdef PARALLEL 
+#ifdef PARALLEL
       fprintf(fp_out,"%d %d %d %d %18.5#E \n",ndataofmesh, 1,i+1,1,svec[i]);
 #else
     /*--*/
@@ -492,13 +492,13 @@ endopen2:;
 /*----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*/
- }/* proc 0 */ 
-#ifdef PARALLEL 
+ }/* proc 0 */
+#ifdef PARALLEL
   CCAFREE(svec);
   CCAFREE(sveh);
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -517,7 +517,7 @@ char    *appf="a";
 char    *newf="w";
 char    *modf;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("og_write_displacements");
 #endif
 /*----------------------------------------------------------------------*/
@@ -542,14 +542,14 @@ endopen3:;
 /*----------------------------------------------------------------------*/
 /*------------------------------------------------- print displacements */
 modf = appf;
-if(kstep==1) modf = newf; 
+if(kstep==1) modf = newf;
 fp_out = fopen("zgout/cgs.vdis",modf);
   if(fp_out==NULL) goto endopen4;
 /*----------------------------------------------------------------------*/
    for (i=0; i<actfield->dis[0].numnp; i++)
    {
       actnode = &(actfield->dis[0].node[i]);
-      
+
       if(actnode->sol.sdim==2)
       {
         fprintf(fp_out," %6d %18.5#E %18.5#E %18.5#E\n",
@@ -568,7 +568,7 @@ fp_out = fopen("zgout/cgs.vdis",modf);
                                                    actnode->sol.a.da[0][2]
                                                    );
       }
-      
+
    }
 /*----------------------------------------------------------------------*/
 fclose(fp_out);
@@ -577,9 +577,9 @@ endopen4:;
 /*----------------------------------------------------------------------*/
 }
 /*----------------------------------------------------------------------*/
- }/* proc 0 */ 
+ }/* proc 0 */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

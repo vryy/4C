@@ -10,7 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-#ifdef D_FLUID3 
+#ifdef D_FLUID3
 #include "../headers/standardtypes.h"
 #include "fluid3_prototypes.h"
 #include "../fluid_full/fluid_prototypes.h"
@@ -24,15 +24,15 @@ static DOUBLE Q18 = ONE/EIGHT;
  | global variable GENPROB genprob is defined in global_control.c       |
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief shape functions and their natural derivatives for hexaeder
 
 <pre>                                                         genk 05/02
 
 In this routine the shape functions and their natural first and second
-derivatives with respect to r/s/t are evaluated for 
+derivatives with respect to r/s/t are evaluated for
  H E X A H E D E R
- 
+
    Numbering of the nodes:
 
                            ^ t
@@ -63,14 +63,14 @@ derivatives with respect to r/s/t are evaluated for
 	       /
 	      /
 	     /
-	    r  
+	    r
 
    PROBLEM: GID has a different numbering of the element nodes than this one.
             So either the shape functions for hex20 and hex27 (see drawing)
-	    has to be adapted or during the input phase the numbering has to 
-	    be adapted to the shape functions. 
+	    has to be adapted or during the input phase the numbering has to
+	    be adapted to the shape functions.
 	    This is all in progress and should be done for fluid3 and
-	    brick1 the same way!!!!	   
+	    brick1 the same way!!!!
 
 </pre>
 \param  *funct    DOUBLE   (o)    shape functions
@@ -81,19 +81,19 @@ derivatives with respect to r/s/t are evaluated for
 \param   t        DOUBLE   (i)    coordinate
 \param   typ      DIS_TYP  (i)    element type
 \param   icode    INT      (i)    evaluation flag
-\return void                                                                       
+\return void
 \warning shape functions for hex20/hex27/tet10 not implemented yet!!!
 
 ------------------------------------------------------------------------*/
 void f3_hex(
-               DOUBLE     *funct,     
-               DOUBLE    **deriv,    
-               DOUBLE    **deriv2,   
-               DOUBLE      r,        
-               DOUBLE      s,        
-               DOUBLE      t,        
-               DIS_TYP     typ,      
-               INT         icode    
+               DOUBLE     *funct,
+               DOUBLE    **deriv,
+               DOUBLE    **deriv2,
+               DOUBLE      r,
+               DOUBLE      s,
+               DOUBLE      t,
+               DIS_TYP     typ,
+               INT         icode
             )
 {
 DOUBLE rp,rm,sp,sm,tp,tm;
@@ -101,7 +101,7 @@ DOUBLE rrm,ssm,ttm;
 DOUBLE drm1,dr00,drp1,dsm1,ds00,dsp1,dtm1,dt00,dtp1;
 DOUBLE rm1,r00,rp1,sm1,s00,sp1,tm1,t00,tp1;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f3_rec");
 #endif
 
@@ -116,7 +116,7 @@ case hex8: /* LINEAR shape functions and their natural derivatives ----*/
    sm=ONE-s;
    tp=ONE+t;
    tm=ONE-t;
-   
+
    funct[0]=Q18*rp*sm*tm;
    funct[1]=Q18*rp*sp*tm;
    funct[2]=Q18*rm*sp*tm;
@@ -125,9 +125,9 @@ case hex8: /* LINEAR shape functions and their natural derivatives ----*/
    funct[5]=Q18*rp*sp*tp;
    funct[6]=Q18*rm*sp*tp;
    funct[7]=Q18*rm*sm*tp;
-   
+
    if(icode>1) /* --> first derivative evaluation */
-   {         
+   {
       deriv[0][0]= Q18*sm*tm  ;
       deriv[0][1]= Q18*sp*tm  ;
       deriv[0][2]=-deriv[0][1];
@@ -163,61 +163,61 @@ case hex8: /* LINEAR shape functions and their natural derivatives ----*/
       deriv2[3][0] = -Q18*tm;
       deriv2[4][0] = -Q18*sm;
       deriv2[5][0] =  Q18*rp;
-      
-      deriv2[0][1] =  ZERO; 
+
+      deriv2[0][1] =  ZERO;
       deriv2[1][1] =  ZERO;
       deriv2[2][1] =  ZERO;
       deriv2[3][1] = -deriv2[3][0];
       deriv2[4][1] = -Q18*sp;
       deriv2[5][1] = -deriv2[5][0];
-            
-      deriv2[0][2] =  ZERO; 
+
+      deriv2[0][2] =  ZERO;
       deriv2[1][2] =  ZERO;
       deriv2[2][2] =  ZERO;
       deriv2[3][2] =  deriv2[3][0];
       deriv2[4][2] = -deriv2[4][1];
       deriv2[5][2] = -Q18*rm;
-      
-      deriv2[0][3] =  ZERO; 
+
+      deriv2[0][3] =  ZERO;
       deriv2[1][3] =  ZERO;
       deriv2[2][3] =  ZERO;
       deriv2[3][3] = -deriv2[3][0];
       deriv2[4][3] = -deriv2[4][0];
-      deriv2[5][3] = -deriv2[5][2]; 
-      
-      deriv2[0][4] =  ZERO; 
+      deriv2[5][3] = -deriv2[5][2];
+
+      deriv2[0][4] =  ZERO;
       deriv2[1][4] =  ZERO;
       deriv2[2][4] =  ZERO;
       deriv2[3][4] = -Q18*tp;
       deriv2[4][4] = -deriv2[4][0];
-      deriv2[5][4] = -deriv2[5][0]; 
-      
-      deriv2[0][5] =  ZERO; 
+      deriv2[5][4] = -deriv2[5][0];
+
+      deriv2[0][5] =  ZERO;
       deriv2[1][5] =  ZERO;
       deriv2[2][5] =  ZERO;
       deriv2[3][5] = -deriv2[3][4];
       deriv2[4][5] = -deriv2[4][1];
-      deriv2[5][5] =  deriv2[5][0]; 
-      
-      deriv2[0][6] =  ZERO; 
+      deriv2[5][5] =  deriv2[5][0];
+
+      deriv2[0][6] =  ZERO;
       deriv2[1][6] =  ZERO;
       deriv2[2][6] =  ZERO;
       deriv2[3][6] =  deriv2[3][4];
       deriv2[4][6] =  deriv2[4][1];
-      deriv2[5][6] = -deriv2[5][2];       
-      
-      deriv2[0][7] =  ZERO; 
+      deriv2[5][6] = -deriv2[5][2];
+
+      deriv2[0][7] =  ZERO;
       deriv2[1][7] =  ZERO;
       deriv2[2][7] =  ZERO;
       deriv2[3][7] = -deriv2[3][4];
       deriv2[4][7] =  deriv2[4][0];
-      deriv2[5][7] =  deriv2[5][2];                   	   
+      deriv2[5][7] =  deriv2[5][2];
    } /* endif icode==3) */
 break;
-   
-case hex20: /* QUADRATIC shape functions and their natural derivatives 
+
+case hex20: /* QUADRATIC shape functions and their natural derivatives
                          without central nodes                      ----*/
-			 
+
    dserror("shape functions for hex20 not implemented yet - see f3_calfuncderiv!\n");
 /*--------------------------------------------------- form basic values */
    rp=ONE+r;
@@ -225,7 +225,7 @@ case hex20: /* QUADRATIC shape functions and their natural derivatives
    sp=ONE+s;
    sm=ONE-s;
    tp=ONE+t;
-   tm=ONE-t;   
+   tm=ONE-t;
    rrm=ONE-r*r;
    ssm=ONE-s*s;
    ttm=ONE-t*t;
@@ -260,7 +260,7 @@ case hex20: /* QUADRATIC shape functions and their natural derivatives
       deriv[0][1] = Q18*sp*tm*(TWO*rp+sp+tm-FIVE);
       deriv[1][1] = Q18*tm*rp*(TWO*sp+tm+rp-FIVE);
       deriv[2][1] =-Q18*rp*sp*(TWO*tm+rp+sp-FIVE);
-						
+
       deriv[0][2] =-Q18*sp*tm*(TWO*rm+sp+tm-FIVE);
       deriv[1][2] = Q18*tm*rm*(TWO*sp+tm+rm-FIVE);
       deriv[2][2] =-Q18*rm*sp*(TWO*tm+rm+sp-FIVE);
@@ -331,7 +331,7 @@ case hex20: /* QUADRATIC shape functions and their natural derivatives
 
       deriv[0][19]=-deriv[0][16];
       deriv[1][19]=-deriv[1][18];
-      deriv[2][19]=-Q12*t*rm*sm;   
+      deriv[2][19]=-Q12*t*rm*sm;
    } /* endif (icode>1) */
    if(icode==3) /* --> second derivative evaluation  */
    {
@@ -476,8 +476,8 @@ case hex20: /* QUADRATIC shape functions and their natural derivatives
       deriv2[5][19]=-deriv2[5][18];
    } /* endif (icode==3) */
 break;
-   
-case hex27: /* QUADRATIC shape functions and their natural derivatives 
+
+case hex27: /* QUADRATIC shape functions and their natural derivatives
                          with central nodes                         ----*/
 
    dserror("shape functions for hex27 not implemented yet - see f3_calfuncderiv!\n");
@@ -491,7 +491,7 @@ case hex27: /* QUADRATIC shape functions and their natural derivatives
    tm1=Q12*t*(t - ONE);
    t00=(ONE - t*t);
    tp1=Q12*t*(t + ONE);
-   
+
    funct[0 ]= rp1 * sm1 * tm1;
    funct[1 ]= rp1 * sp1 * tm1;
    funct[2 ]= rm1 * sp1 * tm1;
@@ -519,7 +519,7 @@ case hex27: /* QUADRATIC shape functions and their natural derivatives
    funct[24]= r00 * s00 * tp1;
    funct[25]= r00 * s00 * tm1;
    funct[26]= r00 * s00 * t00;
-   
+
    if(icode>1) /* --> first derivative evaluation */
    {
       drm1 = r - Q12;
@@ -615,25 +615,25 @@ case hex27: /* QUADRATIC shape functions and their natural derivatives
       deriv[2][24]= r00 * s00 * dtp1;
       deriv[2][25]= r00 * s00 * dtm1;
       deriv[2][26]= r00 * s00 * dt00;
-   }  /* endif (icode>1) */ 
+   }  /* endif (icode>1) */
    if(icode==3) /* --> second derivative evaluation */
    {
       dserror("second derivatives for hex27 not implemented yet!!!\n");
    }
 break;
 
-/*----------------------------------------------------------------------*/   
+/*----------------------------------------------------------------------*/
 default:
    dserror("distyp unknown\n");
 } /* end switch (typ) */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
-} /* end of f3_hex */  
+} /* end of f3_hex */
 
 /*!---------------------------------------------------------------------
 \brief shape functions and their natural derivatives for rectangles
@@ -641,9 +641,9 @@ return;
 <pre>                                                         genk 02/04
 
 In this routine the shape functions and their natural first and second
-derivatives with respect to r/s are evaluated for 
- R E C T A N G L E S 
-		     
+derivatives with respect to r/s are evaluated for
+ R E C T A N G L E S
+
 Numbering of the nodes:
 
 
@@ -667,17 +667,17 @@ Numbering of the nodes:
 \param   s        DOUBLE   (i)    coordinate
 \param   typ      DIS_TYP  (i)    element type
 \param   icode    INT      (i)    evaluation flag
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f3_rec(
-            DOUBLE     *funct,     
-            DOUBLE    **deriv,    
-            DOUBLE    **deriv2,   
-            DOUBLE      r,        
-            DOUBLE      s,        
-            DIS_TYP     typ,      
-            INT         icode     
+            DOUBLE     *funct,
+            DOUBLE    **deriv,
+            DOUBLE    **deriv2,
+            DOUBLE      r,
+            DOUBLE      s,
+            DIS_TYP     typ,
+            INT         icode
             )
 {
 INT    i,ii;
@@ -685,7 +685,7 @@ DOUBLE rp,rm,sp,sm,r2,s2;
 DOUBLE rh,sh,rs;
 DOUBLE rhm,shm,rhp,shp;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f3_rec");
 #endif
 
@@ -699,7 +699,7 @@ case quad4: /* LINEAR shape functions and their natural derivatives ----*/
    rm=ONE-r;
    sp=ONE+s;
    sm=ONE-s;
-   
+
    dsassert(funct!=NULL,"cannot write to NULL-pointer!\n");
    funct[0]=Q14*rp*sp;
    funct[1]=Q14*rm*sp;
@@ -739,7 +739,7 @@ case quad4: /* LINEAR shape functions and their natural derivatives ----*/
 
       deriv2[0][3]= ZERO;
       deriv2[1][3]=ZERO;
-      deriv2[2][3]=-Q14;      
+      deriv2[2][3]=-Q14;
    } /* endif (icode==3) */
 break;
 
@@ -753,16 +753,16 @@ case quad8: /* QUADRATIC shape functions and their natural derivatives
    sm=ONE-s;
    r2=ONE-r*r;
    s2=ONE-s*s;
-   
+
    funct[4]=Q12*r2*sp;
    funct[5]=Q12*rm*s2;
    funct[6]=Q12*r2*sm;
    funct[7]=Q12*rp*s2;
    funct[0]=Q14*rp*sp-Q12*(funct[4]+funct[7]);
-   funct[1]=Q14*rm*sp-Q12*(funct[4]+funct[5]); 
-   funct[2]=Q14*rm*sm-Q12*(funct[5]+funct[6]); 
-   funct[3]=Q14*rp*sm-Q12*(funct[6]+funct[7]); 
-   
+   funct[1]=Q14*rm*sp-Q12*(funct[4]+funct[5]);
+   funct[2]=Q14*rm*sm-Q12*(funct[5]+funct[6]);
+   funct[3]=Q14*rp*sm-Q12*(funct[6]+funct[7]);
+
    if(icode>1) /* --> first derivative evaluation */
    {
       deriv[0][0]= Q14*sp;
@@ -790,13 +790,13 @@ case quad8: /* QUADRATIC shape functions and their natural derivatives
       deriv[1][7]=-ONE*rp*s;
 
       deriv[0][0]-= Q12*(deriv[0][4]+deriv[0][7]);
-      deriv[1][0]-= Q12*(deriv[1][4]+deriv[1][7]);      
+      deriv[1][0]-= Q12*(deriv[1][4]+deriv[1][7]);
 
       for(i=1;i<4;i++)
       {
          ii=i+3;
          deriv[0][i] -= Q12*(deriv[0][ii]+deriv[0][ii+1]);
-	 deriv[1][i] -= Q12*(deriv[1][ii]+deriv[1][ii+1]);     
+	 deriv[1][i] -= Q12*(deriv[1][ii]+deriv[1][ii+1]);
       } /* end loop over i */
    } /* endif (icode>1) */
 
@@ -833,11 +833,11 @@ case quad8: /* QUADRATIC shape functions and their natural derivatives
       deriv2[0][7]= ZERO;
       deriv2[1][7]=-(ONE+r);
       deriv2[2][7]=-s;
-      
+
       deriv2[0][0] -= Q12*(deriv2[0][4]+deriv2[0][7]);
       deriv2[1][0] -= Q12*(deriv2[1][4]+deriv2[1][7]);
-      deriv2[2][0] -= Q12*(deriv2[2][4]+deriv2[2][7]); 
-      
+      deriv2[2][0] -= Q12*(deriv2[2][4]+deriv2[2][7]);
+
       for(i=1;i<4;i++)
       {
          ii=i+3;
@@ -865,7 +865,7 @@ case quad9: /* QUADRATIC  shape functions and their natural derivatives
    rhm=r-Q12;
    shp=s+Q12;
    shm=s-Q12;
-   
+
    funct[0]= rs*rp*sp;
    funct[1]=-rs*rm*sp;
    funct[2]= rs*rm*sm;
@@ -874,8 +874,8 @@ case quad9: /* QUADRATIC  shape functions and their natural derivatives
    funct[5]=-rh*rm*s2;
    funct[6]=-sh*sm*r2;
    funct[7]= rh*rp*s2;
-   funct[8]= r2*s2;   	       
-      
+   funct[8]= r2*s2;
+
    if(icode>1) /* --> first derivative evaluation */
    {
       deriv[0][0]= rhp*sh*sp;
@@ -900,12 +900,12 @@ case quad9: /* QUADRATIC  shape functions and their natural derivatives
       deriv[1][6]= shm*r2;
 
       deriv[0][7]= rhp*s2;
-      deriv[1][7]=-TWO*s*rh*rp; 
+      deriv[1][7]=-TWO*s*rh*rp;
 
       deriv[0][8]=-TWO*r*s2;
-      deriv[1][8]=-TWO*s*r2;         
+      deriv[1][8]=-TWO*s*r2;
    } /* endif (icode>1) */
-   
+
    if(icode==3) /* --> second derivative evaluation */
    {
       deriv2[0][0]= sh*sp;
@@ -942,32 +942,32 @@ case quad9: /* QUADRATIC  shape functions and their natural derivatives
 
       deriv2[0][8]=-TWO*s2;
       deriv2[1][8]=-TWO*r2;
-      deriv2[2][8]= TWO*s*TWO*r;         
+      deriv2[2][8]= TWO*s*TWO*r;
    } /* endif (icode==3) */
 break;
 
-/*----------------------------------------------------------------------*/   
+/*----------------------------------------------------------------------*/
 default:
    dserror("distyp unknown");
 } /* end switch(typ) */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of f3_rec */
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief shape functions and their natural derivatives for tetraeder
 
 <pre>                                                         genk 08/02
 
 In this routine the shape functions and their natural first and second
-derivatives with respect to r/s/t are evaluated for 
-T E T R A E D E R  
-		     
+derivatives with respect to r/s/t are evaluated for
+T E T R A E D E R
+
 </pre>
 \param  *funct    DOUBLE   (o)    shape functions
 \param **deriv    DOUBLE   (o)    1st natural deriv. of shape funct.
@@ -977,25 +977,25 @@ T E T R A E D E R
 \param   t        DOUBLE   (i)    coordinate
 \param   typ      DIS_TYP  (i)    element type
 \param   icode    INT      (i)    evaluation flag
-\return void                                                                       
+\return void
 \warning shape functions for TET10 not implemented yet!!!
 
 ------------------------------------------------------------------------*/
 void f3_tet(
-            DOUBLE     *funct,     
-            DOUBLE    **deriv,    
-            DOUBLE    **deriv2,   
-            DOUBLE      r,        
-            DOUBLE      s,        
-            DOUBLE      t,        
-            DIS_TYP     typ,      
-            INT         icode    
+            DOUBLE     *funct,
+            DOUBLE    **deriv,
+            DOUBLE    **deriv2,
+            DOUBLE      r,
+            DOUBLE      s,
+            DOUBLE      t,
+            DIS_TYP     typ,
+            INT         icode
             )
 {
 DOUBLE t1,t2,t3,t4;
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f3_tet");
 #endif
 /*------------------------------- selection of polynomial interpolation */
@@ -1007,14 +1007,14 @@ case tet4: /* LINEAR shape functions and their natural derivatives -----*/
    t2=s;
    t3=t;
    t4=ONE-r-s-t;
-      
+
    funct[0]= t1;
    funct[1]= t2;
    funct[2]= t3;
    funct[3]= t4;
-   
+
    if(icode>1) /* --> first derivative evaluation */
-   {         
+   {
       deriv[0][0]= ONE;
       deriv[0][1]= ZERO;
       deriv[0][2]= ZERO;
@@ -1029,19 +1029,19 @@ case tet4: /* LINEAR shape functions and their natural derivatives -----*/
       deriv[2][1]= ZERO;
       deriv[2][2]= ONE;
       deriv[2][3]=-ONE;
-   } /* endif (icode>1) */  
+   } /* endif (icode>1) */
 break;
-   
+
 case tet10: /*  QUADRATIC shape functions and their natural derivatives */
-			 
-   dserror("shape functions for tet10 not implemented yet!\n"); 
+
+   dserror("shape functions for tet10 not implemented yet!\n");
 /*--------------------------------------------------- form basic values */
 #if 0
    t1=r;
    t2=s;
    t3=t;
    t4=ONE-r-s-t;
-   
+
    funct[0] =  ;
    funct[1] =  ;
    funct[2] = ;
@@ -1063,7 +1063,7 @@ case tet10: /*  QUADRATIC shape functions and their natural derivatives */
       deriv[0][1] = ;
       deriv[1][1] = ;
       deriv[2][1] = ;
-		
+
       deriv[0][2] = ;
       deriv[1][2] = ;
       deriv[2][2] = ;
@@ -1095,8 +1095,8 @@ case tet10: /*  QUADRATIC shape functions and their natural derivatives */
       deriv[0][9] = ;
       deriv[1][9] = ;
       deriv[2][9] = ;
-   
-   }   
+
+   }
    if(icode==3) /* --> second derivative evaluation  */
    {
       deriv2[0][0] =  ;
@@ -1172,19 +1172,19 @@ case tet10: /*  QUADRATIC shape functions and their natural derivatives */
 #endif
 
 break;
-   
-/*----------------------------------------------------------------------*/   
+
+/*----------------------------------------------------------------------*/
 default:
    dserror("distyp unknown\n");
 } /* end switch(typ) */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
-} /* end of f3_tet */ 
+} /* end of f3_tet */
 
 /*!---------------------------------------------------------------------
 \brief shape functions and their natural derivatives for triangles
@@ -1192,9 +1192,9 @@ return;
 <pre>                                                         genk 02/04
 
 In this routine the shape functions and their natural first and second
-derivatives with respect to r/s are evaluated for 
-T R I A N G L E S 
-		     
+derivatives with respect to r/s are evaluated for
+T R I A N G L E S
+
 </pre>
 \param  *funct    DOUBLE   (o)    shape functions
 \param **deriv    DOUBLE   (o)    1st natural deriv. of shape funct.
@@ -1203,23 +1203,23 @@ T R I A N G L E S
 \param   s        DOUBLE   (i)    coordinate
 \param   typ      DIS_TYP  (i)    element type
 \param   icode    INT      (i)    evaluation flag
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f3_tri(
-            DOUBLE     *funct,      
-            DOUBLE    **deriv,    
-            DOUBLE    **deriv2,   
-            DOUBLE      r,        
-            DOUBLE      s,	  
-            DIS_TYP     typ,	  
-            INT         icode	  
+            DOUBLE     *funct,
+            DOUBLE    **deriv,
+            DOUBLE    **deriv2,
+            DOUBLE      r,
+            DOUBLE      s,
+            DIS_TYP     typ,
+            INT         icode
 	   )
 {
 
 DOUBLE rr,rs,ss;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f3_tri");
 #endif
 
@@ -1232,7 +1232,7 @@ case tri3: /* LINEAR shape functions and their natural derivatives -----*/
 
    funct[0]=ONE-r-s;
    funct[1]=r;
-   funct[2]=s; 
+   funct[2]=s;
 
    if(icode>1) /* --> first derivative evaluation */
    {
@@ -1258,7 +1258,7 @@ case tri6: /* QUADRATIC shape functions and ther natural derivatives ---*/
    funct[3]=FOUR*(r-rr-rs);
    funct[4]=FOUR*rs;
    funct[5]=FOUR*(s-rs-ss);
-   
+
    if(icode>1) /* --> first derivative evaluation */
    {
       deriv[0][0]=-THREE+FOUR*(r+s);
@@ -1277,7 +1277,7 @@ case tri6: /* QUADRATIC shape functions and ther natural derivatives ---*/
       deriv[1][4]= FOUR*r;
 
       deriv[0][5]=-FOUR*s;
-      deriv[1][5]= FOUR*(ONE-r-TWO*s);         
+      deriv[1][5]= FOUR*(ONE-r-TWO*s);
    } /* endif (icode>1) */
 
    if(icode==3) /* --> second derivative evaluation */
@@ -1304,9 +1304,9 @@ case tri6: /* QUADRATIC shape functions and ther natural derivatives ---*/
 
       deriv2[0][5]= ZERO;
       deriv2[1][5]=-EIGHT;
-      deriv2[2][5]=-FOUR;	  
+      deriv2[2][5]=-FOUR;
    } /* endif (icode==3) */
-break;   
+break;
 
 /*----------------------------------------------------------------------*/
 default:
@@ -1314,20 +1314,20 @@ default:
 } /* end swtich(typ) */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of f3_tri */
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief jacobian matrix
 
 <pre>                                                         genk 05/02
 
 In this routine the jacobian matrix and its determinant is calculated
-		     
+
 </pre>
 \param **xyze      DOUBLE   (i)    nodal coordinates
 \param  *funct     DOUBLE   (i)    natural shape functions
@@ -1336,7 +1336,7 @@ In this routine the jacobian matrix and its determinant is calculated
 \param  *det       DOUBLE   (o)    determinant of jacobian matrix
 \param  *ele       ELEMENT  (i)    actual element
 \param   iel       INT      (i)    num. of nodes of act. ele
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f3_jaco(DOUBLE    **xyze,
@@ -1350,11 +1350,11 @@ void f3_jaco(DOUBLE    **xyze,
 INT i,j,l;
 DOUBLE dum;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f3_jaco");
-#endif	 
+#endif
 
-/*-------------------------------- determine jacobian at point r,s,t ---*/       
+/*-------------------------------- determine jacobian at point r,s,t ---*/
 for (i=0; i<3; i++)
 {
    for (j=0; j<3; j++)
@@ -1367,16 +1367,16 @@ for (i=0; i<3; i++)
       xjm[i][j]=dum;
    } /* end loop j */
 } /* end loop i */
-/*------------------------------------------ determinant of jacobian ---*/        
+/*------------------------------------------ determinant of jacobian ---*/
 *det = xjm[0][0]*xjm[1][1]*xjm[2][2]+
        xjm[0][1]*xjm[1][2]*xjm[2][0]+
        xjm[0][2]*xjm[1][0]*xjm[2][1]-
        xjm[0][2]*xjm[1][1]*xjm[2][0]-
        xjm[0][0]*xjm[1][2]*xjm[2][1]-
        xjm[0][1]*xjm[1][0]*xjm[2][2];
-       
+
 if(*det<ZERO)
-{   
+{
    printf("\n");
    printf("GLOBAL ELEMENT %i\n",ele->Id);
    printf("NEGATIVE JACOBIAN DETERMINANT: %lf\n",*det);
@@ -1384,12 +1384,12 @@ if(*det<ZERO)
    dserror("Stopped not regulary!\n");
 #else
 #ifdef D_FSI
-   if (genprob.probtyp==prb_fluid && genprob.numfld==2) 
+   if (genprob.probtyp==prb_fluid && genprob.numfld==2)
    {
       fluid_mf(99);
       dserror("Stopped regulary!\n");
    }
-   else if (genprob.probtyp==prb_fsi) 
+   else if (genprob.probtyp==prb_fsi)
    {
       dyn_fsi(99);
       dserror("Stopped regulary!\n");
@@ -1400,9 +1400,9 @@ if(*det<ZERO)
 #endif /* endif D_FSI */
 #endif /* endif PARALLEL */
 }
-      
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -1415,7 +1415,7 @@ return;
 <pre>                                                         genk 02/04
 
 In this routine the jacobian matrix and its determinant is calculated
-		     
+
 </pre>
 \param **xyze      DOUBLE   (i)    nodal coordinates
 \param  *funct     DOUBLE   (i)    natural shape functions
@@ -1425,16 +1425,16 @@ In this routine the jacobian matrix and its determinant is calculated
 \param  *iedgnod   INT      (i)    edgenodes
 \param   iel       INT      (i)    num. of nodes of act. ele
 \param  *ele       ELEMENT  (i)    actual element
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f3_edgejaco( DOUBLE    **xyze,
-                  DOUBLE     *funct,    
-                  DOUBLE    **deriv,   
-                  DOUBLE    **xjm,     
+                  DOUBLE     *funct,
+                  DOUBLE    **deriv,
+                  DOUBLE    **xjm,
                   DOUBLE     *det,
-                  INT        *iedgnod,          
-                  INT         iel,        
+                  INT        *iedgnod,
+                  INT         iel,
                   ELEMENT    *ele
                )
 
@@ -1442,11 +1442,11 @@ void f3_edgejaco( DOUBLE    **xyze,
 INT k;
 INT node;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f3_edgejaco");
-#endif	 
+#endif
 
-/*---------------------------------- determine jacobian at point r,s ---*/       
+/*---------------------------------- determine jacobian at point r,s ---*/
 xjm[0][0] = ZERO ;
 xjm[0][1] = ZERO ;
 xjm[1][0] = ZERO ;
@@ -1461,11 +1461,11 @@ for (k=0; k<iel; k++) /* loop all nodes of the element */
      xjm[1][1] += deriv[1][k] * xyze[1][node] ;
 } /* end loop over iel */
 
-/*------------------------------------------ determinant of jacobian ---*/        
+/*------------------------------------------ determinant of jacobian ---*/
 *det = xjm[0][0]* xjm[1][1] - xjm[1][0]* xjm[0][1];
-    
+
 if(*det<ZERO)
-{   
+{
    printf("\n");
    printf("GLOBAL ELEMENT %i\n",ele->Id);
    printf("NEGATIVE JACOBIAN DETERMINANT: %lf\n",*det);
@@ -1473,12 +1473,12 @@ if(*det<ZERO)
    dserror("Stopped not regulary!\n");
 #else
 #ifdef D_FSI
-   if (genprob.probtyp==prb_fluid && genprob.numfld==2) 
+   if (genprob.probtyp==prb_fluid && genprob.numfld==2)
    {
       fluid_mf(99);
       dserror("Stopped regulary!\n");
    }
-   else if (genprob.probtyp==prb_fsi) 
+   else if (genprob.probtyp==prb_fsi)
    {
       dyn_fsi(99);
       dserror("Stopped regulary!\n");
@@ -1489,9 +1489,9 @@ if(*det<ZERO)
 #endif /* endif D_FSI */
 #endif /* endif PARALLEL */
 }
-   
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -1504,9 +1504,9 @@ return;
 <pre>                                                         genk 04/04
 
 In this routine the metric of the element edge is calculated
-		     
+
 </pre>
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f3_tvmr(DOUBLE   **x,
@@ -1519,7 +1519,7 @@ void f3_tvmr(DOUBLE   **x,
 INT    idim,ialpha,inode,node;
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f3_tvmr");
 #endif
 
@@ -1532,14 +1532,14 @@ for (ialpha=0; ialpha<2; ialpha++)
       for (inode=0; inode<iel; inode++)
       {
          node=iedgnod[inode];
-         akov[idim][ialpha] +=          
+         akov[idim][ialpha] +=
             deriv[ialpha][inode] * x[idim][node];
       }
    }
 }
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1552,7 +1552,7 @@ return;
 
 In this routine the global derivatives w.r.t. x,y,z at point r,s,t are
 calculated.
-		     
+
 </pre>
 \param **derxy     DOUBLE   (o)    global derivatives wrt. x/y/z
 \param **deriv     DOUBLE   (i)    derivatives of shape functions
@@ -1560,21 +1560,21 @@ calculated.
 \param **xji       DOUBLE   (-)    inverse of jacobian
 \param   det       DOUBLE   (i)    jacobian determinant
 \param   iel       INT      (i)    number of nodes in actual element
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f3_gder(
-               DOUBLE   **derxy,     
-               DOUBLE   **deriv,    
-               DOUBLE   **xjm,      
-               DOUBLE   **xji,      
-               DOUBLE     det,      
-               INT        iel       
+               DOUBLE   **derxy,
+               DOUBLE   **deriv,
+               DOUBLE   **xjm,
+               DOUBLE   **xji,
+               DOUBLE     det,
+               INT        iel
             )
 {
 INT    k;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f3_gder");
 #endif
 
@@ -1608,11 +1608,11 @@ for (k=0;k<iel;k++)
                   + xji[1][2] * deriv[2][k] ;
    derxy[2][k] +=   xji[2][0] * deriv[0][k] \
                   + xji[2][1] * deriv[1][k] \
-                  + xji[2][2] * deriv[2][k] ;   
+                  + xji[2][2] * deriv[2][k] ;
 } /* end of loop over k */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -1626,27 +1626,27 @@ return;
 
 In this routine the global derivatives w.r.t. x,y at point r,s are
 calculated.
-		     
+
 </pre>
 \param **derxy     DOUBLE   (o)    global derivatives wrt. x/y
 \param **deriv     DOUBLE   (i)    derivatives of shape functions
 \param **xjm       DOUBLE   (i)    jacobian matrix
 \param   det       DOUBLE   (i)    jacobian determinant
 \param   iel       INT      (i)    number of nodes in actual element
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f3_edgegder(
-               DOUBLE   **derxy,     
-               DOUBLE   **deriv,    
-               DOUBLE   **xjm,      
-               DOUBLE     det,      
-               INT        iel       
+               DOUBLE   **derxy,
+               DOUBLE   **deriv,
+               DOUBLE   **xjm,
+               DOUBLE     det,
+               INT        iel
 	    )
 {
 INT    k;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f3_edgegder");
 #endif
 
@@ -1657,39 +1657,39 @@ for (k=0;k<iel;k++) /* loop all nodes of the element */
 } /* end of loop over iel */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of f2_gder */
-    
-/*!---------------------------------------------------------------------  
+
+/*!---------------------------------------------------------------------
 \brief global coordinates
 
 <pre>                                                         genk 05/02
 
 In this routine the global coordinates for given shape function values
 are set.
-		     
+
 </pre>
 \param *funct      DOUBLE   (i)    shape functions
 \param *ele        DOUBLE   (i)    actual element
 \param  iel        DOUBLE   (i)    number of nodes in act. element
 \param *gcoor      DOUBLE   (o)    global coordinates
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f3_gcoor(
-               DOUBLE     *funct,     
+               DOUBLE     *funct,
                ELEMENT    *ele,
-               INT         iel,      
-               DOUBLE     *gcoor      
+               INT         iel,
+               DOUBLE     *gcoor
              )
 {
 INT i;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f3_gcoor");
 #endif
 
@@ -1705,21 +1705,21 @@ for(i=0;i<iel;i++)
 } /* end of loop over i */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of f3_gcoor */
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief second global derivatives
 
 <pre>                                                         genk 05/02
 
 In this routine the second global derivatives w.r.t x/y/z at point r,s,t
 are calculated.
-		     
+
 </pre>
 \param **xyze     DOUBLE   (-)    nodal coordinates
 \param **xjm      DOUBLE   (i)    jacobian matrix
@@ -1729,12 +1729,12 @@ are calculated.
 \param **derxy2   DOUBLE   (o)    2nd. glob. coord. deriv.
 \param **deriv2   DOUBLE   (i)    2nd. nat. deriv. of shape funcs
 \param   iel      INT      (i)    number of nodes of actual ele
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f3_gder2(
                DOUBLE     **xyze,
-               DOUBLE     **xjm,            
+               DOUBLE     **xjm,
                DOUBLE     **bm,
                DOUBLE     **xder2,
                DOUBLE     **derxy,
@@ -1746,7 +1746,7 @@ void f3_gder2(
 INT i,j;
 DOUBLE r0,r1,r2,r3,r4,r5;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f3_gder2");
 #endif
 
@@ -1839,14 +1839,14 @@ for (i=0;i<iel;i++)
    r1 = deriv2[1][i] - xder2[1][0]*derxy[0][i] - xder2[1][1]*derxy[1][i] \
                      - xder2[1][2]*derxy[2][i];
    r2 = deriv2[2][i] - xder2[2][0]*derxy[0][i] - xder2[2][1]*derxy[1][i] \
-                     - xder2[2][2]*derxy[2][i]; 
+                     - xder2[2][2]*derxy[2][i];
    r3 = deriv2[3][i] - xder2[3][0]*derxy[0][i] - xder2[3][1]*derxy[1][i] \
-                     - xder2[3][2]*derxy[2][i];		     
+                     - xder2[3][2]*derxy[2][i];
    r4 = deriv2[4][i] - xder2[4][0]*derxy[0][i] - xder2[4][1]*derxy[1][i] \
-                     - xder2[4][2]*derxy[2][i];		     
+                     - xder2[4][2]*derxy[2][i];
    r5 = deriv2[5][i] - xder2[5][0]*derxy[0][i] - xder2[5][1]*derxy[1][i] \
-                     - xder2[5][2]*derxy[2][i];		     
-		     		     		       
+                     - xder2[5][2]*derxy[2][i];
+
    derxy2[0][i] += bm[0][0]*r0 + bm[0][1]*r1 + bm[0][2]*r2 \
                 +  bm[0][3]*r3 + bm[0][4]*r4 + bm[0][5]*r5;
    derxy2[1][i] += bm[1][0]*r0 + bm[1][1]*r1 + bm[1][2]*r2 \
@@ -1862,7 +1862,7 @@ for (i=0;i<iel;i++)
 } /* end of loop over i */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 

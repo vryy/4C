@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 'c1_out_gid_sol_str' which 
+\brief contains the routine 'c1_out_gid_sol_str' which
        writes data for a 3D hex element for gid post processing
 
 <pre>
@@ -17,27 +17,27 @@ Maintainer: Andreas Lipka
 #include "brick1.h"
 #include "brick1_prototypes.h"
 
-/*! 
-\addtogroup BRICK1 
+/*!
+\addtogroup BRICK1
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
 \brief output of data for a 3D hex element
 
 <pre>                                                              al 1/03
-This routine writes the physical stresses, extrapolated from GP to nodal 
-points to the flavia.res file. The stresses are averaged between the 
-different elements, so be careful with the interpretation! Test future 
+This routine writes the physical stresses, extrapolated from GP to nodal
+points to the flavia.res file. The stresses are averaged between the
+different elements, so be careful with the interpretation! Test future
 versions of "Gid" for integration point value visualization!
 </pre>
 \param  out       FILE*   (i)   file to be written on (flavia.res)
 \param  actfield FIELD*   (i)   actual field
-\param  place      INT*   (i)   current solution    
+\param  place      INT*   (i)   current solution
 \param  init       INT*   (i)   allocate/free memory
 
 \warning Check if it is possible to give "Gid" integration point values.
          If it is possible change this code!
-\return void                                               
+\return void
 \sa calling: ---; called by: out_gid_sol()
  *----------------------------------------------------------------------*
  |  routine to calcualate and to write gp stresses of a brick1          |
@@ -45,7 +45,7 @@ versions of "Gid" for integration point value visualization!
  *----------------------------------------------------------------------*/
 void c1_out_gid_sol_str(
                         FILE       *out, /* File pointer to flavia.res */
-                        FIELD *actfield, /* active field               */ 
+                        FIELD *actfield, /* active field               */
                         INT       place, /* current solution           */
                         INT         init /* allocate/free memory       */
                         )
@@ -60,9 +60,9 @@ DOUBLE           **stress;
 ELEMENT           *actele;
 NODE             *actnode;
 static DOUBLE **tmpnodval;         /* vector with smoothed nodal values */
-static ARRAY  tmpnodval_a;         /* dito.                             */   
+static ARRAY  tmpnodval_a;         /* dito.                             */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1_out_gid_sol_str");
 #endif
 /*----------------------------------------------------------------------*/
@@ -70,20 +70,20 @@ dstrc_enter("c1_out_gid_sol_str");
 /*----------------------------------------------------------------------*/
   if (init==1)
   {
-    tmpnodval     = amdef("tmpnodval"  ,&tmpnodval_a,numnp,8 ,"DA"); 
-    goto end;      
+    tmpnodval     = amdef("tmpnodval"  ,&tmpnodval_a,numnp,8 ,"DA");
+    goto end;
   }
 /*----------------------------------------------------------------------*/
   if (init==2)
-  { 
+  {
     amdel(&tmpnodval_a);
-    goto end;      
+    goto end;
   }
 /*----------------------------------------------------------------------*/
   amzero(&tmpnodval_a);
 /*----------------------------------------------------------------------*/
 /*check only first element and assume, that the others are of same type */
-  actele = &(actfield->dis[0].element[0]); 
+  actele = &(actfield->dis[0].element[0]);
   switch(actele->e.c1->stresstyp)
     {
     case c1_nprst: case c1_npeqs:
@@ -113,7 +113,7 @@ dstrc_enter("c1_out_gid_sol_str");
       tmpnodval[inod][3] +=  stress[startstr + 3][j];
       tmpnodval[inod][4] +=  stress[startstr + 4][j];
       tmpnodval[inod][5] +=  stress[startstr + 5][j];
-      tmpnodval[inod][6] +=  stress[          24][j];/* equivalent stress */ 
+      tmpnodval[inod][6] +=  stress[          24][j];/* equivalent stress */
       tmpnodval[inod][7] +=  1.0;
     }
     /*------------------------------------------------------------------*/
@@ -184,7 +184,7 @@ dstrc_enter("c1_out_gid_sol_str");
 /*----------------------------------------------------------------------*/
 end:;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

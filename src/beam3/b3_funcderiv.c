@@ -16,7 +16,7 @@ Maintainer: Frank Huber
 #include "beam3.h"
 #include "beam3_prototypes.h"
 
-/*! 
+/*!
 \addtogroup BEAM3
 *//*! @{ (documentation module open)*/
 
@@ -34,25 +34,25 @@ correspondent derivatives if necessary at the actual gauss point r
 \param r         DOUBLE    (i)  actual gauss point coordinate
 \param typ       DIS_TYP   (i)  LIN2, LIN3 or LIN4
 \param option    INT       (i)  flag for derivatives (1) or not (0)
-               
+
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: b3_cal_ele()
 
 *----------------------------------------------------------------------*/
-void b3_funct_deriv(DOUBLE     *funct, 
-                    DOUBLE    **deriv, 
-                    DOUBLE      r,     
-                    DIS_TYP     typ,     
+void b3_funct_deriv(DOUBLE     *funct,
+                    DOUBLE    **deriv,
+                    DOUBLE      r,
+                    DIS_TYP     typ,
                     INT         option)
 {
 const DOUBLE   q12 = 1.0/2.0;
 const DOUBLE   q116 = 1.0/16.0;
 DOUBLE         r2,r3,rp,rm;     /* some terms for shape functions */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("b3_funct_deriv");
 #endif
 /*----------------------------------------------------------------------*/
@@ -73,7 +73,7 @@ case line2:/*-----------------------linear interpolation-----------------*/
    {
       deriv[0][0]= -q12;
       deriv[0][1]= +q12;
-   }               
+   }
 break;
 case line3:/*------------------------quadratic interpolation ------------*/
    funct[0] = q12*rm-q12*(1.0-r2);
@@ -90,7 +90,7 @@ default:
 break;
 } /* end of switch typ */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

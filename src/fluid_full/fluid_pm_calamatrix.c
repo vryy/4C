@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file
 \brief projection method algorithm for fluid: calculation of A-matrix
- 
+
 <pre>
 Maintainer: Steffen Genkinger
             genkinger@statik.uni-stuttgart.de
@@ -10,7 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
+/*!
 \addtogroup FLUID
 *//*! @{ (documentation module open)*/
 #ifdef D_FLUID
@@ -19,7 +19,7 @@ Maintainer: Steffen Genkinger
 #include "fluid_prototypes.h"
 #include "fluid_pm_prototypes.h"
 static INT     veldis=0;           /* flag, if vel. discr. is used     */
-static INT     predis=1;           /* flag, if pres. discr. is used    */ 
+static INT     predis=1;           /* flag, if pres. discr. is used    */
 extern struct _ARRAY lmass_global; /* element lumped mass matrix       */
 extern struct _ARRAY gradopr_global; /*element gradient operator       */
 /*!----------------------------------------------------------------------
@@ -27,11 +27,11 @@ extern struct _ARRAY gradopr_global; /*element gradient operator       */
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par;  
+ extern struct _PAR   par;
 /*----------------------------------------------------------------------*
  | enum _CALC_ACTION                                      m.gee 1/02    |
  | command passed from control routine to the element level             |
@@ -40,12 +40,12 @@ and the type is in partition.h
  *----------------------------------------------------------------------*/
 enum _CALC_ACTION calc_action[MAXFIELD];
 
-/*!---------------------------------------------------------------------  
+/*!---------------------------------------------------------------------
 \brief projection method: calculation of A-matrix
 
 <pre>                                                        genk 11/02
 control routine to calculate the A-matrix, gradient and reduced
-gradient operator for solving the pressure problem of 
+gradient operator for solving the pressure problem of
 the projection method.
 
 According to Gresho it's necessary to compute the A-matrix with all
@@ -61,30 +61,30 @@ The matrix matrix matrix product is called: A = C_trans * M_l * C.
 The gradient matrix is copied to OLL format and the reduced gradient
 matrix is also created. Finally The A-matrix is copied to OLL-format.
 
-</pre>   
+</pre>
 
-\param  *actfield         FIELD	         (i) the actual field		 
-\param  *actintra         INTRA	         (i) the actual intra communicator   
-\param  *actpart          PARTITION      (i) the actual partition		 
-\param  *actsolv          SOLVAR         (i) the actual solver		 
+\param  *actfield         FIELD	         (i) the actual field
+\param  *actintra         INTRA	         (i) the actual intra communicator
+\param  *actpart          PARTITION      (i) the actual partition
+\param  *actsolv          SOLVAR         (i) the actual solver
 \param  *amatrix_oll      SPARSE_ARRAY   (o) A-matrix OLL format
-\param  *fdyn             FLUID_DYNAMIC  (-) fluid dynamic parameters	 
-\param  *gradmatrix_oll   OLL            (o) gradient matrix (OLL-format)	 
-\param  *rgradmatrix_oll  OLL            (o) reduced gradient matrix (OLL-format)	 
-\param  *lmass            DOUBLE         (o) lumped mass matrix (redundant)		 
-\param  *numeq_total      INT            (i) total number of eq.		 
-\param  *numeq            INT            (i) number of eq. on this proc	 
+\param  *fdyn             FLUID_DYNAMIC  (-) fluid dynamic parameters
+\param  *gradmatrix_oll   OLL            (o) gradient matrix (OLL-format)
+\param  *rgradmatrix_oll  OLL            (o) reduced gradient matrix (OLL-format)
+\param  *lmass            DOUBLE         (o) lumped mass matrix (redundant)
+\param  *numeq_total      INT            (i) total number of eq.
+\param  *numeq            INT            (i) number of eq. on this proc
 \param  *numeq_full       INT            (i) number of eq. on this proc	for full system
 \param  *numeq_total_full INT            (i) total number of eqs for full system
-\param  *action           CALC_ACTION    (i) action 			 
-\param  *container        CONTAINER      (-) container			      
-\return void 
+\param  *action           CALC_ACTION    (i) action
+\param  *container        CONTAINER      (-) container
+\return void
 
 ------------------------------------------------------------------------*/
 void fluid_pm_calamatrix(
                           FIELD           *actfield,
-			  INTRA           *actintra, 
-			  PARTITION       *actpart, 
+			  INTRA           *actintra,
+			  PARTITION       *actpart,
 			  SOLVAR          *actsolv,
 			  SPARSE_ARRAY    *amatrix_oll,
 			  FLUID_DYNAMIC   *fdyn,
@@ -96,7 +96,7 @@ void fluid_pm_calamatrix(
 			  INT             *numeq_full,
 	 		  INT             *numeq_total_full,
 			  CALC_ACTION     *action,
-			  CONTAINER       *container  
+			  CONTAINER       *container
 			 )
 {
 #ifdef MLPCG
@@ -110,7 +110,7 @@ DBCSR  *amatrix_csr;     /* A-matrix in CSR format                     */
 DBCSR  *lumpedmass_csr;  /* lumped mass matrix in CSR-format           */
 DBCSR  *gradmatrix_csr;  /* gradient matrix in CSR-format              */
 #ifdef PARALLEL
-INT     mone=-1;   
+INT     mone=-1;
 ARRAY   saveveldof_a;    /* vel dofs before renumbering                */
 ARRAY   savepredof_a;    /* pre dofs before renumbering                */
 ARRAY   newveldof_a;     /* vel dofs after renumbering                 */
@@ -125,7 +125,7 @@ INT    *prepointer;      /* index vector to old pressure dofs          */
 INT    *velpointer;	 /* index vector to old velocity dofs          */
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_pm_calamatrix");
 #endif
 
@@ -144,7 +144,7 @@ amatrix_csr=(DBCSR*)CCACALLOC(1,sizeof(DBCSR));
 numnp_vel = actfield->dis[veldis].numnp;
 
 #ifdef PARALLEL
-/* pressure arrays are also allocated with numnp of veldis, since the 
+/* pressure arrays are also allocated with numnp of veldis, since the
    reference is created by the global node Id                           */
 saveveldof = amdef("saveveldof",&saveveldof_a,numeq_total_full[veldis],1,"IV");
 savepredof = amdef("savepredof",&savepredof_a,numnp_vel,1,"IV");
@@ -169,7 +169,7 @@ amatrix_csr->numeq	     = numeq_full[predis];
 amatrix_csr->numeq_total     = numeq_total_full[predis];
 
 /*--------------------------------------------------- renumber the dofs */
-fluid_pm_dofrenumber(actfield, 
+fluid_pm_dofrenumber(actfield,
 #ifdef PARALLEL
                     saveveldof,savepredof,newveldof,newpredof,
                     velpointer,prepointer,
@@ -204,7 +204,7 @@ mlpcg_csr_open(amatrix_csr,firstdof[predis],lastdof[predis],
                amatrix_csr->numeq_total,nnz_guess,actintra);
 mlpcg_csr_zero(amatrix_csr,actintra);
 
-/*------------------------------ call the elements and calculate lumped 
+/*------------------------------ call the elements and calculate lumped
                                  mass matrix and the gradient matrices  */
 if (par.myrank==0) printf("  -> calling elements ...");
 container->nif = 0;
@@ -248,12 +248,12 @@ if (par.myrank==0) printf("  {%10.3E}\n",t1);
 /*------------------------------------------------------ close A-matrix */
 mlpcg_csr_close(amatrix_csr);
 
-/*---------------------- copy Amatrix CSR-format to Amatrix OLL and 
+/*---------------------- copy Amatrix CSR-format to Amatrix OLL and
                          and reduce the pressure boundary conditions    */
 if (par.myrank==0) printf("  -> copying matrices ...");
 t0 = ds_cputime();
 fluid_pm_redcpmat(
-#ifdef PARALLEL                 
+#ifdef PARALLEL
 		 savepredof,prepointer,savepredof,prepointer,
 #endif
                  numeq_total[predis],numeq_total[predis],
@@ -262,7 +262,7 @@ fluid_pm_redcpmat(
 
 /*----------------- copy gradmatrix CSR-format to gradmatrix OLL format */
 fluid_pm_redcpmat(
-#ifdef PARALLEL                 
+#ifdef PARALLEL
 		 saveveldof,velpointer,savepredof,prepointer,
 #endif
                  numeq_total_full[veldis],numeq_total_full[predis],
@@ -271,7 +271,7 @@ fluid_pm_redcpmat(
 
 /*--------- copy gradmatrix CSR-format to reduced gradmatrix OLL format */
 fluid_pm_redcpmat(
-#ifdef PARALLEL                 
+#ifdef PARALLEL
 		 saveveldof,velpointer,savepredof,prepointer,
 #endif
                  numeq_total[veldis],numeq_total[predis],
@@ -281,7 +281,7 @@ t1 = ds_cputime()-t0;
 if (par.myrank==0) printf("             {%10.3E}\n",t1);
 
 /*--------------------------------------------------- renumber the dofs */
-fluid_pm_dofrenumber(actfield, 
+fluid_pm_dofrenumber(actfield,
 #ifdef PARALLEL
                     saveveldof,savepredof,NULL,NULL,
                     velpointer,prepointer,
@@ -311,56 +311,56 @@ amdel(&prepointer_a);
   dserror("MLPCG needed for fluid projection method, but not defined!!");
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
-} /* end of fluid_promethod_cal_amatrix */ 
+} /* end of fluid_promethod_cal_amatrix */
 
 
-/*!---------------------------------------------------------------------  
-\brief renumbering the dofs 
+/*!---------------------------------------------------------------------
+\brief renumbering the dofs
 
 <pre>                                                        genk 11/02
 
 control routine to renumber the dofs
 
-</pre>   
+</pre>
 
-\param  *actfield         FIELD	      (i)     the actual field		  
-\param  *saveveldof       INT         (i/o)   actual velocity dofs  	  
-\param  *savepredof       INT         (i/o)   actual pressure dofs  	  
-\param  *newveldof        INT         (i/o)   velocity dofs after renumbering 
-\param  *newpredof        INT         (i/o)   pressure dofs after renumbering 
-\param  *velpointer       INT         (i/o)   pointer to old vel dofs 
-\param  *velpointer       INT         (i/o)   pointer to old pre dofs 
-\param  *actintra         INTRA	      (-)     the actual intra communicator   
-\param  *actpart          PARTITION   (-)     the actual partition  	  
-\param  *amatrix_csr      DBCSR       (-)     gradient matrix (CSR-format)    
-\param  *lumpedmass       DBCSR       (-)     lumped mass matrix (CSR-format) 
-\param  *numeq_total_full INT         (i)     total number of eq.		  
-\param  *numeq_full       INT         (i)     number of eq. on this proc	  
-\param   numnp_vel        INT         (i)     number of vel nodes	  
-\param  *firsdof          INT         (o)     first dofnumbers on this proc   
-\param  *lastdof          INT         (o)     last dofnumbers on this proc    
-\param   option           INT         (i)     evaluation flag		    
-\return void 
-\warning this is all in progress 
+\param  *actfield         FIELD	      (i)     the actual field
+\param  *saveveldof       INT         (i/o)   actual velocity dofs
+\param  *savepredof       INT         (i/o)   actual pressure dofs
+\param  *newveldof        INT         (i/o)   velocity dofs after renumbering
+\param  *newpredof        INT         (i/o)   pressure dofs after renumbering
+\param  *velpointer       INT         (i/o)   pointer to old vel dofs
+\param  *velpointer       INT         (i/o)   pointer to old pre dofs
+\param  *actintra         INTRA	      (-)     the actual intra communicator
+\param  *actpart          PARTITION   (-)     the actual partition
+\param  *amatrix_csr      DBCSR       (-)     gradient matrix (CSR-format)
+\param  *lumpedmass       DBCSR       (-)     lumped mass matrix (CSR-format)
+\param  *numeq_total_full INT         (i)     total number of eq.
+\param  *numeq_full       INT         (i)     number of eq. on this proc
+\param   numnp_vel        INT         (i)     number of vel nodes
+\param  *firsdof          INT         (o)     first dofnumbers on this proc
+\param  *lastdof          INT         (o)     last dofnumbers on this proc
+\param   option           INT         (i)     evaluation flag
+\return void
+\warning this is all in progress
 
 ------------------------------------------------------------------------*/
 void fluid_pm_dofrenumber(FIELD      *actfield,
 #ifdef PARALLEL
-                          INT        *saveveldof, 
+                          INT        *saveveldof,
 			  INT        *savepredof,
 			  INT        *newveldof,
 			  INT        *newpredof,
                           INT        *velpointer,
 			  INT        *prepointer,
 #endif
-			  INTRA      *actintra, 
+			  INTRA      *actintra,
 			  PARTITION  *actpart,
-			  DBCSR      *amatrix_csr, 
+			  DBCSR      *amatrix_csr,
 			  DBCSR      *lumpedmass,
 			  INT        *numeq_total_full,
 			  INT        *numeq_full,
@@ -382,7 +382,7 @@ PARTDISCRET   *actpdis;       /* actual pdis                            */
 NODE          *actnode;       /* actual node                            */
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_pmdofrenumber");
 #endif
 
@@ -406,18 +406,18 @@ case 0: /* define new node numbers and save the old ones                */
       actnode = &(actdis->node[i]);
       savepredof[actnode->Id] = actnode->dof[0];
    }
-   
+
    /*----------------------- renumber the dofs for both discretisations */
-   if (par.nprocs>1) 
+   if (par.nprocs>1)
    {
       imyrank     = actintra->intra_rank;
       inproc      = actintra->intra_nprocs;
-      actpdis     = &(actpart->pdis[veldis]);      
+      actpdis     = &(actpart->pdis[veldis]);
       fluid_pm_newdofs(imyrank,inproc,actfield,actpdis,actintra,
                        lumpedmass,veldis);
-      actpdis     = &(actpart->pdis[predis]);      
+      actpdis     = &(actpart->pdis[predis]);
       fluid_pm_newdofs(imyrank,inproc,actfield,actpdis,actintra,
-                       amatrix_csr,predis);      
+                       amatrix_csr,predis);
    }
 
    /*-------------------- save new dofs for vel and pres discretisation */
@@ -497,21 +497,21 @@ case 1: /* write old dof numbers to the nodes again */
       fd = prepointer[actdof];
       dsassert(fd>=0,"problems while renumbering dofs!\n");
       actnode->dof[0] = savepredof[fd];
-   }      
-#endif   
+   }
+#endif
 break;
 default:
    dserror("option out of range: don't know what to do\n");
-}    
+}
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
-} /* end of fluid_pmdofrenumber */ 
+} /* end of fluid_pmdofrenumber */
 
-/*!---------------------------------------------------------------------  
+/*!---------------------------------------------------------------------
 \brief assembly of lumped mass and gradient matrix
 
 <pre>                                                        genk 11/02
@@ -521,33 +521,33 @@ Both matrices are in CSR-format and the mask for the matrices is
 created during the assembly.
 This is a common assembly routine. However, instead of adding up the
 values on our own, we use here the routine  mlpcg_csr_addentry(),
-which blows up the CSR-matrix if necessary.     
+which blows up the CSR-matrix if necessary.
 
-</pre>   
+</pre>
 
-\param  *container    CONTAINER      container                       (-)      
+\param  *container    CONTAINER      container                       (-)
 \param  *actvele      ELEMENT        actual element (vel. discr.)    (-)
 \param  *actpele      ELEMENT        actual element (pre. discr.)    (-)
 \param  *actintra     INTRA	     the actual intra communicator   (-)
 \warning coupled dofs not possible!!!
 \warning lmass_global and gradopr_global are external global ARRAYS
-\return void   
+\return void
 ------------------------------------------------------------------------*/
-void assemble_fluid_amatrix( 
-                             CONTAINER *container, 
+void assemble_fluid_amatrix(
+                             CONTAINER *container,
                              ELEMENT   *actvele,
-                             ELEMENT   *actpele, 
-			     INTRA     *actintra 
-			   ) 
+                             ELEMENT   *actpele,
+			     INTRA     *actintra
+			   )
 {
 #ifdef MLPCG
-INT     i,j;                  /* simply some counters                   */  
+INT     i,j;                  /* simply some counters                   */
 INT     ndv,ndp;              /* number of dofs per element             */
 INT     counter;              /* a counter                              */
-INT     numnpv,numnpp;        /* number of nodes per element            */ 
+INT     numnpv,numnpp;        /* number of nodes per element            */
 INT     lmv[MAXDOFPERELE];    /* vel location matrix                    */
 INT     lmp[MAXDOFPERELE];    /* pre location matrix                    */
-INT     rindex;               /* row index                              */  
+INT     rindex;               /* row index                              */
 INT     cindex;               /* column index                           */
 #ifdef PARALLEL
 INT     ownerv[MAXDOFPERELE]; /* owner vel dofs                         */
@@ -561,7 +561,7 @@ DBCSR   *gradmatrix;          /* gradient operator in CSR-format        */
 NODE    *actnode;             /* actual node                            */
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("assemble_fluid_amatrix");
 #endif
 
@@ -587,7 +587,7 @@ for (i=0;i<numnpv;i++)
    for (j=0;j<actnode->numdf;j++)
    {
      lmv[counter] = actnode->dof[j];
-#ifdef PARALLEL 
+#ifdef PARALLEL
      ownerv[counter] = actvele->node[i]->proc;
 #endif
      counter++;
@@ -611,16 +611,16 @@ dsassert(counter==ndp,"assemblage failed due to wrong dof numbering");
  | the lumped mass matrix is a						 |
  | diagonal matrix, so one loop is sufficient				 |
  | WARNING: COUPLED DOFS NOT POSSIBLE!!!!!!!!!!!!!!!!!!!		 |
- *-----------------------------------------------------------------------*/ 
+ *-----------------------------------------------------------------------*/
 for (j=0;j<ndv;j++)
 {
    /*-------------------------------------------- loop only my own rows */
-#ifdef PARALLEL 
+#ifdef PARALLEL
    if (ownerv[j]!=myrank) continue;
 #endif
-   rindex = lmv[j];   
+   rindex = lmv[j];
    val = elmass[j][j];
-   mlpcg_csr_addentry(lumpedmass, val, rindex, rindex, actintra); 
+   mlpcg_csr_addentry(lumpedmass, val, rindex, rindex, actintra);
 }
 
 /*-----------------------------------------------------------------------*
@@ -634,16 +634,16 @@ for (j=0;j<ndv;j++)
 for (i=0;i<ndv;i++)
 {
   /*-------------------------------------------- loop only my own rows */
-#ifdef PARALLEL 
+#ifdef PARALLEL
    if (ownerv[i]!=myrank) continue;
 #endif
-   rindex = lmv[i];   
+   rindex = lmv[i];
    /*----------------------------------- loop over the element column j */
    for (j=0;j<ndp;j++)
    {
       cindex = lmp[j];
       val = egraop[i][j];
-      mlpcg_csr_addentry(gradmatrix, val, rindex, cindex, actintra);   
+      mlpcg_csr_addentry(gradmatrix, val, rindex, cindex, actintra);
    }
 }
 
@@ -652,35 +652,35 @@ for (i=0;i<ndv;i++)
   dserror("MLPCG needed for fluid projection method, but not defined!!");
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
-} /* end of assemble_fluid_amatrix */ 
+} /* end of assemble_fluid_amatrix */
 
 
-/*!---------------------------------------------------------------------  
-\brief inverse of lumped mass       
+/*!---------------------------------------------------------------------
+\brief inverse of lumped mass
 
 <pre>                                                        genk 10/03
 
-In this function the lumped mass matrix (CSR) is inverted. Afterwards 
+In this function the lumped mass matrix (CSR) is inverted. Afterwards
 non supported values are copied to a redundant vector.
 
-</pre>   
+</pre>
 \param *lumpedmass_CSR  DBCSR   (i/o)  lumped mass matrix CSR-format
 \param *actintra        INTRA   (i)    intra-communicator
 \param *lmass           DOUBLE  (o)    lumped mass matrix (redundant vector)
 \param *velpointer      INT     (i)    index vector to old vel dofs
-\param *saveveldof      INT     (i)    old vel dofs 
+\param *saveveldof      INT     (i)    old vel dofs
 \param *numeq_total     INT     (i)    total number of equations
-\return void  
+\return void
 
-------------------------------------------------------------------------*/        
+------------------------------------------------------------------------*/
 void fluid_pm_lumpedmass(DBCSR *lumpedmass_csr,INTRA *actintra,
-                         DOUBLE *lmass, 
-#ifdef PARALLEL			 
+                         DOUBLE *lmass,
+#ifdef PARALLEL
 			 INT *velpointer, INT *saveveldof,
 #endif
 			 INT *numeq_total)
@@ -694,9 +694,9 @@ INT        *update;           /* dofs updated on this proc              */
 INT         andof,aodof,fd;   /* actual dof numbers                     */
 ARRAY       lmsend_a;
 DOUBLE     *lmsend;           /* receive buffer for lumped mass         */
-#endif 
+#endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_pm_lumpedmass");
 #endif
 
@@ -720,10 +720,10 @@ update = lumpedmass_csr->update.a.iv;
 for (j=0;j<numeq;j++)
 {
    andof=update[j];
-   fd   = velpointer[andof];   
+   fd   = velpointer[andof];
    aodof=saveveldof[fd];
-   if (aodof>=numeq_total[veldis]) continue;   
-   lmsend[aodof] = val[j];   
+   if (aodof>=numeq_total[veldis]) continue;
+   lmsend[aodof] = val[j];
 }
 /*------------------------------------ allreduce the lumped mass vector */
 MPI_Allreduce(lmsend,lmass,numeq_total[veldis],
@@ -734,26 +734,26 @@ for (i=0;i<numeq_total[veldis];i++) lmass[i]=val[i];
 #endif
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-   
-return;
-}/*end of void fluid_pm_lumpedmass*/ 
 
-/*!---------------------------------------------------------------------  
-\brief copying/reducing CSR to OLL       
+return;
+}/*end of void fluid_pm_lumpedmass*/
+
+/*!---------------------------------------------------------------------
+\brief copying/reducing CSR to OLL
 
 <pre>                                                        genk 10/03
 
-Up to now, we calculated the A-matrix / gradmatrix including all 
-existing pressure dofs. However the system during the timeloop 
+Up to now, we calculated the A-matrix / gradmatrix including all
+existing pressure dofs. However the system during the timeloop
 has to be solved without supported dofs.
 Therefore the matrices are reduced in this function. In addition they
-are copied from the CSR to OLL format, so that one can use any 
+are copied from the CSR to OLL format, so that one can use any
 solver for symmetric systems for getting the pressure solution.
 
-</pre>   
+</pre>
 \param  *saverowdof        INT     (i)   row index of dofs OLL-format
 \param  *rowpointer        INT     (i)   index vector to row dofs
 \param  *saverowdof        INT     (i)   column index of dofs OLL-format
@@ -764,11 +764,11 @@ solver for symmetric systems for getting the pressure solution.
 \param   numeq_totalc_full INT     (i)   total number of column equations (full)
 \param  *matrix_csr        DBCSR   (i)   matrix CSR format (full)
 \param  *matrix_oll        OLL     (o)   matrix OLL-format (reduced)
-\return void  
+\return void
 
-------------------------------------------------------------------------*/        
+------------------------------------------------------------------------*/
 void fluid_pm_redcpmat(
-#ifdef PARALLEL                       
+#ifdef PARALLEL
 		       INT *saverowdof,      INT *rowpointer,
                        INT *savecoldof,      INT *colpointer,
 #endif
@@ -782,7 +782,7 @@ INT      numeq;           /* number of equations on this proc           */
 INT      rindex,cindex;   /* row/column index                           */
 INT      counter;
 INT     *lm;              /* column location vector                     */
-DOUBLE  *a,*val;          /* matrix entries                             */      
+DOUBLE  *a,*val;          /* matrix entries                             */
 ARRAY    lm_a;
 ARRAY    val_a;
 
@@ -790,7 +790,7 @@ ARRAY    val_a;
 INT      k;               /* simply some counters                       */
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_pmredcpam");
 #endif
 
@@ -815,7 +815,7 @@ for (i=0;i<numeq;i++)
    rindex = saverowdof[k];
 #endif
    /*------------------------------------------ check for supported dof */
-   if (rindex>=numeq_totalr) continue;   
+   if (rindex>=numeq_totalr) continue;
    /*---------------------------------------------- loop columns of CSR */
    counter=0;
    for (j=ia[i];j<ia[i+1];j++)
@@ -831,8 +831,8 @@ for (i=0;i<numeq;i++)
       lm[counter] = cindex;
       val[counter] = a[j];
       counter++;
-   }    
-   /*-------------------------------------------- add row to OLL matrix */    
+   }
+   /*-------------------------------------------- add row to OLL matrix */
    oll_addrow(matrix_oll,rindex,lm,val,counter);
 }
 
@@ -840,41 +840,41 @@ amdel(&lm_a);
 amdel(&val_a);
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-   
+
 return;
-}/*end of void fluid_pmredcpam*/ 
+}/*end of void fluid_pmredcpam*/
 
 /*!---------------------------------------------------------------------
-\brief renumber dofs                                              
+\brief renumber dofs
 
-<pre>                                                        genk 10/03 
+<pre>                                                        genk 10/03
 
 This routine renumbers the dofs in the nodes in a sense, that partition's
-dofs are numbers first followed by the boundary dofs coupled to other 
+dofs are numbers first followed by the boundary dofs coupled to other
 processor's equations.
 In the one processor or sequentiell case this is not done
 
-In this case, the A-matrix is calculated using ALL existing dofs, so 
+In this case, the A-matrix is calculated using ALL existing dofs, so
 the supported dofs must not be excluded!!!
 
 </pre>
 \param myrank     INT         (i)   this processors intra rank
 \param nproc      INT         (i)   number of processors in this intra-communicator
-\param actfield   FIELD*      (i)   catual physical field (structure)                                
+\param actfield   FIELD*      (i)   catual physical field (structure)
 \param actpart    PARTITION*  (i)   this processors partition
-\param actintra   INTRA       (i)   the intra-communicator of this field                  
+\param actintra   INTRA       (i)   the intra-communicator of this field
 \warning this routine renumbers the dofs and does NOT support coupling!!!!
 \sa mlpcg_renumberdofs
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void fluid_pm_newdofs(INT            myrank,
                       INT            nproc,
-                      FIELD         *actfield, 
-                      PARTDISCRET   *actpdiscret, 
+                      FIELD         *actfield,
+                      PARTDISCRET   *actpdiscret,
                       INTRA         *actintra,
                       DBCSR         *bdcsr,
 		      INT            dis)
@@ -895,7 +895,7 @@ INT            startdof;
 INT            savedof;
 INT            actdof;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_pm_newdofs");
 #endif
 
@@ -986,7 +986,7 @@ amdel(&newdof_a);
 amdel(&newdofrecv_a);
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 #endif

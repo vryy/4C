@@ -5,41 +5,41 @@
 <pre>
 Maintainer: Volker Gravemeier
             vgravem@stanford.edu
-            
-            
+
+
 </pre>
 
 ------------------------------------------------------------------------*/
 #ifdef FLUID2_ML
-#include "../headers/standardtypes.h" 
+#include "../headers/standardtypes.h"
 #include "../fluid2/fluid2_prototypes.h"
 #include "fluid2ml_prototypes.h"
 #include "../fluid2/fluid2.h"
 
 static INT nhorsm,nversm,nhorss,nverss;
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief creation of (sub-)submesh on parent domain for fluid2
 
 <pre>                                                       gravem 07/03
 
-In this routine, the creation of submesh or sub-submesh on the parent 
-domain is performed, i.e. nodal coordinates on the parent domain, 
+In this routine, the creation of submesh or sub-submesh on the parent
+domain is performed, i.e. nodal coordinates on the parent domain,
 id-array and ien-array are established.
-			     
-</pre>   
-\param  *smesh      FLUID_ML_SMESH   (i/o)  
-\param   xele       INT              (i)    number of elements in x-dir.  
-\param   yele       INT              (i)    number of elements in y-dir.  
-\param   order      INT              (i)    polyn. interpolation order  
-\param   flag       INT              (i)    flag: submesh or sub-submesh?  
-\return void 
+
+</pre>
+\param  *smesh      FLUID_ML_SMESH   (i/o)
+\param   xele       INT              (i)    number of elements in x-dir.
+\param   yele       INT              (i)    number of elements in y-dir.
+\param   order      INT              (i)    polyn. interpolation order
+\param   flag       INT              (i)    flag: submesh or sub-submesh?
+\return void
 
 ------------------------------------------------------------------------*/
 void f2_pdsubmesh(FLUID_ML_SMESH *smesh,
                   INT             xele,
                   INT             yele,
-                  INT             order,  
+                  INT             order,
 		  INT             flag)
 {
 DOUBLE hpdx,hpdy;  /* element length in coord. dir. on parent domain   */
@@ -52,7 +52,7 @@ INT    nnglo;      /* counter for global node number                   */
 INT    nnhor;      /* counter for number of nodes in a horizontal row  */
 INT    nrhor;      /* counter for number of horizontal rows            */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_pdsubmesh");
 #endif
 
@@ -88,18 +88,18 @@ for (iver=0; iver<nver; iver++)
   for (ihor=0; ihor<nhor; ihor++)
   {
 /*-------------------------------- compute coordinates on parent domain */
-    smesh->xyzpd.a.da[0][numnp] = ONE-TWO*ihor*hpdx; 
-    smesh->xyzpd.a.da[1][numnp] = ONE-TWO*iver*hpdy; 
+    smesh->xyzpd.a.da[0][numnp] = ONE-TWO*ihor*hpdx;
+    smesh->xyzpd.a.da[1][numnp] = ONE-TWO*iver*hpdy;
 /*--------------------------------------------------- evaluate id-array */
-    if (iver==0 || iver==nver-1 || ihor==0 || ihor==nhor-1) 
+    if (iver==0 || iver==nver-1 || ihor==0 || ihor==nhor-1)
 /*------------------------------------------------------- boundary node */
       smesh->id.a.iv[numnp] = -1;
-    else 
+    else
     {
 /*--------------------------------------------------- non-boundary node */
       smesh->id.a.iv[numnp] = numeq;
       numeq++;
-    }  
+    }
     numnp++;
   }
 }
@@ -113,7 +113,7 @@ if (order==1)
 /*---------------------------------------------------- set row counters */
   nnhor = 1;
   nrhor = 1;
-  for (iel=0; iel<smesh->numele; iel++) /* loop over submesh elements */ 
+  for (iel=0; iel<smesh->numele; iel++) /* loop over submesh elements */
   {
     if (nnhor==nhor)
     {
@@ -137,7 +137,7 @@ else if (order==2)
 /*------------------------------------ set row and global node counter */
   nnhor = 1;
   nnglo = 0;
-  for (iel=0; iel<smesh->numele; iel++) /* loop over submesh elements */ 
+  for (iel=0; iel<smesh->numele; iel++) /* loop over submesh elements */
   {
     if (nnhor==nhor)
     {
@@ -161,27 +161,27 @@ else if (order==2)
 }
 
 /*--------------------------------------------------------------------- */
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of f2_pdsubmesh */
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief creation of (sub-)submesh on individual element for fluid2
 
 <pre>                                                       gravem 07/03
 
-In this routine, the creation of submesh or sub-submesh on an individual 
-element is performed, i.e. the nodal coordinates on this particular 
+In this routine, the creation of submesh or sub-submesh on an individual
+element is performed, i.e. the nodal coordinates on this particular
 element are established.
-			     
-</pre>   
-\param  *ele        ELEMENT          (i/o)  
-\param  *smesh      FLUID_ML_SMESH   (i)  
-\param   flag       INT              (i)    flag: submesh or sub-submesh?  
-\return void 
+
+</pre>
+\param  *ele        ELEMENT          (i/o)
+\param  *smesh      FLUID_ML_SMESH   (i)
+\param   flag       INT              (i)    flag: submesh or sub-submesh?
+\return void
 
 ------------------------------------------------------------------------*/
 void f2_elesubmesh(ELEMENT        *ele,
@@ -190,7 +190,7 @@ void f2_elesubmesh(ELEMENT        *ele,
 {
 INT       k;          /* just a counter                  		*/
 INT       nelbub;     /* number of bubble functions        		*/
-INT       numnp;      /* number of nodal points 			*/   
+INT       numnp;      /* number of nodal points 			*/
 INT       ihor,iver;  /* counters in horizontal/vertical direction	*/
 INT       nhor,nver;  /* number of nodes in horizontal/vertical dir.    */
 INT       iel;        /* number of large-scale element nodes            */
@@ -202,7 +202,7 @@ DOUBLE    deriv2_b[3*9];/* l-s element shape function 2nd derivatives    */
 DOUBLE   *deriv2[3];
 DIS_TYP   typ;	      /* element type                                   */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_elesubmesh");
 #endif
 
@@ -292,7 +292,7 @@ for (iver=0; iver<nver; iver++)
 ele->e.f2->smisal = 1;
 
 /*--------------------------------------------------------------------- */
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 

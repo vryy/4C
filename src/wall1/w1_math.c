@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Andrea Hund
@@ -28,28 +28,28 @@ void w1_inverse_matrix
 {
   DOUBLE d;
   INT i,j;
-  
-  static ARRAY    col_a;       
+
+  static ARRAY    col_a;
   static DOUBLE  *col;
-  static ARRAY    indx_a;       
+  static ARRAY    indx_a;
   static INT     *indx;
-  static ARRAY    Acopy_a;       
+  static ARRAY    Acopy_a;
   static DOUBLE **Acopy;
-  static ARRAY    Ycopy_a;       
+  static ARRAY    Ycopy_a;
   static DOUBLE **Ycopy;
   /*----------------------------------------------------------------------*/
-  #ifdef DEBUG 
+  #ifdef DEBUG
   dstrc_enter("w1_inverse_matrix");
   #endif
   /*----------------------------------------------------------------------*/
-  col   = amdef("col"  ,&col_a  ,N+1,1,"DV");       
-  indx  = amdef("indx" ,&indx_a ,N+1,1,"IV");       
-  Acopy = amdef("Acopy",&Acopy_a,N+1,N+1,"DA");       
-  Ycopy = amdef("Ycopy",&Ycopy_a,N+1,N+1,"DA");       
+  col   = amdef("col"  ,&col_a  ,N+1,1,"DV");
+  indx  = amdef("indx" ,&indx_a ,N+1,1,"IV");
+  Acopy = amdef("Acopy",&Acopy_a,N+1,N+1,"DA");
+  Ycopy = amdef("Ycopy",&Ycopy_a,N+1,N+1,"DA");
   /*------------- matrix shifting: 0->1, because loops starting with 1 ---*/
   for(i=0;i<N;i++)
   {
-    for(j=0;j<N;j++) 
+    for(j=0;j<N;j++)
     {
       Acopy[i+1][j+1] = A[i][j];
     }
@@ -69,18 +69,18 @@ void w1_inverse_matrix
   /*---------------------- matrix back shifting to usual notaion: 1->0 ---*/
   for(i=0;i<N;i++)
   {
-    for(j=0;j<N;j++) 
+    for(j=0;j<N;j++)
     {
       Y[i][j] = Ycopy[i+1][j+1];
     }
   }
   /*----------------------------------------------------------------------*/
-  amdel(&col_a);  
-  amdel(&indx_a);  
-  amdel(&Acopy_a);  
-  amdel(&Ycopy_a);  
+  amdel(&col_a);
+  amdel(&indx_a);
+  amdel(&Acopy_a);
+  amdel(&Ycopy_a);
   /*----------------------------------------------------------------------*/
-  #ifdef DEBUG 
+  #ifdef DEBUG
   dstrc_exit();
   #endif
   return;
@@ -103,7 +103,7 @@ void w1_ludcmp(DOUBLE **a, /* I: Original Matrix (will be rearanged)     */
   DOUBLE big,dum,sum,temp;
   DOUBLE *vv;
   /*----------------------------------------------------------------------*/
-  #ifdef DEBUG 
+  #ifdef DEBUG
   dstrc_enter("w1_ludcmp");
   #endif
   /*----------------------------------------------------------------------*/
@@ -152,7 +152,7 @@ void w1_ludcmp(DOUBLE **a, /* I: Original Matrix (will be rearanged)     */
   }
   w1_free_vector(vv,1);
   /*------------------------------------------------------------------*/
-  #ifdef DEBUG 
+  #ifdef DEBUG
   dstrc_exit();
   #endif
 }/* end of w1_ludcmp */
@@ -170,7 +170,7 @@ void w1_lubksb(DOUBLE **a,      /* I: LU-decomposed matrix                 */
   INT i,ii=0,ip,j;
   DOUBLE sum;
   /*----------------------------------------------------------------------*/
-  #ifdef DEBUG 
+  #ifdef DEBUG
   dstrc_enter("w1_lubksb");
   #endif
   /*----------------------------------------------------------------------*/
@@ -189,7 +189,7 @@ void w1_lubksb(DOUBLE **a,      /* I: LU-decomposed matrix                 */
         b[i]=sum/a[i][i];
   }
   /*---------------------------------------------------------------------*/
-  #ifdef DEBUG 
+  #ifdef DEBUG
   dstrc_exit();
   #endif
 }/* end of w1_lubksb */

@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Michael Gee
@@ -23,7 +23,7 @@ DOUBLE xsi=1.0; /*----- shear correction coefficient not yet introduced */
 DOUBLE C[3][3][3][3]; /*--------------------------- constitutive tensor */
 DOUBLE l1,l2;/*----------------------------------------- lame constants */
 DOUBLE emod,nue;/*--------------------------------------- mat constants */
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_mat_linel");
 #endif
 /*----------------------------------------------------------------------*/
@@ -80,7 +80,7 @@ CC[5][3] = C[2][2][1][1];
 CC[5][4] = C[2][2][2][1];
 CC[5][5] = C[2][2][2][2];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -91,7 +91,7 @@ return;
 void s8_mat_stress1(DOUBLE *stress, DOUBLE *strain, DOUBLE **C)
 {
 DOUBLE E[6];
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_mat_linel");
 #endif
 /*----------------------------------------------------------------------*/
@@ -103,7 +103,7 @@ E[2] = strain[2] * 2.0;
 E[4] = strain[4] * 2.0;
 math_matvecdense(stress,C,E,6,6,0,1.0);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -111,8 +111,8 @@ return;
 /*----------------------------------------------------------------------*
  | neohooke material from habil wriggers                  m.gee 3/03    |
  *----------------------------------------------------------------------*/
-void s8_mat_neohooke(NEO_HOOKE *mat, 
-                     DOUBLE    *stress, 
+void s8_mat_neohooke(NEO_HOOKE *mat,
+                     DOUBLE    *stress,
                      DOUBLE   **CC,
                      DOUBLE   **gmkonr,
                      DOUBLE   **gmkonc,
@@ -127,8 +127,8 @@ DOUBLE l1,l2;/*----------------------------------------- lame constants */
 DOUBLE emod,nue;/*--------------------------------------- mat constants */
 DOUBLE xj;
 DOUBLE F1;
-#ifdef DEBUG 
-dstrc_enter("s8_mat_neohooke"); 
+#ifdef DEBUG
+dstrc_enter("s8_mat_neohooke");
 #endif
 /*----------------------------------------------------------------------*/
 emod = mat->youngs;
@@ -142,12 +142,12 @@ F1 = l1 * log(xj) - l2;
 for (i=0; i<3; i++)
 for (j=0; j<3; j++)
    sp[i][j] = F1 * gmkonc[i][j] + l2 * gmkonr[i][j];
-stress[0] = sp[0][0];   
-stress[1] = sp[0][1];   
-stress[2] = sp[0][2];   
-stress[3] = sp[1][1];   
-stress[4] = sp[1][2];   
-stress[5] = sp[2][2];   
+stress[0] = sp[0][0];
+stress[1] = sp[0][1];
+stress[2] = sp[0][2];
+stress[3] = sp[1][1];
+stress[4] = sp[1][2];
+stress[5] = sp[2][2];
 /*---------this is not very fast, but corresponds nicely with theory... */
 for (i=0; i<3; i++)
 for (j=0; j<3; j++)
@@ -155,7 +155,7 @@ for (k=0; k<3; k++)
 for (l=0; l<3; l++)
 C[i][j][k][l] = l1*gmkonc[i][j]*gmkonc[k][l] - F1*(gmkonc[i][k]*gmkonc[j][l]+gmkonc[i][l]*gmkonc[k][j]);
 /*----------------------------------------------------------------------*/
-CC[0][0] = C[0][0][0][0];         
+CC[0][0] = C[0][0][0][0];
 CC[0][1] = C[0][0][1][0];
 CC[0][2] = C[0][0][2][0];
 CC[0][3] = C[0][0][1][1];
@@ -197,7 +197,7 @@ CC[5][3] = C[2][2][1][1];
 CC[5][4] = C[2][2][2][1];
 CC[5][5] = C[2][2][2][2];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

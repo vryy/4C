@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 'optvsa', 
+\brief contains the routine 'optvsa',
        variational sensitivity analysis
 
 <pre>
@@ -19,8 +19,8 @@ Maintainer: Andreas Lipka
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 #include "../headers/optimization.h"
-/*! 
-\addtogroup OPTIMIZATION 
+/*!
+\addtogroup OPTIMIZATION
 *//*! @{ (documentation module open)*/
 
 
@@ -30,11 +30,11 @@ Maintainer: Andreas Lipka
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par;                      
+ extern struct _PAR   par;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
@@ -78,7 +78,7 @@ extern INT            numcurve;
 extern struct _CURVE *curve;
 /*!----------------------------------------------------------------------
 \brief the optimization main structure
-<pre>                                                            al 06/01   
+<pre>                                                            al 06/01
 defined in opt_cal_main.c
 </pre>
 *----------------------------------------------------------------------*/
@@ -108,19 +108,19 @@ void optvsa(DOUBLE *grdobj, DOUBLE *grdcon,INT init)
   CONTAINER     container;        /* contains variables defined in container.h */
   ELEMENT *actele;                /* active element                            */
 /*----------------------------------------------------------------------*/
-  #ifdef DEBUG 
+  #ifdef DEBUG
   dstrc_enter("optvsa");
   #endif
 /*------------ the distributed system matrix, which is used for solving */
   actsysarray=0;
-  numvar = 0; 
+  numvar = 0;
   if(opt->strategy==os_fsd) numvar = opt->strat.fsd->numvar;
 /*--------------------------------------------------- set some pointers */
   actfield    = &(field[0]);
   actsolv     = &(solv[0]);
   actpart     = &(partition[0]);
   action      = &(calc_action[0]);
-  #ifdef PARALLEL 
+  #ifdef PARALLEL
   actintra    = &(par.intra[0]);
   #else
   actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
@@ -136,12 +136,12 @@ void optvsa(DOUBLE *grdobj, DOUBLE *grdcon,INT init)
   if(init==1)
   {
     svec  = (DOUBLE*)CCACALLOC(actfield->dis[0].numele,sizeof(DOUBLE));
-    #ifdef PARALLEL 
+    #ifdef PARALLEL
     sveh  = (DOUBLE*)CCACALLOC(actfield->dis[0].numele,sizeof(DOUBLE));
     #endif
     /*---------------- create 1 vector grdisp for displacements deriv. */
     /*----------------------- get global and local number of equations */
-    if (statvar->nonlinear==1) 
+    if (statvar->nonlinear==1)
     {
       solserv_getmatdims(&(actsolv->sysarray[actsysarray]),
                     actsolv->sysarray_typ[actsysarray],
@@ -155,9 +155,9 @@ void optvsa(DOUBLE *grdobj, DOUBLE *grdcon,INT init)
 /*----------------------------------------------------------------------*/
 /*-------------------------- evaluate sensitivities on element level ---*/
   /* derivative of strain energy     */
-  if(opt->objective == oj_strain_energy)  *action = calc_struct_dee; 
+  if(opt->objective == oj_strain_energy)  *action = calc_struct_dee;
   /* derivative of eigen frequencies */
-  if(opt->objective == oj_frequency    )  *action = calc_struct_def; 
+  if(opt->objective == oj_frequency    )  *action = calc_struct_def;
 
   container.dvec         = NULL;
   container.dirich       = NULL;
@@ -167,31 +167,31 @@ void optvsa(DOUBLE *grdobj, DOUBLE *grdcon,INT init)
   container.getvalue      = 0.;
   container.getvector     = svec;
   for (i=0; i<actfield->dis[0].numele; i++) svec[i]=0.;
-#ifdef PARALLEL 
+#ifdef PARALLEL
   for (i=0; i<actfield->dis[0].numele; i++) sveh[i]=0.;
 #endif
-  
+
   calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,&container,action);
-    
-#ifdef PARALLEL 
+
+#ifdef PARALLEL
    /*---------------------------------------- allreduce objective value */
     MPI_Allreduce(svec,sveh,actfield->dis[0].numele,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
 #endif
-  
+
   for (i=0; i<actfield->dis[0].numele; i++)
   {
     actele     = &(actfield->dis[0].element[i]);
     if(actele->optdata==NULL) continue; /* element does not take part in opt. */
     if(actele->optdata[0]==0) continue; /* position in variable vector        */
     iloc       = actele->optdata[0];
-#ifdef PARALLEL 
-    grdobj[iloc-1] +=  sveh[i]; 
+#ifdef PARALLEL
+    grdobj[iloc-1] +=  sveh[i];
 #else
-    grdobj[iloc-1] +=  svec[i]; 
+    grdobj[iloc-1] +=  svec[i];
 #endif
   }
   /*----------------------------------------- nonlinear static analysis */
-  if (statvar->nonlinear==1) 
+  if (statvar->nonlinear==1)
   {/*geolinear==0*/
     /*----------------------------- init the dist sparse matrix to zero */
     /*              NOTE: Has to be called after solver_control(init=1) */
@@ -201,7 +201,7 @@ void optvsa(DOUBLE *grdobj, DOUBLE *grdcon,INT init)
                    &(actsolv->sysarray_typ[actsysarray])
                     );
     /*------------------- calculate tangential stiffness in actsysarray */
-    kstep      = statvar->nstep; 
+    kstep      = statvar->nstep;
     *action = calc_struct_nlnstiff;
     container.dvec         = NULL;
     container.dirich       = NULL;
@@ -225,7 +225,7 @@ void optvsa(DOUBLE *grdobj, DOUBLE *grdcon,INT init)
     solserv_scalarprod_vec(&(actsolv->rhs[actsysarray]),act_loadfac);
 /*------------------------------------------ solve for incremental load */
     init=0;
-    solver_control(  
+    solver_control(
                  actsolv,
                  actintra,
                &(actsolv->sysarray_typ[actsysarray]),
@@ -254,17 +254,17 @@ void optvsa(DOUBLE *grdobj, DOUBLE *grdcon,INT init)
     container.actndis       = 0;
     container.isdyn         = 0;            /* static calculation */
     for (i=0; i<actfield->dis[0].numele; i++) svec[i]=0.;
-#ifdef PARALLEL 
+#ifdef PARALLEL
     for (i=0; i<actfield->dis[0].numele; i++) sveh[i]=0.;
 #endif
-  
+
     calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,&container,action);
-    
-#ifdef PARALLEL 
+
+#ifdef PARALLEL
    /*---------------------------------------- allreduce objective value */
     MPI_Allreduce(svec,sveh,actfield->dis[0].numele,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
 #endif
-#ifdef PARALLEL 
+#ifdef PARALLEL
     for (i=0; i<actfield->dis[0].numele; i++) svec[i]=0.;
     for (i=0; i<actfield->dis[0].numele; i++)
     {
@@ -272,29 +272,29 @@ void optvsa(DOUBLE *grdobj, DOUBLE *grdcon,INT init)
       if(actele->optdata==NULL) continue; /* element does not take part in opt. */
       if(actele->optdata[0]==0) continue; /* position in variable vector        */
       iloc       = actele->optdata[0];
-      svec[iloc-1] +=  sveh[i]; 
+      svec[iloc-1] +=  sveh[i];
     }
 #endif
-  
+
     for (i=0; i<actfield->dis[0].numele; i++)
     {
       actele     = &(actfield->dis[0].element[i]);
       if(actele->optdata==NULL) continue; /* element does not take part in opt. */
       if(actele->optdata[0]==0) continue; /* position in variable vector        */
       iloc       = actele->optdata[0];
-#ifdef PARALLEL 
+#ifdef PARALLEL
       ddum            =  svec[iloc-1] - grdobj[iloc-1];
-      grdobj[iloc-1]  =  ddum; 
+      grdobj[iloc-1]  =  ddum;
 #else
       ddum            =  svec[i] - grdobj[iloc-1];
-      grdobj[iloc-1]  =  ddum; 
+      grdobj[iloc-1]  =  ddum;
 #endif
     }
   /*--------------------------------------------------------------------*/
   /* perform next structural analysis in one step only */
   statvar->nstep = 1;
   /* set first and final value of curve for incr. */
-  curve[0].value.a.da[0][0] = opt->nlndat; 
+  curve[0].value.a.da[0][0] = opt->nlndat;
   /*--------------------------------------------------------------------*/
   }/*geolinear==0*/
 /*----------------------------------------------------------------------*/
@@ -304,22 +304,22 @@ void optvsa(DOUBLE *grdobj, DOUBLE *grdcon,INT init)
     *action = calc_struct_dmc;       /* derivative of mass constraint */
   }
   for (i=0; i<actfield->dis[0].numele; i++) svec[i]=0.;
-#ifdef PARALLEL 
+#ifdef PARALLEL
   for (i=0; i<actfield->dis[0].numele; i++) sveh[i]=0.;
 #endif
   calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,&container,action);
-#ifdef PARALLEL 
+#ifdef PARALLEL
    /*---------------------------------------- allreduce objective value */
     MPI_Allreduce(svec,sveh,actfield->dis[0].numele,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
 #endif
-  
+
   for (i=0; i<actfield->dis[0].numele; i++)
   {
     actele     = &(actfield->dis[0].element[i]);
     if(actele->optdata==NULL) continue; /* element does not take part in opt. */
     if(actele->optdata[0]==0) continue; /* position in variable vector        */
     iloc       = actele->optdata[0];
-#ifdef PARALLEL 
+#ifdef PARALLEL
     grdcon[iloc-1] +=  sveh[i]; /* add masses of elements */
 #else
     grdcon[iloc-1] +=  svec[i]; /* add masses of elements */
@@ -327,20 +327,20 @@ void optvsa(DOUBLE *grdobj, DOUBLE *grdcon,INT init)
   }
   for (i=0; i<numvar; i++)
   {
-    grdcon[i] =  -grdcon[i]/opt->totmas; 
+    grdcon[i] =  -grdcon[i]/opt->totmas;
   }
 
 /*----------------------------------------------------------------------*/
   end: ;
 /*----------------------------------------------------------------------*/
-#ifndef PARALLEL 
+#ifndef PARALLEL
 CCAFREE(actintra);
 #endif
 /*----------------------------------------------------------------------*/
-  #ifdef DEBUG 
+  #ifdef DEBUG
   dstrc_exit();
   #endif
-return; 
+return;
 } /* end of optvsa */
 /*----------------------------------------------------------------------*/
 

@@ -27,7 +27,7 @@ extern struct _FIELD      *field;
 
 <pre>                                                         m.gee 8/00
 -the partition of one proc (all discretizations)
--the type is in partition.h                                                  
+-the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -37,15 +37,15 @@ extern struct _PARTITION  *partition;
  | ranks and communicators                                              |
  | This structure struct _PAR par; is defined in main_ccarat.c
  *----------------------------------------------------------------------*/
-extern struct _PAR   par;                      
-/*! 
-\addtogroup CONTACT 
+extern struct _PAR   par;
+/*!
+\addtogroup CONTACT
 *//*! @{ (documentation module open)*/
 /*!------------------------------------------------------------------------
 \brief main structure for 2-D contact (bilinear discretization) m.gee 10/02
 
 <pre>
-defined in wall_contact_detection.c                             
+defined in wall_contact_detection.c
 </pre>
 
 *-------------------------------------------------------------------------*/
@@ -59,7 +59,7 @@ DOUBLE inner_pr(DOUBLE *a , DOUBLE *b){
 
 INT k;
 DOUBLE result = 0.0;
-  for(k=0; k<3; k++) result+=a[k]*b[k]; 
+  for(k=0; k<3; k++) result+=a[k]*b[k];
 
 return result;
 }
@@ -69,23 +69,23 @@ DOUBLE Heaviside(DOUBLE a){
 
 if(a > 0.0) return 1.0;
 else return 0.0;
-} 
+}
 /*----------------------------------------------------------------------*/
 
 /*!----------------------------------------------------------------------
 \brief short description
-                                                      
-<pre>                                                         m.gee 10/02    
+
+<pre>                                                         m.gee 10/02
 
 This is the main routine which is used for contact detection and assembly
-of contact contributions to global internal force vector and global 
+of contact contributions to global internal force vector and global
 tangent stiffness for 2-dimensional problems.
 
 </pre>
 \param actfield FIELD*               (i) the discretization
-\param actintra   INTRA*             (i) the intra-communicator of this field                  
+\param actintra   INTRA*             (i) the intra-communicator of this field
 \param matrix SPARSE_ARRAY*          (i) tangent stiffness
-\param matrix_type SPARSE_TYP*       (i) type of tangent stiffness storage format   
+\param matrix_type SPARSE_TYP*       (i) type of tangent stiffness storage format
 \param con_force DOUBLE*             (i) contact forces
 \return void
 
@@ -116,7 +116,7 @@ DOUBLE norm_1, norm_2;
 DOUBLE unit_norm_1, unit_norm_2;
 DOUBLE sl_length_1, sl_length_2;
 DOUBLE unit_v1[3], unit_v2[3], unit_v3[3], unit_v3_aux[3], *tangent, relative_pos[3], cr_length_vec[3], rf_length_vec[3];
-DOUBLE pos_ybar1[3], pos_ybar2[3]; 
+DOUBLE pos_ybar1[3], pos_ybar2[3];
 DOUBLE norm_vec_1[3], norm_vec_2[3];
 DOUBLE sl_length_vec1[3], sl_length_vec2[3];
 DOUBLE rel_pos_ybar1[3], rel_pos_ybar2[3];
@@ -147,7 +147,7 @@ k = l = m = n = p = q = r = s = t = tt = qq = 0;
 t_n   = 0.0;
 t_aux = 0.0;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("wall_contact_detection");
 #endif
 /*----------------------------------------------------------------------*/
@@ -163,135 +163,135 @@ numeq_total = K->numeq_total;
      for(i=0; i<contact.ng_slavenode;i++) contact.g_slavenode[i]->contactflag = contact_off;
      for(i=0; i<contact.ng_masternode;i++) contact.g_masternode[i]->contactflag = contact_off;
 
-/*Current positions of the contact nodes (both master and slave) are updated.*/ 
+/*Current positions of the contact nodes (both master and slave) are updated.*/
   for(i=0; i<contact.ng_slavenode;i++){
     for(k=0; k<3; k++)
-      contact.g_slavenode[i]->node->x_cr[k] = contact.g_slavenode[i]->node->x[k] + contact.g_slavenode[i]->node->sol.a.da[0][k];     
+      contact.g_slavenode[i]->node->x_cr[k] = contact.g_slavenode[i]->node->x[k] + contact.g_slavenode[i]->node->sol.a.da[0][k];
   }
-  
+
   for(i=0; i<contact.ng_masternode;i++){
     for(k=0; k<3; k++)
-      contact.g_masternode[i]->node->x_cr[k] = contact.g_masternode[i]->node->x[k] + contact.g_masternode[i]->node->sol.a.da[0][k];     
-  } 
+      contact.g_masternode[i]->node->x_cr[k] = contact.g_masternode[i]->node->x[k] + contact.g_masternode[i]->node->sol.a.da[0][k];
+  }
 
 
 
   for(i=0;i<contact.ng_slavenode;i++){  /* Loop over all slave nodes starts*/
 
-  if ( contact.g_slavenode[i]->node->proc != myrank) continue; 
+  if ( contact.g_slavenode[i]->node->proc != myrank) continue;
 
   distance = 0.0;
   pr_d      = 1.0e12;
-  
+
   for(j=0; j<3; j++) {
     triple[j] = NULL;       /*In triple the previous node, closest node and next node (in the CCW direction of element local system) are stored */
     element_nodes[j] = NULL;/*In element nodes, the nodes of the master segment are stored.*/
   }                         /*element_nodes[0] = starting node; element_nodes[1] = end node */
-  
+
     neigbour_nodes[0] = NULL; /*Neigbour nodes of the closest node are stored(Previous and next) but*/
     neigbour_nodes[1] = NULL; /*their order is not known.(which one is previous and which one is next)*/
     neigbour_glineptr = NULL; /*pointer to the glines of the closest node. It is used in determination*/
                               /*of the order of the neigbour nodes*/
-    for(j=0;j<contact.ng_masternode;j++){ /*for each slave node, closest master node is determined by distance*/       
+    for(j=0;j<contact.ng_masternode;j++){ /*for each slave node, closest master node is determined by distance*/
       distance = 0.0;
       for(k=0; k<3; k++) {                /*check over all master nodes.*/
 	distance += DSQR((contact.g_slavenode[i]->node->x_cr[k] - contact.g_masternode[j]->node->x_cr[k]));
 	}
-        distance = sqrt(distance);      
+        distance = sqrt(distance);
         if(distance < pr_d){
         closestptr = contact.g_masternode[j]->node;
-        pr_d = distance;      
+        pr_d = distance;
         }
     }
-    	  	
+
   triple[1] = closestptr;    /*closest node pointer is assigned to triple[1]*/
-  n = 0; 
-  for(l=0; l<closestptr->gnode->ngline; l++){                 /* loop over the glines of the closest node*/  
+  n = 0;
+  for(l=0; l<closestptr->gnode->ngline; l++){                 /* loop over the glines of the closest node*/
     if(closestptr->gnode->gline[l]->contype != contact_none){ /*check whether the gline is a contact line or not*/
-      neigbour_glineptr = closestptr->gnode->gline[l]; 
+      neigbour_glineptr = closestptr->gnode->gline[l];
         for(m=0; m<2; m++){
           if(neigbour_glineptr->gnode[m] != closestptr->gnode){  /*loop over the gnodes of the gline*/
           neigbour_nodes[n] = neigbour_glineptr->gnode[m]->node; /*if it is different than the closest node*/
 	  n++;                                                   /*then this node is one of the neigbour nodes*/
-	 }    
+	 }
        }
      }
-   }	          
+   }
 
-   	 
-  for(p=0; p<closestptr->numele; p++){	             /*loop over the elements of the closest node*/  
-    for(q=0; q<closestptr->element[p]->numnp; q++)   /*for each element reach the nodes of this element*/	     
+
+  for(p=0; p<closestptr->numele; p++){	             /*loop over the elements of the closest node*/
+    for(q=0; q<closestptr->element[p]->numnp; q++)   /*for each element reach the nodes of this element*/
       if(closestptr->element[p]->node[q] == closestptr)  s = q; /*element node numbering is in CCW fashion.*/
                                                                 /*First determine the position of the closest node*/
     for(q=0; q<closestptr->element[p]->numnp; q++){   		/*in the local sysytem and assign it to s.*/
-      for(m=0; m<2; m++){	                          
+      for(m=0; m<2; m++){
         if(neigbour_nodes[m] == closestptr->element[p]->node[q]){ /* For each neigbour node determine the location */
         r = q;                                                    /* in which neigbour element (q) and the order in */
-	tt = m;                                                   /* the local system (m) and store these in r and tt*/  
+	tt = m;                                                   /* the local system (m) and store these in r and tt*/
 	}
-      }	
-    }	 		  
-	   
-    for(t=0; t<closestptr->element[p]->numnp; t++){ /*loop over the nodes of each element of the closest node*/     
+      }
+    }
+
+    for(t=0; t<closestptr->element[p]->numnp; t++){ /*loop over the nodes of each element of the closest node*/
     s = (s+t) % 4;                                  /*to keep within the numbering system of 0-3 make use of mod operator*/
       if( closestptr->element[p]->node[s] == closestptr->element[p]->node[r]){ /*Moving from the source (s = closest node)*/
       qq = t;	                                                     /*determine how many steps are required to reach the */
-      break;}                                                        /*target(r = neigbour node) and break*/ 
-    }	
-     
+      break;}                                                        /*target(r = neigbour node) and break*/
+    }
+
       if(qq==1) triple[2] = neigbour_nodes[tt];/* if just one step is marched to reach the target(neigbour) then this neigbour*/
-      else triple[0] = neigbour_nodes[tt];     /* is the next node(assigned to triple[2]) otherwise it is the previous node*/	                                                                    
+      else triple[0] = neigbour_nodes[tt];     /* is the next node(assigned to triple[2]) otherwise it is the previous node*/
  }                                             /* Notice that if the closest node is a corner node than previous node or next node*/
                                                /* may not exist.*/
-    
-    
-  
+
+
+
   if(triple[0] != NULL && triple[2] != NULL){  /* if the closest node is not a corner node*/
     for(t=0; t<3; t++){
       unit_v1[t] = triple[1]->x_cr[t] - triple[0]->x_cr[t]; /*unit_v1 is from previous to closest*/
       unit_v2[t] = triple[2]->x_cr[t] - triple[1]->x_cr[t]; /*unit_v2 is from closest to next*/
-      }     
-    
+      }
+
     unit_norm_1 = sqrt(inner_pr(unit_v1,unit_v1));
     unit_norm_2 = sqrt(inner_pr(unit_v2,unit_v2));
-    
+
     for(t=0; t<3; t++){ /* These vectors are normalized.*/
       unit_v1[t] = unit_v1[t] / unit_norm_1;
-      unit_v2[t] = unit_v2[t] / unit_norm_2; 
-      }          
-      
-  } 
-          	     
+      unit_v2[t] = unit_v2[t] / unit_norm_2;
+      }
+
+  }
+
   if(triple[2] == NULL){  /* Lower Corner*/
     for(t=0; t<3; t++){
-      unit_v1[t] = triple[1]->x_cr[t] - triple[0]->x_cr[t]; /*unit_v1 is from previous to closest.*/      
+      unit_v1[t] = triple[1]->x_cr[t] - triple[0]->x_cr[t]; /*unit_v1 is from previous to closest.*/
       unit_v2[t] = 0.0;                                     /*no unit_v2*/
       }
-     
-    unit_norm_1 = sqrt(inner_pr(unit_v1,unit_v1));    
-    
+
+    unit_norm_1 = sqrt(inner_pr(unit_v1,unit_v1));
+
     for(t=0; t<3; t++)  /* This vector is normalized.*/
       unit_v1[t] = unit_v1[t] / unit_norm_1;
-          
+
   }
-    
+
   if(triple[0] == NULL){  /* Upper Corner */
     for(t=0; t<3; t++){
-      unit_v1[t] = triple[2]->x_cr[t] - triple[1]->x_cr[t]; /*unit_v1 is from closest to next.*/      
+      unit_v1[t] = triple[2]->x_cr[t] - triple[1]->x_cr[t]; /*unit_v1 is from closest to next.*/
       unit_v2[t] = 0.0;                                     /*no unit_v2*/
       }
-     
-    unit_norm_1 = sqrt(inner_pr(unit_v1,unit_v1));         
-    
+
+    unit_norm_1 = sqrt(inner_pr(unit_v1,unit_v1));
+
     for(t=0; t<3; t++) /* This vector is normalized.*/
       unit_v1[t] = unit_v1[t] / unit_norm_1;
-    
+
   }
-    
+
   for(t=0; t<3; t++)
     relative_pos[t] = contact.g_slavenode[i]->node->x_cr[t] - closestptr->x_cr[t];
 
-    
+
     if(triple[0] != NULL && triple[2] != NULL) { /*if the closest node is not a corner node*/
     /*----------------------------------------------------------------------------------------------*/
     /* A refers to the closest node*/
@@ -300,17 +300,17 @@ numeq_total = K->numeq_total;
     /* Simple inner product sign checks are done to determine the master segment containing the projection.*/
     /* Chapter 5 of the book by Laursen*/
     /*----------------------------------------------------------------------------------------------*/
-      if(inner_pr(relative_pos,unit_v1) > 0.0 && inner_pr(relative_pos,unit_v2) >= 0.0){                   
+      if(inner_pr(relative_pos,unit_v1) > 0.0 && inner_pr(relative_pos,unit_v2) >= 0.0){
       /*A   A+1*/
-      
+
       unit_v3[0] =   unit_v2[1]; /*outward normal is stored in unit_v3 and obtained by cross product of unit_v2 and e3*/
       unit_v3[1] = - unit_v2[0];
-      unit_v3[2] =   0.0;     
-      
-      g = -1.0 * inner_pr(relative_pos, unit_v3);  /*value of gap function.*/     
+      unit_v3[2] =   0.0;
+
+      g = -1.0 * inner_pr(relative_pos, unit_v3);  /*value of gap function.*/
       t_n = contact.g_slavenode[i]->history->pr_multipliers[0] + pen_par * g;
-        
-	if(t_n <= 0.0){   
+
+	if(t_n <= 0.0){
           contact.g_slavenode[i]->contactflag = contact_off;    /* contact flag is switched to the proper value*/
           contact.g_slavenode[i]->history->pr_masters[0] = NULL;
           contact.g_slavenode[i]->history->pr_masters[1] = NULL;
@@ -318,7 +318,7 @@ numeq_total = K->numeq_total;
           contact.g_slavenode[i]->history->cr_g           = g;
           continue;                                           /* No contact----Continue with the next slave node*/
         }
-      
+
         else {
           contact.g_slavenode[i]->contactflag = contact_on;   /*contact flag is switched to the proper value*/
           element_nodes[0] = contact.g_slavenode[i]->node;    /*Nodes of the contact element element are assigned. element_nodes[0] = slave*/
@@ -327,27 +327,27 @@ numeq_total = K->numeq_total;
 	  tangent = unit_v2;                                  /*Correct unit vector is assigned to the tangent vector(basis)*/
 	  contact.g_slavenode[i]->mymasters[0] = triple[1]->gnode; /*Master nodes are assigned.(defined in gnode)*/
 	  contact.g_slavenode[i]->mymasters[1] = triple[2]->gnode; /*These are used in parallel version.*/
-	
-	  for(l=0; l<3; l++) cr_length_vec[l] = element_nodes[2]->x_cr[l] - element_nodes[1]->x_cr[l]; 
+
+	  for(l=0; l<3; l++) cr_length_vec[l] = element_nodes[2]->x_cr[l] - element_nodes[1]->x_cr[l];
 	  cr_length = sqrt(inner_pr(cr_length_vec, cr_length_vec));       /*Current length of the master segment(appears in Fint and K expressions.)*/
-        
-	
+
+
 	  local_coordinate = inner_pr(relative_pos, unit_v2) / cr_length; /*local coordinate of the projection*/
-	  
+
 	}
-      } 
-     		
-      else if(inner_pr(relative_pos,unit_v1) <= 0.0 && inner_pr(relative_pos,unit_v2) < 0.0){         
+      }
+
+      else if(inner_pr(relative_pos,unit_v1) <= 0.0 && inner_pr(relative_pos,unit_v2) < 0.0){
       /*A-1    A*/
       unit_v3[0] =   unit_v1[1];    /*outward normal is stored in unit_v3 and obtained by cross product of unit_v1 and e3*/
       unit_v3[1] = - unit_v1[0];
-      unit_v3[2] =   0.0;     
-      
-        
-      g = -1.0 * inner_pr(relative_pos, unit_v3);   /*value of gap function.*/     
+      unit_v3[2] =   0.0;
+
+
+      g = -1.0 * inner_pr(relative_pos, unit_v3);   /*value of gap function.*/
       t_n = contact.g_slavenode[i]->history->pr_multipliers[0] + pen_par * g;
-      
-        if(t_n <= 0.0){   
+
+        if(t_n <= 0.0){
           contact.g_slavenode[i]->contactflag = contact_off;    /* contact flag is switched to the proper value*/
           contact.g_slavenode[i]->history->pr_masters[0] = NULL;
           contact.g_slavenode[i]->history->pr_masters[1] = NULL;
@@ -355,42 +355,42 @@ numeq_total = K->numeq_total;
           contact.g_slavenode[i]->history->cr_g           = g;
           continue;                                           /* No contact----Continue with the next slave node*/
         }
-	
+
 	else{
-	
+
     	  contact.g_slavenode[i]->contactflag = contact_on;    /*contact flag is switched to the proper value*/
           element_nodes[0] = contact.g_slavenode[i]->node;     /*see line 303-315 for the explanations*/
-          element_nodes[1] = triple[0];  
+          element_nodes[1] = triple[0];
           element_nodes[2] = triple[1];
           tangent = unit_v1;
   	  contact.g_slavenode[i]->mymasters[0] = triple[0]->gnode;
 	  contact.g_slavenode[i]->mymasters[1] = triple[1]->gnode;
-	
-	  for(l=0; l<3; l++) cr_length_vec[l] = element_nodes[2]->x_cr[l] - element_nodes[1]->x_cr[l]; 
-	  cr_length = sqrt(inner_pr(cr_length_vec, cr_length_vec));  
-        
+
+	  for(l=0; l<3; l++) cr_length_vec[l] = element_nodes[2]->x_cr[l] - element_nodes[1]->x_cr[l];
+	  cr_length = sqrt(inner_pr(cr_length_vec, cr_length_vec));
+
 	  local_coordinate = 1.0 - FABS(inner_pr(relative_pos, unit_v1) / cr_length);
-	  
-	}  		
+
+	}
     }
-      	   	
-      else if(inner_pr(relative_pos,unit_v1) <= 0.0 && inner_pr(relative_pos,unit_v2) >= 0.0){ 
+
+      else if(inner_pr(relative_pos,unit_v1) <= 0.0 && inner_pr(relative_pos,unit_v2) >= 0.0){
       /*Either element can contain the projection*/
-        
+
 	unit_v3[0] =   unit_v1[1];    /*outward normal is stored in unit_v3 and obtained by cross product of unit_v1 and e3*/
         unit_v3[1] = - unit_v1[0];
-        unit_v3[2] =   0.0;     
-      
+        unit_v3[2] =   0.0;
+
         unit_v3_aux[0] =  unit_v2[1];
 	unit_v3_aux[1] = -unit_v2[0];
 	unit_v3_aux[2] =  0.0;
-        
-        g     = -1.0 * inner_pr(relative_pos, unit_v3);   /*value of gap function.*/     
+
+        g     = -1.0 * inner_pr(relative_pos, unit_v3);   /*value of gap function.*/
 	t_n = contact.g_slavenode[i]->history->pr_multipliers[0] + pen_par * g;
-	
+
 	g_aux = -1.0 * inner_pr(relative_pos, unit_v3_aux);
 	t_aux = contact.g_slavenode[i]->history->pr_multipliers[0] + pen_par * g_aux;
-	
+
 	if(t_n<=0.0 && t_aux<=0.0){
 	  contact.g_slavenode[i]->contactflag = contact_off;         /* contact flag is switched to the proper value*/
           contact.g_slavenode[i]->history->pr_masters[0] = NULL;
@@ -399,22 +399,22 @@ numeq_total = K->numeq_total;
           contact.g_slavenode[i]->history->cr_g           = g;
           continue;                                                /* No contact----Continue with the next slave node*/
         }
-	
+
 	else{
-	
+
 	contact.g_slavenode[i]->contactflag = contact_on;             /*contact flag is switched to the proper value*/
-	
+
 	 for(l=0; l<3; l++){
 	   norm_vec_1[l] = triple[1]->x_cr[l] - triple[0]->x_cr[l];
 	   norm_vec_2[l] = triple[2]->x_cr[l] - triple[1]->x_cr[l];
 	 }
-	 
+
 	norm_1 = sqrt(inner_pr(norm_vec_1, norm_vec_1));
-	norm_2 = sqrt(inner_pr(norm_vec_2, norm_vec_2));     
-	
+	norm_2 = sqrt(inner_pr(norm_vec_2, norm_vec_2));
+
 	temp1 = 1.0 - FABS(inner_pr(relative_pos,unit_v1) / norm_1);
 	temp2 = inner_pr(relative_pos,unit_v2) / norm_2;
-	
+
 	  for(t=0; t<3; t++){
 	    pos_ybar1[t] = (1.0 - temp1)*triple[0]->x_cr[t] + temp1*triple[1]->x_cr[t];/*Position vector of the slave node on each segment*/
 	    pos_ybar2[t] = temp2*triple[1]->x_cr[t] + (1.0 - temp2)*triple[2]->x_cr[t];/*is calculated.*/
@@ -423,14 +423,14 @@ numeq_total = K->numeq_total;
 	    rel_pos_ybar1[t] = contact.g_slavenode[i]->node->x_cr[t] - pos_ybar1[t];/*Relative position vector of the slave node w.r.t. the*/
 	    rel_pos_ybar2[t] = contact.g_slavenode[i]->node->x_cr[t] - pos_ybar2[t];/*closest node is calculated for both case.*/
 	  }
-	
+
 	dist1 = sqrt(inner_pr(rel_pos_ybar1,rel_pos_ybar1));/*two different penetration values are calculated.*/
 	dist2 = sqrt(inner_pr(rel_pos_ybar2,rel_pos_ybar2));/*and the larger one is penalized. Therefore the corresponding element*/
 	  	                                            /*is assumed to be the owner of the projection.*/
-        
-	
+
+
 	if(dist1 >= dist2){
-	
+
 	  local_coordinate = temp1;                         /*see line 303-315 for the explanations*/
 	  element_nodes[0] = contact.g_slavenode[i]->node;
 	  element_nodes[1] = triple[0];
@@ -438,13 +438,13 @@ numeq_total = K->numeq_total;
 	  tangent = unit_v1;
 	  contact.g_slavenode[i]->mymasters[0] = triple[0]->gnode;
 	  contact.g_slavenode[i]->mymasters[1] = triple[1]->gnode;
-	  
-	  for(l=0; l<3; l++) cr_length_vec [l] = element_nodes[2]->x_cr[l] - element_nodes[1]->x_cr[l]; 
-	  cr_length = sqrt(inner_pr(cr_length_vec, cr_length_vec));  
+
+	  for(l=0; l<3; l++) cr_length_vec [l] = element_nodes[2]->x_cr[l] - element_nodes[1]->x_cr[l];
+	  cr_length = sqrt(inner_pr(cr_length_vec, cr_length_vec));
 	}
-	
+
     	else if(dist1 < dist2){
-     
+
 	  local_coordinate = temp2;                         /*see line 303-315 for the explanations*/
 	  element_nodes[0] = contact.g_slavenode[i]->node;
           element_nodes[1] = triple[1];
@@ -453,27 +453,27 @@ numeq_total = K->numeq_total;
 	  contact.g_slavenode[i]->mymasters[0] = triple[1]->gnode;
 	  contact.g_slavenode[i]->mymasters[1] = triple[2]->gnode;
 	  g = g_aux;
-	  
+
 	  for(l=0; l<3; l++){
-	    cr_length_vec [l] = element_nodes[2]->x_cr[l] - element_nodes[1]->x_cr[l]; 
+	    cr_length_vec [l] = element_nodes[2]->x_cr[l] - element_nodes[1]->x_cr[l];
             unit_v3[l] = unit_v3_aux[l];
-	    }	  
-	  
-	  cr_length = sqrt(inner_pr(cr_length_vec, cr_length_vec));  
-	} 
+	    }
+
+	  cr_length = sqrt(inner_pr(cr_length_vec, cr_length_vec));
+	}
       }
     }
-    
+
       else if(inner_pr(relative_pos,unit_v1) > 0.0 && inner_pr(relative_pos,unit_v2) < 0.0){
    /*Closest node is the projection of the slave node*/
       unit_v3[0] =  0.5*( unit_v2[1]+ unit_v1[1] ); /*outward normal is stored in unit_v3 and obtained by the average of        */
       unit_v3[1] = -0.5*( unit_v2[0]+ unit_v1[0] ); /* (cross product of unit_v2 and e3)  and (cross product of unit_v1 and e3) */
-      unit_v3[2] =  0.0;     
-      	
-      g = -1.0 * inner_pr(relative_pos, unit_v3);  /*value of gap function.*/     
+      unit_v3[2] =  0.0;
+
+      g = -1.0 * inner_pr(relative_pos, unit_v3);  /*value of gap function.*/
       t_n = contact.g_slavenode[i]->history->pr_multipliers[0] + pen_par * g;
-      
-        if(t_n <= 0.0){   
+
+        if(t_n <= 0.0){
           contact.g_slavenode[i]->contactflag = contact_off;    /* contact flag is switched to the proper value*/
           contact.g_slavenode[i]->history->pr_masters[0] = NULL;
           contact.g_slavenode[i]->history->pr_masters[1] = NULL;
@@ -481,9 +481,9 @@ numeq_total = K->numeq_total;
           contact.g_slavenode[i]->history->cr_g           = g;
           continue;                                           /* No contact----Continue with the next slave node*/
         }
-	
+
 	else{
-	
+
 	  contact.g_slavenode[i]->contactflag = contact_on;       /*contact flag is switched to the proper value*/
 	  local_coordinate = 0.0;
           element_nodes[0] = contact.g_slavenode[i]->node;
@@ -492,23 +492,23 @@ numeq_total = K->numeq_total;
 	  tangent = unit_v2;
 	  contact.g_slavenode[i]->mymasters[0] = triple[1]->gnode;
 	  contact.g_slavenode[i]->mymasters[1] = triple[2]->gnode;
-	
-   	  for(l=0; l<3; l++) cr_length_vec [l] = element_nodes[2]->x_cr[l] - element_nodes[1]->x_cr[l]; 
-	  cr_length = sqrt(inner_pr(cr_length_vec, cr_length_vec));         
+
+   	  for(l=0; l<3; l++) cr_length_vec [l] = element_nodes[2]->x_cr[l] - element_nodes[1]->x_cr[l];
+	  cr_length = sqrt(inner_pr(cr_length_vec, cr_length_vec));
         }
       }
-      
-  }    
+
+  }
       else if(triple[0] == NULL){      /* Upper Corner */
-     
+
       unit_v3[0] =   unit_v1[1];       /*outward normal is stored in unit_v3 and obtained by cross product of unit_v2 and e3*/
       unit_v3[1] = - unit_v1[0];
-      unit_v3[2] =   0.0;     
-	
-      g = -1.0 * inner_pr(relative_pos, unit_v3);  /*value of gap function.*/     
+      unit_v3[2] =   0.0;
+
+      g = -1.0 * inner_pr(relative_pos, unit_v3);  /*value of gap function.*/
       t_n = contact.g_slavenode[i]->history->pr_multipliers[0] + pen_par * g;
-      
-        if(t_n <= 0.0){   
+
+        if(t_n <= 0.0){
           contact.g_slavenode[i]->contactflag = contact_off;         /* contact flag is switched to the proper value*/
           contact.g_slavenode[i]->history->pr_masters[0] = NULL;
           contact.g_slavenode[i]->history->pr_masters[1] = NULL;
@@ -516,35 +516,35 @@ numeq_total = K->numeq_total;
           contact.g_slavenode[i]->history->cr_g           = g;
           continue;                                               /* No contact----Continue with the next slave node*/
         }
-      
+
         else{
-        
-	  contact.g_slavenode[i]->contactflag = contact_on;          /*contact flag is switched to the proper value*/	  
+
+	  contact.g_slavenode[i]->contactflag = contact_on;          /*contact flag is switched to the proper value*/
           element_nodes[0] = contact.g_slavenode[i]->node;           /*see line 303-315 for the explanations*/
           element_nodes[1] = triple[1];
           element_nodes[2] = triple[2];
           tangent = unit_v1;
           contact.g_slavenode[i]->mymasters[0] = triple[1]->gnode;
           contact.g_slavenode[i]->mymasters[1] = triple[2]->gnode;
-	
-          for(l=0; l<3; l++) cr_length_vec [l] = element_nodes[2]->x_cr[l] - element_nodes[1]->x_cr[l]; 
-          cr_length = sqrt(inner_pr(cr_length_vec, cr_length_vec));  
-        
+
+          for(l=0; l<3; l++) cr_length_vec [l] = element_nodes[2]->x_cr[l] - element_nodes[1]->x_cr[l];
+          cr_length = sqrt(inner_pr(cr_length_vec, cr_length_vec));
+
 	  local_coordinate = inner_pr(relative_pos,unit_v1)/cr_length;
-	  
+
 	}
-      }	
-    
+      }
+
       else if(triple[2] == NULL){     /* Lower Corner */
 
       unit_v3[0] =   unit_v1[1];      /*outward normal is stored in unit_v3 and obtained by cross product of unit_v2 and e3*/
       unit_v3[1] = - unit_v1[0];
-      unit_v3[2] =   0.0;     
+      unit_v3[2] =   0.0;
 
-      g = -1.0 * inner_pr(relative_pos, unit_v3);  /*value of gap function.*/     
+      g = -1.0 * inner_pr(relative_pos, unit_v3);  /*value of gap function.*/
       t_n = contact.g_slavenode[i]->history->pr_multipliers[0] + pen_par * g;
-      
-        if(t_n <= 0.0){   
+
+        if(t_n <= 0.0){
           contact.g_slavenode[i]->contactflag = contact_off;          /* contact flag is switched to the proper value*/
           contact.g_slavenode[i]->history->pr_masters[0] = NULL;
           contact.g_slavenode[i]->history->pr_masters[1] = NULL;
@@ -552,58 +552,58 @@ numeq_total = K->numeq_total;
           contact.g_slavenode[i]->history->cr_g           = g;
           continue;                                                /* No contact----Continue with the next slave node*/
         }
-	
+
 	else{
 
-	  contact.g_slavenode[i]->contactflag = contact_on;           /*contact flag is switched to the proper value*/         
+	  contact.g_slavenode[i]->contactflag = contact_on;           /*contact flag is switched to the proper value*/
           element_nodes[0] = contact.g_slavenode[i]->node;            /*see line 303-315 for the explanations*/
           element_nodes[1] = triple[0];
           element_nodes[2] = triple[1];
           tangent = unit_v1;
           contact.g_slavenode[i]->mymasters[0] = triple[0]->gnode;
           contact.g_slavenode[i]->mymasters[1] = triple[1]->gnode;
-      
-          for(l=0; l<3; l++) cr_length_vec [l] = element_nodes[2]->x_cr[l] - element_nodes[1]->x_cr[l]; 
-          cr_length = sqrt(inner_pr(cr_length_vec, cr_length_vec));  
-        
+
+          for(l=0; l<3; l++) cr_length_vec [l] = element_nodes[2]->x_cr[l] - element_nodes[1]->x_cr[l];
+          cr_length = sqrt(inner_pr(cr_length_vec, cr_length_vec));
+
 	  local_coordinate = 1.0 - FABS(inner_pr(relative_pos,unit_v1) / cr_length);
-	  
-	}	    
+
+	}
       }
-    
-    
+
+
     /*Determination of the current metric coefficient*/
     m11 =0.25*DSQR(cr_length);
-    
+
     /*Determination of the reference metric coefficient M11*/
     for(l=0; l<3; l++) rf_length_vec[l] = contact.g_slavenode[i]->mymasters[1]->node->x[l] - contact.g_slavenode[i]->mymasters[0]->node->x[l];
-    rf_length = sqrt(inner_pr(rf_length_vec,rf_length_vec));					    
-    M11 = 0.25*DSQR(rf_length);  
-    
+    rf_length = sqrt(inner_pr(rf_length_vec,rf_length_vec));
+    M11 = 0.25*DSQR(rf_length);
+
 
     /*Local coordinate transformed into the domain {-1 1}*/
-    local_coordinate = 2.0 * local_coordinate - 1.0; 
-    
-    
-    
+    local_coordinate = 2.0 * local_coordinate - 1.0;
+
+
+
     /* tangent = 1/2*(X2-X1)--------We already have (X2-X1) */
     for(t=0 ; t<3; t++)
-    tangent[t] = 0.5*cr_length*tangent[t];   
-     
-    
-    
-       
+    tangent[t] = 0.5*cr_length*tangent[t];
+
+
+
+
     /*Determination of the Jacobian*/
     slave_neigbour_nodes[0] = NULL;
     slave_neigbour_nodes[1] = NULL;
     nn =0;
-    
+
      for(l = 0; l<contact.g_slavenode[i]->ngline; l++) {
-      
+
        if(contact.g_slavenode[i]->gline[l]->contype != contact_none) {
        sl_neigbour_glineptr = contact.g_slavenode[i]->gline[l];
        for(m = 0; m<2; m++) {
-     
+
         if(sl_neigbour_glineptr->gnode[m] != contact.g_slavenode[i]) {
 	slave_neigbour_nodes[nn] = sl_neigbour_glineptr->gnode[m]->node;
         nn++;
@@ -613,7 +613,7 @@ numeq_total = K->numeq_total;
      }
 
      if(slave_neigbour_nodes[0] != NULL && slave_neigbour_nodes[1] != NULL){
-       
+
        for(t=0; t<3; t++){
        sl_length_vec1[t] = slave_neigbour_nodes[0]->x[t] - contact.g_slavenode[i]->node->x[t];
        sl_length_vec2[t] = slave_neigbour_nodes[1]->x[t] - contact.g_slavenode[i]->node->x[t];
@@ -621,39 +621,39 @@ numeq_total = K->numeq_total;
        sl_length_1 = sqrt(inner_pr(sl_length_vec1,sl_length_vec1));
        sl_length_2 = sqrt(inner_pr(sl_length_vec2,sl_length_vec2));
        jacobian = 0.5 *(sl_length_1 + sl_length_2);
-     } 
+     }
 
      else if(slave_neigbour_nodes[0] == NULL){
-       
+
        for(t=0; t<3; t++) sl_length_vec1[t] = slave_neigbour_nodes[1]->x[t] - contact.g_slavenode[i]->node->x[t];
-       
+
        sl_length_1 = sqrt(inner_pr(sl_length_vec1,sl_length_vec1));
        jacobian = 0.5 * sl_length_1;
-     } 
+     }
 
      else if(slave_neigbour_nodes[1] == NULL){
-       
+
        for(t=0; t<3; t++) sl_length_vec1[t] = slave_neigbour_nodes[0]->x[t] - contact.g_slavenode[i]->node->x[t];
-       
+
        sl_length_1 = sqrt(inner_pr(sl_length_vec1,sl_length_vec1));
        jacobian = 0.5 * sl_length_1;
-     } 
+     }
 
-    /*check whether the slave node gets into contact for the first time*/ 
-    if(contact.g_slavenode[i]->history->pr_flag == contact_off)      
-       contact.g_slavenode[i]->history->pr_local_coord = local_coordinate;   
-       
-        
+    /*check whether the slave node gets into contact for the first time*/
+    if(contact.g_slavenode[i]->history->pr_flag == contact_off)
+       contact.g_slavenode[i]->history->pr_local_coord = local_coordinate;
+
+
     /*if slave node slides onto another element*/
     /*depending on the direction of motion of the slave node modify the previous local coordinate*/
-    
+
     else if(contact.g_slavenode[i]->mymasters[0] == contact.g_slavenode[i]->history->pr_masters[1])
       contact.g_slavenode[i]->history->pr_local_coord = -1.0 - ( 1.0 - contact.g_slavenode[i]->history->pr_local_coord );
-    
-    else if(contact.g_slavenode[i]->mymasters[1] == contact.g_slavenode[i]->history->pr_masters[0])    
+
+    else if(contact.g_slavenode[i]->mymasters[1] == contact.g_slavenode[i]->history->pr_masters[0])
       contact.g_slavenode[i]->history->pr_local_coord =  1.0 + ( 1.0 + contact.g_slavenode[i]->history->pr_local_coord );
-    
-    
+
+
     contact.g_slavenode[i]->stiffness = (ARRAY*)CCACALLOC(1,sizeof(ARRAY));   /*Allocation of stiffness matrix for each (active)slave node.*/
     if (!contact.g_slavenode[i]->stiffness) dserror("Allocation of memory failed");
     amdef("stiffness",contact.g_slavenode[i]->stiffness,6,6,"DA");            /*Allocation of int_force vector for each (active)slave node.*/
@@ -663,31 +663,31 @@ numeq_total = K->numeq_total;
     contact.g_slavenode[i]->ass_index = (ARRAY*)CCACALLOC(1,sizeof(ARRAY));   /*Allocation of ass_index vector for each (active)slave node.*/
     if (!contact.g_slavenode[i]->ass_index) dserror("Allocation of memory failed");
     amdef("ass_index",contact.g_slavenode[i]->ass_index,6,1,"IV");
-  
-  
+
+
     l = 0;
     for(t=0; t<3; t++){
-      for(k=0; k<2; k++){  
+      for(k=0; k<2; k++){
         contact.g_slavenode[i]->ass_index->a.iv[l] = element_nodes[t]->dof[k]; /*Get the global degrees of freedom of the contact element*/
-	l++;  
+	l++;
       }
-    }   
-    
-      
+    }
+
+
     N[0] =  unit_v3[0];              /*N  N_1  T  T_1 and D_1 are auxiliary matrices whose definitons are given in Chapter 5 of the book by Laursen.*/
     N[1] =  unit_v3[1];
     N[2] = -0.5*(1.0 - local_coordinate) * unit_v3[0];
     N[3] = -0.5*(1.0 - local_coordinate) * unit_v3[1];
     N[4] = -0.5*(1.0 + local_coordinate) * unit_v3[0];
     N[5] = -0.5*(1.0 + local_coordinate) * unit_v3[1];
-   
+
     N_1[0] =  0.0;
     N_1[1] =  0.0;
     N_1[2] =  0.5*unit_v3[0];
     N_1[3] =  0.5*unit_v3[1];
     N_1[4] = -0.5*unit_v3[0];
     N_1[5] = -0.5*unit_v3[1];
-   
+
 
     T[0] =  tangent[0];
     T[1] =  tangent[1];
@@ -695,57 +695,57 @@ numeq_total = K->numeq_total;
     T[3] = -0.5*(1.0 - local_coordinate)*tangent[1];
     T[4] = -0.5*(1.0 + local_coordinate)*tangent[0];
     T[5] = -0.5*(1.0 + local_coordinate)*tangent[1];
-    
-    
+
+
     T_1[0] =  0.0;
     T_1[1] =  0.0;
     T_1[2] =  0.5*tangent[0];
     T_1[3] =  0.5*tangent[1];
     T_1[4] = -0.5*tangent[0];
     T_1[5] = -0.5*tangent[1];
-    
-       
+
+
     for(t = 0; t<6; t++)  D_1[t] =1.0/m11 * (T[t] + g*N_1[t]);
-    
+
     /*Determination of the normal component of traction vector*/
     t_n = 0.0;
     t_n = contact.g_slavenode[i]->history->pr_multipliers[0] + pen_par * g;
     if(t_n < 0.0) t_n = 0.0;
-    
+
     /*Determination of the tangential component of the traction vector*/
     /*By return mapping algorithm*/
-     
+
      if(fr_flag==1)
      {
-       if(cet_flag==0) 
+       if(cet_flag==0)
        t_trial = contact.g_slavenode[i]->history->pr_t_tan + tan_pen_par * M11 *
                 (local_coordinate - contact.g_slavenode[i]->history->pr_local_coord);
-	       
+
        else if(cet_flag==1)
        t_trial = contact.g_slavenode[i]->history->pr_multipliers[1] + tan_pen_par * M11 *
                (local_coordinate - contact.g_slavenode[i]->history->pr_local_coord);
-     
-       norm_t_trial = sqrt(t_trial*1.0/M11*t_trial);   
-       phi_trial = norm_t_trial - friction * t_n; 
-    
+
+       norm_t_trial = sqrt(t_trial*1.0/M11*t_trial);
+       phi_trial = norm_t_trial - friction * t_n;
+
        if(phi_trial <= 0.0){
          t_tan = t_trial;
            for(t=0; t<6; t++)
 	     for(m=0; m<6; m++)  kc_direct[t][m] = tan_pen_par*M11*D_1[t]*D_1[m]; /*contribution to the stiffness in case of stick*/
        }
-     	                                                                         
+
     else {
       del_gama = phi_trial / tan_pen_par;
-      t_tan = t_trial - tan_pen_par*del_gama*t_trial/norm_t_trial;      	      
+      t_tan = t_trial - tan_pen_par*del_gama*t_trial/norm_t_trial;
 	 for(t=0; t<6; t++)
-	   for(m=0; m<6; m++)  kc_direct[t][m] = -friction*pen_par*Heaviside(t_n)*t_trial/norm_t_trial*D_1[t]*N[m];/*cont. to the stiffness in case of slip*/	        
-         }    
+	   for(m=0; m<6; m++)  kc_direct[t][m] = -friction*pen_par*Heaviside(t_n)*t_trial/norm_t_trial*D_1[t]*N[m];/*cont. to the stiffness in case of slip*/
+         }
      }
-   
+
      if(contact.g_slavenode[i]->history->pr_flag == contact_on){
        if(fr_flag==1)
        for(t=0; t<6; t++)
-         contact.g_slavenode[i]->int_force->a.dv[t] = -1.0 * jacobian * (t_n*N[t] - t_tan * D_1[t]); /* Internal force (contribution to the residuum)*/ 
+         contact.g_slavenode[i]->int_force->a.dv[t] = -1.0 * jacobian * (t_n*N[t] - t_tan * D_1[t]); /* Internal force (contribution to the residuum)*/
        else if(fr_flag == 0)
        for(t=0;t<6;t++)
 	 contact.g_slavenode[i]->int_force->a.dv[t] = -t_n*jacobian*N[t];
@@ -754,76 +754,76 @@ numeq_total = K->numeq_total;
        for(t=0; t<6; t++)
          contact.g_slavenode[i]->int_force->a.dv[t] = -t_n*jacobian*N[t];
      }
-     		
-	
+
+
     for(t=0; t<6; t++)
       for(m=0; m<6; m++)
-        kc_n[t][m] = pen_par*Heaviside(t_n)*N[t]*N[m] + t_n*(g/m11*N_1[t]*N_1[m] - D_1[t]*N_1[m] - N_1[t]*D_1[m]);/*Normal virtual work cont. to kc*/ 
+        kc_n[t][m] = pen_par*Heaviside(t_n)*N[t]*N[m] + t_n*(g/m11*N_1[t]*N_1[m] - D_1[t]*N_1[m] - N_1[t]*D_1[m]);/*Normal virtual work cont. to kc*/
 
     if(fr_flag==1) {
     for(t=0; t<6; t++)
       for(m=0; m<6; m++)
         kc_tan[t][m] = t_tan/m11*(2.0*(T_1[t]*D_1[m]+D_1[t]*T_1[m]) - N[t]*N_1[m] - N_1[t]*N[m] /*Geometric part of kc due to friction*/
    	             - 1.0/m11*(T[t]*T_1[m]+T_1[t]*T[m]));
-    }		         		             
-    
+    }
+
     if(contact.g_slavenode[i]->history->pr_flag == contact_on){
-      
+
       if(fr_flag==1){
       for(t=0; t<6; t++)
         for(m=0; m<6; m++)
          contact.g_slavenode[i]->stiffness->a.da[t][m] = jacobian * ( kc_n[t][m] + kc_direct[t][m] + kc_tan[t][m]); /* Tangent Stiffness (Laursen Chapter 5)*/
       }
-      
+
       else if(fr_flag==0) {
       for(t=0; t<6; t++)
-        for(m=0; m<6; m++)  
-	contact.g_slavenode[i]->stiffness->a.da[t][m] = jacobian*kc_n[t][m]; /*Tangent Stiffness for Frictionless case*/ 
+        for(m=0; m<6; m++)
+	contact.g_slavenode[i]->stiffness->a.da[t][m] = jacobian*kc_n[t][m]; /*Tangent Stiffness for Frictionless case*/
       }
     }
-    
+
     else{ /*If the node is getting in contact at this step(pr_flag==contact_off), regardless of friction flag, this case is considered to be frictionless*/
       for(t=0; t<6; t++)
-        for(m=0; m<6; m++)      
-        contact.g_slavenode[i]->stiffness->a.da[t][m] = jacobian*kc_n[t][m]; 
+        for(m=0; m<6; m++)
+        contact.g_slavenode[i]->stiffness->a.da[t][m] = jacobian*kc_n[t][m];
     }
-   	
-	    	                                                      
+
+
      contact.g_slavenode[i]->history->pr_masters[0]  = contact.g_slavenode[i]->mymasters[0]; /*Update the history variables of the slave node*/
-     contact.g_slavenode[i]->history->pr_masters[1]  = contact.g_slavenode[i]->mymasters[1]; 
+     contact.g_slavenode[i]->history->pr_masters[1]  = contact.g_slavenode[i]->mymasters[1];
      contact.g_slavenode[i]->history->pr_closest     = closestptr;
-     contact.g_slavenode[i]->history->cr_local_coord = local_coordinate; 
+     contact.g_slavenode[i]->history->cr_local_coord = local_coordinate;
      contact.g_slavenode[i]->history->cr_g     = g;
-     contact.g_slavenode[i]->history->cr_force = t_n; 
+     contact.g_slavenode[i]->history->cr_force = t_n;
      contact.g_slavenode[i]->history->cr_tan   = t_tan;
-     contact.g_slavenode[i]->history->R_Metric = M11; 
-     
+     contact.g_slavenode[i]->history->R_Metric = M11;
+
 
  } /* end of loop over slavenodes */
-/*--------------------------------------------------------------------------------------------------------*/ 
+/*--------------------------------------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------------------------------------*/
 /*The following part is the special handling of assembly in parallel case.*/
-/*--------------------------------------------------------------------------------------------------------*/ 
+/*--------------------------------------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------------------------------------*/
 /* start of assembly  - make information about contact appearance redundant */
-#ifdef PARALLEL 
+#ifdef PARALLEL
 if (nproc>1)
 {
-amdef("tmp",&con_flag_s,contact.ng_slavenode,1,"IV");  
+amdef("tmp",&con_flag_s,contact.ng_slavenode,1,"IV");
 amzero(&con_flag_s);
-amdef("tmp",&con_flag_r,contact.ng_slavenode,1,"IV");  
-for (i=0; i<contact.ng_slavenode; i++) 
+amdef("tmp",&con_flag_r,contact.ng_slavenode,1,"IV");
+for (i=0; i<contact.ng_slavenode; i++)
    if (contact.g_slavenode[i]->contactflag == contact_on)
-     con_flag_s.a.iv[i] = 1;  
+     con_flag_s.a.iv[i] = 1;
 MPI_Allreduce(con_flag_s.a.iv,con_flag_r.a.iv,contact.ng_slavenode,MPI_INT,MPI_SUM,actintra->MPI_INTRA_COMM);
-for (i=0; i<contact.ng_slavenode; i++) 
+for (i=0; i<contact.ng_slavenode; i++)
    if (con_flag_r.a.iv[i] != 0)
      contact.g_slavenode[i]->contactflag = contact_on;
 amdel(&con_flag_s);
 amdel(&con_flag_r);
 }
 #endif
-/* start loop all slavenodes and assemble */  
+/* start loop all slavenodes and assemble */
 for (i=0; i<contact.ng_slavenode; i++) {
   if(contact.g_slavenode[i]->contactflag == contact_on) {
 
@@ -832,20 +832,20 @@ for (i=0; i<contact.ng_slavenode; i++) {
   master_owner[1] = contact.g_slavenode[i]->mymasters[0]->node->proc;
   master_owner[2] = contact.g_slavenode[i]->mymasters[1]->node->proc;
   }
-#ifdef PARALLEL 
+#ifdef PARALLEL
   MPI_Bcast(&(master_owner[0]),3,MPI_INT,master_owner[0],actintra->MPI_INTRA_COMM);
 #endif
   index = 0;
   if (myrank == master_owner[0]) index++;
   if (myrank == master_owner[1]) index++;
   if (myrank == master_owner[2]) index++;
-  if (index==0) continue;  
+  if (index==0) continue;
   if (myrank==master_owner[0])
   for (j=1; j<3; j++)
   {
       if (master_owner[j]==myrank) continue;
       if (master_owner[j]==master_owner[j-1]) continue;
-#ifdef PARALLEL 
+#ifdef PARALLEL
       MPI_Send(&(contact.g_slavenode[i]->stiffness->a.da[0][0]),
                contact.g_slavenode[i]->stiffness->fdim * contact.g_slavenode[i]->stiffness->sdim,
 	       MPI_DOUBLE,
@@ -872,12 +872,12 @@ for (i=0; i<contact.ng_slavenode; i++) {
      contact.g_slavenode[i]->int_force = (ARRAY*)CCACALLOC(1,sizeof(ARRAY));
      contact.g_slavenode[i]->ass_index = (ARRAY*)CCACALLOC(1,sizeof(ARRAY));
      if (!(contact.g_slavenode[i]->stiffness) || !(contact.g_slavenode[i]->int_force) ||
-         !(contact.g_slavenode[i]->ass_index)) 
+         !(contact.g_slavenode[i]->ass_index))
         dserror("Alloction of memory failed");
      amdef("stiffness",contact.g_slavenode[i]->stiffness,6,6,"DA");
      amdef("int_force",contact.g_slavenode[i]->int_force,6,1,"DV");
      amdef("ass_index",contact.g_slavenode[i]->ass_index,6,1,"IV");
-#ifdef PARALLEL 
+#ifdef PARALLEL
      MPI_Recv(&(contact.g_slavenode[i]->stiffness->a.da[0][0]),
               contact.g_slavenode[i]->stiffness->fdim * contact.g_slavenode[i]->stiffness->sdim,
 	      MPI_DOUBLE,
@@ -901,8 +901,8 @@ for (i=0; i<contact.ng_slavenode; i++) {
 	      &status);
 #endif
   }
-  
-    
+
+
     for(m=0; m<6; m++){
       ii = contact.g_slavenode[i]->ass_index->a.iv[m];
       /* check ownership */
@@ -911,21 +911,21 @@ for (i=0; i<contact.ng_slavenode; i++) {
       for(l=0; l<6; l++){
         /* check boundary condition */
 	if (ii>=numeq_total) continue;
-      	jj = contact.g_slavenode[i]->ass_index->a.iv[l];	
+      	jj = contact.g_slavenode[i]->ass_index->a.iv[l];
 	if(jj>=numeq_total) continue;
 	else{
 	value = contact.g_slavenode[i]->stiffness->a.da[m][l];
-	add_val_spo(ii,index,jj,K,value,actintra);		
+	add_val_spo(ii,index,jj,K,value,actintra);
         }
-      }	
+      }
     }
-    
+
     for(m=0; m<6; m++){
       ii = contact.g_slavenode[i]->ass_index->a.iv[m];
       index = find_index(ii,K->update.a.iv,numeq);
       if (index==-1) continue;
       else if(ii>numeq_total) continue;
-      else con_force[ii] += contact.g_slavenode[i]->int_force->a.dv[m];    
+      else con_force[ii] += contact.g_slavenode[i]->int_force->a.dv[m];
     }
     amdel(contact.g_slavenode[i]->stiffness);  /*Free the memory allocated.*/
     amdel(contact.g_slavenode[i]->int_force);
@@ -935,13 +935,13 @@ for (i=0; i<contact.ng_slavenode; i++) {
     CCAFREE(contact.g_slavenode[i]->ass_index);
 
   }
-} 
-        
-#ifdef DEBUG 
+}
+
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
-} 
+}
 /* end of wall_contact_detection.c*/
 /*! @} (documentation module close)*/
 #endif

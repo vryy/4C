@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 
+\brief contains the routine
  - s9_mat_plast_mises: which calculates the constitutive matrix for a
                        'von Mises'-Plasticity with linear hardening
                        for a shell9 element
@@ -19,34 +19,34 @@ Maintainer: Stefan Hartmann
 #include "../materials/mat_prototypes.h"
 #include "shell9.h"
 
-/*! 
-\addtogroup SHELL9 
-*//*! @{ (documentation module open)*/ 
+/*!
+\addtogroup SHELL9
+*//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief  shell9 element: consitutive matrix for von Mises-Plasticity                                    
+\brief  shell9 element: consitutive matrix for von Mises-Plasticity
 
 <pre>                                                            sh 03/03
 This routine calculates the constitutive matrix and forces for a von Mises
 Plasticity with a combined linear isotropic/kinematic hardening law.
 </pre>
-\param  DOUBLE     ym        (i)  young's modulus              
-\param  DOUBLE     pv        (i)  poisson's ratio              
-\param  DOUBLE     sigy      (i)  yield stress                 
-\param  DOUBLE     hard      (i)  hardening modulus            
-\param  DOUBLE     gf        (i)  fracture energy              
-\param  DOUBLE     betah     (i)  controls the iso/kin hard.   
-\param  ELEMENT   *ele       (i)  actual element               
-\param  INT        ip        (i)  integration point Id         
-\param  INT        actlay    (i)  actual layer                 
+\param  DOUBLE     ym        (i)  young's modulus
+\param  DOUBLE     pv        (i)  poisson's ratio
+\param  DOUBLE     sigy      (i)  yield stress
+\param  DOUBLE     hard      (i)  hardening modulus
+\param  DOUBLE     gf        (i)  fracture energy
+\param  DOUBLE     betah     (i)  controls the iso/kin hard.
+\param  ELEMENT   *ele       (i)  actual element
+\param  INT        ip        (i)  integration point Id
+\param  INT        actlay    (i)  actual layer
 \param  DOUBLE     stress[6] (o)  vector of stresses [11,22,33,12,23,13]
 \param  DOUBLE     strain[6] (i)  vector of strains  [11,22,33,12,23,13]
-\param  DOUBLE   **d         (o)  constitutive matrix          
-\param  INT        istore    (i)  controls storing of stresses 
-\param  INT        newval    (i)  controls eval. of stresses   
+\param  DOUBLE   **d         (o)  constitutive matrix
+\param  INT        istore    (i)  controls storing of stresses
+\param  INT        newval    (i)  controls eval. of stresses
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: s9_call_mat()     [s9_call_mat.c]
 
 *----------------------------------------------------------------------*/
@@ -75,7 +75,7 @@ INT yip;
 DOUBLE epstn;
 DOUBLE dia;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9_mat_plast_mises");
 #endif
 /*----------------------------------------------------------------------*/
@@ -111,7 +111,7 @@ dstrc_enter("s9_mat_plast_mises");
                       strain,
                       d,        /*Material-Matrix to be calculated 3D*/
                       &iupd,    /*to be modified*/
-                      &yip,     /*to be modified*/ 
+                      &yip,     /*to be modified*/
                       &epstn,   /*to be modified*/
                       sig,
                       eps,
@@ -126,7 +126,7 @@ end:
    {
      for (i=0; i<6; i++)
      {
-       ele->e.s9->elewa[actlay].ipwa[ip].sig[i] = stress[i];  
+       ele->e.s9->elewa[actlay].ipwa[ip].sig[i] = stress[i];
        ele->e.s9->elewa[actlay].ipwa[ip].eps[i] = strain[i];
        ele->e.s9->elewa[actlay].ipwa[ip].qn[ i] = qn[i] ;
      }
@@ -134,7 +134,7 @@ end:
      ele->e.s9->elewa[actlay].ipwa[ip].yip   = yip  ;
    }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

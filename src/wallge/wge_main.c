@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 'wallge' the main routine for the 
+\brief contains the routine 'wallge' the main routine for the
  gradient enhanced wall element
 
 *----------------------------------------------------------------------*/
@@ -14,22 +14,22 @@
  *----------------------------------------------------------------------*/
 extern struct _MATERIAL  *mat;
 
-/*! 
-\addtogroup WALLGE 
+/*!
+\addtogroup WALLGE
 *//*! @{ (documentation module open)*/
 
 
 /*!----------------------------------------------------------------------
 \brief  control routine for the gradient enhanced wall element
 
-<pre>                                                              mn 05/03 
+<pre>                                                              mn 05/03
 This routine acts according to the action and either initializes the element
 or computes the linear stiffness matrix, internal forces,the stresses or the
 right hand side vector.
 
 </pre>
 \param *actpart         PARTITION   (i)   my partition
-\param *actintra        INTRA       (i)   my intra-communicator 
+\param *actintra        INTRA       (i)   my intra-communicator
 \param *ele             ELEMENT     (i)   my element
 \param *estif_global    ARRAY       (i)   global stiffness matrix
 \param *emass_global    ARRAY       (i)   global mass matrix
@@ -37,8 +37,8 @@ right hand side vector.
 \param *action          CALC_ACTION (i)   option passed to element
 \param *container       CONTAINER   (i/o) contains variables defined in container.h
 
-\return void                                               
-\sa calling:   ifinit, ifstatic_ke, if_cal_stress, if_eleload; 
+\return void
+\sa calling:   ifinit, ifstatic_ke, if_cal_stress, if_eleload;
     called by: global_calelm();
 
 *----------------------------------------------------------------------*/
@@ -49,7 +49,7 @@ void wallge(PARTITION   *actpart,
             ARRAY       *emass_global,
             ARRAY       *intforce_global,
             CALC_ACTION *action,
-            CONTAINER   *container) 
+            CONTAINER   *container)
 {
 #ifdef D_WALLGE
 WALLGE_DATA  actdata;
@@ -58,7 +58,7 @@ MATERIAL    *actmat;
 INT          imyrank;
 DOUBLE      *intforce;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("wallge");
 #endif
 /*----------------------------------------------------------------------*/
@@ -72,10 +72,10 @@ switch (*action)
 case calc_struct_init:
     wgeinit(actpart,mat);
     wgestatic_ke(NULL,NULL,NULL,NULL,NULL,NULL,1);
-    wge_eleload(ele,&actdata,intforce,1); 
-# if 0     
-    wge_stress(NULL,NULL,NULL,1);       
-# endif        
+    wge_eleload(ele,&actdata,intforce,1);
+# if 0
+    wge_stress(NULL,NULL,NULL,1);
+# endif
 break;/*----------------------------------------------------------------*/
 /*----------------------------------- calculate linear stiffness matrix */
 case calc_struct_nlnstiff:
@@ -86,7 +86,7 @@ break;/*----------------------------------------------------------------*/
 case calc_struct_stress:
    imyrank = actintra->intra_rank;
    if (imyrank==ele->proc)
-   { 
+   {
      wge_cal_stress(ele);
    }
 break;/*----------------------------------------------------------------*/
@@ -94,7 +94,7 @@ break;/*----------------------------------------------------------------*/
 case calc_struct_eleload:
    imyrank = actintra->intra_rank;
    if (imyrank==ele->proc)
-   { 
+   {
      wge_eleload(ele,&actdata,intforce,0);
    }
 break;/*----------------------------------------------------------------*/
@@ -118,12 +118,12 @@ default:
 break;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 #endif /*D_WALLGE*/
-return; 
+return;
 } /* end of wallge */
 /*----------------------------------------------------------------------*/
 /*! @} (documentation module close)*/

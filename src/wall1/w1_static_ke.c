@@ -17,15 +17,15 @@ Maintainer: Andrea Hund
 #include "wall1.h"
 #include "wall1_prototypes.h"
 
-/*! 
-\addtogroup WALL1 
+/*!
+\addtogroup WALL1
 *//*! @{ (documentation module open)*/
 
 /*----------------------------------------------------------------------*
  | integration of linear stiffness ke for wall1 element      al 9/01    |
  *----------------------------------------------------------------------*/
-void w1static_ke(ELEMENT   *ele, 
-                 W1_DATA   *data, 
+void w1static_ke(ELEMENT   *ele,
+                 W1_DATA   *data,
                  MATERIAL  *mat,
                  ARRAY     *estif_global,
                  ARRAY     *emass_global, /* global vector for mass */
@@ -49,38 +49,38 @@ DOUBLE              fac,facm;         /* integration factors            */
 DOUBLE              stifac;           /* thickness                      */
 DOUBLE              e1,e2;            /* GP-coords                      */
 DOUBLE              facr,facs;        /* weights at GP                  */
-DOUBLE              density;          /* for calculation of mass matrix */       
+DOUBLE              density;          /* for calculation of mass matrix */
 INT                 imass;            /* flag for calc of mass matrix   */
 
-static ARRAY    D_a;         /* material tensor */     
-static DOUBLE **D;         
-static ARRAY    funct_a;     /* shape functions */    
-static DOUBLE  *funct;     
-static ARRAY    deriv_a;     /* derivatives of shape functions */   
-static DOUBLE **deriv;     
-static ARRAY    xjm_a;       /* jacobian matrix */     
-static DOUBLE **xjm;         
-static ARRAY    xjm0_a;      /* jacobian matrix at r = s = 0 */     
-static DOUBLE **xjm0;         
-static ARRAY    bop_a;       /* B-operator */   
-static DOUBLE **bop;       
-static ARRAY    gop_a;       /* incomp modes: strain = Bop*d + Gop*alpha */   
-static DOUBLE  *gop;       
-static ARRAY    alpha_a;     /* incomp modes: alpha = vector of element internal dof*/   
-static DOUBLE  *alpha;       
-static ARRAY    knc_a;       /* incomp modes: knc = BT C G (8*4)     */   
+static ARRAY    D_a;         /* material tensor */
+static DOUBLE **D;
+static ARRAY    funct_a;     /* shape functions */
+static DOUBLE  *funct;
+static ARRAY    deriv_a;     /* derivatives of shape functions */
+static DOUBLE **deriv;
+static ARRAY    xjm_a;       /* jacobian matrix */
+static DOUBLE **xjm;
+static ARRAY    xjm0_a;      /* jacobian matrix at r = s = 0 */
+static DOUBLE **xjm0;
+static ARRAY    bop_a;       /* B-operator */
+static DOUBLE **bop;
+static ARRAY    gop_a;       /* incomp modes: strain = Bop*d + Gop*alpha */
+static DOUBLE  *gop;
+static ARRAY    alpha_a;     /* incomp modes: alpha = vector of element internal dof*/
+static DOUBLE  *alpha;
+static ARRAY    knc_a;       /* incomp modes: knc = BT C G (8*4)     */
 static DOUBLE **knc;
-static ARRAY    knn_a;       /* incomp modes: knn = GT C G (4*4)     */   
+static ARRAY    knn_a;       /* incomp modes: knn = GT C G (4*4)     */
 static DOUBLE **knn;
-static ARRAY    knninv_a;    /* incomp modes:knninv = inverse(knn)   */   
+static ARRAY    knninv_a;    /* incomp modes:knninv = inverse(knn)   */
 static DOUBLE **knninv;
-static ARRAY    deltak_a;    /* incomp modes:deltak=knc*knninv*kcn   */   
+static ARRAY    deltak_a;    /* incomp modes:deltak=knc*knninv*kcn   */
 static DOUBLE **deltak;
-static ARRAY    fintn_a;     /* incomp modes: fintn = GT sig (4*1)   */   
+static ARRAY    fintn_a;     /* incomp modes: fintn = GT sig (4*1)   */
 static DOUBLE  *fintn;
-static ARRAY    deltaf_a;    /* incomp modes:deltaf=knc*knninv*fintn */   
+static ARRAY    deltaf_a;    /* incomp modes:deltaf=knc*knninv*fintn */
 static DOUBLE  *deltaf;
-       
+
 static DOUBLE **estif;       /* element stiffness matrix ke */
 static DOUBLE **emass;       /* mass matrix */
 
@@ -89,7 +89,7 @@ DOUBLE F[4];                 /* stress */
 DOUBLE det,det0;             /* Jacobi-det, Jacobi-det at r=s=0 */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1static_ke");
 #endif
 /*------------------------------------------------- some working arrays */
@@ -97,19 +97,19 @@ istore = 0;
 
 if (init==1)
 {
-funct     = amdef("funct"  ,&funct_a ,MAXNOD_WALL1,1 ,"DV");       
-deriv     = amdef("deriv"  ,&deriv_a ,2,MAXNOD_WALL1 ,"DA");       
-D         = amdef("D"      ,&D_a     ,6,6             ,"DA");           
-xjm       = amdef("xjm"    ,&xjm_a   ,numdf,numdf     ,"DA");           
-xjm0      = amdef("xjm0"   ,&xjm0_a  ,numdf,numdf     ,"DA");           
-bop       = amdef("bop"    ,&bop_a   ,numeps,(numdf*MAXNOD_WALL1),"DA");           
-gop       = amdef("gop"    ,&gop_a   ,4,1,"DV");           
-alpha     = amdef("alpha"  ,&alpha_a ,4,1,"DV");           
-knc       = amdef("knc"    ,&knc_a   ,8,4,"DA");           
-knn       = amdef("knn"    ,&knn_a   ,4,4,"DA");           
-knninv    = amdef("knninv" ,&knninv_a,4,4,"DA");           
-deltak    = amdef("deltak" ,&deltak_a,8,8,"DA");           
-fintn     = amdef("fintn"  ,&fintn_a ,4,1,"DV");           
+funct     = amdef("funct"  ,&funct_a ,MAXNOD_WALL1,1 ,"DV");
+deriv     = amdef("deriv"  ,&deriv_a ,2,MAXNOD_WALL1 ,"DA");
+D         = amdef("D"      ,&D_a     ,6,6             ,"DA");
+xjm       = amdef("xjm"    ,&xjm_a   ,numdf,numdf     ,"DA");
+xjm0      = amdef("xjm0"   ,&xjm0_a  ,numdf,numdf     ,"DA");
+bop       = amdef("bop"    ,&bop_a   ,numeps,(numdf*MAXNOD_WALL1),"DA");
+gop       = amdef("gop"    ,&gop_a   ,4,1,"DV");
+alpha     = amdef("alpha"  ,&alpha_a ,4,1,"DV");
+knc       = amdef("knc"    ,&knc_a   ,8,4,"DA");
+knn       = amdef("knn"    ,&knn_a   ,4,4,"DA");
+knninv    = amdef("knninv" ,&knninv_a,4,4,"DA");
+deltak    = amdef("deltak" ,&deltak_a,8,8,"DA");
+fintn     = amdef("fintn"  ,&fintn_a ,4,1,"DV");
 deltaf    = amdef("deltaf" ,&deltaf_a,8,1,"DV");
 
 amzero(&D_a);
@@ -133,8 +133,8 @@ else if (init==-1)
    amdel(&knninv_a);
    amdel(&deltak_a);
    amdel(&deltaf_a);
-   
-   goto end;  
+
+   goto end;
 }
 
 else if(init==2)
@@ -144,19 +144,19 @@ else if(init==2)
 /*------------------------------------------- integration parameters ---*/
 w1intg(ele,data,1);
 /*------------------------------------ check calculation of mass matrix */
-if (emass_global) 
+if (emass_global)
 {
    imass = 1;
    amzero(emass_global);
    emass = emass_global->a.da;
    w1_getdensity(mat,&density);
-} 
-else 
+}
+else
 {
    imass   = 0;
    emass   = NULL;
    density = 0.0;
-}   
+}
 /*-------------- some of the fields have to be reinitialized to zero ---*/
 amzero(estif_global);
 estif     = estif_global->a.da;
@@ -178,8 +178,8 @@ if(ele->e.w1->modeltype == incomp_mode)
  }
  /*------------------ shape functions and their derivatives at r,s=0 ---*/
  w1_funct_deriv(funct,deriv,0,0,ele->distyp,1);
- /*-------------------------------- compute jacobian matrix at r,s=0 ---*/       
- w1_jaco (deriv,xjm0,&det0,ele,iel);                         
+ /*-------------------------------- compute jacobian matrix at r,s=0 ---*/
+ w1_jaco (deriv,xjm0,&det0,ele,iel);
  /*---------------------------------------------------------------------*/
  amzero(&alpha_a);
  if(mat->mattyp != m_stvenant)
@@ -207,10 +207,10 @@ case quad4: case quad8: case quad9:  /* --> quad - element */
    nir = ele->e.w1->nGP[0];
    nis = ele->e.w1->nGP[1];
 break;
-case tri3: /* --> tri - element */  
+case tri3: /* --> tri - element */
    nir  = ele->e.w1->nGP[0];
    nis  = 1;
-   intc = ele->e.w1->nGP[1]-1;  
+   intc = ele->e.w1->nGP[1]-1;
 break;
 default:
    dserror("ele->distyp unknown! in 'w1_statik_ke.c' ");
@@ -222,7 +222,7 @@ for (lr=0; lr<nir; lr++)
    for (ls=0; ls<nis; ls++)
    {
 /*--------------- get values of  shape functions and their derivatives */
-      switch(ele->distyp)  
+      switch(ele->distyp)
       {
       case quad4: case quad8: case quad9:  /* --> quad - element */
        e1   = data->xgrr[lr];
@@ -230,7 +230,7 @@ for (lr=0; lr<nir; lr++)
        e2   = data->xgss[ls];
        facs = data->wgts[ls];
       break;
-      case tri3:   /* --> tri - element */              
+      case tri3:   /* --> tri - element */
 	 e1   = data->txgr[lr][intc];
 	 facr = data->twgt[lr][intc];
 	 e2   = data->txgs[lr][intc];
@@ -242,17 +242,17 @@ for (lr=0; lr<nir; lr++)
       ip++;
       /*------------------------- shape functions and their derivatives */
       w1_funct_deriv(funct,deriv,e1,e2,ele->distyp,1);
-      /*------------------------------------ compute jacobian matrix ---*/       
-      w1_jaco (deriv,xjm,&det,ele,iel);                         
-      /*--------------------------- thickness rebar  (input rebar %) ---*/       
+      /*------------------------------------ compute jacobian matrix ---*/
+      w1_jaco (deriv,xjm,&det,ele,iel);
+      /*--------------------------- thickness rebar  (input rebar %) ---*/
       if(lanz>0)
       {
         stifac = mat->m.pl_epc->reb_area[lanz-1];
       }
-      /*------------------------------------ integration factor  -------*/ 
+      /*------------------------------------ integration factor  -------*/
       fac = facr * facs * det * stifac;
       /*------------------------------ compute mass matrix if imass=1---*/
-      if (imass == 1) 
+      if (imass == 1)
       {
        facm = fac * density;
        for (a=0; a<iel; a++)
@@ -263,14 +263,14 @@ for (lr=0; lr<nir; lr++)
          emass[2*a+1][2*b+1] += facm * funct[a] * funct[b]; /* a,b odd  */
         }
        }
-      } 
+      }
       /*--------------------------------------- calculate operator B ---*/
       amzero(&bop_a);
       w1_bop(bop,deriv,xjm,det,iel);
       /*--------------------------------------- calculate operator G ---*/
       if(ele->e.w1->modeltype == incomp_mode)
       {
-        amzero(&gop_a);    
+        amzero(&gop_a);
         w1_gop(gop,xjm0,det0,det,e1,e2);
       }
       /*------------------------------------------ call material law ---*/
@@ -280,7 +280,7 @@ for (lr=0; lr<nir; lr++)
       }
       else
       {
-        w1_mat_rebar(ele,mat,bop,NULL,NULL,xjm,F,D,ip,lanz,istore); 
+        w1_mat_rebar(ele,mat,bop,NULL,NULL,xjm,F,D,ip,lanz,istore);
       }
       /*----------------------------------------------------------------*/
       if(istore==0)
@@ -293,17 +293,17 @@ for (lr=0; lr<nir; lr++)
         w1_knc(knc,bop,gop,D,fac);
         w1_knn(knn,gop,D,fac);
        }
-      /*--------------- nodal forces fi from integration of stresses ---*/        
+      /*--------------- nodal forces fi from integration of stresses ---*/
        if (force)
-       { 
+       {
         w1fi (F,fac,bop,nd,force);
         if(ele->e.w1->modeltype == incomp_mode)
         {
          w1_fintn(F,fac,gop,fintn);
         }
-      }                    
-     } 
-   }/*============================================= end of loop over ls */ 
+      }
+     }
+   }/*============================================= end of loop over ls */
 }/*================================================ end of loop over lr */
 }/*------------------------------ loop concrete reinforcement steel ----*/
 
@@ -312,10 +312,10 @@ if(ele->e.w1->modeltype == incomp_mode  && istore==0)
 {
  w1_inverse_matrix(4,knn,knninv);   /*- knn is destroyed afterwards! ---*/
  if (force)    w1_stat_cond(knninv,knc,deltak,fintn,deltaf,ele);
- else          w1_stat_cond(knninv,knc,deltak,NULL,NULL,ele);                                       
+ else          w1_stat_cond(knninv,knc,deltak,NULL,NULL,ele);
  amadd(estif_global,&deltak_a,-1.0,0);
  if (force)
- {  
+ {
   for(i=0;i<8;i++)  force[i] -= deltaf[i];
  }
 }
@@ -324,10 +324,10 @@ dsassert(ele->locsys==locsys_no,"locsys not implemented for this element!\n");
 /*----------------------------------------------------------------------*/
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of w1static_ke */
 /*----------------------------------------------------------------------*
  | evaluates element forces                              al    9/01     |
@@ -342,7 +342,7 @@ void w1fi( DOUBLE  *F,
 INT i,j;
 DOUBLE tau11, tau12, tau22, tau33;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1fi");
 #endif
 /*----------------------------------------------------------------------*/
@@ -358,7 +358,7 @@ dstrc_enter("w1fi");
     fie[j]+=bop[1][j]*tau22 + bop[2][j]*tau12;
   }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -10,8 +10,8 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
-\addtogroup FLUID2 
+/*!
+\addtogroup FLUID2
 *//*! @{ (documentation module open)*/
 #include "../headers/standardtypes.h"
 #include "fluid2.h"
@@ -23,17 +23,17 @@ Maintainer: Steffen Genkinger
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*!----------------------------------------------------------------------
 \brief ranks and communicators
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par;                      
+ extern struct _PAR   par;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -51,7 +51,7 @@ extern struct _FIELD      *field;
 
 <pre>                                                         genk 03/02
 </pre>
-\param  *actpart	 PARTITION    (i)	    
+\param  *actpart	 PARTITION    (i)
 \param	*actintra	 INTRA        (i)
 \param	*ele		 ELEMENT      (i)    actual element
 \param	*estif_global	 ARRAY        (o)    element stiffness matrix
@@ -68,21 +68,21 @@ extern struct _FIELD      *field;
 ------------------------------------------------------------------------*/
 void fluid2(PARTITION   *actpart,
             INTRA       *actintra,
-            ELEMENT     *ele,             
-            ELEMENT     *eleke,             
-            ARRAY       *estif_global,   
-            ARRAY       *emass_global,   
-	    ARRAY       *etforce_global, 
-	    ARRAY       *eiforce_global, 
-	    ARRAY       *edforce_global, 
+            ELEMENT     *ele,
+            ELEMENT     *eleke,
+            ARRAY       *estif_global,
+            ARRAY       *emass_global,
+	    ARRAY       *etforce_global,
+	    ARRAY       *eiforce_global,
+	    ARRAY       *edforce_global,
             CALC_ACTION *action,
 	    INT         *hasdirich,
 	    INT         *hasext,
-            CONTAINER   *container       
+            CONTAINER   *container
 	   )
 {
 /*----------------------------------------------------------------------*/
-#ifdef D_FLUID2 
+#ifdef D_FLUID2
 /*----------------------------------------------------------------------*/
 
 static INT              viscstr;
@@ -96,7 +96,7 @@ static INT              xele,yele,zele;/* numb. of subm. ele. in x,y,z  */
 INT smisal;
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid2");
 #endif
 
@@ -107,63 +107,63 @@ switch (*action)
 case calc_fluid_init:
    fdyn   = alldyn[genprob.numff].fdyn;
    viscstr= alldyn[genprob.numff].fdyn->viscstr;
-/*------------------------------------------- init the element routines */   
+/*------------------------------------------- init the element routines */
    f2_intg(0);
    f2_calele(NULL,NULL,
              estif_global,emass_global,
 	     etforce_global,eiforce_global,edforce_global,
 	     NULL,NULL,0,0,1);
    f2_iedg(NULL,ele,-1,1);
-/*---------------------------------------------------- multi-level FEM? */   
+/*---------------------------------------------------- multi-level FEM? */
 #ifdef FLUID2_ML
-  if (fdyn->mlfem==1) 
-  {  
+  if (fdyn->mlfem==1)
+  {
     mlvar   = alldyn[genprob.numff].fdyn->mlvar;
     submesh = &(alldyn[genprob.numff].fdyn->mlvar->submesh);
     ssmesh  = &(alldyn[genprob.numff].fdyn->mlvar->ssmesh);
-/*------- determine number of submesh elements in coordinate directions */   
+/*------- determine number of submesh elements in coordinate directions */
     math_intextract(mlvar->smelenum,&ndum,&xele,&yele,&zele);
-/*------------------------------------- create submesh on parent domain */   
+/*------------------------------------- create submesh on parent domain */
     f2_pdsubmesh(submesh,xele,yele,mlvar->smorder,0);
-/*-------------------- three-level FEM, i.e. dynamic subgrid viscosity? */   
-    if (mlvar->smsgvi>2) 
+/*-------------------- three-level FEM, i.e. dynamic subgrid viscosity? */
+    if (mlvar->smsgvi>2)
     {
-/*--- determine number of sub-submesh elements in coordinate directions */   
+/*--- determine number of sub-submesh elements in coordinate directions */
       math_intextract(mlvar->ssmelenum,&ndum,&xele,&yele,&zele);
-/*--------------------------------- create sub-submesh on parent domain */   
+/*--------------------------------- create sub-submesh on parent domain */
       f2_pdsubmesh(ssmesh,xele,yele,mlvar->ssmorder,1);
     }
-/*----------------------- init the element routines for multi-level FEM */   
+/*----------------------- init the element routines for multi-level FEM */
     f2_lsele(fdyn->data,mlvar,submesh,ssmesh,ele,estif_global,emass_global,
-             etforce_global,eiforce_global,edforce_global,hasdirich,hasext,1); 
-  }     	    
+             etforce_global,eiforce_global,edforce_global,hasdirich,hasext,1);
+  }
 #endif
 break;
 
 case calc_fluid_initvort:
 /*------------------------------------------- init the element routines */
-   f2_intg(0); 
-   f2_calvort(ele,1);  
+   f2_intg(0);
+   f2_calvort(ele,1);
 break;
 
 /*------------------------------------------- call the element routines */
 case calc_fluid:
-/*---------------------------------------------------- multi-level FEM? */   
+/*---------------------------------------------------- multi-level FEM? */
 #ifdef FLUID2_ML
-if (fdyn->mlfem==1) 
+if (fdyn->mlfem==1)
 {
   smisal = ele->e.f2->smisal;
-  if (smisal!=1) 
+  if (smisal!=1)
   {
-/*------------------------------ create element submesh if not yet done */   
+/*------------------------------ create element submesh if not yet done */
     f2_elesubmesh(ele,submesh,0);
-/*-------------------------- create element sub-submesh if not yet done */   
+/*-------------------------- create element sub-submesh if not yet done */
     if (mlvar->smsgvi>2) f2_elesubmesh(ele,ssmesh,1);
-  }  
+  }
   f2_lsele(fdyn->data,mlvar,submesh,ssmesh,ele,estif_global,emass_global,
            etforce_global,eiforce_global,edforce_global,hasdirich,hasext,0);
-}	      
-else  
+}
+else
 #endif
    f2_calele(ele,eleke,
              estif_global,emass_global,
@@ -198,7 +198,7 @@ case calc_fluid_curvature:
 break;
 
 /*--------------------------------- calculate height function matrices */
-case calc_fluid_heightfunc: 
+case calc_fluid_heightfunc:
    f2_heightfunc(ele,estif_global,
                  eiforce_global,container);
 break;
@@ -220,11 +220,11 @@ break;
 /*------------------------------------------------------- write restart */
 case write_restart:
    f2_write_restart(ele,container->handsize,container->handles);
-break;   
+break;
 /*-------------------------------------------------------- read restart */
 case read_restart:
    f2_read_restart(ele,container->handsize,container->handles);
-break;   
+break;
 /*----------------------------------------------------------------------*/
 default:
    dserror("action unknown\n");
@@ -232,12 +232,12 @@ break;
 } /* end swtich (*action) */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 /*----------------------------------------------------------------------*/
 #endif
 /*----------------------------------------------------------------------*/
-return; 
+return;
 } /* end of fluid2 */
 /*! @} (documentation module close)*/

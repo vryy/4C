@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -37,7 +37,7 @@ extern struct _SOLVAR  *solv;
 
 <pre>                                                         m.gee 8/00
 -the partition of one proc (all discretizations)
--the type is in partition.h                                                  
+-the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -47,11 +47,11 @@ extern struct _PARTITION  *partition;
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par;                      
+ extern struct _PAR   par;
 /*----------------------------------------------------------------------*
  |  calculate the storage mask of the global matrices    m.gee 5/01     |
  |  for various kinds of distributed sparsity patterns                  |
@@ -114,7 +114,7 @@ PARTITION  *actpart;         /* my partition of the active field */
 SOLVAR     *actsolv;         /* the active SOLVAR */
 INTRA      *actintra = NULL; /* the field's intra-communicator */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mask_global_matrices");
 #endif
 
@@ -124,7 +124,7 @@ for (j=0; j<genprob.numfld; j++)
   actfield = &(field[j]);
   actsolv  = &(solv[j]);
   actpart  = &(partition[j]);
-#ifdef PARALLEL 
+#ifdef PARALLEL
   actintra = &(par.intra[j]);
 #else
   /* if we are not parallel here, we have to allocate a pseudo-intracommunicator */
@@ -149,9 +149,9 @@ for (j=0; j<genprob.numfld; j++)
     numeq_total = actfield->dis[actdis].numeq;
     oll_numeq(actfield, actpart, actintra, actdis, &numeq);
 
-    oll_open(actsolv->sysarray[0].oll, numeq, numeq_total, 
+    oll_open(actsolv->sysarray[0].oll, numeq, numeq_total,
              actfield, actpart, actintra, actdis);
- 
+
     continue;
   }
   /*--------------------------------------------- first check some values */
@@ -170,7 +170,7 @@ for (j=0; j<genprob.numfld; j++)
   if (actsolv->solvertyp==aztec_msr)
   {
     if (actsolv->parttyp != cut_elements)
-      dserror("Partitioning has to be Cut_Elements for solution with Aztec"); 
+      dserror("Partitioning has to be Cut_Elements for solution with Aztec");
     else isaztec_msr=1;
   }
 #endif
@@ -181,11 +181,11 @@ for (j=0; j<genprob.numfld; j++)
       actsolv->solvertyp==hypre_amg     ||
       actsolv->solvertyp==hypre_pcg     ||
       actsolv->solvertyp==hypre_gmres   ||
-      actsolv->solvertyp==hypre_bicgstab 
+      actsolv->solvertyp==hypre_bicgstab
      )
   {
     if (actsolv->parttyp != cut_elements)
-      dserror("Partitioning has to be Cut_Elements for solution with Hypre"); 
+      dserror("Partitioning has to be Cut_Elements for solution with Hypre");
     else ishypre=1;
   }
 #endif
@@ -195,7 +195,7 @@ for (j=0; j<genprob.numfld; j++)
   if (actsolv->solvertyp==parsuperlu)
   {
     if (actsolv->parttyp != cut_elements)
-      dserror("Partitioning has to be Cut_Elements for solution with Superlu"); 
+      dserror("Partitioning has to be Cut_Elements for solution with Superlu");
     else isucchb=1;
   }
 #endif
@@ -205,7 +205,7 @@ for (j=0; j<genprob.numfld; j++)
       actsolv->solvertyp==lapack_sym)
   {
     if (actsolv->parttyp != cut_elements)
-      dserror("Partitioning has to be Cut_Elements for solution with LAPACK"); 
+      dserror("Partitioning has to be Cut_Elements for solution with LAPACK");
     else isdense=1;
   }
 
@@ -214,7 +214,7 @@ for (j=0; j<genprob.numfld; j++)
   if (actsolv->solvertyp==mumps_sym || actsolv->solvertyp==mumps_nonsym)
   {
     if (actsolv->parttyp != cut_elements)
-      dserror("Partitioning has to be Cut_Elements for solution with MUMPS"); 
+      dserror("Partitioning has to be Cut_Elements for solution with MUMPS");
     else isrc_ptr=1;
   }
 #endif
@@ -224,7 +224,7 @@ for (j=0; j<genprob.numfld; j++)
   if (actsolv->solvertyp==umfpack)
   {
     if (actsolv->parttyp != cut_elements)
-      dserror("Partitioning has to be Cut_Elements for solution with Umfpack"); 
+      dserror("Partitioning has to be Cut_Elements for solution with Umfpack");
     else isumfpack=1;
   }
 #endif
@@ -233,7 +233,7 @@ for (j=0; j<genprob.numfld; j++)
   if (actsolv->solvertyp==colsol_solver)
   {
     if (actsolv->parttyp != cut_elements)
-      dserror("Partitioning has to be Cut_Elements for solution with Colsol"); 
+      dserror("Partitioning has to be Cut_Elements for solution with Colsol");
     else iscolsol=1;
   }
 
@@ -242,7 +242,7 @@ for (j=0; j<genprob.numfld; j++)
   if (actsolv->solvertyp==SPOOLES_sym || actsolv->solvertyp==SPOOLES_nonsym)
   {
     if (actsolv->parttyp != cut_elements)
-      dserror("Partitioning has to be Cut_Elements for solution with SPOOLES"); 
+      dserror("Partitioning has to be Cut_Elements for solution with SPOOLES");
     else isspooles=1;
   }
 #endif
@@ -252,21 +252,21 @@ for (j=0; j<genprob.numfld; j++)
   if (actsolv->solvertyp==mlpcg)
   {
     if (actsolv->parttyp != cut_elements)
-      dserror("Partitioning has to be Cut_Elements for solution with MLPCG"); 
+      dserror("Partitioning has to be Cut_Elements for solution with MLPCG");
     else ismlpcg=1;
   }
 #endif
 
 #ifdef MLIB_PACKAGE
-  /*----------------------------------------- determine number of sysarrays */   
+  /*----------------------------------------- determine number of sysarrays */
   if (ismlib_d_sp==1) nsysarray = 2;
   /* allocate only one sparse matrix for each field. The sparsity
-     pattern of the matrices for mass and damping and stiffness are  
+     pattern of the matrices for mass and damping and stiffness are
      supposed to be the same, so they are calculated only once (expensive!) */
   /*-------------------------- for the lower triangle of the matrix ---*/
 
   if (ismlib_d_sp==1)
-  {      
+  {
     actsolv->nsysarray = nsysarray;
     actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
     actsolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
@@ -276,7 +276,7 @@ for (j=0; j<genprob.numfld; j++)
       actsolv->sysarray[i].mds = (ML_ARRAY_MDS*)CCACALLOC(1,sizeof(ML_ARRAY_MDS));
     }
     strcpy(actsolv->sysarray[0].mds->arrayname,"gstif1");
-    mask_mds(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].mds); 
+    mask_mds(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].mds);
     ismlib_d_sp=0;
   }
 #endif
@@ -284,7 +284,7 @@ for (j=0; j<genprob.numfld; j++)
 #ifdef AZTEC_PACKAGE
   /*------------------------- matrix is ditributed modified sparse row */
   if (isaztec_msr==1)
-  {      
+  {
     if(nsysarray>1) dserror("different discretisations not possible with SOLVER_TYP 'AZTEC_MSR'\n");
     actsolv->nsysarray = nsysarray;
     actsolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
@@ -293,7 +293,7 @@ for (j=0; j<genprob.numfld; j++)
     {
       actsolv->sysarray_typ[i] = msr;
       actsolv->sysarray[i].msr = (AZ_ARRAY_MSR*)CCACALLOC(1,sizeof(AZ_ARRAY_MSR));
-      actsolv->sysarray[i].msr->bins=NULL;      
+      actsolv->sysarray[i].msr->bins=NULL;
       mask_msr(actfield,actpart,actsolv,actintra,actsolv->sysarray[i].msr,0);
     }
     isaztec_msr=0;
@@ -444,11 +444,11 @@ for (j=0; j<genprob.numfld; j++)
   /*----------------------------------------------------------------------*/
 } /* end of loop over numfld fields */
 /*----------------------------------------------------------------------*/
-#ifndef PARALLEL 
+#ifndef PARALLEL
 CCAFREE(actintra);
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 

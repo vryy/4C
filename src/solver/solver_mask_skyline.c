@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -19,10 +19,10 @@ DOUBLE cmp_double(const void *a, const void *b );
 /*----------------------------------------------------------------------*
  |  calculate the mask of an rc_ptr matrix               m.gee 1/02     |
  *----------------------------------------------------------------------*/
-void mask_skyline(FIELD         *actfield, 
-                  PARTITION     *actpart, 
+void mask_skyline(FIELD         *actfield,
+                  PARTITION     *actpart,
                   SOLVAR        *actsolv,
-                  INTRA         *actintra, 
+                  INTRA         *actintra,
                   SKYMATRIX     *sky)
 {
 INT       i;
@@ -34,7 +34,7 @@ ARRAY     red_dof_connect;
 ELEMENT  *actele;
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mask_skyline");
 #endif
 /*----------------------------------------------------------------------*/
@@ -43,12 +43,12 @@ dstrc_enter("mask_skyline");
    AZ_ARRAY_MSR will be different on every proc
    FIELD is the same everywhere
    In this routine, the vectors update and bindx and val are determined
-   in size and allocated, the contents of the vectors update and bindx 
+   in size and allocated, the contents of the vectors update and bindx
    are calculated
 */
 /*------------------------------------------- put total size of problem */
 sky->numeq_total = actfield->dis[0].numeq;
-/* count number of eqns on proc and build processor-global couplingdof 
+/* count number of eqns on proc and build processor-global couplingdof
                                                                  matrix */
 mask_numeq(actfield,actpart,actsolv,actintra,&numeq,0);
 sky->numeq = numeq;
@@ -57,13 +57,13 @@ amdef("update",&(sky->update),numeq,1,"IV");
 amzero(&(sky->update));
 /*--------------------------------put dofs in update in ascending order */
 skyline_update(actfield,actpart,actsolv,actintra,sky);
-/*------------------------ count number of nonzero entries on partition 
+/*------------------------ count number of nonzero entries on partition
                                     and calculate dof connectivity list */
    /*
       dof_connect[i][0] = lenght of dof_connect[i]
-      dof_connect[i][1] = iscoupled ( 1 or 2 ) 
+      dof_connect[i][1] = iscoupled ( 1 or 2 )
       dof_connect[i][2] = dof
-      dof_connect[i][ 2..dof_connect[i][0]-1 ] = connected dofs exluding itself 
+      dof_connect[i][ 2..dof_connect[i][0]-1 ] = connected dofs exluding itself
    */
 dof_connect = (INT**)CCACALLOC(sky->numeq_total,sizeof(INT*));
 if (!dof_connect) dserror("Allocation of dof_connect failed");
@@ -99,7 +99,7 @@ amdel(&red_dof_connect);
 #endif
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -110,8 +110,8 @@ return;
 /*----------------------------------------------------------------------*
  |  allocate update put dofs in update in ascending order   m.gee 1/02  |
  *----------------------------------------------------------------------*/
-void  skyline_update(FIELD         *actfield, 
-                    PARTITION     *actpart, 
+void  skyline_update(FIELD         *actfield,
+                    PARTITION     *actpart,
                     SOLVAR        *actsolv,
                     INTRA         *actintra,
                     SKYMATRIX     *sky)
@@ -125,7 +125,7 @@ INT       imyrank;
 INT       inprocs;
 NODE     *actnode;
 ARRAY     coupledofs;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("skyline_update");
 #endif
 /*----------------------------------------------------------------------*/
@@ -160,9 +160,9 @@ for (i=0; i<actpart->pdis[0].numnp; i++)
             if (dof == coupledofs.a.ia[k][0])
             {
                /* am I owner of this dof or not */
-               if (coupledofs.a.ia[k][imyrank+1]==2) 
+               if (coupledofs.a.ia[k][imyrank+1]==2)
                foundit=2;
-               else if (coupledofs.a.ia[k][imyrank+1]==1)                                     
+               else if (coupledofs.a.ia[k][imyrank+1]==1)
                foundit=1;
                break;
             }
@@ -186,7 +186,7 @@ for (i=0; i<actpart->pdis[0].numnp; i++)
             continue;
          }
       }
-      
+
    }
 }
 /*---------- check whether the correct number of dofs have been counted */
@@ -196,7 +196,7 @@ qsort((INT*) update, counter, sizeof(INT), cmp_int);
 /*----------------------------------------------------------------------*/
 amdel(&coupledofs);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -207,8 +207,8 @@ return;
 /*----------------------------------------------------------------------*
  |  calculate number of nonzero entries and dof topology    m.gee 1/02  |
  *----------------------------------------------------------------------*/
-void  skyline_nnz_topology(FIELD      *actfield, 
-                         PARTITION    *actpart, 
+void  skyline_nnz_topology(FIELD      *actfield,
+                         PARTITION    *actpart,
                          SOLVAR       *actsolv,
                          INTRA        *actintra,
                          SKYMATRIX    *sky,
@@ -231,11 +231,11 @@ INT        imyrank;
 INT        inprocs;
 INT        actndis;
 
-#ifdef PARALLEL 
+#ifdef PARALLEL
 MPI_Status status;
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("skyline_nnz_topology");
 #endif
 /*----------------------------------------------------------------------*/
@@ -317,24 +317,24 @@ for (i=0; i<numeq; i++)
    dof_connect[dof] = (INT*)CCACALLOC(counter2+3,sizeof(INT));
    if (!dof_connect[dof]) dserror("Allocation of dof connect list failed");
    dof_connect[dof][0] = counter2+3;
-   dof_connect[dof][1] = 0; 
+   dof_connect[dof][1] = 0;
    dof_connect[dof][2] = dof;
    /*
       dof_connect[i][0] = lenght of dof_connect[i]
-      dof_connect[i][1] = iscoupled ( 1 or 2 ) done later on 
+      dof_connect[i][1] = iscoupled ( 1 or 2 ) done later on
       dof_connect[i][2] = dof
-      dof_connect[i][ 2..dof_connect[i][0]-1 ] = connected dofs exluding itself 
+      dof_connect[i][ 2..dof_connect[i][0]-1 ] = connected dofs exluding itself
    */
    counter2=0;
    for (j=0; j<counter; j++)
    {
-      if (dofpatch.a.iv[j] != -1) 
+      if (dofpatch.a.iv[j] != -1)
       {
          dof_connect[dof][counter2+3] = dofpatch.a.iv[j];
          counter2++;
       }
    }
-}  /* end of loop over numeq */ 
+}  /* end of loop over numeq */
 /*--------------------------------------------- now do the coupled dofs */
 coupledofs = &(actpart->pdis[0].coupledofs);
 for (i=0; i<coupledofs->fdim; i++)
@@ -404,7 +404,7 @@ for (i=0; i<coupledofs->fdim; i++)
    counter2=0;
    for (j=0; j<counter; j++)
    {
-      if (dofpatch.a.iv[j] != -1) 
+      if (dofpatch.a.iv[j] != -1)
       {
          dof_connect[dof][counter2+3] = dofpatch.a.iv[j];
          counter2++;
@@ -426,7 +426,7 @@ for (i=0; i<numeq; i++)
 /*----------------------------------------------------------------------*/
 amdel(&dofpatch);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -436,8 +436,8 @@ return;
 /*----------------------------------------------------------------------*
  |  make the dof_connect list redundant                    m.gee 01/02  |
  *----------------------------------------------------------------------*/
-void   skyline_make_red_dof_connect(FIELD         *actfield, 
-                                   PARTITION     *actpart, 
+void   skyline_make_red_dof_connect(FIELD         *actfield,
+                                   PARTITION     *actpart,
                                    SOLVAR        *actsolv,
                                    INTRA         *actintra,
                                    SKYMATRIX     *sky,
@@ -453,7 +453,7 @@ INT        max_dof_connect;
 /* communicate coupled dofs */
 /*----------------------------------------------------------------------*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("skyline_make_red_dof_connect");
 #endif
 /*----------------------------- check for largest row in my dof_connect */
@@ -471,12 +471,12 @@ for (i=0; i<sky->numeq_total; i++)
 {
    if (dof_connect[i])
    {
-      for (j=0; j<dof_connect[i][0]; j++) 
+      for (j=0; j<dof_connect[i][0]; j++)
          reddof[i][j] = dof_connect[i][j];
    }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -500,30 +500,30 @@ INT        actdof;
 INT        lenght;
 INT        counter=0;
 INT        mindof;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("skyline_make_sparsity");
 #endif
 /*----------------------------------------------------------------------*/
    /*
       reddof[i][0] = lenght of reddof[i]
-      reddof[i][1] = iscoupled ( 1 or 2 ) done later on 
+      reddof[i][1] = iscoupled ( 1 or 2 ) done later on
       reddof[i][2] = dof
-      reddof[i][ 2..reddof[i][0]-1 ] = connected dofs exluding itself 
+      reddof[i][ 2..reddof[i][0]-1 ] = connected dofs exluding itself
    */
 reddof = red_dof_connect->a.ia;
 /*------------------------------------------------------- allocate maxa */
 maxa = amdef("maxa",&(sky->maxa),sky->numeq_total+1,1,"IV");
-/*------------------------------------------------------- loop the dofs */       
+/*------------------------------------------------------- loop the dofs */
 for (i=0; i<sky->numeq_total; i++)
 {
    actdof = reddof[i][2];
    if (actdof != i) printf("Warning: skyline format mixed up!\n");
-   
+
    /*-------------- search reddof[i][2..reddof[i][0] ] for smallest dof */
    mindof=10000000;
    for (j=2; j<reddof[i][0]; j++)
    {
-      if (mindof>reddof[i][j]) 
+      if (mindof>reddof[i][j])
       mindof = reddof[i][j];
    }
    /*-------------------------- check distance between actdof and mindof */
@@ -536,7 +536,7 @@ maxa[i]=counter;
 /*-----------------------------------------------------------allocate A */
 amdef("A",&(sky->A),maxa[i],1,"DV");
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -548,14 +548,14 @@ return;
 #ifdef FAST_ASS
 /*----------------------------------------------------------------------*/
 /*!
- \brief 
+ \brief
 
  This routine determines the location vactor for the actele and stores it
- in the element structure.  Furthermore for each component [i][j] in the 
- element stiffness matrix the position in the 1d sparse matrix is 
- calculated and stored in actele->index[i][j]. These can be used later on 
+ in the element structure.  Furthermore for each component [i][j] in the
+ element stiffness matrix the position in the 1d sparse matrix is
+ calculated and stored in actele->index[i][j]. These can be used later on
  for the assembling procedure.
-  
+
  \param actfield  *FIELD        (i)  the field we are working on
  \param actpart   *PARTITION    (i)  the partition we are working on
  \param actintra  *INTRA        (i)  the intra-communicator we do not need
@@ -568,7 +568,7 @@ return;
  */
 /*----------------------------------------------------------------------*/
 void sky_make_index(
-    FIELD                 *actfield, 
+    FIELD                 *actfield,
     PARTITION             *actpart,
     INTRA                 *actintra,
     ELEMENT               *actele,
@@ -598,7 +598,7 @@ void sky_make_index(
 #endif
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("sky_make_index");
 #endif
 
@@ -641,7 +641,7 @@ void sky_make_index(
     for (j=0; j<actele->node[i]->numdf; j++)
     {
       actele->locm[counter]    = actele->node[i]->dof[j];
-#ifdef PARALLEL 
+#ifdef PARALLEL
       actele->owner[counter]   = actele->node[i]->proc;
 #endif
       counter++;
@@ -665,7 +665,7 @@ void sky_make_index(
     }
 
     /* check for ownership of row ii */
-#ifdef PARALLEL 
+#ifdef PARALLEL
     if (actele->owner[i]!=myrank)
     {
       for (j=0; j<nd; j++) actele->index[i][j] = -1;
@@ -693,7 +693,7 @@ void sky_make_index(
 
       /* find position [ii][jj] in A */
       distance  = ii-jj;
-      if (distance < 0) 
+      if (distance < 0)
       {
         actele->index[i][j] = -1;
         continue;
@@ -704,7 +704,7 @@ void sky_make_index(
   }/* end loop over i */
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 

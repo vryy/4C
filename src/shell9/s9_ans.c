@@ -25,12 +25,12 @@ Maintainer: Stefan Hartmann
 #include "../headers/standardtypes.h"
 #include "shell9.h"
 
-/*! 
-\addtogroup SHELL9 
+/*!
+\addtogroup SHELL9
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief collocation points, shape functions and derivatives                                      
+\brief collocation points, shape functions and derivatives
 
 <pre>                     m.gee 2/02              modified by    sh 02/03
 This routine calculates the coordinates of the collocation points, gets
@@ -44,7 +44,7 @@ necessary basis vectors and metrics at these points
 \param  DOUBLE  **deriv1q[],...(o) shape functions derivatives at collocation points
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: s9static_keug() [s9_static_keug.c]
 
 *----------------------------------------------------------------------*/
@@ -52,7 +52,7 @@ void s9_ans_colloqpoints(INT       nsansq,     INT       iel,
                          INT       ans,        DIS_TYP   distyp,
                          DOUBLE    xr1[],      DOUBLE    xs1[],
                          DOUBLE    xr2[],      DOUBLE    xs2[],
-                         DOUBLE   *funct1q[],  DOUBLE  **deriv1q[], 
+                         DOUBLE   *funct1q[],  DOUBLE  **deriv1q[],
                          DOUBLE   *funct2q[],  DOUBLE  **deriv2q[],
                          DOUBLE  **xrefe,      DOUBLE ***a3r,
                          DOUBLE  **xcure,      DOUBLE ***a3c,
@@ -74,10 +74,10 @@ void s9_ans_colloqpoints(INT       nsansq,     INT       iel,
                          DOUBLE  **amkonh,
                          INT       num_klay)
 {
-INT    i;   
-DOUBLE det_dummy;         
+INT    i;
+DOUBLE det_dummy;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9_ans_colloqpoints");
 #endif
 /*----------------------------------------------------------------------*/
@@ -95,8 +95,8 @@ for (i=0; i<nsansq; i++)
   s9_tvmr(xcure,a3c,akovc1q[i],akonc1q[i],amkovc1q[i],amkonc1q[i],
           akovh,akonh,amkovh,amkonh,
           &det_dummy,funct1q[i],deriv1q[i],iel,a3kvpc1q[i],num_klay);
-  
-  
+
+
   s9_funct_deriv(funct2q[i],deriv2q[i],xr2[i],xs2[i],distyp,1);
 
   s9_tvmr(xrefe,a3r,akovr2q[i],akonr2q[i],amkovr2q[i],amkonr2q[i],
@@ -108,14 +108,14 @@ for (i=0; i<nsansq; i++)
           &det_dummy,funct2q[i],deriv2q[i],iel,a3kvpc2q[i],num_klay);
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of s9_ans_colloqpoints */
 
 /*!----------------------------------------------------------------------
-\brief get natural coordinates of collocation points                                      
+\brief get natural coordinates of collocation points
 
 <pre>                     m.gee 2/02              modified by    sh 02/03
 This routine calculates the natural coordinates of the collocation points
@@ -125,7 +125,7 @@ This routine calculates the natural coordinates of the collocation points
 \param  INT      ans       (i) type of ANS (1: Querschub)
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: s9_ans_colloqpoints()   [s9_ans.c]
 
 *----------------------------------------------------------------------*/
@@ -135,7 +135,7 @@ void s9_ans_colloqcoords(DOUBLE xqr1[], DOUBLE xqs1[],
 {
 DOUBLE rthreei;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9_ans_colloq");
 #endif
 /*----------------------------------------------------------------------*/
@@ -157,23 +157,23 @@ if (ans==1)
    if (iel==9)/* 9-noded element */
    {
       rthreei = 1.0 / (sqrt(3.0));
-      xqr1[0] = -rthreei; xqs1[0] = -1.0; 
-      xqr1[1] = -rthreei; xqs1[1] =  0.0; 
-      xqr1[2] = -rthreei; xqs1[2] =  1.0; 
-      xqr1[3] =  rthreei; xqs1[3] = -1.0; 
-      xqr1[4] =  rthreei; xqs1[4] =  0.0; 
-      xqr1[5] =  rthreei; xqs1[5] =  1.0; 
+      xqr1[0] = -rthreei; xqs1[0] = -1.0;
+      xqr1[1] = -rthreei; xqs1[1] =  0.0;
+      xqr1[2] = -rthreei; xqs1[2] =  1.0;
+      xqr1[3] =  rthreei; xqs1[3] = -1.0;
+      xqr1[4] =  rthreei; xqs1[4] =  0.0;
+      xqr1[5] =  rthreei; xqs1[5] =  1.0;
 
-      xqr2[0] = -1.0;     xqs2[0] = -rthreei; 
-      xqr2[1] =  0.0;     xqs2[1] = -rthreei; 
-      xqr2[2] =  1.0;     xqs2[2] = -rthreei; 
-      xqr2[3] = -1.0;     xqs2[3] =  rthreei; 
-      xqr2[4] =  0.0;     xqs2[4] =  rthreei; 
-      xqr2[5] =  1.0;     xqs2[5] =  rthreei; 
+      xqr2[0] = -1.0;     xqs2[0] = -rthreei;
+      xqr2[1] =  0.0;     xqs2[1] = -rthreei;
+      xqr2[2] =  1.0;     xqs2[2] = -rthreei;
+      xqr2[3] = -1.0;     xqs2[3] =  rthreei;
+      xqr2[4] =  0.0;     xqs2[4] =  rthreei;
+      xqr2[5] =  1.0;     xqs2[5] =  rthreei;
    }
 } /* end of (ans==1) */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -181,10 +181,10 @@ return;
 
 
 /*!----------------------------------------------------------------------
-\brief get the shape functions for ans (Querschub)                                     
+\brief get the shape functions for ans (Querschub)
 
 <pre>                     m.gee 2/02              modified by    sh 02/03
-This routine calculates the shape functions for ANS (Querschub) at the 
+This routine calculates the shape functions for ANS (Querschub) at the
 natural coordinates r,s
 </pre>
 \param  DOUBLE   frq[],... (o) shape functions for ANS
@@ -192,7 +192,7 @@ natural coordinates r,s
 \param  INT      nsansq    (i) number of collocation points
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: s9static_keug() [s9_static_keug.c]
 
 *----------------------------------------------------------------------*/
@@ -204,7 +204,7 @@ DOUBLE pr[3],ps[3];
 DOUBLE qr[2],qs[2];
 DOUBLE rr[3],rs[3];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9_ansq_funct");
 #endif
 /*----------------------------------------------------------------------*/
@@ -212,7 +212,7 @@ if (iel==4)
 {
    frq[0] = 0.5 * (1.0 - s);
    frq[1] = 0.5 * (1.0 + s);
-   
+
    fsq[0] = 0.5 * (1.0 - r);
    fsq[1] = 0.5 * (1.0 + r);
 }
@@ -223,29 +223,29 @@ if (iel==8)/* 8-noded element */
 if (iel==9)
 {
    rthreei = 1.0 / (sqrt(3.0));
-   
+
    pr[0] = -0.5 * s * (1.0-s);
    pr[1] =  (1.0-s) * (1.0+s);
    pr[2] =  0.5 * s * (1.0+s);
-   
+
    qr[0] =  0.5 * (1.0-r/rthreei);
    qr[1] =  0.5 * (1.0+r/rthreei);
 
    rr[0] =  1.0/6.0 - 0.5 * s;
    rr[1] =  2.0/3.0;
    rr[2] =  1.0/6.0 + 0.5 * s;
-   
-   ps[0] = -0.5 * r * (1.0-r); 
-   ps[1] =  (1.0-r) * (1.0+r); 
+
+   ps[0] = -0.5 * r * (1.0-r);
+   ps[1] =  (1.0-r) * (1.0+r);
    ps[2] =  0.5 * r * (1.0+r);
 
    qs[0] =  0.5 * (1.0-s/rthreei);
    qs[1] =  0.5 * (1.0+s/rthreei);
-   
+
    rs[0] =  1.0/6.0 - 0.5 * r;
    rs[1] =  2.0/3.0;
    rs[2] =  1.0/6.0 + 0.5 * r;
-   
+
    frq[0] = pr[0] * qr[0];
    frq[1] = pr[1] * qr[0];
    frq[2] = pr[2] * qr[0];
@@ -261,7 +261,7 @@ if (iel==9)
    fsq[5] = ps[2] * qs[1];
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -269,11 +269,11 @@ return;
 
 
 /*!----------------------------------------------------------------------
-\brief gets the values for alpha13/alpha23 (Querschub) of the B-Operator 
- matrix                                     
+\brief gets the values for alpha13/alpha23 (Querschub) of the B-Operator
+ matrix
 
 <pre>                     m.gee 2/02              modified by    sh 02/03
-This routine gets the values for alpha13/alpha23 (Querschub) of the 
+This routine gets the values for alpha13/alpha23 (Querschub) of the
 B-Operator matrix
 </pre>
 \param  DOUBLE  **bop         (i/o) B-Operator to be modified (alpha13,alpha23)
@@ -285,7 +285,7 @@ B-Operator matrix
 \param  INT       nsansq       (i)  number of collocation points
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: s9static_keug() [s9_static_keug.c]
 
 *----------------------------------------------------------------------*/
@@ -294,13 +294,13 @@ void s9_ans_bbar_q(DOUBLE  **bop,        DOUBLE    frq[],      DOUBLE fsq[],
                    DOUBLE  **deriv1q[],  DOUBLE  **deriv2q[],
                    DOUBLE ***akovc1q[],  DOUBLE ***akovc2q[],
                    DOUBLE ***a3kvpc1q[], DOUBLE ***a3kvpc2q[],
-                   INT       iel,        INT       numdf, 
+                   INT       iel,        INT       numdf,
                    INT       num_klay,   INT       klay,
                    DOUBLE    condfac,    INT       nsansq)
 {
 INT    jlay,inode, node_start;
 INT    isamp;
-DOUBLE a1x1, a1y1, a1z1; 
+DOUBLE a1x1, a1y1, a1z1;
 DOUBLE a2x2, a2y2, a2z2;
 
 DOUBLE a3xi1, a3yi1, a3zi1;
@@ -322,7 +322,7 @@ DOUBLE fsis;
 INT    idof, jdof;
 DOUBLE fac,  fac1;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9_ans_bbar_q");
 #endif
 /*----------------------------------------------------------------------*/
@@ -333,16 +333,16 @@ for (jlay=0; jlay<num_klay; jlay++)
   /* is jlay on trajectory of reference layer to klay (=ilay) ? */
   fac1 = s9notr(num_klay,klay,jlay);
   if (fac1 == 0.0) continue;
-  
+
   /* independent part of xsi */
-  fac = s9ksi(num_klay,klay,jlay,condfac);  
+  fac = s9ksi(num_klay,klay,jlay,condfac);
   jdof = 3 + (jlay) * 3;
 
 /*---------- loop over all nodes ---------------------------------------*/
   for (inode=0; inode<iel; inode++)
   {
      node_start = inode*numdf;
-        
+
      for (isamp=0; isamp<nsansq; isamp++)
      {
         /*values on klay -> actual kinematic layer*/
@@ -358,7 +358,7 @@ for (jlay=0; jlay<num_klay; jlay++)
         a1x1 = akovc1q[isamp][0][0][jlay];
         a1y1 = akovc1q[isamp][1][0][jlay];
         a1z1 = akovc1q[isamp][2][0][jlay];
-        
+
         a3xj1 = akovc1q[isamp][0][2][jlay];
         a3yj1 = akovc1q[isamp][1][2][jlay];
         a3zj1 = akovc1q[isamp][2][2][jlay];
@@ -378,13 +378,13 @@ for (jlay=0; jlay<num_klay; jlay++)
         a32xj2 = a3kvpc2q[isamp][0][1][jlay];
         a32yj2 = a3kvpc2q[isamp][1][1][jlay];
         a32zj2 = a3kvpc2q[isamp][2][1][jlay];
-        
+
         p1k = funct1q[isamp][inode];
         p2k = funct2q[isamp][inode];
 
         pk1 = deriv1q[isamp][0][inode];
         pk2 = deriv2q[isamp][1][inode];
-        
+
         fris = frq[isamp];
         fsis = fsq[isamp];
   /*-------------------------------------------------------------------- */
@@ -426,12 +426,12 @@ for (jlay=0; jlay<num_klay; jlay++)
           bop[4][node_start+idof+1]+= fac * p2k*a32yj2*fsis;
           bop[4][node_start+idof+2]+= fac * p2k*a32zj2*fsis;
         }
-        
+
      } /* end of (isamp=0; isamp<nsansq; isamp++) */
   } /* end of (inode=0; inode<iel; inode++) */
 } /* end of loop over all kinematic layers*/
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -440,15 +440,15 @@ return;
 
 
 /*!----------------------------------------------------------------------
-\brief modifies the metrics of shell body due to ans for querschub                                    
+\brief modifies the metrics of shell body due to ans for querschub
 
 <pre>                     m.gee 2/02              modified by    sh 02/03
-This routine modifies the metrics 'gmkovc' and 'gmkonc' of shell body 
-due to ans for querschub.  
+This routine modifies the metrics 'gmkovc' and 'gmkonc' of shell body
+due to ans for querschub.
 </pre>
 \param  DOUBLE  **gmkovc       (i/o) kovariant metric in current configuration
 \param  DOUBLE  **gmkonc       (i/o) kontravariant metric in current configuration
-\param  DOUBLE    e3            (i)  local coordinate zeta (theta3) of act. mlay in act. klay 
+\param  DOUBLE    e3            (i)  local coordinate zeta (theta3) of act. mlay in act. klay
 \param  DOUBLE   *klayhgt       (i)  hight of all kinematic layers in % of total thickness of shell
 \param  DOUBLE   *mlayhgt       (i)  hight of all material layers in % of total thickness of actual kin. layer
 \param  INT       num_klay      (i)  number of kinematic layers to this element
@@ -457,20 +457,20 @@ due to ans for querschub.
 \param  INT       mlay          (i)  actual material layer of within the actual kinematic layer
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: s9static_keug() [s9_static_keug.c]
 
 *----------------------------------------------------------------------*/
-void s9_ans_tvhe_q(DOUBLE  **gmkovr,     DOUBLE  **gmkovc,    
-                   DOUBLE  **gmkonr,     DOUBLE  **gmkonc,    
+void s9_ans_tvhe_q(DOUBLE  **gmkovr,     DOUBLE  **gmkovc,
+                   DOUBLE  **gmkonr,     DOUBLE  **gmkonc,
                    DOUBLE ***amkovc,     DOUBLE ***amkovr,
-                   DOUBLE ***akovc,      DOUBLE ***akovr,     
+                   DOUBLE ***akovc,      DOUBLE ***akovr,
                    DOUBLE ***a3kvpc,     DOUBLE ***a3kvpr,
                    DOUBLE   *detr,       DOUBLE   *detc,
-                   DOUBLE ***amkovr1q[], DOUBLE ***amkovc1q[], 
-                   DOUBLE ***amkovr2q[], DOUBLE ***amkovc2q[], 
-                   DOUBLE    frq[],      DOUBLE    fsq[], 
-                   DOUBLE    e3,         INT       nansq, 
+                   DOUBLE ***amkovr1q[], DOUBLE ***amkovc1q[],
+                   DOUBLE ***amkovr2q[], DOUBLE ***amkovc2q[],
+                   DOUBLE    frq[],      DOUBLE    fsq[],
+                   DOUBLE    e3,         INT       nansq,
                    DOUBLE    h,           /* total thickness of this element */
                    DOUBLE   *klayhgt,     /* hight of kin layer in % of total thickness of shell */
                    DOUBLE   *mlayhgt,     /* hight of mat layer in % of adjacent kin layer */
@@ -498,7 +498,7 @@ DOUBLE deltah, h_mlay, h_kl;
 DOUBLE zeta_kl,zeta,det_dummy;
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9_ans_tvhe_q");
 #endif
 /*----------------------------------------------------------------------*/
@@ -569,9 +569,9 @@ for (jlay=0; jlay<num_klay; jlay++)
    }
 } /*================================ end loop over all layers ========*/
 
-gmkovc[2][0] = gmkovc[0][2]; 
-gmkovc[2][1] = gmkovc[1][2]; 
-gmkovc[1][0] = gmkovc[0][1]; 
+gmkovc[2][0] = gmkovc[0][2];
+gmkovc[2][1] = gmkovc[1][2];
+gmkovc[1][0] = gmkovc[0][1];
 
 /*----------------------------------------------------------------------*/
 math_array_copy(gmkovr,3,3,gmkonr);
@@ -584,7 +584,7 @@ math_inv3(gmkonc,&det_dummy);
 if (det_dummy <= 0.0) det_dummy = EPS8;
 *detc = sqrt(det_dummy);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -593,17 +593,17 @@ return;
 
 
 /*!----------------------------------------------------------------------
-\brief geometric stiffness matrix kg with ans for querschub                                    
+\brief geometric stiffness matrix kg with ans for querschub
 
 <pre>                     m.gee 2/02              modified by    sh 02/03
 This routine calculates the geometric stiffness matrix kg if the ans
-method for querschub is used 
+method for querschub is used
 </pre>
 \param  DOUBLE  **estif        (i/o) element stiffness metrix to be modified
 \param  DOUBLE  *stress_r       (i)  stress resultants
-\param  DOUBLE  *funct          (i)  shape functions at integration point 
-\param  DOUBLE **deriv          (i)  shape function derivatives at integration point 
-\param  DOUBLE   weight         (i)  weight at integration point 
+\param  DOUBLE  *funct          (i)  shape functions at integration point
+\param  DOUBLE **deriv          (i)  shape function derivatives at integration point
+\param  DOUBLE   weight         (i)  weight at integration point
 \param  DOUBLE   frq[],...      (i)  shape functions for ANS
 \param  DOUBLE  *funct1q[],...  (i)  shape functions at collocation points
 \param  DOUBLE **deriv1q[],...  (i)  shape function derivatives at collocation points
@@ -613,20 +613,20 @@ method for querschub is used
 \param  INT      klay           (i)  actual kinematic layer of which is looped
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: s9static_keug() [s9_static_keug.c]
 
 *----------------------------------------------------------------------*/
 void s9_ans_tvkg(DOUBLE **estif,     DOUBLE  *stress_r,
                  DOUBLE  *funct,     DOUBLE **deriv,
-                 INT      numdf,     INT      iel,         
+                 INT      numdf,     INT      iel,
                  DOUBLE   weight,
                  DOUBLE   frq[],     DOUBLE   fsq[],
                  DOUBLE  *funct1q[], DOUBLE  *funct2q[],
                  DOUBLE **deriv1q[], DOUBLE **deriv2q[],
                  INT      ansq,      INT       nsansq,
                  INT      klay,                       /* actual kin layer */
-                 INT      num_klay)                   /* number of kin layers to this element */ 
+                 INT      num_klay)                   /* number of kin layers to this element */
 {
 INT     i,inode,jnode;
 INT     idof,jdof;
@@ -665,7 +665,7 @@ DOUBLE  sm22;
 DOUBLE  sm32;
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9_ans_tvkg");
 #endif
 /*----------------------------------------------------------------------*/
@@ -697,12 +697,12 @@ for (jlay=0; jlay<num_klay; jlay++)
      {
         pi = funct[inode];
         pj = funct[jnode];
-        
+
         d11 = deriv[0][inode] * deriv[0][jnode];
         d12 = deriv[0][inode] * deriv[1][jnode];
         d21 = deriv[1][inode] * deriv[0][jnode];
         d22 = deriv[1][inode] * deriv[1][jnode];
-        
+
         /*-------------------------------------E11,E12,E22(CONST)*/
         xn = (sn11*d11 + sn21*(d12+d21) + sn22*d22) * weight;
         /*---------------------------------------E11,E12,E22(LIN)*/
@@ -749,40 +749,40 @@ for (jlay=0; jlay<num_klay; jlay++)
         y  = y1 + y2;
         /*---------------------------------------------E33(CONST)*/
         z  = pi*pj*sn33*weight;
-        
+
         if (klay == jlay)
         {
            estif[inode*numdf+0][jnode*numdf+0] += xn;
            estif[inode*numdf+1][jnode*numdf+1] += xn;
            estif[inode*numdf+2][jnode*numdf+2] += xn;
- 
+
            estif[inode*numdf+idof+0][jnode*numdf+0] += (xm+yu);
            estif[inode*numdf+idof+1][jnode*numdf+1] += (xm+yu);
            estif[inode*numdf+idof+2][jnode*numdf+2] += (xm+yu);
- 
+
            estif[inode*numdf+0][jnode*numdf+idof+0] += (xm+yo);
            estif[inode*numdf+1][jnode*numdf+idof+1] += (xm+yo);
            estif[inode*numdf+2][jnode*numdf+idof+2] += (xm+yo);
- 
+
            estif[inode*numdf+idof+0][jnode*numdf+idof+0] += (y+z);
            estif[inode*numdf+idof+1][jnode*numdf+idof+1] += (y+z);
            estif[inode*numdf+idof+2][jnode*numdf+idof+2] += (y+z);
-           
+
            /*make symmetric*/
            if (inode!=jnode)
            {
              estif[jnode*numdf+0][inode*numdf+0] += xn;
              estif[jnode*numdf+1][inode*numdf+1] += xn;
              estif[jnode*numdf+2][inode*numdf+2] += xn;
- 
+
              estif[jnode*numdf+0][inode*numdf+idof+0] += (xm+yu);
              estif[jnode*numdf+1][inode*numdf+idof+1] += (xm+yu);
              estif[jnode*numdf+2][inode*numdf+idof+2] += (xm+yu);
- 
+
              estif[jnode*numdf+idof+0][inode*numdf+0] += (xm+yo);
              estif[jnode*numdf+idof+1][inode*numdf+1] += (xm+yo);
              estif[jnode*numdf+idof+2][inode*numdf+2] += (xm+yo);
- 
+
              estif[jnode*numdf+idof+0][inode*numdf+idof+0] += (y+z);
              estif[jnode*numdf+idof+1][inode*numdf+idof+1] += (y+z);
              estif[jnode*numdf+idof+2][inode*numdf+idof+2] += (y+z);
@@ -793,7 +793,7 @@ for (jlay=0; jlay<num_klay; jlay++)
            estif[jnode*numdf+jdof+0][inode*numdf+0] += xn;
            estif[jnode*numdf+jdof+1][inode*numdf+1] += xn;
            estif[jnode*numdf+jdof+2][inode*numdf+2] += xn;
-        
+
            estif[jnode*numdf+0][inode*numdf+jdof+0] += xn;
            estif[jnode*numdf+1][inode*numdf+jdof+1] += xn;
            estif[jnode*numdf+2][inode*numdf+jdof+2] += xn;
@@ -812,7 +812,7 @@ for (jlay=0; jlay<num_klay; jlay++)
              estif[inode*numdf+0][jnode*numdf+jdof+0] += xn;
              estif[inode*numdf+1][jnode*numdf+jdof+1] += xn;
              estif[inode*numdf+2][jnode*numdf+jdof+2] += xn;
-        
+
              estif[inode*numdf+jdof+0][jnode*numdf+0] += xn;
              estif[inode*numdf+jdof+1][jnode*numdf+1] += xn;
              estif[inode*numdf+jdof+2][jnode*numdf+2] += xn;
@@ -826,14 +826,14 @@ for (jlay=0; jlay<num_klay; jlay++)
              estif[inode*numdf+jdof+2][jnode*numdf+idof+2] += yu;
            }
         }
-        
+
      } /* end loop over jnode */
   } /* end loop over inode */
 
 } /* end of loop over all kinematic layers*/
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

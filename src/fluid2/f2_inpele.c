@@ -10,21 +10,21 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
-\addtogroup FLUID2 
+/*!
+\addtogroup FLUID2
 *//*! @{ (documentation module open)*/
-#ifdef D_FLUID2 
-#include "../headers/standardtypes.h" 
+#ifdef D_FLUID2
+#include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #include "fluid2.h"
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief read fluid2 element from input-file
 
 <pre>                                                         genk 03/02
 </pre>
 \param  *ele	   ELEMENT	   (o)	   actual element
 \param   counter   INT             (i)     counter for first element
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f2_inp(ELEMENT *ele, INT counter)
@@ -34,11 +34,11 @@ INT        ierr=0;        /* error flag                                 */
 char      buffer[50];
 static INT cmat;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2inp");
 #endif
 
-/*------------------------------------------------ allocate the element */      
+/*------------------------------------------------ allocate the element */
 ele->e.f2 = (FLUID2*)CCACALLOC(1,sizeof(FLUID2));
 if (ele->e.f2==NULL) dserror("Allocation of element FLUID2 failed\n");
 /*---------------------------------------------- read the element nodes */
@@ -53,7 +53,7 @@ if (ierr==1)
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
 #ifdef D_LS
    ele->e.f2->is_ls = 1;
-#endif   
+#endif
 }
 frchk("QUAD9",&ierr);
 if (ierr==1)
@@ -97,7 +97,7 @@ if (ierr==1)
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed\n");
    frint_n("TRI6",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
-} 
+}
 /*------------------------------------------ reduce node numbers by one */
 for (i=0; i<ele->numnp; i++) (ele->lm[i])--;
 /*-------------------------------------------- read the material number */
@@ -110,20 +110,20 @@ else dsassert(ele->mat==cmat,"no different materials for fluid elements allowed!
 if (ele->numnp==4 || ele->numnp==8 || ele->numnp==9)
 {
    frint_n("GP",&(ele->e.f2->nGP[0]),2,&ierr);
-   if (ierr!=1) dserror("Reading of FLUID2 element failed: integration\n");  
-}   
+   if (ierr!=1) dserror("Reading of FLUID2 element failed: integration\n");
+}
 /*-------------------------- read gaussian points for triangle elements */
 if (ele->numnp==3 || ele->numnp==6)
 {
-   frint("GP_TRI",&(ele->e.f2->nGP[0]),&ierr);   
+   frint("GP_TRI",&(ele->e.f2->nGP[0]),&ierr);
    if (ierr!=1) dserror("Reading of FLUID2 element failed: integration\n");
    frchar("GP_ALT",buffer,&ierr);
 /*
 integration for TRI-elements is distinguished into different cases. This is
-necessary to get the right integration parameters from FLUID_DATA. 
+necessary to get the right integration parameters from FLUID_DATA.
 The flag for the integration case is saved in nGP[1]. For detailed informations
 see /fluid2/f2_intg.c.
-*/   
+*/
    switch(ele->e.f2->nGP[0])
    {
    case 1:
@@ -138,13 +138,13 @@ see /fluid2/f2_intg.c.
       else if (strncmp(buffer,"gaussrad",8)==0)
          ele->e.f2->nGP[1]=2;
       else
-         dserror("Reading of FLUID2 element failed: GP_ALT\n");	 
+         dserror("Reading of FLUID2 element failed: GP_ALT\n");
       break;
    case 4:
       if (strncmp(buffer,"standard",8)==0)
          ele->e.f2->nGP[1]=3;
       else
-         dserror("Reading of FLUID2 element failed: gauss-radau not possible!\n");  
+         dserror("Reading of FLUID2 element failed: gauss-radau not possible!\n");
       break;
    case 6:
        if (strncmp(buffer,"standard",8)==0)
@@ -152,7 +152,7 @@ see /fluid2/f2_intg.c.
       else if (strncmp(buffer,"gaussrad",8)==0)
          ele->e.f2->nGP[1]=5;
       else
-         dserror("Reading of FLUID2 element failed: GP_ALT\n");  
+         dserror("Reading of FLUID2 element failed: GP_ALT\n");
       break;
    case 7:
        if (strncmp(buffer,"standard",8)==0)
@@ -160,25 +160,25 @@ see /fluid2/f2_intg.c.
       else if (strncmp(buffer,"gaussrad",8)==0)
          ele->e.f2->nGP[1]=7;
       else
-         dserror("Reading of FLUID2 element failed: GP_ALT\n");  
+         dserror("Reading of FLUID2 element failed: GP_ALT\n");
       break;
    case 9:
       if (strncmp(buffer,"standard",8)==0)
          ele->e.f2->nGP[1]=8;
       else
-         dserror("Reading of FLUID2 element failed: gauss-radau not possible!\n");    
+         dserror("Reading of FLUID2 element failed: gauss-radau not possible!\n");
       break;
    case 12:
       if (strncmp(buffer,"standard",8)==0)
          ele->e.f2->nGP[1]=9;
       else
-         dserror("Reading of FLUID2 element failed: gauss-radau not possible!\n");   
+         dserror("Reading of FLUID2 element failed: gauss-radau not possible!\n");
       break;
    case 13:
       if (strncmp(buffer,"standard",8)==0)
          ele->e.f2->nGP[1]=10;
       else
-         dserror("Reading of FLUID2 element failed: gauss-radau not possible!\n");   
+         dserror("Reading of FLUID2 element failed: gauss-radau not possible!\n");
       break;
    default:
       dserror("Reading of FLUID2 element failed: integration points\n");
@@ -201,7 +201,7 @@ if (ierr==1)
             strncmp(buffer,"EULER",5)==0 ||
             strncmp(buffer,"Euler",5)==0 )
        ele->e.f2->is_ale=0;
-   else 
+   else
        dserror("Reading of FLUID2 element failed: Euler/Ale\n");
 }
 else
@@ -220,9 +220,9 @@ if (ierr==1)
    else if (strncmp(buffer,"kappa-omega",11)==0)
       ele->e.f2->turbu=3;
    else
-      dserror("Reading of FLUID2 element failed: TURBULENCE\n"); 
+      dserror("Reading of FLUID2 element failed: TURBULENCE\n");
 }
-else 
+else
   dserror("Reading of FLUID2 element failed: TURBULENCE\n");
 #ifndef D_FLUID2TU
 dsassert(ele->e.f2->turbu==0,"Turbulence needed but not compiled in!\n");
@@ -230,13 +230,13 @@ dsassert(ele->e.f2->turbu==0,"Turbulence needed but not compiled in!\n");
 
 /*----------------------------- set initial value for free surface flag */
 ele->e.f2->fs_on=0;
-    
+
 /*-------------------------------------------------------- submesh data */
 #ifdef FLUID2_ML
-ele->e.f2->smisal = 0;   
+ele->e.f2->smisal = 0;
 #endif
 /*--------------------------------------------------------------------- */
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 

@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -16,10 +16,10 @@ Maintainer: Malte Neumann
 
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
-#include "/opt/mlib/include/veclib.h" 
+#include "/opt/mlib/include/veclib.h"
 /*----------------------------------------------------------------------*
  | global dense matrices for element routines             m.gee 9/01    |
- | (defined in globcalelm.c, so they are extern here)                |                
+ | (defined in globcalelm.c, so they are extern here)                |
  *----------------------------------------------------------------------*/
 extern struct _ARRAY estif_global;
 extern struct _ARRAY emass_global;
@@ -50,7 +50,7 @@ INT  add_mds(struct _PARTITION     *actpart,
 /*----------------------------------------------------------------------*/
   mlvar = actsolv->mlvar;
 /*----------------------------------------------------------------------*/
-  #ifdef DEBUG 
+  #ifdef DEBUG
   dstrc_enter("add_mds");
   #endif
 /*------------------------------------- set some pointers and variables */
@@ -64,7 +64,7 @@ INT  add_mds(struct _PARTITION     *actpart,
     for (j=0; j<actele->node[i]->numdf; j++)
     {
       lm[counter]    = actele->node[i]->dof[j];
-      #ifdef PARALLEL 
+      #ifdef PARALLEL
       owner[counter] = actele->node[i]->proc;
       #endif
       counter++;
@@ -76,7 +76,7 @@ INT  add_mds(struct _PARTITION     *actpart,
 /*======================================= loop over i (the element row) */
   for (i=0; i<nd; i++)
   {
-   ii = lm[i]; 
+   ii = lm[i];
    /*------------------------------------- check for boundary condition */
    if (ii>=numeq) continue;
    /*================================= loop over j (the element column) */
@@ -85,24 +85,24 @@ INT  add_mds(struct _PARTITION     *actpart,
       jj = lm[j];
       /*---------------------------------- check for boundary condition */
       if (jj>=numeq) continue;
-      
+
       if ( (ii>=jj && mlvar->symm) || !mlvar->symm) /* lower triangular of full*/
       {
         value = estif[i][j];
-      
+
         ii++;
         jj++;
         dslev1 (&ii, &jj, &value, mds->global, &mds->ierr);
         ii--;
         jj--;
       }
-      if(mds->ierr!=0) exit; 
+      if(mds->ierr!=0) exit;
     } /* end loop over j */
   }/* end loop over i */
 /*-- print additional information, depends on the stage of execution ---*/
-  if(mlvar->msglvl==4) dsleps (mds->global); 
+  if(mlvar->msglvl==4) dsleps (mds->global);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return(0);

@@ -2,11 +2,11 @@
 \file
 \brief contains the routines
  - s9_tforce:  transforms the forces (stress resultants -> "Schnittgroessen")
-               to local/global coordinates ("XYZ", "RST", "RST_ortho") 
- - s9_tstress: transforms the stresses to local/global coordinates 
-               ("XYZ", "RST", "RST_ortho") 
+               to local/global coordinates ("XYZ", "RST", "RST_ortho")
+ - s9_tstress: transforms the stresses to local/global coordinates
+               ("XYZ", "RST", "RST_ortho")
  - s9_tettr:   transformation routine
- 
+
 
 <pre>
 Maintainer: Stefan Hartmann
@@ -20,12 +20,12 @@ Maintainer: Stefan Hartmann
 #include "../headers/standardtypes.h"
 #include "shell9.h"
 
-/*! 
-\addtogroup SHELL9 
+/*!
+\addtogroup SHELL9
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief transform forces to local/global coordinates                                       
+\brief transform forces to local/global coordinates
 
 <pre>                     m.gee 6/01              modified by    sh 10/02
 This routine transforms forces (stress resultants -> "Schnittgroessen")
@@ -33,14 +33,14 @@ to local/global coordinate systems ("XYZ", "RST", "RST_ortho")
 </pre>
 \param DOUBLE   **force   (i/o)  forces to be transformed
 \param INT        ngauss   (i)   ID of actual GP
-\param DOUBLE  ***akov     (i)   metrics at reference surface of each kinematic layer 
+\param DOUBLE  ***akov     (i)   metrics at reference surface of each kinematic layer
 \param INT        klay     (i)   actual kinematic layer
 \param ELEMENT   *ele      (i)   my element
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: is not called, as no forces are calculated yet
-                             
+
 *----------------------------------------------------------------------*/
 void s9_tforce(DOUBLE   **force,
                INT        ngauss,
@@ -63,12 +63,12 @@ const DOUBLE zero   = 0.0;
 static ARRAY    akovKL_a;     static DOUBLE **akovKL;     /* kovariant basis vectors at Int point of actual kin. Layer */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9_tforce");
 #endif
 /*----------------------------------------------------------------------*/
 /*- init the basis vectors of actual kin. Layer ------------------------*/
-akovKL     = amdef("akovKL"  ,&akovKL_a,3,3,"DA");         
+akovKL     = amdef("akovKL"  ,&akovKL_a,3,3,"DA");
 for (i=0; i<3; i++) for (j=0; j<3; j++) akovKL[i][j] = akov[i][j][klay];
 
 /*----------------------------------------------------------------------*/
@@ -101,7 +101,7 @@ switch(option)
 case 0:/*--------------------------------- global coordinate orientated */
       for (i=0; i<3; i++)
       for (j=0; j<3; j++) b[i][j] = 0.0;
-      
+
       b[0][2] = akovKL[1][0]*akovKL[2][1] - akovKL[2][0]*akovKL[1][1];
       b[1][2] = akovKL[2][0]*akovKL[0][1] - akovKL[0][0]*akovKL[2][1];
       b[2][2] = akovKL[0][0]*akovKL[1][1] - akovKL[1][0]*akovKL[0][1];
@@ -117,10 +117,10 @@ case 0:/*--------------------------------- global coordinate orientated */
          anorm = sqrt(b[0][0]*b[0][0] + b[2][0]*b[2][0]);
          b[0][0] /= anorm;
          b[2][0] /= anorm;
-         
+
          b[0][1] =  b[1][2]*b[2][0];
          b[1][1] =  b[2][2]*b[0][0] - b[0][2]*b[2][0];
-         b[2][1] = -b[1][2]*b[0][0]; 
+         b[2][1] = -b[1][2]*b[0][0];
       }
       else
       {
@@ -159,7 +159,7 @@ case 2:
       /*---------------------------------- local orthogonal coordinates */
       for (i=0; i<3; i++)
       for (j=0; j<3; j++) b[i][j] = 0.0;
-      
+
       b[0][2] = akovKL[1][0]*akovKL[2][1] - akovKL[2][0]*akovKL[1][1];
       b[1][2] = akovKL[2][0]*akovKL[0][1] - akovKL[0][0]*akovKL[2][1];
       b[2][2] = akovKL[0][0]*akovKL[1][1] - akovKL[1][0]*akovKL[0][1];
@@ -171,7 +171,7 @@ case 2:
       b[0][0] = akovKL[0][0]/anorm;
       b[1][0] = akovKL[1][0]/anorm;
       b[2][0] = akovKL[2][0]/anorm;
-      
+
       b[0][1] = akovKL[1][2]*akovKL[2][0] - akovKL[2][2]*akovKL[1][0];
       b[1][1] = akovKL[2][2]*akovKL[0][0] - akovKL[0][2]*akovKL[2][0];
       b[2][1] = akovKL[0][2]*akovKL[1][0] - akovKL[1][2]*akovKL[0][0];
@@ -208,9 +208,9 @@ force[13][ngauss] = sm[2][1];
 force[15][ngauss] = sm[2][2];
 
 /*- uninit the basis vectors of actual kin. Layer ----------------------*/
-amdel(&akovKL_a);   
+amdel(&akovKL_a);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -218,10 +218,10 @@ return;
 
 
 /*!----------------------------------------------------------------------
-\brief calculate the physical stresses in different coordinate systems                                       
+\brief calculate the physical stresses in different coordinate systems
 
 <pre>                     m.gee 6/01              modified by    sh 10/02
-This routine calculates the physical stresses in different coordinate 
+This routine calculates the physical stresses in different coordinate
 systems ("XYZ", "RST", "RST_ortho"). It is equal to the routine 'S9SFOR'
 in the old CARAT.
 </pre>
@@ -232,9 +232,9 @@ in the old CARAT.
 \param ELEMENT   *ele      (i)   my element
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by:   s9_stress()    [s9_stress.c]
-                             
+
 *----------------------------------------------------------------------*/
 void s9_tstress(DOUBLE   **force,
                 DOUBLE    *stress,
@@ -255,7 +255,7 @@ DOUBLE cnorm,anorm;
 DOUBLE sum;
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9_tstress");
 #endif
 /*----------------------------------------------------------------------*/
@@ -278,7 +278,7 @@ switch(option)
 case 0:/*--------------------------------- global coordinate orientated */
       for (i=0; i<3; i++)
       for (j=0; j<3; j++) b[i][j] = 0.0;
-      
+
       b[0][2] = akov[1][0]*akov[2][1] - akov[2][0]*akov[1][1];
       b[1][2] = akov[2][0]*akov[0][1] - akov[0][0]*akov[2][1];
       b[2][2] = akov[0][0]*akov[1][1] - akov[1][0]*akov[0][1];
@@ -294,10 +294,10 @@ case 0:/*--------------------------------- global coordinate orientated */
          anorm = sqrt(b[0][0]*b[0][0] + b[2][0]*b[2][0]);
          b[0][0] /= anorm;
          b[2][0] /= anorm;
-         
+
          b[0][1] =  b[1][2]*b[2][0];
          b[1][1] =  b[2][2]*b[0][0] - b[0][2]*b[2][0];
-         b[2][1] = -b[1][2]*b[0][0]; 
+         b[2][1] = -b[1][2]*b[0][0];
       }
       else
       {
@@ -326,7 +326,7 @@ case 2:
       /*---------------------------------- local orthogonal coordinates */
       for (i=0; i<3; i++)
       for (j=0; j<3; j++) b[i][j] = 0.0;
-      
+
       b[0][2] = akov[1][0]*akov[2][1] - akov[2][0]*akov[1][1];
       b[1][2] = akov[2][0]*akov[0][1] - akov[0][0]*akov[2][1];
       b[2][2] = akov[0][0]*akov[1][1] - akov[1][0]*akov[0][1];
@@ -338,7 +338,7 @@ case 2:
       b[0][0] = akov[0][0]/anorm;
       b[1][0] = akov[1][0]/anorm;
       b[2][0] = akov[2][0]/anorm;
-      
+
       b[0][1] = akov[1][2]*akov[2][0] - akov[2][2]*akov[1][0];
       b[1][1] = akov[2][2]*akov[0][0] - akov[0][2]*akov[2][0];
       b[2][1] = akov[0][2]*akov[1][0] - akov[1][2]*akov[0][0];
@@ -358,7 +358,7 @@ force[3][ngauss]  = s[0][2];
 force[4][ngauss]  = s[1][2];
 force[5][ngauss]  = s[2][2];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -366,9 +366,9 @@ return;
 
 
 /*!----------------------------------------------------------------------
-\brief transformation to local/global coordinates                                      
+\brief transformation to local/global coordinates
 
-<pre>                                                         m.gee 12/01 
+<pre>                                                         m.gee 12/01
 .........................................................................
 .        TENSORTRANSFORMATION                                           .
 .        XX(K,L)=T(I,K)*X(I,J)*T(J,L)                                   .
@@ -380,7 +380,7 @@ return;
  NOTE:
    This is NOT a multi-purpose routine, as it takes
    a static 2D array as first argument, a dynamic as second and a
-   static as third argument. This routine will fail with any other 
+   static as third argument. This routine will fail with any other
    combination of static or dynamic 2D arrays
 </pre>
 \param  DOUBLE x[3][3]   (i/o) matrix to be transformed(i)-> transformed matrix(o)
@@ -388,7 +388,7 @@ return;
 \param  DOUBLE b[3][3]    (i)  basis vectors new system
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by:  s9_tforce(); s9_tstress()  [s9_tforce.c]
 
 *----------------------------------------------------------------------*/
@@ -399,7 +399,7 @@ DOUBLE t[3][3];
 DOUBLE h[3][3];
 DOUBLE sum;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9_tettr");
 #endif
 /*----------------------------------------------------------------------*/
@@ -426,7 +426,7 @@ for (j=0; j<3; j++)
    x[i][j] = sum;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -2,8 +2,8 @@
 \file
 \brief contains the routines 'c1_call_mat' and  'c1_call_matd'
        control programs for formulation of material law and its derivatives
-       select proper material law 
-       and evaluation of element stresses 
+       select proper material law
+       and evaluation of element stresses
 
 <pre>
 Maintainer: Andreas Lipka
@@ -19,8 +19,8 @@ Maintainer: Andreas Lipka
 #include "brick1.h"
 #include "brick1_prototypes.h"
 
-/*! 
-\addtogroup BRICK1 
+/*!
+\addtogroup BRICK1
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
@@ -32,35 +32,35 @@ This routine selects proper material law evaluates element stresses.
 </pre>
 \param      ele ELEMENT * (i)   element data
 \param      mat MATERIAL* (i)   material data
-\param       ip INT       (i)   integration point Id      
+\param       ip INT       (i)   integration point Id
 \param   stress DOUBLE*   (o)   stress vector
 \param   strain DOUBLE*   (o)   strain vector
 \param        d DOUBLE**  (o)   constitutive matrix
-\param     disd DOUBLE*   (i)   displacement derivatives 
+\param     disd DOUBLE*   (i)   displacement derivatives
 \param  g[6][6] DOUBLE    (i)   transformation matrix s(glob)=g*s(loc)
 \param gi[6][6] DOUBLE    (i)   inverse of g          s(loc) =gi*s(glob)
 \param   istore INT       (i)   controls storing of new stresses to wa
 \param   newval INT       (i)   controls evaluation of new stresses
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
 void c1_call_mat(ELEMENT   *ele,
-                 MATERIAL  *mat, 
-                 INT ip,       
+                 MATERIAL  *mat,
+                 INT ip,
                  DOUBLE *stress,
                  DOUBLE *strain,
                  DOUBLE **d,
                  DOUBLE *disd,
-                 DOUBLE g[6][6], 
+                 DOUBLE g[6][6],
                  DOUBLE gi[6][6],
                  INT istore,
                  INT newval)
 {
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1_call_mat");
 #endif
 /*------------------------------------------------ call material law ---*/
@@ -146,16 +146,16 @@ dstrc_enter("c1_call_mat");
   break;
   case m_pl_epc:/*---------- elastoplastic concrete material law ---*/
     dserror(" elastoplastic concrete material law not implemented for brick");
-  break;                                         
+  break;
   default:
     dserror(" unknown type of material law");
   break;
   }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of c1_call_mat */
 /*----------------------------------------------------------------------*/
 
@@ -174,19 +174,19 @@ This routine calculates derivatives of material law.
 \param  g[6][6] DOUBLE    (i)   transformation matrix s(glob)=g*s(loc)
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: opt_c1_cint()
 
 *----------------------------------------------------------------------*/
 void c1_call_matd(ELEMENT   *ele,
-                 MATERIAL  *mat, 
+                 MATERIAL  *mat,
                  DOUBLE *stress,
                  DOUBLE *strain,
                  DOUBLE **d,
                  DOUBLE g[6][6])
 {
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1_call_matd");
 #endif
 /*------------------------------------------------ call material law ---*/
@@ -215,10 +215,10 @@ dstrc_enter("c1_call_matd");
   break;
   }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of c1_call_matd */
 /*!----------------------------------------------------------------------
 \brief get density out of material law
@@ -228,16 +228,16 @@ This routine gives density out of material law.
 
 </pre>
 \param      mat MATERIAL*   (i)   material data
-\param    density DOUBLE*   (i)   density value 
+\param    density DOUBLE*   (i)   density value
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: opt_c1_cint()
 
 *----------------------------------------------------------------------*/
 void c1_getdensity(MATERIAL   *mat, DOUBLE *density)
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1_getdensity");
 #endif
 /*----------------------------------------------------------------------*/
@@ -258,7 +258,7 @@ default:
 break;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Michael Gee
@@ -18,7 +18,7 @@ Maintainer: Michael Gee
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -28,7 +28,7 @@ extern struct _FILES  allfiles;
 
 <pre>                                                         m.gee 8/00
 -the partition of one proc (all discretizations)
--the type is in partition.h                                                  
+-the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -51,7 +51,7 @@ ARRAY4D     *array;
 INT          dim;
 MATERIAL    *actmat;
 FILE        *out;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_write_restart");
 #endif
 /*----------------------------------------------------------------------*/
@@ -97,7 +97,7 @@ if (actmat->mattyp==m_viscohyper)
    counter++;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -114,7 +114,7 @@ INT          dims[3];
 FILE        *in;
 MATERIAL    *actmat;
 ARRAY4D     *array;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_read_restart");
 #endif
 /*----------------------------------------------------------------------*/
@@ -136,7 +136,7 @@ if (actele->e.s8->nhyb)
        dserror("Mismatch in reading element restart data");
    /*-------------------------------------------------------- read alfa */
    pss_read_array_name_handle(actele->e.s8->alfa.name,&(actele->e.s8->alfa),&handles[counter],in,&ierr);
-   if (ierr != 1) dserror("Cannot read restart data");  
+   if (ierr != 1) dserror("Cannot read restart data");
    counter++;
    /*------------------------------------------------- check dimensions Dtildinv*/
    pss_getdims_name_handle(actele->e.s8->Dtildinv.name,&dims[0],&dims[1],&dims[2],&handles[counter],in,&ierr);
@@ -146,7 +146,7 @@ if (actele->e.s8->nhyb)
        dserror("Mismatch in reading element restart data");
    /*---------------------------------------------------- read Dtildinv */
    pss_read_array_name_handle(actele->e.s8->Dtildinv.name,&(actele->e.s8->Dtildinv),&handles[counter],in,&ierr);
-   if (ierr != 1) dserror("Cannot read restart data");  
+   if (ierr != 1) dserror("Cannot read restart data");
    counter++;
    /*------------------------------------------------- check dimensions Lt*/
    pss_getdims_name_handle(actele->e.s8->Lt.name,&dims[0],&dims[1],&dims[2],&handles[counter],in,&ierr);
@@ -156,7 +156,7 @@ if (actele->e.s8->nhyb)
        dserror("Mismatch in reading element restart data");
    /*---------------------------------------------------------- read Lt */
    pss_read_array_name_handle(actele->e.s8->Lt.name,&(actele->e.s8->Lt),&handles[counter],in,&ierr);
-   if (ierr != 1) dserror("Cannot read restart data");  
+   if (ierr != 1) dserror("Cannot read restart data");
    counter++;
    /*------------------------------------------------- check dimensions Rtilde*/
    pss_getdims_name_handle(actele->e.s8->Rtilde.name,&dims[0],&dims[1],&dims[2],&handles[counter],in,&ierr);
@@ -166,7 +166,7 @@ if (actele->e.s8->nhyb)
        dserror("Mismatch in reading element restart data");
    /*------------------------------------------------------ read Rtilde */
    pss_read_array_name_handle(actele->e.s8->Rtilde.name,&(actele->e.s8->Rtilde),&handles[counter],in,&ierr);
-   if (ierr != 1) dserror("Cannot read restart data");  
+   if (ierr != 1) dserror("Cannot read restart data");
    counter++;
 }
 /*------------------------------------ read material history if present */
@@ -180,11 +180,11 @@ if (actmat->mattyp==m_viscohyper)
    if (dims[0] != array->fdim*array->sdim*array->tdim*array->fodim)
       dserror("Mismatch in reading element restart data");
    pss_read_name_handle(array->name,&dims[0],&dims[1],&dims[2],array->a.d4[0][0][0],&handles[counter],in,&ierr);
-   if (ierr != 1) dserror("Cannot read restart data");  
+   if (ierr != 1) dserror("Cannot read restart data");
    counter++;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -22,7 +22,7 @@ DOUBLE cmp_double(const void *a, const void *b );
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -33,13 +33,13 @@ extern struct _FILES  allfiles;
  | struct _GENPROB       genprob; defined in global_control.c           |
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
-/*! 
-\addtogroup MLPCG 
+/*!
+\addtogroup MLPCG
 *//*! @{ (documentation module open)*/
 /*!----------------------------------------------------------------------
 \brief the multilevel preconditioner main structure
 
-<pre>                                                         m.gee 09/02    
+<pre>                                                         m.gee 09/02
 defined in solver_mlpcg.c
 </pre>
 
@@ -50,9 +50,9 @@ extern struct _MLPRECOND mlprecond;
 
 
 /*!---------------------------------------------------------------------
-\brief make the parallel matrix-matrix-matrix product                                         
+\brief make the parallel matrix-matrix-matrix product
 
-<pre>                                                        m.gee 10/02 
+<pre>                                                        m.gee 10/02
 make the parallel matrix-matrix-matrix product
 - outcsr = P(transposed) * incsr * P
 - outcsr gets the proc partitioning from P
@@ -63,23 +63,23 @@ make the parallel matrix-matrix-matrix product
 - incsr is symmetric !
 - P is not symmetric !
 
-After the product 
+After the product
 work = P(transposed) * incsr
 is done, the matrix work is closed by call to mlpcg_csr_close
-Then the product 
-outcsr = work * P 
+Then the product
+outcsr = work * P
 is done, afterwards the matrix outcsr is closed.
 
 THIS IS NOT AN ALL PUPOSE ROUTINE, IT MAKES USE OF SPECIAL KNOWLEDGE
 ABOUT THE PROLONGATOR!
 </pre>
-\param P           DBCSR*    (i) the matrix P of the product                   
-\param incsr       DBCSR*    (i) the matrix incsr of the product                   
-\param outcsr      DBCSR*    (o) the matrix outcsr of the product                   
-\param work        DBCSR*    (o) the working matrix                   
-\param actintra    INTRA*    (i) the communicator                 
+\param P           DBCSR*    (i) the matrix P of the product
+\param incsr       DBCSR*    (i) the matrix incsr of the product
+\param outcsr      DBCSR*    (o) the matrix outcsr of the product
+\param work        DBCSR*    (o) the working matrix
+\param actintra    INTRA*    (i) the communicator
 \warning the matrix incsr has to be symmetric!!
-\return void                                               
+\return void
 ------------------------------------------------------------------------*/
 void mlpcg_precond_PtKP(DBCSR *P, DBCSR *incsr, DBCSR *outcsr, DBCSR *work,
                         AGG *agg, INT nagg, INTRA *actintra)
@@ -105,7 +105,7 @@ ARRAY      ra;   DOUBLE *aP;
 INT        rcounter[MAXPROC];
 INT       *isend,*irecv;
 DOUBLE    *dsend,*drecv;
- 
+
 INT        actrow,actcol;
 INT        colstart,colend;
 
@@ -119,7 +119,7 @@ INT        scol = 5000, scolP = 5000;
 INT        nrow,ncol;
 
  /* these are tricky column pointers to the incsr matrix */
-INT     ***icol;    
+INT     ***icol;
 INT       *colsize;
 DOUBLE  ***dcol;
 
@@ -135,9 +135,9 @@ DOUBLE     t1,t2;
 #endif
 INT        min1,max1,min2,max2;
 
-#ifdef PARALLEL 
-MPI_Status   status;  
-MPI_Request  *request;   
+#ifdef PARALLEL
+MPI_Status   status;
+MPI_Request  *request;
 #endif
 
 #if 0 /* for development and debugging */
@@ -147,7 +147,7 @@ ARRAY      so,ro;
 #endif
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_precond_PtKP");
 #endif
 /*----------------------------------------------------------------------*/
@@ -185,10 +185,10 @@ for (i=0; i<incsr->numeq; i++)
       sdense_in.a.da[actrow][actcol] = incsr->a.a.dv[j];
    }
 }
-#ifdef PARALLEL 
+#ifdef PARALLEL
 MPI_Allreduce(sdense_in.a.da[0],rdense_in.a.da[0],sdense_in.fdim*sdense_in.sdim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
 #else
-for (i=0; i<sdense_in.fdim*sdense_in.sdim; i++) 
+for (i=0; i<sdense_in.fdim*sdense_in.sdim; i++)
    rdense_in.a.da[0][i] = sdense_in.a.da[0][i];
 #endif
 /* check symmetry */
@@ -196,7 +196,7 @@ for (i=0; i<sdense_in.fdim; i++)
 {
    for (j=i+1; j<sdense_in.sdim; j++)
      if (FABS(rdense_in.a.da[i][j]-rdense_in.a.da[j][i])>EPS12)
-      fprintf(allfiles.out_err,"K not symmetric in ij %d %d %20.10f ji %d %d %20.10f diff %30.20f\n",i,j,rdense_in.a.da[i][j],j,i,rdense_in.a.da[j][i],FABS(rdense_in.a.da[i][j]-rdense_in.a.da[j][i])); 
+      fprintf(allfiles.out_err,"K not symmetric in ij %d %d %20.10f ji %d %d %20.10f diff %30.20f\n",i,j,rdense_in.a.da[i][j],j,i,rdense_in.a.da[j][i],FABS(rdense_in.a.da[i][j]-rdense_in.a.da[j][i]));
 }
 /* print to err */
 fprintf(allfiles.out_err,"in-Matrix\n");
@@ -224,7 +224,7 @@ for (i=0; i<P->numeq; i++)
       sdense_P.a.da[actrow][actcol] = P->a.a.dv[j];
    }
 }
-#ifdef PARALLEL 
+#ifdef PARALLEL
 MPI_Allreduce(sdense_P.a.da[0],rdense_P.a.da[0],sdense_P.fdim*sdense_P.sdim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
 #else
 for (i=0; i<sdense_P.fdim*sdense_P.sdim; i++)
@@ -287,7 +287,7 @@ for (i=0; i<dense_out.fdim; i++)
 {
    for (j=i+1; j<dense_out.sdim; j++)
      if (FABS(dense_out.a.da[i][j]-dense_out.a.da[j][i])>EPS12)
-      fprintf(allfiles.out_err,"K not symmetric in ij %d %d %20.10f ji %d %d %20.10f\n",i,j,dense_out.a.da[i][j],j,i,dense_out.a.da[j][i]); 
+      fprintf(allfiles.out_err,"K not symmetric in ij %d %d %20.10f ji %d %d %20.10f\n",i,j,dense_out.a.da[i][j],j,i,dense_out.a.da[j][i]);
 }
 for (i=0; i<dense_out.fdim; i++)
 {
@@ -335,9 +335,9 @@ ia_in       = incsr->ia.a.iv;
 ja_in       = incsr->ja.a.iv;
 a_in        = incsr->a.a.dv;
 /*---------------------------------------- create the ownership of work */
-for (n=0; n<nproc; n++) 
-{ 
-   work->owner[n][0] = 0; 
+for (n=0; n<nproc; n++)
+{
+   work->owner[n][0] = 0;
    work->owner[n][1] = 0;
    rcounter[n]       = 0;
 }
@@ -345,9 +345,9 @@ for (n=0; n<nproc; n++)
 for (m=0; m<nproc; m++) sendtos[n][m] = 0;
 work->owner[myrank][0] = work->update.a.iv[0];
 work->owner[myrank][1] = work->update.a.iv[work->numeq-1];
-#ifdef PARALLEL 
+#ifdef PARALLEL
 #if 1
-for (n=0; n<nproc; n++) 
+for (n=0; n<nproc; n++)
 {
    ownertmp[n][0] = 0;
    ownertmp[n][1] = 0;
@@ -381,7 +381,7 @@ for (i=0; i<numeq_cscP; i++)
 MPI_Allreduce(&(sendtos[0][0]),&(sendtor[0][0]),MAXPROC*MAXPROC,MPI_INT,MPI_SUM,actintra->MPI_INTRA_COMM);
 /*--------------------------------------------------- count my receives */
 nrecv=0;
-for (n=0; n<nproc; n++) 
+for (n=0; n<nproc; n++)
 {
    if (n==myrank) continue;
    nrecv += sendtor[n][myrank];
@@ -403,16 +403,16 @@ for (i=0; i<numeq_cscP; i++)/* loop remote columns in P */
 {
    actrow = update_cscP[i];
    owner  = mlpcg_getowner(actrow,work->owner,nproc);
-   if (owner==myrank) 
+   if (owner==myrank)
       continue;
    dsassert(rcounter[owner]<isbuff[owner].fdim,"sendbuffer not enough rows");
-   isend    = &(isbuff[owner].a.ia[rcounter[owner]][0]);   
+   isend    = &(isbuff[owner].a.ia[rcounter[owner]][0]);
    dsend    = &(dsbuff[owner].a.da[rcounter[owner]][0]);
    dsend[0] = (DOUBLE)actrow;
    rcounter[owner]++;
    mlpcg_extractcolcsc(actrow,numeq_cscP,update_cscP,ia_cscP,ja_cscP,a_cscP,
                        &colP,&rcolP,&scolP,&ncol);
-   if (ncol==0) 
+   if (ncol==0)
       continue;
    min2 = rcolP[0];
    max2 = rcolP[ncol-1];
@@ -445,8 +445,8 @@ for (i=0; i<numeq_cscP; i++)/* loop remote columns in P */
          {
             amredef(&(isbuff[owner]),isbuff[owner].fdim,isbuff[owner].sdim+500,"IA");
             amredef(&(dsbuff[owner]),dsbuff[owner].fdim,dsbuff[owner].sdim+500,"DA");
-            isend = &(isbuff[owner].a.ia[rcounter[owner]-1][0]);   
-            dsend = &(dsbuff[owner].a.da[rcounter[owner]-1][0]);   
+            isend = &(isbuff[owner].a.ia[rcounter[owner]-1][0]);
+            dsend = &(dsbuff[owner].a.da[rcounter[owner]-1][0]);
          }
       }
    }
@@ -532,7 +532,7 @@ fflush(stdout);
 /*======================================================================*/
 /* do interproc computation work = Ptransposed * incsr   part II        */
 /*======================================================================*/
-#ifdef PARALLEL 
+#ifdef PARALLEL
 /*
 t1 = ds_cputime();
 */
@@ -569,7 +569,7 @@ for (n=0; n<nproc; n++)
    /*---------------------------------------------- check for right row */
    actrow = (INT)drecv[0];
    owner = mlpcg_getowner(actrow,work->owner,nproc);
-   if (owner != myrank) 
+   if (owner != myrank)
    {
       printf("myrank %d message from %d row %f tag %d myowner from %d to %d!!!!!!!!!!!!!!!!!!!!!\n",
              myrank,n,drecv[0],tag,work->owner[myrank][0],work->owner[myrank][1]);
@@ -582,7 +582,7 @@ for (n=0; n<nproc; n++)
 } /* end of for (n=0; n<nproc; n++) */
 if (nrecv != 0) dserror("Numer of receives wrong");
 /*------------------------------------------ wait for all sent messages */
-for (i=0; i<2*nsend; i++) 
+for (i=0; i<2*nsend; i++)
    MPI_Wait(&(request[i]),&status);
 /*======================================================================*/
 /*                                                       tidy up        */
@@ -623,12 +623,12 @@ amdef("rw",&rw,work->numeq_total,incsr->numeq_total,"DA");
 for (i=0; i<work->numeq; i++)
 {
    actrow   = work->update.a.iv[i];
-   colstart = work->ia.a.iv[i]; 
+   colstart = work->ia.a.iv[i];
    colend   = work->ia.a.iv[i+1];
    for (j=colstart; j<colend; j++)
       sw.a.da[actrow][work->ja.a.iv[j]] =  work->a.a.dv[j];
 }
-#ifdef PARALLEL 
+#ifdef PARALLEL
 MPI_Allreduce(sw.a.da[0],rw.a.da[0],sw.fdim*sw.sdim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
 #else
 for (i=0; i<sw.fdim*sw.sdim; i++)
@@ -666,7 +666,7 @@ fflush(allfiles.out_err);
 /*======================================================================*/
 /*             do interproc computation out = work * P   part I         */
 /*======================================================================*/
-#ifdef PARALLEL 
+#ifdef PARALLEL
 /*
 t1 = ds_cputime();
 */
@@ -700,7 +700,7 @@ if (myrank==0) printf("out  = work * P inter I  : %20.10f\n",t2-t1);
 /*
 t1 = ds_cputime();
 */
-#ifdef PARALLEL 
+#ifdef PARALLEL
 MPI_Barrier(actintra->MPI_INTRA_COMM);
 #endif
 for (i=0; i<work->numeq; i++)/* loop all my rows of work */
@@ -717,7 +717,7 @@ for (i=0; i<work->numeq; i++)/* loop all my rows of work */
       actcol = update_cscP[j];
       mlpcg_extractcolcsc(actcol,numeq_cscP,update_cscP,ia_cscP,ja_cscP,a_cscP,
                           &colP,&rcolP,&scolP,&ncol);
-      if (ncol==0) continue; 
+      if (ncol==0) continue;
       min2 = rcolP[0];
       max2 = rcolP[ncol-1];
       if (min2 > max1 || min1 > max2 || IMAX(min1,min2)>IMIN(max1,max2))
@@ -742,14 +742,14 @@ for (i=0; i<work->numeq; i++)/* loop all my rows of work */
 t2 = ds_cputime();
 if (myrank==0) printf("out  = work * P local    : %20.10f\n",t2-t1);
 */
-#ifdef PARALLEL 
+#ifdef PARALLEL
 MPI_Barrier(actintra->MPI_INTRA_COMM);
 #endif
 /*======================================================================*/
 /*             do interproc computation out = work * P   part II        */
 /*======================================================================*/
 /*-------------------------------------------- allocate receive buffers */
-#ifdef PARALLEL 
+#ifdef PARALLEL
 /*
 t1 = ds_cputime();
 */
@@ -766,14 +766,14 @@ while(nrecv!=0)
    tag = status.MPI_TAG;
    /*------------------------------------------------- get message size */
    MPI_Get_count(&status,MPI_INT,&numeq);
-   if (numeq>rupdate.fdim) 
+   if (numeq>rupdate.fdim)
    {
       amdel(&rupdate);
       amdel(&ria);
       updateP = amdef("upd",&rupdate,numeq  ,1,"IV");
       iaP     = amdef("upd",&ria    ,numeq+1,1,"IV");
    }
-   /*--------------------------------------------------- receive update */  
+   /*--------------------------------------------------- receive update */
    MPI_Recv(updateP,numeq,MPI_INT,n,tag,actintra->MPI_INTRA_COMM,&status);
    /*------------------------------------------------------- receive ia */
    MPI_Recv(iaP    ,numeq+1,MPI_INT,n,tag+1,actintra->MPI_INTRA_COMM,&status);
@@ -784,7 +784,7 @@ while(nrecv!=0)
       amdel(&ra);
       jaP = amdef("ja" ,&rja    ,iaP[numeq],1,"IV");
       aP  = amdef("a"  ,&ra     ,iaP[numeq],1,"DV");
-   } 
+   }
    /*------------------------------------------------------- receive ja */
    MPI_Recv(jaP,iaP[numeq],MPI_INT,n,tag+2,actintra->MPI_INTRA_COMM,&status);
    /*-------------------------------------------------------- receive a */
@@ -821,11 +821,11 @@ while(nrecv!=0)
             index = quick_find(rcolP[k],rcol,ncol,shift,bins);
             if (index==-1) continue;
             foundit=1;
-            sum += col[index]*colP[k]; 
+            sum += col[index]*colP[k];
          }
          if (foundit)
             mlpcg_csr_addentry(outcsr,sum,actrow,actcol,actintra);
-      } 
+      }
    }
 #endif
 #if 0
@@ -853,11 +853,11 @@ while(nrecv!=0)
             index = quick_find(rcol[k],rcolP,nrow,shift,bins);
             if (index==-1) continue;
             foundit=1;
-            sum += col[k]*colP[index]; 
+            sum += col[k]*colP[index];
          }
          if (foundit)
             mlpcg_csr_addentry(outcsr,sum,actrow,actcol,actintra);
-      } 
+      }
    }
 #endif
 }
@@ -888,7 +888,7 @@ CCAFREE(col);
 CCAFREE(rcolP);
 CCAFREE(colP);
 
-#ifdef PARALLEL 
+#ifdef PARALLEL
 MPI_Barrier(actintra->MPI_INTRA_COMM);
 #endif
 /*----------------------------------------------------------------------*/
@@ -901,12 +901,12 @@ amdef("rw",&ro,outcsr->numeq_total,outcsr->numeq_total,"DA");
 for (i=0; i<outcsr->numeq; i++)
 {
    actrow   = outcsr->update.a.iv[i];
-   colstart = outcsr->ia.a.iv[i]; 
+   colstart = outcsr->ia.a.iv[i];
    colend   = outcsr->ia.a.iv[i+1];
    for (j=colstart; j<colend; j++)
       so.a.da[actrow][outcsr->ja.a.iv[j]] =  outcsr->a.a.dv[j];
 }
-#ifdef PARALLEL 
+#ifdef PARALLEL
 MPI_Allreduce(so.a.da[0],ro.a.da[0],so.fdim*so.sdim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
 #else
 for (i=0; i<so.fdim*so.sdim; i++)
@@ -953,7 +953,7 @@ amdel(&ro);
 #endif
 /*-------------------------------debugging */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -962,25 +962,25 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief make a print of the matrix                                              
+\brief make a print of the matrix
 
-<pre>                                                        m.gee 11/02 
+<pre>                                                        m.gee 11/02
 
 </pre>
-\param mlpcgvars    MLPCGVARS*   (i)   variables needed for mlpcg                   
-\param bdcsr        DBCSR*       (i)   the distributed  csr matrix                   
-\param actintra     INTRA*       (i)   the intra-communicator of this field                  
-\return void                                               
+\param mlpcgvars    MLPCGVARS*   (i)   variables needed for mlpcg
+\param bdcsr        DBCSR*       (i)   the distributed  csr matrix
+\param actintra     INTRA*       (i)   the intra-communicator of this field
+\return void
 
 ------------------------------------------------------------------------*/
-void mlpcg_printfmatrix(DBCSR     *bdcsr, 
+void mlpcg_printfmatrix(DBCSR     *bdcsr,
                         INTRA     *actintra)
 {
 INT        i,j;
 ARRAY      sdense,rdense;
 INT        actrow,actcol,colstart,colend;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_printfmatrix");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1001,7 +1001,7 @@ for (i=0; i<bdcsr->numeq; i++)
       sdense.a.da[actrow][actcol] = bdcsr->a.a.dv[j];
    }
 }
-#ifdef PARALLEL 
+#ifdef PARALLEL
 MPI_Allreduce(sdense.a.da[0],rdense.a.da[0],sdense.fdim*sdense.sdim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
 #else
 for (i=0; i<sdense.fdim*sdense.sdim; i++)
@@ -1013,7 +1013,7 @@ for (i=0; i<rdense.fdim; i++)
 {
    for (j=i+1; j<rdense.sdim; j++)
      if (FABS(rdense.a.da[i][j]-rdense.a.da[j][i])>EPS12)
-      fprintf(allfiles.out_err,"K not symmetric in ij %d %d %20.10f ji %d %d %20.10f\n",i,j,rdense.a.da[i][j],j,i,rdense.a.da[j][i]); 
+      fprintf(allfiles.out_err,"K not symmetric in ij %d %d %20.10f ji %d %d %20.10f\n",i,j,rdense.a.da[i][j],j,i,rdense.a.da[j][i]);
 }
 /* print to err */
 fprintf(allfiles.out_err,"Matrix\n");
@@ -1033,28 +1033,28 @@ fflush(allfiles.out_err);
 amdel(&rdense);
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of mlpcg_printfmatrix */
 
 /*!---------------------------------------------------------------------
-\brief make a print of a vector to gid                                             
+\brief make a print of a vector to gid
 
-<pre>                                                        m.gee 11/02 
+<pre>                                                        m.gee 11/02
 
 </pre>
 \param z            DOUBLE*      (i)   the distributed vector to print
 \param csr          DBCSR*       (i)   the matching csr matrix
 \param fielddis     DISCRET*     (i)   the field
 \param partdis      PARTDISCRET* (i)   the partition of the field
-\param actintra     INTRA*       (i)   the intra-communicator of this field                  
-\return void                                               
+\param actintra     INTRA*       (i)   the intra-communicator of this field
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_printvec(INT          iter,
-                   DOUBLE      *z, 
+                   DOUBLE      *z,
                    DBCSR*       csr,
                    DISCRET     *fielddis,
                    PARTDISCRET *partdis,
@@ -1070,7 +1070,7 @@ DOUBLE     x[3],a[3],scal,sdc=0.0;
 INT        nnode;
 nnode = genprob.nnode;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_printvec");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1082,7 +1082,7 @@ for (i=0; i<csr->numeq; i++)
    dof = csr->update.a.iv[i];
    zs[dof] = z[i];
 }
-#ifdef PARALLEL 
+#ifdef PARALLEL
 MPI_Allreduce(zs,zr,csr->numeq_total,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
 #else
 for (i=0; i<csr->numeq_total; i++) zr[i] = zs[i];
@@ -1132,7 +1132,7 @@ fprintf(out,"END VALUES\n");
 fflush(out);
 amdel(&recv_a);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

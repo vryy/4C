@@ -1,6 +1,6 @@
 /*!---------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -29,18 +29,18 @@ void calstatserv_findcontroldof(
     INT        control_node_global,
     INT        control_dof,
     NODE     **node,
-    INT       *cdof); 
+    INT       *cdof);
 
 void calstatserv_findreldofs(
     FIELD     *actfield,
     INT       *reldisnode_ID,
     INT       *reldis_dof,
     INT        num_reldis,
-    INT       *reldof); 
+    INT       *reldof);
 
 void get_stepsize(
     INT         kstep,
-    STATIC_VAR *statvar); 
+    STATIC_VAR *statvar);
 
 
 /*----------------------------------------------------------------------*
@@ -55,7 +55,7 @@ void conpre(
     INTRA         *actintra,     /* the intra-communicator of this field */
     CALC_ACTION   *action,       /* calculation flag */
     INT            kstep,        /* the load or time step we are in */
-    INT            actsysarray,  /* number of the system matrix in 
+    INT            actsysarray,  /* number of the system matrix in
                                     actsolv->sysarray[actsysarray] to be used */
     DIST_VECTOR   *rsd,          /* dist. vector of incremental residual forces
                                     used for iteration in conequ */
@@ -74,7 +74,7 @@ void conequ(
     CALC_ACTION   *action,        /* calculation flag */
     INT            kstep,         /* the load or time step we are in */
     INT           *itnum,         /* number of corrector steps taken by this routine */
-    INT            actsysarray,   /* number of the system matrix in 
+    INT            actsysarray,   /* number of the system matrix in
                                      actsolv->sysarray[actsysarray] to be used */
     DIST_VECTOR   *rsd,           /* dist. vector of incremental residual forces used
                                      for iteration in conequ */
@@ -111,8 +111,8 @@ void increment_controlarc(
     DIST_VECTOR   *dispi,
     DIST_VECTOR   *disp,
     DOUBLE         rlnew,
-    DOUBLE         rlold, 
-    DOUBLE         stepsize,  
+    DOUBLE         rlold,
+    DOUBLE         stepsize,
     DOUBLE        *rli);
 
 void increment_controldisp(
@@ -121,20 +121,20 @@ void increment_controldisp(
     INT            actsysarray,
     INT            cdof,
     DIST_VECTOR   *rsd,
-    DIST_VECTOR   *dispi,   
+    DIST_VECTOR   *dispi,
     DOUBLE        *rli);
 
 
 /*----------------------------------------------------------------------*
   | stru_dyn_nln.c                                        m.gee 02/02    |
  *----------------------------------------------------------------------*/
-void dyn_nln_structural(void); 
+void dyn_nln_structural(void);
 
 
 /*----------------------------------------------------------------------*
   | stru_dyn_nln_expl.c                                   m.gee 05/02    |
  *----------------------------------------------------------------------*/
-void dyn_nln_stru_expl(void); 
+void dyn_nln_stru_expl(void);
 
 
 /*----------------------------------------------------------------------*
@@ -149,7 +149,7 @@ void dyn_eigen(
     INT              mass);
 
 void kefnln_struct(
-    STRUCT_DYN_CALC *dynvar, 
+    STRUCT_DYN_CALC *dynvar,
     STRUCT_DYNAMIC  *sdyn,
     FIELD           *actfield,
     SOLVAR          *actsolv,
@@ -170,7 +170,7 @@ void dyn_keff_expl(
     STRUCT_DYNAMIC  *sdyn);
 
 void pefnln_struct(
-    STRUCT_DYN_CALC *dynvar, 
+    STRUCT_DYN_CALC *dynvar,
     STRUCT_DYNAMIC  *sdyn,
     FIELD           *actfield,
     SOLVAR          *actsolv,
@@ -186,12 +186,12 @@ void dynnle(
     STRUCT_DYN_CALC *dynvar,
     STRUCT_DYNAMIC  *sdyn,
     INTRA           *actintra,
-    SOLVAR          *actsolv, 
+    SOLVAR          *actsolv,
     DIST_VECTOR     *dispi, /* converged incremental displacements */
     DIST_VECTOR     *fie1,  /* internal forces at time t-dt */
     DIST_VECTOR     *fie2,  /* internal forces at time t */
-    DIST_VECTOR     *rhs1,  /* load at time t                      */ 
-    DIST_VECTOR     *rhs2,  /* load at time t-dt                   */ 
+    DIST_VECTOR     *rhs1,  /* load at time t                      */
+    DIST_VECTOR     *rhs2,  /* load at time t-dt                   */
     DIST_VECTOR     *work0);
 
 void dyne(
@@ -214,7 +214,7 @@ void dyn_setconstants_expl(
 
 void dyn_nlnstructupd(
     FIELD           *actfield,
-    STRUCT_DYN_CALC *dynvar, 
+    STRUCT_DYN_CALC *dynvar,
     STRUCT_DYNAMIC  *sdyn,
     SOLVAR          *actsolv,
     DIST_VECTOR     *sol_old,
@@ -234,14 +234,14 @@ void dyn_nlnstruct_outhead(
 void dyn_nlnstru_outhead_expl(void);
 
 void dyn_nlnstruct_outstep(
-    STRUCT_DYN_CALC *dynvar, 
+    STRUCT_DYN_CALC *dynvar,
     STRUCT_DYNAMIC  *sdyn,
     INT              numiter,
     DOUBLE           dt);
 
 void assemble_dirich_dyn(
     ELEMENT         *actele,
-    ARRAY           *estif_global, 
+    ARRAY           *estif_global,
     ARRAY           *emass_global,
     CONTAINER       *container);
 
@@ -266,10 +266,10 @@ void dyn_eout(
     STRUCT_DYN_CALC *dynvar,
     STRUCT_DYNAMIC  *sdyn,
     INTRA           *actintra,
-    SOLVAR          *actsolv, 
+    SOLVAR          *actsolv,
     DIST_VECTOR     *dispi, /* converged incremental displacements */
-    DIST_VECTOR     *rhs1,  /* load at time t                      */ 
-    DIST_VECTOR     *rhs2,  /* load at time t-dt                   */ 
+    DIST_VECTOR     *rhs1,  /* load at time t                      */
+    DIST_VECTOR     *rhs2,  /* load at time t-dt                   */
     DIST_VECTOR     *work0);
 
 void dyn_ekin_local(

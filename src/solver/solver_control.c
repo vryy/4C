@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -17,7 +17,7 @@ Maintainer: Malte Neumann
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -28,7 +28,7 @@ extern struct _FILES  allfiles;
  | global variable *solv, vector of lenght numfld of structures SOLVAR  |
  |                                                       m.gee 11/00    |
  *----------------------------------------------------------------------*/
- struct _SOLVAR  *solv; 
+ struct _SOLVAR  *solv;
 /*----------------------------------------------------------------------*
  |  routine to control all solver calls                  m.gee 9/01     |
  *----------------------------------------------------------------------*/
@@ -43,7 +43,7 @@ void solver_control(
                       )
 {
 DOUBLE t0,t1;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solver_control");
 #endif
 
@@ -119,7 +119,7 @@ break;
 
 default:
    dserror("Unknown format typ of system matrix");
-break;   
+break;
 }
 /*----------------------------------------------------------------------*/
 t1=ds_cputime();
@@ -132,7 +132,7 @@ fflush(allfiles.out_err);
   perf_end(20);
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 

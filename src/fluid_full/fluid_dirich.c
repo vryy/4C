@@ -10,7 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
+/*!
 \addtogroup FLUID
 *//*! @{ (documentation module open)*/
 #ifdef D_FLUID
@@ -26,24 +26,24 @@ static DOUBLE fluid_usd(DOUBLE r, DOUBLE alpha);
  | general problem data                                                 |
  | global variable GENPROB genprob is defined in global_control.c       |
  *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;                     
+extern struct _GENPROB     genprob;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate dynamic variables if needed                      |
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn; 
+extern ALLDYNA      *alldyn;
 /*!----------------------------------------------------------------------
 \brief ranks and communicators
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par; 
+ extern struct _PAR   par;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -55,7 +55,7 @@ extern struct _GENPROB     genprob;
  | vector of material laws                                              |
  | defined in global_control.c
  *----------------------------------------------------------------------*/
-extern struct _MATERIAL  *mat; 
+extern struct _MATERIAL  *mat;
 /*!----------------------------------------------------------------------*
  |                                                       m.gee 02/02    |
  | number of load curves numcurve                                       |
@@ -68,7 +68,7 @@ extern INT            numcurve;
 extern struct _CURVE *curve;
 
 static FLUID_DYNAMIC *fdyn;
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief routine to initialise the dirichlet boundary conditions
 
 <pre>                                                         genk 04/02
@@ -83,14 +83,14 @@ elements are initialised:
     'actnode->sol.a.da[0][j] = initval*acttimefac' (--> output)
     'actnode->sol_increment.a.da[1][j] = initval*acttimefac'
                                  |        |         |
-                            time (n)      |         |               
-                          initial value from input  |               
+                            time (n)      |         |
+                          initial value from input  |
                                        factor from timecurve (T=0.0)
 
 </pre>
-\param *actfield FIELD         (i)  actual field (fluid)   
+\param *actfield FIELD         (i)  actual field (fluid)
 
-\return void                                            
+\return void
 
 ------------------------------------------------------------------------*/
 void fluid_initdirich(  FIELD          *actfield )
@@ -122,15 +122,15 @@ DOUBLE     uact,u10;
 
 INT counter=0;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_initdirich");
-#endif  
+#endif
 
 fdyn = alldyn[genprob.numff].fdyn;
 
 numnp_total  = actfield->dis[0].numnp;
-numele_total = actfield->dis[0].numele; 
-numdf        = fdyn->numdf; 
+numele_total = actfield->dis[0].numele;
+numdf        = fdyn->numdf;
 predof       = numdf-1;
 numveldof    = numdf-1;
 
@@ -142,21 +142,21 @@ dens  = mat[actele->mat-1].m.fluid->density;
 /*------------------------------------------ check dirichlet conditions */
 for (i=0;i<numnp_total;i++) /* loop all nodes */
 {
-   actnode  = &(actfield->dis[0].node[i]); 
-   actgnode = actnode->gnode; 
+   actnode  = &(actfield->dis[0].node[i]);
+   actgnode = actnode->gnode;
    if (actgnode->dirich==NULL)
       continue;
-   if (actgnode->dirich->dirich_type==dirich_FSI)      
+   if (actgnode->dirich->dirich_type==dirich_FSI)
       counter++;
    if (actgnode->dirich->dirich_type==dirich_none)
-   { 
-      for (j=0;j<actnode->numdf;j++) /* loop all dofs */    
+   {
+      for (j=0;j<actnode->numdf;j++) /* loop all dofs */
       {
          if (actgnode->dirich->dirich_onoff.a.iv[j]==0)
             continue;
             actcurve = actgnode->dirich->curve.a.iv[j];
 	    if(actcurve>numcurve)
-	       dserror("Load curve: actual curve > number defined curves\n");   
+	       dserror("Load curve: actual curve > number defined curves\n");
       } /* end of loop over all dofs */
 #ifdef D_FSI
       if (fdyn->freesurf==5 && actnode->xfs!=NULL)
@@ -164,10 +164,10 @@ for (i=0;i<numnp_total;i++) /* loop all nodes */
          if (actgnode->dirich->dirich_onoff.a.iv[numdf]!=0)
 	    dserror("No DBC for height function dof allowed!\n");
       }
-#endif      
+#endif
       /* transform real pressure from input to kinematic pressure ---*/
-      if (actgnode->dirich->dirich_onoff.a.iv[predof]!=0)      
-          actgnode->dirich->dirich_val.a.dv[predof] /= dens; 
+      if (actgnode->dirich->dirich_onoff.a.iv[predof]!=0)
+          actgnode->dirich->dirich_val.a.dv[predof] /= dens;
    }
 } /* end of loop over all nodes */
 
@@ -185,15 +185,15 @@ if (fdyn->init==0)
    for (actcurve=0;actcurve<numcurve;actcurve++)
    {
      dyn_facfromcurve(actcurve,T,&timefac[actcurve]) ;
-   }/* end loop over active timecurves */   
+   }/* end loop over active timecurves */
    /*--------------------- before applying DBC transform to xyz* co-sys */
    locsys_trans_sol_dirich(actfield,0,0,0,0);
-   locsys_trans_sol_dirich(actfield,0,1,1,0);   
+   locsys_trans_sol_dirich(actfield,0,1,1,0);
 /*------------------------------------------------- loop over all nodes */
    for (i=0;i<numnp_total;i++)
    {
-      actnode  = &(actfield->dis[0].node[i]); 
-      actgnode = actnode->gnode;      
+      actnode  = &(actfield->dis[0].node[i]);
+      actgnode = actnode->gnode;
       if (actgnode->dirich==NULL)
          continue;
       switch(actgnode->dirich->dirich_type)
@@ -208,7 +208,7 @@ if (fdyn->init==0)
                acttimefac = ONE;
             else
                acttimefac = timefac[actcurve];
-            initval   = actgnode->dirich->dirich_val.a.dv[j];               
+            initval   = actgnode->dirich->dirich_val.a.dv[j];
             funct_fac = actgnode->d_funct[j];
             actnode->sol_increment.a.da[1][j] = initval*acttimefac*funct_fac;
             actnode->sol.a.da[0][j] = initval*acttimefac*funct_fac;
@@ -218,16 +218,16 @@ if (fdyn->init==0)
       case dirich_FSI: /* FSI --> dirichvalues = grid velocity!!! */
 	 for (j=0;j<numveldof;j++) /* loop vel-dofs */
 	 {
-	    initval = actnode->sol_increment.a.da[4][j];  
-	    actnode->sol_increment.a.da[1][j] = initval; 
+	    initval = actnode->sol_increment.a.da[4][j];
+	    actnode->sol_increment.a.da[1][j] = initval;
 	    actnode->sol.a.da[0][j] = initval;
 	 }
-      break;      
+      break;
       case dirich_FSI_pseudo: /* FSI --> dirichvalues = grid velocity!!! */
 	 for (j=0;j<numveldof;j++) /* loop vel-dofs */
 	 {
-	    initval = actnode->sol_increment.a.da[4][j];  
-	    actnode->sol_increment.a.da[1][j] = initval; 
+	    initval = actnode->sol_increment.a.da[4][j];
+	    actnode->sol_increment.a.da[1][j] = initval;
 	    actnode->sol.a.da[0][j] = initval;
 	 }
       break;
@@ -251,17 +251,17 @@ if (fdyn->init==0)
          else
             acttimefac = timefac[actcurve];
          initval = actgnode->slipdirich->dirich_val;
-      
+
          /*------------------------ actual total length of slip BC line */
          for(j=0;j<3;j++)
             rtotalv[j]= (lastnode->x[j]+alnode->sol_mf.a.da[1][j])
                        -(firstnode->x[j]+afnode->sol_mf.a.da[1][j]);
          rtotal=sqrt(DSQR(rtotalv[0])+DSQR(rtotalv[1])+DSQR(rtotalv[2]));
-      
+
          /*---------------------------- actual position on slip BC line */
          for(j=0;j<3;j++)
             ractv[j]= (actnode->x[j]+actanode->sol_mf.a.da[1][j])
-                     -(firstnode->x[j]+afnode->sol_mf.a.da[1][j]);      
+                     -(firstnode->x[j]+afnode->sol_mf.a.da[1][j]);
          ract=sqrt(DSQR(ractv[0])+DSQR(ractv[1])+DSQR(ractv[2]));
          if (rtotal<length)
          {
@@ -281,26 +281,26 @@ if (fdyn->init==0)
          else
          {
             actnode->sol_increment.a.da[1][1]=initval*acttimefac;
-            actnode->sol_increment.a.da[1][0]=ZERO;         
+            actnode->sol_increment.a.da[1][0]=ZERO;
             actnode->sol.a.da[0][1]=uact/u10*initval*acttimefac;
             actnode->sol.a.da[0][0]=ZERO;
-         }         
+         }
       break;
-#endif      
+#endif
       default:
          dserror("dirch_type unknown!\n");
       } /* end switch */
-   } /*end loop over nodes */   
+   } /*end loop over nodes */
 
    /*------------------------------------- transform back to XYZ co-sys */
    locsys_trans_sol_dirich(actfield,0,0,0,1);
-   locsys_trans_sol_dirich(actfield,0,1,1,1);   
+   locsys_trans_sol_dirich(actfield,0,1,1,1);
 
 } /* endif fdyn->init */
 
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -311,24 +311,24 @@ return;
 \brief routine to set dirichlet boundary conditions at time <time>
 
 <pre>                                                         genk 04/02
-                                                             
+
 in this routine the dirichlet boundary conditions for fluid2 and fluid3
 elements are set at time <T=fdyn->acttime>.
 the actual dirichlet values are written to the solution history of the
 nodes:
     'actnode->sol_increment.a.da[pos][j] = initval*acttimefac'
                                   |         |         |
-                            time (n+1)      |         |               
-                          initial value from input    |               
+                            time (n+1)      |         |
+                          initial value from input    |
                                          factor from timecurve
 </pre>
-\param *actfield FIELD		(i)  actual field (fluid)   
+\param *actfield FIELD		(i)  actual field (fluid)
 \param  pos	 INT		(i)	position, where to write dbc
 
-\return void     
+\return void
 
 ------------------------------------------------------------------------*/
-void fluid_setdirich(   FIELD           *actfield, 
+void fluid_setdirich(   FIELD           *actfield,
 			INT		 pos
 	            )
 {
@@ -354,9 +354,9 @@ DOUBLE     alpha,length;
 DOUBLE     uact,u10;
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_setdirich");
-#endif 
+#endif
 
 /*----------------------------------------------------- set some values */
 fdyn = alldyn[genprob.numff].fdyn;
@@ -371,17 +371,17 @@ numveldof    = numdf-1;
 for (actcurve=0;actcurve<numcurve;actcurve++)
 {
   dyn_facfromcurve(actcurve,T,&timefac[actcurve]) ;
-} /* end loop over active timecurves */ 
+} /* end loop over active timecurves */
 
 /*------------------------ dirichlet values are applied in the xyz* co-sys
    so transform nodal values with dirichlet conditions                   */
-locsys_trans_sol_dirich(actfield,0,1,pos,0);   
+locsys_trans_sol_dirich(actfield,0,1,pos,0);
 
 /*-------------------- loop all nodes and set actual dirichlet condition */
-for (i=0;i<numnp_total;i++) 
+for (i=0;i<numnp_total;i++)
 {
-   actnode  = &(actfield->dis[0].node[i]); 
-   actgnode = actnode->gnode;      
+   actnode  = &(actfield->dis[0].node[i]);
+   actgnode = actnode->gnode;
    if (actgnode->dirich==NULL)
          continue;
    switch(actgnode->dirich->dirich_type)
@@ -396,18 +396,18 @@ for (i=0;i<numnp_total;i++)
             acttimefac = ONE;
          else
             acttimefac = timefac[actcurve];
-         initval   = actgnode->dirich->dirich_val.a.dv[j];               
+         initval   = actgnode->dirich->dirich_val.a.dv[j];
          funct_fac = actgnode->d_funct[j];
          actnode->sol_increment.a.da[pos][j] = initval*acttimefac*funct_fac;
       } /* end loop over dofs */
    break;
 #ifdef D_FSI
-   case dirich_FSI: /* dirichvalues = grid velocity!!! */     
+   case dirich_FSI: /* dirichvalues = grid velocity!!! */
       for (j=0;j<numveldof;j++)  /* loop vel-dofs */
          actnode->sol_increment.a.da[pos][j]
 	=actnode->sol_increment.a.da[4][j];
    break;
-   case dirich_FSI_pseudo: /* dirichvalues = grid velocity!!! */     
+   case dirich_FSI_pseudo: /* dirichvalues = grid velocity!!! */
       for (j=0;j<numveldof;j++)  /* loop vel-dofs */
          actnode->sol_increment.a.da[pos][j]
 	=actnode->sol_increment.a.da[4][j];
@@ -427,7 +427,7 @@ for (i=0;i<numnp_total;i++)
       alpha =actgnode->slipdirich->alpha;
       actcurve = actgnode->slipdirich->curve-1;
       /*---------------------------------------- evaluate time function */
-#if 0      
+#if 0
       if (actcurve<0)
          acttimefac = ONE;
       else
@@ -436,17 +436,17 @@ for (i=0;i<numnp_total;i++)
       initval = actgnode->slipdirich->dirich_val;
 #endif
       acttimefac=ONE;
-      initval = lastnode->sol_increment.a.da[4][1];      
+      initval = lastnode->sol_increment.a.da[4][1];
       /*--------------------------- actual total length of slip BC line */
       for(j=0;j<3;j++)
          rtotalv[j]= (lastnode->x[j]+alnode->sol_mf.a.da[1][j])
                     -(firstnode->x[j]+afnode->sol_mf.a.da[1][j]);
       rtotal=sqrt(DSQR(rtotalv[0])+DSQR(rtotalv[1])+DSQR(rtotalv[2]));
-      
+
       /*------------------------------- actual position on slip BC line */
       for(j=0;j<3;j++)
          ractv[j]= (actnode->x[j]+actanode->sol_mf.a.da[1][j])
-                  -(firstnode->x[j]+afnode->sol_mf.a.da[1][j]);      
+                  -(firstnode->x[j]+afnode->sol_mf.a.da[1][j]);
       ract=sqrt(DSQR(ractv[0])+DSQR(ractv[1])+DSQR(ractv[2]));
       if (rtotal<length)
       {
@@ -464,10 +464,10 @@ for (i=0;i<numnp_total;i++)
       else
       {
          actnode->sol_increment.a.da[pos][1]=initval*acttimefac;
-         actnode->sol_increment.a.da[pos][0]=ZERO;         
-      }   
+         actnode->sol_increment.a.da[pos][0]=ZERO;
+      }
    break;
-#endif   
+#endif
    default:
       dserror("dirich_type unknown!\n");
    } /* end switch */
@@ -475,19 +475,19 @@ for (i=0;i<numnp_total;i++)
 
 /*------------------------ dirichlet values are applied in the xyz* co-sys
    so transform back nodal values with dirichlet conditions             */
-locsys_trans_sol_dirich(actfield,0,1,pos,1);   
+locsys_trans_sol_dirich(actfield,0,1,pos,1);
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of fluid_settdirich*/
 
-/*!---------------------------------------------------------------------                                         
-\brief routine to set dirichlet boundary conditions for a parabolic velocity 
-profile modified for projection algorithm 
+/*!---------------------------------------------------------------------
+\brief routine to set dirichlet boundary conditions for a parabolic velocity
+profile modified for projection algorithm
 
 <pre>                                                         genk 04/02
                                                               basol 03/03
@@ -498,13 +498,13 @@ the actual dirichlet values are written to the solution history of the
 nodes:
     'actnode->sol_increment.a.da[3][j] = initval*acttimefac'
                                  |        |         |
-                            time (n+1)    |         |               
-                          initial value from input  |               
-                                       factor from timecurve			     
+                            time (n+1)    |         |
+                          initial value from input  |
+                                       factor from timecurve
 </pre>
-\param *actfield FIELD         (i)  actual field (fluid)   
+\param *actfield FIELD         (i)  actual field (fluid)
 
-\return void                                                                             
+\return void
 
 ------------------------------------------------------------------------*/
 void fluid_setdirich_parabolic(FIELD  *actfield)
@@ -522,13 +522,13 @@ DOUBLE     initval;	            /* intial dirichlet value	       */
 GNODE     *actgnode;	             /* actual GNODE		        */
 NODE      *actnode;	             /* actual NODE		        */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_setdirich_parabolic");
-#endif 
+#endif
 /*======================================================================*
 * REMARK: Here the inflow profile is assumed to be set at point x=-0.5
 * also the profile is formulated according to the parabolic formula below
-* -(TWO/L)*(TWO/L)*actnode->x[1]*actnode->x[1]+ONE; 
+* -(TWO/L)*(TWO/L)*actnode->x[1]*actnode->x[1]+ONE;
 * a better way of doing this would be implementing the velocity profile into
 * preprocessor code "GID"
 *----------------------------------------------------- set some values */
@@ -543,20 +543,20 @@ numdf        = fdyn->numdf;
 for (actcurve=0;actcurve<numcurve;actcurve++)
 {
   dyn_facfromcurve(actcurve,T,&timefac[actcurve]) ;
-} /* end loop over active timecurves */ 
+} /* end loop over active timecurves */
 
 /*-------------------- loop all nodes and set actual dirichlet condition */
-for (i=0;i<numnp_total;i++) 
+for (i=0;i<numnp_total;i++)
 {
-   actnode  = &(actfield->dis[0].node[i]); 
+   actnode  = &(actfield->dis[0].node[i]);
    dsassert(actnode->locsysId==0,"locsys not implemented yet!\n");
-   actgnode = actnode->gnode;      
+   actgnode = actnode->gnode;
    if (actgnode->dirich==NULL) continue;
    for (j=0;j<numdf;j++) /* loop dofs */
    {
       if (actgnode->dirich->dirich_onoff.a.iv[j]==0) continue;
       actcurve = actgnode->dirich->curve.a.iv[j]-1;
-      if (actcurve<0) 
+      if (actcurve<0)
       {
          acttimefac = ONE;
       }else{
@@ -565,32 +565,32 @@ for (i=0;i<numnp_total;i++)
       if (actnode->x[0]==-0.5)
       {
          if (j==0) /*--the parabolic velocity profile is only for the x-dof--*/
-	 { 
+	 {
             /*--parabolic profile is formulated as below---*/
-            initval  = -(TWO/L)*(TWO/L)*actnode->x[1]*actnode->x[1]+ONE;               
+            initval  = -(TWO/L)*(TWO/L)*actnode->x[1]*actnode->x[1]+ONE;
             /*--it is multiplied with a timefac------------*/
 	    actnode->sol_increment.a.da[3][j] = initval*acttimefac;
          }else{
-	    initval  = actgnode->dirich->dirich_val.a.dv[j];               
+	    initval  = actgnode->dirich->dirich_val.a.dv[j];
             actnode->sol_increment.a.da[3][j] = initval*acttimefac;
 	 }/*end of if (j==0)*/
       }else{
-         initval  = actgnode->dirich->dirich_val.a.dv[j];               
+         initval  = actgnode->dirich->dirich_val.a.dv[j];
          actnode->sol_increment.a.da[3][j] = initval*acttimefac;
       }/*end of (actnode->x[0]==-0.5)*/
    } /* end loop over dofs */
 } /*end loop over nodes */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of fluid_settdirich*/
 
-/*!---------------------------------------------------------------------                                         
-\brief routine to set dirichlet boundary conditions for the specific problem 
+/*!---------------------------------------------------------------------
+\brief routine to set dirichlet boundary conditions for the specific problem
 "flow around a cylinder"
 
 <pre>                                                         basol 05/03
@@ -601,13 +601,13 @@ the actual dirichlet values are written to the solution history of the
 nodes:
     'actnode->sol_increment.a.da[3][j] = initval*acttimefac'
                                  |        |         |
-                            time (n+1)    |         |               
-                          initial value from input  |               
-                                       factor from timecurve			     
+                            time (n+1)    |         |
+                          initial value from input  |
+                                       factor from timecurve
 </pre>
-\param *actfield FIELD         (i)  actual field (fluid)   
+\param *actfield FIELD         (i)  actual field (fluid)
 
-\return void                                                                             
+\return void
 
 ------------------------------------------------------------------------*/
 void fluid_setdirich_cyl(FIELD  *actfield)
@@ -626,15 +626,15 @@ DOUBLE   H=0.41;                     /* height of the channel           */
 GNODE     *actgnode;	              /* actual GNODE		         */
 NODE      *actnode;	              /* actual NODE		         */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_setdirich_cyl");
-#endif 
+#endif
 /*======================================================================*
 * REMARK: Here the inflow profile is assumed to be set at point x=0.0
 * also the profile is formulated according to the parabolic formula below
-* FOUR*Um*actnode->x[1]*(H-actnode->x[1])/(H*H); 
+* FOUR*Um*actnode->x[1]*(H-actnode->x[1])/(H*H);
 * see the DFG Benchmark paper for the flow around a cylinder for the proper
-* description of the problem 
+* description of the problem
 * a better way of doing this would be implementing the velocity profile into
 * preprocessor code "GID"
 *----------------------------------------------------- set some values */
@@ -648,14 +648,14 @@ numdf        = fdyn->numdf;
 for (actcurve=0;actcurve<numcurve;actcurve++)
 {
   dyn_facfromcurve(actcurve,T,&timefac[actcurve]) ;
-} /* end loop over active timecurves */ 
+} /* end loop over active timecurves */
 
 /*-------------------- loop all nodes and set actual dirichlet condition */
-for (i=0;i<numnp_total;i++) 
+for (i=0;i<numnp_total;i++)
 {
-   actnode  = &(actfield->dis[0].node[i]); 
+   actnode  = &(actfield->dis[0].node[i]);
    dsassert(actnode->locsysId==0,"locsys not implemented yet!\n");
-   actgnode = actnode->gnode;      
+   actgnode = actnode->gnode;
    if (actgnode->dirich==NULL)
          continue;
    for (j=0;j<numdf;j++) /* loop dofs */
@@ -670,24 +670,24 @@ for (i=0;i<numnp_total;i++)
       if (actnode->x[0]==0.0)
       {
          if (j==0)/*--the parabolic velocity profile is only for the x-dof--*/
-	 { 
+	 {
             /*--parabolic profile is formulated as below---*/
-	    initval  = FOUR*Um*actnode->x[1]*(H-actnode->x[1])/(H*H);               
+	    initval  = FOUR*Um*actnode->x[1]*(H-actnode->x[1])/(H*H);
             /*--it is multiplied with a timefac------------*/
 	    actnode->sol_increment.a.da[3][j] = initval*acttimefac;
          }else{
-	    initval  = actgnode->dirich->dirich_val.a.dv[j];               
+	    initval  = actgnode->dirich->dirich_val.a.dv[j];
             actnode->sol_increment.a.da[3][j] = initval*acttimefac;
 	 }/*end of if (j==0)*/
       }else{
-         initval  = actgnode->dirich->dirich_val.a.dv[j];               
+         initval  = actgnode->dirich->dirich_val.a.dv[j];
          actnode->sol_increment.a.da[3][j] = initval*acttimefac;
       }/*end of if (actnode->x[0]==0.0)*/
    } /* end loop over dofs */
 } /*end loop over nodes */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -706,20 +706,20 @@ parameter via steepest descent method.
 
 the actual dirichlet values are written to the solution history of the
 nodes:
-    'actnode->sol_increment.a.da[7][j] = 0.0 
-                                 |          | 
-                fluid sol. for RelaxParam   | 
+    'actnode->sol_increment.a.da[7][j] = 0.0
+                                 |          |
+                fluid sol. for RelaxParam   |
 					at Dirichlet boundaries
   AND:
     'actnode->sol_increment.a.da[7][j] = actnode->sol_increment.a.da[4][j]
-                                 |                  | 
-                fluid sol. for RelaxParam           | 
+                                 |                  |
+                fluid sol. for RelaxParam           |
 					at fsi coupling interface,
 					      grid velocity
 </pre>
-\param *actfield FIELD         (i)  actual field (fluid)   
+\param *actfield FIELD         (i)  actual field (fluid)
 
-\return void     
+\return void
 
 ------------------------------------------------------------------------*/
 void fluid_setdirich_sd( FIELD *actfield )
@@ -732,9 +732,9 @@ INT        numveldof;
 GNODE     *actgnode;	             /* actual GNODE		        */
 NODE      *actnode;                  /* actual NODE                     */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_setdirich_sd");
-#endif 
+#endif
 
 /*----------------------------------------------------- set some values */
 fdyn = alldyn[genprob.numff].fdyn;
@@ -745,11 +745,11 @@ numdf        = fdyn->numdf;
 numveldof    = numdf-1;
 
 /*-------------------- loop all nodes and set actual dirichlet condition */
-for (i=0;i<numnp_total;i++) 
+for (i=0;i<numnp_total;i++)
 {
-   actnode  = &(actfield->dis[0].node[i]); 
+   actnode  = &(actfield->dis[0].node[i]);
    dsassert(actnode->locsysId==0,"locsys not implemented yet!\n");
-   actgnode = actnode->gnode;      
+   actgnode = actnode->gnode;
    if (actgnode->dirich==NULL)
          continue;
    switch(actgnode->dirich->dirich_type)
@@ -760,10 +760,10 @@ for (i=0;i<numnp_total;i++)
          if (actgnode->dirich->dirich_onoff.a.iv[j]==0)
             continue;
          actnode->sol_increment.a.da[7][j] = 0.0;
-         actnode->sol_increment.a.da[6][j] = 0.0;	 	
+         actnode->sol_increment.a.da[6][j] = 0.0;
       } /* end loop over dofs */
    break;
-   case dirich_FSI: /* dirichvalues = grid velocity!!! */     
+   case dirich_FSI: /* dirichvalues = grid velocity!!! */
       for (j=0;j<numveldof;j++)  /* loop vel-dofs */
          actnode->sol_increment.a.da[7][j]
 	=actnode->sol_increment.a.da[4][j];
@@ -774,7 +774,7 @@ for (i=0;i<numnp_total;i++)
 } /*end loop over nodes */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -790,9 +790,9 @@ return;
 <pre>                                                             cf 09/03
 
 in this routine the dirichlet boundary conditions for fluid2 and fluid3
-elements are set for the fluid acceleration. These conditions depend 
-upon the dbc for the velocity set in the input file according to the 
-time stepping sceme. 
+elements are set for the fluid acceleration. These conditions depend
+upon the dbc for the velocity set in the input file according to the
+time stepping sceme.
 The actual implementation serves the generalised-alpha scheme.
 
 sol_increment[pos_to][i] = fac1 * sol_increment[pos_from1][i]
@@ -801,7 +801,7 @@ sol_increment[pos_to][i] = fac1 * sol_increment[pos_from1][i]
 
 
 </pre>
-\param *actfield	FIELD		(i)	actual field (fluid)   
+\param *actfield	FIELD		(i)	actual field (fluid)
 \param  pos_to		INT		(i)	pos in sol_increment to write to
 \param  pos1_from	INT		(i)	1st pos to read from
 \param  pos2_from	INT		(i)	2nd pos to read from
@@ -810,11 +810,11 @@ sol_increment[pos_to][i] = fac1 * sol_increment[pos_from1][i]
 \param	fac2		DOUBLE		(i)	factor of value at pos2_from
 \param	fac3		DOUBLE		(i)	factor of value at pos3_from
 
-\return void     
+\return void
 
 ------------------------------------------------------------------------*/
 void fluid_setdirich_acc(
-                         FIELD		*actfield, 
+                         FIELD		*actfield,
 			 INT		 pos_to,
 			 INT		 pos1_from,
 			 INT		 pos2_from,
@@ -832,9 +832,9 @@ INT        numveldof;
 GNODE     *actgnode;	             /* actual GNODE		        */
 NODE      *actnode;                  /* actual NODE                     */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_setdirich_acc");
-#endif 
+#endif
 
 /*----------------------------------------------------- set some values */
 fdyn = alldyn[genprob.numff].fdyn;
@@ -845,11 +845,11 @@ numdf        = fdyn->numdf;
 numveldof    = numdf-1;
 
 /*-------------------- loop all nodes and set actual dirichlet condition */
-for (i=0;i<numnp_total;i++) 
+for (i=0;i<numnp_total;i++)
 {
-   actnode  = &(actfield->dis[0].node[i]); 
+   actnode  = &(actfield->dis[0].node[i]);
    dsassert(actnode->locsysId==0,"locsys not implemented yet!\n");
-   actgnode = actnode->gnode;      
+   actgnode = actnode->gnode;
    if (actgnode->dirich==NULL)
          continue;
    switch(actgnode->dirich->dirich_type)
@@ -859,13 +859,13 @@ for (i=0;i<numnp_total;i++)
       {
          if (actgnode->dirich->dirich_onoff.a.iv[j]==0)
             continue;
-	       actnode->sol_increment.a.da[pos_to][j] 
+	       actnode->sol_increment.a.da[pos_to][j]
 	       = fac1 * actnode->sol_increment.a.da[pos1_from][j]
                + fac2 * actnode->sol_increment.a.da[pos2_from][j]
                + fac3 * actnode->sol_increment.a.da[pos3_from][j];
       } /* end loop over dofs */
    break;
-   case dirich_FSI: /* dirichvalues = grid velocity!!! */     
+   case dirich_FSI: /* dirichvalues = grid velocity!!! */
       for (j=0;j<numveldof;j++)  /* loop vel-dofs */
 	 dserror("generalised alpha with FSI not yet implemented");
    break;
@@ -875,7 +875,7 @@ for (i=0;i<numnp_total;i++)
 } /*end loop over nodes */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -896,51 +896,51 @@ the element load vector 'dforce' is calculated by eveluating
 </pre>
 \code
       dforces[i] -= estif[i][j] * dirich[j];
-\endcode			     
+\endcode
 
-\param  *actele    ELEMENT   (i)   actual element	  
+\param  *actele    ELEMENT   (i)   actual element
 \param  *dforces   DOUBLE    (o)   dirichlet force vector
 \param **estif     DOUBLE    (i)   element stiffness matrix
 \param  *hasdirich INT       (o)   flag if s.th. was written to dforces
 \param   readfrom  INT       (i)   position, where to read dbc from
 
-\return void                                                                             
+\return void
 ------------------------------------------------------------------------*/
 void fluid_caldirich(
-                        ELEMENT         *actele,  
-		        DOUBLE          *dforces, 
-                        DOUBLE         **estif,   
+                        ELEMENT         *actele,
+		        DOUBLE          *dforces,
+                        DOUBLE         **estif,
 		        INT             *hasdirich,
 			INT		 readfrom
-                     )     
+                     )
 {
 
 INT         i,j;
 INT         ilocsys;
 INT         nrow;
 INT         numdf;                      /* number of fluid dofs         */
-INT         nd=0;                      
+INT         nd=0;
 DOUBLE      dirich[MAXDOFPERELE];       /* dirichlet values of act. ele */
-INT         dirich_onoff[MAXDOFPERELE]; /* dirichlet flags of act. ele  */ 
+INT         dirich_onoff[MAXDOFPERELE]; /* dirichlet flags of act. ele  */
 DOUBLE      val[MAXDOFPERNODE];
 GNODE      *actgnode;	                /* actual GNODE                 */
 NODE       *actnode;	                /* actual NODE                  */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_caldirich");
-#endif  
+#endif
 
 /*------------------------- check if there are any dirichlet conditions *
                                           for the nodes of this element */
 for (i=0; i<actele->numnp; i++)
 {
-   actgnode = actele->node[i]->gnode;   
-   if (actgnode->dirich==NULL) 
+   actgnode = actele->node[i]->gnode;
+   if (actgnode->dirich==NULL)
       continue;
    else
       *hasdirich=1;
       break;
-} /* end loop over nodes */					  
+} /* end loop over nodes */
 
 if (*hasdirich==0) /* --> no nodes with DBC for this element */
    goto end;
@@ -961,25 +961,25 @@ for (i=0; i<nd; i++)
 nrow=0;
 for (i=0; i<actele->numnp; i++) /* loop nodes */
 {
-   actnode  = actele->node[i];   
+   actnode  = actele->node[i];
    numdf    = actnode->numdf;
    actgnode = actnode->gnode;
-   if (actgnode->dirich==NULL) 
+   if (actgnode->dirich==NULL)
    {
-      nrow+=numdf;  
+      nrow+=numdf;
       continue;
    }
    ilocsys=actnode->locsysId-1;
    if (ilocsys>=0) /* local co-sys */
    {
       /*--------------------- transform values at node from XYZ to xyz* */
-      for (j=0;j<numdf;j++) 
+      for (j=0;j<numdf;j++)
          val[j]=actnode->sol_increment.a.da[readfrom][j];
       locsys_trans_nodval(actele,&(val[0]),numdf,ilocsys,0);
-      for (j=0;j<numdf;j++) 
+      for (j=0;j<numdf;j++)
       {
          dirich_onoff[nrow+j] = actgnode->dirich->dirich_onoff.a.iv[j];
-         dirich[nrow+j] = val[j];         
+         dirich[nrow+j] = val[j];
       }
    }
    else
@@ -1010,14 +1010,14 @@ for (i=0; i<nd; i++)
 
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
-} /* end of fluid_caldirich*/ 
+} /* end of fluid_caldirich*/
 
-/*!---------------------------------------------------------------------                                         
-\brief routine to calculate the element dirichlet load vector for the 
+/*!---------------------------------------------------------------------
+\brief routine to calculate the element dirichlet load vector for the
 projection method (constant velocity profile)
 
 <pre>                                                     basol 11/02
@@ -1029,9 +1029,9 @@ the element load vector 'dforce' is calculated by eveluating
 </pre>
 \code
       dforces[i] -= (emass[i][j]+dt*estif[i][j]) * dirich[j];
-\endcode			     
+\endcode
 
-\param  *actele    ELEMENT   (i)   actual element	  
+\param  *actele    ELEMENT   (i)   actual element
 \param  *dforces   DOUBLE    (o)   dirichlet force vector
 \param **estif     DOUBLE    (i)   element stiffness matrix
 \param **emass     DOUBLE    (i)   element mass matrix
@@ -1039,42 +1039,42 @@ the element load vector 'dforce' is calculated by eveluating
 \param  theta      DOUBLE    (i)   variable for the time integration of viscousity matrix
                                    for the implicitly treated K, theta=1.0
 \param  *hasdirich INT       (o)   flag if s.th. was written to dforces
-\return void                                                                             
+\return void
 ------------------------------------------------------------------------*/
 void fluid_pm_caldirich(
-                     ELEMENT   *actele,  
-		     DOUBLE   *dforces, 
+                     ELEMENT   *actele,
+		     DOUBLE   *dforces,
                      DOUBLE   **estif,
 		     DOUBLE   **emass,
-		     DOUBLE   dt,   
+		     DOUBLE   dt,
 		     DOUBLE   theta,
 		     INT       *hasdirich
-		    )     
+		    )
 {
 
 INT         i,j;
 INT         numdf;                      /* number of fluid dofs         */
-INT         nd=0;                      
+INT         nd=0;
 DOUBLE    dirich[MAXDOFPERELE];      /* dirichlet values of act. ele */
-INT         dirich_onoff[MAXDOFPERELE];  /* dirichlet flags of act. ele  */ 
+INT         dirich_onoff[MAXDOFPERELE];  /* dirichlet flags of act. ele  */
 GNODE      *actgnode;	                /* actual GNODE                 */
 NODE       *actnode;	                /* actual NODE                  */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_pm_caldirich");
-#endif  
+#endif
 
 /*------------------------- check if there are any dirichlet conditions *
                                           for the nodes of this element */
 for (i=0; i<actele->numnp; i++)
 {
-   actgnode = actele->node[i]->gnode;   
-   if (actgnode->dirich==NULL) 
+   actgnode = actele->node[i]->gnode;
+   if (actgnode->dirich==NULL)
       continue;
    else
       *hasdirich=1;
    break;
-} /* end loop over nodes */					  
+} /* end loop over nodes */
 
 if (*hasdirich==0) /* --> no nodes with DBC for this element */
    goto end;
@@ -1095,7 +1095,7 @@ for (i=0; i<nd; i++)
 for (i=0; i<actele->numnp; i++) /* loop nodes */
 {
    numdf    = actele->node[i]->numdf;
-   actnode  = actele->node[i];   
+   actnode  = actele->node[i];
    actgnode = actnode->gnode;
    for (j=0; j<numdf; j++) /* loop dofs */
    {
@@ -1121,14 +1121,14 @@ for (i=0; i<nd; i++)
 
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
-} /* end of fluid_caldirich*/ 
+} /* end of fluid_caldirich*/
 
-/*!---------------------------------------------------------------------                                         
-\brief routine to calculate the element dirichlet load vector for the 
+/*!---------------------------------------------------------------------
+\brief routine to calculate the element dirichlet load vector for the
        projection method for a parabolic velocity profile
 
 <pre>                                                     basol 11/02
@@ -1140,9 +1140,9 @@ the element load vector 'dforce' is calculated by eveluating
 </pre>
 \code
       dforces[i] -= (emass[i][j]+dt*estif[i][j]) * dirich[j];
-\endcode			     
+\endcode
 
-\param  *actele    ELEMENT   (i)   actual element	  
+\param  *actele    ELEMENT   (i)   actual element
 \param  *dforces   DOUBLE    (o)   dirichlet force vector
 \param **estif     DOUBLE    (i)   element stiffness matrix
 \param **emass     DOUBLE    (i)   element mass matrix
@@ -1150,48 +1150,48 @@ the element load vector 'dforce' is calculated by eveluating
 \param  theta      DOUBLE    (i)   variable for the time integration of viscousity matrix
                                    for the implicitly treated K, theta=1.0
 \param  *hasdirich INT       (o)   flag if s.th. was written to dforces
-\return void                                                                             
+\return void
 ------------------------------------------------------------------------*/
 void fluid_pm_caldirich_parabolic(
-                     ELEMENT   *actele,  
-		     DOUBLE   *dforces, 
+                     ELEMENT   *actele,
+		     DOUBLE   *dforces,
                      DOUBLE   **estif,
 		     DOUBLE   **emass,
-		     DOUBLE   dt,   
+		     DOUBLE   dt,
                      DOUBLE   theta,
 		     INT       *hasdirich
-		    )     
+		    )
 {
 
 INT         i,j;
 INT         numdf;                          /* number of fluid dofs         */
-INT         nd=0;                      
+INT         nd=0;
 DOUBLE    dirich[MAXDOFPERELE];           /* dirichlet values of act. ele */
-INT         dirich_onoff[MAXDOFPERELE];    /* dirichlet flags of act. ele  */ 
+INT         dirich_onoff[MAXDOFPERELE];    /* dirichlet flags of act. ele  */
 GNODE      *actgnode;	                  /* actual GNODE                 */
 NODE       *actnode;	                  /* actual NODE                  */
-DOUBLE     tol=1.0E-6;				
+DOUBLE     tol=1.0E-6;
 DOUBLE     y_coor;
 DOUBLE     L=ONE;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_pm_caldirich_parabolic");
-#endif  
+#endif
 /*======================================================================*
 * REMARK: the profile is formulated according to the parabolic formula below
-* -(TWO/L)*(TWO/L)*y_coor*y_coor+ONE; 
-* if the parabolic input profile is implemented into the preprocessor "GID" 
+* -(TWO/L)*(TWO/L)*y_coor*y_coor+ONE;
+* if the parabolic input profile is implemented into the preprocessor "GID"
 * one doesn't need any further subroutines then "fluid_caldirich"
 *------------------------- check if there are any dirichlet conditions *
                                           for the nodes of this element */
 for (i=0; i<actele->numnp; i++)
 {
-   actgnode = actele->node[i]->gnode;   
-   if (actgnode->dirich==NULL) 
+   actgnode = actele->node[i]->gnode;
+   if (actgnode->dirich==NULL)
       continue;
    else
       *hasdirich=1;
    break;
-} /* end loop over nodes */					  
+} /* end loop over nodes */
 
 if (*hasdirich==0) /* --> no nodes with DBC for this element */
    goto end;
@@ -1213,7 +1213,7 @@ for (i=0; i<nd; i++)
 for (i=0; i<actele->numnp; i++) /* loop nodes */
 {
    numdf    = actele->node[i]->numdf;
-   actnode  = actele->node[i];   
+   actnode  = actele->node[i];
    actgnode = actnode->gnode;
    for (j=0; j<numdf; j++) /* loop dofs */
    {
@@ -1223,12 +1223,12 @@ for (i=0; i<actele->numnp; i++) /* loop nodes */
       {
          dirich[i*numdf+j] = ZERO;
       }else{
-          /*--the parabolic equation is formulated---*/ 
+          /*--the parabolic equation is formulated---*/
 	  /*--according to the y-coordinate----------*/
           y_coor = actnode->x[1];
 	  /*--parabolic value of the velocity--------*/
-	  dirich[i*numdf+j] = -(TWO/L)*(TWO/L)*y_coor*y_coor+ONE;  
-      }/* end of if (actgnode->dirich->dirich_val.a.dv[j] < tol)*/   
+	  dirich[i*numdf+j] = -(TWO/L)*(TWO/L)*y_coor*y_coor+ONE;
+      }/* end of if (actgnode->dirich->dirich_val.a.dv[j] < tol)*/
    } /* end loop over dofs */
 } /* end loop over nodes */
 /*----------------------------------------- loop rows of element matrix */
@@ -1249,14 +1249,14 @@ for (i=0; i<nd; i++)
 
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
-} /* end of fluid_pm_caldirich_parabolic*/ 
+} /* end of fluid_pm_caldirich_parabolic*/
 
-/*!---------------------------------------------------------------------                                         
-\brief routine to calculate the element dirichlet load vector for the 
+/*!---------------------------------------------------------------------
+\brief routine to calculate the element dirichlet load vector for the
        projection method for a parabolic velocity profile & for the specific
        problem "flow around a cylinder"
 
@@ -1269,9 +1269,9 @@ the element load vector 'dforce' is calculated by eveluating
 </pre>
 \code
       dforces[i] -= (emass[i][j]+dt*estif[i][j]) * dirich[j];
-\endcode			     
+\endcode
 
-\param  *actele    ELEMENT   (i)   actual element	  
+\param  *actele    ELEMENT   (i)   actual element
 \param  *dforces   DOUBLE    (o)   dirichlet force vector
 \param **estif     DOUBLE    (i)   element stiffness matrix
 \param **emass     DOUBLE    (i)   element mass matrix
@@ -1279,24 +1279,24 @@ the element load vector 'dforce' is calculated by eveluating
 \param  theta      DOUBLE    (i)   variable for the time integration of viscousity matrix
                                    for the implicitly treated K, theta=1.0
 \param  *hasdirich INT       (o)   flag if s.th. was written to dforces
-\return void                                                                             
+\return void
 *----------------------------------------------------------------------*/
 void fluid_pm_caldirich_cyl(
-                     ELEMENT   *actele,  
-		     DOUBLE   *dforces, 
+                     ELEMENT   *actele,
+		     DOUBLE   *dforces,
                      DOUBLE   **estif,
 		     DOUBLE   **emass,
-		     DOUBLE   dt,   
+		     DOUBLE   dt,
                      DOUBLE   theta,
 		     INT       *hasdirich
-		    )     
+		    )
 {
 
 INT         i,j;
 INT         numdf;                        /* number of fluid dofs         */
-INT         nd=0;                      
+INT         nd=0;
 DOUBLE    dirich[MAXDOFPERELE];         /* dirichlet values of act. ele */
-INT         dirich_onoff[MAXDOFPERELE];  /* dirichlet flags of act. ele  */ 
+INT         dirich_onoff[MAXDOFPERELE];  /* dirichlet flags of act. ele  */
 GNODE      *actgnode;	                /* actual GNODE                 */
 NODE       *actnode;	                /* actual NODE                  */
 DOUBLE     tol=1.0E-6;
@@ -1306,26 +1306,26 @@ DOUBLE     tol=1.0E-6;
 DOUBLE   Um=1.5;                       /* mean velocity                */
 DOUBLE   H=0.41;                       /* height of the channel        */
 /*===============================================================*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_pm_caldirich_cyl");
-#endif  
+#endif
 
 /*======================================================================*
 * REMARK: the profile is formulated according to the parabolic formula below
 * FOUR*Um*actnode->x[1]*(H-actnode->x[1])/(H*H);
-* if the parabolic input profile is implemented into the preprocessor "GID" 
+* if the parabolic input profile is implemented into the preprocessor "GID"
 * one doesn't need any further subroutines then "fluid_caldirich"
-*------------------------- check if there are any dirichlet conditions--*/ 
+*------------------------- check if there are any dirichlet conditions--*/
 /*------------------------- for the nodes of this element----------------*/
 for (i=0; i<actele->numnp; i++)
 {
-   actgnode = actele->node[i]->gnode;   
-   if (actgnode->dirich==NULL) 
+   actgnode = actele->node[i]->gnode;
+   if (actgnode->dirich==NULL)
       continue;
    else
       *hasdirich=1;
    break;
-} /* end loop over nodes */					  
+} /* end loop over nodes */
 
 if (*hasdirich==0) /* --> no nodes with DBC for this element */
    goto end;
@@ -1346,7 +1346,7 @@ for (i=0; i<nd; i++)
 for (i=0; i<actele->numnp; i++) /* loop nodes */
 {
    numdf    = actele->node[i]->numdf;
-   actnode  = actele->node[i];   
+   actnode  = actele->node[i];
    actgnode = actnode->gnode;
    for (j=0; j<numdf; j++) /* loop dofs */
    {
@@ -1357,8 +1357,8 @@ for (i=0; i<actele->numnp; i++) /* loop nodes */
          dirich[i*numdf+j] = ZERO;
       }else{
          /*--parabolic value of the velocity-----------------*/
-         dirich[i*numdf+j] = FOUR*Um*actnode->x[1]*(H-actnode->x[1])/(H*H);  
-      }/*end of if (actgnode->dirich->dirich_val.a.dv[j] < tol)*/   
+         dirich[i*numdf+j] = FOUR*Um*actnode->x[1]*(H-actnode->x[1])/(H*H);
+      }/*end of if (actgnode->dirich->dirich_val.a.dv[j] < tol)*/
    } /* end loop over dofs */
 } /* end loop over nodes */
 /*----------------------------------------- loop rows of element matrix */
@@ -1379,25 +1379,25 @@ for (i=0; i<nd; i++)
 
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
-} /* end of fluid_pm_caldirich_parabolic*/ 
+} /* end of fluid_pm_caldirich_parabolic*/
 /*----------------------------------------------------------------------*
  | function for slip BC                                                 |
  *----------------------------------------------------------------------*/
 #ifdef D_FSI
-static DOUBLE fluid_usd(DOUBLE r, DOUBLE alpha) 
+static DOUBLE fluid_usd(DOUBLE r, DOUBLE alpha)
 {
 DOUBLE twoa;
 DOUBLE rpi;
 DOUBLE ur;
 DOUBLE fac1,fac2,fac3,fac4;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_usd");
-#endif  
+#endif
 
 twoa=TWO*alpha;
 rpi = pow(r,PI/twoa);
@@ -1413,7 +1413,7 @@ fac4=ONE/(rpi+ONE);
 ur=fac1*(fac2/fac3+fac4);
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return(ur);

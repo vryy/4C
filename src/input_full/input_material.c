@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -22,7 +22,7 @@ extern struct _GENPROB     genprob;
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -41,11 +41,11 @@ void inp_material()
 {
 INT  ierr, ierralloc, int_dummy;
 INT  i, j, k, ncm, num_klay, num_mlay;
-struct    _KINLAY *actlay;           /*actual kinematic layer -> shell9 */ 
+struct    _KINLAY *actlay;           /*actual kinematic layer -> shell9 */
 DOUBLE    klay_sum;                  /*total hight or shell9*/
 DOUBLE    mlay_sum;                  /*hight of a kinematic layer*/
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inp_material");
 #endif
 /*----------------------------------------------------------------------*/
@@ -205,9 +205,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("NUE"  ,&(mat[i].m.pl_mises->possionratio)  ,&ierr);
       frdouble("ALFAT",&(mat[i].m.pl_mises->ALFAT)         ,&ierr);
       frdouble("Sigy" ,&(mat[i].m.pl_mises->Sigy)          ,&ierr);
-      mat[i].m.pl_mises->Hard = 0.; 
-      mat[i].m.pl_mises->GF   = 0.; 
-      mat[i].m.pl_mises->betah= 1.; 
+      mat[i].m.pl_mises->Hard = 0.;
+      mat[i].m.pl_mises->GF   = 0.;
+      mat[i].m.pl_mises->betah= 1.;
       frdouble("Hard" ,&(mat[i].m.pl_mises->Hard)          ,&ierr);
       frdouble("GF"   ,&(mat[i].m.pl_mises->GF)            ,&ierr);
       frdouble("BETAH",&(mat[i].m.pl_mises->betah)         ,&ierr);
@@ -221,9 +221,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("NUE"  ,&(mat[i].m.pl_mises->possionratio)  ,&ierr);
       frdouble("ALFAT",&(mat[i].m.pl_mises->ALFAT)         ,&ierr);
       frdouble("Sigy" ,&(mat[i].m.pl_mises->Sigy)          ,&ierr);
-      mat[i].m.pl_mises->Hard = 0.; 
-      mat[i].m.pl_mises->GF   = 0.; 
-      mat[i].m.pl_mises->betah= 1.; 
+      mat[i].m.pl_mises->Hard = 0.;
+      mat[i].m.pl_mises->GF   = 0.;
+      mat[i].m.pl_mises->betah= 1.;
       frdouble("Hard" ,&(mat[i].m.pl_mises->Hard)          ,&ierr);
       frdouble("GF"   ,&(mat[i].m.pl_mises->GF)            ,&ierr);
       frdouble("BETAH",&(mat[i].m.pl_mises->betah)         ,&ierr);
@@ -253,8 +253,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("NUE"  ,&(mat[i].m.pl_foam->possionratio)  ,&ierr);
       frdouble("ALFAT",&(mat[i].m.pl_foam->ALFAT)         ,&ierr);
       frdouble("Sigy" ,&(mat[i].m.pl_foam->Sigy)          ,&ierr);
-      mat[i].m.pl_foam->Hard = 0.; 
-      mat[i].m.pl_foam->GF   = 0.; 
+      mat[i].m.pl_foam->Hard = 0.;
+      mat[i].m.pl_foam->GF   = 0.;
       frdouble("Hard" ,&(mat[i].m.pl_foam->Hard)          ,&ierr);
       frdouble("GF"   ,&(mat[i].m.pl_foam->GF)            ,&ierr);
    }
@@ -268,9 +268,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("ALFAT",&(mat[i].m.pl_dp->ALFAT)         ,&ierr);
       frdouble("Sigy" ,&(mat[i].m.pl_dp->Sigy)          ,&ierr);
       frdouble("PHI"  ,&(mat[i].m.pl_dp->PHI)           ,&ierr);
-      mat[i].m.pl_dp->Hard = 0.; 
-      mat[i].m.pl_dp->GF   = 0.; 
-      mat[i].m.pl_dp->betah= 1.; 
+      mat[i].m.pl_dp->Hard = 0.;
+      mat[i].m.pl_dp->GF   = 0.;
+      mat[i].m.pl_dp->betah= 1.;
       frdouble("Hard" ,&(mat[i].m.pl_dp->Hard)          ,&ierr);
       frdouble("GF"   ,&(mat[i].m.pl_dp->GF)            ,&ierr);
       frdouble("BETAH",&(mat[i].m.pl_dp->betah)         ,&ierr);
@@ -283,8 +283,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       /* initialize */
       mat[i].m.pl_epc->gamma1 = 3.;
       mat[i].m.pl_epc->gamma2 = 6./5.;
-      
-      
+
+
       frdouble("DENS"    ,&(mat[i].m.pl_epc->dens        )        ,&ierr);
       /* concrete */
       frdouble("YOUNG"   ,&(mat[i].m.pl_epc->youngs      )        ,&ierr);
@@ -298,7 +298,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("GT"      ,&(mat[i].m.pl_epc->gt          )        ,&ierr);
       frdouble("GC"      ,&(mat[i].m.pl_epc->gc          )        ,&ierr);
       frdouble("GAMMA1"  ,&(mat[i].m.pl_epc->gamma1      )        ,&ierr);
-      if(mat[i].m.pl_epc->gamma1<1.)mat[i].m.pl_epc->gamma1=3.; 
+      if(mat[i].m.pl_epc->gamma1<1.)mat[i].m.pl_epc->gamma1=3.;
       frdouble("GAMMA2"  ,&(mat[i].m.pl_epc->gamma2      )        ,&ierr);
      /* tension stiffening - next line in input file!*/
       frread();
@@ -311,18 +311,18 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       ncm       = mat[i].m.pl_epc->maxreb;
       ierralloc = 0;
       mat[i].m.pl_epc->rebar=(INT*)CCACALLOC(ncm,sizeof(INT));
-      mat[i].m.pl_epc->reb_area  =(DOUBLE*)CCACALLOC(ncm,sizeof(DOUBLE)); 
+      mat[i].m.pl_epc->reb_area  =(DOUBLE*)CCACALLOC(ncm,sizeof(DOUBLE));
       mat[i].m.pl_epc->reb_ang   =(DOUBLE*)CCACALLOC(ncm,sizeof(DOUBLE));
-      mat[i].m.pl_epc->reb_so    =(DOUBLE*)CCACALLOC(ncm,sizeof(DOUBLE)); 
-      mat[i].m.pl_epc->reb_ds    =(DOUBLE*)CCACALLOC(ncm,sizeof(DOUBLE)); 
-      mat[i].m.pl_epc->reb_rgamma=(DOUBLE*)CCACALLOC(ncm,sizeof(DOUBLE)); 
-      mat[i].m.pl_epc->reb_dens  =(DOUBLE*)CCACALLOC(ncm,sizeof(DOUBLE)); 
-      mat[i].m.pl_epc->reb_alfat =(DOUBLE*)CCACALLOC(ncm,sizeof(DOUBLE)); 
-      mat[i].m.pl_epc->reb_emod  =(DOUBLE*)CCACALLOC(ncm,sizeof(DOUBLE)); 
-      mat[i].m.pl_epc->reb_rebnue=(DOUBLE*)CCACALLOC(ncm,sizeof(DOUBLE)); 
-      mat[i].m.pl_epc->reb_sigy  =(DOUBLE*)CCACALLOC(ncm,sizeof(DOUBLE)); 
-      mat[i].m.pl_epc->reb_hard  =(DOUBLE*)CCACALLOC(ncm,sizeof(DOUBLE)); 
-      
+      mat[i].m.pl_epc->reb_so    =(DOUBLE*)CCACALLOC(ncm,sizeof(DOUBLE));
+      mat[i].m.pl_epc->reb_ds    =(DOUBLE*)CCACALLOC(ncm,sizeof(DOUBLE));
+      mat[i].m.pl_epc->reb_rgamma=(DOUBLE*)CCACALLOC(ncm,sizeof(DOUBLE));
+      mat[i].m.pl_epc->reb_dens  =(DOUBLE*)CCACALLOC(ncm,sizeof(DOUBLE));
+      mat[i].m.pl_epc->reb_alfat =(DOUBLE*)CCACALLOC(ncm,sizeof(DOUBLE));
+      mat[i].m.pl_epc->reb_emod  =(DOUBLE*)CCACALLOC(ncm,sizeof(DOUBLE));
+      mat[i].m.pl_epc->reb_rebnue=(DOUBLE*)CCACALLOC(ncm,sizeof(DOUBLE));
+      mat[i].m.pl_epc->reb_sigy  =(DOUBLE*)CCACALLOC(ncm,sizeof(DOUBLE));
+      mat[i].m.pl_epc->reb_hard  =(DOUBLE*)CCACALLOC(ncm,sizeof(DOUBLE));
+
       /* rebar data - next line in input file! */
       if(ncm==0)
       {
@@ -344,7 +344,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
         frdouble("REBALFAT",&(mat[i].m.pl_epc->reb_alfat[j] ),&ierr);
         frdouble("REBEMOD" ,&(mat[i].m.pl_epc->reb_emod[j]  ),&ierr);
         frdouble("REBNUE"  ,&(mat[i].m.pl_epc->reb_rebnue[j]),&ierr);
-        frread();                               
+        frread();
         frdouble("REBSIGY" ,&(mat[i].m.pl_epc->reb_sigy[j]  ),&ierr);
         frdouble("REBHARD" ,&(mat[i].m.pl_epc->reb_hard[j]  ),&ierr);
       }
@@ -370,7 +370,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       mat[i].m.pl_epc->gamma3 = 1./3.;
       mat[i].m.pl_epc->gamma4 = 4./3.;
       mat[i].m.pl_epc->maxreb = 0;
-      
+
       /* concrete */
       frdouble("YOUNG"   ,&(mat[i].m.pl_epc->youngs      )        ,&ierr);
       frdouble("NUE"     ,&(mat[i].m.pl_epc->possionratio)        ,&ierr);
@@ -466,7 +466,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       {
         actlay = &(mat[i].m.multi_layer->kinlay[j]);
         frread();
-        
+
         frint("KINLAY"   ,&(int_dummy)        ,&ierr);
         /*read number of material layers to this kinematic layer*/
         frint("NUM_MLAY" ,&(actlay->num_mlay) ,&ierr);
@@ -491,7 +491,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
         mlay_sum = 0.0;
         for(k=0; k<num_mlay; k++) mlay_sum += actlay->mlayhgt[k];
         if (FABS(mlay_sum-100.0) > EPS5) dserror("mlay_sum != 100 -> change Data in SEC_MLAY in MULTI_LAYER material");
-                
+
       }
    }
    i++;
@@ -502,7 +502,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    if (genprob.probtyp==prb_twophase)
    {
      if (genprob.nmat!=3) dserror("number of materials incorrect");
-   
+
      if (frfind("--LS_MATERIAL_SECOND_PHASE")==0)
        dserror("frfind: MATERIAL PROPERTIES FOR SECOND PHASE is not in input file");
      frread();
@@ -517,7 +517,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          frdouble("VISCOSITY",&(mat[i].m.fluid->viscosity),&ierr);
          frdouble("DENSITY"  ,&(mat[i].m.fluid->density)  ,&ierr);
          frdouble("GAMMA",&(mat[i].m.fluid->gamma)  ,&ierr);
-       }   
+       }
      i++;
      frread();
      }
@@ -530,7 +530,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       * interface
       */
      mat[i].mattyp = m_fluid;
-     mat[i].m.fluid = (FLUID*)CCACALLOC(1,sizeof(FLUID));     
+     mat[i].m.fluid = (FLUID*)CCACALLOC(1,sizeof(FLUID));
      mat[i].m.fluid->viscosity =
        0.5*(mat[0].m.fluid->viscosity+mat[1].m.fluid->viscosity);
      mat[i].m.fluid->density =
@@ -538,9 +538,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
      mat[i].m.fluid->gamma =
        0.5*(mat[0].m.fluid->gamma+mat[1].m.fluid->gamma);
    }
-#endif 
+#endif
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -558,12 +558,12 @@ INT  check = 0;
 INT  ierr;
 INT  i;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inp_multimat");
 #endif
 /*---- read multilayer material only if a mattyp == m_multi_layer ------*/
-for (i=0; i<genprob.nmat; i++)     
-{ 
+for (i=0; i<genprob.nmat; i++)
+{
    if  (mat[i].mattyp == m_multi_layer) check = 1;
 }
 if (check == 0 ) goto end;
@@ -589,7 +589,7 @@ i=0;
 while(strncmp(allfiles.actplace,"------",6)!=0)
 {
    frint("MULTIMAT",&(multimat[i].Id),&ierr);
-   if (ierr==0) 
+   if (ierr==0)
    {
       frread();
       continue;
@@ -637,9 +637,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("NUE"  ,&(multimat[i].m.pl_mises->possionratio)  ,&ierr);
       frdouble("ALFAT",&(multimat[i].m.pl_mises->ALFAT)         ,&ierr);
       frdouble("Sigy" ,&(multimat[i].m.pl_mises->Sigy)          ,&ierr);
-      multimat[i].m.pl_mises->Hard = 0.; 
-      multimat[i].m.pl_mises->GF   = 0.; 
-      multimat[i].m.pl_mises->betah= 1.; 
+      multimat[i].m.pl_mises->Hard = 0.;
+      multimat[i].m.pl_mises->GF   = 0.;
+      multimat[i].m.pl_mises->betah= 1.;
       frdouble("Hard" ,&(multimat[i].m.pl_mises->Hard)          ,&ierr);
       frdouble("GF"   ,&(multimat[i].m.pl_mises->GF)            ,&ierr);
       frdouble("BETAH",&(multimat[i].m.pl_mises->betah)         ,&ierr);
@@ -663,9 +663,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("ALFAT",&(multimat[i].m.pl_dp->ALFAT)         ,&ierr);
       frdouble("Sigy" ,&(multimat[i].m.pl_dp->Sigy)          ,&ierr);
       frdouble("PHI"  ,&(multimat[i].m.pl_dp->PHI)           ,&ierr);
-      multimat[i].m.pl_dp->Hard = 0.; 
-      multimat[i].m.pl_dp->GF   = 0.; 
-      multimat[i].m.pl_dp->betah= 1.; 
+      multimat[i].m.pl_dp->Hard = 0.;
+      multimat[i].m.pl_dp->GF   = 0.;
+      multimat[i].m.pl_dp->betah= 1.;
       frdouble("Hard" ,&(multimat[i].m.pl_dp->Hard)          ,&ierr);
       frdouble("GF"   ,&(multimat[i].m.pl_dp->GF)            ,&ierr);
       frdouble("BETAH",&(multimat[i].m.pl_dp->betah)         ,&ierr);
@@ -750,7 +750,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       multimat[i].m.pl_epc->gamma3 = 1./3.;
       multimat[i].m.pl_epc->gamma4 = 4./3.;
       multimat[i].m.pl_epc->maxreb = 0;
-      
+
       /* concrete */
       frdouble("YOUNG"   ,&(multimat[i].m.pl_epc->youngs      )        ,&ierr);
       frdouble("NUE"     ,&(multimat[i].m.pl_epc->possionratio)        ,&ierr);
@@ -769,7 +769,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 }
 /*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

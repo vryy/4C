@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief Call and control VISUAL2 
+\brief Call and control VISUAL2
 
 <pre>
 Maintainer: Steffen Genkinger
@@ -13,7 +13,7 @@ Maintainer: Steffen Genkinger
 #include "../headers/standardtypes.h"
 #include "../fluid_full/fluid_prototypes.h"
 #include "../fsi_full/fsi_prototypes.h"
-#ifdef VISUAL2_PACKAGE                   
+#ifdef VISUAL2_PACKAGE
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
@@ -29,7 +29,7 @@ extern struct _GENPROB       genprob;
 
 <pre>                                                         m.gee 8/00
 -the partition of one proc (all discretizations)
--the type is in partition.h                                                  
+-the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -47,13 +47,13 @@ extern enum _CALC_ACTION calc_action[MAXFIELD];
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn; 
+extern ALLDYNA      *alldyn;
 /*!----------------------------------------------------------------------
 \brief file pointers
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -71,14 +71,14 @@ extern enum _CALC_ACTION calc_action[MAXFIELD];
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn; 
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                        genk 07/02    |
  | all variables needed by VISUAL2 are defined extern                   |
  *----------------------------------------------------------------------*/
 static INT      MPTRI,MPPTRI,MFACE;   /* see VISUAL2 manual             */
 static INT      MPFACE,MEDGE,MPEDGE;  /* see VISUAL2 manual             */
-static INT      KCELL;                /* number of visualised cells - 
+static INT      KCELL;                /* number of visualised cells -
                                  different from number of elements!     */
 static INT      IOPT;                 /* program mode                   */
 static INT      IVORT;                /* flag for vorticity calculation */
@@ -94,7 +94,7 @@ static INT      MNODE;                /* maximum number of nodes        */
 static INT      NKEYS=14;              /* see VISUAL2 manual             */
 static INT      XYPIX[2];             /* size of VISUAL2 window         */
 static INT      IKEYS[]={112,115,118,102,120,121,97,116,102,92,109,107,100,110};
-static INT      FKEYS[]={1,1,1,3,1,1,1,1,3,1,1,1,1,1};             
+static INT      FKEYS[]={1,1,1,3,1,1,1,1,3,1,1,1,1,1};
 static float    FLIMS[14][2];          /* data limits                    */
 static float    XYMIN[2], XYMAX[2];   /* min. and max. coordinates      */
 static struct  _ARRAY PCELL_A;
@@ -105,7 +105,7 @@ static struct  _ARRAY CEDGE_A;        /* arrays needed in qat2v2        */
 static INT    **PCELL;
 static INT     *WCELL;
 static INT     *WNODE;
-static INT     *WFACE; 
+static INT     *WFACE;
 static INT     *CEDGE;                /* pointers to arrays             */
 /*------------------------------- variables needed for own calculations */
 static INT     numnp;	        /* number of nodes of actual field	*/
@@ -158,22 +158,22 @@ NODE          *actanode;        /* actual ale-node                      */
 GNODE         *actgnode;        /* actual gnode  			*/
 DIS_TYP        distyp;          /* element type  			*/
 FIELDTYP       actfieldtyp;     /* actual fieldtyp			*/
-FIELD         *actfield;        /* actual field  			*/ 
+FIELD         *actfield;        /* actual field  			*/
 FIELD         *alefield;
 FIELD         *structfield;
 ARRAY          time_a ;         /* time array				*/
 ARRAY          step_a ;         /* time array				*/
 FLUID_DYNAMIC *fdyn;                /* pointer to fluid dyn. inp.data   */
-/*!---------------------------------------------------------------------                                         
-\brief call of visual2 for fluid 
+/*!---------------------------------------------------------------------
+\brief call of visual2 for fluid
 
-<pre>                                                         genk 07/02      
-</pre>  
+<pre>                                                         genk 07/02
+</pre>
 \param  numf   INT      (i)       actual number of fluid field
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
-void vis2caf(INT numff, INT numaf, INT numsf) 
+void vis2caf(INT numff, INT numaf, INT numsf)
 {
 
 INT iscan, i,j;
@@ -183,7 +183,7 @@ PARTITION      *actpart;            /* pointer to active partition      */
 CONTAINER       container;          /* contains variables defined in container.h */
 FLUID_DYNAMIC *fdyn;                /* pointer to fluid dyn. inp.data   */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("vis2caf");
 #endif
 
@@ -207,7 +207,7 @@ switch(screen)
 case 10: DATAFILE=1; break;
 case 48: DATAFILE=0; dummy=getchar(); break;
 case 49: DATAFILE=1; dummy=getchar(); break;
-default: 
+default:
    printf("\nTry again!\n");
    goto input0;
 }
@@ -224,7 +224,7 @@ else if (DATAFILE==1)
                         &FIRSTSTEP,&LASTSTEP,&DSTEP);
    INCRE=1;
 }
-else 
+else
    goto input0;
 
 /*---------------------------------------------------------------------*
@@ -260,16 +260,16 @@ switch(screen)
 case 10: iscan=0; break;
 case 48: iscan=0; dummy=getchar(); break;
 case 49: iscan=1; dummy=getchar(); break;
-default: 
+default:
    printf("\nTry again!\n");
    goto input1;
 }
 
 if (iscan!=0)
 {
-   printf("MPTRI  =\n");  
+   printf("MPTRI  =\n");
    scanf("%d",&MPTRI);
-   printf("MPPTRI =\n"); 
+   printf("MPPTRI =\n");
    scanf("%d",&MPPTRI);
    printf("MFACE  =\n");
    scanf("%d",&MFACE);
@@ -294,7 +294,7 @@ switch(screen)
 case 10: IVORT=0; break;
 case 48: IVORT=0; dummy=getchar(); break;
 case 49: IVORT=1; dummy=getchar(); break;
-default: 
+default:
    printf("\nTry again!\n");
    goto input2;
 }
@@ -308,7 +308,7 @@ if (IVORT==1)
    fdyn->ncols=ncols;
    *action = calc_fluid_initvort;
    calinit(actfield,actpart,action,&container);
-   *action = calc_fluid_vort; 
+   *action = calc_fluid_vort;
    container.actndis=0;
    container.nif=0;
    container.nii=0;
@@ -317,9 +317,9 @@ if (IVORT==1)
    container.dvec=NULL;
    container.is_relax     = 0;
    container.dvec         = NULL;
-   container.actndis  = 0;   
+   container.actndis  = 0;
    calelm(actfield,NULL,actpart,NULL,0,0,
-          &container,action); 
+          &container,action);
 } /* endif (IVORT==1) */
 
 input3:
@@ -337,7 +337,7 @@ case 48: IOPT=0; dummy=getchar(); break;
 case 49: IOPT=1; dummy=getchar(); break;
 case 50: IOPT=2; dummy=getchar(); break;
 case 51: IOPT=3; dummy=getchar(); break;
-default: 
+default:
    printf("\nTry again!\n");
    goto input3;
 }
@@ -404,7 +404,7 @@ switch(screen)
 case 10: SCAL=0; break;
 case 48: SCAL=0; dummy=getchar(); break;
 case 49: SCAL=1; dummy=getchar(); break;
-default: 
+default:
    printf("\nTry again!\n");
    goto input4;
 }
@@ -450,7 +450,7 @@ case 10: bgcolour=0; break;
 case 48: bgcolour=0; dummy=getchar(); break;
 case 49: bgcolour=1; dummy=getchar(); break;
 case 50: bgcolour=2; dummy=getchar(); break;
-default: 
+default:
    printf("\nTry again!\n");
    goto input6;
 }
@@ -482,7 +482,7 @@ case quad9:
    KCELL = 4*numele;
 break;
 default:
-   dserror("distyp not implemented yet!\n");         
+   dserror("distyp not implemented yet!\n");
 } /* end switch(distyp) */
 
 /*----------------------------------------------------- define arrays */
@@ -495,7 +495,7 @@ amzero(&PCELL_A);
 amzero(&WCELL_A);
 amzero(&WNODE_A);
 amzero(&WFACE_A);
-amzero(&CEDGE_A); 
+amzero(&CEDGE_A);
 
 /*------------------------- check if all elements are the same distyp */
 for (i=1;i<numele;i++) /* loop all elements */
@@ -539,7 +539,7 @@ if (IOPT>=2)
    }
 #else
    dserror("FSI-functions not compiled in!\n");
-#endif   
+#endif
 }
 else
 {
@@ -552,7 +552,7 @@ else
       minxy=DMIN(minxy,actnode->x[0]);
       maxxy=DMAX(maxxy,actnode->x[0]);
    }
-   
+
 }
 XYMIN[0] = minxy - (maxxy-minxy)*0.1;
 XYMAX[0] = maxxy + (maxxy-minxy)*0.1;
@@ -572,7 +572,7 @@ if (IOPT>=2)
       if (actanode==NULL)
       {
          minxy=DMIN(minxy,actnode->x[1]);
-         maxxy=DMAX(maxxy,actnode->x[1]);      
+         maxxy=DMAX(maxxy,actnode->x[1]);
       }
       else
       {
@@ -587,7 +587,7 @@ if (IOPT>=2)
    }
 #else
    dserror("FSI-functions not compiled in!\n");
-#endif   
+#endif
 }
 else
 {
@@ -600,7 +600,7 @@ else
       minxy=DMIN(minxy,actnode->x[1]);
       maxxy=DMAX(maxxy,actnode->x[1]);
    }
-   
+
 }
 XYMIN[1] = minxy - (maxxy-minxy)*0.1;
 XYMAX[1] = maxxy + (maxxy-minxy)*0.1;
@@ -625,7 +625,7 @@ if (dx>=dy)
    {
       dx = dy*ratio;
       XYMIN[0] = centerx - dx/TWO;
-      XYMAX[0] = centerx + dx/TWO;           
+      XYMAX[0] = centerx + dx/TWO;
    }
    else
    {
@@ -660,7 +660,7 @@ velx    = actnode->sol.a.da[0][0];
 vely    = actnode->sol.a.da[0][1];
 absv    = sqrt(velx*velx+vely*vely);
 pres    = actnode->sol.a.da[0][2];
-if (IVORT==1) 
+if (IVORT==1)
 {
    vort = actnode->sol.a.da[0][3];
 }
@@ -668,7 +668,7 @@ if (IVORT==1)
 minvx   = velx;
 maxvx   = velx;
 minvy   = vely;
-maxvy   = vely; 
+maxvy   = vely;
 minpre  = pres;
 maxpre  = pres;
 minabsv = sqrt(velx*velx+vely*vely);
@@ -687,21 +687,21 @@ for (i=0;i<numnp;i++) /* loop nodes */
       velx    = actnode->sol.a.da[j][0];
       vely    = actnode->sol.a.da[j][1];
       pres    = actnode->sol.a.da[j][2];
-      absv    = sqrt(velx*velx+vely*vely);  
+      absv    = sqrt(velx*velx+vely*vely);
       if(IVORT==1)
       {
          vort = actnode->sol.a.da[j][3];
-      }          
+      }
       minvx   = DMIN(minvx  ,velx);
       maxvx   = DMAX(maxvx  ,velx);
       minvy   = DMIN(minvy  ,vely);
-      maxvy   = DMAX(maxvy  ,vely); 
+      maxvy   = DMAX(maxvy  ,vely);
       minpre  = DMIN(minpre ,pres);
       maxpre  = DMAX(maxpre ,pres);
       minabsv = DMIN(minabsv,absv);
       maxabsv = DMAX(maxabsv,absv);
       if (IVORT==1)
-      { 
+      {
          minvort = DMIN(minvort,vort);
 	 maxvort = DMAX(maxvort,vort);
       }
@@ -723,9 +723,9 @@ if (fdyn->turbu == 2 || fdyn->turbu == 3)
       minkappa   = DMIN(minkappa   ,kappa);
       maxkappa   = DMAX(maxkappa   ,kappa);
       mindissi   = DMIN(mindissi   ,dissi);
-      maxdissi   = DMAX(maxdissi   ,dissi); 
+      maxdissi   = DMAX(maxdissi   ,dissi);
       minvisco   = DMIN(minvisco   ,visco);
-      maxvisco   = DMAX(maxvisco   ,visco); 
+      maxvisco   = DMAX(maxvisco   ,visco);
    } /* end of loop over columns */
  } /* end of loop over nodes */
 } /* end of container.turbu==2 || container.turbu==3 */
@@ -735,9 +735,9 @@ else
       minkappa   = 0.0;
       maxkappa   = 1.0;
       mindissi   = 0.0;
-      maxdissi   = 1.0; 
+      maxdissi   = 1.0;
       minvisco   = 0.0;
-      maxvisco   = 1.0; 
+      maxvisco   = 1.0;
 }
 /* grid velocity not available yet !!!! */
 mingv = 0.0;
@@ -800,22 +800,22 @@ v2call(&IOPT,&CMNCOL,&CMUNIT,
 	&MNODE,&MPTRI,&MPPTRI,
 	&MFACE,&MPFACE,&MEDGE,&MPEDGE,&bgcolour);
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of vis2caf */
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief set VISUAL2's constants and structures
 
-<pre>                                                         genk 07/02      
+<pre>                                                         genk 07/02
 
 use QAT2V2 to make VISUAL2 structures
 this routine is called by VISUAL2 during the visualisation
 
-</pre>  
+</pre>
 \param  *KNODE     INT   (o)    Number of nodes
 \param	*PTRI	   INT	 (o)	PolyTri pointers to nodes
 \param	*CTRI	   INT	 (o)	PolyTri pointers to neighbouring cells
@@ -828,15 +828,15 @@ this routine is called by VISUAL2 during the visualisation
 \param	*PEDGE	   INT	 (o)	Edge PolyLine pointers to nodes
 \param	*KPEDGE    INT	 (o)	Number of Edge PolyLines
 \param	*PPEDGE    INT	 (o)	Pointers to ends of edge PolyLines
-\return void                                                                       
+\return void
 ------------------------------------------------------------------------*/
-void v2data(INT *KNODE, INT *PTRI, INT *CTRI, INT *ITRI, INT *KPPTRI, 
-            INT *PPTRI, INT *PFACE, INT *KPFACE, INT *PPFACE, 
-	    INT *PEDGE, INT *KPEDGE, INT *PPEDGE) 
+void v2data(INT *KNODE, INT *PTRI, INT *CTRI, INT *ITRI, INT *KPPTRI,
+            INT *PPTRI, INT *PFACE, INT *KPFACE, INT *PPFACE,
+	    INT *PEDGE, INT *KPEDGE, INT *PPEDGE)
 {
 INT KPTRI, KEDGE, KFACE;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("V2DATA");
 #endif
 
@@ -847,7 +847,7 @@ qat2v2(&PCELL[0][0],WCELL,&KCELL,WNODE,KNODE,WFACE,
        &MPTRI,&MPPTRI,&MEDGE,&MPEDGE,&MFACE,&MPFACE,
        PTRI,CTRI,ITRI,&KPTRI,PPTRI,KPPTRI,
        PEDGE,CEDGE,&KEDGE,PPEDGE,KPEDGE,
-       PFACE,&KFACE,PPFACE,KPFACE); 
+       PFACE,&KFACE,PPFACE,KPFACE);
 
 /*-------------------------------------------------------------- output */
 printf("\n");
@@ -867,38 +867,38 @@ printf("   Ave Edge PLn Strip Length = %d \n",KEDGE/(*KPEDGE));
 printf("\n");
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of V2DATA */
 
-/*!---------------------------------------------------------------------                                         
-\brief set VISUAL2's grid coordinates 
+/*!---------------------------------------------------------------------
+\brief set VISUAL2's grid coordinates
 
-<pre>                                                         genk 07/02      
+<pre>                                                         genk 07/02
 
 this routine is called by VISUAL2 during the visualisation
 
-</pre>  
-\param  *XY        float   (o)  xy coordinates of grid nodes		    
+</pre>
+\param  *XY        float   (o)  xy coordinates of grid nodes
 \param	*XYDELT    float   (o)  Maximum width (dx) and heigth dy of any cell
-\param	*XYMINP    float   (o)  Minimum values of x,y in each PolyTri strip 
-\param	*XYMAXP    float   (o)  Maximum values of x,y in each PolyTri strip 
-\param	*XYMINF    float   (o)  Minimum values of x,y in each face PolyTri  
-\param	*XYMAXF    float   (o)  Maximum values of x,y in each face PolyTri  
-\param	*XYMINE    float   (o)  Minimum values of x,y in each edge PolyTri  
-\param	*XYMAXE    float   (o)  Maximum values of x,y in each edge PolyTri  
-\return void                                                                       
+\param	*XYMINP    float   (o)  Minimum values of x,y in each PolyTri strip
+\param	*XYMAXP    float   (o)  Maximum values of x,y in each PolyTri strip
+\param	*XYMINF    float   (o)  Minimum values of x,y in each face PolyTri
+\param	*XYMAXF    float   (o)  Maximum values of x,y in each face PolyTri
+\param	*XYMINE    float   (o)  Minimum values of x,y in each edge PolyTri
+\param	*XYMAXE    float   (o)  Maximum values of x,y in each edge PolyTri
+\return void
 ------------------------------------------------------------------------*/
 void v2grid(float XY[][2], float *XYDELT, float *XYMINP, float *XYMAXP,
-            float *XYMINF, float *XYMAXF, float *XYMINE, float *XYMAXE) 
+            float *XYMINF, float *XYMAXF, float *XYMINE, float *XYMAXE)
 {
 
 INT i;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("V2GRID");
 #endif
 
@@ -908,10 +908,10 @@ case fluid:
    if (NUMA>=0 && IOPT==0)
    {
       input4:
-      v2_cursor(&true);  
+      v2_cursor(&true);
       printf("Give the column number (min. 0; max. %d): ?\n",ncols-1);
-      scanf("%d",&icol);      
-      v2_cursor(&false);  
+      scanf("%d",&icol);
+      v2_cursor(&false);
       if (icol<0 || icol>ncols-1)
       {
          printf("Column number out of range. New input!\n");
@@ -930,17 +930,17 @@ case fluid:
 	 if (actanode==NULL)
 	 {
             XY[i][0] = actnode->x[0];
-            XY[i][1] = actnode->x[1];	 
+            XY[i][1] = actnode->x[1];
          }
 	 else
 	 {
 	    XY[i][0] = actanode->x[0] + actanode->sol.a.da[icol][0];
-	    XY[i][1] = actanode->x[1] + actanode->sol.a.da[icol][1];	   
+	    XY[i][1] = actanode->x[1] + actanode->sol.a.da[icol][1];
          }
       }
 #else
    dserror("FSI-functions not compiled in!\n");
-#endif   
+#endif
    }
    else
    {
@@ -961,17 +961,17 @@ default:
 } /* end switch(actfieldtyp) */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of V2GRID */
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief set VISUAL2's scalar function values
 
-<pre>                                                         genk 07/02      
+<pre>                                                         genk 07/02
 
 This routine is called by VISUAL2 during the visualisation.
 It filters the scalar values out of the nodal sol-field at the actual
@@ -979,20 +979,20 @@ position icol.
 icol is set every timestep in v2update
 
 
-</pre>  
-\param  *JKEY      INT    (i)  Index of key			 
-\param	*S         float  (o)  Scalar function at nodes or cells 
-\return void                                                                       
+</pre>
+\param  *JKEY      INT    (i)  Index of key
+\param	*S         float  (o)  Scalar function at nodes or cells
+\return void
 \sa v2update
 
 ------------------------------------------------------------------------*/
-void v2scal(INT *JKEY, float *S) 
+void v2scal(INT *JKEY, float *S)
 {
 
 INT i;
 float vx,vy;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("V2SCAL");
 #endif
 
@@ -1004,8 +1004,8 @@ case fluid:
       input3:
       v2_cursor(&true);
       printf("Give the column number (min. 0; max. %d): ?\n",ncols-1);
-      scanf("%d",&icol);      
-      v2_cursor(&false);      
+      scanf("%d",&icol);
+      v2_cursor(&false);
       if (icol<0 || icol>ncols-1)
       {
          printf("Column number out of range. New input!\n");
@@ -1023,11 +1023,11 @@ case fluid:
 	 S[i]=actnode->sol.a.da[icol][2];
       }
    break;
-   /*-------------------------------------------------------------------*/   
+   /*-------------------------------------------------------------------*/
    case 2: /* ???? */
       printf("NOT IMPLEMTED SO FAR!!!!!!!!!!!!!!!!!!!!\n");
    break;
-   /*-------------------------------------------------------------------*/   
+   /*-------------------------------------------------------------------*/
    case 3: /* vorticity */
       if (IVORT==1)
       {
@@ -1042,28 +1042,28 @@ case fluid:
          printf("vorticity not calculated!!!! --> ZERO-field\n");
 	 for (i=0;i<numnp;i++)
 	 S[i]=ZERO;
-      }        
+      }
    break;
-   case 4: 
+   case 4:
       printf("VECTOR DATA IN SCALAR ROUTINE ???????\n");
-   break;   
-   /*-------------------------------------------------------------------*/   
+   break;
+   /*-------------------------------------------------------------------*/
    case 5: /* horizontal velocity */
       for (i=0;i<numnp;i++)
       {
          actnode=&(actfield->dis[0].node[i]);
 	 S[i]=actnode->sol.a.da[icol][0];
-      }      
+      }
    break;
-   /*-------------------------------------------------------------------*/   
+   /*-------------------------------------------------------------------*/
    case 6: /* vertical velocity */
       for (i=0;i<numnp;i++)
       {
          actnode=&(actfield->dis[0].node[i]);
 	 S[i]=actnode->sol.a.da[icol][1];
-      }        
+      }
    break;
-   /*-------------------------------------------------------------------*/  
+   /*-------------------------------------------------------------------*/
    case 7: /* absolute velocity */
       for (i=0;i<numnp;i++)
       {
@@ -1071,9 +1071,9 @@ case fluid:
 	 vx=actnode->sol.a.da[icol][0];
 	 vy=actnode->sol.a.da[icol][1];
 	 S[i] = sqrt(vx*vx+vy*vy);
-      }       
+      }
    break;
-   /*-------------------------------------------------------------------*/   
+   /*-------------------------------------------------------------------*/
    case 8: /* switch streamline - stationary streamline */
       if(isstr==0)
       {
@@ -1081,7 +1081,7 @@ case fluid:
 	 v2_cursor(&true);
 	 printf("Subtraction value for stationary streamlines: ?\n");
 	 scanf("%f",&sstrval);
-	 v2_cursor(&false);	 
+	 v2_cursor(&false);
       }
       else
          isstr=0;
@@ -1089,16 +1089,16 @@ case fluid:
       {
          actnode=&(actfield->dis[0].node[i]);
 	 S[i] = actnode->sol.a.da[icol][2];
-      }          
+      }
    break;
-   /*-------------------------------------------------------------------*/    
+   /*-------------------------------------------------------------------*/
    case 9:
       printf("VECTOR DATA IN SCALAR ROUTINE ???????\n");
    break;
-   /*-------------------------------------------------------------------*/   
+   /*-------------------------------------------------------------------*/
    case 10: /* stopping at step */
       printf("   Which step do you want to stop?\n");
-      scanf("%d",&STSTEP); 
+      scanf("%d",&STSTEP);
    break;
    /*-------------------------------------------------------------------*/
    case 11:
@@ -1108,9 +1108,9 @@ case fluid:
          printf("   Starting movie creation at time 0.0\n");
 	 printf("\n");
          IMOVIE=1;
-      }      
+      }
    break;
-   /*-------------------------------------------------------------------*/   
+   /*-------------------------------------------------------------------*/
    case 12: /* kappa */
       if (ITURBU==1)
       {
@@ -1119,15 +1119,15 @@ case fluid:
         actnode=&(actfield->dis[1].node[i]);
 	  S[i]=actnode->sol.a.da[icol][0];
        }
-      }        
+      }
       else
       {
        printf("kappa not calculated!!!! --> ZERO-field\n");
 	 for (i=0;i<numnp;i++)
 	 S[i]=ZERO;
-      }        
+      }
    break;
-   /*-------------------------------------------------------------------*/  
+   /*-------------------------------------------------------------------*/
    case 13: /* dissi */
       if (ITURBU==1)
       {
@@ -1135,16 +1135,16 @@ case fluid:
        {
         actnode=&(actfield->dis[1].node[i]);
 	  S[i] = actnode->sol.a.da[icol][2];
-       }       
-      }        
+       }
+      }
       else
       {
        printf("dissipation not calculated!!!! --> ZERO-field\n");
 	 for (i=0;i<numnp;i++)
 	 S[i]=ZERO;
-      }        
+      }
    break;
-   /*-------------------------------------------------------------------*/  
+   /*-------------------------------------------------------------------*/
    case 14: /* visco */
       if (ITURBU==1)
       {
@@ -1152,16 +1152,16 @@ case fluid:
        {
         actnode=&(actfield->dis[1].node[i]);
 	  S[i] = actnode->sol.a.da[icol][1];
-       }       
-      }        
+       }
+      }
       else
       {
        printf("eddy-viscosity with ke- or kw-model not calculated!!!! --> ZERO-field\n");
 	 for (i=0;i<numnp;i++)
 	 S[i]=ZERO;
-      }        
+      }
    break;
-   /*-------------------------------------------------------------------*/                 
+   /*-------------------------------------------------------------------*/
    } /* end switch(*JKEY) */
 break;
 case structure:
@@ -1173,36 +1173,36 @@ default:
 } /* end switch(actfieldtyp) */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of V2SCAL */
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief set VISUAL2's vector function values
 
-<pre>                                                         genk 07/02      
+<pre>                                                         genk 07/02
 
 This routine is called by VISUAL2 during the visualisation.
 It filters the vector values out of the nodal sol-field at the actual
 position icol.
 icol is set every timestep in v2update
 
-</pre>  
-\param  *JKEY      INT    (i)  Index of key			 
-\param	*V         float  (o)  Vector function at nodes or cells 
-\return void                                                                       
+</pre>
+\param  *JKEY      INT    (i)  Index of key
+\param	*V         float  (o)  Vector function at nodes or cells
+\return void
 \sa v2update
 
 ------------------------------------------------------------------------*/
-void v2vect(INT *JKEY, float V[][2]) 
+void v2vect(INT *JKEY, float V[][2])
 {
 
 INT i;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("V2VECT");
 #endif
 
@@ -1222,15 +1222,15 @@ case fluid:
 	    V[i][1] = actnode->sol.a.da[icol][1];
          }
          break;
-   /*-------------------------------------------------------------------*/   
+   /*-------------------------------------------------------------------*/
       default: /* stationary streamlines */
          printf("stationary streamlines not checked yet!!!!");
          for (i=0;i<numnp;i++)
          {
             actnode=&(actfield->dis[0].node[i]);
 	    actgnode=actnode->gnode;
-	    if (actgnode->dirich!=NULL) 
-	    {        
+	    if (actgnode->dirich!=NULL)
+	    {
 	       if (actgnode->dirich->dirich_val.a.dv[0]==0.0)
 	       {
 	          V[i][0] = actnode->sol.a.da[icol][0];
@@ -1244,10 +1244,10 @@ case fluid:
 	    else
 	    {
 	       V[i][0] = actnode->sol.a.da[icol][0]-sstrval;
-	       V[i][1] = actnode->sol.a.da[icol][1];	 
-	    }	 
-         }      
-         break;                 
+	       V[i][1] = actnode->sol.a.da[icol][1];
+	    }
+         }
+         break;
       }
    }
 break;
@@ -1260,31 +1260,31 @@ default:
 } /* end switch(actfieldtyp) */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of V2VECT */
 
-/*!---------------------------------------------------------------------                                         
-\brief update time and icol 
+/*!---------------------------------------------------------------------
+\brief update time and icol
 
-<pre>                                                         genk 07/02      
+<pre>                                                         genk 07/02
 
 This routine is called by VISUAL2 during the visualisation.
-Beside the actual time the actual position in the nodal sol-history 
+Beside the actual time the actual position in the nodal sol-history
 icol is also updated
 
-</pre>  
-\param  *TIME      float    (o)  actual time		 
-\return void                                                                       
+</pre>
+\param  *TIME      float    (o)  actual time
+\return void
 
 ------------------------------------------------------------------------*/
-void v2update(float *TIME) 
+void v2update(float *TIME)
 {
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("V2UPDATE");
 #endif
 
@@ -1293,33 +1293,33 @@ dstrc_enter("V2UPDATE");
 if (icol==STSTEP)
 {
    printf("   Next Step to Stop (-1 to terminate)\n");
-   scanf("%d",&STSTEP);        
+   scanf("%d",&STSTEP);
 }
 
 /*------------------------------------------- check for movie creation */
-if (icol==0 && IMOVIE==2) 
-{   
+if (icol==0 && IMOVIE==2)
+{
    IMOVIE=0;
    printf("\n");
    printf("Movie creation finished\n");
-}   
+}
 if (icol==0 && IMOVIE==1) IMOVIE=2;
 if (IMOVIE==2) v2movie();
 
 
 switch(actfieldtyp)
 {
-case fluid: 
-   if (icol==-1 || icol+INCRE > ncols-1) 
+case fluid:
+   if (icol==-1 || icol+INCRE > ncols-1)
    {
       icol=0;
       if (DATAFILE==0)
          ACTSTEP=FIRSTSTEP;
-      else         
+      else
          ACTSTEP=step_a.a.iv[icol];
    }
    else
-   { 
+   {
       icol+=INCRE;
       if (DATAFILE==0)
          ACTSTEP+=DSTEP;
@@ -1327,7 +1327,7 @@ case fluid:
          ACTSTEP=step_a.a.iv[icol];
    }
    *TIME = time_a.a.dv[icol];
-break;   
+break;
 case structure:
    dserror("fieldtyp not implemented yet!\n");
 case ale:
@@ -1338,53 +1338,53 @@ default:
 
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of V2UPDATE */
 
-/*!---------------------------------------------------------------------                                         
-\brief  additional label for  VISUAL2 plots 
+/*!---------------------------------------------------------------------
+\brief  additional label for  VISUAL2 plots
 
-<pre>                                                         genk 07/02      
+<pre>                                                         genk 07/02
 
 This routine is called by VISUAL2 during the visualisation.
 
-</pre>  
-\param  STRING     char    (o)  plot on VISUAL2 window		 
-\return void                                                                       
+</pre>
+\param  STRING     char    (o)  plot on VISUAL2 window
+\return void
 
 ------------------------------------------------------------------------*/
-void v2string(char STRING[81]) 
+void v2string(char STRING[81])
 {
 
 char *charpointer;
 float t;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("V2STRING");
 #endif
 
 switch(actfieldtyp)
 {
 case fluid:
-   t=time_a.a.dv[icol];  
+   t=time_a.a.dv[icol];
    strcpy(STRING,"Time: ");
    charpointer=STRING+strlen(STRING);
    sprintf(charpointer,"%8.4f",t);
    charpointer=STRING+strlen(STRING);
    strcpy(charpointer,"    Step: ");
    charpointer=STRING+strlen(STRING);
-   sprintf(charpointer,"%5d",ACTSTEP);  
-   charpointer=STRING+strlen(STRING); 
+   sprintf(charpointer,"%5d",ACTSTEP);
+   charpointer=STRING+strlen(STRING);
    strcpy(charpointer,"/");
-   charpointer=STRING+strlen(STRING); 
-   sprintf(charpointer,"%-5d",LASTSTEP); 
-   charpointer=STRING+strlen(STRING);      
-   strcpy(charpointer,"                                             ");      
-break;   
+   charpointer=STRING+strlen(STRING);
+   sprintf(charpointer,"%-5d",LASTSTEP);
+   charpointer=STRING+strlen(STRING);
+   strcpy(charpointer,"                                             ");
+break;
 case structure:
    dserror("fieldtyp not implemented yet!\n");
 case ale:
@@ -1395,29 +1395,29 @@ default:
 
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of V2STRING */
 
-/*!---------------------------------------------------------------------                                         
-\brief  compute the array WCELL for use in QAT2V2 
+/*!---------------------------------------------------------------------
+\brief  compute the array WCELL for use in QAT2V2
 
-<pre>                                                         genk 07/02      
-</pre>  
-\param  *actfield     FIELD    (i)  actual field		 
-\return void                                                                       
+<pre>                                                         genk 07/02
+</pre>
+\param  *actfield     FIELD    (i)  actual field
+\return void
 \warning QAT2V2 requires FORTRAN numbering, so increase node-numbers by one!!
 
 ------------------------------------------------------------------------*/
-void v2cell(FIELD *actfield) 
+void v2cell(FIELD *actfield)
 {
 INT i,j;
 INT inel;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("v2cell");
 #endif
 
@@ -1428,51 +1428,51 @@ switch (distyp)
 case tri3: /* 3 node triangle */
    for (i=0;i<numele;i++)
    {
-      actele=&(actfield->dis[0].element[i]); 
+      actele=&(actfield->dis[0].element[i]);
       inel++;
-      for(j=0;j<3;j++) 
+      for(j=0;j<3;j++)
       {
          PCELL[inel][j] = actele->node[j]->Id_loc+1;
       }
       PCELL[inel][3] = PCELL[inel][0];
-   }   
+   }
    break;
 case tri6:
    for (i=0;i<numele;i++)
    {
-      actele=&(actfield->dis[0].element[i]); 
+      actele=&(actfield->dis[0].element[i]);
       inel++;
       /*----------------------------------------- sub-element 1 */
-      PCELL[inel][0] = actele->node[0]->Id_loc+1;    
-      PCELL[inel][1] = actele->node[3]->Id_loc+1;    
-      PCELL[inel][2] = actele->node[5]->Id_loc+1;    
+      PCELL[inel][0] = actele->node[0]->Id_loc+1;
+      PCELL[inel][1] = actele->node[3]->Id_loc+1;
+      PCELL[inel][2] = actele->node[5]->Id_loc+1;
       PCELL[inel][3] = actele->node[0]->Id_loc+1;
       inel++;
       /*----------------------------------------- sub-element 2 */
-      PCELL[inel][0] = actele->node[3]->Id_loc+1;    
-      PCELL[inel][1] = actele->node[1]->Id_loc+1;    
-      PCELL[inel][2] = actele->node[4]->Id_loc+1;    
+      PCELL[inel][0] = actele->node[3]->Id_loc+1;
+      PCELL[inel][1] = actele->node[1]->Id_loc+1;
+      PCELL[inel][2] = actele->node[4]->Id_loc+1;
       PCELL[inel][3] = actele->node[3]->Id_loc+1;
       inel++;
       /*----------------------------------------- sub-element 3 */
-      PCELL[inel][0] = actele->node[3]->Id_loc+1;    
-      PCELL[inel][1] = actele->node[4]->Id_loc+1;    
-      PCELL[inel][2] = actele->node[5]->Id_loc+1;    
+      PCELL[inel][0] = actele->node[3]->Id_loc+1;
+      PCELL[inel][1] = actele->node[4]->Id_loc+1;
+      PCELL[inel][2] = actele->node[5]->Id_loc+1;
       PCELL[inel][3] = actele->node[3]->Id_loc+1;
       inel++;
       /*----------------------------------------- sub-element 4 */
-      PCELL[inel][0] = actele->node[4]->Id_loc+1;    
-      PCELL[inel][1] = actele->node[3]->Id_loc+1;    
-      PCELL[inel][2] = actele->node[5]->Id_loc+1;    
+      PCELL[inel][0] = actele->node[4]->Id_loc+1;
+      PCELL[inel][1] = actele->node[3]->Id_loc+1;
+      PCELL[inel][2] = actele->node[5]->Id_loc+1;
       PCELL[inel][3] = actele->node[4]->Id_loc+1;
-    } 
+    }
    break;
 case quad4: /* 4 node rectangle */
    for (i=0;i<numele;i++)
    {
-      actele=&(actfield->dis[0].element[i]); 
+      actele=&(actfield->dis[0].element[i]);
       inel++;
-      for(j=0;j<4;j++) 
+      for(j=0;j<4;j++)
       {
          PCELL[inel][j] = actele->node[j]->Id_loc+1;
       }
@@ -1481,98 +1481,98 @@ case quad4: /* 4 node rectangle */
 case quad8:
    for (i=0;i<numele;i++)
    {
-      actele=&(actfield->dis[0].element[i]); 
+      actele=&(actfield->dis[0].element[i]);
       inel++;
       /*----------------------------------------- sub-element 1 */
-      PCELL[inel][0] = actele->node[0]->Id_loc+1;    
-      PCELL[inel][1] = actele->node[4]->Id_loc+1;    
-      PCELL[inel][2] = actele->node[7]->Id_loc+1;    
+      PCELL[inel][0] = actele->node[0]->Id_loc+1;
+      PCELL[inel][1] = actele->node[4]->Id_loc+1;
+      PCELL[inel][2] = actele->node[7]->Id_loc+1;
       PCELL[inel][3] = actele->node[0]->Id_loc+1;
       inel++;
       /*----------------------------------------- sub-element 2 */
-      PCELL[inel][0] = actele->node[4]->Id_loc+1;    
-      PCELL[inel][1] = actele->node[1]->Id_loc+1;    
-      PCELL[inel][2] = actele->node[5]->Id_loc+1;    
+      PCELL[inel][0] = actele->node[4]->Id_loc+1;
+      PCELL[inel][1] = actele->node[1]->Id_loc+1;
+      PCELL[inel][2] = actele->node[5]->Id_loc+1;
       PCELL[inel][3] = actele->node[4]->Id_loc+1;
       inel++;
       /*----------------------------------------- sub-element 3 */
-      PCELL[inel][0] = actele->node[5]->Id_loc+1;    
-      PCELL[inel][1] = actele->node[2]->Id_loc+1;    
-      PCELL[inel][2] = actele->node[6]->Id_loc+1;    
+      PCELL[inel][0] = actele->node[5]->Id_loc+1;
+      PCELL[inel][1] = actele->node[2]->Id_loc+1;
+      PCELL[inel][2] = actele->node[6]->Id_loc+1;
       PCELL[inel][3] = actele->node[5]->Id_loc+1;
       inel++;
       /*----------------------------------------- sub-element 4 */
-      PCELL[inel][0] = actele->node[6]->Id_loc+1;    
-      PCELL[inel][1] = actele->node[3]->Id_loc+1;    
-      PCELL[inel][2] = actele->node[7]->Id_loc+1;    
+      PCELL[inel][0] = actele->node[6]->Id_loc+1;
+      PCELL[inel][1] = actele->node[3]->Id_loc+1;
+      PCELL[inel][2] = actele->node[7]->Id_loc+1;
       PCELL[inel][3] = actele->node[6]->Id_loc+1;
       inel++;
       /*----------------------------------------- sub-element 5 */
-      PCELL[inel][0] = actele->node[6]->Id_loc+1;    
-      PCELL[inel][1] = actele->node[7]->Id_loc+1;    
-      PCELL[inel][2] = actele->node[4]->Id_loc+1;    
+      PCELL[inel][0] = actele->node[6]->Id_loc+1;
+      PCELL[inel][1] = actele->node[7]->Id_loc+1;
+      PCELL[inel][2] = actele->node[4]->Id_loc+1;
       PCELL[inel][3] = actele->node[5]->Id_loc+1;
    }
    break;
 case quad9:
    for (i=0;i<numele;i++)
    {
-      actele=&(actfield->dis[0].element[i]); 
+      actele=&(actfield->dis[0].element[i]);
       inel++;
       /*----------------------------------------- sub-element 1 */
-      PCELL[inel][0] = actele->node[0]->Id_loc+1;    
-      PCELL[inel][1] = actele->node[4]->Id_loc+1;    
-      PCELL[inel][2] = actele->node[8]->Id_loc+1;    
+      PCELL[inel][0] = actele->node[0]->Id_loc+1;
+      PCELL[inel][1] = actele->node[4]->Id_loc+1;
+      PCELL[inel][2] = actele->node[8]->Id_loc+1;
       PCELL[inel][3] = actele->node[7]->Id_loc+1;
       inel++;
       /*----------------------------------------- sub-element 2 */
-      PCELL[inel][0] = actele->node[4]->Id_loc+1;    
-      PCELL[inel][1] = actele->node[1]->Id_loc+1;    
-      PCELL[inel][2] = actele->node[5]->Id_loc+1;    
+      PCELL[inel][0] = actele->node[4]->Id_loc+1;
+      PCELL[inel][1] = actele->node[1]->Id_loc+1;
+      PCELL[inel][2] = actele->node[5]->Id_loc+1;
       PCELL[inel][3] = actele->node[8]->Id_loc+1;
       inel++;
       /*----------------------------------------- sub-element 3 */
-      PCELL[inel][0] = actele->node[8]->Id_loc+1;    
-      PCELL[inel][1] = actele->node[5]->Id_loc+1;    
-      PCELL[inel][2] = actele->node[2]->Id_loc+1;    
+      PCELL[inel][0] = actele->node[8]->Id_loc+1;
+      PCELL[inel][1] = actele->node[5]->Id_loc+1;
+      PCELL[inel][2] = actele->node[2]->Id_loc+1;
       PCELL[inel][3] = actele->node[6]->Id_loc+1;
       inel++;
       /*----------------------------------------- sub-element 4 */
-      PCELL[inel][0] = actele->node[7]->Id_loc+1;    
-      PCELL[inel][1] = actele->node[8]->Id_loc+1;    
-      PCELL[inel][2] = actele->node[6]->Id_loc+1;    
+      PCELL[inel][0] = actele->node[7]->Id_loc+1;
+      PCELL[inel][1] = actele->node[8]->Id_loc+1;
+      PCELL[inel][2] = actele->node[6]->Id_loc+1;
       PCELL[inel][3] = actele->node[3]->Id_loc+1;
    }
-   break;           
+   break;
 default:
    dserror("disytp not implemented yet!\n");
 }
 
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of v2cell*/
 
-/*!---------------------------------------------------------------------                                         
-\brief  movie creation 
+/*!---------------------------------------------------------------------
+\brief  movie creation
 
-<pre>                                                         genk 03/03      
+<pre>                                                         genk 03/03
 
-this function							   
-creates the file vis<ACTSTEP>.xwd via system command (screen-shot     
-xwd -out ...)							   
+this function
+creates the file vis<ACTSTEP>.xwd via system command (screen-shot
+xwd -out ...)
 converts the xwd-file into a .gif file via system command (convert)
-deletes the xwd-file via system command (rm)			   
+deletes the xwd-file via system command (rm)
 
 see also /bau/statik/info/README.visual2_ccarat_movie
 
-</pre>  
+</pre>
 
-\return void                                                                       
+\return void
 ------------------------------------------------------------------------*/
 void v2movie()
 {
@@ -1583,7 +1583,7 @@ char convert[100]=("convert vis                         ");
 char remove[100] =("rm vis                               ");
 char screen[100] =("Storing vis                          ");
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("v2movie");
 #endif
 
@@ -1626,7 +1626,7 @@ system(&remove[0]);
 #ifdef HPUX11
 end:
 #endif
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -1634,16 +1634,16 @@ return;
 } /* end of v2movie*/
 
 #else
-/*!---------------------------------------------------------------------                                         
-\brief dummy routine 
+/*!---------------------------------------------------------------------
+\brief dummy routine
 
-<pre>                                                         genk 07/02      
+<pre>                                                         genk 07/02
 
 since VISUAL2 is called by a fortran routine, this one is necessary, if
 VIS2-routines are not compiled into the program
 
-</pre>  		 
-\return void                                                                       
+</pre>
+\return void
 
 ------------------------------------------------------------------------*/
 void v2_init(
@@ -1652,7 +1652,7 @@ void v2_init(
 	     INT *nkeys, INT *ikeys, INT *tkeys, INT *fkeys, float **flims,
 	     INT *mnode, INT *mptri, INT *mpptri,
 	     INT *mface, INT *mpface, INT *medge, INT *mpedge
-	    )   
+	    )
 {
 dserror("VISUAL2 PACKAGE not compiled into programm\n");
 return;
@@ -1663,7 +1663,7 @@ void v2_init_(
 	     INT *nkeys, INT *ikeys, INT *tkeys, INT *fkeys, float **flims,
 	     INT *mnode, INT *mptri, INT *mpptri,
 	     INT *mface, INT *mpface, INT *medge, INT *mpedge
-	    )   
+	    )
 {
 dserror("VISUAL2 PACKAGE not compiled into programm\n");
 return;
@@ -1674,7 +1674,7 @@ void v2_init__(
 	     INT *nkeys, INT *ikeys, INT *tkeys, INT *fkeys, float **flims,
 	     INT *mnode, INT *mptri, INT *mpptri,
 	     INT *mface, INT *mpface, INT *medge, INT *mpedge
-	    )   
+	    )
 {
 dserror("VISUAL2 PACKAGE not compiled into programm\n");
 return;

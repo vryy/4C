@@ -1,6 +1,6 @@
 /*!---------------------------------------------------------------------
   \file
-  \brief 
+  \brief
 
   <pre>
 Maintainer: Malte Neumann
@@ -11,7 +11,7 @@ Maintainer: Malte Neumann
 
 ---------------------------------------------------------------------*/
 
-/*! 
+/*!
   \addtogroup FLUID3
   *//*! @{ (documentation module open)*/
 
@@ -25,7 +25,7 @@ Maintainer: Malte Neumann
 
   <pre>                                                         m.gee 8/00
   This structure struct _FILES allfiles is defined in input_control_global.c
-  and the type is in standardtypes.h                                                  
+  and the type is in standardtypes.h
   It holds all file pointers and some variables needed for the FRSYSTEM
   </pre>
  *----------------------------------------------------------------------*/
@@ -42,14 +42,14 @@ extern struct _GENPROB     genprob;
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 
 
 /*!---------------------------------------------------------------------
   \brief lift, drag and moment calculation for 3d fluid
 
   <pre>                                                           mn 03/04
-  In this function the lift and drag forces and moments are calcutaed for 
+  In this function the lift and drag forces and moments are calcutaed for
   one 3d fluid element.
 
   </pre>
@@ -70,9 +70,9 @@ void f3_liftdrag(
   INT              i,j,cc;              /* some loopers and counters */
   INT              nir,nis,nit;         /* num GP in r/s/t direction */
   INT              iel;                 /* numnp to this element */
-  static DOUBLE    funct[MAXNOD_F3];     
-  static DOUBLE    deriv[3][MAXNOD_F3];     
-  static DOUBLE    xjm[3][3];         
+  static DOUBLE    funct[MAXNOD_F3];
+  static DOUBLE    deriv[3][MAXNOD_F3];
+  static DOUBLE    xjm[3][3];
   DOUBLE           xyze[3][MAXNOD_F3];   /* element-node coordinates */
   DOUBLE           vn[3];
   GSURF	          *actgsurf;
@@ -92,7 +92,7 @@ void f3_liftdrag(
   INT  gpr, gps, gpt;
   DOUBLE e1, e2, e3, facr, facs, fact, fac;
   DOUBLE det0;
-  FLUID_DATA     *data; 
+  FLUID_DATA     *data;
   FLUID_DYNAMIC  *fdyn;
 
   static INT shnod[6][8] = {
@@ -106,7 +106,7 @@ void f3_liftdrag(
   INT *shn;
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("f3_liftdrag");
 #endif
 
@@ -124,8 +124,8 @@ void f3_liftdrag(
 
   /* setup individual element arrays */
   cc=0;
-  for (i=0;i<iel;i++) 
-    for (j=0;j<3;j++) 
+  for (i=0;i<iel;i++)
+    for (j=0;j<3;j++)
       xyze[j][i] = ele->node[i]->x[j];
   if(iel==20)
   {
@@ -166,7 +166,7 @@ void f3_liftdrag(
 
 
   /* loop all gsurfs of the element */
-  for (surf=0; surf<ngsurf; surf++) 
+  for (surf=0; surf<ngsurf; surf++)
   {
     actgsurf = ele->g.gvol->gsurf[surf];
 
@@ -187,55 +187,55 @@ void f3_liftdrag(
     ngnode = actgsurf->ngnode;
 
     /* make coordinates and weights of integration points */
-    ngr = nir; 
-    ngs = nis; 
-    ngt = nit; 
-    for (i=0; i<ngr; i++) 
-    { 
+    ngr = nir;
+    ngs = nis;
+    ngt = nit;
+    for (i=0; i<ngr; i++)
+    {
       xgp[i] = data->qxg[i][nir-1];
       wgx[i] = data->qwgt[i][nir-1];
     }
-    for (i=0; i<ngs; i++) 
+    for (i=0; i<ngs; i++)
     {
       ygp[i] = data->qxg[i][nis-1];
       wgy[i] = data->qwgt[i][nis-1];
     }
-    for (i=0; i<ngt; i++) 
+    for (i=0; i<ngt; i++)
     {
       zgp[i] = data->qxg[i][nit-1];
-      wgz[i] = data->qwgt[i][nit-1]; 
+      wgz[i] = data->qwgt[i][nit-1];
     }
     /*------------ get surface-node topology, det. integration order ---*/
     shn=shnod[surf];
     switch (surf)
     {
-      case 0:                  
-        ngt = 1; 
+      case 0:
+        ngt = 1;
         zgp[0] = -1.;
         wgz[0] =  1.;
         break;
       case 1:
-        ngr = 1; 
+        ngr = 1;
         xgp[0] =  1.;
         wgx[0] =  1.;
         break;
       case 2:
-        ngs = 1; 
+        ngs = 1;
         ygp[0] =  1.;
         wgy[0] =  1.;
         break;
       case 3:
-        ngr = 1; 
+        ngr = 1;
         xgp[0] = -1.;
         wgx[0] =  1.;
         break;
       case 4:
-        ngs = 1; 
+        ngs = 1;
         ygp[0] = -1.;
         wgy[0] =  1.;
         break;
       case 5:
-        ngt = 1; 
+        ngt = 1;
         zgp[0] =  1.;
         wgz[0] =  1.;
         break;
@@ -295,7 +295,7 @@ void f3_liftdrag(
           for (i=0;i<12;i++) sigmaint[i] = ZERO;
 
           for (i=0;i<12;i++)
-            for (j=0;j<ngnode;j++) 
+            for (j=0;j<ngnode;j++)
               sigmaint[i] += funct[shn[j]] * nsigma[i][shn[j]];
 
 
@@ -330,13 +330,13 @@ void f3_liftdrag(
           container->liftdrag[ld_id*6+2] += forceline[2] * fac;
 
           /* add momentums */
-          container->liftdrag[ld_id*6+3] += 
+          container->liftdrag[ld_id*6+3] +=
             ( forceline[1]*xyz[2] - forceline[2]*xyz[1] ) * fac;
 
-          container->liftdrag[ld_id*6+4] += 
+          container->liftdrag[ld_id*6+4] +=
             - ( forceline[0]*xyz[2] - forceline[2]*xyz[0] ) * fac;
 
-          container->liftdrag[ld_id*6+5] += 
+          container->liftdrag[ld_id*6+5] +=
             ( forceline[0]*xyz[1] - forceline[1]*xyz[0] ) * fac;
 
 
@@ -347,13 +347,13 @@ void f3_liftdrag(
           container->liftdrag[(FLUID_NUM_LD+1+ld_id)*6+2] += forceline[5] * fac;
 
           /* add momentums */
-          container->liftdrag[(FLUID_NUM_LD+1+ld_id)*6+3] += 
+          container->liftdrag[(FLUID_NUM_LD+1+ld_id)*6+3] +=
             ( forceline[4]*xyz[2] - forceline[5]*xyz[1] ) * fac;
 
-          container->liftdrag[(FLUID_NUM_LD+1+ld_id)*6+4] += 
+          container->liftdrag[(FLUID_NUM_LD+1+ld_id)*6+4] +=
             - ( forceline[3]*xyz[2] - forceline[5]*xyz[0] ) * fac;
 
-          container->liftdrag[(FLUID_NUM_LD+1+ld_id)*6+5] += 
+          container->liftdrag[(FLUID_NUM_LD+1+ld_id)*6+5] +=
             ( forceline[3]*xyz[1] - forceline[4]*xyz[0] ) * fac;
 
         }
@@ -364,11 +364,11 @@ void f3_liftdrag(
 
 
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 
-  return; 
+  return;
 } /* end of f3_liftdrag */
 
 
@@ -376,13 +376,13 @@ void f3_liftdrag(
 static DOUBLE Q12 = ONE/TWO;
 static DOUBLE Q14 = ONE/FOUR;
 static DOUBLE Q18 = ONE/EIGHT;
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
   \brief shape functions and their natural derivatives for hexaeder
 
   <pre>                                                         mn 03/04
 
   In this routine the shape functions and their natural first
-  derivatives with respect to r/s/t are evaluated for 
+  derivatives with respect to r/s/t are evaluated for
   H E X A H E D E R
 
 
@@ -394,7 +394,7 @@ static DOUBLE Q18 = ONE/EIGHT;
   \param   t 	       DOUBLE   (i)    coordinate
   \param   typ 	       DIS_TYP  (i)    element type
 
-  \return void                                                                       
+  \return void
   \warning shape functions for hex20/hex27/tet10 not implemented yet!!!
 
   ------------------------------------------------------------------------*/
@@ -412,7 +412,7 @@ void f3_hex2(
   DOUBLE drm1,dr00,drp1,dsm1,ds00,dsp1,dtm1,dt00,dtp1;
   DOUBLE rm1,r00,rp1,sm1,s00,sp1,tm1,t00,tp1;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("f3_hex2");
 #endif
 
@@ -468,7 +468,7 @@ void f3_hex2(
       break;
 
 
-    case hex20: /* QUADRATIC shape functions and their natural derivatives 
+    case hex20: /* QUADRATIC shape functions and their natural derivatives
                    without central nodes                      ----*/
 
       dserror("shape functions for hex20 not implemented yet - see f3_calfuncderiv!\n");
@@ -478,7 +478,7 @@ void f3_hex2(
       sp=ONE+s;
       sm=ONE-s;
       tp=ONE+t;
-      tm=ONE-t;   
+      tm=ONE-t;
       rrm=ONE-r*r;
       ssm=ONE-s*s;
       ttm=ONE-t*t;
@@ -583,11 +583,11 @@ void f3_hex2(
 
       deriv[0][19]=-deriv[0][16];
       deriv[1][19]=-deriv[1][18];
-      deriv[2][19]=-Q12*t*rm*sm;   
+      deriv[2][19]=-Q12*t*rm*sm;
       break;
 
 
-    case hex27: /* QUADRATIC shape functions and their natural derivatives 
+    case hex27: /* QUADRATIC shape functions and their natural derivatives
                    with central nodes                         ----*/
 
       dserror("shape functions for hex20 not implemented yet - see f3_calfuncderiv!\n");
@@ -732,17 +732,17 @@ void f3_hex2(
   } /* end switch (typ) */
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 
   return;
-} /* end of f3_hex2 */  
+} /* end of f3_hex2 */
 
 
 
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
   \brief jacobian matrix
 
   <pre>                                                         mn 03/04
@@ -757,7 +757,7 @@ void f3_hex2(
   \param  *ele       ELEMENT     (i)    actual element
   \param   iel       INT         (i)    num. of nodes of act. ele
 
-  \return void                                                                       
+  \return void
 
   ------------------------------------------------------------------------*/
 void f3_jaco2(
@@ -773,12 +773,12 @@ void f3_jaco2(
   INT i,j,l;
   DOUBLE dum;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("f3_jaco2");
-#endif	 
+#endif
 
 
-  /* determine jacobian at point r,s,t */       
+  /* determine jacobian at point r,s,t */
   for (i=0; i<3; i++)
   {
     for (j=0; j<3; j++)
@@ -793,7 +793,7 @@ void f3_jaco2(
   }
 
 
-  /* determinant of jacobian */        
+  /* determinant of jacobian */
   *det = xjm[0][0]*xjm[1][1]*xjm[2][2]+
     xjm[0][1]*xjm[1][2]*xjm[2][0]+
     xjm[0][2]*xjm[1][0]*xjm[2][1]-
@@ -802,14 +802,14 @@ void f3_jaco2(
     xjm[0][1]*xjm[1][0]*xjm[2][2];
 
   if(*det<ZERO)
-  {   
+  {
     printf("\n");
     printf("GLOBAL ELEMENT %i\n",ele->Id);
     dserror("NEGATIVE JACOBIAN DETERMINANT\n");
   }
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 
@@ -819,5 +819,5 @@ void f3_jaco2(
 
 
 #endif
-/*! @} (documentation module close)*/         
+/*! @} (documentation module close)*/
 

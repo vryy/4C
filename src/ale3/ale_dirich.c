@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 'ale_setdirich', 'ale_caldirich', 
-'ale_setdirich_increment', 'ale_caldirich_increment' and 
+\brief contains the routine 'ale_setdirich', 'ale_caldirich',
+'ale_setdirich_increment', 'ale_caldirich_increment' and
 'check_ale_dirich'
 
 <pre>
@@ -38,16 +38,16 @@ extern struct _MATERIAL  *mat;
 extern INT            numcurve;
 extern struct _CURVE *curve;
 
-/*! 
-\addtogroup Ale 
+/*!
+\addtogroup Ale
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
 \brief sets dirichlet boundary conditions on at time t
 
-<pre>                                                              mn 06/02 
-This routine reads the initial value for the dirichlet condition from 
-actgnode->dirich->dirich_val.a.dv[j], gets the appropriate factor from 
+<pre>                                                              mn 06/02
+This routine reads the initial value for the dirichlet condition from
+actgnode->dirich->dirich_val.a.dv[j], gets the appropriate factor from
 the timecurve and writes the value for the dirichlet conditions at the
 time t to actnode->sol.a.da[0][j].
 
@@ -60,13 +60,13 @@ time t to actnode->sol.a.da[0][j].
 
 \warning For (dirich_val.a.dv == 90) the boundary conditions for a special
          example (rotating hole) are calculated.
-\return void                                               
+\return void
 \sa calling: dyn_facfromcurve(); called by: dyn_ale_lin()
 
 *----------------------------------------------------------------------*/
 void ale_setdirich(
-    FIELD        *actfield, 
-    ALE_DYNAMIC  *adyn, 
+    FIELD        *actfield,
+    ALE_DYNAMIC  *adyn,
     INT           readstructpos
     )
 {
@@ -89,9 +89,9 @@ DOUBLE                initval;
 DOUBLE                delta, deltav[MAXDOFPERNODE];
 DOUBLE                cx,cy,win,wino,dd;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ale_setdirich");
-#endif 
+#endif
 
 numnp_total  = actfield->dis[0].numnp;
 numele_total = actfield->dis[0].numele;
@@ -110,17 +110,17 @@ for (actcurve=0;actcurve<numcurve;actcurve++)
 /*------------------------------------------------- loop over all nodes */
 for (i=0;i<numnp_total;i++)
 {
-   actanode  = &(actfield->dis[0].node[i]); 
-   actagnode = actanode->gnode;      
+   actanode  = &(actfield->dis[0].node[i]);
+   actagnode = actanode->gnode;
    if (actagnode->dirich==NULL) continue;
-   
+
     switch(actagnode->dirich->dirich_type)
     {
       case dirich_none:
         for (j=0;j<actanode->numdf;j++)
         {
           /*--------- to make sure that there's no garbage we zero the sol-array */
-          actanode->sol_increment.a.da[0][j] = ZERO;  
+          actanode->sol_increment.a.da[0][j] = ZERO;
           if (actagnode->dirich->dirich_onoff.a.iv[j]==0)
             continue;
           actcurve = actagnode->dirich->curve.a.iv[j]-1;
@@ -128,7 +128,7 @@ for (i=0;i<numnp_total;i++)
             acttimefac = 1.0;
           else
             acttimefac = timefac[actcurve];
-          initval  = actagnode->dirich->dirich_val.a.dv[j];               
+          initval  = actagnode->dirich->dirich_val.a.dv[j];
           /*=====================================================================*
             |    example: rotating hole (dirich_val.a.dv == 90)                   |
             |    sonst: Normalfall:                                               |
@@ -136,11 +136,11 @@ for (i=0;i<numnp_total;i++)
            *=====================================================================*/
           if (FABS(initval-90.0) > EPS13)
           {
-            actanode->sol_increment.a.da[0][j] = initval*acttimefac;  
+            actanode->sol_increment.a.da[0][j] = initval*acttimefac;
           }
           else
           {
-            cx = actanode->x[0]; 
+            cx = actanode->x[0];
             cy = actanode->x[1];
             win = (initval * acttimefac * 3.14159265359)/180.0;
             wino= atan(cy/cx);
@@ -154,7 +154,7 @@ for (i=0;i<numnp_total;i++)
             {
               actanode->sol_increment.a.da[0][j] = dd * sin(win+wino) - cy;
             }
-          } 
+          }
         }
         break;
 
@@ -165,7 +165,7 @@ for (i=0;i<numnp_total;i++)
       for (j=0;j<actanode->numdf;j++)
       {
          actanode->sol_increment.a.da[0][j] =
-	    actsnode->sol_mf.a.da[readstructpos][j];  
+	    actsnode->sol_mf.a.da[readstructpos][j];
       } /* readstructpos = 0 for 'ordinary' calculation *
                          = 6 for calculation for Relaxation parameter via
 			     steepest descent method */
@@ -174,45 +174,45 @@ for (i=0;i<numnp_total;i++)
                                free surface                             */
       if (actanode->locsysId==0)
       {
-         actfnode = actagnode->mfcpnode[numff];                            
+         actfnode = actagnode->mfcpnode[numff];
          for (j=0;j<actanode->numdf;j++)
          {
             delta = actfnode->xfs[j]-actanode->x[j];
-            actanode->sol_increment.a.da[0][j]=delta;   
+            actanode->sol_increment.a.da[0][j]=delta;
          }
       }
       else /* local co-system */
-           /* NOTE: given is the position of the free surface from which 
+           /* NOTE: given is the position of the free surface from which
                     we get the prescribed displacement for this node
                     in the XYZ co-system. So the displacement vector
                     has to be tranformed to the xyz* co-system          */
       {
-         actfnode = actagnode->mfcpnode[numff];                            
+         actfnode = actagnode->mfcpnode[numff];
          actele = actanode->element[0];
          for (j=0;j<actanode->numdf;j++)
-            deltav[j]=actfnode->xfs[j]-actanode->x[j];         
+            deltav[j]=actfnode->xfs[j]-actanode->x[j];
          locsys_trans_nodval(actele,&(deltav[0]),actanode->numdf,
                              actanode->locsysId-1,0);
          for (j=0;j<actanode->numdf;j++)
-            actanode->sol_increment.a.da[0][j]=deltav[j];   
-         
-      }    
-   break;  
+            actanode->sol_increment.a.da[0][j]=deltav[j];
 
-#endif   
+      }
+   break;
+
+#endif
    default:
       dserror("dirich type unknown!\n");
    }
 }
 
 /*------------------------ dirichlet values are applied in the xyz* co-sys
-   so transform nodal values with dirichlet conditions for 
+   so transform nodal values with dirichlet conditions for
    sol_increment                                                          */
-locsys_trans_sol_dirich(actfield,0,1,0,1);   
+locsys_trans_sol_dirich(actfield,0,1,0,1);
 
 /*----------------------------------------------------------------------*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -224,9 +224,9 @@ return;
   \brief sets incremental dirichlet boundary conditions on at time t
 
   <pre>                                                             ck 06/03
-  This routine reads the initial value for the dirichlet condition from 
-  actgnode->dirich->dirich_val.a.dv[j], gets the appropriate factor from 
-  the timecurve and writes the value for the incremental dirichlet conditions 
+  This routine reads the initial value for the dirichlet condition from
+  actgnode->dirich->dirich_val.a.dv[j], gets the appropriate factor from
+  the timecurve and writes the value for the incremental dirichlet conditions
   at the time t to actnode->sol_increment.a.da[0][j].
   Routine is used for fsi-ale problems with changing ale stiffness over time.
 
@@ -237,14 +237,14 @@ return;
 
   \warning For (dirich_val.a.dv == 90) the boundary conditions for a special
   example (rotating hole) are calculated.
-  \return void                                               
-  \sa calling: dyn_facfromcurve(); 
-  called by: fsi_ale_nln(), fsi_ale_2step(), fsi_ale_spring(), 
+  \return void
+  \sa calling: dyn_facfromcurve();
+  called by: fsi_ale_nln(), fsi_ale_2step(), fsi_ale_spring(),
   fsi_ale_laplace()
 
  *----------------------------------------------------------------------*/
-void ale_setdirich_increment_fsi(FIELD        *actfield, 
-                                 ALE_DYNAMIC  *adyn, 
+void ale_setdirich_increment_fsi(FIELD        *actfield,
+                                 ALE_DYNAMIC  *adyn,
 				 INT           actpos)
 {
 GNODE                *actagnode;
@@ -265,9 +265,9 @@ DOUBLE                acttimefac;
 DOUBLE                initval;
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("ale_setdirich_increment_fsi");
-#endif 
+#endif
 
 numnp_total  = actfield->dis[0].numnp;
 numele_total = actfield->dis[0].numele;
@@ -286,9 +286,9 @@ for (actcurve=0;actcurve<numcurve;actcurve++)
 /*------------------------------------------------- loop over all nodes */
 for (i=0;i<numnp_total;i++)
 {
-   actanode  = &(actfield->dis[0].node[i]); 
+   actanode  = &(actfield->dis[0].node[i]);
    dsassert(actanode->locsysId==0,"locsys not implemented yet!\n");
-   actagnode = actanode->gnode;      
+   actagnode = actanode->gnode;
    dsassert(actanode->locsysId==0,"incremental DBCs at ALE nodes!\n");
    if (actpos >= actanode->sol.fdim)
    {
@@ -314,7 +314,7 @@ for (i=0;i<numnp_total;i++)
             acttimefac = timefac[actcurve];
           initval  = actagnode->dirich->dirich_val.a.dv[j];
           actanode->sol_increment.a.da[0][j] = initval*acttimefac
-            - actanode->sol_increment.a.da[1][j];  
+            - actanode->sol_increment.a.da[1][j];
           /* actanode->sol.a.da[actpos][j] = initval*acttimefac; */
         }
         break;
@@ -325,26 +325,26 @@ for (i=0;i<numnp_total;i++)
       for (j=0;j<actanode->numdf;j++)
       {
          actanode->sol_increment.a.da[0][j] = actsnode->sol_mf.a.da[0][j]
-	                                    - actanode->sol_increment.a.da[1][j];  
+	                                    - actanode->sol_increment.a.da[1][j];
       }
    break;
    case dirich_freesurf: /* dirichvalues = displacement of fluid
                             free surface                                */
-      actfnode = actagnode->mfcpnode[numff];                            
+      actfnode = actagnode->mfcpnode[numff];
       for (j=0;j<actanode->numdf;j++)
       {
-            actanode->sol_increment.a.da[0][j] 
+            actanode->sol_increment.a.da[0][j]
 	       = actfnode->xfs[j]-actanode->x[j]-actanode->sol_increment.a.da[1][j];
-      }    
-   break;  
-#endif   
+      }
+   break;
+#endif
 
       default:
         dserror("dirich type unknown!\n");
     }
   }
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -358,10 +358,10 @@ dstrc_exit();
   \brief sets dirichlet boundary conditions on at time t for incremental
   calculation
 
-  <pre>                                                             ck 12/02 
-  This routine reads the initial value for the dirichlet condition from 
-  actgnode->dirich->dirich_val.a.dv[j], gets the appropriate factor from 
-  the timecurve at t and t - dt and writes the value for the dirichlet 
+  <pre>                                                             ck 12/02
+  This routine reads the initial value for the dirichlet condition from
+  actgnode->dirich->dirich_val.a.dv[j], gets the appropriate factor from
+  the timecurve at t and t - dt and writes the value for the dirichlet
   conditions at the time t to actnode->sol_increment.a.da[0][j].
 
   </pre>
@@ -369,9 +369,9 @@ dstrc_exit();
   \param *sdyn      STRUCT_DYNAMIK (i)  structure containing time information
 
   \warning There is nothing special to this routine.
-  \return void                                               
-  \sa calling: dyn_facfromcurve(); 
-  called by: dyn_ale_nln(), dyn_ale_2step(), dyn_ale_spring(), 
+  \return void
+  \sa calling: dyn_facfromcurve();
+  called by: dyn_ale_nln(), dyn_ale_2step(), dyn_ale_spring(),
   dyn_ale_laplace()
 
  *----------------------------------------------------------------------*/
@@ -381,7 +381,7 @@ void ale_setdirich_increment(
     )
 {
   GNODE                *actgnode;
-  NODE                 *actnode; 
+  NODE                 *actnode;
   INT                   i,j;
   INT                   numnp_total;
   INT                   numele_total;
@@ -395,9 +395,9 @@ void ale_setdirich_increment(
   DOUBLE                cx,cy,win,wino,winp,dd;
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("ale_setdirich_increment");
-#endif 
+#endif
 
 numnp_total  = actfield->dis[0].numnp;
 numele_total = actfield->dis[0].numele;
@@ -414,9 +414,9 @@ for (actcurve=0;actcurve<numcurve;actcurve++)
 /*------------------------------------------------- loop over all nodes */
 for (i=0;i<numnp_total;i++)
 {
-   actnode  = &(actfield->dis[0].node[i]); 
+   actnode  = &(actfield->dis[0].node[i]);
    dsassert(actnode->locsysId==0,"locsys not implemented yet!\n");
-   actgnode = actnode->gnode; 
+   actgnode = actnode->gnode;
    if (actgnode->dirich==NULL)
          continue;
    for (j=0;j<actnode->numdf;j++)
@@ -434,7 +434,7 @@ for (i=0;i<numnp_total;i++)
         acttimefac = timefac[0][actcurve];
         prevtimefac = timefac[1][actcurve];
       }
-      initval  = actgnode->dirich->dirich_val.a.dv[j];		 
+      initval  = actgnode->dirich->dirich_val.a.dv[j];
       /*=====================================================================*
         |    example: rotating hole (dirich_val.a.dv == 90)                   |
         |    sonst: Normalfall:                                               |
@@ -448,15 +448,15 @@ for (i=0;i<numnp_total;i++)
         cy = actnode->x[1];
         win = (initval * acttimefac * 3.14159265359)/180.0;
         winp = (initval * prevtimefac * 3.14159265359)/180.0;
-        if (cx != 0.0) wino= atan(cy/cx);   
+        if (cx != 0.0) wino= atan(cy/cx);
         else wino = 3.14159265359/2.;
         dd = sqrt(cx*cx+cy*cy);
         if(cx < 0.0) wino += 3.14159265359;
         if (j==0)
-          actnode->sol_increment.a.da[0][j] = dd * cos(win+wino) 
+          actnode->sol_increment.a.da[0][j] = dd * cos(win+wino)
             - dd * cos(winp+wino);
         else
-          actnode->sol_increment.a.da[0][j] = dd * sin(win+wino) 
+          actnode->sol_increment.a.da[0][j] = dd * sin(win+wino)
             - dd * sin(winp+wino);
       }
     }
@@ -465,7 +465,7 @@ for (i=0;i<numnp_total;i++)
     /*=====================================================================*/
   } /* end loop over nodes */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -475,9 +475,9 @@ dstrc_exit();
 
 
 /*!----------------------------------------------------------------------
-  \brief calculates the element dirichlet load vector  
+  \brief calculates the element dirichlet load vector
 
-  <pre>                                                              mn 06/02 
+  <pre>                                                              mn 06/02
   This routine calculates the element dirichlet load vector, reading the
   values of the dirichlet conditions from actnode->sol.a.da[0][j]
 
@@ -487,16 +487,16 @@ dstrc_exit();
   \param dim            INT     (i)  dimension
   \param *estif_global  ARRAY   (i)  the element stiffness matrix
 
-  \return void                                               
+  \return void
   \sa calling: ---; called by: ale_rhs()
 
  *----------------------------------------------------------------------*/
 void ale_caldirich(
-                     ELEMENT   *actele, 
+                     ELEMENT   *actele,
 		     DOUBLE    *fullvec,
 		     INT        dim,
                      ARRAY     *estif_global
-		    )     
+		    )
 {
 
 INT                   i,j;
@@ -512,9 +512,9 @@ GNODE                *actgnode;
 NODE                 *actnode;
 INT                   lm[MAXDOFPERELE];
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ale_caldirich");
-#endif  
+#endif
 
 /*----------------------------------------------------------------------*/
 estif  = estif_global->a.da;
@@ -534,13 +534,13 @@ for (i=0; i<nd; i++)
 for (i=0; i<actele->numnp; i++)
 {
    numdf    = actele->node[i]->numdf;
-   actnode  = actele->node[i];   
+   actnode  = actele->node[i];
    actgnode = actnode->gnode;
    ilocsys=actnode->locsysId-1;
    if (ilocsys>=0) /* local co-sys */
    {
       /*------------------------- transform values at from XYZ to xyz* */
-      for (j=0;j<numdf;j++) 
+      for (j=0;j<numdf;j++)
          val[j]=actnode->sol_increment.a.da[0][j];
       locsys_trans_nodval(actele,&(val[0]),actnode->numdf,ilocsys,0);
       for (j=0; j<numdf; j++)
@@ -584,21 +584,21 @@ for (i=0; i<nd; i++)
 
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
   return;
-} /* end of ale_caldirich*/ 
+} /* end of ale_caldirich*/
 
 
 
 
 /*!----------------------------------------------------------------------
-  \brief calculates the element dirichlet load vector for incremental 
-  calculations 
+  \brief calculates the element dirichlet load vector for incremental
+  calculations
 
-  <pre>                                                            ck 05/03 
+  <pre>                                                            ck 05/03
   This routine calculates the element dirichlet load vector, reading the
   values of the dirichlet conditions from actnode->sol_increment.a.da[0][j]
 
@@ -609,17 +609,17 @@ dstrc_exit();
   \param *estif_global  ARRAY   (i)  the element stiffness matrix
   \param  place         INT     (i)  where to read in sol_increment
 
-  \return void                                               
+  \return void
   \sa calling: ---; calelem()
 
  *----------------------------------------------------------------------*/
 void ale_caldirich_increment(
-    ELEMENT   *actele, 
+    ELEMENT   *actele,
     DOUBLE    *fullvec,
     INT        dim,
     ARRAY     *estif_global,
     INT        place
-    )     
+    )
 {
 
   INT                   i,j;
@@ -633,9 +633,9 @@ void ale_caldirich_increment(
   NODE                 *actnode;
   INT                   lm[MAXDOFPERELE];
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("ale_caldirich_increment");
-#endif  
+#endif
 
   estif  = estif_global->a.da;
 
@@ -655,7 +655,7 @@ void ale_caldirich_increment(
   for (i=0; i<actele->numnp; i++)
   {
     numdf    = actele->node[i]->numdf;
-    actnode  = actele->node[i];   
+    actnode  = actele->node[i];
     actgnode = actnode->gnode;
     for (j=0; j<numdf; j++)
     {
@@ -688,18 +688,18 @@ void ale_caldirich_increment(
     fullvec[lm[i]] += dforces[i];
   }
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 
   return;
-} /* end of ale_caldirich_increment*/ 
+} /* end of ale_caldirich_increment*/
 
 
 /*!----------------------------------------------------------------------
   \brief checks if element has node with Dirichlet condition
 
-  <pre>                                                             ck 05/03 
+  <pre>                                                             ck 05/03
   This routine checks if element has Dirichlet condition.
 
   </pre>
@@ -713,15 +713,15 @@ INT check_ale_dirich(
   INT hasdirich=0;
   GNODE *actgnode;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("check_ale_dirich");
-#endif  
+#endif
 
 
   for (j=0; j<actele->numnp; j++)
-  {   
-    actgnode = actele->node[j]->gnode;   
-    if (actgnode->dirich==NULL) 
+  {
+    actgnode = actele->node[j]->gnode;
+    if (actgnode->dirich==NULL)
       continue;
     else
     {
@@ -738,7 +738,7 @@ INT check_ale_dirich(
   }
   return hasdirich;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 

@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -45,14 +45,14 @@ struct _IO_FLAGS        ioflags;
  | pointer to allocate dynamic variables if needed                      |
  | dedfined in global_control.c                                         |
  *----------------------------------------------------------------------*/
-extern struct _DYNAMIC *dyn;   
+extern struct _DYNAMIC *dyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate dynamic variables if needed                      |
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA         *alldyn;   
+extern ALLDYNA         *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
@@ -75,7 +75,7 @@ extern struct _MATERIAL  *mat;
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -91,11 +91,11 @@ extern struct _STATIC_VAR  *statvar;
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par;                      
+ extern struct _PAR   par;
 
 /*----------------------------------------------------------------------*
  |  print out general information about problem              m.gee 12/01|
@@ -114,7 +114,7 @@ NODE      *actnode;
 INT        myrank;
 INT        nprocs;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("out_general");
 #endif
 
@@ -160,7 +160,7 @@ fprintf(out,"Type of Problem           : Two-Phase-Fluid-Flow\n");
 break;
 case prb_levelset:
 fprintf(out,"Type of Problem           : Levelset \n");
-break;  
+break;
 default:
 dserror("Cannot print problem type");
 break;
@@ -185,7 +185,7 @@ fprintf(out,"\n");
 for (i=0; i<genprob.numfld; i++)
 {
    actfield = &(field[i]);
-#ifdef PARALLEL 
+#ifdef PARALLEL
    actintra = &(par.intra[i]);
 #else
    actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
@@ -207,7 +207,7 @@ fprintf(out,"FIELD: structure\n");
 break;
 case levelset:
 fprintf(out,"FIELD: levelset\n");
-break; 
+break;
 default:
 dserror("Cannot print fieldtype");
 break;
@@ -286,7 +286,7 @@ fprintf(out,"ELE glob_Id %6d loc_Id %6d WALLGE\n",actele->Id,actele->Id_loc);
 break;
 case el_ls2:
 fprintf(out,"ELE glob_Id %6d loc_Id %6d LS2\n",actele->Id,actele->Id_loc);
-break; 
+break;
 default:
 dserror("Cannot print elementtype");
 break;
@@ -315,7 +315,7 @@ actnode = &(actfield->dis[0].node[j]);
       if (actnode->element[k]->eltyp == el_shell9) is_shell9 = 1;
    }
    /* write dofs for shell9 */
-   if (is_shell9 == 1) 
+   if (is_shell9 == 1)
    {
      s9out_dof(actnode,j);
      continue;
@@ -367,10 +367,10 @@ fprintf(out,"___________________________________________________________________
 } /* end of if (myrank==0) */
 /*----------------------------------------------------------------------*/
 fflush(out);
-#ifndef PARALLEL 
+#ifndef PARALLEL
 CCAFREE(actintra);
 #endif
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -381,7 +381,7 @@ return;
 /*----------------------------------------------------------------------*
  |  print out solution of a certain step                     m.gee 12/01|
  *----------------------------------------------------------------------*/
-void out_sol(FIELD *actfield, PARTITION *actpart, INTRA *actintra, 
+void out_sol(FIELD *actfield, PARTITION *actpart, INTRA *actintra,
              INT step, INT place)
 {
 INT        i,j,k,kk;
@@ -396,7 +396,7 @@ INT        nprocs;
 INT        imyrank;
 INT        inprocs;
 INT        ngauss;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("out_sol");
 #endif
 /*----------------------------------------------------------------------*/
@@ -432,7 +432,7 @@ case structure:
    if (ioflags.struct_disp_file==1)
    {
    fprintf(out,"================================================================================\n");
-   fprintf(out,"Converged Solution of Discretisation %d in step %d \n",0,step); 
+   fprintf(out,"Converged Solution of Discretisation %d in step %d \n",0,step);
    fprintf(out,"================================================================================\n");
    for (j=0; j<actfield->dis[0].numnp; j++)
    {
@@ -465,14 +465,14 @@ case structure:
       #endif /*D_SHELL9*/
 
       fprintf(out,"NODE glob_Id %6d loc_Id %6d    ",actnode->Id,actnode->Id_loc);
-      for (k=0; k<actnode->numdf; k++) 
-      { 
+      for (k=0; k<actnode->numdf; k++)
+      {
          if (place >= actnode->sol.fdim) dserror("Cannot print solution step");
          fprintf(out,"%20.7E ",actnode->sol.a.da[place][k]);
       }
-      fprintf(out,"\n");     
+      fprintf(out,"\n");
    }
-   fprintf(out,"________________________________________________________________________________\n\n");  
+   fprintf(out,"________________________________________________________________________________\n\n");
    }
 break;
 case fluid:
@@ -481,13 +481,13 @@ case fluid:
       for (kk=0;kk<actfield->ndis;kk++)
       {
          fprintf(out,"================================================================================\n");
-         fprintf(out,"Converged Solution of Discretisation %d in step %d \n",kk,step); 
+         fprintf(out,"Converged Solution of Discretisation %d in step %d \n",kk,step);
          fprintf(out,"================================================================================\n");
          for (j=0; j<actfield->dis[kk].numnp; j++)
          {
             actnode = &(actfield->dis[kk].node[j]);
             fprintf(out,"NODE glob_Id %6d loc_Id %6d    ",actnode->Id,actnode->Id_loc);
-            for (k=0; k<actnode->sol.sdim; k++) 
+            for (k=0; k<actnode->sol.sdim; k++)
             {
                if (place >= actnode->sol.fdim) dserror("Cannot print solution step");
                fprintf(out,"%20.7E ",actnode->sol.a.da[place][k]);
@@ -502,14 +502,14 @@ case ale:
    if (ioflags.ale_disp_file==1)
    {
    fprintf(out,"================================================================================\n");
-   fprintf(out,"Converged Solution of Discretisation %d in step %d \n",0,step); 
+   fprintf(out,"Converged Solution of Discretisation %d in step %d \n",0,step);
    fprintf(out,"================================================================================\n");
    for (j=0; j<actfield->dis[0].numnp; j++)
    {
       actnode = &(actfield->dis[0].node[j]);
       fprintf(out,"NODE glob_Id %6d loc_Id %6d    ",actnode->Id,actnode->Id_loc);
-      for (k=0; k<actnode->numdf; k++) 
-      { 
+      for (k=0; k<actnode->numdf; k++)
+      {
    	 if (place >= actnode->sol.fdim) dserror("Cannot print solution step");
    	 fprintf(out,"%20.7E ",actnode->sol.a.da[place][k]);
       }
@@ -567,13 +567,13 @@ for (j=0; j<actfield->dis[0].numele; j++)
        switch(actele->e.s8->forcetyp)
        {
        case s8_xyz:
-       fprintf(out,"Gaussian     Moment-xx    Moment-xy    Moment-yx     Moment-yy    Moment-xz    Moment-zx     Moment-yz    Moment-zy    Moment-zz\n"); 
+       fprintf(out,"Gaussian     Moment-xx    Moment-xy    Moment-yx     Moment-yy    Moment-xz    Moment-zx     Moment-yz    Moment-zy    Moment-zz\n");
        break;
        case s8_rst:
-       fprintf(out,"Gaussian     Moment-rr    Moment-rs    Moment-sr     Moment-ss    Moment-rt    Moment-tr     Moment-st    Moment-ts    Moment-tt\n"); 
+       fprintf(out,"Gaussian     Moment-rr    Moment-rs    Moment-sr     Moment-ss    Moment-rt    Moment-tr     Moment-st    Moment-ts    Moment-tt\n");
        break;
        case s8_rst_ortho:
-       fprintf(out,"Gaussian     Moment-rr    Moment-rs    Moment-sr     Moment-ss    Moment-rt    Moment-tr     Moment-st    Moment-ts    Moment-tt\n"); 
+       fprintf(out,"Gaussian     Moment-rr    Moment-rs    Moment-sr     Moment-ss    Moment-rt    Moment-tr     Moment-st    Moment-ts    Moment-tt\n");
        break;
        default:
           dserror("Unknown type of element stresses");
@@ -595,13 +595,13 @@ for (j=0; j<actfield->dis[0].numele; j++)
        }
 #endif /*D_SHELL8*/
    break;
-/*---------------------------------------------------------sh 9/02-------*/  
+/*---------------------------------------------------------sh 9/02-------*/
    case el_shell9:
 #ifdef D_SHELL9
 /*NOTE: It does not seem to be very interesting to write the forces of each kinematic layer; it is more
         usefull to look at the stresses. These are writen to the flavia.res-File, so that they could be
         visualized with gid.   sh 02/03 */
-        
+
 #if 0
        ngauss   = actele->e.s9->nGP[0] * actele->e.s9->nGP[1];
        num_klay = actele->e.s9->num_klay;
@@ -643,13 +643,13 @@ for (j=0; j<actfield->dis[0].numele; j++)
        switch(actele->e.s9->forcetyp)
        {
        case s9_xyz:
-       fprintf(out,"Gaussian   Layer      Moment-xx    Moment-xy    Moment-yx    Moment-yy    Moment-xz    Moment-zx    Moment-yz    Moment-zy    Moment-zz\n"); 
+       fprintf(out,"Gaussian   Layer      Moment-xx    Moment-xy    Moment-yx    Moment-yy    Moment-xz    Moment-zx    Moment-yz    Moment-zy    Moment-zz\n");
        break;
        case s9_rst:
-       fprintf(out,"Gaussian   Layer      Moment-rr    Moment-rs    Moment-sr    Moment-ss    Moment-rt    Moment-tr    Moment-st    Moment-ts    Moment-tt\n"); 
+       fprintf(out,"Gaussian   Layer      Moment-rr    Moment-rs    Moment-sr    Moment-ss    Moment-rt    Moment-tr    Moment-st    Moment-ts    Moment-tt\n");
        break;
        case s9_rst_ortho:
-       fprintf(out,"Gaussian   Layer      Moment-rr    Moment-rs    Moment-sr    Moment-ss    Moment-rt    Moment-tr    Moment-st    Moment-ts    Moment-tt\n"); 
+       fprintf(out,"Gaussian   Layer      Moment-rr    Moment-rs    Moment-sr    Moment-ss    Moment-rt    Moment-tr    Moment-st    Moment-ts    Moment-tt\n");
        break;
        default:
           dserror("Unknown type of element stresses");
@@ -674,10 +674,10 @@ for (j=0; j<actfield->dis[0].numele; j++)
           }
        }
 #endif
-       
+
 #endif /*D_SHELL9*/
    break;
-/*---------------------------------------------------------fh 03/02-------*/  
+/*---------------------------------------------------------fh 03/02-------*/
    case el_wall1:
 #ifdef D_WALL1
        ngauss = actele->e.w1->nGP[0] * actele->e.w1->nGP[1];
@@ -708,8 +708,8 @@ for (j=0; j<actfield->dis[0].numele; j++)
        actele->e.w1->stress_GP.a.d3[place][5][i],
        actele->e.w1->stress_GP.a.d3[place][6][i]
        );
-       }           
-#endif /*D_WALL1*/   
+       }
+#endif /*D_WALL1*/
    break;
    case el_brick1:
 #ifdef D_BRICK1
@@ -737,12 +737,12 @@ for (j=0; j<actfield->dis[0].numele; j++)
           actele->e.c1->stress_GP.a.d3[place][10][i],
           actele->e.c1->stress_GP.a.d3[place][11][i]
           );
-       }           
+       }
        break;
        case c1_gprst:
-       fprintf(out,"r,s,t    ---> local system on element level \n");                                                 
-       fprintf(out,"rr,ss,tt ---> normal-stresses               \n");                                                  
-       fprintf(out,"rs,st,tr ---> shear -stresses               \n\n");                                               
+       fprintf(out,"r,s,t    ---> local system on element level \n");
+       fprintf(out,"rr,ss,tt ---> normal-stresses               \n");
+       fprintf(out,"rs,st,tr ---> shear -stresses               \n\n");
        fprintf(out,"INT.point   x-coord.     y-coord.     z-coord.     stress-rr    stress-ss    stress-tt    stress-rs    stress-st    stress-tr\n");
        for (i=0; i<ngauss; i++)
        {
@@ -758,13 +758,13 @@ for (j=0; j<actfield->dis[0].numele; j++)
           actele->e.c1->stress_GP.a.d3[place][4][i],
           actele->e.c1->stress_GP.a.d3[place][5][i]
           );
-       }           
+       }
        break;
        case c1_gp123:
-       fprintf(out,"11,22,33 ---> principal-stresses                       \n");                                                 
-       fprintf(out,"r1,s1,t1 ---> angles to the first  principal direction \n");                                                  
-       fprintf(out,"r2,s2,t2 ---> angles to the second principal direction \n");                                               
-       fprintf(out,"r3,s3,t3 ---> angles to the third  principal direction \n\n"); 
+       fprintf(out,"11,22,33 ---> principal-stresses                       \n");
+       fprintf(out,"r1,s1,t1 ---> angles to the first  principal direction \n");
+       fprintf(out,"r2,s2,t2 ---> angles to the second principal direction \n");
+       fprintf(out,"r3,s3,t3 ---> angles to the third  principal direction \n\n");
        fprintf(out,"INT.point   stress-11    stress-22    stress-33  ang-r1  ang-s1   ang-t1    ang-r2   ang-s2   ang-t2   ang-r3   ang-s3   ang-t3\n");
        for (i=0; i<ngauss; i++)
        {
@@ -783,7 +783,7 @@ for (j=0; j<actfield->dis[0].numele; j++)
           actele->e.c1->stress_GP.a.d3[place][22][i],
           actele->e.c1->stress_GP.a.d3[place][23][i]
           );
-       }           
+       }
        break;
        case c1_nprst:
        fprintf(out,"elenode     stress-rr    stress-ss    stress-tt    stress-rs    stress-st    stress-tr\n");
@@ -798,7 +798,7 @@ for (j=0; j<actfield->dis[0].numele; j++)
           actele->e.c1->stress_ND.a.d3[place][4][i],
           actele->e.c1->stress_ND.a.d3[place][5][i]
           );
-       }           
+       }
        break;
        case c1_np123:
        fprintf(out,"elenode     stress-11    stress-22    stress-33  ang-r1  ang-s1   ang-t1    ang-r2   ang-s2   ang-t2   ang-r3   ang-s3   ang-t3\n");
@@ -819,7 +819,7 @@ for (j=0; j<actfield->dis[0].numele; j++)
           actele->e.c1->stress_ND.a.d3[place][22][i],
           actele->e.c1->stress_ND.a.d3[place][23][i]
           );
-       }           
+       }
        break;
        case c1_npxyz:
        fprintf(out,"elenode     stress-xx    stress-yy    stress-zz    stress-xy    stress-yz    stress-xz\n");
@@ -834,17 +834,17 @@ for (j=0; j<actfield->dis[0].numele; j++)
           actele->e.c1->stress_ND.a.d3[place][10][i],
           actele->e.c1->stress_ND.a.d3[place][11][i]
           );
-       }           
+       }
        break;
        default:
        fprintf(out,"no stresses available\n");
        }
-#endif /*D_BRICK1*/   
+#endif /*D_BRICK1*/
    break;
-   
+
    case el_beam3:
 #ifdef D_BEAM3
-       ngauss = actele->e.b3->nGP[0];          
+       ngauss = actele->e.b3->nGP[0];
        fprintf(out,"________________________________________________________________________________\n");
        fprintf(out,"Element glob_Id %d loc_Id %d                BEAM3\n",actele->Id,actele->Id_loc);
        fprintf(out,"\n");
@@ -861,8 +861,8 @@ for (j=0; j<actfield->dis[0].numele; j++)
        actele->e.b3->force_GP.a.d3[place][5][i]
 
        );
-       }                    
-#endif /*D_BEAM3*/   
+       }
+#endif /*D_BEAM3*/
    break;
 
    case el_interf:
@@ -871,17 +871,17 @@ for (j=0; j<actfield->dis[0].numele; j++)
        fprintf(out,"________________________________________________________________________________\n");
        fprintf(out,"Element glob_Id %d loc_Id %d                INTERF\n",actele->Id,actele->Id_loc);
 
-       switch(actele->e.interf->stresstyp)                                             
-       {                                                                               
+       switch(actele->e.interf->stresstyp)
+       {
        case if_xy:
        fprintf(out,"Gaussian     stresses-xx     stresses-yy    stresses-xy\n");
-       break;                                                                          
+       break;
        case if_tn:
-       fprintf(out,"Gaussian     stresses-tangential     stresses-normal\n");          
-       break;                                                                          
-       default:                                                                        
-          dserror("Unknown type of element stresses");                                 
-       }                                                                               
+       fprintf(out,"Gaussian     stresses-tangential     stresses-normal\n");
+       break;
+       default:
+          dserror("Unknown type of element stresses");
+       }
        for (i=0; i<ngauss; i++)
        {
        fprintf(out,"Gauss %d   %12.3E %12.3E %12.3E\n",
@@ -923,8 +923,8 @@ for (j=0; j<actfield->dis[0].numele; j++)
        actele->e.wallge->stress_GP.a.d3[place][5][i],
        actele->e.wallge->stress_GP.a.d3[place][6][i]
        );
-       }           
-#endif /*D_WALLGE*/   
+       }
+#endif /*D_WALLGE*/
    break;
 
    default:
@@ -953,7 +953,7 @@ for (j=0; j<actfield->dis[0].numele; j++)
    {
    case el_wall1:
    #ifdef D_WALL1
-       
+
        numnp = actele->numnp;
        fprintf(out,"________________________________________________________________________________\n");
        fprintf(out,"Element glob_Id %d loc_Id %d                WALL1\n",actele->Id,actele->Id_loc);
@@ -985,11 +985,11 @@ for (j=0; j<actfield->dis[0].numele; j++)
        actele->e.w1->stress_ND.a.d3[place][6][i]
        );
        }
-   #endif /*D_WALL1*/                       
+   #endif /*D_WALL1*/
    break;
-   
+
    case el_beam3:
-#ifdef D_BEAM3          
+#ifdef D_BEAM3
        numnp = actele->numnp;
        fprintf(out,"________________________________________________________________________________\n");
        fprintf(out,"Element glob_Id %d loc_Id %d                BEAM3\n",actele->Id,actele->Id_loc);
@@ -1007,14 +1007,14 @@ for (j=0; j<actfield->dis[0].numele; j++)
        actele->e.b3->force_ND.a.d3[place][4][i],
        actele->e.b3->force_ND.a.d3[place][5][i]
        );
-       }                    
+       }
 #endif /*D_BEAM3*/
-   break;      
+   break;
    }
 }
 
 #endif
-/*----------------------------------------------------------------------*/  
+/*----------------------------------------------------------------------*/
 
 
 
@@ -1022,7 +1022,7 @@ for (j=0; j<actfield->dis[0].numele; j++)
 } /* end of if (myrank==0 && imyrank==0) */
 /*----------------------------------------------------------------------*/
 if (myrank==0 && imyrank==0) fflush(out);
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1032,12 +1032,12 @@ return;
 \brief print fsi coupling informations
 
 <pre>                                                         genk 01/03
-		     
+
 </pre>
 
-\param *fluidfield    FIELD   (i)    
+\param *fluidfield    FIELD   (i)
 
-\return void                                                                             
+\return void
 
 ------------------------------------------------------------------------*/
 void out_fsi(FIELD *fluidfield)
@@ -1052,7 +1052,7 @@ INT        myrank;
 INT        nprocs;
 INT        numaf,numsf;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("out_fsi");
 #endif
 
@@ -1080,9 +1080,9 @@ for (i=0;i<fluidfield->dis[0].numnp;i++)
    else if (actanode==NULL && actsnode!=NULL)
    fprintf(out,"%-6d         ------       %-6d\n",actfnode->Id,actsnode->Id);
    else if (actanode!=NULL && actsnode!=NULL)
-   fprintf(out,"%-6d         %-6d       %-6d\n",actfnode->Id,actanode->Id,actsnode->Id); 
+   fprintf(out,"%-6d         %-6d       %-6d\n",actfnode->Id,actanode->Id,actsnode->Id);
    else
-   fprintf(out,"%-6d         ------       ------\n",actfnode->Id);    
+   fprintf(out,"%-6d         ------       ------\n",actfnode->Id);
 
 }
 fprintf(out,"________________________________________________________________________________\n\n");
@@ -1102,9 +1102,9 @@ for (i=0;i<fluidfield->dis[0].numnp;i++)
    else if (actanode==NULL && actsnode!=NULL)
    fprintf(out,"%-6d         ------       %-6d\n",actfnode->Id_loc,actsnode->Id_loc);
    else if (actanode!=NULL && actsnode!=NULL)
-   fprintf(out,"%-6d         %-6d       %-6d\n",actfnode->Id_loc,actanode->Id,actsnode->Id_loc); 
+   fprintf(out,"%-6d         %-6d       %-6d\n",actfnode->Id_loc,actanode->Id,actsnode->Id_loc);
    else
-   fprintf(out,"%-6d         ------       ------\n",actfnode->Id_loc);    
+   fprintf(out,"%-6d         ------       ------\n",actfnode->Id_loc);
 
 }
 fprintf(out,"________________________________________________________________________________\n\n");
@@ -1116,7 +1116,7 @@ if (myrank==0) fflush(out);
 #else
 dserror("FSI functions not compiled in\n");
 #endif
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1126,12 +1126,12 @@ return;
 \brief  print fluid multifield coupling informations
 
 <pre>                                                         genk 01/03
-		     
+
 </pre>
 
-\param *fluidfield    FIELD   (i)    
+\param *fluidfield    FIELD   (i)
 
-\return void                                                                             
+\return void
 
 ------------------------------------------------------------------------*/
 void out_fluidmf(FIELD *fluidfield)
@@ -1147,7 +1147,7 @@ INT        nprocs;
 INT        numff;
 INT        numaf;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("out_fluidmf");
 #endif
 
@@ -1170,9 +1170,9 @@ for (i=0;i<fluidfield->dis[0].numnp;i++)
    actfgnode = actfnode->gnode;
    actanode  = actfgnode->mfcpnode[numaf];
    if (actanode!=NULL)
-   fprintf(out,"%-6d         %-6d       \n",actfnode->Id,actanode->Id); 
+   fprintf(out,"%-6d         %-6d       \n",actfnode->Id,actanode->Id);
    else
-   fprintf(out,"%-6d         ------       \n",actfnode->Id);    
+   fprintf(out,"%-6d         ------       \n",actfnode->Id);
 
 }
 fprintf(out,"________________________________________________________________________________\n\n");
@@ -1189,7 +1189,7 @@ for (i=0;i<fluidfield->dis[0].numnp;i++)
    if (actanode!=NULL)
    fprintf(out,"%-6d         %-6d       \n",actfnode->Id_loc,actanode->Id_loc);
    else
-   fprintf(out,"%-6d         ------       \n",actfnode->Id_loc);    
+   fprintf(out,"%-6d         ------       \n",actfnode->Id_loc);
 
 }
 fprintf(out,"________________________________________________________________________________\n\n");
@@ -1201,7 +1201,7 @@ if (myrank==0) fflush(out);
 #else
 dserror("FSI functions not compiled in\n");
 #endif
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1216,7 +1216,7 @@ INT        i,j,k;
 FILE      *out = allfiles.out_tur;
 NODE      *actnode;
 NODE      *actnode2;
-GNODE     *actgnode2;	            
+GNODE     *actgnode2;
 INT        myrank;
 INT        nprocs;
 INT        imyrank;
@@ -1226,7 +1226,7 @@ DOUBLE     visc = 0.0;
 FLUID_DYNAMIC *fdyn;
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("out_fluidmtu");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1253,14 +1253,14 @@ if (imyrank==0 && myrank==0)
 {
 /*-------------------------------------------------------- print header */
 fprintf(out,"================================================================================\n");
-fprintf(out,"Converged Solution in step %d\n",step); 
+fprintf(out,"Converged Solution in step %d\n",step);
 fprintf(out,"================================================================================\n");
 fprintf(out,"________________________________________________________________________________\n\n");
 for (j=0; j<actfield->dis[1].numnp; j++)
 {
    actnode = &(actfield->dis[1].node[j]);
    fprintf(out,"NODE glob_Id %6d loc_Id %6d    ",actnode->Id,actnode->Id_loc);
-   for (k=0; k<actnode->numdf; k++) 
+   for (k=0; k<actnode->numdf; k++)
    {
       if (place >= actnode->sol.fdim) dserror("Cannot print solution step");
       fprintf(out,"%20.7E %20.7E %20.7E",actnode->sol.a.da[place][k],actnode->sol.a.da[place][k+2],actnode->sol.a.da[place][k+1]);
@@ -1272,11 +1272,11 @@ for (j=0; j<actfield->dis[1].numnp; j++)
 {
    actnode  = &(actfield->dis[1].node[j]);
    actnode2 = &(actfield->dis[0].node[j]);
-   actgnode2 = actnode2->gnode;      
+   actgnode2 = actnode2->gnode;
    if (FABS(actnode2->x[0]-fdyn->coord_scale[0])<EPS7)
    {
     fprintf(out,"COORD X %20.3E  Y+ %20.7E ",actnode2->x[0],fdyn->washvel*actnode->x[1]/visc);
-    for (k=0; k<actnode->numdf; k++) 
+    for (k=0; k<actnode->numdf; k++)
     {
      if (place >= actnode->sol.fdim) dserror("Cannot print solution step");
      fprintf(out,"%20.7E %20.7E %20.7E",actnode->sol.a.da[place][k],actnode->sol.a.da[place][k+2],actnode2->sol.a.da[place][k]/fdyn->washvel);
@@ -1289,13 +1289,13 @@ fprintf(out,"___________________________________________________________________
 for (j=0; j<actfield->dis[0].numnp; j++)
 {
    actnode2 = &(actfield->dis[0].node[j]);
-   actgnode2 = actnode2->gnode;      
+   actgnode2 = actnode2->gnode;
    if (actgnode2->dirich==NULL) continue;
    if(actgnode2->dirich->dirich_onoff.a.iv[0]==1 && actgnode2->dirich->dirich_onoff.a.iv[1]==1)
    {
     if(actnode2->sol_increment.a.da[3][0] == 0.0 && actnode2->sol_increment.a.da[3][1] == 0.0)
     {
-#ifdef D_FLUID   
+#ifdef D_FLUID
      fprintf(out,"COORD_X %20.3E C_F %20.7E",actnode2->x[0],actnode2->fluid_varia->c_f_shear);
      actnode2->fluid_varia->c_f_shear = ZERO;
      fprintf(out,"\n");
@@ -1311,7 +1311,7 @@ fprintf(out,"___________________________________________________________________
 if (myrank==0 && imyrank==0) fflush(out);
 /*----------------------------------------------------------------------*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

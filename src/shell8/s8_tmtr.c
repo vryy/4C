@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Michael Gee
@@ -33,7 +33,7 @@ void s8_tmtr(DOUBLE   **x,
 INT    i,j,k,idim,ialpha,inode;
 INT    i1=0,i2=0,i3=0,i4=0,i5=0;
 DOUBLE zeta,det_dummy;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_tmtr");
 #endif
 /*----------------------------------------------------------------------*/
@@ -67,8 +67,8 @@ for (ialpha=0; ialpha<2; ialpha++)
       gkov[idim][ialpha]=0.0;
       for (inode=0; inode<iel; inode++)
       {
-         gkov[idim][ialpha] += 
-         
+         gkov[idim][ialpha] +=
+
             deriv[ialpha][inode] * (x[idim][inode]+zeta*a3[idim][inode]);
       }
    }
@@ -82,7 +82,7 @@ if (i1==1)
       for (inode=0; inode<iel; inode++)
       {
          gkov[idim][2] +=
-         
+
             funct[inode] * a3[idim][inode];
       }
    }
@@ -107,10 +107,10 @@ if (i4==1)
       for (j=i; j<3; j++)
       {
          gmkov[i][j]=0.0;
-         for (k=0; k<3; k++) 
+         for (k=0; k<3; k++)
          gmkov[i][j] += gkov[k][i]*gkov[k][j];
       }
-   }   
+   }
          gmkov[1][0] = gmkov[0][1];
          gmkov[2][0] = gmkov[0][2];
          gmkov[2][1] = gmkov[1][2];
@@ -122,7 +122,7 @@ if (i5==1)
     math_inv3(gmkon,&det_dummy);
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 'ale2', the main routine of the 2d ale element 
+\brief contains the routine 'ale2', the main routine of the 2d ale element
 
 <pre>
 Maintainer: Christiane Foerster
@@ -19,27 +19,27 @@ Maintainer: Christiane Foerster
  *----------------------------------------------------------------------*/
 extern struct _MATERIAL  *mat;
 
-/*! 
-\addtogroup Ale 
+/*!
+\addtogroup Ale
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
 \brief  control routine for the 2d ale element
 
-<pre>                                                              mn 06/02 
+<pre>                                                              mn 06/02
 This routine controles the calculation of the element stiffness, acts
 according to the action.
 
 </pre>
 \param *actpart      PARTITION   (i)   my partition
-\param *actintra     INTRA       (i)   my intra-communicator 
+\param *actintra     INTRA       (i)   my intra-communicator
 \param *ele          ELEMENT     (i)   my element
 \param *estif_global ARRAY       (i)   global stiffness matrix
 \param *action       CALC_ACTION (i)   option passed to element
 \param *container    CONTAINER   (i/o) contains variables defined in container.h
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ale2_static_ke(); called by: ale_calelm(), ale_rhs()
 
 *----------------------------------------------------------------------*/
@@ -54,7 +54,7 @@ void ale2(     PARTITION   *actpart,
 ALE2_DATA     actdata;
 MATERIAL     *actmat;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ale2");
 #endif
 /*----------------------------------------------------------------------*/
@@ -77,25 +77,25 @@ case calc_ale_init_nln:
    ale2_static_ke_prestress(NULL,NULL,NULL,NULL,1,NULL,0,container->quality);
 break;
 /*------------------------------------ calculate nonlinear stiffness ---*/
-case calc_ale_stiff_nln:  
+case calc_ale_stiff_nln:
    actmat = &(mat[ele->mat-1]);
    ale2_static_ke_stiff(ele,&actdata,actmat,estif_global,0,
-			container->quality); 
+			container->quality);
 break;
 
 /*------------- calculate stiffness with prestress for initial steps ---*/
-case calc_ale_stiff_stress:  
+case calc_ale_stiff_stress:
    actmat = &(mat[ele->mat-1]);
    ale2_static_ke_prestress(ele,&actdata,actmat,estif_global,0,
                             container->dirich,container->global_numeq
-			    ,container->quality); 
+			    ,container->quality);
 break;
 
 /*-------------------------- init element routines for two step calc ---*/
 case calc_ale_init_step2:  /* init element routines for both steps */
    ale2_static_ke(NULL,NULL,NULL,NULL,1);
    ale2_static_ke_step2(NULL,NULL,NULL,NULL,1,0,NULL,NULL,
-                        NULL,NULL); 
+                        NULL,NULL);
 break;
 /*---------------------------- calculate stiffness for two step calc ---*/
 case calc_ale_stiff_step2:
@@ -103,7 +103,7 @@ case calc_ale_stiff_step2:
    ale2_static_ke_step2(ele,&actdata,actmat,estif_global,0,
                        container->quality,&container->min_stiff,
 		       &container->max_stiff,&container->min,
-		       &container->max); 
+		       &container->max);
 break;
 
 /*--------------------- init element routines for spring stiffnesses ---*/
@@ -137,10 +137,10 @@ default:
 break;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 #endif
-return; 
+return;
 } /* end of ale3 */
 /*! @} (documentation module close)*/

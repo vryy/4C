@@ -12,31 +12,31 @@ Maintainer: Malte Neumann
 *----------------------------------------------------------------------*/
 #ifdef D_ALE
 #include "../headers/standardtypes.h"
-/*! 
-\addtogroup Ale 
+/*!
+\addtogroup Ale
 *//*! @{ (documentation module open)*/
 /*!----------------------------------------------------------------------
-\brief 
+\brief
 
-<pre>                                                         genk 03/03 
+<pre>                                                         genk 03/03
 
 </pre>
 
-\return void                                               
+\return void
 
 *----------------------------------------------------------------------*/
 void ale_init(
     FIELD *actfield
-    )     
+    )
 {
 
   INT i;
   INT numnp_total;
   NODE *actnode;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("ale_init");
-#endif  
+#endif
 
   /* set some values */
   numnp_total  = actfield->dis[0].numnp;
@@ -49,12 +49,12 @@ void ale_init(
     amzero(&(actnode->sol_increment));
   }
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 
   return;
-} /* end of ale_init*/ 
+} /* end of ale_init*/
 
 
 #endif

@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -14,7 +14,7 @@ Maintainer: Malte Neumann
 #include "../solver/solver.h"
 /*----------------------------------------------------------------------*
  | global dense matrices for element routines             m.gee 9/01    |
- | (defined in global_calelm.c, so they are extern here)                |                
+ | (defined in global_calelm.c, so they are extern here)                |
  *----------------------------------------------------------------------*/
 extern struct _ARRAY estif_global;
 extern struct _ARRAY emass_global;
@@ -38,7 +38,7 @@ INT               nd;                    /* size of estif */
 INT               numeq_total;           /* total number of equations */
 INT               numeq;                 /* number of equations on this proc */
 INT               lm[MAXDOFPERELE];      /* location vector for this element */
-#ifdef PARALLEL 
+#ifdef PARALLEL
 INT               owner[MAXDOFPERELE];   /* the owner of every dof */
 #endif
 INT               myrank;                /* my intra-proc number */
@@ -52,7 +52,7 @@ DOUBLE           **B;                     /* the second dense matrix */
 INT       **cdofs;
 INT         ncdofs;
 */
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("add_dense");
 #endif
 /*----------------------------------------------------------------------*/
@@ -85,7 +85,7 @@ for (i=0; i<actele->numnp; i++)
    for (j=0; j<actele->node[i]->numdf; j++)
    {
       lm[counter]    = actele->node[i]->dof[j];
-#ifdef PARALLEL 
+#ifdef PARALLEL
       owner[counter] = actele->node[i]->proc;
 #endif
       counter++;
@@ -109,7 +109,7 @@ if (*solvertyp==lapack_nonsym)/*-------------- unsymmetric lapack solve */
       /*---------------------------------- check for boundary condition */
       if (ii>=numeq_total) continue;
       /*--------------------------------- check for ownership of row ii */
-#ifdef PARALLEL 
+#ifdef PARALLEL
       if (owner[i]!=myrank) continue;
 #endif
       /*============================== loop over j (the element column) */
@@ -134,7 +134,7 @@ else/*------------------------------------------ symmetric lapack solve */
       /*---------------------------------- check for boundary condition */
       if (ii>=numeq_total) continue;
       /*--------------------------------- check for ownership of row ii */
-#ifdef PARALLEL 
+#ifdef PARALLEL
       if (owner[i]!=myrank) continue;
 #endif
       /*============================== loop over j (the element column) */
@@ -163,7 +163,7 @@ else/*------------------------------------------ symmetric lapack solve */
    }/* end loop over i */
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -183,7 +183,7 @@ void redundant_dense(
                         )
 {
 
-#ifdef PARALLEL 
+#ifdef PARALLEL
 INT      imyrank;
 INT      inprocs;
 
@@ -191,27 +191,27 @@ ARRAY    recv_a;
 DOUBLE **recv;
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("redundant_dense");
 #endif
 /*----------------------------------------------------------------------*/
 /*  NOTE:
           In this routine, for a relatively short time the system matrix
-          exists 2 times. This takes a lot of memory and may be a 
+          exists 2 times. This takes a lot of memory and may be a
           bottle neck!
           In MPI2 there exists a flag for in-place-Allreduce:
-          
+
           MPI_Allreduce(MPI_IN_PLACE,
                         ucchb->a.a.dv,
                         (ucchb->a.fdim)*(ucchb->a.sdim),
                         MPI_DOUBLE,
                         MPI_SUM,
                         actintra->MPI_INTRA_COMM);
-          
+
           But there is no MPI2 in for HP, yet.
 */
 /*----------------------------------------------------------------------*/
-#ifdef PARALLEL 
+#ifdef PARALLEL
 /*----------------------------------------------------------------------*/
 imyrank = actintra->intra_rank;
 inprocs = actintra->intra_nprocs;
@@ -219,7 +219,7 @@ inprocs = actintra->intra_nprocs;
 /*                      (all coupling conditions are done then as well) */
 /*--------------------------------------------------- allocate recvbuff */
 recv = amdef("recv_a",&recv_a,dense1->A.fdim,dense1->A.sdim,"DA");
-/*----------------------------------------------------------- Allreduce */  
+/*----------------------------------------------------------- Allreduce */
 MPI_Allreduce(dense1->A.a.da[0],
               recv[0],
               (dense1->A.fdim)*(dense1->A.sdim),
@@ -231,7 +231,7 @@ amcopy(&recv_a,&(dense1->A));
 /* check for presence of second system matrix and reduce this one as well */
 if (dense2)
 {
-   /*-------------------------------------------------------- Allreduce */  
+   /*-------------------------------------------------------- Allreduce */
    MPI_Allreduce(dense2->A.a.da[0],
                  recv[0],
                  (dense2->A.fdim)*(dense2->A.sdim),
@@ -244,9 +244,9 @@ if (dense2)
 }
 /*----------------------------------------------------- delete recvbuff */
 amdel(&recv_a);
-#endif /*---------------------------------------------- end of PARALLEL */ 
+#endif /*---------------------------------------------- end of PARALLEL */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

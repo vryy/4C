@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -21,7 +21,7 @@ Maintainer: Malte Neumann
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -44,7 +44,7 @@ static void out_ivector(INTRA* actintra, INT* vector, INT size, CHAR* vname)
     fprintf(f, "%d: %d\n", i, vector[i]);
   }
   fclose(f);
-  
+
   count++;
 }
 
@@ -55,7 +55,7 @@ static void out_ivector(INTRA* actintra, INT* vector, INT size, CHAR* vname)
 /*----------------------------------------------------------------------*
  |  control solver lib AZTEC                             m.gee 9/01     |
  *----------------------------------------------------------------------*/
-void solver_az_msr( 
+void solver_az_msr(
                       struct _SOLVAR         *actsolv,
                       struct _INTRA          *actintra,
                       struct _AZ_ARRAY_MSR   *msr_array,
@@ -80,7 +80,7 @@ DOUBLE     *tmprhs;
 ARRAY       tmprhs_a;
 
 /* DOUBLE      l2norm; */
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solver_az_msr");
 #endif
 /*----------------------------------------------------------------------*/
@@ -101,12 +101,12 @@ case 1:
    /*------------------------------------- set default value to options */
    AZ_defaults(msr_array->options,msr_array->params);
    /*-------------------------------------- perform check of msr matrix */
-   #ifdef DEBUG 
+   #ifdef DEBUG
    AZ_check_msr(
                 &(msr_array->bindx.a.iv[0]),
-                  msr_array->numeq, 
+                  msr_array->numeq,
                   msr_array->N_external,
-                  AZ_GLOBAL, 
+                  AZ_GLOBAL,
                   msr_array->proc_config
                );
    #endif
@@ -177,7 +177,7 @@ case 1:
       msr_array->options[AZ_graph_fill]      = azvar->azgfill;
    break;
    case azprec_BILU:
-      dserror("Block Preconditioning Bilu cannot be used in MSR format"); 
+      dserror("Block Preconditioning Bilu cannot be used in MSR format");
       msr_array->options[AZ_precond]         = AZ_dom_decomp;
       msr_array->options[AZ_subdomain_solve] = AZ_bilu;
       msr_array->options[AZ_graph_fill]      = azvar->azgfill;
@@ -203,7 +203,7 @@ case 1:
    msr_array->Amat  = NULL;
    msr_array->Aprec = NULL;
    msr_array->ncall=0;
-   /* set flag, that this matrix has been initialized and is ready for solve */   
+   /* set flag, that this matrix has been initialized and is ready for solve */
    msr_array->is_init=1;
 break;
 /*----------------------------------------------------------------------*/
@@ -217,7 +217,7 @@ case 0:
   perf_begin(31);
 #endif
 /*--------------------------------------------- check the reuse feature */
-/* 
+/*
  * Lets assume we need different reuse information for every
  * matrix. Then we'd have to calculate a different number for every
  * matrix in every field. We know the number of matrices in the
@@ -239,7 +239,7 @@ case 0:
       break;
     }
 /*----------------------- transform matrix to processor local numbering */
-    /* 
+    /*
      * After the transformation the value array changed to an internal
      * aztec representation and must not be used by ccarat any longer.
      */
@@ -250,7 +250,7 @@ case 0:
      */
     if (msr_array->is_transformed==0) {
       msr_array->is_transformed = 1;
-      
+
       if (msr_array->Amat != NULL) {
         AZ_matrix_destroy(&(msr_array->Amat)); msr_array->Amat        =NULL;
       }
@@ -266,7 +266,7 @@ case 0:
       if (msr_array->data_org != NULL) {
         free(msr_array->data_org);             msr_array->data_org      =NULL;
       }
-      
+
       /* Make backup copy of bindx, as it is permuted in
        * solution. This has to be done on demand as we need the same
        * thing in the matrix-vector product as well.
@@ -284,7 +284,7 @@ case 0:
                  "bindx backup with wrong size");
         amcopy(&(msr_array->bindx),&(msr_array->bindx_backup));
       }
-      
+
       AZ_transform(msr_array->proc_config,
                    &(msr_array->external),
                    msr_array->bindx_backup.a.iv,
@@ -301,29 +301,29 @@ case 0:
                    AZ_MSR_MATRIX);
 
 #if 0
-#ifdef DEBUG 
+#ifdef DEBUG
       out_ivector(actintra, msr_array->update_index, msr_array->update.fdim, "update_index");
       out_ivector(actintra, msr_array->external, msr_array->data_org[AZ_N_external], "external");
       out_ivector(actintra, msr_array->extern_index, msr_array->data_org[AZ_N_external], "extern_index");
 #endif
 #endif
-      
+
       /* create Aztec structure AZ_MATRIX */
       msr_array->Amat = AZ_matrix_create(msr_array->data_org[AZ_N_internal]+
                                          msr_array->data_org[AZ_N_border]);
 
       /* attach dmsr-matrix to this structure */
-      AZ_set_MSR(msr_array->Amat, 
-                 msr_array->bindx_backup.a.iv, 
-                 msr_array->val.a.dv, 
-                 msr_array->data_org, 
-                 0, 
-                 NULL, 
+      AZ_set_MSR(msr_array->Amat,
+                 msr_array->bindx_backup.a.iv,
+                 msr_array->val.a.dv,
+                 msr_array->data_org,
+                 0,
+                 NULL,
                  AZ_LOCAL);
     }
-/*--------------------- save number of external components on this proc */            
+/*--------------------- save number of external components on this proc */
 msr_array->N_external = msr_array->data_org[AZ_N_external];
-/*-------------------------------------------------- reorder rhs-vector */            
+/*-------------------------------------------------- reorder rhs-vector */
 tmprhs = am_alloc_copy(&(rhs->vec),&(tmprhs_a));
 AZ_reorder_vec(
                tmprhs,
@@ -331,7 +331,7 @@ AZ_reorder_vec(
                msr_array->update_index,
                NULL
               );
-/*--------------------------- reorder initial guess and solution-vector */            
+/*--------------------------- reorder initial guess and solution-vector */
 AZ_reorder_vec(
                sol->vec.a.dv,
                msr_array->data_org,
@@ -410,7 +410,7 @@ else {
 #ifdef PERF
   perf_begin(33);
 #endif
-/*------------------------------------------------ delete temporary rhs */          
+/*------------------------------------------------ delete temporary rhs */
 amdel(&tmprhs_a);
 /*-------------------------------------------- recover unpermuted bindx */
 /* amcopy(&(msr_array->bindx_backup),&(msr_array->bindx)); */
@@ -462,7 +462,7 @@ if ( (DOUBLE)(msr_array->status[AZ_why]) != AZ_normal )
       }
    }
 }
-/*------------------------------------ print solver iterations and time */             
+/*------------------------------------ print solver iterations and time */
 if (actintra->intra_rank==0)
 {
    if (actsolv->fieldtyp==structure) fprintf(allfiles.out_err,"Structure:\n");
@@ -485,10 +485,10 @@ break;
 /*----------------------------------------------------------------------*/
 default:
    dserror("Unknown option for solver call to Aztec");
-break;   
+break;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 

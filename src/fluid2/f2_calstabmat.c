@@ -10,10 +10,10 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
-\addtogroup FLUID2 
+/*!
+\addtogroup FLUID2
 *//*! @{ (documentation module open)*/
-#ifdef D_FLUID2 
+#ifdef D_FLUID2
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #include "fluid2.h"
@@ -23,7 +23,7 @@ Maintainer: Steffen Genkinger
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -37,7 +37,7 @@ static FLUID_DYNAMIC *fdyn;
 
 <pre>                                                         genk 04/02
                                             modified for ALE  genk 10/02
-					    
+
 In this routine the stabilisation part of matrix Kvv is calculated:
 
 EULER/ALE:
@@ -50,24 +50,24 @@ EULER:
     /
    |  tau_mu * u_old * grad(v) * u_old * grad(u)   d_omega
   /
-  
+
     /
    |  tau_mu * u_old * grad(v) * u * grad(u_old)   d_omega
-  /  
+  /
 
 ALE:
 
     /
    |  tau_mu * c * grad(v) * u_old * grad(u)   d_omega
   /
-  
+
     /
    |  tau_mu * c * grad(v) * u * grad(u_old)   d_omega
-  /  
+  /
 
     /
  - |  tau_mu * c * grad(v) * u_G_old * grad(u)   d_omega
-  / 
+  /
 
 EULER:
     /
@@ -82,7 +82,7 @@ ALE:
 EULER/ALE:
     /
    |  +/- tau_mp  * 4 * nue**2 * div(eps(v))  div(eps(u))d_omega
-  /  
+  /
 
 EULER/ALE:
     /
@@ -97,18 +97,18 @@ ALE:
     /
    |  +/- tau_mp  * 2 * nue * div(eps(v)) * u_G_old * grad(u) d_omega
   /
-  
+
 see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
-  
+
 NOTE: there's only one elestif
       --> Kvv is stored in estif[0..(2*iel-1)][0..(2*iel-1)]
-      
+
 NOTE: there are two velocities at integration point
       EULER: velint  = vel2int = u_old
       ALE:   velint  = u_old
              vel2int = c (ale-convective velocity)
 
-NOTE: for EULER-case grid-velocity is not used      
+NOTE: for EULER-case grid-velocity is not used
 
 </pre>
 \param  *ele	   ELEMENT	   (i)	   actual element
@@ -121,28 +121,28 @@ NOTE: for EULER-case grid-velocity is not used
 \param  *funct     DOUBLE	   (i)     nat. shape functions
 \param **derxy     DOUBLE	   (i)     global derivatives
 \param **derxy2    DOUBLE	   (i)     2nd global derivatives
-\param   fac	   DOUBLE	   (i)	   weighting factor	   
+\param   fac	   DOUBLE	   (i)	   weighting factor
 \param   visc	   DOUBLE	   (i)	   fluid viscosity
 \param   iel	   INT		   (i)	   num. of nodes in ele
 \param   ihoel	   INT		   (i)	   flag for higer ord. ele
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
-void f2_calstabkvv(			      
-                     ELEMENT         *ele,    
-                     STAB_PAR_GLS    *gls,  
-                     DOUBLE         **estif,  
+void f2_calstabkvv(
+                     ELEMENT         *ele,
+                     STAB_PAR_GLS    *gls,
+                     DOUBLE         **estif,
                      DOUBLE          *velint,
-                     DOUBLE          *vel2int, 
+                     DOUBLE          *vel2int,
                      DOUBLE          *gridvint,
-                     DOUBLE         **vderxy, 
-                     DOUBLE          *funct,  
-                     DOUBLE         **derxy,  
-                     DOUBLE         **derxy2, 
-                     DOUBLE           fac,    
-                     DOUBLE           visc,   
-                     INT              iel,    
-                     INT              ihoel   
+                     DOUBLE         **vderxy,
+                     DOUBLE          *funct,
+                     DOUBLE         **derxy,
+                     DOUBLE         **derxy2,
+                     DOUBLE           fac,
+                     DOUBLE           visc,
+                     INT              iel,
+                     INT              ihoel
                    )
 {
 /*----------------------------------------------------------------------*
@@ -150,7 +150,7 @@ void f2_calstabkvv(
  |   irow - row number in element matrix                                |
  |   icol - column number in element matrix                             |
  |   irn  - row node: number of node considered for matrix-row          |
- |   ird  - row dim.: number of spatial dimension at row node           |  
+ |   ird  - row dim.: number of spatial dimension at row node           |
  *----------------------------------------------------------------------*/
 INT    irow,icol,irn,icn;
 DOUBLE taumu;
@@ -160,11 +160,11 @@ DOUBLE c,cc;
 DOUBLE aux,auxr,auxc;
 DOUBLE sign=ONE;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_calstabkvv");
 #endif
 
-dsassert(ele->e.f2->stab_type == stab_gls, 
+dsassert(ele->e.f2->stab_type == stab_gls,
    "routine with no or wrong stabilisation called");
 /*---------------------------------------------------------- initialise */
 fdyn   = alldyn[genprob.numff].fdyn;
@@ -207,14 +207,14 @@ if (gls->iadvec!=0)
 {
 /*----------------------------------------------------------------------*
    Calculate advection stabilisation part Nc(u):
-EULER:   
+EULER:
     /
-   |  tau_mu * u_old * grad(v) * u_old * grad(u)   d_omega   
+   |  tau_mu * u_old * grad(v) * u_old * grad(u)   d_omega
   /
 ALE:
     /
-   |  tau_mu * c * grad(v) * u_old * grad(u)   d_omega   
-  /  
+   |  tau_mu * c * grad(v) * u_old * grad(u)   d_omega
+  /
  *----------------------------------------------------------------------*/
    icol=0;
    for (icn=0;icn<iel;icn++)
@@ -233,14 +233,14 @@ ALE:
 
 /*----------------------------------------------------------------------*
    Calculate advection stabilisation part Nr(u):
-EULER:   
+EULER:
     /
    |  tau_mu * u_old * grad(v) * u * grad(u_old)   d_omega
   /
 ALE:
     /
    |  tau_mu * c * grad(v) * u * grad(u_old)   d_omega
-  /  
+  /
  *----------------------------------------------------------------------*/
    if (fdyn->nir!=0)  /* evaluate for Newton iteraton */
    {
@@ -266,11 +266,11 @@ ALE:
    Calculate advection stabilisation part for ALE due to u_G:
 ALE:
     /
- - |  tau_mu * c * grad(v) * u_G_old * grad(u)   d_omega   
-  /  
+ - |  tau_mu * c * grad(v) * u_G_old * grad(u)   d_omega
+  /
    REMARK:
     - this term is linear inside the domain and for explicit free surface
-    - for implicit free surface this term is nonlinear (Nc), since u_G is 
+    - for implicit free surface this term is nonlinear (Nc), since u_G is
       unknown at the free surface. So it depends on the nonlinear iteration
       scheme if this term has to be taken into account:
 	 - Newton: YES
@@ -294,7 +294,7 @@ ALE:
          icol += 2;
       } /* end of loop over icn */
    }/* endif (ele->e.f2->is_ale!=0) */
-   
+
 /*----------------------------------------------------------------------*
    Calculate advection stabilisation part for higher order elements:
 EULER:
@@ -309,7 +309,7 @@ ALE:
    if (ihoel!=0)
    {
       cc = c*visc;
-      
+
       icol=0;
       for (icn=0;icn<iel;icn++)
       {
@@ -331,16 +331,16 @@ ALE:
 
 /*-------------------------------- calculate viscous stabilisation part */
 if (ihoel!=0 && gls->ivisc!=0)
-{   
+{
    if (gls->ivisc==2) sign*=-ONE; /* GLS+ stabilisation */
 /*----------------------------------------------------------------------*
    Calculate viscous stabilisation part for higher order elements:
     /
    |  +/- tau_mp  * 4 * nue**2 * div(eps(v)) * div(eps(u))d_omega
   /
- *----------------------------------------------------------------------*/   
+ *----------------------------------------------------------------------*/
    cc = fac * taump * visc*visc * sign;
-   
+
    icol=0;
    for (icn=0;icn<iel;icn++)
    {
@@ -355,14 +355,14 @@ if (ihoel!=0 && gls->ivisc!=0)
                                   + derxy2[0][irn]* auxc + aux)*cc       ;
          estif[irow+1][icol]   +=  (derxy2[0][icn]* derxy2[2][irn]       \
                                   + derxy2[2][icn]*(derxy2[1][irn]+auxr) \
-                                  + derxy2[2][irn]* auxc)*cc             ;  
+                                  + derxy2[2][irn]* auxc)*cc             ;
          estif[irow+1][icol+1] +=  (derxy2[2][icn]* derxy2[2][irn]       \
                                   + derxy2[1][icn]*(derxy2[1][irn]+auxr) \
                                   + derxy2[1][irn]* auxc + aux)*cc       ;
          estif[irow][icol+1]   +=  (derxy2[2][icn]*(derxy2[0][irn]+auxr) \
                                   + derxy2[1][icn]* derxy2[2][irn]       \
                                   + derxy2[2][irn]* auxc)*cc             ;
-         irow += 2;		      		      
+         irow += 2;
       } /* end of loop over irn */
       icol += 2;
    } /* end of loop over icn */
@@ -374,7 +374,7 @@ if (ihoel!=0 && gls->ivisc!=0)
   /
  *----------------------------------------------------------------------*/
    cc = fac * taump * visc * sign;
-   
+
    icol=0;
    for (icn=0;icn<iel;icn++)
    {
@@ -391,13 +391,13 @@ if (ihoel!=0 && gls->ivisc!=0)
       } /* end of loop over irn */
       icol += 2;
    } /* end of loop over icn */
-   
+
 /*----------------------------------------------------------------------*
    Calculate viscous stabilisation part Nr(u) for higher order elements:
     /
    |  -/+ tau_mp  * 2 * nue * div(eps(v)) * u * grad(u_old) d_omega
   /
- *----------------------------------------------------------------------*/   
+ *----------------------------------------------------------------------*/
    if (fdyn->nir!=0)  /* evaluate for Newton iteraton */
    {
       icol=0;
@@ -433,7 +433,7 @@ if (ihoel!=0 && gls->ivisc!=0)
   /
    REMARK:
     - this term is linear inside the domain and for explicit free surface
-    - for implicit free surface this term is nonlinear (Nc), since u_G is 
+    - for implicit free surface this term is nonlinear (Nc), since u_G is
       unknown at the free surface. So it depends on the nonlinear iteration
       scheme if this term has to be taken into account:
 	 - Newton: YES
@@ -462,7 +462,7 @@ if (ihoel!=0 && gls->ivisc!=0)
 } /* end of viscous stabilisation for higher order elments */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -491,17 +491,17 @@ EULER/ALE:
     /
    |  -/+ tau_mp * 2 * nue * div(eps(v)) * grad(p)  d_omega
   /
-        
+
 see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
-  
- NOTE: there's only one elestif 				    
+
+ NOTE: there's only one elestif
        --> Kvp is stored in estif[(0..(2*iel-1)][(2*iel)..(3*iel-1)]
 
 NOTE: if the function is called from f2_calint, we have EULER case
       and so velint = u_old
       if the function is called from f2_calinta, we have ALE case
       and so velint = c (ale-convective velocity)
-      
+
 </pre>
 \param  *ele	   ELEMENT	   (i)	   actual element
 \param   *gls      STAB_PAR_GLS    (i)    stabilisation
@@ -514,21 +514,21 @@ NOTE: if the function is called from f2_calint, we have EULER case
 \param   visc      DOUBLE	   (i)     fluid viscosity
 \param   iel	   INT  	   (i)	   num. of nodes in ele
 \param   ihoel     INT  	   (i)	   flag for higer ord. ele
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f2_calstabkvp(
-                     ELEMENT         *ele,    
-                     STAB_PAR_GLS    *gls,  
-                     DOUBLE         **estif, 
+                     ELEMENT         *ele,
+                     STAB_PAR_GLS    *gls,
+                     DOUBLE         **estif,
                      DOUBLE          *velint,
-                     DOUBLE          *funct, 
-                     DOUBLE         **derxy, 
+                     DOUBLE          *funct,
+                     DOUBLE         **derxy,
                      DOUBLE         **derxy2,
-                     DOUBLE           fac,   
-                     DOUBLE           visc,  
-                     INT              iel,   
-                     INT              ihoel   	    
+                     DOUBLE           fac,
+                     DOUBLE           visc,
+                     INT              iel,
+                     INT              ihoel
                    )
 {
 /*----------------------------------------------------------------------*
@@ -538,7 +538,7 @@ void f2_calstabkvp(
  |   irn  - row node: number of node considered for matrix-row          |
  |   ird  - row dim.: number of spatial dimension at row node           |
  |   posc - since there's only one full element stiffness matrix the    |
- |          column number has to be changed!                            |   
+ |          column number has to be changed!                            |
  *----------------------------------------------------------------------*/
 INT    irow,icol,irn,posc;
 DOUBLE taumu;
@@ -547,11 +547,11 @@ DOUBLE c;
 DOUBLE aux;
 DOUBLE sign=ONE;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_calstabkvp");
 #endif
 
-dsassert(ele->e.f2->stab_type == stab_gls, 
+dsassert(ele->e.f2->stab_type == stab_gls,
    "routine with no or wrong stabilisation called");
 /*---------------------------------------------------------- initialise */
 fdyn   = alldyn[genprob.numff].fdyn;
@@ -601,7 +601,7 @@ if (gls->ivisc!=0 && ihoel!=0)
   /
  *----------------------------------------------------------------------*/
    c = fac * taump * visc * sign;
-   
+
    for (icol=0;icol<iel;icol++)
    {
       irow=0;
@@ -615,13 +615,13 @@ if (gls->ivisc!=0 && ihoel!=0)
          estif[irow+1][posc] -=  (derxy2[2][irn]*derxy[0][icol] \
                                 + derxy2[1][irn]*derxy[1][icol] \
                                 + aux*derxy[1][icol])*c         ;
-         irow += 2;				
+         irow += 2;
       } /* end loop over irn */
    } /* end loop over icol */
 } /*------------ end of viscous stabilisation for higher order elements */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -632,24 +632,24 @@ return;
 \brief evaluate stabilisaton part of Kvg
 
 <pre>                                                         genk 01/03
-					    
+
 In this routine the stabilisation part of matrix Kvg is calculated:
 
 
 ALE:
        /
   (-) |  tau_mu * c * grad(v) * u_G * grad(u_old)   d_omega
-     /  
+     /
 
     /
    |  +/- tau_mp  * 2 * nue * div(eps(v)) * u_G * grad(u_old) d_omega
   /
 
-  
-  
+
+
 NOTE: there's only one elestif
       --> Kvg is stored in estif[0..(2*iel-1)](3*iel)..(5*iel-1)]
-      
+
 </pre>
 \param  *ele	   ELEMENT	   (i)	   actual element
 \param   *gls      STAB_PAR_GLS    (i)    stabilisation
@@ -659,26 +659,26 @@ NOTE: there's only one elestif
 \param **derxy     DOUBLE	   (i)     global derivatives
 \param **derxy2    DOUBLE	   (i)     2nd global derivatives
 \param  *alecovint DOUBLE          (i)     ale conv. vel. at intpoint
-\param   fac	   DOUBLE	   (i)	   weighting factor	   
+\param   fac	   DOUBLE	   (i)	   weighting factor
 \param   visc	   DOUBLE	   (i)	   fluid viscosity
 \param   iel	   INT		   (i)	   num. of nodes in ele
 \param   ihoel	   INT		   (i)	   flag for higer ord. ele
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
-void f2_calstabkvg(			      
-                     ELEMENT         *ele,    
-                     STAB_PAR_GLS    *gls,  
-                     DOUBLE         **estif,  
-                     DOUBLE         **vderxy, 
-                     DOUBLE          *funct,  
+void f2_calstabkvg(
+                     ELEMENT         *ele,
+                     STAB_PAR_GLS    *gls,
+                     DOUBLE         **estif,
+                     DOUBLE         **vderxy,
+                     DOUBLE          *funct,
                      DOUBLE         **derxy,
-                     DOUBLE         **derxy2, 
+                     DOUBLE         **derxy2,
                      DOUBLE          *alecovint,
-                     DOUBLE           fac,    
-                     DOUBLE           visc,   
-                     INT              iel,    
-                     INT              ihoel   
+                     DOUBLE           fac,
+                     DOUBLE           visc,
+                     INT              iel,
+                     INT              ihoel
                    )
 {
 /*----------------------------------------------------------------------*
@@ -686,7 +686,7 @@ void f2_calstabkvg(
  |   irow - row number in element matrix                                |
  |   icol - column number in element matrix                             |
  |   irn  - row node: number of node considered for matrix-row          |
- |   ird  - row dim.: number of spatial dimension at row node           |  
+ |   ird  - row dim.: number of spatial dimension at row node           |
  *----------------------------------------------------------------------*/
 INT    irow,icol,irn,icn;
 DOUBLE taump,taumu;
@@ -694,25 +694,25 @@ DOUBLE cc;
 DOUBLE aux,auxr,auxc;
 DOUBLE sign=ONE;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_calstabkvg");
 #endif
 /*---------------------------------------------------------- initialise */
 fdyn   = alldyn[genprob.numff].fdyn;
 
-dsassert(ele->e.f2->stab_type == stab_gls, 
+dsassert(ele->e.f2->stab_type == stab_gls,
    "routine with no or wrong stabilisation called");
 
 /*---------------------------------------- set stabilisation parameter */
 taump = fdyn->tau[1];
-taumu = fdyn->tau[0]; 
-  
+taumu = fdyn->tau[0];
+
 /*----------------------------------------------------------------------*
    Calculate advection stabilisation part Nr(u):
 ALE:
        /
   (-) |  tau_mu * c * grad(v) * u_G * grad(u_old)   d_omega
-     /  
+     /
  *----------------------------------------------------------------------*/
 if (gls->iadvec!=0 && fdyn->nir!=0)  /* evaluate for Newton iteraton */
 {
@@ -744,7 +744,7 @@ if (ihoel!=0 && gls->ivisc!=0 && fdyn->nir!=0)
     /
    |  +/- tau_mp  * 2 * nue * div(eps(v)) * u_G * grad(u_old) d_omega
   /
- *----------------------------------------------------------------------*/   
+ *----------------------------------------------------------------------*/
    cc = fac * taump * visc * sign;
    icol=3*iel;
    for (icn=0;icn<iel;icn++)
@@ -772,14 +772,14 @@ if (ihoel!=0 && gls->ivisc!=0 && fdyn->nir!=0)
    } /* end of loop over icn */
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of f2_calstabkvg */
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief evaluate stabilisaton part of Mvv
 
 <pre>                                                         genk 04/02
@@ -795,23 +795,23 @@ EULER:
 ALE:
     /
    |  -/+ tau_mu * c * grad(v) * u d_omega
-  /  
+  /
 
 EULER/ALE:
     /
    |  -/+ tau_mp * 2 * nue * div(eps(v)) * u  d_omega
-  /  
-        
+  /
+
 see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
-  
-NOTE: there's only one elestif  			    
+
+NOTE: there's only one elestif
       --> Mvv is stored in emass[0..(2*iel-1)][0..(2*iel-1)]
 
 NOTE: if the function is called from f2_calint, we have EULER case
       and so velint = u_old
       if the function is called from f2_calinta, we have ALE case
       and so velint = c (ale-convective velocity)
-      
+
 </pre>
 \param  *ele	   ELEMENT	   (i)	   actual element
 \param   *gls      STAB_PAR_GLS    (i)    stabilisation
@@ -824,21 +824,21 @@ NOTE: if the function is called from f2_calint, we have EULER case
 \param   visc      DOUBLE	   (i)     fluid viscosity
 \param   iel	   INT  	   (i)	   num. of nodes in ele
 \param   ihoel     INT  	   (i)	   flag for higer ord. ele
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f2_calstabmvv(
-                     ELEMENT         *ele,     
-                     STAB_PAR_GLS    *gls,  
-                     DOUBLE         **emass,  
-                     DOUBLE          *velint, 
-                     DOUBLE          *funct,  
-                     DOUBLE         **derxy,  
-                     DOUBLE         **derxy2, 
-                     DOUBLE           fac,    
-                     DOUBLE           visc,   
-                     INT              iel,    
-                     INT              ihoel           
+                     ELEMENT         *ele,
+                     STAB_PAR_GLS    *gls,
+                     DOUBLE         **emass,
+                     DOUBLE          *velint,
+                     DOUBLE          *funct,
+                     DOUBLE         **derxy,
+                     DOUBLE         **derxy2,
+                     DOUBLE           fac,
+                     DOUBLE           visc,
+                     INT              iel,
+                     INT              ihoel
                    )
 {
 /*----------------------------------------------------------------------*
@@ -846,7 +846,7 @@ void f2_calstabmvv(
  |   irow - row number in element matrix                                |
  |   icol - column number in element matrix                             |
  |   irn  - row node: number of node considered for matrix-row          |
- |   ird  - row dim.: number of spatial dimension at row node           |   
+ |   ird  - row dim.: number of spatial dimension at row node           |
  *----------------------------------------------------------------------*/
 INT    irow,icol,irn,icn;
 DOUBLE taumu;
@@ -855,14 +855,14 @@ DOUBLE c,cc;
 DOUBLE aux,auxc;
 DOUBLE sign=ONE;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_calstabmvv");
 #endif
 
 /*---------------------------------------------------------- initialise */
 fdyn   = alldyn[genprob.numff].fdyn;
 
-dsassert(ele->e.f2->stab_type == stab_gls, 
+dsassert(ele->e.f2->stab_type == stab_gls,
    "routine with no or wrong stabilisation called");
 
 /*---------------------------------------- set stabilisation parameter */
@@ -898,7 +898,7 @@ ALE:
          emass[irow+1][icol+1] += aux;
          irow += 2;
       } /* end loop over irn */
-      icol += 2;      
+      icol += 2;
    } /* end loop over icn */
 } /* end of advection stabilisation */
 
@@ -913,10 +913,10 @@ if (gls->ivisc!=0 && ihoel!=0)
   /
  *----------------------------------------------------------------------*/
    c = fac * taump * visc * sign;
-   
+
    icol=0;
    for (icn=0;icn<iel;icn++)
-   {      
+   {
       aux = funct[icn]*c;
       irow=0;
       for(irn=0;irn<iel;irn++)
@@ -932,14 +932,14 @@ if (gls->ivisc!=0 && ihoel!=0)
 } /* end of viscous stabilisation for higher order elements */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of f2_calstabmvv */
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief evaluate stabilisaton part of Kpv
 
 <pre>                                                         genk 04/02
@@ -951,10 +951,10 @@ EULER/ALE:
     /
    |  - tau_mp * grad(q) * u_old * grad(u) d_omega
   /
-  
+
     /
    |  - tau_mp * grad(q) * u * grad(u_old) d_omega
-  /  
+  /
 
 ALE:
     /
@@ -965,12 +965,12 @@ EULER/ALE:
     /
    |  tau_mp * 2 * nue *grad(q) * div(eps(u)) d_omega
   /
-        
+
 see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
-  
-NOTE: there's only one elestif  				    
-      --> Kpv is stored in estif[((2*iel)..(3*iel-1)][0..(2*iel-1)] 
-      
+
+NOTE: there's only one elestif
+      --> Kpv is stored in estif[((2*iel)..(3*iel-1)][0..(2*iel-1)]
+
 </pre>
 \param  *ele       ELEMENT          (i)     actual element
 \param   *gls      STAB_PAR_GLS    (i)    stabilisation
@@ -985,23 +985,23 @@ NOTE: there's only one elestif
 \param   visc      DOUBLE           (i)     fluid viscosity
 \param   iel       INT              (i)	    num. of nodes in ele
 \param   ihoel     INT              (i)	    flag for higer ord. ele
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f2_calstabkpv(
                      ELEMENT         *ele,
-                     STAB_PAR_GLS    *gls,  
-                     DOUBLE         **estif,   
+                     STAB_PAR_GLS    *gls,
+                     DOUBLE         **estif,
                      DOUBLE          *velint,
-                     DOUBLE          *gridvint, 
-                     DOUBLE         **vderxy, 
-                     DOUBLE          *funct,  
-                     DOUBLE         **derxy,  
-                     DOUBLE         **derxy2, 
-                     DOUBLE           fac,    
-                     DOUBLE           visc,   
-                     INT              iel,    
-                     INT              ihoel          
+                     DOUBLE          *gridvint,
+                     DOUBLE         **vderxy,
+                     DOUBLE          *funct,
+                     DOUBLE         **derxy,
+                     DOUBLE         **derxy2,
+                     DOUBLE           fac,
+                     DOUBLE           visc,
+                     INT              iel,
+                     INT              ihoel
                    )
 {
 /*----------------------------------------------------------------------*
@@ -1018,7 +1018,7 @@ DOUBLE c;
 DOUBLE aux;
 DOUBLE taump;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_calstabkpv");
 #endif
 
@@ -1081,7 +1081,7 @@ ALE:
   /
    REMARK:
     - this term is linear inside the domain and for explicit free surface
-    - for implicit free surface this term is nonlinear (Nc), since u_G is 
+    - for implicit free surface this term is nonlinear (Nc), since u_G is
       unknown at the free surface. So it depends on the nonlinear iteration
       scheme if this term has to be taken into account:
 	 - Newton: YES
@@ -1113,7 +1113,7 @@ if (ele->e.f2->is_ale!=0) /* evaluate for ALE only */
 if (ihoel!=0)
 {
    c = c * visc;
-   
+
    icol=0;
    for (icn=0;icn<iel;icn++)
    {
@@ -1132,14 +1132,14 @@ if (ihoel!=0)
 
 /*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of f2_calstabkpv */
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief evaluate stabilisaton part of Kpg
 
 <pre>                                                         genk 01/03
@@ -1149,12 +1149,12 @@ In this routine the stabilisation part of matrix Kpv is calculated:
 ALE:
     /
    |  + tau_mp * grad(q) * u_G * grad(u_old) d_omega
-  /  
+  /
 
-  
-NOTE: there's only one elestif  				    
-      --> Kpg is stored in estif[((2*iel)..(3*iel-1)][(3*iel)..(5*iel-1)] 
-      
+
+NOTE: there's only one elestif
+      --> Kpg is stored in estif[((2*iel)..(3*iel-1)][(3*iel)..(5*iel-1)]
+
 </pre>
 \param   *gls      STAB_PAR_GLS    (i)    stabilisation
 \param **estif     DOUBLE           (i/o)   ele stiffness matrix
@@ -1163,17 +1163,17 @@ NOTE: there's only one elestif
 \param **derxy     DOUBLE           (i)     global derivatives
 \param   fac       DOUBLE           (i)     weighting factor
 \param   iel       INT              (i)     num. of nodes in ele
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f2_calstabkpg(
-                    STAB_PAR_GLS    *gls,  
-		    DOUBLE         **estif, 
-		    DOUBLE          *funct,  
-		    DOUBLE         **vderxy, 
-		    DOUBLE         **derxy,  
-		    DOUBLE           fac,    
-		    INT              iel          
+                    STAB_PAR_GLS    *gls,
+		    DOUBLE         **estif,
+		    DOUBLE          *funct,
+		    DOUBLE         **vderxy,
+		    DOUBLE         **derxy,
+		    DOUBLE           fac,
+		    INT              iel
                    )
 {
 /*----------------------------------------------------------------------*
@@ -1190,7 +1190,7 @@ DOUBLE c;
 DOUBLE aux;
 DOUBLE taump;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_calstabkpg");
 #endif
 
@@ -1230,14 +1230,14 @@ if (fdyn->nir!=0) /* evaluate for Newton iteration */
 
 /*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of f2_calstabkpg */
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief evaluate stabilisaton part of Kpp
 
 <pre>                                                         genk 04/02
@@ -1247,28 +1247,28 @@ In this routine the stabilisation part of matrix Kpp is calculated:
     /
    |  - tau_mp * grad(q) *grad(p) d_omega
   /
-        
+
 see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
-  
-NOTE: there's only one elestif  			     
-      --> Kpp is stored in				     
-	      estif[((2*iel)..(3*iel-1)][((2*iel)..(3*iel-1)] 
-      
+
+NOTE: there's only one elestif
+      --> Kpp is stored in
+	      estif[((2*iel)..(3*iel-1)][((2*iel)..(3*iel-1)]
+
 </pre>
 \param   *gls      STAB_PAR_GLS    (i)    stabilisation
 \param **estif     DOUBLE	   (i/o)   ele stiffness matrix
 \param **derxy     DOUBLE	   (i)     global derivatives
 \param   fac	   DOUBLE	   (i)     weighting factor
 \param   iel	   INT  	   (i)     num. of nodes in ele
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f2_calstabkpp(
-                     STAB_PAR_GLS    *gls,  
-                     DOUBLE         **estif,   
-                     DOUBLE         **derxy,  
-                     DOUBLE           fac,    
-                     INT              iel             
+                     STAB_PAR_GLS    *gls,
+                     DOUBLE         **estif,
+                     DOUBLE         **derxy,
+                     DOUBLE           fac,
+                     INT              iel
                    )
 {
 /*----------------------------------------------------------------------*
@@ -1284,7 +1284,7 @@ INT    irow,icol,posc,posr;
 DOUBLE c;
 DOUBLE taump;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_calstabkpp");
 #endif
 
@@ -1315,7 +1315,7 @@ for (icol=0;icol<iel;icol++)
 
 /*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -1332,12 +1332,12 @@ In this routine the stabilisation part of matrix Mpv is calculated:
     /
    |  - tau_mp * grad(q) * u d_omega
   /
-        
+
 see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
-  
-NOTE: there's only one elemass  				    
-      --> Mpv is stored in emass[(2*iel)..(3*iel-1)][0..(2*iel-1)] 
-      
+
+NOTE: there's only one elemass
+      --> Mpv is stored in emass[(2*iel)..(3*iel-1)][0..(2*iel-1)]
+
 </pre>
 \param   *gls      STAB_PAR_GLS    (i)    stabilisation
 \param **emass     DOUBLE           (i/o)   ele mass matrix
@@ -1346,16 +1346,16 @@ NOTE: there's only one elemass
 \param   fac       DOUBLE           (i)     weighting factor
 \param   iel       INT              (i)	   num. of nodes in ele
 
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f2_calstabmpv(
-                     STAB_PAR_GLS    *gls,  
-                     DOUBLE         **emass,   
-                     DOUBLE          *funct,  
-                     DOUBLE         **derxy,  
-                     DOUBLE           fac,    
-                     INT              iel     
+                     STAB_PAR_GLS    *gls,
+                     DOUBLE         **emass,
+                     DOUBLE          *funct,
+                     DOUBLE         **derxy,
+                     DOUBLE           fac,
+                     INT              iel
                    )
 {
 /*----------------------------------------------------------------------*
@@ -1372,7 +1372,7 @@ DOUBLE c;
 DOUBLE taump;
 DOUBLE auxc;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_calstabmpv");
 #endif
 
@@ -1405,7 +1405,7 @@ for (icn=0;icn<iel;icn++)
 
 /*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 

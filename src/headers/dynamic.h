@@ -1,6 +1,6 @@
 /*!---------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -13,7 +13,7 @@ Maintainer: Malte Neumann
 /*----------------------------------------------------------------------*
  | general structural dynamic-variables                   m.gee 4/01    |
  *----------------------------------------------------------------------*/
-typedef union _ALLDYNA                 
+typedef union _ALLDYNA
 {
    struct _STRUCT_DYNAMIC    *sdyn;   /* ptr for allocation of structural dynamic data */
    struct _FLUID_DYNAMIC     *fdyn;   /* ptr for allocation of fluid dynamic data */
@@ -21,7 +21,7 @@ typedef union _ALLDYNA
    struct _ALE_DYNAMIC       *adyn;   /* ptr for allocation of ale dynamic data */
 #ifdef D_LS
   struct _LS_DYNAMIC        *lsdyn;  /* ptr for allocation of ls dynamic data */
-#endif  
+#endif
 } ALLDYNA;
 
 
@@ -29,7 +29,7 @@ typedef union _ALLDYNA
 /*----------------------------------------------------------------------*
  | general structural dynamic-variables                   m.gee 4/01    |
  *----------------------------------------------------------------------*/
-typedef struct _STRUCT_DYNAMIC                 
+typedef struct _STRUCT_DYNAMIC
 {
 enum
    {
@@ -70,7 +70,7 @@ INT                writecounter; /* counter for output steps */
 /*----------------------------------------------------------------------*
  | general dynamic-variables for analysis                 m.gee 4/01    |
  *----------------------------------------------------------------------*/
-typedef struct _STRUCT_DYN_CALC                
+typedef struct _STRUCT_DYN_CALC
 {
 DOUBLE             rldfac;          /* ? */
 DOUBLE             rnorm;           /* ? */
@@ -99,7 +99,7 @@ DOUBLE             dnorm;   /* square of the L2-norm of the displacements increm
 /*----------------------------------------------------------------------*
  | general fsi variables                                  genk 09/02    |
  *----------------------------------------------------------------------*/
-typedef struct _FSI_DYNAMIC                 
+typedef struct _FSI_DYNAMIC
 {
 INT                ifsi;            /*!< coupling algorithm */
 INT                ipre;            /*!< type of predictor */
@@ -118,7 +118,7 @@ DOUBLE             dt;              /*!< time increment */
 DOUBLE             maxtime;         /*!< total time */
 DOUBLE             entol;           /*!< tolerance for energy check over fields */
 DOUBLE             relax;           /*!< actual relaxation parameter */
-DOUBLE             convtol;         /*!< tolerance for iteration over fields */ 
+DOUBLE             convtol;         /*!< tolerance for iteration over fields */
 DOUBLE             deltaeint;       /*!< energy production at the interface */
 ARRAY              sid;             /*!< structural interface dofs */
 INT                numsid;          /*!< number of structural interface dofs */
@@ -128,12 +128,12 @@ INT                actpos;          /*!<  */
 /*----------------------------------------------------------------------*
  | general ale dynamic variables                            ck 12/02    |
  *----------------------------------------------------------------------*/
-typedef struct _ALE_DYNAMIC                
+typedef struct _ALE_DYNAMIC
 {
 enum
    {
                   classic_lin,   /*!< classic linear calculation */
-		  min_Je_stiff,  /*!< incremental calculation 
+		  min_Je_stiff,  /*!< incremental calculation
 		                    stiffened with min J_element^2 */
                   two_step,      /*!< calculation in 2 steps per timestep */
 		  springs,       /*!< springs rather than continous pseudo material */

@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -21,8 +21,8 @@ static INT kk;
  |  count processor local and global number of equations    m.gee 5/01  |
  *----------------------------------------------------------------------*/
 void mask_numeq(
-    FIELD         *actfield, 
-    PARTITION    *actpart, 
+    FIELD         *actfield,
+    PARTITION    *actpart,
     SOLVAR       *actsolv,
     INTRA        *actintra,
     INT          *numeq,
@@ -45,7 +45,7 @@ void mask_numeq(
 
   INT       no_coupling = 0;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("mask_numeq");
 #endif
 
@@ -75,7 +75,7 @@ void mask_numeq(
       if (actnode->gnode->couple->couple.a.ia[l][0] != 0 ||
           actnode->gnode->couple->couple.a.ia[l][1] != 0 )
       {
-        if (counter>=actpart->pdis[kk].coupledofs.fdim) 
+        if (counter>=actpart->pdis[kk].coupledofs.fdim)
           amredef(&(actpart->pdis[kk].coupledofs),(actpart->pdis[kk].coupledofs.fdim+5000),1,"IV");
         /* the coupled dof could be dirichlet conditioned */
         if (actnode->dof[l]<actfield->dis[kk].numeq)
@@ -96,14 +96,14 @@ void mask_numeq(
 
   /* delete the doubles in coupledofs */
   if (!no_coupling)
-  { 
+  {
     for (i=0; i<actpart->pdis[kk].coupledofs.fdim; i++)
     {
       if (actpart->pdis[kk].coupledofs.a.iv[i]==-1) continue;
       dof = actpart->pdis[kk].coupledofs.a.iv[i];
       for (j=i+1; j<actpart->pdis[kk].coupledofs.fdim; j++)
       {
-        if (actpart->pdis[kk].coupledofs.a.iv[j]==dof) 
+        if (actpart->pdis[kk].coupledofs.a.iv[j]==dof)
           actpart->pdis[kk].coupledofs.a.iv[j]=-1;
       }
     }
@@ -122,28 +122,28 @@ void mask_numeq(
 
     /* the newly allocated columns have to be initialized */
     for (i=1; i<actpart->pdis[kk].coupledofs.sdim; i++)
-      for (j=0; j<actpart->pdis[kk].coupledofs.fdim; j++) 
+      for (j=0; j<actpart->pdis[kk].coupledofs.fdim; j++)
         actpart->pdis[kk].coupledofs.a.ia[j][i]=0;
 
   } /* end of if(!no_coupling) */
 
 
-/* processor looks on his own domain whether he has some of these coupdofs, 
-   puts this information in the array coupledofs in the column myrank+1, so it 
-   can be allreduced 
+/* processor looks on his own domain whether he has some of these coupdofs,
+   puts this information in the array coupledofs in the column myrank+1, so it
+   can be allreduced
 
    The matrix has the following style (after allreduce on all procs the same):
-   
+
                ----------------------
                | 12 | 1 | 0 | 1 | 0 |
                | 40 | 1 | 0 | 0 | 0 |
                | 41 | 1 | 1 | 1 | 1 |
                | 76 | 0 | 1 | 1 | 0 |
                ----------------------
-               
+
                column 0             : number of the coupled equation
                column 1 - inprocs+1 : proc has coupled equation or not
-               
+
 */
 
   if (!no_coupling)
@@ -177,7 +177,7 @@ void mask_numeq(
       }
     }
 
-    /* Allreduce the whole array, so every proc knows about where all 
+    /* Allreduce the whole array, so every proc knows about where all
        coupledofs are */
 #ifdef PARALLEL
     sendsize = (actpart->pdis[kk].coupledofs.fdim)*(inprocs);
@@ -231,13 +231,13 @@ void mask_numeq(
       iscoupled=0;
       for (k=0; k<actpart->pdis[kk].coupledofs.fdim; k++)
       {
-        if (dof == actpart->pdis[kk].coupledofs.a.ia[k][0]) 
+        if (dof == actpart->pdis[kk].coupledofs.a.ia[k][0])
         {
           iscoupled=1;
           break;
         }
       }
-      if (iscoupled==0) 
+      if (iscoupled==0)
       {
         if (dof < actfield->dis[kk].numeq)
           counter++;
@@ -249,25 +249,25 @@ void mask_numeq(
   *numeq = counter;
 
 
-/* 
-   An inter-proc coupled equation produces communications calculating the 
+/*
+   An inter-proc coupled equation produces communications calculating the
    sparsity mask of the matrix
    An inter-proc coupled equation produces communications adding element
    matrices to the system matrix
    An inter-proc coupled equation ruins the bandwith locally
    ->
-   Now one processor has to be owner of the coupled equation. 
+   Now one processor has to be owner of the coupled equation.
    Try to distribute the coupled equations equally over the processors
 
    The matrix has the following style (after allreduce on all procs the same):
-   
+
                ----------------------
                | 12 | 2 | 0 | 1 | 0 |
                | 40 | 2 | 0 | 0 | 0 |
                | 41 | 1 | 2 | 1 | 1 |
                | 76 | 0 | 1 | 2 | 0 |
                ----------------------
-               
+
                column 0                : number of the coupled equation
                column 1 - inprocs+1 : proc has coupled equation or not
                                          2 indicates owner of equation
@@ -292,7 +292,7 @@ void mask_numeq(
         {
           for (j=0; j<inprocs; j++)
           {
-            if (actpart->pdis[kk].coupledofs.a.ia[i][j+1]==1) 
+            if (actpart->pdis[kk].coupledofs.a.ia[i][j+1]==1)
             {
               actpart->pdis[kk].coupledofs.a.ia[i][j+1]=2;
               break;
@@ -306,7 +306,7 @@ void mask_numeq(
           proc=-1;
           for (j=0; j<inprocs; j++)
           {
-            if (actpart->pdis[kk].coupledofs.a.ia[i][j+1]==1) 
+            if (actpart->pdis[kk].coupledofs.a.ia[i][j+1]==1)
             {
               if (tmp[j]<=min)
               {
@@ -339,7 +339,7 @@ void mask_numeq(
     }
   } /* end of if(!no_coupling) */
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 
@@ -358,10 +358,10 @@ void dof_in_coupledofs(
     PARTITION    *actpart,
     INT          *iscoupled)
 {
-  
+
   INT       i;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("dof_in_coupledofs");
 #endif
 
@@ -373,11 +373,11 @@ void dof_in_coupledofs(
       break;
     }
   }
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of dof_in_coupledofs */
 
@@ -388,14 +388,14 @@ void dof_in_coupledofs(
  |  find the node to this dof in partition               m.gee 6/01     |
  *----------------------------------------------------------------------*/
 void dof_find_centernode(
-    INT          dof, 
+    INT          dof,
     PARTITION   *actpart,
     NODE       **centernode)
 {
 
   INT       j,k;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("dof_find_centernode");
 #endif
 
@@ -412,7 +412,7 @@ void dof_find_centernode(
   }
 nodefound1:
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 

@@ -12,9 +12,9 @@ Maintainer: Thomas Hettich
 ------------------------------------------------------------------------*/
 
 /*!---------------------------------------------------------------------
-\brief fluid2                                                 
+\brief fluid2
 
-<pre>                                                         he  12/02 
+<pre>                                                         he  12/02
 
 In this structure all variables used for element evaluation by the 2D
 fluid element fluid2_tu are stored.

@@ -8,36 +8,36 @@
 #include "interf.h"
 #include "interf_prototypes.h"
 
-/*! 
+/*!
 \addtogroup INTERF
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
 \brief  contains the dispacement-jump calculation for the interface element
 
-<pre>                                                              mn 05/03 
+<pre>                                                              mn 05/03
 This routine computes the dispacement-jump of the interface element
 
 </pre>
 \param *mat          STVENANT   (i)   blabal
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling:   ---; 
+\return void
+\sa calling:   ---;
     called by: if_mat();
 
 *----------------------------------------------------------------------*/
-void if_jumpu(ELEMENT  *ele, 
+void if_jumpu(ELEMENT  *ele,
               DOUBLE  **bop,
               DOUBLE   *disjump,
-              DOUBLE   *Deltadisjump) 
+              DOUBLE   *Deltadisjump)
 {
 INT i,j,nodei,iel;
 DOUBLE d[16];
 DOUBLE Deltad[16];
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("if_deltau");
 #endif
 /* get nodal displ. and nodal increm. displ (=Delta d + sum delta d) ---*/
@@ -63,10 +63,10 @@ for (i=0; i<2; i++)
   }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of if_jumpu */
 
 /*----------------------------------------------------------------------*/

@@ -23,7 +23,7 @@ INT dirich;
 INT couple;
 INT geocouple;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2tu_ass_dof");
 #endif
 
@@ -34,7 +34,7 @@ couple=0;
 geocouple=0;
 /*-------------------------- dof has dirichlet condition */
 if (actnode->gnode->dirich!=NULL && actnode->gnode->dirich->dirich_onoff.a.iv[0]!=0
-&& actnode->gnode->dirich->dirich_onoff.a.iv[1]!=0) 
+&& actnode->gnode->dirich->dirich_onoff.a.iv[1]!=0)
 dirich=1;
 
 if (actnode->gnode->couple != NULL)
@@ -67,7 +67,7 @@ else if (dirich==0 && couple==0 && geocouple==1)
 }
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 

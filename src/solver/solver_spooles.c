@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -25,7 +25,7 @@ Maintainer: Malte Neumann
  |  but it is still missing the clean-up phase                          |
  | -to understand any of the written below, read the manuals            |
  *----------------------------------------------------------------------*/
-void solver_spooles( 
+void solver_spooles(
                       struct _SOLVAR         *actsolv,
                       struct _INTRA          *actintra,
                       struct _SPOOLMAT       *spo,
@@ -52,7 +52,7 @@ INT        root,firsttag=0,error=-1,stats[20];
 /*DV        *cumopsDV;
 IV        *ownedColumnsIV;*/
 INT        nmycol;
-/*InpMtx    *newA;    
+/*InpMtx    *newA;
 DenseMtx  *newY;
 SolveMap  *solvemap ;*/
 INT        sym=SPOOLES_NONSYMMETRIC;
@@ -61,7 +61,7 @@ INT        pivotingflag;
 static ARRAY recv_a;
 static DOUBLE *recv;
 char  buffer[50];
-/* for debugging 
+/* for debugging
 INT   msglvl=2;
 FILE *msgFile;
 FILE *mtxf;
@@ -74,7 +74,7 @@ FILE *rhsf=NULL;
 
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solver_spooles");
 #endif
 if (msglvl)
@@ -122,9 +122,9 @@ case 0:
    A_loc  = spo->A_loc.a.dv;
    b      = rhs->vec.a.dv;
    x      = sol->vec.a.dv;
-   nnz    = spo->nnz; 
-   numeq  = spo->numeq; 
-   numeq_total = spo->numeq_total;   
+   nnz    = spo->nnz;
+   numeq  = spo->numeq;
+   numeq_total = spo->numeq_total;
    IVzero(20,stats);
    DVzero(20,cpus);
    /*-------------------------------------------------------------------*/
@@ -136,14 +136,14 @@ case 0:
       recv = amdef("recv",&recv_a,numeq_total,1,"DV");
    }
 /*----------------------------------------------------------------------*/
-/* print the matrix in a format that can be read by the spooles test drivers*/   
+/* print the matrix in a format that can be read by the spooles test drivers*/
    if (msglvl)
    {
       fprintf(mtxf,"%d %d %d\n",numeq_total,numeq_total,nnz);
       for (i=0; i<nnz; i++)
       fprintf(mtxf,"%d %d %18.12E \n",irn[i],jcn[i],A_loc[i]);
       fflush(mtxf);
-      
+
       fprintf(rhsf,"%d 1\n",numeq);
       for (i=0; i<numeq; i++)
       fprintf(rhsf,"%d %18.12E \n",update[i],b[i]);
@@ -152,7 +152,7 @@ case 0:
 /*----------------------------------------------------------------------*/
 /*
    --------------------------------------------
-   STEP 1: read the entries 
+   STEP 1: read the entries
            and create the InpMtx object
    --------------------------------------------
 */
@@ -268,7 +268,7 @@ if (spo->is_factored==0)
 /*----------------------------------------------------------------------*/
 /*
    -----------------------------------------------------
-   STEP 4: get the permutation, permute the matrix and 
+   STEP 4: get the permutation, permute the matrix and
            front tree and get the symbolic factorization,
            permute the right hand side.
    -----------------------------------------------------
@@ -352,7 +352,7 @@ if (spo->is_factored==0)
       InpMtx_writeForHumanEye(spo->mtxA,msgFile) ;
       fflush(msgFile) ;
    }
-   spo->newY = DenseMtx_MPI_splitByRows(spo->mtxY,spo->vtxmapIV,stats,msglvl, 
+   spo->newY = DenseMtx_MPI_splitByRows(spo->mtxY,spo->vtxmapIV,stats,msglvl,
                                    msgFile,firsttag,actintra->MPI_INTRA_COMM);
    DenseMtx_free(spo->mtxY);
    spo->mtxY = spo->newY;
@@ -410,7 +410,7 @@ if (spo->is_factored==0)
   spo->chvmanager = ChvManager_new();
    ChvManager_init(spo->chvmanager,NO_LOCK,0);
    spo->rootchv = FrontMtx_MPI_factorInpMtx(spo->frontmtx,spo->mtxA,tau,droptol,
-                        spo->chvmanager,spo->ownersIV,0,&error,cpus, 
+                        spo->chvmanager,spo->ownersIV,0,&error,cpus,
                         stats,msglvl,msgFile,firsttag,actintra->MPI_INTRA_COMM);
    ChvManager_free(spo->chvmanager);
    firsttag += 3*(spo->frontETree->nfront) + 2;
@@ -422,7 +422,7 @@ if (spo->is_factored==0)
       FrontMtx_writeForHumanEye(spo->frontmtx, msgFile);
       fflush(msgFile);
    }
-   if ( error >= 0 ) 
+   if ( error >= 0 )
    {
       dserror("Error in spooles numeric factorization");
    }
@@ -454,10 +454,10 @@ if (spo->is_factored==0)
 if (spo->is_factored==0)
 {
    spo->solvemap = SolveMap_new() ;
-   SolveMap_ddMap(spo->solvemap,spo->frontmtx->symmetryflag, 
+   SolveMap_ddMap(spo->solvemap,spo->frontmtx->symmetryflag,
                   FrontMtx_upperBlockIVL(spo->frontmtx),
                   FrontMtx_lowerBlockIVL(spo->frontmtx),
-                  inprocs,spo->ownersIV,FrontMtx_frontTree(spo->frontmtx), 
+                  inprocs,spo->ownersIV,FrontMtx_frontTree(spo->frontmtx),
                   seed,msglvl,msgFile);
 }
    /* debug */
@@ -474,7 +474,7 @@ if (spo->is_factored==0)
 */
 if (spo->is_factored==0)
 {
-   FrontMtx_MPI_split(spo->frontmtx,spo->solvemap, 
+   FrontMtx_MPI_split(spo->frontmtx,spo->solvemap,
                       stats,msglvl,msgFile,firsttag,actintra->MPI_INTRA_COMM);
 }
    /* debug */
@@ -490,7 +490,7 @@ if (spo->is_factored==0)
    STEP 13: permute and redistribute Y if necessary
    ------------------------------------------------
 */
-   if ( FRONTMTX_IS_PIVOTING(spo->frontmtx) ) 
+   if ( FRONTMTX_IS_PIVOTING(spo->frontmtx) )
    {
       IV   *rowmapIV ;
 /*
@@ -501,7 +501,7 @@ if (spo->is_factored==0)
 */
    rowmapIV = FrontMtx_MPI_rowmapIV(spo->frontmtx,spo->ownersIV,msglvl,
                                     msgFile,actintra->MPI_INTRA_COMM);
-   spo->newY = DenseMtx_MPI_splitByRows(spo->mtxY,rowmapIV,stats,msglvl, 
+   spo->newY = DenseMtx_MPI_splitByRows(spo->mtxY,rowmapIV,stats,msglvl,
                                    msgFile,firsttag,actintra->MPI_INTRA_COMM);
    DenseMtx_free(spo->mtxY);
    spo->mtxY = spo->newY;
@@ -527,7 +527,7 @@ if (spo->is_factored==0)
 }
    nmycol = IV_size(spo->ownedColumnsIV);
    spo->mtxX = DenseMtx_new();
-   if ( nmycol > 0 ) 
+   if ( nmycol > 0 )
    {
       DenseMtx_init(spo->mtxX,SPOOLES_REAL,0,0,nmycol,1,1,nmycol);
       DenseMtx_rowIndices(spo->mtxX,&nrow,&rowind1);
@@ -626,16 +626,16 @@ break;
 /*----------------------------------------------------------------------*/
 default:
    dserror("Unknown option for solver call to Aztec");
-break;   
+break;
 }
 /*----------------------------------------------------------------------*/
-if (msglvl) 
+if (msglvl)
 {
    fclose(msgFile);
    fclose(mtxf);
    fclose(rhsf);
 }
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Michael Gee
@@ -32,7 +32,7 @@ void s8_mat_ogden_coupled(COMPOGDEN *mat, DOUBLE *stress_cart, DOUBLE C_cart[3][
       DOUBLE      J;
       DOUBLE      Jpowmbeta;
       DOUBLE      psi;
-      
+
       DOUBLE      CG[3][3];
       DOUBLE      N[3][3];
       DOUBLE      lam2[3];
@@ -40,12 +40,12 @@ void s8_mat_ogden_coupled(COMPOGDEN *mat, DOUBLE *stress_cart, DOUBLE C_cart[3][
       DOUBLE      lampowalfap[3][3];
       DOUBLE      PK2[3];
       DOUBLE      PK2cart[3][3];
-       
+
       DOUBLE      C[3][3][3][3];
-      DOUBLE      C0000;      
-      DOUBLE      C0011;      
-      DOUBLE      C0022;      
-      DOUBLE      C1111;      
+      DOUBLE      C0000;
+      DOUBLE      C0011;
+      DOUBLE      C0022;
+      DOUBLE      C1111;
       DOUBLE      C1122;
       DOUBLE      C2222;
       DOUBLE      C0101=0.0;
@@ -55,7 +55,7 @@ void s8_mat_ogden_coupled(COMPOGDEN *mat, DOUBLE *stress_cart, DOUBLE C_cart[3][
       DOUBLE      scal;
       DOUBLE      Ncross[3];
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_mat_ogden_coupled");
 #endif
 /*----------------------------------------------------------------------*/
@@ -107,7 +107,7 @@ CG[2][2] = gmkovc[2][2];
 /*
 CG is in covariant components in contravariant material bases, transform to cartesian
 */
-s8_kov_CGcuca(CG,gkonr); 
+s8_kov_CGcuca(CG,gkonr);
 /*----------------------------------------------------------------------*/
 /* make spectral decomposition and principal axes of right Cauchy Green */
 /*
@@ -131,7 +131,7 @@ for (i=0; i<3; i++)
 for (p=0; p<3; p++)
    lampowalfap[i][p] = pow(lam[i],alfap[p]);
 /*---------------- test orthogonality and unit length of eigenvectors N */
-#if 1 
+#if 1
 /*N0 * N1 = 0*/
 scal = N[0][0]*N[1][0] + N[0][1]*N[1][1] + N[0][2]*N[1][2];
 dsassert(FABS(scal)<EPS10,"eigenvectors N0,N1 not orthogonal");
@@ -163,8 +163,8 @@ psi += (lame1/(beta*beta))*(Jpowmbeta-1.0+beta*log(J));
 printf("  coupled PSI  %20.10f\n\n",psi);fflush(stdout);
 #endif
 /*--------------------------- calculate the 2.PK stresses in eigenbases */
-PK2[0] = 
-PK2[1] = 
+PK2[0] =
+PK2[1] =
 PK2[2] = (lame1/beta)*(1.0-Jpowmbeta);
 for (p=0; p<3; p++)
    for (i=0; i<3; i++)
@@ -178,12 +178,12 @@ printf("PK2        [0] %14.8f PK2        [1] %14.8f PK2        [2] %14.8f\n\n",P
 /*----------------------- calculate the PK2 stresses in cartesian bases */
 s8_ogden_cartPK2(PK2cart,PK2,N);
 /*------------------ sort cartesian stresses to the vector shell8-style */
-stress_cart[0] = PK2cart[0][0];   
-stress_cart[1] = PK2cart[0][1];   
-stress_cart[2] = PK2cart[0][2];   
-stress_cart[3] = PK2cart[1][1];   
-stress_cart[4] = PK2cart[1][2];   
-stress_cart[5] = PK2cart[2][2];   
+stress_cart[0] = PK2cart[0][0];
+stress_cart[1] = PK2cart[0][1];
+stress_cart[2] = PK2cart[0][2];
+stress_cart[3] = PK2cart[1][1];
+stress_cart[4] = PK2cart[1][2];
+stress_cart[5] = PK2cart[2][2];
 /*---------------------- make deviatoric material tangent in eigenspace */
 /*================== components C_aaaa */
 C0000 = C1111 = C2222 = lame1*((2/beta+1.0)*Jpowmbeta-2/beta);
@@ -231,7 +231,7 @@ C[2][1][2][1] = C[1][2][1][2] = C1212;
 /*--------------------------------- calculate C_cart in cartesian basis */
 s8_ogden_Ccart(C,C_cart,N);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -245,7 +245,7 @@ return;
 void s8_ogden_Ccart(DOUBLE C[3][3][3][3], DOUBLE C_cart[3][3][3][3], DOUBLE N[3][3])
 {
 INT i,j,k,l;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_ogden_Ccart");
 #endif
 /*----------------------------------------------------------------------*/
@@ -274,7 +274,7 @@ for (l=0; l<3; l++)
    C_cart[i][j][k][l] += C[2][2][1][1] * N[i][2]*N[j][2]*N[k][1]*N[l][1];
    /* a = 2  b = 2 */
    C_cart[i][j][k][l] += C[2][2][2][2] * N[i][2]*N[j][2]*N[k][2]*N[l][2];
-   
+
    /* a = 0  b = 1 */
    C_cart[i][j][k][l] += C[0][1][0][1] * (N[i][0]*N[j][1]*N[k][0]*N[l][1] + N[i][0]*N[j][1]*N[k][1]*N[l][0]);
    /* a = 0  b = 2 */
@@ -291,7 +291,7 @@ for (l=0; l<3; l++)
    C_cart[i][j][k][l] += C[2][1][2][1] * (N[i][2]*N[j][1]*N[k][2]*N[l][1] + N[i][2]*N[j][1]*N[k][1]*N[l][2]);
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -306,7 +306,7 @@ void s8_ogden_cartPK2(DOUBLE PK2[3][3], DOUBLE PK2main[3], DOUBLE N[3][3])
 {
 INT i,j;
 DOUBLE dyad0[3][3],dyad1[3][3],dyad2[3][3];
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_ogden_cartPK2");
 #endif
 /*----------------------------------------------------------------------*/
@@ -378,12 +378,12 @@ PK2[1][2] += PK2main[2] * N[1][2]*N[2][2];
 PK2[2][0] += PK2main[2] * N[2][2]*N[0][2];
 PK2[2][1] += PK2main[2] * N[2][2]*N[1][2];
 PK2[2][2] += PK2main[2] * N[2][2]*N[2][2];
-/* make symmetry 
+/* make symmetry
 PK2[1][0] = PK2[0][1];
-PK2[2][0] = PK2[0][2]; 
+PK2[2][0] = PK2[0][2];
 PK2[2][1] = PK2[1][2];*/
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -400,11 +400,11 @@ void s8_ogden_principal_CG(DOUBLE CG[3][3], DOUBLE lambda[3], DOUBLE N[3][3])
 INT          i;
 DOUBLE       fstrain[9];
 DOUBLE       fn[9];
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_ogden_principal_CG");
 #endif
 /*----------------------------------------------------------------------*/
-for (i=0; i<9; i++) 
+for (i=0; i<9; i++)
    fn[i] = 0.0;
 
 fstrain[0] = CG[0][0];
@@ -437,7 +437,7 @@ N[0][2] = fn[6];
 N[1][2] = fn[7];
 N[2][2] = fn[8];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -465,7 +465,7 @@ DOUBLE xsi=1.0; /*----- shear correction coefficient not yet introduced */
 DOUBLE C[3][3][3][3]; /*--------------------------- constitutive tensor */
 DOUBLE l1,l2;/*----------------------------------------- lame constants */
 DOUBLE emod;/*--------------------------------------- mat constants */
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_mat_lineltmp");
 #endif
 /*----------------------------------------------------------------------*/
@@ -521,7 +521,7 @@ CC[5][3] = C[2][2][1][1];
 CC[5][4] = C[2][2][2][1];
 CC[5][5] = C[2][2][2][2];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -529,7 +529,7 @@ return;
 /*----------------------------------------------------------------------*
  |                                                        m.gee 5/03    |
  *----------------------------------------------------------------------*/
-void s8_mat_linel_carttmp(DOUBLE emod, DOUBLE nue, 
+void s8_mat_linel_carttmp(DOUBLE emod, DOUBLE nue,
                          DOUBLE C[][3][3][3])
 {
 INT i,j,k,l;
@@ -537,8 +537,8 @@ DOUBLE l1,l2,ll2;
 /*
 DOUBLE e[3][3];
 */
-#ifdef DEBUG 
-dstrc_enter("s8_mat_linel_cart"); 
+#ifdef DEBUG
+dstrc_enter("s8_mat_linel_cart");
 #endif
 /*----------------------------------------------------------------------*/
 l1   = (emod*nue) / ((1.0+nue)*(1.0-2.0*nue));
@@ -593,7 +593,7 @@ C[0][2][2][0]= l2 ;         C[1][2][2][0]= 0.0;          C[2][2][2][0]= 0.0;
 C[0][2][2][1]= 0.0;         C[1][2][2][1]= l2 ;          C[2][2][2][1]= 0.0;
 C[0][2][2][2]= 0.0;         C[1][2][2][2]= 0.0;          C[2][2][2][2]= l1+ll2;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -615,11 +615,11 @@ DOUBLE Tcart[3][3];
 /*
 DOUBLE c[3][3];
 */
-#ifdef DEBUG 
-dstrc_enter("s8_kov_CGcuca"); 
+#ifdef DEBUG
+dstrc_enter("s8_kov_CGcuca");
 #endif
 /*----------------------------------------------------------------------*/
-/* theory: 
+/* theory:
 for (k=0; k<3; k++)
 for (l=0; l<3; l++)
 {
@@ -631,11 +631,11 @@ for (l=0; l<3; l++)
 */
 /*----------------------------------------------------------------------*/
 Tcart[0][0] = 0.0;
-Tcart[0][1] = 0.0; 
-Tcart[0][2] = 0.0; 
-Tcart[1][1] = 0.0; 
-Tcart[1][2] = 0.0; 
-Tcart[2][2] = 0.0; 
+Tcart[0][1] = 0.0;
+Tcart[0][2] = 0.0;
+Tcart[1][1] = 0.0;
+Tcart[1][2] = 0.0;
+Tcart[2][2] = 0.0;
 for (i=0; i<3; i++)
 for (j=0; j<3; j++)
 {
@@ -647,14 +647,14 @@ for (j=0; j<3; j++)
    Tcart[2][2] += gkon[2][i]*gkon[2][j]*T[i][j];
 }
 /*----------------------------------------------------------------------*/
-T[0][0] =           Tcart[0][0];   
-T[1][0] = T[0][1] = Tcart[0][1];   
-T[2][0] = T[0][2] = Tcart[0][2];   
-T[1][1] =           Tcart[1][1];   
-T[2][1] = T[1][2] = Tcart[1][2];   
-T[2][2] =           Tcart[2][2];   
+T[0][0] =           Tcart[0][0];
+T[1][0] = T[0][1] = Tcart[0][1];
+T[2][0] = T[0][2] = Tcart[0][2];
+T[1][1] =           Tcart[1][1];
+T[2][1] = T[1][2] = Tcart[1][2];
+T[2][2] =           Tcart[2][2];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

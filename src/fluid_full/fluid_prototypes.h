@@ -10,11 +10,11 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-/* RULE HOW TO ADD NEW FILES AND FUNCTIONS: 
+/* RULE HOW TO ADD NEW FILES AND FUNCTIONS:
    1.) THE FILENAMES ARE IN ALPHABETICAL ORDER !!!
    2.) FUNCTIONS ARE IN THE SAME ORDER LIKE IN THE FILE!!!
-*/   
-/*! 
+*/
+/*!
 \addtogroup FLUID
 *//*! @{ (documentation module open)*/
 /************************************************************************
@@ -39,87 +39,87 @@ void fluid_lte_norm(
 /************************************************************************
  | fluid_curvature.c                                                       |
  ************************************************************************/
-void fluid_curvature(FIELD        *actfield,    
-                     PARTITION    *actpart,     
-                     INTRA        *actintra,    
-                     CALC_ACTION  *action);      
+void fluid_curvature(FIELD        *actfield,
+                     PARTITION    *actpart,
+                     INTRA        *actintra,
+                     CALC_ACTION  *action);
 
 /************************************************************************
  | fluid_dirich.c                                                       |
  ************************************************************************/
 void fluid_initdirich(  FIELD          *actfield );
-void fluid_setdirich(   FIELD           *actfield, 
+void fluid_setdirich(   FIELD           *actfield,
 			INT              pos
 	            );
 void fluid_setdirich_cyl(FIELD  *actfield );
-void fluid_setdirich_parabolic(FIELD  *actfield );			 		    
+void fluid_setdirich_parabolic(FIELD  *actfield );
 void fluid_setdirich_sd(   FIELD           *actfield );
 void fluid_caldirich(
-                        ELEMENT         *actele,  
-		        DOUBLE          *dforces, 
-                        DOUBLE         **estif,   
+                        ELEMENT         *actele,
+		        DOUBLE          *dforces,
+                        DOUBLE         **estif,
 		        INT             *hasdirich,
 			INT		 readfrom
-		    ); 
+		    );
 void fluid_pm_caldirich(
-                     ELEMENT   *actele,  
-		     DOUBLE   *dforces, 
+                     ELEMENT   *actele,
+		     DOUBLE   *dforces,
                      DOUBLE   **estif,
 		     DOUBLE   **emass,
-		     DOUBLE   dt,   
+		     DOUBLE   dt,
 		     DOUBLE   theta,
 		     INT       *hasdirich
 		    );
 void fluid_pm_caldirich_parabolic(
-                     ELEMENT   *actele,  
-		     DOUBLE   *dforces, 
+                     ELEMENT   *actele,
+		     DOUBLE   *dforces,
                      DOUBLE   **estif,
 		     DOUBLE   **emass,
-		     DOUBLE   dt,   
+		     DOUBLE   dt,
                      DOUBLE   theta,
 		     INT       *hasdirich
-		    );	
+		    );
 void fluid_pm_caldirich_cyl(
-                     ELEMENT   *actele,  
-		     DOUBLE   *dforces, 
+                     ELEMENT   *actele,
+		     DOUBLE   *dforces,
                      DOUBLE   **estif,
 		     DOUBLE   **emass,
-		     DOUBLE   dt,   
+		     DOUBLE   dt,
                      DOUBLE   theta,
 		     INT       *hasdirich
-		    );		 
-		       
+		    );
+
 /************************************************************************
  | fluid_dirich_tu.c                                                     |
  ************************************************************************/
 void fluid_setdirich_tu(
-                       FIELD  *actfield, 
+                       FIELD  *actfield,
                        DOUBLE   *lower_limit_kappa,
                        DOUBLE   *lower_limit_eps
                        );
 
-void fluid_caldirich_tu( 
-                     ELEMENT   *actele,  
-		        DOUBLE    *dforces, 
-                    DOUBLE   **estif,   
+void fluid_caldirich_tu(
+                     ELEMENT   *actele,
+		        DOUBLE    *dforces,
+                    DOUBLE   **estif,
 		       INT       *hasdirich
 		       );
-                        
+
 /************************************************************************
  | fluid_dirich_tu_1.c                                                   |
  ************************************************************************/
 void fluid_setdirich_tu_1(
-                       FIELD  *actfield, 
+                       FIELD  *actfield,
                        DOUBLE   *lower_limit_kappa,
                        DOUBLE   *lower_limit_omega
                        );
 
-void fluid_caldirich_tu_1( 
-                         ELEMENT   *actele,  
-		             DOUBLE    *dforces, 
-                         DOUBLE   **estif,   
+void fluid_caldirich_tu_1(
+                         ELEMENT   *actele,
+		             DOUBLE    *dforces,
+                         DOUBLE   **estif,
 		             INT       *hasdirich
-		             );     
+		             );
 
 
 /************************************************************************
@@ -140,14 +140,14 @@ void fluid_updfscoor(FIELD *fluidfield, FLUID_DYNAMIC *fdyn,
  | fluid_heightfunction.c                                               |
  ************************************************************************/
 void fluid_heightfunc(INT                  hctrl,
-                      DOUBLE              *grat, 
+                      DOUBLE              *grat,
 		      FIELD               *actfield,
                       PARTITION           *actpart,
                       INTRA               *actintra,
                       CALC_ACTION         *action,
                       CONTAINER           *container,
                       INT                  converged);
-		      
+
 /************************************************************************
  | fluid_imp_semimp.c                                                   |
  ************************************************************************/
@@ -189,74 +189,74 @@ void fluid_mf(INT mctrl);
  ************************************************************************/
 void fluid_initmfcoupling(
                            FIELD         *fluidfield,
-			   FIELD         *alefield		
+			   FIELD         *alefield
 		         );
 
 /************************************************************************
  | fluid_mlservice.c                                                   |
  ************************************************************************/
-void fluid_ml_init( FIELD         *actfield );      
-void fluid_smcopy( PARTITION       *actpart );      
+void fluid_ml_init( FIELD         *actfield );
+void fluid_smcopy( PARTITION       *actpart );
 void fluid_prgmr(DOUBLE    **smmat,
                  DOUBLE    **smrhs,
 		 INT         numeq,
-                 INT         numrhs);      
+                 INT         numrhs);
 void fluid_add_smat(DOUBLE  **smat,
 		    DOUBLE  **semat,
 		    INT       numen,
-		    INT      *slme,  
-                    DOUBLE    fac);      
+		    INT      *slme,
+                    DOUBLE    fac);
 void fluid_add_smrhs(DOUBLE  **smrhs,
 		     DOUBLE  **smerhs,
                      INT       numrhs,
 		     INT       numen,
-		     INT      *smlme);	  
+		     INT      *smlme);
 void fluid_add_ssrhs(DOUBLE   *ssrhs,
 		     DOUBLE   *sserhs,
 		     INT       numen,
-		     INT      *sslme);	  
+		     INT      *sslme);
 void fluid_add_intlhs(DOUBLE   *smidiff,
 		      DOUBLE  **smiediff,
 		      INT       numen,
-		      INT      *smlme);      
+		      INT      *smlme);
 void fluid_add_intrhs(DOUBLE   *smirhs,
 		      DOUBLE   *smierhs,
 		      INT       numen,
-		      INT      *smlme);      
-void fluid_bubint(DOUBLE  *bubint,     
-                  DOUBLE  *smfunct,    
+		      INT      *smlme);
+void fluid_bubint(DOUBLE  *bubint,
+                  DOUBLE  *smfunct,
 	          DOUBLE **ebub,
-		  INT      smiel,     
-	          INT      nbub); 
-void fluid_pbubint(DOUBLE **pbubint,     
-                   DOUBLE  *smfunct,    
+		  INT      smiel,
+	          INT      nbub);
+void fluid_pbubint(DOUBLE **pbubint,
+                   DOUBLE  *smfunct,
 	           DOUBLE **epbub,
-		   INT      smiel,     
-		   INT      iel,     
-		   INT      nsd); 
-void fluid_bubder(DOUBLE **bubderxy,     
-                  DOUBLE **smderxy,    
+		   INT      smiel,
+		   INT      iel,
+		   INT      nsd);
+void fluid_bubder(DOUBLE **bubderxy,
+                  DOUBLE **smderxy,
 	          DOUBLE **ebub,
-		  INT      smiel,     
+		  INT      smiel,
 	          INT      nbub,
-		  INT      nder); 
-void fluid_pbubder(DOUBLE ***pbubderxy,     
-                   DOUBLE  **smderxy,    
+		  INT      nder);
+void fluid_pbubder(DOUBLE ***pbubderxy,
+                   DOUBLE  **smderxy,
 	           DOUBLE  **epbub,
-		   INT       smiel,     
-		   INT       iel,     
+		   INT       smiel,
+		   INT       iel,
 	           INT       nsd,
-		   INT       nder); 
-void fluid_calnofo(DOUBLE       *erhs,  
-		   DOUBLE  	*funct,  
-		   DOUBLE  	 fac,	 
+		   INT       nder);
+void fluid_calnofo(DOUBLE       *erhs,
+		   DOUBLE  	*funct,
+		   DOUBLE  	 fac,
 		   INT		 iel);
 void fluid_mlcaldirich(
-                       ELEMENT   *actele,  
-		       DOUBLE    *dforces, 
-                       DOUBLE   **estif,   
+                       ELEMENT   *actele,
+		       DOUBLE    *dforces,
+                       DOUBLE   **estif,
 		       INT       *hasdirich
-		      );  
+		      );
 
 /************************************************************************
  | fluid_normal.c                                                       |
@@ -282,58 +282,58 @@ void fluid_icons( INT itnum );
 void fluid_init(
                           PARTITION	    *actpart,
                           INTRA	            *actintra,
-			  FIELD             *actfield, 
+			  FIELD             *actfield,
                           CALC_ACTION       *action,
                           CONTAINER         *container,
                           INT                numr,
-                          FLUID_STRESS       str	
+                          FLUID_STRESS       str
 	       );
-void fluid_norm(          
-                          FIELD             *actfield,    
-		          INT                numeq_total, 
-                          DOUBLE            *vrat,        
-		          DOUBLE            *prat         
+void fluid_norm(
+                          FIELD             *actfield,
+		          INT                numeq_total,
+                          DOUBLE            *vrat,
+		          DOUBLE            *prat
 	       );
-void fluid_sol_copy(       
+void fluid_sol_copy(
                           FIELD             *actfield,
 			  INT                disnum,
 			  INT                arrayfrom,
-			  INT                arrayto,  
-                          INT                from,     
-		          INT                to,       
-		          INT                numdf      
+			  INT                arrayto,
+                          INT                from,
+		          INT                to,
+		          INT                numdf
 		  );
-void fluid_transpres(       
+void fluid_transpres(
                           FIELD             *actfield,
 			  INT                disnum,
 			  INT                index,
 			  INT                actpos,
                           INT                predof,
-			  INT                option     
-		    );		  
-INT fluid_steadycheck(    
-                          FIELD             *actfield,   
-		          INT                numeq_total 
+			  INT                option
+		    );
+INT fluid_steadycheck(
+                          FIELD             *actfield,
+		          INT                numeq_total
 		     );
-INT fluid_convcheck(      
-                          DOUBLE             vrat,  
+INT fluid_convcheck(
+                          DOUBLE             vrat,
 		          DOUBLE             prat,
-			  DOUBLE             grat,  
-                          INT                itnum, 
-		          DOUBLE             te,    
-		          DOUBLE             ts     
+			  DOUBLE             grat,
+                          INT                itnum,
+		          DOUBLE             te,
+		          DOUBLE             ts
 		   );
-void fluid_algoout(void);		   		     		  
+void fluid_algoout(void);
 void fluid_reduceshstr(INTRA             *actintra,
                          FIELD             *actfield);
 void fluid_nullshstr(INTRA             *actintra,
                         PARTITION         *actpart,
                         FIELD             *actfield);
-void fluid_reducestress(  
+void fluid_reducestress(
                           INTRA             *actintra,
                           PARTITION         *actpart,
                           FIELD             *actfield,
-			  INT                numdf, 
+			  INT                numdf,
 			  FLUID_STRESS       str
 		       );
 void fluid_cal_error(
@@ -346,24 +346,24 @@ void fluid_cal_error(
  ************************************************************************/
 void fluid_init_tu(
 		        FIELD  *actfield
-	            );      
+	            );
 void fluid_tcons_tu(void);
 
 void fluid_set_check_tu(
-                       FIELD  *actfield, 
+                       FIELD  *actfield,
                        DOUBLE lower_limit_kappa);
 
-void fluid_eddy_pro(FIELD         *actfield 
+void fluid_eddy_pro(FIELD         *actfield
                   );
 
-INT fluid_convcheck_tu(DOUBLE         kapepsrat,  
-                       INT            itnum1, 
-		           DOUBLE         te,    
-		           DOUBLE         ts     
+INT fluid_convcheck_tu(DOUBLE         kapepsrat,
+                       INT            itnum1,
+		           DOUBLE         te,
+		           DOUBLE         ts
 		          );
 INT fluid_convcheck_test(
-                     FIELD         *actfield, 
-                     INT            itnum_check 
+                     FIELD         *actfield,
+                     INT            itnum_check
 		         );
 
 void fluid_icons_tu( INT itnum1,
@@ -371,25 +371,25 @@ void fluid_icons_tu( INT itnum1,
                      INT itnum_n
 		      );
 
-void fluid_copysol_tu( FIELD         *actfield,  
-                       INT            from,     
-		           INT            to,       
-		           INT            flag      
+void fluid_copysol_tu( FIELD         *actfield,
+                       INT            from,
+		           INT            to,
+		           INT            flag
 		          );
-                       
+
 void fluid_copysol_test(
-                   FIELD         *actfield,  
-                   INT            from,     
-                   INT            to     
+                   FIELD         *actfield,
+                   INT            from,
+                   INT            to
 		       );
 
 void fluid_algoout_tu( void );
-                   
+
 /************************************************************************
  | fluid_service_tu_1.c                                                 |
  ************************************************************************/
 void fluid_set_check_tu_1(
-                       FIELD  *actfield, 
+                       FIELD  *actfield,
                        DOUBLE lower_limit_kappa,
                        DOUBLE lower_limit_omega
                        );

@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file
 \brief contains the routine 'saxistatic_ke' which forms the linear stiffness
-ke for axisymmetric shell element and the routine 'saxi_statcond' which 
+ke for axisymmetric shell element and the routine 'saxi_statcond' which
 condenses the stiffness matrix
 
 <pre>
@@ -18,17 +18,17 @@ Maintainer: Malte Neumann
 #include "axishell.h"
 #include "axishell_prototypes.h"
 
-/*! 
+/*!
 \addtogroup AXISHELL
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief  Computation of linear stiffness ke for axialsymmetric shell element 
+\brief  Computation of linear stiffness ke for axialsymmetric shell element
 
-<pre>                                                              mn 05/03 
+<pre>                                                              mn 05/03
 This routine computes the linear stiffness for the axialsymmetric shell
 element by computing first a (7,7)-stiffness matrix. Then this matrix is
-condensed from (7,7) to (6,6) by static condensation. 
+condensed from (7,7) to (6,6) by static condensation.
 
 
 </pre>
@@ -40,14 +40,14 @@ condensed from (7,7) to (6,6) by static condensation.
                                            init != 1 : integration
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling:   saxiintg, saxi_B, saxi_mat, saxi_keku, saxi_statcond;
     called by: axishell();
 
 *----------------------------------------------------------------------*/
 void saxistatic_ke(
-    ELEMENT   *ele, 
-    SAXI_DATA *data, 
+    ELEMENT   *ele,
+    SAXI_DATA *data,
     MATERIAL  *mat,
     ARRAY     *estif_global,
     INT        init
@@ -74,7 +74,7 @@ void saxistatic_ke(
 
   static DOUBLE **estif;            /* ke(6,6) after  static condensation */
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("saxistatic_ke");
 #endif
 
@@ -86,7 +86,7 @@ void saxistatic_ke(
 
   /* uninit phase (init==-1) */
   else if (init==-1)
-    goto end;  
+    goto end;
 
   else if(init==2)
   {
@@ -139,11 +139,11 @@ void saxistatic_ke(
     {
       /* element stiffness matrix ke */
       saxi_keku(estif_7,B,D,work1,work2,fac,r,dl);
-    } 
+    }
 
   }/* end of loop over lxsi */
 
-  /* static condensation to reduce the stiffness matrix 
+  /* static condensation to reduce the stiffness matrix
      from (7,7) to (6,6) by elemination of the middle node */
   saxi_statcond(ele,estif,estif_7,cosa,sina);
 
@@ -152,11 +152,11 @@ dsassert(ele->locsys==locsys_no,"locsys not implemented for this element!\n");
 
 end:
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 
-  return; 
+  return;
 } /* end of saxistatic_ke */
 
 
@@ -164,9 +164,9 @@ end:
 /*!----------------------------------------------------------------------
   \brief  Static condensation to reduce the stiffnes matrix
 
-  <pre>                                                              mn 05/03 
-  This routine reduces the linear stiffness for the axialsymmetric shell from 
-  a (7,7)-stiffness matrix to a (6,6)-stiffness matrix by static condensation. 
+  <pre>                                                              mn 05/03
+  This routine reduces the linear stiffness for the axialsymmetric shell from
+  a (7,7)-stiffness matrix to a (6,6)-stiffness matrix by static condensation.
 
 
   </pre>
@@ -177,16 +177,16 @@ end:
   \param   sina     DOUBLE  (i)   the sine of the angle of the current element
 
   \warning There is nothing special to this routine
-  \return void                                               
+  \return void
   \sa calling:   ---;
   called by: saxistatic_ke();
 
  *----------------------------------------------------------------------*/
 void saxi_statcond(
     ELEMENT *ele,
-    DOUBLE **estif,  
+    DOUBLE **estif,
     DOUBLE   estif_7[7][7],
-    DOUBLE    cosa,  
+    DOUBLE    cosa,
     DOUBLE    sina
     )
 {
@@ -213,48 +213,48 @@ void saxi_statcond(
   if (ele->node[0]->gnode->ondesigntyp==ondnode && ele->node[0]->gnode->d.dnode->cos_type == 1)
   {
     /* local cos */
-    T[0][0] =  1.0;   
-    T[1][1] =  1.0;   
-    T[2][2] =  1.0;   
+    T[0][0] =  1.0;
+    T[1][1] =  1.0;
+    T[2][2] =  1.0;
   }
   else
   {
     /* global cos */
-    T[0][0] =  cosa;   
-    T[0][1] =  sina;   
-    T[1][0] =  sina;   
-    T[1][1] = -cosa;   
-    T[2][2] =  -1.0;   
+    T[0][0] =  cosa;
+    T[0][1] =  sina;
+    T[1][0] =  sina;
+    T[1][1] = -cosa;
+    T[2][2] =  -1.0;
   }
 
   if (ele->node[1]->gnode->ondesigntyp==ondnode && ele->node[1]->gnode->d.dnode->cos_type == 1)
   {
     /* local cos */
-    T[3][3] =  1.0;   
-    T[4][4] =  1.0;   
-    T[5][5] =  1.0;   
+    T[3][3] =  1.0;
+    T[4][4] =  1.0;
+    T[5][5] =  1.0;
   }
   else
   {
     /* global cos */
-    T[3][3] =  cosa;   
-    T[3][4] =  sina;   
-    T[4][3] =  sina;   
-    T[4][4] = -cosa;   
-    T[5][5] =  -1.0;   
+    T[3][3] =  cosa;
+    T[3][4] =  sina;
+    T[4][3] =  sina;
+    T[4][4] = -cosa;
+    T[5][5] =  -1.0;
   }
 
   /*
-     T[0][0] =  cosa;   
-     T[0][1] =  sina;   
-     T[1][0] =  sina;   
-     T[1][1] = -cosa;   
-     T[2][2] =  -1.0;   
-     T[3][3] =  cosa;   
-     T[3][4] =  sina;   
-     T[4][3] =  sina;   
-     T[4][4] = -cosa;   
-     T[5][5] =  -1.0;   
+     T[0][0] =  cosa;
+     T[0][1] =  sina;
+     T[1][0] =  sina;
+     T[1][1] = -cosa;
+     T[2][2] =  -1.0;
+     T[3][3] =  cosa;
+     T[3][4] =  sina;
+     T[4][3] =  sina;
+     T[4][4] = -cosa;
+     T[5][5] =  -1.0;
      */
 
   /* compute the local 6/6 stiffnes matrix */
@@ -270,7 +270,7 @@ void saxi_statcond(
   {
     for (j=0; j<6; j++)
     {
-      estif_local[i][j] = estif_7[i][j] + k17[i] * k71[j]; 
+      estif_local[i][j] = estif_7[i][j] + k17[i] * k71[j];
     }
   }
 
@@ -308,7 +308,7 @@ void saxi_statcond(
     statcond[i] = -(1.0/k77)*k17[i]; /* local */
   }
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 

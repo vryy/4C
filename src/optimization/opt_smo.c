@@ -19,8 +19,8 @@ Maintainer: Andreas Lipka
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 #include "../headers/optimization.h"
-/*! 
-\addtogroup OPTIMIZATION 
+/*!
+\addtogroup OPTIMIZATION
 *//*! @{ (documentation module open)*/
 
 
@@ -30,11 +30,11 @@ Maintainer: Andreas Lipka
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par;                      
+ extern struct _PAR   par;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
@@ -68,7 +68,7 @@ extern enum _CALC_ACTION calc_action[MAXFIELD];
 extern struct _STATIC_VAR  *statvar;
 /*!----------------------------------------------------------------------
 \brief the optimization main structure
-<pre>                                                            al 06/01   
+<pre>                                                            al 06/01
 defined in opt_cal_main.c
 </pre>
 *----------------------------------------------------------------------*/
@@ -89,7 +89,7 @@ void optsmo(DOUBLE *vvar, INT init)
   DOUBLE dist, sstab, rstb, rzl, sumo;
   DOUBLE cpsum[4];
   DOUBLE **cpele;
-  
+
   static  INT     **nbele;
   static  DOUBLE  **nbelv;
   static  DOUBLE  *stbobj;
@@ -104,7 +104,7 @@ void optsmo(DOUBLE *vvar, INT init)
   ELEMENT *actele;                /* active element                            */
   ELEMENT *nctele;                /* another active element                    */
 /*----------------------------------------------------------------------*/
-  #ifdef DEBUG 
+  #ifdef DEBUG
   dstrc_enter("optsmo");
   #endif
 /*------------ the distributed system matrix, which is used for solving */
@@ -114,7 +114,7 @@ void optsmo(DOUBLE *vvar, INT init)
   actsolv     = &(solv[0]);
   actpart     = &(partition[0]);
   action      = &(calc_action[0]);
-  #ifdef PARALLEL 
+  #ifdef PARALLEL
   actintra    = &(par.intra[0]);
   #else
   actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
@@ -160,8 +160,8 @@ void optsmo(DOUBLE *vvar, INT init)
     /*---- determine all elements in the neigbourhood of one element ---*/
     nbele = (INT**   )CCACALLOC(actfield->dis[0].numele,sizeof(INT*   ));
     nbelv = (DOUBLE**)CCACALLOC(actfield->dis[0].numele,sizeof(DOUBLE*));
-    
-    
+
+
     for (i=0; i<actfield->dis[0].numele; i++)
     { /* loop elements */
       /* */
@@ -186,7 +186,7 @@ void optsmo(DOUBLE *vvar, INT init)
           ngbevec[ngbevec[0]+1] = j+1;
           sstab = fabs(2.0-dist/opt->smoothrad);
           sstab = pow(sstab,opt->smoothexp);
-          
+
           ngbeval[ngbevec[0]+1] = sstab;
           ngbevec[0]++;
         }
@@ -223,17 +223,17 @@ void optsmo(DOUBLE *vvar, INT init)
       {
         iloc = nbele[i][j]; /* element Id */
         rstb = nbelv[i][j];
-        
+
         nctele = &(actfield->dis[0].element[iloc-1]);
         iloc   = nctele->optdata[0];
-        
+
         rzl  += rstb;
         sumo += rstb * vvar[iloc-1];
       }
-            if(rzl!=0.0) stbobj[i] = sumo / rzl; 
-            else         stbobj[i] = 0.0; 
+            if(rzl!=0.0) stbobj[i] = sumo / rzl;
+            else         stbobj[i] = 0.0;
     }
-  
+
     for (i=0; i<actfield->dis[0].numele; i++)
     {
       actele = &(actfield->dis[0].element[i]);
@@ -245,14 +245,14 @@ void optsmo(DOUBLE *vvar, INT init)
 /*----------------------------------------------------------------------*/
   end: ;
 /*----------------------------------------------------------------------*/
-#ifndef PARALLEL 
+#ifndef PARALLEL
 CCAFREE(actintra);
 #endif
 /*----------------------------------------------------------------------*/
-  #ifdef DEBUG 
+  #ifdef DEBUG
   dstrc_exit();
   #endif
-return; 
+return;
 } /* end of optsmo */
 /*----------------------------------------------------------------------*/
 

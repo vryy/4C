@@ -10,19 +10,19 @@ Maintainer: Malte Neumann
 </pre>
 
 ---------------------------------------------------------------------*/
-/*! 
-\addtogroup DSSYSTEM 
+/*!
+\addtogroup DSSYSTEM
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
 \brief tracing of routines
 
 <pre>                                                         m.gee 8/00
-This structures is used by the chained list that keeps track of      
-the function calls.                                                  
+This structures is used by the chained list that keeps track of
+the function calls.
 This chained list is organized as a ring of lenght 100 and is readily
-preallocated. It can therefore trace routine calls up to a deepness  
-level of 100 routines before it starts overriding itself             
+preallocated. It can therefore trace routine calls up to a deepness
+level of 100 routines before it starts overriding itself
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -31,27 +31,27 @@ typedef struct _TRACEROUT
 struct _TRACEROUT   *prev;          /*!< ptr to previous structure in chained list */
 struct _TRACEROUT   *next;          /*!< ptr to next structure in chained list */
 char                 name[50];      /*!< name of routine */
-enum 
+enum
    {
     dsnone,
     dsin,
     dsout
    }                 dsroutcontrol; /*!< status of routine, inside, outside, unknown */
-   
+
 } TRACEROUT;
 
 /*!----------------------------------------------------------------------
 \brief tracing of ARRAYs
 
 <pre>                                                         m.gee 2/02
-This structures is used by the chained list that keeps track of      
-the the ARRAYS which are allocated using the AM-System               
-The chained list is fully dynamic an creates one structure to point  
-to each ARRAY or ARRAY4D which is created. If an ARRAY is deleted    
-using amdel or am4del the structure is taken off the chain list and  
-deallocated.                                                         
+This structures is used by the chained list that keeps track of
+the the ARRAYS which are allocated using the AM-System
+The chained list is fully dynamic an creates one structure to point
+to each ARRAY or ARRAY4D which is created. If an ARRAY is deleted
+using amdel or am4del the structure is taken off the chain list and
+deallocated.
 A report about all ARRAYs and ARRAY4Ds can be written to .err to keep
-to e.g. detect local or damaged ARRAYs which where not destroyed     
+to e.g. detect local or damaged ARRAYs which where not destroyed
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -78,7 +78,7 @@ typedef struct _TRACEARRAY
 \brief the tracing variable
 
 <pre>                                                         m.gee 8/00
-defined in pss_ds.c, declared in tracing.h                                                  
+defined in pss_ds.c, declared in tracing.h
 </pre>
 *----------------------------------------------------------------------*/
 typedef struct _TRACE

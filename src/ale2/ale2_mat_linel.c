@@ -15,15 +15,15 @@ Maintainer: Christiane Foerster
 #include "../headers/standardtypes.h"
 #include "ale2.h"
 
-/*! 
-\addtogroup Ale 
+/*!
+\addtogroup Ale
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
 \brief  calculates the linear elastic constitutive matrix
 
-<pre>                                                              mn 06/02 
-This routine calculates the linear elastic isotropic constitutive 
+<pre>                                                              mn 06/02
+This routine calculates the linear elastic isotropic constitutive
 matrix for a 2D ale element.
 
 </pre>
@@ -31,7 +31,7 @@ matrix for a 2D ale element.
 \param *d     DOUBLE     (o)   the constitutive matrix
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: ale2_static_ke()
 
 *----------------------------------------------------------------------*/
@@ -39,7 +39,7 @@ void ale2_mat_linel(STVENANT *mat, DOUBLE **d)
 {
 DOUBLE a1, b1, c1;
 DOUBLE ym,pv;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ale2_mat_linel");
 #endif
 /*----------------------------------------------------------------------*/
@@ -73,7 +73,7 @@ pv  = mat->possionratio;
     d[0][1]=b1;
     d[0][2]=0.;
     d[0][3]=b1;
-    
+
     d[1][0]=b1;
     d[1][1]=a1;
     d[1][2]=0.;
@@ -83,7 +83,7 @@ pv  = mat->possionratio;
     d[2][1]=0.;
     d[2][2]=c1/2.;
     d[2][3]=0.;
-    
+
     d[3][0]=b1;
     d[3][1]=b1;
     d[3][2]=0.;
@@ -91,7 +91,7 @@ pv  = mat->possionratio;
 /*  break;
   }*/
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

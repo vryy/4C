@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file
 \brief contains the routine 'opcini',
-       initialize execution stage of optimization 
+       initialize execution stage of optimization
 
 <pre>
 Maintainer: Andreas Lipka
@@ -20,15 +20,15 @@ Maintainer: Andreas Lipka
 #include "../solver/solver.h"
 #include "../headers/optimization.h"
 #include "opt_prototypes.h"
-/*! 
-\addtogroup OPTIMIZATION 
+/*!
+\addtogroup OPTIMIZATION
 *//*! @{ (documentation module open)*/
 
 
 
 /*!----------------------------------------------------------------------
 \brief the optimization main structure
-<pre>                                                            al 06/01   
+<pre>                                                            al 06/01
 defined in opt_cal_main.c
 </pre>
 *----------------------------------------------------------------------*/
@@ -70,7 +70,7 @@ extern struct _MATERIAL  *mat;
  | dedfined in global_control.c                                         |
  | struct _ALLEIG       *alleig;                                        |
  *----------------------------------------------------------------------*/
-extern ALLEIG              *alleig;   
+extern ALLEIG              *alleig;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate design if needed                                 |
@@ -104,7 +104,7 @@ MATERIAL    *actmat;
   INT numvarlin;                    /* AS */
   INT  *adr;
 /*----------------------------------------------------------------------*/
-  #ifdef DEBUG 
+  #ifdef DEBUG
   dstrc_enter("opcini");
   #endif
 /*--------------------------------------------------- set some pointers */
@@ -126,8 +126,8 @@ MATERIAL    *actmat;
   else
   {
     opt_calsta(calsta_init);
-  }  
-/*--------------- initialize element arrays for sensitivity analysis ---*/        
+  }
+/*--------------- initialize element arrays for sensitivity analysis ---*/
 /*----------------------------------------------- number of opt.var. ---*/
   numvar=0;
   for (i=0; i<opt->numvar; i++)
@@ -141,14 +141,14 @@ MATERIAL    *actmat;
          {
            numvar++;
            /* initialize element struct for opti. */
-           if(opt->numlin != 0)                              
+           if(opt->numlin != 0)
 	   {
 	   actele->optdata = (INT*)CCACALLOC(3,sizeof(INT));
-	   }                                                 
+	   }
 	   else actele->optdata = (INT*)CCACALLOC(2,sizeof(INT));
          }
       }
-    
+
     }
   }
   /*-----------------------------------------------*/
@@ -181,7 +181,7 @@ MATERIAL    *actmat;
          {
            /* initialize element struct for opti. */
            actele->optdata = (INT*)CCACALLOC(2,sizeof(INT));
-           
+
            if(actele->eltyp==el_wall1)
            {
              dId = actele->g.gsurf[0].dsurf->Id;
@@ -192,7 +192,7 @@ MATERIAL    *actmat;
              dId = actele->g.gvol[0].dvol->Id;
              dvolopt[dId] = 1;
            }
-         
+
          }
       }
       /*---------*/
@@ -217,7 +217,7 @@ MATERIAL    *actmat;
          dvolopt[j]=numvar;
        }
       }
-      
+
       /*---------*/
     }
   }
@@ -235,19 +235,19 @@ MATERIAL    *actmat;
   if (opt->strategy==os_fsd)
   {
     opt->strat.fsd->numvar  = numvar;
-    
+
     opt->strat.fsd->grdobj  = (DOUBLE*)CCACALLOC(numvar,sizeof(DOUBLE));
     opt->strat.fsd->grdcon  = (DOUBLE*)CCACALLOC(numvar,sizeof(DOUBLE));
-    opt->strat.fsd->var     = (DOUBLE*)CCACALLOC(numvar,sizeof(DOUBLE)); 
+    opt->strat.fsd->var     = (DOUBLE*)CCACALLOC(numvar,sizeof(DOUBLE));
     opt->strat.fsd->resu    = (DOUBLE*)CCACALLOC(numvar,sizeof(DOUBLE));
-    opt->strat.fsd->resl    = (DOUBLE*)CCACALLOC(numvar,sizeof(DOUBLE)); 
+    opt->strat.fsd->resl    = (DOUBLE*)CCACALLOC(numvar,sizeof(DOUBLE));
     for (i=0; i<numvar; i++)
     {
       opt->strat.fsd->grdobj[i]  =  0.;
       opt->strat.fsd->grdcon[i]  =  0.;
-      opt->strat.fsd->var[i]     =  0.; 
+      opt->strat.fsd->var[i]     =  0.;
       opt->strat.fsd->resu[i]    =  1.0E20;
-      opt->strat.fsd->resl[i]    = -1.0E20; 
+      opt->strat.fsd->resl[i]    = -1.0E20;
     }
   }
 
@@ -299,10 +299,10 @@ MATERIAL    *actmat;
            opt->strat.fsd->resl[numvar] = opt->ovar[i].blower;
 
            numvar++;
-           
+
          }
       }
-    
+
     }
   }
   /*--------------------------------------------------------------------*/
@@ -367,10 +367,10 @@ MATERIAL    *actmat;
            actele->optdata[1] = opt->ovar[i].objId;
          }
       }
-    
+
     }
   }
-  
+
   /*-----------------------------------------------*/
   if(design->ndsurf> 0 ) CCAFREE(dsurfopt);
   if(design->ndvol > 0 ) CCAFREE(dvolopt );
@@ -408,14 +408,14 @@ if(opt->numlin != 0)
        actele->mylinweight = opt->olin[i].myweight;
        actele->optdata[2] = adr[c];
        c++;
-       }  
+       }
        if(c > c_max) dserror("Linking problem in opt_init.c, sorry!");
     }
    if(c != c_max) dserror("problem in opt_init.c: different no. of elements for linking materials!");
    numvarlin = numvarlin-c;      /*angepasste laenge von numvar */
    }
    opt->strat.fsd->numvar_lin = numvarlin;
-   CCAFREE(adr);  
+   CCAFREE(adr);
 
 /* -------------- allocate memory for resized vectors for linking  --- */
   opt->strat.fsd->grdobj_lin = (DOUBLE*)CCACALLOC(numvarlin,sizeof(DOUBLE));
@@ -426,23 +426,23 @@ if(opt->numlin != 0)
   {
      opt->strat.fsd->grdobj_lin[i]  =  0.;
      opt->strat.fsd->grdcon_lin[i]  =  0.;
-     opt->strat.fsd->var_lin[i]     =  0.; 
+     opt->strat.fsd->var_lin[i]     =  0.;
   }
-}  
+}
 /*--- AS ENDE ----------------------------------------------------------*/
 /*-------------------- initialize upodate of optimization variables  ---*/
-  optupd(1); 
+  optupd(1);
 /*-------------------- initialize evaluation of equality constraints ---*/
-  opteqc(NULL,1); 
+  opteqc(NULL,1);
 /*--------------------------- initialize evaluation of sensitivities ---*/
-  optvsa(NULL,NULL,1); 
+  optvsa(NULL,NULL,1);
 /*---------------------------- initialize smoothing of sensitivities ---*/
-  if(opt->optsmooth == sm_on) optsmo(NULL,1); 
+  if(opt->optsmooth == sm_on) optsmo(NULL,1);
 /*------------------ initialize reference values of mass, volume ... ---*/
-  opt->totmas = 0.; 
-  opt->totvol = 0.; 
+  opt->totmas = 0.;
+  opt->totvol = 0.;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

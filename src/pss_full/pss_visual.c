@@ -18,28 +18,28 @@ Maintainer: Malte Neumann
  | structure allfiles, which holds all file pointers                    |
  | is defined in input_control_global.c
  *----------------------------------------------------------------------*/
-extern struct _FILES  allfiles;                     
- 
-/*!---------------------------------------------------------------------  
+extern struct _FILES  allfiles;
+
+/*!---------------------------------------------------------------------
 \brief output to pss-file
 
 <pre>                                                         genk 07/02
 
 in this routine the solution (node->sol) is written to the pss-file of
 proc 0 used for visualisation with VISUAL2 / VISUAL3
-all other data required by VISUAL2 / VISUAL3 are read from the input    
+all other data required by VISUAL2 / VISUAL3 are read from the input
 file
-			     
-</pre>   
+
+</pre>
 \param *actfield	FIELD         (i)  actual field
 \param  ntsteps         INT           (i)  total num. of time steps
-\param *time_a          ARRAY         (i)  time array 
-\return void  
+\param *time_a          ARRAY         (i)  time array
+\return void
 
 ------------------------------------------------------------------------*/
-void visual_writepss(FIELD  *actfield,  
-                       INT     ntsteps,  
-		       ARRAY  *time_a	 
+void visual_writepss(FIELD  *actfield,
+                       INT     ntsteps,
+		       ARRAY  *time_a
 		    )
 {
 INT                  i,kk;          /* simply a counter                 */
@@ -51,7 +51,7 @@ FILE                *out;           /* pointer to pss-file              */
 VISUAL_DATA          vis;           /* visualisation data               */
 NODE                *actnode;       /* actual node                      */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_writevispss");
 #endif
 
@@ -64,11 +64,11 @@ amredef(time_a,ntsteps,1,"DV");
 pss_write_array(time_a,&(vis.time),out,&ierr);
 
 /*----------------------------------------------------------------------*/
-/* 
-   now write the solution data, that are stored in the nodes: 
-   
+/*
+   now write the solution data, that are stored in the nodes:
+
    actnode->sol
-   
+
    so we need to store an array of numnp handles
 */
 /*----------------------------------------------------------------------*/
@@ -89,7 +89,7 @@ for (i=0; i<numnp; i++)
    if (ierr != 1) dserror("Error writing visual data\n");
 }
 
-/*---------------------------------------------------------------------* 
+/*---------------------------------------------------------------------*
    all nodal data is written, so we now write the node_handles and store
    the handle to this in vis.handle_of_node_handles
  *---------------------------------------------------------------------*/
@@ -103,16 +103,16 @@ free(vis.node_handles);
 
 /*----------------------------------------------------------------------*/
 /*
-   the only thing to do is now write the VISUAL_FLUID itself with 
+   the only thing to do is now write the VISUAL_FLUID itself with
    its unique name "fluidvis"
    NOTE:
    names are limited to 9 characters.
-*/ 
+*/
 switch (actfield->fieldtyp)
 {
-case fluid:  
+case fluid:
 if (actfield->ndis==1)
-{   
+{
    pss_write("fluidvis",1,1,sizeof(VISUAL_DATA),&vis,&longdummy,out,&ierr);
    if (ierr != 1) dserror("Error writing visual data\n");
 }
@@ -122,11 +122,11 @@ else
    {
    case 0:
       pss_write("fluidvis",1,1,sizeof(VISUAL_DATA),&vis,&longdummy,out,&ierr);
-      if (ierr != 1) dserror("Error writing visual data\n");      
+      if (ierr != 1) dserror("Error writing visual data\n");
    break;
    case 1:
       pss_write("kapeps",1,1,sizeof(VISUAL_DATA),&vis,&longdummy,out,&ierr);
-      if (ierr != 1) dserror("Error writing visual data\n");      
+      if (ierr != 1) dserror("Error writing visual data\n");
    break;
    default:
       dserror("more than 2 discrtetistions not possible with VISUAL2\n");
@@ -144,34 +144,34 @@ default:
 }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
-} /* end of visual_writepss */ 
+} /* end of visual_writepss */
 
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief input from pss-file
 
 <pre>                                                         genk 07/02
 
 in this routine the solution (node->sol) is read from the pss-file of
 proc 0 used for visualisation with VISUAL2 / VISUAL3
-all other data required by VISUAL2 / VISUAL3 are read from the input    
+all other data required by VISUAL2 / VISUAL3 are read from the input
 file
-			     
-</pre>   
+
+</pre>
 \param *actfield	FIELD         (i)  actual field
 \param  ntsteps         INT           (i)  total num. of time steps
-\param *time_a          ARRAY         (i)  time array 
-\return void  
+\param *time_a          ARRAY         (i)  time array
+\return void
 
 ------------------------------------------------------------------------*/
-void visual_readpss(FIELD   *actfield, 
-                      INT     *ntsteps,  
-		      ARRAY   *time_a	 
+void visual_readpss(FIELD   *actfield,
+                      INT     *ntsteps,
+		      ARRAY   *time_a
 		     )
 {
 INT                  i;              /* simply some counters          */
@@ -185,7 +185,7 @@ FILE                *in;               /* pointer to pss-input file     */
 VISUAL_DATA          vis;              /* visualisation data            */
 NODE                *actnode;          /* actual node                   */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_readvispss");
 #endif
 
@@ -197,7 +197,7 @@ in = allfiles.in_pss;
 switch (actfield->fieldtyp)
 {
   case fluid:
-    pss_chck("fluidvis",&vishandle,in,&ierr);  
+    pss_chck("fluidvis",&vishandle,in,&ierr);
     if (ierr != 1) dserror("Cannot visualise fluid, data don't exist in vis.pss-file\n");
     pss_read_name_handle("fluidvis",&i,&i,&byte,&vis,&vishandle,in,&ierr);
     if (ierr != 1) dserror("Restart structure exists, but cannot read it\n");
@@ -205,7 +205,7 @@ switch (actfield->fieldtyp)
   case structure:
     break;
   case ale:
-    pss_chck("alevis",&vishandle,in,&ierr);  
+    pss_chck("alevis",&vishandle,in,&ierr);
     if (ierr != 1) dserror("Cannot visualise fluid, data don't exist in vis.pss-file\n");
     pss_read_name_handle("alevis",&i,&i,&byte,&vis,&vishandle,in,&ierr);
     if (ierr != 1) dserror("Restart structure exists, but cannot read it\n");
@@ -228,7 +228,7 @@ if (time_a)
 }
 /*----------------------------------------------------------------------*/
 /*
-   now read the data that is stored in the nodes: 
+   now read the data that is stored in the nodes:
 
    actnode->sol
 
@@ -267,7 +267,7 @@ for (i=0; i<numnp; i++)
    pss_read_array_name_handle(actnode->sol.name,&(actnode->sol),&(node_handles[i]),in,&ierr);
    if (ierr != 1) dserror("Cannot read visual data\n");
    /*-------------------------------------------------------------------*/
-} 
+}
 
 if (actfield->ndis==2)
 {
@@ -282,7 +282,7 @@ if (ierr != 1) dserror("Restart structure exists, but cannot read it\n");
 
 /*----------------------------------------------------------------------*/
 /*
-   now read the data that is stored in the nodes: 
+   now read the data that is stored in the nodes:
 
    actnode->sol
 
@@ -321,16 +321,16 @@ for (i=0; i<numnp; i++)
    pss_read_array_name_handle(actnode->sol.name,&(actnode->sol),&(node_handles[i]),in,&ierr);
    if (ierr != 1) dserror("Cannot read visual data\n");
    /*-------------------------------------------------------------------*/
-} 
+}
 }
 /*------------------------------- delete the handle array for the nodes */
 free(vis.node_handles);
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
-} /* end of visaul_readpss */ 
+} /* end of visaul_readpss */
 

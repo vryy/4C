@@ -1,9 +1,9 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 
- - mat_el_iso: which calculates the constitutive matrix for a linear 
+\brief contains the routine
+ - mat_el_iso: which calculates the constitutive matrix for a linear
                elastic, isotropic material (St. Venant-Kirchhoff)
-               formulated in cartesian coordinate system, 
+               formulated in cartesian coordinate system,
                general 3D with the sorting [11,22,33,12,23,13]
 
 <pre>
@@ -18,12 +18,12 @@ Maintainer: Stefan Hartmann
 #include "../headers/standardtypes.h"
 #include "mat_prototypes.h"
 
-/*! 
-\addtogroup MAT 
-*//*! @{ (documentation module open)*/ 
+/*!
+\addtogroup MAT
+*//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief consitutive matrix for a linear elastic isotropic material                                    
+\brief consitutive matrix for a linear elastic isotropic material
 
 <pre>                                                            sh 03/03
 This routine calculates the constitutive matrix for a linear elastic,
@@ -32,13 +32,13 @@ Within this routine, everything is done in a cartesian coordinate system
 with the following sorting of stresses and strains:
 "brick" [11,22,33,12,23,13]
 </pre>
-\param       youngs   DOUBLE  (i)   young's modulus 
-\param possionratio   DOUBLE  (i)   poisson's ratio 
+\param       youngs   DOUBLE  (i)   young's modulus
+\param possionratio   DOUBLE  (i)   poisson's ratio
 \param      **d       DOUBLE  (o)   constitutive matrix [6][6]
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling: ---; called by: 
+\return void
+\sa calling: ---; called by:
 
 *----------------------------------------------------------------------*/
 void mat_el_iso(DOUBLE   youngs,
@@ -48,7 +48,7 @@ void mat_el_iso(DOUBLE   youngs,
 DOUBLE d1,d2,d3;
 DOUBLE ym,pv;/*------------------------------------------ mat constants */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mat_el_iso");
 #endif
 /*----------------------------------------------------------------------*/
@@ -102,7 +102,7 @@ d[5][4]=0.0;
 d[5][5]=d3;
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -112,23 +112,23 @@ return;
 
 
 /*!----------------------------------------------------------------------
-\brief INVERSE of the consitutive matrix for a linear elastic 
-isotropic material                                    
+\brief INVERSE of the consitutive matrix for a linear elastic
+isotropic material
 
 <pre>                                                            sh 03/03
-This routine calculates the INVERSE of the constitutive matrix for a 
+This routine calculates the INVERSE of the constitutive matrix for a
 linear elastic, isotropic material
 Within this routine, everything is done in a cartesian coordinate system
 with the following sorting of stresses and strains:
 "brick" [11,22,33,12,23,13]
 </pre>
-\param       youngs   DOUBLE  (i)   young's modulus 
-\param possionratio   DOUBLE  (i)   poisson's ratio 
+\param       youngs   DOUBLE  (i)   young's modulus
+\param possionratio   DOUBLE  (i)   poisson's ratio
 \param     dinv[36]   DOUBLE  (o)   INVERSE of the constitutive matrix
 
 \warning This routine returns a vector [36] instead of matrix [6][6]
-\return void                                               
-\sa calling: ---; called by: 
+\return void
+\sa calling: ---; called by:
 
 *----------------------------------------------------------------------*/
 void mat_el_iso_inv(DOUBLE   youngs,
@@ -138,7 +138,7 @@ void mat_el_iso_inv(DOUBLE   youngs,
 DOUBLE d1,d2,d3;
 DOUBLE ym,pv;/*------------------------------------------ mat constants */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mat_el_iso_inv");
 #endif
 /*----------------------------------------------------------------------*/
@@ -191,7 +191,7 @@ dinv[33]=0.0;
 dinv[34]=0.0;
 dinv[35]=d3;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

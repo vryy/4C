@@ -16,8 +16,8 @@ Maintainer: Andreas Lipka
 #include "brick1.h"
 #include "brick1_prototypes.h"
 
-/*! 
-\addtogroup BRICK1 
+/*!
+\addtogroup BRICK1
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
@@ -28,25 +28,25 @@ This routine to establish local material law
        stress-strain law for isotropic material for for a 3D-hex-element.
 
 </pre>
-\param        ym  DOUBLE    (i) young's modulus                     
-\param        pv  DOUBLE    (i) poisson's ratio                   
-\param     alfat  DOUBLE    (i) temperature expansion factor 
-\param     uniax  DOUBLE    (i) yield stresse                
-\param     fhard  DOUBLE    (i) hardening modulus            
-\param        gf  DOUBLE    (i) fracture energy                   
-\param       ele  ELEMENT*  (i) actual element               
-\param       bop  DOUBLE**  (i) derivative operator          
-\param        ip  INT       (i) integration point Id                 
-\param    stress  DOUBLE*   (o) ele stress (-resultant) vector  
-\param         d  DOUBLE**  (o) material matrix                    
-\param      disd  DOUBLE*   (i) displacement derivatives     
-\param   g[6][6]  DOUBLE    (i) transformation matrix        
-\param  gi[6][6]  DOUBLE    (i) inverse of g                 
-\param    istore  INT       (i) controls storing of stresses     
-\param    newval  INT       (i) controls eval. of stresses   
+\param        ym  DOUBLE    (i) young's modulus
+\param        pv  DOUBLE    (i) poisson's ratio
+\param     alfat  DOUBLE    (i) temperature expansion factor
+\param     uniax  DOUBLE    (i) yield stresse
+\param     fhard  DOUBLE    (i) hardening modulus
+\param        gf  DOUBLE    (i) fracture energy
+\param       ele  ELEMENT*  (i) actual element
+\param       bop  DOUBLE**  (i) derivative operator
+\param        ip  INT       (i) integration point Id
+\param    stress  DOUBLE*   (o) ele stress (-resultant) vector
+\param         d  DOUBLE**  (o) material matrix
+\param      disd  DOUBLE*   (i) displacement derivatives
+\param   g[6][6]  DOUBLE    (i) transformation matrix
+\param  gi[6][6]  DOUBLE    (i) inverse of g
+\param    istore  INT       (i) controls storing of stresses
+\param    newval  INT       (i) controls eval. of stresses
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
@@ -56,7 +56,7 @@ void c1_mat_plast_mises(DOUBLE ym,      /* young's modulus              */
                         DOUBLE fhard,   /* hardening modulus            */
                         ELEMENT   *ele, /* actual element               */
                         INT ip,         /* integration point Id         */
-                        DOUBLE *stress, /*ele stress (-resultant) vector*/      
+                        DOUBLE *stress, /*ele stress (-resultant) vector*/
                         DOUBLE **d,     /* material matrix              */
                         DOUBLE  *disd,  /* displacement derivatives     */
                         DOUBLE g[6][6], /* transformation matrix        */
@@ -82,7 +82,7 @@ DOUBLE dlam;
 DOUBLE yld, sm, sx, sy, sz, sxy, sxz, syz, sig2;
 DOUBLE expo  = 0.;
 DOUBLE alpha = 0.;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1_mat_plast_mises");
 #endif
 /*----------------------------------------------------------------------*/
@@ -148,7 +148,7 @@ dstrc_enter("c1_mat_plast_mises");
           sig2 = ( sx*sx + sy*sy + sz*sz)/2. + sxy*sxy + sxz*sxz + syz*syz;
           sig2*=2.;
           sig2=sqrt(sig2);
- 
+
           c1matp1 (ym, fhard, pv, sig2,tau,epstn,dlam,d);
           c1gld (d,g);/* transform local to global material matrix */
 
@@ -171,7 +171,7 @@ dstrc_enter("c1_mat_plast_mises");
   for (i=0; i<6; i++) deleps[i] = strain[i] - eps[i];
   for (i=0; i<6; i++) delsig[i] = 0.0;
   for (i=0; i<6; i++) for (j=0; j<6; j++) delsig[i] += d[i][j]*deleps[j];
-  
+
   for (i=0; i<6; i++) tau[i] = sig[i] + delsig[i];
 /*------------------------------------------------ verify plasticity ---*/
   sm  = (tau[0]+tau[1]+tau[2])/3.;
@@ -183,15 +183,15 @@ dstrc_enter("c1_mat_plast_mises");
   syz = tau[5];
 /*-------------------------------------------------- yield condition ---*/
   sig2 = ( sx*sx + sy*sy + sz*sz)/2. + sxy*sxy + sxz*sxz + syz*syz;
-  ft = sig2 - yld*yld/3.; 
+  ft = sig2 - yld*yld/3.;
 /*------------- state of stress within yield surface - E L A S T I C ---*/
-  if (ft<=tol) 
+  if (ft<=tol)
   {
     yip = 1;
     for (i=0; i<6; i++) stress[i] = tau[i];
   }
 /*------------ state of stress outside yield surface - P L A S T I C ---*/
-  else 
+  else
   {
     yip = 2;
     /*transform stresses to local coordinate system */
@@ -201,9 +201,9 @@ dstrc_enter("c1_mat_plast_mises");
     sig2*=2.;
     sig2=sqrt(sig2);
     c1rad1 (ym, fhard, uniax, pv, sig2, tau, &epstn, &dlam);
-    
+
     /* evaluate new material matrix if requested    */
-    
+
     c1matp1 (ym, fhard, pv, sig2,stress,epstn,dlam,d);
     c1gld (d,g);/* transform local to global material matrix */
 
@@ -212,7 +212,7 @@ dstrc_enter("c1_mat_plast_mises");
     tau[2] += sm;
     /*transform stresses to global coordinate system */
     c1trss2global (tau,g);
-    
+
     for (i=0; i<6; i++) stress[i] = tau[i];
   }
 /*----------------------------- put new values -> sig, eps,epstn,yip ---*/
@@ -229,7 +229,7 @@ end:
     ele->e.c1->elewa[0].ipwa[ip].yip   = yip  ;
   }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -243,17 +243,17 @@ radial return for elements with mises material model.
 Nonlinear Ramberg-Osgood -Hardening law.
 
 </pre>
-\param e     DOUBLE  (i) young's modulus                      
-\param fhard DOUBLE  (i) hardening modulus                    
-\param uniax DOUBLE  (i) yield stresse                        
-\param vnu   DOUBLE  (i) poisson's ratio                      
-\param sig2  DOUBLE  (i) equivalent stress                    
+\param e     DOUBLE  (i) young's modulus
+\param fhard DOUBLE  (i) hardening modulus
+\param uniax DOUBLE  (i) yield stresse
+\param vnu   DOUBLE  (i) poisson's ratio
+\param sig2  DOUBLE  (i) equivalent stress
 \param dev   DOUBLE* (i) elastic predicor projected onto yield
-\param epstn DOUBLE* (i) equivalent uniaxial plastic strain   
-\param dlam  DOUBLE* (i) increment of plastic multiplier      
+\param epstn DOUBLE* (i) equivalent uniaxial plastic strain
+\param dlam  DOUBLE* (i) increment of plastic multiplier
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
@@ -275,7 +275,7 @@ DOUBLE rnorm[6];
 DOUBLE alpha = 0.;
 DOUBLE expo  = 0.;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1rad1");
 #endif
 /*----------------------------------------------------------------------*/
@@ -305,7 +305,7 @@ L500:
   epst = *epstn + ro23* *dlam;
 
 /* new hardening rate */
-                        
+
   dhard = fhard + alpha*(expo*exp(-expo*epst));
 
 /*  new uniaxial yield stress */
@@ -346,10 +346,10 @@ L500:
 
   *epstn = epst;
 
-/* new stress state */  
+/* new stress state */
   for (i=0;i<6;i++) dev[i] -= 2.*bmu*(*dlam)*rnorm[i]*fobj;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -361,18 +361,18 @@ return;
 This routine forms the elasto-plastic consistent tangent material tensor.
 
 </pre>
-\param e     DOUBLE  (i) young's modulus                      
-\param fhard DOUBLE  (i) hardening modulus                    
-\param uniax DOUBLE  (i) yield stresse                        
-\param vnu   DOUBLE  (i) poisson's ratio                      
-\param sig2  DOUBLE  (i) equivalent stress                    
+\param e     DOUBLE  (i) young's modulus
+\param fhard DOUBLE  (i) hardening modulus
+\param uniax DOUBLE  (i) yield stresse
+\param vnu   DOUBLE  (i) poisson's ratio
+\param sig2  DOUBLE  (i) equivalent stress
 \param tau   DOUBLE* (i) current stresses (local)
-\param epstn DOUBLE* (i) equivalent uniaxial plastic strain   
-\param dlam  DOUBLE* (i) increment of plastic multiplier      
-\param cc    DOUBLE**(o) material matrix to be calculated   
+\param epstn DOUBLE* (i) equivalent uniaxial plastic strain
+\param dlam  DOUBLE* (i) increment of plastic multiplier
+\param cc    DOUBLE**(o) material matrix to be calculated
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
@@ -381,7 +381,7 @@ void c1matp1(DOUBLE e,       /* young's modulus                         */
              DOUBLE vnu,     /* poisson's ratio                         */
              DOUBLE sig2,
              DOUBLE *tau,    /* current stresses (local)                */
-             DOUBLE epstn,   /* equivalent uniaxial plastic strain      */ 
+             DOUBLE epstn,   /* equivalent uniaxial plastic strain      */
              DOUBLE dlam,    /* increment of plastic multiplier         */
              DOUBLE **cc)    /* material matrix to be calculated        */
 {
@@ -393,7 +393,7 @@ DOUBLE rn[3][3];
 DOUBLE c[3][3][3][3];
 DOUBLE gk[3][3] = {1.,0.,0.,0.,1.,0.,0.,0.,1.};
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1matp1");
 #endif
 /*----------------------------------------------------------------------*/
@@ -440,7 +440,7 @@ dstrc_enter("c1matp1");
 /*----------------------------------------------------------------------*/
   b  = 1.-2.*g*dlam/sig2*fobj;
   fac1 = fkh -2.*g*b/3.;
-  fac2 = g*b; 
+  fac2 = g*b;
   fac3 = 2.*g*(fobj*1./(fobj+hard/(3.*g)) - 1. + b );
   for (k=0; k<3; k++)
   {
@@ -449,74 +449,74 @@ dstrc_enter("c1matp1");
       c[0][0][k][l]= fac1*gk[0][0]*gk[k][l] +
                      fac2*(gk[0][k]*gk[0][l]+gk[0][l]*gk[0][k]) -
                      fac3*rn[0][0]*rn[k][l];
-      
+
       c[1][0][k][l]= fac1*gk[1][0]*gk[k][l] +
                      fac2*(gk[1][k]*gk[0][l]+gk[1][l]*gk[0][k]) -
                      fac3*rn[1][0]*rn[k][l];
-      
+
       c[1][1][k][l]= fac1*gk[1][1]*gk[k][l] +
                      fac2*(gk[1][k]*gk[1][l]+gk[1][l]*gk[1][k]) -
                      fac3*rn[1][1]*rn[k][l];
-      
+
       c[2][0][k][l]= fac1*gk[2][0]*gk[k][l] +
                      fac2*(gk[2][k]*gk[0][l]+gk[2][l]*gk[0][k]) -
                      fac3*rn[2][0]*rn[k][l];
-      
+
       c[2][1][k][l]= fac1*gk[2][1]*gk[k][l] +
                      fac2*(gk[2][k]*gk[1][l]+gk[2][l]*gk[1][k]) -
                      fac3*rn[2][1]*rn[k][l];
-      
+
       c[2][2][k][l]= fac1*gk[2][2]*gk[k][l] +
                      fac2*(gk[2][k]*gk[2][l]+gk[2][l]*gk[2][k]) -
                      fac3*rn[2][2]*rn[k][l];
   }}
 /**/
- cc[0][0]=c[0][0][0][0];                                                   
- cc[0][1]=c[0][0][1][1];                                                   
- cc[0][2]=c[0][0][2][2];                                                  
- cc[0][3]=c[0][0][1][0];                                                  
- cc[0][4]=c[0][0][2][1];                                                  
- cc[0][5]=c[0][0][2][0];                                                  
-                                              
- cc[1][0]=c[1][1][0][0];                                                    
- cc[1][1]=c[1][1][1][1];                                                   
- cc[1][2]=c[1][1][2][2];                                                  
- cc[1][3]=c[1][1][1][0];                                                  
- cc[1][4]=c[1][1][2][1];                                                  
- cc[1][5]=c[1][1][2][0];                                                   
-                                
- cc[2][0]=c[2][2][0][0];                                                     
- cc[2][1]=c[2][2][1][1];                                                   
- cc[2][2]=c[2][2][2][2];                                                  
- cc[2][3]=c[2][2][1][0];                                                  
- cc[2][4]=c[2][2][2][1];                                                 
- cc[2][5]=c[2][2][2][0];                                                    
-                                
- cc[3][0]=c[1][0][0][0];                                                    
- cc[3][1]=c[1][0][1][1];                                                   
- cc[3][2]=c[1][0][2][2];                                                   
- cc[3][3]=c[1][0][1][0];                                                  
- cc[3][4]=c[1][0][2][1];                                                  
- cc[3][5]=c[1][0][2][0];                                                    
-                                
- cc[4][0]=c[2][1][0][0];                                                    
- cc[4][1]=c[2][1][1][1];                                                   
- cc[4][2]=c[2][1][2][2];                                                   
- cc[4][3]=c[2][1][1][0];                                                  
- cc[4][4]=c[2][1][2][1];                                                  
- cc[4][5]=c[2][1][2][0];                                                   
-                                
- cc[5][0]=c[2][0][0][0];                                                    
- cc[5][1]=c[2][0][1][1];                                                   
- cc[5][2]=c[2][0][2][2];                                                   
- cc[5][3]=c[2][0][1][0];                                                 
- cc[5][4]=c[2][0][2][1];                                                  
- cc[5][5]=c[2][0][2][0];                                                     
+ cc[0][0]=c[0][0][0][0];
+ cc[0][1]=c[0][0][1][1];
+ cc[0][2]=c[0][0][2][2];
+ cc[0][3]=c[0][0][1][0];
+ cc[0][4]=c[0][0][2][1];
+ cc[0][5]=c[0][0][2][0];
+
+ cc[1][0]=c[1][1][0][0];
+ cc[1][1]=c[1][1][1][1];
+ cc[1][2]=c[1][1][2][2];
+ cc[1][3]=c[1][1][1][0];
+ cc[1][4]=c[1][1][2][1];
+ cc[1][5]=c[1][1][2][0];
+
+ cc[2][0]=c[2][2][0][0];
+ cc[2][1]=c[2][2][1][1];
+ cc[2][2]=c[2][2][2][2];
+ cc[2][3]=c[2][2][1][0];
+ cc[2][4]=c[2][2][2][1];
+ cc[2][5]=c[2][2][2][0];
+
+ cc[3][0]=c[1][0][0][0];
+ cc[3][1]=c[1][0][1][1];
+ cc[3][2]=c[1][0][2][2];
+ cc[3][3]=c[1][0][1][0];
+ cc[3][4]=c[1][0][2][1];
+ cc[3][5]=c[1][0][2][0];
+
+ cc[4][0]=c[2][1][0][0];
+ cc[4][1]=c[2][1][1][1];
+ cc[4][2]=c[2][1][2][2];
+ cc[4][3]=c[2][1][1][0];
+ cc[4][4]=c[2][1][2][1];
+ cc[4][5]=c[2][1][2][0];
+
+ cc[5][0]=c[2][0][0][0];
+ cc[5][1]=c[2][0][1][1];
+ cc[5][2]=c[2][0][2][2];
+ cc[5][3]=c[2][0][1][0];
+ cc[5][4]=c[2][0][2][1];
+ cc[5][5]=c[2][0][2][0];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
-#endif  
-return; 
+#endif
+return;
 } /* end of c1matp1 */
 /*----------------------------------------------------------------------*/
 #endif

@@ -28,14 +28,14 @@ struct _ARRAY estif_global;
 struct _ARRAY emass_global;
 struct _ARRAY intforce_global;
 
-/*! 
-\addtogroup Ale 
+/*!
+\addtogroup Ale
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
 \brief controls the calculation of the rhs for ale elements
 
-<pre>                                                              mn 06/02 
+<pre>                                                              mn 06/02
 This routine controls the calculation of the rhs for ale elements.
 
 </pre>
@@ -51,11 +51,11 @@ This routine controls the calculation of the rhs for ale elements.
 \param *action      CALC_ACTION (i)  calculation option passed to elements
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ale2(), ale3(); ale_caldirich(); called by: dyn_ale
 
 *----------------------------------------------------------------------*/
-void ale_rhs(FIELD        *actfield,     /* active field */        
+void ale_rhs(FIELD        *actfield,     /* active field */
             SOLVAR       *actsolv,      /* active SOLVAR */
             PARTITION    *actpart,      /* my partition of this field */
             INTRA        *actintra,     /* my intra-communicator */
@@ -77,12 +77,12 @@ GNODE            *actgnode;
 ASSEMBLE_ACTION   assemble_action;
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ale_rhs");
 #endif
 /*----------------------------------------------------------------------*/
-/*-------------- zero the parallel coupling exchange buffers if present */  
-#ifdef PARALLEL 
+/*-------------- zero the parallel coupling exchange buffers if present */
+#ifdef PARALLEL
 /*------------------------ check the send & recv buffers from sysarray1 */
 if (sysarray1 != -1)
 {
@@ -226,7 +226,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    /* check if there are inhomogeneous dirich conditions present for this element */
    for (j=0; j<actele->numnp; j++)
    {
-      actgnode = actele->node[j]->gnode;   
+      actgnode = actele->node[j]->gnode;
       if (actgnode->dirich==NULL) continue;
       if (actgnode->dirich->dirich_type==dirich_freesurf)
       {
@@ -237,7 +237,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
       {
          hasdirich=1;
          goto out;
-      }       
+      }
       else
       {
         for(k=0; k<actele->node[j]->numdf; k++)
@@ -249,7 +249,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
           }
         }
       }
-   }   					  
+   }
    out:
    *action = calc_ale_stiff;
    /*----------------------------------------------------------------------*/
@@ -283,7 +283,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
 /*                    in parallel coupled dofs have to be exchanged now */
 /*             (if there are any inter-proc couplings, which is tested) */
 /*----------------------------------------------------------------------*/
-#ifdef PARALLEL 
+#ifdef PARALLEL
 *action = calc_ale_rhs;
 switch(*action)
 {
@@ -304,7 +304,7 @@ assemble(sysarray1,
          container);
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

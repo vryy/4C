@@ -36,7 +36,7 @@ void ls2_intg(
   INT        i,j;
   DOUBLE     DUMMY = 0.0;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("ls2_intg");
 #endif
 /*----------------------------------------------------------------------*/
@@ -53,15 +53,15 @@ void ls2_intg(
       data->xgts[i][j] = 0.0;
     }
   }
-  
+
   /* for quadrilateral element  */
   /* weights */
   data->wgtq[0][0] = 2.0000000000000;
   data->wgtq[0][1] = 1.0000000000000;
-  data->wgtq[1][1] = 1.0000000000000;  
+  data->wgtq[1][1] = 1.0000000000000;
   data->wgtq[0][2] = 0.5555555555555;
   data->wgtq[1][2] = 0.8888888888888;
-  data->wgtq[2][2] = 0.5555555555555;  
+  data->wgtq[2][2] = 0.5555555555555;
   /* Gauss points */
   data->xgq[0][0] =  0.0000000000000;
   data->xgq[0][1] = -0.5773502691896;
@@ -74,7 +74,7 @@ void ls2_intg(
   /* weights */
   data->wgtt[0][0] = 0.5000000000000;
   data->wgtt[0][1] = DUMMY;
-  data->wgtt[1][1] = DUMMY;  
+  data->wgtt[1][1] = DUMMY;
   data->wgtt[0][2] = 0.1666666666667;
   data->wgtt[1][2] = 0.1666666666667;
   data->wgtt[2][2] = 0.1666666666667;
@@ -92,9 +92,9 @@ void ls2_intg(
   data->xgts[0][2] = 0.1666666666667;
   data->xgts[1][2] = 0.6666666666667;
   data->xgts[2][2] = 0.1666666666667;
-  
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return;

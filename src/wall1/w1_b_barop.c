@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 'w1_b_bar' which calculates the 
+\brief contains the routine 'w1_b_bar' which calculates the
        b_bar operator matrix for a wall element at point r,s
 
 <pre>
@@ -18,11 +18,11 @@ Maintainer: Andrea Hund
 
 
 #ifdef GEMM
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 #endif
 
-/*! 
-\addtogroup WALL1 
+/*!
+\addtogroup WALL1
 *//*! @{ (documentation module open)*/
 
 /*----------------------------------------------------------------------*
@@ -34,11 +34,11 @@ void w1_b_barop(ELEMENT *ele, DOUBLE **b_bar,DOUBLE **int_b_bar, DOUBLE **boplin
 INT i, j, k;
 DOUBLE Fmatrix[4][4];
 #ifdef GEMM
-STRUCT_DYNAMIC *sdyn;       
+STRUCT_DYNAMIC *sdyn;
 DOUBLE alpha_f;
 #endif
 /*------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_b_barop");
 #endif
 /*------------------------------------------------------------*/
@@ -50,9 +50,9 @@ alpha_f = sdyn->alpha_f;
 for(i=0;i<numeps;i++)
  for(j=0;j<numeps;j++)
      Fmatrix[i][j]=0;
- 
-   
-/*---------------------------write Vector F as a matrix Fmatrix*/  
+
+
+/*---------------------------write Vector F as a matrix Fmatrix*/
 
  Fmatrix[0][0] = F[0];
  Fmatrix[0][2] = 0.5 * F[2];
@@ -70,20 +70,20 @@ for(i=0;i<numeps;i++)
   for(i=0; i<numeps; i++)
     for(j=0; j<nd; j++)
       for(k=0; k<numeps; k++)
-      b_bar[i][j] += Fmatrix[k][i]*boplin[k][j];      
+      b_bar[i][j] += Fmatrix[k][i]*boplin[k][j];
 /*----------------------------------------------------------------*/
-        
-/*-------------------- Interpolated B_bar operator(for E-M scheme)*/ 
+
+/*-------------------- Interpolated B_bar operator(for E-M scheme)*/
   for(i=0; i<numeps; i++)
     for(j=0; j<nd; j++) {
 #ifdef GEMM
   int_b_bar[i][j] = (1.0-alpha_f) * b_bar[i][j] + alpha_f * ele->e.w1->b_bar_history.a.d3[ip][i][j];
 #else
   int_b_bar[i][j] = b_bar[i][j];
-#endif   
+#endif
     }
 /*-----------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

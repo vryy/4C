@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Michael Gee
@@ -19,8 +19,8 @@ Maintainer: Michael Gee
 void s8_eas(const INT    nhyb,
                const DOUBLE e1,
                const DOUBLE e2,
-               const INT    iel, 
-               const INT   *eas, 
+               const INT    iel,
+               const INT   *eas,
                DOUBLE     **P)
 {
 INT       place_P=0;
@@ -42,7 +42,7 @@ DOUBLE    e2e2;
 DOUBLE    e1e1e2;
 DOUBLE    e1e2e2;
 DOUBLE    e1e1e2e2;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_eas");
 #endif
 /*----------------------------------------------------------------------*/
@@ -63,39 +63,39 @@ if (iel>4)
    case 0:
    break;
    case 7:
-      P[nrr][place_P]   = e2-3.0*e1e1e2; 
-      P[nrr][place_P+1] = e2e2-3.0*e1e1e2e2; 
-      P[nss][place_P+2] = e1-3.0*e1e2e2; 
-      P[nss][place_P+3] = e1e1-3.0*e1e1e2e2; 
-      P[nrs][place_P+4] = e2-3.0*e1e1e2; 
-      P[nrs][place_P+5] = e1-3.0*e1e2e2; 
+      P[nrr][place_P]   = e2-3.0*e1e1e2;
+      P[nrr][place_P+1] = e2e2-3.0*e1e1e2e2;
+      P[nss][place_P+2] = e1-3.0*e1e2e2;
+      P[nss][place_P+3] = e1e1-3.0*e1e1e2e2;
+      P[nrs][place_P+4] = e2-3.0*e1e1e2;
+      P[nrs][place_P+5] = e1-3.0*e1e2e2;
       P[nrs][place_P+6] = 1.0-3.0*(e1e1+e2e2)+9.0*e1e1e2e2;
       place_P+=7;
    break;
    case 9:
-      P[nrr][place_P]   = 1.0-3.0*e1e1;; 
-      P[nrr][place_P+1] = e2-3.0*e1e1e2;; 
-      P[nss][place_P+2] = 1.0-3.0*e2e2; 
-      P[nss][place_P+3] = e1-3.0*e1e2e2; 
-      P[nrs][place_P+4] = 1.0-3.0*e1e1e2; 
-      P[nrs][place_P+5] = 1.0-3.0*e1e2e2; 
-      P[nrs][place_P+6] = e2-3.0*e1e1e2; 
-      P[nrs][place_P+7] = e1-3.0*e1e2e2; 
+      P[nrr][place_P]   = 1.0-3.0*e1e1;;
+      P[nrr][place_P+1] = e2-3.0*e1e1e2;;
+      P[nss][place_P+2] = 1.0-3.0*e2e2;
+      P[nss][place_P+3] = e1-3.0*e1e2e2;
+      P[nrs][place_P+4] = 1.0-3.0*e1e1e2;
+      P[nrs][place_P+5] = 1.0-3.0*e1e2e2;
+      P[nrs][place_P+6] = e2-3.0*e1e1e2;
+      P[nrs][place_P+7] = e1-3.0*e1e2e2;
       P[nrs][place_P+8] = 1.0-3.0*(e1e1+e2e2)+9.0*e1e1e2e2;
       place_P+=9;
    break;
    case 11:
-      P[nrr][place_P]    = 1.0-3.0*e1e1; 
-      P[nrr][place_P+1]  = e2-3.0*e1e1e2; 
-      P[nrr][place_P+2]  = e2e2-3.0*e1e1e2e2; 
-      P[nss][place_P+3]  = 1.0-3.0*e2e2; 
-      P[nss][place_P+4]  = e1-3.0*e1e2e2; 
-      P[nss][place_P+5]  = e1e1-3.0*e1e1e2e2; 
-      P[nrs][place_P+6]  = 1.0-3.0*e1e1; 
-      P[nrs][place_P+7]  = 1.0-3.0*e2e2; 
-      P[nrs][place_P+8]  = e2-3.0*e1e1e2; 
-      P[nrs][place_P+9]  = e1-3.0*e1e2e2; 
-      P[nrs][place_P+10] = 1.0-3.0*(e1e1+e2e2)+9.0*e1e1e2e2; 
+      P[nrr][place_P]    = 1.0-3.0*e1e1;
+      P[nrr][place_P+1]  = e2-3.0*e1e1e2;
+      P[nrr][place_P+2]  = e2e2-3.0*e1e1e2e2;
+      P[nss][place_P+3]  = 1.0-3.0*e2e2;
+      P[nss][place_P+4]  = e1-3.0*e1e2e2;
+      P[nss][place_P+5]  = e1e1-3.0*e1e1e2e2;
+      P[nrs][place_P+6]  = 1.0-3.0*e1e1;
+      P[nrs][place_P+7]  = 1.0-3.0*e2e2;
+      P[nrs][place_P+8]  = e2-3.0*e1e1e2;
+      P[nrs][place_P+9]  = e1-3.0*e1e2e2;
+      P[nrs][place_P+10] = 1.0-3.0*(e1e1+e2e2)+9.0*e1e1e2e2;
       place_P+=11;
    break;
    default:
@@ -109,29 +109,29 @@ if (iel>4)
    case 0:
    break;
    case 9:
-      P[mrr][place_P]   = 1.0-3.0*e1e1; 
-      P[mrr][place_P+1] = e2-3.0*e1e1e2; 
-      P[mss][place_P+2] = 1.0-3.0*e2e2; 
-      P[mss][place_P+3] = e1-3.0*e1e2e2; 
-      P[mrs][place_P+4] = 1.0-3.0*e1e1; 
-      P[mrs][place_P+5] = 1.0-3.0*e2e2; 
-      P[mrs][place_P+6] = e2-3.0*e1e1e2; 
-      P[mrs][place_P+7] = e1-3.0*e1e2e2; 
-      P[mrs][place_P+8] = 1.0-3.0*(e1e1+e2e2)+9.0*e1e1e2e2; 
+      P[mrr][place_P]   = 1.0-3.0*e1e1;
+      P[mrr][place_P+1] = e2-3.0*e1e1e2;
+      P[mss][place_P+2] = 1.0-3.0*e2e2;
+      P[mss][place_P+3] = e1-3.0*e1e2e2;
+      P[mrs][place_P+4] = 1.0-3.0*e1e1;
+      P[mrs][place_P+5] = 1.0-3.0*e2e2;
+      P[mrs][place_P+6] = e2-3.0*e1e1e2;
+      P[mrs][place_P+7] = e1-3.0*e1e2e2;
+      P[mrs][place_P+8] = 1.0-3.0*(e1e1+e2e2)+9.0*e1e1e2e2;
       place_P+=9;
    break;
    case 11:
-      P[mrr][place_P]    = 1.0-3.0*e1e1; 
-      P[mrr][place_P+1]  = e2-3.0*e1e1e2; 
-      P[mrr][place_P+2]  = e2e2-3.0*e1e1e2e2; 
-      P[mss][place_P+3]  = 1.0-3.0*e2e2; 
-      P[mss][place_P+4]  = e1-3.0*e1e2e2; 
-      P[mss][place_P+5]  = e1e1-3.0*e1e1e2e2; 
-      P[mrs][place_P+6]  = 1.0-3.0*e1e1; 
-      P[mrs][place_P+7]  = 1.0-3.0*e2e2; 
-      P[mrs][place_P+8]  = e2-3.0*e1e1e2; 
-      P[mrs][place_P+9]  = e1-3.0*e1e2e2; 
-      P[mrs][place_P+10] = 1.0-3.0*(e1e1+e2e2)+9.0*e1e1e2e2; 
+      P[mrr][place_P]    = 1.0-3.0*e1e1;
+      P[mrr][place_P+1]  = e2-3.0*e1e1e2;
+      P[mrr][place_P+2]  = e2e2-3.0*e1e1e2e2;
+      P[mss][place_P+3]  = 1.0-3.0*e2e2;
+      P[mss][place_P+4]  = e1-3.0*e1e2e2;
+      P[mss][place_P+5]  = e1e1-3.0*e1e1e2e2;
+      P[mrs][place_P+6]  = 1.0-3.0*e1e1;
+      P[mrs][place_P+7]  = 1.0-3.0*e2e2;
+      P[mrs][place_P+8]  = e2-3.0*e1e1e2;
+      P[mrs][place_P+9]  = e1-3.0*e1e2e2;
+      P[mrs][place_P+10] = 1.0-3.0*(e1e1+e2e2)+9.0*e1e1e2e2;
       place_P+=11;
    break;
    default:
@@ -145,52 +145,52 @@ if (iel>4)
    case 0:
    break;
    case 1:
-      P[st][place_P] = 1.0; 
+      P[st][place_P] = 1.0;
       place_P+=1;
    break;
    case 3:
-      P[st][place_P]   = 1.0; 
-      P[st][place_P+1] = e1; 
-      P[st][place_P+2] = e2; 
+      P[st][place_P]   = 1.0;
+      P[st][place_P+1] = e1;
+      P[st][place_P+2] = e2;
       place_P+=3;
    break;
    case 4:
-      P[st][place_P]   = 1.0; 
-      P[st][place_P+1] = e1; 
-      P[st][place_P+2] = e2; 
-      P[st][place_P+3] = e1e2; 
+      P[st][place_P]   = 1.0;
+      P[st][place_P+1] = e1;
+      P[st][place_P+2] = e2;
+      P[st][place_P+3] = e1e2;
       place_P+=4;
    break;
    case 6:
-      P[st][place_P]   = 1.0; 
-      P[st][place_P+1] = e1; 
-      P[st][place_P+2] = e2; 
-      P[st][place_P+3] = e1e2; 
-      P[st][place_P+4] = e1e1; 
-      P[st][place_P+5] = e2e2; 
+      P[st][place_P]   = 1.0;
+      P[st][place_P+1] = e1;
+      P[st][place_P+2] = e2;
+      P[st][place_P+3] = e1e2;
+      P[st][place_P+4] = e1e1;
+      P[st][place_P+5] = e2e2;
       place_P+=6;
    break;
    case 8:
-      P[st][place_P]   = 1.0; 
-      P[st][place_P+1] = e1; 
-      P[st][place_P+2] = e2; 
-      P[st][place_P+3] = e1e2; 
-      P[st][place_P+4] = e1e1; 
-      P[st][place_P+5] = e2e2; 
-      P[st][place_P+6] = e1e1e2; 
-      P[st][place_P+7] = e1e2e2; 
+      P[st][place_P]   = 1.0;
+      P[st][place_P+1] = e1;
+      P[st][place_P+2] = e2;
+      P[st][place_P+3] = e1e2;
+      P[st][place_P+4] = e1e1;
+      P[st][place_P+5] = e2e2;
+      P[st][place_P+6] = e1e1e2;
+      P[st][place_P+7] = e1e2e2;
       place_P+=8;
    break;
    case 9:
-      P[st][place_P]   = 1.0; 
-      P[st][place_P+1] = e1; 
-      P[st][place_P+2] = e2; 
-      P[st][place_P+3] = e1e2; 
-      P[st][place_P+4] = 1.0-3.0*e1e1; 
-      P[st][place_P+5] = 1.0-3.0*e2e2; 
-      P[st][place_P+6] = e1e1e2; 
-      P[st][place_P+7] = e1e2e2; 
-      P[st][place_P+8] = 1.0-9.0*e1e1e2e2; 
+      P[st][place_P]   = 1.0;
+      P[st][place_P+1] = e1;
+      P[st][place_P+2] = e2;
+      P[st][place_P+3] = e1e2;
+      P[st][place_P+4] = 1.0-3.0*e1e1;
+      P[st][place_P+5] = 1.0-3.0*e2e2;
+      P[st][place_P+6] = e1e1e2;
+      P[st][place_P+7] = e1e2e2;
+      P[st][place_P+8] = 1.0-9.0*e1e1e2e2;
       place_P+=9;
    break;
    default:
@@ -204,24 +204,24 @@ if (iel>4)
    case 0:
    break;
    case 2:
-      P[qr][place_P]   = e2-3.0*e1e1e2; 
-      P[qs][place_P+1] = e1-3.0*e1e2e2; 
+      P[qr][place_P]   = e2-3.0*e1e1e2;
+      P[qs][place_P+1] = e1-3.0*e1e2e2;
       place_P+=2;
    break;
    case 4:
-      P[qr][place_P]   = 1.0-3.0*e1e1; 
-      P[qr][place_P+1] = e2-3.0*e1e1e2; 
-      P[qs][place_P+2] = 1.0-3.0*e2e2; 
-      P[qs][place_P+3] = e1-3.0*e1e2e2; 
+      P[qr][place_P]   = 1.0-3.0*e1e1;
+      P[qr][place_P+1] = e2-3.0*e1e1e2;
+      P[qs][place_P+2] = 1.0-3.0*e2e2;
+      P[qs][place_P+3] = e1-3.0*e1e2e2;
       place_P+=4;
    break;
    case 6:
-      P[qr][place_P]   = 1.0-3.0*e1e1; 
-      P[qr][place_P+1] = e2-3.0*e1e1e2; 
-      P[qr][place_P+2] = e2e2-3.0*e1e1e2e2; 
-      P[qs][place_P+3] = 1.0-3.0*e2e2; 
-      P[qs][place_P+4] = e1-3.0*e1e2e2; 
-      P[qs][place_P+5] = e1e1-3.0*e1e1e2e2; 
+      P[qr][place_P]   = 1.0-3.0*e1e1;
+      P[qr][place_P+1] = e2-3.0*e1e1e2;
+      P[qr][place_P+2] = e2e2-3.0*e1e1e2e2;
+      P[qs][place_P+3] = 1.0-3.0*e2e2;
+      P[qs][place_P+4] = e1-3.0*e1e2e2;
+      P[qs][place_P+5] = e1e1-3.0*e1e1e2e2;
       place_P+=6;
    break;
    default:
@@ -235,24 +235,24 @@ if (iel>4)
    case 0:
    break;
    case 2:
-      P[sr][place_P]   = e1e1; 
-      P[ss][place_P+1] = e2e2; 
+      P[sr][place_P]   = e1e1;
+      P[ss][place_P+1] = e2e2;
       place_P+=2;
    break;
    case 4:
-      P[sr][place_P]   = e1e1; 
-      P[sr][place_P+1] = e1e1e2e2; 
-      P[ss][place_P+2] = e2e2; 
-      P[ss][place_P+3] = e1e1e2e2; 
+      P[sr][place_P]   = e1e1;
+      P[sr][place_P+1] = e1e1e2e2;
+      P[ss][place_P+2] = e2e2;
+      P[ss][place_P+3] = e1e1e2e2;
       place_P+=4;
    break;
    case 6:
-      P[sr][place_P]   = e1e1; 
-      P[sr][place_P+1] = e1e1e2; 
-      P[sr][place_P+2] = e1e1e2e2; 
-      P[ss][place_P+3] = e2e2; 
-      P[ss][place_P+4] = e1e2e2; 
-      P[ss][place_P+5] = e1e1e2e2; 
+      P[sr][place_P]   = e1e1;
+      P[sr][place_P+1] = e1e1e2;
+      P[sr][place_P+2] = e1e1e2e2;
+      P[ss][place_P+3] = e2e2;
+      P[ss][place_P+4] = e1e2e2;
+      P[ss][place_P+5] = e1e1e2e2;
       place_P+=6;
    break;
    default:
@@ -311,7 +311,7 @@ else if (iel==4)
       P[nrs][place_P+6]=e1e2;
       place_P+=7;
    break;
-   }   
+   }
 /*----------------------------------------------------------------------
       BIEGUNG: E11,E12,E22 LINEAR
   ----------------------------------------------------------------------*/
@@ -362,52 +362,52 @@ else if (iel==4)
    case 0:
    break;
    case 1:
-      P[st][place_P] = 1.0; 
+      P[st][place_P] = 1.0;
       place_P+=1;
    break;
    case 3:
-      P[st][place_P]   = 1.0; 
-      P[st][place_P+1] = e1; 
-      P[st][place_P+2] = e2; 
+      P[st][place_P]   = 1.0;
+      P[st][place_P+1] = e1;
+      P[st][place_P+2] = e2;
       place_P+=3;
    break;
    case 4:
-      P[st][place_P]   = 1.0; 
-      P[st][place_P+1] = e1; 
-      P[st][place_P+2] = e2; 
-      P[st][place_P+3] = e1e2; 
+      P[st][place_P]   = 1.0;
+      P[st][place_P+1] = e1;
+      P[st][place_P+2] = e2;
+      P[st][place_P+3] = e1e2;
       place_P+=4;
    break;
    case 6:
-      P[st][place_P]   = 1.0; 
-      P[st][place_P+1] = e1; 
-      P[st][place_P+2] = e2; 
-      P[st][place_P+3] = e1e2; 
-      P[st][place_P+4] = e1e1; 
-      P[st][place_P+5] = e2e2; 
+      P[st][place_P]   = 1.0;
+      P[st][place_P+1] = e1;
+      P[st][place_P+2] = e2;
+      P[st][place_P+3] = e1e2;
+      P[st][place_P+4] = e1e1;
+      P[st][place_P+5] = e2e2;
       place_P+=6;
    break;
    case 8:
-      P[st][place_P]   = 1.0; 
-      P[st][place_P+1] = e1; 
-      P[st][place_P+2] = e2; 
-      P[st][place_P+3] = e1e2; 
-      P[st][place_P+4] = e1e1; 
-      P[st][place_P+5] = e2e2; 
-      P[st][place_P+6] = e1e1e2; 
-      P[st][place_P+7] = e1e2e2; 
+      P[st][place_P]   = 1.0;
+      P[st][place_P+1] = e1;
+      P[st][place_P+2] = e2;
+      P[st][place_P+3] = e1e2;
+      P[st][place_P+4] = e1e1;
+      P[st][place_P+5] = e2e2;
+      P[st][place_P+6] = e1e1e2;
+      P[st][place_P+7] = e1e2e2;
       place_P+=8;
    break;
    case 9:
-      P[st][place_P]   = 1.0; 
-      P[st][place_P+1] = e1; 
-      P[st][place_P+2] = e2; 
-      P[st][place_P+3] = e1e2; 
-      P[st][place_P+4] = 1.0-3.0*e1e1; 
-      P[st][place_P+5] = 1.0-3.0*e2e2; 
-      P[st][place_P+6] = e1e1e2; 
-      P[st][place_P+7] = e1e2e2; 
-      P[st][place_P+8] = 1.0-9.0*e1e1e2e2; 
+      P[st][place_P]   = 1.0;
+      P[st][place_P+1] = e1;
+      P[st][place_P+2] = e2;
+      P[st][place_P+3] = e1e2;
+      P[st][place_P+4] = 1.0-3.0*e1e1;
+      P[st][place_P+5] = 1.0-3.0*e2e2;
+      P[st][place_P+6] = e1e1e2;
+      P[st][place_P+7] = e1e2e2;
+      P[st][place_P+8] = 1.0-9.0*e1e1e2e2;
       place_P+=9;
    break;
    default:
@@ -462,7 +462,7 @@ else
 /*----------------------------------------------------------------------*/
 if (place_P != nhyb) dserror("wrong parameter nhyb in EAS");
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -473,7 +473,7 @@ return;
 /*----------------------------------------------------------------------*
  | transform the eas-strains from midpoint to gausspoint  m.gee 7/01    |
  *----------------------------------------------------------------------*/
-void s8_transeas(DOUBLE      **P, 
+void s8_transeas(DOUBLE      **P,
                     DOUBLE      **transP,
                     DOUBLE      **T,
                     DOUBLE      **akovr,
@@ -486,7 +486,7 @@ INT          i,j;
 const DOUBLE two=2.0;
 DOUBLE       t11,t12,t13,t21,t22,t23,t31,t32,t33;
 DOUBLE       factor;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_transeas");
 #endif
 /*----------------------------------------------------------------------*/
@@ -500,7 +500,7 @@ t23=0.0;
 t31=0.0;
 t32=0.0;
 t33=1.0;
-for (i=0; i<3; i++) 
+for (i=0; i<3; i++)
 {
    t11 += akovr[i][0]*akonr0[i][0];
    t12 += akovr[i][0]*akonr0[i][1];
@@ -610,10 +610,10 @@ for (i=0; i<6; i++)
 /*--------------------------------------------------- multiply TP = T*P */
 math_matmatdense(transP,T,P,12,12,nhyb,0,1.0);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of s8_transeas */
 #endif
- 
+

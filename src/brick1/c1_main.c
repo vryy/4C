@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file
 \brief contains the routine 'brick1', the main routine of the 3D Hexahedral
-/Tetrahedral element 
+/Tetrahedral element
 
 <pre>
 Maintainer: Andreas Lipka
@@ -21,20 +21,20 @@ Maintainer: Andreas Lipka
  *----------------------------------------------------------------------*/
 extern struct _MATERIAL  *mat;
 
-/*! 
-\addtogroup BRICK1 
+/*!
+\addtogroup BRICK1
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
 \brief  main control routine for the 3D Hex element
 
-<pre>                                                              al 06/02 
+<pre>                                                              al 06/02
 This routine controles the calculation of the element stiffness, acts
 according to the action.
 
 </pre>
 \param actpart         PARTITION*   (i)   my partition
-\param actintra        INTRA*       (i)   my intra-communicator 
+\param actintra        INTRA*       (i)   my intra-communicator
 \param ele             ELEMENT*     (i)   my element
 \param estif_global    ARRAY*       (i)   global stiffness matrix
 \param emass_global    ARRAY*       (i)   global mass      matrix
@@ -43,7 +43,7 @@ according to the action.
 \param container       CONTAINER*   (i)   contains variables defined in container.h
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: c1_cint(); called by: calelm(), cal_rhs()
 
 *----------------------------------------------------------------------*/
@@ -66,7 +66,7 @@ MATERIAL    *actmat;
 DOUBLE      *intforce;
 DOUBLE       getval;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("brick1");
 #endif
 /*----------------------------------------------------------------------*/
@@ -135,7 +135,7 @@ case calc_struct_opt_init:
 break;/*----------------------------------------------------------------*/
 /*---------------------------------------------- evaluate strain energy */
 case calc_struct_ste:
-#ifdef PARALLEL 
+#ifdef PARALLEL
    if(ele->proc!=actintra->intra_rank) break;
 #endif
    actmat = &(mat[ele->mat-1]);
@@ -149,7 +149,7 @@ case calc_struct_ste:
 break;/*----------------------------------------------------------------*/
 /*------------------------------------------------------- evaluate mass */
 case calc_struct_stm:
-#ifdef PARALLEL 
+#ifdef PARALLEL
    if(ele->proc!=actintra->intra_rank) break;
 #endif
    actmat = &(mat[ele->mat-1]);
@@ -163,13 +163,13 @@ case calc_struct_stm:
 break;/*----------------------------------------------------------------*/
 /*-------------------------------- evaluate derivative of strain energy */
 case calc_struct_dee:
-#ifdef PARALLEL 
+#ifdef PARALLEL
    if(ele->proc!=actintra->intra_rank) break;
 #endif
    if(ele->optdata==NULL) break; /* element does not take part in opt. */
    if(ele->optdata[0]==0) break; /* position in variable vector        */
    iloc = ele->optdata[0];
-   
+
    actmat = &(mat[ele->mat-1]);
    c1_oint(ele,
            &actdata,
@@ -182,13 +182,13 @@ case calc_struct_dee:
 break;/*----------------------------------------------------------------*/
 /*----------------------------- evaluate derivative of eigen frequencies*/
 case calc_struct_def:
-#ifdef PARALLEL 
+#ifdef PARALLEL
    if(ele->proc!=actintra->intra_rank) break;
 #endif
    if(ele->optdata==NULL) break; /* element does not take part in opt. */
    if(ele->optdata[0]==0) break; /* position in variable vector        */
    iloc = ele->optdata[0];
-   
+
    actmat = &(mat[ele->mat-1]);
    c1_oint(ele,
            &actdata,
@@ -200,13 +200,13 @@ case calc_struct_def:
 break;/*----------------------------------------------------------------*/
 /*------------------------ evaluate derivative for selfadjoint problems */
 case calc_deriv_self_adj:
-#ifdef PARALLEL 
+#ifdef PARALLEL
    if(ele->proc!=actintra->intra_rank) break;
 #endif
    if(ele->optdata==NULL) break; /* element does not take part in opt. */
    if(ele->optdata[0]==0) break; /* position in variable vector        */
    iloc = ele->optdata[0];
-   
+
    actmat = &(mat[ele->mat-1]);
    c1_oint(ele,
            &actdata,
@@ -219,13 +219,13 @@ case calc_deriv_self_adj:
 break;/*----------------------------------------------------------------*/
 /*------------------------------ evaluate derivative of mass constraint */
 case calc_struct_dmc:
-#ifdef PARALLEL 
+#ifdef PARALLEL
    if(ele->proc!=actintra->intra_rank) break;
 #endif
    if(ele->optdata==NULL) break; /* element does not take part in opt. */
    if(ele->optdata[0]==0) break; /* position in variable vector        */
    iloc = ele->optdata[0];
-   
+
    actmat = &(mat[ele->mat-1]);
    c1_oint(ele,
            &actdata,
@@ -250,12 +250,12 @@ default:
    dserror("action unknown");
 break;
 }
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 /*----------------------------------------------------------------------*/
 #endif                                         /*end of "ifdef D_BRICK1"*/
 /*----------------------------------------------------------------------*/
-return; 
+return;
 } /* end of brick1 */
 /*! @} (documentation module close)*/

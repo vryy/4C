@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 
+\brief contains the routine
  - s9_tmtr: which calculates the metrics within the shell body (theta_3
             is variable)
 
@@ -17,12 +17,12 @@ Maintainer: Stefan Hartmann
 #include "../headers/standardtypes.h"
 #include "shell9.h"
 
-/*! 
-\addtogroup SHELL9 
+/*!
+\addtogroup SHELL9
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief calculates the metrics within the shell body for variable theta_3                                      
+\brief calculates the metrics within the shell body for variable theta_3
 
 <pre>                     m.gee 6/01              modified by    sh 10/02
 This routine calculates the metrics (gkov, gkon, gmkov, gmkon) within the
@@ -40,14 +40,14 @@ see Dis. Braun (p.77 -> material layer & p.115f for kinematic layers)
 \param  DOUBLE  ***akov    (i)  kovariant basis vectors in reference layer of each kinematic layer
 \param  DOUBLE  ***a3kvp   (i)  partial derivatives of a3_L for each kinematic layer
 \param  DOUBLE     h       (i)  total thickness of this element
-\param  DOUBLE    *klayhgt (i)  hight of kin layer in % of total thickness of shell 
-\param  DOUBLE    *mlayhgt (i)  hight of mat layer in % of adjacent kin layer 
-\param  INT        num_klay(i)  number of kin layers to this element  
-\param  INT        klay    (i)  actual kin layer 
-\param  INT        mlay    (i)  actual mat layer of this kin layer 
+\param  DOUBLE    *klayhgt (i)  hight of kin layer in % of total thickness of shell
+\param  DOUBLE    *mlayhgt (i)  hight of mat layer in % of adjacent kin layer
+\param  INT        num_klay(i)  number of kin layers to this element
+\param  INT        klay    (i)  actual kin layer
+\param  INT        mlay    (i)  actual mat layer of this kin layer
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: s9static_keug() [s9_static_keug.c]
                              s9_stress()     [s9_stress.c]
                              s9jaco()        [s9_jaco.c]
@@ -64,7 +64,7 @@ void s9_tmtr(DOUBLE     e3,
              DOUBLE     h,           /* total thickness of this element */
              DOUBLE    *klayhgt,     /* hight of kin layer in % of total thickness of shell */
              DOUBLE    *mlayhgt,     /* hight of mat layer in % of adjacent kin layer */
-             INT        num_klay,    /* number of kin layers to this element */  
+             INT        num_klay,    /* number of kin layers to this element */
              INT        klay,        /* actual kin layer */
              INT        mlay,        /* actual mat layer of this kin layer */
              DOUBLE     condfac)
@@ -73,7 +73,7 @@ INT    i,j,k,idim,jlay;
 DOUBLE deltah, h_mlay, h_kl;
 DOUBLE zeta_kl,zeta,det_dummy;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9_tmtr");
 #endif
 /*----------------------------------------------------------------------*/
@@ -125,10 +125,10 @@ for (i=0; i<3; i++)
    for (j=i; j<3; j++)
    {
       gmkov[i][j]=0.0;
-      for (k=0; k<3; k++) 
+      for (k=0; k<3; k++)
       gmkov[i][j] += gkov[k][i]*gkov[k][j];
    }
-}   
+}
       gmkov[1][0] = gmkov[0][1];
       gmkov[2][0] = gmkov[0][2];
       gmkov[2][1] = gmkov[1][2];
@@ -136,7 +136,7 @@ for (i=0; i<3; i++)
     math_array_copy(gmkov,3,3,gmkon);
     math_inv3(gmkon,&det_dummy);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

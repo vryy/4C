@@ -17,7 +17,7 @@ Maintainer: Frank Huber
 #include "beam3.h"
 #include "beam3_prototypes.h"
 
-/*! 
+/*!
 \addtogroup BEAM3
 *//*! @{ (documentation module open)*/
 
@@ -43,12 +43,12 @@ within a plastic calculation for von Mises material
 \param istore          INT         (i)  flag to control storing of new val to WA
 \param newval          INT         (i)  flog to control evaluation of new stresses
 \param init            INT         (i)  initialization (1) or calculation (2,3)
-               
+
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   b3_blowup_stress() , b3_compr_stress() , b3_blowup_strain() ,
-               b3_compr_strain() , b3_compr_Cep() , b3_kronecker() , 
+               b3_compr_strain() , b3_compr_Cep() , b3_kronecker() ,
 	       b3_cal_volCel() , b3_cal_devCel() , b3_cal_Cel() , b3_condense()
     called by: beam3() , b3_call_mat()
 
@@ -62,7 +62,7 @@ void b3_mat_plast_mises(DOUBLE    ym,
                         ELEMENT  *ele,
                         DOUBLE   *strain,
 			INT       ip,
-                        DOUBLE   *stress,       
+                        DOUBLE   *stress,
                         DOUBLE  **d,
                         INT       istore,
                         INT       newval,
@@ -84,7 +84,7 @@ DOUBLE sigma_el_vol[3][3];     /* volumetric part of trial stress tensor */
 DOUBLE sigma_tr_dev[3][3];     /* deviatoric part of trial stress tensor */
 DOUBLE sigma_tr[3][3];         /* trial stress tensor */
 DOUBLE sigma_tr_dev2;          /* sigma_tr_dev * sigma_tr_dev */
-DOUBLE phi_tr;                 /* flow condition */ 
+DOUBLE phi_tr;                 /* flow condition */
 DOUBLE n_tr[3][3];             /* dphi / dsigma */
 DOUBLE delta_C[3][3][3][3];    /* Cep-Cel */
 DOUBLE I_dev[3][3][3][3];      /* IIdev */
@@ -105,20 +105,20 @@ const INT    max = MAXDOFPERNODE*MAXNOD_BEAM3;
 const INT    numdf = 6;
 INT          nedof;
 
-static ARRAY      sig_a; 
+static ARRAY      sig_a;
 static DOUBLE    *sig; /* new stress vector at GP */
 static ARRAY      sig_it_a;
 static DOUBLE    *sig_it; /* used for iteration to sigyy=sigzz=tauyz=0 */
 static ARRAY      sigma_a;
 static DOUBLE   **sigma; /* new stress tensor at GP */
 static ARRAY      sigma_old_a;
-static DOUBLE   **sigma_old; /* old stress tensor at GP */    
+static DOUBLE   **sigma_old; /* old stress tensor at GP */
 static ARRAY      eps_pl_a;
 static DOUBLE    *eps_pl; /* new plastic strain vector at GP */
-static ARRAY      epsilon_a; 
-static DOUBLE   **epsilon; /* new strain tensor at GP */ 
-static ARRAY      epsilon_pl_a; 
-static DOUBLE   **epsilon_pl; /* new plastic strain tensor at GP */ 
+static ARRAY      epsilon_a;
+static DOUBLE   **epsilon; /* new strain tensor at GP */
+static ARRAY      epsilon_pl_a;
+static DOUBLE   **epsilon_pl; /* new plastic strain tensor at GP */
 static ARRAY      epsilon_pl_old_a;
 static DOUBLE   **epsilon_pl_old; /* old plastic strain tensor at GP */
 static ARRAY      delta_a;
@@ -135,7 +135,7 @@ static ARRAY4D    Cdev_a;
 static DOUBLE ****Cdev; /* deviatoric part of elasticity tensor */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("b3_mat_plast_mises");
 #endif
 
@@ -157,7 +157,7 @@ if (init==1)
   C_BA           = amdef("C_BA"           ,&C_BA_a,           3,3 ,"DA");
   Cep            = am4def("Cep"            ,&Cep_a  ,      3,3,3,3 ,"D4");
   Cvol           = am4def("Cvol"           ,&Cvol_a ,      3,3,3,3 ,"D4");
-  Cdev           = am4def("Cdev"           ,&Cdev_a ,      3,3,3,3 ,"D4");  
+  Cdev           = am4def("Cdev"           ,&Cdev_a ,      3,3,3,3 ,"D4");
   goto end;
 }
 /*----------------------------------------------------------------------*/
@@ -179,7 +179,7 @@ amdel(&C_BA_a);
 am4del(&Cep_a);
 am4del(&Cvol_a);
 am4del(&Cdev_a);
-goto end;  
+goto end;
 }
 /*----------------------------------------------------------------------*/
 /* calculation phase        (init=0)                                    */
@@ -219,7 +219,7 @@ hards = ym * hard / (ym - hard);
 /*----------------------------- get old values -> sig, eps , alpha------*/
 alpha_pl_old = ele->e.b3->elewa.a.da[ip][0];
 yip          = ele->e.b3->elewa.a.da[ip][1];
-for (i=0; i<6; i++) 
+for (i=0; i<6; i++)
 {
    sig[i]       = ele->e.b3->elewa.a.da[ip][i+2];
    eps_pl[i]    = ele->e.b3->elewa.a.da[ip][i+8];
@@ -227,7 +227,7 @@ for (i=0; i<6; i++)
 
 
 /*---------- get stresses from WA for calculation of M,V,N -------------*/
-if (newval==1) 
+if (newval==1)
 {
    for (i=0; i<6; i++) stress[i]=sig[i];
    goto end;
@@ -238,15 +238,15 @@ if (newval==1)
 /*----------------------------------------------------------------------*/
 /* 	eps_it = [eps_xx, gamma_xy, gamma_xz, eps_yy, eps_zz, gamma_yz]T*/
 /* 	sig_it = [sig_yy, sig_zz, tau_yz]T of last iteration step       */
-/*   deleps_it = actual [eps_xx, gamma_xy, gamma_xz]T - eps_it          */ 
+/*   deleps_it = actual [eps_xx, gamma_xy, gamma_xz]T - eps_it          */
 /*----------------------------------------------------------------------*/
 for (i=0; i<3; i++)
-{ 
+{
    sig_it[i]    = ele->e.b3->elewa.a.da[ip][i+20];
 }
 
 for (i=0; i<6; i++)
-{ 
+{
    eps_it[i]    = ele->e.b3->elewa.a.da[ip][i+14];
    deleps_it[i] = strain[i]-eps_it[i];
 }
@@ -269,7 +269,7 @@ for (i=0; i<3; i++)
       k1+=1;
       k2+=1;
    }
-} 
+}
 /*-----------make C_BB to 1/C_BB----------------------------------------*/
 math_inv3(C_BB, det);
 if ( *det==0.0 ) amzero(&C_BB_a);
@@ -280,12 +280,12 @@ for (i=0; i<3; i++) sig_dum_it[i]+=sig_it[i];
 /*-----------calculate -1/C_BB*[C_BA*deleps_it+sig_it]------------------*/
 math_matvecdense(deleps_it,C_BB,sig_dum_it,3,3,0,-1.0);
 /*-----------calculate strain [yy,zz,yz] = eps_it+deleps_it-------------*/
-for (i=0; i<3; i++) 
+for (i=0; i<3; i++)
 {
    if (deleps_it[i]!=0.) strain[i+3]=eps_it[i+3]+deleps_it[i];
 }
 
-  
+
 b3_blowup_strain(strain,epsilon);
 b3_blowup_strain(eps_pl,epsilon_pl_old);
 b3_kronecker(delta);
@@ -299,7 +299,7 @@ b3_kronecker(delta);
 if (yip>0)
 {
    if (yip==1.0)
-   {    
+   {
       b3_cal_Cel(ym,pv,delta,Cep);
       b3_compr_Cep(d,Cep);
       math_matvecdense(sig,d,strain,6,6,0,1.);
@@ -310,19 +310,19 @@ if (yip>0)
    else
    {
       b3_blowup_stress(sig,sigma_old);
-      sig_vol=0.;							         
-      for (i=0; i<3; i++)						        
+      sig_vol=0.;
+      for (i=0; i<3; i++)
       {
          for (j=0; j<3; j++) sig_vol+=sigma_old[i][j]*delta[i][j];
       }
       for (i=0; i<3; i++)
       {
-         for (j=0; j<3; j++) 
+         for (j=0; j<3; j++)
 	 {
 	    sigma_tr_dev[i][j]=sigma_old[i][j]-q13*sig_vol*delta[i][j];
 	    sigma_tr[i][j]=sigma_old[i][j];
 	 }
-      } 
+      }
       sigma_tr_dev2=0.;
       for (i=0; i<3; i++)
       {
@@ -346,7 +346,7 @@ for (i=0; i<3; i++)
 for (i=0; i<3; i++)
 {
    for (j=0; j<3; j++) e_dev[i][j]=epsilon[i][j]-q13*eps_vol*delta[i][j];
-} 
+}
 
 /*----------calculate vol. and dev. part of elasticity tensor ----------*/
 /*b3_cal_volCel(bulk,delta,Cvol);
@@ -362,7 +362,7 @@ for (i=0; i<3; i++)
 for (i=0; i<3; i++)
 {
    for (j=0; j<3; j++)
-   {     
+   {
      sigma_el_vol[i][j]=bulk*delta[i][j]*eps_vol;
      sigma_tr_dev[i][j]=2.*shear*(e_dev[i][j]-epsilon_pl_old[i][j]);
      sigma_tr[i][j]=sigma_el_vol[i][j]+sigma_tr_dev[i][j];
@@ -387,7 +387,7 @@ if (phi_tr<=tol_pl)
    alpha_pl=alpha_pl_old;
    for (i=0; i<3; i++)
    {
-      for (j=0; j<3; j++) 
+      for (j=0; j<3; j++)
       {
          epsilon_pl[i][j]=epsilon_pl_old[i][j];
 	 sigma[i][j]=sigma_tr[i][j];
@@ -407,17 +407,17 @@ else
    gamma_pl=phi_tr/(2.*shear+q23*hards);
 
 plastic:
-/*----------calculate stresses------------------------------------------*/   
+/*----------calculate stresses------------------------------------------*/
    for (i=0; i<3; i++)
    {
-      for (j=0; j<3; j++) 
+      for (j=0; j<3; j++)
       {
          n_tr[i][j]=sigma_tr_dev[i][j]/sqrt(sigma_tr_dev2);
 	 sigma[i][j]=sigma_tr[i][j]-2.*shear*gamma_pl*n_tr[i][j];
       }
    }
 /*----------calculate the elastoplastic tangent Cep---------------------*/
-   b3_cal_Cel(ym,pv,delta,Cep);    	  	  
+   b3_cal_Cel(ym,pv,delta,Cep);
    c_pl_1=-2.*shear*gamma_pl/sqrt(sigma_tr_dev2);
    c_pl_2=2.*shear/(2.*shear+q23*hards)*(1-phi_tr/sqrt(sigma_tr_dev2));
    for (i=0; i<3; i++)
@@ -463,8 +463,8 @@ for (i=0; i<3; i++)
 /*-----------write eps_it to WA-----------------------------------------*/
    ele->e.b3->elewa.a.da[ip][i+14] = strain[i];
    ele->e.b3->elewa.a.da[ip][i+17] = strain[3+i];
-   for (j=0; j<3; j++) 
-   {  
+   for (j=0; j<3; j++)
+   {
 /*-----------write C_BA to working array [20-28]------------------------*/
       ele->e.b3->elewa.a.da[ip][k]   = d[i+3][j];
 /*-----------write C_BB to working array [29-37]------------------------*/
@@ -482,10 +482,10 @@ for (i=0; i<3; i++) stress[i] = sig[i];
 end:
 /*-----------put new values -> alpha_pl, yip, sig, eps_pl---------------*/
 if (istore==1)
-{   
+{
    ele->e.b3->elewa.a.da[ip][0] = alpha_pl;
    ele->e.b3->elewa.a.da[ip][1] = yip;
-   for (i=0; i<6; i++)				        	 
+   for (i=0; i<6; i++)
    {
       ele->e.b3->elewa.a.da[ip][i+2] = sig[i];
       ele->e.b3->elewa.a.da[ip][i+8] = eps_pl[i];
@@ -498,7 +498,7 @@ if (iupd==1) ele->e.b3->elewa.a.da[ip][1] = yip;
 
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -515,7 +515,7 @@ This routine calculates the stress tensor (3*3) out of stress vector (6*1)
 \param **matrix  DOUBLE    (o)  stress tensor
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: b3_mat_plast_mises()
 
@@ -539,7 +539,7 @@ matrix[2][1]=vector[5];
 matrix[2][2]=vector[4];
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -556,7 +556,7 @@ This routine calculates the stress vector (6*1) out of stress tensor (3*3)
 \param **matrix  DOUBLE    (i)  stress tensor
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: b3_mat_plast_mises()
 
@@ -577,7 +577,7 @@ vector[4]=matrix[2][2];
 vector[5]=matrix[1][2];
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -595,7 +595,7 @@ This routine calculates the strain tensor (3*3) out of strain vector (6*1)
 \param **matrix  DOUBLE    (o)  strain tensor
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: b3_mat_plast_mises()
 
@@ -619,7 +619,7 @@ matrix[2][1]=vector[5]/2.;
 matrix[2][2]=vector[4];
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -636,7 +636,7 @@ This routine calculates the strain vector (6*1) out of strain tensor (3*3)
 \param **matrix  DOUBLE    (i)  stress tensor
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: b3_mat_plast_mises()
 
@@ -657,7 +657,7 @@ vector[4]=matrix[2][2];
 vector[5]=matrix[1][2]*2.;
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -667,7 +667,7 @@ return;
 \brief calculates Cep matrix (6*6) out of Cep tensor (3*3*3*3)
 
 <pre>                                                              fh 03/03
-This routine calculates the elastoplastic tangent matrix (6*6) out of 
+This routine calculates the elastoplastic tangent matrix (6*6) out of
 elastoplastic tangent tensor (3*3*3*3)
 
 </pre>
@@ -675,7 +675,7 @@ elastoplastic tangent tensor (3*3*3*3)
 \param ****tensor  DOUBLE    (i)  Cep tensor
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: b3_mat_plast_mises()
 
@@ -702,7 +702,7 @@ matrix[1][2]=tensor[0][1][0][2];
 matrix[1][3]=tensor[0][1][1][1];
 matrix[1][4]=tensor[0][1][2][2];
 matrix[1][5]=tensor[0][1][1][2];
-		  
+
 matrix[2][0]=tensor[0][2][0][0];
 matrix[2][1]=tensor[0][2][0][1];
 matrix[2][2]=tensor[0][2][0][2];
@@ -732,7 +732,7 @@ matrix[5][4]=tensor[1][2][2][2];
 matrix[5][5]=tensor[1][2][1][2];
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -749,7 +749,7 @@ This routine calculates the Kronecker-delta for (3*3) tensor
 
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: b3_mat_plast_mises()
 
@@ -773,7 +773,7 @@ for (i=0; i<3; i++)
 }
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -792,7 +792,7 @@ This routine calculates the volumetric part of the elasticity tensor
 
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: b3_mat_plast_mises()
 
@@ -819,7 +819,7 @@ for (i=0; i<3; i++)
    }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -838,7 +838,7 @@ This routine calculates the volumetric part of the elasticity tensor
 
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: b3_mat_plast_mises()
 
@@ -862,8 +862,8 @@ for (i=0; i<3; i++)
    {
       for (k=0; k<3; k++)
       {
-         for (l=0; l<3; l++) 
-	 { 
+         for (l=0; l<3; l++)
+	 {
 	    dikjl=delta[i][k]*delta[j][l];
 	    diljk=delta[i][l]*delta[j][k];
 	    dijkl=delta[i][j]*delta[k][l];
@@ -873,7 +873,7 @@ for (i=0; i<3; i++)
    }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -893,7 +893,7 @@ This routine calculates the elasticity tensor
 
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: b3_mat_plast_mises()
 
@@ -922,8 +922,8 @@ for (i=0; i<3; i++)
    {
       for (k=0; k<3; k++)
       {
-         for (l=0; l<3; l++) 
-	 { 
+         for (l=0; l<3; l++)
+	 {
 	    dikjl=delta[i][k]*delta[j][l];
 	    diljk=delta[i][l]*delta[j][k];
 	    dijkl=delta[i][j]*delta[k][l];
@@ -933,7 +933,7 @@ for (i=0; i<3; i++)
    }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -951,7 +951,7 @@ This routine condensates the stresses and the elastoplastic tangent
 
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: b3_mat_plast_mises()
 
@@ -961,7 +961,7 @@ void b3_condense(DOUBLE **D,
 {
 
 INT j,n,m; /* some loopers */
-DOUBLE stfc, constress; 
+DOUBLE stfc, constress;
 
 #ifdef DEBUG
 dstrc_enter("b3_condense");
@@ -977,17 +977,17 @@ for (j=3; j<6; j++)
 {
   stfc=D[j][j];
   if (D[j][j]!=0.)
-  {	
+  {
     for (n=0; n<6; n++) D[j][n]=D[j][n]/stfc;
     /*-------------Condensation stress--------------------------------------*/
     constress=sig[j];
-    for (n=0; n<6; n++) sig[n]=sig[n]-D[j][n]*constress;    
+    for (n=0; n<6; n++) sig[n]=sig[n]-D[j][n]*constress;
     /*-------------Condensation Kaa-----------------------------------------*/
     for (n=0; n<j; n++)
     {
       for (m=n; m<j; m++) D[n][m]=D[n][m]-D[n][j]*D[j][m];
       for (m=0; m<n; m++) D[n][m]=D[m][n];
-    }	  
+    }
     /*-------------Condensation Kac and Kca---------------------------------*/
     for (n=j+1; n<6; n++)
     {
@@ -996,13 +996,13 @@ for (j=3; j<6; j++)
     	D[n][m]=D[n][m]-D[j][n]*D[m][j];
     	D[m][n]=D[n][m];
       }
-    }					
+    }
     /*-------------Condensation Kcc-----------------------------------------*/
     for (n=j+1; n<6; n++)
     {
       for (m=n; m<6; m++) D[n][m]=D[n][m]-D[n][j]*D[j][m];
       for (m=j+1; m<6; m++) D[n][m]=D[m][n];
-    }			      
+    }
     /*-------------Set Cond. domain equal zero------------------------------*/
     for (n=0; n<6; n++)
     {
@@ -1010,7 +1010,7 @@ for (j=3; j<6; j++)
       D[n][j]=0.;
     }
   }
-  else goto out;                                   
+  else goto out;
 }
 goto end;
 out:
@@ -1020,7 +1020,7 @@ for (j=0; j<6; j++)
 }
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -18,7 +18,7 @@ Maintainer: Malte Neumann
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
 /*----------------------------------------------------------------------*
- | prototypes of routines which are only to be called inside this file  | 
+ | prototypes of routines which are only to be called inside this file  |
  |                                                        m.gee 3/02    |
  *----------------------------------------------------------------------*/
 static void inptop_findadjele(ELEMENT *centerele, ELEMENT *elepatch[400], INT nelepatch,
@@ -47,7 +47,7 @@ void inp_topology(DISCRET *actdis)
   ELEMENT *actele;
   NODE    *actnode;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("inp_topology");
 #endif
   /* create pointer from elements to nodes */
@@ -97,7 +97,7 @@ for (i=0; i<actdis->numele; i++)
    }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -121,7 +121,7 @@ return;
  |                                                                       |
  | [[3]]   make pointer GVOL <-> ELEMENT                                 |
  |         make GVOL.ngsurf                                              |
- |         Allocate GVOL.gsurf                                           | 
+ |         Allocate GVOL.gsurf                                           |
  |                                                                       |
  | [[4]]   count number of 2D elements                                   |
  |         make upper estimate for DISCRET.ngsurf                        |
@@ -196,7 +196,7 @@ void inp_detailed_topology(DISCRET   *actdis)
   INT        isgline;
   INT        isgsurf;
   INT        isgvol;
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("inp_detailed_topology");
 #endif
   /*----------------------------------------------------------------------*/
@@ -209,7 +209,7 @@ void inp_detailed_topology(DISCRET   *actdis)
      */
   actdis->ngnode = actdis->numnp;
   actdis->gnode = (GNODE*)CCACALLOC(actdis->ngnode,sizeof(GNODE));
-#ifdef DEBUG 
+#ifdef DEBUG
   for (i=0; i<actdis->ngnode; i++) actdis->gnode[i].Id = i;
 #endif
   /*----------------------------------------- set pointers gnode <-> node */
@@ -232,12 +232,12 @@ void inp_detailed_topology(DISCRET   *actdis)
     actele = &(actdis->element[i]);
     switch (actele->distyp)
     {
-      case hex8: 
+      case hex8:
       case hex20:
       case hex27:
-      case tet4: 
-      case tet10: 
-        counter++; 
+      case tet4:
+      case tet10:
+        counter++;
         break;
       default:
         break;
@@ -245,7 +245,7 @@ void inp_detailed_topology(DISCRET   *actdis)
   }
   actdis->ngvol=counter;
   actdis->gvol = (GVOL*)CCACALLOC(actdis->ngvol,sizeof(GVOL));
-#ifdef DEBUG 
+#ifdef DEBUG
   for (i=0; i<actdis->ngvol; i++) actdis->gvol[i].Id = i;
 #endif
   /*----------------------------------------------------------------------*/
@@ -271,24 +271,24 @@ void inp_detailed_topology(DISCRET   *actdis)
     actele = &(actdis->element[i]);
     switch (actele->distyp)
     {
-      case hex8:  
-      case hex20: 
-      case hex27: 
+      case hex8:
+      case hex20:
+      case hex27:
         actdis->gvol[counter].element = actele;
         actele->g.gvol                = &(actdis->gvol[counter]);
         actdis->gvol[counter].ngsurf  = 6;
         actdis->gvol[counter].gsurf   = (GSURF**)CCACALLOC(actdis->gvol[counter].ngsurf,sizeof(GSURF*));
         nsurftovol += actdis->gvol[counter].ngsurf;
-        counter++; 
+        counter++;
         break;
-      case tet4:  
-      case tet10: 
+      case tet4:
+      case tet10:
         actdis->gvol[counter].element = actele;
         actele->g.gvol                = &(actdis->gvol[counter]);
         actdis->gvol[counter].ngsurf  = 4;
         actdis->gvol[counter].gsurf   = (GSURF**)CCACALLOC(actdis->gvol[counter].ngsurf,sizeof(GSURF*));
         nsurftovol += actdis->gvol[counter].ngsurf;
-        counter++; 
+        counter++;
         break;
       default:
         break;
@@ -305,13 +305,13 @@ void inp_detailed_topology(DISCRET   *actdis)
     actele = &(actdis->element[i]);
     switch (actele->distyp)
     {
-      case quad4: 
-      case quad8: 
-      case quad9: 
-      case tri3:  
-      case tri6:  
-        nsurfelement++; 
-        break; 
+      case quad4:
+      case quad8:
+      case quad9:
+      case tri3:
+      case tri6:
+        nsurfelement++;
+        break;
       default:
         break;
     }
@@ -320,7 +320,7 @@ void inp_detailed_topology(DISCRET   *actdis)
   /* allocate (temporarily) some surfaces */
   actdis->ngsurf = nsurftovol+nsurfelement;
   actdis->gsurf = (GSURF*)CCACALLOC(actdis->ngsurf,sizeof(GSURF));
-#ifdef DEBUG 
+#ifdef DEBUG
   for (i=0; i<actdis->ngsurf; i++) actdis->gsurf[i].Id = i;
 #endif
   /*------------------------------------ now loop all volumetric elements */
@@ -336,7 +336,7 @@ void inp_detailed_topology(DISCRET   *actdis)
     /*------------------- built a patch of elements around this element */
     /* elepatch holds pointers of on all elements on patch and nelepatch
        is the number of elements on patch. Note that actele is also included
-       in the patch 
+       in the patch
        */
     inptop_makepatch(actele,elepatch,&nelepatch);
     /* make the array surfnodes containing the nodes of each surface to actele */
@@ -352,8 +352,8 @@ void inp_detailed_topology(DISCRET   *actdis)
       /* find the element, which shares the actual surface (if it exists) */
       /* function inptop_findotherele returns elementpointer otherele if there
          is an element 'on the other side of gsurf[j], it returns otherele=NULL
-         if there is no other element to this surface. 
-         The function returns facenumber=the local surface number of the otherele 
+         if there is no other element to this surface.
+         The function returns facenumber=the local surface number of the otherele
          */
       inptop_findotherele(actele,&otherele,&facenumber,elepatch,nelepatch,surfnodes[j]);
       /*------------------ if there is another element to this surface */
@@ -409,17 +409,17 @@ void inp_detailed_topology(DISCRET   *actdis)
     actele = &(actdis->element[i]);
     switch (actele->distyp)
     {
-      case quad4: 
-      case quad8: 
-      case quad9: 
-      case tri3:  
-      case tri6:  
+      case quad4:
+      case quad8:
+      case quad9:
+      case tri3:
+      case tri6:
         dsassert(actdis->gsurf[counter].ngvol==0,"surfaces of 2D elements got mixed up with 3D elements");
         actdis->gsurf[counter].element = actele;
         actele->g.gsurf = &(actdis->gsurf[counter]);
         counter++;
         dsassert(counter<=actdis->ngsurf,"Initial guess of ngsurf too small");
-        break; 
+        break;
       default:
         break;
     }
@@ -439,7 +439,7 @@ void inp_detailed_topology(DISCRET   *actdis)
     tmpgsurf       = actdis->gsurf;
     actdis->gsurf  = (GSURF*)CCAREALLOC(actdis->gsurf,(actdis->ngsurf)*sizeof(GSURF));
     /*---- if the realloc moved the gsurf to another place, adjust pointers */
-    if (actdis->gsurf != tmpgsurf) 
+    if (actdis->gsurf != tmpgsurf)
     {
       /*--------------- find the pointer offset between new and old gsurfs */
       ptrdistance = (PTRSIZE)(actdis->gsurf) - (PTRSIZE)(tmpgsurf);
@@ -452,21 +452,21 @@ void inp_detailed_topology(DISCRET   *actdis)
           case line2:
           case line3:
             break;
-          case quad4: 
-          case quad8: 
-          case quad9: 
-          case tri3:  
-          case tri6:  
+          case quad4:
+          case quad8:
+          case quad9:
+          case tri3:
+          case tri6:
             ShiftPointer((void**)&(actele->g.gsurf),ptrdistance);
-            break; 
-          case hex8: 
+            break;
+          case hex8:
           case hex20:
           case hex27:
-          case tet4: 
+          case tet4:
           case tet10:
             actgvol = actele->g.gvol;
-            for (j=0; j<actgvol->ngsurf; j++) 
-              ShiftPointer((void**)&(actgvol->gsurf[j]),ptrdistance); 
+            for (j=0; j<actgvol->ngsurf; j++)
+              ShiftPointer((void**)&(actgvol->gsurf[j]),ptrdistance);
             break;
           default:
             dserror("Unknown type of discretization 1");
@@ -497,38 +497,38 @@ void inp_detailed_topology(DISCRET   *actdis)
       case line2:
       case line3:
         break;
-      case quad4: 
-      case quad8: 
-      case quad9: 
+      case quad4:
+      case quad8:
+      case quad9:
         actgsurf         = actele->g.gsurf;
         actgsurf->ngline = 4;
         actgsurf->gline = (GLINE**)CCACALLOC(actgsurf->ngline,sizeof(GLINE*));
-        break; 
-      case tri3:  
-      case tri6:  
+        break;
+      case tri3:
+      case tri6:
         actgsurf         = actele->g.gsurf;
         actgsurf->ngline = 3;
         actgsurf->gline = (GLINE**)CCACALLOC(actgsurf->ngline,sizeof(GLINE*));
-        break; 
-      case hex8: 
+        break;
+      case hex8:
       case hex20:
       case hex27:
         actgvol  = actele->g.gvol;
         actgvol->ngline = 12;
         actgvol->gline = (GLINE**)CCACALLOC(actgvol->ngline,sizeof(GLINE*));
-        for (j=0; j<actgvol->ngsurf; j++) 
+        for (j=0; j<actgvol->ngsurf; j++)
         {
           actgvol->gsurf[j]->ngline = 4;
           if (!actgvol->gsurf[j]->gline)
             actgvol->gsurf[j]->gline = (GLINE**)CCACALLOC(actgvol->gsurf[j]->ngline,sizeof(GLINE*));
         }
         break;
-      case tet4: 
+      case tet4:
       case tet10:
         actgvol  = actele->g.gvol;
         actgvol->ngline = 6;
         actgvol->gline = (GLINE**)CCACALLOC(actgvol->ngline,sizeof(GLINE*));
-        for (j=0; j<actgvol->ngsurf; j++) 
+        for (j=0; j<actgvol->ngsurf; j++)
         {
           actgvol->gsurf[j]->ngline = 3;
           if (!actgvol->gsurf[j]->gline)
@@ -546,7 +546,7 @@ void inp_detailed_topology(DISCRET   *actdis)
      */
   counter=0;
   nlinetosurf = 0;
-  for (i=0; i<actdis->ngsurf; i++) 
+  for (i=0; i<actdis->ngsurf; i++)
   {
     nlinetosurf += actdis->gsurf[i].ngline;
     dsassert(actdis->gsurf[i].ngline!=0,"lines got mixed up ");
@@ -561,10 +561,10 @@ void inp_detailed_topology(DISCRET   *actdis)
     actele = &(actdis->element[i]);
     switch (actele->distyp)
     {
-      case line2: 
-      case line3: 
-        nlineelement++; 
-        break; 
+      case line2:
+      case line3:
+        nlineelement++;
+        break;
       default:
         break;
     }
@@ -573,7 +573,7 @@ void inp_detailed_topology(DISCRET   *actdis)
   /*-------------------------------------------- allocate vector of glines */
   actdis->ngline = nlinetosurf+nlineelement;
   actdis->gline = (GLINE*)CCACALLOC(actdis->ngline,sizeof(GLINE));
-#ifdef DEBUG 
+#ifdef DEBUG
   for (i=0; i<actdis->ngline; i++) actdis->gline[i].Id = i;
 #endif
   /*---------------------------------------------------- loop all elements */
@@ -587,16 +587,16 @@ void inp_detailed_topology(DISCRET   *actdis)
     /*------------------------------------------ make patch around actele */
     /* elepatch holds pointers of on all elements on patch and nelepatch
        is the number of elements on patch. Note that actele is also included
-       in the patch 
+       in the patch
        */
     inptop_makepatch(actele,elepatch,&nelepatch);
-    /*--------------------------------- build list of lines to an element */   
+    /*--------------------------------- build list of lines to an element */
     /* linenodes[12][3] holds the global node ids of the nodes on each line
        to the element actele.
        Dependent on the element type there are linenodes[numlines][numpointsonline]
        On 2-noded lines, the nodes are in linenodes[line][0 and 2]
        On 3-noded lines, the nodes are in linenodes[line][0 and 1 and 2]
-       */   
+       */
     inptop_makelinestoele(actele,linenodes);
     /*------------------------------------------------------ check distyp */
     /*-------------- get number of lines to element and its gline pointer */
@@ -607,23 +607,23 @@ void inp_detailed_topology(DISCRET   *actdis)
         nline = 0;
         /*gline = actele->g.gline;*/
         break;
-      case quad4: 
-      case quad8: 
+      case quad4:
+      case quad8:
       case quad9:
-      case tri3:   
-      case tri6:  
+      case tri3:
+      case tri6:
         nline = actele->g.gsurf->ngline;
-        gline = actele->g.gsurf->gline;  
-        break; 
+        gline = actele->g.gsurf->gline;
+        break;
       case hex8:
       case hex20:
       case hex27:
       case tet4:
-      case tet10: 
-        nline = actele->g.gvol->ngline;  
-        gline = actele->g.gvol->gline;   
+      case tet10:
+        nline = actele->g.gvol->ngline;
+        gline = actele->g.gvol->gline;
         break;
-      default: 
+      default:
         dserror("Unknown type of discretization 3");
         break;
     }
@@ -633,7 +633,7 @@ void inp_detailed_topology(DISCRET   *actdis)
       /*--------- if the actual gline has been done before then continue */
       if (gline[j]!=NULL) continue;
       /* find all adjacent elements and which line numbers of them to this line */
-      /* 
+      /*
          actele is the centerelement of the elementpatch
          elepatch is the patch of element around actele
          nelepatch is the number of element on the patch
@@ -652,21 +652,21 @@ void inp_detailed_topology(DISCRET   *actdis)
           case line2:
           case line3:
             break;
-          case quad4: 
-          case quad8: 
-          case quad9: 
-          case tri3:  
-          case tri6:  
+          case quad4:
+          case quad8:
+          case quad9:
+          case tri3:
+          case tri6:
             dsassert(adjelepatch[k]->g.gsurf->gline[adjelelinenum[k]]==NULL,"Lines got mixed up");
-            adjelepatch[k]->g.gsurf->gline[adjelelinenum[k]] = &(actdis->gline[counter]); 
-            break; 
-          case hex8:  
-          case hex20: 
-          case hex27: 
-          case tet4:  
-          case tet10: 
+            adjelepatch[k]->g.gsurf->gline[adjelelinenum[k]] = &(actdis->gline[counter]);
+            break;
+          case hex8:
+          case hex20:
+          case hex27:
+          case tet4:
+          case tet10:
             dsassert(adjelepatch[k]->g.gvol->gline[adjelelinenum[k]]==NULL,"Lines got mixed up");
-            adjelepatch[k]->g.gvol->gline[adjelelinenum[k]] = &(actdis->gline[counter]); 
+            adjelepatch[k]->g.gvol->gline[adjelelinenum[k]] = &(actdis->gline[counter]);
             break;
           default: dserror("Unknown type of discretization 4"); break;
         }
@@ -685,13 +685,13 @@ void inp_detailed_topology(DISCRET   *actdis)
     actele = &(actdis->element[i]);
     switch (actele->distyp)
     {
-      case line2: 
-      case line3: 
+      case line2:
+      case line3:
         actdis->gline[counter].element = actele;
         actele->g.gline = &(actdis->gline[counter]);
         counter++;
         dsassert(counter<=actdis->ngline,"Initial guess of ngline too small");
-        break; 
+        break;
       default:
         break;
     }
@@ -720,27 +720,27 @@ void inp_detailed_topology(DISCRET   *actdis)
         case line3:
           ShiftPointer((void**)&(actele->g.gline),ptrdistance);
           break;
-        case quad4: 
-        case quad8: 
+        case quad4:
+        case quad8:
         case quad9:
-        case tri3:   
-        case tri6:  
+        case tri3:
+        case tri6:
           nline = actele->g.gsurf->ngline;
-          gline = actele->g.gsurf->gline;  
-          break; 
+          gline = actele->g.gsurf->gline;
+          break;
         case hex8:
         case hex20:
         case hex27:
         case tet4:
-        case tet10: 
-          nline = actele->g.gvol->ngline;  
-          gline = actele->g.gvol->gline;   
+        case tet10:
+          nline = actele->g.gvol->ngline;
+          gline = actele->g.gvol->gline;
           break;
         default: dserror("Unknown type of discretization 5"); break;
       }
       for (j=0; j<nline; j++)
       {
-        ShiftPointer((void**)&(gline[j]),ptrdistance); 
+        ShiftPointer((void**)&(gline[j]),ptrdistance);
       }
     }
   }/* end of (tmpgline != actdis->gline) */
@@ -755,9 +755,9 @@ void inp_detailed_topology(DISCRET   *actdis)
     /*------------------------------------------- switch type of element */
     switch (actele->distyp)
     {
-      case hex8: 
-      case hex20: 
-      case hex27: 
+      case hex8:
+      case hex20:
+      case hex27:
         /* surface 0 has lines 0 1 2 3 */
         dsassert(actgvol->gsurf[0]->ngline==4,"wrong number of lines in surface");
         actgvol->gsurf[0]->gline[0] = actgvol->gline[0];
@@ -795,8 +795,8 @@ void inp_detailed_topology(DISCRET   *actdis)
         actgvol->gsurf[5]->gline[2] = actgvol->gline[10];
         actgvol->gsurf[5]->gline[3] = actgvol->gline[11];
         break;
-      case tet4:  
-      case tet10: 
+      case tet4:
+      case tet10:
         /* surface 0 has lines 0 1 2 */
         dsassert(actgvol->gsurf[0]->ngline==3,"wrong number of lines in surface");
         actgvol->gsurf[0]->gline[0] = actgvol->gline[0];
@@ -837,28 +837,28 @@ void inp_detailed_topology(DISCRET   *actdis)
       case line2:
       case line3:
         break;
-      case quad4: 
-      case quad8: 
-      case quad9: 
-      case tri3:  
-      case tri6:  
-        actgsurf = actele->g.gsurf; isgvol=0; 
+      case quad4:
+      case quad8:
+      case quad9:
+      case tri3:
+      case tri6:
+        actgsurf = actele->g.gsurf; isgvol=0;
         for (j=0; j<actgsurf->ngline; j++)
-        { 
-          dsassert(actgsurf->gline[j]!=NULL,"missing line to surface"); 
+        {
+          dsassert(actgsurf->gline[j]!=NULL,"missing line to surface");
           actgsurf->gline[j]->ngsurf++;
         }
-        break; 
-      case hex8:  
-      case hex20: 
-      case hex27: 
-      case tet4:  
-      case tet10: 
-        actgvol = actele->g.gvol;   isgvol=1; 
+        break;
+      case hex8:
+      case hex20:
+      case hex27:
+      case tet4:
+      case tet10:
+        actgvol = actele->g.gvol;   isgvol=1;
         for (k=0; k<actgvol->ngsurf; k++)
           for (j=0; j<actgvol->gsurf[k]->ngline; j++)
           {
-            dsassert(actgvol->gsurf[k]->gline[j]!=NULL,"missing line to surface"); 
+            dsassert(actgvol->gsurf[k]->gline[j]!=NULL,"missing line to surface");
             actgvol->gsurf[k]->gline[j]->ngsurf++;
           }
         break;
@@ -884,7 +884,7 @@ void inp_detailed_topology(DISCRET   *actdis)
         if (actgline->gsurf[k]==NULL) break;
       }
       dsassert(k!=actgline->ngsurf,"No empty pointer in gline to gsurf found");
-      actgline->gsurf[k] = actgsurf;      
+      actgline->gsurf[k] = actgsurf;
     }
   }
   /*------------------------------------ count number of nodes on 1 gline */
@@ -900,13 +900,13 @@ void inp_detailed_topology(DISCRET   *actdis)
     /*------------------------------------------------------ check distyp */
     switch (actele->distyp)
     {
-      case line2: actgline = actele->g.gline; isgline=1; nnodeperline=2; break; 
-      case line3: actgline = actele->g.gline; isgline=1; nnodeperline=3; break; 
-      case quad4: actgsurf = actele->g.gsurf; isgsurf=1; nnodeperline=2; break; 
-      case quad8: actgsurf = actele->g.gsurf; isgsurf=1; nnodeperline=3; break; 
-      case quad9: actgsurf = actele->g.gsurf; isgsurf=1; nnodeperline=3; break; 
-      case tri3:  actgsurf = actele->g.gsurf; isgsurf=1; nnodeperline=2; break; 
-      case tri6:  actgsurf = actele->g.gsurf; isgsurf=1; nnodeperline=3; break; 
+      case line2: actgline = actele->g.gline; isgline=1; nnodeperline=2; break;
+      case line3: actgline = actele->g.gline; isgline=1; nnodeperline=3; break;
+      case quad4: actgsurf = actele->g.gsurf; isgsurf=1; nnodeperline=2; break;
+      case quad8: actgsurf = actele->g.gsurf; isgsurf=1; nnodeperline=3; break;
+      case quad9: actgsurf = actele->g.gsurf; isgsurf=1; nnodeperline=3; break;
+      case tri3:  actgsurf = actele->g.gsurf; isgsurf=1; nnodeperline=2; break;
+      case tri6:  actgsurf = actele->g.gsurf; isgsurf=1; nnodeperline=3; break;
       case hex8:  actgvol = actele->g.gvol;   isgvol=1; nnodeperline=2; break;
       case hex20: actgvol = actele->g.gvol;   isgvol=1; nnodeperline=3; break;
       case hex27: actgvol = actele->g.gvol;   isgvol=1; nnodeperline=3; break;
@@ -927,7 +927,7 @@ void inp_detailed_topology(DISCRET   *actdis)
     }
     if (isgsurf)
     {
-      for (j=0; j<actgsurf->ngline; j++) 
+      for (j=0; j<actgsurf->ngline; j++)
       {
         dsassert(actgsurf->gline[j]->ngnode==0 || actgsurf->gline[j]->ngnode==nnodeperline,
             "Nonconforming grid detected, this wil lead to severe topology mix-up");
@@ -974,8 +974,8 @@ void inp_detailed_topology(DISCRET   *actdis)
         actgline->gnode[2] = actgline->element->node[2]->gnode;
         actgline->gnode[2]->ngline++;
         break;
-      case quad4: 
-        actgsurf = actele->g.gsurf; 
+      case quad4:
+        actgsurf = actele->g.gsurf;
         /* line 0 */
         actgsurf->gline[0]->gnode[0] = actgsurf->element->node[0]->gnode;
         actgsurf->gline[0]->gnode[0]->ngline++;
@@ -996,10 +996,10 @@ void inp_detailed_topology(DISCRET   *actdis)
         actgsurf->gline[3]->gnode[0]->ngline++;
         actgsurf->gline[3]->gnode[1] = actgsurf->element->node[0]->gnode;
         actgsurf->gline[3]->gnode[1]->ngline++;
-        break; 
-      case quad8: 
-      case quad9: 
-        actgsurf = actele->g.gsurf; 
+        break;
+      case quad8:
+      case quad9:
+        actgsurf = actele->g.gsurf;
         /* line 0 */
         actgsurf->gline[0]->gnode[0] = actgsurf->element->node[0]->gnode;
         actgsurf->gline[0]->gnode[0]->ngline++;
@@ -1028,9 +1028,9 @@ void inp_detailed_topology(DISCRET   *actdis)
         actgsurf->gline[3]->gnode[1]->ngline++;
         actgsurf->gline[3]->gnode[2] = actgsurf->element->node[0]->gnode;
         actgsurf->gline[3]->gnode[2]->ngline++;
-        break; 
-      case tri3:  
-        actgsurf = actele->g.gsurf; 
+        break;
+      case tri3:
+        actgsurf = actele->g.gsurf;
         /* line 0 */
         actgsurf->gline[0]->gnode[0] = actgsurf->element->node[0]->gnode;
         actgsurf->gline[0]->gnode[0]->ngline++;
@@ -1046,9 +1046,9 @@ void inp_detailed_topology(DISCRET   *actdis)
         actgsurf->gline[2]->gnode[0]->ngline++;
         actgsurf->gline[2]->gnode[1] = actgsurf->element->node[0]->gnode;
         actgsurf->gline[2]->gnode[1]->ngline++;
-        break; 
-      case tri6:  
-        actgsurf = actele->g.gsurf; 
+        break;
+      case tri6:
+        actgsurf = actele->g.gsurf;
         /* line 0 */
         actgsurf->gline[0]->gnode[0] = actgsurf->element->node[0]->gnode;
         actgsurf->gline[0]->gnode[0]->ngline++;
@@ -1070,9 +1070,9 @@ void inp_detailed_topology(DISCRET   *actdis)
         actgsurf->gline[2]->gnode[1]->ngline++;
         actgsurf->gline[2]->gnode[2] = actgsurf->element->node[0]->gnode;
         actgsurf->gline[2]->gnode[2]->ngline++;
-        break; 
-      case hex8:  
-        actgvol = actele->g.gvol;   
+        break;
+      case hex8:
+        actgvol = actele->g.gvol;
         /* line 0 */
         actgvol->gline[0]->gnode[0] = actgvol->element->node[0]->gnode;
         actgvol->gline[0]->gnode[0]->ngline++;
@@ -1134,9 +1134,9 @@ void inp_detailed_topology(DISCRET   *actdis)
         actgvol->gline[11]->gnode[1] = actgvol->element->node[4]->gnode;
         actgvol->gline[11]->gnode[1]->ngline++;
         break;
-      case hex20: 
-      case hex27: 
-        actgvol = actele->g.gvol;   
+      case hex20:
+      case hex27:
+        actgvol = actele->g.gvol;
         /* line 0 */
         actgvol->gline[0]->gnode[0] = actgvol->element->node[0]->gnode;
         actgvol->gline[0]->gnode[0]->ngline++;
@@ -1222,8 +1222,8 @@ void inp_detailed_topology(DISCRET   *actdis)
         actgvol->gline[11]->gnode[2] = actgvol->element->node[4]->gnode;
         actgvol->gline[11]->gnode[2]->ngline++;
         break;
-      case tet4:  
-        actgvol = actele->g.gvol;   
+      case tet4:
+        actgvol = actele->g.gvol;
         /* line 0 */
         actgvol->gline[0]->gnode[0] = actgvol->element->node[0]->gnode;
         actgvol->gline[0]->gnode[0]->ngline++;
@@ -1255,8 +1255,8 @@ void inp_detailed_topology(DISCRET   *actdis)
         actgvol->gline[5]->gnode[1] = actgvol->element->node[3]->gnode;
         actgvol->gline[5]->gnode[1]->ngline++;
         break;
-      case tet10: 
-        actgvol = actele->g.gvol;   
+      case tet10:
+        actgvol = actele->g.gvol;
         /* line 0 */
         actgvol->gline[0]->gnode[0] = actgvol->element->node[0]->gnode;
         actgvol->gline[0]->gnode[0]->ngline++;
@@ -1331,42 +1331,42 @@ void inp_detailed_topology(DISCRET   *actdis)
       case line2:
       case line3:
         break;
-      case quad4: 
+      case quad4:
         actgsurf = actele->g.gsurf;
         actgsurf->ngnode = 4;
         actgsurf->gnode = (GNODE**)CCACALLOC(actgsurf->ngnode,sizeof(GNODE*));
-        for (j=0; j<actele->numnp; j++) 
+        for (j=0; j<actele->numnp; j++)
           actgsurf->gnode[j] = actele->node[j]->gnode;
-        break; 
-      case quad8: 
+        break;
+      case quad8:
         actgsurf = actele->g.gsurf;
         actgsurf->ngnode = 8;
         actgsurf->gnode = (GNODE**)CCACALLOC(actgsurf->ngnode,sizeof(GNODE*));
-        for (j=0; j<actele->numnp; j++) 
+        for (j=0; j<actele->numnp; j++)
           actgsurf->gnode[j] = actele->node[j]->gnode;
         break;
-      case quad9: 
+      case quad9:
         actgsurf = actele->g.gsurf;
         actgsurf->ngnode = 9;
         actgsurf->gnode = (GNODE**)CCACALLOC(actgsurf->ngnode,sizeof(GNODE*));
-        for (j=0; j<actele->numnp; j++) 
+        for (j=0; j<actele->numnp; j++)
           actgsurf->gnode[j] = actele->node[j]->gnode;
-        break; 
-      case tri3:  
+        break;
+      case tri3:
         actgsurf = actele->g.gsurf;
         actgsurf->ngnode = 3;
         actgsurf->gnode = (GNODE**)CCACALLOC(actgsurf->ngnode,sizeof(GNODE*));
-        for (j=0; j<actele->numnp; j++) 
+        for (j=0; j<actele->numnp; j++)
           actgsurf->gnode[j] = actele->node[j]->gnode;
-        break; 
-      case tri6:  
+        break;
+      case tri6:
         actgsurf = actele->g.gsurf;
         actgsurf->ngnode = 6;
         actgsurf->gnode = (GNODE**)CCACALLOC(actgsurf->ngnode,sizeof(GNODE*));
-        for (j=0; j<actele->numnp; j++) 
+        for (j=0; j<actele->numnp; j++)
           actgsurf->gnode[j] = actele->node[j]->gnode;
-        break; 
-      case hex8:  
+        break;
+      case hex8:
         actgvol = actele->g.gvol;
         if (actgvol->gsurf[0]->ngnode == 0)
         {
@@ -1429,7 +1429,7 @@ void inp_detailed_topology(DISCRET   *actdis)
           actgsurf->gnode[3] = actele->node[7]->gnode;
         }
         break;
-      case hex20: 
+      case hex20:
         actgvol = actele->g.gvol;
         if (actgvol->gsurf[0]->ngnode == 0)
         {
@@ -1516,7 +1516,7 @@ void inp_detailed_topology(DISCRET   *actdis)
           actgsurf->gnode[7] = actele->node[19]->gnode;
         }
         break;
-      case hex27: 
+      case hex27:
         actgvol = actele->g.gvol;
         if (actgvol->gsurf[0]->ngnode == 0)
         {
@@ -1609,7 +1609,7 @@ void inp_detailed_topology(DISCRET   *actdis)
           actgsurf->gnode[8] = actele->node[25]->gnode;
         }
         break;
-      case tet4:  
+      case tet4:
         actgvol = actele->g.gvol;
         if (actgvol->gsurf[0]->ngnode == 0)
         {
@@ -1648,7 +1648,7 @@ void inp_detailed_topology(DISCRET   *actdis)
           actgsurf->gnode[2] = actele->node[3]->gnode;
         }
         break;
-      case tet10: 
+      case tet10:
         actgvol = actele->g.gvol;
         if (actgvol->gsurf[0]->ngnode == 0)
         {
@@ -1707,7 +1707,7 @@ void inp_detailed_topology(DISCRET   *actdis)
 
 
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return;
@@ -1728,7 +1728,7 @@ INT        firstnode,scndnode,thirdnode;
 INT        matchfirst,matchscnd,matchthird;
 INT        searchlnodes[12][3];
 INT        ngline = 0;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inptop_findadjele");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1747,18 +1747,18 @@ for (i=0; i<nelepatch; i++)
    /*---------------------------------------- check for type of element */
    switch (actele->distyp)
    {
-   case line2: ngline = 1;break; 
-   case line3: ngline = 1;break; 
-   case quad4: ngline = actele->g.gsurf->ngline;break; 
-   case quad8: ngline = actele->g.gsurf->ngline;break;   
-   case quad9: ngline = actele->g.gsurf->ngline;break;   
-   case tri3:  ngline = actele->g.gsurf->ngline;break;    
-   case tri6:  ngline = actele->g.gsurf->ngline;break;    
-   case hex8:  ngline = actele->g.gvol->ngline; break;    
-   case hex20: ngline = actele->g.gvol->ngline; break;     
-   case hex27: ngline = actele->g.gvol->ngline; break;     
-   case tet4:  ngline = actele->g.gvol->ngline; break;      
-   case tet10: ngline = actele->g.gvol->ngline; break;     
+   case line2: ngline = 1;break;
+   case line3: ngline = 1;break;
+   case quad4: ngline = actele->g.gsurf->ngline;break;
+   case quad8: ngline = actele->g.gsurf->ngline;break;
+   case quad9: ngline = actele->g.gsurf->ngline;break;
+   case tri3:  ngline = actele->g.gsurf->ngline;break;
+   case tri6:  ngline = actele->g.gsurf->ngline;break;
+   case hex8:  ngline = actele->g.gvol->ngline; break;
+   case hex20: ngline = actele->g.gvol->ngline; break;
+   case hex27: ngline = actele->g.gvol->ngline; break;
+   case tet4:  ngline = actele->g.gvol->ngline; break;
+   case tet10: ngline = actele->g.gvol->ngline; break;
    default: dserror("Unknown type of discretization 11"); break;
    }
    for (j=0; j<ngline; j++)
@@ -1782,7 +1782,7 @@ for (i=0; i<nelepatch; i++)
 }/* end i loop over input patch */
 *nadjele=counter;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1798,24 +1798,24 @@ return;
 static void inptop_makelinestoele(ELEMENT *actele, INT linenodes[12][3])
 {
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inptop_makelinestoele");
 #endif
 /*----------------------------------------------------------------------*/
 switch (actele->distyp)
 {
-case line2: 
+case line2:
    /* line 0 */
    linenodes[0][0] = actele->node[0]->Id;
    linenodes[0][2] = actele->node[1]->Id;
-break; 
-case line3: 
+break;
+case line3:
    /* line 0 */
    linenodes[0][0] = actele->node[0]->Id;
    linenodes[0][1] = actele->node[1]->Id;
    linenodes[0][2] = actele->node[2]->Id;
-break; 
-case quad4: 
+break;
+case quad4:
    /* line 0 */
    linenodes[0][0] = actele->node[0]->Id;
    linenodes[0][2] = actele->node[1]->Id;
@@ -1828,26 +1828,8 @@ case quad4:
    /* line 3 */
    linenodes[3][0] = actele->node[3]->Id;
    linenodes[3][2] = actele->node[0]->Id;
-break; 
-case quad8: 
-   /* line 0 */
-   linenodes[0][0] = actele->node[0]->Id;
-   linenodes[0][1] = actele->node[4]->Id;
-   linenodes[0][2] = actele->node[1]->Id;
-   /* line 1 */
-   linenodes[1][0] = actele->node[1]->Id;
-   linenodes[1][1] = actele->node[5]->Id;
-   linenodes[1][2] = actele->node[2]->Id;
-   /* line 2 */
-   linenodes[2][0] = actele->node[2]->Id;
-   linenodes[2][1] = actele->node[6]->Id;
-   linenodes[2][2] = actele->node[3]->Id;
-   /* line 3 */
-   linenodes[3][0] = actele->node[3]->Id;
-   linenodes[3][1] = actele->node[7]->Id;
-   linenodes[3][2] = actele->node[0]->Id;
-break; 
-case quad9: 
+break;
+case quad8:
    /* line 0 */
    linenodes[0][0] = actele->node[0]->Id;
    linenodes[0][1] = actele->node[4]->Id;
@@ -1864,8 +1846,26 @@ case quad9:
    linenodes[3][0] = actele->node[3]->Id;
    linenodes[3][1] = actele->node[7]->Id;
    linenodes[3][2] = actele->node[0]->Id;
-break; 
-case tri3:  
+break;
+case quad9:
+   /* line 0 */
+   linenodes[0][0] = actele->node[0]->Id;
+   linenodes[0][1] = actele->node[4]->Id;
+   linenodes[0][2] = actele->node[1]->Id;
+   /* line 1 */
+   linenodes[1][0] = actele->node[1]->Id;
+   linenodes[1][1] = actele->node[5]->Id;
+   linenodes[1][2] = actele->node[2]->Id;
+   /* line 2 */
+   linenodes[2][0] = actele->node[2]->Id;
+   linenodes[2][1] = actele->node[6]->Id;
+   linenodes[2][2] = actele->node[3]->Id;
+   /* line 3 */
+   linenodes[3][0] = actele->node[3]->Id;
+   linenodes[3][1] = actele->node[7]->Id;
+   linenodes[3][2] = actele->node[0]->Id;
+break;
+case tri3:
    /* line 0 */
    linenodes[0][0] = actele->node[0]->Id;
    linenodes[0][2] = actele->node[1]->Id;
@@ -1875,8 +1875,8 @@ case tri3:
    /* line 2 */
    linenodes[2][0] = actele->node[2]->Id;
    linenodes[2][2] = actele->node[0]->Id;
-break; 
-case tri6:  
+break;
+case tri6:
    /* line 0 */
    linenodes[0][0] = actele->node[0]->Id;
    linenodes[0][1] = actele->node[3]->Id;
@@ -1889,8 +1889,8 @@ case tri6:
    linenodes[2][0] = actele->node[2]->Id;
    linenodes[2][1] = actele->node[5]->Id;
    linenodes[2][2] = actele->node[0]->Id;
-break; 
-case hex8:  
+break;
+case hex8:
    /* line 0 */
    linenodes[0][0] = actele->node[0]->Id;
    linenodes[0][2] = actele->node[1]->Id;
@@ -1928,57 +1928,7 @@ case hex8:
    linenodes[11][0] = actele->node[7]->Id;
    linenodes[11][2] = actele->node[4]->Id;
 break;
-case hex20: 
-   /* line 0 */
-   linenodes[0][0] = actele->node[0]->Id;
-   linenodes[0][1] = actele->node[8]->Id;
-   linenodes[0][2] = actele->node[1]->Id;
-   /* line 1 */
-   linenodes[1][0] = actele->node[1]->Id;
-   linenodes[1][1] = actele->node[9]->Id;
-   linenodes[1][2] = actele->node[2]->Id;
-   /* line 2 */
-   linenodes[2][0] = actele->node[2]->Id;
-   linenodes[2][1] = actele->node[10]->Id;
-   linenodes[2][2] = actele->node[3]->Id;
-   /* line 3 */
-   linenodes[3][0] = actele->node[3]->Id;
-   linenodes[3][1] = actele->node[11]->Id;
-   linenodes[3][2] = actele->node[0]->Id;
-   /* line 4 */
-   linenodes[4][0] = actele->node[0]->Id;
-   linenodes[4][1] = actele->node[12]->Id;
-   linenodes[4][2] = actele->node[4]->Id;
-   /* line 5 */
-   linenodes[5][0] = actele->node[1]->Id;
-   linenodes[5][1] = actele->node[13]->Id;
-   linenodes[5][2] = actele->node[5]->Id;
-   /* line 6 */
-   linenodes[6][0] = actele->node[2]->Id;
-   linenodes[6][1] = actele->node[14]->Id;
-   linenodes[6][2] = actele->node[6]->Id;
-   /* line 7 */
-   linenodes[7][0] = actele->node[3]->Id;
-   linenodes[7][1] = actele->node[15]->Id;
-   linenodes[7][2] = actele->node[7]->Id;
-   /* line 8 */
-   linenodes[8][0] = actele->node[4]->Id;
-   linenodes[8][1] = actele->node[16]->Id;
-   linenodes[8][2] = actele->node[5]->Id;
-   /* line 9 */
-   linenodes[9][0] = actele->node[5]->Id;
-   linenodes[9][1] = actele->node[17]->Id;
-   linenodes[9][2] = actele->node[6]->Id;
-   /* line 10 */
-   linenodes[10][0] = actele->node[6]->Id;
-   linenodes[10][1] = actele->node[18]->Id;
-   linenodes[10][2] = actele->node[7]->Id;
-   /* line 11 */
-   linenodes[11][0] = actele->node[7]->Id;
-   linenodes[11][1] = actele->node[19]->Id;
-   linenodes[11][2] = actele->node[4]->Id;
-break;
-case hex27: 
+case hex20:
    /* line 0 */
    linenodes[0][0] = actele->node[0]->Id;
    linenodes[0][1] = actele->node[8]->Id;
@@ -2028,7 +1978,57 @@ case hex27:
    linenodes[11][1] = actele->node[19]->Id;
    linenodes[11][2] = actele->node[4]->Id;
 break;
-case tet4:  
+case hex27:
+   /* line 0 */
+   linenodes[0][0] = actele->node[0]->Id;
+   linenodes[0][1] = actele->node[8]->Id;
+   linenodes[0][2] = actele->node[1]->Id;
+   /* line 1 */
+   linenodes[1][0] = actele->node[1]->Id;
+   linenodes[1][1] = actele->node[9]->Id;
+   linenodes[1][2] = actele->node[2]->Id;
+   /* line 2 */
+   linenodes[2][0] = actele->node[2]->Id;
+   linenodes[2][1] = actele->node[10]->Id;
+   linenodes[2][2] = actele->node[3]->Id;
+   /* line 3 */
+   linenodes[3][0] = actele->node[3]->Id;
+   linenodes[3][1] = actele->node[11]->Id;
+   linenodes[3][2] = actele->node[0]->Id;
+   /* line 4 */
+   linenodes[4][0] = actele->node[0]->Id;
+   linenodes[4][1] = actele->node[12]->Id;
+   linenodes[4][2] = actele->node[4]->Id;
+   /* line 5 */
+   linenodes[5][0] = actele->node[1]->Id;
+   linenodes[5][1] = actele->node[13]->Id;
+   linenodes[5][2] = actele->node[5]->Id;
+   /* line 6 */
+   linenodes[6][0] = actele->node[2]->Id;
+   linenodes[6][1] = actele->node[14]->Id;
+   linenodes[6][2] = actele->node[6]->Id;
+   /* line 7 */
+   linenodes[7][0] = actele->node[3]->Id;
+   linenodes[7][1] = actele->node[15]->Id;
+   linenodes[7][2] = actele->node[7]->Id;
+   /* line 8 */
+   linenodes[8][0] = actele->node[4]->Id;
+   linenodes[8][1] = actele->node[16]->Id;
+   linenodes[8][2] = actele->node[5]->Id;
+   /* line 9 */
+   linenodes[9][0] = actele->node[5]->Id;
+   linenodes[9][1] = actele->node[17]->Id;
+   linenodes[9][2] = actele->node[6]->Id;
+   /* line 10 */
+   linenodes[10][0] = actele->node[6]->Id;
+   linenodes[10][1] = actele->node[18]->Id;
+   linenodes[10][2] = actele->node[7]->Id;
+   /* line 11 */
+   linenodes[11][0] = actele->node[7]->Id;
+   linenodes[11][1] = actele->node[19]->Id;
+   linenodes[11][2] = actele->node[4]->Id;
+break;
+case tet4:
    /* line 0 */
    linenodes[0][0] = actele->node[0]->Id;
    linenodes[0][2] = actele->node[1]->Id;
@@ -2048,7 +2048,7 @@ case tet4:
    linenodes[5][0] = actele->node[2]->Id;
    linenodes[5][2] = actele->node[3]->Id;
 break;
-case tet10: 
+case tet10:
    /* line 0 */
    linenodes[0][0] = actele->node[0]->Id;
    linenodes[0][1] = actele->node[4]->Id;
@@ -2074,11 +2074,11 @@ case tet10:
    linenodes[5][1] = actele->node[9]->Id;
    linenodes[5][2] = actele->node[3]->Id;
 break;
-default: dserror("Unknown type of discretization 12"); 
+default: dserror("Unknown type of discretization 12");
 break;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -2100,7 +2100,7 @@ INT        surfnodesother[6][4];
 INT        matchfirst=0,matchscnd=0,matchthird=0,foundsurface=0;
 INT        firstnode,scndnode,thirdnode;
 INT        nodespersurf=0;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inptop_findotherele");
 #endif
 /*----------------------------------------------------------------------*/
@@ -2115,7 +2115,7 @@ for (i=0; i<npatch; i++)
    actgvol = actele->g.gvol;
    /*---------------------------- we do not want to find firstele again */
    if (actele == firstele) continue;
-   /*------------------------------- check number of surfaces to actele */   
+   /*------------------------------- check number of surfaces to actele */
    /*----------- if actele has 6 surfaces it's a brick, else it's a tet */
    if (actgvol->ngsurf==6)      nodespersurf=4;
    else if (actgvol->ngsurf==4) nodespersurf=3;
@@ -2123,7 +2123,7 @@ for (i=0; i<npatch; i++)
    /*---------------------------- make the surfacenodes array of actele */
    inptop_makesurfnodes(actele,surfnodesother);
    /* loop nodes in surfnodes, we need a match of three nodes to detect
-                                                       a common surface */   
+                                                       a common surface */
    foundsurface=-1;
    for (j=0; j<actgvol->ngsurf; j++)/* loop over surfaces of actgvol */
    {
@@ -2178,7 +2178,7 @@ else
    *facenumber=-1;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -2195,7 +2195,7 @@ static void inptop_makepatch(ELEMENT *centerele, ELEMENT *elepatch[400], INT *ne
 INT        i,j,counter;
 ELEMENT   *actele;
 ELEMENT   *patch[400];
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inptop_makepatch");
 #endif
 /*----------------------------------------------------------------------*/
@@ -2223,14 +2223,14 @@ for (i=0; i<counter; i++)
 *nelepatch = 0;
 for (i=0; i<counter; i++)
 {
-   if (patch[i]) 
+   if (patch[i])
    {
       elepatch[*nelepatch] = patch[i];
       (*nelepatch)++;
    }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -2244,7 +2244,7 @@ return;
 static void inptop_makesurfnodes(ELEMENT *actele, INT surfnodes[6][4])
 {
 INT        nsurf;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inptop_makesurfnodes");
 #endif
 /*----------------------------------------------------------------------*/
@@ -2282,7 +2282,7 @@ switch(actele->distyp)
      surfnodes[5][2] = actele->node[6]->Id;
      surfnodes[5][3] = actele->node[7]->Id;
   break;
-  case hex20: nsurf=6; 
+  case hex20: nsurf=6;
      /* surface 0 */
      surfnodes[0][0] = actele->node[0]->Id;
      surfnodes[0][1] = actele->node[1]->Id;
@@ -2314,7 +2314,7 @@ switch(actele->distyp)
      surfnodes[5][2] = actele->node[6]->Id;
      surfnodes[5][3] = actele->node[7]->Id;
   break;
-  case hex27: nsurf=6; 
+  case hex27: nsurf=6;
      /* surface 0 */
      surfnodes[0][0] = actele->node[0]->Id;
      surfnodes[0][1] = actele->node[1]->Id;
@@ -2346,7 +2346,7 @@ switch(actele->distyp)
      surfnodes[5][2] = actele->node[6]->Id;
      surfnodes[5][3] = actele->node[7]->Id;
   break;
-  case tet4:  nsurf=4; 
+  case tet4:  nsurf=4;
      /* surface 0 */
      surfnodes[0][0] = actele->node[0]->Id;
      surfnodes[0][1] = actele->node[1]->Id;
@@ -2364,7 +2364,7 @@ switch(actele->distyp)
      surfnodes[3][1] = actele->node[2]->Id;
      surfnodes[3][2] = actele->node[3]->Id;
   break;
-  case tet10: nsurf=4; 
+  case tet10: nsurf=4;
      /* surface 0 */
      surfnodes[0][0] = actele->node[0]->Id;
      surfnodes[0][1] = actele->node[1]->Id;
@@ -2386,7 +2386,7 @@ switch(actele->distyp)
      dserror("Unknown type of discretization 14");
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -1,6 +1,6 @@
 /*!---------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -14,7 +14,7 @@ Maintainer: Malte Neumann
  | general static-variables                               m.gee 6/01    |
  | variables used by linear or nonlinear structural static analysis     |
  *----------------------------------------------------------------------*/
-typedef struct _STATIC_VAR               
+typedef struct _STATIC_VAR
 {
 INT                 linear;             /* is linear calculation */
 INT                 nonlinear;          /* is nonlinear calculation */
@@ -32,7 +32,7 @@ INT                 resevry_disp;       /* write result very updevry step */
 INT                 resevry_stress;     /* write result very updevry step */
 INT                 resevery_restart;   /* write restart every res_write_evry step */
 INT                 graderw;            /* is gradient damage model */
-				
+
 
 struct _NODE       *controlnode;        /* ptr to control node */
 INT                 control_node_global;/* global control node Id (redundant) */
@@ -51,7 +51,7 @@ INT                 reldis_dof[6];        /* dof we want in output for relative 
  | general static-control-variables                       m.gee 6/01    |
  | variables to perform Newton Raphson                                  |
  *----------------------------------------------------------------------*/
-typedef struct _STANLN  
+typedef struct _STANLN
 {
 DOUBLE              sp1;                  /* initial stiffness of control node */
 DOUBLE              csp;                  /* current stiffness parameter */

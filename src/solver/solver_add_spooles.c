@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -18,7 +18,7 @@ Maintainer: Malte Neumann
 #include "../solver/solver.h"
 /*----------------------------------------------------------------------*
   | global dense matrices for element routines             m.gee 9/01  |
-  | (defined in global_calelm.c, so they are extern here)              |                
+  | (defined in global_calelm.c, so they are extern here)              |
  *----------------------------------------------------------------------*/
 extern struct _ARRAY estif_global;
 extern struct _ARRAY emass_global;
@@ -28,11 +28,11 @@ extern struct _ARRAY emass_global;
 /*!
  \brief assemble into a msr matrix (original version)
 
- This routine assembles one or two element matrices (estiff_global and 
- emass_global) into the global matrices in the spooles format.  
- It makes extensive use of the searchs provided by the function 
+ This routine assembles one or two element matrices (estiff_global and
+ emass_global) into the global matrices in the spooles format.
+ It makes extensive use of the searchs provided by the function
  'find_index'.
-  
+
  \param actpart   *PARTITION    (i)  the partition we are working on
  \param actsolv   *SOLVAR       (i)  the solver we are using
  \param actintra  *INTRA        (i)  the intra-communicator we do not need
@@ -87,7 +87,7 @@ void  add_spo(
   INT         nsend;
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("add_spo");
 #endif
 
@@ -115,8 +115,8 @@ void  add_spo(
   ncdofs     = actpart->pdis[0].coupledofs.fdim;
 
   /* put pointers to sendbuffers if any */
-#ifdef PARALLEL 
-  if (spo1->couple_i_send) 
+#ifdef PARALLEL
+  if (spo1->couple_i_send)
   {
     isend1 = spo1->couple_i_send->a.ia;
     dsend1 = spo1->couple_d_send->a.da;
@@ -136,7 +136,7 @@ void  add_spo(
     for (j=0; j<actele->node[i]->numdf; j++)
     {
       lm[counter]    = actele->node[i]->dof[j];
-#ifdef PARALLEL 
+#ifdef PARALLEL
       owner[counter] = actele->node[i]->proc;
 #endif
       counter++;
@@ -144,7 +144,7 @@ void  add_spo(
   }/* end of loop over element nodes */
   /* end of loop over element nodes */
 
-  /* this check is not possible any more for fluid element with implicit 
+  /* this check is not possible any more for fluid element with implicit
   free surface condition: nd not eqaual numnp*numdf!!!                    */
 #if 0
     if (counter != nd) dserror("assemblage failed due to wrong dof numbering");
@@ -161,7 +161,7 @@ void  add_spo(
     ii = lm[i];
 
     /* loop only my own rows */
-#ifdef PARALLEL 
+#ifdef PARALLEL
     if (owner[i]!=myrank) continue;
 #endif
 
@@ -169,7 +169,7 @@ void  add_spo(
     if (ii>=numeq_total) continue;
 
     /* check for coupling condition */
-#ifdef PARALLEL 
+#ifdef PARALLEL
     if (ncdofs)
     {
       ii_iscouple = 0;
@@ -189,7 +189,7 @@ void  add_spo(
       lenght        = rowptr[ii_index+1]-rowptr[ii_index];
 
     }
-#endif   
+#endif
 
     /* loop over j (the element column) */
     /* This is the full unsymmetric version ! */
@@ -231,7 +231,7 @@ void  add_spo(
   }/* end loop over i */
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 
@@ -247,10 +247,10 @@ void  add_spo(
 /*!
  \brief assemble into a spooles matrix (faster version)
 
- This routine assembles one or two element matrices (estiff_global and 
- emass_global) into the global matrices in the spooles format.  
- It makes use of the information saved in actele->index to determine the 
- correct position in the sparse matrix.  
+ This routine assembles one or two element matrices (estiff_global and
+ emass_global) into the global matrices in the spooles format.
+ It makes use of the information saved in actele->index to determine the
+ correct position in the sparse matrix.
  This is faster then searching every time, but consumes a lot of memory!!
 
  \param actpart   *PARTITION    (i)  the partition we are working on
@@ -306,7 +306,7 @@ void  add_spo_fast(
   DOUBLE    **dsend2;                   /* pointer to sendbuffer to communicate coupling conditions */
   INT         nsend;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("add_spo_fast");
 #endif
 
@@ -334,8 +334,8 @@ void  add_spo_fast(
   ncdofs     = actpart->pdis[0].coupledofs.fdim;
 
   /* put pointers to sendbuffers if any */
-#ifdef PARALLEL 
-  if (spo1->couple_i_send) 
+#ifdef PARALLEL
+  if (spo1->couple_i_send)
   {
     isend1 = spo1->couple_i_send->a.ia;
     dsend1 = spo1->couple_d_send->a.da;
@@ -396,7 +396,7 @@ void  add_spo_fast(
   }/* end loop over i */
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 
@@ -421,7 +421,7 @@ INT     nnz,nnz_new;
 INT     rsize;
 INT     move_index;
 INT     sf_col,ef_col,st_col,et_col;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("add_val_spo");
 #endif
 /*----------------------------------------------------------------------*/
@@ -523,7 +523,7 @@ else
    }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -544,7 +544,7 @@ INT     nnz,nnz_new;
 INT     rsize;
 INT     move_index;
 INT     sf_col,ef_col,st_col,et_col;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("set_val_spo");
 #endif
 /*----------------------------------------------------------------------*/
@@ -647,7 +647,7 @@ else
    }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -655,7 +655,7 @@ return;
 
 
 
- 
+
 /*----------------------------------------------------------------------*
  |  finalize the assembly to the spooles matrix              m.gee 11/02|
  *----------------------------------------------------------------------*/
@@ -665,7 +665,7 @@ INT     i,j,k,index,colstart,colend,foundit,actrow,offset;
 INT    *irn,*jcn,*update,*rptr,numeq;
 DOUBLE *A;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("close_spooles_matrix");
 #endif
 /*----------------------------------------------------------------------*/
@@ -714,7 +714,7 @@ if (spo->jcn_loc.fdim > (INT)(1.2 * rptr[numeq]))
 /* set correct number of nonzeros */
 spo->nnz = rptr[numeq];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -738,7 +738,7 @@ DOUBLE *A_to;
 INT    *irn_from,*jcn_from,*update_from,*rptr_from,numeq_from;
 DOUBLE *A_from;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("add_spooles_matrix");
 #endif
 /*----------------------------------------------------------------------*/
@@ -775,7 +775,7 @@ for (i=0; i<numeq_to; i++)
 }
 close_spooles_matrix(to,actintra);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -798,7 +798,7 @@ void add_spo_checkcouple(
 
   INT         i,k;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("add_spo_checkcouple");
 #endif
 
@@ -818,7 +818,7 @@ void add_spo_checkcouple(
     }
   }
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 
@@ -836,7 +836,7 @@ void add_spo_sendbuff(INT ii,INT jj,INT i,INT j,INT ii_owner,INT **isend,
                       DOUBLE **dsend,DOUBLE **estif, INT numsend)
 {
 INT         k,l;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("add_spo_sendbuff");
 #endif
 /*----------------------------------------------------------------------*/
@@ -847,7 +847,7 @@ for (k=0; k<numsend; k++)
 isend[k][1]  = ii_owner;
 dsend[k][jj]+= estif[i][j];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -887,7 +887,7 @@ INT           *irn;                      /*    "       irn see MUMPS manual */
 INT           *jcn;                      /*    "       jcn see MUMPS manual */
 INT           *rowptr;                   /*    "       rowptr see rc_ptr structure */
 
-#ifdef PARALLEL 
+#ifdef PARALLEL
 MPI_Status    *irecv_status;
 MPI_Status    *drecv_status;
 
@@ -897,11 +897,11 @@ MPI_Request   *dsendrequest;
 MPI_Comm      *ACTCOMM;
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("exchange_coup_spo");
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef PARALLEL 
+#ifdef PARALLEL
 /*----------------------------------------------------------------------*/
 imyrank = actintra->intra_rank;
 inprocs = actintra->intra_nprocs;
@@ -943,7 +943,7 @@ for (i=0; i<numsend; i++)
    MPI_Isend(&(dsend[i][0]),numeq_total,MPI_DOUBLE,isend[i][1],isend[i][0],(*ACTCOMM),&(dsendrequest[i]));
 }/*------------------------------------------------ end of sending loop */
 /*------------------------------- now loop over the dofs to be received */
-/* 
+/*
    do blocking receives, 'cause one can't add something to the system
    matrix, which has not yet arrived, easy, isn't it?
 */
@@ -958,9 +958,9 @@ for (i=0; i<numrecv; i++)
    tag    = irecv_status[i].MPI_TAG;
    if (tag != irecv[i][0]) dserror("MPI messages somehow got mixed up");
    source = irecv_status[i].MPI_SOURCE;
-   
+
    /* do not use wildcards for second recv, we know now where it should come from */
-   MPI_Recv(&(drecv[i][0]),numeq_total,MPI_DOUBLE,source,tag,(*ACTCOMM),&(drecv_status[i]));   
+   MPI_Recv(&(drecv[i][0]),numeq_total,MPI_DOUBLE,source,tag,(*ACTCOMM),&(drecv_status[i]));
    if (drecv_status[i].MPI_ERROR) dserror("An error in MPI - communication occured !");
 
    /* now add the received data properly to my own piece of sparse matrix */
@@ -987,11 +987,11 @@ if (numsend){CCAFREE(isendrequest);CCAFREE(dsendrequest);}
 /*----------------------------------------------------------------------
   do a barrier, because this is the end of the assembly, the msr matrix
   is now ready for solve
-*/ 
+*/
 MPI_Barrier(*ACTCOMM);
-#endif /*---------------------------------------------- end of PARALLEL */ 
+#endif /*---------------------------------------------- end of PARALLEL */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

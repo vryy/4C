@@ -17,8 +17,8 @@ Maintainer: Andreas Lipka
 #include "brick1.h"
 #include "brick1_prototypes.h"
 
-/*! 
-\addtogroup BRICK1 
+/*!
+\addtogroup BRICK1
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
@@ -29,12 +29,12 @@ This routine to establish local material law
        stress-strain law for isotropic material for for a 3D-hex-element.
 
 </pre>
-\param       youngs   DOUBLE  (i)   young's modulus 
-\param possionratio   DOUBLE  (i)   poisson's ratio 
+\param       youngs   DOUBLE  (i)   young's modulus
+\param possionratio   DOUBLE  (i)   poisson's ratio
 \param            d   DOUBLE**(o)   constitutive matrix
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
@@ -44,7 +44,7 @@ void c1_mat_linel(DOUBLE youngs,
 {
 DOUBLE d1,d2,d3;
 DOUBLE ym,pv;/*------------------------------------------ mat constants */
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1_mat_linel");
 #endif
 /*----------------------------------------------------------------------*/
@@ -97,7 +97,7 @@ d[5][3]=0.0;
 d[5][4]=0.0;
 d[5][5]=d3;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -111,12 +111,12 @@ This routine to establish local porous material law
        stress-strain law for isotropic material for for a 3D-hex-element.
 
 </pre>
-\param       youngs   DOUBLE    (i)   young's modulus 
+\param       youngs   DOUBLE    (i)   young's modulus
 \param      matdata MATERIAL*   (i)   material data
 \param            d   DOUBLE**  (i)   constitutive matrix
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1_call_mat()
 
 *----------------------------------------------------------------------*/
@@ -127,7 +127,7 @@ void c1_mat_stvpor(MATERIAL  *mat,
 DOUBLE d1,d2,d3;
 /*------------------------------------------ mat constants */
 DOUBLE ym, pv, dn, rd, ex;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1_mat_stvpor");
 #endif
 /*----------------------------------------------------------------------*/
@@ -189,7 +189,7 @@ d[5][3]=0.0;
 d[5][4]=0.0;
 d[5][5]=d3;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -203,12 +203,12 @@ This routine to establish derivatives of llocal porous material law
        stress-strain law for isotropic material for for a 3D-hex-element.
 
 </pre>
-\param       youngs   DOUBLE    (i)   young's modulus 
+\param       youngs   DOUBLE    (i)   young's modulus
 \param      matdata MATERIAL*   (i)   material data
 \param            d   DOUBLE**  (i)   constitutive matrix
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1_call_matd()
 
 *----------------------------------------------------------------------*/
@@ -219,7 +219,7 @@ void c1_matd_stvpor(MATERIAL  *mat,
 DOUBLE d1,d2,d3;
 /*------------------------------------------ mat constants */
 DOUBLE dym, ym, pv, dn, rd, ex;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1_matd_stvpor");
 #endif
 /*----------------------------------------------------------------------*/
@@ -233,7 +233,7 @@ dstrc_enter("c1_matd_stvpor");
   rd = mat->m.stvenpor->refdens     ;
   ex = mat->m.stvenpor->exponent    ;
 
-  dym=pow((dn/rd),(ex-1.)); 
+  dym=pow((dn/rd),(ex-1.));
   dym=(ym*ex*dym)/rd;
 
 /* derivative for material law: */
@@ -285,7 +285,7 @@ d[5][3]=0.0;
 d[5][4]=0.0;
 d[5][5]=d3;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -299,12 +299,12 @@ This routine to establish derivatives of llocal porous material law
        stress-strain law for isotropic material for for a 3D-hex-element.
 
 </pre>
-\param       youngs   DOUBLE    (i)   young's modulus 
+\param       youngs   DOUBLE    (i)   young's modulus
 \param      matdata MATERIAL*   (i)   material data
 \param            d   DOUBLE**  (i)   constitutive matrix
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1_call_matd()
 
 *----------------------------------------------------------------------*/
@@ -315,7 +315,7 @@ void c1_mat_mfoc(  MATERIAL  *mat,
 DOUBLE d1,d2,d3;
 /*------------------------------------------ mat constants */
 DOUBLE es, ym, pr, dens, denss, oce, ocf, denmin, denmax;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1_mat_mfoc");
 #endif
 /*----------------------------------------------------------------------*/
@@ -381,7 +381,7 @@ d[5][3]=0.0;
 d[5][4]=0.0;
 d[5][5]=d3;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -395,12 +395,12 @@ This routine to establish derivatives of llocal porous material law
        stress-strain law for isotropic material for for a 3D-hex-element.
 
 </pre>
-\param       youngs   DOUBLE    (i)   young's modulus 
+\param       youngs   DOUBLE    (i)   young's modulus
 \param      matdata MATERIAL*   (i)   material data
 \param            d   DOUBLE**  (i)   constitutive matrix
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1_call_matd()
 
 *----------------------------------------------------------------------*/
@@ -411,7 +411,7 @@ void c1_mat_mfcc(  MATERIAL  *mat,
 DOUBLE d1,d2,d3;
 /*------------------------------------------ mat constants */
 DOUBLE es, ym, pr, dens, denss, cce, ccf, denmin, denmax;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1_mat_mfcc");
 #endif
 /*----------------------------------------------------------------------*/
@@ -477,7 +477,7 @@ d[5][3]=0.0;
 d[5][4]=0.0;
 d[5][5]=d3;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -491,12 +491,12 @@ This routine to establish derivatives of llocal porous material law
        stress-strain law for isotropic material for for a 3D-hex-element.
 
 </pre>
-\param       youngs   DOUBLE    (i)   young's modulus 
+\param       youngs   DOUBLE    (i)   young's modulus
 \param      matdata MATERIAL*   (i)   material data
 \param            d   DOUBLE**  (i)   constitutive matrix
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1_call_matd()
 
 *----------------------------------------------------------------------*/
@@ -507,7 +507,7 @@ void c1_matd_mfoc( MATERIAL  *mat,
 /*----------------------------------------------------------------------*/
 DOUBLE d1,d2,d3;
 DOUBLE es, dym, pr, dens, denss, oce, ocf, denmin, denmax;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1_matd_mfoc");
 #endif
 /*----------------------------------------------------------------------*/
@@ -527,7 +527,7 @@ dstrc_enter("c1_matd_mfoc");
 
 /*----------------------------------- evaluate basic material values ---*/
 /* derivative for material law: */
-dym= ocf * oce/dens * pow((dens/denss),(oce)) * es; 
+dym= ocf * oce/dens * pow((dens/denss),(oce)) * es;
 
 d1=dym*(1.0 - pr)/((1.0 + pr)*(1.0 - 2.0*pr));
 d2=dym*pr/((1.0 + pr)*(1.0 - 2.0*pr));
@@ -575,7 +575,7 @@ d[5][3]=0.0;
 d[5][4]=0.0;
 d[5][5]=d3;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -589,12 +589,12 @@ This routine to establish derivatives of llocal porous material law
        stress-strain law for isotropic material for for a 3D-hex-element.
 
 </pre>
-\param       youngs   DOUBLE    (i)   young's modulus 
+\param       youngs   DOUBLE    (i)   young's modulus
 \param      matdata MATERIAL*   (i)   material data
 \param            d   DOUBLE**  (i)   constitutive matrix
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1_call_matd()
 
 *----------------------------------------------------------------------*/
@@ -605,7 +605,7 @@ void c1_matd_mfcc( MATERIAL  *mat,
 /*----------------------------------------------------------------------*/
 DOUBLE d1,d2,d3;
 DOUBLE es, dym, pr, dens, denss, cce, ccf, denmin, denmax;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1_matd_mfcc");
 #endif
 /*----------------------------------------------------------------------*/
@@ -625,7 +625,7 @@ dstrc_enter("c1_matd_mfcc");
 
 /*----------------------------------- evaluate basic material values ---*/
 /* derivative for material law: */
-dym= ccf * (dens/pow(denss,cce)+ 0.3/denss) * es; 
+dym= ccf * (dens/pow(denss,cce)+ 0.3/denss) * es;
 
 d1=dym*(1.0 - pr)/((1.0 + pr)*(1.0 - 2.0*pr));
 d2=dym*pr/((1.0 + pr)*(1.0 - 2.0*pr));
@@ -673,7 +673,7 @@ d[5][3]=0.0;
 d[5][4]=0.0;
 d[5][5]=d3;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -686,12 +686,12 @@ return;
 This routine to evaluate stresses for elastic material for a 3D-hex-element.
 
 </pre>
-\param      strain   DOUBLE*    (i)   global strains                 
-\param           d   MATERIAL** (i)   material matrices              
+\param      strain   DOUBLE*    (i)   global strains
+\param           d   MATERIAL** (i)   material matrices
 \param      stress   DOUBLE*    (o)   forces/moments/additional terms
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1_call_matd()
 
 *----------------------------------------------------------------------*/
@@ -702,14 +702,14 @@ void c1mefm(DOUBLE *strain, /* global strains                           */
 /*----------------------------------------------------------------------*/
 INT    i, j;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1mefm");
 #endif
 /*-------------------------------------------------- global stresses ---*/
   for (i=0; i<6; i++) stress[i] = 0.0;
   for (i=0; i<6; i++) for (j=0; j<6; j++) stress[i] += d[i][j]*strain[j];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -724,19 +724,19 @@ This routine to establish of llocal porous material law
        stress-strain law for orthotropic material for for a 3D-hex-element.
 
 </pre>
-\param     emod1   DOUBLE  (i)   young's modulus 
-\param     emod2   DOUBLE  (i)   young's modulus 
-\param     emod3   DOUBLE  (i)   young's modulus 
-\param    xnue23   DOUBLE  (i)   poisson's ratio  
-\param    xnue13   DOUBLE  (i)   poisson's ratio 
-\param    xnue12   DOUBLE  (i)   poisson's ratio 
-\param    gmod12   DOUBLE  (i)   shear modulus 
-\param    gmod23   DOUBLE  (i)   shear modulus 
-\param    gmod13   DOUBLE  (i)   shear modulus 
-\param         c   DOUBLE**(o)   constitutive matrix 
+\param     emod1   DOUBLE  (i)   young's modulus
+\param     emod2   DOUBLE  (i)   young's modulus
+\param     emod3   DOUBLE  (i)   young's modulus
+\param    xnue23   DOUBLE  (i)   poisson's ratio
+\param    xnue13   DOUBLE  (i)   poisson's ratio
+\param    xnue12   DOUBLE  (i)   poisson's ratio
+\param    gmod12   DOUBLE  (i)   shear modulus
+\param    gmod23   DOUBLE  (i)   shear modulus
+\param    gmod13   DOUBLE  (i)   shear modulus
+\param         c   DOUBLE**(o)   constitutive matrix
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1_call_mat()
 
 *----------------------------------------------------------------------*/
@@ -757,11 +757,11 @@ DOUBLE xnue32        = 0.;
 DOUBLE xnue21        = 0.;
 DOUBLE emod          = 0.;
 DOUBLE delta         = 0.;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1_mat_elorth");
 #endif
 /*----------------------------------------------------------------------*/
-  for (i=0; i<6; i++) for (j=0; j<6; j++) c[i][j] = 0.; 
+  for (i=0; i<6; i++) for (j=0; j<6; j++) c[i][j] = 0.;
 /*----------------------------------------------------------------------*/
   xnue31=xnue13*emod3/emod1;
   xnue32=xnue23*emod3/emod2;
@@ -782,7 +782,7 @@ dstrc_enter("c1_mat_elorth");
   c[0][2]=c[2][0];
   c[1][2]=c[2][1];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

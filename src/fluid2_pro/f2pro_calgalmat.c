@@ -10,13 +10,13 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
-\addtogroup FLUID2_PRO 
+/*!
+\addtogroup FLUID2_PRO
 *//*! @{ (documentation module open)*/
-#ifdef D_FLUID2_PRO 
+#ifdef D_FLUID2_PRO
 #include "../headers/standardtypes.h"
 #include "fluid2pro_prototypes.h"
-/*!----------------------------------------------------------------------                
+/*!----------------------------------------------------------------------
 \brief evaluate galerkin part of Kvv
 
 <pre>                                                         basol 11/02
@@ -31,35 +31,35 @@ NOTE: there's only one elestif
 </pre>
 \param **estif     DOUBLE	   (i/o)  ele stiffness matrix
 \param **derxy     DOUBLE	   (i)    global coord. deriv.
-\param   fac 	   DOUBLE	   (i)    weighting factor	      
-\param   visc      DOUBLE	   (i)    fluid viscosity	     
-\param   dt        DOUBLE	   (i)    incremental time step	
+\param   fac 	   DOUBLE	   (i)    weighting factor
+\param   visc      DOUBLE	   (i)    fluid viscosity
+\param   dt        DOUBLE	   (i)    incremental time step
 \param   iel	   INT  	   (i)	  number of nodes of act. ele
-\return void                                                                       
+\return void
 ------------------------------------------------------------------------*/
 void f2pro_calkvv(
-                
-		DOUBLE         **estif,   
-		DOUBLE         **derxy,  
-		DOUBLE           fac,    
+
+		DOUBLE         **estif,
+		DOUBLE         **derxy,
+		DOUBLE           fac,
 		DOUBLE           visc,
-		DOUBLE           dt,   
-		INT              iel     
-              ) 
+		DOUBLE           dt,
+		INT              iel
+              )
 {
 /*----------------------------------------------------------------------*
  | NOTATION:                                                            |
  |   irow - row number in element matrix                                |
  |   icol - column number in element matrix                             |
  |   irn  - row node: number of node considered for matrix-row          |
- |   icn  - column node: number of node considered for matrix column    |  
+ |   icn  - column node: number of node considered for matrix column    |
 /-----------------------------------------------------------------------*/
 INT     irow, icol,irn,icn;
 DOUBLE  c;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2pro_calkvv");
-#endif		
+#endif
 
 c=fac*visc;
 
@@ -70,13 +70,13 @@ c=fac*visc;
   /
  *----------------------------------------------------------------------*/
 icol=0;
-for (icn=0;icn<iel;icn++) 
+for (icn=0;icn<iel;icn++)
 {
    irow=0;
    for (irn=0;irn<iel;irn++)
    {
       estif[irow][icol]     += c*(TWO*derxy[0][irn]*derxy[0][icn] \
-                                    + derxy[1][irn]*derxy[1][icn]); 	     
+                                    + derxy[1][irn]*derxy[1][icn]);
       estif[irow+1][icol]   += c*(    derxy[0][irn]*derxy[1][icn]);
       estif[irow+1][icol+1] += c*(TWO*derxy[1][irn]*derxy[1][icn] \
                                     + derxy[0][irn]*derxy[0][icn]);
@@ -87,13 +87,13 @@ for (icn=0;icn<iel;icn++)
 } /* end loop over icn */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of f2pro_calkvv */
 
-/*!----------------------------------------------------------------------                 
+/*!----------------------------------------------------------------------
 \brief evaluate the lumped mass matrix
 <pre>                                                         basol 11/02
 
@@ -103,21 +103,21 @@ In this routine lumped mass matrix is calculated
 \param **lmass     DOUBLE	   (o)    lumped ele mass matrix
 \param **emass     DOUBLE	   (i)    ele mass matrix
 \param   iel	   INT  	   (i)	  number of nodes
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
-void f2pro_lmass(        
-		 DOUBLE         **lmass,   
-		 DOUBLE         **emass,  
-		 INT                iel     
+void f2pro_lmass(
+		 DOUBLE         **lmass,
+		 DOUBLE         **emass,
+		 INT                iel
               )
 {
 INT     i,j;
 DOUBLE sum;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2pro_lmass");
-#endif		
+#endif
 
 for (i=0;i<2*iel;i++)
 {
@@ -125,66 +125,66 @@ for (i=0;i<2*iel;i++)
    for(j=0;j<2*iel;j++)
    {
       sum +=emass[i][j];
-      lmass[i][j]=ZERO; 
+      lmass[i][j]=ZERO;
    }
    lmass[i][i]=sum;
-}   
+}
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of f2pro_lmass */
 
-/*!---------------------------------------------------------------------                 
-\brief evaluate the gradient operator                         
+/*!---------------------------------------------------------------------
+\brief evaluate the gradient operator
 
-<pre>                                                   basol 11/02      
+<pre>                                                   basol 11/02
 In this routine the gradient operator is calculated
 
 psi,x = derivative of shape function wrt x for velocities
 psi,y = derivative of shape function wrt y for velocities
-phi   = shape function for pressure 
+phi   = shape function for pressure
 i,j   = index
-        
+
            /
  Cxx = (-)|  (psi,x)(i)*phi(j) d_omega
          /
            /
  Cyy = (-)|  (psi,y)(i)*phi(j) d_omega
          /
-    
- C = [Cxx, 
-      Cyy]   
+
+ C = [Cxx,
+      Cyy]
  C --->18x4
  CT --->4x18
-  
+
 </pre>
 \param **gradopr    DOUBLE	   (o)    grad. operator C-->(18x4)
 \param **derxy     DOUBLE	   (i)    global coord. deriv.
-\param  *functpr    DOUBLE	   (i)    pressure shape functions	      
-\param   fac 	   DOUBLE	   (i)    weighting factor	     
+\param  *functpr    DOUBLE	   (i)    pressure shape functions
+\param   fac 	   DOUBLE	   (i)    weighting factor
 \param   ielp	   INT  	   (i)	  number of nodes for pressure ele.
 \param   iel	   INT  	   (i)	  number of nodes for velocity ele.
-\return void                                                           
+\return void
 ------------------------------------------------------------------------*/
 void f2pro_gradopr(
-                
-		DOUBLE          **gradopr,   
-		DOUBLE          **derxy,  
-		DOUBLE           *functpr,    
+
+		DOUBLE          **gradopr,
+		DOUBLE          **derxy,
+		DOUBLE           *functpr,
 		DOUBLE            fac,
-		INT               ielp,    
-		INT               iel   
+		INT               ielp,
+		INT               iel
               )
 {
 INT     i,j;
 INT     irow,icol;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2pro_ gradopr");
-#endif		
+#endif
 
 irow=0;
 for (i=0;i<iel;i++)
@@ -200,7 +200,7 @@ for (i=0;i<iel;i++)
 }
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

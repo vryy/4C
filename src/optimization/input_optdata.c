@@ -11,8 +11,8 @@ Maintainer: Andreas Lipka
 </pre>
 
 *----------------------------------------------------------------------*/
-/*! 
-\addtogroup OPTIMIZATION 
+/*!
+\addtogroup OPTIMIZATION
 *//*! @{ (documentation module open)*/
 
 /*----------------------------------------------------------------------*/
@@ -41,10 +41,10 @@ INT    ierr;
 INT    i, idum, iloop;
 INT    ccdv=0; /* n.of.variables */
 INT    ccdl=0; /* n.of.link.data */
-char   buffer[50]; 
+char   buffer[50];
 OSNLP *nlp;
 OSFSD *fsd;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpctropt");
 #endif
 /*----------------------------------------------------------------------*/
@@ -75,27 +75,27 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
   if (ierr==1)
   {
      if (strncmp(buffer,"FSD",3)==0 )
-     {    
+     {
          opt->strategy=os_fsd;
          opt->strat.fsd = (OSFSD*)CCACALLOC(1,sizeof(OSFSD));
-         if (opt->strat.fsd==NULL) 
+         if (opt->strat.fsd==NULL)
                              dserror("Allocation of OPTIMIZATION failed");
          /*---------------------- initialize  data for fsd-stragedy ----*/
          fsd = opt->strat.fsd;
-         fsd->numiter = 0;   
+         fsd->numiter = 0;
          fsd->fgrad   = implicit;
          fsd->grdinc  = 1.0E-07;   /* forward difference step increment */
-         fsd->acc     = 1.0;  
-         fsd->alpha   = 0.0;  
-         fsd->beta    = 0.0;  
-         fsd->delta   = 0.0;  
-         fsd->gamma   = 0.0;  
+         fsd->acc     = 1.0;
+         fsd->alpha   = 0.0;
+         fsd->beta    = 0.0;
+         fsd->delta   = 0.0;
+         fsd->gamma   = 0.0;
      }
      else if (strncmp(buffer,"NLP",3)==0 )
-     {    
+     {
          opt->strategy=os_nlp;
          opt->strat.nlp = (OSNLP*)CCACALLOC(1,sizeof(OSNLP));
-         if (opt->strat.nlp==NULL) 
+         if (opt->strat.nlp==NULL)
                              dserror("Allocation of OPTIMIZATION failed");
          /*---------------------- initialize  data for nlp-stragedy ----*/
          nlp = opt->strat.nlp;
@@ -209,7 +209,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
         frread(); /* read line */
         frdouble("SMO_EXPO"   ,&(opt->smoothexp) ,&ierr);
         /*----*/
-        
+
       }
     }
 /*---------------------- smoothing of objectives or densities or ... ---*/
@@ -228,30 +228,30 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
     opt->numvar = iloop; /* store n.of.variables    */
     /* allocate memory */
     opt->ovar = (OBTV*)CCACALLOC(opt->numvar,sizeof(OBTV));
-    
+
     for (i=0;i<iloop;i++)
     {
       frread(); /* read line */
-      frint(   "ELEofMAT",&(idum) ,&ierr); 
+      frint(   "ELEofMAT",&(idum) ,&ierr);
       if(ierr==1)
       { /* ELEofMAT 1 TYPE DENS  DL 1.0E-1  DU 1.0E0 SCL 1. */
         opt->ovar[ccdv].objId  =  idum;
         opt->ovar[ccdv].ovatt  =  eleofmat;
         opt->ovar[ccdv].numvar =  1;
-        frdouble("DL"   ,&(opt->ovar[ccdv].blower) ,&ierr); 
-        frdouble("DU"   ,&(opt->ovar[ccdv].bupper) ,&ierr); 
-        frdouble("SCL"  ,&(opt->ovar[ccdv].scva  ) ,&ierr); 
+        frdouble("DL"   ,&(opt->ovar[ccdv].blower) ,&ierr);
+        frdouble("DU"   ,&(opt->ovar[ccdv].bupper) ,&ierr);
+        frdouble("SCL"  ,&(opt->ovar[ccdv].scva  ) ,&ierr);
         ccdv++;
       }
-      frint(   "ELEofDesofMAT",&(idum) ,&ierr); 
+      frint(   "ELEofDesofMAT",&(idum) ,&ierr);
       if(ierr==1)
       { /* ELEofMAT 1 TYPE DENS  DL 1.0E-1  DU 1.0E0 SCL 1. */
         opt->ovar[ccdv].objId  =  idum;
         opt->ovar[ccdv].ovatt  =  eleofdesofmat;
         opt->ovar[ccdv].numvar =  1;
-        frdouble("DL"   ,&(opt->ovar[ccdv].blower) ,&ierr); 
-        frdouble("DU"   ,&(opt->ovar[ccdv].bupper) ,&ierr); 
-        frdouble("SCL"  ,&(opt->ovar[ccdv].scva  ) ,&ierr); 
+        frdouble("DL"   ,&(opt->ovar[ccdv].blower) ,&ierr);
+        frdouble("DU"   ,&(opt->ovar[ccdv].bupper) ,&ierr);
+        frdouble("SCL"  ,&(opt->ovar[ccdv].scva  ) ,&ierr);
         ccdv++;
       }
     }
@@ -268,20 +268,20 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
     /* allocate memory */
     opt->olin  = (OLIN*)CCACALLOC(opt->numlin,sizeof(OLIN));
     if (opt->olin==NULL) dserror("Allocation for OPT.LINKING failed");
-    
+
     for (i=0;i<iloop;i++)
     {
       frread(); /* read line */
-      frint(   "ELEofMAT",&(idum) ,&ierr); 
+      frint(   "ELEofMAT",&(idum) ,&ierr);
       if(ierr==1)
       { /* ELEofMAT 1 TYPE DENS  DL 1.0E-1  DU 1.0E0 SCL 1. */
         opt->olin[ccdl].olin_type = matl;
-	
+
 	opt->olin[ccdl].objIds[0]  =  idum;
-        frdouble("WEIGHT"   ,&(opt->olin[ccdl].myweight) ,&ierr); 
-	frint(   "WELEofMAT",&(idum) ,&ierr); 
+        frdouble("WEIGHT"   ,&(opt->olin[ccdl].myweight) ,&ierr);
+	frint(   "WELEofMAT",&(idum) ,&ierr);
         opt->olin[ccdl].objIds[1]  =  idum;
-        frdouble("WWEIGHT"   ,&(opt->olin[ccdl].neweight) ,&ierr); 
+        frdouble("WWEIGHT"   ,&(opt->olin[ccdl].neweight) ,&ierr);
         ccdl++;
       }
     }
@@ -289,33 +289,33 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 /*------------------------------- input for graphical output at every ? step ---*/
 /*
 GOUTSTEP 5
-*/   
+*/
   opt->graph_out = 1;
   frint(   "GOUTSTEP",&(iloop) ,&ierr); /* number of steps */
-  if (ierr==1)  opt->graph_out = iloop; 
+  if (ierr==1)  opt->graph_out = iloop;
 
 /*-------------------------------------- global equality constraints ---*/
 /*
 OC_ECO 1                  : global equality constraints
-              DFACE 1 TYP Volume  VAL 10.27899 CON 1 */   
+              DFACE 1 TYP Volume  VAL 10.27899 CON 1 */
   frint(   "OC_ECO",&(iloop) ,&ierr); /* number of constraints */
-  if(ierr==1) 
+  if(ierr==1)
   {
     opt->numeqc = iloop;           /* store  global equality constraints */
-    
+
     /* allocate memory */
     opt->oeqc = (OEQC*)CCACALLOC(opt->numeqc,sizeof(OEQC));
-    
+
     for (i=0; i<iloop; i++)
     {
       frread(); /* read line */
       /* */
-      frint(   "DFACE",&(idum) ,&ierr); /* type of design object */ 
+      frint(   "DFACE",&(idum) ,&ierr); /* type of design object */
       if (ierr==1)
       {
         opt->oeqc[i].objId  = idum;
         opt->oeqc[i].oeqc_object = eqdface;
-        
+
         frchar(  "TYP"   ,buffer          ,&ierr); /* type of constraint */
         if (strncmp(buffer,"Volume",6)==0 ) opt->oeqc[i].oeqc_type = volume;
         if (strncmp(buffer,"WEIGHT",6)==0 ) opt->oeqc[i].oeqc_type = mass;
@@ -324,12 +324,12 @@ OC_ECO 1                  : global equality constraints
 
       }
       /* */
-      frint(   "DVOLU",&(idum) ,&ierr); /* type of design object */ 
+      frint(   "DVOLU",&(idum) ,&ierr); /* type of design object */
       if (ierr==1)
       { /* DVOLU 1 TYP WEIGHT  SCL 1. */
         opt->oeqc[i].objId  = idum;
         opt->oeqc[i].oeqc_object = eqdvolu;
-        
+
         frchar(  "TYP"   ,buffer          ,&ierr); /* type of constraint */
         if (strncmp(buffer,"WEIGHT",6)==0 ) opt->oeqc[i].oeqc_type = mass;
         frdouble("SCL"   ,&(opt->oeqc[i].scl) ,&ierr); /* scaling factor */
@@ -343,7 +343,7 @@ OC_ECO 1                  : global equality constraints
 /*----------------------------------------------------------------------*/
 
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

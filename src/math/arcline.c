@@ -2,7 +2,7 @@
 
 /*!-----------------------------------------------------------------------
 \file
-\brief collection of function for stlines and arclines 
+\brief collection of function for stlines and arclines
 
 <pre>
 Maintainer: Malte Neumann
@@ -23,7 +23,7 @@ extern struct _DESIGN *design;
 
 
 /*!----------------------------------------------------------------------
-\brief prototypes callable only in this file  
+\brief prototypes callable only in this file
 
 *-----------------------------------------------------------------------*/
 void arcline_xi(DLINE    *dline, NODE     *node, DOUBLE   *xi);
@@ -33,7 +33,7 @@ void calc_arc_props(DLINE *dline);
 
 
 /*!----------------------------------------------------------------------
-\brief calculates xi for a node on a arcline 
+\brief calculates xi for a node on a arcline
 
 <pre>                                                              mn 05/03
 This function calculates the relative distance xi of a node on a arcline
@@ -44,7 +44,7 @@ from the beginning of the dline
 \param *xi        DOUBLE  (o)   the relative distance
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa
 
 *----------------------------------------------------------------------*/
@@ -61,7 +61,7 @@ void arcline_xi(
   DOUBLE   initang;
   DOUBLE   length,total_length;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("arcline_xi");
 #endif
 
@@ -82,7 +82,7 @@ void arcline_xi(
 
 
   /* calculation of the 'direction-angle' with the Theissen-formula */
-  t = atan(delta[0]/delta[1]) + ( 1.0 - 0.5*SIGN(delta[0]) - 
+  t = atan(delta[0]/delta[1]) + ( 1.0 - 0.5*SIGN(delta[0]) -
       0.5*SIGN(delta[0])*SIGN(delta[1])) * PI;
 
   /* calculate the angle phi,
@@ -95,7 +95,7 @@ void arcline_xi(
   length = radius*FABS(initang-phi);
   *xi     = length/total_length;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 
@@ -105,7 +105,7 @@ void arcline_xi(
 
 
 /*!----------------------------------------------------------------------
-\brief calculates xi for a node on a stline 
+\brief calculates xi for a node on a stline
 
 <pre>                                                              mn 05/03
 This function calculates the relative distance xi of a node on a stline
@@ -116,7 +116,7 @@ from the beginning of the dline
 \param *xi        DOUBLE  (o)   the relative distance
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa
 
 *----------------------------------------------------------------------*/
@@ -130,7 +130,7 @@ void stline_xi(
   DOUBLE   length,total_length;
   DOUBLE   delta[2];
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("stline_xi");
 #endif
 
@@ -147,7 +147,7 @@ void stline_xi(
   length = sqrt((delta[0])*(delta[0]) + (delta[1])*(delta[1]));
   *xi     = length/total_length;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 
@@ -167,7 +167,7 @@ These are:
 \param *dline     DLINE   (i)   the stline the node must be on
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa
 
 *----------------------------------------------------------------------*/
@@ -181,7 +181,7 @@ void calc_arc_props(
   DOUBLE    t;
   DOUBLE    point[2];
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("calc_arc_props");
 #endif
 
@@ -200,7 +200,7 @@ void calc_arc_props(
   dline->props.arcline->center[0] = point[0] - radius*cos(t);
   dline->props.arcline->center[1] = point[1] - radius*sin(t);
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 
@@ -214,13 +214,13 @@ void calc_arc_props(
 \brief interpolate axishell conditions to the node
 
 <pre>                                                              mn 05/03
-This function interpolates the axishell load and thickness conditions of 
+This function interpolates the axishell load and thickness conditions of
 a dline onto the nodes on this dline.
 </pre>
 \param *actdis     DISCRET   (i)   the discretization to be used
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa
 
 *----------------------------------------------------------------------*/
@@ -240,7 +240,7 @@ void interpolate_axishell_conds(
   GNODE    *actgnode;
   ELEMENT  *actele;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("interpolate_axishell_conds");
 #endif
 
@@ -255,7 +255,7 @@ void interpolate_axishell_conds(
         length = sqrt((actdline->dnode[0]->x[0]-actdline->dnode[1]->x[0])*
             (actdline->dnode[0]->x[0]-actdline->dnode[1]->x[0])
             + (actdline->dnode[0]->x[1]-actdline->dnode[1]->x[1])*
-            (actdline->dnode[0]->x[1]-actdline->dnode[1]->x[1])); 
+            (actdline->dnode[0]->x[1]-actdline->dnode[1]->x[1]));
         actdline->props.stline->total_length = length;
         break;
       case arcline:
@@ -302,7 +302,7 @@ void interpolate_axishell_conds(
                 (actdline->dnode[1]->x[1]-actdline->dnode[0]->x[1]);
 
               /* interpolate thickness along line */
-              thick = actdline->thickness->value[0] + 
+              thick = actdline->thickness->value[0] +
                 xi * (actdline->thickness->value[1] - actdline->thickness->value[0]);
 
               /* calculation of the loads depending on typ of interpolation */
@@ -310,13 +310,13 @@ void interpolate_axishell_conds(
               if (actdline->axishellload->interpol_pv == 0)
               {
                 /* interpolation along the curve */
-                pv = actdline->axishellload->pv[0] + 
+                pv = actdline->axishellload->pv[0] +
                   xi * (actdline->axishellload->pv[1] - actdline->axishellload->pv[0]);
               }
               else
               {
                 /* interpolation along the vertical axis */
-                pv = actdline->axishellload->pv[0] + 
+                pv = actdline->axishellload->pv[0] +
                   xi2 * (actdline->axishellload->pv[1] - actdline->axishellload->pv[0]);
               }
 
@@ -324,13 +324,13 @@ void interpolate_axishell_conds(
               if (actdline->axishellload->interpol_ph == 0)
               {
                 /* interpolation along the curve */
-                ph = actdline->axishellload->ph[0] + 
+                ph = actdline->axishellload->ph[0] +
                   xi * (actdline->axishellload->ph[1] - actdline->axishellload->ph[0]);
               }
               else
               {
                 /* interpolation along the vertical axis */
-                ph = actdline->axishellload->ph[0] + 
+                ph = actdline->axishellload->ph[0] +
                   xi2 * (actdline->axishellload->ph[1] - actdline->axishellload->ph[0]);
               }
 
@@ -338,13 +338,13 @@ void interpolate_axishell_conds(
               if (actdline->axishellload->interpol_px == 0)
               {
                 /* interpolation along the curve */
-                px = actdline->axishellload->px[0] + 
+                px = actdline->axishellload->px[0] +
                   xi * (actdline->axishellload->px[1] - actdline->axishellload->px[0]);
               }
               else
               {
                 /* interpolation along the vertical axis */
-                px = actdline->axishellload->px[0] + 
+                px = actdline->axishellload->px[0] +
                   xi2 * (actdline->axishellload->px[1] - actdline->axishellload->px[0]);
               }
 
@@ -352,13 +352,13 @@ void interpolate_axishell_conds(
               if (actdline->axishellload->interpol_pw == 0)
               {
                 /* interpolation along the curve */
-                pw = actdline->axishellload->pw[0] + 
+                pw = actdline->axishellload->pw[0] +
                   xi * (actdline->axishellload->pw[1] - actdline->axishellload->pw[0]);
               }
               else
               {
                 /* interpolation along the vertical axis */
-                pw = actdline->axishellload->pw[0] + 
+                pw = actdline->axishellload->pw[0] +
                   xi2 * (actdline->axishellload->pw[1] - actdline->axishellload->pw[0]);
               }
               break;
@@ -390,7 +390,7 @@ void interpolate_axishell_conds(
   } /* END of for all elements */
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 

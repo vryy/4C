@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -67,9 +67,9 @@ static INT **dline_fenode;
 static INT *ndsurf_fenode;
 static INT **dsurf_fenode;
 
-static INT *ndvol_fenode; 
-static INT **dvol_fenode; 
-  
+static INT *ndvol_fenode;
+static INT **dvol_fenode;
+
 /*----------------------------------------------------------------------*
  | create the connectivity of the design                           1/02 |
  *----------------------------------------------------------------------*/
@@ -84,23 +84,23 @@ INT       nodeid;
 INT       lineid;
 INT       surfid;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpdesign_topology_design");
 #endif
 /*----------------------------------------------------------------------*/
 /*----------------------------- init the topology of the design to zero */
-for (i=0; i<design->ndnode; i++) 
+for (i=0; i<design->ndnode; i++)
 {
    design->dnode[i].ndline = 0;
    design->dnode[i].dline  = NULL;
 }
-for (i=0; i<design->ndline; i++) 
+for (i=0; i<design->ndline; i++)
 {
    design->dline[i].ndsurf = 0;
    design->dline[i].dsurf  = NULL;
 /*   design->dline[i].dnode  = NULL;*/
 }
-for (i=0; i<design->ndsurf; i++) 
+for (i=0; i<design->ndsurf; i++)
 {
    design->dsurf[i].ndvol  = 0;
    design->dsurf[i].dvol   = NULL;
@@ -228,7 +228,7 @@ for (i=0; i<design->ndvol; i++)
    }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -243,7 +243,7 @@ void inpdesign_topology_fe()
 {
 INT i,j;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpdesign_topology_fe");
 #endif
 
@@ -303,7 +303,7 @@ for (i=0; i<design->ndvol; i++) CCAFREE(dvol_fenode[i]);
 CCAFREE(dvol_fenode);
 CCAFREE(ndvol_fenode);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -319,7 +319,7 @@ static void inpdesign_dpoint_fenode_read()
 INT    i,ierr;
 INT    dnode;
 INT    found = 0;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpdesign_dpoint_fenode_read");
 #endif
 /*-------------------------------------------------------------- rewind */
@@ -335,7 +335,7 @@ for (i=0; i<design->ndnode; i++)
       frint("DNODE",&dnode,&ierr);
       if (ierr==1)
       {
-         found = 1; /*fount at least one DNODE-NODE TOPOLOGY*/  
+         found = 1; /*fount at least one DNODE-NODE TOPOLOGY*/
          if (dnode==i+1)
          {
             ndnode_fenode[i]=1;
@@ -355,7 +355,7 @@ if (found == 0) dserror("Cannot make DNODE-NODE topology");
 /*----------------------------------------------------------------------*/
 
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -370,7 +370,7 @@ static void inpdesign_dline_fenode_read()
 INT    i,ierr;
 INT    counter;
 INT    dline;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpdesign_dline_fenode_read");
 #endif
 /*----------------------------------------------------------------------*/
@@ -414,7 +414,7 @@ for (i=0; i<design->ndline; i++)
 /*----------------------------------------------------------------------*/
 
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -429,7 +429,7 @@ static void inpdesign_dsurf_fenode_read()
 INT    i,ierr;
 INT    counter;
 INT    dsurf;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpdesign_dsurf_fenode_read");
 #endif
 /*----------------------------------------------------------------------*/
@@ -473,7 +473,7 @@ for (i=0; i<design->ndsurf; i++)
 /*----------------------------------------------------------------------*/
 
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -488,7 +488,7 @@ static void inpdesign_dvol_fenode_read()
 INT    i,ierr;
 INT    counter;
 INT    dvol;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpdesign_dvol_fenode_read");
 #endif
 /*----------------------------------------------------------------------*/
@@ -532,7 +532,7 @@ for (i=0; i<design->ndvol; i++)
 /*----------------------------------------------------------------------*/
 
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -551,7 +551,7 @@ INT           i;
 INT           nodeId;
 DNODE        *actdnode;
 GNODE        *actgnode;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpdesign_dpoint_fenode");
 #endif
 /*----------------------------------------------------------------------*/
@@ -565,7 +565,7 @@ for (i=0; i<design->ndnode; i++)
    actgnode->d.dnode = actdnode;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -587,7 +587,7 @@ INT           nodeId;
 INT           firstnode,scndnode,thirdnode;
 INT           firstmatch,scndmatch,thirdmatch;
 INT           linematch;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpdesign_dline_feline");
 #endif
 /*----------------------------------------------------------------------*/
@@ -627,7 +627,7 @@ for (i=0; i<design->ndline; i++)
       /*------------------------- if scndnode not on actdline continue */
       if (!scndmatch) continue;
       /*----------------- check whether this actgline has 3 or 2 nodes */
-      /*-------------------- a 2-node actgline does match the actdline */ 
+      /*-------------------- a 2-node actgline does match the actdline */
       if (actgline->ngnode==2) linematch=1;
       /*----------------------- for a 3-node actgline check third node */
       else
@@ -647,7 +647,7 @@ for (i=0; i<design->ndline; i++)
       }
       dsassert(linematch==1,"Problems with GLINEs");
       actgline->dline = actdline;
-   } /* end loop j over glines */    
+   } /* end loop j over glines */
 }/* end loop i over dlines */
 /* loop all dlines again and make pointers from all gnodes to the dlines*/
 /*------------- if a gnode already has a pointer to a dnode, do nothing */
@@ -668,7 +668,7 @@ for (i=0; i<design->ndline; i++)
   }/* end loop i over dlines */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -691,7 +691,7 @@ INT           firstmatch,scndmatch,thirdmatch;
 INT           surfmatch;
 INT           nodeId;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpdesign_dsurf_fesurf");
 #endif
 /*----------------------------------------------------------------------*/
@@ -742,11 +742,11 @@ for (i=0; i<design->ndsurf; i++)
       }
       /*----------------------- if thirdnode not on actdsurf continue */
       if (!thirdmatch) continue;
-      /* three nodes of actgsurf are on actdsurf, so actgsurf is in 
+      /* three nodes of actgsurf are on actdsurf, so actgsurf is in
          actdsurf
       */
       actgsurf->dsurf = actdsurf;
-   } /* end loop j over gsurfs */    
+   } /* end loop j over gsurfs */
 }/* end loop i over dsurfs */
 /*- loop dsurfaces again and set pointers GNODE -> DSURF for all GNODEs */
 /*------------- which do NOT already have a pointer to a DNODE or DLINE */
@@ -767,7 +767,7 @@ for (i=0; i<design->ndsurf; i++)
   } /* end loop i over DSURF */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -793,7 +793,7 @@ INT           fourthnode = 0;
 INT           firstmatch,scndmatch,thirdmatch,fourthmatch;
 INT           nodeId;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpdesign_dvol_fevol");
 #endif
 /*----------------------------------------------------------------------*/
@@ -809,15 +809,15 @@ for (i=0; i<design->ndvol; i++)
       switch (actele->distyp)
       {
       case hex8:
-      case hex20: 
-      case hex27: 
+      case hex20:
+      case hex27:
          firstnode  = actele->node[0]->Id;
          scndnode   = actele->node[2]->Id;
          thirdnode  = actele->node[4]->Id;
          fourthnode = actele->node[6]->Id;
       break;
-      case tet4:  
-      case tet10: 
+      case tet4:
+      case tet10:
          firstnode  = actele->node[0]->Id;
          scndnode   = actele->node[1]->Id;
          thirdnode  = actele->node[2]->Id;
@@ -893,7 +893,7 @@ for (i=0; i<design->ndvol; i++)
   } /* end loop i over DVOL */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

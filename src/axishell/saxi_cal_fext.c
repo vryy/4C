@@ -2,7 +2,7 @@
 \file
 \brief contains the routine 'saxi_eleload' which computes the right hand
        side of the symmetric shell element
-       
+
 <pre>
 Maintainer: Malte Neumann
             neumann@statik.uni-stuttgart.de
@@ -17,14 +17,14 @@ Maintainer: Malte Neumann
 #include "axishell.h"
 #include "axishell_prototypes.h"
 
-/*! 
+/*!
 \addtogroup AXISHELL
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief  Computation of the rhs of the axialsymmetric shell element 
+\brief  Computation of the rhs of the axialsymmetric shell element
 
-<pre>                                                              mn 05/03 
+<pre>                                                              mn 05/03
 This routine computes the right hand side of the axialsymmetric shell element
 for loads acting on the actual element. The element loads used here are:
 
@@ -54,7 +54,7 @@ for loads acting on the actual element. The element loads used here are:
  |                         +px/                   |                      |
  |                           /                    |                      |
  |                          o                     |                      |
- |                       node j                   rotational axis        |     
+ |                       node j                   rotational axis        |
  |    +y                                                                 |
  |    | global                                                           |
  |    | coordinate                                                       |
@@ -62,8 +62,8 @@ for loads acting on the actual element. The element loads used here are:
  |    |----->+x                                                          |
  |                                                                       |
  *-----------------------------------------------------------------------/
-                                                                         
-</pre>                                                                   
+
+</pre>
 \param *ele           ELEMENT   (i)   my element
 \param *data          SAXI_DATA (i)   structure containing gaussian point and weight
 \param *loadvec       DOUBLE    (i)   global element load vector
@@ -71,14 +71,14 @@ for loads acting on the actual element. The element loads used here are:
                                            init != 1 : integration
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling:   saxiintg;
     called by: axishell();
 
 *----------------------------------------------------------------------*/
 void saxi_eleload(
-    ELEMENT    *ele,    
-    SAXI_DATA  *data,   
+    ELEMENT    *ele,
+    SAXI_DATA  *data,
     DOUBLE     *loadvec,
     INT	      init
     )
@@ -91,11 +91,11 @@ void saxi_eleload(
   DOUBLE  loadvec_7[7];     /*local  loadvector before static condensation*/
   DOUBLE  loadvec_local[6];   /*local loadvector after static condensation*/
 
-  static ARRAY eload_a; 
+  static ARRAY eload_a;
   static DOUBLE **eload;                    /* static element load vector */
   DOUBLE *statcond;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("saxi_eleload");
 #endif
 
@@ -110,7 +110,7 @@ void saxi_eleload(
   else if (init==-1)
   {
     amdel(&eload_a);
-    goto end;  
+    goto end;
   }
 
 
@@ -159,8 +159,8 @@ void saxi_eleload(
     px = px_ij[0]+xsi/1.0*(px_ij[1]-px_ij[0]);
     pw = pw_ij[0]+xsi/1.0*(pw_ij[1]-pw_ij[0]);
 
-    qx = px - ph*cosa + pv*sina;  
-    qw = pw + ph*sina - pv*cosa;  
+    qx = px - ph*cosa + pv*sina;
+    qw = pw + ph*sina - pv*cosa;
 
     loadvec_7[0] += dl*r*qx*(-1.0+3.0*xsi-2.0*xsi*xsi)        *fac;
     /*zusaetzlicher term bei loadvec_7[0] ?*/
@@ -197,7 +197,7 @@ void saxi_eleload(
     /* global cos */
     loadvec[0] =  loadvec_local[0]*cosa + loadvec_local[1]*sina;/*load in horizontal direction*/
     loadvec[1] =  loadvec_local[0]*sina - loadvec_local[1]*cosa;/*load in vertical direction*/
-    loadvec[2] = -loadvec_local[2];                             /*moment */     
+    loadvec[2] = -loadvec_local[2];                             /*moment */
   }
 
 
@@ -213,17 +213,17 @@ void saxi_eleload(
     /* global cos */
     loadvec[3] =  loadvec_local[3]*cosa + loadvec_local[4]*sina;/*load in horizontal direction*/
     loadvec[4] =  loadvec_local[3]*sina - loadvec_local[4]*cosa;/*load in vertical direction*/
-    loadvec[5] = -loadvec_local[5];                             /*moment */     
+    loadvec[5] = -loadvec_local[5];                             /*moment */
   }
 
 
 end:
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 
-  return; 
+  return;
 } /* end of saxi_eleload */
 
 

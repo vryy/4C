@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Steffen Genkinger
@@ -23,7 +23,7 @@ struct _IO_FLAGS        ioflags;
  | pointer to allocate dynamic variables if needed                      |
  | dedfined in global_control.c                                         |
  *----------------------------------------------------------------------*/
-extern struct _DYNAMIC *dyn;   
+extern struct _DYNAMIC *dyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
@@ -40,7 +40,7 @@ extern struct _GENPROB     genprob;
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -50,11 +50,11 @@ extern struct _FILES  allfiles;
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par; 
+ extern struct _PAR   par;
 
 /*---------------------------------------------------------------------*
  | monotoring informations                                  genk 01/03 |
@@ -62,18 +62,18 @@ and the type is in partition.h
 extern struct _MONITOR *moni;
 
 /*!---------------------------------------------------------------------
-\brief  print out monitoring data 
+\brief  print out monitoring data
 
 <pre>                                                         genk 01/03
-		     
+
 </pre>
 
-\param *actfield    FIELD   (i)     actual field   
+\param *actfield    FIELD   (i)     actual field
 \param  numf        INT     (i)     number of field
 \param  time        DOUBLE  (i)     the actual time
 \param  init        INT     (i)     flag
 
-\return void                                                                             
+\return void
 
 ------------------------------------------------------------------------*/
 void out_monitor(FIELD *actfield, INT numf,DOUBLE time,INT init)
@@ -89,11 +89,11 @@ DOUBLE   *val;
 ARRAY     valdofs_a;
 INT      *valdofs;
 ARRAY     valIds_a;
-INT      *valIds; 
+INT      *valIds;
 MONITOR  *actmoni;
 FILE     *mon ;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("out_monitor");
 #endif
 
@@ -107,7 +107,7 @@ if (numnp==0) goto end;
 
 val      = actmoni->val.a.dv;
 monnodes = actmoni->monnodes.a.ia;
-onoff    = actmoni->onoff.a.ia; 
+onoff    = actmoni->onoff.a.ia;
 
 if (myrank>0) goto end;
 
@@ -123,7 +123,7 @@ if (init==1)
       for (j=0;j<MAXDOFPERNODE;j++)
       {
          if (actmoni->onoff.a.ia[i][j]==-1) continue;
-         else 
+         else
          {
             valdofs[counter] = j;
 	    valIds[counter]=monnodes[i][0];
@@ -199,7 +199,7 @@ fprintf(mon,"\n");
 fflush(mon);
 
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -209,13 +209,13 @@ return;
 \brief  print out area to monitoring file
 
 <pre>                                                         genk 01/03
-		     
+
 </pre>
 
-\param *actfield    FIELD   (i)     actual field   
+\param *actfield    FIELD   (i)     actual field
 \param  numf        INT     (i)     number of fluid field
-\warning this function has to be parallelised 
-\return void                                                                             
+\warning this function has to be parallelised
+\return void
 
 ------------------------------------------------------------------------*/
 void out_area(ARRAY totarea_a, DOUBLE time, INT itnum, INT init)
@@ -226,7 +226,7 @@ DOUBLE    *totarea;
 char      *charpointer;
 FILE      *mon;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("out_area");
 #endif
 /*----------------------------------------------------------------------*/
@@ -245,9 +245,9 @@ if (init==1)
    if ( (allfiles.out_monarea=fopen(allfiles.outputfile_name,"w"))==NULL)
    {
       printf("Opening of output file .fluidarea.mon failed\n");
-#ifdef PARALLEL 
+#ifdef PARALLEL
       MPI_Finalize();
-#endif 
+#endif
       exit(1);
    }
    mon = allfiles.out_monarea;
@@ -269,7 +269,7 @@ fflush(mon);
 
 end:
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

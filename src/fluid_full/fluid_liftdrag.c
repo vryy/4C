@@ -10,7 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ---------------------------------------------------------------------*/
-/*! 
+/*!
 \addtogroup FLUID
 *//*! @{ (documentation module open)*/
 #ifdef D_FLUID
@@ -25,11 +25,11 @@ Maintainer: Steffen Genkinger
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par; 
+ extern struct _PAR   par;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
@@ -53,10 +53,10 @@ extern struct _DESIGN *design;
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;  
+extern ALLDYNA      *alldyn;
 
 static FLUID_DYNAMIC *fdyn;
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief controlling lift and drag calculation
 
 <pre>                                                         genk 12/03
@@ -64,7 +64,7 @@ static FLUID_DYNAMIC *fdyn;
 </pre>
 
 
-\return void                                            
+\return void
 
 ------------------------------------------------------------------------*/
 void fluid_liftdrag(INT            init,
@@ -89,7 +89,7 @@ DOUBLE        initval;
 DOUBLE        recv[(FLUID_NUM_LD+1)*12];          /*  receive buffer              */
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_liftdrag");
 #endif
 
@@ -139,11 +139,11 @@ case 2: /* evaluate for pseudo fsi problem */
       aledline = &(design->dline[numline]);
       for (j=0;j<2;j++)
       {
-         actcurve = aledline->dirich->curve.a.iv[j]-1; 
+         actcurve = aledline->dirich->curve.a.iv[j]-1;
          if (actcurve<0) acttimefac = ONE;
          else acttimefac = timefac[actcurve];
-         initval  = aledline->dirich->dirich_val.a.dv[j];               
-         actdline->liftdrag->ld_center[j] += initval*acttimefac;  
+         initval  = aledline->dirich->dirich_val.a.dv[j];
+         actdline->liftdrag->ld_center[j] += initval*acttimefac;
       }
    }
 break;
@@ -170,7 +170,7 @@ if (init>0)
   {
    liftdrag[i] = ZERO;
   }
-   
+
    /*------------------------- get fluid stresses and integrate them ---*/
    container->liftdrag = liftdrag;
    container->nii= 0;
@@ -187,17 +187,17 @@ if (init>0)
 #endif
 
    /* viscous */
-   /* calculate the sums of all liftdrag conditions */ 
-   for (j=0; j<6; j++) 
+   /* calculate the sums of all liftdrag conditions */
+   for (j=0; j<6; j++)
      for (i=0; i<FLUID_NUM_LD; i++)
        liftdrag[FLUID_NUM_LD*6+j] += liftdrag[i*6+j];
-   
+
    /* only pressure */
-   /* calculate the sums of all liftdrag conditions */ 
-   for (j=0; j<6; j++) 
+   /* calculate the sums of all liftdrag conditions */
+   for (j=0; j<6; j++)
      for (i=0; i<FLUID_NUM_LD; i++)
        liftdrag[(2*FLUID_NUM_LD+1)*6+j] += liftdrag[(FLUID_NUM_LD+1)*6+i*6+j];
-   
+
    /*-------------------------------------------------------- output ---*/
    if(par.myrank == 0)
    {
@@ -269,7 +269,7 @@ if (init>0)
 
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 

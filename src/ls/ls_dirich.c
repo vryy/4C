@@ -25,11 +25,11 @@ Maintainer: Baris Irhan
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
-extern struct _PAR        par; 
+extern struct _PAR        par;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of material laws                                              |
@@ -60,7 +60,7 @@ process
 
 *----------------------------------------------------------------------*/
 void ls_initdirich(
-  FIELD          *actfield, 
+  FIELD          *actfield,
   LS_DYNAMIC     *lsdyn
   )
 {
@@ -72,28 +72,28 @@ void ls_initdirich(
   DOUBLE     initval;
   GNODE     *actgnode;
   NODE      *actnode;
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_enter("ls_initdirich");
-#endif  
+#endif
 /*----------------------------------------------------------------------*/
-  
+
   /* check dirichlet conditions */
   for (i=0; i<actfield->dis[0].numnp; i++)
   {
-    actnode  = &(actfield->dis[0].node[i]); 
-    actgnode = actnode->gnode; 
+    actnode  = &(actfield->dis[0].node[i]);
+    actgnode = actnode->gnode;
     if (actgnode->dirich==NULL)
       continue;
     if (actgnode->dirich->dirich_type==dirich_none)
-    { 
+    {
       for (j=0;j<actnode->numdf;j++)
       {
         if (actgnode->dirich->dirich_onoff.a.iv[j]==0)
           continue;
         actcurve = actgnode->dirich->curve.a.iv[j];
         if(actcurve>numcurve)
-          dserror("Load curve: actual curve > number defined curves\n");   
+          dserror("Load curve: actual curve > number defined curves\n");
       }
     }
   }
@@ -108,8 +108,8 @@ void ls_initdirich(
     /* loop */
     for (i=0;i<actfield->dis[0].numnp;i++)
     {
-      actnode  = &(actfield->dis[0].node[i]); 
-      actgnode = actnode->gnode;      
+      actnode  = &(actfield->dis[0].node[i]);
+      actgnode = actnode->gnode;
       if (actgnode->dirich==NULL)
         continue;
       switch(actgnode->dirich->dirich_type)
@@ -124,7 +124,7 @@ void ls_initdirich(
                 acttimefac = ONE;
               else
                 acttimefac = timefac[actcurve];
-              initval  = actgnode->dirich->dirich_val.a.dv[j];               
+              initval  = actgnode->dirich->dirich_val.a.dv[j];
               actnode->sol_increment.a.da[0][j] = initval*acttimefac;
               actnode->sol.a.da[0][j] = initval*acttimefac;
             }
@@ -134,12 +134,12 @@ void ls_initdirich(
       }
     }
   }
-  
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of ls_initdirich */
 
@@ -156,7 +156,7 @@ in the process
 
 *----------------------------------------------------------------------*/
 void ls_setdirich(
-  FIELD           *actfield, 
+  FIELD           *actfield,
   LS_DYNAMIC      *lsdyn,
   INT              pos
   )
@@ -169,12 +169,12 @@ void ls_setdirich(
   DOUBLE     initval;
   GNODE     *actgnode;
   NODE      *actnode;
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_enter("ls_setdirich");
-#endif 
+#endif
 /*----------------------------------------------------------------------*/
-  
+
   /* set time */
   T = lsdyn->time;
   /* values from time curve */
@@ -183,10 +183,10 @@ void ls_setdirich(
     dyn_facfromcurve(actcurve,T,&timefac[actcurve]) ;
   }
   /* loop */
-  for (i=0; i<actfield->dis[0].numnp; i++) 
+  for (i=0; i<actfield->dis[0].numnp; i++)
   {
-    actnode  = &(actfield->dis[0].node[i]); 
-    actgnode = actnode->gnode;      
+    actnode  = &(actfield->dis[0].node[i]);
+    actgnode = actnode->gnode;
     if (actgnode->dirich==NULL)
       continue;
     switch(actgnode->dirich->dirich_type)
@@ -201,20 +201,20 @@ void ls_setdirich(
               acttimefac = ONE;
             else
               acttimefac = timefac[actcurve];
-            initval  = actgnode->dirich->dirich_val.a.dv[j];               
-            actnode->sol_increment.a.da[pos][j] = initval*acttimefac;	 
+            initval  = actgnode->dirich->dirich_val.a.dv[j];
+            actnode->sol_increment.a.da[pos][j] = initval*acttimefac;
           }
           break;
         default:
           dserror("dirch_type unknown!\n");
     }
   }
-  
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of ls_settdirich */
 /*! @} (documentation module close)*/

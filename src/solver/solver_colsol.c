@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -12,7 +12,7 @@ Maintainer: Malte Neumann
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
-/* 
+/*
 the 64bit linker expects an underslash appended to calls for
 fortran90 subroutines:
 */
@@ -46,7 +46,7 @@ INT            kkk;
 INT            isc;
 INT            nsch;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solver_colsol");
 #endif
 /*----------------------------------------------------------------------*/
@@ -62,7 +62,7 @@ case 1:
    /*---------------------------------- copy maxa to fortran convention */
    am_alloc_copy(&(sky->maxa),&(sky->maxaf));
    for (i=0; i<sky->maxaf.fdim; i++) sky->maxaf.a.iv[i]++;
-   /* set flag, that this matrix has been initialized and is ready for solve */   
+   /* set flag, that this matrix has been initialized and is ready for solve */
    sky->is_init     = 1;
    sky->ncall       = 0;
    sky->is_factored = 0;
@@ -77,14 +77,14 @@ case 0:
    /*--------------------------------- allocate rhs and solution vector */
    b   = amdef("b",&b_a,sky->numeq_total,1,"DV");
          amzero(&b_a);
-#ifdef PARALLEL 
+#ifdef PARALLEL
    tmp = amdef("tmp",&tmp_a,sky->numeq_total,1,"DV");
          amzero(&tmp_a);
    /*--------------------------------------------------------- fill rhs */
    for (i=0; i<rhs->numeq; i++)
    {
       dof      = sky->update.a.iv[i];
-      tmp[dof] = rhs->vec.a.dv[i]; 
+      tmp[dof] = rhs->vec.a.dv[i];
    }
    /*--------------------------------------------- allreduce rhs vector */
    MPI_Allreduce(tmp,b,sky->numeq_total,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
@@ -94,11 +94,11 @@ case 0:
    for (i=0; i<rhs->numeq; i++)
    {
       dof      = sky->update.a.iv[i];
-      b[dof]   = rhs->vec.a.dv[i]; 
+      b[dof]   = rhs->vec.a.dv[i];
    }
    /*------------------------------------------------------------------ */
 #endif
-   /*------------------------------ solution is only done on imyrank==0 */   
+   /*------------------------------ solution is only done on imyrank==0 */
    if (imyrank==0)
    {
       if (sky->is_factored==0) kkk=3;
@@ -112,7 +112,7 @@ case 0:
              &ione,
              &(sky->A.fdim),
              &(sky->maxaf.fdim),
-             &ione, 
+             &ione,
              &ione,
              &kkk,
              &(sky->det),
@@ -123,7 +123,7 @@ case 0:
             );
    }/* end of (imyrank==0) */
    /*------------------------------------------------ distribute result */
-#ifdef PARALLEL 
+#ifdef PARALLEL
       MPI_Bcast(b,sky->numeq_total,MPI_DOUBLE,0,actintra->MPI_INTRA_COMM);
 #endif
    /*------------------------------------------------------- get result */
@@ -137,7 +137,7 @@ case 0:
    sky->is_factored=1;
    /*------------------------------------- deallocate temporary vectors */
    amdel(&b_a);
-#ifdef PARALLEL 
+#ifdef PARALLEL
    amdel(&tmp_a);
 #endif
 break;
@@ -146,10 +146,10 @@ break;
 /*----------------------------------------------------------------------*/
 default:
    dserror("Unknown option for solver call to Colsol");
-break;   
+break;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

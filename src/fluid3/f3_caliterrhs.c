@@ -10,7 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-#ifdef D_FLUID3 
+#ifdef D_FLUID3
 #include "../headers/standardtypes.h"
 #include "fluid3_prototypes.h"
 #include "fluid3.h"
@@ -21,7 +21,7 @@ Maintainer: Steffen Genkinger
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -30,7 +30,7 @@ extern ALLDYNA      *alldyn;
 extern struct _GENPROB     genprob;
 
 static FLUID_DYNAMIC   *fdyn;
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief galerkin part of iteration forces for vel dofs
 
 <pre>                                                         genk 05/02
@@ -42,7 +42,7 @@ EULER:
 
                    /
    (+/-) THETA*dt |  v * u * grad(u)  d_omega
-                 /  
+                 /
 
 ALE:
                    /
@@ -53,33 +53,33 @@ NOTE:
   ALE:    covint = c*grad(u)
 
 see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
-      
+
 </pre>
 \param  *eforce    DOUBLE	   (i/o)  element force vector
 \param  *covint    DOUBLE	   (i)	  conv. vels at INT. point
 \param  *funct     DOUBLE	   (i)    nat. shape funcs
 \param   fac 	   DOUBLE	   (i)    weighting factor
 \param	 iel	   INT		   (i)	  num. of nodes of act. ele
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f3_calgalifv(
-                  DOUBLE          *eforce,    
+                  DOUBLE          *eforce,
                   DOUBLE          *covint,
                   DOUBLE          *funct,
                   DOUBLE           fac,
                   INT              iel
-                 )  
+                 )
 {
 INT    inode,isd;
-INT    irow;  
+INT    irow;
 DOUBLE facsl;
- 
-#ifdef DEBUG 
+
+#ifdef DEBUG
 dstrc_enter("f3_calgalifv");
 #endif
 
-/*--------------------------------------------------- set some factors */   
+/*--------------------------------------------------- set some factors */
 fdyn  = alldyn[genprob.numff].fdyn;
 facsl = fac * fdyn->thsl * fdyn->sigma;
 
@@ -89,13 +89,13 @@ facsl = fac * fdyn->thsl * fdyn->sigma;
 EULER:
                /
    + THETA*dt |  v * u * grad(u)  d_omega
-             /  
+             /
 
 ALE:
                /
    + THETA*dt |  v * c * grad(u)  d_omega
              /
- *----------------------------------------------------------------------*/ 
+ *----------------------------------------------------------------------*/
 irow = -1;
 for (inode=0;inode<iel;inode++)
 {
@@ -106,15 +106,15 @@ for (inode=0;inode<iel;inode++)
    } /* end of loop over isd */
 } /* end of loop over inode */
 
-/*----------------------------------------------------------------------*/ 
-#ifdef DEBUG 
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of f3_calgalifv */
 
-/*!---------------------------------------------------------------------  
+/*!---------------------------------------------------------------------
 \brief stabilisation part of iteration forces for vel dofs
 
 <pre>                                                         genk 05/02
@@ -126,7 +126,7 @@ is calculated:
 EULER:
                    /
    (+/-) THETA*dt |  tau_mu * u * grad(v) * u * grad(u)  d_omega
-                 /    
+                 /
 
                        /
    (-/+) -/+ THETA*dt |  tau_mp * 2*nue * div( eps(v) ) * u * grad(u)  d_omega
@@ -135,7 +135,7 @@ EULER:
 ALE:
                    /
    (+/-) THETA*dt |  tau_mu * c * grad(v) * c * grad(u)  d_omega
-                 /    
+                 /
 
                        /
    (-/+) -/+ THETA*dt |  tau_mp * 2*nue * div( eps(v) ) * c * grad(u)  d_omega
@@ -146,7 +146,7 @@ NOTE:
   ALE:    covint = c*grad(u)   velint = alecovint (c)
 
 see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
-      
+
 </pre>
 \param   *gls      STAB_PAR_GLS    (i)    stabilisation
 \param   *ele      ELEMENT	   (i)    actual element
@@ -160,13 +160,13 @@ see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
 \param    visc     DOUBLE	   (i)    fluid viscosity
 \param    ihoel    INT		   (i)    flag for higher order ele
 \param	  iel	   INT		   (i)    num. of nodes of act. ele
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f3_calstabifv(
-                     STAB_PAR_GLS    *gls,  
+                     STAB_PAR_GLS    *gls,
                      ELEMENT         *ele,
-                     DOUBLE          *eforce,   
+                     DOUBLE          *eforce,
                      DOUBLE          *covint,
                      DOUBLE          *velint,
                      DOUBLE          *funct,
@@ -176,27 +176,27 @@ void f3_calstabifv(
                      DOUBLE           visc,
                      INT              ihoel,
                      INT              iel
-                 )  
+                 )
 {
 INT    inode,isd;
-INT    irow;  
+INT    irow;
 DOUBLE facsl,cc;
 DOUBLE aux;
 DOUBLE sign=ONE;
 DOUBLE taumu,taump;
 DOUBLE fact[3];
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f3_calgalifv");
-#endif	
+#endif
 
 /*---------------------------------------------------------- initialise */
 fdyn  = alldyn[genprob.numff].fdyn;
 gls   = ele->e.f3->stabi.gls;
 
-dsassert(ele->e.f3->stab_type == stab_gls, 
+dsassert(ele->e.f3->stab_type == stab_gls,
         "routine with no or wrong stabilisation called");
- 
+
 /*--------------------------------------------------- set some factors */
 facsl = fac * fdyn->thsl * fdyn->sigma;
 taumu = fdyn->tau[0];
@@ -207,13 +207,13 @@ taump = fdyn->tau[1];
 EULER:
                /
    + THETA*dt |  tau_mu * u * grad(v) * u * grad(u)  d_omega
-             /  
+             /
 
 ALE:
                /
    + THETA*dt |  tau_mu * c * grad(v) * c * grad(u)  d_omega
-             / 
- *----------------------------------------------------------------------*/ 
+             /
+ *----------------------------------------------------------------------*/
 if (gls->iadvec!=0)
 {
    fact[0] = taumu*covint[0]*facsl;
@@ -237,7 +237,7 @@ if (gls->iadvec!=0)
 EULER:
                   /
     -/+ THETA*dt |  tau_mp * 2*nue * div( eps(v) ) * u * grad(u)  d_omega
-                /  
+                /
 
 ALE:
                  /
@@ -249,7 +249,7 @@ ALE:
 if (gls->ivisc!=0 && ihoel!=0)
 {
    if (gls->ivisc==2) sign*=-ONE; /* GLS+ stabilisation */
-   
+
    cc = facsl*visc*taump*sign;
    irow=0;
    for (inode=0;inode<iel;inode++)
@@ -264,46 +264,46 @@ if (gls->ivisc!=0 && ihoel!=0)
       eforce[irow+2] -= ((derxy2[2][inode]+aux)*covint[2]    \
                         + derxy2[4][inode]     *covint[0]    \
                         + derxy2[5][inode]     *covint[1])*cc;
-      irow += 3;		      
+      irow += 3;
    } /* end of loop over inode */
 } /* endif (ele->e.f3->ivisc!=0 && ihoel!=0) */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of f3_calgalifv */
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief stabilisation part of iteration forces for pre dofs
 
 <pre>                                                         genk 05/02
-In this routine the stabilisation part of the iteration forces for pre 
+In this routine the stabilisation part of the iteration forces for pre
 dofs is calculated:
 
 EULER:
                /
    - THETA*dt |  tau_mp * grad(q) * u * grad(u)  d_omega
-             /  
+             /
 
 ALE:
                /
    - THETA*dt |  tau_mp * grad(q) * c * grad(u)  d_omega
-             / 
-		 
+             /
+
 see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
 
 NOTE:
-  EULER:  covint = u*grad(u)  
-  ALE:    covint = c*grad(u)  
+  EULER:  covint = u*grad(u)
+  ALE:    covint = c*grad(u)
 
-NOTE:							
-    there's only one full element force vector  	
-    for pre-dofs the pointer eforce points to the entry  
-    eforce[3*iel]					
-      
+NOTE:
+    there's only one full element force vector
+    for pre-dofs the pointer eforce points to the entry
+    eforce[3*iel]
+
 </pre>
 \param   *gls      STAB_PAR_GLS    (i)    stabilisation
 \param   *eforce   DOUBLE	   (i/o)  element force vector
@@ -311,24 +311,24 @@ NOTE:
 \param  **derxy    DOUBLE	   (i)    global derivative
 \param    fac      DOUBLE	   (i)    weighting factor
 \param	  iel	   INT  	   (i)	  num. of nodes of act. ele
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f3_calstabifp(
-                     STAB_PAR_GLS    *gls,  
-                     DOUBLE          *eforce,    
+                     STAB_PAR_GLS    *gls,
+                     DOUBLE          *eforce,
                      DOUBLE          *covint,
                      DOUBLE          **derxy,
                      DOUBLE           fac,
                      INT              iel
-                 ) 
+                 )
 {
-INT    inode; 
+INT    inode;
 DOUBLE facsl;
 DOUBLE taump;
 DOUBLE fact[3];
- 
-#ifdef DEBUG 
+
+#ifdef DEBUG
 dstrc_enter("f3_calgstabifp");
 #endif
 
@@ -344,13 +344,13 @@ taump = fdyn->tau[1];
 EULER:
                /
    - THETA*dt |  tau_mp * grad(q) * u * grad(u)  d_omega
-             /  
-                   
+             /
+
 ALE:
                /
    - THETA*dt |  tau_mp * grad(q) * c * grad(u)  d_omega
-             / 
- *----------------------------------------------------------------------*/ 
+             /
+ *----------------------------------------------------------------------*/
 fact[0] = covint[0]*taump*facsl;
 fact[1] = covint[1]*taump*facsl;
 fact[2] = covint[2]*taump*facsl;
@@ -362,7 +362,7 @@ for (inode=0;inode<iel;inode++)
 
 /*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 

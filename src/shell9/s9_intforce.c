@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 
- - s9_intforce: which calculates the internal forces: 
+\brief contains the routine
+ - s9_intforce: which calculates the internal forces:
                 R = INT (Bt * stress_r)
 
 
@@ -17,12 +17,12 @@ Maintainer: Stefan Hartmann
 #include "../headers/standardtypes.h"
 #include "shell9.h"
 
-/*! 
-\addtogroup SHELL9 
+/*!
+\addtogroup SHELL9
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief make internal forces                                      
+\brief make internal forces
 
 <pre>                     m.gee 11/01             modified by    sh 11/02
 This routine calculates the internal forces:
@@ -37,7 +37,7 @@ This routine calculates the internal forces:
 \param  DOUBLE   weight    (i)  weight at GP
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: s9static_keug() [s9_static_keug.c]
 
 *----------------------------------------------------------------------*/
@@ -47,7 +47,7 @@ void s9_intforce(DOUBLE *intforce, DOUBLE *stress_r, DOUBLE **bop,
 INT nd;
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9_intforce");
 #endif
 /*----------------------------------------------------------------------*/
@@ -57,7 +57,7 @@ make intforce[nd] = transposed(bop[nstress_r][nd]) * stress_r[nstress_r]
 */
 math_mattrnvecdense(intforce,bop,stress_r,nd,nstress_r,1,weight);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

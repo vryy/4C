@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief service routines for fluid2 element 
+\brief service routines for fluid2 element
 
 <pre>
 Maintainer: Steffen Genkinger
@@ -10,8 +10,8 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
-\addtogroup FLUID2_PRO 
+/*!
+\addtogroup FLUID2_PRO
 *//*! @{ (documentation module open)*/
 #ifdef D_FLUID2_PRO
 #include "../headers/standardtypes.h"
@@ -21,29 +21,29 @@ Maintainer: Steffen Genkinger
 
 <pre>                                                         basol 11/02
 
-get the element velocities and the pressure at different times 
-				      
+get the element velocities and the pressure at different times
+
 </pre>
 \param   *elevel      ELEMENT	   (i)    actual element for velocity
 \param   *elepre      ELEMENT	   (i)    actual element for pressure
 \param   **xyze       DOUBLE	   (o)    coordinates of the element
 \param   **eveln      DOUBLE	   (o)    ele velocities at time n
 \param   *epren       DOUBLE	   (o)    ele pressures at time n
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
-void f2pro_calset( 
+void f2pro_calset(
 	        ELEMENT         *elevel,
 		ELEMENT         *elepre,
 		DOUBLE         **xyze,
-                DOUBLE         **eveln,    
-	        DOUBLE          *epren    
+                DOUBLE         **eveln,
+	        DOUBLE          *epren
 	      )
 {
 INT i ;              /* simply some counters                            */
 NODE *actnode;       /* actual node for element                         */
-                             
-#ifdef DEBUG 
+
+#ifdef DEBUG
 dstrc_enter("f2pro_calset");
 #endif
 
@@ -68,13 +68,13 @@ for(i=0;i<elevel->numnp;i++)
       for(i=0;i<elevel->numnp;i++) /* loop nodes of element for velocity  */
       {
          actnode=elevel->node[i];
-/*------------------------------------- set element velocities at (n) */	 
+/*------------------------------------- set element velocities at (n) */
          eveln[0][i]=actnode->sol_increment.a.da[1][0];
-	 eveln[1][i]=actnode->sol_increment.a.da[1][1];    
-/*------------------------------------------------- set pressures (n) */   
-      } /* end of loop over nodes of element for velocity */  
+	 eveln[1][i]=actnode->sol_increment.a.da[1][1];
+/*------------------------------------------------- set pressures (n) */
+      } /* end of loop over nodes of element for velocity */
 
-/*----------------------------------------------------------------------* 
+/*----------------------------------------------------------------------*
  | REMARK::in projection method that we implement here the pressure     |
  | element and velocity element have different number of nodes and      |
  | different shape functions. Therefore below loop runs up to 4 nodes.  |
@@ -83,14 +83,14 @@ for(i=0;i<elevel->numnp;i++)
       for(i=0;i<elepre->numnp;i++) /* loop nodes of element for pressure  */
       {
          actnode=elepre->node[i];
-	 epren[i]   =actnode->sol_increment.a.da[1][0];	       
-      } /* end of loop over nodes of element  for pressure */  
+	 epren[i]   =actnode->sol_increment.a.da[1][0];
+      } /* end of loop over nodes of element  for pressure */
 
 /*---------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of f2pro_calset */
 
 #endif

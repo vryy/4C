@@ -17,8 +17,8 @@ Maintainer: Andreas Lipka
 #include "brick1.h"
 #include "brick1_prototypes.h"
 
-/*! 
-\addtogroup BRICK1 
+/*!
+\addtogroup BRICK1
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
@@ -29,21 +29,21 @@ This routine to establish local material law
        stress-strain law for isotropic material for for a 3D-hex-element.
 
 </pre>
-\param       youngs   DOUBLE    (i)   young's modulus 
-\param possionratio   DOUBLE    (i)   poisson's ratio 
-\param         disd   DOUBLE*   (i)   displacement derivatives     
-\param       stress   DOUBLE*   (o)   ele stress (-resultant) vector  
+\param       youngs   DOUBLE    (i)   young's modulus
+\param possionratio   DOUBLE    (i)   poisson's ratio
+\param         disd   DOUBLE*   (i)   displacement derivatives
+\param       stress   DOUBLE*   (o)   ele stress (-resultant) vector
 \param            d   DOUBLE**  (o)   constitutive matrix
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
 void c1_mat_neohook(DOUBLE youngs,     /* young's modulus              */
                     DOUBLE possionratio, /* poisson's ratio            */
                     DOUBLE *disd,      /* displacement derivatives     */
-                    DOUBLE *stress,  /* ele stress (-resultant) vector */      
+                    DOUBLE *stress,  /* ele stress (-resultant) vector */
                     DOUBLE **d)      /* material matrix                */
 {
 /*----------------------------------------------------------------------*/
@@ -67,7 +67,7 @@ DOUBLE b[9];
 DOUBLE bt[3][3];
 DOUBLE Wene,Ib;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1_mat_neohook");
 #endif
 /*----------------------------------------------------------------------*/
@@ -104,13 +104,13 @@ pv  = possionratio;
       }
       cci++;
     }
-  } 
+  }
   for (i=0; i<9; i++)   C[i] = FTF[i];
-  
+
   c1inv3(C);
   cci = 0; /* copy back to ansiC style */
   for (i=0; i<3; i++) for (j=0; j<3; j++)  Ct[j][i] = C[cci++];
-  
+
 
   /* left cauchy green b: b = F FT = V^2 */
   for (i=0; i<9; i++)   FFT[i] = 0.0;
@@ -125,8 +125,8 @@ pv  = possionratio;
       }
       cci++;
     }
-  } 
-  for (i=0; i<9; i++)   b[i] = FFT[i]; 
+  }
+  for (i=0; i<9; i++)   b[i] = FFT[i];
   bt[0][0] = b[0];
   bt[1][0] = b[1];
   bt[2][0] = b[2];
@@ -140,94 +140,94 @@ pv  = possionratio;
   /* first invariant */
   Ib = bt[0][0]+bt[1][1]+bt[2][2];
 /*----------------------------------------------------------------------*/
-  xl=ym*pv/(1.0+pv)/(1.0-2.0*pv); /* lambda */                                
-  g=ym/2.0/(1.0+pv);              /* mue =G */                                     
-  xj=J;                                                              
-  if(xj<1.0E-6)xj=1.0E-6;                                                   
-  f1=xl*log(xj)-g; /* ansiC(log)==ln */                                                          
+  xl=ym*pv/(1.0+pv)/(1.0-2.0*pv); /* lambda */
+  g=ym/2.0/(1.0+pv);              /* mue =G */
+  xj=J;
+  if(xj<1.0E-6)xj=1.0E-6;
+  f1=xl*log(xj)-g; /* ansiC(log)==ln */
 /*----------------------------------------------------------------------*/
   Wene = 0.5*xl*(log(xj))*(log(xj))-g*log(xj)+0.5*g*(Ib-3.0);
-/*--------------------------------------------------- pk2-spannungen ---*/        
+/*--------------------------------------------------- pk2-spannungen ---*/
   for (i=0; i<3; i++)
   {
     for (j=0; j<3; j++)
     {
-       sp[i][j]=f1*Ct[i][j]+g*gk[i][j];                                  
+       sp[i][j]=f1*Ct[i][j]+g*gk[i][j];
   }}
-  
-  stress[0]=sp[0][0];                                                        
-  stress[1]=sp[1][1];                                                          
-  stress[2]=sp[2][2];                                                          
-  stress[3]=sp[0][1];                                                          
-  stress[4]=sp[1][2];                                                          
-  stress[5]=sp[0][2];                                                          
-/*-------------------------------------------------- werkstofftensor ---*/        
+
+  stress[0]=sp[0][0];
+  stress[1]=sp[1][1];
+  stress[2]=sp[2][2];
+  stress[3]=sp[0][1];
+  stress[4]=sp[1][2];
+  stress[5]=sp[0][2];
+/*-------------------------------------------------- werkstofftensor ---*/
   for (k=0; k<3; k++)
   {
     for (l=0; l<3; l++)
     {
       c[0][0][k][l]= xl*Ct[0][0]*Ct[k][l] -
                      f1*(Ct[0][k]*Ct[0][l]+Ct[0][l]*Ct[0][k]) ;
-      
+
       c[1][0][k][l]= xl*Ct[1][0]*Ct[k][l] -
                      f1*(Ct[1][k]*Ct[0][l]+Ct[1][l]*Ct[0][k]) ;
-      
+
       c[1][1][k][l]= xl*Ct[1][1]*Ct[k][l] -
                      f1*(Ct[1][k]*Ct[1][l]+Ct[1][l]*Ct[1][k]) ;
-      
+
       c[2][0][k][l]= xl*Ct[2][0]*Ct[k][l] -
                      f1*(Ct[2][k]*Ct[0][l]+Ct[2][l]*Ct[0][k]) ;
-      
+
       c[2][1][k][l]= xl*Ct[2][1]*Ct[k][l] -
                      f1*(Ct[2][k]*Ct[1][l]+Ct[2][l]*Ct[1][k]) ;
-      
+
       c[2][2][k][l]= xl*Ct[2][2]*Ct[k][l] -
                      f1*(Ct[2][k]*Ct[2][l]+Ct[2][l]*Ct[2][k]) ;
   }}
 
- d[0][0]=c[0][0][0][0];                                                   
- d[0][1]=c[0][0][1][1];                                                   
- d[0][2]=c[0][0][2][2];                                                  
- d[0][3]=c[0][0][1][0];                                                  
- d[0][4]=c[0][0][2][1];                                                  
- d[0][5]=c[0][0][2][0];                                                  
-                                              
- d[1][0]=c[1][1][0][0];                                                    
- d[1][1]=c[1][1][1][1];                                                   
- d[1][2]=c[1][1][2][2];                                                  
- d[1][3]=c[1][1][1][0];                                                  
- d[1][4]=c[1][1][2][1];                                                  
- d[1][5]=c[1][1][2][0];                                                   
-                                
- d[2][0]=c[2][2][0][0];                                                     
- d[2][1]=c[2][2][1][1];                                                   
- d[2][2]=c[2][2][2][2];                                                  
- d[2][3]=c[2][2][1][0];                                                  
- d[2][4]=c[2][2][2][1];                                                 
- d[2][5]=c[2][2][2][0];                                                    
-                                
- d[3][0]=c[1][0][0][0];                                                    
- d[3][1]=c[1][0][1][1];                                                   
- d[3][2]=c[1][0][2][2];                                                   
- d[3][3]=c[1][0][1][0];                                                  
- d[3][4]=c[1][0][2][1];                                                  
- d[3][5]=c[1][0][2][0];                                                    
-                                
- d[4][0]=c[2][1][0][0];                                                    
- d[4][1]=c[2][1][1][1];                                                   
- d[4][2]=c[2][1][2][2];                                                   
- d[4][3]=c[2][1][1][0];                                                  
- d[4][4]=c[2][1][2][1];                                                  
- d[4][5]=c[2][1][2][0];                                                   
-                                
- d[5][0]=c[2][0][0][0];                                                    
- d[5][1]=c[2][0][1][1];                                                   
- d[5][2]=c[2][0][2][2];                                                   
- d[5][3]=c[2][0][1][0];                                                 
- d[5][4]=c[2][0][2][1];                                                  
- d[5][5]=c[2][0][2][0];                                                     
+ d[0][0]=c[0][0][0][0];
+ d[0][1]=c[0][0][1][1];
+ d[0][2]=c[0][0][2][2];
+ d[0][3]=c[0][0][1][0];
+ d[0][4]=c[0][0][2][1];
+ d[0][5]=c[0][0][2][0];
+
+ d[1][0]=c[1][1][0][0];
+ d[1][1]=c[1][1][1][1];
+ d[1][2]=c[1][1][2][2];
+ d[1][3]=c[1][1][1][0];
+ d[1][4]=c[1][1][2][1];
+ d[1][5]=c[1][1][2][0];
+
+ d[2][0]=c[2][2][0][0];
+ d[2][1]=c[2][2][1][1];
+ d[2][2]=c[2][2][2][2];
+ d[2][3]=c[2][2][1][0];
+ d[2][4]=c[2][2][2][1];
+ d[2][5]=c[2][2][2][0];
+
+ d[3][0]=c[1][0][0][0];
+ d[3][1]=c[1][0][1][1];
+ d[3][2]=c[1][0][2][2];
+ d[3][3]=c[1][0][1][0];
+ d[3][4]=c[1][0][2][1];
+ d[3][5]=c[1][0][2][0];
+
+ d[4][0]=c[2][1][0][0];
+ d[4][1]=c[2][1][1][1];
+ d[4][2]=c[2][1][2][2];
+ d[4][3]=c[2][1][1][0];
+ d[4][4]=c[2][1][2][1];
+ d[4][5]=c[2][1][2][0];
+
+ d[5][0]=c[2][0][0][0];
+ d[5][1]=c[2][0][1][1];
+ d[5][2]=c[2][0][2][2];
+ d[5][3]=c[2][0][1][0];
+ d[5][4]=c[2][0][2][1];
+ d[5][5]=c[2][0][2][0];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -243,22 +243,22 @@ This routine to establish local material law
 </pre>
 \param          mat   MATERIAL* (i)   material data ...
 \param      matdata   DOUBLE*   (i)   variable mat. data, opti.
-\param         disd   DOUBLE*   (i)   displacement derivatives     
-\param       stress   DOUBLE*   (o)   ele stress (-resultant) vector  
+\param         disd   DOUBLE*   (i)   displacement derivatives
+\param       stress   DOUBLE*   (o)   ele stress (-resultant) vector
 \param            d   DOUBLE**  (o)   constitutive matrix
 \param          ste   DOUBLE*   (o)   energy
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
 void c1_mat_nhmfcc( MATERIAL  *mat,     /* material data ...           */
                     DOUBLE *matdata,    /* variable mat. data, opti.   */
                     DOUBLE *disd,      /* displacement derivatives     */
-                    DOUBLE *stress,  /* ele stress (-resultant) vector */      
+                    DOUBLE *stress,  /* ele stress (-resultant) vector */
                     DOUBLE **d,         /* material matrix             */
-                    DOUBLE *ste)       
+                    DOUBLE *ste)
 {
 /*----------------------------------------------------------------------*/
 INT i,j,k,l;
@@ -281,7 +281,7 @@ DOUBLE b[9];
 DOUBLE bt[3][3];
 DOUBLE Wene,Ib,Ic;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1_mat_nhmfcc");
 #endif
 /*----------------------------------------------------------------------*/
@@ -329,16 +329,16 @@ dstrc_enter("c1_mat_nhmfcc");
       }
       cci++;
     }
-  } 
+  }
   for (i=0; i<9; i++)   C[i] = FTF[i];
-  
+
   /* first invariant */
   Ic = C[0]+C[4]+C[8];
- 
+
   c1inv3(C);
   cci = 0; /* copy to ansiC style */
   for (i=0; i<3; i++) for (j=0; j<3; j++)  Ct[j][i] = C[cci++];
-  
+
 
   /* left cauchy green b: b = F FT = V^2 */
   for (i=0; i<9; i++)   FFT[i] = 0.0;
@@ -353,8 +353,8 @@ dstrc_enter("c1_mat_nhmfcc");
       }
       cci++;
     }
-  } 
-  for (i=0; i<9; i++)   b[i] = FFT[i]; 
+  }
+  for (i=0; i<9; i++)   b[i] = FFT[i];
   bt[0][0] = b[0];
   bt[1][0] = b[1];
   bt[2][0] = b[2];
@@ -368,99 +368,99 @@ dstrc_enter("c1_mat_nhmfcc");
   /* first invariant */
   Ib = bt[0][0]+bt[1][1]+bt[2][2];
 /*----------------------------------------------------------------------*/
-  xl=ym*pv/(1.0+pv)/(1.0-2.0*pv); /* lambda */                                
-  g=ym/2.0/(1.0+pv);              /* mue =G */                                     
-  xj=J;                                                              
-  if(xj<1.0E-6)xj=1.0E-6;                                                   
-  f1=xl*log(xj)-g; /* ansiC(log)==ln */                                                          
+  xl=ym*pv/(1.0+pv)/(1.0-2.0*pv); /* lambda */
+  g=ym/2.0/(1.0+pv);              /* mue =G */
+  xj=J;
+  if(xj<1.0E-6)xj=1.0E-6;
+  f1=xl*log(xj)-g; /* ansiC(log)==ln */
 /*----------------------------------------------------------------------*/
   Wene = 0.5*xl*(log(xj))*(log(xj))-g*log(xj)+0.5*g*(Ib-3.0);
   *ste = Wene;
-/*--------------------------------------------------- pk2-spannungen ---*/        
+/*--------------------------------------------------- pk2-spannungen ---*/
   for (i=0; i<3; i++)
   {
     for (j=0; j<3; j++)
     {
-       sp[i][j]=f1*Ct[i][j]+g*gk[i][j];                                  
+       sp[i][j]=f1*Ct[i][j]+g*gk[i][j];
   }}
   /* */
-  stress[0]=sp[0][0];                                                      
-  stress[1]=sp[1][1];                                                          
-  stress[2]=sp[2][2];                                                          
-  stress[3]=sp[0][1];                                                          
-  stress[4]=sp[1][2];                                                          
-  stress[5]=sp[0][2];                                                          
-/*-------------------------------------------------- werkstofftensor ---*/        
+  stress[0]=sp[0][0];
+  stress[1]=sp[1][1];
+  stress[2]=sp[2][2];
+  stress[3]=sp[0][1];
+  stress[4]=sp[1][2];
+  stress[5]=sp[0][2];
+/*-------------------------------------------------- werkstofftensor ---*/
   for (k=0; k<3; k++)
   {
     for (l=0; l<3; l++)
     {
       c[0][0][k][l]= xl*Ct[0][0]*Ct[k][l] -
                      f1*(Ct[0][k]*Ct[0][l]+Ct[0][l]*Ct[0][k]) ;
-      
+
       c[1][0][k][l]= xl*Ct[1][0]*Ct[k][l] -
                      f1*(Ct[1][k]*Ct[0][l]+Ct[1][l]*Ct[0][k]) ;
-      
+
       c[1][1][k][l]= xl*Ct[1][1]*Ct[k][l] -
                      f1*(Ct[1][k]*Ct[1][l]+Ct[1][l]*Ct[1][k]) ;
-      
+
       c[2][0][k][l]= xl*Ct[2][0]*Ct[k][l] -
                      f1*(Ct[2][k]*Ct[0][l]+Ct[2][l]*Ct[0][k]) ;
-      
+
       c[2][1][k][l]= xl*Ct[2][1]*Ct[k][l] -
                      f1*(Ct[2][k]*Ct[1][l]+Ct[2][l]*Ct[1][k]) ;
-      
+
       c[2][2][k][l]= xl*Ct[2][2]*Ct[k][l] -
                      f1*(Ct[2][k]*Ct[2][l]+Ct[2][l]*Ct[2][k]) ;
   }}
 /**/
- d[0][0]=c[0][0][0][0];                                                   
- d[0][1]=c[0][0][1][1];                                                   
- d[0][2]=c[0][0][2][2];                                                  
- d[0][3]=c[0][0][1][0];                                                  
- d[0][4]=c[0][0][2][1];                                                  
- d[0][5]=c[0][0][2][0];                                                  
-                                              
- d[1][0]=c[1][1][0][0];                                                    
- d[1][1]=c[1][1][1][1];                                                   
- d[1][2]=c[1][1][2][2];                                                  
- d[1][3]=c[1][1][1][0];                                                  
- d[1][4]=c[1][1][2][1];                                                  
- d[1][5]=c[1][1][2][0];                                                   
-                                
- d[2][0]=c[2][2][0][0];                                                     
- d[2][1]=c[2][2][1][1];                                                   
- d[2][2]=c[2][2][2][2];                                                  
- d[2][3]=c[2][2][1][0];                                                  
- d[2][4]=c[2][2][2][1];                                                 
- d[2][5]=c[2][2][2][0];                                                    
-                                
- d[3][0]=c[1][0][0][0];                                                    
- d[3][1]=c[1][0][1][1];                                                   
- d[3][2]=c[1][0][2][2];                                                   
- d[3][3]=c[1][0][1][0];                                                  
- d[3][4]=c[1][0][2][1];                                                  
- d[3][5]=c[1][0][2][0];                                                    
-                                
- d[4][0]=c[2][1][0][0];                                                    
- d[4][1]=c[2][1][1][1];                                                   
- d[4][2]=c[2][1][2][2];                                                   
- d[4][3]=c[2][1][1][0];                                                  
- d[4][4]=c[2][1][2][1];                                                  
- d[4][5]=c[2][1][2][0];                                                   
-                                
- d[5][0]=c[2][0][0][0];                                                    
- d[5][1]=c[2][0][1][1];                                                   
- d[5][2]=c[2][0][2][2];                                                   
- d[5][3]=c[2][0][1][0];                                                 
- d[5][4]=c[2][0][2][1];                                                  
- d[5][5]=c[2][0][2][0];                                                     
+ d[0][0]=c[0][0][0][0];
+ d[0][1]=c[0][0][1][1];
+ d[0][2]=c[0][0][2][2];
+ d[0][3]=c[0][0][1][0];
+ d[0][4]=c[0][0][2][1];
+ d[0][5]=c[0][0][2][0];
+
+ d[1][0]=c[1][1][0][0];
+ d[1][1]=c[1][1][1][1];
+ d[1][2]=c[1][1][2][2];
+ d[1][3]=c[1][1][1][0];
+ d[1][4]=c[1][1][2][1];
+ d[1][5]=c[1][1][2][0];
+
+ d[2][0]=c[2][2][0][0];
+ d[2][1]=c[2][2][1][1];
+ d[2][2]=c[2][2][2][2];
+ d[2][3]=c[2][2][1][0];
+ d[2][4]=c[2][2][2][1];
+ d[2][5]=c[2][2][2][0];
+
+ d[3][0]=c[1][0][0][0];
+ d[3][1]=c[1][0][1][1];
+ d[3][2]=c[1][0][2][2];
+ d[3][3]=c[1][0][1][0];
+ d[3][4]=c[1][0][2][1];
+ d[3][5]=c[1][0][2][0];
+
+ d[4][0]=c[2][1][0][0];
+ d[4][1]=c[2][1][1][1];
+ d[4][2]=c[2][1][2][2];
+ d[4][3]=c[2][1][1][0];
+ d[4][4]=c[2][1][2][1];
+ d[4][5]=c[2][1][2][0];
+
+ d[5][0]=c[2][0][0][0];
+ d[5][1]=c[2][0][1][1];
+ d[5][2]=c[2][0][2][2];
+ d[5][3]=c[2][0][1][0];
+ d[5][4]=c[2][0][2][1];
+ d[5][5]=c[2][0][2][0];
 /*----------------------------------------------------------------------*/
  disd[0] -= 1.;
  disd[1] -= 1.;
  disd[2] -= 1.;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -476,22 +476,22 @@ This routine to establish derivatives of  local material law
 </pre>
 \param          mat   MATERIAL* (i)   material data ...
 \param      matdata   DOUBLE*   (i)   variable mat. data, opti.
-\param         disd   DOUBLE*   (i)   displacement derivatives     
-\param       stress   DOUBLE*   (o)   ele stress (-resultant) vector  
+\param         disd   DOUBLE*   (i)   displacement derivatives
+\param       stress   DOUBLE*   (o)   ele stress (-resultant) vector
 \param            d   DOUBLE**  (o)   derivative of constitutive matrix
 \param          ste   DOUBLE*   (o)   energy
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
-void c1_dmat_nhmfcc( MATERIAL  *mat, 
-                    DOUBLE *matdata, 
-                    DOUBLE *disd,    
-                    DOUBLE *stress,      
-                    DOUBLE **d,      
-                    DOUBLE *ste)       
+void c1_dmat_nhmfcc( MATERIAL  *mat,
+                    DOUBLE *matdata,
+                    DOUBLE *disd,
+                    DOUBLE *stress,
+                    DOUBLE **d,
+                    DOUBLE *ste)
 {
 /*----------------------------------------------------------------------*/
 INT i,j,k,l;
@@ -514,7 +514,7 @@ DOUBLE b[9];
 DOUBLE bt[3][3];
 DOUBLE Wene,Ib,Ic;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1_dmat_nhmfcc");
 #endif
 /*----------------------------------------------------------------------*/
@@ -534,8 +534,8 @@ dstrc_enter("c1_dmat_nhmfcc");
   ym = ccf *( 0.5 * pow((dens/denss),cce) + 0.3 * dens/denss)*es;
 /*----------------------------------- evaluate basic material values ---*/
 /* derivative for material law: */
-  dym= ccf * (0.5*cce*pow((dens/denss),(cce-1.0))+ 0.3/denss) * es; 
-  /*dym= ccf * (dens/pow(denss,cce)+ 0.3/denss) * es;*/ 
+  dym= ccf * (0.5*cce*pow((dens/denss),(cce-1.0))+ 0.3/denss) * es;
+  /*dym= ccf * (dens/pow(denss,cce)+ 0.3/denss) * es;*/
   ym = dym;
 /*----------------------------------------------------------------------*/
 /* determine def. gradient and inverse */
@@ -569,10 +569,10 @@ dstrc_enter("c1_dmat_nhmfcc");
       }
       cci++;
     }
-  } 
+  }
   for (i=0; i<9; i++)   C[i] = FTF[i];
-  
-  
+
+
   /* first invariant */
   Ic = C[0]+C[4]+C[8];
 
@@ -580,7 +580,7 @@ dstrc_enter("c1_dmat_nhmfcc");
   c1inv3(C);
   cci = 0; /* copy to ansiC style */
   for (i=0; i<3; i++) for (j=0; j<3; j++)  Ct[j][i] = C[cci++];
-  
+
 
   /* left cauchy green b: b = F FT = V^2 */
   for (i=0; i<9; i++)   FFT[i] = 0.0;
@@ -595,8 +595,8 @@ dstrc_enter("c1_dmat_nhmfcc");
       }
       cci++;
     }
-  } 
-  for (i=0; i<9; i++)   b[i] = FFT[i]; 
+  }
+  for (i=0; i<9; i++)   b[i] = FFT[i];
   bt[0][0] = b[0];
   bt[1][0] = b[1];
   bt[2][0] = b[2];
@@ -610,100 +610,100 @@ dstrc_enter("c1_dmat_nhmfcc");
   /* first invariant */
   Ib = bt[0][0]+bt[1][1]+bt[2][2];
 /*----------------------------------------------------------------------*/
-  xl=ym*pv/(1.0+pv)/(1.0-2.0*pv); /* lambda */                                
-  g=ym/2.0/(1.0+pv);              /* mue =G */                                     
-  xj=J;                                                              
-  if(xj<1.0E-6)xj=1.0E-6;                                                   
-  f1=xl*log(xj)-g; /* ansiC(log)==ln */                                                          
+  xl=ym*pv/(1.0+pv)/(1.0-2.0*pv); /* lambda */
+  g=ym/2.0/(1.0+pv);              /* mue =G */
+  xj=J;
+  if(xj<1.0E-6)xj=1.0E-6;
+  f1=xl*log(xj)-g; /* ansiC(log)==ln */
 /*----------------------------------------------------------------------*/
   Wene = 0.5*xl*(log(xj))*(log(xj))-g*log(xj)+0.5*g*(Ib-3.0);
   *ste = Wene;
-/*--------------------------------------------------- pk2-spannungen ---*/        
+/*--------------------------------------------------- pk2-spannungen ---*/
   /* lala*/
   for (i=0; i<3; i++)
   {
     for (j=0; j<3; j++)
     {
-       sp[i][j]=f1*Ct[i][j]+g*gk[i][j];                                  
+       sp[i][j]=f1*Ct[i][j]+g*gk[i][j];
   }}
   /* */
-  stress[0]=sp[0][0]; /* ? */                                                         
-  stress[1]=sp[1][1];                                                          
-  stress[2]=sp[2][2];                                                          
-  stress[3]=sp[0][1];                                                          
-  stress[4]=sp[1][2];                                                          
-  stress[5]=sp[0][2];                                                          
-/*-------------------------------------------------- werkstofftensor ---*/        
+  stress[0]=sp[0][0]; /* ? */
+  stress[1]=sp[1][1];
+  stress[2]=sp[2][2];
+  stress[3]=sp[0][1];
+  stress[4]=sp[1][2];
+  stress[5]=sp[0][2];
+/*-------------------------------------------------- werkstofftensor ---*/
   for (k=0; k<3; k++)
   {
     for (l=0; l<3; l++)
     {
       c[0][0][k][l]= xl*Ct[0][0]*Ct[k][l] -
                      f1*(Ct[0][k]*Ct[0][l]+Ct[0][l]*Ct[0][k]) ;
-      
+
       c[1][0][k][l]= xl*Ct[1][0]*Ct[k][l] -
                      f1*(Ct[1][k]*Ct[0][l]+Ct[1][l]*Ct[0][k]) ;
-      
+
       c[1][1][k][l]= xl*Ct[1][1]*Ct[k][l] -
                      f1*(Ct[1][k]*Ct[1][l]+Ct[1][l]*Ct[1][k]) ;
-      
+
       c[2][0][k][l]= xl*Ct[2][0]*Ct[k][l] -
                      f1*(Ct[2][k]*Ct[0][l]+Ct[2][l]*Ct[0][k]) ;
-      
+
       c[2][1][k][l]= xl*Ct[2][1]*Ct[k][l] -
                      f1*(Ct[2][k]*Ct[1][l]+Ct[2][l]*Ct[1][k]) ;
-      
+
       c[2][2][k][l]= xl*Ct[2][2]*Ct[k][l] -
                      f1*(Ct[2][k]*Ct[2][l]+Ct[2][l]*Ct[2][k]) ;
   }}
 /**/
- d[0][0]=c[0][0][0][0];                                                   
- d[0][1]=c[0][0][1][1];                                                   
- d[0][2]=c[0][0][2][2];                                                  
- d[0][3]=c[0][0][1][0];                                                  
- d[0][4]=c[0][0][2][1];                                                  
- d[0][5]=c[0][0][2][0];                                                  
-                                              
- d[1][0]=c[1][1][0][0];                                                    
- d[1][1]=c[1][1][1][1];                                                   
- d[1][2]=c[1][1][2][2];                                                  
- d[1][3]=c[1][1][1][0];                                                  
- d[1][4]=c[1][1][2][1];                                                  
- d[1][5]=c[1][1][2][0];                                                   
-                                
- d[2][0]=c[2][2][0][0];                                                     
- d[2][1]=c[2][2][1][1];                                                   
- d[2][2]=c[2][2][2][2];                                                  
- d[2][3]=c[2][2][1][0];                                                  
- d[2][4]=c[2][2][2][1];                                                 
- d[2][5]=c[2][2][2][0];                                                    
-                                
- d[3][0]=c[1][0][0][0];                                                    
- d[3][1]=c[1][0][1][1];                                                   
- d[3][2]=c[1][0][2][2];                                                   
- d[3][3]=c[1][0][1][0];                                                  
- d[3][4]=c[1][0][2][1];                                                  
- d[3][5]=c[1][0][2][0];                                                    
-                                
- d[4][0]=c[2][1][0][0];                                                    
- d[4][1]=c[2][1][1][1];                                                   
- d[4][2]=c[2][1][2][2];                                                   
- d[4][3]=c[2][1][1][0];                                                  
- d[4][4]=c[2][1][2][1];                                                  
- d[4][5]=c[2][1][2][0];                                                   
-                                
- d[5][0]=c[2][0][0][0];                                                    
- d[5][1]=c[2][0][1][1];                                                   
- d[5][2]=c[2][0][2][2];                                                   
- d[5][3]=c[2][0][1][0];                                                 
- d[5][4]=c[2][0][2][1];                                                  
- d[5][5]=c[2][0][2][0];                                                     
+ d[0][0]=c[0][0][0][0];
+ d[0][1]=c[0][0][1][1];
+ d[0][2]=c[0][0][2][2];
+ d[0][3]=c[0][0][1][0];
+ d[0][4]=c[0][0][2][1];
+ d[0][5]=c[0][0][2][0];
+
+ d[1][0]=c[1][1][0][0];
+ d[1][1]=c[1][1][1][1];
+ d[1][2]=c[1][1][2][2];
+ d[1][3]=c[1][1][1][0];
+ d[1][4]=c[1][1][2][1];
+ d[1][5]=c[1][1][2][0];
+
+ d[2][0]=c[2][2][0][0];
+ d[2][1]=c[2][2][1][1];
+ d[2][2]=c[2][2][2][2];
+ d[2][3]=c[2][2][1][0];
+ d[2][4]=c[2][2][2][1];
+ d[2][5]=c[2][2][2][0];
+
+ d[3][0]=c[1][0][0][0];
+ d[3][1]=c[1][0][1][1];
+ d[3][2]=c[1][0][2][2];
+ d[3][3]=c[1][0][1][0];
+ d[3][4]=c[1][0][2][1];
+ d[3][5]=c[1][0][2][0];
+
+ d[4][0]=c[2][1][0][0];
+ d[4][1]=c[2][1][1][1];
+ d[4][2]=c[2][1][2][2];
+ d[4][3]=c[2][1][1][0];
+ d[4][4]=c[2][1][2][1];
+ d[4][5]=c[2][1][2][0];
+
+ d[5][0]=c[2][0][0][0];
+ d[5][1]=c[2][0][1][1];
+ d[5][2]=c[2][0][2][2];
+ d[5][3]=c[2][0][1][0];
+ d[5][4]=c[2][0][2][1];
+ d[5][5]=c[2][0][2][0];
 /*----------------------------------------------------------------------*/
  disd[0] -= 1.;
  disd[1] -= 1.;
  disd[2] -= 1.;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -18,15 +18,15 @@ Maintainer: Andreas Lipka
 #include "../headers/standardtypes.h"
 #include "../headers/optimization.h"
 #include "opt_prototypes.h"
-/*! 
-\addtogroup OPTIMIZATION 
+/*!
+\addtogroup OPTIMIZATION
 *//*! @{ (documentation module open)*/
 
 
 
 /*!----------------------------------------------------------------------
 \brief the optimization main structure
-<pre>                                                            al 06/01   
+<pre>                                                            al 06/01
 defined in opt_cal_main.c
 </pre>
 *----------------------------------------------------------------------*/
@@ -64,7 +64,7 @@ extern struct _STATIC_VAR  *statvar;
 extern struct _MATERIAL  *mat;
 
 
-void linking (INT phase, DOUBLE *grdobj, DOUBLE *grdcon, DOUBLE *var, 
+void linking (INT phase, DOUBLE *grdobj, DOUBLE *grdcon, DOUBLE *var,
              DOUBLE *grdobj_lin, DOUBLE *grdcon_lin, DOUBLE *var_lin)
 {
 /* -------------------------------------------------------------------------- */
@@ -84,7 +84,7 @@ CONTAINER     container;        /* contains variables defined in container.h */
 /* ---------------------------------------------------------------------------------- */
   numvarlin = opt->strat.fsd->numvar_lin;
 /* --------------------------------------- write linked grdobj and grdcon vectors --- */
-  if(phase == 1) 
+  if(phase == 1)
   {
    for(i=0; i<actfield->dis[0].numele; i++)
    {
@@ -99,7 +99,7 @@ CONTAINER     container;        /* contains variables defined in container.h */
                                    \approx 1-1/m_{ref}\sum \rho_{i} V_{i}
      \partial c / \partial \rho_{i}=-1/m_{ref} V_{i}   */
    }
-    
+
    for(i=0; i< numvarlin; i++)
    {
     var_lin[i] = var[i];
@@ -107,7 +107,7 @@ CONTAINER     container;        /* contains variables defined in container.h */
   }
 
 /* ------------------------------ rewrite var from OC algo to original var length --- */
-  if(phase == 2) 
+  if(phase == 2)
   {
    for(i=0; i<actfield->dis[0].numele; i++)
    {
@@ -136,4 +136,4 @@ CONTAINER     container;        /* contains variables defined in container.h */
    - linking rules: link material 2 with 1
                     link material 3 with 2
 		    link material 4 with 3 and so on */
-		  
+

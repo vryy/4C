@@ -10,10 +10,10 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
-\addtogroup FLUID2_PRO 
+/*!
+\addtogroup FLUID2_PRO
 *//*! @{ (documentation module open)*/
-#ifdef D_FLUID2_PRO 
+#ifdef D_FLUID2_PRO
 #include "../headers/standardtypes.h"
 #include "../fluid2/fluid2_prototypes.h"
 #include "fluid2pro_prototypes.h"
@@ -25,7 +25,7 @@ Maintainer: Steffen Genkinger
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -33,17 +33,17 @@ extern ALLDYNA      *alldyn;
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief control routine for element integration of fluid2pro
 
 <pre>                                                         basol 10/02
 
 This routine controls the element evaluation:
 -actual vel. and pres. variables are set
--element integration is performed --> element stiffness matrix and 
+-element integration is performed --> element stiffness matrix and
                                   --> element load vectors
--element load vector due to dirichlet conditions is calculated				      
-			     
+-element load vector due to dirichlet conditions is calculated
+
 </pre>
 \param  *data	         FLUID_DATA     (i)
 \param  *elev	         ELEMENT	(i)   actual velocity element
@@ -52,26 +52,26 @@ This routine controls the element evaluation:
 \param  *emass_global    ARRAY	        (o)   ele mass matrix
 \param  *lmass_global    ARRAY	        (o)   lumped mass matrix
 \param  *gradopr_global  ARRAY	        (o)   gradient operator
-\param  *etforce_global  ARRAY	        (o)   element time force 
+\param  *etforce_global  ARRAY	        (o)   element time force
 \param  *eiforce_global  ARRAY	        (o)   ele iteration force
 \param  *edforce_global  ARRAY	        (o)   ele dirichlet force
 \param*  hasdirich       int	        (o)   element flag
 \param   init	         int	        (i)   init flag
-\return void                                               
-                                 
+\return void
+
 ------------------------------------------------------------------------*/
 void f2pro_calele(
-	        ELEMENT        *elev, 
-	        ELEMENT        *elep,            
-                ARRAY          *estif_global,   
+	        ELEMENT        *elev,
+	        ELEMENT        *elep,
+                ARRAY          *estif_global,
                 ARRAY          *emass_global,
 		ARRAY          *lmass_global,
-		ARRAY          *gradopr_global,   
+		ARRAY          *gradopr_global,
 	        ARRAY          *etforce_global,
-		ARRAY          *eiforce_global, 
+		ARRAY          *eiforce_global,
 		ARRAY          *edforce_global,
-		INT             *hasdirich,      
-		INT             init            
+		INT             *hasdirich,
+		INT             init
 	       )
 {
 static ARRAY     eveln_a;    /* element velocities at (n)               */
@@ -103,22 +103,22 @@ static DOUBLE  **derxy;
 static ARRAY     derxypr_a;  /* coordinate - derivatives for pressure shape functions */
 static DOUBLE  **derxypr;
 static ARRAY     xyze_a;     /* coordinates of the element */
-static DOUBLE  **xyze; 
+static DOUBLE  **xyze;
 static ARRAY     w1_a;         /* working array of arbitrary chosen size     */
 static DOUBLE  **wa1;          /* used in different element routines         */
 static DOUBLE  **estif;        /* pointer to global ele-stif                 */
 static DOUBLE  **emass;        /* pointer to galerkin ele-stif               */
-static DOUBLE  **lmass;        /* pointer to galerkin lumped ele mass matrix */ 
+static DOUBLE  **lmass;        /* pointer to galerkin lumped ele mass matrix */
 static DOUBLE  **gradopr;      /* pointer to gradient operator               */
 static DOUBLE  *etforce ;      /* pointer to Time RHS                        */
 static DOUBLE  *eiforce;       /* pointer to Iteration RHS                   */
 static DOUBLE  *edforce;       /* pointer to RHS due to dirichl. conditions  */
 static FLUID_DYNAMIC *fdyn;    /* pointer to fluid dynamic variables         */
 DOUBLE  dirich[MAXDOFPERELE];  /* dirichlet values of act. ele               */
-INT dirich_onoff[MAXDOFPERELE]; /* dirichlet flags of act. ele               */ 
+INT dirich_onoff[MAXDOFPERELE]; /* dirichlet flags of act. ele               */
 INT iel;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2pro_calele");
 #endif
 if (init==1) /* allocate working arrays and set pointers */
@@ -146,7 +146,7 @@ if (init==1) /* allocate working arrays and set pointers */
    eiforce = eiforce_global->a.dv;
    etforce = etforce_global->a.dv;
    edforce = edforce_global->a.dv;
-   
+
    fdyn = alldyn[genprob.numff].fdyn;
    goto end;
 } /* endif (init==1) */
@@ -162,7 +162,7 @@ amzero(etforce_global);
 amzero(edforce_global);
 *hasdirich=0;
 /*---------------------------------------------------- set element data */
-if (fdyn->pro_calveln==1) 
+if (fdyn->pro_calveln==1)
    f2pro_calset(elev,elep,xyze,eveln,epren);
 /*-------------------------------- calculate element stiffness matrices */
 /*                                            and element force vectors */
@@ -171,15 +171,15 @@ f2pro_calint(elev,elep,
              xyze,funct,functpr,deriv,derivpr,xjm,derxy,derxypr,
              eveln,epren,
              velint,covint,vderxy,pderxy,wa1,
-             dirich,deriv2,dirich_onoff);     
+             dirich,deriv2,dirich_onoff);
 /*-------------- calculate the element lumped mass matrix just one time */
-if (fdyn->pro_lum==1)	  
+if (fdyn->pro_lum==1)
    f2pro_lmass(lmass,emass,elev->numnp);
 /*------------------------------- calculate element load vector edforce */
 if (fdyn->pro_caldirich==1)
 {
    switch (fdyn->pro_profile)
-   { 
+   {
    case 1:
       fluid_pm_caldirich_parabolic(elev,edforce,estif,emass,fdyn->dta,fdyn->theta,hasdirich);
    break;
@@ -199,11 +199,11 @@ dsassert(elev->locsys==locsys_no,"locsys not implemented for this element!\n");
 
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of f2pro_calele */
 
 #endif

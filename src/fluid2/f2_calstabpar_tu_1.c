@@ -10,7 +10,7 @@ Maintainer: Thomas Hettich
 </pre>
 
 ------------------------------------------------------------------------*/
-#ifdef D_FLUID2TU 
+#ifdef D_FLUID2TU
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #include "fluid2.h"
@@ -21,7 +21,7 @@ Maintainer: Thomas Hettich
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -30,11 +30,11 @@ extern ALLDYNA      *alldyn;
 extern struct _GENPROB     genprob;
 
 static FLUID_DYNAMIC   *fdyn;
-/*!--------------------------------------------------------------------- 
-\brief routine to calculate stability parameter                
+/*!---------------------------------------------------------------------
+\brief routine to calculate stability parameter
 
-<pre>                                                           he  02/03   
-  									 
+<pre>                                                           he  02/03
+
 
 </pre>
 
@@ -44,28 +44,28 @@ static FLUID_DYNAMIC   *fdyn;
 \param   *velint,     DOUBLE	      (i)    vel at center
 \param   *velint_dc,  DOUBLE	      (i)    vel at center for D.C.
 \param    visc,       DOUBLE	      (i)    viscosity
-\return void                                                                       
+\return void
 
-------------------------------------------------------------------------*/ 
+------------------------------------------------------------------------*/
 void f2_calstabpar_tu_1(
-	            ELEMENT         *ele,      
+	            ELEMENT         *ele,
 		      ELEMENT         *elev,
-		      DOUBLE           eddyint, 
-                  DOUBLE          *velint, 
-                  DOUBLE          *velint_dc, 
-                  DOUBLE           visc    
+		      DOUBLE           eddyint,
+                  DOUBLE          *velint,
+                  DOUBLE          *velint_dc,
+                  DOUBLE           visc
                   )
-{ 
-DOUBLE peclet,xi_Pe; 
+{
+DOUBLE peclet,xi_Pe;
 DOUBLE vel_abs;
-DOUBLE kappa; 
+DOUBLE kappa;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_calstabpar_tu_1");
 #endif
 
 
-/*----------------------------------- calculate peclet number           */  
+/*----------------------------------- calculate peclet number           */
 fdyn   = alldyn[genprob.numff].fdyn;
 ele->e.f2_tu->strom = elev->e.f2->hk[0];
 
@@ -78,39 +78,39 @@ peclet  = ele->e.f2_tu->strom * vel_abs / (2*kappa);
 
 xi_Pe = DMIN(peclet/3, 1);
 
-/*----------------------------------- calculate stabilisation parameter */  
+/*----------------------------------- calculate stabilisation parameter */
 if(vel_abs!=0.0)
-fdyn->tau_tu      = (ele->e.f2_tu->strom*xi_Pe) / (2*vel_abs); 
+fdyn->tau_tu      = (ele->e.f2_tu->strom*xi_Pe) / (2*vel_abs);
 else
-fdyn->tau_tu      = fdyn->dta; 
-  
-fdyn->tau_tu      = DMIN(fdyn->tau_tu,fdyn->dta);   
+fdyn->tau_tu      = fdyn->dta;
+
+fdyn->tau_tu      = DMIN(fdyn->tau_tu,fdyn->dta);
 
 /*------------------- calculate stabilisation parameter for DISC. CAPT. */
-vel_abs = sqrt(pow(velint_dc[0],2) + pow(velint_dc[1],2));      
+vel_abs = sqrt(pow(velint_dc[0],2) + pow(velint_dc[1],2));
 
 peclet  = ele->e.f2_tu->strom_dc * vel_abs / (2*kappa);
 
 xi_Pe  = DMIN(peclet/3, 1);
 
 if(vel_abs != 0.0)
-fdyn->tau_tu_dc  = (ele->e.f2_tu->strom_dc*xi_Pe) / (2*vel_abs); 
+fdyn->tau_tu_dc  = (ele->e.f2_tu->strom_dc*xi_Pe) / (2*vel_abs);
 else
-fdyn->tau_tu_dc  = fdyn->dta; 
-  
-/*------------------------------------- VERSION: DC1 -------------------*/                  
-fdyn->tau_tu_dc  = DMIN(fdyn->tau_tu_dc,fdyn->dta);  
+fdyn->tau_tu_dc  = fdyn->dta;
 
-/*------------------------------------- VERSION: DC2 -------------------*/                  
-/*fdyn->tau_tu_dc  = DMAX(0,fdyn->tau_tu_dc-fdyn->tau_tu);*/  
+/*------------------------------------- VERSION: DC1 -------------------*/
+fdyn->tau_tu_dc  = DMIN(fdyn->tau_tu_dc,fdyn->dta);
+
+/*------------------------------------- VERSION: DC2 -------------------*/
+/*fdyn->tau_tu_dc  = DMAX(0,fdyn->tau_tu_dc-fdyn->tau_tu);*/
 
 /*----------------------------------------------------------------------*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
-} /* end of f2_calstabpar_tu_1*/	
+} /* end of f2_calstabpar_tu_1*/
 
 #endif

@@ -9,7 +9,7 @@ void w1_kroneker(DOUBLE delta[3][3])
 {
 INT    i,j;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_kroneker");
 #endif
 /*----------------------------------------------------------------------*/
@@ -21,10 +21,10 @@ for (i=0; i<3; i++)
   if (i==j) delta[i][j] = 1.0;
   if (i!=j) delta[i][j] = 0.0;
  }
-} 
+}
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -33,16 +33,16 @@ return;
 /*----------------------------------------------------------------------*
  | compute ela. stresses with Hook                        he    04/03   |
  *----------------------------------------------------------------------*/
-void w1_stress_ela(DOUBLE ym, 
-                   DOUBLE pv, 
-                   DOUBLE epsilon[3][3], 
+void w1_stress_ela(DOUBLE ym,
+                   DOUBLE pv,
+                   DOUBLE epsilon[3][3],
                    DOUBLE sigma_el[3][3],
                    DOUBLE delta[3][3]
                    )
 {
 INT    i,j;
 DOUBLE mu,lam,trace;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_stress_ela");
 #endif
 /*-------------------- elast. variables and trace from epsilon --------*/
@@ -56,10 +56,10 @@ for (i=0; i<3; i++)
  {
   sigma_el[i][j] = 2.0*mu*epsilon[i][j] + lam*trace*delta[i][j];
  }
-} 
+}
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -69,15 +69,15 @@ return;
 /*----------------------------------------------------------------------*
  | compute ela. stiffness tensor                           he    04/03   |
  *----------------------------------------------------------------------*/
-void w1_mat_ela(DOUBLE   ym, 
+void w1_mat_ela(DOUBLE   ym,
                 DOUBLE   pv,
-                DOUBLE   delta[3][3], 
-                DOUBLE   c_el[3][3][3][3] 
+                DOUBLE   delta[3][3],
+                DOUBLE   c_el[3][3][3][3]
                 )
 {
 INT    i,j,k,l;
 DOUBLE mu,lam;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_mat_ela");
 #endif
 /*-------------------- elast. variables and trace from epsilon --------*/
@@ -93,14 +93,14 @@ for (i=0; i<3; i++)
    for (l=0; l<3; l++)
    {
     c_el[i][j][k][l] = mu*(delta[i][k]*delta[j][l]+delta[i][l]*delta[j][k])+
-                       lam*delta[i][j]*delta[k][l]; 
+                       lam*delta[i][j]*delta[k][l];
    }
-  } 
+  }
  }
-} 
+}
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -114,11 +114,11 @@ return;
  | Equival = 3 -  JU (1989)                                             |
  | Equival = 4 -  de VREE (1995)                                        |
  *----------------------------------------------------------------------*/
-void w1_equi_eps(DOUBLE   epsilon[3][3], 
-                 DOUBLE   sigma_el[3][3],       
-                 DOUBLE   delta[3][3], 
+void w1_equi_eps(DOUBLE   epsilon[3][3],
+                 DOUBLE   sigma_el[3][3],
+                 DOUBLE   delta[3][3],
                  INT      Equival,
-                 DOUBLE   *eta, 
+                 DOUBLE   *eta,
                  DOUBLE   eta_der[3][3],
                  DOUBLE   pv,
                  DOUBLE   k
@@ -128,7 +128,7 @@ INT    i,j;
 DOUBLE depsilon[3][3];
 DOUBLE I_1,J_2,epseps;
 DOUBLE K0,K1,K2,K3,ROOT;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_equi_eps");
 #endif
 /*----------------------------------------------------------------------*/
@@ -143,7 +143,7 @@ if (Equival == 1)
   {
    *eta += 0.5*epsilon[i][j]*sigma_el[i][j];
    eta_der[i][j] = sigma_el[i][j];
-  } 
+  }
  }
 } /* if */
 
@@ -155,16 +155,16 @@ if (Equival == 2)
   for(j=0; j<3; j++)
   {
    *eta += epsilon[i][j]*sigma_el[i][j];
-  } 
+  }
  }
  *eta = sqrt(*eta);
- 
+
  for(i=0; i<3; i++)
  {
   for(j=0; j<3; j++)
   {
    eta_der[i][j] = sigma_el[i][j]/(*eta);
-  } 
+  }
  }
 } /* if */
 
@@ -176,7 +176,7 @@ if (Equival == 3)
   for(j=0; j<3; j++)
   {
    *eta += 0.5*epsilon[i][j]*sigma_el[i][j];
-  } 
+  }
  }
  *eta = sqrt(*eta);
 
@@ -185,7 +185,7 @@ if (Equival == 3)
   for(j=0; j<3; j++)
   {
    eta_der[i][j] = 0.5*sigma_el[i][j]/(*eta);
-  } 
+  }
  }
 } /* if */
 
@@ -202,7 +202,7 @@ if (Equival == 4)
    for(j=0; j<3; j++)
    {
     epseps += epsilon[i][j]*epsilon[i][j];
-   } 
+   }
   }
   J_2 = 0.5*(epseps - I_1*I_1/3.0);
 
@@ -211,7 +211,7 @@ if (Equival == 4)
   K1 = (k-1.0)/(1.0-2.0*pv);
   K2 = (12.0*k)/(1.0+pv)/(1.0+pv);
   K3 = (1.0)/(2.0*k);
-	
+
   ROOT = sqrt(K1*K1*I_1*I_1+K2*J_2);
  *eta  = K0*I_1+K3*ROOT;
 
@@ -221,7 +221,7 @@ if (Equival == 4)
    {
     depsilon[i][j] = epsilon[i][j];
     if(i==j) depsilon[i][j]=depsilon[i][j]-I_1/3.0;
-   } 
+   }
   }
 
   for(i=0; i<3; i++)
@@ -237,14 +237,14 @@ if (Equival == 4)
     {
      eta_der[i][j] = 0.0;
     }
-   } 
+   }
   }
 
 } /* if */
 
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -254,11 +254,11 @@ return;
 /*----------------------------------------------------------------------*
  | create tensor from vector !!!!!!only for strains!!!!   he    04/03   |
  *----------------------------------------------------------------------*/
-void w1_4to9(DOUBLE  *vector, 
-             DOUBLE   tensor[3][3]       
+void w1_4to9(DOUBLE  *vector,
+             DOUBLE   tensor[3][3]
              )
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_4to9");
 #endif
 /*----------------------------------------------------------------------*/
@@ -274,7 +274,7 @@ dstrc_enter("w1_4to9");
    tensor[2][2] = vector[3];
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -283,11 +283,11 @@ return;
 /*----------------------------------------------------------------------*
  | reduce tensor to vector                                 he    04/03   |
  *----------------------------------------------------------------------*/
-void w1_9to4(DOUBLE   tensor[3][3], 
-             DOUBLE  *vector       
+void w1_9to4(DOUBLE   tensor[3][3],
+             DOUBLE  *vector
              )
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_9to4");
 #endif
 /*----------------------------------------------------------------------*/
@@ -297,7 +297,7 @@ dstrc_enter("w1_9to4");
    vector[3] = tensor[2][2];
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -306,11 +306,11 @@ return;
 /*----------------------------------------------------------------------*
  | reduce 4-stufigen tensor to 2-stufigen tensor           he    04/03   |
  *----------------------------------------------------------------------*/
-void w1_81to16(DOUBLE   tensor4[3][3][3][3], 
-               DOUBLE **tensor2       
+void w1_81to16(DOUBLE   tensor4[3][3][3][3],
+               DOUBLE **tensor2
               )
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_81to16");
 #endif
 /*----------------------------------------------------------------------*/
@@ -336,7 +336,7 @@ tensor2[3][2] = tensor4[2][2][0][1];
 tensor2[3][3] = tensor4[2][2][2][2];
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -345,11 +345,11 @@ return;
 /*----------------------------------------------------------------------*
  | reduce 4-stufigen tensor to 2-stufigen tensor           he    04/03   |
  *----------------------------------------------------------------------*/
-void w1_81to16_1(DOUBLE   tensor4[3][3][3][3], 
-                 DOUBLE   tensor2[4][4]       
+void w1_81to16_1(DOUBLE   tensor4[3][3][3][3],
+                 DOUBLE   tensor2[4][4]
               )
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_81to16_1");
 #endif
 /*----------------------------------------------------------------------*/
@@ -375,7 +375,7 @@ tensor2[3][2] = tensor4[2][2][0][1];
 tensor2[3][3] = tensor4[2][2][2][2];
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -387,7 +387,7 @@ return;
  | DAMTYPE=1 - LINEAR-ENTFESTIGENDES DAMAGING                           |
  | DAMTYPE=2 - EXPONENTIELLES DAMAGING                                  |
  *----------------------------------------------------------------------*/
-void w1_dam_typ(DOUBLE *damage, 
+void w1_dam_typ(DOUBLE *damage,
                 DOUBLE *dam_deriv,
                 DOUBLE kappa,
                 DOUBLE Kappa_0,
@@ -397,7 +397,7 @@ void w1_dam_typ(DOUBLE *damage,
                 INT    Damtyp
                 )
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_dam_typ");
 #endif
 /*---------------- DAMTYPE=1 - LINEAR-ENTFESTIGENDES DAMAGING -----------*/
@@ -424,7 +424,7 @@ if (Damtyp == 2)
 } /* end if Damtyp */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -433,13 +433,13 @@ return;
 /*----------------------------------------------------------------------*
  | BESTIMMUNG DES SEKANTENTENSORS                         he    04/03   |
  *----------------------------------------------------------------------*/
-void w1_sec(DOUBLE damage, 
+void w1_sec(DOUBLE damage,
             DOUBLE c_el[3][3][3][3],
             DOUBLE c_sec[3][3][3][3]
             )
 {
 INT    i,j,k,l;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_sec");
 #endif
 /*----------------------------------------------------------------------*/
@@ -453,13 +453,13 @@ for(i=0; i<3; i++)
    for(l=0; l<3; l++)
    {
     c_sec[i][j][k][l] = (1.0-damage)*c_el[i][j][k][l];
-   } 
-  } 
- } 
-} 
+   }
+  }
+ }
+}
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -469,13 +469,13 @@ return;
 /*----------------------------------------------------------------------*
  | BESTIMMUNG DES SPANNUNGSTENSORS                        he    04/03   |
  *----------------------------------------------------------------------*/
-void w1_stress(DOUBLE c_sec[3][3][3][3], 
+void w1_stress(DOUBLE c_sec[3][3][3][3],
                DOUBLE epsilon[3][3],
                DOUBLE sigma[3][3]
               )
 {
 INT    i,j,k,l;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_stress");
 #endif
 /*----------------------------------------------------------------------*/
@@ -490,13 +490,13 @@ for(i=0; i<3; i++)
    for(l=0; l<3; l++)
    {
     sigma[i][j] = sigma[i][j] + c_sec[i][j][k][l]*epsilon[k][l];
-   } 
-  } 
- } 
-} 
+   }
+  }
+ }
+}
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -505,55 +505,55 @@ return;
 /*----------------------------------------------------------------------*
  | BESTIMMUNG DER SPANNUNGSKOMPONENTEN sig                he    04/03   |
  *----------------------------------------------------------------------*/
-void w1_cond(DOUBLE sig[4], 
+void w1_cond(DOUBLE sig[4],
              DOUBLE **d
               )
 {
 INT    i,j;
 DOUBLE sig_con[4];
 DOUBLE d_con[4][4];
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_cond");
 #endif
 /*----------------------------------------------------------------------*/
 
 if (d[3][3] != 0.0)
-{ 
+{
  for(i=0; i<3; i++)
  {
   sig_con[i]= sig[i]-sig[3]*d[i][3]/d[3][3];
- }  
+ }
 
  for(i=0; i<3; i++)
  {
   sig[i] = sig_con[i];
- }  
+ }
 
  for(i=0; i<3; i++)
  {
   for (j=0; j<3; j++)
   {
    d_con[i][j]=d[i][j]-d[i][3]*d[3][j]/d[3][3];
-  }  
- }  
-   
+  }
+ }
+
  for(i=0; i<3; i++)
  {
   for (j=0; j<3; j++)
   {
    d[i][j]=d_con[i][j];
-  }  
- }  
+  }
+ }
 
  for(i=0; i<4; i++)
  {
   d[i][3] = 0.0;
   d[3][i] = 0.0;
  }
-}  
+}
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -5,15 +5,15 @@
 <pre>
 Maintainer: Volker Gravemeier
             vgravem@stanford.edu
-            
-            
+
+
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
-\addtogroup ML_FLUID3 
+/*!
+\addtogroup ML_FLUID3
 *//*! @{ (documentation module open)*/
-#ifdef FLUID3_ML 
+#ifdef FLUID3_ML
 #include "../headers/standardtypes.h"
 #include "../fluid3/fluid3_prototypes.h"
 #include "fluid3ml_prototypes.h"
@@ -24,7 +24,7 @@ Maintainer: Volker Gravemeier
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -37,11 +37,11 @@ static FLUID_DYNAMIC *fdyn;
 static DOUBLE Q13  = ONE/THREE;
 static DOUBLE Q112 = ONE/TWELVE;
 
-/*!--------------------------------------------------------------------- 
-\brief routine to calculate submesh stability parameter for fluid2                
+/*!---------------------------------------------------------------------
+\brief routine to calculate submesh stability parameter for fluid2
 
-<pre>                                                       gravem 07/03   
-  									 
+<pre>                                                       gravem 07/03
+
 In this routine, the stability parameter for the actual submesh element
 is calculated.
 
@@ -51,19 +51,19 @@ is calculated.
 \param   *mlvar       FLUID_DYN_ML    (i/o)
 \param   *velint      DOUBLE	      (i)    l-s velocity at ele. center
 \param    visc        DOUBLE	      (i)    viscosity
-\param    iel         INT	      (i)    number of nodes	     
+\param    iel         INT	      (i)    number of nodes
 \param	  typ         DIS_TYP         (i)    element type
-\return void                                                                       
+\return void
 
-------------------------------------------------------------------------*/ 
+------------------------------------------------------------------------*/
 void f3_smstabpar(ELEMENT         *ele,
 		  FLUID_DYN_ML    *mlvar,
-		  DOUBLE	  *velint,  
-		  DOUBLE	   visc,    
-		  INT		   iel,     
+		  DOUBLE	  *velint,
+		  DOUBLE	   visc,
+		  INT		   iel,
 		  DIS_TYP	   typ)
 {
-DOUBLE hdiv=ONE;   /* element length quotient for higher-order elements */  
+DOUBLE hdiv=ONE;   /* element length quotient for higher-order elements */
 DOUBLE velno;      /* velocity norm                                     */
 DOUBLE c_mk;       /* parameter mk                                      */
 DOUBLE dt;         /* time step size                                    */
@@ -72,7 +72,7 @@ DOUBLE re,re1,re2; /* various element Reynolds numbers                  */
 DOUBLE hk;         /* characteristic element length                     */
 DOUBLE aux1;       /* auxiliary parameter                               */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f3_smstabpar");
 #endif
 
@@ -87,7 +87,7 @@ case -1:
       if (iel<10)
          hdiv = TWO;
       else
-         hdiv = THREE;               
+         hdiv = THREE;
    }
    else if (typ==tet10)
    {
@@ -102,7 +102,7 @@ case 0:
       c_mk=Q112;
    else
       c_mk=Q13;
-break;   
+break;
 default:
    dserror("mk > 0 not implemented yet!\n");
 } /* end switch (mlvar->smstamk) */
@@ -117,14 +117,14 @@ case 35: /*-------------------------- version diss. Wall - instationary */
   dt = fdyn->dta;	/* check if dta or dt has to be chosen!!!!!!!! */
   hk = ele->e.f3->smcml/hdiv;
   if (velno>EPS15)
-  { 
+  {
     aux1 = DMIN(hk/TWO/velno,c_mk*hk*hk/FOUR/visc);
     mlvar->smtau = DMIN(dt,aux1);
   }
   else
     mlvar->smtau = DMIN(dt,c_mk*hk*hk/FOUR/visc);
 break;
-   
+
 case 36: /*---------------------------- version diss. Wall - stationary */
   velno = sqrt(velint[0]*velint[0] \
              + velint[1]*velint[1] \
@@ -148,24 +148,24 @@ case 37: /*------------------------------- version Franca/Valentin (2000) */
   if (re2<ONE) re2 = ONE;
   mlvar->smtau = hk*hk/(hk*hk*re1/rc+TWO*visc*re2/c_mk);
 break;
-   
+
 default:
-   dserror("submesh stability parameter version unknown!\n");   
+   dserror("submesh stability parameter version unknown!\n");
 } /* end switch (mlvar->smstapa) */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
-} /* end of f3_smstabpar*/	
+} /* end of f3_smstabpar*/
 
-/*!--------------------------------------------------------------------- 
-\brief routine to calculate submesh subgrid viscosity for fluid3                
+/*!---------------------------------------------------------------------
+\brief routine to calculate submesh subgrid viscosity for fluid3
 
-<pre>                                                       gravem 07/03   
-  									 
+<pre>                                                       gravem 07/03
+
 In this routine, the subgrid viscosity for the actual submesh element
 is calculated.
 
@@ -176,16 +176,16 @@ is calculated.
 \param   *velint      DOUBLE	      (i)    l-s velocity at ele. center
 \param  **vderxy      DOUBLE	      (i)    l-s vel. der. at ele. center
 \param    visc        DOUBLE	      (i)    viscosity
-\param    iel         INT	      (i)    number of nodes	     
-\return void                                                                       
+\param    iel         INT	      (i)    number of nodes
+\return void
 
-------------------------------------------------------------------------*/ 
+------------------------------------------------------------------------*/
 void f3_smsgvisc(ELEMENT         *ele,
                  FLUID_DYN_ML    *mlvar,
-		 DOUBLE 	 *velint,  
-		 DOUBLE 	**vderxy,  
-		 DOUBLE 	  visc,    
-		 INT		  iel,     
+		 DOUBLE 	 *velint,
+		 DOUBLE 	**vderxy,
+		 DOUBLE 	  visc,
+		 INT		  iel,
 		 DIS_TYP          typ)
 {
 DOUBLE hdiv=ONE;   /* element length quotient for higher-order elements */
@@ -195,7 +195,7 @@ DOUBLE pe;         /* element Peclet number                             */
 DOUBLE hk;         /* characteristic element length                     */
 DOUBLE auxfu;      /* auxiliary function                                */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f3_smsgvisc");
 #endif
 
@@ -206,7 +206,7 @@ if (typ==hex20 || typ==hex27)
    if (iel<32)
       hdiv = TWO;
    else
-      hdiv = THREE;		  
+      hdiv = THREE;
 }
 else if (typ==tet10)
 {
@@ -241,32 +241,32 @@ case 2: /*--------------------------------- Smagorinsky version (1963) */
 		     +vderxy[0][2]*vderxy[2][0]+vderxy[1][2]*vderxy[2][1])\
 		     +vderxy[0][1]*vderxy[0][1]+vderxy[1][0]*vderxy[1][0]\
 		     +vderxy[0][2]*vderxy[0][2]+vderxy[2][0]*vderxy[2][0]\
-                     +vderxy[1][2]*vderxy[1][2]+vderxy[2][1]*vderxy[2][1]); 
+                     +vderxy[1][2]*vderxy[1][2]+vderxy[2][1]*vderxy[2][1]);
 /*-------------------------------------------------- subgrid viscosity */
    mlvar->smsgvisc = mlvar->smsmagcon*mlvar->smsmagcon*hk*hk*norovt;
 break;
-   
+
 default:
-   dserror("subgrid viscosity version unknown!\n");   
+   dserror("subgrid viscosity version unknown!\n");
 } /* end switch (mlvar->smsgvi) */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
-} /* end of f3_smsgvisc*/	
+} /* end of f3_smsgvisc*/
 
 void f3_mlcalstabpar(ELEMENT         *ele,
-		     DOUBLE	   *velint,  
-		     DOUBLE	    visc,    
-		     INT  	    iel,     
-		     DIS_TYP  	    typ,    
+		     DOUBLE	   *velint,
+		     DOUBLE	    visc,
+		     INT  	    iel,
+		     DIS_TYP  	    typ,
 		     INT  	    iflag)
 {
 INT    isp;
-DOUBLE hdiv=ONE; 
+DOUBLE hdiv=ONE;
 DOUBLE velno;
 DOUBLE c_mk;
 DOUBLE dt,rc;
@@ -275,7 +275,7 @@ DOUBLE hk;
 DOUBLE aux1;
 STAB_PAR_GLS *gls;	/* pointer to GLS stabilisation parameters	*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f3_mlcalstabpar");
 #endif
 
@@ -283,7 +283,7 @@ dstrc_enter("f3_mlcalstabpar");
 fdyn = alldyn[genprob.numff].fdyn;
 gls    = ele->e.f3->stabi.gls;
 
-if (ele->e.f3->stab_type != stab_gls) 
+if (ele->e.f3->stab_type != stab_gls)
    dserror("routine with no or wrong stabilisation called");
 
 /*------------------------ higher order element diameter modifications ? */
@@ -296,7 +296,7 @@ case -1:
       if (iel<32)
          hdiv = TWO;
       else
-         hdiv = THREE;               
+         hdiv = THREE;
    }
    else if (typ==tet10)
    {
@@ -311,7 +311,7 @@ case 0:
       c_mk=Q112;
    else
       c_mk=Q13;
-break;   
+break;
 default:
    dserror("mk > 0 not implemented yet!");
 } /* end swtich (ele->e.f3->mk) */
@@ -332,11 +332,11 @@ case 35: /*-------------------------- version diss. Wall - instationary */
       {
       case 2:/* continiuty stabilisation */
          re = c_mk*hk*velno/TWO/visc;  /* element reynolds number */
-	 fdyn->tau[isp] = (gls->clamb)*velno*hk/TWO*DMIN(ONE,re);         
+	 fdyn->tau[isp] = (gls->clamb)*velno*hk/TWO*DMIN(ONE,re);
       break;
       default: /* velocity / pressure stabilisation */
          if (velno>EPS15)
-	 { 
+	 {
 	    aux1 = DMIN(hk/TWO/velno , c_mk*hk*hk/FOUR/visc);
             fdyn->tau[isp] = DMIN(dt , aux1);
          }
@@ -346,7 +346,7 @@ case 35: /*-------------------------- version diss. Wall - instationary */
       } /* end switch (isp) */
    } /* end of loop over isp */
 break;
-   
+
 case 36: /*---------------------------- version diss. Wall - stationary */
    velno = sqrt(velint[0]*velint[0] \
                +velint[1]*velint[1] \
@@ -371,7 +371,7 @@ case 36: /*---------------------------- version diss. Wall - stationary */
 	    fdyn->tau[isp] = hk/TWO/velno;
       break;
       }  /* end switch (isp) */
-   } /* end loop over isp */   
+   } /* end loop over isp */
 break;
 
 case 37: /*------------------------------- version Franca/Valentin (2000) */
@@ -388,7 +388,7 @@ case 37: /*------------------------------- version Franca/Valentin (2000) */
      {
      case 2:/* continuity stabilisation */
        re = c_mk*hk*velno/TWO/visc;  /* element reynolds number */
-       fdyn->tau[isp] = (gls->clamb)*velno*hk/TWO*DMIN(ONE,re);         
+       fdyn->tau[isp] = (gls->clamb)*velno*hk/TWO*DMIN(ONE,re);
      break;
      default: /* velocity / pressure stabilisation */
        re1 = TWO*visc*rc/c_mk/hk/hk; /* first element reynolds number */
@@ -398,7 +398,7 @@ case 37: /*------------------------------- version Franca/Valentin (2000) */
        re2 = c_mk*velno*hk/visc; /* second element reynolds number */
        if (re2<ONE)
 	 re2 = ONE;
-       
+
        fdyn->tau[isp] = hk*hk/(hk*hk*re1/rc+TWO*visc*re2/c_mk);
      break;
      } /* end switch (isp) */
@@ -406,23 +406,23 @@ case 37: /*------------------------------- version Franca/Valentin (2000) */
 break;
 
 default:
-   dserror("stability parameter version ISTAP unknown!");   
+   dserror("stability parameter version ISTAP unknown!");
 } /* end switch (ele->e.f3->istapa) */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
-} /* end of f3_mlcalstabpar*/	
+} /* end of f3_mlcalstabpar*/
 
-/*!--------------------------------------------------------------------- 
-\brief routine to calculate subgrid viscosity for fluid3               
+/*!---------------------------------------------------------------------
+\brief routine to calculate subgrid viscosity for fluid3
 
-<pre>                                                      gravem 07/03   
+<pre>                                                      gravem 07/03
 
-In this routine, two versions of a subgrid viscosity (based on the 
+In this routine, two versions of a subgrid viscosity (based on the
 element Peclet number or the Smagorinsky version) may be calculated.
 
 </pre>
@@ -431,26 +431,26 @@ element Peclet number or the Smagorinsky version) may be calculated.
 \param   *velint      DOUBLE	      (i)    vel. at center
 \param  **vderxy      DOUBLE	      (i)    vel. der. at center
 \param    visc        DOUBLE	      (i)    viscosity
-\param    iel,        INT	      (i)    number of nodes	     
+\param    iel,        INT	      (i)    number of nodes
 \param	  typ         DIS_TYP	      (i)    element type
-\return void                                                                       
+\return void
 
-------------------------------------------------------------------------*/ 
+------------------------------------------------------------------------*/
 void f3_calsgvisc(ELEMENT         *ele,
-		  DOUBLE          *velint,  
-		  DOUBLE         **vderxy,  
-		  DOUBLE           visc,    
-		  INT              iel,     
+		  DOUBLE          *velint,
+		  DOUBLE         **vderxy,
+		  DOUBLE           visc,
+		  INT              iel,
 		  DIS_TYP          typ)
 {
 INT    isp;
-DOUBLE hdiv=ONE; 
+DOUBLE hdiv=ONE;
 DOUBLE velno,norovt;
 DOUBLE pek;
 DOUBLE hk;
 DOUBLE auxfu;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f3_calstabpar");
 #endif
 
@@ -462,7 +462,7 @@ if (typ==hex20 || typ==hex27)
    if (iel<32)
       hdiv = TWO;
    else
-      hdiv = THREE;		  
+      hdiv = THREE;
 }
 else if (typ==tet10)
 {
@@ -495,22 +495,22 @@ case 2: /*--------------------------------- Smagorinsky version (1963) */
 		     +vderxy[0][2]*vderxy[2][0]+vderxy[1][2]*vderxy[2][1])\
 		     +vderxy[0][1]*vderxy[0][1]+vderxy[1][0]*vderxy[1][0]\
 		     +vderxy[0][2]*vderxy[0][2]+vderxy[2][0]*vderxy[2][0]\
-                     +vderxy[1][2]*vderxy[1][2]+vderxy[2][1]*vderxy[2][1]); 
+                     +vderxy[1][2]*vderxy[1][2]+vderxy[2][1]*vderxy[2][1]);
 /*-------------------------------------------------- subgrid viscosity */
    fdyn->sugrvisc = fdyn->smagcon*fdyn->smagcon*hk*hk*norovt;
 break;
-   
+
 default:
-   dserror("subgrid viscosity version unknown!\n");   
+   dserror("subgrid viscosity version unknown!\n");
 } /* end switch (fdyn->sgvisc) */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
-} /* end of f3_calsgvisc*/	
+} /* end of f3_calsgvisc*/
 
 
 #endif

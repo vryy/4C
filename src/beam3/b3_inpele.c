@@ -16,7 +16,7 @@ Maintainer: Frank Huber
 #include "beam3.h"
 #include "beam3_prototypes.h"
 
-/*! 
+/*!
 \addtogroup BEAM3
 *//*! @{ (documentation module open)*/
 
@@ -28,26 +28,26 @@ This routine reads all datas of the actual beam element from input file
 
 </pre>
 \param *ele      ELEMENT  (i/o)  actual element
-               
+
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
-    called by: inp_struct_field() 
+    called by: inp_struct_field()
 
 *----------------------------------------------------------------------*/
 void b3inp(ELEMENT *ele)
 {
 INT  i;
 INT  ierr=0;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("b3inp");
 #endif
-/*------------------------------------------------ allocate the element */      
+/*------------------------------------------------ allocate the element */
 ele->e.b3 = (BEAM3*)CCACALLOC(1,sizeof(BEAM3));
 /*-------------- read elements topology --------------------------------*/
 frchk("LIN2",&ierr);
-if (ierr==1) 
+if (ierr==1)
 {
    ele->distyp = line2;
    ele->numnp=2;
@@ -56,7 +56,7 @@ if (ierr==1)
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
 }
 frchk("LIN3",&ierr);
-if (ierr==1) 
+if (ierr==1)
 {
    ele->distyp = line3;
    ele->numnp=3;
@@ -98,7 +98,7 @@ frint_n("CODE",&(ele->e.b3->hc[1]),12,&ierr);
 if (ierr!=1) dserror("Reading of BEAM3 element failed");
 /*----------------------------------------------------------------------*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 

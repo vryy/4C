@@ -2,7 +2,7 @@
 \file
 \brief contains the routine 'calfrq',
       to control dynamic eigenvalue analysis for optimization
-       
+
 <pre>
 Maintainer: Andreas Lipka
             lipka@statik.uni-stuttgart.de
@@ -21,8 +21,8 @@ Maintainer: Andreas Lipka
 #include "../solver/solver.h"
 #include "../headers/optimization.h"
 #include "opt_prototypes.h"
-/*! 
-\addtogroup OPTIMIZATION 
+/*!
+\addtogroup OPTIMIZATION
 *//*! @{ (documentation module open)*/
 
 
@@ -55,21 +55,21 @@ extern struct _IO_FLAGS     ioflags;
  | ranks and communicators                                              |
  | This structure struct _PAR par; is defined in main_ccarat.c
  *----------------------------------------------------------------------*/
- extern struct _PAR   par;                      
+ extern struct _PAR   par;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate dynamic variables if needed                      |
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                          al 08/02    |
  | pointer to allocate eigensolution variables                          |
  | dedfined in global_control.c                                         |
  | struct _ALLEIG       *alleig;                                        |
  *----------------------------------------------------------------------*/
-extern ALLEIG              *alleig;   
+extern ALLEIG              *alleig;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 02/02    |
  | number of load curves numcurve                                       |
@@ -90,7 +90,7 @@ extern enum _CALC_ACTION calc_action[MAXFIELD];
 
 /*!----------------------------------------------------------------------
 \brief the optimization main structure
-<pre>                                                            al 06/01   
+<pre>                                                            al 06/01
 defined in opt_cal_main.c
 </pre>
 *----------------------------------------------------------------------*/
@@ -102,7 +102,7 @@ DOUBLE acttime;
 /*----------------------------------------------------------------------*
  |  routine to control dynamic eigenvalue analysis              al 08/02|
  *----------------------------------------------------------------------*/
-void calfrq(INT init) 
+void calfrq(INT init)
 {
 INT             i,j;                /* some counters                    */
 static INT      numeq;              /* number of equations on this proc */
@@ -160,7 +160,7 @@ static ARRAY vec_a; static DOUBLE   *vec;           /* eigenvectors of reduced p
 static ARRAY ind_a; static INT      *ind;           /* subspace specific */
 
 INT    isiz;
-INT    nn  ; /* real problem size (number of unknowns)            */            
+INT    nn  ; /* real problem size (number of unknowns)            */
 INT    nnm ; /* length of pointer array maxa                      */
 INT    nwk ; /* size of matrix a                                  */
 INT    nwm ; /* size of matrix b                                  */
@@ -182,7 +182,7 @@ INT    iprint;
 
 INT    dof, nvec;
 DOUBLE totmass;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("calfrq");
 #endif
 /*----------------------------------------------------------------------*/
@@ -199,7 +199,7 @@ sdyn        =   alldyn[0].sdyn;
 container.isdyn   = 0;            /* static calculation */
 container.actndis = 0;            /* only one discretisation */
 container.fieldtyp  = actfield->fieldtyp;
-#ifdef PARALLEL 
+#ifdef PARALLEL
 actintra    = &(par.intra[0]);
 /* if we are not parallel, we have to allocate an alibi intra-communicator structure */
 #else
@@ -226,11 +226,11 @@ if (actintra->intra_fieldtyp != structure) goto end;
 if(init==1)
 {/*init==1*/
   isiz = actsolv->nsysarray*(INT)(sizeof(SPARSE_TYP));
-  actsolv->sysarray_typ = 
+  actsolv->sysarray_typ =
   (SPARSE_TYP*)CCAREALLOC(actsolv->sysarray_typ,isiz);
   if (!actsolv->sysarray_typ) dserror("Allocation of memory failed");
 
-  actsolv->sysarray = 
+  actsolv->sysarray =
   (SPARSE_ARRAY*)CCAREALLOC(actsolv->sysarray,isiz);
   if (!actsolv->sysarray_typ) dserror("Allocation of memory failed");
 
@@ -295,7 +295,7 @@ if(init==1)
   rtfou  = amdef("rtfou"  ,&rtfou_a  ,numvec,1,"DV");
 /*---------------------------------- initialize solver on all matrices */
 /*
-NOTE: solver init phase has to be called with each matrix one wants to 
+NOTE: solver init phase has to be called with each matrix one wants to
       solve with. Solver init phase has to be called with all matrices
       one wants to do matrix-vector products and matrix scalar products.
       This is not needed by all solver libraries, but the solver-init phase
@@ -327,7 +327,7 @@ NOTE: solver init phase has to be called with each matrix one wants to
   }
 /*----------------- init the assembly for stiffness and for mass matrix */
 init_assembly(actpart,actsolv,actintra,actfield,stiff_array,0);
-if(!alleig->ilmp) 
+if(!alleig->ilmp)
 {
   init_assembly(actpart,actsolv,actintra,actfield,mass_array,0);
 }
@@ -373,7 +373,7 @@ container.dirich       = NULL;
 container.global_numeq = actsolv->sol[0].numeq_total;
 container.kstep        = 0;
 container.actndis      = 0;            /* only one discretisation */
-if(alleig->ilmp) *action = calc_struct_linstifflmass; 
+if(alleig->ilmp) *action = calc_struct_linstifflmass;
 if(alleig->ilmp)
 {
   calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,&container,action);
@@ -383,7 +383,7 @@ calelm(actfield,actsolv,actpart,actintra,stiff_array,mass_array,
                                   lumpedmass,
                                   NULL,numeq_total,0,action);
 */
-} 
+}
 else
 {
   calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,&container,action);
@@ -411,7 +411,7 @@ if(*sysarray_typ==skymatrix)
   for (i=0; i<sky_copy->A.fdim; i++)  sky_copy->A.a.dv[i] = sky->A.a.dv[i];
 }
 /*----------------------------------------------------------------------*/
-nn     = numeq_total;     /* real problem size (number of unknowns)            */            
+nn     = numeq_total;     /* real problem size (number of unknowns)            */
 nnm    = sky->maxaf.fdim; /* length of pointer array maxa                      */
 nwk    = sky->A.fdim;     /* size of matrix a                                  */
 if(alleig->ilmp) nwm    = numeq_total;     /* size of matrix b                                  */
@@ -453,16 +453,16 @@ if(alleig->ilmp)
          work3,
          rtolv,
          ind,
-         &nn ,  
-         &nnm,  
-         &nwk,  
-         &nwm,  
-         &nc ,  
+         &nn ,
+         &nnm,
+         &nwk,
+         &nwm,
+         &nc ,
          &nsta,
          &isol,
          &nnz,
          eigfou,
-         rfou,  
+         rfou,
          &nroot,
          &nitem,
          &nsmax,
@@ -493,16 +493,16 @@ else
          work3,
          rtolv,
          ind,
-         &nn ,  
-         &nnm,  
-         &nwk,  
-         &nwm,  
-         &nc ,  
+         &nn ,
+         &nnm,
+         &nwk,
+         &nwm,
+         &nc ,
          &nsta,
          &isol,
          &nnz,
          eigfou,
-         rfou,  
+         rfou,
          &nroot,
          &nitem,
          &nsmax,
@@ -521,7 +521,7 @@ else
 
 
    /*------------------------------------------------ distribute result */
-#ifdef PARALLEL 
+#ifdef PARALLEL
       MPI_Bcast(itervec,numeq_total*numvec,MPI_DOUBLE,0,actintra->MPI_INTRA_COMM);
 #endif
 /*--------------------------------------- save data for optimization ---*/
@@ -535,9 +535,9 @@ for (i=0;i<opt->oeig->numeigv;i++)
 {
   for (j=0;j<numeq_total;j++)
   {
-    opt->oeig->eigs[i] += 
-             lumpedmass[j] 
-           * itervec->vec.a.dv[i*numeq_total+j] 
+    opt->oeig->eigs[i] +=
+             lumpedmass[j]
+           * itervec->vec.a.dv[i*numeq_total+j]
            * itervec->vec.a.dv[i*numeq_total+j];
   }
 }
@@ -553,8 +553,8 @@ for (i=0;i<opt->oeig->numeigv;i++)
     solserv_result_total(actfield,actintra, &(actsolv->sol[0]),0,
                        &(actsolv->sysarray[stiff_array]),
                        &(actsolv->sysarray_typ[stiff_array]));
-    
-    opt_g_out(gr_disp); 
+
+    opt_g_out(gr_disp);
   }
 /*---------------------------------------------------------- get result */
   for (nvec=0; nvec<nroot; nvec++)
@@ -570,7 +570,7 @@ for (i=0;i<opt->oeig->numeigv;i++)
                        &(actsolv->sysarray_typ[stiff_array]));
   }
 /*---- ------------------------------------------------------------------*/
-end:   
+end:
 /*---- ----------------------------------------------- cleaning up phase */
 if(init==2)
 {/*init==2*/
@@ -583,10 +583,10 @@ if(init==2)
   solserv_del_vec(&work,3);
 }/*init==2*/
 /*----------------------------------------------------------------------*/
-#ifndef PARALLEL 
+#ifndef PARALLEL
 CCAFREE(actintra);
 #endif
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

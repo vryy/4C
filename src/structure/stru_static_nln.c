@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Michael Gee
@@ -22,7 +22,7 @@ extern struct _FIELD      *field;
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -32,10 +32,10 @@ extern struct _FILES  allfiles;
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 *----------------------------------------------------------------------*/
- extern struct _PAR   par;                      
+ extern struct _PAR   par;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -54,7 +54,7 @@ extern struct _SOLVAR  *solv;
 
 <pre>                                                         m.gee 8/00
 -the partition of one proc (all discretizations)
--the type is in partition.h                                                  
+-the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -76,11 +76,11 @@ extern struct _IO_FLAGS     ioflags;
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par;                      
+ extern struct _PAR   par;
 /*----------------------------------------------------------------------*
  | enum _CALC_ACTION                                      m.gee 1/02    |
  | command passed from control routine to the element level             |
@@ -92,7 +92,7 @@ extern enum _CALC_ACTION calc_action[MAXFIELD];
 /*----------------------------------------------------------------------*
  |  routine to control nonlinear static execution       m.gee 11/01     |
  *----------------------------------------------------------------------*/
-void stanln() 
+void stanln()
 {
 INT           i;                  /* simply a counter */
 INT           numeq;              /* number of equations on this proc */
@@ -120,7 +120,7 @@ NR_CONTROLTYP controltyp;         /* type of path following technic */
 
 DIST_VECTOR  *re;                 /* vector of out of balance loads */
 DIST_VECTOR  *rsd;                /* vector for incremental displacements */
-DIST_VECTOR  *dispi;              /* incrementel displacements */              
+DIST_VECTOR  *dispi;              /* incrementel displacements */
 
 SOLVAR       *actsolv;            /* pointer to active solution structure */
 PARTITION    *actpart;            /* pointer to active partition */
@@ -137,24 +137,24 @@ CONTAINER     container;          /* contains variables defined in container.h *
 container.isdyn   = 0;              /* static computation */
 container.actndis = 0;              /* only one discretisation */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("stanln");
 #endif
 /*--------------- check wether this calculation is a restart or not ---*/
 restart = genprob.restart;
 /*----------------------------------------------------------------------*/
 /*------------ the distributed system matrix, which is used for solving */
-/* 
+/*
 NOTE: This routine only uses 1 global sparse matrix, which was created
       in global_mask_matrices. If You need more, it is necessary to allocate
       more matrices in actsolv->sysarray.
-      Then one has to either copy the sparisty mask from 
+      Then one has to either copy the sparisty mask from
       actsolv->actsysarray[0] to the others if using the same matrix format,
-      or one has to call global mask matrices again for another type of 
+      or one has to call global mask matrices again for another type of
       sparsity mask.
       Normally a control routine should not mix up different storage formats
       for system matrices
-*/         
+*/
 /*---- indize in the vector actsolv->sysarray[] of the stiffness matrix */
 /*   the sparse matrix actsolv->sysarray[actsysarray] is used as system */
 /*                                                               matrix */
@@ -178,12 +178,12 @@ break;
 case tot_lagr:
    container.kintyp = 2;
 break;
-default: 
+default:
    dserror("Unknown typ of kinematic");
 break;
 }
 
-#ifdef PARALLEL 
+#ifdef PARALLEL
 actintra    = &(par.intra[0]);    /*     the field's intra-communicator */
 /*---------------- if we are not parallel, we have to allocate a pseudo */
 /*                                         intra-communicator structure */
@@ -213,7 +213,7 @@ calstatserv_findcontroldof(actfield,
                            statvar->control_node_global,
                            statvar->control_dof,
                            &(statvar->controlnode),
-                           &cdof); 
+                           &cdof);
 /*--------------- reldof are dof numbers wanted for output  to err file */
 if(ioflags.relative_displ>0)
 {
@@ -227,7 +227,7 @@ if(ioflags.relative_displ>0)
 /*              type of control algorithm (displacement, arclenght ...) */
 controltyp = statvar->nr_controltyp;
 /*------------------------------------------------- get number of steps */
-nstep      = statvar->nstep; 
+nstep      = statvar->nstep;
 /*------------------------------------ get maximum number of iterations */
 maxiter    = statvar->maxiter;
 /*----------------------------------------------- number of rhs vectors */
@@ -271,7 +271,7 @@ init_assembly(actpart,actsolv,actintra,actfield,actsysarray,0);
 calinit(actfield,actpart,action,&container);
 /*----------------------------------------- write output of mesh to gid */
 if (par.myrank==0)
-if (ioflags.struct_disp_gid||ioflags.struct_stress_gid) 
+if (ioflags.struct_disp_gid||ioflags.struct_stress_gid)
    out_gid_msh();
 /*-------------------------------------- create the original rhs vector */
 /*-------------------------- set action before of calrhs --- genk 10/02 */
@@ -301,7 +301,7 @@ amdef("arcfac",&(nln_data.arcfac),nstep,1,"DV");
 amzero(&(nln_data.arcfac));
 /*----------------------------------------- output to GID postprozessor */
 if (ioflags.struct_disp_gid==1 || ioflags.struct_stress_gid==1)
-if (par.myrank==0) 
+if (par.myrank==0)
 {
    /* colors the partitions in the postprocessing, if this is sequentiell*/
    /*              the picture of the partitions can be quite boring... */
@@ -369,15 +369,15 @@ for (kstep=0; kstep<nstep; kstep++)
                            actsolv->nrhs, actsolv->rhs,
                            actsolv->nsol, actsolv->sol,
                            1            , dispi,
-                           &container);  /* contains variables defined in container.h */ 
+                           &container);  /* contains variables defined in container.h */
    /*--------------- give the restartinfo to the associated variables --*/
    /* kstep = restart; --*/
-     kstep = restart+1; 
+     kstep = restart+1;
    /*--------------------------------------------- switch restart off --*/
-     restart = 0; 
+     restart = 0;
    /*----------------------- give back temporary storage of new input --*/
      statvar->stepsize = stepsi;
-     statvar->nstep = nstep; 
+     statvar->nstep = nstep;
      statvar->maxiter = maxiter;
      statvar->resevery_restart = restartevery;
    }
@@ -395,7 +395,7 @@ for (kstep=0; kstep<nstep; kstep++)
          &nln_data,
           controltyp,
          &container);
-   /*-------------------------------------- make equillibrium iteration */  
+   /*-------------------------------------- make equillibrium iteration */
    conequ(actfield,
           actsolv,
           actpart,
@@ -411,8 +411,8 @@ for (kstep=0; kstep<nstep; kstep++)
           reldof,
           &nln_data,
           controltyp,
-          &container);    
-   /*-- update for nonlinear material models - new stress/strain values */  
+          &container);
+   /*-- update for nonlinear material models - new stress/strain values */
    *action = calc_struct_update_istep;
    container.dvec         = NULL;
    container.dirich       = NULL;
@@ -420,7 +420,7 @@ for (kstep=0; kstep<nstep; kstep++)
    container.kstep        = 0;
    calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,&container,action);
    /*-------------- check, if output is to be written is this loadstep */
-   mod_displ =    kstep  % statvar->resevry_disp;        
+   mod_displ =    kstep  % statvar->resevry_disp;
    mod_stress =   kstep  % statvar->resevry_stress;
    mod_restart =  kstep  % statvar->resevery_restart;
    /*-------------------------------------- perform stress calculation */
@@ -433,7 +433,7 @@ for (kstep=0; kstep<nstep; kstep++)
          container.dirich       = NULL;
          container.global_numeq = 0;
          container.kstep        = 0;
-         calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,&container,action); 
+         calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,&container,action);
          /*---------------------- reduce stresses, so they can be written */
          /*- this makes the result of the stress calculation redundant on */
          /*                                                         procs */
@@ -451,7 +451,7 @@ for (kstep=0; kstep<nstep; kstep++)
       }
    }
    /*----------------------------------------- printout results to gid */
-   if (par.myrank==0) 
+   if (par.myrank==0)
    {
        if (ioflags.struct_disp_gid==1 && mod_displ==0)
        out_gid_sol("displacement",actfield,actintra,kstep,0,ZERO);
@@ -460,7 +460,7 @@ for (kstep=0; kstep<nstep; kstep++)
    }
    /*----------------------------------- printout results to pss file */
    if(mod_restart==0)
-  { 
+  {
    switch(controltyp)
     {
     case control_disp:                        /* displacement control */
@@ -474,11 +474,11 @@ for (kstep=0; kstep<nstep; kstep++)
                            actsolv->nrhs, actsolv->rhs,
                            actsolv->nsol, actsolv->sol,
                            1            , dispi,
-                           &container);  /* contains variables defined in container.h */ 
+                           &container);  /* contains variables defined in container.h */
     break;
     case control_arc:                            /* arclenght control */
       dserror("restart for arclengh not yet impl.");
-    break;  
+    break;
     case control_load:
       dserror("load control not yet impl.");
     break;
@@ -500,11 +500,11 @@ solserv_del_vec(&(rsd),3);
 solserv_del_vec(&(dispi),2);
 /*----------------------------------------------------------------------*/
 end:
-#ifndef PARALLEL 
+#ifndef PARALLEL
 CCAFREE(actintra);
 #endif
 amdel(&(nln_data.arcfac));
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -538,12 +538,12 @@ void conpre(  /*!< rueckgabe INT da kein prototyp definiert wurde! */
 {
 INT                  init;             /* solver flag */
 DOUBLE               prenorm;          /* norm of predictor step */
-DOUBLE               controldisp;      /* displacment value at controled dof */ 
+DOUBLE               controldisp;      /* displacment value at controled dof */
 DOUBLE               rldiff;           /* forgot.... */
 DOUBLE               spi;              /* forgot.... */
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("conpre");
 #endif
 /*----------------------------------------------------------------------*/
@@ -576,7 +576,7 @@ init=0;
 /*
 oll_print(actsolv->sysarray[actsysarray].oll,7);
 */
-solver_control(  
+solver_control(
                  actsolv,                             /* active solver typ        */
                  actintra,                            /* my intra-comunicators    */
                &(actsolv->sysarray_typ[actsysarray]), /* Systemmatrixtyp          */
@@ -630,7 +630,7 @@ else                             nln_data->csp = nln_data->sp1 / spi;
 sp1 = gradient of controlled load path in first increment
 spi = gradient of controlled load path in current increment
 
-csp =  sp1/spi is a relation of the current gradient of the load curve to 
+csp =  sp1/spi is a relation of the current gradient of the load curve to
 the initial gradient in the first step, so
 if csp turns to zero, a limit or saddle point is reached, and if
 csp takes negative values we are on a branch which is going downwards
@@ -654,7 +654,7 @@ solserv_copy_vec(&(rsd[0]),&(dispi[0]));
 /*---------------------------------------- make new norm of load vector */
 nln_data->rrnorm = nln_data->rinorm * nln_data->rlnew;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -688,8 +688,8 @@ INT                  init;                   /* init flag for solver */
 INT                  itemax;                 /* max. number of corrector steps allowed */
 DOUBLE               stepsize;               /* stepsize */
 INT                  convergence=0;          /* test flag for convergence */
-INT                  j;                  
-DOUBLE               rl0;                    /* some norms and working variables */                   
+INT                  j;
+DOUBLE               rl0;                    /* some norms and working variables */
 DOUBLE               rlold;
 DOUBLE               rlnew;
 DOUBLE               rlpre;
@@ -701,19 +701,19 @@ DOUBLE               told;
 DOUBLE               disval;
 DOUBLE               rli;
 
-INT                  rel_dof;                 
-DOUBLE               reldisval[6];                 
-DOUBLE               reldis;                 
+INT                  rel_dof;
+DOUBLE               reldisval[6];
+DOUBLE               reldis;
 
 ARRAY                intforce_a;             /* global redundant vector of internal forces */
 DOUBLE              *intforce;               /* pointer to intforce_a.a.dv */
-#ifdef PARALLEL 
+#ifdef PARALLEL
 static ARRAY intforcerecv_a;
 static DOUBLE *intforcerecv;
 #endif
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("conequ");
 #endif
 /*----------------------------------------------------------------------*/
@@ -729,7 +729,7 @@ stepsize            = statvar->stepsize;
 itemax              = statvar->maxiter;
 /*-------------------------------- update total displacements on sol[0] */
 solserv_add_vec(&(dispi[0]),&(actsolv->sol[0]),1.0);
-/*---------- put actsolv->sol[kstep] to the nodes (total displacements) */ 
+/*---------- put actsolv->sol[kstep] to the nodes (total displacements) */
 solserv_result_total(
                      actfield,
                      actintra,
@@ -745,20 +745,20 @@ if (actintra->intra_rank==0) conequ_printhead(kstep,controltyp,cdof,nln_data->cs
 solserv_vecnorm_euclid(actintra,&(dispi[0]),&dnorm);
 /*-------------------------------------- norm of residual displacements */
 solserv_vecnorm_euclid(actintra,&(rsd[0]),&dinorm);
-/*------------------------------------- total disp value of control dof */ 
+/*------------------------------------- total disp value of control dof */
 solserv_getele_vec(actintra,
                    &(actsolv->sysarray_typ[actsysarray]),
                    &(actsolv->sysarray[actsysarray]),
                    &(actsolv->sol[0]),
                    cdof,
                    &disval);
-/*------------------------------------------- print out first iteration */                   
+/*------------------------------------------- print out first iteration */
 if (actintra->intra_rank==0)
 conequ_printiter(*itnum,disval,rlnew,dinorm,renorm,energy,dnorm,nln_data->rrnorm);
 /*----------------------------------------------------------------------*/
 /*----------------------------- create an array for the internal forces */
 intforce = amdef("intforce",&intforce_a,actsolv->sol[0].numeq_total,1,"DV");
-#ifdef PARALLEL 
+#ifdef PARALLEL
 if (intforcerecv_a.Typ != cca_DV)
 {
    intforcerecv = amdef("tmpintf",&intforcerecv_a,actsolv->sol[0].numeq_total,1,"DV");
@@ -783,7 +783,7 @@ solserv_scalarprod_vec(&(actsolv->rhs[actsysarray]),rlnew);
 solserv_copy_vec(&(actsolv->rhs[actsysarray+1]),&(re[0]));
 /*------------------------------------------ scale the re[0] with rlnew */
 solserv_scalarprod_vec(&(re[0]),rlnew);
-/* put residual displacements to the nodes (needed for material, eas ..)*/              
+/* put residual displacements to the nodes (needed for material, eas ..)*/
 solserv_result_resid(
                      actfield,
                      actintra,
@@ -792,7 +792,7 @@ solserv_result_resid(
                      &(actsolv->sysarray[actsysarray]),
                      &(actsolv->sysarray_typ[actsysarray])
                      );
-/*-- put incremental displacements to the nodes (needed for material...)*/              
+/*-- put incremental displacements to the nodes (needed for material...)*/
 solserv_result_incre(
                      actfield,
                      actintra,
@@ -821,7 +821,7 @@ calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,container,action);
 oll_print(actsolv->sysarray[actsysarray].oll,7);
 */
 /*--------------------------------------- allreduce the vector intforce */
-#ifdef PARALLEL 
+#ifdef PARALLEL
 amzero(&intforcerecv_a);
 MPI_Allreduce(intforce,intforcerecv,actsolv->sol[0].numeq_total,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
 
@@ -842,7 +842,7 @@ solver_control(  actsolv,
                &(actsolv->sysarray[actsysarray]),
                &(rsd[2]),
                &(re[0]),
-                 init); 
+                 init);
 /*-------------------------------------- solve for original load vector */
 /*                                                          K * du1 = P */
 /*                                 initial guess is value of last solve */
@@ -947,7 +947,7 @@ if (convergence)/*------------------------------------------convergence */
 else/*---------------------------------------------------no convergence */
 {
    if (*itnum < itemax) *itnum = *itnum + 1;
-   else 
+   else
    {
       if (actintra->intra_rank==0)
       {
@@ -958,7 +958,7 @@ else/*---------------------------------------------------no convergence */
    }
 }
 } /*--------------------------------------------- end of iteration loop */
-/*---------------------------------- update data after incremental step */           
+/*---------------------------------- update data after incremental step */
 /*--------------------- copy converged solution from sol[0] to dispi[1] */
 solserv_copy_vec(&(actsolv->sol[0]),&(dispi[1]));
 /*----------------- put converged solution to the elements in next step */
@@ -970,7 +970,7 @@ solserv_result_total(
                      &(actsolv->sysarray[actsysarray]),
                      &(actsolv->sysarray_typ[actsysarray])
                     );
-/*----------------------------------------------- update of load factor */                                  
+/*----------------------------------------------- update of load factor */
 nln_data->rlold = nln_data->rlnew;
 /*--------------- update of parameters for material law and eas etc.... */
 /* nothing needed yet..... */
@@ -982,7 +982,7 @@ if (par.myrank==0)
 }
 /*----------------------------------------------------------------------*/
 amdel(&intforce_a);
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1018,8 +1018,8 @@ void increment_controlarc(INTRA         *actintra,
                           DIST_VECTOR   *dispi,
                           DIST_VECTOR   *disp,
                           DOUBLE         rlnew,
-                          DOUBLE         rlold, 
-                          DOUBLE         stepsize,  
+                          DOUBLE         rlold,
+                          DOUBLE         stepsize,
                           DOUBLE        *rli)
 {
 INT                  i;
@@ -1034,7 +1034,7 @@ DOUBLE               valsqr;
 DOUBLE               rli1,rli2;
 DOUBLE               valcos1,valcos2;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("increment_controlarc");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1072,13 +1072,13 @@ val1 = val2 = val3 = val4 = val5 = val6 = 0.0;
       val3  += (ddisp+rsd2) * (ddisp+rsd2);
       val4  += ddisp * ddisp;
       val5  += ddisp * rsd2;
-      val6  += ddisp * rsd1;   
+      val6  += ddisp * rsd1;
    }/* end of (i=0; i<dispi[0].numeq_total; i++) */
 /*
 C-----------------------------------------------------------------------
-C            PARAMETER FOR QUADRATIC FUNCTION 
+C            PARAMETER FOR QUADRATIC FUNCTION
 C               A1*RLI*RLI + A2*RLI +A3 = 0
-C               A3,A4  TO CHOOSE ONE OF BOTH SOLUTIONS FOR RLI 
+C               A3,A4  TO CHOOSE ONE OF BOTH SOLUTIONS FOR RLI
 C            ARCSCL --> SCALING FACTOR
 C               = 1  SPERICAL ARC-LENGTH-METHOD
 C               = 0  CYLINDRICAL ARC-LENGTH-METHOD
@@ -1086,12 +1086,12 @@ C-----------------------------------------------------------------------
 */
    drl = rlnew - rlold;
    a1 =     val1 + statvar->arcscl*statvar->arcscl;
-   a2 = 2.0*val2 + 2.0*drl*statvar->arcscl*statvar->arcscl;    
+   a2 = 2.0*val2 + 2.0*drl*statvar->arcscl*statvar->arcscl;
    a3 =     val3 + drl*drl*statvar->arcscl*statvar->arcscl - stepsize*stepsize;
    a4 =     val4 + val5;
    a5 =     val6;
    valsqr = a2*a2 - 4.0*a1*a3;
-   if (valsqr < 0.0) dserror("No solution for qudratic function in arclenght-method, try new stepsize"); 
+   if (valsqr < 0.0) dserror("No solution for qudratic function in arclenght-method, try new stepsize");
    else if (valsqr<EPS8) *rli = -a2 / (2.0*a1);
    else
    {
@@ -1110,7 +1110,7 @@ solserv_add_vec(&(rsd[0]),&(dispi[0]),1.0);
 solserv_add_vec(&(rsd[2]),&(rsd[0]),1.0);
 solserv_add_vec(&(rsd[2]),&(dispi[0]),1.0);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1128,12 +1128,12 @@ void increment_controldisp(INTRA *actintra,
                           INT            actsysarray,
                           INT            cdof,
                           DIST_VECTOR   *rsd,
-                          DIST_VECTOR   *dispi,   
+                          DIST_VECTOR   *dispi,
                           DOUBLE        *rli)
 {
 DOUBLE rsd1,rsd2;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("increment_controldisp");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1159,7 +1159,7 @@ solserv_add_vec(&(rsd[0]),&(dispi[0]),1.0);
 solserv_add_vec(&(rsd[2]),&(rsd[0]),1.0);
 solserv_add_vec(&(rsd[2]),&(dispi[0]),1.0);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1172,11 +1172,11 @@ return;
  |  print out iteration head                                 m.gee 11/01|
  |  kstep                           load or time step we are in         |
  |  controltyp                      type of control algorithm           |
- |  cdof                            number of dof that is controlled    |      
+ |  cdof                            number of dof that is controlled    |
  *----------------------------------------------------------------------*/
 void conequ_printhead(INT kstep, NR_CONTROLTYP  controltyp, INT cdof, DOUBLE csp)
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("conequ_printhead");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1231,7 +1231,7 @@ dstrc_enter("conequ_printhead");
    case control_none:
       dserror("Unknown typ of path following technique");
    break;
-   default: 
+   default:
       dserror("Unknown typ of path following technique");
    break;
    }
@@ -1249,7 +1249,7 @@ dstrc_enter("conequ_printhead");
    fprintf(allfiles.out_err,"ITE  DISVAL       RLNEW        DINORM       RENORM       ENERGY       DNORM        RNORM\n");
    fflush(allfiles.out_err);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1263,13 +1263,13 @@ return;
  | dinorm                    norm of residual incremental displacements |
  | renorm                                  Norm of out-of-balance-loads |
  | energy   norm of product of out-of-balance-loads and residual displ. |
- | dnorm                              norm of incremental displacements | 
+ | dnorm                              norm of incremental displacements |
  | rrnorm                                            norm of total load |
  *----------------------------------------------------------------------*/
 void conequ_printiter(INT itnum, DOUBLE disval, DOUBLE rlnew, DOUBLE dinorm,
                      DOUBLE renorm, DOUBLE energy, DOUBLE dnorm, DOUBLE rrnorm)
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("conequ_printiter");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1280,7 +1280,7 @@ dstrc_enter("conequ_printiter");
    itnum,disval,rlnew,dinorm,renorm,energy,dnorm,rrnorm);
    fflush(allfiles.out_err);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

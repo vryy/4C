@@ -15,21 +15,21 @@ Maintainer: Christiane Foerster
 #include "../fluid3/fluid3.h"
 #include "ale2.h"
 
-/*! 
-\addtogroup Ale 
+/*!
+\addtogroup Ale
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
 \brief reads a 2d ale element from the input file
 
-<pre>                                                              mn 06/02 
+<pre>                                                              mn 06/02
 This routine reads a 2d ale element from the input file.
 
 </pre>
 \param *ele  ELEMENT  (o)   the element
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: inp_ale_field()
 
 *----------------------------------------------------------------------*/
@@ -37,10 +37,10 @@ void ale2inp(ELEMENT *ele)
 {
 INT  i;
 INT  ierr=0;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ale2inp");
 #endif
-/*------------------------------------------------ allocate the element */      
+/*------------------------------------------------ allocate the element */
 ele->e.ale2 = (ALE2*)CCACALLOC(1,sizeof(ALE2));
 /*----------------------------------- read stuff needed for ALE element */
 /*---------------------------------------------- read the element nodes */
@@ -99,19 +99,19 @@ if (ierr!=1) dserror("Reading of ALE2 element failed");
 if (ele->numnp==4 || ele->numnp==8 || ele->numnp==9)
 {
    frint_n("GP",&(ele->e.ale2->nGP[0]),2,&ierr);
-   if (ierr!=1) dserror("Reading of ALE2 element failed: integration\n");  
-}   
+   if (ierr!=1) dserror("Reading of ALE2 element failed: integration\n");
+}
 /*-------------------------- read gaussian points for triangle elements */
 if (ele->numnp==3 || ele->numnp==6)
 {
-   frint("GP_TRI",&(ele->e.ale2->nGP[0]),&ierr);   
+   frint("GP_TRI",&(ele->e.ale2->nGP[0]),&ierr);
    if (ierr!=1) dserror("Reading of ALE2 element failed: integration\n");
 }
 /*-------------------------- read gaussian points for triangle elements */
 frint("JAC",&(ele->e.ale2->jacobi),&ierr);
 if (ierr!=1) dserror("Reading of ALE element failed");
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

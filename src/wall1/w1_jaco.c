@@ -16,7 +16,7 @@ Maintainer: Andrea Hund
 #include "wall1.h"
 #include "wall1_prototypes.h"
 
-/*! 
+/*!
 \addtogroup WALL1
 *//*! @{ (documentation module open)*/
 
@@ -31,30 +31,30 @@ void w1_jaco(DOUBLE    **deriv,
 {
 /*----------------------------------------------------------------------*/
 INT k;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_jaco");
 #endif
 /*---------------------------------------------- initialize jacobian ---*/
-/*      CALL MXIR8 (XJM,NUMDFE,NUMDFE,ZERO) */                                      
-/*---------------------------------- determine jacobian at point r,s ---*/       
+/*      CALL MXIR8 (XJM,NUMDFE,NUMDFE,ZERO) */
+/*---------------------------------- determine jacobian at point r,s ---*/
    xjm[0][0] = 0.0 ;
    xjm[0][1] = 0.0 ;
    xjm[1][0] = 0.0 ;
    xjm[1][1] = 0.0 ;
-   
+
    for (k=0; k<iel; k++)
    {
         xjm[0][0] += deriv[0][k] * ele->node[k]->x[0] ;
-        xjm[0][1] += deriv[0][k] * ele->node[k]->x[1] ; 
-        xjm[1][0] += deriv[1][k] * ele->node[k]->x[0] ;  
+        xjm[0][1] += deriv[0][k] * ele->node[k]->x[1] ;
+        xjm[1][0] += deriv[1][k] * ele->node[k]->x[0] ;
         xjm[1][1] += deriv[1][k] * ele->node[k]->x[1] ;
    }
-/*------------------------------------------ determinant of jacobian ---*/        
+/*------------------------------------------ determinant of jacobian ---*/
      *det = xjm[0][0]* xjm[1][1] - xjm[1][0]* xjm[0][1];
-   
-      if (*det<0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");         
+
+      if (*det<0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

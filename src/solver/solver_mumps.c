@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -53,7 +53,7 @@ DOUBLE        *b;
 ARRAY          tmp_a;
 DOUBLE        *tmp;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solver_mumps");
 #endif
 /*----------------------------------------------------------------------*/
@@ -75,7 +75,7 @@ switch(option)
 case 1:
    /*--------------------------------------- This will only do on HPUX! */
    /*---------------------------------------- This will only do on SUN! */
-#ifdef PARALLEL 
+#ifdef PARALLEL
    rc_ptr->comm  =  MPI_Comm_c2f(actintra->MPI_INTRA_COMM);
 #endif
    /*------------------- copy the pointer vectors to fortran numbering */
@@ -97,8 +97,8 @@ case 1:
    /*------------------------------------------ call the solver to init */
    /*--------------------------------- input is dist. assembled matrix */
    /*
-   the matrix is rowsum distributed in a_loc, irn_loc and jcn_loc. 
-   for the mumps analysis phase, the complete matrix sparsity pattern is given 
+   the matrix is rowsum distributed in a_loc, irn_loc and jcn_loc.
+   for the mumps analysis phase, the complete matrix sparsity pattern is given
    on imyrank==0 and is then deallocated
    */
    job       = -1;                       /* analysis phase */
@@ -142,7 +142,7 @@ case 1:
    amdel(&(rc_ptr->irn_glob));
    amdel(&(rc_ptr->jcn_glob));
    }
-   /* set flag, that this matrix has been initialized and is ready for solve */   
+   /* set flag, that this matrix has been initialized and is ready for solve */
    rc_ptr->is_init     = 1;
    rc_ptr->ncall       = 0;
    rc_ptr->is_factored = 0;
@@ -157,14 +157,14 @@ case 0:
    /*--------------------------------- allocate rhs and solution vector */
    b   = amdef("b",&b_a,rc_ptr->numeq_total,1,"DV");
          amzero(&b_a);
-#ifdef PARALLEL 
+#ifdef PARALLEL
    tmp = amdef("tmp",&tmp_a,rc_ptr->numeq_total,1,"DV");
          amzero(&tmp_a);
    /*--------------------------------------------------------- fill rhs */
    for (i=0; i<rhs->numeq; i++)
    {
       dof      = rc_ptr->update.a.iv[i];
-      tmp[dof] = rhs->vec.a.dv[i]; 
+      tmp[dof] = rhs->vec.a.dv[i];
    }
    /*--------------------------------------------- allreduce rhs vector */
    MPI_Allreduce(tmp,b,rc_ptr->numeq_total,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
@@ -174,11 +174,11 @@ case 0:
    for (i=0; i<rhs->numeq; i++)
    {
       dof      = rc_ptr->update.a.iv[i];
-      b[dof]   = rhs->vec.a.dv[i]; 
+      b[dof]   = rhs->vec.a.dv[i];
    }
 #endif
    /*------------------------------------------- set some other values */
-   if (rc_ptr->is_factored) 
+   if (rc_ptr->is_factored)
    {
       job = 3;
    }
@@ -221,7 +221,7 @@ case 0:
    rc_ptr->ncall++;
    rc_ptr->is_factored=1;
    /*------------------------------------------------- broadcast result */
-#ifdef PARALLEL 
+#ifdef PARALLEL
    MPI_Bcast(b,n,MPI_DOUBLE,0,actintra->MPI_INTRA_COMM);
 #endif
    /*------------------------------------------------------- get result */
@@ -236,10 +236,10 @@ break;
 /*----------------------------------------------------------------------*/
 default:
    dserror("Unknown option for solver call to Mumps");
-break;   
+break;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

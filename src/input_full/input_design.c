@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -16,7 +16,7 @@ Maintainer: Malte Neumann
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -33,7 +33,7 @@ extern struct _DESIGN *design;
  *----------------------------------------------------------------------*/
 void inpdesign()
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpctrdesign");
 #endif
 
@@ -50,7 +50,7 @@ inp_dsurface();
 /*----------------------------------------------input of design volumes */
 inp_dvolume();
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -69,7 +69,7 @@ INT  numdnode;
 INT  numdline;
 INT  numdsurf;
 INT  numdvol;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inp_designsize");
 #endif
 
@@ -112,7 +112,7 @@ for (i=0; i<design->ndvol; i++) design->dvol[i].Id = i;
 frrewind();
 /*----------------------------------------------------------------------*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -131,7 +131,7 @@ void inp_dnode()
 INT    i;
 INT    readID;
 DNODE *actdnode;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inp_dnode");
 #endif
 /*-------------------------------------------------------------- rewind */
@@ -149,7 +149,7 @@ for (i=0; i<design->ndnode; i++)
 }
 /*----------------------------------------------------------------------*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -161,7 +161,7 @@ return;
 void read_1_dnode(DNODE *dnode, INT readId)
 {
 INT    i,ierr;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("read_1_dnode");
 #endif
 /*----------------------------------------------------------------------*/
@@ -188,7 +188,7 @@ frchk("END POINT",&ierr);
 while (!ierr) {frread(); frchk("END POINT",&ierr);}
 frread();
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -209,7 +209,7 @@ void inp_dline()
 INT    i;
 DLINE *actdline;
 INT    readID;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inp_dline");
 #endif
 
@@ -227,7 +227,7 @@ for (i=0; i<design->ndline; i++)
 }
 /*----------------------------------------------------------------------*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -241,7 +241,7 @@ void read_1_dline(DLINE *dline, INT readId)
 {
 INT    i,ierr;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("read_1_dline");
 #endif
 /*----------------------------------------------------------------------*/
@@ -311,7 +311,7 @@ frchk("END",&ierr);
 while (!ierr) {frread(); frchk("END",&ierr);}
 frread();
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -328,7 +328,7 @@ void inp_dsurface()
 INT    i;
 DSURF *actdsurf;
 INT    readId;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inp_dsurface");
 #endif
 /*------------------------ now read the description of the design lines */
@@ -344,7 +344,7 @@ for (i=0; i<design->ndsurf; i++)
 }
 /*----------------------------------------------------------------------*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -359,7 +359,7 @@ void read_1_dsurf(DSURF *dsurf, INT readId)
 {
 INT    i,ierr;
 char   buffer[100];
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("read_1_dsurf");
 #endif
 /*----------------------------------------------------------------------*/
@@ -401,7 +401,7 @@ frchk("END NURBSURFACE",&ierr);
 while (!ierr) {frread(); frchk("END NURBSURFACE",&ierr);}
 frread();
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -419,7 +419,7 @@ void inp_dvolume()
 INT   i;
 DVOL *actdvol;
 INT   readId;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inp_dvolume");
 #endif
 
@@ -436,7 +436,7 @@ for (i=0; i<design->ndvol; i++)
 }
 /*----------------------------------------------------------------------*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -449,7 +449,7 @@ void read_1_dvol(DVOL *dvol, INT readId)
 {
 INT    i,ierr;
 char   buffer[100];
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("read_1_dvol");
 #endif
 /*----------------------------------------------------------------------*/
@@ -490,7 +490,7 @@ frchk("END VOLUME",&ierr);
 while (!ierr) {frread(); frchk("END VOLUME",&ierr);}
 frread();
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

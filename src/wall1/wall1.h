@@ -12,7 +12,7 @@ Maintainer: Andrea Hund
 *----------------------------------------------------------------------*/
 #ifdef D_WALL1
 
-/*! 
+/*!
 \addtogroup WALL1
 *//*! @{ (documentation module open)*/
 
@@ -67,31 +67,31 @@ DOUBLE       dam;   /* damage variable for output                   */
 DOUBLE       *sigc; /* condensed global stresses                    */
 DOUBLE       *grad; /* actual gradient                              */
 DOUBLE       *dlam; /* uniaxial plastic strain  (- dlam)            */
-DOUBLE       *sigi; /* stresses from last iteration step            */          
-DOUBLE       *epsi; /* strains from last iteration step             */    
+DOUBLE       *sigi; /* stresses from last iteration step            */
+DOUBLE       *epsi; /* strains from last iteration step             */
 DOUBLE       *di  ; /* components d41,d42,d43,d44 of the            */
                     /* constitutive tensor from last iteration step */
 /* epc3D   ...*/  /*SH 12/03*/
 DOUBLE   kappa_c;   /*!< internal variable -> controls evolution in compression*/
 DOUBLE   kappa_t;   /*!< internal variable -> controls evolution in tension*/
                     /* constitutive tensor from last iteration step */
-/* rebar */    
-DOUBLE       *rsig;   /* stress */ 
+/* rebar */
+DOUBLE       *rsig;   /* stress */
 DOUBLE       *reps;   /* strain */
 DOUBLE       *repstn; /* equivalent strain */
 INT          *ryip;   /* flag */
 /* tension stiffening */
-DOUBLE       stcappae;  /* max. elastic strain of the concrete     */              
-DOUBLE       stcappaut; /* fracture strain of the concrete         */          
-DOUBLE       stalpha;   /* angle of the principal concrete stress  */         
-DOUBLE       stthick ;  /* thickness ot the structure              */        
+DOUBLE       stcappae;  /* max. elastic strain of the concrete     */
+DOUBLE       stcappaut; /* fracture strain of the concrete         */
+DOUBLE       stalpha;   /* angle of the principal concrete stress  */
+DOUBLE       stthick ;  /* thickness ot the structure              */
 DOUBLE       stfbd;     /* tension stiffening stress               */
 /* incompatible mode method */
 DOUBLE       D[3];      /* material tangente:D0=C11,D1=C22,D2=C12=C21 */
 /* damgage */
-DOUBLE       kappa;     /* max. equival. strain ever reached*/              
-DOUBLE       aequistrain;     /* actual equival. strain */              
-DOUBLE       damage;    /* damage value*/              
+DOUBLE       kappa;     /* max. equival. strain ever reached*/
+DOUBLE       aequistrain;     /* actual equival. strain */
+DOUBLE       damage;    /* damage value*/
 } W1_IP_WA;
 typedef struct _W1_ELE_WA
 {
@@ -107,18 +107,18 @@ INT           *optdata; /* optimization variable number ... */
  *----------------------------------------------------------------------*/
 typedef enum _WALL_TYPE
 {
-                       plane_strain, 
+                       plane_strain,
                        plane_stress,
-                       rotat_symmet  
+                       rotat_symmet
 } WALL_TYPE;
 /*----------------------------------------------------------------------*
  | type of Kinematik                                       ah 06/02    |
  *----------------------------------------------------------------------*/
 typedef enum _KINEMATIK_TYPE
 {
-                       geo_lin, 
+                       geo_lin,
                        total_lagr,
-                       updated_lagr  
+                       updated_lagr
 } KINEMATIK_TYPE;
 /*----------------------------------------------------------------------*
  | type of model (displacem. or mixed) for QUAD4            ah 08/02    |
@@ -158,7 +158,7 @@ enum
     {
     w1_xy,
     w1_rs
-    }            stresstyp; 
+    }            stresstyp;
 
 struct _ARRAY4D  stress_GP;
 struct _ARRAY4D  stress_ND;

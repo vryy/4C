@@ -16,13 +16,13 @@ Maintainer: Michael Gee
 #include "../solver/solver.h"
 INT cmp_int(const void *a, const void *b );
 DOUBLE cmp_double(const void *a, const void *b );
-/*! 
-\addtogroup MLPCG 
+/*!
+\addtogroup MLPCG
 *//*! @{ (documentation module open)*/
 /*!----------------------------------------------------------------------
 \brief the multilevel preconditioner main structure
 
-<pre>                                                         m.gee 09/02    
+<pre>                                                         m.gee 09/02
 defined in solver_mlpcg.c
 </pre>
 
@@ -32,16 +32,16 @@ extern struct _MLPRECOND mlprecond;
 
 
 /*!---------------------------------------------------------------------
-\brief number the dofs of a coarse level                                             
+\brief number the dofs of a coarse level
 
-<pre>                                                        m.gee 9/02 
+<pre>                                                        m.gee 9/02
 number the dofs of a coarse level, but check,
 whether this has been done before
 </pre>
-\param actintra   INTRA*       (i)   the intra-communicator of this field                  
+\param actintra   INTRA*       (i)   the intra-communicator of this field
 \param numdf      INT          (i)   number of dofs per supernode
 \param actlev     MLLEVEL*     (i/o) the active level of the multilevel hierarchy
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_precond_aggsetdofs(MLLEVEL *actlev,INT numdf, INTRA *actintra)
@@ -52,7 +52,7 @@ INT           sendbuff[MAXPROC],recvbuff[MAXPROC];
 INT           firstdof=0;
 INT           foundit =0;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_precond_aggsetdofs");
 #endif
 /*----------------------------------------------------------------------*/
@@ -69,7 +69,7 @@ for (i=0; i<actlev->nagg; i++)
 }
 /*----------------------------- make total number of procs on each proc */
 /* This is very easy, 'cause there are no supported dofs on higher levels */
-for (i=0; i<nproc; i++) 
+for (i=0; i<nproc; i++)
 {
    if (i==myrank)
       sendbuff[i] = numdf * actlev->nagg;
@@ -96,7 +96,7 @@ for (i=0; i<actlev->nagg; i++)
 }
 /*----------------------------------------------------------------------*/
 exit:;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -107,17 +107,17 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief make the aggregates on the finest grid                                              
+\brief make the aggregates on the finest grid
 
-<pre>                                                        m.gee 9/02 
+<pre>                                                        m.gee 9/02
 IMPORTANT:
 This routine makes disconnected patches of nodes (blocks) in parallel.
 It uses the information from the DBCSR matrix only, expecially the values
 of dbcsr.firstcoupledof and dbcsr.blocks.
-The goal is to create aggregates, that have a user chosen number of 
+The goal is to create aggregates, that have a user chosen number of
 dofs and will later operate as a virtual coarse grid to the multilevel
-preconditioner and will form a coarse grid stiffness matrix in DBCSR format. 
-The aggregates and there dof numbering have to be chosen 
+preconditioner and will form a coarse grid stiffness matrix in DBCSR format.
+The aggregates and there dof numbering have to be chosen
 in a way, that local aggregates have lower dof numbers and aggregates
 on domain boundaries have the high dof numbers. This is very important to
 fullfill the requirements of the DBCSR matrix, which expects no interproc-
@@ -127,15 +127,15 @@ will have to take extra care of interproc smoothing.
 
 Aggregation is therefore done the following way:
 1.) All blocks are split into purely local and interproc blocks.
-2.) All purely local blocks are aggregated 
+2.) All purely local blocks are aggregated
 3.) All interproc blocks are aggregated
 4.) coarse grid dof numbers are assigned starting with the low aggregates
     and taking care of the parallelity
-    
+
 </pre>
-\param actintra   INTRA*       (i)   the intra-communicator of this field                  
+\param actintra   INTRA*       (i)   the intra-communicator of this field
 \param actlev     MLLEVEL*     (i/o) the active level of the multilevel hierarchy
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_precond_agg(MLLEVEL *actlev,INTRA *actintra)
@@ -169,7 +169,7 @@ INT          *bpatch[100];
 INT           nbpatch;
 INT           max;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_precond_agg");
 #endif
 /*----------------------------------------------------------------------*/
@@ -265,9 +265,9 @@ while (nfreeblock != 0)
          }
       }
    }
-   else 
+   else
    actblock = neighblock;
-   if (actblock==NULL && nfreeblock != 0) 
+   if (actblock==NULL && nfreeblock != 0)
    dserror("Severe error in aggregation");
    /* make aggregate */
    /* get neighbours of this block */
@@ -281,7 +281,7 @@ while (nfreeblock != 0)
    actlev->agg[aggcounter].coupling = mlpcg_agglocal;
    actlev->agg[aggcounter].nblock   = nbpatch;
    actlev->agg[aggcounter].block    = (INT**)CCACALLOC(nbpatch,sizeof(INT*));
-   for (i=0; i<nbpatch; i++) 
+   for (i=0; i<nbpatch; i++)
    actlev->agg[aggcounter].block[i] = bpatch[i];
    aggcounter++;
    if (aggcounter==actlev->nagg)
@@ -308,7 +308,7 @@ while (nfreeblock != 0)
    if (nfreeblock>0)
    mlpcg_precond_getneightoagg(&neighblock,bpatch,nbpatch,freeblock,nb,
                                numeq,update,ia,ja);
-} 
+}
 /*---------------------------------- we now make the interproc blocks  */
 nfreeblock  = niblock;
 nb          = niblock;
@@ -332,9 +332,9 @@ while (nfreeblock != 0)
          }
       }
    }
-   else 
+   else
    actblock = neighblock;
-   if (actblock==NULL && nfreeblock != 0) 
+   if (actblock==NULL && nfreeblock != 0)
    dserror("Severe error in aggregation");
    /* make aggregate */
    /* get neighbours of this block */
@@ -346,7 +346,7 @@ while (nfreeblock != 0)
    actlev->agg[aggcounter].coupling = mlpcg_agginterproc;
    actlev->agg[aggcounter].nblock = nbpatch;
    actlev->agg[aggcounter].block  = (INT**)CCACALLOC(nbpatch,sizeof(INT*));
-   for (i=0; i<nbpatch; i++) 
+   for (i=0; i<nbpatch; i++)
    actlev->agg[aggcounter].block[i] = bpatch[i];
    aggcounter++;
    if (aggcounter==actlev->nagg && nfreeblock-nbpatch != 0)
@@ -373,7 +373,7 @@ while (nfreeblock != 0)
    if (nfreeblock>0)
    mlpcg_precond_getneightoagg(&neighblock,bpatch,nbpatch,freeblock,nb,
                                numeq,update,ia,ja);
-} 
+}
 /* do not allow aggregates with a single block, merge with other aggregate */
 for (i=0; i<aggcounter; i++)
 {
@@ -407,10 +407,10 @@ for (i=0; i<aggcounter; i++)
       {
          neighblock = bpatch[j];
          break;
-      } 
+      }
    if (neighblock==NULL)
       continue;
-   /*------------------- find the aggregate that is owner of this block */   
+   /*------------------- find the aggregate that is owner of this block */
    neighagg = NULL;
    for (j=0; j<aggcounter; j++)
    {
@@ -467,23 +467,23 @@ if (actlev->nagg != counter)
 CCAFREE(freeblock);
 CCAFREE(lblock);
 CCAFREE(iblock);
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of mlpcg_precond_agg */
 /*!---------------------------------------------------------------------
-\brief make a neighbourhood to a patch                                              
+\brief make a neighbourhood to a patch
 
-<pre>                                                        m.gee 9/02 
-make a neighbourhood to a patch. Find a neighbour to this neighbourhood 
+<pre>                                                        m.gee 9/02
+make a neighbourhood to a patch. Find a neighbour to this neighbourhood
 and return it. The returned neighbour-neighbour has a graph-distance of 2
 to the patch and will serve as new starting point for an aggregate
 </pre>
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
-void mlpcg_precond_getneightoagg(INT **neighblock, 
+void mlpcg_precond_getneightoagg(INT **neighblock,
                                  INT  *bpatch[],
                                  INT   nbpatch,
                                  INT **freeblock,
@@ -502,7 +502,7 @@ INT       *actblock;
 INT        counter=0;
 INT       *neighpatch[200];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_precond_getneightoagg");
 #endif
 /*----------------------------------------------------------------------*/
@@ -549,14 +549,14 @@ for (i=0; i<nbpatch; i++)
                 goto nextj;
             }
          }
-      }      
+      }
       nextj:;
    }
 }
 /*----------------------------------------------------------------------*/
-/* 
+/*
 now loop the neighbourhood and find first block which is
-1.) part of freeblock (therefore doesn not belong to the patch 
+1.) part of freeblock (therefore doesn not belong to the patch
 2.) not part of the neighbourhood
 3.) neighbour to the neighbourhood
 */
@@ -593,7 +593,7 @@ for (i=0; i<counter; i++)
                (*neighblock)=freeblock[k];
                goto nexttest;
             }
-            
+
          }
       }
       nextcolumn:;
@@ -601,7 +601,7 @@ for (i=0; i<counter; i++)
 }
 nexttest:;
 /*----------------------------------------------------------------------*/
-/* 
+/*
 check whether neiblock is zero or not. if no distance-2 neighbour could be
 found, then find a distance-1 neighbour. If this also is not possible, then
 return neighblock==NULL
@@ -637,25 +637,25 @@ if ((*neighblock)==NULL)
                    goto exit;
                }
             }
-         }      
-      
+         }
+
       }
    }
 }
 /*----------------------------------------------------------------------*/
 exit:;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of mlpcg_precond_getneightoagg */
 /*!---------------------------------------------------------------------
-\brief make a patch of nodal blocks from a list                                              
+\brief make a patch of nodal blocks from a list
 
-<pre>                                                        m.gee 9/02 
+<pre>                                                        m.gee 9/02
 
 </pre>
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_precond_getfreenblocks(INT  *actblock,
@@ -675,7 +675,7 @@ INT        column;
 INT        colstart,colend;
 INT        foundneigh;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_precond_getfreenblocks");
 #endif
 /*----------------------------------------------------------------------*/
@@ -713,7 +713,7 @@ for (j=colstart; j<colend; j++)
                   {
                      foundneigh = 0;
                      goto nextj;
-                  } 
+                  }
                }
             }
             if (foundneigh==1)
@@ -721,7 +721,7 @@ for (j=colstart; j<colend; j++)
                bpatch[(*nbpatch)] = freeblock[i];
                (*nbpatch)++;
                /* limit the size to 4 */
-               if (*nbpatch == 4) 
+               if (*nbpatch == 4)
                   goto exit;
                if ((*nbpatch) == 100) dserror("Fixed size Block patch too small");
             }
@@ -733,7 +733,7 @@ for (j=colstart; j<colend; j++)
 }
 exit:;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -775,7 +775,7 @@ INT           aggcounter;
 MPI_Status    status;
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_precond_mergeagg");
 #endif
 #ifdef PARALLEL
@@ -803,7 +803,7 @@ MPI_Allreduce(owners,owner,MAXPROC*2,MPI_INT,MPI_SUM,actintra->MPI_INTRA_COMM);
 for (n=0; n<nproc; n++) niaggs[n] = 0;
 for (i=0; i<nagg; i++)
 {
-   if (agg[i].coupling==mlpcg_agginterproc) 
+   if (agg[i].coupling==mlpcg_agginterproc)
    {
       iagg           = &(agg[i]);
       niaggs[myrank] = nagg-i;
@@ -816,14 +816,14 @@ MPI_Allreduce(niaggs,niagg,nproc,MPI_INT,MPI_SUM,actintra->MPI_INTRA_COMM);
 max1 = 0;
 for (n=0; n<nproc; n++)
    if (max1 < niagg[n]) max1 = niagg[n];
-/*------------- make an array holding number of blocks for each aggregate */   
+/*------------- make an array holding number of blocks for each aggregate */
 bonaggs = amdef("tmp",&bonaggs_a,nproc,max1,"IA");
 bonagg  = amdef("tmp",&bonagg_a ,nproc,max1,"IA");
 amzero(&bonaggs_a);
 /*--------------------------------------------- fill my nblock to bonaggs */
 for (i=0; i<niagg[myrank]; i++)
    bonaggs[myrank][i] = iagg[i].nblock;
-/*-------------------------------------------------- allreduce this array */   
+/*-------------------------------------------------- allreduce this array */
 MPI_Allreduce(&(bonaggs[0][0]),&(bonagg[0][0]),nproc*max1,MPI_INT,MPI_SUM,actintra->MPI_INTRA_COMM);
 amdel(&bonaggs_a);
 /*-------------------------------- find the maximum number of blocks max2 */
@@ -863,7 +863,7 @@ for (n=0; n<nproc; n++)/* loop over processors */
          actagg = &(iagg[i]);
       /* number of blocks on this aggregate */
       nblock1 = bonagg[n][i];
-      if (nblock1==0) 
+      if (nblock1==0)
          continue;
       /* set pointer to these blocks */
       bptr1 = block[n][i];
@@ -898,7 +898,7 @@ for (n=0; n<nproc; n++)/* loop over processors */
             max = ncouple[k];
             m   = k;
          }
-         if (m==myrank) 
+         if (m==myrank)
             goto found_none;
          /* make list of dofs on m coupled to this aggregate */
          nrdofs = 0;
@@ -939,7 +939,7 @@ for (n=0; n<nproc; n++)/* loop over processors */
                {
                   dof1 = bptr2[k][l+1];
                   index = find_index(dof1,rdofs,nrdofs);
-                  if (index != -1) 
+                  if (index != -1)
                      counter++;
                }
             }
@@ -953,7 +953,7 @@ for (n=0; n<nproc; n++)/* loop over processors */
       /*------------------------------------------------ broadcast this m */
       found_none:
       MPI_Bcast(&m,1,MPI_INT,n,actintra->MPI_INTRA_COMM);
-      if (m==n) 
+      if (m==n)
          continue;
       /*---------------------------------- broadcast which aggregate on m */
       MPI_Bcast(&needagg,1,MPI_INT,n,actintra->MPI_INTRA_COMM);
@@ -962,7 +962,7 @@ for (n=0; n<nproc; n++)/* loop over processors */
       /*------------------------------- if there was no match, do nothing */
       if (myrank==0)
          printf("n %d m %d nmatch %d\n",n,m,nmatch);
-      if (nmatch==0) 
+      if (nmatch==0)
          continue;
       /*-------------------------- m sets pointer to approbiate aggregate */
       if (myrank==m)
@@ -1004,7 +1004,7 @@ for (i=0; i<nagg; i++)
       aggcounter++;
 }
 /*------------------------- do nothing, if number of aggregates unchanged */
-if (aggcounter==nagg) 
+if (aggcounter==nagg)
    goto exit;
 /*---------------- allocate a vector of aggregates to a temporary pointer */
 aggptr = (AGG*)CCACALLOC(aggcounter,sizeof(AGG));
@@ -1043,7 +1043,7 @@ amdel(&bonagg_a);
 am4del(&block_a);
 /*------------------------------------------------------------------------*/
 #endif /* end of PARALLEL */
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

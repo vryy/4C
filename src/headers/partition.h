@@ -11,8 +11,8 @@ Maintainer: Malte Neumann
 
 ---------------------------------------------------------------------*/
 
-/*! 
-\addtogroup PARALLEL 
+/*!
+\addtogroup PARALLEL
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
@@ -20,7 +20,7 @@ Maintainer: Malte Neumann
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -28,7 +28,7 @@ typedef struct _PAR
 {
 INT               myrank;                /*!< the individual processor number */
 INT               nprocs;                /*!< total number of processors */
-#ifdef PARALLEL 
+#ifdef PARALLEL
 INT               numfld;                /*!< number of intra-communicators == number of fields */
 struct _INTRA    *intra;                 /*!< vector of intra-communicator-structures correspondent to vector of FIELDs */
 #endif
@@ -39,7 +39,7 @@ struct _INTRA    *intra;                 /*!< vector of intra-communicator-struc
 
 <pre>                                                         m.gee 9/01
 -holds data associated with one intra-communicator
--the type is in partition.h                                                  
+-the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -48,7 +48,7 @@ typedef struct _INTRA
 enum   _FIELDTYP    intra_fieldtyp;      /*!< type of field */
 INT                 intra_rank;          /*!< proc's intra-rank */
 INT                 intra_nprocs;        /*!< number of procs in this intracomm. */
-#ifdef PARALLEL 
+#ifdef PARALLEL
 MPI_Comm            MPI_INTRA_COMM;      /*!< the intra-communicator itself */
 MPI_Group           MPI_INTRA_GROUP;     /*!< not needed, but for some reason you cannot have an intra-communicator without group */
 #endif
@@ -59,7 +59,7 @@ MPI_Group           MPI_INTRA_GROUP;     /*!< not needed, but for some reason yo
 
 <pre>                                                         m.gee 8/00
 -the partition of one proc (all discretizations)
--the type is in partition.h                                                  
+-the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -75,7 +75,7 @@ struct _PARTDISCRET *pdis;                /*!< vector of partitions of discretiz
 
 <pre>                                                         m.gee 2/02
 -the partition of one proc of one discretization
--the type is in partition.h                                                  
+-the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/

@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -17,7 +17,7 @@ Maintainer: Malte Neumann
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -58,7 +58,7 @@ COLSOLVARS   *colsolvars = NULL;
 MLPCGVARS    *mlpcgvars = NULL;
 #endif
 
-#ifdef DEBUG  
+#ifdef DEBUG
 dstrc_enter("inpctrsol");
 #endif
 
@@ -89,7 +89,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    if (ierr==1)
    {
       /*--------------------------------------------------- MLIB solver */
-      if (strncmp("MLIB_D_SP",buffer,9)==0) 
+      if (strncmp("MLIB_D_SP",buffer,9)==0)
       {
 #ifndef MLIB_PACKAGE
          dserror("MLIB package is not compiled in");
@@ -100,7 +100,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 #endif
       }
       /*-------------------------------------------------- Aztec solver */
-      if (strncmp("Aztec_MSR",buffer,9)==0) 
+      if (strncmp("Aztec_MSR",buffer,9)==0)
       {
 #ifndef AZTEC_PACKAGE
          dserror("Aztec package is not compiled in");
@@ -111,7 +111,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 #endif
       }
       /*---------------------------------------- HYPRE solver BoomerAMG */
-      if (strncmp("HYPRE_BoomerAMG",buffer,15)==0) 
+      if (strncmp("HYPRE_BoomerAMG",buffer,15)==0)
       {
 #ifndef HYPRE_PACKAGE
          dserror("Hypre package is not compiled in");
@@ -122,7 +122,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 #endif
       }
       /*---------------------------------------------- HYPRE solver PCG */
-      if (strncmp("HYPRE_PCG",buffer,9)==0) 
+      if (strncmp("HYPRE_PCG",buffer,9)==0)
       {
 #ifndef HYPRE_PACKAGE
          dserror("Hypre package is not compiled in");
@@ -133,7 +133,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 #endif
       }
       /*-------------------------------------------- HYPRE solver Gmres */
-      if (strncmp("HYPRE_GMRES",buffer,11)==0) 
+      if (strncmp("HYPRE_GMRES",buffer,11)==0)
       {
 #ifndef HYPRE_PACKAGE
          dserror("Hypre package is not compiled in");
@@ -144,7 +144,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 #endif
       }
       /*----------------------------------------- HYPRE solver BiCGstab */
-      if (strncmp("HYPRE_BiCGStab",buffer,14)==0) 
+      if (strncmp("HYPRE_BiCGStab",buffer,14)==0)
       {
 #ifndef HYPRE_PACKAGE
          dserror("Hypre package is not compiled in");
@@ -155,7 +155,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 #endif
       }
       /*------------------------------------------------ solver SuperLU */
-      if (strncmp("ParSuperLU",buffer,10)==0) 
+      if (strncmp("ParSuperLU",buffer,10)==0)
       {
 #ifndef PARSUPERLU_PACKAGE
          dserror("ParSuperLU package is not compiled in");
@@ -166,21 +166,21 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 #endif
       }
       /*------------------------------------------------- solver Lapack */
-      if (strncmp("LAPACK_sym",buffer,10)==0) 
+      if (strncmp("LAPACK_sym",buffer,10)==0)
       {
          solv->solvertyp = lapack_sym;
          solv->lapackvars = (LAPACKVARS*)CCACALLOC(1,sizeof(LAPACKVARS));
          lapackvars = solv->lapackvars;
       }
       /*------------------------------------------------- solver Lapack */
-      if (strncmp("LAPACK_nonsym",buffer,13)==0) 
+      if (strncmp("LAPACK_nonsym",buffer,13)==0)
       {
          solv->solvertyp = lapack_nonsym;
          solv->lapackvars = (LAPACKVARS*)CCACALLOC(1,sizeof(LAPACKVARS));
          lapackvars = solv->lapackvars;
       }
       /*-------------------------------------------------- solver Mumps */
-      if (strncmp("MUMPS_sym",buffer,9)==0) 
+      if (strncmp("MUMPS_sym",buffer,9)==0)
       {
 #ifndef MUMPS_PACKAGE
          dserror("MUMPS package is not compiled in");
@@ -191,7 +191,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 #endif
       }
       /*-------------------------------------------------- solver Mumps */
-      if (strncmp("MUMPS_nonsym",buffer,12)==0) 
+      if (strncmp("MUMPS_nonsym",buffer,12)==0)
       {
 #ifndef MUMPS_PACKAGE
          dserror("MUMPS package is not compiled in");
@@ -202,7 +202,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 #endif
       }
       /*------------------------------------------------ solver Umfpack */
-      if (strncmp("UMFPACK",buffer,7)==0) 
+      if (strncmp("UMFPACK",buffer,7)==0)
       {
 #ifndef UMFPACK
          dserror("UMFPACK is not compiled in");
@@ -211,14 +211,14 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 #endif
       }
       /*------------------------------------------------- solver Colsol */
-      if (strncmp("Colsol",buffer,6)==0) 
+      if (strncmp("Colsol",buffer,6)==0)
       {
          solv->solvertyp = colsol_solver;
          solv->colsolvars = (COLSOLVARS*)CCACALLOC(1,sizeof(COLSOLVARS));
          colsolvars = solv->colsolvars;
       }
       /*------------------------------------------------- solver Spooles */
-      if (strncmp("SPOOLES_nonsym",buffer,11)==0) 
+      if (strncmp("SPOOLES_nonsym",buffer,11)==0)
       {
 #ifndef SPOOLES_PACKAGE
          dserror("SPOOLES package is not compiled in");
@@ -227,7 +227,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 #endif
       }
       /*------------------------------------------------- solver Spooles */
-      if (strncmp("SPOOLES_sym",buffer,11)==0) 
+      if (strncmp("SPOOLES_sym",buffer,11)==0)
       {
 #ifndef SPOOLES_PACKAGE
          dserror("SPOOLES package is not compiled in");
@@ -236,7 +236,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 #endif
       }
       /*--------------------------------------------------- solver MLPCG */
-      if (strncmp("MLPCG",buffer,5)==0) 
+      if (strncmp("MLPCG",buffer,5)==0)
       {
 #ifndef MLPCG
         dserror("MLPCG package is not compiled in");
@@ -296,11 +296,11 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       hyprevars->hypre_prectyp = hypreprec_none;
 
       frchar("HYPRE_IO",buffer,&ierr);
-      if (ierr) 
+      if (ierr)
       {
-       if (strncmp("full",buffer,4)==0)  
+       if (strncmp("full",buffer,4)==0)
           hyprevars->io=1;
-       if (strncmp("none",buffer,4)==0)  
+       if (strncmp("none",buffer,4)==0)
           hyprevars->io=0;
       }
 
@@ -324,20 +324,20 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       }
 
       frchar("HYPRE_IO",buffer,&ierr);
-      if (ierr) 
+      if (ierr)
       {
-       if (strncmp("full",buffer,4)==0)  
+       if (strncmp("full",buffer,4)==0)
           hyprevars->io=1;
-       if (strncmp("none",buffer,4)==0)  
+       if (strncmp("none",buffer,4)==0)
           hyprevars->io=0;
       }
-      
+
       frchar("HYPRE_PARASY",buffer,&ierr);
       if (ierr)
       {
        if (strncmp("symm_pos_def",buffer,12)==0) hyprevars->parasymm = 1;
        if (strncmp("nonsym_def",buffer,10)==0)   hyprevars->parasymm = 2;
-       if (strncmp("non_sym_indef",buffer,13)==0)hyprevars->parasymm = 0;  
+       if (strncmp("non_sym_indef",buffer,13)==0)hyprevars->parasymm = 0;
       }
 
       frint("HYPRE_ITER"   ,&(hyprevars->maxiter)  ,&ierr);
@@ -366,20 +366,20 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       }
 
       frchar("HYPRE_IO",buffer,&ierr);
-      if (ierr) 
+      if (ierr)
       {
-       if (strncmp("full",buffer,4)==0)  
+       if (strncmp("full",buffer,4)==0)
           hyprevars->io=1;
-       if (strncmp("none",buffer,4)==0)  
+       if (strncmp("none",buffer,4)==0)
           hyprevars->io=0;
       }
-      
+
       frchar("HYPRE_PARASY",buffer,&ierr);
       if (ierr)
       {
        if (strncmp("symm_pos_def",buffer,12)==0) hyprevars->parasymm = 1;
        if (strncmp("nonsym_def",buffer,10)==0)   hyprevars->parasymm = 2;
-       if (strncmp("non_sym_indef",buffer,13)==0)hyprevars->parasymm = 0;  
+       if (strncmp("non_sym_indef",buffer,13)==0)hyprevars->parasymm = 0;
       }
 
       frint("HYPRE_ITER"   ,&(hyprevars->maxiter)  ,&ierr);
@@ -408,20 +408,20 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       }
 
       frchar("HYPRE_IO",buffer,&ierr);
-      if (ierr) 
+      if (ierr)
       {
-       if (strncmp("full",buffer,4)==0)  
+       if (strncmp("full",buffer,4)==0)
           hyprevars->io=1;
-       if (strncmp("none",buffer,4)==0)  
+       if (strncmp("none",buffer,4)==0)
           hyprevars->io=0;
       }
-      
+
       frchar("HYPRE_PARASY",buffer,&ierr);
       if (ierr)
       {
        if (strncmp("symm_pos_def",buffer,12)==0) hyprevars->parasymm = 1;
        if (strncmp("nonsym_def",buffer,10)==0)   hyprevars->parasymm = 2;
-       if (strncmp("non_sym_indef",buffer,13)==0)hyprevars->parasymm = 0;  
+       if (strncmp("non_sym_indef",buffer,13)==0)hyprevars->parasymm = 0;
       }
 
       frint("HYPRE_ITER"   ,&(hyprevars->maxiter)  ,&ierr);
@@ -494,7 +494,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frint("COARSENUMDF" ,&(mlpcgvars->numdf)    ,&ierr);
       frint("OVERLAP"     ,&(mlpcgvars->overlap)  ,&ierr);
       frint("REUSE"       ,&(mlpcgvars->reuse)    ,&ierr);
-      
+
       frdouble("PROLONGSMODAMP",&(mlpcgvars->p_omega),&ierr);
       frdouble("TOLERANCE"     ,&(mlpcgvars->tol)    ,&ierr);
       frdouble("GAMMA"         ,&(mlpcgvars->gamma)  ,&ierr);
@@ -502,12 +502,12 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frchar("COARSESOLV" ,buffer,&ierr);
       if (ierr==1)
       {
-         if (strncmp("SPOOLES",buffer,7)==0) 
+         if (strncmp("SPOOLES",buffer,7)==0)
          {
             mlpcgvars->coarsesolv = co_spooles;
 #ifndef SPOOLES_PACKAGE
             dserror("Spooles chosen as coarse solver but not compiled in");
-#endif            
+#endif
          }
          if (strncmp("LAPACK",buffer,6)==0)  mlpcgvars->coarsesolv = co_lapack;
          if (strncmp("ILU",buffer,3)==0)     mlpcgvars->coarsesolv = co_ilu;
@@ -560,7 +560,7 @@ frrewind();
 /*----------------------------------------------------------------------*/
 
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

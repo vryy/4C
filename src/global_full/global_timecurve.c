@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -41,7 +41,7 @@ INT      fdim;
 ARRAY    time_a;
 ARRAY    rlcurve_a;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("dyn_init_curve");
 #endif
 /*----------------------------------------------------------------------*/
@@ -66,7 +66,7 @@ case curve_polygonal:
       time_a.a.dv[fdim]    = curve[actcurve].time.a.da[fdim-1][1];
       rlcurve_a.a.dv[fdim] = curve[actcurve].value.a.da[fdim-1][1];
       /*----------- check whether the time curve is long enough in time */
- /*     
+ /*
       if (nstep*dt-EPS14 > time_a.a.dv[fdim]) dserror("Curve not long enough");
       if (maxtime  > time_a.a.dv[fdim])       dserror("Curve not long enough");
  */
@@ -93,7 +93,7 @@ default:
 break;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -113,7 +113,7 @@ INT      numtstep;
 INT      success=0;
 DOUBLE   time1,time2,val1,val2;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("dyn_facfromcurve");
 #endif
 /*----------------------------------------------------------------------*/
@@ -132,14 +132,14 @@ case curve_polygonal:
             time2 = curve[actcurve].time.a.dv[i+1];
             val1  = curve[actcurve].value.a.dv[i];
             val2  = curve[actcurve].value.a.dv[i+1];
-            
+
             *fac = val1 + (val2-val1)/(time2-time1) * (T-time1);
-            
+
             success=1;
             break;
          }
       }
-      if (!success) 
+      if (!success)
       dserror("Interpolation went wrong");
    }
    else/*=============================================== curve in steps */
@@ -149,7 +149,7 @@ case curve_polygonal:
 break;
 case curve_explicit:
    *fac = dyn_facexplcurve(actcurve,T);
-break;   
+break;
 case curve_none:
    dserror("Type of timecurve unknown");
 break;
@@ -159,14 +159,14 @@ break;
 }
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of dyn_facfromcurve */
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief get factor at a certain time T defined by any explict function
 
 <pre>                                                         genk 06/02
@@ -178,11 +178,11 @@ numex = -3: f(T) = 1-cos(c1*PI*T)
 numex = -4: f(T) = exp(-c1*nu*d*d*T)                       beltrami flow
 numex = -5: f(T) = exp(-c1*a*a*PI*PI*nu*T)                 kim-moin flow
 tbc
-		     
+
 </pre>
 
 \param     actcurve     INT            (i)    number of actual time curve
-\param     T            DOUBLE         (i)    actual time       
+\param     T            DOUBLE         (i)    actual time
 \return DOUBLE
 
 ------------------------------------------------------------------------*/
@@ -198,7 +198,7 @@ DOUBLE a;           /* parameters for Kim-Moin flow */
 DOUBLE s0;
 static DOUBLE savefac;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("dyn_facexplcurve");
 #endif
 
@@ -208,18 +208,18 @@ c2=curve[actcurve].c2;
 
 /*----------------------------------------------------------------------*/
 switch (numex)
-{   
+{
 case -1: /* f(t)=sin(t:C1*PI:2)_for_t<_C1_else_f(t)=1 */
    if (T <= c1)
    {
       val1 = T/c1*PI/2;
-      fac = sin(val1);      
+      fac = sin(val1);
    }
    else
-      fac = ONE;         
+      fac = ONE;
 break;
 case -2: /* f(t)=exp(1-1:t)_for_t<C1_else_const. */
-   if (T < EPS6) 
+   if (T < EPS6)
    {
       fac = ZERO;
    }
@@ -235,20 +235,20 @@ break;
 case -3: /* f(t)=1-cos(2*PI*C1*t) */
    val1 = TWO*PI*c1*T;
    fac  = ONE - cos(val1);
-break;   
+break;
 case -4: /* f(t)=C2*sin(2PI*C1*t) */
    val1 = TWO*c1*PI*T;
    fac  = c2*sin(val1);
 break;
 case -5: /* f(t)=(sin(PI(t:C1-0.5))+1)*0.5 */
    if (T<=c1)
-   { 
+   {
       val1 = PI*(T/c1-ONE/TWO);
       fac = (sin(val1)+ONE)/TWO;
    }
    else
       fac = ONE;
-break;      
+break;
 case -6: /* Beltrami-Flow */
    visc = mat[0].m.fluid->viscosity;
    d = PI/TWO;
@@ -272,7 +272,7 @@ default:
 } /* end switch(numex) */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 

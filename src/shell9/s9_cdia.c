@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 
+\brief contains the routine
  - s9_cdia: which calculates the equivalent element length of one element
 
 *----------------------------------------------------------------------*/
@@ -8,23 +8,23 @@
 #include "../headers/standardtypes.h"
 #include "shell9.h"
 
-/*! 
-\addtogroup SHELL9 
+/*!
+\addtogroup SHELL9
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief calculates the equivalent internal length                                      
+\brief calculates the equivalent internal length
 
 <pre>                                                            sh 10/03
 This routine calculates the equivalent internal length of one element
                    ___      ___
-                  \        \   
+                  \        \
 dia = chi* sqrt ( /___  *  /___ * det J * w(lr) * w(ls)  )  (Dis. Menrath p.68)
                    lr       ls
-                   
+
 with chi = sqrt(2) for Quad4
            1       for Quad8/9
-           
+
 Note: for this calculation, the JACOBIAN is calculated in the middle surface
       -> no need to account for different layers
         -> numklay == 1, nummlay = 1;
@@ -32,17 +32,17 @@ Note: for this calculation, the JACOBIAN is calculated in the middle surface
 \param  ELEMENT   *ele     (i)  the element structure
 \param  S9_DATA   *data    (i)  element integration data
 \param  DOUBLE    *funct   (-)  shape functions at GP
-\param  DOUBLE   **deriv   (-)  shape function derivatives at GP 
+\param  DOUBLE   **deriv   (-)  shape function derivatives at GP
 \param  DOUBLE   **xjm     (-)  jacobian matrix
 \param  DOUBLE   **x       (-)  coordinates of nodal points (global coordinate system)
 \param  DOUBLE  ***a3r     (-)  normed (not shared) director in ref/cur config. (->s9a3ref_extern)
 \
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: s9init() [s9_init.c]
 
 *----------------------------------------------------------------------*/
-void s9_cdia(ELEMENT   *ele, 
+void s9_cdia(ELEMENT   *ele,
              S9_DATA   *data,
              DOUBLE    *funct,
              DOUBLE   **deriv,
@@ -67,7 +67,7 @@ DOUBLE   det;                 /*jacobi-determinant*/
 DOUBLE   dia;                 /*equivalent element length*/
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9_cdia");
 #endif
 /*----------------------------------------------------------------------*/
@@ -114,11 +114,11 @@ for (lr=0; lr<nir; lr++)   /* loop in r-direction */
       facs = data->wgts[ls];
       /*-------------------- shape functions at gp e1,e2 on mid surface */
       s9_funct_deriv(funct,deriv,e1,e2,ele->distyp,1);
-      /*------------------------------------ compute jacobian matrix ---*/       
-      s9jaco(funct,deriv,x,xjm,hte,a3r,0.0,iel,&det,0,1,klayhgt_dummy); 
-      
+      /*------------------------------------ compute jacobian matrix ---*/
+      s9jaco(funct,deriv,x,xjm,hte,a3r,0.0,iel,&det,0,1,klayhgt_dummy);
+
       dia += det * facr*facs;
-    }/*============================================= end of loop over ls */ 
+    }/*============================================= end of loop over ls */
 }/*================================================ end of loop over lr */
 
 if      (iel == 4)             dia = sqrt(2.) * sqrt(dia);
@@ -129,7 +129,7 @@ else dserror("only Quad4/8/9 implemented -> s9_cdia.c");
 ele->e.s9->dia = dia;
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -137,4 +137,4 @@ return;
 /*----------------------------------------------------------------------*/
 #endif /*D_SHELL9*/
 /*! @} (documentation module close)*/
- 
+

@@ -54,7 +54,7 @@ extern struct _GENPROB     genprob;
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -64,11 +64,11 @@ extern struct _FILES  allfiles;
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par;                      
+ extern struct _PAR   par;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
@@ -81,7 +81,7 @@ extern struct _FIELD      *field;
 
 <pre>                                                         m.gee 8/00
 -the partition of one proc (all discretizations)
--the type is in partition.h                                                  
+-the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -104,10 +104,10 @@ struct _RESULTDESCR      *resultdescr;
 /*----------------------------------------------------------------------*/
 /*!
  \brief Read a positions description.
- 
+
  Read a positions description. See if its name equals \a name. If so
  read \a nargs integer arguments and store them in \a args.
-  
+
  \param position   a string of the form "name(x1,...,xn)" read from the input file
  \param name       the expected name
  \param nargs      the expected number of arguments
@@ -123,10 +123,10 @@ static INT parse_position_descr(CHAR* position, CHAR* name, INT nargs, INT* args
   INT name_length;
   INT ret = -1234567890;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("parse_position_descr");
 #endif
-  
+
   lp = strpbrk(position, "(");
   if (lp == NULL) {
     dserror("Missing left parenthesis in position description");
@@ -156,7 +156,7 @@ static INT parse_position_descr(CHAR* position, CHAR* name, INT nargs, INT* args
     ret = 0;
   }
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return ret;
@@ -166,12 +166,12 @@ static INT parse_position_descr(CHAR* position, CHAR* name, INT nargs, INT* args
 /*----------------------------------------------------------------------*/
 /*!
  \brief return the specified value
- 
+
  \param actnode    a node
  \param position   a string of the form "name(x1,...,xn)" read from the input file
                    It describes a value in one of the solution array
                    of the given node.
- 
+
  \author uk
  \date 06/04
  */
@@ -180,8 +180,8 @@ static DOUBLE get_node_result_value(NODE* actnode, CHAR* position)
 {
   INT args[2];
   DOUBLE ret = -1234567890;
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_enter("get_node_result_value");
 #endif
 
@@ -198,7 +198,7 @@ static DOUBLE get_node_result_value(NODE* actnode, CHAR* position)
     printf("\n");
   }
   */
-    
+
   if (parse_position_descr(position, "sol", 2, args) == 1) {
     ret = actnode->sol.a.da[args[0]][args[1]];
   }
@@ -214,8 +214,8 @@ static DOUBLE get_node_result_value(NODE* actnode, CHAR* position)
   else {
     dserror("Unknown position specifier: %s", position);
   }
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return ret;
@@ -229,10 +229,10 @@ static DOUBLE get_node_result_value(NODE* actnode, CHAR* position)
 
  Compare \a actresult with \a givenresult and return 0 if they are
  considered to be equal.
- 
+
  \param err        the file where to document both values
  \param res        the describtion of the expected result including name and tolerance
- 
+
  \author uk
  \date 06/04
  */
@@ -240,8 +240,8 @@ static DOUBLE get_node_result_value(NODE* actnode, CHAR* position)
 static int compare_values(FILE* err, DOUBLE actresult, DOUBLE givenresult, RESULTDESCR *res)
 {
   INT ret = 0;
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_enter("compare_values");
 #endif
 
@@ -255,7 +255,7 @@ static int compare_values(FILE* err, DOUBLE actresult, DOUBLE givenresult, RESUL
     ret = 1;
   }
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return ret;
@@ -269,7 +269,7 @@ static int compare_values(FILE* err, DOUBLE actresult, DOUBLE givenresult, RESUL
 
  Find node with id \a nodenum. Only the given partition and
  discretization is searched.
- 
+
  \author uk
  \date 06/04
  */
@@ -279,8 +279,8 @@ static NODE* find_node(PARTITION* part, INT disnum, INT nodenum)
   INT i;
   NODE* res = NULL;
   PARTDISCRET* pdis;
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_enter("find_node");
 #endif
 
@@ -291,8 +291,8 @@ static NODE* find_node(PARTITION* part, INT disnum, INT nodenum)
       break;
     }
   }
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return res;
@@ -305,7 +305,7 @@ static NODE* find_node(PARTITION* part, INT disnum, INT nodenum)
 
  Find element with id \a elenum. Only the given partition and
  discretization is searched.
- 
+
  \author uk
  \date 06/04
  */
@@ -315,8 +315,8 @@ static ELEMENT* find_element(PARTITION* part, INT disnum, INT elenum)
   INT i;
   ELEMENT* res = 0;
   PARTDISCRET* pdis;
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_enter("find_element");
 #endif
 
@@ -327,8 +327,8 @@ static ELEMENT* find_element(PARTITION* part, INT disnum, INT elenum)
       break;
     }
   }
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return res;
@@ -337,7 +337,7 @@ static ELEMENT* find_element(PARTITION* part, INT disnum, INT elenum)
 
 /*----------------------------------------------------------------------*/
 /*!
-\brief testing of result 
+\brief testing of result
 
 Before checking in the latest version it's necessery to check the whole
 program. In this context it seems to be useful to check the numerical
@@ -345,10 +345,10 @@ results, too. This function compares all predefined values with the
 calculated ones. It's called once, after the calculation finished.
 
 \author genk
-\date 10/03  
+\date 10/03
 */
 /*----------------------------------------------------------------------*/
-void global_result_test() 
+void global_result_test()
 {
 #ifndef PARALLEL
   FIELD  *alefield     = NULL;
@@ -364,10 +364,10 @@ void global_result_test()
   INT i;
   INT nerr = 0;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("global_result_test");
 #endif
-  if (genprob.numresults<=0) goto end; 
+  if (genprob.numresults<=0) goto end;
 
 #ifndef PARALLEL
   if (genprob.numff>-1) fluidfield  = &(field[genprob.numff]);
@@ -388,7 +388,7 @@ void global_result_test()
   for (i=0; i<genprob.numresults; ++i) {
     PARTITION* actpart = NULL;
     RESULTDESCR* res = &(resultdescr[i]);
-    
+
     switch (res->field) {
     case fluid:
       actpart = fluidpart;
@@ -421,7 +421,7 @@ void global_result_test()
       if (actelement == 0) {
         continue;
       }
-    
+
 #ifdef D_AXISHELL
       if (actelement->eltyp == el_axishell) {
         INT args[3];
@@ -438,7 +438,7 @@ void global_result_test()
         }
       }
 #endif
-    
+
 #ifdef D_SHELL9
       if (actelement->eltyp == el_shell9) {
         INT args[3];
@@ -493,7 +493,7 @@ void global_result_test()
 
 /*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return;

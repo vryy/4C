@@ -14,14 +14,14 @@ Maintainer: Michael Gee
 ---------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
-/*! 
-\addtogroup MLPCG 
+/*!
+\addtogroup MLPCG
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
 \brief the multilevel preconditioner main structure
 
-<pre>                                                         m.gee 09/02    
+<pre>                                                         m.gee 09/02
 defined in solver_mlpcg.c
 </pre>
 
@@ -29,18 +29,18 @@ defined in solver_mlpcg.c
 extern struct _MLPRECOND mlprecond;
 
 /*!------------------------------------------------------------------------
-\brief stuff needed by the spooles solver   
+\brief stuff needed by the spooles solver
 
-m.gee 6/01  
+m.gee 6/01
 
-matrix needed by the MLPCG solver on the finest grid only      
+matrix needed by the MLPCG solver on the finest grid only
 
 -------------------------------------------------------------------------*/
 typedef struct _SPO_DATA
 {
 #ifdef SPOOLES_PACKAGE
 FrontMtx               *frontmtx;
-InpMtx                 *mtxA;            
+InpMtx                 *mtxA;
 DenseMtx               *mtxY;
 DenseMtx               *mtxX;
 Graph                  *graph;
@@ -57,7 +57,7 @@ IV                     *ownersIV;
 IV                     *vtxmapIV;
 DV                     *cumopsDV;
 IV                     *ownedColumnsIV;
-InpMtx                 *newA;    
+InpMtx                 *newA;
 DenseMtx               *newY;
 SolveMap               *solvemap;
 #else
@@ -68,16 +68,16 @@ static struct _SPO_DATA sdata;
 
 
 /*!---------------------------------------------------------------------
-\brief lapack solver                                              
+\brief lapack solver
 
-<pre>                                                        m.gee 11/02 
+<pre>                                                        m.gee 11/02
 
 </pre>
-\param z            DOUBLE*      (o)   the solution of the solve 
-\param r            DOUBLE*      (i)   the rhs 
-\param csr          DBCSR*       (i)   the matrix to be solved with 
-\param actintra     INTRA*       (i)   the intra-communicator of this field                  
-\return void                                               
+\param z            DOUBLE*      (o)   the solution of the solve
+\param r            DOUBLE*      (i)   the rhs
+\param csr          DBCSR*       (i)   the matrix to be solved with
+\param actintra     INTRA*       (i)   the intra-communicator of this field
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_precond_spoolessolve(DOUBLE *z, DOUBLE *r, DBCSR *csr, INTRA *actintra)
@@ -88,7 +88,7 @@ INT              myrank,nproc;
 INT              pivotingflag;
 INT             *update,*ia,*ja;
 DOUBLE          *a;
-INT              numeq,numeq_total,nnz; 
+INT              numeq,numeq_total,nnz;
 DOUBLE           cpus[20];
 INT              stats[20];
 INT             *rowind1;
@@ -106,7 +106,7 @@ DOUBLE          *recv;
 ARRAY            recv_a;
 INT              new;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_precond_spoolessolve");
 #endif
 /*----------------------------------------------------------------------*/
@@ -215,7 +215,7 @@ if (new)
 
    InpMtx_permute(sdata.mtxA,IV_entries(sdata.oldToNewIV),IV_entries(sdata.oldToNewIV));
 
-   if (sym==SPOOLES_SYMMETRIC || sym == SPOOLES_HERMITIAN) 
+   if (sym==SPOOLES_SYMMETRIC || sym == SPOOLES_HERMITIAN)
    InpMtx_mapToUpperTriangle(sdata.mtxA);
 
    InpMtx_changeCoordType(sdata.mtxA,INPMTX_BY_CHEVRONS);
@@ -317,7 +317,7 @@ if (new)
    FrontMtx_MPI_split(sdata.frontmtx,sdata.solvemap,stats,msglvl,msgFile,firsttag,actintra->MPI_INTRA_COMM);
 }
 /*----------------------------------------------------------------------*/
-if ( FRONTMTX_IS_PIVOTING(sdata.frontmtx) ) 
+if ( FRONTMTX_IS_PIVOTING(sdata.frontmtx) )
 {
    IV   *rowmapIV ;
 
@@ -339,7 +339,7 @@ nmycol = IV_size(sdata.ownedColumnsIV);
 
 sdata.mtxX = DenseMtx_new();
 
-if ( nmycol > 0 ) 
+if ( nmycol > 0 )
 {
    DenseMtx_init(sdata.mtxX,SPOOLES_REAL,0,0,nmycol,1,1,nmycol);
 
@@ -366,7 +366,7 @@ sdata.mtxX = DenseMtx_MPI_splitByRows(sdata.mtxX,sdata.vtxmapIV,stats,msglvl,msg
 /*----------------------------------------------------------------------*/
 /* put complete solution to recv on proc 0 */
 if (myrank==0)
-   for (i=0; i<numeq_total; i++) 
+   for (i=0; i<numeq_total; i++)
       recv[i] =  sdata.mtxX->entries[i];
 
 /* broadcast solution */
@@ -383,7 +383,7 @@ DenseMtx_free(sdata.mtxX);
 amdel(&recv_a);
 /*----------------------------------------------------------------------*/
 exit:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 #endif /* end of ifdef SPOOLES_PACKAGE */

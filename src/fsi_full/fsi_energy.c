@@ -10,13 +10,13 @@ Maintainer: Steffen Genkinger
 </pre>
 
 *----------------------------------------------------------------------*/
-/*! 
+/*!
 \addtogroup FSI
 *//*! @{ (documentation module open)*/
 #ifdef D_FSI
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
-#include "fsi_prototypes.h"    
+#include "fsi_prototypes.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -31,8 +31,8 @@ extern struct _GENPROB     genprob;
  *----------------------------------------------------------------------*/
 extern ALLDYNA      *alldyn;
 
-static FSI_DYNAMIC *fsidyn;    
-/*!---------------------------------------------------------------------                                         
+static FSI_DYNAMIC *fsidyn;
+/*!---------------------------------------------------------------------
 \brief interface energy
 
 <pre>                                                         genk 01/03
@@ -40,36 +40,36 @@ static FSI_DYNAMIC *fsidyn;
 compute increment of energy transported across the fs - interface
 (PIPERNO 2000)
 
-   DESINT = [Ps(n) + Ps(n+1)]/2 * dispi 
-   
+   DESINT = [Ps(n) + Ps(n+1)]/2 * dispi
+
    Ps(n+1) ... time discretisation of the structural interface forces
    -->  [Ps(n) + Ps(n+1)]/2 = (1-ALPHA_f)*P(n+1) + ALPHA_f*P(n)
 
-   dispi  = sol_mf[3]    ... displacement increment (n) --> (n+1)           	      	  
+   dispi  = sol_mf[3]    ... displacement increment (n) --> (n+1)
    P(n+1) = sol_mf[4][j] ... coupling forces at the end of the time-step
    P(n)   = sol_mf[5][j] ... coupling forces at the beginning of the time-step
- 
+
   DEFINT = -Pf(n+1)* [d(n+1) - d(n)]
          = -Pf(n+1)* (sol_mf[1][j] - sol_mf[2][j])
-	 	 
+
   Pf(n+1) ... time discretisation of the fluid interface pressure
   	      Pf(n+1) = THETA*P(n+1) + (1-THETA)*P(n)
   sol_mf[1][j]  ... (relaxed) displacements of previous iteration step
   sol_mf[2][j]  ... (relaxed) displacements of previous time step
-  
+
 </pre>
 
 \param *structfield   FIELD	     (i)   structural field
-\param *fsidyn 	      FSI_DYNAMIC    (i/o)   
+\param *fsidyn 	      FSI_DYNAMIC    (i/o)
 \param *sdyn          STRUCT_DYNAMIC (i)
 \param *fdyn          FLUID_DYNAMIC  (i)
 \param  init          INT            (i)  initialisation flag
 \warning this function is not parallised but it's no problem!!!
-\return void                                                                             
+\return void
 
 ------------------------------------------------------------------------*/
-void fsi_dyneint( 
-                       FIELD          *structfield, 
+void fsi_dyneint(
+                       FIELD          *structfield,
 		       INT             init
 		)
 {
@@ -80,7 +80,7 @@ static INT      numnp_total;    /* total number of structure nodes      */
 static INT      numdf_total;    /* total number of structure dofs       */
 static INT     *sid;            /* structural interface dofs            */
 DOUBLE          desint,defint;  /* energies                             */
-DOUBLE          fac;       
+DOUBLE          fac;
 DOUBLE          dispi;          /* displacement increment               */
 DOUBLE        **sol_mf;         /* multifield nodal solution array      */
 static DOUBLE   alpha;          /* structural time integr. factor       */
@@ -91,7 +91,7 @@ NODE           *actsnode;       /* actual structure node                */
 static STRUCT_DYNAMIC *sdyn;
 static FLUID_DYNAMIC  *fdyn;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fsi_dyneint");
 #endif
 
@@ -117,7 +117,7 @@ else if (init==2) /* initialisation called by fluid */
    theta       = fdyn->theta;
    omt         = ONE-theta;
    goto end;
-}   
+}
 
 dsassert(fsidyn->ifsi!=3,
 "computation of interface energy not implemented for fsi-algo with dt/2-shift!\n");
@@ -131,7 +131,7 @@ defint = ZERO;
 for (i=0;i<numnp_total;i++)
 {
    actsnode  = &(structfield->dis[0].node[i]);
-   numdf = actsnode->numdf; 
+   numdf = actsnode->numdf;
    sol_mf = actsnode->sol_mf.a.da;
    /*--------------------------------- loop dofs and check for coupling */
    for (j=0;j<numdf;j++)
@@ -147,36 +147,36 @@ for (i=0;i<numnp_total;i++)
       dispi   = sol_mf[1][j] - sol_mf[2][j];
       fac     = theta*sol_mf[4][j] + omt*sol_mf[5][j];
       defint -= fac*dispi;
-   } /* end of loop over dofs */   
+   } /* end of loop over dofs */
 } /* end of loop over nodes */
 
 /*---------------------------------- energy production at the interface */
 fsidyn->deltaeint = desint + defint;
 
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of fsi_dyneint */
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief inteface energy check
 
 <pre>                                                         genk 01/03
 
 check energy production at the fs-interface
-  
+
 </pre>
 
-\param *fsidyn 	      FSI_DYNAMIC    (i)   
-\return void                                                                             
+\param *fsidyn 	      FSI_DYNAMIC    (i)
+\return void
 
 ------------------------------------------------------------------------*/
-void fsi_energycheck(void) 
+void fsi_energycheck(void)
 {
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fsi_energycheck");
 #endif
 
@@ -196,7 +196,7 @@ if (fsidyn->deltaeint>fsidyn->entol)
    fsidyn->step=fsidyn->nstep;
 }
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 'axishell' the main routine for the 
+\brief contains the routine 'axishell' the main routine for the
  axisymmetric shell element
 
 <pre>
@@ -23,30 +23,30 @@ Maintainer: Malte Neumann
  *----------------------------------------------------------------------*/
 extern struct _MATERIAL  *mat;
 
-/*! 
-\addtogroup AXISHELL 
+/*!
+\addtogroup AXISHELL
 *//*! @{ (documentation module open)*/
 
 
 /*!----------------------------------------------------------------------
 \brief  control routine for the axisymmetric shell element
 
-<pre>                                                              mn 05/03 
+<pre>                                                              mn 05/03
 This routine acts according to the action and either initializes the element
-or computes the linear stiffness matrix, the stresses or the right hand side 
+or computes the linear stiffness matrix, the stresses or the right hand side
 vector.
 
 </pre>
 \param *actpart      PARTITION   (i)   my partition
-\param *actintra     INTRA       (i)   my intra-communicator 
+\param *actintra     INTRA       (i)   my intra-communicator
 \param *ele          ELEMENT     (i)   my element
 \param *estif_global ARRAY       (i)   global stiffness matrix
 \param *action       CALC_ACTION (i)   option passed to element
 \param *container    CONTAINER   (i/o) contains variables defined in container.h
 
 \warning *container is not needed here
-\return void                                               
-\sa calling:   saxiinit, saxistatic_ke, saxi_cal_stress, saxi_eleload; 
+\return void
+\sa calling:   saxiinit, saxistatic_ke, saxi_cal_stress, saxi_eleload;
     called by: global_calelm();
 
 *----------------------------------------------------------------------*/
@@ -67,7 +67,7 @@ void axishell(
   INT          imyrank;
   DOUBLE      *intforce = NULL;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("axishell");
 #endif
 
@@ -82,8 +82,8 @@ void axishell(
     case calc_struct_init:
       saxiinit(actpart);
       saxistatic_ke(NULL,NULL,NULL,NULL,1);
-      saxi_cal_stress(NULL,NULL,NULL,1); 
-      saxi_eleload(ele,&actdata,intforce,1);         
+      saxi_cal_stress(NULL,NULL,NULL,1);
+      saxi_eleload(ele,&actdata,intforce,1);
       break;
 
     /* calculate linear stiffness matrix */
@@ -101,7 +101,7 @@ void axishell(
     /* calculate load vector of element loads */
     case calc_struct_eleload:
       imyrank = actintra->intra_rank;
-      if (imyrank==ele->proc) 
+      if (imyrank==ele->proc)
       {
         actmat = &(mat[ele->mat-1]);
         saxi_eleload(ele,&actdata,intforce,0);
@@ -152,11 +152,11 @@ void axishell(
       break;
   }
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 
-  return; 
+  return;
 } /* end of axishell */
 
 /*! @} (documentation module close)*/

@@ -16,37 +16,37 @@ Maintainer: Michael Gee
 #include "s8contact.h"
 #include "shell8.h"
 
-/*! 
-\addtogroup CONTACTS8 
+/*!
+\addtogroup CONTACTS8
 *//*! @{ (documentation module open)*/
 
 
 /*!----------------------------------------------------------------------
 \brief the contact main structure
 
-<pre>                                                         m.gee 2/03    
+<pre>                                                         m.gee 2/03
 defined in s8_contact_init.c
 </pre>
 
 *----------------------------------------------------------------------*/
 extern struct _SHELLCONTACT shellcontact;
 /*!---------------------------------------------------------------------
-\brief detect shell8 contact                                              
+\brief detect shell8 contact
 
-<pre>                                                        m.gee 2/03 
+<pre>                                                        m.gee 2/03
 </pre>
 \param actfield    FIELD*        (i)   the discretization
-\param actintra    INTRA*        (i)   the intra-communicator of this field                  
+\param actintra    INTRA*        (i)   the intra-communicator of this field
 \param matrix      SPARSE_ARRAY* (i/o) the stiffness matrix
 \param matrix_type SPARSE_TYP*   (i)   the storage format of matrix
 \param cforce      DOUBLE*       (o)   the redundant vector for contact forces
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
-void s8_contact_detection(FIELD        *actfield, 
-                          INTRA        *actintra, 
-                          SPARSE_ARRAY *matrix, 
-                          SPARSE_TYP   *matrix_type, 
+void s8_contact_detection(FIELD        *actfield,
+                          INTRA        *actintra,
+                          SPARSE_ARRAY *matrix,
+                          SPARSE_TYP   *matrix_type,
                           DOUBLE       *cforce,
                           INT          *iscontact,
                           DOUBLE       *maxdt)
@@ -106,7 +106,7 @@ DOUBLE           dt;
 MPI_Status       status;                           /* parallel stuff */
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_contact_detection");
 #endif
 /*----------------------------------------------------------------------*/
@@ -120,11 +120,11 @@ numeq_total = K->numeq_total;
 numnp = shellcontact.numnp;
 cnode = shellcontact.cnode;
 /*-------------------------------- update current coordinates and flags */
-for (i=0; i<numnp; i++) 
+for (i=0; i<numnp; i++)
 {
    cnode[i].topflag = s8_c_off;
    cnode[i].botflag = s8_c_off;
-   for (j=0; j<6; j++)   
+   for (j=0; j<6; j++)
       cnode[i].xc[j] = cnode[i].xr[j] + cnode[i].node->sol.a.da[0][j];
 }
 /*------------------------------------------------ loop all slave nodes */
@@ -150,7 +150,7 @@ for (i=0; i<numnp; i++)
          actele = neartop->node->element[j];
          /* check for a projection on this element on the side neartopside */
          s8_contact_orthproject(actcnode,&ssurf,&neartopside,actele,xi,&distance,&success,nue);
-         if (success) 
+         if (success)
          {
             if (distance < disttop)
             {
@@ -207,8 +207,8 @@ for (i=0; i<numnp; i++)
    {
       ssurf = 1;
       /*
-      actcnode side ssurf=1 
-      has projection onto 
+      actcnode side ssurf=1
+      has projection onto
       acteletop side neartopside at coordinates xitop
       */
       /* make gap function to the neartopside of the element */
@@ -247,7 +247,7 @@ for (i=0; i<numnp; i++)
          if (neartopside==-1)/* the true projection was made to the bottom surface */
          {
             s8_contact_orthproject(actcnode,&ssurf,&one,acteletop,xitop,&distance,&success,nue);
-            if (success) 
+            if (success)
             {
                s8_contact_gapfunction(actcnode,&ssurf,&one ,acteletop,xitop,&gtop);
                s8_contact_gapfunction(actcnode,&ssurf,&mone,acteletop,xitop,&gbot);
@@ -296,7 +296,7 @@ for (i=0; i<numnp; i++)
                actcnode->topproj = s8_c_project_onbot;
                actcnode->topele  = acteletop;
                s8_contact_orthproject(actcnode,&ssurf,&mone,acteletop,xitop,&distance,&success,nue);
-               if (!success) 
+               if (!success)
                dserror("Detected trouble in projection 2");
                s8_contact_gapfunction(actcnode,&ssurf,&one ,acteletop,xitop,&gtop);
                s8_contact_gapfunction(actcnode,&ssurf,&mone,acteletop,xitop,&gbot);
@@ -327,7 +327,7 @@ for (i=0; i<numnp; i++)
          if (neartopside==1) /* the true projection was made to the top surface */
          {
             s8_contact_orthproject(actcnode,&ssurf,&mone,acteletop,xitop,&distance,&success,nue);
-            if (success) 
+            if (success)
             {
                neartopside = -1;
                s8_contact_gapfunction(actcnode,&ssurf,&one ,acteletop,xitop,&gtop);
@@ -376,7 +376,7 @@ for (i=0; i<numnp; i++)
                actcnode->topproj = s8_c_project_ontop;
                actcnode->topele  = acteletop;
                s8_contact_orthproject(actcnode,&ssurf,&one,acteletop,xitop,&distance,&success,nue);
-               if (!success) 
+               if (!success)
                dserror("Detected trouble in projection 4");
                s8_contact_gapfunction(actcnode,&ssurf,&one ,acteletop,xitop,&gtop);
                s8_contact_gapfunction(actcnode,&ssurf,&mone,acteletop,xitop,&gbot);
@@ -413,7 +413,7 @@ for (i=0; i<numnp; i++)
             {
                /* project to the correct side */
                s8_contact_orthproject(actcnode,&ssurf,&one,acteletop,xitop,&distance,&success,nue);
-               if (success) 
+               if (success)
                {
                   neartopside = 1;
                   s8_contact_gapfunction(actcnode,&ssurf,&one ,acteletop,xitop,&gtop);
@@ -446,7 +446,7 @@ for (i=0; i<numnp; i++)
             {
                /* project to the correct side */
                s8_contact_orthproject(actcnode,&ssurf,&mone,acteletop,xitop,&distance,&success,nue);
-               if (success) 
+               if (success)
                {
                   /* is successfull, make the correct gap functions */
                   neartopside=-1;
@@ -599,7 +599,7 @@ for (i=0; i<numnp; i++)
          if (nearbotside==-1)/* the true projection was made to the bottom surface */
          {
             s8_contact_orthproject(actcnode,&ssurf,&one,actelebot,xibot,&distance,&success,nue);
-            if (success) 
+            if (success)
             {
                nearbotside = 1;
                s8_contact_gapfunction(actcnode,&ssurf,&one ,actelebot,xibot,&gtop);
@@ -648,7 +648,7 @@ for (i=0; i<numnp; i++)
                actcnode->botproj = s8_c_project_onbot;
                actcnode->botele  = actelebot;
                s8_contact_orthproject(actcnode,&ssurf,&mone,actelebot,xibot,&distance,&success,nue);
-               if (!success) 
+               if (!success)
                dserror("Detected trouble in projection 2 bot");
                s8_contact_gapfunction(actcnode,&ssurf,&one ,actelebot,xibot,&gtop);
                s8_contact_gapfunction(actcnode,&ssurf,&mone,actelebot,xibot,&gbot);
@@ -679,7 +679,7 @@ for (i=0; i<numnp; i++)
          if (nearbotside==1) /* the true projection was made to the top surface */
          {
             s8_contact_orthproject(actcnode,&ssurf,&mone,actelebot,xibot,&distance,&success,nue);
-            if (success) 
+            if (success)
             {
                nearbotside=-1;
                s8_contact_gapfunction(actcnode,&ssurf,&one ,actelebot,xibot,&gtop);
@@ -728,7 +728,7 @@ for (i=0; i<numnp; i++)
                actcnode->botproj = s8_c_project_ontop;
                actcnode->botele  = actelebot;
                s8_contact_orthproject(actcnode,&ssurf,&one,actelebot,xibot,&distance,&success,nue);
-               if (!success) 
+               if (!success)
                dserror("Detected trouble in projection 4 bot");
                s8_contact_gapfunction(actcnode,&ssurf,&one ,actelebot,xibot,&gtop);
                s8_contact_gapfunction(actcnode,&ssurf,&mone,actelebot,xibot,&gbot);
@@ -765,7 +765,7 @@ for (i=0; i<numnp; i++)
             {
                /* project to the correct side */
                s8_contact_orthproject(actcnode,&ssurf,&one,actelebot,xibot,&distance,&success,nue);
-               if (success) 
+               if (success)
                {
                   nearbotside = 1;
                   s8_contact_gapfunction(actcnode,&ssurf,&one ,actelebot,xibot,&gtop);
@@ -797,7 +797,7 @@ for (i=0; i<numnp; i++)
             if (nearbotside==1) /* the true projection was made to the top surface */
             {
                s8_contact_orthproject(actcnode,&ssurf,&mone,actelebot,xibot,&distance,&success,nue);
-               if (success) 
+               if (success)
                {
                   nearbotside = -1;
                   s8_contact_gapfunction(actcnode,&ssurf,&one ,actelebot,xibot,&gtop);
@@ -811,7 +811,7 @@ for (i=0; i<numnp; i++)
                      goto decisionsbot;
                   }
                }
-               
+
             }
             *iscontact         = 1;
             actcnode->botflag  = s8_c_on;
@@ -894,11 +894,11 @@ for (i=0; i<numnp; i++)
    /*===================================================================*/
    /*==========check for contact on both - top and bottom of slave node */
    /*===================================================================*/
-   /* 
+   /*
       maybe do something if the top AND the bottom of a slave node
       penetrate the same element from the same side
       ->
-      only push the side out which is deeper in 
+      only push the side out which is deeper in
    */
    if (actcnode->topflag == s8_c_on && actcnode->botflag == s8_c_on)
    if (actcnode->topele == actcnode->botele)
@@ -911,9 +911,9 @@ for (i=0; i<numnp; i++)
          actcnode->topflag = s8_c_off;
       else
          dserror("Cannot decide top or bottom contact");
-   }      
+   }
    /*===================================================================*/
-   /*============================================know we now what to do */   
+   /*============================================know we now what to do */
    /*===================================================================*/
    if (actcnode->topflag == s8_c_on)
    {
@@ -990,7 +990,7 @@ for (k=0; k<numnp; k++)
          owners[3] = actcnode->topele->node[2]->proc;
          owners[4] = actcnode->topele->node[3]->proc;
       }
-#ifdef PARALLEL 
+#ifdef PARALLEL
       MPI_Bcast(&(owners[0]),5,MPI_INT,actcnode->node->proc,actintra->MPI_INTRA_COMM);
 #endif
       /*-------------------------- check who takes part in this contact */
@@ -1004,7 +1004,7 @@ for (k=0; k<numnp; k++)
          amdef("lmtop"   ,&(actcnode->lmtop)   ,30,1 ,"IV");
       }
       /* make send */
-#ifdef PARALLEL 
+#ifdef PARALLEL
       if (owners[0] == myrank)
       {
          for (j=0; j<nproc; j++)
@@ -1045,9 +1045,9 @@ for (k=0; k<numnp; k++)
             }
          }
          /* delete all memory of top */
-         amdel(&(actcnode->lmtop));     
-         amdel(&(actcnode->forcetop));     
-         amdel(&(actcnode->stifftop));     
+         amdel(&(actcnode->lmtop));
+         amdel(&(actcnode->forcetop));
+         amdel(&(actcnode->stifftop));
       }
    }/* end of if (actcnode->topflag==s8_c_on)*/
    /*=================================================== do bot contact */
@@ -1061,7 +1061,7 @@ for (k=0; k<numnp; k++)
          owners[3] = actcnode->botele->node[2]->proc;
          owners[4] = actcnode->botele->node[3]->proc;
       }
-#ifdef PARALLEL 
+#ifdef PARALLEL
       MPI_Bcast(&(owners[0]),5,MPI_INT,actcnode->node->proc,actintra->MPI_INTRA_COMM);
 #endif
       /*-------------------------- check who takes part in this contact */
@@ -1074,7 +1074,7 @@ for (k=0; k<numnp; k++)
          amdef("stiffbot",&(actcnode->stiffbot),30,30,"DA");
          amdef("lmbot"   ,&(actcnode->lmbot)   ,30,1 ,"IV");
       }
-#ifdef PARALLEL 
+#ifdef PARALLEL
       /* make send */
       if (owners[0] == myrank)
       {
@@ -1116,22 +1116,22 @@ for (k=0; k<numnp; k++)
             }
          }
          /* delete all memory of bot */
-         amdel(&(actcnode->lmbot));     
-         amdel(&(actcnode->forcebot));     
-         amdel(&(actcnode->stiffbot));     
+         amdel(&(actcnode->lmbot));
+         amdel(&(actcnode->forcebot));
+         amdel(&(actcnode->stiffbot));
       }
    }/* end of if (actcnode->botflag==s8_c_on)*/
 }/* end of for (k=0; k<numnp; k++) */
 /*----------------------------------------------------------------------*/
-#ifdef PARALLEL 
+#ifdef PARALLEL
 MPI_Allreduce(iscontact,&iscrecv,1,MPI_INT,MPI_MAX,actintra->MPI_INTRA_COMM);
 *iscontact = iscrecv;
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of s8_contact_detection */
 
 /*! @} (documentation module close)*/

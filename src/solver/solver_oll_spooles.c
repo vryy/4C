@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the function to solve oll matrices with Spooles 
+\brief contains the function to solve oll matrices with Spooles
 
 <pre>
 Maintainer: Malte Neumann
@@ -15,8 +15,8 @@ Maintainer: Malte Neumann
 #include "../solver/solver.h"
 
 
-/*! 
-\addtogroup OLL 
+/*!
+\addtogroup OLL
 *//*! @{ (documentation module open)*/
 
 
@@ -35,11 +35,11 @@ the oll format.
 \param  option         INT    (i) number of equations
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling: ---; called by: --- 
+\return void
+\sa calling: ---; called by: ---
 
 *----------------------------------------------------------------------*/
-void solver_spo_oll( 
+void solver_spo_oll(
     struct _SOLVAR         *actsolv,
     struct _INTRA          *actintra,
     struct _OLL            *oll,
@@ -69,7 +69,7 @@ void solver_spo_oll(
   /*DV        *cumopsDV;
     IV        *ownedColumnsIV;*/
   INT        nmycol;
-  /*InpMtx    *newA;    
+  /*InpMtx    *newA;
     DenseMtx  *newY;
     SolveMap  *solvemap ;*/
   INT        sym=SPOOLES_NONSYMMETRIC;
@@ -78,7 +78,7 @@ void solver_spo_oll(
   static ARRAY recv_a;
   static DOUBLE *recv;
   char  buffer[50];
-  /* for debugging 
+  /* for debugging
      INT   msglvl=2;
      FILE *msgFile;
      FILE *mtxf;
@@ -90,7 +90,7 @@ void solver_spo_oll(
   FILE *rhsf=NULL;
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("solver_spooles");
 #endif
   if (msglvl)
@@ -135,9 +135,9 @@ void solver_spo_oll(
       update = spo->update.a.iv;
       b      = rhs->vec.a.dv;
       x      = sol->vec.a.dv;
-      nnz    = spo->nnz; 
-      numeq  = spo->numeq; 
-      numeq_total = spo->numeq_total;   
+      nnz    = spo->nnz;
+      numeq  = spo->numeq;
+      numeq_total = spo->numeq_total;
       IVzero(20,stats);
       DVzero(20,cpus);
       /*-------------------------------------------------------------------*/
@@ -151,7 +151,7 @@ void solver_spo_oll(
       /*----------------------------------------------------------------------*/
       /*
          --------------------------------------------
-         STEP 1: read the entries 
+         STEP 1: read the entries
          and create the InpMtx object
          --------------------------------------------
          */
@@ -277,7 +277,7 @@ void solver_spo_oll(
       /*----------------------------------------------------------------------*/
       /*
          -----------------------------------------------------
-         STEP 4: get the permutation, permute the matrix and 
+         STEP 4: get the permutation, permute the matrix and
          front tree and get the symbolic factorization,
          permute the right hand side.
          -----------------------------------------------------
@@ -361,7 +361,7 @@ void solver_spo_oll(
         InpMtx_writeForHumanEye(spo->mtxA,msgFile) ;
         fflush(msgFile) ;
       }
-      spo->newY = DenseMtx_MPI_splitByRows(spo->mtxY,spo->vtxmapIV,stats,msglvl, 
+      spo->newY = DenseMtx_MPI_splitByRows(spo->mtxY,spo->vtxmapIV,stats,msglvl,
           msgFile,firsttag,actintra->MPI_INTRA_COMM);
       DenseMtx_free(spo->mtxY);
       spo->mtxY = spo->newY;
@@ -419,7 +419,7 @@ void solver_spo_oll(
         spo->chvmanager = ChvManager_new();
         ChvManager_init(spo->chvmanager,NO_LOCK,0);
         spo->rootchv = FrontMtx_MPI_factorInpMtx(spo->frontmtx,spo->mtxA,tau,droptol,
-            spo->chvmanager,spo->ownersIV,0,&error,cpus, 
+            spo->chvmanager,spo->ownersIV,0,&error,cpus,
             stats,msglvl,msgFile,firsttag,actintra->MPI_INTRA_COMM);
         ChvManager_free(spo->chvmanager);
         firsttag += 3*(spo->frontETree->nfront) + 2;
@@ -431,7 +431,7 @@ void solver_spo_oll(
         FrontMtx_writeForHumanEye(spo->frontmtx, msgFile);
         fflush(msgFile);
       }
-      if ( error >= 0 ) 
+      if ( error >= 0 )
       {
         dserror("Error in spooles numeric factorization");
       }
@@ -463,10 +463,10 @@ void solver_spo_oll(
       if (spo->is_factored==0)
       {
         spo->solvemap = SolveMap_new() ;
-        SolveMap_ddMap(spo->solvemap,spo->frontmtx->symmetryflag, 
+        SolveMap_ddMap(spo->solvemap,spo->frontmtx->symmetryflag,
             FrontMtx_upperBlockIVL(spo->frontmtx),
             FrontMtx_lowerBlockIVL(spo->frontmtx),
-            inprocs,spo->ownersIV,FrontMtx_frontTree(spo->frontmtx), 
+            inprocs,spo->ownersIV,FrontMtx_frontTree(spo->frontmtx),
             seed,msglvl,msgFile);
       }
       /* debug */
@@ -483,7 +483,7 @@ void solver_spo_oll(
          */
       if (spo->is_factored==0)
       {
-        FrontMtx_MPI_split(spo->frontmtx,spo->solvemap, 
+        FrontMtx_MPI_split(spo->frontmtx,spo->solvemap,
             stats,msglvl,msgFile,firsttag,actintra->MPI_INTRA_COMM);
       }
       /* debug */
@@ -499,7 +499,7 @@ void solver_spo_oll(
          STEP 13: permute and redistribute Y if necessary
          ------------------------------------------------
          */
-      if ( FRONTMTX_IS_PIVOTING(spo->frontmtx) ) 
+      if ( FRONTMTX_IS_PIVOTING(spo->frontmtx) )
       {
         IV   *rowmapIV ;
         /*
@@ -510,7 +510,7 @@ void solver_spo_oll(
            */
         rowmapIV = FrontMtx_MPI_rowmapIV(spo->frontmtx,spo->ownersIV,msglvl,
             msgFile,actintra->MPI_INTRA_COMM);
-        spo->newY = DenseMtx_MPI_splitByRows(spo->mtxY,rowmapIV,stats,msglvl, 
+        spo->newY = DenseMtx_MPI_splitByRows(spo->mtxY,rowmapIV,stats,msglvl,
             msgFile,firsttag,actintra->MPI_INTRA_COMM);
         DenseMtx_free(spo->mtxY);
         spo->mtxY = spo->newY;
@@ -536,7 +536,7 @@ void solver_spo_oll(
       }
       nmycol = IV_size(spo->ownedColumnsIV);
       spo->mtxX = DenseMtx_new();
-      if ( nmycol > 0 ) 
+      if ( nmycol > 0 )
       {
         DenseMtx_init(spo->mtxX,SPOOLES_REAL,0,0,nmycol,1,1,nmycol);
         DenseMtx_rowIndices(spo->mtxX,&nrow,&rowind1);
@@ -635,16 +635,16 @@ void solver_spo_oll(
       /*----------------------------------------------------------------------*/
     default:
       dserror("Unknown option for solver call to Aztec");
-      break;   
+      break;
   }
   /*----------------------------------------------------------------------*/
-  if (msglvl) 
+  if (msglvl)
   {
     fclose(msgFile);
     fclose(mtxf);
     fclose(rhsf);
   }
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 #endif /* end of ifdef SPOOLES_PACKAGE */

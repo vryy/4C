@@ -10,7 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
   ------------------------------------------------------------------------*/
-/*! 
+/*!
   \addtogroup FSI
   *//*! @{ (documentation module open)*/
 #ifdef D_FSI
@@ -39,7 +39,7 @@ extern struct _GENPROB     genprob;
 
   <pre>                                                         m.gee 8/00
   This structure struct _FILES allfiles is defined in input_control_global.c
-  and the type is in standardtypes.h                                                  
+  and the type is in standardtypes.h
   It holds all file pointers and some variables needed for the FRSYSTEM
   </pre>
  *----------------------------------------------------------------------*/
@@ -50,7 +50,7 @@ extern struct _FILES  allfiles;
   | dedfined in global_control.c                                         |
   | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
   |                                                          mn 06/02    |
   | structure of flags to control output                                 |
@@ -62,14 +62,14 @@ extern struct _IO_FLAGS     ioflags;
 
   <pre>                                                         m.gee 8/00
   This structure struct _PAR par; is defined in main_ccarat.c
-  and the type is in partition.h                                                  
+  and the type is in partition.h
   </pre>
 
  *----------------------------------------------------------------------*/
-extern struct _PAR   par;                      
+extern struct _PAR   par;
 
 extern struct _CURVE *curve;
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
   \brief routine to control output og fsi to gid
 
   <pre>                                                           mn 05/03
@@ -81,7 +81,7 @@ extern struct _CURVE *curve;
   - fluid pressure
   - structure displacements
   - structure stresses
-  - structure velocities    (not yet implemented) 
+  - structure velocities    (not yet implemented)
   - structure accelerations (not yet implemented)
   </pre>
 
@@ -116,7 +116,7 @@ void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield)
   char          sign='"';
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("out_gid_sol_fsi");
 #endif
   /*----------------------------------------------------------------------*/
@@ -125,7 +125,7 @@ void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield)
   fdyn= alldyn[genprob.numff].fdyn;
   fsidyn= alldyn[genprob.numfld].fsidyn;
   /*----------------------------------------------------------------------*/
-#ifdef PARALLEL 
+#ifdef PARALLEL
   actintraf    = &(par.intra[genprob.numff]);
   if (structfield!=NULL)
   actintras    = &(par.intra[genprob.numsf]);
@@ -167,8 +167,8 @@ void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield)
     /*-------------------------------------------------------------------*/
     fprintf(out,"#-------------------------------------------------------------------------------\n");
     fprintf(out,"# RESULT DISPLACEMENTS on FIELD FSI\n");
-    fprintf(out,"# TIME %18.5E \n",fsidyn->time);   
-    fprintf(out,"# STEP %6d    \n",fsidyn->step);   
+    fprintf(out,"# TIME %18.5E \n",fsidyn->time);
+    fprintf(out,"# STEP %6d    \n",fsidyn->step);
     fprintf(out,"#-------------------------------------------------------------------------------\n");
     fprintf(out,"RESULT %cdisplacement%c %cccarat%c %d %s %s\n",
         sign,sign,
@@ -289,7 +289,7 @@ void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield)
   }
   /*-------------------------------------------------------------------*/
 #if 0
-  /* ------------- write fsi loads of structure field 
+  /* ------------- write fsi loads of structure field
    THIS DOES NOT WORK UP TO NOW!!!
   /-----------------------------------------------------------------------*/
   if (ioflags.struct_disp_gid==1||ioflags.fluid_sol_gid==1)
@@ -304,8 +304,8 @@ void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield)
     /*-------------------------------------------------------------------*/
     fprintf(out,"#-------------------------------------------------------------------------------\n");
     fprintf(out,"# RESULT FSI LOADS on FIELD STRUCTURE\n");
-    fprintf(out,"# TIME %18.5E \n",fsidyn->time);   
-    fprintf(out,"# STEP %6d    \n",fsidyn->step);   
+    fprintf(out,"# TIME %18.5E \n",fsidyn->time);
+    fprintf(out,"# STEP %6d    \n",fsidyn->step);
     fprintf(out,"#-------------------------------------------------------------------------------\n");
     fprintf(out,"RESULT %cfsiload%c %cccarat%c %d %s %s\n",
         sign,sign,
@@ -375,7 +375,7 @@ void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield)
 #endif
 
   /* write velocities and pressure of fluid field */
-  if (ioflags.fluid_sol_gid==1) 
+  if (ioflags.fluid_sol_gid==1)
   {
     out_gid_sol("velocity",fluidfield,actintraf,fdyn->step,fsidyn->actpos,fsidyn->time);
     out_gid_sol("pressure",fluidfield,actintraf,fdyn->step,fsidyn->actpos,fsidyn->time);
@@ -395,7 +395,7 @@ void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield)
   /*----------------------------------------------------------------------*/
   fflush(out);
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return;

@@ -1,6 +1,6 @@
 /*!---------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -26,7 +26,7 @@ Maintainer: Malte Neumann
 /*----------------------------------------------------------------------*
  | includes of mpi of C                                   m.gee 8/00    |
  *----------------------------------------------------------------------*/
-#ifdef PARALLEL 
+#ifdef PARALLEL
    #include "mpi.h"
 #endif
 /*----------------------------------------------------------------------*
@@ -110,8 +110,8 @@ Maintainer: Malte Neumann
 
 
 
-/*! 
-\addtogroup FRSYSTEM 
+/*!
+\addtogroup FRSYSTEM
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
@@ -119,7 +119,7 @@ Maintainer: Malte Neumann
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 
@@ -222,7 +222,7 @@ struct _DISCRET   *dis;           /* structure holding a number of discretisatio
  *----------------------------------------------------------------------*/
 typedef struct _DISCRET
 {
-INT                numnp;          /* number of nodes in this field */ 
+INT                numnp;          /* number of nodes in this field */
 INT                numele;         /* number of elements in this field */
 INT                numeq;          /* number of unknowns */
 INT                numdf;          /* number of degrees of freedom */
@@ -230,14 +230,14 @@ INT                numdf;          /* number of degrees of freedom */
 struct _ELEMENT   *element;       /* vector of elements */
 struct _NODE      *node;          /* vector of nodes */
 
-INT                ngnode;        /* number of geometry points */        
-INT                ngline;        /* number of geometry lines */        
-INT                ngsurf;        /* number of geometry surfaces */        
-INT                ngvol;         /* number of geometry volumes */        
-struct _GNODE     *gnode;         /* vector of geometry points */    
-struct _GLINE     *gline;         /* vector of geometry lines */    
-struct _GSURF     *gsurf;         /* vector of geometry surfaces */    
-struct _GVOL      *gvol;          /* vector of geometry volumes */    
+INT                ngnode;        /* number of geometry points */
+INT                ngline;        /* number of geometry lines */
+INT                ngsurf;        /* number of geometry surfaces */
+INT                ngvol;         /* number of geometry volumes */
+struct _GNODE     *gnode;         /* vector of geometry points */
+struct _GLINE     *gline;         /* vector of geometry lines */
+struct _GSURF     *gsurf;         /* vector of geometry surfaces */
+struct _GVOL      *gvol;          /* vector of geometry volumes */
 } DISCRET;
 
 
@@ -245,7 +245,7 @@ struct _GVOL      *gvol;          /* vector of geometry volumes */
 
 /*----------------------------------------------------------------------*
  | general problem-variables                              m.gee 4/01    |
- | General information is held here                                     |           
+ | General information is held here                                     |
  *----------------------------------------------------------------------*/
 typedef struct _GENPROB
 {
@@ -268,7 +268,7 @@ INT               graderw;       /* flag is gradient enhanced material model */
 #ifdef D_XFEM
 INT               xfem_on_off;    /* flag to switch enriched formulation */
 #endif
-  
+
 enum _PROBLEM_TYP probtyp;       /* type of problem, see enum.h */
 enum _TIME_TYP    timetyp;       /* type of time, see enum.h */
 
@@ -276,7 +276,7 @@ enum _TIME_TYP    timetyp;       /* type of time, see enum.h */
   INT             numresults;   /* number of known results waiting to
                                  * be compared to the calculated ones. */
 #endif
-  
+
 NODE            **nodes;
 INT               ngnode;
 GNODE           **gnodes;
@@ -313,12 +313,12 @@ typedef struct _RESULTDESCR
 {
   FIELDTYP field;               /* the field the value steams from */
   INT dis;                      /* the discretisation */
-  
+
   /* You can only have one. Either node or element. The other one must
    * equal -1. */
   INT node;                     /* the node the value belongs to */
   INT element;                  /* or the element */
-  
+
   CHAR position[100];           /* The position of the checked value
                                  * inside its node or
                                  * element. Normally it looks like
@@ -365,7 +365,7 @@ typedef struct _RESULTDESCR
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -388,7 +388,7 @@ and the type is in partition.h
 
 <pre>                                                         m.gee 06/01
 This structure struct _PAR par; is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -412,7 +412,7 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 \brief the tracing variable
 
 <pre>                                                         m.gee 8/00
-defined in pss_ds.c, declared in tracing.h                                                  
+defined in pss_ds.c, declared in tracing.h
 </pre>
 *----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*

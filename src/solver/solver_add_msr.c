@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -18,7 +18,7 @@ Maintainer: Malte Neumann
 
 /*----------------------------------------------------------------------*
   | global dense matrices for element routines             m.gee 9/01  |
-  | (defined in global_calelm.c, so they are extern here)              |                
+  | (defined in global_calelm.c, so they are extern here)              |
  *----------------------------------------------------------------------*/
 extern struct _ARRAY estif_global;
 extern struct _ARRAY emass_global;
@@ -29,10 +29,10 @@ extern struct _ARRAY emass_global;
 /*!
  \brief assemble into a msr matrix (original version)
 
- This routine assembles one or two element matrices (estiff_global and 
- emass_global) into the global matrices in the msr format.  
+ This routine assembles one or two element matrices (estiff_global and
+ emass_global) into the global matrices in the msr format.
  It makes extensive use of the search algorithms provided by AZTEC.
-  
+
  \param actpart   *PARTITION    (i)  the partition we are working on
  \param actsolv   *SOLVAR       (i)  the solver we are using
  \param actintra  *INTRA        (i)  the intra-communicator we do not need
@@ -86,7 +86,7 @@ void  add_msr(
   INT         nsend =0;
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("add_msr");
 #endif
 
@@ -123,8 +123,8 @@ void  add_msr(
 
 
   /* put pointers to sendbuffers if any */
-#ifdef PARALLEL 
-  if (msr1->couple_i_send) 
+#ifdef PARALLEL
+  if (msr1->couple_i_send)
   {
     isend1 = msr1->couple_i_send->a.ia;
     dsend1 = msr1->couple_d_send->a.da;
@@ -144,14 +144,14 @@ void  add_msr(
     for (j=0; j<actele->node[i]->numdf; j++)
     {
       lm[counter]    = actele->node[i]->dof[j];
-#ifdef PARALLEL 
+#ifdef PARALLEL
       owner[counter] = actele->node[i]->proc;
 #endif
       counter++;
     }
   }
   /* end of loop over element nodes */
-  /* this check is not possible any more for fluid element with implicit 
+  /* this check is not possible any more for fluid element with implicit
   free surface condition: nd not eqaual numnp*numdf!!! */
 #if 0
     if (counter != nd) dserror("assemblage failed due to wrong dof numbering");
@@ -167,7 +167,7 @@ void  add_msr(
   {
     ii = lm[i];
     /* loop only my own rows */
-#ifdef PARALLEL 
+#ifdef PARALLEL
     if (owner[i]!=myrank) continue;
 #endif
 
@@ -175,7 +175,7 @@ void  add_msr(
     if (ii>=numeq_total) continue;
 
     /* check for coupling condition */
-#ifdef PARALLEL 
+#ifdef PARALLEL
     if (ncdofs)
     {
       ii_iscouple = 0;
@@ -211,7 +211,7 @@ void  add_msr(
           val1[ii_index] += estif[i][j];
           if (msr2)
             val2[ii_index] += emass[i][j];
-        } 
+        }
 
         /* do off-diagonal entry in row ii */
         /* (either not a coupled dof or I am master owner) */
@@ -239,7 +239,7 @@ void  add_msr(
   }/* end loop over i */
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 
@@ -253,12 +253,12 @@ void  add_msr(
 /*!
  \brief assemble into a msr matrix (faster version)
 
- This routine assembles one or two element matrices (estiff_global and 
+ This routine assembles one or two element matrices (estiff_global and
  emass_global) into the global matrices in the msr format. (same as add_msr)
- It makes use of the information saved in actele->index to determine the 
- correct position in the sparse matrix.  
+ It makes use of the information saved in actele->index to determine the
+ correct position in the sparse matrix.
  This is faster then searching every time, but consumes a lot of memory!!
-  
+
  \param actpart   *PARTITION    (i)  the partition we are working on
  \param actsolv   *SOLVAR       (i)  the solver we are using
  \param actintra  *INTRA        (i)  the intra-communicator we do not need
@@ -296,7 +296,7 @@ void  add_msr_fast(
   DOUBLE    **dsend2;        /* pointer to sendbuffer to communicate coupling conditions */
   INT         nsend;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("add_msr_fast");
 #endif
 
@@ -313,8 +313,8 @@ void  add_msr_fast(
 
 
   /* put pointers to sendbuffers if any */
-#ifdef PARALLEL 
-  if (msr1->couple_i_send) 
+#ifdef PARALLEL
+  if (msr1->couple_i_send)
   {
     isend1 = msr1->couple_i_send->a.ia;
     dsend1 = msr1->couple_d_send->a.da;
@@ -359,7 +359,7 @@ void  add_msr_fast(
   }/* end loop over i */
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 
@@ -376,12 +376,12 @@ void  add_msr_fast(
 /*!
  \brief assemble into a msr matrix (faster version 2)
 
- This routine assembles one or two element matrices (estiff_global and 
+ This routine assembles one or two element matrices (estiff_global and
  emass_global) into the global matrices in the msr format. (same as add_msr)
- It makes use of "inversion" of update and parts of bindx to avoid the 
+ It makes use of "inversion" of update and parts of bindx to avoid the
  searching.
  This is faster then the original, and consumes only very little memory.
-  
+
  \param actpart   *PARTITION    (i)  the partition we are working on
  \param actsolv   *SOLVAR       (i)  the solver we are using
  \param actintra  *INTRA        (i)  the intra-communicator we do not need
@@ -438,7 +438,7 @@ void  add_msr_fast2(
   static INT  *invbindx  = NULL;
   INT index2;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("add_msr_fast2");
 #endif
 
@@ -491,8 +491,8 @@ void  add_msr_fast2(
 
 
   /* put pointers to sendbuffers if any */
-#ifdef PARALLEL 
-  if (msr1->couple_i_send) 
+#ifdef PARALLEL
+  if (msr1->couple_i_send)
   {
     isend1 = msr1->couple_i_send->a.ia;
     dsend1 = msr1->couple_d_send->a.da;
@@ -512,7 +512,7 @@ void  add_msr_fast2(
     for (j=0; j<actele->node[i]->numdf; j++)
     {
       lm[counter]    = actele->node[i]->dof[j];
-#ifdef PARALLEL 
+#ifdef PARALLEL
       owner[counter] = actele->node[i]->proc;
 #endif
       counter++;
@@ -530,7 +530,7 @@ void  add_msr_fast2(
   {
     ii = lm[i];
     /* loop only my own rows */
-#ifdef PARALLEL 
+#ifdef PARALLEL
     if (owner[i]!=myrank) continue;
 #endif
 
@@ -538,7 +538,7 @@ void  add_msr_fast2(
     if (ii>=numeq_total) continue;
 
     /* check for coupling condition */
-#ifdef PARALLEL 
+#ifdef PARALLEL
     if (ncdofs)
     {
       ii_iscouple = 0;
@@ -578,7 +578,7 @@ void  add_msr_fast2(
           val1[ii_index] += estif[i][j];
           if (msr2)
             val2[ii_index] += emass[i][j];
-        } 
+        }
 
         /* do off-diagonal entry in row ii */
         /* (either not a coupled dof or I am master owner) */
@@ -603,7 +603,7 @@ void  add_msr_fast2(
   }/* end loop over i */
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 
@@ -622,7 +622,7 @@ void add_msr_checkcouple(INT ii,INT **cdofs,INT ncdofs,INT *iscouple,
                            INT *isowner, INT nprocs)
 {
 INT         i,k;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("add_msr_checkcouple");
 #endif
 /*----------------------------------------------------------------------*/
@@ -642,7 +642,7 @@ for (k=0; k<ncdofs; k++)
    }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -657,7 +657,7 @@ void add_msr_sendbuff(INT ii,INT jj,INT i,INT j,INT ii_owner,INT **isend,
                     DOUBLE **dsend,DOUBLE **estif, INT numsend)
 {
 INT         k;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("add_msr_sendbuff");
 #endif
 /*----------------------------------------------------------------------*/
@@ -668,7 +668,7 @@ for (k=0; k<numsend; k++)
 isend[k][1]  = ii_owner;
 dsend[k][jj]+= estif[i][j];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -687,7 +687,7 @@ void exchange_coup_msr(
                         )
 {
 
-#ifdef PARALLEL 
+#ifdef PARALLEL
 INT            i,j;
 INT            ii,ii_index;
 INT            start;
@@ -719,11 +719,11 @@ MPI_Request   *dsendrequest;
 MPI_Comm      *ACTCOMM;
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("exchange_coup_msr");
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef PARALLEL 
+#ifdef PARALLEL
 /*----------------------------------------------------------------------*/
 imyrank = actintra->intra_rank;
 inprocs = actintra->intra_nprocs;
@@ -765,7 +765,7 @@ for (i=0; i<numsend; i++)
    MPI_Isend(&(dsend[i][0]),numeq_total,MPI_DOUBLE,isend[i][1],isend[i][0],(*ACTCOMM),&(dsendrequest[i]));
 }/*------------------------------------------------ end of sending loop */
 /*------------------------------- now loop over the dofs to be received */
-/* 
+/*
    do blocking receives, 'cause one can't add something to the system
    matrix, which has not yet arrived, easy, isn't it?
 */
@@ -780,9 +780,9 @@ for (i=0; i<numrecv; i++)
    tag    = irecv_status[i].MPI_TAG;
    if (tag != irecv[i][0]) dserror("MPI messages somehow got mixed up");
    source = irecv_status[i].MPI_SOURCE;
-   
+
    /* do not use wildcards for second recv, we know now where it should come from */
-   MPI_Recv(&(drecv[i][0]),numeq_total,MPI_DOUBLE,source,tag,(*ACTCOMM),&(drecv_status[i]));   
+   MPI_Recv(&(drecv[i][0]),numeq_total,MPI_DOUBLE,source,tag,(*ACTCOMM),&(drecv_status[i]));
    if (drecv_status[i].MPI_ERROR) dserror("An error in MPI - communication occured !");
 
    /* now add the received data properly to my own piece of sparse matrix */
@@ -806,12 +806,12 @@ if (numsend){CCAFREE(isendrequest);CCAFREE(dsendrequest);}
 /*----------------------------------------------------------------------
   do a barrier, because this is the end of the assembly, the msr matrix
   is now ready for solve
-*/ 
+*/
 MPI_Barrier(*ACTCOMM);
-#endif /*---------------------------------------------- end of PARALLEL */ 
+#endif /*---------------------------------------------- end of PARALLEL */
 /*----------------------------------------------------------------------*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 

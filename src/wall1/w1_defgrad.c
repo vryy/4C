@@ -17,7 +17,7 @@ Maintainer: Andrea Hund
 #include "wall1_prototypes.h"
 #include "wall1_prototypes.h"
 
-/*! 
+/*!
 \addtogroup WALL1
 *//*! @{ (documentation module open)*/
 
@@ -33,7 +33,7 @@ void w1_defgrad(DOUBLE    *F,
 {
 /*----------------------------------------------------------------------*/
 INT inode;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_defgrad");
 #endif
 /*------------------calculate defgrad --------- (Summenschleife->+=) ---*
@@ -47,7 +47,7 @@ defgrad looks like:
 F[0]=1;
 F[1]=1;
 for (inode=0; inode<iel; inode++)
-{ 
+{
    F[0] += boplin[0][2*inode]   * (xcure[0][inode] - xrefe[0][inode]);
    F[1] += boplin[1][2*inode+1] * (xcure[1][inode] - xrefe[1][inode]);
    F[2] += boplin[2][2*inode]   * (xcure[0][inode] - xrefe[0][inode]);
@@ -59,7 +59,7 @@ strain[1]=0.5 * (F[2] * F[2] + F[1] * F[1] - ONE);
 strain[2]=0.5 * (F[0] * F[2] + F[3] * F[1]);
 strain[3]=strain[2];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

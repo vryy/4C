@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -32,7 +32,7 @@ extern struct _GENPROB       genprob;
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -42,7 +42,7 @@ extern struct _FILES  allfiles;
  | write restart                                         m.gee 05/02    |
  | of nln-structural dynamics                                           |
  | How to restart:                                                      |
- | 1.) run calculation with RESTART 0 and NUMSTEP 10 in the input file  |          
+ | 1.) run calculation with RESTART 0 and NUMSTEP 10 in the input file  |
  | 2.) cp xxx.pss xxx_0.pss                                             |
  | 3.) run calculation with RESTART 9 and NUMSTEP 20 in the input file  |
  |     by starting with                                                 |
@@ -58,7 +58,7 @@ extern struct _FILES  allfiles;
  |            a restarted calculation runs from step                    |
  |            RESTART i+1 to NUMSTEP j-1                                |
  *----------------------------------------------------------------------*/
-void restart_write_nlnstructdyn(STRUCT_DYNAMIC  *sdyn,                  
+void restart_write_nlnstructdyn(STRUCT_DYNAMIC  *sdyn,
                                 STRUCT_DYN_CALC *dynvar,
                                 FIELD           *actfield,
                                 PARTITION       *actpart,
@@ -88,7 +88,7 @@ RESTART_DYNSTRUCT    res;
 DIST_VECTOR         *distwrite;
 NODE                *actnode;
 ELEMENT             *actele;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("restart_write_nlnstructdyn");
 #endif
 /*----------------------------------------------------------------------*/
@@ -163,11 +163,11 @@ pss_write_array(intforce_a,&(res.intforce),out,&ierr);
 pss_write_array(dirich_a,&(res.dirich),out,&ierr);
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-/* 
-   now write the data, that is stored in the nodes of this processor's 
+/*
+   now write the data, that is stored in the nodes of this processor's
    partition
-   
-   a structure node as the following ARRAYS: 
+
+   a structure node as the following ARRAYS:
    actnode->sol
    actnode->sol_increment
    actnode->sol_residual
@@ -181,7 +181,7 @@ numnp = actpart->pdis[0].numnp;
 res.node_handles = (long int**)CCAMALLOC(numnp*sizeof(long int*));
 node_handles = res.node_handles;
 res.node_handles[0] = (long int*)CCAMALLOC(4*numnp*sizeof(long int));
-for (i=1; i<numnp; i++) 
+for (i=1; i<numnp; i++)
 node_handles[i] = &(node_handles[0][i*4]);
 /*----------------------------------------------------------------------*/
 /* now we loop the nodes on the partition and each node writes his ARRAYs */
@@ -201,7 +201,7 @@ for (i=0; i<numnp; i++)
    }
 
 }
-/* 
+/*
    all nodal data is written, so we now write the node_handles and store
    the handle to this in res.handle_of_node_handles
 */
@@ -214,11 +214,11 @@ CCAFREE(res.node_handles[0]);
 CCAFREE(res.node_handles);
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-/* 
+/*
    we come to the most difficult part, the writing of the element data.
-   One element is assumed not to have more then MAXRECORDPERELE different 
+   One element is assumed not to have more then MAXRECORDPERELE different
    records to write of arbitary type
-   
+
    The element is called with the element action action = write_restart
    Again, all elements to the processors partition are written
 */
@@ -227,7 +227,7 @@ numele = actpart->pdis[0].numele;
 res.ele_handles = (long int**)CCAMALLOC(numele*sizeof(long int*));
 ele_handles = res.ele_handles;
 res.ele_handles[0] = (long int*)CCAMALLOC(MAXRECORDPERELE*numele*sizeof(long int));
-for (i=1; i<numele; i++) 
+for (i=1; i<numele; i++)
 ele_handles[i] = &(ele_handles[0][i*MAXRECORDPERELE]);
 /*--------------------- now loop element and switch for type of element */
 *action = write_restart;
@@ -238,7 +238,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    {
 #ifdef D_SHELL8
    case el_shell8:
-      container->kstep    = 0;      
+      container->kstep    = 0;
       container->handsize = MAXRECORDPERELE;
       container->handles  = ele_handles[i];
       shell8(actfield,actpart,actintra,actele,
@@ -259,10 +259,10 @@ for (i=0; i<actpart->pdis[0].numele; i++)
             action,container);
    break;
 #endif
-   case el_fluid2: 
+   case el_fluid2:
        dserror("Restart for fluid2 not yet impl.");
    break;
-   case el_fluid3: 
+   case el_fluid3:
        dserror("Restart for fluid3 not yet impl.");
    break;
    case el_ale3:
@@ -273,7 +273,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
       container->handsize = MAXRECORDPERELE;
       container->handles  = ele_handles[i];
       beam3(actfield,actpart,actintra,actele,
-            NULL,NULL,NULL,action,container);     
+            NULL,NULL,NULL,action,container);
    break;
 #endif
    case el_interf:
@@ -282,16 +282,16 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    break;
    case el_none:
       dserror("Typ of element unknown");
-   break;   
+   break;
    default:
       dserror("Typ of element unknown");
    }/* end of calling elements */
 }
 /*----------------------------------------------------------------------*/
-/* 
+/*
    all ele data is written, so write the ele_handles and store the handle to
    it in res.handle_of_ele_handles
-*/   
+*/
 res.ele_fdim = numele;
 res.ele_sdim = MAXRECORDPERELE;
 pss_write("ele_hand",numele,MAXRECORDPERELE,sizeof(long int),ele_handles[0],&(res.handle_of_ele_handles),out,&ierr);
@@ -302,22 +302,22 @@ CCAFREE(res.ele_handles);
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*
-   the only thing to do is now write the RESTART_DYNSTRUCT itself with 
+   the only thing to do is now write the RESTART_DYNSTRUCT itself with
    its unique name resname = "res<step>"
    NOTE:
    names are limited to 9 characters, so a step larger then sres99999
    can not be restarted at the moment !!!!
-*/   
+*/
 pss_write(resname,1,1,sizeof(RESTART_DYNSTRUCT),&res,&longdummy,out,&ierr);
 if (ierr != 1) dserror("Error writing restart data");
 /*----------------------------------------------------------------------*/
 /*
-#ifdef DEBUG 
+#ifdef DEBUG
 pss_status_to_err();
 #endif
 */
 /*----------------------------------------------------------------------*/
-/* 
+/*
    now write a notice to the err file, that this retsrat step was
    successfully written
 */
@@ -333,7 +333,7 @@ if (res.step != 0)
    fflush(allfiles.out_err);
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -386,7 +386,7 @@ INT                  j;
 INT                  sender;
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("restart_read_nlnstructdyn");
 #endif
 /*----------------------------------------------------------------------*/
@@ -471,8 +471,8 @@ if (ierr != 1) dserror("Cannot read restart data");
 /*
    now read the data that is stored in the nodes of this processors
    partition
-   
-   a structure node as the following ARRAYS: 
+
+   a structure node as the following ARRAYS:
    actnode->sol
    actnode->sol_increment
    actnode->sol_residual
@@ -490,7 +490,7 @@ numnp = actpart->pdis[0].numnp;
 res.node_handles = (long int**)CCAMALLOC(numnp*sizeof(long int*));
 node_handles = res.node_handles;
 res.node_handles[0] = (long int*)CCAMALLOC(4*numnp*sizeof(long int));
-for (i=1; i<numnp; i++) 
+for (i=1; i<numnp; i++)
 node_handles[i] = &(node_handles[0][i*4]);
 /*------------------------------------------- read the array of handles */
 pss_read_name_handle("nod_hand",&(res.node_fdim),&(res.node_sdim),&i,
@@ -560,7 +560,7 @@ CCAFREE(res.node_handles);
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*
-   now start reading the element data 
+   now start reading the element data
 */
 /*----------------------------------------------------------------------*/
 numele = actpart->pdis[0].numele;
@@ -570,7 +570,7 @@ if (numele != res.ele_fdim || MAXRECORDPERELE != res.ele_sdim)
 res.ele_handles = (long int**)CCAMALLOC(numele*sizeof(long int*));
 ele_handles = res.ele_handles;
 res.ele_handles[0] = (long int*)CCAMALLOC(MAXRECORDPERELE*numele*sizeof(long int));
-for (i=1; i<numele; i++) 
+for (i=1; i<numele; i++)
 ele_handles[i] = &(ele_handles[0][i*MAXRECORDPERELE]);
 /*------------------------------------------- read the array of handles */
 pss_read_name_handle("ele_hand",&res.ele_fdim,&res.ele_sdim,&i,
@@ -585,9 +585,9 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    {
 #ifdef D_SHELL8
    case el_shell8:
-      container->kstep    = 0;  
+      container->kstep    = 0;
       container->handsize = MAXRECORDPERELE;
-      container->handles  = ele_handles[i];       
+      container->handles  = ele_handles[i];
       shell8(actfield,actpart,actintra,actele,
              NULL,NULL,NULL,action,container);
    break;
@@ -605,10 +605,10 @@ for (i=0; i<actpart->pdis[0].numele; i++)
        wall1(actpart,actintra,actele,NULL,NULL,NULL,action,container);
    break;
 #endif
-   case el_fluid2: 
+   case el_fluid2:
        dserror("Restart for fluid2 not yet impl.");
    break;
-   case el_fluid3: 
+   case el_fluid3:
        dserror("Restart for fluid3 not yet impl.");
    break;
    case el_ale3:
@@ -626,12 +626,12 @@ for (i=0; i<actpart->pdis[0].numele; i++)
 CCAFREE(res.ele_handles[0]);
 CCAFREE(res.ele_handles);
 /*----------------------------------------------------------------------*/
-/* 
-   now we have to make the arrays node->sol, node->sol_increment, 
+/*
+   now we have to make the arrays node->sol, node->sol_increment,
    node->sol_residual redundant for the whole field
 */
 #ifdef PARALLEL
-numnp = actfield->dis[0].numnp;  
+numnp = actfield->dis[0].numnp;
 for (i=0; i<numnp; i++)
 {
    actnode = &(actfield->dis[0].node[i]);
@@ -667,10 +667,10 @@ for (i=0; i<numnp; i++)
    j = actnode->sol_mf.fdim * actnode->sol_mf.sdim;
    MPI_Bcast(actnode->sol_mf.a.da[0],j,MPI_DOUBLE,sender,actintra->MPI_INTRA_COMM);
    }
-} 
+}
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -681,7 +681,7 @@ return;
  | write restart                                         ah    08/02                      |
  | of nonlinear - structural statics                                                      |
  | How to restart:                                                                        |
- | 1.) run calculation with RESTART 0 and NUMSTEP 10 in the input file                    |          
+ | 1.) run calculation with RESTART 0 and NUMSTEP 10 in the input file                    |
  | 2.) cp xxx.pss xxx_0.pss                                                               |
  | 3.) run calculation with RESTART 9 and NUMSTEP 20 and maybe differ-                    |
  |     ent STEPSIZE, MAXITER and RESTARTEVRY in the input file                            |
@@ -698,7 +698,7 @@ return;
  |            a restarted calculation runs from step                                      |
  |            RESTART i+1 to NUMSTEP j-1                                                  |
  *----------------------------------------------------------------------------------------*/
-void restart_write_nlnstructstat(STATIC_VAR     *statvar, /*-------------- static input --*/                  
+void restart_write_nlnstructstat(STATIC_VAR     *statvar, /*-------------- static input --*/
                 STANLN          *nln_data,  /*-- control variables for global NR-Iterat --*/
                 FIELD           *actfield,  /*---------------------------- actual field --*/
                 PARTITION       *actpart,   /*------------------------ actual partition --*/
@@ -723,7 +723,7 @@ RESTART_STATSTRUCT   res;                    /*------ res has acces to all resta
 DIST_VECTOR         *distwrite;              /*--------- array, which has to be written --*/
 NODE                *actnode;                /*---------------------------- actual node --*/
 ELEMENT             *actele;                 /*------------------------- actual element --*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("restart_write_nlnstructstat");
 #endif
 /*----------------------------------------------------------------------*/
@@ -762,11 +762,11 @@ res.dist_vec_dispi[0] = ndis;
     if (ierr != 1) dserror("Error writing restart data");
  }
 /*----------------------------------------------------------------------*/
-/* 
-   now write the data, that is stored in the nodes of this processor's 
+/*
+   now write the data, that is stored in the nodes of this processor's
    partition
-   
-   a node has 3 ARRAYS: 
+
+   a node has 3 ARRAYS:
    actnode->sol
    actnode->sol_increment
    actnode->sol_residual
@@ -778,7 +778,7 @@ numnp = actpart->pdis[0].numnp;
 res.node_handles = (long int**)CCAMALLOC(numnp*sizeof(long int*));
 node_handles = res.node_handles;
 res.node_handles[0] = (long int*)CCAMALLOC(3*numnp*sizeof(long int));
-for (i=1; i<numnp; i++) 
+for (i=1; i<numnp; i++)
 node_handles[i] = &(node_handles[0][i*3]);
 /*----------------------------------------------------------------------*/
 /* now we loop the nodes on the partition and each node writes his ARRAYs */
@@ -792,7 +792,7 @@ for (i=0; i<numnp; i++)
    pss_write_array(&(actnode->sol_residual),&(node_handles[i][2]),out,&ierr);
    if (ierr != 1) dserror("Error writing restart data");
 }
-/* 
+/*
    all nodal data is written, so we now write the node_handles and store
    the handle to this in res.handle_of_node_handles
 */
@@ -805,11 +805,11 @@ CCAFREE(res.node_handles[0]);
 CCAFREE(res.node_handles);
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-/* 
+/*
    we come to the most difficult part, the writing of the element data.
-   One element is assumed not to have more then MAXRECORDPERELE different 
+   One element is assumed not to have more then MAXRECORDPERELE different
    records to write of arbitary type
-   
+
    The element is called with the element action action = write_restart
    Again, all elements to the processors partition are written
 */
@@ -818,7 +818,7 @@ numele = actpart->pdis[0].numele;
 res.ele_handles = (long int**)CCAMALLOC(numele*sizeof(long int*));
 ele_handles = res.ele_handles;
 res.ele_handles[0] = (long int*)CCAMALLOC(MAXRECORDPERELE*numele*sizeof(long int));
-for (i=1; i<numele; i++) 
+for (i=1; i<numele; i++)
 ele_handles[i] = &(ele_handles[0][i*MAXRECORDPERELE]);
 /*--------------------- now loop element and switch for type of element */
 *action = write_restart;
@@ -829,7 +829,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    {
 #ifdef D_SHELL8
    case el_shell8:
-      container->kstep    = 0;   
+      container->kstep    = 0;
       container->handsize = MAXRECORDPERELE;
       container->handles  = ele_handles[i];
       shell8(actfield,actpart,actintra,actele,
@@ -839,7 +839,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
 
 #ifdef D_SHELL9
    case el_shell9:
-      container->kstep    = 0;   
+      container->kstep    = 0;
       container->handsize = MAXRECORDPERELE;
       container->handles  = ele_handles[i];
       shell9(actfield,actintra,actele,
@@ -856,10 +856,10 @@ for (i=0; i<actpart->pdis[0].numele; i++)
             NULL,NULL,NULL,action,container);
    break;
 #endif
-   case el_fluid2: 
+   case el_fluid2:
        dserror("Restart for fluid2 not yet impl.");
    break;
-   case el_fluid3: 
+   case el_fluid3:
        dserror("Restart for fluid3 not yet impl.");
    break;
    case el_ale3:
@@ -874,23 +874,23 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    break;
 #endif
    case el_interf:
-   
+
    break;
    case el_wallge:
-   
+
    break;
    case el_none:
       dserror("Typ of element unknown");
-   break;   
+   break;
    default:
       dserror("Typ of element unknown");
    }/* end of calling elements */
 }
 /*----------------------------------------------------------------------*/
-/* 
+/*
    all ele data is written, so write the ele_handles and store the handle to
    it in res.handle_of_ele_handles
-*/   
+*/
 res.ele_fdim = numele;
 res.ele_sdim = MAXRECORDPERELE;
 pss_write("ele_hand",numele,MAXRECORDPERELE,sizeof(long int),ele_handles[0],&(res.handle_of_ele_handles),out,&ierr);
@@ -901,22 +901,22 @@ CCAFREE(res.ele_handles);
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*
-   the only thing to do is now write the RESTART_STRUCT itself with 
+   the only thing to do is now write the RESTART_STRUCT itself with
    its unique name resname = "res<step>"
    NOTE:
    names are limited to 9 characters, so a step larger then sres99999
    can not be restarted at the moment !!!!
-*/   
+*/
 pss_write(resname,1,1,sizeof(RESTART_STATSTRUCT),&res,&longdummy,out,&ierr);
 if (ierr != 1) dserror("Error writing restart data");
 /*----------------------------------------------------------------------*/
 /*
-#ifdef DEBUG 
+#ifdef DEBUG
 pss_status_to_err();
 #endif
 */
 /*----------------------------------------------------------------------*/
-/* 
+/*
    now write a notice to the err file, that this retsrat step was
    successfully written
 */
@@ -934,7 +934,7 @@ if (res.step != 0)
 
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -948,7 +948,7 @@ return;
  | of nln-structural statics                                                                 |
  *-------------------------------------------------------------------------------------------*/
 void restart_read_nlnstructstat(INT restart,   /* restart step */
-                STATIC_VAR     *statvar,       /* static input */                  
+                STATIC_VAR     *statvar,       /* static input */
                 STANLN          *nln_data,     /* control variables for global NR-Iterat */
                 FIELD           *actfield,     /* actual field */
                 PARTITION       *actpart,      /* actual partition */
@@ -958,7 +958,7 @@ void restart_read_nlnstructstat(INT restart,   /* restart step */
                 INT nsol,  DIST_VECTOR *sol,   /* solution processorpart     --"--       */
                 INT ndis,  DIST_VECTOR *dispi, /* displacement processorpart  --"--      */
                 CONTAINER    *container)       /*!< contains variables defined in container.h */
-{                                                
+{
 INT                  i;                      /* counters */
 INT                  ierr;                     /* error-flag */
 long int             reshandle;                /* restart handle */
@@ -981,7 +981,7 @@ INT                  fdim;                     /* fdim = actfield->actnode->sol.
 INT                  sender;                   /* sender in parallel comunication */
 #endif
 
-#ifdef DEBUG                                   
+#ifdef DEBUG
 dstrc_enter("restart_read_nlnstructstat");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1027,8 +1027,8 @@ for (i=0; i<ndis; i++)
 /*
    now read the data that is stored in the nodes of this processors
    partition
-   
-   a node has 3 ARRAYS: 
+
+   a node has 3 ARRAYS:
    actnode->sol
    actnode->sol_increment
    actnode->sol_residual
@@ -1044,7 +1044,7 @@ numnp = actpart->pdis[0].numnp;
 res.node_handles = (long int**)CCAMALLOC(numnp*sizeof(long int*));
 node_handles = res.node_handles;
 res.node_handles[0] = (long int*)CCAMALLOC(3*numnp*sizeof(long int));
-for (i=1; i<numnp; i++) 
+for (i=1; i<numnp; i++)
 node_handles[i] = &(node_handles[0][i*3]);
 /*------------------------------------------- read the array of handles */
 pss_read_name_handle("nod_hand",&(res.node_fdim),&(res.node_sdim),&i,
@@ -1098,7 +1098,7 @@ CCAFREE(res.node_handles);
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*
-   now start reading the element data 
+   now start reading the element data
 */
 /*----------------------------------------------------------------------*/
 numele = actpart->pdis[0].numele;
@@ -1108,7 +1108,7 @@ if (numele != res.ele_fdim || MAXRECORDPERELE != res.ele_sdim)
 res.ele_handles = (long int**)CCAMALLOC(numele*sizeof(long int*));
 ele_handles = res.ele_handles;
 res.ele_handles[0] = (long int*)CCAMALLOC(MAXRECORDPERELE*numele*sizeof(long int));
-for (i=1; i<numele; i++) 
+for (i=1; i<numele; i++)
 ele_handles[i] = &(ele_handles[0][i*MAXRECORDPERELE]);
 /*------------------------------------------- read the array of handles */
 pss_read_name_handle("ele_hand",&res.ele_fdim,&res.ele_sdim,&i,
@@ -1123,7 +1123,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    {
 #ifdef D_SHELL8
    case el_shell8:
-      container->kstep    = 0;    
+      container->kstep    = 0;
       container->handsize = MAXRECORDPERELE;
       container->handles  = ele_handles[i];
       shell8(actfield,actpart,actintra,actele,
@@ -1133,7 +1133,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
 
 #ifdef D_SHELL9
    case el_shell9:
-      container->kstep    = 0;    
+      container->kstep    = 0;
       container->handsize = MAXRECORDPERELE;
       container->handles  = ele_handles[i];
       shell9(actfield,actintra,actele,
@@ -1149,10 +1149,10 @@ for (i=0; i<actpart->pdis[0].numele; i++)
        wall1(actpart,actintra,actele,NULL,NULL,NULL,action,container);
    break;
 #endif
-   case el_fluid2: 
+   case el_fluid2:
        dserror("Restart for fluid2 not yet impl.");
    break;
-   case el_fluid3: 
+   case el_fluid3:
        dserror("Restart for fluid3 not yet impl.");
    break;
    case el_ale3:
@@ -1164,7 +1164,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
        container->handsize = MAXRECORDPERELE;
        container->handles = ele_handles[i];
        beam3(actfield,actpart,actintra,actele,
-             NULL,NULL,NULL,action,container);       
+             NULL,NULL,NULL,action,container);
    break;
 #endif
    case el_none:
@@ -1179,12 +1179,12 @@ for (i=0; i<actpart->pdis[0].numele; i++)
 CCAFREE(res.ele_handles[0]);
 CCAFREE(res.ele_handles);
 /*----------------------------------------------------------------------*/
-/* 
-   now we have to make the arrays node->sol, node->sol_increment, 
+/*
+   now we have to make the arrays node->sol, node->sol_increment,
    node->sol_residual redundant for the whole field
 */
 #ifdef PARALLEL
-numnp = actfield->dis[0].numnp;  
+numnp = actfield->dis[0].numnp;
 for (i=0; i<numnp; i++)
 {
    actnode = &(actfield->dis[0].node[i]);
@@ -1210,38 +1210,38 @@ for (i=0; i<numnp; i++)
    amredef(&(actnode->sol_residual),fdim,actnode->sol_residual.sdim,"DA");
    j = actnode->sol_residual.fdim * actnode->sol_residual.sdim;
    MPI_Bcast(actnode->sol_residual.a.da[0],j,MPI_DOUBLE,sender,actintra->MPI_INTRA_COMM);
-} 
+}
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /*end of restart_read_nlnstructstat */
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief write restart data of fluid field
 
 <pre>                                                         genk 09/03
 
 write restart data of FLUID field from pss-file
-			     
-</pre>   
-\param   *fdyn	     FLUID_DYNAMIC    (i)    
+
+</pre>
+\param   *fdyn	     FLUID_DYNAMIC    (i)
 \param   *actfield   FIELD            (i)   actual field
 \param   *actpart    PARTITION        (i)   actual partition
 \param   *actintra   INTRA            (i)   actual intra-communicator
-\param   *action     CALC_ACTION      (i)  
+\param   *action     CALC_ACTION      (i)
 \param   *container  CONTAINER        (i)
 
-\return void 
+\return void
 
 ------------------------------------------------------------------------*/
-void restart_write_fluiddyn(FLUID_DYNAMIC   *fdyn,                  
+void restart_write_fluiddyn(FLUID_DYNAMIC   *fdyn,
                             FIELD	    *actfield,
                             PARTITION	    *actpart,
                             INTRA	    *actintra,
 			    CALC_ACTION     *action,
-			    CONTAINER       *container)  
+			    CONTAINER       *container)
 {
 INT                  i;
 INT                  ierr;
@@ -1256,7 +1256,7 @@ RESTART_DYNFLUID     res;
 NODE                *actnode;
 ELEMENT             *actele;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("restart_write_fluiddyn");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1268,11 +1268,11 @@ sprintf(resname,"fres%d",res.step);
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-/* 
-   now write the data, that is stored in the nodes of this processor's 
+/*
+   now write the data, that is stored in the nodes of this processor's
    partition
-   
-   for a fluid node two arrays are important: 
+
+   for a fluid node two arrays are important:
    actnode->sol
    actnode->sol_increment
    additionally there may be a multifield array
@@ -1287,7 +1287,7 @@ if (!res.node_handles) dserror("Allocation of memory failed");
 node_handles = res.node_handles;
 res.node_handles[0] = (long int*)CCAMALLOC(3*numnp*sizeof(long int));
 if (!res.node_handles[0]) dserror("Allocation of memory failed");
-for (i=1; i<numnp; i++) 
+for (i=1; i<numnp; i++)
 node_handles[i] = &(node_handles[0][i*3]);
 /*----------------------------------------------------------------------*/
 /* now we loop the nodes on the partition and each node writes his ARRAYs */
@@ -1304,7 +1304,7 @@ for (i=0; i<numnp; i++)
    if (ierr != 1) dserror("Error writing restart data");
    }
 }
-/* 
+/*
    all nodal data is written, so we now write the node_handles and store
    the handle to this in res.handle_of_node_handles
 */
@@ -1317,11 +1317,11 @@ CCAFREE(res.node_handles[0]);
 CCAFREE(res.node_handles);
 
 /*----------------------------------------------------------------------*/
-/* 
+/*
    we come to the most difficult part, the writing of the element data.
    One element is assumed not to have more then 5 different records to
    write of arbitary type
-   
+
    The element is called with the element action action = write_restart
    Again, all elements to the processors partition are written
 
@@ -1335,7 +1335,7 @@ if (fdyn->surftens!=0)
   res.ele_handles = (long int**)CCAMALLOC(numele*sizeof(long int*));
   ele_handles = res.ele_handles;
   res.ele_handles[0] = (long int*)CCAMALLOC(5*numele*sizeof(long int));
-  for (i=1; i<numele; i++) 
+  for (i=1; i<numele; i++)
   ele_handles[i] = &(ele_handles[0][i*5]);
   /*------------------- now loop element and switch for type of element */
   *action = write_restart;
@@ -1344,8 +1344,8 @@ if (fdyn->surftens!=0)
      actele = actpart->pdis[0].element[i];
      switch(actele->eltyp)/*===================== call element routines */
      {
-     case el_fluid2: 
-#ifdef D_FLUID2   
+     case el_fluid2:
+#ifdef D_FLUID2
         container->handsize = 5;
         container->handles  = ele_handles[i];
         fluid2(actpart,actintra,actele,NULL,
@@ -1354,21 +1354,21 @@ if (fdyn->surftens!=0)
 	       action,NULL,NULL,container);
 #endif
      break;
-     case el_fluid3: 
+     case el_fluid3:
          dserror("Restart for fluid3 not yet impl.");
      break;
      case el_none:
         dserror("Typ of element unknown");
-     break;   
+     break;
      default:
         dserror("Typ of element unknown");
      }/* end of calling elements */
   }
   /*----------------------------------------------------------------------*/
-  /* 
+  /*
      all ele data is written, so write the ele_handles and store the handle to
      it in res.handle_of_ele_handles
-  */   
+  */
   res.ele_fdim = numele;
   res.ele_sdim = 5;
   pss_write("ele_hand",numele,5,sizeof(long int),ele_handles[0],&(res.handle_of_ele_handles),out,&ierr);
@@ -1380,22 +1380,22 @@ if (fdyn->surftens!=0)
 
 /*----------------------------------------------------------------------*/
 /*
-   the only thing to do is now write the RESTART_DYNFLUID itself with 
+   the only thing to do is now write the RESTART_DYNFLUID itself with
    its unique name resname = "fres<step>"
    NOTE:
    names are limited to 9 characters, so a step larger then fres99999
    can not be restarted at the moment !!!!
-*/   
+*/
 pss_write(resname,1,1,sizeof(RESTART_DYNFLUID),&res,&longdummy,out,&ierr);
 if (ierr != 1) dserror("Error writing restart data");
 /*----------------------------------------------------------------------*/
 /*
-#ifdef DEBUG 
+#ifdef DEBUG
 pss_status_to_err();
 #endif
 */
 /*----------------------------------------------------------------------*/
-/* 
+/*
    now write a notice to the err file, that this retsrat step was
    successfully written
 */
@@ -1411,29 +1411,29 @@ if (res.step != 0)
    fflush(allfiles.out_err);
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of restart_write_fluiddyn */
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief read restart data of ale field
 
 <pre>                                                         genk 09/03
 
 read restart data of FLUID field from pss file
-			     
-</pre>   
+
+</pre>
 \param    restart    INT              (i)   restart step
-\param   *fdyn	     FLUID_DYNAMIC    (i)    
+\param   *fdyn	     FLUID_DYNAMIC    (i)
 \param   *actfield   FIELD            (i)   actual field
 \param   *actpart    PARTITION        (i)   actual partition
 \param   *actintra   INTRA            (i)   actual intra-communicator
-\param   *action     CALC_ACTION      (i)  
+\param   *action     CALC_ACTION      (i)
 \param   *container  CONTAINER        (i)
 
-\return void 
+\return void
 
 ------------------------------------------------------------------------*/
 void restart_read_fluiddyn(INT restart,
@@ -1465,7 +1465,7 @@ INT                  fdim;
 INT                  sender;
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("restart_read_fluiddyn");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1484,8 +1484,8 @@ fdyn->acttime=res.time;
 /*
    now read the data that is stored in the nodes of this processors
    partition
-   
-   for a fluid node two arrays are important: 
+
+   for a fluid node two arrays are important:
    actnode->sol
    actnode->sol_increment
    additionally there may be a multifield array
@@ -1502,7 +1502,7 @@ numnp = actpart->pdis[0].numnp;
 res.node_handles = (long int**)CCAMALLOC(numnp*sizeof(long int*));
 node_handles = res.node_handles;
 res.node_handles[0] = (long int*)CCAMALLOC(3*numnp*sizeof(long int));
-for (i=1; i<numnp; i++) 
+for (i=1; i<numnp; i++)
 node_handles[i] = &(node_handles[0][i*3]);
 /*------------------------------------------- read the array of handles */
 pss_read_name_handle("nod_hand",&(res.node_fdim),&(res.node_sdim),&i,
@@ -1559,7 +1559,7 @@ CCAFREE(res.node_handles);
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*
-   now start reading the element data 
+   now start reading the element data
 */
 /*----------------------------------------------------------------------*/
 if (fdyn->surftens!=0)
@@ -1571,7 +1571,7 @@ if (fdyn->surftens!=0)
   res.ele_handles = (long int**)CCAMALLOC(numele*sizeof(long int*));
   ele_handles = res.ele_handles;
   res.ele_handles[0] = (long int*)CCAMALLOC(5*numele*sizeof(long int));
-  for (i=1; i<numele; i++) 
+  for (i=1; i<numele; i++)
   ele_handles[i] = &(ele_handles[0][i*5]);
   /*------------------------------------------- read the array of handles */
   pss_read_name_handle("ele_hand",&res.ele_fdim,&res.ele_sdim,&i,
@@ -1584,8 +1584,8 @@ if (fdyn->surftens!=0)
      actele = actpart->pdis[0].element[i];
      switch(actele->eltyp)/*======================= call element routines */
      {
-       case el_fluid2: 
-#ifdef D_FLUID2   
+       case el_fluid2:
+#ifdef D_FLUID2
         container->handsize = 5;
         container->handles  = ele_handles[i];
         fluid2(actpart,actintra,actele,NULL,
@@ -1594,7 +1594,7 @@ if (fdyn->surftens!=0)
 	       action,NULL,NULL,container);
 #endif
      break;
-     case el_fluid3: 
+     case el_fluid3:
          dserror("Restart for fluid3 not yet impl.");
      break;
      case el_none:
@@ -1603,19 +1603,19 @@ if (fdyn->surftens!=0)
      default:
         dserror("Typ of element unknown");
      }/* end of calling elements */
-  }  
+  }
 /*----------------------------------------------------------------------*/
-/*----------------------------- delete the handle array of the elements */ 
+/*----------------------------- delete the handle array of the elements */
   CCAFREE(res.ele_handles[0]);
   CCAFREE(res.ele_handles);
 }
 /*----------------------------------------------------------------------*/
-/* 
-   now we have to make the arrays node->sol, node->sol_increment, 
+/*
+   now we have to make the arrays node->sol, node->sol_increment,
    node->sol_residual redundant for the whole field
 */
 #ifdef PARALLEL
-numnp = actfield->dis[0].numnp;  
+numnp = actfield->dis[0].numnp;
 for (i=0; i<numnp; i++)
 {
    actnode = &(actfield->dis[0].node[i]);
@@ -1644,35 +1644,35 @@ for (i=0; i<numnp; i++)
    j = actnode->sol_mf.fdim * actnode->sol_mf.sdim;
    MPI_Bcast(actnode->sol_mf.a.da[0],j,MPI_DOUBLE,sender,actintra->MPI_INTRA_COMM);
    }
-} 
+}
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of restart_read_fluiddyn */
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief write restart data of ale field
 
 <pre>                                                         genk 09/03
 
 write restart data of ALE field from pss file
-			     
-</pre>   
-\param   *adyn	     ALE_DYNAMIC      (i)    
+
+</pre>
+\param   *adyn	     ALE_DYNAMIC      (i)
 \param   *actfield   FIELD            (i)   actual field
 \param   *actpart    PARTITION        (i)   actual partition
 \param   *actintra   INTRA            (i)   actual intra-communicator
 
-\return void 
+\return void
 
 ------------------------------------------------------------------------*/
-void restart_write_aledyn(ALE_DYNAMIC       *adyn,                  
+void restart_write_aledyn(ALE_DYNAMIC       *adyn,
                             FIELD	    *actfield,
                             PARTITION	    *actpart,
-                            INTRA	    *actintra)  
+                            INTRA	    *actintra)
 {
 INT                  i;
 INT                  ierr;
@@ -1684,7 +1684,7 @@ FILE                *out;
 RESTART_DYNALE       res;
 NODE                *actnode;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("restart_write_aledyn");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1696,11 +1696,11 @@ sprintf(resname,"ares%d",res.step);
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-/* 
-   now write the data, that is stored in the nodes of this processor's 
+/*
+   now write the data, that is stored in the nodes of this processor's
    partition
-   
-   for a ale node two arrays are important: 
+
+   for a ale node two arrays are important:
    actnode->sol
    actnode->sol_increment
    additionally there may be a multifield array
@@ -1713,7 +1713,7 @@ numnp = actpart->pdis[0].numnp;
 res.node_handles = (long int**)CCAMALLOC(numnp*sizeof(long int*));
 node_handles = res.node_handles;
 res.node_handles[0] = (long int*)CCAMALLOC(3*numnp*sizeof(long int));
-for (i=1; i<numnp; i++) 
+for (i=1; i<numnp; i++)
 node_handles[i] = &(node_handles[0][i*3]);
 /*----------------------------------------------------------------------*/
 /* now we loop the nodes on the partition and each node writes his ARRAYs */
@@ -1730,7 +1730,7 @@ for (i=0; i<numnp; i++)
    if (ierr != 1) dserror("Error writing restart data");
    }
 }
-/* 
+/*
    all nodal data is written, so we now write the node_handles and store
    the handle to this in res.handle_of_node_handles
 */
@@ -1744,22 +1744,22 @@ CCAFREE(res.node_handles);
 
 /*----------------------------------------------------------------------*/
 /*
-   the only thing to do is now write the RESTART_DYNSTRUCT itself with 
+   the only thing to do is now write the RESTART_DYNSTRUCT itself with
    its unique name resname = "res<step>"
    NOTE:
    names are limited to 9 characters, so a step larger then ares99999
    can not be restarted at the moment !!!!
-*/   
+*/
 pss_write(resname,1,1,sizeof(RESTART_DYNALE),&res,&longdummy,out,&ierr);
 if (ierr != 1) dserror("Error writing restart data");
 /*----------------------------------------------------------------------*/
 /*
-#ifdef DEBUG 
+#ifdef DEBUG
 pss_status_to_err();
 #endif
 */
 /*----------------------------------------------------------------------*/
-/* 
+/*
    now write a notice to the err file, that this retsrat step was
    successfully written
 */
@@ -1775,26 +1775,26 @@ if (res.step != 0)
    fflush(allfiles.out_err);
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of restart_write_fluiddyn */
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief read restart data of ale field
 
 <pre>                                                         genk 09/03
 
 read restart data of ALE field from pss file
-			     
-</pre>   
- \param   *adyn	     ALE_DYNAMIC      (i)    
+
+</pre>
+ \param   *adyn	     ALE_DYNAMIC      (i)
 \param   *actfield   FIELD            (i)   actual field
 \param   *actpart    PARTITION        (i)   actual partition
 \param   *actintra   INTRA            (i)   actual intra-communicator
 
-\return void 
+\return void
 
 ------------------------------------------------------------------------*/
 void restart_read_aledyn(INT          restart,
@@ -1821,7 +1821,7 @@ INT                  fdim;
 INT                  sender;
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("restart_read_aledyn");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1840,8 +1840,8 @@ adyn->time=res.time;
 /*
    now read the data that is stored in the nodes of this processors
    partition
-   
-   a node has 3 ARRAYS: 
+
+   a node has 3 ARRAYS:
    actnode->sol
    actnode->sol_increment
    actnode->sol_residual
@@ -1857,7 +1857,7 @@ numnp = actpart->pdis[0].numnp;
 res.node_handles = (long int**)CCAMALLOC(numnp*sizeof(long int*));
 node_handles = res.node_handles;
 res.node_handles[0] = (long int*)CCAMALLOC(3*numnp*sizeof(long int));
-for (i=1; i<numnp; i++) 
+for (i=1; i<numnp; i++)
 node_handles[i] = &(node_handles[0][i*3]);
 /*------------------------------------------- read the array of handles */
 pss_read_name_handle("nod_hand",&(res.node_fdim),&(res.node_sdim),&i,
@@ -1914,12 +1914,12 @@ CCAFREE(res.node_handles);
 /*----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*/
-/* 
-   now we have to make the arrays node->sol, node->sol_increment, 
+/*
+   now we have to make the arrays node->sol, node->sol_increment,
    node->sol_residual redundant for the whole field
 */
 #ifdef PARALLEL
-numnp = actfield->dis[0].numnp;  
+numnp = actfield->dis[0].numnp;
 for (i=0; i<numnp; i++)
 {
    actnode = &(actfield->dis[0].node[i]);
@@ -1948,29 +1948,29 @@ for (i=0; i<numnp; i++)
    j = actnode->sol_mf.fdim * actnode->sol_mf.sdim;
    MPI_Bcast(actnode->sol_mf.a.da[0],j,MPI_DOUBLE,sender,actintra->MPI_INTRA_COMM);
    }
-} 
+}
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of restart_read_aledyn */
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief write restart data for FSI-problems
 
 <pre>                                                         genk 09/03
 
 write some specific parameters for restart of FSI-problems
-			     
-</pre>   
-\param *fsidyn	  FSI_DYNAMIC (i)    
 
-\return void 
+</pre>
+\param *fsidyn	  FSI_DYNAMIC (i)
+
+\return void
 
 ------------------------------------------------------------------------*/
-void restart_write_fsidyn(FSI_DYNAMIC       *fsidyn)  
+void restart_write_fsidyn(FSI_DYNAMIC       *fsidyn)
 {
 INT                  ierr;
 long int             longdummy;
@@ -1979,7 +1979,7 @@ FILE                *out;
 RESTART_DYNFSI       res;
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("restart_write_fsidyn");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1992,22 +1992,22 @@ sprintf(resname,"ires%d",res.step);
 
 /*----------------------------------------------------------------------*/
 /*
-   the only thing to do is now write the RESTART_DYNSTRUCT itself with 
+   the only thing to do is now write the RESTART_DYNSTRUCT itself with
    its unique name resname = "res<step>"
    NOTE:
    names are limited to 9 characters, so a step larger then ires99999
    can not be restarted at the moment !!!!
-*/   
+*/
 pss_write(resname,1,1,sizeof(RESTART_DYNFSI),&res,&longdummy,out,&ierr);
 if (ierr != 1) dserror("Error writing restart data");
 /*----------------------------------------------------------------------*/
 /*
-#ifdef DEBUG 
+#ifdef DEBUG
 pss_status_to_err();
 #endif
 */
 /*----------------------------------------------------------------------*/
-/* 
+/*
    now write a notice to the err file, that this retsrat step was
    successfully written
 */
@@ -2023,23 +2023,23 @@ if (res.step != 0)
    fflush(allfiles.out_err);
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of restart_write_fsidyn */
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief read restart data for FSI problems
 
 <pre>                                                         genk 09/03
 
-read some specific parameters for restart of FSI-problems			     
+read some specific parameters for restart of FSI-problems
 
-</pre>   
-\param *fsidyn	 FSI_DYNAMIC (i)    
+</pre>
+\param *fsidyn	 FSI_DYNAMIC (i)
 
-\return void 
+\return void
 
 ------------------------------------------------------------------------*/
 void restart_read_fsidyn(INT restart,
@@ -2052,7 +2052,7 @@ char                 resname[100];
 FILE                *in;
 RESTART_DYNFSI       res;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("restart_read_fsidyn");
 #endif
 /*----------------------------------------------------------------------*/
@@ -2069,7 +2069,7 @@ fsidyn->time=res.time;
 fsidyn->relax=res.relax;
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

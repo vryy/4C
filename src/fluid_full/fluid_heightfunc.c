@@ -3,7 +3,7 @@
 \brief setting free surface conditions for fluid and ale
 
 ------------------------------------------------------------------------*/
-/*! 
+/*!
 \addtogroup FLUID
 *//*! @{ (documentation module open)*/
 #ifdef D_FLUID
@@ -14,9 +14,9 @@
 #include "../fluid3/fluid3.h"
 #include "../fluid3/fluid3_prototypes.h"
 INT cmp_int(const void *a, const void *b );
-void fluid_calelm_hf(	      
+void fluid_calelm_hf(
                       PARTITION           *actpart,
-                      INTRA               *actintra,  
+                      INTRA               *actintra,
                       CALC_ACTION         *action,
                       CONTAINER           *container,
                       OLL                 *hfmat_oll,
@@ -42,14 +42,14 @@ extern struct _GENPROB     genprob;
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;  
+extern ALLDYNA      *alldyn;
 
 /*!----------------------------------------------------------------------
 \brief file pointers
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -63,7 +63,7 @@ extern struct _FILES  allfiles;
  *----------------------------------------------------------------------*/
 enum _CALC_ACTION calc_action[MAXFIELD];
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief seperat treatment of heightfunction
 
 <pre>                                                         genk 11/03
@@ -75,7 +75,7 @@ during the nonlinear iteration.
 </pre>
 \param    hctrl       INT                control flag
 \param   *grat        DOUBLE             convergence ration
-\param   *fdyn        FLUID_DYNAMIC 
+\param   *fdyn        FLUID_DYNAMIC
 \param   *actfield    FIELD               actual field
 \param   *actpart     PARTITION           actual partition
 \param   *actintra    INTRA               actual intra-com.
@@ -83,11 +83,11 @@ during the nonlinear iteration.
 \param   *container   CONTAINER
 \param    converged   INT                 convergence flag
 
-\return void                                            
+\return void
 
 ------------------------------------------------------------------------*/
 void fluid_heightfunc(INT                  hctrl,
-                      DOUBLE              *grat, 
+                      DOUBLE              *grat,
 		      FIELD               *actfield,
                       PARTITION           *actpart,
                       INTRA               *actintra,
@@ -108,8 +108,8 @@ INT                    init;
 INT                    dof;
 static INT             phipos;
 static INT             myrank;
-static SOLVAR         *hfsolv; 
-static OLL            *hfmat_oll;  
+static SOLVAR         *hfsolv;
+static OLL            *hfmat_oll;
 static DIST_VECTOR    *rhs;
 static DIST_VECTOR    *sol;
 static DISCRET        *actdis;
@@ -122,7 +122,7 @@ DOUBLE                 gnorm=ZERO;
 DOUBLE                 dgnorm=ZERO;
 static FLUID_DYNAMIC  *fdyn;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_heightfunc");
 #endif
 
@@ -132,7 +132,7 @@ switch (hctrl)
 /*======================================================================*
  |                      I N I T I A L I S A T I O N                     |
  *======================================================================*/
-case 1: 
+case 1:
 /*----------------------------------------------------------------------*/
 fdyn   = alldyn[genprob.numff].fdyn;
 fdyn->hf_stab=2;
@@ -174,7 +174,7 @@ hfsolv->sysarray[0].oll = (OLL*)CCACALLOC(1,sizeof(OLL));
 hfmat_oll = hfsolv->sysarray[0].oll;
 
 /*--------------------------------------------------- initialise matrix */
-hfmat_oll->numeq       = numeq; 
+hfmat_oll->numeq       = numeq;
 hfmat_oll->numeq_total = numeq_total;
 hfmat_oll->nnz         =0;
 hfmat_oll->is_copied   =0;
@@ -192,7 +192,7 @@ for (i=0;i<numnp_total;i++)
    if (actnode->hfdof==NULL) continue;
    if (actnode->proc!=myrank) continue;
    update[counter]=actnode->hfdof[0];
-   counter++;   
+   counter++;
 }
 dsassert(counter==numeq,"number of local dofs wrong for height function!\n");
 /*---------------------------------------------- sort the vector update */
@@ -293,7 +293,7 @@ case fncc_L2:
     gnorm = sqrt(gnorm);
 break;
 default:
-   dserror("parameter itchk out of range!\n"); 
+   dserror("parameter itchk out of range!\n");
 }
 if (gnorm<EPS5) gnorm=ONE;
 *grat = dgnorm/gnorm;
@@ -304,10 +304,10 @@ default:
 } /* end of switch (hctrl) */
 
 /*----------------------------------- actual solution gets old solution */
-amcopy(&result_a, &result_old_a); 
+amcopy(&result_a, &result_old_a);
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -317,7 +317,7 @@ dserror("FSI-functions not compiled in!\n");
 return;
 } /* end of fluid_heighfunc*/
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief seperat treatment of heightfunction
 
 <pre>                                                         genk 11/03
@@ -333,12 +333,12 @@ during the nonlinear iteration.
 \param   *container   CONTAINER
 \param    converged   INT                 convergence flag
 
-\return void                                            
+\return void
 
 ------------------------------------------------------------------------*/
-void fluid_calelm_hf(	      
+void fluid_calelm_hf(
                       PARTITION           *actpart,
-                      INTRA               *actintra,  
+                      INTRA               *actintra,
                       CALC_ACTION         *action,
                       CONTAINER           *container,
                       OLL                 *hfmat_oll,
@@ -366,7 +366,7 @@ MATENTRY             **row;          /* matrix column                           
 MATENTRY              *actentry;     /* actual matrix entry                         */
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_calelm_hf");
 #endif
 
@@ -389,8 +389,8 @@ for (i=0;i<numele;i++)
    actele = actpart->pdis[0].element[i];
    switch(actele->eltyp)
    {
-#ifdef D_FLUID2   
-   case el_fluid2: 
+#ifdef D_FLUID2
+   case el_fluid2:
       if (actele->e.f2->fs_on!=3) continue;
       fluid2(actpart,actintra,actele,NULL,
              &estif_global,NULL,
@@ -398,13 +398,13 @@ for (i=0;i<numele;i++)
 	     action,NULL,NULL,container);
    break;
 #endif
-#ifdef D_FLUID3   
+#ifdef D_FLUID3
    case el_fluid3:
       if (actele->e.f3->fs_on!=3) continue;
       fluid3(actpart,actintra,actele,
              &estif_global,NULL,
              &etforce_global,&eiforce_global,NULL,
-	     action,NULL,NULL,container);   
+	     action,NULL,NULL,container);
    break;
 #endif
    default:
@@ -417,7 +417,7 @@ for (i=0;i<numele;i++)
       node = container->iedgnod[j];
       dsassert(actele->node[node]->hfdof!=NULL,"cannot read hfdof\n");
       lm[counter] = actele->node[node]->hfdof[0];
-#ifdef PARALLEL 
+#ifdef PARALLEL
       owner[counter] = actele->node[node]->proc;
 #endif
       counter++;
@@ -429,7 +429,7 @@ for (i=0;i<numele;i++)
    {
       jj = lm[j];
       /*----------------------------------------- loop only my own rows */
-#ifdef PARALLEL 
+#ifdef PARALLEL
       if (owner[j]!=myrank) continue;
 #endif
       /* --------------------------------------------- add complete row */
@@ -438,8 +438,8 @@ for (i=0;i<numele;i++)
       rindex = find_index(jj,update,numeq);
       dsassert(rindex>=0,"dof does not exist in update\n");
       rhs[0].vec.a.dv[rindex]+=eiforce[j];
-   }/* end loop over i */   
-} 
+   }/* end loop over i */
+}
 
 /*----------------------------------------------------------- count nnz */
 if (init_nnz==0)
@@ -461,7 +461,7 @@ if (init_nnz==0)
 
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 #else

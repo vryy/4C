@@ -33,7 +33,7 @@ extern struct _SOLVAR  *solv;
 
 <pre>                                                         m.gee 8/00
 -the partition of one proc (all discretizations)
--the type is in partition.h                                                  
+-the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -49,18 +49,18 @@ extern struct _IO_FLAGS     ioflags;
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par;                      
+ extern struct _PAR   par;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate dynamic variables if needed                      |
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -84,17 +84,17 @@ extern struct _CURVE *curve;
  | defined globally in global_calelm.c                                  |
  *----------------------------------------------------------------------*/
 extern enum _CALC_ACTION calc_action[MAXFIELD];
- 
+
 static FLUID_DYNAMIC *fdyn;
 /*----------------------------------------------------------------------*
  | routine to control implicit and semi-implicit algorithms for fluid   |
- | problems combined with Newton and fixed point iteration schemes.     | 
+ | problems combined with Newton and fixed point iteration schemes.     |
  | IN PROGRESS: ONE-STEP-THETA                                          |
  |              fixed point like iteration                              |
  |              only Euler no ALE                                       |
  |                                                          genk  03/02 |
  *----------------------------------------------------------------------*/
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief implicit and semi-implicit algorithms for fluid problems
 
 <pre>                                                         genk 03/02
@@ -106,7 +106,7 @@ time-discretisation:
 fdyn->iop=2: Semi-Implicit-One-Step Method
 fdyn->iop=3: Semi-Implicit-Two-Step Method
 fdyn->iop=4: One-Step-Theta Scheme
-fdyn->iop=5: Fractional-Step-Theta Scheme 
+fdyn->iop=5: Fractional-Step-Theta Scheme
 
 see dissertation of W.A. Wall chapter 4.2 'Zeitdiskretisierung'
 
@@ -117,13 +117,13 @@ fdyn->ite=2: Newton iteration
 fdyn->ite=3: fixed-point iteration
 
 see dissertation chapter 4.3 'Linearisierung und Iteratonsverfahren'.
-			     
-</pre>   
-\param *fdyn	 FLUID_DYNAMIC (i)    
 
-\return void 
+</pre>
+\param *fdyn	 FLUID_DYNAMIC (i)
+
+\return void
 \warning up to now only the One-Step-Theta scheme combined with a
-fixed-point-like iteration scheme is tested! 
+fixed-point-like iteration scheme is tested!
 
 ------------------------------------------------------------------------*/
 void fluid_isi_tu(void)
@@ -161,7 +161,7 @@ DOUBLE          lower_limit_eps;    /* convergence ratio                */
 DOUBLE          t1,ts,te;	    /*					*/
 DOUBLE          tes=0.0;            /*					*/
 DOUBLE          tss=0.0;            /*					*/
-FLUID_STRESS    str;           
+FLUID_STRESS    str;
 
 DIST_VECTOR    *rhs_ke;             /* distr. RHS for solving ke        */
 DIST_VECTOR    *sol_ke;             /* distr. ke solution               */
@@ -199,12 +199,12 @@ CONTAINER       container;      /* contains variables defined in container.h */
 
 INT             initialisation=0;
 INT             kapeps_yeah=0;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_isi_tu");
 #endif
 
 
-/*======================================================================* 
+/*======================================================================*
  |                    I N I T I A L I S A T I O N                       |
  *======================================================================*/
 /*--------------------------------------------------- set some pointers */
@@ -227,9 +227,9 @@ container.is_relax = 0;
 /*--------------------------------------------- set max. iterationsteps */
 fdyn->itemax_ke= 5*fdyn->itemax;
 
-/*---------------- if we are not parallel, we have to allocate an alibi * 
+/*---------------- if we are not parallel, we have to allocate an alibi *
   ---------------------------------------- intra-communicator structure */
-#ifdef PARALLEL 
+#ifdef PARALLEL
 actintra    = &(par.intra[0]);
 #else
 actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
@@ -295,7 +295,7 @@ solserv_getmatdims(&(actsolv->sysarray[actsysarray]),
 numeq_total_oll = actfield->dis[kapeps].numeq;
 oll_numeq(actfield, actpart, actintra, kapeps, &numeq_oll);
 
-oll_open(kesolv->sysarray[0].oll, numeq_oll, numeq_total_oll, 
+oll_open(kesolv->sysarray[0].oll, numeq_oll, numeq_total_oll,
 	 actfield, actpart, actintra, kapeps);
 
 numeq[kapeps] = numeq_oll;
@@ -305,9 +305,9 @@ numeq_total[kapeps] = numeq_total_oll;
 #ifdef PARALLEL
 MPI_Barrier(actintra->MPI_INTRA_COMM);
 #endif
-printf("PROC  %3d | FIELD FLUID     | number of rans equations        : %10d \n", 
+printf("PROC  %3d | FIELD FLUID     | number of rans equations        : %10d \n",
         par.myrank,numeq[rans]);
-printf("PROC  %3d | FIELD FLUID     | number of kapeps equations      : %10d \n", 
+printf("PROC  %3d | FIELD FLUID     | number of kapeps equations      : %10d \n",
         par.myrank,numeq[kapeps]);
 #ifdef PARALLEL
 MPI_Barrier(actintra->MPI_INTRA_COMM);
@@ -322,14 +322,14 @@ if (par.myrank==0) printf("\n\n");
 solserv_create_vec(&(actsolv->rhs),1,numeq_total[rans],numeq[rans],"DV");
 solserv_zero_vec(&(actsolv->rhs[0]));
 
-/*------------------------------------------- allocate 1 dist. solution */		       
+/*------------------------------------------- allocate 1 dist. solution */
 solserv_create_vec(&(actsolv->sol),1,numeq_total[rans],numeq[rans],"DV");
 solserv_zero_vec(&(actsolv->sol[0]));
 
 /*-------------------------- allocate 1 dist. vector 'rhs' for ke       */
 solserv_create_vec(&rhs_ke,1,numeq_total[kapeps],numeq[kapeps],"DV");
 solserv_zero_vec(rhs_ke);
-                                     
+
 /*-------------------------- allocate 1 dist. vector 'sol' for ke       */
 solserv_create_vec(&sol_ke,1,numeq_total[kapeps],numeq[kapeps],"DV");
 solserv_zero_vec(sol_ke);
@@ -353,22 +353,22 @@ fiterhs_ke = amdef("fiterhs_ke",&fiterhs_ke_a,numeq_total[kapeps],1,"DV");
 amdef("time",&time_a,1000,1,"DV");
 
 /*--------------------------------------------- initialise fluid field */
-fluid_init(actpart,actintra,actfield,action,&container,4,str);		     
-fluid_init_tu(actfield);	
+fluid_init(actpart,actintra,actfield,action,&container,4,str);
+fluid_init_tu(actfield);
 actpos=0;
 
 /*--------------------------------------- init all applied time curves */
 for (actcurve=0; actcurve<numcurve; actcurve++)
-   dyn_init_curve(actcurve,fdyn->nstep,fdyn->dt,fdyn->maxtime);   
+   dyn_init_curve(actcurve,fdyn->nstep,fdyn->dt,fdyn->maxtime);
 
 /*-------------------------------------- init the dirichlet-conditions */
 fluid_initdirich(actfield);
 /*---------------------------------- initialize solver on all matrices */
 /*
-NOTE: solver init phase has to be called with each matrix one wants to 
+NOTE: solver init phase has to be called with each matrix one wants to
       solve with. Solver init phase has to be called with all matrices
       one wants to do matrix-vector products and matrix scalar products.
-      This is not needed by all solver libraries, but the solver-init 
+      This is not needed by all solver libraries, but the solver-init
       phase is cheap in computation (can be costly in memory)
 */
 /*--------------------------------------------------- initialize solver */
@@ -386,7 +386,7 @@ solver_control(kesolv, actintra,
                sol_ke,
                rhs_ke,
                init);
-	       
+
 /*------------------------------------- init the assembly for stiffness */
 init_assembly(actpart,actsolv,actintra,actfield,k_array,rans);
 init_assembly(actpart,kesolv,actintra,actfield,0,kapeps);
@@ -404,7 +404,7 @@ actpos++;
 
 fluid_cons();
 
-/*======================================================================* 
+/*======================================================================*
  |                         T I M E L O O P                              |
  *======================================================================*/
 /* nodal solution history fluid field:                                  *
@@ -423,7 +423,7 @@ if (fdyn->step<=(fdyn->nums+1)) fluid_startproc(&nfrastep,0);
 
 /*------------------------------ calculate constants for time algorithm */
 fluid_tcons();
-if (kapeps_yeah == 1) fluid_tcons_tu(); 
+if (kapeps_yeah == 1) fluid_tcons_tu();
 
 fdyn->acttime += fdyn->dta;
 
@@ -449,7 +449,7 @@ if (fdyn->itnorm!=fncc_no && par.myrank==0)
    printf("|- step/max -|-  tol     [norm] -|- vel. error -|- pre. error -| \n");
 }
 itnum=1;
-/*======================================================================* 
+/*======================================================================*
  |           N O N L I N E A R   I T E R A T I O N                      |
  *======================================================================*/
 nonlniter:
@@ -469,7 +469,7 @@ amzero(&fiterhs_a);
 t1=ds_cputime();
 container.ftimerhs     = ftimerhs;
 container.fiterhs      = fiterhs;
-container.global_numeq = numeq_total[rans]; 
+container.global_numeq = numeq_total[rans];
 container.nii          = fdyn->nii;
 container.nif          = fdyn->nif;
 container.nim          = 0;
@@ -477,7 +477,7 @@ container.kstep        = 0;
 calelm(actfield,actsolv,actpart,actintra,k_array,-1,
        &container,action);
 te=ds_cputime()-t1;
-tes+=te;	     
+tes+=te;
 
 /*--------------------------------------------------------------------- *
  | build the actual rhs-vector:                                         |
@@ -530,17 +530,17 @@ if (converged==0)
    itnum++;
    goto nonlniter;
 }
- 
+
 /*----------------------------------------------------------------------*
  | -->  end of nonlinear iteration   for rans                           |
  *----------------------------------------------------------------------*/
 
-/*======================================================================* 
-                 K A P P A - E P S I L O N 
-   if possible: calc. until steady state before kappa, epsilon and 
-                     eddy-viscosity are calcul.                         
+/*======================================================================*
+                 K A P P A - E P S I L O N
+   if possible: calc. until steady state before kappa, epsilon and
+                     eddy-viscosity are calcul.
  *======================================================================*/
-if (kapeps_yeah == 1)   
+if (kapeps_yeah == 1)
 {
 container.actndis=1;
 
@@ -548,10 +548,10 @@ container.actndis=1;
 fluid_setdirich_tu(actfield,&lower_limit_kappa,&lower_limit_eps);
 
 /*---------------- initialise the turbulence variables for calculation */
-if (initialisation == 0) 
+if (initialisation == 0)
 {
 fdyn->stepke++;
-fluid_set_check_tu(actfield,lower_limit_kappa);       
+fluid_set_check_tu(actfield,lower_limit_kappa);
 /*-------------------------------- amzero timerhs for kappa end epsilon */
 amzero(&ftimerhs_kappa_a);
 amzero(&ftimerhs_epsilon_a);
@@ -570,7 +570,7 @@ itnumke= 1;
 amzero(&ftimerhs_pro_kappa_a);
 amzero(&ftimerhs_pro_epsilon_a);
 
-/*======================================================================* 
+/*======================================================================*
  | do the nonlinear iteration  for turbulence  (kappa)                  |
  *======================================================================*/
 kappa:
@@ -587,7 +587,7 @@ if (fdyn->itnorm!=fncc_no && par.myrank==0)
 
 if(fdyn->kapeps_flag==1)
 {
-/*======================================================================* 
+/*======================================================================*
  | do the nonlinear iteration  for turbulence  (epsilon)                |
  *======================================================================*/
 epsilon:
@@ -603,7 +603,7 @@ if (fdyn->itnorm!=fncc_no && par.myrank==0)
 }
 
 } /* end fdyn->kapeps_flag==1 */
- 
+
 /*---------------------------------------------------------------------*/
 nonlniter1:
 fluid_icons_tu(itnum1,itnumke,itnum_n);
@@ -631,8 +631,8 @@ if(fdyn->kapeps_flag==1)
 }
 container.fiterhs      = fiterhs_ke;
 container.global_numeq = numeq_total[kapeps];
-container.niturbu_pro  = fdyn->niturbu_pro; 
-container.niturbu_n    = fdyn->niturbu_n; 
+container.niturbu_pro  = fdyn->niturbu_pro;
+container.niturbu_n    = fdyn->niturbu_n;
 container.nii          = 0;
 container.nim          = 0;
 container.nif          = 0;
@@ -640,18 +640,18 @@ container.kstep        = 0;
 calelm(actfield,kesolv,actpart,actintra,0,-1,
        &container,action);
 te=ds_cputime()-t1;
-tes+=te;	     
+tes+=te;
 
-if(fdyn->kapeps_flag==0) 
+if(fdyn->kapeps_flag==0)
 {
  ftimerhs_ke = ftimerhs_kappa;
  ftimerhs_pro= ftimerhs_pro_kappa;
-} 
-if(fdyn->kapeps_flag==1) 
+}
+if(fdyn->kapeps_flag==1)
 {
  ftimerhs_ke = ftimerhs_epsilon;
  ftimerhs_pro= ftimerhs_pro_epsilon;
-} 
+}
 /*--------------------------------------------------------------------- *
  | build the actual rhs-vector:                                         |
  |        rhs = ftimerhs + fiterhs                                      |
@@ -661,7 +661,7 @@ assemble_vec(actintra,
              &(kesolv->sysarray_typ[0]),
              &(kesolv->sysarray[0]),
              rhs_ke,
-             ftimerhs_ke, 
+             ftimerhs_ke,
              1.0
              );
 /* add iteration-rhs: */
@@ -724,8 +724,8 @@ itnum_n++;
 if (fdyn->itnorm!=fncc_no && par.myrank==0)
 {
    printf("|____________|___________________|________________| \n");
-   printf("\n"); 
-}   
+   printf("\n");
+}
 
 /*--------------- iteration convergence check for characteristic lenght */
 if (fdyn->itnorm!=fncc_no && par.myrank==0)
@@ -736,7 +736,7 @@ if (fdyn->itnorm!=fncc_no && par.myrank==0)
 
 fluid_eddy_update(actfield,sol_ke);
 fluid_lenght_update(actfield,sol_ke,&lenghtrat);
- 
+
 /*--------------------- check if nonlinear iteration has to be finished */
 converged = fluid_convcheck_tu(lenghtrat,itnum2,te,ts);
 
@@ -745,7 +745,7 @@ if (converged==0)
    itnum2++;
    goto kappa;
 }
-  
+
 /*----------------- write eddy (n) to eddy (n+g) due to production-term */
 fluid_eddy_pro(actfield);
 
@@ -753,15 +753,15 @@ if (fdyn->itnorm!=fncc_no && par.myrank==0)
 {
    printf("|____________|___________________|________________| \n");
    printf(" ______________________________________________________________ \n");
-   printf("\n"); 
-}   
+   printf("\n");
+}
 
 /*------------------------- check if rans has finished due to kappa-eps */
 if (conv_check_rans == 1)
 {
  converged = fluid_convcheck_test(actfield,itnum_check);
 
- if (converged!=0) 
+ if (converged!=0)
  {
 /*--------------------------------- copy solution at (n+1) to place (n) *
                                       in solution history sol_increment */
@@ -787,13 +787,13 @@ fluid_copysol_test(actfield,3,1);
 
 conv_check_rans = 1;
 
-/*--------------------- check if nonlinear iteration for rans converge */  
+/*--------------------- check if nonlinear iteration for rans converge */
 goto nonlniter_check;
 } /* endif kapeps_yeah */
 
-/*========================== E N D: ====================================* 
+/*========================== E N D: ====================================*
  /                  K A P P A - E P S I L O N                          /
-*========================== E N D: =====================================*/ 
+*========================== E N D: =====================================*/
 endrans:
 
 /*-------------------------------------------------- steady state check */
@@ -811,7 +811,7 @@ solserv_sol_copy(actfield,0,1,1,3,1);
 outstep++;
 pssstep++;
 
-/*-------- copy solution from sol_increment[3][j] to sol_[actpos][j]   
+/*-------- copy solution from sol_increment[3][j] to sol_[actpos][j]
            and transform kinematic to real pressure --------------------*/
 solserv_sol_copy(actfield,0,1,0,3,actpos);
 fluid_transpres(actfield,0,0,actpos,fdyn->numdf-1,0);
@@ -847,7 +847,7 @@ fluid_nullshstr(actintra,actpart,actfield);
 }
 if (pssstep==fdyn->uppss && ioflags.fluid_vis_file==1 && par.myrank==0)
 {
-   pssstep=0;   
+   pssstep=0;
 /*----------------------------------------------- store time in time_a */
    if (actpos >= time_a.fdim) amredef(&(time_a),time_a.fdim+1000,1,"DV");
    time_a.a.dv[actpos] = fdyn->acttime;
@@ -858,7 +858,7 @@ if (pssstep==fdyn->uppss && ioflags.fluid_vis_file==1 && par.myrank==0)
 if (fdyn->step < fdyn->nstep && fdyn->acttime <= fdyn->maxtime && steady==0)
 {
 /*------ check time and number of steps if steady state cannot achieved */
-if (kapeps_yeah==0 && (fdyn->step >= 0.5*fdyn->nstep || fdyn->acttime > 0.5*fdyn->maxtime)) 
+if (kapeps_yeah==0 && (fdyn->step >= 0.5*fdyn->nstep || fdyn->acttime > 0.5*fdyn->maxtime))
 {
    kapeps_yeah = 1;
 }
@@ -867,7 +867,7 @@ if (kapeps_yeah==0 && (fdyn->step >= 0.5*fdyn->nstep || fdyn->acttime > 0.5*fdyn
 }
 
 /*------------------------ if steady state was achieved goto kappa-eps */
-if (kapeps_yeah==0 && steady==1) 
+if (kapeps_yeah==0 && steady==1)
 {
    kapeps_yeah = 1;
    steady = 0;
@@ -876,8 +876,8 @@ if (kapeps_yeah==0 && steady==1)
 /*----------------------------------------------------------------------*
  | -->  end of timeloop                                                 |
  *----------------------------------------------------------------------*/
- 
-/*======================================================================* 
+
+/*======================================================================*
  |                      F I N A L I S I N G                             |
  *======================================================================*/
 if (pssstep==0) actpos--;
@@ -887,7 +887,7 @@ if (outstep!=0 && ioflags.fluid_sol_file==1){
  out_fluidtu(actfield,actintra,fdyn->step,actpos);}
 
 /*----------------------------- print out solution to 0.flavia.res file */
-if (ioflags.fluid_sol_gid==1 && par.myrank==0) 
+if (ioflags.fluid_sol_gid==1 && par.myrank==0)
 {
     for(i=0;i<actpos+1;i++)
     {
@@ -904,8 +904,8 @@ if (ioflags.fluid_vis_file==1 && par.myrank==0)
       /*------------------------------------------ store time in time_a */
       if (actpos >= time_a.fdim)
       amredef(&(time_a),time_a.fdim+1000,1,"DV");
-      time_a.a.dv[actpos] = fdyn->acttime;   
-   }   
+      time_a.a.dv[actpos] = fdyn->acttime;
+   }
     visual_writepss(actfield,actpos+1,&time_a);
 }
 
@@ -918,9 +918,9 @@ for (i=0;i<par.nprocs;i++)
 if (par.myrank==i)
 {
 printf("\n");
-printf("PROC  %3d | FIELD FLUID     | total time element for calculations: %10.3E \n", 
+printf("PROC  %3d | FIELD FLUID     | total time element for calculations: %10.3E \n",
         par.myrank,tes);
-printf("PROC  %3d | FIELD FLUID     | total time for solver              : %10.3E \n", 
+printf("PROC  %3d | FIELD FLUID     | total time for solver              : %10.3E \n",
         par.myrank,tss);
 }
 }
@@ -947,14 +947,14 @@ solserv_del_vec(&(actsolv->sol),actsolv->nsol);
 solserv_del_vec(&rhs_ke,1);
 solserv_del_vec(&sol_ke,1);
 /*----------------------------------------------------------------------*/
-#ifndef PARALLEL 
+#ifndef PARALLEL
 CCAFREE(actintra);
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
-} /* end of fluid_isi_tu */ 
+} /* end of fluid_isi_tu */
 
 #endif

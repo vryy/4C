@@ -30,13 +30,13 @@ extern struct _RESULTDESCR* resultdescr;
  * <pre>
  * fieldname DIS x NODE y POSITION sol(row,col) NAME name VALUE value TOLERANCE tolerance
  * </pre>
- * 
+ *
  * or
  *
  * <pre>
  * fieldname DIS x ELEMENT y POSITION somename(i,...,k) NAME name VALUE value TOLERANCE tolerance
  * </pre>
- * 
+ *
  * or
  *
  * <pre>
@@ -47,13 +47,13 @@ void inp_resultdescr()
 {
   INT ierr;
   INT i;
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_enter("inp_resultdescr");
 #endif
 
   genprob.numresults = 0;
-  
+
   if (frfind("--RESULT DESCRIPTION")==1) {
     frread();
     while(strncmp(allfiles.actplace,"------",6)!=0) {
@@ -150,7 +150,7 @@ void inp_resultdescr()
   }
 
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return;

@@ -16,8 +16,8 @@ Maintainer: Baris Irhan
 #include "../fluid2/fluid2.h"
 #include "../ls/ls_prototypes.h"
 #include "xfem_prototypes.h"
-/*! 
-\addtogroup XFEM 
+/*!
+\addtogroup XFEM
 *//*! @{ (documentation module open)*/
 
 
@@ -49,57 +49,57 @@ extern struct _MATERIAL  *mat;
 
 <pre>                                                            irhan 05/04
 
-   ele->e.f2->stabi.gls->iadvec: adevction stab.					 
-      0 = no								
-      1 = yes								
-   ele->e.f2->stabi.gls->ipres: pressure stab.					
-      0 = no								
-      1 = yes								
-   ele->e.f2->stabi.gls->ivisc: diffusion stab.					
-      0 = no								
-      1 = GLS-  							
-      2 = GLS+  							
-   ele->e.f2->stabi.gls->icont: continuity stab.					
-      0 = no								
-      1 = yes								
-   ele->e.f2->stabi.gls->istapa: version of stab. parameter			
-      35 = diss wall instationary					
-      36 = diss wall stationanary					
-   ele->e.f2->stabi.gls->norm_P: p-norm						
-      p = 1<=p<=oo							
-      0 = max.-norm (p=oo)						
-   ele->e.f2->stabi.gls->mk: higher order elements control flag			
-      0 = mk fixed (--> (bi)linear: 1/3, biquadr.: 1/12)		
-      1 = min(1/3,2*C)  						
-     -1 = mk=1/3  (--> element order via approx. nodal-distance)	
-   ele->e.f2->stabi.gls->ihele[]:  						
-      x/y/z = length-def. for velocity/pressure/continuity stab 	
-      0 = don't compute 						
-      1 = sqrt(area)							
-      2 = area equivalent diameter					
-      3 = diameter/sqrt(2)						
-      4 = sqrt(2)*area/diagonal (rectangle) 4*area/s (triangle) 	
-      5 = streamlength (element length in flow direction		
-   ele->e.f2->stabi.gls->ninths: number of integration points for streamlength	
-      1 = at center of element  					
-      2 = at every INT pt used for element.-stab.-matrices		
-   ele->e.f2->stabi.gls->istapc: flag for stabilisation parameter calculation	
-      1 = at center of element  					
-      2 = at every integration point					
-   ele->e.f2->stabi.gls->clamb \							
-   ele->e.f2->c1               |_>> stabilisation constants (input)		
-   ele->e.f2->c2               |  						
-   ele->e.f2->c3              /							
-   ele->e.f2->stabi.gls->istrle: has streamlength to be computed			
-   ele->e.f2->stabi.gls->iareavol: calculation of area length 			
-   ele->e.f2->stabi.gls->iduring: calculation during INT.-pt.loop  		
-   ele->e.f2->stabi.gls->itau[0]: flag for tau_mu calc. (-1: before, 1:during)	
-   ele->e.f2->stabi.gls->itau[1]: flag for tau_mp calc. (-1: before, 1:during)	
-   ele->e.f2->stabi.gls->itau[2]: flag for tau_c calc. (-1: before, 1:during)	
-   ele->e.f2->hk[i]: "element sizes" (vel / pre / cont) 		  
-   ele->e.f2->stabi.gls->idiaxy: has diagonals to be computed			
-   fdyn->tau[0]: stability parameter momentum / velocity (tau_mu)	
-   fdyn->tau[1]: stability parameter momentum / pressure (tau_mp)	
+   ele->e.f2->stabi.gls->iadvec: adevction stab.
+      0 = no
+      1 = yes
+   ele->e.f2->stabi.gls->ipres: pressure stab.
+      0 = no
+      1 = yes
+   ele->e.f2->stabi.gls->ivisc: diffusion stab.
+      0 = no
+      1 = GLS-
+      2 = GLS+
+   ele->e.f2->stabi.gls->icont: continuity stab.
+      0 = no
+      1 = yes
+   ele->e.f2->stabi.gls->istapa: version of stab. parameter
+      35 = diss wall instationary
+      36 = diss wall stationanary
+   ele->e.f2->stabi.gls->norm_P: p-norm
+      p = 1<=p<=oo
+      0 = max.-norm (p=oo)
+   ele->e.f2->stabi.gls->mk: higher order elements control flag
+      0 = mk fixed (--> (bi)linear: 1/3, biquadr.: 1/12)
+      1 = min(1/3,2*C)
+     -1 = mk=1/3  (--> element order via approx. nodal-distance)
+   ele->e.f2->stabi.gls->ihele[]:
+      x/y/z = length-def. for velocity/pressure/continuity stab
+      0 = don't compute
+      1 = sqrt(area)
+      2 = area equivalent diameter
+      3 = diameter/sqrt(2)
+      4 = sqrt(2)*area/diagonal (rectangle) 4*area/s (triangle)
+      5 = streamlength (element length in flow direction
+   ele->e.f2->stabi.gls->ninths: number of integration points for streamlength
+      1 = at center of element
+      2 = at every INT pt used for element.-stab.-matrices
+   ele->e.f2->stabi.gls->istapc: flag for stabilisation parameter calculation
+      1 = at center of element
+      2 = at every integration point
+   ele->e.f2->stabi.gls->clamb \
+   ele->e.f2->c1               |_>> stabilisation constants (input)
+   ele->e.f2->c2               |
+   ele->e.f2->c3              /
+   ele->e.f2->stabi.gls->istrle: has streamlength to be computed
+   ele->e.f2->stabi.gls->iareavol: calculation of area length
+   ele->e.f2->stabi.gls->iduring: calculation during INT.-pt.loop
+   ele->e.f2->stabi.gls->itau[0]: flag for tau_mu calc. (-1: before, 1:during)
+   ele->e.f2->stabi.gls->itau[1]: flag for tau_mp calc. (-1: before, 1:during)
+   ele->e.f2->stabi.gls->itau[2]: flag for tau_c calc. (-1: before, 1:during)
+   ele->e.f2->hk[i]: "element sizes" (vel / pre / cont)
+   ele->e.f2->stabi.gls->idiaxy: has diagonals to be computed
+   fdyn->tau[0]: stability parameter momentum / velocity (tau_mu)
+   fdyn->tau[1]: stability parameter momentum / pressure (tau_mp)
    fdyn->tau[2]: stability parameter continuity (tau_c)
 </pre>
 \param  *ele     ELEMENT	       (i)   actual element
@@ -117,22 +117,22 @@ extern struct _MATERIAL  *mat;
 \param  *eddyint DOUBLE 	       (-)   eddy-visc. at integr. point (only for turbulence)
 \param  *visc    DOUBLE 	       (-)   viscosity
 \param **cutp    DOUBLE 	       (-)   cutting points
-\return void             
+\return void
 
 ------------------------------------------------------------------------*/
 void xfem_f2_calelesize(
-  ELEMENT         *ele,    
-  FLUID_DATA      *data, 
+  ELEMENT         *ele,
+  FLUID_DATA      *data,
   DOUBLE         **xyze,
-  DOUBLE          *funct,  
-  DOUBLE         **deriv,  
-  DOUBLE         **deriv2,  		 
-  DOUBLE         **xjm,    
-  DOUBLE         **derxy, 
+  DOUBLE          *funct,
+  DOUBLE         **deriv,
+  DOUBLE         **deriv2,
+  DOUBLE         **xjm,
+  DOUBLE         **derxy,
   DOUBLE         **vderxy,
-  DOUBLE         **evel,    		  
-  DOUBLE          *velint, 
-  DOUBLE         **cutp    
+  DOUBLE         **evel,
+  DOUBLE          *velint,
+  DOUBLE         **cutp
   )
 {
   INT         i,ilen;         /* simply a counter                       */
@@ -159,20 +159,20 @@ void xfem_f2_calelesize(
 
   STAB_PAR_GLS  *gls;	/* pointer to GLS stabilisation parameters	*/
   FLUID_DYNAMIC *fdyn;
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_enter("xfem_f2_calelesize");
-#endif		
+#endif
 /*----------------------------------------------------------------------*/
 
   /* is element cut? */
   if (genprob.xfem_on_off==1) /* enriched formulation! */
   {
-    is_elcut = ele->e.f2->my_ls->e.ls2->is_elcut;  
+    is_elcut = ele->e.f2->my_ls->e.ls2->is_elcut;
   }
   else                        /* standard formulation! */
   {
-    is_elcut = 0;                       
+    is_elcut = 0;
   }
   /* access to the nodal values of level set profile */
   ls2_calset1(ele->e.f2->my_ls,1,lset01);
@@ -183,21 +183,21 @@ void xfem_f2_calelesize(
   fdyn   = alldyn[genprob.numff].fdyn;
   gls    = ele->e.f2->stabi.gls;
 
-if (ele->e.f2->stab_type != stab_gls) 
+if (ele->e.f2->stab_type != stab_gls)
    dserror("routine with no or wrong stabilisation called");
-  
+
   istrnint = gls->istrle * gls->ninths;
   isharea  = fdyn->ishape * gls->iareavol;
-  
+
 /*----------------------------------------------------------------------*
  | calculations at element center: area & streamlength                  |
  | NOTE:                                                                |
- |    area is always calculated using only 1 integrationpoint           |     
+ |    area is always calculated using only 1 integrationpoint           |
  |    --> it may be possible to save some operations here by replacing  |
  |         e1,e2,facr,facs with their constant values in the calls of   |
  |         f2_rec / f2_tri!!!!!!                                        |
  *----------------------------------------------------------------------*/
-  
+
   if (isharea==1)
   {
     area  = ZERO;
@@ -220,7 +220,7 @@ if (ele->e.f2->stab_type != stab_gls)
           xfem_f2_funct(funct,deriv,deriv2,e1,e2,typ,lset01,iel,is_elcut);
           break;
         default:
-          dserror("typ unknown!\n");      
+          dserror("typ unknown!\n");
     }
     ieval++;
     /* compute Jacobian matrix */
@@ -234,7 +234,7 @@ if (ele->e.f2->stab_type != stab_gls)
       ieval++;
       f2_gcoor(xyze,funct,iel,gcoor);
       igc++;
-      f2_calstrlen(&strle,xyze,velint,ele,gcoor,typ);            
+      f2_calstrlen(&strle,xyze,velint,ele,gcoor,typ);
     }
     if (gls->idiaxy==1) /* compute diagonal based diameter */
     {
@@ -248,7 +248,7 @@ if (ele->e.f2->stab_type != stab_gls)
             dy = xyze[1][1] - xyze[1][3];
             dia2 = sqrt(dx*dx+dy*dy);
             /* dia=sqrt(2)*area/(1/2*(dia1+dia2))=sqrt(8)*area/(dia1+dia2) */
-            dia = sqrt(EIGHT)*area/(dia1+dia2); 
+            dia = sqrt(EIGHT)*area/(dia1+dia2);
             break;
           case tri3: case tri6: /* get global coordinate of element center */
             if (igc==0)
@@ -273,17 +273,17 @@ if (ele->e.f2->stab_type != stab_gls)
       else if (gls->ihele[ilen]==2) ele->e.f2->hk[ilen] = TWO*sqrt(area/PI);
       else if (gls->ihele[ilen]==3) ele->e.f2->hk[ilen] = sqrt(TWO*area/PI);
       else if (gls->ihele[ilen]==4) ele->e.f2->hk[ilen] = dia;
-      else if (gls->ninths==1) ele->e.f2->hk[ilen] = strle;  
+      else if (gls->ninths==1) ele->e.f2->hk[ilen] = strle;
     }
   }
-  
+
 /*-----------------------------------------------------------------------*
   | calculations at element center: only streamlength                    |
   |    --> it may be possible to save some operations here by replacing  |
   |         e1,e2,facr,facs with their constant values in the calls of   |
   |         f2_rec / f2_tri!!!!!!                                        |
   *----------------------------------------------------------------------*/
-  else if (istrnint==1 && isharea !=1) 
+  else if (istrnint==1 && isharea !=1)
   {
     area  = ZERO;
     strle = ZERO;
@@ -323,7 +323,7 @@ if (ele->e.f2->stab_type != stab_gls)
     for (ilen=0;ilen<3;ilen++)
     {
       if (gls->ihele[ilen]==5)
-        ele->e.f2->hk[ilen] = strle;   
+        ele->e.f2->hk[ilen] = strle;
     }
   }
 
@@ -358,7 +358,7 @@ if (ele->e.f2->stab_type != stab_gls)
           }
           xfem_f2_veli(velint,funct,evel,iel);
           break;
-        case 1:            
+        case 1:
           xfem_f2_veli(velint,funct,evel,iel);
           break;
         case 2:
@@ -370,14 +370,14 @@ if (ele->e.f2->stab_type != stab_gls)
     actmat=ele->mat-1;
     if (actmat==-2) actmat = 0;
     visc = mat[actmat].m.fluid->viscosity;
-    f2_calstabpar(ele,velint,visc,iel,typ,-1); 
+    f2_calstabpar(ele,velint,visc,iel,typ,-1);
   }
-  
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of xfem_f2_calelesize */
 /*! @} (documentation module close)*/

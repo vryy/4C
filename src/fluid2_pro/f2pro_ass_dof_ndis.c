@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief assign dofs 
+\brief assign dofs
 
 <pre>
 Maintainer: Steffen Genkinger
@@ -10,22 +10,22 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
-\addtogroup FLUID2_PRO 
+/*!
+\addtogroup FLUID2_PRO
 *//*! @{ (documentation module open)*/
-#ifdef D_FLUID2_PRO 
+#ifdef D_FLUID2_PRO
 #include "../headers/standardtypes.h"
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief assign dofs to nodes for the Q2Q1 fluid element
 
 <pre>                                                         genk 10/03
 
-			     
+
 </pre>
 \param  *actnode	         NODE     (i)
 \param  *counter	         INT      (i)
-\return void                                               
-                                 
+\return void
+
 ------------------------------------------------------------------------*/
 
 void f2pro_ass_dof_q2q1(NODE *actnode, INT *counter)
@@ -34,7 +34,7 @@ INT dirich;
 INT couple;
 INT geocouple;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2pro_ass_dof_q2q1");
 #endif
 
@@ -44,14 +44,14 @@ dirich=0;
 couple=0;
 geocouple=0;
 /*-------------------------- dof has dirichlet condition */
-if (actnode->gnode->dirich!=NULL && actnode->gnode->dirich->dirich_onoff.a.iv[2]!=0) 
+if (actnode->gnode->dirich!=NULL && actnode->gnode->dirich->dirich_onoff.a.iv[2]!=0)
 dirich=1;
 if (actnode->gnode->couple != NULL)
 {
    dserror("coupling conditions for FLUID2_PRO Q2Q1 not implemented yet!\n");
 }
 /*-------------------------------------------------------*/
-if (couple==1 && geocouple==1) 
+if (couple==1 && geocouple==1)
    dserror("geostationary dof coupling conflicts");
 if (dirich==0 && couple==0 && geocouple==0)
 {
@@ -71,9 +71,9 @@ else if (dirich==0 && couple==0 && geocouple==1)
 }
 else
    dserror("this is not OK! - you better go home now!\n");
-   
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 

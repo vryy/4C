@@ -16,13 +16,13 @@ Maintainer: Michael Gee
 #include "../solver/solver.h"
 INT cmp_int(const void *a, const void *b );
 DOUBLE cmp_double(const void *a, const void *b );
-/*! 
-\addtogroup MLPCG 
+/*!
+\addtogroup MLPCG
 *//*! @{ (documentation module open)*/
 /*!----------------------------------------------------------------------
 \brief the multilevel preconditioner main structure
 
-<pre>                                                         m.gee 09/02    
+<pre>                                                         m.gee 09/02
 defined in solver_mlpcg.c
 </pre>
 
@@ -32,15 +32,15 @@ extern struct _MLPRECOND mlprecond;
 
 
 /*!---------------------------------------------------------------------
-\brief create the tentative prolongator from actlev+1 to actlev                                              
+\brief create the tentative prolongator from actlev+1 to actlev
 
-<pre>                                                        m.gee 9/02 
-create the tentative prolongator from actlev+1 to actlev  
+<pre>                                                        m.gee 9/02
+create the tentative prolongator from actlev+1 to actlev
 from the aggregation done before , this routine only from 0 to 1
 </pre>
-\param actlev      MLLEVEL*     (i/o) the active level in the ml-precond.                   
-\param actintra   INTRA*       (i)   the intra-communicator of this field                  
-\return void                                               
+\param actlev      MLLEVEL*     (i/o) the active level in the ml-precond.
+\param actintra   INTRA*       (i)   the intra-communicator of this field
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_precond_P(MLLEVEL  *actlev, INTRA *actintra)
@@ -56,7 +56,7 @@ DOUBLE       aggblock[1000][500];
 INT          rindex[1000],cindex[500];
 DOUBLE     **R;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_precond_P");
 #endif
 /*----------------------------------------------------------------------*/
@@ -70,23 +70,23 @@ if (actlev->P == NULL)
    actlev->P = (DBCSR*)CCACALLOC(1,sizeof(DBCSR));
    P = actlev->P;
 /*----------------------------------------------------------------------*/
-/* 
-the prolongator takes the row blocks from the actstiff  
+/*
+the prolongator takes the row blocks from the actstiff
 */
-   am_alloc_copy(&(actstiff->blocks),&(P->blocks));   
+   am_alloc_copy(&(actstiff->blocks),&(P->blocks));
 /*----------------------------------------------------------------------*/
-/* 
+/*
 make a good guess of the size of the prolongator and init the csr matrix
 */
    counter = actlev->agg[0].numdf * actstiff->numeq;
 /*----------------------------------------------------------------------*/
-/* 
-make the guess 80% too large 
+/*
+make the guess 80% too large
 */
    counter = (INT)(counter*4.0);
 /*----------------------------------------------------------------------*/
-/* 
-open the csr matrix to add to 
+/*
+open the csr matrix to add to
 */
    mlpcg_csr_open(P,
                   actstiff->update.a.iv[0],
@@ -96,7 +96,7 @@ open the csr matrix to add to
                   actintra);
 /*----------------------------------------------------------------------*/
 /*
-get first interproc row in P 
+get first interproc row in P
 */
    P->firstcoupledof=actstiff->firstcoupledof;
 } /* end of if (actlev->P == NULL) */
@@ -106,9 +106,9 @@ P = actlev->P;
 /*-------- get the pointer to the previous level, to get the R matrices */
 prevlev = actlev-1;
 /*----------------------------------------------------------------------*/
-/* 
-loop the aggregates and create the tentative prolongator  
-*/                  
+/*
+loop the aggregates and create the tentative prolongator
+*/
 for (i=0; i<actlev->nagg; i++)
 {
    actagg = &(actlev->agg[i]);
@@ -123,9 +123,9 @@ for (i=0; i<actlev->nagg; i++)
       actagg->tentP = (ARRAY*)CCACALLOC(1,sizeof(ARRAY));
       amdef("tentP",actagg->tentP,nrow,ncol,"DA");
    }
-   else if (actagg->tentP->fdim != nrow) 
+   else if (actagg->tentP->fdim != nrow)
        dserror("Size mismatch in aggregate");
-   else if (actagg->tentP_nrow != nrow)  
+   else if (actagg->tentP_nrow != nrow)
        dserror("Size mismatch in aggregate");
    if (!(actagg->tentP_rindex))
       actagg->tentP_rindex = (INT*)CCAMALLOC(nrow*sizeof(INT));
@@ -156,7 +156,7 @@ for (i=0; i<actlev->nagg; i++)
    mlpcg_precond_gramschmidt(actagg->tentP->a.da,R,nrow,ncol);
 #endif
 } /* end of for (i=0; i<actlev->nagg; i++) */
-/*--------------- loop all aggregates again and fill the DBCSR matrix P */   
+/*--------------- loop all aggregates again and fill the DBCSR matrix P */
 #if 1
 for (i=0; i<actlev->nagg; i++)
 {
@@ -191,7 +191,7 @@ if (mlprecond.omega>0.0)
 /*------------------------ tent. prolongator is ready, close the matrix */
 mlpcg_csr_close(P);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -200,15 +200,15 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief create the tentative prolongator from actlev+1 to actlev                                              
+\brief create the tentative prolongator from actlev+1 to actlev
 
-<pre>                                                        m.gee 9/02 
-create the tentative prolongator from actlev+1 to actlev  
+<pre>                                                        m.gee 9/02
+create the tentative prolongator from actlev+1 to actlev
 from the aggregation done before , this routine only from 0 to 1
 </pre>
-\param actlev      MLLEVEL*     (i/o) the active level in the ml-precond.                   
-\param actintra   INTRA*       (i)   the intra-communicator of this field                  
-\return void                                               
+\param actlev      MLLEVEL*     (i/o) the active level in the ml-precond.
+\param actintra   INTRA*       (i)   the intra-communicator of this field
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_precond_P0(MLLEVEL  *actlev, INTRA *actintra)
@@ -223,7 +223,7 @@ DOUBLE       aggblock[1000][500];
 INT          rindex[1000],cindex[500];
 DOUBLE     **R;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_precond_P0");
 #endif
 /*----------------------------------------------------------------------*/
@@ -236,25 +236,25 @@ if (actlev->P == NULL)
    actlev->P = (DBCSR*)CCACALLOC(1,sizeof(DBCSR));
 P = actlev->P;
 /*----------------------------------------------------------------------*/
-/* 
-the prolongator takes the row blocks from the actstiff  
+/*
+the prolongator takes the row blocks from the actstiff
 */
 if (mlprecond.ncall==0)
 {
-   am_alloc_copy(&(actstiff->blocks),&(P->blocks));   
+   am_alloc_copy(&(actstiff->blocks),&(P->blocks));
 /*----------------------------------------------------------------------*/
-/* 
+/*
 make a good guess of the size of the prolongator and init the csr matrix
 */
    counter = actlev->agg[0].numdf * actstiff->numeq;
 /*----------------------------------------------------------------------*/
-/* 
-make the guess 80% too large 
+/*
+make the guess 80% too large
 */
    counter = (INT)(counter*4.0);
 /*----------------------------------------------------------------------*/
-/* 
-open the csr matrix to add to 
+/*
+open the csr matrix to add to
 */
    mlpcg_csr_open(P,
                   actstiff->update.a.iv[0],
@@ -267,20 +267,20 @@ else if (mlprecond.mod==0)
    mlpcg_csr_zero(P,actintra);
 /*----------------------------------------------------------------------*/
 /*
-get first interproc row in P 
+get first interproc row in P
 */
 if (mlprecond.ncall==0)
    P->firstcoupledof=actstiff->firstcoupledof;
 /*----------------------------------------------------------------------*/
 /*
-get the directors of the shell elements 
+get the directors of the shell elements
 */
 if (mlprecond.ncall==0)
    mlpcg_precond_getdirs();
 /*----------------------------------------------------------------------*/
-/* 
-loop the aggregates and create the tentative prolongator  
-*/                  
+/*
+loop the aggregates and create the tentative prolongator
+*/
 for (i=0; i<actlev->nagg; i++)
 {
    actagg = &(actlev->agg[i]);
@@ -291,9 +291,9 @@ for (i=0; i<actlev->nagg; i++)
       actagg->tentP = (ARRAY*)CCACALLOC(1,sizeof(ARRAY));
       amdef("tentP",actagg->tentP,nrow,ncol,"DA");
    }
-   else if (actagg->tentP->fdim != nrow) 
+   else if (actagg->tentP->fdim != nrow)
        dserror("Size mismatch in aggregate");
-   else if (actagg->tentP_nrow != nrow)  
+   else if (actagg->tentP_nrow != nrow)
        dserror("Size mismatch in aggregate");
    if (!(actagg->tentP_rindex))
       actagg->tentP_rindex = (INT*)CCAMALLOC(nrow*sizeof(INT));
@@ -322,7 +322,7 @@ for (i=0; i<actlev->nagg; i++)
    mlpcg_precond_gramschmidt(actagg->tentP->a.da,R,nrow,ncol);
 #endif
 } /* end of for (i=0; i<actlev->nagg; i++) */
-/*--------------- loop all aggregates again and fill the DBCSR matrix P */   
+/*--------------- loop all aggregates again and fill the DBCSR matrix P */
 #if 1
 for (i=0; i<actlev->nagg; i++)
 {
@@ -357,7 +357,7 @@ if (mlprecond.omega>0.0)
 /*------------------------ tent. prolongator is ready, close the matrix */
 mlpcg_csr_close(P);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -366,9 +366,9 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief create the tentative prolongator for one aggregate                                          
+\brief create the tentative prolongator for one aggregate
 
-<pre>                                                        m.gee 11/02 
+<pre>                                                        m.gee 11/02
 
 </pre>
 \param actagg         AGG*    (i/o) the active aggregate
@@ -379,7 +379,7 @@ return;
 \param ncol           int*              (o) dimension of cindex
 \param actstiff       DBCSR*            (i) fine grid stiffness matrix
 \param prevlevel      MLLEVEL*          (i) last level
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_precond_oneP_vanekQR(AGG     *actagg,
@@ -405,7 +405,7 @@ int           foundit;
 int           shift,bins[5000];
 double      **R;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_precond_oneP_vanekQR");
 #endif
 /*----------------------------------------------------------------------*/
@@ -413,14 +413,14 @@ dstrc_enter("mlpcg_precond_oneP_vanekQR");
 *nrow=0;
 for (i=0; i<actagg->nblock; i++)
    (*nrow) += actagg->block[i][0];
-   
+
 *ncol = actagg->numdf;
 if (*nrow >= 1000 || *ncol >= 500)
 dserror("Local variable aggblock[1000][500] too small");
 /*--------------------------------------- get the global column indizes */
 for (i=0; i<actagg->numdf; i++)
    cindex[i] = actagg->dof[i];
-/*------------------------------------------ get the global row indizes */   
+/*------------------------------------------ get the global row indizes */
 counter=0;
 for (i=0; i<actagg->nblock; i++)
    for (j=0; j<actagg->block[i][0]; j++)
@@ -438,7 +438,7 @@ qsort((int*)rindex,*nrow,sizeof(int),cmp_int);
 /*======================================================================*/
 dsassert(actagg->nblock<=200,"Local variable prevagg[200] too small");
 dsassert(*ncol==6,"number of rbm's has to be 6 in this case");
-/* 
+/*
 the index of the agg in prevlev corresponds to the index of the block in
 blocks
 */
@@ -489,7 +489,7 @@ for (i=0; i<actagg->nblock; i++)
 /*======================================================================*/
 /*======================================================================*/
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -499,9 +499,9 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief create the tentative prolongator for one aggregate                                          
+\brief create the tentative prolongator for one aggregate
 
-<pre>                                                        m.gee 11/02 
+<pre>                                                        m.gee 11/02
 
 </pre>
 \param actagg         AGG*    (i/o) the active aggregate
@@ -512,7 +512,7 @@ return;
 \param ncol           INT*              (o) dimension of cindex
 \param actstiff       DBCSR*            (i) fine grid stiffness matrix
 \param prevlevel      MLLEVEL*          (i) last level
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_precond_oneP_vanek(AGG     *actagg,
@@ -533,7 +533,7 @@ DOUBLE        x0,y0,z0,x,y,z;
 INT           index;
 INT           shift,bins[5000];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_precond_oneP_vanek");
 #endif
 /*----------------------------------------------------------------------*/
@@ -541,14 +541,14 @@ dstrc_enter("mlpcg_precond_oneP_vanek");
 *nrow=0;
 for (i=0; i<actagg->nblock; i++)
    (*nrow) += actagg->block[i][0];
-   
+
 *ncol = actagg->numdf;
 if (*nrow >= 1000 || *ncol >= 500)
 dserror("Local variable aggblock[1000][500] too small");
 /*--------------------------------------- get the global column indizes */
 for (i=0; i<actagg->numdf; i++)
    cindex[i] = actagg->dof[i];
-/*------------------------------------------ get the global row indizes */   
+/*------------------------------------------ get the global row indizes */
 counter=0;
 for (i=0; i<actagg->nblock; i++)
    for (j=0; j<actagg->block[i][0]; j++)
@@ -562,7 +562,7 @@ qsort((INT*)rindex,*nrow,sizeof(INT),cmp_int);
 /*======================================================================*/
 dsassert(actagg->nblock<=200,"Local variable prevagg[200] too small");
 dsassert(*ncol==6,"number of rbm's has to be 6 in this case");
-/* 
+/*
 the index of the agg in prevlev corresponds to the index of the block in
 blocks
 */
@@ -688,7 +688,7 @@ for (i=0; i<actagg->nblock; i++)
 } /* end of for (i=0; i<actagg->nblock; i++) */
 /*======================================================================*/
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -696,9 +696,9 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief create the tentative prolongator for one aggregate                                          
+\brief create the tentative prolongator for one aggregate
 
-<pre>                                                        m.gee 10/02 
+<pre>                                                        m.gee 10/02
 
 </pre>
 \param actagg         AGG*    (i/o) the active aggregate
@@ -708,7 +708,7 @@ return;
 \param nrow           INT*              (o) dimension of rindex
 \param ncol           INT*              (o) dimension of cindex
 \param actstiff       DBCSR*            (i) fine grid stiffness matrix
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_precond_oneP0_vanek(AGG     *actagg,
@@ -729,7 +729,7 @@ DOUBLE        x0,y0,z0,x,y,z,a1,a2,a3;
 INT           index;
 INT           shift,bins[5000];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_precond_oneP0_vanek");
 #endif
 /*----------------------------------------------------------------------*/
@@ -737,14 +737,14 @@ dstrc_enter("mlpcg_precond_oneP0_vanek");
 *nrow=0;
 for (i=0; i<actagg->nblock; i++)
    (*nrow) += actagg->block[i][0];
-   
+
 *ncol = actagg->numdf;
 if (*nrow >= 1000 || *ncol >= 500)
 dserror("Local variable aggblock[1000][500] too small");
 /*--------------------------------------- get the global column indizes */
 for (i=0; i<actagg->numdf; i++)
    cindex[i] = actagg->dof[i];
-/*------------------------------------------ get the global row indizes */   
+/*------------------------------------------ get the global row indizes */
 counter=0;
 for (i=0; i<actagg->nblock; i++)
    for (j=0; j<actagg->block[i][0]; j++)
@@ -762,7 +762,7 @@ qsort((INT*)rindex,*nrow,sizeof(INT),cmp_int);
 /*======================================================================*/
 dsassert(actagg->nblock<200,"Local variable node[200] too small");
 dsassert(*ncol==6,"number of rbm's has to be 6 in this case");
-/* 
+/*
 the index of the node in node corresponds to the index of the block in
 blocks
 */
@@ -790,7 +790,7 @@ for (i=0; i<actagg->nblock; i++)
 }
 dsassert(counter==actagg->nblock,"Cannot find nodes to matrix blocks");
 /*----------------------- make the nodal coordinate center of the patch */
-/* 
+/*
 IMPORTANT NOTE:
 in the nonlinear dynaic or static case, it could be advisable to use the
 deformed configuration to create the rigid body modes !
@@ -906,7 +906,7 @@ for (i=0; i<actagg->nblock; i++)
 /*======================================================================*/
 /*======================================================================*/
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -915,9 +915,9 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief smoothes the columns of the prolongator P by damped Jacobi                                             
+\brief smoothes the columns of the prolongator P by damped Jacobi
 
-<pre>                                                        m.gee 10/02 
+<pre>                                                        m.gee 10/02
 
 </pre>
 \param P          DBCSR*       (i/o) the Prolongator
@@ -926,11 +926,11 @@ return;
 \param cindex     INT*         (i)   column indize of block
 \param nrow       INT*         (i)   row dimension of block
 \param ncol       INT*         (i)   column dimension of block
-\param actstiff   DBCSR*       (i)   the stiffness matrix to be smoothe 
+\param actstiff   DBCSR*       (i)   the stiffness matrix to be smoothe
 \param agg        AGG*         (i)   the aggregates the proongator belongs to
-\param nagg       INT          (i)   the number of aggregates on this proc 
-\param actintra   INTRA*       (i)   the intra-communicator of this field                  
-\return void                                               
+\param nagg       INT          (i)   the number of aggregates on this proc
+\param actintra   INTRA*       (i)   the intra-communicator of this field
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_smoothP(DBCSR *P, DBCSR *actstiff, INTRA *actintra)
@@ -970,12 +970,12 @@ DOUBLE       *c;
 INT           shift;
 INT           bins[5000];
 INT           max,min;
-#ifdef PARALLEL 
-MPI_Status    status;  
-MPI_Request  *request;   
+#ifdef PARALLEL
+MPI_Status    status;
+MPI_Request  *request;
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_smoothP");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1059,8 +1059,8 @@ maxcol = lastcol;
 #endif
 /*-------------------------------- find the first interproc column of P */
 /*
-   intercol = the first local column, where rows occur, that have interproc 
-              off-diagonal entries 
+   intercol = the first local column, where rows occur, that have interproc
+              off-diagonal entries
 */
 intercol = VERYLARGEINT;
 index    = mlpcg_getindex(P->firstcoupledof,P->update.a.iv,numeq);
@@ -1080,33 +1080,33 @@ for (i=index; i<numeq; i++)
 }
 dsassert(intercol<VERYLARGEINT,"No intercol found");
 /*======================================make interproc smoothing part I */
-#ifdef PARALLEL 
+#ifdef PARALLEL
 if (nproc > 1) {
 /* make myinterrows array */
 for (n=0; n<nproc; n++)
-for (m=0; m<2; m++) 
+for (m=0; m<2; m++)
    myinters[n][m] = 0;
 myinters[myrank][0] = P->firstcoupledof;
 myinters[myrank][1] = P->update.a.iv[numeq-1];
 MPI_Allreduce(&(myinters[0][0]),&(myinterr[0][0]),MAXPROC*2,MPI_INT,MPI_SUM,actintra->MPI_INTRA_COMM);
 /* loop my piece of matrix, and check, from who I need the interproc columns */
-/* 
+/*
    I need the interproc columns from      processors n : needitr[myrank][n]==1
    I have to send my interproc columns to processors n : needitr[n][myrank]==1
 */
 for (n=0; n<nproc; n++)
-for (m=0; m<nproc; m++) 
+for (m=0; m<nproc; m++)
    needits[n][m] = 0;
 for (j=0; j<ia[numeq]; j++)
 {
    actcol = ja[j];
    if (actcol==-1) continue;
    owner  = mlpcg_getowner(actcol,actstiff->owner,nproc);
-   if (owner==myrank) 
+   if (owner==myrank)
       continue;
    for (n=0; n<nproc; n++)
    {
-      if (n==myrank) 
+      if (n==myrank)
          continue;
       if (actcol >= myinterr[n][0] && actcol <= myinterr[n][1])
          needits[myrank][n] = 1;
@@ -1189,9 +1189,9 @@ for (i=firstcol; i<=lastcol; i++)
    if (nr==0)
       continue;
    if (nr > 18000) dserror("static bins too small");
-   init_quick_find(rcol,nr,&shift,bins); 
+   init_quick_find(rcol,nr,&shift,bins);
    min = rcol[0];
-   max = rcol[nr-1]; 
+   max = rcol[nr-1];
    /* make the multiplication with the modfied stiffness */
    /* loop the row of the mod. stiffness matrix */
    for (j=0; j<numeq; j++)
@@ -1215,11 +1215,11 @@ for (i=firstcol; i<=lastcol; i++)
          foundit=1;
          /* make the multiplication */
          sum += a[k] * col[index];
-      } 
+      }
       /* put the value back to the prolongator */
       if (foundit && FABS(sum)>EPS14)
          mlpcg_csr_setentry(P,sum,actrow,actcolP,actintra);
-   }      
+   }
 }
 /*======================================================================*/
 
@@ -1239,7 +1239,7 @@ for (i=0; i<numeq; i++)
 
 
 /*=====================================make interproc smoothing part II */
-#ifdef PARALLEL 
+#ifdef PARALLEL
 if (nproc > 1) {
 /* make receive */
 while (nrecv != 0)
@@ -1297,7 +1297,7 @@ while (nrecv != 0)
             if (ja[k] < min || ja[k] > max) continue;
             /* find actcol in the received prolongator columnd */
             index = quick_find(ja[k],rc,nr,shift,bins);
-            if (index==-1) 
+            if (index==-1)
                continue;
             foundit = 1;
             /* make the multiplication */
@@ -1313,7 +1313,7 @@ while (nrecv != 0)
 }
 for (i=0; i<nsend*3; i++)
    MPI_Wait(&(request[i]),&status);
-CCAFREE(request);   
+CCAFREE(request);
 /* end of if (nproc > 1) */
 }
 #endif
@@ -1325,7 +1325,7 @@ CCAFREE(request);
 
 /*============================================================= tidy up */
 amdel(&a_a);
-#ifdef PARALLEL 
+#ifdef PARALLEL
 if (nproc > 1)
 {
    amdel(&isend_a);
@@ -1347,7 +1347,7 @@ for (i=0; i<numeq; i++)
 }
 */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

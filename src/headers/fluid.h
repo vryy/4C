@@ -11,9 +11,9 @@ Maintainer: Steffen Genkinger
 
 ------------------------------------------------------------------------*/
 /*!----------------------------------------------------------------------
-\brief integration parameters                                              
+\brief integration parameters
 
-<pre>                                                         genk 03/02  
+<pre>                                                         genk 03/02
 
 In this structure the coordinates and weights used by gauss integration
 are stored.
@@ -33,11 +33,11 @@ DOUBLE        twgt[MAXTINTP][MAXTINTC];   /*!< weights for TRIS and TETS*/
 } FLUID_DATA;
 
 /*!----------------------------------------------------------------------
-\brief submesh parameters                                              
+\brief submesh parameters
 
-<pre>                                                       gravem 05/03 
+<pre>                                                       gravem 05/03
 
-In this structure, the parameters for the submesh (and sub-submesh) 
+In this structure, the parameters for the submesh (and sub-submesh)
 are stored.
 
 </pre>
@@ -45,7 +45,7 @@ are stored.
 ------------------------------------------------------------------------*/
 typedef struct _FLUID_ML_SMESH
 {
-INT                numnp;	   /* number of nodes in this field */ 
+INT                numnp;	   /* number of nodes in this field */
 INT                numele;	   /* number of elements in this field */
 INT                numeq;	   /* number of unknowns */
 INT                numen;	   /* number of element nodes */
@@ -64,17 +64,17 @@ struct _ARRAY      ipiv;	   /* pivot-array for solver lapack */
 } FLUID_ML_SMESH;
 
 /*!----------------------------------------------------------------------
-\brief multi-level calculation parameter                                              
+\brief multi-level calculation parameter
 
-<pre>                                                        gravem 05/03  
+<pre>                                                        gravem 05/03
 
-In this structure all parameters for the elementwise multi-level 
+In this structure all parameters for the elementwise multi-level
 algorithm are stored.
 
 </pre>
 
 ------------------------------------------------------------------------*/
-typedef struct _FLUID_DYN_ML                
+typedef struct _FLUID_DYN_ML
 {
 DOUBLE   smsmagcon;     /*!< submesh Smagorinsky constant */
 INT      transterm;     /*!< treatment of transient terms */
@@ -110,15 +110,15 @@ struct _FLUID_ML_SMESH ssmesh;
 /*!----------------------------------------------------------------------
 \brief fluid dynamic parameter, flags and variables
 
-<pre>                                                         genk 03/02  
+<pre>                                                         genk 03/02
 
 In this structure all fluid-dynamic variables from the input file as well
-as flags and other dynamic information are stored. 
+as flags and other dynamic information are stored.
 
 </pre>
 
 ------------------------------------------------------------------------*/
-typedef struct _FLUID_DYNAMIC               
+typedef struct _FLUID_DYNAMIC
 {
 /* general control variables of fluid dynamics */
 INT    dyntyp;       /*!< dynamictype                                   */
@@ -144,8 +144,8 @@ enum {
      } stnorm;       /*!< norm for steady state check                   */
 /* output flags */
 INT    uppss;        /*!< update pss file every n steps                 */
-INT    upout;        /*!< store results every n steps                   */      
-INT    upres;        /*!< store results in .flavia.res every n steps    */      
+INT    upout;        /*!< store results every n steps                   */
+INT    upres;        /*!< store results in .flavia.res every n steps    */
 INT    uprestart;    /*!< write restart every n steps                 */
 INT    resstep;      /*!< restart step                                  */
 /* time stepping flags and variables */
@@ -216,14 +216,14 @@ DOUBLE thsr;     /*!< theta-s,r: const. for "stiffness" terms RHS       */
 DOUBLE thpl;     /*!< theta-p,l: const. for "pressure" terms LHS        */
 DOUBLE thpr;     /*!< theta-p,r: const. for "pressure" terms RHS        */
 DOUBLE thnr;	 /*!< additional part of thsr needed for gen_alpha      */
-DOUBLE sigma;    /*!< const. for nonlinear iteration                    */ 
+DOUBLE sigma;    /*!< const. for nonlinear iteration                    */
 /* tolerances */
 DOUBLE  ittol;     /*!< tolerance for iteration convergence check       */
 DOUBLE  sttol;     /*!< tolerance for steady state check                */
 /*!< variables related to free surface */
 DOUBLE totarea;  /*!< total area of fluid field */
 DOUBLE dphimax;
-INT    fsstnif; 
+INT    fsstnif;
 INT    fsstnii;
 INT    hf_numeq_total;
 INT    hf_numeq;
@@ -232,13 +232,13 @@ INT    hf_numdf_total;
 /* DOUBLEs related to turbulence*/
 DOUBLE  lenght;         /*!< internal lenght of problem                 */
 DOUBLE  rought;         /*!< roughtness of solid boundaries             */
-DOUBLE  coord_scale[2]; /*!< coordinates for scaling the turbulence variables */   
+DOUBLE  coord_scale[2]; /*!< coordinates for scaling the turbulence variables */
 /*!< variables related to stabilisation                                 */
 DOUBLE tau[3];   /*!< array for stabilitity parameter */
 DOUBLE tau_tu;   /*!< array for stabilitity parameter for turbulence*/
 DOUBLE tau_tu_dc;/*!< array for DISCONTINUITY CAPTURING for turbulence*/
 /*!< variables related to ml or turbulence (?) */
-DOUBLE washvel;  /*!< wall shear velocity */   
+DOUBLE washvel;  /*!< wall shear velocity */
 DOUBLE sugrvisc; /*!< subgrid viscosity       */
 DOUBLE smagcon;  /*!< Smagorinsky constant       */
 /**/
@@ -247,16 +247,16 @@ struct _FLUID_DATA    *data;  /* pointer to integration data            */
 } FLUID_DYNAMIC;
 
 /*!----------------------------------------------------------------------
-\brief fluid parameters                                              
+\brief fluid parameters
 
-<pre>                                                         he  06/03  
+<pre>                                                         he  06/03
 
 In this structure all fluid variables needed on node are stored.
 
 </pre>
 
 ------------------------------------------------------------------------*/
-typedef struct _FLUID_VARIA               
+typedef struct _FLUID_VARIA
 {
 DOUBLE             c_f_shear;     /*!< dim. shearstress c_f of node     */
 } FLUID_VARIA;

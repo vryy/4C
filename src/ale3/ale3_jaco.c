@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 'ale3_jaco' which calculates the Jacobian 
+\brief contains the routine 'ale3_jaco' which calculates the Jacobian
 matrix for a 3d ale element
 
 <pre>
@@ -15,15 +15,15 @@ Maintainer: Malte Neumann
 #include "../headers/standardtypes.h"
 #include "ale3.h"
 
-/*! 
-\addtogroup Ale 
+/*!
+\addtogroup Ale
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief  calculate the Jacobian matrix  
+\brief  calculate the Jacobian matrix
 
-<pre>                                                              mn 06/02 
-This routine calculates the Jacobian matrix  at a point r,s,t for 
+<pre>                                                              mn 06/02
+This routine calculates the Jacobian matrix  at a point r,s,t for
 a 3D ale element.
 
 </pre>
@@ -34,7 +34,7 @@ a 3D ale element.
 \param iel      INT        (i)   number of nodes of the element
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: ale3_static_ke
 
 *----------------------------------------------------------------------*/
@@ -50,11 +50,11 @@ void ale3_jaco(
   INT i,j,l;
   DOUBLE dum;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("ale3_jaco");
 #endif
 
-  /* determine jacobian at point r,s,t */       
+  /* determine jacobian at point r,s,t */
   for (i=0; i<3; i++)
   {
     for (j=0; j<3; j++)
@@ -68,7 +68,7 @@ void ale3_jaco(
     }
   }
 
-  /* determinant of jacobian */        
+  /* determinant of jacobian */
   *det = xjm[0][0]*xjm[1][1]*xjm[2][2]+
     xjm[0][1]*xjm[1][2]*xjm[2][0]+
     xjm[0][2]*xjm[1][0]*xjm[2][1]-
@@ -76,9 +76,9 @@ void ale3_jaco(
     xjm[0][0]*xjm[1][2]*xjm[2][1]-
     xjm[0][1]*xjm[1][0]*xjm[2][2];
 
-  if (*det<0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");         
+  if (*det<0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 

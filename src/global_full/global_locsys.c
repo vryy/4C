@@ -10,33 +10,33 @@ Maintainer: Steffen Genkinger
 
 General explanation:
    Local co-systems may be used for defining tangential or normal
-   DBCs along inclined or even curved Lines/Surfaces, e.g. 
+   DBCs along inclined or even curved Lines/Surfaces, e.g.
    slip dirichlet condition for fluids along a curved wall.
    In such a case the DBCs  cannot be prescribed in the XYZ-system
    any more.
 
    One defines a new co-system xyz* for the specific design object.
-   The DBCs in the inpute file are then given in this new co-system. 
+   The DBCs in the inpute file are then given in this new co-system.
    The locsys information is inherited from the Dobjects to the nodes
-   and all elements belonging to one of this node get this 
+   and all elements belonging to one of this node get this
    information, too. (locsys_inherit_to_node).
-         
+
 Bringing in the locsys information into the solution:
-   All nodal sol_arrays are still in the XYZ co-system. The element 
+   All nodal sol_arrays are still in the XYZ co-system. The element
    matrix and the ele-RHS are also build in the XYZ-system.
-   This means before applying the dirichlet conditions one has to 
+   This means before applying the dirichlet conditions one has to
    tranform the used sol-array to the xyz* system, then the prescribed
    values are applied and afterwards one has to transform back the
    sol array. (locsys_trans_sol_dirich)
-   
+
    After building the element stiffness matrix and the ele-RHS, one has
    to transform them to the xyz* system (before assembling!)
    (locsys_trans).
-   
+
    When calculating the RHS due to dirichlet conditions (condensation)
    the prescribed values have to be in the xyz* co-system.
-   
-   In the resulting solution the values can be in different co-sys. 
+
+   In the resulting solution the values can be in different co-sys.
    After copying back them to the sol-arrays at the nodes the solution
    at the nodes with a locsys have to be transformed to the XYZ system
    (locsys_trans_sol)
@@ -47,10 +47,10 @@ Final Remarks:
    dirichlet values) to xyz*. After the calculation one immediatetely
    transforms them back.
 
-   The whole procedure looks quite complicated. However I did not 
+   The whole procedure looks quite complicated. However I did not
    see another possiblity for the used fluid-solver. It might
    be simpler, when only working with struct elements ...
-    
+
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -75,7 +75,7 @@ extern struct _CURVE *curve;
  | vector of structures of local co-ordinate systems                    |
  | defined in input_locsys.c                                          |
  *----------------------------------------------------------------------*/
-extern INT            numlocsys; 
+extern INT            numlocsys;
 extern struct _LOCSYS *locsys;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -99,7 +99,7 @@ static DOUBLE   *workv;          /* working vector for temp. result */
 static ARRAY     nodalwork_a;
 static DOUBLE   *nodalwork;      /* nodal working vector */
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief inherit local co-ordinate system to elements
 
 <pre>                                                         genk 04/04
@@ -108,10 +108,10 @@ local co-ordinate systems are assigned to design elements (points, lines
 surfs, vols). They are NOT inherited to their lower design elements.
 
 create local co-ordinate system on node level
-			     
+
 </pre>
-\return void                                               
-                                 
+\return void
+
 ------------------------------------------------------------------------*/
 void locsys_inherit_to_node()
 {
@@ -121,12 +121,12 @@ NODE     *actnode;
 GNODE    *actgnode;
 ELEMENT  *actele;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("locsys_inherit_to_ele");
 #endif
 
 
-/*-------------------------- allocate transformation and working arrays 
+/*-------------------------- allocate transformation and working arrays
   since there may be internally defined locsys, these arrays have to be
   allocated for ALL cases                                               */
 trans    =amdef("trans"    ,&trans_a    ,MAXDOFPERELE,MAXDOFPERELE,"DA");
@@ -154,9 +154,9 @@ for (i=0; i<genprob.numfld; i++)
          case ondline: locsysId = actgnode->d.dline->locsysId;   break;
          case ondsurf: locsysId = actgnode->d.dsurf->locsysId;   break;
          case ondvol : locsysId = actgnode->d.dvol->locsysId;    break;
-         case ondnothing:   
+         case ondnothing:
             dserror("GNODE not owned by any design object");     break;
-         default: 
+         default:
             dserror("Cannot create locsys on element level");    break;
          }
          actnode->locsysId=locsysId;
@@ -167,20 +167,20 @@ for (i=0; i<genprob.numfld; i++)
                actele=actnode->element[l];
                actele->locsys=locsys_yes;
             } /* end loop over nodes */
-         } /* endif (locsysId>0) */     
+         } /* endif (locsysId>0) */
       } /* end loop over nodes */
    } /* end loop over discretisations */
 } /* end loop over fields */
 
 /*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of locsys_create */
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief transform element stiffness matrix
 
 <pre>                                                         genk 04/04
@@ -189,29 +189,29 @@ the element stiffness matrix of the actual element is transformed from
 the global XYZ - co-ordinate system to the local one.
 This names are a bit confusing, since the "local" co-ordinate system is
 the one we are solving in, so we better introduce new names:
-			     
+
 estif  = stiffness matrix in the given XYZ cartesian co-system
-estif* = stiffness matrix in the alternative xyz* co-system defined 
+estif* = stiffness matrix in the alternative xyz* co-system defined
          in the input file
-         
+
 eload  = load vector in the given XYZ cartesian co-system
 eload* = load vector in the alternative xyz* co-system
 
 trans  = transformation matrix containing the direction cosini between
          XYZ and xyz*
-                             
+
 </pre>
 \param   *ele        ELEMENT     (i)      actual element
 \param  **estif1     DOUBLE      (i/o)    element matrix
 \param  **estif2     DOUBLE      (i/o)    element matrix
 \param   *vec1       DOUBLE      (i/o)    element RHS
-\param   *vec2       DOUBLE      (i/o)    element RHS 
+\param   *vec2       DOUBLE      (i/o)    element RHS
 \sa locsys_trans_nodval
 
-\return void                                               
-                                 
+\return void
+
 ------------------------------------------------------------------------*/
-void locsys_trans(ELEMENT *ele, DOUBLE **estif1, DOUBLE **estif2, 
+void locsys_trans(ELEMENT *ele, DOUBLE **estif1, DOUBLE **estif2,
                                 DOUBLE *vec1,    DOUBLE *vec2)
 {
 INT      i,j;        /* simply some counters */
@@ -220,7 +220,7 @@ INT      ilocsys;    /* index of locsys */
 INT      numdf;      /* number of dofs at actual node */
 NODE     *actnode;   /* actual node */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("locsys_trans");
 #endif
 #ifdef PERF
@@ -239,10 +239,10 @@ case el_fluid2:
    dsassert (ele->e.f2->fs_on<=2,
              "no local co-ordinate system on free surface allowed!\n");
    /*----------------------------------------------- loop element nodes */
-   for (i=0;i<ele->numnp;i++) 
+   for (i=0;i<ele->numnp;i++)
    {
       actnode=ele->node[i];
-      numdf=actnode->numdf;      
+      numdf=actnode->numdf;
       ilocsys=actnode->locsysId-1;
       if(ilocsys>=0)
       {
@@ -257,9 +257,9 @@ case el_fluid2:
          }
          else if (numdf==4)
          {
-            dserror("transformation for fluid node with 4 dofs not implemented!\n");         
+            dserror("transformation for fluid node with 4 dofs not implemented!\n");
          }
-         else if (numdf==5) /*  node at free surf. w/ five dofs 
+         else if (numdf==5) /*  node at free surf. w/ five dofs
                             [vel, vel, pre, velg, velg]                 */
          {
             trans[nd][nd]     = locsys[ilocsys].lXx;
@@ -270,7 +270,7 @@ case el_fluid2:
             trans[nd+3][nd+3] = locsys[ilocsys].lXx;
             trans[nd+4][nd+3] = locsys[ilocsys].lXy;
             trans[nd+3][nd+4] = locsys[ilocsys].lYx;
-            trans[nd+4][nd+4] = locsys[ilocsys].lYy;         
+            trans[nd+4][nd+4] = locsys[ilocsys].lYy;
          }
          else
             dserror("transformation not possible!\n");
@@ -288,10 +288,10 @@ case el_fluid3:
    dsassert (ele->e.f3->fs_on<=2,
              "no local co-ordinate system on free surface allowed!\n");
    /*----------------------------------------------- loop element nodes */
-   for (i=0;i<ele->numnp;i++) 
+   for (i=0;i<ele->numnp;i++)
    {
       actnode=ele->node[i];
-      numdf=actnode->numdf;      
+      numdf=actnode->numdf;
       ilocsys=actnode->locsysId-1;
       if(ilocsys>=0)
       {
@@ -311,9 +311,9 @@ case el_fluid3:
          }
          else if (numdf==5)
          {
-            dserror("transformation for fluid node with 5 dofs not implemented!\n"); 
+            dserror("transformation for fluid node with 5 dofs not implemented!\n");
          }
-         else if (numdf==7) /*  node at free surf. w/ five dofs 
+         else if (numdf==7) /*  node at free surf. w/ five dofs
                           [vel, vel, vel, pre, velg, velg, velg]        */
          {
             trans[nd][nd]     = locsys[ilocsys].lXx;
@@ -345,12 +345,12 @@ case el_fluid3:
       }
       nd+=numdf;
    } /* end loop over element nodes */
-break;      
+break;
 #endif
 #ifdef D_ALE
 case el_ale2:
    /*----------------------------------------------- loop element nodes */
-   for (i=0;i<ele->numnp;i++) 
+   for (i=0;i<ele->numnp;i++)
    {
       actnode=ele->node[i];
       numdf=actnode->numdf;
@@ -408,21 +408,21 @@ if (vec2!=NULL)
 {
    /* workv = trans * vec2 */
    math_matvecdense(workv,trans,vec2,nd,nd,0,ONE);
-   /* copy result to vec2 */ 
+   /* copy result to vec2 */
    for(i=0;i<nd;i++) vec2[i]=workv[i];
 } /* endif (vec2!=NULL) */
-   
+
 /*----------------------------------------------------------------------*/
 #ifdef PERF
   perf_end(22);
 #endif
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of locsys_trans_ele */
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief transform solution to global co-ordinate system
 
 <pre>                                                         genk 04/04
@@ -435,26 +435,26 @@ the one we are solving in, so we better introduce new names:
 sol  = sol vector in the given XYZ cartesian co-system
 sol* = sol vector in the alternative xyz* co-system
 
-array   index of the array,        0 = sol                    
-                                   1 = sol_increment          
-                                   2 = sol_residual           
-                                   3 = sol_mf                 
+array   index of the array,        0 = sol
+                                   1 = sol_increment
+                                   2 = sol_residual
+                                   3 = sol_mf
 
 flag = 1 : transform sol in xyz* to XYZ
 flag = 0 : transform sol in XYZ to xyz*
-			     
+
 </pre>
 \param   *actfield      FIELD       (i)   actual field
 \param    dis           INT         (i/o) index for dis
 \param    array         INT         (i)   index for nodal array
 \param    place         INT         (i)   place in nodal array
-\param    flag          INT         (i)   just a flag 
-\sa  locsys_trans_nodval()	
+\param    flag          INT         (i)   just a flag
+\sa  locsys_trans_nodval()
 
-\return void                                               
-                                 
+\return void
+
 ------------------------------------------------------------------------*/
-void locsys_trans_sol(FIELD *actfield, INT idis, INT array, 
+void locsys_trans_sol(FIELD *actfield, INT idis, INT array,
                       INT place, INT flag)
 {
 INT      i,j;           /* simply some counters */
@@ -465,7 +465,7 @@ DOUBLE   **nodalsol;    /* pointer to nodal array */
 NODE     *actnode;      /* actual node */
 ELEMENT  *actele;       /* actual element */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("locsys_trans_sol");
 #endif
 
@@ -475,7 +475,7 @@ numnp_total=actfield->dis[idis].numnp;
 
 for (i=0;i<numnp_total;i++)
 {
-   actnode=&(actfield->dis[idis].node[i]);   
+   actnode=&(actfield->dis[idis].node[i]);
    /*----- any element can be used to find the local co-ordinate system */
    iloccsys=actnode->locsysId-1;
    if (iloccsys<0) continue; /* no locsys for this node */
@@ -491,7 +491,7 @@ for (i=0;i<numnp_total;i++)
    case 3:  nodalsol=actnode->sol_mf.a.da;        break;
    default: dserror("index out of range!\n");     break;
    } /* end switch (array) */
-   
+
    /* copy values to working vector */
    for (j=0;j<numdf;j++) nodalwork[j]=nodalsol[place][j];
    /* transform vector */
@@ -502,13 +502,13 @@ for (i=0;i<numnp_total;i++)
 
 /*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of locsys_trans_sol */
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief transform solution to global co-ordinate system
 
 <pre>                                                         genk 04/04
@@ -522,26 +522,26 @@ the one we are solving in, so we better introduce new names:
 sol  = sol vector in the given XYZ cartesian co-system
 sol* = sol vector in the alternative xyz* co-system
 
-array   index of the array,        0 = sol                    
-                                   1 = sol_increment          
-                                   2 = sol_residual           
-                                   3 = sol_mf                 
+array   index of the array,        0 = sol
+                                   1 = sol_increment
+                                   2 = sol_residual
+                                   3 = sol_mf
 
 flag = 1 : transform sol in xyz* to XYZ
 flag = 0 : transform sol in XYZ to xyz*
-			     
+
 </pre>
 \param   *actfield      FIELD       (i)   actual field
 \param    dis           INT         (i/o) index for dis
 \param    array         INT         (i)   index for nodal array
 \param    place         INT         (i)   place in nodal array
-\param    flag          INT         (i)   just a flag 
-\sa  locsys_trans_nodval()	
+\param    flag          INT         (i)   just a flag
+\sa  locsys_trans_nodval()
 
-\return void                                               
-                                 
+\return void
+
 ------------------------------------------------------------------------*/
-void locsys_trans_sol_dirich(FIELD *actfield, INT idis, INT array, 
+void locsys_trans_sol_dirich(FIELD *actfield, INT idis, INT array,
                              INT place, INT flag)
 {
 INT      i,j;           /* simply some counters */
@@ -553,7 +553,7 @@ NODE     *actnode;      /* actual node */
 GNODE    *actgnode;     /* actual gnode */
 ELEMENT  *actele;       /* actual element */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("locsys_trans_sol");
 #endif
 
@@ -565,7 +565,7 @@ for (i=0;i<numnp_total;i++)
 {
    actnode=&(actfield->dis[idis].node[i]);
    actgnode=actnode->gnode;
-   if (actgnode->dirich==NULL) continue; 
+   if (actgnode->dirich==NULL) continue;
    /*----- any element can be used to find the local co-ordinate system */
    iloccsys=actnode->locsysId-1;
    if (iloccsys<0) continue; /* no locsys for this node */
@@ -581,7 +581,7 @@ for (i=0;i<numnp_total;i++)
    case 3:  nodalsol=actnode->sol_mf.a.da;        break;
    default: dserror("index out of range!\n");     break;
    } /* end switch (array) */
-   
+
    /* copy values to working vector */
    for (j=0;j<numdf;j++) nodalwork[j]=nodalsol[place][j];
    /* transform vector */
@@ -592,13 +592,13 @@ for (i=0;i<numnp_total;i++)
 
 /*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of locsys_trans_sol */
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief transform solution to global co-ordinate system
 
 <pre>                                                         genk 04/04
@@ -610,11 +610,11 @@ the one we are solving in, so we better introduce new names:
 
     Transformation of displacements (3D):
 
-     | (Dx*) |   | cos(Xx*)   cos(Yx*)   cos(Zx*) | | (DX) | 
+     | (Dx*) |   | cos(Xx*)   cos(Yx*)   cos(Zx*) | | (DX) |
      | (Dy*) | = | cos(Xy*)   cos(Yy*)   cos(Zy*) | | (DY) |
      | (Dz*) |   | cos(Xz*)   cos(Yz*)   cos(Zz*) | | (DZ) |
 
-      val*     =                  T                   val      
+      val*     =                  T                   val
 
 cos(Yx*) =  cosine of angle between the given Y-base vector
             and the alternative x*-base vector
@@ -631,19 +631,19 @@ flag = 0 : transform val in XYZ to xyz*
 \param   *val        DOUBLE         (i/o) values to transform
 \param    numdf      INT            (i)   number of dofs
 \param    ilocsys    INT            (i)   index of locsys
-\param    flag       INT            (i)   just a flag 
+\param    flag       INT            (i)   just a flag
 
-\sa inp_read_locsys()			     
-\return void                                               
-                                 
+\sa inp_read_locsys()
+\return void
+
 ------------------------------------------------------------------------*/
-void locsys_trans_nodval(ELEMENT *actele, DOUBLE *val, INT numdf, 
+void locsys_trans_nodval(ELEMENT *actele, DOUBLE *val, INT numdf,
                          INT iloccsys, INT flag)
 {
 INT      i,j;           /* simply some counters */
 LOCSYS   *actlocsys;    /* the actual local co-system xzy* */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("locsys_trans_nodval");
 #endif
 #ifdef PERF
@@ -678,7 +678,7 @@ case el_fluid2:
    {
       dserror("transformation for fluid node with 4 dofs not implemented!\n");
    }
-   else if (numdf==5) /*  node at free surf. w/ five dofs 
+   else if (numdf==5) /*  node at free surf. w/ five dofs
                           [vel, vel, pre, velg, velg]                   */
    {
       trans[0][0] = actlocsys->lXx;
@@ -689,12 +689,12 @@ case el_fluid2:
       trans[3][3] = actlocsys->lXx;
       trans[4][3] = actlocsys->lXy;
       trans[3][4] = actlocsys->lYx;
-      trans[4][4] = actlocsys->lYy;      
+      trans[4][4] = actlocsys->lYy;
    }
    else
       dserror("transformation not possible!\n");
-break; 
-#endif         
+break;
+#endif
 #ifdef D_FLUID3
 case el_fluid3:
    if (numdf<5)
@@ -712,9 +712,9 @@ case el_fluid3:
    }
    else if (numdf==5)
    {
-      dserror("transformation for fluid node with 5 dofs not implemented!\n"); 
+      dserror("transformation for fluid node with 5 dofs not implemented!\n");
    }
-   else if (numdf==7) /*  node at free surf. w/ five dofs 
+   else if (numdf==7) /*  node at free surf. w/ five dofs
                     [vel, vel, vel, pre, velg, velg, velg]        */
    {
       trans[0][0] = actlocsys->lXx;
@@ -739,14 +739,14 @@ case el_fluid3:
    }
    else
       dserror("transformation not possible!\n");
-break;      
+break;
 #endif
 #ifdef D_ALE
 case el_ale2:
    trans[0][0] = actlocsys->lXx;
    trans[1][0] = actlocsys->lXy;
    trans[0][1] = actlocsys->lYx;
-   trans[1][1] = actlocsys->lYy;   
+   trans[1][1] = actlocsys->lYy;
 break;
 #endif
 default: dserror("no transformation implemented for this kind of element!\n");
@@ -772,7 +772,7 @@ end:
 #ifdef PERF
   perf_end(22);
 #endif
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -18,7 +18,7 @@ Maintainer: Malte Neumann
 #include "../solver/solver.h"
 /*----------------------------------------------------------------------*
  | global dense matrices for element routines             m.gee 9/01    |
- | (defined in global_calelm.c, so they are extern here)                |                
+ | (defined in global_calelm.c, so they are extern here)                |
  *----------------------------------------------------------------------*/
 extern struct _ARRAY estif_global;
 extern struct _ARRAY emass_global;
@@ -28,11 +28,11 @@ extern struct _ARRAY emass_global;
 /*!
  \brief assemble into a ccf matrix (original version)
 
- This routine assembles one or two element matrices (estiff_global and 
- emass_global) into the global matrices in the ccf format.  
- It makes extensive use of the searchs provided by the function 
+ This routine assembles one or two element matrices (estiff_global and
+ emass_global) into the global matrices in the ccf format.
+ It makes extensive use of the searchs provided by the function
  'find_index'.
-  
+
  \param actpart   *PARTITION    (i)  the partition we are working on
  \param actsolv   *SOLVAR       (i)  the solver we are using
  \param actintra  *INTRA        (i)  the intra-communicator we do not need
@@ -84,7 +84,7 @@ void  add_ccf(
   INT         nsend;
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("add_ccf");
 #endif
 
@@ -113,8 +113,8 @@ void  add_ccf(
   ncdofs     = actpart->pdis[0].coupledofs.fdim;
 
   /* put pointers to sendbuffers if any */
-#ifdef PARALLEL 
-  if (ccf1->couple_i_send) 
+#ifdef PARALLEL
+  if (ccf1->couple_i_send)
   {
     isend1 = ccf1->couple_i_send->a.ia;
     dsend1 = ccf1->couple_d_send->a.da;
@@ -134,14 +134,14 @@ void  add_ccf(
     for (j=0; j<actele->node[i]->numdf; j++)
     {
       lm[counter]    = actele->node[i]->dof[j];
-#ifdef PARALLEL 
+#ifdef PARALLEL
       owner[counter] = actele->node[i]->proc;
 #endif
       counter++;
     }
   }/* end of loop over element nodes */
   /* end of loop over element nodes */
-  /* this check is not possible any more for fluid element with implicit 
+  /* this check is not possible any more for fluid element with implicit
   free surface condition: nd not eqaual numnp*numdf!!! */
 #if 0
     if (counter != nd) dserror("assemblage failed due to wrong dof numbering");
@@ -156,7 +156,7 @@ void  add_ccf(
     ii = lm[i];
 
     /* loop only my own rows */
-#ifdef PARALLEL 
+#ifdef PARALLEL
     if (owner[i]!=myrank) continue;
 #endif
 
@@ -182,7 +182,7 @@ void  add_ccf(
   }/* end loop over i */
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return;
@@ -197,12 +197,12 @@ void  add_ccf(
 /*!
  \brief assemble into a ccf matrix (original version)
 
- This routine assembles one or two element matrices (estiff_global and 
- emass_global) into the global matrices in the ccf format.  
- It makes use of the information saved in actele->index to determine the 
- correct position in the sparse matrix.  
+ This routine assembles one or two element matrices (estiff_global and
+ emass_global) into the global matrices in the ccf format.
+ It makes use of the information saved in actele->index to determine the
+ correct position in the sparse matrix.
  This is faster then searching every time, but consumes a lot of memory!!
-  
+
  \param actpart   *PARTITION    (i)  the partition we are working on
  \param actsolv   *SOLVAR       (i)  the solver we are using
  \param actintra  *INTRA        (i)  the intra-communicator we do not need
@@ -252,7 +252,7 @@ void  add_ccf_fast(
   INT         nsend;
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("add_ccf");
 #endif
 
@@ -280,8 +280,8 @@ void  add_ccf_fast(
   ncdofs     = actpart->pdis[0].coupledofs.fdim;
 
   /* put pointers to sendbuffers if any */
-#ifdef PARALLEL 
-  if (ccf1->couple_i_send) 
+#ifdef PARALLEL
+  if (ccf1->couple_i_send)
   {
     isend1 = ccf1->couple_i_send->a.ia;
     dsend1 = ccf1->couple_d_send->a.da;
@@ -299,7 +299,7 @@ void  add_ccf_fast(
   for (i=0; i<nd; i++)
   {
     ii = actele->locm[i];
-    
+
     /* loop over j (the element row) */
     start         = Ap[ii];
     lenght        = Ap[ii+1]-Ap[ii];
@@ -322,7 +322,7 @@ void  add_ccf_fast(
   }/* end loop over i */
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return;
@@ -340,7 +340,7 @@ void redundant_ccf(PARTITION *actpart,
                    CCF       *ccf2)
 {
 
-#ifdef PARALLEL 
+#ifdef PARALLEL
 INT      imyrank;
 INT      inprocs;
 
@@ -348,27 +348,27 @@ ARRAY    recv_a;
 DOUBLE  *recv;
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("redundant_ccf");
 #endif
 /*----------------------------------------------------------------------*/
 /*  NOTE:
           In this routine, for a relatively short time the system matrix
-          exists 2 times. This takes a lot of memory and may be a 
+          exists 2 times. This takes a lot of memory and may be a
           bottle neck!
           In MPI2 there exists a flag for in-place-Allreduce:
-          
+
           MPI_Allreduce(MPI_IN_PLACE,
                         ucchb->a.a.dv,
                         (ucchb->a.fdim)*(ucchb->a.sdim),
                         MPI_DOUBLE,
                         MPI_SUM,
                         actintra->MPI_INTRA_COMM);
-          
+
           But there is no MPI2 in for HP, yet.
 */
 /*----------------------------------------------------------------------*/
-#ifdef PARALLEL 
+#ifdef PARALLEL
 /*----------------------------------------------------------------------*/
 imyrank = actintra->intra_rank;
 inprocs = actintra->intra_nprocs;
@@ -376,7 +376,7 @@ inprocs = actintra->intra_nprocs;
 /*                      (all coupling conditions are done then as well) */
 /*--------------------------------------------------- allocate recvbuff */
 recv = amdef("recv_a",&recv_a,ccf1->Ax.fdim,ccf1->Ax.sdim,"DV");
-/*----------------------------------------------------------- Allreduce */  
+/*----------------------------------------------------------- Allreduce */
 MPI_Allreduce(ccf1->Ax.a.dv,
               recv,
               (ccf1->Ax.fdim)*(ccf1->Ax.sdim),
@@ -387,7 +387,7 @@ MPI_Allreduce(ccf1->Ax.a.dv,
 amcopy(&recv_a,&(ccf1->Ax));
 if (ccf2)
 {
-/*----------------------------------------------------------- Allreduce */  
+/*----------------------------------------------------------- Allreduce */
 MPI_Allreduce(ccf2->Ax.a.dv,
               recv,
               (ccf2->Ax.fdim)*(ccf2->Ax.sdim),
@@ -399,9 +399,9 @@ amcopy(&recv_a,&(ccf2->Ax));
 }
 /*----------------------------------------------------- delete recvbuff */
 amdel(&recv_a);
-#endif /*---------------------------------------------- end of PARALLEL */ 
+#endif /*---------------------------------------------- end of PARALLEL */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

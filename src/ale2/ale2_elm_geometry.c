@@ -14,8 +14,8 @@ Maintainer: Christiane Foerster
 #include "../headers/standardtypes.h"
 #include "ale2.h"
 
-/*! 
-\addtogroup Ale 
+/*!
+\addtogroup Ale
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
@@ -29,9 +29,9 @@ This routine evaluates the area of a 4 noded quad ale element
                                                       2dn index: x or y
 
 \warning There is nothing special to this routine
-\return DOUBLE element area                                              
-\sa calling: 
-             called by: ale2_static_ke_prestress(), 
+\return DOUBLE element area
+\sa calling:
+             called by: ale2_static_ke_prestress(),
 	                ale2_static_ke_step2()
 
 *----------------------------------------------------------------------*/
@@ -40,7 +40,7 @@ DOUBLE ale2_el_area(DOUBLE **xyz)
 DOUBLE a, b, c;  /* geometrical values */
 DOUBLE el_area;  /* element area */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ale2_el_area");
 #endif
 /*----------------------------------------------------------------------*/
@@ -58,7 +58,7 @@ b = (xyz[3][0]-xyz[0][0])*(xyz[3][0]-xyz[0][0])
 /*-------------------------------------------- evaluate element area ---*/
 el_area += 0.25 * sqrt(2.0*a*b + 2.0*b*c + 2.0*c*a - a*a - b*b - c*c);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -80,8 +80,8 @@ This routine evaluates the area of a 3 noded triangular ale element
 \param   k      INT       (i)   node k
 
 \warning There is nothing special to this routine
-\return DOUBLE element area                                               
-\sa calling: 
+\return DOUBLE element area
+\sa calling:
              called by: ale2_torsional()
 
 *----------------------------------------------------------------------*/
@@ -90,7 +90,7 @@ DOUBLE ale2_area_tria(DOUBLE **xyz, INT i, INT j, INT k)
 DOUBLE a, b, c;  /* geometrical values */
 DOUBLE el_area;  /* element area */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ale2_area_tria");
 #endif
 /*----------------------------------------------------------------------*/
@@ -101,7 +101,7 @@ b = (xyz[j][0]-xyz[k][0])*(xyz[j][0]-xyz[k][0])
 c = (xyz[k][0]-xyz[i][0])*(xyz[k][0]-xyz[i][0])
    +(xyz[k][1]-xyz[i][1])*(xyz[k][1]-xyz[i][1]); /* line k-i squared */
 el_area = 0.25 * sqrt(2.0*a*b + 2.0*b*c + 2.0*c*a - a*a - b*b - c*c);
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -111,7 +111,7 @@ return el_area;
 
 
 /*!----------------------------------------------------------------------
-\brief  determine the length and direction of a line 
+\brief  determine the length and direction of a line
 
 <pre>                                                             ck 06/03
 This routine evaluates the length and direction (sin and cos) of a line
@@ -125,35 +125,35 @@ between two points i and j.
 \param   k      INT       (i)   node k
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling: 
+\return void
+\sa calling:
              called by: ale2_static_ke_spring()
 
 *----------------------------------------------------------------------*/
-void edge_geometry(INT      i, 
-                   INT      j, 
-         	   DOUBLE **xyz, 
+void edge_geometry(INT      i,
+                   INT      j,
+         	   DOUBLE **xyz,
 	           DOUBLE  *length,
 	           DOUBLE  *sin_alpha,
 	           DOUBLE  *cos_alpha)
 {
 DOUBLE   delta_x, delta_y;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("edge_length");
 #endif
 /*---------------------------------------------- x- and y-difference ---*/
 delta_x = xyz[j][0]-xyz[i][0];
 delta_y = xyz[j][1]-xyz[i][1];
 /*------------------------------- determine distance between i and j ---*/
-*length = sqrt( delta_x * delta_x 
+*length = sqrt( delta_x * delta_x
               + delta_y * delta_y );
 if (*length < EPS14) dserror("edge or diagonal of element has zero length");
 /*--------------------------------------- determine direction of i-j ---*/
 *sin_alpha = delta_y / *length;
 *cos_alpha = delta_x / *length;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -163,11 +163,11 @@ return;
 \brief determines the torsional spring stiffness of a triangle i, j, k
 
 <pre>                                                             ck 06/03
-This routine evaluates the torsional springs attached to the vertices of 
-a triangle i, j, k following Farhat et al. in 'Torsional springs for 
-two-dimensional dynamic unstructured fluid meshes' in Comput. Mech. 
+This routine evaluates the torsional springs attached to the vertices of
+a triangle i, j, k following Farhat et al. in 'Torsional springs for
+two-dimensional dynamic unstructured fluid meshes' in Comput. Mech.
 Engrg. 163 (1998) 231-245
-It determines the 6 x 6 matrix which corresponds to the displacement 
+It determines the 6 x 6 matrix which corresponds to the displacement
 degrees of freedom u and v of the nodes.
 
 </pre>
@@ -180,16 +180,16 @@ degrees of freedom u and v of the nodes.
 \param   init      INT       (i)   initialisation flag
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling: 
-             called by: ale2_tors_spring_quad4(), 
+\return void
+\sa calling:
+             called by: ale2_tors_spring_quad4(),
 	                ale2_tors_spring_tri3()
 
 *----------------------------------------------------------------------*/
-void ale2_torsional(INT      i, 
-                    INT      j, 
-		    INT      k, 
-		    DOUBLE **xyz, 
+void ale2_torsional(INT      i,
+                    INT      j,
+		    INT      k,
+		    DOUBLE **xyz,
 		    DOUBLE **k_torsion,
 		    INT      init)
 /*
@@ -209,13 +209,13 @@ DOUBLE a_ij, a_jk, a_ki;  /* auxiliary values same as in Farhat et al. */
 DOUBLE b_ij, b_jk, b_ki;  /*                  - " -                    */
 DOUBLE area;              /* area of the triangle */
 static ARRAY    R_a;      /* rotation matrix same as in Farhat et al. */
-static DOUBLE **R;  
+static DOUBLE **R;
 static ARRAY    C_a;      /* torsion stiffness matrix same as in Farhat et al. */
 static DOUBLE **C;
 static ARRAY    A_a;      /* auxiliary array of intermediate results */
 static DOUBLE **A;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ale2_torsional");
 #endif
 /*--------------------------------------------------- initialisation ---*/
@@ -283,7 +283,7 @@ math_matmatdense(k_torsion,A,R,6,3,6,0,1.0);   /* stiff = A * R */
 
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -293,7 +293,7 @@ return;
 \brief adds the torsional spring stiffness part to a quad 4 ale element
 
 <pre>                                                             ck 06/03
-divides a quad 4 ale element into 4 subtriangles which contain each three 
+divides a quad 4 ale element into 4 subtriangles which contain each three
 of the four elemental nodes, determines the torsional springs for these
 subtriangles and adds these values to the appropriate places in the elemental
 stiffness matrix.
@@ -305,7 +305,7 @@ stiffness matrix.
 \param   init      INT       (i)   initialisation flag
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ale2_torsional()
              called by: ale2_static_ke_spring()
 
@@ -315,9 +315,9 @@ void ale2_tors_spring_quad4(DOUBLE **estif, DOUBLE **xyz, INT init)
 INT i, j;                 /* counters */
 
 static ARRAY    k_tria_a; /* rotational stiffness matrix of one triangle */
-static DOUBLE **k_tria;  
+static DOUBLE **k_tria;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ale2_tors_spring_quad4");
 #endif
 /*--------------------------------------------------- initialisation ---*/
@@ -327,7 +327,7 @@ if (init==1)
    ale2_torsional(0,0,0,NULL,NULL,1);
    goto end;
 }
-/*--- pass all nodes and determine the triangle defined by the node i and 
+/*--- pass all nodes and determine the triangle defined by the node i and
 adjunct nodes... ---*/
 ale2_torsional(0,1,2,xyz,k_tria,0);
 /*---------- ...sort everything into the element stiffness matrix... ---*/
@@ -373,7 +373,7 @@ for (i=6; i<8; i++)
 }
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -385,7 +385,7 @@ return;
 \brief adds the torsional spring stiffness part to a quad 4 ale element
 
 <pre>                                                             ck 06/03
-adds the torisonal stiffness part to the elemental stiffness of a 
+adds the torisonal stiffness part to the elemental stiffness of a
 linear triangle ale element
 
 </pre>
@@ -396,7 +396,7 @@ linear triangle ale element
 \param   init      INT       (i)   initialisation flag
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ale2_torsional()
              called by: ale2_static_ke_spring()
 
@@ -406,9 +406,9 @@ void ale2_tors_spring_tri3(DOUBLE **estif, DOUBLE **xyz, INT init)
 INT i, j;      /* counters */
 
 static ARRAY    k_tria_a; /* rotational stiffness matrix of one triangle */
-static DOUBLE **k_tria;  
+static DOUBLE **k_tria;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ale2_tors_spring_tri3");
 #endif
 /*--------------------------------------------------- initialisation ---*/
@@ -427,7 +427,7 @@ for (i=0; i<6; i++)
 /*----------------------------------------------------------------------*/
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return; /* end of ale2_tors_spring_tri3 */
@@ -437,7 +437,7 @@ return; /* end of ale2_tors_spring_tri3 */
 \brief calculate global derivatives at point r,s
 
 <pre>                                                            ck 06/03
-This routine calcuates global derivatives of the shape functions at the 
+This routine calcuates global derivatives of the shape functions at the
 given point r,s for an 2D-ale-element.
 
 </pre>
@@ -448,7 +448,7 @@ given point r,s for an 2D-ale-element.
 \param iel         INT     (i)   number of nodes per element
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: ale2_static_ke_laplace()
 
 *----------------------------------------------------------------------*/
@@ -462,11 +462,11 @@ void ale2_deriv_xy(DOUBLE    **deriv_xy,
 INT inode;
 DOUBLE dum;
 DOUBLE xji[2][2];
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ale2_bop");
 #endif
 /*---------------------------------------------- inverse of jacobian ---*/
-dum = 1.0/det;                                                             
+dum = 1.0/det;
 xji[0][0] = xjm[1][1]* dum;
 xji[0][1] =-xjm[0][1]* dum;
 xji[1][0] =-xjm[1][0]* dum;
@@ -474,13 +474,13 @@ xji[1][1] = xjm[0][0]* dum;
 /*------------------------------------------- get global derivatives ---*/
 for (inode=0; inode<iel; inode++)
 {
-  deriv_xy[0][inode] += xji[0][0] * deriv[0][inode] 
-                     +  xji[0][1] * deriv[1][inode];                             
-  deriv_xy[1][inode] += xji[1][0] * deriv[0][inode]                             
-                     +  xji[1][1] * deriv[1][inode];                                           
+  deriv_xy[0][inode] += xji[0][0] * deriv[0][inode]
+                     +  xji[0][1] * deriv[1][inode];
+  deriv_xy[1][inode] += xji[1][0] * deriv[0][inode]
+                     +  xji[1][1] * deriv[1][inode];
 } /* end of loop over nodes */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -10,12 +10,12 @@ Maintainer: Thomas Hettich
 </pre>
 
 ------------------------------------------------------------------------*/
-#ifdef D_FLUID2TU 
+#ifdef D_FLUID2TU
 #include "../headers/standardtypes.h"
 #include "../fluid_full/fluid_prototypes.h"
 #include "fluid2_prototypes.h"
 #include "fluid2.h"
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief control routine for element integration of fluid2
 
 <pre>                                                        he  12/02
@@ -23,10 +23,10 @@ Maintainer: Thomas Hettich
 This routine controls the element evaluation:
 -actual kapeps variables are set
 -stabilisation parameters are calculated
--element integration is performed --> element stiffness matrix and 
+-element integration is performed --> element stiffness matrix and
                                   --> element load vectors
--element load vector due to dirichlet conditions is calculated				      
-			     
+-element load vector due to dirichlet conditions is calculated
+
 </pre>
 \param  *eleke	       ELEMENT	        (i)   actual element
 \param  *elev	       ELEMENT	        (i)   actual element for velocity
@@ -39,28 +39,28 @@ This routine controls the element evaluation:
 \param  *hasdirich       INT	              (o)   element flag
 \param  *hasext          INT	              (o)   element flag
 \param   init	        INT	              (i)   init flag
-\return void                                               
-                                 
+\return void
+
 ------------------------------------------------------------------------*/
 void f2_calele_tu(
-                  ELEMENT        *eleke,             
-                  ELEMENT        *elev,          
-                  ARRAY          *estif_global,   
-                  ARRAY          *emass_global,   
-                  ARRAY          *etforce_global,       
-                  ARRAY          *eiforce_global, 
-                  ARRAY          *edforce_global,		
-                  ARRAY          *eproforce_global,		
-                  INT            *hasdirich,      
+                  ELEMENT        *eleke,
+                  ELEMENT        *elev,
+                  ARRAY          *estif_global,
+                  ARRAY          *emass_global,
+                  ARRAY          *etforce_global,
+                  ARRAY          *eiforce_global,
+                  ARRAY          *edforce_global,
+                  ARRAY          *eproforce_global,
+                  INT            *hasdirich,
                   INT            *hasext,
-                  INT             init            
+                  INT             init
                 )
 {
 INT              hasdead;
 static ARRAY     kapepsn_a;     /* element turbulent ken. energy  at (n)    */
 static DOUBLE   *kapepsn;
 static ARRAY     kapepsg_a;     /* element turbulent ken. energy  at (n+gamma)*/
-static DOUBLE   *kapepsg; 
+static DOUBLE   *kapepsg;
 static ARRAY     kapepspro_a;   /* kappa for Production-term              */
 static DOUBLE   *kapepspro;
 static ARRAY     kappa_a;       /* kappa for epsilon equation                */
@@ -96,7 +96,7 @@ static DOUBLE  **deriv;
 static ARRAY     deriv2_a;      /* second natural derivatives                */
 static DOUBLE  **deriv2;
 static ARRAY     xyze_a;
-static DOUBLE  **xyze;   
+static DOUBLE  **xyze;
 static ARRAY     xjm_a;         /* jocobian matrix                           */
 static DOUBLE  **xjm;
 static ARRAY     derxy_a;       /* coordinate - derivatives                  */
@@ -115,7 +115,7 @@ static DOUBLE   *edforce;  /* pointer to RHS due to dirichl. conditions */
 static DOUBLE   *eproforce;  /* pointer to RHS due to dirichl. conditions */
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_calele_tu");
 #endif
 
@@ -144,7 +144,7 @@ if (init==1) /* allocate working arrays and set pointers */
    vderxy  = amdef("vderxy" ,&vderxy_a ,2,MAXNOD_F2,"DA");
    vderxy2 = amdef("vderxy2" ,&vderxy2_a ,3,MAXNOD_F2,"DA");
    wa1     = amdef("wa1"    ,&w1_a     ,30,30,"DA");
-   wa2     = amdef("wa2"    ,&w2_a     ,30,30,"DA");  
+   wa2     = amdef("wa2"    ,&w2_a     ,30,30,"DA");
 /*                                        \- size is arbitrary chosen!  */
    estif   = estif_global->a.da;
    emass   = emass_global->a.da;
@@ -190,11 +190,11 @@ fluid_caldirich_tu(eleke,edforce,estif,hasdirich);
 
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of f2_calele */
 
 

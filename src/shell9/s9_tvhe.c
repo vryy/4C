@@ -17,16 +17,16 @@ Maintainer: Stefan Hartmann
 #include "../headers/standardtypes.h"
 #include "shell9.h"
 
-/*! 
-\addtogroup SHELL9 
+/*!
+\addtogroup SHELL9
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief re-calculates the metrics (geom. linear/nonlinear)                                      
+\brief re-calculates the metrics (geom. linear/nonlinear)
 
 <pre>                     m.gee 6/01              modified by    sh 10/02
-This routine re-calculates the metrics (geom. linear/nonlinear) to take 
-the neglection of the in theta_3 quadratic parts into account. The 
+This routine re-calculates the metrics (geom. linear/nonlinear) to take
+the neglection of the in theta_3 quadratic parts into account. The
 metics 'gmkovc' and 'gmkonc' are re-calculated.
 </pre>
 \param  DOUBLE   **gmkovr   (i)  kovariant metric at specified location in shell body (ref. config.)
@@ -44,16 +44,16 @@ metics 'gmkovc' and 'gmkonc' are re-calculated.
 \param  DOUBLE  ***a3kvpc   (i)  partial derivatives of a3_L of each kin. Layer (cur. config.)
 \param  DOUBLE  ***a3kvpr   (i)  partial derivatives of a3_L of each kin. Layer (ref. config.)
 \param  DOUBLE     e3       (i)  local theta3 of actual mat. layer
-\param  INT        kintyp   (i)  kintyp=0: geo_lin; =1: upd_lagr; =2: tot_lagr 
+\param  INT        kintyp   (i)  kintyp=0: geo_lin; =1: upd_lagr; =2: tot_lagr
 \param  DOUBLE     h        (i)  total thickness of this element
-\param  DOUBLE    *klayhgt  (i)  hight of kin layer in % of total thickness of shell 
-\param  DOUBLE    *mlayhgt  (i)  hight of mat layer in % of adjacent kin layer 
-\param  INT        num_klay (i)  number of kin layers to this element  
-\param  INT        klay     (i)  actual kin layer 
-\param  INT        mlay     (i)  actual mat layer of this kin layer 
+\param  DOUBLE    *klayhgt  (i)  hight of kin layer in % of total thickness of shell
+\param  DOUBLE    *mlayhgt  (i)  hight of mat layer in % of adjacent kin layer
+\param  INT        num_klay (i)  number of kin layers to this element
+\param  INT        klay     (i)  actual kin layer
+\param  INT        mlay     (i)  actual mat layer of this kin layer
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: s9static_keug() [s9_static_keug.c]
                              s9_stress()     [s9_stress.c]
 
@@ -101,7 +101,7 @@ DOUBLE deltah, h_mlay, h_kl;
 DOUBLE zeta_kl,zeta,det_dummy;
 DOUBLE heps[3][3];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9_tvhe");
 #endif
 /*----------------------------------------------------------------------*/
@@ -144,7 +144,7 @@ if (kintyp > 0) /*geom. nonlinear*/
         b22r=0.0;
         b31r=0.0;
         b32r=0.0;
-        
+
         for (i=0; i<3; i++) b11c += akovc[i][0][0]   *a3kvpc[i][0][jlay];
         for (i=0; i<3; i++) b12c += akovc[i][0][0]   *a3kvpc[i][1][jlay];
         for (i=0; i<3; i++) b21c += akovc[i][1][0]   *a3kvpc[i][0][jlay];
@@ -184,11 +184,11 @@ else /*geom. linear*/
   gmkovc[0][1] = heps[0][1]+heps[1][0] - gmkovr[0][1];
   gmkovc[0][2] = heps[0][2]+heps[2][0] - gmkovr[0][2];
   gmkovc[1][2] = heps[1][2]+heps[2][1] - gmkovr[1][2];
-}/*=========== end geom. linear ========================================*/ 
+}/*=========== end geom. linear ========================================*/
 
-gmkovc[2][0] = gmkovc[0][2]; 
-gmkovc[2][1] = gmkovc[1][2]; 
-gmkovc[1][0] = gmkovc[0][1]; 
+gmkovc[2][0] = gmkovc[0][2];
+gmkovc[2][1] = gmkovc[1][2];
+gmkovc[1][0] = gmkovc[0][1];
 
 /*----------------------------------------------------------------------*/
 math_array_copy(gmkovr,3,3,gmkonr);
@@ -201,7 +201,7 @@ math_inv3(gmkonc,&det_dummy);
 if (det_dummy <= 0.0) det_dummy = EPS8;
 *detc = sqrt(det_dummy);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -210,11 +210,11 @@ return;
 
 
 /*!----------------------------------------------------------------------
-\brief re-calculates the metrics (geom. linear)                                      
+\brief re-calculates the metrics (geom. linear)
 
-<pre>                                                          m.gee 6/01              
-This routine re-calculates the metrics (geom. linear) to take 
-the neglection of the in theta_3 quadratic parts into account. The 
+<pre>                                                          m.gee 6/01
+This routine re-calculates the metrics (geom. linear) to take
+the neglection of the in theta_3 quadratic parts into account. The
 metics 'gmkovc' and 'gmkonc' are re-calculated. This Routine is not used
 as it is part of 's9_tvhe'!
 </pre>
@@ -228,7 +228,7 @@ as it is part of 's9_tvhe'!
 \param  DOUBLE    *detc     (o)  determinant of gkovc (cur. config.)
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: ---------
 
 *----------------------------------------------------------------------*/
@@ -247,7 +247,7 @@ DOUBLE heps[3][3];
 DOUBLE det_dummy;
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9_tvhe_lin");
 #endif
 /*----------------------------------------------------------------------*/
@@ -280,7 +280,7 @@ math_inv3(gmkonc,&det_dummy);
 if (det_dummy <= 0.0) det_dummy = EPS8;
 *detc = sqrt(det_dummy);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

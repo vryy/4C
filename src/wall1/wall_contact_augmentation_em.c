@@ -1,7 +1,7 @@
 /*!---------------------------------------------------------------------
 \file
-\brief contains wall_contact_augmentation_em routine used for the update 
-of Lagrange Multipliers in case of Energy-Momentum conserving Int. scheme 
+\brief contains wall_contact_augmentation_em routine used for the update
+of Lagrange Multipliers in case of Energy-Momentum conserving Int. scheme
 
 <pre>
 Maintainer: Michael Gee
@@ -23,7 +23,7 @@ Maintainer: Michael Gee
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -38,7 +38,7 @@ extern struct _FIELD      *field;
 
 <pre>                                                         m.gee 8/00
 -the partition of one proc (all discretizations)
--the type is in partition.h                                                  
+-the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -48,20 +48,20 @@ extern struct _PARTITION  *partition;
  | ranks and communicators                                              |
  | This structure struct _PAR par; is defined in main_ccarat.c
  *----------------------------------------------------------------------*/
- extern struct _PAR   par;                      
+ extern struct _PAR   par;
 /*-----------------------------------------------------------------------*/
 DOUBLE Heaviside(DOUBLE a);
 DOUBLE Mac(DOUBLE a);
 /*-----------------------------------------------------------------------*/
 
-/*! 
-\addtogroup CONTACT 
+/*!
+\addtogroup CONTACT
 *//*! @{ (documentation module open)*/
 /*!------------------------------------------------------------------------
 \brief main structure for 2-D contact (bilinear discretization)
 
 <pre>                                                           m.gee 10/02
-defined in wall_contact_detection.c                             
+defined in wall_contact_detection.c
 </pre>
 
 -------------------------------------------------------------------------*/
@@ -70,12 +70,12 @@ extern struct _WALL_CONTACT contact;
 #endif
 /*!----------------------------------------------------------------------
 \brief short description
-                                                      
-<pre>                                                         m.gee 10/02    
-This routine is used for the update of Lagrange Multipliers which is called 
+
+<pre>                                                         m.gee 10/02
+This routine is used for the update of Lagrange Multipliers which is called
 when Augmented Lagrangian Method is used to enforce the contact constraints.
 Since in Eneergy-Momentum conserving scheme only the frictionless contact is
-considered normal component of Lagrange Multiplier is to be updated. 
+considered normal component of Lagrange Multiplier is to be updated.
 </pre>
 \param actintra INTRA*    (i) the intra-communicator of this field
 \return void
@@ -92,28 +92,28 @@ DOUBLE lamda_n;
 pen_par     = contact.n_pen_par; /*-----Normal penalty parameter*/
 /*--------------------------------------------------------------*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("wall_contact_augmentation_em");
 #endif
- 
+
  myrank = actintra->intra_rank;
- 
+
   for(i=0; i<contact.set_size; i++) {       /*loop over active slave nodes*/
-  
+
       if ( contact.contact_set[i]->node->proc != myrank) continue;    /*check ownership*/
-      
+
       lamda_n = Heaviside(contact.contact_set[i]->history->g_n)                                                                 /*Update of normal multiplier*/
               * Mac(contact.contact_set[i]->history->pr_multipliers[0] + pen_par * contact.contact_set[i]->history->g_tilda );  /*Chapter 7 of book by Laursen*/
-      contact.contact_set[i]->history->pr_multipliers[0] = lamda_n;       
+      contact.contact_set[i]->history->pr_multipliers[0] = lamda_n;
   }
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
-} 
+}
 /* end of wall_contact_augmentation_em*/
-  
+
 /*! @} (documentation module close)*/
 #endif
 #endif

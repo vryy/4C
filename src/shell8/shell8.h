@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Michael Gee
@@ -29,14 +29,14 @@ enum
     s8_xyz,
     s8_rst,
     s8_rst_ortho
-    }            forcetyp;   
+    }            forcetyp;
 struct _ARRAY4D  forces;
 /*struct _ARRAY    energy;*/
 /*-------------------------------------------- array of internal forces */
 struct _ARRAY    intforce;
 /*-------------------------------------------- variables needed for eas */
 INT              eas[5];
-INT              nhyb; 
+INT              nhyb;
 struct _ARRAY    alfa;
 struct _ARRAY    oldalfa;
 struct _ARRAY    Dtildinv;
@@ -95,10 +95,10 @@ void s8_BtDB(DOUBLE **estif, DOUBLE **bop, DOUBLE **D, INT iel,
 void s8_eas(const INT    nhyb,
                const DOUBLE e1,
                const DOUBLE e2,
-               const INT    iel, 
-               const INT   *eas, 
+               const INT    iel,
+               const INT   *eas,
                DOUBLE     **P);
-void s8_transeas(DOUBLE      **P, 
+void s8_transeas(DOUBLE      **P,
                     DOUBLE      **transP,
                     DOUBLE      **T,
                     DOUBLE      **akovr,
@@ -113,9 +113,9 @@ void s8_eps(DOUBLE *strain,DOUBLE **gmkovc, DOUBLE **gmkovr);
 /*----------------------------------------------------------------------*
  |  s8_funcderiv.c                                       m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void s8_funct_deriv(DOUBLE     *funct, 
-                       DOUBLE    **deriv, 
-                       DOUBLE      r, 
+void s8_funct_deriv(DOUBLE     *funct,
+                       DOUBLE    **deriv,
+                       DOUBLE      r,
                        DOUBLE      s,
                        DIS_TYP     typ,
                        INT         option);
@@ -170,7 +170,7 @@ void s8fsiload(ELEMENT  *ele,
                S8_DATA  *data,
                MATERIAL *mat,
                DOUBLE	*loadvec,
-               INT	 init);               
+               INT	 init);
 /*----------------------------------------------------------------------*
  |  s8_loccoordnode.c                                    m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -212,14 +212,14 @@ void s8mtr(DOUBLE   **x,
 /*----------------------------------------------------------------------*
  |  s8_static_ke.c                                       m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void s8static_ke(ELEMENT   *ele,                        
-                    S8_DATA   *data,                    
-                    MATERIAL  *mat,                     
-                    ARRAY     *estif_global,            
-                    DOUBLE    *force,                   
-                    INT        iforce,                  
-                    INT        kstep,                   
-                    INT        init);                   
+void s8static_ke(ELEMENT   *ele,
+                    S8_DATA   *data,
+                    MATERIAL  *mat,
+                    ARRAY     *estif_global,
+                    DOUBLE    *force,
+                    INT        iforce,
+                    INT        kstep,
+                    INT        init);
 /*----------------------------------------------------------------------*
  |  s8_static_keug.c                                       m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -427,7 +427,7 @@ void s8_tfte(DOUBLE **force,
  *----------------------------------------------------------------------*/
 void s8_ans_colloqpoints(INT nsansq,INT iel,INT ans,DIS_TYP distyp,
                         DOUBLE xr1[],DOUBLE xs1[],DOUBLE xr2[],DOUBLE xs2[],
-                        DOUBLE *funct1q[],DOUBLE **deriv1q[], 
+                        DOUBLE *funct1q[],DOUBLE **deriv1q[],
                         DOUBLE *funct2q[],DOUBLE **deriv2q[],
                         DOUBLE **xrefe,DOUBLE **a3r,DOUBLE **xcure,DOUBLE **a3c,
                         DOUBLE **akovr1q[] ,DOUBLE **akonr1q[],
@@ -458,10 +458,10 @@ void s8_ans_tvhe_q(DOUBLE **gmkovr,DOUBLE **gmkovc,DOUBLE **gmkonr,DOUBLE **gmko
                   DOUBLE **gkovr,DOUBLE **gkovc,DOUBLE **amkovc,DOUBLE **amkovr,
                   DOUBLE **akovc,DOUBLE **akovr,DOUBLE **a3kvpc,DOUBLE **a3kvpr,
                   DOUBLE *detr,   DOUBLE *detc,
-                  DOUBLE **amkovr1q[], DOUBLE **amkovc1q[], 
+                  DOUBLE **amkovr1q[], DOUBLE **amkovc1q[],
                   DOUBLE **akovr1q[] , DOUBLE **akovc1q[] ,
                   DOUBLE **a3kvpr1q[], DOUBLE **a3kvpc1q[],
-                  DOUBLE **amkovr2q[], DOUBLE **amkovc2q[], 
+                  DOUBLE **amkovr2q[], DOUBLE **amkovc2q[],
                   DOUBLE **akovr2q[] , DOUBLE **akovc2q[] ,
                   DOUBLE **a3kvpr2q[], DOUBLE **a3kvpc2q[],
                   DOUBLE frq[], DOUBLE fsq[], DOUBLE e3, INT nansq, INT iel,
@@ -518,8 +518,8 @@ void s8static_mass(ELEMENT   *ele,                        /* the element structu
 /*----------------------------------------------------------------------*
  |  s8_mat_linel.c                                     m.gee 06/03    |
  *----------------------------------------------------------------------*/
-void s8_mat_neohooke(NEO_HOOKE *mat, 
-                     DOUBLE    *stress, 
+void s8_mat_neohooke(NEO_HOOKE *mat,
+                     DOUBLE    *stress,
                      DOUBLE   **CC,
                      DOUBLE   **gmkonr,
                      DOUBLE   **gmkonc,

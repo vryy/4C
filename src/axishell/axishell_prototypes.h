@@ -12,7 +12,7 @@ Maintainer: Malte Neumann
 *----------------------------------------------------------------------*/
 #ifdef D_AXISHELL
 
-/*! 
+/*!
 \addtogroup AXISHELL
 *//*! @{ (documentation module open)*/
 
@@ -27,8 +27,8 @@ void saxiinit(
 |  saxi_static_ke.c                                            mn 05/03  |
 *-----------------------------------------------------------------------*/
 void saxistatic_ke(
-    ELEMENT   *ele, 
-    SAXI_DATA *data, 
+    ELEMENT   *ele,
+    SAXI_DATA *data,
     MATERIAL  *mat,
     ARRAY     *estif_global,
     INT        init
@@ -50,7 +50,7 @@ void saxi_B(
 |  saxi_mat.c                                                  mn 05/03  |
 *-----------------------------------------------------------------------*/
 void saxi_mat(
-    STVENANT  *mat, 
+    STVENANT  *mat,
     DOUBLE     D[4][4],
     DOUBLE     thick
     );
@@ -59,8 +59,8 @@ void saxi_mat(
 |  saxi_call_stiff.c                                           mn 05/03  |
 *-----------------------------------------------------------------------*/
 void saxi_keku(
-    DOUBLE    s[7][7], 
-    DOUBLE    b[4][7], 
+    DOUBLE    s[7][7],
+    DOUBLE    b[4][7],
     DOUBLE    d[4][4],
     DOUBLE    work1[4][7],
     DOUBLE    work2[7][7],
@@ -74,9 +74,9 @@ void saxi_keku(
 *-----------------------------------------------------------------------*/
 void saxi_statcond(
     ELEMENT *ele,
-    DOUBLE **estif,  
+    DOUBLE **estif,
     DOUBLE   estif_7[7][7],
-    DOUBLE    cosa,  
+    DOUBLE    cosa,
     DOUBLE    sina
     );
 
@@ -84,8 +84,8 @@ void saxi_statcond(
 |  saxi_cal_stress.c                                           mn 05/03  |
 *-----------------------------------------------------------------------*/
 void saxi_cal_stress(
-    ELEMENT   *ele, 
-    SAXI_DATA *data, 
+    ELEMENT   *ele,
+    SAXI_DATA *data,
     MATERIAL  *mat,
     INT        init
     );
@@ -101,8 +101,8 @@ void saxiintg(
  | saxi_cal_fext.c                                             mn 05/03  |
  *----------------------------------------------------------------------*/
 void saxi_eleload(
-    ELEMENT    *ele,    
-    SAXI_DATA  *data,   
+    ELEMENT    *ele,
+    SAXI_DATA  *data,
     DOUBLE     *loadvec,
     INT	      init
     );

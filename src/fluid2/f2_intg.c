@@ -10,10 +10,10 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
-\addtogroup FLUID2 
+/*!
+\addtogroup FLUID2
 *//*! @{ (documentation module open)*/
-#ifdef D_FLUID2 
+#ifdef D_FLUID2
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 static DOUBLE Q12 = ONE/TWO;
@@ -26,28 +26,28 @@ static DOUBLE Q23 = TWO/THREE;
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
  | global variable GENPROB genprob is defined in global_control.c       |
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief integration parameters for fluid2 element
 
 <pre>                                                         genk 06/02
 
-this routine is a try to organise the integration parameters   
+this routine is a try to organise the integration parameters
 different. ALL paramters are stored in FLUID_DATA, so that this
-routine has to be (hopefully) called only once!!!	       
+routine has to be (hopefully) called only once!!!
 
 </pre>
-\param   option	  INT              (i)     flag (not used at the moment 
-\return void                                                                       
+\param   option	  INT              (i)     flag (not used at the moment
+\return void
 
 ------------------------------------------------------------------------*/
-void f2_intg(INT                option  
+void f2_intg(INT                option
 	    )
 {
 INT     i, k;                          /* simply some counters          */
@@ -59,7 +59,7 @@ DOUBLE  wgt[MAXQINTP][MAXQINTC];       /* integr. weights TRI    	*/
 static FLUID_DYNAMIC   *fdyn;
 static FLUID_DATA      *data;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_intg");
 #endif
 
@@ -87,16 +87,16 @@ if (option==0)
     } /* end loop over k */
   } /* end loop over i */
 
-/*----------------------------------------------------------------------*  
- |     INTEGRATION PARAMETERS FOR    R E C T A N G U L A R   ELEMENTS   |        
- |     GAUSS SAMPLING POINTS  AT     R/S-COORDINATES     RESPECTIVELY   |      
- |                            AND    CORRESPONDING WEIGHTING  FACTORS   |      
+/*----------------------------------------------------------------------*
+ |     INTEGRATION PARAMETERS FOR    R E C T A N G U L A R   ELEMENTS   |
+ |     GAUSS SAMPLING POINTS  AT     R/S-COORDINATES     RESPECTIVELY   |
+ |                            AND    CORRESPONDING WEIGHTING  FACTORS   |
  |     xg[i][j]                                                         |
  |    wgt[i][j]:  i+1 - actual number of gausspoint                     |
  |                j+1 - total number of gausspoints                     |
- *----------------------------------------------------------------------*/       
+ *----------------------------------------------------------------------*/
 /* coordinates for two gauss points */
-      xg[0][1]  =  -0.5773502691896;                                            
+      xg[0][1]  =  -0.5773502691896;
       xg[1][1]  =  -xg[0][1]       ;
 /* coordinates for three gauss points */
       xg[0][2]  =  -0.7745966692415;
@@ -112,14 +112,14 @@ if (option==0)
       xg[3][4]  =  -xg[1][4]       ;
       xg[4][4]  =  -xg[0][4]       ;
 /* coordinates for six gauss points */
-      xg[0][5]  =  -0.9324695142032;                                            
-      xg[1][5]  =  -0.6612093864663;                                            
-      xg[2][5]  =  -0.2386191860832;                                            
+      xg[0][5]  =  -0.9324695142032;
+      xg[1][5]  =  -0.6612093864663;
+      xg[2][5]  =  -0.2386191860832;
       xg[3][5]  =  -xg[2][5]       ;
       xg[4][5]  =  -xg[1][5]       ;
       xg[5][5]  =  -xg[0][5]       ;
 
-/* weights for one gauss points */                                 
+/* weights for one gauss points */
       wgt[0][0] =  TWO             ;
 /* weights for two gauss points */
       wgt[0][1] =  ONE             ;
@@ -147,26 +147,26 @@ if (option==0)
       wgt[4][5] =  wgt[1][5]       ;
       wgt[5][5] =  wgt[0][5]       ;
 
-/*----------------------------------------------------------------------*  
+/*----------------------------------------------------------------------*
  |     INTEGRATION PARAMETERS FOR    T R I A N G U L A R     ELEMENTS   |
  |     GAUSS SAMPLING POINTS  AT     R/S-COORDINATES     RESPECTIVELY   |
  |                            AND    CORRESPONDING WEIGHTING  FACTORS   |
  |     xgr[i][j]                                                        |
  |    wgts[i][j]:  i+1 - actual number of gausspoint                    |
  |                 j+1 - number for integration case (from input)       |
- *----------------------------------------------------------------------*/       
-                                                                                                     
-/*----------------------------------------------------------------------*  
- |    GAUSS INTEGRATION         1 SAMPLING POINT, DEG.OF PRECISION 1    |        
+ *----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*
+ |    GAUSS INTEGRATION         1 SAMPLING POINT, DEG.OF PRECISION 1    |
  |                              CASE 0                                  |
- *----------------------------------------------------------------------*/       
+ *----------------------------------------------------------------------*/
       xgr[0][0]    =  Q13 ;
       xgs[0][0]    =  Q13 ;
       wgtt[0][0]   =  Q12 ;
-/*----------------------------------------------------------------------*  
+/*----------------------------------------------------------------------*
  |    GAUSS INTEGRATION        3 SAMPLING POINTS, DEG.OF PRECISION 2    |
- |                             CASE 1                                   |        
- *----------------------------------------------------------------------*/       
+ |                             CASE 1                                   |
+ *----------------------------------------------------------------------*/
       xgr[0][1]    =  Q12  ;
       xgr[1][1]    =  Q12  ;
       xgr[2][1]    =  ZERO ;
@@ -176,10 +176,10 @@ if (option==0)
       wgtt[0][1]   =  Q16  ;
       wgtt[1][1]   =  Q16  ;
       wgtt[2][1]   =  Q16  ;
-/*----------------------------------------------------------------------*  
- |    ALT.GAUSS INTEGRATION    3 SAMPLING POINTS, DEG.OF PRECISION 2    |        
- |                             CASE 2                                   |    
- *----------------------------------------------------------------------*/       
+/*----------------------------------------------------------------------*
+ |    ALT.GAUSS INTEGRATION    3 SAMPLING POINTS, DEG.OF PRECISION 2    |
+ |                             CASE 2                                   |
+ *----------------------------------------------------------------------*/
 
       xgr[0][2]    =  Q16  ;
       xgr[1][2]    =  Q23  ;
@@ -190,10 +190,10 @@ if (option==0)
       wgtt[0][2]   =  Q16  ;
       wgtt[1][2]   =  Q16  ;
       wgtt[2][2]   =  Q16  ;
-/*----------------------------------------------------------------------*  
- |    GAUSS INTEGRATION        4 SAMPLING POINTS, DEG.OF PRECISION 3    |        
+/*----------------------------------------------------------------------*
+ |    GAUSS INTEGRATION        4 SAMPLING POINTS, DEG.OF PRECISION 3    |
  |                             CASE 3                                   |
- *----------------------------------------------------------------------*/       
+ *----------------------------------------------------------------------*/
       xgr[0][3]    =  0.2                ;
       xgr[1][3]    =  0.6                ;
       xgr[2][3]    =  0.2                ;
@@ -206,10 +206,10 @@ if (option==0)
       wgtt[1][3]   =  wgtt[0][2]         ;
       wgtt[2][3]   =  wgtt[0][2]         ;
       wgtt[3][3]   = -0.28125            ;
-/*----------------------------------------------------------------------*  
- |    GAUSS INTEGRATION        6 SAMPLING POINTS, DEG.OF PRECISION 4    |        
+/*----------------------------------------------------------------------*
+ |    GAUSS INTEGRATION        6 SAMPLING POINTS, DEG.OF PRECISION 4    |
  |                             CASE 4                                   |
- *----------------------------------------------------------------------*/       
+ *----------------------------------------------------------------------*/
       xgr[0][4]    =  0.0915762135098	;
       xgr[1][4]    =  0.8168475729805	;
       xgr[2][4]    =  xgr[0][3] 	;
@@ -227,11 +227,11 @@ if (option==0)
       wgtt[2][4]   =  wgtt[0][3]	;
       wgtt[3][4]   =  0.1116907948390	;
       wgtt[4][4]   =  wgtt[3][3]	;
-      wgtt[5][4]   =  wgtt[3][3]	;				            
-/*----------------------------------------------------------------------*  
- |    ALT.GAUSS INTEGRATION    6 SAMPLING POINTS, DEG.OF PRECISION 3    |        
+      wgtt[5][4]   =  wgtt[3][3]	;
+/*----------------------------------------------------------------------*
+ |    ALT.GAUSS INTEGRATION    6 SAMPLING POINTS, DEG.OF PRECISION 3    |
  |                             CASE 5                                   |
- *----------------------------------------------------------------------*/       
+ *----------------------------------------------------------------------*/
       xgr[0][5]    =  0.1090390090729	;
       xgr[1][5]    =  0.2319333685530	;
       xgr[2][5]    =  0.6590276223741	;
@@ -250,10 +250,10 @@ if (option==0)
       wgtt[3][5]   =  wgtt[0][3]	;
       wgtt[4][5]   =  wgtt[0][3]	;
       wgtt[5][5]   =  wgtt[0][3]	;
-/*----------------------------------------------------------------------*  
- |    GAUSS INTEGRATION        7 SAMPLING POINTS, DEG.OF PRECISION 5    |        
+/*----------------------------------------------------------------------*
+ |    GAUSS INTEGRATION        7 SAMPLING POINTS, DEG.OF PRECISION 5    |
  |                             CASE 6                                   |
- *----------------------------------------------------------------------*/       
+ *----------------------------------------------------------------------*/
       xgr[0][6]    =  0.1012865073235 ;
       xgr[1][6]    =  0.4701420641051 ;
       xgr[2][6]    =  0.7974269853531 ;
@@ -274,11 +274,11 @@ if (option==0)
       wgtt[3][6]   =  wgtt[1][4]      ;
       wgtt[4][6]   =  wgtt[0][4]      ;
       wgtt[5][6]   =  wgtt[1][4]      ;
-      wgtt[6][6]   =  0.1125	      ;                             
-/*----------------------------------------------------------------------*  
- |    ALT.GAUSS INTEGRATION    7 SAMPLING POINTS, DEG.OF PRECISION 4    |        
+      wgtt[6][6]   =  0.1125	      ;
+/*----------------------------------------------------------------------*
+ |    ALT.GAUSS INTEGRATION    7 SAMPLING POINTS, DEG.OF PRECISION 4    |
  |                             CASE 7                                   |
- *----------------------------------------------------------------------*/       
+ *----------------------------------------------------------------------*/
       xgr[0][7]    =  0.2379323664724 ;
       xgr[1][7]    =  0.7367124989684 ;
       xgr[2][7]    =  xgr[1][4]       ;
@@ -300,10 +300,10 @@ if (option==0)
       wgtt[4][7]   =  wgtt[0][4]      ;
       wgtt[5][7]   =  wgtt[0][4]      ;
       wgtt[6][7]   =  0.1875	      ;
-/*----------------------------------------------------------------------*  
- |    GAUSS INTEGRATION        9 SAMPLING POINTS, DEG.OF PRECISION 5    |        
+/*----------------------------------------------------------------------*
+ |    GAUSS INTEGRATION        9 SAMPLING POINTS, DEG.OF PRECISION 5    |
  |                             CASE 8                                   |
- *----------------------------------------------------------------------*/       
+ *----------------------------------------------------------------------*/
       xgr[0][8]    =  0.1654099273898     ;
       xgr[1][8]    =  0.4375252483834     ;
       xgr[2][8]    =  0.7971126518601     ;
@@ -330,11 +330,11 @@ if (option==0)
       wgtt[5][8]   =  wgtt[0][5]          ;
       wgtt[6][8]   =  wgtt[0][5]          ;
       wgtt[7][8]   =  wgtt[1][5]          ;
-      wgtt[8][8]   =  wgtt[0][5]          ;                                       
-/*----------------------------------------------------------------------*  
- |    GAUSS INTEGRATION       12 SAMPLING POINTS, DEG.OF PRECISION 6    |        
+      wgtt[8][8]   =  wgtt[0][5]          ;
+/*----------------------------------------------------------------------*
+ |    GAUSS INTEGRATION       12 SAMPLING POINTS, DEG.OF PRECISION 6    |
  |                            CASE 9                                    |
- *----------------------------------------------------------------------*/       
+ *----------------------------------------------------------------------*/
       xgr[0][9]    =  0.0630890144915     ;
       xgr[1][9]    =  0.3103524510338     ;
       xgr[2][9]    =  0.6365024991214     ;
@@ -374,7 +374,7 @@ if (option==0)
 /*----------------------------------------------------------------------*
  |    GAUSS INTEGRATION       13 SAMPLING POINTS, DEG.OF PRECISION 7    |
  |                            CASE 10                                   |
- *----------------------------------------------------------------------*/       
+ *----------------------------------------------------------------------*/
       xgr[0][10]    =  0.0651301029022     ;
       xgr[1][10]    =  0.3128654960049     ;
       xgr[2][10]    =  0.6384441885698     ;
@@ -435,15 +435,15 @@ if (option==0)
 	data->twgt[i][k]=wgtt[i][k];
      } /* end loop over k */
    } /* end loop over i */
-} /* endif (option==0) */                                                
+} /* endif (option==0) */
 else
 {
    dserror("don't know what to do!\n");
-/* do nothing at the moment --------------------------------------------*/       
+/* do nothing at the moment --------------------------------------------*/
 }
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -451,24 +451,24 @@ return;
 } /* end of f2_intg */
 
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief local coordinates
 
 <pre>                                                         genk 10/02
 
 In this routine the local coordinates of nodes are determined
-		     
+
 </pre>
-\param   node        INT      (i)    number of actual node 
+\param   node        INT      (i)    number of actual node
 \param   irs         INT      (i)    r/s identifier
 \param   iel         INT      (i)    number of nodes in actual element
-\return  DOUBLE                                                                      
+\return  DOUBLE
 
 ------------------------------------------------------------------------*/
 DOUBLE f2_rsn(
-	      INT            node,     
-	      INT             irs,    
-	      INT             iel       
+	      INT            node,
+	      INT             irs,
+	      INT             iel
 	    )
 {
 
@@ -486,7 +486,7 @@ DOUBLE tri[][2]  = {
 		   };
 /*----------------------------------------------------------------------*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_rsn");
 #endif
 
@@ -496,14 +496,14 @@ switch(iel)	/*-- switch to number of element nodes ---*/
 case 6: case 3:
    c = tri[node][irs];
 break;
-case 4: case 8: case 9: 
-   c = quad[node][irs]; 
+case 4: case 8: case 9:
+   c = quad[node][irs];
 break;
 default:
    dserror("number of nodes 'iel' unknown");
 }/* end of switch(iel) */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 

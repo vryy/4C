@@ -10,7 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-#ifdef D_FLUID3 
+#ifdef D_FLUID3
 #include "../headers/standardtypes.h"
 #include "fluid3_prototypes.h"
 #include "fluid3.h"
@@ -32,7 +32,7 @@ extern struct _GENPROB     genprob;
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  | integration points                                      genk 03/02   |
  | this routine is a try to organise the integration parameters         |
@@ -44,13 +44,13 @@ void f3_intg(
 {
 INT i, k;
 DOUBLE  xgr[MAXTINTP][MAXTINTC],xgs[MAXTINTP][MAXTINTC],xgt[MAXTINTP][MAXTINTC];
-DOUBLE  wgtt[MAXTINTP][MAXTINTC]; 
+DOUBLE  wgtt[MAXTINTP][MAXTINTC];
 DOUBLE  xg[MAXQINTP][MAXQINTC],wgt[MAXQINTP][MAXQINTC];
 DOUBLE  palpha, pbeta;
-FLUID_DATA     *data; 
+FLUID_DATA     *data;
 FLUID_DYNAMIC  *fdyn;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f3_intg");
 #endif
 
@@ -69,7 +69,7 @@ if (option==0)
        xgt[i][k] = ZERO;
       wgtt[i][k] = ZERO;
     }
-  } 
+  }
   for (i=0; i<MAXQINTP; i++)
   {
     for (k=0; k<MAXQINTC; k++)
@@ -78,25 +78,25 @@ if (option==0)
        wgt[i][k] = ZERO;
     }
   }
-  palpha = (FIVE+THREE*sqrt(FIVE))/20.0;  
+  palpha = (FIVE+THREE*sqrt(FIVE))/20.0;
   pbeta  = (FIVE-sqrt(FIVE))/20.0;
 
-   
-/*----------------------------------------------------------------------*  
- |     INTEGRATION PARAMETERS FOR    H E X A H E D R A L    ELEMENTS    |        
- |     GAUSS SAMPLING POINTS  AT     R/S-COORDINATES     RESPECTIVELY   |      
- |                            AND    CORRESPONDING WEIGHTING  FACTORS   |      
+
+/*----------------------------------------------------------------------*
+ |     INTEGRATION PARAMETERS FOR    H E X A H E D R A L    ELEMENTS    |
+ |     GAUSS SAMPLING POINTS  AT     R/S-COORDINATES     RESPECTIVELY   |
+ |                            AND    CORRESPONDING WEIGHTING  FACTORS   |
  |     xg[i][j]                                                         |
  |    wgt[i][j]:  i+1 - actual number of gausspoint                     |
  |                j+1 - total number of gausspoints                     |
- *----------------------------------------------------------------------*/       
+ *----------------------------------------------------------------------*/
 /* coordinates for two gauss points */
-      xg[0][1]  =  -0.5773502691896;                                            
+      xg[0][1]  =  -0.5773502691896;
       xg[1][1]  =  -xg[0][1]       ;
-/* coordinates for three gauss points */     
+/* coordinates for three gauss points */
       xg[0][2]  =  -0.7745966692415;
       xg[2][2]  =  -xg[0][2]       ;
-/* coordinates for four gauss points */      
+/* coordinates for four gauss points */
       xg[0][3]  =  -0.8611363115941;
       xg[1][3]  =  -0.3399810435849;
       xg[2][3]  =  -xg[1][3]       ;
@@ -107,14 +107,14 @@ if (option==0)
       xg[3][4]  =  -xg[1][4]       ;
       xg[4][4]  =  -xg[0][4]       ;
 /* coordinates for six gauss points */
-      xg[0][5]  =  -0.9324695142032;                                            
-      xg[1][5]  =  -0.6612093864663;                                            
-      xg[2][5]  =  -0.2386191860832;                                            
+      xg[0][5]  =  -0.9324695142032;
+      xg[1][5]  =  -0.6612093864663;
+      xg[2][5]  =  -0.2386191860832;
       xg[3][5]  =  -xg[2][5]       ;
       xg[4][5]  =  -xg[1][5]       ;
       xg[5][5]  =  -xg[0][5]       ;
 
-/* weights for one gauss points */                                 
+/* weights for one gauss points */
       wgt[0][0] =  TWO             ;
 /* weights for two gauss points */
       wgt[0][1] =  ONE             ;
@@ -142,27 +142,27 @@ if (option==0)
       wgt[4][5] =  wgt[1][5]       ;
       wgt[5][5] =  wgt[0][5]       ;
 
-/*----------------------------------------------------------------------*  
+/*----------------------------------------------------------------------*
  |     INTEGRATION PARAMETERS FOR    T R I A N G U L A R     ELEMENTS   |
  |     GAUSS SAMPLING POINTS  AT     R/S-COORDINATES     RESPECTIVELY   |
  |                            AND    CORRESPONDING WEIGHTING  FACTORS   |
  |     xgr[i][j]                                                        |
  |    wgts[i][j]:  i+1 - actual number of gausspoint                    |
  |                 j+1 - number for integration case (from input)       |
- *----------------------------------------------------------------------*/      
+ *----------------------------------------------------------------------*/
 
-/*----------------------------------------------------------------------*  
- |    GAUSS INTEGRATION         1 SAMPLING POINT, DEG.OF PRECISION 1    |        
+/*----------------------------------------------------------------------*
+ |    GAUSS INTEGRATION         1 SAMPLING POINT, DEG.OF PRECISION 1    |
  |                              CASE 0                                  |
- *----------------------------------------------------------------------*/       
+ *----------------------------------------------------------------------*/
       xgr[0][0]    =  Q14 ;
       xgs[0][0]    =  Q14 ;
       xgt[0][0]    =  Q14 ;
-      wgtt[0][0]   =  Q16 ;       
-/*----------------------------------------------------------------------*  
+      wgtt[0][0]   =  Q16 ;
+/*----------------------------------------------------------------------*
  |    GAUSS INTEGRATION        4 SAMPLING POINTS, DEG.OF PRECISION 2    |
- |                             CASE 1                                   |        
- *----------------------------------------------------------------------*/       
+ |                             CASE 1                                   |
+ *----------------------------------------------------------------------*/
       xgr[0][1]    =    pbeta ;
       xgr[1][1]    =    palpha;
       xgr[2][1]    =    pbeta ;
@@ -179,10 +179,10 @@ if (option==0)
       wgtt[1][1]   =    Q124  ;
       wgtt[2][1]   =    Q124  ;
       wgtt[3][1]   =    Q124  ;
-/*----------------------------------------------------------------------*  
+/*----------------------------------------------------------------------*
  |    ALT.GAUSS INTEGRATION    4 SAMPLING POINTS, DEG.OF PRECISION 1    |
- |                             CASE 2                                   |        
- *----------------------------------------------------------------------*/       
+ |                             CASE 2                                   |
+ *----------------------------------------------------------------------*/
       xgr[0][2]    =     ZERO;
       xgr[1][2]    =     ONE ;
       xgr[2][2]    =     ZERO;
@@ -199,10 +199,10 @@ if (option==0)
       wgtt[1][2]   =     Q124;
       wgtt[2][2]   =     Q124;
       wgtt[3][2]   =     Q124;
-/*----------------------------------------------------------------------*  
+/*----------------------------------------------------------------------*
  |    GAUSS INTEGRATION        5 SAMPLING POINTS, DEG.OF PRECISION 3    |
- |                             CASE 3                                   |        
- *----------------------------------------------------------------------*/       
+ |                             CASE 3                                   |
+ *----------------------------------------------------------------------*/
       xgr[0][3]    =     Q14  ;
       xgr[1][3]    =     Q12  ;
       xgr[2][3]    =     Q16  ;
@@ -248,10 +248,10 @@ if (option==0)
 }
 else
 {
-/* do nothing at the moment --------------------------------------------*/       
+/* do nothing at the moment --------------------------------------------*/
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

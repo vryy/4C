@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Michael Gee
@@ -21,9 +21,9 @@ void s8_mat_ogden_uncoupled2(COMPOGDEN *mat, DOUBLE *stress_cart, DOUBLE C_cart[
                             DOUBLE **gkonr, DOUBLE **gmkovc)
 {
       INT         i,j,k,l,p;
-const DOUBLE      mthird = -0.3333333333333333333333333333;  
-const DOUBLE      third  =  0.3333333333333333333333333333;  
-const DOUBLE      ninth  =  0.1111111111111111111111111111;  
+const DOUBLE      mthird = -0.3333333333333333333333333333;
+const DOUBLE      third  =  0.3333333333333333333333333333;
+const DOUBLE      ninth  =  0.1111111111111111111111111111;
 
       DOUBLE      mu;
       DOUBLE      E;
@@ -34,9 +34,9 @@ const DOUBLE      ninth  =  0.1111111111111111111111111111;
       DOUBLE     *mup;
       DOUBLE     *alfap;
       DOUBLE      J;
-      
+
       DOUBLE      psi1,psi2,psi;
-      
+
       DOUBLE      CG[3][3];
       DOUBLE      N[3][3];
       DOUBLE      lam2[3];
@@ -51,11 +51,11 @@ const DOUBLE      ninth  =  0.1111111111111111111111111111;
 
       DOUBLE      scal;
       DOUBLE      Ncross[3];
-      
-      DOUBLE      Cdev0000=0.0;      
-      DOUBLE      Cdev0011=0.0;      
-      DOUBLE      Cdev0022=0.0;      
-      DOUBLE      Cdev1111=0.0;      
+
+      DOUBLE      Cdev0000=0.0;
+      DOUBLE      Cdev0011=0.0;
+      DOUBLE      Cdev0022=0.0;
+      DOUBLE      Cdev1111=0.0;
       DOUBLE      Cdev1122=0.0;
       DOUBLE      Cdev2222=0.0;
       DOUBLE      Cdev0101=0.0;
@@ -74,7 +74,7 @@ const DOUBLE      ninth  =  0.1111111111111111111111111111;
 
       DOUBLE      C[3][3][3][3];
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_mat_ogden_uncoupled2");
 #endif
 /*----------------------------------------------------------------------*/
@@ -92,7 +92,7 @@ if (!(mat->init))
 {
    /* make mu = 2.0 * shear modulus */
    mu = 0.0;
-   for (i=0; i<3; i++) 
+   for (i=0; i<3; i++)
    mu += mat->alfap[i] * mat->mup[i];
    /* make Young's modulus */
    E  = mu*(1.0+mat->nue);
@@ -127,7 +127,7 @@ CG[2][0] = gmkovc[2][0];
 CG[2][1] = gmkovc[2][1];
 CG[2][2] = gmkovc[2][2];
 /*------------------------------------- transform CG to cartesian basis */
-s8_kov_CGcuca(CG,gkonr); 
+s8_kov_CGcuca(CG,gkonr);
 /*------------------------------------ make spectral decoposition of CG */
 s8_ogden_principal_CG(CG,lam2,N);
 dsassert(lam2[0]>0.0 && lam2[1]>0.0 && lam2[2]>0.0,"Principal stretches smaller zero");
@@ -199,7 +199,7 @@ for (i=0; i<3; i++)
 /*-------------------------------------------- make volumetric stresses */
 scal = (kappa/(beta))*(1.0-pow(J,mbeta));
 for (i=0; i<3; i++)
-   PK2vol[i] = scal/lam2[i]; 
+   PK2vol[i] = scal/lam2[i];
 /*---------------- make total stresses and transform to cartesian bases */
 for (i=0; i<3; i++) PK2[i] = PK2dev[i] + PK2vol[i];
 s8_ogden_cartPK2(PK2cart,PK2,N);
@@ -211,18 +211,18 @@ printf("PK2        [0] %14.8f PK2        [1] %14.8f PK2        [2] %14.8f\n\n",P
 #endif
 /*--------------------------------- sort PK2cart to vector shell8 style */
 /*--- which then will be tranformed to shell bases outside this routine */
-stress_cart[0] = PK2cart[0][0];   
-stress_cart[1] = PK2cart[0][1];   
-stress_cart[2] = PK2cart[0][2];   
-stress_cart[3] = PK2cart[1][1];   
-stress_cart[4] = PK2cart[1][2];   
-stress_cart[5] = PK2cart[2][2];   
+stress_cart[0] = PK2cart[0][0];
+stress_cart[1] = PK2cart[0][1];
+stress_cart[2] = PK2cart[0][2];
+stress_cart[3] = PK2cart[1][1];
+stress_cart[4] = PK2cart[1][2];
+stress_cart[5] = PK2cart[2][2];
 /*---------------------- make deviatoric material tangent in eigenspace */
 /*================== components Cdev_aaaa */
 for (p=0; p<3; p++)
 {
    scal = ninth*(lamdevpowalfap[0][p]+lamdevpowalfap[1][p]+ lamdevpowalfap[2][p]);
-   
+
    Cdev0000 += alfap[p]*mup[p]*(third*lamdevpowalfap[0][p]+scal);
    Cdev1111 += alfap[p]*mup[p]*(third*lamdevpowalfap[1][p]+scal);
    Cdev2222 += alfap[p]*mup[p]*(third*lamdevpowalfap[2][p]+scal);
@@ -238,7 +238,7 @@ Cdev2222 += (-2.0)*PK2dev[2]/lam2[2];
 for (p=0; p<3; p++)
 {
    scal = ninth*(lamdevpowalfap[0][p]+lamdevpowalfap[1][p]+ lamdevpowalfap[2][p]);
-   
+
    Cdev0011 += alfap[p]*mup[p]*(mthird*lamdevpowalfap[0][p]+mthird*lamdevpowalfap[1][p]+scal);
    Cdev0022 += alfap[p]*mup[p]*(mthird*lamdevpowalfap[0][p]+mthird*lamdevpowalfap[2][p]+scal);
    Cdev1122 += alfap[p]*mup[p]*(mthird*lamdevpowalfap[1][p]+mthird*lamdevpowalfap[2][p]+scal);
@@ -271,8 +271,8 @@ Cvol2222 = scal / (lam2[2]*lam2[2]);
 /*================== components Cvol_aabb */
 scal = kappa*pow(J,mbeta);
 Cvol0011 =  scal / (lam2[0]*lam2[1]);
-Cvol0022 =  scal / (lam2[0]*lam2[2]); 
-Cvol1122 =  scal / (lam2[1]*lam2[2]); 
+Cvol0022 =  scal / (lam2[0]*lam2[2]);
+Cvol1122 =  scal / (lam2[1]*lam2[2]);
 
 /*================== components Cvol_abab */
 if (FABS(lam2[0]-lam2[1])>EPS12)
@@ -305,7 +305,7 @@ C[2][1][2][1] = C[1][2][1][2] = Cdev1212+Cvol1212;
 s8_ogden_Ccart(C,C_cart,N);
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

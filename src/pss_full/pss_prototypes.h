@@ -1,6 +1,6 @@
 /*!---------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -85,8 +85,8 @@ void *CCAFREE(
  | return value:                                                        |
  | void pointer to allocated memory                                     |
  *----------------------------------------------------------------------*/
-void* amdef( 
-    char     *namstr, 
+void* amdef(
+    char     *namstr,
     ARRAY    *a,
     INT       fdim,
     INT       sdim,
@@ -152,7 +152,7 @@ void  amzero(
  | *value (input) adress of the scaling parameter, this may be of type  |
  |                INT* or DOUBLE* and must be casted to void* in the    |
  |                parameter list                                        |
- |                example: amscal(&val,(void*)(&ione));                 |        
+ |                example: amscal(&val,(void*)(&ione));                 |
  *----------------------------------------------------------------------*/
 void  amscal(
     ARRAY     *array,
@@ -165,7 +165,7 @@ void  amscal(
  | *value (input) adress of the initvalues, this may be of type         |
  |                INT* or DOUBLE* and must be casted to void* in the    |
  |                parameter list                                        |
- |                example: aminit(&val,(void*)(&ione));                 |        
+ |                example: aminit(&val,(void*)(&ione));                 |
  *----------------------------------------------------------------------*/
 void  aminit(
     ARRAY     *array,
@@ -242,7 +242,7 @@ void  amadd(
 void* am4def(
     char     *namstr,
     ARRAY4D  *a,
-    INT       fdim, 
+    INT       fdim,
     INT       sdim,
     INT       tdim,
     INT       fodim,
@@ -302,7 +302,7 @@ void* am4redef(
     ARRAY4D     *array,
     INT          newfdim,
     INT          newsdim,
-    INT          newtdim, 
+    INT          newtdim,
     INT          newfodim);
 
 
@@ -369,15 +369,15 @@ void dstrc_enter(
 void dstrc_exit(void);
 
 /*----------------------------------------------------------------------*
- | report a new DOUBLE array to the bugtracing system     m.gee 8/00    |    
- | this routine is called by the am-system only !                       | 
+ | report a new DOUBLE array to the bugtracing system     m.gee 8/00    |
+ | this routine is called by the am-system only !                       |
  *----------------------------------------------------------------------*/
 void dsreportarray(
     void     *array,
     INT       typ);
 
 /*----------------------------------------------------------------------*
- | report a new DOUBLE array to the bugtracing system     m.gee 8/00    |    
+ | report a new DOUBLE array to the bugtracing system     m.gee 8/00    |
  | this routine is called by the am-system only !                       |
  *----------------------------------------------------------------------*/
 void dsdeletearray(
@@ -385,7 +385,7 @@ void dsdeletearray(
     INT        typ);
 
 /*----------------------------------------------------------------------*
- | write a report about all arrays to the .err file       m.gee 8/00    |    
+ | write a report about all arrays to the .err file       m.gee 8/00    |
  | does nothing if DEBUG is not defined                                 |
  | writes a list of all ARRAY and ARRAY4D structure generated           |
  | by the am-System to the *.err file                                   |
@@ -484,7 +484,7 @@ void frdouble(
 
 /*----------------------------------------------------------------------*
  | reads a charstring from input file                                   |
- | user must assure, that the given charpointer space is long enough    |   
+ | user must assure, that the given charpointer space is long enough    |
  | to hold the string                                                   |
  | ierr=0 keyword not found on line                                     |
  | ierr=1 char string read                                 m.gee 8/00   |
@@ -517,50 +517,50 @@ void frend(void);
  |  pss_pss.c                                            m.gee 11/01    |
  *----------------------------------------------------------------------*/
 void pss_write(
-    char          *name, 
-    INT            fdim, 
+    char          *name,
+    INT            fdim,
     INT            sdim,
     INT            byte,
     const void    *startaddress,
     long int      *handle,
-    FILE          *out, 
+    FILE          *out,
     INT           *ierr);
 
 void pss_write_array(
-    const ARRAY *array, 
+    const ARRAY *array,
     long int    *handle,
-    FILE        *out, 
+    FILE        *out,
     INT         *ierr);
 
 void pss_read_name(
-    char      *name, 
-    INT       *fdim, 
+    char      *name,
+    INT       *fdim,
     INT       *sdim,
     INT       *byte,
     void      *ziel,
-    long int  *handle, 
+    long int  *handle,
     FILE      *in,
     INT       *ierr);
 
 void pss_read_name_handle(
-    char       *name, 
-    INT	     *fdim, 
+    char       *name,
+    INT	     *fdim,
     INT	     *sdim,
     INT	     *byte,
-    void       *ziel, 
+    void       *ziel,
     long int   *handle,
-    FILE       *in, 
+    FILE       *in,
     INT	     *ierr);
 
 void pss_read_array_name(
-    char       *name, 
+    char       *name,
     ARRAY      *array,
     long int   *handle,
     FILE       *in,
     INT        *ierr);
 
 void pss_read_array_name_handle(
-    char       *name, 
+    char       *name,
     ARRAY	   *array,
     long int   *handle,
     FILE       *in,
@@ -574,18 +574,18 @@ void pss_read_array_handle(
 
 void pss_chck(
     char       *name,
-    long int   *handle, 
+    long int   *handle,
     FILE       *in,
     INT        *ierr);
 
 void pss_chck_handle(
     char       *name,
-    long int   *handle, 
+    long int   *handle,
     FILE       *in,
     INT        *ierr);
 
 void pss_getdims_name(
-    char       *name, 
+    char       *name,
     INT	 *fdim,
     INT	 *sdim,
     INT	 *byte,
@@ -594,7 +594,7 @@ void pss_getdims_name(
     INT	 *ierr);
 
 void pss_getdims_name_handle(
-    char       *name, 
+    char       *name,
     INT	*fdim,
     INT	*sdim,
     INT	*byte,
@@ -611,12 +611,12 @@ void pss_status_to_err(
  | pss_visual.c                                            genk 12/02   |
  *----------------------------------------------------------------------*/
 void visual_writepss(
-    FIELD  *actfield,  
-    INT     ntsteps,  
+    FIELD  *actfield,
+    INT     ntsteps,
     ARRAY  *time_a);
 void visual_readpss(
-    FIELD   *actfield, 
-    INT     *ntsteps,  
+    FIELD   *actfield,
+    INT     *ntsteps,
     ARRAY   *time_a);
 
 
@@ -625,34 +625,34 @@ void visual_readpss(
  * file: ps_perf.c
  * ==================================================================== */
 /*!---------------------------------------------------------------------
-  \brief routine to meassure the performance                                              
+  \brief routine to meassure the performance
 
-  <pre>                                                        mn 01/04 
+  <pre>                                                        mn 01/04
   Gets the current cpu tics.
   </pre>
-  \return void                                                
+  \return void
   ------------------------------------------------------------------------*/
 DOUBLE perf_cpu (void);
 
 
 /*!---------------------------------------------------------------------
-  \brief routine to meassure the performance                                              
+  \brief routine to meassure the performance
 
-  <pre>                                                        mn 01/04 
+  <pre>                                                        mn 01/04
   Gets the current system time.
   </pre>
-  \return void                                                
+  \return void
   ------------------------------------------------------------------------*/
 DOUBLE perf_time (void);
 
 
 /*!---------------------------------------------------------------------
-  \brief routine to meassure the performance                                              
+  \brief routine to meassure the performance
 
-  <pre>                                                        mn 01/04 
+  <pre>                                                        mn 01/04
   Initializes all counters with 0.
   </pre>
-  \return void                                                
+  \return void
   ------------------------------------------------------------------------*/
 void perf_init_all (void);
 
@@ -660,10 +660,10 @@ void perf_init_all (void);
 /*!---------------------------------------------------------------------
   \brief routine to meassure the performance
 
-  <pre>                                                        mn 01/04 
+  <pre>                                                        mn 01/04
   Initializes one counters with 0.
   </pre>
-  \return void                                                
+  \return void
   ------------------------------------------------------------------------*/
 void perf_init (
     INT      index);
@@ -672,10 +672,10 @@ void perf_init (
 /*!---------------------------------------------------------------------
   \brief routine to meassure the performance
 
-  <pre>                                                        mn 01/04 
+  <pre>                                                        mn 01/04
   start of the region for one timer.
   </pre>
-  \return void                                                
+  \return void
   ------------------------------------------------------------------------*/
 void perf_begin (
     INT      index);
@@ -684,10 +684,10 @@ void perf_begin (
 /*!---------------------------------------------------------------------
   \brief routine to meassure the performance
 
-  <pre>                                                        mn 01/04 
+  <pre>                                                        mn 01/04
   end of the region for one timer.
   </pre>
-  \return void                                                
+  \return void
   ------------------------------------------------------------------------*/
 void perf_end (
     INT       index);
@@ -696,10 +696,10 @@ void perf_end (
 /*!---------------------------------------------------------------------
   \brief routine to meassure the performance
 
-  <pre>                                                        mn 01/04 
+  <pre>                                                        mn 01/04
   Print the results for one timer.
   </pre>
-  \return void                                                
+  \return void
   ------------------------------------------------------------------------*/
 void perf_print (
     INT        index,
@@ -711,10 +711,10 @@ void perf_print (
 /*!---------------------------------------------------------------------
   \brief routine to meassure the performance
 
-  <pre>                                                        mn 01/04 
+  <pre>                                                        mn 01/04
   Print the results for all timers.
   </pre>
-  \return void                                                
+  \return void
   ------------------------------------------------------------------------*/
 void perf_out (void);
 

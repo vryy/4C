@@ -1,9 +1,9 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 
- - s9static_keug: which caluclates the element stiffness matrix 
-                 (geom. nonliner) elementtechnology like ANS for 
-                 'Querschub' and EAS for a different locking type 
+\brief contains the routine
+ - s9static_keug: which caluclates the element stiffness matrix
+                 (geom. nonliner) elementtechnology like ANS for
+                 'Querschub' and EAS for a different locking type
                  effects are implemented
 
 
@@ -19,8 +19,8 @@ Maintainer: Stefan Hartmann
 #include "../headers/standardtypes.h"
 #include "shell9.h"
 
-/*! 
-\addtogroup SHELL9 
+/*!
+\addtogroup SHELL9
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
@@ -28,7 +28,7 @@ Maintainer: Stefan Hartmann
 
 <pre>                                                            sh 10/02
 This structure struct _MULTIMAT  *multimat is defined in global_control.c
-and the type is in materials.h                                                  
+and the type is in materials.h
 It holds all information about the layered section data
 </pre>
 *----------------------------------------------------------------------*/
@@ -37,7 +37,7 @@ extern struct _MULTIMAT  *multimat;
 
 
 /*!----------------------------------------------------------------------
-\brief integration of linear stiffness ke for shell9 element                                      
+\brief integration of linear stiffness ke for shell9 element
 
 <pre>                     m.gee 6/01              modified by    sh 02/03
 This routine performs the integration of the linear element stiffness
@@ -48,13 +48,13 @@ matrix ke for a shell9 element
 \param  MATERIAL  *mat          (i)  the material structure
 \param  ARRAY     *estif_global (o)  element stiffness matrix (NOT initialized!)
 \param  ARRAY     *emass_global (o)  element mass matrix (NOT initialized!)
-\param  INT        kintyp       (i)  kintyp=0: geo_lin; =1: upd_lagr; =2: tot_lagr 
+\param  INT        kintyp       (i)  kintyp=0: geo_lin; =1: upd_lagr; =2: tot_lagr
 \param  DOUBLE    *force       (i/o) global vector for internal forces (initialized!)
 \param  INT        kstep        (i)  actual step in nonlinear analysis
 \param  INT        init         (i)  init=1 -> init phase / init=0 -> calc. phase / init=-1 -> uninit phase
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: shell9()   [s9_main.c]
 
 *----------------------------------------------------------------------*/
@@ -85,10 +85,10 @@ INT                 newval = 0;                             /* controls evaluati
 
 INT                 ip;                                     /* actual integration point */
 INT                 actlay;                                 /* actual layer */
-INT                 num_mlay;                               /* number of material layers to actual kinematic layer */  
+INT                 num_mlay;                               /* number of material layers to actual kinematic layer */
 INT                 num_klay;                               /* number of kinematic layers to this element*/
 INT                 numdf;                                  /* ndofs per node to this element */
-INT                 numdof_shell9; 
+INT                 numdof_shell9;
 DOUBLE             *klayhgt;                                /* hight of kinematic layer in percent of total thicknes of element*/
 DOUBLE             *mlayhgt;                                /* hight of material layer in percent of adjacent kinematic layer*/
 MULTIMAT           *actmultimat;                            /* material of actual material layer */
@@ -143,10 +143,10 @@ static ARRAY4D      amkovc_a;    static DOUBLE ***amkovc;   /* kovaraiant metric
 static ARRAY4D      amkonc_a;    static DOUBLE ***amkonc;   /* kontravar.--------------"------------ current.config. */
 
 /* mid surface basis vectors and metric tensors -> help for s9_tvmr.c */
-static ARRAY        akovh_a;     static DOUBLE **akovh;     
-static ARRAY        akonh_a;     static DOUBLE **akonh;     
-static ARRAY        amkovh_a;    static DOUBLE **amkovh;    
-static ARRAY        amkonh_a;    static DOUBLE **amkonh;    
+static ARRAY        akovh_a;     static DOUBLE **akovh;
+static ARRAY        akonh_a;     static DOUBLE **akonh;
+static ARRAY        amkovh_a;    static DOUBLE **amkovh;
+static ARRAY        amkonh_a;    static DOUBLE **amkonh;
 
 /* shell body basis vectors and metric tensors */
 static ARRAY        gkovr_a;     static DOUBLE **gkovr;     /* kovariant basis vectors at Int point ref.config. */
@@ -190,10 +190,10 @@ static ARRAY   DtildinvKl_a[MAXKLAY_SHELL9]; static DOUBLE **Dtildinv_kl[MAXKLAY
 static ARRAY   RtildKl_a[MAXKLAY_SHELL9];    static DOUBLE  *Rtild_kl[MAXKLAY_SHELL9];    /* eas part of internal forces  -> one kinematic Layer*/
 
 
-static ARRAY   akovr0_a[MAXKLAY_SHELL9];   static DOUBLE **akovr0[MAXKLAY_SHELL9];  /* kovariant basis vectors at mid point ref.config. -> vor each kinematic layer */          
-static ARRAY   akonr0_a[MAXKLAY_SHELL9];   static DOUBLE **akonr0[MAXKLAY_SHELL9];  /* kontravar.--------------"----------- ref.config. -> vor each kinematic layer */          
-static ARRAY   amkovr0_a[MAXKLAY_SHELL9];  static DOUBLE **amkovr0[MAXKLAY_SHELL9]; /* kovaraiant metric tensor at mid point ref.config. -> vor each kinematic layer */          
-static ARRAY   amkonr0_a[MAXKLAY_SHELL9];  static DOUBLE **amkonr0[MAXKLAY_SHELL9]; /* kontravar.--------------"------------ ref.config. -> vor each kinematic layer */          
+static ARRAY   akovr0_a[MAXKLAY_SHELL9];   static DOUBLE **akovr0[MAXKLAY_SHELL9];  /* kovariant basis vectors at mid point ref.config. -> vor each kinematic layer */
+static ARRAY   akonr0_a[MAXKLAY_SHELL9];   static DOUBLE **akonr0[MAXKLAY_SHELL9];  /* kontravar.--------------"----------- ref.config. -> vor each kinematic layer */
+static ARRAY   amkovr0_a[MAXKLAY_SHELL9];  static DOUBLE **amkovr0[MAXKLAY_SHELL9]; /* kovaraiant metric tensor at mid point ref.config. -> vor each kinematic layer */
+static ARRAY   amkonr0_a[MAXKLAY_SHELL9];  static DOUBLE **amkonr0[MAXKLAY_SHELL9]; /* kontravar.--------------"------------ ref.config. -> vor each kinematic layer */
 
 /* arrays for ANS */
 INT                 ansq;
@@ -202,7 +202,7 @@ INT                 nsansq;                                  /* number of sampli
 DOUBLE              xr1[6];                                  /* coordinates of collocation points for ANS */
 DOUBLE              xs1[6];
 DOUBLE              xr2[6];
-DOUBLE              xs2[6];                     
+DOUBLE              xs2[6];
 DOUBLE              frq[6];
 DOUBLE              fsq[6];
 
@@ -239,7 +239,7 @@ static ARRAY4D     amkonc2q_a[6]; static DOUBLE ***amkonc2q[6];
 static ARRAY4D     a3kvpc2q_a[6]; static DOUBLE ***a3kvpc2q[6];
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9static_keug");
 #endif
 /*----------------------------------------------------------------------*/
@@ -249,56 +249,56 @@ if (init==1)
 {
 iel = MAXNOD_SHELL9; /* maximum number of nodes for this type of shell */
 
-xrefe     = amdef("xrefe"  ,&xrefe_a,3,MAXNOD_SHELL9,"DA");       
-xcure     = amdef("xcure"  ,&xcure_a,3,MAXNOD_SHELL9,"DA");       
-a3r       = am4def("a3r"    ,&a3r_a,3,MAXNOD_SHELL9,MAXKLAY_SHELL9,0,"D3");         
-a3c       = am4def("a3c"    ,&a3c_a,3,MAXNOD_SHELL9,MAXKLAY_SHELL9,0,"D3");         
+xrefe     = amdef("xrefe"  ,&xrefe_a,3,MAXNOD_SHELL9,"DA");
+xcure     = amdef("xcure"  ,&xcure_a,3,MAXNOD_SHELL9,"DA");
+a3r       = am4def("a3r"    ,&a3r_a,3,MAXNOD_SHELL9,MAXKLAY_SHELL9,0,"D3");
+a3c       = am4def("a3c"    ,&a3c_a,3,MAXNOD_SHELL9,MAXKLAY_SHELL9,0,"D3");
 
-a3kvpr    = am4def("a3kvpr" ,&a3kvpr_a,3,2,MAXKLAY_SHELL9,0,"D3");         
-a3kvpc    = am4def("a3kvpc" ,&a3kvpc_a,3,2,MAXKLAY_SHELL9,0,"D3");        
+a3kvpr    = am4def("a3kvpr" ,&a3kvpr_a,3,2,MAXKLAY_SHELL9,0,"D3");
+a3kvpc    = am4def("a3kvpc" ,&a3kvpc_a,3,2,MAXKLAY_SHELL9,0,"D3");
 
-funct     = amdef("funct"  ,&funct_a,MAXNOD_SHELL9,1,"DV");       
-deriv     = amdef("deriv"  ,&deriv_a,2,MAXNOD_SHELL9,"DA");       
+funct     = amdef("funct"  ,&funct_a,MAXNOD_SHELL9,1,"DV");
+deriv     = amdef("deriv"  ,&deriv_a,2,MAXNOD_SHELL9,"DA");
 
-akovr     = am4def("akovr"  ,&akovr_a,3,3,MAXKLAY_SHELL9,0,"D3");         
-akonr     = am4def("akonr"  ,&akonr_a,3,3,MAXKLAY_SHELL9,0,"D3");          
-amkovr    = am4def("amkovr" ,&amkovr_a,3,3,MAXKLAY_SHELL9,0,"D3");         
-amkonr    = am4def("amkonr" ,&amkonr_a,3,3,MAXKLAY_SHELL9,0,"D3");         
+akovr     = am4def("akovr"  ,&akovr_a,3,3,MAXKLAY_SHELL9,0,"D3");
+akonr     = am4def("akonr"  ,&akonr_a,3,3,MAXKLAY_SHELL9,0,"D3");
+amkovr    = am4def("amkovr" ,&amkovr_a,3,3,MAXKLAY_SHELL9,0,"D3");
+amkonr    = am4def("amkonr" ,&amkonr_a,3,3,MAXKLAY_SHELL9,0,"D3");
 
-akovc     = am4def("akovc"  ,&akovc_a,3,3,MAXKLAY_SHELL9,0,"D3");         
-akonc     = am4def("akonc"  ,&akonc_a,3,3,MAXKLAY_SHELL9,0,"D3");         
-amkovc    = am4def("amkovc" ,&amkovc_a,3,3,MAXKLAY_SHELL9,0,"D3");        
-amkonc    = am4def("amkonc" ,&amkonc_a,3,3,MAXKLAY_SHELL9,0,"D3");        
+akovc     = am4def("akovc"  ,&akovc_a,3,3,MAXKLAY_SHELL9,0,"D3");
+akonc     = am4def("akonc"  ,&akonc_a,3,3,MAXKLAY_SHELL9,0,"D3");
+amkovc    = am4def("amkovc" ,&amkovc_a,3,3,MAXKLAY_SHELL9,0,"D3");
+amkonc    = am4def("amkonc" ,&amkonc_a,3,3,MAXKLAY_SHELL9,0,"D3");
 
-akovh     = amdef("akovh"  ,&akovh_a,3,3,"DA");         
-akonh     = amdef("akonh"  ,&akonh_a,3,3,"DA");         
-amkovh    = amdef("amkovh" ,&amkovh_a,3,3,"DA");        
-amkonh    = amdef("amkonh" ,&amkonh_a,3,3,"DA");        
+akovh     = amdef("akovh"  ,&akovh_a,3,3,"DA");
+akonh     = amdef("akonh"  ,&akonh_a,3,3,"DA");
+amkovh    = amdef("amkovh" ,&amkovh_a,3,3,"DA");
+amkonh    = amdef("amkonh" ,&amkonh_a,3,3,"DA");
 
-gkovr     = amdef("gkovr"  ,&gkovr_a,3,3,"DA");         
-gkonr     = amdef("gkonr"  ,&gkonr_a,3,3,"DA");         
-gmkovr    = amdef("gmkovr" ,&gmkovr_a,3,3,"DA");        
-gmkonr    = amdef("gmkonr" ,&gmkonr_a,3,3,"DA");        
+gkovr     = amdef("gkovr"  ,&gkovr_a,3,3,"DA");
+gkonr     = amdef("gkonr"  ,&gkonr_a,3,3,"DA");
+gmkovr    = amdef("gmkovr" ,&gmkovr_a,3,3,"DA");
+gmkonr    = amdef("gmkonr" ,&gmkonr_a,3,3,"DA");
 
-gkovc     = amdef("gkovc"  ,&gkovc_a,3,3,"DA");         
-gkonc     = amdef("gkonc"  ,&gkonc_a,3,3,"DA");         
-gmkovc    = amdef("gmkovc" ,&gmkovc_a,3,3,"DA");        
-gmkonc    = amdef("gmkonc" ,&gmkonc_a,3,3,"DA");        
+gkovc     = amdef("gkovc"  ,&gkovc_a,3,3,"DA");
+gkonc     = amdef("gkonc"  ,&gkonc_a,3,3,"DA");
+gmkovc    = amdef("gmkovc" ,&gmkovc_a,3,3,"DA");
+gmkonc    = amdef("gmkonc" ,&gmkonc_a,3,3,"DA");
 
 bop       = amdef("bop"    ,&bop_a ,12,(NUMDOF_SHELL9*MAXNOD_SHELL9),"DA");
-C         = amdef("C"      ,&C_a   ,6 ,6                    ,"DA");             
-D         = amdef("D"      ,&D_a   ,12,12                   ,"DA");           
-work      = amdef("work"   ,&work_a,12,(MAXNOD_SHELL9*NUMDOF_SHELL9),"DA"); 
+C         = amdef("C"      ,&C_a   ,6 ,6                    ,"DA");
+D         = amdef("D"      ,&D_a   ,12,12                   ,"DA");
+work      = amdef("work"   ,&work_a,12,(MAXNOD_SHELL9*NUMDOF_SHELL9),"DA");
 
 /* for eas */
-P         = amdef("P"      ,&P_a       ,12           ,MAXHYB_SHELL9                ,"DA");         
-transP    = amdef("transP" ,&transP_a  ,12           ,MAXHYB_SHELL9                ,"DA"); 
+P         = amdef("P"      ,&P_a       ,12           ,MAXHYB_SHELL9                ,"DA");
+transP    = amdef("transP" ,&transP_a  ,12           ,MAXHYB_SHELL9                ,"DA");
 T         = amdef("T"      ,&T_a       ,12           ,12                           ,"DA");
 workeas   = amdef("workeas",&workeas_a ,12           ,(MAXNOD_SHELL9*NUMDOF_SHELL9),"DA");
 /*workeas   = amdef("workeas", &workeas_a ,MAXHYB_SHELL9        ,(MAXNOD_SHELL9*NUMDOF_SHELL9),"DA");*/
 workeas2  = amdef("workeas2",&workeas2_a,(MAXNOD_SHELL9*NUMDOF_SHELL9),MAXHYB_SHELL9        ,"DA");
 
-for (i=0; i<MAXKLAY_SHELL9; i++) alfa[i]       = amdef("alfa"      ,&alfa_a[i]       ,MAXHYB_SHELL9     ,1                ,"DV"); 
+for (i=0; i<MAXKLAY_SHELL9; i++) alfa[i]       = amdef("alfa"      ,&alfa_a[i]       ,MAXHYB_SHELL9     ,1                ,"DV");
 for (i=0; i<MAXKLAY_SHELL9; i++) L_kl[i]       = amdef("L_kl"      ,&LKl_a[i]        ,(MAXNOD_SHELL9*NUMDOF_SHELL9),MAXHYB_SHELL9     ,"DA");
 for (i=0; i<MAXKLAY_SHELL9; i++) Lt_kl[i]      = amdef("Lt_kl"     ,&LtKl_a[i]       ,MAXHYB_SHELL9     ,(MAXNOD_SHELL9*NUMDOF_SHELL9),"DA");
 for (i=0; i<MAXKLAY_SHELL9; i++) Dtild_kl[i]   = amdef("Dtild_kl"  ,&DtildKl_a[i]    ,MAXHYB_SHELL9     ,MAXHYB_SHELL9    ,"DA");
@@ -307,10 +307,10 @@ for (i=0; i<MAXKLAY_SHELL9; i++) Rtild_kl[i]   = amdef("Rtild_kl"  ,&RtildKl_a[i
 
 eashelp   = amdef("eashelp",&eashelp_a ,MAXHYB_SHELL9        ,1                    ,"DV");
 
-for (i=0; i<MAXKLAY_SHELL9; i++) akovr0[i]  = amdef("akovr0"  ,&akovr0_a[i]  ,3,3,"DA");  
-for (i=0; i<MAXKLAY_SHELL9; i++) akonr0[i]  = amdef("akonr0"  ,&akonr0_a[i]  ,3,3,"DA");  
-for (i=0; i<MAXKLAY_SHELL9; i++) amkovr0[i] = amdef("amkovr0" ,&amkovr0_a[i] ,3,3,"DA");  
-for (i=0; i<MAXKLAY_SHELL9; i++) amkonr0[i] = amdef("amkonr0" ,&amkonr0_a[i] ,3,3,"DA");  
+for (i=0; i<MAXKLAY_SHELL9; i++) akovr0[i]  = amdef("akovr0"  ,&akovr0_a[i]  ,3,3,"DA");
+for (i=0; i<MAXKLAY_SHELL9; i++) akonr0[i]  = amdef("akonr0"  ,&akonr0_a[i]  ,3,3,"DA");
+for (i=0; i<MAXKLAY_SHELL9; i++) amkovr0[i] = amdef("amkovr0" ,&amkovr0_a[i] ,3,3,"DA");
+for (i=0; i<MAXKLAY_SHELL9; i++) amkonr0[i] = amdef("amkonr0" ,&amkonr0_a[i] ,3,3,"DA");
 
 /* for ans */
 for (i=0; i<nsansmax; i++) funct1q[i]  = amdef("funct1q",&(funct1q_a[i]),MAXNOD_SHELL9,1,"DV");
@@ -359,29 +359,29 @@ am4del(&a3kvpc_a);
 amdel(&funct_a);
 amdel(&deriv_a);
 
-am4del(&akovr_a);   
-am4del(&akonr_a);   
-am4del(&amkovr_a);  
-am4del(&amkonr_a);  
+am4del(&akovr_a);
+am4del(&akonr_a);
+am4del(&amkovr_a);
+am4del(&amkonr_a);
 
-am4del(&akovc_a);   
-am4del(&akonc_a);   
-am4del(&amkovc_a);  
+am4del(&akovc_a);
+am4del(&akonc_a);
+am4del(&amkovc_a);
 am4del(&amkonc_a);
 
-amdel(&akovh_a);   
-amdel(&akonh_a);   
-amdel(&amkovh_a);  
-amdel(&amkonh_a);  
+amdel(&akovh_a);
+amdel(&akonh_a);
+amdel(&amkovh_a);
+amdel(&amkonh_a);
 
-amdel(&gkovr_a);   
-amdel(&gkonr_a);   
-amdel(&gmkovr_a);  
-amdel(&gmkonr_a);  
+amdel(&gkovr_a);
+amdel(&gkonr_a);
+amdel(&gmkovr_a);
+amdel(&gmkonr_a);
 
-amdel(&gkovc_a);   
-amdel(&gkonc_a);   
-amdel(&gmkovc_a);  
+amdel(&gkovc_a);
+amdel(&gkonc_a);
+amdel(&gmkovc_a);
 amdel(&gmkonc_a);
 
 amdel(&bop_a);
@@ -438,7 +438,7 @@ for (i=0; i<nsansmax; i++) am4del( &(amkovc2q_a[i]));
 for (i=0; i<nsansmax; i++) am4del( &(amkonc2q_a[i]));
 for (i=0; i<nsansmax; i++) am4del( &(a3kvpc2q_a[i]));
 
-goto end;  
+goto end;
 }
 /*----------------------------------------------------------------------*/
 /* update phase  for material nonlinearity      (init=2)                */
@@ -466,17 +466,17 @@ nir     = ele->e.s9->nGP[0];
 nis     = ele->e.s9->nGP[1];
 nit     = ele->e.s9->nGP[2];
 iel     = ele->numnp;
-nd      = iel*numdf; 
+nd      = iel*numdf;
 condfac = ele->e.s9->sdc;
 a3ref   = ele->e.s9->a3ref.a.da;
           amzero(&(ele->e.s9->intforce));
 intforce= ele->e.s9->intforce.a.dv;
 /*------------------------------------------------------- check for eas */
 nhyb=ele->e.s9->nhyb;
-if (nhyb>0) 
-{   
-   for (kl=0; kl<num_klay; kl++) 
-   { 
+if (nhyb>0)
+{
+   for (kl=0; kl<num_klay; kl++)
+   {
      amzero(&LKl_a[kl]);       /* array, that holds the information for ONE kinematic layers*/
      amzero(&LtKl_a[kl]);      /* array, that holds the information for ONE kinematic layers*/
      amzero(&DtildKl_a[kl]);   /* array, that holds the information for ONE kinematic layers*/
@@ -487,14 +487,14 @@ if (nhyb>0)
 
    /*----- check if there is a new loadstep -> alfa-values have to be reinitialized to ZERO*/
    if (kstep == 0) ele->e.s9->oldkstep = 0;     /* initialize oldkstep in first kstep*/
-   if (kstep != ele->e.s9->oldkstep) 
+   if (kstep != ele->e.s9->oldkstep)
    {
       for (kl=0; kl<num_klay; kl++) for (i=0; i<nhyb; i++) ele->e.s9->alfa.a.da[kl][i] = 0.0;
       ele->e.s9->oldkstep = kstep;
    }
-   
-   for (kl=0; kl<num_klay; kl++) 
-   { 
+
+   for (kl=0; kl<num_klay; kl++)
+   {
       /*--------------------------------------- update of eas strains alfa */
       /*---------------------------- set pointer to actual kinematic layer */
       alfa[kl] = ele->e.s9->alfa.a.da[kl];
@@ -527,7 +527,7 @@ if (nhyb>0)
 }
 /*----------------------------------------------------- geometry update */
 for (kl=0; kl<num_klay; kl++) /*loop over all kinematic layers*/
-{  
+{
   klayhgt = ele->e.s9->klayhgt;   /* hgt of kinematic layer on percent of total thickness of shell */
   for (k=0; k<iel; k++)           /*loop over all nodes per layer*/
   {
@@ -538,7 +538,7 @@ for (kl=0; kl<num_klay; kl++) /*loop over all kinematic layers*/
      h2 = A3FAC_SHELL9 * h2;
      /*else if (ele->e.s9->dfield == 1)*/ /*half of shell thickness, norm(a3) = H/2*/
      /*  h2 = ele->e.s9->thick_node.a.dv[k]/2. * condfac;*/
- 
+
      a3r[0][k][kl] = a3ref[0][k] * h2;
      a3r[1][k][kl] = a3ref[1][k] * h2;
      a3r[2][k][kl] = a3ref[2][k] * h2;
@@ -550,7 +550,7 @@ for (kl=0; kl<num_klay; kl++) /*loop over all kinematic layers*/
      xcure[0][k] = xrefe[0][k] + ele->node[k]->sol.a.da[0][0];
      xcure[1][k] = xrefe[1][k] + ele->node[k]->sol.a.da[0][1];
      xcure[2][k] = xrefe[2][k] + ele->node[k]->sol.a.da[0][2];
- 
+
      a3c[0][k][kl] = a3r[0][k][kl]  + ele->node[k]->sol.a.da[0][3*kl+3];
      a3c[1][k][kl] = a3r[1][k][kl]  + ele->node[k]->sol.a.da[0][3*kl+4];
      a3c[2][k][kl] = a3r[2][k][kl]  + ele->node[k]->sol.a.da[0][3*kl+5];
@@ -588,12 +588,12 @@ if (nhyb>0)
            &detr,funct,deriv,iel,a3kvpr,num_klay);
    /*make hgt at mid point of the element*/
    s9_xint(&hgt,hte,funct,iel);
-   
+
    for (kl=0; kl<num_klay; kl++)
    {
       s9_tmtr(0.0,akovr0[kl],akonr0[kl],amkovr0[kl],amkonr0[kl],&detr0[kl],
                  akovr,a3kvpr,hgt,klayhgt,mlhgt_eas,num_klay,kl,0,condfac);
-   }        
+   }
 }
 /**************************************************************************/
 /**************************************************************************/
@@ -635,7 +635,7 @@ for (lr=0; lr<nir; lr++)   /* loop in r-direction */
       h[0] = akovr[1][0][0]*akovr[2][1][0] - akovr[2][0][0]*akovr[1][1][0];
       h[1] = akovr[2][0][0]*akovr[0][1][0] - akovr[0][0][0]*akovr[2][1][0];
       h[2] = akovr[0][0][0]*akovr[1][1][0] - akovr[1][0][0]*akovr[0][1][0];
-      /*------------------------------------- make director unit length 
+      /*------------------------------------- make director unit length
                                         and get midsurf area da from it */
       math_unvc(&da,h,3);
 /*---------------------------loop over all kinematic layers (num_klay) */
@@ -688,7 +688,7 @@ for (lr=0; lr<nir; lr++)   /* loop in r-direction */
                /*---------------------------- gaussian point and weight at it */
                e3   = data->xgpt[lt];
                fact = data->wgtt[lt];
-               /*-------------------- basis vectors and metrics at shell body */ 
+               /*-------------------- basis vectors and metrics at shell body */
                s9_tmtr(e3,gkovr,gkonr,gmkovr,gmkonr,&detr,akovr,a3kvpr,hgt,
                        klayhgt,mlayhgt,num_klay,kl,ml,condfac);
 
@@ -708,7 +708,7 @@ for (lr=0; lr<nir; lr++)   /* loop in r-direction */
                              frq,fsq,e3,nsansq,hgt,klayhgt,mlayhgt,
                              num_klay,kl,ml,condfac);
                /*----------- calc shell shifter and put it in the weight fact */
-               /* xnu = (0.5/condfac)*(detr/da); */               
+               /* xnu = (0.5/condfac)*(detr/da); */
                /* xnu = (1.0/condfac)*(detr/da); */ /*A3_IST_EINHALB*/
                xnu = (0.5/A3FAC_SHELL9) * (1.0/condfac)*(detr/da);
                fact *= xnu;
@@ -727,16 +727,16 @@ for (lr=0; lr<nir; lr++)   /* loop in r-direction */
                /*---------------- do thickness integration of material tensor */
                s9_tvma(D,C,stress,stress_r,e3,fact,hgt,klayhgt,mlayhgt,
                        num_klay,kl,ml,condfac);
-            }/*========================================== end of loop over lt */            
+            }/*========================================== end of loop over lt */
 
          actlay ++;
          }/*======= end of loop over all material layers of aktual kinematic layer*/
 
-         /*------------ product of all weights and jacobian of mid surface */            
+         /*------------ product of all weights and jacobian of mid surface */
          weight = facr*facs*da;
          /*----------------------------------- elastic stiffness matrix ke */
          s9_BtDB(estif,bop,D,iel,numdf,weight,work);
-         
+
          if (kintyp > 0) /*geometric nonlinear*/
          {
            /*--------------------------------- geometric stiffness matrix kg */
@@ -783,7 +783,7 @@ for (lr=0; lr<nir; lr++)   /* loop in r-direction */
           }
       }/*============================== end loop over all kinematic layers */
       ngauss++;
-   }/*============================================= end of loop over ls */ 
+   }/*============================================= end of loop over ls */
 }/*================================================ end of loop over lr */
 
 
@@ -799,7 +799,7 @@ if (nhyb>0)
 /**** Test the symmetry of Dtildinv ***/
 /*for (i=0; i<nhyb; i++)
 for (j=i+1; j<nhyb; j++)
-if (FABS(Dtildinv_kl[kl][i][j]-Dtildinv_kl[kl][j][i])>EPS9) 
+if (FABS(Dtildinv_kl[kl][i][j]-Dtildinv_kl[kl][j][i])>EPS9)
 printf(" Dtild[%d][%d] is not sym with %E\n",   i,j,Dtildinv_kl[kl][i][j]-Dtildinv_kl[kl][j][i]);*/
 /**** Test the symmetry of Dtildinv ***/
 
@@ -854,10 +854,10 @@ if (FABS(estif[i][j]-estif[j][i])>EPS12) printf("i %d j %d not sym with %E\n",
 dsassert(ele->locsys==locsys_no,"locsys not implemented for this element!\n");
 /*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of s9static_keug */
 /*----------------------------------------------------------------------*/
 #endif /*D_SHELL9*/

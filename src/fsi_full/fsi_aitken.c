@@ -10,11 +10,11 @@ Maintainer: Steffen Genkinger
 </pre>
 
 *----------------------------------------------------------------------*/
-/*! 
+/*!
 \addtogroup FSI
 *//*! @{ (documentation module open)*/
 #include "../headers/standardtypes.h"
-#include "fsi_prototypes.h"    
+#include "fsi_prototypes.h"
 #ifdef D_FSI
 static DOUBLE done = 1.0E20;
 /*----------------------------------------------------------------------*
@@ -23,7 +23,7 @@ static DOUBLE done = 1.0E20;
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;    
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -35,7 +35,7 @@ extern struct _GENPROB       genprob;
  | ranks and communicators                                              |
  | This structure struct _PAR par; is defined in main_ccarat.c
  *----------------------------------------------------------------------*/
- extern struct _PAR   par;  
+ extern struct _PAR   par;
 /*!---------------------------------------------------------------------*
 \brief compute relaxation parameter via AITKEN iteration
 
@@ -49,16 +49,16 @@ DELTAd(i) = d(i-1) - d~(i)
 d(i-1) ... relaxad interface displacements of last iteration step
 d~(i)  ... unrelaxed interface displacements of this iteration step
 
-see also Dissertation of D.P.MOK, chapter 6.4 
-		     
+see also Dissertation of D.P.MOK, chapter 6.4
+
 </pre>
 
 \param *structfield   FIELD	     (i)   structural field
 \param  itnum         INT            (i)   actual iteration step
-\return void     
+\return void
 
 ------------------------------------------------------------------------*/
-void fsi_aitken(  
+void fsi_aitken(
                  FIELD          *structfield,
 		 INT             itnum,
                  INT             init
@@ -71,16 +71,16 @@ static INT     numnp_total;   /* total number of nodes                  */
 static INT     numdf_total;   /* total number of coupled dofs           */
 static INT    *sid;           /* flags for structural interface dofs    */
 static DOUBLE  nu;            /* actual AITKEN factor                   */
-DOUBLE         top=ZERO;      
+DOUBLE         top=ZERO;
 DOUBLE         den=ZERO;
-DOUBLE         del2;				
+DOUBLE         del2;
 DOUBLE       **sol_mf;        /* multifield nodal solution array        */
-static ARRAY   del_a;      
+static ARRAY   del_a;
 static DOUBLE *del;           /* DELTAd(i)                              */
-NODE          *actsnode;      /* actual structural node                 */ 
+NODE          *actsnode;      /* actual structural node                 */
 static FSI_DYNAMIC *fsidyn;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fsi_aitken");
 #endif
 
@@ -88,11 +88,11 @@ switch (init)
 {
 case 0: /* initialisation */
    fsidyn = alldyn[3].fsidyn;
-   
+
    if (genprob.restart==0)
       nu       = ZERO;
-   else      
-      nu       = ONE - fsidyn->relax; 
+   else
+      nu       = ONE - fsidyn->relax;
    numnp_total = structfield->dis[0].numnp;
    sid         = fsidyn->sid.a.iv;
    numdf_total = fsidyn->sid.fdim;
@@ -100,7 +100,7 @@ case 0: /* initialisation */
 break;
 case 1: /* calculation */
    if (itnum==0)
-      aminit(&del_a,&done);  
+      aminit(&del_a,&done);
    /*-------------------- the solution history sol_mf of the structfield:
    - sol_mf[0][j] holds the latest struct-displacements
    - sol_mf[1][j] holds the (relaxed) displacements of the last iteration step
@@ -109,20 +109,20 @@ case 1: /* calculation */
    for (i=0;i<numnp_total;i++)
    {
       actsnode  = &(structfield->dis[0].node[i]);
-      numdf = actsnode->numdf; 
+      numdf = actsnode->numdf;
       sol_mf = actsnode->sol_mf.a.da;
       /*------------------------------ loop dofs and check for coupling */
       for (j=0;j<numdf;j++)
       {
-         dof = actsnode->dof[j];      
+         dof = actsnode->dof[j];
          dsassert(dof<numdf_total,"dofnumber not valid!\n");
          if (sid[dof]==0) continue;
-         del2     = del[dof]; 
+         del2     = del[dof];
          del[dof] = sol_mf[1][j] - sol_mf[0][j];
          del2     = del2 - del[dof];
          top     += del2*del[dof];
-         den     += del2*del2;        
-      } /* end of loop over dofs */   
+         den     += del2*del2;
+      } /* end of loop over dofs */
    } /* end of loop over nodes */
 
    nu = nu + (nu - ONE)*top/den;
@@ -136,7 +136,7 @@ break;
 }
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

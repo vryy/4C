@@ -1,6 +1,6 @@
 /*!---------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -19,7 +19,7 @@ Maintainer: Malte Neumann
  |  out_global.c                                         m.gee 12/01    |
  *----------------------------------------------------------------------*/
 void out_general(void);
-void out_sol(FIELD *actfield, PARTITION *actpart, INTRA *actintra, 
+void out_sol(FIELD *actfield, PARTITION *actpart, INTRA *actintra,
              INT step, INT place);
 
 void out_fluidmf(FIELD *fluidfield);
@@ -53,22 +53,22 @@ void out_area(ARRAY totarea_a, DOUBLE time, INT itnum, INT init);
 /*----------------------------------------------------------------------*
  |  out_checkfilesize.c                                   genk 08/03    |
  *----------------------------------------------------------------------*/
-void out_checkfilesize(INT opt); 
+void out_checkfilesize(INT opt);
 /*----------------------------------------------------------------------*
  |  out_plt.c                                            chfoe 01/04    |
  *----------------------------------------------------------------------*/
 void plot_liftdrag(DOUBLE time, DOUBLE *liftdrag);
-void plot_lte(	DOUBLE  time, 
-                INT     step, 
-                DOUBLE  norm, 
-                DOUBLE  dt, 
+void plot_lte(	DOUBLE  time,
+                INT     step,
+                DOUBLE  norm,
+                DOUBLE  dt,
                 INT     itnum);
-void plot_ale_quality(FIELD *field,INT step, INTRA *actintra, 
+void plot_ale_quality(FIELD *field,INT step, INTRA *actintra,
                       PARTITION *actpart);
 
 /*----------------------------------------------------------------------*
  |  out_gid_solfsi.c                                       mn 05/03     |
- *----------------------------------------------------------------------*/       
+ *----------------------------------------------------------------------*/
 void out_gid_sol_fsi(
     FIELD     *fluidfield,
     FIELD     *structfield);

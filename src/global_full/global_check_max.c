@@ -78,7 +78,7 @@ extern struct _GENPROB     genprob;
  *----------------------------------------------------------------------*/
 extern struct _FIELD      *field;
 
-/*! 
+/*!
 \addtogroup GLOBAL
 *//*! @{ (documentation module open)*/
 
@@ -91,8 +91,8 @@ and maxgauss and compares those to the given values of the respective defines.
 </pre>
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling: ---; called by: --- 
+\return void
+\sa calling: ---; called by: ---
 
 *----------------------------------------------------------------------*/
 void check_max_sizes(
@@ -108,7 +108,7 @@ void check_max_sizes(
   FIELD      *actfield;
   ELEMENT    *actele;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("check_max_sizes");
 #endif
 
@@ -122,7 +122,7 @@ gauss         = 0;
 /* determine correct max sizes */
 for(i=0; i<genprob.numfld; i++)  /* loop all fields */
 {
-  actfield = &(field[i]); 
+  actfield = &(field[i]);
   for(j=0; j<actfield->ndis; j++)  /* loop all discretisations */
   {
     for (k=0; k<actfield->dis[j].numele; k++)  /* loop all elements */
@@ -178,13 +178,13 @@ for(i=0; i<genprob.numfld; i++)  /* loop all fields */
 #endif
 
 #ifdef D_FLUID2
-        case el_fluid2: 
+        case el_fluid2:
           gauss = actele->e.f2->nGP[0]*actele->e.f2->nGP[1];
           break;
 #endif
 
 #ifdef D_FLUID3
-        case el_fluid3: 
+        case el_fluid3:
           gauss = actele->e.f3->nGP[0]*actele->e.f3->nGP[1]*actele->e.f3->nGP[2];
           break;
 #endif
@@ -214,7 +214,7 @@ for(i=0; i<genprob.numfld; i++)  /* loop all fields */
 #endif
 
 #ifdef D_FLUID2_PRO
-        case el_fluid2_pro: 
+        case el_fluid2_pro:
           gauss = actele->e.f2pro->nGP[0]*actele->e.f2pro->nGP[1];
 
           /* check maxdofpernode for fluid2_pro */
@@ -224,7 +224,7 @@ for(i=0; i<genprob.numfld; i++)  /* loop all fields */
 #endif
 
 #ifdef D_FLUID2
-        case el_fluid2_tu: 
+        case el_fluid2_tu:
           gauss = actele->e.f2_tu->nGP[0]*actele->e.f2_tu->nGP[1];
           break;
 #endif
@@ -304,7 +304,7 @@ if (maxgauss < MAXGAUSS)
 printf("\n");
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 

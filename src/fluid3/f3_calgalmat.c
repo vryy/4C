@@ -10,7 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-#ifdef D_FLUID3 
+#ifdef D_FLUID3
 #include "../headers/standardtypes.h"
 #include "fluid3_prototypes.h"
 #include "fluid3.h"
@@ -20,14 +20,14 @@ Maintainer: Steffen Genkinger
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
  | global variable GENPROB genprob is defined in global_control.c       |
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief evaluate galerkin part of Kvv
 
 <pre>                                                         genk 05/02
@@ -63,24 +63,24 @@ ale-convective velocity is split into
    --> this is a linear term inside the domain and for explicit treatement
        of  a free surface
    --> for implicit treatement of the free surface this term is nonlinear
-       so it depends on the nonlinear iteration scheme if this term has to 
+       so it depends on the nonlinear iteration scheme if this term has to
        be taken into account on the LHS!
 
-see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'  
+see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
 
-NOTE: there's only one elestif  			    
+NOTE: there's only one elestif
       --> Kvv is stored in estif[0..(3*iel-1)][0..(3*iel-1)]
-      
+
 </pre>
 \param **estif     DOUBLE	   (i/o)  ele stiffness matrix
 \param  *velint    DOUBLE	   (i)    vel at INT point
 \param **vderxy    DOUBLE	   (i)    global vel derivatives
 \param  *funct     DOUBLE	   (i)    nat. shape funcs
 \param **derxy     DOUBLE	   (i)    global coord. deriv.
-\param   fac 	   DOUBLE	   (i)    weighting factor	      
-\param   visc      DOUBLE	   (i)    fluid viscosity	     
+\param   fac 	   DOUBLE	   (i)    weighting factor
+\param   visc      DOUBLE	   (i)    fluid viscosity
 \param   iel	   INT  	   (i)	  number of nodes of act. ele
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f3_calkvv(
@@ -93,7 +93,7 @@ void f3_calkvv(
                   DOUBLE         **derxy,
                   DOUBLE           fac,
                   DOUBLE           visc,
-                  INT              iel       
+                  INT              iel
               )
 {
 /*----------------------------------------------------------------------*
@@ -101,16 +101,16 @@ void f3_calkvv(
  |   irow - row number in element matrix                                |
  |   icol - column number in element matrix                             |
  |   irn  - row node: number of node considered for matrix-row          |
- |   icn  - column node: number of node considered for matrix column    |  
+ |   icn  - column node: number of node considered for matrix column    |
  *----------------------------------------------------------------------*/
 INT     irow, icol,irn,icn;
 DOUBLE  c,aux;
 
 FLUID_DYNAMIC   *fdyn;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f3_calkvv");
-#endif	
+#endif
 
 fdyn    = alldyn[genprob.numff].fdyn;
 c=fac*visc;
@@ -121,7 +121,7 @@ c=fac*visc;
    |  2 * nue * eps(v) : eps(u)   d_omega
   /
  *----------------------------------------------------------------------*/
- 
+
 icol=0;
 for (icn=0;icn<iel;icn++)
 {
@@ -132,7 +132,7 @@ for (icn=0;icn<iel;icn++)
             + derxy[1][irn]*derxy[1][icn] \
             + derxy[2][irn]*derxy[2][icn] ;
 
-      estif[irow][icol]     += c*(aux+derxy[0][irn]*derxy[0][icn]); 	     
+      estif[irow][icol]     += c*(aux+derxy[0][irn]*derxy[0][icn]);
       estif[irow+1][icol]   += c*(    derxy[0][irn]*derxy[1][icn]);
       estif[irow+2][icol]   += c*(    derxy[0][irn]*derxy[2][icn]);
 
@@ -157,7 +157,7 @@ for (icn=0;icn<iel;icn++)
 icol=0;
 for (icn=0;icn<iel;icn++)
 {
-   irow=0;  
+   irow=0;
    for (irn=0;irn<iel;irn++)
    {
       aux = (velint[0]*derxy[0][icn] + velint[1]*derxy[1][icn] \
@@ -165,7 +165,7 @@ for (icn=0;icn<iel;icn++)
       estif[irow][icol]     += aux;
       estif[irow+1][icol+1] += aux;
       estif[irow+2][icol+2] += aux;
-      irow += 3;      
+      irow += 3;
    } /* end of loop over irn */
    icol += 3;
 } /* end of loop over icn */
@@ -181,7 +181,7 @@ if (fdyn->nir != 0) /* evaluate for Newton iteraton */
    icol=0;
    for (icn=0;icn<iel;icn++)
    {
-      irow=0;  
+      irow=0;
       for (irn=0;irn<iel;irn++)
       {
          aux = funct[irn]*funct[icn]*fac;
@@ -209,7 +209,7 @@ if (fdyn->nir != 0) /* evaluate for Newton iteraton */
    /
    REMARK:
     - this term is linear inside the domain and for explicit free surface
-    - for implicit free surface this term is nonlinear (Nc), since u_G is 
+    - for implicit free surface this term is nonlinear (Nc), since u_G is
       unknown at the free surface. So it depends on the nonlinear iteration
       scheme if this term has to be taken into account:
 	 - Newton: YES
@@ -221,7 +221,7 @@ if(ele->e.f3->is_ale !=0) /* evaluate only for ALE */
    icol=0;
    for (icn=0;icn<iel;icn++)
    {
-      irow=0;  
+      irow=0;
       for (irn=0;irn<iel;irn++)
       {
          aux = (gridvint[0]*derxy[0][icn] + gridvint[1]*derxy[1][icn] \
@@ -229,7 +229,7 @@ if(ele->e.f3->is_ale !=0) /* evaluate only for ALE */
          estif[irow][icol]     -= aux;
          estif[irow+1][icol+1] -= aux;
          estif[irow+2][icol+2] -= aux;
-         irow += 3;   
+         irow += 3;
       } /* end of loop over irn */
       icol += 3;
    } /* end of loop over icn */
@@ -237,14 +237,14 @@ if(ele->e.f3->is_ale !=0) /* evaluate only for ALE */
 
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 
 #endif
 return;
-} /* end of f3_calkvv */	
+} /* end of f3_calkvv */
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief evaluate galerkin part of Kvp
 
 <pre>                                                         genk 05/02
@@ -257,21 +257,21 @@ In this routine the galerkin part of matrix Kvp is calculated:
 
     /
    | - q * div(u)      d_omega
-  / 
+  /
 
 see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
-  
-NOTE: there's only one elestif  				    
-      --> Kvp is stored in estif[(0..(3*iel-1)][(4*iel)..(4*iel-1)] 
-      --> Kpv is stored in estif[((3*iel)..(4*iel-1)][0..(3*iel-1)] 
-      
+
+NOTE: there's only one elestif
+      --> Kvp is stored in estif[(0..(3*iel-1)][(4*iel)..(4*iel-1)]
+      --> Kpv is stored in estif[((3*iel)..(4*iel-1)][0..(3*iel-1)]
+
 </pre>
 \param **estif     DOUBLE	   (i/o)  ele stiffness matrix
 \param  *funct     DOUBLE	   (i)    nat. shape funcs
 \param **derxy     DOUBLE	   (i)    global coord. deriv.
 \param   fac       DOUBLE	   (i)    weighting factor
 \param   iel       INT             (i)    number of nodes of act. ele
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f3_calkvp(
@@ -279,7 +279,7 @@ void f3_calkvp(
                DOUBLE          *funct,
                DOUBLE         **derxy,
                DOUBLE           fac,
-               INT              iel                
+               INT              iel
               )
 {
 /*----------------------------------------------------------------------*
@@ -287,17 +287,17 @@ void f3_calkvp(
  |   irow - row number in element matrix                                |
  |   icol - column number in element matrix                             |
  |   irn  - row node: number of node considered for matrix-row          |
- |   ird  - row dim.: number of spatial dimension at row node           |  
+ |   ird  - row dim.: number of spatial dimension at row node           |
  |   posc - since there's only one full element stiffness matrix the    |
  |          column number has to be changed!                            |
  *----------------------------------------------------------------------*/
-INT     irow, icol,irn,ird;  
+INT     irow, icol,irn,ird;
 INT     posc;
 DOUBLE  aux;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f3_calkvp");
-#endif		
+#endif
 
 
 /*----------------------------------------------------------------------*
@@ -305,11 +305,11 @@ dstrc_enter("f3_calkvp");
     /
    |  - div(v) * p     d_omega
   /
-  
-   and matrix Kpv: 
+
+   and matrix Kpv:
     /
    | - q * div(u)      d_omega
-  /      
+  /
  *----------------------------------------------------------------------*/
 
 for (icol=0;icol<iel;icol++)
@@ -319,24 +319,24 @@ for (icol=0;icol<iel;icol++)
   for (irn=0;irn<iel;irn++)
   {
      for(ird=0;ird<3;ird++)
-     {      
+     {
          aux = funct[icol]*derxy[ird][irn]*fac;
          irow++;
          estif[irow][posc] -= aux;
-         estif[posc][irow] -= aux;		
+         estif[posc][irow] -= aux;
      } /* end of loop over ird */
   } /* end of loop over irn */
 } /* end of loop over icol */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of f3_calkvp */
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief evaluate galerkin part of Mvv
 
 <pre>                                                         genk 05/02
@@ -348,23 +348,23 @@ In this routine the galerkin part of matrix Mvv is calculated:
   /
 
 see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
-  
-NOTE: there's only one elestif  			     
-      --> Mvv is stored in estif[0..(3*iel-1)][0..(3*iel-1)] 
-      
+
+NOTE: there's only one elestif
+      --> Mvv is stored in estif[0..(3*iel-1)][0..(3*iel-1)]
+
 </pre>
 \param **emass     DOUBLE	   (i/o)  ele mass matrix
 \param  *funct     DOUBLE	   (i)    nat. shape funcs
 \param   fac       DOUBLE	   (i)    weighting factor
 \param   iel       INT   	   (i)    number of nodes of act. ele
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f3_calmvv(
                DOUBLE         **estif,
                DOUBLE          *funct,
                DOUBLE           fac,
-               INT              iel  
+               INT              iel
               )
 {
 /*----------------------------------------------------------------------*
@@ -372,15 +372,15 @@ void f3_calmvv(
  |   irow - row number in element matrix                                |
  |   icol - column number in element matrix                             |
  |   irn  - row node: number of node considered for matrix-row          |
- |   icn  - column node: number of node considered for matrix column    |  
+ |   icn  - column node: number of node considered for matrix column    |
  *----------------------------------------------------------------------*/
-INT     irow, icol,irn,icn;  
+INT     irow, icol,irn,icn;
 INT     nvdfe;             /* number of velocity dofs of actual element */
 DOUBLE  aux;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f3_calmvv");
-#endif		
+#endif
 
 nvdfe = NUM_F3_VELDOF*iel;
 
@@ -404,9 +404,9 @@ for(icol=0;icol<nvdfe;icol+=3)
       estif[irow+1][icol+1] += aux;
       estif[irow+2][icol+2] += aux;
    }
-} 
- 
-#ifdef DEBUG 
+}
+
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -430,9 +430,9 @@ In this routine the galerkin part of matrix Kgg is calculated:
      /
   - |  w * u_G    d_gamma_FS
    /
-  
-NOTE: there's only one estif 			      
-      
+
+NOTE: there's only one estif
+
 </pre>
 \param **estif     DOUBLE     (i/o)  ele stiffness matrix
 \param  *funct     DOUBLE     (i)    nat. shape funcs at edge
@@ -440,14 +440,14 @@ NOTE: there's only one estif
 \param   iel       INT        (i)    number of nodes of act. element
 \param  *iedgnod   INT        (i)    edge nodes
 \param   ngnode    INT        (i)    number of nodes of act. edge
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f3_calkgedge(
-                  DOUBLE         **estif,  
-                  DOUBLE          *funct, 
+                  DOUBLE         **estif,
+                  DOUBLE          *funct,
                   DOUBLE           fac,
-                  INT             *iedgnod,    		      
+                  INT             *iedgnod,
                   INT              iel,
                   INT              ngnode
                 )
@@ -457,15 +457,15 @@ void f3_calkgedge(
  |   irow - row number in element matrix                                |
  |   icol - column number in element matrix                             |
  |   irn  - row node: number of node considered for matrix-row          |
- |   icn  - column node: number of node considered for matrix column    |  
+ |   icn  - column node: number of node considered for matrix column    |
 /-----------------------------------------------------------------------*/
-INT     irow,icolv,icolg,irn,icn;  
-INT     nd;                 
+INT     irow,icolv,icolg,irn,icn;
+INT     nd;
 DOUBLE  aux;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f3_calkgedge");
-#endif		
+#endif
 
 nd = NUMDOF_FLUID3*iel;
 
@@ -500,8 +500,8 @@ for(icn=0;icn<ngnode;icn++)
 } /* end loop over icol */
 
 
-/*----------------------------------------------------------------------*/ 
-#ifdef DEBUG 
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
 dstrc_exit();
 #endif
 

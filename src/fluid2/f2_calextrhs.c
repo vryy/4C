@@ -10,10 +10,10 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
-\addtogroup FLUID2 
+/*!
+\addtogroup FLUID2
 *//*! @{ (documentation module open)*/
-#ifdef D_FLUID2 
+#ifdef D_FLUID2
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #include "fluid2.h"
@@ -23,7 +23,7 @@ Maintainer: Steffen Genkinger
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -32,7 +32,7 @@ extern ALLDYNA      *alldyn;
 extern struct _GENPROB     genprob;
 
 static FLUID_DYNAMIC   *fdyn;
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief galerkin part of external forces for vel dofs
 
 <pre>                                                         genk 09/02
@@ -42,40 +42,40 @@ is calculated:
 
                    /
    + (1-THETA)*dt |  v * b_old   d_omega
-                 /  
+                 /
 
                /
    + THETA*dt |  v * b   d_omega
-             /      	  		      
+             /
 
 see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
-     
-      
+
+
 </pre>
 \param   *eforce     DOUBLE         (i/o)  element force vector
-\param	 *funct      DOUBLE         (i)    nat. shape functions      
+\param	 *funct      DOUBLE         (i)    nat. shape functions
 \param   *edeadn     DOUBLE         (i)    ele dead load at n
 \param   *edeadn     DOUBLE         (i)    ele dead load at n+1
 \param	  fac        DOUBLE         (i)    weighting factor
 \param	  iel        INT            (i)    num. of nodes in ele
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f2_calgalexfv(
-                  DOUBLE          *eforce,     
-		  DOUBLE          *funct,       
+                  DOUBLE          *eforce,
+		  DOUBLE          *funct,
                   DOUBLE          *edeadn,
 		  DOUBLE          *edeadng,
-		  DOUBLE           fac,      
-		  INT              iel       
-              ) 
+		  DOUBLE           fac,
+		  INT              iel
+              )
 {
 DOUBLE  facsl, facsr;
 INT     inode,irow,isd;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_calgalexfv");
-#endif		
+#endif
 
 /*--------------------------------------------------- set some factors */
 fdyn  = alldyn[genprob.numff].fdyn;
@@ -85,15 +85,15 @@ facsr = fac*fdyn->thsr;
 
 /*----------------------------------------------------------------------*
    Calculate galerkin part of external forces:
-   
+
                    /
    + (1-THETA)*dt |  v * b_old   d_omega
-                 /  
+                 /
 
                /
    + THETA*dt |  v * b   d_omega
              /
-   
+
  *----------------------------------------------------------------------*/
 irow=-1;
 for (inode=0;inode<iel;inode++)
@@ -103,18 +103,18 @@ for (inode=0;inode<iel;inode++)
       irow++;
       eforce[irow] += funct[inode]*(edeadn[isd]*facsr+edeadng[isd]*facsl);
    } /* end of loop over isd */
-} /* end of loop over inode */ 
- 
- 
-/*----------------------------------------------------------------------*/ 
-#ifdef DEBUG 
+} /* end of loop over inode */
+
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
-} /* end of f2_calgalexfv */ 
+} /* end of f2_calgalexfv */
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief stabilisation part of external forces for vel dofs
 
 <pre>                                                         genk 09/02
@@ -125,7 +125,7 @@ is calculated:
 EULER:
                      /
    + thetas(l,r)*dt |  tau_mu * u * grad(v) * b^   d_omega
-                   /  
+                   /
 
 ALE:
                      /
@@ -135,7 +135,7 @@ ALE:
 EULER/ALE:
                        /
    -/+ thetas(l,r)*dt |  tau_mp * 2*nue * div( eps(v) ) * b^  d_omega
-                     /      	  		      
+                     /
 
 This routine is called twice with different values:
 1. values are added to Iteration RHS (evaluation at n+1):
@@ -143,7 +143,7 @@ This routine is called twice with different values:
     b^ = b = deadng
 2. values are added to Time RHS (evaluation at n):
    thetas(l,r) = (1-THETA)*dt
-   b^ = b_old = deadn    
+   b^ = b_old = deadn
 
 see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
 
@@ -151,14 +151,14 @@ NOTE: for EULER
       velint = U
 
 NOTE: for ALE
-      velint = C (ale-convective velocity)           
-      
+      velint = C (ale-convective velocity)
+
 </pre>
 \param   *gls         STAB_PAR_GLS    (i)    stabilisation
 \param   *ele         ELEMENT	      (i)    actual element
 \param   *eforce      DOUBLE	      (i/o)  element force vector
 \param  **derxy,      DOUBLE	      (i)    global derivatives
-\param  **derxy2,     DOUBLE	      (i)    2nd. global derivatives    
+\param  **derxy2,     DOUBLE	      (i)    2nd. global derivatives
 \param   *edead       DOUBLE          (i)    ele dead load at n or n+1
 \param   *velint      DOUBLE	      (i)    vel. at integr. point
 \param	  fac	      DOUBLE	      (i)    weighting factor
@@ -166,35 +166,35 @@ NOTE: for ALE
 \param	  iel	      INT	      (i)    num. of nodes in ele
 \param	  ihoel       INT	      (i)    flag for higer ord. ele
 \param	  flag	      INT	      (i)    flag for n or n+1
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f2_calstabexfv(
-                    STAB_PAR_GLS    *gls,  
-                    ELEMENT         *ele,  
-                    DOUBLE          *eforce,     
+                    STAB_PAR_GLS    *gls,
+                    ELEMENT         *ele,
+                    DOUBLE          *eforce,
                     DOUBLE         **derxy,
-                    DOUBLE         **derxy2,      
+                    DOUBLE         **derxy2,
                     DOUBLE          *edead,
-                    DOUBLE          *velint,  
-                    DOUBLE           fac,      
+                    DOUBLE          *velint,
+                    DOUBLE           fac,
                     DOUBLE           visc,
                     INT              iel,
                     INT              ihoel,
-                    INT              flag      
-                   ) 
+                    INT              flag
+                   )
 {
 
 INT    irow,inode,isd;
 DOUBLE aux;
 DOUBLE sign=ONE;
 DOUBLE taumu,taump;
-DOUBLE c,fvts; 
+DOUBLE c,fvts;
 DOUBLE fact[2];
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_calstabexfv");
-#endif		
+#endif
 
 /*---------------------------------------------------------- initialise */
 fdyn  = alldyn[genprob.numff].fdyn;
@@ -222,7 +222,7 @@ default:
 EULER:
                      /
    + thetas(l,r)*dt |  tau_mu * u * grad(v) * b^   d_omega
-                   /  
+                   /
 ALE:
                      /
    + thetas(l,r)*dt |  tau_mu * c * grad(v) * b^   d_omega
@@ -261,19 +261,19 @@ if (gls->ivisc!=0 && ihoel!=0)
                             + derxy2[2][inode]*edead[1])*fvts;
       eforce[irow+1] -= ((TWO*derxy2[1][inode] + derxy2[0][inode])*edead[1] \
                             + derxy2[2][inode]*edead[0])*fvts;
-      irow += 2;			 
+      irow += 2;
    } /* end loop over inode */
 } /* endif (ele->e.f2->ivisc!=0 && ihoel!=0) */
 
-/*----------------------------------------------------------------------*/ 
-#ifdef DEBUG 
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
-} /* end of f2_stabexfv */ 
+} /* end of f2_stabexfv */
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief stabilisation part of external forces for pre dofs
 
 <pre>                                                         genk 09/02
@@ -283,7 +283,7 @@ is calculated:
 
                       /
    - thetas(l,r)*dt  |  tau_mp * grad(q) * b^  d_omega
-                    /	  		      
+                    /
 
 This routine is called twice with different values:
 1. values are added to Iteration RHS (evaluation at n+1):
@@ -291,36 +291,36 @@ This routine is called twice with different values:
     b^ = b = deadng
 2. values are added to Time RHS (evaluation at n):
    thetas(l,r) = (1-THETA)*dt
-   b^ = b_old = deadn    
+   b^ = b_old = deadn
 
 see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
 
-NOTE:							
-    there's only one full element force vector  	
-    for pre-dofs the pointer eforce points to the entry 
-    eforce[2*iel]     
-      
+NOTE:
+    there's only one full element force vector
+    for pre-dofs the pointer eforce points to the entry
+    eforce[2*iel]
+
 </pre>
 \param   *gls         STAB_PAR_GLS    (i)    stabilisation
 \param   *eforce      DOUBLE	      (i/o)  element force vector
-\param  **derxy,      DOUBLE	      (i)    global derivatives    
+\param  **derxy,      DOUBLE	      (i)    global derivatives
 \param   *edead       DOUBLE          (i)    ele dead load at n or n+1
 \param   *velint      DOUBLE	      (i)    vel. at integr. point
 \param	  fac	      DOUBLE	      (i)    weighting factor
 \param	  iel	      INT	      (i)    num. of nodes in ele
 \param	  flag	      INT	      (i)    flag for n or n+1
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f2_calstabexfp(
-                     STAB_PAR_GLS    *gls,  
-                     DOUBLE          *eforce,     
-                     DOUBLE         **derxy,       
-                     DOUBLE          *edead,  
-                     DOUBLE           fac,      
+                     STAB_PAR_GLS    *gls,
+                     DOUBLE          *eforce,
+                     DOUBLE         **derxy,
+                     DOUBLE          *edead,
+                     DOUBLE           fac,
                      INT              iel,
-                     INT              flag      
-                   ) 
+                     INT              flag
+                   )
 {
 INT    inode;
 DOUBLE c;
@@ -347,7 +347,7 @@ default:
    Calculate inertia/pressure stab forces of time force vector:
                       /
    - thetas(l,r)*dt  |  tau_mp * grad(q) * b  d_omega
-                    /	  		      
+                    /
  *----------------------------------------------------------------------*/
 fact[0] = edead[0]*taump*fac*c;
 fact[1] = edead[1]*taump*fac*c;
@@ -356,14 +356,14 @@ for (inode=0;inode<iel;inode++)
    eforce[inode] -= (derxy[0][inode]*fact[0] + derxy[1][inode]*fact[1]);
 }
 
-/*----------------------------------------------------------------------*/ 
+/*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
-} /* end of f2_stabexfp */ 
+} /* end of f2_stabexfp */
 
 #endif
 /*! @} (documentation module close)*/

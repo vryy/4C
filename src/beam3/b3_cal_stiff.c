@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 'b3_cal_lst', 'b3_cal_sec', 
+\brief contains the routine 'b3_cal_lst', 'b3_cal_sec',
 'b3_cal_trn', 'b3_con_dof', 'b3_trans_stf', 'b3_keku'
 
 <pre>
@@ -16,7 +16,7 @@ Maintainer: Frank Huber
 #include "beam3.h"
 #include "beam3_prototypes.h"
 
-/*! 
+/*!
 \addtogroup BEAM3
 *//*! @{ (documentation module open)*/
 
@@ -32,18 +32,18 @@ This routine calculates the local element stiffness matrix of a spatial
 \param *mat      MATERIAL  (i)  actual material
 \param **estif   DOUBLE    (o)  local element stiffness matrix
 \param *hinge    INT       (i)  Hinge Code for actual beam element
-               
+
 
 \warning done for n nodes per element
-\return void                                               
+\return void
 \sa calling:   ---;
-    called by: b3_cal_ele() 
+    called by: b3_cal_ele()
 
 *----------------------------------------------------------------------*/
-void b3_cal_lst(ELEMENT  *ele, 
-                MATERIAL *mat, 
-		DOUBLE  **estif, 
-		INT      *hinge)  	   	     	     	     	     	     	   	     
+void b3_cal_lst(ELEMENT  *ele,
+                MATERIAL *mat,
+		DOUBLE  **estif,
+		INT      *hinge)
 {
 INT            i, j;  /* some counters */
 INT            ike;   /* flag for Euler-Bernoulli-beam (direct stiffness) */
@@ -54,12 +54,12 @@ DOUBLE         area;  /* area */
 DOUBLE         iuu;   /* Iuu first main moment of inertia */
 DOUBLE         ivv;   /* Ivv second main moment of inertia */
 DOUBLE         it;    /* torsional moment */
-DOUBLE         length;/* lenght */  											
+DOUBLE         length;/* lenght */
 DOUBLE         fac;   /* E/l */
 DOUBLE         gmod;  /* shear modulus */
 /*----------------------------------------------------------------------*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("b3_cal_lst");
 #endif
 /*----------------------------------------------------------------------*/
@@ -86,7 +86,7 @@ if (ele->e.b3->ike==1)
    gmod=emod/(2.*(1+pv));
    fac=emod/length;
 
-   /*---- Skript Baustatik VI: S. 4.2 -------------------------------------*/ 
+   /*---- Skript Baustatik VI: S. 4.2 -------------------------------------*/
    estif[0][0]=fac*area;
    estif[6][0]=-estif[0][0];
    estif[1][1]=12.*fac*ivv/(length*length);
@@ -113,14 +113,14 @@ if (ele->e.b3->ike==1)
    estif[9][9]=estif[3][3];
    estif[10][10]=estif[4][4];
    estif[11][11]=estif[5][5];
-   
+
    for (i=0; i<12; i++)
    {
-     for (j=i; j<12; j++) estif[i][j]=estif[j][i];      
+     for (j=i; j<12; j++) estif[i][j]=estif[j][i];
    }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -135,15 +135,15 @@ element and the main moments of inertia
 
 </pre>
 \param *ele      ELEMENT  (i/O)  actual element
-               
+
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
-    called by: b3_cal_ele() 
+    called by: b3_cal_ele()
 
 *----------------------------------------------------------------------*/
-void b3_cal_sec(ELEMENT *ele)	     	     	     	   	     
+void b3_cal_sec(ELEMENT *ele)
 {
 DOUBLE         x12=0.; /* square of element length */
 DOUBLE         xi,yi,zi,xk,yk,zk; /* coordinates of element nodes */
@@ -152,7 +152,7 @@ DOUBLE         root,iyy,izz,iyz,iuu,ivv,alpha;
 INT            ike;
 /*----------------------------------------------------------------------*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("b3_cal_sec");
 #endif
 /*----------------------------------------------------------------------*/
@@ -167,7 +167,7 @@ if (ike!=1 || ike!=2)
    {
    iuu=iyy;
    ivv=izz;
-   alpha=0.;	 
+   alpha=0.;
    }
    else
    {
@@ -194,7 +194,7 @@ d3=zk-zi;
 x12=d1*d1+d2*d2+d3*d3;
 ele->e.b3->length=sqrt(x12);
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -212,15 +212,15 @@ actual element
 \param **A       DOUBLE    (O)  transformation matrix
 
 \warning done for n nodes per element
-\return void                                               
+\return void
 \sa calling:   ---;
-    called by: b3_cal_ele() 
+    called by: b3_cal_ele()
 
 *----------------------------------------------------------------------*/
-void b3_cal_trn(ELEMENT *ele, 
-                DOUBLE **A)	     	     	     	   	     
+void b3_cal_trn(ELEMENT *ele,
+                DOUBLE **A)
 {
-INT            i, j, k; /* some counters */ 
+INT            i, j, k; /* some counters */
 INT            iel; /* number of nodes of the element */
 DOUBLE         trn[3][3]; /* local axes x', y', z' are stored here */
 DOUBLE         x12=0.;
@@ -229,7 +229,7 @@ DOUBLE         dx1,dy1,dz1,dx2,dy2,dz2;
 DOUBLE         xloc,yloc,zloc;
 DOUBLE         co,si;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("b3_cal_trn");
 #endif
 /*----------------------------------------------------------------------*/
@@ -297,7 +297,7 @@ for (k=0; k<2*iel; k++)
     }
   }
 }
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -311,25 +311,25 @@ This routine calculates the condensed local element stiffness matrix if
 there are any hinge conditions
 
 </pre>
-\param **estif   DOUBLE   (i/o) local element stiffness matrix 
+\param **estif   DOUBLE   (i/o) local element stiffness matrix
 \param *hc       INT       (i)  hinge code of actual element
 \param nedof     INT       (i)  number of dofs per element
 
 \warning done for n nodes per element
-\return void                                               
+\return void
 \sa calling:   ---;
-    called by: b3_cal_ele() 
+    called by: b3_cal_ele()
 
 *----------------------------------------------------------------------*/
-void b3_con_dof(DOUBLE **estif, 
+void b3_con_dof(DOUBLE **estif,
                 INT     *hc,
-		INT	 nedof)  	   	     	     	     	     	     	   	     
+		INT	 nedof)
 {
 INT            j, m, n; /* some counters */
 DOUBLE         stfc;    /* stiffness value to be condensed */
 /*----------------------------------------------------------------------*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("b3_con_dof");
 #endif
 /* Adopted from CARAT */
@@ -340,15 +340,15 @@ for (j=0; j<nedof; j++)
   {
    stfc=estif[j][j];
    if (estif[j][j]!=0.)
-   {	
+   {
      for (n=0; n<nedof; n++) estif[j][n]=estif[j][n]/stfc;
-     estif[j][j]=1/stfc;      
+     estif[j][j]=1/stfc;
      /*-------------Condensation Kaa------------------------------------*/
      for (n=0; n<j; n++)
      {
        for (m=n; m<j; m++) estif[n][m]=estif[n][m]-estif[n][j]*estif[j][m];
        for (m=0; m<n; m++) estif[n][m]=estif[m][n];
-     }     
+     }
      /*-------------Condensation Kac and Kca----------------------------*/
      for (n=j+1; n<nedof; n++)
      {
@@ -363,7 +363,7 @@ for (j=0; j<nedof; j++)
      {
        for (m=n; m<nedof; m++) estif[n][m]=estif[n][m]-estif[n][j]*estif[j][m];
        for (m=j+1; m<n; m++) estif[n][m]=estif[m][n];
-     }  		       
+     }
      /*-------------Set Cond. domain equal zero-------------------------*/
      for (n=0; n<nedof; n++)
      {
@@ -371,9 +371,9 @@ for (j=0; j<nedof; j++)
        estif[n][j]=0.;
      }
    }
-   else goto out;				      
+   else goto out;
   }
-}              
+}
 goto end;
 out:
 for (j=0; j<nedof; j++)
@@ -382,7 +382,7 @@ for (j=0; j<nedof; j++)
 }
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -395,25 +395,25 @@ return;
 This routine does the statical condensation of the additional warping dofs
 
 </pre>
-\param **estif   DOUBLE   (i/o) local element stiffness matrix 
+\param **estif   DOUBLE   (i/o) local element stiffness matrix
 \param iel       INT       (i)  number of nodes per element
 \param nedof     INT       (i)  number of dofs per element
 
 \warning done for n nodes per element
-\return void                                               
+\return void
 \sa calling:   ---;
-    called by: b3_cal_ele() 
+    called by: b3_cal_ele()
 
 *----------------------------------------------------------------------*/
-void b3_con_warp(DOUBLE **estif, 
+void b3_con_warp(DOUBLE **estif,
 		 INT      iel,
-		 INT	  nedof)  	   	     	     	     	     	     	   	     
+		 INT	  nedof)
 {
 INT            i, j, k, m, n; /* some counters */
 DOUBLE         stfc;    /* stiffness value to be condensed */
 /*----------------------------------------------------------------------*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("b3_con_warp");
 #endif
 /* Adopted from CARAT */
@@ -422,15 +422,15 @@ for (j=6*iel; j<8*iel; j++)
 {
    stfc=estif[j][j];
    if (estif[j][j]!=0.)
-   {	
+   {
      for (n=0; n<nedof; n++) estif[j][n]=estif[j][n]/stfc;
-     estif[j][j]=1/stfc;      
+     estif[j][j]=1/stfc;
      /*-------------Condensation Kaa------------------------------------*/
      for (n=0; n<j; n++)
      {
        for (m=n; m<j; m++) estif[n][m]=estif[n][m]-estif[n][j]*estif[j][m];
        for (m=0; m<n; m++) estif[n][m]=estif[m][n];
-     }     
+     }
      /*-------------Condensation Kac and Kca----------------------------*/
      for (n=j+1; n<nedof; n++)
      {
@@ -445,17 +445,17 @@ for (j=6*iel; j<8*iel; j++)
      {
        for (m=n; m<nedof; m++) estif[n][m]=estif[n][m]-estif[n][j]*estif[j][m];
        for (m=j+1; m<n; m++) estif[n][m]=estif[m][n];
-     }  		       
+     }
      /*-------------Set Cond. domain equal zero-------------------------*/
      for (n=0; n<nedof; n++)
      {
        estif[j][n]=0.;
        estif[n][j]=0.;
      }
-   }   
-}              
+   }
+}
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -465,40 +465,40 @@ return;
 \brief transforms local to global stiffness matrix
 
 <pre>                                                              fh 09/02
-This routine calculates the transformation of the local to the global 
+This routine calculates the transformation of the local to the global
 element stiffness matrix
 
 </pre>
-\param **K       DOUBLE    (i)  local element stiffness matrix 
-\param **TRN     DOUBLE    (i)  element transformation matrix 
+\param **K       DOUBLE    (i)  local element stiffness matrix
+\param **TRN     DOUBLE    (i)  element transformation matrix
 \param **estif   DOUBLE    (o)  global element stiffness matrix
 \param nedof     INT       (i)  number of dofs of the element
 \param calcstep  INT       (i)  flag for calculation step
 
 
 \warning done for n nodes per element
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: beam3() , b3_cal_ele()
 
 *----------------------------------------------------------------------*/
-void b3_trans_stf(DOUBLE **K, 
+void b3_trans_stf(DOUBLE **K,
                   DOUBLE **TRN,
 		  DOUBLE **estif,
 		  INT      nedof,
-		  INT	   calcstep)  	   	     	     	     	     	     	   	     
+		  INT	   calcstep)
 {
 static ARRAY stiff_a; static DOUBLE **stiff;  /* stiffness vector */
 const INT max = MAXDOFPERNODE*MAXNOD_BEAM3;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("b3_trans_stf");
 #endif
 /*---------------------------------------------------------------------*/
 /* init phase        (calcstep=1)                                      */
 /*---------------------------------------------------------------------*/
-if (calcstep==1)  
-{  
+if (calcstep==1)
+{
   stiff      = amdef("stiff"  ,&stiff_a,max,max                  ,"DA");
 }
 else if (calcstep==-1)
@@ -516,12 +516,12 @@ else if (calcstep==2 || calcstep==3)
 /*---------------Calculate Kl*A-----------------------------------------*/
   amzero(&stiff_a);
   math_matmatdense(stiff,K,TRN,nedof,nedof,nedof,0,1.);
-    
+
 /*---------------Calculate A^t*Kl*A-------------------------------------*/
   math_mattrnmatdense(estif,TRN,stiff,nedof,nedof,nedof,0,1.);
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -535,7 +535,7 @@ This routine calculates the local element stiffness matrix of a spatial
 Timoshenko beam (Finite Element method)
 
 </pre>
-\param **S       DOUBLE    (o)  local element stiffness matrix 
+\param **S       DOUBLE    (o)  local element stiffness matrix
 \param **bs      DOUBLE    (i)  B-Operator matrix
 \param **d       DOUBLE    (i)  Constitutive Matrix
 \param fac       DOUBLE    (i)  integration factor
@@ -543,23 +543,23 @@ Timoshenko beam (Finite Element method)
 \param neps      INT       (i)  actual number of strain components = 3
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: b3_cal_ele()
 
 *----------------------------------------------------------------------*/
-void b3_keku(DOUBLE  **s,    
-             DOUBLE  **bs,   
-             DOUBLE  **d,    
-             DOUBLE    fac,  
-             INT       nd,   
-             INT       neps) 
+void b3_keku(DOUBLE  **s,
+             DOUBLE  **bs,
+             DOUBLE  **d,
+             DOUBLE    fac,
+             INT       nd,
+             INT       neps)
 {
 INT            i, j, k, l, m; /* some loopers */
 DOUBLE         dum; /* value to store actual entry Kij */
 DOUBLE         db[6]; /* D*B */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("b3_keku");
 #endif
 /*---------------------calculates K=B^t*D*B-----------------------------*/
@@ -586,7 +586,7 @@ dstrc_enter("b3_keku");
      }
    }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

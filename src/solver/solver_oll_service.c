@@ -14,8 +14,8 @@ Maintainer: Malte Neumann
 #include "../solver/solver.h"
 INT cmp_int(const void *a, const void *b );
 DOUBLE cmp_double(const void *a, const void *b );
-/*! 
-\addtogroup OLL 
+/*!
+\addtogroup OLL
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
@@ -23,7 +23,7 @@ DOUBLE cmp_double(const void *a, const void *b );
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -34,14 +34,14 @@ extern struct _FILES  allfiles;
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
-extern struct _PAR   par;                      
+extern struct _PAR   par;
 
 /*!----------------------------------------------------------------------
-\brief numeq for oll matrices 
+\brief numeq for oll matrices
 
 <pre>                                                              mn 02/03
 This function counts the number of equations on this processor
@@ -53,13 +53,13 @@ This function counts the number of equations on this processor
 \param *numeq          INT    (o)   number of equations
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling: ---; called by: --- 
+\return void
+\sa calling: ---; called by: ---
 
 *----------------------------------------------------------------------*/
 void oll_numeq(
-    FIELD         *actfield, 
-    PARTITION    *actpart, 
+    FIELD         *actfield,
+    PARTITION    *actpart,
     INTRA        *actintra,
     INT           dis,
     INT          *numeq)
@@ -81,7 +81,7 @@ void oll_numeq(
 
 INT       no_coupling = 0;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("oll_numeq");
 #endif
   /*----------------------------------------------------------------------*/
@@ -104,7 +104,7 @@ INT       no_coupling = 0;
       if (actnode->gnode->couple->couple.a.ia[l][0] != 0 ||
           actnode->gnode->couple->couple.a.ia[l][1] != 0 )
       {
-        if (counter>=actpart->pdis[dis].coupledofs.fdim) 
+        if (counter>=actpart->pdis[dis].coupledofs.fdim)
           amredef(&(actpart->pdis[dis].coupledofs),(actpart->pdis[dis].coupledofs.fdim+5000),1,"IV");
         /* the coupled dof could be dirichlet conditioned */
         if (actnode->dof[l]<actfield->dis[dis].numeq)
@@ -149,14 +149,14 @@ if (!no_coupling)
   amredef(&(actpart->pdis[dis].coupledofs),counter,inprocs+1,"IA");
   /*------------------- the newly allocated columns have to be initialized */
   for (i=1; i<actpart->pdis[dis].coupledofs.sdim; i++)
-    for (j=0; j<actpart->pdis[dis].coupledofs.fdim; j++) 
+    for (j=0; j<actpart->pdis[dis].coupledofs.fdim; j++)
       actpart->pdis[dis].coupledofs.a.ia[j][i]=0;
 
 } /* end of if(!no_coupling) */
 
-  /* processor looks on his own domain whether he has some of these coupdofs, 
-     puts this information in the array coupledofs in the column myrank+1, so it 
-     can be allreduced 
+  /* processor looks on his own domain whether he has some of these coupdofs,
+     puts this information in the array coupledofs in the column myrank+1, so it
+     can be allreduced
 
      The matrix has the following style (after allreduce on all procs the same):
 
@@ -203,7 +203,7 @@ if (!no_coupling)
       }
     }
   }
-  /* ----- Allreduce the whole array, so every proc knows about where all 
+  /* ----- Allreduce the whole array, so every proc knows about where all
      coupledofs are */
 #ifdef PARALLEL
   sendsize = (actpart->pdis[dis].coupledofs.fdim)*(inprocs);
@@ -256,13 +256,13 @@ if (!no_coupling)
       iscoupled=0;
       for (k=0; k<actpart->pdis[dis].coupledofs.fdim; k++)
       {
-        if (dof == actpart->pdis[dis].coupledofs.a.ia[k][0]) 
+        if (dof == actpart->pdis[dis].coupledofs.a.ia[k][0])
         {
           iscoupled=1;
           break;
         }
       }
-      if (iscoupled==0) 
+      if (iscoupled==0)
       {
         if (dof < actfield->dis[dis].numeq)
           counter++;
@@ -271,14 +271,14 @@ if (!no_coupling)
   }
   /*--- number of equations on this partition including the coupled ones */
   *numeq = counter;
-  /* 
-     An inter-proc coupled equation produces communications calculating the 
+  /*
+     An inter-proc coupled equation produces communications calculating the
      sparsity mask of the matrix
      An inter-proc coupled equation produces communications adding element
      matrices to the system matrix
      An inter-proc coupled equation ruins the bandwith locally
      ->
-     Now one processor has to be owner of the coupled equation. 
+     Now one processor has to be owner of the coupled equation.
      Try to distribute the coupled equations equally over the processors
 
      The matrix has the following style (after allreduce on all procs the same):
@@ -311,7 +311,7 @@ if (!no_coupling)
       {
         for (j=0; j<inprocs; j++)
         {
-          if (actpart->pdis[dis].coupledofs.a.ia[i][j+1]==1) 
+          if (actpart->pdis[dis].coupledofs.a.ia[i][j+1]==1)
           {
             actpart->pdis[dis].coupledofs.a.ia[i][j+1]=2;
             break;
@@ -325,7 +325,7 @@ if (!no_coupling)
         proc=-1;
         for (j=0; j<inprocs; j++)
         {
-          if (actpart->pdis[dis].coupledofs.a.ia[i][j+1]==1) 
+          if (actpart->pdis[dis].coupledofs.a.ia[i][j+1]==1)
           {
             if (tmp[j]<=min)
             {
@@ -359,7 +359,7 @@ if (!no_coupling)
 } /* end of if(!no_coupling) */
 
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return;
@@ -368,19 +368,19 @@ if (!no_coupling)
 
 
 /*!----------------------------------------------------------------------
-\brief check whether dof is in coupledofs 
+\brief check whether dof is in coupledofs
 
 <pre>                                                              mn 02/03
 This function checks whether this dof is in coupled dofs
 </pre>
 \param  dof            INT        (i)   the dof in question
 \param *actpart        PARTITION  (i)   the active partition
-\param *iscoupled      INT        (o)   the answer 
+\param *iscoupled      INT        (o)   the answer
 \param  dis            INT        (i)   actual disnumber
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling: ---; called by: --- 
+\return void
+\sa calling: ---; called by: ---
 
 *----------------------------------------------------------------------*/
 void oll_dof_in_coupledofs(
@@ -390,7 +390,7 @@ void oll_dof_in_coupledofs(
     INT  dis)
 {
   INT       i;
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("oll_dof_in_coupledofs");
 #endif
   /*----------------------------------------------------------------------*/
@@ -403,7 +403,7 @@ void oll_dof_in_coupledofs(
     }
   }
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return;
@@ -413,7 +413,7 @@ void oll_dof_in_coupledofs(
 
 
 /*!----------------------------------------------------------------------
-\brief nnz and topology for oll 
+\brief nnz and topology for oll
 
 <pre>                                                              mn 02/03
 This function calculates the number of non-zero entrys and the topology
@@ -425,13 +425,13 @@ for oll matrices. Only the nnz is needed.
 \param *oll            OLL    (i)   the oll matrix
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling: ---; called by: --- 
+\return void
+\sa calling: ---; called by: ---
 
 *----------------------------------------------------------------------*/
 void oll_nnz_topology(
-    FIELD         *actfield, 
-    PARTITION     *actpart, 
+    FIELD         *actfield,
+    PARTITION     *actpart,
     INTRA         *actintra,
     OLL           *oll,
     INT            dis)
@@ -464,11 +464,11 @@ void oll_nnz_topology(
   INT        max_dof,dof_id;
 
 
-#ifdef PARALLEL 
+#ifdef PARALLEL
   MPI_Status status;
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("oll_nnz_topology");
 #endif
   /*----------------------------------------------------------------------*/
@@ -560,7 +560,7 @@ void oll_nnz_topology(
     }
     /*-------------- allocate the dof_nnz vector and put dofs in it */
     dof_nnz.a.iv[dof] = counter2+1;
-  }  /* end of loop over numeq */ 
+  }  /* end of loop over numeq */
   /*--------------------------------------------- now do the coupled dofs */
   coupledofs = &(actpart->pdis[dis].coupledofs);
   for (i=0; i<coupledofs->fdim; i++)
@@ -627,7 +627,7 @@ void oll_nnz_topology(
     dof_nnz.a.iv[dof] = counter2+1;
   } /* end of loop over coupled dofs */
   /* make the who-has-to-send-whom-how-much-and-what-arrays and communicate */
-#ifdef PARALLEL 
+#ifdef PARALLEL
   counter=0;
   for (i=0; i<coupledofs->fdim; i++)
   {
@@ -635,7 +635,7 @@ void oll_nnz_topology(
     /*-------------------------------------- find the master of this dof */
     for (j=1; j<coupledofs->sdim; j++)
     {
-      if (coupledofs->a.ia[i][j]==2) 
+      if (coupledofs->a.ia[i][j]==2)
       {
         dofmaster = j-1;
         break;
@@ -692,7 +692,7 @@ void oll_nnz_topology(
   amdel(&dof_nnz);
   CCAFREE(node_dof);
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return;
@@ -705,7 +705,7 @@ void oll_nnz_topology(
 \brief create update for oll matrices
 
 <pre>                                                              mn 02/03
-This function creates the update vector for oll matrices. 
+This function creates the update vector for oll matrices.
 </pre>
 \param *actfield       FIELD  (i)   the active field
 \param *actpart        PARTITION  (i)   the active partition
@@ -714,13 +714,13 @@ This function creates the update vector for oll matrices.
 \param *oll            OLL    (o)   the oll matrix
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling: ---; called by: --- 
+\return void
+\sa calling: ---; called by: ---
 
 *----------------------------------------------------------------------*/
 void oll_update(
-    FIELD         *actfield, 
-    PARTITION     *actpart, 
+    FIELD         *actfield,
+    PARTITION     *actpart,
     INTRA         *actintra,
     INT            dis,
     OLL           *oll)
@@ -734,7 +734,7 @@ void oll_update(
   INT       inprocs;
   NODE     *actnode;
   ARRAY     coupledofs;
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("oll_update");
 #endif
   /*----------------------------------------------------------------------*/
@@ -770,7 +770,7 @@ void oll_update(
           if (dof == coupledofs.a.ia[k][0])
           {
             /* am I owner of this dof or not */
-            if (coupledofs.a.ia[k][imyrank+1]==2) 
+            if (coupledofs.a.ia[k][imyrank+1]==2)
               foundit=2;
             else if (coupledofs.a.ia[k][imyrank+1]==1)
               foundit=1;
@@ -806,7 +806,7 @@ void oll_update(
   /*----------------------------------------------------------------------*/
   amdel(&coupledofs);
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return;
@@ -816,17 +816,17 @@ void oll_update(
 
 
 /*!---------------------------------------------------------------------
-\brief return index of a given dof from local dof list 
+\brief return index of a given dof from local dof list
 
-<pre>                                                        m.gee 9/02 
+<pre>                                                        m.gee 9/02
 return index of a given dof from local dof list. The given vector update
 of length length has to be sorted and continous
 </pre>
-\param dof      INT    (i)           the dof the index is needed for 
-\param update   INT*   (i)           the sorted and continous vector update 
-\param length   INT    (i)           length of update 
+\param dof      INT    (i)           the dof the index is needed for
+\param update   INT*   (i)           the sorted and continous vector update
+\param length   INT    (i)           length of update
 \return the index of dof in update (INT) or -1 if index not in range
-\sa 
+\sa
 
 ------------------------------------------------------------------------*/
 INT oll_getindex(
@@ -836,21 +836,21 @@ INT oll_getindex(
 {
   INT index;
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("oll_getindex");
 #endif
   /*----------------------------------------------------------------------*/
   index = dof-(*update);
-  if (index<0 || index>=length) 
+  if (index<0 || index>=length)
   {
-#ifdef DEBUG 
+#ifdef DEBUG
     dstrc_exit();
 #endif
     return(-1);
   }
   else
   {
-#ifdef DEBUG 
+#ifdef DEBUG
     dstrc_exit();
 #endif
     return(index);
@@ -864,14 +864,14 @@ INT oll_getindex(
 /*!---------------------------------------------------------------------
 \brief prints an oll matrix !!
 
-<pre>                                                        mn 02/03 
+<pre>                                                        mn 02/03
 This function prints the given oll matrix to the screen. Only for numeq
 smaller than n_max.
 </pre>
 \param *oll      OLL    (i)    the oll matrix to print
 \param  n_max    INT    (i)    max number of columns to print
 \return void
-\sa                                        
+\sa
 
 ------------------------------------------------------------------------*/
 void oll_print(
@@ -885,7 +885,7 @@ void oll_print(
   INT         i,j;
   DOUBLE      null = 0.0;
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("oll_print");
 #endif
   /*----------------------------------------------------------------------*/
@@ -926,7 +926,7 @@ void oll_print(
   }
   printf("END of matrix \n");
   printf("============= \n");
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return;
@@ -939,13 +939,13 @@ void oll_print(
 /*!---------------------------------------------------------------------
 \brief  prints the pattern of an oll matrix
 
-<pre>                                                        mn 02/03 
+<pre>                                                        mn 02/03
 This function prints the sparsety pattern of an oll matrix to the screen.
 </pre>
 \param *oll      OLL    (i)    the oll matrix to print
 \param  n_max    INT    (i)    max number of columns to print
 \return void
-\sa                                        
+\sa
 
 ------------------------------------------------------------------------*/
 void oll_pattern(
@@ -959,7 +959,7 @@ void oll_pattern(
   INT         i,j;
   INT         lehr,null,nn;
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("oll_pattern");
 #endif
   /*----------------------------------------------------------------------*/
@@ -991,7 +991,7 @@ void oll_pattern(
             lehr++;
           }
         } /* end if gap>1 */
-        if( FABS(actentry->val) <= EPS12 ) 
+        if( FABS(actentry->val) <= EPS12 )
         {
           printf("0");
           null++;
@@ -1029,7 +1029,7 @@ void oll_pattern(
             lehr++;
           }
         } /* end if gap>1 */
-        if( FABS(actentry->val) <= EPS12 ) 
+        if( FABS(actentry->val) <= EPS12 )
         {
           null++;
         }
@@ -1051,7 +1051,7 @@ void oll_pattern(
   printf("nn:   %4d \n",nn);
   printf("END of matrix \n");
   printf("============= \n");
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return;
@@ -1069,7 +1069,7 @@ void oll_pattern(
   </pre>
   \param *oll      OLL    (i)    the oll matrix to print
   \return void
-  \sa                                        
+  \sa
 
   ------------------------------------------------------------------------*/
 void oll_gnupattern(
@@ -1082,7 +1082,7 @@ void oll_gnupattern(
   INT         nn;
   FILE        *gnu = allfiles.gnu;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("oll_gnupattern");
 #endif
 
@@ -1104,7 +1104,7 @@ if (par.myrank != 0) goto end;
     actentry = row[i];
     while(actentry != NULL )
     {
-      if( FABS(actentry->val) > EPS12 ) 
+      if( FABS(actentry->val) > EPS12 )
       {
         fprintf(gnu,"%9d  %9d \n",actentry->c,actentry->r);
         nn++;
@@ -1120,7 +1120,7 @@ if (par.myrank != 0) goto end;
 end:
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 

@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -18,7 +18,7 @@ Maintainer: Malte Neumann
 #include "../solver/solver.h"
 /*----------------------------------------------------------------------*
  | global dense matrices for element routines             m.gee 9/01    |
- | (defined in global_calelm.c, so they are extern here)                |                
+ | (defined in global_calelm.c, so they are extern here)                |
  *----------------------------------------------------------------------*/
 extern struct _ARRAY estif_global;
 extern struct _ARRAY emass_global;
@@ -68,7 +68,7 @@ DOUBLE    **dsend1;                   /* pointer to sendbuffer to communicate co
 INT       **isend2;                   /* pointer to sendbuffer to communicate coupling conditions */
 DOUBLE    **dsend2;                   /* pointer to sendbuffer to communicate coupling conditions */
 INT         nsend;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("add_rc_ptr");
 #endif
 /*----------------------------------------------------------------------*/
@@ -94,8 +94,8 @@ rowptr     = rc_ptr1->rowptr.a.iv;
 cdofs      = actpart->pdis[0].coupledofs.a.ia;
 ncdofs     = actpart->pdis[0].coupledofs.fdim;
 /*---------------------------------- put pointers to sendbuffers if any */
-#ifdef PARALLEL 
-if (rc_ptr1->couple_i_send) 
+#ifdef PARALLEL
+if (rc_ptr1->couple_i_send)
 {
    isend1 = rc_ptr1->couple_i_send->a.ia;
    dsend1 = rc_ptr1->couple_d_send->a.da;
@@ -114,7 +114,7 @@ for (i=0; i<actele->numnp; i++)
    for (j=0; j<actele->node[i]->numdf; j++)
    {
       lm[counter]    = actele->node[i]->dof[j];
-#ifdef PARALLEL 
+#ifdef PARALLEL
       owner[counter] = actele->node[i]->proc;
 #endif
       counter++;
@@ -129,13 +129,13 @@ for (i=0; i<nd; i++)
 {
    ii = lm[i];
    /*-------------------------------------------- loop only my own rows */
-#ifdef PARALLEL 
+#ifdef PARALLEL
    if (owner[i]!=myrank) continue;
 #endif
    /*------------------------------------- check for boundary condition */
    if (ii>=numeq_total) continue;
    /*------------------------------------- check for coupling condition */
-#ifdef PARALLEL 
+#ifdef PARALLEL
    if (ncdofs)
    {
       ii_iscouple = 0;
@@ -159,10 +159,10 @@ for (i=0; i<nd; i++)
       /*---------------------------------- check for boundary condition */
       if (jj>=numeq_total) continue;
       /*---------------------------------- check for coupling condition */
-      /* 
-        coupling condition for jj is not checked, because we add to 
+      /*
+        coupling condition for jj is not checked, because we add to
         row ii here, which must also hold the coupled columns jj
-      */ 
+      */
       /*======================================== do main-diagonal entry */
       /*                (either not a coupled dof or I am master owner) */
       if (!ii_iscouple || ii_owner==myrank)
@@ -187,7 +187,7 @@ for (i=0; i<nd; i++)
    } /* end loop over j */
 }/* end loop over i */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -211,7 +211,7 @@ void add_rcptr_checkcouple(
 
   INT         i,k;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("add_rcptr_checkcouple");
 #endif
 
@@ -231,7 +231,7 @@ void add_rcptr_checkcouple(
     }
   }
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 
@@ -260,7 +260,7 @@ void add_rcptr_sendbuff(INT ii,INT jj,INT i,INT j,INT ii_owner,INT **isend,
                     DOUBLE **dsend,DOUBLE **estif, INT numsend)
 {
 INT         k,l;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("add_rcptr_sendbuff");
 #endif
 /*----------------------------------------------------------------------*/
@@ -271,7 +271,7 @@ for (k=0; k<numsend; k++)
 isend[k][1]  = ii_owner;
 dsend[k][jj]+= estif[i][j];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -310,7 +310,7 @@ INT           *irn;                      /*    "       irn see MUMPS manual */
 INT           *jcn;                      /*    "       jcn see MUMPS manual */
 INT           *rowptr;                   /*    "       rowptr see rc_ptr structure */
 
-#ifdef PARALLEL 
+#ifdef PARALLEL
 MPI_Status    *irecv_status;
 MPI_Status    *drecv_status;
 
@@ -320,11 +320,11 @@ MPI_Request   *dsendrequest;
 MPI_Comm      *ACTCOMM;
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("exchange_coup_rc_ptr");
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef PARALLEL 
+#ifdef PARALLEL
 /*----------------------------------------------------------------------*/
 imyrank = actintra->intra_rank;
 inprocs = actintra->intra_nprocs;
@@ -366,7 +366,7 @@ for (i=0; i<numsend; i++)
    MPI_Isend(&(dsend[i][0]),numeq_total,MPI_DOUBLE,isend[i][1],isend[i][0],(*ACTCOMM),&(dsendrequest[i]));
 }/*------------------------------------------------ end of sending loop */
 /*------------------------------- now loop over the dofs to be received */
-/* 
+/*
    do blocking receives, 'cause one can't add something to the system
    matrix, which has not yet arrived, easy, isn't it?
 */
@@ -381,9 +381,9 @@ for (i=0; i<numrecv; i++)
    tag    = irecv_status[i].MPI_TAG;
    if (tag != irecv[i][0]) dserror("MPI messages somehow got mixed up");
    source = irecv_status[i].MPI_SOURCE;
-   
+
    /* do not use wildcards for second recv, we know now where it should come from */
-   MPI_Recv(&(drecv[i][0]),numeq_total,MPI_DOUBLE,source,tag,(*ACTCOMM),&(drecv_status[i]));   
+   MPI_Recv(&(drecv[i][0]),numeq_total,MPI_DOUBLE,source,tag,(*ACTCOMM),&(drecv_status[i]));
    if (drecv_status[i].MPI_ERROR) dserror("An error in MPI - communication occured !");
 
    /* now add the received data properly to my own piece of sparse matrix */
@@ -405,11 +405,11 @@ if (numsend){CCAFREE(isendrequest);CCAFREE(dsendrequest);}
 /*----------------------------------------------------------------------
   do a barrier, because this is the end of the assembly, the msr matrix
   is now ready for solve
-*/ 
+*/
 MPI_Barrier(*ACTCOMM);
-#endif /*---------------------------------------------- end of PARALLEL */ 
+#endif /*---------------------------------------------- end of PARALLEL */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

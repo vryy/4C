@@ -10,8 +10,8 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
-\addtogroup FLUID2_PRO 
+/*!
+\addtogroup FLUID2_PRO
 *//*! @{ (documentation module open)*/
 #ifdef D_FLUID2_PRO
 #include "../headers/standardtypes.h"
@@ -22,7 +22,7 @@ Maintainer: Steffen Genkinger
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -38,29 +38,29 @@ extern struct _GENPROB     genprob;
     /
    |  tau_mu * u_old * grad(v) * u_old * grad(u)   d_omega
   /
-  
+
 </pre>
 \param  *ele	   ELEMENT	   (i)	   actual element
 \param **estif     DOUBLE	   (i/o)   ele stiffness matrix
 \param  *velint    DOUBLE	   (i)     vel. at integr. point
 \param **derxy     DOUBLE	   (i)     global derivatives
 \param  *func      DOUBLE	   (i)     shape functions
-\param   fac	   DOUBLE	   (i)	   weighting factor	   
+\param   fac	   DOUBLE	   (i)	   weighting factor
 \param   visc	   DOUBLE	   (i)	   fluid viscosity
 \param   iel	   INT		   (i)	   num. of nodes in ele
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
-void f2pro_calbdt(			      
-                    ELEMENT         *ele, 
-		    DOUBLE         **estif,  
-		    DOUBLE          *velint, 
-		    DOUBLE         **derxy,  
+void f2pro_calbdt(
+                    ELEMENT         *ele,
+		    DOUBLE         **estif,
+		    DOUBLE          *velint,
+		    DOUBLE         **derxy,
 		    DOUBLE         **vderxy,
                     DOUBLE          *funct,
-                    DOUBLE           fac,    
-		    DOUBLE          visc,   
-		    INT               iel    
+                    DOUBLE           fac,
+		    DOUBLE          visc,
+		    INT               iel
                    )
 {
 /*----------------------------------------------------------------------*
@@ -75,7 +75,7 @@ DOUBLE c;
 DOUBLE aux,auxc;
 FLUID_DYNAMIC *fdyn;    /* pointer to fluid dynamic variables           */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2pro_calbtd");
 #endif
 
@@ -106,8 +106,8 @@ for (icn=0;icn<iel;icn++)
    icol += 2;
 } /* end of loop over icn */
 
-/*---------------------------------------------------------------------*/   
-#ifdef DEBUG 
+/*---------------------------------------------------------------------*/
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

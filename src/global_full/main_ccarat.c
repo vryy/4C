@@ -29,27 +29,27 @@ Maintainer: Malte Neumann
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
 struct _PAR     par;
 /*!---------------------------------------------------------------------
 
-\brief main routine                                              
+\brief main routine
 
-<pre>                                                        m.gee 8/00 
+<pre>                                                        m.gee 8/00
 main is only printing the ccarat head and the finish
 </pre>
-\param argc     INT     (i)   number of arguments on command line including exe                                
+\param argc     INT     (i)   number of arguments on command line including exe
 \param argv     *char[] (i)   array of arguments from command line
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 INT main(INT argc, char *argv[])
 {
 static char release[13] = "02_20040817*";
-#ifdef PARALLEL 
+#ifdef PARALLEL
 static char *buff,*dbuff;
 INT          buffsize=MPIBUFFSIZE;
 MPI_Init(&argc,&argv);
@@ -57,12 +57,12 @@ MPI_Comm_rank(MPI_COMM_WORLD, &par.myrank);
 MPI_Comm_size(MPI_COMM_WORLD, &par.nprocs);
 /*------------------------------------------------ attach buffer to mpi */
 buff = (char*)malloc(buffsize);
-if (!buff) 
+if (!buff)
 {
    printf("Allocation of memory for mpi buffer failed");
    MPI_Finalize();
    exit(1);
-}   
+}
 MPI_Buffer_attach(buff,buffsize);
 #else
 par.myrank=0;
@@ -76,7 +76,7 @@ if (par.myrank==0)
    printf("*             C C A R A T              *\n");
    printf("*                                      *\n");
    printf("*                                      *\n");
-#ifdef PARALLEL 
+#ifdef PARALLEL
    printf("*           parallel version           *\n");
 #else
    printf("*          sequential version          *\n");
@@ -93,7 +93,7 @@ if (par.myrank==0)
    printf("*    (c) 2004 All Rights Reserved.     *\n");
    printf("*                                      *\n");
    printf("****************************************\n\n");
-#ifdef PARALLEL 
+#ifdef PARALLEL
    printf("number of processors: %d\n",par.nprocs);
 #endif
 }
@@ -152,7 +152,7 @@ MPI_Barrier(MPI_COMM_WORLD);
 printf("processor %d finished normally\n",par.myrank);
 MPI_Buffer_detach(&dbuff,&buffsize);
 if (dbuff!=buff || buffsize != MPIBUFFSIZE)
-dserror("Illegal modification of mpi buffer adress or size appeared"); 
+dserror("Illegal modification of mpi buffer adress or size appeared");
 free(dbuff);
 MPI_Finalize();
 #else

@@ -15,14 +15,14 @@ Maintainer: Michael Gee
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 
-/*! 
-\addtogroup MLPCG 
+/*!
+\addtogroup MLPCG
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
 \brief the multilevel preconditioner main structure
 
-<pre>                                                         m.gee 09/02    
+<pre>                                                         m.gee 09/02
 defined in solver_mlpcg.c
 </pre>
 
@@ -31,7 +31,7 @@ struct _MLPRECOND mlprecond;
 /*!----------------------------------------------------------------------
 \brief the multilevel preconditioned solver main structure
 
-<pre>                                                         m.gee 09/02    
+<pre>                                                         m.gee 09/02
 defined in solver_mlpcg.c
 </pre>
 
@@ -39,17 +39,17 @@ defined in solver_mlpcg.c
 struct _MLSOLVER mlsolver;
 
 /*!---------------------------------------------------------------------
-\brief multilevel preconditioned iterative solver                                              
+\brief multilevel preconditioned iterative solver
 
-<pre>                                                        m.gee 9/02 
+<pre>                                                        m.gee 9/02
 </pre>
-\param actsolv    SOLVAR*      (i)   general structure of solver informations                   
-\param actintra   INTRA*       (i)   the intra-communicator of this field                  
-\param bdcsr      DBCSR_ROOT*  (i)   the dbcsr matrix                 
+\param actsolv    SOLVAR*      (i)   general structure of solver informations
+\param actintra   INTRA*       (i)   the intra-communicator of this field
+\param bdcsr      DBCSR_ROOT*  (i)   the dbcsr matrix
 \param sol        DIST_VECTOR* (o)   the distributed solution vector
 \param rhs        DIST_VECTOR* (i)   the distributed right hand side vector
 \param option     INT          (i)   option=1 init phase option=0 solve
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void solver_mlpcg(struct _SOLVAR         *actsolv,
@@ -62,10 +62,10 @@ void solver_mlpcg(struct _SOLVAR         *actsolv,
 MLPCGVARS           *mlpcgvars;
 static ARRAY         a_copy;
 /* the symmetric scaling matrix */
-static ARRAY         Da; 
+static ARRAY         Da;
 static double       *D;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solver_mlpcg");
 #endif
 /*----------------------------------------------------------------------*/
@@ -126,10 +126,10 @@ break;
 /*----------------------------------------------------------------------*/
 default:
    dserror("Unknown option for solver call to MLPCG");
-break;   
+break;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

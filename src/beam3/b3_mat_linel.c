@@ -16,7 +16,7 @@ Maintainer: Frank Huber
 #include "beam3.h"
 #include "beam3_prototypes.h"
 
-/*! 
+/*!
 \addtogroup BEAM3
 *//*! @{ (documentation module open)*/
 
@@ -24,32 +24,32 @@ Maintainer: Frank Huber
 \brief calculates the constitutive matrix for a beam
 
 <pre>                                                              fh 10/02
-This routine calculates the linear elastic constitutive matrix for a 
-spatial 1d-Timoshenko-beam element 
+This routine calculates the linear elastic constitutive matrix for a
+spatial 1d-Timoshenko-beam element
 
 </pre>
 \param *ele      ELEMENT   (i)  actual element
 \param ym        DOUBLE    (i)  Youngs Modulus
-\param pv        DOUBLE    (i)  Poissons ratio 
+\param pv        DOUBLE    (i)  Poissons ratio
 \param **d       DOUBLE    (o)  Constitutive matrix
 
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: b3_call_mat()
 
 *----------------------------------------------------------------------*/
-void b3_mat_linel(ELEMENT *ele,    
-                  DOUBLE   ym,     
-                  DOUBLE   pv,     
-		  DOUBLE **d)      
+void b3_mat_linel(ELEMENT *ele,
+                  DOUBLE   ym,
+                  DOUBLE   pv,
+		  DOUBLE **d)
 {
 /* Values for cross section and material */
-DOUBLE e, g, k, a, iy, iz, it, h, gay, gaz, gas; 
+DOUBLE e, g, k, a, iy, iz, it, h, gay, gaz, gas;
 INT    ike;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("b3_mat_linel");
 #endif
 /*----------get value for shear correction factor k=1/gs ----------------*/
@@ -88,7 +88,7 @@ else
    d[2][2]=g*k;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

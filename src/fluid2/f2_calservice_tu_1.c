@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief service routines for fluid2 element 
+\brief service routines for fluid2 element
 
 <pre>
 Maintainer: Thomas Hettich
@@ -10,7 +10,7 @@ Maintainer: Thomas Hettich
 </pre>
 
 ------------------------------------------------------------------------*/
-#ifdef D_FLUID2TU 
+#ifdef D_FLUID2TU
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #include "fluid2_tu.h"
@@ -21,7 +21,7 @@ Maintainer: Thomas Hettich
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -36,12 +36,12 @@ extern struct _GENPROB     genprob;
 extern struct _MATERIAL  *mat;
 
 static FLUID_DYNAMIC *fdyn;
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief set all arrays for element calculation
 
 <pre>                                                         he  02/03
 
-				      
+
 </pre>
 \param   *ele      ELEMENT	     (i)    actual element
 \param   *elev     ELEMENT	     (i)    actual element for velocity
@@ -54,19 +54,19 @@ static FLUID_DYNAMIC *fdyn;
 \param   *omega      DOUBLE	     (o)    omega
 \param  **evel       DOUBLE	     (o)    ele velocity
 \param  **xzye       DOUBLE        (o)   nodal coordinates
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
-void f2_calset_tu_1( 
-	              ELEMENT         *ele,     
+void f2_calset_tu_1(
+	              ELEMENT         *ele,
                     ELEMENT         *elev,
-                    DOUBLE          *kapomen,    
+                    DOUBLE          *kapomen,
 	              DOUBLE          *kapomeg,
 	              DOUBLE          *kapomepro,
                     DOUBLE          *eddyg,
                     DOUBLE          *eddypro,
-	              DOUBLE          *kappan,    
-	              DOUBLE          *omega,    
+	              DOUBLE          *kappan,
+	              DOUBLE          *omega,
 	              DOUBLE         **evel,
 	              DOUBLE         **xyze
                    )
@@ -74,9 +74,9 @@ void f2_calset_tu_1(
 INT i,j;            /* simply a counter                                 */
 INT kap_ome;
 NODE  *actnode;     /* actual node                                      */
-FLUID_DATA      *data;    
+FLUID_DATA      *data;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_calset_tu_1");
 #endif
 
@@ -89,7 +89,7 @@ for(i=0;i<ele->numnp;i++)
    xyze[0][i]=ele->node[i]->x[0];
    xyze[1][i]=ele->node[i]->x[1];
 }
- 
+
 /*---------------------------------------------------------------------*
  | position of the different solutions:                                |
  | node->sol_incement: solution history used for calculations          |
@@ -104,14 +104,14 @@ for(i=0;i<ele->numnp;i++)
  *---------------------------------------------------------------------*/
  if (fdyn->kapomega_flag==0) kap_ome=0;
  if (fdyn->kapomega_flag==1) kap_ome=2;
-   
+
    for(i=0;i<ele->numnp;i++) /* loop nodes of element */
    {
      actnode=ele->node[i];
 
-/*----------------------------------- set element kapome (n+1,i)       */      
+/*----------------------------------- set element kapome (n+1,i)       */
       kapomeg[i]  =actnode->sol_increment.a.da[3][kap_ome];
-/*----------------------------------- set element kapome (n)           */      
+/*----------------------------------- set element kapome (n)           */
       kapomen[i]  =actnode->sol_increment.a.da[1][kap_ome];
 /*----------------------------------- set eddy viscosity for timestep  */
       eddyg[i]    =actnode->sol_increment.a.da[3][1];
@@ -121,23 +121,23 @@ for(i=0;i<ele->numnp;i++)
     if (fdyn->kapomega_flag==0)
     {
      omega[i] = actnode->sol_increment.a.da[3][2];
-    
+
      if (fdyn->kappan==2)
      {
       actnode->sol_increment.a.da[2][0] = actnode->sol_increment.a.da[3][0];
      }
     }
 /*---------- for omega equation: kappan is needed for production term  */
-    if (fdyn->kapomega_flag==1 && fdyn->kappan==2) 
-    { 
+    if (fdyn->kapomega_flag==1 && fdyn->kappan==2)
+    {
       actnode->sol_increment.a.da[2][2] = actnode->sol_increment.a.da[3][2];
       kappan[i] = actnode->sol_increment.a.da[2][0];
     }
-/*----------------------------------- set element kapome (pro)         */      
+/*----------------------------------- set element kapome (pro)         */
       kapomepro[i]=actnode->sol_increment.a.da[2][kap_ome];
 
 /*----------------------- get velocities calculated form Navier-Stokes */
-    for(j=0;j<2;j++) 
+    for(j=0;j<2;j++)
     {
       actnode=elev->node[i];
       evel[j][i]=actnode->sol_increment.a.da[3][j];
@@ -146,80 +146,80 @@ for(i=0;i<ele->numnp;i++)
  } /* end of loop over nodes of element */
 
 /*---------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of f2_calset */
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief routine to calculate kapome at integration point
 
 <pre>                                                        he  02/03
-				      
+
 </pre>
 \param   *kapomeint   DOUBLE        (o)   kapome at integration point
 \param   *funct       DOUBLE        (i)   shape functions
 \param   *ekapome    DOUBLE        (i)   kapome at element nodes
 \param    iel	    INT           (i)   number of nodes in this element
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f2_kapomei(
-             DOUBLE  *kapomeint,     
-             DOUBLE  *funct,    
-	       DOUBLE  *kapome,     
-             INT      iel       
-	     ) 
+             DOUBLE  *kapomeint,
+             DOUBLE  *funct,
+	       DOUBLE  *kapome,
+             INT      iel
+	     )
 {
 INT     j;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_kapomei");
 #endif
 /*---------------------------------------------------------------------*/
 
-   *kapomeint=ZERO; 
+   *kapomeint=ZERO;
    for (j=0;j<iel;j++) /* loop over all nodes j of the element */
    {
       *kapomeint += funct[j]*kapome[j];
    } /* end loop over j */
-   
- 
+
+
 /*---------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of f2_kapepsi */
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief routine to calculate kapome derivatives at integration point
 
 <pre>                                                         he   02/03
 
 In this routine the derivatives of the kapeps w.r.t x/y are calculated
-				      
+
 </pre>
 \param   *kapomederxy   DOUBLE        (o)   kapome derivativs
 \param  **derxy         DOUBLE        (i)   global derivatives
 \param   *ekapome       DOUBLE        (i)   kapome at element nodes
 \param    iel	      INT           (i)   number of nodes in this element
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f2_kapomeder(
-             DOUBLE  *kapomederxy,     
-             DOUBLE **derxy,    
-	       DOUBLE  *kapome,    
-             INT      iel       
-	       ) 
+             DOUBLE  *kapomederxy,
+             DOUBLE **derxy,
+	       DOUBLE  *kapome,
+             INT      iel
+	       )
 {
 INT     i,j;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_kapomeder");
 #endif
 
@@ -234,39 +234,39 @@ for (i=0;i<2;i++) /* loop directions i */
 
 
 /*---------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of f2_kapepsder */
 
-/*!---------------------------------------------------------------------  
+/*!---------------------------------------------------------------------
 \brief routine to calculate 2nd kapome derivatives at integration point
 
 <pre>                                                         he  02/03
 
 In this routine the 2nd derivatives of the kapome
 w.r.t x/y are calculated
-				      
+
 </pre>
 \param   *kapomederxy2  DOUBLE        (o)   2nd kapome derivativs
 \param  **derxy2        DOUBLE        (i)   2nd global derivatives
 \param   *kapomen       DOUBLE        (i)   kapome at element nodes
 \param    iel	      INT           (i)   number of nodes in this element
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f2_kapomeder2(
-                   DOUBLE  *kapomederxy2,    
-                   DOUBLE **derxy2,    
-	             DOUBLE  *kapomen,      
-	             INT      iel        
-	           ) 
+                   DOUBLE  *kapomederxy2,
+                   DOUBLE **derxy2,
+	             DOUBLE  *kapomen,
+	             INT      iel
+	           )
 {
 INT     i,j;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_kapomeder2");
 #endif
 
@@ -280,14 +280,14 @@ for (i=0;i<3;i++)
 } /* end of loop over i */
 
 /*---------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of f2_kapomeder2 */
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief routine to calculate factors for kappa-equation
 
 <pre>                                                        he  02/03
@@ -295,36 +295,36 @@ return;
 </pre>
 \param    *kapomederxy  DOUBLE      (i)   kapome deriv. at integr. point
 \param    *omegaderxy   DOUBLE      (i)   omega deriv. at integr. point
-\param     omegaint      DOUBLE      (i)   omega at integr. point 
+\param     omegaint      DOUBLE      (i)   omega at integr. point
 \param    xi            DOUBLE      (o)   factor
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f2_xi_kappa(
-                  DOUBLE  *kapomederxy,     
-                  DOUBLE  *omegaderxy,    
-	            DOUBLE   omegaint,     
-	            DOUBLE  *xi     
-	           ) 
+                  DOUBLE  *kapomederxy,
+                  DOUBLE  *omegaderxy,
+	            DOUBLE   omegaint,
+	            DOUBLE  *xi
+	           )
 {
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_xi_kappa");
 #endif
 /*---------------------------------------------------------------------*/
 
- *xi = (kapomederxy[0]*omegaderxy[0]+ 
+ *xi = (kapomederxy[0]*omegaderxy[0]+
         kapomederxy[1]*omegaderxy[1])/pow(omegaint,3);
- 
+
 /*---------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of f2_xi_kappa */
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief routine to calculate factors for kappa-equation
 
 <pre>                                                        he  02/03
@@ -339,24 +339,24 @@ return;
 \param    factor1       DOUBLE      (o)   factor
 \param    factor2       DOUBLE      (o)   factor
 \param    sig           DOUBLE      (o)   factor
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f2_fac_kappa_1(
-                  DOUBLE   xi,     
-                  DOUBLE   eddyint,    
-                  DOUBLE   kapomeint,    
-                  DOUBLE   omegaint,    
-                  DOUBLE   visc,    
-                  DOUBLE  *factor,    
-                  DOUBLE  *factor1,    
-                  DOUBLE  *factor2,    
-	            DOUBLE  *sig    
-	           ) 
+                  DOUBLE   xi,
+                  DOUBLE   eddyint,
+                  DOUBLE   kapomeint,
+                  DOUBLE   omegaint,
+                  DOUBLE   visc,
+                  DOUBLE  *factor,
+                  DOUBLE  *factor1,
+                  DOUBLE  *factor2,
+	            DOUBLE  *sig
+	           )
 {
 DOUBLE f;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_fac_kappa_1");
 #endif
 
@@ -370,41 +370,41 @@ if(xi> 0.0)  f=(1+680*xi*xi)/(1+400*xi*xi);
 *factor2 = 0.09*f/eddyint;
 *factor1 = 1.0;
 *sig     = 0.5;
- 
+
 /*---------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of f2_fac_kappa_1 */
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief routine to calculate factors for omega-equation
 
 <pre>                                                        he  02/03
 
 </pre>
 \param   **vderxy       DOUBLE      (i)   vel. deriv. at integr. point
-\param    kapomeint     DOUBLE      (i)   omega at integr. point 
+\param    kapomeint     DOUBLE      (i)   omega at integr. point
 \param    xi            DOUBLE      (o)   factor
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f2_xi_ome(
-                  DOUBLE  **vderxy,     
-	            DOUBLE   kapomeint,     
-	            DOUBLE  *xi     
-	           ) 
+                  DOUBLE  **vderxy,
+	            DOUBLE   kapomeint,
+	            DOUBLE  *xi
+	           )
 {
 DOUBLE wert,zaehler;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_xi_ome");
 #endif
 
 /*-----------------------------------------------------------------------
-                      zaehler = 
+                      zaehler =
 1/2 (grad u - grad^T u) 1/2 (grad u - grad^T u) : 1/2 (grad u + grad^T u)
 -------------------------------------------------------------------------*/
 
@@ -412,17 +412,17 @@ dstrc_enter("f2_xi_ome");
  zaehler = -2.0/8.0*(wert*wert*(vderxy[0][0]+vderxy[1][1]));
 
  *xi = FABS(zaehler/pow(0.09*kapomeint,3));
- 
+
 /*---------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of f2_xi_ome */
 
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief routine to calculate factors for omega-equation
 
 <pre>                                                        he  02/03
@@ -436,23 +436,23 @@ return;
 \param    factor1       DOUBLE      (o)   factor
 \param    factor2       DOUBLE      (o)   factor
 \param    sig           DOUBLE      (o)   factor
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f2_fac_ome(
-                  DOUBLE   xi,     
-                  DOUBLE   ome_proint,    
-                  DOUBLE   kappanint,    
-                  DOUBLE   visc,    
-                  DOUBLE  *factor,    
-                  DOUBLE  *factor1,    
-                  DOUBLE  *factor2,    
-	            DOUBLE  *sig    
-	           ) 
+                  DOUBLE   xi,
+                  DOUBLE   ome_proint,
+                  DOUBLE   kappanint,
+                  DOUBLE   visc,
+                  DOUBLE  *factor,
+                  DOUBLE  *factor1,
+                  DOUBLE  *factor2,
+	            DOUBLE  *sig
+	           )
 {
 DOUBLE f;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_fac_ome");
 #endif
 
@@ -463,39 +463,39 @@ f=(1+70*xi)/(1+80*xi);
 *factor2 =     0.072*f;
 *factor1 = 0.52*ome_proint/kappanint;
 *sig     = 0.5;
- 
+
 /*---------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of f2_fac_ome */
 
-/*!---------------------------------------------------------------------  
+/*!---------------------------------------------------------------------
 \brief routine to calculate 2nd kapeps derivatives at integration point
 
 <pre>                                                         he  03/03
 
 In this routine velint_dc for DISC. CAPT. is calc.
-				      
+
 </pre>
 \param   *velint        DOUBLE        (i)   2nd kapeps derivativs
 \param   *velint_dc     DOUBLE        (o)   2nd global derivatives
 \param   *kapomederxy   DOUBLE        (i)   kapomederiv.
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f2_vel_dc_1(
-                   DOUBLE  *velint,    
-                   DOUBLE  *velint_dc,    
-	             DOUBLE  *kapomederxy      
-	         ) 
+                   DOUBLE  *velint,
+                   DOUBLE  *velint_dc,
+	             DOUBLE  *kapomederxy
+	         )
 {
-DOUBLE skalar,square; 
+DOUBLE skalar,square;
 INT    idum;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_vel_dc_1");
 #endif
 /*---------------------------------------------------------------------*/
@@ -519,18 +519,18 @@ else
 
 
 /*---------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of f2_vel_dc_1 */
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief routine to calculate kappa for omega at integration point
 
 <pre>                                                        he  12/02
-				      
+
 </pre>
 \param   *kappanint    DOUBLE       (o)   kappan at integration point
 \param   *ome_proint   DOUBLE       (o)   ome_pro at integration point
@@ -538,40 +538,40 @@ return;
 \param   *kappan       DOUBLE       (i)   kappan (start-value) kappa equation
 \param   *kapomepro    DOUBLE       (i)   omega for production term
 \param    iel	    INT           (i)   number of nodes in this element
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
-void f2_kappain(	          
-             DOUBLE     *kappanint,     
-             DOUBLE     *ome_proint,     
-             DOUBLE     *funct,    
-             DOUBLE     *kappan,    
-             DOUBLE     *kapomepro,    
-             INT         iel       
-	     ) 
+void f2_kappain(
+             DOUBLE     *kappanint,
+             DOUBLE     *ome_proint,
+             DOUBLE     *funct,
+             DOUBLE     *kappan,
+             DOUBLE     *kapomepro,
+             INT         iel
+	     )
 {
 INT     j;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_kappain");
 #endif
 /*---------------------------------------------------------------------*/
 
-   *kappanint =ZERO; 
-   *ome_proint=ZERO; 
+   *kappanint =ZERO;
+   *ome_proint=ZERO;
    for (j=0;j<iel;j++) /* loop over all nodes j of the element */
    {
       *kappanint    += funct[j]*kappan[j];
       *ome_proint   += funct[j]*kapomepro[j];
     } /* end loop over j */
-   
- 
+
+
 /*---------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of f2_kappain */
 
 

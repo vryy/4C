@@ -14,8 +14,8 @@ Maintainer: Andrea Hund
 #include "wall1.h"
 #include "wall1_prototypes.h"
 
-/*! 
-\addtogroup WALL1 
+/*!
+\addtogroup WALL1
 *//*! @{ (documentation module open)*/
 
 /*----------------------------------------------------------------------*
@@ -48,7 +48,7 @@ DOUBLE       getval;
 INT          iloc;
 #endif /* D_OPTIM*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("wall1");
 #endif
 /*----------------------------------------------------------------------*/
@@ -107,7 +107,7 @@ break;/*----------------------------------------------------------------*/
 case calc_struct_stress:
    imyrank = actintra->intra_rank;
    if (imyrank==ele->proc)
-   { 
+   {
     actmat = &(mat[ele->mat-1]);
     w1_cal_stress(ele,&actdata,actmat,0,0);
    }
@@ -143,7 +143,7 @@ case calc_struct_update_istep:
    w1static_keug(ele,&actdata,actmat,estif_global,emass_global,NULL,0);
    dyn_ekin_local(ele,emass_global,container);
    }
-#ifdef GEMM  
+#ifdef GEMM
    if (container->isdyn) w1_update_history(ele,&actdata,actmat);
 #endif
 break;/*----------------------------------------------------------------*/
@@ -164,7 +164,7 @@ case calc_struct_opt_init:
 break;/*----------------------------------------------------------------*/
 /*---------------------------------------------- evaluate strain energy */
 case calc_struct_ste:
-#ifdef PARALLEL 
+#ifdef PARALLEL
    if(ele->proc!=actintra->intra_rank) break;
 #endif
    actmat = &(mat[ele->mat-1]);
@@ -178,7 +178,7 @@ case calc_struct_ste:
 break;/*----------------------------------------------------------------*/
 /*------------------------------------------------------- evaluate mass */
 case calc_struct_stm:
-#ifdef PARALLEL 
+#ifdef PARALLEL
    if(ele->proc!=actintra->intra_rank) break;
 #endif
    actmat = &(mat[ele->mat-1]);
@@ -192,13 +192,13 @@ case calc_struct_stm:
 break;/*----------------------------------------------------------------*/
 /*-------------------------------- evaluate derivative of strain energy */
 case calc_struct_dee:
-#ifdef PARALLEL 
+#ifdef PARALLEL
    if(ele->proc!=actintra->intra_rank) break;
 #endif
    if(ele->optdata==NULL) break; /* element does not take part in opt. */
    if(ele->optdata[0]==0) break; /* position in variable vector        */
    iloc = ele->optdata[0];
-   
+
    actmat = &(mat[ele->mat-1]);
    w1_oint(ele,
            &actdata,
@@ -210,13 +210,13 @@ case calc_struct_dee:
 break;/*----------------------------------------------------------------*/
 /*------------------------------ evaluate derivative of mass constraint */
 case calc_struct_dmc:
-#ifdef PARALLEL 
+#ifdef PARALLEL
    if(ele->proc!=actintra->intra_rank) break;
 #endif
    if(ele->optdata==NULL) break; /* element does not take part in opt. */
    if(ele->optdata[0]==0) break; /* position in variable vector        */
    iloc = ele->optdata[0];
-   
+
    actmat = &(mat[ele->mat-1]);
    w1_oint(ele,
            &actdata,
@@ -241,11 +241,11 @@ default:
 break;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 #endif /*D_WALL1*/
-return; 
+return;
 } /* end of wall1 */
 /*----------------------------------------------------------------------*/
 /*! @} (documentation module close)*/

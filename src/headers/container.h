@@ -9,7 +9,7 @@ Maintainer: Malte Neumann
 </pre>
 
 <pre>                                                         m.gee 10/02
-This Container is used to transport variables from the 'steuerroutinen' 
+This Container is used to transport variables from the 'steuerroutinen'
 to the 'Elementroutinen'
 </pre>
 
@@ -19,7 +19,7 @@ typedef struct _CONTAINER
 /*------------------------------------------------------------- file I/O */
 enum _FIELDTYP fieldtyp;     /*!< typ of field */
 INT            handsize;     /*!< has to do with restart */
-long int      *handles;      /*!< has to do with restart */                         
+long int      *handles;      /*!< has to do with restart */
 DOUBLE        *dvec;         /*!< global redundant vector passed to elements */
 DOUBLE        *dirich;       /*!< ? */
 INT            global_numeq; /*!< size of dvec */
@@ -41,12 +41,12 @@ INT            quality;      /*!< element quality measure */
 
 DOUBLE         min, max;     /*<! scaling parameters for ale two_step */
 DOUBLE         min_stiff;
-DOUBLE         max_stiff; 
-                                                   
+DOUBLE         max_stiff;
+
 INT            pos;          /*<! sol_increment[pos] contains dbc in ale */
 
-#ifdef D_FLUID               /* ab hier fuer fluid */ 
-DOUBLE        *ftimerhs;       
+#ifdef D_FLUID               /* ab hier fuer fluid */
+DOUBLE        *ftimerhs;
 DOUBLE        *fiterhs;
 DOUBLE        *liftdrag;
 DOUBLE        *fidrichrhs;   /*!< for storing the pressure rhs values */
@@ -59,7 +59,7 @@ struct _DBCSR *lumpedmass;   /*!< gradient matrix Projection Method */
 INT            turbu;
 INT            niturbu_pro;
 INT            niturbu_n;
-enum _FLUID_STRESS str;         
+enum _FLUID_STRESS str;
 INT           *iedgnod;
 INT            ngnode;
 INT            is_relax;      /*!< flag, if calculation is for relaxation parameter */
@@ -68,7 +68,7 @@ INT            is_relax;      /*!< flag, if calculation is for relaxation parame
 #endif
 
 #ifdef D_OPTIM                /* include optimization code to ccarat        */
-DOUBLE         getvalue ;     /*!< optimization */   
-DOUBLE        *getvector;     /*!< optimization */   
+DOUBLE         getvalue ;     /*!< optimization */
+DOUBLE        *getvector;     /*!< optimization */
 #endif                        /* stop including optimization code to ccarat */
 } CONTAINER;

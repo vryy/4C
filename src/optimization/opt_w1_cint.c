@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the 2D material routines which calclate 
+\brief contains the 2D material routines which calclate
        derivatives for optimization
 
 <pre>
@@ -26,7 +26,7 @@ Maintainer: Andreas Lipka
  | select proper material law                               al 01/02    |
  *----------------------------------------------------------------------*/
 void w1_call_matd(ELEMENT     *ele,
-                 MATERIAL     *mat, 
+                 MATERIAL     *mat,
                  WALL_TYPE   wtype,
                  DOUBLE      **bop,
                  DOUBLE    *stress,
@@ -37,11 +37,11 @@ void w1_call_matd(ELEMENT     *ele,
  *----------------------------------------------------------------------*/
 void w1_matd_stvpor(MATERIAL  *mat,
                     DOUBLE *matdata,
-                    WALL_TYPE wtype, 
+                    WALL_TYPE wtype,
                     DOUBLE **d);
 
-/*! 
-\addtogroup WALL1 
+/*!
+\addtogroup WALL1
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
@@ -58,13 +58,13 @@ This routine performs integration of an 3D-hex-element.
 \param         *init  INT      (i)   flag for initialization (alloc mem...)
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: w1_oint()
 
 *----------------------------------------------------------------------*/
 void w1_oint(
-             ELEMENT   *ele, 
-             W1_DATA   *data, 
+             ELEMENT   *ele,
+             W1_DATA   *data,
              MATERIAL  *mat,
              DOUBLE    *retval,  /* return value */
              INT        init     /* ==2 calc.strain energy */
@@ -86,18 +86,18 @@ DOUBLE              stifac;           /* thickness                      */
 DOUBLE              e1,e2;            /* GP-coords                      */
 DOUBLE              facr,facs;        /* weights at GP                  */
 /*----------------------------------------------------------------------*/
-static ARRAY    D_a;         /* material tensor */     
-static DOUBLE **D;         
-static ARRAY   DD_a;         /* material tensor */     
-static DOUBLE **DD;         
-static ARRAY    funct_a;     /* shape functions */    
-static DOUBLE  *funct;     
-static ARRAY    deriv_a;     /* derivatives of shape functions */   
-static DOUBLE **deriv;     
-static ARRAY    xjm_a;       /* jacobian matrix */     
-static DOUBLE **xjm;         
-static ARRAY    bop_a;       /* B-operator */   
-static DOUBLE **bop;       
+static ARRAY    D_a;         /* material tensor */
+static DOUBLE **D;
+static ARRAY   DD_a;         /* material tensor */
+static DOUBLE **DD;
+static ARRAY    funct_a;     /* shape functions */
+static DOUBLE  *funct;
+static ARRAY    deriv_a;     /* derivatives of shape functions */
+static DOUBLE **deriv;
+static ARRAY    xjm_a;       /* jacobian matrix */
+static DOUBLE **xjm;
+static ARRAY    bop_a;       /* B-operator */
+static DOUBLE **bop;
 
 DOUBLE det;             /* Jacobi-det*/
 DOUBLE disd[5];
@@ -112,7 +112,7 @@ DOUBLE  stv;  /* volume                      */
 
 DOUBLE dens;  /* density                     */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_oint");
 #endif
 /*----------------------------------------------------------------------*/
@@ -121,12 +121,12 @@ newval = 0;
 /*------------------------------------------------- some working arrays */
 if (init==1)
 {
-  funct     = amdef("funct"  ,&funct_a ,MAXNOD_WALL1,1 ,"DV");       
-  deriv     = amdef("deriv"  ,&deriv_a ,2,MAXNOD_WALL1 ,"DA");       
-  D         = amdef("D"      ,&D_a     ,6,6            ,"DA");           
-  DD        = amdef("DD"     ,&DD_a  ,6,6              ,"DA");           
-  xjm       = amdef("xjm"    ,&xjm_a ,numdf,numdf      ,"DA");           
-  bop       = amdef("bop"    ,&bop_a   ,numeps,(numdf*MAXNOD_WALL1),"DA");           
+  funct     = amdef("funct"  ,&funct_a ,MAXNOD_WALL1,1 ,"DV");
+  deriv     = amdef("deriv"  ,&deriv_a ,2,MAXNOD_WALL1 ,"DA");
+  D         = amdef("D"      ,&D_a     ,6,6            ,"DA");
+  DD        = amdef("DD"     ,&DD_a  ,6,6              ,"DA");
+  xjm       = amdef("xjm"    ,&xjm_a ,numdf,numdf      ,"DA");
+  bop       = amdef("bop"    ,&bop_a   ,numeps,(numdf*MAXNOD_WALL1),"DA");
   goto end;
 }
 /*------------------------------------------- integration parameters ---*/
@@ -157,9 +157,9 @@ for (lr=0; lr<nir; lr++)
       facs = data->wgts[ls];
       /*------------------------- shape functions and their derivatives */
       w1_funct_deriv(funct,deriv,e1,e2,ele->distyp,1);
-      /*------------------------------------ compute jacobian matrix ---*/       
-      w1_jaco (deriv,xjm,&det,ele,iel);                      
-      /*------------------------------------ integration factor  -------*/ 
+      /*------------------------------------ compute jacobian matrix ---*/
+      w1_jaco (deriv,xjm,&det,ele,iel);
+      /*------------------------------------ integration factor  -------*/
       fac = facr * facs * det * stifac;
       /*------------------------------------------- calculate volume ---*/
       if (init==5||init==3)
@@ -170,8 +170,8 @@ for (lr=0; lr<nir; lr++)
       amzero(&bop_a);
       /*--------------------------------------- calculate operator B ---*/
       w1_bop(bop,deriv,xjm,det,iel);
-      /*--------------------------- compute displacement derivatives ---*/        
-      w1_disd (ele,bop,NULL,NULL,ele->e.w1->wtype,disd) ;                  
+      /*--------------------------- compute displacement derivatives ---*/
+      w1_disd (ele,bop,NULL,NULL,ele->e.w1->wtype,disd) ;
       /*------------------------------- get actual strains -> strain ---*/
       w1_eps (disd,ele->e.w1->wtype,strain);
       /*------------------------------------------ call material law ---*/
@@ -182,18 +182,18 @@ for (lr=0; lr<nir; lr++)
           ste += (F[0]*strain[0] + F[1]*strain[1] + F[2]*strain[2] +
                   F[3]*strain[3])*fac*0.5;
           continue;
-        
+
       }
       /*----------- calculate derivatives material matrix and stress ---*/
       if(init==4)
       {
         for (i=0;i<4;i++) DF[i] = 0.;
         w1_call_matd(ele,mat,ele->e.w1->wtype,bop,DF, DD);
-       
+
         dste -= (DF[0]*strain[0] + DF[1]*strain[1] + DF[2]*strain[2] +
                  DF[3]*strain[3]) *fac*0.5;
       }
-   }/*============================================= end of loop over ls */ 
+   }/*============================================= end of loop over ls */
 }/*================================================ end of loop over lr */
 /*----------------------------------------------------------------------*/
   switch(init)
@@ -221,17 +221,17 @@ for (lr=0; lr<nir; lr++)
 /*----------------------------------------------------------------------*/
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of w1_oint */
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*
  | select proper material law                               al 01/02    |
  *----------------------------------------------------------------------*/
 void w1_call_matd(ELEMENT     *ele,
-                 MATERIAL     *mat, 
+                 MATERIAL     *mat,
                  WALL_TYPE   wtype,
                  DOUBLE      **bop,
                  DOUBLE    *stress,
@@ -242,7 +242,7 @@ INT j;
 DOUBLE disd[4];
 DOUBLE strain[6];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_call_matd");
 #endif
 /*------------------------------------------------ call material law ---*/
@@ -260,10 +260,10 @@ dstrc_enter("w1_call_matd");
   break;
   }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of w1_call_matd */
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*
@@ -272,12 +272,12 @@ return;
  *----------------------------------------------------------------------*/
 void w1_matd_stvpor(MATERIAL  *mat,
                     DOUBLE *matdata,
-                    WALL_TYPE wtype, 
+                    WALL_TYPE wtype,
                     DOUBLE **d)
 {
 DOUBLE e1, e2, e3, a1, b1, c1;
 DOUBLE dym, ym, pv, dn, rd, ex;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_matd_stvpor");
 #endif
 /*----------------------------------------------------------------------*/
@@ -291,7 +291,7 @@ dstrc_enter("w1_matd_stvpor");
   rd = mat->m.stvenpor->refdens     ;
   ex = mat->m.stvenpor->exponent    ;
 
-  dym=pow((dn/rd),(ex-1.)); 
+  dym=pow((dn/rd),(ex-1.));
   dym=(ym*ex*dym)/rd;
 /*----------------------------------------------------- plane stress ---*/
   switch(wtype)
@@ -321,7 +321,7 @@ dstrc_enter("w1_matd_stvpor");
     d[0][1]=b1;
     d[0][2]=0.;
     d[0][3]=b1;
-    
+
     d[1][0]=b1;
     d[1][1]=a1;
     d[1][2]=0.;
@@ -331,7 +331,7 @@ dstrc_enter("w1_matd_stvpor");
     d[2][1]=0.;
     d[2][2]=c1/2.;
     d[2][3]=0.;
-    
+
     d[3][0]=b1;
     d[3][1]=b1;
     d[3][2]=0.;
@@ -339,7 +339,7 @@ dstrc_enter("w1_matd_stvpor");
   break;
   }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

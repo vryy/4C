@@ -1,13 +1,13 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 
- - mat_pl_dp_lin_main:      which calculates the constitutive matrix for 
-                            a plasticity model based on the 'Drucker Prager' 
-                            yield criterion, with a combined, isotropic and 
-                            kinematic linear hardening law 
+\brief contains the routine
+ - mat_pl_dp_lin_main:      which calculates the constitutive matrix for
+                            a plasticity model based on the 'Drucker Prager'
+                            yield criterion, with a combined, isotropic and
+                            kinematic linear hardening law
                             (see Dis. Menrath & Book: Simo & Hughes).
-                            This routine is formulated in cartesian 
-                            coordinate system, general 3D with the sorting 
+                            This routine is formulated in cartesian
+                            coordinate system, general 3D with the sorting
                             [11,22,33,12,23,13]
  - mat_pl_dp_lin_radi:      which performs the radial return algorithm
  - mat_pl_dp_lin_mapl:      which calculates the elasto-plastic consistent
@@ -31,14 +31,14 @@ Maintainer: Stefan Hartmann
 #include "../headers/standardtypes.h"
 #include "mat_prototypes.h"
 
-/*! 
-\addtogroup MAT 
-*//*! @{ (documentation module open)*/ 
+/*!
+\addtogroup MAT
+*//*! @{ (documentation module open)*/
 
 
 /*!----------------------------------------------------------------------
-\brief consitutive matrix for 'Drucker Prager'-Plasticity Model with linear 
-       hardening                                  
+\brief consitutive matrix for 'Drucker Prager'-Plasticity Model with linear
+       hardening
 
 <pre>                                                            sh 09/03
 This routine calculates the constitutive matrix and forces for a plasticity
@@ -48,18 +48,18 @@ Within this routine, everything is done in a cartesian coordinate system
 with the following sorting of stresses and strains:
 "brick" [11,22,33,12,23,13]
 </pre>
-\param  DOUBLE    ym        (i)  young's modulus 
-\param  DOUBLE    pv        (i)  poisson's ration               
-\param  DOUBLE    sigy      (i)  uniaxial yield stress         
-\param  DOUBLE    eh        (i)  hardening modulus                 
+\param  DOUBLE    ym        (i)  young's modulus
+\param  DOUBLE    pv        (i)  poisson's ration
+\param  DOUBLE    sigy      (i)  uniaxial yield stress
+\param  DOUBLE    eh        (i)  hardening modulus
 \param  DOUBLE    gf        (i)  fracture energy
 \param  DOUBLE    betah     (i)  controls the isotropic/kinematic hardening
 \param  DOUBLE    alpha     (i)  coefficient of friction
 \param  DOUBLE    stress[6] (o)  vector of stresses [11,22,33,12,23,13]
 \param  DOUBLE    strain[6] (i)  actual strains from displacements  [11,22,33,12,23,13]
-\param  DOUBLE  **d         (o)  constitutive matrix          
-\param  INT      *iupd     (i/o) controls update of new stresses to wa         
-\param  INT      *yip      (i/o) flag if global predictor step an if last step was plastic/elastic               
+\param  DOUBLE  **d         (o)  constitutive matrix
+\param  INT      *iupd     (i/o) controls update of new stresses to wa
+\param  INT      *yip      (i/o) flag if global predictor step an if last step was plastic/elastic
 \param  DOUBLE   *epstn    (i/o) uniaxial equivalent strain -> WA
 \param  DOUBLE    sig[6]    (i)  stresses from WA  [11,22,33,12,23,13]
 \param  DOUBLE    eps[6]    (i)  strains from WA  [11,22,33,12,23,13]
@@ -67,28 +67,28 @@ with the following sorting of stresses and strains:
 \param  DOUBLE    dia     (i)  internal length parameter from WA
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: s9_mat_plast_dp()     [s9_mat_plast_dp.c]
 
 *----------------------------------------------------------------------*/
 void mat_pl_dp_lin_main(
-             DOUBLE   ym,       
-             DOUBLE   pv,       
-             DOUBLE   sigy,     
-             DOUBLE   eh,       
-             DOUBLE   gf,       
-             DOUBLE   betah,    
-             DOUBLE   phi,      
+             DOUBLE   ym,
+             DOUBLE   pv,
+             DOUBLE   sigy,
+             DOUBLE   eh,
+             DOUBLE   gf,
+             DOUBLE   betah,
+             DOUBLE   phi,
              DOUBLE   stress[6],
              DOUBLE   strain[6],
-             DOUBLE **d,        
-             INT     *iupd,     
-             INT     *yip,      
-             DOUBLE  *epstn,    
-             DOUBLE   sig[6],   
-             DOUBLE   eps[6],   
-             DOUBLE   qn[6],    
-             DOUBLE   dia)      
+             DOUBLE **d,
+             INT     *iupd,
+             INT     *yip,
+             DOUBLE  *epstn,
+             DOUBLE   sig[6],
+             DOUBLE   eps[6],
+             DOUBLE   qn[6],
+             DOUBLE   dia)
 {
 /*----------------------------------------------------------------------*/
 INT    i,j;
@@ -108,7 +108,7 @@ DOUBLE norm;            /*Norm of n*/
 DOUBLE k_eps;           /*uniaxial equivalent stresses -> isotropic hardening*/
 DOUBLE epstmax;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mat_pl_dp_lin_main");
 #endif
 /*----------------------------------------------------------------------*/
@@ -139,8 +139,8 @@ dstrc_enter("mat_pl_dp_lin_main");
 q13  = 1./3.;
 ro23 = sqrt(2./3.);
 
-phi    = phi * RAD;          
-alpha1 = ro23 * ( q13 * (6.*sin(phi)) / (3.-sin(phi)) ); 
+phi    = phi * RAD;
+alpha1 = ro23 * ( q13 * (6.*sin(phi)) / (3.-sin(phi)) );
 
 yld = sigy * (3.*cos(phi))/(3.-sin(phi));
 
@@ -150,7 +150,7 @@ G = ym / (2. + 2.* pv);
 ft2 = 1.0;   /*initialize for inverted cone*/
 
 /*----- get linear elastic isotropic material tensor -------------------*/
-   mat_el_iso(ym, pv, d); 
+   mat_el_iso(ym, pv, d);
 
 /*-----------------------------------------------------------------------|
 |     YIP > 0  STRESSES ARE AVAILABLE FROM LAST UPDATE                   |
@@ -190,8 +190,8 @@ ft2 = 1.0;   /*initialize for inverted cone*/
 |   3. CALCULATE TOTAL STRESS                                            |
 |   4. CHECK STRESS DEVIATOR AGAINST CURRENT YIELD SURFACE               |
 |-----------------------------------------------------------------------*/
-  
-  for (i=0; i<6; i++) deleps[i] = strain[i] - eps[i]; 
+
+  for (i=0; i<6; i++) deleps[i] = strain[i] - eps[i];
 
   deleps[3] = 2. * deleps[3];
   deleps[4] = 2. * deleps[4];
@@ -199,7 +199,7 @@ ft2 = 1.0;   /*initialize for inverted cone*/
 
   for (i=0; i<6; i++) delsig[i] = 0.0;
   for (i=0; i<6; i++) for (j=0; j<6; j++) delsig[i] += d[i][j]*deleps[j];
-  
+
   for (i=0; i<6; i++) sigma[i] = sig[i] + delsig[i];
   for (i=0; i<6; i++) eta[i]   = sigma[i] - qn[i];
 
@@ -218,7 +218,7 @@ ft2 = 1.0;   /*initialize for inverted cone*/
     else
     {
       if(*epstn < epstmax)  k_eps = ro23 * (yld + betah*hards* *epstn);
-      else k_eps = 0.01*sigy;    
+      else k_eps = 0.01*sigy;
     }
 
 /*--- yield condition - Drucker Prager 3D - linear hardening/softening  ---*/
@@ -229,13 +229,13 @@ ft2 = 1.0;   /*initialize for inverted cone*/
 
 
 /*------------- state of stress within yield surface - E L A S T I C ---*/
-  if (ft1<EPS10) 
+  if (ft1<EPS10)
   {
     *yip = 1;
     for (i=0; i<6; i++) stress[i] = eta[i] + qn[i];
   }
 /*------------ state of stress outside yield surface - P L A S T I C ---*/
-  else 
+  else
   {
     *yip = 2;
 
@@ -268,7 +268,7 @@ ft2 = 1.0;   /*initialize for inverted cone*/
 end:
 /*Store values into Working-Array --> outside of this routine*/
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -279,28 +279,28 @@ return;
 \brief return algorithm for 'Drucker Prager' material model
 
 <pre>                                                            sh 09/03
-This routine projects the trial stresses back to the yield surface. In 
-here is the return algorithm for the 'Drucker Prager' yield criterion with 
-combined linear iso/kin. hardenig law  
+This routine projects the trial stresses back to the yield surface. In
+here is the return algorithm for the 'Drucker Prager' yield criterion with
+combined linear iso/kin. hardenig law
 </pre>
-\param  DOUBLE    hards     (i)  (E*Eh)/(E-Eh)  
+\param  DOUBLE    hards     (i)  (E*Eh)/(E-Eh)
 \param  DOUBLE    betah     (i)  controls the isotropic/kinematic hardening
 \param  DOUBLE   *epstn    (i/o) uniaxial equivalent strain -> WA
-\param  DOUBLE    G         (i)  shear modulus  
-\param  DOUBLE    K         (i)  bulk modulus  
-\param  DOUBLE    alpha     (i)  coefficient of friction          
-\param  DOUBLE    sigma[6] (i/o) trial stresses to be projected  
+\param  DOUBLE    G         (i)  shear modulus
+\param  DOUBLE    K         (i)  bulk modulus
+\param  DOUBLE    alpha     (i)  coefficient of friction
+\param  DOUBLE    sigma[6] (i/o) trial stresses to be projected
 \param  DOUBLE    qn[6]    (i/o) backstress vector from WA  [11,22,33,12,23,13]
-\param  DOUBLE   *dlam      (o)  plastic multiplier 
-\param  DOUBLE    ft_tr     (i)  yield criterion of trial state 
-\param  DOUBLE    n[6]      (i)  gradient n of trial state 
+\param  DOUBLE   *dlam      (o)  plastic multiplier
+\param  DOUBLE    ft_tr     (i)  yield criterion of trial state
+\param  DOUBLE    n[6]      (i)  gradient n of trial state
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: mat_pl_dp_lin_main()  [mat_pl_dp_lin.c]
 
 *----------------------------------------------------------------------*/
-void mat_pl_dp_lin_radi(DOUBLE  hards, 
+void mat_pl_dp_lin_radi(DOUBLE  hards,
                         DOUBLE  betah,
                         DOUBLE *epstn,
                         DOUBLE  G,
@@ -318,7 +318,7 @@ DOUBLE ro23,q13;
 DOUBLE H_k;
 DOUBLE sig_m,s[6],qn_m,qn_dev[6];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mat_pl_dp_lin_radi");
 #endif
 /*----------------------------------------------------------------------*/
@@ -376,7 +376,7 @@ qn[3] =        qn_dev[3];
 qn[4] =        qn_dev[4];
 qn[5] =        qn_dev[5];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -385,29 +385,29 @@ return;
 
 /*!----------------------------------------------------------------------
 \brief calculates the elasto-plastic consistent material tangent for
- von 'Drucker Prager' plasticity                                   
+ von 'Drucker Prager' plasticity
 
 <pre>                                                            sh 09/03
 This routine calculates the elasto-plastic consistent material tangent
 for the 'Drucker Prager plasticity with combined, linear iso/kin. hardening
-law. 
+law.
 with the following sorting of stresses and strains:
 "brick" [11,22,33,12,23,13]
 </pre>
-\param  DOUBLE    hards     (i)  (E*Eh)/(E-Eh)  
+\param  DOUBLE    hards     (i)  (E*Eh)/(E-Eh)
 \param  DOUBLE    betah     (i)  controls the isotropic/kinematic hardening
-\param  DOUBLE    alpha     (i)  coefficient of friction          
-\param  DOUBLE    dlam      (i)  plastic multiplier 
-\param  DOUBLE    e         (i)  youngs modulus  
-\param  DOUBLE    vnu       (i)  poisson's ration  
-\param  DOUBLE  **d         (o)  material matrix to be calculated   
+\param  DOUBLE    alpha     (i)  coefficient of friction
+\param  DOUBLE    dlam      (i)  plastic multiplier
+\param  DOUBLE    e         (i)  youngs modulus
+\param  DOUBLE    vnu       (i)  poisson's ration
+\param  DOUBLE  **d         (o)  material matrix to be calculated
                                  i: elastic material matric (not needed)
-                                 o: konsistent elasto-plastic material matrix          
-\param  DOUBLE    norm      (i)  norm of deviatoric stresses |s| (projected) 
+                                 o: konsistent elasto-plastic material matrix
+\param  DOUBLE    norm      (i)  norm of deviatoric stresses |s| (projected)
 \param  DOUBLE    n[6]      (i)  gradient n (s/|s|)  (projected)
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: mat_pl_dp_lin_main()     [mat_pl_dp_lin.c]
 
 *-----------------------------------------------------------------------*/
@@ -431,7 +431,7 @@ DOUBLE dfdk;
 DOUBLE hm[6][6],CC[36], CI_vec[36];
 DOUBLE nenner, zaehler1[6];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mat_pl_dp_lin_mapl");
 #endif
 /*----------------------------------------------------------------------*/
@@ -449,47 +449,47 @@ q23  = 2./3.;
 mat_el_iso_inv(e, vnu, CI_vec); /* This routine returns a vector [36] --*/
 
 /*------  df2dss = 1/|n| * (P_dev - n dyad n) --------------------------*/
-df2dss[ 0] = ( q23 - n[0] * n[0]); 
-df2dss[ 1] = (-q13 - n[0] * n[1]); 
-df2dss[ 2] = (-q13 - n[0] * n[2]); 
-df2dss[ 3] = (     - n[0] * n[3]); 
-df2dss[ 4] = (     - n[0] * n[4]); 
-df2dss[ 5] = (     - n[0] * n[5]); 
+df2dss[ 0] = ( q23 - n[0] * n[0]);
+df2dss[ 1] = (-q13 - n[0] * n[1]);
+df2dss[ 2] = (-q13 - n[0] * n[2]);
+df2dss[ 3] = (     - n[0] * n[3]);
+df2dss[ 4] = (     - n[0] * n[4]);
+df2dss[ 5] = (     - n[0] * n[5]);
 
-df2dss[ 6] = (-q13 - n[1] * n[0]); 
-df2dss[ 7] = ( q23 - n[1] * n[1]); 
-df2dss[ 8] = (-q13 - n[1] * n[2]); 
-df2dss[ 9] = (     - n[1] * n[3]); 
-df2dss[10] = (     - n[1] * n[4]); 
-df2dss[11] = (     - n[1] * n[5]); 
+df2dss[ 6] = (-q13 - n[1] * n[0]);
+df2dss[ 7] = ( q23 - n[1] * n[1]);
+df2dss[ 8] = (-q13 - n[1] * n[2]);
+df2dss[ 9] = (     - n[1] * n[3]);
+df2dss[10] = (     - n[1] * n[4]);
+df2dss[11] = (     - n[1] * n[5]);
 
-df2dss[12] = (-q13 - n[2] * n[0]); 
-df2dss[13] = (-q13 - n[2] * n[1]); 
-df2dss[14] = ( q23 - n[2] * n[2]); 
-df2dss[15] = (     - n[2] * n[3]); 
-df2dss[16] = (     - n[2] * n[4]); 
-df2dss[17] = (     - n[2] * n[5]); 
+df2dss[12] = (-q13 - n[2] * n[0]);
+df2dss[13] = (-q13 - n[2] * n[1]);
+df2dss[14] = ( q23 - n[2] * n[2]);
+df2dss[15] = (     - n[2] * n[3]);
+df2dss[16] = (     - n[2] * n[4]);
+df2dss[17] = (     - n[2] * n[5]);
 
-df2dss[18] = (     - n[3] * n[0]); 
-df2dss[19] = (     - n[3] * n[1]); 
-df2dss[20] = (     - n[3] * n[2]); 
-df2dss[21] = ( 2.  - n[3] * n[3]); 
-df2dss[22] = (     - n[3] * n[4]); 
-df2dss[23] = (     - n[3] * n[5]); 
+df2dss[18] = (     - n[3] * n[0]);
+df2dss[19] = (     - n[3] * n[1]);
+df2dss[20] = (     - n[3] * n[2]);
+df2dss[21] = ( 2.  - n[3] * n[3]);
+df2dss[22] = (     - n[3] * n[4]);
+df2dss[23] = (     - n[3] * n[5]);
 
-df2dss[24] = (     - n[4] * n[0]); 
-df2dss[25] = (     - n[4] * n[1]); 
-df2dss[26] = (     - n[4] * n[2]); 
-df2dss[27] = (     - n[4] * n[3]); 
-df2dss[28] = ( 2.  - n[4] * n[4]); 
-df2dss[29] = (     - n[4] * n[5]); 
+df2dss[24] = (     - n[4] * n[0]);
+df2dss[25] = (     - n[4] * n[1]);
+df2dss[26] = (     - n[4] * n[2]);
+df2dss[27] = (     - n[4] * n[3]);
+df2dss[28] = ( 2.  - n[4] * n[4]);
+df2dss[29] = (     - n[4] * n[5]);
 
-df2dss[30] = (     - n[5] * n[0]); 
-df2dss[31] = (     - n[5] * n[1]); 
-df2dss[32] = (     - n[5] * n[2]); 
-df2dss[33] = (     - n[5] * n[3]); 
-df2dss[34] = (     - n[5] * n[4]); 
-df2dss[35] = ( 2.  - n[5] * n[5]); 
+df2dss[30] = (     - n[5] * n[0]);
+df2dss[31] = (     - n[5] * n[1]);
+df2dss[32] = (     - n[5] * n[2]);
+df2dss[33] = (     - n[5] * n[3]);
+df2dss[34] = (     - n[5] * n[4]);
+df2dss[35] = ( 2.  - n[5] * n[5]);
 
 /*------  Cel_-1 + dlam*df2dss -------------------------------------------*/
 fac = dlam / norm;
@@ -523,12 +523,12 @@ for (i=0; i<6; i++) for (j=0; j<6; j++) zaehler1[i] += hm[i][j]*dfds[j];
 /*---- Cep = hm - [(hm:dfds)dyad(hm:dfds)]/(dfds:hm:dfds - dfdk) ---------*/
 fac = 1./nenner;
 
-for (i=0; i<6; i++) for (j=0; j<6; j++) 
+for (i=0; i<6; i++) for (j=0; j<6; j++)
 {
-      d[i][j] = hm[i][j] - fac * zaehler1[i] * zaehler1[j]; 
+      d[i][j] = hm[i][j] - fac * zaehler1[i] * zaehler1[j];
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -540,28 +540,28 @@ return;
 inverted cone
 
 <pre>                                                            sh 09/03
-This routine projects the trial stresses back to the yield surface. In 
-here is the return algorithm for the 'Drucker Prager' yield criterion with 
-combined linear iso/kin. hardenig law  
+This routine projects the trial stresses back to the yield surface. In
+here is the return algorithm for the 'Drucker Prager' yield criterion with
+combined linear iso/kin. hardenig law
 </pre>
-\param  DOUBLE    hards     (i)  (E*Eh)/(E-Eh)  
+\param  DOUBLE    hards     (i)  (E*Eh)/(E-Eh)
 \param  DOUBLE    betah     (i)  controls the isotropic/kinematic hardening
 \param  DOUBLE   *epstn    (i/o) uniaxial equivalent strain -> WA
-\param  DOUBLE    G         (i)  shear modulus  
-\param  DOUBLE    K         (i)  bulk modulus 
-\param  DOUBLE    alpha1    (i)  coefficient of friction of main yield surface         
-\param  DOUBLE    sigma[6] (i/o) trial stresses to be projected  
+\param  DOUBLE    G         (i)  shear modulus
+\param  DOUBLE    K         (i)  bulk modulus
+\param  DOUBLE    alpha1    (i)  coefficient of friction of main yield surface
+\param  DOUBLE    sigma[6] (i/o) trial stresses to be projected
 \param  DOUBLE    qn[6]    (i/o) backstress vector from WA  [11,22,33,12,23,13]
 \param  DOUBLE   *dlam      (o)  plastic multiplier (dlam1 + dlam2 ; of main yield surface + inverted cone)
 \param  DOUBLE    ft1       (i)  yilcr at trial state of main yield surface
 \param  DOUBLE    ft2       (i)  yilcr at trial state of inverted cone
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: mat_pl_dp_lin_main()  [mat_pl_dp_lin.c]
 
 *----------------------------------------------------------------------*/
-void mat_pl_dp_lin_radi_apex(DOUBLE  hards, 
+void mat_pl_dp_lin_radi_apex(DOUBLE  hards,
                              DOUBLE  betah,
                              DOUBLE *epstn,
                              DOUBLE  G,
@@ -583,7 +583,7 @@ DOUBLE d11,d12,d21,d22,det;
 DOUBLE H_k;
 DOUBLE sig_m,s[6],qn_m,qn_dev[6];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mat_pl_dp_lin_radi_apex");
 #endif
 /*----------------------------------------------------------------------*/
@@ -611,7 +611,7 @@ if   (dlam1 < 0.0) dserror("dlam1 < 0 in mat_pl_dp_lin -> radi_apex");
 if   (dlam2 > 0.0) dserror("dlam2 > 0 in mat_pl_dp_lin -> radi_apex");
 
 /*---- new dlam for mapl_apex  -----------------------------------------*/
-*dlam = dlam1 + dlam2; 
+*dlam = dlam1 + dlam2;
 
 /*-------- update of uniaxial plastic strain, stresses & backstress ----*/
 *epstn = *epstn +  dlam1;
@@ -666,7 +666,7 @@ qn[4] =        qn_dev[4];
 qn[5] =        qn_dev[5];
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -676,7 +676,7 @@ return;
 /*!----------------------------------------------------------------------
 \brief calculates the elasto-plastic consistent material tangent for
  von 'Drucker Prager' plasticity for trial stresses in the apex region
- --> inverted cone                                  
+ --> inverted cone
 
 <pre>                                                            sh 09/03
 This routine calculates the elasto-plastic consistent material tangent
@@ -685,20 +685,20 @@ law. --> inverted cone
 with the following sorting of stresses and strains:
 "brick" [11,22,33,12,23,13]
 </pre>
-\param  DOUBLE    hards     (i)  (E*Eh)/(E-Eh)  
+\param  DOUBLE    hards     (i)  (E*Eh)/(E-Eh)
 \param  DOUBLE    betah     (i)  controls the isotropic/kinematic hardening
-\param  DOUBLE    alpha1    (i)  coefficient of friction for main yield surface          
+\param  DOUBLE    alpha1    (i)  coefficient of friction for main yield surface
 \param  DOUBLE    dlam      (i)  plastic multiplier (dlam1 + dlam2 ; of main yield surface + inverted cone)
-\param  DOUBLE    e         (i)  youngs modulus  
-\param  DOUBLE    vnu       (i)  poisson's ratio  
-\param  DOUBLE  **d         (o)  material matrix to be calculated   
+\param  DOUBLE    e         (i)  youngs modulus
+\param  DOUBLE    vnu       (i)  poisson's ratio
+\param  DOUBLE  **d         (o)  material matrix to be calculated
                                  i: elastic material matric (not needed)
-                                 o: konsistent elasto-plastic material matrix          
-\param  DOUBLE    norm      (i)  norm of deviatoric stresses (|s|) (projected)  
-\param  DOUBLE    n[6]      (i)  gradient n (s/|s|) (projected) 
+                                 o: konsistent elasto-plastic material matrix
+\param  DOUBLE    norm      (i)  norm of deviatoric stresses (|s|) (projected)
+\param  DOUBLE    n[6]      (i)  gradient n (s/|s|) (projected)
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: mat_pl_dp_lin_main()     [mat_pl_dp_lin.c]
 
 *----------------------------------------------------------------------*/
@@ -709,8 +709,8 @@ void mat_pl_dp_lin_mapl_apex(DOUBLE   hards,
                              DOUBLE   e,
                              DOUBLE   vnu,
                              DOUBLE **d,
-                             DOUBLE   norm, 
-                             DOUBLE   n[6]) 
+                             DOUBLE   norm,
+                             DOUBLE   n[6])
 {
 /*----------------------------------------------------------------------*/
 INT    i,j,k,cc,irc;
@@ -726,7 +726,7 @@ DOUBLE CC[36], CI_vec[36];
 DOUBLE fac;
 DOUBLE df2dss[36];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mat_pl_dp_lin_mapl_apex");
 #endif
 /*----------------------------------------------------------------------*/
@@ -748,47 +748,47 @@ for (i=0; i<6; i++) for (j=0; j<6; j++) HM2[i][j]    = 0.0;
 mat_el_iso_inv(e, vnu, CI_vec); /* This routine returns a vector [36] --*/
 
 /*------  df2dss = 1/|n| * (P_dev - n dyad n) --------------------------*/
-df2dss[ 0] = ( q23 - n[0] * n[0]); 
-df2dss[ 1] = (-q13 - n[0] * n[1]); 
-df2dss[ 2] = (-q13 - n[0] * n[2]); 
-df2dss[ 3] = (     - n[0] * n[3]); 
-df2dss[ 4] = (     - n[0] * n[4]); 
-df2dss[ 5] = (     - n[0] * n[5]); 
+df2dss[ 0] = ( q23 - n[0] * n[0]);
+df2dss[ 1] = (-q13 - n[0] * n[1]);
+df2dss[ 2] = (-q13 - n[0] * n[2]);
+df2dss[ 3] = (     - n[0] * n[3]);
+df2dss[ 4] = (     - n[0] * n[4]);
+df2dss[ 5] = (     - n[0] * n[5]);
 
-df2dss[ 6] = (-q13 - n[1] * n[0]); 
-df2dss[ 7] = ( q23 - n[1] * n[1]); 
-df2dss[ 8] = (-q13 - n[1] * n[2]); 
-df2dss[ 9] = (     - n[1] * n[3]); 
-df2dss[10] = (     - n[1] * n[4]); 
-df2dss[11] = (     - n[1] * n[5]); 
+df2dss[ 6] = (-q13 - n[1] * n[0]);
+df2dss[ 7] = ( q23 - n[1] * n[1]);
+df2dss[ 8] = (-q13 - n[1] * n[2]);
+df2dss[ 9] = (     - n[1] * n[3]);
+df2dss[10] = (     - n[1] * n[4]);
+df2dss[11] = (     - n[1] * n[5]);
 
-df2dss[12] = (-q13 - n[2] * n[0]); 
-df2dss[13] = (-q13 - n[2] * n[1]); 
-df2dss[14] = ( q23 - n[2] * n[2]); 
-df2dss[15] = (     - n[2] * n[3]); 
-df2dss[16] = (     - n[2] * n[4]); 
-df2dss[17] = (     - n[2] * n[5]); 
+df2dss[12] = (-q13 - n[2] * n[0]);
+df2dss[13] = (-q13 - n[2] * n[1]);
+df2dss[14] = ( q23 - n[2] * n[2]);
+df2dss[15] = (     - n[2] * n[3]);
+df2dss[16] = (     - n[2] * n[4]);
+df2dss[17] = (     - n[2] * n[5]);
 
-df2dss[18] = (     - n[3] * n[0]); 
-df2dss[19] = (     - n[3] * n[1]); 
-df2dss[20] = (     - n[3] * n[2]); 
-df2dss[21] = ( 2.  - n[3] * n[3]); 
-df2dss[22] = (     - n[3] * n[4]); 
-df2dss[23] = (     - n[3] * n[5]); 
+df2dss[18] = (     - n[3] * n[0]);
+df2dss[19] = (     - n[3] * n[1]);
+df2dss[20] = (     - n[3] * n[2]);
+df2dss[21] = ( 2.  - n[3] * n[3]);
+df2dss[22] = (     - n[3] * n[4]);
+df2dss[23] = (     - n[3] * n[5]);
 
-df2dss[24] = (     - n[4] * n[0]); 
-df2dss[25] = (     - n[4] * n[1]); 
-df2dss[26] = (     - n[4] * n[2]); 
-df2dss[27] = (     - n[4] * n[3]); 
-df2dss[28] = ( 2.  - n[4] * n[4]); 
-df2dss[29] = (     - n[4] * n[5]); 
+df2dss[24] = (     - n[4] * n[0]);
+df2dss[25] = (     - n[4] * n[1]);
+df2dss[26] = (     - n[4] * n[2]);
+df2dss[27] = (     - n[4] * n[3]);
+df2dss[28] = ( 2.  - n[4] * n[4]);
+df2dss[29] = (     - n[4] * n[5]);
 
-df2dss[30] = (     - n[5] * n[0]); 
-df2dss[31] = (     - n[5] * n[1]); 
-df2dss[32] = (     - n[5] * n[2]); 
-df2dss[33] = (     - n[5] * n[3]); 
-df2dss[34] = (     - n[5] * n[4]); 
-df2dss[35] = ( 2.  - n[5] * n[5]); 
+df2dss[30] = (     - n[5] * n[0]);
+df2dss[31] = (     - n[5] * n[1]);
+df2dss[32] = (     - n[5] * n[2]);
+df2dss[33] = (     - n[5] * n[3]);
+df2dss[34] = (     - n[5] * n[4]);
+df2dss[35] = ( 2.  - n[5] * n[5]);
 
 /*------  Cel_-1 + dlam*df2dss -------------------------------------------*/
 fac = dlam / norm;
@@ -828,7 +828,7 @@ for (i=0; i<6; i++) for (j=0; j<6; j++) E_help[0][0] += df1ds[j] * hm[j][i] * df
 for (i=0; i<6; i++) for (j=0; j<6; j++) E_help[0][1] += df1ds[j] * hm[j][i] * df2ds[i];
 for (i=0; i<6; i++) for (j=0; j<6; j++) E_help[1][0] += df2ds[j] * hm[j][i] * df1ds[i];
 for (i=0; i<6; i++) for (j=0; j<6; j++) E_help[1][1] += df2ds[j] * hm[j][i] * df2ds[i];
-              
+
 /*------ E_help = E + UT*hm*U ------------------------------*/
 E_help[0][0] += E[0][0];
 E_help[0][1] += E[0][1];
@@ -860,18 +860,18 @@ U[4][1] = df2ds[4];
 U[5][1] = df2ds[5];
 
 /*--------- H1[6][2] = hm[6][6]*U[6][2] ---------------------*/
-for (j=0; j<6; j++) for (k=0; k<6; k++) for (i=0; i<2; i++) H1[j][i] += hm[j][k] * U[k][i]; 
+for (j=0; j<6; j++) for (k=0; k<6; k++) for (i=0; i<2; i++) H1[j][i] += hm[j][k] * U[k][i];
 
 /*--------- H2[6][2] = hm[6][6]*U[6][2]*E[2][2] = H1[6][2]*E[2][2] -----*/
-for (j=0; j<6; j++) for (k=0; k<2; k++) for (i=0; i<2; i++) H2[j][i] += H1[j][k] * E[k][i]; 
+for (j=0; j<6; j++) for (k=0; k<2; k++) for (i=0; i<2; i++) H2[j][i] += H1[j][k] * E[k][i];
 
 /*--------- HM2[6][6] = hm[6][6]*U[6][2]*E[2][2]*UT[2][6]*hm[6][6] = H2[6][2] * H1T[2][6] ----*/
-for (j=0; j<6; j++) for (k=0; k<2; k++) for (i=0; i<6; i++) HM2[j][i] += H2[j][k] * H1[i][k]; 
+for (j=0; j<6; j++) for (k=0; k<2; k++) for (i=0; i<6; i++) HM2[j][i] += H2[j][k] * H1[i][k];
 
 /*--- Cep = hm - HM2 ---------------------------------------------------*/
-for (i=0; i<6; i++) for (j=0; j<6; j++) d[i][j] = hm[i][j] - HM2[i][j]; 
+for (i=0; i<6; i++) for (j=0; j<6; j++) d[i][j] = hm[i][j] - HM2[i][j];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -880,49 +880,49 @@ return;
 
 /*!----------------------------------------------------------------------
 \brief calculates some neede values for Drucker-Prager Model with
-combined linear iso/kin hardening                                  
+combined linear iso/kin hardening
 
 <pre>                                                            sh 09/03
-This routine calculates the 
+This routine calculates the
 - norm of deviatoric stresses
 - the gradient n (dfds)
 for the 'Drucker Prager plasticity with combined, linear iso/kin. hardening
-law. 
+law.
 with the following sorting of stresses and strains:
 "brick" [11,22,33,12,23,13]
 </pre>
-\param  DOUBLE    sig[6]  (i/o)  stresses (input, could be modified due 
-                                 to numerical aspects if |s| is close to ZERO  
+\param  DOUBLE    sig[6]  (i/o)  stresses (input, could be modified due
+                                 to numerical aspects if |s| is close to ZERO
 \param  DOUBLE   *norm     (o)   norm of deviatoric stresses |s|
 \param  DOUBLE    n[6]     (o)   gradient n of deviatoric stresses (s/|s|)
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: mat_pl_dp_lin_main()     [mat_pl_dp_lin.c]
 
 *----------------------------------------------------------------------*/
-void mat_pl_dp_lin_preval(DOUBLE   sig[6], 
+void mat_pl_dp_lin_preval(DOUBLE   sig[6],
                           DOUBLE  *norm,
                           DOUBLE   n[6])
 {
 /*----------------------------------------------------------------------*/
 DOUBLE q13;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mat_pl_dp_lin_preval");
 #endif
 /*----------------------------------------------------------------------*/
 q13  = 1./3.;
 
 /*-------- check for numerical problems  --> |s| = ZERO ----------------*/
-if (FABS(sig[0]-sig[1]) < EPS8  &&    
+if (FABS(sig[0]-sig[1]) < EPS8  &&
     FABS(sig[0]-sig[2]) < EPS8  &&     /*sig[0]=sig[1]=sig[2]*/
     FABS(sig[1]-sig[2]) < EPS8)
 {
    /*-- modify the stress vector slightly to avoid numerical problems --*/
    if(FABS(sig[2]) < EPS8)  sig[2] = EPS5;
    else                     sig[2] = 1.001*sig[2];
-}    
+}
 
 /*-------- |s| ---------------------------------------------------------*/
 *norm = sqrt(2./3.*(sig[0]*sig[0] + sig[1]*sig[1] + sig[2]*sig[2] -
@@ -938,7 +938,7 @@ n[4]= sig[4] / *norm;
 n[5]= sig[5] / *norm;
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -10,10 +10,10 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
-\addtogroup FLUID2 
+/*!
+\addtogroup FLUID2
 *//*! @{ (documentation module open)*/
-#ifdef D_FLUID2 
+#ifdef D_FLUID2
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 /*!---------------------------------------------------------------------
@@ -26,15 +26,15 @@ is calulated:
 
                  /
      + (facs)*  |  v * h^   d_gamma
-               /  
- 	  		      
+               /
+
 
 see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
 
 NOTE:
    h^ is either h at (n) or h at (n+1)
    facs is either (1-THETA)*dt at (n) or THETA*dt at (n+1)
-		     
+
 </pre>
 \param  *eforce    DOUBLE   (o)    element force vector
 \param  *funct     DOUBLE   (i)    natural shape functions
@@ -44,24 +44,24 @@ NOTE:
 \param   fac 	   DOUBLE   (i)    weighting factor
 \param   ngnode    INT      (i)    number of nodes on actual edge
 \param   iedgnod   INT	    (i)    actual edge nodes
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
-void f2_calsurftenfv( 
-                     DOUBLE   *eforce, 
-		     DOUBLE   *funct, 
-		     DOUBLE   *vn, 
+void f2_calsurftenfv(
+                     DOUBLE   *eforce,
+		     DOUBLE   *funct,
+		     DOUBLE   *vn,
 		     DOUBLE    sigmaint,
-		     DOUBLE    facs, 
+		     DOUBLE    facs,
 		     DOUBLE    fac,
                      INT       ngnode,
-		     INT      *iedgnod     
+		     INT      *iedgnod
 		    )
 {
 INT irow, inode,isd;
 DOUBLE c;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_calsurftenfv");
 #endif
 /*--------------------------------------------------- set some factors */
@@ -69,11 +69,11 @@ c = facs*fac*sigmaint;
 
 /*----------------------------------------------------------------------*
    Calculate galerkin part of external forces:
-   
+
            /                      /
-   + facs |  v * h   d_gamma  =  | v * n * sigma d_gamma 
+   + facs |  v * h   d_gamma  =  | v * n * sigma d_gamma
          /                      /
-   
+
  *----------------------------------------------------------------------*/
 for (inode=0;inode<ngnode;inode++)
 {
@@ -83,10 +83,10 @@ for (inode=0;inode<ngnode;inode++)
       eforce[irow] += funct[inode]*vn[isd]*c;
       irow++;
    } /* end of loop over isd */
-} /* end of loop over inode */ 
+} /* end of loop over inode */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

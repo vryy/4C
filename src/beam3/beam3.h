@@ -12,8 +12,8 @@ Maintainer: Frank Huber
 *----------------------------------------------------------------------*/
 #ifdef D_BEAM3
 
-/*! 
-\addtogroup BEAM3 
+/*!
+\addtogroup BEAM3
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
@@ -38,7 +38,7 @@ DOUBLE          xr[3];	  /*!< local r-coordinate of element nodes */
 \brief beam3 working array for element input data set
 
 <pre>                                                              fh 09/02
-This structure contains all input data set (number of GP, Hinge Code, 
+This structure contains all input data set (number of GP, Hinge Code,
 material, cross section, geometry) of a specific beam element
 </pre>
 
@@ -92,11 +92,11 @@ This routine is the main beam3 control routine
 \param *container       CONTAINER   (i/o) container
 
 \warning There is nothing special in this routine
-\return void                                               
-\sa calling:   b3_init() , b3_static_ke() , b3_bop, b3_trans_stf() , 
-               b3_load() , b3_loadlin() , b3_cal_stress() , 
-	       b3_cal_stresslin() , b3_setdirich() 
-    called by: calinit() , calelm() 
+\return void
+\sa calling:   b3_init() , b3_static_ke() , b3_bop, b3_trans_stf() ,
+               b3_load() , b3_loadlin() , b3_cal_stress() ,
+	       b3_cal_stresslin() , b3_setdirich()
+    called by: calinit() , calelm()
 
 *----------------------------------------------------------------------*/
 void beam3(FIELD       *actfield,
@@ -117,12 +117,12 @@ This routine reads all datas of the actual beam element from input file
 
 </pre>
 \param *ele      ELEMENT  (i/o)  actual element
-               
+
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
-    called by: beam3() 
+    called by: beam3()
 
 *----------------------------------------------------------------------*/
 void b3inp(ELEMENT *ele);

@@ -1,6 +1,6 @@
 /*!---------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -12,11 +12,11 @@ Maintainer: Malte Neumann
 ---------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*
  | control structure                                      m.gee 5/02    |
- | for nonlinear structural dynamics                                    |           
+ | for nonlinear structural dynamics                                    |
  *----------------------------------------------------------------------*/
 typedef struct _RESTART_DYNSTRUCT
 {
-INT                          step;     
+INT                          step;
 struct _STRUCT_DYNAMIC       sdyn;
 struct _STRUCT_DYN_CALC      dynvar;
 
@@ -45,11 +45,11 @@ long int                   **ele_handles;
 
 /*----------------------------------------------------------------------*
  | control structure                                      m.gee 5/02    |
- | for nonlinear structural dynamics                                    |           
+ | for nonlinear structural dynamics                                    |
  *----------------------------------------------------------------------*/
 typedef struct _RESTART_STATSTRUCT
 {
-INT                          step;     
+INT                          step;
 struct _STATIC_VAR           statvar;
 struct _STANLN               nln_data;
 
@@ -72,11 +72,11 @@ long int                   **ele_handles;
 
 /*----------------------------------------------------------------------*
  | control structure                                      genk 09/03    |
- | for fluid dynamics                                                   |           
+ | for fluid dynamics                                                   |
  *----------------------------------------------------------------------*/
 typedef struct _RESTART_DYNFLUID
 {
-INT                          step;     
+INT                          step;
 DOUBLE                       time;
 
 long int                     handle_of_node_handles;
@@ -93,11 +93,11 @@ long int                   **ele_handles;
 
 /*----------------------------------------------------------------------*
  | control structure                                      genk 09/03    |
- | for ale dynamics                                                     |           
+ | for ale dynamics                                                     |
  *----------------------------------------------------------------------*/
 typedef struct _RESTART_DYNALE
 {
-INT                          step;     
+INT                          step;
 DOUBLE                       time;
 long int                     handle_of_node_handles;
 INT                          node_fdim;
@@ -108,11 +108,11 @@ long int                   **node_handles;
 
 /*----------------------------------------------------------------------*
  | control structure                                      genk 09/03    |
- | for fsi dynamics                                                     |           
+ | for fsi dynamics                                                     |
  *----------------------------------------------------------------------*/
 typedef struct _RESTART_DYNFSI
 {
-INT                          step;     
+INT                          step;
 DOUBLE                       time;
 DOUBLE                       relax;
 } RESTART_DYNFSI;

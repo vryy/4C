@@ -10,16 +10,16 @@ Maintainer: Malte Neumann
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
-\addtogroup AMSYSTEM 
+/*!
+\addtogroup AMSYSTEM
 *//*! @{ (documentation module open)*/
 
 /*!------------------------------------------------------------------------
 \brief main structure all kinds of fields are kept
 
-m.gee 6/01  
+m.gee 6/01
 
-main structure all kinds of fields are kept with         
+main structure all kinds of fields are kept with
 
 -------------------------------------------------------------------------*/
 typedef struct _ARRAY
@@ -27,7 +27,7 @@ typedef struct _ARRAY
 char                name[9];           /*!< name of the field (just for fun) */
 INT                 fdim;              /*!< first dimension of field         */
 INT                 sdim;              /*!< scnd dimension of field          */
-enum         
+enum
    {
     cca_XX,                            /*!< not defined    */
     cca_DA,                            /*!< DOUBLE array   */
@@ -42,17 +42,17 @@ union
     INT    **ia;                       /*!< integer array  */
     DOUBLE **da;                       /*!< DOUBLE array   */
    }                a;                 /*!< ptr used for calculations        */
-#ifdef DEBUG 
+#ifdef DEBUG
 struct _TRACEARRAY  *mytracer;         /*!< bugtracing information */
 #endif
 } ARRAY;
 
 /*!-------------------------------------------------------------------------
-\brief main structure all kinds of 3D & 4D fields are kept with   
+\brief main structure all kinds of 3D & 4D fields are kept with
 
-m.gee 12/01 
+m.gee 12/01
 
-main structure all kinds of 3D & 4D fields are kept with 
+main structure all kinds of 3D & 4D fields are kept with
 
 -------------------------------------------------------------------------*/
 typedef struct _ARRAY4D
@@ -62,7 +62,7 @@ INT                 fdim;              /*!< first dimension of field         */
 INT                 sdim;              /*!< scnd dimension of field          */
 INT                 tdim;              /*!< third dimension of field         */
 INT                 fodim;             /*!< fourth dimension of field        */
-enum         
+enum
    {
     cca_XX4D,                              /*!< not defined    */
     cca_D3,                                /*!< DOUBLE 3D-array   */
@@ -77,7 +77,7 @@ union
      INT      ***i3;                   /*!< 3D - integer array */
      INT     ****i4;                   /*!< 4D - integer array */
    }                a;                 /*!< name of union */
-#ifdef DEBUG                           
+#ifdef DEBUG
 struct _TRACEARRAY  *mytracer;         /*!< bugtracing information */
 #endif
 } ARRAY4D;

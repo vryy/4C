@@ -2,11 +2,11 @@
 \file
 \brief contains the routine 'w1_cal_stress' which evaluates the element
        stresses for 2D isoparametric degenerated element
-       contains the routine 'w1_mami' which evaluates the principal 
+       contains the routine 'w1_mami' which evaluates the principal
        stresses and directions for 2D isoparametric degenerated element
        contains the routine 'w1rsn' which returns R/S coordinates of
        gauss integration points 2D isoparametric degenerated element
-       contains the routine 'w1recs' which extrapolates from gauss 
+       contains the routine 'w1recs' which extrapolates from gauss
        points for rectangles
 
 <pre>
@@ -22,16 +22,16 @@ Maintainer: Andrea Hund
 #include "wall1.h"
 #include "wall1_prototypes.h"
 
-/*! 
-\addtogroup WALL1 
+/*!
+\addtogroup WALL1
 *//*! @{ (documentation module open)*/
 
 /*----------------------------------------------------------------------*
  | evaluate element stresses                                 al 9/01    |
  | 2-D isoparametric degenerated element                                |
  *----------------------------------------------------------------------*/
-void w1_cal_stress(ELEMENT   *ele, 
-                   W1_DATA   *data, 
+void w1_cal_stress(ELEMENT   *ele,
+                   W1_DATA   *data,
                    MATERIAL  *mat,
                    INT	      kstep,  /* number of current load step */
 		       INT        init)
@@ -58,32 +58,32 @@ DOUBLE              dum;
 DOUBLE deltad[8], help[4];
 DOUBLE knninv[4][4], knc[8][4];
 
-static ARRAY    D_a;      /* material tensor */     
-static DOUBLE **D;         
-static ARRAY    funct_a;  /* shape functions */    
-static DOUBLE  *funct;     
-static ARRAY    deriv_a;  /* derivatives of shape functions */   
-static DOUBLE **deriv;     
-static ARRAY    xjm_a;    /* jacobian matrix */     
-static DOUBLE **xjm;         
-static ARRAY    xjm0_a;    /* jacobian matrix at r,s=0*/     
-static DOUBLE **xjm0;         
+static ARRAY    D_a;      /* material tensor */
+static DOUBLE **D;
+static ARRAY    funct_a;  /* shape functions */
+static DOUBLE  *funct;
+static ARRAY    deriv_a;  /* derivatives of shape functions */
+static DOUBLE **deriv;
+static ARRAY    xjm_a;    /* jacobian matrix */
+static DOUBLE **xjm;
+static ARRAY    xjm0_a;    /* jacobian matrix at r,s=0*/
+static DOUBLE **xjm0;
 static ARRAY    xji_a;    /* inverse of jacobian matrix */
 static DOUBLE **xji;
 static ARRAY    F_a;      /* dummy matrix for saving stresses at gauss point*/
-static DOUBLE  *F;  
-static ARRAY    bop_a;    /* B-operator */   
+static DOUBLE  *F;
+static ARRAY    bop_a;    /* B-operator */
 static DOUBLE **bop;
-static ARRAY    gop_a;    /* incomp_modes: G-operator */   
+static ARRAY    gop_a;    /* incomp_modes: G-operator */
 static DOUBLE  *gop;
-static ARRAY    alpha_a;  /* incomp-modes: internal dof */   
+static ARRAY    alpha_a;  /* incomp-modes: internal dof */
 static DOUBLE  *alpha;
-static ARRAY    spar_a;   /* function parameters for extrapolation */   
-static DOUBLE **spar;       
-static ARRAY    transm_a; /* transformation matrix sig(loc)-->sig(glob) */   
-static DOUBLE **transm;       
-static ARRAY    transmi_a;/* inverse transformation matrix sig(glob)-->sig(loc) */   
-static DOUBLE **transmi;       
+static ARRAY    spar_a;   /* function parameters for extrapolation */
+static DOUBLE **spar;
+static ARRAY    transm_a; /* transformation matrix sig(loc)-->sig(glob) */
+static DOUBLE **transm;
+static ARRAY    transmi_a;/* inverse transformation matrix sig(glob)-->sig(loc) */
+static DOUBLE **transmi;
 static ARRAY    work_a;
 static DOUBLE **work;     /* working array */
 
@@ -92,25 +92,25 @@ INT node, npoint;
 DOUBLE fv, r, s;
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_cal_stress");
 #endif
 /*------------------------------------------------- some working arrays */
 if (init==1)
 {
-funct     = amdef("funct"  ,&funct_a,MAXNOD_WALL1,1 ,"DV");       
-deriv     = amdef("deriv"  ,&deriv_a,2,MAXNOD_WALL1 ,"DA");       
-D         = amdef("D"      ,&D_a   ,6,6             ,"DA");           
-xjm       = amdef("xjm"    ,&xjm_a ,numdf,numdf     ,"DA");           
-xjm0      = amdef("xjm0"   ,&xjm0_a,numdf,numdf     ,"DA");           
-xji       = amdef("xji"    ,&xji_a ,numdf,numdf     ,"DA");           
-F         = amdef("F"      ,&F_a,4,1     ,"DV");           
-bop       = amdef("bop"  ,&bop_a ,numeps,(numdf*MAXNOD_WALL1),"DA");           
-gop       = amdef("gop"  ,&gop_a ,4,1,"DV");           
-alpha     = amdef("alpha"  ,&alpha_a ,4,1,"DV");           
-transm    = amdef("transm"  ,&transm_a ,numstr,numstr,"DA");           
-transmi   = amdef("transmi"  ,&transmi_a ,numstr,numstr,"DA");           
-spar      = amdef("spar"  ,&spar_a ,numstr,16,"DA");           
+funct     = amdef("funct"  ,&funct_a,MAXNOD_WALL1,1 ,"DV");
+deriv     = amdef("deriv"  ,&deriv_a,2,MAXNOD_WALL1 ,"DA");
+D         = amdef("D"      ,&D_a   ,6,6             ,"DA");
+xjm       = amdef("xjm"    ,&xjm_a ,numdf,numdf     ,"DA");
+xjm0      = amdef("xjm0"   ,&xjm0_a,numdf,numdf     ,"DA");
+xji       = amdef("xji"    ,&xji_a ,numdf,numdf     ,"DA");
+F         = amdef("F"      ,&F_a,4,1     ,"DV");
+bop       = amdef("bop"  ,&bop_a ,numeps,(numdf*MAXNOD_WALL1),"DA");
+gop       = amdef("gop"  ,&gop_a ,4,1,"DV");
+alpha     = amdef("alpha"  ,&alpha_a ,4,1,"DV");
+transm    = amdef("transm"  ,&transm_a ,numstr,numstr,"DA");
+transmi   = amdef("transmi"  ,&transmi_a ,numstr,numstr,"DA");
+spar      = amdef("spar"  ,&spar_a ,numstr,16,"DA");
 work      = amdef("work"  ,&work_a ,4,4,"DA");
 goto end;
 }
@@ -126,10 +126,10 @@ case quad4: case quad8: case quad9:  /* --> quad - element */
    nir = ele->e.w1->nGP[0];
    nis = ele->e.w1->nGP[1];
 break;
-case tri3: /* --> tri - element */  
+case tri3: /* --> tri - element */
    nir  = ele->e.w1->nGP[0];
    nis  = 1;
-   intc = ele->e.w1->nGP[1]-1;  
+   intc = ele->e.w1->nGP[1]-1;
 break;
 default:
    dserror("ele->distyp unknown!");
@@ -140,12 +140,12 @@ if(ele->e.w1->modeltype == incomp_mode)
 {
  /*------------------ shape functions and their derivatives at r,s=0 ---*/
  w1_funct_deriv(funct,deriv,0,0,ele->distyp,1);
- /*-------------------------------- compute jacobian matrix at r,s=0 ---*/       
+ /*-------------------------------- compute jacobian matrix at r,s=0 ---*/
  w1_jaco (deriv,xjm0,&det0,ele,iel);
- amzero(&alpha_a); 
+ amzero(&alpha_a);
  if(mat->mattyp != m_stvenant)
  {
-  for (i=0;i<4;i++)                        
+  for (i=0;i<4;i++)
   alpha[i] = ele->e.w1->elewa[0].imodewa[0].alpha[i];
  }
  else
@@ -158,14 +158,14 @@ if(ele->e.w1->modeltype == incomp_mode)
       knninv[i][j]=ele->e.w1->elewa[0].imodewa[0].knninv[i][j];
     for(j=0;j<8;j++)
       knc[j][i]=ele->e.w1->elewa[0].imodewa[0].knc[j][i];
-  }   
+  }
 /*-------------------------------------------- evaluate alpha ---*/
   for (i=0; i<4; i++)
   {
     dum=0.0;
     for (k=0; k<4; k++)
     {
-     help[k] = 0.0;                                                              
+     help[k] = 0.0;
      for (l=0; l<8; l++)
      {
        help[k] += knc[l][k] * deltad[l];
@@ -175,7 +175,7 @@ if(ele->e.w1->modeltype == incomp_mode)
     }
     alpha[i] -= dum ;
   }
- } 
+ }
 }
 /*================================================ integration loops ===*/
 ip = -1;
@@ -184,13 +184,13 @@ for (lr=0; lr<nir; lr++)
    for (ls=0; ls<nis; ls++)
    {
 /*--------------- get values of  shape functions and their derivatives */
-      switch(ele->distyp)  
+      switch(ele->distyp)
       {
       case quad4: case quad8: case quad9:  /* --> quad - element */
        e1   = data->xgrr[lr];
        e2   = data->xgss[ls];
       break;
-      case tri3:   /* --> tri - element */              
+      case tri3:   /* --> tri - element */
 	 e1   = data->txgr[lr][intc];
 	 e2   = data->txgs[lr][intc];
       break;
@@ -200,9 +200,9 @@ for (lr=0; lr<nir; lr++)
       ip++;
        /*------------------------- shape functions and their derivatives */
       w1_funct_deriv(funct,deriv,e1,e2,ele->distyp,1);
-      /*------------------------------------ compute jacobian matrix ---*/       
-      w1_jaco (deriv,xjm,&det,ele,iel);                         
-      fac = facr * facs * det; 
+      /*------------------------------------ compute jacobian matrix ---*/
+      w1_jaco (deriv,xjm,&det,ele,iel);
+      fac = facr * facs * det;
       /*--------------------------------------- calculate operator B ---*/
       amzero(&bop_a);
       w1_bop(bop,deriv,xjm,det,iel);
@@ -216,66 +216,66 @@ for (lr=0; lr<nir; lr++)
 /*-----------------------------------------------------fh 06/02---*/
       newval=1; /* Flag to calculate stresses */
       w1_call_mat(ele, mat,ele->e.w1->wtype, bop,gop,alpha, ip, F,D, istore,newval);
-      
+
       /* transformation of global stresses into local stresses and vice versa */
-      
+
       switch(ele->e.w1->stresstyp){
-      case w1_rs: 
+      case w1_rs:
       w1_tram(xjm,transm,transmi,work);
       w1_lss(F,transmi,transm,it);
       break;
       default:
       break;
-      }    
+      }
       for (i=0; i<4; i++)
       {
 	ele->e.w1->stress_GP.a.d3[kstep][i][ip]= F[i];
       }
 
-      
-      w1_mami(F, &ele->e.w1->stress_GP.a.d3[kstep][4][ip], 
-                 &ele->e.w1->stress_GP.a.d3[kstep][5][ip], 
+
+      w1_mami(F, &ele->e.w1->stress_GP.a.d3[kstep][4][ip],
+                 &ele->e.w1->stress_GP.a.d3[kstep][5][ip],
                  &ele->e.w1->stress_GP.a.d3[kstep][6][ip]);
-      
-   }/*============================================= end of loop over ls */ 
+
+   }/*============================================= end of loop over ls */
 }/*================================================ end of loop over lr */
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 for (node=1; node<=iel; node++)
 {
-/*----------------------------------- get local coordinates of nodes ---*/        
-  r = w1rsn (node,1,iel) ;                                               
-  s = w1rsn (node,2,iel) ;                                               
-/*------------------------------------------- extrapolate values now ---*/        
-  w1recs (&fv,r,s,&ele->e.w1->stress_GP.a.d3[kstep][0][0],spar[0],npoint,node);        
+/*----------------------------------- get local coordinates of nodes ---*/
+  r = w1rsn (node,1,iel) ;
+  s = w1rsn (node,2,iel) ;
+/*------------------------------------------- extrapolate values now ---*/
+  w1recs (&fv,r,s,&ele->e.w1->stress_GP.a.d3[kstep][0][0],spar[0],npoint,node);
   ele->e.w1->stress_ND.a.d3[kstep][0][node-1] = fv;
 
-  w1recs (&fv,r,s,&ele->e.w1->stress_GP.a.d3[kstep][1][0],spar[1],npoint,node);        
+  w1recs (&fv,r,s,&ele->e.w1->stress_GP.a.d3[kstep][1][0],spar[1],npoint,node);
   ele->e.w1->stress_ND.a.d3[kstep][1][node-1] = fv;
 
-  w1recs (&fv,r,s,&ele->e.w1->stress_GP.a.d3[kstep][2][0],spar[2],npoint,node);        
+  w1recs (&fv,r,s,&ele->e.w1->stress_GP.a.d3[kstep][2][0],spar[2],npoint,node);
   ele->e.w1->stress_ND.a.d3[kstep][2][node-1] = fv;
 
-  w1recs (&fv,r,s,&ele->e.w1->stress_GP.a.d3[kstep][3][0],spar[3],npoint,node);        
+  w1recs (&fv,r,s,&ele->e.w1->stress_GP.a.d3[kstep][3][0],spar[3],npoint,node);
   ele->e.w1->stress_ND.a.d3[kstep][3][node-1] = fv;
- 
+
   F[0] = ele->e.w1->stress_ND.a.d3[kstep][0][node-1];
   F[1] = ele->e.w1->stress_ND.a.d3[kstep][1][node-1];
   F[2] = ele->e.w1->stress_ND.a.d3[kstep][2][node-1];
   F[3] = ele->e.w1->stress_ND.a.d3[kstep][3][node-1];
-    
-  w1_mami(F, &ele->e.w1->stress_ND.a.d3[kstep][4][node-1], 
-             &ele->e.w1->stress_ND.a.d3[kstep][5][node-1], 
-             &ele->e.w1->stress_ND.a.d3[kstep][6][node-1]);  
+
+  w1_mami(F, &ele->e.w1->stress_ND.a.d3[kstep][4][node-1],
+             &ele->e.w1->stress_ND.a.d3[kstep][5][node-1],
+             &ele->e.w1->stress_ND.a.d3[kstep][6][node-1]);
 }
 /*----------------------------------------------------------------*/
 
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of w1_cal_stress */
 /*----------------------------------------------------------------------*
  |                                                           al 9/01    |
@@ -288,9 +288,9 @@ return;
  |                                          (SIGMA X - SIGMA Y)         |
  *----------------------------------------------------------------------*/
 void w1_mami(DOUBLE *stress,
-             DOUBLE *fps, /* FIRST  PRINCIPAL STRESS       */ 
-             DOUBLE *sps, /* SECOND PRINCIPAL STRESS       */ 
-             DOUBLE *aps) /* ANGLE OF PRINCIPAL DIRECTION  */ 
+             DOUBLE *fps, /* FIRST  PRINCIPAL STRESS       */
+             DOUBLE *sps, /* SECOND PRINCIPAL STRESS       */
+             DOUBLE *aps) /* ANGLE OF PRINCIPAL DIRECTION  */
 {
 /*----------------------------------------------------------------------*/
 DOUBLE 		ag;
@@ -306,7 +306,7 @@ DOUBLE		work[5];
 INT		info=0;
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_mami");
 #endif
 /*----------------------------------------------------------------------*/
@@ -330,7 +330,7 @@ dsyev(jobz,
       &lwork,
       &info);
 
-  if (rad == 0.) 
+  if (rad == 0.)
   {
     rad = atan(1.) / 45.;
   }
@@ -346,10 +346,10 @@ if (A[3]<0.)
 *sps=W[0];
 *aps=ag;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of w1_mami */
 
 /*----------------------------------------------------------------------*
@@ -389,7 +389,7 @@ DOUBLE w1rsn (INT node, /* number of actual integration point */
   /* Local variables */
   static INT jump;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1rsn");
 #endif
 /*---------------------------------- labels for element nodal points ---*/
@@ -422,7 +422,7 @@ L5:
 L100:
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 /*----------------------------------------------------------------------*/
@@ -434,16 +434,16 @@ dstrc_exit();
  *----------------------------------------------------------------------*/
 void w1recs(DOUBLE *funval,/* function value  */
             DOUBLE  r,     /* r/s coordinates */
-            DOUBLE  s,  
+            DOUBLE  s,
             DOUBLE *fval,  /* function values at gauss points */
             DOUBLE *fpar,  /* function parameters */
             INT     igauss,/* number of gauss points */
             INT     icode) /* ==1 initialize function parameters */
-                           /* > 1            function evaluation */      
+                           /* > 1            function evaluation */
 {
   static INT i;
-  static DOUBLE f1, f2, f3, f4, f5, 
-                p1, p2, p3, p4, p5, p6, p7, p8, p9, 
+  static DOUBLE f1, f2, f3, f4, f5,
+                p1, p2, p3, p4, p5, p6, p7, p8, p9,
                 r3, s3,
                 p10, p11, p12, p13, p14, p15, p16,
                 ra, rb, rq, rr, rs, ss,
@@ -453,7 +453,7 @@ void w1recs(DOUBLE *funval,/* function value  */
   --fpar;
   --fval;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1recs");
 #endif
 /*------------------------------------- evaluate function parameters ---*/
@@ -506,7 +506,7 @@ dstrc_enter("w1recs");
 	    f1 = f3 * f3;
 	    f2 = f1 * sqrt(.59999999999999998);
 	    f5 = f3 * sqrt(.59999999999999998);
-	    fpar[1] = f1 * (p1 + p7 + p3 + p9 - (p4 + p2 + p8 + p6) * 2. + p5 
+	    fpar[1] = f1 * (p1 + p7 + p3 + p9 - (p4 + p2 + p8 + p6) * 2. + p5
 		    * 4.);
 	    fpar[2] = f2 * (-p1 - p7 + p3 + p9 + (p4 - p6) * 2.);
 	    fpar[3] = f2 * (-p1 + p7 - p3 + p9 + (p2 - p8) * 2.);
@@ -531,45 +531,45 @@ dstrc_enter("w1recs");
 	    qa2 = qab * qab;
 	    qb2 = qba * qba;
 	    rq = .63802083333333337;
-	    fpar[1] = (p1 - p13 - p4 + p16) / raa + (p6 - p10 - p7 + p11) / 
+	    fpar[1] = (p1 - p13 - p4 + p16) / raa + (p6 - p10 - p7 + p11) /
 		    rbb + (-p5 + p9 - p2 + p14 + p3 - p15 + p8 - p12) / rab;
-	    fpar[2] = (-p1 + p13 + p2 - p14 + p3 - p15 - p4 + p16) / ra + (p5 
+	    fpar[2] = (-p1 + p13 + p2 - p14 + p3 - p15 - p4 + p16) / ra + (p5
 		    - p9 - p6 + p10 - p7 + p11 + p8 - p12) / rb;
-	    fpar[3] = (-p1 + p5 + p9 - p13 + p4 - p8 - p12 + p16) / ra + (p2 
+	    fpar[3] = (-p1 + p5 + p9 - p13 + p4 - p8 - p12 + p16) / ra + (p2
 		    - p6 - p10 + p14 - p3 + p7 + p11 - p15) / rb;
-	    fpar[4] = (-p6 + p10 + p7 - p11) * qa2 + (-p1 + p13 + p4 - p16) * 
+	    fpar[4] = (-p6 + p10 + p7 - p11) * qa2 + (-p1 + p13 + p4 - p16) *
 		    qb2 + (p2 - p14 - p3 + p15) * qab + (p5 - p9 - p8 + p12) *
 		     qba;
-	    fpar[5] = p1 - p5 - p9 + p13 - p2 + p6 + p10 - p14 - p3 + p7 + 
+	    fpar[5] = p1 - p5 - p9 + p13 - p2 + p6 + p10 - p14 - p3 + p7 +
 		    p11 - p15 + p4 - p8 - p12 + p16;
-	    fpar[6] = (-p6 + p10 + p7 - p11) * qa2 + (-p1 + p13 + p4 - p16) * 
+	    fpar[6] = (-p6 + p10 + p7 - p11) * qa2 + (-p1 + p13 + p4 - p16) *
 		    qb2 + (p2 - p14 - p3 + p15) * qba + (p5 - p9 - p8 + p12) *
 		     qab;
 	    fpar[7] = (p6 - p10 + p7 - p11) * qab * ra + (p1 - p13 + p4 - p16)
-		     * qba * rb + (-p2 + p14 - p3 + p15) * ra + (-p5 + p9 - 
+		     * qba * rb + (-p2 + p14 - p3 + p15) * ra + (-p5 + p9 -
 		    p8 + p12) * rb;
-	    fpar[8] = (-p2 + p6 + p10 - p14 + p3 - p7 - p11 + p15) * qab * ra 
+	    fpar[8] = (-p2 + p6 + p10 - p14 + p3 - p7 - p11 + p15) * qab * ra
 		    + (p1 - p5 - p9 + p13 - p4 + p8 + p12 - p16) * qba * rb;
-	    fpar[9] = (-p5 + p9 + p6 - p10 + p7 - p11 - p8 + p12) * qab * ra 
+	    fpar[9] = (-p5 + p9 + p6 - p10 + p7 - p11 - p8 + p12) * qab * ra
 		    + (p1 - p13 - p2 + p14 - p3 + p15 + p4 - p16) * qba * rb;
-	    fpar[10] = (p6 + p10 - p7 - p11) * qab * ra + (p1 + p13 - p4 - 
-		    p16) * qba * rb + (-p2 - p14 + p3 + p15) * rb + (-p5 - p9 
+	    fpar[10] = (p6 + p10 - p7 - p11) * qab * ra + (p1 + p13 - p4 -
+		    p16) * qba * rb + (-p2 - p14 + p3 + p15) * rb + (-p5 - p9
 		    + p8 + p12) * ra;
 	    fpar[11] = (p2 - p6 - p10 + p14 + p3 - p7 - p11 + p15) * raa + (
 		    -p1 + p5 + p9 - p13 - p4 + p8 + p12 - p16) * rbb;
-	    fpar[12] = (p6 - p10 - p7 + p11) * raa * qa2 + (p1 - p13 - p4 + 
-		    p16) * rbb * qb2 + (-p5 + p9 - p2 + p14 + p3 - p15 + p8 - 
+	    fpar[12] = (p6 - p10 - p7 + p11) * raa * qa2 + (p1 - p13 - p4 +
+		    p16) * rbb * qb2 + (-p5 + p9 - p2 + p14 + p3 - p15 + p8 -
 		    p12) * rab;
 	    fpar[13] = (p5 + p9 - p6 - p10 - p7 - p11 + p8 + p12) * raa + (
 		    -p1 - p13 + p2 + p14 + p3 + p15 - p4 - p16) * rbb;
-	    fpar[14] = (-p6 + p10 - p7 + p11) * qab * ra3 + (-p1 + p13 - p4 + 
-		    p16) * qba * rb3 + (p2 - p14 + p3 - p15) * rab * rb + (p5 
+	    fpar[14] = (-p6 + p10 - p7 + p11) * qab * ra3 + (-p1 + p13 - p4 +
+		    p16) * qba * rb3 + (p2 - p14 + p3 - p15) * rab * rb + (p5
 		    - p9 + p8 - p12) * rab * ra;
-	    fpar[15] = (-p6 - p10 + p7 + p11) * qab * ra3 + (-p1 - p13 + p4 + 
-		    p16) * qba * rb3 + (p2 + p14 - p3 - p15) * rab * ra + (p5 
+	    fpar[15] = (-p6 - p10 + p7 + p11) * qab * ra3 + (-p1 - p13 + p4 +
+		    p16) * qba * rb3 + (p2 + p14 - p3 - p15) * rab * ra + (p5
 		    + p9 - p8 - p12) * rab * rb;
-	    fpar[16] = (p6 + p10 + p7 + p11) * raa * raa + (p1 + p13 + p4 + 
-		    p16) * rbb * rbb + (-p5 - p9 - p2 - p14 - p3 - p15 - p8 - 
+	    fpar[16] = (p6 + p10 + p7 + p11) * raa * raa + (p1 + p13 + p4 +
+		    p16) * rbb * rbb + (-p5 - p9 - p2 - p14 - p3 - p15 - p8 -
 		    p12) * raa * rbb;
 	    for (i = 1; i <= 16; ++i) {
 		fpar[i] *= rq;
@@ -606,7 +606,7 @@ dstrc_enter("w1recs");
 	p8 = fpar[8];
 	p9 = fpar[9];
 	rs = r * s;
-	*funval = p1 * rs * rs + p2 * rs * r + p3 * rs * s + p4 * r * r + 
+	*funval = p1 * rs * rs + p2 * rs * r + p3 * rs * s + p4 * r * r +
 		p5 * rs + p6 * s * s + p7 * r + p8 * s + p9;
 /*------------------------------------- cubic function extrapolation ---*/
     } else if (igauss == 16) {
@@ -632,16 +632,16 @@ dstrc_enter("w1recs");
 	r3 = r * rr;
 	ss = s * s;
 	s3 = s * ss;
-	*funval = p1 * r3 * s3 + p2 * r3 * ss + p3 * rr * s3 + p4 * r3 * s + 
-		p5 * rr * ss + p6 * r * s3 + p7 * r3 + p8 * rr * s + p9 * 
-		r * ss + p10 * s3 + p11 * rr + p12 * rs + p13 * ss + p14 * r 
+	*funval = p1 * r3 * s3 + p2 * r3 * ss + p3 * rr * s3 + p4 * r3 * s +
+		p5 * rr * ss + p6 * r * s3 + p7 * r3 + p8 * rr * s + p9 *
+		r * ss + p10 * s3 + p11 * rr + p12 * rs + p13 * ss + p14 * r
 		+ p15 * s + p16;
     } else {
         dserror("TOO MANY GAUSS POINTS FOR EXTRAPOLATION");
     }
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 /*----------------------------------------------------------------------*/

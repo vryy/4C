@@ -25,7 +25,7 @@ Maintainer: Baris Irhan
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -41,37 +41,37 @@ subroutine for convergence check of level set problem
 </pre>
 
 *----------------------------------------------------------------------*/
-INT ls_convcheck(      
-  LS_DYNAMIC	*lsdyn,   
+INT ls_convcheck(
+  LS_DYNAMIC	*lsdyn,
   DOUBLE       lrat,
-  INT          itnum, 
-  DOUBLE       te,    
-  DOUBLE       ts     
+  INT          itnum,
+  DOUBLE       te,
+  DOUBLE       ts
   )
 {
   INT     converged=0;  /* flag for convergence check */
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_enter("ls_convcheck");
 #endif
 /*----------------------------------------------------------------------*/
-  
+
   if (lsdyn->itchk!=0)
   {
     if (par.myrank==0) /* output to the screen */
-    { 
+    {
       switch(lsdyn->itchk)
       {
           case 1: /* infinity norm */
-            printf("|  %3d/%3d   | %10.3E[L_in]   | %10.3E   | {te: %10.3E} {ts:%10.3E} \n", 
+            printf("|  %3d/%3d   | %10.3E[L_in]   | %10.3E   | {te: %10.3E} {ts:%10.3E} \n",
                    itnum,lsdyn->itemax,lsdyn->ittol,lrat,te,ts);
             break;
           case 2: /* L_1 norm */
-            printf("|  %3d/%3d   | %10.3E[L_in]   | %10.3E   | {te: %10.3E} {ts:%10.3E} \n", 
+            printf("|  %3d/%3d   | %10.3E[L_in]   | %10.3E   | {te: %10.3E} {ts:%10.3E} \n",
                    itnum,lsdyn->itemax,lsdyn->ittol,lrat,te,ts);
             break;
           case 3: /* L_2 norm */
-            printf("|  %3d/%3d   | %10.3E[L_in]   | %10.3E   | {te: %10.3E} {ts:%10.3E} \n", 
+            printf("|  %3d/%3d   | %10.3E[L_in]   | %10.3E   | {te: %10.3E} {ts:%10.3E} \n",
                    itnum,lsdyn->itemax,lsdyn->ittol,lrat,te,ts);
             break;
           default:
@@ -86,33 +86,33 @@ INT ls_convcheck(
     if (converged==1 && par.myrank==0)
     {
       printf("---------------------------------------------------------------- \n");
-      printf("|          >>>>>> not converged in itemax steps!               | \n");         
+      printf("|          >>>>>> not converged in itemax steps!               | \n");
     }
     if (converged>0 && par.myrank==0)
     {
-      printf("---------------------------------------------------------------- \n"); 
+      printf("---------------------------------------------------------------- \n");
       printf("\n");
     }
   }
-  else 
+  else
   {
-    if (par.myrank==0) 
-    {      
-      printf("      iteration step: %3d / 3d \n",  
+    if (par.myrank==0)
+    {
+      printf("      iteration step: %3d / 3d \n",
              itnum, lsdyn->itemax);
       if(itnum==lsdyn->itemax)
       {
-       printf("----------------------------------------------------------------- \n"); 
-       printf("\n");   
+       printf("----------------------------------------------------------------- \n");
+       printf("\n");
       }
     }
   }
-  
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return (converged);
 } /* end of ls_convcheck*/
 /*! @} (documentation module close)*/

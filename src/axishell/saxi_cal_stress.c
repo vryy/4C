@@ -17,14 +17,14 @@ Maintainer: Malte Neumann
 #include "axishell.h"
 #include "axishell_prototypes.h"
 
-/*! 
-\addtogroup AXISHELL 
+/*!
+\addtogroup AXISHELL
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief  Computation of the stresses for the axialsymmetric shell element 
+\brief  Computation of the stresses for the axialsymmetric shell element
 
-<pre>                                                              mn 05/03 
+<pre>                                                              mn 05/03
 This routine computes the stresses for the axialsymmetric shell element
 after computation of the displacements.
 
@@ -37,14 +37,14 @@ after computation of the displacements.
                                            init != 1 : integration
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling:   saxiintg, saxi_B, saxi_mat;
     called by: axishell();
 
 *----------------------------------------------------------------------*/
 void saxi_cal_stress(
-    ELEMENT   *ele, 
-    SAXI_DATA *data, 
+    ELEMENT   *ele,
+    SAXI_DATA *data,
     MATERIAL  *mat,
     INT        init
     )
@@ -76,7 +76,7 @@ void saxi_cal_stress(
   DOUBLE ***gp_stress;   /* pointer to array of stresses at the middle GP */
   DOUBLE * statcond;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("saxi_cal_stress");
 #endif
 
@@ -124,7 +124,7 @@ void saxi_cal_stress(
   if (ele->node[0]->gnode->ondesigntyp==ondnode && ele->node[0]->gnode->d.dnode->cos_type == 1)
   {
     /* local cos */
-    disp_local[0] = ele->node[0]->sol.a.da[0][0]; 
+    disp_local[0] = ele->node[0]->sol.a.da[0][0];
     disp_local[1] = ele->node[0]->sol.a.da[0][1];
     disp_local[2] = ele->node[0]->sol.a.da[0][2];
     /* calculate global disps */
@@ -140,7 +140,7 @@ void saxi_cal_stress(
   else
   {
     /* global cos */
-    disp_global[0] = ele->node[0]->sol.a.da[0][0]; 
+    disp_global[0] = ele->node[0]->sol.a.da[0][0];
     disp_global[1] = ele->node[0]->sol.a.da[0][1];
     disp_global[2] = ele->node[0]->sol.a.da[0][2];
     /* calculate local disps */
@@ -263,7 +263,7 @@ void saxi_cal_stress(
     /* compute schnittkraefte n */
     /* normal forces n_s, n_deta and moments m_s, m_deta */
     for (i=0; i<4; i++)
-    {    
+    {
       n[i] = 0.0;
       for (j=0; j<7; j++)
       {
@@ -280,17 +280,17 @@ void saxi_cal_stress(
       {
         Bs[i][j] = 0.0;
       }
-    }    
+    }
     Bs[2][1] = 12.0/dl/dl;
     Bs[2][2] = 6.0/dl;
     Bs[2][4] = -Bs[2][1];
     Bs[2][5] = 6.0/dl;
-    Bs[3][1] = 6.0*(-1.0+2.0*xsi)*cosa/(dl*r) - 
+    Bs[3][1] = 6.0*(-1.0+2.0*xsi)*cosa/(dl*r) -
       6.0*cosa*xsi*(-1.0+xsi)*dr/dl/r/r;
-    Bs[3][2] = (-4.0+6.0*xsi)*cosa/r - 
+    Bs[3][2] = (-4.0+6.0*xsi)*cosa/r -
       cosa/r/r*dr*dl*(1.0-4.0*xsi+3.0*xsi*xsi);
     Bs[3][4] = -B[3][1];
-    Bs[3][5] = (-2.0+6.0*xsi)*cosa/r - 
+    Bs[3][5] = (-2.0+6.0*xsi)*cosa/r -
       cosa/r/r*dr*dl*(-2.0*xsi+3.0*xsi*xsi);
 
     /* since we have to derive B with respect to s we have to divide the
@@ -301,7 +301,7 @@ void saxi_cal_stress(
       {
         Bs[i][j] /= dl;
       }
-    }    
+    }
 
     /* Multiplication of D with Bs */
     for (i=0; i<7; i++)
@@ -311,11 +311,11 @@ void saxi_cal_stress(
       {
         DBs[i] += D[2][j] * Bs[j][i];
       }
-    }    
+    }
 
     /* Computation of the first part of q_s = DBs * disp_local */
     n[4] = 0.0;
-    for (i=0; i<7; i++) 
+    for (i=0; i<7; i++)
     {
       n[4] += DBs[i] * disp_local[i];
     }
@@ -326,18 +326,18 @@ void saxi_cal_stress(
 
   /* store the local n-vector onto stress_GP for postprocessing */
   gp_stress = ele->e.saxi->stress_GP.a.d3;
-  for (i=0; i<5; i++) 
+  for (i=0; i<5; i++)
   {
     gp_stress[0][i][0] = n[i];
   }
 
 end:
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 
-  return; 
+  return;
 } /* end of saxi_cal_stress */
 
 /*! @} (documentation module close)*/

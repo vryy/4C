@@ -12,8 +12,8 @@ Maintainer: Andreas Lipka
 *----------------------------------------------------------------------*/
 #ifdef D_BRICK1
 #include "brick1_doxygen.h"
-/*! 
-\addtogroup BRICK1 
+/*!
+\addtogroup BRICK1
 *//*! @{ (documentation module open)*/
 
 
@@ -42,7 +42,7 @@ DOUBLE        wgtt[13]; /*!< weights at natural coordinates t */
 \brief 3D hex element
 
 <pre>                                                              al 06/01
-This structure contains eas data 
+This structure contains eas data
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -50,16 +50,16 @@ typedef struct _C1_EASDAT
 {
 /* eas ...*/
 DOUBLE     *disl;  /*!< element displacements (last step) */
-DOUBLE     *ehdis; /*!< element displacements             */ 
-DOUBLE     *hil;   /*!< element parameters                */ 
-DOUBLE     *hih;   /*!< element parameters                */ 
+DOUBLE     *ehdis; /*!< element displacements             */
+DOUBLE     *hil;   /*!< element parameters                */
+DOUBLE     *hih;   /*!< element parameters                */
 } C1_EASDAT;
 
 /*!----------------------------------------------------------------------
 \brief 3D hex element
 
 <pre>                                                              al 06/01
-This structure contains the working array for g.p. values 
+This structure contains the working array for g.p. values
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -71,7 +71,7 @@ DOUBLE      eps[9]; /*!< global strains                               */
 DOUBLE       epstn; /*!< equivalent strain                            */
 INT          yip;   /*!< stress state: 1=elastic 2=plastic            */
 /* hashin delamination (plasticity) ...*/
-DOUBLE      kappa;  /*!< damage threshold value                       */ 
+DOUBLE      kappa;  /*!< damage threshold value                       */
 INT         imod;   /*!< flag, indicates if sigy has been reached     */
 } C1_IP_WA;
 
@@ -80,7 +80,7 @@ INT         imod;   /*!< flag, indicates if sigy has been reached     */
 \brief 3D hex element
 
 <pre>                                                              al 06/01
-This structure contains the working array for element values 
+This structure contains the working array for element values
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -116,9 +116,9 @@ stress_GP[place][15..23][gp] ang-r1  ang-s1  ang-t1  ang-r2  ang-s2  ang-t2  ang
 stress_GP[place][24..26][gp] x-coord.    y-coord.    z-coord.
 
 stress_ND[place][ 0.. 2][nn] stress-rr   stress-ss   stress-tt
-stress_ND[place][ 3.. 5][nn] stress-rs   stress-st   stress-tr  
+stress_ND[place][ 3.. 5][nn] stress-rs   stress-st   stress-tr
 stress_ND[place][ 6.. 8][nn] stress-xx   stress-yy   stress-zz
-stress_ND[place][ 9..11][nn] stress-xy   stress-yz   stress-xz 
+stress_ND[place][ 9..11][nn] stress-xy   stress-yz   stress-xz
 stress_ND[place][12..14][nn] stress-11   stress-22   stress-33
 stress_ND[place][15..17][nn] ang-r1  ang-s1  ang-t1
 stress_ND[place][18..20][nn] ang-r2  ang-s2  ang-t2
@@ -134,7 +134,7 @@ enum
     c1_nprst,  /*!<  extrapolation to nodes: local  system on element level    */
     c1_np123,  /*!<  extrapolation to nodes: principal-stresses                */
     c1_npeqs   /*!<  extrapolation to nodes: equivalent stress                 */
-    }            stresstyp; 
+    }            stresstyp;
 struct _ARRAY4D  stress_GP;  /*!< array for stress values */
 struct _ARRAY4D  stress_ND;  /*!< array for stress values */
 } BRICK1;
@@ -148,7 +148,7 @@ typedef enum _RSTF
 { /* r..r-dir., s..s-dir., t..t-dir., n..-1.0, p..+1.0 */
   rpp, rpn, rnp, rnn, psp, psn, nsp, nsn, ppt, pnt, npt, nnt,/*line*/
   rsn, rsp, rnt, rpt, nst, pst,/*surface*/
-  rst/*volume*/ 
+  rst/*volume*/
 } RSTF;
 /*----------------------------------------------------------------------*
  |  prototypes of main and input/output routines            al 11/01    |
@@ -164,7 +164,7 @@ void brick1(PARTITION   *actpart,
             ARRAY       *emass_global,
             ARRAY      *intforce_global,
             CALC_ACTION *action,
-            CONTAINER   *container);  
+            CONTAINER   *container);
 /*----------------------------------------------------------------------*
  | c1_inpele.c                                               al 6/01    |
  | read brick1 element                                                  |
@@ -176,7 +176,7 @@ void c1inp(ELEMENT *ele);
  *----------------------------------------------------------------------*/
 void c1_out_gid_sol_str(
                         FILE       *out, /* File pointer to flavia.res */
-                        FIELD *actfield, /* active field               */ 
+                        FIELD *actfield, /* active field               */
                         INT       place, /* current solution           */
                         INT         init /* allocate/free memory       */
                         );

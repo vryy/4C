@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Michael Gee
@@ -94,7 +94,7 @@ static ARRAY        gmkonc_a;    static DOUBLE **gmkonc;    /* kontravar.-------
 
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8static_mass");
 #endif
 /*----------------------------------------------------------------------*/
@@ -104,36 +104,36 @@ if (init==1)
 {
 iel = MAXNOD_SHELL8; /* maximum number of nodes for this type of shell */
 
-xrefe     = amdef("xrefe"  ,&xrefe_a,3,MAXNOD_SHELL8,"DA");       
-xcure     = amdef("xcure"  ,&xcure_a,3,MAXNOD_SHELL8,"DA");       
-a3r       = amdef("a3r"    ,&a3r_a,3,MAXNOD_SHELL8,"DA");         
-a3c       = amdef("a3c"    ,&a3c_a,3,MAXNOD_SHELL8,"DA");         
+xrefe     = amdef("xrefe"  ,&xrefe_a,3,MAXNOD_SHELL8,"DA");
+xcure     = amdef("xcure"  ,&xcure_a,3,MAXNOD_SHELL8,"DA");
+a3r       = amdef("a3r"    ,&a3r_a,3,MAXNOD_SHELL8,"DA");
+a3c       = amdef("a3c"    ,&a3c_a,3,MAXNOD_SHELL8,"DA");
 
-a3kvpr    = amdef("a3kvpr" ,&a3kvpr_a,3,2,"DA");        
-a3kvpc    = amdef("a3kvpc" ,&a3kvpc_a,3,2,"DA");        
+a3kvpr    = amdef("a3kvpr" ,&a3kvpr_a,3,2,"DA");
+a3kvpc    = amdef("a3kvpc" ,&a3kvpc_a,3,2,"DA");
 
-funct     = amdef("funct"  ,&funct_a,MAXNOD_SHELL8,1,"DV");       
-deriv     = amdef("deriv"  ,&deriv_a,2,MAXNOD_SHELL8,"DA");       
+funct     = amdef("funct"  ,&funct_a,MAXNOD_SHELL8,1,"DV");
+deriv     = amdef("deriv"  ,&deriv_a,2,MAXNOD_SHELL8,"DA");
 
-akovr     = amdef("akovr"  ,&akovr_a,3,3,"DA");         
-akonr     = amdef("akonr"  ,&akonr_a,3,3,"DA");         
-amkovr    = amdef("amkovr" ,&amkovr_a,3,3,"DA");        
-amkonr    = amdef("amkonr" ,&amkonr_a,3,3,"DA");        
+akovr     = amdef("akovr"  ,&akovr_a,3,3,"DA");
+akonr     = amdef("akonr"  ,&akonr_a,3,3,"DA");
+amkovr    = amdef("amkovr" ,&amkovr_a,3,3,"DA");
+amkonr    = amdef("amkonr" ,&amkonr_a,3,3,"DA");
 
-akovc     = amdef("akovc"  ,&akovc_a,3,3,"DA");         
-akonc     = amdef("akonc"  ,&akonc_a,3,3,"DA");         
-amkovc    = amdef("amkovc" ,&amkovc_a,3,3,"DA");        
-amkonc    = amdef("amkonc" ,&amkonc_a,3,3,"DA");        
+akovc     = amdef("akovc"  ,&akovc_a,3,3,"DA");
+akonc     = amdef("akonc"  ,&akonc_a,3,3,"DA");
+amkovc    = amdef("amkovc" ,&amkovc_a,3,3,"DA");
+amkonc    = amdef("amkonc" ,&amkonc_a,3,3,"DA");
 
-gkovr     = amdef("gkovr"  ,&gkovr_a,3,3,"DA");         
-gkonr     = amdef("gkonr"  ,&gkonr_a,3,3,"DA");         
-gmkovr    = amdef("gmkovr" ,&gmkovr_a,3,3,"DA");        
-gmkonr    = amdef("gmkonr" ,&gmkonr_a,3,3,"DA");        
+gkovr     = amdef("gkovr"  ,&gkovr_a,3,3,"DA");
+gkonr     = amdef("gkonr"  ,&gkonr_a,3,3,"DA");
+gmkovr    = amdef("gmkovr" ,&gmkovr_a,3,3,"DA");
+gmkonr    = amdef("gmkonr" ,&gmkonr_a,3,3,"DA");
 
-gkovc     = amdef("gkovc"  ,&gkovc_a,3,3,"DA");         
-gkonc     = amdef("gkonc"  ,&gkonc_a,3,3,"DA");         
-gmkovc    = amdef("gmkovc" ,&gmkovc_a,3,3,"DA");        
-gmkonc    = amdef("gmkonc" ,&gmkonc_a,3,3,"DA");        
+gkovc     = amdef("gkovc"  ,&gkovc_a,3,3,"DA");
+gkonc     = amdef("gkonc"  ,&gkonc_a,3,3,"DA");
+gmkovc    = amdef("gmkovc" ,&gmkovc_a,3,3,"DA");
+gmkonc    = amdef("gmkonc" ,&gmkonc_a,3,3,"DA");
 
 goto end;
 }
@@ -162,7 +162,7 @@ for (k=0; k<iel; k++)
    h2 = ele->e.s8->thick_node.a.dv[k];
    h2 /= 2.0;
    h2 *= condfac;
-   
+
    a3r[0][k] = a3ref[0][k] * h2;
    a3r[1][k] = a3ref[1][k] * h2;
    a3r[2][k] = a3ref[2][k] * h2;
@@ -174,7 +174,7 @@ for (k=0; k<iel; k++)
    xcure[0][k] = xrefe[0][k] + ele->node[k]->sol.a.da[0][0];
    xcure[1][k] = xrefe[1][k] + ele->node[k]->sol.a.da[0][1];
    xcure[2][k] = xrefe[2][k] + ele->node[k]->sol.a.da[0][2];
- 
+
    a3c[0][k] = a3r[0][k]     + ele->node[k]->sol.a.da[0][3];
    a3c[1][k] = a3r[1][k]     + ele->node[k]->sol.a.da[0][4];
    a3c[2][k] = a3r[2][k]     + ele->node[k]->sol.a.da[0][5];
@@ -207,7 +207,7 @@ for (lr=0; lr<nir; lr++)
       h[0] = akovr[1][0]*akovr[2][1] - akovr[2][0]*akovr[1][1];
       h[1] = akovr[2][0]*akovr[0][1] - akovr[0][0]*akovr[2][1];
       h[2] = akovr[0][0]*akovr[1][1] - akovr[1][0]*akovr[0][1];
-      /*------------------------------------- make director unit lenght 
+      /*------------------------------------- make director unit lenght
                                         and get midsurf area da from it */
       math_unvc(&da,h,3);
       /*============================== loop GP in thickness direction t */
@@ -216,18 +216,18 @@ for (lr=0; lr<nir; lr++)
          /*---------------------------- gaussian point and weight at it */
          e3   = data->xgpt[lt];
          fact = data->wgtt[lt];
-         /*-------------------- basis vectors and metrics at shell body */ 
+         /*-------------------- basis vectors and metrics at shell body */
          s8_tmtr(xrefe,a3r,e3,gkovr,gkonr,gmkovr,gmkonr,&detr,
                     funct,deriv,iel,condfac,0);
 
          s8_tmtr(xcure,a3c,e3,gkovc,gkonc,gmkovc,gmkonc,&detc,
                     funct,deriv,iel,condfac,0);
-         /*--------------------------------- metric at gp in shell body */     
+         /*--------------------------------- metric at gp in shell body */
          s8_tvhe(gmkovr,gmkovc,gmkonr,gmkonc,gkovr,gkovc,&detr,&detc,
-                 amkovc,amkovr,akovc,akovr,a3kvpc,a3kvpr,e3,condfac);     
+                 amkovc,amkovr,akovc,akovr,a3kvpc,a3kvpr,e3,condfac);
          /*----------- calc shell shifter and put it in the weight fact */
          xnu   = (1.0/condfac)*(detr/da);
-         fact *= xnu; 
+         fact *= xnu;
          /*-------------------------- mass matrix thickness integration */
          facv  += data->wgtt[lt] * detr;
          facw  += data->wgtt[lt] * detr * DSQR(e3);
@@ -243,14 +243,14 @@ for (lr=0; lr<nir; lr++)
          s8_tmas(funct,thick,emass,iel,numdf,facv,facw,facvw);
       }
    ngauss++;
-   }/*============================================= end of loop over ls */ 
+   }/*============================================= end of loop over ls */
 }/*================================================ end of loop over lr */
 /*----------------------------------------------------------------- end */
 /*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of s8static_mass */
 #endif

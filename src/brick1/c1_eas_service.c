@@ -17,8 +17,8 @@ Maintainer: Andreas Lipka
 #include "brick1.h"
 #include "brick1_prototypes.h"
 
-/*! 
-\addtogroup BRICK1 
+/*!
+\addtogroup BRICK1
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
@@ -30,18 +30,18 @@ systems and its inverse jacobian matrix at point 0,0,0                          
 for an 3D-hex-element.
 
 </pre>
-\param  fi[6][6]   DOUBLE  (i)   
-\param  ff[6][6]   DOUBLE  (i)   
-\param    **xjm0   DOUBLE  (o)   
+\param  fi[6][6]   DOUBLE  (i)
+\param  ff[6][6]   DOUBLE  (i)
+\param    **xjm0   DOUBLE  (o)
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
-void c1t0( DOUBLE   fi[6][6],    
-           DOUBLE   ff[6][6],    
-           DOUBLE     **xjm0)  
+void c1t0( DOUBLE   fi[6][6],
+           DOUBLE   ff[6][6],
+           DOUBLE     **xjm0)
 {
 /*----------------------------------------------------------------------*/
 INT i,j,cc;
@@ -49,7 +49,7 @@ INT fdim=6;
 DOUBLE ffi[36];
 DOUBLE fii[36];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1t0");
 #endif
 /*----------------------------------------------------------------------*/
@@ -101,7 +101,7 @@ dstrc_enter("c1t0");
   cc=0;
   for (i=0; i<6; i++) for (j=0; j<6; j++) fi[j][i]=fii[cc++];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -115,22 +115,22 @@ This routine calcuates bop with extended deformations                           
 for an 3D-hex-element.
 
 </pre>
-\param        **bop9  DOUBLE  (o) b-operator matrix modified   
-\param    bn1[3][10]  DOUBLE  (i)   
-\param      fi[6][6]  DOUBLE  (i)   
-\param      disd1[9]  DOUBLE  (i)   
-\param  ehdis[3][10]  DOUBLE  (i)   
-\param          det0  DOUBLE  (i)   
-\param          det1  DOUBLE  (i)   
-\param            e1  DOUBLE  (i)   
-\param            e2  DOUBLE  (i)   
-\param            e3  DOUBLE  (i)   
-\param           iel     INT  (i)   
-\param            l1     INT  (i)   
-\param            l3     INT  (i)   
+\param        **bop9  DOUBLE  (o) b-operator matrix modified
+\param    bn1[3][10]  DOUBLE  (i)
+\param      fi[6][6]  DOUBLE  (i)
+\param      disd1[9]  DOUBLE  (i)
+\param  ehdis[3][10]  DOUBLE  (i)
+\param          det0  DOUBLE  (i)
+\param          det1  DOUBLE  (i)
+\param            e1  DOUBLE  (i)
+\param            e2  DOUBLE  (i)
+\param            e3  DOUBLE  (i)
+\param           iel     INT  (i)
+\param            l1     INT  (i)
+\param            l3     INT  (i)
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
@@ -147,8 +147,8 @@ void c1bop9(
             DOUBLE              e3,
             INT                iel,
             INT                 l1,
-            INT                 l3 
-           )  
+            INT                 l3
+           )
 {
 /*----------------------------------------------------------------------*/
 INT i,j,k,m,cb,ce;
@@ -156,7 +156,7 @@ INT fdim=6;
 DOUBLE rdet, dum;
 DOUBLE eas[6][30],aux[9];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1bop9");
 #endif
 /*----------------------------------------------------------------------*/
@@ -181,14 +181,14 @@ dstrc_enter("c1bop9");
       eas[3][17]= e1 * e3 * rdet;
       eas[5][20]= e1 * e2 * rdet;
       eas[4][19]= e1 * e2 * rdet;
-      
-    for (k=0; k<l3; k++) { 
+
+    for (k=0; k<l3; k++) {
       for (m=0; m<3; m++) {
         for (i=0; i<6; i++) {
           dum=0.;
           for (j=0; j<6; j++) dum += fi[j][i] * eas[j][m+k*3];
             bop9[i][(k+iel)*3 + m] += dum; }}}
-      
+
       for (i=0; i<l3; i++) {
         for (j=0; j<6; j++) {
           for (k=0; k<3; k++) {
@@ -233,7 +233,7 @@ dstrc_enter("c1bop9");
         eas[5][29]= e1*e2*e3* rdet;
         eas[4][28]= e1*e2*e3* rdet;
 
-    for (k=0; k<l3; k++) { 
+    for (k=0; k<l3; k++) {
       for (m=0; m<3; m++) {
         for (i=0; i<6; i++) {
           dum=0.;
@@ -261,7 +261,7 @@ dstrc_enter("c1bop9");
        bn1[2][k] = bop9[2][2 + (k+iel)*3];
       }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -275,14 +275,14 @@ This routine includes initial displacements to derivative operator              
 for an 3D-hex-element.
 
 </pre>
-\param      **bop  DOUBLE  (o) b-operator  matrix   
-\param  bn[3][10]  DOUBLE  (o) bn-operator matrix  
-\param    disd[9]  DOUBLE  (i)   
-\param        iel     INT  (i)   
-\param         l3     INT  (i)   
+\param      **bop  DOUBLE  (o) b-operator  matrix
+\param  bn[3][10]  DOUBLE  (o) bn-operator matrix
+\param    disd[9]  DOUBLE  (i)
+\param        iel     INT  (i)
+\param         l3     INT  (i)
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
@@ -291,15 +291,15 @@ void c1bdish(
             DOUBLE   bn[3][10],
             DOUBLE     disd[9],
             INT            iel,
-            INT             l3 
-           )  
+            INT             l3
+           )
 {
 /*----------------------------------------------------------------------*/
 INT l,k,node_start;
 DOUBLE rl11, rl12, rl13, rl21, rl22, rl23, rl31, rl32, rl33;
 DOUBLE h1, h2, h3;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1bdish");
 #endif
 /*----------------------------------------------------------------------*/
@@ -341,7 +341,7 @@ dstrc_enter("c1bdish");
     bop[5][node_start+2]  += rl31*h3 + rl33*h1;
   }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -351,20 +351,20 @@ return;
 \brief modify stiffness matrix and internal forces
 
 <pre>                                                              al 06/02
-This routine modifies stiffness matrix and internal forces 
-for enhanced strain elements,  update displacement parameters 
+This routine modifies stiffness matrix and internal forces
+for enhanced strain elements,  update displacement parameters
 for an 3D-hex-element.
 
 </pre>
-\param      *ele  ELEMENT  (i) element stiffness-matrix           
-\param  **estif9   DOUBLE  (o) modified element stiffness-matrix 
-\param   **estif   DOUBLE  (i) element residuals                
-\param     *fieh   DOUBLE  (o)                                   
-\param      *fie   DOUBLE  (o)   
-\param        l1      INT  (i)   
+\param      *ele  ELEMENT  (i) element stiffness-matrix
+\param  **estif9   DOUBLE  (o) modified element stiffness-matrix
+\param   **estif   DOUBLE  (i) element residuals
+\param     *fieh   DOUBLE  (o)
+\param      *fie   DOUBLE  (o)
+\param        l1      INT  (i)
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
@@ -375,7 +375,7 @@ void c1rkefi(
             DOUBLE    *fieh,
             DOUBLE     *fie,
             INT          l1
-           )  
+           )
 {
 /*----------------------------------------------------------------------*/
 INT i,j;
@@ -391,7 +391,7 @@ DOUBLE sbai[720];
 DOUBLE sbb[ 900];
 DOUBLE sbbi[900];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1rkefi");
 #endif
 /*----------------------------------------------------------------------*/
@@ -471,33 +471,33 @@ dstrc_enter("c1rkefi");
       }}
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of c1rkefi */
 
 /*!----------------------------------------------------------------------
-\brief evaluation of residual 
+\brief evaluation of residual
 
 <pre>                                                              al 06/02
-This routine evaluates residuals  
+This routine evaluates residuals
 for an 3D-hex-element.
 
 </pre>
 \param      *F   DOUBLE  (i) force vector integral (stress-resultants)
-\param     fac   DOUBLE  (i) multiplier for numerical integration     
-\param  **bop9   DOUBLE  (i) b-operator matrix                        
-\param     iel      INT  (i) number nodes of element                  
-\param   *fieh   DOUBLE  (o) internal force vector                    
-\param      l3      INT  (i) 
+\param     fac   DOUBLE  (i) multiplier for numerical integration
+\param  **bop9   DOUBLE  (i) b-operator matrix
+\param     iel      INT  (i) number nodes of element
+\param   *fieh   DOUBLE  (o) internal force vector
+\param      l3      INT  (i)
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
-void c1res( 
+void c1res(
            DOUBLE     *F,    /*  force vector integral (stress-resultants)*/
            DOUBLE    fac,    /*  multiplier for numerical integration     */
            DOUBLE **bop9,    /*  b-operator matrix                        */
@@ -510,7 +510,7 @@ INT i,j,k;
 INT ca,ce;
 DOUBLE n11,n22,n33,n12,n23,n31;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1res");
 #endif
 /*---------------------------- set values of force vector components ---*/
@@ -523,7 +523,7 @@ dstrc_enter("c1res");
 /*---  loop over all nodal points ----- and over enhanced parameters ---*/
   ca = iel*3+2;
   ce = (iel+l3)*3;
-  
+
   for (j=ca; j<ce; j+=3)
   {
     k=j-1;
@@ -536,17 +536,17 @@ dstrc_enter("c1res");
                     bop9[3][j]*n12 + bop9[4][j]*n23 + bop9[5][j]*n31;
   }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of c1res */
 
 /*!----------------------------------------------------------------------
-\brief update of strain paramenters 
+\brief update of strain paramenters
 
 <pre>                                                              al 06/02
-This routine updates strain paramenters  
+This routine updates strain paramenters
 for an 3D-hex-element.
 
 </pre>
@@ -557,13 +557,13 @@ for an 3D-hex-element.
 \param            l3      INT  (i)
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
-void c1upenh(  
+void c1upenh(
              ELEMENT         *ele,
-             DOUBLE      edis[60],  
+             DOUBLE      edis[60],
              DOUBLE  ehdis[3][10],
              INT               l1,
              INT               l3
@@ -577,7 +577,7 @@ DOUBLE ehdisl[30];
 DOUBLE hih[30];
 DOUBLE hil[30][24];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1upenh");
 #endif
 /*----------------------------------------------------------------------*/
@@ -589,7 +589,7 @@ dstrc_enter("c1upenh");
     cc=0;
     for (i=0; i<l1; i++) hih[i]=ele->e.c1->elewa[0].eas[0].hih[cc++];
     cc=0;
-    for (i=0; i<24; i++){ for (j=0; j<l1; j++){ 
+    for (i=0; i<24; i++){ for (j=0; j<l1; j++){
                   hil[j][i]=ele->e.c1->elewa[0].eas[0].hil[cc++];}}
 
     /*----------------------------------- update enhanced parameters ----|
@@ -597,30 +597,30 @@ dstrc_enter("c1upenh");
      |                                                                   |
      |   terms [ hi ]*(fieh)  and [- hi ]*[ l ] from last iteration      |
      |   stored in wah in vectors hil and hih resp. ( function:  c1rkefi)|
-     *------------------------------------------------------------------*/    
-   
-    
+     *------------------------------------------------------------------*/
+
+
     cc=0;
     for (i=0; i<l3; i++) {
-      for (j=0; j<3; j++) { 
+      for (j=0; j<3; j++) {
          ehdis[j][i] = ehdisl[cc] - hih[cc];
          cc++; }}
 
     cc=0;
     for (i=0; i<l3; i++) {
-      for (j=0; j<3; j++) { 
-        for (k=0; k<24; k++) { 
+      for (j=0; j<3; j++) {
+        for (k=0; k<24; k++) {
          ehdis[j][i] -= hil[cc][k]*(edis[k]-disl[k]);}
          cc++;}}
     /*---------------------------------------- put new values in wah ---*/
     cc=0;
     for (i=0; i<l3; i++) {
-      for (j=0; j<3; j++) { 
+      for (j=0; j<3; j++) {
                ele->e.c1->elewa[0].eas[0].ehdis[cc++] = ehdis[j][i];}}
-    
+
     for (i=0; i<24; i++) ele->e.c1->elewa[0].eas[0].disl[i] = edis[i];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

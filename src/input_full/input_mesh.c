@@ -54,7 +54,7 @@ extern struct _GENPROB     genprob;
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -81,7 +81,7 @@ INT  node_id;
 INT  numnd;
 INT  nnode_total = 0;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpfield");
 #endif
 
@@ -94,17 +94,17 @@ inpnodes();
 if (genprob.probtyp == prb_fsi)
 {
    if (genprob.numfld!=3) dserror("numfld != 3 for FSI");
-   
+
    field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
 
-   field[genprob.numsf].fieldtyp = structure;   
+   field[genprob.numsf].fieldtyp = structure;
    inpdis(&(field[genprob.numsf]));
    inp_struct_field(&(field[genprob.numsf]));
-   
+
    field[genprob.numff].fieldtyp = fluid;
    inpdis(&(field[genprob.numff]));
    inp_fluid_field (&(field[genprob.numff]));
-   
+
    field[genprob.numaf].fieldtyp = ale;
    inpdis(&(field[genprob.numaf]));
    inp_ale_field  (&(field[genprob.numaf]));
@@ -116,7 +116,7 @@ if (genprob.probtyp==prb_structure)
 {
    if (genprob.numfld!=1) dserror("numfld != 1 for structural problem");
    field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
-   
+
    field[genprob.numsf].fieldtyp = structure;
    inpdis(&(field[genprob.numsf]));
    inp_struct_field(&(field[genprob.numsf]));
@@ -137,7 +137,7 @@ if (genprob.probtyp==prb_fluid)
    if (genprob.numfld==1) /* single field fluid problem                 */
    {
       field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
-   
+
       field[genprob.numff].fieldtyp = fluid;
       inpdis(&(field[genprob.numff]));
       inp_fluid_field (&(field[genprob.numff]));
@@ -145,23 +145,23 @@ if (genprob.probtyp==prb_fluid)
    else if (genprob.numfld==2) /* two field fluid problem (fluid+ale)       */
    {
       field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
-      
+
       field[genprob.numff].fieldtyp = fluid;
       inpdis(&(field[genprob.numff]));
       inp_fluid_field (&(field[genprob.numff]));
 
       field[genprob.numaf].fieldtyp = ale;
       inpdis(&(field[genprob.numaf]));
-      inp_ale_field  (&(field[genprob.numaf]));      
+      inp_ale_field  (&(field[genprob.numaf]));
    }
-   else dserror("NUMFLD>2 not allowed for Problemtype FLUID\n");   
+   else dserror("NUMFLD>2 not allowed for Problemtype FLUID\n");
 }
 /*------------------------------------------------- ale type of problem */
 if (genprob.probtyp==prb_ale)
 {
    if (genprob.numfld!=1) dserror("numfld != 1 for ale problem");
    field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
-   
+
    field[genprob.numaf].fieldtyp = ale;
    inpdis(&(field[genprob.numaf]));
    inp_ale_field(&(field[genprob.numaf]));
@@ -172,7 +172,7 @@ if (genprob.probtyp==prb_twophase)
 {
    if (genprob.numfld!=2) dserror("numfld != 2 for two phase fluid flow problem");
    field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
-   
+
    field[genprob.numff].fieldtyp = fluid;
    inpdis(&(field[genprob.numff]));
    inp_fluid_field(&(field[genprob.numff]));
@@ -244,7 +244,7 @@ amdel(&tmpnodes2);
     }
   }
 /*---------------------------------------- TWO PHASE FLUID FLOW PROBLEM */
-/* 
+/*
  * levelset and fluid discretizations are compatible
  * => construct the topology in between
  */
@@ -252,12 +252,12 @@ amdel(&tmpnodes2);
 if (genprob.probtyp==prb_twophase)
 {
   if (field[genprob.numff].ndis!=1 || field[genprob.numls].ndis!=1)
-    dserror("ndis != 1 for twophase problem");   
+    dserror("ndis != 1 for twophase problem");
   fluid_to_ls(&(field[genprob.numff]),&(field[genprob.numls]));
 }
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -278,7 +278,7 @@ INT counter;
 INT minusone=-1;
 ARRAY nodeflag;
 ELEMENT *actele;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inp_assign_nodes");
 #endif
 amdef("nodeflag",&nodeflag,2*genprob.nnode,1,"IV");
@@ -317,13 +317,13 @@ for (i=0; i<2*genprob.nnode; i++)
 
       if (genprob.maxnode < (actdis->node[counter].Id+1))
         genprob.maxnode = actdis->node[counter].Id + 1;
-      
+
       counter++;
    }
 }
 /*----------------------------------------------------------------------*/
 amdel(&nodeflag);
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -331,19 +331,19 @@ return;
 
 
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief input of disretisation data
 
-<pre>                                                         genk 08/02		     
+<pre>                                                         genk 08/02
 </pre>
 
-\return void                                                                             
+\return void
 
 ------------------------------------------------------------------------*/
 void inpdis(FIELD *actfield)
 {
 INT  ierr=0;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpdis");
 #endif
 /*--------------------------------------------------- set default value */
@@ -354,7 +354,7 @@ if (frfind("--DISCRETISATION")==0) goto end;
 frread();
 switch(actfield->fieldtyp)
 {
-  case fluid: 
+  case fluid:
     while(strncmp(allfiles.actplace,"------",6)!=0)
     {
       frint("NUMFLUIDDIS", &(actfield->ndis),&ierr);
@@ -381,16 +381,16 @@ switch(actfield->fieldtyp)
       frint("NUMLEVELSETDIS", &(actfield->ndis),&ierr);
       frread();
     }
-    break; 
+    break;
   default:
     dserror("Unknown fieldtype");
     break;
-}   
+}
 frrewind();
 /*----------------------------------------------------------------------*/
 
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -405,7 +405,7 @@ void inpnodes()
 {
 INT  ierr=0;
 INT  counter;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpnodes");
 #endif
 /*--------------- allocate temporary array for coordinates of all nodes */
@@ -431,7 +431,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 frrewind();
 /*----------------------------------------------------------------------*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -450,7 +450,7 @@ INT  ierr;
 INT  counter=0;
 INT  elenumber;
 char *colpointer;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inp_struct_field");
 #endif
 /*----------------------------------------- allocate one discretization */
@@ -485,12 +485,12 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchk("SHELL8",&ierr);
    if (ierr==1)
    {
-#ifndef D_SHELL8 
+#ifndef D_SHELL8
       dserror("SHELL8 needed but not defined in Makefile");
 #endif
    }
-#ifdef D_SHELL8 
-   if (ierr==1) 
+#ifdef D_SHELL8
+   if (ierr==1)
    {
       structfield->dis[0].element[counter].eltyp=el_shell8;
       s8inp(&(structfield->dis[0].element[counter]));
@@ -500,12 +500,12 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchk("SHELL9",&ierr);
    if (ierr==1)
    {
-#ifndef D_SHELL9 
+#ifndef D_SHELL9
       dserror("SHELL9 needed but not defined in Makefile");
 #endif
    }
-#ifdef D_SHELL9 
-   if (ierr==1) 
+#ifdef D_SHELL9
+   if (ierr==1)
    {
       structfield->dis[0].element[counter].eltyp=el_shell9;
       s9inp(&(structfield->dis[0].element[counter]));
@@ -515,12 +515,12 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchk("BRICK1",&ierr);
    if (ierr==1)
    {
-#ifndef D_BRICK1 
+#ifndef D_BRICK1
       dserror("BRICK1 needed but not defined in Makefile");
 #endif
    }
-#ifdef D_BRICK1 
-   if (ierr==1) 
+#ifdef D_BRICK1
+   if (ierr==1)
    {
       structfield->dis[0].element[counter].eltyp=el_brick1;
       c1inp(&(structfield->dis[0].element[counter]));
@@ -530,12 +530,12 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchk("WALL",&ierr);
    if (ierr==1)
    {
-#ifndef D_WALL1 
+#ifndef D_WALL1
       dserror("WALL1 needed but not defined in Makefile");
 #endif
    }
-#ifdef D_WALL1 
-   if (ierr==1) 
+#ifdef D_WALL1
+   if (ierr==1)
    {
       structfield->dis[0].element[counter].eltyp=el_wall1;
       w1inp(&(structfield->dis[0].element[counter]));
@@ -545,12 +545,12 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchk("BEAM3",&ierr);
    if (ierr==1)
    {
-#ifndef D_BEAM3 
+#ifndef D_BEAM3
       dserror("BEAM3 needed but not defined in Makefile");
 #endif
    }
-#ifdef D_BEAM3 
-   if (ierr==1) 
+#ifdef D_BEAM3
+   if (ierr==1)
    {
       structfield->dis[0].element[counter].eltyp=el_beam3;
       b3inp(&(structfield->dis[0].element[counter]));
@@ -560,12 +560,12 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchk("SAXI",&ierr);
    if (ierr==1)
    {
-#ifndef D_AXISHELL 
+#ifndef D_AXISHELL
       /*dserror("AXISHELL needed but not defined in Makefile");*/
 #endif
    }
 #ifdef D_AXISHELL
-   if (ierr==1) 
+   if (ierr==1)
    {
       structfield->dis[0].element[counter].eltyp=el_axishell;
       saxi_inp(&(structfield->dis[0].element[counter]));
@@ -575,12 +575,12 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchk("IF",&ierr);
    if (ierr==1)
    {
-#ifndef D_INTERF 
+#ifndef D_INTERF
       dserror("INTERF needed but not defined in Makefile");
 #endif
    }
 #ifdef D_INTERF
-   if (ierr==1) 
+   if (ierr==1)
    {
       structfield->dis[0].element[counter].eltyp=el_interf;
       interf_inp(&(structfield->dis[0].element[counter]));
@@ -590,12 +590,12 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchk("WGE",&ierr);
    if (ierr==1)
    {
-#ifndef D_WALLGE 
+#ifndef D_WALLGE
       dserror("WALLGE needed but not defined in Makefile");
 #endif
    }
 #ifdef D_WALLGE
-   if (ierr==1) 
+   if (ierr==1)
    {
       structfield->dis[0].element[counter].eltyp=el_wallge;
       wge_inp(&(structfield->dis[0].element[counter]));
@@ -609,7 +609,7 @@ frrewind();
 /*----------------------------------------------------------------------*/
 
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -635,7 +635,7 @@ INT  cpro=0;
 INT  elenumber;
 char *colpointer;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inp_fluid_field");
 #endif
 /*-------------------------------------------- allocate discretizations */
@@ -673,28 +673,28 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchk("FLUID2_PRO",&ierr);
    if (ierr==1)
    {
-#ifndef D_FLUID2_PRO 
+#ifndef D_FLUID2_PRO
       dserror("FLUID2_PRO needed but not defined in Makefile");
 #endif
    }
-#ifdef D_FLUID2_PRO 
-   if (ierr==1) 
+#ifdef D_FLUID2_PRO
+   if (ierr==1)
    {
       /*-------------------------- allocate elements of second discretisation */
       if (cpro==0)
       {
-         if(fluidfield->ndis<2) 
+         if(fluidfield->ndis<2)
             dserror("NUMFLUIDDIS has to be g.t. 1 for FLUID2_PRO Elements!\n");
          fluidfield->dis[1].numele = fluidfield->dis[0].numele;
 	 fluidfield->dis[1].element=(ELEMENT*)CCACALLOC(fluidfield->dis[1].numele,sizeof(ELEMENT));
          cpro++;
          create_dis = 1;
-      } /* endif (cpro==0) */      
+      } /* endif (cpro==0) */
       fluidfield->dis[0].element[counter].eltyp=el_fluid2_pro;
       fluidfield->dis[1].element[counter].eltyp=el_fluid2_pro;
       f2pro_inp(&(fluidfield->dis[0].element[counter]));
       f2pro_dis(&(fluidfield->dis[0].element[counter]),&(fluidfield->dis[1].element[counter]),
-           genprob.nele,genprob.nnode);       
+           genprob.nele,genprob.nnode);
       genprob.nodeshift = genprob.nnode;
       goto read;
    }
@@ -703,27 +703,27 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchk("FLUID3",&ierr);
    if (ierr==1)
    {
-#ifndef D_FLUID3 
+#ifndef D_FLUID3
       dserror("FLUID3 needed but not defined in Makefile");
 #endif
    }
-#ifdef D_FLUID3 
-   if (ierr==1) 
+#ifdef D_FLUID3
+   if (ierr==1)
    {
       fluidfield->dis[0].element[counter].eltyp=el_fluid3;
       f3inp(&(fluidfield->dis[0].element[counter]),counter);
    }
-#endif   
+#endif
 /*------------------------------------------------ elementtyp is FLUID2 */
    frchk("FLUID2",&ierr);
    if (ierr==1)
    {
-#ifndef D_FLUID2 
+#ifndef D_FLUID2
      dserror("FLUID2 needed but not defined in Makefile");
 #endif
    }
-#ifdef D_FLUID2 
-   if (ierr==1) 
+#ifdef D_FLUID2
+   if (ierr==1)
    {
 #ifdef D_XFEM
      if (genprob.probtyp==prb_twophase)
@@ -732,15 +732,15 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
      }
      else
      {
-#endif     
+#endif
      fluidfield->dis[0].element[counter].eltyp=el_fluid2;
 #ifdef D_XFEM
      }
-#endif          
+#endif
      f2_inp(&(fluidfield->dis[0].element[counter]),counter);
 
-#ifdef D_FLUID2TU 
-     if (fluidfield->dis[0].element[counter].e.f2->turbu == 2 || 
+#ifdef D_FLUID2TU
+     if (fluidfield->dis[0].element[counter].e.f2->turbu == 2 ||
          fluidfield->dis[0].element[counter].e.f2->turbu == 3 )
      {
        if(cpro==0)
@@ -749,17 +749,17 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          fluidfield->dis[1].element=(ELEMENT*)CCACALLOC(fluidfield->dis[1].numele,sizeof(ELEMENT));
          cpro++;
          create_dis = 1;
-       } /* endif (cpro==0) */      
+       } /* endif (cpro==0) */
        fluidfield->dis[1].element[counter].eltyp=el_fluid2_tu;
        f2tu_dis(&(fluidfield->dis[0].element[counter]),&(fluidfield->dis[1].element[counter]),
-           genprob.nele,genprob.nnode);       
+           genprob.nele,genprob.nnode);
        genprob.nodeshift = genprob.nnode;
-     } /* endif (e.f2->turbu == 2 || 3) */      
+     } /* endif (e.f2->turbu == 2 || 3) */
 #endif
    }
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef D_FLUID2_PRO 
+#ifdef D_FLUID2_PRO
 read:
 #endif
    counter++;
@@ -769,7 +769,7 @@ frrewind();
 /*----------------------------------------------------------------------*/
 
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -791,13 +791,13 @@ INT  ierr;
 INT  counter=0;
 INT  elenumber;
 char *colpointer;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inp_ale_field");
 #endif
 
 /*----------------------------------------- allocate one discretization */
 /*alefield->ndis=1;*/
-if (alefield->ndis>1) 
+if (alefield->ndis>1)
    dserror("different discretisations not implemented yet for structural elements\n");
 alefield->dis = (DISCRET*)CCACALLOC(alefield->ndis,sizeof(DISCRET));
 /*-------------------------------------------- count number of elements */
@@ -829,12 +829,12 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchk("ALE3",&ierr);
    if (ierr==1)
    {
-#ifndef D_ALE 
+#ifndef D_ALE
       dserror("ALE3 needed but not defined in Makefile");
 #endif
    }
-#ifdef D_ALE 
-   if (ierr==1) 
+#ifdef D_ALE
+   if (ierr==1)
    {
       alefield->dis[0].element[counter].eltyp=el_ale3;
       ale3inp(&(alefield->dis[0].element[counter]));
@@ -844,12 +844,12 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchk("ALE2",&ierr);
    if (ierr==1)
    {
-#ifndef D_ALE 
+#ifndef D_ALE
       dserror("ALE2 needed but not defined in Makefile");
 #endif
    }
-#ifdef D_ALE 
-   if (ierr==1) 
+#ifdef D_ALE
+   if (ierr==1)
    {
       alefield->dis[0].element[counter].eltyp=el_ale2;
       ale2inp(&(alefield->dis[0].element[counter]));
@@ -863,7 +863,7 @@ frrewind();
 /*----------------------------------------------------------------------*/
 
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -882,15 +882,15 @@ void inp_ls_field(FIELD *lsfield)
   INT        counter=0;
   INT        elenumber;
   char      *colpointer;
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_enter("inp_ls_field");
 #endif
 /*----------------------------------------------------------------------*/
 
   /*--------------------------------------- allocate one discretization */
   /*lsfield->ndis=1;*/
-  if (lsfield->ndis>1) 
+  if (lsfield->ndis>1)
     dserror("different discretisations not implemented yet for levelset elements\n");
   lsfield->dis = (DISCRET*)CCACALLOC(lsfield->ndis,sizeof(DISCRET));
   /*------------------------------------------ count number of elements */
@@ -908,7 +908,7 @@ void inp_ls_field(FIELD *lsfield)
   /*------------------------------------------------- allocate elements */
   lsfield->dis[0].element=(ELEMENT*)CCACALLOC(lsfield->dis[0].numele,sizeof(ELEMENT));
   /*----------------------------------------------------- read elements */
-  if (frfind("--LEVELSET ELEMENTS")==0) goto end; 
+  if (frfind("--LEVELSET ELEMENTS")==0) goto end;
   frread();
   counter=0;
   while(strncmp(allfiles.actplace,"------",6)!=0)
@@ -919,8 +919,8 @@ void inp_ls_field(FIELD *lsfield)
     /* read the typ of element and call element reading function */
     /* --------------------------------------- elementtyp is LS2 */
     frchk("LS2",&ierr);
-#ifdef D_LS 
-    if (ierr==1) 
+#ifdef D_LS
+    if (ierr==1)
     {
       lsfield->dis[0].element[counter].eltyp=el_ls2;
       ls2inp(&(lsfield->dis[0].element[counter]));
@@ -932,9 +932,9 @@ void inp_ls_field(FIELD *lsfield)
   frrewind();
 
 /*----------------------------------------------------------------------*/
-  
+
  end:
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return;

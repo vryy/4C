@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 'ale3_hourglass' which calculates the 
+\brief contains the routine 'ale3_hourglass' which calculates the
 hourglass stabilization matrix for a 3D ale element
 
 <pre>
@@ -21,25 +21,25 @@ Maintainer: Malte Neumann
 *----------------------------------------------------------------------*/
 extern struct _MATERIAL  *mat;
 
-/*! 
-\addtogroup Ale 
+/*!
+\addtogroup Ale
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
 \brief calculates the additional stiffness matrix for hourglass stabilization
 
-<pre>                                                              mn 06/02 
+<pre>                                                              mn 06/02
 This routine calcuates the additional stiffness matrix for hourglass
 stabilization for a 3D element.
-   
-see also:                                                             
-   (1) T. Belytschko and L.P. Bindeman:                                  
-       Assumed strain stabilization of the 8-node hexahedral element     
-       Comp. Meth. Appl. Mech. Eng.: 105 (1993) p. 225-260.              
-   (2) D.P. Flanagan and T. Belytschko:                                  
-       A uniform strain hexahedron and quadrilateral with orthogonal     
-       hourglass control                                                 
-       Int. J. Num. Meth. Ing.: Vol. 17 (1981) p. 679-706.        
+
+see also:
+   (1) T. Belytschko and L.P. Bindeman:
+       Assumed strain stabilization of the 8-node hexahedral element
+       Comp. Meth. Appl. Mech. Eng.: 105 (1993) p. 225-260.
+   (2) D.P. Flanagan and T. Belytschko:
+       A uniform strain hexahedron and quadrilateral with orthogonal
+       hourglass control
+       Int. J. Num. Meth. Ing.: Vol. 17 (1981) p. 679-706.
 
 </pre>
 \param *ele  ELEMENT  (i)   the element
@@ -48,7 +48,7 @@ see also:
 \param vol   DOUBLE   (i)   the volume of the element
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: ale3_static_ke
 
 *----------------------------------------------------------------------*/
@@ -92,7 +92,7 @@ void ale3_hourglass(
   DOUBLE         ee,nu,mu;
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("ale3_hourglass");
 #endif
   /* material data */
@@ -128,7 +128,7 @@ void ale3_hourglass(
 
   /* corotational coordinate system: rotation tensor r[3][3] */
   /* accord. to (1) Appendix A, Table 9 */
-  for (i=0; i<2; i++) 
+  for (i=0; i<2; i++)
   {
     for (j=0; j<3; j++)
     {
@@ -205,7 +205,7 @@ void ale3_hourglass(
           break;
       }
       b[i][l0] =1/(12 * vol) * (
-          xc[j][l1]*((xc[k][l5] - xc[k][l2])-(xc[k][l3] - xc[k][l4])) 
+          xc[j][l1]*((xc[k][l5] - xc[k][l2])-(xc[k][l3] - xc[k][l4]))
           + xc[j][l2]* (xc[k][l1] - xc[k][l3])
           + xc[j][l3]*((xc[k][l2] - xc[k][l7])-(xc[k][l4] - xc[k][l1]))
           + xc[j][l4]*((xc[k][l7] - xc[k][l5])-(xc[k][l1] - xc[k][l3]))
@@ -282,7 +282,7 @@ void ale3_hourglass(
             + c2*gg33[i][j]) + 0.5 * (hh[2][2] + hh[0][0]) * gg11[i][j]);
 
       /* kstab 22 */
-      kstab[i*3+2][j*3+2] = 2*mu* (hh[2][2]*(c1*(gg00[i][j] + gg11[i][j]) 
+      kstab[i*3+2][j*3+2] = 2*mu* (hh[2][2]*(c1*(gg00[i][j] + gg11[i][j])
             + c2*gg33[i][j]) + 0.5 * (hh[0][0] + hh[1][1]) * gg22[i][j]);
 
       /* kstab 01 */
@@ -316,19 +316,19 @@ void ale3_hourglass(
       {
         for(l=0;l<3;l++)
         {
-          s[i*3+k][j*3+l] = s[i*3+k][j*3+l] 
-            + (r[0][k]*kstab[i*3+0][j*3+0] + r[1][k]*kstab[i*3+1][j*3+0] 
+          s[i*3+k][j*3+l] = s[i*3+k][j*3+l]
+            + (r[0][k]*kstab[i*3+0][j*3+0] + r[1][k]*kstab[i*3+1][j*3+0]
                 + r[2][k]*kstab[i*3+2][j*3+0]) * r[0][l]
-            + (r[0][k]*kstab[i*3+0][j*3+1] + r[1][k]*kstab[i*3+1][j*3+1] 
-                + r[2][k]*kstab[i*3+2][j*3+1]) * r[1][l] 
-            + (r[0][k]*kstab[i*3+0][j*3+2] + r[1][k]*kstab[i*3+1][j*3+2] 
+            + (r[0][k]*kstab[i*3+0][j*3+1] + r[1][k]*kstab[i*3+1][j*3+1]
+                + r[2][k]*kstab[i*3+2][j*3+1]) * r[1][l]
+            + (r[0][k]*kstab[i*3+0][j*3+2] + r[1][k]*kstab[i*3+1][j*3+2]
                 + r[2][k]*kstab[i*3+2][j*3+2]) * r[2][l];
         }
       }
     }
   }
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 

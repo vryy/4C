@@ -10,7 +10,7 @@ Maintainer: Malte Neumann
 </pre>
 
 ---------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 #include <assert.h>
 #endif
 #include <stdarg.h>
@@ -20,7 +20,7 @@ Maintainer: Malte Neumann
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -30,15 +30,15 @@ extern struct _FILES  allfiles;
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par;                      
+ extern struct _PAR   par;
 /*!----------------------------------------------------------------------
 \brief counter of memory in byte
 
-<pre>                                                         m.gee 02/02    
+<pre>                                                         m.gee 02/02
 defined in pss_am.c
 </pre>
 
@@ -47,15 +47,15 @@ defined in pss_am.c
 extern long int num_byte_allocated;
 #endif
 
-/*! 
-\addtogroup DSSYSTEM 
+/*!
+\addtogroup DSSYSTEM
 *//*! @{ */
 
 /*!----------------------------------------------------------------------
 \brief the tracing variable
 
 <pre>                                                         m.gee 8/00
-defined in pss_ds.c, declared in tracing.h                                                  
+defined in pss_ds.c, declared in tracing.h
 </pre>
 *----------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -74,9 +74,9 @@ time_t seq_start;
 #endif
 
 /*!---------------------------------------------------------------------
-\brief Initialize bugtracing systems                                              
+\brief Initialize bugtracing systems
 
-<pre>                                                        m.gee 8/00 
+<pre>                                                        m.gee 8/00
 -sets num_byte_allocted to zero
 -checks for type unsigned char to be exactly one byte
  (Needed for ptr-shifting)
@@ -86,30 +86,30 @@ time_t seq_start;
  ARRAY deleted, the corresponding chain element is also deleted.
 -for routine tracing a chained list closed ring is allocated inside a
  linear vector, which ends are connected. These ring has 100 elements and
- is therefore able to trace routine calls upto a deepness of 100 before it 
+ is therefore able to trace routine calls upto a deepness of 100 before it
  starts overriding itself.
  Everytime a subroutine is entered a ptr is set forward (like on a clock)
  in this chain ring and the name of the routine and status 'dsin' is set.
  On exit of this routine, the ptr is set anticlockwis back to the calling
  routine
 </pre>
-\return void                                                
+\return void
 
 ------------------------------------------------------------------------*/
 void dsinit()
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 INT i=0;
 /*====================================================tracing of memory */
-/* 
+/*
    num_byte_allocated is a global variable which can be seen here and in
    pss_am.c, where it is defined
-*/   
+*/
 num_byte_allocated=0;
 /*---------------------------------------------- check for memory sizes */
 /*
 the routine CCACALLOC uses unsigned char to allocate internally, so it is
-necessary, that unsigned char is exactly one byte in DEBUG mode 
+necessary, that unsigned char is exactly one byte in DEBUG mode
 */
 if (sizeof(unsigned char) != (unsigned)1)
 {
@@ -158,20 +158,20 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief report entrance to routine                                              
+\brief report entrance to routine
 
-<pre>                                                        m.gee 8/00 
+<pre>                                                        m.gee 8/00
 This routine reports the entry to a subroutine the the ds-system
 see dsinit()
 </pre>
-\param string   char[]   (i)  name of routine                                
-\return void                                               
-\sa dstrc_exit() , dsinit()                                    
+\param string   char[]   (i)  name of routine
+\return void
+\sa dstrc_exit() , dsinit()
 
 ------------------------------------------------------------------------*/
 void dstrc_enter(char string[])
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 if (trace.trace_on==1)
 {
 trace.actroutine = trace.actroutine->next;
@@ -184,20 +184,20 @@ return;
 } /* end of dstrc_enter */
 
 /*!---------------------------------------------------------------------
-\brief report exit to routine                                              
+\brief report exit to routine
 
-<pre>                                                        m.gee 8/00 
+<pre>                                                        m.gee 8/00
 This routine reports the exit of a subroutine the the ds-system
 see dsinit()
 </pre>
-\param string   char[]   (i)  name of routine                                
-\return void                                               
-\sa dstrc_enter() , dsinit()                                    
+\param string   char[]   (i)  name of routine
+\return void
+\sa dstrc_enter() , dsinit()
 
 ------------------------------------------------------------------------*/
 void dstrc_exit()
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 if (trace.trace_on==1)
 {
 trace.actroutine->dsroutcontrol=dsout;
@@ -213,18 +213,18 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief report a new array to the bugtracing system                                              
+\brief report a new array to the bugtracing system
 
-<pre>                                                        m.gee 8/00 
+<pre>                                                        m.gee 8/00
 This routine reports the creation of an ARRAY to the ds-system
 It creates a new chain element in the list of ARRAY-tracing structures
 this routine is called by the am-system only !
 see dsinit()
 </pre>
-\param string   char[]   (i)  name of routine                                
-\param typ      INT      (i)  type of array 1 = ARRAY / 2 = ARRAY4D                                
-\return void                                               
-\sa dsinit()                                    
+\param string   char[]   (i)  name of routine
+\param typ      INT      (i)  type of array 1 = ARRAY / 2 = ARRAY4D
+\return void
+\sa dsinit()
 
 ------------------------------------------------------------------------*/
 void dsreportarray(void *array, INT typ)
@@ -249,7 +249,7 @@ case 2:
 break;
 default:
    dserror("Unknown type of ARRAY to watch");
-break;   
+break;
 }
 /*----------------------- allocate a new piece to the end of the chain */
 trace.endarraychain->next = (TRACEARRAY*)CCACALLOC(1,sizeof(TRACEARRAY));
@@ -264,19 +264,19 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief report a deletion of an array to the bugtracing system                                              
+\brief report a deletion of an array to the bugtracing system
 
-<pre>                                                        m.gee 8/00 
+<pre>                                                        m.gee 8/00
 This routine reports the deletion of an ARRAY to the ds-system
-It deleted the correponding chain element in the list of ARRAY-tracing 
+It deleted the correponding chain element in the list of ARRAY-tracing
 structures
 this routine is called by the am-system only !
 see dsinit()
 </pre>
-\param string   char[]   (i)  name of routine                                
-\param typ      INT      (i)  type of array 1 = ARRAY / 2 = ARRAY4D                                
-\return void                                               
-\sa dsinit() ,  dstracereport()                                  
+\param string   char[]   (i)  name of routine
+\param typ      INT      (i)  type of array 1 = ARRAY / 2 = ARRAY4D
+\return void
+\sa dsinit() ,  dstracereport()
 
 ------------------------------------------------------------------------*/
 void dsdeletearray(void *array, INT typ)
@@ -302,26 +302,26 @@ acttracearray = ((ARRAY4D*)array)->mytracer;
 break;
 default:
    dserror("Unknown type of ARRAY to watch");
-break;   
+break;
 }
 
 /* if acttracearray is NOT the first piece in the chain pointed to by trace.arraychain */
 if (acttracearray->prev)
-{  
-   /*-------------- set forward pointer of previous piece to next piece */ 
+{
+   /*-------------- set forward pointer of previous piece to next piece */
    acttracearray->prev->next = acttracearray->next;
    /*------------- set backward pointer of next piece to previous piece */
    acttracearray->next->prev = acttracearray->prev;
 }
 /* if acttracearray IS the first piece in the chain pointed to by trace.arraychain */
-else 
+else
 {
    /*-------------------------------- set trace.arraychain to next piece */
    trace.arraychain = acttracearray->next;
-   /* set the backward pointer of this next piece to NULL to indicate that 
+   /* set the backward pointer of this next piece to NULL to indicate that
       it is the first piece in the chain pointed to by trace.arraychain  */
    acttracearray->next->prev = NULL;
-}   
+}
 /*---------- delete the actual piece which now is taken out of the chain */
 CCAFREE(acttracearray);
 /*-----------------------------------------------------------------------*/
@@ -334,22 +334,22 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief write a report about all arrays                                              
+\brief write a report about all arrays
 
-<pre>                                                        m.gee 8/00 
+<pre>                                                        m.gee 8/00
 -write a report about all arrays to the .err file
--does nothing if DEBUG is not defined 
+-does nothing if DEBUG is not defined
 -writes a list of all ARRAY and ARRAY4D structure generated
 see dsinit()
 </pre>
-\return void                                               
-\sa dsinit() ,  dstracereport() , dsdeletearray()                                 
+\return void
+\sa dsinit() ,  dstracereport() , dsdeletearray()
 
 ------------------------------------------------------------------------*/
 void dstrace_to_err()
 {
 
-#ifdef DEBUG 
+#ifdef DEBUG
 INT         i=0;
 TRACEARRAY *acttracer;
 
@@ -403,8 +403,8 @@ fprintf(allfiles.out_err,"ARRAY   NO%8d NAME %9s DIM %4d x%4d TYPE: DAMAGED TYPE
         acttracer->a.a2->fdim,
         acttracer->a.a2->sdim);
       }
-      
-      /* print for a ARRAY4D */ 
+
+      /* print for a ARRAY4D */
    if (acttracer->arraytyp == array_4d)
       switch(acttracer->a.a4->Typ)
       {
@@ -463,7 +463,7 @@ fprintf(allfiles.out_err,"ARRAY4D NO%8d NAME %9s DIM %4d x%4d x%4d x%4d TYPE: DA
    /* set acttracer to next tracer */
    acttracer = acttracer->next;
    i++;
-      
+
 } /* end of loop (i=0; i<trace.num_arrays; i++) */
 fprintf(allfiles.out_err,"===========================================\n");;
 fprintf(allfiles.out_err,"dstrace - array report END                 \n");
@@ -474,7 +474,7 @@ else
 {
 #endif
 fprintf(allfiles.out_err,"bugtracing was switched off - noreport\n");
-#ifdef DEBUG 
+#ifdef DEBUG
 }
 #endif
 return;
@@ -484,22 +484,22 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief report the amount of actual allocated memory                                              
+\brief report the amount of actual allocated memory
 
-<pre>                                                        m.gee 2/02 
+<pre>                                                        m.gee 2/02
 -write a report about all memory allocated to the
  .err file. Memory has to be allocated using the CCAMALLOC CCACALLOC CCAREALLOC
  and CCAFREE functions
--does nothing if DEBUG is not defined 
+-does nothing if DEBUG is not defined
 see dsinit()
 </pre>
-\return void                                               
-\sa dsinit()  CCAMALLOC() , CCACALLOC() , CCAREALLOC() , CCAFREE()                              
+\return void
+\sa dsinit()  CCAMALLOC() , CCACALLOC() , CCAREALLOC() , CCAFREE()
 
 ------------------------------------------------------------------------*/
 void dsmemreport()
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 char   *colptr;
 char    message[300];
 DOUBLE  mbyte;
@@ -510,26 +510,26 @@ mbyte /= 1048576.0;
 if (trace.trace_on==1)
 {
    strcpy(message,"PROC ");
-   colptr = message + strlen(message); 
+   colptr = message + strlen(message);
    sprintf(colptr,"%d",par.myrank);
    colptr = message + strlen(message);
    strcpy(colptr," memory used in ");
    colptr = message + strlen(message);
    strcpy(colptr,trace.actroutine->name);
-   colptr = message + strlen(message); 
+   colptr = message + strlen(message);
    strcpy(colptr," : ");
    colptr = message + strlen(message);
-   sprintf(colptr,"%.6f MegaByte\n",mbyte); 
+   sprintf(colptr,"%.6f MegaByte\n",mbyte);
 }
 else
 {
    strcpy(message,"PROC ");
-   colptr = message + strlen(message); 
+   colptr = message + strlen(message);
    sprintf(colptr,"%d",par.myrank);
    colptr = message + strlen(message);
    strcpy(colptr," memory used : ");
    colptr = message + strlen(message);
-   sprintf(colptr,"%.6f MegaByte\n",mbyte); 
+   sprintf(colptr,"%.6f MegaByte\n",mbyte);
 }
 fprintf(allfiles.out_err,"%s",message);
 printf (                 "%s",message);
@@ -541,24 +541,24 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief asserts a boolean criterium                                              
+\brief asserts a boolean criterium
 
-<pre>                                                        m.gee 3/02 
-this routine does nothing if the boolean criterium is true           
-but aborts the programm, if it is not                                
-The routine is empty in an optimezed (not DEBUG) compilation and     
-can therefor be excessively used to develop a secure code, without   
-making it slow when running as fast-exe                              
+<pre>                                                        m.gee 3/02
+this routine does nothing if the boolean criterium is true
+but aborts the programm, if it is not
+The routine is empty in an optimezed (not DEBUG) compilation and
+can therefor be excessively used to develop a secure code, without
+making it slow when running as fast-exe
 </pre>
-\param true     INT     (i)   boolean value                       
-\param string   char[]  (i)   error message, if true==0                    
-\return void                                                
-\sa dserror()                                    
+\param true     INT     (i)   boolean value
+\param string   char[]  (i)   error message, if true==0
+\return void
+\sa dserror()
 
 ------------------------------------------------------------------------*/
 void dsassert(INT true, char string[])
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 /*----------------------------------------------------------------------*/
 if (true) return;
 else
@@ -571,48 +571,48 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief report an error and stop program                                              
+\brief report an error and stop program
 
-<pre>                                                        m.gee 8/00 
--report an error and stop program                       
--prints error message string to console and *.err       
--prints call tree, if DEBUG was defined                 
--aborts parallel and sequentiell programm               
+<pre>                                                        m.gee 8/00
+-report an error and stop program
+-prints error message string to console and *.err
+-prints call tree, if DEBUG was defined
+-aborts parallel and sequentiell programm
 </pre>
-\param string   char[]  (i)   error message to be printed                    
-\return void                                                
-\sa dsassert()                                    
+\param string   char[]  (i)   error message to be printed
+\return void
+\sa dsassert()
 
 ------------------------------------------------------------------------*/
 void dserror(char string[], ...)
 {
   va_list ap;
   char line[] = "=========================================================================\n";
-#ifdef DEBUG 
+#ifdef DEBUG
   INT i=0;
   TRACEROUT *routhis = NULL;
 #endif
 
-  
+
   /* write warnings */
   dswarning(2,0);
 
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   if (trace.trace_on==1)
   {
     char message[300];
     char *colptr=NULL;
-    
+
     va_start(ap, string);
     sprintf(message,"PROC %d ERROR IN %s : ", par.myrank, trace.actroutine->name);
-    colptr = message + strlen(message); 
+    colptr = message + strlen(message);
     vsprintf(colptr,string,ap);
 
     fprintf(allfiles.out_err,line);
-    fprintf(allfiles.out_err,"%s\n",message); 
+    fprintf(allfiles.out_err,"%s\n",message);
     printf(line);
-    printf("%s\n",message); 
+    printf("%s\n",message);
 
     fprintf(allfiles.out_err,"This routine was called by:\n");
     printf("This routine was called by:\n");
@@ -633,24 +633,24 @@ void dserror(char string[], ...)
 #endif
     va_start(ap, string);
     fprintf(allfiles.out_err,line);
-    vfprintf(allfiles.out_err,string,ap); 
-    fprintf(allfiles.out_err,"\n"); 
+    vfprintf(allfiles.out_err,string,ap);
+    fprintf(allfiles.out_err,"\n");
     printf(line);
-    vprintf(string,ap); 
-    printf("\n"); 
+    vprintf(string,ap);
+    printf("\n");
     fprintf(allfiles.out_err,line);
     printf(line);
     va_end(ap);
-#ifdef DEBUG 
+#ifdef DEBUG
   }
 #endif
   fflush(stdout);
   fflush(allfiles.out_err);
 
-#ifdef PARALLEL 
+#ifdef PARALLEL
   MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
 #else
-#ifdef DEBUG 
+#ifdef DEBUG
   assert(0);
 #endif
   exit(EXIT_FAILURE);
@@ -659,27 +659,27 @@ void dserror(char string[], ...)
 } /* end of dserror */
 
 /*!-----------------------------------------------------------------------
-\brief get warnings and writes them to the screen at the end 
+\brief get warnings and writes them to the screen at the end
 
 <pre>                                                             ck 07/03
 depending on task it initialises all warnings to Zero (= no warning),
-collects warnings during running process and reports them to the screen at 
-the end. A reoccuring warning is written once (per proc). 
+collects warnings during running process and reports them to the screen at
+the end. A reoccuring warning is written once (per proc).
 In parallel processes the warnings are ordered to the fields where they
 occure. Warnings are written to the screen and the error files.
 
 task 	= 0 	initialisation to no warnings
 	= 1	create warning depending on 'warning'
 	= 2	plot warnings to the screen
-warning	= 1	when trinangular ale elements are monitored with wrong 
+warning	= 1	when trinangular ale elements are monitored with wrong
 		quality meassure
-	= 2	aspect ration quality meassure for ale elements is called 
+	= 2	aspect ration quality meassure for ale elements is called
 		for a distyp it has not been implemented for
-	= 3	corner angle quality criterion for ale elements is called 
+	= 3	corner angle quality criterion for ale elements is called
 		for a distyp it	has not been implemented for
 	= 4	min J quality criterion for ale elements is called for a
-		distyp it has not been implemented for 
-        = 5     Function used for points outside the range 0 < xi < 1 
+		distyp it has not been implemented for
+        = 5     Function used for points outside the range 0 < xi < 1
         = 6     Function used for points not on the defined line
         = 7     the value givne for MAXNOD is too large
         = 8     the value givne for MAXELE is too large
@@ -691,8 +691,8 @@ warning	= 1	when trinangular ale elements are monitored with wrong
 
 \param task     INT (i)  flag, what to do
 \param warning  INT (i)  flag, which warning shall be printed at the end
-\return void                                                
-\sa 
+\return void
+\sa
 
 ------------------------------------------------------------------------*/
 void dswarning(INT task, INT warning)
@@ -710,9 +710,9 @@ static INT ale_quality_Je;
 static INT funct_range;     /* warning 5 */
 static INT funct_line;      /* warning 6 */
 static INT dirich_fsi_line; /* warning 7 */
-static INT max_nod;         /* warning 8 */    
-static INT max_ele;         /* warning 9 */    
-static INT max_dofpernode;  /* warning 10 */   
+static INT max_nod;         /* warning 8 */
+static INT max_ele;         /* warning 9 */
+static INT max_dofpernode;  /* warning 10 */
 static INT max_gauss;       /* warning 11 */
 static INT rescheck_nonode; /* warning 12 */
 /* DEFINE your new warning flag here!!! */
@@ -749,9 +749,9 @@ switch (task)
     if (warning == 1)
       ale_quality_min_J_triangles++;
     else if (warning == 2)
-      ale_quality_ar++;       
+      ale_quality_ar++;
     else if (warning == 3)
-      ale_quality_ca++;       
+      ale_quality_ca++;
     else if (warning == 4)
       ale_quality_Je++;
     else if (warning == 5)
@@ -833,7 +833,7 @@ switch (task)
       {
         printf("\nWarning PROC %i: min_J quality monitoring for one of the distyps not implemented!!\n", par.myrank);
         fprintf(err,"\n Warning PROC %i: min_J quality monitoring for one of the distyps not implemented!!\n", par.myrank);
-      }      
+      }
       if (funct_range)
       {
         printf("\n WARNING PROC %i: Function used for points outside the range 0<xi<1 !!\n", par.myrank);
@@ -894,7 +894,7 @@ switch (task)
 /*----------------------------------------------------------------------*/
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -903,12 +903,12 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief routine to initialise the cpu - time                                              
+\brief routine to initialise the cpu - time
 
-<pre>                                                        genk 05/02 
+<pre>                                                        genk 05/02
 routine to initialise the cpu - time
 </pre>
-\return void                                                
+\return void
 
 ------------------------------------------------------------------------*/
 void ds_cputime_init()
@@ -924,7 +924,7 @@ void ds_cputime_init()
 
 
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return;
@@ -932,12 +932,12 @@ void ds_cputime_init()
 
 
 /*!---------------------------------------------------------------------
-\brief routine to meassure the cpu - time                                              
+\brief routine to meassure the cpu - time
 
-<pre>                                                        genk 05/02 
+<pre>                                                        genk 05/02
 routine to meassure the cpu - time
 </pre>
-\return void                                                
+\return void
 
 ------------------------------------------------------------------------*/
 DOUBLE ds_cputime()
@@ -960,10 +960,10 @@ DOUBLE ds_cputime()
 #endif
 
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  return ((DOUBLE)(diff)); 
+  return ((DOUBLE)(diff));
 }
 
 /*! @} (documentation module close)*/

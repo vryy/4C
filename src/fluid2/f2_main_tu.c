@@ -10,7 +10,7 @@ Maintainer: Thomas Hettich
 </pre>
 
 ------------------------------------------------------------------------*/
-#ifdef D_FLUID2 
+#ifdef D_FLUID2
 /*----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
@@ -20,7 +20,7 @@ Maintainer: Thomas Hettich
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -36,12 +36,12 @@ extern struct _FIELD      *field;
  | global dense matrices for element routines             genk 04/02    |
  *----------------------------------------------------------------------*/
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief main fluid2 control routine
 
 <pre>                                                        he    11/02
 </pre>
-\param      *actpart	        PARTITION    (i)	    
+\param      *actpart	        PARTITION    (i)
 \param	*actintra	        INTRA        (i)
 \param	*eleke		  ELEMENT      (i)    actual element
 \param	*elev		        ELEMENT      (i)    element with velocities
@@ -54,21 +54,21 @@ extern struct _FIELD      *field;
 \param	*action	        CALC_ACTION  (i)
 \param	*hasdirich	        INT          (o)    flag
 \param      *hasext             INT          (o)    flag
-\param      *container	        CONTAINER    (i)	    
+\param      *container	        CONTAINER    (i)
 \return void
 
 ------------------------------------------------------------------------*/
 void fluid2_tu(
             PARTITION   *actpart,
             INTRA       *actintra,
-            ELEMENT     *eleke,  
-            ELEMENT     *elev,            
-            ARRAY       *estif_global,   
-            ARRAY       *emass_global,   
-            ARRAY       *etforce_global, 
-            ARRAY       *eiforce_global, 
-            ARRAY       *edforce_global, 
-            ARRAY       *eproforce_global, 
+            ELEMENT     *eleke,
+            ELEMENT     *elev,
+            ARRAY       *estif_global,
+            ARRAY       *emass_global,
+            ARRAY       *etforce_global,
+            ARRAY       *eiforce_global,
+            ARRAY       *edforce_global,
+            ARRAY       *eproforce_global,
             CALC_ACTION *action,
             INT         *hasdirich,
             INT         *hasext,
@@ -76,7 +76,7 @@ void fluid2_tu(
 	   )
 {
 /*----------------------------------------------------------------------*/
-#ifdef D_FLUID2TU 
+#ifdef D_FLUID2TU
 /*----------------------------------------------------------------------*/
 
 static INT              numff;      /* actual number of fluid field     */
@@ -84,7 +84,7 @@ MATERIAL               *actmat;     /* actual material                  */
 FLUID_DYNAMIC          *fdyn;
 FIELD                  *actfield;   /* actual field                     */
 INT                    start;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid2_tu");
 #endif
 
@@ -104,7 +104,7 @@ case calc_fluid_init:
       if (actfield->fieldtyp==fluid)
       break;
    } /* end loop over numff */
-/*------------------------------------------- init the element routines */   
+/*------------------------------------------- init the element routines */
    f2_intg(0);
    f2_calele_tu(NULL,NULL,
                 estif_global,emass_global,
@@ -143,7 +143,7 @@ case calc_fluid_init:
       if (actfield->fieldtyp==fluid)
       break;
    } /* end loop over numff */
-/*------------------------------------------- init the element routines */   
+/*------------------------------------------- init the element routines */
    f2_intg(0);
    f2_calele_tu_1(NULL,NULL,
                   estif_global,emass_global,
@@ -166,12 +166,12 @@ break;
 
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 /*----------------------------------------------------------------------*/
 #endif
-return; 
+return;
 } /* end of fluid2 */
 
 

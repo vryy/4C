@@ -10,7 +10,7 @@ Maintainer: Thomas Hettich
 </pre>
 
 ------------------------------------------------------------------------*/
-#ifdef D_FLUID2TU 
+#ifdef D_FLUID2TU
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #include "fluid2.h"
@@ -27,7 +27,7 @@ extern struct _MATERIAL  *mat;
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -51,36 +51,36 @@ extern struct _GENPROB     genprob;
 \param  *eddyg    DOUBLE 	       (i)   eddy-viscosity
 \param  *velint   DOUBLE 	       (-)   vel. at integr. point
 \param  *velint_dc DOUBLE 	       (-)   vel. for D.C. at integr. point
-\param  *kapepsn   DOUBLE 	       (i)   kapepsn at nodes 
+\param  *kapepsn   DOUBLE 	       (i)   kapepsn at nodes
 \param **xjm        DOUBLE 	       (-)   jacobian  matrix
 \param **xzye       DOUBLE           (-)   nodal coordinates
-\param **derxy      DOUBLE 	       (-)   global deriv. 
-\param  *kapepsderxy  DOUBLE 	       (-)   kapeps global deriv. 
-\param **cutp         DOUBLE 	       (-)   array 
-\return void             
+\param **derxy      DOUBLE 	       (-)   global deriv.
+\param  *kapepsderxy  DOUBLE 	       (-)   kapeps global deriv.
+\param **cutp         DOUBLE 	       (-)   array
+\return void
 
 ------------------------------------------------------------------------*/
-void f2_calelesize_tu(			     
-	           ELEMENT         *ele,    
-		     ELEMENT         *elev,    
-	           DOUBLE          *funct,  
-	           DOUBLE         **deriv,  
-	           DOUBLE         **deriv2,  
-                 DOUBLE         **evel, 
-                 DOUBLE          *eddyg, 
-                 DOUBLE          *velint, 
-                 DOUBLE          *velint_dc, 
-                 DOUBLE          *kapepsn, 
-	           DOUBLE         **xjm,     
-	           DOUBLE         **xyze,     
-	           DOUBLE         **derxy,   
-                 DOUBLE          *kapepsderxy,  
+void f2_calelesize_tu(
+	           ELEMENT         *ele,
+		     ELEMENT         *elev,
+	           DOUBLE          *funct,
+	           DOUBLE         **deriv,
+	           DOUBLE         **deriv2,
+                 DOUBLE         **evel,
+                 DOUBLE          *eddyg,
+                 DOUBLE          *velint,
+                 DOUBLE          *velint_dc,
+                 DOUBLE          *kapepsn,
+	           DOUBLE         **xjm,
+	           DOUBLE         **xyze,
+	           DOUBLE         **derxy,
+                 DOUBLE          *kapepsderxy,
                  DOUBLE         **cutp
                  )
 {
 INT     actmat;         /* number of actual material		            */
 INT     iel;            /* number of nodes of actual element            */
-INT     icode=2;        /* flag for eveluation of shape functions       */     
+INT     icode=2;        /* flag for eveluation of shape functions       */
 INT     ihoel=0;        /* flag for higher order elements               */
 DOUBLE  e1,e2;          /* natural coordinates of inegration point      */
 DOUBLE  visc;           /* fluid viscosity                              */
@@ -91,9 +91,9 @@ DIS_TYP typ;
 FLUID_DYNAMIC *fdyn;
 FLUID_DATA    *data;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_calelesize_tu");
-#endif		
+#endif
 
 /*---------------------------------------------------------- initialise */
 fdyn   = alldyn[genprob.numff].fdyn;
@@ -116,7 +116,7 @@ typ    = ele->distyp;
       facs = data->qwgt[0][0];
       f2_rec(funct,deriv,deriv2,e1,e2,typ,icode);
    break;
-   case tri3: case tri6:       /* --> tri - element */              
+   case tri3: case tri6:       /* --> tri - element */
      if (iel>3)
      {
       icode   = 3;
@@ -129,20 +129,20 @@ typ    = ele->distyp;
       f2_tri(funct,deriv,deriv2,e1,e2,typ,icode);
    break;
    default:
-      dserror("typ unknown!\n");      
+      dserror("typ unknown!\n");
    } /*end switch(typ) */
-     
+
 /*-------------------------------------------- compute Jacobian matrix */
    f2_jaco(xyze,funct,deriv,xjm,&det,iel,ele);
 
 /*------------------------------------------- compute global derivates */
    f2_gder(derxy,deriv,xjm,det,iel);
 
-/*-------------------------------- get eddy-visc. at center of element */               
+/*-------------------------------- get eddy-visc. at center of element */
    f2_eddyi(&eddyint,funct,eddyg,iel);
 
-/*---------------------------------- get velocity at center of element */               
-   f2_veci(velint,funct,evel,iel);    
+/*---------------------------------- get velocity at center of element */
+   f2_veci(velint,funct,evel,iel);
 
 /*------------------- calculate stabilisation parameter for DISC. CAPT. */
    f2_kapepsder(kapepsderxy,derxy,kapepsn,iel);
@@ -150,44 +150,44 @@ typ    = ele->distyp;
 
 /*---------------- get streamlenght for elementlenght for DISC. CAPT.  */
    f2_gcoor(xyze,funct,iel,gcoor);
-   f2_calstrlen_tu(velint_dc,ele,gcoor,cutp,typ);       
+   f2_calstrlen_tu(velint_dc,ele,gcoor,cutp,typ);
 
-/*----------------------------------- calculate stabilisation parameter */                
-   f2_calstabpar_tu(ele,elev,eddyint,velint,velint_dc,visc); 
+/*----------------------------------- calculate stabilisation parameter */
+   f2_calstabpar_tu(ele,elev,eddyint,velint,velint_dc,visc);
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of f2_calelesize */
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief routine to calculate streamlength
 
 <pre>                                                         he 03/03
 
-in this routine the the streamlength, used for calculation of 
+in this routine the the streamlength, used for calculation of
 stabilisation parameter is calculated. for higher order element this
 is only an approximation, since the boundaries are assumed to be
 straight.
-		     
+
 </pre>
 \param  *velint_dc    DOUBLE   (i)    velocities at integr. point for D.C.
 \param  *ele 	    ELEMENT  (i)    actual element
 \param  *gcoor        DOUBLE   (i)    global coord. of INT. point
 \param **cutp         DOUBLE   (-)    cutting points
 \param   typ	    DIS_TYP     (i)    flag for element type
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void f2_calstrlen_tu(
-		         DOUBLE   *velint_dc,   
-		         ELEMENT  *ele,      
-                     DOUBLE   *gcoor,    
-		         DOUBLE  **cutp,             
-		         DIS_TYP       typ      
+		         DOUBLE   *velint_dc,
+		         ELEMENT  *ele,
+                     DOUBLE   *gcoor,
+		         DOUBLE  **cutp,
+		         DIS_TYP       typ
                      )
 {
 INT     nodcut=-1;
@@ -196,7 +196,7 @@ INT     inod;
 DOUBLE dl,dx,dy,dxh,dyh;
 DOUBLE dsub,dval;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_calstrlen_tu");
 #endif
 
@@ -205,12 +205,12 @@ if (dval == ZERO)  /* no flow at this point - take some arbitr. measure for stre
 {
    dx = ele->node[2]->x[0] - ele->node[0]->x[0];
    dy = ele->node[2]->x[1] - ele->node[0]->x[1];
-   goto calc2;   
+   goto calc2;
 } /* enidf (dval == ZERO) */
 
 /*----------------------------------------------------------------------*
    streamlength is calculated via cutting points of velocity vector
-   with straight boundaries                                             
+   with straight boundaries
 */
 switch(typ)
 {
@@ -221,8 +221,8 @@ case tri3: case tri6:  /* max number of nodes for tri: 3 --> C-numbering nodmax 
    nodmax = 2;
 break;
 default:
-   dserror("typ unknown!\n");   
-} /* end switch(typ) */        
+   dserror("typ unknown!\n");
+} /* end switch(typ) */
  /*------------------------------------------------- get cutting points */
 for (inod=0;inod<nodmax;inod++)
 {
@@ -255,7 +255,7 @@ if (dl>=ZERO && dl <= ONE)
 {
    nodcut++;
    cutp[0][nodcut]=ele->node[nodmax]->x[0]+dl*dxh;
-   cutp[1][nodcut]=ele->node[nodmax]->x[1]+dl*dyh; 
+   cutp[1][nodcut]=ele->node[nodmax]->x[1]+dl*dyh;
    if(nodcut==1)
       goto calc1;
 } /* endif  (dl>=ZERO && dl <= ONE) */
@@ -269,12 +269,12 @@ dy = cutp[1][1]-cutp[1][0];
 calc2:
 ele->e.f2_tu->strom_dc = sqrt(dx*dx+dy*dy);
 
-/*----------------------------------------------------------------------*/		
-#ifdef DEBUG 
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
-} /* end of f2_calstrlen_tu */		  
+} /* end of f2_calstrlen_tu */
 
 #endif

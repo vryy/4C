@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -15,7 +15,7 @@ Maintainer: Malte Neumann
 /*----------------------------------------------------------------------*
  |  control solver lib Lapack                            m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void solver_lapack_dense( 
+void solver_lapack_dense(
                               struct _SOLVAR         *actsolv,
                               struct _INTRA          *actintra,
                               struct _DENSE          *dense,
@@ -44,7 +44,7 @@ ARRAY          tmp_a;
 DOUBLE        *tmp;
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solver_lapack_dense");
 #endif
 /*----------------------------------------------------------------------*/
@@ -75,7 +75,7 @@ case 1:
       dserror("Unknown typ of solver");
    break;
    }
-   /* set flag, that this matrix has been initialized and is ready for solve */   
+   /* set flag, that this matrix has been initialized and is ready for solve */
    dense->is_init    = 1;
    dense->ncall      = 0;
    dense->is_factored = 0;
@@ -90,14 +90,14 @@ case 0:
    /*--------------------------------- allocate rhs and solution vector */
    b   = amdef("b",&b_a,dense->numeq_total,1,"DV");
          amzero(&b_a);
-#ifdef PARALLEL 
+#ifdef PARALLEL
    tmp = amdef("tmp",&tmp_a,dense->numeq_total,1,"DV");
          amzero(&tmp_a);
    /*--------------------------------------------------------- fill rhs */
    for (i=0; i<rhs->numeq; i++)
    {
       dof      = dense->update.a.iv[i];
-      tmp[dof] = rhs->vec.a.dv[i]; 
+      tmp[dof] = rhs->vec.a.dv[i];
    }
    /*--------------------------------------------- allreduce rhs vector */
    MPI_Allreduce(tmp,b,dense->numeq_total,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
@@ -107,7 +107,7 @@ case 0:
    for (i=0; i<rhs->numeq; i++)
    {
       dof      = dense->update.a.iv[i];
-      b[dof]   = rhs->vec.a.dv[i]; 
+      b[dof]   = rhs->vec.a.dv[i];
    }
    /*--------------------------------------------- allreduce rhs vector */
 #endif
@@ -196,10 +196,10 @@ break;
 /*----------------------------------------------------------------------*/
 default:
    dserror("Unknown option for solver call to Lapack");
-break;   
+break;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

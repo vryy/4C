@@ -1,9 +1,9 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 
- - s9jaco: which calculates the jacobian matrix and the jacobi determinant. 
-           This Routine is needed to calculate the shell shifter for 
-           evaluating the loads applied on the shell (-> especially for 
+\brief contains the routine
+ - s9jaco: which calculates the jacobian matrix and the jacobi determinant.
+           This Routine is needed to calculate the shell shifter for
+           evaluating the loads applied on the shell (-> especially for
            surface loads!)
 
 
@@ -19,12 +19,12 @@ Maintainer: Stefan Hartmann
 #include "../headers/standardtypes.h"
 #include "shell9.h"
 
-/*! 
-\addtogroup SHELL9 
+/*!
+\addtogroup SHELL9
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief calculate jacobian matrix                                      
+\brief calculate jacobian matrix
 
 <pre>                     m.gee 10/01             modified by    sh 10/02
 This routine calculates the jacobian matrix and the jacobi determinant,
@@ -32,7 +32,7 @@ which is needed to calculate the shell shifter for evaluating load vectors
 if the load is applied on the surface of the shell.
 </pre>
 \param  DOUBLE   *funct   (i) shape functions at GP
-\param  DOUBLE  **deriv   (i) shape function derivatives at GP 
+\param  DOUBLE  **deriv   (i) shape function derivatives at GP
 \param  DOUBLE  **x       (i) coordinates of nodal points (global coordinate system)
 \param  DOUBLE  **xjm     (o) jacobian matrix
 \param  DOUBLE   *hte     (i) thickness of shell at nodal points
@@ -42,10 +42,10 @@ if the load is applied on the surface of the shell.
 \param  DOUBLE   *deta    (o) Determinant of jacobian
 \param  INT       init    (i) flag for initializing arrays
 \param  INT       num_klay(i) number of kinematic layers to this element
-\param  DOUBLE   *klayhgt (i) hight of kin layer in % of total thickness of shell 
+\param  DOUBLE   *klayhgt (i) hight of kin layer in % of total thickness of shell
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: s9eleload()   [s9_load1.c]
                              shell9()      [s9_main.c]
 
@@ -82,10 +82,10 @@ static ARRAY    gmkov_a; static DOUBLE **gmkov;
 static ARRAY    gmkon_a; static DOUBLE **gmkon;
 
 /* mid surface basis vectors and metric tensors -> help for s9_tvmr.c */
-static ARRAY        akovh_a;     static DOUBLE **akovh;     
-static ARRAY        akonh_a;     static DOUBLE **akonh;     
-static ARRAY        amkovh_a;    static DOUBLE **amkovh;    
-static ARRAY        amkonh_a;    static DOUBLE **amkonh;    
+static ARRAY        akovh_a;     static DOUBLE **akovh;
+static ARRAY        akonh_a;     static DOUBLE **akonh;
+static ARRAY        amkovh_a;    static DOUBLE **amkovh;
+static ARRAY        amkonh_a;    static DOUBLE **amkonh;
 
 static ARRAY4D  akov_a;  static DOUBLE ***akov;    /* kovariant basis vectors at Int point ref.config. */
 static ARRAY4D  akon_a;  static DOUBLE ***akon;    /* kontravar.--------------"----------- ref.config. */
@@ -94,47 +94,47 @@ static ARRAY4D  amkon_a; static DOUBLE ***amkon;   /* kontravar.--------------"-
 static ARRAY4D  a3kvp_a; static DOUBLE ***a3kvp;   /* partiel derivatives of normal vector ref.config. */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9jaco");
 #endif
 /*----------------------------------------------------------------------*/
 /*---------------------------------------------------------- init phase */
 if (init==1)
 {
-   gkov     = amdef("gkov"  ,&gkov_a,3,3,"DA");         
-   gkon     = amdef("gkon"  ,&gkon_a,3,3,"DA");         
-   gmkov    = amdef("gmkov" ,&gmkov_a,3,3,"DA");         
-   gmkon    = amdef("gmkon" ,&gmkon_a,3,3,"DA");         
-   akov     = am4def("akov" ,&akov_a,3,3,MAXKLAY_SHELL9,0,"D3");      
-   akon     = am4def("akon" ,&akon_a,3,3,MAXKLAY_SHELL9,0,"D3");       
-   amkov    = am4def("amkov",&amkov_a,3,3,MAXKLAY_SHELL9,0,"D3");      
-   amkon    = am4def("amkon",&amkon_a,3,3,MAXKLAY_SHELL9,0,"D3"); 
-   a3kvp    = am4def("a3kvp",&a3kvp_a,3,2,MAXKLAY_SHELL9,0,"D3");              
+   gkov     = amdef("gkov"  ,&gkov_a,3,3,"DA");
+   gkon     = amdef("gkon"  ,&gkon_a,3,3,"DA");
+   gmkov    = amdef("gmkov" ,&gmkov_a,3,3,"DA");
+   gmkon    = amdef("gmkon" ,&gmkon_a,3,3,"DA");
+   akov     = am4def("akov" ,&akov_a,3,3,MAXKLAY_SHELL9,0,"D3");
+   akon     = am4def("akon" ,&akon_a,3,3,MAXKLAY_SHELL9,0,"D3");
+   amkov    = am4def("amkov",&amkov_a,3,3,MAXKLAY_SHELL9,0,"D3");
+   amkon    = am4def("amkon",&amkon_a,3,3,MAXKLAY_SHELL9,0,"D3");
+   a3kvp    = am4def("a3kvp",&a3kvp_a,3,2,MAXKLAY_SHELL9,0,"D3");
 
-   akovh     = amdef("akovh"  ,&akovh_a,3,3,"DA");      
-   akonh     = amdef("akonh"  ,&akonh_a,3,3,"DA");      
-   amkovh    = amdef("amkovh" ,&amkovh_a,3,3,"DA");     
-   amkonh    = amdef("amkonh" ,&amkonh_a,3,3,"DA");     
+   akovh     = amdef("akovh"  ,&akovh_a,3,3,"DA");
+   akonh     = amdef("akonh"  ,&akonh_a,3,3,"DA");
+   amkovh    = amdef("amkovh" ,&amkovh_a,3,3,"DA");
+   amkonh    = amdef("amkonh" ,&amkonh_a,3,3,"DA");
 
    goto end;
 }
 /*-------------------------------------------------------- uninit phase */
 else if (init==-1)
 {
-   amdel(&gkov_a);   
-   amdel(&gkon_a);   
-   amdel(&gmkov_a);   
-   amdel(&gmkon_a);   
-   am4del(&akov_a); 
-   am4del(&akon_a); 
+   amdel(&gkov_a);
+   amdel(&gkon_a);
+   amdel(&gmkov_a);
+   amdel(&gmkon_a);
+   am4del(&akov_a);
+   am4del(&akon_a);
    am4del(&amkov_a);
    am4del(&amkon_a);
    am4del(&a3kvp_a);
 
-   amdel(&akovh_a);  
-   amdel(&akonh_a);  
-   amdel(&amkovh_a); 
-   amdel(&amkonh_a); 
+   amdel(&akovh_a);
+   amdel(&akonh_a);
+   amdel(&amkovh_a);
+   amdel(&amkonh_a);
 
    goto end;
 }
@@ -145,7 +145,7 @@ s9_tvmr(x,a3r,akov,akon,amkov,amkon,akovh,akonh,amkovh,amkonh,
 s9_xint(&hgt,hte,funct,iel);
 /* check if top,bot or mid */
 if (e3 == -1.0) /*bottom surface of shell body = bottom of first kinematic layer*/
-{ 
+{
    klay       = 0;
 }
 else if (e3 == 0.0) /* reference layer: NOTE: does not have to be the geometrical middle in thickness direction! */
@@ -156,7 +156,7 @@ else if (e3 == 0.0) /* reference layer: NOTE: does not have to be the geometrica
       klay = (num_klay)/2; /* the one above the reference layer */
       e3   = -1.0;
    }
-   else                    /* uneven number of kinematic layers */ 
+   else                    /* uneven number of kinematic layers */
    {
       klay = (num_klay - 1)/2; /*the middle kinematic layer*/
    }
@@ -197,10 +197,10 @@ x3s=xjm[1][2];
 if (*deta <= EPS14) dserror("Element Area equal 0.0 or negativ detected");
 /*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of s9jaco */
 /*----------------------------------------------------------------------*/
 #endif /*D_SHELL9*/

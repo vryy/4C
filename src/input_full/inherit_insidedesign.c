@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -42,54 +42,54 @@ static void inherit_dlinednode_axishellload(void);
  *----------------------------------------------------------------------*/
 void inherit_dirich_coup_indesign()
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inherit_dirich_coup_indesign");
 #endif
 /*----------------------------------------------------------------------*/
-/* 
+/*
 dirichlet conditions are inherited as follows:
-DVOL inherits to its DSURFS if the DSURF does not have its own 
-DSURF inherits to its DLINEs if the DLINE does not have its own 
-DLINE inherits to its DNODEs if the DNODE does not have its own 
+DVOL inherits to its DSURFS if the DSURF does not have its own
+DSURF inherits to its DLINEs if the DLINE does not have its own
+DLINE inherits to its DNODEs if the DNODE does not have its own
 */
 inherit_dvoldsurf_dirich();
 inherit_dsurfdline_dirich();
 inherit_dlinednode_dirich();
-/* 
+/*
 coupling conditions are inherited as follows:
-DVOL inherits to its DSURFS if the DSURF does not have its own 
-DSURF inherits to its DLINEs if the DLINE does not have its own 
-DLINE inherits to its DNODEs if the DNODE does not have its own 
+DVOL inherits to its DSURFS if the DSURF does not have its own
+DSURF inherits to its DLINEs if the DLINE does not have its own
+DLINE inherits to its DNODEs if the DNODE does not have its own
 */
 inherit_dvoldsurf_couple();
 inherit_dsurfdline_couple();
 inherit_dlinednode_couple();
-/* 
+/*
 fsi coupling conditions are inherited as follows:
-DLINE inherits to its DNODEs if the DNODE does not have its own 
+DLINE inherits to its DNODEs if the DNODE does not have its own
 */
 #ifdef D_FSI
 inherit_dsurfdline_fsicouple();
 inherit_dlinednode_fsicouple();
 #endif
-/* 
+/*
 freesruface conditions are inherited as follows:
-DLINE inherits to its DNODEs if the DNODE does not have its own 
+DLINE inherits to its DNODEs if the DNODE does not have its own
 */
 #ifdef D_FSI
-inherit_dsurfdline_freesurf(); 
-inherit_dlinednode_freesurf(); 
+inherit_dsurfdline_freesurf();
+inherit_dlinednode_freesurf();
 #endif
 /*
  * thickness and axishellload conditions are inherited as follows:
  * DLINE inherits to its DNODEs if the DNODE does not have its own
  */
 #ifdef D_AXISHELL
-inherit_dlinednode_thickness(); 
-inherit_dlinednode_axishellload(); 
+inherit_dlinednode_thickness();
+inherit_dlinednode_axishellload();
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -105,12 +105,12 @@ static void inherit_dvoldsurf_dirich()
 INT             i,j;
 DVOL           *actdvol;
 DSURF          *actdsurf;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inherit_dvoldsurf_dirich");
 #endif
-/* 
+/*
 dirichlet conditions are inherited as follows:
-DVOL inherits to its DSURFS if the DSURF does not have its own 
+DVOL inherits to its DSURFS if the DSURF does not have its own
 */
 /*----------------------------------------------------------------------*/
 /*---------------------------------------------------------- loop DVOLs */
@@ -129,14 +129,14 @@ for (i=0; i<design->ndvol; i++)
       actdsurf->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
       if (!actdsurf->dirich) dserror("Allocation of memory failed");
       actdsurf->dirich->dirich_type = actdvol->dirich->dirich_type;
-      am_alloc_copy(&(actdvol->dirich->dirich_onoff),&(actdsurf->dirich->dirich_onoff));  
-      am_alloc_copy(&(actdvol->dirich->dirich_val),&(actdsurf->dirich->dirich_val));  
+      am_alloc_copy(&(actdvol->dirich->dirich_onoff),&(actdsurf->dirich->dirich_onoff));
+      am_alloc_copy(&(actdvol->dirich->dirich_val),&(actdsurf->dirich->dirich_val));
       am_alloc_copy(&(actdvol->dirich->curve),&(actdsurf->dirich->curve));
       am_alloc_copy(&(actdvol->dirich->funct),&(actdsurf->dirich->funct));
    }/* loop j over dsurfs */
 }/* loop i over dvols */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -149,7 +149,7 @@ static void inherit_dsurfdline_dirich()
 INT             i,j;
 DSURF          *actdsurf;
 DLINE          *actdline;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inherit_dsurfdline_dirich");
 #endif
 /*----------------------------------------------------------------------*/
@@ -169,14 +169,14 @@ for (i=0; i<design->ndsurf; i++)
       actdline->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
       if (!actdline->dirich) dserror("Allocation of memory failed");
       actdline->dirich->dirich_type = actdsurf->dirich->dirich_type;
-      am_alloc_copy(&(actdsurf->dirich->dirich_onoff),&(actdline->dirich->dirich_onoff));  
-      am_alloc_copy(&(actdsurf->dirich->dirich_val),&(actdline->dirich->dirich_val));  
+      am_alloc_copy(&(actdsurf->dirich->dirich_onoff),&(actdline->dirich->dirich_onoff));
+      am_alloc_copy(&(actdsurf->dirich->dirich_val),&(actdline->dirich->dirich_val));
       am_alloc_copy(&(actdsurf->dirich->curve),&(actdline->dirich->curve));
       am_alloc_copy(&(actdsurf->dirich->funct),&(actdline->dirich->funct));
    }/* loop j over dlines */
 }/* loop i over dsurfs */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -189,7 +189,7 @@ static void inherit_dlinednode_dirich()
 INT             i,j;
 DNODE          *actdnode;
 DLINE          *actdline;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inherit_dlinednode_dirich");
 #endif
 /*----------------------------------------------------------------------*/
@@ -210,14 +210,14 @@ for (i=0; i<design->ndline; i++)
       /*------ inherit the dirichlet condition from actdline to actdnode */
       actdnode->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
       actdnode->dirich->dirich_type = actdline->dirich->dirich_type;
-      am_alloc_copy(&(actdline->dirich->dirich_onoff),&(actdnode->dirich->dirich_onoff));  
-      am_alloc_copy(&(actdline->dirich->dirich_val),&(actdnode->dirich->dirich_val));  
+      am_alloc_copy(&(actdline->dirich->dirich_onoff),&(actdnode->dirich->dirich_onoff));
+      am_alloc_copy(&(actdline->dirich->dirich_val),&(actdnode->dirich->dirich_val));
       am_alloc_copy(&(actdline->dirich->curve),&(actdnode->dirich->curve));
       am_alloc_copy(&(actdline->dirich->funct),&(actdnode->dirich->funct));
    }/* loop j over dnodes */
 }/* loop i over dlines */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -233,12 +233,12 @@ static void inherit_dvoldsurf_couple()
 INT             i,j;
 DVOL           *actdvol;
 DSURF          *actdsurf;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inherit_dvoldsurf_couple");
 #endif
-/* 
+/*
 couple conditions are inherited as follows:
-DVOL inherits to its DSURFS if the DSURF does not have its own 
+DVOL inherits to its DSURFS if the DSURF does not have its own
 */
 /*----------------------------------------------------------------------*/
 /*---------------------------------------------------------- loop DVOLs */
@@ -257,11 +257,11 @@ for (i=0; i<design->ndvol; i++)
       actdsurf->couple = (COUPLE_CONDITION*)CCACALLOC(1,sizeof(COUPLE_CONDITION));
       if (!actdsurf->couple) dserror("Allocation of memory failed");
       actdsurf->couple->fieldtyp      = actdvol->couple->fieldtyp;
-      am_alloc_copy(&(actdvol->couple->couple),&(actdsurf->couple->couple));  
+      am_alloc_copy(&(actdvol->couple->couple),&(actdsurf->couple->couple));
    }/* loop j over dsurfs */
 }/* loop i over dvols */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -274,7 +274,7 @@ static void inherit_dsurfdline_couple()
 INT             i,j;
 DSURF          *actdsurf;
 DLINE          *actdline;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inherit_dsurfdline_couple");
 #endif
 /*----------------------------------------------------------------------*/
@@ -294,11 +294,11 @@ for (i=0; i<design->ndsurf; i++)
       actdline->couple = (COUPLE_CONDITION*)CCACALLOC(1,sizeof(COUPLE_CONDITION));
       if (!actdline->couple) dserror("Allocation of memory failed");
       actdline->couple->fieldtyp      = actdsurf->couple->fieldtyp;
-      am_alloc_copy(&(actdsurf->couple->couple),&(actdline->couple->couple));  
+      am_alloc_copy(&(actdsurf->couple->couple),&(actdline->couple->couple));
    }/* loop j over dlines */
 }/* loop i over dsurfs */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -311,7 +311,7 @@ static void inherit_dlinednode_couple()
 INT             i,j;
 DNODE          *actdnode;
 DLINE          *actdline;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inherit_dlinednode_couple");
 #endif
 /*----------------------------------------------------------------------*/
@@ -331,11 +331,11 @@ for (i=0; i<design->ndline; i++)
       actdnode->couple = (COUPLE_CONDITION*)CCACALLOC(1,sizeof(COUPLE_CONDITION));
       if (!actdnode->couple) dserror("Allocation of memory failed");
       actdnode->couple->fieldtyp       = actdline->couple->fieldtyp;
-     am_alloc_copy(&(actdline->couple->couple),&(actdnode->couple->couple));  
+     am_alloc_copy(&(actdline->couple->couple),&(actdnode->couple->couple));
    }/* loop j over dnodes */
 }/* loop i over dlines */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -353,7 +353,7 @@ static void inherit_dsurfdline_fsicouple()
 INT             i,j;
 DSURF          *actdsurf;
 DLINE          *actdline;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inherit_dsurfdline_fsicouple");
 #endif
 /*----------------------------------------------------------------------*/
@@ -377,7 +377,7 @@ for (i=0; i<design->ndsurf; i++)
    }/* loop j over dnodes */
 }/* loop i over dlines */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 #endif
@@ -392,7 +392,7 @@ static void inherit_dlinednode_fsicouple()
 INT             i,j;
 DNODE          *actdnode;
 DLINE          *actdline;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inherit_dlinednode_fsicouple");
 #endif
 /*----------------------------------------------------------------------*/
@@ -416,7 +416,7 @@ for (i=0; i<design->ndline; i++)
    }/* loop j over dnodes */
 }/* loop i over dlines */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -433,7 +433,7 @@ static void inherit_dsurfdline_freesurf()
 INT             i,j;
 DLINE          *actdline;
 DSURF          *actdsurf;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inherit_dsurfdline_freesurf");
 #endif
 /*----------------------------------------------------------------------*/
@@ -455,7 +455,7 @@ for (i=0; i<design->ndsurf; i++)
    }/* loop j over dnodes */
 }/* loop i over dlines */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -469,7 +469,7 @@ static void inherit_dlinednode_freesurf()
 INT             i,j;
 DNODE          *actdnode;
 DLINE          *actdline;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inherit_dlinednode_freesurf");
 #endif
 /*----------------------------------------------------------------------*/
@@ -491,7 +491,7 @@ for (i=0; i<design->ndline; i++)
    }/* loop j over dnodes */
 }/* loop i over dlines */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -510,7 +510,7 @@ inherit thickness conditions DLINE to DNODE
 </pre>
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa
 
 *----------------------------------------------------------------------*/
@@ -519,7 +519,7 @@ static void inherit_dlinednode_thickness()
 INT             i,j;
 DNODE          *actdnode;
 DLINE          *actdline;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inherit_dlinednode_thickness");
 #endif
 /*----------------------------------------------------------------------*/
@@ -534,7 +534,7 @@ for (i=0; i<design->ndline; i++)
    {
       actdnode = actdline->dnode[j];
       /*-------- if actdnode has its own thickness condition check value */
-      if (actdnode->thickness != NULL) 
+      if (actdnode->thickness != NULL)
       {
         if (actdnode->thickness->value[0] !=  actdline->thickness->value[j])
           dserror("Thickness ust be equal at both sides of a dnode!");
@@ -546,7 +546,7 @@ for (i=0; i<design->ndline; i++)
    }/* loop j over dnodes */
 }/* loop i over dlines */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -556,7 +556,7 @@ return;
 
 
 
-#ifdef D_AXISHELL 
+#ifdef D_AXISHELL
 /*!----------------------------------------------------------------------
 \brief inherit axishell_load conditions DLINE to DNODE
 
@@ -565,7 +565,7 @@ inherit axishell_load conditions DLINE to DNODE
 </pre>
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa
 
 *----------------------------------------------------------------------*/
@@ -574,7 +574,7 @@ static void inherit_dlinednode_axishellload()
 INT             i,j;
 DNODE          *actdnode;
 DLINE          *actdline;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inherit_dlinednode_axishellload");
 #endif
 /*---------------------------------------------------------------------*/
@@ -589,7 +589,7 @@ for (i=0; i<design->ndline; i++)
    {
       actdnode = actdline->dnode[j];
       /*-- if actdnode has its own axishell_load condition check value */
-      if (actdnode->axishellload != NULL) 
+      if (actdnode->axishellload != NULL)
       {
         if (actdnode->axishellload->pv[0] !=  actdline->axishellload->pv[j] ||
             actdnode->axishellload->ph[0] !=  actdline->axishellload->ph[j] ||
@@ -607,7 +607,7 @@ for (i=0; i<design->ndline; i++)
    }/* loop j over dnodes */
 }/* loop i over dlines */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -15,14 +15,14 @@ Maintainer: Christiane Foerster
 #include "../headers/standardtypes.h"
 #include "ale2.h"
 
-/*! 
-\addtogroup Ale 
+/*!
+\addtogroup Ale
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief coordinates and weight factors for numerical integration 
+\brief coordinates and weight factors for numerical integration
 
-<pre>                                                              mn 06/02 
+<pre>                                                              mn 06/02
 This routine  gives the coordinates and weight factors for numerical
 integration of a 2D ale element.
 
@@ -31,7 +31,7 @@ integration of a 2D ale element.
 \param *data   ALE2_DATA  (o)   structure containing the coordinates and weighting factors
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: ale2_static_ke()
 
 *----------------------------------------------------------------------*/
@@ -41,7 +41,7 @@ void ale2_intg(const ELEMENT   *ele,
 DOUBLE  q12 = 1.0/2.0;
 DOUBLE  q13 = 1.0/3.0;
 DOUBLE  q16 = 1.0/6.0;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ale2_intg");
 #endif
 
@@ -50,11 +50,11 @@ switch (ele->distyp)
     case quad4:
     case quad8:
     case quad9:
-        /*----------------------------------------------------------------------*  
+        /*----------------------------------------------------------------------*
           |     INTEGRATION PARAMETERS FOR    Q U A D                 ELEMENTS   |
           |     GAUSS SAMPLING POINTS  AT     R/S-COORDINATES     RESPECTIVELY   |
           |                            AND    CORRESPONDING WEIGHTING  FACTORS   |
-         *----------------------------------------------------------------------*/       
+         *----------------------------------------------------------------------*/
         switch(ele->e.ale2->nGP[0])/* direction r */
         {
             case 2:
@@ -94,11 +94,11 @@ switch (ele->distyp)
         break; /* end case quad489*/
     case tri3:
     case tri6:
-        /*----------------------------------------------------------------------*  
+        /*----------------------------------------------------------------------*
           |     INTEGRATION PARAMETERS FOR    T R I                   ELEMENTS   |
           |     GAUSS SAMPLING POINTS  AT     R/S-COORDINATES     RESPECTIVELY   |
           |                            AND    CORRESPONDING WEIGHTING  FACTORS   |
-         *----------------------------------------------------------------------*/       
+         *----------------------------------------------------------------------*/
         switch(ele->e.ale2->nGP[0])
         {
             case 1:
@@ -127,7 +127,7 @@ switch (ele->distyp)
         break; /* end default */
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

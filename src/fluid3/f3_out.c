@@ -1,7 +1,7 @@
 
 /*!----------------------------------------------------------------------
   \file
-  \brief contains the routine 'f3_out_gid_sol_str' which 
+  \brief contains the routine 'f3_out_gid_sol_str' which
   writes data for a 3D fluid element for gid post processing
 
   <pre>
@@ -18,17 +18,17 @@ Maintainer: Malte Neumann
 #include "fluid3.h"
 #include "fluid3_prototypes.h"
 
-/*! 
-  \addtogroup FLUID3 
+/*!
+  \addtogroup FLUID3
   *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
   \brief output of data for a 3D fluid element
 
   <pre>                                                             mn 03/04
-  This routine writes the viscouse stresses, extrapolated from GP to nodal 
-  points to the flavia.res file. The stresses are averaged between the 
-  different elements, so be careful with the interpretation! Test future 
+  This routine writes the viscouse stresses, extrapolated from GP to nodal
+  points to the flavia.res file. The stresses are averaged between the
+  different elements, so be careful with the interpretation! Test future
   versions of "Gid" for integration point value visualization!
   </pre>
 
@@ -39,14 +39,14 @@ Maintainer: Malte Neumann
   \warning Check if it is possible to give "Gid" integration point values.
   If it is possible change this code!
 
-  \return void                                               
+  \return void
   \sa calling: ---; called by: out_gid_sol()
 
  *----------------------------------------------------------------------*/
 
 void f3_out_gid_sol_str(
     FILE       *out,     /* File pointer to flavia.res */
-    FIELD *actfield,     /* active field */ 
+    FIELD *actfield,     /* active field */
     INT        type,     /* viscous (1) or press (0) stresses */
     INT         init     /* allocate/free memory */
     )
@@ -63,7 +63,7 @@ void f3_out_gid_sol_str(
   NODE             *actnode;
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("f3_out_gid_sol_str");
 #endif
 
@@ -90,7 +90,7 @@ void f3_out_gid_sol_str(
       str[2] += stress[k][type*6+2];
       str[3] += stress[k][type*6+3];
       str[4] += stress[k][type*6+4];
-      str[5] += stress[k][type*6+5];		
+      str[5] += stress[k][type*6+5];
     }
 
     invcount = 1.0/count;
@@ -108,7 +108,7 @@ void f3_out_gid_sol_str(
   }
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
     dstrc_exit();
 #endif
 

@@ -10,7 +10,7 @@ Maintainer: Thomas Hettich
 </pre>
 
 ------------------------------------------------------------------------*/
-#ifdef D_FLUID2TU 
+#ifdef D_FLUID2TU
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #include "fluid2.h"
@@ -27,7 +27,7 @@ extern struct _MATERIAL  *mat;
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -50,36 +50,36 @@ extern struct _GENPROB     genprob;
 \param  *eddyg   DOUBLE 	       (i)   eddy-viscosity
 \param  *velint  DOUBLE 	       (-)   vel. at integr. point
 \param  *velint_dc  DOUBLE 	       (-)   vel. at integr. point for D.C.
-\param  *kapomen    DOUBLE 	       (i)   kapomen at nodes 
+\param  *kapomen    DOUBLE 	       (i)   kapomen at nodes
 \param **xjm        DOUBLE 	       (-)   jacobian  matrix
 \param **xzye       DOUBLE           (-)   nodal coordinates
-\param **derxy      DOUBLE 	       (-)   global deriv. 
-\param  *kapomederxy   DOUBLE 	 (-)   kapome global deriv. 
-\param **cutp         DOUBLE 	       (-)   array 
-\return void             
+\param **derxy      DOUBLE 	       (-)   global deriv.
+\param  *kapomederxy   DOUBLE 	 (-)   kapome global deriv.
+\param **cutp         DOUBLE 	       (-)   array
+\return void
 
 ------------------------------------------------------------------------*/
-void f2_calelesize_tu_1(			     
-	           ELEMENT         *ele,    
-		     ELEMENT         *elev,    
-	           DOUBLE          *funct,  
-	           DOUBLE         **deriv,  
-	           DOUBLE         **deriv2,  		 
-                 DOUBLE         **evel, 
-                 DOUBLE          *eddyg, 
-                 DOUBLE          *velint, 
-                 DOUBLE          *velint_dc, 
-                 DOUBLE          *kapomen, 
-	           DOUBLE         **xjm,     
-	           DOUBLE         **xyze,     
-	           DOUBLE         **derxy,   
-                 DOUBLE          *kapomederxy,  
+void f2_calelesize_tu_1(
+	           ELEMENT         *ele,
+		     ELEMENT         *elev,
+	           DOUBLE          *funct,
+	           DOUBLE         **deriv,
+	           DOUBLE         **deriv2,
+                 DOUBLE         **evel,
+                 DOUBLE          *eddyg,
+                 DOUBLE          *velint,
+                 DOUBLE          *velint_dc,
+                 DOUBLE          *kapomen,
+	           DOUBLE         **xjm,
+	           DOUBLE         **xyze,
+	           DOUBLE         **derxy,
+                 DOUBLE          *kapomederxy,
                  DOUBLE         **cutp
                  )
 {
 INT     actmat;         /* number of actual material		            */
 INT     iel;            /* number of nodes of actual element            */
-INT     icode=2;        /* flag for eveluation of shape functions       */     
+INT     icode=2;        /* flag for eveluation of shape functions       */
 INT     ihoel=0;        /* flag for higher order elements               */
 DOUBLE  e1,e2;          /* natural coordinates of inegration point      */
 DOUBLE  visc;           /* fluid viscosity                              */
@@ -88,11 +88,11 @@ DOUBLE  facr,facs,det;
 DOUBLE  gcoor[2];       /* global coordinates                           */
 DIS_TYP typ;
 FLUID_DYNAMIC  *fdyn;
-FLUID_DATA    *data; 
+FLUID_DATA    *data;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_calelesize_tu_1");
-#endif		
+#endif
 
 /*---------------------------------------------------------- initialise */
 fdyn   = alldyn[genprob.numff].fdyn;
@@ -115,7 +115,7 @@ typ    = ele->distyp;
       facs = data->qwgt[0][0];
       f2_rec(funct,deriv,deriv2,e1,e2,typ,icode);
    break;
-   case tri3: case tri6:       /* --> tri - element */              
+   case tri3: case tri6:       /* --> tri - element */
      if (iel>3)
      {
       icode   = 3;
@@ -128,20 +128,20 @@ typ    = ele->distyp;
       f2_tri(funct,deriv,deriv2,e1,e2,typ,icode);
    break;
    default:
-      dserror("typ unknown!\n");      
+      dserror("typ unknown!\n");
    } /*end switch(typ) */
-     
+
 /*-------------------------------------------- compute Jacobian matrix */
    f2_jaco(xyze,funct,deriv,xjm,&det,iel,ele);
 
 /*------------------------------------------- compute global derivates */
    f2_gder(derxy,deriv,xjm,det,iel);
 
-/*--------------------------------- get eddy-visc. at center of element */               
+/*--------------------------------- get eddy-visc. at center of element */
    f2_eddyi(&eddyint,funct,eddyg,iel);
 
-/*----------------------------------- get velocity at center of element */               
-   f2_veci(velint,funct,evel,iel);    
+/*----------------------------------- get velocity at center of element */
+   f2_veci(velint,funct,evel,iel);
 
 /*------------------- calculate stabilisation parameter for DISC. CAPT. */
    f2_kapomeder(kapomederxy,derxy,kapomen,iel);
@@ -149,13 +149,13 @@ typ    = ele->distyp;
 
 /*---------------- get streamlenght for elementlenght for DISC. CAPT.  */
    f2_gcoor(xyze,funct,iel,gcoor);
-   f2_calstrlen_tu(velint_dc,ele,gcoor,cutp,typ);       
+   f2_calstrlen_tu(velint_dc,ele,gcoor,cutp,typ);
 
-/*----------------------------------- calculate stabilisation parameter */               
-   f2_calstabpar_tu_1(ele,elev,eddyint,velint,velint_dc,visc); 
+/*----------------------------------- calculate stabilisation parameter */
+   f2_calstabpar_tu_1(ele,elev,eddyint,velint,velint_dc,visc);
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 

@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 
- - s9_tvkg: which calculates the geometric stiffness matrix for a shell9 
+\brief contains the routine
+ - s9_tvkg: which calculates the geometric stiffness matrix for a shell9
             element
 
 
@@ -17,12 +17,12 @@ Maintainer: Stefan Hartmann
 #include "../headers/standardtypes.h"
 #include "shell9.h"
 
-/*! 
-\addtogroup SHELL9 
+/*!
+\addtogroup SHELL9
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief geometric striffness matrix                                      
+\brief geometric striffness matrix
 
 <pre>                     m.gee 6/01              modified by    sh 10/02
 This routine performs the geometric striffness matrix for a shell9 element
@@ -34,11 +34,11 @@ This routine performs the geometric striffness matrix for a shell9 element
 \param  INT        numdf      (i)  number of dofs to one node
 \param  INT        iel        (i)  number of nodes to this element
 \param  DOUBLE     weight     (i)  weight at GP
-\param  INT        num_klay   (i)  number of mat layers to this kin layer 
-\param  INT        klay       (i)  actual kin layer 
+\param  INT        num_klay   (i)  number of mat layers to this kin layer
+\param  INT        klay       (i)  actual kin layer
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: s9static_keug()   [s9_static_keug.c]
 
 *----------------------------------------------------------------------*/
@@ -50,7 +50,7 @@ void s9_tvkg(DOUBLE **estif,
              INT      iel,
              DOUBLE   weight,
              INT      klay,        /* actual kin layer */
-             INT      num_klay)    /* number of kin layers to this element */  
+             INT      num_klay)    /* number of kin layers to this element */
 {
 INT     inode,jnode;
 INT     idof,jdof;
@@ -89,7 +89,7 @@ DOUBLE  sm31;
 DOUBLE  sm22;
 DOUBLE  sm32;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9_tvkg");
 #endif
 /*----------------------------------------------------------------------*/
@@ -121,17 +121,17 @@ for (jlay=0; jlay<num_klay; jlay++)
      {
         pi = funct[inode];
         pj = funct[jnode];
-        
+
         d11 = deriv[0][inode] * deriv[0][jnode];
         d12 = deriv[0][inode] * deriv[1][jnode];
         d21 = deriv[1][inode] * deriv[0][jnode];
         d22 = deriv[1][inode] * deriv[1][jnode];
-        
+
         pd1ij = deriv[0][inode] * pj;
         pd1ji = deriv[0][jnode] * pi;
         pd2ij = deriv[1][inode] * pj;
         pd2ji = deriv[1][jnode] * pi;
-        
+
         /*-------------------------------------E11,E12,E22(CONST)*/
         xn = (sn11*d11 + sn21*(d12+d21) + sn22*d22) * weight;
         /*---------------------------------------E11,E12,E22(LIN)*/
@@ -145,40 +145,40 @@ for (jlay=0; jlay<num_klay; jlay++)
         y  = y1 + y2;
         /*---------------------------------------------E33(CONST)*/
         z  = pi*pj*sn33*weight;
-        
+
         if (klay == jlay)
         {
            estif[inode*numdf+0][jnode*numdf+0] += xn;
            estif[inode*numdf+1][jnode*numdf+1] += xn;
            estif[inode*numdf+2][jnode*numdf+2] += xn;
- 
+
            estif[inode*numdf+idof+0][jnode*numdf+0] += (xm+yu);
            estif[inode*numdf+idof+1][jnode*numdf+1] += (xm+yu);
            estif[inode*numdf+idof+2][jnode*numdf+2] += (xm+yu);
- 
+
            estif[inode*numdf+0][jnode*numdf+idof+0] += (xm+yo);
            estif[inode*numdf+1][jnode*numdf+idof+1] += (xm+yo);
            estif[inode*numdf+2][jnode*numdf+idof+2] += (xm+yo);
- 
+
            estif[inode*numdf+idof+0][jnode*numdf+idof+0] += (y+z);
            estif[inode*numdf+idof+1][jnode*numdf+idof+1] += (y+z);
            estif[inode*numdf+idof+2][jnode*numdf+idof+2] += (y+z);
-           
+
            /*make symmetric*/
            if (inode!=jnode)
            {
              estif[jnode*numdf+0][inode*numdf+0] += xn;
              estif[jnode*numdf+1][inode*numdf+1] += xn;
              estif[jnode*numdf+2][inode*numdf+2] += xn;
- 
+
              estif[jnode*numdf+0][inode*numdf+idof+0] += (xm+yu);
              estif[jnode*numdf+1][inode*numdf+idof+1] += (xm+yu);
              estif[jnode*numdf+2][inode*numdf+idof+2] += (xm+yu);
- 
+
              estif[jnode*numdf+idof+0][inode*numdf+0] += (xm+yo);
              estif[jnode*numdf+idof+1][inode*numdf+1] += (xm+yo);
              estif[jnode*numdf+idof+2][inode*numdf+2] += (xm+yo);
- 
+
              estif[jnode*numdf+idof+0][inode*numdf+idof+0] += (y+z);
              estif[jnode*numdf+idof+1][inode*numdf+idof+1] += (y+z);
              estif[jnode*numdf+idof+2][inode*numdf+idof+2] += (y+z);
@@ -189,7 +189,7 @@ for (jlay=0; jlay<num_klay; jlay++)
            estif[jnode*numdf+jdof+0][inode*numdf+0] += xn;
            estif[jnode*numdf+jdof+1][inode*numdf+1] += xn;
            estif[jnode*numdf+jdof+2][inode*numdf+2] += xn;
-        
+
            estif[jnode*numdf+0][inode*numdf+jdof+0] += xn;
            estif[jnode*numdf+1][inode*numdf+jdof+1] += xn;
            estif[jnode*numdf+2][inode*numdf+jdof+2] += xn;
@@ -208,7 +208,7 @@ for (jlay=0; jlay<num_klay; jlay++)
              estif[inode*numdf+0][jnode*numdf+jdof+0] += xn;
              estif[inode*numdf+1][jnode*numdf+jdof+1] += xn;
              estif[inode*numdf+2][jnode*numdf+jdof+2] += xn;
-        
+
              estif[inode*numdf+jdof+0][jnode*numdf+0] += xn;
              estif[inode*numdf+jdof+1][jnode*numdf+1] += xn;
              estif[inode*numdf+jdof+2][jnode*numdf+2] += xn;
@@ -222,14 +222,14 @@ for (jlay=0; jlay<num_klay; jlay++)
              estif[inode*numdf+jdof+2][jnode*numdf+idof+2] += yu;
            }
         }
-        
+
      } /* end loop over jnode */
   } /* end loop over inode */
 
 } /* end of loop over all kinematic layers*/
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 'w1_mat_plast_dp' which calculates the 
-       constitutive matrix - forces - Drucker Prager - 2D 
+\brief contains the routine 'w1_mat_plast_dp' which calculates the
+       constitutive matrix - forces - Drucker Prager - 2D
        (planes stress, planes strain, rotational symmetry)
 
 <pre>
@@ -17,8 +17,8 @@ Maintainer: Andrea Hund
 #include "wall1.h"
 #include "wall1_prototypes.h"
 
-/*! 
-\addtogroup WALL1 
+/*!
+\addtogroup WALL1
 *//*! @{ (documentation module open)*/
 
 /*----------------------------------------------------------------------*
@@ -36,7 +36,7 @@ void w1_mat_plast_dp(DOUBLE     ym,
                      DOUBLE    *gop,
                      DOUBLE    *alpha,
                      INT        ip,
-                     DOUBLE    *stress,       
+                     DOUBLE    *stress,
                      DOUBLE   **d,
                      INT        istore,/* controls storing of new stresses to wa */
                      INT        newval)/* controls evaluation of new stresses    */
@@ -62,18 +62,18 @@ DOUBLE dia = 0.;
 INT    isoft = 0;
 DOUBLE betah = 1.;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_mat_plast_dp");
 #endif
 /*----------------------------------------------------------------------*/
   iupd=0;
 /*----------------------------------------------------------------------*/
   rad   = atan(1.)/45.;
-  phi   = phi * rad;          
+  phi   = phi * rad;
 /*------------ original global elastic matrix for current point -> D ---*/
   w1_mat_linel(ym, pv, wtype, d);
-/*--------------------------------- compute displacement derivatives ---*/        
-  w1_disd (ele,bop,gop,alpha,wtype,disd) ;                  
+/*--------------------------------- compute displacement derivatives ---*/
+  w1_disd (ele,bop,gop,alpha,wtype,disd) ;
 /*------------------------------------- get actual strains -> strain ---*/
   w1_eps (disd,wtype,strain);
 /*----------------------------- get old values -> sig, eps,epstn,yip ---*/
@@ -130,14 +130,14 @@ for (i=0; i<4; i++)
 |   3. CALCULATE TOTAL STRESS                                            |
 |   4. CHECK STRESS DEVIATOR AGAINST CURRENT YIELD SURFACE               |
 |-----------------------------------------------------------------------*/
-  
+
   for (i=0; i<4; i++) deleps[i] = strain[i] - eps[i];
-  
+
   for (i=0; i<4; i++) delsig[i] = 0.0;
   for (i=0; i<4; i++) for (j=0; j<4; j++) delsig[i] += d[i][j]*deleps[j];
-  
+
   for (i=0; i<4; i++) tau[i] = sig[i] + delsig[i] - qn[i];
-  
+
   sum = 0.0;
   for (i=0; i<4; i++) sum += sig[i] * delsig[i];
   if(sum<0.0)
@@ -149,18 +149,18 @@ for (i=0; i<4; i++)
 /*-------------------------------------------------- yield condition ---*/
   w1yilcr_dp(ym, hard, phi, sigy, &sigym, epstn, tau, &ft);
 /*------------- state of stress within yield surface - E L A S T I C ---*/
-  if (ft<tol) 
+  if (ft<tol)
   {
     yip = 1;
     for (i=0; i<4; i++) stress[i] = tau[i] + qn[i];
   }
 /*------------ state of stress outside yield surface - P L A S T I C ---*/
-  else 
+  else
   {
     yip = 2;
     w1radi_dp(ym, hard, phi, sigy, pv, tau, qn, &epstn, &sigym, &dlam, wtype);
     w1mapl(ym, hard, betah, sigy, pv, dia, tau, isoft, &epstn, &dlam, d, wtype);
-    
+
     for (i=0; i<4; i++) stress[i] = tau[i] + qn[i];
   }
 /*----------------------------- put new values -> sig, eps,epstn,yip ---*/
@@ -178,7 +178,7 @@ end:
     ele->e.w1->elewa[0].ipwa[ip].yip   = yip  ;
   }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

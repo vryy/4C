@@ -1,6 +1,6 @@
 /*!---------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -21,18 +21,18 @@ Maintainer: Malte Neumann
 /*!---------------------------------------------------------------------
 \brief call of Visualisation tools
 
-<pre>                                                         genk 07/02       
+<pre>                                                         genk 07/02
 
 This routine checks the type of problem and based on the program  options
 a visualisation tool is called.
 At the moment implemented:
 VISUAL2
 
-</pre>  
-\return void                                                                       
+</pre>
+\return void
 
 ------------------------------------------------------------------------*/
-void ntavisual(void); 
+void ntavisual(void);
 
 
 /*----------------------------------------------------------------------*
@@ -87,8 +87,8 @@ void vis3caf(
  | visual_readflaviares.c                                  genk 01/04   |
  *----------------------------------------------------------------------*/
 void visual_readflaviares(
-    FIELD   *actfield, 
-    INT     *ntsteps,  
+    FIELD   *actfield,
+    INT     *ntsteps,
     ARRAY   *time_a,
     ARRAY   *step_a,
     INT     *FIRSTSTEP,

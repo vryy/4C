@@ -23,13 +23,13 @@ Maintainer: Andreas Lipka
 #include "../brick1/brick1_prototypes.h"
 #include "../headers/optimization.h"
 
-/*! 
-\addtogroup BRICK1 
+/*!
+\addtogroup BRICK1
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
 \brief the optimization main structure
-<pre>                                                            al 06/01   
+<pre>                                                            al 06/01
 defined in opt_cal_main.c
 </pre>
 *----------------------------------------------------------------------*/
@@ -49,13 +49,13 @@ This routine performs integration of an 3D-hex-element.
 \param         *init  INT      (i)   flag for initialization (alloc mem...)
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1_oint()
 
 *----------------------------------------------------------------------*/
 void c1_oint(
-             ELEMENT   *ele, 
-             C1_DATA   *data, 
+             ELEMENT   *ele,
+             C1_DATA   *data,
              MATERIAL  *mat,
              DOUBLE    *retval,  /* return value */
              INT        init     /* ==2 calc.strain energy */
@@ -83,30 +83,30 @@ DOUBLE F[6];  /* element stress vector   (stress-resultants) */
 DOUBLE DF[6]; /* derivative of element stress vector         */
 DOUBLE strain[6];
 DOUBLE xyze[60];
-DOUBLE edis[60];  
-DOUBLE grdis[60];/* displacement derivatives                  */  
+DOUBLE edis[60];
+DOUBLE grdis[60];/* displacement derivatives                  */
 DOUBLE  g[6][6]; /* transformation matrix s(glob)= g*s(loc)   */
 DOUBLE gi[6][6]; /* inverse of g          s(loc) = gi*s(glob) */
 /*-------------------------------------------  for eas elements only ---*/
 INT    cc;
 
-static ARRAY    D_a;      /* material tensor */     
-static DOUBLE **D;         
-static ARRAY    DD_a;      /* material tensor */     
-static DOUBLE **DD;         
-static ARRAY    funct_a;  /* shape functions */    
-static DOUBLE  *funct;     
-static ARRAY    deriv_a;  /* derivatives of shape functions */   
-static DOUBLE **deriv;     
-static ARRAY    xjm_a;    /* jacobian matrix */     
-static DOUBLE **xjm;         
-static ARRAY    bop_a;    /* B-operator */   
-static DOUBLE **bop;       
-static ARRAY    bnop_a;   /* BN-operator */   
-static DOUBLE **bn;       
+static ARRAY    D_a;      /* material tensor */
+static DOUBLE **D;
+static ARRAY    DD_a;      /* material tensor */
+static DOUBLE **DD;
+static ARRAY    funct_a;  /* shape functions */
+static DOUBLE  *funct;
+static ARRAY    deriv_a;  /* derivatives of shape functions */
+static DOUBLE **deriv;
+static ARRAY    xjm_a;    /* jacobian matrix */
+static DOUBLE **xjm;
+static ARRAY    bop_a;    /* B-operator */
+static DOUBLE **bop;
+static ARRAY    bnop_a;   /* BN-operator */
+static DOUBLE **bn;
 
-static DOUBLE **estiflo;       
-static ARRAY    estiflo_a; /* local element stiffness matrix ke for eas */   
+static DOUBLE **estiflo;
+static ARRAY    estiflo_a; /* local element stiffness matrix ke for eas */
 
 DOUBLE det;
 
@@ -131,7 +131,7 @@ DOUBLE dens, density;  /* density                     */
 DOUBLE lmvec[60];   /* lumped mass vector     */
 DOUBLE facm, totmas, emasdg;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1_oint");
 #endif
 /*----------------------------------------------------------------------*/
@@ -141,14 +141,14 @@ newval = 0;
 /*------------------------------------------------- some working arrays */
 if (init==1)
 {
-  funct     = amdef("funct"  ,&funct_a,MAXNOD_BRICK1,1 ,"DV");       
-  deriv     = amdef("deriv"  ,&deriv_a,3,MAXNOD_BRICK1 ,"DA");       
-  D         = amdef("D"      ,&D_a   ,6,6              ,"DA");           
-  DD        = amdef("DD"     ,&DD_a  ,6,6              ,"DA");           
-  xjm       = amdef("xjm"    ,&xjm_a ,numdf,numdf      ,"DA");           
-  bop       = amdef("bop"  ,&bop_a ,numeps,(numdf*MAXNOD_BRICK1),"DA");           
-  bn        = amdef("bnop" ,&bnop_a,3     ,       MAXNOD_BRICK1 ,"DA");           
-  estiflo   = amdef("estiflo"  ,&estiflo_a ,60,60,"DA");           
+  funct     = amdef("funct"  ,&funct_a,MAXNOD_BRICK1,1 ,"DV");
+  deriv     = amdef("deriv"  ,&deriv_a,3,MAXNOD_BRICK1 ,"DA");
+  D         = amdef("D"      ,&D_a   ,6,6              ,"DA");
+  DD        = amdef("DD"     ,&DD_a  ,6,6              ,"DA");
+  xjm       = amdef("xjm"    ,&xjm_a ,numdf,numdf      ,"DA");
+  bop       = amdef("bop"  ,&bop_a ,numeps,(numdf*MAXNOD_BRICK1),"DA");
+  bn        = amdef("bnop" ,&bnop_a,3     ,       MAXNOD_BRICK1 ,"DA");
+  estiflo   = amdef("estiflo"  ,&estiflo_a ,60,60,"DA");
 goto end;
 }
 /*------------------------------------------- integration parameters ---*/
@@ -184,7 +184,7 @@ c1intg(ele,data);
     }
     /*------------------------------------------------------------------*/
   }
-  else 
+  else
   {/*iel==20*/
    cc=0;
    xyze[cc++] = ele->node[0]->x[0];
@@ -450,19 +450,19 @@ c1intg(ele,data);
   stv  = 0.;
   dste = 0.;
 /*------------------------------------ check calculation of mass matrix */
-if (init==7) 
+if (init==7)
 {
   krexpo = opt->oeig->rhoks;                 /* exponent in Kreiselmeier*/
   /*---------------------------------------------------- get density ---*/
   #ifdef D_OPTIM                   /* include optimization code to ccarat */
    if(ele->e.c1->elewa->matdata==NULL) c1_getdensity(mat, &density);
-   else density = ele->e.c1[0].elewa[0].matdata[0];   
+   else density = ele->e.c1[0].elewa[0].matdata[0];
   #else
   c1_getdensity(mat, &density);
   #endif /* stop including optimization code to ccarat :*/
   for (i=0; i<60; i++) lmvec[i] = 0.0;
   amzero(&estiflo_a);
-} 
+}
 /*-------------------------------------------  initialize total mass ---*/
   totmas = 0.0;
   emasdg = 0.0;
@@ -500,13 +500,13 @@ for (lr=0; lr<nir; lr++)
       c1tram (xjm,g,gi);
       /*--------------------------------------- calculate operator B ---*/
       c1_bop(bop,bn,deriv,xjm,det,iel);
-      /*--------------------------- compute displacement derivatives ---*/        
-      c1_disd (bop,edis,disd,iel) ;                  
-      /*---------------- include initial displacements to b-operator ---*/        
+      /*--------------------------- compute displacement derivatives ---*/
+      c1_disd (bop,edis,disd,iel) ;
+      /*---------------- include initial displacements to b-operator ---*/
       if(iform==2 && mat->mattyp!=m_pl_mises_ls)
       {
-        c1_bdis (bop,disd,iel) ;                  
-      }  
+        c1_bdis (bop,disd,iel) ;
+      }
       /*------------------------------- get actual strains -> strain ---*/
       c1_eps (disd,strain,iform);
       /*------------------------------------------ call material law ---*/
@@ -519,13 +519,13 @@ for (lr=0; lr<nir; lr++)
             ste += strain[0]*fac;
             continue;
           }
-          
-          
+
+
           ste += (F[0]*strain[0] + F[1]*strain[1] + F[2]*strain[2] +
                   F[3]*strain[3] + F[4]*strain[4] + F[5]*strain[5])
                   *fac*0.5;
           continue;
-        
+
       }
       /*----------- calculate derivatives material matrix and stress ---*/
       if(init==4)
@@ -552,7 +552,7 @@ for (lr=0; lr<nir; lr++)
         for (i=0;i<6;i++) DF[i] = 0.;
         c1_call_matd(ele, mat,DF,strain,DD,g);
         /* derivative of internal force vector */
-        c1dfi (DF,fac,bop,disd,nd,dfie);                    
+        c1dfi (DF,fac,bop,disd,nd,dfie);
       }
       /*--------------- calculate derivatives for frequency problems ---*/
       if(init==7)
@@ -561,7 +561,7 @@ for (lr=0; lr<nir; lr++)
         for (i=0;i<6;i++) DF[i] = 0.;
         c1_call_matd(ele, mat,DF,strain,DD,g);
         c1_keku(estiflo,bop,DD,fac,nd,numeps);
-        
+
         density = 1.0;
         facm = fac * density;
         totmas += facm;
@@ -572,20 +572,20 @@ for (lr=0; lr<nir; lr++)
 }/*================================================ end of loop over lr */
 /*----------------------------------------------------------------------*/
   /*---------------------------------------------------- mass matrix ---*/
-  if (init==7) 
+  if (init==7)
   {
   /*--------------------------------------------------------------------*/
     fac=3.0*totmas/emasdg;
     for (i=0; i<nd; i++) lmvec[i] *= fac;
-    
+
     for (ieig=0;ieig<opt->oeig->numeigv;ieig++)
     {/* loop eigenvalues */
-      /*-------------------------------------------- k,s - w|2 * m,s ---*/ 
+      /*-------------------------------------------- k,s - w|2 * m,s ---*/
       for (i=0; i<(iel*3); i++)
       {
         estiflo[i][i] -= opt->oeig->eigv[ieig] * lmvec[i];
       }
-      /*------------------------- w|2,s = rt * (k,s - w|2 * m,s) * r ---*/ 
+      /*------------------------- w|2,s = rt * (k,s - w|2 * m,s) * r ---*/
       w2s1[ieig]=0.0;
       for (i=0; i<(iel*3); i++) hvar1[i]=0.0;
       for (i=0; i<(iel*3); i++)
@@ -595,11 +595,11 @@ for (lr=0; lr<nir; lr++)
       }
       /*---------------------------------------------------- scaling ---*/
       w2s1[ieig]=w2s1[ieig]/opt->oeig->eigs[ieig];
-      /*-------------------------------- teta_s = w|2,s / (8*PI*fie) ---*/ 
+      /*-------------------------------- teta_s = w|2,s / (8*PI*fie) ---*/
       teta_s1[ieig] =  w2s1[ieig] / (4.0*PI*sqrt(opt->oeig->eigv[ieig]));
       teta1[ieig]   =  sqrt(opt->oeig->eigv[ieig]) / (2*PI);
     }
-      /*------------------------- Kreisselmeier-Steinhaeuser (MAUTE) ---*/ 
+      /*------------------------- Kreisselmeier-Steinhaeuser (MAUTE) ---*/
       stf = 0.0;
       if(opt->oeig->numeigv==1)
       {
@@ -607,8 +607,8 @@ for (lr=0; lr<nir; lr++)
       }
       else
       {
-        kro = 0.0; 
-        kru = 0.0; 
+        kro = 0.0;
+        kru = 0.0;
         for (j=0;j<opt->oeig->numeigv;j++) kro -= exp(-krexpo*teta1[j])*teta_s1[j];
         for (j=0;j<opt->oeig->numeigv;j++) kru += exp(-krexpo*teta1[j])           ;
         stf = kro / kru;
@@ -649,10 +649,10 @@ for (lr=0; lr<nir; lr++)
 /*----------------------------------------------------------------------*/
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of c1_oint */
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*
@@ -670,7 +670,7 @@ INT i,j,k;
 DOUBLE n11,n22,n33,n12,n23,n31;
 DOUBLE dd11,dd22,dd33,dd12,dd21,dd13,dd23,dd31,dd32;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1dfi");
 #endif
 /*---------------------------- set values of force vector components ---*/
@@ -680,7 +680,7 @@ dstrc_enter("c1dfi");
   n12 = F[3]*fac;
   n23 = F[4]*fac;
   n31 = F[5]*fac;
-  
+
   dd11 = disd[0] + 1.;
   dd22 = disd[1] + 1.;
   dd33 = disd[2] + 1.;
@@ -697,8 +697,8 @@ dstrc_enter("c1dfi");
     i=j-2;
     /*
     fie[i]+=  bop[0][i]*dd11*n11 + bop[1][i]*dd12*n22 + bop[2][i]*dd13*n33 +
-              bop[3][i]*(dd12+dd11)*n12 + 
-              bop[4][i]*(dd13+dd11)*n23 + 
+              bop[3][i]*(dd12+dd11)*n12 +
+              bop[4][i]*(dd13+dd11)*n23 +
               bop[5][i]*(dd13+dd12)*n31;
     fie[k]+=  bop[0][k]*dd21*n11 + bop[1][k]*dd22*n22 + bop[2][k]*dd23*n33 +
               bop[3][k]*(dd22+dd21)*n12 +
@@ -710,8 +710,8 @@ dstrc_enter("c1dfi");
               bop[5][j]*(dd33+dd32)*n31;
     /**/
     fie[i]+=  bop[0][i]*n11 + bop[1][i]*n22 + bop[2][i]*n33 +
-              bop[3][i]*n12 + 
-              bop[4][i]*n23 + 
+              bop[3][i]*n12 +
+              bop[4][i]*n23 +
               bop[5][i]*n31;
     fie[k]+=  bop[0][k]*n11 + bop[1][k]*n22 + bop[2][k]*n33 +
               bop[3][k]*n12 +
@@ -723,7 +723,7 @@ dstrc_enter("c1dfi");
               bop[5][j]*n31;
   }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

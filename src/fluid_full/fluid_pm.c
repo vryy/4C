@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file
 \brief projection method algorithm for fluid
- 
+
 <pre>
 Maintainer: Steffen Genkinger
             genkinger@statik.uni-stuttgart.de
@@ -10,7 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
+/*!
 \addtogroup FLUID
 *//*! @{ (documentation module open)*/
 #ifdef D_FLUID
@@ -21,7 +21,7 @@ Maintainer: Steffen Genkinger
 
 static INT       veldis=0;           /* flag, if vel. discr. is used    */
 static INT       predis=1;           /* flag, if pres. discr. is used   */
-static INT       predof=0;           /* flag for pressure dof           */ 
+static INT       predof=0;           /* flag for pressure dof           */
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -45,7 +45,7 @@ extern struct _SOLVAR  *solv;
 
 <pre>                                                         m.gee 8/00
 -the partition of one proc (all discretizations)
--the type is in partition.h                                                  
+-the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -61,18 +61,18 @@ extern struct _IO_FLAGS     ioflags;
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par;                      
+ extern struct _PAR   par;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate dynamic variables if needed                      |
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 02/02    |
  | number of load curves numcurve                                       |
@@ -93,7 +93,7 @@ extern enum _CALC_ACTION calc_action[MAXFIELD];
 
 static FLUID_DYNAMIC *fdyn;
 
-/*!---------------------------------------------------------------------  
+/*!---------------------------------------------------------------------
 \brief projection method algorithm for fluid problems
 
 <pre>                                                        basol 08/02
@@ -103,17 +103,17 @@ problems.
 
 see:
 GRESHO, Philip M.
-"On the theory of Semi-Implicit Projection Methods for viscous 
+"On the theory of Semi-Implicit Projection Methods for viscous
 incompressible flow and its implementation via a finite element
 method that also introduces a nearly consistent mass matrix
 part 1 & part 2 "
-International Journal for Numerical Methods in Fluids, 
+International Journal for Numerical Methods in Fluids,
 VOL 11, pp. 587-659, (1990)
 
-</pre>     
+</pre>
 
-\return void 
-\warning this is all in progress 
+\return void
+\warning this is all in progress
 
 ------------------------------------------------------------------------*/
 void fluid_pm(void)
@@ -136,11 +136,11 @@ INT             actpos=0;           /* actual position in sol. history  */
 INT             outstep=0;          /* counter for output control       */
 INT             resstep=0;          /* counter for output control       */
 INT             pssstep=0;	    /* counter for output control	*/
-ARRAY           fvelrhs1_a;          
+ARRAY           fvelrhs1_a;
 DOUBLE         *fvelrhs1;           /* velocity rhs term1=MUn+dt*(fn-N(Un)*Un)  */
-ARRAY           fvelrhs2_a;          
+ARRAY           fvelrhs2_a;
 DOUBLE         *fvelrhs2;           /* velocity rhs term2= -dt*CPn              */
-ARRAY           fdirich_a; 
+ARRAY           fdirich_a;
 DOUBLE         *fdirich;            /* dirichlet forces for velocity            */
 ARRAY           lmass_a;            /* inverse of reduced lumped mass matrix    */
 DOUBLE         *lmass;
@@ -169,17 +169,17 @@ PARTITION      *actpart;            /* pointer to active partition      */
 FIELD          *actfield;           /* pointer to active field          */
 INTRA          *actintra;           /* pointer to active intra-communic.*/
 CALC_ACTION    *action;             /* pointer to the cal_action enum   */
-CONTAINER       container;          /* contains variables defined in container.h */      
+CONTAINER       container;          /* contains variables defined in container.h */
 OLL            *gradmatrix_oll;     /* full gradient matrix             */
 OLL            *rgradmatrix_oll;    /* reduced gradient matrix          */
-FLUID_STRESS    str;           
+FLUID_STRESS    str;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_pm");
 #endif
 
 /*======================================================================*
- |                   I N I T I A L I S A T I O N                        |   
+ |                   I N I T I A L I S A T I O N                        |
  *======================================================================*/
 /*--------------------------------------------------- set some pointers */
 /*---------------------------- only valid for single field problem !!!! */
@@ -195,9 +195,9 @@ numeq_full[veldis] = actpart->pdis[veldis].numnp*2;
 numeq_total_full[veldis] = actfield->dis[veldis].numdf;
 numeq_full[predis] = actpart->pdis[predis].numnp;
 numeq_total_full[predis] = actfield->dis[predis].numdf;
-/*---------------- if we are not parallel, we have to allocate an alibi * 
+/*---------------- if we are not parallel, we have to allocate an alibi *
   ---------------------------------------- intra-communicator structure */
-#ifdef PARALLEL 
+#ifdef PARALLEL
 actintra    = &(par.intra[0]);
 #else
 actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
@@ -251,9 +251,9 @@ presolv->sysarray[0].oll = (OLL*)CCACALLOC(1,sizeof(OLL));
   M_hat-matrix: m_array=1;
  *------------------------------------------------------------------------*/
 actsolv->nsysarray=nsysarray;
-actsolv->sysarray_typ = 
+actsolv->sysarray_typ =
 (SPARSE_TYP*)CCAREALLOC(actsolv->sysarray_typ,actsolv->nsysarray*sizeof(SPARSE_TYP));
-actsolv->sysarray = 
+actsolv->sysarray =
 (SPARSE_ARRAY*)CCAREALLOC(actsolv->sysarray,actsolv->nsysarray*sizeof(SPARSE_ARRAY));
 
 /*--------------------- copy the mask from the k_array to the mass_array */
@@ -285,7 +285,7 @@ actsysarray=kk;
 numeq_total_oll = actfield->dis[predis].numeq;
 oll_numeq(actfield, actpart, actintra, predis, &numeq_oll);
 
-oll_open(presolv->sysarray[0].oll, numeq_oll, numeq_total_oll, 
+oll_open(presolv->sysarray[0].oll, numeq_oll, numeq_total_oll,
 	 actfield, actpart, actintra, predis);
 
 numeq[predis] = numeq_oll;
@@ -298,17 +298,17 @@ numeq_save = actfield->dis[veldis].numeq;
 actfield->dis[veldis].numeq = numeq_total_full[veldis];
 oll_open(gradmatrix_oll,numeq_full[veldis],numeq_total_full[veldis],
          actfield,actpart,actintra,veldis);
-actfield->dis[veldis].numeq = numeq_save;	 
+actfield->dis[veldis].numeq = numeq_save;
 oll_open(rgradmatrix_oll,numeq[veldis],numeq_total[veldis],
          actfield,actpart,actintra,veldis);
 
 /*--------------------------------------------- output to the screen */
 #ifdef PARALLEL
-printf("number of velocity eqations on PROC %3d : %10d \n", 
+printf("number of velocity eqations on PROC %3d : %10d \n",
         par.myrank,numeq[veldis]);
 if (par.myrank==0)
-   printf("total number of velocity equations: %10d \n",numeq_total[veldis]);	
-printf("number of pressure eqations on PROC %3d : %10d \n", 
+   printf("total number of velocity equations: %10d \n",numeq_total[veldis]);
+printf("number of pressure eqations on PROC %3d : %10d \n",
         par.myrank,numeq[predis]);
 if (par.myrank==0)
    printf("total number of pressure equations:       %10d \n",numeq_total[predis]);
@@ -328,7 +328,7 @@ solserv_create_vec(&work2,1,numeq_total[veldis],numeq[veldis],"DV");
 solserv_zero_vec(work2);
 /*-------------------------- allocate 1 dist. vector 'rhs' for pressure */
 solserv_create_vec(&rhs_p,1,numeq_total[predis],numeq[predis],"DV");
-solserv_zero_vec(rhs_p); 
+solserv_zero_vec(rhs_p);
 /*------------------------ allocate 1 dist. vector 'sol_v' for velocity */
 solserv_create_vec(&sol_v,1,numeq_total[veldis],numeq[veldis],"DV");
 solserv_zero_vec(sol_v);
@@ -341,7 +341,7 @@ solserv_zero_vec(sol_pnew);
 /*----------------------------------- allocate 1 redundant vector lmass */
 lmass = amdef("lmass",&lmass_a,numeq_total[veldis],1,"DV");
 amzero(&lmass_a);
-/*------------------ allocate redundant vectors fvelrhs1 of full lenght 
+/*------------------ allocate redundant vectors fvelrhs1 of full lenght
             these are used by the element routines to assemble the  RHS */
 fvelrhs1    = amdef("fvelrhs1",&fvelrhs1_a,numeq_total[veldis],1,"DV");
 amzero(&fvelrhs1_a);
@@ -372,22 +372,22 @@ if (ioflags.fluid_vis_file==1 )
 amdef("time",&time_a,1000,1,"DV");
 
 /*---------------------------------------------- initialise fluid field */
-fluid_init(actpart,actintra,actfield,action,&container,4,str);		     
+fluid_init(actpart,actintra,actfield,action,&container,4,str);
 actpos=0;
 
 /*---------------------------------------- init all applied time curves */
 for (actcurve=0; actcurve<numcurve; actcurve++)
-   dyn_init_curve(actcurve,fdyn->nstep,fdyn->dt,fdyn->maxtime); 
+   dyn_init_curve(actcurve,fdyn->nstep,fdyn->dt,fdyn->maxtime);
 
 /*--------------------------------------- init the dirichlet-conditions */
 fluid_initdirich(actfield);
 
 /*----------------------------------- initialize solver on all matrices */
 /*
-NOTE: solver init phase has to be called with each matrix one wants to 
+NOTE: solver init phase has to be called with each matrix one wants to
       solve with. Solver init phase has to be called with all matrices
       one wants to do matrix-vector products and matrix scalar products.
-      This is not needed by all solver libraries, but the solver-init 
+      This is not needed by all solver libraries, but the solver-init
       phase is cheap in computation (can be costly in memory)
 */
 /*--------------------------------------------------- initialize solver */
@@ -420,14 +420,14 @@ calinit(actfield,actpart,action,&container);
 out_sol(actfield,actpart,actintra,fdyn->step,actpos);
 
 /*------------------------------- print out initial data to .flavia.res */
-if (ioflags.fluid_sol_gid==1 && par.myrank==0) 
+if (ioflags.fluid_sol_gid==1 && par.myrank==0)
 {
    out_gid_sol("velocity",actfield,actintra,fdyn->step,actpos,fdyn->acttime);
    out_gid_sol("pressure",actfield,actintra,fdyn->step,actpos,fdyn->acttime);
 }
 
 /*----------------------------------------------------------------------*
- *                    END OF THE INITIALISATION       
+ *                    END OF THE INITIALISATION
  *----------------------------------------------------------------------*/
 
 fdyn->theta = ONE;
@@ -436,7 +436,7 @@ fdyn->pro_profile = 1;        /* parabolic profile              */
 /*fdyn->pro_profile = 3; */   /* parabolic profile for cylinder */
 
 /*======================================================================*
- |                         A  -  M A T R I X                            |   
+ |                         A  -  M A T R I X                            |
  *======================================================================*/
 /*-------------------- calculate the A-matrix : A = CT*ML-1*C-----------*/
 /*-------------------- A  corresponds to the laplace operator ----------*/
@@ -457,7 +457,7 @@ fluid_pm_calamatrix( actfield,
 		      numeq_full,
 		      numeq_total_full,
 		      action,
-		     &container		      
+		     &container
 		    );
 
 /*----------------- initialize the solver again-------------------------*/
@@ -481,7 +481,7 @@ solver_control(presolv, actintra,
                &(presolv->sysarray[0]),
                sol_p,
                rhs_p,
-               init);	 
+               init);
 
 /*----------------------------------------------------------------------*/
 fdyn->acttime=ZERO;
@@ -489,11 +489,11 @@ fdyn->step=0;
 fdyn->dta = fdyn->dt;
 
 /*======================================================================*
- |                         T I M E   L O O P                            |   
+ |                         T I M E   L O O P                            |
  *======================================================================*/
 if (par.myrank==0) printf("\nTIMELOOP:\n\n");
 timeloop:
-fdyn->step++; 
+fdyn->step++;
 fdyn->acttime += fdyn->dta;
 /*----------------------------------------------- output to the screen */
 if (par.myrank==0)
@@ -534,7 +534,7 @@ amzero(&fvelrhs1_a);
 amzero(&fvelrhs2_a);
 amzero(&fdirich_a);
 
-/*----------------------------------------------------------------------*	            
+/*----------------------------------------------------------------------*
 | Stiffness matrix and Mass matrix are also calculated at every         |
 | time step because K includes the BTD stabilization term which         |
 | is dependent on the velocity and changing at every time step          |
@@ -552,7 +552,7 @@ container.ftimerhs     = fvelrhs2;
 container.nif          = 1;
 container.nim          = 0;
 container.fidrichrhs   = fdirich;
-container.global_numeq = numeq_total[veldis]; 
+container.global_numeq = numeq_total[veldis];
 container.kstep        = 0;
 container.actndis      = veldis;
 fdyn->pro_calmat     = 1;
@@ -574,14 +574,14 @@ solserv_add_mat(actintra,
                &(actsolv->sysarray[k_array]),
                &(actsolv->sysarray_typ[m_array]),
                &(actsolv->sysarray[m_array]),
-               ONE);      
+               ONE);
 /*---------------------------------------------------- M_hat = M * ML-1 */
 fluid_pm_matlmatmul(&(actsolv->sysarray[m_array]),
                    &(actsolv->sysarray_typ[m_array]),
 		   lmass);
 
 /*----------------------------------------------------------------------*
- |           rhs_v = fvelrhs1 + (MMl-1)*fvelrhs2  + fdirich             | 
+ |           rhs_v = fvelrhs1 + (MMl-1)*fvelrhs2  + fdirich             |
  *----------------------------------------------------------------------*/
 /*------------ assemble fvelrhs1  --------------------------------------*/
 assemble_vec(actintra,
@@ -597,7 +597,7 @@ assemble_vec(actintra,
              rhs_v,
              fvelrhs1,
              1.0);
-/*----------------------------------------- assemble fvelrhs2 = -dt*CPn */	     
+/*----------------------------------------- assemble fvelrhs2 = -dt*CPn */
 assemble_vec(actintra,
              &(actsolv->sysarray_typ[veldis]),
              &(actsolv->sysarray[veldis]),
@@ -611,7 +611,7 @@ solserv_sparsematvec(actintra,
                      &(actsolv->sysarray_typ[m_array]),
                      work2);
 /*-------------------------------- rhs term for velocity rhs_v += work1 */
-solserv_add_vec(work1,rhs_v,1.0);		     	     	     
+solserv_add_vec(work1,rhs_v,1.0);
 
 /*--------------------------------- solving for intermediate velocities */
 init=0;
@@ -623,8 +623,8 @@ solver_control(actsolv, actintra,
                init);
 
 /*----------------------------------------------------------------------*
- | REMARK: We are dealing with the full velocity vector because we use  | 
- | the full gradient matrix in our calculations, also the A matrix is   | 
+ | REMARK: We are dealing with the full velocity vector because we use  |
+ | the full gradient matrix in our calculations, also the A matrix is   |
  | calculated by using the full gradient matrix. One can use the        |
  | reduced gradient matrix but we believe that full A matrix is a       |
  | better approximation to the laplace operator over the whole domain   |                              |
@@ -632,9 +632,9 @@ solver_control(actsolv, actintra,
 solserv_result_incre(actfield,actintra,sol_v,3,
                      &(actsolv->sysarray[k_array]),
                      &(actsolv->sysarray_typ[k_array]),veldis);
-		     
+
 /*--------------------------------------- form the full velocity vector */
-fluid_pm_fullvel(actfield,veldis,fullvel,3); 
+fluid_pm_fullvel(actfield,veldis,fullvel,3);
 
 /*------------------------------------- redistribute sol_v to resultvel */
 solserv_reddistvec(sol_v,
@@ -676,9 +676,9 @@ solver_control(presolv, actintra,
                rhs_p,
                init);
 
-/*------------ do the projection and get the divergence free velocities 
+/*------------ do the projection and get the divergence free velocities
                Un+1 = U~n+1 - (ML-1)*C*(phi)                            */
- 
+
 /*--------------------------------------- redistribute the sol_p vector */
 solserv_reddistvec(sol_p,
                   &(presolv->sysarray[0]),
@@ -687,13 +687,13 @@ solserv_reddistvec(sol_p,
 
 /*------------------------------------------------ C*phi multiplication */
 fluid_pm_matvecmul(&ctimesphi_a,&resultpre_a,rgradmatrix_oll,
-                    actintra,numeq[veldis],0);		   
+                    actintra,numeq[veldis],0);
 
 /*--------------------------------------- Ml-1*ctimesphi multiplication */
 fluid_pm_lmatmulvec(ctimesphi,lmass,numeq_total[veldis]);
 
-/*----------------------------------------------------------------------* 
- | subtract the correction term from intermediate velocities and get    | 
+/*----------------------------------------------------------------------*
+ | subtract the correction term from intermediate velocities and get    |
  | the divergence free velocities                                       |
  *----------------------------------------------------------------------*/
 amadd(&resultvel_a,&ctimesphi_a,-ONE,0);
@@ -726,7 +726,7 @@ solserv_sol_copy(actfield,veldis,1,1,3,1);
 solserv_sol_copy(actfield,predis,1,1,3,1);
 
 
-/*-------- copy solution from sol_increment[3][j] to sol_[actpos][j]   
+/*-------- copy solution from sol_increment[3][j] to sol_[actpos][j]
            and transform kinematic to real pressure --------------------*/
 solserv_sol_copy(actfield,veldis,1,0,3,actpos);
 solserv_sol_copy(actfield,predis,1,0,3,actpos);
@@ -748,7 +748,7 @@ if (outstep==fdyn->upout && ioflags.fluid_sol_file==1)
 }
 
 /*--------------------------------------- write solution to .flavia.res */
-if (resstep==fdyn->upres &&ioflags.fluid_sol_gid==1 && par.myrank==0) 
+if (resstep==fdyn->upres &&ioflags.fluid_sol_gid==1 && par.myrank==0)
 {
    resstep=0;
    out_gid_sol("velocity",actfield,actintra,fdyn->step,actpos,fdyn->acttime);
@@ -758,23 +758,23 @@ if (resstep==fdyn->upres &&ioflags.fluid_sol_gid==1 && par.myrank==0)
 /*---------------------------------------------- write solution to .pss */
 if (pssstep==fdyn->uppss && ioflags.fluid_vis_file==1)
 {
-   pssstep=0;   
+   pssstep=0;
    /*--------------------------------------------- store time in time_a */
    if (actpos >= time_a.fdim)
    amredef(&(time_a),time_a.fdim+1000,1,"DV");
-   time_a.a.dv[actpos] = fdyn->acttime;   
+   time_a.a.dv[actpos] = fdyn->acttime;
    actpos++;
 }
 
 /*--------------------- check time and number of steps and steady state */
 if (fdyn->step < fdyn->nstep && fdyn->acttime <= fdyn->maxtime)
-   goto timeloop; 
+   goto timeloop;
 /*----------------------------------------------------------------------*
  | -->  end of timeloop                                                 |
  *----------------------------------------------------------------------*/
 end:
 
-/*======================================================================* 
+/*======================================================================*
  |                      F I N A L I S I N G                             |
  *======================================================================*/
 if (pssstep==0) actpos--;
@@ -790,8 +790,8 @@ if (ioflags.fluid_vis_file==1 && par.myrank==0)
       /*------------------------------------------ store time in time_a */
       if (actpos >= time_a.fdim)
       amredef(&(time_a),time_a.fdim+1000,1,"DV");
-      time_a.a.dv[actpos] = fdyn->acttime;   
-   }   
+      time_a.a.dv[actpos] = fdyn->acttime;
+   }
    visual_writepss(actfield,actpos+1,&time_a);
 }
 
@@ -815,11 +815,11 @@ amdel(&ctimesphi_a);
 amdel(&fullvel_a);
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
-} /* end of fluid_pm */ 
+} /* end of fluid_pm */
 #endif
 /*! @} (documentation module close)*/

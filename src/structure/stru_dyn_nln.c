@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Michael Gee
@@ -17,7 +17,7 @@ Maintainer: Michael Gee
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -45,7 +45,7 @@ extern struct _SOLVAR  *solv;
 
 <pre>                                                         m.gee 8/00
 -the partition of one proc (all discretizations)
--the type is in partition.h                                                  
+-the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -61,14 +61,14 @@ extern struct _IO_FLAGS     ioflags;
  | ranks and communicators                                              |
  | This structure struct _PAR par; is defined in main_ccarat.c
  *----------------------------------------------------------------------*/
- extern struct _PAR   par;                      
+ extern struct _PAR   par;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate dynamic variables if needed                      |
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 02/02    |
  | number of load curves numcurve                                       |
@@ -104,7 +104,7 @@ DOUBLE deltat;
 /*----------------------------------------------------------------------*
  |  routine to control nonlinear dynamic structural analysis m.gee 02/02|
  *----------------------------------------------------------------------*/
-void dyn_nln_structural() 
+void dyn_nln_structural()
 {
 INT             i;                  /* simply a counter */
 INT             numeq;              /* number of equations on this proc */
@@ -142,24 +142,24 @@ INTRA          *actintra;           /* pointer to active intra-communicator */
 CALC_ACTION    *action;             /* pointer to the structure cal_action enum */
 STRUCT_DYNAMIC *sdyn;               /* pointer to structural dynamic input data */
 
-DIST_VECTOR    *vel;                /* total velocities */              
+DIST_VECTOR    *vel;                /* total velocities */
 DIST_VECTOR    *acc;                /* total accelerations */
 DIST_VECTOR    *fie;                /* internal forces and working array */
-DIST_VECTOR    *dispi;              /* distributed vector to hold incremental displacments */ 
+DIST_VECTOR    *dispi;              /* distributed vector to hold incremental displacments */
 DIST_VECTOR    *work;               /* working vectors */
 
 ARRAY           intforce_a;         /* redundant vector of full length for internal forces */
 DOUBLE         *intforce;
 ARRAY           dirich_a;           /* redundant vector of full length for dirichlet-part of rhs */
-DOUBLE         *dirich;             
+DOUBLE         *dirich;
 DOUBLE          dirichfacs[10];     /* factors needed for dirichlet-part of rhs */
- 
-STRUCT_DYN_CALC dynvar;             /* variables to perform dynamic structural simulation */              
+
+STRUCT_DYN_CALC dynvar;             /* variables to perform dynamic structural simulation */
 
 INT             contactflag = 0;    /* flag for contact onoff */
 ARRAY           contactforce_a;     /* redundant vector of full length for contact forces */
 DOUBLE         *cforce;
-DIST_VECTOR    *con;                /*  contact forces */              
+DIST_VECTOR    *con;                /*  contact forces */
 
 #if defined(S8CONTACT) || defined(WALLCONTACT)
 INT             augon=0;
@@ -177,7 +177,7 @@ DOUBLE          resultdt;
 DOUBLE          newdt;
 DOUBLE          olddt;
 DOUBLE          eta;
-#endif 
+#endif
 
 INT             repeatcount;
 #if 0
@@ -192,7 +192,7 @@ CONTAINER       container;          /* contains variables defined in container.h
 container.isdyn   = 1;                /* dynamic calculation */
 container.actndis = 0;                /* only one discretisation */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("dyn_nln_structural");
 #endif
 /*----------------------------------------------------------------------*/
@@ -211,7 +211,7 @@ maxdt              = sdyn->maxdt;
 resultdt           = sdyn->resultdt;
 sdyn->writecounter = 0;
 /*----------------------------------------------------------------------*/
-#ifdef PARALLEL 
+#ifdef PARALLEL
 actintra    = &(par.intra[0]);
 /* if we are not parallel, we have to allocate an alibi intra-communicator structure */
 #else
@@ -241,7 +241,7 @@ acttime=0.0;
    stiff_array = 0;
    mass_array  = 1;
 
-if (sdyn->damp==1) 
+if (sdyn->damp==1)
 {
    damp_array  = 2;
    actsolv->nsysarray=3;
@@ -256,11 +256,11 @@ else
 /*------------------------------- mass_array (and damp_array if needed) */
 /* reallocate the vector of sparse matrices and the vector of there types */
 /* formerly lenght 1, now lenght 2 or 3 dependent on presence of damp_array */
-actsolv->sysarray_typ = 
+actsolv->sysarray_typ =
 (SPARSE_TYP*)CCAREALLOC(actsolv->sysarray_typ,actsolv->nsysarray*sizeof(SPARSE_TYP));
 if (!actsolv->sysarray_typ) dserror("Allocation of memory failed");
 
-actsolv->sysarray = 
+actsolv->sysarray =
 (SPARSE_ARRAY*)CCAREALLOC(actsolv->sysarray,actsolv->nsysarray*sizeof(SPARSE_ARRAY));
 if (!actsolv->sysarray) dserror("Allocation of memory failed");
 
@@ -325,7 +325,7 @@ if (contactflag)
    solserv_zero_vec(&(con[0]));
 }
 /*----------------------------------------- allocate 3 DIST_VECTOR fie */
-/*                    to hold internal forces at t, t-dt and inbetween */ 
+/*                    to hold internal forces at t, t-dt and inbetween */
 solserv_create_vec(&fie,3,numeq_total,numeq,"DV");
 for (i=0; i<3; i++) solserv_zero_vec(&(fie[i]));
 
@@ -336,7 +336,7 @@ solserv_create_vec(&work,3,numeq_total,numeq,"DV");
 for (i=0; i<3; i++) solserv_zero_vec(&(work[i]));
 /*---------------------------------- initialize solver on all matrices */
 /*
-NOTE: solver init phase has to be called with each matrix one wants to 
+NOTE: solver init phase has to be called with each matrix one wants to
       solve with. Solver init phase has to be called with all matrices
       one wants to do matrix-vector products and matrix scalar products.
       This is not needed by all solver libraries, but the solver-init phase
@@ -365,7 +365,7 @@ calinit(actfield,actpart,action,&container);
 
 /*----------------------------------------- write output of mesh to gid */
 if (par.myrank==0)
-if (ioflags.struct_disp_gid||ioflags.struct_stress_gid) 
+if (ioflags.struct_disp_gid||ioflags.struct_stress_gid)
    out_gid_msh();
 
 /*----------------- init the contact algorithms for contact with shells */
@@ -403,7 +403,7 @@ if (damp_array>0)
                    &(actsolv->sysarray[damp_array]),
                    &(actsolv->sysarray_typ[mass_array]),
                    &(actsolv->sysarray[mass_array]),
-                   sdyn->m_damp);  
+                   sdyn->m_damp);
 }
 /*----------------------- init the time curve applied to the loads here */
 /*-------------- this control routine at the moment always uses curve 0 */
@@ -426,7 +426,7 @@ sdyn->time = 0.0;
 
 /*----------------------------------------- output to GID postprozessor */
 if (ioflags.struct_disp_gid==1 || ioflags.struct_stress_gid==1)
-if (par.myrank==0) 
+if (par.myrank==0)
 {
    out_gid_domains(actfield);
 }
@@ -450,16 +450,16 @@ if (par.myrank==0) dyn_nlnstruct_outhead(&dynvar,sdyn);
 
    sol[0]    total displacements at time t-dt
    sol[1]    total displacements at time t
-   
+
    vel[0]    velocities    at t-dt
    acc[0]    accelerations at t-dt
 
-   work[2]   working vector for sums and matrix-vector products 
-   work[1]   working vector for sums and matrix-vector products 
-   work[0]   working vector for sums and matrix-vector products 
-   work[0]   is used to hold residual displacements in corrector 
+   work[2]   working vector for sums and matrix-vector products
+   work[1]   working vector for sums and matrix-vector products
+   work[0]   working vector for sums and matrix-vector products
+   work[0]   is used to hold residual displacements in corrector
              iteration
-             
+
    in the nodes, displacements are kept in node[].sol[0][0..numdf-1]
                  velocities    are kept in node[].sol[1][0..numdf-1]
                  accelerations are kept in node[].sol[2][0..numdf-1]
@@ -483,9 +483,9 @@ Values of the different vectors from above in one loop:
 
    sol[0]    	/{=d(t-dt)}		/			/		/				=sol[1]{=d(t)}
    sol[1]    	{=d(t-dt)}		=sol[0]+dispi[0]{=d(t)}	/		=sol[0]+dispi[0]		/
-   
+
    vel[0]    	/{=v(t-dt)}		/			/		/				=v(t)
-   acc[0]    	/{=a(t-dt)}		/			/		/				=a(t)	
+   acc[0]    	/{=a(t-dt)}		/			/		/				=a(t)
 
    work[2]    	/{=v(t-2dt)}		/			/		/				=v(t-dt)
    work[1]    	/{=a(t-2dt)}		/			/		/				=a(t-dt)
@@ -587,17 +587,17 @@ solserv_adddirich(actfield,0,0,3,4,5,-1.0,1.0);
 
 /*----- set factors needed for prescribed displacement terms on rhs eff */
 /*
-dirichfacs[0] = -(1.0-alpham)*(1.0/beta)/(DSQR(dt))         
-dirichfacs[1] =  (1.0-alpham)*(1.0/beta)/dt                 
-dirichfacs[2] =  (1.0-alpham)/(2*beta) - 1                  
-dirichfacs[3] = -(1.0-alphaf)*(gamma/beta)/dt               
-dirichfacs[4] =  (1.0-alphaf)*gamma/beta - 1                
-dirichfacs[5] =  (gamma/(2*beta)-1)*(1.0-alphaf)            
-dirichfacs[6] = -(1.0-alphaf) or 0                          
-dirichfacs[7] =  raleigh damping factor for mass            
-dirichfacs[8] =  raleigh damping factor for stiffness       
-dirichfacs[9] =  dt     
-see phd theses Mok page 165: generalized alfa time integration with prescribed displ.                                    
+dirichfacs[0] = -(1.0-alpham)*(1.0/beta)/(DSQR(dt))
+dirichfacs[1] =  (1.0-alpham)*(1.0/beta)/dt
+dirichfacs[2] =  (1.0-alpham)/(2*beta) - 1
+dirichfacs[3] = -(1.0-alphaf)*(gamma/beta)/dt
+dirichfacs[4] =  (1.0-alphaf)*gamma/beta - 1
+dirichfacs[5] =  (gamma/(2*beta)-1)*(1.0-alphaf)
+dirichfacs[6] = -(1.0-alphaf) or 0
+dirichfacs[7] =  raleigh damping factor for mass
+dirichfacs[8] =  raleigh damping factor for stiffness
+dirichfacs[9] =  dt
+see phd theses Mok page 165: generalized alfa time integration with prescribed displ.
 */
 dirichfacs[0] = -dynvar.constants[0];
 dirichfacs[1] =  dynvar.constants[1];
@@ -605,8 +605,8 @@ dirichfacs[2] =  dynvar.constants[2];
 dirichfacs[3] = -dynvar.constants[3];
 dirichfacs[4] =  dynvar.constants[4];
 dirichfacs[5] =  dynvar.constants[5];
-dirichfacs[6] = -dynvar.constants[6]; 
-dirichfacs[9] =  sdyn->dt; 
+dirichfacs[6] = -dynvar.constants[6];
+dirichfacs[9] =  sdyn->dt;
 if (damp_array>0) {
    dirichfacs[7] =  sdyn->m_damp;
    dirichfacs[8] =  sdyn->k_damp;}
@@ -675,10 +675,10 @@ assemble_vec(actintra,&(actsolv->sysarray_typ[stiff_array]),&(actsolv->sysarray[
 
 /*--------------------- create effective load vector (rhs[0]-fie[2])eff */
 /*
-  Peff = rhs[0] - fie[0] 
-         + M*(-a1*dispi[0]+a2*vel[0]+a3*acc[0]) 
+  Peff = rhs[0] - fie[0]
+         + M*(-a1*dispi[0]+a2*vel[0]+a3*acc[0])
          + D*(-a4*dispi[0]+a5*vel[0]+a6*acc[0]) (if present)
-    
+
     a1 =  (1.0-alpham) * (1.0/beta)/(DSQR(dt))
     a2 = ((1.0-alpham) * (1.0/beta)/(DSQR(dt)))*dt
     a3 =  (1.0-alpham) / (2.0*beta) - 1.0
@@ -695,7 +695,7 @@ pefnln_struct(&dynvar,sdyn,actfield,actsolv,actintra,dispi,vel,acc,work,mass_arr
          constants[6] =  (1.0-alphaf)
          constants[0] =  (1.0-alpham) * (1.0/beta)/(DSQR(dt))
          constants[3] =  (1.0-alphaf) * ((gamma/beta)/dt)
-*/  
+*/
 /*----------------------------------------------------------------------*/
 kefnln_struct(&dynvar,sdyn,actfield,actsolv,actintra,work,stiff_array,mass_array,damp_array);
 /*------------- call for solution of system dispi[0] = Keff^-1 * rhs[0] */
@@ -709,13 +709,13 @@ solserv_copy_vec(&(actsolv->sol[0]),&(actsolv->sol[1]));
 solserv_add_vec(&dispi[0],&(actsolv->sol[1]),1.0);
 
 /*----------------------------- return total displacements to the nodes */
-solserv_result_total(actfield,actintra, 
+solserv_result_total(actfield,actintra,
                    &(actsolv->sol[1]),0,&(actsolv->sysarray[stiff_array]),
 		   &(actsolv->sysarray_typ[stiff_array]));
 
 /*--------------------------------------- make testprintout for contact */
 /*
-if (par.myrank==0 && ioflags.struct_disp_gid) 
+if (par.myrank==0 && ioflags.struct_disp_gid)
 {
    out_gid_sol("displacement",actfield,actintra,counter,0);
    counter++;
@@ -757,8 +757,8 @@ dirichfacs[2] =  dynvar.constants[2];
 dirichfacs[3] = -dynvar.constants[3];
 dirichfacs[4] =  dynvar.constants[4];
 dirichfacs[5] =  dynvar.constants[5];
-dirichfacs[6] =  0.0; 
-dirichfacs[9] =  sdyn->dt; 
+dirichfacs[6] =  0.0;
+dirichfacs[9] =  sdyn->dt;
 if (damp_array>0) {
    dirichfacs[7] =  sdyn->m_damp;
    dirichfacs[8] =  sdyn->k_damp;}
@@ -784,7 +784,7 @@ if (contactflag)
 if (contactflag)
 {
    amzero(&contactforce_a);
-   wall_contact_detection(actfield,actintra,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]),cforce,&augon,&contactdt);   
+   wall_contact_detection(actfield,actintra,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]),cforce,&augon,&contactdt);
 }
 #endif
 
@@ -895,12 +895,12 @@ if (dynvar.dinorm < sdyn->toldisp ||
 {
    itnum++;
    convergence = 1;
-}    
+}
 else
 {
    itnum++;
    if (itnum==sdyn->maxiter && !timeadapt)
-      dserror("No convergence in maxiter steps");   
+      dserror("No convergence in maxiter steps");
    goto iterloop;
 }
 /*----------------------------------------------------------------------*/
@@ -922,7 +922,7 @@ if (contactflag)
       actaug++;
       /* make augmentation for actaug = 0,1,2, where 0 is penalty method */
       if (actaug<5)
-      { 
+      {
          if (par.myrank==0) printf("\nAUGMENTATION %d\n",actaug);fflush(stdout);
          augon = 0;
          goto augstart;
@@ -945,17 +945,17 @@ augon = 0;
 if (contactflag)
 {
   if(actaug >= aug_number) goto augend;
- 
+
   wall_contact_flag(actintra);
   if(aug_number == 1) goto augend;
   if(contact.contactflag == contact_off && actaug == 0) goto augend;
-  
+
   wall_contact_set();
   wall_contact_augmentation(actintra);
   actaug++;
-  
+
   contact.contact_set = NULL;
-  contact.set_size = 0;   
+  contact.set_size = 0;
   goto augstart;
 }
 #endif
@@ -1002,7 +1002,7 @@ dyn_nlnstructupd(actfield,
                  &(actsolv->rhs[1]),/* load vector         at time t    */
                  &(actsolv->rhs[2]),/* load vector         at time t-dt */
                  &vel[0],           /* velocities          at time t    */
-                 &acc[0],           /* accelerations       at time t    */ 
+                 &acc[0],           /* accelerations       at time t    */
                  &work[0],          /* working arrays                   */
                  &work[1],          /* working arrays                   */
                  &work[2]);         /* working arrays                   */
@@ -1014,28 +1014,28 @@ solserv_adddirich(actfield,0,0,6,0,1,1.0,0.0);
 solserv_result_total(actfield,actintra, &acc[0],2,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
 /*-------------------------------------------accel. for prescribed dofs */
 solserv_adddirich(actfield,0,0,7,0,2,1.0,0.0);
-/* 
+/*
 It is a bit messed up, but anyway:
-in the nodes the results are stored the following way: 
+in the nodes the results are stored the following way:
 
 in ARRAY sol.a.da[place][0..numdf-1]:
-place 0  holds total displacements  time t      (free/prescr) 
-place 1  holds velocities           time t      (free/prescr) 
-place 2  holds accels               time t      (free/prescr) 
-place 3  holds displacements        time t-dt   (prescr only) 
-place 4  holds displacements        time t      (prescr only) 
+place 0  holds total displacements  time t      (free/prescr)
+place 1  holds velocities           time t      (free/prescr)
+place 2  holds accels               time t      (free/prescr)
+place 3  holds displacements        time t-dt   (prescr only)
+place 4  holds displacements        time t      (prescr only)
 place 5  holds place 4 - place 3
 place 6  holds velocities           time t      (prescr only)
 place 7  holds accels               time t      (prescr only)
 place 8  is working space
-place 9  holds contact forces       time t      (free only) 
-place 10 holds total displacements  time t-dt   (free/prescr) 
-place 11 holds velocities           time t-dt   (free/prescr) 
-place 12 holds accels               time t-dt   (free/prescr) 
+place 9  holds contact forces       time t      (free only)
+place 10 holds total displacements  time t-dt   (free/prescr)
+place 11 holds velocities           time t-dt   (free/prescr)
+place 12 holds accels               time t-dt   (free/prescr)
 
 in ARRAY sol_increment.a.da[place][0..numdf-1]
-place 0 holds converged incremental displacements (without prescribed dofs) 
-place 1 holds converged internal forces at time t-dt 
+place 0 holds converged incremental displacements (without prescribed dofs)
+place 1 holds converged internal forces at time t-dt
 place 2 holds converged internal forces at time t
 
 in ARRAY sol_residual
@@ -1085,7 +1085,7 @@ if (ioflags.struct_stress_file==1 && ioflags.struct_disp_file==1)
 }
 /*-------------------------- printout results to gid no time adaptivity */
 if (timeadapt==0)
-if (par.myrank==0) 
+if (par.myrank==0)
 {
    if (mod_disp==0)
    if (ioflags.struct_disp_gid==1)
@@ -1127,7 +1127,7 @@ restart_write_nlnstructdyn(sdyn,&dynvar,actfield,actpart,actintra,action,
 if (contactflag)
    s8_contact_restartwrite(actintra,sdyn->step);
 #endif
-}                           
+}
 /*----------------------------------------------------- print time step */
 if (par.myrank==0 && !timeadapt) dyn_nlnstruct_outstep(&dynvar,sdyn,itnum,sdyn->dt);
 /*------------------------------------------ measure time for this step */
@@ -1150,10 +1150,10 @@ solserv_del_vec(&acc,1);
 solserv_del_vec(&fie,3);
 solserv_del_vec(&work,3);
 /*----------------------------------------------------------------------*/
-#ifndef PARALLEL 
+#ifndef PARALLEL
 CCAFREE(actintra);
 #endif
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -1,10 +1,10 @@
 c
-c     Maintainer: Malte Neumann 
-c                 neumann@statik.uni-stuttgart.de 
-c                 http://www.uni-stuttgart.de/ibs/members/neumann/ 
-c                 0711 - 685-6121 
+c     Maintainer: Malte Neumann
+c                 neumann@statik.uni-stuttgart.de
+c                 http://www.uni-stuttgart.de/ibs/members/neumann/
+c                 0711 - 685-6121
 c
-c     ---------------------------------------------------------------  
+c     ---------------------------------------------------------------
 !**********************************************************************
 !
 !
@@ -12,22 +12,22 @@ c     ---------------------------------------------------------------
 !   This Version generated on Thu Mar 16 15:39:34 PST 2000
 !
 !
-! COPYRIGHT 
+! COPYRIGHT
 ! P. R. Amestoy( ENSEEIHT-IRIT/NERSC ), I. S. Duff( CERFACS/RAL ),
-! J. Koster(RAL/Parallab), J.-Y. L'Excellent(CERFACS/ENSEEIHT-IRIT), 
+! J. Koster(RAL/Parallab), J.-Y. L'Excellent(CERFACS/ENSEEIHT-IRIT),
 !             and M. Tuma( CERFACS )
 !
 !  CERFACS      , Toulouse    (France)  (http://www.cerfacs.fr)
 !  ENSEEIHT-IRIT, Toulouse    (France)  (http://www.enseeiht.fr)
 !  NERSC-LBL    , Berkeley CA (USA)     (http://www.nersc.gov)
 !  PARALLAB     , Bergen      (Norway)  (http://www.parallab.uib.no)
-!  RAL          , Oxfordshire (UK)      (http://www.clrc.ac.uk)    
+!  RAL          , Oxfordshire (UK)      (http://www.clrc.ac.uk)
 !
 !
 !      THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY
 !      EXPRESSED OR IMPLIED.  ANY USE IS AT YOUR OWN RISK.
 !
-!  The user shall acknowledge the contribution 
+!  The user shall acknowledge the contribution
 !  (using references [1] and [2]) of this
 !  package in any publication of material dependent upon the use of
 !  the package. The user shall use reasonable endeavours to notify
@@ -41,25 +41,25 @@ c     ---------------------------------------------------------------
 !  extending the capabilities or enhancing the performance of this
 !  package.
 !
-!  This package and modified version of this package may 
+!  This package and modified version of this package may
 !  not be sold or redistributed.
 !
-!  One may make copies of the package or modify it 
-!  for their use provided that the copies, modified or otherwise, 
-!  are not sold or distributed, and are used under the same 
-!  terms and conditions. 
+!  One may make copies of the package or modify it
+!  for their use provided that the copies, modified or otherwise,
+!  are not sold or distributed, and are used under the same
+!  terms and conditions.
 !
 !  [1] Amestoy, Duff and  L'Excellent (1998),
 !      Multifrontal parallel distributed symmetric and unsymmetric solvers,
 !      to appear in Comput. Methods in Appl. Mech. Eng. (1999).
-!  
+!
 !  [2] Amestoy, Duff, Koster and  L'Excellent (1999),
 !      A fully asynchronous multifrontal solver using distributed
 !      dynamic scheduling, Technical Report ENSEEIHT-IRIT, RT/APO/99/2.
 !      Submitted to SIAM Journal of Matrix Analysis and Appl.
 !
 !
-!  None of the comments from the Copyright notice up to and 
+!  None of the comments from the Copyright notice up to and
 !  including this one shall be removed or altered in any way.
 !
 !**********************************************************************

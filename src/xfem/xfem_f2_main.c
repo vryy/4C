@@ -10,12 +10,12 @@ Maintainer: Baris Irhan
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_XFEM 
+#ifdef D_XFEM
 #include "../headers/standardtypes.h"
 #include "../fluid2/fluid2_prototypes.h"
 #include "xfem_prototypes.h"
-/*! 
-\addtogroup XFEM 
+/*!
+\addtogroup XFEM
 *//*! @{ (documentation module open)*/
 
 
@@ -26,7 +26,7 @@ Maintainer: Baris Irhan
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA            *alldyn;   
+extern ALLDYNA            *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -46,7 +46,7 @@ extern struct _FIELD      *field;
 
 <pre>                                                            irhan 05/04
 </pre>
-\param  *actpart	 PARTITION    (i)	    
+\param  *actpart	 PARTITION    (i)
 \param	*actintra	 INTRA        (i)
 \param	*ele		 ELEMENT      (i)    actual element
 \param	*estif_global	 ARRAY        (o)    element stiffness matrix
@@ -64,22 +64,22 @@ extern struct _FIELD      *field;
 void xfem_fluid2(
   PARTITION   *actpart,
   INTRA       *actintra,
-  ELEMENT     *ele,             
-  ARRAY       *estif_global,   
-  ARRAY       *emass_global,   
-  ARRAY       *etforce_global, 
-  ARRAY       *eiforce_global, 
-  ARRAY       *edforce_global, 
+  ELEMENT     *ele,
+  ARRAY       *estif_global,
+  ARRAY       *emass_global,
+  ARRAY       *etforce_global,
+  ARRAY       *eiforce_global,
+  ARRAY       *edforce_global,
   CALC_ACTION *action,
   INT         *hasdirich,
   INT         *hasext,
-  CONTAINER   *container       
+  CONTAINER   *container
   )
 {
   static INT                 viscstr;
-  static FLUID_DATA         *data;      
+  static FLUID_DATA         *data;
   static FLUID_DYNAMIC      *fdyn;
-  
+
 #ifdef DEBUG
   dstrc_enter("xfem_fluid2");
 #endif
@@ -94,7 +94,7 @@ void xfem_fluid2(
         data  = alldyn[genprob.numff].fdyn->data;
         viscstr = alldyn[genprob.numff].fdyn->viscstr;
         xfem_f2_intg(data);
-        /* init the element routines */   
+        /* init the element routines */
         xfem_f2_calele(
           data,NULL,estif_global,emass_global,
           etforce_global,eiforce_global,edforce_global,
@@ -114,12 +114,12 @@ void xfem_fluid2(
         dserror("action unknown\n");
         break;
   }
-  
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  return; 
+  return;
 }  /* end of xfem_f2_main */
 /*! @} (documentation module close)*/
 #endif

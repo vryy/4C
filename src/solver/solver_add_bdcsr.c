@@ -14,25 +14,25 @@ Maintainer: Michael Gee
 #include "../solver/solver.h"
 /*----------------------------------------------------------------------*
  | global dense matrices for element routines             m.gee 9/01    |
- | (defined in global_calelm.c, so they are extern here)                |                
+ | (defined in global_calelm.c, so they are extern here)                |
  *----------------------------------------------------------------------*/
 extern struct _ARRAY estif_global;
 extern struct _ARRAY emass_global;
-/*! 
-\addtogroup MLPCG 
+/*!
+\addtogroup MLPCG
 *//*! @{ (documentation module open)*/
 /*!---------------------------------------------------------------------
-\brief assemble element matrices to compressed sparse row matrix                                              
+\brief assemble element matrices to compressed sparse row matrix
 
-<pre>                                                        m.gee 9/02 
+<pre>                                                        m.gee 9/02
 assemble element matrices to compressed sparse row matrix
 </pre>
-\param actsolv    SOLVAR*      (i)   general structure of solver informations                   
-\param actintra   INTRA*       (i)   the intra-communicator of this field                  
-\param bdcsr      DBCSR_ROOT*  (i)   the dbcsr matrix                 
+\param actsolv    SOLVAR*      (i)   general structure of solver informations
+\param actintra   INTRA*       (i)   the intra-communicator of this field
+\param bdcsr      DBCSR_ROOT*  (i)   the dbcsr matrix
 \param sol        DIST_VECTOR* (o)   the distributed solution vector
 \param rhs        DIST_VECTOR* (i)   the distributed right hand side vector
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void  add_bdcsr(struct _PARTITION     *actpart,
@@ -62,7 +62,7 @@ INT        *update;                   /* csr-vector update see AZTEC manual */
 INT        *ja;                       /*    "       ja           "         */
 INT        *ia;                       /*    "       ia           "         */
 DOUBLE     *a1,*a2;                   /*    "       a            "         */
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("add_bdcsr");
 #endif
 /*----------------------------------------------------------------------*/
@@ -90,7 +90,7 @@ for (i=0; i<actele->numnp; i++)
    for (j=0; j<actele->node[i]->numdf; j++)
    {
       lm[counter]    = actele->node[i]->dof[j];
-#ifdef PARALLEL 
+#ifdef PARALLEL
       owner[counter] = actele->node[i]->proc;
 #endif
       counter++;
@@ -103,7 +103,7 @@ for (i=0; i<nd; i++)
 {
    ii = lm[i];
    /*-------------------------------------------- loop only my own rows */
-#ifdef PARALLEL 
+#ifdef PARALLEL
    if (owner[i]!=myrank) continue;
 #endif
    /*------------------------------------- check for boundary condition */
@@ -130,7 +130,7 @@ for (i=0; i<nd; i++)
    } /* end loop over j */
 }/* end loop over i */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -36,7 +36,7 @@ extern struct _GENPROB     genprob;
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -75,18 +75,18 @@ DOUBLE        a1,a2,a3,thick,scal,sdc;
 INT           tot_numnp;
 #endif
 
-/* 
+/*
    gausspoint permutation :
    On the Gausspoint number i in Gid, the results of Carats GP number gausspermn[i]
    have to be written
-*/   
+*/
 
 INT           gaussperm4[4] = {3,1,0,2};
 /*INT           gaussperm8[8] = {0,4,2,6,1,5,3,7};*/
 INT           gaussperm9[9] = {8,2,0,6,5,1,3,7,4};
 /*INT           gaussperm27[27] = {0,9,18,3,12,21,6,15,24,1,10,19,4,13,22,7,16,25,2,11,20,5,14,23,8,17,26};*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("out_gid_soldyn");
 #endif
 /*----------------------------------------------------------------------*/
@@ -109,7 +109,7 @@ if (strncmp(string,"displacement",stringlenght)==0)
 {
    resulttype        = "VECTOR";
    resultplace       = "ONNODES";
-   gpset             = ""; 
+   gpset             = "";
    rangetable        = actgid->standardrangetable;
    ncomponent        = 3;
    componentnames[0] = "x-displ";
@@ -159,7 +159,7 @@ if (strncmp(string,"displacement",stringlenght)==0)
    }
    else
 #endif
-#endif   
+#endif
    for (i=0; i<actfield->dis[0].numnp; i++)
    {
       actnode = &(actfield->dis[0].node[i]);
@@ -187,7 +187,7 @@ if (strncmp(string,"contact",stringlenght)==0)
 {
    resulttype        = "VECTOR";
    resultplace       = "ONNODES";
-   gpset             = ""; 
+   gpset             = "";
    rangetable        = actgid->standardrangetable;
    ncomponent        = 3;
    componentnames[0] = "x-con";
@@ -304,7 +304,7 @@ if (strncmp(string,"stress",stringlenght)==0)
                              forces[2][gaussperm4[j]],
                              forces[4][gaussperm4[j]],
                              forces[3][gaussperm4[j]]);
- 
+
       }
       fprintf(out,"END VALUES\n");
       /*--- print the linear-in-thickness direction forces */
@@ -342,7 +342,7 @@ if (strncmp(string,"stress",stringlenght)==0)
                              forces[7] [gaussperm4[j]],
                              forces[11][gaussperm4[j]],
                              forces[10][gaussperm4[j]]);
- 
+
       }
       fprintf(out,"END VALUES\n");
    }
@@ -385,7 +385,7 @@ if (strncmp(string,"stress",stringlenght)==0)
                              forces[2][gaussperm9[j]],
                              forces[4][gaussperm9[j]],
                              forces[3][gaussperm9[j]]);
- 
+
       }
       fprintf(out,"END VALUES\n");
       /*--- print the linear-in-thickness direction forces */
@@ -416,7 +416,7 @@ if (strncmp(string,"stress",stringlenght)==0)
                              forces[7] [gaussperm9[j]],
                              forces[11][gaussperm9[j]],
                              forces[10][gaussperm9[j]]);
- 
+
       }
       fprintf(out,"END VALUES\n");
    }
@@ -467,7 +467,7 @@ if (strncmp(string,"stress",stringlenght)==0)
                        );
       }
       fprintf(out,"END VALUES\n");
-      
+
    }
    /*-------------------now go through the meshes and print the results */
    /*===============================wall1 element with 3x3 gausspoints */
@@ -511,13 +511,13 @@ if (strncmp(string,"stress",stringlenght)==0)
                      );
       }
       fprintf(out,"END VALUES\n");
-/*----------------------------------------------------------------------*/      
+/*----------------------------------------------------------------------*/
    }
-#endif   
-#ifdef D_INTERF   
+#endif
+#ifdef D_INTERF
    /* STRESS output for INTERFACE */
    if (actgid->is_interf_22)
-   { 
+   {
      /* ------------------------------------------------ write stresses */
       ngauss=4;
       resulttype        = "MATRIX";
@@ -551,7 +551,7 @@ if (strncmp(string,"stress",stringlenght)==0)
         break;
         default:
         break;
-      }    
+      }
       fprintf(out,"VALUES\n");
       for (i=0; i<actfield->dis[0].numele; i++)
       {
@@ -607,7 +607,7 @@ if (strncmp(string,"velocity",stringlenght)==0)
 {
    resulttype        = "VECTOR";
    resultplace       = "ONNODES";
-   gpset             = ""; 
+   gpset             = "";
    rangetable        = actgid->standardrangetable;
    ncomponent        = 3;
    componentnames[0] = "x-vel";
@@ -658,7 +658,7 @@ if (strncmp(string,"velocity",stringlenght)==0)
 } /* end of (strncmp(string,"velocity",stringlenght)==0) */
 /*----------------------------------------------------------------------*/
 fflush(out);
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -7,7 +7,7 @@
  contains the routine 'w1_vec_switch' which changes to rows of a vector
  contains the routine 'w1_matrix_switch' which changes to rows and columns
        of a square matrix
- 
+
 <pre>
 Maintainer: Andrea Hund
             hund@statik.uni-stuttgart.de
@@ -21,12 +21,12 @@ Maintainer: Andrea Hund
 #include "wall1.h"
 #include "wall1_prototypes.h"
 
-/*! 
-\addtogroup WALL1 
+/*!
+\addtogroup WALL1
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief blowing up plane stress/strain conditions                                       
+\brief blowing up plane stress/strain conditions
 
 <pre>                                sh 7/02 modified by         sh 03/04
 This routine performs the blowing up of plane stress/strain conditions
@@ -43,20 +43,20 @@ for a 3D-material formulation
 \param  DOUBLE       strain[4]    (o)  strains (extended from) [11,22,12,33]
 
 \warning  NOTE: everything in here is with sorting [11,22,12,33]
-\return void                                               
+\return void
 \sa calling: ---; called by: w1_mat_plast_mises_3D()   [w1_mat_plast_mises3D.c]
                              w1_mat_plast_epc3D()      [w1_mat_plast_epc3D.c]
 
 *----------------------------------------------------------------------*/
 void w1mat_trans_up (DOUBLE     ym,
                      DOUBLE     pv,
-                     ELEMENT   *ele,                                        
+                     ELEMENT   *ele,
                      WALL_TYPE  wtype,
                      DOUBLE   **bop,
                      DOUBLE    *gop,
                      DOUBLE    *alpha,
                      INT        ip,
-                     DOUBLE     strain[4]) 
+                     DOUBLE     strain[4])
 {
 /*----------------------------------------------------------------------*/
 INT i;
@@ -67,23 +67,23 @@ DOUBLE di[4];       /*components d41,d42,d43,d44 of th const. tensor from
                       last iteration step*/
 WALL_TYPE local_wtype;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1mat_trans_up");
 #endif
 /*------------ original global elastic matrix for current point -> D ---*/
   /* look at horst's work (pp.30): in case of plane stress ->
-     switch to plane strain and condense stress and material 
+     switch to plane strain and condense stress and material
      tensor at the end */
   local_wtype=plane_strain;
-/*--------------------------------- compute displacement derivatives ---*/        
-  w1_disd (ele,bop,gop,alpha,wtype,disd) ;                  
+/*--------------------------------- compute displacement derivatives ---*/
+  w1_disd (ele,bop,gop,alpha,wtype,disd) ;
 /*------------------------------------- get actual strains -> strain ---*/
   w1_eps (disd,local_wtype,strain);
 
 
-/*extend the strain vector by eps_zz if plane_stress */  
-if(wtype==plane_stress)      
-{  
+/*extend the strain vector by eps_zz if plane_stress */
+if(wtype==plane_stress)
+{
   for (i=0; i<4; i++)
   {
     sigi[i]   = ele->e.w1->elewa[0].ipwa[ip].sigi[i];
@@ -95,10 +95,10 @@ if(wtype==plane_stress)
     w1iwadi (ym, pv, di);
   }
   w1de33 (sigi,epsi,di,strain);
-} 
+}
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 /*----------------------------------------------------------------------*/
@@ -107,10 +107,10 @@ dstrc_exit();
 
 
 /*!----------------------------------------------------------------------
-\brief kondense 3D conditions to plane stress/strain conditions                                   
+\brief kondense 3D conditions to plane stress/strain conditions
 
 <pre>                                sh 7/02 modified by         sh 03/04
-This routine condenses stresses and D from 3D to 
+This routine condenses stresses and D from 3D to
 plane stress/strain conditions
 </pre>
 \param  DOUBLE     **d           (i/o) to be condensed
@@ -126,21 +126,21 @@ plane stress/strain conditions
 \param  DOUBLE      *qn           (i)  qn [11,22,12,33] to be condensed
 
 \warning NOTE: everything in here is with sorting [11,22,12,33]
-\return void                                               
+\return void
 \sa calling: ---; called by: w1_mat_plast_mises_3D()   [w1_mat_plast_mises3D.c]
                              w1_mat_plast_epc3D()      [w1_mat_plast_epc3D.c]
 
 *----------------------------------------------------------------------*/
-void w1mat_trans_down (DOUBLE   **d, 
+void w1mat_trans_down (DOUBLE   **d,
                        ELEMENT   *ele,
                        WALL_TYPE  wtype,
                        INT        ip,
                        INT        yipc,
-                       DOUBLE    *stressc, 
+                       DOUBLE    *stressc,
                        DOUBLE    *sig,
                        DOUBLE    *eps,
                        DOUBLE    *stress,
-                       DOUBLE    *strain,  
+                       DOUBLE    *strain,
                        DOUBLE    *qn)
 {
 /*----------------------------------------------------------------------*/
@@ -149,12 +149,12 @@ DOUBLE tau[4];
 DOUBLE tauc[4];
 DOUBLE qnc[4];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1mat_trans_down");
 #endif
 /*----------------------------------------------------------------------*/
 /*Initialize*/
-for (i=0; i<4; i++) 
+for (i=0; i<4; i++)
 {
   tau[i]    = 0.0;
   tauc[i]   = 0.0;
@@ -182,7 +182,7 @@ if (yipc>0)     /*stresses are available from last update*/
     {
       strain[i] = eps[i];
     }
-  }  
+  }
 }
 else /*(yipc < 0)*/
 {
@@ -203,10 +203,10 @@ else /*(yipc < 0)*/
 for (i=0 ; i<4; i++)
 {
   stressc[i] = tauc[i] + qnc[i];
-}  
+}
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 /*----------------------------------------------------------------------*/
@@ -226,7 +226,7 @@ void w1_vec_switch(DOUBLE *vec,      /* vector do be modified           */
 {
 DOUBLE help;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_vec_switch");
 #endif
 /*----------------------------------------------------------------------*/
@@ -234,7 +234,7 @@ help   = vec[a];
 vec[a] = vec[b];
 vec[b] = help;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -258,7 +258,7 @@ void w1_matrix_switch(DOUBLE **mat,   /* matrix do be modified          */
 DOUBLE help;
 INT i;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_matrix_switch");
 #endif
 /*----------------------------------------------------------------------*/
@@ -276,7 +276,7 @@ dstrc_enter("w1_matrix_switch");
     mat[b][i] = help;
   }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

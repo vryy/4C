@@ -1,30 +1,30 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 'wge_inp' which reads the 
+\brief contains the routine 'wge_inp' which reads the
        gradient enhanced wall element
 
 *----------------------------------------------------------------------*/
 #ifdef D_WALLGE
 #include "../headers/standardtypes.h"
 #include "wallge.h"
-#include "wallge_prototypes.h" 
+#include "wallge_prototypes.h"
 
-/*! 
+/*!
 \addtogroup WALLGE
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
 \brief reads an gradient enhanced wall element from the input file
 
-<pre>                                                              mn 05/03 
+<pre>                                                              mn 05/03
 This routine reads an gradient enhanced wall element from the input file
 
 </pre>
 \param *ele  ELEMENT  (o)   the element
 
 \warning buffer[50] is not needed locally
-\return void                                               
-\sa caling:    ---; 
+\return void
+\sa caling:    ---;
     called by: inp_struct_field()
 
 *----------------------------------------------------------------------*/
@@ -33,15 +33,15 @@ void wge_inp(ELEMENT *ele)
 INT  i;
 INT  ierr=0;
 char buffer[50];
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("wge_inp");
 #endif
-/*------------------------------------------------ allocate the element */      
+/*------------------------------------------------ allocate the element */
 ele->e.wallge = (WALLGE*)CCACALLOC(1,sizeof(WALLGE));
 if (ele->e.wallge==NULL) dserror("Allocation of element failed");
 /*---------------------------------------------- read elements topology */
 frchk("QUAD4",&ierr);
-if (ierr==1) 
+if (ierr==1)
 {
    ele->distyp = quad4;
    ele->numnp=4;
@@ -51,7 +51,7 @@ if (ierr==1)
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
 }
 frchk("QUAD8",&ierr);
-if (ierr==1) 
+if (ierr==1)
 {
    ele->distyp = quad8;
    ele->numnp=8;
@@ -61,7 +61,7 @@ if (ierr==1)
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
 }
 frchk("QUAD9",&ierr);
-if (ierr==1) 
+if (ierr==1)
 {
    ele->distyp = quad9;
    ele->numnp=9;
@@ -99,7 +99,7 @@ if (ierr)
 }
 if (ierr!=1) ele->e.wallge->stresstyp = wge_xy;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

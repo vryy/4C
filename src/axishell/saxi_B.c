@@ -1,6 +1,6 @@
 /*!-----------------------------------------------------------------------
 \file
-\brief contains the routine 'saxi_B' which calculates the linear operator 
+\brief contains the routine 'saxi_B' which calculates the linear operator
 matrix for a symmetric shell element at point xsi=s/l
 
 <pre>
@@ -17,14 +17,14 @@ Maintainer: Malte Neumann
 #include "axishell.h"
 #include "axishell_prototypes.h"
 
-/*! 
+/*!
 \addtogroup AXISHELL
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief calculate operator matrix at point xsi=s/l                                           
+\brief calculate operator matrix at point xsi=s/l
 
-<pre>                                                             mn 05/03 
+<pre>                                                             mn 05/03
 This routine calcuates the operator matrix B at the given point xsi=s/l
 for an axisymmetric shell element.
 
@@ -37,7 +37,7 @@ for an axisymmetric shell element.
 \param   sina    DOUBLE  (i)   the sine of the angle of the current element
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: saxi_static_ke(), saxi_cal_stress()
 
 *----------------------------------------------------------------------*/
@@ -53,7 +53,7 @@ void saxi_B(
 
   INT i,j;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("saxi_B");
 #endif
 
@@ -66,7 +66,7 @@ void saxi_B(
   }
 
   /* compute operator B  */
-  /* compare with Schalen-Skriptum S.11.8  */  
+  /* compare with Schalen-Skriptum S.11.8  */
   B[0][0] = (-3.0+4.0*xsi)/dl;
   B[0][3] = (-1.0+4.0*xsi)/dl;
   B[1][0] = (1.0-3.0*xsi+2.0*xsi*xsi)*cosa/r;
@@ -86,7 +86,7 @@ void saxi_B(
   B[0][6] = (4.0-8.0*xsi)/dl;
   B[1][6] = 4.0*xsi*(1.0-xsi)*cosa/r;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 

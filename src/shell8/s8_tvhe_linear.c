@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Michael Gee
@@ -18,7 +18,7 @@ Maintainer: Michael Gee
  *----------------------------------------------------------------------*/
 /*
 C.......................................................................
-C!    METRIK DES SCHALENRAUMS 
+C!    METRIK DES SCHALENRAUMS
 c!    gmkovc wird hier erneut berechnet, um die Vernachlaessigung der
 c!    in e3 quadratischen Anteile zu beruecksichtigen, d.h.
 c!    gmkovc_ij ungleich gkovc_i*gkovc_j                                         .
@@ -37,7 +37,7 @@ INT i,j,k;
 DOUBLE heps[3][3];
 DOUBLE skalar;
 DOUBLE det_dummy;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_tvhe_linear");
 #endif
 /*----------------------------------------------------------------------*/
@@ -72,7 +72,7 @@ math_inv3(gmkonc,&det_dummy);
 if (det_dummy <= 0.0) det_dummy = 1.0E-08;
 *detc = sqrt(det_dummy);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

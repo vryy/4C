@@ -27,28 +27,28 @@ extract nodal coordinate and solution data from element
 </pre>
 
 *----------------------------------------------------------------------*/
-void ls2_calset( 
-  ELEMENT         *ele,     
+void ls2_calset(
+  ELEMENT         *ele,
   DOUBLE         **xyze,
-  DOUBLE          *lset00,    
+  DOUBLE          *lset00,
   DOUBLE          *lset01
   )
 {
   INT      i;
   NODE    *actnode;
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_enter("ls2_calset");
 #endif
 /*----------------------------------------------------------------------*/
-  
+
   /* set element coordinates */
   for(i=0; i<ele->numnp; i++)
   {
     xyze[0][i]=ele->node[i]->x[0];
     xyze[1][i]=ele->node[i]->x[1];
   }
-  
+
   /*--------------------------------------------------------------------*
    | position of the different solutions:                               |
    | node->sol_incement: solution history used for calculations         |
@@ -60,18 +60,18 @@ void ls2_calset(
   for(i=0; i<ele->numnp; i++)
   {
     actnode=ele->node[i];
-    /* nodal values of levelset function at time step (n  ) */      
+    /* nodal values of levelset function at time step (n  ) */
     lset00[i]=actnode->sol_increment.a.da[0][0];
-    /* nodal values of levelset function at time step (n+1) */      	
+    /* nodal values of levelset function at time step (n+1) */
     lset01[i]=actnode->sol_increment.a.da[1][0];
   }
-  
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
-  return; 
+
+  return;
 } /* end of ls2_calset */
 
 
@@ -84,7 +84,7 @@ extract nodal solution data from element
 </pre>
 
 *----------------------------------------------------------------------*/
-void ls2_calset1( 
+void ls2_calset1(
   ELEMENT         *ele,
   INT              pos,
   DOUBLE          *lset
@@ -92,12 +92,12 @@ void ls2_calset1(
 {
   INT      i;
   NODE    *actnode;
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_enter("ls2_calset1");
 #endif
 /*----------------------------------------------------------------------*/
-  
+
   /*--------------------------------------------------------------------*
    | position of the different solutions:                               |
    | node->sol_incement: solution history used for calculations         |
@@ -111,16 +111,16 @@ void ls2_calset1(
     /*
      * nodal values of levelset function at time step
      * (n+1) if pos==1, (n) if pos==0
-     */      	
+     */
     lset[i]=actnode->sol_increment.a.da[pos][0];
   }
-  
+
 /*---------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
-  return; 
+
+  return;
 } /* end of ls2_calset1 */
 /*! @} (documentation module close)*/
 #endif

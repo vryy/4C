@@ -16,32 +16,32 @@ Maintainer: Michael Gee
 #include "s8contact.h"
 #include "shell8.h"
 
-/*! 
-\addtogroup CONTACTS8 
+/*!
+\addtogroup CONTACTS8
 *//*! @{ (documentation module open)*/
 
 
 /*!----------------------------------------------------------------------
 \brief the contact main structure
 
-<pre>                                                         m.gee 2/03    
+<pre>                                                         m.gee 2/03
 defined in s8_contact_init.c
 </pre>
 
 *----------------------------------------------------------------------*/
 extern struct _SHELLCONTACT shellcontact;
 /*!---------------------------------------------------------------------
-\brief make orthogonal projection onto element                                              
+\brief make orthogonal projection onto element
 
-<pre>                                                        m.gee 2/03 
+<pre>                                                        m.gee 2/03
 </pre>
 \param actcnode    SHELLNODE*    (i)   the active node
 \param ssurf       INT*          (i)   indicates top or bottom of slave node
 \param msurf       INT*          (i)   indicates top or bottom of closest master node
-\param actele      ELEMENT*      (i)   element to be projected on 
+\param actele      ELEMENT*      (i)   element to be projected on
 \param xires       DOUBLE*       (o)   local coordinates of projection point
 \param success     INT*          (o)   indicates wether projection is inside element
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void s8_contact_orthproject(SHELLNODE  *actcnode,
@@ -73,7 +73,7 @@ DOUBLE       xbarxi[3],xbareta[3],xbarxieta[3];
 DOUBLE       a3barxi[3],a3bareta[3],a3barxieta[3];
 DOUBLE       F1,F2,F1xi,F1eta,F2xi,F2eta,detF;
 INT          second;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_contact_orthproject");
 #endif
 /*----------------------------------------------------------------------*/
@@ -91,10 +91,10 @@ for (k=0; k<iel; k++)
    a3c[1][k] = a3r[1][k] + actele->node[k]->sol.a.da[0][4];
    a3c[2][k] = a3r[2][k] + actele->node[k]->sol.a.da[0][5];
 
-   xr[0][k]  = actele->node[k]->x[0];   
-   xr[1][k]  = actele->node[k]->x[1];   
-   xr[2][k]  = actele->node[k]->x[2];   
-   
+   xr[0][k]  = actele->node[k]->x[0];
+   xr[1][k]  = actele->node[k]->x[1];
+   xr[2][k]  = actele->node[k]->x[2];
+
    xc[0][k]  = xr[0][k] + actele->node[k]->sol.a.da[0][0];
    xc[1][k]  = xr[1][k] + actele->node[k]->sol.a.da[0][1];
    xc[2][k]  = xr[2][k] + actele->node[k]->sol.a.da[0][2];
@@ -210,13 +210,13 @@ for (iter=0; iter<80; iter++)
       F2eta -=                xbareta[i]  * xbareta[i];
       F2eta -= 2.0 * thetam * xbareta[i]  * a3bareta[i];
       F2eta -=                a3bareta[i] * a3bareta[i];
-      
+
    }
    /*---------------------------------- solution of the equation system */
    detF = F1xi * F2eta - F1eta * F2xi;
 /*   if (detF <= 0.0) printf("Determinant smaller zero detF = %20.10E\n",detF);*/
    detF = 1.0/detF;
-   
+
    dxi[0] = detF * (F2eta*(-F1) + F1eta *   F2 );
    dxi[1] = detF * (F2xi *  F1  + F1xi  * (-F2));
 
@@ -225,9 +225,9 @@ for (iter=0; iter<80; iter++)
 
    l2 = dxi[0]*dxi[0] + dxi[1]*dxi[1];
    l2 = sqrt(l2);
-   
+
    if (l2 < EPS12) break;
-   
+
 }/* end of  for (iter=0; iter<80; iter++)  */
 /*------------------------ check whether projection point is in element */
 if ( -1.01  < xi[0] && xi[0] < 1.01) *success = 1;
@@ -249,7 +249,7 @@ if (-2.0  < xi[0] && xi[0] < 2.0 &&
 /*   printf("Local projection finally failed: L2 %20.10E\n",l2);
    printf("try another starting point\n");
    fflush(stdout);*/
-   if (second<10) 
+   if (second<10)
    {
       xi[0] = 0.5;
       xi[1] = 0.5;
@@ -281,39 +281,39 @@ if (*success)
 else
    *distance = VERYLARGEREAL;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of s8_contact_orthproject */
- 
+
 
 
 
 /*!---------------------------------------------------------------------
-\brief evaluate shape functions at a given point                                              
+\brief evaluate shape functions at a given point
 
-<pre>                                                        m.gee 2/03 
+<pre>                                                        m.gee 2/03
 </pre>
 \param funct    DOUBLE*          (o)   values of shape functions at xi
 \param deriv    DOUBLE**         (o)   derivatives of shape functions at xi
 \param deriv2   DOUBLE**         (o)   2nd derivatives of shape functions at xi
 \param r        DOUBLE           (i)   xi
-\param s        DOUBLE           (i)   eta 
-\return void                                               
+\param s        DOUBLE           (i)   eta
+\return void
 
 ------------------------------------------------------------------------*/
-void s8_contact_functderiv(DOUBLE     funct[], 
-                           DOUBLE    deriv[][4], 
+void s8_contact_functderiv(DOUBLE     funct[],
+                           DOUBLE    deriv[][4],
                            DOUBLE    deriv2[],
-                           DOUBLE      r, 
+                           DOUBLE      r,
                            DOUBLE      s)
 {
 const DOUBLE   q12 = 1.0/2.0;
 const DOUBLE   q14 = 1.0/4.0;
 const DOUBLE   q16 = 1.0/6.0;
 DOUBLE         rp,rm,sp,sm;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_contact_functderiv");
 #endif
 /*----------------------------------------------------------------------*/
@@ -338,23 +338,23 @@ deriv2[1]=-q14;
 deriv2[2]= q14;
 deriv2[3]=-q14;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of s8_contact_functderiv */
 
 /*!---------------------------------------------------------------------
-\brief evaluate allmetrics at a given point                                              
+\brief evaluate allmetrics at a given point
 
-<pre>                                                        m.gee 2/03 
+<pre>                                                        m.gee 2/03
 </pre>
 \param funct    DOUBLE*          (o)   values of shape functions at xi
 \param deriv    DOUBLE**         (o)   derivatives of shape functions at xi
 \param deriv2   DOUBLE**         (o)   2nd derivatives of shape functions at xi
 \param r        DOUBLE           (i)   xi
-\param s        DOUBLE           (i)   eta 
-\return void                                               
+\param s        DOUBLE           (i)   eta
+\return void
 
 ------------------------------------------------------------------------*/
 void s8_contact_metrics(DOUBLE x[][4],
@@ -370,7 +370,7 @@ void s8_contact_metrics(DOUBLE x[][4],
 {
 INT            i,j,k,idim,ialpha,inode;
 DOUBLE         det;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_contact_metrics");
 #endif
 /*----------------------------------------------------------------------*/
@@ -395,7 +395,7 @@ for (idim=0; idim<3; idim++)
    for (inode=0; inode<iel; inode++)
    {
       gkov[idim][2] +=
-      
+
          funct[inode] * a3[idim][inode];
    }
 }
@@ -415,10 +415,10 @@ for (i=0; i<3; i++)
    for (j=i; j<3; j++)
    {
       gmkov[i][j]=0.0;
-      for (k=0; k<3; k++) 
+      for (k=0; k<3; k++)
       gmkov[i][j] += gkov[k][i]*gkov[k][j];
    }
-}   
+}
       gmkov[1][0] = gmkov[0][1];
       gmkov[2][0] = gmkov[0][2];
       gmkov[2][1] = gmkov[1][2];
@@ -427,7 +427,7 @@ for (i=0; i<3; i++)
 for (j=0; j<3; j++) gmkon[i][j] = gmkov[i][j];
 s8_contact_inv3(gmkon,&det);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -436,11 +436,11 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief invert 3x3 matrix                                              
+\brief invert 3x3 matrix
 
-<pre>                                                        m.gee 2/03 
+<pre>                                                        m.gee 2/03
 </pre>
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void s8_contact_inv3(DOUBLE a[][3], DOUBLE *det)
@@ -448,7 +448,7 @@ void s8_contact_inv3(DOUBLE a[][3], DOUBLE *det)
 INT i,j;
 DOUBLE b00,b01,b02,b10,b11,b12,b20,b21,b22;
 DOUBLE detinv;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_contact_inv3");
 #endif
 /*----------------------------------------------------------------------*/
@@ -456,7 +456,7 @@ dstrc_enter("s8_contact_inv3");
 
    a[0]    = [ hole array as a vector ]
    a[1..n] = ptr to start of this row in the vector above
-*/   
+*/
 b00 = a[0][0];
 b01 = a[0][1];
 b02 = a[0][2];
@@ -482,24 +482,24 @@ detinv = 1.0/(*det);
 for (i=0; i<3; i++)
 for (j=0; j<3; j++) a[i][j] *= detinv;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of s8_contact_inv3 */
 /*!---------------------------------------------------------------------
-\brief transpose matrix                                              
+\brief transpose matrix
 
-<pre>                                                        m.gee 2/03 
+<pre>                                                        m.gee 2/03
 </pre>
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void s8_contact_trans(DOUBLE a[][3], INT n)
 {
 INT i,j;
 DOUBLE change;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_contact_trans");
 #endif
 /*----------------------------------------------------------------------*/
@@ -513,41 +513,41 @@ for (i=0; i<n; i++)
    }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of s8_contact_trans */
 /*!---------------------------------------------------------------------
-\brief evaluate da                                              
+\brief evaluate da
 
-<pre>                                                        m.gee 2/03 
+<pre>                                                        m.gee 2/03
 </pre>
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void s8_contact_deta(DOUBLE gkov[][3], DOUBLE *deta)
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_contact_deta");
 #endif
 /*----------------------------------------------------------------------*/
 *deta = (gkov[0][0]*gkov[1][1] - gkov[1][0]*gkov[0][1])*(gkov[0][0]*gkov[1][1] - gkov[1][0]*gkov[0][1])
-      + (gkov[2][0]*gkov[0][1] - gkov[2][1]*gkov[0][0])*(gkov[2][0]*gkov[0][1] - gkov[2][1]*gkov[0][0]) 
+      + (gkov[2][0]*gkov[0][1] - gkov[2][1]*gkov[0][0])*(gkov[2][0]*gkov[0][1] - gkov[2][1]*gkov[0][0])
       + (gkov[1][0]*gkov[2][1] - gkov[2][0]*gkov[1][1])*(gkov[1][0]*gkov[2][1] - gkov[2][0]*gkov[1][1]);
 *deta = sqrt(*deta);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of s8_contact_deta */
 /*!---------------------------------------------------------------------
-\brief make a guess for the time till contact                                              
+\brief make a guess for the time till contact
 
-<pre>                                                        m.gee 3/03 
+<pre>                                                        m.gee 3/03
 </pre>
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void s8_contact_timeguess(SHELLNODE *actcnode,
@@ -562,7 +562,7 @@ DOUBLE       funct[4];
 DOUBLE       deriv[2][4];
 DOUBLE       deriv2[4];
 DOUBLE       vs[3],vm[3],vrel[3],v;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_contact_timeguess");
 #endif
 /*----------------------------------------------------------------------*/
@@ -597,7 +597,7 @@ v = -v;
 if (*dt < EPS12) *dt = EPS12;
 /*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -605,7 +605,7 @@ return;
 
 
 
- 
+
 
 /*! @} (documentation module close)*/
 

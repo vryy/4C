@@ -22,15 +22,15 @@ Maintainer: Michael Gee
 INT cmp_int(const void *a, const void *b );
 DOUBLE cmp_double(const void *a, const void *b );
 
-/*! 
-\addtogroup MLPCG 
+/*!
+\addtogroup MLPCG
 *//*! @{ (documentation module open)*/
 
- 
-/*!---------------------------------------------------------------------
-\brief calculate the mask of a dbcsr matrix                                              
 
-<pre>                                                        m.gee 6/02 
+/*!---------------------------------------------------------------------
+\brief calculate the mask of a dbcsr matrix
+
+<pre>                                                        m.gee 6/02
 calculates the mask of a block distributed csr matrix
 in structure DBCSR.
 DBCSR contains a rectangular part of a distributed square
@@ -38,23 +38,23 @@ compressed sparse row matrix with additional information about
 the dofs belonging to one node
 It is supposed to serve as the finest grid matrix in an mulitlevel environment
 This routine also renumbers the dofs in the nodes in a sense, that partition's
-internal dofs are numbers first followed by the boundary dofs coupled to other 
+internal dofs are numbers first followed by the boundary dofs coupled to other
 processor's equations.
 In the one processor or sequentiell case this is not done
 </pre>
-\param actfield   FIELD*      (i)   catual physical field (structure)                                
+\param actfield   FIELD*      (i)   catual physical field (structure)
 \param actpart    PARTITION*  (i)   this processors partition
-\param actsolv    SOLVAR      (i)   general structure of solver informations                   
-\param actintra   INTRA       (i)   the intra-communicator of this field                  
-\param bdcsr      DBCSR       (o)   the empty dbcsr matrix                 
+\param actsolv    SOLVAR      (i)   general structure of solver informations
+\param actintra   INTRA       (i)   the intra-communicator of this field
+\param bdcsr      DBCSR       (o)   the empty dbcsr matrix
 \warning this routine renumbers the dofs!
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
-void mask_bdcsr(FIELD         *actfield, 
-                PARTITION     *actpart, 
+void mask_bdcsr(FIELD         *actfield,
+                PARTITION     *actpart,
                 SOLVAR        *actsolv,
-                INTRA         *actintra, 
+                INTRA         *actintra,
                 DBCSR         *bdcsr)
 {
 INT            i,j,counter;
@@ -66,11 +66,11 @@ PARTDISCRET   *actpdiscret;
 INT            numeq;
 INT            numdf;
 INT          **dof_connect;
-INT            actdof; 
+INT            actdof;
 INT          **blocks;
 NODE          *actnode;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mask_bdcsr");
 #endif
 /*----------------------------------------------------------------------*/
@@ -90,13 +90,13 @@ amdef("update",&(bdcsr->update),numeq,1,"IV");
 amzero(&(bdcsr->update));
 /*--------------------------------put dofs in update in ascending order */
 bdcsr_update(actfield,actpart,actsolv,actintra,bdcsr);
-/*------------------------ count number of nonzero entries on partition 
+/*------------------------ count number of nonzero entries on partition
                                     and calculate dof connectivity list */
    /*
       dof_connect[i][0] = lenght of dof_connect[i]
-      dof_connect[i][1] = iscoupled ( 1 or 2 ) 
+      dof_connect[i][1] = iscoupled ( 1 or 2 )
       dof_connect[i][2] = dof
-      dof_connect[i][ 3..dof_connect[i][0]-1 ] = connected dofs exluding itself 
+      dof_connect[i][ 3..dof_connect[i][0]-1 ] = connected dofs exluding itself
    */
 dof_connect = (INT**)CCACALLOC(bdcsr->numeq_total,sizeof(INT*));
 if (!dof_connect) dserror("Allocation of dof_connect failed");
@@ -132,7 +132,7 @@ for (i=0; i<bdcsr->numeq_total; i++)
 }
 CCAFREE(dof_connect);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -143,21 +143,21 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief make csr matrix                                              
+\brief make csr matrix
 
-<pre>                                                        m.gee 6/02 
+<pre>                                                        m.gee 6/02
 make csr matrix (see book of Y.Saad)
 </pre>
-\param actfield    FIELD*      (i)   catual physical field (structure)                                
+\param actfield    FIELD*      (i)   catual physical field (structure)
 \param actpart     PARTITION*  (i)   this processors partition
-\param actsolv     SOLVAR      (i)   general structure of solver informations                   
-\param bdcsr       DBCSR_ROOT  (i/o) the empty dbcsr matrix                 
+\param actsolv     SOLVAR      (i)   general structure of solver informations
+\param bdcsr       DBCSR_ROOT  (i/o) the empty dbcsr matrix
 \param dof_connect INT**       (i)   the connectivity
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
-void bdcsr_make_csr(FIELD         *actfield, 
-                    PARTITION     *actpart, 
+void bdcsr_make_csr(FIELD         *actfield,
+                    PARTITION     *actpart,
                     SOLVAR        *actsolv,
                     DBCSR         *bdcsr,
                     INT          **dof_connect)
@@ -166,7 +166,7 @@ INT        i,j;
 INT        count;
 INT        dof;
 INT        *ja,*ia,*update;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("bdcsr_make_csr");
 #endif
 /*----------------------------------------------------------------------*/
@@ -188,7 +188,7 @@ for (i=0; i<bdcsr->update.fdim; i++)
    ia[i+1] = count;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -199,29 +199,29 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief count number of nonzeros on this proc                                              
+\brief count number of nonzeros on this proc
 
-<pre>                                                        m.gee 6/02 
+<pre>                                                        m.gee 6/02
 count number of nonzeros on this proc and make a dof connecticvity list
 
 dof_connect[i][0] = lenght of dof_connect[i]
-dof_connect[i][1] = iscoupled ( 1 or 2 ) 
+dof_connect[i][1] = iscoupled ( 1 or 2 )
 dof_connect[i][2] = dof
-dof_connect[i][ 3..dof_connect[i][0]-1 ] = connected dofs exluding itself 
+dof_connect[i][ 3..dof_connect[i][0]-1 ] = connected dofs exluding itself
 
 </pre>
-\param actfield    FIELD*      (i)   catual physical field (structure)                                
+\param actfield    FIELD*      (i)   catual physical field (structure)
 \param actpart     PARTITION*  (i)   this processors partition
-\param actsolv     SOLVAR      (i)   general structure of solver informations                   
-\param actintra    INTRA       (i)   the intra-communicator of this field                  
-\param bdcsr       DBCSR_ROOT  (i/o) the empty dbcsr matrix                 
+\param actsolv     SOLVAR      (i)   general structure of solver informations
+\param actintra    INTRA       (i)   the intra-communicator of this field
+\param bdcsr       DBCSR_ROOT  (i/o) the empty dbcsr matrix
 \param dof_connect INT**       (o)   the connectivity
 \warning this routine does not support coupling!
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
-void  bdcsr_nnz_topology(FIELD         *actfield, 
-                         PARTITION     *actpart, 
+void  bdcsr_nnz_topology(FIELD         *actfield,
+                         PARTITION     *actpart,
                          SOLVAR        *actsolv,
                          INTRA         *actintra,
                          DBCSR         *bdcsr,
@@ -249,11 +249,11 @@ ARRAY     *coupledofs;
 INT        imyrank;
 INT        inprocs;
 
-#ifdef PARALLEL 
+#ifdef PARALLEL
 MPI_Status status;
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("bdcsr_nnz_topology");
 #endif
 /*----------------------------------------------------------------------*/
@@ -320,24 +320,24 @@ for (i=0; i<numeq; i++)
    dof_connect[dof] = (INT*)CCACALLOC(counter2+3,sizeof(INT));
    if (!dof_connect[dof]) dserror("Allocation of dof connect list failed");
    dof_connect[dof][0] = counter2+3;
-   dof_connect[dof][1] = 0; 
+   dof_connect[dof][1] = 0;
    dof_connect[dof][2] = dof;
    /*
       dof_connect[i][0] = lenght of dof_connect[i]
-      dof_connect[i][1] = iscoupled ( 1 or 2 ) done later on 
+      dof_connect[i][1] = iscoupled ( 1 or 2 ) done later on
       dof_connect[i][2] = dof
-      dof_connect[i][ 3..dof_connect[i][0]-1 ] = connected dofs exluding itself 
+      dof_connect[i][ 3..dof_connect[i][0]-1 ] = connected dofs exluding itself
    */
    counter2=0;
    for (j=0; j<counter; j++)
    {
-      if (dofpatch.a.iv[j] != -1) 
+      if (dofpatch.a.iv[j] != -1)
       {
          dof_connect[dof][counter2+3] = dofpatch.a.iv[j];
          counter2++;
       }
    }
-}  /* end of loop over numeq */ 
+}  /* end of loop over numeq */
 /*--------------------------------------------- now do the coupled dofs */
 coupledofs = &(actpart->pdis[0].coupledofs);
 for (i=0; i<coupledofs->fdim; i++)
@@ -410,7 +410,7 @@ for (i=0; i<coupledofs->fdim; i++)
    counter2=0;
    for (j=0; j<counter; j++)
    {
-      if (dofpatch.a.iv[j] != -1) 
+      if (dofpatch.a.iv[j] != -1)
       {
          dof_connect[dof][counter2+3] = dofpatch.a.iv[j];
          counter2++;
@@ -418,7 +418,7 @@ for (i=0; i<coupledofs->fdim; i++)
    }
 } /* end of loop over coupled dofs */
 /* make the who-has-to-send-whom-how-much-and-what-arrays and communicate */
-#ifdef PARALLEL 
+#ifdef PARALLEL
 counter=0;
 for (i=0; i<coupledofs->fdim; i++)
 {
@@ -426,7 +426,7 @@ for (i=0; i<coupledofs->fdim; i++)
    /*-------------------------------------- find the master of this dof */
    for (j=1; j<coupledofs->sdim; j++)
    {
-      if (coupledofs->a.ia[i][j]==2) 
+      if (coupledofs->a.ia[i][j]==2)
       {
          dofmaster = j-1;
          break;
@@ -467,7 +467,7 @@ for (i=0; i<coupledofs->fdim; i++)
                if (actdof==-1) continue;
                for (k=m+1; k<dof_connect[dof][0]; k++)
                {
-                  if (dof_connect[dof][k] == actdof) 
+                  if (dof_connect[dof][k] == actdof)
                   dof_connect[dof][k] = -1;
                }
             }
@@ -520,7 +520,7 @@ for (i=0; i<numeq; i++)
 /*----------------------------------------------------------------------*/
 amdel(&dofpatch);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -532,22 +532,22 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief make list of dofs on each proc (sorted)                                              
+\brief make list of dofs on each proc (sorted)
 
-<pre>                                                        m.gee 6/02 
+<pre>                                                        m.gee 6/02
 make list of dofs on each proc (sorted in ascending order)
 </pre>
-\param actfield   FIELD*      (i)   catual physical field (structure)                                
+\param actfield   FIELD*      (i)   catual physical field (structure)
 \param actpart    PARTITION*  (i)   this processors partition
-\param actsolv    SOLVAR      (i)   general structure of solver informations                   
-\param actintra   INTRA       (i)   the intra-communicator of this field                  
-\param bdcsr      DBCSR_ROOT  (o)   the empty dbcsr matrix                 
+\param actsolv    SOLVAR      (i)   general structure of solver informations
+\param actintra   INTRA       (i)   the intra-communicator of this field
+\param bdcsr      DBCSR_ROOT  (o)   the empty dbcsr matrix
 \warning this routine does not support coupling!
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
-void bdcsr_update(FIELD          *actfield, 
-                  PARTITION      *actpart, 
+void bdcsr_update(FIELD          *actfield,
+                  PARTITION      *actpart,
                   SOLVAR         *actsolv,
                   INTRA          *actintra,
                   DBCSR          *bdcsr)
@@ -559,7 +559,7 @@ INT       dof;
 INT       imyrank;
 INT       inprocs;
 NODE     *actnode;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("bdcsr_update");
 #endif
 /*----------------------------------------------------------------------*/
@@ -588,7 +588,7 @@ for (i=0; i<actpart->pdis[0].numnp; i++)
       {
           dserror("BDCSR does not support dofcoupling");
       }
-      
+
    }
 }
 /*----------- check whether the correct number of dofs has been counted */
@@ -596,7 +596,7 @@ if (counter != bdcsr->numeq) dserror("Number of dofs in update-vector update wro
 /*---------------------------- sort the vector update just to make sure */
 qsort((INT*) update, counter, sizeof(INT), cmp_int);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -607,27 +607,27 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief renumber dofs                                              
+\brief renumber dofs
 
-<pre>                                                        m.gee 6/02 
+<pre>                                                        m.gee 6/02
 This routine renumbers the dofs in the nodes in a sense, that partition's
-internal dofs are numbers first followed by the boundary dofs coupled to other 
+internal dofs are numbers first followed by the boundary dofs coupled to other
 processor's equations.
 In the one processor or sequentiell case this is not done
 </pre>
 \param myrank     INT         (i)   this processors intra rank
 \param nproc      INT         (i)   number of processors in this intra-communicator
-\param actfield   FIELD*      (i)   catual physical field (structure)                                
+\param actfield   FIELD*      (i)   catual physical field (structure)
 \param actpart    PARTITION*  (i)   this processors partition
-\param actintra   INTRA       (i)   the intra-communicator of this field                  
+\param actintra   INTRA       (i)   the intra-communicator of this field
 \warning <b>this routine renumbers the dofs and does NOT support coupling!!!!</b>
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_renumberdofs(INT            myrank,
                         INT            nproc,
-                        FIELD         *actfield, 
-                        PARTDISCRET   *actpdiscret, 
+                        FIELD         *actfield,
+                        PARTDISCRET   *actpdiscret,
                         INTRA         *actintra,
                         DBCSR         *bdcsr,
 			INT            dis)
@@ -648,7 +648,7 @@ INT            startdof;
 INT            savedof;
 INT            actdof;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_renumberdofs");
 #endif
 /*----------------------------------------------------------------------*/
@@ -731,7 +731,7 @@ amdel(&dofflag_a);
 amdel(&newdof_a);
 amdel(&newdofrecv_a);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 #endif
@@ -744,21 +744,21 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief count processors number of equations                                              
+\brief count processors number of equations
 
-<pre>                                                        m.gee 6/02 
+<pre>                                                        m.gee 6/02
 counts processors number of equations, including coupling conditions
 </pre>
-\param actfield   FIELD*      (i)   catual physical field (structure)                                
+\param actfield   FIELD*      (i)   catual physical field (structure)
 \param actpart    PARTITION*  (i)   this processors partition
-\param actsolv    SOLVAR      (i)   general structure of solver informations                   
-\param actintra   INTRA       (i)   the intra-communicator of this field                  
+\param actsolv    SOLVAR      (i)   general structure of solver informations
+\param actintra   INTRA       (i)   the intra-communicator of this field
 \param numeq      INT*        (o)   local number of dofs
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
-void bdcsr_numeq(FIELD         *actfield, 
-                 PARTITION     *actpart, 
+void bdcsr_numeq(FIELD         *actfield,
+                 PARTITION     *actpart,
                  SOLVAR        *actsolv,
                  INTRA         *actintra,
                  INT           *numeq)
@@ -780,7 +780,7 @@ NODE     *actnode;
 
 INT       no_coupling = 0;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("bdcsr_numeq");
 #endif
 /*----------------------------------------------------------------------*/
@@ -804,7 +804,7 @@ for (i=0; i<actfield->dis[0].numnp; i++)
       if (actnode->gnode->couple->couple.a.ia[l][0] != 0 ||
           actnode->gnode->couple->couple.a.ia[l][1] != 0 )
       {
-         if (counter>=actpart->pdis[0].coupledofs.fdim) 
+         if (counter>=actpart->pdis[0].coupledofs.fdim)
          amredef(&(actpart->pdis[0].coupledofs),(actpart->pdis[0].coupledofs.fdim+5000),1,"IV");
          /* the coupled dof could be dirichlet conditioned */
          if (actnode->dof[l]<actfield->dis[0].numeq)
@@ -825,7 +825,7 @@ amredef(&(actpart->pdis[0].coupledofs),counter,1,"IV");
 /*---------------------------------- delete the doubles in coupledofs */
 
 if (!no_coupling)
-{ 
+{
 
 for (i=0; i<actpart->pdis[0].coupledofs.fdim; i++)
 {
@@ -849,27 +849,27 @@ for (i=0; i<actpart->pdis[0].coupledofs.fdim; i++)
 amredef(&(actpart->pdis[0].coupledofs),counter,inprocs+1,"IA");
 /*------------------- the newly allocated columns have to be initialized */
 for (i=1; i<actpart->pdis[0].coupledofs.sdim; i++)
-for (j=0; j<actpart->pdis[0].coupledofs.fdim; j++) 
+for (j=0; j<actpart->pdis[0].coupledofs.fdim; j++)
 actpart->pdis[0].coupledofs.a.ia[j][i]=0;
 
 } /* end of if(!no_coupling) */
 
-/* processor looks on his own domain whether he has some of these coupdofs, 
-   puts this information in the array coupledofs in the column myrank+1, so it 
-   can be allreduced 
+/* processor looks on his own domain whether he has some of these coupdofs,
+   puts this information in the array coupledofs in the column myrank+1, so it
+   can be allreduced
 
    The matrix has the following style (after allreduce on all procs the same):
-   
+
                ----------------------
                | 12 | 1 | 0 | 1 | 0 |
                | 40 | 1 | 0 | 0 | 0 |
                | 41 | 1 | 1 | 1 | 1 |
                | 76 | 0 | 1 | 1 | 0 |
                ----------------------
-               
+
                column 0                : number of the coupled equation
                column 1 - inprocs+1 : proc has coupled equation or not
-               
+
 */
 
 if (!no_coupling)
@@ -903,7 +903,7 @@ else /*----------------------------------------------- parallel version */
       }
    }
 }
-/* ----- Allreduce the whole array, so every proc knows about where all 
+/* ----- Allreduce the whole array, so every proc knows about where all
                                                          coupledofs are */
 #ifdef PARALLEL
 sendsize = (actpart->pdis[0].coupledofs.fdim)*(inprocs);
@@ -956,13 +956,13 @@ for (i=0; i<actpart->pdis[0].numnp; i++)
       iscoupled=0;
       for (k=0; k<actpart->pdis[0].coupledofs.fdim; k++)
       {
-         if (dof == actpart->pdis[0].coupledofs.a.ia[k][0]) 
+         if (dof == actpart->pdis[0].coupledofs.a.ia[k][0])
          {
             iscoupled=1;
             break;
          }
       }
-      if (iscoupled==0) 
+      if (iscoupled==0)
       {
          if (dof < actfield->dis[0].numeq)
          counter++;
@@ -971,25 +971,25 @@ for (i=0; i<actpart->pdis[0].numnp; i++)
 }
 /*--- number of equations on this partition including the coupled ones */
 *numeq = counter;
-/* 
-   An inter-proc coupled equation produces communications calculating the 
+/*
+   An inter-proc coupled equation produces communications calculating the
    sparsity mask of the matrix
    An inter-proc coupled equation produces communications adding element
    matrices to the system matrix
    An inter-proc coupled equation ruins the bandwith locally
    ->
-   Now one processor has to be owner of the coupled equation. 
+   Now one processor has to be owner of the coupled equation.
    Try to distribute the coupled equations equally over the processors
 
    The matrix has the following style (after allreduce on all procs the same):
-   
+
                ----------------------
                | 12 | 2 | 0 | 1 | 0 |
                | 40 | 2 | 0 | 0 | 0 |
                | 41 | 1 | 2 | 1 | 1 |
                | 76 | 0 | 1 | 2 | 0 |
                ----------------------
-               
+
                column 0                : number of the coupled equation
                column 1 - inprocs+1 : proc has coupled equation or not
                                          2 indicates owner of equation
@@ -1011,7 +1011,7 @@ if (inprocs > 1)
       {
          for (j=0; j<inprocs; j++)
          {
-            if (actpart->pdis[0].coupledofs.a.ia[i][j+1]==1) 
+            if (actpart->pdis[0].coupledofs.a.ia[i][j+1]==1)
             {
                actpart->pdis[0].coupledofs.a.ia[i][j+1]=2;
                break;
@@ -1025,7 +1025,7 @@ if (inprocs > 1)
          proc=-1;
          for (j=0; j<inprocs; j++)
          {
-            if (actpart->pdis[0].coupledofs.a.ia[i][j+1]==1) 
+            if (actpart->pdis[0].coupledofs.a.ia[i][j+1]==1)
             {
                if (tmp[j]<=min)
                {
@@ -1059,7 +1059,7 @@ if (inprocs > 1)
 } /* end of if(!no_coupling) */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

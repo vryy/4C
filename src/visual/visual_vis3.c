@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief Call and control VISUAL3 
+\brief Call and control VISUAL3
 
 <pre>
 Maintainer: Steffen Genkinger
@@ -27,7 +27,7 @@ extern struct _GENPROB       genprob;
 
 <pre>                                                         m.gee 8/00
 -the partition of one proc (all discretizations)
--the type is in partition.h                                                  
+-the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -45,13 +45,13 @@ extern enum _CALC_ACTION calc_action[MAXFIELD];
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn; 
+extern ALLDYNA      *alldyn;
 /*!----------------------------------------------------------------------
 \brief file pointers
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -69,12 +69,12 @@ extern enum _CALC_ACTION calc_action[MAXFIELD];
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn; 
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                        genk 07/02    |
  | all variables needed by VISUAL2 are defined extern                   |
  *----------------------------------------------------------------------*/
-static INT      KSURF;              
+static INT      KSURF;
 static INT      KCEL1,KCEL2,KCEL3,KCEL4;
 static INT      WIN3D;
 static INT      MIRROR;
@@ -107,28 +107,28 @@ NODE          *actanode;        /* actual ale-node                      */
 GNODE         *actgnode;        /* actual gnode  			*/
 DIS_TYP        distyp;          /* element type  			*/
 FIELDTYP       actfieldtyp;     /* actual fieldtyp			*/
-FIELD         *actfield;        /* actual field  			*/ 
+FIELD         *actfield;        /* actual field  			*/
 FIELD         *alefield;
 FIELD         *structfield;
 ARRAY          time_a ;         /* time array				*/
 ARRAY          step_a ;         /* time array				*/
 FLUID_DYNAMIC *fdyn;                /* pointer to fluid dyn. inp.data   */
-/*!---------------------------------------------------------------------                                         
-\brief call of visual3 for fluid 
+/*!---------------------------------------------------------------------
+\brief call of visual3 for fluid
 
-<pre>                                                         genk 12/03      
-</pre>  
+<pre>                                                         genk 12/03
+</pre>
 \param  numf   INT      (i)       actual number of fluid field
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
-void vis3caf(INT numff, INT numaf, INT numsf) 
+void vis3caf(INT numff, INT numaf, INT numsf)
 {
 
 INT iscan, i,j,k;
 static INT      NKEYS=7;              /* see VISUAL3 manual             */
 static INT      IKEYS[]={120,121,122,112,102,97,109};
-static INT      FKEYS[]={1,1,1,1,2,1,1};             
+static INT      FKEYS[]={1,1,1,1,2,1,1};
 static float    FLIMS[7][2];          /* data limits                    */
 static DOUBLE  velx;	        /*					*/
 static DOUBLE  vely;	        /*					*/
@@ -148,7 +148,7 @@ FLUID_DYNAMIC  *fdyn;               /* pointer to fluid dyn. inp.data   */
 INT             screen;
 INT             dummy;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("vis3caf");
 #endif
 
@@ -184,7 +184,7 @@ case hex8:
    KSURF=numele*8;
 break;
 default:
-   dserror("distyp not implemented yet!\n");         
+   dserror("distyp not implemented yet!\n");
 } /* end switch(distyp) */
 
 /*-------------------- read solution data from flavia.res-file of proc 0 */
@@ -206,7 +206,7 @@ case 10: IOPT=2; break;
 case 48: IOPT=0; dummy=getchar(); break;
 case 49: IOPT=1; dummy=getchar(); break;
 case 50: IOPT=2; dummy=getchar(); break;
-default: 
+default:
    printf("\nTry again!\n");
    goto input1;
 }
@@ -264,7 +264,7 @@ switch(screen)
 case 10: WIN3D=0; break;
 case 48: WIN3D=0; dummy=getchar(); break;
 case 49: WIN3D=1; dummy=getchar(); break;
-default: 
+default:
    printf("\nTry again!\n");
    goto input2;
 }
@@ -287,7 +287,7 @@ case 48: MIRROR=0; dummy=getchar(); break;
 case 49: MIRROR=1; dummy=getchar(); break;
 case 50: MIRROR=2; dummy=getchar(); break;
 case 51: MIRROR=3; dummy=getchar(); break;
-default: 
+default:
    printf("\nTry again!\n");
    goto input3;
 }
@@ -304,7 +304,7 @@ switch(screen)
 case 10: SCAL=0; break;
 case 48: SCAL=0; dummy=getchar(); break;
 case 49: SCAL=1; dummy=getchar(); break;
-default: 
+default:
    printf("\nTry again!\n");
    goto input4;
 }
@@ -339,7 +339,7 @@ case 10: bgcolour=0; break;
 case 48: bgcolour=0; dummy=getchar(); break;
 case 49: bgcolour=1; dummy=getchar(); break;
 case 50: bgcolour=2; dummy=getchar(); break;
-default: 
+default:
    printf("\nTry again!\n");
    goto input5;
 }
@@ -358,9 +358,9 @@ pres    = actnode->sol.a.da[0][3];
 minvx   = velx;
 maxvx   = velx;
 minvy   = vely;
-maxvy   = vely; 
+maxvy   = vely;
 minvz   = velz;
-maxvz   = velz; 
+maxvz   = velz;
 minpre  = pres;
 maxpre  = pres;
 minabsv = absv;
@@ -375,13 +375,13 @@ for (i=0;i<numnp;i++) /* loop nodes */
       vely    = actnode->sol.a.da[j][1];
       velz    = actnode->sol.a.da[j][2];
       pres    = actnode->sol.a.da[j][3];
-      absv    = sqrt(velx*velx+vely*vely+velz*velz);  
+      absv    = sqrt(velx*velx+vely*vely+velz*velz);
       minvx   = DMIN(minvx  ,velx);
       maxvx   = DMAX(maxvx  ,velx);
       minvy   = DMIN(minvy  ,vely);
-      maxvy   = DMAX(maxvy  ,vely); 
+      maxvy   = DMAX(maxvy  ,vely);
       minvz   = DMIN(minvz  ,velz);
-      maxvz   = DMAX(maxvz  ,velz); 
+      maxvz   = DMAX(maxvz  ,velz);
       minpre  = DMIN(minpre ,pres);
       maxpre  = DMAX(maxpre ,pres);
       minabsv = DMIN(minabsv,absv);
@@ -416,11 +416,11 @@ for (i=0;i<NKEYS;i++)
 {
    for (j=0;j<2;j++)
    {
-      if (FABS(FLIMS[i][j])<EPS9) 
+      if (FABS(FLIMS[i][j])<EPS9)
       {
          if (FLIMS[i][j]<ZERO) FLIMS[i][j] = -0.000000001;
          else                  FLIMS[i][j] =  0.000000001;
-      }      
+      }
    }
    if (FLIMS[i][0]==FLIMS[i][1]) FLIMS[i][1] += ONE;
 }
@@ -436,7 +436,7 @@ v3call(&IOPT,&WIN3D,&CMUNIT,
        &KSURF,&bgcolour);
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -444,22 +444,22 @@ return;
 } /* end of vis3caf */
 
 
-/*!---------------------------------------------------------------------                                         
-\brief call of visual3 for fluid 
+/*!---------------------------------------------------------------------
+\brief call of visual3 for fluid
 
-<pre>                                                         genk 12/03      
-</pre>  
+<pre>                                                         genk 12/03
+</pre>
 \param  numf   INT      (i)       actual number of fluid field
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
-void vis3cas(INT numff, INT numaf, INT numsf) 
+void vis3cas(INT numff, INT numaf, INT numsf)
 {
 
 INT iscan, i,j,k;
 static INT      NKEYS=5;              /* see VISUAL3 manual             */
 static INT      IKEYS[]={120,121,122,97,109};
-static INT      FKEYS[]={1,1,1,1,1};             
+static INT      FKEYS[]={1,1,1,1,1};
 static float    FLIMS[5][2];          /* data limits                    */
 static DOUBLE   disx;	        /*					*/
 static DOUBLE   disy;	        /*					*/
@@ -479,7 +479,7 @@ STRUCT_DYNAMIC  *sdyn;              /* pointer to struct dyn. inp.data   */
 INT             screen;
 INT             dummy;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("vis3cas");
 #endif
 
@@ -519,7 +519,7 @@ case quad4:
    KSURF=numele*8;
 break;
 default:
-   dserror("distyp not implemented yet!\n");         
+   dserror("distyp not implemented yet!\n");
 } /* end switch(distyp) */
 
 /*-------------------- read solution data from flavia.res-file of proc 0 */
@@ -546,7 +546,7 @@ switch(screen)
 case 10: WIN3D=0; break;
 case 48: WIN3D=0; dummy=getchar(); break;
 case 49: WIN3D=1; dummy=getchar(); break;
-default: 
+default:
    printf("\nTry again!\n");
    goto input2;
 }
@@ -569,7 +569,7 @@ case 48: MIRROR=0; dummy=getchar(); break;
 case 49: MIRROR=1; dummy=getchar(); break;
 case 50: MIRROR=2; dummy=getchar(); break;
 case 51: MIRROR=3; dummy=getchar(); break;
-default: 
+default:
    printf("\nTry again!\n");
    goto input3;
 }
@@ -586,7 +586,7 @@ switch(screen)
 case 10: SCAL=0; break;
 case 48: SCAL=0; dummy=getchar(); break;
 case 49: SCAL=1; dummy=getchar(); break;
-default: 
+default:
    printf("\nTry again!\n");
    goto input4;
 }
@@ -621,7 +621,7 @@ case 10: bgcolour=0; break;
 case 48: bgcolour=0; dummy=getchar(); break;
 case 49: bgcolour=1; dummy=getchar(); break;
 case 50: bgcolour=2; dummy=getchar(); break;
-default: 
+default:
    printf("\nTry again!\n");
    goto input5;
 }
@@ -639,9 +639,9 @@ absd    = sqrt(disx*disx+disy*disy+disz*disz);
 mindx     = disx;
 maxdx     = disx;
 mindy     = disy;
-maxdy     = disy; 
+maxdy     = disy;
 mindz     = disz;
-maxdz     = disz; 
+maxdz     = disz;
 minabsd   = absd;
 maxabsd   = absd;
 
@@ -653,13 +653,13 @@ for (i=0;i<numnp;i++) /* loop nodes */
       disx      = actnode->sol.a.da[j][0];
       disy      = actnode->sol.a.da[j][1];
       disz      = actnode->sol.a.da[j][2];
-      absd      = sqrt(disx*disx+disy*disy+disz*disz);  
+      absd      = sqrt(disx*disx+disy*disy+disz*disz);
       mindx     = DMIN(mindx  ,disx);
       maxdx     = DMAX(maxdx  ,disx);
       mindy     = DMIN(mindy  ,disy);
-      maxdy     = DMAX(maxdy  ,disy); 
+      maxdy     = DMAX(maxdy  ,disy);
       mindz     = DMIN(mindz  ,disz);
-      maxdz     = DMAX(maxdz  ,disz); 
+      maxdz     = DMAX(maxdz  ,disz);
       minabsd   = DMIN(minabsd,absd);
       maxabsd   = DMAX(maxabsd,absd);
    } /* end of loop over columns */
@@ -686,11 +686,11 @@ for (i=0;i<NKEYS;i++)
 {
    for (j=0;j<2;j++)
    {
-      if (FABS(FLIMS[i][j])<EPS9) 
+      if (FABS(FLIMS[i][j])<EPS9)
       {
          if (FLIMS[i][j]<ZERO) FLIMS[i][j] = -0.000000001;
          else                  FLIMS[i][j] =  0.000000001;
-      }      
+      }
    }
    if (FLIMS[i][0]==FLIMS[i][1]) FLIMS[i][1] += ONE;
 }
@@ -705,28 +705,28 @@ v3call_struct(&IOPT,&WIN3D,&CMUNIT,
        &KSURF,&bgcolour);
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of vis3cas */
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief return nodes to VISUAL3
 
-<pre>                                                         genk 01/04      
+<pre>                                                         genk 01/04
 
 
-</pre>  
-\return void                                                                       
+</pre>
+\return void
 ------------------------------------------------------------------------*/
-void v3cell(INT **cel1, INT **cel2, INT **cel3, INT cel4[][8], 
-            INT **nptet, INT *ptet) 
+void v3cell(INT **cel1, INT **cel2, INT **cel3, INT cel4[][8],
+            INT **nptet, INT *ptet)
 {
 INT i,j;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("v3cell");
 #endif
 
@@ -744,9 +744,9 @@ case fluid:
             actnode = actele->node[j];
 	    cel4[i][j]=actnode->Id_loc+1;
          }
-      break;      
+      break;
       default:
-         dserror("distyp not implemented yet!\n");         
+         dserror("distyp not implemented yet!\n");
       }
    } /* end loop over all elements */
 break;
@@ -761,11 +761,11 @@ case structure:
          {
             actnode = actele->node[j];
 	    cel4[i][j]=actnode->Id_loc+1;
-	    cel4[i][j+4]=actnode->Id_loc+1+numnp_struct;            
+	    cel4[i][j+4]=actnode->Id_loc+1+numnp_struct;
          }
-      break;      
+      break;
       default:
-         dserror("distyp not implemented yet!\n");         
+         dserror("distyp not implemented yet!\n");
       }
    } /* end loop over all elements */
 break;
@@ -773,33 +773,33 @@ default:
    dserror("fieldtyp unknown!\n");
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of v3cell */
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief return nodes to VISUAL3
 
-<pre>                                                         genk 01/04      
+<pre>                                                         genk 01/04
 
 
-</pre>  
-\return void                                                                       
+</pre>
+\return void
 ------------------------------------------------------------------------*/
-void v3surface(INT **nsurf, INT *surf, INT **scel, char tsurf[][100]) 
+void v3surface(INT **nsurf, INT *surf, INT **scel, char tsurf[][100])
 {
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("v3surface");
 #endif
 
 /* do nothing at the moment! */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -807,20 +807,20 @@ return;
 } /* end of v3surface */
 
 
-/*!---------------------------------------------------------------------                                         
-\brief set VISUAL3's grid coordinates 
+/*!---------------------------------------------------------------------
+\brief set VISUAL3's grid coordinates
 
-<pre>                                                         genk 01/04      
+<pre>                                                         genk 01/04
 
 
-</pre>  
-\return void                                                                       
+</pre>
+\return void
 ------------------------------------------------------------------------*/
-void v3grid(float XYZ[][3]) 
+void v3grid(float XYZ[][3])
 {
 INT i;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("v3grid");
 #endif
 
@@ -831,10 +831,10 @@ case fluid:
    if (NUMA>=0 && IOPT==0)
    {
       input4:
-      v3_cursor(&true);  
+      v3_cursor(&true);
       printf("Give the column number (min. 0; max. %d): ?\n",ncols-1);
-      scanf("%d",&icol);      
-      v3_cursor(&false);  
+      scanf("%d",&icol);
+      v3_cursor(&false);
       if (icol<0 || icol>ncols-1)
       {
          printf("Column number out of range. New input!\n");
@@ -842,7 +842,7 @@ case fluid:
 	 goto input4;
       }
    }
-#endif   
+#endif
    if (IOPT==2)
    {
 #ifdef D_FSI
@@ -854,19 +854,19 @@ case fluid:
 	 if (actanode==NULL)
 	 {
             XYZ[i][0] = actnode->x[0]*FACX;
-            XYZ[i][1] = actnode->x[1]*FACY;   
-            XYZ[i][2] = actnode->x[2]*FACZ;   
+            XYZ[i][1] = actnode->x[1]*FACY;
+            XYZ[i][2] = actnode->x[2]*FACZ;
          }
 	 else
 	 {
 	    XYZ[i][0] = (actanode->x[0]+actanode->sol.a.da[icol][0])*FACX;
-	    XYZ[i][1] = (actanode->x[1]+actanode->sol.a.da[icol][1])*FACY;    
-	    XYZ[i][2] = (actanode->x[2]+actanode->sol.a.da[icol][2])*FACZ;    
+	    XYZ[i][1] = (actanode->x[1]+actanode->sol.a.da[icol][1])*FACY;
+	    XYZ[i][2] = (actanode->x[2]+actanode->sol.a.da[icol][2])*FACZ;
          }
       }
 #else
    dserror("FSI-functions not compiled in!\n");
-#endif   
+#endif
    }
    else
    {
@@ -896,7 +896,7 @@ case ale:
 } /* end switch(actfieldtyp) */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -904,10 +904,10 @@ return;
 } /* end of V3GRID */
 
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief set VISUAL3's scalar function values
 
-<pre>                                                         genk 01/04      
+<pre>                                                         genk 01/04
 
 This routine is called by VISUAL3 during the visualisation.
 It filters the scalar values out of the nodal sol-field at the actual
@@ -915,21 +915,21 @@ position icol.
 icol is set every timestep in v3update
 
 
-</pre>  
-\param  *JKEY      INT    (i)  Index of key			 
-\param	*S         float  (o)  Scalar function at nodes or cells 
-\return void                                                                       
+</pre>
+\param  *JKEY      INT    (i)  Index of key
+\param	*S         float  (o)  Scalar function at nodes or cells
+\return void
 \sa v2update
 
 ------------------------------------------------------------------------*/
-void v3scal(INT *JKEY, float *S) 
+void v3scal(INT *JKEY, float *S)
 {
 
 INT i;
 float vx,vy,vz;
 float dx,dy,dz;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("v3scal");
 #endif
 
@@ -942,8 +942,8 @@ case fluid:
       input3:
       v3_cursor(&true);
       printf("Give the column number (min. 0; max. %d): ?\n",ncols-1);
-      scanf("%d",&icol);      
-      v3_cursor(&false);      
+      scanf("%d",&icol);
+      v3_cursor(&false);
       if (icol<0 || icol>ncols-1)
       {
          printf("Column number out of range. New input!\n");
@@ -951,33 +951,33 @@ case fluid:
 	 goto input3;
       }
    }
-#endif   
+#endif
    /*-------------------------------------------------- get scalar data */
    switch(*JKEY)
    {
-   /*-------------------------------------------------------------------*/   
+   /*-------------------------------------------------------------------*/
    case 1: /* Ux */
       for (i=0;i<numnp;i++)
       {
          actnode=&(actfield->dis[0].node[i]);
 	 S[i]=actnode->sol.a.da[icol][0];
-      }      
+      }
    break;
-   /*-------------------------------------------------------------------*/   
+   /*-------------------------------------------------------------------*/
    case 2: /* Uy */
       for (i=0;i<numnp;i++)
       {
          actnode=&(actfield->dis[0].node[i]);
 	 S[i]=actnode->sol.a.da[icol][1];
-      }        
+      }
    break;
-   /*-------------------------------------------------------------------*/   
+   /*-------------------------------------------------------------------*/
    case 3: /* Uz */
       for (i=0;i<numnp;i++)
       {
          actnode=&(actfield->dis[0].node[i]);
 	 S[i]=actnode->sol.a.da[icol][2];
-      }        
+      }
    break;
    case 4: /* pressure */
       for (i=0;i<numnp;i++)
@@ -986,11 +986,11 @@ case fluid:
 	 S[i]=actnode->sol.a.da[icol][3];
       }
    break;
-   /*-------------------------------------------------------------------*/  
-   case 5: 
+   /*-------------------------------------------------------------------*/
+   case 5:
       printf("VECTOR DATA IN SCALAR ROUTINE ???????\n");
    break;
-   /*-------------------------------------------------------------------*/  
+   /*-------------------------------------------------------------------*/
    case 6: /* absolute velocity */
       for (i=0;i<numnp;i++)
       {
@@ -999,7 +999,7 @@ case fluid:
 	 vy=actnode->sol.a.da[icol][1];
 	 vz=actnode->sol.a.da[icol][2];
 	 S[i] = sqrt(vx*vx+vy*vy+vz*vz);
-      }       
+      }
    break;
    /*-------------------------------------------------------------------*/
    case 7:
@@ -1009,43 +1009,43 @@ case fluid:
          printf("   Starting movie creation at time 0.0\n");
 	 printf("\n");
          IMOVIE=1;
-      }      
+      }
    break;
-   /*-------------------------------------------------------------------*/                 
+   /*-------------------------------------------------------------------*/
    } /* end switch(*JKEY) */
 break;
 case structure:
    /*-------------------------------------------------- get scalar data */
    switch(*JKEY)
    {
-   /*-------------------------------------------------------------------*/   
+   /*-------------------------------------------------------------------*/
    case 1: /* Dx */
       for (i=0;i<numnp_struct;i++)
       {
          actnode=&(actfield->dis[0].node[i]);
 	 S[i]=actnode->sol.a.da[icol][0];
 	 S[i+numnp_struct]=actnode->sol.a.da[icol][0];
-      }      
+      }
    break;
-   /*-------------------------------------------------------------------*/   
+   /*-------------------------------------------------------------------*/
    case 2: /* Dy */
       for (i=0;i<numnp;i++)
       {
          actnode=&(actfield->dis[0].node[i]);
 	 S[i]=actnode->sol.a.da[icol][1];
 	 S[i+numnp_struct]=actnode->sol.a.da[icol][1];
-      }        
+      }
    break;
-   /*-------------------------------------------------------------------*/   
+   /*-------------------------------------------------------------------*/
    case 3: /* Dz */
       for (i=0;i<numnp;i++)
       {
          actnode=&(actfield->dis[0].node[i]);
 	 S[i]=actnode->sol.a.da[icol][2];
 	 S[i+numnp_struct]=actnode->sol.a.da[icol][2];
-      }        
+      }
    break;
-   /*-------------------------------------------------------------------*/  
+   /*-------------------------------------------------------------------*/
    case 4: /* absolute displacement */
       for (i=0;i<numnp;i++)
       {
@@ -1055,7 +1055,7 @@ case structure:
 	 dz=actnode->sol.a.da[icol][2];
 	 S[i] = sqrt(dx*dx+dy*dy+dz*dz);
 	 S[i+numnp_struct] = sqrt(dx*dx+dy*dy+dz*dz);
-      }       
+      }
    break;
    /*-------------------------------------------------------------------*/
    case 5:
@@ -1065,9 +1065,9 @@ case structure:
          printf("   Starting movie creation at time 0.0\n");
 	 printf("\n");
          IMOVIE=1;
-      }      
+      }
    break;
-   /*-------------------------------------------------------------------*/                 
+   /*-------------------------------------------------------------------*/
    } /* end switch(*JKEY) */
 break;
 case ale:
@@ -1077,36 +1077,36 @@ default:
 } /* end switch(actfieldtyp) */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of V3SCAL */
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief set VISUAL3's vector function values
 
-<pre>                                                         genk 01/04      
+<pre>                                                         genk 01/04
 
 This routine is called by VISUAL3 during the visualisation.
 It filters the vector values out of the nodal sol-field at the actual
 position icol.
 icol is set every timestep in v2update
 
-</pre>  
-\param  *JKEY      INT    (i)  Index of key			 
-\param	*V         float  (o)  Vector function at nodes or cells 
-\return void                                                                       
+</pre>
+\param  *JKEY      INT    (i)  Index of key
+\param	*V         float  (o)  Vector function at nodes or cells
+\return void
 \sa v2update
 
 ------------------------------------------------------------------------*/
-void v3vect(INT *JKEY, float V[][3]) 
+void v3vect(INT *JKEY, float V[][3])
 {
 
 INT i;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("V3VECT");
 #endif
 
@@ -1123,10 +1123,10 @@ case fluid:
      	 V[i][1] = actnode->sol.a.da[icol][1];
      	 V[i][2] = actnode->sol.a.da[icol][2];
       }
-   }   
+   }
    else
      printf("SCALAR DATA IN VECTOR ROUTINE ???????\n");
-   
+
 break;
 case structure:
    /*-------------------------------------------------- get vector data */
@@ -1137,31 +1137,31 @@ case ale:
 } /* end switch(actfieldtyp) */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of V3VECT */
 
-/*!---------------------------------------------------------------------                                         
-\brief update time and icol 
+/*!---------------------------------------------------------------------
+\brief update time and icol
 
-<pre>                                                         genk 01/04      
+<pre>                                                         genk 01/04
 
 This routine is called by VISUAL3 during the visualisation.
-Beside the actual time the actual position in the nodal sol-history 
+Beside the actual time the actual position in the nodal sol-history
 icol is also updated
 
-</pre>  
-\param  *TIME      float    (o)  actual time		 
-\return void                                                                       
+</pre>
+\param  *TIME      float    (o)  actual time
+\return void
 
 ------------------------------------------------------------------------*/
-void v3update(float *TIME) 
+void v3update(float *TIME)
 {
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("V3UPDATE");
 #endif
 
@@ -1170,18 +1170,18 @@ dstrc_enter("V3UPDATE");
 if (icol==STSTEP)
 {
    printf("   Next Step to Stop (-1 to terminate)\n");
-   scanf("%d",&STSTEP);        
+   scanf("%d",&STSTEP);
 }
 #endif
 
 #if 0
 /*------------------------------------------- check for movie creation */
-if (icol==0 && IMOVIE==2) 
-{   
+if (icol==0 && IMOVIE==2)
+{
    IMOVIE=0;
    printf("\n");
    printf("Movie creation finished\n");
-}   
+}
 if (icol==0 && IMOVIE==1) IMOVIE=2;
 if (IMOVIE==2) v3movie();
 
@@ -1189,27 +1189,27 @@ if (IMOVIE==2) v3movie();
 
 switch(actfieldtyp)
 {
-case fluid: 
-   if (icol==-1 || icol+INCRE > ncols-1) 
+case fluid:
+   if (icol==-1 || icol+INCRE > ncols-1)
    {
       icol=0;
       ACTSTEP=step_a.a.iv[icol];
    }
    else
-   { 
+   {
       icol+=INCRE;
       ACTSTEP=step_a.a.iv[icol];
    }
    *TIME = time_a.a.dv[icol];
-break;   
+break;
 case structure:
-   if (icol==-1 || icol+INCRE > ncols-1) 
+   if (icol==-1 || icol+INCRE > ncols-1)
    {
       icol=0;
       ACTSTEP=step_a.a.iv[icol];
    }
    else
-   { 
+   {
       icol+=INCRE;
       ACTSTEP=step_a.a.iv[icol];
    }
@@ -1221,7 +1221,7 @@ case ale:
 
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -1229,61 +1229,61 @@ return;
 } /* end of V3UPDATE */
 
 
-/*!---------------------------------------------------------------------                                         
-\brief  additional label for  VISUAL3 plots 
+/*!---------------------------------------------------------------------
+\brief  additional label for  VISUAL3 plots
 
-<pre>                                                         genk 01/04      
+<pre>                                                         genk 01/04
 
 This routine is called by VISUAL2 during the visualisation.
 
-</pre>  
-\param  STRING     char    (o)  plot on VISUAL3 window		 
-\return void                                                                       
+</pre>
+\param  STRING     char    (o)  plot on VISUAL3 window
+\return void
 
 ------------------------------------------------------------------------*/
-void v3string(char STRING[81]) 
+void v3string(char STRING[81])
 {
 
 char *charpointer;
 float t;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("V3STRING");
 #endif
 
 switch(actfieldtyp)
 {
 case fluid:
-   t=time_a.a.dv[icol];  
+   t=time_a.a.dv[icol];
    strcpy(STRING,"Time: ");
    charpointer=STRING+strlen(STRING);
    sprintf(charpointer,"%8.4f",t);
    charpointer=STRING+strlen(STRING);
    strcpy(charpointer,"    Step: ");
    charpointer=STRING+strlen(STRING);
-   sprintf(charpointer,"%5d",ACTSTEP);  
-   charpointer=STRING+strlen(STRING); 
+   sprintf(charpointer,"%5d",ACTSTEP);
+   charpointer=STRING+strlen(STRING);
    strcpy(charpointer,"/");
-   charpointer=STRING+strlen(STRING); 
-   sprintf(charpointer,"%-5d",LASTSTEP); 
-   charpointer=STRING+strlen(STRING);      
-   strcpy(charpointer,"                                             ");      
-break;   
+   charpointer=STRING+strlen(STRING);
+   sprintf(charpointer,"%-5d",LASTSTEP);
+   charpointer=STRING+strlen(STRING);
+   strcpy(charpointer,"                                             ");
+break;
 case structure:
-   t=time_a.a.dv[icol];  
+   t=time_a.a.dv[icol];
    strcpy(STRING,"Time: ");
    charpointer=STRING+strlen(STRING);
    sprintf(charpointer,"%8.4f",t);
    charpointer=STRING+strlen(STRING);
    strcpy(charpointer,"    Step: ");
    charpointer=STRING+strlen(STRING);
-   sprintf(charpointer,"%5d",ACTSTEP);  
-   charpointer=STRING+strlen(STRING); 
+   sprintf(charpointer,"%5d",ACTSTEP);
+   charpointer=STRING+strlen(STRING);
    strcpy(charpointer,"/");
-   charpointer=STRING+strlen(STRING); 
-   sprintf(charpointer,"%-5d",LASTSTEP); 
-   charpointer=STRING+strlen(STRING);      
-   strcpy(charpointer,"                                             ");      
+   charpointer=STRING+strlen(STRING);
+   sprintf(charpointer,"%-5d",LASTSTEP);
+   charpointer=STRING+strlen(STRING);
+   strcpy(charpointer,"                                             ");
 break;
 case ale:
    dserror("fieldtyp not implemented yet!\n");
@@ -1291,36 +1291,36 @@ case ale:
 
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of V3STRING */
 #else
-/*!---------------------------------------------------------------------                                         
-\brief dummy routine 
+/*!---------------------------------------------------------------------
+\brief dummy routine
 
-<pre>                                                         genk 07/02      
+<pre>                                                         genk 07/02
 
 since VISUAL3 is called by a fortran routine, this one is necessary, if
 VIS3-routines are not compiled into the program
 
-</pre>  		 
-\return void                                                                       
+</pre>
+\return void
 
 ------------------------------------------------------------------------*/
-void v3_init()   
+void v3_init()
 {
 dserror("VISUAL3 PACKAGE not compiled into programm\n");
 return;
 }
-void v3_init_()   
+void v3_init_()
 {
 dserror("VISUAL3 PACKAGE not compiled into programm\n");
 return;
 }
-void v3_init__()   
+void v3_init__()
 {
 dserror("VISUAL3 PACKAGE not compiled into programm\n");
 return;

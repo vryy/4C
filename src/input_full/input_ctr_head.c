@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -16,7 +16,7 @@ Maintainer: Malte Neumann
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -25,7 +25,7 @@ extern struct _FILES  allfiles;
 \brief the tracing variable
 
 <pre>                                                         m.gee 8/00
-defined in pss_ds.c, declared in tracing.h                                                  
+defined in pss_ds.c, declared in tracing.h
 </pre>
 *----------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -39,7 +39,7 @@ void inpctrhed()
 {
 INT  linecount=0;
 INT  i=0;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpctrhed");
 #endif
 
@@ -60,7 +60,7 @@ while ( strncmp(allfiles.input_file[i],"------",6) != 0)
 }
 frrewind();
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -74,7 +74,7 @@ return;
 void inptrace()
 {
 
-#ifdef DEBUG 
+#ifdef DEBUG
 char buffer[40];
 INT  ierr=0;
 
@@ -85,7 +85,7 @@ frchar("TRACE",buffer,&ierr);
 if (
     strncmp(buffer,"secure",6)==0 ||
     strncmp(buffer,"Secure",6)==0 ||
-    strncmp(buffer,"SECURE",6)==0 
+    strncmp(buffer,"SECURE",6)==0
    )
     trace.trace_on=1;
 else

@@ -17,19 +17,19 @@ Maintainer: Malte Neumann
 #include "axishell.h"
 #include "axishell_prototypes.h"
 
-/*! 
+/*!
 \addtogroup AXISHELL
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief calculates usual stiffness matrix in total lagrangian formulation 
+\brief calculates usual stiffness matrix in total lagrangian formulation
 
 <pre>                                                              mn 05/03
 This routine calculates usual stiffness matrix in total lagrangian
 formulation.
 
 </pre>
-\param   s       DOUBLE[][]    (o)  element stiffness matrix 
+\param   s       DOUBLE[][]    (o)  element stiffness matrix
 \param   b       DOUBLE[][]    (i)  derivative operator
 \param   d       DOUBLE[][]    (i)  constitutive matrix
 \param   work1   DOUBLE[][]    (i)  working array (4,7)
@@ -39,14 +39,14 @@ formulation.
 \param   dl      DOUBLE    (i)  length of current element
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling:  ---; 
+\return void
+\sa calling:  ---;
     caled by: saxi_static_ke();
 
 *----------------------------------------------------------------------*/
 void saxi_keku(
-    DOUBLE    s[7][7], 
-    DOUBLE    b[4][7], 
+    DOUBLE    s[7][7],
+    DOUBLE    b[4][7],
     DOUBLE    d[4][4],
     DOUBLE    work1[4][7],
     DOUBLE    work2[7][7],
@@ -58,7 +58,7 @@ void saxi_keku(
 
   INT            i, j, k;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("saxi_keku");
 #endif
 
@@ -93,13 +93,13 @@ void saxi_keku(
   {
     for (j=0; j<7; j++)
     {
-      s[i][j] += fac*r*dl*work2[i][j]/1.0; 
+      s[i][j] += fac*r*dl*work2[i][j]/1.0;
       /* im fortran code wird durch 2 dividiert, dieser faktor ist bei
          mir schon in den Gewichten der numerischen integration */
     }
   }
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 

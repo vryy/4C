@@ -11,7 +11,7 @@
 /*----------------------------------------------------------------------*/
 typedef enum _RSF
 { /* r..r-dir., s..s-dir., n..-1.0, p..+1.0 */
-  rp, rn, ps, ns 
+  rp, rn, ps, ns
 } RSF;
 
 static ARRAY eload_a;  static DOUBLE **eload;  /* static element load vector */
@@ -19,8 +19,8 @@ static ARRAY functd_a; static DOUBLE  *functd; /* ansatz-func. for displacements
 static ARRAY derivd_a; static DOUBLE **derivd;  /* derivatives of ansatz-funct*/
 static ARRAY xjm_a;    static DOUBLE **xjm;    /* jacobian matrix            */
 
-/*! 
-\addtogroup WALLGE 
+/*!
+\addtogroup WALLGE
 *//*! @{ (documentation module open)*/
 
 #ifdef D_WALLGE
@@ -51,7 +51,7 @@ static ARRAY xjm_a;    static DOUBLE **xjm;    /* jacobian matrix            */
 void wge_eleload(ELEMENT     *ele,       /* actual element              */
                  WALLGE_DATA *data,      /* element integration data    */
                  DOUBLE      *loadvec,   /* external element forces     */
-                 INT          init) 
+                 INT          init)
 {
 
 INT          i,j;                /* element Diplacement-DOF         */
@@ -84,7 +84,7 @@ DOUBLE          facline;     /*integration factor for line integration */
 DOUBLE          forceline[2];/* lineload value in x and y direction(inp)*/
 RSF rsgeo;                   /* integration direction on line          */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("wge_eleload");
 #endif
 /*----------------------------------------------------------------------*/
@@ -94,8 +94,8 @@ dstrc_enter("wge_eleload");
 if (init==1)
 {
   eload   = amdef("eload"  ,&eload_a,MAXDOFPERNODE,MAXNOD_WALL1,"DA");
-  functd  = amdef("functd"  ,&functd_a,MAXNOD_WALL1,1          ,"DV");       
-  derivd  = amdef("derivd"  ,&derivd_a,2          ,MAXNOD_WALL1,"DA");       
+  functd  = amdef("functd"  ,&functd_a,MAXNOD_WALL1,1          ,"DV");
+  derivd  = amdef("derivd"  ,&derivd_a,2          ,MAXNOD_WALL1,"DA");
   xjm     = amdef("xjm_a"  ,&xjm_a  ,numdfd        ,numdfd     ,"DA");
   goto end;
 }
@@ -108,7 +108,7 @@ amdel(&eload_a);
 amdel(&functd_a);
 amdel(&derivd_a);
 amdel(&xjm_a);
-goto end;  
+goto end;
 }
 /*----------------------------------------------------------------------*/
 /* calculation phase        (init=0)                                    */
@@ -142,12 +142,12 @@ for (lr=0; lr<nir; lr++)/*------------------------- loop r-direction */
      facs = data->wgts[ls];
      /*----------------------------------------- shape functions ---*/
      w1_funct_deriv(functd,derivd,e1,e2,ele->distyp,1);
-     /*------------------------------------------ jacobian matrix ---*/       
-     w1_jaco(derivd,xjm,&det,ele,ield); 
-     /*--------------------------------------- integration factor ---*/ 
-     fac = facr * facs * det; 
-     /*--------------------------------------------------------------*/ 
-     w1_fextsurf(ele,eload,functd,fac,ield); 
+     /*------------------------------------------ jacobian matrix ---*/
+     w1_jaco(derivd,xjm,&det,ele,ield);
+     /*--------------------------------------- integration factor ---*/
+     fac = facr * facs * det;
+     /*--------------------------------------------------------------*/
+     w1_fextsurf(ele,eload,functd,fac,ield);
   }
 }
 /*----------------------------------------------------------------------*/
@@ -165,7 +165,7 @@ for (i=0; i<ngline; i++)
    gline[i] = ele->g.gsurf->gline[i];
    lineneum[i] = gline[i]->neum;
    if (lineneum[i]==NULL) continue;
-   if (lineneum[i]) foundline=1; 
+   if (lineneum[i]) foundline=1;
 }
 if (foundline==0) goto endline;
 /*-------------------------- loop over lines (with neumann conditions) */
@@ -175,41 +175,41 @@ for (line=0; line<ngline; line++)
    /*------------------------------------ check number of nodes on line */
    ngnode = gline[line]->ngnode;
    /*--------- original GP-coordinates and weights for area-integration */
-   ngr = nir; 
-   ngs = nis; 
-    for (i=0; i<ngr; i++) 
-    { 
+   ngr = nir;
+   ngs = nis;
+    for (i=0; i<ngr; i++)
+    {
       xgp[i] = data->xgrr[i];
-      wgx[i] = data->wgtr[i]; 
+      wgx[i] = data->wgtr[i];
      }
-    for (i=0; i<ngs; i++) 
-    { 
+    for (i=0; i<ngs; i++)
+    {
        ygp[i] = data->xgss[i];
-       wgy[i] = data->wgts[i]; 
+       wgy[i] = data->wgts[i];
      }
    /*--------- degeneration to line-integration-info for r-s directions */
     switch (line)
     {
-    case 0:  /* line1 (s=const=+1) - first,last,(quadratic:middle) node */                     
-       ngs    =  1; /*s=const -> only one integration point in s-direct */ 
+    case 0:  /* line1 (s=const=+1) - first,last,(quadratic:middle) node */
+       ngs    =  1; /*s=const -> only one integration point in s-direct */
        ygp[0] =  1.;/* line 1 -> s=const=+1                             */
        wgy[0] =  1.;
        rsgeo = rp; /*  r = {+ -> 0 -> -} |s = +1  */
     break;
     case 1:
-       ngr    =  1; 
+       ngr    =  1;
        xgp[0] = -1.;
        wgx[0] =  1.;
        rsgeo = ns; /*  r = -1 | s={+ -> 0 -> -}  */
     break;
     case 2:
-       ngs    = 1; 
+       ngs    = 1;
        ygp[0] = -1.;
        wgy[0] =  1.;
        rsgeo = rn; /*  r = {- -> 0 -> +} |s = -1  */
     break;
     case 3:
-       ngr    =  1; 
+       ngr    =  1;
        xgp[0] =  1.;
        wgx[0] =  1.;
        rsgeo = ps; /*  r =  1 | s={- -> 0 -> +}  */
@@ -228,17 +228,17 @@ for (line=0; line<ngline; line++)
           facs = wgy[ls];
          /*------------------------------------------- shape functions ---*/
           w1_funct_deriv(functd,derivd,e1,e2,ele->distyp,1);
-          /*--------------------------------------------- jacobian matrix */       
-          w1_jaco(derivd,xjm,&det,ele,ield); 
+          /*--------------------------------------------- jacobian matrix */
+          w1_jaco(derivd,xjm,&det,ele,ield);
           /*---------------------------------------------- line increment */
           ds = 0.0;
           switch (rsgeo)
           {
-          case rp: case rn: 
+          case rp: case rn:
             ds = DSQR(xjm[0][0])+DSQR(xjm[0][1]);
             ds = sqrt(ds);
           break;
-          case ps: case ns: 
+          case ps: case ns:
             ds = DSQR(xjm[1][0])+DSQR(xjm[1][1]);
             ds = sqrt(ds);
           break;
@@ -257,8 +257,8 @@ for (line=0; line<ngline; line++)
                  eload[i][j] += functd[j] * forceline[i] * facline;
               }
           }
-          
-          
+
+
         }/*========================================== end of loop over ls */
       }/*============================================= end of loop over lr */
    /* line number lie has been done,switch of the neumann pointer of it */
@@ -291,10 +291,10 @@ if (foundline != 0 || foundsurface != 0)
 /*----------------------------------------------------------------------*/
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of wge_eleload */
 
 #endif /*D_WALLGE*/

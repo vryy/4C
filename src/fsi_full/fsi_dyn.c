@@ -10,19 +10,19 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
+/*!
 \addtogroup FSI
 *//*! @{ (documentation module open)*/
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
-#include "fsi_prototypes.h"    
+#include "fsi_prototypes.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate dynamic variables if needed                      |
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;    
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -39,11 +39,11 @@ extern struct _FIELD      *field;
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par;  
+ extern struct _PAR   par;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 02/02    |
  | number of load curves numcurve                                       |
@@ -54,7 +54,7 @@ and the type is in partition.h
  *----------------------------------------------------------------------*/
  extern INT            numcurve;
  extern struct _CURVE *curve;
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief routine to control fsi dynamic analyis
 
 <pre>                                                         genk 09/02
@@ -64,21 +64,21 @@ Implemented Algorithms:
  - basic sequentiel staggered scheme
  - sequential staggered scheme with predictor
  - iterative staggered scheme with fixed relaxation parameter
- - iterative staggered scheme with relaxation parameter via AITKEN 
+ - iterative staggered scheme with relaxation parameter via AITKEN
    iteration
-		     
+
 </pre>
 
 \param mctrl    INT   (i)     evaluation flag
 
-\return void                                                                             
+\return void
 
 ------------------------------------------------------------------------*/
 void dyn_fsi(INT mctrl)
 {
 
 static INT      numfld;       /* number of fiels                        */
-static INT      numsf;        
+static INT      numsf;
 static INT      numff;
 static INT      numaf;        /* actual number of fields                */
 static INT      resstep=0;    /* counter for output control             */
@@ -87,7 +87,7 @@ const  INT      mctrlpre=4;   /* control flag                           */
 INT             actcurve;     /* actual curve                           */
 INT             itnum=0;      /* iteration counter                      */
 INT             converged;    /* convergence flag                       */
-static FIELD          *fluidfield;   
+static FIELD          *fluidfield;
 static FIELD          *structfield;
 static FIELD          *alefield;
 static FLUID_DYNAMIC  *fdyn;
@@ -95,7 +95,7 @@ static FSI_DYNAMIC    *fsidyn;
 static STRUCT_DYNAMIC *sdyn;
 static ALE_DYNAMIC    *adyn;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("dyn_fsi");
 #endif
 
@@ -105,7 +105,7 @@ if (mctrl==99) goto cleaningup;
 /*--------------------------------------------------------- check input *
  | convention used at the moment:                                       |
  | FIELD 0: structure                                                   |
- | FIELD 1: fluid                                                       | 
+ | FIELD 1: fluid                                                       |
  | FIELD 2: mesh / ale                                                  |
  *----------------------------------------------------------------------*/
 numfld=genprob.numfld;
@@ -159,7 +159,7 @@ if (genprob.restart!=0)
        fsidyn->time != sdyn->time   )
        dserror("Restart problem: Time not identical in fields!\n");
    if (fsidyn->step != fdyn->step ||
-       fsidyn->step != adyn->step || 
+       fsidyn->step != adyn->step ||
        fsidyn->step != sdyn->step   )
        dserror("Restart problem: Step not identical in fields!\n");
 }
@@ -167,9 +167,9 @@ if (genprob.restart!=0)
 /*----------------------------------------- initialise AITKEN iteration */
 if (fsidyn->ifsi==5)
 {
-   fsi_aitken(structfield,itnum,0);   
+   fsi_aitken(structfield,itnum,0);
 }
-    
+
 /*----------------------------------------------------------------------*/
 if (par.myrank==0) out_gid_msh();
 /*--------------------------------------- write initial solution to gid */
@@ -181,7 +181,7 @@ if (par.myrank==0) out_gid_sol_fsi(fluidfield,structfield);
 timeloop:
 mctrl=2;
 fsidyn->step++;
-fsidyn->time += fsidyn->dt; 
+fsidyn->time += fsidyn->dt;
 fdyn->step=fsidyn->step;
 sdyn->step=fsidyn->step;
 adyn->step=fsidyn->step;
@@ -229,14 +229,14 @@ else if (fsidyn->ifsi==2 || fsidyn->ifsi>=4)
 if (fsidyn->ifsi>=4)
 {
    /*-------------------------------------- iteration convergence check */
-   converged=fsi_convcheck(structfield, itnum);   
+   converged=fsi_convcheck(structfield, itnum);
 
    if (converged==0) /*--------------------------------- no convergence */
    {
    /*----------------------------- compute optimal relaxation parameter */
       if (fsidyn->ifsi==5)
       {
-         fsi_aitken(structfield,itnum,1);   
+         fsi_aitken(structfield,itnum,1);
       }
       else if (fsidyn->ifsi==6)
       {
@@ -245,7 +245,7 @@ if (fsidyn->ifsi>=4)
       else if (fsidyn->ifsi==7)
       {
          dserror("RELAX via CHEBYCHEV not implemented yet!\n");
-      }   
+      }
       /*-------------- relaxation of structural interface displacements */
       fsi_relax_intdisp(structfield);
       itnum++;
@@ -257,7 +257,7 @@ if (fsidyn->ifsi>=4)
       /*--------------------- update MESH data -------------------------*/
       fsi_ale(alefield,mctrl);
       /*-------------------- update FLUID data -------------------------*/
-      fsi_fluid(fluidfield,mctrl);      
+      fsi_fluid(fluidfield,mctrl);
       /*------------------ update STRUCTURE data -----------------------*/
       fsi_struct(structfield,mctrl,itnum);
    }
@@ -295,13 +295,13 @@ cleaningup:
 mctrl=99;
 fsi_fluid(fluidfield,mctrl);
 fsi_struct(structfield,mctrl,itnum);
-fsi_ale(alefield,mctrl);   
+fsi_ale(alefield,mctrl);
 
 /*----------------------------------------------------------------------*/
 #else
 dserror("FSI routines are not compiled in!\n");
 #endif
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

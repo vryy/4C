@@ -1,6 +1,6 @@
 /*!---------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -14,7 +14,7 @@ Maintainer: Malte Neumann
  |                                                          al 08/02    |
  | general eigensolution-variables                                      |
  *----------------------------------------------------------------------*/
-typedef struct _ALLEIG                 
+typedef struct _ALLEIG
 {
 EIG_SOL_TYPE       soltyp;    /* eigenvalue solution process                        */
 INT                sturm ;    /* perform sturm sequence check  0=no                 */
@@ -25,7 +25,7 @@ INT                range;     /* search in a range                              
 INT                numvec;    /* number of iteration vectors                        */
 INT                nroot;     /* number of requested eigenvalues to be converged    */
 INT                itemax;    /* maximum number of iterations                       */
-INT                ifctr;     /* 1 = output to console 2 = print iteration on file  */ 
+INT                ifctr;     /* 1 = output to console 2 = print iteration on file  */
 DOUBLE             toleig;    /* tolerance to be used in convergence check          */
 DOUBLE             shift;     /* relative shift (removed after iteration)           */
 DOUBLE             boulo;     /* lower boundary                                     */

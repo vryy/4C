@@ -18,7 +18,7 @@ Maintainer: Stefan Hartmann
 #include "wall1.h"
 #include "wall1_prototypes.h"
 
-/*! 
+/*!
 \addtogroup WALL1
 *//*! @{ (documentation module open)*/
 
@@ -27,7 +27,7 @@ Maintainer: Stefan Hartmann
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -37,7 +37,7 @@ extern struct _FILES  allfiles;
 
 <pre>                                                         m.gee 8/00
 -the partition of one proc (all discretizations)
--the type is in partition.h                                                  
+-the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -45,19 +45,19 @@ extern struct _PARTITION  *partition;
 
 
 /*!----------------------------------------------------------------------
-\brief write the data needed to restart this element                                       
+\brief write the data needed to restart this element
 
 <pre>                                                           sh 03/04
-This routine writes the data needed to restart the shell9 element. 
+This routine writes the data needed to restart the shell9 element.
 </pre>
 \param  ELEMENT  *actele   (i) actual element
 \param  MATERIAL *mat      (i)  the material structure
 \param  INT       nhandle  (i) size of handles
-\param  long int *handles  ( ) unique handle returned by the pss-system 
+\param  long int *handles  ( ) unique handle returned by the pss-system
 \param  INT       init    (i) flag for initializing arrays
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: wall1()   [w1_main.c]
 
 *----------------------------------------------------------------------*/
@@ -68,18 +68,18 @@ INT size_j;
 static ARRAY   elewares_a;  static DOUBLE **elewares;     /* array for elewa */
 FILE *out;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_write_restart");
 #endif
 /*---------------------------------------------------------- init phase */
 if (init==1)
 {
-   /*array for elewares_a  
+   /*array for elewares_a
      fdim = 1
-     sdim = max number of possible entries in ipwa per GP (30 at the moment) 
+     sdim = max number of possible entries in ipwa per GP (30 at the moment)
             * max number of GP (3x3 = 9 at the moment) */
 
-    /*  pl_mises */      
+    /*  pl_mises */
     /*  DOUBLE       epstn;      equivalent strain                            */
     /*  INT          yip;        stress state: 1=elastic 2=plastic            */
     /*  DOUBLE       sig[4];     stresses                               [4]   */
@@ -87,7 +87,7 @@ if (init==1)
     /*  DOUBLE       qn[4]       backstress                             [4]   */
     /*      ( == 14 )                                                         */
 
-    /*  pl_mises_3D */      
+    /*  pl_mises_3D */
     /*  DOUBLE       epstn;      equivalent strain                            */
     /*  INT          yip;        stress state: 1=elastic 2=plastic            */
     /*  DOUBLE       sig[4];     stresses                               [4]   */
@@ -99,7 +99,7 @@ if (init==1)
     /*  DOUBLE       di[4]       part of constitutive matrix for cond.  [4]   */
     /*      ( == 30 )                                                         */
 
-    /*  pl_epc3D */      
+    /*  pl_epc3D */
     /*  INT          yip;        stress state: 1=elastic 2=plastic            */
     /*  DOUBLE       dlam[0];    equivalent strain (tension)                  */
     /*  DOUBLE       dlam[1];    equivalent strain (compression)              */
@@ -112,14 +112,14 @@ if (init==1)
     /*  DOUBLE       di[4]       part of constitutive matrix for cond.  [4]   */
     /*      ( == 31 )                                                         */
 
-   elewares     = amdef("elewares"  ,&elewares_a,1,31*9,"DA");    
+   elewares     = amdef("elewares"  ,&elewares_a,1,31*9,"DA");
 
    goto end;
 }
 /*-------------------------------------------------------- uninit phase */
 else if (init==-1)
 {
-   amdel(&elewares_a);   
+   amdel(&elewares_a);
 
    goto end;
 }
@@ -139,7 +139,7 @@ handles[0]=0;
 if (!actele->e.w1->elewa) goto end; /*no elewa to this element*/
 
 /*if there is a working array, write all the data into the elewares_a */
-/*number of gausspoints to this element*/     
+/*number of gausspoints to this element*/
 size_j = actele->e.w1->nGP[0]*actele->e.w1->nGP[1];
 
 n = 0;
@@ -225,7 +225,7 @@ else if(mat[actele->mat-1].mattyp == m_pl_epc3D )
   }
 } /*end pl_epc3D */
 
-else printf("WARNING: Unknown mattyp in 'w1_write_restart'\n");  
+else printf("WARNING: Unknown mattyp in 'w1_write_restart'\n");
 
 handles[0]+=1;
 if (handles[0]+1 > nhandle) dserror("Handle range too small for element in 'w1_write_restart' ");
@@ -237,26 +237,26 @@ if (ierr != 1) dserror("Error writing restart data in 'w1_write_restart' ");
 /*----------------------------------------------------------------------*/
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of w1_write_restart */
 
 /*!----------------------------------------------------------------------
-\brief read the data needed to restart this element                                       
+\brief read the data needed to restart this element
 
 <pre>                                                            sh 03/04
-This routine reads the data needed to restart the wall1 element. 
+This routine reads the data needed to restart the wall1 element.
 </pre>
 \param  ELEMENT  *actele   (i) actual element
 \param  MATERIAL *mat      (i)  the material structure
 \param  INT       nhandle  (i) size of handles
-\param  long int *handles  ( ) unique handle returned by the pss-system 
+\param  long int *handles  ( ) unique handle returned by the pss-system
 \param  INT       init    (i) flag for initializing arrays
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: wall1()   [w1_main.c]
 
 *----------------------------------------------------------------------*/
@@ -268,22 +268,22 @@ static ARRAY   elewares_a;  static DOUBLE **elewares;     /* array for elewa */
 INT dims[3];
 FILE *in;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_read_restart");
 #endif
 /*---------------------------------------------------------- init phase */
 if (init==1)
 {
    /*for dimensions see w1_write_restart */
-               
-   elewares     = amdef("elewares"  ,&elewares_a,1,31*9,"DA");    
+
+   elewares     = amdef("elewares"  ,&elewares_a,1,31*9,"DA");
 
    goto end;
 }
 /*-------------------------------------------------------- uninit phase */
 else if (init==-1)
 {
-   amdel(&elewares_a);   
+   amdel(&elewares_a);
 
    goto end;
 }
@@ -309,12 +309,12 @@ if (elewares_a.fdim != dims[0] ||
     dserror("Mismatch in reading element restart data in 'w1_read_restart'");
 /*-------------------------------------------------------- read elewares_a */
 pss_read_array_name_handle(elewares_a.name,&elewares_a,&handles[1],in,&ierr);
-if (ierr != 1) dserror("Cannot read restart data in 'w1_read_restart'");  
+if (ierr != 1) dserror("Cannot read restart data in 'w1_read_restart'");
 
 
 /*----- now write the restart data back to elewa -------------------------*/
 
-/*number of gausspoints to this element*/     
+/*number of gausspoints to this element*/
 size_j = actele->e.w1->nGP[0]*actele->e.w1->nGP[1];
 
 n = 0;
@@ -400,12 +400,12 @@ else if(mat[actele->mat-1].mattyp == m_pl_epc3D )
   }
 } /*end pl_epc3D */
 
-else printf("WARNING: Unknown mattyp in 'w1_write_restart'\n");  
+else printf("WARNING: Unknown mattyp in 'w1_write_restart'\n");
 
 /*----------------------------------------------------------------------*/
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -14,14 +14,14 @@ Maintainer: Michael Gee
 ---------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
-/*! 
-\addtogroup MLPCG 
+/*!
+\addtogroup MLPCG
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
 \brief the multilevel preconditioner main structure
 
-<pre>                                                         m.gee 09/02    
+<pre>                                                         m.gee 09/02
 defined in solver_mlpcg.c
 </pre>
 
@@ -29,17 +29,17 @@ defined in solver_mlpcg.c
 extern struct _MLPRECOND mlprecond;
 
 /*!---------------------------------------------------------------------
-\brief Jacobi smoother                                              
+\brief Jacobi smoother
 
-<pre>                                                        m.gee 10/02 
+<pre>                                                        m.gee 10/02
 
 </pre>
 \param z            DOUBLE*      (o)   the solution of the smoothing
 \param r            DOUBLE*      (i)   the right hand side
 \param csr          DBCSR*       (i)   the matrix to smooth with
 \param nsweep       INT          (i)   number of smoothing cycles
-\param actintra     INTRA*       (i)   the intra-communicator of this field                  
-\return void                                               
+\param actintra     INTRA*       (i)   the intra-communicator of this field
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_precond_smoJacobi(DOUBLE *z, DOUBLE *r, DBCSR *csr, INT nsweep, INTRA *actintra)
@@ -53,7 +53,7 @@ DOUBLE *work;
 DOUBLE  done=1.0;
 INT     ione=1;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_precond_smoJacobi");
 #endif
 /*----------------------------------------------------------------------*/
@@ -68,7 +68,7 @@ work = amdef("work",&work_a,numeq,1,"DV");
 /*----------------------- get the inverse of the diagonal of csr matrix */
 mlpcg_csr_getdinv(Dinv,csr,numeq);
 /*--------------------------------------------------- make z = Dinv * r */
-for (i=0; i<numeq; i++) 
+for (i=0; i<numeq; i++)
    z[i] = Dinv[i] * r[i];
 /*--------------------------------------- copy r to working vector work */
 if (nsweep>1)
@@ -90,7 +90,7 @@ if (nsweep>1)
 amdel(&work_a);
 /*----------------------------------------------------------------------*/
 exit:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -98,17 +98,17 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief ilu(n) smoother                                              
+\brief ilu(n) smoother
 
-<pre>                                                        m.gee 11/02 
+<pre>                                                        m.gee 11/02
 
 </pre>
 \param z            DOUBLE*      (o)   the solution of the smoothing
 \param r            DOUBLE*      (i)   the right hand side
 \param csr          DBCSR*       (i)   the matrix to smooth with
 \param nsweep       INT          (i)   n in ilu(n)
-\param actintra     INTRA*       (i)   the intra-communicator of this field                  
-\return void                                               
+\param actintra     INTRA*       (i)   the intra-communicator of this field
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_precond_smo_ILUn(DOUBLE *z, DOUBLE *r, DBCSR *csr, INT nsweep, INTRA *actintra)
@@ -120,7 +120,7 @@ DBCSR  *asm;
 INT     size,ierr=0;
 ARRAY   levs,w,jw;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_precond_smo_ILUn");
 #endif
 /*----------------------------------------------------------------------*/
@@ -198,7 +198,7 @@ c           ierr  = -2   --> The matrix L overflows the array al.
 c           ierr  = -3   --> The matrix U overflows the array alu.
 c           ierr  = -4   --> Illegal value for lfil.
 c           ierr  = -5   --> zero row encountered in A or U.
-*/        
+*/
    if (ierr != 0)
    {
       if (ierr>0)
@@ -215,10 +215,10 @@ c           ierr  = -5   --> zero row encountered in A or U.
          amdel(&(ilu->ja));
          amdel(&(ilu->ia));
          amdel(&levs     );
-         amdel(&w        ); 
+         amdel(&w        );
          amdel(&jw       );
          goto tryagain;
-      } 
+      }
    }
    /*----------------------------------- set flag, that ilu is factored */
    ilu->is_factored = mlprecond.ncall;
@@ -273,7 +273,7 @@ else if (csr->ilu->is_factored != mlprecond.ncall && mlprecond.mod==0)
         asm->ja.a.iv,
         asm->ia.a.iv,
         &nsweep,
-        ilu->a.a.dv, 
+        ilu->a.a.dv,
         ilu->ja.a.iv,
         ilu->ia.a.iv,
         levs.a.iv,
@@ -292,7 +292,7 @@ c           ierr  = -2   --> The matrix L overflows the array al.
 c           ierr  = -3   --> The matrix U overflows the array alu.
 c           ierr  = -4   --> Illegal value for lfil.
 c           ierr  = -5   --> zero row encountered in A or U.
-*/        
+*/
    if (ierr != 0)
    {
       if (ierr>0)
@@ -315,7 +315,7 @@ c           ierr  = -5   --> zero row encountered in A or U.
          amdel(&w        );
          amdel(&jw       );
          goto tryagain2;
-      } 
+      }
    }
    /*----------------------------------- set flag, that ilu is factored */
    ilu->is_factored = mlprecond.ncall;
@@ -330,7 +330,7 @@ c           ierr  = -5   --> zero row encountered in A or U.
 ilu = csr->ilu;
 lusol(&(ilu->numeq),r,z,ilu->a.a.dv,ilu->ja.a.iv,ilu->ia.a.iv);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -340,16 +340,16 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief lapack solver                                              
+\brief lapack solver
 
-<pre>                                                        m.gee 11/02 
+<pre>                                                        m.gee 11/02
 
 </pre>
-\param z            DOUBLE*      (o)   the solution of the solve 
-\param r            DOUBLE*      (i)   the rhs 
-\param csr          DBCSR*       (i)   the matrix to be solved with 
-\param actintra     INTRA*       (i)   the intra-communicator of this field                  
-\return void                                               
+\param z            DOUBLE*      (o)   the solution of the solve
+\param r            DOUBLE*      (i)   the rhs
+\param csr          DBCSR*       (i)   the matrix to be solved with
+\param actintra     INTRA*       (i)   the intra-communicator of this field
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_precond_lapacksolve(DOUBLE *z, DOUBLE *r, DBCSR *csr, INTRA *actintra)
@@ -364,7 +364,7 @@ DOUBLE **sdense,*srhs,*rrhs;
 char     trans[1];
 INT      ione=1;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_precond_lapacksolve");
 #endif
 /*----------------------------------------------------------------------*/
@@ -386,21 +386,21 @@ if (csr->dense==NULL)
 
    sdense = amdef("tmp",&sdense_a,numeq_total,numeq_total,"DA");
             amzero(&sdense_a);
-#ifndef PARALLEL 
+#ifndef PARALLEL
    amzero(csr->dense);
 #endif
    /*------------------------------------------------------ fill sdense */
    for (i=0; i<numeq; i++)
       for (j=ia[i]; j<ia[i+1]; j++)
          {
-#ifdef PARALLEL 
+#ifdef PARALLEL
             sdense[update[i]][ja[j]] = a[j];
 #else
             csr->dense->a.da[update[i]][ja[j]] = a[j];
 #endif
          }
    /*--------------------------------------------------- allreduce them */
-#ifdef PARALLEL 
+#ifdef PARALLEL
    MPI_Allreduce(sdense[0],csr->dense->a.da[0],sdense_a.fdim*sdense_a.sdim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
 #endif
    amdel(&sdense_a);
@@ -419,21 +419,21 @@ else if (csr->is_factored != mlprecond.ncall)
 {
    sdense = amdef("tmp",&sdense_a,numeq_total,numeq_total,"DA");
             amzero(&sdense_a);
-#ifndef PARALLEL 
+#ifndef PARALLEL
    amzero(csr->dense);
 #endif
    /*------------------------------------------------------ fill sdense */
    for (i=0; i<numeq; i++)
       for (j=ia[i]; j<ia[i+1]; j++)
          {
-#ifdef PARALLEL 
+#ifdef PARALLEL
             sdense[update[i]][ja[j]] = a[j];
 #else
             csr->dense->a.da[update[i]][ja[j]] = a[j];
 #endif
          }
    /*--------------------------------------------------- allreduce them */
-#ifdef PARALLEL 
+#ifdef PARALLEL
    MPI_Allreduce(sdense[0],csr->dense->a.da[0],sdense_a.fdim*sdense_a.sdim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
 #endif
    amdel(&sdense_a);
@@ -453,13 +453,13 @@ srhs   = amdef("tmp",&srhs_a,numeq_total,1,"DV");
          amzero(&srhs_a);
 rrhs   = amdef("tmp",&rrhs_a,numeq_total,1,"DV");
 for (i=0; i<numeq; i++)
-#ifdef PARALLEL 
+#ifdef PARALLEL
    srhs[update[i]] = r[i];
 #else
    rrhs[update[i]] = r[i];
 #endif
 
-#ifdef PARALLEL 
+#ifdef PARALLEL
 MPI_Allreduce(srhs     ,rrhs     ,srhs_a.fdim                ,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
 #endif
 amdel(&srhs_a);
@@ -486,23 +486,23 @@ for (i=0; i<numeq; i++)
 /*------------------------------------------------------------- tidy up */
 amdel(&rrhs_a);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of mlpcg_precond_lapacksolve */
 
 /*!---------------------------------------------------------------------
-\brief Modified Gram-Schmidt Orthonormalization                                              
+\brief Modified Gram-Schmidt Orthonormalization
 
-<pre>                                                        m.gee 11/02 
+<pre>                                                        m.gee 11/02
 
 </pre>
 \param P            DOUBLE**      (i/o)   The prolongator to be orthonormalized
 \param R            DOUBLE**      (o)     the R part of the P = QR factorization
-\param nrow         INT           (i)     row dimension of P 
+\param nrow         INT           (i)     row dimension of P
 \param ncol         INT           (i)     column dimension of P
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_precond_gramschmidt(DOUBLE **P, DOUBLE **R,const INT nrow,const INT ncol)
@@ -511,7 +511,7 @@ INT     i,j,k;
 DOUBLE  sum;
 INT     start=0;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_precond_gramschmidt");
 #endif
 /*----------------------------------------------------------------------*/
@@ -519,10 +519,10 @@ dsassert(nrow<=500,"Local array Q too small");
 /*------------------------------------------- make norm of first column */
 tryagain:
 sum = 0.0;
-for (i=0; i<nrow; i++) 
+for (i=0; i<nrow; i++)
    sum += P[i][start]*P[i][start];
 if (FABS(sum) < EPS13)
-{ 
+{
    R[start][start]=0.0;
    start++;
    if (start==ncol) dserror("Prolongator is completely zero");
@@ -530,7 +530,7 @@ if (FABS(sum) < EPS13)
 }
 sum = sqrt(sum);
 /*----------------------------------------------- put first column to Q */
-for (i=0; i<nrow; i++) 
+for (i=0; i<nrow; i++)
    P[i][start] /= sum;
 /*----------------------------------------------- put first column in R */
 R[start][start] = sum;
@@ -564,7 +564,7 @@ for (j=start+1; j<ncol; j++)
       R[j][j] = 0.0;
 } /* end of for (j=0; j<ncol; j++) */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

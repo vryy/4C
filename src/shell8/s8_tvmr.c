@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Michael Gee
@@ -32,7 +32,7 @@ void s8_tvmr(DOUBLE   **x,
 INT    i,j,k,idim,ialpha,inode;
 INT    i1=0,i2=0,i3=0,i4=0,i5=0,i6=0;
 DOUBLE det_dummy;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_tvmr");
 #endif
 /*----------------------------------------------------------------------*/
@@ -66,8 +66,8 @@ for (ialpha=0; ialpha<2; ialpha++)
       akov[idim][ialpha]=0.0;
       for (inode=0; inode<iel; inode++)
       {
-         akov[idim][ialpha] += 
-         
+         akov[idim][ialpha] +=
+
             deriv[ialpha][inode] * x[idim][inode];
       }
    }
@@ -81,7 +81,7 @@ if (i1==1)
       for (inode=0; inode<iel; inode++)
       {
          akov[idim][2] +=
-         
+
             funct[inode] * a3[idim][inode];
       }
    }
@@ -106,10 +106,10 @@ if (i4==1)
       for (j=i; j<3; j++)
       {
          amkov[i][j]=0.0;
-         for (k=0; k<3; k++) 
+         for (k=0; k<3; k++)
          amkov[i][j] += akov[k][i]*akov[k][j];
       }
-   }   
+   }
          amkov[1][0] = amkov[0][1];
          amkov[2][0] = amkov[0][2];
          amkov[2][1] = amkov[1][2];
@@ -136,7 +136,7 @@ if (i6==1)
    }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

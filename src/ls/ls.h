@@ -15,7 +15,7 @@ Maintainer: Baris Irhan
 #ifndef LS_H
 #define LS_H
 
-/*! 
+/*!
 \addtogroup LEVELSET
 *//*! @{ (documentation module open)*/
 
@@ -35,10 +35,10 @@ typedef struct _LS_INT_DATA
   DOUBLE               pd[2];        /* intersection with diagonal */
   INT                  edge[2];      /* start and end edges */
   INT                  polycon[2][3];/* polygon connectivity */
-  INT                  is_diagcut;   /* is diagonal cut */    
+  INT                  is_diagcut;   /* is diagonal cut */
   INT                  reconstruct;  /* flag for reconstruction */
   struct _ELEMENT     *nbor;         /* element neighbor to eedge */
-  struct _ELEMENT     *nbor_s;       /* element neighbor to sedge */  
+  struct _ELEMENT     *nbor_s;       /* element neighbor to sedge */
 } LS_INT_DATA;
 
 
@@ -52,7 +52,7 @@ This structure contains data related to polygonization
 *----------------------------------------------------------------------*/
 typedef struct _LS_POLY_DATA
 {
-  INT                  ind[2];               /* index for refined integration */                                    
+  INT                  ind[2];               /* index for refined integration */
   INT                  polygonmat[2][7];     /* material properties for each subpolygon */
   DOUBLE               polygonwgt[2][7];     /* weight corresponding to each subpolygon */
   DOUBLE               polygonGP[2][2][7];   /* Gauss points corresponding to each subpolygon */
@@ -86,7 +86,7 @@ typedef struct _LS2
   INT                  nenode;       /* number of enriched nodes */
   INT                  enode[4];     /* local node numbers of enriched nodes */
   INT                  intcnt;       /* index to interface number involved */
-  INT                  prncnt;       /* counter used in printing */  
+  INT                  prncnt;       /* counter used in printing */
   INT                  rstcnt;       /* counter used in resetting */
 
   struct _LS_INT_DATA  intdata[2];   /* struct to store interface data */
@@ -110,10 +110,10 @@ typedef struct _LS_DYNAMIC
   INT 	                  nstep;       /* number of time steps */
   INT 	                  nfstep;      /* number of fluid only time steps */
   INT 	                  nfreinit;    /* frequency of reinitialization */
-  INT 	                  nfreprn;     /* frequency of print */  
+  INT 	                  nfreprn;     /* frequency of print */
   INT  	                  itemax;      /* maximum num. of itn. at a certain time step */
   INT                     iop;         /* time integration scheme */
-  INT	                  ite;         /* iteration scheme */	
+  INT	                  ite;         /* iteration scheme */
   INT                     itchk;       /* convergence check during nonlin. iteration */
   INT                     stchk;       /* flag for steady state check */
   INT                     itnrm;       /* norm for conv. check d. nonlin. iteration */
@@ -148,12 +148,12 @@ typedef struct _LS_GEN_DATA
   INT        flag_vel;               /* if setvel==byuser => flag for description of velocity profile */
 
   DOUBLE     xc1;                    /* data for circular interfaces */
-  DOUBLE     yc1;                    
+  DOUBLE     yc1;
   DOUBLE     rad1;
-  DOUBLE     xc2;                   
+  DOUBLE     xc2;
   DOUBLE     yc2;
   DOUBLE     rad2;
-  DOUBLE     xc3;                   
+  DOUBLE     xc3;
   DOUBLE     yc3;
   DOUBLE     rad3;
 
@@ -169,18 +169,18 @@ typedef struct _LS_GEN_DATA
   DOUBLE     ys3;
   DOUBLE     xe3;
   DOUBLE     ye3;
-  
+
   INT 	     isstab;              /* flag to control stabilization */
   INT 	     localization;        /* flag to control localization (localization not implemented yet!) */
   INT 	     numlayer;            /* flag to control localization region */
-  
+
   INT 	     reinitialization;    /* flag to control reinitialization */
   INT 	     numreinit;           /* number of reinitialization */
   INT 	     reinitflag;          /* initialization flag */
   DOUBLE     rdt;                 /* dt for reinitialization */
   INT        algo;                /* treatment of velocity (imp. or exp.) */
   DOUBLE     epsilon;             /* smoothing parameter for sign function */
-  INT 	     anchor;              /*  */  
+  INT 	     anchor;              /*  */
 
   INT        boundary_on_off;     /* treatment of boundary */
   INT        reconstruct_on_off;  /* flag used in reconstruction phase */
@@ -190,7 +190,7 @@ typedef struct _LS_GEN_DATA
                                   /* ( = 1 ) => bubble problem */
                                   /* ( = 2 ) => breaking dam   */
   INT        searchband;          /* maximum number of layer. it is used for element search in interface construction */
-} LS_GEN_DATA;                  
+} LS_GEN_DATA;
 
 
 
@@ -198,7 +198,7 @@ typedef struct _LS_GEN_DATA
 \brief 2D level set update
 
 <pre>                                                            irhan 05/04
-This structure contains interface information 
+This structure contains interface information
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -264,16 +264,16 @@ typedef enum _FRONTLSFLAG
 {
   front_ls_set,
   front_ls_init,
-  front_ls_initmat,    
+  front_ls_initmat,
   front_ls_updt,
-  front_ls_updtmat,  
+  front_ls_updtmat,
   front_ls_activate,
   front_ls_localize,
   front_ls_polygonize,
   front_ls_write,
   front_ls_write_fld_soln,
   front_ls_finalize,
-  front_ls_init_pressure_breaking_dam          
+  front_ls_init_pressure_breaking_dam
 } FRONTLSFLAG;
 /*! @} (documentation module close)*/
 

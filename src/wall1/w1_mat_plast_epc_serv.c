@@ -2,7 +2,7 @@
 \file
 \brief contains the routine 'w1iwadi' which initializes d-components
        d[0][3], d[1][3], d[2][3], d[3][3] on elastic
-       contains the routine 'w1yicsr' which calculates the yield 
+       contains the routine 'w1yicsr' which calculates the yield
        criterion for planes strain - Drucker Prager
        contains the routine 'w1yiccap' which calculates the yield
        criterion in the cap-region of the cap-model
@@ -24,8 +24,8 @@ Maintainer: Andrea Hund
 #include "wall1.h"
 #include "wall1_prototypes.h"
 
-/*! 
-\addtogroup WALL1 
+/*!
+\addtogroup WALL1
 *//*! @{ (documentation module open)*/
 
 /*-----------------------------------------------------------------------|
@@ -33,13 +33,13 @@ Maintainer: Andrea Hund
 |      on elastic                                                        |
 |-----------------------------------------------------------------------*/
 void w1iwadi (DOUBLE ym,
-              DOUBLE pv, 
+              DOUBLE pv,
               DOUBLE *di)
 {
 /*----------------------------------------------------------------------*/
     static DOUBLE a1, b1, c1;
 /*----------------------------------------------------------------------*/
-    #ifdef DEBUG 
+    #ifdef DEBUG
     dstrc_enter("w1iwadi");
     #endif
 /*----------------------------------------------------------------------*/
@@ -52,7 +52,7 @@ void w1iwadi (DOUBLE ym,
     di[2] = 0.;
     di[3] = a1;
 /*----------------------------------------------------------------------*/
-    #ifdef DEBUG 
+    #ifdef DEBUG
     dstrc_exit();
     #endif
 /*----------------------------------------------------------------------*/
@@ -71,7 +71,7 @@ void w1yicsr (DOUBLE dev,      /* norm der deviatorischen spannungen    */
 /*----------------------------------------------------------------------*/
     static DOUBLE ro23;
 /*----------------------------------------------------------------------*/
-    #ifdef DEBUG 
+    #ifdef DEBUG
     dstrc_enter("w1yicsr");
     #endif
 /*------------------------------------------------------- initialize ---*/
@@ -80,7 +80,7 @@ void w1yicsr (DOUBLE dev,      /* norm der deviatorischen spannungen    */
 /*---------------------------------- yield condition: drucker-prager ---*/
     *ft  = dev + alpha * hyd - ro23 * sigym;
 /*----------------------------------------------------------------------*/
-    #ifdef DEBUG 
+    #ifdef DEBUG
     dstrc_exit();
     #endif
 /*----------------------------------------------------------------------*/
@@ -99,7 +99,7 @@ void w1yiccap (DOUBLE dev,   /* norm of deviatoric predictor stresses   */
 /*----------------------------------------------------------------------*/
     static DOUBLE dum;
 /*----------------------------------------------------------------------*/
-    #ifdef DEBUG 
+    #ifdef DEBUG
     dstrc_enter("w1yiccap");
     #endif
 /*------------------------------------------------------- initialize ---*/
@@ -107,16 +107,16 @@ void w1yiccap (DOUBLE dev,   /* norm of deviatoric predictor stresses   */
 /*---------------------------------- yield condition: drucker-prager ---*/
     dum = hyd-alpha*sigym[2];
     *ft = sqrt(dev*dev + (dum*dum)/9.);
-    *ft -= sigym[3];      
+    *ft -= sigym[3];
 /*----------------------------------------------------------------------*/
-    #ifdef DEBUG 
+    #ifdef DEBUG
     dstrc_exit();
     #endif
 /*----------------------------------------------------------------------*/
     return;
 } /* end of w1yiccap */
 /*-----------------------------------------------------------------------|
-|    topic: calculate the gradients of the elastic predictor             |              
+|    topic: calculate the gradients of the elastic predictor             |
 |           deviatoric/hydrostatic stresses                              |
 |-----------------------------------------------------------------------*/
 void w1preds(DOUBLE *sigma, /* elastic predictor projected              */
@@ -132,27 +132,27 @@ void w1preds(DOUBLE *sigma, /* elastic predictor projected              */
     static DOUBLE half, ro23, q13, xsi1, xsi2, xsi3, xsi4;
     static DOUBLE dsig[4], fac[4];
 /*----------------------------------------------------------------------*/
-    #ifdef DEBUG 
+    #ifdef DEBUG
     dstrc_enter("w1preds");
     #endif
 /*----------------------------------------------------------------------*/
       half = 1./2.;
       ro23 = sqrt(2./3.);
-      q13  = 1./3.; 
+      q13  = 1./3.;
 /*-------------------------------------------- initialized variables ---*/
     for (i = 0; i < 3; i++) fac[i]  = 1.;
     fac[3]  = 0.;
-    
+
     xsi1 = sigma[0];
     xsi2 = sigma[1];
     xsi3 = sigma[3];
     xsi4 = sigma[2];
-    
+
     for (i = 0; i < 4; i++) dsig[i]  = devsig[i];
 /*------------------------------------------------ stress components ---*/
-      if((sigma[0]==sigma[1])&&(sigma[0]==sigma[3])) 
+      if((sigma[0]==sigma[1])&&(sigma[0]==sigma[3]))
       {
-        if(fabs(sigma[3])-1.0E-4<=0.) 
+        if(fabs(sigma[3])-1.0E-4<=0.)
         {
           xsi3 = 1.0E-4;
         }
@@ -167,8 +167,8 @@ void w1preds(DOUBLE *sigma, /* elastic predictor projected              */
                   + 2. *(xsi4*xsi4);
        *dev = sqrt(*dev);
 
-        dsig[0] = ( 2. *xsi1 - xsi2 - xsi3 ) / 3.; 
-        dsig[1] = (-xsi1 + 2. *xsi2 - xsi3 ) / 3.; 
+        dsig[0] = ( 2. *xsi1 - xsi2 - xsi3 ) / 3.;
+        dsig[1] = (-xsi1 + 2. *xsi2 - xsi3 ) / 3.;
         dsig[2] = (-xsi1  -xsi2 + 2. *xsi3 ) / 3.;
         dsig[3] = xsi4;
       }
@@ -180,7 +180,7 @@ void w1preds(DOUBLE *sigma, /* elastic predictor projected              */
       grad[i] = dn[i] + dcom[i];
     }
 /*----------------------------------------------------------------------*/
-    #ifdef DEBUG 
+    #ifdef DEBUG
     dstrc_exit();
     #endif
 /*----------------------------------------------------------------------*/
@@ -201,7 +201,7 @@ void w1pres (DOUBLE *sigma ,    /*  elastic predictor projected         */
     static INT i;
     static DOUBLE q13, ro23, xsi1, xsi2, xsi3, xsi4;
 /*----------------------------------------------------------------------*/
-    #ifdef DEBUG 
+    #ifdef DEBUG
     dstrc_enter("w1pres");
     #endif
 /*----------------------------------------------------------------------*/
@@ -238,7 +238,7 @@ void w1pres (DOUBLE *sigma ,    /*  elastic predictor projected         */
     sm[2] = *hyd / 3.;
     sm[3] = 0.;
 /*----------------------------------------------------------------------*/
-    #ifdef DEBUG 
+    #ifdef DEBUG
     dstrc_exit();
     #endif
 /*----------------------------------------------------------------------*/

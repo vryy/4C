@@ -1,8 +1,8 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 
- - s9_tvma: which integrates the material law and stresses in thickness 
-            direction 
+\brief contains the routine
+ - s9_tvma: which integrates the material law and stresses in thickness
+            direction
 
 
 <pre>
@@ -17,18 +17,18 @@ Maintainer: Stefan Hartmann
 #include "../headers/standardtypes.h"
 #include "shell9.h"
 
-/*! 
-\addtogroup SHELL9 
+/*!
+\addtogroup SHELL9
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief integrate material law and stresses in thickness direction of shell                                      
+\brief integrate material law and stresses in thickness direction of shell
 
 <pre>                     m.gee 6/01              modified by    sh 11/02
-This routine integrates the material law and stresses in thickness 
+This routine integrates the material law and stresses in thickness
 direction of multilayer shell element.
 </pre>
-\param  DOUBLE **D       (o)  konstitutive matrix combining kinematic and static variables 
+\param  DOUBLE **D       (o)  konstitutive matrix combining kinematic and static variables
                               of shell element (-> dimension [12][12])
 \param  DOUBLE **C       (i)  konstitutive matrix from material law (-> dimension [6][6])
 \param  DOUBLE  *stress  (i)  PK_II stresses from konsitutive law (-> dimenesion [6])
@@ -36,14 +36,14 @@ direction of multilayer shell element.
 \param  DOUBLE   e3      (i)  zeta of aktuel material layer
 \param  DOUBLE   fact    (i)  factor including the shell shifter
 \param  DOUBLE   h       (i)  total thickness of this element
-\param  DOUBLE  *klayhgt (i)  hight of kin layer in % of total thickness of shell 
-\param  DOUBLE  *mlayhgt (i)  hight of mat layer in % of adjacent kin layer 
-\param  INT      num_klay(i)  number of kin layers to this element  
-\param  INT      klay    (i)  actual kin layer 
-\param  INT      mlay    (i)  actual mat layer of this kin layer 
+\param  DOUBLE  *klayhgt (i)  hight of kin layer in % of total thickness of shell
+\param  DOUBLE  *mlayhgt (i)  hight of mat layer in % of adjacent kin layer
+\param  INT      num_klay(i)  number of kin layers to this element
+\param  INT      klay    (i)  actual kin layer
+\param  INT      mlay    (i)  actual mat layer of this kin layer
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: s9static_keug() [s9_static_keug.c]
 
 *----------------------------------------------------------------------*/
@@ -56,7 +56,7 @@ void s9_tvma(DOUBLE   **D,
              DOUBLE     h,           /* total thickness of this element */
              DOUBLE    *klayhgt,     /* hight of kin layer in % of total thickness of shell */
              DOUBLE    *mlayhgt,     /* hight of mat layer in % of adjacent kin layer */
-             INT        num_klay,    /* number of kin layers to this element */  
+             INT        num_klay,    /* number of kin layers to this element */
              INT        klay,        /* actual kin layer */
              INT        mlay,        /* actual mat layer of this kin layer */
              DOUBLE     condfac)
@@ -66,7 +66,7 @@ DOUBLE deltah, h_mlay, h_kl;
 DOUBLE zeta_kl,zeta;
 DOUBLE stress_fact, C_fact;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9_tvma");
 #endif
 /*----------------------------------------------------------------------*/
@@ -110,7 +110,7 @@ for (i=0; i<6; i++)
    }
 }*/
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -118,4 +118,4 @@ return;
 /*----------------------------------------------------------------------*/
 #endif /*D_SHELL9*/
 /*! @} (documentation module close)*/
- 
+

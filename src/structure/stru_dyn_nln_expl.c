@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Michael Gee
@@ -17,7 +17,7 @@ Maintainer: Michael Gee
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -45,7 +45,7 @@ extern struct _SOLVAR  *solv;
 
 <pre>                                                         m.gee 8/00
 -the partition of one proc (all discretizations)
--the type is in partition.h                                                  
+-the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -61,18 +61,18 @@ extern struct _IO_FLAGS     ioflags;
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par;                      
+ extern struct _PAR   par;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate dynamic variables if needed                      |
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 02/02    |
  | number of load curves numcurve                                       |
@@ -97,7 +97,7 @@ DOUBLE acttime;
 /*---------------------------------------------------------------------------*
  |  routine to control nonlinear dyn explicit structural analysis m.gee 05/02|
  *---------------------------------------------------------------------------*/
-void dyn_nln_stru_expl() 
+void dyn_nln_stru_expl()
 {
 INT             i;                  /* simply a counter */
 INT             numeq;              /* number of equations on this proc */
@@ -126,22 +126,22 @@ INTRA          *actintra;           /* pointer to active intra-communicator */
 CALC_ACTION    *action;             /* pointer to the structure cal_action enum */
 STRUCT_DYNAMIC *sdyn;               /* pointer to structural dynamic input data */
 
-DIST_VECTOR    *vel;                /* total velocities */              
+DIST_VECTOR    *vel;                /* total velocities */
 DIST_VECTOR    *acc;                /* total accelerations */
 DIST_VECTOR    *fie;                /* internal forces and working array */
-DIST_VECTOR    *dispi;              /* distributed vector to hold incremental displacments */ 
+DIST_VECTOR    *dispi;              /* distributed vector to hold incremental displacments */
 DIST_VECTOR    *work;               /* working vectors */
 
 ARRAY           intforce_a;         /* redundant vector of full length for internal forces */
 DOUBLE         *intforce;
 ARRAY           dirich_a;           /* redundant vector of full length for dirichlet-part of rhs */
 DOUBLE         *dirich;
- 
-STRUCT_DYN_CALC dynvar;             /* variables to perform dynamic structural simulation */              
+
+STRUCT_DYN_CALC dynvar;             /* variables to perform dynamic structural simulation */
 
 CONTAINER       container;          /* contains variables defined in container.h */
 container.isdyn = 1;                /* dynamic calculation */
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("dyn_nln_stru_expl");
 #endif
 /*----------------------------------------------------------------------*/
@@ -155,7 +155,7 @@ sdyn               =   alldyn[0].sdyn;
 container.fieldtyp = actfield->fieldtyp;
 container.actndis  = 0;
 /*----------------------------------------------------------------------*/
-#ifdef PARALLEL 
+#ifdef PARALLEL
 actintra    = &(par.intra[0]);
 /* if we are not parallel, we have to allocate an alibi intra-communicator structure */
 #else
@@ -184,7 +184,7 @@ acttime=0.0;
    stiff_array = 0;
    mass_array  = 1;
 
-if (sdyn->damp==1) 
+if (sdyn->damp==1)
 {
    damp_array  = 2;
    actsolv->nsysarray=3;
@@ -199,11 +199,11 @@ else
 /*------------------------------- mass_array (and damp_array if needed) */
 /* reallocate the vector of sparse matrices and the vector of there types */
 /* formerly lenght 1, now lenght 2 or 3 dependent on presence of damp_array */
-actsolv->sysarray_typ = 
+actsolv->sysarray_typ =
 (SPARSE_TYP*)CCAREALLOC(actsolv->sysarray_typ,actsolv->nsysarray*sizeof(SPARSE_TYP));
 if (!actsolv->sysarray_typ) dserror("Allocation of memory failed");
 
-actsolv->sysarray = 
+actsolv->sysarray =
 (SPARSE_ARRAY*)CCAREALLOC(actsolv->sysarray,actsolv->nsysarray*sizeof(SPARSE_ARRAY));
 if (!actsolv->sysarray) dserror("Allocation of memory failed");
 
@@ -268,7 +268,7 @@ intforce = amdef("intforce",&intforce_a,numeq_total,1,"DV");
 /*----------- create a vector of full length for dirichlet part of rhs */
 dirich = amdef("dirich",&dirich_a,numeq_total,1,"DV");
 /*----------------------------------------- allocate 3 DIST_VECTOR fie */
-/*                    to hold internal forces at t, t-dt and inbetween */ 
+/*                    to hold internal forces at t, t-dt and inbetween */
 solserv_create_vec(&fie,3,numeq_total,numeq,"DV");
 for (i=0; i<3; i++) solserv_zero_vec(&(fie[i]));
 
@@ -280,7 +280,7 @@ for (i=0; i<3; i++) solserv_zero_vec(&(work[i]));
 
 /*---------------------------------- initialize solver on all matrices */
 /*
-NOTE: solver init phase has to be called with each matrix one wants to 
+NOTE: solver init phase has to be called with each matrix one wants to
       solve with. Solver init phase has to be called with all matrices
       one wants to do matrix-vector products and matrix scalar products.
       This is not needed by all solver libraries, but the solver-init phase
@@ -319,7 +319,7 @@ calinit(actfield,actpart,action,&container);
 
 /*----------------------------------------- write output of mesh to gid */
 if (par.myrank==0)
-if (ioflags.struct_disp_gid||ioflags.struct_stress_gid) 
+if (ioflags.struct_disp_gid||ioflags.struct_stress_gid)
    out_gid_msh();
 
 /*----------------------- call elements to calculate stiffness and mass */
@@ -353,7 +353,7 @@ if (damp_array>0)
                    &(actsolv->sysarray[damp_array]),
                    &(actsolv->sysarray_typ[mass_array]),
                    &(actsolv->sysarray[mass_array]),
-                   sdyn->m_damp);  
+                   sdyn->m_damp);
 }
 
 
@@ -391,7 +391,7 @@ sdyn->time = 0.0;
 
 /*----------------------------------------- output to GID postprozessor */
 if (ioflags.struct_disp_gid==1 || ioflags.struct_stress_gid==1)
-if (par.myrank==0) 
+if (par.myrank==0)
 {
    out_gid_domains(actfield);
 }
@@ -613,7 +613,7 @@ if (ioflags.struct_stress_file==1 && ioflags.struct_disp_file==1)
   out_sol(actfield,actpart,actintra,sdyn->step,0);
 }
 /*--------------------------------------------- printout results to gid */
-if (par.myrank==0) 
+if (par.myrank==0)
 {
    if (mod_disp==0)
    if (ioflags.struct_disp_gid==1)
@@ -665,10 +665,10 @@ solserv_del_vec(&acc,1);
 solserv_del_vec(&fie,3);
 solserv_del_vec(&work,3);
 /*----------------------------------------------------------------------*/
-#ifndef PARALLEL 
+#ifndef PARALLEL
 CCAFREE(actintra);
 #endif
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

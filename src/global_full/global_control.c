@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -26,7 +26,7 @@ struct _GENPROB       genprob;
 
 <pre>                                                         m.gee 8/00
 -the partition of one proc (all discretizations)
--the type is in partition.h                                                  
+-the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -43,14 +43,14 @@ struct _DESIGN       *design;
  | dedfined in global_control.c                                         |
  | struct _ALLDYNA       *alldyn;                                       |
  *----------------------------------------------------------------------*/
-ALLDYNA             *alldyn;   
+ALLDYNA             *alldyn;
 /*----------------------------------------------------------------------*
  |                                                          al 08/02    |
  | pointer to allocate eigensolution variables                          |
  | dedfined in global_control.c                                         |
  | struct _ALLEIG       *alleig;                                        |
  *----------------------------------------------------------------------*/
-ALLEIG              *alleig;   
+ALLEIG              *alleig;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate static variables if needed                       |
@@ -69,7 +69,7 @@ struct _MULTIMAT     *multimat;
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -79,11 +79,11 @@ extern struct _FILES  allfiles;
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par;                      
+ extern struct _PAR   par;
 /*----------------------------------------------------------------------*
  | main routine                                           m.gee 8/00    |
  *----------------------------------------------------------------------*/
@@ -115,7 +115,7 @@ void ntam(INT argc, char *argv[])
   {
     printf("\n");
     printf("Total CPU Time for INPUT:       %10.3E sec \n",ti);
-    printf("\n"); 
+    printf("\n");
   }
 
   /*------------------------------close the input file, delete the copy */
@@ -124,7 +124,7 @@ void ntam(INT argc, char *argv[])
   /*-------------------------------------- check for visualisation mode */
   if (genprob.visual!=0) goto visualisation;
   /*------------------------------- set up field-specific communicators */
-#ifdef PARALLEL 
+#ifdef PARALLEL
   create_communicators();
 #endif
   /*--------------------------------------------------calculation phase */
@@ -143,7 +143,7 @@ void ntam(INT argc, char *argv[])
   {
     printf("\n");
     printf("Total CPU Time for CALCULATION: %10.3E sec \n",tc);
-    printf("\n"); 
+    printf("\n");
   }
 
 #ifdef PERF
@@ -161,7 +161,7 @@ visualisation:
     ntavisual();
   /*----------------------------------------------------------------------*/
 endcal:
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 

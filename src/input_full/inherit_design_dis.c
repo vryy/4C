@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -32,7 +32,7 @@ void inherit_design_dis_dirichlet(DISCRET *actdis)
 {
 INT     i,j;
 GNODE  *actgnode;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inherit_design_dis_dirichlet");
 #endif
 /*----------------------------------------------------------------------*/
@@ -61,7 +61,7 @@ for (i=0; i<actdis->ngnode; i++)
    }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -73,7 +73,7 @@ void inherit_design_dis_couple(DISCRET *actdis)
 {
 INT     i;
 GNODE  *actgnode;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inherit_design_dis_couple");
 #endif
 /*----------------------------------------------------------------------*/
@@ -91,7 +91,7 @@ for (i=0; i<actdis->ngnode; i++)
    }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -105,7 +105,7 @@ void inherit_design_dis_fsicouple(DISCRET *actdis)
 {
 INT     i;
 GNODE  *actgnode;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inherit_design_dis_fsicouple");
 #endif
 /*----------------------------------------------------------------------*/
@@ -116,14 +116,14 @@ for (i=0; i<actdis->ngnode; i++)
    {
    case ondnode:    actgnode->fsicouple = actgnode->d.dnode->fsicouple;   break;
    case ondline:    actgnode->fsicouple = actgnode->d.dline->fsicouple;   break;
-   case ondsurf:    actgnode->fsicouple = actgnode->d.dsurf->fsicouple;   break; 
+   case ondsurf:    actgnode->fsicouple = actgnode->d.dsurf->fsicouple;   break;
    case ondvol:     actgnode->fsicouple = NULL;                           break;
    case ondnothing: dserror("GNODE not owned by any design object");      break;
    default: dserror("Cannot inherit dirichlet condition");                break;
    }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -141,7 +141,7 @@ void inherit_design_dis_freesurf(DISCRET *actdis)
 INT     i;
 GNODE  *actgnode;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inherit_design_dis_freesurf");
 #endif
 
@@ -153,7 +153,7 @@ for (i=0; i<actdis->ngnode; i++)
    {
    case ondnode:    actgnode->freesurf = actgnode->d.dnode->freesurf;   break;
    case ondline:    actgnode->freesurf = actgnode->d.dline->freesurf;   break;
-   case ondsurf:    actgnode->freesurf = actgnode->d.dsurf->freesurf;   break; 
+   case ondsurf:    actgnode->freesurf = actgnode->d.dsurf->freesurf;   break;
    case ondvol:     actgnode->freesurf = NULL;                          break;
    case ondnothing: dserror("GNODE not owned by any design object");    break;
    default: dserror("Cannot inherit dirichlet condition");              break;
@@ -180,7 +180,7 @@ for (i=0; i<actdis->ngsurf; i++)
 
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 #endif
@@ -196,7 +196,7 @@ void inherit_design_dis_slipdirich(DISCRET *actdis)
 INT     i;
 GNODE  *actgnode;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inherit_design_dis_slipdirich");
 #endif
 
@@ -207,9 +207,9 @@ for (i=0; i<actdis->ngnode; i++)
    switch(actgnode->ondesigntyp)
    {
    case ondnode: break;
-   case ondline:    
+   case ondline:
       actgnode->slipdirich = actgnode->d.dline->slipdirich;             break;
-   case ondsurf: break; 
+   case ondsurf: break;
    case ondvol:  break;
    case ondnothing: dserror("GNODE not owned by any design object");    break;
    default: dserror("Cannot inherit dirichlet condition");              break;
@@ -217,7 +217,7 @@ for (i=0; i<actdis->ngnode; i++)
 }
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 #endif
@@ -233,7 +233,7 @@ void inherit_design_dis_neum(DISCRET *actdis)
 {
 INT     i;
 GNODE  *actgnode;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inherit_design_dis_neum");
 #endif
 /*----------------------------------------------------------------------*/
@@ -271,10 +271,10 @@ for (i=0; i<actdis->ngsurf; i++)
 for (i=0; i<actdis->ngvol; i++)
 {
    dsassert(actdis->gvol[i].dvol!=NULL,"volume fe-element outside any design volume");
-   actdis->gvol[i].neum = actdis->gvol[i].dvol->neum;   
+   actdis->gvol[i].neum = actdis->gvol[i].dvol->neum;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -10,10 +10,10 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
-\addtogroup FLUID2 
+/*!
+\addtogroup FLUID2
 *//*! @{ (documentation module open)*/
-#ifdef D_FLUID2 
+#ifdef D_FLUID2
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #include "fluid2.h"
@@ -35,17 +35,17 @@ extern struct _GENPROB     genprob;
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief calculation of fluid stresses
 
 <pre>                                                         genk 10/02
 
 calculation of the stress tensor sigma, which es stored at the nodes
 
-    sigma = -p_real*I + 2*nue * eps(u) 				      
-			     
+    sigma = -p_real*I + 2*nue * eps(u)
+
 </pre>
 
 \param   viscstr    INT         (i)    include viscose stresses yes/no
@@ -54,18 +54,18 @@ calculation of the stress tensor sigma, which es stored at the nodes
 \param  *epre       DOUBLE      (-)    element pressure
 \param **funct      DOUBLE      (-)    shape functions
 \param **deriv      DOUBLE      (-)    natural deriv. of shape funct.
-\param **derxy      DOUBLE      (-)    global deriv. of sape funct.       
+\param **derxy      DOUBLE      (-)    global deriv. of sape funct.
 \param **vderxy     DOUBLE      (-)    global vel. deriv
 \param **xjm        DOUBLE      (-)    jacobian matrix
 \param **xyze       DOUBLE      (-)    element coordinates
-\param **sigmaint   DOUBLE      (-)    stresses at GAUSS point 
-\return void                                               
-                                 
+\param **sigmaint   DOUBLE      (-)    stresses at GAUSS point
+\return void
+
 ------------------------------------------------------------------------*/
 void f2_calelestress(
                       INT             viscstr,
        	              ELEMENT        *ele,
-		      DOUBLE        **evel, 
+		      DOUBLE        **evel,
 		      DOUBLE         *epre,
 		      DOUBLE         *funct,
 		      DOUBLE        **deriv,
@@ -84,19 +84,19 @@ INT     actmat;              /* actual material number                 */
 INT     iv;                  /* counter for GAUSS points               */
 INT     pos;                 /* position, where to read from           */
 DOUBLE  preint,det,val;      /* element values                         */
-DOUBLE  e1,e2,r,s;         
+DOUBLE  e1,e2,r,s;
 DIS_TYP typ;	             /* element displacement type              */
 DOUBLE  dens,visc,twovisc;   /* material parameters                    */
 DOUBLE  fpar[MAXGAUSS];      /* working array                          */
 NODE   *actnode;             /* actual node                            */
 FLUID_DYNAMIC  *fdyn;
-FLUID_DATA     *data; 
+FLUID_DATA     *data;
 #ifdef D_FSI
 NODE   *actfnode, *actanode;
 GNODE  *actfgnode;
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_calelestress");
 #endif
 
@@ -124,7 +124,7 @@ case 0: /* only real pressure */
    }
 break;
 case 1: /* real pressure + viscose stresses */
-/* sigma = -p_real*I + 2*nue * eps(u) */ 
+/* sigma = -p_real*I + 2*nue * eps(u) */
 /* calculate deformation velocity tensor */
 /*------------------------------------------------ get integraton data  */
    switch (typ)
@@ -134,11 +134,11 @@ case 1: /* real pressure + viscose stresses */
       nir = ele->e.f2->nGP[0];
       nis = ele->e.f2->nGP[1];
    break;
-   case tri3: case tri6: /* --> tri - element */  
+   case tri3: case tri6: /* --> tri - element */
       icode = 2;
       nir  = ele->e.f2->nGP[0];
       nis  = 1;
-      intc = ele->e.f2->nGP[1];  
+      intc = ele->e.f2->nGP[1];
    break;
    default:
       dserror("typ unknown!");
@@ -157,9 +157,9 @@ case 1: /* real pressure + viscose stresses */
       {
          xyze[0][j] = ele->node[j]->x[0];
          xyze[1][j] = ele->node[j]->x[1];
-      }         
+      }
    break;
-#ifdef D_FSI      
+#ifdef D_FSI
    case 1:
       for (j=0;j<iel;j++)
       {
@@ -168,9 +168,9 @@ case 1: /* real pressure + viscose stresses */
          actanode = actfgnode->mfcpnode[genprob.numaf];
          xyze[0][j] = ele->node[j]->x[0]+ actanode->sol_mf.a.da[1][0];
          xyze[1][j] = ele->node[j]->x[1]+ actanode->sol_mf.a.da[1][1];
-      }       
+      }
    break;
-#endif      
+#endif
    default:
       dserror("elment flag is_ale out of range!");
    }
@@ -180,18 +180,18 @@ case 1: /* real pressure + viscose stresses */
    iv=0;
    twovisc=TWO*visc;
    for (lr=0;lr<nir;lr++)
-   {    
+   {
       for (ls=0;ls<nis;ls++)
       {
 /*--------------- get values of  shape functions and their derivatives */
-         switch(typ)  
+         switch(typ)
          {
          case quad4: case quad8: case quad9:   /* --> quad - element */
-	    e1   = data->qxg[lr][nir-1];           
+	    e1   = data->qxg[lr][nir-1];
 	    e2   = data->qxg[ls][nis-1];
             f2_rec(funct,deriv,NULL,e1,e2,typ,icode);
          break;
-         case tri3: case tri6:   /* --> tri - element */              
+         case tri3: case tri6:   /* --> tri - element */
 	    e1   = data->txgr[lr][intc];
 	    e2   = data->txgs[lr][intc];
 	    f2_tri(funct,deriv,NULL,e1,e2,typ,icode);
@@ -205,7 +205,7 @@ case 1: /* real pressure + viscose stresses */
          f2_gder(derxy,deriv,xjm,det,iel);
 /*--------------------- get velocity  derivatives at integration point */
          f2_vder(vderxy,derxy,evel,iel);
-/*---------------------------------- get pressure at integration point */         
+/*---------------------------------- get pressure at integration point */
 	 preint=f2_scali(funct,epre,iel);
 /*---------------
                          | Ux,x    Ux,y |
@@ -215,24 +215,24 @@ case 1: /* real pressure + viscose stresses */
                              | Ux,x+Ux,x   Ux,y+Uy,x |
                 eps(u) = 1/2 |		             |
                              |   symm.     Uy,y+Uy,y |
-			     
+
                 SIGMA = -p_real*I + 2*nue * eps(u)                     */
          sigmaint[0][iv] = -preint + twovisc*vderxy[0][0];
 	 sigmaint[1][iv] = -preint + twovisc*vderxy[1][1];
 	 sigmaint[2][iv] = (vderxy[0][1] + vderxy[1][0])*visc;
-	 iv++;			     
+	 iv++;
       } /* end loop over nis */
    } /* end loop over nir */
    /*------------------------------- extrapolate stresses to the nodes */
    for (i=0;i<3;i++)
-   {         
+   {
       switch (typ)
       {
       case quad4: case quad8: case quad9:
-         f2_recex(NULL,fpar,ZERO,ZERO,&(sigmaint[i][0]),iv,0);      
+         f2_recex(NULL,fpar,ZERO,ZERO,&(sigmaint[i][0]),iv,0);
       break;
-      case tri3: case tri6: 
-         f2_triex(NULL,fpar,ZERO,ZERO,&(sigmaint[i][0]),iv,0); 
+      case tri3: case tri6:
+         f2_triex(NULL,fpar,ZERO,ZERO,&(sigmaint[i][0]),iv,0);
       break;
       default:
          dserror("typ unknown!\n");
@@ -245,13 +245,13 @@ case 1: /* real pressure + viscose stresses */
          switch (typ)
          {
          case quad4: case quad8: case quad9:
-            f2_recex(&val,fpar,r,s,NULL,iv,2); 
+            f2_recex(&val,fpar,r,s,NULL,iv,2);
 	 break;
-         case tri3: case tri6: 
-            f2_triex(&val,fpar,r,s,NULL,iv,2); 
+         case tri3: case tri6:
+            f2_triex(&val,fpar,r,s,NULL,iv,2);
 	 break;
          default:
-            dserror("typ unknown!\n");	 	 
+            dserror("typ unknown!\n");
 	 }
          ele->e.f2->stress_ND.a.da[node][i]=val;
       }
@@ -261,11 +261,11 @@ default:
    dserror("parameter viscstr out of range!\n");
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of f2_calelestress */
 
 #endif

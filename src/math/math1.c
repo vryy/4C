@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -20,7 +20,7 @@ void math_array_copy(DOUBLE **from, INT n, INT m, DOUBLE **to)
 INT i,size;
 DOUBLE *ptr_from;
 DOUBLE *ptr_to;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("math_array_copy");
 #endif
 /*----------------------------------------------------------------------*/
@@ -28,13 +28,13 @@ dstrc_enter("math_array_copy");
 
    a[0]    = [ hole array as a vector ]
    a[1..n] = ptr to start of this row in the vector above
-*/   
+*/
 size=n*m;
 ptr_from = from[0];
 ptr_to   = to[0];
 for (i=0; i<size; i++) *(ptr_to++) = *(ptr_from++);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -47,7 +47,7 @@ void math_inv3(DOUBLE **a, DOUBLE *det)
 INT i,j;
 DOUBLE b00,b01,b02,b10,b11,b12,b20,b21,b22;
 DOUBLE detinv;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("math_inv3");
 #endif
 /*----------------------------------------------------------------------*/
@@ -55,7 +55,7 @@ dstrc_enter("math_inv3");
 
    a[0]    = [ hole array as a vector ]
    a[1..n] = ptr to start of this row in the vector above
-*/   
+*/
 b00 = a[0][0];
 b01 = a[0][1];
 b02 = a[0][2];
@@ -81,7 +81,7 @@ detinv = 1.0/(*det);
 for (i=0; i<3; i++)
 for (j=0; j<3; j++) a[i][j] *= detinv;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -93,7 +93,7 @@ void math_tran(DOUBLE **a, INT n)
 {
 INT i,j;
 DOUBLE change;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("math_tran");
 #endif
 /*----------------------------------------------------------------------*/
@@ -101,7 +101,7 @@ dstrc_enter("math_tran");
 
    a[0]    = [ hole array as a vector ]
    a[1..n] = ptr to start of this row in the vector above
-*/   
+*/
 for (i=0; i<n; i++)
 {
    for (j=i+1; j<n; j++)
@@ -112,7 +112,7 @@ for (i=0; i<n; i++)
    }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -124,7 +124,7 @@ void math_unvc(DOUBLE *enorm,DOUBLE *vec, INT n)
 {
 INT    i;
 DOUBLE skalar;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("math_unvc");
 #endif
 /*----------------------------------------------------------------------*/
@@ -134,7 +134,7 @@ for (i=0; i<n; i++) skalar += vec[i]*vec[i];
 if (*enorm < EPS13) dserror("Vector of lenght < EPS13 appeared");
 for (i=0; i<n; i++) vec[i] /= (*enorm);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -154,7 +154,7 @@ void math_matvecdense(DOUBLE  *r,
 {
 INT i,k;
 DOUBLE sum;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("math_matvecdense");
 #endif
 /*----------------------------------------------------------------------*/
@@ -169,7 +169,7 @@ for (i=0; i<ni; i++)
    r[i] += sum*factor;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -190,7 +190,7 @@ void math_mattrnvecdense(DOUBLE  *r,
 INT i,k;
 DOUBLE *dptr;
 DOUBLE sum;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("math_mattrnvecdense");
 #endif
 /*----------------------------------------------------------------------*/
@@ -206,7 +206,7 @@ for (i=0; i<ni; i++)
    r[i] += sum*factor;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -234,7 +234,7 @@ void math_matmatdense(DOUBLE **R,
 {
 INT i,j,k;
 DOUBLE sum;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("math_matmatdense");
 #endif
 /*----------------------------------------------------------------------*/
@@ -263,7 +263,7 @@ else
    }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -291,7 +291,7 @@ void math_mattrnmatdense(DOUBLE **R,
 {
 INT i,j,k;
 DOUBLE sum;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("math_mattrnmatdense");
 #endif
 /*----------------------------------------------------------------------*/
@@ -320,7 +320,7 @@ else
    }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -348,7 +348,7 @@ void math_matmattrndense(DOUBLE **R,
 {
 INT i,j,k;
 DOUBLE sum;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("math_matmattrndense");
 #endif
 /*----------------------------------------------------------------------*/
@@ -377,7 +377,7 @@ else
    }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -400,7 +400,7 @@ DOUBLE   work[5000];
 DOUBLE   Inverse[250000];
 INT      info;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("math_sym_inv");
 #endif
 lwork   = 5000;
@@ -410,7 +410,7 @@ strncpy(uplo,"L ",2);
 /*----------------------------------------------------------------------*/
 if (dim>=500) dserror("This routine only sym dense matrices upto size 500");
 
-for (i=0; i<dim; i++) 
+for (i=0; i<dim; i++)
 for (j=0; j<dim; j++)
 {
    Inverse[k] = A[i][j];
@@ -420,16 +420,16 @@ for (j=0; j<dim; j++)
 n = dim;
 dsytrf(uplo,&dim,&(Inverse[0]),&n,&(ipiv[0]),&(work[0]),&lwork,&info);
 
-if (info) 
+if (info)
    dserror("Inversion of dense matrix failed");
 
 dsytri(uplo,&dim,&(Inverse[0]),&n,&(ipiv[0]),&(work[0]),&info);
 
-if (info) 
+if (info)
    dserror("Inversion of dense matrix failed");
 
 /*--------------------------------------------------- symmetrize result */
-for (i=0; i<dim; i++) 
+for (i=0; i<dim; i++)
 for (j=0; j<dim; j++)
 {
    A[i][j] = Inverse[info];
@@ -437,7 +437,7 @@ for (j=0; j<dim; j++)
 }
 for (i=0; i<dim; i++) for (j=0; j<i; j++) A[i][j] = A[j][i];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -459,14 +459,14 @@ INT      lwork=2000;
 DOUBLE   work[2000];
 INT      info=0;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("math_unsym_inv");
 #endif
 /*----------------------------------------------------------------------*/
-if (dimr>=2000 || dimc>=2000) 
+if (dimr>=2000 || dimc>=2000)
    dserror("This routine only unsym dense matrices upto size 2000");
 
-for (i=0; i<dimr; i++) 
+for (i=0; i<dimr; i++)
 for (j=0; j<dimc; j++)
 {
    Inverse[info] = A[i][j];
@@ -483,7 +483,7 @@ dgetrf(&dimr,
 if (info) dserror("Inversion of dense matrix failed");
 
 dgetri(&dimc,
-       &(Inverse[0]),  
+       &(Inverse[0]),
        &dimc,
        &(ipiv[0]),
        &(work[0]),
@@ -493,13 +493,13 @@ dgetri(&dimc,
 if (info) dserror("Inversion of dense matrix failed");
 
 /*---------------------------------------------------- copy result to A */
-for (i=0; i<dimr; i++) 
+for (i=0; i<dimr; i++)
 for (j=0; j<dimc; j++)
 {
    A[i][j] = Inverse[info];
    info++;
 }
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -524,12 +524,12 @@ DOUBLE   work[6];
 DOUBLE   Inverse[36];
 INT      info=0;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("math_unsym_inv6x6");
 #endif
 /*----------------------------------------------------------------------*/
 
-for (i=0; i<6; i++) 
+for (i=0; i<6; i++)
 for (j=0; j<6; j++)
 {
    Inverse[info] = A[i][j];
@@ -546,7 +546,7 @@ dgetrf(&dimr,
 if (info) dserror("Inversion of dense matrix failed");
 
 dgetri(&dimc,
-       &(Inverse[0]),  
+       &(Inverse[0]),
        &dimc,
        &(ipiv[0]),
        &(work[0]),
@@ -556,13 +556,13 @@ dgetri(&dimc,
 if (info) dserror("Inversion of dense matrix failed");
 
 /*---------------------------------------------------- copy result to A */
-for (i=0; i<6; i++) 
+for (i=0; i<6; i++)
 for (j=0; j<6; j++)
 {
    A[i][j] = Inverse[info];
    info++;
 }
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -575,7 +575,7 @@ void math_sppr(DOUBLE *spat, DOUBLE *a, DOUBLE *b, DOUBLE *c)
 {
 INT i;
 DOUBLE d[3];
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("math_sppr");
 #endif
 /*----------------------------------------------------------------------*/
@@ -585,9 +585,9 @@ d[1] = b[2]*c[0] - b[0]*c[2];
 d[2] = b[0]*c[1] - b[1]*c[0];
 /*------------------------------------------------------ scalar product */
 *spat = 0.0;
-for (i=0; i<3; i++) *spat += a[i]*d[i];     
+for (i=0; i<3; i++) *spat += a[i]*d[i];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -599,7 +599,7 @@ return;
 void math_addab(DOUBLE **a, DOUBLE **b, INT dim1, INT dim2,DOUBLE fact)
 {
 int i,j;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("math_addab");
 #endif
 
@@ -611,36 +611,36 @@ for (i=0;i<dim1;i++)
    }
 }
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of math_addab */
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief extract digits from integer number
 
-<pre>                                                         genk 04/02		     
-</pre>   
+<pre>                                                         genk 04/02
+</pre>
 \param  num	 INT   (i)    integer number
 \param *it	 INT   (o)    integer on position "thousand"
 \param *ih       INT   (o)    integer on position "hundred"
 \param *id       INT   (o)    integer on position "ten"
 \param *id       INT   (o)    integer on position "one"
-\return void 
+\return void
 
 ------------------------------------------------------------------------*/
 void math_intextract(
-                    INT num,    
-                    INT *it,    
-		    INT *ih,    
-		    INT *id,    
-		    INT *io     
+                    INT num,
+                    INT *it,
+		    INT *ih,
+		    INT *id,
+		    INT *io
 	            )
 {
 INT nit, nih, nid, nio;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("intextract");
 #endif
 
@@ -655,9 +655,9 @@ nio = num -nit*1000-nih*100-nid*10;
 *io=nio;
 
  /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
-} /* end of intextract*/  
+} /* end of intextract*/
 

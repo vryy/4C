@@ -29,18 +29,18 @@ map solution obtained back to nodes and compute convergence ratio
 
 *----------------------------------------------------------------------*/
 void ls_result_incre(
-  FIELD             *actfield,    
-  INTRA             *actintra,   
-  DIST_VECTOR       *sol,        
-  INT                place,      
-  SPARSE_ARRAY      *sysarray,      
+  FIELD             *actfield,
+  INTRA             *actintra,
+  DIST_VECTOR       *sol,
+  INT                place,
+  SPARSE_ARRAY      *sysarray,
   SPARSE_TYP        *sysarray_typ,
-  DOUBLE            *lrat,        
+  DOUBLE            *lrat,
   LS_DYNAMIC       *lsdyn
   )
 {
   INT         i,j;
-  INT         max;       
+  INT         max;
   INT         diff;
   INT         dof;
   INT         numeq_total;
@@ -48,17 +48,17 @@ void ls_result_incre(
   ARRAY       result_a;
   DOUBLE     *result; /* redundant result vector */
 /************************************************************************/
-  DOUBLE      lnorm  =ZERO;  
-  DOUBLE      lnorm00=ZERO;      
-  DOUBLE      lnorm01=ZERO; 
+  DOUBLE      lnorm  =ZERO;
+  DOUBLE      lnorm00=ZERO;
+  DOUBLE      lnorm01=ZERO;
   DOUBLE      lnorm02=ZERO;
 /************************************************************************/
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_enter("ls_result_incre");
 #endif
 /*----------------------------------------------------------------------*/
-  
+
   numeq_total = sol->numeq_total;
   /* allocate space to allreduce the DIST_VECTOR */
   result = amdef("result",&result_a,numeq_total,1,"DV");
@@ -90,14 +90,14 @@ void ls_result_incre(
       if (dof>=numeq_total) continue;
 /*****************************BE CAREFUL*********************************/
       if (actnode->sol_increment.a.da[place][j]==0.0) continue;
-/*****************************BE CAREFUL*********************************/      
+/*****************************BE CAREFUL*********************************/
       /* compute L-inf     norm */
       lnorm00  = DMAX(lnorm, FABS(result[dof])/actnode->sol_increment.a.da[place][j]);
       /* compute L-1       norm */
       lnorm01 += FABS(result[dof]/actnode->sol_increment.a.da[place][j]);
       /* compute L-2       norm */
       lnorm02 += pow(result[dof]/actnode->sol_increment.a.da[place][j],2);
-      /* put result to the node */			
+      /* put result to the node */
       actnode->sol_increment.a.da[place][j] += result[dof];
     }
   }
@@ -127,12 +127,12 @@ void ls_result_incre(
 
  end:
   amdel(&result_a);
-  
+
 /*-------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of  ls_result_incre */
 /*! @} (documentation module close)*/

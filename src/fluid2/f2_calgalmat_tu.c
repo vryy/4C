@@ -10,7 +10,7 @@ Maintainer: Thomas Hettich
 </pre>
 
 ------------------------------------------------------------------------*/
-#ifdef D_FLUID2TU 
+#ifdef D_FLUID2TU
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 /*----------------------------------------------------------------------*
@@ -19,7 +19,7 @@ Maintainer: Thomas Hettich
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -28,7 +28,7 @@ extern ALLDYNA      *alldyn;
 extern struct _GENPROB     genprob;
 
 static FLUID_DYNAMIC *fdyn;
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief evaluate galerkin part of Kkapeps
 
 <pre>                                                         he 12/02
@@ -53,12 +53,12 @@ LOW-REYNOLD's MODEL only for kappa:
     /
    | 2.0 * visc * [ 2*grad(k_old)/(4*k_old)  * grad (k) - grad(k_old)*grad(k_old)/(4*k_old^2) * k ] * psi     d_omega
   /
-  
+
 
 
 NOTE: there's only one elestif
       --> Kkapeps is stored in estif[0..(iel-1)][0..(iel-1)]
-      
+
 </pre>
 \param **estif        DOUBLE	   (i/o)  ele stiffness matrix
 \param   kapepsint    DOUBLE	   (i)    kapeps at INT point
@@ -67,27 +67,27 @@ NOTE: there's only one elestif
 \param  *kapepsderxy  DOUBLE	   (i)    kapeps deriv. at INT point
 \param  *funct        DOUBLE	   (i)    nat. shape funcs
 \param **derxy        DOUBLE	   (i)    global coord. deriv.
-\param   fac 	    DOUBLE	   (i)    weighting factor	      
-\param   visc         DOUBLE	   (i)    fluid viscosity	     
-\param   factor        DOUBLE	   (i)    facor 
-\param   sig          DOUBLE	   (i)    facor 
+\param   fac 	    DOUBLE	   (i)    weighting factor
+\param   visc         DOUBLE	   (i)    fluid viscosity
+\param   factor        DOUBLE	   (i)    facor
+\param   sig          DOUBLE	   (i)    facor
 \param   iel	    INT  	   (i)    number of nodes of act. ele
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f2_calkkapeps(
-		    DOUBLE         **estif,   
-		    DOUBLE           kapepsint, 
+		    DOUBLE         **estif,
+		    DOUBLE           kapepsint,
 	          DOUBLE          *velint,
-                DOUBLE           eddyint, 
-                DOUBLE          *kapepsderxy, 
-                DOUBLE          *funct,  
-		    DOUBLE         **derxy,  
-		    DOUBLE           fac,    
-		    DOUBLE           visc,   
+                DOUBLE           eddyint,
+                DOUBLE          *kapepsderxy,
+                DOUBLE          *funct,
+		    DOUBLE         **derxy,
+		    DOUBLE           fac,
+		    DOUBLE           visc,
 		    DOUBLE           factor,
 		    DOUBLE           sig,
-                INT              iel     
+                INT              iel
               )
 {
 /*----------------------------------------------------------------------*
@@ -95,14 +95,14 @@ void f2_calkkapeps(
  |   irow - row number in element matrix                                |
  |   icol - column number in element matrix                             |
  |   irn  - row node: number of node considered for matrix-row          |
- |   icn  - column node: number of node considered for matrix column    |  
+ |   icn  - column node: number of node considered for matrix column    |
 /-----------------------------------------------------------------------*/
 INT     irow, icol,irn,icn;
 DOUBLE  auxc;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_calkkapeps");
-#endif		
+#endif
 
 fdyn = alldyn[genprob.numff].fdyn;
 /*----------------------------------------------------------------------*
@@ -112,7 +112,7 @@ fdyn = alldyn[genprob.numff].fdyn;
   /
  *----------------------------------------------------------------------*/
 icol=0;
-for (icn=0;icn<iel;icn++) 
+for (icn=0;icn<iel;icn++)
 {
    irow=0;
    auxc = (derxy[0][icn]*velint[0]+derxy[1][icn]*velint[1])*fac;
@@ -134,13 +134,13 @@ for (icn=0;icn<iel;icn++)
 icol=0;
  for (icn=0;icn<iel;icn++)
  {
-      irow=0;  
-      auxc = (visc+eddyint/sig)*fac;   
-   
+      irow=0;
+      auxc = (visc+eddyint/sig)*fac;
+
       for (irn=0;irn<iel;irn++)
       {
 	   estif[irow][icol] += auxc*(derxy[0][icn]*derxy[0][irn]+derxy[1][icn]*derxy[1][irn]);
-         irow += 1;	 
+         irow += 1;
       } /* end loop over irn */
       icol += 1;
  } /* end loop over icn */
@@ -154,7 +154,7 @@ icol=0;
 icol=0;
    for (icn=0;icn<iel;icn++)
    {
-      irow=0;  
+      irow=0;
       auxc=factor*kapepsint*funct[icn]*fac;
 
       for (irn=0;irn<iel;irn++)
@@ -166,7 +166,7 @@ icol=0;
    } /* end loop over icn */
 
 
-if(fdyn->kapeps_flag==0) 
+if(fdyn->kapeps_flag==0)
 {
 /*----------------------------------------------------------------------*
    Calculate full Galerkin part of matrix K for LOW-REYNOLD's MODEL:
@@ -177,17 +177,17 @@ if(fdyn->kapeps_flag==0)
 icol=0;
    for (icn=0;icn<iel;icn++)
    {
-      irow =0;  
+      irow =0;
 
       auxc  = 2/(4*kapepsint)*
               (kapepsderxy[0]*derxy[0][icn]+kapepsderxy[1]*derxy[1][icn]);
       auxc -= (pow(kapepsderxy[0],2)+pow(kapepsderxy[1],2))/
               (4*kapepsint*kapepsint) * funct[icn];
-              
+
       for (irn=0;irn<iel;irn++)
       {
         estif[irow][icol]  += 2.0*visc*fac*auxc*funct[irn];
-	  
+
         irow += 1;
       } /* end loop over irn */
       icol += 1;
@@ -195,7 +195,7 @@ icol=0;
 
 } /* endif */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -203,7 +203,7 @@ return;
 } /* end of f2_calkvv */
 
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief evaluate galerkin part of Mkapeps
 
 <pre>                                                         he  12/02
@@ -213,23 +213,23 @@ In this routine the galerkin part of matrix Mvv is calculated:
     /
    |  psi * kapeps    d_omega
   /
-  
-NOTE: there's only one elemass  			      
-      --> Mkapeps is stored in emass[0..(iel-1)][0..(iel-1)]  
-      
+
+NOTE: there's only one elemass
+      --> Mkapeps is stored in emass[0..(iel-1)][0..(iel-1)]
+
 </pre>
 \param **emass     DOUBLE	   (i/o)  ele mass matrix
 \param  *funct     DOUBLE	   (i)    nat. shape funcs
 \param   fac       DOUBLE	   (i)    weighting factor
 \param   iel       INT   	   (i)    number of nodes of act. ele
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f2_calmkapeps(
-		DOUBLE         **emass,  
-		DOUBLE          *funct, 
-		DOUBLE           fac,   
-		INT              iel    
+		DOUBLE         **emass,
+		DOUBLE          *funct,
+		DOUBLE           fac,
+		INT              iel
               )
 {
 /*----------------------------------------------------------------------*
@@ -237,14 +237,14 @@ void f2_calmkapeps(
  |   irow - row number in element matrix                                |
  |   icol - column number in element matrix                             |
  |   irn  - row node: number of node considered for matrix-row          |
- |   icn  - column node: number of node considered for matrix column    |  
+ |   icn  - column node: number of node considered for matrix column    |
 /-----------------------------------------------------------------------*/
-INT     irow, icol,irn,icn;  
+INT     irow, icol,irn,icn;
 DOUBLE  auxc;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_calmkapeps");
-#endif		
+#endif
 
 
 /*----------------------------------------------------------------------*
@@ -258,19 +258,19 @@ for(icn=0;icn<iel;icn++)
 {
    irow = 0;
    auxc = funct[icn]*fac;
-   
+
    for(irn=0;irn<iel;irn++)
    {
       emass[irow][icol] += auxc*funct[irn];
       irow += 1;
    } /* end loop over irn */
- 
+
   icol += 1;
 
 } /* end loop over icn */
 
-/*----------------------------------------------------------------------*/ 
-#ifdef DEBUG 
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
 dstrc_exit();
 #endif
 

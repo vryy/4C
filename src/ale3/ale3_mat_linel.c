@@ -15,15 +15,15 @@ Maintainer: Malte Neumann
 #include "../headers/standardtypes.h"
 #include "ale3.h"
 
-/*! 
-\addtogroup Ale 
+/*!
+\addtogroup Ale
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
 \brief  calculates the linear elastic constitutive matrix
 
-<pre>                                                              mn 06/02 
-This routine calculates the linear elastic isotropic constitutive 
+<pre>                                                              mn 06/02
+This routine calculates the linear elastic isotropic constitutive
 matrix for a 3D ale element
 
 </pre>
@@ -31,7 +31,7 @@ matrix for a 3D ale element
 \param  d     DOUBLE[][] (o)   the constitutive matrix
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: ale3_static_ke
 
 *----------------------------------------------------------------------*/
@@ -44,7 +44,7 @@ void ale3_mat_linel(
   DOUBLE d1,d2,d3;
   DOUBLE ym,pv;       /* mat constants */
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("ale3_mat_linel");
 #endif
 
@@ -99,7 +99,7 @@ void ale3_mat_linel(
   d[5][4]=0.0;
   d[5][5]=d3;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 

@@ -1,6 +1,6 @@
 /*!---------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -15,7 +15,7 @@ Maintainer: Malte Neumann
  | - if changes or additions are made to this file, a complete recompile|
  |   of the whole code is recommended                                   |
  | - if segmentation violation errors occure in runtime, check the      |
- |   values below, as some of them are the default sizes of arrays      | 
+ |   values below, as some of them are the default sizes of arrays      |
  | - please do not define thousands of all kinds of variables, because  |
  |   they are global, do only define globally important ones            |
  | - do NOT use common words (e.g. JACOBI, NODE, ELEMENT ...)           |
@@ -56,11 +56,11 @@ typedef char      CHAR;
 #undef CCA_APPEND_U
 
 /* append underslash for gnu's linux compiler gcc and g77 */
-#ifdef SUSE73 
+#ifdef SUSE73
 #define CCA_APPEND_U (1)
 #endif
 
-#ifdef WIN 
+#ifdef WIN
 #define CCA_APPEND_U (1)
 #endif
 
@@ -73,17 +73,17 @@ typedef char      CHAR;
 #endif
 
 /* append underslash for CUSS Sunfire */
-#ifdef SUN 
+#ifdef SUN
 #define CCA_APPEND_U (1)
 #endif
 
 /* append underslash for SIXTYFOUR flag */
-#ifdef SIXTYFOUR 
+#ifdef SIXTYFOUR
 #define CCA_APPEND_U (1)
 #endif
 
 /* append underslash for HPUX11i flag */
-#ifdef HPUXITA 
+#ifdef HPUXITA
 #define CCA_APPEND_U (1)
 #endif
 

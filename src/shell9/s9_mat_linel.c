@@ -19,17 +19,17 @@ Maintainer: Stefan Hartmann
 #include "../headers/standardtypes.h"
 #include "shell9.h"
 
-/*! 
-\addtogroup SHELL9 
+/*!
+\addtogroup SHELL9
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief calculates the constitutive matrix for St. Venant-Kirchhoff-Material                                      
+\brief calculates the constitutive matrix for St. Venant-Kirchhoff-Material
 
 <pre>                     m.gee 6/01              modified by    sh 10/02
 This routine calculates the constitutive matrix for a St. Venant-Kirchhoff-
 Material. The C-Matrix is defined according to the kovariant basis vectors
-of the shell body. 
+of the shell body.
 NOTE: Sorting of stresses and strains differ in shell8 and shell9
       s8: [11,12,13,22,23,33] <=> s9: [11,12,22,13,23,33]
 </pre>
@@ -38,7 +38,7 @@ NOTE: Sorting of stresses and strains differ in shell8 and shell9
 \param  DOUBLE   **CC      (o) konsitutive matrix
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: s9_call_mat()   [s9_call_mat.c]
 
 *----------------------------------------------------------------------*/
@@ -50,7 +50,7 @@ DOUBLE C[3][3][3][3]; /*--------------------------- constitutive tensor */
 DOUBLE l1,l2;/*----------------------------------------- lame constants */
 DOUBLE emod,nue;/*--------------------------------------- mat constants */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9_mat_linel");
 #endif
 /*----------------------------------------------------------------------*/
@@ -85,7 +85,7 @@ CC[2][2] = C[1][1][1][1];
 CC[2][3] = C[1][1][2][0];
 CC[2][4] = C[1][1][2][1];
 CC[2][5] = C[1][1][2][2];
- 
+
 CC[3][0] = C[2][0][0][0];
 CC[3][1] = C[2][0][1][0];
 CC[3][2] = C[2][0][1][1];
@@ -107,14 +107,14 @@ CC[5][3] = C[2][2][2][0];
 CC[5][4] = C[2][2][2][1];
 CC[5][5] = C[2][2][2][2];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of s9_mat_linel */
 
 /*!----------------------------------------------------------------------
-\brief calculates the PK II stresses                                      
+\brief calculates the PK II stresses
 
 <pre>                     m.gee 6/01              modified by    sh 10/02
 This routine calculates the PK II stresses from green-lagrange strains
@@ -127,7 +127,7 @@ NOTE: Sorting of stresses and strains differ in shell8 and shell9
 \param  DOUBLE  **C       (i) konsitutive matrix
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: s9_call_mat()   [s9_call_mat.c]
 
 *----------------------------------------------------------------------*/
@@ -135,7 +135,7 @@ void s9_mat_stress1(DOUBLE stress[6], DOUBLE strain[6], DOUBLE **C)
 {
 DOUBLE   E[6];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9_mat_linel");
 #endif
 /*----------------------------------------------------------------------*/
@@ -148,7 +148,7 @@ E[4] = strain[4] * 2.0;
 
 math_matvecdense(stress,C,E,6,6,0,1.0);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

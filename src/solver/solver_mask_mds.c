@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -20,7 +20,7 @@ DOUBLE cmp_double(const void *a, const void *b );
  | prototypes of functions callable only in this file                   |
  *----------------------------------------------------------------------*/
 void dofconnectivity(
-    FIELD        *actfield, 
+    FIELD        *actfield,
     INT      **dof_dof,
     INT       *nnz);
 void mds_make_colstr_rowind(
@@ -34,16 +34,16 @@ void mds_make_colstr_rowind(
  |                                                            al  10/01 |
  |  calculate the mask of a column pointer, row index sparse  matrix    |
  *----------------------------------------------------------------------*/
-void mask_mds(FIELD        *actfield, 
-              PARTITION    *actpart, 
+void mask_mds(FIELD        *actfield,
+              PARTITION    *actpart,
               SOLVAR       *actsolv,
-              INTRA        *actintra, 
+              INTRA        *actintra,
               ML_ARRAY_MDS *mds)
 {
 INT       i;
 INT       nnz;
 INT     **dof_connect;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mask_mds");
 #endif
 /*------------------------------------------- put total size of problem */
@@ -60,8 +60,8 @@ dstrc_enter("mask_mds");
  mds->nnz  = nnz;
 /*--------------------------------------- allocate colstr and rowind ---*/
 amdef("rowind" ,&(mds->rowind)  ,(mds->nnz  +1),1,"IV");
-amdef("colstr" ,&(mds->colstr)  ,(mds->numeq+1),1,"IV"); 
-/*amdef("value"  ,&(mds->value )  ,(mds->nnz  +1),1,"DV");*/ 
+amdef("colstr" ,&(mds->colstr)  ,(mds->numeq+1),1,"IV");
+/*amdef("value"  ,&(mds->value )  ,(mds->nnz  +1),1,"DV");*/
 /*amzero(&(mds->value));*/
 
 mds_make_colstr_rowind(actsolv, mds,dof_connect, mds->numeq);
@@ -73,7 +73,7 @@ mds_make_colstr_rowind(actsolv, mds,dof_connect, mds->numeq);
 }
 CCAFREE(dof_connect);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -11,26 +11,26 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
-\addtogroup FLUID2 
+/*!
+\addtogroup FLUID2
 *//*! @{ (documentation module open)*/
-#ifdef D_FLUID2 
+#ifdef D_FLUID2
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #include "fluid2.h"
 #include "../fluid_full/fluid_prototypes.h"
 
-/*!--------------------------------------------------------------------- 
-\brief calculates mass-acceleration-part of the rhs vector for 
+/*!---------------------------------------------------------------------
+\brief calculates mass-acceleration-part of the rhs vector for
        generalised-alpha time integration
 
 <pre>                                                        chfoe 09/03
 
 This routine performs the multiplication emass*acc(n) and writes its
-negative result on the elemental iteration force vector. This gives a 
+negative result on the elemental iteration force vector. This gives a
 part of the rhs required in the generalised alpha time integration scheme
 for fluids.
-			     
+
 </pre>
 \param	 *ele		ELEMENT		(i)	actual element
 \param	**emass		DOUBLE		(i)	element mass matrix
@@ -39,10 +39,10 @@ for fluids.
 
 \warning There is nothing special to this routine
 
-\return void                                               
-\sa calling: 
+\return void
+\sa calling:
              called by: f2_calele()
-                     
+
 ------------------------------------------------------------------------*/
 void f2_massrhs(ELEMENT *ele, DOUBLE **emass, DOUBLE **eaccn, DOUBLE *eiforce)
 {
@@ -52,7 +52,7 @@ INT	dim=2;		/* dimension, number of velocity-dofs		*/
 INT	dofpern=dim+1;	/* degrees of freedom per node			*/
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_massrhs");
 #endif
 
@@ -74,11 +74,11 @@ for (i=0; i<iel; i++)
 }
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of f2_massrhs */
 
 

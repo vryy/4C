@@ -10,7 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 *----------------------------------------------------------------------*/
-/*! 
+/*!
 \addtogroup FSI
 *//*! @{ (documentation module open)*/
 #ifdef D_FSI
@@ -35,7 +35,7 @@ extern struct _FIELD      *field;
 
 <pre>                                                         m.gee 8/00
 -the partition of one proc (all discretizations)
--the type is in partition.h                                                  
+-the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -58,11 +58,11 @@ extern struct _STATIC_VAR  *statvar;
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par;                      
+ extern struct _PAR   par;
 /*----------------------------------------------------------------------*
  | enum _CALC_ACTION                                      m.gee 1/02    |
  | command passed from control routine to the element level             |
@@ -99,27 +99,27 @@ extern enum _CALC_ACTION calc_action[MAXFIELD];
  | is defined in input_control_global.c
  *----------------------------------------------------------------------*/
  extern struct _FILES  allfiles;
- 
- 
+
+
 /*!----------------------------------------------------------------------
-\brief  solving for mesh displacements 
+\brief  solving for mesh displacements
 
 <pre>                                                            ck 06/03
 
-in this function the mesh of a multifield problem is solved as a 
+in this function the mesh of a multifield problem is solved as a
 pseude structure. The calculation is performed in two solutions per time
 step. The elemental stiffness factos used in the second step depend on
-the distortion evaluated in the first one. Displacements are prescribed at 
-the fluid structure interface and at the free surface as Dirichlet boundary 
+the distortion evaluated in the first one. Displacements are prescribed at
+the fluid structure interface and at the free surface as Dirichlet boundary
 conditions.
 
 </pre>
 
-\param  *actfield   FIELD          (i)     ale field 			  
-\param   mctrl      INT            (i)     control flag		  
-\warning 
-\return void                                               
-                                        
+\param  *actfield   FIELD          (i)     ale field
+\param   mctrl      INT            (i)     control flag
+\warning
+\return void
+
 \sa   calling: calelm(), monitoring(), ale_setdirich_increment_fsi(),
                plot_ale_quality()
       called by: fsi_ale()
@@ -155,7 +155,7 @@ static SPARSE_TYP    array_typ;   /* type of psarse system matrix               
 static FSI_DYNAMIC  *fsidyn;
 static ALE_DYNAMIC  *adyn;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fsi_ale_2step");
 #endif
 
@@ -164,7 +164,7 @@ switch (mctrl)
 /*======================================================================*
  |                      I N I T I A L I S A T I O N                     |
  *======================================================================*/
-case 1: 
+case 1:
 numaf  = genprob.numaf;
 adyn   = alldyn[numaf].adyn;
 fsidyn = alldyn[numaf+1].fsidyn;
@@ -174,8 +174,8 @@ adyn->maxtime=fsidyn->maxtime;
 adyn->nstep=fsidyn->nstep;
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-container.isdyn   = 0;  
-container.actndis = 0;    
+container.isdyn   = 0;
+container.actndis = 0;
 container.pos     = 0;
 actpos=0;
 outstep=0;
@@ -189,11 +189,11 @@ actsolv     = &(solv[numaf]);
 actpart     = &(partition[numaf]);
 action      = &(calc_action[numaf]);
 container.fieldtyp  = actfield->fieldtyp;
-/* to follow Chiandussi et al. calculation is performed in two steps, 
+/* to follow Chiandussi et al. calculation is performed in two steps,
    first step linear, second step with modified stiffness
    reference calculation is performed incrementally                     */
 /*----------------------------------------------------------------------*/
-#ifdef PARALLEL 
+#ifdef PARALLEL
 actintra    = &(par.intra[numaf]);
 #else
 actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
@@ -208,7 +208,7 @@ if (actintra->intra_fieldtyp != ale) goto end;
 /*------------------------------------------------ typ of global matrix */
 array_typ   = actsolv->sysarray_typ[actsysarray];
 
-/*--- in the case of relaxation parameter calculations we would like to 
+/*--- in the case of relaxation parameter calculations we would like to
       have a second system matrix which remains constant over time.     */
 if (fsidyn->ifsi == 6)
 {
@@ -218,9 +218,9 @@ if (fsidyn->ifsi == 6)
    numsys++;
    actsolv->nsysarray=2;
    constsysarray = 1;
-   actsolv->sysarray_typ = 
+   actsolv->sysarray_typ =
    (SPARSE_TYP*)CCAREALLOC(actsolv->sysarray_typ,actsolv->nsysarray*sizeof(SPARSE_TYP));
-   actsolv->sysarray = 
+   actsolv->sysarray =
    (SPARSE_ARRAY*)CCAREALLOC(actsolv->sysarray,actsolv->nsysarray*sizeof(SPARSE_ARRAY));
    /*-copy the matrices sparsity mask */
    solserv_alloc_cp_sparsemask(  actintra,
@@ -244,13 +244,13 @@ MPI_Barrier(actintra->MPI_INTRA_COMM);
 #endif
 for (i=0;i<par.nprocs;i++)
 if (par.myrank==i)
-printf("PROC  %3d | FIELD ALE       | number of equations      : %10d \n", 
+printf("PROC  %3d | FIELD ALE       | number of equations      : %10d \n",
         par.myrank,numeq);
 #ifdef PARALLEL
 MPI_Barrier(actintra->MPI_INTRA_COMM);
 #endif
 if (par.myrank==0)
-printf("          | FIELD ALE       | total number of equations: %10d \n",numeq_total);	
+printf("          | FIELD ALE       | total number of equations: %10d \n",numeq_total);
 if (par.myrank==0) printf("\n\n");
 
 /*---------------------------------- number of rhs and solution vectors */
@@ -271,7 +271,7 @@ if (par.myrank==0) amdef("time",&time_a,1000,1,"DV");
 init=1;
 for (i = 0; i<numsys; i++)
 {
-   solver_control(  
+   solver_control(
                        actsolv,
                        actintra,
                      &(actsolv->sysarray_typ[i]),
@@ -317,7 +317,7 @@ container.max = 500.0;
 container.min_stiff = container.min;
 container.max_stiff = container.max;
 /*------------------------------------------- print out results to .out */
-#ifdef PARALLEL 
+#ifdef PARALLEL
 if (ioflags.ale_disp_gid==1 && par.myrank==0)
 out_gid_domains(actfield);
 #endif
@@ -343,9 +343,9 @@ break;
  * nodal solution history ale field:                                    *
  * sol[1...actpos][j]  ... solution for visualisation (real pressure)	*
  * sol_increment[0][i] ... displacements at (n+1)			        *
- * sol_increment[1][i] ... displacements at (n) 		        * 
+ * sol_increment[1][i] ... displacements at (n) 		        *
  * sol_mf[0][i]        ... displacements at (n)			        *
- * sol_mf[1][i]        ... displacements at (n+1) 		        * 
+ * sol_mf[1][i]        ... displacements at (n+1) 		        *
  *======================================================================*/
 case 2:
 /*------------------------------------------------------- check proc ---*/
@@ -359,11 +359,11 @@ if (par.myrank==0)
 
 /*--------------------------------------- sequential staggered schemes: */
 /*------------------------ copy from nodal sol_mf[1][j] to sol_mf[0][j] */
-if (fsidyn->ifsi<3 && fsidyn->ifsi>0) 
+if (fsidyn->ifsi<3 && fsidyn->ifsi>0)
 solserv_sol_copy(actfield,0,3,3,1,0);
 
 dsassert(fsidyn->ifsi!=3,"ale-solution handling not implemented for algo with DT/2-shift!\n");
-   
+
 /*------------------------------ init the created dist. vectors to zero */
 solserv_zero_vec(&(actsolv->rhs[actsysarray]));
 solserv_zero_vec(&(actsolv->sol[actsysarray]));
@@ -430,7 +430,7 @@ container.max_stiff = 0.0;
 container.min_stiff = 1.E10;
 /*-call element routines to calculate & assemble stiffness matrix */
 *action = calc_ale_stiff_step2;
-container.kstep        = adyn->step; 
+container.kstep        = adyn->step;
 switch (adyn->measure_quality)
 {
    /*--------------------------------*/
@@ -496,16 +496,16 @@ solserv_sol_copy(actfield,0,0,3,actpos,1);
 if (fsidyn->ifsi>=4 || fsidyn->ifsi<0)
 break;
 
-/*======================================================================* 
+/*======================================================================*
  |                       F I N A L I S I N G                            |
  *======================================================================*/
 case 3:
 /*------------------------------------ for iterative staggared schemes: */
 /*------------------------ copy from nodal sol_mf[1][j] to sol_mf[0][j] */
-if (fsidyn->ifsi>=4 || fsidyn->ifsi==-1) 
+if (fsidyn->ifsi>=4 || fsidyn->ifsi==-1)
    solserv_sol_copy(actfield,0,3,3,1,0);
 
-/*--------------------- to get the corrected free surface position copy 
+/*--------------------- to get the corrected free surface position copy
   --------------------------------- from sol_mf[1][j] to sol[actpos][j] */
 solserv_sol_copy(actfield,0,3,0,0,actpos);
 
@@ -518,7 +518,7 @@ pssstep++;
 restartstep++;
 
 if (outstep==adyn->updevry_disp && ioflags.ale_disp_file==1)
-{ 
+{
     outstep=0;
     out_sol(actfield,actpart,actintra,adyn->step,actpos);
 /*    if (par.myrank==0) out_gid_sol("displacement",actfield,actintra,adyn->step,0);*/
@@ -533,21 +533,21 @@ if (pssstep==fsidyn->uppss && ioflags.fluid_vis_file==1 && par.myrank==0)
    /*--------------------------------------------- store time in time_a */
    if (actpos >= time_a.fdim)
    amredef(&(time_a),time_a.fdim+1000,1,"DV");
-   time_a.a.dv[actpos] = adyn->time;   
+   time_a.a.dv[actpos] = adyn->time;
    actpos++;
-} 
+}
 
 /*------------------------------------------------- write restart data */
 if (restartstep==fsidyn->uprestart)
 {
    restartstep=0;
    restart_write_aledyn(adyn,actfield,actpart,actintra);
-} 
+}
 
 /*--------------------------------------- do mesh quality statistics ---*/
-if (container.quality) 
+if (container.quality)
   plot_ale_quality(actfield,fsidyn->step,actintra,actpart);
-/*--------------------------------------------------------------------- */   
+/*--------------------------------------------------------------------- */
 
 break;
 
@@ -559,7 +559,7 @@ break;
  * nodal solution history ale field:                                    *
  * sol[1...actpos][j]  ... solution for visualisation (real pressure)	*
  * sol_mf[0][i]        ... displacements at (n)			        *
- * sol_mf[1][i]        ... displacements at (n+1) 		        * 
+ * sol_mf[1][i]        ... displacements at (n+1) 		        *
  * sol_mf[2][i]        ... grid position in relaxation parameter calc.  *
  * sol_increment[0][i] ... displacement used to determine omega_RELAX   *
  *======================================================================*/
@@ -574,7 +574,7 @@ if (par.myrank==0)
 }
 
 dsassert(fsidyn->ifsi!=3,"ale-solution handling not implemented for algo with DT/2-shift!\n");
-   
+
 /*------------------------------ init the created dist. vectors to zero */
 solserv_zero_vec(&(actsolv->rhs[actsysarray]));
 solserv_zero_vec(&(actsolv->sol[actsysarray]));
@@ -582,10 +582,10 @@ solserv_zero_vec(&(actsolv->sol[actsysarray]));
 amzero(&dirich_a);
 
 /*-------------------------set dirichlet boundary conditions on at time */
-/* note: ale Dirichlet boundary conditions different from ZERO are not 
+/* note: ale Dirichlet boundary conditions different from ZERO are not
          helpful for fsi coupling problems and would cause trouble here.
 	 But there's no test to set all ordinary dbc = 0.0 !!!
-	 The required Dirichlet boundary conditions from fsi coupling 
+	 The required Dirichlet boundary conditions from fsi coupling
 	 are calculated here.						*/
 ale_setdirich(actfield,adyn,6);
 
@@ -625,7 +625,7 @@ solserv_result_incre(
 break;
 
 
-/*======================================================================* 
+/*======================================================================*
  |                C L E A N I N G   U P   P H A S E                     |
  *======================================================================*/
 case 99:
@@ -646,16 +646,16 @@ if (ioflags.fluid_vis_file==1 && par.myrank==0)
       /*------------------------------------------ store time in time_a */
       if (actpos >= time_a.fdim)
       amredef(&(time_a),time_a.fdim+1000,1,"DV");
-      time_a.a.dv[actpos] = adyn->time;   
-   }   
+      time_a.a.dv[actpos] = adyn->time;
+   }
    visual_writepss(actfield,actpos+1,&time_a);
 }
 
-/*------------------------------------------------------------- tidy up */ 
+/*------------------------------------------------------------- tidy up */
 if (par.myrank==0) amdel(&time_a);
 solserv_del_vec(&(actsolv->rhs),actsolv->nrhs);
 solserv_del_vec(&(actsolv->sol),actsolv->nsol);
-#ifndef PARALLEL 
+#ifndef PARALLEL
 CCAFREE(actintra);
 #endif
 break;
@@ -666,7 +666,7 @@ default:
 /*----------------------------------------------------------------------*/
 end:
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

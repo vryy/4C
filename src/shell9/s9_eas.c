@@ -2,7 +2,7 @@
 \file
 \brief contains the routines
  - s9_eas: which holds the shape functions for Enhanced Asumed Strains
- - s9_transeas: which transforms the EAS-strains from element midpoint 
+ - s9_transeas: which transforms the EAS-strains from element midpoint
                 to gausspoints
 
 
@@ -18,12 +18,12 @@ Maintainer: Stefan Hartmann
 #include "../headers/standardtypes.h"
 #include "shell9.h"
 
-/*! 
-\addtogroup SHELL9 
+/*!
+\addtogroup SHELL9
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief shape functions for EAS                                      
+\brief shape functions for EAS
 
 <pre>                     m.gee 7/01              modified by    sh 02/03
 This routine gets the shape functions for EAS.
@@ -38,15 +38,15 @@ NOTE: The numbering of strains/stresses in shell8/9 is different,
 \param  DOUBLE     **P    (o)  shape function matrix (M) for EAS
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: s9static_keug() [s9_static_keug.c]
 
 *----------------------------------------------------------------------*/
 void s9_eas(const INT    nhyb,
             const DOUBLE e1,
             const DOUBLE e2,
-            const INT    iel, 
-            const INT   *eas, 
+            const INT    iel,
+            const INT   *eas,
             DOUBLE     **P)
 {
 INT       place_P=0;
@@ -69,7 +69,7 @@ DOUBLE    e1e1e2;
 DOUBLE    e1e2e2;
 DOUBLE    e1e1e2e2;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9_eas");
 #endif
 /*----------------------------------------------------------------------*/
@@ -131,7 +131,7 @@ if (iel==4)
    break;
    default:
       dserror("eas: MEMBRAN: E11,E12,E22 KONSTANT other then 0,1,2,3,4,5,7 for Quad4");
-   }   
+   }
 /*----------------------------------------------------------------------
       BIEGUNG: E11,E12,E22 LINEAR
   ----------------------------------------------------------------------*/
@@ -175,20 +175,20 @@ if (iel==4)
    case 0:
    break;
    case 1:
-      P[st][place_P] = 1.0; 
+      P[st][place_P] = 1.0;
       place_P+=1;
    break;
    case 3:
-      P[st][place_P]   = 1.0; 
-      P[st][place_P+1] = e1; 
-      P[st][place_P+2] = e2; 
+      P[st][place_P]   = 1.0;
+      P[st][place_P+1] = e1;
+      P[st][place_P+2] = e2;
       place_P+=3;
    break;
    case 4:
-      P[st][place_P]   = 1.0; 
-      P[st][place_P+1] = e1; 
-      P[st][place_P+2] = e2; 
-      P[st][place_P+3] = e1e2; 
+      P[st][place_P]   = 1.0;
+      P[st][place_P+1] = e1;
+      P[st][place_P+2] = e2;
+      P[st][place_P+3] = e1e2;
       place_P+=4;
    break;
    default:
@@ -270,20 +270,20 @@ else if (iel==8)
    case 0:
    break;
    case 1:
-      P[st][place_P] = 1.0; 
+      P[st][place_P] = 1.0;
       place_P+=1;
    break;
    case 3:
-      P[st][place_P]   = 1.0; 
-      P[st][place_P+1] = e1; 
-      P[st][place_P+2] = e2; 
+      P[st][place_P]   = 1.0;
+      P[st][place_P+1] = e1;
+      P[st][place_P+2] = e2;
       place_P+=3;
    break;
    case 4:
-      P[st][place_P]   = 1.0; 
-      P[st][place_P+1] = e1; 
-      P[st][place_P+2] = e2; 
-      P[st][place_P+3] = e1e2; 
+      P[st][place_P]   = 1.0;
+      P[st][place_P+1] = e1;
+      P[st][place_P+2] = e2;
+      P[st][place_P+3] = e1e2;
       place_P+=4;
    break;
     default:
@@ -321,39 +321,39 @@ else if (iel==9)
    case 0:
    break;
    case 7:
-      P[nrr][place_P]   = e2-3.0*e1e1e2; 
-      P[nrr][place_P+1] = e2e2-3.0*e1e1e2e2; 
-      P[nss][place_P+2] = e1-3.0*e1e2e2; 
-      P[nss][place_P+3] = e1e1-3.0*e1e1e2e2; 
-      P[nrs][place_P+4] = e2-3.0*e1e1e2; 
-      P[nrs][place_P+5] = e1-3.0*e1e2e2; 
+      P[nrr][place_P]   = e2-3.0*e1e1e2;
+      P[nrr][place_P+1] = e2e2-3.0*e1e1e2e2;
+      P[nss][place_P+2] = e1-3.0*e1e2e2;
+      P[nss][place_P+3] = e1e1-3.0*e1e1e2e2;
+      P[nrs][place_P+4] = e2-3.0*e1e1e2;
+      P[nrs][place_P+5] = e1-3.0*e1e2e2;
       P[nrs][place_P+6] = 1.0-3.0*(e1e1+e2e2)+9.0*e1e1e2e2;
       place_P+=7;
    break;
    case 9:
-      P[nrr][place_P]   = 1.0-3.0*e1e1;; 
-      P[nrr][place_P+1] = e2-3.0*e1e1e2;; 
-      P[nss][place_P+2] = 1.0-3.0*e2e2; 
-      P[nss][place_P+3] = e1-3.0*e1e2e2; 
-      P[nrs][place_P+4] = 1.0-3.0*e1e1; 
-      P[nrs][place_P+5] = 1.0-3.0*e2e2; 
-      P[nrs][place_P+6] = e2-3.0*e1e1e2; 
-      P[nrs][place_P+7] = e1-3.0*e1e2e2; 
+      P[nrr][place_P]   = 1.0-3.0*e1e1;;
+      P[nrr][place_P+1] = e2-3.0*e1e1e2;;
+      P[nss][place_P+2] = 1.0-3.0*e2e2;
+      P[nss][place_P+3] = e1-3.0*e1e2e2;
+      P[nrs][place_P+4] = 1.0-3.0*e1e1;
+      P[nrs][place_P+5] = 1.0-3.0*e2e2;
+      P[nrs][place_P+6] = e2-3.0*e1e1e2;
+      P[nrs][place_P+7] = e1-3.0*e1e2e2;
       P[nrs][place_P+8] = 1.0-3.0*(e1e1+e2e2)+9.0*e1e1e2e2;
       place_P+=9;
    break;
    case 11:
-      P[nrr][place_P]    = 1.0-3.0*e1e1; 
-      P[nrr][place_P+1]  = e2-3.0*e1e1e2; 
-      P[nrr][place_P+2]  = e2e2-3.0*e1e1e2e2; 
-      P[nss][place_P+3]  = 1.0-3.0*e2e2; 
-      P[nss][place_P+4]  = e1-3.0*e1e2e2; 
-      P[nss][place_P+5]  = e1e1-3.0*e1e1e2e2; 
-      P[nrs][place_P+6]  = 1.0-3.0*e1e1; 
-      P[nrs][place_P+7]  = 1.0-3.0*e2e2; 
-      P[nrs][place_P+8]  = e2-3.0*e1e1e2; 
-      P[nrs][place_P+9]  = e1-3.0*e1e2e2; 
-      P[nrs][place_P+10] = 1.0-3.0*(e1e1+e2e2)+9.0*e1e1e2e2; 
+      P[nrr][place_P]    = 1.0-3.0*e1e1;
+      P[nrr][place_P+1]  = e2-3.0*e1e1e2;
+      P[nrr][place_P+2]  = e2e2-3.0*e1e1e2e2;
+      P[nss][place_P+3]  = 1.0-3.0*e2e2;
+      P[nss][place_P+4]  = e1-3.0*e1e2e2;
+      P[nss][place_P+5]  = e1e1-3.0*e1e1e2e2;
+      P[nrs][place_P+6]  = 1.0-3.0*e1e1;
+      P[nrs][place_P+7]  = 1.0-3.0*e2e2;
+      P[nrs][place_P+8]  = e2-3.0*e1e1e2;
+      P[nrs][place_P+9]  = e1-3.0*e1e2e2;
+      P[nrs][place_P+10] = 1.0-3.0*(e1e1+e2e2)+9.0*e1e1e2e2;
       place_P+=11;
    break;
    default:
@@ -367,29 +367,29 @@ else if (iel==9)
    case 0:
    break;
    case 9:
-      P[mrr][place_P]   = 1.0-3.0*e1e1; 
-      P[mrr][place_P+1] = e2-3.0*e1e1e2; 
-      P[mss][place_P+2] = 1.0-3.0*e2e2; 
-      P[mss][place_P+3] = e1-3.0*e1e2e2; 
-      P[mrs][place_P+4] = 1.0-3.0*e1e1; 
-      P[mrs][place_P+5] = 1.0-3.0*e2e2; 
-      P[mrs][place_P+6] = e2-3.0*e1e1e2; 
-      P[mrs][place_P+7] = e1-3.0*e1e2e2; 
-      P[mrs][place_P+8] = 1.0-3.0*(e1e1+e2e2)+9.0*e1e1e2e2; 
+      P[mrr][place_P]   = 1.0-3.0*e1e1;
+      P[mrr][place_P+1] = e2-3.0*e1e1e2;
+      P[mss][place_P+2] = 1.0-3.0*e2e2;
+      P[mss][place_P+3] = e1-3.0*e1e2e2;
+      P[mrs][place_P+4] = 1.0-3.0*e1e1;
+      P[mrs][place_P+5] = 1.0-3.0*e2e2;
+      P[mrs][place_P+6] = e2-3.0*e1e1e2;
+      P[mrs][place_P+7] = e1-3.0*e1e2e2;
+      P[mrs][place_P+8] = 1.0-3.0*(e1e1+e2e2)+9.0*e1e1e2e2;
       place_P+=9;
    break;
    case 11:
-      P[mrr][place_P]    = 1.0-3.0*e1e1; 
-      P[mrr][place_P+1]  = e2-3.0*e1e1e2; 
-      P[mrr][place_P+2]  = e2e2-3.0*e1e1e2e2; 
-      P[mss][place_P+3]  = 1.0-3.0*e2e2; 
-      P[mss][place_P+4]  = e1-3.0*e1e2e2; 
-      P[mss][place_P+5]  = e1e1-3.0*e1e1e2e2; 
-      P[mrs][place_P+6]  = 1.0-3.0*e1e1; 
-      P[mrs][place_P+7]  = 1.0-3.0*e2e2; 
-      P[mrs][place_P+8]  = e2-3.0*e1e1e2; 
-      P[mrs][place_P+9]  = e1-3.0*e1e2e2; 
-      P[mrs][place_P+10] = 1.0-3.0*(e1e1+e2e2)+9.0*e1e1e2e2; 
+      P[mrr][place_P]    = 1.0-3.0*e1e1;
+      P[mrr][place_P+1]  = e2-3.0*e1e1e2;
+      P[mrr][place_P+2]  = e2e2-3.0*e1e1e2e2;
+      P[mss][place_P+3]  = 1.0-3.0*e2e2;
+      P[mss][place_P+4]  = e1-3.0*e1e2e2;
+      P[mss][place_P+5]  = e1e1-3.0*e1e1e2e2;
+      P[mrs][place_P+6]  = 1.0-3.0*e1e1;
+      P[mrs][place_P+7]  = 1.0-3.0*e2e2;
+      P[mrs][place_P+8]  = e2-3.0*e1e1e2;
+      P[mrs][place_P+9]  = e1-3.0*e1e2e2;
+      P[mrs][place_P+10] = 1.0-3.0*(e1e1+e2e2)+9.0*e1e1e2e2;
       place_P+=11;
    break;
    default:
@@ -403,52 +403,52 @@ else if (iel==9)
    case 0:
    break;
    case 1:
-      P[st][place_P] = 1.0; 
+      P[st][place_P] = 1.0;
       place_P+=1;
    break;
    case 3:
-      P[st][place_P]   = 1.0; 
-      P[st][place_P+1] = e1; 
-      P[st][place_P+2] = e2; 
+      P[st][place_P]   = 1.0;
+      P[st][place_P+1] = e1;
+      P[st][place_P+2] = e2;
       place_P+=3;
    break;
    case 4:
-      P[st][place_P]   = 1.0; 
-      P[st][place_P+1] = e1; 
-      P[st][place_P+2] = e2; 
-      P[st][place_P+3] = e1e2; 
+      P[st][place_P]   = 1.0;
+      P[st][place_P+1] = e1;
+      P[st][place_P+2] = e2;
+      P[st][place_P+3] = e1e2;
       place_P+=4;
    break;
    case 6:
-      P[st][place_P]   = 1.0; 
-      P[st][place_P+1] = e1; 
-      P[st][place_P+2] = e2; 
-      P[st][place_P+3] = e1e2; 
-      P[st][place_P+4] = e1e1; 
-      P[st][place_P+5] = e2e2; 
+      P[st][place_P]   = 1.0;
+      P[st][place_P+1] = e1;
+      P[st][place_P+2] = e2;
+      P[st][place_P+3] = e1e2;
+      P[st][place_P+4] = e1e1;
+      P[st][place_P+5] = e2e2;
       place_P+=6;
    break;
    case 8:
-      P[st][place_P]   = 1.0; 
-      P[st][place_P+1] = e1; 
-      P[st][place_P+2] = e2; 
-      P[st][place_P+3] = e1e2; 
-      P[st][place_P+4] = e1e1; 
-      P[st][place_P+5] = e2e2; 
-      P[st][place_P+6] = e1e1e2; 
-      P[st][place_P+7] = e1e2e2; 
+      P[st][place_P]   = 1.0;
+      P[st][place_P+1] = e1;
+      P[st][place_P+2] = e2;
+      P[st][place_P+3] = e1e2;
+      P[st][place_P+4] = e1e1;
+      P[st][place_P+5] = e2e2;
+      P[st][place_P+6] = e1e1e2;
+      P[st][place_P+7] = e1e2e2;
       place_P+=8;
    break;
    case 9:
-      P[st][place_P]   = 1.0; 
-      P[st][place_P+1] = e1; 
-      P[st][place_P+2] = e2; 
-      P[st][place_P+3] = e1e2; 
-      P[st][place_P+4] = 1.0-3.0*e1e1; 
-      P[st][place_P+5] = 1.0-3.0*e2e2; 
-      P[st][place_P+6] = e1e1e2; 
-      P[st][place_P+7] = e1e2e2; 
-      P[st][place_P+8] = 1.0-9.0*e1e1e2e2; 
+      P[st][place_P]   = 1.0;
+      P[st][place_P+1] = e1;
+      P[st][place_P+2] = e2;
+      P[st][place_P+3] = e1e2;
+      P[st][place_P+4] = 1.0-3.0*e1e1;
+      P[st][place_P+5] = 1.0-3.0*e2e2;
+      P[st][place_P+6] = e1e1e2;
+      P[st][place_P+7] = e1e2e2;
+      P[st][place_P+8] = 1.0-9.0*e1e1e2e2;
       place_P+=9;
    break;
 
@@ -463,24 +463,24 @@ else if (iel==9)
    case 0:
    break;
    case 2:
-      P[qr][place_P]   = e2-3.0*e1e1e2; 
-      P[qs][place_P+1] = e1-3.0*e1e2e2; 
+      P[qr][place_P]   = e2-3.0*e1e1e2;
+      P[qs][place_P+1] = e1-3.0*e1e2e2;
       place_P+=2;
    break;
    case 4:
-      P[qr][place_P]   = 1.0-3.0*e1e1; 
-      P[qr][place_P+1] = e2-3.0*e1e1e2; 
-      P[qs][place_P+2] = 1.0-3.0*e2e2; 
-      P[qs][place_P+3] = e1-3.0*e1e2e2; 
+      P[qr][place_P]   = 1.0-3.0*e1e1;
+      P[qr][place_P+1] = e2-3.0*e1e1e2;
+      P[qs][place_P+2] = 1.0-3.0*e2e2;
+      P[qs][place_P+3] = e1-3.0*e1e2e2;
       place_P+=4;
    break;
    case 6:
-      P[qr][place_P]   = 1.0-3.0*e1e1; 
-      P[qr][place_P+1] = e2-3.0*e1e1e2; 
-      P[qr][place_P+2] = e2e2-3.0*e1e1e2e2; 
-      P[qs][place_P+3] = 1.0-3.0*e2e2; 
-      P[qs][place_P+4] = e1-3.0*e1e2e2; 
-      P[qs][place_P+5] = e1e1-3.0*e1e1e2e2; 
+      P[qr][place_P]   = 1.0-3.0*e1e1;
+      P[qr][place_P+1] = e2-3.0*e1e1e2;
+      P[qr][place_P+2] = e2e2-3.0*e1e1e2e2;
+      P[qs][place_P+3] = 1.0-3.0*e2e2;
+      P[qs][place_P+4] = e1-3.0*e1e2e2;
+      P[qs][place_P+5] = e1e1-3.0*e1e1e2e2;
       place_P+=6;
    break;
    default:
@@ -494,24 +494,24 @@ else if (iel==9)
    case 0:
    break;
    case 2:
-      P[sr][place_P]   = e1e1; 
-      P[ss][place_P+1] = e2e2; 
+      P[sr][place_P]   = e1e1;
+      P[ss][place_P+1] = e2e2;
       place_P+=2;
    break;
    case 4:
-      P[sr][place_P]   = e1e1; 
-      P[sr][place_P+1] = e1e1e2e2; 
-      P[ss][place_P+2] = e2e2; 
-      P[ss][place_P+3] = e1e1e2e2; 
+      P[sr][place_P]   = e1e1;
+      P[sr][place_P+1] = e1e1e2e2;
+      P[ss][place_P+2] = e2e2;
+      P[ss][place_P+3] = e1e1e2e2;
       place_P+=4;
    break;
    case 6:
-      P[sr][place_P]   = e1e1; 
-      P[sr][place_P+1] = e1e1e2; 
-      P[sr][place_P+2] = e1e1e2e2; 
-      P[ss][place_P+3] = e2e2; 
-      P[ss][place_P+4] = e1e2e2; 
-      P[ss][place_P+5] = e1e1e2e2; 
+      P[sr][place_P]   = e1e1;
+      P[sr][place_P+1] = e1e1e2;
+      P[sr][place_P+2] = e1e1e2e2;
+      P[ss][place_P+3] = e2e2;
+      P[ss][place_P+4] = e1e2e2;
+      P[ss][place_P+5] = e1e1e2e2;
       place_P+=6;
    break;
    default:
@@ -526,7 +526,7 @@ else
 /*----------------------------------------------------------------------*/
 if (place_P != nhyb) dserror("wrong parameter nhyb in EAS");
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -535,12 +535,12 @@ return;
 
 
 /*!----------------------------------------------------------------------
-\brief transform the eas-strains from midpoint to gausspoint                                      
+\brief transform the eas-strains from midpoint to gausspoint
 
 <pre>                     m.gee 7/01              modified by    sh 02/03
 This routine gets the shape functions for EAS.
 NOTE: There is a different numbering of strains/stresses in shell8/9
-       shell8:[11,12,13,22,23,33]  <=>  shell9:[11,12,22,13,23,33] 
+       shell8:[11,12,13,22,23,33]  <=>  shell9:[11,12,22,13,23,33]
 </pre>
 \param  DOUBLE   **P      (i)  shape function matrix (M) for EAS
 \param  DOUBLE   **transP (o)  transformed shape function matrix (M) for EAS
@@ -551,11 +551,11 @@ NOTE: There is a different numbering of strains/stresses in shell8/9
 \param  INT        klay   (i)  actual kinematic layer
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: s9static_keug() [s9_static_keug.c]
 
 *----------------------------------------------------------------------*/
-void s9_transeas(DOUBLE      **P, 
+void s9_transeas(DOUBLE      **P,
                  DOUBLE      **transP,
                  DOUBLE      **T,
                  DOUBLE     ***akovr,
@@ -570,7 +570,7 @@ const DOUBLE two=2.0;
 DOUBLE       t11,t12,t13,t21,t22,t23,t31,t32,t33;
 DOUBLE       factor;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9_transeas");
 #endif
 /*----------------------------------------------------------------------*/
@@ -584,7 +584,7 @@ t23=0.0;
 t31=0.0;
 t32=0.0;
 t33=1.0;
-for (i=0; i<3; i++) 
+for (i=0; i<3; i++)
 {
    t11 += akovr[i][0][klay]*akonr0[i][0];
    t12 += akovr[i][0][klay]*akonr0[i][1];
@@ -614,12 +614,12 @@ T[4][1] = factor*(t21*t32+t31*t22);
 T[5][1] = factor*t31*t32;
 
 T[0][3] = factor*t11*t13;
-T[1][3] = factor*(t11*t23+t21*t13);                
-T[3][3] = factor*(t11*t33+t31*t13);                
-T[2][3] = factor*t21*t23;                          
-T[4][3] = factor*(t21*t33+t31*t23);                
-T[5][3] = factor*t31*t33;                          
-                                                  
+T[1][3] = factor*(t11*t23+t21*t13);
+T[3][3] = factor*(t11*t33+t31*t13);
+T[2][3] = factor*t21*t23;
+T[4][3] = factor*(t21*t33+t31*t23);
+T[5][3] = factor*t31*t33;
+
 T[0][2] = factor*t12*t12;
 T[1][2] = factor*two*t12*t22;
 T[3][2] = factor*two*t12*t32;
@@ -656,10 +656,10 @@ T[8][7]  = factor*t21*t22          ;
 T[10][7] = factor*(t21*t32+t31*t22);
 T[11][7] = factor*t31*t32          ;
 
-T[6][9]  = factor*t11*t13           ;            
-T[7][9]  = factor*(t11*t23+t21*t13) ;            
-T[9][9]  = factor*(t11*t33+t31*t13) ;            
-T[8][9]  = factor*t21*t23          ;             
+T[6][9]  = factor*t11*t13           ;
+T[7][9]  = factor*(t11*t23+t21*t13) ;
+T[9][9]  = factor*(t11*t33+t31*t13) ;
+T[8][9]  = factor*t21*t23          ;
 T[10][9] = factor*(t21*t33+t31*t23);
 T[11][9] = factor*t31*t33          ;
 
@@ -695,7 +695,7 @@ for (i=0; i<6; i++)
 /*--------------------------------------------------- multiply TP = T*P */
 math_matmatdense(transP,T,P,12,12,nhyb,0,1.0);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -703,4 +703,4 @@ return;
 /*----------------------------------------------------------------------*/
 #endif /*D_SHELL9*/
 /*! @} (documentation module close)*/
- 
+

@@ -9,12 +9,12 @@
        hardening for mises material model
  contains the routine 'w1yilcr_dp' which calculates the yield criterion
        for material model - Plasticity: Drucker-Prager
- contains the routine 'w1radi_dp' - radial return for element with 
+ contains the routine 'w1radi_dp' - radial return for element with
        Drucker-Prager material model
  contains the routine 'w1maplg' which forms the elasto-plastic consistent
        tangent material tensor for Drucker-Prager material model
        (generalized for the multisurface problem: including the apex)
- contains the routine 'w1radcap' - radial return for element with 
+ contains the routine 'w1radcap' - radial return for element with
        elastoplastic material model (concrete) - Cap region
  contains the routine 'w1mplcap' which forms the elasto-plastic consistent
        tangent material tensor for elastoplastic material model (concrete)
@@ -22,7 +22,7 @@
  contains the routine 'w1cradi' - radial return for element with elasto-
        plastic material model (concrete)
  contains the routine 'w1mapl2' which forms the elasto-plastic consistent
-       tangent material tensor 
+       tangent material tensor
  contains the routine 'w1cradms' - radial return for element with elasto-
        plastic material model (concrete) - multisurface problem
  contains the routine 'w1_mat_rebar' which calculates the constitutive
@@ -32,10 +32,10 @@
  contains the routine 'w1cpreva' which calculates some prevalues
  contains the routine 'w1conver' which converts some arrays
  contains the routine 'w1arcs' which computes the average crack spacing
- contains the routine 'w1cpreds' which calculates the gradients of the 
+ contains the routine 'w1cpreds' which calculates the gradients of the
        elastic predictor deviatoric/hydrostatic stresses
  and contains some mathematical routines
-      
+
 <pre>
 Maintainer: Andrea Hund
             hund@statik.uni-stuttgart.de
@@ -50,8 +50,8 @@ Maintainer: Andrea Hund
 #include "wall1.h"
 #include "wall1_prototypes.h"
 
-/*! 
-\addtogroup WALL1 
+/*!
+\addtogroup WALL1
 *//*! @{ (documentation module open)*/
 
 /*----------------------------------------------------------------------*
@@ -62,7 +62,7 @@ Maintainer: Andrea Hund
  |                               PHI = 0 MISES                          |
  |           FOR MATERIAL MODEL 3 - PLASTICITY                          |
  *----------------------------------------------------------------------*/
-void w1yilcr(DOUBLE E, 
+void w1yilcr(DOUBLE E,
              DOUBLE Eh,
              DOUBLE betah,
              DOUBLE sigy,
@@ -75,7 +75,7 @@ void w1yilcr(DOUBLE E,
 /*----------------------------------------------------------------------*/
 DOUBLE J2, sx, sy, sz, sxy, sigym, hards, epstmax;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1yilcr");
 #endif
 /*----------------------------------------------------------------------*/
@@ -94,16 +94,16 @@ dstrc_enter("w1yilcr");
   {
     epstmax = (2. * Eh)/(sigy * dia);
     epstmax = fabs(epstmax);
-    hards   = -(sigy*sigy * dia)/(2. * Eh); 
+    hards   = -(sigy*sigy * dia)/(2. * Eh);
 
     if(epstn<epstmax)  sigym = sigy + betah * hards * epstn;
-    else sigym = 0.01*sigy;    
+    else sigym = 0.01*sigy;
   }
 /*-------------------------------------------------------- von mises ---*/
   J2 = 1./3. * (sx*sx + sy*sy + sz*sz -sx*sy - sx*sz - sy*sz) + sxy*sxy;
   *ft = sqrt(3.* J2) - sigym;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -114,7 +114,7 @@ return;
  |   radial return for elements with mises material model               |
  |                                              modified by sh  8/02    |
  *----------------------------------------------------------------------*/
-void w1radi(DOUBLE e, 
+void w1radi(DOUBLE e,
             DOUBLE eh,
             DOUBLE betah,
             DOUBLE sigy,
@@ -132,7 +132,7 @@ INT i;
 INT isoft1 = 0;
 INT nsoft  = 1;
 DOUBLE half, ro23, q13, g, c1, c2, xsi1, xsi2, xsi3, hard2, hards;
-DOUBLE f, f1, f2, f3, f4, dfdl, esig, epst, fr, det, epstmax, df, dfi; 
+DOUBLE f, f1, f2, f3, f4, dfdl, esig, epst, fr, det, epstmax, df, dfi;
 DOUBLE J2, xsi4, stps, dum;
 DOUBLE hm11, hm21, hm12, hm22, hm33;
 DOUBLE dm11, dm21, dm12, dm22, dm33;
@@ -142,7 +142,7 @@ DOUBLE x1,x2,x3,x4;
 DOUBLE ft;
 /**/
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1radi");
 #endif
 /*----------------------------------------------------------------------*/
@@ -229,7 +229,7 @@ L500:
 	f4 = esig * esig / 3.;
 	f = f / 2. - f4;
 /*------------------------------------ derivative of yield criteria ----*/
-	dfdl = -c1 * f1 * f1 / ((c1 * *dlam + 1.) * 6.) - c2 * f2 / 
+	dfdl = -c1 * f1 * f1 / ((c1 * *dlam + 1.) * 6.) - c2 * f2 /
               (f3 * f3 * f3);
 	f4 = esig * (betah * hards) * ro23 * 2. / 3.;
 	dfdl = (fr - f4 * *dlam) * dfdl / fr - f4 * fr;
@@ -237,7 +237,7 @@ L500:
 	*dlam -= f / dfdl;
 /*------------------------------------------------- Abbruchkriterium ---*/
 	if ((dum = f / esig, fabs(dum)) > 1e-5) {
-	    if (i > 100) dserror("i>100!");         
+	    if (i > 100) dserror("i>100!");
 	    goto L500;
 	} else {
 	    *epstn = epst;
@@ -287,9 +287,9 @@ L500:
 	xsi3 = sigma[3]; /*!!!*/
 	xsi4 = sigma[2];
 /*---------------------------------- increment of plastic multiplier ---*/
-   J2 = 1./3. * (xsi1*xsi1 + xsi2*xsi2 + xsi3*xsi3 - 
+   J2 = 1./3. * (xsi1*xsi1 + xsi2*xsi2 + xsi3*xsi3 -
                  xsi1*xsi2 - xsi1*xsi3 - xsi2*xsi3) + xsi4*xsi4;
-   stps = sqrt(2.* J2);    /*norm of devaiatoric praedictor stresses*/     
+   stps = sqrt(2.* J2);    /*norm of devaiatoric praedictor stresses*/
 
 /*-------- direct evaluation of dlam  see Simo & Hughes p.120f ---------*/
 /*------------- only possible for linear hardening ---------------------*/
@@ -308,17 +308,17 @@ L500:
    x4= xsi4 / stps;
 
 /*-- see equation (3.3.3) in Simo & Hughes on p.121 --------------------*/
-   sigma[0] = sigma[0] - (2.*g + ro23*fac)* *dlam*x1;   
-   sigma[1] = sigma[1] - (2.*g + ro23*fac)* *dlam*x2;   
-   sigma[3] = sigma[3] - (2.*g + ro23*fac)* *dlam*x3;   
-   sigma[2] = sigma[2] - (2.*g + ro23*fac)* *dlam*x4;   
-         
+   sigma[0] = sigma[0] - (2.*g + ro23*fac)* *dlam*x1;
+   sigma[1] = sigma[1] - (2.*g + ro23*fac)* *dlam*x2;
+   sigma[3] = sigma[3] - (2.*g + ro23*fac)* *dlam*x3;
+   sigma[2] = sigma[2] - (2.*g + ro23*fac)* *dlam*x4;
+
 /*-- backstress vector: qn = qn_trial + fac2 * dlam * grad (3.3.1) -----*/
    qn[0]  = qn[0] + ro23*fac * *dlam * x1;
    qn[1]  = qn[1] + ro23*fac * *dlam * x2;
    qn[3]  = qn[3] + ro23*fac * *dlam * x3;
    qn[2]  = qn[2] + ro23*fac * *dlam * x4;
-   
+
 /*----------------------------------------------------------------------*/
   break;
 /*============================================== rotational symmetry ===*/
@@ -327,7 +327,7 @@ L500:
   break;
   }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -341,7 +341,7 @@ return;
  |   see Simo & Huges: plane_strain: S.124                              |
  |                     plane_stress: S.130                              |
  *----------------------------------------------------------------------*/
-void w1mapl(DOUBLE e, 
+void w1mapl(DOUBLE e,
             DOUBLE eh,
             DOUBLE betah,
             DOUBLE sigy,
@@ -368,7 +368,7 @@ DOUBLE dm11, dm21, dm12, dm22, dm33;
 DOUBLE k,fac,fac1,fac2;
 DOUBLE stps,J2;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1mapl");
 #endif
 /*----------------------------------------------------------------------*/
@@ -410,7 +410,7 @@ dstrc_enter("w1mapl");
 
 	beta = (betah * hards * gamma1 + (1. - betah) * hards * gamma2) *
                2. * gamma1 / (gamma2 * 3.);
-	beta = beta * 2. * (xsi1 * xsi1 + xsi2 * xsi2 - xsi1 * 
+	beta = beta * 2. * (xsi1 * xsi1 + xsi2 * xsi2 - xsi1 *
                xsi2 + xsi3 * xsi3 * 3.) / 3.;
 
 	df = *dlam / ((1. - betah) * 2. * hards * *dlam / 3. + 1.) / 3.;
@@ -479,9 +479,9 @@ dstrc_enter("w1mapl");
    xsi3 = tau[3];
    xsi4 = tau[2];
 /*------- Grad n  -> Normiert  -----------------------------------------*/
-   J2 = 1./3. * (xsi1*xsi1 + xsi2*xsi2 + xsi3*xsi3 - 
+   J2 = 1./3. * (xsi1*xsi1 + xsi2*xsi2 + xsi3*xsi3 -
                  xsi1*xsi2 - xsi1*xsi3 - xsi2*xsi3) + xsi4*xsi4;
-   stps = sqrt(2.* J2); /*norm of devaiatoric predictor stresses*/     
+   stps = sqrt(2.* J2); /*norm of devaiatoric predictor stresses*/
 
    x1= (2. * xsi1 - xsi2 - xsi3 ) / 3. / stps;
    x2= (2. * xsi2 - xsi1 - xsi3 ) / 3. / stps;
@@ -490,31 +490,31 @@ dstrc_enter("w1mapl");
 /*------- Vorfaktoren  -------------------------------------------------*/
    fac  = (2.*g* *dlam)/ (stps);
    fac1 = 1. - fac;
-   fac2 = 1./(1.+ hards/(3.*g)) - fac ;      
+   fac2 = 1./(1.+ hards/(3.*g)) - fac ;
 /*-------- Cep_alg nach Simo & Hughes  ---------------------------------*/
 
    dm[0][0] = k + 2.*g*fac1*( 2./3.) - 2.*g*fac2*x1*x1;
    dm[1][1] = k + 2.*g*fac1*( 2./3.) - 2.*g*fac2*x2*x2;
    dm[2][2] = k + 2.*g*fac1*( 2./3.) - 2.*g*fac2*x3*x3;
    dm[3][3] =     2.*g*fac1*( 1./2 ) - 2.*g*fac2*x4*x4;
-           
+
    dm[0][1] = k + 2.*g*fac1*(-1./3.) - 2.*g*fac2*x1*x2;
    dm[1][0] = dm[0][1];
    dm[0][2] = k + 2.*g*fac1*(-1./3.) - 2.*g*fac2*x1*x3;
    dm[2][0] = dm[0][2];
    dm[1][2] = k + 2.*g*fac1*(-1./3.) - 2.*g*fac2*x2*x3;
    dm[2][1] = dm[1][2];
-     
+
    dm[0][3] =                        - 2.*g*fac2*x1*x4;
    dm[3][0] = dm[0][3];
    dm[1][3] =                        - 2.*g*fac2*x2*x4;
    dm[3][1] = dm[1][3];
    dm[2][3] =                        - 2.*g*fac2*x3*x4;
    dm[3][2] = dm[2][3];
-   
+
    /*Sorting back rows/columns 2 <-> 3 */
    d[0][0] = dm[0][0];
-   d[1][0] = dm[1][0]; 
+   d[1][0] = dm[1][0];
    d[2][0] = dm[3][0];
    d[3][0] = dm[2][0];
    d[0][1] = dm[0][1];
@@ -523,12 +523,12 @@ dstrc_enter("w1mapl");
    d[3][1] = dm[2][1];
    d[0][2] = dm[0][3];
    d[1][2] = dm[1][3];
-   d[2][2] = dm[3][3]; 
+   d[2][2] = dm[3][3];
    d[3][2] = dm[2][3];
    d[0][3] = dm[0][2];
    d[1][3] = dm[1][2];
    d[2][3] = dm[3][2];
-   d[3][3] = dm[2][2];              
+   d[3][3] = dm[2][2];
 /*----------------------------------------------------------------------*/
   break;
 /*============================================== rotational symmetry ===*/
@@ -537,7 +537,7 @@ dstrc_enter("w1mapl");
   break;
   }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -551,7 +551,7 @@ return;
  |           YIELD - CRITERION:  PHI > 0 DRUCKER - PRAGER               |
  |                               PHI = 0 MISES                          |
  *----------------------------------------------------------------------*/
-void w1yilcr_dp(DOUBLE E, 
+void w1yilcr_dp(DOUBLE E,
                 DOUBLE Eh,
                 DOUBLE phi,
                 DOUBLE sigy,
@@ -564,7 +564,7 @@ void w1yilcr_dp(DOUBLE E,
 DOUBLE coh, sx, sy, sxy, hards, alpha, yld;
 DOUBLE betah = 1.;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1yilcr_dp");
 #endif
 /*----------------------------------------------------------------------*/
@@ -588,7 +588,7 @@ dstrc_enter("w1yilcr_dp");
 /*     Fliessbedingung  Drucker - Prager */
   *ft = sqrt(sx*sx-sx*sy+sy*sy+3.0*(sxy*sxy)) + alpha*(sx+sy)- *sigym;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -598,7 +598,7 @@ return;
  |   radial return for elements with mises material model               |
  |                                                                      |
  *----------------------------------------------------------------------*/
-void w1radi_dp(DOUBLE e, 
+void w1radi_dp(DOUBLE e,
                DOUBLE eh,
                DOUBLE phi,
                DOUBLE sigy,
@@ -613,14 +613,14 @@ void w1radi_dp(DOUBLE e,
 /*----------------------------------------------------------------------*/
 INT i=0;
 DOUBLE half, ro23, q13, g, c1, c2, g1, xsi1, xsi2, xsi3, hard2, hards;
-DOUBLE f, f1, f2, f3, f4, dfdl, esig, epst, fr, det, df; 
+DOUBLE f, f1, f2, f3, f4, dfdl, esig, epst, fr, det, df;
 DOUBLE dum, xsi4, stps, dlf, dlfi, coh, y, alpha, devinv, alph, fac;
 DOUBLE hd11, hd12, hd44;
 DOUBLE hm11, hm21, hm12, hm22, hm33;
 DOUBLE dm11, dm21, dm12, dm22, dm33;
 DOUBLE betah = 1.0;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1radi_dp");
 #endif
 /*----------------------------------------------------------------------*/
@@ -631,10 +631,10 @@ dstrc_enter("w1radi_dp");
   hards = e * eh / (e - eh);
   hard2 = hards;
   g     = e / (vnu * 2. + 2.);
-  coh   = sigy/2.;  
+  coh   = sigy/2.;
 /*----------------------------------------------------------------------*/
 /*     MAXIMALE HYDROSTATISCHER SPANNUNGSZUSTAND */
-  if(phi!=0.) y=coh/tan(phi); 
+  if(phi!=0.) y=coh/tan(phi);
 /*===================================================== plane stress ===*/
   switch(wtype)
   {
@@ -664,13 +664,13 @@ L500:
 	f3 = c2 * *dlam + 1.;
 /*----------------------------------------------------------------------*/
 /*       Vorwert bei I1  (1. Invariante) */
-        alpha = 1. / 3. * 6. * sin(phi) / (3. - sin(phi)); 
+        alpha = 1. / 3. * 6. * sin(phi) / (3. - sin(phi));
 /*----------------------------------------------------------------------*/
 /*       Wurzel 3J2  (Deviatorinvariante) */
-        devinv =  sqrt(3./2.*(f1*f1/6. + f2/(f3*f3))); 
+        devinv =  sqrt(3./2.*(f1*f1/6. + f2/(f3*f3)));
 /*----------------------------------------------------------------------*/
 /*       Vergleichsspannung */
-        f  =  devinv + alpha * f1 ;  
+        f  =  devinv + alpha * f1 ;
         fr = sqrt(f);
 /*----------------------------------------------------------------------*/
 /*       Beiwert fuer plastische Verzerrung */
@@ -681,8 +681,8 @@ L500:
 /*----------------------------------------------------------------------*/
 	  epst = *epstn + *dlam * fr * fac;
 /*----------------------------------------------------------------------*/
-/*       isotrope Materialverfestigung DRUCKER PRAGER */    
-          esig = *sigym  + betah*hards*epst; 
+/*       isotrope Materialverfestigung DRUCKER PRAGER */
+          esig = *sigym  + betah*hards*epst;
 /*----------------------------------------------------------------------*/
 /*       Fliessbedingung */
           f4 = esig;
@@ -698,24 +698,24 @@ L500:
 	*dlam -= f / dfdl;
 /*------------------------------------------------- Abbruchkriterium ---*/
 /*       Abbruchkriterium */
-          if (esig>(0.001* *sigym)) 
+          if (esig>(0.001* *sigym))
           {
-            if (fabs(f/esig)>0.0001 ) 
+            if (fabs(f/esig)>0.0001 )
             {
-	      if (i > 30) dserror("i>30!");         
+	      if (i > 30) dserror("i>30!");
 	      goto L500;
             }
             else
             {
               *epstn = epst;
 	      df = *dlam /(1.+2.*(1. - betah) * hards* *dlam/3)/3.;
-            }  
+            }
           }
           else
           {
-            sigy = 0.001 * *sigym; 
+            sigy = 0.001 * *sigym;
             *epstn = epst;
-            df = *dlam /(1.+2.*(1. - betah) * hards* *dlam/3)/3.;  
+            df = *dlam /(1.+2.*(1. - betah) * hards* *dlam/3)/3.;
           }
 /*-------- modified constitutive tensor (compliance) HM = H + DF * P ---*/
 	hm11 = 1. / e + df * 2.;
@@ -758,7 +758,7 @@ L500:
 	xsi3 = sigma[3]; /*!!!*/
 	xsi4 = sigma[2];
 /*---------------------------------- increment of plastic multiplier ---*/
-	dum = q13 * (xsi1 * (xsi1 * 2. - xsi2 - xsi3) + xsi2 * (xsi2 * 2. - 
+	dum = q13 * (xsi1 * (xsi1 * 2. - xsi2 - xsi3) + xsi2 * (xsi2 * 2. -
 		xsi1 - xsi3) + xsi3 * (xsi3 * 2. - xsi1 - xsi2)) + xsi4 * 2. *
 		 xsi4;
 	stps = pow(dum, half);
@@ -773,7 +773,7 @@ L600:
 	f = 1. / (dlf * 2. * dlf) * stps * stps - q13 * esig * esig;
 /*--------- derivative of the yield criteria with respect to plastic ---*/
 /*---------                                                increment ---*/
-	dfdl = -stps / (dlf * dlf) * (stps / dlf * 2. * (g + (1.-betah) * 
+	dfdl = -stps / (dlf * dlf) * (stps / dlf * 2. * (g + (1.-betah) *
 		hards / 3.)+pow(ro23, 3.) * esig * betah * hards);
 /*-------------------------------------------- new plastic increment ---*/
 	*dlam -= f / dfdl;
@@ -795,7 +795,7 @@ L600:
 	}
 	*epstn = epst;
 /*-----------------------------------------------------------------------|
-|        NEW STRESS STATE  SIGMA = DM * H * SIGMA(PRED)                  |  
+|        NEW STRESS STATE  SIGMA = DM * H * SIGMA(PRED)                  |
 |        WITH MODIFIED CONSTITUTIVE TENSOR (COMPLIANCE)                  |
 |        HM = H + DLAM * P                                               |
 |        HD = INV[H]*INV[D]                                              |
@@ -824,16 +824,16 @@ L600:
   break;
   }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of w1radi_dp */
 /*----------------------------------------------------------------------*
  |                                                       al    9/01     |
- |    calculate element diameter (equivalent length) for one element    |	     
+ |    calculate element diameter (equivalent length) for one element    |
  *----------------------------------------------------------------------*/
-void w1cdia(ELEMENT   *ele, 
+void w1cdia(ELEMENT   *ele,
             W1_DATA   *data,
             DOUBLE    *funct_h,
             DOUBLE   **deriv_h,
@@ -850,7 +850,7 @@ DOUBLE              e1,e2;         /*GP-coords*/
 DOUBLE              facr,facs;   /* weights at GP */
 DOUBLE              det, exp, dia;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1cdia");
 #endif
 /*------------------------------------------- integration parameters ---*/
@@ -874,11 +874,11 @@ for (lr=0; lr<nir; lr++)
       facs = data->wgts[ls];
       /*------------------------- shape functions and their derivatives */
       w1_funct_deriv(funct_h,deriv_h,e1,e2,ele->distyp,1);
-      /*------------------------------------ compute jacobian matrix ---*/       
-      w1_jaco (deriv_h,xjm_h,&det,ele,iel);                         
-      fac += facr * facs * det; 
+      /*------------------------------------ compute jacobian matrix ---*/
+      w1_jaco (deriv_h,xjm_h,&det,ele,iel);
+      fac += facr * facs * det;
       /*----------------------------------------------------------------*/
-   }/*============================================= end of loop over ls */ 
+   }/*============================================= end of loop over ls */
 }/*================================================ end of loop over lr */
 
 /*------------------------------- mofification factor exp = alpha**2 ---*/
@@ -886,15 +886,15 @@ for (lr=0; lr<nir; lr++)
   else if(iel==8)  exp = 1.;
   else if(iel==9)  exp = 1.;
   else             exp = 2./3.;
-  
+
   dia = sqrt(exp * fac);
-  
+
   ele->e.w1->elewa[0].dia = dia;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of w1cdia */
 /*-----------------------------------------------------------------------|
 |     topic : wall1 - concrete material prevalues           al  2/02     |
@@ -929,14 +929,14 @@ void w1cpreva (DOUBLE *epst,     /* equivalent uniaxial plastic strain  */
                DOUBLE **d,       /* elastic material matrix             */
                DOUBLE *sig,      /* stresses from last update           */
                DOUBLE *eps)      /* strains from last update            */
-{                                
+{
 /*-------------------------------------------------- local variables ---*/
     static INT i, j;
     static DOUBLE dum;
     static DOUBLE vect[4], dfac1, dfac2, epsn1, epsn2;
     static DOUBLE sigym1, sigym2, q23, fac, dam, ro23, ro54, dia2, sig1;
 /*----------------------------------------------------------------------*/
-  #ifdef DEBUG 
+  #ifdef DEBUG
   dstrc_enter("w1cpreva");
   #endif
 /*----------------------------------------------------------------------*/
@@ -948,7 +948,7 @@ void w1cpreva (DOUBLE *epst,     /* equivalent uniaxial plastic strain  */
     sigym2 = 0.;
     *dfac = 1.;
 
-    for (i = 0; i < 4; i++) 
+    for (i = 0; i < 4; i++)
     {
 	vect[i ] = 0.;
 	sigym[i] = 0.;
@@ -959,15 +959,15 @@ void w1cpreva (DOUBLE *epst,     /* equivalent uniaxial plastic strain  */
     *g = *e / (*vnu * 2. + 2.);
     *com = *e / ((1. - *vnu * 2.) * 3.);
 /*----------------------------------------------------------------------*/
-/* Objektivitaet bei grosser equivalenter Elementlaenge gewaehrleisten  */ 
+/* Objektivitaet bei grosser equivalenter Elementlaenge gewaehrleisten  */
     dia2 = *gt * *e / pow(*ftm,2.);
-    if (*dia > dia2) 
+    if (*dia > dia2)
     {
 	*ftm = sqrt(*gt * *e / *dia);
     }
 
     dia2 = *gc * 3. * *e / (pow(*fcm, 2.) * 4.);
-    if (*dia > dia2) 
+    if (*dia > dia2)
     {
 	*fcm = sqrt(*gc * 3. * *e / (*dia * 4.));
     }
@@ -982,11 +982,11 @@ void w1cpreva (DOUBLE *epst,     /* equivalent uniaxial plastic strain  */
     sig1 = *gamma1 * 2. * *fcm * *ftm / (*gamma1 * *fcm + *ftm);
     sigym[0] = sig1 * exp(-epst[0] / *cappaut);
 
-    if (sigym[0] > sig1 * .01) 
+    if (sigym[0] > sig1 * .01)
     {
 	hards[0] = -sigym[0] / *cappaut;
     }
-    else 
+    else
     {
 	sigym[0] = sig1 * .01;
 	hards[0] = 1e-4;
@@ -999,35 +999,35 @@ void w1cpreva (DOUBLE *epst,     /* equivalent uniaxial plastic strain  */
 /*----------------------------------------------------------------------*/
 /* Vorwerte fuer: Druck-Bereich */
     alpha[2] = ro23 * (*gamma2 - 1.) / (*gamma2 * 2. - 1.);
-    if (alpha[2] == 0.) 
+    if (alpha[2] == 0.)
     {
 	alpha[2] = 1e-4;
     }
     *cappae = *fcm * 4. / (*e * 3.);
     *cappauc = *cappae + *gc * 3. / (*dia * 2. * *fcm);
     *sig3 = *fcm * *gamma2 / (*gamma2 * 2. - 1.);
-    if (epst[1] < *cappae) 
+    if (epst[1] < *cappae)
     {
 	fac = epst[1] / *cappae;
 	*sig3 /= 3.;
 	sigym[2] = *sig3 * (fac * 4. + 1. - pow(fac, 2.) * 2.);
 	hards[2] = *sig3 * 4. * (1. - fac) / *cappae;
-    } 
-    else if (epst[1] >= *cappae && epst[1] < *cappauc) 
+    }
+    else if (epst[1] >= *cappae && epst[1] < *cappauc)
     {
 	fac = epst[1] - *cappae;
 	fac /= *cappauc - *cappae;
 	sigym[2] = *sig3 * (1. - pow(fac, 2.));
 	dum = *cappauc - *cappae;
 	hards[2] = *sig3 * -2. * (epst[1] - *cappae) / (dum * dum);
-    } 
-    else if (epst[1] >= *cappauc) 
+    }
+    else if (epst[1] >= *cappauc)
     {
 	sigym[2] = 1e-4;
 	hards[2] = 1e-4;
     }
 
-    if (sigym[2] < *sig3 * .03) 
+    if (sigym[2] < *sig3 * .03)
     {
 	sigym[2] = *sig3 * .03;
 	hards[2] = 1e-4;
@@ -1040,7 +1040,7 @@ void w1cpreva (DOUBLE *epst,     /* equivalent uniaxial plastic strain  */
     hards[3] = hards[2] * sigym[3] / sigym[2];
 /*----------------------------------------------------------------------*/
 /* Schaedigungsfaktor (ingenieurmaessiger Ansatz) */
-    if (dam > 0. && dam <= 1. && (epst[0] > 0. || epst[1] > 0.)) 
+    if (dam > 0. && dam <= 1. && (epst[0] > 0. || epst[1] > 0.))
     {
 	dum = ro23 + alpha[0];
 	epsn1 = pow(dum, 2.) * epst[0] / ro23;
@@ -1048,18 +1048,18 @@ void w1cpreva (DOUBLE *epst,     /* equivalent uniaxial plastic strain  */
 	epsn2 = pow(dum, 2.) * epst[1] / ro23;
 	dfac1 = sigym[0] / (sigym[0] + dam * *e * epsn1);
 	dfac2 = sigym[2] / (sigym[2] + dam * *e * epsn2);
-	if (epst[0] > 0. && epst[1] <= 0.) 
+	if (epst[0] > 0. && epst[1] <= 0.)
         {
 	    *dfac = dfac1;
-	} 
-        else if (epst[0] <= 0. && epst[1] > 0.) 
+	}
+        else if (epst[0] <= 0. && epst[1] > 0.)
         {
 	    *dfac = dfac2;
-	} 
-        else if (epst[0] > 0. && epst[1] > 0.) 
+	}
+        else if (epst[0] > 0. && epst[1] > 0.)
         {
 	    *dfac = (dfac1 * epsn1 + dfac2 * epsn2) / (epsn1 + epsn2);
-	} 
+	}
         else {
 	    *dfac = 1.;
 	}
@@ -1068,16 +1068,16 @@ void w1cpreva (DOUBLE *epst,     /* equivalent uniaxial plastic strain  */
 /*                SIG : EPS    */
 /*     DFAC =  --------------- */
 /* 	       EPS : D : EPS   */
-    } 
-    else if (dam > 1. && dam <= 2. && (epst[0] > 0. || epst[1] > 0.)) 
+    }
+    else if (dam > 1. && dam <= 2. && (epst[0] > 0. || epst[1] > 0.))
     {
 	dfac1 = 0.;
 	dfac2 = 0.;
 /*----------------------------------------------------------------------*/
 /* VECT  = DM : DEPS */
-	for (j = 0; j < 4; j++) 
+	for (j = 0; j < 4; j++)
         {
-	    for (i = 0; i < 4; i++) 
+	    for (i = 0; i < 4; i++)
             {
 		vect[j] += d[j][i] * eps[i];
 	    }
@@ -1086,12 +1086,12 @@ void w1cpreva (DOUBLE *epst,     /* equivalent uniaxial plastic strain  */
 /* DFAC1 = SIG  : EPS */
 /* DFAC2 = VECT : EPS */
 	eps[2] *= 2.;
-	for (i = 0; i < 4; i++) 
+	for (i = 0; i < 4; i++)
         {
 	    dfac1 += sig[i] * eps[i];
 	    dfac2 += vect[i] * eps[i];
 	}
-	if (dfac2 != 0.) 
+	if (dfac2 != 0.)
         {
 	    *dfac = dfac1 / dfac2;
 	    *dfac = (*dfac - 1.) * (dam - 1.) + 1.;
@@ -1099,7 +1099,7 @@ void w1cpreva (DOUBLE *epst,     /* equivalent uniaxial plastic strain  */
 	eps[2] /= 2.;
     }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return ;
@@ -1109,42 +1109,42 @@ return ;
 |       topic : radial return for elements with elastoplastic material   |
 |               (concrete)                                               |
 |-----------------------------------------------------------------------*/
-void w1cradi (DOUBLE *sigma,  /* elastic predictor projected onto yield surface */ 
-              DOUBLE *epstn,  /* equivalent uniaxial plastic strain             */ 
-              DOUBLE *dlam,   /* incremental plastic multiplier                 */ 
-              WALL_TYPE wtype,/* type of problem                                */ 
-              INT    yip,     /* stress state   1 =elastic   >=2 =plastic       */ 
-              DOUBLE *alpha,  /* factor for the first invariants                */ 
-              DOUBLE *ft,     /* yield condition                                */ 
-              DOUBLE *e,      /* young modulus                                  */ 
-              DOUBLE *g,      /* shear modulus                                  */ 
-	        DOUBLE *com,    /* bulk modulus                                   */ 
-              DOUBLE *sigym,  /* uniaxial predictor yield stress                */ 
-              DOUBLE *hards,  /* plastic modulus                                */ 
-              DOUBLE *sigy,   /* actual uniaxial yield stress                   */ 
-              DOUBLE *dn,     /* gradient components in deviatoric direction    */ 
-              DOUBLE *dcom,   /* gradient components in hdrostatic direction    */ 
-              DOUBLE *devsig, /* deviatoric predictor stresses                  */ 
-              DOUBLE *sm,     /* hydrostatic predictor stresses                 */ 
-              DOUBLE *fcm,    /* compressive strenght                           */ 
-              DOUBLE *gc,     /* compression fracture energy                    */ 
-              DOUBLE *ftm,    /* tensile strenght                               */ 
-	        DOUBLE *gt,     /* tensile fracture energy                        */ 
-              DOUBLE *gamma1, /* fitting factor yield function 1                */ 
-              DOUBLE *gamma2, /* fitting factor yield function 2                */ 
-              DOUBLE *dia,    /* equivalent element length                      */ 
-              DOUBLE *acrs)   /* average crack spacing                          */ 
-{                             
+void w1cradi (DOUBLE *sigma,  /* elastic predictor projected onto yield surface */
+              DOUBLE *epstn,  /* equivalent uniaxial plastic strain             */
+              DOUBLE *dlam,   /* incremental plastic multiplier                 */
+              WALL_TYPE wtype,/* type of problem                                */
+              INT    yip,     /* stress state   1 =elastic   >=2 =plastic       */
+              DOUBLE *alpha,  /* factor for the first invariants                */
+              DOUBLE *ft,     /* yield condition                                */
+              DOUBLE *e,      /* young modulus                                  */
+              DOUBLE *g,      /* shear modulus                                  */
+	        DOUBLE *com,    /* bulk modulus                                   */
+              DOUBLE *sigym,  /* uniaxial predictor yield stress                */
+              DOUBLE *hards,  /* plastic modulus                                */
+              DOUBLE *sigy,   /* actual uniaxial yield stress                   */
+              DOUBLE *dn,     /* gradient components in deviatoric direction    */
+              DOUBLE *dcom,   /* gradient components in hdrostatic direction    */
+              DOUBLE *devsig, /* deviatoric predictor stresses                  */
+              DOUBLE *sm,     /* hydrostatic predictor stresses                 */
+              DOUBLE *fcm,    /* compressive strenght                           */
+              DOUBLE *gc,     /* compression fracture energy                    */
+              DOUBLE *ftm,    /* tensile strenght                               */
+	        DOUBLE *gt,     /* tensile fracture energy                        */
+              DOUBLE *gamma1, /* fitting factor yield function 1                */
+              DOUBLE *gamma2, /* fitting factor yield function 2                */
+              DOUBLE *dia,    /* equivalent element length                      */
+              DOUBLE *acrs)   /* average crack spacing                          */
+{
 /*----------------------------------------------------------------------*/
-    DOUBLE dum;               
+    DOUBLE dum;
 /*----------------------------------------------------------------------*/
     static DOUBLE dfdl, half, epst;
     static DOUBLE f;
     static INT i;
-    static DOUBLE q13, dalpha, cappae, fac, ro23, smi[4], cappauc, 
+    static DOUBLE q13, dalpha, cappae, fac, ro23, smi[4], cappauc,
 	    devsigi[4], cappaut, sig1, sig3;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1cradi");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1158,7 +1158,7 @@ dstrc_enter("w1cradi");
     *dlam = 0.;
 
 /*------------------------------------- plane strain / plane stress  ---*/
-    if (wtype==plane_stress || wtype==plane_strain) 
+    if (wtype==plane_stress || wtype==plane_strain)
     {
 /*------- iteration scheme to obtain increment of plastic multiplier ---*/
 L600:
@@ -1215,21 +1215,21 @@ L600:
 /*---- derivative of the yield criteria with respect to plastic --------*/
 /*---- increment                                                --------*/
 	dfdl = -(*g * 2. + *com * 9 * dalpha) - ro23 * *hards;
-	if (dfdl >= 0.)   dserror("CHECK THE SOFTENING PARAMETER");        
+	if (dfdl >= 0.)   dserror("CHECK THE SOFTENING PARAMETER");
 /*------------------------------------------- new plastic increment  ---*/
 	*dlam -= f / dfdl;
 /*------------------------------------------------ check convergence ---*/
 	if (*sigy == 0.) {
 	    if (fabs(f) > 1e-8) {
 		if (i > 60) {
-	           dserror("CONVERGENCE CHECK FAILED");        
+	           dserror("CONVERGENCE CHECK FAILED");
 		}
 		goto L600;
 	    }
 	} else {
 	    if ((dum = f / *sigy, fabs(dum)) > 1e-8) {
 		if (i > 60) {
-	           dserror("CONVERGENCE CHECK FAILED");        
+	           dserror("CONVERGENCE CHECK FAILED");
 		}
 		goto L600;
 	    }
@@ -1248,10 +1248,10 @@ L600:
 /*---------------------------------------------- rotational symmetry ---*/
     } else  {
 
-	dserror("ROTATIONAL SYMMETRY FOR PLASTICITY NOT IMPLEMENTED");        
+	dserror("ROTATIONAL SYMMETRY FOR PLASTICITY NOT IMPLEMENTED");
     }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 /*----------------------------------------------------------------------*/
@@ -1277,11 +1277,11 @@ void w1mapl2(DOUBLE *tau,      /* current stresses (local)              */
 static DOUBLE half, fact, vect[4], stps, fact1,dum;
 static INT i, j;
 static DOUBLE x[4];
-static DOUBLE stpsi, dm[4][4], hm[4][4], q13, q23; 
-static DOUBLE dalpha, add, fkg, fki, ro23; 
+static DOUBLE stpsi, dm[4][4], hm[4][4], q13, q23;
+static DOUBLE dalpha, add, fkg, fki, ro23;
 static DOUBLE xsi1, xsi2, xsi3, xsi4;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1mapl2");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1302,13 +1302,13 @@ dstrc_enter("w1mapl2");
     xsi3 = tau[3];
     xsi4 = tau[2];
 
-    dum = q13 * (xsi1 * (xsi1 * 2. - xsi2 - xsi3) 
-               + xsi2 * (xsi2 * 2. - xsi1 - xsi3) 
-               + xsi3 * (xsi3 * 2. - xsi1 - xsi2)) 
+    dum = q13 * (xsi1 * (xsi1 * 2. - xsi2 - xsi3)
+               + xsi2 * (xsi2 * 2. - xsi1 - xsi3)
+               + xsi3 * (xsi3 * 2. - xsi1 - xsi2))
                + xsi4 * xsi4 * 2.;
     stps = sqrt(dum);
 
-    if (stps < 9.9999999999999998e-13) 
+    if (stps < 9.9999999999999998e-13)
     {
         fkg = *g * 2.;
         fki = 1.;
@@ -1332,16 +1332,16 @@ dstrc_enter("w1mapl2");
     hm[0][0] =  *com + fkg*(fki*dn[0]*dn[0] + stpsi * q23);
     hm[0][1] =  *com + fkg*(fki*dn[0]*dn[1] - stpsi * q13);
     hm[0][2] =  *com + fkg*(fki*dn[0]*dn[2] - stpsi * q13);
-    hm[0][3] =         fkg*(fki*dn[0]*dn[3]); 
+    hm[0][3] =         fkg*(fki*dn[0]*dn[3]);
 
     hm[1][1] =  *com + fkg*(fki*dn[1]*dn[1] + stpsi * q23);
     hm[1][2] =  *com + fkg*(fki*dn[1]*dn[2] - stpsi * q13);
-    hm[1][3] =         fkg*(fki*dn[1]*dn[3]); 
+    hm[1][3] =         fkg*(fki*dn[1]*dn[3]);
 
     hm[2][2] =  *com + fkg*(fki*dn[2]*dn[2] + stpsi * q23);
-    hm[2][3] =         fkg*(fki*dn[2]*dn[3]); 
+    hm[2][3] =         fkg*(fki*dn[2]*dn[3]);
 
-    hm[3][3] =         fkg*(fki*dn[3]*dn[3] + stpsi * half);  
+    hm[3][3] =         fkg*(fki*dn[3]*dn[3] + stpsi * half);
 
     for (i=1; i<4; i++)
       for (j=0; j<i; j++)
@@ -1363,14 +1363,14 @@ dstrc_enter("w1mapl2");
 /*------------------------------ form consistent 4x4 material matrix ---*/
     for (i=0; i<4; i++)for (j=0; j<4; j++) dm[i][j] = 0.;
     for (i=0; i<4; i++)for (j=0; j<4; j++) d[ i][j] = 0.;
-    
+
     for (i=0; i<4; i++)
       for (j=0; j<4; j++)
             dm[i][j] = hm[i][j] - fact1 * vect[i] * vect[j];
 
-  
+
     d[0][0] = dm[0][0];
-    d[1][0] = dm[1][0]; 
+    d[1][0] = dm[1][0];
     d[2][0] = dm[3][0];
     d[3][0] = dm[2][0];
 
@@ -1381,7 +1381,7 @@ dstrc_enter("w1mapl2");
 
     d[0][2] = dm[0][3];
     d[1][2] = dm[1][3];
-    d[2][2] = dm[3][3]; 
+    d[2][2] = dm[3][3];
     d[3][2] = dm[2][3];
 
     d[0][3] = dm[0][2];
@@ -1393,7 +1393,7 @@ dstrc_enter("w1mapl2");
          dserror("ROTATIONAL SYMMETRY FOR PLASTICITY NOT IMPLEMENTED");
   }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1403,31 +1403,31 @@ return;
 |       topic : radial return for multisurface problems                  |
 |               (material model: concrete)                               |
 |-----------------------------------------------------------------------*/
-void w1cradms(DOUBLE *sigma,  /* elastic predictor projected onto yield surface */ 
-              DOUBLE *epstn,  /* equivalent uniaxial plastic strain             */ 
-              DOUBLE *dlam,   /* incremental plastic multiplier                 */ 
-              WALL_TYPE wtype,/* type of problem                                */ 
-              INT     yip,    /* stress state   1 =elastic   >=2 =plastic       */ 
-              DOUBLE *alpha,  /* factor for the first invariants                */ 
-              DOUBLE *ft,     /* yield condition                                */ 
-              DOUBLE  e,      /* young modulus                                  */ 
-              DOUBLE  g,      /* shear modulus                                  */ 
-	      DOUBLE  com,    /* bulk modulus                                   */ 
-              DOUBLE *sigym,  /* uniaxial predictor yield stress                */ 
-              DOUBLE *hards,  /* plastic modulus                                */ 
-              DOUBLE  dn[3][4],  /* gradient components in deviatoric direction */ 
-              DOUBLE  dcom[3][4],/* gradient components in hdrostatic direction */ 
-              DOUBLE *devsig, /* deviatoric predictor stresses                  */ 
-              DOUBLE *sm,     /* hydrostatic predictor stresses                 */ 
-              DOUBLE  fcm,    /* compressive strenght                           */ 
-              DOUBLE  gc,     /* compression fracture energy                    */ 
-              DOUBLE  ftm,    /* tensile strenght                               */ 
-	      DOUBLE  gt,     /* tensile fracture energy                        */ 
-              DOUBLE  gamma1, /* fitting factor yield function 1                */ 
-              DOUBLE  gamma2, /* fitting factor yield function 2                */ 
-              DOUBLE  dia,    /* equivalent element length                      */ 
-              DOUBLE  acrs)   /* average crack spacing                          */ 
-{                             
+void w1cradms(DOUBLE *sigma,  /* elastic predictor projected onto yield surface */
+              DOUBLE *epstn,  /* equivalent uniaxial plastic strain             */
+              DOUBLE *dlam,   /* incremental plastic multiplier                 */
+              WALL_TYPE wtype,/* type of problem                                */
+              INT     yip,    /* stress state   1 =elastic   >=2 =plastic       */
+              DOUBLE *alpha,  /* factor for the first invariants                */
+              DOUBLE *ft,     /* yield condition                                */
+              DOUBLE  e,      /* young modulus                                  */
+              DOUBLE  g,      /* shear modulus                                  */
+	      DOUBLE  com,    /* bulk modulus                                   */
+              DOUBLE *sigym,  /* uniaxial predictor yield stress                */
+              DOUBLE *hards,  /* plastic modulus                                */
+              DOUBLE  dn[3][4],  /* gradient components in deviatoric direction */
+              DOUBLE  dcom[3][4],/* gradient components in hdrostatic direction */
+              DOUBLE *devsig, /* deviatoric predictor stresses                  */
+              DOUBLE *sm,     /* hydrostatic predictor stresses                 */
+              DOUBLE  fcm,    /* compressive strenght                           */
+              DOUBLE  gc,     /* compression fracture energy                    */
+              DOUBLE  ftm,    /* tensile strenght                               */
+	      DOUBLE  gt,     /* tensile fracture energy                        */
+              DOUBLE  gamma1, /* fitting factor yield function 1                */
+              DOUBLE  gamma2, /* fitting factor yield function 2                */
+              DOUBLE  dia,    /* equivalent element length                      */
+              DOUBLE  acrs)   /* average crack spacing                          */
+{
 /*----------------------------------------------------------------------*/
     DOUBLE dum1, dum2;
 
@@ -1465,7 +1465,7 @@ void w1cradms(DOUBLE *sigma,  /* elastic predictor projected onto yield surface 
     df[3] = g * 2. + com * 9 * alpha2 * alpha2;
 
 /*------------------------------------- plane strain / plane stress  ---*/
-    if (wtype==plane_stress || wtype==plane_strain) 
+    if (wtype==plane_stress || wtype==plane_strain)
     {
 /*------- iteration scheme to obtain increment of plastic multiplier ---*/
 L600:
@@ -1575,7 +1575,7 @@ L600:
 	}
 
 	if (sol[0] >= 0.) {
-	           dserror("CHECK THE SOFTENING PARAMETER");        
+	           dserror("CHECK THE SOFTENING PARAMETER");
 	}
 /*--------------------------------- modify the multisurface problem  ---*/
 L700:
@@ -1634,7 +1634,7 @@ L700:
 /*------------------------------------------------ check convergence ---*/
 	if (f > 1e-8) {
 	    if (i > 60) {
-		 dserror("CHECK CONVERGENCE"); 
+		 dserror("CHECK CONVERGENCE");
 	    }
 	    goto L600;
 	}
@@ -1656,14 +1656,14 @@ L700:
 /*-------- (considering the back stress vector)           --------------*/
 	for (i = 0; i < 4; ++i) {
 	    if (yip == 2) {
-		devsig[i] = devsig[i] - g * 2. * dn[0][i] * dlambda[0] - g 
+		devsig[i] = devsig[i] - g * 2. * dn[0][i] * dlambda[0] - g
 			* 2. * dn[1][i] * dlambda[1];
-		sm[i] = sm[i] - com * 3. * dcom[0][i] * dlambda[0] - com * 
+		sm[i] = sm[i] - com * 3. * dcom[0][i] * dlambda[0] - com *
 			3. * dcom[1][i] * dlambda[1];
 	    } else if (yip == 3) {
-		devsig[i] = devsig[i] - g * 2. * dn[0][i] * dlambda[0] - g 
+		devsig[i] = devsig[i] - g * 2. * dn[0][i] * dlambda[0] - g
 			* 2. * dn[2][i] * dlambda[1];
-		sm[i] = sm[i] - com * 3. * dcom[0][i] * dlambda[0] - com * 
+		sm[i] = sm[i] - com * 3. * dcom[0][i] * dlambda[0] - com *
 			3. * dcom[2][i] * dlambda[1];
 	    }
 	}
@@ -1682,7 +1682,7 @@ L700:
          dserror("ROTATIONAL SYMMETRY FOR PLASTICITY NOT IMPLEMENTED");
   }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1690,21 +1690,21 @@ return;
 /*-----------------------------------------------------------------------|
 |     topic: convert some arrays                                         |
 |-----------------------------------------------------------------------*/
-      void w1conver(DOUBLE *dlam,       /*  incr. of plastic multiplier */             
-                    DOUBLE *alpha,      /*  factor for the first inv.   */             
-                    DOUBLE *hards,      /*  plastischer hardeningmodul  */             
-                    DOUBLE dn[3][4],    /*  gradient comp. in dev. dir. */  
-                    DOUBLE grad[3][4],  /*  total gradient              */             
-                    DOUBLE *dlamc,      /*  -|                          */             
-                    DOUBLE *alphac,     /*   |                          */             
-                    DOUBLE *hardsc,     /*   |-  converted arrays       */             
-                    DOUBLE dnc[2][4],   /*   |                          */             
-                    DOUBLE gradc[2][4]) /*  -|                          */             
+      void w1conver(DOUBLE *dlam,       /*  incr. of plastic multiplier */
+                    DOUBLE *alpha,      /*  factor for the first inv.   */
+                    DOUBLE *hards,      /*  plastischer hardeningmodul  */
+                    DOUBLE dn[3][4],    /*  gradient comp. in dev. dir. */
+                    DOUBLE grad[3][4],  /*  total gradient              */
+                    DOUBLE *dlamc,      /*  -|                          */
+                    DOUBLE *alphac,     /*   |                          */
+                    DOUBLE *hardsc,     /*   |-  converted arrays       */
+                    DOUBLE dnc[2][4],   /*   |                          */
+                    DOUBLE gradc[2][4]) /*  -|                          */
 {
 /*----------------------------------------------------------------------*/
     static INT i;
 /*----------------------------------------------------------------------*/
-    #ifdef DEBUG 
+    #ifdef DEBUG
     dstrc_enter("w1conver");
     #endif
 /*----------------------------------------------------------------------*/
@@ -1724,7 +1724,7 @@ return;
         gradc[1][i] = grad[2][i];
     }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1755,10 +1755,10 @@ void w1maplg(DOUBLE *tau,      /* current stresses (local)              */
     static DOUBLE e[2][2];
     static DOUBLE e2[2][2], stpsi, dm[4][4];
     static DOUBLE  hm[4][4], q13, q23, facmin;
-    static DOUBLE fak, fkg, fki, ghm[4][2], det, ro23; 
+    static DOUBLE fak, fkg, fki, ghm[4][2], det, ro23;
     static DOUBLE tra[4][4], xsi1, xsi2, xsi3, xsi4;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1maplg");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1816,16 +1816,16 @@ dstrc_enter("w1maplg");
     hm[0][0] =  com + fkg*(fki*dn[0][0]*dn[0][0] + stpsi * q23);
     hm[0][1] =  com + fkg*(fki*dn[0][0]*dn[0][1] - stpsi * q13);
     hm[0][2] =  com + fkg*(fki*dn[0][0]*dn[0][2] - stpsi * q13);
-    hm[0][3] =        fkg*(fki*dn[0][0]*dn[0][3]); 
+    hm[0][3] =        fkg*(fki*dn[0][0]*dn[0][3]);
 
     hm[1][1] =  com + fkg*(fki*dn[0][1]*dn[0][1] + stpsi * q23);
     hm[1][2] =  com + fkg*(fki*dn[0][1]*dn[0][2] - stpsi * q13);
-    hm[1][3] =        fkg*(fki*dn[0][1]*dn[0][3]); 
+    hm[1][3] =        fkg*(fki*dn[0][1]*dn[0][3]);
 
     hm[2][2] =  com + fkg*(fki*dn[0][2]*dn[0][2] + stpsi * q23);
-    hm[2][3] =        fkg*(fki*dn[0][2]*dn[0][3]); 
+    hm[2][3] =        fkg*(fki*dn[0][2]*dn[0][3]);
 
-    hm[3][3] =        fkg*(fki*dn[0][3]*dn[0][3] + stpsi * .5);  
+    hm[3][3] =        fkg*(fki*dn[0][3]*dn[0][3] + stpsi * .5);
 
     for (i=1; i<4; i++)
       for (j=0; j<i; j++)
@@ -1845,17 +1845,17 @@ dstrc_enter("w1maplg");
 |-----------------------------------------------------------------------*/
         for (i=0; i<4; i++)for (j=0; j<2; j++) ghm[i][j] = 0.;
         for (i=0; i<2; i++)for (j=0; j<2; j++) e2[i][j] = 0.;
-        
+
         for (i=0; i<4; i++)
-          for (j=0; j<4; j++) 
-            for (k=0; k<2; k++) 
+          for (j=0; j<4; j++)
+            for (k=0; k<2; k++)
               ghm[i][j] = hm[i][k]* grad[k][j];
 
         for (i=0; i<4; i++)
-          for (j=0; j<2; j++) 
-            for (k=0; k<2; k++) 
+          for (j=0; j<2; j++)
+            for (k=0; k<2; k++)
               ghm[i][j] = grad[k][i]* e2[k][j];
-	
+
         for (i=0; i<2; i++)for (j=0; j<2; j++) e[i][j] += e2[i][j];
 
 	det = e[0][0] * e[1][1] - e[1][0] * e[0][1];
@@ -1871,13 +1871,13 @@ dstrc_enter("w1maplg");
         for (i=0; i<4; i++)for (j=0; j<4; j++)  tra[i][j] = 0.;
 
         for (i=0; i<4; i++)
-          for (j=0; j<2; j++) 
-            for (k=0; k<2; k++) 
+          for (j=0; j<2; j++)
+            for (k=0; k<2; k++)
               ghme[i][j] = ghm[i][k]* e2[k][j];
 
         for (i=0; i<4; i++)
-          for (j=0; j<2; j++) 
-            for (k=0; k<4; k++) 
+          for (j=0; j<2; j++)
+            for (k=0; k<4; k++)
 	    tra[i][j] += ghme[i][j] * ghm[j][k];
 
 /*------------------------------ form consistent 4x4 material matrix ---*/
@@ -1887,23 +1887,23 @@ dstrc_enter("w1maplg");
     fak = -1.;
     for (i=0; i<4; i++)for (j=0; j<4; j++)  tra[i][j] *= fak;
     for (i=0; i<2; i++)for (j=0; j<2; j++) dm[i][j] = hm[i][j] + tra[i][j];
-    
+
     /* initialization at the apex */
     facmin = 1e-5;
     for (i=0; i<4; i++)
       for (j=0; j<4; j++)
         if(fabs(dm[i][j])>facmin) facmin = dm[i][j];
-    
+
     if(facmin < emod * 1e-5)
     {
       for (i=0; i<4; i++)for (j=0; j<4; j++) dm[i][j] = 0.;
       for (i=0; i<3; i++)
         for (j=0; j<3; j++)
             dm[i][j] = emod * 1e-5;
-    }   
+    }
 
     d[0][0] = dm[0][0];
-    d[1][0] = dm[1][0]; 
+    d[1][0] = dm[1][0];
     d[2][0] = dm[3][0];
     d[3][0] = dm[2][0];
 
@@ -1914,7 +1914,7 @@ dstrc_enter("w1maplg");
 
     d[0][2] = dm[0][3];
     d[1][2] = dm[1][3];
-    d[2][2] = dm[3][3]; 
+    d[2][2] = dm[3][3];
     d[3][2] = dm[2][3];
 
     d[0][3] = dm[0][2];
@@ -1926,7 +1926,7 @@ dstrc_enter("w1maplg");
          dserror("ROTATIONAL SYMMETRY FOR PLASTICITY NOT IMPLEMENTED");
   }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1936,32 +1936,32 @@ return;
 |       topic : radial return for elements with elastoplastic material   |
 |               (concrete)      CAP-REGION                               |
 |-----------------------------------------------------------------------*/
-void w1radcap(DOUBLE *sigma,  /* elastic predictor projected onto yield surface */ 
-              DOUBLE *epstn,  /* equivalent uniaxial plastic strain             */ 
-              DOUBLE *dlam,   /* incremental plastic multiplier                 */ 
-              WALL_TYPE wtype,/* type of problem                                */ 
-              DOUBLE *alpha,  /* factor for the first invariants                */ 
-              DOUBLE *e,      /* young modulus                                  */ 
-              DOUBLE *g,      /* shear modulus                                  */ 
-	        DOUBLE *com,    /* bulk modulus                                   */ 
-              DOUBLE *sigym,  /* uniaxial predictor yield stress                */ 
-              DOUBLE *hards,  /* plastic modulus                                */ 
-              DOUBLE *grad,   /* total gradient                                 */ 
-              DOUBLE *devsig, /* deviatoric predictor stresses                  */ 
-              DOUBLE *dev,     /* norm of the deviatoric predictor stresses     */ 
-              DOUBLE *hyd,     /* 1st invariant  of the predictor stresses      */ 
-              DOUBLE *hydn,    /* 1st invariant  of the new stresses            */ 
-              DOUBLE *fcm,    /* compressive strenght                           */ 
-              DOUBLE *gc,     /* compression fracture energy                    */ 
-              DOUBLE *gamma2, /* fitting factor yield function 2                */ 
-              DOUBLE *dia)    /* equivalent element length                      */ 
+void w1radcap(DOUBLE *sigma,  /* elastic predictor projected onto yield surface */
+              DOUBLE *epstn,  /* equivalent uniaxial plastic strain             */
+              DOUBLE *dlam,   /* incremental plastic multiplier                 */
+              WALL_TYPE wtype,/* type of problem                                */
+              DOUBLE *alpha,  /* factor for the first invariants                */
+              DOUBLE *e,      /* young modulus                                  */
+              DOUBLE *g,      /* shear modulus                                  */
+	        DOUBLE *com,    /* bulk modulus                                   */
+              DOUBLE *sigym,  /* uniaxial predictor yield stress                */
+              DOUBLE *hards,  /* plastic modulus                                */
+              DOUBLE *grad,   /* total gradient                                 */
+              DOUBLE *devsig, /* deviatoric predictor stresses                  */
+              DOUBLE *dev,     /* norm of the deviatoric predictor stresses     */
+              DOUBLE *hyd,     /* 1st invariant  of the predictor stresses      */
+              DOUBLE *hydn,    /* 1st invariant  of the new stresses            */
+              DOUBLE *fcm,    /* compressive strenght                           */
+              DOUBLE *gc,     /* compression fracture energy                    */
+              DOUBLE *gamma2, /* fitting factor yield function 2                */
+              DOUBLE *dia)    /* equivalent element length                      */
 {
 /*----------------------------------------------------------------------*/
-    DOUBLE dum1, dum2;               
+    DOUBLE dum1, dum2;
 /*----------------------------------------------------------------------*/
     static INT i;
-    
-    static DOUBLE dadk, dadl, dbdl, dbdk, half, fact[4], dcom[4]; 
+
+    static DOUBLE dadk, dadl, dbdl, dbdk, half, fact[4], dcom[4];
     static DOUBLE soli[2][2], epst, root;
     static DOUBLE a, b, f;
     static DOUBLE hardi, hardr, rdevc, rcomc, rdevn;
@@ -1969,7 +1969,7 @@ void w1radcap(DOUBLE *sigma,  /* elastic predictor projected onto yield surface 
     static DOUBLE det, fti[2], ro23, smi[4], ro54, cappauc, sol[2][2];
     static DOUBLE devsigi[4], fac1, fac2, sig3;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1radcap");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1989,7 +1989,7 @@ dstrc_enter("w1radcap");
     fact[2] = 1.;
     fact[3] = 0.;
 /*------------------------------------- plane strain / plane stress  ---*/
-    if (wtype==plane_stress || wtype==plane_strain) 
+    if (wtype==plane_stress || wtype==plane_strain)
     {
 /*------- iteration scheme to obtain increment of plastic multiplier ---*/
 L600:
@@ -2059,19 +2059,19 @@ L600:
 	dum1 = rcomn;
 	dbdk = -(rcomn * hardi + rcomc * hardr) / (dum1 * dum1);
 
-	sol[0][0] = pow(rdevc, 2.) * -2. * 2. * *g / pow(rdevn, 3.) 
+	sol[0][0] = pow(rdevc, 2.) * -2. * 2. * *g / pow(rdevn, 3.)
                   - q29 * rcomc * (rcomc * *com) / pow(rcomn, 3.);
-	sol[0][1] = pow(rdevc, 2.) * -2. * hardr / pow(rdevn, 3.) 
+	sol[0][1] = pow(rdevc, 2.) * -2. * hardr / pow(rdevn, 3.)
 		- q29 * rcomc * (hardi * rcomn + rcomc * hardr) / pow(
 		rcomn, 3.);
 
-	sol[1][0] = -(fac1 * b / (root * 9) + fac2) - (root * dbdl - b * (a * 
+	sol[1][0] = -(fac1 * b / (root * 9) + fac2) - (root * dbdl - b * (a *
 		dadl + b * dbdl / 9) / root) / (pow(root, 2.) * 9) * *
 		dlam * fac1;
 	sol[1][1] = 1. - (root * dbdk - b * (a * dadk + b * dbdk / 9) / root) / (
 		pow(root, 2.) * 9) * *dlam * fac1;
 
-	if (sol[0][0] >= 0.) dserror("CHECK THE SOFTENING PARAMETER");        
+	if (sol[0][0] >= 0.) dserror("CHECK THE SOFTENING PARAMETER");
 /*----------------------------------- solution of the equation system---*/
 	det = sol[0][0] * sol[1][1] - sol[1][0] * sol[0][1];
 	soli[0][0] =  sol[1][1] / det;
@@ -2116,10 +2116,10 @@ L600:
 /*---------------------------------------------- rotational symmetry ---*/
     } else  {
 
-	dserror("ROTATIONAL SYMMETRY FOR PLASTICITY NOT IMPLEMENTED");        
+	dserror("ROTATIONAL SYMMETRY FOR PLASTICITY NOT IMPLEMENTED");
     }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 /*----------------------------------------------------------------------*/
@@ -2147,10 +2147,10 @@ void w1mplcap(DOUBLE *tau,      /* current stresses (local)              */
               DOUBLE *sig3)     /* equivalent compressive stress         */
 {
 /*----------------------------------------------------------------------*/
-    DOUBLE dum;               
+    DOUBLE dum;
 /*----------------------------------------------------------------------*/
     static INT i, j;
-    
+
     static DOUBLE diag[4][4], half, hard, dkkf, hinv[4][4];
     static DOUBLE hydr[4], fack1, quot, a[2][2];
     static DOUBLE q[4][4], facth, hardi, gradk[4];
@@ -2162,7 +2162,7 @@ void w1mplcap(DOUBLE *tau,      /* current stresses (local)              */
     static DOUBLE ro13, hyd, ro16, fac1, fac2, fac3, val3, xsi1;
     static DOUBLE xsi2, xsi3, xsi4;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1mplcap");
 #endif
 /*----------------------------------------------------------------------*/
@@ -2173,11 +2173,11 @@ dstrc_enter("w1mplcap");
     q13 = .33333333333333331;
     q23 = .66666666666666663;
 
-    if (*dlam < 1e-10) { 
+    if (*dlam < 1e-10) {
 	*dlam = 1e-10;
     }
 /*------------------------------------- plane strain / plane stress  ---*/
-    if (wtype==plane_stress || wtype==plane_strain) 
+    if (wtype==plane_stress || wtype==plane_strain)
     {
 	xsi1 = tau[0];
 	xsi2 = tau[1];
@@ -2359,7 +2359,7 @@ dstrc_enter("w1mplcap");
 
 
         d[0][0] = dm[0][0];
-        d[1][0] = dm[1][0]; 
+        d[1][0] = dm[1][0];
         d[2][0] = dm[3][0];
         d[3][0] = dm[2][0];
 
@@ -2370,7 +2370,7 @@ dstrc_enter("w1mplcap");
 
         d[0][2] = dm[0][3];
         d[1][2] = dm[1][3];
-        d[2][2] = dm[3][3]; 
+        d[2][2] = dm[3][3];
         d[3][2] = dm[2][3];
 
         d[0][3] = dm[0][2];
@@ -2380,10 +2380,10 @@ dstrc_enter("w1mplcap");
 /*---------------------------------------------- rotational symmetry ---*/
     } else  {
 
-	dserror("ROTATIONAL SYMMETRY FOR PLASTICITY NOT IMPLEMENTED");        
+	dserror("ROTATIONAL SYMMETRY FOR PLASTICITY NOT IMPLEMENTED");
     }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 /*----------------------------------------------------------------------*/
@@ -2407,11 +2407,11 @@ void w1acrs(DOUBLE  hte,    /* section properties                       */
 {
 /*----------------------------------------------------------------------*/
     static INT i, k, id;
-    static DOUBLE dum, rad, fps, sps, aps; 
+    static DOUBLE dum, rad, fps, sps, aps;
     static DOUBLE sig[8], dl, alphas, fac, area, alphar, so, ds, rho, rls;
-    static DOUBLE dalpha, dls[2], dgamma;              
+    static DOUBLE dalpha, dls[2], dgamma;
 /*----------------------------------------------------------------------*/
-    #ifdef DEBUG 
+    #ifdef DEBUG
     dstrc_enter("w1acrs");
     #endif
 /*-------------------------------------------- initialized variables ---*/
@@ -2428,7 +2428,7 @@ void w1acrs(DOUBLE  hte,    /* section properties                       */
   rad   = atan(1.)/45.;
 /*----------------------------------------------------------------------*/
   dum = sig[0]+sig[1]+sig[2];
-  if (fabs(dum)>0.000001) 
+  if (fabs(dum)>0.000001)
   {/*w1acrs01*/
 /*----------------------------------------------------------------------*/
     w1_mami(sig, &fps,&sps,&aps);
@@ -2437,21 +2437,21 @@ void w1acrs(DOUBLE  hte,    /* section properties                       */
     sig[6] = aps;
     sig[7] = 0.;
     *angle = sig[6];
-/*------------------------------------ compute average crack spacing ---*/      
+/*------------------------------------ compute average crack spacing ---*/
     for (i=0; i<2; i++)
     {/*800*/
       alphas = sig[6] + 90. * (DOUBLE)(i);
       if(alphas<0.) alphas = alphas + 180.;
       fac = 0.;
 
-      id = 0;           
+      id = 0;
       for (k=0; k<maxreb; k++)
       {
 	area   = reb_area[k];
 	if (area>0.) id++;
       }
-	    
-      if (id>0) 
+
+      if (id>0)
       {
         if(id>1) id = 2;
         for (k=0; k<id; k++)
@@ -2461,21 +2461,21 @@ void w1acrs(DOUBLE  hte,    /* section properties                       */
           so     = reb_so[k];
           ds     = reb_ds[k];
           dgamma = reb_rgamma[k];
-       
+
           rho    = area / *thick;
           rls    = 2.*(2.*so + ds/(dgamma*rho))/3.;
           dalpha = fabs(alphas - alphar) * rad;
-       
+
           if (id==1) fac = 1. / rls;
           else if (id>1) fac += fabs(cos(dalpha))/rls;
-          
+
         }
       }
-       
+
   	  if (fabs(fac)<0.000001) fac = 1. / dia;
           dls[i] = 1. / fac;
   	  if (dls[i]>dia) dls[i] = dia;
-    }/*800*/	
+    }/*800*/
     dl = (dls[0] + dls[1]) * .5;
 /*----------------------------------------------------------------------*/
   }/*w1acrs01*/
@@ -2483,14 +2483,14 @@ void w1acrs(DOUBLE  hte,    /* section properties                       */
    if(dia<dl) *acrs = dia;
    else       *acrs = dl;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 /*----------------------------------------------------------------------*/
     return ;
 } /* end of w1acrs */
 /*-----------------------------------------------------------------------|
-|    topic: calculate the gradients of the elastic predictor             |              
+|    topic: calculate the gradients of the elastic predictor             |
 |           deviatoric/hydrostatic stresses                              |
 |-----------------------------------------------------------------------*/
 void w1cpreds(DOUBLE *sigym, /* uniaxial predictor yield stress         */
@@ -2503,7 +2503,7 @@ void w1cpreds(DOUBLE *sigym, /* uniaxial predictor yield stress         */
     static INT i;
     static DOUBLE dn[4], fact[4], dcom[4];
 /*----------------------------------------------------------------------*/
-    #ifdef DEBUG 
+    #ifdef DEBUG
     dstrc_enter("w1cpreds");
     #endif
 /*-------------------------------------------- initialized variables ---*/
@@ -2517,7 +2517,7 @@ void w1cpreds(DOUBLE *sigym, /* uniaxial predictor yield stress         */
       grad[i] = dn[i] + dcom[i];
     }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 /*----------------------------------------------------------------------*/
@@ -2538,13 +2538,13 @@ void w1_init44(DOUBLE a[4][4],DOUBLE val)
 /*----------------------------------------------------------------------*/
 INT i,j;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_init44");
 #endif
 /*----------------------------------------------------------------------*/
       for (i=0; i<4; i++)for (j=0; j<4; j++) a[i][j] = val;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -2557,18 +2557,18 @@ void w1_AxB_444(DOUBLE a[4][4],DOUBLE b[4][4],DOUBLE r[4][4])
 /*----------------------------------------------------------------------*/
 INT i,j,k;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_AxB_444");
 #endif
 /*----------------------------------------------------------------------*/
   for (i=0; i<4; i++)for (j=0; j<4; j++)  r[i][j] = 0.;
 
   for (i=0; i<4; i++)
-    for (j=0; j<4; j++) 
-      for (k=0; k<4; k++) 
+    for (j=0; j<4; j++)
+      for (k=0; k<4; k++)
         r[i][j] += a[i][k]* b[k][j];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -2581,18 +2581,18 @@ void w1_AxBT_444(DOUBLE a[4][4],DOUBLE b[4][4],DOUBLE r[4][4])
 /*----------------------------------------------------------------------*/
 INT i,j,k;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_AxBT_444");
 #endif
 /*----------------------------------------------------------------------*/
   for (i=0; i<4; i++)for (j=0; j<4; j++)  r[i][j] = 0.;
 
   for (i=0; i<4; i++)
-    for (j=0; j<4; j++) 
-      for (k=0; k<4; k++) 
+    for (j=0; j<4; j++)
+      for (k=0; k<4; k++)
         r[i][j] += a[i][k]* b[j][k];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -2605,17 +2605,17 @@ void w1_AxB_441(DOUBLE a[4][4],DOUBLE b[4],DOUBLE r[4])
 /*----------------------------------------------------------------------*/
 INT i,k;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_AxB_441");
 #endif
 /*----------------------------------------------------------------------*/
   for (i=0; i<4; i++)  r[i] = 0.;
 
   for (i=0; i<4; i++)
-      for (k=0; k<4; k++) 
+      for (k=0; k<4; k++)
         r[i] += a[i][k]* b[k];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -2628,17 +2628,17 @@ void w1_AxBT_414(DOUBLE a[4],DOUBLE b[4],DOUBLE r[4][4])
 /*----------------------------------------------------------------------*/
 INT i,j;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_AxBT_414");
 #endif
 /*----------------------------------------------------------------------*/
 
   for (i=0; i<4; i++)
-    for (j=0; j<4; j++) 
+    for (j=0; j<4; j++)
 
         r[i][j] = a[i]* b[j];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -2651,15 +2651,15 @@ void w1_AxFAC_44(DOUBLE a[4][4], DOUBLE r[4][4], DOUBLE fac)
 /*----------------------------------------------------------------------*/
 INT i,j;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_AxBT_414");
 #endif
 /*----------------------------------------------------------------------*/
   for (i=0; i<4; i++)
-    for (j=0; j<4; j++) 
+    for (j=0; j<4; j++)
         r[i][j] = a[i][j]* fac;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -2672,15 +2672,15 @@ void w1_AaddB_44(DOUBLE a[4][4], DOUBLE b[4][4], DOUBLE r[4][4])
 /*----------------------------------------------------------------------*/
 INT i,j;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_AaddB_44");
 #endif
 /*----------------------------------------------------------------------*/
   for (i=0; i<4; i++)
-    for (j=0; j<4; j++) 
+    for (j=0; j<4; j++)
         r[i][j] = a[i][j] + b[i][j];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -2689,13 +2689,13 @@ return;
  | constitutive matrix - forces - plastic - rebar                al 9/01|
  *----------------------------------------------------------------------*/
 void w1_mat_rebar(ELEMENT   *ele,
-                  MATERIAL  *mat, 
+                  MATERIAL  *mat,
                   DOUBLE   **bop, /*derivative operator */
                   DOUBLE    *gop, /*derivative operator */
                   DOUBLE    *alpha, /*derivative operator */
                   DOUBLE   **xjm, /* jacobian matrix    */
-                  DOUBLE *stress,       
-                  DOUBLE     **d,   
+                  DOUBLE *stress,
+                  DOUBLE     **d,
                   INT         ip,
                   INT       lanz,
                   INT     istore)
@@ -2705,19 +2705,19 @@ INT    yip, iupd, nstiff;
 DOUBLE epstn, rad, alfr, areb, den, prod, c, ac, arad;
 DOUBLE x1r, x2r, x1s, x2s;
 DOUBLE straino, strainrb, stresso, stressrb, dstrain;
-DOUBLE ca, sa, epste, eh, sigy, stiff1; 
+DOUBLE ca, sa, epste, eh, sigy, stiff1;
 DOUBLE alfrr, alfpri, ca2, sa2, emod, emod1, sigyv,
-factor;  
+factor;
 DOUBLE disd[5];
 DOUBLE strain[4];
 DOUBLE cappaet, cappaut, angle, thick, fbd, epsy, dalpha, ecappaet;
 DOUBLE dcappaet, roh, ecappaut, dcappaut;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_mat_rebar");
 #endif
-/*--------------------------------- compute displacement derivatives ---*/        
-  w1_disd (ele,bop,gop,alpha,ele->e.w1->wtype,disd) ;                  
+/*--------------------------------- compute displacement derivatives ---*/
+  w1_disd (ele,bop,gop,alpha,ele->e.w1->wtype,disd) ;
 /*------------------------------------- get actual strains -> strain ---*/
   w1_eps (disd,ele->e.w1->wtype,strain);
 /*----------------------------- get old values -> stressrb, strainrb ---*/
@@ -2732,14 +2732,14 @@ dstrc_enter("w1_mat_rebar");
   alfr = mat->m.pl_epc->reb_ang[lanz-1];  /* input angle of rebar in degrees*/
   areb = mat->m.pl_epc->reb_area[lanz-1]; /* input area of rebar in degrees */
 
-  if(alfr>=360.0) 
+  if(alfr>=360.0)
   {
     x1r = xjm[0][0];
     x2r = xjm[0][1];
     x1s = xjm[1][0];
     x2s = xjm[1][1];
- 
-    prod=x1r*x1s + x2r*x2s; 
+
+    prod=x1r*x1s + x2r*x2s;
     den=(x1r*x1r+x2r*x2r)*(x1s*x1s+x2s*x2s);
     den=sqrt(den);
     c=prod/den;
@@ -2759,7 +2759,7 @@ dstrc_enter("w1_mat_rebar");
   straino  = strainrb;
   stresso  = stressrb;
 /*------------------------------ determine strain in rebar direction ---*/
-  ca       = cos(alfrr);                                       
+  ca       = cos(alfrr);
   sa       = sin(alfrr);
   ca2      = ca*ca;
   sa2      = sa*sa;
@@ -2775,17 +2775,17 @@ dstrc_enter("w1_mat_rebar");
   nstiff=mat->m.pl_epc->nstiff;
   if (fabs(strainrb)<=0.000000001) nstiff=0;
 
-   
-  if (nstiff==1) 
+
+  if (nstiff==1)
   {
     cappaet = ele->e.w1->elewa[0].ipwa[ip].stcappae ;
     cappaut = ele->e.w1->elewa[0].ipwa[ip].stcappaut;
-    angle   = ele->e.w1->elewa[0].ipwa[ip].stalpha;  
-    thick   = ele->e.w1->elewa[0].ipwa[ip].stthick;  
-    fbd     = ele->e.w1->elewa[0].ipwa[ip].stfbd;    
-   
+    angle   = ele->e.w1->elewa[0].ipwa[ip].stalpha;
+    thick   = ele->e.w1->elewa[0].ipwa[ip].stthick;
+    fbd     = ele->e.w1->elewa[0].ipwa[ip].stfbd;
+
     dalpha   = (angle - alfr) * rad;
-    epsy     = strainrb; 
+    epsy     = strainrb;
     ecappaet = 0.01 * cappaet;
     ecappaut = 0.01 * cappaut;
     dcappaet = (cos(dalpha));
@@ -2799,10 +2799,10 @@ dstrc_enter("w1_mat_rebar");
     else                  cappaet  = dcappaet;
     if(ecappaut>dcappaut) cappaut  = ecappaut;
     else                  cappaut  = dcappaut;
- 
+
     roh      = areb / thick;
-   
-    if (epsy>cappaet && epsy<(3.*cappaut)) 
+
+    if (epsy>cappaet && epsy<(3.*cappaut))
     {
       stiff1  = (3. * cappaut - cappaet);
       stiff1 *= stiff1;
@@ -2813,41 +2813,41 @@ dstrc_enter("w1_mat_rebar");
     }
   }
 
-/*--------------------------------------------------------praedictor ---*/  
+/*--------------------------------------------------------praedictor ---*/
   iupd = 0;
-  if (yip>0) 
-  { 
-    stressrb = stresso; 
+  if (yip>0)
+  {
+    stressrb = stresso;
     if (yip==2||yip==-2) emod = eh;
     yip    = -yip;
     iupd   = 1;
     goto local_stresses;
   }
-/*---------------------------------------------------------------------*/   
+/*---------------------------------------------------------------------*/
 /* 1. calculate praedictor stress from incremental strains using emod  */
   emod     = emod1 + stiff1;
-  stressrb = dstrain * emod + stresso; 
+  stressrb = dstrain * emod + stresso;
 /* 2. yield criterion */
   if (yip==1||yip==-1) sigyv = sigy;
   else                 sigyv = sigy+(fabs(epstn)-epste)*eh;
-/*-------------------------------------------------- yield condition ---*/  	  
-  if (sigyv>fabs(stressrb)) 
-  { 
-/*---------------------------------------------------------- elastic ---*/  
+/*-------------------------------------------------- yield condition ---*/
+  if (sigyv>fabs(stressrb))
+  {
+/*---------------------------------------------------------- elastic ---*/
     yip = 1;
   }
-/*---------------------------------------------------------- plastic ---*/  
+/*---------------------------------------------------------- plastic ---*/
   else
   {
     yip   = 2;
-    epstn = strainrb;       
+    epstn = strainrb;
 
     if (stressrb>=0.) factor = 1.;
     else factor =-1.;
 
     stressrb = (sigy+(fabs(strainrb)-epste)*eh)*factor;
     emod     = eh;
-  }          
+  }
 /*----------------------------------------------------------------------*/
 local_stresses:
 /*--------------------------------------------------- local stresses ---*/
@@ -2855,27 +2855,27 @@ local_stresses:
       stress[0]=ca2*stressrb;
       stress[1]=sa2*stressrb;
       stress[3]=0.;
-      stress[2]=ca*sa*stressrb;     
-/*-------------------------------------------- local material matrix ---*/ 
+      stress[2]=ca*sa*stressrb;
+/*-------------------------------------------- local material matrix ---*/
 /*------------------------------------------- global material matrix ---*/
       d[0][0]=ca2*ca2*emod;
       d[0][1]=ca2*sa2*emod;
-      d[0][2]=ca2*ca*sa*emod;       
+      d[0][2]=ca2*ca*sa*emod;
       d[0][3]=0.;
-      
+
       d[1][0]=d[0][1];
       d[1][1]=sa2*sa2*emod;
-      d[1][2]=ca*sa2*sa*emod;  
+      d[1][2]=ca*sa2*sa*emod;
       d[1][3]=0.;
-      
+
       d[2][0]=d[0][2];
       d[2][1]=d[1][2];
       d[2][2]=d[0][1];
       d[2][3]=0.;
-      
+
       d[3][0]=d[0][3];
       d[3][1]=d[1][3];
-      d[3][2]=d[2][3]; 
+      d[3][2]=d[2][3];
       d[3][3]=0.;
 /*------------------------------------------------- store new values ---*/
   if(istore==1||iupd==1)
@@ -2886,7 +2886,7 @@ local_stresses:
     ele->e.w1->elewa[0].ipwa[ip].ryip[lanz-1]    = yip     ;
   }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

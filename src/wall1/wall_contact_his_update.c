@@ -1,6 +1,6 @@
 /*!---------------------------------------------------------------------
 \file
-\brief contains wall_contact_history update routine used to update some 
+\brief contains wall_contact_history update routine used to update some
 history variables of 2-D contact interfaces.
 
 <pre>
@@ -26,7 +26,7 @@ extern struct _FIELD      *field;
 
 <pre>                                                         m.gee 8/00
 -the partition of one proc (all discretizations)
--the type is in partition.h                                                  
+-the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -36,15 +36,15 @@ extern struct _PARTITION  *partition;
  | ranks and communicators                                              |
  | This structure struct _PAR par; is defined in main_ccarat.c
  *----------------------------------------------------------------------*/
- extern struct _PAR   par;                      
-/*! 
-\addtogroup CONTACT 
+ extern struct _PAR   par;
+/*!
+\addtogroup CONTACT
 *//*! @{ (documentation module open)*/
 /*!------------------------------------------------------------------------
 \brief main structure for 2-D contact (bilinear discretization)
 
 <pre>                                                           m.gee 10/02
-defined in wall_contact_detection.c                             
+defined in wall_contact_detection.c
 </pre>
 
 -------------------------------------------------------------------------*/
@@ -53,13 +53,13 @@ extern struct _WALL_CONTACT contact;
 #endif
 /*!----------------------------------------------------------------------
 \brief short description
-                                                      
-<pre>                                                         m.gee 10/02    
+
+<pre>                                                         m.gee 10/02
 This routine is used to update the history variables of 2-D contact interfaces.
 Additionally, Lagrange multipliers are set to zero when the associated node
 gets out of contact.
 </pre>
-\param actintra   INTRA*       (i)   the intra-communicator of this field                  
+\param actintra   INTRA*       (i)   the intra-communicator of this field
 \return void
 
 
@@ -68,37 +68,37 @@ void wall_contact_history_update(INTRA *actintra)
 {
 INT   i;
 INT   myrank;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("wall_contact_his_update");
 #endif
 /*----------------------------------------------------------------------*/
 myrank = actintra->intra_rank;
-   
+
   for(i=0; i<contact.ng_slavenode; i++) {
-   
+
     if (contact.g_slavenode[i]->node->proc != myrank) continue;    /*Update of history variables*/
-  
+
     contact.g_slavenode[i]->history->pr_local_coord = contact.g_slavenode[i]->history->cr_local_coord;
     contact.g_slavenode[i]->history->pr_t_tan       = contact.g_slavenode[i]->history->cr_tan;
     contact.g_slavenode[i]->history->pr_flag        = contact.g_slavenode[i]->contactflag;
-     
-    if (contact.CET_flag == 1) {  
+
+    if (contact.CET_flag == 1) {
       if(contact.g_slavenode[i]->contactflag == contact_off){
       contact.g_slavenode[i]->history->pr_multipliers[0] = 0.0;
-      contact.g_slavenode[i]->history->pr_multipliers[1] = 0.0; 
-      
+      contact.g_slavenode[i]->history->pr_multipliers[1] = 0.0;
+
       }
-    }  
-    if (contact.CET_flag == 0) {  
-      if(contact.g_slavenode[i]->contactflag == contact_off){   
+    }
+    if (contact.CET_flag == 0) {
+      if(contact.g_slavenode[i]->contactflag == contact_off){
       contact.g_slavenode[i]->history->pr_t_tan          = 0.0;
-      } 
-  
+      }
+
     }
   }
-        
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -5,8 +5,8 @@
 <pre>
 Maintainer: Volker Gravemeier
             vgravem@stanford.edu
-            
-            
+
+
 </pre>
 
 ------------------------------------------------------------------------*/
@@ -20,7 +20,7 @@ Maintainer: Volker Gravemeier
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -29,7 +29,7 @@ extern ALLDYNA      *alldyn;
 extern struct _GENPROB     genprob;
 
 static FLUID_DYNAMIC *fdyn;
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief evaluate Galerkin part of submesh "Time" force vector for fluid2
 
 <pre>                                                       gravem 07/03
@@ -50,32 +50,32 @@ on the rhs is calculated.
 \param  *pderxyn   DOUBLE          (i)    global pres. derivatives at n
 \param  *smfunct   DOUBLE	   (i)    sm natural shape functions
 \param **smderxy   DOUBLE	   (i)    sm global deriv. of shape fun.
-\param   fac 	   DOUBLE	   (i)    weighting factor	      
-\param   visc 	   DOUBLE	   (i)    physical viscosity	      
+\param   fac 	   DOUBLE	   (i)    weighting factor
+\param   visc 	   DOUBLE	   (i)    physical viscosity
 \param   smiel	   INT  	   (i)	  number of nodes of sm element
 \param   iel	   INT  	   (i)	  number of nodes of l-s element
 \param   ihoelsm   INT  	   (i)	  flag for higher-order sm ele.
 \param   ihoel	   INT  	   (i)	  flag for higher-order l-s ele.
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
-void f2_calsmft(FLUID_DYN_ML	*mlvar, 
-		DOUBLE         **smetfor,  
-		DOUBLE  	*velintn, 
-		DOUBLE  	*velintnt, 
-		DOUBLE  	*velintnc, 
-		DOUBLE         **vderxyn, 
-		DOUBLE         **vderxync, 
-		DOUBLE         **vderxynv, 
-		DOUBLE         **vderxy2n, 
-		DOUBLE          *pderxyn, 
-		DOUBLE  	*smfunct,  
-		DOUBLE         **smderxy,  
-		DOUBLE  	 fac,	 
-		DOUBLE  	 visc,   
-		INT		 smiel,    
-		INT		 iel,    
-		INT		 ihoelsm,    
+void f2_calsmft(FLUID_DYN_ML	*mlvar,
+		DOUBLE         **smetfor,
+		DOUBLE  	*velintn,
+		DOUBLE  	*velintnt,
+		DOUBLE  	*velintnc,
+		DOUBLE         **vderxyn,
+		DOUBLE         **vderxync,
+		DOUBLE         **vderxynv,
+		DOUBLE         **vderxy2n,
+		DOUBLE          *pderxyn,
+		DOUBLE  	*smfunct,
+		DOUBLE         **smderxy,
+		DOUBLE  	 fac,
+		DOUBLE  	 visc,
+		INT		 smiel,
+		INT		 iel,
+		INT		 ihoelsm,
                 INT		 ihoel)
 {
 /*----------------------------------------------------------------------*
@@ -88,7 +88,7 @@ DOUBLE con,ccon,beta,divvc,cb,facsr,facpr;
 DOUBLE aux;
 DOUBLE sign;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_calsmft");
 #endif
 
@@ -100,16 +100,16 @@ con   = facsr*visc;
 
 switch (fdyn->conte) /* determine parameter beta of convective term */
 {
-case 0: 
+case 0:
   beta = ZERO;
 break;
-case 1: 
+case 1:
   beta = ONE;
-  divvc= vderxync[0][0]+vderxync[1][1]; 
+  divvc= vderxync[0][0]+vderxync[1][1];
 break;
-case 2: 
+case 2:
   beta = ONE/TWO;
-  divvc= vderxync[0][0]+vderxync[1][1]; 
+  divvc= vderxync[0][0]+vderxync[1][1];
 break;
 default:
    dserror("unknown form of convective term");
@@ -155,7 +155,7 @@ if (fdyn->thsr!=ZERO)
     icol++;
   } /* end loop over icol */
 
-  if (fdyn->conte!=0)  
+  if (fdyn->conte!=0)
   {
     cb = beta*divvc*facsr;
 /*----------------------------------------------------------------------*
@@ -173,7 +173,7 @@ if (fdyn->thsr!=ZERO)
       } /* end loop over irow */
       icol++;
     } /* end loop over icol */
-  }  
+  }
 
 /*----------------------------------------------------------------------*
    Calculate viscous forces (separate large- and small-scale part of u_n):
@@ -196,7 +196,7 @@ if (fdyn->thsr!=ZERO)
       } /* end loop over irow */
       icol++;
     } /* end loop over icol */
-  }  
+  }
 
   if (ihoel!=0 && ihoelsm!=0)
   {
@@ -216,7 +216,7 @@ if (fdyn->thsr!=ZERO)
       icol++;
     } /* end loop over icol */
   }
-}  
+}
 
 /*----------------------------------------------------------------------*
    Calculate pressure forces:
@@ -239,21 +239,21 @@ if (fdyn->thpr!=ZERO && fdyn->iprerhs>0)
     icol++;
   } /* end loop over icol */
 }
-    
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of f2_calsmft */
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief evaluate stabilization part of sm "Time" force vector for fluid2
 
 <pre>                                                       gravem 07/03
 
-In this routine, the stabilization part of the submesh "Time" force 
+In this routine, the stabilization part of the submesh "Time" force
 vector on the rhs is calculated.
 
 </pre>
@@ -270,32 +270,32 @@ vector on the rhs is calculated.
 \param  *smfunct   DOUBLE	   (i)    sm natural shape functions
 \param **smderxy   DOUBLE	   (i)    sm global deriv. of shape fun.
 \param **smderxy2  DOUBLE	   (i)    sm 2nd global deriv. of shape fun.
-\param   fac 	   DOUBLE	   (i)    weighting factor	      
-\param   visc 	   DOUBLE	   (i)    physical viscosity	      
+\param   fac 	   DOUBLE	   (i)    weighting factor
+\param   visc 	   DOUBLE	   (i)    physical viscosity
 \param   smiel	   INT  	   (i)	  number of nodes of sm element
 \param   iel	   INT  	   (i)	  number of nodes of l-s element
 \param   ihoelsm   INT  	   (i)	  flag for higher-order sm ele.
 \param   ihoel	   INT  	   (i)	  flag for higher-order l-s ele.
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
-void f2_calstabsmft(FLUID_DYN_ML    *mlvar, 
-		    DOUBLE         **smetfor,  
-		    DOUBLE  	    *velintn, 
-		    DOUBLE  	    *velintnt, 
-		    DOUBLE  	    *velintnc, 
-		    DOUBLE         **vderxyn, 
-		    DOUBLE         **vderxync, 
-		    DOUBLE         **vderxynv, 
-		    DOUBLE         **vderxy2n, 
-		    DOUBLE          *pderxyn, 
-	 	    DOUBLE  	    *smfunct,  
-		    DOUBLE         **smderxy,  
-		    DOUBLE         **smderxy2, 
-		    DOUBLE  	     fac,	 
-		    DOUBLE  	     visc,   
-		    INT		     smiel,    
-		    INT		     iel,    
+void f2_calstabsmft(FLUID_DYN_ML    *mlvar,
+		    DOUBLE         **smetfor,
+		    DOUBLE  	    *velintn,
+		    DOUBLE  	    *velintnt,
+		    DOUBLE  	    *velintnc,
+		    DOUBLE         **vderxyn,
+		    DOUBLE         **vderxync,
+		    DOUBLE         **vderxynv,
+		    DOUBLE         **vderxy2n,
+		    DOUBLE          *pderxyn,
+	 	    DOUBLE  	    *smfunct,
+		    DOUBLE         **smderxy,
+		    DOUBLE         **smderxy2,
+		    DOUBLE  	     fac,
+		    DOUBLE  	     visc,
+		    INT		     smiel,
+		    INT		     iel,
                     INT		     ihoelsm,
                     INT		     ihoel)
 {
@@ -309,7 +309,7 @@ DOUBLE con,ccon,beta,divvc,cb,ccb,cbb;
 DOUBLE aux,auxc;
 DOUBLE sign,tau;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_calstabsmft");
 #endif
 
@@ -319,16 +319,16 @@ tau = mlvar->smtau;
 
 switch (fdyn->conte) /* determine parameter beta of convective term */
 {
-case 0: 
+case 0:
   beta = ZERO;
 break;
-case 1: 
+case 1:
   beta = ONE;
-  divvc= vderxync[0][0]+vderxync[1][1]; 
+  divvc= vderxync[0][0]+vderxync[1][1];
 break;
-case 2: 
+case 2:
   beta = ONE/TWO;
-  divvc= vderxync[0][0]+vderxync[1][1]; 
+  divvc= vderxync[0][0]+vderxync[1][1];
 break;
 default:
    dserror("unknown form of convective term");
@@ -341,9 +341,9 @@ else                  sign = ONE;   /* GLS- */
    Calculate temporal stabilization:
  *----------------------------------------------------------------------*/
 if (ABS(mlvar->smstado)<3)
-{ 
+{
   if (mlvar->smstado==-1) con = fac*tau;
-  else  		  con = fac*tau*sign; 
+  else  		  con = fac*tau*sign;
 /*---------------------------------------------------------------------*
     /
    |  +/-  tau * (1/(theta*dt)) * w * u_transient d_omega
@@ -359,7 +359,7 @@ if (ABS(mlvar->smstado)<3)
     } /* end loop over irow */
     icol++;
   } /* end loop over icol */
-      
+
   ccon = con*(fdyn->thsr/fdyn->thsl);
 /*---------------------------------------------------------------------*
     /
@@ -377,7 +377,7 @@ if (ABS(mlvar->smstado)<3)
     icol++;
   } /* end loop over icol */
 
-  if (fdyn->conte!=0)  
+  if (fdyn->conte!=0)
   {
     cb = beta*divvc*ccon;
 /*----------------------------------------------------------------------*
@@ -395,9 +395,9 @@ if (ABS(mlvar->smstado)<3)
       } /* end loop over irow */
       icol++;
     } /* end loop over icol */
-  }  
+  }
 
-  if (ihoel!=0 && ihoelsm!=0)  
+  if (ihoel!=0 && ihoelsm!=0)
   {
     ccon = ccon*visc;
 /*---------------------------------------------------------------------*
@@ -416,7 +416,7 @@ if (ABS(mlvar->smstado)<3)
       icol++;
     } /* end loop over icol */
   }
-  
+
   if (fdyn->thpr!=ZERO && fdyn->iprerhs>0)
   {
     ccon = con*(fdyn->thpr/fdyn->thpl);
@@ -434,9 +434,9 @@ if (ABS(mlvar->smstado)<3)
         smetfor[irow][icol] -= smfunct[irow]*aux;
       } /* end loop over irow */
       icol++;
-    }  
+    }
   }
-}  
+}
 
 /*----------------------------------------------------------------------*
    Calculate convective stabilization:
@@ -458,8 +458,8 @@ for (icn=0;icn<2;icn++)
   } /* end loop over irow */
   icol++;
 } /* end loop over icol */
-      
-if (fdyn->conte!=0)  
+
+if (fdyn->conte!=0)
 {
   cb = con*beta;
 /*----------------------------------------------------------------------*
@@ -477,7 +477,7 @@ if (fdyn->conte!=0)
     } /* end loop over irow */
     icol++;
   } /* end loop over icol */
-}  
+}
 
 if (fdyn->thsr!=ZERO)
 {
@@ -498,8 +498,8 @@ if (fdyn->thsr!=ZERO)
     } /* end loop over irow */
     icol++;
   } /* end loop over icol */
-      
-  if (fdyn->conte!=0)  
+
+  if (fdyn->conte!=0)
   {
     cb  = ccon*beta;
     cbb = cb*beta*sign;
@@ -519,7 +519,7 @@ if (fdyn->thsr!=ZERO)
       } /* end loop over irow */
       icol++;
     } /* end loop over icol */
-  
+
     cb = cb*sign;
 /*----------------------------------------------------------------------*
     /
@@ -537,7 +537,7 @@ if (fdyn->thsr!=ZERO)
       } /* end loop over irow */
       icol++;
     } /* end loop over icol */
-  
+
 /*----------------------------------------------------------------------*
     /
    |  -/+ beta * beta * tau * ((1-th)*dt) * v * div(u_con.) * u_n * div(u_con.)
@@ -574,8 +574,8 @@ if (fdyn->thsr!=ZERO)
       } /* end loop over irow */
       icol++;
     } /* end loop over icol */
-      
-    if (fdyn->conte!=0)  
+
+    if (fdyn->conte!=0)
     {
       cb = ccon*beta*sign;
 /*----------------------------------------------------------------------*
@@ -595,8 +595,8 @@ if (fdyn->thsr!=ZERO)
       } /* end loop over icol */
     }
   }
-}      
-  
+}
+
 if (fdyn->thpr!=ZERO && fdyn->iprerhs>0)
 {
   ccon = con*fdyn->thpr;
@@ -615,9 +615,9 @@ if (fdyn->thpr!=ZERO && fdyn->iprerhs>0)
       smetfor[irow][icol] -= aux;
     } /* end loop over irow */
     icol++;
-  }  
+  }
 
-  if (fdyn->conte!=0)  
+  if (fdyn->conte!=0)
   {
     cb = ccon*beta*sign;
 /*----------------------------------------------------------------------*
@@ -635,9 +635,9 @@ if (fdyn->thpr!=ZERO && fdyn->iprerhs>0)
       } /* end loop over irow */
       icol++;
     }
-  }    
+  }
 }
-    
+
 /*----------------------------------------------------------------------*
    Calculate viscous stabilization for higher-order elements:
  *----------------------------------------------------------------------*/
@@ -681,7 +681,7 @@ if (ihoelsm!=0)
       icol++;
     } /* end loop over icol */
 
-    if (fdyn->conte!=0)  
+    if (fdyn->conte!=0)
     {
       cb = beta*ccon;
 /*----------------------------------------------------------------------*
@@ -700,8 +700,8 @@ if (ihoelsm!=0)
         } /* end loop over irow */
         icol++;
       } /* end loop over icol */
-    }  
-    
+    }
+
     if (ihoel!=0)
     {
       ccon = ccon*visc;
@@ -721,9 +721,9 @@ if (ihoelsm!=0)
         } /* end loop over irow */
         icol++;
       } /* end loop over icol */
-    }  
-  }  
- 
+    }
+  }
+
   if (fdyn->thpr!=ZERO && fdyn->iprerhs>0)
   {
     ccon = con*fdyn->thpr*visc*sign;
@@ -742,12 +742,12 @@ if (ihoelsm!=0)
         smetfor[irow][icol] += aux;
       } /* end loop over irow */
       icol++;
-    }  
+    }
   }
-}  
+}
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 

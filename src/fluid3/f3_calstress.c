@@ -11,7 +11,7 @@ Maintainer: Malte Neumann
 
 ------------------------------------------------------------------------*/
 
-/*! 
+/*!
   \addtogroup FLUID3
   *//*! @{ (documentation module open)*/
 #ifdef D_FLUID3
@@ -37,16 +37,16 @@ extern struct _GENPROB     genprob;
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
   \brief calculation of fluid stresses for fluid3
 
   <pre>                                                       mn 03/04
 
   calculation of the stress tensor sigma, which es stored at the nodes
 
-  sigma = -p_real*I + 2*nue * eps(u) 				      
+  sigma = -p_real*I + 2*nue * eps(u)
 
   </pre>
 
@@ -56,20 +56,20 @@ extern ALLDYNA      *alldyn;
   \param   *epre       DOUBLE      (-)    element pressure
   \param  **funct      DOUBLE      (-)    shape functions
   \param  **deriv      DOUBLE      (-)    natural deriv. of shape funct.
-  \param  **derxy      DOUBLE      (-)    global deriv. of sape funct.       
+  \param  **derxy      DOUBLE      (-)    global deriv. of sape funct.
   \param  **vderxy     DOUBLE      (-)    global vel. deriv
   \param  **xjm        DOUBLE      (-)    jacobian matrix
   \param  **wa1        DOUBLE      (-)    working array
   \param  **xyze       DOUBLE      (-)    element coordinates
-  \param  **sigmaint   DOUBLE      (-)    stresses at GAUSS point 
+  \param  **sigmaint   DOUBLE      (-)    stresses at GAUSS point
 
-  \return void                                               
+  \return void
 
   ------------------------------------------------------------------------*/
 void f3_calelestress(
     INT             viscstr,
     ELEMENT        *ele,
-    DOUBLE        **evel, 
+    DOUBLE        **evel,
     DOUBLE         *epre,
     DOUBLE         *funct,
     DOUBLE        **deriv,
@@ -88,7 +88,7 @@ void f3_calelestress(
   INT     actmat;              /* actual material number */
   INT     iv;                  /* counter for GAUSS points */
   DOUBLE  preint,det;          /* element values */
-  DOUBLE  e1,e2,e3;         
+  DOUBLE  e1,e2,e3;
   DOUBLE  xgr[MAXGAUSS];       /* local r coords of gauss points */
   DOUBLE  xgs[MAXGAUSS];       /* local s coords of gauss points */
   DOUBLE  xgt[MAXGAUSS];       /* local t coords of gauss points */
@@ -98,10 +98,10 @@ void f3_calelestress(
   NODE   *actfnode;             /* actual node */
   NODE   *actanode;             /* actual node */
   GNODE  *actfgnode;             /* actual node */
-  FLUID_DATA     *data; 
+  FLUID_DATA     *data;
   FLUID_DYNAMIC  *fdyn;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("f3_calelestress");
 #endif
 
@@ -134,7 +134,7 @@ case 0: /* only real pressure */
 break;
 case 1: /* real pressure + viscose stresses */
   /* real pressure + viscose stresses */
-  /* sigma = -p_real*I + 2*nue * eps(u) */ 
+  /* sigma = -p_real*I + 2*nue * eps(u) */
 
   /* get integraton data  */
   switch (typ)
@@ -147,14 +147,14 @@ case 1: /* real pressure + viscose stresses */
       intc = 0;
       break;
 
-   case tet4: case tet10:   /* --> tet - element */		  	
+   case tet4: case tet10:   /* --> tet - element */
       if (iel>4)
         icode   = 2;
       /* initialise integration */
       nir  = ele->e.f3->nGP[0];
       nis  = 1;
-      nit  = 1; 
-      intc = ele->e.f3->nGP[1];  
+      nit  = 1;
+      intc = ele->e.f3->nGP[1];
       break;
     default:
       nir = nis = nit = 0.0;
@@ -180,7 +180,7 @@ case 1: /* real pressure + viscose stresses */
          xyze[1][j] = ele->node[j]->x[1];
          xyze[2][j] = ele->node[j]->x[2];
       }
-#ifdef D_FSI      
+#ifdef D_FSI
    case 1:
       for (j=0;j<iel;j++)
       {
@@ -190,9 +190,9 @@ case 1: /* real pressure + viscose stresses */
          xyze[0][j] = ele->node[j]->x[0]+ actanode->sol_mf.a.da[1][0];
          xyze[1][j] = ele->node[j]->x[1]+ actanode->sol_mf.a.da[1][1];
          xyze[2][j] = ele->node[j]->x[2]+ actanode->sol_mf.a.da[1][2];
-      }       
+      }
    break;
-#endif      
+#endif
    default:
       dserror("elment flag is_ale out of range!");
    }
@@ -202,14 +202,14 @@ case 1: /* real pressure + viscose stresses */
   iv=0;
   twovisc=TWO*visc;
   for (lr=0;lr<nir;lr++)
-  {    
+  {
     for (ls=0;ls<nis;ls++)
     {
       for (lt=0;lt<nit;lt++)
       {
 
         /* get values of  shape functions and their derivatives */
-        switch(typ)  
+        switch(typ)
         {
          case hex8: case hex20: case hex27:   /* --> hex - element */
             e1   = data->qxg[lr][nir-1];
@@ -220,11 +220,11 @@ case 1: /* real pressure + viscose stresses */
             xgs[ls] = e2;
             xgt[lt] = e3;
             break;
-         case tet4: case tet10:   /* --> tet - element */		  	
+         case tet4: case tet10:   /* --> tet - element */
             e1   = data->txgr[lr][intc];
             e2   = data->txgs[lr][intc];
-            e3   = data->txgt[lr][intc]; 
-            f3_tet(funct,deriv,NULL,e1,e2,e3,typ,icode); 
+            e3   = data->txgt[lr][intc];
+            f3_tet(funct,deriv,NULL,e1,e2,e3,typ,icode);
             break;
           default:
             dserror("typ unknown!");
@@ -240,7 +240,7 @@ case 1: /* real pressure + viscose stresses */
         /* get velocity  derivatives at integration point */
         f3_vder(vderxy,derxy,evel,iel);
 
-        /* get pressure at integration point */         
+        /* get pressure at integration point */
         preint=f3_scali(funct,epre,iel);
 
 
@@ -270,7 +270,7 @@ case 1: /* real pressure + viscose stresses */
         sigmaint[iv][4] = (vderxy[1][2] + vderxy[2][1])*visc;
         sigmaint[iv][5] = (vderxy[0][2] + vderxy[2][0])*visc;
 
-        iv++;			     
+        iv++;
 
       } /* end loop over nit */
     } /* end loop over nis */
@@ -293,11 +293,11 @@ break;
 default:
    dserror("parameter viscstr out of range!\n");
 }
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 
-  return; 
+  return;
 } /* end of f3_calelestress */
 
 
@@ -306,7 +306,7 @@ default:
   \brief returns local coordinates of element nodes in rst-coordinates
 
   <pre>                                                          mn 03/04
-  This routine returns local coordinates of element nodes in rst-coordinates 
+  This routine returns local coordinates of element nodes in rst-coordinates
   for a 3D fluid element.
 
   </pre>
@@ -326,23 +326,23 @@ DOUBLE f3_rsn (
     )
 {
 
-  static DOUBLE  xh8[24] = { 
+  static DOUBLE  xh8[24] = {
      1., 1.,-1.,-1., 1., 1.,-1.,-1.,
     -1., 1., 1.,-1.,-1., 1., 1.,-1.,
     -1.,-1.,-1.,-1., 1., 1., 1., 1.
   };
 
-  static DOUBLE xh20[36] = { 
-     1.,  0., -1.,  0.,  1.,  0., -1.,  0.,  1.,  1., -1., -1., 
-     0.,  1.,  0., -1.,  0.,  1.,  0., -1., -1.,  1.,  1., -1., 
-    -1., -1., -1., -1.,  1.,  1.,  1.,  1.,  0.,  0.,  0.,  0. 
+  static DOUBLE xh20[36] = {
+     1.,  0., -1.,  0.,  1.,  0., -1.,  0.,  1.,  1., -1., -1.,
+     0.,  1.,  0., -1.,  0.,  1.,  0., -1., -1.,  1.,  1., -1.,
+    -1., -1., -1., -1.,  1.,  1.,  1.,  1.,  0.,  0.,  0.,  0.
   };
 
   INT inode;
   DOUBLE ret_val;
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("f3_rsn");
 #endif
 
@@ -365,7 +365,7 @@ DOUBLE f3_rsn (
     dserror("unknown number of nodes in hex element");
   }
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return(ret_val);
@@ -390,15 +390,15 @@ DOUBLE f3_rsn (
 
   \warning There is nothing special to this routine
 
-  \return void                                               
+  \return void
 
-  \sa calling: ---; called by: --- 
+  \sa calling: ---; called by: ---
 
  *----------------------------------------------------------------------*/
 void f3_lgpl (
     INT         i,
     INT         n,
-    DOUBLE    *zr,  
+    DOUBLE    *zr,
     DOUBLE      z,
     DOUBLE *value
     )
@@ -406,7 +406,7 @@ void f3_lgpl (
   /*----------------------------------------------------------------------*/
   INT j;
   DOUBLE zi, zj;
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("f3_lgpl");
 #endif
   /*----------------------------------------------------------------------*/
@@ -419,7 +419,7 @@ void f3_lgpl (
     *value *= (z-zj)/(zi-zj);
   }
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return;
@@ -445,7 +445,7 @@ void f3_lgpl (
 
   \warning There is nothing special to this routine
 
-  \return void                                               
+  \return void
 
   \sa calling: ---; called by: ---
 
@@ -453,7 +453,7 @@ void f3_lgpl (
 void f3_hxsm (
     INT nir,
     INT nis,
-    INT nit,  
+    INT nit,
     DOUBLE rk,
     DOUBLE sk,
     DOUBLE tk,
@@ -468,7 +468,7 @@ void f3_hxsm (
   INT i, j, k, ns, kkk, ngp;
   DOUBLE xlr, xls, xlt;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("f3_hxsm");
 #endif
 
@@ -490,7 +490,7 @@ void f3_hxsm (
     }
   }
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return;
@@ -503,7 +503,7 @@ void f3_hxsm (
   \brief extrapolation of stress from gauss points to nodal points
 
   <pre>                                                          mn 03/04
-  This routine extrapolates stresses from gauss points to nodal points 
+  This routine extrapolates stresses from gauss points to nodal points
   for a 3D fluid element.
 
 
@@ -519,7 +519,7 @@ void f3_hxsm (
   \param        iel     INT    (i) number of element nodes
 
   \warning There is nothing special to this routine
-  \return void                                               
+  \return void
   \sa calling: ---; called by: ---
 
  *----------------------------------------------------------------------*/
@@ -530,7 +530,7 @@ void f3_sext(
     DOUBLE   *xgs,
     DOUBLE   *xgt,
     INT       nir,
-    INT       nis, 
+    INT       nis,
     INT       nit,
     INT       iel
     )
@@ -542,7 +542,7 @@ void f3_sext(
   DOUBLE     fgp[6][27];
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("f3_sext");
 #endif
 
@@ -576,7 +576,7 @@ void f3_sext(
     f3_hxsm (nir,nis,nit,cnp1,cnp2,cnp3,fgp,nostrs[nn-1],&(xgr[0]),&(xgs[0]),&(xgt[0]));
   }
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 

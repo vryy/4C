@@ -1,6 +1,6 @@
 /*!---------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -18,7 +18,7 @@ Maintainer: Malte Neumann
  *----------------------------------------------------------------------*/
 typedef struct _NODE
 {
-     INT                        Id;            /* global Id (numbering starts with 0)*/              
+     INT                        Id;            /* global Id (numbering starts with 0)*/
      INT                        Id_loc;        /* field-local Id  (numbering starts with 0)*/
      INT                        proc;          /* my owner intra-proc */
 
@@ -38,14 +38,14 @@ typedef struct _NODE
      struct _ELEMENT          **element;       /* ptrs to elements to me */
 
      struct _GNODE             *gnode;         /* ptr to my gnode */
-#ifdef D_FLUID   
+#ifdef D_FLUID
      struct _FLUID_VARIA       *fluid_varia;   /* ptr to my fluid_varia */
      DOUBLE                    *actn;          /* ptr to my actual surface normal */
      DOUBLE                    *oldn;          /* ptr to my old surface normal */
 #endif
-#ifdef WALLCONTACT  
-     DOUBLE                     x_cr[3];       /* current coordinates (for contact only) */     
-     DOUBLE                     x_mid[3];      /* mid_configuration  coordinates(contact and EM Int. Scheme)*/  
+#ifdef WALLCONTACT
+     DOUBLE                     x_cr[3];       /* current coordinates (for contact only) */
+     DOUBLE                     x_mid[3];      /* mid_configuration  coordinates(contact and EM Int. Scheme)*/
 #endif
      INT                        locsysId;
 } NODE;
@@ -55,8 +55,8 @@ typedef struct _NODE
  | 1 ELEMENT                                              m.gee 8/00    |
  *----------------------------------------------------------------------*/
 typedef struct _ELEMENT
-{  
-     INT                        Id;             /* global Id (numbering starts with 0)*/                          
+{
+     INT                        Id;             /* global Id (numbering starts with 0)*/
      INT                        Id_loc;         /* field-local Id (numbering starts with 0)*/
      INT                        proc;           /* my owner intra-proc */
 
@@ -81,7 +81,7 @@ typedef struct _ELEMENT
      {
      struct _SHELL9     *s9;                    /* shell9 element */
      struct _SHELL8     *s8;                    /* shell8 element */
-     struct _BEAM3      *b3;			/* structural beam 3D element */     
+     struct _BEAM3      *b3;			/* structural beam 3D element */
      struct _BRICK1     *c1;                    /* structural volume element */
      struct _WALL1      *w1;                    /* 2D plane stress - plane strain element */
      struct _FLUID2     *f2;                    /* 2D fluid element */
@@ -93,20 +93,20 @@ typedef struct _ELEMENT
      struct _AXISHELL   *saxi;                  /* axisymmetric shell */
      struct _INTERF     *interf;                /* 1D interface */
      struct _WALLGE     *wallge;                /* gradient enhance wall element */
-     struct _LS2        *ls2;                   /* 2D element used for level set calculation */	  
-     }                          e;              /* name of union */ 
+     struct _LS2        *ls2;                   /* 2D element used for level set calculation */
+     }                          e;              /* name of union */
 
      union
      {
      struct _GLINE    *gline;                   /* my gline, if I am a 1D element */
      struct _GSURF    *gsurf;                   /* my gsurf, if I am a 2D element */
      struct _GVOL     *gvol;                    /* my gvol,  if I am a 3D element */
-     }                          g;              /* name of union */           
+     }                          g;              /* name of union */
 /*----------------------------------------------------------------------*/
 #ifdef D_OPTIM                   /* include optimization code to ccarat */
 /*----------------------------------------------------------------------*/
      INT    *optdata;               /* optimization variable number ... */
-     DOUBLE mylinweight;    /*element weighting for material linking AS */  
+     DOUBLE mylinweight;    /*element weighting for material linking AS */
 /*----------------------------------------------------------------------*/
 #endif                   /* stop including optimization code to ccarat :*/
 /*----------------------------------------------------------------------*/
@@ -121,7 +121,7 @@ typedef struct _ELEMENT
  *----------------------------------------------------------------------*/
 typedef struct _GNODE
 {
-#ifdef DEBUG 
+#ifdef DEBUG
      INT                           Id;          /* for debugging only, do not use in code !*/
 #endif
    /*------------fe topology section */
@@ -136,17 +136,17 @@ typedef struct _GNODE
         ondline,                                /* I am on a DLINE */
         ondsurf,                                /* I am on a DSURF */
         ondvol                                  /* I am inside a DVOL */
-     }                             ondesigntyp; 
+     }                             ondesigntyp;
      union
      {
-        struct _DNODE      *dnode;              
+        struct _DNODE      *dnode;
         struct _DLINE      *dline;
         struct _DSURF      *dsurf;
         struct _DVOL       *dvol;
      }                             d;           /* ptr to the design object I am positioned on */
    /* boundary and coupling conditions */
      struct _DIRICH_CONDITION     *dirich;      /* a dirichlet condition on this gnode, else NULL */
-     DOUBLE                        d_funct[MAXDOFPERNODE];  /* factors of the spatial functions  at this gnode 
+     DOUBLE                        d_funct[MAXDOFPERNODE];  /* factors of the spatial functions  at this gnode
                                                    for the dirich conditins */
      struct _COUPLE_CONDITION     *couple;      /* a coupling conditions on this gnode, else NULL */
      struct _NEUM_CONDITION       *neum;        /* a neumann condition on this gnode, else NULL */
@@ -159,12 +159,12 @@ typedef struct _GNODE
 
 #ifdef WALLCONTACT
      enum   _CONTACTTYPE       contype;
-     enum   _CONTACTFLAG   contactflag; 
+     enum   _CONTACTFLAG   contactflag;
      struct _ARRAY          *stiffness;
      struct _ARRAY          *int_force;
      struct _ARRAY          *ass_index;
      struct _GNODE          *mymasters[2];
-     struct _HISTORY        *history;     
+     struct _HISTORY        *history;
 #endif
 
 #ifdef D_LS
@@ -180,7 +180,7 @@ typedef struct _GNODE
  *----------------------------------------------------------------------*/
 typedef struct _GLINE
 {
-#ifdef DEBUG 
+#ifdef DEBUG
      INT                        Id;             /* for debugging only, do not use in code !*/
 #endif
      INT                        proc;           /* my owner intra-proc */
@@ -213,7 +213,7 @@ typedef struct _GLINE
  *----------------------------------------------------------------------*/
 typedef struct _GSURF
 {
-#ifdef DEBUG 
+#ifdef DEBUG
      INT                        Id;             /* for debugging only, do not use in code !*/
 #endif
    /*------------fe topology section */
@@ -243,7 +243,7 @@ typedef struct _GSURF
  *----------------------------------------------------------------------*/
 typedef struct _GVOL
 {
-#ifdef DEBUG 
+#ifdef DEBUG
      INT                        Id;             /* for debugging only, do not use in code !*/
 #endif
    /*------------fe topology section */

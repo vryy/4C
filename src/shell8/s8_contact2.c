@@ -16,32 +16,32 @@ Maintainer: Michael Gee
 #include "s8contact.h"
 #include "shell8.h"
 
-/*! 
-\addtogroup CONTACTS8 
+/*!
+\addtogroup CONTACTS8
 *//*! @{ (documentation module open)*/
 
 
 /*!----------------------------------------------------------------------
 \brief the contact main structure
 
-<pre>                                                         m.gee 2/03    
+<pre>                                                         m.gee 2/03
 defined in s8_contact_init.c
 </pre>
 
 *----------------------------------------------------------------------*/
 extern struct _SHELLCONTACT shellcontact;
 /*!---------------------------------------------------------------------
-\brief calculate contact stiffness and forces                                              
+\brief calculate contact stiffness and forces
 
-<pre>                                                        m.gee 2/03 
-calculate contact stiffness and forces 
+<pre>                                                        m.gee 2/03
+calculate contact stiffness and forces
 </pre>
 \param  actcnode    SHELLNODE*     (i/o)  the contacting slave node
 \param  actele      ELEMENT*       (i)    the element that is contacted
 \param  xi          DOUBLE*        (i)    local coorinates of projection point
 \param  ssurf       INT            (i)    indicates whether top or bottom of slave contated
 \param  msurf       INT            (i)    indicates, whether top or bottom of element is contacted
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void s8_contact_make(SHELLNODE *actcnode,
@@ -166,7 +166,7 @@ DOUBLE           xiout[2];
 DOUBLE           distance;
 INT              success;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_contact_make");
 #endif
 /*----------------------------------------------------------------------*/
@@ -211,9 +211,9 @@ for (i=0; i<actcnode->node->numele; i++)
       a3r[1][k] = ele->e.s8->a3ref.a.da[1][k] * h2;
       a3r[2][k] = ele->e.s8->a3ref.a.da[2][k] * h2;
 
-      xr[0][k]  = ele->node[k]->x[0];   
-      xr[1][k]  = ele->node[k]->x[1];   
-      xr[2][k]  = ele->node[k]->x[2];   
+      xr[0][k]  = ele->node[k]->x[0];
+      xr[1][k]  = ele->node[k]->x[1];
+      xr[2][k]  = ele->node[k]->x[2];
    }
    /* find which node is actcnode->node */
    for (j=0; j<ele->numnp; j++)
@@ -223,17 +223,17 @@ for (i=0; i<actcnode->node->numele; i++)
    {
       xinode[0] = 1.0;
       xinode[1] = 1.0;
-   }   
+   }
    if (j==1)
    {
       xinode[0] = -1.0;
       xinode[1] =  1.0;
-   }   
+   }
    if (j==2)
    {
       xinode[0] = -1.0;
       xinode[1] = -1.0;
-   }   
+   }
    if (j==3)
    {
       xinode[0] =  1.0;
@@ -251,7 +251,7 @@ for (i=0; i<actcnode->node->numele; i++)
 for (k=0; k<actele->numnp; k++)
 {
    h2        = actele->e.s8->thick_node.a.dv[k] / 2.0;
-   
+
    a3r[0][k] = actele->e.s8->a3ref.a.da[0][k] * h2;
    a3r[1][k] = actele->e.s8->a3ref.a.da[1][k] * h2;
    a3r[2][k] = actele->e.s8->a3ref.a.da[2][k] * h2;
@@ -260,9 +260,9 @@ for (k=0; k<actele->numnp; k++)
    a3c[1][k] = a3r[1][k] + actele->node[k]->sol.a.da[0][4];
    a3c[2][k] = a3r[2][k] + actele->node[k]->sol.a.da[0][5];
 
-   xr[0][k]  = actele->node[k]->x[0];   
-   xr[1][k]  = actele->node[k]->x[1];   
-   xr[2][k]  = actele->node[k]->x[2];   
+   xr[0][k]  = actele->node[k]->x[0];
+   xr[1][k]  = actele->node[k]->x[1];
+   xr[2][k]  = actele->node[k]->x[2];
 
    xc[0][k]  = xr[0][k] + actele->node[k]->sol.a.da[0][0];
    xc[1][k]  = xr[1][k] + actele->node[k]->sol.a.da[0][1];
@@ -287,13 +287,13 @@ xs[1] = actcnode->xc[1] + thetas * actcnode->xc[4];
 xs[2] = actcnode->xc[2] + thetas * actcnode->xc[5];
 /*---------------------------------------- make global projection point */
 for (i=0; i<3; i++) xbar[i] = 0.0;
-for (k=0; k<actele->numnp; k++) 
+for (k=0; k<actele->numnp; k++)
    for (i=0; i<3; i++)
       xbar[i] += funct[k] * (xc[i][k] + thetam*a3c[i][k]);
-/*-------------------- make vector from projection point to slave point */     
+/*-------------------- make vector from projection point to slave point */
 for (i=0; i<3; i++)
    diff[i] = xs[i] - xbar[i];
-/*----------------------------------------------- project diff onto nue */   
+/*----------------------------------------------- project diff onto nue */
 g = 0.0;
 for (i=0; i<3; i++) g += diff[i] * nue[i];
 g = -g;
@@ -301,8 +301,8 @@ g = -g;
 /*------------------------------------------------------ build vector N */
 j=0;
 for (l=0; l<2; l++)
-for (i=0; i<3; i++) 
-   N[j++] = nue[i]; 
+for (i=0; i<3; i++)
+   N[j++] = nue[i];
 for (k=0; k<actele->numnp; k++)
 for (l=0; l<2; l++)
 for (i=0; i<3; i++)
@@ -358,7 +358,7 @@ A[0][1] = gmkovc[0][1];
 A[1][0] = gmkovc[1][0];
 A[1][1] = gmkovc[1][1];
 sum = 0.0;
-for (i=0; i<3; i++) 
+for (i=0; i<3; i++)
    sum += gkovcab[i] * nue[i];
 A[0][1] += g*sum;
 A[1][0] += g*sum;
@@ -382,7 +382,7 @@ for (i=0; i<numdf; i++)
   Nbar2[i] = N2[i] - sum * D1[i];
 }
 /*------------------------------------------- make normal contact force */
-if (ssurf==1) 
+if (ssurf==1)
 {
    tn = actcnode->top_ln + EPSN * g;
    actcnode->top_tn = tn;
@@ -466,11 +466,11 @@ tTtrial_kov[0] = lT[0] + EPST * ( gmkovr[0][0] * dxi[0] + gmkovr[0][1] * dxi[1] 
 tTtrial_kov[1] = lT[1] + EPST * ( gmkovr[1][0] * dxi[0] + gmkovr[1][1] * dxi[1] );
 /* make absolute value of frictional force wit respect to current base vectors */
 /* warning: this may be in terms of gmkonr metrics */
-tTabs = tTtrial_kov[0]*gmkonc[0][0]*tTtrial_kov[0] + 
+tTabs = tTtrial_kov[0]*gmkonc[0][0]*tTtrial_kov[0] +
         tTtrial_kov[1]*gmkonc[1][1]*tTtrial_kov[1] +
         tTtrial_kov[0]*gmkonc[0][1]*tTtrial_kov[1] +
         tTtrial_kov[1]*gmkonc[1][0]*tTtrial_kov[0] ;
-tTabs = sqrt(tTabs);  
+tTabs = sqrt(tTabs);
 /* tTtrial_kov are kovariant components in kontravariant basis */
 /* make tTtrial_kon kontravariant components in covariant basis */
 tTtrial_kon[0] = tTtrial_kov[0]*gmkonc[0][0] + tTtrial_kov[1]*gmkonc[1][0];
@@ -485,9 +485,9 @@ for (i=0; i<3; i++)
 /*-------------------------------------------------- make coulomb's law */
 PHI = tTabs - NU * tn;
 /*-------------------------------------------- decide for slip or stick */
-if (PHI < 0.0) 
+if (PHI < 0.0)
 slip = 0;
-else           
+else
 slip = 1;
 /*--------------------------------- make return of frictional tractions */
 if (slip)
@@ -503,7 +503,7 @@ else
 /*printf("lt[0] %15.10f lt[1] %15.10f tT_kov[0] %15.10f tT_kov[1] %15.10f tTabs %15.10f dxi[0] %15.10f dxi[1] %15.10f  ",
         lT[0],lT[1],tT_kov[0],tT_kov[1],tTabs,dxi[0],dxi[1]); */
 /*------------------------------- put frictional tractions back to node */
-/* from there they will be copied to the history in the converged status */  
+/* from there they will be copied to the history in the converged status */
 if (ssurf==1)
 {
    actcnode->top_tT[0] = tT_kov[0];
@@ -545,7 +545,7 @@ p_kon[0] = tTtrial_kon[0]/tTabs;
 p_kon[1] = tTtrial_kon[1]/tTabs;
 for (i=0; i<3; i++)
    p[i] = p_kov[0]*gkonc[i][0] + p_kov[1]*gkonc[i][1];
-/*----------------------------------- make vectors P1, P2, Pbar1, Pbar2 */   
+/*----------------------------------- make vectors P1, P2, Pbar1, Pbar2 */
 sum = 0.0;
 for (i=0; i<3; i++)
    sum += gkovcab[i] * p[i];
@@ -584,7 +584,7 @@ for (k=0; k<actele->numnp; k++)
 for (l=0; l<2; l++)
 for (i=0; i<3; i++)
 {
-   T11[j]   = -deriv[0][k] * gkovc[i][0]; 
+   T11[j]   = -deriv[0][k] * gkovc[i][0];
    T12[j]   = -deriv[1][k] * gkovc[i][0];
    T21[j]   = -deriv[0][k] * gkovc[i][1];
    T22[j]   = -deriv[1][k] *  gkovc[i][1];
@@ -645,13 +645,13 @@ if (slip)
    for (j=0; j<numdf; j++)
    {
       /* expression 1 */
-      slipstiff[i][j] -= 
-      fac1 * 
+      slipstiff[i][j] -=
+      fac1 *
       (
       p_kov[0]*D1[i] + p_kov[1]*D2[i]
       ) * N[j];
       /* expression 2 */
-      slipstiff[i][j] += 
+      slipstiff[i][j] +=
       fac2 *
       (
       D1[i]*D1[j]*( (1.0-p1p1)*(M11+kappa1*dxi[1]                  )-p2p1*(M21+kappa1*dxi[0]+2.0*kappa2*dxi[1]) )+
@@ -659,8 +659,8 @@ if (slip)
       D1[i]*D2[j]*( (1.0-p1p1)*(M12+2.0*kappa1*dxi[0]+kappa2*dxi[1])-p2p1*(M22+kappa2*dxi[0]                  ) )+
       D2[i]*D2[j]*( (1.0-p2p2)*(M22+kappa2*dxi[0]                  )-p1p2*(M12+2.0*kappa1*dxi[0]+kappa2*dxi[1]) )
       );
-      /* expression 3 */                  
-      slipstiff[i][j] += 
+      /* expression 3 */
+      slipstiff[i][j] +=
       fac3 *
       (
       p1p1*D1[i]*Pbar1[j] +
@@ -676,16 +676,16 @@ else /* stick */
    for (i=0; i<numdf; i++)
    for (j=0; j<numdf; j++)
    {
-      slipstiff[i][j] += 
+      slipstiff[i][j] +=
       fac1 *
-      ( 
-      gmkovr[0][0]*D1[i]*D1[j] + 
+      (
+      gmkovr[0][0]*D1[i]*D1[j] +
       gmkovr[0][1]*D1[i]*D2[j] + gmkovr[1][0]*D2[i]*D1[j] +
       gmkovr[1][1]*D2[i]*D2[j] +
       2.0*kappa1*dxi[0]*D1[i]*D2[j] +
       kappa1*dxi[1]*D1[i]*D1[j] + kappa2*dxi[1]*D1[i]*D2[j] +
       kappa1*dxi[0]*D2[i]*D1[j] + kappa2*dxi[0]*D2[i]*D2[j] +
-      2.0*kappa2*dxi[1]*D2[i]*D1[j] 
+      2.0*kappa2*dxi[1]*D2[i]*D1[j]
       );
    }
 }
@@ -699,12 +699,12 @@ for (j=0; j<numdf; j++)
 {
    slipstiff[i][j] += wgt * fac1 *
                       (
-                        T11[i]*D1[j] + T12[i]*D2[j] + D1[i]*T11[j] + D2[i]*T12[j] 
+                        T11[i]*D1[j] + T12[i]*D2[j] + D1[i]*T11[j] + D2[i]*T12[j]
                       - sum * (D1[i]*D2[j] + D2[i]*D1[j])
                       + Tbar11[i]*D1[j] + Tbar21[i]*D2[j]
                       + D1[i]*Tbar11[j] + D2[i]*Tbar21[j]
                       + g * (N12[i]*D2[j] + D2[i]*N12[j])
-                      - N[i]*Nbar1[j] 
+                      - N[i]*Nbar1[j]
                       - T1[i] * ( gmkonc[0][0]*Tbar11[j] + gmkonc[0][1]*Tbar21[j] )
                       - T2[i] * ( gmkonc[1][0]*Tbar11[j] + gmkonc[1][1]*Tbar21[j] )
                       - Nbar1[i]*N[j]
@@ -713,7 +713,7 @@ for (j=0; j<numdf; j++)
                       );
 }
 
-fac2 = tT_kov[0]*Akon[0][1] + tT_kov[1]*Akon[1][1]; 
+fac2 = tT_kov[0]*Akon[0][1] + tT_kov[1]*Akon[1][1];
 sum  = 0.0;
 for (i=0; i<3; i++)
    sum += gkovcab[i]*gkovc[i][0];
@@ -741,7 +741,7 @@ for (j=0; j<numdf; j++)
    stiff[i][j] += slipstiff[i][j];
 /*----------------------------------------------------- end of friction */
 } /* end of if (friction) */
-#endif 
+#endif
 if (ssurf==1)
 {
    if (friction)
@@ -760,7 +760,7 @@ else
    printf("node %5d element %5d topbot %2d %2d gap %15.10f lambdan %15.8f tn %15.8f\n",
            actcnode->node->Id,actele->Id,ssurf,msurf,g,actcnode->bot_ln,actcnode->bot_tn*wgt);
 }
-fflush(stdout);        
+fflush(stdout);
 /*========= build the toggle diagonal matrix theta (stored as a vector) */
 j=0;
 for (i=0; i<3; i++) theta[j++] = 1.0;
@@ -785,10 +785,10 @@ for (j=0; j<numdf; j++)
    stiff[i][j] *= theta[j];
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of s8_contact_make */
 
 

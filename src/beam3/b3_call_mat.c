@@ -16,7 +16,7 @@ Maintainer: Frank Huber
 #include "beam3.h"
 #include "beam3_prototypes.h"
 
-/*! 
+/*!
 \addtogroup BEAM3
 *//*! @{ (documentation module open)*/
 
@@ -39,16 +39,16 @@ This routine selects the proper material law for a spatial 1d-beam-element
 
 
 \warning There is nothing special in this routine
-\return void                                               
-\sa calling:   b3_mat_linel() , b3_mat_plast_mises() 
+\return void
+\sa calling:   b3_mat_linel() , b3_mat_plast_mises()
     called by: b3_cal_ele()
 
 *----------------------------------------------------------------------*/
-void b3_call_mat(ELEMENT   *ele,  
-                 MATERIAL  *mat,  
+void b3_call_mat(ELEMENT   *ele,
+                 MATERIAL  *mat,
                  DOUBLE    *eps,
-		 DOUBLE   **bop,    
-                 DOUBLE   **d,      
+		 DOUBLE   **bop,
+                 DOUBLE   **d,
                  DOUBLE    *stress,
 		 INT        ip,
 		 INT        istore,
@@ -58,7 +58,7 @@ void b3_call_mat(ELEMENT   *ele,
 const INT numdf=6;
 INT init=0;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("b3_call_mat");
 #endif
 /*------------------------------------------------ call material law ---*/
@@ -85,10 +85,10 @@ dstrc_enter("b3_call_mat");
   break;
   }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of b3_call_mat */
 /*----------------------------------------------------------------------*/
 #endif

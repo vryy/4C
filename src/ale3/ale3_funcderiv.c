@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 'ale3_funct_deriv' which calculates the 
+\brief contains the routine 'ale3_funct_deriv' which calculates the
 shape functions for a 3d ale element
 
 <pre>
@@ -16,14 +16,14 @@ Maintainer: Malte Neumann
 #include "ale3.h"
 
 
-/*! 
-\addtogroup Ale 
+/*!
+\addtogroup Ale
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
 \brief calculates the shape functions and derivatives
 
-<pre>                                                              mn 06/02 
+<pre>                                                              mn 06/02
 This routine calcuates the shape functions and their derivatives at a
 point r,s,t for 3D hex and tet ale-elements.
 
@@ -38,14 +38,14 @@ point r,s,t for 3D hex and tet ale-elements.
                              option == 1 : also derivatives
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: ale3_static_ke
 
 *----------------------------------------------------------------------*/
 void ale3_funct_deriv(
-    DOUBLE      funct[MAXNOD_BRICK1], 
-    DOUBLE      deriv[3][MAXNOD_BRICK1], 
-    DOUBLE      r, 
+    DOUBLE      funct[MAXNOD_BRICK1],
+    DOUBLE      deriv[3][MAXNOD_BRICK1],
+    DOUBLE      r,
     DOUBLE      s,
     DOUBLE      t,
     DIS_TYP     typ,
@@ -56,8 +56,8 @@ void ale3_funct_deriv(
   const DOUBLE   q18 = 1.0/8.0;
   DOUBLE         rp,sp,tp,rm,sm,tm,rrm,ssm,ttm;
   DOUBLE         t1,t2,t3,t4;
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_enter("ale3_funct_deriv");
 #endif
 
@@ -126,7 +126,7 @@ void ale3_funct_deriv(
       funct[3]= t4;
 
       if(option==1) /* first derivative evaluation */
-      {         
+      {
         deriv[0][0]= ONE;
         deriv[0][1]= ZERO;
         deriv[0][2]= ZERO;
@@ -141,12 +141,12 @@ void ale3_funct_deriv(
         deriv[2][1]= ZERO;
         deriv[2][2]= ONE;
         deriv[2][3]=-ONE;
-      } /* endif (option==1) */  
+      } /* endif (option==1) */
       break;
 
     case tet10: /*  QUADRATIC SHAPE FUNCTIONS */
 
-      dserror("shape functions for tet10 not yet implemented \n"); 
+      dserror("shape functions for tet10 not yet implemented \n");
       /* form basic values */
 #if 0
       t1=r;
@@ -216,7 +216,7 @@ void ale3_funct_deriv(
       break;
   } /* end of switch typ */
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 

@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -48,27 +48,27 @@ enum _CALC_ACTION calc_action[MAXFIELD];
  | global dense matrices for element routines             m.gee 7/01    |
  *----------------------------------------------------------------------*/
 struct _ARRAY estif_global;    /* element stiffness matrix                */
-struct _ARRAY emass_global;    /* element mass matrix                     */  
+struct _ARRAY emass_global;    /* element mass matrix                     */
 struct _ARRAY lmass_global;    /* element mass matrix                     */
 struct _ARRAY gradopr_global;  /* gradient operator                       */
 struct _ARRAY etforce_global;  /* element Time RHS                        */
 struct _ARRAY eiforce_global;  /* element Iteration RHS                   */
 struct _ARRAY edforce_global;  /* element dirichlet RHS                   */
 struct _ARRAY gforce_global;   /* element dirich for pressure  RHS (g_n+1)*/
-struct _ARRAY intforce_global;  
-struct _ARRAY eproforce_global;  
+struct _ARRAY intforce_global;
+struct _ARRAY eproforce_global;
 
 /*----------------------------------------------------------------------*
  |  routine to call elements                             m.gee 6/01     |
  *----------------------------------------------------------------------*/
-void calelm(FIELD        *actfield,     /* active field */        
+void calelm(FIELD        *actfield,     /* active field */
             SOLVAR       *actsolv,      /* active SOLVAR */
             PARTITION    *actpart,      /* my partition of this field */
             INTRA        *actintra,     /* my intra-communicator */
             INT           sysarray1,    /* number of first sparse system matrix */
             INT           sysarray2,    /* number of secnd system matrix, if present, else -1 */
             CONTAINER    *container,    /* contains variables defined in container.h */
-            CALC_ACTION  *action)       /* calculation option passed to element routines */     
+            CALC_ACTION  *action)       /* calculation option passed to element routines */
 /*----------------------------------------------------------------------*/
 {
 INT               i,kk;
@@ -80,12 +80,12 @@ ELEMENT          *actele2 = NULL;
 #endif
 ASSEMBLE_ACTION   assemble_action;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("calelm");
 #endif
 /*----------------------------------------------------------------------*/
-/*-------------- zero the parallel coupling exchange buffers if present */  
-#ifdef PARALLEL 
+/*-------------- zero the parallel coupling exchange buffers if present */
+#ifdef PARALLEL
 /*------------------------ check the send & recv buffers from sysarray1 */
 if (sysarray1 != -1)
 {
@@ -284,7 +284,7 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
 #ifdef D_FLUID
 
 #ifdef D_FLUID2
-   case el_fluid2: 
+   case el_fluid2:
      if(container->turbu==2 || container->turbu==3)
        actele2 = actpart->pdis[1].element[i];
      else
@@ -298,7 +298,7 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
 #endif
 
 #ifdef D_FLUID2
-   case el_fluid2_tu: 
+   case el_fluid2_tu:
       actele2 = actpart->pdis[0].element[i];
       fluid2_tu(actpart,actintra,actele,actele2,
                 &estif_global,&emass_global,
@@ -306,7 +306,7 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
 	          action,&hasdirich,&hasext,container);
    break;
 #endif
-   
+
 #ifdef D_FLUID2_PRO
    case el_fluid2_pro:
       actele2 = actpart->pdis[1].element[i];
@@ -326,13 +326,13 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
        );
    break;
 #endif
-   
+
 #ifdef D_FLUID3
-   case el_fluid3: 
+   case el_fluid3:
       fluid3(actpart,actintra,actele,
           &estif_global,&emass_global,
           &etforce_global,&eiforce_global,&edforce_global,
-          action,&hasdirich,&hasext,container); 
+          action,&hasdirich,&hasext,container);
    break;
 #endif
 
@@ -388,8 +388,8 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
    break;
 #endif
 
-#ifdef D_LS   
-   case el_ls2:	 
+#ifdef D_LS
+   case el_ls2:
      ls2(
        actpart,actintra,actele,&estif_global,&emass_global,
        &etforce_global,&eiforce_global,action
@@ -494,9 +494,9 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
       }
    /*-------------- assemble the vector eiforce_global to iteration rhs */
       if (container->nii+hasext!=0 || container->nim!=0)
-      {   
+      {
          container->dvec = container->fiterhs;
-         assemble_intforce(actele,&eiforce_global,container,actintra); 
+         assemble_intforce(actele,&eiforce_global,container,actintra);
       }
    /*-------------- assemble the vector edforce_global to iteration rhs */
       if (hasdirich!=0)
@@ -504,7 +504,7 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
          container->dvec = container->fiterhs;
          assemble_intforce(actele,&edforce_global,container,actintra);
       }
-#ifdef D_FLUID2_PRO      
+#ifdef D_FLUID2_PRO
       if (*action==calc_fluid_amatrix)
       assemble_fluid_amatrix(container,actele,actele2,actintra);
 #endif
@@ -522,10 +522,10 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
          }
          container->dvec = container->fiterhs;
          assemble_intforce(actele,&eiforce_global,container,actintra);
-      }   
-      container->dvec=NULL;   
+      }
+      container->dvec=NULL;
    break;
-#endif   
+#endif
 #ifdef D_ALE
    case ale:
    if (container->dirich && container->isdyn == 1)
@@ -534,11 +534,11 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
 	 if (hasdirich)
             ale_caldirich_increment(actele,container->dirich,
                           container->global_numeq,&estif_global,
-			  container->pos); 
+			  container->pos);
       }
    break;
 #endif
-#ifdef D_LS   
+#ifdef D_LS
    case levelset:
      /* assemble the vector etforce_global to time rhs */
      if (container->nif!=0)
@@ -548,13 +548,13 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
      }
      /* assemble the vector eiforce_global to iteration rhs */
      if (container->nii!=0)
-     {   
+     {
        container->dvec = container->fiterhs;
-       assemble_intforce(actele,&eiforce_global,container,actintra); 
+       assemble_intforce(actele,&eiforce_global,container,actintra);
      }
-     container->dvec=NULL;   
+     container->dvec=NULL;
      break;
-#endif      
+#endif
    default:
      dserror("fieldtyp unknown!");
    }
@@ -566,7 +566,7 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
 /*                    in parallel coupled dofs have to be exchanged now */
 /*             (if there are any inter-proc couplings, which is tested) */
 /*----------------------------------------------------------------------*/
-#ifdef PARALLEL 
+#ifdef PARALLEL
 switch(*action)
 {
 case calc_struct_linstiff        : assemble_action = assemble_one_exchange; break;
@@ -626,8 +626,8 @@ perf_end(19);
 #endif
 #endif
 /*----------------------------------------------------------------------*/
-/* 
-   in the case of dynamically increasing sparse matrices (spooles) the 
+/*
+   in the case of dynamically increasing sparse matrices (spooles) the
    matrix has to be closed after assembly
 */
 #ifdef D_CONTACT
@@ -687,10 +687,10 @@ if(actsolv->sysarray_typ[sysarray1]==oll)
 {
   switch(*action)/*=== set flag dependent on calculation-flag */
   {
-    case calc_struct_nlnstiffmass    : 
+    case calc_struct_nlnstiffmass    :
       actsolv->sysarray[sysarray2].oll->is_masked = 1;
     case calc_struct_linstiff        :
-    case calc_struct_nlnstiff        : 
+    case calc_struct_nlnstiff        :
       actsolv->sysarray[sysarray1].oll->is_masked = 1; break;
     case calc_struct_internalforce   :
     case calc_struct_eleload         :
@@ -700,13 +700,13 @@ if(actsolv->sysarray_typ[sysarray1]==oll)
     case calc_struct_def             :
     case calc_struct_stv             :
     case calc_struct_dee             :
-    case calc_deriv_self_adj         : 
+    case calc_deriv_self_adj         :
     case calc_struct_dmc             :
     case calc_fluid_shearvelo        :
     case update_struct_odens         :
     case calc_struct_update_istep    :
     case calc_struct_update_stepback : break;
-    case calc_ale_stiff              : 
+    case calc_ale_stiff              :
       actsolv->sysarray[sysarray1].oll->is_masked = 1; break;
     case calc_ale_rhs                : break;
     case calc_fluid                  :
@@ -723,7 +723,7 @@ if(actsolv->sysarray_typ[sysarray1]==oll)
   }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -736,7 +736,7 @@ return;
 /*----------------------------------------------------------------------*
  |  routine to call elements to init                     m.gee 7/01     |
  *----------------------------------------------------------------------*/
-void calinit(FIELD       *actfield,   /* the active physical field */ 
+void calinit(FIELD       *actfield,   /* the active physical field */
              PARTITION   *actpart,    /* my partition of this field */
              CALC_ACTION *action,
              CONTAINER   *container)  /*!< contains variables defined in container.h */
@@ -744,25 +744,25 @@ void calinit(FIELD       *actfield,   /* the active physical field */
 INT i;            /* a counter */
 INT kk;
 INT is_axishell=0;/* flags to check for presents of certain element types */
-INT is_shell8=0;              
-INT is_shell9=0;   
+INT is_shell8=0;
+INT is_shell9=0;
 INT is_brick1=0;
 INT is_wall1 =0;
 INT is_fluid2=0;
 INT is_fluid2_pro=0;
 INT is_fluid2_tu=0;
-INT is_fluid2_xfem=0; 
+INT is_fluid2_xfem=0;
 INT is_fluid3=0;
 INT is_ale3=0;
 INT is_ale2=0;
 INT is_beam3=0;
 INT is_interf=0;
 INT is_wallge=0;
-INT is_ls2=0; 
+INT is_ls2=0;
 
 ELEMENT *actele;              /* active element */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("calinit");
 #endif
 /*-------------------------- define dense element matrices for assembly */
@@ -836,11 +836,11 @@ for (i=0; i<actfield->dis[kk].numele; i++)
    break;
    default:
       dserror("Unknown typ of element");
-   break;   
+   break;
    }
 }/* end of loop over all elements */
 /*--------------------- init the element routines for all present types */
-container->kstep = 0;  
+container->kstep = 0;
 /*----------------------------- init all kind of routines for axishell  */
 #ifdef D_AXISHELL
 if (is_axishell==1)
@@ -928,7 +928,7 @@ if (is_fluid2_xfem==1)
     actpart,NULL,NULL,&estif_global,&emass_global,
     &etforce_global,&eiforce_global,&edforce_global,
     action,NULL,NULL,container
-    );          
+    );
 }
 #endif
 /*-------------------------------- init all kind of routines for fluid3 */
@@ -971,8 +971,8 @@ if (is_interf==1)
 {
    container->handsize = 0;
    container->handles  = NULL;
-   interf(actpart,NULL,NULL,&estif_global,&emass_global,&intforce_global, 
-           action,container);                                
+   interf(actpart,NULL,NULL,&estif_global,&emass_global,&intforce_global,
+           action,container);
 }
 #endif
 /*----------------------------- init all kind of routines for interface */
@@ -981,15 +981,15 @@ if (is_wallge==1)
 {
    container->handsize = 0;
    container->handles  = NULL;
-   wallge(actpart,NULL,NULL,&estif_global,&emass_global,&intforce_global, 
-           action,container);                                
+   wallge(actpart,NULL,NULL,&estif_global,&emass_global,&intforce_global,
+           action,container);
 }
 #endif
 /*---------------------------------- init all kind of routines for ls2 */
 #ifdef D_LS
 if (is_ls2==1)
 {
-  /* init all kind of routines for ls2 */    
+  /* init all kind of routines for ls2 */
   ls2(
     actpart,NULL,NULL,&estif_global,&emass_global,
     &etforce_global,&eiforce_global,action
@@ -997,7 +997,7 @@ if (is_ls2==1)
 }
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1025,16 +1025,16 @@ INT is_shell9=0;
 INT is_brick1=0;
 INT is_wall1 =0;
 INT is_fluid1=0;
-INT is_fluid2_xfem=0; 
+INT is_fluid2_xfem=0;
 INT is_fluid3=0;
 INT is_ale3=0;
 INT is_beam3=0;
 INT is_interf=0;
 INT is_wallge=0;
-INT is_ls2=0; 
+INT is_ls2=0;
 
 ELEMENT *actele;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("calreduce");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1085,7 +1085,7 @@ for (i=0; i<actfield->dis[0].numele; i++)
    break;
    default:
       dserror("Unknown typ of element");
-   break;   
+   break;
    }
 }/* end of loop over all elements */
 /*-----------------------------------------reduce results for axishell  */
@@ -1151,7 +1151,7 @@ if (is_ls2==1)
 {
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

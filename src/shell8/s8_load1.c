@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Michael Gee
@@ -76,7 +76,7 @@ INT             dir;
 DOUBLE          ds;
 DOUBLE          ar[3];
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8eleload");
 #endif
 /*----------------------------------------------------------------------*/
@@ -86,8 +86,8 @@ if (init==1)
 eload     = amdef("eload",&eload_a,MAXDOFPERNODE,MAXNOD_SHELL8,"DA");
 x         = amdef("x"    ,&x_a    ,3            ,MAXNOD_SHELL8,"DA");
 xc        = amdef("xc"   ,&xc_a   ,3            ,MAXNOD_SHELL8,"DA");
-funct     = amdef("funct",&funct_a,MAXNOD_SHELL8,1            ,"DV");       
-deriv     = amdef("deriv",&deriv_a,2            ,MAXNOD_SHELL8,"DA");       
+funct     = amdef("funct",&funct_a,MAXNOD_SHELL8,1            ,"DV");
+deriv     = amdef("deriv",&deriv_a,2            ,MAXNOD_SHELL8,"DA");
 xjm       = amdef("xjm_a",&xjm_a  ,3            ,3            ,"DA");
 a3ref     = amdef("a3ref",&a3ref_a,3            ,MAXNOD_SHELL8,"DA");
 a3cur     = amdef("a3cur",&a3cur_a,3            ,MAXNOD_SHELL8,"DA");
@@ -98,8 +98,8 @@ goto end;
 else if (init==-1)/*--------------------- delete phase for this routine */
 {
 amdel(&eload_a);
-amdel(&x_a);   
-amdel(&xc_a);   
+amdel(&x_a);
+amdel(&xc_a);
 amdel(&funct_a);
 amdel(&deriv_a);
 amdel(&xjm_a);
@@ -107,7 +107,7 @@ amdel(&a3ref_a);
 amdel(&a3cur_a);
 amdel(&a3r_a);
 amdel(&a3c_a);
-goto end;  
+goto end;
 }
 amzero(&eload_a);
 /*--------------------------------- check for presence of element loads */
@@ -175,7 +175,7 @@ for (lr=0; lr<nir; lr++)/*---------------------------- loop r-direction */
       s8jaco(funct,deriv,xc,xjm,hte,a3cur,e3,iel,&det,&deta,0);
       /*--------------------------- make total weight at gaussian point */
       wgt = facr*facs;
-      /*------------------------------ coordinates of integration point */ 
+      /*------------------------------ coordinates of integration point */
       xi=yi=zi=0.0;
       if (ele->g.gsurf->neum->neum_type!=neum_live)
       for (i=0; i<iel; i++)
@@ -239,8 +239,8 @@ for (line=0; line<ngline; line++)
    /*                                       and weights at these points */
    switch (line)
    {
-   case 0:                       
-      for (i=0; i<ngp; i++)       
+   case 0:
+      for (i=0; i<ngp; i++)
       {
          xgp[i] = data->xgpr[i];
          wgp[i] = data->wgtr[i];
@@ -253,7 +253,7 @@ for (line=0; line<ngline; line++)
       gnode[2] = 4;
    break;
    case 2:
-      for (i=0; i<ngp; i++) 
+      for (i=0; i<ngp; i++)
       {
          xgp[i] = data->xgpr[i];
          wgp[i] = data->wgtr[i];
@@ -266,7 +266,7 @@ for (line=0; line<ngline; line++)
       gnode[2] = 6;
    break;
    case 1:
-      for (i=0; i<ngp; i++) 
+      for (i=0; i<ngp; i++)
       {
          xgp[i] = data->xgps[i];
          wgp[i] = data->wgts[i];
@@ -279,7 +279,7 @@ for (line=0; line<ngline; line++)
       gnode[2] = 5;
    break;
    case 3:
-      for (i=0; i<ngp; i++) 
+      for (i=0; i<ngp; i++)
       {
          xgp[i] = data->xgps[i];
          wgp[i] = data->wgts[i];
@@ -313,14 +313,14 @@ for (line=0; line<ngline; line++)
          for (j=0; j<3; j++)
          {
             xjm[i][j] = 0.0;
-            for (k=0; k<iel; k++) 
+            for (k=0; k<iel; k++)
             xjm[i][j] += deriv[i][k] * x[j][k];
          }
       }
-         for (j=0; j<3; j++) 
+         for (j=0; j<3; j++)
          {
             xjm[2][j] = 0.0;
-            for (k=0; k<iel; k++) 
+            for (k=0; k<iel; k++)
             xjm[2][j] += funct[k] * (hte[k]/2.0) * a3ref[j][k];
          }
       /*------------------- ds = |g1| in dir=0 and ds = |g2| in dir=1 */
@@ -333,9 +333,9 @@ for (line=0; line<ngline; line++)
       /*----- ar[i] = ar[i] * facr * ds * onoffflag[i] * loadvalue[i] */
       for (i=0; i<3; i++)
       {
-         ar[i] = ar[i] * 
+         ar[i] = ar[i] *
                  facr  *
-                 ds    * 
+                 ds    *
                  (DOUBLE)(lineneum[line]->neum_onoff.a.iv[i]) *
                  (lineneum[line]->neum_val.a.dv[i]);
       }
@@ -364,10 +364,10 @@ for (inode=0; inode<iel; inode++)
 }
 /*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of s8eleload */
 
 
@@ -394,7 +394,7 @@ DOUBLE       val;
 DOUBLE       pressure;
 DOUBLE       height;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8loadGP");
 #endif
 /*----------------------------------------------------------------------*/
@@ -424,9 +424,9 @@ case neum_live: case neum_live_FSI:
 */
    for (i=0; i<3; i++)
    {
-      ar[i] = wgt   * 
-              ar[i] * 
-              (DOUBLE)(ele->g.gsurf->neum->neum_onoff.a.iv[i]) * 
+      ar[i] = wgt   *
+              ar[i] *
+              (DOUBLE)(ele->g.gsurf->neum->neum_onoff.a.iv[i]) *
               (ele->g.gsurf->neum->neum_val.a.dv[i]);
    }
 /*-------------------- add load vector component to element load vector */
@@ -470,9 +470,9 @@ case neum_increhydro_z:
    height = acttime * 10.0;
    if (zi <= height)
    pressure = -val * (height-zi);
-   else 
+   else
    pressure = 0.0;
-   
+
    ar[0] = ap[0] * pressure * wgt;
    ar[1] = ap[1] * pressure * wgt;
    ar[2] = ap[2] * pressure * wgt;
@@ -484,7 +484,7 @@ case neum_increhydro_z:
          eload[j][i] += funct[i] * ar[j];
       }
    }
-   
+
 break;
 /*----------------------------------------------------------------------*/
 
@@ -506,7 +506,7 @@ case neum_orthopressure: case neum_opres_FSI:
          eload[j][i] += funct[i] * ar[j];
       }
    }
-   
+
 break;
 /*----------------------------------------------------------------------*/
 
@@ -518,10 +518,10 @@ break;
 
 }/* end of switch(ele->g.gsurf->neum->neum_type)*/
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of s8loadGP */
 
 void s8fsiload(ELEMENT  *ele,
@@ -567,7 +567,7 @@ static ARRAY a3cur_a; static DOUBLE **a3cur;
 static ARRAY a3r_a;   static DOUBLE **a3r;
 static ARRAY a3c_a;   static DOUBLE **a3c;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8eleload");
 #endif
 /*----------------------------------------------------------------------*/
@@ -577,8 +577,8 @@ if (init==1)
 eload     = amdef("eload",&eload_a,MAXDOFPERNODE,MAXNOD_SHELL8,"DA");
 x         = amdef("x"    ,&x_a    ,3            ,MAXNOD_SHELL8,"DA");
 xc        = amdef("xc"   ,&xc_a   ,3            ,MAXNOD_SHELL8,"DA");
-funct     = amdef("funct",&funct_a,MAXNOD_SHELL8,1            ,"DV");       
-deriv     = amdef("deriv",&deriv_a,2            ,MAXNOD_SHELL8,"DA");       
+funct     = amdef("funct",&funct_a,MAXNOD_SHELL8,1            ,"DV");
+deriv     = amdef("deriv",&deriv_a,2            ,MAXNOD_SHELL8,"DA");
 xjm       = amdef("xjm_a",&xjm_a  ,3            ,3            ,"DA");
 a3ref     = amdef("a3ref",&a3ref_a,3            ,MAXNOD_SHELL8,"DA");
 a3cur     = amdef("a3cur",&a3cur_a,3            ,MAXNOD_SHELL8,"DA");
@@ -589,8 +589,8 @@ goto end;
 else if (init==-1)/*--------------------- delete phase for this routine */
 {
 amdel(&eload_a);
-amdel(&x_a);   
-amdel(&xc_a);   
+amdel(&x_a);
+amdel(&xc_a);
 amdel(&funct_a);
 amdel(&deriv_a);
 amdel(&xjm_a);
@@ -598,13 +598,13 @@ amdel(&a3ref_a);
 amdel(&a3cur_a);
 amdel(&a3r_a);
 amdel(&a3c_a);
-goto end;  
+goto end;
 }
 amzero(&eload_a);
 /*----------------------------- check for presence of FSI element loads */
 foundsurface=0;
 if (!(ele->g.gsurf->neum)) goto endsurface;
-if (ele->g.gsurf->neum->neum_type!=neum_FSI && 
+if (ele->g.gsurf->neum->neum_type!=neum_FSI &&
     ele->g.gsurf->neum->neum_type!=neum_live_FSI &&
     ele->g.gsurf->neum->neum_type!=neum_opres_FSI) goto endsurface;
 foundsurface=1;
@@ -670,7 +670,7 @@ for (lr=0; lr<nir; lr++)/*---------------------------- loop r-direction */
       for (i=0;i<6;i++)
       {
    	 for (j=0;j<iel;j++) sigmaint[i]+=funct[j]*nsigma[i][j];
-      } 	 
+      }
       /*--------------------------- element thickness at gaussian point */
       hhi=ZERO;
       for (i=0; i<iel; i++) hhi += funct[i] * hte[i];
@@ -696,18 +696,18 @@ for (lr=0; lr<nir; lr++)/*---------------------------- loop r-direction */
       */
       forcesurf[0] = -sigmaint[0]*ap[0]+sigmaint[3]*ap[1]+sigmaint[4]*ap[2];
       forcesurf[1] = -sigmaint[3]*ap[0]+sigmaint[1]*ap[1]+sigmaint[5]*ap[2];
-      forcesurf[2] = -sigmaint[4]*ap[0]+sigmaint[5]*ap[1]+sigmaint[2]*ap[2];   
-      
+      forcesurf[2] = -sigmaint[4]*ap[0]+sigmaint[5]*ap[1]+sigmaint[2]*ap[2];
+
       /*------------------- loop over all degrees of freedom at element */
       /*
          ar[i] = det(J) * facr*facs * valueofload
-               jacobian determinant cancels with length of normal vector 
+               jacobian determinant cancels with length of normal vector
       */
       for (i=0; i<3; i++)
       {
          ar[i] = wgt * forcesurf[i];
       }
-      
+
       /*-------------- add load vector component to element load vector */
       for (i=0; i<iel; i++)
       {
@@ -734,11 +734,11 @@ for (inode=0; inode<iel; inode++)
 }
 /*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 #endif
-return; 
+return;
 } /* end of s8eleload */
 
 #endif

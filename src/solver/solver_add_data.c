@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -14,7 +14,7 @@ Maintainer: Malte Neumann
 #include "../solver/solver.h"
 /*----------------------------------------------------------------------*
  | global dense matrices for element routines             m.gee 9/01    |
- | (defined in global_calelm.c, so they are extern here)                |                
+ | (defined in global_calelm.c, so they are extern here)                |
  *----------------------------------------------------------------------*/
 extern struct _ARRAY estif_global;
 extern struct _ARRAY emass_global;
@@ -40,28 +40,28 @@ enum  _SPARSE_TYP    sysa1_typ;
 union _SPARSE_ARRAY *sysa1;
 enum  _SPARSE_TYP    sysa2_typ;
 union _SPARSE_ARRAY *sysa2;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("assemble");
 #endif
 /*----------------------------------------------------------------------*/
 if (assemble_action==assemble_do_nothing) goto end;
 /*----------------------- check for presence and typ of system matrices */
-if (sysarray1>=0) 
+if (sysarray1>=0)
 {
    sysa1       = &(actsolv->sysarray[sysarray1]);
-   sysa1_typ   =   actsolv->sysarray_typ[sysarray1]; 
+   sysa1_typ   =   actsolv->sysarray_typ[sysarray1];
 }
-else              
+else
 {
    sysa1     = NULL;
-   sysa1_typ = sparse_none; 
+   sysa1_typ = sparse_none;
 }
-if (sysarray2>=0) 
+if (sysarray2>=0)
 {
    sysa2     = &(actsolv->sysarray[sysarray2]);
    sysa2_typ =   actsolv->sysarray_typ[sysarray2];
 }
-else              
+else
 {
    sysa2     = NULL;
    sysa2_typ = sparse_none;
@@ -89,7 +89,7 @@ if (assemble_action==assemble_two_matrix)
 
 #if defined(FAST_ASS) && !defined(FAST_ASS2)
       add_msr_fast(actpart,actsolv,actintra,actele,sysa1->msr,sysa2->msr);
-#endif 
+#endif
 
 #if !defined(FAST_ASS) && !defined(FAST_ASS2)
       add_msr(actpart,actsolv,actintra,actele,sysa1->msr,sysa2->msr);
@@ -182,7 +182,7 @@ if (assemble_action==assemble_one_matrix)
 
 #if defined(FAST_ASS) && !defined(FAST_ASS2)
       add_msr_fast(actpart,actsolv,actintra,actele,sysa1->msr,NULL);
-#endif 
+#endif
 
 #if !defined(FAST_ASS) && !defined(FAST_ASS2)
       add_msr(actpart,actsolv,actintra,actele,sysa1->msr,NULL);
@@ -364,7 +364,7 @@ if (assemble_action==assemble_close_2matrix)
 
    case oll:
    break;
-   
+
    case sparse_none:
       dserror("Unspecified typ of system matrix");
    break;
@@ -376,7 +376,7 @@ if (assemble_action==assemble_close_2matrix)
 }
 /*-------------- option==1 is exchange of coupled dofs among processors */
 /*                    (which, of course, only occures in parallel case) */
-#ifdef PARALLEL 
+#ifdef PARALLEL
 /*----------------------------------------exchange of 2 system matrices */
 if (assemble_action==assemble_two_exchange)
 {
@@ -522,7 +522,7 @@ if (assemble_action==assemble_one_exchange)
 /*------------------------------------- close the dynamic system matrix */
 /*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -553,7 +553,7 @@ void init_assembly(
                      )
 {
 
-#ifdef PARALLEL 
+#ifdef PARALLEL
 INT         i,j,k,counter;
 INT         numeq;
 INT         numsend;
@@ -574,11 +574,11 @@ ARRAY     **couple_i_recv_ptr;
 ARRAY      *dummyarray;
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("init_assembly");
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef PARALLEL 
+#ifdef PARALLEL
 /*----------------------------------------------------------------------*/
 imyrank = actintra->intra_rank;
 inprocs = actintra->intra_nprocs;
@@ -694,25 +694,25 @@ coupledofs = &(actpart->pdis[actndis].coupledofs);
 numsend = 0;
 numrecv = 0;
 numeq   = actfield->dis[actndis].numeq;
-/* 
-   An inter-proc coupled equation produces communications calculating the 
+/*
+   An inter-proc coupled equation produces communications calculating the
    sparsity mask of the matrix
    An inter-proc coupled equation produces communications adding element
    matrices to the system matrix
    An inter-proc coupled equation ruins the bandwith locally
    ->
-   Now one processor has to be owner of the coupled equation. 
+   Now one processor has to be owner of the coupled equation.
    Try to distribute the coupled equations equally over the processors
 
    The matrix has the following style (after allreduce on all procs the same):
-   
+
                ----------------------
                | 12 | 2 | 0 | 1 | 0 |
                | 40 | 2 | 0 | 0 | 0 |
                | 41 | 1 | 2 | 1 | 1 |
                | 76 | 0 | 1 | 2 | 0 |
                ----------------------
-               
+
                column 0                : number of the coupled equation
                column 1 - inprocs+1 : proc has coupled equation or not
                                          2 indicates owner of equation
@@ -740,8 +740,8 @@ for (i=0; i<coupledofs->fdim; i++)
    durchzufuehren. Damit waere aber die Art dieses send + recv von dem
    verwendeten Loeser abhaengig, und man muesste das fuer jeden Loeser
    gesondert schreiben. Weil es fuer alle Loeser funktioniert wird hier als
-   send und recv buffer eine komplette Zeile der Systemmatrix pro coupled dof 
-   verwendet 
+   send und recv buffer eine komplette Zeile der Systemmatrix pro coupled dof
+   verwendet
 */
 if (numsend) /*-------- I have to send couple dof entries to other proc */
 {
@@ -766,7 +766,7 @@ if (numsend) /*-------- I have to send couple dof entries to other proc */
           counter++;
        }
    }
-} 
+}
 else /*----------------------------------------- I have nothing to send */
 {
    *couple_d_send_ptr = NULL;
@@ -794,7 +794,7 @@ else /*----------------------- I do not expect entries from other procs */
 end:
 #endif /* end of PARALLEL */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -858,7 +858,7 @@ DBCSR                *bdcsr_array;
 #endif
 
 OLL                  *oll_array;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("assemble_vec");
 #endif
 /*----------------------------------------------------------------------*/
@@ -980,13 +980,13 @@ case oll:
        rhs->vec.a.dv[i] += drhs[dof]*factor;
     }
 break;
- 
+
 default:
    dserror("Unknown typ of system matrix");
 break;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1044,7 +1044,7 @@ SPOOLMAT             *spo;
 #endif
 
 OLL                  *oll_array;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("sum_vec");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1163,12 +1163,12 @@ default:
 break;
 }
 /*----------------------------------------------------------------------*/
-#ifdef PARALLEL 
+#ifdef PARALLEL
 MPI_Allreduce(sum,&recv,1,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
 *sum = recv;
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1186,16 +1186,16 @@ void assemble_intforce(ELEMENT *actele,ARRAY *elevec_a,CONTAINER *container,
 INT                   i,j;
 INT                   dof;
 INT                   numdf;
-#ifdef PARALLEL 
+#ifdef PARALLEL
 INT                   imyrank;
 #endif
 INT                   irow;
 DOUBLE               *elevec;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("assemble_intforce");
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef PARALLEL 
+#ifdef PARALLEL
 imyrank = actintra->intra_rank;
 #endif
 /*----------------------------------------------------------------------*/
@@ -1205,7 +1205,7 @@ irow=-1;
 for (i=0; i<actele->numnp; i++)
 {
    numdf = actele->node[i]->numdf;
-#ifdef PARALLEL 
+#ifdef PARALLEL
    if(actele->node[i]->proc!= imyrank)
    {
      irow+=numdf;
@@ -1222,7 +1222,7 @@ for (i=0; i<actele->numnp; i++)
    }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1245,7 +1245,7 @@ DOUBLE                dforces[MAXDOFPERELE];
 INT                   dirich_onoff[MAXDOFPERELE];
 INT                   lm[MAXDOFPERELE];
 GNODE                *actgnode;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("assemble_dirich");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1292,7 +1292,7 @@ for (i=0; i<nd; i++)
    container->dirich[lm[i]] += dforces[i];
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

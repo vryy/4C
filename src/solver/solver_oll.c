@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains functions to handle oll matrices 
+\brief contains functions to handle oll matrices
 
 <pre>
 Maintainer: Malte Neumann
@@ -13,8 +13,8 @@ Maintainer: Malte Neumann
 
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
-/*! 
-\addtogroup OLL 
+/*!
+\addtogroup OLL
 *//*! @{ (documentation module open)*/
 
 
@@ -33,8 +33,8 @@ This function counts the number of equations on this processor
 \param  option         INT    (i)   option for init or not
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling: ---; called by: --- 
+\return void
+\sa calling: ---; called by: ---
 
 *----------------------------------------------------------------------*/
 void solver_oll(
@@ -46,7 +46,7 @@ void solver_oll(
     INT                     option)
 {
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("solver_oll");
 #endif
   /*----------------------------------------------------------------------*/
@@ -60,7 +60,7 @@ void solver_oll(
       switch(actsolv->solvertyp)
       {
         case colsol_solver:/*--------------------------------- solver is colsol */
-#ifdef PARALLEL 
+#ifdef PARALLEL
           /* ------------------------------------ NO COLSOL in parallel for OLL */
 #ifdef SPOOLES_PACKAGE
           /* -------------------------------------------- using SPOOLES instead */
@@ -130,15 +130,15 @@ void solver_oll(
 #endif
 #ifdef PARALLEL
           dserror("No UMFPACK for parallel OLL!\n");
-#endif	  
+#endif
           oll->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(1,sizeof(SPARSE_TYP));
           oll->sysarray     = (SPARSE_ARRAY*)CCACALLOC(1,sizeof(SPARSE_ARRAY));
           oll->sysarray_typ[0] = ccf;
 	  oll->sysarray[0].ccf = (CCF*)CCACALLOC(1,sizeof(CCF));
 	  oll->sysarray[0].ccf->numeq_total = oll->numeq_total;
 	  oll->sysarray[0].ccf->numeq = oll->numeq;
-	  oll->sysarray[0].ccf->nnz = oll->nnz;          
-	  oll->sysarray[0].ccf->nnz_total = oll->nnz;          
+	  oll->sysarray[0].ccf->nnz = oll->nnz;
+	  oll->sysarray[0].ccf->nnz_total = oll->nnz;
           amdef("Ap",&(oll->sysarray[0].ccf->Ap),oll->numeq_total+1,1,"IV");
           amdef("Ai",&(oll->sysarray[0].ccf->Ai),oll->nnz     ,1,"IV");
           amdef("Ax",&(oll->sysarray[0].ccf->Ax),oll->nnz     ,1,"DV");
@@ -149,10 +149,10 @@ void solver_oll(
 
         default:
           dserror("Unknown solver typ for oll");
-          break;   
+          break;
       }
 
-      /* set flag, that this matrix has been copied */   
+      /* set flag, that this matrix has been copied */
       oll->is_copied = 0;
       break;
       /*----------------------------------------------------------------------*/
@@ -168,7 +168,7 @@ void solver_oll(
         switch(actsolv->solvertyp)
         {
           case colsol_solver:/*--------------------------------- solver is colsol */
-#ifdef PARALLEL 
+#ifdef PARALLEL
             /* ------------------------------------ NO COLSOL in parallel for OLL */
 #ifdef SPOOLES_PACKAGE
             /* -------------------------------------------- using SPOOLES instead */
@@ -196,12 +196,12 @@ void solver_oll(
 #ifdef UMFPACK
           case umfpack: /*------------------------------------- solver is umfpack */
 	    oll_to_ccf(oll,&(oll->sysarray[0]));
-	  break; 
+	  break;
 #endif
 
           default:
             dserror("Unknown solver typ for oll");
-            break;   
+            break;
         }
         oll->is_copied = 1;
       }
@@ -240,7 +240,7 @@ void solver_oll(
 
         default:
           dserror("Unknown solver typ for oll");
-          break;   
+          break;
       }
 
       break;
@@ -249,7 +249,7 @@ void solver_oll(
       break;
   }
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return;

@@ -16,28 +16,28 @@ Maintainer: Michael Gee
 #include "s8contact.h"
 #include "shell8.h"
 
-/*! 
-\addtogroup CONTACTS8 
+/*!
+\addtogroup CONTACTS8
 *//*! @{ (documentation module open)*/
 
 
 /*!----------------------------------------------------------------------
 \brief the contact main structure
 
-<pre>                                                         m.gee 2/03    
+<pre>                                                         m.gee 2/03
 defined in s8_contact_init.c
 </pre>
 
 *----------------------------------------------------------------------*/
 extern struct _SHELLCONTACT shellcontact;
 /*!---------------------------------------------------------------------
-\brief make update of the search radius                                              
+\brief make update of the search radius
 
-<pre>                                                        m.gee 2/03 
+<pre>                                                        m.gee 2/03
 </pre>
 \param actintra    INTRA*    (i)   the intracommunicator
 \param dt          DOUBLE    (i)   the time step size
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void s8_contact_searchupdate(INTRA *actintra, DOUBLE dt)
@@ -57,7 +57,7 @@ INT              nx,ny,nz;
 CONTACTSLICE    *actslice;
 CONTACTSTRIPE   *actstripe;
 CONTACTBUCKET   *actbuck;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_contact_searchupdate");
 #endif
 /*----------------------------------------------------------------------*/
@@ -66,9 +66,9 @@ nproc       = actintra->intra_nprocs;
 numnp       = shellcontact.numnp;
 cnode       = shellcontact.cnode;
 /*------------------------------------------ update current coordinates */
-for (i=0; i<numnp; i++) 
+for (i=0; i<numnp; i++)
 {
-   for (j=0; j<6; j++)   
+   for (j=0; j<6; j++)
       cnode[i].xc[j] = cnode[i].xr[j] + cnode[i].node->sol.a.da[0][j];
 }
 /*---------------------------------- find min and max of each dimension */
@@ -191,23 +191,23 @@ for (i=0; i<numnp; i++)
    }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of s8_contact_searchupdate */
 
 
 
 
 /*!---------------------------------------------------------------------
-\brief find nearest node to a given node                                              
+\brief find nearest node to a given node
 
-<pre>                                                        m.gee 2/03 
+<pre>                                                        m.gee 2/03
 </pre>
 \param actcnode    SHELLNODE*    (i)   the active node
 \param nearcnode   SHELLNODE**   (o)   the nearest node
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void s8_contact_nearestnode(SHELLNODE  *actcnode,
@@ -234,7 +234,7 @@ NODE          *node;
 CONTACTBUCKET *cbuck;
 INT            nbuck;
 CONTACTBUCKET *buckstack[27];
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_contact_nearestnode");
 #endif
 /*----------------------------------------------------------------------*/
@@ -445,7 +445,7 @@ if (ii<idim-1)
       }
    }
 }
-if (nbuck>27) 
+if (nbuck>27)
    dserror("Patch of search buckets wrong");
 /*-------------------------------- loop the nodes in the search buckets */
 for (i=0; i<nbuck; i++)
@@ -523,21 +523,21 @@ for (i=0; i<nbuck; i++)
 *distop = mindistancetop;
 *disbot  = mindistancebot;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of s8_contact_nearestnode */
 
 
 /*!---------------------------------------------------------------------
-\brief find nearest node to a given node                                              
+\brief find nearest node to a given node
 
-<pre>                                                        m.gee 2/03 
+<pre>                                                        m.gee 2/03
 </pre>
 \param actcnode    SHELLNODE*    (i)   the active node
 \param nearcnode   SHELLNODE**   (o)   the nearest node
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void s8_contact_nearestnode_bruteforce(SHELLNODE  *actcnode,
@@ -561,7 +561,7 @@ DOUBLE       distance;
 SHELLNODE   *searchcnode;
 NODE        *stack[1000];
 NODE        *node;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_contact_nearestnode_bruteforce");
 #endif
 /*----------------------------------------------------------------------*/
@@ -673,10 +673,10 @@ for (i=0; i<numnp; i++)
 *distop  = mindistancetop;
 *disbot  = mindistancebot;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of s8_contact_nearestnode_bruteforce */
 
 

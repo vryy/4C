@@ -38,19 +38,19 @@ extern struct _FILES  allfiles;
  | ranks and communicators                                              |
  | This structure struct _PAR par; is defined in main_ccarat.c
  *----------------------------------------------------------------------*/
-extern struct _PAR   par;                     
-/*!---------------------------------------------------------------------                                         
+extern struct _PAR   par;
+/*!---------------------------------------------------------------------
 \brief call of Visualisation tools
 
-<pre>                                                         genk 07/02       
+<pre>                                                         genk 07/02
 
 This routine checks the type of problem and based on the program  options
 a visualisation tool is called.
 At the moment implemented:
 VISUAL2
 
-</pre>  
-\return void                                                                       
+</pre>
+\return void
 
 ------------------------------------------------------------------------*/
 void ntavisual()
@@ -63,7 +63,7 @@ INT    dummy;
 #endif
 FIELD *actfield; /* actual field                                        */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ntavisual");
 #endif
 
@@ -97,7 +97,7 @@ case 2: /* 2D - Problem: Visualisation with VISUAL2*/
 /*----------------------------------------------------------------------*/
    printf("\n");
    printf("     Starting Visual2 filter ... \n");
-   printf("     ----------------------------\n\n");      
+   printf("     ----------------------------\n\n");
    printf("     [ ] = DEFAULT = RETURN \n\n");
 /*---------------------------------------------- check number of fields */
    switch (genprob.numfld)
@@ -107,7 +107,7 @@ case 2: /* 2D - Problem: Visualisation with VISUAL2*/
       if (actfield->fieldtyp==fluid)
       {
          printf("     Visualisation of a single field problem: FLUID\n");
-	 vis2caf(0,-1,-1); 
+	 vis2caf(0,-1,-1);
       }
       else if (actfield->fieldtyp==structure)
       {
@@ -123,14 +123,14 @@ case 2: /* 2D - Problem: Visualisation with VISUAL2*/
       printf("     Visualisation of a multi field problem:\n");
       printf("     Number of fields: %d\n",genprob.numfld);
       printf("\n");
-            
+
       input2:
       if (genprob.numsf>=0)
-      printf("     Actual number of STRUCTURE field:   %d\n",genprob.numsf); 
+      printf("     Actual number of STRUCTURE field:   %d\n",genprob.numsf);
       if (genprob.numff>=0)
       printf("     Actual number of FLUID field:      [%d]\n",genprob.numff);
       if (genprob.numaf>=0)
-      printf("     Actual number of ALE field:         %d\n",genprob.numaf);            
+      printf("     Actual number of ALE field:         %d\n",genprob.numaf);
       printf("\n");
       printf("     Which field do you want to visualise?\n");
       screen=getchar();
@@ -140,30 +140,30 @@ case 2: /* 2D - Problem: Visualisation with VISUAL2*/
       case 48: actnum=0; dummy=getchar(); break;
       case 49: actnum=1; dummy=getchar(); break;
       case 50: actnum=2; dummy=getchar(); break;
-      default: 
+      default:
          printf("\nTry again!\n");
          goto input2;
-      }      
-      if(actnum==genprob.numff) 
+      }
+      if(actnum==genprob.numff)
          vis2caf(genprob.numff,genprob.numaf,genprob.numsf);
       else
          dserror("Visualisation of ale/struct problem not implemented yet!\n");
-   } /* end switch(numfld) */   
+   } /* end switch(numfld) */
 break;
 /*----------------------------------------------------------------------*/
 #else
    dserror("VISUAL2 package is not compiled in!!!\n");
 #endif
-/*----------------------------------------------------------------------*/   
+/*----------------------------------------------------------------------*/
 case 3: /* 3D - Problem : Visualisation with VISUAL3 */
 /*----------------------------------------------------------------------*/
 #ifdef VISUAL3_PACKAGE
 /*----------------------------------------------------------------------*/
    printf("\n");
    printf("     Starting Visual3 filter ... \n");
-   printf("     ----------------------------\n\n");   
+   printf("     ----------------------------\n\n");
    printf("     [ ] = DEFAULT = RETURN \n\n");
-      
+
 /*---------------------------------------------- check number of fields */
    switch (genprob.numfld)
    {
@@ -172,7 +172,7 @@ case 3: /* 3D - Problem : Visualisation with VISUAL3 */
       if (actfield->fieldtyp==fluid)
       {
          printf("     Visualisation of a single field problem: FLUID\n");
-	 vis3caf(0,-1,-1); 
+	 vis3caf(0,-1,-1);
       }
       else if (actfield->fieldtyp==structure)
       {
@@ -188,14 +188,14 @@ case 3: /* 3D - Problem : Visualisation with VISUAL3 */
       printf("     Visualisation of a multi field problem:\n");
       printf("     Number of fields: %d\n",genprob.numfld);
       printf("\n");
-            
+
       input1:
       if (genprob.numsf>=0)
-      printf("     Actual number of STRUCTURE field:   %d\n",genprob.numsf); 
+      printf("     Actual number of STRUCTURE field:   %d\n",genprob.numsf);
       if (genprob.numff>=0)
       printf("     Actual number of FLUID field:      [%d]\n",genprob.numff);
       if (genprob.numaf>=0)
-      printf("     Actual number of ALE field:         %d\n",genprob.numaf);            
+      printf("     Actual number of ALE field:         %d\n",genprob.numaf);
       printf("\n");
       printf("     Which field do you want to visualise?\n");
       screen=getchar();
@@ -205,15 +205,15 @@ case 3: /* 3D - Problem : Visualisation with VISUAL3 */
       case 48: actnum=0; dummy=getchar(); break;
       case 49: actnum=1; dummy=getchar(); break;
       case 50: actnum=2; dummy=getchar(); break;
-      default: 
+      default:
          printf("\nTry again!\n");
          goto input1;
       }
-      if(actnum==genprob.numff) 
+      if(actnum==genprob.numff)
          vis3caf(genprob.numff,genprob.numaf,genprob.numsf);
       else
          dserror("Visualisation of ale/struct problem not implemented yet!\n");
-   } /* end switch(numfld) */   
+   } /* end switch(numfld) */
 break;
 #else
 dserror("VISUAL3 package is not compiled in!!!\n");
@@ -222,7 +222,7 @@ default:
    dserror("visualisation mode unknown!\n");
 } /* switch(genprob.visual) */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 

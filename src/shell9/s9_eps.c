@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 
- - s9_eps: which calculates the green lagrange strains from the kovariant 
+\brief contains the routine
+ - s9_eps: which calculates the green lagrange strains from the kovariant
            shell9 metrics
 
 
@@ -17,15 +17,15 @@ Maintainer: Stefan Hartmann
 #include "../headers/standardtypes.h"
 #include "shell9.h"
 
-/*! 
-\addtogroup SHELL9 
+/*!
+\addtogroup SHELL9
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief calc green lagrange strains from shell metrics                                      
+\brief calc green lagrange strains from shell metrics
 
 <pre>                     m.gee 6/01              modified by    sh 10/02
-This routine calculates the green lagrange strains from the kovariant 
+This routine calculates the green lagrange strains from the kovariant
 shell9 metrics in current and reference configuration
 </pre>
 \param  DOUBLE *strain   (o) green lagrange strains
@@ -33,13 +33,13 @@ shell9 metrics in current and reference configuration
 \param  DOUBLE **gmkovr  (i) kovariant metric in referent configuration
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: s9_call_mat()   [s9_call_mat.c]
 
 *----------------------------------------------------------------------*/
 void s9_eps(DOUBLE strain[6],DOUBLE **gmkovc, DOUBLE **gmkovr)
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9_eps");
 #endif
 /*----------------------------------------------------------------------*/
@@ -50,7 +50,7 @@ strain[3] = 0.5*(gmkovc[0][2] - gmkovr[0][2]);
 strain[4] = 0.5*(gmkovc[1][2] - gmkovr[1][2]);
 strain[5] = 0.5*(gmkovc[2][2] - gmkovr[2][2]);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

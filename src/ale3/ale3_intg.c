@@ -15,14 +15,14 @@ Maintainer: Malte Neumann
 #include "../headers/standardtypes.h"
 #include "ale3.h"
 
-/*! 
-\addtogroup Ale 
+/*!
+\addtogroup Ale
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief coordinates and weight factors for numerical integration 
+\brief coordinates and weight factors for numerical integration
 
-<pre>                                                              mn 06/02 
+<pre>                                                              mn 06/02
 This routine  gives the coordinates and weight factors for numerical
 integration of a 3D ale element.
 
@@ -31,7 +31,7 @@ integration of a 3D ale element.
 \param *data   ALE3_DATA  (o)   structure containing the coordinates and weighting factors
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: ale3_static_ke
 
 *----------------------------------------------------------------------*/
@@ -44,7 +44,7 @@ void ale3_intg(
   DOUBLE  q14, q16, q124;
   DOUBLE  palpha,pbeta;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("ale3_intg");
 #endif
 
@@ -52,11 +52,11 @@ void ale3_intg(
   {
     case hex8:
     case hex20:
-      /*----------------------------------------------------------------------*  
+      /*----------------------------------------------------------------------*
         |     INTEGRATION PARAMETERS FOR    H E X A H E D R A L     ELEMENTS   |
         |     GAUSS SAMPLING POINTS  AT     R/S/T-COORDINATES   RESPECTIVELY   |
         |                            AND    CORRESPONDING WEIGHTING  FACTORS   |
-       *----------------------------------------------------------------------*/       
+       *----------------------------------------------------------------------*/
       switch(ele->e.ale3->nGP[0])/* direction r */
       {
         case 2:
@@ -117,30 +117,30 @@ void ale3_intg(
       q14 = 1.0/4.0;
       q16 = 1.0/6.0;
       q124= 1.0/24.0;
-      palpha = (5.0+3.0*sqrt(5.0))/20.0;  
+      palpha = (5.0+3.0*sqrt(5.0))/20.0;
       pbeta  = (5.0-sqrt(5.0))/20.0;
 
-      /*----------------------------------------------------------------------* 
+      /*----------------------------------------------------------------------*
         |     INTEGRATION PARAMETERS FOR    T E T R A H E D R A L   ELEMENTS   |
         |     GAUSS SAMPLING POINTS  AT     R/S/T-COORDINATES   RESPECTIVELY   |
         |                            AND    CORRESPONDING WEIGHTING  FACTORS   |
        *----------------------------------------------------------------------*/
 
-      /*----------------------------------------------------------------------* 
+      /*----------------------------------------------------------------------*
         |    GAUSS INTEGRATION         1 SAMPLING POINT, DEG.OF PRECISION 1    |
         |                              CASE 0                                  |
-       *----------------------------------------------------------------------*/       
+       *----------------------------------------------------------------------*/
       switch(ele->e.ale3->nGP[0])/* direction r */
       {
         case 1:
           data->xgpr[0]    =  q14 ;
           data->xgps[0]    =  q14 ;
           data->xgpt[0]    =  q14 ;
-          data->wgtr[0]    =  q16 ;       
+          data->wgtr[0]    =  q16 ;
           break;
-          /*----------------------------------------------------------------*  
+          /*----------------------------------------------------------------*
             | GAUSS INTEGRATION    4 SAMPLING POINTS, DEG.OF PRECISION 2    |
-            |                      CASE 1                                   | 
+            |                      CASE 1                                   |
            *----------------------------------------------------------------*/
         case 4:
           data->xgpr[0]    =    pbeta ;
@@ -169,9 +169,9 @@ void ale3_intg(
     default:
       dserror("unknown typ of discretisation");
       break;
-  } /* end switch */ 
+  } /* end switch */
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 

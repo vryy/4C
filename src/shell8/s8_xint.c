@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Michael Gee
@@ -19,16 +19,16 @@ Maintainer: Michael Gee
 void s8_xint(DOUBLE *result, DOUBLE *values, DOUBLE *funct, INT iel)
 {
 INT              i;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_xint");
 #endif
 /*----------------------------------------------------------------------*/
 *result=0.0;
 for (i=0; i<iel; i++) *result += (funct[i]*values[i]);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of s8_xint */
 #endif

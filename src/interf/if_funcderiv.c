@@ -7,16 +7,16 @@
 #ifdef D_INTERF
 #include "../headers/standardtypes.h"
 #include "interf.h"
-#include "interf_prototypes.h" 
+#include "interf_prototypes.h"
 
-/*! 
+/*!
 \addtogroup INTERF
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
 \brief  calculates ansatzfunctions,
         its derivatives with respect to xi and the jacobi-determinant
-<pre>                                                              mn 05/03 
+<pre>                                                              mn 05/03
 This routine calculates ansatzfunctions,
              its derivatives with respect to xi and the jacobi-determinant
 
@@ -24,8 +24,8 @@ This routine calculates ansatzfunctions,
 \param *ele  ELEMENT  (o)   the element
 
 \warning buffer[50] is not needed locally
-\return void                                               
-\sa caling:    ---; 
+\return void
+\sa caling:    ---;
     called by: inp_struct_field()
 
 *----------------------------------------------------------------------*/
@@ -49,7 +49,7 @@ DOUBLE deltax,deltay;
 DOUBLE deriv[3];
 DOUBLE beta,alpha;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("if_funcderiv");
 #endif
 /*----------------------------------------------------------------------*/
@@ -71,7 +71,7 @@ case quad4:
    else if (deltax <0)                   alpha = beta + PI;
    else if (deltay < 0 && deltax ==0)    alpha =  (3*PI)/TWO;
    else if (deltay < 0 && deltax >0)     alpha =  beta + TWO*PI;
-   
+
 break;
 /*-----------------------------------------------------------------------*/
 case quad8:
@@ -98,8 +98,8 @@ case quad8:
    else if (dx_dxi <0)                  alpha = beta + PI;
    else if (dy_dx < 0 && dx_dxi ==0)    alpha =  (3*PI)/TWO;
    else if (dy_dx < 0 && dx_dxi >0)     alpha =  beta + TWO*PI;
-   
-  
+
+
 break;
 }
 
@@ -107,7 +107,7 @@ break;
 *si = sin(alpha);
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -136,7 +136,7 @@ DOUBLE deltax,deltay,deltay_help;
 DOUBLE beta,alpha;
 DOUBLE derive[4];
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("if_func_bope");
 #endif
 /*----------------------------------------------------------------------*/
@@ -158,7 +158,7 @@ if(flag==1)
  derive[1] =  (ONE/TWO) *(ONE/TWO);
  derive[2] =  (ONE/TWO) *(ONE/TWO);
  derive[3] = -(ONE/TWO) *(ONE/TWO);
- 
+
 }
 else if(flag==2)
 {
@@ -217,7 +217,7 @@ else if(deltay ==0)
 *sie = sin(alpha);
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

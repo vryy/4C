@@ -16,8 +16,8 @@ Maintainer: Andrea Hund
 #include "wall1.h"
 #include "wall1_prototypes.h"
 
-/*! 
-\addtogroup WALL1 
+/*!
+\addtogroup WALL1
 *//*! @{ (documentation module open)*/
 
 /*----------------------------------------------------------------------------*
@@ -45,7 +45,7 @@ INT       i,j,k;
 
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_kinetic_energy");
 #endif
 /*----------------------------------------------------------------------*/
@@ -68,7 +68,7 @@ amzero(&xcure_a);
 amzero(&auxilliary_a);
 /*---------------------------Current position of the nodes of an element*/
 for(k=0; k<iel; k++) {
- xcure[0][k]= ele->node[k]->x[0] + ele->node[k]->sol.a.da[0][0]; 
+ xcure[0][k]= ele->node[k]->x[0] + ele->node[k]->sol.a.da[0][0];
  xcure[1][k]= ele->node[k]->x[1] + ele->node[k]->sol.a.da[0][1];
  }
 
@@ -92,38 +92,38 @@ for(i=0; i<nd; i++){
   }
 
 /*-------------------------Velocity components of the nodes of an element*/
-i=0;  
+i=0;
 for(k=0; k<iel; k++){
   for(j=0; j<2; j++){
   velocity_components[i] = ele->node[k]->sol.a.da[1][j];
   i++;
   }
-}  
+}
 
 /*-----------------------------Calculation of linear momentum  : L = mv */
 for(i=0; i<nd; i++)
   for(j=0;j<nd; j++)
-  linear_momentum[i] += mass[i][j] * velocity_components[j]; 
+  linear_momentum[i] += mass[i][j] * velocity_components[j];
 
- /*-------------------Calculation of angular momentum: J = Auxilliary*L */ 
+ /*-------------------Calculation of angular momentum: J = Auxilliary*L */
 for(i=0; i<iel; i++)
-  for(j=0; j<nd; j++) 
+  for(j=0; j<nd; j++)
   angular_momentum[i] += auxilliary[i][j]*linear_momentum[j];
 
 
 /*-------------------------------------Linear momentum x-component : Lx */
 for(i=0;i<nd; i=i+2)
- ele->e.w1->linmom[0] += linear_momentum[i]; 
- 
+ ele->e.w1->linmom[0] += linear_momentum[i];
+
 /*-------------------------------------Linear momentum y-component : Ly */
 for(i=1;i<nd; i=i+2)
- ele->e.w1->linmom[1] += linear_momentum[i]; 
+ ele->e.w1->linmom[1] += linear_momentum[i];
 
 /*-----------------------------------------------------Angular momentum */
 for(i=0; i<iel; i++)
 ang_momentum += angular_momentum[i];
 
-ele->e.w1->angular_momentum = ang_momentum; 
+ele->e.w1->angular_momentum = ang_momentum;
 
 
 /*-----------------------------------------Calculation of kinetic energy*/
@@ -141,10 +141,10 @@ amdel(&angular_momentum_a);
 amdel(&xcure_a);
 amdel(&auxilliary_a);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 }/* end of w1_kinetic_energy */
 #endif
 /*! @} (documentation module close)*/

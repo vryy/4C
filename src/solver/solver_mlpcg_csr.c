@@ -16,13 +16,13 @@ Maintainer: Michael Gee
 #include "../solver/solver.h"
 INT cmp_int(const void *a, const void *b );
 DOUBLE cmp_double(const void *a, const void *b );
-/*! 
-\addtogroup MLPCG 
+/*!
+\addtogroup MLPCG
 *//*! @{ (documentation module open)*/
 /*!----------------------------------------------------------------------
 \brief the multilevel preconditioner main structure
 
-<pre>                                                         m.gee 09/02    
+<pre>                                                         m.gee 09/02
 defined in solver_mlpcg.c
 </pre>
 
@@ -31,18 +31,18 @@ extern struct _MLPRECOND mlprecond;
 
 
 /*!---------------------------------------------------------------------
-\brief extract a local column from a   DBCSR  matrix , init call                                        
+\brief extract a local column from a   DBCSR  matrix , init call
 
-<pre>                                                        m.gee 11/02 
+<pre>                                                        m.gee 11/02
 
 </pre>
 \param matrix     DBCSR*       (i/o) the matrix
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_extractcollocal_init(DBCSR     *matrix,
                                 INT       *sizes,
-                                INT     ***icol, 
+                                INT     ***icol,
                                 DOUBLE  ***dcol)
 {
 INT           i,j,k,counter;
@@ -53,7 +53,7 @@ INT            actcol,colstart,colend;
 INT           *tmp;
 DOUBLE       **test;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_extractcollocal_init");
 #endif
 /*----------------------------------------------------------------------*/
@@ -110,7 +110,7 @@ for (i=0; i<numeq; i++)
 }
 CCAFREE(tmp);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -118,13 +118,13 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief extract a local column from a   DBCSR  matrix , uninit call                                        
+\brief extract a local column from a   DBCSR  matrix , uninit call
 
-<pre>                                                        m.gee 11/02 
+<pre>                                                        m.gee 11/02
 
 </pre>
 \param matrix     DBCSR*       (i/o) the matrix
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_extractcollocal_uninit(DBCSR    *matrix,
@@ -135,7 +135,7 @@ void mlpcg_extractcollocal_uninit(DBCSR    *matrix,
 INT           i,numeq_total;
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_extractcollocal_uninit");
 #endif
 /*----------------------------------------------------------------------*/
@@ -156,7 +156,7 @@ for (i=0; i<numeq_total; i++)
       }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -166,9 +166,9 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief extract a local column from a   DBCSR  matrix                                         
+\brief extract a local column from a   DBCSR  matrix
 
-<pre>                                                        m.gee 11/02 
+<pre>                                                        m.gee 11/02
 
 </pre>
 \param matrix     DBCSR*       (i/o) the Prolongator
@@ -176,13 +176,13 @@ return;
 \param block      DOUBLE[][500](i)   working matrix
 \param rindex     INT*         (i)   row indize of block
 \param nrow       INT*         (i)   row dimension of block
-\param sizes      INT*         (i)   sizes of all columns 
+\param sizes      INT*         (i)   sizes of all columns
 \param icol       INT***       (i)   pointers to row indizes of all columns in matrix
 \param dcol       DOUBLE***    (i)   pointers to values of all columns in matrix
-\return void                                               
+\return void
 \sa mlpcg_extractcollocal_init mlpcg_extractcollocal_uninit
 ------------------------------------------------------------------------*/
-void mlpcg_extractcollocal_fast(DBCSR *matrix, INT actcol, 
+void mlpcg_extractcollocal_fast(DBCSR *matrix, INT actcol,
                                 DOUBLE **col,INT **rcol, INT *size, INT *nrow,
                                 INT *sizes, INT ***icol, DOUBLE ***dcol)
 {
@@ -190,7 +190,7 @@ INT           i,counter;
 INT          **ic;
 DOUBLE       **dc;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_extractcollocal_fast");
 #endif
 /*----------------------------------------------------------------------*/
@@ -219,7 +219,7 @@ for (i=0; i<counter; i++)
 }
 /*----------------------------------------------------------------------*/
 exit:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -229,9 +229,9 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief extract a local column from a   DBCSR  matrix                                         
+\brief extract a local column from a   DBCSR  matrix
 
-<pre>                                                        m.gee 10/02 
+<pre>                                                        m.gee 10/02
 
 </pre>
 \param P          DBCSR*       (i/o) the Prolongator
@@ -239,10 +239,10 @@ return;
 \param block      DOUBLE[][500](i)   working matrix
 \param rindex     INT*         (i)   row indize of block
 \param nrow       INT*         (i)   row dimension of block
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
-void mlpcg_extractcollocal(DBCSR *P, INT actcol, DOUBLE *col, 
+void mlpcg_extractcollocal(DBCSR *P, INT actcol, DOUBLE *col,
                            INT *rcol, INT *nrow)
 {
 INT           i,j,counter;
@@ -250,7 +250,7 @@ INT           *ia,*ja,*update,numeq;
 DOUBLE        *a;
 INT            actrow,colstart,colend;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_extractcollocal");
 #endif
 /*----------------------------------------------------------------------*/
@@ -281,7 +281,7 @@ for (i=0; i<numeq; i++)
 }
 *nrow = counter;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -289,20 +289,20 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief extract a local column from a CSC matrix                                          
+\brief extract a local column from a CSC matrix
 
-<pre>                                                        m.gee 10/02 
+<pre>                                                        m.gee 10/02
 there must not be any ellbow room in the matrix!
 </pre>
 \param col    INT       (i) column to extract
-\param update INT*      (i) update vector of csc matrix 
-\param ia     INT*      (i) ia vector of csc matrix    
-\param ja     INT*      (i) ja vector of csc matrix    
-\param a      DOUBLE*   (i) a vector of csc matrix    
-\param col    DOUBLE[]  (o) column vector, maxlength 1000 !             
-\param rcol   INT[]     (o) row indizes vector, maxlength 1000 !             
+\param update INT*      (i) update vector of csc matrix
+\param ia     INT*      (i) ia vector of csc matrix
+\param ja     INT*      (i) ja vector of csc matrix
+\param a      DOUBLE*   (i) a vector of csc matrix
+\param col    DOUBLE[]  (o) column vector, maxlength 1000 !
+\param rcol   INT[]     (o) row indizes vector, maxlength 1000 !
 \param nrow   INT*      (o) number of rows in column
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_extractcolcsc(INT      col,
@@ -319,7 +319,7 @@ void mlpcg_extractcolcsc(INT      col,
 INT           i,k;
 INT           index,rowstart,rowend;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_extractcolcsc");
 #endif
 /*----------------------------------------------------------------------*/
@@ -352,26 +352,26 @@ for (i=rowstart; i<rowend; i++)
 }
 /*----------------------------------------------------------------------*/
 exit:
-#ifdef DEBUG 
-dstrc_exit(); 
+#ifdef DEBUG
+dstrc_exit();
 #endif
 return;
 } /* end of mlpcg_extractcolcsc */
 /*!---------------------------------------------------------------------
-\brief extract a local row from a CSR matrix                                          
+\brief extract a local row from a CSR matrix
 
-<pre>                                                        m.gee 10/02 
+<pre>                                                        m.gee 10/02
 there must not be any ellbow room in the matrix!
 </pre>
 \param col    INT       (i) column to extract
-\param update INT*      (i) update vector of csc matrix 
-\param ia     INT*      (i) ia vector of csc matrix    
-\param ja     INT*      (i) ja vector of csc matrix    
-\param a      DOUBLE*   (i) a vector of csc matrix    
-\param col    DOUBLE[]  (o) column vector, maxlength 1000 !             
-\param rcol   INT[]     (o) row indizes vector, maxlength 1000 !             
+\param update INT*      (i) update vector of csc matrix
+\param ia     INT*      (i) ia vector of csc matrix
+\param ja     INT*      (i) ja vector of csc matrix
+\param a      DOUBLE*   (i) a vector of csc matrix
+\param col    DOUBLE[]  (o) column vector, maxlength 1000 !
+\param rcol   INT[]     (o) row indizes vector, maxlength 1000 !
 \param nrow   INT*      (o) number of rows in column
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_extractrowcsr(INT      row,
@@ -388,7 +388,7 @@ void mlpcg_extractrowcsr(INT      row,
 INT           i,k;
 INT           index,rowstart,rowend;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_extractrowcsr");
 #endif
 /*----------------------------------------------------------------------*/
@@ -421,25 +421,25 @@ for (i=rowstart; i<rowend; i++)
 }
 /*----------------------------------------------------------------------*/
 exit:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of mlpcg_extractrowcsr */
 
 /*!---------------------------------------------------------------------
-\brief opens a matrix for adding                                          
+\brief opens a matrix for adding
 
-<pre>                                                        m.gee 9/02 
+<pre>                                                        m.gee 9/02
 
 </pre>
-\param matrix      DBCSR*    (i/o) the active level in the ml-precond.                   
+\param matrix      DBCSR*    (i/o) the active level in the ml-precond.
 \param firstdof    INT       (i)   first dof updated on this proc
 \param lastdof     INT       (i)   last dof updated on this proc
 \param numeq_total INT       (i)   total number of rows
-\param nnz_guess   INT       (i)   guess for number of nonzero entries 
-\param actintra    INTRA*    (i)   the intra-communicator of this field  
-\return void                                               
+\param nnz_guess   INT       (i)   guess for number of nonzero entries
+\param actintra    INTRA*    (i)   the intra-communicator of this field
+\return void
 \sa mlpcg_csr_setblock
 ------------------------------------------------------------------------*/
 void mlpcg_csr_open(DBCSR*  matrix,
@@ -458,7 +458,7 @@ INT        ione=-1;
 INT        isnew;
 INT        rowguess;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_csr_open");
 #endif
 /*----------------------------------------------------------------------*/
@@ -490,7 +490,7 @@ for (i=1; i<nproc; i++)
 }
 /*------------------------------------------ check the sums of the dofs */
 counter=0;
-for (i=0; i<nproc; i++) 
+for (i=0; i<nproc; i++)
    counter += dofrangerecv[i*2+1]-dofrangerecv[i*2]+1;
 if (counter != numeq_total)
 dserror("total sum of dofs wrong");
@@ -499,7 +499,7 @@ if (matrix->update.Typ != cca_XX) isnew=0;
 else                              isnew=1;
 /*------------------------------------------------------------ put size */
 matrix->numeq       = dofrangerecv[myrank*2+1]-dofrangerecv[myrank*2]+1;
-matrix->numeq_total = counter; 
+matrix->numeq_total = counter;
 /*----------------------------------------------------- allocate update */
 if (isnew==1)
 {
@@ -525,7 +525,7 @@ if (isnew==1)
    /*------ there is a rest in ja and a which is not assigned to a line */
 } /* end of if (isnew==1) */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -534,14 +534,14 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief zeros a matrix                                          
+\brief zeros a matrix
 
-<pre>                                                        m.gee 11/02 
+<pre>                                                        m.gee 11/02
 
 </pre>
-\param matrix      DBCSR*    (i/o) the active level in the ml-precond.                   
-\param actintra    INTRA*    (i)   the intra-communicator of this field  
-\return void                                               
+\param matrix      DBCSR*    (i/o) the active level in the ml-precond.
+\param actintra    INTRA*    (i)   the intra-communicator of this field
+\return void
 \sa mlpcg_csr_setblock
 ------------------------------------------------------------------------*/
 void mlpcg_csr_zero(DBCSR*  matrix,
@@ -550,7 +550,7 @@ void mlpcg_csr_zero(DBCSR*  matrix,
 INT        myrank,nproc;
 INT        ione=-1;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_csr_zero");
 #endif
 /*----------------------------------------------------------------------*/
@@ -562,7 +562,7 @@ if (matrix->update.Typ == cca_XX) dserror("Matrix doesn't exist");;
 aminit(&(matrix->ja),(void*)(&ione));
 amzero(&(matrix->a));
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -572,9 +572,9 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief close a DBCSR matrix                                         
+\brief close a DBCSR matrix
 
-<pre>                                                        m.gee 10/02 
+<pre>                                                        m.gee 10/02
 remove all the remaining unneeded 'ellbow-space' from the csr format.
 If the matrix is then 20% too large, redefine the size, if not, leave the
 allocated memory unchanged (not worth the work).
@@ -584,8 +584,8 @@ it does not have to be opened again before adding to it again. The routine
 mlpcg_csr_setblock is clever enough to add new 'ellbow-space' to the matrix
 if needed.
 </pre>
-\param matrix      DBCSR*    (i/o) the active level in the ml-precond.                   
-\return void                                               
+\param matrix      DBCSR*    (i/o) the active level in the ml-precond.
+\return void
 \sa mlpcg_csr_open mlpcg_csr_setblock
 ------------------------------------------------------------------------*/
 void mlpcg_csr_close(DBCSR*   matrix)
@@ -598,7 +598,7 @@ DOUBLE    *a;
 INT        size,nnz_guess;
 INT        colstart,colend,actrow;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_csr_close");
 #endif
 /*----------------------------------------------------------------------*/
@@ -647,7 +647,7 @@ if ((INT)(1.2*ia[numeq]) < size)
 }
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -656,41 +656,41 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief destroy a DBCSR matrix                                         
+\brief destroy a DBCSR matrix
 
-<pre>                                                        m.gee 10/02 
+<pre>                                                        m.gee 10/02
 check for alocated memory and free everything
 </pre>
-\param matrix      DBCSR*    (i/o) the active level in the ml-precond.                   
-\return void                                               
+\param matrix      DBCSR*    (i/o) the active level in the ml-precond.
+\return void
 \sa mlpcg_csr_open mlpcg_csr_setblock mlpcg_csr_close
 ------------------------------------------------------------------------*/
 void mlpcg_csr_destroy(DBCSR*   matrix)
 {
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_csr_destroy");
 #endif
 /*----------------------------------------------------------------------*/
-if (matrix->update.Typ != cca_XX) 
+if (matrix->update.Typ != cca_XX)
    amdel(&(matrix->update));
-if (matrix->a.Typ != cca_XX) 
+if (matrix->a.Typ != cca_XX)
    amdel(&(matrix->a));
-if (matrix->ja.Typ != cca_XX) 
+if (matrix->ja.Typ != cca_XX)
    amdel(&(matrix->ja));
-if (matrix->ia.Typ != cca_XX) 
+if (matrix->ia.Typ != cca_XX)
    amdel(&(matrix->ia));
-if (matrix->blocks.Typ != cca_XX) 
+if (matrix->blocks.Typ != cca_XX)
    amdel(&(matrix->blocks));
-if (matrix->gdofrecv.Typ != cca_XX) 
+if (matrix->gdofrecv.Typ != cca_XX)
    amdel(&(matrix->gdofrecv));
-if (matrix->recvbuff.Typ != cca_XX) 
+if (matrix->recvbuff.Typ != cca_XX)
    amdel(&(matrix->recvbuff));
-if (matrix->computebuff.Typ != cca_XX) 
+if (matrix->computebuff.Typ != cca_XX)
    amdel(&(matrix->computebuff));
-if (matrix->gdofsend.Typ != cca_XX) 
+if (matrix->gdofsend.Typ != cca_XX)
    amdel(&(matrix->gdofsend));
-if (matrix->sendbuff.Typ != cca_XX) 
+if (matrix->sendbuff.Typ != cca_XX)
    amdel(&(matrix->sendbuff));
 if (matrix->csc)
 {
@@ -703,13 +703,13 @@ if (matrix->ilu)
    matrix->ilu = CCAFREE(matrix->ilu);
 }
 #ifdef PARALLEL
-if (matrix->status != NULL) 
+if (matrix->status != NULL)
    CCAFREE(matrix->status);
-if (matrix->request != NULL) 
+if (matrix->request != NULL)
    CCAFREE(matrix->request);
-#endif   
+#endif
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -718,20 +718,20 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief extract a block from a csr matrix to an open csr matrix                                         
+\brief extract a block from a csr matrix to an open csr matrix
 
-<pre>                                                        m.gee 11/02 
-extract a block from a csr matrix to an open csr matrix   
+<pre>                                                        m.gee 11/02
+extract a block from a csr matrix to an open csr matrix
 the matrix to must be opened and empty
 </pre>
 \param from      DBCSR*    (i) the csr to be extracted from
 \param to        DBCSR*    (o) the csr to be extracted to
 \param rstart    INT       (i) rowstart of the block
-\param rend      INT       (i) rowend of the block 
+\param rend      INT       (i) rowend of the block
 \param cstart    INT       (i) columnstart of the block
 \param cend      INT       (i) columnend of the block
-\param actintra  INTRA*    (i)   the intra-communicator of this field  
-\return void                                               
+\param actintra  INTRA*    (i)   the intra-communicator of this field
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_csr_extractsubblock(DBCSR *from, DBCSR *to,
@@ -747,7 +747,7 @@ DOUBLE    *a_from;
 INT        actrow,actcol;
 INT        colstart,colend;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_csr_extractsubblock");
 #endif
 /*----------------------------------------------------------------------*/
@@ -760,7 +760,7 @@ a_from      = from->a.a.dv;
 for (i=0; i<numeq_from; i++)
 {
    actrow   = update_from[i];
-   if (actrow < rstart || actrow > rend) 
+   if (actrow < rstart || actrow > rend)
       continue;
    colstart = ia_from[i];
    colend   = ia_from[i+1];
@@ -773,7 +773,7 @@ for (i=0; i<numeq_from; i++)
    }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -782,18 +782,18 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief extract a block from a csr matrix to an open csr matrix                                         
+\brief extract a block from a csr matrix to an open csr matrix
 
-<pre>                                                        m.gee 12/02 
-extract a block from a csr matrix to a dense matrix   
+<pre>                                                        m.gee 12/02
+extract a block from a csr matrix to a dense matrix
 the matrix to must be sufficient in size
 </pre>
 \param from      DBCSR*       (i) the csr to be extracted from
 \param A         DOUBLE**     (o) the dense matrix to be extracted to
 \param index     INT*         (i) list of indizes the square matrix shall be extracted
-\param nindex    INT          (i) length of index 
-\param actintra  INTRA*       (i)   the intra-communicator of this field  
-\return void                                               
+\param nindex    INT          (i) length of index
+\param actintra  INTRA*       (i)   the intra-communicator of this field
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_csr_extractsubblock_dense(DBCSR *from, DOUBLE **A,
@@ -806,7 +806,7 @@ INT        numeq_from,*update_from,*ia_from,*ja_from;
 DOUBLE    *a_from;
 INT        colstart,colend,actrow,actcol;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_csr_extractsubblock_dense");
 #endif
 /*----------------------------------------------------------------------*/
@@ -819,9 +819,9 @@ a_from      = from->a.a.dv;
 for (i=0; i<numeq_from; i++)
 {
    actrow   = update_from[i];
-   if (actrow < index[0] || actrow > index[nindex-1]) 
+   if (actrow < index[0] || actrow > index[nindex-1])
       continue;
-   ii = find_index(actrow,index,nindex); 
+   ii = find_index(actrow,index,nindex);
    if (ii==-1) continue;
    colstart = ia_from[i];
    colend   = ia_from[i+1];
@@ -836,7 +836,7 @@ for (i=0; i<numeq_from; i++)
    }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -846,12 +846,12 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief change global dofs to local dofs in fortran style                                        
+\brief change global dofs to local dofs in fortran style
 
-<pre>                                                        m.gee 11/02 
+<pre>                                                        m.gee 11/02
 </pre>
 \param matrix      DBCSR*    (i) the csr to be extracted from
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_csr_localnumsf(DBCSR *matrix)
@@ -861,7 +861,7 @@ INT        numeq,*ia,*ja;
 INT        colstart,colend;
 INT        offset;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_csr_localnumsf");
 #endif
 /*----------------------------------------------------------------------*/
@@ -880,7 +880,7 @@ for (i=0; i<numeq; i++)
 for (i=0; i<=numeq; i++)
    ia[i]++;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -890,29 +890,29 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief sets a dense block into a DBCSR matrix                                         
+\brief sets a dense block into a DBCSR matrix
 
-<pre>                                                        m.gee 10/02 
+<pre>                                                        m.gee 10/02
 puts a dense block into a BDCSR matrix in a processor local manner.
 This means, that the given row indizes in rindex belong to this processor.
 The DBCSR matrix has to be opened by mlpcg_csr_open before, the vectors
 DBCSR.update, DBCSR.a, DBCSR.ja, DBCSR.ia have to be alloacted.
 </pre>
-\param matrix      DBCSR*        (i/o) the active level in the ml-precond.                   
+\param matrix      DBCSR*        (i/o) the active level in the ml-precond.
 \param block       DOUBLE[][500] (i)   block of values
 \param rindex      INT*          (i)   row indize of block in matrix
 \param cindex      INT*          (i)   col indize of block in matrix
 \param nrow        INT           (i)   number of rows in block
 \param ncol        INT           (i)   number of oclumns in block
-\param actintra    INTRA*        (i)   the intra-communicator of this field  
-\return void                                               
+\param actintra    INTRA*        (i)   the intra-communicator of this field
+\return void
 \sa mlpcg_csr_open
 ------------------------------------------------------------------------*/
 void mlpcg_csr_setblock(DBCSR*   matrix,
                         DOUBLE   block[][500],
                         INT     *rindex,
                         INT     *cindex,
-                        INT      nrow, 
+                        INT      nrow,
                         INT      ncol,
                         INTRA   *actintra)
 {
@@ -932,7 +932,7 @@ INT        colstart,colend;
 INT        foundit;
 INT        hasmoved;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_csr_setblock");
 #endif
 /*----------------------------------------------------------------------*/
@@ -979,13 +979,13 @@ for (i=0; i<nrow; i++)
             foundit = 0;
             n       = colstart+1;
             for (l=colstart; l<colend; l++)
-            {   
-               if (ja[l] != -1 && foundit==0) 
+            {
+               if (ja[l] != -1 && foundit==0)
                {
                   n=l;
                   foundit=1;
                }
-               if (ja[l] > actcol) 
+               if (ja[l] > actcol)
                   break;
             }
             if (l==colend && foundit==0) /* there is no values yet */
@@ -1012,7 +1012,7 @@ for (i=0; i<nrow; i++)
             /* find the largest row and make a guess for a new size */
             new_row_guess=0;
             for (k=0; k<numeq; k++)
-               if (new_row_guess<ia[k+1]-ia[k]) 
+               if (new_row_guess<ia[k+1]-ia[k])
                   new_row_guess = ia[k+1]-ia[k];
             new_row_guess = (INT)(new_row_guess*2.0);
             new_nnz_guess = (INT)(new_row_guess*numeq);
@@ -1039,7 +1039,7 @@ for (i=0; i<nrow; i++)
                for (l=sf_col; l<ef_col; l++)
                {
                   /* nothing to move */
-                  if (ja[l]==-1) continue; 
+                  if (ja[l]==-1) continue;
                   /* flag, that a move happens */
                   hasmoved++;
                   /* copy column index to target */
@@ -1075,7 +1075,7 @@ for (i=0; i<nrow; i++)
                /*------------------------ resort the row in ja AND in a */
                mg_sort(&(ja[colstart]),colend-colstart,NULL,&(a[colstart]));
             }
-            else 
+            else
                dserror("Sever fatal error in redimension of BDCSR matrix");
             /*--------------------- movement finished, adjust nnz_guess */
             nnz_guess = new_nnz_guess;
@@ -1084,7 +1084,7 @@ for (i=0; i<nrow; i++)
    } /* and of for (j=0; j<ncol; j++) */
 } /* end of for (i=0; i<nrow; i++) */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1092,29 +1092,29 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief adds a dense block into a DBCSR matrix                                         
+\brief adds a dense block into a DBCSR matrix
 
-<pre>                                                        m.gee 10/02 
+<pre>                                                        m.gee 10/02
 puts a dense block into a BDCSR matrix in a processor local manner.
 This means, that the given row indizes in rindex belong to this processor.
 The DBCSR matrix has to be opened by mlpcg_csr_open before, the vectors
 DBCSR.update, DBCSR.a, DBCSR.ja, DBCSR.ia have to be alloacted.
 </pre>
-\param matrix      DBCSR*        (i/o) the active level in the ml-precond.                   
+\param matrix      DBCSR*        (i/o) the active level in the ml-precond.
 \param block       DOUBLE[][500] (i)   block of values
 \param rindex      INT*          (i)   row indize of block in matrix
 \param cindex      INT*          (i)   col indize of block in matrix
 \param nrow        INT           (i)   number of rows in block
 \param ncol        INT           (i)   number of oclumns in block
-\param actintra    INTRA*        (i)   the intra-communicator of this field  
-\return void                                               
+\param actintra    INTRA*        (i)   the intra-communicator of this field
+\return void
 \sa mlpcg_csr_open
 ------------------------------------------------------------------------*/
 void mlpcg_csr_addblock(DBCSR*   matrix,
                         DOUBLE   block[][500],
                         INT     *rindex,
                         INT     *cindex,
-                        INT      nrow, 
+                        INT      nrow,
                         INT      ncol,
                         INTRA   *actintra)
 {
@@ -1134,7 +1134,7 @@ INT        colstart,colend;
 INT        foundit;
 INT        hasmoved;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_csr_addblock");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1181,13 +1181,13 @@ for (i=0; i<nrow; i++)
             foundit = 0;
             n       = colstart+1;
             for (l=colstart; l<colend; l++)
-            {   
-               if (ja[l] != -1 && foundit==0) 
+            {
+               if (ja[l] != -1 && foundit==0)
                {
                   n=l;
                   foundit=1;
                }
-               if (ja[l] > actcol) 
+               if (ja[l] > actcol)
                   break;
             }
             if (l==colend && foundit==0) /* there is no values yet */
@@ -1214,14 +1214,14 @@ for (i=0; i<nrow; i++)
             /* find the largest row and make a guess for a new size */
             new_row_guess=0;
             for (k=0; k<numeq; k++)
-               if (new_row_guess<ia[k+1]-ia[k]) 
+               if (new_row_guess<ia[k+1]-ia[k])
                   new_row_guess = ia[k+1]-ia[k];
             new_row_guess = (INT)(new_row_guess*2.0);
             new_nnz_guess = (INT)(new_row_guess*numeq);
             ja = amredef(&(matrix->ja),new_nnz_guess,1,"IV");
             a  = amredef(&(matrix->a) ,new_nnz_guess,1,"DV");
             /*------------------------- have to init the new part of ja */
-            for (k=nnz_guess; k<new_nnz_guess; k++) 
+            for (k=nnz_guess; k<new_nnz_guess; k++)
             ja[k]=-1;
             /*- loop the rows from the back and move values to the back */
             for (k=numeq-1; k>=0; k--)
@@ -1242,7 +1242,7 @@ for (i=0; i<nrow; i++)
                for (l=sf_col; l<ef_col; l++)
                {
                   /* nothing to move */
-                  if (ja[l]==-1) continue; 
+                  if (ja[l]==-1) continue;
                   /* flag, that a move happens */
                   hasmoved++;
                   /* copy column index to target */
@@ -1278,7 +1278,7 @@ for (i=0; i<nrow; i++)
                /*------------------------ resort the row in ja AND in a */
                mg_sort(&(ja[colstart]),colend-colstart,NULL,&(a[colstart]));
             }
-            else 
+            else
                dserror("Sever fatal error in redimension of BDCSR matrix");
             /*--------------------- movement finished, adjust nnz_guess */
             nnz_guess = new_nnz_guess;
@@ -1287,7 +1287,7 @@ for (i=0; i<nrow; i++)
    } /* and of for (j=0; j<ncol; j++) */
 } /* end of for (i=0; i<nrow; i++) */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1296,20 +1296,20 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief adds an entry into a DBCSR matrix                                         
+\brief adds an entry into a DBCSR matrix
 
-<pre>                                                        m.gee 10/02 
+<pre>                                                        m.gee 10/02
 puts a value into a BDCSR matrix in a processor local manner.
 This means, that the given row indizes in rindex belong to this processor.
 The DBCSR matrix has to be opened by mlpcg_csr_open before, the vectors
 DBCSR.update, DBCSR.a, DBCSR.ja, DBCSR.ia have to be alloacted.
 </pre>
-\param matrix      DBCSR*    (i/o) the active level in the ml-precond.                   
+\param matrix      DBCSR*    (i/o) the active level in the ml-precond.
 \param val         DOUBLE    (i)   value to be added to matrix
 \param rindex      INT       (i)   row index of value
 \param cindex      INT       (i)   column index of value
-\param actintra    INTRA*    (i)   the intra-communicator of this field  
-\return void                                               
+\param actintra    INTRA*    (i)   the intra-communicator of this field
+\return void
 ------------------------------------------------------------------------*/
 void mlpcg_csr_addentry(DBCSR*   matrix,
                         DOUBLE  val,
@@ -1333,7 +1333,7 @@ INT        colstart,colend;
 INT        foundit;
 INT        hasmoved;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_csr_addentry");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1376,13 +1376,13 @@ nnz_guess = ia[numeq];
             foundit = 0;
             n       = colstart+1;
             for (l=colstart; l<colend; l++)
-            {   
-               if (ja[l] != -1 && foundit==0) 
+            {
+               if (ja[l] != -1 && foundit==0)
                {
                   n=l;
                   foundit=1;
                }
-               if (ja[l] > actcol) 
+               if (ja[l] > actcol)
                   break;
             }
             if (l==colend && foundit==0) /* there is no values yet */
@@ -1409,14 +1409,14 @@ nnz_guess = ia[numeq];
             /* find the largest row and make a guess for a new size */
             new_row_guess=0;
             for (k=0; k<numeq; k++)
-               if (new_row_guess<ia[k+1]-ia[k]) 
+               if (new_row_guess<ia[k+1]-ia[k])
                   new_row_guess = ia[k+1]-ia[k];
             new_row_guess = (INT)(new_row_guess*2.0);
             new_nnz_guess = (INT)(new_row_guess*numeq);
             ja = amredef(&(matrix->ja),new_nnz_guess,1,"IV");
             a  = amredef(&(matrix->a) ,new_nnz_guess,1,"DV");
             /*------------------------- have to init the new part of ja */
-            for (k=nnz_guess; k<new_nnz_guess; k++) 
+            for (k=nnz_guess; k<new_nnz_guess; k++)
             ja[k]=-1;
             /*- loop the rows from the back and move values to the back */
             for (k=numeq-1; k>=0; k--)
@@ -1437,7 +1437,7 @@ nnz_guess = ia[numeq];
                for (l=sf_col; l<ef_col; l++)
                {
                   /* nothing to move */
-                  if (ja[l]==-1) continue; 
+                  if (ja[l]==-1) continue;
                   /* flag, that a move happens */
                   hasmoved++;
                   /* copy column index to target */
@@ -1473,14 +1473,14 @@ nnz_guess = ia[numeq];
                /*------------------------ resort the row in ja AND in a */
                mg_sort(&(ja[colstart]),colend-colstart,NULL,&(a[colstart]));
             }
-            else 
+            else
                dserror("Sever fatal error in redimension of BDCSR matrix");
             /*--------------------- movement finished, adjust nnz_guess */
             nnz_guess = new_nnz_guess;
          } /* end of else */
       } /* end of else */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1488,20 +1488,20 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief sets an entry into a DBCSR matrix                                         
+\brief sets an entry into a DBCSR matrix
 
-<pre>                                                        m.gee 10/02 
+<pre>                                                        m.gee 10/02
 puts a value into a BDCSR matrix in a processor local manner.
 This means, that the given row indizes in rindex belong to this processor.
 The DBCSR matrix has to be opened by mlpcg_csr_open before, the vectors
 DBCSR.update, DBCSR.a, DBCSR.ja, DBCSR.ia have to be alloacted.
 </pre>
-\param matrix      DBCSR*    (i/o) the active level in the ml-precond.                   
+\param matrix      DBCSR*    (i/o) the active level in the ml-precond.
 \param val         DOUBLE    (i)   value to be added to matrix
 \param rindex      INT       (i)   row index of value
 \param cindex      INT       (i)   column index of value
-\param actintra    INTRA*    (i)   the intra-communicator of this field  
-\return void                                               
+\param actintra    INTRA*    (i)   the intra-communicator of this field
+\return void
 ------------------------------------------------------------------------*/
 void mlpcg_csr_setentry(DBCSR*   matrix,
                         DOUBLE  val,
@@ -1525,7 +1525,7 @@ INT        colstart,colend;
 INT        foundit;
 INT        hasmoved;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_csr_setentry");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1538,7 +1538,7 @@ nnz_guess = ia[numeq];
 /*------------------------------------ loop the rows in the dense block */
    actrow    = rindex;
    row_index = mlpcg_getindex(actrow,update,numeq);
-   if (row_index==-1) 
+   if (row_index==-1)
       dserror("Cannot find row on local piece of BDCSR matrix");
    /*------------------------------ get the col range of this row in ia */
    colstart = ia[row_index];
@@ -1569,13 +1569,13 @@ nnz_guess = ia[numeq];
             foundit = 0;
             n       = colstart+1;
             for (l=colstart; l<colend; l++)
-            {   
-               if (ja[l] != -1 && foundit==0) 
+            {
+               if (ja[l] != -1 && foundit==0)
                {
                   n=l;
                   foundit=1;
                }
-               if (ja[l] > actcol) 
+               if (ja[l] > actcol)
                   break;
             }
             if (l==colend && foundit==0) /* there is no values yet */
@@ -1602,14 +1602,14 @@ nnz_guess = ia[numeq];
             /* find the largest row and make a guess for a new size */
             new_row_guess=0;
             for (k=0; k<numeq; k++)
-               if (new_row_guess<ia[k+1]-ia[k]) 
+               if (new_row_guess<ia[k+1]-ia[k])
                   new_row_guess = ia[k+1]-ia[k];
             new_row_guess = (INT)(new_row_guess*2.0);
             new_nnz_guess = (INT)(new_row_guess*numeq);
             ja = amredef(&(matrix->ja),new_nnz_guess,1,"IV");
             a  = amredef(&(matrix->a) ,new_nnz_guess,1,"DV");
             /*------------------------- have to init the new part of ja */
-            for (k=nnz_guess; k<new_nnz_guess; k++) 
+            for (k=nnz_guess; k<new_nnz_guess; k++)
             ja[k]=-1;
             /*- loop the rows from the back and move values to the back */
             for (k=numeq-1; k>=0; k--)
@@ -1630,7 +1630,7 @@ nnz_guess = ia[numeq];
                for (l=sf_col; l<ef_col; l++)
                {
                   /* nothing to move */
-                  if (ja[l]==-1) continue; 
+                  if (ja[l]==-1) continue;
                   /* flag, that a move happens */
                   hasmoved++;
                   /* copy column index to target */
@@ -1666,14 +1666,14 @@ nnz_guess = ia[numeq];
                /*------------------------ resort the row in ja AND in a */
                mg_sort(&(ja[colstart]),colend-colstart,NULL,&(a[colstart]));
             }
-            else 
+            else
                dserror("Sever fatal error in redimension of BDCSR matrix");
             /*--------------------- movement finished, adjust nnz_guess */
             nnz_guess = new_nnz_guess;
          } /* end of else */
       } /* end of else */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1681,20 +1681,20 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief sets an entry into a DBCSR matrix                                         
+\brief sets an entry into a DBCSR matrix
 
-<pre>                                                        m.gee 10/02 
+<pre>                                                        m.gee 10/02
 puts a value into a BDCSR matrix in a processor local manner.
 This means, that the given row indizes in rindex belong to this processor.
 The DBCSR matrix has to be opened by mlpcg_csr_open before, the vectors
 DBCSR.update, DBCSR.a, DBCSR.ja, DBCSR.ia have to be alloacted.
 </pre>
-\param matrix      DBCSR*    (i/o) the active level in the ml-precond.                   
+\param matrix      DBCSR*    (i/o) the active level in the ml-precond.
 \param val         DOUBLE    (i)   value to be added to matrix
 \param rindex      INT       (i)   row index of value
 \param cindex      INT       (i)   column index of value
-\param actintra    INTRA*    (i)   the intra-communicator of this field  
-\return void                                               
+\param actintra    INTRA*    (i)   the intra-communicator of this field
+\return void
 ------------------------------------------------------------------------*/
 void mlpcg_csr_setentry_overlap(DBCSR*   matrix,
                                 DOUBLE  val,
@@ -1718,7 +1718,7 @@ INT        colstart,colend;
 INT        foundit;
 INT        hasmoved;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_csr_setentry_overlap");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1731,7 +1731,7 @@ nnz_guess = ia[numeq];
 /*------------------------------------ loop the rows in the dense block */
    actrow    = rindex;
    row_index = find_index(actrow,update,numeq);
-   if (row_index==-1) 
+   if (row_index==-1)
       dserror("Cannot find row on local piece of BDCSR matrix");
    /*------------------------------ get the col range of this row in ia */
    colstart = ia[row_index];
@@ -1762,13 +1762,13 @@ nnz_guess = ia[numeq];
             foundit = 0;
             n       = colstart+1;
             for (l=colstart; l<colend; l++)
-            {   
-               if (ja[l] != -1 && foundit==0) 
+            {
+               if (ja[l] != -1 && foundit==0)
                {
                   n=l;
                   foundit=1;
                }
-               if (ja[l] > actcol) 
+               if (ja[l] > actcol)
                   break;
             }
             if (l==colend && foundit==0) /* there is no values yet */
@@ -1795,14 +1795,14 @@ nnz_guess = ia[numeq];
             /* find the largest row and make a guess for a new size */
             new_row_guess=0;
             for (k=0; k<numeq; k++)
-               if (new_row_guess<ia[k+1]-ia[k]) 
+               if (new_row_guess<ia[k+1]-ia[k])
                   new_row_guess = ia[k+1]-ia[k];
             new_row_guess = (INT)(new_row_guess*2.0);
             new_nnz_guess = (INT)(new_row_guess*numeq);
             ja = amredef(&(matrix->ja),new_nnz_guess,1,"IV");
             a  = amredef(&(matrix->a) ,new_nnz_guess,1,"DV");
             /*------------------------- have to init the new part of ja */
-            for (k=nnz_guess; k<new_nnz_guess; k++) 
+            for (k=nnz_guess; k<new_nnz_guess; k++)
             ja[k]=-1;
             /*- loop the rows from the back and move values to the back */
             for (k=numeq-1; k>=0; k--)
@@ -1823,7 +1823,7 @@ nnz_guess = ia[numeq];
                for (l=sf_col; l<ef_col; l++)
                {
                   /* nothing to move */
-                  if (ja[l]==-1) continue; 
+                  if (ja[l]==-1) continue;
                   /* flag, that a move happens */
                   hasmoved++;
                   /* copy column index to target */
@@ -1859,14 +1859,14 @@ nnz_guess = ia[numeq];
                /*------------------------ resort the row in ja AND in a */
                mg_sort(&(ja[colstart]),colend-colstart,NULL,&(a[colstart]));
             }
-            else 
+            else
                dserror("Sever fatal error in redimension of BDCSR matrix");
             /*--------------------- movement finished, adjust nnz_guess */
             nnz_guess = new_nnz_guess;
          } /* end of else */
       } /* end of else */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1877,22 +1877,22 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief adds a row into a DBCSR matrix                                         
+\brief adds a row into a DBCSR matrix
 
-<pre>                                                        m.gee 10/02 
+<pre>                                                        m.gee 10/02
 puts a dense block into a BDCSR matrix in a processor local manner.
 This means, that the given row indizes in rindex belong to this processor.
 The DBCSR matrix has to be opened by mlpcg_csr_open before, the vectors
 DBCSR.update, DBCSR.a, DBCSR.ja, DBCSR.ia have to be alloacted.
 </pre>
-\param matrix      DBCSR*        (i/o) the active level in the ml-precond.                   
+\param matrix      DBCSR*        (i/o) the active level in the ml-precond.
 \param block       DOUBLE[][500] (i)   block of values
 \param rindex      INT*          (i)   row indize of block in matrix
 \param cindex      INT*          (i)   col indize of block in matrix
 \param nrow        INT           (i)   number of rows in block
 \param ncol        INT           (i)   number of oclumns in block
-\param actintra    INTRA*        (i)   the intra-communicator of this field  
-\return void                                               
+\param actintra    INTRA*        (i)   the intra-communicator of this field
+\return void
 \sa mlpcg_csr_open
 ------------------------------------------------------------------------*/
 void mlpcg_csr_addrow(DBCSR*   matrix,
@@ -1918,7 +1918,7 @@ INT        colstart,colend;
 INT        foundit;
 INT        hasmoved;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_csr_addrow");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1963,13 +1963,13 @@ for (j=0; j<ncol; j++)
             foundit = 0;
             n       = colstart+1;
             for (l=colstart; l<colend; l++)
-            {   
-               if (ja[l] != -1 && foundit==0) 
+            {
+               if (ja[l] != -1 && foundit==0)
                {
                   n=l;
                   foundit=1;
                }
-               if (ja[l] > actcol) 
+               if (ja[l] > actcol)
                   break;
             }
             if (l==colend && foundit==0) /* there is no values yet */
@@ -1996,14 +1996,14 @@ for (j=0; j<ncol; j++)
          /* find the largest row and make a guess for a new size */
          new_row_guess=0;
          for (k=0; k<numeq; k++)
-            if (new_row_guess<ia[k+1]-ia[k]) 
+            if (new_row_guess<ia[k+1]-ia[k])
                new_row_guess = ia[k+1]-ia[k];
          new_row_guess = (INT)(new_row_guess*2.0);
          new_nnz_guess = (INT)(new_row_guess*numeq);
          ja = amredef(&(matrix->ja),new_nnz_guess,1,"IV");
          a  = amredef(&(matrix->a) ,new_nnz_guess,1,"DV");
          /*------------------------- have to init the new part of ja */
-         for (k=nnz_guess; k<new_nnz_guess; k++) 
+         for (k=nnz_guess; k<new_nnz_guess; k++)
          ja[k]=-1;
          /*- loop the rows from the back and move values to the back */
          for (k=numeq-1; k>=0; k--)
@@ -2024,7 +2024,7 @@ for (j=0; j<ncol; j++)
             for (l=sf_col; l<ef_col; l++)
             {
                /* nothing to move */
-               if (ja[l]==-1) continue; 
+               if (ja[l]==-1) continue;
                /* flag, that a move happens */
                hasmoved++;
                /* copy column index to target */
@@ -2060,7 +2060,7 @@ for (j=0; j<ncol; j++)
             /*------------------------ resort the row in ja AND in a */
             mg_sort(&(ja[colstart]),colend-colstart,NULL,&(a[colstart]));
          }
-         else 
+         else
             dserror("Sever fatal error in redimension of BDCSR matrix");
          /*--------------------- movement finished, adjust nnz_guess */
          nnz_guess = new_nnz_guess;
@@ -2068,7 +2068,7 @@ for (j=0; j<ncol; j++)
    } /* end of else */
 } /* and of for (j=0; j<ncol; j++) */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -2077,16 +2077,16 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief makes compressed sparse column matrix from csr                                         
+\brief makes compressed sparse column matrix from csr
 
-<pre>                                                        m.gee 10/02 
+<pre>                                                        m.gee 10/02
 allocates csc inside the csr matrix and creates a compressed sparse column
 matrix from the compressed sparse row matrix. the csr matrix has to be
 closed before (no 'ellbow-room' inside)
 </pre>
 \param matrix          DBCSR*       (i/o) the DBCSR to be transformed
-\param actintra    INTRA*    (i) the communicator                 
-\return void                                               
+\param actintra    INTRA*    (i) the communicator
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_csr_csrtocsc(DBCSR *matrix, INTRA *actintra)
@@ -2100,7 +2100,7 @@ INT            actcol;
 DBCSR         *csc;
 INT            actrow,colstart,colend;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_csr_csrtocsc");
 #endif
 /*----------------------------------------------------------------------*/
@@ -2195,9 +2195,9 @@ for (i=0; i<csc_numeq; i++)
         colend   = ia[j+1];
         for (k=colstart; k<colend; k++) /* loop the columns in the row */
         {
-           if (ja[k]  > actcol) 
+           if (ja[k]  > actcol)
               break; /* won't find actcol anymore in this row */
-           if (ja[k] != actcol) 
+           if (ja[k] != actcol)
               continue; /* not the right column */
            csc_ja[counter] = actrow;
            csc_a[counter]  = a[k];
@@ -2210,7 +2210,7 @@ csc_ia[i] = counter;
 if (counter != ia[numeq])
    dserror("The csc matrix has not the same size as the csr");
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -2220,15 +2220,15 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief extract the inverse of the diagonal from csr matrix                                         
+\brief extract the inverse of the diagonal from csr matrix
 
-<pre>                                                        m.gee 10/02 
+<pre>                                                        m.gee 10/02
 
 </pre>
 \param Dinv       DOUBLE*         (o)   vector to hold inverse of D=diag(csr)
 \param csr        DBCSR*          (i)   the csr matrix
 \param numeq      INT             (i)   local number of rows in csr matrix and length of Dinv
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_csr_getdinv(DOUBLE *Dinv, DBCSR *csr, INT numeq)
@@ -2238,7 +2238,7 @@ INT           *ia,*ja,*update;
 DOUBLE        *a;
 INT            actrow,colstart,colend;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_csr_getdinv");
 #endif
 /*----------------------------------------------------------------------*/
@@ -2267,7 +2267,7 @@ for (i=0; i<numeq; i++)
    }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

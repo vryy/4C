@@ -10,11 +10,11 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-/* RULE HOW TO ADD NEW FILES AND FUNCTIONS: 
+/* RULE HOW TO ADD NEW FILES AND FUNCTIONS:
    1.) THE FILENAMES ARE IN ALPHABETICAL ORDER !!!
    2.) FUNCTIONS ARE IN THE SAME ORDER LIKE IN THE FILE!!!
-*/   
-/*! 
+*/
+/*!
 \addtogroup FLUID
 *//*! @{ (documentation module open)*/
 /************************************************************************
@@ -27,8 +27,8 @@ void fluid_pm(void);
  ************************************************************************/
 void fluid_pm_calamatrix(
                           FIELD           *actfield,
-			  INTRA           *actintra, 
-			  PARTITION       *actpart, 
+			  INTRA           *actintra,
+			  PARTITION       *actpart,
 			  SOLVAR          *actsolv,
 			  SPARSE_ARRAY    *amatrix_oll,
 			  FLUID_DYNAMIC   *fdyn,
@@ -40,20 +40,20 @@ void fluid_pm_calamatrix(
 			  INT             *numeq_full,
 	 		  INT             *numeq_total_full,
 			  CALC_ACTION     *action,
-			  CONTAINER       *container  
-			 );			 
+			  CONTAINER       *container
+			 );
 void fluid_pm_dofrenumber(FIELD      *actfield,
 #ifdef PARALLEL
-                          INT        *saveveldof, 
+                          INT        *saveveldof,
 			  INT        *savepredof,
 			  INT        *newveldof,
 			  INT        *newpredof,
                           INT        *velpointer,
 			  INT        *prepointer,
 #endif
-			  INTRA      *actintra, 
+			  INTRA      *actintra,
 			  PARTITION  *actpart,
-			  DBCSR      *amatrix_csr, 
+			  DBCSR      *amatrix_csr,
 			  DBCSR      *lumpedmass,
 			  INT        *numeq_total_full,
 			  INT        *numeq_full,
@@ -62,20 +62,20 @@ void fluid_pm_dofrenumber(FIELD      *actfield,
 			  INT        *lastdof,
 			  INT         option
 			);
-void assemble_fluid_amatrix( 
-                             CONTAINER *container, 
+void assemble_fluid_amatrix(
+                             CONTAINER *container,
                              ELEMENT   *actvele,
-                             ELEMENT   *actpele, 
-			     INTRA     *actintra 
-			   );       
+                             ELEMENT   *actpele,
+			     INTRA     *actintra
+			   );
 void fluid_pm_lumpedmass(DBCSR *lumpedmass_csr,INTRA *actintra,
-                         DOUBLE *lmass, 
-#ifdef PARALLEL			 
+                         DOUBLE *lmass,
+#ifdef PARALLEL
 			 INT *velpointer, INT *saveveldof,
 #endif
 			 INT *numeq_total);
 void fluid_pm_redcpmat(
-#ifdef PARALLEL                       
+#ifdef PARALLEL
 		       INT *saverowdof,      INT *rowpointer,
                        INT *savecoldof,      INT *colpointer,
 #endif
@@ -84,8 +84,8 @@ void fluid_pm_redcpmat(
 		       DBCSR *matrix_csr,    OLL *matrix_oll);
 void fluid_pm_newdofs(INT            myrank,
                           INT            nproc,
-                          FIELD         *actfield, 
-                          PARTDISCRET   *actpdiscret, 
+                          FIELD         *actfield,
+                          PARTDISCRET   *actpdiscret,
                           INTRA         *actintra,
                           DBCSR         *bdcsr,
 			  INT            dis);
@@ -97,9 +97,9 @@ void fluid_pm_matlmatmul(
                         SPARSE_ARRAY   *m,
 		        SPARSE_TYP     *m_typ,
                         DOUBLE      *lmass
-		        );		      
+		        );
 void fluid_pm_matvecmul(ARRAY *rc_a,     ARRAY *r_a, OLL *P_oll,
-                        INTRA *actintra, INT numeq,  INT option);      
+                        INTRA *actintra, INT numeq,  INT option);
 void fluid_pm_lmatmulvec(
                          DOUBLE   *lmat,
 		         DOUBLE   *vec,

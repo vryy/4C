@@ -14,35 +14,35 @@ Maintainer: Malte Neumann
 #include "../solver/solver.h"
 /*----------------------------------------------------------------------*
  | global dense matrices for element routines             m.gee 9/01    |
- | (defined in global_calelm.c, so they are extern here)                |                
+ | (defined in global_calelm.c, so they are extern here)                |
  *----------------------------------------------------------------------*/
 extern struct _ARRAY estif_global;
 extern struct _ARRAY emass_global;
 
 
-/*! 
-\addtogroup OLL 
+/*!
+\addtogroup OLL
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief fills sendbuffers isend und dsend 
+\brief fills sendbuffers isend und dsend
 
 <pre>                                                              mn 02/03
 This function fills the sendbuffers isend und dsend for oll matrices.
 </pre>
-\param    ii            INT    (i)   
-\param    jj            INT    (i)   
-\param    i             INT    (i)   
-\param    j             INT    (i)   
-\param    ii_owner      INT    (i)   
-\param  **isend         INT    (i)   
-\param  **dsend         DOUBLE (i)   
-\param  **estiff        DOUBLE (i)   
-\param    numsend       INT    (i)   
+\param    ii            INT    (i)
+\param    jj            INT    (i)
+\param    i             INT    (i)
+\param    j             INT    (i)
+\param    ii_owner      INT    (i)
+\param  **isend         INT    (i)
+\param  **dsend         DOUBLE (i)
+\param  **estiff        DOUBLE (i)
+\param    numsend       INT    (i)
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling: ---; called by: --- 
+\return void
+\sa calling: ---; called by: ---
 
 *----------------------------------------------------------------------*/
 void add_oll_sendbuff(
@@ -57,7 +57,7 @@ void add_oll_sendbuff(
     INT numsend)
 {
   INT         k;
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("add_oll_sendbuff");
 #endif
   /*----------------------------------------------------------------------*/
@@ -68,7 +68,7 @@ void add_oll_sendbuff(
   isend[k][1]  = ii_owner;
   dsend[k][jj]+= estif[i][j];
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return;
@@ -83,16 +83,16 @@ void add_oll_sendbuff(
 <pre>                                                              mn 02/03
 This function counts the number of equations on this processor
 </pre>
-\param   ii             INT    (i)   
-\param **cdofs          INT    (i)   
-\param   ncdofs         INT    (i)   
-\param  *iscoupled      INT    (i)   
-\param  *isowner        INT    (i)   
-\param   nprocs         INT    (i)   
+\param   ii             INT    (i)
+\param **cdofs          INT    (i)
+\param   ncdofs         INT    (i)
+\param  *iscoupled      INT    (i)
+\param  *isowner        INT    (i)
+\param   nprocs         INT    (i)
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling: ---; called by: --- 
+\return void
+\sa calling: ---; called by: ---
 
  *----------------------------------------------------------------------*/
 void add_oll_checkcouple(
@@ -104,7 +104,7 @@ void add_oll_checkcouple(
     INT nprocs)
 {
   INT         i,k;
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("add_oll_checkcouple");
 #endif
   /*----------------------------------------------------------------------*/
@@ -124,7 +124,7 @@ void add_oll_checkcouple(
     }
   }
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return;
@@ -136,7 +136,7 @@ void add_oll_checkcouple(
 \brief assembles global oll matrix
 
 <pre>                                                              mn 02/03
-This function assembles the element matrices to a global oll matrix, 
+This function assembles the element matrices to a global oll matrix,
 sequentially or parallel taking care of the couplig conditions
 </pre>
 \param *actpart        PARTITION (i)   the active partition
@@ -146,8 +146,8 @@ sequentially or parallel taking care of the couplig conditions
 \param *oll2           OLL       (o)   the second global oll matrix
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling: ---; called by: --- 
+\return void
+\sa calling: ---; called by: ---
 
 *----------------------------------------------------------------------*/
 void  add_oll(
@@ -182,7 +182,7 @@ void  add_oll(
   INT       **isend2 = NULL;         /* p to sendbuffer to communicate coupling cond */
   DOUBLE    **dsend2 = NULL;         /* p to sendbuffer to communicate coupling cond */
   INT         nsend = 0;
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("add_oll");
 #endif
   /*----------------------------------------------------------------------*/
@@ -202,8 +202,8 @@ void  add_oll(
   cdofs      = actpart->pdis[0].coupledofs.a.ia;
   ncdofs     = actpart->pdis[0].coupledofs.fdim;
   /*---------------------------------- put pointers to sendbuffers if any */
-#ifdef PARALLEL 
-  if (oll1->couple_i_send) 
+#ifdef PARALLEL
+  if (oll1->couple_i_send)
   {
     isend1 = oll1->couple_i_send->a.ia;
     dsend1 = oll1->couple_d_send->a.da;
@@ -222,7 +222,7 @@ void  add_oll(
     for (j=0; j<actele->node[i]->numdf; j++)
     {
       lm[counter]    = actele->node[i]->dof[j];
-#ifdef PARALLEL 
+#ifdef PARALLEL
       owner[counter] = actele->node[i]->proc;
 #endif
       counter++;
@@ -237,13 +237,13 @@ void  add_oll(
   {
     ii = lm[i];
     /*-------------------------------------------- loop only my own rows */
-#ifdef PARALLEL 
+#ifdef PARALLEL
     if (owner[i]!=myrank) continue;
 #endif
     /*------------------------------------- check for boundary condition */
     if (ii>=numeq_total) continue;
     /*------------------------------------- check for coupling condition */
-#ifdef PARALLEL 
+#ifdef PARALLEL
     if (ncdofs)
     {
       ii_iscouple = 0;
@@ -274,10 +274,10 @@ void  add_oll(
           add_oll_sendbuff(ii,jj,i,j,ii_owner,isend2,dsend2,emass,nsend);
       } /* end loop over j */
     }
-    /* ------------------------------------------------------------------- */ 
+    /* ------------------------------------------------------------------- */
   }/* end loop over i */
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return;
@@ -297,8 +297,8 @@ This function exchanges the coupled dofs for an oll matrix
 \param *oll            OLL    (i)   the oll matrix
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling: ---; called by: --- 
+\return void
+\sa calling: ---; called by: ---
 
  *----------------------------------------------------------------------*/
 void exchange_coup_oll(
@@ -307,7 +307,7 @@ void exchange_coup_oll(
     OLL           *oll)
 {
 
-#ifdef PARALLEL 
+#ifdef PARALLEL
   INT            i;
   INT            ii,jj;
   INT            tag;
@@ -332,11 +332,11 @@ void exchange_coup_oll(
   MPI_Comm      *ACTCOMM;
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("exchange_coup_oll");
 #endif
   /*----------------------------------------------------------------------*/
-#ifdef PARALLEL 
+#ifdef PARALLEL
   /*----------------------------------------------------------------------*/
   imyrank = actintra->intra_rank;
   inprocs = actintra->intra_nprocs;
@@ -374,7 +374,7 @@ void exchange_coup_oll(
     MPI_Isend(&(dsend[i][0]),numeq_total,MPI_DOUBLE,isend[i][1],isend[i][0],(*ACTCOMM),&(dsendrequest[i]));
   }/*------------------------------------------------ end of sending loop */
   /*------------------------------- now loop over the dofs to be received */
-  /* 
+  /*
      do blocking receives, 'cause one can't add something to the system
      matrix, which has not yet arrived, easy, isn't it?
      */
@@ -391,7 +391,7 @@ void exchange_coup_oll(
     source = irecv_status[i].MPI_SOURCE;
 
     /* do not use wildcards for second recv, we know now where it should come from */
-    MPI_Recv(&(drecv[i][0]),numeq_total,MPI_DOUBLE,source,tag,(*ACTCOMM),&(drecv_status[i]));   
+    MPI_Recv(&(drecv[i][0]),numeq_total,MPI_DOUBLE,source,tag,(*ACTCOMM),&(drecv_status[i]));
     if (drecv_status[i].MPI_ERROR) dserror("An error in MPI - communication occured !");
 
     /* now add the received data properly to my own piece of sparse matrix */
@@ -408,11 +408,11 @@ void exchange_coup_oll(
   /*----------------------------------------------------------------------
     do a barrier, because this is the end of the assembly, the oll matrix
     is now ready for solve
-    */ 
+    */
   MPI_Barrier(*ACTCOMM);
-#endif /*---------------------------------------------- end of PARALLEL */ 
+#endif /*---------------------------------------------- end of PARALLEL */
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return;

@@ -1,6 +1,6 @@
 /*!---------------------------------------------------------------------
 \file
-\brief routines writing data to plot file 0.plt 
+\brief routines writing data to plot file 0.plt
 
 <pre>
 Maintainer: Christiane Foerster
@@ -10,8 +10,8 @@ Maintainer: Christiane Foerster
 </pre>
 
 ---------------------------------------------------------------------*/
-/*! 
-\addtogroup OUTPUT 
+/*!
+\addtogroup OUTPUT
 *//*! @{ (documentation module open)*/
 #include "../headers/standardtypes.h"
 #include "../ale2/ale2.h"
@@ -21,7 +21,7 @@ Maintainer: Christiane Foerster
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -32,18 +32,18 @@ extern struct _FILES  allfiles;
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par;                      
+ extern struct _PAR   par;
 
 /*!----------------------------------------------------------------------
 \brief plot lift, drag and angular momentum over time
 
 <pre>                                                       chfoe 01/04
 Writes lift and drag forces as well as the angular momentum and the actual
-time to 0.plt file to serve gnuplot plots. 
+time to 0.plt file to serve gnuplot plots.
 This routine is usefull for 2D fluid calculations only.
 
 liftdrag[0]     drag force (global x-direction)
@@ -52,7 +52,7 @@ liftdrag[2]     angular momentum
 </pre>
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa
 
 *-----------------------------------------------------------------------*/
@@ -66,7 +66,7 @@ void plot_liftdrag(
   INT            i;
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("plot_liftdrag");
 #endif
 
@@ -77,7 +77,7 @@ if (par.myrank != 0) goto end;
 
 fprintf(allfiles.gnu,"%10.5f  ", time);
 for (i=0; i<2*(FLUID_NUM_LD+1); i++)
-  fprintf(allfiles.gnu,"%8.7f  %8.7f  %8.7f  %8.7f  %8.7f  %8.7f  ", 
+  fprintf(allfiles.gnu,"%8.7f  %8.7f  %8.7f  %8.7f  %8.7f  %8.7f  ",
       liftdrag[i*6+0], liftdrag[i*6+1], liftdrag[i*6+2],
       liftdrag[i*6+3], liftdrag[i*6+4], liftdrag[i*6+5]);
 fprintf(allfiles.gnu,"\n");
@@ -89,7 +89,7 @@ fflush(allfiles.gnu);
 end:
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -105,25 +105,25 @@ return;
 
 This routine simply plots fluid dynamic variables to *.plt-file.
 
-</pre>   
+</pre>
 \param	time		DOUBLE		(i)	actual simulation time
 \param	step		INT		(i)	step number
 \param	norm		DOUBLE		(i)	actual LTE-norm
 \param 	dt		DOUBLE		(i)	actual step size
-\param 	itnum		INT		(i)	number of iterations needed 
-\return void 
+\param 	itnum		INT		(i)	number of iterations needed
+\return void
 
 \warning This routine is automatically used as soon as adaptive time stepping
          is switched on. This could collide with other plotting options.
 ------------------------------------------------------------------------*/
-void plot_lte(	DOUBLE 	time, 
-			INT 	step, 
-			DOUBLE 	norm, 
-			DOUBLE 	dt, 
+void plot_lte(	DOUBLE 	time,
+			INT 	step,
+			DOUBLE 	norm,
+			DOUBLE 	dt,
 			INT 	itnum)
 {
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("plot_lte");
 #endif
 /*------------------------------------------------------- check proc ---*/
@@ -134,10 +134,10 @@ if (par.myrank != 0) goto end;
 if (step == 1)
 {
    fprintf(allfiles.gnu,"# total time  step nr.    LTE norm      stepsize  itnum\n");
-   fprintf(allfiles.gnu,"%12.7f      %i  %14.12f  %12.8f  %i\n", 
+   fprintf(allfiles.gnu,"%12.7f      %i  %14.12f  %12.8f  %i\n",
            0.0, 0, 0.0, dt, 0);
 }
-fprintf(allfiles.gnu,"%12.7f      %i  %14.12f  %12.7f  %i\n", 
+fprintf(allfiles.gnu,"%12.7f      %i  %14.12f  %12.7f  %i\n",
         time, step, norm, dt, itnum);
 fflush(allfiles.gnu);
 
@@ -146,7 +146,7 @@ fflush(allfiles.gnu);
 end:
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -168,13 +168,13 @@ element quality statistics
 \param *actpart   PARTITION (i)   actual partition
 
 \warning Works at the moment for ale2-elements only!
-\return void                                               
-\sa calling: 
+\return void
+\sa calling:
              called by: dyn_ale();
 
 *----------------------------------------------------------------------*/
 #ifdef D_ALE
-void plot_ale_quality(FIELD *field,INT step, INTRA *actintra, 
+void plot_ale_quality(FIELD *field,INT step, INTRA *actintra,
                       PARTITION *actpart)
 {
 INT i;      /* a counter */
@@ -182,7 +182,7 @@ INT numel;  /* number of elements in this discretisation */
 INT numele_total;
 
 DOUBLE quality;     /* current element quality measure */
-DOUBLE square = 0;       
+DOUBLE square = 0;
 DOUBLE min, max;    /* minimal and maximal quality */
 DOUBLE stand_degr;  /* standard degression*/
 DOUBLE average;
@@ -193,7 +193,7 @@ DOUBLE recv=ZERO;
 #endif
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("plot_ale_quality");
 #endif
 
@@ -208,7 +208,7 @@ for (i=0; i<numel; i++)  /* loop over all elements */
 {
    actele = actpart->pdis[0].element[i];
    if (actele->proc!=par.myrank) continue;
-   quality = actele->e.ale2->quality;   
+   quality = actele->e.ale2->quality;
    average += quality;
    min = DMIN(quality,min);
    max = DMAX(quality,max);
@@ -236,13 +236,13 @@ if (par.myrank==0)
 /*----------------------------------------------------- gnuplot file ---*/
    if(step == 1)
    fprintf(allfiles.gnu,"# step nr.  av. quality  standard degr.  min quality max quality\n");
-   fprintf(allfiles.gnu,"%i  %8.7f  %8.7f  %8.7f  %8.7f\n", 
+   fprintf(allfiles.gnu,"%i  %8.7f  %8.7f  %8.7f  %8.7f\n",
            step-1, average, stand_degr, min, max);
    fflush(allfiles.gnu);
 }
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -250,4 +250,4 @@ return;
 } /* end plot_ale_quality */
 #endif /* ALE */
 
-/*! @} (documentation module close)*/       
+/*! @} (documentation module close)*/

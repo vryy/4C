@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief  contains the routine 'wge_disd' which calculates displacement 
+\brief  contains the routine 'wge_disd' which calculates displacement
         derivatives for gradient enhanced wall element
 
 *----------------------------------------------------------------------*/
@@ -8,13 +8,13 @@
 #include "wallge.h"
 #include "wallge_prototypes.h"
 
-/*! 
-\addtogroup WALLGE 
+/*!
+\addtogroup WALLGE
 *//*! @{ (documentation module open)*/
 
 
 /*!----------------------------------------------------------------------
-\brief  contains the routine 'wge_disd' which calculates displacement 
+\brief  contains the routine 'wge_disd' which calculates displacement
         derivatives for gradient enhanced wall element
 
 *----------------------------------------------------------------------*/
@@ -32,7 +32,7 @@ INT i,dnode, node_start,enode;
 DOUBLE disd[4];
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("wge_strain");
 #endif
 /*----------------------------------------------------------------------*/
@@ -67,12 +67,12 @@ for (enode=0; enode<4; enode++)
 } /* end of loop over equivalent-strain-nodes */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 #endif /*D_WALLGE*/
-return; 
+return;
 } /* end of wge_strain */
 /*----------------------------------------------------------------------*/
 /*! @} (documentation module close)*/

@@ -1,12 +1,12 @@
 /*!----------------------------------------------------------------------
 \file
-\brief headerfile for 1D interface element, 
+\brief headerfile for 1D interface element,
        containing structures
 
 *----------------------------------------------------------------------*/
 #ifdef D_INTERF
 
-/*! 
+/*!
 \addtogroup INTERF
 *//*! @{ (documentation module open)*/
 
@@ -15,27 +15,27 @@
 \brief 1D interface element
 
 <pre>                                                            ah 08/03
-This structure contains the working array at the Gaussian points for the 
+This structure contains the working array at the Gaussian points for the
 1D interface element
 </pre>
 
 *----------------------------------------------------------------------*/
 typedef struct _IF_IP_WA
 {
-INT          yip;         /* displacement jump normal  */              
-DOUBLE       jump_ut_pl;  /* plastic displacement jump tangential  */              
-DOUBLE       Q[2][2];     /* material tangent  */              
-DOUBLE       dn;          /* damage normal  */              
-DOUBLE       dt;          /* damage tangential  */              
-DOUBLE       Tn;          /* stress normal  */              
-DOUBLE       Tt;          /* stress tangential  */              
+INT          yip;         /* displacement jump normal  */
+DOUBLE       jump_ut_pl;  /* plastic displacement jump tangential  */
+DOUBLE       Q[2][2];     /* material tangent  */
+DOUBLE       dn;          /* damage normal  */
+DOUBLE       dt;          /* damage tangential  */
+DOUBLE       Tn;          /* stress normal  */
+DOUBLE       Tt;          /* stress tangential  */
 } IF_IP_WA;
 
 /*!----------------------------------------------------------------------
 \brief 1D interface element
 
 <pre>                                                            ah 08/03
-This structure contains the working arrays for the 
+This structure contains the working arrays for the
 1D interface element
 </pre>
 
@@ -50,21 +50,21 @@ IF_IP_WA      *ipwa;
 \brief 1D interface element
 
 <pre>                                                            ah 08/03
-This structure contains all specific information for the 
+This structure contains all specific information for the
 1D interface element
 </pre>
 
 *----------------------------------------------------------------------*/
 typedef struct _INTERF
 {
-INT           nGP;   
+INT           nGP;
 DOUBLE        thick;              /*!< thickness perpend. to wallplane */
-IF_ELE_WA     *elewa;         
+IF_ELE_WA     *elewa;
 enum
     {
     if_xy,                         /*!< stresses in global orientaion */
     if_tn                          /*!< stresses in local orientaion */
-    } stresstyp; 
+    } stresstyp;
 struct _ARRAY4D  stress_GP;
 struct _ARRAY4D  stress_ND;
 } INTERF;
@@ -98,8 +98,8 @@ void interf(PARTITION   *actpart,
             ARRAY       *emass_global,
             ARRAY       *intforce_global,
             CALC_ACTION *action,
-            CONTAINER   *container); 
-         
+            CONTAINER   *container);
+
 /*----------------------------------------------------------------------*
  | read input of interface element                         mn 05/03    |
  *----------------------------------------------------------------------*/

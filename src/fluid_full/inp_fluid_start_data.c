@@ -34,16 +34,16 @@ extern struct _MATERIAL  *mat;
  | variables needed for parallel comp.                    m.gee 8/00    |
  *----------------------------------------------------------------------*/
 extern struct _PAR   par;
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief input from file 'fluid_start-data'
 
 <pre>                                                         genk 07/02
 
 in this routine the inital fluid data are read form 'fluid_start_data'
 and stored in the array 'start'
-			     
-</pre>   
-\return void  
+
+</pre>
+\return void
 ------------------------------------------------------------------------*/
 void inp_fluid_start_data( FIELD   *actfield,
                            FLUID_DYNAMIC *fdyn
@@ -72,10 +72,10 @@ DOUBLE *velz     = NULL;
 ARRAY   globloc;                   /* global - local node Ids            */
 NODE  *actnode;
 ELEMENT *actele;
-char   *foundit = NULL;   
+char   *foundit = NULL;
 char   *end;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inp_fluid_start_data");
 #endif
 
@@ -86,37 +86,37 @@ if (par.myrank==0)
    if (in == NULL) irc=0;
 }
 #ifdef PARALLEL
-MPI_Bcast(&irc,1,MPI_INT,0,MPI_COMM_WORLD); 
-#endif 	         
+MPI_Bcast(&irc,1,MPI_INT,0,MPI_COMM_WORLD);
+#endif
 if (irc==0)
 {
    if (par.myrank==0)
    printf("opening of file fluid_start.data failed\n");
 #ifdef PARALLEL
    MPI_Finalize();
-#else               
+#else
    exit(1);
-#endif	 
-}         
-/*------------------------------------------------- store / check values */      
+#endif
+}
+/*------------------------------------------------- store / check values */
 numnp = actfield->dis[0].numnp;
 numdf = fdyn->numdf;
 /*------------------------------------- allocate vector for storing data */
 velx = amdef("velx",&velx_a,numnp,1,"DV");
 vely = amdef("vely",&vely_a,numnp,1,"DV");
 pre  = amdef("pre" ,&pre_a ,numnp,1,"DV");
-if (numdf==4) 
+if (numdf==4)
 velz = amdef("velz",&velz_a,numnp,1,"DV");
 /*------------------------------------- determine global local node Ids */
 amdef("globloc",&globloc,genprob.nnode,1,"IV");
 aminit(&globloc,&mone);
 for (i=0;i<numnp;i++)
 {
-   actnode = &(actfield->dis[0].node[i]);  
+   actnode = &(actfield->dis[0].node[i]);
    globloc.a.iv[actnode->Id] = actnode->Id_loc;
 }
 
-/*------------------------------------------ read initial data from file */ 
+/*------------------------------------------ read initial data from file */
 if (par.myrank==0)
 {
   if (fdyn->resstep==-1)
@@ -145,11 +145,11 @@ if (par.myrank==0)
            dserror("An error occured reading a line from fluid_start.data");
      }
      if (foundstep==1)
-        datastep=stepin;     
+        datastep=stepin;
      else
         dserror("Restart step not in file fluid_start.data\n");
   }
-  else 
+  else
      dserror("An error occured reading a line from fluid_start.data");
   rewind(in);
   if (fgets(line,499,in)==NULL)
@@ -181,21 +181,21 @@ if (par.myrank==0)
      foundit = strstr(line," ");
      foundit=strpbrk(foundit,"-.1234567890");
      /*-------------------------------------------- read global node Id */
-     num = strtod(foundit,&end)-1;   
+     num = strtod(foundit,&end)-1;
      /*---------------------------------------- determine local node Id */
      num = globloc.a.iv[num];
      if (num<0) dserror("node number not valid!\n");
      foundit = strstr(foundit," ");
      foundit=strpbrk(foundit,"-.1234567890");
-     velx[num] = strtod(foundit,&end); 
+     velx[num] = strtod(foundit,&end);
      foundit = strstr(foundit," ");
      foundit=strpbrk(foundit,"-.1234567890");
-     vely[num] = strtod(foundit,&end); 
+     vely[num] = strtod(foundit,&end);
      if (numdf==4)
      {
         foundit = strstr(foundit," ");
         foundit=strpbrk(foundit,"-.1234567890");
-        velz[num] = strtod(foundit,&end); 
+        velz[num] = strtod(foundit,&end);
      }
   }
   /*---------------------------------------------- plausibility checkes */
@@ -213,34 +213,34 @@ if (par.myrank==0)
      foundit = strstr(line," ");
      foundit=strpbrk(foundit,"-.1234567890");
      /*-------------------------------------------- read global node Id */
-     num = strtod(foundit,&end)-1;   
+     num = strtod(foundit,&end)-1;
      /*---------------------------------------- determine local node Id */
      num = globloc.a.iv[num];
      if (num<0) dserror("node number not valid!\n");
      foundit = strstr(foundit," ");
      foundit=strpbrk(foundit,"-.1234567890");
-     pre[num] = strtod(foundit,&end); 
+     pre[num] = strtod(foundit,&end);
   }
   /*---------------------------------------------- plausibility checkes */
   if (fgets(line,499,in)==NULL)
      dserror("An error occured reading a line from fluid_start.data\n");
   if (strstr(line,"END VALUES") == NULL)
-     dserror("Number of Fluid nodes not correct in fluid_start.data\n");  
-   
+     dserror("Number of Fluid nodes not correct in fluid_start.data\n");
+
 /*----------------------------------------- close file fluid_start.data */
    fclose(in);
    printf("initial field read from    fluid_start.data\n\n");
-}	     
-    
+}
+
 /*----------------------------------------------- broadcast array start */
 #ifdef PARALLEL
-MPI_Bcast(velx,numnp,MPI_DOUBLE,0,MPI_COMM_WORLD); 
-MPI_Bcast(vely,numnp,MPI_DOUBLE,0,MPI_COMM_WORLD); 
+MPI_Bcast(velx,numnp,MPI_DOUBLE,0,MPI_COMM_WORLD);
+MPI_Bcast(vely,numnp,MPI_DOUBLE,0,MPI_COMM_WORLD);
 if (numdf==4)
-MPI_Bcast(velz,numnp,MPI_DOUBLE,0,MPI_COMM_WORLD); 
-MPI_Bcast(pre ,numnp,MPI_DOUBLE,0,MPI_COMM_WORLD); 
-MPI_Bcast(&time,1,MPI_DOUBLE,0,MPI_COMM_WORLD); 
-MPI_Bcast(&step,1,MPI_DOUBLE,0,MPI_COMM_WORLD); 
+MPI_Bcast(velz,numnp,MPI_DOUBLE,0,MPI_COMM_WORLD);
+MPI_Bcast(pre ,numnp,MPI_DOUBLE,0,MPI_COMM_WORLD);
+MPI_Bcast(&time,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+MPI_Bcast(&step,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 #endif
 /*------------------------------------------ copy values to the nodes  */
 fdyn->acttime=time;
@@ -281,27 +281,27 @@ amdel(&pre_a);
 amdel(&globloc);
 /*----------------------------------------------------------------------*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
-} 
-/* end of inp_fluid_start_data */ 
+}
+/* end of inp_fluid_start_data */
 
 /*!---------------------------------------------------------------------
-\brief find a character string in fluid_start.data					     
+\brief find a character string in fluid_start.data
 
-<pre>                                                        genk 07/03 
+<pre>                                                        genk 07/03
 searches for a given character string in fluid_start.data
 </pre>
-\param string   char[]   (i)   string to search for in input                                
-\return void                                               
+\param string   char[]   (i)   string to search for in input
+\return void
 
 ------------------------------------------------------------------------*/
 void inp_fluid_frfind(char string[])
 {
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inp_fluid_frfind");
 #endif
 
@@ -320,7 +320,7 @@ while ( strstr(line,string) == NULL )
 }
 end:
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

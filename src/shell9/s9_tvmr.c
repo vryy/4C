@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 
- - s9_tvmr: which calculates all the metrics in the middle surface of each 
+\brief contains the routine
+ - s9_tvmr: which calculates all the metrics in the middle surface of each
             kinematic layer -> akov, akon, amkov, amkon, ...
 
 
@@ -17,15 +17,15 @@ Maintainer: Stefan Hartmann
 #include "../headers/standardtypes.h"
 #include "shell9.h"
 
-/*! 
-\addtogroup SHELL9 
+/*!
+\addtogroup SHELL9
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief calculates the metrics in the middle surface of each kinematic layer                                      
+\brief calculates the metrics in the middle surface of each kinematic layer
 
 <pre>                     m.gee 6/01              modified by    sh 10/02
-This routine calculates the metrics (akov, akon, amkov, amkon) in the 
+This routine calculates the metrics (akov, akon, amkov, amkon) in the
 middle of each kinematic layer.
 </pre>
 \param  DOUBLE   **x       (i)  coordinates at nodal points
@@ -40,10 +40,10 @@ middle of each kinematic layer.
 \param  DOUBLE   **deriv   (i)  shape function derivatives at GP
 \param  INT        iel     (i)  number of nodes to this element
 \param  DOUBLE  ***a3kvp   (o)  partial derivatives of a3_L for each kinematic layer
-\param  INT        num_klay(i)  number of kin layers to this element  
+\param  INT        num_klay(i)  number of kin layers to this element
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: s9static_keug()       [s9_static_keug.c]
                              s9_stress()           [s9_stress.c]
                              s9_ans_colloqpoints() [s9_ans.c]
@@ -70,13 +70,13 @@ void s9_tvmr(DOUBLE    **x,
 INT    i,j,k,klay,idim,ialpha,inode;
 DOUBLE det_dummy;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9_tvmr");
 #endif
 /*----------------------------------------------------------------------*/
 /*-------------------- loop over all layers ----------------------------*/
-for (klay=0; klay<num_klay; klay++) 
-{  
+for (klay=0; klay<num_klay; klay++)
+{
  /*------------------------ interpolation --------- a1,a2 (kov.) ------*/
   for (idim=0; idim<3; idim++)
   {
@@ -113,10 +113,10 @@ for (klay=0; klay<num_klay; klay++)
      for (j=i; j<3; j++)
      {
         amkov[i][j][klay]=0.0;
-        for (k=0; k<3; k++) 
+        for (k=0; k<3; k++)
         amkov[i][j][klay] += akov[k][i][klay]*akov[k][j][klay];
      }
-  }   
+  }
         amkov[1][0][klay] = amkov[0][1][klay];
         amkov[2][0][klay] = amkov[0][2][klay];
         amkov[2][1][klay] = amkov[1][2][klay];
@@ -144,7 +144,7 @@ for (klay=0; klay<num_klay; klay++)
 
 } /*---------------- end loop over all layers ---------------------------*/
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

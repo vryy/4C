@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 'beam3' which is the main beam3 control 
+\brief contains the routine 'beam3' which is the main beam3 control
 routine
 
 <pre>
@@ -27,7 +27,7 @@ declared in src/headers/materials.h
 extern struct _MATERIAL  *mat;
 
 
-/*! 
+/*!
 \addtogroup BEAM3
 *//*! @{ (documentation module open)*/
 
@@ -49,12 +49,12 @@ This routine is the main beam3 control routine
 \param *container       CONTAINER   (i/o) container
 
 \warning There is nothing special in this routine
-\return void                                               
-\sa calling:   b3_init() , b3_cal_ele() , b3_boplin3D, b3_trans_stf() , 
-               b3_load() , b3_loadlin() , b3_cal_force() , 
+\return void
+\sa calling:   b3_init() , b3_cal_ele() , b3_boplin3D, b3_trans_stf() ,
+               b3_load() , b3_loadlin() , b3_cal_force() ,
 	       b3_mat_plast_mises() , b3_setdirich() , b3_write_restart() ,
 	       b3_read_restart()
-    called by: calinit() , calelm() 
+    called by: calinit() , calelm()
 
 *----------------------------------------------------------------------*/
 void beam3(FIELD       *actfield,
@@ -71,10 +71,10 @@ void beam3(FIELD       *actfield,
 B3_DATA      actdata;  /* actual data */
 MATERIAL    *actmat;   /* actual material */
 
-INT          imyrank;  
+INT          imyrank;
 DOUBLE      *intforce; /* internal force vector */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("beam3");
 #endif
 /*----------------------------------------------------------------------*/
@@ -96,7 +96,7 @@ case calc_struct_init:
    b3_mat_plast_mises(ZERO,ZERO,ZERO,ZERO,ZERO,ZERO,NULL,NULL,0,NULL,NULL,0,0,1);
    b3_setdirich(actfield);
 
-   
+
 break;/*----------------------------------------------------------------*/
 /*----------- calculate linear stiffness matrix ------------------------*/
 case calc_struct_linstiff:
@@ -106,7 +106,7 @@ break;
 /*--------------- calculate global element load vector -----------------*/
 case calc_struct_eleload:
    imyrank = actintra->intra_rank;
-   if (imyrank==ele->proc) 
+   if (imyrank==ele->proc)
    {
       actmat = &(mat[ele->mat-1]);
       b3_cal_ele(ele,&actdata,actmat,estif_global,intforce,action,0);
@@ -125,7 +125,7 @@ break;
 /*----------- update stresses from last step ---------------------------*/
 case calc_struct_update_istep:
    actmat = &(mat[ele->mat-1]);
-   b3_cal_ele(ele,&actdata,actmat,estif_global,intforce,action,0);   
+   b3_cal_ele(ele,&actdata,actmat,estif_global,intforce,action,0);
 break;
 /*------------------------------------------------------- write restart */
 case write_restart:
@@ -140,10 +140,10 @@ default:
 break;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 #endif
-return; 
+return;
 } /* end of beam3 */
 /*! @} (documentation module close)*/

@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Michael Gee
@@ -57,7 +57,7 @@ DOUBLE xu32=0.0;
 DOUBLE xu13=0.0;
 DOUBLE xu23=0.0;
 DOUBLE xu33=0.0;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_tfte");
 #endif
 /*----------------------------------------------------------------------*/
@@ -123,7 +123,7 @@ force[14][ngauss] += (s21*xu11+s22*xu21+s23*xu31) * wgthe3;
 /*..................................................................M33 */
 force[15][ngauss] += (s31*xu13+s32*xu23+s33*xu33) * wgthe3;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

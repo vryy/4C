@@ -14,14 +14,14 @@ Maintainer: Michael Gee
 ---------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
-/*! 
-\addtogroup MLPCG 
+/*!
+\addtogroup MLPCG
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
 \brief the multilevel preconditioner main structure
 
-<pre>                                                         m.gee 09/02    
+<pre>                                                         m.gee 09/02
 defined in solver_mlpcg.c
 </pre>
 
@@ -29,17 +29,17 @@ defined in solver_mlpcg.c
 extern struct _MLPRECOND mlprecond;
 
 /*!---------------------------------------------------------------------
-\brief ilu(n) smoother with overlap                                             
+\brief ilu(n) smoother with overlap
 
-<pre>                                                        m.gee 11/02 
+<pre>                                                        m.gee 11/02
 
 </pre>
 \param z            DOUBLE*      (o)   the solution of the smoothing
 \param r            DOUBLE*      (i)   the right hand side
 \param csr          DBCSR*       (i)   the matrix to smooth with
 \param nsweep       INT          (i)   n in ilu(n)
-\param actintra     INTRA*       (i)   the intra-communicator of this field                  
-\return void                                               
+\param actintra     INTRA*       (i)   the intra-communicator of this field
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_precond_smo_ILUn_overlap(DOUBLE *z, DOUBLE *r, DBCSR *csr, INT nsweep, INTRA *actintra)
@@ -67,7 +67,7 @@ ARRAY          dsend_a;
 MPI_Request   *request;
 MPI_Status     status;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_precond_smo_ILUn_overlap");
 #endif
 /*----------------------------------------------------------------------*/
@@ -127,7 +127,7 @@ c           ierr  = -2   --> The matrix L overflows the array al.
 c           ierr  = -3   --> The matrix U overflows the array alu.
 c           ierr  = -4   --> Illegal value for lfil.
 c           ierr  = -5   --> zero row encountered in A or U.
-*/        
+*/
    if (ierr != 0)
    {
       if (ierr>0)
@@ -147,7 +147,7 @@ c           ierr  = -5   --> zero row encountered in A or U.
          amdel(&w        );
          amdel(&jw       );
          goto tryagain;
-      } 
+      }
    }
    /*----------------------------------- set flag, that ilu is factored */
    ilu->is_factored = mlprecond.ncall;
@@ -207,7 +207,7 @@ c           ierr  = -2   --> The matrix L overflows the array al.
 c           ierr  = -3   --> The matrix U overflows the array alu.
 c           ierr  = -4   --> Illegal value for lfil.
 c           ierr  = -5   --> zero row encountered in A or U.
-*/        
+*/
    if (ierr != 0)
    {
       if (ierr>0)
@@ -228,7 +228,7 @@ c           ierr  = -5   --> zero row encountered in A or U.
          amdel(&w        );
          amdel(&jw       );
          goto tryagain2;
-      } 
+      }
    }
    /*----------------------------------- set flag, that ilu is factored */
    ilu->is_factored = mlprecond.ncall;
@@ -252,7 +252,7 @@ for (n=0; n<nproc; n++)
       dof   = ilu->gdofsend.a.ia[n][i+1];
       index = find_index(dof,csr->update.a.iv,csr->numeq);
       if (index==-1) dserror("Cannot find local dof");
-      ilu->sendbuff.a.da[n][i+1] = r[index]; 
+      ilu->sendbuff.a.da[n][i+1] = r[index];
    }
 }
 /*----------------------------------------------------------- make send */
@@ -362,7 +362,7 @@ amdel(&irecv_a);
 amdel(&drecv_a);
 amdel(&dsend_a);
 #endif /* end of #ifdef PARALLEL */
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -371,18 +371,18 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief get ghost rows to a given overlap                                          
+\brief get ghost rows to a given overlap
 
-<pre>                                                        m.gee 12/02 
+<pre>                                                        m.gee 12/02
 
 </pre>
 \param csr        DBCSR*          (i)   the csr matrix
 \param ocsr       DBCSR*          (o)   the csr matrix which overlaps
-\param ilu        DBCSR*          (o)   the csr matrix which overlaps and will hold the ilu 
+\param ilu        DBCSR*          (o)   the csr matrix which overlaps and will hold the ilu
 \param overlap    INT*            (i)   degree of overlap
 \param oupdate    INT**           (o)   adress of the overalping update vector pointer
-\param actintra   INTRA*          (i)   the communicator                 
-\return void                                               
+\param actintra   INTRA*          (i)   the communicator
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_csr_overlap(DBCSR *csr, DBCSR *ocsr, DBCSR *ilu, INT overlap, INTRA *actintra)
@@ -450,7 +450,7 @@ INT      ione=-1;
 MPI_Request   *request;
 MPI_Status     status;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_csr_overlap");
 #endif
 /*----------------------------------------------------------------------*/
@@ -484,7 +484,7 @@ if (nrequest == 0) dserror("Something wrong in overlap of ILU");
 /*
 NOTE:
 - The piece of my stiffness matrix is different for every neighbour
-- Overlap is at least 1, so find the rows 
+- Overlap is at least 1, so find the rows
 */
 /* make a guess */
 nupdatesend = numeq-fcdindex;
@@ -546,7 +546,7 @@ for (i=1; i<overlap; i++)
             updatesend[n][updatesend[n][0]+1] = actcol;
             updatesend[n][0]++;
          }
-         
+
       }
       /* delete the doubles */
       for (j=0; j<updatesend[n][0]; j++)
@@ -630,13 +630,13 @@ amdef("ja"    ,&(ocsr->ja)    ,nnzguess  ,1,"IV");
 amdef("a"     ,&(ocsr->a)     ,nnzguess  ,1,"DV");
 aminit(&(ocsr->ja),(void*)(&ione));
 counter=0;
-for (i=0; i<ocsr->numeq; i++) 
+for (i=0; i<ocsr->numeq; i++)
 {
    ocsr->ia.a.iv[i] = counter;
    counter += rowguess;
 }
    ocsr->ia.a.iv[i] = counter;
-for (i=0; i<noupdate; i++) 
+for (i=0; i<noupdate; i++)
    ocsr->update.a.iv[i] = oupdate[i];
 for (i=0; i<nproc; i++)
 {
@@ -775,7 +775,7 @@ if (ilu->gdofsend.Typ != cca_IA)
 {
    counter=0;
    for (n=0; n<nproc; n++)
-      if (counter<updatesend[n][0]) 
+      if (counter<updatesend[n][0])
          counter = updatesend[n][0];
    counter++;
    amredef(&updatesend_a,nproc,counter,"IA");
@@ -804,19 +804,19 @@ amdel(&iasend_a);
 amdel(&jasend_a);
 amdel(&asend_a);
 #endif /* end of #ifdef PARALLEL */
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of mlpcg_csr_overlap */
 
 /*!---------------------------------------------------------------------
-\brief change global dofs to local dofs in fortran style                                        
+\brief change global dofs to local dofs in fortran style
 
-<pre>                                                        m.gee 11/02 
+<pre>                                                        m.gee 11/02
 </pre>
 \param matrix      DBCSR*    (i) the csr to be extracted from
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_csr_localnumsf_overlap(DBCSR *matrix)
@@ -826,7 +826,7 @@ INT        numeq,*ia,*ja,*update,index;
 INT        nnz;
 INT        shift,*bins;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_csr_localnumsf_overlap");
 #endif
 /*----------------------------------------------------------------------*/
@@ -851,28 +851,28 @@ for (i=0; i<=numeq; i++)
 /*----------------------------------------------------------------------*/
 CCAFREE(bins);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of mlpcg_csr_localnumsf_overlap */
 
 /*!---------------------------------------------------------------------
-\brief overlap mutliply with the preconditioner y += A tilde * x * fac                                            
+\brief overlap mutliply with the preconditioner y += A tilde * x * fac
 
-<pre>                                                        m.gee 1/03 
+<pre>                                                        m.gee 1/03
 
 </pre>
 \param y            DOUBLE*      (o)   the solution of y += A*x*fac
-\param A            DBCSR*       (i)   the matrix 
+\param A            DBCSR*       (i)   the matrix
 \param x            DOUBLE*      (i)   the right hand side
 \param fac          DOUBLE       (i)   the factor fac
 \param init         INT          (i)   init=1-> y = A*x*fac init=0->y += A*x*fac
-\param actintra     INTRA*       (i)   the intra-communicator of this field                  
-\return void                                               
+\param actintra     INTRA*       (i)   the intra-communicator of this field
+\return void
 
 ------------------------------------------------------------------------*/
-void mlpcg_matvec_asm_overlap(DOUBLE       *y, 
+void mlpcg_matvec_asm_overlap(DOUBLE       *y,
                               DBCSR        *A,
                               DOUBLE       *x,
                               DOUBLE        fac,
@@ -903,7 +903,7 @@ ARRAY          dsend_a;
 MPI_Request   *request;
 MPI_Status     status;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_matvec_asm_overlap");
 #endif
 /*----------------------------------------------------------------------*/
@@ -989,7 +989,7 @@ for (i=0; i<ilu->numeq; i++)
    ywork[i] = sum;
 }
 /*------------------------------------------ wait for isends to finish */
-for (i=0; i<nrequest; i++) 
+for (i=0; i<nrequest; i++)
    MPI_Wait(&(request[i]),&status);
 /*----------------------------------------- fill sendbuffer from ywork */
 dsend = amdef("dsend",&dsend_a,nproc,irecv_a.sdim,"DA");
@@ -1014,7 +1014,7 @@ for (n=0; n<nproc; n++)
 }
 nrequest = j;
 /*------------------------------- put my own piece of ywork back to y */
-if (init) 
+if (init)
    dveczero(y,&(A->numeq));
 /*-------------------------------------------------- find first entry */
 index = find_index(A->update.a.iv[0],ilu->update.a.iv,ilu->numeq);
@@ -1040,7 +1040,7 @@ for (n=0; n<nproc; n++)
    }
 }
 /*----------------------------------------- wait for isends to finish */
-for (i=0; i<nrequest; i++) 
+for (i=0; i<nrequest; i++)
    MPI_Wait(&(request[i]),&status);
 /*----------------------------------------------------------- tidy up */
 CCAFREE(request);
@@ -1049,7 +1049,7 @@ CCAFREE(ywork);
 amdel(&irecv_a);
 amdel(&drecv_a);
 amdel(&dsend_a);
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 #endif /* end of #ifdef PARALLEL */

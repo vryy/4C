@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -16,7 +16,7 @@ Maintainer: Malte Neumann
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -26,7 +26,7 @@ extern struct _FILES  allfiles;
  | pointer to allocate dynamic variables if needed                      |
  | dedfined in global_control.c                                         |
  *----------------------------------------------------------------------*/
-extern struct _DYNAMIC *dyn;   
+extern struct _DYNAMIC *dyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 02/02    |
  | number of load curves numcurve                                       |
@@ -44,7 +44,7 @@ void inp_cond_curve()
 {
 INT  ierr;
 INT  i;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inp_cond_curve");
 #endif
 /*----------------------------------------------------------------------*/
@@ -96,7 +96,7 @@ inp_read_curve("--CURVE3");
 inp_read_curve("--CURVE4");
 inp_read_curve("--CURVE5");
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -119,7 +119,7 @@ INT      counter=0;
 char     buffer[50];
 CURVE   *actcurve = NULL;
 char    *colpointer;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inp_read_curve");
 #endif
 /*----------------------------------------------------------------------*/
@@ -131,7 +131,7 @@ if (ierr==1) goto end;
 /*------------------------------------------- find the first free curve */
 for (i=0; i<numcurve; i++)
 {
-   if (curve[i].Id==0) 
+   if (curve[i].Id==0)
    {
       actcurve=&(curve[i]);
       break;
@@ -155,9 +155,9 @@ for (i=0; i<counter; i++)
 /*------------------------------------------------------- read curve Id */
    frint("CURVE",&(actcurve->Id),&ierr);
    if (ierr!=1) dserror("cannot read CURVE");
-/*--------------------------------------------------- read typ of curve */   
+/*--------------------------------------------------- read typ of curve */
    frchk("Polygonal",&ierr);
-   if (ierr==1) 
+   if (ierr==1)
    {
      actcurve->curvetyp = curve_polygonal;
      actcurve->bystep=0;
@@ -171,9 +171,9 @@ for (i=0; i<counter; i++)
      actcurve->value.a.da[i][0] = strtod(colpointer,&colpointer);
      actcurve->value.a.da[i][1] = strtod(colpointer,&colpointer);
      frdouble("T",&(actcurve->T),&ierr);
-   }   
+   }
    frchk("Explicit",&ierr);
-   if (ierr==1) 
+   if (ierr==1)
    {
       actcurve->curvetyp = curve_explicit;
       frchar("FUNC",buffer,&ierr);
@@ -198,14 +198,14 @@ for (i=0; i<counter; i++)
          dserror("cannot read function of CURVE\n");
       if (ierr!=1) dserror("cannot read CURVE");
       frdouble("c1",&(actcurve->c1),&ierr);
-      if (ierr!=1) dserror("cannot read CURVE");  
-      frdouble("c2",&(actcurve->c2),&ierr); 
-      if (ierr!=1) dserror("cannot read CURVE");                
+      if (ierr!=1) dserror("cannot read CURVE");
+      frdouble("c2",&(actcurve->c2),&ierr);
+      if (ierr!=1) dserror("cannot read CURVE");
    }
 } /* end of loop over curve lines */
 /*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

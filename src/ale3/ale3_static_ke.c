@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 'ale3_static_ke' which integrates the 
+\brief contains the routine 'ale3_static_ke' which integrates the
 linear stiffness for the 3d ale element
 
 <pre>
@@ -15,14 +15,14 @@ Maintainer: Malte Neumann
 #include "../headers/standardtypes.h"
 #include "ale3.h"
 
-/*! 
-\addtogroup Ale 
+/*!
+\addtogroup Ale
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief  integration of linear stiffness ke for ALE element 
+\brief  integration of linear stiffness ke for ALE element
 
-<pre>                                                              mn 06/02 
+<pre>                                                              mn 06/02
 This routine integrates the linear stiffness for the 3d ale element
 
 
@@ -35,17 +35,17 @@ This routine integrates the linear stiffness for the 3d ale element
                                            init != 1 : integration
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ale3_intg(), ale3_funct_deriv(), ale3_jaco(), ale3_bop(),
              ale3_mat_linel(), ale3_keku(), ale3_hourglass();
              called by: ale3()
 
 *----------------------------------------------------------------------*/
 void ale3_static_ke(
-    ELEMENT    *ele, 
-    ALE3_DATA  *data, 
+    ELEMENT    *ele,
+    ALE3_DATA  *data,
     MATERIAL   *mat,
-    ARRAY      *estif_global, 
+    ARRAY      *estif_global,
     INT         init
     )
 {
@@ -59,19 +59,19 @@ void ale3_static_ke(
   DOUBLE              facr=0.0,facs=0.0,fact=0.0;   /* weights at GP */
   DOUBLE              vol;                  /* element volume */
 
-  static DOUBLE   D[6][6];         
-  static DOUBLE   funct[MAXNOD_BRICK1];     
-  static DOUBLE   deriv[3][MAXNOD_BRICK1];     
+  static DOUBLE   D[6][6];
+  static DOUBLE   funct[MAXNOD_BRICK1];
+  static DOUBLE   deriv[3][MAXNOD_BRICK1];
 
-  static DOUBLE   xjm[3][3];         
-  static DOUBLE   bop[6][6*MAXNOD_BRICK1];       
+  static DOUBLE   xjm[3][3];
+  static DOUBLE   bop[6][6*MAXNOD_BRICK1];
 
   static DOUBLE **estif;    /* element stiffness matrix ke */
 
   DOUBLE det;
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("ale3_static_ke");
 #endif
 
@@ -177,11 +177,11 @@ void ale3_static_ke(
 dsassert(ele->locsys==locsys_no,"locsys not implemented for this element!\n");
 end:
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 
-  return; 
+  return;
 } /* end of ale3_static_ke */
 
 #endif

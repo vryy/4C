@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Michael Gee
@@ -13,7 +13,7 @@ Maintainer: Michael Gee
 #include "../headers/standardtypes.h"
 #include "shell8.h"
 
-/* 
+/*
 prototypes from prototypes_sol.h which are necessary here, but prototypes_sol.h
 shall not be included here
 */
@@ -37,7 +37,7 @@ void shell8(FIELD      *actfield,
             ELEMENT    *ele,
             ARRAY      *estif_global,
             ARRAY      *emass_global,
-            ARRAY      *intforce_global,    
+            ARRAY      *intforce_global,
             CALC_ACTION *action,
             CONTAINER  *container)    /* contains variables defined in container.h */
 {
@@ -50,7 +50,7 @@ DOUBLE      *intforce;
 S8_DATA      actdata;
 MATERIAL    *actmat;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("shell8");
 #endif
 /*----------------------------------------------------------------------*/
@@ -128,7 +128,7 @@ break;/*----------------------------------------------------------------*/
 /*-------------------------------- calculate stresses in a certain step */
 case calc_struct_stress:
    imyrank = actintra->intra_rank;
-   if (imyrank==ele->proc) 
+   if (imyrank==ele->proc)
    {
       actmat = &(mat[ele->mat-1]);
       s8_stress(ele,&actdata,actmat,container->kstep,0);
@@ -147,13 +147,13 @@ break;/*----------------------------------------------------------------*/
 
 case calc_struct_fsiload:
    actmat = &(mat[ele->mat-1]);
-   s8fsiload(ele,&actdata,actmat,intforce,0);   
+   s8fsiload(ele,&actdata,actmat,intforce,0);
 break;
 /*---------------------------------------- reduce stresses to all procs */
 case calc_struct_stressreduce:
    /*------------------------------------- not necessary in sequentiell */
    if (actintra->intra_nprocs==1) goto end;
-   s8_stress_reduce(actfield,actpart,actintra,container->kstep);      
+   s8_stress_reduce(actfield,actpart,actintra,container->kstep);
 break;/*----------------------------------------------------------------*/
 /*-----------------------------------------------------update variables */
 case calc_struct_update_istep:
@@ -188,9 +188,9 @@ break;
 }
 /*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 #endif
-return; 
+return;
 } /* end of shell8 */

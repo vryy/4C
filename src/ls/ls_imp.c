@@ -25,8 +25,8 @@ extern struct _SOLVAR  *solv;
 
 <pre>                                                         m.gee 8/00
 -the partition of one proc (all discretizations)
--the type is in partition.h                                                  
-</pre> 
+-the type is in partition.h
+</pre>
 
 *----------------------------------------------------------------------*/
 extern struct _PARTITION  *partition;
@@ -41,18 +41,18 @@ extern struct _IO_FLAGS     ioflags;
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par;                      
+ extern struct _PAR   par;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate dynamic variables if needed                      |
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 02/02    |
  | number of load curves numcurve                                       |
@@ -70,10 +70,10 @@ extern struct _CURVE *curve;
  | defined globally in global_calelm.c                                  |
  *----------------------------------------------------------------------*/
 extern enum _CALC_ACTION calc_action[MAXFIELD];
- 
+
 /*----------------------------------------------------------------------*
  | routine to control implicit and semi-implicit algorithms for levelset|
- | problems combined with Newton and fixed point iteration schemes.     | 
+ | problems combined with Newton and fixed point iteration schemes.     |
  | IN PROGRESS: ONE-STEP-THETA                                          |
  |              fixed point like iteration                              |
  |              only Euler no ALE                                       |
@@ -117,7 +117,7 @@ FIELD          *actfield;           /* pointer to active field          */
 INTRA          *actintra;           /* pointer to active intra-communic.*/
 CALC_ACTION    *action;             /* pointer to the cal_action enum   */
 FRONTLSFLAG     frontlsflag;
- 
+
 ARRAY           ftimerhs_a;
 DOUBLE         *ftimerhs;	         /* time - RHS							   */
 ARRAY           fiterhs_a;
@@ -127,12 +127,12 @@ CONTAINER       container;          /* variables defined in container.h */
 
 LS_DYNAMIC     *lsdyn;              /* pointer to ls_dynamic	  		   */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ls_isi");
 #endif
 
 
-/*======================================================================* 
+/*======================================================================*
  |                    I N I T I A L I S A T I O N                       |
  *======================================================================*/
 /*--------------------------------------------------- set some pointers */
@@ -147,9 +147,9 @@ container.actndis  = 0;
 container.fieldtyp = actfield->fieldtyp;
 lsdyn->t    = ZERO;
 
-/*---------------- if we are not parallel, we have to allocate an alibi * 
+/*---------------- if we are not parallel, we have to allocate an alibi *
   ---------------------------------------- intra-communicator structure */
-#ifdef PARALLEL 
+#ifdef PARALLEL
 actintra    = &(par.intra[genprob.numls]);
 #else
 actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
@@ -182,7 +182,7 @@ MPI_Barrier(actintra->MPI_INTRA_COMM);
 #endif
 for (i=0;i<par.nprocs;i++)
 if (par.myrank==i)
-printf("PROC  %3d | FIELD LEVELSET     | number of equations      : %10d \n", 
+printf("PROC  %3d | FIELD LEVELSET     | number of equations      : %10d \n",
         par.myrank,numeq);
 #ifdef PARALLEL
 MPI_Barrier(actintra->MPI_INTRA_COMM);
@@ -196,11 +196,11 @@ actsolv->nrhs = 1;
 solserv_create_vec(&(actsolv->rhs),actsolv->nrhs,numeq_total,numeq,"DV");
 solserv_zero_vec(&(actsolv->rhs[0]));
 
-/*------------------------------------------- allocate 1 dist. solution */		       
+/*------------------------------------------- allocate 1 dist. solution */
 actsolv->nsol= 1;
 solserv_create_vec(&(actsolv->sol),actsolv->nsol,numeq_total,numeq,"DV");
 solserv_zero_vec(&(actsolv->sol[0]));
-                                     
+
 /*--------------- allocate one redundant vector ftimerhs of full lenght */
 /*        this is used by the element routines to assemble the  Time RHS*/
 ftimerhs = amdef("ftimerhs",&ftimerhs_a,numeq_total,1,"DV");
@@ -234,10 +234,10 @@ ls_initdirich(actfield,lsdyn);
 
 /*----------------------------------- initialize solver on all matrices */
 /*
-NOTE: solver init phase has to be called with each matrix one wants to 
+NOTE: solver init phase has to be called with each matrix one wants to
       solve with. Solver init phase has to be called with all matrices
       one wants to do matrix-vector products and matrix scalar products.
-      This is not needed by all solver libraries, but the solver-init 
+      This is not needed by all solver libraries, but the solver-init
       phase is cheap in computation (can be costly in memory)
 */
 /*--------------------------------------------------- initialize solver */
@@ -248,7 +248,7 @@ solver_control(actsolv, actintra,
                &(actsolv->sol[0]),
                &(actsolv->rhs[0]),
                init);
-	       
+
 /*------------------------------------- init the assembly for stiffness */
 init_assembly(actpart,actsolv,actintra,actfield,actsysarray,0);
 
@@ -258,14 +258,14 @@ calinit(actfield,actpart,action,&container);
 
 /*-------------------------------------- print out initial data to .out */
 out_sol(actfield,actpart,actintra,lsdyn->step,actpos);
-if (ioflags.lset_sol_gid==1 && par.myrank==0) 
+if (ioflags.lset_sol_gid==1 && par.myrank==0)
 {
    out_gid_sol("levelset"    ,actfield,actintra,lsdyn->step,actpos,lsdyn->t);
-   out_gid_sol("zerolevelset",actfield,actintra,lsdyn->step,actpos,lsdyn->t);	
+   out_gid_sol("zerolevelset",actfield,actintra,lsdyn->step,actpos,lsdyn->t);
 }
 
 
-/*======================================================================* 
+/*======================================================================*
  |                         T I M E L O O P                              |
  *======================================================================*/
 /* nodal solution history levelset field:                               *
@@ -294,7 +294,7 @@ if (lsdyn->ichk!=0 && par.myrank==0)
    printf("|- step/max -|-  tol     [norm]  -|- lset error -|\n");
 }
 itnum=1;
-/*======================================================================* 
+/*======================================================================*
  |           N O N L I N E A R   I T E R A T I O N                      |
  *======================================================================*/
 nonlniter:
@@ -304,7 +304,7 @@ solserv_zero_vec(&(actsolv->rhs[0]));
 solserv_zero_vec(&(actsolv->sol[0]));
 solserv_zero_mat(actintra,&(actsolv->sysarray[actsysarray]),
                  &(actsolv->sysarray_typ[actsysarray]));
-					  
+
 /*------------------------------------------- initialise iterations-rhs */
 amzero(&fiterhs_a);
 
@@ -377,7 +377,7 @@ if (converged==0)
 /*----------------------------------------------------------------------*
  | -->  end of nonlinear iteration                                      |
  *----------------------------------------------------------------------*/
- 
+
 /*-------------------------------------------------- steady state check */
 if (lsdyn->schk==iststep)
 {
@@ -406,10 +406,10 @@ restartstep++;
 solserv_sol_copy(actfield,0,1,0,1,0);
 
 /*--------------------------------------- write solution to .flavia.res */
-if (ioflags.lset_sol_gid==1 && par.myrank==0) 
+if (ioflags.lset_sol_gid==1 && par.myrank==0)
 {
    out_gid_sol("levelset",actfield,actintra,lsdyn->step,actpos,lsdyn->t);
-   out_gid_sol("zerolevelset",actfield,actintra,lsdyn->step,actpos,lsdyn->t);	
+   out_gid_sol("zerolevelset",actfield,actintra,lsdyn->step,actpos,lsdyn->t);
 }
 
 /*---------------------------------------------- write solution to .out */
@@ -421,14 +421,14 @@ if (ioflags.lset_sol_file==1)
 /*--------------------- check time and number of steps and steady state */
 if (lsdyn->step < lsdyn->nitn && lsdyn->t <= lsdyn->mtim && steady==0)
 {
-	lsdyn->nif = 1;			 
-   goto timeloop; 
+	lsdyn->nif = 1;
+   goto timeloop;
 }
 /*----------------------------------------------------------------------*
  | -->  end of timeloop                                                 |
  *----------------------------------------------------------------------*/
 
-/*======================================================================* 
+/*======================================================================*
  |                      F I N A L I S I N G                             |
  *======================================================================*/
 
@@ -446,9 +446,9 @@ for (i=0;i<par.nprocs;i++)
 if (par.myrank==i)
 {
 printf("\n");
-printf("PROC  %3d | FIELD LEVELSET     | total time element for calculations: %10.3E \n", 
+printf("PROC  %3d | FIELD LEVELSET     | total time element for calculations: %10.3E \n",
         par.myrank,tes);
-printf("PROC  %3d | FIELD LEVELSET     | total time for solver              : %10.3E \n", 
+printf("PROC  %3d | FIELD LEVELSET     | total time for solver              : %10.3E \n",
         par.myrank,tss);
 }
 }
@@ -464,14 +464,14 @@ solserv_del_vec(&(actsolv->rhs),actsolv->nrhs);
 solserv_del_vec(&(actsolv->sol),actsolv->nsol);
 
 /*----------------------------------------------------------------------*/
-#ifndef PARALLEL 
+#ifndef PARALLEL
 CCAFREE(actintra);
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
-} /* end of ls_isi */ 
+} /* end of ls_isi */
 
 #endif

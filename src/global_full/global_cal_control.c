@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -43,11 +43,11 @@ extern struct _GENPROB     genprob;
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par;                      
+ extern struct _PAR   par;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
@@ -61,7 +61,7 @@ void ntacal()
 INT i;
 FIELD *actfield;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ntacal");
 #endif
 /*----------------------------------------------------------------------*/
@@ -91,7 +91,7 @@ if (genprob.graderw>0) wge_setdof();
 #endif
 for(i=0; i<genprob.numfld; i++)
 {
-   actfield = &(field[i]); 
+   actfield = &(field[i]);
    if (actfield->ndis==1) assign_dof(actfield);
    if (actfield->ndis>1) assign_dof_ndis(actfield);
 }
@@ -106,7 +106,7 @@ part_assignfield();
 #ifdef PERF
   perf_end(14);
 #endif
- 
+
 
   /* check the values of the defines for MAXNODE etc. */
 #ifdef CHECK_MAX
@@ -129,10 +129,10 @@ locsys_inherit_to_node();
 /*------------------------------------------------ write general output */
 out_general();
 /*--------------------------------------------------- write mesh to gid */
-if (par.myrank==0) 
+if (par.myrank==0)
 {
    if (ioflags.struct_disp_gid||ioflags.struct_stress_gid||ioflags.fluid_sol_gid
-       ||ioflags.ale_disp_gid||ioflags.fluid_stress_gid) 
+       ||ioflags.ale_disp_gid||ioflags.fluid_stress_gid)
    {
       out_gid_sol_init();
       if (genprob.probtyp != prb_structure && genprob.probtyp != prb_fsi)
@@ -167,7 +167,7 @@ case prb_fluid:
 #ifdef D_FSI
 case prb_fsi:
   dyn_fsi(0);
-  break;    
+  break;
 #endif
 
 #ifdef D_ALE
@@ -178,7 +178,7 @@ case prb_ale:
 
 #ifdef D_LS
 case prb_twophase:
-case prb_levelset:  
+case prb_levelset:
   ls_dyn();
   break;
 #endif
@@ -188,7 +188,7 @@ case prb_opt:
   caloptmain();
   break;
 #endif
-  
+
 default:
   dserror("solution of unknown problemtyp requested");
 break;
@@ -202,7 +202,7 @@ global_result_test();
 /*--------------------------------------------------- write warnings ---*/
 dswarning(2,0);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

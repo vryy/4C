@@ -5,43 +5,43 @@
 <pre>
 Maintainer: Volker Gravemeier
             vgravem@stanford.edu
-            
-            
+
+
 </pre>
 
 ------------------------------------------------------------------------*/
-#ifdef FLUID3_ML 
-#include "../headers/standardtypes.h" 
+#ifdef FLUID3_ML
+#include "../headers/standardtypes.h"
 #include "../fluid3/fluid3_prototypes.h"
 #include "fluid3ml_prototypes.h"
 #include "../fluid3/fluid3.h"
 
 static int nxsm,nysm,nzsm,nxss,nyss,nzss;
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief creation of (sub-)submesh on parent domain for fluid3
 
 <pre>                                                       gravem 07/03
 
-In this routine, the creation of submesh or sub-submesh on the parent 
-domain is performed, i.e. nodal coordinates on the parent domain, 
+In this routine, the creation of submesh or sub-submesh on the parent
+domain is performed, i.e. nodal coordinates on the parent domain,
 id-array and ien-array are established.
-			     
-</pre>   
-\param  *smesh      FLUID_ML_SMESH   (i/o)  
-\param   xele       INT              (i)    number of elements in x-dir.  
-\param   yele       INT              (i)    number of elements in y-dir.  
-\param   zele       INT              (i)    number of elements in z-dir.  
-\param   order      INT              (i)    polyn. interpolation order  
-\param   flag       INT              (i)    flag: submesh or sub-submesh?  
-\return void 
+
+</pre>
+\param  *smesh      FLUID_ML_SMESH   (i/o)
+\param   xele       INT              (i)    number of elements in x-dir.
+\param   yele       INT              (i)    number of elements in y-dir.
+\param   zele       INT              (i)    number of elements in z-dir.
+\param   order      INT              (i)    polyn. interpolation order
+\param   flag       INT              (i)    flag: submesh or sub-submesh?
+\return void
 
 ------------------------------------------------------------------------*/
 void f3_pdsubmesh(FLUID_ML_SMESH *smesh,
                   INT             xele,
                   INT             yele,
                   INT             zele,
-                  INT             order,  
+                  INT             order,
 		  INT             flag)
 {
 DOUBLE hpdx,hpdy,hpdz;/* element length in coord. dir. on parent domain */
@@ -57,7 +57,7 @@ INT    nrpla;         /* counter for number of rows in a plane          */
 INT    nnpla;         /* number of nodes in a plane                     */
 INT    npact;         /* actual plane                                   */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f3_pdsubmesh");
 #endif
 
@@ -100,21 +100,21 @@ for (iz=0; iz<nz; iz++)
     for (ix=0; ix<nx; ix++)
     {
 /*-------------------------------- compute coordinates on parent domain */
-      smesh->xyzpd.a.da[0][numnp] = -ONE+TWO*ix*hpdx; 
-      smesh->xyzpd.a.da[1][numnp] = -ONE+TWO*iy*hpdy; 
-      smesh->xyzpd.a.da[2][numnp] = -ONE+TWO*iz*hpdz; 
+      smesh->xyzpd.a.da[0][numnp] = -ONE+TWO*ix*hpdx;
+      smesh->xyzpd.a.da[1][numnp] = -ONE+TWO*iy*hpdy;
+      smesh->xyzpd.a.da[2][numnp] = -ONE+TWO*iz*hpdz;
 /*--------------------------------------------------- evaluate id-array */
-      if (ix==0 || ix==nx-1 || iy==0 || iy==ny-1 || iz==0 || iz==nz-1) 
+      if (ix==0 || ix==nx-1 || iy==0 || iy==ny-1 || iz==0 || iz==nz-1)
 /*------------------------------------------------------- boundary node */
         smesh->id.a.iv[numnp] = -1;
-      else 
+      else
       {
 /*--------------------------------------------------- non-boundary node */
         smesh->id.a.iv[numnp] = numeq;
         numeq++;
-      }  
+      }
       numnp++;
-    }  
+    }
   }
 }
 
@@ -159,29 +159,29 @@ if (order==1)
     nnhor++;
   }
 }
-else dserror("no other than linear submeshes in 3D!\n"); 
+else dserror("no other than linear submeshes in 3D!\n");
 /*--------------------------------------------------------------------- */
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of f3_pdsubmesh */
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief creation of (sub-)submesh on individual element for fluid3
 
 <pre>                                                       gravem 07/03
 
-In this routine, the creation of submesh or sub-submesh on an individual 
-element is performed, i.e. the nodal coordinates on this particular 
+In this routine, the creation of submesh or sub-submesh on an individual
+element is performed, i.e. the nodal coordinates on this particular
 element are established.
-			     
-</pre>   
-\param  *ele        ELEMENT          (i/o)  
-\param  *smesh      FLUID_ML_SMESH   (i)  
-\param   flag       INT              (i)    flag: submesh or sub-submesh?  
-\return void 
+
+</pre>
+\param  *ele        ELEMENT          (i/o)
+\param  *smesh      FLUID_ML_SMESH   (i)
+\param   flag       INT              (i)    flag: submesh or sub-submesh?
+\return void
 
 ------------------------------------------------------------------------*/
 void f3_elesubmesh(ELEMENT        *ele,
@@ -190,7 +190,7 @@ void f3_elesubmesh(ELEMENT        *ele,
 {
 INT       k;          /* just a counter                  		*/
 INT       nelbub;     /* number of bubble functions        		*/
-INT       numnp;      /* number of nodal points 			*/   
+INT       numnp;      /* number of nodal points 			*/
 INT       ix,iy,iz;   /* counters in coordinate directions      	*/
 INT       nx,ny,nz;   /* number of nodes in coordinate directions       */
 INT       iel;        /* number of large-scale element nodes            */
@@ -198,11 +198,11 @@ DOUBLE    r[3];       /* coordinates on parent domain                   */
 DOUBLE    funct[8];   /* large-scale element shape functions            */
 DOUBLE    deriv_b[3*8];/* large-scale element shape function derivatives */
 DOUBLE   *deriv[3];
-DOUBLE    deriv2_b[6*8];/* l-s element shape function 2nd derivatives    */      
+DOUBLE    deriv2_b[6*8];/* l-s element shape function 2nd derivatives    */
 DOUBLE   *deriv2[6];
 DIS_TYP   typ;	      /* element type                                   */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f3_elesubmesh");
 #endif
 
@@ -304,7 +304,7 @@ for (iz=0; iz<nz; iz++)
 ele->e.f3->smisal = 1;
 
 /*--------------------------------------------------------------------- */
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 

@@ -12,8 +12,8 @@ Maintainer: Christiane Foerster
 *----------------------------------------------------------------------*/
 #ifdef D_ALE
 
-/*! 
-\addtogroup Ale 
+/*!
+\addtogroup Ale
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
@@ -93,26 +93,26 @@ void ale2_mat_linel(STVENANT *mat, DOUBLE **d);
  *----------------------------------------------------------------------*/
 void ale2_static_ke(ELEMENT *ele, ALE2_DATA *data, MATERIAL *mat,
 		   ARRAY *estif_global, INT init);
-void ale2_static_ke_stiff(ELEMENT *ele, 
-                          ALE2_DATA      *data, 
+void ale2_static_ke_stiff(ELEMENT *ele,
+                          ALE2_DATA      *data,
                           MATERIAL       *mat,
-                          ARRAY          *estif_global, 
+                          ARRAY          *estif_global,
                           INT             init,
 		          INT             quality);
-void ale2_static_ke_prestress(ELEMENT    *ele, 
-                              ALE2_DATA  *data, 
+void ale2_static_ke_prestress(ELEMENT    *ele,
+                              ALE2_DATA  *data,
                               MATERIAL   *mat,
-                              ARRAY      *estif_global, 
+                              ARRAY      *estif_global,
                               INT         init,
 		              DOUBLE     *rhs,
        			      INT         total_dim,
 		              INT         quality);
-void ale2_static_ke_step2(ELEMENT   *ele, 
-                          ALE2_DATA  *data, 
+void ale2_static_ke_step2(ELEMENT   *ele,
+                          ALE2_DATA  *data,
                           MATERIAL  *mat,
-                          ARRAY     *estif_global, 
+                          ARRAY     *estif_global,
                           INT	     init,
-                          INT	     quality, 
+                          INT	     quality,
 			  DOUBLE    *min_stiff,
 			  DOUBLE    *max_stiff,
 			  DOUBLE    *min,
@@ -121,9 +121,9 @@ void ale2_static_ke_spring(ELEMENT   *ele,
                            ARRAY     *estif_global,
 			   INT        quality,
 			   INT        init);
-void ale2_static_ke_laplace(ELEMENT     *ele, 
-                            ALE2_DATA   *data, 
-                            ARRAY       *estif_global, 
+void ale2_static_ke_laplace(ELEMENT     *ele,
+                            ALE2_DATA   *data,
+                            ARRAY       *estif_global,
                             INT          init,
 		            INT          quality);
 /*----------------------------------------------------------------------*
@@ -135,16 +135,16 @@ void ale2_hourglass(ELEMENT *ele, DOUBLE **s);
  *----------------------------------------------------------------------*/
 DOUBLE ale2_el_area(DOUBLE **xyz);
 DOUBLE ale2_area_tria(DOUBLE **xyz, INT i, INT j, INT k);
-void edge_geometry(INT      i, 
-                   INT      j, 
-         	   DOUBLE **xyz, 
+void edge_geometry(INT      i,
+                   INT      j,
+         	   DOUBLE **xyz,
 	           DOUBLE  *length,
 	           DOUBLE  *sin_alpha,
 	           DOUBLE  *cos_alpha);
-void ale2_torsional(INT      i, 
-                    INT      j, 
-		    INT      k, 
-		    DOUBLE **xyz, 
+void ale2_torsional(INT      i,
+                    INT      j,
+		    INT      k,
+		    DOUBLE **xyz,
 		    DOUBLE **k_torsion,
 		    INT      init);
 void ale2_tors_spring_quad4(DOUBLE **estif, DOUBLE **xyz, INT init);
@@ -161,11 +161,11 @@ DOUBLE ale2_corner_angle(DOUBLE **xyz);
 DOUBLE ale2_corner_angle_tria(DOUBLE **xyz);
 DOUBLE ale2_aspect_ratio(DOUBLE **xyz);
 DOUBLE ale2_aspect_ratio_tria(DOUBLE **xyz);
-void write_element_quality(ELEMENT  *ele, 
-                           INT       quality, 
-			   DOUBLE  **xyz, 
+void write_element_quality(ELEMENT  *ele,
+                           INT       quality,
+			   DOUBLE  **xyz,
 			   DOUBLE    min_detF);
-void ale_quality(FIELD *field,INT step, 
+void ale_quality(FIELD *field,INT step,
                  INTRA  *actintra, PARTITION    *actpart);
 /*----------------------------------------------------------------------*/
 #endif

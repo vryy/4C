@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routines 'wge_damvar' -> calculates actual damage 
+\brief contains the routines 'wge_damvar' -> calculates actual damage
        variable and derivative
        routine 'wge_epsequiv' -> calculates local equivalent strains and
        Tangente F = (partial eps_eq)/(partial epsilon)
@@ -13,27 +13,27 @@ Maintainer: Andrea Hund
             hund@statik.uni-stuttgart.de
             http://www.uni-stuttgart.de/ibs/members/hund/
             0771 - 685-6122
-</pre> 
+</pre>
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "wallge.h"
 #include "wallge_prototypes.h"
 
-/*! 
-\addtogroup WALLGE 
+/*!
+\addtogroup WALLGE
 *//*! @{ (documentation module open)*/
 
 #ifdef D_WALLGE
 
 /*!----------------------------------------------------------------------
-\brief routine 'wge_damvar' -> calculates actual damage 
+\brief routine 'wge_damvar' -> calculates actual damage
        variable and derivative (partial D)/(partial eps_equiv)
        damtyp = 1 :         linear softening damage
        damtyp = 2 :         exponential damage law
 
 
 \param   damtyp        INT      I: Damage law
-\param   kappa         DOUBLE   I: actual nonl. eqvival. strain 
+\param   kappa         DOUBLE   I: actual nonl. eqvival. strain
 \param   kappa_0       DOUBLE   I: parameter of exp. damage law
 \param  *eps_vnl       DOUBLE   I: nonlocal equiv. strain
 \param   alpha         DOUBLE   I: parameter of exp. damage law
@@ -41,8 +41,8 @@ Maintainer: Andrea Hund
 \param  *damage        DOUBLE   O: actual damage variable(scalar)
 \param  *dam_deriv     DOUBLE   O: (partial D)/(partial eps_equi)
 
-\return void                                               
-\sa calling:   nothing; 
+\return void
+\sa calling:   nothing;
     called by: wge_mat_damage();
 *----------------------------------------------------------------------*/
 void wge_damvar(INT     damtyp,        /*  Damage law                   */
@@ -52,11 +52,11 @@ void wge_damvar(INT     damtyp,        /*  Damage law                   */
                 DOUBLE  alpha,         /* parameter of exp. damage law  */
                 DOUBLE  beta,          /* parameter of exp. damage law  */
                 DOUBLE *damage,        /* actual damage variable        */
-                DOUBLE *dam_deriv)     /* (partial D)/(partial eps_equi)*/       
+                DOUBLE *dam_deriv)     /* (partial D)/(partial eps_equi)*/
 {
 /*----------------------------------------------------------------------*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("wge_damvar");
 #endif
 /*----------------------------------------------------------------------*/
@@ -93,10 +93,10 @@ default:
 break;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of wge_damvar */
 
 
@@ -111,15 +111,15 @@ return;
        equival = 4:     de Vree
 
 \param   equival      INT      I: definition of equiv. strains
-\param   epsilon      DOUBLE   I: strain (tensor) 
+\param   epsilon      DOUBLE   I: strain (tensor)
 \param   delta        DOUBLE   I: kroneker delta (tensor)
 \param   k_f          DOUBLE   I: nonlocal equiv. strain
 \param   nue          DOUBLE   I: parameter for de Vree
 \param  *eps_vl       DOUBLE   O: poisson rate
 \param   F_ed         DOUBLE   O: equ. strain derivative (tensor)
 
-\return void                                               
-\sa calling:   nothing; 
+\return void
+\sa calling:   nothing;
     called by: wge_mat_damage();
 *----------------------------------------------------------------------*/
 void wge_epsequiv(INT     equival,     /* definition of equiv. strains */
@@ -128,14 +128,14 @@ void wge_epsequiv(INT     equival,     /* definition of equiv. strains */
                   DOUBLE  k_f,           /* parameter for de Vree      */
                   DOUBLE  nue,           /* poisson rate               */
                   DOUBLE *eps_vl,        /* local equiv. strains       */
-                  DOUBLE  F_ed[3][3])    /* equ. strain derivative     */         
+                  DOUBLE  F_ed[3][3])    /* equ. strain derivative     */
 {
 /*----------------------------------------------------------------------*/
 INT    i,j;
 DOUBLE I1,J2;
 DOUBLE scalar,fac1,fac2,wurzel;
 DOUBLE ev_I1, ev_J2;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("wge_epsequiv");
 #endif
 /*--------------------------------------------- elasto-damge tangent ---*/
@@ -150,12 +150,12 @@ case 4:
    {
     scalar += epsilon[i][j]*epsilon[i][j];
    }
-  } 
+  }
   J2     = (I1 * I1)/6.0 - scalar/2.0;
   fac1   = (k_f - 1.0)/(1.0 - 2.0* nue);
   fac2   = (12.0*k_f)/((1.0+nue)*(1.0+nue));
   wurzel = sqrt(fac1 * fac1 * I1 * I1 - fac2*J2 );
-  if(wurzel == 0.0)  
+  if(wurzel == 0.0)
   {
     wurzel = 1.0E-50;
     /*
@@ -163,7 +163,7 @@ case 4:
     */
   }
   *eps_vl = (fac1*I1)/(2.0*k_f) + wurzel/(2*k_f);
-  
+
   ev_I1  = (fac1/(2*k_f))*(1 + (fac1*I1)/wurzel);
   ev_J2  = (-3.0)/((1.0+nue)*(1.0+nue)*wurzel);
   for (i=0; i<3; i++)
@@ -172,24 +172,24 @@ case 4:
    {
     F_ed[i][j] = ev_I1*delta[i][j] + ev_J2*((I1*delta[i][j])/3.0-epsilon[i][j]);
    }
-  } 
+  }
 break;
 default:
   dserror(" these euivalent strains are not implemented");
 break;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of wge_epsequiv */
 
 
 
 
 /*!----------------------------------------------------------------------
-\brief routine 'wge_stress' -> calculates elastic and damaged stresses 
+\brief routine 'wge_stress' -> calculates elastic and damaged stresses
 
 \param   youngs     DOUBLE   I: youngs modulus
 \param   nue        DOUBLE   I: poisson ratio
@@ -199,8 +199,8 @@ return;
 \param   sigma_el   DOUBLE   O: elastic stress (tensor)
 \param   sigma      DOUBLE   O: stress (tensor)
 
-\return void                                               
-\sa calling:   nothing; 
+\return void
+\sa calling:   nothing;
     called by: wge_mat_damage();
 *----------------------------------------------------------------------*/
 void wge_stress(DOUBLE   youngs,           /*  youngs modulus          */
@@ -208,14 +208,14 @@ void wge_stress(DOUBLE   youngs,           /*  youngs modulus          */
                 DOUBLE   delta[3][3],      /*  kroneker delta          */
                 DOUBLE   epsilon[3][3],    /*  strain tensor           */
                 DOUBLE   damage,           /*  actual damage variable  */
-                DOUBLE   sigma_el[3][3],   /*  elastic stress tensor   */ 
-                DOUBLE   sigma[3][3])      /*  stress tensor           */      
+                DOUBLE   sigma_el[3][3],   /*  elastic stress tensor   */
+                DOUBLE   sigma[3][3])      /*  stress tensor           */
 {
 /*----------------------------------------------------------------------*/
 INT    i,j;
 DOUBLE mu,lambda,trace;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("wge_elastic");
 #endif
 /*--------------------------------------------- elasto-damge tangent ---*/
@@ -232,12 +232,12 @@ for (i=0; i<3; i++)
   sigma_el[i][j] = lambda*trace*delta[i][j]+2.0*mu*epsilon[i][j];
   sigma[i][j]    = (1 - damage)*sigma_el[i][j];
  }
-} 
+}
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of wge_stress */
 
 
@@ -251,21 +251,21 @@ return;
 \param   damage     DOUBLE   I: actual damage variable
 \param   C_ed       DOUBLE   O: elasto-damage-tangent (tensor)
 
-\return void                                               
-\sa calling:   nothing; 
+\return void
+\sa calling:   nothing;
     called by: wge_mat_damage();
 *----------------------------------------------------------------------*/
 void wge_tangent(DOUBLE   youngs,           /*  youngs modulus         */
                  DOUBLE   nue,              /*  poisson ratio          */
                  DOUBLE   delta[3][3],      /*  kroneker delta         */
                  DOUBLE   damage,           /*  damaage variable       */
-                 DOUBLE   C_ed[3][3][3][3]) /*  elasto-damage-tangent  */         
+                 DOUBLE   C_ed[3][3][3][3]) /*  elasto-damage-tangent  */
 {
 /*----------------------------------------------------------------------*/
 INT    i,j,k,l;
 DOUBLE mu,lambda;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("wge_tangent");
 #endif
 /*--------------------------------------------- elasto-damge tangent ---*/
@@ -282,17 +282,17 @@ for (i=0; i<3; i++)
    for (l=0; l<3; l++)
    {
     C_ed[i][j][k][l] = (1 - damage)*(lambda*delta[i][j]*delta[k][l]
-                     + mu*(delta[i][k]*delta[j][l]+delta[i][l]*delta[j][k])); 
+                     + mu*(delta[i][k]*delta[j][l]+delta[i][l]*delta[j][k]));
    }
-  } 
+  }
  }
-} 
+}
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of wge_tangent */
 
 
@@ -306,9 +306,9 @@ return;
 \param   *F      DOUBLE     I/O: 3.elasto-damage-tangent-matrix
 \param    wtype  WALLGE_TYPE  I: plane-stress or plane strain
 \param    nue    DOUBLE       I: poisson ratio
- 
-\return void                                               
-\sa calling:   nothing; 
+
+\return void
+\sa calling:   nothing;
     called by: wge_mat_damage();
 
 *----------------------------------------------------------------------*/
@@ -316,14 +316,14 @@ void wge_condense(DOUBLE    **D,     /* 1.elasto-damage-tangent-matrix */
                   DOUBLE     *E,     /* 2.elasto-damage-tangent-matrix */
                   DOUBLE     *F,     /* 3.elasto-damage-tangent-matrix */
                   WALLGE_TYPE wtype, /* plane-stress or plane strain   */
-                  DOUBLE      nue)   /* poisson ratio                  */         
+                  DOUBLE      nue)   /* poisson ratio                  */
 {
 /*----------------------------------------------------------------------*/
 INT  i,j;
 DOUBLE D_con[4][4];
 DOUBLE F_con[3];
 DOUBLE factor;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("wge_condense");
 #endif
 /*----------------------------------------------------------------------*/
@@ -339,7 +339,7 @@ case pl_strain:
   }
   E[3] = 0.0;
   F[3] = 0.0;
-  
+
 break;
 /*----------------------------------------------------------------------*/
 case pl_stress:
@@ -351,23 +351,23 @@ case pl_stress:
      for (j=0; j<3; j++)
      {
        D_con[i][j] = D[i][j] - (D[i][3]*D[3][j])/D[3][3];
-     }  
-    }  
+     }
+    }
     for(i=0; i<3; i++)
     {
      for (j=0; j<3; j++)
      {
        D[i][j] = D_con[i][j];
-     }  
+     }
     }
     for(i=0; i<4; i++)
     {
       D[i][3] = 0.0;
       D[3][i] = 0.0;
     }
-  }  
+  }
   E[3] = 0.0;
-  factor   = nue/(1.0 - nue); 
+  factor   = nue/(1.0 - nue);
   F_con[0] = F[0] - factor * F[3];
   F_con[1] = F[1] - factor * F[3];
   F_con[2] = F[2];
@@ -376,18 +376,18 @@ case pl_stress:
     F[i] = F_con[i];
   }
   F[3] = 0.0;
-  
+
 break;
 default:
   dserror("wall-type(planestrain/planestress) not specified");
 break;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of wge_condense */
 
 #endif /*D_WALLGE*/

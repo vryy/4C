@@ -16,14 +16,14 @@ Maintainer: Andrea Hund
 #include "wall1.h"
 #include "wall1_prototypes.h"
 
-/*! 
+/*!
 \addtogroup WALL1
 *//*! @{ (documentation module open)*/
 
 /*----------------------------------------------------------------------*
  | select proper material law                               ah 06/02    |
  *----------------------------------------------------------------------*/
-void w1_call_matgeononl(MATERIAL  *mat, 
+void w1_call_matgeononl(MATERIAL  *mat,
                         WALL_TYPE  wtype,
                         DOUBLE    *strain,
                         DOUBLE   **stress,
@@ -31,7 +31,7 @@ void w1_call_matgeononl(MATERIAL  *mat,
                         INT        numeps)
 {
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_call_matgeononl");
 #endif
 /*--------------------------- call material law -> get tangent modulus--*/
@@ -44,17 +44,17 @@ dstrc_enter("w1_call_matgeononl");
                        strain,
                        d,
                        stress,
-                       numeps);                       
+                       numeps);
   break;
   default:
     dserror(" unknown type of material law");
   break;
   }
 /*---------------------------------------------- evaluate stress (2.PK)--*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of w1_call_matgeononl */
 /*----------------------------------------------------------------------*/
 #endif /*D_WALL1*/

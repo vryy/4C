@@ -16,8 +16,8 @@ Maintainer: Andreas Lipka
 #include "brick1.h"
 #include "brick1_prototypes.h"
 
-/*! 
-\addtogroup BRICK1 
+/*!
+\addtogroup BRICK1
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
@@ -30,7 +30,7 @@ This routine reads data for an 3D-hex-element.
 \param *ele     ELEMENT    (o)   the element
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: inp_struct_field()
 
 *----------------------------------------------------------------------*/
@@ -39,15 +39,15 @@ void c1inp(ELEMENT *ele)
 INT  i;
 INT  ierr=0;
 char buffer[50];
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1inp");
 #endif
-/*------------------------------------------------ allocate the element */      
+/*------------------------------------------------ allocate the element */
 ele->e.c1 = (BRICK1*)CCACALLOC(1,sizeof(BRICK1));
 if (ele->e.c1==NULL) dserror("Allocation of element failed");
 /*---------------------------------------------- read elements topology */
 frchk("HEX8",&ierr);
-if (ierr==1) 
+if (ierr==1)
 {
    ele->distyp = hex8;
    ele->numnp=8;
@@ -57,7 +57,7 @@ if (ierr==1)
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
 }
 frchk("HEX20",&ierr);
-if (ierr==1) 
+if (ierr==1)
 {
    ele->distyp = hex20;
    ele->numnp=20;
@@ -67,7 +67,7 @@ if (ierr==1)
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
 }
 frchk("HEX27",&ierr);
-if (ierr==1) 
+if (ierr==1)
 {
    ele->numnp=27;
    ele->distyp = hex27;
@@ -77,7 +77,7 @@ if (ierr==1)
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
 }
 frchk("TET4",&ierr);
-if (ierr==1) 
+if (ierr==1)
 {
    ele->numnp=4;
    ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
@@ -86,7 +86,7 @@ if (ierr==1)
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
 }
 frchk("TET10",&ierr);
-if (ierr==1) 
+if (ierr==1)
 {
    ele->numnp=10;
    ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
@@ -120,8 +120,8 @@ if (ierr)
    if (strncmp(buffer,"NDEQS",3)==0)       ele->e.c1->stresstyp = c1_npeqs;
 }
 /*----------------------------------------------------------------------*/
-    
-#ifdef DEBUG 
+
+#ifdef DEBUG
 dstrc_exit();
 #endif
 

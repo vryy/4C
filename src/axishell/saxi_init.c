@@ -16,23 +16,23 @@ Maintainer: Malte Neumann
 #include "axishell.h"
 #include "axishell_prototypes.h"
 
-/*! 
+/*!
 \addtogroup AXISHELL
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
 \brief  initialization routine for the axisymmetric shell element
 
-<pre>                                                              mn 05/03 
+<pre>                                                              mn 05/03
 This routine acts according to the action and either initializes the element
-or computes the linear stiffness matrix, the stresses or the right hand side 
+or computes the linear stiffness matrix, the stresses or the right hand side
 vector.
 
 </pre>
 \param *actpart      PARTITION   (i)   my partition
 
 \warning There is nothing special to this routine.
-\return void                                               
+\return void
 \sa calling:   saxiintg;
     called by: axishell();
 
@@ -59,7 +59,7 @@ void saxiinit(
     am4def("stress_ND",&(actele->e.saxi->stress_ND),1,5,1,0,"D3");
   }
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("saxiinit");
 #endif
 

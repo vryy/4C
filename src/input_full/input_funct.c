@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -16,7 +16,7 @@ Maintainer: Malte Neumann
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -33,7 +33,7 @@ extern struct _FILES  allfiles;
  | pointer to allocate dynamic variables if needed                      |
  | dedfined in global_control.c                                         |
  *----------------------------------------------------------------------*/
-extern struct _DYNAMIC *dyn;   
+extern struct _DYNAMIC *dyn;
 /*----------------------------------------------------------------------*
  |                                                          mn 02/04    |
  | number of spatual load functions   numcurve                          |
@@ -51,7 +51,7 @@ struct _FUNCT      *funct;
 void inp_cond_funct()
 {
 INT  ierr;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inp_cond_funct");
 #endif
 /*----------------------------------------------------------------------*/
@@ -110,7 +110,7 @@ inp_read_funct("--FUNCT4",3);
 inp_read_funct("--FUNCT5",4);
 inp_read_funct("--FUNCT6",5);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -130,7 +130,7 @@ void inp_read_funct(char *string, INT id)
 INT      ierr;
 FUNCT   *actfunct;
 DOUBLE   tmp[20];
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inp_read_funct");
 #endif
 /*----------------------------------------------------------------------*/
@@ -149,9 +149,9 @@ if (frfind(string)==0) goto end;
    frint("FUNCT",&(actfunct->Id),&ierr);
    if (ierr!=1) dserror("cannot read FUNCT");
 
-/* read typ of funct */   
+/* read typ of funct */
    frchk("LINEAR",&ierr);
-   if (ierr==1) 
+   if (ierr==1)
    {
       actfunct->functtyp = funct_lin;
       actfunct->typ.funct_lin = (FUNCT_LIN*)CCACALLOC(1,sizeof(FUNCT_LIN));
@@ -174,7 +174,7 @@ if (frfind(string)==0) goto end;
    }
 
    frchk("QUADRATIC",&ierr);
-   if (ierr==1) 
+   if (ierr==1)
    {
       actfunct->functtyp = funct_qua;
       actfunct->typ.funct_qua = (FUNCT_QUA*)CCACALLOC(1,sizeof(FUNCT_QUA));
@@ -193,21 +193,21 @@ if (frfind(string)==0) goto end;
    }
 
    frchk("BELTRAMI",&ierr);
-   if (ierr==1) 
+   if (ierr==1)
    {
       actfunct->functtyp = funct_bel;
       actfunct->typ.funct_bel = NULL;
    }
 
    frchk("KIM-MOIN",&ierr);
-   if (ierr==1) 
+   if (ierr==1)
    {
       actfunct->functtyp = funct_kim;
       actfunct->typ.funct_kim = NULL;
    }
 
    frchk("CYLINDER_3D",&ierr);
-   if (ierr==1) 
+   if (ierr==1)
    {
       actfunct->functtyp = funct_cyl;
       actfunct->typ.funct_cyl = (FUNCT_CYL*)CCACALLOC(1,sizeof(FUNCT_CYL));
@@ -217,7 +217,7 @@ if (frfind(string)==0) goto end;
    }
 /*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

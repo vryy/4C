@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -41,7 +41,7 @@ INT      create_dis;
 
 #ifdef D_AXISHELL
 /*!----------------------------------------------------------------------
-\brief prototypes callable only in this file  
+\brief prototypes callable only in this file
 *-----------------------------------------------------------------------*/
 void interpolate_axishell_conds(DISCRET  *actdis);
 #endif /* D_AXISHELL */
@@ -60,11 +60,11 @@ INT  ngsurf;
 INT  ngvol;
 INT  counter1, counter2, counter3;
 
-/* 
+/*
    the input of the tracing option has not been done yet, so
-   we have to make the dstrc_enter 'by hand' 
+   we have to make the dstrc_enter 'by hand'
 */
-#ifdef DEBUG 
+#ifdef DEBUG
 trace.actroutine = trace.actroutine->next;
 strncpy(trace.actroutine->name,"ntainp",49);
 trace.actroutine->dsroutcontrol=dsin;
@@ -72,7 +72,7 @@ trace.deepness++;
 #endif
 
 /*--------------------------------------------- input of tracing option */
-#ifdef DEBUG 
+#ifdef DEBUG
 inptrace();
 #endif
 /*=========================== tracing is active and working from now on */
@@ -90,7 +90,7 @@ if (genprob.probtyp == prb_opt) inpctropt();
 #endif
 /*------------------------------------------------ input of design data */
 /* read description of design volumes, surfaces, lines and nodes, allocate
-   and fill the structures DVOL, DSURF, DLINE and DNODE 
+   and fill the structures DVOL, DSURF, DLINE and DNODE
 */
 #ifdef PERF
   perf_begin(4);
@@ -100,7 +100,7 @@ inpdesign();
   perf_end(4);
 #endif
 /* build the topology among the design elements, allocate and create the
-   pointers connecting DVOL, DSURF, DLINE and DNODE 
+   pointers connecting DVOL, DSURF, DLINE and DNODE
 */
 #ifdef PERF
   perf_begin(5);
@@ -125,11 +125,11 @@ inp_multimat();
   perf_end(6);
 #endif
 /*------------------------------------------------------input of meshes */
-/* read the fe-nodes in NODE, the fe-elements in ELEMENT and build the 
+/* read the fe-nodes in NODE, the fe-elements in ELEMENT and build the
    topology among ELEMENTs and NODEs. Assign the disctretization to
    the different fields in a multifield problem dependent on type
    of element
-*/    
+*/
 #ifdef PERF
   perf_begin(7);
 #endif
@@ -138,10 +138,10 @@ inpfield();
   perf_end(7);
 #endif
 /*------------------ built the detailed topology of the discretizations */
-/* for each existing field and discretization build a detailed topology 
+/* for each existing field and discretization build a detailed topology
    of GNODEs, GLINEs, GSURFs and GVOLs and connect them to the topology
    of NODEs and ELEMENTs
-*/   
+*/
 #ifdef PERF
   perf_begin(8);
 #endif
@@ -155,7 +155,7 @@ inp_detailed_topology(&(field[i].dis[j]));
 /* Read which node is on which design object from file.
    For each field and discretization build the pointers among design
    and FE-objects DVOL<->GVOL,DSURF<->GSURF,DLINE<->GLINE,DNODE<->GNODE.
-*/   
+*/
 #ifdef PERF
   perf_begin(9);
 #endif
@@ -228,7 +228,7 @@ inpctreig();
 /*------------------------------------------------- input of conditions */
 /* dirichlet/coupling/neumann conditions are read from file to the
    DVOLS/DSURFS/DLINES/DNODES
-*/   
+*/
 #ifdef PERF
   perf_begin(10);
 #endif
@@ -236,16 +236,16 @@ inp_conditions();
 #ifdef PERF
   perf_end(10);
 #endif
-/*----------- inherit the fsi coupling conditions inside the design 
+/*----------- inherit the fsi coupling conditions inside the design
    condition is transformed in a dirichlet condition for fluid- and
    ale-field and into a neumann condition for structure-field           */
 #ifdef D_FSI
-if (genprob.probtyp==prb_fsi) fsi_createfsicoup();  
+if (genprob.probtyp==prb_fsi) fsi_createfsicoup();
 #endif
 #ifdef D_FLUID
-/*----------------- inherit the freesurface condition inside the design 
+/*----------------- inherit the freesurface condition inside the design
    condition is transformed into a dirichlet condition for ale fiedl    */
-if ((genprob.probtyp==prb_fluid && genprob.numfld>=2) || genprob.probtyp==prb_fsi) 
+if ((genprob.probtyp==prb_fluid && genprob.numfld>=2) || genprob.probtyp==prb_fsi)
    fluid_createfreesurf();
 
 if (genprob.probtyp==prb_fluid && genprob.numfld>=2)
@@ -258,7 +258,7 @@ for (i=0; i<genprob.numfld; i++)
     for (j=0; j<field[i].ndis; j++)
       inherit_design_ele(&(field[i].dis[j]));
 }
-#endif   
+#endif
 /*----- inherit the dirichlet and coupling conditions inside the design */
 /* conditions are inherited 'downwards': DVOL->DSURF->DLINE->DNODE      */
 /* BUT: if a 'lower object already has its own condition, it does NOT   */
@@ -277,11 +277,11 @@ for (j=0; j<field[i].ndis; j++)
 inherit_design_dis_couple(&(field[i].dis[j]));
 #ifdef D_FSI
 /*---- set pointers in the discretisations to the design fsi conditions */
-if (genprob.probtyp==prb_fluid || genprob.probtyp==prb_fsi) 
-{   
+if (genprob.probtyp==prb_fluid || genprob.probtyp==prb_fsi)
+{
    for (i=0; i<genprob.numfld; i++)
       for (j=0; j<field[i].ndis; j++)
-         inherit_design_dis_fsicouple(&(field[i].dis[j]));  
+         inherit_design_dis_fsicouple(&(field[i].dis[j]));
 }
 #endif
 /*------ set pointers in the discr. to the design freesurface condition */
@@ -319,7 +319,7 @@ inp_resultdescr();
 
 /*--------------------------------------------- all reading is over here*/
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -10,31 +10,31 @@ Maintainer: Christiane Foerster
 </pre>
 
 *----------------------------------------------------------------------*/
-/*! 
-\addtogroup INPUT 
+/*!
+\addtogroup INPUT
 *//*! @{ (documentation module open)*/
 #include "../headers/standardtypes.h"
 #include "../fluid2/fluid2.h"
 #include "../fluid3/fluid3.h"
- 
+
 
 #ifdef D_FLUID
 /*!----------------------------------------------------------------------
 \brief inherit stabilisation condition from design to elements
 
 <pre>                                                       chfoe 01/04
-The stabilisation parameters have been read within a condition assigned 
-to the dsurf (2D) or dvol (3D). Now pointers within the elements are set 
+The stabilisation parameters have been read within a condition assigned
+to the dsurf (2D) or dvol (3D). Now pointers within the elements are set
 to the stabilisation constants of the corresponding dsurface or dvolume.
 
 This routine has to be called for discretisations of the fluid field only!
 </pre>
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa
 
-*----------------------------------------------------------------------*/ 
+*----------------------------------------------------------------------*/
 void inherit_design_ele(DISCRET *actdis)
 {
 
@@ -48,10 +48,10 @@ DSURF	*actdsurf;
 
 #ifdef D_FLUID3
 FLUID3	*fluid3;
-DVOL	*actdvol; 
+DVOL	*actdvol;
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inherit_design_ele");
 #endif
 /*----------------------------------------------------------------------*/
@@ -65,10 +65,10 @@ for (i=0; i<actdis->numele; i++)
       /*------------------------------------------ set some pointers ---*/
       fluid2 = actele->e.f2;
       actdsurf = actele->g.gsurf->dsurf;
-       
+
       /*------------------- get type of stabilisation to the element ---*/
       fluid2->stab_type = actdsurf->stab_type;
-       
+
       /*--- assign pointer to corresponding stabilisation parameters ---*/
       if (fluid2->stab_type == stab_gls)
       {
@@ -77,7 +77,7 @@ for (i=0; i<actdis->numele; i++)
       }
       else if (fluid2->stab_type == stab_prespro)
         ;   /* nothing needs to be done at the moment (no parameters!) */
-      else 
+      else
         dserror("Unknown stabilisation");
     break;
     /*---------------------------- do nothin in the following cases: ---*/
@@ -90,36 +90,36 @@ for (i=0; i<actdis->numele; i++)
       /*------------------------------------------ set some pointers ---*/
       fluid2 = actele->e.f2;
       actdsurf = actele->g.gsurf->dsurf;
-       
+
       /*------------------- get type of stabilisation to the element ---*/
       fluid2->stab_type = actdsurf->stab_type;
-       
+
       /*--- assign pointer to corresponding stabilisation parameters ---*/
       if (fluid2->stab_type == stab_gls)
         fluid2->stabi.gls = actdsurf->stabi.gls;
       else if (fluid2->stab_type == stab_prespro)
         ;   /* nothing needs to be done at the moment (no parameters!) */
-      else 
+      else
         dserror("Unknown stabilisation");
     break;
 #endif
-    break;    
+    break;
     case el_fluid3:
 #ifdef D_FLUID3
       /*------------------------------------------ set some pointers ---*/
       fluid3 = actele->e.f3;
       actdvol = actele->g.gvol->dvol;
-       
+
       /*------------------- get type of stabilisation to the element ---*/
       fluid3->stab_type = actdvol->stab_type;
-       
+
       /*--- assign pointer to corresponding stabilisation parameters ---*/
       if (fluid3->stab_type == stab_gls)
       {
         dsassert(actdvol->stabi.gls!=NULL,"no stabilisation at DVOL!\n");
         fluid3->stabi.gls = actdvol->stabi.gls;
       }
-      else 
+      else
         dserror("Other than gls stabilisation not yet implemented!");
 #endif
     break;
@@ -127,7 +127,7 @@ for (i=0; i<actdis->numele; i++)
   }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

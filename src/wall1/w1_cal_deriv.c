@@ -16,23 +16,23 @@ Maintainer: Andrea Hund
 #include "wall1.h"
 #include "wall1_prototypes.h"
 
-/*! 
-\addtogroup WALL1 
+/*!
+\addtogroup WALL1
 *//*! @{ (documentation module open)*/
 
 /*----------------------------------------------------------------------*
  | compute displacement derivatives                          al 9/01    |
  *----------------------------------------------------------------------*/
 void w1_disd(ELEMENT   *ele,
-             DOUBLE   **bop, 
-             DOUBLE    *gop, 
-             DOUBLE    *alpha, 
+             DOUBLE   **bop,
+             DOUBLE    *gop,
+             DOUBLE    *alpha,
              WALL_TYPE wtype,
              DOUBLE   *disd)
 {
 /*----------------------------------------------------------------------*/
 INT i,inode, node_start;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_disd");
 #endif
 /*----------------------------------------------------------------------*/
@@ -63,7 +63,7 @@ if(wtype==rotat_symmet)
   } /* end of loop over nodes */
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

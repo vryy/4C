@@ -19,7 +19,7 @@ extern struct _FILES         allfiles;
 /*!----------------------------------------------------------------------
 \brief the multilevel preconditioner main structure
 
-<pre>                                                         m.gee 09/02    
+<pre>                                                         m.gee 09/02
 defined in solver_mlpcg.c
 </pre>
 
@@ -45,7 +45,7 @@ INT       info=1;
 INT      *ia,*ja,*update,colstart,colend;
 DOUBLE   *a;
 DIST_VECTOR    *distvecs;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_eigen");
 #endif
 /*-------------------------------------------------------some variables */
@@ -111,7 +111,7 @@ amdel(&WORK_a);
 amdel(&IWORK_a);
 dserror("End of eigenvalue analysis");
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -122,7 +122,7 @@ return;
 /*!----------------------------------------------------------------------
 \brief the multilevel preconditioner main structure
 
-<pre>                                                         m.gee 09/02    
+<pre>                                                         m.gee 09/02
 defined in solver_mlpcg.c
 </pre>
 
@@ -191,7 +191,7 @@ info = 1;
 dgetrf(&numeq,&numeq,dense[0],&numeq,ipiv,&info);
 if (info != 0) dserror("Lapack dgetrf returned info nonzero");
 return;
-} 
+}
 
 
 INT dense_solve(DBCSR *ilu, DOUBLE *r, DOUBLE *z)
@@ -247,7 +247,7 @@ INT           foundit;
 INT           shift,bins[5000];
 DOUBLE      **R;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_precond_oneP_vanek");
 #endif
 /*----------------------------------------------------------------------*/
@@ -255,14 +255,14 @@ dstrc_enter("mlpcg_precond_oneP_vanek");
 *nrow=0;
 for (i=0; i<actagg->nblock; i++)
    (*nrow) += actagg->block[i][0];
-   
+
 *ncol = actagg->numdf;
 if (*nrow >= 1000 || *ncol >= 500)
 dserror("Local variable aggblock[1000][500] too small");
 /*--------------------------------------- get the global column indizes */
 for (i=0; i<actagg->numdf; i++)
    cindex[i] = actagg->dof[i];
-/*------------------------------------------ get the global row indizes */   
+/*------------------------------------------ get the global row indizes */
 counter=0;
 for (i=0; i<actagg->nblock; i++)
    for (j=0; j<actagg->block[i][0]; j++)
@@ -280,7 +280,7 @@ qsort((INT*)rindex,*nrow,sizeof(INT),cmp_int);
 /*======================================================================*/
 dsassert(actagg->nblock<=200,"Local variable prevagg[200] too small");
 dsassert(*ncol==6,"number of rbm's has to be 6 in this case");
-/* 
+/*
 the index of the agg in prevlev corresponds to the index of the block in
 blocks
 */
@@ -327,11 +327,11 @@ for (i=0; i<actagg->nblock; i++)
 } /* end of for (i=0; i<actagg->nblock; i++) */
 /*======================================================================*/
 /*======================================================================*/
-#endif 
+#endif
 /*======================================================================*/
 /*======================================================================*/
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

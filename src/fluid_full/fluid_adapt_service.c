@@ -10,7 +10,7 @@ Maintainer: Christiane Foerster
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
+/*!
 \addtogroup FLUID
 *//*! @{ (documentation module open)*/
 #ifdef D_FLUID
@@ -25,7 +25,7 @@ Maintainer: Christiane Foerster
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -39,18 +39,18 @@ static FLUID_DYNAMIC *fdyn;
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par; 
+ extern struct _PAR   par;
 
 /*!---------------------------------------------------------------------
 \brief calculate fluid acceleration field
 
 <pre>                                                         chfoe 10/03
 
-the fluid acceleration is calculated depending on the actual time 
+the fluid acceleration is calculated depending on the actual time
 stepping scheme. It is written to sol_increment[5][i]
 
 One-step-Theta and Generalised Alpha:
@@ -61,37 +61,37 @@ acc(n+1) = (vel(n+1)-vel(n)) / (Theta * dt(n)) - (1/Theta -1) * acc(n)
 BDF2:
 
 	      2*dt(n)+dt(n-1)		     dt(n)+dt(n-1)
-acc(n+1) = --------------------- vel(n+1) - --------------- vel(n) 
+acc(n+1) = --------------------- vel(n+1) - --------------- vel(n)
 	   dt(n)*[dt(n)+dt(n-1)]	     dt(n)*dt(n-1)
-	   
-		    dt(n)  
+
+		    dt(n)
 	 + ----------------------- vel(n+1)
  	   dt(n-1)*[dt(n)+dt(n-1)]
- 
+
  NOTE: For the One step Theta scheme the first 10 steps are performed
-       by means of the BDF2 acceleration. This is necessary to get 
+       by means of the BDF2 acceleration. This is necessary to get
        zero initial field calculations running properly.
- 
+
  the values at the nodes are
  sol_increment[0][i] .. vel(n-1)
  sol_increment[1][i] .. vel(n)
  sol_increment[2][i] .. lin. combin. of the other values
- sol_increment[3][i] .. vel(n+1) 
+ sol_increment[3][i] .. vel(n+1)
  sol_increment[4][i] .. acc(n-1)
  sol_increment[5][i] .. acc(n)
-			     
-</pre>   
+
+</pre>
 \param *actfield	FIELD		(i)	the actual field
 \param  iop		INT		(i)	flag, which scheme
-\return void 
+\return void
 
 ------------------------------------------------------------------------*/
-void fluid_acceleration(	FIELD 		*actfield, 
+void fluid_acceleration(	FIELD 		*actfield,
 				INT 	 	iop
 			)
 {
 DOUBLE fact1, fact2, fact3, dta, dtp, sum;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_acceleration");
 #endif
 
@@ -105,7 +105,7 @@ case 4:	/* One step Theta time integration 				*/
    solserv_sol_zero(actfield,0,1,5);
    solserv_sol_add(actfield,0,1,1,3,5, fact1);
    solserv_sol_add(actfield,0,1,1,1,5,-fact1);
-   solserv_sol_add(actfield,0,1,1,4,5, fact2); 
+   solserv_sol_add(actfield,0,1,1,4,5, fact2);
 break;
 case 7:	/* 2nd order backward differencing BDF2				*/
    dta = fdyn->dta;
@@ -126,7 +126,7 @@ default:
 }
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -138,8 +138,8 @@ return;
 
 <pre>                                                         chfoe 10/03
 
-This routine prepares the time rhs in mass form. Depending on the time 
-integration scheme the linear combination of vel(n) and acc(n) is 
+This routine prepares the time rhs in mass form. Depending on the time
+integration scheme the linear combination of vel(n) and acc(n) is
 evaluated which is later multiplied by the mass matrix in order to give
 the time rhs.
 The linear combination is written to sol_increment[2]
@@ -164,31 +164,31 @@ for constant time step:
 for adaptive time step:
 
 /		   2	       \			  2
-|	    (dt(n))	       |    		   (dt(n))	      
+|	    (dt(n))	       |    		   (dt(n))
 |1 + ------------------------- | vel(n) - ------------------------- vel(n-1)
 \    dt(n-1)*[2*dt(n)+dt(n-1)] /	  dt(n-1)*[2*dt(n)+dt(n-1)]
- 
- 
+
+
  the values at the nodes are
  sol_increment[0][i] .. vel(n-1)
  sol_increment[1][i] .. vel(n)
  sol_increment[2][i] .. lin. combin. of the other values
- sol_increment[3][i] .. vel(n+1) 
+ sol_increment[3][i] .. vel(n+1)
  sol_increment[4][i] .. acc(n-1)
  sol_increment[5][i] .. acc(n)
- 
- 
-</pre>   
+
+
+</pre>
 \param *actfield	FIELD		(i)	the actual field
 \param  iop		INT		(i)	flag, which scheme
-\return void 
+\return void
 
 ------------------------------------------------------------------------*/
 void fluid_prep_rhs(FIELD *actfield)
 {
 DOUBLE 	fact;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_prep_rhs");
 #endif
 
@@ -197,8 +197,8 @@ fdyn = alldyn[genprob.numff].fdyn;
 switch (fdyn->iop)
 {
 case 1:	/* Generalised Alpha time integration 				*/
-   fact = -fdyn->dta * fdyn->alpha_f * 
-          (fdyn->theta - fdyn->alpha_m) / fdyn->alpha_m; 
+   fact = -fdyn->dta * fdyn->alpha_f *
+          (fdyn->theta - fdyn->alpha_m) / fdyn->alpha_m;
    solserv_sol_copy(actfield,0,1,1,1,2);
    solserv_sol_add(actfield,0,1,1,5,2,fact);
 break;
@@ -217,7 +217,7 @@ default:
    dserror("Time integration scheme unknown for mass rhs!");
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -232,7 +232,7 @@ return;
 
 This routine evaluates the predicted velocity at the end of the next time
 step. The prediction is performed via an explicit partner of the implicit
-time stepping scheme used. 
+time stepping scheme used.
 
 One-step-Theta with Theta = 1/2 (Crack Nicolson)
 and Generalised Alpha:
@@ -242,37 +242,37 @@ with 2nd order Adams-Bashford (AB2):
 vel_P(n+1) = vel(n) + ----- || 2 + ------- | * acc(n) - ------- * acc(n-1) |
 	 	        2   |\     dt(n-1) /            dt(n-1)            |
 		            \					 	  /
-			  
+
 One step Theta with Forward Euler: (Theta != 1/2)
 
 vel_P(n+1) = vel(n) + dt(n) * acc(n)
 
 BDF2 with generalised leapfrog:
 
-			     /	 dt(n) 	  \	    /dt(n) \2  
+			     /	 dt(n) 	  \	    /dt(n) \2
 vel_P(n+1) = vel(n) + dt(n) | 1 + ------- |*acc(n)-|-------| * [u(n)-u(n-1)]
 			    \ 	dt(n-1)   /	   \dt(n-1)/
- 
+
  the values at the nodes are
  sol_increment[0][i] .. vel(n-1)
  sol_increment[1][i] .. vel(n)
  sol_increment[2][i] .. lin. combin. of the other values
- sol_increment[3][i] .. vel(n+1) 
+ sol_increment[3][i] .. vel(n+1)
  sol_increment[4][i] .. acc(n-1)
  sol_increment[5][i] .. acc(n)
  sol_increment[6][i] .. predicted vel(n+1)
- 
-</pre>   
+
+</pre>
 \param *actfield	FIELD		(i)	the actual field
 \param  iop		INT		(i)	flag, which scheme
-\return void 
+\return void
 
 ------------------------------------------------------------------------*/
 void fluid_predictor(FIELD *actfield, INT iop)
 {
 DOUBLE 	fact1, fact2;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_predictor");
 #endif
 
@@ -313,7 +313,7 @@ default:
 /*---- copy predicted velocities (no pressure) at (n+1) to sol_field ---*/
 solserv_sol_copy(actfield,0,1,1,6,3);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -337,7 +337,7 @@ with 2nd order Adams-Bashford:
 		6*alpha_f - 2
 LTE = ------------------------------- * [vel(n+1) - vel_P(n+1)]
       3*( dt(n-1)/dt(n) + 2*alpha_f )
-      
+
 One-step-Theta with Theta = 1/2 (Crack Nicolson):
 with 2nd order Adams-Bashford:
 
@@ -359,31 +359,31 @@ BDF2 with generalised leapfrog:
 	      \     dt(n)  /
 LTE = -------------------------------------  * [ vel(n+1) - vel_P(n+1) ]
         dt(n-1)     /dt(n-1)\2    /dt(n-1)\3
-     1+3------- + 4| -------| + 2| -------| 
+     1+3------- + 4| -------| + 2| -------|
          dt(n)     \  dt(n) /    \  dt(n) /
-  
+
  the values at the nodes are
  sol_increment[0][i] .. vel(n-1)
  sol_increment[1][i] .. vel(n)
  sol_increment[2][i] .. lin. combin. of the other values
- sol_increment[3][i] .. vel(n+1) 
+ sol_increment[3][i] .. vel(n+1)
  sol_increment[4][i] .. acc(n-1)
  sol_increment[5][i] .. acc(n)
  sol_increment[6][i] .. predicted vel(n+1)
  sol_increment[7][i] .. local truncation error (lte)
- 
-</pre>   
+
+</pre>
 \param *actfield	FIELD		(i)	the actual field
 \param  iop		INT		(i)	flag, which scheme
-\return void 
+\return void
 
 ------------------------------------------------------------------------*/
-void fluid_lte(	FIELD	 	*actfield, 
+void fluid_lte(	FIELD	 	*actfield,
 		INT 		 iop)
 {
 DOUBLE 	fact, ratio;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_lte");
 #endif
 
@@ -392,11 +392,11 @@ fdyn = alldyn[genprob.numff].fdyn;
 switch (iop)
 {
 case 1:	/* Generalised Alpha time integration                           */
-   fact = (6.0 * fdyn->alpha_f - 2.0) / ( 3.0*( fdyn->dtp/fdyn->dta 
+   fact = (6.0 * fdyn->alpha_f - 2.0) / ( 3.0*( fdyn->dtp/fdyn->dta
            + 2.0*fdyn->alpha_f ) );
    solserv_sol_zero(actfield,0,1,7);
    solserv_sol_add(actfield,0,1,1,3,7, fact);
-   solserv_sol_add(actfield,0,1,1,6,7,-fact); 
+   solserv_sol_add(actfield,0,1,1,6,7,-fact);
 break;
 case 4:	/* One step Theta time integration                              */
    if (fdyn->theta == 0.5) 	/* TR! */
@@ -404,14 +404,14 @@ case 4:	/* One step Theta time integration                              */
       fact = 1.0/3.0*(1.0+fdyn->dtp/fdyn->dta);
       solserv_sol_zero(actfield,0,1,7);
       solserv_sol_add(actfield,0,1,1,3,7, fact);
-      solserv_sol_add(actfield,0,1,1,6,7,-fact);     
+      solserv_sol_add(actfield,0,1,1,6,7,-fact);
    }
    else
    {
       fact = 1.0 - 1.0/( 2.0*fdyn->theta );
       solserv_sol_zero(actfield,0,1,7);
       solserv_sol_add(actfield,0,1,1,3,7, fact);
-      solserv_sol_add(actfield,0,1,1,6,7,-fact);   
+      solserv_sol_add(actfield,0,1,1,6,7,-fact);
    }
 break;
 case 7:	/* 2nd order backward differencing BDF2                         */
@@ -420,13 +420,13 @@ case 7:	/* 2nd order backward differencing BDF2                         */
            ( 1.0 + 3.0*ratio + 4.0*DSQR(ratio) + 2.0*DSQR(ratio)*ratio );
    solserv_sol_zero(actfield,0,1,7);
    solserv_sol_add(actfield,0,1,1,3,7, fact);
-   solserv_sol_add(actfield,0,1,1,6,7,-fact); 
+   solserv_sol_add(actfield,0,1,1,6,7,-fact);
 break;
 default:
    dserror("Time integration scheme unknown for adaptive time stepping!");
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -438,23 +438,23 @@ return;
 
 <pre>                                                         chfoe 10/03
 
-This routine evaluates the norm of the local truncation error and sets 
+This routine evaluates the norm of the local truncation error and sets
 the new time step size. It also decides whether or not a time step should
 be repeated in order to secure accuracy.
-The decision to repeat the timestep bases on the error norm given by 
+The decision to repeat the timestep bases on the error norm given by
 GRESHO/SANI in "Incompressible Flow and the Finite Element Method" p.708.
-The maximal velocities in x- and y-direction (and z-direction) are used 
+The maximal velocities in x- and y-direction (and z-direction) are used
 to set up the characteristic velocities u0, v0 (w0), respectively.
 
-NOTE: The proposed new time step is actually the proper time step size 
-      for the recent step. Hence this is repeated in case the new 
+NOTE: The proposed new time step is actually the proper time step size
+      for the recent step. Hence this is repeated in case the new
       proposal is much smaller than the step size which was used.
 
-NOTE: The repeat-timestep/don't-repeat-timestep-decision follows the 
+NOTE: The repeat-timestep/don't-repeat-timestep-decision follows the
       'heuristics' in GRESHO/SANI "Incompressible Flow and the Finite
       Element Method" p. 711 or W.A.Wall (dissertation) p. 98.
 
-</pre>   
+</pre>
 \param *actpart		PARTITION	(i) 	actual partition
 \param *actfield	FIELD		(i)	the actual field
 \param *actintra	INTRA		(i)
@@ -463,10 +463,10 @@ NOTE: The repeat-timestep/don't-repeat-timestep-decision follows the
 \param *repeat		INT		(o)	flag, if to repeat
 \param *repeated	INT		(i/o)	flag, if was repeated
 \param  itnum		INT		(i)	number of iterations
-\return void 
+\return void
 
 ------------------------------------------------------------------------*/
-void fluid_lte_norm(	
+void fluid_lte_norm(
 			PARTITION 	*actpart,
 			INTRA		*actintra,
 			INT		*iststep,
@@ -495,7 +495,7 @@ NODE    *actnode;       /* the actual node                              */
 GNODE   *actgnode;      /* the corresponding gnode                      */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_lte_norm");
 #endif
 /*------------------------------------------- initialise some values ---*/
@@ -508,16 +508,16 @@ vel0[0] = vel0[1] = vel0[2] = ZERO;
 
 /*---------------------- get maximum velocity in x, y, (z)-direction ---*/
 /* loop nodal points of this proc. */
-for (i=0; i<actpart->pdis[0].numnp; i++)	
+for (i=0; i<actpart->pdis[0].numnp; i++)
 {
   actnode  = (actpart->pdis[0].node[i]);
   if(actnode->numdf > 4)
     dserror("Too many degrees of freedom!!");
-  for (j=0;j<actnode->numdf-1;j++) /* loop all velocity dofs */ 
-    vel0[j] = DMAX(FABS(actnode->sol_increment.a.da[3][j]),vel0[j]); 
+  for (j=0;j<actnode->numdf-1;j++) /* loop all velocity dofs */
+    vel0[j] = DMAX(FABS(actnode->sol_increment.a.da[3][j]),vel0[j]);
 }
 
-#ifdef PARALLEL 
+#ifdef PARALLEL
 MPI_Reduce(vel0,getvec,3,MPI_DOUBLE,MPI_MAX,0,actintra->MPI_INTRA_COMM);
 #else
 for (i=0; i<3; i++)  getvec[i] = vel0[i];
@@ -525,21 +525,21 @@ for (i=0; i<3; i++)  getvec[i] = vel0[i];
 
 /*---------------- truncate characteristic velocity at lower bound ...
                                        ... to avoid division by zero ---*/
-if (par.myrank == 0) for (i=0; i<3; i++) vel0[i]=DMAX(getvec[i],0.0001);	
+if (par.myrank == 0) for (i=0; i<3; i++) vel0[i]=DMAX(getvec[i],0.0001);
 
 /*------------------------------------------- send vel0 to all procs ---*/
-#ifdef PARALLEL 
+#ifdef PARALLEL
 MPI_Bcast(vel0,3,MPI_DOUBLE,0,actintra->MPI_INTRA_COMM);
 #endif
 
 /*------------------------- determine norm of local truncation error ---*/
 
 /* loop nodal points of this proc. */
-for (i=0; i<actpart->pdis[0].numnp; i++)	
+for (i=0; i<actpart->pdis[0].numnp; i++)
 {
   actnode  = (actpart->pdis[0].node[i]);
   actgnode = actnode->gnode;
-  for (j=0;j<numveldof;j++) /* loop all velocity dofs */    
+  for (j=0;j<numveldof;j++) /* loop all velocity dofs */
   {
     if (actgnode->dirich->dirich_onoff.a.iv[j]!=0)
       continue; /* do nothing for dbc dofs*/
@@ -687,9 +687,9 @@ end:
 if (par.myrank == 0)
   if (*repeat == 0)
     plot_lte(fdyn->acttime,fdyn->step,d_norm,fdyn->dta,itnum);
-      
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -17,8 +17,8 @@ Maintainer: Andreas Lipka
 #include "../solver/solver.h"
 #include "../headers/optimization.h"
 #include "opt_prototypes.h"
-/*! 
-\addtogroup OPTIMIZATION 
+/*!
+\addtogroup OPTIMIZATION
 *//*! @{ (documentation module open)*/
 
 
@@ -33,7 +33,7 @@ extern struct _FIELD      *field;
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -66,7 +66,7 @@ extern struct _CURVE *curve;
 
 <pre>                                                         m.gee 8/00
 -the partition of one proc (all discretizations)
--the type is in partition.h                                                  
+-the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -88,11 +88,11 @@ extern struct _IO_FLAGS     ioflags;
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par;                      
+ extern struct _PAR   par;
 /*----------------------------------------------------------------------*
  | enum _CALC_ACTION                                      m.gee 1/02    |
  | command passed from control routine to the element level             |
@@ -102,7 +102,7 @@ and the type is in partition.h
 extern enum _CALC_ACTION calc_action[MAXFIELD];
 /*!----------------------------------------------------------------------
 \brief the optimization main structure
-<pre>                                                            al 06/01   
+<pre>                                                            al 06/01
 defined in opt_cal_main.c
 </pre>
 *----------------------------------------------------------------------*/
@@ -166,7 +166,7 @@ void nlnequ(
 /*----------------------------------------------------------------------*
  |  routine to control nonlinear static execution       m.gee 11/01     |
  *----------------------------------------------------------------------*/
-void opt_stanln(CALSTA_EXEC stalact) 
+void opt_stanln(CALSTA_EXEC stalact)
 {
 INT           i;                  /* simply a counter */
 INT           numeq;              /* number of equations on this proc */
@@ -197,7 +197,7 @@ NR_CONTROLTYP controltyp;         /* type of path following technic */
 
 static DIST_VECTOR  *re;          /* vector of out of balance loads */
 static DIST_VECTOR  *rsd;         /* vector for incremental displacements */
-static DIST_VECTOR  *dispi;       /* incrementel displacements */              
+static DIST_VECTOR  *dispi;       /* incrementel displacements */
 
 SOLVAR       *actsolv;            /* pointer to active solution structure */
 PARTITION    *actpart;            /* pointer to active partition */
@@ -214,7 +214,7 @@ CONTAINER     container;          /* contains variables defined in container.h *
 
 INT           reldof[6];          /* the Id's of the dofs for output */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("opt_stanln");
 #endif
 container.isdyn = 0;              /* static computation */
@@ -223,17 +223,17 @@ restart = genprob.restart;
 /*----------------------------------------------------------------------*/
 oflag=0;
 /*------------ the distributed system matrix, which is used for solving */
-/* 
+/*
 NOTE: This routine only uses 1 global sparse matrix, which was created
       in global_mask_matrices. If You need more, it is necessary to allocate
       more matrices in actsolv->sysarray.
-      Then one has to either copy the sparisty mask from 
+      Then one has to either copy the sparisty mask from
       actsolv->actsysarray[0] to the others if using the same matrix format,
-      or one has to call global mask matrices again for another type of 
+      or one has to call global mask matrices again for another type of
       sparsity mask.
       Normally a control routine should not mix up different storage formats
       for system matrices
-*/         
+*/
 /*---- indize in the vector actsolv->sysarray[] of the stiffness matrix */
 /*   the sparse matrix actsolv->sysarray[actsysarray] is used as system */
 /*                                                               matrix */
@@ -245,7 +245,7 @@ actsolv     = &(solv[0]);         /* the corresponednt SOLVAR structure */
 actpart     = &(partition[0]);    /*     the partitioning of this field */
 action      = &(calc_action[0]);  /*        the calculation action enum */
 container.fieldtyp = actfield->fieldtyp;
-#ifdef PARALLEL 
+#ifdef PARALLEL
 actintra    = &(par.intra[0]);    /*     the field's intra-communicator */
 /*---------------- if we are not parallel, we have to allocate a pseudo */
 /*                                         intra-communicator structure */
@@ -277,12 +277,12 @@ calstatserv_findcontroldof(actfield,
                            statvar->control_node_global,
                            statvar->control_dof,
                            &(statvar->controlnode),
-                           &cdof); 
+                           &cdof);
 /*------------------------------------------------- get type of control */
 /*              type of control algorithm (displacement, arclenght ...) */
 controltyp = statvar->nr_controltyp;
 /*------------------------------------------------- get number of steps */
-nstep      = statvar->nstep; 
+nstep      = statvar->nstep;
 /*------------------------------------ get maximum number of iterations */
 maxiter    = statvar->maxiter;
 /*----------------------------------------------- number of rhs vectors */
@@ -344,7 +344,7 @@ if(stalact == calsta_init || stalact==calsta_init_solve)
 }
 /*----------------------------------------- write output of mesh to gid */
 if (par.myrank==0)
-if (ioflags.struct_disp_gid||ioflags.struct_stress_gid) 
+if (ioflags.struct_disp_gid||ioflags.struct_stress_gid)
    out_gid_msh();
 /*-------------------------------------- create the original rhs vector */
 /*-------------------------- the approbiate action is set inside calrhs */
@@ -378,7 +378,7 @@ if(stalact == calsta_init || stalact==calsta_init_solve)
 amzero(&(nln_data.arcfac));
 /*----------------------------------------- output to GID postprozessor */
 if (ioflags.struct_disp_gid==1 || ioflags.struct_stress_gid==1)
-if (par.myrank==0) 
+if (par.myrank==0)
 {
    /* colors the partitions in the postprocessing, if this is sequentiell*/
    /*              the picture of the partitions can be quite boring... */
@@ -424,7 +424,7 @@ act_loadfac = 0.;
 /*
 if(oflag==1)
 {
-   act_loadfac = (fin_loadfac-1)*step_fac; /* final value ! */ 
+   act_loadfac = (fin_loadfac-1)*step_fac; /* final value ! */
 /*}
 /*--- load controlled ---*/
 
@@ -452,18 +452,18 @@ for (kstep=0; kstep<nstep; kstep++)
                            actsolv->nrhs, actsolv->rhs,
                            actsolv->nsol, actsolv->sol,
                            1            , dispi,
-                           &container);  /* contains variables defined in container.h */ 
+                           &container);  /* contains variables defined in container.h */
    /*--------------- give the restartinfo to the associated variables --*/
-     kstep = restart; 
+     kstep = restart;
    /*--------------------------------------------- switch restart off --*/
-     restart = 0; 
+     restart = 0;
    /*----------------------- give back temporary storage of new input --*/
      statvar->stepsize = stepsi;
-     statvar->nstep = nstep; 
+     statvar->nstep = nstep;
      statvar->maxiter = maxiter;
      statvar->resevery_restart = restartevery;
    }
-                                            
+
    /*----------------------------------------------- LOAD-CONTROLLED ---*/
    if(controltyp==control_load)
    {
@@ -471,7 +471,7 @@ for (kstep=0; kstep<nstep; kstep++)
      solserv_copy_vec(&(actsolv->rhs[actsysarray+1]),&(actsolv->rhs[actsysarray]));
      /* get first load factor */
      act_loadfac += step_fac;
-     
+
      nln_data.rlnew = act_loadfac;
      /*---------------------- if load controlled; multiply with factor  */
      solserv_scalarprod_vec(&(actsolv->rhs[actsysarray]),act_loadfac);
@@ -499,7 +499,7 @@ for (kstep=0; kstep<nstep; kstep++)
        solserv_copy_vec(&(rsd[0]),&(dispi[0]));
        /*-------------------------------- update total displacements on sol[0] */
        solserv_add_vec(&(dispi[0]),&(actsolv->sol[0]),1.0);
-       /*---------- put actsolv->sol[kstep] to the nodes (total displacements) */ 
+       /*---------- put actsolv->sol[kstep] to the nodes (total displacements) */
        solserv_result_total(
                      actfield,
                      actintra,
@@ -534,7 +534,7 @@ for (kstep=0; kstep<nstep; kstep++)
      }
      else
      {
-   /*-------------------------------------- make equillibrium iteration */  
+   /*-------------------------------------- make equillibrium iteration */
      nlnequ(
            actfield,
            actsolv,
@@ -552,7 +552,7 @@ for (kstep=0; kstep<nstep; kstep++)
            controltyp,
            oflag,
            &container
-         );    
+         );
      }
    }
    /*--------------------------------------- DISPLACEMENT-CONTROLLED ---*/
@@ -572,7 +572,7 @@ for (kstep=0; kstep<nstep; kstep++)
          &nln_data,
           controltyp,
          &container);
-   /*-------------------------------------- make equillibrium iteration */  
+   /*-------------------------------------- make equillibrium iteration */
    conequ(actfield,
           actsolv,
           actpart,
@@ -588,9 +588,9 @@ for (kstep=0; kstep<nstep; kstep++)
           reldof,
           &nln_data,
           controltyp,
-          &container);    
+          &container);
    }
-   /*-- update for nonlinear material models - new stress/strain values */  
+   /*-- update for nonlinear material models - new stress/strain values */
    *action = calc_struct_update_istep;
    container.dvec         = NULL;
    container.dirich       = NULL;
@@ -601,7 +601,7 @@ for (kstep=0; kstep<nstep; kstep++)
    container.actndis = 0;              /* only one discretisation */
    calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,&container,action);
    /*-------------- check, if output is to be written is this loadstep */
-   mod_displ =    kstep  % statvar->resevry_disp;        
+   mod_displ =    kstep  % statvar->resevry_disp;
    mod_stress =   kstep  % statvar->resevry_stress;
    mod_restart =  kstep  % statvar->resevery_restart;
    /*-------------------------------------- perform stress calculation */
@@ -635,7 +635,7 @@ for (kstep=0; kstep<nstep; kstep++)
       }
    }
    /*----------------------------------------- printout results to gid */
-   if (par.myrank==0) 
+   if (par.myrank==0)
    {
        if (ioflags.struct_disp_gid==1 && mod_displ==0)
        out_gid_sol("displacement",actfield,actintra,kstep,0,ZERO);
@@ -644,7 +644,7 @@ for (kstep=0; kstep<nstep; kstep++)
    }
    /*----------------------------------- printout results to pss file */
    if(mod_restart==0)
-  { 
+  {
    switch(controltyp)
     {
     case control_disp:                        /* displacement control */
@@ -658,7 +658,7 @@ for (kstep=0; kstep<nstep; kstep++)
                            actsolv->nrhs, actsolv->rhs,
                            actsolv->nsol, actsolv->sol,
                            1            , dispi,
-                           &container);  /* contains variables defined in container.h */ 
+                           &container);  /* contains variables defined in container.h */
     break;
     case control_arc:                            /* arclenght control */
       dserror("restart for arclengh not yet impl.");
@@ -676,7 +676,7 @@ for (kstep=0; kstep<nstep; kstep++)
   }
 } /* end of (kstep=0; kstep<nstep; kstep++) */
 /*----------------------------------------------------------------------*/
-opt->nlndat = nln_data.rlnew;    /* store load factor for optimization */ 
+opt->nlndat = nln_data.rlnew;    /* store load factor for optimization */
 /*----------------------------------------------------------------------*/
 end:
 /*---------------------------------------------------- make cleaning up */
@@ -689,11 +689,11 @@ if(stalact == calsta_free)
   solserv_del_vec(&(dispi),2);
 }
 /*----------------------------------------------------------------------*/
-#ifndef PARALLEL 
+#ifndef PARALLEL
 CCAFREE(actintra);
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 /*----------------------------------------------------------------------*/
@@ -724,7 +724,7 @@ DOUBLE               dinorm;
 ARRAY                intforce_a;             /* global redundant vector of internal forces */
 DOUBLE              *intforce;               /* pointer to intforce_a.a.dv */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("nlninc");
 #endif
 /*----------------------------------------------------------------------*/
@@ -771,7 +771,7 @@ solserv_vecnorm_euclid(actintra,&(actsolv->rhs[actsysarray]),
 nln_data->rrnorm = nln_data->rinorm;
 /*------------------------------------------ solve for incremental load */
 init=0;
-solver_control(  
+solver_control(
                  actsolv,
                  actintra,
                &(actsolv->sysarray_typ[actsysarray]),
@@ -791,7 +791,7 @@ if (dinorm < statvar->toldisp) *iconv = 1;
 /*----------------------------------------------------------------------*/
 amdel(&intforce_a);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -823,7 +823,7 @@ INT                  init;                   /* init flag for solver */
 INT                  itemax;                 /* max. number of corrector steps allowed */
 DOUBLE               stepsize;               /* stepsize */
 INT                  convergence=0;          /* test flag for convergence */
-DOUBLE               rl0;                    /* some norms and working variables */                   
+DOUBLE               rl0;                    /* some norms and working variables */
 DOUBLE               rlold;
 DOUBLE               rlnew;
 DOUBLE               rlpre;
@@ -835,13 +835,13 @@ DOUBLE               told;
 DOUBLE               disval;
 
 static DOUBLE dsx,dsi,alfa0;
-static DOUBLE rni, rn1, sp, sp1; 
+static DOUBLE rni, rn1, sp, sp1;
 DOUBLE spi;
 
 ARRAY                intforce_a;             /* global redundant vector of internal forces */
 DOUBLE              *intforce;               /* pointer to intforce_a.a.dv */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("nlnequ");
 #endif
 /*----------------------------------------------------------------------*/
@@ -867,7 +867,7 @@ rlold               = rlnew;
 nln_data->rlold     = rlold;
 /*-------------------------------- update total displacements on sol[0] */
 solserv_add_vec(&(dispi[0]),&(actsolv->sol[0]),1.0);
-/*---------- put actsolv->sol[kstep] to the nodes (total displacements) */ 
+/*---------- put actsolv->sol[kstep] to the nodes (total displacements) */
 solserv_result_total(
                      actfield,
                      actintra,
@@ -883,7 +883,7 @@ if (actintra->intra_rank==0) conequ_printhead(kstep,controltyp,cdof,nln_data->cs
 solserv_vecnorm_euclid(actintra,&(dispi[0]),&dnorm);
 /*-------------------------------------- norm of residual displacements */
 solserv_vecnorm_euclid(actintra,&(rsd[0]),&dinorm);
-/*------------------------------------- total disp value of control dof */ 
+/*------------------------------------- total disp value of control dof */
 solserv_getele_vec(actintra,
                    &(actsolv->sysarray_typ[actsysarray]),
                    &(actsolv->sysarray[actsysarray]),
@@ -909,7 +909,7 @@ if (ABS(rn1) <= EPS14) rn1=rni;
 if (ABS(nln_data->sp1) <= EPS14) nln_data->sp1 = spi;
 
 /*------------------------------- evaluate current stiffness parameterr */
-if (statvar->iarc==0) 
+if (statvar->iarc==0)
 {
   sp=nln_data->sp1/spi*(rni/rn1);
   sp*=sp;
@@ -933,7 +933,7 @@ solserv_scalarprod_vec(&(actsolv->rhs[actsysarray]),rlnew);
 solserv_copy_vec(&(actsolv->rhs[actsysarray+1]),&(re[0]));
 /*------------------------------------------ scale the re[0] with rlnew */
 solserv_scalarprod_vec(&(re[0]),rlnew);
-/* put residual displacements to the nodes (needed for material, eas ..)*/              
+/* put residual displacements to the nodes (needed for material, eas ..)*/
 solserv_result_resid(
                      actfield,
                      actintra,
@@ -942,7 +942,7 @@ solserv_result_resid(
                      &(actsolv->sysarray[actsysarray]),
                      &(actsolv->sysarray_typ[actsysarray])
                     );
-/*-- put incremental displacements to the nodes (needed for material...)*/              
+/*-- put incremental displacements to the nodes (needed for material...)*/
 solserv_result_incre(
                      actfield,
                      actintra,
@@ -990,7 +990,7 @@ assemble_vec(actintra,
 /*                                                initial guess is zero */
 init=0;
 solserv_zero_vec(&(rsd[2]));
-solver_control(  
+solver_control(
                  actsolv,
                  actintra,
                &(actsolv->sysarray_typ[actsysarray]),
@@ -1045,7 +1045,7 @@ if (convergence)/*------------------------------------------convergence */
 else/*---------------------------------------------------no convergence */
 {
    if (*itnum < itemax) *itnum = *itnum + 1;
-   else 
+   else
    {
       if (actintra->intra_rank==0)
       {
@@ -1056,7 +1056,7 @@ else/*---------------------------------------------------no convergence */
    }
 }
 } /*--------------------------------------------- end of iteration loop */
-/*---------------------------------- update data after incremental step */           
+/*---------------------------------- update data after incremental step */
 /*--------------------- copy converged solution from sol[0] to dispi[1] */
 solserv_copy_vec(&(actsolv->sol[0]),&(dispi[1]));
 /*----------------- put converged solution to the elements in next step */
@@ -1068,13 +1068,13 @@ solserv_result_total(
                      &(actsolv->sysarray[actsysarray]),
                      &(actsolv->sysarray_typ[actsysarray])
                     );
-/*----------------------------------------------- update of load factor */                                  
+/*----------------------------------------------- update of load factor */
 nln_data->rlold = nln_data->rlnew;
 /*--------------- update of parameters for material law and eas etc.... */
 /* nothing needed yet..... */
 /*----------------------------------------------------------------------*/
 amdel(&intforce_a);
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

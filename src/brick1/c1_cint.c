@@ -17,8 +17,8 @@ Maintainer: Andreas Lipka
 #include "brick1.h"
 #include "brick1_prototypes.h"
 
-/*! 
-\addtogroup BRICK1 
+/*!
+\addtogroup BRICK1
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
@@ -56,21 +56,21 @@ This routine performs integration of an 3D-hex-element.
  |         \|               \|          \|               \|             |
  |          4-------16-------0           4----------------0             |
  |                                                                      |
- *----------------------------------------------------------------------* 
+ *----------------------------------------------------------------------*
 
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1_main()
 
 *----------------------------------------------------------------------*/
 void c1_cint(
-             ELEMENT   *ele, 
-             C1_DATA   *data, 
+             ELEMENT   *ele,
+             C1_DATA   *data,
              MATERIAL  *mat,
-             ARRAY     *estif_global, 
+             ARRAY     *estif_global,
              ARRAY     *emass_global,
-             DOUBLE    *force, 
+             DOUBLE    *force,
              INT        init
              )
 {
@@ -93,7 +93,7 @@ DOUBLE F[6]; /* element stress vector   (stress-resultants) */
 DOUBLE fielo[81];
 DOUBLE strain[6];
 DOUBLE xyze[60];
-DOUBLE edis[60];  
+DOUBLE edis[60];
 DOUBLE  g[6][6]; /* transformation matrix s(glob)= g*s(loc)   */
 DOUBLE gi[6][6]; /* inverse of g          s(loc) = gi*s(glob) */
 
@@ -112,25 +112,25 @@ DOUBLE disd1[9];
 DOUBLE fieh[30];
 DOUBLE epsh[6];
 
-static DOUBLE **estiflo;       
-static ARRAY    estiflo_a; /* local element stiffness matrix ke for eas */   
+static DOUBLE **estiflo;
+static ARRAY    estiflo_a; /* local element stiffness matrix ke for eas */
 
-static DOUBLE **estif9;       
-static ARRAY    estif9_a;   /* element stiffness matrix ke for eas */   
+static DOUBLE **estif9;
+static ARRAY    estif9_a;   /* element stiffness matrix ke for eas */
 
 /*----------------------------------------------------------------------*/
-static ARRAY    D_a;      /* material tensor */     
-static DOUBLE **D;         
-static ARRAY    funct_a;  /* shape functions */    
-static DOUBLE  *funct;     
-static ARRAY    deriv_a;  /* derivatives of shape functions */   
-static DOUBLE **deriv;     
-static ARRAY    xjm_a;    /* jacobian matrix */     
-static DOUBLE **xjm;         
-static ARRAY    bop_a;    /* B-operator */   
-static DOUBLE **bop;       
-static ARRAY    bnop_a;   /* BN-operator */   
-static DOUBLE **bn;       
+static ARRAY    D_a;      /* material tensor */
+static DOUBLE **D;
+static ARRAY    funct_a;  /* shape functions */
+static DOUBLE  *funct;
+static ARRAY    deriv_a;  /* derivatives of shape functions */
+static DOUBLE **deriv;
+static ARRAY    xjm_a;    /* jacobian matrix */
+static DOUBLE **xjm;
+static ARRAY    bop_a;    /* B-operator */
+static DOUBLE **bop;
+static ARRAY    bnop_a;   /* BN-operator */
+static DOUBLE **bn;
 static DOUBLE **estif;    /* element stiffness matrix ke */
 static DOUBLE **emass;     /* element mass matrix */
 DOUBLE          lmvec[ 60]; /* lumped     mass vector */
@@ -142,7 +142,7 @@ DOUBLE det;
 INT    iform;             /* index for nonlinear formulation of element */
 INT    calstr;            /* flag for stress calculation                */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1_cint");
 #endif
 /*----------------------------------------------------------------------*/
@@ -152,16 +152,16 @@ newval = 0;
 /*------------------------------------------------- some working arrays */
 if (init==1)
 {
-  funct     = amdef("funct"  ,&funct_a,MAXNOD_BRICK1,1 ,"DV");       
-  deriv     = amdef("deriv"  ,&deriv_a,3,MAXNOD_BRICK1 ,"DA");       
-  D         = amdef("D"      ,&D_a   ,6,6              ,"DA");           
-  xjm       = amdef("xjm"    ,&xjm_a ,numdf,numdf      ,"DA");           
-  
-  bop       = amdef("bop"  ,&bop_a ,numeps,(numdf*MAXNOD_BRICK1),"DA");           
-  bn        = amdef("bnop" ,&bnop_a,3     ,       MAXNOD_BRICK1 ,"DA");           
-  estif9    = amdef("estif9"  ,&estif9_a ,54,54,"DA");           
-  
-  estiflo   = amdef("estiflo"  ,&estiflo_a ,60,60,"DA");           
+  funct     = amdef("funct"  ,&funct_a,MAXNOD_BRICK1,1 ,"DV");
+  deriv     = amdef("deriv"  ,&deriv_a,3,MAXNOD_BRICK1 ,"DA");
+  D         = amdef("D"      ,&D_a   ,6,6              ,"DA");
+  xjm       = amdef("xjm"    ,&xjm_a ,numdf,numdf      ,"DA");
+
+  bop       = amdef("bop"  ,&bop_a ,numeps,(numdf*MAXNOD_BRICK1),"DA");
+  bn        = amdef("bnop" ,&bnop_a,3     ,       MAXNOD_BRICK1 ,"DA");
+  estif9    = amdef("estif9"  ,&estif9_a ,54,54,"DA");
+
+  estiflo   = amdef("estiflo"  ,&estiflo_a ,60,60,"DA");
 goto end;
 }
 else if(init==2)
@@ -187,12 +187,12 @@ amzero(&estiflo_a);
 
 for (i=0; i<81; i++) fielo[i] = 0.0;
 /*------------------------------------ check calculation of mass matrix */
-if (init==4 || init==5) 
+if (init==4 || init==5)
 {
   /*---------------------------------------------------- get density ---*/
   #ifdef D_OPTIM                   /* include optimization code to ccarat */
    if(ele->e.c1->elewa->matdata==NULL) c1_getdensity(mat, &density);
-   else density = ele->e.c1[0].elewa[0].matdata[0];   
+   else density = ele->e.c1[0].elewa[0].matdata[0];
   #else
   c1_getdensity(mat, &density);
   #endif /* stop including optimization code to ccarat :*/
@@ -200,7 +200,7 @@ if (init==4 || init==5)
   for (i=0; i<400; i++) consm[i] = 0.0;
   if(emass_global!=NULL) amzero(emass_global);
   emass     = emass_global->a.da;
-} 
+}
 /*------------------------------------------- integration parameters ---*/
 nir     = ele->e.c1->nGP[0];
 nis     = ele->e.c1->nGP[1];
@@ -215,7 +215,7 @@ nd      = numdf * iel;
     cc=0;
     for (i=0;i<iel;i++) for (j=0;j<3;j++) edis[cc++] = ele->node[i]->sol.a.da[0][j];
   }
-  else 
+  else
   {/*iel==20*/
    cc=0;
    xyze[cc++] = ele->node[0]->x[0];
@@ -344,7 +344,7 @@ nd      = numdf * iel;
   iform   = ele->e.c1->form;/*=1:linear:=2 total lagrangian formulation */
 /*-------------------------------------------  for eas elements only ---*/
   ihyb = ele->e.c1->nhyb;
-  if(ihyb>0) 
+  if(ihyb>0)
   {
     l1=3*ihyb;
     l3=ihyb;
@@ -385,7 +385,7 @@ for (lr=0; lr<nir; lr++)
       fac = facr * facs *  fact * det;
       amzero(&bop_a);
       /*------------------------------------------------ mass matrix ---*/
-      if (init==4) 
+      if (init==4)
       {
         facm = fac * density;
         totmas += facm;
@@ -394,37 +394,37 @@ for (lr=0; lr<nir; lr++)
       /*-- local element coordinate system for anisotropic materials ---*/
       c1tram (xjm,g,gi);
       /*----------------------------------  eas element (small def.) ---*/
-      if(ihyb>0) 
+      if(ihyb>0)
       {
         det1 = det;
         c1bop9 (bop, bn1,fi, disd1,ehdis, det0,det1, e1,e2,e3, iel, l1,l3);
       }
       /*--------------------------------------- calculate operator B ---*/
       c1_bop(bop,bn,deriv,xjm,det,iel);
-      /*--------------------------- compute displacement derivatives ---*/        
-      c1_disd (bop,edis,disd,iel) ;                  
-      /*---------------- include initial displacements to b-operator ---*/        
+      /*--------------------------- compute displacement derivatives ---*/
+      c1_disd (bop,edis,disd,iel) ;
+      /*---------------- include initial displacements to b-operator ---*/
       if(iform==2 && mat->mattyp!=m_pl_mises_ls)
       {
-        c1_bdis (bop,disd,iel) ;                  
-       if(ihyb >0) c1bdish (bop,bn1,disd1,iel,l3) ; 
-      }  
+        c1_bdis (bop,disd,iel) ;
+       if(ihyb >0) c1bdish (bop,bn1,disd1,iel,l3) ;
+      }
       /*------------------------------- get actual strains -> strain ---*/
       c1_eps (disd,strain,iform);
       /*--------------------------------------------------- eas part ---*/
-      if(ihyb>0) 
+      if(ihyb>0)
       {
         c1_eps (disd1,epsh,iform);
         cc=0;
         for (i=0; i<ihyb; i++) {
-          for (j=0; j<6; j++) { 
-            for (k=0; k<3; k++) { 
+          for (j=0; j<6; j++) {
+            for (k=0; k<3; k++) {
               strain[j] +=  bop[j][k + (i+iel)*3] * ehdis[k][i];}}}
       }
       /*------------------------------------------ call material law ---*/
       c1_call_mat(ele, mat,ip,F,strain,D,disd,g,gi,istore,newval);
       /*----------- calculate element stresses at integration points ---*/
-      if(calstr==1) 
+      if(calstr==1)
       {
         for (i=0; i<6; i++) srst[i]=F[i]; /* stresses at gauss point    */
         for (i=0; i<6; i++) s123[i]=F[i]; /* princ. stress,  directions */
@@ -463,7 +463,7 @@ for (lr=0; lr<nir; lr++)
       /*--------------- nodal forces fi from integration of stresses ---*/
         if (force)
         {
-           c1fi (F,fac,bop,nd,fielo);                    
+           c1fi (F,fac,bop,nd,fielo);
       /*------------------------ compute residuals----------------------*/
           if(ihyb>0)
           {
@@ -478,7 +478,7 @@ for (lr=0; lr<nir; lr++)
   {
     /*---- extrapolation of stress from gauss points to nodal points ---*/
     c1_sext(nostrs, funct, deriv,xjm,xyze,
-            gpstrs, 
+            gpstrs,
             data->xgrr, data->xgss, data->xgtt, nir,nis,nit,iel);
     /*------------------------------------------------- store values ---*/
     for (i=0; i<25; i++) /* number of stress components */
@@ -497,12 +497,12 @@ for (lr=0; lr<nir; lr++)
   }
 /*----------------------------------------------------------------------*/
   /*---------------------------------------------------- mass matrix ---*/
-  if (init==4) 
+  if (init==4)
   {
     fac=3.0*totmas/emasdg;
     for (i=0; i<nd; i++) fielo[i] = lmvec[i]*fac;
   }
-  if (init==5) 
+  if (init==5)
   {
     cc=0;
     for (i=0; i<nd; i++) for (j=0; j<nd; j++) emass[i][j] = consm[cc++];
@@ -525,10 +525,10 @@ dsassert(ele->locsys==locsys_no,"locsys not implemented for this element!\n");
 /*----------------------------------------------------------------------*/
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of c1_cint */
 /*----------------------------------------------------------------------*/
 
@@ -539,14 +539,14 @@ return;
 This routine evaluates element forces of an 3D-hex-element.
 
 </pre>
-\param    F   DOUBLE*   (i)   force vector integral (stress-resultants) 
-\param  fac   DOUBLE    (i)   multiplier for numerical integration      
-\param  bop   DOUBLE**  (i)   b-operator matrix                         
+\param    F   DOUBLE*   (i)   force vector integral (stress-resultants)
+\param  fac   DOUBLE    (i)   multiplier for numerical integration
+\param  bop   DOUBLE**  (i)   b-operator matrix
 \param   nd   INT       (i)   total number degrees of freedom of element
-\param  fie   DOUBLE*   (o)   internal force vector                     
+\param  fie   DOUBLE*   (o)   internal force vector
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
@@ -560,7 +560,7 @@ void c1fi( DOUBLE  *F,   /*  force vector integral (stress-resultants)  */
 INT i,j,k;
 DOUBLE n11,n22,n33,n12,n23,n31;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1fi");
 #endif
 /*---------------------------- set values of force vector components ---*/
@@ -583,7 +583,7 @@ dstrc_enter("c1fi");
               bop[3][j]*n12 + bop[4][j]*n23 + bop[5][j]*n31;
   }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -597,12 +597,12 @@ return;
 This routine evaluates material transformation matricies for a 3D-hex-element.
 
 </pre>
-\param       xjm   DOUBLE**  (i)  jacobian matrix r,s,t-direction          
-\param   g[6][6]   DOUBLE    (o)  transformation matrix s(glob)=g*s(loc)   
-\param  gi[6][6]   DOUBLE    (o)  inverse of g          s(loc) =gi*s(glob) 
+\param       xjm   DOUBLE**  (i)  jacobian matrix r,s,t-direction
+\param   g[6][6]   DOUBLE    (o)  transformation matrix s(glob)=g*s(loc)
+\param  gi[6][6]   DOUBLE    (o)  inverse of g          s(loc) =gi*s(glob)
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
@@ -617,7 +617,7 @@ DOUBLE x1n, x2n, x3n, x1c, x2c, x3c;
 DOUBLE a11, a21, a31, a12, a22, a32, a13, a23, a33;
 DOUBLE dum[3][3];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1tram");
 #endif
 /*----------------------------------------------------------------------*
@@ -676,22 +676,22 @@ dstrc_enter("c1tram");
       a13=dum[2][0];
       a23=dum[2][1];
       a33=dum[2][2];
-      
-      
+
+
       gi[0][0] = a11*a11;
       gi[1][0] = a12*a12;
       gi[2][0] = a13*a13;
       gi[3][0] = a11*a12;
       gi[4][0] = a12*a13;
       gi[5][0] = a11*a13;
-                       
+
       gi[0][1] = a21*a21;
       gi[1][1] = a22*a22;
       gi[2][1] = a23*a23;
       gi[3][1] = a21*a22;
       gi[4][1] = a22*a23;
       gi[5][1] = a21*a23;
-                       
+
       gi[0][2] = a31*a31;
       gi[1][2] = a32*a32;
       gi[2][2] = a33*a33;
@@ -719,7 +719,7 @@ dstrc_enter("c1tram");
       gi[3][5] = a11*a32 + a31*a12;
       gi[4][5] = a12*a33 + a32*a13;
       gi[5][5] = a11*a33 + a31*a13;
- 
+
       a11=dum[0][0];
       a12=dum[0][1];
       a13=dum[0][2];
@@ -729,21 +729,21 @@ dstrc_enter("c1tram");
       a31=dum[2][0];
       a32=dum[2][1];
       a33=dum[2][2];
-      
+
       g[0][0] = a11*a11;
       g[1][0] = a12*a12;
       g[2][0] = a13*a13;
       g[3][0] = a11*a12;
       g[4][0] = a12*a13;
       g[5][0] = a11*a13;
-                       
+
       g[0][1] = a21*a21;
       g[1][1] = a22*a22;
       g[2][1] = a23*a23;
       g[3][1] = a21*a22;
       g[4][1] = a22*a23;
       g[5][1] = a21*a23;
-                       
+
       g[0][2] = a31*a31;
       g[1][2] = a32*a32;
       g[2][2] = a33*a33;
@@ -772,7 +772,7 @@ dstrc_enter("c1tram");
       g[4][5] = a12*a33 + a32*a13;
       g[5][5] = a11*a33 + a31*a13;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -785,11 +785,11 @@ return;
 This routine transforms of local material-matrix to global axes for a 3D-hex-element.
 
 </pre>
-\param       **d   DOUBLE  (o)  material matrix         
-\param   g[6][6]   DOUBLE  (i)  transformation matrix   
+\param       **d   DOUBLE  (o)  material matrix
+\param   g[6][6]   DOUBLE  (i)  transformation matrix
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
@@ -800,12 +800,12 @@ void c1gld(DOUBLE **d,     /* material matrix                           */
 INT i,j,k;
 DOUBLE dgt[6][6];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1gld");
 #endif
 /*----------------------------------------------------------------------*/
   for (i=0; i<6; i++) for (j=0; j<6; j++) dgt[i][j] = 0.;
-  for (i=0; i<6; i++) 
+  for (i=0; i<6; i++)
   {
     for (j=0; j<6; j++)
     {
@@ -817,7 +817,7 @@ dstrc_enter("c1gld");
   }
 /* R(I,J) = A(I,K)*B(K,J) ---  R = A*B */
   for (i=0; i<6; i++) for (j=0; j<6; j++) d[i][j] = 0.;
-  for (i=0; i<6; i++) 
+  for (i=0; i<6; i++)
   {
     for (j=0; j<6; j++)
     {
@@ -828,11 +828,11 @@ dstrc_enter("c1gld");
     }
   }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
-} /* end of c1gld */ 
+} /* end of c1gld */
 
 /*!----------------------------------------------------------------------
 \brief transformation of global stress vector to local axes
@@ -841,11 +841,11 @@ return;
 This routine transforms of global stress vector to local axes for a 3D-hex-element.
 
 </pre>
-\param         s   DOUBLE* (o)  stress vector to be transformed   
-\param   g[6][6]   DOUBLE  (i)  inverse of transformation matrix  
+\param         s   DOUBLE* (o)  stress vector to be transformed
+\param   g[6][6]   DOUBLE  (i)  inverse of transformation matrix
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
@@ -856,12 +856,12 @@ void c1trss2local(DOUBLE *s,       /* stress vector to be transformed   */
 INT i,j;
 DOUBLE sh[6];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1trss2local");
 #endif
 /*--------------- sig(global) --> sig(local)  s(loc) = g(inv)*s(glo) ---*/
   for (i=0; i<6; i++) sh[i] = s[i];
-  for (i=0; i<6; i++) 
+  for (i=0; i<6; i++)
   {
     s[i] = 0.;
     for (j=0; j<6; j++)
@@ -870,7 +870,7 @@ dstrc_enter("c1trss2local");
     }
   }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -883,11 +883,11 @@ return;
 This routine transforms of local stress vector to global axes for a 3D-hex-element.
 
 </pre>
-\param         s   DOUBLE* (o)  stress vector to be transformed   
-\param   g[6][6]   DOUBLE  (i)  transformation matrix  
+\param         s   DOUBLE* (o)  stress vector to be transformed
+\param   g[6][6]   DOUBLE  (i)  transformation matrix
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
@@ -898,12 +898,12 @@ void c1trss2global(DOUBLE *s,       /* stress vector to be transformed  */
 INT i,j;
 DOUBLE sh[6];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG  
+#ifdef DEBUG
 dstrc_enter("c1trss2global");
 #endif
 /*--------------- sig(local) --> sig(global)  s(glo) = g(inv)*s(loc) ---*/
   for (i=0; i<6; i++) sh[i] = s[i];
-  for (i=0; i<6; i++) 
+  for (i=0; i<6; i++)
   {
     s[i] = 0.;
     for (j=0; j<6; j++)
@@ -912,7 +912,7 @@ dstrc_enter("c1trss2global");
     }
   }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -925,31 +925,31 @@ return;
 This routine evaluates mass matrix for a 3D-hex-element.
 
 </pre>
-\param  *funct   DOUBLE  (i)   shape functions  
-\param  *emass   DOUBLE  (o)   mass vector  
-\param  *emasdg  DOUBLE  (o)   factor for lumped mass  
-\param  iel      INT     (i)   number of nodes  
-\param  ilmp     INT     (i)   flag for lumped/consistent matrix  
+\param  *funct   DOUBLE  (i)   shape functions
+\param  *emass   DOUBLE  (o)   mass vector
+\param  *emasdg  DOUBLE  (o)   factor for lumped mass
+\param  iel      INT     (i)   number of nodes
+\param  ilmp     INT     (i)   flag for lumped/consistent matrix
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
 void c1cptp(
-            DOUBLE     *funct, 
-            DOUBLE     *lmass, 
-            DOUBLE     *consm, 
+            DOUBLE     *funct,
+            DOUBLE     *lmass,
+            DOUBLE     *consm,
             DOUBLE     *emasdg,
-            INT         iel,   
-            INT         ilmp,  
+            INT         iel,
+            INT         ilmp,
             DOUBLE      fac
-            )  
+            )
 {
 /*----------------------------------------------------------------------*/
 INT i,j,k,l,cc;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG  
+#ifdef DEBUG
 dstrc_enter("c1cptp");
 #endif
 /*----------------------------------------------------------------------*/
@@ -958,13 +958,13 @@ switch (ilmp)
 /*------------------------------------------- consistent mass (full) ---*/
 case 2:
   cc = 0;
-  for (i=0; i<iel; i++) 
+  for (i=0; i<iel; i++)
   {
-    for (k=0; k<3; k++) 
+    for (k=0; k<3; k++)
     {
-      for (j=0; j<iel; j++) 
+      for (j=0; j<iel; j++)
       {
-        for (l=0; l<3; l++) 
+        for (l=0; l<3; l++)
         {
            if(k==l) consm[cc] += fac*funct[i]*funct[j];
            cc++;
@@ -976,9 +976,9 @@ break;/*----------------------------------------------------------------*/
 /*------------------------------------------------------ lumped mass ---*/
 case 1:
   cc = 0;
-  for (i=0; i<iel; i++) 
+  for (i=0; i<iel; i++)
   {
-    for (l=0; l<3; l++) 
+    for (l=0; l<3; l++)
     {
             (*emasdg) += fac*funct[i]*funct[i];
             lmass[cc] += fac*funct[i]*funct[i];
@@ -992,7 +992,7 @@ default:
 break;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

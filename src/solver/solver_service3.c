@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -22,7 +22,7 @@ Maintainer: Malte Neumann
  |                                          1 = sol_increment           |
  |                                          2 = sol_residual            |
  |                                          3 = sol_mf                  |
- | INT    place    (i) row in ARRAY sol to be set to zero               | 
+ | INT    place    (i) row in ARRAY sol to be set to zero               |
  *----------------------------------------------------------------------*/
 void solserv_sol_zero(FIELD *actfield, INT disnum, INT arraynum, INT place)
 {
@@ -31,7 +31,7 @@ INT               diff,max;
 ARRAY            *array;
 NODE             *actnode;
 DISCRET          *actdis;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_sol_zero");
 #endif
 /*----------------------------------------------------------------------*/
@@ -53,7 +53,7 @@ for (i=0; i<actdis->numnp; i++)
    break;
    case 3:
       array = &(actnode->sol_mf);
-   break;      
+   break;
    default:
       array = NULL;
       dserror("Only 0,1,2,3 allowed for arraynum to select sol, sol_increment, sol_residual, sol_mf");
@@ -70,7 +70,7 @@ for (i=0; i<actdis->numnp; i++)
       array->a.da[place][j] = 0.0;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -92,9 +92,9 @@ return;
  |                                           1 = sol_increment          |
  |                                           2 = sol_residual           |
  |                                           3 = sol_mf                 |
- | INT    from    (i) row in ARRAY sol to be set to zero                | 
+ | INT    from    (i) row in ARRAY sol to be set to zero                |
  *----------------------------------------------------------------------*/
-void solserv_sol_copy(FIELD *actfield, INT disnum, INT arrayfrom, INT arrayto, 
+void solserv_sol_copy(FIELD *actfield, INT disnum, INT arrayfrom, INT arrayto,
                       INT from, INT to)
 {
 INT               i,j;
@@ -102,7 +102,7 @@ INT               diff,max;
 ARRAY            *arrayf,*arrayt;
 NODE             *actnode;
 DISCRET          *actdis;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_sol_copy");
 #endif
 /*----------------------------------------------------------------------*/
@@ -124,7 +124,7 @@ for (i=0; i<actdis->numnp; i++)
    break;
    case 3:
       arrayf = &(actnode->sol_mf);
-   break;   
+   break;
    default:
       arrayf = NULL;
       dserror("Only 0,1,2,3 allowed for arrayfrom to select sol, sol_increment, sol_residual, sol_mf");
@@ -143,7 +143,7 @@ for (i=0; i<actdis->numnp; i++)
    break;
    case 3:
       arrayt = &(actnode->sol_mf);
-   break;      
+   break;
    default:
       arrayt = NULL;
       dserror("Only 0,1,2,3 allowed for arrayfrom to select sol, sol_increment, sol_residual, sol_mf");
@@ -163,7 +163,7 @@ for (i=0; i<actdis->numnp; i++)
       arrayt->a.da[to][j] = arrayf->a.da[from][j];
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -185,9 +185,9 @@ return;
  |                                           1 = sol_increment          |
  |                                           2 = sol_residual           |
  |                                           3 = sol_mf                 |
- | INT    from    (i) row in ARRAY sol to be set to zero                | 
+ | INT    from    (i) row in ARRAY sol to be set to zero                |
  *----------------------------------------------------------------------*/
-void solserv_sol_add(FIELD *actfield, INT disnum, INT arrayfrom, INT arrayto, 
+void solserv_sol_add(FIELD *actfield, INT disnum, INT arrayfrom, INT arrayto,
                       INT from, INT to, DOUBLE fac)
 {
 INT               i,j;
@@ -195,7 +195,7 @@ INT               diff,max;
 ARRAY            *arrayf,*arrayt;
 NODE             *actnode;
 DISCRET          *actdis;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_sol_add");
 #endif
 /*----------------------------------------------------------------------*/
@@ -217,7 +217,7 @@ for (i=0; i<actdis->numnp; i++)
    break;
    case 3:
       arrayf = &(actnode->sol_mf);
-   break;   
+   break;
    default:
       arrayf = NULL;
       dserror("Only 0,1,2,3 allowed for arrayfrom to select sol, sol_increment, sol_residual, sol_mf");
@@ -236,7 +236,7 @@ for (i=0; i<actdis->numnp; i++)
    break;
    case 3:
       arrayt = &(actnode->sol_mf);
-   break;      
+   break;
    default:
       arrayt = NULL;
       dserror("Only 0,1,2,3 allowed for arrayfrom to select sol, sol_increment, sol_residual, sol_mf");
@@ -256,7 +256,7 @@ for (i=0; i<actdis->numnp; i++)
       arrayt->a.da[to][j] += arrayf->a.da[from][j]*fac;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -285,7 +285,7 @@ INT               i,j;
 INT               diff,max,numdf;
 ARRAY            *array;
 NODE             *actnode;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_sol_localassemble");
 #endif
 /*----------------------------------------------------------------------*/
@@ -308,7 +308,7 @@ for (i=0; i<actele->numnp; i++)
    break;
    case 3:
       array = &(actnode->sol_mf);
-   break;      
+   break;
    default:
       array = NULL;
       dserror("Only 0,1,2,3 allowed for arraynum to select sol, sol_increment, sol_residual, sol_mf");
@@ -325,7 +325,7 @@ for (i=0; i<actele->numnp; i++)
       array->a.da[place][j] += localvec[i*numdf+j];
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -352,7 +352,7 @@ return;
  | DOUBLE scale    (i) scaling factor for dirichlet condition           |
  | INT place       (i) row to put values in the ARRAY sol               |
  *----------------------------------------------------------------------*/
-void solserv_putdirich_to_dof(FIELD *actfield, INT disnum, INT arraynum, DOUBLE scale, 
+void solserv_putdirich_to_dof(FIELD *actfield, INT disnum, INT arraynum, DOUBLE scale,
                               INT place)
 {
 INT               i,j;
@@ -361,7 +361,7 @@ ARRAY            *array;
 NODE             *actnode;
 DISCRET          *actdis;
 DIRICH_CONDITION *dirich;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_putdirich_to_dof");
 #endif
 /*----------------------------------------------------------------------*/
@@ -386,7 +386,7 @@ for (i=0; i<actdis->numnp; i++)
    break;
    case 3:
       array = &(actnode->sol_mf);
-   break;      
+   break;
    default:
       array = NULL;
       dserror("Only 0,1,2,3 allowed for arraynum to select sol, sol_increment, sol_residual, sol_mf");
@@ -408,10 +408,10 @@ for (i=0; i<actdis->numnp; i++)
       array->a.da[place][j] = dirich->dirich_val.a.dv[j] * scale;
 /* this is special for the ortiz example m.gee*/
 /*      array->a.da[place][j] *= actnode->x[j];*/
-   }   
+   }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -448,7 +448,7 @@ ARRAY            *array;
 NODE             *actnode;
 DISCRET          *actdis;
 DIRICH_CONDITION *dirich;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_adddirich");
 #endif
 /*----------------------------------------------------------------------*/
@@ -472,7 +472,7 @@ for (i=0; i<actdis->numnp; i++)
    break;
    case 3:
       array = &(actnode->sol_mf);
-   break;      
+   break;
    default:
       array = NULL;
       dserror("Only 0,1,2,3 allowed for arraynum to select sol, sol_increment, sol_residual, sol_mf");
@@ -492,14 +492,14 @@ for (i=0; i<actdis->numnp; i++)
    for (j=0; j<actnode->numdf; j++)
    {
       if (dirich->dirich_onoff.a.iv[j]==0) continue;
-      array->a.da[to][j] = 
-      array->a.da[from1][j]*facfrom1 + 
+      array->a.da[to][j] =
+      array->a.da[from1][j]*facfrom1 +
       array->a.da[from2][j]*facfrom2;
-   }   
-   
+   }
+
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -519,7 +519,7 @@ return;
  |                                                                      |
  *----------------------------------------------------------------------*/
 void solserv_assdirich_fac(FIELD *actfield, INT disnum, INT arraynum,
-                           INT from1,INT from2,INT to, 
+                           INT from1,INT from2,INT to,
                            DOUBLE facfrom1, DOUBLE facfrom2)
 {
 INT               i,j;
@@ -528,7 +528,7 @@ ARRAY            *array;
 NODE             *actnode;
 DISCRET          *actdis;
 DIRICH_CONDITION *dirich;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_assdirich_fac");
 #endif
 /*----------------------------------------------------------------------*/
@@ -552,7 +552,7 @@ for (i=0; i<actdis->numnp; i++)
    break;
    case 3:
       array = &(actnode->sol_mf);
-   break;      
+   break;
    default:
       array = NULL;
       dserror("Only 0,1,2,3 allowed for arraynum to select sol, sol_increment, sol_residual, sol_mf");
@@ -572,14 +572,14 @@ for (i=0; i<actdis->numnp; i++)
    for (j=0; j<actnode->numdf; j++)
    {
       if (dirich->dirich_onoff.a.iv[j]==0) continue;
-      array->a.da[to][j] += 
-      array->a.da[from1][j]*facfrom1 + 
+      array->a.da[to][j] +=
+      array->a.da[from1][j]*facfrom1 +
       array->a.da[from2][j]*facfrom2;
-   }   
-   
+   }
+
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -611,7 +611,7 @@ ARRAY            *array;
 NODE             *actnode;
 DISCRET          *actdis;
 DIRICH_CONDITION *dirich;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_cpdirich");
 #endif
 /*----------------------------------------------------------------------*/
@@ -634,7 +634,7 @@ for (i=0; i<actdis->numnp; i++)
    break;
    case 3:
       array = &(actnode->sol_mf);
-   break;      
+   break;
    default:
       array = NULL;
       dserror("Only 0,1,2,3 allowed for arraynum to select sol, sol_increment, sol_residual, sol_mf");
@@ -654,10 +654,10 @@ for (i=0; i<actdis->numnp; i++)
    {
       if (dirich->dirich_onoff.a.iv[j]==0) continue;
       array->a.da[to][j] = array->a.da[from][j];
-   }   
+   }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -676,7 +676,7 @@ return;
  | INT    arraynum (i) indize of the array, 0 = sol                     |
  |                                          1 = sol_increment           |
  |                                          2 = sol_residual            |
- | INT    place    (i) row in ARRAY sol to be set to zero               | 
+ | INT    place    (i) row in ARRAY sol to be set to zero               |
  *----------------------------------------------------------------------*/
 void solserv_zerodirich(FIELD *actfield, INT disnum, INT arraynum, INT place)
 {
@@ -686,7 +686,7 @@ ARRAY            *array;
 NODE             *actnode;
 DISCRET          *actdis;
 DIRICH_CONDITION *dirich;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_zerodirich");
 #endif
 /*----------------------------------------------------------------------*/
@@ -709,7 +709,7 @@ for (i=0; i<actdis->numnp; i++)
    break;
    case 3:
       array = &(actnode->sol_mf);
-   break;      
+   break;
    default:
       array = NULL;
       dserror("Only 0,1,2,3 allowed for arraynum to select sol, sol_increment, sol_residual, sol_mf");
@@ -728,10 +728,10 @@ for (i=0; i<actdis->numnp; i++)
    {
       if (dirich->dirich_onoff.a.iv[j]==0) continue;
       array->a.da[place][j] = 0.0;
-   }   
+   }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -26,7 +26,7 @@ extern struct _MATERIAL  *mat;
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -47,7 +47,7 @@ static FLUID_DYNAMIC   *fdyn;
 
 In this routine the element stiffness matrix, iteration-RHS and
 time-RHS for one fluid2 element is calculated
-      
+
 </pre>
 \param  *ele	 ELEMENT	   (i)    actual element
 \param  *elev	 ELEMENT	   (i)    actual rans-element
@@ -67,7 +67,7 @@ time-RHS for one fluid2 element is calculated
 \param  *kapepsg   DOUBLE	   (i)    kapeps at time n+g
 \param  *eddyg     DOUBLE	   (i)    eddy-viscosity at time n+1
 \param  *eddypro   DOUBLE	   (i)    eddy-viscosity for prod. term
-\param  *kappa     DOUBLE	   (i)    kappa 
+\param  *kappa     DOUBLE	   (i)    kappa
 \param  *kappan    DOUBLE	   (i)    kappa at time n
 \param  *epsilon   DOUBLE	   (-)    epsilon at nodes
 \param  *kapepspro    DOUBLE    (i)     kapeps for production term
@@ -80,50 +80,50 @@ time-RHS for one fluid2 element is calculated
 \param **vderxy2	 DOUBLE	   (-)    velocity 2nd derivates
 \param **wa1	 DOUBLE	   (-)    working array
 \param **wa2	 DOUBLE	   (-)    working array
-\return void                                                   
+\return void
 
 ------------------------------------------------------------------------*/
 void f2_calint_tu(
-	         ELEMENT         *ele,     
-	         ELEMENT         *elev, 
-               DOUBLE         **estif,   
-	         DOUBLE         **emass,   
-	         DOUBLE          *etforce, 
-	         DOUBLE          *eiforce, 
-	         DOUBLE          *eproforce, 
-	         DOUBLE          *funct,   
-	         DOUBLE         **deriv,   
-	         DOUBLE         **deriv2,  
-	         DOUBLE         **xjm,     
+	         ELEMENT         *ele,
+	         ELEMENT         *elev,
+               DOUBLE         **estif,
+	         DOUBLE         **emass,
+	         DOUBLE          *etforce,
+	         DOUBLE          *eiforce,
+	         DOUBLE          *eproforce,
+	         DOUBLE          *funct,
+	         DOUBLE         **deriv,
+	         DOUBLE         **deriv2,
+	         DOUBLE         **xjm,
 	         DOUBLE         **xyze,
-	         DOUBLE         **derxy,   
-	         DOUBLE         **derxy2,  
-	         DOUBLE          *kapepsn,   
-	         DOUBLE          *kapepsg,   
-               DOUBLE          *eddyg, 
-               DOUBLE          *eddypro, 
-               DOUBLE          *kappa, 
-               DOUBLE          *kappan, 
-               DOUBLE          *epsilon,    
-               DOUBLE          *kapepspro,    
-               DOUBLE          *kapepsderxy,  
-               DOUBLE          *kapepsderxy2, 
-	         DOUBLE          *velint,  
-	         DOUBLE          *velint_dc,  
+	         DOUBLE         **derxy,
+	         DOUBLE         **derxy2,
+	         DOUBLE          *kapepsn,
+	         DOUBLE          *kapepsg,
+               DOUBLE          *eddyg,
+               DOUBLE          *eddypro,
+               DOUBLE          *kappa,
+               DOUBLE          *kappan,
+               DOUBLE          *epsilon,
+               DOUBLE          *kapepspro,
+               DOUBLE          *kapepsderxy,
+               DOUBLE          *kapepsderxy2,
+	         DOUBLE          *velint,
+	         DOUBLE          *velint_dc,
                DOUBLE         **evel,
                DOUBLE         **vderxy,
                DOUBLE         **vderxy2,
-               DOUBLE         **wa1,     
-	         DOUBLE         **wa2      
+               DOUBLE         **wa1,
+	         DOUBLE         **wa2
 	        )
-{ 
+{
 INT       i,j;        /* simply a counter                               */
 INT       iel;        /* number of nodes                                */
 INT       intc;       /* "integration case" for tri for further infos
                           see f2_inpele.c and f2_intg.c                 */
 INT       nir,nis;    /* number of integration nodesin r,s direction    */
 INT       actmat;     /* material number of the element                 */
-INT       icode=2;    /* flag for eveluation of shape functions         */     
+INT       icode=2;    /* flag for eveluation of shape functions         */
 INT       ihoel=0;    /* flag for higher order elements                 */
 INT       lr, ls;     /* counter for integration                        */
 DOUBLE    dens;       /* density                                        */
@@ -144,9 +144,9 @@ DOUBLE    kapepsint;
 DOUBLE    kapepsnint;
 DOUBLE    eps_proint;
 DIS_TYP   typ;	    /* element type                                   */
-FLUID_DATA  *data;     
+FLUID_DATA  *data;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_calint_tu");
 #endif
 
@@ -170,7 +170,7 @@ case quad4: case quad8: case quad9:  /* --> quad - element */
    nir = ele->e.f2_tu->nGP[0];
    nis = ele->e.f2_tu->nGP[1];
 break;
-case tri3: case tri6: /* --> tri - element */  
+case tri3: case tri6: /* --> tri - element */
    if (iel>3)
    {
       icode   = 3;
@@ -179,7 +179,7 @@ case tri3: case tri6: /* --> tri - element */
    /* initialise integration */
    nir  = ele->e.f2_tu->nGP[0];
    nis  = 1;
-   intc = ele->e.f2_tu->nGP[1];  
+   intc = ele->e.f2_tu->nGP[1];
 break;
 default:
    dserror("typ unknown!");
@@ -189,11 +189,11 @@ default:
  |               start loop over integration points                     |
  *----------------------------------------------------------------------*/
 for (lr=0;lr<nir;lr++)
-{    
+{
    for (ls=0;ls<nis;ls++)
    {
 /*--------------- get values of  shape functions and their derivatives */
-      switch(typ)  
+      switch(typ)
       {
       case quad4: case quad8: case quad9:   /* --> quad - element */
 	 e1   = data->qxg[lr][nir-1];
@@ -202,13 +202,13 @@ for (lr=0;lr<nir;lr++)
 	 facs = data->qwgt[ls][nis-1];
        f2_rec(funct,deriv,deriv2,e1,e2,typ,icode);
       break;
-      case tri3: case tri6:   /* --> tri - element */              
+      case tri3: case tri6:   /* --> tri - element */
 	 e1   = data->txgr[lr][intc];
 	 facr = data->twgt[lr][intc];
 	 e2   = data->txgs[lr][intc];
 	 facs = ONE;
 	 f2_tri(funct,deriv,deriv2,e1,e2,typ,icode);
-      break; 
+      break;
       default:
          dserror("typ unknown!");
       } /* end switch(typ) */
@@ -220,19 +220,19 @@ for (lr=0;lr<nir;lr++)
       f2_gder(derxy,deriv,xjm,det,iel);
       f2_gder2(xyze,xjm,wa1,wa2,derxy,derxy2,deriv2,iel);
 
-/*--------------------- get element vel. and vel. at integration point */               
-      f2_veci(velint,funct,evel,iel);    
+/*--------------------- get element vel. and vel. at integration point */
+      f2_veci(velint,funct,evel,iel);
 
-/*-------------------------------- get eddy-visc. at integration point */               
+/*-------------------------------- get eddy-visc. at integration point */
       f2_eddyi(&eddyint,funct,eddyg,iel);
 
 /*---------------------------------- compute global derivates for vel. */
-      f2_vder(vderxy,derxy,evel,iel);	
+      f2_vder(vderxy,derxy,evel,iel);
 
 /*---------------------------- get kapeps (n+1,i)  at integraton point */
       f2_kapepsi(&kapepsint,funct,kapepsg,iel);
 
-/*------------------ calculate stabilisation parameter for DISC. CAPT. */               
+/*------------------ calculate stabilisation parameter for DISC. CAPT. */
       f2_kapepsder(kapepsderxy,derxy,kapepsn,iel);
       f2_vel_dc(velint,velint_dc,kapepsderxy);
 
@@ -242,7 +242,7 @@ for (lr=0;lr<nir;lr++)
 /*------------- get factors for LOW-REYNOLD's Model for kappa-equation */
       if(fdyn->kapeps_flag==0)
       {
-/*--------- calculate C_u with R_t and factors for LOW-REYNOLD's Model */       
+/*--------- calculate C_u with R_t and factors for LOW-REYNOLD's Model */
        f2_C_kappa(kapepsint,epsilon,funct,visc,&C_u,iel);
        f2_fac_kappa(C_u,eddyint,&factor,&factor1,&factor2,&sig);
 /*--------------------------------get the Residuum at integraton point */
@@ -251,10 +251,10 @@ for (lr=0;lr<nir;lr++)
 /*----------- get factors for LOW-REYNOLD's Model for epsilon-equation */
       if(fdyn->kapeps_flag==1)
       {
-/*------- calculate grad(grad u): grad(grad u) for LOW-REYNOLD's Model */       
+/*------- calculate grad(grad u): grad(grad u) for LOW-REYNOLD's Model */
        f2_vder2(vderxy2,derxy2,evel,iel);
        f2_v(vderxy2,&vderxy_12);
-/*--------- calculate C_2 with R_t and factors for LOW-REYNOLD's Model */       
+/*--------- calculate C_2 with R_t and factors for LOW-REYNOLD's Model */
        f2_kappai_tu(&kappaint,&kappanint,&eps_proint,funct,kappa,kappan,
                     kapepspro,iel);
        f2_C_eps(kapepsint,kappaint,visc,&C_2,iel);
@@ -268,15 +268,15 @@ for (lr=0;lr<nir;lr++)
  |  Standard Galerkin matrices are all stored in one matrix "estif"     |
  |  Standard Galerkin mass matrix is stored in "emass"                  |
  *----------------------------------------------------------------------*/
- 
- /*--------------------------------------------- compute matrix Kkapeps */      
+
+ /*--------------------------------------------- compute matrix Kkapeps */
        f2_calkkapeps(estif,kapepsint,velint,eddyint,kapepsderxy,
                      funct,derxy,fac,visc,factor,sig,iel);
-       
+
 /*---------------------------------------------- compute matrix Mkapeps */
-	 if (fdyn->nis==0)	  	 	    
+	 if (fdyn->nis==0)
           f2_calmkapeps(emass,funct,fac,iel);
-  
+
 /*----------------------------------------------------------------------*
  |         compute Stabilisation matrices                               |
  | NOTE:                                                                |
@@ -286,14 +286,14 @@ for (lr=0;lr<nir;lr++)
 /*------------------------------------ stabilisation for matrix Kkapeps */
        f2_calstabkkapeps(ele,elev,estif,kapepsint,velint,velint_dc,
                          eddyint,kapepsderxy,funct,derxy,derxy2,fac,visc,
-                         factor,sig,iel); 
+                         factor,sig,iel);
 /*------------------------------------ stabilisation for matrix Mkapeps */
 
-       if (fdyn->nis==0) 
-          f2_calstabmkapeps(ele,emass,velint,velint_dc,funct,derxy,fac,iel); 
+       if (fdyn->nis==0)
+          f2_calstabmkapeps(ele,emass,velint,velint_dc,funct,derxy,fac,iel);
 /*----------------------------------------------------------------------*
  |         compute "Iteration" Force Vectors                            |
- *----------------------------------------------------------------------*/ 
+ *----------------------------------------------------------------------*/
 
 /*------------- calculate galerkin part of "Iter-RHS" (kapeps dof) */
          f2_calgalifkapeps(eiforce,eddyint,kapepsint,funct,fac,
@@ -301,14 +301,14 @@ for (lr=0;lr<nir;lr++)
 
 /*---------------- calculate stabilisation for "Iter-RHS" (kapeps dof) */
          f2_calstabifkapeps(ele,eiforce,kapepsint,velint,velint_dc,
-                            eddyint,funct,derxy,fac,factor2,vderxy_12,visc,iel); 
+                            eddyint,funct,derxy,fac,factor2,vderxy_12,visc,iel);
 
 /*----------------------------------------------------------------------*
  |         compute Production "Time" Force Vector                        |
- *----------------------------------------------------------------------*/ 
-      if (fdyn->niturbu_pro!=0) 
+ *----------------------------------------------------------------------*/
+      if (fdyn->niturbu_pro!=0)
       {
-/*-------------------------------- get eddy-visc. at integration point */               
+/*-------------------------------- get eddy-visc. at integration point */
         f2_eddyi(&eddynint,funct,eddypro,iel);
 
 /*------------ calculate production-term for "PROTime-RHS" (kapeps-dofs)*/
@@ -324,8 +324,8 @@ for (lr=0;lr<nir;lr++)
       }
 /*----------------------------------------------------------------------*
  |         compute "Time" Force Vector                                  |
- *----------------------------------------------------------------------*/ 
-      if (fdyn->niturbu_n!=0) 
+ *----------------------------------------------------------------------*/
+      if (fdyn->niturbu_n!=0)
       {
 /*-------------------------------- get kapeps (n) at integration point */
 	    f2_kapepsi(&kapepsint,funct,kapepsn,iel);
@@ -349,13 +349,13 @@ for (lr=0;lr<nir;lr++)
      } /* endif fdyn->niturbu_n */
    } /* end of loop over integration points ls*/
 } /* end of loop over integration points lr */
- 
+
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of f2_calint */
 
 

@@ -23,21 +23,21 @@ Maintainer: Michael Gee
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
 
-/*! 
-\addtogroup CONTACTS8 
+/*!
+\addtogroup CONTACTS8
 *//*! @{ (documentation module open)*/
 
 
 /*!----------------------------------------------------------------------
 \brief the contact main structure
 
-<pre>                                                         m.gee 2/03    
+<pre>                                                         m.gee 2/03
 defined in s8_contact_init.c
 </pre>
 
@@ -47,12 +47,12 @@ extern struct _SHELLCONTACT shellcontact;
 
 
 /*!---------------------------------------------------------------------
-\brief write restart for contact variables                                              
+\brief write restart for contact variables
 
-<pre>                                                        m.gee 3/03 
+<pre>                                                        m.gee 3/03
 </pre>
 \param  actintra        *INTRA        (i) the intracommunicator
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void s8_contact_restartwrite(INTRA *actintra,INT step)
@@ -67,7 +67,7 @@ long int         handle;
 RESTARTCONTACT   res;
 SHELLNODERES     resnode;
 char             resname[100];
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_contact_restartwrite");
 #endif
 /*----------------------------------------------------------------------*/
@@ -92,7 +92,7 @@ for (i=0; i<numnp; i++)
    resnode.top_ln     = actcnode->top_ln;
    resnode.top_lt[0]  = actcnode->top_lt[0];
    resnode.top_lt[1]  = actcnode->top_lt[1];
-   
+
    resnode.botflag    = actcnode->botflag;
    resnode.botproj    = actcnode->botproj;
    resnode.hisbotflag = actcnode->hisbotflag;
@@ -111,7 +111,7 @@ pss_write(resname,1,1,sizeof(RESTARTCONTACT),&res,&handle,out,&ierr);
 /*-------------------------------------------- free the allocated space */
 CCAFREE(res.handles);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -120,12 +120,12 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief read restart for contact variables                                              
+\brief read restart for contact variables
 
-<pre>                                                        m.gee 3/03 
+<pre>                                                        m.gee 3/03
 </pre>
 \param  actintra        *INTRA        (i) the intracommunicator
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void s8_contact_restartread(INTRA *actintra,INT step)
@@ -140,7 +140,7 @@ FILE            *in;
 long int         handle;
 RESTARTCONTACT   res;
 char             resname[100];
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_contact_restartread");
 #endif
 /*----------------------------------------------------------------------*/
@@ -171,7 +171,7 @@ for (i=0; i<numnp; i++)
    pss_read_name_handle("cnode",&j,&j,&k,&tmpnode,&(res.handles[i]),in,&ierr);
    if (ierr != 1) dserror("Failed to read contact nodes");
    /* copy data to the node */
-   for (l=0; l<6; l++) 
+   for (l=0; l<6; l++)
    actcnode->xc_his[l]  = tmpnode.xc_his[l];
 
    actcnode->topflag    = tmpnode.topflag;
@@ -193,21 +193,21 @@ for (i=0; i<numnp; i++)
 /*-------------------------------------------- free the allocated space */
 CCAFREE(res.handles);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of s8_contact_restartread */
 
 /*!---------------------------------------------------------------------
-\brief set lagrange multipliers for contact to zero                                             
+\brief set lagrange multipliers for contact to zero
 
-<pre>                                                        m.gee 3/03 
+<pre>                                                        m.gee 3/03
 </pre>
 \param  actfield       *FIELD        (i) the field
 \param  actpart        *PARTITION    (i) mypartition
 \param  actintra       *INTRA        (i) the intracommunicator
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void s8_contact_setlagr(FIELD *actfield, PARTITION *actpart, INTRA *actintra)
@@ -216,7 +216,7 @@ INT              i;
 SHELLNODE       *actcnode,*cnode;                  /* the active contact node */
 INT              myrank,nproc;                     /* parallel stuff */
 INT              numnp;                            /* number of slave nodes (ususally all nodes) */
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_contact_setlagr");
 #endif
 /*----------------------------------------------------------------------*/
@@ -244,7 +244,7 @@ for (i=0; i<numnp; i++)
    }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -253,14 +253,14 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief update lagrange multipliers for contact                                              
+\brief update lagrange multipliers for contact
 
-<pre>                                                        m.gee 3/03 
+<pre>                                                        m.gee 3/03
 </pre>
 \param  actfield       *FIELD        (i) the field
 \param  actpart        *PARTITION    (i) mypartition
 \param  actintra       *INTRA        (i) the intracommunicator
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void s8_contact_updlagr(FIELD *actfield, PARTITION *actpart, INTRA *actintra)
@@ -269,7 +269,7 @@ INT              i;
 SHELLNODE       *actcnode,*cnode;                  /* the active contact node */
 INT              myrank,nproc;                     /* parallel stuff */
 INT              numnp;                            /* number of slave nodes (ususally all nodes) */
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_contact_updlagr");
 #endif
 /*----------------------------------------------------------------------*/
@@ -301,18 +301,18 @@ for (i=0; i<numnp; i++)
    }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of s8_contact_updlagr */
 /*!---------------------------------------------------------------------
-\brief store converged contact variables                                              
+\brief store converged contact variables
 
-<pre>                                                        m.gee 2/03 
+<pre>                                                        m.gee 2/03
 </pre>
 \param  actintra        *INTRA        (i) the intracommunicator
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void s8_contact_history(INTRA *actintra)
@@ -321,7 +321,7 @@ INT              i,j;
 SHELLNODE       *actcnode,*cnode;                  /* the active contact node */
 INT              myrank,nproc;                     /* parallel stuff */
 INT              numnp;                            /* number of slave nodes (ususally all nodes) */
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_contact_history");
 #endif
 /*----------------------------------------------------------------------*/
@@ -367,7 +367,7 @@ for (i=0; i<numnp; i++)
    actcnode->xc_his[j] = actcnode->xr[j] + actcnode->node->sol.a.da[0][j];
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -375,12 +375,12 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief set contact variables back to last converged step                                              
+\brief set contact variables back to last converged step
 
-<pre>                                                        m.gee 2/03 
+<pre>                                                        m.gee 2/03
 </pre>
 \param  actintra        *INTRA        (i) the intracommunicator
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void s8_contact_historyback(INTRA *actintra)
@@ -389,7 +389,7 @@ INT              i;
 SHELLNODE       *actcnode,*cnode;                  /* the active contact node */
 INT              myrank,nproc;                     /* parallel stuff */
 INT              numnp;                            /* number of slave nodes (ususally all nodes) */
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_contact_historyback");
 #endif
 /*----------------------------------------------------------------------*/
@@ -404,19 +404,19 @@ for (i=0; i<numnp; i++)
    if (actcnode->node->proc != myrank) continue;
    /* top */
    actcnode->topflag     =  actcnode->histopflag     ;
-   actcnode->topproj     =  actcnode->histopproj     ; 
-   actcnode->topele      =  actcnode->histopele      ; 
-   actcnode->xitop[0]    =  actcnode->hisxitop[0]    ; 
+   actcnode->topproj     =  actcnode->histopproj     ;
+   actcnode->topele      =  actcnode->histopele      ;
+   actcnode->xitop[0]    =  actcnode->hisxitop[0]    ;
    actcnode->xitop[1]    =  actcnode->hisxitop[1]    ;
    actcnode->hisxitop[0] =  actcnode->oldhisxitop[0] ;
    actcnode->hisxitop[1] =  actcnode->oldhisxitop[1] ;
-   actcnode->topgap      =  actcnode->histopgap      ; 
-   actcnode->top_ln      =  actcnode->his_top_ln     ; 
-   actcnode->top_lt[0]   =  actcnode->his_top_lt[0]  ; 
-   actcnode->top_lt[1]   =  actcnode->his_top_lt[1]  ; 
+   actcnode->topgap      =  actcnode->histopgap      ;
+   actcnode->top_ln      =  actcnode->his_top_ln     ;
+   actcnode->top_lt[0]   =  actcnode->his_top_lt[0]  ;
+   actcnode->top_lt[1]   =  actcnode->his_top_lt[1]  ;
    /* bot */
    actcnode->botflag     =  actcnode->hisbotflag     ;
-   actcnode->botproj     =  actcnode->hisbotproj     ; 
+   actcnode->botproj     =  actcnode->hisbotproj     ;
    actcnode->botele      =  actcnode->hisbotele      ;
    actcnode->xibot[0]    =  actcnode->hisxibot[0]    ;
    actcnode->xibot[1]    =  actcnode->hisxibot[1]    ;
@@ -428,7 +428,7 @@ for (i=0; i<numnp; i++)
    actcnode->bot_lt[1]   =  actcnode->his_bot_lt[1]  ;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -10,7 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ---------------------------------------------------------------------*/
-/*! 
+/*!
 \addtogroup FLUID
 *//*! @{ (documentation module open)*/
 #ifdef D_FLUID
@@ -24,7 +24,7 @@ Maintainer: Steffen Genkinger
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -34,11 +34,11 @@ extern struct _FILES  allfiles;
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par; 
+ extern struct _PAR   par;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
@@ -62,8 +62,8 @@ extern struct _DESIGN *design;
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;  
-/*!--------------------------------------------------------------------- 
+extern ALLDYNA      *alldyn;
+/*!---------------------------------------------------------------------
 \brief create free surface condition
 
 <pre>                                                         genk 01/03
@@ -74,7 +74,7 @@ FLUID  - dirichlet boundary condition
 </pre>
 
 
-\return void                                            
+\return void
 
 ------------------------------------------------------------------------*/
 void fluid_createpseudofsi()
@@ -86,9 +86,9 @@ INT       hasfsi,hasneum;                 /* different flags            */
 INT       hasfreesurf;
 DLINE    *actdline;                       /* actual DLINE               */
 DNODE    *actdnode;                       /* actual DNODE               */
-FIELDTYP  fieldtyp;                       
+FIELDTYP  fieldtyp;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_createpseudofsi");
 #endif
 
@@ -100,7 +100,7 @@ dsassert(genprob.numff>=0,"No fluid field in fluid function!\n");
 dsassert(genprob.numaf>=0,"No ale field in fluid freesurf function!\n");
 /*--------------------------------------------------------- loop dlines */
 for (i=0; i<design->ndline; i++)
-{ 
+{
    hasdirich=0;
    hascouple=0;
    hasfsi   =0;
@@ -115,34 +115,34 @@ for (i=0; i<design->ndline; i++)
    if (actdline->freesurf!=NULL) hasfreesurf++;
    if (hasfsi==0) continue;
    if (actdline->fsicouple->fsi_typ!=fsi_pseudo) continue;
-   fieldtyp=actdline->fsicouple->fieldtyp;   
+   fieldtyp=actdline->fsicouple->fieldtyp;
    switch (fieldtyp)
    {
    case fluid:
       /*------------------ just check if this is really a free surface! */
       dsassert(hasdirich==0,"dirich- and freesurface condition defined on same DLINE\n");
-      dsassert(hascouple==0,"coupling- and freesurface condition defined on same DLINE\n");   
+      dsassert(hascouple==0,"coupling- and freesurface condition defined on same DLINE\n");
       dsassert(hasfreesurf==0,"fsi- and freesurface condition defined on same DLINE\n");
       dsassert(hasneum==0,"neumann- and freesurface condition defined on same DLINE\n");
       /*----------- allocate space for a dirichlet condition in this dline */
       actdline->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
-      if (!actdline->dirich) dserror("Allocation of memory failed");  
+      if (!actdline->dirich) dserror("Allocation of memory failed");
       amdef("onoff",&(actdline->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
       amzero(&(actdline->dirich->dirich_onoff));
       amdef("val",&(actdline->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
-      amdef("curve",&(actdline->dirich->curve),MAXDOFPERNODE,1,"IV"); 
+      amdef("curve",&(actdline->dirich->curve),MAXDOFPERNODE,1,"IV");
       amzero(&(actdline->dirich->dirich_val));
       amzero(&(actdline->dirich->curve));
       /*----------------------------------- initialise for fsi-coupling */
       for (j=0;j<genprob.ndim;j++)
-         actdline->dirich->dirich_onoff.a.iv[j] = 1;   
+         actdline->dirich->dirich_onoff.a.iv[j] = 1;
       actdline->dirich->dirich_type=dirich_FSI_pseudo;
    break;
    case ale:
-      dserror("fieldtyp ale not allowed for pseudo fsi!");   
+      dserror("fieldtyp ale not allowed for pseudo fsi!");
    break;
    case structure:
-      dserror("fieldtyp structure not allowed for pseudo fsi!");   
+      dserror("fieldtyp structure not allowed for pseudo fsi!");
    break;
    default:
        dserror("fieldtyp unknown!(1)");
@@ -175,7 +175,7 @@ for (i=0; i<design->ndnode; i++)
       actdnode->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
       amdef("onoff",&(actdnode->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
       amdef("val",&(actdnode->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
-      amdef("curve",&(actdnode->dirich->curve),MAXDOFPERNODE,1,"IV"); 
+      amdef("curve",&(actdnode->dirich->curve),MAXDOFPERNODE,1,"IV");
       amzero(&(actdnode->dirich->dirich_onoff));
       amzero(&(actdnode->dirich->dirich_val));
       amzero(&(actdnode->dirich->curve));
@@ -183,17 +183,17 @@ for (i=0; i<design->ndnode; i++)
       amzero(&(actdnode->dirich->funct));
       /*----------------------------------- initialise for fsi-coupling */
       for (j=0;j<genprob.ndim;j++)
-         actdnode->dirich->dirich_onoff.a.iv[j] = 1;   
+         actdnode->dirich->dirich_onoff.a.iv[j] = 1;
       actdnode->dirich->dirich_type=dirich_FSI_pseudo;
-   break;   
+   break;
    case ale:
-      dserror("fieldtyp ale not allowed for pseudo fsi!");   
+      dserror("fieldtyp ale not allowed for pseudo fsi!");
    break;
    case structure:
-      dserror("fieldtyp structure not allowed for pseudo fsi!");   
+      dserror("fieldtyp structure not allowed for pseudo fsi!");
    break;
    default:
-      dserror("fieldtyp unknown (1)!\n"); 
+      dserror("fieldtyp unknown (1)!\n");
    } /* end switch(fieldtyp) */
 } /* end of loop over dnodes */
 
@@ -204,7 +204,7 @@ dserror("FSI-functions not compiled in!\n");
 
 /*----------------------------------------------------------------------*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 

@@ -21,7 +21,7 @@ Maintainer: Malte Neumann
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -31,7 +31,7 @@ extern struct _FILES  allfiles;
 \brief the tracing variable
 
 <pre>                                                         m.gee 8/00
-defined in pss_ds.c, declared in tracing.h                                                  
+defined in pss_ds.c, declared in tracing.h
 </pre>
 *----------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -39,15 +39,15 @@ extern struct _TRACE         trace;
 #endif
 
 
-/*! 
-\addtogroup AMSYSTEM 
+/*!
+\addtogroup AMSYSTEM
 *//*! @{ (documentation module open)*/
 
 
 /*!----------------------------------------------------------------------
 \brief counter of memory in byte
 
-<pre>                                                         m.gee 02/02    
+<pre>                                                         m.gee 02/02
 defined in pss_am.c
 </pre>
 
@@ -60,20 +60,20 @@ long int num_byte_allocated;
 
 /*!----------------------------------------------------------------------
 \brief size of a DOUBLE in byte
-                                                      
-<pre>                                                         m.gee 02/02   
+
+<pre>                                                         m.gee 02/02
 in debug mode all memory is allocated one DOUBLE bigger then
 asked for, so the size of what was allocated can be stored
 </pre>
 \sa ShiftPointer() , MYBYTE
 
 *----------------------------------------------------------------------*/
-#define DWORD  (sizeof(DOUBLE)) 
+#define DWORD  (sizeof(DOUBLE))
 
 /*!----------------------------------------------------------------------
 \brief exactly one byte
-                                                      
-<pre>                                                         m.gee 02/02    
+
+<pre>                                                         m.gee 02/02
 in debug mode all memory is allocated one DOUBLE bigger then
 asked for, so the size of what was allocated can be stored
 This variable is used by the function ShiftPointer
@@ -81,49 +81,49 @@ This variable is used by the function ShiftPointer
 \sa ShiftPointer() , DWORD
 
 *----------------------------------------------------------------------*/
-#define MYBYTE (sizeof(unsigned char)) 
+#define MYBYTE (sizeof(unsigned char))
 #endif
 
 /*!----------------------------------------------------------------------
 \brief shift a pointer by a certain distance
-                                                      
-<pre>                                                          m.gee 3/02 
-This routine is usefull when data is moved in the memory (e.g.) by a 
-call to CCAREALLOC, and there are pointers which used to point to this  
-data. After moving the data these pointers do no longer point to the 
-correct adresses, but they can be moved to the new location of the   
-data by using this function.                                         
-The correct functionality of this routine is dependent on the proper 
-definition of the data type PTRSIZE defined in definitions.h:        
-#ifdef SIXTYFOUR                a 64 bit pointer is of size long int  
-typedef long int PTRSIZE;                                             
-#else                           a 32 bit pointer is of size INT  
-typedef INT PTRSIZE;                                                  
-#endif                                                                
- This function takes as argument                                      
- -the adress of the pointer to be moved                              
- -the relative difference between the new and the old adress of the  
-  data which was pointed to                                         
 
-EXAMPLE:                                                        
+<pre>                                                          m.gee 3/02
+This routine is usefull when data is moved in the memory (e.g.) by a
+call to CCAREALLOC, and there are pointers which used to point to this
+data. After moving the data these pointers do no longer point to the
+correct adresses, but they can be moved to the new location of the
+data by using this function.
+The correct functionality of this routine is dependent on the proper
+definition of the data type PTRSIZE defined in definitions.h:
+#ifdef SIXTYFOUR                a 64 bit pointer is of size long int
+typedef long int PTRSIZE;
+#else                           a 32 bit pointer is of size INT
+typedef INT PTRSIZE;
+#endif
+ This function takes as argument
+ -the adress of the pointer to be moved
+ -the relative difference between the new and the old adress of the
+  data which was pointed to
+
+EXAMPLE:
 \code
- i=5;                                                        
- j=12;                                                       
- iptr = &i;                                                  
- now move iptr from i to j:                                  
- ShiftPointer((void**)&iptr,(PTRSIZE)&j-(PTRSIZE)&i);        
+ i=5;
+ j=12;
+ iptr = &i;
+ now move iptr from i to j:
+ ShiftPointer((void**)&iptr,(PTRSIZE)&j-(PTRSIZE)&i);
 \endcode
- result:                                                     
- *ptr = 12 now                                               
-\warning                                                             
+ result:
+ *ptr = 12 now
+\warning
  This is an extremely power and helpfull little routine, but when using
- this you should be REALLY sure what you are doing, 'cause misuse     
- leads to a very nasty type of error, which can be hardly detected by 
- debugging!                                                           
+ this you should be REALLY sure what you are doing, 'cause misuse
+ leads to a very nasty type of error, which can be hardly detected by
+ debugging!
 
- This routine appears courtesy of                                     
- Dr. Ralf Diekmann, Hilti AG, Fuerstentum Liechtenstein               
-</pre>  
+ This routine appears courtesy of
+ Dr. Ralf Diekmann, Hilti AG, Fuerstentum Liechtenstein
+</pre>
 \param ptr  (i/o) void**    ptr to be shifted
 \param diff (i)   PTRSIZE   offset the ptr shall be shifted
 
@@ -142,8 +142,8 @@ return;
 
 /*!----------------------------------------------------------------------
 \brief redefinition of malloc DEBUG version
-                                                      
-<pre>                                                         m.gee 2/02    
+
+<pre>                                                         m.gee 2/02
 bhaves exactly like malloc conform to ansi c standard
 if compiled with DEBUG define, it counts the allocated memory
 </pre>
@@ -179,8 +179,8 @@ return (void*)(buf);
 
 /*!----------------------------------------------------------------------
 \brief redefinition of calloc DEBUG version
-                                                      
-<pre>                                                         m.gee 2/02    
+
+<pre>                                                         m.gee 2/02
 bhaves exactly like calloc conform to ansi c standard
 if compiled with DEBUG define, it counts the allocated memory
 </pre>
@@ -215,8 +215,8 @@ return (void *)(buf);
 
 /*!----------------------------------------------------------------------
 \brief redefinition of realloc DEBUG version
-                                                      
-<pre>                                                         m.gee 2/02    
+
+<pre>                                                         m.gee 2/02
 bhaves exactly like realloc conform to ansi c standard
 if compiled with DEBUG define, it counts the allocated memory
 </pre>
@@ -256,8 +256,8 @@ return (void*)(buf);
 
 /*!----------------------------------------------------------------------
 \brief redefinition of free DEBUG version
-                                                      
-<pre>                                                         m.gee 2/02    
+
+<pre>                                                         m.gee 2/02
 bhaves exactly like free conform to ansi c standard
 if compiled with DEBUG define, it counts the allocated memory
 </pre>
@@ -294,10 +294,10 @@ return (oldptr=NULL);
 
 
 /*!---------------------------------------------------------------------
-\brief define a 1 or 2 dimensional array in structure ARRAY                                              
+\brief define a 1 or 2 dimensional array in structure ARRAY
 
-<pre>                                                        m.gee 8/00 
-allocate a 1 or 2 - D vector of type INT or DOUBLE in the structure  
+<pre>                                                        m.gee 8/00
+allocate a 1 or 2 - D vector of type INT or DOUBLE in the structure
 memory is allocted and pointed to in the following style:
 
 1D arrays:
@@ -314,23 +314,23 @@ This means, that the SECOND (or last) indize is continous in contrast to
 fortran, where the first indize is continous. Fortran routines called on
 am-allocated 2D arrays therefore operate on the transpose of the array.
 </pre>
-\param namstr   char*   (i)   name of array                                
+\param namstr   char*   (i)   name of array
 \param a        ARRAY*  (i)   adress of structure ARRAY the vector lives in
-\param fdim     INT     (i)   first dimension of 2D vector dimension of 1D vector                       
-\param sdim     INT     (i)   scnd dimension of 2D vector                  
-\param typstr   char[]  (i)   type of array to allocate                    
-              ="IV"     allocate integer vector in a->a.iv           
-              ="IA"     allocate integer array  in a->a.ia            
-              ="DV"     allocate DOUBLE vector in a->a.dv           
-              ="DA"     allocate DOUBLE array  in a->a.da            
-\return void pointer to allocated memory                                               
-\sa am4def()                                    
+\param fdim     INT     (i)   first dimension of 2D vector dimension of 1D vector
+\param sdim     INT     (i)   scnd dimension of 2D vector
+\param typstr   char[]  (i)   type of array to allocate
+              ="IV"     allocate integer vector in a->a.iv
+              ="IA"     allocate integer array  in a->a.ia
+              ="DV"     allocate DOUBLE vector in a->a.dv
+              ="DA"     allocate DOUBLE array  in a->a.da
+\return void pointer to allocated memory
+\sa am4def()
 
 ------------------------------------------------------------------------*/
 void* amdef(char *namstr,ARRAY *a,INT fdim, INT sdim, char typstr[])
 {
 register INT i=0;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("amdef");
 #endif
 /*----------------------------------------------------------------------*/
@@ -373,7 +373,7 @@ default:
 dserror("Unknown type of array given");
 }
 /*------------------- make report about new array to bugtraceing system */
-#ifdef DEBUG 
+#ifdef DEBUG
 if (trace.trace_on==1) dsreportarray(a,1);
 
 dstrc_exit();
@@ -391,54 +391,54 @@ return((void*)(a->a.iv));
 
 /*!---------------------------------------------------------------------
 
-\brief redefine a 1 or 2 dimensional array in structure ARRAY                                              
+\brief redefine a 1 or 2 dimensional array in structure ARRAY
 
 
-<pre>                                                        m.gee 8/00 
+<pre>                                                        m.gee 8/00
 changes an already allocated array a in dimensions
-a typecast of the values in the array is not possible              
-(no INT to DOUBLE or vice versa transformation)                    
+a typecast of the values in the array is not possible
+(no INT to DOUBLE or vice versa transformation)
 
-a cast from iv to ia and from dv to da and vice versa is allowed     
+a cast from iv to ia and from dv to da and vice versa is allowed
 
-if the new dimension of an the array is larger then the old one,     
+if the new dimension of an the array is larger then the old one,
 the values inside the array are kept, the new entries are initialized
-with zero                                                            
-                                                                     
-if the new dimension of the  array is smaller then the old one,      
-values outside the new dimension are dropped                         
-                                                                     
-this routine handles every dimension (fdim and sdim) separately,     
-that means, it does NOT behave like a fortran array. If a dimesnion gets 
+with zero
+
+if the new dimension of the  array is smaller then the old one,
+values outside the new dimension are dropped
+
+this routine handles every dimension (fdim and sdim) separately,
+that means, it does NOT behave like a fortran array. If a dimesnion gets
 smaller, it does NOT brak the spare values to the next line of the other
 dimension.
 it does NOT: array[3][3] ->redefine-> array[9] all values kept
-it does    : array[3][3] ->redefine-> array[9] 
+it does    : array[3][3] ->redefine-> array[9]
              values array[0][0..2] kept in array[0..2]
              values array[1..2][0..2] dropped, array[3..8]=0.0
 </pre>
 \param a         ARRAY* (i) adress of structure ARRAY the vector lives in
-\param newfdim   INT    (i) new first dimension of 2D vector dimension of 1D vector                       
-\param newsdim   INT    (i) new scnd dimension of 2D vector                  
-\param newtypstr char[] (i) type the array shall be reallocated to                    
-                 ="IV"  convert existing iv or ia to iv              
-                 ="IA"  convert existing iv or ia to ia 
-                 ="DV"  convert existing dv or da to dv              
-                 ="DA"  convert existing dv or da to da              
+\param newfdim   INT    (i) new first dimension of 2D vector dimension of 1D vector
+\param newsdim   INT    (i) new scnd dimension of 2D vector
+\param newtypstr char[] (i) type the array shall be reallocated to
+                 ="IV"  convert existing iv or ia to iv
+                 ="IA"  convert existing iv or ia to ia
+                 ="DV"  convert existing dv or da to dv
+                 ="DA"  convert existing dv or da to da
 \warning This routine is very expensive
-\return void pointer to reallocated and reorganized memory                                               
-\sa am4redef()                                    
+\return void pointer to reallocated and reorganized memory
+\sa am4redef()
 
 ------------------------------------------------------------------------*/
-void* amredef(ARRAY *a,INT newfdim, INT newsdim, char newtypstr[])      
+void* amredef(ARRAY *a,INT newfdim, INT newsdim, char newtypstr[])
 {
 INT i, j;
 enum {amredefvoid, newIV, newIA, newDV, newDA} newtyp = amredefvoid;
 INT size1,size2;
-ARRAY copyarray;                    
+ARRAY copyarray;
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("amredef");
 #endif
 #ifdef PERF
@@ -452,7 +452,7 @@ if (strncmp("DA",newtypstr,2)==0){ newtyp =  newDA; goto next; }
 next:
 switch(newtyp) /*------------- what is the new array typ supposed to be */
 {
-case newIV:/*---------------------------------------------new typ is IV */ 
+case newIV:/*---------------------------------------------new typ is IV */
    switch(a->Typ) /*------------------------- what is the old array typ */
    {
 
@@ -465,7 +465,7 @@ case newIV:/*---------------------------------------------new typ is IV */
       for (i=0; i<size1; a->a.iv[i++]=copyarray.a.iv[i]);
       amdel(&copyarray);
    goto end;
-   
+
    case cca_IA: /*------------------------------------- conversion IA to IV */
       am_alloc_copy(a,&copyarray);
       amdel(a);
@@ -473,10 +473,10 @@ case newIV:/*---------------------------------------------new typ is IV */
       amzero(a);
       if (newfdim==1) {
           size1 = IMIN(newsdim,copyarray.sdim);
-          for (i=0; i<size1; a->a.iv[i++]=copyarray.a.ia[0][i]);}  
+          for (i=0; i<size1; a->a.iv[i++]=copyarray.a.ia[0][i]);}
       else {
-          size1 = IMIN(newfdim,copyarray.fdim); 
-          for (i=0; i<size1; a->a.iv[i++]=copyarray.a.ia[i][0]);}  
+          size1 = IMIN(newfdim,copyarray.fdim);
+          for (i=0; i<size1; a->a.iv[i++]=copyarray.a.ia[i][0]);}
       amdel(&copyarray);
    goto end;
 
@@ -485,7 +485,7 @@ case newIV:/*---------------------------------------------new typ is IV */
    goto end;
    }
 
-case newIA:/*---------------------------------------------new typ is IA */ 
+case newIA:/*---------------------------------------------new typ is IA */
    switch(a->Typ) /*------------------------- what is the old array typ */
    {
    case cca_IV: /*------------------------------------- conversion IV to IA */
@@ -495,11 +495,11 @@ case newIA:/*---------------------------------------------new typ is IA */
       amzero(a);
       if (copyarray.fdim==1){
          size1 = IMIN(newsdim,copyarray.sdim);
-         for (i=0; i<size1; a->a.ia[0][i++]=copyarray.a.iv[i]);}  
+         for (i=0; i<size1; a->a.ia[0][i++]=copyarray.a.iv[i]);}
       else{
          size1 = IMIN(newfdim,copyarray.fdim);
-         for (i=0; i<size1; a->a.ia[i++][0]=copyarray.a.iv[i]);}  
-      amdel(&copyarray);   
+         for (i=0; i<size1; a->a.ia[i++][0]=copyarray.a.iv[i]);}
+      amdel(&copyarray);
    goto end;
 
    case cca_IA: /*--------------------------------------conversion IA to IA */
@@ -516,14 +516,14 @@ case newIA:/*---------------------------------------------new typ is IA */
             a->a.ia[i][j] = copyarray.a.ia[i][j];
          }
       }
-      amdel(&copyarray);   
+      amdel(&copyarray);
    goto end;
    default:
       dserror("conversion from integer to DOUBLE or vice versa not allowed");
    goto end;
    }
 
-case newDV:/*---------------------------------------------new typ is DV */ 
+case newDV:/*---------------------------------------------new typ is DV */
    switch(a->Typ) /*------------------------- what is the old array typ */
    {
    case cca_DV:/*---------------------------------------conversion DV to DV */
@@ -543,10 +543,10 @@ case newDV:/*---------------------------------------------new typ is DV */
       amzero(a);
       if (newfdim==1){
           size1 = IMIN(newsdim,copyarray.sdim);
-          for (i=0; i<size1; a->a.dv[i++]=copyarray.a.da[0][i]);}  
+          for (i=0; i<size1; a->a.dv[i++]=copyarray.a.da[0][i]);}
       else{
-          size1 = IMIN(newfdim,copyarray.fdim); 
-          for (i=0; i<size1; a->a.dv[i++]=copyarray.a.da[i][0]);}  
+          size1 = IMIN(newfdim,copyarray.fdim);
+          for (i=0; i<size1; a->a.dv[i++]=copyarray.a.da[i][0]);}
       amdel(&copyarray);
    goto end;
    default:
@@ -554,7 +554,7 @@ case newDV:/*---------------------------------------------new typ is DV */
    goto end;
    }
 
-case newDA:/*---------------------------------------------new typ is DA */ 
+case newDA:/*---------------------------------------------new typ is DA */
    switch(a->Typ) /*------------------------- what is the old array typ */
    {
    case cca_DV:/*---------------------------------------conversion DV to DA */
@@ -564,11 +564,11 @@ case newDA:/*---------------------------------------------new typ is DA */
       amzero(a);
       if (copyarray.fdim==1){
          size1 = IMIN(newsdim,copyarray.sdim);
-         for (i=0; i<size1; a->a.da[0][i++]=copyarray.a.dv[i]);}  
+         for (i=0; i<size1; a->a.da[0][i++]=copyarray.a.dv[i]);}
       else{
          size1 = IMIN(newfdim,copyarray.fdim);
-         for (i=0; i<size1; a->a.da[i++][0]=copyarray.a.dv[i]);}  
-      amdel(&copyarray);   
+         for (i=0; i<size1; a->a.da[i++][0]=copyarray.a.dv[i]);}
+      amdel(&copyarray);
    goto end;
 
    case cca_DA:/*---------------------------------------conversion DA to DA */
@@ -585,7 +585,7 @@ case newDA:/*---------------------------------------------new typ is DA */
             a->a.da[i][j] = copyarray.a.da[i][j];
          }
       }
-      amdel(&copyarray);   
+      amdel(&copyarray);
    goto end;
    default:
       dserror("conversion from integer to DOUBLE or vice versa not allowed");
@@ -598,7 +598,7 @@ goto end;
 }
 /*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 #ifdef PERF
@@ -614,10 +614,10 @@ return((void*)(a->a.iv));
 
 /*!----------------------------------------------------------------------
 \brief delete array allocated via am system
-                                                      
-<pre>                                                         m.gee 8/00    
+
+<pre>                                                         m.gee 8/00
 frees the vector or array located in the ARRAY
-sets 
+sets
 array->name     = "DELETED"
 array->Typ      = cca_XX
 array->a.iv     = NULL;
@@ -633,7 +633,7 @@ void amdel(ARRAY *array)
 INT size;
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("amdel");
 #endif
 #ifdef PERF
@@ -669,7 +669,7 @@ array->sdim=0;
 /*----------------------------------------------------- delete the type */
 array->Typ = cca_XX;
 /*------------------------- delete the array from the bugtracing system */
-#ifdef DEBUG 
+#ifdef DEBUG
 if (trace.trace_on==1) dsdeletearray(array,1);
 
 dstrc_exit();
@@ -687,8 +687,8 @@ return;
 
 /*!----------------------------------------------------------------------
 \brief initialize an array by zero
-                                                      
-<pre>                                                         m.gee 8/00    
+
+<pre>                                                         m.gee 8/00
 initializes the content of the ARRAY array to zero
 put 0 to integer fields, 0.0 to DOUBLE fields
 </pre>
@@ -704,7 +704,7 @@ INT          dim;
 INT         *iptr;
 DOUBLE      *dptr;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("amzero");
 #endif
 #ifdef PERF
@@ -717,24 +717,24 @@ switch (array->Typ)
 case cca_DA:
    dptr = array->a.da[0];
    for (i=0; i<dim; i++) *(dptr++) = 0.0;
-   break; 
+   break;
 case cca_DV:
    dptr = array->a.dv;
    for (i=0; i<dim; i++) *(dptr++) = 0.0;
    break;
 case cca_IA:
    iptr = array->a.ia[0];
-   for (i=0; i<dim; i++) *(iptr++) = 0; 
-   break; 
+   for (i=0; i<dim; i++) *(iptr++) = 0;
+   break;
 case cca_IV:
    iptr = array->a.iv;
-   for (i=0; i<dim; i++) *(iptr++) = 0; 
-   break; 
+   for (i=0; i<dim; i++) *(iptr++) = 0;
+   break;
 default:
    dserror("Unknown type of array given");
-}  
+}
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 #ifdef PERF
@@ -749,9 +749,9 @@ return;
 
 /*!----------------------------------------------------------------------
 \brief multiply an array by a scalar
-                                                      
-<pre>                                                         m.gee 6/01    
-scales the contents of a field by a given value 
+
+<pre>                                                         m.gee 6/01
+scales the contents of a field by a given value
 to avoid warnings in compilation, the call has to take the form
 amscal(&val,(void*)(&int_one));
 or
@@ -772,7 +772,7 @@ INT             *ivalue;
 DOUBLE          *dvalue;
 INT             *iptr;
 DOUBLE          *dptr;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("amscal");
 #endif
 /*----------------------------------------------------------------------*/
@@ -783,7 +783,7 @@ case cca_DA:
    dvalue = (DOUBLE*)value;
    dptr   = array->a.da[0];
    for (i=0; i<dim; i++) *(dptr++) *= (*dvalue);
-   break; 
+   break;
 case cca_DV:
    dvalue = (DOUBLE*)value;
    dptr = array->a.dv;
@@ -793,17 +793,17 @@ case cca_IA:
    ivalue = (INT*)value;
    iptr = array->a.ia[0];
    for (i=0; i<dim; i++) *(iptr++) *= (*ivalue);
-   break; 
+   break;
 case cca_IV:
    ivalue = (INT*)value;
    iptr = array->a.iv;
-   for (i=0; i<dim; i++) *(iptr++) *= (*ivalue); 
-   break; 
+   for (i=0; i<dim; i++) *(iptr++) *= (*ivalue);
+   break;
 default:
    dserror("Unknown type of array given");
-}  
+}
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -812,8 +812,8 @@ return;
 
 /*!----------------------------------------------------------------------
 \brief initialize an array by value
-                                                      
-<pre>                                                         m.gee 6/01    
+
+<pre>                                                         m.gee 6/01
 sets the contents of a field to a given value
 to avoid warnings in compilation, the call has to take the form
 aminit(&val,(void*)(&int_one));
@@ -835,7 +835,7 @@ INT             *ivalue;
 DOUBLE          *dvalue;
 INT             *iptr;
 DOUBLE          *dptr;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("aminit");
 #endif
 /*----------------------------------------------------------------------*/
@@ -846,7 +846,7 @@ case cca_DA:
    dvalue = (DOUBLE*)value;
    dptr   = array->a.da[0];
    for (i=0; i<dim; i++) *(dptr++) = *dvalue;
-   break; 
+   break;
 case cca_DV:
    dvalue = (DOUBLE*)value;
    dptr = array->a.dv;
@@ -856,17 +856,17 @@ case cca_IA:
    ivalue = (INT*)value;
    iptr = array->a.ia[0];
    for (i=0; i<dim; i++) *(iptr++) = *ivalue;
-   break; 
+   break;
 case cca_IV:
    ivalue = (INT*)value;
    iptr = array->a.iv;
-   for (i=0; i<dim; i++) *(iptr++) = *ivalue; 
-   break; 
+   for (i=0; i<dim; i++) *(iptr++) = *ivalue;
+   break;
 default:
    dserror("Unknown type of array given");
-}  
+}
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -876,9 +876,9 @@ return;
 
 /*!----------------------------------------------------------------------
 \brief allocate and make a copy of ARRAY *array_from
-                                                      
-<pre>                                                         m.gee 8/00    
-alocates a new field in array_to of the same size and type as        
+
+<pre>                                                         m.gee 8/00
+alocates a new field in array_to of the same size and type as
 in array_from. Then copies the contents from array_from to array_to  .
 user must provide an previously NOT allocted structure array_to
 </pre>
@@ -894,7 +894,7 @@ register INT i;
 INT          dim;
 INT         *iptr_from, *iptr_to;
 DOUBLE      *dptr_from, *dptr_to;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("am_alloc_copy");
 #endif
 /*----------------------------------------------------------------------*/
@@ -906,7 +906,7 @@ case cca_DA:
    dptr_from = array_from->a.da[0];
    dptr_to   = array_to->a.da[0];
    for (i=0; i<dim; i++) *(dptr_to++) = *(dptr_from++);
-   break; 
+   break;
 case cca_DV:
    amdef(array_from->name,array_to,array_from->fdim,array_from->sdim,"DV");
    dptr_from = array_from->a.dv;
@@ -918,18 +918,18 @@ case cca_IA:
    iptr_from = array_from->a.ia[0];
    iptr_to   = array_to->a.ia[0];
    for (i=0; i<dim; i++) *(iptr_to++) = *(iptr_from++);
-   break; 
+   break;
 case cca_IV:
    amdef(array_from->name,array_to,array_from->fdim,array_from->sdim,"IV");
    iptr_from = array_from->a.iv;
    iptr_to   = array_to->a.iv;
    for (i=0; i<dim; i++) *(iptr_to++) = *(iptr_from++);
-   break; 
+   break;
 default:
    dserror("Unknown type of array given");
-}  
+}
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return((void*)(array_to->a.iv));
@@ -941,10 +941,10 @@ return((void*)(array_to->a.iv));
 
 /*!----------------------------------------------------------------------
 \brief make a copy of ARRAY *array_from to *array_to
-                                                      
-<pre>                                                         m.gee 6/01    
-Copies the contents from array_from to array_to                      
-user must provide exisiting arrays of matching type and size!                  
+
+<pre>                                                         m.gee 6/01
+Copies the contents from array_from to array_to
+user must provide exisiting arrays of matching type and size!
 </pre>
 \param array_from  ARRAY* (i)   adress of existing structure to be copied from
 \param array_to    ARRAY* (i/o) adress of existing structure to be copied to
@@ -958,13 +958,13 @@ register INT i;
 INT          dim1, dim2;
 INT         *iptr_from, *iptr_to;
 DOUBLE      *dptr_from, *dptr_to;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("amcopy");
 #endif
 /*----------------------------------------------------------------------*/
 dim1 = array_from->fdim * array_from->sdim;
 dim2 = array_to->fdim   * array_to->sdim;
-if (dim1 != dim2) 
+if (dim1 != dim2)
    dserror("mismatching dimensions, cannot copy ARRAYs");
 if (array_from->Typ != array_to->Typ)
    dserror("mismatching typ of ARRAYs, cannot copy ARRAYs");
@@ -975,7 +975,7 @@ case cca_DA:
    dptr_from = array_from->a.da[0];
    dptr_to   = array_to->a.da[0];
    for (i=0; i<dim1; i++) *(dptr_to++) = *(dptr_from++);
-   break; 
+   break;
 case cca_DV:
    dptr_from = array_from->a.dv;
    dptr_to   = array_to->a.dv;
@@ -985,17 +985,17 @@ case cca_IA:
    iptr_from = array_from->a.ia[0];
    iptr_to   = array_to->a.ia[0];
    for (i=0; i<dim1; i++) *(iptr_to++) = *(iptr_from++);
-   break; 
+   break;
 case cca_IV:
    iptr_from = array_from->a.iv;
    iptr_to   = array_to->a.iv;
    for (i=0; i<dim1; i++) *(iptr_to++) = *(iptr_from++);
-   break; 
+   break;
 default:
    dserror("Unknown type of array given");
-}  
+}
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return((void*)(array_to->a.iv));
@@ -1006,11 +1006,11 @@ return((void*)(array_to->a.iv));
 
 /*!----------------------------------------------------------------------
 \brief makes array_to = or += array_from * factor
-                                                      
-<pre>                                                         m.gee 2/02    
-if init==1 array_to = array_from * factor  
-if init==0 array_to = array_to + array_from * factor        
-user must provide matching array-types and sufficient space in array_to                                                             
+
+<pre>                                                         m.gee 2/02
+if init==1 array_to = array_from * factor
+if init==0 array_to = array_to + array_from * factor
+user must provide matching array-types and sufficient space in array_to
 </pre>
 \param array_from  ARRAY* (i)   adress of existing structure to be added from
 \param array_to    ARRAY* (i/o) adress of existing structure to be added to
@@ -1029,7 +1029,7 @@ DOUBLE     **dafrom,**dato;
 DOUBLE      *dvfrom, *dvto;
 INT        **iafrom,**iato;
 INT         *ivfrom, *ivto;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("amadd");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1047,7 +1047,7 @@ case cca_DA:
    for (i=0; i<fdim; i++)
    for (j=0; j<sdim; j++)
    dato[i][j] += dafrom[i][j] * factor;
-break; 
+break;
 case cca_DV:
    fdim   = array_to->fdim * array_to->sdim;
    sdim   = array_from->fdim * array_from->sdim;
@@ -1065,7 +1065,7 @@ case cca_IA:
    for (i=0; i<fdim; i++)
    for (j=0; j<sdim; j++)
    iato[i][j] += (INT)((DOUBLE)iafrom[i][j] * factor);
-break; 
+break;
 case cca_IV:
    fdim   = array_to->fdim * array_to->sdim;
    sdim   = array_from->fdim * array_from->sdim;
@@ -1074,12 +1074,12 @@ case cca_IV:
    ivto   = array_to->a.iv;
    for (i=0; i<fdim; i++)
    ivto[i] += (INT)((DOUBLE)ivfrom[i] * factor);
-break; 
+break;
 default:
    dserror("Unknown type of array given");
-}  
+}
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1090,10 +1090,10 @@ return;
 
 /*!---------------------------------------------------------------------
 
-\brief define a 3 or 4 dimensional array in structure ARRAY4D                                              
+\brief define a 3 or 4 dimensional array in structure ARRAY4D
 
 <pre>                                                        m.gee 12/01
-allocate a 3 or 4 - D vector of type INT or DOUBLE in the structure  
+allocate a 3 or 4 - D vector of type INT or DOUBLE in the structure
 In the case of 3D arrays, the fourth dimension fodim must be zero.
 
 memory is allocted and pointed to in the following style:
@@ -1112,32 +1112,32 @@ This means, that the LAST indize is continous in contrast to
 fortran, where the first indize is continous. Fortran routines called on
 am-allocated 3/4D arrays therefore operate on the transpose of the array.
 </pre>
-\param namstr    char*    (i)   name of array                                
+\param namstr    char*    (i)   name of array
 \param a         ARRAY4D* (i/o) adress of structure ARRAY4D the vector lives in
-\param fdim      INT      (i)   first dimension of 2D vector dimension of 1D vector                       
-\param sdim      INT      (i)   scnd dimension of 2D vector                  
-\param tdim      INT      (i)   thrd dimension of 2D vector                  
-\param fodim     INT      (i)   fourth dimension of 2D vector                  
-\param typstr    char[]   (i)   type of array to allocate                    
-                 ="I3"     allocate integer vector in a->a.i3           
-                 ="I4"     allocate DOUBLE array  in a->a.i4            
-                 ="D3"     allocate integer vector in a->a.d3           
-                 ="D4"     allocate DOUBLE array  in a->a.d4            
-\return void pointer to allocated memory                                               
-\sa amdef() , am4redef                                   
+\param fdim      INT      (i)   first dimension of 2D vector dimension of 1D vector
+\param sdim      INT      (i)   scnd dimension of 2D vector
+\param tdim      INT      (i)   thrd dimension of 2D vector
+\param fodim     INT      (i)   fourth dimension of 2D vector
+\param typstr    char[]   (i)   type of array to allocate
+                 ="I3"     allocate integer vector in a->a.i3
+                 ="I4"     allocate DOUBLE array  in a->a.i4
+                 ="D3"     allocate integer vector in a->a.d3
+                 ="D4"     allocate DOUBLE array  in a->a.d4
+\return void pointer to allocated memory
+\sa amdef() , am4redef
 
 ------------------------------------------------------------------------*/
 void* am4def(char    *namstr,
              ARRAY4D *a,
-             INT      fdim, 
+             INT      fdim,
              INT      sdim,
              INT      tdim,
-             INT      fodim, 
+             INT      fodim,
              char     typstr[])
 {
 register INT i;
 INT          endloop;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("am4def");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1205,7 +1205,7 @@ default:
 dserror("Unknown type of array given");
 }
 /*------------------- make report about new array to bugtraceing system */
-#ifdef DEBUG 
+#ifdef DEBUG
 if (trace.trace_on==1) dsreportarray(a,2);
 dstrc_exit();
 #endif
@@ -1218,10 +1218,10 @@ return((void*)(a->a.d3));
 
 /*!----------------------------------------------------------------------
 \brief delete 3/4D array
-                                                      
-<pre>                                                         m.gee 12/01    
+
+<pre>                                                         m.gee 12/01
 frees all field memory in array
-sets 
+sets
 array->name     = "DELETED"
 array->a.iv     = NULL;
 array->mytracer = NULL
@@ -1234,7 +1234,7 @@ array->mytracer = NULL
 void am4del(ARRAY4D *array)
 {
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("am4del");
 #endif
 /*-------------------------------------------------delete name of array */
@@ -1275,7 +1275,7 @@ dserror("Unknown type of array given");
 /*----------------------------------------------------- delete the type */
 array->Typ = cca_XX4D;
 /*------------------------- delete the array from the bugtracing system */
-#ifdef DEBUG 
+#ifdef DEBUG
 if (trace.trace_on==1) dsdeletearray(array,2);
 dstrc_exit();
 #endif
@@ -1287,8 +1287,8 @@ return;
 
 /*!----------------------------------------------------------------------
 \brief initialize an ARRAY4D array by zero
-                                                      
-<pre>                                                         m.gee 12/01    
+
+<pre>                                                         m.gee 12/01
 initializes the content of the ARRAY4D array to zero
 put 0 to integer fields, 0.0 to DOUBLE fields
 </pre>
@@ -1303,7 +1303,7 @@ register INT i;
 INT          dim;
 INT         *iptr;
 DOUBLE      *dptr;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("am4zero");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1313,7 +1313,7 @@ case cca_D3:
    dim = (array->fdim) * (array->sdim) * (array->tdim);
    dptr = array->a.d3[0][0];
    for (i=0; i<dim; i++) *(dptr++) = 0.0;
-break; 
+break;
 case cca_D4:
    dim = (array->fdim) * (array->sdim) * (array->tdim) * (array->fodim);
    dptr = array->a.d4[0][0][0];
@@ -1322,18 +1322,18 @@ break;
 case cca_I3:
    dim = (array->fdim) * (array->sdim) * (array->tdim);
    iptr = array->a.i3[0][0];
-   for (i=0; i<dim; i++) *(iptr++) = 0; 
-break; 
+   for (i=0; i<dim; i++) *(iptr++) = 0;
+break;
 case cca_I4:
    dim = (array->fdim) * (array->sdim) * (array->tdim) * (array->fodim);
    iptr = array->a.i4[0][0][0];
-   for (i=0; i<dim; i++) *(iptr++) = 0; 
-break; 
+   for (i=0; i<dim; i++) *(iptr++) = 0;
+break;
 default:
    dserror("Unknown type of array given");
-}  
+}
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1344,8 +1344,8 @@ return;
 
 /*!----------------------------------------------------------------------
 \brief initialize an ARRAY4D array by value
-                                                      
-<pre>                                                         m.gee 6/01    
+
+<pre>                                                         m.gee 6/01
 sets the contents of a field to a given value
 to avoid warnings in compilation, the call has to take the form
 am4init(&val,(void*)(&int_one));
@@ -1367,7 +1367,7 @@ INT             *ivalue;
 DOUBLE          *dvalue;
 INT             *iptr;
 DOUBLE          *dptr;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("am4init");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1378,7 +1378,7 @@ case cca_D3:
    dvalue = (DOUBLE*)value;
    dptr   = array->a.d3[0][0];
    for (i=0; i<dim; i++) *(dptr++) = *dvalue;
-break; 
+break;
 case cca_D4:
    dim = (array->fdim) * (array->sdim) * (array->tdim) * (array->fodim);
    dvalue = (DOUBLE*)value;
@@ -1390,18 +1390,18 @@ case cca_I3:
    ivalue = (INT*)value;
    iptr = array->a.i3[0][0];
    for (i=0; i<dim; i++) *(iptr++) = *ivalue;
-break; 
+break;
 case cca_I4:
    dim = (array->fdim) * (array->sdim) * (array->tdim) * (array->fodim);
    ivalue = (INT*)value;
    iptr = array->a.i4[0][0][0];
-   for (i=0; i<dim; i++) *(iptr++) = *ivalue; 
-break; 
+   for (i=0; i<dim; i++) *(iptr++) = *ivalue;
+break;
 default:
    dserror("Unknown type of array given");
-}  
+}
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1411,9 +1411,9 @@ return;
 
 /*!----------------------------------------------------------------------
 \brief allocate and make a copy of ARRAY4D *array_from
-                                                      
-<pre>                                                         m.gee 12/01    
-alocates a new field in array_to of the same size and type as        
+
+<pre>                                                         m.gee 12/01
+alocates a new field in array_to of the same size and type as
 in array_from. Then copies the contents from array_from to array_to  .
 user must provide an previously NOT allocted structure array_to
 </pre>
@@ -1429,7 +1429,7 @@ register INT i;
 INT          dim;
 INT         *iptr_from, *iptr_to;
 DOUBLE      *dptr_from, *dptr_to;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("am4_alloc_copy");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1447,7 +1447,7 @@ case cca_D3:
    dptr_from = array_from->a.d3[0][0];
    dptr_to   = array_to->a.d3[0][0];
    for (i=0; i<dim; i++) *(dptr_to++) = *(dptr_from++);
-break; 
+break;
 case cca_D4:
    dim = array_from->fdim * array_from->sdim * array_from->tdim * array_from->fodim;
    am4def(array_from->name,
@@ -1473,7 +1473,7 @@ case cca_I3:
    iptr_from = array_from->a.i3[0][0];
    iptr_to   = array_to->a.i3[0][0];
    for (i=0; i<dim; i++) *(iptr_to++) = *(iptr_from++);
-break; 
+break;
 case cca_I4:
    dim = array_from->fdim * array_from->sdim * array_from->tdim * array_from->fodim;
    am4def(array_from->name,
@@ -1486,12 +1486,12 @@ case cca_I4:
    iptr_from = array_from->a.i4[0][0][0];
    iptr_to   = array_to->a.i4[0][0][0];
    for (i=0; i<dim; i++) *(iptr_to++) = *(iptr_from++);
-break; 
+break;
 default:
    dserror("Unknown type of array given");
-}  
+}
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return((void*)(array_to->a.d3));
@@ -1502,10 +1502,10 @@ return((void*)(array_to->a.d3));
 
 /*!----------------------------------------------------------------------
 \brief make a copy of ARRAY4D *array_from to *array_to
-                                                      
-<pre>                                                         m.gee 12/01    
-Copies the contents from array_from to array_to                      
-user must provide exisiting arrays of matching type and size!                  
+
+<pre>                                                         m.gee 12/01
+Copies the contents from array_from to array_to
+user must provide exisiting arrays of matching type and size!
 </pre>
 \param array_from  ARRAY4D* (i)   adress of existing structure to be copied from
 \param array_to    ARRAY4D* (i/o) adress of existing structure to be copied to
@@ -1519,7 +1519,7 @@ register INT i;
 INT          dim,dimnew;
 INT         *iptr_from, *iptr_to;
 DOUBLE      *dptr_from, *dptr_to;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("am4copy");
 #endif
 /*--------------------------------------------------------- check types */
@@ -1535,7 +1535,7 @@ case cca_D3:
    dptr_from = array_from->a.d3[0][0];
    dptr_to   = array_to->a.d3[0][0];
    for (i=0; i<dim; i++) *(dptr_to++) = *(dptr_from++);
-break; 
+break;
 case cca_D4:
    dim    = array_from->fdim * array_from->sdim * array_from->tdim * array_from->fodim;
    dimnew = array_to->fdim * array_to->sdim * array_to->tdim * array_to->fodim;
@@ -1551,7 +1551,7 @@ case cca_I3:
    iptr_from = array_from->a.i3[0][0];
    iptr_to   = array_to->a.i3[0][0];
    for (i=0; i<dim; i++) *(iptr_to++) = *(iptr_from++);
-break; 
+break;
 case cca_I4:
    dim = array_from->fdim * array_from->sdim * array_from->tdim * array_from->fodim;
    dimnew = array_to->fdim * array_to->sdim * array_to->tdim * array_to->fodim;
@@ -1559,12 +1559,12 @@ case cca_I4:
    iptr_from = array_from->a.i4[0][0][0];
    iptr_to   = array_to->a.i4[0][0][0];
    for (i=0; i<dim; i++) *(iptr_to++) = *(iptr_from++);
-break; 
+break;
 default:
    dserror("Unknown type of array given");
-}  
+}
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return((void*)(array_to->a.d3));
@@ -1575,25 +1575,25 @@ return((void*)(array_to->a.d3));
 
 /*!---------------------------------------------------------------------
 
-\brief redefine a 3 or 4 dimensional array in structure ARRAY4D                                              
+\brief redefine a 3 or 4 dimensional array in structure ARRAY4D
 
 
-<pre>                                                        m.gee 12/01 
+<pre>                                                        m.gee 12/01
 changes an already allocated array a in dimensions
-a typecast of the values in the array is not possible              
-(no INT to DOUBLE or vice versa transformation)                    
+a typecast of the values in the array is not possible
+(no INT to DOUBLE or vice versa transformation)
 
-a cast between 3D and 4D arrays is NOT allowed     
+a cast between 3D and 4D arrays is NOT allowed
 
-if the new dimension of an the array is larger then the old one,     
+if the new dimension of an the array is larger then the old one,
 the values inside the array are kept, the new entries are initialized
-with zero                                                            
-                                                                     
-if the new dimension of the  array is smaller then the old one,      
-values outside the new dimension are dropped                         
-                                                                     
-this routine handles every dimension (fdim and sdim) separately,     
-that means, it does NOT behave like a fortran array. If a dimension gets 
+with zero
+
+if the new dimension of the  array is smaller then the old one,
+values outside the new dimension are dropped
+
+this routine handles every dimension (fdim and sdim) separately,
+that means, it does NOT behave like a fortran array. If a dimension gets
 smaller, it does NOT break the spare values to the next line of the other
 dimension.
 
@@ -1601,25 +1601,25 @@ Additional memory in in redefined array is set to zero
 
 </pre>
 \param a         ARRAY4D* (i/o) adress of structure ARRAY the vector lives in
-\param newfdim   INT      (i)   new first dimension of 3/4D array dimension                       
-\param newsdim   INT      (i)   new scnd dimension of 3/4D array                  
-\param newtdim   INT      (i)   new thrd dimension of 3/4D array                  
-\param newfodim  INT      (i)   new fourth dimension of 3/4D array                  
+\param newfdim   INT      (i)   new first dimension of 3/4D array dimension
+\param newsdim   INT      (i)   new scnd dimension of 3/4D array
+\param newtdim   INT      (i)   new thrd dimension of 3/4D array
+\param newfodim  INT      (i)   new fourth dimension of 3/4D array
 \warning This routine can be very expensive
-\return void pointer to reallocated and reorganized memory                                               
-\sa amredef()                                    
+\return void pointer to reallocated and reorganized memory
+\sa amredef()
 
 ------------------------------------------------------------------------*/
-void* am4redef(ARRAY4D *array, 
-               INT newfdim, 
-               INT newsdim, 
+void* am4redef(ARRAY4D *array,
+               INT newfdim,
+               INT newsdim,
                INT newtdim,
                INT newfodim)
 {
 register INT i,j,k,l;
 INT          size1,size2,size3,size4;
 ARRAY4D copyarray;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("am4redef");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1688,9 +1688,9 @@ break;
 default:
    dserror("Unknown type of array given");
 break;
-}  
+}
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return((void*)(array->a.d3));
@@ -1702,7 +1702,7 @@ void amprint(ARRAY *a,INT fdim, INT sdim)
 INT i,j;
 FILE *err=allfiles.out_err;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("amprint");
 #endif
 
@@ -1721,7 +1721,7 @@ case cca_DA: /* -------------------------------------------DOUBLE array */
       for(j=0;j<sdim;j++)
       {
          fprintf(err,"%6.16lf ",a->a.da[i][j]);
-      } 
+      }
       fprintf(err,"\n");
    }
 break;
@@ -1732,7 +1732,7 @@ case cca_IA: /* ------------------------------------------integer array */
       for(j=0;j<sdim;j++)
       {
          fprintf(err,"%6d ",a->a.ia[i][j]);
-      } 
+      }
       fprintf(err,"\n");
    }
 break;
@@ -1761,7 +1761,7 @@ dserror("Unknown type of array given");
 fprintf(err,"\n");
 
 /*------------------- make report about new array to bugtraceing system */
-#ifdef DEBUG 
+#ifdef DEBUG
 if (trace.trace_on==1) dsreportarray(a,1);
 
 dstrc_exit();

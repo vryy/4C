@@ -10,7 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
+/*!
 \addtogroup FLUID
 *//*! @{ (documentation module open)*/
 #ifdef D_FLUID
@@ -26,16 +26,16 @@ Maintainer: Steffen Genkinger
  *----------------------------------------------------------------------*/
 extern INT            numlocsys;
 extern struct _LOCSYS *locsys;
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief define locsys for slip BC along curved DLINEs
 
 <pre>                                                         genk 04/02
-			     
-</pre>   
-\return void 
+
+</pre>
+\return void
 
 ------------------------------------------------------------------------*/
-void fluid_locsys(FIELD *actfield, FLUID_DYNAMIC *fdyn) 
+void fluid_locsys(FIELD *actfield, FLUID_DYNAMIC *fdyn)
 {
 INT i,j;
 INT numnp_total;
@@ -46,7 +46,7 @@ NODE     *actnode;
 LOCSYS   *actlocsys;
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_locsys");
 #endif
 
@@ -100,7 +100,7 @@ for (i=0;i<numnp_total;i++)
       dserror("fluid locsys for 3D case not implemented yet!\n");
    else
       dserror("fluid locsys for 4D and higer dim. cases not implemented yet!\n");
-      
+
    /*---------------------------------------- normalise the base vectors */
    norm = sqrt(DSQR(xloc[0])+DSQR(xloc[1])+DSQR(xloc[2]));
    for (j=0;j<3;j++) xloc[j] /=norm;
@@ -126,14 +126,14 @@ for (i=0;i<numnp_total;i++)
 
    /*--------------------------------------- store the direction cosini */
    actlocsys->lXx=xloc[0];
-   actlocsys->lXy=yloc[0];  
+   actlocsys->lXy=yloc[0];
    actlocsys->lXz=zloc[0];
    actlocsys->lYx=xloc[1];
-   actlocsys->lYy=yloc[1];  
+   actlocsys->lYy=yloc[1];
    actlocsys->lYz=zloc[1];
    actlocsys->lZx=xloc[2];
-   actlocsys->lZy=yloc[2]; 
-   actlocsys->lZz=zloc[2];        
+   actlocsys->lZy=yloc[2];
+   actlocsys->lZz=zloc[2];
 }
 
 #if 0
@@ -192,7 +192,7 @@ if (fdyn->freesurf==6)
       else if (fdyn->numdf==4) /* 3D how to choose the tangents??? */
          dserror("fluid locsys for 3D case not implemented yet!\n");
       else
-         dserror("fluid locsys for 4D and higer dim. cases not implemented yet!\n");      
+         dserror("fluid locsys for 4D and higer dim. cases not implemented yet!\n");
       /*------------------------------------- normalise the base vectors */
       norm = sqrt(DSQR(xloc[0])+DSQR(xloc[1])+DSQR(xloc[2]));
       for (j=0;j<3;j++) xloc[j] /=norm;
@@ -218,23 +218,23 @@ if (fdyn->freesurf==6)
 
       /*------------------------------------ store the direction cosini */
       actlocsys->lXx=xloc[0];
-      actlocsys->lXy=yloc[0];  
+      actlocsys->lXy=yloc[0];
       actlocsys->lXz=zloc[0];
       actlocsys->lYx=xloc[1];
-      actlocsys->lYy=yloc[1];  
+      actlocsys->lYy=yloc[1];
       actlocsys->lYz=zloc[1];
       actlocsys->lZx=xloc[2];
-      actlocsys->lZy=yloc[2]; 
-      actlocsys->lZz=zloc[2];        
+      actlocsys->lZy=yloc[2];
+      actlocsys->lZz=zloc[2];
    }
 }
 #endif
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of fluid_locsys */
 
 #endif

@@ -15,8 +15,8 @@ Maintainer: Andrea Hund
 #include "wall1.h"
 #include "wall1_prototypes.h"
 
-/*! 
-\addtogroup WALL1 
+/*!
+\addtogroup WALL1
 *//*! @{ (documentation module open)*/
 
 /*----------------------------------------------------------------------*
@@ -27,15 +27,15 @@ void w1inp(ELEMENT *ele)
 INT  i;
 INT  ierr=0;
 char buffer[50];
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("winp");
 #endif
-/*------------------------------------------------ allocate the element */      
+/*------------------------------------------------ allocate the element */
 ele->e.w1 = (WALL1*)CCACALLOC(1,sizeof(WALL1));
 if (ele->e.w1==NULL) dserror("Allocation of element failed");
 /*---------------------------------------------- read elements topology */
 frchk("QUAD4",&ierr);
-if (ierr==1) 
+if (ierr==1)
 {
    ele->distyp = quad4;
    ele->numnp=4;
@@ -45,7 +45,7 @@ if (ierr==1)
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
 }
 frchk("QUAD8",&ierr);
-if (ierr==1) 
+if (ierr==1)
 {
    ele->distyp = quad8;
    ele->numnp=8;
@@ -55,7 +55,7 @@ if (ierr==1)
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
 }
 frchk("QUAD9",&ierr);
-if (ierr==1) 
+if (ierr==1)
 {
    ele->distyp = quad9;
    ele->numnp=9;
@@ -100,7 +100,7 @@ if (ierr==1) ele->e.w1->kintype = geo_lin;
 frchk("W_TotalLagr",&ierr);
 if (ierr==1) ele->e.w1->kintype = total_lagr;
 frchk("W_UpdatedLagr",&ierr);
-if (ierr==1) 
+if (ierr==1)
 {
  ele->e.w1->kintype = updated_lagr;
  dserror("updated lagrange for WALL1 not implemented");
@@ -120,7 +120,7 @@ if (ierr)
 }
 if (ierr!=1) ele->e.w1->stresstyp = w1_xy;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 

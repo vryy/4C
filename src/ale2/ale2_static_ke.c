@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains classic routines which integrate the stiffness for the 2d 
+\brief contains classic routines which integrate the stiffness for the 2d
 ale element
 
 <pre>
@@ -16,14 +16,14 @@ Maintainer: Christiane Foerster
 #include "../ale3/ale3.h"
 #include "ale2.h"
 
-/*! 
-\addtogroup Ale 
+/*!
+\addtogroup Ale
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief  integration of linear stiffness ke for ALE element 
+\brief  integration of linear stiffness ke for ALE element
 
-<pre>                                                              mn 06/02 
+<pre>                                                              mn 06/02
 This routine integrates the linear stiffness for the 2d ale element
 
 </pre>
@@ -35,16 +35,16 @@ This routine integrates the linear stiffness for the 2d ale element
                                            init != 1 : integration
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling: ale2_intg(), ale2_funct_deriv(), ale2_jaco(), ale2_bop(), 
-             ale2_mat_linel(), ale2_keku(), ale2_hourglass(); 
+\return void
+\sa calling: ale2_intg(), ale2_funct_deriv(), ale2_jaco(), ale2_bop(),
+             ale2_mat_linel(), ale2_keku(), ale2_hourglass();
              called by: ale2()
 
 *----------------------------------------------------------------------*/
-void ale2_static_ke(ELEMENT   *ele, 
-                   ALE2_DATA  *data, 
+void ale2_static_ke(ELEMENT   *ele,
+                   ALE2_DATA  *data,
                    MATERIAL   *mat,
-                   ARRAY      *estif_global, 
+                   ARRAY      *estif_global,
                    INT         init)
 {
 INT                 i, j;         /* counters */
@@ -59,36 +59,36 @@ DOUBLE              fac;
 DOUBLE              e1,e2;         /*GP-coords*/
 DOUBLE              facr,facs;   /* weights at GP */
 
-static ARRAY    D_a;      /* material tensor */     
-static DOUBLE **D;         
-static ARRAY    funct_a;  /* shape functions */    
-static DOUBLE  *funct;     
-static ARRAY    deriv_a;  /* derivatives of shape functions */   
-static DOUBLE **deriv;     
-static ARRAY    xjm_a;    /* jacobian matrix */     
-static DOUBLE **xjm;         
-static ARRAY    bop_a;    /* B-operator */   
-static DOUBLE **bop;           
+static ARRAY    D_a;      /* material tensor */
+static DOUBLE **D;
+static ARRAY    funct_a;  /* shape functions */
+static DOUBLE  *funct;
+static ARRAY    deriv_a;  /* derivatives of shape functions */
+static DOUBLE **deriv;
+static ARRAY    xjm_a;    /* jacobian matrix */
+static DOUBLE **xjm;
+static ARRAY    bop_a;    /* B-operator */
+static DOUBLE **bop;
 static ARRAY    xyz_a;    /* actual element coordiantes */
 static DOUBLE **xyz;
-static DOUBLE **estif;    /* element stiffness matrix ke */ 
+static DOUBLE **estif;    /* element stiffness matrix ke */
 
 DOUBLE det;
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ale2_static_ke");
 #endif
 /*------------------------------------------------- some working arrays */
 if (init==1)
 {
-funct     = amdef("funct"  ,&funct_a,MAXNOD_BRICK1,1 ,"DV");       
-deriv     = amdef("deriv"  ,&deriv_a,3,MAXNOD_BRICK1 ,"DA");       
-D         = amdef("D"      ,&D_a   ,6,6              ,"DA");           
-xjm       = amdef("xjm"    ,&xjm_a ,numdf,numdf      ,"DA");           
-xyz       = amdef("xyz"    ,&xyz_a ,4    ,numdf      ,"DA"); 
+funct     = amdef("funct"  ,&funct_a,MAXNOD_BRICK1,1 ,"DV");
+deriv     = amdef("deriv"  ,&deriv_a,3,MAXNOD_BRICK1 ,"DA");
+D         = amdef("D"      ,&D_a   ,6,6              ,"DA");
+xjm       = amdef("xjm"    ,&xjm_a ,numdf,numdf      ,"DA");
+xyz       = amdef("xyz"    ,&xyz_a ,4    ,numdf      ,"DA");
 
-bop       = amdef("bop"  ,&bop_a ,numeps,(numdf*MAXNOD_BRICK1),"DA");           
+bop       = amdef("bop"  ,&bop_a ,numeps,(numdf*MAXNOD_BRICK1),"DA");
 goto end;
 }
 /*------------------------------------------- integration parameters ---*/
@@ -175,14 +175,14 @@ for (lr=0; lr<nir; lr++)
 
 /*----------------------------------------------------- local co-system */
 if(ele->locsys==locsys_yes)
-   locsys_trans(ele,estif,NULL,NULL,NULL); 
+   locsys_trans(ele,estif,NULL,NULL,NULL);
 
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of ale2_static_ke */
 /*----------------------------------------------------------------------*/
 
@@ -191,8 +191,8 @@ return;
 \brief  integration of linear stiffness ke for ALE element including
 additional stiffening
 
-<pre>                                                              ck 01/03 
-This routine integrates the linear stiffness for the 2d ale element 
+<pre>                                                              ck 01/03
+This routine integrates the linear stiffness for the 2d ale element
 The stiffness is influenced by the element distortion via minimal Jacobian
 determinant
 
@@ -209,17 +209,17 @@ determinant
 					   quality == 3 : min det F
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling: ale2_intg(), ale2_funct_deriv(), ale2_jaco(), ale2_bop(), 
+\return void
+\sa calling: ale2_intg(), ale2_funct_deriv(), ale2_jaco(), ale2_bop(),
              ale2_mat_linel(), ale2_keku(), ale2_hourglass(),
-	     ale2_min_jaco(), write_element_quality(); 
+	     ale2_min_jaco(), write_element_quality();
              called by: ale2()
 
 *----------------------------------------------------------------------*/
-void ale2_static_ke_stiff(ELEMENT     *ele, 
-                          ALE2_DATA   *data, 
+void ale2_static_ke_stiff(ELEMENT     *ele,
+                          ALE2_DATA   *data,
                           MATERIAL    *mat,
-                          ARRAY       *estif_global, 
+                          ARRAY       *estif_global,
                           INT          init,
 	        	  INT          quality)
 {
@@ -238,16 +238,16 @@ DOUBLE              facr,facs;   /* weights at GP */
 
 DOUBLE              min_detF;         /* minimal Jacobian determinant */
 
-static ARRAY    D_a;      /* material tensor */     
-static DOUBLE **D;         
-static ARRAY    funct_a;  /* shape functions */    
-static DOUBLE  *funct;     
-static ARRAY    deriv_a;  /* derivatives of shape functions */   
-static DOUBLE **deriv;     
-static ARRAY    xjm_a;    /* jacobian matrix */     
-static DOUBLE **xjm;         
-static ARRAY    bop_a;    /* B-operator */   
-static DOUBLE **bop;       
+static ARRAY    D_a;      /* material tensor */
+static DOUBLE **D;
+static ARRAY    funct_a;  /* shape functions */
+static DOUBLE  *funct;
+static ARRAY    deriv_a;  /* derivatives of shape functions */
+static DOUBLE **deriv;
+static ARRAY    xjm_a;    /* jacobian matrix */
+static DOUBLE **xjm;
+static ARRAY    bop_a;    /* B-operator */
+static DOUBLE **bop;
 static ARRAY    xyz_a;    /* actual element coordiantes */
 static DOUBLE **xyz;
 static ARRAY    fint_a;   /* internal force vector from prestress */
@@ -257,19 +257,19 @@ static DOUBLE **estif;    /* element stiffness matrix ke */
 DOUBLE det;
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ale2_static_ke_stiff");
 #endif
 /*------------------------------------------------- some working arrays */
 if (init==1)
 {
-funct     = amdef("funct"  ,&funct_a,MAXNOD_BRICK1,1 ,"DV");       
-deriv     = amdef("deriv"  ,&deriv_a,3,MAXNOD_BRICK1 ,"DA");       
-D         = amdef("D"      ,&D_a   ,6,6              ,"DA");           
-xjm       = amdef("xjm"    ,&xjm_a ,numdf,numdf      ,"DA");           
-xyz       = amdef("xyz"    ,&xyz_a ,4    ,numdf      ,"DA"); 
+funct     = amdef("funct"  ,&funct_a,MAXNOD_BRICK1,1 ,"DV");
+deriv     = amdef("deriv"  ,&deriv_a,3,MAXNOD_BRICK1 ,"DA");
+D         = amdef("D"      ,&D_a   ,6,6              ,"DA");
+xjm       = amdef("xjm"    ,&xjm_a ,numdf,numdf      ,"DA");
+xyz       = amdef("xyz"    ,&xyz_a ,4    ,numdf      ,"DA");
 fint      = amdef("fint"   ,&fint_a,4*numdf,1        ,"DV");
-bop       = amdef("bop"  ,&bop_a ,numeps,(numdf*MAXNOD_BRICK1),"DA");           
+bop       = amdef("bop"  ,&bop_a ,numeps,(numdf*MAXNOD_BRICK1),"DA");
 goto end;
 }
 /*------------------------------------------- integration parameters ---*/
@@ -342,7 +342,7 @@ for (lr=0; lr<nir; lr++)
      /*------------------------------------- compute jacobian matrix ---*/
      ale2_jaco (deriv,xjm,&det,xyz,iel);
      /*------------------------ evaluate factor including stiffening ---*/
-     fac = facr * facs * det/min_detF/min_detF; 
+     fac = facr * facs * det/min_detF/min_detF;
      /*---------------------------------------- calculate operator B ---*/
      amzero(&bop_a);
      ale2_bop(bop,deriv,xjm,det,iel);
@@ -361,10 +361,10 @@ dsassert(ele->locsys==locsys_no,"locsys not implemented for this element!\n");
 
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of ale2_static_ke_stiff */
 /*----------------------------------------------------------------------*/
 
@@ -373,7 +373,7 @@ return;
 \brief  integration of linear stiffness ke for ALE element with linear
 prestress
 
-<pre>                                                              ck 01/03 
+<pre>                                                              ck 01/03
 This routine integrates the linear stiffness for the 2d ale element and
 calculates element node forces from prestress evaluated from element
 distortion
@@ -392,17 +392,17 @@ distortion
 					   quality == 3 : min det F
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling: ale2_intg(), ale2_funct_deriv(), ale2_jaco(), ale2_bop(), 
+\return void
+\sa calling: ale2_intg(), ale2_funct_deriv(), ale2_jaco(), ale2_bop(),
              ale2_mat_linel(), ale2_keku(), ale2_hourglass(),
-	     ale2_min_jaco(), write_element_quality(); 
+	     ale2_min_jaco(), write_element_quality();
              called by: ale2()
 
 *----------------------------------------------------------------------*/
-void ale2_static_ke_prestress(ELEMENT    *ele, 
-                              ALE2_DATA  *data, 
+void ale2_static_ke_prestress(ELEMENT    *ele,
+                              ALE2_DATA  *data,
                               MATERIAL   *mat,
-                              ARRAY      *estif_global, 
+                              ARRAY      *estif_global,
                               INT         init,
 		              DOUBLE     *rhs,
        			      INT         total_dim,
@@ -429,16 +429,16 @@ DOUBLE              mid[2];           /* element middle point */
 DOUBLE              square[4][2];     /* nodes of square with same area*/
 DOUBLE              min_detF;         /* minimal Jacobian determinant */
 
-static ARRAY    D_a;      /* material tensor */     
-static DOUBLE **D;         
-static ARRAY    funct_a;  /* shape functions */    
-static DOUBLE  *funct;     
-static ARRAY    deriv_a;  /* derivatives of shape functions */   
-static DOUBLE **deriv;     
-static ARRAY    xjm_a;    /* jacobian matrix */     
-static DOUBLE **xjm;         
-static ARRAY    bop_a;    /* B-operator */   
-static DOUBLE **bop;       
+static ARRAY    D_a;      /* material tensor */
+static DOUBLE **D;
+static ARRAY    funct_a;  /* shape functions */
+static DOUBLE  *funct;
+static ARRAY    deriv_a;  /* derivatives of shape functions */
+static DOUBLE **deriv;
+static ARRAY    xjm_a;    /* jacobian matrix */
+static DOUBLE **xjm;
+static ARRAY    bop_a;    /* B-operator */
+static DOUBLE **bop;
 static ARRAY    xyz_a;    /* actual element coordiantes */
 static DOUBLE **xyz;
 static ARRAY    fint_a;   /* internal force vector from prestress */
@@ -448,19 +448,19 @@ static DOUBLE **estif;    /* element stiffness matrix ke */
 DOUBLE det;
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ale2_static_ke_prestress");
 #endif
 /*------------------------------------------------- some working arrays */
 if (init==1)
 {
-funct     = amdef("funct" ,&funct_a,MAXNOD_BRICK1,1 ,"DV");	  
-deriv     = amdef("deriv" ,&deriv_a,3,MAXNOD_BRICK1 ,"DA");	  
-D         = amdef("D"     ,&D_a   ,6,6  	    ,"DA");	      
-xjm       = amdef("xjm"   ,&xjm_a ,numdf,numdf      ,"DA");	      
-xyz       = amdef("xyz"   ,&xyz_a ,4	,numdf      ,"DA"); 
+funct     = amdef("funct" ,&funct_a,MAXNOD_BRICK1,1 ,"DV");
+deriv     = amdef("deriv" ,&deriv_a,3,MAXNOD_BRICK1 ,"DA");
+D         = amdef("D"     ,&D_a   ,6,6  	    ,"DA");
+xjm       = amdef("xjm"   ,&xjm_a ,numdf,numdf      ,"DA");
+xyz       = amdef("xyz"   ,&xyz_a ,4	,numdf      ,"DA");
 fint      = amdef("fint"  ,&fint_a,4*numdf,1	    ,"DV");
-bop       = amdef("bop"  ,&bop_a ,numeps,(numdf*MAXNOD_BRICK1),"DA");           
+bop       = amdef("bop"  ,&bop_a ,numeps,(numdf*MAXNOD_BRICK1),"DA");
 goto end;
 }
 /*------------------------------------------- integration parameters ---*/
@@ -562,7 +562,7 @@ for (lr=0; lr<nir; lr++)
      /*------------------------------------- compute jacobian matrix ---*/
      ale2_jaco (deriv,xjm,&det,xyz,iel);
      /*----------------------------- use jacobian determinant or not ---*/
-     if(ele->e.ale2->jacobi==1)   fac = facr * facs * det; 
+     if(ele->e.ale2->jacobi==1)   fac = facr * facs * det;
      else         fac = facr * facs;
      /*---------------------------------------- calculate operator B ---*/
      amzero(&bop_a);
@@ -586,16 +586,16 @@ for (i=0; i<iel; i++)
    {
       fint[2*i]   += estif[2*i][2*j]     * (square[j][0]-xyz[j][0]);
       fint[2*i]   += estif[2*i][2*j+1]   * (square[j][1]-xyz[j][1]);
-      fint[2*i+1] += estif[2*i+1][2*j]   * (square[j][0]-xyz[j][0]); 
-      fint[2*i+1] += estif[2*i+1][2*j+1] * (square[j][1]-xyz[j][1]); 
+      fint[2*i+1] += estif[2*i+1][2*j]   * (square[j][0]-xyz[j][0]);
+      fint[2*i+1] += estif[2*i+1][2*j+1] * (square[j][1]-xyz[j][1]);
    }
    for (j=0; j<numdf; j++)
-   { 
-      lm[i*numdf+j] = ele->node[i]->dof[j]; 
+   {
+      lm[i*numdf+j] = ele->node[i]->dof[j];
    }
 }
 /*------------------------------------ assemble in global rhs-vector ---*/
-for (i=0; i<nd; i++) 
+for (i=0; i<nd; i++)
 {
    if (lm[i] >= total_dim) continue;
    rhs[lm[i]] += fint[i];
@@ -605,10 +605,10 @@ for (i=0; i<nd; i++)
 dsassert(ele->locsys==locsys_no,"locsys not implemented for this element!\n");
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of ale2_static_ke_prestress */
 /*----------------------------------------------------------------------*/
 
@@ -616,10 +616,10 @@ return;
 
 
 /*!----------------------------------------------------------------------
-\brief  integration of stiffness ke for ALE element depending on 
+\brief  integration of stiffness ke for ALE element depending on
 displacement of test step
 
-<pre>                                                              ck 01/03 
+<pre>                                                              ck 01/03
 This routine integrates the stiffness for the 2d ale element depending on
 the results of a test step [see Chiandussi et al. 2000]
 
@@ -640,20 +640,20 @@ the results of a test step [see Chiandussi et al. 2000]
 \param *max           DOUBLE    (i)   maximal stiffness of previous step
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling: ale2_min_jaco(), ale2_el_area(), ale2_intg(), 
-             ale2_funct_deriv(), ale2_jaco(), ale2_bop(), 
-	     ale2_mat_linel(), ale2_keku(), ale2_hourglass(), 
+\return void
+\sa calling: ale2_min_jaco(), ale2_el_area(), ale2_intg(),
+             ale2_funct_deriv(), ale2_jaco(), ale2_bop(),
+	     ale2_mat_linel(), ale2_keku(), ale2_hourglass(),
 	     ale2_min_jaco(), write_element_quality();
              called by: ale2()
 
 *----------------------------------------------------------------------*/
-void ale2_static_ke_step2(ELEMENT    *ele, 
-                          ALE2_DATA  *data, 
+void ale2_static_ke_step2(ELEMENT    *ele,
+                          ALE2_DATA  *data,
                           MATERIAL   *mat,
-                          ARRAY      *estif_global, 
+                          ARRAY      *estif_global,
                           INT	      init,
-                          INT	      quality, 
+                          INT	      quality,
 			  DOUBLE     *min_stiff,
 			  DOUBLE     *max_stiff,
 			  DOUBLE     *min,
@@ -677,18 +677,18 @@ DOUBLE              stiff;            /* stiffness factor */
 DOUBLE              pv;               /* Possions ratio */
 DOUBLE              m,r;
 
-static ARRAY    D_a;      /* material tensor */     
-static DOUBLE **D;         
-static ARRAY    funct_a;  /* shape functions */    
-static DOUBLE  *funct;     
-static ARRAY    deriv_a;  /* derivatives of shape functions */   
-static DOUBLE **deriv;     
-static ARRAY    xjm_a;    /* jacobian matrix */     
-static DOUBLE **xjm;         
-static ARRAY    bop_a;    /* B-operator */   
-static DOUBLE **bop;       
+static ARRAY    D_a;      /* material tensor */
+static DOUBLE **D;
+static ARRAY    funct_a;  /* shape functions */
+static DOUBLE  *funct;
+static ARRAY    deriv_a;  /* derivatives of shape functions */
+static DOUBLE **deriv;
+static ARRAY    xjm_a;    /* jacobian matrix */
+static DOUBLE **xjm;
+static ARRAY    bop_a;    /* B-operator */
+static DOUBLE **bop;
 static ARRAY    xyz_a;    /* actual element coordiantes */
-static DOUBLE **xyz;  
+static DOUBLE **xyz;
 static ARRAY    uxyz_a;   /* actual displacements */
 static DOUBLE **uxyz;
 static ARRAY    strain_a; /* strains */
@@ -698,21 +698,21 @@ static DOUBLE **estif;    /* element stiffness matrix ke */
 DOUBLE det;
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ale2_static_ke_step2");
 #endif
 /*------------------------------------------------- some working arrays */
 if (init==1)
 {
-funct     = amdef("funct"  ,&funct_a,MAXNOD_BRICK1,1 ,"DV");       
-deriv     = amdef("deriv"  ,&deriv_a,3,MAXNOD_BRICK1 ,"DA");       
-D         = amdef("D"      ,&D_a   ,6,6              ,"DA");           
-xjm       = amdef("xjm"    ,&xjm_a ,numdf,numdf      ,"DA");           
-xyz       = amdef("xyz"    ,&xyz_a ,4    ,numdf      ,"DA");            
-uxyz      = amdef("uxyz"   ,&uxyz_a ,4   ,numdf      ,"DA"); 
+funct     = amdef("funct"  ,&funct_a,MAXNOD_BRICK1,1 ,"DV");
+deriv     = amdef("deriv"  ,&deriv_a,3,MAXNOD_BRICK1 ,"DA");
+D         = amdef("D"      ,&D_a   ,6,6              ,"DA");
+xjm       = amdef("xjm"    ,&xjm_a ,numdf,numdf      ,"DA");
+xyz       = amdef("xyz"    ,&xyz_a ,4    ,numdf      ,"DA");
+uxyz      = amdef("uxyz"   ,&uxyz_a ,4   ,numdf      ,"DA");
 
-bop       = amdef("bop"  ,&bop_a ,numeps,(numdf*MAXNOD_BRICK1),"DA");  
-strain    = amdef("strain",&strain_a ,numeps,1,"DV");          
+bop       = amdef("bop"  ,&bop_a ,numeps,(numdf*MAXNOD_BRICK1),"DA");
+strain    = amdef("strain",&strain_a ,numeps,1,"DV");
 goto end;
 }
 /*------------------------------------------- integration parameters ---*/
@@ -754,7 +754,7 @@ for (i=0; i<iel; i++)
    }
 }
 /*----------------------------------------------------------------------*/
-   ale2_min_jaco(ele->distyp,xyz,&min_detF); 
+   ale2_min_jaco(ele->distyp,xyz,&min_detF);
    el_area = ale2_el_area(xyz);
 /*----------------------------------- write element quality meassure ---*/
 write_element_quality(ele,quality,xyz,min_detF);
@@ -794,7 +794,7 @@ for (lr=0; lr<nir; lr++)
      ale2_jaco(deriv,xjm,&det,xyz,iel);
      /*----------------------------- use jacobian determinant or not ---*/
      if(ele->e.ale2->jacobi==1)
-       fac = facr * facs * det; 
+       fac = facr * facs * det;
      else
        fac = facr * facs;
      /*---------------------------------------- calculate operator B ---*/
@@ -830,10 +830,10 @@ for (lr=0; lr<nir; lr++)
         *min_stiff = (stiff < *min_stiff) ? stiff:*min_stiff;
         *max_stiff = (stiff > *max_stiff) ? stiff:*max_stiff;
         /* --- scale stiffening factor --- */
-        stiff = ((stiff - *min)/(*max - *min) * 99.0) + 1.0;  
+        stiff = ((stiff - *min)/(*max - *min) * 99.0) + 1.0;
         /* --- use stiffening factor --- */
      }
-     fac = fac*stiff; 
+     fac = fac*stiff;
      /*------------------------------------------- call material law ---*/
      ale2_mat_linel(mat->m.stvenant,D);
      /*--------------------------------- elastic stiffness matrix ke ---*/
@@ -844,10 +844,10 @@ for (lr=0; lr<nir; lr++)
 dsassert(ele->locsys==locsys_no,"locsys not implemented for this element!\n");
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of ale2_static_ke_step2 */
 /*----------------------------------------------------------------------*/
 
@@ -855,10 +855,10 @@ return;
 
 
 /*!----------------------------------------------------------------------
-\brief  linear stiffness ke for spring ALE element 
+\brief  linear stiffness ke for spring ALE element
 
 <pre>                                                           ck 06/03
-This routine 
+This routine
 
 </pre>
 \param *ele           ELEMENT   (i)   my element
@@ -871,7 +871,7 @@ This routine
                                            init != 1 : integration
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ale2_min_jaco(), edge_geometry(), write_element_quality()
              called by: ale2_static_ke()
 
@@ -892,20 +892,20 @@ DOUBLE              length;          /* length of actual edge*/
 DOUBLE              sin, cos;        /* direction of actual edge */
 DOUBLE              factor;
 
-static DOUBLE **estif;    /* element stiffness matrix ke */ 
-      
+static DOUBLE **estif;    /* element stiffness matrix ke */
+
 static ARRAY    xyz_a;    /* actual element coordiantes */
-static DOUBLE **xyz;  
+static DOUBLE **xyz;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ale2_static_ke_spring");
 #endif
 /*--------------------------------------------------- initialisation ---*/
 if (init==1)
 {
-   xyz = amdef("xyz", &xyz_a, 4, numdf, "DA");  
-   ale2_tors_spring_quad4(NULL,NULL,1);   
-   ale2_tors_spring_tri3(NULL,NULL,1);       
+   xyz = amdef("xyz", &xyz_a, 4, numdf, "DA");
+   ale2_tors_spring_quad4(NULL,NULL,1);
+   ale2_tors_spring_tri3(NULL,NULL,1);
    goto end;
 }
 /*------------------------------------------- zero element stiffness ---*/
@@ -923,7 +923,7 @@ for (i=0; i<iel; i++)
    }
 }
 /* check 'jacobian determinant' just to determine degenerated elements -*/
-ale2_min_jaco(ele->distyp,xyz,&min_detF); 
+ale2_min_jaco(ele->distyp,xyz,&min_detF);
 /*----------------------------------- write element quality meassure ---*/
 write_element_quality(ele,quality,xyz,min_detF);
 /*----------------------- lineal springs from all nodes to all nodes ---*/
@@ -939,7 +939,7 @@ for (node_i=0; node_i<iel; node_i++)
       estif[node_i*2+1][node_i*2+1] += sin*sin * factor;
       estif[node_i*2][node_i*2+1]   += sin*cos * factor;
       estif[node_i*2+1][node_i*2]   += sin*cos * factor;
-      
+
       estif[node_j*2][node_j*2]     += cos*cos * factor;
       estif[node_j*2+1][node_j*2+1] += sin*sin * factor;
       estif[node_j*2][node_j*2+1]   += sin*cos * factor;
@@ -949,7 +949,7 @@ for (node_i=0; node_i<iel; node_i++)
       estif[node_i*2+1][node_j*2+1] -= sin*sin * factor;
       estif[node_i*2][node_j*2+1]   -= sin*cos * factor;
       estif[node_i*2+1][node_j*2]   -= sin*cos * factor;
-      
+
       estif[node_j*2][node_i*2]     -= cos*cos * factor;
       estif[node_j*2+1][node_i*2+1] -= sin*sin * factor;
       estif[node_j*2][node_i*2+1]   -= sin*cos * factor;
@@ -967,7 +967,7 @@ switch (ele->distyp)
        dserror("ale spring dynamic for this distyp not yet implemented");
        break;
     case tri3:
-       ale2_tors_spring_tri3(estif,xyz,0); 
+       ale2_tors_spring_tri3(estif,xyz,0);
        break;
     case tri6:
        dserror("ale spring dynamic for this distyp not yet implemented");
@@ -980,25 +980,25 @@ switch (ele->distyp)
 dsassert(ele->locsys==locsys_no,"locsys not implemented for this element!\n");
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of ale2_static_ke_spring */
 /*----------------------------------------------------------------------*/
 
 
 
 /*!----------------------------------------------------------------------
-\brief  integration of linear stiffness ke for ALE element with 
+\brief  integration of linear stiffness ke for ALE element with
 Laplacian smoothing
 
-<pre>                                                              ck 01/03 
-This routine integrates the linear 'stiffness' for the 2d ale element 
+<pre>                                                              ck 01/03
+This routine integrates the linear 'stiffness' for the 2d ale element
 stiffness is determined by laplacian smoothing of the velocity (or displacement
 increment)
-In difference to the mentioned paper the diffusion coefficient does not 
-depend upon the distance to the moving surface but rather on the shape of 
+In difference to the mentioned paper the diffusion coefficient does not
+depend upon the distance to the moving surface but rather on the shape of
 the element which is represented by the minimal Jacobian determinant.
 
 </pre>
@@ -1013,16 +1013,16 @@ the element which is represented by the minimal Jacobian determinant.
 					   quality == 3 : min det F
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling: ale2_intg(), ale2_funct_deriv(), ale2_jaco(), ale2_bop(), 
+\return void
+\sa calling: ale2_intg(), ale2_funct_deriv(), ale2_jaco(), ale2_bop(),
              ale2_mat_linel(), ale2_keku(), ale2_hourglass(),
-	     ale2_min_jaco(), write_element_quality(); 
+	     ale2_min_jaco(), write_element_quality();
              called by: ale2()
 
 *----------------------------------------------------------------------*/
-void ale2_static_ke_laplace(ELEMENT     *ele, 
-                            ALE2_DATA   *data, 
-                            ARRAY       *estif_global, 
+void ale2_static_ke_laplace(ELEMENT     *ele,
+                            ALE2_DATA   *data,
+                            ARRAY       *estif_global,
                             INT          init,
 		            INT          quality)
 {
@@ -1042,16 +1042,16 @@ DOUBLE              min_detF;         /* minimal Jacobian determinant */
 
 DOUBLE              k_diff;
 
-static ARRAY    D_a;        /* material tensor */     
-static DOUBLE **D;         
-static ARRAY    funct_a;    /* shape functions */    
-static DOUBLE  *funct;     
-static ARRAY    deriv_a;    /* derivatives of shape functions */   
-static DOUBLE **deriv;     
-static ARRAY    xjm_a;      /* jacobian matrix */     
-static DOUBLE **xjm;         
-static ARRAY    deriv_xy_a; /* global derivatives */   
-static DOUBLE **deriv_xy;       
+static ARRAY    D_a;        /* material tensor */
+static DOUBLE **D;
+static ARRAY    funct_a;    /* shape functions */
+static DOUBLE  *funct;
+static ARRAY    deriv_a;    /* derivatives of shape functions */
+static DOUBLE **deriv;
+static ARRAY    xjm_a;      /* jacobian matrix */
+static DOUBLE **xjm;
+static ARRAY    deriv_xy_a; /* global derivatives */
+static DOUBLE **deriv_xy;
 static ARRAY    xyz_a;      /* actual element coordiantes */
 static DOUBLE **xyz;
 static ARRAY    fint_a;     /* internal force vector from prestress */
@@ -1061,19 +1061,19 @@ static DOUBLE **estif;      /* element stiffness matrix ke */
 DOUBLE det;
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ale2_static_ke_laplace");
 #endif
 /*------------------------------------------------- some working arrays */
 if (init==1)
 {
-funct     = amdef("funct"  ,&funct_a,MAXNOD_BRICK1,1 ,"DV");       
-deriv     = amdef("deriv"  ,&deriv_a,3,MAXNOD_BRICK1 ,"DA");       
-D         = amdef("D"      ,&D_a   ,6,6              ,"DA");           
-xjm       = amdef("xjm"    ,&xjm_a ,numdf,numdf      ,"DA");           
-xyz       = amdef("xyz"    ,&xyz_a ,4    ,numdf      ,"DA"); 
+funct     = amdef("funct"  ,&funct_a,MAXNOD_BRICK1,1 ,"DV");
+deriv     = amdef("deriv"  ,&deriv_a,3,MAXNOD_BRICK1 ,"DA");
+D         = amdef("D"      ,&D_a   ,6,6              ,"DA");
+xjm       = amdef("xjm"    ,&xjm_a ,numdf,numdf      ,"DA");
+xyz       = amdef("xyz"    ,&xyz_a ,4    ,numdf      ,"DA");
 fint      = amdef("fint"   ,&fint_a,4*numdf,1        ,"DV");
-deriv_xy  = amdef("deriv_xy",&deriv_xy_a ,numdf,(MAXNOD_BRICK1),"DA");           
+deriv_xy  = amdef("deriv_xy",&deriv_xy_a ,numdf,(MAXNOD_BRICK1),"DA");
 goto end;
 }
 /*------------------------------------------- integration parameters ---*/
@@ -1151,15 +1151,15 @@ for (lr=0; lr<nir; lr++)
      amzero(&deriv_xy_a);
      ale2_deriv_xy(deriv_xy,deriv,xjm,det,iel);
      /*------------------------- diffusivity depends on displacement ---*/
-     k_diff = 1.0/min_detF/min_detF; 
+     k_diff = 1.0/min_detF/min_detF;
      /*------------------------------- sort it into stiffness matrix ---*/
      for (i=0; i<iel; i++)
      {
         for (j=0; j<iel; j++)
 	{
-	   estif[i*2][j*2]     += ( deriv_xy[0][i] * deriv_xy[0][j] 
+	   estif[i*2][j*2]     += ( deriv_xy[0][i] * deriv_xy[0][j]
 	                          + deriv_xy[1][i] * deriv_xy[1][j] )*fac*k_diff;
-	   estif[i*2+1][j*2+1] += ( deriv_xy[0][i] * deriv_xy[0][j] 
+	   estif[i*2+1][j*2+1] += ( deriv_xy[0][i] * deriv_xy[0][j]
 	                          + deriv_xy[1][i] * deriv_xy[1][j] )*fac*k_diff;
 	}
      }
@@ -1170,10 +1170,10 @@ for (lr=0; lr<nir; lr++)
 dsassert(ele->locsys==locsys_no,"locsys not implemented for this element!\n");
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of ale2_static_ke_laplace */
 /*----------------------------------------------------------------------*/
 

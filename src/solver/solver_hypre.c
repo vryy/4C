@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -21,16 +21,16 @@ Maintainer: Malte Neumann
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
-extern struct _FILES  allfiles; 
+extern struct _FILES  allfiles;
 /*--------------------------------------------------------------------------*
  |  control solver lib HYPRE                            m.gee 10/01         |
  |  struct _SOLVAR         *actsolv    ptr to actual solver structure       |
  |  struct _INTRA          *actintra   ptr to field's intra-communicator    |
- |  struct _H_PARCSR       *parcsr     ptr to parcsr system matrix to solve | 
+ |  struct _H_PARCSR       *parcsr     ptr to parcsr system matrix to solve |
  |  struct _DIST_VECTOR    *sol        ptr to distrib. solution vector      |
  |  struct _DIST_VECTOR    *rhs        ptr to distrib. rhs vector           |
  |  INT                     option     =1 init phase                        |
@@ -68,7 +68,7 @@ HYPRE_ParCSRMatrix  parcsr_matrix;         /* parallel compressed sparse row mat
 HYPRE_ParVector     parcsr_vector_rhs;     /* vector that suits the HYPRE_ParCSRMatrix matrix */
 HYPRE_ParVector     parcsr_vector_sol;     /* vector that suits the HYPRE_ParCSRMatrix matrix */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solver_hypre_parcsr");
 #endif
 /*----------------------------------------------------------------------*/
@@ -128,7 +128,7 @@ case 1:
       case hypreprec_euclid:
          /*-------------------------------------- create preconditioner */
          hypre_create_precond_euclid(&(parcsr->precond),actintra,hyprevars);
-         /*--------------------------- pass function pointers to solver */     
+         /*--------------------------- pass function pointers to solver */
          err=HYPRE_GMRESSetPrecond(parcsr->solver,
                                    (HYPRE_PtrToSolverFcn) HYPRE_EuclidSolve,
                                    (HYPRE_PtrToSolverFcn) HYPRE_EuclidSetup,
@@ -140,7 +140,7 @@ case 1:
       case hypreprec_parasails:
          /*-------------------------------------- create preconditioner */
          hypre_create_precond_parasails(&(parcsr->precond),actintra,hyprevars);
-         /*--------------------------- pass function pointers to solver */ 
+         /*--------------------------- pass function pointers to solver */
          err+=HYPRE_GMRESSetPrecond(parcsr->solver,
                                     (HYPRE_PtrToSolverFcn) HYPRE_ParaSailsSolve,
                                     (HYPRE_PtrToSolverFcn) HYPRE_ParaSailsSetup,
@@ -153,7 +153,7 @@ case 1:
       case hypreprec_amg:
          /*-------------------------------------- create preconditioner */
          hypre_create_precond_boomeramg(&(parcsr->precond),actintra,hyprevars);
-         /*--------------------------- pass function pointers to solver */ 
+         /*--------------------------- pass function pointers to solver */
          err=HYPRE_GMRESSetPrecond(parcsr->solver,
                                    (HYPRE_PtrToSolverFcn) HYPRE_BoomerAMGSolve,
                                    (HYPRE_PtrToSolverFcn) HYPRE_BoomerAMGSetup,
@@ -188,7 +188,7 @@ case 1:
       case hypreprec_euclid:
          /*-------------------------------------- create preconditioner */
          hypre_create_precond_euclid(&(parcsr->precond),actintra,hyprevars);
-         /*--------------------------- pass function pointers to solver */     
+         /*--------------------------- pass function pointers to solver */
          err=HYPRE_BiCGSTABSetPrecond(parcsr->solver,
                                       (HYPRE_PtrToSolverFcn) HYPRE_EuclidSolve,
                                       (HYPRE_PtrToSolverFcn) HYPRE_EuclidSetup,
@@ -201,7 +201,7 @@ case 1:
       case hypreprec_parasails:
          /*-------------------------------------- create preconditioner */
          hypre_create_precond_parasails(&(parcsr->precond),actintra,hyprevars);
-         /*--------------------------- pass function pointers to solver */ 
+         /*--------------------------- pass function pointers to solver */
          err=HYPRE_BiCGSTABSetPrecond(parcsr->solver,
                                      (HYPRE_PtrToSolverFcn) HYPRE_ParaSailsSolve,
                                      (HYPRE_PtrToSolverFcn) HYPRE_ParaSailsSetup,
@@ -214,7 +214,7 @@ case 1:
       case hypreprec_amg:
          /*-------------------------------------- create preconditioner */
          hypre_create_precond_boomeramg(&(parcsr->precond),actintra,hyprevars);
-         /*--------------------------- pass function pointers to solver */ 
+         /*--------------------------- pass function pointers to solver */
          err=HYPRE_BiCGSTABSetPrecond(parcsr->solver,
                                       (HYPRE_PtrToSolverFcn) HYPRE_BoomerAMGSolve,
                                       (HYPRE_PtrToSolverFcn) HYPRE_BoomerAMGSetup,
@@ -249,7 +249,7 @@ case 1:
       case hypreprec_euclid:
          /*-------------------------------------- create preconditioner */
          hypre_create_precond_euclid(&(parcsr->precond),actintra,hyprevars);
-         /*--------------------------- pass function pointers to solver */     
+         /*--------------------------- pass function pointers to solver */
          err=HYPRE_PCGSetPrecond(parcsr->solver,
                                  (HYPRE_PtrToSolverFcn) HYPRE_EuclidSolve,
                                  (HYPRE_PtrToSolverFcn) HYPRE_EuclidSetup,
@@ -261,7 +261,7 @@ case 1:
       case hypreprec_parasails:
          /*-------------------------------------- create preconditioner */
          hypre_create_precond_parasails(&(parcsr->precond),actintra,hyprevars);
-         /*--------------------------- pass function pointers to solver */ 
+         /*--------------------------- pass function pointers to solver */
          err=HYPRE_PCGSetPrecond(parcsr->solver,
                                  (HYPRE_PtrToSolverFcn) HYPRE_ParaSailsSolve,
                                  (HYPRE_PtrToSolverFcn) HYPRE_ParaSailsSetup,
@@ -273,7 +273,7 @@ case 1:
       case hypreprec_amg:
          /*-------------------------------------- create preconditioner */
          hypre_create_precond_boomeramg(&(parcsr->precond),actintra,hyprevars);
-         /*--------------------------- pass function pointers to solver */ 
+         /*--------------------------- pass function pointers to solver */
          err=HYPRE_PCGSetPrecond(parcsr->solver,
                                  (HYPRE_PtrToSolverFcn) HYPRE_BoomerAMGSolve,
                                  (HYPRE_PtrToSolverFcn) HYPRE_BoomerAMGSetup,
@@ -321,7 +321,7 @@ case 0:
    hypre_vector_create(myrank,parcsr,actintra,&ijvector_sol);
    /*--------------------------------------put values to the rhs vector */
    err=HYPRE_IJVectorSetValues(ijvector_rhs,rhs->numeq,parcsr->perm.a.ia[myrank],rhs->vec.a.dv);
-   if (err) dserror("error in setting up solver package HYPRE");                           
+   if (err) dserror("error in setting up solver package HYPRE");
    /*-------------------------------- finalize rhs and sol for solution */
    hypre_vector_assemble(&ijvector_rhs,&parcsr_vector_rhs);
    hypre_vector_assemble(&ijvector_sol,&parcsr_vector_sol);
@@ -340,13 +340,13 @@ case 0:
       err=0;
       /*-------------------------------------------------- setup solver */
       err+=HYPRE_BoomerAMGSetup(parcsr->solver,parcsr_matrix,parcsr_vector_rhs,parcsr_vector_sol);
-      if (err) dserror("error in calling solver package HYPRE");     
-      /*-------------------------------------------- Yes, finally solve */                      
+      if (err) dserror("error in calling solver package HYPRE");
+      /*-------------------------------------------- Yes, finally solve */
       err=HYPRE_BoomerAMGSolve(parcsr->solver,parcsr_matrix,parcsr_vector_rhs,parcsr_vector_sol);
-      if (err && myrank==0) 
+      if (err && myrank==0)
       {
-         printf("RANK %d: error or noconvergence in calling solver BoomerAMG\n",myrank);     
-         fprintf(allfiles.out_err,"RANK %d: error or noconvergence in calling solver BoomerAMG\n",myrank); 
+         printf("RANK %d: error or noconvergence in calling solver BoomerAMG\n",myrank);
+         fprintf(allfiles.out_err,"RANK %d: error or noconvergence in calling solver BoomerAMG\n",myrank);
          fflush(stdout);
       }
       /*---------- get number of iterations and final relative residual */
@@ -399,14 +399,14 @@ case 0:
          dserror("Unknown type of preconditioner for HYPRE solver");
       }
       /*----------------------------------------------------------------*/
-      if (err) dserror("error in calling solver package HYPRE");     
-      /*-------------------------------------------- Yes, finally solve */                      
+      if (err) dserror("error in calling solver package HYPRE");
+      /*-------------------------------------------- Yes, finally solve */
       err=HYPRE_ParCSRGMRESSolve(parcsr->solver,parcsr_matrix,parcsr_vector_rhs,
                                  parcsr_vector_sol);
-      if (err) 
+      if (err)
       {
-         printf("RANK %d: error or noconvergence in calling solver GMRES\n",myrank);     
-         fprintf(allfiles.out_err,"RANK %d: error or noconvergence in calling solver EuclidCG\n",myrank); 
+         printf("RANK %d: error or noconvergence in calling solver GMRES\n",myrank);
+         fprintf(allfiles.out_err,"RANK %d: error or noconvergence in calling solver EuclidCG\n",myrank);
          fflush(stdout);
       }
       /*---------- get number of iterations and final relative residual */
@@ -420,7 +420,7 @@ case 0:
          fprintf(allfiles.out_err,"ParCG: Numiterations=%d ResidualNorm=%E\n",hyprevars->numiter,hyprevars->resnorm);
       }
       /*----------------------------------------------------------------*/
-      if (err) dserror("error in calling solver package HYPRE");     
+      if (err) dserror("error in calling solver package HYPRE");
    break;
    /*===================================================== end of GMRES */
 
@@ -471,16 +471,16 @@ case 0:
          dserror("Unknown type of preconditioner for HYPRE solver");
       }
       /*----------------------------------------------------------------*/
-      if (err) dserror("error in calling solver package HYPRE");     
-      /*-------------------------------------------- Yes, finally solve */                      
+      if (err) dserror("error in calling solver package HYPRE");
+      /*-------------------------------------------- Yes, finally solve */
       err=HYPRE_BiCGSTABSolve(parcsr->solver,
                               (HYPRE_Matrix)parcsr_matrix,
                               (HYPRE_Vector)parcsr_vector_rhs,
                               (HYPRE_Vector)parcsr_vector_sol);
-      if (err) 
+      if (err)
       {
-         printf("RANK %d: error or noconvergence in calling solver BiCGStab\n",myrank);     
-         fprintf(allfiles.out_err,"RANK %d: error or noconvergence in calling solver EuclidCG\n",myrank); 
+         printf("RANK %d: error or noconvergence in calling solver BiCGStab\n",myrank);
+         fprintf(allfiles.out_err,"RANK %d: error or noconvergence in calling solver EuclidCG\n",myrank);
          fflush(stdout);
       }
       /*---------- get number of iterations and final relative residual */
@@ -494,7 +494,7 @@ case 0:
          fprintf(allfiles.out_err,"ParCG: Numiterations=%d ResidualNorm=%E\n",hyprevars->numiter,hyprevars->resnorm);
       }
       /*----------------------------------------------------------------*/
-      if (err) dserror("error in calling solver package HYPRE");     
+      if (err) dserror("error in calling solver package HYPRE");
    break;
    /*================================================== end of BiCGStab */
 
@@ -536,14 +536,14 @@ case 0:
          dserror("Unknown type of preconditioner for HYPRE solver");
       }
       /*----------------------------------------------------------------*/
-      if (err) dserror("error in calling solver package HYPRE");     
-      /*-------------------------------------------- Yes, finally solve */                      
+      if (err) dserror("error in calling solver package HYPRE");
+      /*-------------------------------------------- Yes, finally solve */
       err=HYPRE_ParCSRPCGSolve(parcsr->solver,parcsr_matrix,parcsr_vector_rhs,
                                parcsr_vector_sol);
-      if (err) 
+      if (err)
       {
-         printf("RANK %d: error or noconvergence in calling solver EuclidCG\n",myrank);     
-         fprintf(allfiles.out_err,"RANK %d: error or noconvergence in calling solver EuclidCG\n",myrank); 
+         printf("RANK %d: error or noconvergence in calling solver EuclidCG\n",myrank);
+         fprintf(allfiles.out_err,"RANK %d: error or noconvergence in calling solver EuclidCG\n",myrank);
          fflush(stdout);
       }
       /*---------- get number of iterations and final relative residual */
@@ -557,7 +557,7 @@ case 0:
          fprintf(allfiles.out_err,"ParCG: Numiterations=%d ResidualNorm=%E\n",hyprevars->numiter,hyprevars->resnorm);
       }
       /*----------------------------------------------------------------*/
-      if (err) dserror("error in calling solver package HYPRE");     
+      if (err) dserror("error in calling solver package HYPRE");
    break;
    /*======================================================== end of CG */
 
@@ -590,7 +590,7 @@ case 0:
                                ijvector_sol,
                                sol->numeq,
                                parcsr->perm.a.ia[myrank],
-                               sol->vec.a.dv 
+                               sol->vec.a.dv
                               );
     /*------------------------------------- destroy the solution object */
    err=HYPRE_IJVectorDestroy(ijvector_sol);
@@ -609,10 +609,10 @@ break;
 /*======================================================================*/
 default:
    dserror("Unknown option for solver call to HYPRE");
-break;   
+break;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -633,7 +633,7 @@ void hypre_vector_create(INT              myrank,
 INT err=0;
 INT ilower,iupper;
 INT jlower,jupper;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("hypre_vector_create");
 #endif
 /*----------------------------------------------------------------------*/
@@ -646,7 +646,7 @@ err+=HYPRE_IJVectorSetObjectType(*ijvector,HYPRE_PARCSR);
 err+=HYPRE_IJVectorInitialize(*ijvector);
 if (err) dserror("Creation of HYPRE vector failed");
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -662,7 +662,7 @@ void hypre_vector_assemble(HYPRE_IJVector  *ijvector,
                              HYPRE_ParVector *parcsr_vector)
 {
 INT err=0;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("hypre_vector_assemble");
 #endif
 /*----------------------------------------------------------------------*/
@@ -670,7 +670,7 @@ err+=HYPRE_IJVectorAssemble(*ijvector);
 err+=HYPRE_IJVectorGetObject(*ijvector,(void**)parcsr_vector);
 if (err) dserror("Assembly of HYPRE vector failed");
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -690,7 +690,7 @@ void hypre_matrix_create(INT              myrank,
 INT err=0;
 INT ilower,iupper;
 INT jlower,jupper;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("hypre_matrix_create");
 #endif
 /*----------------------------------------------------------------------*/
@@ -704,7 +704,7 @@ err+=HYPRE_IJMatrixSetObjectType(*ijmatrix,HYPRE_PARCSR);
 /*----------------------------------------------------- check for error */
 if (err) dserror("Creation of HYPRE matrix failed");
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -721,7 +721,7 @@ void hypre_matrix_assemble(HYPRE_IJMatrix     *ij_matrix,
                              HYPRE_ParCSRMatrix *parcsr_matrix)
 {
 INT err=0;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("hypre_matrix_assemble");
 #endif
 /*----------------------------------------------------------------------*/
@@ -729,7 +729,7 @@ err+=HYPRE_IJMatrixAssemble(*ij_matrix);
 err+=HYPRE_IJMatrixGetObject(*ij_matrix,(void**)parcsr_matrix);
 if (err) dserror("Assembly of HYPRE matrix failed");
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -749,7 +749,7 @@ INT i;
 INT err=0;
 INT gridrelaxtype[4];
 INT gridnsweep[4];
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("hypre_solver_set_params_boomeramg");
 #endif
 /*----------------------------------------------------------------------*/
@@ -784,9 +784,9 @@ err+=HYPRE_BoomerAMGSetNumGridSweeps(*solver,gridnsweep);
 /*------------------------------------ set type of coarsening algorithm */
 err+=HYPRE_BoomerAMGSetCoarsenType(*solver,0);
 /*----------------------------------------------------------------------*/
-if (err) dserror("error in calling solver package HYPRE");   
+if (err) dserror("error in calling solver package HYPRE");
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -803,7 +803,7 @@ void hypre_set_params_gmres_solver(HYPRE_Solver *solver,HYPREVARS *hyprevars)
 {
 INT i;
 INT err=0;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("hypre_set_params_gmres_solver");
 #endif
 /*----------------------------------------------------------------------*/
@@ -819,9 +819,9 @@ else
 /*--------------------------------------------- set size of krylovspace */
 err+=HYPRE_ParCSRGMRESSetKDim(*solver,hyprevars->kryldim);
 /*----------------------------------------------------------------------*/
-if (err) dserror("error in calling solver package HYPRE");   
+if (err) dserror("error in calling solver package HYPRE");
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -838,7 +838,7 @@ void hypre_set_params_bicgstab_solver(HYPRE_Solver *solver,HYPREVARS *hyprevars)
 {
 INT i;
 INT err=0;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("hypre_set_params_bicgstab_solver");
 #endif
 /*----------------------------------------------------------------------*/
@@ -852,9 +852,9 @@ if (hyprevars->io)
 else
    err+=HYPRE_BiCGSTABSetLogging(*solver,0);
 /*----------------------------------------------------------------------*/
-if (err) dserror("error in calling solver package HYPRE");   
+if (err) dserror("error in calling solver package HYPRE");
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -871,7 +871,7 @@ void hypre_set_params_pcg_solver(HYPRE_Solver *solver,HYPREVARS *hyprevars)
 {
 INT i;
 INT err=0;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("hypre_set_params_pcg_solver");
 #endif
 /*----------------------------------------------------------------------*/
@@ -887,9 +887,9 @@ if (hyprevars->io)
 else
    err+=HYPRE_ParCSRPCGSetLogging(*solver,0);
 /*----------------------------------------------------------------------*/
-if (err) dserror("error in calling solver package HYPRE");   
+if (err) dserror("error in calling solver package HYPRE");
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -908,7 +908,7 @@ INT    i;
 INT    err=0;
 INT    numarg;
 char **args;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("hypre_create_precond_euclid");
 #endif
 /*----------------------------------------------------------------------*/
@@ -917,7 +917,7 @@ err+=HYPRE_EuclidCreate(actintra->MPI_INTRA_COMM,precond);
 numarg=4;
 args = (char**)CCACALLOC(numarg,sizeof(char*));
 if (!args) dserror("Allocation for Euclid failed");
-for (i=0; i<numarg; i++) 
+for (i=0; i<numarg; i++)
 {
    args[i] = (char*)CCACALLOC(15,sizeof(char));
    if (!args[i]) dserror("Allocation for Euclid failed");
@@ -943,9 +943,9 @@ err+=HYPRE_EuclidSetParams(*precond,numarg,args);
 for (i=0; i<numarg; i++) CCAFREE(args[i]);
 CCAFREE(args);
 /*----------------------------------------------------------------------*/
-if (err) dserror("error in calling solver package HYPRE");   
+if (err) dserror("error in calling solver package HYPRE");
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -958,12 +958,12 @@ return;
 /*----------------------------------------------------------------------*
  |  create preconditioner parasails and set parameters       m.gee 10/01|
  *----------------------------------------------------------------------*/
-void hypre_create_precond_parasails(HYPRE_Solver *precond, INTRA *actintra, 
+void hypre_create_precond_parasails(HYPRE_Solver *precond, INTRA *actintra,
                                       HYPREVARS *hyprevars)
 {
 INT    i;
 INT    err=0;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("hypre_create_precond_parasails");
 #endif
 /*----------------------------------------------------------------------*/
@@ -977,9 +977,9 @@ err+=HYPRE_ParaSailsSetParams(*precond,hyprevars->parathresh,
 /*--------------------------------------------------------------set I/O */
 if (hyprevars->io) err+=HYPRE_ParaSailsSetLogging(*precond,1);
 /*----------------------------------------------------------------------*/
-if (err) dserror("error in calling solver package HYPRE");   
+if (err) dserror("error in calling solver package HYPRE");
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -992,16 +992,16 @@ return;
 /*----------------------------------------------------------------------*
  |  create preconditioner boomeramg and set parameters       m.gee 10/01|
  *----------------------------------------------------------------------*/
-void hypre_create_precond_boomeramg(HYPRE_Solver *precond, INTRA *actintra, 
+void hypre_create_precond_boomeramg(HYPRE_Solver *precond, INTRA *actintra,
                                       HYPREVARS *hyprevars)
 {
 INT    i;
 INT    err=0;
 INT    gridrelaxtype[4];
 INT    gridnsweep[4];
-#ifdef DEBUG  
+#ifdef DEBUG
 dstrc_enter("hypre_create_precond_boomeramg");
-#endif 
+#endif
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------- create preconditioner */
 err+=HYPRE_BoomerAMGCreate(precond);
@@ -1028,9 +1028,9 @@ err+=HYPRE_BoomerAMGSetCoarsenType(*precond,0);
 /*------------------------------------------------------------- set tol */
 err+=HYPRE_BoomerAMGSetTol(*precond,0.0);
 /*----------------------------------------------------------------------*/
-if (err) dserror("error in calling solver package HYPRE");   
+if (err) dserror("error in calling solver package HYPRE");
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

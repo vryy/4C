@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -15,7 +15,7 @@ Maintainer: Malte Neumann
 \brief the tracing variable
 
 <pre>                                                         m.gee 8/00
-defined in pss_ds.c, declared in tracing.h                                                  
+defined in pss_ds.c, declared in tracing.h
 </pre>
 *----------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -33,7 +33,7 @@ extern struct _GENPROB  genprob;
 void ntaini(INT argc, char *argv[])
 {
 /*---------------------------------------------------initialize tracing */
-#ifdef DEBUG 
+#ifdef DEBUG
 dsinit();
 #endif
 /*---------------------------------------------- initialise warnings ---*/
@@ -41,12 +41,12 @@ dswarning(0,0);
 /*-------------------------------------------------------initialize I/O */
 ntadev(argc,argv);
 /*------------------------------------------initialize free-field-input */
-frinit(); 
+frinit();
 
 /* because there is no dstrc_enter to this routine, the dstrc_exit has to
    be done 'by hand'
 */
-#ifdef DEBUG 
+#ifdef DEBUG
 trace.actroutine->dsroutcontrol=dsout;
 trace.actroutine = trace.actroutine->prev;
 trace.deepness--;

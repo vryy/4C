@@ -1,9 +1,9 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 
- - mat_el_orth: which calculates the constitutive matrix for a linear 
-                elastic, orthotropic material formulated in cartesian 
-                coordinate system, 
+\brief contains the routine
+ - mat_el_orth: which calculates the constitutive matrix for a linear
+                elastic, orthotropic material formulated in cartesian
+                coordinate system,
                 general 3D with the sorting [11,22,33,12,23,13]
 
 <pre>
@@ -18,12 +18,12 @@ Maintainer: Stefan Hartmann
 #include "../headers/standardtypes.h"
 #include "mat_prototypes.h"
 
-/*! 
-\addtogroup MAT 
-*//*! @{ (documentation module open)*/ 
+/*!
+\addtogroup MAT
+*//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief consitutive matrix for a linear elastic orthotropic material                                    
+\brief consitutive matrix for a linear elastic orthotropic material
 
 <pre>                                                            sh 03/03
 This routine calculates the constitutive matrix for a linear elastic,
@@ -33,13 +33,13 @@ with the following sorting of stresses and strains:
 "brick" [11,22,33,12,23,13]
 </pre>
 \param  DOUBLE    emod1,..   (i)  youngs modulus in different directions
-\param  DOUBLE    xnue23,..  (i)  poisons ratio ..               
-\param  DOUBLE    gmod12,..  (i)  shear modulus ..        
-\param  DOUBLE  **d          (o)  constitutive matrix                 
+\param  DOUBLE    xnue23,..  (i)  poisons ratio ..
+\param  DOUBLE    gmod12,..  (i)  shear modulus ..
+\param  DOUBLE  **d          (o)  constitutive matrix
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling: ---; called by: 
+\return void
+\sa calling: ---; called by:
 
 *----------------------------------------------------------------------*/
 void mat_el_orth(DOUBLE    emod1,
@@ -57,7 +57,7 @@ DOUBLE xnue21,xnue32,xnue31;
 DOUBLE emod;
 DOUBLE delta;
 /*---------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mat_el_orth");
 #endif
 /*----------------------------------- 3D-MATERIALTENSOR (ORTHOTROPIC) --*/
@@ -110,7 +110,7 @@ d[5][3]=0.0;
 d[5][4]=0.0;
 d[5][5]=gmod13;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

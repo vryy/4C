@@ -2,7 +2,7 @@
 
 /*!---------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Michael Gee
@@ -16,57 +16,57 @@ Maintainer: Michael Gee
 #ifndef SOLVER_MLPCG_PROTOTYPES_H
 #define SOLVER_MLPCG_PROTOTYPES_H
 
-void bdcsr_numeq(FIELD         *actfield, 
-                 PARTITION     *actpart, 
+void bdcsr_numeq(FIELD         *actfield,
+                 PARTITION     *actpart,
                  SOLVAR        *actsolv,
                  INTRA         *actintra,
                  INT           *numeq);
-void bdcsr_update(FIELD          *actfield, 
-                  PARTITION      *actpart, 
+void bdcsr_update(FIELD          *actfield,
+                  PARTITION      *actpart,
                   SOLVAR         *actsolv,
                   INTRA          *actintra,
                   DBCSR          *bdcsr);
-void  bdcsr_nnz_topology(FIELD         *actfield, 
-                         PARTITION     *actpart, 
+void  bdcsr_nnz_topology(FIELD         *actfield,
+                         PARTITION     *actpart,
                          SOLVAR        *actsolv,
                          INTRA         *actintra,
                          DBCSR         *bdcsr,
                          INT          **dof_connect);
-void bdcsr_make_csr(FIELD         *actfield, 
-                    PARTITION     *actpart, 
+void bdcsr_make_csr(FIELD         *actfield,
+                    PARTITION     *actpart,
                     SOLVAR        *actsolv,
                     DBCSR         *bdcsr,
                     INT          **dof_connect);
 void mask_bdcsr(
-    FIELD         *actfield, 
-    PARTITION     *actpart, 
+    FIELD         *actfield,
+    PARTITION     *actpart,
     SOLVAR        *actsolv,
-    INTRA         *actintra, 
+    INTRA         *actintra,
     struct _DBCSR         *bdcsr);
-void mlpcg_pcg(DBCSR       *bdcsr, 
+void mlpcg_pcg(DBCSR       *bdcsr,
                DIST_VECTOR *sol,
                DIST_VECTOR *rhs,
                DOUBLE      *D,
                INTRA       *actintra);
 void mlpcg_solver_init(
-    struct _DBCSR       *bdcsr, 
+    struct _DBCSR       *bdcsr,
     DIST_VECTOR *sol,
     DIST_VECTOR *rhs,
     INTRA       *actintra);
 void mlpcg_sym_scale1(struct _DBCSR       *bdcsr,
-                     struct _DIST_VECTOR *rhs, 
+                     struct _DIST_VECTOR *rhs,
                      DOUBLE              *D,
                      struct _INTRA       *actintra);
 void mlpcg_sym_scale2(struct _DBCSR       *bdcsr,
-                     struct _DIST_VECTOR *sol, 
+                     struct _DIST_VECTOR *sol,
                      DOUBLE              *D,
-                     struct _INTRA       *actintra); 
+                     struct _INTRA       *actintra);
 void mlpcg_sym_scale3(struct _DBCSR       *bdcsr,
-                     DOUBLE              *r, 
+                     DOUBLE              *r,
                      DOUBLE              *D,
                      struct _INTRA       *actintra);
 void mlpcg_solver_create(
-    struct _DBCSR       *bdcsr, 
+    struct _DBCSR       *bdcsr,
     DIST_VECTOR *sol,
     DIST_VECTOR *rhs,
     MLPCGVARS   *mlpcgvars);
@@ -83,7 +83,7 @@ void solver_mlpcg(struct _SOLVAR         *actsolv,
                   struct _DIST_VECTOR    *sol,
                   struct _DIST_VECTOR    *rhs,
                   INT                     option);
-void mlpcg_precond_create(DBCSR     *bdcsr, 
+void mlpcg_precond_create(DBCSR     *bdcsr,
                           MLPCGVARS *mlpcgvars,
                           INTRA     *actintra);
 void mlpcg_precond_init(DBCSR  *bdcsr,MLPCGVARS *mlpcgvars, INTRA *actintra);
@@ -91,7 +91,7 @@ void mlpcg_precond_restrictK(MLLEVEL  *actlev, MLLEVEL *nextlev, INTRA *actintra
 void mlpcg_precond_getdirs(void);
 void mlpcg_precond_aggsetdofs(MLLEVEL *actlev,INT numdf, INTRA *actintra);
 void mlpcg_precond_agg(MLLEVEL *actlev,INTRA *actintra);
-void mlpcg_precond_getneightoagg(INT **neighblock, 
+void mlpcg_precond_getneightoagg(INT **neighblock,
                                  INT  *bpatch[],
                                  INT   nbpatch,
                                  INT **freeblock,
@@ -109,13 +109,13 @@ void mlpcg_precond_getfreenblocks(INT  *actblock,
                                   INT  *update,
                                   INT  *ia,
                                   INT  *ja);
-void mlpcg_matvec(DOUBLE       *y, 
+void mlpcg_matvec(DOUBLE       *y,
                   DBCSR        *A,
                   DOUBLE       *x,
                   DOUBLE        fac,
                   INT           init,
                   INTRA        *actintra);
-void mlpcg_matvec_init(DBCSR       *bdcsr, 
+void mlpcg_matvec_init(DBCSR       *bdcsr,
                        INTRA       *actintra);
 void mlpcg_matvec_uninit(DBCSR       *bdcsr);
 void mlpcg_vecvec(DOUBLE *scalar, DOUBLE *x, DOUBLE *y, const INT dim, INTRA *actintra);
@@ -155,13 +155,13 @@ void mlpcg_csr_open(DBCSR*  csr,
                     INTRA  *actintra);
 void mlpcg_renumberdofs(INT            myrank,
                         INT            nproc,
-                        FIELD         *actfield, 
-                        PARTDISCRET   *actpdiscret, 
+                        FIELD         *actfield,
+                        PARTDISCRET   *actpdiscret,
                         INTRA         *actintra,
                         DBCSR         *bdcsr,
 			INT            dis);
 
-void mlpcg_extractcollocal(DBCSR *P, INT actcol, DOUBLE *col, 
+void mlpcg_extractcollocal(DBCSR *P, INT actcol, DOUBLE *col,
                            INT *rcol, INT *nrow);
 void mlpcg_csr_open(DBCSR*  matrix,
                     INT     firstdof,
@@ -175,14 +175,14 @@ void mlpcg_csr_setblock(DBCSR*   matrix,
                         DOUBLE   block[][500],
                         INT     *rindex,
                         INT     *cindex,
-                        INT      nrow, 
+                        INT      nrow,
                         INT      ncol,
                         INTRA   *actintra);
 void mlpcg_csr_addblock(DBCSR*   matrix,
                         DOUBLE   block[][500],
                         INT     *rindex,
                         INT     *cindex,
-                        INT      nrow, 
+                        INT      nrow,
                         INT      ncol,
                         INTRA   *actintra);
 void mlpcg_csr_addentry(DBCSR*   matrix,
@@ -230,7 +230,7 @@ void mlpcg_csr_setentry_overlap(DBCSR*   matrix,
                                 INT     rindex,
                                 INT     cindex,
                                 INTRA   *actintra);
-void mlpcg_matvec_asm_overlap(DOUBLE       *y, 
+void mlpcg_matvec_asm_overlap(DOUBLE       *y,
                               DBCSR        *A,
                               DOUBLE       *x,
                               DOUBLE        fac,
@@ -250,7 +250,7 @@ void mlpcg_extractcollocal_init(DBCSR    *matrix,
                                 INT      *sizes,
                                 INT    ***icol,
                                 DOUBLE ***dcol);
-void mlpcg_extractcollocal_fast(DBCSR *matrix, INT actcol, 
+void mlpcg_extractcollocal_fast(DBCSR *matrix, INT actcol,
                                 DOUBLE **col,INT **rcol, INT *size, INT *nrow,
                                 INT *sizes, INT ***icol, DOUBLE ***dcol);
 void mlpcg_extractcollocal_uninit(DBCSR    *matrix,
@@ -262,9 +262,9 @@ void mlpcg_precond_PtKP(DBCSR *P, DBCSR *incsr, DBCSR *outcsr, DBCSR *work,
 void mlpcg_precond_presmo(DOUBLE *z, DOUBLE *r, DBCSR *csr, MLLEVEL *lev, INTRA *actintra, INT level);
 void mlpcg_precond_postsmo(DOUBLE *z, DOUBLE *r, DBCSR *csr, MLLEVEL *lev, INTRA *actintra, INT level);
 void mlpcg_precond_coarsesolv(DOUBLE *z, DOUBLE *r, MLLEVEL *lev, INTRA *actintra);
-void mlpcg_precond_prolongz(DOUBLE *zc, DOUBLE *z, DBCSR *P, DBCSR *coarsecsr, 
+void mlpcg_precond_prolongz(DOUBLE *zc, DOUBLE *z, DBCSR *P, DBCSR *coarsecsr,
                             INTRA *actintra);
-void mlpcg_precond_restrictr(DOUBLE *rc, DOUBLE *r, DBCSR *P, DBCSR *coarsecsr, 
+void mlpcg_precond_restrictr(DOUBLE *rc, DOUBLE *r, DBCSR *P, DBCSR *coarsecsr,
                             INTRA *actintra);
 void mlpcg_precond_check_fcd(DBCSR *matrix, INTRA *actintra);
 void mlpcg_precond_checkdirich(DBCSR *matrix, INTRA *actintra);
@@ -280,7 +280,7 @@ void mlpcg_precond_amgVW(INT    level,
                          INTRA *actintra,
                          INT   *gamma);
 void mlpcg_printvec(INT          iter,
-                   DOUBLE      *z, 
+                   DOUBLE      *z,
                    DBCSR*       csr,
                    DISCRET     *fielddis,
                    PARTDISCRET *partdis,

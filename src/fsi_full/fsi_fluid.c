@@ -10,7 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
+/*!
 \addtogroup FSI
 *//*! @{ (documentation module open)*/
 #ifdef D_FSI
@@ -36,7 +36,7 @@ extern struct _SOLVAR  *solv;
 
 <pre>                                                         m.gee 8/00
 -the partition of one proc (all discretizations)
--the type is in partition.h                                                  
+-the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -52,18 +52,18 @@ extern struct _IO_FLAGS     ioflags;
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par;                      
+ extern struct _PAR   par;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate dynamic variables if needed                      |
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 02/02    |
  | number of load curves numcurve                                       |
@@ -81,9 +81,9 @@ extern struct _CURVE *curve;
  | defined globally in global_calelm.c                                  |
  *----------------------------------------------------------------------*/
 extern enum _CALC_ACTION calc_action[MAXFIELD];
- 
-/*!---------------------------------------------------------------------                                         
-\brief implicit and semi-implicit algorithms for 
+
+/*!---------------------------------------------------------------------
+\brief implicit and semi-implicit algorithms for
        multifield fluid problems
 
 <pre>                                                         genk 09/02
@@ -91,20 +91,20 @@ extern enum _CALC_ACTION calc_action[MAXFIELD];
 this functions solves the fluid within a multifield problem in an
 ALE-framework. The mesh velocity is determined based on the displacements
 of the mesh (fsi_ale()).
-			     
-</pre>   
+
+</pre>
 
 \param *fsidyn   FSI_DYNAMIC                                 (i)
 \param *actfield FIELD            actual field               (i)
 \param  mctrl    INT              evaluation flag            (i)
 \param  numff    INT              number of fluid field      (i)
-\return void 
+\return void
 \warning up to now only the One-Step-Theta scheme combined with a
-fixed-point-like iteration scheme is tested! 
+fixed-point-like iteration scheme is tested!
 
 ------------------------------------------------------------------------*/
 void fsi_fluid(
-		       FIELD          *actfield, 
+		       FIELD          *actfield,
 		       INT             mctrl
 	      )
 {
@@ -142,11 +142,11 @@ static ARRAY           time_a;             /* stored time                      *
 static ARRAY           totarea_a;
 static DOUBLE         *totarea;
 static CONTAINER       container;          /* variables for calelm             */
-static FLUID_STRESS    str;  
+static FLUID_STRESS    str;
 static FLUID_DYNAMIC  *fdyn;               /* fluid dynamic variables   */
 static FSI_DYNAMIC    *fsidyn;             /* fsi dynamic variables     */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fsi_fluid");
 #endif
 
@@ -155,7 +155,7 @@ switch (mctrl)
 /*======================================================================*
  |                      I N I T I A L I S A T I O N                     |
  *======================================================================*/
-case 1: 
+case 1:
 numff  = genprob.numff;
 fdyn   = alldyn[numff].fdyn;
 fsidyn = alldyn[genprob.numaf+1].fsidyn;
@@ -164,10 +164,10 @@ fdyn->dt=fsidyn->dt;
 fdyn->maxtime=fsidyn->maxtime;
 fdyn->nstep=fsidyn->nstep;
 grat=ZERO;
-dsassert(fdyn->iop==4,"TIMEINTEGR for fluid: only ONE-STEP-THETA implemented!\n"); 
+dsassert(fdyn->iop==4,"TIMEINTEGR for fluid: only ONE-STEP-THETA implemented!\n");
 /*------------------------------------------ initialiase some counters */
 outstep=0;
-pssstep=0;  
+pssstep=0;
 restartstep=0;
 /*--------------------------------------------------- set some pointers */
 /*---------------------------- only valid for single field problem !!!! */
@@ -184,9 +184,9 @@ fdyn->acttime=ZERO;
 if (fdyn->freesurf==5)
    fdyn->hf_stab=0;
 
-/*---------------- if we are not parallel, we have to allocate an alibi * 
+/*---------------- if we are not parallel, we have to allocate an alibi *
   ---------------------------------------- intra-communicator structure */
-#ifdef PARALLEL 
+#ifdef PARALLEL
 actintra    = &(par.intra[numff]);
 #else
 actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
@@ -218,11 +218,11 @@ actsolv->nrhs = 1;
 solserv_create_vec(&(actsolv->rhs),actsolv->nrhs,numeq_total,numeq,"DV");
 solserv_zero_vec(&(actsolv->rhs[0]));
 
-/*------------------------------------------- allocate 1 dist. solution */		       
+/*------------------------------------------- allocate 1 dist. solution */
 actsolv->nsol= 1;
 solserv_create_vec(&(actsolv->sol),actsolv->nsol,numeq_total,numeq,"DV");
 solserv_zero_vec(&(actsolv->sol[0]));
-                                     
+
 /*--------------- allocate one redundant vector ftimerhs of full lenght */
 /*        this is used by the element routines to assemble the  Time RHS*/
 ftimerhs = amdef("ftimerhs",&ftimerhs_a,numeq_total,1,"DV");
@@ -236,7 +236,7 @@ amdef("time",&time_a,1000,1,"DV");
 
 /*--------------------------- allocate one vector for storing the area */
 if (fdyn->checkarea>0)
-{ 
+{
    totarea = amdef("area",&totarea_a,fdyn->itemax,1,"DV");
    amzero(&totarea_a);
 }
@@ -251,18 +251,18 @@ if (restart>0)
       fdyn->init=2;
    }
 }
-fluid_init(actpart,actintra,actfield,action,&container,7,str);		     
-actpos=0;   
+fluid_init(actpart,actintra,actfield,action,&container,7,str);
+actpos=0;
 
 /*-------------------------------------- init the dirichlet-conditions */
 fluid_initdirich(actfield);
 
 /*---------------------------------- initialize solver on all matrices */
 /*
-NOTE: solver init phase has to be called with each matrix one wants to 
+NOTE: solver init phase has to be called with each matrix one wants to
       solve with. Solver init phase has to be called with all matrices
       one wants to do matrix-vector products and matrix scalar products.
-      This is not needed by all solver libraries, but the solver-init 
+      This is not needed by all solver libraries, but the solver-init
       phase is cheap in computation (can be costly in memory)
 */
 /*--------------------------------------------------- initialize solver */
@@ -273,7 +273,7 @@ solver_control(actsolv, actintra,
                &(actsolv->sol[0]),
                &(actsolv->rhs[0]),
                init);
-	       
+
 /*------------------------------------- init the assembly for stiffness */
 init_assembly(actpart,actsolv,actintra,actfield,actsysarray,0);
 
@@ -294,7 +294,7 @@ MPI_Barrier(actintra->MPI_INTRA_COMM);
 #endif
 for (i=0;i<par.nprocs;i++)
 if (par.myrank==i)
-printf("PROC  %3d | FIELD FLUID     | number of equations      : %10d \n", 
+printf("PROC  %3d | FIELD FLUID     | number of equations      : %10d \n",
         par.myrank,numeq);
 #ifdef PARALLEL
 MPI_Barrier(actintra->MPI_INTRA_COMM);
@@ -304,7 +304,7 @@ printf("          | FIELD FLUID     | total number of equations: %10d \n",numeq_
 if (par.myrank==0) printf("\n\n");
 
 /*--------------------------------- initialise height function solution */
-if (fdyn->freesurf==3) 
+if (fdyn->freesurf==3)
 fluid_heightfunc(1,&grat,actfield,actpart,actintra,action,
                  &container,converged);
 
@@ -387,7 +387,7 @@ if (fdyn->step<=(fdyn->nums+1))
 fluid_tcons();
 
 /*------------------------------------------------ output to the screen */
-if (par.myrank==0) printf("Solving FLUID by One-Step-Theta ...\n"); 
+if (par.myrank==0) printf("Solving FLUID by One-Step-Theta ...\n");
 /*--------------------------------------------------------- ALE-PHASE I */
 if (fsidyn->iale==1)
 {
@@ -396,10 +396,10 @@ if (fsidyn->iale==1)
    /*---------------------------------------------- change element flag */
    fdyn->ishape=1;
    /*------------------ calculate ALE-convective velocities at time (n) */
-   fsi_aleconv(actfield,fdyn->numdf,5,1);     
+   fsi_aleconv(actfield,fdyn->numdf,5,1);
 }
 else  dserror("ALE field by function not implemented yet!\n");
- 
+
 /*--------------------- set dirichlet boundary conditions for  timestep */
 fluid_setdirich(actfield,3);
 
@@ -417,7 +417,7 @@ if (fdyn->itnorm!=fncc_no && par.myrank==0)
    }
 }
 itnum=1;
-/*======================================================================* 
+/*======================================================================*
  |               N O N L I N E A R   I T E R A T I O N                  |
  *======================================================================*/
 nonlniter:
@@ -428,13 +428,13 @@ fluid_icons(itnum);
 /*-------------------------------------------------------- ALE-PHASE II */
 if (fsidyn->iale==1)
 {
-   /*------------------ for implicit free surface we have to update the 
+   /*------------------ for implicit free surface we have to update the
      ------------------------------- grid velocity during the iteration */
    if (fdyn->freesurf>1 && itnum>1)
    {
-      fsi_alecp(actfield,fdyn->dta,fdyn->numdf,fdyn->freesurf);   
+      fsi_alecp(actfield,fdyn->dta,fdyn->numdf,fdyn->freesurf);
      /*-------------------------------------------- change element flag */
-      fdyn->ishape=1;   
+      fdyn->ishape=1;
    }
    /*--------------- calculate ale-convective velocities at  time (n+1) */
    fsi_aleconv(actfield,fdyn->numdf,6,3);
@@ -442,7 +442,7 @@ if (fsidyn->iale==1)
 else  dserror("ALE field by function not implemented yet!\n");
 
 /*--------------------------------- calculate curvature at free surface */
-if (fdyn->surftens!=0) 
+if (fdyn->surftens!=0)
 {
    *action = calc_fluid_curvature;
    fluid_curvature(actfield,actpart,actintra,action);
@@ -472,7 +472,7 @@ container.is_relax     = 0;
 calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,
        &container,action);
 te=ds_cputime()-t1;
-tes+=te;	     
+tes+=te;
 
 /*--------------------------------------------------------------------- *
  | build the actual rhs-vector:                                         |
@@ -514,7 +514,7 @@ fdyn->ishape=0;
 fluid_result_incre(actfield,actintra,&(actsolv->sol[0]),3,
                      &(actsolv->sysarray[actsysarray]),
                      &(actsolv->sysarray_typ[actsysarray]),
-		     &vrat,&prat,&grat);	     
+		     &vrat,&prat,&grat);
 
 /*---------------------------------------------------- store total area */
 if (fdyn->checkarea>0)
@@ -565,7 +565,7 @@ if (fsidyn->ifsi>0)
    calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,
           &container,action);
 
-   /* since stresses are stored locally at the element it's necassary to 
+   /* since stresses are stored locally at the element it's necassary to
       reduce them to all procs! ----------------------------------------*/
    dsassert(actsolv->parttyp==cut_elements,
    "Stress reduction for 'cut_nodes' not possible\n");
@@ -577,7 +577,7 @@ if (fsidyn->ifsi>0)
 if (fsidyn->ifsi>=4)
 break;
 
-/*======================================================================* 
+/*======================================================================*
  |                       F I N A L I S I N G                            |
  *======================================================================*/
 case 3:
@@ -601,7 +601,7 @@ container.nii          = 0;
 container.nif          = 0;
 container.nim          = 0;
 calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,
-       &container,action);   
+       &container,action);
 #endif
 /*-------------------------------------- make predictor at free surface */
 if (fdyn->freesurf>0)
@@ -611,7 +611,7 @@ if (fdyn->freesurf>0)
 fluid_cal_normal(actfield,2,action);
 
 /*------- copy solution from sol_increment[1][j] to sol_increment[0][j] */
-if (fdyn->freesurf==3 || fdyn->freesurf==5) 
+if (fdyn->freesurf==3 || fdyn->freesurf==5)
    solserv_sol_copy(actfield,0,1,1,1,0);
 
 /*------- copy solution from sol_increment[3][j] to sol_increment[1][j] */
@@ -634,11 +634,11 @@ if (pssstep==fsidyn->uppss && ioflags.fluid_vis_file==1)
    /*--------------------------------------------- store time in time_a */
    if (actpos >= time_a.fdim)
       amredef(&(time_a),time_a.fdim+100,1,"DV");
-   time_a.a.dv[actpos] = fdyn->acttime;   
+   time_a.a.dv[actpos] = fdyn->acttime;
    actpos++;
-} 
+}
 
-/*-------- copy solution from sol_increment[3][j] to sol[actpos][j]   
+/*-------- copy solution from sol_increment[3][j] to sol[actpos][j]
            and transform kinematic to real pressure --------------------*/
 solserv_sol_copy(actfield,0,1,0,3,actpos);
 fluid_transpres(actfield,0,0,actpos,fdyn->numdf-1,0);
@@ -653,7 +653,7 @@ if (outstep==fdyn->upout && ioflags.fluid_sol_file==1)
 if (restartstep==fsidyn->uprestart)
 {
    restartstep=0;
-   restart_write_fluiddyn(fdyn,actfield,actpart,actintra,action,&container);   
+   restart_write_fluiddyn(fdyn,actfield,actpart,actintra,action,&container);
 }
 
 /*---------------------------------------------------------- monitoring */
@@ -663,7 +663,7 @@ monitoring(actfield,numff,actpos,fdyn->acttime);
 fsidyn->actpos = actpos;
 
 /*--------------------------------------------------------------------- */
-break;   
+break;
 
 /*======================================================================*
  |     S O L U T I O N    F O R    S T E E P E S T    D E S C E N T     |
@@ -686,7 +686,7 @@ break;
  *======================================================================*/
 case 6:
 
-if (fsidyn->ifsi != 6) 
+if (fsidyn->ifsi != 6)
 dserror("No auxiliary fluid solution within this coupling scheme");
 
 /*- there are only procs allowed in here, that belong to the fluid -----*/
@@ -694,28 +694,28 @@ dserror("No auxiliary fluid solution within this coupling scheme");
 if (actintra->intra_fieldtyp != fluid) break;
 
 /*------------------------------ calculate constants for time algorithm */
-fluid_tcons();          
+fluid_tcons();
 
 /*------------------------------------------------ output to the screen */
-if (par.myrank==0) printf("          - Solving FLUID ...\n"); 
+if (par.myrank==0) printf("          - Solving FLUID ...\n");
 /*--------------------------------------------------------- ALE-PHASE I */
 if (fsidyn->iale!=0)
 {
   /*----------------------------------------------- change element flag */
   fdyn->ishape=1;
   /*------------------- calculate ALE-convective velocities at time (n) */
-  fsi_aleconv(actfield,fdyn->numdf,6,3);     
+  fsi_aleconv(actfield,fdyn->numdf,6,3);
 }
- 
+
 /*----------------------------------- set dirichlet boundary conditions */
 fluid_setdirich_sd(actfield);
 
 /*------------------------- calculate constants for nonlinear iteration */
 /*
-nir <->  EVALUATION OF NONLINEAR LHS N-REACTION 	    
-nil <->  EVALUATION OF LUMPED MASS MATRIX (Mvv-lumped)      
-nif <->  EVALUATION OF "TIME - RHS" (F-hat)		    
-nii <->  EVALUATION OF "ITERATION - RHS"		    
+nir <->  EVALUATION OF NONLINEAR LHS N-REACTION
+nil <->  EVALUATION OF LUMPED MASS MATRIX (Mvv-lumped)
+nif <->  EVALUATION OF "TIME - RHS" (F-hat)
+nii <->  EVALUATION OF "ITERATION - RHS"
 nis <->  STATIONARY CASE (NO TIMEDEPENDENT TERMS) */
 fdyn->nir = 0;
 fdyn->nil = 0;
@@ -724,7 +724,7 @@ fdyn->nii = 0;
 fdyn->nis = 0;
 
 /*--------------------------------- calculate curvature at free surface */
-if (fdyn->surftens!=0) 
+if (fdyn->surftens!=0)
 {
    dserror("steepest descent method with free surface not yet implemented.");
    *action = calc_fluid_curvature;
@@ -753,7 +753,7 @@ container.is_relax     = 1;
 calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,
        &container,action);
 te=ds_cputime()-t1;
-tes+=te;	     
+tes+=te;
 
 /*--------------------------------------------------------------------- *
  | build the actual rhs-vector:                                         |
@@ -791,7 +791,7 @@ solserv_result_incre(
 		     7,
 		     &(actsolv->sysarray[actsysarray]),
 		     &(actsolv->sysarray_typ[actsysarray]),
-		     0);     
+		     0);
 
 /*------------------------- calculate stresses transferred to structure */
 if (fsidyn->ifsi>0)
@@ -804,7 +804,7 @@ if (fsidyn->ifsi>0)
    calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,
           &container,action);
 
-   /* since stresses are stored locally at the element it's necassary to 
+   /* since stresses are stored locally at the element it's necassary to
       reduce them to all procs! ----------------------------------------*/
    dsassert(actsolv->parttyp==cut_elements,"Stress reduction for 'cut_nodes' not possible\n");
    fluid_reducestress(actintra,actpart,actfield,fdyn->numdf,str);
@@ -817,9 +817,9 @@ if (fsidyn->ifsi>0)
 break;
 
 
-/*======================================================================* 
+/*======================================================================*
  |                C L E A N I N G   U P   P H A S E                     |
- *======================================================================*/ 
+ *======================================================================*/
 case 99:
 /*- there are only procs allowed in here, that belong to the fluid -----*/
 /* intracommunicator (in case of nonlinear fluid. dyn., this should be all)*/
@@ -838,8 +838,8 @@ if (ioflags.fluid_vis_file==1)
       /*------------------------------------------ store time in time_a */
       if (actpos >= time_a.fdim)
       amredef(&(time_a),time_a.fdim+1000,1,"DV");
-      time_a.a.dv[actpos] = fdyn->acttime;   
-   }   
+      time_a.a.dv[actpos] = fdyn->acttime;
+   }
    if (par.myrank==0) visual_writepss(actfield,actpos+1,&time_a);
 }
 
@@ -855,9 +855,9 @@ MPI_Barrier(actintra->MPI_INTRA_COMM);
 if (par.myrank==i)
 {
 printf("\n");
-printf("PROC  %3d | FIELD FLUID     | total time element for calculations: %10.3E \n", 
+printf("PROC  %3d | FIELD FLUID     | total time element for calculations: %10.3E \n",
         par.myrank,tes);
-printf("PROC  %3d | FIELD FLUID     | total time for solver              : %10.3E \n", 
+printf("PROC  %3d | FIELD FLUID     | total time for solver              : %10.3E \n",
         par.myrank,tss);
 }
 }
@@ -865,7 +865,7 @@ printf("PROC  %3d | FIELD FLUID     | total time for solver              : %10.3
 MPI_Barrier(actintra->MPI_INTRA_COMM);
 #endif
 
-/*------------------------------------------------------------- tidy up */   
+/*------------------------------------------------------------- tidy up */
 amdel(&ftimerhs_a);
 amdel(&fiterhs_a);
 amdel(&time_a);
@@ -873,7 +873,7 @@ if (fdyn->checkarea>0) amdel(&totarea_a);
 solserv_del_vec(&(actsolv->rhs),actsolv->nrhs);
 solserv_del_vec(&(actsolv->sol),actsolv->nsol);
 
-#ifndef PARALLEL 
+#ifndef PARALLEL
 CCAFREE(actintra);
 #endif
 
@@ -882,11 +882,11 @@ default:
    dserror("Parameter out of range: mctrl \n");
 } /* end switch (mctrl) */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
-} /* end of fluid_isi */ 
+} /* end of fluid_isi */
 
 #endif
 

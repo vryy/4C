@@ -14,8 +14,8 @@ Maintainer: Baris Irhan
 #include "../headers/standardtypes.h"
 #include "../ls/ls_prototypes.h"
 #include "xfem_prototypes.h"
-/*! 
-\addtogroup XFEM 
+/*!
+\addtogroup XFEM
 *//*! @{ (documentation module open)*/
 
 
@@ -81,7 +81,7 @@ static FILE          *f02;
 static FILE          *f03;
 static FILE          *f04;
 static FILE          *f05;
-static FILE          *f06; 
+static FILE          *f06;
 
 
 static DOUBLE         atri;  /* area of triangle */
@@ -101,14 +101,14 @@ control subroutine for polygonization.
 *----------------------------------------------------------------------*/
 void xfem_polygon(
   XFEMPOLYFLAG xfempolyflag,
-  ELEMENT* myls2   
-  )      
+  ELEMENT* myls2
+  )
 {
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("xfem_polygon");
 #endif
 /*----------------------------------------------------------------------*/
-  
+
 /*------------------------------------------------- switch to do option */
   switch (xfempolyflag)
   {
@@ -148,12 +148,12 @@ void xfem_polygon(
       default:
         dserror("action unknown\n");
   } /* end swtich (*action) */
-  
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of xfem_polygon */
 
@@ -172,8 +172,8 @@ void xfem_polygon_init(
   )
 {
   INT     i;
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_enter("xfem_poly_init");
 #endif
 /*----------------------------------------------------------------------*/
@@ -188,7 +188,7 @@ void xfem_polygon_init(
   pend = intdata->p[1];
   /* set start edge */
   sedge = intdata->edge[0];
-  /* set end edge */  
+  /* set end edge */
   eedge = intdata->edge[1];
   /* set polycon */
   polycon[0] = intdata->polycon[0];
@@ -226,12 +226,12 @@ void xfem_polygon_init(
   xyze_int[1][1] = pdiag[1];
   xyze_int[0][2] = pend[0];
   xyze_int[1][2] = pend[1];
- 
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of xfem_poly_init */
 
@@ -248,14 +248,14 @@ by the interface is divided into seven subtriangles.
 *----------------------------------------------------------------------*/
 void xfem_polygon_cons(
   ELEMENT *myls2
-  )      
+  )
 {
   INT     i;
   INT     nd1,nd2,nd3,nd4,nd5;
   INT     numtri,numtristart,numtriend;
   INT     ind1[2][2];
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_enter("xfem_poly_cons");
 #endif
 /*----------------------------------------------------------------------*/
@@ -278,7 +278,7 @@ void xfem_polygon_cons(
         else
         {
           nd4 = 3;
-          nd5 = 1;          
+          nd5 = 1;
         }
 
         polygonxy[0][0][0] = xyze[0][nd1-1];
@@ -287,12 +287,12 @@ void xfem_polygon_cons(
         polygonxy[0][1][1] = xyze[1][nd2-1];
         polygonxy[0][0][2] = xyze[0][nd3-1];
         polygonxy[0][1][2] = xyze[1][nd3-1];
-        
+
         polygonxy[0][0][3] = xyze_int[0][nd4-1];
         polygonxy[0][1][3] = xyze_int[1][nd4-1];
         polygonxy[0][0][4] = xyze_int[0][nd5-1];
         polygonxy[0][1][4] = xyze_int[1][nd5-1];
-        
+
         polygonxy[0][0][5] = (xyze[0][nd1-1]+xyze_int[0][nd4-1]+
                               xyze_int[0][nd5-1])/3.0;
         polygonxy[0][1][5] = (xyze[1][nd1-1]+xyze_int[1][nd4-1]+
@@ -339,54 +339,54 @@ void xfem_polygon_cons(
             ind1[1][0] = 2;
           }
         }
-        
+
         /* construct polygon coordinate data */
         for (i=0; i<2; i++)
         {
           if (ind[i]==0) continue;
-          
+
           nd1 = polycon[i][0];
           nd2 = polycon[i][1];
           nd3 = polycon[i][2];
-          
+
           if ((nd1==2 && i==0) || (nd1==4 && i==1))
           {
             nd4 =  ind1[1][i];
             nd5 =  ind1[0][i];
           }
-          
+
           if ((nd1==4 && i==0) || (nd1==2 && i==1))
           {
             nd4 =  ind1[0][i];
-            nd5 =  ind1[1][i];        
+            nd5 =  ind1[1][i];
           }
-          
+
           if (nd1==1 || nd1==3)
           {
             if (sedge==1 || sedge==3)
             {
               nd4 =  1;
-              nd5 =  3;                  
+              nd5 =  3;
             }
             else
             {
               nd4 =  3;
-              nd5 =  1;                            
+              nd5 =  1;
             }
           }
-          
+
           polygonxy[i][0][0] = xyze[0][nd1-1];
           polygonxy[i][1][0] = xyze[1][nd1-1];
           polygonxy[i][0][1] = xyze[0][nd2-1];
           polygonxy[i][1][1] = xyze[1][nd2-1];
           polygonxy[i][0][2] = xyze[0][nd3-1];
           polygonxy[i][1][2] = xyze[1][nd3-1];
-          
+
           polygonxy[i][0][3] = xyze_int[0][nd4-1];
           polygonxy[i][1][3] = xyze_int[1][nd4-1];
           polygonxy[i][0][4] = xyze_int[0][nd5-1];
           polygonxy[i][1][4] = xyze_int[1][nd5-1];
-          
+
           polygonxy[i][0][5] = (xyze[0][nd1-1]+xyze_int[0][nd4-1]+
                                 xyze_int[0][nd5-1])/3.0;
           polygonxy[i][1][5] = (xyze[1][nd1-1]+xyze_int[1][nd4-1]+
@@ -400,12 +400,12 @@ void xfem_polygon_cons(
       default:
         dserror("typ unknown!");
   } /* end switch(typ) */
-  
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of xfem_poly_cons */
 
@@ -428,8 +428,8 @@ void xfem_polygon_GP(
   INT              i,j;
   DOUBLE           sum;
   const DOUBLE     tol=1.0E-05;
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_enter("xfem_poly_GP");
 #endif
 /*----------------------------------------------------------------------*/
@@ -454,7 +454,7 @@ void xfem_polygon_GP(
           /* compute area coordinates of xtarget */
           xfem_polygon_compGP(myls2->distyp);
           /* set Gauss point */
-          polygonGP[0][0][j] = GP[0]; 
+          polygonGP[0][0][j] = GP[0];
           polygonGP[0][1][j] = GP[1];
         }
         /* simple check for weights */
@@ -482,7 +482,7 @@ void xfem_polygon_GP(
             /* set Gauss point */
             polygonGP[i][0][0] = GP[0];
             polygonGP[i][1][0] = GP[1];
-            continue;      
+            continue;
           }
           else
           {
@@ -524,12 +524,12 @@ void xfem_polygon_GP(
       default:
         dserror("typ unknown!");
   } /* end switch(typ) */
-  
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of xfem_poly_GP */
 
@@ -550,13 +550,13 @@ void xfem_polygon_getsubp(
 {
   INT     i,j;
   INT     nd;
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_enter("xfem_poly_getsubp");
 #endif
 /*----------------------------------------------------------------------*/
 
-  /* initialize */  
+  /* initialize */
   for (i=0; i<2; i++)
     for (j=0; j<3; j++)
       xyze_subp[i][j] = 0.0;
@@ -570,10 +570,10 @@ void xfem_polygon_getsubp(
   }
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of xfem_poly_getsubp */
 
@@ -598,8 +598,8 @@ void xfem_polygon_compGP(
   DOUBLE           area;
   const DOUBLE     tol = 1.0E-06;
   const DOUBLE     nitnmax = 10;
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_enter("xfem_polygon_compGP");
 #endif
 /*----------------------------------------------------------------------*/
@@ -616,7 +616,7 @@ void xfem_polygon_compGP(
         for (j=0; j<2; j++)
         {
           nd1 = node_to_node_tri[0][j];
-          nd2 = node_to_node_tri[1][j]; 
+          nd2 = node_to_node_tri[1][j];
           xyze_subp[0][1] = xyze[0][nd1-1];
           xyze_subp[1][1] = xyze[1][nd1-1];
           xyze_subp[0][2] = xyze[0][nd2-1];
@@ -646,19 +646,19 @@ void xfem_polygon_compGP(
           det = A[0][0]*A[1][1] - A[1][0]*A[0][1];
           /* update GP */
           GP[0] = GP[0] - ( A[1][1]*R[0] - A[0][1]*R[1])/det;
-          GP[1] = GP[1] - (-A[1][0]*R[0] + A[0][0]*R[1])/det;     
+          GP[1] = GP[1] - (-A[1][0]*R[0] + A[0][0]*R[1])/det;
         }
         /* END Newton iteration */
-        break;        
+        break;
       default:
         dserror("typ unknown!");
   }
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of xfem_polygon_compGP */
 
@@ -675,8 +675,8 @@ evaluate shape functions at the trial Gauss point.
 void xfem_polygon_funct()
 {
   INT     i;
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_enter("xfem_polygon_funct");
 #endif
 /*----------------------------------------------------------------------*/
@@ -690,10 +690,10 @@ void xfem_polygon_funct()
     N[i] = (1 + GP[0]*rsI[0][i])*(1 + GP[1]*rsI[1][i])/4.0;
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of xfem_polygon_funct */
 
@@ -715,7 +715,7 @@ void xfem_polygon_deriv()
                         {0,1},
                         {1,0}
                        };
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("xfem_polygon_deriv");
 #endif
 /*----------------------------------------------------------------------*/
@@ -735,12 +735,12 @@ void xfem_polygon_deriv()
       gradN[j][i] = rsI[ind1][i]*(1 + GP[ind2]*rsI[ind2][i])/4.0;
     }
   }
-  
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of xfem_polygon_deriv */
 
@@ -758,7 +758,7 @@ void xfem_polygon_resNewton()
 {
   INT     i,j;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("xfem_polygon_resNewton");
 #endif
 /*----------------------------------------------------------------------*/
@@ -776,12 +776,12 @@ void xfem_polygon_resNewton()
         R[i] -= xyze[i][j]*N[j];
       }
     }
-  
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of xfem_polygon_resNewton */
 
@@ -799,7 +799,7 @@ void xfem_polygon_tanNewton()
 {
   INT     i,j,k;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("xfem_polygon_tanNewton");
 #endif
 /*----------------------------------------------------------------------*/
@@ -814,12 +814,12 @@ void xfem_polygon_tanNewton()
     for (j=0; j<2; j++)
       for (k=0; k<4; k++)
         A[i][j] -= xyze[i][k]*gradN[j][k];
-  
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of xfem_polygon_tanNewton */
 
@@ -838,8 +838,8 @@ void xfem_polygon_write(
   )
 {
   INT    i,j,k;
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_enter("xfem_polygon_write");
 #endif
 /*----------------------------------------------------------------------*/
@@ -851,18 +851,18 @@ void xfem_polygon_write(
     {
       fprintf(f01,"%10.5E  ",xyze[i][j]);
     }
-    fprintf(f01,"\n");    
+    fprintf(f01,"\n");
   }
   fprintf(f01,"\n");
 
-  /* write interface coordinate data */  
+  /* write interface coordinate data */
   for (i=0; i<2; i++)
   {
     for(j=0; j<3; j++)
     {
       fprintf(f02,"%10.5E  ",xyze_int[i][j]);
     }
-    fprintf(f02,"\n");    
+    fprintf(f02,"\n");
   }
   fprintf(f02,"\n");
 
@@ -875,7 +875,7 @@ void xfem_polygon_write(
       {
         fprintf(f03,"%10.5E  ",polygonxy[i][j][k]);
       }
-      fprintf(f03,"\n");    
+      fprintf(f03,"\n");
     }
     fprintf(f03,"\n");
   }
@@ -890,7 +890,7 @@ void xfem_polygon_write(
       {
         fprintf(f04,"%10.5E  ",polygonGP[i][j][k]);
       }
-      fprintf(f04,"\n");    
+      fprintf(f04,"\n");
     }
     fprintf(f04,"\n");
   }
@@ -913,12 +913,12 @@ void xfem_polygon_write(
     fprintf(f06,"\n");
   }
   fprintf(f06,"\n");
-   
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of xfem_polygon_write */
 
@@ -934,7 +934,7 @@ open files to write polygon information.
 *----------------------------------------------------------------------*/
 void xfem_polygon_open()
 {
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("xfem_polygon_open");
 #endif
 /*----------------------------------------------------------------------*/
@@ -946,12 +946,12 @@ void xfem_polygon_open()
   f04 = fopen("src/ls/to_matlab/xfem_to_matlab/xfem_to_matlab_polygonGP","w");
   f05 = fopen("src/ls/to_matlab/xfem_to_matlab/xfem_to_matlab_ind","w");
   f06 = fopen("src/ls/to_matlab/xfem_to_matlab/xfem_to_matlab_polygonmat","w");
-  
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of xfem_polygon_open */
 
@@ -967,7 +967,7 @@ close files.
 *----------------------------------------------------------------------*/
 void xfem_polygon_close()
 {
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("xfem_polygon_close");
 #endif
 /*----------------------------------------------------------------------*/
@@ -978,13 +978,13 @@ void xfem_polygon_close()
   fclose(f03);
   fclose(f04);
   fclose(f05);
-  fclose(f06);  
-  
+  fclose(f06);
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of xfem_polygon_finalize */
 
@@ -1001,8 +1001,8 @@ compute area of the quadrilateral element.
 void xfem_polygon_area_rect()
 {
   INT     i;
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_enter("xfem_polygon_area_rect");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1012,12 +1012,12 @@ void xfem_polygon_area_rect()
   /* add up area of the triangles */
   for (i=0; i<2; i++)
     arect += xfem_polygon_area_subtri(i);
-  
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of xfem_polygon_area_rect */
 
@@ -1037,8 +1037,8 @@ DOUBLE xfem_polygon_area_subtri(
 {
   INT     j;
   INT     nd;
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_enter("xfem_polygon_area_subtri");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1062,10 +1062,10 @@ DOUBLE xfem_polygon_area_subtri(
   }
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return xfem_polygon_area_tri();
 } /* end of xfem_polygon_area_subtri */
 
@@ -1082,8 +1082,8 @@ compute area of the subtriangle.
 DOUBLE xfem_polygon_area_tri()
 {
   DOUBLE     x21,y21,x31,y31;
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_enter("xfem_polygon_area_tri");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1095,10 +1095,10 @@ DOUBLE xfem_polygon_area_tri()
   y31 = xyze_subp[1][2] - xyze_subp[1][0];
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return 0.5*(x21*y31 - y21*x31);
 } /* end of xfem_polygon_area_tri */
 
@@ -1117,8 +1117,8 @@ triangular domain).
 void xfem_polygon_target_tri()
 {
   INT     i;
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_enter("xfem_polygon_target_tri");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1129,14 +1129,14 @@ void xfem_polygon_target_tri()
   for (i=0; i<3; i++)
   {
     xtarget[0] += xyze_subp[0][i]/3.0;
-    xtarget[1] += xyze_subp[1][i]/3.0;        
+    xtarget[1] += xyze_subp[1][i]/3.0;
   }
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of xfem_polygon_target_tri */
 
@@ -1158,8 +1158,8 @@ void xfem_polygon_target_subtri(
 {
   INT     j;
   INT     nd;
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_enter("xfem_polygon_target_subtri");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1171,14 +1171,14 @@ void xfem_polygon_target_subtri(
   {
     nd = conr[i][j]-1;
     xtarget[0] += xyze[0][nd]/3.0;
-    xtarget[1] += xyze[1][nd]/3.0;        
+    xtarget[1] += xyze[1][nd]/3.0;
   }
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of xfem_polygon_target_subtri */
 
@@ -1205,8 +1205,8 @@ void xfem_polygon_mat(
                               {2,2,2,1,1,1,1},
                               {1,1,1,2,2,2,2}
                             };
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_enter("xfem_polygon_mat");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1226,7 +1226,7 @@ void xfem_polygon_mat(
         else
         {
           for (j=0; j<7; j++)
-            polygonmat[0][j] = indmat[1][j];      
+            polygonmat[0][j] = indmat[1][j];
         }
         break;
       case quad4 :
@@ -1251,19 +1251,19 @@ void xfem_polygon_mat(
           else
           {
             for (j=0; j<7; j++)
-              polygonmat[i][j] = indmat[1][j];      
+              polygonmat[i][j] = indmat[1][j];
           }
         }
         break;
       default:
-        dserror("typ unknown!");        
+        dserror("typ unknown!");
   }
-  
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of xfem_polygon_mat */
 /*! @} (documentation module close)*/

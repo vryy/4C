@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -11,7 +11,7 @@ Maintainer: Malte Neumann
 
 *----------------------------------------------------------------------*/
 
-#ifdef UMFPACK 
+#ifdef UMFPACK
 
 
 #include "../headers/standardtypes.h"
@@ -21,7 +21,7 @@ Maintainer: Malte Neumann
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -42,7 +42,7 @@ This functions controls the solution with the solver umfpack.
 \param options     INT          (i)   flag for init or not
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa
 
 *----------------------------------------------------------------------*/
@@ -85,7 +85,7 @@ DOUBLE        *info    = (DOUBLE *) NULL;*/
 void          *symbolic, *numeric;
 DOUBLE        info [UMFPACK_INFO], control [UMFPACK_CONTROL];
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solver_umfpack");
 #endif
 /*----------------------------------------------------------------------*/
@@ -99,7 +99,7 @@ switch(option)
 /*----------------------------------------------------------------------*/
 case 1:
 
-   /* set flag, that this matrix has been initialized and is ready for solve */   
+   /* set flag, that this matrix has been initialized and is ready for solve */
    ccf->is_init     = 1;
    ccf->ncall       = 0;
    ccf->is_factored = 0;
@@ -108,7 +108,7 @@ case 1:
    umfpack_di_defaults (control) ;
 
    break;
-      
+
 case 0:
    /*--------------------------------- allocate rhs and solution vector */
    b   = amdef("b",&b_a,ccf->numeq_total,1,"DV");
@@ -142,8 +142,8 @@ case 0:
    Ai        =  ccf->Ai.a.iv;
    Ap        =  ccf->Ap.a.iv;
    Ax        =  ccf->Ax.a.dv;
- 
-   /*------------------------------ solution is only done on imyrank==0 */   
+
+   /*------------------------------ solution is only done on imyrank==0 */
    if (imyrank==0)
    {
        t = umfpack_timer ( ) ;
@@ -152,7 +152,7 @@ case 0:
        control [UMFPACK_PIVOT_TOLERANCE] = 0.2;
        control [UMFPACK_IRSTEP]          =   5;
 
-#ifdef DEBUG 
+#ifdef DEBUG
        control [UMFPACK_PRL] = 5 ;
 #endif
 
@@ -162,8 +162,8 @@ case 0:
 #else
        status = umfpack_di_symbolic (n, n, Ap, Ai, &symbolic, control, info);
 #endif
-       
-#ifdef DEBUG 
+
+#ifdef DEBUG
        if (status < 0)
        {
            umfpack_di_report_info (control, info) ;
@@ -174,7 +174,7 @@ case 0:
 
        /* numeric factorization */
        status =  umfpack_di_numeric (Ap, Ai, Ax, symbolic, &numeric, control, info);
-#ifdef DEBUG 
+#ifdef DEBUG
        if (status < 0)
        {
            umfpack_di_report_info (control, info) ;
@@ -187,7 +187,7 @@ case 0:
 
        /* solve Ax=b */
        status = umfpack_di_solve (UMFPACK_A, Ap, Ai, Ax, x, b, numeric, control, info);
-#ifdef DEBUG 
+#ifdef DEBUG
        if (status < 0)
        {
            umfpack_di_report_info (control, info) ;
@@ -200,7 +200,7 @@ case 0:
        t = umfpack_timer ( ) - t ;
        fprintf(allfiles.out_err,"umfpack solve complete.  Total time: %5.2f (seconds)\n", t);
 
-/*#ifdef DEBUG 
+/*#ifdef DEBUG
    control [UMFPACK_PRL] = 5 ;
    umfpack_di_report_info (control, info);
 #endif*/
@@ -222,7 +222,7 @@ case 0:
 
    amdel(&x_a);
    amdel(&b_a);
-#ifdef PARALLEL 
+#ifdef PARALLEL
    amdel(&tmp_a);
 #endif
 break;
@@ -234,8 +234,8 @@ default:
    dserror("Unknown option for solver call to umfpack");
 break;
 }
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

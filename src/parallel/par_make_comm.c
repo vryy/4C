@@ -24,8 +24,8 @@ extern struct _FIELD      *field;
 extern struct _GENPROB     genprob;
 
 
-/*! 
-\addtogroup PARALLEL 
+/*!
+\addtogroup PARALLEL
 */
 
 /*! @{ (documentation module open)*/
@@ -36,59 +36,59 @@ extern struct _GENPROB     genprob;
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par;                      
+ extern struct _PAR   par;
 
 /*!---------------------------------------------------------------------
 
-\brief create field-specific intra-communicators                                              
+\brief create field-specific intra-communicators
 
 
-<pre>                                                        m.gee 9/01 
-at the moment there is a communicator created for each field.        
-All of these n communicators are identical to MPI_COMM_WORLD,        
-but the code now uses the field specific communicator for            
-all calculations & communications inside a field.                    
-For Inter-field communcations the communicator MPI_COMM_WORLD        
-is used.                                                             
-This opens the opportunity to have parallel execution of different   
-fields in future.                                                    
-Example:                                                             
-While solving the structure in the                                   
-structure's communicator with 2 procs, the other 14 procs are        
-doing the fluid field in their own communicating space. None         
-of both groups gets disturbed by the other one. They only get        
-synchronized through MPI_COMM_WORLD at the moment of the             
-fluid-structure-coupling.                                            
+<pre>                                                        m.gee 9/01
+at the moment there is a communicator created for each field.
+All of these n communicators are identical to MPI_COMM_WORLD,
+but the code now uses the field specific communicator for
+all calculations & communications inside a field.
+For Inter-field communcations the communicator MPI_COMM_WORLD
+is used.
+This opens the opportunity to have parallel execution of different
+fields in future.
+Example:
+While solving the structure in the
+structure's communicator with 2 procs, the other 14 procs are
+doing the fluid field in their own communicating space. None
+of both groups gets disturbed by the other one. They only get
+synchronized through MPI_COMM_WORLD at the moment of the
+fluid-structure-coupling.
 
 To create the intra-communicators the followin gsteps are done:
 -MPI_WORLD_GROUP is extracted from MPI_COMM_WORLD
 -numfield copies of this MPI_WORLD_GROUP are created named MPI_INTRA_GROUP
 -communicators MPI_INTRA_COMM are created from these MPI_INTRA_GROUP
--MPI_INTRA_GROUPs are kept, because I'am not sure whether the 
+-MPI_INTRA_GROUPs are kept, because I'am not sure whether the
  MPI_INTRA_COMM gets damaged when the corresponding GROUP is freed
 </pre>
 
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void create_communicators()
 {
 
-#ifdef PARALLEL 
+#ifdef PARALLEL
 INT         i,j;
 INT        *ranklist;
 MPI_Group   MPI_WORLD_GROUP;
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("create_communicators");
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef PARALLEL 
+#ifdef PARALLEL
 /*----------------------------------------------------------------------*/
 ranklist = (INT*)CCAMALLOC(par.nprocs*sizeof(INT));
 if (!ranklist) dserror("Allocation of memory failed");
@@ -110,7 +110,7 @@ for (i=0; i<par.numfld; i++)
 /* in the solution of the actual field. At the moment this is all procs */
 /*--------- Remark: This is the place to build in other groups later on */
    for (j=0; j<par.nprocs; j++) ranklist[j]=j;
-/*----- construct a subgroup of these procs, derive it from the default */   
+/*----- construct a subgroup of these procs, derive it from the default */
 /*                                                group MPI_WORLD_GROUP */
    MPI_Group_incl(
                   MPI_WORLD_GROUP,
@@ -120,20 +120,20 @@ for (i=0; i<par.numfld; i++)
                  );
    if (par.intra[i].MPI_INTRA_GROUP == MPI_GROUP_NULL)
    dserror("Creation of MPI_INTRA_GROUP failed");
-/*------------------------now construct the communicator from this group */                 
+/*------------------------now construct the communicator from this group */
 /*     Remark: This call returns MPI_COMM_NULL to all procs not in group */
 /*                  it is a collective call to be performed by ALL procs */
-   MPI_Comm_create( 
+   MPI_Comm_create(
                    MPI_COMM_WORLD,
                    par.intra[i].MPI_INTRA_GROUP,
                    &(par.intra[i].MPI_INTRA_COMM)
                   );
 /*------------- at the moment, all procs shall be in all MPI_INTRA_COMMs */
-   if (par.intra[i].MPI_INTRA_COMM==MPI_COMM_NULL) 
+   if (par.intra[i].MPI_INTRA_COMM==MPI_COMM_NULL)
    dserror("Creation of intra communicator MPI_INTRA_COMM failed");
 /*---------------- now get the new ranks of each proc from the intra_com */
    MPI_Comm_rank(par.intra[i].MPI_INTRA_COMM,&(par.intra[i].intra_rank));
-/*------------------ now get the size of newly created intracommunicator */   
+/*------------------ now get the size of newly created intracommunicator */
    MPI_Comm_size(par.intra[i].MPI_INTRA_COMM,&(par.intra[i].intra_nprocs));
    if (par.intra[i].intra_nprocs>MAXPROC) dserror("Define of MAXPROC too small");
 
@@ -154,7 +154,7 @@ for (i=0; i<par.numfld; i++)
        MPI_Attr_put(par.intra[i].MPI_INTRA_COMM, MPI_TAG_UB, (void *) iptr);
      }
    }
-/*-----------------------------------------------------------------------*/   
+/*-----------------------------------------------------------------------*/
 }/* end of loop over fields */
 /*--------------------------- free the MPI_WORLD_GROUP, no longer needed */
    MPI_Group_free(&MPI_WORLD_GROUP);
@@ -165,7 +165,7 @@ CCAFREE(ranklist);
 /*----------------------------------------------------------------------*/
 #endif /* end of PARALLEL */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

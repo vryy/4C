@@ -17,8 +17,8 @@ Maintainer: Stefan Hartmann
 #include "../headers/standardtypes.h"
 #include "shell9.h"
 
-/*! 
-\addtogroup SHELL9 
+/*!
+\addtogroup SHELL9
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
@@ -26,7 +26,7 @@ Maintainer: Stefan Hartmann
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -36,7 +36,7 @@ extern struct _FILES  allfiles;
 
 <pre>                                                         m.gee 8/00
 -the partition of one proc (all discretizations)
--the type is in partition.h                                                  
+-the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -46,7 +46,7 @@ extern struct _PARTITION  *partition;
 
 <pre>                                                            sh 10/02
 This structure struct _MULTIMAT  *multimat is defined in global_control.c
-and the type is in materials.h                                                  
+and the type is in materials.h
 It holds all information about the layered section data
 </pre>
 *----------------------------------------------------------------------*/
@@ -54,18 +54,18 @@ extern struct _MULTIMAT  *multimat;
 
 
 /*!----------------------------------------------------------------------
-\brief write the data needed to restart this element                                       
+\brief write the data needed to restart this element
 
 <pre>                     m.gee 5/02              modified by    sh 02/03
-This routine writes the data needed to restart the shell9 element. 
+This routine writes the data needed to restart the shell9 element.
 </pre>
 \param  ELEMENT  *actele   (i) actual element
 \param  INT       nhandle  (i) size of handles
-\param  long int *handles  ( ) unique handle returned by the pss-system 
+\param  long int *handles  ( ) unique handle returned by the pss-system
 \param  INT       init     (i) flag for initializing arrays
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: shell9()   [s9_main.c]
 
 *----------------------------------------------------------------------*/
@@ -81,7 +81,7 @@ MULTIMAT      *actmultimat;                               /* material of actual 
 static ARRAY   elewares_a;  static DOUBLE **elewares;     /* array for elewa */
 FILE *out;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9_write_restart");
 #endif
 /*---------------------------------------------------------- init phase */
@@ -90,10 +90,10 @@ if (init==1)
    /*array for every layer elewares_a
      fdim = MAXLAY_SHELL9 (total number of layers)
 
-     sdim = max number of possible entries in ipwa per GP (35 at the moment) 
+     sdim = max number of possible entries in ipwa per GP (35 at the moment)
             * max number of GP (3x3x2 = 18 at the moment) */
 
-    /*  pl_mises or pl_dp*/         
+    /*  pl_mises or pl_dp*/
     /*  DOUBLE       epstn;        equivalent strain                          */
     /*  INT          yip;          stress state: 1=elastic 2=plastic          */
     /*  DOUBLE       sig[6];       stresses                           [6]     */
@@ -101,7 +101,7 @@ if (init==1)
     /*  DOUBLE       qn[6]         backstress                         [6]     */
     /*      ( == 20 )                                                         */
 
-    /*  pl_epc */      
+    /*  pl_epc */
     /*  INT          yip;          stress state: 1=elastic 2=plastic          */
     /*  DOUBLE       kappa_t;      equivalent strain (tension)                */
     /*  DOUBLE       kappa_c;      equivalent strain (compression)            */
@@ -109,7 +109,7 @@ if (init==1)
     /*  DOUBLE       eps[6]        strains                             [6]    */
     /*      ( == 15 )                                                         */
 
-    /*  pl_hoff */      
+    /*  pl_hoff */
     /*  INT          yip;          stress state: 1=elastic 2=plastic          */
     /*  DOUBLE       dhard;        equivalent strain                          */
     /*  DOUBLE       sig[6];       stresses                             [6]   */
@@ -119,14 +119,14 @@ if (init==1)
     /*  DOUBLE       rkappa[9];                                         [9]   */
     /*      ( == 35 )                                                         */
 
-   elewares     = amdef("elewares"  ,&elewares_a,MAXLAY_SHELL9,35*18,"DA");    
+   elewares     = amdef("elewares"  ,&elewares_a,MAXLAY_SHELL9,35*18,"DA");
 
    goto end;
 }
 /*-------------------------------------------------------- uninit phase */
 else if (init==-1)
 {
-   amdel(&elewares_a);   
+   amdel(&elewares_a);
 
    goto end;
 }
@@ -175,10 +175,10 @@ for (kl=0; kl<num_klay; kl++) /*loop all kinematic layers*/
    {
         /*check if there is a ipwa for this layer */
         if (!actele->e.s9->elewa[actlay].ipwa) goto next; /*no ipwa to this layer*/
-        
+
         actmultimat = &(multimat[actele->e.s9->kinlay[kl].mmatID[ml]-1]);
-        
-        /*number of gausspoints in one layer*/     
+
+        /*number of gausspoints in one layer*/
         size_j = actele->e.s9->nGP[0]*actele->e.s9->nGP[1]*actele->e.s9->nGP[2];
 
         n = 0;
@@ -273,25 +273,25 @@ if (ierr != 1) dserror("Error writing restart data");
 /*----------------------------------------------------------------------*/
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of s9_write_restart */
 
 /*!----------------------------------------------------------------------
-\brief read the data needed to restart this element                                       
+\brief read the data needed to restart this element
 
 <pre>                     m.gee 5/02              modified by    sh 02/03
-This routine reads the data needed to restart the shell9 element. 
+This routine reads the data needed to restart the shell9 element.
 </pre>
 \param  ELEMENT  *actele   (i) actual element
 \param  INT       nhandle  (i) size of handles
-\param  long int *handles  ( ) unique handle returned by the pss-system 
+\param  long int *handles  ( ) unique handle returned by the pss-system
 \param  INT       init     (i) flag for initializing arrays
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: shell9()   [s9_main.c]
 
 *----------------------------------------------------------------------*/
@@ -313,22 +313,22 @@ static ARRAY   elewares_a;  static DOUBLE **elewares;     /* array for elewa */
 INT dims[3];
 FILE *in;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9_read_restart");
 #endif
 /*---------------------------------------------------------- init phase */
 if (init==1)
 {
    /*for dimensions see s9_write_restart */
-               
-   elewares     = amdef("elewares"  ,&elewares_a,MAXLAY_SHELL9,35*18,"DA");    
+
+   elewares     = amdef("elewares"  ,&elewares_a,MAXLAY_SHELL9,35*18,"DA");
 
    goto end;
 }
 /*-------------------------------------------------------- uninit phase */
 else if (init==-1)
 {
-   amdel(&elewares_a);   
+   amdel(&elewares_a);
 
    goto end;
 }
@@ -353,7 +353,7 @@ if (actele->e.s9->nhyb)
        dserror("Mismatch in reading element restart data");
    /*-------------------------------------------------------- read alfa */
    pss_read_array_name_handle(actele->e.s9->alfa.name,&(actele->e.s9->alfa),&handles[1],in,&ierr);
-   if (ierr != 1) dserror("Cannot read restart data");  
+   if (ierr != 1) dserror("Cannot read restart data");
 
    /*------------------------------------------------- check dimensions Dtildinv*/
    pss_getdims_name_handle(actele->e.s9->Dtildinv.name,&dims[0],&dims[1],&dims[2],&handles[2],in,&ierr);
@@ -363,7 +363,7 @@ if (actele->e.s9->nhyb)
        dserror("Mismatch in reading element restart data");
    /*---------------------------------------------------- read Dtildinv */
    pss_read_array_name_handle(actele->e.s9->Dtildinv.name,&(actele->e.s9->Dtildinv),&handles[2],in,&ierr);
-   if (ierr != 1) dserror("Cannot read restart data");  
+   if (ierr != 1) dserror("Cannot read restart data");
 
    /*------------------------------------------------- check dimensions L*/
    pss_getdims_name_handle(actele->e.s9->L.name,&dims[0],&dims[1],&dims[2],&handles[3],in,&ierr);
@@ -373,7 +373,7 @@ if (actele->e.s9->nhyb)
        dserror("Mismatch in reading element restart data");
    /*---------------------------------------------------------- read L */
    pss_read_array_name_handle(actele->e.s9->L.name,&(actele->e.s9->L),&handles[3],in,&ierr);
-   if (ierr != 1) dserror("Cannot read restart data");  
+   if (ierr != 1) dserror("Cannot read restart data");
 
    /*------------------------------------------------- check dimensions Lt*/
 /*   pss_getdims_name_handle(actele->e.s9->Lt.name,&dims[0],&dims[1],&dims[2],&handles[3],in,&ierr);
@@ -383,7 +383,7 @@ if (actele->e.s9->nhyb)
        dserror("Mismatch in reading element restart data");*/
    /*---------------------------------------------------------- read Lt */
 /*   pss_read_array_name_handle(actele->e.s9->Lt.name,&(actele->e.s9->Lt),&handles[3],in,&ierr);
-   if (ierr != 1) dserror("Cannot read restart data"); */ 
+   if (ierr != 1) dserror("Cannot read restart data"); */
 
    /*------------------------------------------------- check dimensions Rtilde*/
    pss_getdims_name_handle(actele->e.s9->Rtilde.name,&dims[0],&dims[1],&dims[2],&handles[4],in,&ierr);
@@ -393,7 +393,7 @@ if (actele->e.s9->nhyb)
        dserror("Mismatch in reading element restart data");
    /*------------------------------------------------------ read Rtilde */
    pss_read_array_name_handle(actele->e.s9->Rtilde.name,&(actele->e.s9->Rtilde),&handles[4],in,&ierr);
-   if (ierr != 1) dserror("Cannot read restart data");  
+   if (ierr != 1) dserror("Cannot read restart data");
 }
 /*----------------------------------------------------------------------*/
 /*--------- now check for ELEWA --->  material nonlinearity ------------*/
@@ -409,7 +409,7 @@ if (elewares_a.fdim != dims[0] ||
     dserror("Mismatch in reading element restart data");
 /*-------------------------------------------------------- read elewares_a */
 pss_read_array_name_handle(elewares_a.name,&elewares_a,&handles[5],in,&ierr);
-if (ierr != 1) dserror("Cannot read restart data");  
+if (ierr != 1) dserror("Cannot read restart data");
 
 
 /*----- now write the restart data back to elewa -------------------------*/
@@ -421,10 +421,10 @@ for (kl=0; kl<num_klay; kl++) /*loop all kinematic layers*/
    {
     /*check if there is a ipwa for this layer */
         if (!actele->e.s9->elewa[actlay].ipwa) goto next; /*no ipwa to this layer*/
-        
+
         actmultimat = &(multimat[actele->e.s9->kinlay[kl].mmatID[ml]-1]);
-        
-        /*number of gausspoints in one layer*/     
+
+        /*number of gausspoints in one layer*/
         size_j = actele->e.s9->nGP[0]*actele->e.s9->nGP[1]*actele->e.s9->nGP[2];
 
         n = 0;
@@ -512,7 +512,7 @@ for (kl=0; kl<num_klay; kl++) /*loop all kinematic layers*/
 /*----------------------------------------------------------------------*/
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

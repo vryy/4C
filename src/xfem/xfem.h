@@ -15,8 +15,8 @@ Maintainer: Baris Irhan
 #ifndef XFEM_H
 #define XFEM_H
 
-/*! 
-\addtogroup XFEM 
+/*!
+\addtogroup XFEM
 *//*! @{ (documentation module open)*/
 
 

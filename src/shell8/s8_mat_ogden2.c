@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Michael Gee
@@ -44,7 +44,7 @@ DOUBLE              PK2main_vol[3];        /* volumetric 2.PK stresses in princi
 DOUBLE              PK2main[3];            /* 2.PK stresses in principal directions (main stresses) */
 DOUBLE              C[3][3][3][3];         /* components of material tangent in principal directions */
 DOUBLE              C_vol[3][3][3][3];     /* volumetric components of material tangent in principal directions */
-DOUBLE              C_cartvol[3][3][3][3];     
+DOUBLE              C_cartvol[3][3][3][3];
 DOUBLE              psi,psi1,psi2;
 
 DOUBLE              Ntest[3];
@@ -53,7 +53,7 @@ DOUBLE              Ntest[3];
 DOUBLE              df[28],bpr[3],tautil[3],PK2tautil[3],atilp[6][6];
 DOUBLE              Ef;
 #endif
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_mat_ogden_uncoupled");
 #endif
 /*----------------------------------------------------------------------*/
@@ -127,7 +127,7 @@ CG[2][2] = gmkovc[2][2];
 /*
 CG is in covariant components in contravariant material bases, transform to cartesian
 */
-s8_kov_CGcuca(CG,gkonr); 
+s8_kov_CGcuca(CG,gkonr);
 /* make spectral decomposition and principal axes of right Cauchy Green */
 /*
 (CG - lambda_a*I)*PHI_a = 0
@@ -250,12 +250,12 @@ PK2 = PK2main_a * N_a dyad N_a   (sum over a )
 */
 s8_ogden_cartPK2(PK2,PK2main,N);
 /*------------------ sort cartesian stresses to the vector shell8-style */
-stress_cart[0] = PK2[0][0];   
-stress_cart[1] = PK2[0][1];   
-stress_cart[2] = PK2[0][2];   
-stress_cart[3] = PK2[1][1];   
-stress_cart[4] = PK2[1][2];   
-stress_cart[5] = PK2[2][2];   
+stress_cart[0] = PK2[0][0];
+stress_cart[1] = PK2[0][1];
+stress_cart[2] = PK2[0][2];
+stress_cart[3] = PK2[1][1];
+stress_cart[4] = PK2[1][2];
+stress_cart[5] = PK2[2][2];
 /*================ make components of C[][][][] in principal directions */
 /*-------------------------------------------------- make C[a][a][a][a] */
 /*--------------------------------------------- deviatoric contribution */
@@ -289,7 +289,7 @@ for (p=0; p<3; p++)
       work2 += work;
    }
    work2 /= 9.0;
-   
+
    /* a = 0 b = 1 */
    fortranpow(&(lambda_bar[0]),&sum1,&(alfap[p]));
    fortranpow(&(lambda_bar[1]),&sum2,&(alfap[p]));
@@ -379,7 +379,7 @@ for (k=0; k<3; k++)
 for (l=0; l<3; l++)
 C_cart[i][j][k][l] += C_cartvol[i][j][k][l];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

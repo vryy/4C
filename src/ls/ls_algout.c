@@ -11,8 +11,8 @@ Maintainer: Baris Irhan
 
 *----------------------------------------------------------------------*/
 #ifdef D_LS
-#include "../headers/standardtypes.h" 
-#include "ls_prototypes.h" 
+#include "../headers/standardtypes.h"
+#include "ls_prototypes.h"
 /*!
 \addtogroup LEVELSET
 *//*! @{ (documentation module open)*/
@@ -27,15 +27,15 @@ printing subroutine for the time integration scheme used
 </pre>
 
 *----------------------------------------------------------------------*/
-void ls_algout(       
+void ls_algout(
   LS_DYNAMIC	*lsdyn
   )
 {
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("ls_algoout");
 #endif
-/*----------------------------------------------------------------------*/  
-  
+/*----------------------------------------------------------------------*/
+
   switch(lsdyn->iop)
   {
       case 0:
@@ -45,12 +45,12 @@ void ls_algout(
       default:
         dserror("unknown integration scheme: iop\n");
   }
-  
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of ls_algout*/
 /*! @} (documentation module close)*/

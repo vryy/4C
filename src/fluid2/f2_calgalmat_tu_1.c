@@ -10,10 +10,10 @@ Maintainer: Thomas Hettich
 </pre>
 
 ------------------------------------------------------------------------*/
-#ifdef D_FLUID2TU 
+#ifdef D_FLUID2TU
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief evaluate galerkin part of Kkapome
 
 <pre>                                                         he 02/03
@@ -32,12 +32,12 @@ In this routine the galerkin part of matrix Kkapeps is calculated:
     /
    |  factor * kapome_old * kapome * psi     d_omega
   /
-  
+
 
 
 NOTE: there's only one elestif
       --> Kkapome is stored in estif[0..(iel-1)][0..(iel-1)]
-      
+
 </pre>
 \param **estif        DOUBLE	   (i/o)  ele stiffness matrix
 \param   kapomeint    DOUBLE	   (i)    kapome at INT point
@@ -45,26 +45,26 @@ NOTE: there's only one elestif
 \param   eddyint      DOUBLE	   (i)    eddy-viscosity at INT point
 \param  *funct        DOUBLE	   (i)    nat. shape funcs
 \param **derxy        DOUBLE	   (i)    global coord. deriv.
-\param   fac 	    DOUBLE	   (i)    weighting factor	      
-\param   visc         DOUBLE	   (i)    fluid viscosity	     
-\param   factor       DOUBLE	   (i)    factor 
-\param   sig          DOUBLE	   (i)    factor 
+\param   fac 	    DOUBLE	   (i)    weighting factor
+\param   visc         DOUBLE	   (i)    fluid viscosity
+\param   factor       DOUBLE	   (i)    factor
+\param   sig          DOUBLE	   (i)    factor
 \param   iel	    INT  	   (i)    number of nodes of act. ele
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f2_calkkapome(
-		    DOUBLE         **estif,   
-		    DOUBLE           kapomeint, 
+		    DOUBLE         **estif,
+		    DOUBLE           kapomeint,
 	          DOUBLE          *velint,
-                DOUBLE           eddyint, 
-                DOUBLE          *funct,  
-		    DOUBLE         **derxy,  
-		    DOUBLE           fac,    
-		    DOUBLE           visc,   
+                DOUBLE           eddyint,
+                DOUBLE          *funct,
+		    DOUBLE         **derxy,
+		    DOUBLE           fac,
+		    DOUBLE           visc,
 		    DOUBLE           factor,
 		    DOUBLE           sig,
-                INT              iel     
+                INT              iel
               )
 {
 /*----------------------------------------------------------------------*
@@ -72,14 +72,14 @@ void f2_calkkapome(
  |   irow - row number in element matrix                                |
  |   icol - column number in element matrix                             |
  |   irn  - row node: number of node considered for matrix-row          |
- |   icn  - column node: number of node considered for matrix column    |  
+ |   icn  - column node: number of node considered for matrix column    |
 /-----------------------------------------------------------------------*/
 INT     irow, icol,irn,icn;
 DOUBLE  auxc;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_calkkapome");
-#endif		
+#endif
 
 /*----------------------------------------------------------------------*
    Calculate full Galerkin part of matrix K:
@@ -88,7 +88,7 @@ dstrc_enter("f2_calkkapome");
   /
  *----------------------------------------------------------------------*/
 icol=0;
-for (icn=0;icn<iel;icn++) 
+for (icn=0;icn<iel;icn++)
 {
    irow=0;
    auxc = (derxy[0][icn]*velint[0]+derxy[1][icn]*velint[1])*fac;
@@ -110,13 +110,13 @@ for (icn=0;icn<iel;icn++)
 icol=0;
  for (icn=0;icn<iel;icn++)
  {
-      irow=0;  
-      auxc = (visc+eddyint*sig)*fac;   
-   
+      irow=0;
+      auxc = (visc+eddyint*sig)*fac;
+
       for (irn=0;irn<iel;irn++)
       {
 	   estif[irow][icol] += auxc*(derxy[0][icn]*derxy[0][irn]+derxy[1][icn]*derxy[1][irn]);
-         irow += 1;	 
+         irow += 1;
       } /* end loop over irn */
       icol += 1;
  } /* end loop over icn */
@@ -130,7 +130,7 @@ icol=0;
 icol=0;
    for (icn=0;icn<iel;icn++)
    {
-      irow=0;  
+      irow=0;
       auxc=factor*kapomeint*funct[icn]*fac;
 
       for (irn=0;irn<iel;irn++)
@@ -143,7 +143,7 @@ icol=0;
 
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -151,7 +151,7 @@ return;
 } /* end of f2_calkvv */
 
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief evaluate galerkin part of Mkapome
 
 <pre>                                                         he  02/03
@@ -161,23 +161,23 @@ In this routine the galerkin part of matrix Mvv is calculated:
     /
    |  psi * kapome    d_omega
   /
-  
-NOTE: there's only one elemass  			      
-      --> Mkapeps is stored in emass[0..(iel-1)][0..(iel-1)]  
-      
+
+NOTE: there's only one elemass
+      --> Mkapeps is stored in emass[0..(iel-1)][0..(iel-1)]
+
 </pre>
 \param **emass     DOUBLE	   (i/o)  ele mass matrix
 \param  *funct     DOUBLE	   (i)    nat. shape funcs
 \param   fac       DOUBLE	   (i)    weighting factor
 \param   iel       INT   	   (i)    number of nodes of act. ele
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f2_calmkapome(
-		DOUBLE         **emass,  
-		DOUBLE          *funct, 
-		DOUBLE           fac,   
-		INT              iel    
+		DOUBLE         **emass,
+		DOUBLE          *funct,
+		DOUBLE           fac,
+		INT              iel
               )
 {
 /*----------------------------------------------------------------------*
@@ -185,14 +185,14 @@ void f2_calmkapome(
  |   irow - row number in element matrix                                |
  |   icol - column number in element matrix                             |
  |   irn  - row node: number of node considered for matrix-row          |
- |   icn  - column node: number of node considered for matrix column    |  
+ |   icn  - column node: number of node considered for matrix column    |
 /-----------------------------------------------------------------------*/
-INT     irow, icol,irn,icn;  
+INT     irow, icol,irn,icn;
 DOUBLE  auxc;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_calmkapome");
-#endif		
+#endif
 
 
 /*----------------------------------------------------------------------*
@@ -206,19 +206,19 @@ for(icn=0;icn<iel;icn++)
 {
    irow = 0;
    auxc = funct[icn]*fac;
-   
+
    for(irn=0;irn<iel;irn++)
    {
       emass[irow][icol] += auxc*funct[irn];
       irow += 1;
    } /* end loop over irn */
- 
+
   icol += 1;
 
 } /* end loop over icn */
 
-/*----------------------------------------------------------------------*/ 
-#ifdef DEBUG 
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
 dstrc_exit();
 #endif
 

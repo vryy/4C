@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the function to solve oll matrices with Aztec 
+\brief contains the function to solve oll matrices with Aztec
 
 <pre>
 Maintainer: Malte Neumann
@@ -14,8 +14,8 @@ Maintainer: Malte Neumann
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 
-/*! 
-\addtogroup OLL 
+/*!
+\addtogroup OLL
 *//*! @{ (documentation module open)*/
 
 
@@ -25,7 +25,7 @@ Maintainer: Malte Neumann
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -48,11 +48,11 @@ the oll format.
 \param  option         INT    (i) number of equations
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling: ---; called by: --- 
+\return void
+\sa calling: ---; called by: ---
 
 *----------------------------------------------------------------------*/
-void solver_az_oll( 
+void solver_az_oll(
     struct _SOLVAR         *actsolv,
     struct _INTRA          *actintra,
     struct _AZ_ARRAY_MSR   *msr_array,
@@ -75,7 +75,7 @@ void solver_az_oll(
   DOUBLE     *tmprhs;
   ARRAY       tmprhs_a;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("solver_az_msr");
 #endif
   /*----------------------------------------------------------------------*/
@@ -96,12 +96,12 @@ void solver_az_oll(
       /*------------------------------------- set default value to options */
       AZ_defaults(msr_array->options,msr_array->params);
       /*-------------------------------------- perform check of msr matrix */
-#ifdef DEBUG 
+#ifdef DEBUG
       AZ_check_msr(
           &(msr_array->bindx.a.iv[0]),
-          msr_array->numeq, 
+          msr_array->numeq,
           msr_array->N_external,
-          AZ_GLOBAL, 
+          AZ_GLOBAL,
           msr_array->proc_config
           );
 #endif
@@ -172,7 +172,7 @@ void solver_az_oll(
           msr_array->options[AZ_graph_fill]      = azvar->azgfill;
           break;
         case azprec_BILU:
-          dserror("Block Preconditioning Bilu cannot be used in MSR format"); 
+          dserror("Block Preconditioning Bilu cannot be used in MSR format");
           msr_array->options[AZ_precond]         = AZ_dom_decomp;
           msr_array->options[AZ_subdomain_solve] = AZ_bilu;
           msr_array->options[AZ_graph_fill]      = azvar->azgfill;
@@ -202,7 +202,7 @@ void solver_az_oll(
       msr_array->Amat  = NULL;
       msr_array->Aprec = NULL;
       msr_array->ncall=0;
-      /* set flag, that this matrix has been initialized and is ready for solve */   
+      /* set flag, that this matrix has been initialized and is ready for solve */
       msr_array->is_init=1;
       break;
       /*----------------------------------------------------------------------*/
@@ -214,23 +214,23 @@ void solver_az_oll(
     case 0:
       /*--------------------------------------------- check the reuse feature */
       /* NOTE: This is not multifield yet !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
-      /* 
-         check for type of field, each field uses an own aztec internal storage 
-         name called azname, so if using aztec with 2 or more different fields, 
-         the reuse properties, which are stored internal in aztec (that means the 
-         preconditioner) don't become mixed up 
+      /*
+         check for type of field, each field uses an own aztec internal storage
+         name called azname, so if using aztec with 2 or more different fields,
+         the reuse properties, which are stored internal in aztec (that means the
+         preconditioner) don't become mixed up
 
          structure uses azname=1
          fluid     uses azname=2
-         ale       uses azname=3    
+         ale       uses azname=3
          */
       switch (actsolv->fieldtyp)
       {
-        case structure: 
+        case structure:
           azname=1; break;
-        case fluid:     
+        case fluid:
           azname=2; break;
-        case ale:       
+        case ale:
           azname=3; break;
         default:
           azname=0;
@@ -264,17 +264,17 @@ void solver_az_oll(
           );
       /*---------------------------------attach dmsr-matrix to this structure */
       AZ_set_MSR(
-          msr_array->Amat, 
-          msr_array->bindx.a.iv, 
-          msr_array->val.a.dv, 
-          msr_array->data_org, 
-          0, 
-          NULL, 
+          msr_array->Amat,
+          msr_array->bindx.a.iv,
+          msr_array->val.a.dv,
+          msr_array->data_org,
+          0,
+          NULL,
           AZ_LOCAL
           );
-      /*--------------------- save number of external components on this proc */            
+      /*--------------------- save number of external components on this proc */
       msr_array->N_external = msr_array->data_org[AZ_N_external];
-      /*-------------------------------------------------- reorder rhs-vector */            
+      /*-------------------------------------------------- reorder rhs-vector */
       tmprhs = am_alloc_copy(&(rhs->vec),&(tmprhs_a));
       AZ_reorder_vec(
           tmprhs,
@@ -282,7 +282,7 @@ void solver_az_oll(
           msr_array->update_index,
           NULL
           );
-      /*--------------------------- reorder initial guess and solution-vector */            
+      /*--------------------------- reorder initial guess and solution-vector */
       AZ_reorder_vec(
           sol->vec.a.dv,
           msr_array->data_org,
@@ -303,7 +303,7 @@ void solver_az_oll(
       /*--------------------------------------------- check the reuse feature */
       msr_array->data_org[AZ_name]=azname;
       /*---------------------------------------------------------- first call */
-      /* 
+      /*
        * reuse feature funktioniert nicht beim problemtype ALE
        *--------------------------------------------------------------------- */
       /*
@@ -317,12 +317,12 @@ void solver_az_oll(
       /*
          else
          {
-         if (msr_array->is_factored==0) 
+         if (msr_array->is_factored==0)
          {
          msr_array->options[AZ_pre_calc] = AZ_recalc;
          msr_array->options[AZ_keep_info] = 1;
          }
-         else                           
+         else
          {
          msr_array->options[AZ_pre_calc] = AZ_reuse;
          msr_array->options[AZ_keep_info] = 1;
@@ -341,7 +341,7 @@ void solver_az_oll(
           NULL,
           NULL
           );
-      /*------------------------------------------------ delete temporary rhs */          
+      /*------------------------------------------------ delete temporary rhs */
       amdel(&tmprhs_a);
       /*-------------------------------------------- recover unpermuted bindx */
       amcopy(&(msr_array->bindx_backup),&(msr_array->bindx));
@@ -352,7 +352,7 @@ void solver_az_oll(
           msr_array->update_index,
           NULL,
           sol->vec.a.dv
-          ); 
+          );
       /*------------------------------------ delete temporary solution vector */
       amdel(&tmpsol_a);
       /*---------------------------------------- destroy the Aztec structures */
@@ -393,7 +393,7 @@ void solver_az_oll(
           }
         }
       }
-      /*------------------------------------ print solver iterations and time */             
+      /*------------------------------------ print solver iterations and time */
       if (actintra->intra_rank==0)
       {
         if (actsolv->fieldtyp==structure) fprintf(allfiles.out_err,"Structure:\n");
@@ -413,10 +413,10 @@ void solver_az_oll(
       /*----------------------------------------------------------------------*/
     default:
       dserror("Unknown option for solver call to Aztec");
-      break;   
+      break;
   }
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 #endif /* end of ifdef AZTEC_PACKAGE */

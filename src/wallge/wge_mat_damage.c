@@ -8,8 +8,8 @@
 #include "wallge.h"
 #include "wallge_prototypes.h"
 
-/*! 
-\addtogroup WALLGE 
+/*!
+\addtogroup WALLGE
 *//*! @{ (documentation module open)*/
 
 
@@ -40,8 +40,8 @@ void wge_mat_damage(INT      equival,  /* flag for equivalent strains     */
                     DOUBLE  *E,        /* 2. Material tangent             */
                     DOUBLE  *F,        /* 3. Material tangent             */
                     INT      istore,
-                    INT      newval)       
-                      
+                    INT      newval)
+
 {
 #ifdef D_WALLGE
 /*----------------------------------------------------------------------*/
@@ -64,7 +64,7 @@ DOUBLE tol = -1.0E-10;
 
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("wge_mat_damage");
 #endif
 /*----------------------------------------------------------------------*/
@@ -74,8 +74,8 @@ dstrc_enter("wge_mat_damage");
 /*----------------------------------------------------------------------*/
 if(newval==1)
 {
- for (i=0; i<4; i++) 
- { 
+ for (i=0; i<4; i++)
+ {
   stress[i] = ele->e.wallge->elwa[0].iptwa[ip].sig[i];
  }
 goto end;
@@ -102,12 +102,12 @@ kappa_0 = kappa_0*0.9;
 }
 }
 # endif
-/*--------- compute strain nonl.equiv.strain, grad nonl.equiv.strain ---*/        
+/*--------- compute strain nonl.equiv.strain, grad nonl.equiv.strain ---*/
 wge_strain(ele,bopd,functe,bope,strain,eps_vnl,grad_eps_vnl);
-/*------------------------------------------------ compute strain_33 ---*/        
+/*------------------------------------------------ compute strain_33 ---*/
 if(ele->e.wallge->wgetype==pl_strain)  strain[3]=0.0;
 if(ele->e.wallge->wgetype==pl_stress)  strain[3]=-(nue*(strain[0]+strain[1]))/(1.0-nue);
-/*------------------------------ from strain-vector to strain-tensor ---*/        
+/*------------------------------ from strain-vector to strain-tensor ---*/
 w1_4to9(strain,epsilon);
 /*------------------------------ max. ever reached equivalent strain ---*/
 kappa_n = ele->e.wallge->elwa[0].iptwa[ip].kappa;
@@ -117,7 +117,7 @@ kappa_n = ele->e.wallge->elwa[0].iptwa[ip].kappa;
 /*----------------------------------------------------------------------*/
 
 /*----------------------------- loading (elastic or already damaged) ---*/
-if(*eps_vnl - kappa_n >= tol) 
+if(*eps_vnl - kappa_n >= tol)
 {
  yip = 1;
  kappa = *eps_vnl;
@@ -159,21 +159,21 @@ for (i=0; i<3; i++)
  {
   E_ed[i][j] = - yip * dam_derv * sigma_el[i][j];
  }
-} 
+}
 /*----------------------------------------------------------------------*/
 /*               from tensor- back to vetor/matrix-notation             */
 /*----------------------------------------------------------------------*/
 
 /*------ from stresstensor to stress vector (just another arangement)---*/
-w1_9to4(sigma,stress); 
+w1_9to4(sigma,stress);
 /*--- from tangenttensor to tangentmatrix D (just another arangement)---*/
-w1_81to16(C_ed,D); 
+w1_81to16(C_ed,D);
 /*--- from tangenttensor to tangentvector E (just another arangement)---*/
-w1_9to4(E_ed,E); 
+w1_9to4(E_ed,E);
 /*--- from tangenttensor to tangentvector F (just another arangement)---*/
-w1_9to4(F_ed,F); 
+w1_9to4(F_ed,F);
 /*--------------------------------- condensation of tangent matrixes ---*/
-wge_condense(D,E,F,ele->e.wallge->wgetype,nue); 
+wge_condense(D,E,F,ele->e.wallge->wgetype,nue);
 
 /*----------------------------------------------------------------------*/
 /*           store statevariables of converged state (update)           */
@@ -188,17 +188,17 @@ if(istore==1)
   ele->e.wallge->elwa[0].iptwa[ip].sig[1] = stress[1];
   ele->e.wallge->elwa[0].iptwa[ip].sig[2] = stress[2];
   ele->e.wallge->elwa[0].iptwa[ip].sig[3] = stress[3];
-}/*end of: if (istore==1) */  
+}/*end of: if (istore==1) */
 
 /*----------------------------------------------------------------------*/
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 #endif /*D_WALLGE*/
-return; 
+return;
 } /* end of wge_mat_damage */
 /*----------------------------------------------------------------------*/
 /*! @} (documentation module close)*/

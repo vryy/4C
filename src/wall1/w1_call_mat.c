@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 'w1_call_mat' which selects the proper 
+\brief contains the routine 'w1_call_mat' which selects the proper
        material law for a wall element
        contains the routine 'w1_getdensity' which gets the density
        out of the material law
@@ -18,7 +18,7 @@ Maintainer: Andrea Hund
 #include "wall1.h"
 #include "wall1_prototypes.h"
 
-/*! 
+/*!
 \addtogroup WALL1
 *//*! @{ (documentation module open)*/
 
@@ -26,12 +26,12 @@ Maintainer: Andrea Hund
  | select proper material law                               al 01/02    |
  *----------------------------------------------------------------------*/
 void w1_call_mat(ELEMENT   *ele,
-                 MATERIAL  *mat, 
+                 MATERIAL  *mat,
                  WALL_TYPE wtype,
                  DOUBLE **bop,
                  DOUBLE  *gop,
                  DOUBLE  *alpha,
-                 INT ip,       
+                 INT ip,
                  DOUBLE *stress,
                  DOUBLE **d,
                  INT istore,/* controls storing of new stresses to wa */
@@ -43,7 +43,7 @@ DOUBLE disd[4];
 /*----------------------------------------------------------------------*/
 DOUBLE strain[6];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_call_mat");
 #endif
 /*------------------------------------------------ call material law ---*/
@@ -137,17 +137,17 @@ dstrc_enter("w1_call_mat");
                        mat->m.pl_epc->reb_so      ,
                        mat->m.pl_epc->reb_ds      ,
                        mat->m.pl_epc->reb_rgamma  ,
-                       ele,                      
-                       wtype,                    
+                       ele,
+                       wtype,
                        bop,
                        gop,
                        alpha,
-                       ip,                       
-                       stress,                   
-                       d,                        
-                       istore,                   
-                       newval);                  
-  break;                                         
+                       ip,
+                       stress,
+                       d,
+                       istore,
+                       newval);
+  break;
 #ifdef D_MAT
   case m_pl_epc3D:/*------ elastoplastic concrete material law 3D --- sh 12/03 -*/
     w1_mat_plast_epc3D(mat->m.pl_epc->youngs      ,
@@ -160,24 +160,24 @@ dstrc_enter("w1_call_mat");
                        mat->m.pl_epc->gamma2      ,
                        mat->m.pl_epc->gamma3      ,
                        mat->m.pl_epc->gamma4      ,
-                       ele,                      
-                       wtype,                    
+                       ele,
+                       wtype,
                        bop,
                        gop,
                        alpha,
-                       ip,                       
-                       stress,                   
-                       d,                        
-                       istore,                   
-                       newval);                  
-  break;                                         
+                       ip,
+                       stress,
+                       d,
+                       istore,
+                       newval);
+  break;
 #endif
   case m_dam_mp:/*--------------------- isotropic damage ---*/
     w1_mat_dam_mp(mat->m.dam_mp->youngs,
                    mat->m.dam_mp->nue,
-                   mat->m.dam_mp->kappa_0,               
-                   mat->m.dam_mp->alpha,               
-                   mat->m.dam_mp->beta,              
+                   mat->m.dam_mp->kappa_0,
+                   mat->m.dam_mp->alpha,
+                   mat->m.dam_mp->beta,
                    ele,
                    wtype,
                    bop,
@@ -215,10 +215,10 @@ dstrc_enter("w1_call_mat");
   break;
   }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of w1_call_mat */
 /*----------------------------------------------------------------------*/
 
@@ -228,7 +228,7 @@ return;
 /*----------------------------------------------------------------------*/
 void w1_getdensity(MATERIAL   *mat, DOUBLE *density)
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_getdensity");
 #endif
 /*----------------------------------------------------------------------*/
@@ -258,7 +258,7 @@ default:
 break;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

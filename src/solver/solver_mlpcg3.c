@@ -21,18 +21,18 @@ DOUBLE cmp_double(const void *a, const void *b );
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
-/*! 
-\addtogroup MLPCG 
+/*!
+\addtogroup MLPCG
 *//*! @{ (documentation module open)*/
 /*!----------------------------------------------------------------------
 \brief the multilevel preconditioner main structure
 
-<pre>                                                         m.gee 09/02    
+<pre>                                                         m.gee 09/02
 defined in solver_mlpcg.c
 </pre>
 
@@ -41,38 +41,38 @@ extern struct _MLPRECOND mlprecond;
 /*!----------------------------------------------------------------------
 \brief the multilevel preconditioned solver main structure
 
-<pre>                                                         m.gee 09/02    
+<pre>                                                         m.gee 09/02
 defined in solver_mlpcg.c
 </pre>
 
 *----------------------------------------------------------------------*/
 extern struct _MLSOLVER mlsolver;
 /*!---------------------------------------------------------------------
-\brief create multilevel solver                                              
+\brief create multilevel solver
 
-<pre>                                                        m.gee 9/02 
+<pre>                                                        m.gee 9/02
 
 </pre>
-\param bdcsr    DBCSR*         (i)   the distributed  csr matrix                   
-\param sol      DIST_VECTOR*   (i)   the distributed  solution vector         
-\param rhs      DIST_VECTOR*   (i)   the distributed  rhs vector         
-\return void                                               
+\param bdcsr    DBCSR*         (i)   the distributed  csr matrix
+\param sol      DIST_VECTOR*   (i)   the distributed  solution vector
+\param rhs      DIST_VECTOR*   (i)   the distributed  rhs vector
+\return void
 
 ------------------------------------------------------------------------*/
-void mlpcg_solver_create(DBCSR       *bdcsr, 
+void mlpcg_solver_create(DBCSR       *bdcsr,
                          DIST_VECTOR *sol,
                          DIST_VECTOR *rhs,
                          MLPCGVARS   *mlpcgvars)
 {
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_solver_create");
 #endif
 /*----------------------------------------------------------------------*/
 mlsolver.tol = mlpcgvars->tol;
 mlsolver.maxiter = mlpcgvars->maxiter;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -81,19 +81,19 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief multilevel preconditioned cg                                              
+\brief multilevel preconditioned cg
 
-<pre>                                                        m.gee 9/02 
+<pre>                                                        m.gee 9/02
 
 </pre>
-\param bdcsr    DBCSR_ROOT*    (i)   the distributed csr matrix                   
-\param sol      DIST_VECTOR*   (i)   the distributed  solution vector         
-\param rhs      DIST_VECTOR*   (i)   the distributed  rhs vector         
-\param actintra INTRA*         (i)   the intra-communicator of this field                  
-\return void                                               
+\param bdcsr    DBCSR_ROOT*    (i)   the distributed csr matrix
+\param sol      DIST_VECTOR*   (i)   the distributed  solution vector
+\param rhs      DIST_VECTOR*   (i)   the distributed  rhs vector
+\param actintra INTRA*         (i)   the intra-communicator of this field
+\return void
 \sa mlpcg_solver_init mlpcg_matvec_init mlpcg_matvec
 ------------------------------------------------------------------------*/
-void mlpcg_pcg(DBCSR       *bdcsr, 
+void mlpcg_pcg(DBCSR       *bdcsr,
                DIST_VECTOR *sol,
                DIST_VECTOR *rhs,
                DOUBLE      *D,
@@ -112,7 +112,7 @@ INT        ione=1;
 INT        izero=0;
 INT        one=1,two;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_pcg");
 #endif
 /*----------------------------------------------------------------------*/
@@ -125,7 +125,7 @@ x = sol->vec.a.dv;
 b = rhs->vec.a.dv;
 r = mlsolver.r.a.dv;
 runscale = mlsolver.runscale.a.dv;
-z = mlsolver.z.a.dv; 
+z = mlsolver.z.a.dv;
 p = mlsolver.p.a.dv;
 q = mlsolver.q.a.dv;
 /*------------------------------------------------------------take time */
@@ -160,7 +160,7 @@ for (i=0; i<mlsolver.maxiter; i++)
       beta = rho1/rho2;
       /*---------------------------------------------- p = z + beta * p */
       mlpcgupdupdvec(p,z,&done,p,&beta,&ione,&numeq);
-   } 
+   }
    /*----------------------------------------------------------- q = Ap */
    mlpcg_matvec(q,bdcsr,p,1.0,1,actintra);
    /*------------------------------------------------- alfa = rho1 / pq */
@@ -192,7 +192,7 @@ for (i=0; i<mlsolver.maxiter; i++)
       printf("%d : %20.15f\n",i,eps);
       fflush(stdout);
    }
-   if (eps<=mlsolver.tol) 
+   if (eps<=mlsolver.tol)
    break;
    /*------------------------------------------------------ update rho2 */
    rho2 = rho1;
@@ -213,7 +213,7 @@ if ((i==mlsolver.maxiter || eps>mlsolver.tol ) && myrank==0)
 if (myrank==0)
    printf("MLPCG: numiter: %d   eps: %E\n",i+1,eps);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -222,19 +222,19 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief init multilevel solver                                              
+\brief init multilevel solver
 
-<pre>                                                        m.gee 9/02 
+<pre>                                                        m.gee 9/02
 
 </pre>
-\param bdcsr    DBCSR_ROOT*    (i)   the distributed csr matrix                   
-\param sol      DIST_VECTOR*   (i)   the distributed  solution vector         
-\param rhs      DIST_VECTOR*   (i)   the distributed  rhs vector         
-\param actintra   INTRA*       (i)   the intra-communicator of this field                  
-\return void                                               
+\param bdcsr    DBCSR_ROOT*    (i)   the distributed csr matrix
+\param sol      DIST_VECTOR*   (i)   the distributed  solution vector
+\param rhs      DIST_VECTOR*   (i)   the distributed  rhs vector
+\param actintra   INTRA*       (i)   the intra-communicator of this field
+\return void
 
 ------------------------------------------------------------------------*/
-void mlpcg_solver_init(DBCSR       *bdcsr, 
+void mlpcg_solver_init(DBCSR       *bdcsr,
                        DIST_VECTOR *sol,
                        DIST_VECTOR *rhs,
                        INTRA       *actintra)
@@ -242,7 +242,7 @@ void mlpcg_solver_init(DBCSR       *bdcsr,
 INT        myrank,nproc;
 INT        numeq;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_solver_init");
 #endif
 /*----------------------------------------------------------------------*/
@@ -259,10 +259,10 @@ if (mlsolver.r.Typ != cca_DV)
    amdef("p",&(mlsolver.p),numeq,1,"DV");
    amdef("q",&(mlsolver.q),numeq,1,"DV");
 }
-else if (mlsolver.r.fdim != numeq) 
+else if (mlsolver.r.fdim != numeq)
    dserror("Mismatch in dimensions");
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -271,27 +271,27 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief the parallel matrix vector product                                              
+\brief the parallel matrix vector product
 
-<pre>                                                        m.gee 9/02 
+<pre>                                                        m.gee 9/02
 the parallel matrix vector product y += fac * A * x
 Note that this routine is piece of the mos inner computation, so quite
 an effort is taken to make very smooth communication using
 incomplete send, testing for multiple messages, overlayering communication
-with computation 
+with computation
 </pre>
 \param y        DOUBLE*        (o)   the result vector of the matrix vector product
-\param bdcsr    DBCSR_ROOT*    (i)   the distributed csr matrix                   
+\param bdcsr    DBCSR_ROOT*    (i)   the distributed csr matrix
 \param x        DOUBLE*        (i)   the input vector of the product
 \param fac      DOUBLE         (i)   scaling factor
 \param init     INT            (i)   init=1: y = fac*A*x / init=0: y += fac*A*x
-\param actintra INTRA*         (i)   the intra-communicator of this field                  
-\return void   
+\param actintra INTRA*         (i)   the intra-communicator of this field
+\return void
 \warning the incomplete communication used needs mpi-internal buffer space.
-         It may be necessary to allocate extra buffer for MPI, see MPI manual.                                            
+         It may be necessary to allocate extra buffer for MPI, see MPI manual.
 \sa mlpcg_matvec_init
 ------------------------------------------------------------------------*/
-void mlpcg_matvec(DOUBLE       *y, 
+void mlpcg_matvec(DOUBLE       *y,
                   DBCSR        *A,
                   DOUBLE       *x,
                   DOUBLE        fac,
@@ -323,11 +323,11 @@ INT        column;
 INT        shift;
 INT        bins[5000];
 
-#ifdef PARALLEL 
+#ifdef PARALLEL
 MPI_Status local_status;
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_matvec");
 #endif
 /*----------------------------------------------------------------------*/
@@ -354,7 +354,7 @@ fcd         = A->firstcoupledof;
 fcdindex    = mlpcg_getindex(fcd,update,numeq);
 if (fcdindex==-1) dserror("Cannot find local dof in update");
 /*----------------------------------------------------------------------*/
-/* 
+/*
 we will shade the communication of the ghost dofs by the computation of
 the processor local parts of the product. So we first make incomplete
 communication
@@ -377,8 +377,8 @@ for (i=0; i<nproc; i++)
       sbuff[i][j] = x[index];
    }
    dsassert(j==gdofs[i][0],"size mismatch");
-#ifdef PARALLEL 
-   /* send the approbiate values of x */          
+#ifdef PARALLEL
+   /* send the approbiate values of x */
    MPI_Isend(&(sbuff[i][0]),gdofs[i][0],MPI_DOUBLE,i,myrank,
              actintra->MPI_INTRA_COMM,&(A->request[i]));
 #endif
@@ -434,7 +434,7 @@ for (i=0; i<nproc; i++) recv_size[i]=0;
 for (i=0; i<ngdofr; i++)
 {
    own = mlpcg_getowner(gdofr[i],A->owner,nproc);
-   recv_size[own]++;   
+   recv_size[own]++;
 }
 /*---------------------- especially receive in the order as they arrive */
 startrecv:
@@ -443,7 +443,7 @@ for (i=0; i<nproc; i++)
 {
    /* do not receive messages of length zero */
    if (recv_size[i]==0) continue;
-#ifdef PARALLEL 
+#ifdef PARALLEL
    /* check for message from proc i */
    MPI_Iprobe(i,i,actintra->MPI_INTRA_COMM,&flag,&(A->status[i]));
    if (flag==0) continue; /* there is no message from proc i yet */
@@ -474,7 +474,7 @@ for (i=0; i<nproc; i++)
             cbuff[j] = rbuff[i][counter];
             counter++;
          }
-      }   
+      }
    }
 #endif
 }
@@ -488,7 +488,7 @@ if (nproc>1)
 {
 if (ngdofr>18000) dserror("static bins too small");
 init_quick_find(gdofr,ngdofr,&shift,bins);
-for (i=fcdindex; i<numeq; i++) 
+for (i=fcdindex; i<numeq; i++)
    /* loop indizes of colmns */
    for (j=ia[i]; j<ia[i+1]; j++)
    {
@@ -496,7 +496,7 @@ for (i=fcdindex; i<numeq; i++)
       column = ja[j];
       /* check for ownership */
       own    = mlpcg_getowner(column,A->owner,nproc);
-      /* if it is a non-interproc offdiagonal or a diagonal entry, it has 
+      /* if it is a non-interproc offdiagonal or a diagonal entry, it has
                                                   been computed already */
       if (own==myrank) continue;
       /* it is an interproc column */
@@ -507,10 +507,10 @@ for (i=fcdindex; i<numeq; i++)
       dsassert(0<=index<A->computebuff.fdim,"buffer overflow");
       y[i] += a[j] * cbuff[index] * fac;
       /*================================================================*/
-   }   
+   }
 }
 /*--------------------------------- close the incomplete communications */
-#ifdef PARALLEL 
+#ifdef PARALLEL
 for (i=0; i<nproc; i++)
 if (A->request[i])
 MPI_Wait(&(A->request[i]),&local_status);
@@ -520,7 +520,7 @@ t2 = ds_cputime();
 if (myrank==0) printf("matvec INTER II: %20.10f\n",t2-t1);
 */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -529,13 +529,13 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief init the matrix vector product of a dbcsr matrix                                              
+\brief init the matrix vector product of a dbcsr matrix
 
-<pre>                                                        m.gee 9/02 
+<pre>                                                        m.gee 9/02
 This routine checks the ghost dofs of the distributed csr matrix, means
 it looks for the dofs on other procs, which are locally necessary to
 perform a multiplication with this piece of csr matrix. Plausibility tests
-of the matrix are made and it is checked whether the given matrix has been 
+of the matrix are made and it is checked whether the given matrix has been
 initialized by this routine before
 
    For simple computation we demand the following properties of the given
@@ -551,12 +551,12 @@ initialized by this routine before
        -> no row before bdcsr->firstcoupledof has interproc coupling
 
 </pre>
-\param bdcsr      DBCSR*       (i/o) the distributed csr matrix                   
-\param actintra   INTRA*       (i)   the intra-communicator of this field                  
-\return void                                               
+\param bdcsr      DBCSR*       (i/o) the distributed csr matrix
+\param actintra   INTRA*       (i)   the intra-communicator of this field
+\return void
 
 ------------------------------------------------------------------------*/
-void mlpcg_matvec_init(DBCSR       *bdcsr, 
+void mlpcg_matvec_init(DBCSR       *bdcsr,
                        INTRA       *actintra)
 {
 INT        i,j,k,counter;
@@ -578,7 +578,7 @@ INT        index;
 INT        rbuffsize[MAXPROC];
 INT        own;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_matvec_init");
 #endif
 /*----------------------------------------------------------------------*/
@@ -594,9 +594,9 @@ update       = bdcsr->update.a.iv;
 ja           = bdcsr->ja.a.iv;
 ia           = bdcsr->ia.a.iv;
 /*----------------------------------------------------------------------*/
-/* 
+/*
    make some plausibility checks for the given bdcsr matrix.
-   
+
    For efficient computation we demand the following properties of the given
    bdcsr matrix:
    -1.) dof numbering and indexing is C-style (starts with 0)
@@ -623,7 +623,7 @@ if (index_fcd==-1) dserror("cannot find dof in update");
 for (i=0; i<ia[index_fcd]; i++)
 {
    j = mlpcg_getindex(ja[i],update,numeq);
-   if (j==-1) 
+   if (j==-1)
       dserror("Interprocessor coupled rows are not sorted correctly");
 }
 /* check sizes of rows */
@@ -650,12 +650,12 @@ for (i=start_index; i<end_index; i++)
    if (index_actdof != -1) continue;
    /* check whether active dof has been counted before */
    for (j=0; j<ngdof; j++)
-   if (actdof==gdof[j]) 
+   if (actdof==gdof[j])
    goto nextdof;
    /* it's a previously unknown ghost-dof */
    gdof[ngdof]=actdof;
    ngdof++;
-   if (ngdof==bdcsr->gdofrecv.fdim) 
+   if (ngdof==bdcsr->gdofrecv.fdim)
    amredef(&(bdcsr->gdofrecv),bdcsr->gdofrecv.fdim+2000,1,"IV");
    nextdof:;
 }
@@ -663,7 +663,7 @@ qsort((INT*)gdof,ngdof,sizeof(INT),cmp_int);
 gdof = (INT*)amredef(&(bdcsr->gdofrecv),ngdof,1,"IV");
 amdef("cbuff",&(bdcsr->computebuff),ngdof,1,"DV");
 /*----------------------------------------------------------------------*/
-/* we have to find the owners of the ghost dofs to store them in the 
+/* we have to find the owners of the ghost dofs to store them in the
    second column of gdof */
 /*----------------------------------------------------------------------*/
 gupdatesend = amdef("tmp",&gupdatesend_a,numeq_total,1,"IV");
@@ -671,7 +671,7 @@ gupdatesend = amdef("tmp",&gupdatesend_a,numeq_total,1,"IV");
 gupdaterecv = amdef("tmp",&gupdaterecv_a,numeq_total,1,"IV");
 #endif
 amzero(&gupdatesend_a);
-for (i=0; i<numeq; i++) 
+for (i=0; i<numeq; i++)
    gupdatesend[update[i]] = myrank;
 #ifdef PARALLEL
 MPI_Allreduce(gupdatesend,gupdaterecv,numeq_total,MPI_INT,MPI_SUM,actintra->MPI_INTRA_COMM);
@@ -695,10 +695,10 @@ bdcsr->owner[counter][1] = numeq_total-1;
 dsassert(counter+1==nproc,"number of processors wrong");
 /*----------------------------------------------------------------------*/
 /* now I(the proc) know in ascending order from which proc I will receive which
-   ghost dof. We now have to find out to who we have to send our own dofs. 
-   Due to the symmetry of the problem, my coupled dofs are ghost to all 
+   ghost dof. We now have to find out to who we have to send our own dofs.
+   Due to the symmetry of the problem, my coupled dofs are ghost to all
    which are ghost to me.
-   But in the send direction my dof can be ghost to several other procs, 
+   But in the send direction my dof can be ghost to several other procs,
    so we need this information more detailed
 */
 /*----------------------------------------------------------------------*/
@@ -774,13 +774,13 @@ for (i=0; i<nproc; i++)
    qsort((INT*)&(gdofsend[i][1]),gdofsend[i][0],sizeof(INT),cmp_int);
 }
 /*----------------------------------------------------------------------*/
-/* 
-   now we have gdofrecv and gdofsend, we can now allocate appropriate 
+/*
+   now we have gdofrecv and gdofsend, we can now allocate appropriate
    DOUBLE precision send- and recvbuffers for the communication
 */
-/*---------------------------- make recvbuff size and allocate recvbuff */   
+/*---------------------------- make recvbuff size and allocate recvbuff */
 counter=0;
-for (i=0; i<MAXPROC; i++) 
+for (i=0; i<MAXPROC; i++)
 rbuffsize[i] = 0;
 for (i=0; i<bdcsr->gdofrecv.fdim; i++)
 {
@@ -790,15 +790,15 @@ for (i=0; i<bdcsr->gdofrecv.fdim; i++)
    rbuffsize[own]++;
 }
 for (i=0; i<nproc; i++)
-   if (rbuffsize[i]>counter) 
+   if (rbuffsize[i]>counter)
       counter = rbuffsize[i];
 amdef("rbuff",&(bdcsr->recvbuff),nproc,counter,"DA");
-/*--------------------------------------------- make size of sendbuffer */      
+/*--------------------------------------------- make size of sendbuffer */
 counter=0;
 for (i=0; i<nproc; i++)
    if (gdofsend[i][0]>counter)
       counter = gdofsend[i][0];
-amdef("sbuff",&(bdcsr->sendbuff),nproc,counter,"DA");      
+amdef("sbuff",&(bdcsr->sendbuff),nproc,counter,"DA");
 /*----------------------------------------- allocate request and status */
 #ifdef PARALLEL
 bdcsr->status  = (MPI_Status*)CCACALLOC(nproc,sizeof(MPI_Status));
@@ -811,7 +811,7 @@ amdel(&gupdaterecv_a);
 #endif
 /*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -820,21 +820,21 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief uninit the matrix vector product of a dbcsr matrix                                              
+\brief uninit the matrix vector product of a dbcsr matrix
 
-<pre>                                                        m.gee 9/02 
+<pre>                                                        m.gee 9/02
 
 </pre>
-\param bdcsr    DBCSR*    (i/o)   the distributed csr matrix                   
-\warning After a call to this routine, no matrix vector product with 
+\param bdcsr    DBCSR*    (i/o)   the distributed csr matrix
+\warning After a call to this routine, no matrix vector product with
          the DBCSR matrix can be done
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_matvec_uninit(DBCSR       *bdcsr)
 {
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_matvec_uninit");
 #endif
 /*----------------------------------------------------------------------*/
@@ -851,7 +851,7 @@ CCAFREE(bdcsr->request);
 #endif
 /*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -860,24 +860,24 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief make the vector product scalar = x * y with distributed vectors                                              
+\brief make the vector product scalar = x * y with distributed vectors
 
-<pre>                                                        m.gee 9/02 
-make the vector product scalar = x * y with distributed vectors 
+<pre>                                                        m.gee 9/02
+make the vector product scalar = x * y with distributed vectors
 </pre>
 \param scalar   DOUBLE*    (o)        the result
-\param x        DOUBLE*    (i)        the vector to update y                  
-\param y        DOUBLE*    (i)        the updated vector length numeq                   
-\param dim      const INT  (i)        the dimension of vectors y and x                   
+\param x        DOUBLE*    (i)        the vector to update y
+\param y        DOUBLE*    (i)        the updated vector length numeq
+\param dim      const INT  (i)        the dimension of vectors y and x
 \param actintra INTRA*     (i)        the corresponding intra-communicator
-\return void                                         
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_vecvec(DOUBLE *scalar, DOUBLE *x, DOUBLE *y, INT dim, INTRA *actintra)
 {
 DOUBLE  sbuff=0.0;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_vecvec");
 #endif
 /*----------------------------------------------------------------------*/
@@ -888,7 +888,7 @@ MPI_Allreduce(&sbuff,scalar,1,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
 *scalar = sbuff;
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -903,38 +903,38 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief return index of a given dof from local dof list                                              
+\brief return index of a given dof from local dof list
 
-<pre>                                                        m.gee 9/02 
+<pre>                                                        m.gee 9/02
 return index of a given dof from local dof list. The given vector update
 of length length has to be sorted and continous
 </pre>
-\param dof      INT    (i)           the dof the index is needed for                   
-\param update   INT*   (i)           the sorted and continous vector update                   
-\param length   INT    (i)           length of update                   
-\return the index of dof in update (INT) or -1 if index not in range                                              
-\sa mlpcg_matvec_init  mlpcg_getowner                                       
+\param dof      INT    (i)           the dof the index is needed for
+\param update   INT*   (i)           the sorted and continous vector update
+\param length   INT    (i)           length of update
+\return the index of dof in update (INT) or -1 if index not in range
+\sa mlpcg_matvec_init  mlpcg_getowner
 
 ------------------------------------------------------------------------*/
 INT mlpcg_getindex(INT dof, INT *update, INT length)
 {
 INT index;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_getindex");
 #endif
 /*----------------------------------------------------------------------*/
 index = dof-(*update);
-if (index<0 || index>=length) 
+if (index<0 || index>=length)
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
    return(-1);
 }
 else
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
    return(index);
@@ -945,24 +945,24 @@ dstrc_exit();
 
 
 /*!---------------------------------------------------------------------
-\brief return the owner of a given dof                                              
+\brief return the owner of a given dof
 
-<pre>                                                        m.gee 9/02 
+<pre>                                                        m.gee 9/02
 return the proc a given dof of a BDCSR matrix is held on. This only works
 after a function call to mlpcg_matvec_init
 </pre>
-\param dof      INT      (i)           the dof the index is needed for                   
-\param owner    INT[][2] (i)           the owner array of the bdcsr matrix                   
-\param nproc    INT      (i)           number of processors                   
-\return the owner of a given dof    
-\sa mlpcg_matvec_init mlpcg_getindex                                        
+\param dof      INT      (i)           the dof the index is needed for
+\param owner    INT[][2] (i)           the owner array of the bdcsr matrix
+\param nproc    INT      (i)           number of processors
+\return the owner of a given dof
+\sa mlpcg_matvec_init mlpcg_getindex
 
 ------------------------------------------------------------------------*/
 INT mlpcg_getowner(INT dof, INT owner[][2], INT nproc)
 {
 INT i,own;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_getowner");
 #endif
 /*----------------------------------------------------------------------*/
@@ -977,7 +977,7 @@ for (i=0; i<nproc; i++)
 }
 if (own==-1) dserror("Cannot find owner of a given dof");
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return(own);
@@ -986,16 +986,16 @@ return(own);
 
 
 /*!---------------------------------------------------------------------
-\brief Do symmetric scaling of system of equations                                              
+\brief Do symmetric scaling of system of equations
 
-<pre>                                                        m.gee 11/03 
+<pre>                                                        m.gee 11/03
 
 </pre>
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_sym_scale1(struct _DBCSR       *bdcsr,
-                     struct _DIST_VECTOR *rhs, 
+                     struct _DIST_VECTOR *rhs,
                      DOUBLE              *D,
                      struct _INTRA       *actintra)
 {
@@ -1008,7 +1008,7 @@ DOUBLE *f;
 INT     numeq,numeq_total;
 DOUBLE *send = NULL;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_sym_scale1");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1065,32 +1065,32 @@ for (i=0; i<numeq; i++)
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of mlpcg_sym_scale1 */
 
 /*!---------------------------------------------------------------------
-\brief Remove symmetric scaling from solution vector                                             
+\brief Remove symmetric scaling from solution vector
 
-<pre>                                                        m.gee 11/03 
+<pre>                                                        m.gee 11/03
 
 </pre>
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_sym_scale2(struct _DBCSR       *bdcsr,
-                     struct _DIST_VECTOR *sol, 
+                     struct _DIST_VECTOR *sol,
                      DOUBLE              *D,
-                     struct _INTRA       *actintra) 
+                     struct _INTRA       *actintra)
 {
 INT     i,j,row;
 INT    *update;
 DOUBLE *f;
 INT     numeq;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_sym_scale2");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1104,22 +1104,22 @@ for (i=0; i<numeq; i++)
    f[i] = f[i]*D[row];
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of mlpcg_sym_scale2 */
 /*!---------------------------------------------------------------------
-\brief Remove symmetric scaling from solution vector                                             
+\brief Remove symmetric scaling from solution vector
 
-<pre>                                                        m.gee 11/03 
+<pre>                                                        m.gee 11/03
 
 </pre>
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_sym_scale3(struct _DBCSR       *bdcsr,
-                     DOUBLE              *r, 
+                     DOUBLE              *r,
                      DOUBLE              *D,
                      struct _INTRA       *actintra)
 {
@@ -1127,7 +1127,7 @@ INT     i,j,row;
 INT    *update;
 INT     numeq;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_sym_scale3");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1140,7 +1140,7 @@ for (i=0; i<numeq; i++)
    r[i] = r[i]*D[row];
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -16,34 +16,34 @@ Maintainer: Malte Neumann
 #include "../headers/standardtypes.h"
 #include "ale2.h"
 
-/*! 
-\addtogroup Ale 
+/*!
+\addtogroup Ale
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief calculates usual stiffness matrix in total lagrangian formulation 
+\brief calculates usual stiffness matrix in total lagrangian formulation
 
 <pre>                                                              mn 06/02
 This routine calculates usual stiffness matrix in total lagrangian
 formulation.
 
 </pre>
-\param **s   DOUBLE    (o)  element stiffness matrix 
+\param **s   DOUBLE    (o)  element stiffness matrix
 \param bs  **DOUBLE    (i)  derivative operator
 \param d   **DOUBLE    (i)  constitutive matrix
 \param fac   DOUBLE    (i)  integration factor
 \param nd    INT       (i)  total number degrees of freedom of element
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; caled by: ale2_static_ke(), ale3_static_ke()
 
 *----------------------------------------------------------------------*/
 void ale2_keku(
-    DOUBLE  **s, 
-    DOUBLE  **bs, 
-    DOUBLE  **d, 
-    DOUBLE    fac, 
+    DOUBLE  **s,
+    DOUBLE  **bs,
+    DOUBLE  **d,
+    DOUBLE    fac,
     INT       nd,
     INT       neps
     )
@@ -53,7 +53,7 @@ void ale2_keku(
   DOUBLE         db[24];
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("ale2_keku");
 #endif
 
@@ -78,7 +78,7 @@ void ale2_keku(
     }
   }
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 

@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -23,16 +23,16 @@ DOUBLE cmp_double(const void *a, const void *b );
 /*----------------------------------------------------------------------*
  |  calculate the mask of an ucchb matrix               m.gee 11/01     |
  *----------------------------------------------------------------------*/
-void  mask_ucchb(FIELD     *actfield, 
-                   PARTITION *actpart, 
+void  mask_ucchb(FIELD     *actfield,
+                   PARTITION *actpart,
                    SOLVAR    *actsolv,
-                   INTRA     *actintra, 
+                   INTRA     *actintra,
                    UCCHB     *ucchb)
 {
 INT       i;
 INT       numeq;
 INT     **dof_connect;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mask_ucchb");
 #endif
 /*----------------------------------------------------------------------*/
@@ -41,12 +41,12 @@ dstrc_enter("mask_ucchb");
    AZ_ARRAY_MSR will be different on every proc
    FIELD is the same everywhere
    In this routine, the vectors update and bindx and val are determined
-   in size and allocated, the contents of the vectors update and bindx 
+   in size and allocated, the contents of the vectors update and bindx
    are calculated
 */
 /*------------------------------------------- put total size of problem */
 ucchb->numeq_total = actfield->dis[0].numeq;
-/* count number of eqns on proc and build processor-global couplingdof 
+/* count number of eqns on proc and build processor-global couplingdof
                                                                  matrix */
 mask_numeq(actfield,actpart,actsolv,actintra,&numeq,0);
 ucchb->numeq = numeq;
@@ -55,13 +55,13 @@ amdef("update",&(ucchb->update),numeq,1,"IV");
 amzero(&(ucchb->update));
 /*--------------------------------put dofs in update in ascending order */
 ucchb_update(actfield,actpart,actsolv,actintra,ucchb);
-/*------------------------ count number of nonzero entries on partition 
+/*------------------------ count number of nonzero entries on partition
                                     and calculate dof connectivity list */
    /*
       dof_connect[i][0] = lenght of dof_connect[i]
-      dof_connect[i][1] = iscoupled ( 1 or 2 ) 
+      dof_connect[i][1] = iscoupled ( 1 or 2 )
       dof_connect[i][2] = dof
-      dof_connect[i][ 2..dof_connect[i][0]-1 ] = connected dofs exluding itself 
+      dof_connect[i][ 2..dof_connect[i][0]-1 ] = connected dofs exluding itself
    */
 dof_connect = (INT**)CCACALLOC(ucchb->numeq_total,sizeof(INT*));
 if (!dof_connect) dserror("Allocation of dof_connect failed");
@@ -75,7 +75,7 @@ for (i=0; i<ucchb->numeq_total; i++)
 }
 CCAFREE(dof_connect);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -87,8 +87,8 @@ return;
 /*----------------------------------------------------------------------*
  |  count processor local and global number of equations    m.gee 5/01  |
  *----------------------------------------------------------------------*/
-void ucchb_numeq(FIELD      *actfield, 
-                   PARTITION    *actpart, 
+void ucchb_numeq(FIELD      *actfield,
+                   PARTITION    *actpart,
                    SOLVAR       *actsolv,
                    INTRA        *actintra,
                    INT          *numeq)
@@ -110,7 +110,7 @@ NODE     *actnode;
 
 INT       no_coupling = 0;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ucchb_numeq");
 #endif
 /*----------------------------------------------------------------------*/
@@ -134,7 +134,7 @@ for (i=0; i<actfield->dis[0].numnp; i++)
       if (actnode->gnode->couple->couple.a.ia[l][0] != 0 ||
           actnode->gnode->couple->couple.a.ia[l][1] != 0 )
       {
-         if (counter>=actpart->pdis[0].coupledofs.fdim) 
+         if (counter>=actpart->pdis[0].coupledofs.fdim)
          amredef(&(actpart->pdis[0].coupledofs),(actpart->pdis[0].coupledofs.fdim+5000),1,"IV");
       /* the coupled dof could be dirichlet conditioned */
          if (actnode->dof[l]<actfield->dis[0].numeq)
@@ -163,7 +163,7 @@ if (!no_coupling)
     dof = actpart->pdis[0].coupledofs.a.iv[i];
     for (j=i+1; j<actpart->pdis[0].coupledofs.fdim; j++)
     {
-      if (actpart->pdis[0].coupledofs.a.iv[j]==dof) 
+      if (actpart->pdis[0].coupledofs.a.iv[j]==dof)
         actpart->pdis[0].coupledofs.a.iv[j]=-1;
     }
   }
@@ -180,27 +180,27 @@ if (!no_coupling)
   amredef(&(actpart->pdis[0].coupledofs),counter,inprocs+1,"IA");
   /*------------------- the newly allocated columns have to be initialized */
   for (i=1; i<actpart->pdis[0].coupledofs.sdim; i++)
-    for (j=0; j<actpart->pdis[0].coupledofs.fdim; j++) 
+    for (j=0; j<actpart->pdis[0].coupledofs.fdim; j++)
       actpart->pdis[0].coupledofs.a.ia[j][i]=0;
 
 } /* end of if(!no_coupling) */
 
-/* processor looks on his own domain whether he has some of these coupdofs, 
-   puts this information in the array coupledofs in the column myrank+1, so it 
-   can be allreduced 
+/* processor looks on his own domain whether he has some of these coupdofs,
+   puts this information in the array coupledofs in the column myrank+1, so it
+   can be allreduced
 
    The matrix has the following style (after allreduce on all procs the same):
-   
+
                ----------------------
                | 12 | 1 | 0 | 1 | 0 |
                | 40 | 1 | 0 | 0 | 0 |
                | 41 | 1 | 1 | 1 | 1 |
                | 76 | 0 | 1 | 1 | 0 |
                ----------------------
-               
+
                column 0                : number of the coupled equation
                column 1 - inprocs+1    : proc has coupled equation or not
-               
+
 */
 
 if (!no_coupling)
@@ -234,7 +234,7 @@ else /*----------------------------------------------- parallel version */
       }
    }
 }
-/* ----- Allreduce the whole array, so every proc knows about where all 
+/* ----- Allreduce the whole array, so every proc knows about where all
                                                          coupledofs are */
 #ifdef PARALLEL
 sendsize = (actpart->pdis[0].coupledofs.fdim)*(inprocs);
@@ -287,13 +287,13 @@ for (i=0; i<actpart->pdis[0].numnp; i++)
       iscoupled=0;
       for (k=0; k<actpart->pdis[0].coupledofs.fdim; k++)
       {
-         if (dof == actpart->pdis[0].coupledofs.a.ia[k][0]) 
+         if (dof == actpart->pdis[0].coupledofs.a.ia[k][0])
          {
             iscoupled=1;
             break;
          }
       }
-      if (iscoupled==0) 
+      if (iscoupled==0)
       {
          if (dof < actfield->dis[0].numeq)
          counter++;
@@ -302,25 +302,25 @@ for (i=0; i<actpart->pdis[0].numnp; i++)
 }
 /*--- number of equations on this partition including the coupled ones */
 *numeq = counter;
-/* 
-   An inter-proc coupled equation produces communications calculating the 
+/*
+   An inter-proc coupled equation produces communications calculating the
    sparsity mask of the matrix
    An inter-proc coupled equation produces communications adding element
    matrices to the system matrix
    An inter-proc coupled equation ruins the bandwith locally
    ->
-   Now one processor has to be owner of the coupled equation. 
+   Now one processor has to be owner of the coupled equation.
    Try to distribute the coupled equations equally over the processors
 
    The matrix has the following style (after allreduce on all procs the same):
-   
+
                ----------------------
                | 12 | 2 | 0 | 1 | 0 |
                | 40 | 2 | 0 | 0 | 0 |
                | 41 | 1 | 2 | 1 | 1 |
                | 76 | 0 | 1 | 2 | 0 |
                ----------------------
-               
+
                column 0                : number of the coupled equation
                column 1 - inprocs+1    : proc has coupled equation or not
                                          2 indicates owner of equation
@@ -342,7 +342,7 @@ if (inprocs > 1)
       {
          for (j=0; j<inprocs; j++)
          {
-            if (actpart->pdis[0].coupledofs.a.ia[i][j+1]==1) 
+            if (actpart->pdis[0].coupledofs.a.ia[i][j+1]==1)
             {
                actpart->pdis[0].coupledofs.a.ia[i][j+1]=2;
                break;
@@ -355,7 +355,7 @@ if (inprocs > 1)
          proc=-1;
          for (j=0; j<inprocs; j++)
          {
-            if (actpart->pdis[0].coupledofs.a.ia[i][j+1]==1) 
+            if (actpart->pdis[0].coupledofs.a.ia[i][j+1]==1)
             {
                if (tmp[j]<=min)
                {
@@ -389,7 +389,7 @@ if (inprocs > 1)
 } /* end of if(!no_coupling) */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -403,8 +403,8 @@ return;
 /*----------------------------------------------------------------------*
  |  allocate update put dofs in update in ascending order   m.gee 5/01  |
  *----------------------------------------------------------------------*/
-void  ucchb_update(FIELD     *actfield, 
-                     PARTITION *actpart, 
+void  ucchb_update(FIELD     *actfield,
+                     PARTITION *actpart,
                      SOLVAR    *actsolv,
                      INTRA     *actintra,
                      UCCHB     *ucchb)
@@ -418,7 +418,7 @@ INT       dof;
 INT       foundit;
 NODE     *actnode;
 ARRAY     coupledofs;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ucchb_update");
 #endif
 /*----------------------------------------------------------------------*/
@@ -453,9 +453,9 @@ for (i=0; i<actpart->pdis[0].numnp; i++)
             if (dof == coupledofs.a.ia[k][0])
             {
                /* am I owner of this dof or not */
-               if (coupledofs.a.ia[k][imyrank+1]==2) 
+               if (coupledofs.a.ia[k][imyrank+1]==2)
                foundit=2;
-               else if (coupledofs.a.ia[k][imyrank+1]==1)                                     
+               else if (coupledofs.a.ia[k][imyrank+1]==1)
                foundit=1;
                break;
             }
@@ -479,7 +479,7 @@ for (i=0; i<actpart->pdis[0].numnp; i++)
             continue;
          }
       }
-      
+
    }
 }
 /*---------- check whether the correct number of dofs have been counted */
@@ -489,7 +489,7 @@ qsort((INT*) update, counter, sizeof(INT), cmp_int);
 /*----------------------------------------------------------------------*/
 amdel(&coupledofs);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -501,8 +501,8 @@ return;
 /*----------------------------------------------------------------------*
  |  calculate number of nonzero entries and dof topology    m.gee 6/01  |
  *----------------------------------------------------------------------*/
-void  ucchb_nnz_topology(FIELD      *actfield, 
-                           PARTITION  *actpart, 
+void  ucchb_nnz_topology(FIELD      *actfield,
+                           PARTITION  *actpart,
                            SOLVAR     *actsolv,
                            INTRA      *actintra,
                            UCCHB      *ucchb,
@@ -530,11 +530,11 @@ ARRAY     *coupledofs;
 INT        imyrank;
 INT        inprocs;
 
-#ifdef PARALLEL 
+#ifdef PARALLEL
 MPI_Status status;
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ucchb_nnz_topology");
 #endif
 /*----------------------------------------------------------------------*/
@@ -599,24 +599,24 @@ for (i=0; i<numeq; i++)
    dof_connect[dof] = (INT*)CCACALLOC(counter2+3,sizeof(INT));
    if (!dof_connect[dof]) dserror("Allocation of dof connect list failed");
    dof_connect[dof][0] = counter2+3;
-   dof_connect[dof][1] = 0; 
+   dof_connect[dof][1] = 0;
    dof_connect[dof][2] = dof;
    /*
       dof_connect[i][0] = lenght of dof_connect[i]
-      dof_connect[i][1] = iscoupled ( 1 or 2 ) done later on 
+      dof_connect[i][1] = iscoupled ( 1 or 2 ) done later on
       dof_connect[i][2] = dof
-      dof_connect[i][ 2..dof_connect[i][0]-1 ] = connected dofs exluding itself 
+      dof_connect[i][ 2..dof_connect[i][0]-1 ] = connected dofs exluding itself
    */
    counter2=0;
    for (j=0; j<counter; j++)
    {
-      if (dofpatch.a.iv[j] != -1) 
+      if (dofpatch.a.iv[j] != -1)
       {
          dof_connect[dof][counter2+3] = dofpatch.a.iv[j];
          counter2++;
       }
    }
-}  /* end of loop over numeq */ 
+}  /* end of loop over numeq */
 /*--------------------------------------------- now do the coupled dofs */
 coupledofs = &(actpart->pdis[0].coupledofs);
 for (i=0; i<coupledofs->fdim; i++)
@@ -689,7 +689,7 @@ for (i=0; i<coupledofs->fdim; i++)
    counter2=0;
    for (j=0; j<counter; j++)
    {
-      if (dofpatch.a.iv[j] != -1) 
+      if (dofpatch.a.iv[j] != -1)
       {
          dof_connect[dof][counter2+3] = dofpatch.a.iv[j];
          counter2++;
@@ -697,7 +697,7 @@ for (i=0; i<coupledofs->fdim; i++)
    }
 } /* end of loop over coupled dofs */
 /* make the who-has-to-send-whom-how-much-and-what-arrays and communicate */
-#ifdef PARALLEL 
+#ifdef PARALLEL
 counter=0;
 for (i=0; i<coupledofs->fdim; i++)
 {
@@ -705,7 +705,7 @@ for (i=0; i<coupledofs->fdim; i++)
    /*-------------------------------------- find the master of this dof */
    for (j=1; j<coupledofs->sdim; j++)
    {
-      if (coupledofs->a.ia[i][j]==2) 
+      if (coupledofs->a.ia[i][j]==2)
       {
          dofmaster = j-1;
          break;
@@ -746,7 +746,7 @@ for (i=0; i<coupledofs->fdim; i++)
                if (actdof==-1) continue;
                for (k=m+1; k<dof_connect[dof][0]; k++)
                {
-                  if (dof_connect[dof][k] == actdof) 
+                  if (dof_connect[dof][k] == actdof)
                   dof_connect[dof][k] = -1;
                }
             }
@@ -799,7 +799,7 @@ for (i=0; i<numeq; i++)
 /*----------------------------------------------------------------------*/
 amdel(&dofpatch);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -810,8 +810,8 @@ return;
  |  make the UCCHB vectors a, asub, xa                     m.gee 11/01  |
  | and nnz_total                                                        |
  *----------------------------------------------------------------------*/
-void  ucchb_make_a(FIELD         *actfield, 
-                     PARTITION     *actpart, 
+void  ucchb_make_a(FIELD         *actfield,
+                     PARTITION     *actpart,
                      SOLVAR        *actsolv,
                      INTRA         *actintra,
                      UCCHB         *ucchb,
@@ -837,7 +837,7 @@ INT      **tmpr;
 INT        max_dof_connect_send;
 INT        max_dof_connect_recv;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ucchb_make_a");
 #endif
 /*----------------------------------------------------------------------*/
@@ -845,17 +845,17 @@ imyrank = actintra->intra_rank;
 inprocs = actintra->intra_nprocs;
 /*----------------------------------------------------------------------*/
 /*
-At the moment, the mpi-based version of SuperLU expects the 
+At the moment, the mpi-based version of SuperLU expects the
 unsymmetric column compressed Harwell Boeing matrix completly redundant
-on all processes (not nice), but calculates the factors L and U in a 
+on all processes (not nice), but calculates the factors L and U in a
 distributed storage, so it at least scales up to a certain problem size
 (For very large problems one cannot use this direct solver anyway - too slow)
 
-for information about the storage format see SuperLU manual 
+for information about the storage format see SuperLU manual
 */
 /*----------------------- Allreduce the total number of nonzero entries */
 ucchb->nnz_total=0;
-#ifdef PARALLEL 
+#ifdef PARALLEL
 MPI_Allreduce(&(ucchb->nnz),&(ucchb->nnz_total),1,MPI_INT,MPI_SUM,actintra->MPI_INTRA_COMM);
 #else
 ucchb->nnz_total=ucchb->nnz;
@@ -874,7 +874,7 @@ for (i=0; i<ucchb->numeq_total; i++)
    if (dof_connect[i][0]>max_dof_connect_send)
    max_dof_connect_send=dof_connect[i][0];
 }
-#ifdef PARALLEL 
+#ifdef PARALLEL
 MPI_Allreduce(&max_dof_connect_send,&max_dof_connect_recv,1,MPI_INT,MPI_MAX,actintra->MPI_INTRA_COMM);
 #else
 max_dof_connect_recv=max_dof_connect_send;
@@ -882,7 +882,7 @@ max_dof_connect_recv=max_dof_connect_send;
 /*---------------- allocate temporary array to hold global connectivity */
 tmps = amdef("tmp",&tmps_a,ucchb->numeq_total,max_dof_connect_recv,"IA");
        amzero(&tmps_a);
-#ifdef PARALLEL 
+#ifdef PARALLEL
 tmpr = amdef("tmp",&tmpr_a,ucchb->numeq_total,max_dof_connect_recv,"IA");
        amzero(&tmpr_a);
 #endif
@@ -891,12 +891,12 @@ for (i=0; i<ucchb->numeq_total; i++)
 {
    if (dof_connect[i])
    {
-      for (j=0; j<dof_connect[i][0]; j++) 
+      for (j=0; j<dof_connect[i][0]; j++)
          tmps[i][j] = dof_connect[i][j];
    }
 }
 /*--------------------------------------------- allreduce the array tmp */
-#ifdef PARALLEL 
+#ifdef PARALLEL
 MPI_Allreduce(tmps[0],tmpr[0],(tmps_a.fdim*tmps_a.sdim),MPI_INT,MPI_SUM,actintra->MPI_INTRA_COMM);
 /*======================================================================*/
 /*                             parallel version of building xa and asub */
@@ -915,7 +915,7 @@ if (inprocs>1)/*----------- there are more then one proc, make parallel */
          actdof     = tmpr[i][2];
          colheight  = tmpr[i][0]-2;
          xa[i]      = counter;
-         counter   += colheight; 
+         counter   += colheight;
       }
       xa[ucchb->numeq_total] = ucchb->nnz_total;
       if (counter != ucchb->nnz_total) dserror("number of nonzeros mixed up");
@@ -935,7 +935,7 @@ if (inprocs>1)/*----------- there are more then one proc, make parallel */
             asub[counter]=tmpr[i][j+2];
             counter++;
          }
-      }   
+      }
       if (counter != ucchb->nnz_total) dserror("number of nonzeros mixed up");
    }
    /*----------------------------------------------- make communication */
@@ -951,7 +951,7 @@ else/*---------- there is only one proc, make sequentiell, no broadcast */
       actdof     = tmpr[i][2];
       colheight  = tmpr[i][0]-2;
       xa[i]      = counter;
-      counter   += colheight; 
+      counter   += colheight;
    }
    xa[ucchb->numeq_total] = ucchb->nnz_total;
    if (counter != ucchb->nnz_total) dserror("number of nonzeros mixed up");
@@ -968,7 +968,7 @@ else/*---------- there is only one proc, make sequentiell, no broadcast */
          asub[counter]=tmpr[i][j+2];
          counter++;
       }
-   }   
+   }
    if (counter != ucchb->nnz_total) dserror("number of nonzeros mixed up");
 }
 /*======================================================================*/
@@ -984,7 +984,7 @@ for (i=0; i<ucchb->numeq_total; i++)
    actdof     = tmps[i][2];
    colheight  = tmps[i][0]-2;
    xa[i]      = counter;
-   counter   += colheight; 
+   counter   += colheight;
 }
 xa[ucchb->numeq_total] = ucchb->nnz_total;
 if (counter != ucchb->nnz_total) dserror("number of nonzeros mixed up");
@@ -1008,11 +1008,11 @@ if (counter != ucchb->nnz_total) dserror("number of nonzeros mixed up");
 /*======================================================================*/
 /*----------------------------------------------------------------------*/
 amdel(&tmps_a);
-#ifdef PARALLEL 
+#ifdef PARALLEL
 amdel(&tmpr_a);
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Michael Gee
@@ -40,25 +40,25 @@ static ARRAY gkon_a;  static DOUBLE **gkon;
 static ARRAY gmkov_a; static DOUBLE **gmkov;
 static ARRAY gmkon_a; static DOUBLE **gmkon;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8jaco");
 #endif
 /*----------------------------------------------------------------------*/
 /*---------------------------------------------------------- init phase */
 if (init==1)
 {
-   gkov     = amdef("gkov"  ,&gkov_a,3,3,"DA");         
-   gkon     = amdef("gkon"  ,&gkon_a,3,3,"DA");         
-   gmkov    = amdef("gmkov" ,&gmkov_a,3,3,"DA");        
-   gmkon    = amdef("gmkon" ,&gmkon_a,3,3,"DA");        
+   gkov     = amdef("gkov"  ,&gkov_a,3,3,"DA");
+   gkon     = amdef("gkon"  ,&gkon_a,3,3,"DA");
+   gmkov    = amdef("gmkov" ,&gmkov_a,3,3,"DA");
+   gmkon    = amdef("gmkon" ,&gmkon_a,3,3,"DA");
    goto end;
 }
 else if (init==-1)
 {
-   amdel(&gkov_a);   
-   amdel(&gkon_a);   
-   amdel(&gmkov_a);  
-   amdel(&gmkon_a);  
+   amdel(&gkov_a);
+   amdel(&gkon_a);
+   amdel(&gmkov_a);
+   amdel(&gmkon_a);
    goto end;
 }
 /*--------------------------------------------------- calculate metrics */
@@ -86,9 +86,9 @@ x3s=xjm[1][2];
 if (*deta <= EPS14) dserror("Element Area equal 0.0 or negativ detected");
 /*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of s8jaco */
 #endif

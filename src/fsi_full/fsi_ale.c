@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief ale control part of fsi-problems 
+\brief ale control part of fsi-problems
 
 <pre>
 Maintainer: Steffen Genkinger
@@ -10,20 +10,20 @@ Maintainer: Steffen Genkinger
 </pre>
 
 *----------------------------------------------------------------------*/
-/*! 
+/*!
 \addtogroup FSI
 *//*! @{ (documentation module open)*/
 #ifdef D_FSI
 #include "../headers/standardtypes.h"
 #include "../ale3/ale3.h"
-#include "fsi_prototypes.h"                   
+#include "fsi_prototypes.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate dynamic variables if needed                      |
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;  
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -31,20 +31,20 @@ extern ALLDYNA      *alldyn;
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
 /*!----------------------------------------------------------------------
-\brief  solving for mesh displacements 
+\brief  solving for mesh displacements
 
 <pre>                                                          ck 06/03
 control of fsi ale part; program continues depending on ALE_TYP in input
 
 </pre>
 
-\param  *actfield   FIELD          (i)     ale field 			  
-\param   mctrl      INT            (i)     control flag		  
-\param   numfa      INT            (i)     number of ale field	  
-\warning 
-\return void                                               
+\param  *actfield   FIELD          (i)     ale field
+\param   mctrl      INT            (i)     control flag
+\param   numfa      INT            (i)     number of ale field
+\warning
+\return void
 
-\sa   calling: fsi_ale_lin(), fsi_ale_nln(), fsi_ale_2step(), 
+\sa   calling: fsi_ale_lin(), fsi_ale_nln(), fsi_ale_2step(),
                fsi_ale_spring(), fsi_ale_laplace()
       called by: fluid_mf()
 
@@ -59,7 +59,7 @@ ALE_DYNAMIC *adyn;
 
 adyn = alldyn[genprob.numaf].adyn;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fsi_ale");
 #endif
 switch (adyn->typ)
@@ -73,14 +73,14 @@ switch (adyn->typ)
       fsi_ale_nln(actfield,mctrl);
    break;
 /*--------------------------------------------- two step calculation ---*/
-/*  calculation in two steps per timestep following Chiandussi et al. in 
+/*  calculation in two steps per timestep following Chiandussi et al. in
     'A simple method for automatic update of finite element meshes'
     Commun. Numer. Meth. Engng. 2000; 16: 1-19                          */
    case two_step:
       fsi_ale_2step(actfield,mctrl);
    break;
 /*--------------------------------------------------- spring analogy ---*/
-/*  calculation following Farhat et al. in 'Torsional springs for 
+/*  calculation following Farhat et al. in 'Torsional springs for
     two-dimensional dynamic unstructured fluid meshes' Comput. Methods
     Appl. Mech. Engrg. 163 (1998) 231-245 */
    case springs:
@@ -103,7 +103,7 @@ switch (adyn->typ)
    break;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 /*----------------------------------------------------------------------*/

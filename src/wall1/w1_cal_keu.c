@@ -17,12 +17,12 @@ Maintainer: Andrea Hund
 #include "wall1_prototypes.h"
 
 #ifdef GEMM
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 #endif
 
 
-/*! 
-\addtogroup WALL1 
+/*!
+\addtogroup WALL1
 *//*! @{ (documentation module open)*/
 
 /*----------------------------------------------------------------------*
@@ -37,22 +37,22 @@ extern ALLDYNA      *alldyn;
  | NEPS    -->  ACTUAL NUMBER OF STRAIN COMPONENTS   =4                 |
  |                                                                      |
  *----------------------------------------------------------------------*/
-void w1_keu(DOUBLE  **keu, 
+void w1_keu(DOUBLE  **keu,
             DOUBLE  **b_bar,
             DOUBLE  **int_b_bar,
             DOUBLE  **D,
-            DOUBLE    fac, 
+            DOUBLE    fac,
             INT       nd,
             INT       neps)
 {
 
 INT       i, j, k, m;          /*New format*/
 #ifdef GEMM
-STRUCT_DYNAMIC *sdyn;    
+STRUCT_DYNAMIC *sdyn;
 DOUBLE    alpha_f, xsi;
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_keu");
 #endif
 
@@ -67,14 +67,14 @@ for(i=0; i<nd; i++)
    for(j=0; j<nd; j++)
       for(k=0; k<neps; k++)
          for(m=0; m<neps; m++)
-#ifdef GEMM        
-            keu[i][j] +=  ((1.0-alpha_f+xsi)/(1.0-alpha_f)) 
+#ifdef GEMM
+            keu[i][j] +=  ((1.0-alpha_f+xsi)/(1.0-alpha_f))
                           * (int_b_bar[k][i]*D[k][m]*b_bar[m][j]*fac);
 #else
             keu[i][j] +=  int_b_bar[k][i]*D[k][m]*b_bar[m][j]*fac;
-#endif	
+#endif
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -10,26 +10,26 @@ Maintainer: Steffen Genkinger
 </pre>
 
 *----------------------------------------------------------------------*/
-/*! 
+/*!
 \addtogroup FSI
 *//*! @{ (documentation module open)*/
 #ifdef D_FSI
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
-#include "fsi_prototypes.h"    
+#include "fsi_prototypes.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
  | struct _GENPROB       genprob; defined in global_control.c           |
  *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;                     
+extern struct _GENPROB     genprob;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate dynamic variables if needed                      |
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn; 
+extern ALLDYNA      *alldyn;
 /*!---------------------------------------------------------------------
 \brief relaxation of structural interface displacements
 
@@ -37,25 +37,25 @@ extern ALLDYNA      *alldyn;
 
 Relaxation of structural interface displacements:
 
-   d(i+1) = RELAX(i) * d~(i+1) + (1 - RELAX(i)) * d(i) 
+   d(i+1) = RELAX(i) * d~(i+1) + (1 - RELAX(i)) * d(i)
 
    d(i+1)  ... new relaxed interface displacements
    d~(i+1) ... unrelaxed interface displacements
-   d(i)    ... old relaxed interface displacements 
+   d(i)    ... old relaxed interface displacements
                (they are stored in sol_increment of the ALE-nodes)
 
    see dissertation of D.P. MOK chapter 6.2
-   
+
    d~(i+1) = actsnode->sol_mf.a.da[0][j]
    d(i)    = actsnode->sol_mf.a.da[1][j]
-      
-   result is written to:	       
-             actsnode->sol_mf.a.da[0][j]	       
-		     
+
+   result is written to:
+             actsnode->sol_mf.a.da[0][j]
+
 </pre>
 \param *structfield   FIELD	     (i)   structural field
-\param *fsidyn 	      FSI_DYNAMIC    (i)   
-\return void                                                                             
+\param *fsidyn 	      FSI_DYNAMIC    (i)
+\return void
 
 ------------------------------------------------------------------------*/
 void fsi_relax_intdisp( FIELD *structfield )
@@ -67,11 +67,11 @@ INT     numdf_total;      /* total number of struct dofs                */
 INT     dof;              /* actual dof                                 */
 INT    *sid;              /* structural interface dofs                  */
 DOUBLE  relax;            /* actual relaxation parameter omega	        */
-DOUBLE  fac;             
+DOUBLE  fac;
 NODE   *actsnode;	  /* the actual struct	node 			*/
 FSI_DYNAMIC    *fsidyn;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fsi_relax_intdisp");
 #endif
 
@@ -88,19 +88,19 @@ numdf_total = fsidyn->sid.fdim;
 for (i=0;i<numnp_total;i++)
 {
    actsnode  = &(structfield->dis[0].node[i]);
-   numdf = actsnode->numdf; 
+   numdf = actsnode->numdf;
    /*--------------------------------- loop dofs and check for coupling */
    for (j=0;j<numdf;j++)
    {
       dof = actsnode->dof[j];
       dsassert(dof<numdf_total,"dofnumber not valid!\n");
       if (sid[dof]==0) continue;
-      actsnode->sol_mf.a.da[0][j] = relax*actsnode->sol_mf.a.da[0][j] 
+      actsnode->sol_mf.a.da[0][j] = relax*actsnode->sol_mf.a.da[0][j]
                                   + fac*actsnode->sol_mf.a.da[1][j];
-   } /* end of loop over dofs */   
+   } /* end of loop over dofs */
 } /* end of loop over nodes */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

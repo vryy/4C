@@ -1,6 +1,6 @@
 /*!-----------------------------------------------------------------------
 \file
-\brief contains the routine 'saxi_mat' which is the material law 
+\brief contains the routine 'saxi_mat' which is the material law
  for the axisymmetric shell element
 
 <pre>
@@ -17,14 +17,14 @@ Maintainer: Malte Neumann
 #include "axishell.h"
 #include "axishell_prototypes.h"
 
-/*! 
+/*!
 \addtogroup AXISHELL
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
 \brief  contains the material law for the axisymmetric shell element
 
-<pre>                                                              mn 05/03 
+<pre>                                                              mn 05/03
 This routine computes the constitutive  matrix of the axisymmetric shell element
 
 </pre>
@@ -33,13 +33,13 @@ This routine computes the constitutive  matrix of the axisymmetric shell element
 \param thick         DOUBLE     (i)   thickness of the element
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling:   ---; 
+\return void
+\sa calling:   ---;
     called by: saxi_static_ke(), saxi_cal_stress();
 
 *----------------------------------------------------------------------*/
 void saxi_mat(
-    STVENANT  *mat, 
+    STVENANT  *mat,
     DOUBLE     D[4][4],
     DOUBLE     thick
     )
@@ -48,11 +48,11 @@ void saxi_mat(
   INT i,j;
   DOUBLE E, mu, fac;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("saxi_mat");
 #endif
 
-  E  = mat->youngs;      
+  E  = mat->youngs;
   mu = mat->possionratio;
   fac= E*thick/(1.0-mu*mu);
 
@@ -74,11 +74,11 @@ void saxi_mat(
   D[3][2] = D[2][3];
   D[3][3] = D[2][2];
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 
-  return; 
+  return;
 } /* end of saxi_mat */
 
 /*! @} (documentation module close)*/

@@ -10,10 +10,10 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
-\addtogroup FLUID2 
+/*!
+\addtogroup FLUID2
 *//*! @{ (documentation module open)*/
-#ifdef D_FLUID2 
+#ifdef D_FLUID2
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #include "fluid2.h"
@@ -22,10 +22,10 @@ Maintainer: Steffen Genkinger
 
 <pre>                                                         genk 01/03
 
-      
+
 </pre>
 \param **estif     DOUBLE     (i/o)  ele stiffness matrix
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f2_calmat_gfs(DOUBLE       *funct,
@@ -43,15 +43,15 @@ void f2_calmat_gfs(DOUBLE       *funct,
  |   irow - row number in element matrix                                |
  |   icol - column number in element matrix                             |
  |   irn  - row node: number of node considered for matrix-row          |
- |   icn  - column node: number of node considered for matrix column    |  
+ |   icn  - column node: number of node considered for matrix column    |
  *----------------------------------------------------------------------*/
-INT     irow,icolv,icolg1,icolg2,irn,icn;  
-INT     nd;                 
+INT     irow,icolv,icolg1,icolg2,irn,icn;
+INT     nd;
 DOUBLE  aux;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_calmat_gfs");
-#endif		 
+#endif
 
 nd = NUMDOF_FLUID2*iel;
 
@@ -111,8 +111,8 @@ for(icn=0;icn<ngnode;icn++)
    } /* end loop over irow */
 } /* end loop over icol */
 
-/*----------------------------------------------------------------------*/ 
-#ifdef DEBUG 
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
 dstrc_exit();
 #endif
 

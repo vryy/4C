@@ -10,7 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
+/*!
 \addtogroup FLUID
 *//*! @{ (documentation module open)*/
 #ifdef D_FLUID
@@ -26,7 +26,7 @@ Maintainer: Steffen Genkinger
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -41,21 +41,21 @@ extern struct _GENPROB     genprob;
  *----------------------------------------------------------------------*/
 extern INT            numlocsys;
 extern struct _LOCSYS *locsys;
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief calculate normal of fluid nodes
 
 <pre>                                                         genk 04/02
 
    init = 0    just calculate the normal
    init = 1    initialise and calculate the normal and old normal
-   init = 2    copy first actn to oldn and then calculate new normal 
+   init = 2    copy first actn to oldn and then calculate new normal
 
-</pre>   
-\return void 
+</pre>
+\return void
 
 ------------------------------------------------------------------------*/
 void fluid_cal_normal(FIELD *actfield, INT init,
-                      CALC_ACTION *action         ) 
+                      CALC_ACTION *action         )
 {
 INT         i,j,l;       /* simply some counters */
 INT         foundit;       /* found flag */
@@ -72,9 +72,9 @@ INT         ngline;        /* number of glines */
 GLINE      *actgline;      /* the actual gline */
 #endif
 LOCSYS     *actlocsys;     /* the actual local co-system xzy* */
-FLUID_DYNAMIC *fdyn; 
+FLUID_DYNAMIC *fdyn;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_cal_normal");
 #endif
 
@@ -91,10 +91,10 @@ if (init==1) /* initialise and calculate initial normal */
    /* loop elements and allocate normals at the nodes */
    for (i=0;i<numele_total;i++)
    {
-      actele=&(actfield->dis[0].element[i]);   
+      actele=&(actfield->dis[0].element[i]);
       dsassert(actele->eltyp==el_fluid2,
       "normals only for fluid2 element implemented!\n");
-      /* we need normals for 
+      /* we need normals for
          local co-sys and for a generalised free surface */
       /* check for local co-sys */
       if (actele->locsys==locsys_yes) /* locsys */
@@ -108,7 +108,7 @@ if (init==1) /* initialise and calculate initial normal */
             actlocsys=&(locsys[ilocsys]);
             if (actlocsys->locsystyp!=locsys_fmc) continue;
             actnode->actn=(DOUBLE*)CCACALLOC(3,sizeof(DOUBLE));
-            for(l=0;l<3;l++) actnode->actn[l]=ZERO;           
+            for(l=0;l<3;l++) actnode->actn[l]=ZERO;
             numnorm++;
          }
       }
@@ -119,20 +119,20 @@ if (init==1) /* initialise and calculate initial normal */
          ngline=actele->g.gsurf->ngline;
          for (j=0; j<ngline; j++)
          {
-            actgline = actele->g.gsurf->gline[j];          
+            actgline = actele->g.gsurf->gline[j];
             if (actgline->freesurf==NULL) continue;
             ngnode = actgline->ngnode;
             for (k=0;k<ngnode;k++)
             {
                actnode=actgline->gnode[k]->node;
                if (actnode->actn!=NULL) continue;
-               actnode->actn=(DOUBLE*)CCACALLOC(3,sizeof(DOUBLE));            
-               actnode->oldn=(DOUBLE*)CCACALLOC(3,sizeof(DOUBLE));            
-               for(l=0;l<3;l++) actnode->actn[l]=ZERO;           
+               actnode->actn=(DOUBLE*)CCACALLOC(3,sizeof(DOUBLE));
+               actnode->oldn=(DOUBLE*)CCACALLOC(3,sizeof(DOUBLE));
+               for(l=0;l<3;l++) actnode->actn[l]=ZERO;
                numnorm++;
-            }                        
+            }
          }
-      }   
+      }
 #endif
 #endif
    }
@@ -154,7 +154,7 @@ if (numnorm>0) /* calculate nodal normals */
    *action=calc_fluid_normal;
    for (i=0;i<numele_total;i++)
    {
-      actele=&(actfield->dis[0].element[i]);   
+      actele=&(actfield->dis[0].element[i]);
       dsassert(actele->eltyp==el_fluid2,
       "normals only for fluid2 element implemented!\n");
       foundit=0;
@@ -165,7 +165,7 @@ if (numnorm>0) /* calculate nodal normals */
          {
             foundit++;
             break;
-         }         
+         }
       }
       if (foundit>0)
       {
@@ -184,7 +184,7 @@ if (numnorm>0) /* calculate nodal normals */
       if (actnode->actn==NULL) continue;
       norm=sqrt(DSQR(actnode->actn[0])+DSQR(actnode->actn[1])
                +DSQR(actnode->actn[2]));
-      for (l=0;l<3;l++) 
+      for (l=0;l<3;l++)
          actnode->actn[l]/=norm;
       /*------------------------------------------ output to the screen */
 #ifdef DEUBG
@@ -209,10 +209,10 @@ if (numnorm>0) /* calculate nodal normals */
 
 /*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of fluid_cal_normal */
 
 #endif

@@ -16,32 +16,32 @@ Maintainer: Michael Gee
 #include "s8contact.h"
 #include "shell8.h"
 
-/*! 
-\addtogroup CONTACTS8 
+/*!
+\addtogroup CONTACTS8
 *//*! @{ (documentation module open)*/
 
 
 /*!----------------------------------------------------------------------
 \brief the contact main structure
 
-<pre>                                                         m.gee 2/03    
+<pre>                                                         m.gee 2/03
 defined in s8_contact_init.c
 </pre>
 
 *----------------------------------------------------------------------*/
 extern struct _SHELLCONTACT shellcontact;
 /*!---------------------------------------------------------------------
-\brief make value of gap function                                              
+\brief make value of gap function
 
-<pre>                                                        m.gee 2/03 
+<pre>                                                        m.gee 2/03
 </pre>
 \param actcnode    SHELLNODE*    (i)   the active node
 \param ssurf       INT*          (i)   indicates top or bottom of slave node
 \param msurf       INT*          (i)   indicates top or bottom of closest master node
-\param actele      ELEMENT*      (i)   element to be projected on 
+\param actele      ELEMENT*      (i)   element to be projected on
 \param xires       DOUBLE*       (o)   local coodinates of projection point
 \param g           DOUBLE*       (o)   gap function
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void s8_contact_gapfunction(SHELLNODE  *actcnode,
@@ -67,7 +67,7 @@ DOUBLE       diff[3];
 DOUBLE       tau[3][2];
 DOUBLE       nue[3];
 DOUBLE       dummy;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_contact_gapfunction");
 #endif
 /*------------------------------------------ build geometry for element */
@@ -83,10 +83,10 @@ for (k=0; k<iel; k++)
    a3c[1][k] = a3r[1][k] + actele->node[k]->sol.a.da[0][4];
    a3c[2][k] = a3r[2][k] + actele->node[k]->sol.a.da[0][5];
 
-   xr[0][k]  = actele->node[k]->x[0];   
-   xr[1][k]  = actele->node[k]->x[1];   
-   xr[2][k]  = actele->node[k]->x[2];   
-   
+   xr[0][k]  = actele->node[k]->x[0];
+   xr[1][k]  = actele->node[k]->x[1];
+   xr[2][k]  = actele->node[k]->x[2];
+
    xc[0][k]  = xr[0][k] + actele->node[k]->sol.a.da[0][0];
    xc[1][k]  = xr[1][k] + actele->node[k]->sol.a.da[0][1];
    xc[2][k]  = xr[2][k] + actele->node[k]->sol.a.da[0][2];
@@ -123,7 +123,7 @@ if (thetam==-1)
 for (i=0; i<3; i++) nue[i] = -nue[i];
 /*----------------------------------- make global projection point xbar */
 for (i=0; i<3; i++) xbar[i] = 0.0;
-for (k=0; k<iel; k++) 
+for (k=0; k<iel; k++)
    for (i=0; i<3; i++)
       xbar[i] += funct[k] * (xc[i][k] + thetam*a3c[i][k]);
 /*---------------------------------------------- make difference vector */
@@ -136,14 +136,14 @@ for (i=0; i<3; i++)
 /*------------------------------------ gap is positive when penetrating */
 *g = -(*g);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of s8_contact_gapfunction */
 
 
- 
+
 
 
 

@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 'ale3_bop' which calclates the operator 
+\brief contains the routine 'ale3_bop' which calclates the operator
        matrix for a 3d ale element
 
 <pre>
@@ -15,14 +15,14 @@ Maintainer: Malte Neumann
 #include "../headers/standardtypes.h"
 #include "ale3.h"
 
-/*! 
-\addtogroup Ale 
+/*!
+\addtogroup Ale
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief calculate operator matrix at point r,s                                            
+\brief calculate operator matrix at point r,s
 
-<pre>                                                             mn 06/02 
+<pre>                                                             mn 06/02
 This routine calcuates the operator matrix b at the given point r,s,t
 for an 3D-ale-element.
 
@@ -34,7 +34,7 @@ for an 3D-ale-element.
 \param iel       INT     (i)   number of nodes per element
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: ale3_static_ke()
 
 *----------------------------------------------------------------------*/
@@ -54,7 +54,7 @@ void ale3_bop(
   DOUBLE hr, hs, ht;
   DOUBLE h1, h2, h3;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("ale3_bop");
 #endif
 
@@ -82,7 +82,7 @@ void ale3_bop(
   xi33=dum*(x1r*x2s - x2r*x1s);
 
   /* get operator b of global derivatives */
-  for (i=0; i<iel; i++)         
+  for (i=0; i<iel; i++)
   {
     node_start = i*3;
 
@@ -114,7 +114,7 @@ void ale3_bop(
     b[5][node_start+2] = h1 ;
   } /* end of loop over nodes */
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 

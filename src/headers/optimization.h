@@ -1,6 +1,6 @@
 /*!---------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Andreas Lipka
@@ -18,8 +18,8 @@ Maintainer: Andreas Lipka
  *----------------------------------------------------------------------*/
 typedef struct _OPTI
 {
-                               
-     enum 
+
+     enum
      {                             /* type of structural optimization   */
         ot_none,
         ot_shape_optimization   ,
@@ -29,33 +29,33 @@ typedef struct _OPTI
      INT                  numiter;  /* total number of iteration steps  */
      INT                  optstep;  /* current iteration step           */
      INT                  graph_out;/* graphical output every ? step AS */
-                               
-     enum 
+
+     enum
      {                              /* type of optimization strategy    */
         os_none,
         os_fsd,
         os_nlp
      }                    strategy;
-                                                 
-     enum 
+
+     enum
      {                              /* objective                        */
         oj_none,
-        oj_structural_weight,    
-        oj_structural_volume,    
-        oj_strain_energy,        
-        oj_stress_function,      
-        oj_frequency ,           
-        oj_buckling,             
-        oj_ductility           
+        oj_structural_weight,
+        oj_structural_volume,
+        oj_strain_energy,
+        oj_stress_function,
+        oj_frequency ,
+        oj_buckling,
+        oj_ductility
      }                   objective;
-                                                 
-     
+
+
      union
      {                              /* type of optimization strategy    */
        struct _OSFSD *fsd;
        struct _OSNLP *nlp;
      }                       strat;
-                                         
+
      INT  numvar;                /* total number struct. opt. variables */
      INT  nvaind;                /* number of independent opt variables */
      INT  numeqc;                /* number equality     constraints     */
@@ -67,13 +67,13 @@ typedef struct _OPTI
      struct _OIQC            *oiqc;           /* inequality constraints */
      struct _ORES            *ores;           /* variable restricitons  */
      struct _OLIN            *olin;           /* variable linking       */
-     
+
      struct _OEIG      *oeig;/* struct contains eigenvalue analysis data */
      DOUBLE totvol;
      DOUBLE totwgt;
      DOUBLE totmas;
      DOUBLE nlndat;
-     /*---- smoothing of objectives or densities or ... ---*/                               
+     /*---- smoothing of objectives or densities or ... ---*/
      /* input file should contain:
      OPT_SMO       ON          : smooth gradients or other values
      SMO_TYPE      gradient
@@ -81,12 +81,12 @@ typedef struct _OPTI
      SMO_EXPO      2.5         : exponent */
      /*----------------------------------------------------*/
      enum /* switch smoothing on/off */
-     {                              
+     {
         sm_off,
         sm_on
      }                    optsmooth;
      enum /* what to smooth: */
-     {                              
+     {
         sm_grad,
         sm_dens
      }                    smoothtype;
@@ -99,7 +99,7 @@ typedef struct _OPTI
  | evaluation of function gradients                    a.lipka 5/01     |
  *----------------------------------------------------------------------*/
 typedef enum _EVGRAD
-{                 
+{
    implicit,
    explicit,
    variational
@@ -108,12 +108,12 @@ typedef enum _EVGRAD
  | linking rules of variable design coordinates        a.lipka 5/01     |
  *----------------------------------------------------------------------*/
 typedef enum _LINKR
-     {                  
+     {
         no_olin,         /* type of objects to be linked with           */
         dncl,            /* design nodal coordinates                    */
         dntl,            /* design nodal thickness                      */
         matl             /* linking of diffenrent materials             */
-     
+
      } LINKR;
 /*----------------------------------------------------------------------*
  | fully stressed design stragedy                      a.lipka 5/01     |
@@ -124,7 +124,7 @@ typedef struct _OSFSD
      INT      numvar;   /* number number of independent opt. variables  */
      INT  numvar_lin;   /* no. of elements with density as opt. var. when linking. AS */
      DOUBLE   grdinc;   /* forward difference step increment            */
-     
+
      EVGRAD    fgrad;   /* evaluation of function gradients             */
 
      DOUBLE    acc  ;   /*  erforderliche genauigkeit                   */
@@ -151,14 +151,14 @@ typedef struct _OSNLP
 {
      EVGRAD    fgrad;   /* evaluation of function gradients             */
      DOUBLE   grdinc;   /* forward difference step increment            */
-     
-     enum 
+
+     enum
      {                  /* type of scaling the variables                */
         no,
         initial,
         hessian
      }                         sclvar;
-     
+
      DOUBLE    acc ;   /*  accuracy in program nlpql                    */
      DOUBLE sclfun ;    /* scaling factor for objective                 */
      DOUBLE sclcon ;    /* scaling factors for constraints              */
@@ -179,7 +179,7 @@ typedef struct _OSNLP
      INT igrad ; /* define kind of gradient evaluation        */
      INT isqp  ; /* flag for control of nonlinear programming */
      INT mode  ; /* mode = 0 : normal execution.              */
-     DOUBLE time; /* cpu time used for optimization with nlp  */   
+     DOUBLE time; /* cpu time used for optimization with nlp  */
      INT nprint; /* write nlp process data to file            */
      DOUBLE *var;  /* initial guess for the optimal solution, on return: the last computed iterate */
      DOUBLE *resl; /* the upper bounds of the variables */
@@ -196,7 +196,7 @@ typedef struct _OSNLP
      DOUBLE *wa;     /* wa is a real working array of length lwa */
      INT    *kwa;    /* wa is a intg working array of length lwa */
      INT    *lwa;    /* wa is a intg working array of length lwa */
-     DOUBLE *f; /* the objective function value of x */   
+     DOUBLE *f; /* the objective function value of x */
      INT    nitstep; /* current iteration step */
      /* dimensions for wa's ... */
      INT n;
@@ -209,10 +209,10 @@ typedef struct _OSNLP
      INT nlwa ;
      INT lkwa ;
      INT llwa ;
-     DOUBLE *scg ;/* scaling factors for constraints */ 
+     DOUBLE *scg ;/* scaling factors for constraints */
      INT ixmax;
      INT ixmin;
-     
+
 
 
 
@@ -226,10 +226,10 @@ typedef struct _OSNLP
 typedef struct _OBTV
 {
      INT objId;          /* object Id (design node, material number ... */
-     INT posgl;          /* position in global variable vector          */ 
+     INT posgl;          /* position in global variable vector          */
      /* type of object with variable attributes */
-     enum 
-     {                  
+     enum
+     {
         no_ovatt,
         dheight,                  /* variable design thickness          */
         dcoorx,                   /* variable design coordinates        */
@@ -244,7 +244,7 @@ typedef struct _OBTV
      DOUBLE scva       ;/*  scaling factor                              */
      DOUBLE bupper     ;/*  upper limitation of opt. variable           */
      DOUBLE blower     ;/*  lower limitation of opt. variable           */
-     
+
      INT    linked     ;/*  prescribed linking                          */
      DOUBLE  myweight   ;/*  weighting factor for linking               */
      DOUBLE  neweight   ;/* weighting factor for linking                */
@@ -256,15 +256,15 @@ typedef struct _OBTV
 typedef struct _OEQC
 {
      INT objId;          /* object Id (design node, material number ... */
-    
-     enum 
-     {                  
+
+     enum
+     {
         no_oeqco,                 /* object with   equality constraint  */
         eqdface,                  /* design face   equality constraint  */
         eqdvolu                   /* design volume equality constraint  */
      }                         oeqc_object;
-     enum 
-     {                  
+     enum
+     {
         no_oeqct,                  /* type of equality constraint       */
         volume,                    /* volume  equality constraint       */
         mass                       /* mass    equality constraint       */
@@ -278,24 +278,24 @@ typedef struct _OEQC
 typedef struct _OIQC
 {
      INT objIds[2];   /* object Ids (design nodes, material numbers ... */
-     
-     enum 
-     {                  
+
+     enum
+     {
         no_oiqco,                 /* object with inequality constraint  */
         iednode,                  /* design node inequality constraint  */
         iedface,                  /* design face inequality constraint  */
         iefeele                   /* finite ele. inequality constraint  */
      }                         oiqc_object;
-     enum 
-     {                  
+     enum
+     {
         no_oiqct,                  /* type of inequality constraint     */
         coorx,                     /* coord. constr. in z direction     */
         coory,                     /* coord. constr. in z direction     */
         coorz,                     /* coord. constr. in z direction     */
         sve                        /* v.mises element stress constraint */
      }                         oiqc_type;
-     enum 
-     {                  
+     enum
+     {
         no_opie,                   /* type of constraint operation      */
         lowt,                      /* >     */
         lart                       /* <     */
@@ -316,14 +316,14 @@ typedef struct _OIQC
 typedef struct _ORES
 {
      INT objId;          /* object Id (design node, material number ... */
-     
-     enum 
-     {                  
+
+     enum
+     {
         no_orest,   /* type of restriction                              */
         dnthick,    /* design node thickness upper/lower restriction    */
         dncooz,     /* design coordinates: upper/lower restriction zdir */
         maulr       /*           material: upper/lower restriction      */
-     
+
      } ores_type;
 
      DOUBLE resuval;                               /*  upper value */
@@ -345,7 +345,7 @@ typedef struct _OLIN
      INT objIds[2];   /* object Ids (design nodes, material numbers ... */
      DOUBLE  myweight   ;/* weighting factor for linking                   */
      DOUBLE  neweight   ;/* weighting factor for linking                   */
-     
+
      LINKR olin_type;          /* type of objects to be linked with              */
 } OLIN;
 /*----------------------------------------------------------------------*
@@ -354,11 +354,11 @@ typedef struct _OLIN
  *----------------------------------------------------------------------*/
 typedef struct _OEIG
 {
-     INT      numeigv; /* number of eigenvalues   */  
+     INT      numeigv; /* number of eigenvalues   */
      DOUBLE  eigv[10]; /* vector with eigenvalues */
      DOUBLE  eigf[10]; /* vector with frequencies */
      DOUBLE  eigs[10]; /* scaling vector          */
-     DOUBLE  *scasens; /* vector with scaling factors for sens. ana.*/        
+     DOUBLE  *scasens; /* vector with scaling factors for sens. ana.*/
      /*--- KREISSELMEIER-STEINHAUSER  ---*/
      DOUBLE  rhoks;
 } OEIG;

@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -21,16 +21,16 @@ DOUBLE cmp_double(const void *a, const void *b );
 /*----------------------------------------------------------------------*
  |  calculate the mask of an parcsr matrix              m.gee 10/01     |
  *----------------------------------------------------------------------*/
-void  mask_parcsr(FIELD         *actfield, 
-                    PARTITION     *actpart, 
+void  mask_parcsr(FIELD         *actfield,
+                    PARTITION     *actpart,
                     SOLVAR        *actsolv,
-                    INTRA         *actintra, 
+                    INTRA         *actintra,
                     H_PARCSR  *parcsr)
 {
 INT       i;
 INT       numeq;
 INT     **dof_connect;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mask_parcsr");
 #endif
 /*----------------------------------------------------------------------*/
@@ -41,7 +41,7 @@ dstrc_enter("mask_parcsr");
 */
 /*------------------------------------------- put total size of problem */
 parcsr->numeq_total = actfield->dis[0].numeq;
-/* count number of eqns on proc and build processor-global couplingdof 
+/* count number of eqns on proc and build processor-global couplingdof
                                                                  matrix */
 mask_numeq(actfield,actpart,actsolv,actintra,&numeq,0);
 parcsr->numeq = numeq;
@@ -50,13 +50,13 @@ amdef("update",&(parcsr->update),numeq,1,"IV");
 amzero(&(parcsr->update));
 /*--------------------------------put dofs in update in ascending order */
 parcsr_update(actfield,actpart,actsolv,actintra,parcsr);
-/*------------------------ count number of nonzero entries on partition 
+/*------------------------ count number of nonzero entries on partition
                                     and calculate dof connectivity list */
    /*
       dof_connect[i][0] = lenght of dof_connect[i]
-      dof_connect[i][1] = iscoupled ( 1 or 2 ) 
+      dof_connect[i][1] = iscoupled ( 1 or 2 )
       dof_connect[i][2] = dof
-      dof_connect[i][ 2..dof_connect[i][0]-1 ] = connected dofs exluding itself 
+      dof_connect[i][ 2..dof_connect[i][0]-1 ] = connected dofs exluding itself
    */
 dof_connect = (INT**)CCACALLOC(parcsr->numeq_total,sizeof(INT*));
 if (!dof_connect) dserror("Allocation of dof_connect failed");
@@ -75,7 +75,7 @@ for (i=0; i<parcsr->numeq_total; i++)
 }
 CCAFREE(dof_connect);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -84,8 +84,8 @@ return;
 /*----------------------------------------------------------------------*
  |  allocate update put dofs in update in ascending order  m.gee 10/01  |
  *----------------------------------------------------------------------*/
-void parcsr_update(FIELD         *actfield, 
-                     PARTITION     *actpart, 
+void parcsr_update(FIELD         *actfield,
+                     PARTITION     *actpart,
                      SOLVAR        *actsolv,
                      INTRA         *actintra,
                      H_PARCSR      *parcsr)
@@ -99,7 +99,7 @@ INT       imyrank;
 INT       inprocs;
 NODE     *actnode;
 ARRAY     coupledofs;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("parcsr_update");
 #endif
 /*----------------------------------------------------------------------*/
@@ -134,9 +134,9 @@ for (i=0; i<actpart->pdis[0].numnp; i++)
             if (dof == coupledofs.a.ia[k][0])
             {
                /* am I owner of this dof or not */
-               if (coupledofs.a.ia[k][imyrank+1]==2) 
+               if (coupledofs.a.ia[k][imyrank+1]==2)
                foundit=2;
-               else if (coupledofs.a.ia[k][imyrank+1]==1)                                     
+               else if (coupledofs.a.ia[k][imyrank+1]==1)
                foundit=1;
                break;
             }
@@ -160,7 +160,7 @@ for (i=0; i<actpart->pdis[0].numnp; i++)
             continue;
          }
       }
-      
+
    }
 }
 /*---------- check whether the correct number of dofs have been counted */
@@ -170,7 +170,7 @@ qsort((INT*) update, counter, sizeof(INT), cmp_int);
 /*----------------------------------------------------------------------*/
 amdel(&coupledofs);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -198,13 +198,13 @@ ARRAY     recv_a;
 INT      *recvbuff;
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("parcsr_update_perm");
 #endif
 /*----------------------------------------------------------------------*/
 /*
-   The HYPRE solvers want to have the dofs in ascending order and contigous, 
-   starting with proc 0 (See HYPRE manuals). So it is necesary to perform a 
+   The HYPRE solvers want to have the dofs in ascending order and contigous,
+   starting with proc 0 (See HYPRE manuals). So it is necesary to perform a
    permutation of the dof numbers especially for the solver.
    The vector update is already ordered in ascending order on each proc,
    but it does not necessariely start with the small numbers on proc 0.
@@ -234,7 +234,7 @@ for (i=0; i<inprocs; i++)
 /*-------------------------------------------- allocate the matrix perm */
 perm = amdef("perm",&(parcsr->perm),inprocs,maxdofs,"IA");
        aminit(&(parcsr->perm),&minusone);
-/*--------- make the permutation vectors for each proc including myself */       
+/*--------- make the permutation vectors for each proc including myself */
 prevdofs=0;
 for (i=0; i<inprocs; i++)
 {
@@ -251,12 +251,12 @@ amdef("update",&(parcsr->update),inprocs,maxdofs,"IA");
 amdef("update",&recv_a          ,inprocs,maxdofs,"IA");
 amzero(&(parcsr->update));
 amzero(&recv_a);
-for (i=0; i<tmp.fdim; i++) 
+for (i=0; i<tmp.fdim; i++)
 {
    parcsr->update.a.ia[imyrank][i]=tmp.a.iv[i];
 }
 amdel(&tmp);
-#ifdef PARALLEL 
+#ifdef PARALLEL
 MPI_Allreduce(parcsr->update.a.ia[0],
               recv_a.a.ia[0],
               (parcsr->update.fdim)*(parcsr->update.sdim),
@@ -266,7 +266,7 @@ MPI_Allreduce(parcsr->update.a.ia[0],
 amcopy(&recv_a,&(parcsr->update));
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -279,8 +279,8 @@ return;
 /*----------------------------------------------------------------------*
  |  calculate number of nonzero entries and dof topology   m.gee 10/01  |
  *----------------------------------------------------------------------*/
-void  parcsr_nnz_topology(FIELD         *actfield, 
-                            PARTITION    *actpart, 
+void  parcsr_nnz_topology(FIELD         *actfield,
+                            PARTITION    *actpart,
                             SOLVAR       *actsolv,
                             INTRA        *actintra,
                             H_PARCSR     *parcsr,
@@ -308,11 +308,11 @@ ARRAY     *coupledofs;
 INT        imyrank;
 INT        inprocs;
 
-#ifdef PARALLEL 
+#ifdef PARALLEL
 MPI_Status status;
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("parcsr_nnz_topology");
 #endif
 /*----------------------------------------------------------------------*/
@@ -378,24 +378,24 @@ for (i=0; i<numeq; i++)
    dof_connect[dof] = (INT*)CCACALLOC(counter2+3,sizeof(INT));
    if (!dof_connect[dof]) dserror("Allocation of dof connect list failed");
    dof_connect[dof][0] = counter2+3;
-   dof_connect[dof][1] = 0; 
+   dof_connect[dof][1] = 0;
    dof_connect[dof][2] = dof;
    /*
       dof_connect[i][0] = lenght of dof_connect[i]
-      dof_connect[i][1] = iscoupled ( 1 or 2 ) done later on 
+      dof_connect[i][1] = iscoupled ( 1 or 2 ) done later on
       dof_connect[i][2] = dof
-      dof_connect[i][ 2..dof_connect[i][0]-1 ] = connected dofs exluding itself 
+      dof_connect[i][ 2..dof_connect[i][0]-1 ] = connected dofs exluding itself
    */
    counter2=0;
    for (j=0; j<counter; j++)
    {
-      if (dofpatch.a.iv[j] != -1) 
+      if (dofpatch.a.iv[j] != -1)
       {
          dof_connect[dof][counter2+3] = dofpatch.a.iv[j];
          counter2++;
       }
    }
-}  /* end of loop over numeq */ 
+}  /* end of loop over numeq */
 /*--------------------------------------------- now do the coupled dofs */
 coupledofs = &(actpart->pdis[0].coupledofs);
 for (i=0; i<coupledofs->fdim; i++)
@@ -469,7 +469,7 @@ for (i=0; i<coupledofs->fdim; i++)
    counter2=0;
    for (j=0; j<counter; j++)
    {
-      if (dofpatch.a.iv[j] != -1) 
+      if (dofpatch.a.iv[j] != -1)
       {
          dof_connect[dof][counter2+3] = dofpatch.a.iv[j];
          counter2++;
@@ -477,7 +477,7 @@ for (i=0; i<coupledofs->fdim; i++)
    }
 } /* end of loop over coupled dofs */
 /* make the who-has-to-send-whom-how-much-and-what-arrays and communicate */
-#ifdef PARALLEL 
+#ifdef PARALLEL
 counter=0;
 for (i=0; i<coupledofs->fdim; i++)
 {
@@ -485,7 +485,7 @@ for (i=0; i<coupledofs->fdim; i++)
    /*-------------------------------------- find the master of this dof */
    for (j=1; j<coupledofs->sdim; j++)
    {
-      if (coupledofs->a.ia[i][j]==2) 
+      if (coupledofs->a.ia[i][j]==2)
       {
          dofmaster = j-1;
          break;
@@ -526,7 +526,7 @@ for (i=0; i<coupledofs->fdim; i++)
                if (actdof==-1) continue;
                for (k=m+1; k<dof_connect[dof][0]; k++)
                {
-                  if (dof_connect[dof][k] == actdof) 
+                  if (dof_connect[dof][k] == actdof)
                   dof_connect[dof][k] = -1;
                }
             }
@@ -579,7 +579,7 @@ for (i=0; i<numeq; i++)
 /*----------------------------------------------------------------------*/
 amdel(&dofpatch);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -590,8 +590,8 @@ return;
  |  make the vector bindx                                  m.gee 10/01  |
  | for format see Aztec manual                                          |
  *----------------------------------------------------------------------*/
-void parcsr_make_bindx(FIELD         *actfield, 
-                          PARTITION     *actpart, 
+void parcsr_make_bindx(FIELD         *actfield,
+                          PARTITION     *actpart,
                           SOLVAR        *actsolv,
                           H_PARCSR      *parcsr,
                           INT          **dof_connect)
@@ -600,7 +600,7 @@ INT        i,j;
 INT        count1,count2;
 INT        dof;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("parcsr_make_bindx");
 #endif
 /*----------------------------------------------------------------------*/
@@ -616,11 +616,11 @@ for (i=0; i<parcsr->update.fdim; i++)
    {
       parcsr->bindx.a.iv[count2] = dof_connect[dof][j];
       count2++;
-   }   
+   }
 }
 parcsr->bindx.a.iv[parcsr->numeq] = parcsr->nnz+1;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

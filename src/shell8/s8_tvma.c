@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Michael Gee
@@ -23,7 +23,7 @@ void s8_tvma(DOUBLE **D, DOUBLE **C, DOUBLE *stress, DOUBLE *stress_r,
 INT i,i6,j,j6;
 DOUBLE zeta;
 DOUBLE stress_fact, C_fact;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_tvma");
 #endif
 /*----------------------------------------------------------------------*/
@@ -52,10 +52,10 @@ for (i=0; i<12; i++)
    }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of s8_tvma */
 #endif
- 
+

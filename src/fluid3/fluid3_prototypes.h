@@ -12,7 +12,7 @@ Maintainer: Steffen Genkinger
 #include "../fluid2/fluid2.h"
 
 ------------------------------------------------------------------------*/
-/* RULE HOW TO ADD NEW FILES AND FUNCTIONS: 
+/* RULE HOW TO ADD NEW FILES AND FUNCTIONS:
    1.) THE FILENAMES ARE IN ALPHABETICAL ORDER !!!
    2.) FUNCTIONS ARE IN THE SAME ORDER LIKE IN THE FILE!!!
 */
@@ -23,26 +23,26 @@ Maintainer: Steffen Genkinger
 void f3_calele(
 	        ELEMENT        *ele,
                 ARRAY          *estif_global,
-                ARRAY          *emass_global, 
+                ARRAY          *emass_global,
 	        ARRAY          *etforce_global,
 	        ARRAY          *eiforce_global,
-		ARRAY          *edforce_global,	
+		ARRAY          *edforce_global,
 		INT            *hasdirich,
-		INT            *hasext,		
+		INT            *hasext,
 		INT             init
 	       );
-void f3_stress(FLUID_STRESS  str, 
+void f3_stress(FLUID_STRESS  str,
                INT           viscstr,
 	       ELEMENT      *ele,
-	       INT           is_relax  );               
-void f3_heightfunc(                                 
+	       INT           is_relax  );
+void f3_heightfunc(
                    ELEMENT              *ele,
-                   ARRAY                *estif_global,   
-		   ARRAY                *eiforce_global,  
-		   CONTAINER            *container		   
+                   ARRAY                *estif_global,
+		   ARRAY                *eiforce_global,
+		   CONTAINER            *container
 		   );
 void f3_calstab(ELEMENT *ele);
-                   
+
 /************************************************************************
  | f3_calelesize.c                                                      |
  ************************************************************************/
@@ -51,17 +51,17 @@ void f3_calelesize(
                      DOUBLE         **xyze,
                      DOUBLE          *funct,
                      DOUBLE         **deriv,
-                     DOUBLE         **deriv2,	       
+                     DOUBLE         **deriv2,
                      DOUBLE         **derxy,
                      DOUBLE         **xjm,
-                     DOUBLE         **evel,	       
+                     DOUBLE         **evel,
                      DOUBLE         **wa1,
-                     INT              cpele		
+                     INT              cpele
                   );
 void f3_calelesize2(
                      ELEMENT         *ele,
-                     DOUBLE          *velint,	       
-                     DOUBLE         **derxy,	       	
+                     DOUBLE          *velint,
+                     DOUBLE         **derxy,
                      DOUBLE           visc,
                      INT              iel,
                      DIS_TYP          typ
@@ -71,78 +71,78 @@ void f3_calelesize2(
  | f3_calextrhs.c                                                       |
  ************************************************************************/
 void f3_calgalexfv(
-                  DOUBLE          *eforce,     
-		  DOUBLE          *funct,       
+                  DOUBLE          *eforce,
+		  DOUBLE          *funct,
                   DOUBLE          *edeadn,
 		  DOUBLE          *edeadng,
-		  DOUBLE           fac,      
-		  INT              iel       
+		  DOUBLE           fac,
+		  INT              iel
               );
 void f3_calstabexfv(
-                     STAB_PAR_GLS    *gls,  
-                     ELEMENT         *ele,  
-                     DOUBLE          *eforce,     
+                     STAB_PAR_GLS    *gls,
+                     ELEMENT         *ele,
+                     DOUBLE          *eforce,
                      DOUBLE         **derxy,
-                     DOUBLE         **derxy2,      
+                     DOUBLE         **derxy2,
                      DOUBLE          *edead,
-                     DOUBLE          *velint,  
-                     DOUBLE           fac,      
+                     DOUBLE          *velint,
+                     DOUBLE           fac,
                      DOUBLE           visc,
                      INT              iel,
                      INT              ihoel,
-                     INT              flag      
+                     INT              flag
 
                    );
 void f3_calstabexfp(
-                     STAB_PAR_GLS    *gls,  
-                     DOUBLE          *eforce,     
-                     DOUBLE         **derxy,       
-                     DOUBLE          *edead,  
-                     DOUBLE           fac,      
+                     STAB_PAR_GLS    *gls,
+                     DOUBLE          *eforce,
+                     DOUBLE         **derxy,
+                     DOUBLE          *edead,
+                     DOUBLE           fac,
                      INT              iel,
-                     INT              flag      
-                   ) ;		   	      
+                     INT              flag
+                   ) ;
 
 /************************************************************************
  | f3_calfuncderiv.c                                                    |
  ************************************************************************/
 void f3_hex(
-               DOUBLE     *funct,     
-               DOUBLE    **deriv,    
-               DOUBLE    **deriv2,   
-               DOUBLE      r,        
-               DOUBLE      s,        
-               DOUBLE      t,        
-               DIS_TYP     typ,      
-               INT         icode    
+               DOUBLE     *funct,
+               DOUBLE    **deriv,
+               DOUBLE    **deriv2,
+               DOUBLE      r,
+               DOUBLE      s,
+               DOUBLE      t,
+               DIS_TYP     typ,
+               INT         icode
                );
 void f3_rec(
-            DOUBLE     *funct,     
-            DOUBLE    **deriv,    
-            DOUBLE    **deriv2,   
-            DOUBLE      r,        
-            DOUBLE      s,        
-            DIS_TYP     typ,      
-            INT         icode     
+            DOUBLE     *funct,
+            DOUBLE    **deriv,
+            DOUBLE    **deriv2,
+            DOUBLE      r,
+            DOUBLE      s,
+            DIS_TYP     typ,
+            INT         icode
             );
 void f3_tet(
-            DOUBLE     *funct,     
-            DOUBLE    **deriv,    
-            DOUBLE    **deriv2,   
-            DOUBLE      r,        
-            DOUBLE      s,        
-            DOUBLE      t,        
-            DIS_TYP     typ,      
-            INT         icode    
-            );	   
+            DOUBLE     *funct,
+            DOUBLE    **deriv,
+            DOUBLE    **deriv2,
+            DOUBLE      r,
+            DOUBLE      s,
+            DOUBLE      t,
+            DIS_TYP     typ,
+            INT         icode
+            );
 void f3_tri(
-            DOUBLE     *funct,      
-            DOUBLE    **deriv,    
-            DOUBLE    **deriv2,   
-            DOUBLE      r,        
-            DOUBLE      s,	  
-            DIS_TYP     typ,	  
-            INT         icode	  
+            DOUBLE     *funct,
+            DOUBLE    **deriv,
+            DOUBLE    **deriv2,
+            DOUBLE      r,
+            DOUBLE      s,
+            DIS_TYP     typ,
+            INT         icode
 	   );
 void f3_jaco(DOUBLE    **xyze,
              DOUBLE     *funct,
@@ -152,12 +152,12 @@ void f3_jaco(DOUBLE    **xyze,
              ELEMENT    *ele,
              INT         iel);
 void f3_edgejaco( DOUBLE    **xyze,
-                  DOUBLE     *funct,    
-                  DOUBLE    **deriv,   
-                  DOUBLE    **xjm,     
+                  DOUBLE     *funct,
+                  DOUBLE    **deriv,
+                  DOUBLE    **xjm,
                   DOUBLE     *det,
-                  INT        *iedgnod,          
-                  INT         iel,        
+                  INT        *iedgnod,
+                  INT         iel,
                   ELEMENT    *ele
                );
 void f3_tvmr(DOUBLE   **x,
@@ -167,29 +167,29 @@ void f3_tvmr(DOUBLE   **x,
                 INT       *iedgnod,
                 INT        iel);
 void f3_gder(
-               DOUBLE   **derxy,     
-               DOUBLE   **deriv,    
-               DOUBLE   **xjm,      
-               DOUBLE   **xji,      
-               DOUBLE     det,      
-               INT        iel       
+               DOUBLE   **derxy,
+               DOUBLE   **deriv,
+               DOUBLE   **xjm,
+               DOUBLE   **xji,
+               DOUBLE     det,
+               INT        iel
             );
 void f3_edgegder(
-               DOUBLE   **derxy,     
-               DOUBLE   **deriv,    
-               DOUBLE   **xjm,      
-               DOUBLE     det,      
-               INT        iel       
+               DOUBLE   **derxy,
+               DOUBLE   **deriv,
+               DOUBLE   **xjm,
+               DOUBLE     det,
+               INT        iel
 	    );
 void f3_gcoor(
-               DOUBLE     *funct,     
+               DOUBLE     *funct,
                ELEMENT    *ele,
-               INT         iel,      
-               DOUBLE     *gcoor      
+               INT         iel,
+               DOUBLE     *gcoor
              );
 void f3_gder2(
                DOUBLE     **xyze,
-               DOUBLE     **xjm,            
+               DOUBLE     **xjm,
                DOUBLE     **bm,
                DOUBLE     **xder2,
                DOUBLE     **derxy,
@@ -197,7 +197,7 @@ void f3_gder2(
                DOUBLE     **deriv2,
                INT          iel
 	     );
-	     	     	    	     
+
 /************************************************************************
  | f3_calgalmat.c                                                       |
  ************************************************************************/
@@ -211,29 +211,29 @@ void f3_calkvv(
                   DOUBLE         **derxy,
                   DOUBLE           fac,
                   DOUBLE           visc,
-                  INT              iel       
+                  INT              iel
               );
 void f3_calkvp(
                DOUBLE         **estif,
                DOUBLE          *funct,
                DOUBLE         **derxy,
                DOUBLE           fac,
-               INT              iel                
+               INT              iel
               );
 void f3_calmvv(
                DOUBLE         **estif,
                DOUBLE          *funct,
                DOUBLE           fac,
-               INT              iel  
+               INT              iel
               );
 void f3_calkgedge(
-                  DOUBLE         **estif,  
-                  DOUBLE          *funct, 
+                  DOUBLE         **estif,
+                  DOUBLE          *funct,
                   DOUBLE           fac,
-                  INT             *iedgnod,    		      
+                  INT             *iedgnod,
                   INT              iel,
                   INT              ngnode
-                );	      	      	      
+                );
 
 /************************************************************************
  | f3_calheightfunc_sep.c                                               |
@@ -270,7 +270,7 @@ void f3_stabpar_hfsep(
                         DOUBLE           *phiderxy,
                         INT              *iedgnod,
                         INT               ngnode,
-                        DIS_TYP           typ 
+                        DIS_TYP           typ
                      );
 void f3_calmat_vhf_sep(
 		       ELEMENT                *ele,
@@ -280,7 +280,7 @@ void f3_calmat_vhf_sep(
 		       DOUBLE                **derxy,
 		       DOUBLE                 *velint,
 		       DOUBLE                  fac
-	              );                     
+	              );
 void f3_caliterhs_vhf_sep(
  	 	           ELEMENT                *ele,
 		           DOUBLE                 *eforce,
@@ -302,7 +302,7 @@ void f3_caltimerhs_vhf_sep(
                            DOUBLE                 *phiderxy,
                            DOUBLE                  fac
                           );
-                                                   
+
 /************************************************************************
  | f3_calint.c                                                          |
  ************************************************************************/
@@ -330,8 +330,8 @@ void f3_calint(
                DOUBLE         **vderxy2,
                DOUBLE         **wa1,
                DOUBLE         **wa2
-               );      	      	      	     	     	    	   	   
-void f3_calinta(     	
+               );
+void f3_calinta(
                   ELEMENT         *ele,
                   INT             *hasext,
                   DOUBLE         **estif,
@@ -349,7 +349,7 @@ void f3_calinta(
                   DOUBLE         **evelng,
                   DOUBLE         **ealecovn,
                   DOUBLE         **ealecovng,
-                  DOUBLE         **egridv, 
+                  DOUBLE         **egridv,
                   DOUBLE          *epren,
                   DOUBLE          *edeadn,
                   DOUBLE          *edeadng,
@@ -362,18 +362,18 @@ void f3_calinta(
 
 /************************************************************************
  | f3_caliterrhs.c                                                      |
- ************************************************************************/ 
+ ************************************************************************/
 void f3_calgalifv(
-                  DOUBLE          *eforce,    
+                  DOUBLE          *eforce,
                   DOUBLE          *covint,
                   DOUBLE          *funct,
                   DOUBLE           fac,
                   INT              iel
                  );
 void f3_calstabifv(
-                     STAB_PAR_GLS    *gls,  
+                     STAB_PAR_GLS    *gls,
                      ELEMENT         *ele,
-                     DOUBLE          *eforce,   
+                     DOUBLE          *eforce,
                      DOUBLE          *covint,
                      DOUBLE          *velint,
                      DOUBLE          *funct,
@@ -385,18 +385,18 @@ void f3_calstabifv(
                      INT              iel
                  );
 void f3_calstabifp(
-                     STAB_PAR_GLS    *gls,  
-                     DOUBLE          *eforce,    
+                     STAB_PAR_GLS    *gls,
+                     DOUBLE          *eforce,
                      DOUBLE          *covint,
                      DOUBLE          **derxy,
                      DOUBLE           fac,
                      INT              iel
                  );
-		 		 		 
+
 /************************************************************************
  | f3_calservice.c                                                      |
  ************************************************************************/
-void f3_calset( 
+void f3_calset(
                ELEMENT         *ele,
                DOUBLE         **xyze,
                DOUBLE         **eveln,
@@ -404,9 +404,9 @@ void f3_calset(
                DOUBLE          *epren,
                DOUBLE          *edeadn,
                DOUBLE          *edeadng,
-               INT             *hasext		
+               INT             *hasext
 	      );
-void f3_calseta( 
+void f3_calseta(
                   ELEMENT         *ele,
                   DOUBLE         **xyze,
                   DOUBLE         **eveln,
@@ -417,103 +417,103 @@ void f3_calseta(
                   DOUBLE          *epren,
                   DOUBLE          *edeadn,
                   DOUBLE          *edeadng,
-                  INT             *hasext		
+                  INT             *hasext
                );
-void f3_alecoor( 
-                  ELEMENT         *ele,     
+void f3_alecoor(
+                  ELEMENT         *ele,
                   DOUBLE         **xyze
 	       );
 void f3_veci(
-             DOUBLE  *vecint,    
-             DOUBLE  *funct,    
-             DOUBLE **evec,     
-             INT      iel       
+             DOUBLE  *vecint,
+             DOUBLE  *funct,
+             DOUBLE **evec,
+             INT      iel
             ) ;
 void f3_edgeveli(
-                  DOUBLE  *velint,     
-                  DOUBLE  *funct,    
-                  DOUBLE **evel,     
-                  INT      ngnode,       
+                  DOUBLE  *velint,
+                  DOUBLE  *funct,
+                  DOUBLE **evel,
+                  INT      ngnode,
                   INT     *iedgnod
                );
 DOUBLE f3_scali(
-               DOUBLE  *funct,    
-               DOUBLE  *epre,     
-               INT      iel       
+               DOUBLE  *funct,
+               DOUBLE  *epre,
+               INT      iel
             );
-DOUBLE f3_phii(  
-                  DOUBLE  *funct,    
-                  DOUBLE  *ephi,  
-                  INT     *iedgnod,   
-                  INT      ngnode       
+DOUBLE f3_phii(
+                  DOUBLE  *funct,
+                  DOUBLE  *ephi,
+                  INT     *iedgnod,
+                  INT      ngnode
                );
 void f3_vder(
-               DOUBLE **vderxy,     
-               DOUBLE **derxy,    
-               DOUBLE **evel,     
-               INT      iel       
+               DOUBLE **vderxy,
+               DOUBLE **derxy,
+               DOUBLE **evel,
+               INT      iel
             ) ;
 void f3_vder2(
-               DOUBLE **vderxy2,   
-               DOUBLE **derxy2,   
-               DOUBLE **evel,     
-               INT      iel       
+               DOUBLE **vderxy2,
+               DOUBLE **derxy2,
+               DOUBLE **evel,
+               INT      iel
                );
 void f3_pder(
-               DOUBLE  *pderxy,    
-               DOUBLE **derxy,    
-               DOUBLE  *epre,     
-               INT      iel       
+               DOUBLE  *pderxy,
+               DOUBLE **derxy,
+               DOUBLE  *epre,
+               INT      iel
             );
 void f3_phider(
                   DOUBLE  *phiderxy,
                   DOUBLE **derxy,
-                  DOUBLE  *ephi,     
-                  INT      ngnode,        
+                  DOUBLE  *ephi,
+                  INT      ngnode,
                   INT     *iedgnod
 	        );
 void f3_covi(
-               DOUBLE **vderxy,    
-               DOUBLE  *velint,   
-               DOUBLE  *covint    
+               DOUBLE **vderxy,
+               DOUBLE  *velint,
+               DOUBLE  *covint
             );
 void f3_permeforce(
                   DOUBLE    *eforce,
                   DOUBLE   **tmp,
-                  INT        iel		   		   
+                  INT        iel
                   );
-void f3_permeforce_ifs( 
-                        DOUBLE   *eforce,  
-                        DOUBLE  **tmp,    
-                        ELEMENT  *ele     
+void f3_permeforce_ifs(
+                        DOUBLE   *eforce,
+                        DOUBLE  **tmp,
+                        ELEMENT  *ele
 	              ) ;
-void f3_permestif(                  
+void f3_permestif(
 		   DOUBLE         **estif,
 		   DOUBLE         **emass,
 		   DOUBLE         **tmp,
 		   INT              iel
 	          );
-void f3_permestif_ifs(                  
-                        DOUBLE         **estif,   
-                        DOUBLE         **emass, 
-                        DOUBLE         **tmp,   
-                        ELEMENT         *ele	   		    
+void f3_permestif_ifs(
+                        DOUBLE         **estif,
+                        DOUBLE         **emass,
+                        DOUBLE         **tmp,
+                        ELEMENT         *ele
                      );
-void f3_iedg(     
-               INT     *iegnod, 
-               ELEMENT *ele, 
+void f3_iedg(
+               INT     *iegnod,
+               ELEMENT *ele,
                INT      surf
 	     );
-             
+
 /************************************************************************
  | f3_calstabmat.c                                                      |
  ************************************************************************/
 void f3_calstabkvv(
                      ELEMENT         *ele,
-                     STAB_PAR_GLS    *gls,  
+                     STAB_PAR_GLS    *gls,
                      DOUBLE         **estif,
                      DOUBLE          *velint,
-                     DOUBLE          *vel2int, 
+                     DOUBLE          *vel2int,
                      DOUBLE          *gridvint,
                      DOUBLE         **vderxy,
                      DOUBLE          *funct,
@@ -521,12 +521,12 @@ void f3_calstabkvv(
                      DOUBLE         **derxy2,
                      DOUBLE           fac,
                      DOUBLE           visc,
-                     INT              iel,	 
+                     INT              iel,
                      INT              ihoel
                   );
 void f3_calstabkvp(
                      ELEMENT         *ele,
-                     STAB_PAR_GLS    *gls,  
+                     STAB_PAR_GLS    *gls,
                      DOUBLE         **estif,
                      DOUBLE          *velint,
                      DOUBLE          *funct,
@@ -535,25 +535,25 @@ void f3_calstabkvp(
                      DOUBLE           fac,
                      DOUBLE           visc,
                      INT              iel,
-                     INT              ihoel		 
+                     INT              ihoel
                    );
-void f3_calstabkvg(			      
-                     ELEMENT         *ele,    
-                     STAB_PAR_GLS    *gls,  
-                     DOUBLE         **estif,  
-                     DOUBLE         **vderxy, 
-                     DOUBLE          *funct,  
+void f3_calstabkvg(
+                     ELEMENT         *ele,
+                     STAB_PAR_GLS    *gls,
+                     DOUBLE         **estif,
+                     DOUBLE         **vderxy,
+                     DOUBLE          *funct,
                      DOUBLE         **derxy,
-                     DOUBLE         **derxy2, 
+                     DOUBLE         **derxy2,
                      DOUBLE          *alecovint,
-                     DOUBLE           fac,    
-                     DOUBLE           visc,   
-                     INT              iel,    
-                     INT              ihoel   
+                     DOUBLE           fac,
+                     DOUBLE           visc,
+                     INT              iel,
+                     INT              ihoel
                    );
 void f3_calstabmvv(
                      ELEMENT         *ele,
-                     STAB_PAR_GLS    *gls,  
+                     STAB_PAR_GLS    *gls,
                      DOUBLE         **estif,
                      DOUBLE          *velint,
                      DOUBLE          *funct,
@@ -562,14 +562,14 @@ void f3_calstabmvv(
                      DOUBLE           fac,
                      DOUBLE           visc,
                      INT              iel,
-                     INT              ihoel		 
+                     INT              ihoel
                    );
 void f3_calstabkpv(
                      ELEMENT         *ele,
-                     STAB_PAR_GLS    *gls,  
+                     STAB_PAR_GLS    *gls,
                      DOUBLE         **estif,
                      DOUBLE          *velint,
-                     DOUBLE          *gridvint, 
+                     DOUBLE          *gridvint,
                      DOUBLE         **vderxy,
                      DOUBLE          *funct,
                      DOUBLE         **derxy,
@@ -577,47 +577,47 @@ void f3_calstabkpv(
                      DOUBLE           fac,
                      DOUBLE           visc,
                      INT              iel,
-                     INT              ihoel		 
+                     INT              ihoel
                    );
 void f3_calstabkpg(
-                    STAB_PAR_GLS    *gls,  
-		    DOUBLE         **estif, 
-		    DOUBLE          *funct,  
-		    DOUBLE         **vderxy, 
-		    DOUBLE         **derxy,  
-		    DOUBLE           fac,    
-		    INT              iel          
+                    STAB_PAR_GLS    *gls,
+		    DOUBLE         **estif,
+		    DOUBLE          *funct,
+		    DOUBLE         **vderxy,
+		    DOUBLE         **derxy,
+		    DOUBLE           fac,
+		    INT              iel
                    );
 
 void f3_calstabkpp(
-                     STAB_PAR_GLS    *gls,  
+                     STAB_PAR_GLS    *gls,
                      DOUBLE         **estif,
                      DOUBLE         **derxy,
                      DOUBLE           fac,
-                     INT              iel		 
+                     INT              iel
                    );
 void f3_calstabmpv(
-                     STAB_PAR_GLS    *gls,  
+                     STAB_PAR_GLS    *gls,
                      DOUBLE         **estif,
                      DOUBLE          *funct,
                      DOUBLE         **derxy,
                      DOUBLE           fac,
-                     INT              iel		 
+                     INT              iel
                    );
 
 /************************************************************************
  | f3_calstabpar.c                                                      |
  ************************************************************************/
 void f3_calstabpar(
-	            ELEMENT         *ele,      
-		    DOUBLE          *velint,  
-		    DOUBLE           visc,    
-		    INT              iel,     
-		    DIS_TYP          typ,    
-		    INT              iflag    
+	            ELEMENT         *ele,
+		    DOUBLE          *velint,
+		    DOUBLE           visc,
+		    INT              iel,
+		    DIS_TYP          typ,
+		    INT              iflag
                   );
-		  
-		  		  		  	      
+
+
 /************************************************************************
  | f3_inpele.c                                                          |
  ************************************************************************/
@@ -637,16 +637,16 @@ void fluid3(
             INTRA       *actintra,
             ELEMENT     *ele,
             ARRAY       *estif_global,
-            ARRAY       *emass_global, 
+            ARRAY       *emass_global,
 	    ARRAY       *etforce_global,
 	    ARRAY       *eiforce_global,
 	    ARRAY       *edforce_global,
             CALC_ACTION *action,
 	    INT         *hasdirich,
-	    INT         *hasext,     	    
+	    INT         *hasext,
 	    CONTAINER   *container
            );
-	   
+
 /************************************************************************
  | f3_massrhs.c                                                         |
  ************************************************************************/
@@ -654,7 +654,7 @@ void f3_massrhs(ELEMENT *ele, DOUBLE **emass, DOUBLE **eaccn, DOUBLE *eiforce);
 
 
 void f3_stress(
-    FLUID_STRESS  str, 
+    FLUID_STRESS  str,
     INT           viscstr,
     ELEMENT      *ele,
     INT           is_relax);
@@ -662,7 +662,7 @@ void f3_stress(
 void f3_calelestress(
     INT             viscstr,
     ELEMENT        *ele,
-    DOUBLE        **evel, 
+    DOUBLE        **evel,
     DOUBLE         *epre,
     DOUBLE         *funct,
     DOUBLE        **deriv,
@@ -680,14 +680,14 @@ DOUBLE f3_rsn (
 void f3_lgpl (
     INT         i,
     INT         n,
-    DOUBLE    *zr,  
+    DOUBLE    *zr,
     DOUBLE      z,
     DOUBLE *value
     );
 void f3_hxsm (
     INT nir,
     INT nis,
-    INT nit,  
+    INT nit,
     DOUBLE rk,
     DOUBLE sk,
     DOUBLE tk,
@@ -704,7 +704,7 @@ void f3_sext(
     DOUBLE   *xgs,
     DOUBLE   *xgt,
     INT       nir,
-    INT       nis, 
+    INT       nis,
     INT       nit,
     INT       iel
     );
@@ -716,12 +716,12 @@ void f3_hex2(
     DOUBLE      t,
     DIS_TYP     typ
     );
-                    
+
 /************************************************************************
  | f3_caltimerhs.c                                                      |
  ************************************************************************/
-void f3_calgaltfv( 
-                  DOUBLE          *eforce,    
+void f3_calgaltfv(
+                  DOUBLE          *eforce,
                   DOUBLE          *vel2int,
                   DOUBLE          *covint,
                   DOUBLE          *funct,
@@ -732,17 +732,17 @@ void f3_calgaltfv(
                   DOUBLE           fac,
                   INT              iel
                 )  ;
-void f3_calgaltfp( 
-                     DOUBLE          *eforce,    
+void f3_calgaltfp(
+                     DOUBLE          *eforce,
                      DOUBLE          *funct,
                      DOUBLE         **vderxy,
                      DOUBLE           fac,
                      INT              iel
                   ) ;
-void f3_calstabtfv( 
-                     STAB_PAR_GLS    *gls,  
+void f3_calstabtfv(
+                     STAB_PAR_GLS    *gls,
                      ELEMENT         *ele,
-                     DOUBLE          *eforce,    
+                     DOUBLE          *eforce,
                      DOUBLE          *velint,
                      DOUBLE          *vel2int,
                      DOUBLE          *covint,
@@ -758,8 +758,8 @@ void f3_calstabtfv(
                   );
 void f3_calstabtfp(
                      ELEMENT         *ele,
-                     STAB_PAR_GLS    *gls,  
-                     DOUBLE          *eforce,    
+                     STAB_PAR_GLS    *gls,
+                     DOUBLE          *eforce,
                      DOUBLE         **derxy,
                      DOUBLE         **vderxy2,
                      DOUBLE          *velint,
@@ -770,7 +770,7 @@ void f3_calstabtfp(
                      INT              ihoel,
                      INT              iel
                   )  ;
-		  		  		  	      
+
 /************************************************************************
  | f3_inpele.c                                                          |
  ************************************************************************/
@@ -805,7 +805,7 @@ void f3_jaco2(
     ELEMENT    *ele,
     INT         iel
     );
-    
+
 /************************************************************************
  | f3_main.c                                                            |
  ************************************************************************/
@@ -814,16 +814,16 @@ void fluid3(
             INTRA       *actintra,
             ELEMENT     *ele,
             ARRAY       *estif_global,
-            ARRAY       *emass_global, 
+            ARRAY       *emass_global,
 	    ARRAY       *etforce_global,
 	    ARRAY       *eiforce_global,
 	    ARRAY       *edforce_global,
             CALC_ACTION *action,
 	    INT         *hasdirich,
 	    INT         *hasext,
-            CONTAINER   *container     	    
+            CONTAINER   *container
 	   );
-	   
+
 /************************************************************************
  | f3_massrhs.c                                                         |
  ************************************************************************/
@@ -848,8 +848,8 @@ void f3_pdsubmesh(FLUID_ML_SMESH *smesh,
                   INT             xele,
                   INT             yele,
                   INT             zele,
-                  INT             order,  
+                  INT             order,
 		  INT             flag);
 void f3_elesubmesh(ELEMENT        *ele,
                    FLUID_ML_SMESH *smesh,
-		   INT             flag);                  
+		   INT             flag);

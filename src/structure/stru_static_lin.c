@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Michael Gee
@@ -28,7 +28,7 @@ extern struct _FIELD      *field;
 
 <pre>                                                         m.gee 8/00
 -the partition of one proc (all discretizations)
--the type is in partition.h                                                  
+-the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -51,11 +51,11 @@ extern struct _STATIC_VAR  *statvar;
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par;                      
+ extern struct _PAR   par;
 /*----------------------------------------------------------------------*
  | enum _CALC_ACTION                                      m.gee 1/02    |
  | command passed from control routine to the element level             |
@@ -70,24 +70,24 @@ extern enum _CALC_ACTION calc_action[MAXFIELD];
  *----------------------------------------------------------------------*/
 void calsta()
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("calsta");
 #endif
 /*----------------------------------------------------------------------*/
 
 if (statvar->linear==1 && statvar->nonlinear==1)
    dserror("linear and nonlinear static analysis on");
-   
-if (statvar->linear==1) 
+
+if (statvar->linear==1)
 {
    stalin();
 }
-if (statvar->nonlinear==1) 
+if (statvar->nonlinear==1)
 {
-   stanln(); 
+   stanln();
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -99,7 +99,7 @@ return;
 /*----------------------------------------------------------------------*
  |  routine to control linear static structural analysis    m.gee 6/01  |
  *----------------------------------------------------------------------*/
-void stalin() 
+void stalin()
 {
 INT           i;                /* a counter */
 INT           numeq;            /* number of equations on this proc */
@@ -124,7 +124,7 @@ container.isdyn   = 0;           /* static calculation */
 container.kintyp  = 0;           /* kintyp  = 0: geo_lin*/
 container.actndis = 0;           /* actndis = 0: only one discretisation*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("stalin");
 #endif
 /*----------------------------------------------------------------------*/
@@ -137,8 +137,8 @@ container.fieldtyp  = actfield->fieldtyp;
 actsolv     = &(solv[0]);
 actpart     = &(partition[0]);
 action      = &(calc_action[0]);
-#ifdef PARALLEL 
-actintra    = &(par.intra[0]); 
+#ifdef PARALLEL
+actintra    = &(par.intra[0]);
 #else
 actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
 if (!actintra) dserror("Allocation of INTRA failed");
@@ -172,7 +172,7 @@ for (i=0; i<actsolv->nsol; i++)
    solserv_zero_vec(&(actsolv->sol[i]));
 /*--------------------------------------------------- initialize solver */
 init=1;
-solver_control(  
+solver_control(
                     actsolv,
                     actintra,
                   &(actsolv->sysarray_typ[actsysarray]),
@@ -195,7 +195,7 @@ init_assembly(actpart,actsolv,actintra,actfield,actsysarray,0);
 calinit(actfield,actpart,action,&container);
 /*----------------------------------------- write output of mesh to gid */
 if (par.myrank==0)
-if (ioflags.struct_disp_gid||ioflags.struct_stress_gid) 
+if (ioflags.struct_disp_gid||ioflags.struct_stress_gid)
    out_gid_msh();
 /*------call element routines to calculate & assemble stiffness matrice */
 *action = calc_struct_linstiff;
@@ -243,7 +243,7 @@ if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1)
    container.dirich       = NULL;
    container.global_numeq = 0;
    container.kstep        = 0;
-   calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,&container,action);   
+   calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,&container,action);
    /*-------------------------- reduce stresses, so they can be written */
    *action = calc_struct_stressreduce;
    container.kstep = 0;
@@ -267,10 +267,10 @@ if ( (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1) && par.myra
 }
 /*----------------------------------------------------------------------*/
 end:
-#ifndef PARALLEL 
+#ifndef PARALLEL
 CCAFREE(actintra);
 #endif
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

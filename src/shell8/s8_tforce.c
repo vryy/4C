@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Michael Gee
@@ -36,7 +36,7 @@ const DOUBLE caeins = 0.99999999999;
 const DOUBLE one    = 1.0;
 const DOUBLE zero   = 0.0;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_tforce");
 #endif
 /*----------------------------------------------------------------------*/
@@ -69,7 +69,7 @@ switch(option)
 case 0:/*--------------------------------- global coordinate orientated */
       for (i=0; i<3; i++)
       for (j=0; j<3; j++) b[i][j] = 0.0;
-      
+
       b[0][2] = akov[1][0]*akov[2][1] - akov[2][0]*akov[1][1];
       b[1][2] = akov[2][0]*akov[0][1] - akov[0][0]*akov[2][1];
       b[2][2] = akov[0][0]*akov[1][1] - akov[1][0]*akov[0][1];
@@ -85,10 +85,10 @@ case 0:/*--------------------------------- global coordinate orientated */
          anorm = sqrt(b[0][0]*b[0][0] + b[2][0]*b[2][0]);
          b[0][0] /= anorm;
          b[2][0] /= anorm;
-         
+
          b[0][1] =  b[1][2]*b[2][0];
          b[1][1] =  b[2][2]*b[0][0] - b[0][2]*b[2][0];
-         b[2][1] = -b[1][2]*b[0][0]; 
+         b[2][1] = -b[1][2]*b[0][0];
       }
       else
       {
@@ -127,7 +127,7 @@ case 2:
       /*---------------------------------- local orthogonal coordinates */
       for (i=0; i<3; i++)
       for (j=0; j<3; j++) b[i][j] = 0.0;
-      
+
       b[0][2] = akov[1][0]*akov[2][1] - akov[2][0]*akov[1][1];
       b[1][2] = akov[2][0]*akov[0][1] - akov[0][0]*akov[2][1];
       b[2][2] = akov[0][0]*akov[1][1] - akov[1][0]*akov[0][1];
@@ -139,7 +139,7 @@ case 2:
       b[0][0] = akov[0][0]/anorm;
       b[1][0] = akov[1][0]/anorm;
       b[2][0] = akov[2][0]/anorm;
-      
+
       b[0][1] = akov[1][2]*akov[2][0] - akov[2][2]*akov[1][0];
       b[1][1] = akov[2][2]*akov[0][0] - akov[0][2]*akov[2][0];
       b[2][1] = akov[0][2]*akov[1][0] - akov[1][2]*akov[0][0];
@@ -175,7 +175,7 @@ force[12][ngauss] = sm[2][0];
 force[13][ngauss] = sm[2][1];
 force[15][ngauss] = sm[2][2];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -197,7 +197,7 @@ C.......................................................................
  NOTE:
    This is NOT a multi-purpose routine, as it takes
    a static 2D array as first argument, a dynamic as second and a
-   static as third argument. This routine will fail with any other 
+   static as third argument. This routine will fail with any other
    combination of static or dynamic 2D arrays
  *----------------------------------------------------------------------*/
 void s8_tettr(DOUBLE x[3][3], DOUBLE **a, DOUBLE b[3][3])
@@ -206,7 +206,7 @@ INT    i,j,k;
 DOUBLE t[3][3];
 DOUBLE h[3][3];
 DOUBLE sum;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_tettr");
 #endif
 /*----------------------------------------------------------------------*/
@@ -233,7 +233,7 @@ for (j=0; j<3; j++)
    x[i][j] = sum;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

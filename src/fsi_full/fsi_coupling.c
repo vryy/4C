@@ -10,7 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
+/*!
 \addtogroup FSI
 *//*! @{ (documentation module open)*/
 #ifdef D_FSI
@@ -18,7 +18,7 @@ Maintainer: Steffen Genkinger
 #include "../solver/solver.h"
 #include "../fluid2/fluid2.h"
 #include "../fluid3/fluid3.h"
-#include "fsi_prototypes.h"    
+#include "fsi_prototypes.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -46,10 +46,10 @@ extern struct _DESIGN *design;
 In this routine the fsi-coupling conditions from the input file are
 evaluated and transformed into Neumann conditions for structure
 and into Dirichlet conditions for fluid and ale.
-			     
-</pre>   
 
-\return void 
+</pre>
+
+\return void
 
 ------------------------------------------------------------------------*/
 void fsi_createfsicoup()
@@ -62,7 +62,7 @@ DLINE    *actdline;
 DSURF    *actdsurf;
 FIELDTYP  fieldtyp;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fsi_createfsicoup");
 #endif
 
@@ -85,7 +85,7 @@ for (i=0; i<design->ndsurf; i++)
    {
    case structure:
       dsassert(hasdirich==0,"dirich- and fsi-coupling condition defined on same DSURF\n");
-      dsassert(hascouple==0,"coupling- and fsi-coupling condition defined on same DSURF\n");      
+      dsassert(hascouple==0,"coupling- and fsi-coupling condition defined on same DSURF\n");
       if (hasneum==0)
       {
          actdsurf->neum = (NEUM_CONDITION*)CCACALLOC(1,sizeof(NEUM_CONDITION));
@@ -98,7 +98,7 @@ for (i=0; i<design->ndsurf; i++)
       }
       else if (hasneum>0 && actdsurf->neum->neum_type==neum_orthopressure)
       {
-         /* combination of live load and FSI load */ 
+         /* combination of live load and FSI load */
          actdsurf->neum->neum_type = neum_opres_FSI;
       }
       else
@@ -112,7 +112,7 @@ for (i=0; i<design->ndsurf; i++)
       actdsurf->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
       amdef("onoff",&(actdsurf->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
       amdef("val",&(actdsurf->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
-      amdef("curve",&(actdsurf->dirich->curve),MAXDOFPERNODE,1,"IV"); 
+      amdef("curve",&(actdsurf->dirich->curve),MAXDOFPERNODE,1,"IV");
       amdef("function",&(actdsurf->dirich->funct),MAXDOFPERNODE,1,"IV");
       amzero(&(actdsurf->dirich->dirich_onoff));
       amzero(&(actdsurf->dirich->dirich_val));
@@ -120,9 +120,9 @@ for (i=0; i<design->ndsurf; i++)
       amzero(&(actdsurf->dirich->funct));
       /*----------------------------------- initialise for fsi-coupling */
       for (j=0;j<genprob.ndim;j++)
-         actdsurf->dirich->dirich_onoff.a.iv[j] = 1;   
+         actdsurf->dirich->dirich_onoff.a.iv[j] = 1;
       actdsurf->dirich->dirich_type=dirich_FSI;
-   break;   
+   break;
    case ale:
       dsassert(hasdirich==0,"dirich- and fsi-coupling condition defined on same DSURF\n");
       dsassert(hascouple==0,"coupling- and fsi-coupling condition defined on same DSURF\n");
@@ -131,7 +131,7 @@ for (i=0; i<design->ndsurf; i++)
       actdsurf->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
       amdef("onoff",&(actdsurf->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
       amdef("val",&(actdsurf->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
-      amdef("curve",&(actdsurf->dirich->curve),MAXDOFPERNODE,1,"IV"); 
+      amdef("curve",&(actdsurf->dirich->curve),MAXDOFPERNODE,1,"IV");
       amdef("function",&(actdsurf->dirich->funct),MAXDOFPERNODE,1,"IV");
       amzero(&(actdsurf->dirich->dirich_onoff));
       amzero(&(actdsurf->dirich->dirich_val));
@@ -139,7 +139,7 @@ for (i=0; i<design->ndsurf; i++)
       amzero(&(actdsurf->dirich->curve));
       /*----------------------------------- initialise for fsi-coupling */
       for (j=0;j<genprob.ndim;j++)
-         actdsurf->dirich->dirich_onoff.a.iv[j] = 1;   
+         actdsurf->dirich->dirich_onoff.a.iv[j] = 1;
       actdsurf->dirich->dirich_type=dirich_FSI;
    break;
    default:
@@ -168,7 +168,7 @@ for (i=0; i<design->ndline; i++)
    case structure:
       if (hasdirich!=0) dswarning(1,7);
       dsassert(hasdirich==0,"dirich- and fsi-coupling condition defined on same DLINE\n");
-      dsassert(hascouple==0,"coupling- and fsi-coupling condition defined on same DLINE\n");      
+      dsassert(hascouple==0,"coupling- and fsi-coupling condition defined on same DLINE\n");
       actdline->neum = (NEUM_CONDITION*)CCACALLOC(1,sizeof(NEUM_CONDITION));
       if (!actdline->neum) dserror("Allocation of memory failed");
       actdline->neum->neum_type = neum_FSI;
@@ -181,7 +181,7 @@ for (i=0; i<design->ndline; i++)
       actdline->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
       amdef("onoff",&(actdline->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
       amdef("val",&(actdline->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
-      amdef("curve",&(actdline->dirich->curve),MAXDOFPERNODE,1,"IV"); 
+      amdef("curve",&(actdline->dirich->curve),MAXDOFPERNODE,1,"IV");
       amdef("function",&(actdline->dirich->funct),MAXDOFPERNODE,1,"IV");
       amzero(&(actdline->dirich->dirich_onoff));
       amzero(&(actdline->dirich->dirich_val));
@@ -189,9 +189,9 @@ for (i=0; i<design->ndline; i++)
       amzero(&(actdline->dirich->funct));
       /*----------------------------------- initialise for fsi-coupling */
       for (j=0;j<genprob.ndim;j++)
-         actdline->dirich->dirich_onoff.a.iv[j] = 1;   
+         actdline->dirich->dirich_onoff.a.iv[j] = 1;
       actdline->dirich->dirich_type=dirich_FSI;
-   break;   
+   break;
    case ale:
        dsassert(hasdirich==0,"dirich- and fsi-coupling condition defined on same DLINE\n");
        dsassert(hascouple==0,"coupling- and fsi-coupling condition defined on same DLINE\n");
@@ -200,7 +200,7 @@ for (i=0; i<design->ndline; i++)
       actdline->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
       amdef("onoff",&(actdline->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
       amdef("val",&(actdline->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
-      amdef("curve",&(actdline->dirich->curve),MAXDOFPERNODE,1,"IV"); 
+      amdef("curve",&(actdline->dirich->curve),MAXDOFPERNODE,1,"IV");
       amdef("function",&(actdline->dirich->funct),MAXDOFPERNODE,1,"IV");
       amzero(&(actdline->dirich->dirich_onoff));
       amzero(&(actdline->dirich->dirich_val));
@@ -208,7 +208,7 @@ for (i=0; i<design->ndline; i++)
       amzero(&(actdline->dirich->funct));
       /*----------------------------------- initialise for fsi-coupling */
       for (j=0;j<genprob.ndim;j++)
-         actdline->dirich->dirich_onoff.a.iv[j] = 1;   
+         actdline->dirich->dirich_onoff.a.iv[j] = 1;
       actdline->dirich->dirich_type=dirich_FSI;
    break;
    default:
@@ -236,7 +236,7 @@ for (i=0; i<design->ndnode; i++)
    {
    case structure:
       dsassert(hasdirich==0,"dirich- and fsi-coupling condition defined on same DNODE\n");
-      dsassert(hascouple==0,"coupling- and fsi-coupling condition defined on same DNODE\n");      
+      dsassert(hascouple==0,"coupling- and fsi-coupling condition defined on same DNODE\n");
       actdnode->neum = (NEUM_CONDITION*)CCACALLOC(1,sizeof(NEUM_CONDITION));
       if (!actdnode->neum) dserror("Allocation of memory failed");
       actdnode->neum->neum_type = neum_FSI;
@@ -249,7 +249,7 @@ for (i=0; i<design->ndnode; i++)
       actdnode->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
       amdef("onoff",&(actdnode->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
       amdef("val",&(actdnode->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
-      amdef("curve",&(actdnode->dirich->curve),MAXDOFPERNODE,1,"IV"); 
+      amdef("curve",&(actdnode->dirich->curve),MAXDOFPERNODE,1,"IV");
       amdef("function",&(actdnode->dirich->funct),MAXDOFPERNODE,1,"IV");
       amzero(&(actdnode->dirich->dirich_onoff));
       amzero(&(actdnode->dirich->dirich_val));
@@ -257,9 +257,9 @@ for (i=0; i<design->ndnode; i++)
       amzero(&(actdnode->dirich->funct));
       /*----------------------------------- initialise for fsi-coupling */
       for (j=0;j<genprob.ndim;j++)
-         actdnode->dirich->dirich_onoff.a.iv[j] = 1;   
+         actdnode->dirich->dirich_onoff.a.iv[j] = 1;
       actdnode->dirich->dirich_type=dirich_FSI;
-   break;   
+   break;
    case ale:
        dsassert(hasdirich==0,"dirich- and fsi-coupling condition defined on same DNODE\n");
        dsassert(hascouple==0,"coupling- and fsi-coupling condition defined on same DNODE\n");
@@ -268,7 +268,7 @@ for (i=0; i<design->ndnode; i++)
       actdnode->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
       amdef("onoff",&(actdnode->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
       amdef("val",&(actdnode->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
-      amdef("curve",&(actdnode->dirich->curve),MAXDOFPERNODE,1,"IV"); 
+      amdef("curve",&(actdnode->dirich->curve),MAXDOFPERNODE,1,"IV");
       amdef("function",&(actdnode->dirich->funct),MAXDOFPERNODE,1,"IV");
       amzero(&(actdnode->dirich->dirich_onoff));
       amzero(&(actdnode->dirich->dirich_val));
@@ -276,7 +276,7 @@ for (i=0; i<design->ndnode; i++)
       amzero(&(actdnode->dirich->funct));
       /*----------------------------------- initialise for fsi-coupling */
       for (j=0;j<genprob.ndim;j++)
-         actdnode->dirich->dirich_onoff.a.iv[j] = 1;   
+         actdnode->dirich->dirich_onoff.a.iv[j] = 1;
       actdnode->dirich->dirich_type=dirich_FSI;
    break;
    default:
@@ -285,44 +285,44 @@ for (i=0; i<design->ndnode; i++)
 } /* end of loop over dnodes */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of fsi_creatcoup*/
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief initialise fsi coupling conditions
 
 <pre>                                                         genk 09/02
 
  create mulitfield solution history and set pointers to the corresponding
  nodes of the other fields
-			     
-</pre>   
 
-\param *structfield   FIELD         (i)      structure field 
-\param *fluidfield    FIELD         (i)      fluid field     
-\param *alefield      FIELD         (i)      ale field       
+</pre>
 
-\return void 
+\param *structfield   FIELD         (i)      structure field
+\param *fluidfield    FIELD         (i)      fluid field
+\param *alefield      FIELD         (i)      ale field
+
+\return void
 
 ------------------------------------------------------------------------*/
-void fsi_initcoupling( 
+void fsi_initcoupling(
                           FIELD       *structfield,
-                          FIELD       *fluidfield, 
+                          FIELD       *fluidfield,
 		          FIELD       *alefield
 		      )
 {
-INT     numfnp, numsnp, numanp;              /* number of nodes         */  
+INT     numfnp, numsnp, numanp;              /* number of nodes         */
 INT     numdf;                               /* number of dofs          */
 INT     numc;                                /* number of columns in mf */
 INT     numaf,numsf,numff;
 INT     i,j;                                 /* simply some counters    */
 INT     ierr;                                /* flag                    */
 INT     dim;                                 /* dimension of problem    */
-INT     sfound,afound;                       /* flag                    */          
+INT     sfound,afound;                       /* flag                    */
 INT     is_ale;
 DOUBLE  tol=EPS4;                            /* tolerance for node dist */
 NODE   *actfnode, *actsnode, *actanode;      /* actual nodes            */
@@ -331,7 +331,7 @@ ELEMENT *actele;
 ARRAY   aindex_a, sindex_a;
 INT    *aindex, *sindex;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fsi_initcoupling");
 #endif
 
@@ -356,8 +356,8 @@ dim     = genprob.ndim;
    actfnode->sol_mf.a.da[0][i]: velocity transfered to ale
    actfnode->sol_mf.a.da[1][i]: stresses transfered to structure
    2D: SIGMA11,SIGMA22,SIGMA12
-   3D: SIGMA11,SIGMA22,SIGMA33,SIGMA12,SIGMA13,SIGMA23                      
-  ----------------------------------------------------------------------*/   
+   3D: SIGMA11,SIGMA22,SIGMA33,SIGMA12,SIGMA13,SIGMA23
+  ----------------------------------------------------------------------*/
 for (i=0;i<numfnp;i++)
 {
    actfnode  = &(fluidfield->dis[0].node[i]);
@@ -369,7 +369,7 @@ for (i=0;i<numfnp;i++)
    amdef("sol_mf",&actfnode->sol_mf,2,numc,"DA");
    amzero(&(actfnode->sol_mf));
    actfgnode->mfcpnode=(NODE**)CCACALLOC(3,sizeof(NODE*));
-   if (actfgnode->mfcpnode==NULL) 
+   if (actfgnode->mfcpnode==NULL)
       dserror("Allocation of coupling node pointers failed");
    for (j=0;j<3;j++) actfgnode->mfcpnode[j]=NULL;
 } /* end of loop over fluid nodes */
@@ -377,12 +377,12 @@ for (i=0;i<numfnp;i++)
 /*------------------------------------------------ loop structure nodes */
 /* multifield solution history of structural nodes:
    actsnode->sol_mf.a.da[0][i]: actual displacements transfered to ale
-   actsnode->sol_mf.a.da[1][i]: displacements of old iteration step 
+   actsnode->sol_mf.a.da[1][i]: displacements of old iteration step
    actsnode->sol_mf.a.da[2][i]: displacements of old time step
    actsnode->sol_mf.a.da[3][i]: dispi
    actsnode->sol_mf.a.da[4][i]: couplingforces at the end of time step
    actsnode->sol_mf.a.da[5][i]: coupling forces at the beginning of time step
- -----------------------------------------------------------------------*/   
+ -----------------------------------------------------------------------*/
 for (i=0;i<numsnp;i++)
 {
    actsnode  = &(structfield->dis[0].node[i]);
@@ -391,7 +391,7 @@ for (i=0;i<numsnp;i++)
    amdef("sol_mf",&actsnode->sol_mf,6,numdf,"DA");
    amzero(&(actsnode->sol_mf));
    actsgnode->mfcpnode=(NODE**)CCACALLOC(3,sizeof(NODE*));
-   if (actsgnode->mfcpnode==NULL) 
+   if (actsgnode->mfcpnode==NULL)
       dserror("Allocation of coupling node pointers failed");
    for (j=0;j<3;j++) actsgnode->mfcpnode[j]=NULL;
 } /* end of loop over struct nodes */
@@ -409,12 +409,12 @@ for (i=0;i<numanp;i++)
    amdef("sol_mf",&actanode->sol_mf,2,numdf,"DA");
    amzero(&(actanode->sol_mf));
    actagnode->mfcpnode=(NODE**)CCACALLOC(3,sizeof(NODE*));
-   if (actagnode->mfcpnode==NULL) 
+   if (actagnode->mfcpnode==NULL)
       dserror("Allocation of coupling node pointers failed");
    for (j=0;j<3;j++) actagnode->mfcpnode[j]=NULL;
 } /* end of loop over ale nodes */
 
-/* find fsi coupled nodes and set ptrs to the corresponding nodes of 
+/* find fsi coupled nodes and set ptrs to the corresponding nodes of
    the other fields --------------------------------------------------*/
 
 /*------------------------------- create and initialsise index arrays */
@@ -423,7 +423,7 @@ sindex = amdef("sindex",&sindex_a,numsnp,1,"IV");
 for (i=0;i<numanp;i++) aindex[i]=1;
 for (i=0;i<numsnp;i++) sindex[i]=1;
 
-/*------------------------------------------------- loop fluid nodes  */    
+/*------------------------------------------------- loop fluid nodes  */
 for (i=0;i<numfnp;i++)
 {
    actfnode  = &(fluidfield->dis[0].node[i]);
@@ -439,11 +439,11 @@ for (i=0;i<numfnp;i++)
          if (actele->e.f2->is_ale>0) is_ale++;
       break;
 #endif
-#ifdef D_FLUID3      
+#ifdef D_FLUID3
       case el_fluid3:
          if (actele->e.f3->is_ale>0) is_ale++;
       break;
-#endif      
+#endif
       default:
          dserror("eltyp unknow\n");
       }
@@ -462,9 +462,9 @@ for (i=0;i<numfnp;i++)
       sfound++;
       actsgnode = actsnode->gnode;
       sindex[j]=0;
-      break;      
-   } /* end of loop over structnodes */  
-   /*--------------------- loop ale nodes and find corresponding node */   
+      break;
+   } /* end of loop over structnodes */
+   /*--------------------- loop ale nodes and find corresponding node */
    if (is_ale>0)
    for (j=0;j<numanp;j++)
    {
@@ -475,19 +475,19 @@ for (i=0;i<numfnp;i++)
       afound++;
       actagnode = actanode->gnode;
       aindex[j]=0;
-      break;          
-   } /* end of loop over ale nodes */      
+      break;
+   } /* end of loop over ale nodes */
 
    /*--------------------------- set pointers to corresponding nodes */
    if(sfound>0)   actfgnode->mfcpnode[numsf]=actsnode;
                   actfgnode->mfcpnode[numff]=actfnode;
-   if(afound>0)   actfgnode->mfcpnode[numaf]=actanode; 
+   if(afound>0)   actfgnode->mfcpnode[numaf]=actanode;
    if(sfound>0)   actsgnode->mfcpnode[numsf]=actsnode;
    if(sfound>0)   actsgnode->mfcpnode[numff]=actfnode;
-   if(sfound>0)   actsgnode->mfcpnode[numaf]=actanode;    
+   if(sfound>0)   actsgnode->mfcpnode[numaf]=actanode;
    if(sfound>0)   actagnode->mfcpnode[numsf]=actsnode;
    if(afound>0)   actagnode->mfcpnode[numff]=actfnode;
-   if(afound>0)   actagnode->mfcpnode[numaf]=actanode;  	   
+   if(afound>0)   actagnode->mfcpnode[numaf]=actanode;
 }/* end of loop over fluidnodes */
 
 amdel(&aindex_a);
@@ -513,9 +513,9 @@ for (i=0;i<numfnp;i++)
    dsassert(actfgnode->fsicouple->fsi_coupleId==actsgnode->fsicouple->fsi_coupleId,
             "FSI Coupling Condition Fluid-Struct: wrong coupleId\n");
    dsassert(actfgnode->fsicouple->fsi_coupleId==actagnode->fsicouple->fsi_coupleId,
-            "FSI Coupling Condition Fluid-Ale: wrong coupleId\n");	
+            "FSI Coupling Condition Fluid-Ale: wrong coupleId\n");
    dsassert(actfgnode->fsicouple->fsi_mesh==actsgnode->fsicouple->fsi_mesh,
-            "FSI Coupling Condition Fluid-Struct: wrong mesh\n"); 
+            "FSI Coupling Condition Fluid-Struct: wrong mesh\n");
    dsassert(actfgnode->fsicouple->fsi_mesh==actagnode->fsicouple->fsi_mesh,
             "FSI Coupling Condition Fluid-Ale: wrong mesh\n");
    dsassert(actfgnode->dirich!=NULL,"No dirich condition for fsi-coupling fluid node!\n");
@@ -530,13 +530,13 @@ for (i=0;i<numanp;i++)
 {
    actanode  = &(alefield->dis[0].node[i]);
    actagnode = actanode->gnode;
-   if (actagnode->fsicouple==NULL) continue; 
-   dsassert(actagnode->dirich!=NULL,"No dirich condition for fsi-coupling ale node!\n"); 
+   if (actagnode->fsicouple==NULL) continue;
+   dsassert(actagnode->dirich!=NULL,"No dirich condition for fsi-coupling ale node!\n");
    if(actagnode->dirich->dirich_type!=dirich_FSI) continue;
    for(j=0;j<actanode->numdf;j++)
    dsassert(actagnode->dirich->dirich_onoff.a.iv[j]==1,"wrong onoff() at ale node!\n");
    for (j=actanode->numdf;j<MAXDOFPERNODE;j++)
-      actagnode->dirich->dirich_onoff.a.iv[j]=0;       
+      actagnode->dirich->dirich_onoff.a.iv[j]=0;
 }
 
 /*------------------------------------------------ print out coupling */
@@ -545,7 +545,7 @@ if (genprob.visual==0)
 
 end:
 /*--------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -558,12 +558,12 @@ return;
 <pre>                                                         genk 01/03
 
  create array sid (structural interface dofs)
-			     
-</pre>   
 
-\param *structfield   FIELD         (i)      structure field 
-\param *fsidyn        FSI_DYNAMIC   (i)               
-\return void 
+</pre>
+
+\param *structfield   FIELD         (i)      structure field
+\param *fsidyn        FSI_DYNAMIC   (i)
+\return void
 
 ------------------------------------------------------------------------*/
 void fsi_struct_intdofs(
@@ -571,16 +571,16 @@ void fsi_struct_intdofs(
 		       )
 {
 INT    i,j;                    /* some counters                         */
-INT    numnp_total;            /* total number of structure dofs        */             
+INT    numnp_total;            /* total number of structure dofs        */
 INT    dof;                    /* actual dof                            */
-INT    counter=0;              
+INT    counter=0;
 INT    numaf;
 INT   *sid;                    /* structural interface dofs             */
 NODE  *actsnode, *actanode;    /* actual nodes                          */
 GNODE *actsgnode, *actagnode;  /* actual gnodes                         */
 FSI_DYNAMIC *fsidyn;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fsi_struct_intdofs");
 #endif
 
@@ -599,22 +599,22 @@ for (i=0;i<numnp_total;i++)
    actsnode  = &(structfield->dis[0].node[i]);
    actsgnode = actsnode->gnode;
    actanode  = actsgnode->mfcpnode[numaf];
-   if (actanode==NULL) continue; 
+   if (actanode==NULL) continue;
    actagnode = actanode->gnode;
    /*----------------------------------------- check for coupling nodes */
    dsassert(actagnode->dirich!=NULL,"no dirich condition for coupled ALE node\n");
    if (actagnode->dirich->dirich_type!=dirich_FSI) continue;
    for (j=0;j<actanode->numdf;j++)
    {
-      dof = actsnode->dof[j];      
+      dof = actsnode->dof[j];
       sid[dof]=1;
       counter++;
-   }      
+   }
 } /* end of loop over nodes */
 
 fsidyn->numsid=counter;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 

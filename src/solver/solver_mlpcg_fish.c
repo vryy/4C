@@ -16,13 +16,13 @@ Maintainer: Michael Gee
 #include "../solver/solver.h"
 INT cmp_int(const void *a, const void *b );
 DOUBLE cmp_double(const void *a, const void *b );
-/*! 
-\addtogroup MLPCG 
+/*!
+\addtogroup MLPCG
 *//*! @{ (documentation module open)*/
 /*!----------------------------------------------------------------------
 \brief the multilevel preconditioner main structure
 
-<pre>                                                         m.gee 09/02    
+<pre>                                                         m.gee 09/02
 defined in solver_mlpcg.c
 </pre>
 
@@ -33,7 +33,7 @@ extern struct _MLPRECOND mlprecond;
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -42,15 +42,15 @@ extern struct _FILES  allfiles;
 
 
 /*!---------------------------------------------------------------------
-\brief create the tentative prolongator from actlev+1 to actlev                                              
+\brief create the tentative prolongator from actlev+1 to actlev
 
-<pre>                                                        m.gee 9/02 
-create the tentative prolongator from actlev+1 to actlev  
+<pre>                                                        m.gee 9/02
+create the tentative prolongator from actlev+1 to actlev
 from the aggregation done before , this routine only from 0 to 1
 </pre>
-\param actlev      MLLEVEL*     (i/o) the active level in the ml-precond.                   
-\param actintra   INTRA*       (i)   the intra-communicator of this field                  
-\return void                                               
+\param actlev      MLLEVEL*     (i/o) the active level in the ml-precond.
+\param actintra   INTRA*       (i)   the intra-communicator of this field
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_precond_P_fish(MLLEVEL  *actlev, INTRA *actintra)
@@ -66,7 +66,7 @@ INT          rindex[1000],cindex[500];
 INT          firstdof=0;
 INT          sendbuff[MAXPROC],recvbuff[MAXPROC];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_precond_P_fish");
 #endif
 /*----------------------------------------------------------------------*/
@@ -75,9 +75,9 @@ nproc  = actintra->intra_nprocs;
 /*----------------------------------------------------------------------*/
 actstiff    = actlev->csr;
 /*----------------------------------------------------------------------*/
-/* 
-loop the aggregates and create the tentative prolongator  
-*/                  
+/*
+loop the aggregates and create the tentative prolongator
+*/
 for (i=0; i<actlev->nagg; i++)
 {
    actagg = &(actlev->agg[i]);
@@ -88,9 +88,9 @@ for (i=0; i<actlev->nagg; i++)
       actagg->tentP = (ARRAY*)CCACALLOC(1,sizeof(ARRAY));
       amdef("tentP",actagg->tentP,nrow,ncol,"DA");
    }
-   else if (actagg->tentP->fdim != nrow) 
+   else if (actagg->tentP->fdim != nrow)
        dserror("Size mismatch in aggregate");
-   else if (actagg->tentP_nrow != nrow)  
+   else if (actagg->tentP_nrow != nrow)
        dserror("Size mismatch in aggregate");
    if (!(actagg->tentP_rindex))
       actagg->tentP_rindex = (INT*)CCAMALLOC(nrow*sizeof(INT));
@@ -138,7 +138,7 @@ if (mlprecond.ncall==0)
 }/* end of if (mlprecond.ncall==0) */
 else
    mlpcg_csr_zero(P,actintra);
-/*--------------- loop all aggregates again and fill the DBCSR matrix P */   
+/*--------------- loop all aggregates again and fill the DBCSR matrix P */
 for (i=0; i<actlev->nagg; i++)
 {
    for (j=0; j<actlev->agg[i].numdf; j++) /* column loop */
@@ -160,7 +160,7 @@ if (mlprecond.omega>0.0)
 /*------------------------ tent. prolongator is ready, close the matrix */
 mlpcg_csr_close(P);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -171,9 +171,9 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief create the tentative prolongator for one aggregate                                          
+\brief create the tentative prolongator for one aggregate
 
-<pre>                                                        m.gee 12/02 
+<pre>                                                        m.gee 12/02
 
 </pre>
 \param actagg         AGG*    (i/o) the active aggregate
@@ -183,8 +183,8 @@ return;
 \param nrow           INT*              (o) dimension of rindex
 \param ncol           INT*              (o) dimension of cindex
 \param actstiff       DBCSR*            (i) fine grid stiffness matrix
-\param actintra       INTRA*            (i) the intra-communicator of this field  
-\return void                                               
+\param actintra       INTRA*            (i) the intra-communicator of this field
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_precond_oneP_fish(AGG     *actagg,
@@ -216,10 +216,10 @@ INT           iwork[10000];
 INT           ifail[500];
 INT           info;
 jobz[0]  = 'V';
-range[0] = 'I'; /* A gives all eigenvalues and vectors */ 
+range[0] = 'I'; /* A gives all eigenvalues and vectors */
 uplo[0]  = 'U';
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_precond_oneP_fish");
 #endif
 /*------------------- get size and global dofs of the prolongator block */
@@ -228,7 +228,7 @@ for (i=0; i<actagg->nblock; i++)
    (*nrow) += actagg->block[i][0];
 if (*nrow >= 1000)
 dserror("Local variable aggblock[1000][500] too small");
-/*------------------------------------------ get the global row indizes */   
+/*------------------------------------------ get the global row indizes */
 counter=0;
 for (i=0; i<actagg->nblock; i++)
    for (j=0; j<actagg->block[i][0]; j++)
@@ -243,7 +243,7 @@ A = amdef("A",&A_a,*nrow,*nrow,"DA");
 Z = amdef("Z",&Z_a,*nrow,*nrow,"DA");
 amzero(&A_a);
 mlpcg_csr_extractsubblock_dense(actstiff,A,rindex,*nrow,actintra);
-/*---------------------------------------------------- call eigensolver */   
+/*---------------------------------------------------- call eigensolver */
 vl = -10.0;
 vu = mlprecond.gamma;
 il = 1;
@@ -275,12 +275,12 @@ if (actagg->numdf==0) dserror("Aggregate with no dofs detected");
 
 for (j=0; j<*ncol; j++)
 for (i=0; i<*nrow; i++)
-   aggblock[i][j] = Z[j][i]; /* this is the transformation which happens between c and fortran */ 
+   aggblock[i][j] = Z[j][i]; /* this is the transformation which happens between c and fortran */
 /*----------------------------------------------------------------------*/
 amdel(&A_a);
 amdel(&Z_a);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

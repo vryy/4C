@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -64,7 +64,7 @@ static void oll_matvec(INTRA *actintra, OLL *oll, DOUBLE *work1, DOUBLE *work2);
 void solserv_scal_mat(SPARSE_TYP *Atyp,SPARSE_ARRAY *A,DOUBLE factor)
 {
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_scal_mat");
 #endif
 /*----------------------------------------------------------------------*/
@@ -140,7 +140,7 @@ default:
 break;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -164,7 +164,7 @@ void solserv_add_mat(INTRA *actintra,
                      DOUBLE factor)
 {
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_add_mat");
 #endif
 /*----------------------------------------------------------------------*/
@@ -234,7 +234,7 @@ break;
 
 case oll:
    if(B->oll->is_masked==0) break;
-   if(A->oll->is_masked==0) 
+   if(A->oll->is_masked==0)
    {
      oll_copy(B->oll,A->oll);
      oll_scal(B->oll,factor);
@@ -254,7 +254,7 @@ default:
 break;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -272,7 +272,7 @@ return;
 void solserv_getmatdims(SPARSE_ARRAY* mat,SPARSE_TYP mattyp,
                         INT *numeq, INT *numeq_total)
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_getmatdims");
 #endif
 /*----------------------------------------------------------------------*/
@@ -359,7 +359,7 @@ default:
 break;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -388,7 +388,7 @@ INT                  err=1;
 INT                  minusone=-1;
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_zero_mat");
 #endif
 /*----------------------------------------------------------------------*/
@@ -506,7 +506,7 @@ default:
 break;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -523,13 +523,13 @@ return;
  | SPARSE_TYP   *typto    (o)  type of sparsity mask to be copied to    |
  | SPARSE_ARRAY *matto    (o)  sparsity mask to be allocated and copied |
  *----------------------------------------------------------------------*/
-void solserv_alloc_cp_sparsemask(INTRA        *actintra, 
+void solserv_alloc_cp_sparsemask(INTRA        *actintra,
                                  SPARSE_TYP   *typfrom,
                                  SPARSE_ARRAY *matfrom,
                                  SPARSE_TYP   *typto,
                                  SPARSE_ARRAY *matto)
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_alloc_cp_sparsemask");
 #endif
 /*----------------------------------------------------------------------*/
@@ -618,7 +618,7 @@ default:
 break;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -633,7 +633,7 @@ return;
  *----------------------------------------------------------------------*/
 static void solserv_cp_bdcsrmask(DBCSR *from, DBCSR *to)
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_cp_bdcsrmask");
 #endif
 /*----------------------------------------------------------------------*/
@@ -649,7 +649,7 @@ am_alloc_copy(&(from->ja),&(to->ja));
 /* alloccopy ia */
 am_alloc_copy(&(from->ia),&(to->ia));
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -665,7 +665,7 @@ return;
  *----------------------------------------------------------------------*/
 static void solserv_cp_spomask(SPOOLMAT *from, SPOOLMAT *to)
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_cp_spomask");
 #endif
 /*----------------------------------------------------------------------*/
@@ -683,7 +683,7 @@ am_alloc_copy(&(from->rowptr),&(to->rowptr));
 /* alloccopy A_loc */
 am_alloc_copy(&(from->A_loc),&(to->A_loc));
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -699,7 +699,7 @@ return;
  *----------------------------------------------------------------------*/
 static void solserv_cp_rc_ptrmask(INTRA *actintra, RC_PTR *from, RC_PTR *to)
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_cp_rc_ptrmask");
 #endif
 /*----------------------------------------------------------------------*/
@@ -733,7 +733,7 @@ if (actintra->intra_rank==0)
 /* numcoupsend,numcouprecv,couple_d_send,couple_i_send,couple_d_recv,couple_i_recv
    are allocated if necessary in the assembly init phase */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -745,7 +745,7 @@ return;
 #ifdef UMFPACK
 static void solserv_cp_ccfmask(INTRA *actintra, CCF *from, CCF *to)
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_cp_ccfmask");
 #endif
 /*----------------------------------------------------------------------*/
@@ -765,7 +765,7 @@ am_alloc_copy(&(from->Ai),&(to->Ai));
 am_alloc_copy(&(from->Ax),&(to->Ax));
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -783,7 +783,7 @@ return;
  *----------------------------------------------------------------------*/
 static void solserv_cp_ucchbmask(UCCHB *from, UCCHB *to)
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_cp_ucchbmask");
 #endif
 /*----------------------------------------------------------------------*/
@@ -808,7 +808,7 @@ am_alloc_copy(&(from->xa),&(to->xa));
 /* numcoupsend,numcouprecv,couple_d_send,couple_i_send,couple_d_recv,couple_i_recv
    are allocated if necessary in the assembly init phase */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -825,7 +825,7 @@ return;
  *----------------------------------------------------------------------*/
 static void solserv_cp_skymask(SKYMATRIX *from, SKYMATRIX *to)
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_cp_skymask");
 #endif
 /*----------------------------------------------------------------------*/
@@ -848,7 +848,7 @@ am_alloc_copy(&(from->A),&(to->A));
 /* numcoupsend,numcouprecv,couple_d_send,couple_i_send,couple_d_recv,couple_i_recv
    are allocated if necessary in the assembly init phase */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -864,7 +864,7 @@ return;
  *----------------------------------------------------------------------*/
 static void solserv_cp_msrmask(AZ_ARRAY_MSR *from, AZ_ARRAY_MSR *to)
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_cp_msrmask");
 #endif
 /*----------------------------------------------------------------------*/
@@ -889,7 +889,7 @@ am_alloc_copy(&(from->val),&(to->val));
 /* numcoupsend,numcouprecv,couple_d_send,couple_i_send,couple_d_recv,couple_i_recv
    are allocated if necessary in the assembly init phase */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -905,7 +905,7 @@ return;
  *----------------------------------------------------------------------*/
 static void solserv_cp_densemask(DENSE *from, DENSE *to)
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_cp_densemask");
 #endif
 /*----------------------------------------------------------------------*/
@@ -923,7 +923,7 @@ amdef(from->A.name,&(to->A),from->A.fdim,from->A.sdim,"DA");
 /* couple_d_send,couple_i_send,couple_d_recv,couple_i_recv
    are allocated if necessary in the assembly init phase */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -950,7 +950,7 @@ static DOUBLE *work1;
 static ARRAY   work2_a;
 static DOUBLE *work2;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_sparsematvec");
 #endif
 
@@ -985,7 +985,7 @@ case msr:
   struct _AZ_ARRAY_MSR* msr_array = mat->msr;
 
   INT i;
-  
+
   DOUBLE     *tmpsol;
   ARRAY       tmpsol_a;
 
@@ -997,11 +997,11 @@ case msr:
   am_debug_out(actintra, &(msr_array->val), "val");
   am_debug_out(actintra, &(msr_array->bindx), "bindx");
 #endif
-  
+
 /*----------------------- transform matrix to processor local numbering */
     if (msr_array->is_transformed==0) {
       msr_array->is_transformed = 1;
-      
+
       if (msr_array->Amat != NULL) {
         AZ_matrix_destroy(&(msr_array->Amat)); msr_array->Amat        =NULL;
       }
@@ -1017,7 +1017,7 @@ case msr:
       if (msr_array->data_org != NULL) {
         free(msr_array->data_org);             msr_array->data_org      =NULL;
       }
-      
+
       /* Make backup copy of bindx, as it is permuted in
        * solution. This has to be done on demand as we need the same
        * thing for solving linear systems.
@@ -1053,12 +1053,12 @@ case msr:
                                          msr_array->data_org[AZ_N_border]);
 
       /* attach dmsr-matrix to this structure */
-      AZ_set_MSR(msr_array->Amat, 
-                 msr_array->bindx_backup.a.iv, 
-                 msr_array->val.a.dv, 
-                 msr_array->data_org, 
-                 0, 
-                 NULL, 
+      AZ_set_MSR(msr_array->Amat,
+                 msr_array->bindx_backup.a.iv,
+                 msr_array->val.a.dv,
+                 msr_array->data_org,
+                 0,
+                 NULL,
                  AZ_LOCAL);
     }
 
@@ -1077,7 +1077,7 @@ case msr:
                  msr_array->data_org,
                  msr_array->update_index,
                  NULL);
-  
+
   /* allocate temporary solution vector */
   tmpsol = amdef("tmpsol",&tmpsol_a,msr_array->numeq,1,"DV");
   amzero(&tmpsol_a);
@@ -1092,7 +1092,7 @@ case msr:
                   msr_array->update_index,
                   NULL,
                   result->vec.a.dv);
-  
+
   /* delete temporary rhs */
   amdel(&tmprhs_a);
 
@@ -1176,7 +1176,7 @@ default:
 break;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1206,7 +1206,7 @@ DOUBLE     *A;
 INT         rowstart,rowend;
 INT         col;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_matvec_spo");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1236,7 +1236,7 @@ for (i=0; i<numeq; i++)
    There is no need to alreduce this vector here, because it will anyway
    bre distributed to a DIS_VECTOR */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1268,7 +1268,7 @@ DOUBLE     *A;
 INT         rowstart,rowend;
 INT         col;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_matvec_rc_ptr");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1298,7 +1298,7 @@ for (i=0; i<numeq; i++)
    There is no need to alreduce this vector here, because it will anyway
    bre distributed to a DIS_VECTOR */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1329,7 +1329,7 @@ DOUBLE     *Ax;
 INT         start,end;
 INT         col;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_matvec_ccf");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1357,7 +1357,7 @@ for (i=0; i<numeq_total; i++)
    There is no need to alreduce this vector here, because it will anyway
    bre distributed to a DIS_VECTOR */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1389,7 +1389,7 @@ INT        *update;
 INT        *bindx;
 DOUBLE     *val;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_matvec_msr");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1423,7 +1423,7 @@ for (i=0; i<numeq; i++)
    There is no need to alreduce this vector here, because it will anyway
    bre distributed to a DIS_VECTOR */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1454,7 +1454,7 @@ INT     nrn,neq1,neq;
 DOUBLE *A;
 INT    *maxa;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_matvec_sky");
 #endif
 /*---------------------- the dense matrix is redundant on all processes */
@@ -1478,7 +1478,7 @@ for (i=0; i<neq; i++)
    }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1499,7 +1499,7 @@ INT      i,j;
 INT      I,J;
 DOUBLE   sum;
 DOUBLE **A;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_matvec_dense");
 #endif
 /*---------------------- the dense matrix is redundant on all processes */
@@ -1517,7 +1517,7 @@ for (i=0; i<I; i++)
    work2[i] = sum;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1541,7 +1541,7 @@ static void oll_matvec(
   MATENTRY  **row;
   MATENTRY   *actentry;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("oll_matvec");
 #endif
   /*----------------------------------------------------------------------*/
@@ -1567,7 +1567,7 @@ static void oll_matvec(
      There is no need to alreduce this vector here, because it will anyway
      be distributed to a DIS_VECTOR */
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return;

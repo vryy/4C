@@ -10,8 +10,8 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
-\addtogroup FLUID2_PRO 
+/*!
+\addtogroup FLUID2_PRO
 *//*! @{ (documentation module open)*/
 #include "../headers/standardtypes.h"
 #include "../fluid2/fluid2_prototypes.h"
@@ -22,7 +22,7 @@ Maintainer: Steffen Genkinger
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -49,7 +49,7 @@ extern struct _FIELD      *field;
 \param  *emass_global    ARRAY	        (o)   ele mass matrix
 \param  *lmass_global    ARRAY	        (o)   lumped mass matrix
 \param  *gradopr_global  ARRAY	        (o)   gradient operator
-\param  *etforce_global  ARRAY	        (o)   element time force 
+\param  *etforce_global  ARRAY	        (o)   element time force
 \param  *etforce1_global ARRAY	        (o)   element time force part1
 \param  *etforce2_global ARRAY	        (o)   element time force part2
 \param  *etforce3_global ARRAY	        (o)   element time force part3
@@ -77,10 +77,10 @@ void fluid2_pro(     PARTITION     *actpart,
 	       )
 {
 /*----------------------------------------------------------------------*/
-#ifdef D_FLUID2_PRO 
+#ifdef D_FLUID2_PRO
 /*----------------------------------------------------------------------*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid2_pro");
 #endif
 /*------------------------------------------------- switch to do option */
@@ -88,31 +88,31 @@ switch (*action)
 {
 /*------------------------------------------------------ initialisation */
 case calc_fluid_init:
-   /*---------------------------------------- init the element routines */   
-   f2_intg(0); 
+   /*---------------------------------------- init the element routines */
+   f2_intg(0);
    /*----------- f2_pro element is initialized, some arrays are defined */
    f2pro_calele(NULL,NULL,estif_global,emass_global,
                lmass_global,gradopr_global,etforce_global,eiforce_global,
-	       edforce_global,NULL,1);                                        
-break;                    
+	       edforce_global,NULL,1);
+break;
 /*---------------------------------------- calculate the A=(Ct)(Ml-1)(C)*/
 case calc_fluid_amatrix:
-   f2pro_calele(elev,elep,estif_global,emass_global, 
+   f2pro_calele(elev,elep,estif_global,emass_global,
                 lmass_global,gradopr_global,etforce_global,eiforce_global,
 		edforce_global,hasdirich,0);
-break;                        
+break;
 /*------------------------------------------- call the element routines */
 case calc_fluid_f2pro:
    f2pro_calele(elev,elep,estif_global,emass_global,
                 lmass_global,gradopr_global,etforce_global,eiforce_global,
-		edforce_global,hasdirich,0);   
-break;                        
+		edforce_global,hasdirich,0);
+break;
 /*------------------------------------------- call the element routines */
 case calc_fluid_f2pro_rhs_both:
    f2pro_calele(elev,elep,estif_global,emass_global,
                 lmass_global,gradopr_global,etforce_global,eiforce_global,
-		edforce_global,hasdirich,0); 
-break; 
+		edforce_global,hasdirich,0);
+break;
 /*----------------------------------------------------------------------*/
 default:
    dserror("action unknown\n");
@@ -120,12 +120,12 @@ break;
 } /* end swtich (*action) */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 /*----------------------------------------------------------------------*/
 #endif
 /*----------------------------------------------------------------------*/
-return; 
+return;
 } /* end of fluid2_pro */
 /*! @} (documentation module close)*/

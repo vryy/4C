@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -40,13 +40,13 @@ extern struct _GENPROB     genprob;
  |                    actual discretisation: 1                          |
  |   continue with                                                      |
  |     nodeflag[j]=20+kk: node j belongs to a ??? element               |
- |                    actual discretisation: kk                         | 
+ |                    actual discretisation: kk                         |
  |                                                                      |
  *----------------------------------------------------------------------*/
 void assign_dof_ndis(FIELD *actfield)
 {
 INT j,k,l,kk;                    /* some counters */
-INT counter;                       
+INT counter;
 INT cpro;
 INT coupleID;                      /* Id of a coupling set from gid */
 INT dof;                           /* dof in progress */
@@ -56,7 +56,7 @@ NODE    *actnode, *partnernode;    /* node and coupling partner in progress */
 INT max;
 ARRAY   nodeflag_a;
 INT *nodeflag;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("assign_dof_ndis");
 #endif
 /*----------------------------------------------------------------------*/
@@ -102,7 +102,7 @@ for (kk=0;kk<actfield->ndis;kk++)
 	 {
 	    cpro++;
             for (k=0; k<actele->numnp; k++)
-            {           
+            {
 	       nodeflag[actele->node[k]->Id_loc]=10+kk;
 	       if (kk==0)
 	       {
@@ -114,22 +114,22 @@ for (kk=0;kk<actfield->ndis;kk++)
 	       }
 	    } /* end of loop over numnp */
          }
-	 else	 
-	    dserror("assign_dof for DISMODE of FLUID2_PRO not implemented yet!");	
+	 else
+	    dserror("assign_dof for DISMODE of FLUID2_PRO not implemented yet!");
          break;
       case el_fluid2:
          for (k=0; k<actele->numnp; k++)
          {
             if (actele->node[k]->numdf < 3) actele->node[k]->numdf=3;
          }
-         break;         
+         break;
       case el_fluid2_tu:
          for (k=0; k<actele->numnp; k++)
          {
-            nodeflag[actele->node[k]->Id_loc]=20+kk;       
+            nodeflag[actele->node[k]->Id_loc]=20+kk;
             if (actele->node[k]->numdf < 1) actele->node[k]->numdf=1;
          }
-         break;         
+         break;
       case el_fluid3:
          for (k=0; k<actele->numnp; k++)
          {
@@ -164,14 +164,14 @@ for (kk=0;kk<actfield->ndis;kk++)
    for (j=0; j<actfield->dis[kk].numnp; j++)
    {
       actfield->dis[kk].node[j].dof          = (INT*)CCACALLOC(actfield->dis[kk].node[j].numdf,sizeof(INT));
-#ifdef D_FLUID   
+#ifdef D_FLUID
       actfield->dis[kk].node[j].fluid_varia  = (FLUID_VARIA*)CCACALLOC(1,sizeof(FLUID_VARIA));
 #endif
-      if (!(actfield->dis[kk].node[j].dof)) 
+      if (!(actfield->dis[kk].node[j].dof))
          dserror("Allocation of dof in NODE failed");
       /*------------------------- allocate the arrays to hold solutions */
       max = IMAX(3,actfield->dis[kk].node[j].numdf);
-      
+
       amdef("sol",&(actfield->dis[kk].node[j].sol),1,max,"DA");
       amzero(&(actfield->dis[kk].node[j].sol));
 
@@ -182,8 +182,8 @@ for (kk=0;kk<actfield->ndis;kk++)
       amzero(&(actfield->dis[kk].node[j].sol_residual));
       /*------------------------------------------- init all dofs to -2 */
       for (l=0; l<actfield->dis[kk].node[j].numdf; l++) actfield->dis[kk].node[j].dof[l]=-2;
-   }   
-/*------- eliminate geostationary coupling conditions that conflict with 
+   }
+/*------- eliminate geostationary coupling conditions that conflict with
    dofcoupling sets by putting the geostat coupling to the coupling set */
    coupleID=0;
    for (j=0; j<actfield->dis[kk].numnp; j++)
@@ -206,17 +206,17 @@ for (kk=0;kk<actfield->ndis;kk++)
                                            &partnernode,
                                            actnode->gnode->couple->couple.a.ia[l][0],
                                            l);
-                if (partnernode==NULL) dserror("Cannot do geostationary coupling");  
+                if (partnernode==NULL) dserror("Cannot do geostationary coupling");
                 partnernode->gnode->couple->couple.a.ia[l][1] =  coupleID;
                 partnernode->gnode->couple->couple.a.ia[l][0] =  0;
-                actnode->gnode->couple->couple.a.ia[l][0]     =  0;                                 
+                actnode->gnode->couple->couple.a.ia[l][0]     =  0;
             }
          }
       }
    }
 
 /*--------------------------------------------------------- assign dofs */
-/* this is getting a little bit more complicated for several 
+/* this is getting a little bit more complicated for several
    discretisations. The problem is that the dirichlet conditions from the
    input file may not fit any more to the actual nodes of this discretisation.
    e.g. element FLUID2_PRO:
@@ -224,7 +224,7 @@ for (kk=0;kk<actfield->ndis;kk++)
       - however we still need the dirichlet information from the input-file
       - but the only dof of the second discretisation corresponds to the third
         dof in gnode->dirich
-*/      
+*/
    for (j=0; j<actfield->dis[kk].numnp; j++)
    {
       actnode = &(actfield->dis[kk].node[j]);
@@ -254,11 +254,11 @@ for (kk=0;kk<actfield->ndis;kk++)
 	    switch(nodeflag[actnode->Id_loc])
 	    {
 	    case 11:
-#ifdef D_FLUID2_PRO          
+#ifdef D_FLUID2_PRO
 	       f2pro_ass_dof_q2q1(actnode,&counter);
-#endif             
+#endif
 	    break;
-	    case 21:   
+	    case 21:
 #ifdef D_FLUID2TU
 	       f2tu_ass_dof(actnode,&counter);
 #endif
@@ -270,7 +270,7 @@ for (kk=0;kk<actfield->ndis;kk++)
                   couple=0;
                   geocouple=0;
                   /*-------------------------- dof has dirichlet condition */
-                  if (actnode->gnode->dirich!=NULL && actnode->gnode->dirich->dirich_onoff.a.iv[l]!=0) 
+                  if (actnode->gnode->dirich!=NULL && actnode->gnode->dirich->dirich_onoff.a.iv[l]!=0)
                   dirich=1;
                   if (actnode->gnode->couple != NULL)
                   {
@@ -305,7 +305,7 @@ for (kk=0;kk<actfield->ndis;kk++)
             				     &partnernode,
             				     coupleID,
             		 		     l);
-            	     if (partnernode==NULL) dserror("Cannot do geostationary coupling"); 
+            	     if (partnernode==NULL) dserror("Cannot do geostationary coupling");
             	     /* check wheher there already has been a dof assigned to partnernode */
             	     dof = partnernode->dof[l];
             	     if (dof==-2 && actnode->dof[l]==-2)
@@ -323,9 +323,9 @@ for (kk=0;kk<actfield->ndis;kk++)
             	        partnernode->dof[l] = actnode->dof[l];
             	     }
                   }
-             /*  else if (dirich==1 && couple==0 && geocouple==1) 
+             /*  else if (dirich==1 && couple==0 && geocouple==1)
                dserror("Case dirichlet condition in geocoupleset not yet implemented");*/
-               }/* end of loops over dofs */ 
+               }/* end of loops over dofs */
 	    }/* end switch(nodeflag[actnode->Id]) */
          }/* end of has dirich and/or coupling condition */
       }
@@ -346,11 +346,11 @@ for (kk=0;kk<actfield->ndis;kk++)
          }
       } /* end of loop over dofs */
    } /* end of loop over nodes */
-   actfield->dis[kk].numdf = counter;   
+   actfield->dis[kk].numdf = counter;
    amdel(&nodeflag_a);
 } /* end of loop over fields */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -13,21 +13,21 @@ enhanced wall element
  | defined in global_control.c
  *----------------------------------------------------------------------*/
 
-/*! 
-\addtogroup WALLGE 
+/*!
+\addtogroup WALLGE
 *//*! @{ (documentation module open)*/
 
 
 /*!----------------------------------------------------------------------
 \brief  define dofs of the gradient enhanced wall element     mn 05/03
 
-<pre>                                                              
+<pre>
 This routine .
 
 </pre>
 \param *actpart      PARTITION   (i)   my partition
 
-\return void                                               
+\return void
 \sa calling:   ;
 
 *----------------------------------------------------------------------*/
@@ -43,14 +43,14 @@ extern struct _FIELD      *field;
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
 /*----------------------------------------------------------------------*/
-void wge_setdof() 
+void wge_setdof()
 {
 INT i,j;
 FIELD *structfield;
 ELEMENT *actele;
 NODE *actnode;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("wge_setdof");
 #endif
 
@@ -59,7 +59,7 @@ dstrc_enter("wge_setdof");
 structfield = &(field[genprob.numsf]);
 for (i=0;i<structfield->dis[0].numele;i++)
 {
-  actele = &(structfield->dis[0].element[i]);   
+  actele = &(structfield->dis[0].element[i]);
   for (j=0;j<4;j++)
   {
      actnode=actele->node[j];
@@ -73,12 +73,12 @@ for (i=0;i<structfield->dis[0].numele;i++)
 }
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 #endif /*D_WALLGE*/
-return; 
+return;
 } /* end of wge_setdof */
 /*----------------------------------------------------------------------*/
 /*! @} (documentation module close)*/

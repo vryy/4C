@@ -1,11 +1,11 @@
 /*!----------------------------------------------------------------------
 \file
 \brief contains the routines
- - 's9_surf' which calculates the entries of the load vector if the load 
-             is applied on the surface of the shell 
+ - 's9_surf' which calculates the entries of the load vector if the load
+             is applied on the surface of the shell
  - 's9_surf_P' surface loads -> Pointloads
- - 's9_surf_onoff' switches the <neum_onoff> to 1 if the differential vector 
-                   component is to be loaded  -> Point loads!  
+ - 's9_surf_onoff' switches the <neum_onoff> to 1 if the differential vector
+                   component is to be loaded  -> Point loads!
 
 
 <pre>
@@ -20,14 +20,14 @@ Maintainer: Stefan Hartmann
 #include "../headers/standardtypes.h"
 #include "shell9.h"
 
-/*! 
-\addtogroup SHELL9 
+/*!
+\addtogroup SHELL9
 *//*! @{ (documentation module open)*/
 
 
 /*!----------------------------------------------------------------------
-\brief calculates loadvector if load is applied on the shell surface 
-                  -> Line and Surface Loads!                                        
+\brief calculates loadvector if load is applied on the shell surface
+                  -> Line and Surface Loads!
 
 <pre>                                                              sh 012/02
 This routine calcuates the loadvector if the load is applied on the surface
@@ -39,7 +39,7 @@ of a multilayerd shell element (shell9)  -> Line and Surface Loads!
 \param   iel     INT     (i)   number of nodes to this element
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: s9eleload(), s9loadGP()
 
 *-----------------------------------------------------------------------*/
@@ -50,7 +50,7 @@ INT     midlay;   /* middle layer if uneven number of numklay */
 DOUBLE  fact;     /* factor depending on the norm of a3 */
 INT     mod;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9_surf");
 #endif
 /*--------- factor due to norm of a3 -----------------------------------*/
@@ -142,18 +142,18 @@ if (nsurf == 3)
 /*----------------------------------------------------------------------*/
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of s9_surf */
 
 
 
 
 /*!----------------------------------------------------------------------
-\brief calculates loadvector if load is applied on the shell surface 
-                  -> Point loads!                                         
+\brief calculates loadvector if load is applied on the shell surface
+                  -> Point loads!
 
 <pre>                                                              sh 012/02
 This routine calcuates the loadvector if the load is applied on the surface
@@ -164,7 +164,7 @@ of a multilayerd shell element (shell9)  -> Point loads!
 \param   numklay INT     (i)   number of kinematic layers to this node
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: rhs_point_neum()
 
 *-----------------------------------------------------------------------*/
@@ -175,7 +175,7 @@ INT     midlay;   /*middle layer if uneven number of numklay */
 DOUBLE  fact;     /* factor depending on the norm of a3 */
 INT     mod;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9_surf_P");
 #endif
 /*--------- factor due to norm of a3 -----------------------------------*/
@@ -249,20 +249,20 @@ if (nsurf == 3)
 /*----------------------------------------------------------------------*/
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of s9_surf_P */
 
 
 /*!----------------------------------------------------------------------
 \brief switches the <neum_onoff> to 1 if the differential vector component
-       is to be loaded  -> Point loads!  
-       (is similar to s9_surf_P but the array to be modified is a integer)                                         
+       is to be loaded  -> Point loads!
+       (is similar to s9_surf_P but the array to be modified is a integer)
 
 <pre>                                                              sh 012/02
-This routine switches the <neum_onoff> to 1 if the differential vector 
+This routine switches the <neum_onoff> to 1 if the differential vector
 component is to be loaded -> shell element (shell9)  -> Point loads!
 </pre>
 \param  *pload   INT   (i/o) the modified loadvector of the node
@@ -270,7 +270,7 @@ component is to be loaded -> shell element (shell9)  -> Point loads!
 \param   numklay INT     (i)   number of kinematic layers to this node
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: rhs_point_neum()
 
 *-----------------------------------------------------------------------*/
@@ -280,7 +280,7 @@ INT     j,l;
 INT     midlay;   /*middle layer if uneven number of numklay */
 INT     mod;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9_surf_onoff");
 #endif
 /*---------- NSURF = MID -----------------------------------------------*/
@@ -342,10 +342,10 @@ if (nsurf == 3)
 /*----------------------------------------------------------------------*/
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of s9_surf_onoff */
 /*----------------------------------------------------------------------*/
 #endif /*D_SHELL9*/

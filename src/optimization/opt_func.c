@@ -20,8 +20,8 @@ Maintainer: Andreas Lipka
 #include "../solver/solver.h"
 #include "../headers/optimization.h"
 #include "opt_prototypes.h"
-/*! 
-\addtogroup OPTIMIZATION 
+/*!
+\addtogroup OPTIMIZATION
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
@@ -29,11 +29,11 @@ Maintainer: Andreas Lipka
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par;                      
+ extern struct _PAR   par;
 /*----------------------------------------------------------------------*
  |                                                         al 06/02     |
  | vector of material laws                                              |
@@ -73,7 +73,7 @@ extern enum _CALC_ACTION calc_action[MAXFIELD];
 extern struct _STATIC_VAR  *statvar;
 /*!----------------------------------------------------------------------
 \brief the optimization main structure
-<pre>                                                            al 06/01   
+<pre>                                                            al 06/01
 defined in opt_cal_main.c
 </pre>
 *----------------------------------------------------------------------*/
@@ -97,7 +97,7 @@ INT indcon;
 DOUBLE objective;
 DOUBLE constraint;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("func");
 #endif
 /*----------------------------------------------------------------------*/
@@ -113,18 +113,18 @@ dstrc_enter("func");
   else
   {
     opt_calsta(calsta_solve);
-  }  
+  }
 /*------------------------- evaluate objective and constraint values ---*/
-  optobj(&objective);             
+  optobj(&objective);
 
   f[0] = objective;
- 
-     
+
+
   indcon=1;/* number of global (independent) constraints ?*/
-  if (opt->numeqc>0) opteqc(&constraint,0);                                    
+  if (opt->numeqc>0) opteqc(&constraint,0);
   g[0] = constraint;
 
-/*  if (opt->numiqc>0) optcon(indcon);  
+/*  if (opt->numiqc>0) optcon(indcon);
 
   for (i=0;i<(*m);i++)
   {
@@ -132,7 +132,7 @@ dstrc_enter("func");
   }
 */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -158,7 +158,7 @@ INTRA        *actintra;         /* pointer to the fields intra-communicator stru
 CALC_ACTION  *action;           /* pointer to the structures cal_action enum */
 CONTAINER     container;        /* contains variables defined in container.h */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("opteqc");
 #endif
 /*----------------------------------------------------------------------*/
@@ -175,7 +175,7 @@ dstrc_enter("opteqc");
   actsolv     = &(solv[0]);
   actpart     = &(partition[0]);
   action      = &(calc_action[0]);
-  #ifdef PARALLEL 
+  #ifdef PARALLEL
   actintra    = &(par.intra[0]);
   #else
   actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
@@ -191,16 +191,16 @@ dstrc_enter("opteqc");
   if(opt->oeqc[0].oeqc_type == volume)
   {
     *action = calc_struct_stv;       /* calculate structural volume */
-    
+
     container.dvec         = NULL;
     container.dirich       = NULL;
     container.global_numeq = 0;
     container.kstep        = 0;
-    
+
     container.getvalue     = 0.;
-    
+
     calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,&container,action);
-    
+
     constraint[0] = container.getvalue;
     /*----- store integral values (only for last element in group) ---*/
     /*--------------------------------- volume equality constraint ---*/
@@ -213,18 +213,18 @@ dstrc_enter("opteqc");
   if(opt->oeqc[0].oeqc_type == mass)
   {
     *action = calc_struct_stm;       /* calculate structural mass */
-    
+
     container.dvec         = NULL;
     container.dirich       = NULL;
     container.global_numeq = 0;
     container.kstep        = 0;
     container.actndis      = 0;            /* only one discretisation */
-    
+
     container.getvalue     = 0.;
-    
+
     calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,&container,action);
-    
-#ifdef PARALLEL 
+
+#ifdef PARALLEL
    /*---------------------------------------- allreduce objective value */
     tmpobj = container.getvalue;
     MPI_Allreduce(&tmpobj,&constraint[0],ione,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
@@ -237,19 +237,19 @@ dstrc_enter("opteqc");
     if( refmass<=0.0)
     {
       refmass = constraint[0];
-      opt->totmas = refmass; 
+      opt->totmas = refmass;
     }
 
     constraint[0] = 1.0-constraint[0]/refmass;
   }
 /*----------------------------------------------------------------------*/
-#ifndef PARALLEL 
+#ifndef PARALLEL
 CCAFREE(actintra);
 #endif
 /*----------------------------------------------------------------------*/
 end: ;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -274,7 +274,7 @@ CALC_ACTION  *action;           /* pointer to the structures cal_action enum */
 CONTAINER     container;        /* contains variables defined in container.h */
 ELEMENT *actele;                /* active element                            */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("optupd");
 #endif
 /*------------ the distributed system matrix, which is used for solving */
@@ -284,7 +284,7 @@ dstrc_enter("optupd");
   actsolv     = &(solv[0]);
   actpart     = &(partition[0]);
   action      = &(calc_action[0]);
-  #ifdef PARALLEL 
+  #ifdef PARALLEL
   actintra    = &(par.intra[0]);
   #else
   actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
@@ -302,7 +302,7 @@ dstrc_enter("optupd");
     if(opt->opttype == ot_topology_optimization)
     {
       svec  = (DOUBLE*)CCACALLOC(actfield->dis[0].numele,sizeof(DOUBLE));
-    } 
+    }
     goto end;
   }
 /*---------------------------------------------- update of variables ---*/
@@ -313,19 +313,19 @@ dstrc_enter("optupd");
    /* deoupd();*/
 /*--------- check for element variables and element loads for update ---*/
    /* s1_upd(actfield,0);*/
-  } 
+  }
 /*------------------------------------ update of materials - topoopt ---*/
   if(opt->opttype == ot_topology_optimization)
   {
     *action = update_struct_odens;
    /* calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,NULL,NULL,0,0,action);*/
-    
+
     container.dvec         = NULL;
     container.dirich       = NULL;
     container.global_numeq = 0;
     container.kstep        = 0;
     container.actndis      = 0;            /* only one discretisation */
-    
+
     container.getvalue      = 0.;
     container.getvector     = svec;
     for (i=0; i<actfield->dis[0].numele; i++) svec[i]=0.;
@@ -364,21 +364,21 @@ dstrc_enter("optupd");
       }
     /*-----------------------------*/
     }
-    
+
     calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,&container,action);
 
-  } 
+  }
 /*----------------------------------------- new rhs for updated mesh ---*/
  /* wird in stalin automatisch gemacht ! */
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
   end: ;
 /*----------------------------------------------------------------------*/
-#ifndef PARALLEL 
+#ifndef PARALLEL
 CCAFREE(actintra);
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -394,7 +394,7 @@ OSNLP *nlp;
 /*----------------------------------------------------------------------*/
 INT iscvar;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("updvar");
 #endif
 /*----------------------------------------------------------------------*/
@@ -406,7 +406,7 @@ dstrc_enter("updvar");
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -431,7 +431,7 @@ INTRA        *actintra;         /* pointer to the fields intra-communicator stru
 CALC_ACTION  *action;           /* pointer to the structures cal_action enum */
 CONTAINER     container;        /* contains variables defined in container.h */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("optobj");
 #endif
 /*------------ the distributed system matrix, which is used for solving */
@@ -441,7 +441,7 @@ dstrc_enter("optobj");
   actsolv     = &(solv[0]);
   actpart     = &(partition[0]);
   action      = &(calc_action[0]);
-  #ifdef PARALLEL 
+  #ifdef PARALLEL
   actintra    = &(par.intra[0]);
   #else
   actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
@@ -459,22 +459,22 @@ dstrc_enter("optobj");
 /*----------------------------------------------------------------------*/
   if(opt->objective==oj_frequency)
   {
-    
-    objeig(&objective[0]); 
+
+    objeig(&objective[0]);
   }
   if(opt->objective == oj_strain_energy)
   {
     *action = calc_struct_ste;
-    
+
     container.dvec         = NULL;
     container.dirich       = NULL;
     container.global_numeq = 0;
     container.kstep        = 0;
     container.actndis      = 0;            /* only one discretisation */
-    
+
     container.getvalue     = 0.;
     calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,&container,action);
-#ifdef PARALLEL 
+#ifdef PARALLEL
    /*---------------------------------------- allreduce objective value */
     tmpobj = container.getvalue;
     MPI_Allreduce(&tmpobj,&objective[0],ione,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
@@ -485,11 +485,11 @@ dstrc_enter("optobj");
 #endif
   }
 /*----------------------------------------------------------------------*/
-#ifndef PARALLEL 
+#ifndef PARALLEL
 CCAFREE(actintra);
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -505,12 +505,12 @@ void objeig(DOUBLE *objctval)
 INT ieig;
 DOUBLE val, big, objval, fac, objsum, objct, frequ;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("objeig");
 #endif
 /*---------------------------------- create objective function value ---*/
 /*---------------------------------------- KREISSELMEIER-STEINHAUSER ---*/
-  val = opt->oeig->rhoks; 
+  val = opt->oeig->rhoks;
   big = 1.0e+99;
 /*----------------------------------------------------------------------*/
   for (ieig=0;ieig<opt->oeig->numeigv;ieig++)
@@ -525,15 +525,15 @@ dstrc_enter("objeig");
   {
     val = log(1.0e-30) / big;
     printf("modifing rhoks, new rhoks = %E\n",val);
-    opt->oeig->rhoks = val; 
-  } 
+    opt->oeig->rhoks = val;
+  }
   for (ieig=0;ieig<opt->oeig->numeigv;ieig++)
   {/* loop eigenvalues */
     objval  = sqrt(opt->oeig->eigv[ieig])/(2.*PI);
-    fac     = -1.0;          
-    objsum += exp(val*fac*objval);   
+    fac     = -1.0;
+    objsum += exp(val*fac*objval);
   }/* loop eigenvalues */
-  objct = 1.0/val*log(objsum);                  
+  objct = 1.0/val*log(objsum);
 /*----------------------------------------- print nature frequencies ---*/
   for (ieig=0;ieig<opt->oeig->numeigv;ieig++)
   {/* loop eigenvalues */
@@ -543,7 +543,7 @@ dstrc_enter("objeig");
 /*-------------------------------- store objective function value(s) ---*/
   (*objctval) = objct;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routines which calculate the operator 
+\brief contains the routines which calculate the operator
        matrix for a 3D hex element
 
 <pre>
@@ -17,12 +17,12 @@ Maintainer: Andreas Lipka
 #include "brick1.h"
 #include "brick1_prototypes.h"
 
-/*! 
-\addtogroup BRICK1 
+/*!
+\addtogroup BRICK1
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief calculate operator matrix at point r,s,t                                            
+\brief calculate operator matrix at point r,s,t
 
 <pre>                                                              al 06/01
 This routine calcuates the operator matrix b at the given point r,s,t
@@ -36,7 +36,7 @@ for an 3D-hex-element.
 \param iel       INT       (i)   number of nodes per element
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
@@ -54,7 +54,7 @@ DOUBLE x1r, x2r, x3r, x1s, x2s, x3s, x1t, x2t, x3t;
 DOUBLE xi11, xi12, xi13, xi21, xi22, xi23, xi31, xi32, xi33;
 DOUBLE hr, hs, ht;
 DOUBLE h1, h2, h3;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1_bop");
 #endif
 /*---------------------------------------------- inverse of jacobian ---*/
@@ -67,7 +67,7 @@ dstrc_enter("c1_bop");
   x1t = xjm[2][0];
   x2t = xjm[2][1];
   x3t = xjm[2][2];
- 
+
   dum=1.0/det;
 
   xi11=dum*(x2s*x3t - x2t*x3s);
@@ -80,10 +80,10 @@ dstrc_enter("c1_bop");
   xi32=dum*(x2r*x1t - x1r*x2t);
   xi33=dum*(x1r*x2s - x2r*x1s);
 /*----------------------------- get operator b of global derivatives ---*/
-  for (i=0; i<iel; i++)         
+  for (i=0; i<iel; i++)
   {
     node_start = i*3;
-  
+
     hr   = deriv[0][i];
     hs   = deriv[1][i];
     ht   = deriv[2][i];
@@ -91,7 +91,7 @@ dstrc_enter("c1_bop");
     h1 = xi11*hr + xi12*hs + xi13*ht;
     h2 = xi21*hr + xi22*hs + xi23*ht;
     h3 = xi31*hr + xi32*hs + xi33*ht;
-    
+
     bn[0][i] = h1;
     bn[1][i] = h2;
     bn[2][i] = h3;
@@ -116,14 +116,14 @@ dstrc_enter("c1_bop");
     b[5][node_start+2] = h1 ;
   } /* end of loop over nodes */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of c1_bop */
 
 /*!----------------------------------------------------------------------
-\brief include initial displacements to derivative operator                                            
+\brief include initial displacements to derivative operator
 
 <pre>                                                              al 06/01
 This routine includes initial displacements to derivative operator
@@ -134,7 +134,7 @@ for an 3D-hex-element.
 \param iel       INT       (i)   number of nodes per element
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
@@ -147,7 +147,7 @@ INT node_start, inode;
 DOUBLE rl11, rl12, rl13, rl21, rl22, rl23, rl31, rl32, rl33;
 DOUBLE h1, h2, h3;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1_bdis");
 #endif
 /*----------------------------------------------------------------------*/
@@ -188,7 +188,7 @@ dstrc_enter("c1_bdis");
    bop[5][node_start+2]  += rl31*h3 + rl33*h1;
   }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 /*----------------------------------------------------------------------*/

@@ -15,7 +15,7 @@ Maintainer: Frank Huber
 #include "beam3.h"
 #include "beam3_prototypes.h"
 
-/*! 
+/*!
 \addtogroup BEAM3
 *//*! @{ (documentation module open)*/
 
@@ -30,14 +30,14 @@ element load vector, internal forces)
 \param *ele            ELEMENT    (i/o) actual element
 \param *data           B3_DATA     (o)  data set for gauss points
 \param *mat            MATERIAL    (o)  actual material
-\param **estif_global  ARRAY       (o)  global element stiffness matrix 
+\param **estif_global  ARRAY       (o)  global element stiffness matrix
 \param *force          DOUBLE      (o)  global force vector
 \param *action         CALC_ACTION (i)  action to do
 \param init            INT         (i)  initialization (1) or calculation (2,3)
-               
+
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   b3_cal_sec() , b3_cal_lst() , b3_con_dof() , b3_cal_trn() ,
                b3_trans_stf() , b3_funct_deriv() , b3_jaco() , b3_boplin() ,
 	       b3_boplin3D() , b3_call_mat() , b3_keku() , b3_load() ,
@@ -46,11 +46,11 @@ element load vector, internal forces)
     called by: beam3()
 
 *----------------------------------------------------------------------*/
-void b3_cal_ele(ELEMENT     *ele, 
-                B3_DATA     *data, 
+void b3_cal_ele(ELEMENT     *ele,
+                B3_DATA     *data,
                 MATERIAL    *mat,
-                ARRAY       *estif_global, 
-                DOUBLE      *force,  
+                ARRAY       *estif_global,
+                DOUBLE      *force,
                 CALC_ACTION *action,
 		INT          init)
 {
@@ -58,7 +58,7 @@ INT                 i,j;              /* some loopers */
 INT                 ip=0;             /* code for actual integration point */
 INT                 nir;              /* num GP in r direction */
 INT                 lr, ls, lt;       /* loopers over GP */
-INT                 iel;              /* numnp to this element */ 
+INT                 iel;              /* numnp to this element */
 INT                 ndof = 6;         /* number of nodal dofs */
 INT                 nist=3;           /* number of divisions in rs-direction (Simpson-Integration) */
 INT                 numeledof;        /* number of element dofs */
@@ -70,7 +70,7 @@ INT                 numeps = 6;/* number of nodal strains */
 INT                 ike       ;/* controls calculation of linear elastic element stiffness matrix (12x12) */
 const INT           max = (MAXDOFPERNODE+2)*MAXNOD_BEAM3;
 
-DOUBLE              a,b;              /* a = element height, b = element width */ 
+DOUBLE              a,b;              /* a = element height, b = element width */
 DOUBLE              e1,e2,e3;         /* GP-coords */
 DOUBLE              facr,facs,fact;   /* weights at GP */
 DOUBLE              fac;              /* integration factor of 1 point r,s,t   */
@@ -79,41 +79,41 @@ DOUBLE              det;              /* determinant of jacobian matrix */
 DOUBLE              detrs;            /* da = dydz = detrs * drds        */
 DOUBLE              pv;               /* possions ratio */
 DOUBLE              gs;               /* inverse of shear correction factor */
-            
+
 static ARRAY    intforce_a;   /* local internal force vector */
 static DOUBLE  *intforce;
 static ARRAY    eload_a;  /* static element load vector */
-static DOUBLE  *eload;    
+static DOUBLE  *eload;
 static ARRAY    KLA_a;    /* Kl*a for calculation of internal forces */
 static DOUBLE **KLA;
 static ARRAY    K_a;      /* local / global element stiffness matrix */
 static DOUBLE **K;
 static ARRAY    A_a;      /* transformation matrix loc->glob*/
 static DOUBLE **A;
-static ARRAY    D_a;      /* material tensor */     
-static DOUBLE **D;         
+static ARRAY    D_a;      /* material tensor */
+static DOUBLE **D;
 static ARRAY    HC_a;     /* hinge code vector */
 static INT     *HC;
-static ARRAY    funct_a;  /* shape functions */    
-static DOUBLE  *funct;     
-static ARRAY    deriv_a;  /* derivatives of shape functions */   
-static DOUBLE **deriv;     
-static ARRAY    xjm_a;    /* jacobian matrix */     
-static DOUBLE **xjm;         
-static ARRAY    ijm_a;    /* inverse of jacobian matrix */     
+static ARRAY    funct_a;  /* shape functions */
+static DOUBLE  *funct;
+static ARRAY    deriv_a;  /* derivatives of shape functions */
+static DOUBLE **deriv;
+static ARRAY    xjm_a;    /* jacobian matrix */
+static DOUBLE **xjm;
+static ARRAY    ijm_a;    /* inverse of jacobian matrix */
 static DOUBLE **ijm;
-static ARRAY    bop_a;    /* B-operator */   
-static DOUBLE **bop;       
+static ARRAY    bop_a;    /* B-operator */
+static DOUBLE **bop;
 static ARRAY    edisp_a;  /* element displacements */
 static DOUBLE  *edisp;
 static ARRAY    dummy_a;  /* dummy vector */
 static DOUBLE  *dummy;
-static ARRAY    eps_a;    /* strain vector at integration point */ 
+static ARRAY    eps_a;    /* strain vector at integration point */
 static DOUBLE  *eps;
 static DOUBLE **estif;    /* element stiffness matrix ke */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("b3_cal_ele");
 #endif
 /*------------------------------------------------- some working arrays */
@@ -170,7 +170,7 @@ switch (mat->mattyp)
    break;
    default:
      dserror(" unknown type of material law");
-   break;    
+   break;
 }
 /*----------------------------------------------------------------------*
 |  calcstep = 1:	initialization of beam3 element                 |
@@ -188,18 +188,18 @@ case calc_struct_linstiff:
 |       ike = 2: 	Timoshenko-Beam element (Finite Element method) |
 |       ike = 3:        spatial Beam element according to Bathe         |
 |-----------------------------------------------------------------------*/
-  if (ike==1)  
+  if (ike==1)
   {
-     b3_cal_sec(ele);	  
+     b3_cal_sec(ele);
      b3_cal_lst(ele,mat,K,HC);
      if (HC[0] != 0) b3_con_dof(K,HC,numeledof);
      b3_cal_trn(ele,A);
      b3_trans_stf(K,A,estif,numeledof,calcstep);
-  }    
+  }
   else if (ike==2)
-  {    
+  {
      b3_cal_sec(ele);
-     b3_cal_lst(ele,mat,K,HC);	  
+     b3_cal_lst(ele,mat,K,HC);
      b3_cal_trn(ele,A);
      amzero(&K_a);
      l2=ele->e.b3->length/2.;
@@ -215,7 +215,7 @@ case calc_struct_linstiff:
 	b3_boplin(bop,deriv,funct,iel,l2);
         /*------------------------------------------ call material law ---*/
         amzero(&D_a);
-	b3_call_mat(ele,mat,eps,bop,D,NULL,lr,0,0);      
+	b3_call_mat(ele,mat,eps,bop,D,NULL,lr,0,0);
         /*----------------------------------------------------------------*/
         b3_keku(K,bop,D,facr,numeledof,numeps);
      }
@@ -224,7 +224,7 @@ case calc_struct_linstiff:
   }
   else if (ike==3)
   {
-     b3_cal_lst(ele,mat,K,HC);	  
+     b3_cal_lst(ele,mat,K,HC);
      b3_cal_sec(ele);
      ele->e.b3->alpha=0.;
      b3_cal_trn(ele,A);
@@ -235,7 +235,7 @@ case calc_struct_linstiff:
 	e1   = data->xgrr[lr];
 	facr = data->wgtr[lr];
 	/*------------------------- shape functions and their derivatives */
-	b3_funct_deriv(funct,deriv,e1,ele->distyp,1);        
+	b3_funct_deriv(funct,deriv,e1,ele->distyp,1);
 	for (ls=0; ls<nist; ls++)
 	{
 	   /*=========================== lobatto point s and weight at it =*/
@@ -245,7 +245,7 @@ case calc_struct_linstiff:
 	   {
 	      /*======================== lobatto point t and weight at it =*/
 	      e3   = data->xlst[lt];
-	      fact = data->wlst[lt];	      
+	      fact = data->wlst[lt];
 	      /*-----------Jacobian matrix at point r,s,t -----------------*/
               b3_jaco(funct,deriv,xjm,ijm,A,&det,e2,e3,ele,iel);
               /*-----------calculate operator B ---------------------------*/
@@ -260,8 +260,8 @@ case calc_struct_linstiff:
 	      b3_keku(K,bop,D,fac,numeledof+2*iel,numeps);
 	   }
 	}
-     }     
-     
+     }
+
      /*   local element stiffness matrix corresponds to global dofs,      */
      /*   so in case of hinges transformation to local dofs is needed.    */
      math_matmattrndense(KLA,K,A,numeledof,numeledof,numeledof,0,1.);
@@ -271,7 +271,7 @@ case calc_struct_linstiff:
      for (i=3; i<numeledof; i=i+6)
      {
         for (j=3; j<numeledof; j=j+6) K[i][j]=K[i][j]*gs;
-     }          
+     }
      for (i=numeledof; i<numeledof+2*iel; i++)
      {
         for (j=0; j<numeledof+2*iel; j++)
@@ -285,7 +285,7 @@ case calc_struct_linstiff:
      math_mattrnmatdense(KLA,A,K,numeledof,numeledof,numeledof,0,1.);
      math_matmatdense(estif,KLA,A,numeledof,numeledof,numeledof,0,1.);
 
-  }	
+  }
 break;
 
 /*-------- calculate element load vector ----------------------------------*/
@@ -298,10 +298,10 @@ case calc_struct_eleload:
       for (i=0; i<12; i++) force[i]=eload[i];
    }
    else if (ike==2)
-   {      
+   {
       l2=ele->e.b3->length/2.;
       b3_cal_lst(ele,mat,K,HC);
-      b3_cal_trn(ele,A);     
+      b3_cal_trn(ele,A);
       for (lr=0; lr<nir; lr++)
       /*=============================== gaussian point and weight at it ===*/
       {
@@ -318,11 +318,11 @@ case calc_struct_eleload:
       }
    }
    else
-   {      
+   {
       b3_cal_sec(ele); /* only for nonlinear computation */
       l2=ele->e.b3->length/2.;
       b3_cal_lst(ele,mat,K,HC);
-      b3_cal_trn(ele,A);      
+      b3_cal_trn(ele,A);
       for (lr=0; lr<nir; lr++)
       /*=============================== gaussian point and weight at it ===*/
       {
@@ -337,7 +337,7 @@ case calc_struct_eleload:
       {
 	 force[i] = eload[i];
       }
-   }   
+   }
 break;
 
 /*-------- calculate element internal force vector ------------------------*/
@@ -350,22 +350,22 @@ case calc_struct_stress:
       b3_load(ele,mat,K,intforce,HC,calcstep);
       b3_cal_trn(ele,A);
       b3_trans_stf(K,A,KLA,numeledof,calcstep);
-      b3_cal_force(ele,KLA,intforce,calcstep);  
+      b3_cal_force(ele,KLA,intforce,calcstep);
    }
    else if (ike==2)
    {
       l2=ele->e.b3->length/2.;
       b3_cal_lst(ele,mat,K,HC);
       b3_cal_trn(ele,A);
-      b3_edisp(ele,edisp);	 
+      b3_edisp(ele,edisp);
       /*--------------calculate local displacements--------------------------*/
       math_matvecdense(dummy,A,edisp,numeledof,numeledof,0,1.);
       /*---calculate internal forces at Gauss points ----------*/
       for (lr=0; lr<nir; lr++)
       {
-         e1   = data->xgrr[lr];     
+         e1   = data->xgrr[lr];
 	 b3_funct_deriv(funct,deriv,e1,ele->distyp,1);
-	 amzero(&bop_a);        
+	 amzero(&bop_a);
 	 b3_boplin(bop,deriv,funct,iel,l2);
 	 amzero(&eps_a);
 	 b3_cal_eps(eps,pv,dummy,bop,ndof,numeledof);
@@ -374,7 +374,7 @@ case calc_struct_stress:
 	 b3_cal_forcelin(ele,intforce,lr,0);
       }
       /* extrapolate internal forces from integration points to element nodes */
-      b3_exforce(ele,data);      
+      b3_exforce(ele,data);
    }
    else
    {
@@ -383,7 +383,7 @@ case calc_struct_stress:
       b3_edisp(ele,edisp);
       /*---calculate internal forces at Gauss points ----------*/
       for (lr=0; lr<nir; lr++)
-      {         
+      {
 	 e1   = data->xgrr[lr];
 	 b3_funct_deriv(funct,deriv,e1,ele->distyp,1);
 	 for (ls=0; ls<nist; ls++)
@@ -395,7 +395,7 @@ case calc_struct_stress:
 	   {
 	      /*====================== lobatto point t and weight at it ===*/
 	      e3   = data->xlst[lt];
-	      fact = data->wlst[lt];	      
+	      fact = data->wlst[lt];
 	      /*-----------Jacobian matrix at point r,s,t -----------------*/
               b3_jaco(funct,deriv,xjm,ijm,A,&det,e2,e3,ele,iel);
 	      /*-----------calculate operator B ---------------------------*/
@@ -414,13 +414,13 @@ case calc_struct_stress:
 	 }
       }
       /* extrapolate internal forces from integration points to element nodes */
-      b3_exforce(ele,data);      
+      b3_exforce(ele,data);
    }
 break;
 
 /*-------- calculate structural nonlinear element stiffness matrix -----*/
 case calc_struct_nlnstiff:
-   b3_cal_lst(ele,mat,K,HC);         
+   b3_cal_lst(ele,mat,K,HC);
    b3_cal_sec(ele);
    ele->e.b3->alpha=0.;
    b3_cal_trn(ele,A);
@@ -432,7 +432,7 @@ case calc_struct_nlnstiff:
       e1   = data->xgrr[lr];
       facr = data->wgtr[lr];
       /*------------------------- shape functions and their derivatives */
-      b3_funct_deriv(funct,deriv,e1,ele->distyp,1);	  
+      b3_funct_deriv(funct,deriv,e1,ele->distyp,1);
       for (ls=0; ls<nist; ls++)
       {
   	 /*=========================== lobatto point s and weight at it ===*/
@@ -442,14 +442,14 @@ case calc_struct_nlnstiff:
   	 {
   	    /*======================== lobatto point t and weight at it ===*/
   	    e3	= data->xlst[lt];
-  	    fact = data->wlst[lt];	   
+  	    fact = data->wlst[lt];
   	    /*-----------Jacobian matrix at point r,s,t -------------------*/
   	    b3_jaco(funct,deriv,xjm,ijm,A,&det,e2,e3,ele,iel);
   	    /*-----------calculate operator B -----------------------------*/
   	    amzero(&bop_a);
   	    b3_boplin3D(bop,deriv,funct,xjm,ijm,A,e2,e3,b,a,iel,init);
   	    /*---------- call material law --------------------------------*/
-  	    amzero(&D_a);	      
+  	    amzero(&D_a);
 	    numeps=3;
 	    b3_cal_eps(eps,pv,edisp,bop,numeps,numeledof);
 	    b3_call_mat(ele,mat,eps,bop,D,intforce,ip,0,0);
@@ -465,8 +465,8 @@ case calc_struct_nlnstiff:
    }
    /*----statical condensation of warping dofs-----------------------------*/
    b3_con_warp(K,iel,numeledof+2*iel);
-   if (HC[0] != 0) 
-   {        
+   if (HC[0] != 0)
+   {
       /*   local element stiffness matrix corresponds to global dofs,      */
       /*   so in case of hinges transformation to local dofs is needed.    */
       math_matmatdense(KLA,A,K,numeledof,numeledof,numeledof,0,1.);
@@ -482,23 +482,23 @@ case calc_struct_nlnstiff:
          estif[i][j] = K[i][j];
        }
      }
-   }   
+   }
 break;
 
 /*-------- calculate structural update of actual step ---------------------*/
 case calc_struct_update_istep:
-   b3_cal_lst(ele,mat,K,HC);         
+   b3_cal_lst(ele,mat,K,HC);
    b3_cal_sec(ele);
    ele->e.b3->alpha=0.;
    b3_cal_trn(ele,A);
-   b3_edisp(ele,edisp);	     
+   b3_edisp(ele,edisp);
    for (lr=0; lr<nir; lr++)
    {
       /*=============================== gaussian point and weight at it ===*/
       e1   = data->xgrr[lr];
       facr = data->wgtr[lr];
       /*------------------------- shape functions and their derivatives */
-      b3_funct_deriv(funct,deriv,e1,ele->distyp,1);	  
+      b3_funct_deriv(funct,deriv,e1,ele->distyp,1);
       for (ls=0; ls<nist; ls++)
       {
   	 /*=========================== lobatto point s and weight at it ===*/
@@ -508,7 +508,7 @@ case calc_struct_update_istep:
   	 {
   	    /*======================== lobatto point t and weight at it ===*/
   	    e3	= data->xlst[lt];
-  	    fact = data->wlst[lt];	   
+  	    fact = data->wlst[lt];
   	    /*-----------Jacobian matrix at point r,s,t -------------------*/
   	    b3_jaco(funct,deriv,xjm,ijm,A,&det,e2,e3,ele,iel);
   	    /*-----------calculate operator B -----------------------------*/
@@ -534,10 +534,10 @@ dsassert(ele->locsys==locsys_no,"locsys not implemented for this element!\n");
 /*----------------------------------------------------------------------*/
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of b3_cal_ele */
 /*----------------------------------------------------------------------*/
 #endif

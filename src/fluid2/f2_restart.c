@@ -10,10 +10,10 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
-\addtogroup FLUID2 
+/*!
+\addtogroup FLUID2
 *//*! @{ (documentation module open)*/
-#ifdef D_FLUID2 
+#ifdef D_FLUID2
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #include "fluid2.h"
@@ -22,7 +22,7 @@ Maintainer: Steffen Genkinger
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -32,7 +32,7 @@ extern struct _FILES  allfiles;
 
 <pre>                                                         m.gee 8/00
 -the partition of one proc (all discretizations)
--the type is in partition.h                                                  
+-the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -43,22 +43,22 @@ extern struct _PARTITION  *partition;
 
 <pre>                                                         genk 09/03
 
-   at the moment only the curvature at the free surface has to be 
+   at the moment only the curvature at the free surface has to be
    written to the binary file
-		     
+
 </pre>
 \param  *actele	   ELEMENT	   (i)    actual element
 \param   nhandle   INT             (i)    number of handles
 \param  *handles   long int        (i)    handles
 
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f2_write_restart(ELEMENT *actele, INT nhandle, long int *handles)
 {
 INT ierr;
 FILE *out;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_write_restart");
 #endif
 /*----------------------------------------------------------------------*/
@@ -79,26 +79,26 @@ if (actele->e.f2->fs_on>0)
    if (ierr != 1) dserror("Error writing restart data");
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
-} /* end of f2_write_restart */ 
+} /* end of f2_write_restart */
 
 /*!---------------------------------------------------------------------
 \brief read element restart data of fluid2 element
 
 <pre>                                                         genk 09/03
 
-   at the moment only the curvature at the free surface has to be 
+   at the moment only the curvature at the free surface has to be
    read from the binary file
-		     
+
 </pre>
 \param  *actele	   ELEMENT	   (i)    actual element
 \param   nhandle   INT             (i)    number of handles
 \param  *handles   long int        (i)    handles
 
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f2_read_restart(ELEMENT *actele, INT nhandle, long int *handles)
@@ -106,7 +106,7 @@ void f2_read_restart(ELEMENT *actele, INT nhandle, long int *handles)
 INT ierr;
 INT dims[3];
 FILE *in;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_read_restart");
 #endif
 /*----------------------------------------------------------------------*/
@@ -128,10 +128,10 @@ if (actele->e.f2->fs_on>0)
        dserror("Mismatch in reading element restart data");
    /*-------------------------------------------------------- read alfa */
    pss_read_array_name_handle(actele->e.f2->kappa_ND.name,&(actele->e.f2->kappa_ND),&handles[1],in,&ierr);
-   if (ierr != 1) dserror("Cannot read restart data");   
+   if (ierr != 1) dserror("Cannot read restart data");
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

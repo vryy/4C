@@ -16,7 +16,7 @@ Maintainer: Andrea Hund
 #include "wall1.h"
 #include "wall1_prototypes.h"
 
-/*! 
+/*!
 \addtogroup WALL1
 *//*! @{ (documentation module open)*/
 
@@ -35,10 +35,10 @@ Maintainer: Andrea Hund
  |              =4 AXISYMMETRIC                                         |
  |                                                                      |
  *----------------------------------------------------------------------*/
-void w1_keku(DOUBLE  **s, 
-             DOUBLE  **bs, 
-             DOUBLE  **d, 
-             DOUBLE    fac, 
+void w1_keku(DOUBLE  **s,
+             DOUBLE  **bs,
+             DOUBLE  **d,
+             DOUBLE    fac,
              INT       nd,
              INT       neps)
 {
@@ -46,7 +46,7 @@ INT            i, j, k, l, m;
 DOUBLE         dum;
 DOUBLE         db[4];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_keku");
 #endif
 /*----------------------------------------------------------------------*/
@@ -54,7 +54,7 @@ dstrc_enter("w1_keku");
    {
      for (k=0; k<neps; k++)
      {
-      db[k] = 0.0 ;                                                              
+      db[k] = 0.0 ;
        for (l=0; l<neps; l++)
        {
        db[k] = db[k] + d[k][l]*bs[l][j]*fac ;
@@ -62,7 +62,7 @@ dstrc_enter("w1_keku");
      }
      for (i=0; i<nd; i++)
      {
-       dum = 0.0 ;                                                                
+       dum = 0.0 ;
        for (m=0; m<neps; m++)
        {
         dum = dum + bs[m][i]*db[m] ;
@@ -71,7 +71,7 @@ dstrc_enter("w1_keku");
      }
    }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

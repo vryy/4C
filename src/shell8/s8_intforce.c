@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Michael Gee
@@ -21,7 +21,7 @@ void s8_intforce(DOUBLE *intforce, DOUBLE *stress_r, DOUBLE **bop,
 {
 INT nd;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_intforce");
 #endif
 /*----------------------------------------------------------------------*/
@@ -31,7 +31,7 @@ make intforce[nd] = transposed(bop[nstress_r][nd]) * stress_r[nstress_r]
 */
 math_mattrnvecdense(intforce,bop,stress_r,nd,nstress_r,1,weight);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -24,10 +24,10 @@ DOUBLE cmp_double(const void *a, const void *b );
 /*----------------------------------------------------------------------*
  |  calculate the mask of an ccf matrix           s.offermanns 05/02    |
  *----------------------------------------------------------------------*/
-void mask_ccf(FIELD         *actfield, 
-              PARTITION     *actpart, 
+void mask_ccf(FIELD         *actfield,
+              PARTITION     *actpart,
               SOLVAR        *actsolv,
-              INTRA         *actintra, 
+              INTRA         *actintra,
               CCF           *ccf)
 {
 INT       i;
@@ -41,7 +41,7 @@ ARRAY     red_dof_connect;
 ELEMENT  *actele;
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mask_ccf");
 #endif
 /*----------------------------------------------------------------------*/
@@ -50,12 +50,12 @@ dstrc_enter("mask_ccf");
    AZ_ARRAY_MSR will be different on every proc
    FIELD is the same everywhere
    In this routine, the vectors update and bindx and val are determined
-   in size and allocated, the contents of the vectors update and bindx 
+   in size and allocated, the contents of the vectors update and bindx
    are calculated
 */
 /*------------------------------------------- put size of problem */
 ccf->numeq_total = actfield->dis[0].numeq;
-/* count number of eq_totalns on proc and build processor-global couplingdof 
+/* count number of eq_totalns on proc and build processor-global couplingdof
                                                                  matrix */
 mask_numeq(actfield,actpart,actsolv,actintra,&numeq,0);
 ccf->numeq = numeq;
@@ -64,13 +64,13 @@ amdef("update",&(ccf->update),numeq,1,"IV");
 amzero(&(ccf->update));
 /*--------------------------------put dofs in update in ascending order */
 ccf_update(actfield,actpart,actsolv,actintra,ccf);
-/*------------------------ count number of nonzero entries on partition 
+/*------------------------ count number of nonzero entries on partition
                                     and calculate dof connectivity list */
    /*
       dof_connect[i][0] = lenght of dof_connect[i]
-      dof_connect[i][1] = iscoupled ( 1 or 2 ) 
+      dof_connect[i][1] = iscoupled ( 1 or 2 )
       dof_connect[i][2] = dof
-      dof_connect[i][ 2..dof_connect[i][0]-1 ] = connected dofs exluding itself 
+      dof_connect[i][ 2..dof_connect[i][0]-1 ] = connected dofs exluding itself
    */
 dof_connect = (INT**)CCACALLOC(ccf->numeq_total,sizeof(INT*));
 if (!dof_connect) dserror("Allocation of dof_connect failed");
@@ -115,7 +115,7 @@ amdel(&bindx_a);
 #endif
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -126,8 +126,8 @@ return;
 /*----------------------------------------------------------------------*
  |  allocate update put dofs in update in ascending order   m.gee 1/02  |
  *----------------------------------------------------------------------*/
-void  ccf_update(FIELD         *actfield, 
-                 PARTITION   *actpart, 
+void  ccf_update(FIELD         *actfield,
+                 PARTITION   *actpart,
                  SOLVAR      *actsolv,
                  INTRA       *actintra,
                  CCF         *ccf)
@@ -141,7 +141,7 @@ INT       imyrank;
 INT       inprocs;
 NODE     *actnode;
 ARRAY     coupledofs;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ccf_update");
 #endif
 /*----------------------------------------------------------------------*/
@@ -176,9 +176,9 @@ for (i=0; i<actpart->pdis[0].numnp; i++)
             if (dof == coupledofs.a.ia[k][0])
             {
                /* am I owner of this dof or not */
-               if (coupledofs.a.ia[k][imyrank+1]==2) 
+               if (coupledofs.a.ia[k][imyrank+1]==2)
                foundit=2;
-               else if (coupledofs.a.ia[k][imyrank+1]==1)                                     
+               else if (coupledofs.a.ia[k][imyrank+1]==1)
                foundit=1;
                break;
             }
@@ -202,7 +202,7 @@ for (i=0; i<actpart->pdis[0].numnp; i++)
             continue;
          }
       }
-      
+
    }
 }
 /*---------- check whether the correct number of dofs have been counted */
@@ -212,7 +212,7 @@ qsort((INT*) update, counter, sizeof(INT), cmp_int);
 /*----------------------------------------------------------------------*/
 amdel(&coupledofs);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -223,8 +223,8 @@ return;
 /*----------------------------------------------------------------------*
  |  calculate number of nonzero entries and dof topology    m.gee 1/02  |
  *----------------------------------------------------------------------*/
-void  ccf_nnz_topology(FIELD         *actfield, 
-                         PARTITION    *actpart, 
+void  ccf_nnz_topology(FIELD         *actfield,
+                         PARTITION    *actpart,
                          SOLVAR       *actsolv,
                          INTRA        *actintra,
                          CCF          *ccf,
@@ -252,11 +252,11 @@ ARRAY     *coupledofs;
 INT        imyrank;
 INT        inprocs;
 
-#ifdef PARALLEL 
+#ifdef PARALLEL
 MPI_Status status;
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ccf_nnz_topology");
 #endif
 /*----------------------------------------------------------------------*/
@@ -321,24 +321,24 @@ for (i=0; i<numeq; i++)
    dof_connect[dof] = (INT*)CCACALLOC(counter2+3,sizeof(INT));
    if (!dof_connect[dof]) dserror("Allocation of dof connect list failed");
    dof_connect[dof][0] = counter2+3;
-   dof_connect[dof][1] = 0; 
+   dof_connect[dof][1] = 0;
    dof_connect[dof][2] = dof;
    /*
       dof_connect[i][0] = lenght of dof_connect[i]
-      dof_connect[i][1] = iscoupled ( 1 or 2 ) done later on 
+      dof_connect[i][1] = iscoupled ( 1 or 2 ) done later on
       dof_connect[i][2] = dof
-      dof_connect[i][ 2..dof_connect[i][0]-1 ] = connected dofs exluding itself 
+      dof_connect[i][ 2..dof_connect[i][0]-1 ] = connected dofs exluding itself
    */
    counter2=0;
    for (j=0; j<counter; j++)
    {
-      if (dofpatch.a.iv[j] != -1) 
+      if (dofpatch.a.iv[j] != -1)
       {
          dof_connect[dof][counter2+3] = dofpatch.a.iv[j];
          counter2++;
       }
    }
-}  /* end of loop over numeq */ 
+}  /* end of loop over numeq */
 /*--------------------------------------------- now do the coupled dofs */
 coupledofs = &(actpart->pdis[0].coupledofs);
 for (i=0; i<coupledofs->fdim; i++)
@@ -411,7 +411,7 @@ for (i=0; i<coupledofs->fdim; i++)
    counter2=0;
    for (j=0; j<counter; j++)
    {
-      if (dofpatch.a.iv[j] != -1) 
+      if (dofpatch.a.iv[j] != -1)
       {
          dof_connect[dof][counter2+3] = dofpatch.a.iv[j];
          counter2++;
@@ -419,7 +419,7 @@ for (i=0; i<coupledofs->fdim; i++)
    }
 } /* end of loop over coupled dofs */
 /* make the who-has-to-send-whom-how-much-and-what-arrays and communicate */
-#ifdef PARALLEL 
+#ifdef PARALLEL
 counter=0;
 for (i=0; i<coupledofs->fdim; i++)
 {
@@ -427,7 +427,7 @@ for (i=0; i<coupledofs->fdim; i++)
    /*-------------------------------------- find the master of this dof */
    for (j=1; j<coupledofs->sdim; j++)
    {
-      if (coupledofs->a.ia[i][j]==2) 
+      if (coupledofs->a.ia[i][j]==2)
       {
          dofmaster = j-1;
          break;
@@ -468,7 +468,7 @@ for (i=0; i<coupledofs->fdim; i++)
                if (actdof==-1) continue;
                for (k=m+1; k<dof_connect[dof][0]; k++)
                {
-                  if (dof_connect[dof][k] == actdof) 
+                  if (dof_connect[dof][k] == actdof)
                   dof_connect[dof][k] = -1;
                }
             }
@@ -521,7 +521,7 @@ for (i=0; i<numeq; i++)
 /*----------------------------------------------------------------------*/
 amdel(&dofpatch);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -532,8 +532,8 @@ return;
 /*----------------------------------------------------------------------*
  |  make redundant dof_connect array                        m.gee 1/02  |
  *----------------------------------------------------------------------*/
-void ccf_red_dof_connect(FIELD        *actfield, 
-                         PARTITION    *actpart, 
+void ccf_red_dof_connect(FIELD        *actfield,
+                         PARTITION    *actpart,
                          SOLVAR       *actsolv,
                          INTRA        *actintra,
                          CCF          *ccf,
@@ -550,7 +550,7 @@ INT      **tmps;
 #endif
 INT      **reddof;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ccf_red_dof_connect");
 #endif
 /*----------------------------- check for largest row in my dof_connect */
@@ -562,7 +562,7 @@ for (i=0; i<ccf->numeq_total; i++)
    if (dof_connect[i][0]>max_dof_connect_send)
    max_dof_connect_send=dof_connect[i][0];
 }
-#ifdef PARALLEL 
+#ifdef PARALLEL
 MPI_Allreduce(&max_dof_connect_send,&max_dof_connect_recv,1,MPI_INT,MPI_MAX,actintra->MPI_INTRA_COMM);
 #else
 max_dof_connect_recv=max_dof_connect_send;
@@ -570,7 +570,7 @@ max_dof_connect_recv=max_dof_connect_send;
 /*---------------- allocate temporary array to hold global connectivity */
 reddof = amdef("tmp",red_dof_connect,ccf->numeq_total,max_dof_connect_recv,"IA");
 /*---------------- allocate temporary array to hold global connectivity */
-#ifdef PARALLEL 
+#ifdef PARALLEL
 tmps = amdef("tmp",&tmps_a,ccf->numeq_total,max_dof_connect_recv,"IA");
        amzero(&tmps_a);
 /*-------------------------------- put my own dof_connect values to tmp */
@@ -578,7 +578,7 @@ for (i=0; i<ccf->numeq_total; i++)
 {
    if (dof_connect[i])
    {
-      for (j=0; j<dof_connect[i][0]; j++) 
+      for (j=0; j<dof_connect[i][0]; j++)
          tmps[i][j] = dof_connect[i][j];
    }
 }
@@ -588,21 +588,21 @@ for (i=0; i<ccf->numeq_total; i++)
 {
    if (dof_connect[i])
    {
-      for (j=0; j<dof_connect[i][0]; j++) 
+      for (j=0; j<dof_connect[i][0]; j++)
          reddof[i][j] = dof_connect[i][j];
    }
 }
 #endif
 /*--------------------------------------------- allreduce the array tmp */
-#ifdef PARALLEL 
+#ifdef PARALLEL
 MPI_Allreduce(tmps[0],reddof[0],(tmps_a.fdim*tmps_a.sdim),MPI_INT,MPI_SUM,actintra->MPI_INTRA_COMM);
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef PARALLEL 
+#ifdef PARALLEL
 amdel(&tmps_a);
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -613,8 +613,8 @@ return;
  |  make the DMSR vector bindx                              m.gee 1/02  |
  | for format see Aztec manual                                          |
  *----------------------------------------------------------------------*/
-void  ccf_make_bindx(FIELD         *actfield, 
-                     PARTITION     *actpart, 
+void  ccf_make_bindx(FIELD         *actfield,
+                     PARTITION     *actpart,
                      SOLVAR        *actsolv,
                      CCF           *ccf,
                      INT           *bindx,
@@ -624,7 +624,7 @@ INT        i,j;
 INT        count1,count2;
 INT      **reddof;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ccf_make_bindx");
 #endif
 reddof = red_dof_connect->a.ia;
@@ -642,12 +642,12 @@ for (i=0; i<ccf->numeq_total; i++)
          bindx[count2] = reddof[i][j];
          count2++;
       }
-   }   
+   }
    count1++;
 }
 bindx[ccf->numeq_total] = ccf->nnz_total+1;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -671,7 +671,7 @@ INT       *update;
 INT       *Ap;
 INT       *Ai;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ccf_make_sparsity");
 #endif
 /*----------------------------------------------------------------------*/
@@ -689,7 +689,7 @@ for (i=0; i<numeq_total; i++)
    end      = bindx[i+1];
    Ap[i]    = counter;
    j=start;
-   while (j<end && bindx[j]<i)/* dofs lower then actdof */ 
+   while (j<end && bindx[j]<i)/* dofs lower then actdof */
    {
       Ai[counter]=bindx[j];
       counter++;
@@ -709,7 +709,7 @@ Ap[i]=counter;
 
 if (counter != ccf->nnz_total) dserror("sparsity mask failure");
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -722,14 +722,14 @@ return;
 #ifdef FAST_ASS
 /*----------------------------------------------------------------------*/
 /*!
- \brief 
+ \brief
 
  This routine determines the location vactor for the actele and stores it
- in the element structure.  Furthermore for each component [i][j] in the 
- element stiffness matrix the position in the 1d sparse matrix is 
- calculated and stored in actele->index[i][j]. These can be used later on 
+ in the element structure.  Furthermore for each component [i][j] in the
+ element stiffness matrix the position in the 1d sparse matrix is
+ calculated and stored in actele->index[i][j]. These can be used later on
  for the assembling procedure.
-  
+
  \param actfield  *FIELD        (i)  the field we are working on
  \param actpart   *PARTITION    (i)  the partition we are working on
  \param actintra  *INTRA        (i)  the intra-communicator we do not need
@@ -742,7 +742,7 @@ return;
  */
 /*----------------------------------------------------------------------*/
 void ccf_make_index(
-    FIELD                 *actfield, 
+    FIELD                 *actfield,
     PARTITION             *actpart,
     INTRA                 *actintra,
     ELEMENT               *actele,
@@ -773,7 +773,7 @@ void ccf_make_index(
 #endif
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("ccf_make_index");
 #endif
 
@@ -820,7 +820,7 @@ void ccf_make_index(
     for (j=0; j<actele->node[i]->numdf; j++)
     {
       actele->locm[counter]    = actele->node[i]->dof[j];
-#ifdef PARALLEL 
+#ifdef PARALLEL
       actele->owner[counter]   = actele->node[i]->proc;
 #endif
       counter++;
@@ -838,8 +838,8 @@ void ccf_make_index(
     ii = actele->locm[i];
 
     /* loop only my own rows */
-#ifdef PARALLEL 
-    if (actele->owner[i]!=myrank) 
+#ifdef PARALLEL
+    if (actele->owner[i]!=myrank)
     {
       for (j=0; j<nd; j++) actele->index[i][j] = -1;
       continue;
@@ -861,7 +861,7 @@ void ccf_make_index(
       jj = actele->locm[j];
 
       /* check for boundary condition */
-      if (jj>=numeq_total) 
+      if (jj>=numeq_total)
       {
         actele->index[i][j] = -1;
         continue;
@@ -876,7 +876,7 @@ void ccf_make_index(
   }/* end loop over i */
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 

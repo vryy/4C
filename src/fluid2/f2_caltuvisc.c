@@ -10,7 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-#ifdef D_FLUID2 
+#ifdef D_FLUID2
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #include "fluid2.h"
@@ -21,11 +21,11 @@ Maintainer: Steffen Genkinger
  *----------------------------------------------------------------------*/
 extern struct _MATERIAL  *mat;
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 
 <pre>                                                         he    11/02
 
-In this routine the algebraic turbulent eddy viscosity is calculated:   
+In this routine the algebraic turbulent eddy viscosity is calculated:
 
 </pre>
 \param  *ele	   ELEMENT	   (i)    actual element
@@ -37,11 +37,11 @@ DOUBLE f2_calvisc(
                  DOUBLE     **vderxy
                 )
 {
-DOUBLE           factor;     /* Faktorisierung der Wurzel */   
-DOUBLE           radiant;   
-DOUBLE           root; 
-DOUBLE           visc;       /* eddy-viscosity */ 
-DOUBLE           density;    /* density */     
+DOUBLE           factor;     /* Faktorisierung der Wurzel */
+DOUBLE           radiant;
+DOUBLE           root;
+DOUBLE           visc;       /* eddy-viscosity */
+DOUBLE           density;    /* density */
 INT              actmat;     /* material number of the element */
 
 /*----------------------------------------------------------------------*/
@@ -53,16 +53,16 @@ actmat     = ele->mat-1;
 density    = mat[actmat].m.fluid->density;
 
 /*----------------------------------------------------------------------*/
-factor  = pow(0.15*ele->e.f2->hk[0],2); 
+factor  = pow(0.15*ele->e.f2->hk[0],2);
 
-radiant = 2.0 * (pow(vderxy[0][0],2) + pow(vderxy[1][1],2) + 
+radiant = 2.0 * (pow(vderxy[0][0],2) + pow(vderxy[1][1],2) +
                  0.5*pow(vderxy[0][1],2) + 0.5*pow(vderxy[1][0],2) +
                  vderxy[1][0]*vderxy[0][1]);
- 
+
 root  = sqrt(radiant);
 
 /*----------------------------------- Wirbelviskositaet ----------------*/
-visc = 1.0/density*factor*root;   
+visc = 1.0/density*factor*root;
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -72,5 +72,5 @@ dstrc_exit();
 
 return ((DOUBLE)(visc));
 } /*end of f2_calvisc */
- 
+
 #endif

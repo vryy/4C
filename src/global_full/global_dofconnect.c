@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -17,11 +17,11 @@ Maintainer: Malte Neumann
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par;                      
+ extern struct _PAR   par;
 
 
 /*----------------------------------------------------------------------*
@@ -50,7 +50,7 @@ void dofdof_realloc(INT dof1,INT **dof_dof)
   INT *hivec;
   INT numdofconected    = 100;
 /*----------------------------------------------------------------------*/
-  #ifdef DEBUG 
+  #ifdef DEBUG
   dstrc_enter("dofdof_realloc");
   #endif
 /*----------------------------------------------------------------------*/
@@ -63,7 +63,7 @@ void dofdof_realloc(INT dof1,INT **dof_dof)
   dof_dof[dof1][1]  += numdofconected;  /* number of allocated integers */
   CCAFREE(hivec);
 /*----------------------------------------------------------------------*/
-  #ifdef DEBUG 
+  #ifdef DEBUG
   dstrc_exit();
   #endif
 /*----------------------------------------------------------------------*/
@@ -78,7 +78,7 @@ void delete_redundant_dof(INT dof1,INT **dof_dof)
   INT m=0, k=0;
   INT dof11, dof22;
 /*----------------------------------------------------------------------*/
-  #ifdef DEBUG 
+  #ifdef DEBUG
   dstrc_enter("delete_redundant_dof");
   #endif
 /*----------------------------------------------------------------------*/
@@ -101,7 +101,7 @@ void delete_redundant_dof(INT dof1,INT **dof_dof)
     }
   }
 /*----------------------------------------------------------------------*/
-  #ifdef DEBUG 
+  #ifdef DEBUG
   dstrc_exit();
   #endif
 /*----------------------------------------------------------------------*/
@@ -117,7 +117,7 @@ void delete_single_dof(INT dof1,INT **dof_dof)
   INT m=0, k=0;
   INT dof22;
 /*----------------------------------------------------------------------*/
-  #ifdef DEBUG 
+  #ifdef DEBUG
   dstrc_enter("delete_single_dof");
   #endif
 /*----------------------------------------------------------------------*/
@@ -134,7 +134,7 @@ void delete_single_dof(INT dof1,INT **dof_dof)
     }
   }
 /*----------------------------------------------------------------------*/
-  #ifdef DEBUG 
+  #ifdef DEBUG
   dstrc_exit();
   #endif
 /*----------------------------------------------------------------------*/
@@ -143,7 +143,7 @@ return;
 /*----------------------------------------------------------------------*
  |  calculate dof topology                                   al  10/01  |
  *----------------------------------------------------------------------*/
-void dofconnectivity(FIELD        *actfield, 
+void dofconnectivity(FIELD        *actfield,
                         INT      **dof_dof,
                         INT       *nnz)
 {
@@ -159,7 +159,7 @@ void dofconnectivity(FIELD        *actfield,
 
   NODE    *actnode, *partnernode;
 /*----------------------------------------------------------------------*/
-  #ifdef DEBUG 
+  #ifdef DEBUG
   dstrc_enter("dofconnectivity");
   #endif
 /*----------------------------------------------------------------------*/
@@ -197,7 +197,7 @@ void dofconnectivity(FIELD        *actfield,
         /* loop neighbour nodes */
         for (nod=0; nod<actnode->element[nel]->numnp; nod++)
         {
- 
+
           partnernode = actnode->element[nel]->node[nod];
           hnod = partnernode->Id;
           if(hnod==actnode->Id) continue;
@@ -213,7 +213,7 @@ void dofconnectivity(FIELD        *actfield,
         }
       }
       /* sort dof numbers */
-      qsort((INT*) &dof_dof[dof1][2], dof_dof[dof1][0], sizeof(INT), cmp);     
+      qsort((INT*) &dof_dof[dof1][2], dof_dof[dof1][0], sizeof(INT), cmp);
       /* eliminate redundant numbers */
       delete_redundant_dof(dof1, dof_dof);
       /* eliminate actual dof number from list */
@@ -230,15 +230,15 @@ void dofconnectivity(FIELD        *actfield,
 /*-----------------------------------------------------------------------------*/
   /* matrix: dof - dof connectivity */
 /*  sprintf(filename,"msr_proc%d_1.txt",par.myrank);
-  
- 
+
+
   if ((filep = fopen(filename, "w")) != NULL)
   {
     for(k=0;k<actfield->numeq;k++)
     {
-      dof1 = k;         
+      dof1 = k;
       if(dof_dof[dof1][0]==0)continue;
-    
+
       fprintf(filep, "dof %4d - ndof %3d - dofs  ",dof1,dof_dof[dof1][0]);
       for(m=2;m<dof_dof[dof1][0]+2;m++)
         {
@@ -250,7 +250,7 @@ void dofconnectivity(FIELD        *actfield,
   }
   */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -271,7 +271,7 @@ void mds_make_colstr_rowind(SOLVAR       *actsolv,
   INT        ncdof;
   INT        symm;
   MLVAR        *mlvar;
- 
+
   #ifdef DEBUG
   dstrc_enter("mds_make_colstr_rowind");
   #endif
@@ -283,12 +283,12 @@ void mds_make_colstr_rowind(SOLVAR       *actsolv,
   for (i=0; i<numeq; i++) /* loop columns */
   {
     dof1 = i+1;
-    mds->colstr.a.iv[i]=count+1; 
-    
+    mds->colstr.a.iv[i]=count+1;
+
     ncdof = dof_dof[i][0];/* loop connected dofs */
-    for (j=0; j<ncdof; j++) 
+    for (j=0; j<ncdof; j++)
     {
-    
+
       dof2 = dof_dof[i][j+2]+1;
       if(symm && dof2>=dof1)/*-symmetric- lower triangular part*/
       {
@@ -303,7 +303,7 @@ void mds_make_colstr_rowind(SOLVAR       *actsolv,
   }
   mds->colstr.a.iv[numeq]=count+1;
 /*----------------------------------------------------------------------*/
-  #ifdef DEBUG 
+  #ifdef DEBUG
   dstrc_exit();
   #endif
   return;

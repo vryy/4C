@@ -1,6 +1,6 @@
 /*!-----------------------------------------------------------------------
 \file
-\brief contains the routine 'if_bop' which calculates the linear operator 
+\brief contains the routine 'if_bop' which calculates the linear operator
 matrix for a interface element at gaussian points
 
 *-----------------------------------------------------------------------*/
@@ -9,14 +9,14 @@ matrix for a interface element at gaussian points
 #include "interf.h"
 #include "interf_prototypes.h"
 
-/*! 
+/*!
 \addtogroup INTERF
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief calculate operator matrix at gaussian point                                           
+\brief calculate operator matrix at gaussian point
 
-<pre>                                                             mn 05/03 
+<pre>                                                             mn 05/03
 This routine calcuates the operator matrix B at the given gaussian point
 for an interface element.
 
@@ -25,7 +25,7 @@ for an interface element.
 \param   xsi     DOUBLE  (i)   blabla
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: if_static_ke()
 
 *----------------------------------------------------------------------*/
@@ -37,7 +37,7 @@ void if_bop(DIS_TYP    typ,
             INT        flag)
 {
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("if_bop");
 #endif
 
@@ -161,7 +161,7 @@ break;
 }
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

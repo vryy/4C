@@ -44,7 +44,7 @@ extern struct _FIELD     *field;
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -88,8 +88,8 @@ void ls_dyn()
 
   LS_GEN_DATA       *lsdata;
   LSFLAG             lsflag;
-    
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_enter("ls_dyn");
 #endif
 /*----------------------------------------------------------------------*/
@@ -136,10 +136,10 @@ void ls_dyn()
         /* T I M E L O O P */
   timeloop1:
         lsdyn->step++;
-        lsdyn->time += lsdyn->dt; 
+        lsdyn->time += lsdyn->dt;
         fdyn->step = lsdyn->step;
         fdyn->acttime = lsdyn->time;
-        /* set execution flag */        
+        /* set execution flag */
         eflag=2;
         /* solve fluid field */
         ls_fluid(eflag);
@@ -147,7 +147,7 @@ void ls_dyn()
         if (lsdyn->step>lsdyn->nfstep)
           ls_levelset(eflag);
         /* F I N A L I Z E */
-        /* set execution flag */        
+        /* set execution flag */
         eflag=3;
         /* finalize fluid field */
         ls_fluid(eflag);
@@ -166,18 +166,18 @@ void ls_dyn()
               /* turn reinitialization flag on */
               if (lsdyn->lsdata->reinitflag==1) dserror("reinitflag is on!");
               lsdyn->lsdata->reinitflag = 1;
-              /* print to screen */  
+              /* print to screen */
               printf("\n**WARNING** PERFORMING RE-INITIALIZATION!");
               if (lsdyn->lsdata->anchor == 1)
               {
-                printf("\n**WARNING** INTERFACE IS ANCHORED!");                
+                printf("\n**WARNING** INTERFACE IS ANCHORED!");
               }
               for (i=0; i<lsdyn->lsdata->numreinit; i++)
               {
                 /* solve levelset field */
                 eflag = 2;
                 ls_levelset(eflag);
-                /* finalize levelset field */      
+                /* finalize levelset field */
                 eflag = 3;
                 ls_levelset(eflag);
               }
@@ -205,7 +205,7 @@ void ls_dyn()
         if (lsdyn->step < lsdyn->nstep && lsdyn->time <= lsdyn->maxtime)
           goto timeloop1;
         /* C L E A N I N G   U P   P H A S E */
-        /* set execution flag */        
+        /* set execution flag */
         eflag=99;
         ls_fluid(eflag);
         ls_levelset(eflag);
@@ -213,7 +213,7 @@ void ls_dyn()
         lsflag = ls_finaphase;
         ls_main(lsflag);
         break;
-      case prb_levelset:  
+      case prb_levelset:
         /*
          * convention used at the moment =>
          * PURE LEVELSET PROBLEM -> FIELD 0: levelset
@@ -246,13 +246,13 @@ void ls_dyn()
         /* T I M E L O O P */
   timeloop2:
         lsdyn->step++;
-        lsdyn->time += lsdyn->dt; 
-        /* set execution flag */        
+        lsdyn->time += lsdyn->dt;
+        /* set execution flag */
         eflag=2;
         /* solve levelset field */
         ls_levelset(eflag);
         /* F I N A L I Z E */
-        /* set execution flag */        
+        /* set execution flag */
         eflag=3;
         /* finalize levelset field */
         ls_levelset(eflag);
@@ -268,18 +268,18 @@ void ls_dyn()
               /* turn reinitialization flag on */
               if (lsdyn->lsdata->reinitflag==1) dserror("reinitflag is on!");
               lsdyn->lsdata->reinitflag = 1;
-              /* print to screen */  
+              /* print to screen */
               printf("\n**WARNING** PERFORMING RE-INITIALIZATION!");
               if (lsdyn->lsdata->anchor == 1)
               {
-                printf("\n**WARNING** INTERFACE IS ANCHORED!");                
+                printf("\n**WARNING** INTERFACE IS ANCHORED!");
               }
               for (i=0; i<lsdyn->lsdata->numreinit; i++)
               {
                 /* solve levelset field */
                 eflag = 2;
                 ls_levelset(eflag);
-                /* finalize levelset field */      
+                /* finalize levelset field */
                 eflag = 3;
                 ls_levelset(eflag);
               }
@@ -304,7 +304,7 @@ void ls_dyn()
         if (lsdyn->step < lsdyn->nstep && lsdyn->time <= lsdyn->maxtime)
           goto timeloop2;
         /* C L E A N I N G   U P   P H A S E */
-        /* set execution flag */        
+        /* set execution flag */
         eflag=99;
         ls_levelset(eflag);
         /* finalize level set module */
@@ -315,9 +315,9 @@ void ls_dyn()
         dserror("in ls_dyn() unknown Problemtyp requested");
         break;
   }
-  
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return;

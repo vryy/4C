@@ -21,22 +21,22 @@ Maintainer: Baris Irhan
  *----------------------------------------------------------------------*/
 #include "xfem.h"
 
-/* RULE HOW TO ADD NEW FILES AND FUNCTIONS: 
+/* RULE HOW TO ADD NEW FILES AND FUNCTIONS:
    1.) THE FILENAMES ARE IN ALPHABETICAL ORDER !!!
    2.) FUNCTIONS ARE IN THE SAME ORDER LIKE IN THE FILE !!!
 */
-/*! 
+/*!
 \addtogroup XFEM
 *//*! @{ (documentation module open)*/
 
 /* xfem_calfuncderiv.c */
 void xfem_f2_funct(
-  DOUBLE*,     
-  DOUBLE**,    
-  DOUBLE**,   
-  DOUBLE,        
-  DOUBLE,        
-  DIS_TYP,      
+  DOUBLE*,
+  DOUBLE**,
+  DOUBLE**,
+  DOUBLE,
+  DOUBLE,
+  DIS_TYP,
   DOUBLE*,
   INT,
   INT
@@ -44,10 +44,10 @@ void xfem_f2_funct(
 
 
 void xfem_f2_funct1(
-  DOUBLE*,     
-  DOUBLE,        
-  DOUBLE,        
-  DIS_TYP,      
+  DOUBLE*,
+  DOUBLE,
+  DOUBLE,
+  DIS_TYP,
   INT,
   DOUBLE*,
   INT
@@ -55,25 +55,25 @@ void xfem_f2_funct1(
 
 
 void xfem_f2_derxy(
-  DOUBLE**,     
-  DOUBLE**,    
-  DOUBLE**,      
-  DOUBLE,      
+  DOUBLE**,
+  DOUBLE**,
+  DOUBLE**,
+  DOUBLE,
   INT,
   DOUBLE*,
-  DOUBLE*,     
+  DOUBLE*,
   INT
   );
 
 
 void xfem_f2_derxy2(
-  DOUBLE**,     
-  DOUBLE**,      
-  DOUBLE**,     
-  DOUBLE**,  
-  DOUBLE**,  
-  DOUBLE**, 
-  DOUBLE**, 
+  DOUBLE**,
+  DOUBLE**,
+  DOUBLE**,
+  DOUBLE**,
+  DOUBLE**,
+  DOUBLE**,
+  DOUBLE**,
   INT,
   DOUBLE*,
   DOUBLE*,
@@ -83,24 +83,24 @@ void xfem_f2_derxy2(
 
 void xfem_f2_veli(
   DOUBLE*,
-  DOUBLE*,    
-  DOUBLE**,     
+  DOUBLE*,
+  DOUBLE**,
   INT
   );
 
 
 void xfem_f2_vder(
-  DOUBLE**,     
-  DOUBLE**,    
-  DOUBLE**,     
+  DOUBLE**,
+  DOUBLE**,
+  DOUBLE**,
   INT
   );
 
 
 void xfem_f2_vder2(
-  DOUBLE**,    
-  DOUBLE**,    
-  DOUBLE**,      
+  DOUBLE**,
+  DOUBLE**,
+  DOUBLE**,
   INT
   );
 
@@ -108,14 +108,14 @@ void xfem_f2_vder2(
 /* xfem_calgalmat.c */
 void xfem_f2_calkvv(
   ELEMENT*,
-  DOUBLE**,   
+  DOUBLE**,
   DOUBLE*,
   DOUBLE*,
-  DOUBLE**, 
-  DOUBLE*,  
-  DOUBLE**,  
-  DOUBLE,    
-  DOUBLE,   
+  DOUBLE**,
+  DOUBLE*,
+  DOUBLE**,
+  DOUBLE,
+  DOUBLE,
   INT,
   INT*,
   DOUBLE
@@ -123,19 +123,19 @@ void xfem_f2_calkvv(
 
 
 void xfem_f2_calkvp(
-  DOUBLE**,   
-  DOUBLE*,  
-  DOUBLE**,  
-  DOUBLE,    
+  DOUBLE**,
+  DOUBLE*,
+  DOUBLE**,
+  DOUBLE,
   INT,
   INT*
   );
 
 
 void xfem_f2_calmvv(
-  DOUBLE**,  
-  DOUBLE*, 
-  DOUBLE,   
+  DOUBLE**,
+  DOUBLE*,
+  DOUBLE,
   INT,
   INT*,
   DOUBLE
@@ -143,19 +143,19 @@ void xfem_f2_calmvv(
 
 
 /* xfem_calstabmat.c */
-void xfem_f2_calstabkvv(			      
-  ELEMENT*,    
-  DOUBLE**,  
+void xfem_f2_calstabkvv(
+  ELEMENT*,
+  DOUBLE**,
   DOUBLE*,
-  DOUBLE*, 
   DOUBLE*,
-  DOUBLE**, 
-  DOUBLE*,  
-  DOUBLE**,  
-  DOUBLE**, 
-  DOUBLE,    
-  DOUBLE,   
-  INT,    
+  DOUBLE*,
+  DOUBLE**,
+  DOUBLE*,
+  DOUBLE**,
+  DOUBLE**,
+  DOUBLE,
+  DOUBLE,
+  INT,
   INT,
   INT*,
   DOUBLE
@@ -163,15 +163,15 @@ void xfem_f2_calstabkvv(
 
 
 void xfem_f2_calstabkvp(
-  ELEMENT*,    
-  DOUBLE**, 
-  DOUBLE*,
-  DOUBLE*, 
-  DOUBLE**, 
+  ELEMENT*,
   DOUBLE**,
-  DOUBLE,   
-  DOUBLE,  
-  INT,   
+  DOUBLE*,
+  DOUBLE*,
+  DOUBLE**,
+  DOUBLE**,
+  DOUBLE,
+  DOUBLE,
+  INT,
   INT,
   INT*,
   DOUBLE
@@ -179,15 +179,15 @@ void xfem_f2_calstabkvp(
 
 
 void xfem_f2_calstabmvv(
-  ELEMENT*,     
-  DOUBLE**,  
-  DOUBLE*, 
-  DOUBLE*,  
-  DOUBLE**,  
-  DOUBLE**, 
-  DOUBLE,    
-  DOUBLE,   
-  INT,    
+  ELEMENT*,
+  DOUBLE**,
+  DOUBLE*,
+  DOUBLE*,
+  DOUBLE**,
+  DOUBLE**,
+  DOUBLE,
+  DOUBLE,
+  INT,
   INT,
   INT*,
   DOUBLE
@@ -196,16 +196,16 @@ void xfem_f2_calstabmvv(
 
 void xfem_f2_calstabkpv(
   ELEMENT*,
-  DOUBLE**,   
+  DOUBLE**,
   DOUBLE*,
-  DOUBLE*, 
-  DOUBLE**, 
-  DOUBLE*,  
-  DOUBLE**,  
-  DOUBLE**, 
-  DOUBLE,    
-  DOUBLE,   
-  INT,    
+  DOUBLE*,
+  DOUBLE**,
+  DOUBLE*,
+  DOUBLE**,
+  DOUBLE**,
+  DOUBLE,
+  DOUBLE,
+  INT,
   INT,
   INT*,
   DOUBLE
@@ -213,10 +213,10 @@ void xfem_f2_calstabkpv(
 
 
 void xfem_f2_calstabmpv(
-  DOUBLE**,   
-  DOUBLE*,  
-  DOUBLE**,  
-  DOUBLE,    
+  DOUBLE**,
+  DOUBLE*,
+  DOUBLE**,
+  DOUBLE,
   INT,
   INT*,
   DOUBLE
@@ -224,27 +224,27 @@ void xfem_f2_calstabmpv(
 
 
 void xfem_f2_calstabkpp(
-  DOUBLE**,   
-  DOUBLE**,  
-  DOUBLE,    
+  DOUBLE**,
+  DOUBLE**,
+  DOUBLE,
   INT
   );
 
 
 /* xfem_f2_calele.c */
 void xfem_f2_calele(
-  FLUID_DATA*, 
-  ELEMENT*,             
-  ARRAY*,   
-  ARRAY*,   
-  ARRAY*,       
-  ARRAY*, 
-  ARRAY*,		
-  INT*,      
+  FLUID_DATA*,
+  ELEMENT*,
+  ARRAY*,
+  ARRAY*,
+  ARRAY*,
+  ARRAY*,
+  ARRAY*,
+  INT*,
   INT*,
   INT,
   INT,
-  INT            
+  INT
   );
 
 
@@ -273,28 +273,28 @@ void xfem_f2_iand(void);
 
 /* xfem_f2_calelesize.c */
 void xfem_f2_calelesize(
-  ELEMENT*,    
-  FLUID_DATA*, 
+  ELEMENT*,
+  FLUID_DATA*,
   DOUBLE**,
-  DOUBLE*,  
-  DOUBLE**,  
-  DOUBLE**,  		 
-  DOUBLE**,    
-  DOUBLE**, 
+  DOUBLE*,
   DOUBLE**,
-  DOUBLE**,    		  
-  DOUBLE*, 
+  DOUBLE**,
+  DOUBLE**,
+  DOUBLE**,
+  DOUBLE**,
+  DOUBLE**,
+  DOUBLE*,
   DOUBLE**
   );
 
 
 /* xfem_f2_calextrhs.c */
 void xfem_f2_calgalexfv(
-  DOUBLE*,     
-  DOUBLE*,       
   DOUBLE*,
   DOUBLE*,
-  DOUBLE,      
+  DOUBLE*,
+  DOUBLE*,
+  DOUBLE,
   INT,
   INT*,
   DOUBLE
@@ -302,27 +302,27 @@ void xfem_f2_calgalexfv(
 
 
 void xfem_f2_calstabexfv(
-  ELEMENT*,  
-  DOUBLE*,     
-  DOUBLE**,
-  DOUBLE**,      
+  ELEMENT*,
   DOUBLE*,
-  DOUBLE*,  
-  DOUBLE,      
+  DOUBLE**,
+  DOUBLE**,
+  DOUBLE*,
+  DOUBLE*,
+  DOUBLE,
   DOUBLE,
   INT,
   INT,
   INT,
   INT*,
   DOUBLE
-  ); 
+  );
 
 
 void xfem_f2_calstabexfp(
-  DOUBLE*,     
-  DOUBLE**,       
-  DOUBLE*,  
-  DOUBLE,      
+  DOUBLE*,
+  DOUBLE**,
+  DOUBLE*,
+  DOUBLE,
   INT,
   INT,
   DOUBLE
@@ -331,42 +331,42 @@ void xfem_f2_calstabexfp(
 
 /* xfem_f2_calint.c */
 void xfem_f2_calint(
-  FLUID_DATA*,     
-  ELEMENT*,     
+  FLUID_DATA*,
+  ELEMENT*,
   INT*,
-  DOUBLE**,   
-  DOUBLE**,   
-  DOUBLE*, 
-  DOUBLE*, 
   DOUBLE**,
-  DOUBLE*,   
-  DOUBLE**,   
-  DOUBLE**,  
-  DOUBLE**,     
-  DOUBLE**,   
-  DOUBLE**,  
-  DOUBLE**,   
-  DOUBLE**,  
-  DOUBLE*,   
+  DOUBLE**,
   DOUBLE*,
-  DOUBLE*,	        	       
-  DOUBLE*,  
-  DOUBLE*, 
-  DOUBLE*,  
-  DOUBLE**,  
-  DOUBLE*,  
-  DOUBLE**, 
-  DOUBLE**,     
+  DOUBLE*,
+  DOUBLE**,
+  DOUBLE*,
+  DOUBLE**,
+  DOUBLE**,
+  DOUBLE**,
+  DOUBLE**,
+  DOUBLE**,
+  DOUBLE**,
+  DOUBLE**,
+  DOUBLE*,
+  DOUBLE*,
+  DOUBLE*,
+  DOUBLE*,
+  DOUBLE*,
+  DOUBLE*,
+  DOUBLE**,
+  DOUBLE*,
+  DOUBLE**,
+  DOUBLE**,
   DOUBLE**
   );
 
 
 /* xfem_f2_calset.c */
-void xfem_f2_calset( 
-  ELEMENT*,     
+void xfem_f2_calset(
+  ELEMENT*,
   DOUBLE**,
-  DOUBLE**,    
-  DOUBLE**,   
+  DOUBLE**,
+  DOUBLE**,
   DOUBLE*,
   DOUBLE*,
   DOUBLE*,
@@ -376,15 +376,15 @@ void xfem_f2_calset(
 
 /* xfem_f2_caltimerhs.c */
 void xfem_f2_calgaltfv(
-  DOUBLE*,    
-  DOUBLE*,    
-  DOUBLE*,   
-  DOUBLE*,    
-  DOUBLE**,    
-  DOUBLE**,   
-  DOUBLE,   
-  DOUBLE,     
-  DOUBLE,      
+  DOUBLE*,
+  DOUBLE*,
+  DOUBLE*,
+  DOUBLE*,
+  DOUBLE**,
+  DOUBLE**,
+  DOUBLE,
+  DOUBLE,
+  DOUBLE,
   INT,
   INT*,
   DOUBLE
@@ -392,19 +392,19 @@ void xfem_f2_calgaltfv(
 
 
 void xfem_f2_calstabtfv(
-  ELEMENT*,      
-  DOUBLE*,  
-  DOUBLE*,  
-  DOUBLE*, 
-  DOUBLE*,  
-  DOUBLE**,   
-  DOUBLE**,  
-  DOUBLE**,  
-  DOUBLE**, 
-  DOUBLE*,  
-  DOUBLE,     
-  DOUBLE,    
-  INT,   
+  ELEMENT*,
+  DOUBLE*,
+  DOUBLE*,
+  DOUBLE*,
+  DOUBLE*,
+  DOUBLE**,
+  DOUBLE**,
+  DOUBLE**,
+  DOUBLE**,
+  DOUBLE*,
+  DOUBLE,
+  DOUBLE,
+  INT,
   INT,
   INT*,
   DOUBLE
@@ -412,15 +412,15 @@ void xfem_f2_calstabtfv(
 
 
 void xfem_f2_calstabtfp(
-  DOUBLE*,    
-  DOUBLE**,   
-  DOUBLE**, 
-  DOUBLE*,  
-  DOUBLE*,  
-  DOUBLE*,  
-  DOUBLE,    
-  DOUBLE,     
-  INT,   
+  DOUBLE*,
+  DOUBLE**,
+  DOUBLE**,
+  DOUBLE*,
+  DOUBLE*,
+  DOUBLE*,
+  DOUBLE,
+  DOUBLE,
+  INT,
   INT,
   DOUBLE
   );
@@ -436,12 +436,12 @@ void xfem_f2_intg(
 void xfem_fluid2(
   PARTITION*,
   INTRA*,
-  ELEMENT*,             
-  ARRAY*,   
-  ARRAY*,   
-  ARRAY*, 
-  ARRAY*, 
-  ARRAY*, 
+  ELEMENT*,
+  ARRAY*,
+  ARRAY*,
+  ARRAY*,
+  ARRAY*,
+  ARRAY*,
   CALC_ACTION*,
   INT*,
   INT*,

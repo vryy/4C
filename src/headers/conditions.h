@@ -1,6 +1,6 @@
 /*!---------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -19,11 +19,11 @@ Maintainer: Malte Neumann
  *----------------------------------------------------------------------*/
 typedef struct _NEUM_CONDITION
 {
-     INT                       curve;        /* number of load curve associated with this conditions */        
+     INT                       curve;        /* number of load curve associated with this conditions */
 
      struct _ARRAY             neum_onoff;   /* array of on-off flags */
-     struct _ARRAY             neum_val;     /* values of this condition */    
-     
+     struct _ARRAY             neum_val;     /* values of this condition */
+
      enum
      {
      neum_none,
@@ -60,7 +60,7 @@ typedef struct _DIRICH_CONDITION
      struct _ARRAY             funct;        /* spatial function */
 
      struct _ARRAY             dirich_onoff; /* array of on-off flags */
-     struct _ARRAY             dirich_val;   /* values of this condition */    
+     struct _ARRAY             dirich_val;   /* values of this condition */
      enum
      {
      dirich_none,                            /* no specification */
@@ -68,7 +68,7 @@ typedef struct _DIRICH_CONDITION
      dirich_FSI_pseudo,
      dirich_freesurf,
      dirich_slip
-     }                         dirich_type;                       
+     }                         dirich_type;
 
 } DIRICH_CONDITION;
 /*----------------------------------------------------------------------*
@@ -81,10 +81,10 @@ typedef struct _DIRICH_CONDITION
 typedef struct _SLIPDIRICH_CONDITION
 {
      INT             curve;        /* time curve */
-     
-     DOUBLE          dirich_val;   /* values of this condition */    
+
+     DOUBLE          dirich_val;   /* values of this condition */
      DOUBLE          length;
-     DOUBLE          alpha;       
+     DOUBLE          alpha;
 
      NODE           *firstnode;
      NODE           *lastnode;
@@ -113,11 +113,11 @@ typedef struct _FSI_COUPLE_CONDITION
      enum {
            fsi_real,
 	   fsi_pseudo
-	  }                   fsi_typ;     
+	  }                   fsi_typ;
 } FSI_COUPLE_CONDITION;
 /*----------------------------------------------------------------------*
  | fluid freesurface condition                            genk 10/02    |
- |                                                                      |        
+ |                                                                      |
  *----------------------------------------------------------------------*/
 typedef struct _FLUID_FREESURF_CONDITION
 {
@@ -143,7 +143,7 @@ typedef struct _SAXI_THICK_CONDITION
 \brief axishell load condition
 
 <pre>                                                              mn 05/03
-axishell load condition for linear varying loads along a dline in four 
+axishell load condition for linear varying loads along a dline in four
 directions:
  - global vertical   pv
  - global horizontal ph
@@ -168,7 +168,7 @@ typedef struct _SAXI_LOAD_CONDITION
 \brief stabilisation parameters
 
 <pre>                                                         chfoe 01/04
-stabilisation parameters used for fluid2 or fluid3 elements in case of 
+stabilisation parameters used for fluid2 or fluid3 elements in case of
 'classic' GLS stabilisation as described in the dissertation of W. Wall.
 </pre>
 
@@ -196,7 +196,7 @@ typedef struct _STAB_PAR_GLS
    INT	iareavol;	/*!< calculation of area length			*/
    INT	iduring;	/*!< calculation during INT.-pt.loop		*/
    INT	itau[3];	/*!< has diagonals etc. to be computed		*/
-   INT	idiaxy;		/*!< flags for tau_? calculation 
+   INT	idiaxy;		/*!< flags for tau_? calculation
 			     	  (-1: before; 1: during)		*/
 } STAB_PAR_GLS;
 

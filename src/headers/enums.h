@@ -1,6 +1,6 @@
 /*!---------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -21,7 +21,7 @@ typedef enum _PROBLEM_TYP
                        prb_opt,       /*  strctural optimization  problem */
 		       prb_ale,       /*  pure ale problem */
                        prb_twophase,  /*  two phase fluid flow (used for levelset) */
-                       prb_levelset   /*  pure level set problem (user defined advection velocity) */                       
+                       prb_levelset   /*  pure level set problem (user defined advection velocity) */
 } PROBLEM_TYP;
 /*----------------------------------------------------------------------*
  | TIME TYPES                                             m.gee 7/01    |
@@ -40,7 +40,7 @@ typedef enum _FIELDTYP
                        fluid,       /* fluid field */
                        ale,         /* pseudo structural field */
                        structure,   /* structural field */
-                       levelset     /* levelset field */                       
+                       levelset     /* levelset field */
 } FIELDTYP;
 /*----------------------------------------------------------------------*
  | DISRCETISATION MODES                                   genk 08/02    |
@@ -48,7 +48,7 @@ typedef enum _FIELDTYP
 typedef enum _DISMODE
 {
                       dm_none,        /* unknown type of discretisation */
-                      dm_q2q1 
+                      dm_q2q1
 } DISMODE;
 /*----------------------------------------------------------------------*
  | enum DIS_TYP                                           m.gee 6/01    |
@@ -69,7 +69,7 @@ typedef enum _DIS_TYP
                        tet10,          /* 4 noded tetrahedra */
                        line2,          /* 2 noded line */
                        line3           /* 3 noded line */
-} DIS_TYP;                         
+} DIS_TYP;
 /*----------------------------------------------------------------------*
  | enum FE_TYP                                            m.gee 7/01    |
  | type of element formulation                                          |
@@ -93,8 +93,8 @@ typedef enum _ELEMENT_TYP
                        el_interf,      /* 1D interface element (combination only with wall) */
                        el_wallge,      /* gradient enhanced wall element */
                        el_ls2,         /* 2D element for level set calculations */
-                       el_fluid2_xfem  /* 2D element for x-fem calculations */                                              
-} ELEMENT_TYP;                         
+                       el_fluid2_xfem  /* 2D element for x-fem calculations */
+} ELEMENT_TYP;
 /*----------------------------------------------------------------------*
  | enum MATERIAL_TYP                                      m.gee 7/01    |
  | material laws                                                        |
@@ -126,7 +126,7 @@ typedef enum _MATERIAL_TYP
                        m_ifmat,        /* interface surface elasto-damage-plasto material*/
                        m_dam_mp,       /* isotropic damage model -> mazars/pijadier-cabot*/
                        m_damage_ge     /* isotropic gradient enhanced damage model */
-} MATERIAL_TYP;                         
+} MATERIAL_TYP;
 /*----------------------------------------------------------------------*
  | enum PART_TYP                                          m.gee 7/01    |
  | type of domain decomposition                                         |
@@ -137,7 +137,7 @@ typedef enum _PART_TYP
 {
                        cut_elements,
                        cut_nodes
-} PART_TYP;                         
+} PART_TYP;
 /*----------------------------------------------------------------------*
  | enum NR_CONTROLTYP                                    m.gee 11/01    |
  | type of control algorithm for Newton-Raphson in nonlinear structural |
@@ -149,7 +149,7 @@ typedef enum _NR_CONTROLTYP         /* type of nonlinear static control */
                        control_disp,     /* displacement control */
                        control_load,     /* not impl. yet */
                        control_arc       /* not implem. yet */
-} NR_CONTROLTYP;                         
+} NR_CONTROLTYP;
 /*----------------------------------------------------------------------*
  | enum _CALC_ACTION                                      m.gee 1/02    |
  | command passed from control routine to the element level             |
@@ -188,7 +188,7 @@ typedef enum _CALC_ACTION
 		       calc_fluid_time_rhs,
 		       calc_fluid_stab,
 		       calc_fluid_normal,
-		       /* ale */		
+		       /* ale */
 		       calc_ale_init,   	/* classic linear ale calculation */
 		       calc_ale_stiff,
 		       calc_ale_rhs,
@@ -216,8 +216,8 @@ typedef enum _CALC_ACTION
                        put_optvar,
                        /* levelset */
                        calc_ls_init,
-                       calc_ls                       
-} CALC_ACTION;                         
+                       calc_ls
+} CALC_ACTION;
 /*----------------------------------------------------------------------*
  | enum _ASSEMBLE_ACTION                                  m.gee 1/02    |
  | command passed from element control routine to the assemble          |
@@ -232,7 +232,7 @@ typedef enum _ASSEMBLE_ACTION
                        assemble_two_exchange,
                        assemble_close_1matrix,
                        assemble_close_2matrix
-} ASSEMBLE_ACTION;                         
+} ASSEMBLE_ACTION;
 /*----------------------------------------------------------------------*
  | enum SOLVER_TYP                                        m.gee 7/01    |
  *----------------------------------------------------------------------*/
@@ -254,7 +254,7 @@ typedef enum _SOLVER_TYP
                        SPOOLES_nonsym,/* spooles parallel direct solver */
                        umfpack,       /* solver package umfpack, matrix in compressed column format */
                        mlpcg          /* solver package umfpack, matrix in compressed column format */
-} SOLVER_TYP;                         
+} SOLVER_TYP;
 /*!----------------------------------------------------------------------
 \brief enum of possible matrix types
 
@@ -268,7 +268,7 @@ typedef enum _MATRIX_TYP
 {
                        oll_matrix,           /* */
                        matrix_none            /* */
-} MATRIX_TYP;                         
+} MATRIX_TYP;
 /*----------------------------------------------------------------------*
  | enum AZSOLVERTYP                                        m.gee 9/01  |
  | different solvers within the Aztec2.1 library                       |
@@ -281,7 +281,7 @@ typedef enum _AZSOLVERTYP
                        azsolv_BiCGSTAB,      /* bicgstab-solver */
                        azsolv_LU,            /* LU-solver (I think this doesn't work for some reasons) */
                        azsolv_TFQMR          /* quasi-minimum residual-solver (never used it) */
-} AZSOLVERTYP;                         
+} AZSOLVERTYP;
 /*----------------------------------------------------------------------*
  | enum AZPRECTYP                                           m.gee 9/01  |
  | different preconditioners within the Aztec package                   |
@@ -299,18 +299,18 @@ typedef enum _AZPRECTYP
                        azprec_RILU,              /* relaxed incomplete LU */
                        azprec_BILU,              /* block incomplete LU (only with matrix in DVBR format*/
                        azprec_ICC                /* ? */
-} AZPRECTYP;                         
+} AZPRECTYP;
 /*----------------------------------------------------------------------*
  | enum HYPREPRECTYP                                       m.gee 10/01  |
  | preconditioners within the HYPRE package                             |
  *----------------------------------------------------------------------*/
 typedef enum _HYPREPRECTYP
 {
-                       hypreprec_none,           /* no preconditioning */    
+                       hypreprec_none,           /* no preconditioning */
                        hypreprec_euclid,         /* incompl. LU of level k */
                        hypreprec_parasails,      /* apporximate inverse precond. */
                        hypreprec_amg             /* algebraic multigrid precond. */
-} HYPREPRECTYP;                         
+} HYPREPRECTYP;
 /*----------------------------------------------------------------------*
  | enum EIG_SOL_TYPE                                         al 8/02    |
  *----------------------------------------------------------------------*/
@@ -318,7 +318,7 @@ typedef enum _EIG_SOL_TYPE
 {
                        subspace,      /* subspace iteration*/
                        eig_none       /* no solver defined */
-} EIG_SOL_TYPE;                         
+} EIG_SOL_TYPE;
 /*----------------------------------------------------------------------*
  | enum STALIN_EXEC                                           al 09/02  |
  | to tell control routine for static structural analysis               |
@@ -326,12 +326,12 @@ typedef enum _EIG_SOL_TYPE
  *----------------------------------------------------------------------*/
 typedef enum _CALSTA_EXEC
 {
-                       calsta_none,         /* initialize struct. analysis module */    
-                       calsta_init,         /* initialize struct. analysis module */  
-                       calsta_init_solve,   /* initialize and solve */  
+                       calsta_none,         /* initialize struct. analysis module */
+                       calsta_init,         /* initialize struct. analysis module */
+                       calsta_init_solve,   /* initialize and solve */
                        calsta_solve,        /* solve                */
                        calsta_free          /* free memory          */
-} CALSTA_EXEC;                         
+} CALSTA_EXEC;
 /*----------------------------------------------------------------------*
  | enum KINTYP                                              sh 03/03    |
  | type of kinematic, that is used in nonlinear static analysis         |                                                           |
@@ -341,7 +341,7 @@ typedef enum _KINTYP         /* type of kinematic */
                        geo_linear,   /* linear kinematic */
                        upd_lagr,     /* updated lagrange */
                        tot_lagr      /* total lagrange */
-} KINTYP;                         
+} KINTYP;
 
 /*----------------------------------------------------------------------*
  |  FSI MESHES                                            genk 10/02    |
@@ -361,9 +361,9 @@ typedef enum _FLUID_STRESS
      str_fsicoupling,
      str_liftdrag,
      str_all
-}  FLUID_STRESS; 
+}  FLUID_STRESS;
 /*!----------------------------------------------------------------------
-\brief enum of DLINE types                                            
+\brief enum of DLINE types
 
 <pre>                                                              mn 05/03
 This is the enumeration of all types for DLINEs
@@ -376,9 +376,9 @@ typedef enum _DLINE_TYP
                        nurbline,          /* nurb line */
                        arcline            /* arc line */
 } DLINE_TYP;
- 
+
 /*!----------------------------------------------------------------------
-\brief enum of stabilisation types                                            
+\brief enum of stabilisation types
 
 <pre>                                                        chfoe 01/04
 This is the enumeration of all types of different stabilisation schemes

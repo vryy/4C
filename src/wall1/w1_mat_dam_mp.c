@@ -8,22 +8,22 @@
 #include "wall1.h"
 #include "wall1_prototypes.h"
 
-/*! 
+/*!
 \addtogroup WALL1
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
 \brief  contains a isotropic damage model
 
-<pre>                                                              mn 05/03 
+<pre>                                                              mn 05/03
 This routine computes the constitutive  matrix of the interface element
 
 </pre>
 \param *mat          STVENANT   (i)   blabal
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling:   ---; 
+\return void
+\sa calling:   ---;
     called by: w1_call_mat();
 
 *----------------------------------------------------------------------*/
@@ -41,7 +41,7 @@ void w1_mat_dam_mp(DOUBLE     youngs,
                    DOUBLE    *stress,
                    DOUBLE   **D,
                    INT        istore,
-                   INT        newval) 
+                   INT        newval)
 {
 INT i,j,k;
 INT yip;
@@ -60,7 +60,7 @@ DOUBLE ev_e1,ev_e2,ev_e3;/* (partial equiv. strain)/(partial main strains)*/
 DOUBLE D_ev;         /* (partial D)/(partial equiv. strain)*/
 DOUBLE e_eps[3][3];/* (partial main strains)/(partial strain components)*/
 /*------------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_mat_dam_mp");
 #endif
 /*------------------------------------------------------------------------*/
@@ -174,8 +174,8 @@ youngs = youngs*0.95;
   /*----------------------------------------------------------------------*/
   /*-------------- maximale bisher aufgetretene equivalente Verzerrung ---*/
   kappa_n = ele->e.w1->elewa[0].ipwa[ip].kappa;
-  /*--------------------------------- compute displacement derivatives ---*/        
-  w1_disd (ele,bop,gop,alpha,wtype,disd);                  
+  /*--------------------------------- compute displacement derivatives ---*/
+  w1_disd (ele,bop,gop,alpha,wtype,disd);
   /*------------------------------------- get actual strains -> strain ---*/
   /*------------------------------------------- strain[2]=eps12+eps21! ---*/
   w1_eps (disd,wtype,strain);
@@ -233,7 +233,7 @@ youngs = youngs*0.95;
   /*----- if damage is increasing: constitutive matrix to be adjusted ---*/
   if(eps_eq>kappa_n  && eps_eq>kappa_0)
   {
-    D_ev  = (kappa_0 * (1 - alph))/(kappa * kappa) + 
+    D_ev  = (kappa_0 * (1 - alph))/(kappa * kappa) +
             (alph * kappa_0 * exp(beta*kappa_0 - beta*kappa))*(beta/kappa + 1.0/(kappa*kappa));
     ev_e1 = ((meps[0]+FABS(meps[0]))*(1. + FSIGN(meps[0])))/(4.* eps_eq);
     ev_e2 = ((meps[1]+FABS(meps[1]))*(1. + FSIGN(meps[1])))/(4.* eps_eq);
@@ -267,7 +267,7 @@ youngs = youngs*0.95;
     dserror("only plane-stress damage implemented");
   break;
   }
-  yip=1;  
+  yip=1;
   /*----------------------------------------------------------------------*/
   /*              update the converged results of a loadstep              */
   /*----------------------------------------------------------------------*/
@@ -280,7 +280,7 @@ youngs = youngs*0.95;
     ele->e.w1->elewa[0].ipwa[ip].sig[0] = stress[0];
     ele->e.w1->elewa[0].ipwa[ip].sig[1] = stress[1];
     ele->e.w1->elewa[0].ipwa[ip].sig[2] = stress[2];
-  }/*end of: if (istore==1) */  
+  }/*end of: if (istore==1) */
 
 # if 0
 }/*end of: if (yip<0) */
@@ -292,10 +292,10 @@ end:
 
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of w1_mat_dam_mp */
 
 /*----------------------------------------------------------------------*/

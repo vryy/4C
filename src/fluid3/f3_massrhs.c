@@ -11,26 +11,26 @@ Maintainer: Christiane Foerster
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
-\addtogroup FLUID3 
+/*!
+\addtogroup FLUID3
 *//*! @{ (documentation module open)*/
-#ifdef D_FLUID3 
+#ifdef D_FLUID3
 #include "../headers/standardtypes.h"
 #include "fluid3_prototypes.h"
 #include "fluid3.h"
 #include "../fluid_full/fluid_prototypes.h"
 
-/*!--------------------------------------------------------------------- 
-\brief calculates mass-acceleration-part of the rhs vector for 
+/*!---------------------------------------------------------------------
+\brief calculates mass-acceleration-part of the rhs vector for
        generalised-alpha time integration
 
 <pre>                                                        chfoe 11/03
 
 This routine performs the multiplication emass*acc(n) and writes its
-negative result on the elemental iteration force vector. This gives a 
+negative result on the elemental iteration force vector. This gives a
 part of the rhs required in the generalised alpha time integration scheme
 for fluids.
-			     
+
 </pre>
 \param	 *ele		ELEMENT		(i)	actual element
 \param	**emass		DOUBLE		(i)	element mass matrix
@@ -39,10 +39,10 @@ for fluids.
 
 \warning This routine has not yet been tested!!!
 
-\return void                                               
-\sa calling: 
+\return void
+\sa calling:
              called by: f3_calele()
-                     
+
 ------------------------------------------------------------------------*/
 void f3_massrhs(ELEMENT *ele, DOUBLE **emass, DOUBLE **eaccn, DOUBLE *eiforce)
 {
@@ -52,7 +52,7 @@ INT	dim=3;		/* dimension, number of velocity-dofs		*/
 INT	dofpern=dim+1;	/* degrees of freedom per node			*/
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f3_massrhs");
 #endif
 
@@ -80,11 +80,11 @@ for (i=0; i<iel; i++)
 }
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of f3_massrhs */
 
 

@@ -1,10 +1,10 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 'w1_mat_linel' which calculates the 
-       constitutive matrix - linear elastic - 2D 
+\brief contains the routine 'w1_mat_linel' which calculates the
+       constitutive matrix - linear elastic - 2D
        (plane stress, plane strain, rotational symmetry)
        contains the routine 'w1_mat_stvpor' which calculates the
-       constitutive matrix - linear elastic porous -2D 
+       constitutive matrix - linear elastic porous -2D
        (plane stress, plane strain, roational symmetry)
 
 <pre>
@@ -21,8 +21,8 @@ Maintainer: Andrea Hund
 #include "wall1_prototypes.h"
 #include "wall1_prototypes.h"
 
-/*! 
-\addtogroup WALL1 
+/*!
+\addtogroup WALL1
 *//*! @{ (documentation module open)*/
 
 /*----------------------------------------------------------------------*
@@ -32,7 +32,7 @@ Maintainer: Andrea Hund
 void w1_mat_linel(DOUBLE ym, DOUBLE pv, WALL_TYPE wtype, DOUBLE **d)
 {
 DOUBLE e1, e2, e3, a1, b1, c1;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_mat_linel");
 #endif
 /*----------------------------------------------------- plane stress ---*/
@@ -63,7 +63,7 @@ dstrc_enter("w1_mat_linel");
     d[0][1]=b1;
     d[0][2]=0.;
     d[0][3]=b1;
-    
+
     d[1][0]=b1;
     d[1][1]=a1;
     d[1][2]=0.;
@@ -73,7 +73,7 @@ dstrc_enter("w1_mat_linel");
     d[2][1]=0.;
     d[2][2]=c1/2.;
     d[2][3]=0.;
-    
+
     d[3][0]=b1;
     d[3][1]=b1;
     d[3][2]=0.;
@@ -81,7 +81,7 @@ dstrc_enter("w1_mat_linel");
   break;
   }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -92,12 +92,12 @@ return;
  *----------------------------------------------------------------------*/
 void w1_mat_stvpor(MATERIAL  *mat,
                    DOUBLE *matdata,
-                   WALL_TYPE wtype, 
+                   WALL_TYPE wtype,
                    DOUBLE **d)
 {
 DOUBLE e1, e2, e3, a1, b1, c1;
 DOUBLE ym, pv, dn, rd, ex;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_mat_stvpor");
 #endif
 /*----------------------------------------------------------------------*/
@@ -140,7 +140,7 @@ dstrc_enter("w1_mat_stvpor");
     d[0][1]=b1;
     d[0][2]=0.;
     d[0][3]=b1;
-    
+
     d[1][0]=b1;
     d[1][1]=a1;
     d[1][2]=0.;
@@ -150,7 +150,7 @@ dstrc_enter("w1_mat_stvpor");
     d[2][1]=0.;
     d[2][2]=c1/2.;
     d[2][3]=0.;
-    
+
     d[3][0]=b1;
     d[3][1]=b1;
     d[3][2]=0.;
@@ -158,7 +158,7 @@ dstrc_enter("w1_mat_stvpor");
   break;
   }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -10,10 +10,10 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
-\addtogroup FLUID3 
+/*!
+\addtogroup FLUID3
 *//*! @{ (documentation module open)*/
-#ifdef D_FLUID3 
+#ifdef D_FLUID3
 #include "../headers/standardtypes.h"
 #include "fluid3.h"
 #include "fluid3_prototypes.h"
@@ -23,11 +23,11 @@ Maintainer: Steffen Genkinger
 <pre>                                                         genk 05/02
 </pre>
 \param  *ele	   ELEMENT	   (o)	   actual element
-\return void                                                                       
+\return void
 \warning Node Numbers of TET4 are changed compered to the input
          file: node0=node1; node1=node0;
          This is necessary, since the GID-TET4 element is defined in
-         a local left-system, which leads to a negative determinant 
+         a local left-system, which leads to a negative determinant
          of the Jacobian matrix.
 ------------------------------------------------------------------------*/
 void f3inp(ELEMENT *ele,INT counter)
@@ -38,10 +38,10 @@ INT  lmtmp;
 char buffer[50];
 static INT cmat;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f3inp");
 #endif
-/*------------------------------------------------ allocate the element */      
+/*------------------------------------------------ allocate the element */
 ele->e.f3 = (FLUID3*)CCACALLOC(1,sizeof(FLUID3));
 if (ele->e.f3==NULL) dserror("Allocation of element FLUID3 failed\n");
 /*---------------------------------------------- read the element nodes */
@@ -58,7 +58,7 @@ if (ierr==1)
 frchk("HEX20",&ierr);
 if (ierr==1)
 {
-   dserror("HEX20 elements not implemented yet!!!\n"); 
+   dserror("HEX20 elements not implemented yet!!!\n");
    ele->numnp=20;
    ele->distyp=hex20;
    ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
@@ -115,7 +115,7 @@ if (ele->numnp==8 || ele->numnp==20 || ele->numnp==27)
 {
    frint_n("GP",&(ele->e.f3->nGP[0]),3,&ierr);
    if (ierr!=1) dserror("Reading of FLUID3 element failed\n");
-}   
+}
 /*----------------------- read gaussian points for tetrahedral elements */
 if (ele->numnp==4 || ele->numnp==10)
 {
@@ -125,10 +125,10 @@ if (ele->numnp==4 || ele->numnp==10)
    frchar("GP_ALT",buffer,&ierr);
 /*
 integration for TET-elements is distinguished into different cases. This is
-necessary to get the right integration parameters from FLUID_DATA. 
+necessary to get the right integration parameters from FLUID_DATA.
 The flag for the integration case is saved in nGP[1]. For detailed informations
 see /fluid3/f3_intg.c.
-*/   
+*/
    switch(ele->e.f3->nGP[0])
    {
    case 1:
@@ -143,19 +143,19 @@ see /fluid3/f3_intg.c.
       else if (strncmp(buffer,"gaussrad",8)==0)
          ele->e.f3->nGP[1]=2;
       else
-         dserror("Reading of FLUID3 element failed: GP_ALT\n");	 
+         dserror("Reading of FLUID3 element failed: GP_ALT\n");
    break;
    case 5:
       if (strncmp(buffer,"standard",8)==0)
          ele->e.f3->nGP[1]=3;
       else
-         dserror("Reading of FLUID3 element failed: GP_ALT: gauss-radau not possible!\n");  
+         dserror("Reading of FLUID3 element failed: GP_ALT: gauss-radau not possible!\n");
    break;
    default:
       dserror("Reading of FLUID3 element failed: integration points\n");
    } /* end switch(ele->e.f3->nGP[0]) */
    if (ierr!=1) dserror("Reading of FLUID3 element failed: GP_ALT\n");
-}  
+}
 /*------------------------------------------------------ read net algo */
 frchar("NA",buffer,&ierr);
 if (ierr==1)
@@ -168,7 +168,7 @@ if (ierr==1)
             strncmp(buffer,"EULER",5)==0 ||
             strncmp(buffer,"Euler",5)==0 )
        ele->e.f3->is_ale=0;
-   else 
+   else
        dserror("Reading of FLUID3 element failed: Euler/Ale\n");
 }
 else
@@ -179,10 +179,10 @@ ele->e.f3->fs_on=0;
 
 /*-------------------------------------------------------- submesh data */
 #ifdef FLUID3_ML
-ele->e.f3->smisal = 0;   
+ele->e.f3->smisal = 0;
 #endif
 /*--------------------------------------------------------------------- */
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 

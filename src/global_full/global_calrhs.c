@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -32,9 +32,9 @@ void calrhs(FIELD        *actfield,     /* the active field */
             CONTAINER    *container)     /*!< contains variables defined in container.h */
 {
 INT i;
-static ARRAY rhs_a; 
+static ARRAY rhs_a;
 static DOUBLE *rhs;
-#ifdef PARALLEL 
+#ifdef PARALLEL
 static ARRAY rhsrecv_a;
 static DOUBLE *rhsrecv;
 #endif
@@ -45,7 +45,7 @@ dstrc_enter("calrhs");
 #endif
 /*----------------------------------------------------------------------*/
 sysarraytyp = &(actsolv->sysarray_typ[actsysarray]);
-sysarray    = &(actsolv->sysarray[actsysarray]);            
+sysarray    = &(actsolv->sysarray[actsysarray]);
 /*-------------------- create a temporary vector of redundant full size */
 if (rhs_a.Typ != cca_DV)
 {
@@ -57,7 +57,7 @@ if (rhs_a.fdim < rhs1->numeq_total)
    rhs = amdef("tmprhs",&rhs_a,rhs1->numeq_total,1,"DV");
 }
 amzero(&rhs_a);
-#ifdef PARALLEL 
+#ifdef PARALLEL
 if (rhsrecv_a.Typ != cca_DV)
 {
    rhsrecv = amdef("tmprhs",&rhsrecv_a,rhs1->numeq_total,1,"DV");
@@ -85,7 +85,7 @@ container->dirich       = NULL;
 container->global_numeq = rhs1->numeq_total;
 calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,container,action);
 /*-------------------------------------------- allreduce the vector rhs */
-#ifdef PARALLEL 
+#ifdef PARALLEL
 MPI_Allreduce(rhs,rhsrecv,rhs1->numeq_total,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
 /*----------------- assemble rhs to rhs1, which is a distributed vector */
 assemble_vec(actintra,sysarraytyp,sysarray,rhs1,rhsrecv,1.0);
@@ -96,7 +96,7 @@ assemble_vec(actintra,sysarraytyp,sysarray,rhs1,rhs,1.0);
 m.gee
 testen, ob linienlasten ueber prozessorengrenzen hinweg richtig assembliert werden!
 */
-/* genk 05/03 
+/* genk 05/03
 GLINEs haben nun einen Prozessor als eindeutigen Besitzer gline->proc.
 Integrale ueber die Elementkanten werden nur vom besitzenden Prozessor
 ausgewertet.
@@ -105,7 +105,7 @@ Umsetzung fuer
  - WALL1 - FSI-Lasten
 */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -116,7 +116,7 @@ return;
  | Attention! This assembly of nodal forces works only correct with     |
  | partitioning in the "Cut_Elements" style !!!!
  *----------------------------------------------------------------------*/
-void rhs_point_neum(DOUBLE *rhs, INT dimrhs, PARTITION *actpart)     
+void rhs_point_neum(DOUBLE *rhs, INT dimrhs, PARTITION *actpart)
 {
 INT             i,j;
 INT             dof;
@@ -139,7 +139,7 @@ for (i=0; i<actpart->pdis[0].numnp; i++)
    actnode = actpart->pdis[0].node[i];
    /*------------------------------------- set active neumann condition */
    actneum = actnode->gnode->neum;
-   
+
    #ifdef D_SHELL9
      if (actnode->element[0]->eltyp == el_shell9)
      {
@@ -169,7 +169,7 @@ for (i=0; i<actpart->pdis[0].numnp; i++)
        s9_surf_onoff(actneum->neum_onoff.a.iv, nsurf, numklay);
      }
    #endif /*D_SHELL9*/
-   
+
    /*------------------------------------------------ loop dofs of node */
    for (j=0; j<actnode->numdf; j++)
    {
@@ -187,7 +187,7 @@ for (i=0; i<actpart->pdis[0].numnp; i++)
    actnode->gnode->neum=NULL;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -10,15 +10,15 @@ Maintainer: Baris Irhan
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_XFEM 
+#ifdef D_XFEM
 #include "../headers/standardtypes.h"
 #include "../fluid2/fluid2_prototypes.h"
 #include "../fluid2/fluid2.h"
 #include "../fluid_full/fluid_prototypes.h"
 #include "../ls/ls_prototypes.h"
 #include "xfem_prototypes.h"
-/*! 
-\addtogroup XFEM 
+/*!
+\addtogroup XFEM
 *//*! @{ (documentation module open)*/
 
 
@@ -69,9 +69,9 @@ static DOUBLE  **deriv;
 static ARRAY     deriv2_a;    /* second natural derivatives */
 static DOUBLE  **deriv2;
 static ARRAY     xyze_a;
-static DOUBLE  **xyze;   
+static DOUBLE  **xyze;
 static ARRAY     xyzen_a;
-static DOUBLE  **xyzen;   
+static DOUBLE  **xyzen;
 static ARRAY     xjm_a;       /* Jocobian matrix */
 static DOUBLE  **xjm;
 static ARRAY     velint_a;    /* velocities at integration point */
@@ -140,7 +140,7 @@ static DOUBLE   *etforce_temp;
 
 
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief control routine for element integration of fluid2
 
 <pre>                                                            irhan 05/04
@@ -148,11 +148,11 @@ static DOUBLE   *etforce_temp;
 This routine controls the element evaluation:
 -actual vel. and pres. variables are set
 -stabilisation parameters are calculated
--element integration is performed --> element stiffness matrix and 
+-element integration is performed --> element stiffness matrix and
                                   --> element load vectors
 -stiffness matrix and load vectors are permuted for assembling
--element load vector due to dirichlet conditions is calculated				      
-			     
+-element load vector due to dirichlet conditions is calculated
+
 </pre>
 \param  *data	         FLUID_DATA     (i)
 \param  *ele	         ELEMENT	(i)   actual element
@@ -163,42 +163,42 @@ This routine controls the element evaluation:
 \param  *eiforce_global  ARRAY	        (o)   ele iteration force
 \param  *edforce_global  ARRAY	        (o)   ele dirichlet force
 \param  *hasdirich       INT	        (o)   element flag
-\param  *hasext          INT	        (o)   element flag         
+\param  *hasext          INT	        (o)   element flag
 \param   imyrank         INT            (i)   proc number
 \param   velgrad         INT	        (i)   flag
 \param   is_relax        INT            (i)   flag
 \param   init	         INT	        (i)   init flag
-\return void                                               
-                                 
+\return void
+
 ------------------------------------------------------------------------*/
 void xfem_f2_calele(
-  FLUID_DATA     *data, 
-  ELEMENT        *ele,             
-  ARRAY          *estif_global,   
-  ARRAY          *emass_global,   
-  ARRAY          *etforce_global,       
-  ARRAY          *eiforce_global, 
-  ARRAY          *edforce_global,		
-  INT            *hasdirich,      
+  FLUID_DATA     *data,
+  ELEMENT        *ele,
+  ARRAY          *estif_global,
+  ARRAY          *emass_global,
+  ARRAY          *etforce_global,
+  ARRAY          *eiforce_global,
+  ARRAY          *edforce_global,
+  INT            *hasdirich,
   INT            *hasext,
   INT             imyrank,
   INT             is_relax,
-  INT             init            
+  INT             init
   )
 {
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_enter("xfem_f2_calele");
 #endif
 /*----------------------------------------------------------------------*/
-  
+
   if (init==1) /* allocate working arrays and set pointers */
   {
     eveln     = amdef("eveln"    ,&eveln_a    ,NUM_F2_VELDOF,MAXNOD_F2,"DA");
     evelng    = amdef("evelng"   ,&evelng_a   ,NUM_F2_VELDOF,MAXNOD_F2,"DA");
     epren     = amdef("epren"    ,&epren_a    ,MAXNOD_F2,1,"DV");
     edeadn    = amdef("edeadn"   ,&edeadn_a   ,2,1,"DV");
-    edeadng   = amdef("edeadng"  ,&edeadng_a  ,2,1,"DV");      
+    edeadng   = amdef("edeadng"  ,&edeadng_a  ,2,1,"DV");
     funct     = amdef("funct"    ,&funct_a    ,MAXNOD_F2,1,"DV");
     deriv     = amdef("deriv"    ,&deriv_a    ,2,MAXNOD_F2,"DA");
     deriv2    = amdef("deriv2"   ,&deriv2_a   ,3,MAXNOD_F2,"DA");
@@ -232,8 +232,8 @@ void xfem_f2_calele(
     /******************************XFEM**************************************/
     /******************************XFEM**************************************/
     /******************************XFEM**************************************/
-    
-    
+
+
     estif   = estif_global->a.da;
     emass   = emass_global->a.da;
     eiforce = eiforce_global->a.dv;
@@ -251,13 +251,13 @@ void xfem_f2_calele(
   amzero(eiforce_global);
   amzero(etforce_global);
   amzero(edforce_global);
-  
+
   *hasdirich=0;
   *hasext=0;
-  
+
   /* set some parameters */
   xfem_f2_init(ele);
-  /* initialize iand and temp arrays */  
+  /* initialize iand and temp arrays */
   xfem_f2_array_init();
   /* construct iand vector */
   xfem_f2_iand();
@@ -285,14 +285,14 @@ void xfem_f2_calele(
   if (fdyn->nii+(*hasext)!=0) xfem_f2_loc_ass_intforce(eiforce,eiforce_temp);
   /* calculate element load vector edforce */
   fluid_caldirich(ele,edforce,estif,hasdirich,is_relax);
-  
+
 /*----------------------------------------------------------------------*/
  end:
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
-  return; 
+
+  return;
 } /* end of xfem_f2_calele */
 
 
@@ -310,8 +310,8 @@ void xfem_f2_loc_con()
   INT     i;
   INT     icnt;
   INT     piv,piv1;
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_enter("xfem_f2_loc_con");
 #endif
 /*----------------------------------------------------------------------*/
@@ -326,7 +326,7 @@ void xfem_f2_loc_con()
   {
     iarr[2*(i+1)-2] = FIVE*(i+1)-4;
     iarr[2*(i+1)-1] = FIVE*(i+1)-3;
-    iarr[piv1+(i+1)-1] = FIVE*(i+1)-2;          
+    iarr[piv1+(i+1)-1] = FIVE*(i+1)-2;
   }
   /*
    * => Part II = Part I + "local connectivity for enriched formulation"
@@ -342,12 +342,12 @@ void xfem_f2_loc_con()
     }
   }
   nact = THREE*iel + TWO*icnt;
-  
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of xfem_f2_loc_con */
 
@@ -366,8 +366,8 @@ void xfem_f2_loc_ass_tangent()
   INT        i,j;
   INT        i1,j1;
   INT        cnt,cnt1;
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_enter("xfem_f2_loc_ass_tangent");
 #endif
 /*----------------------------------------------------------------------*/
@@ -388,7 +388,7 @@ void xfem_f2_loc_ass_tangent()
       }
     }
   }
-  
+
 /*
  * => NOTE
  * to avoid singular system at least diagonal terms of the
@@ -400,7 +400,7 @@ void xfem_f2_loc_ass_tangent()
   for (i=0; i<ntotal; i++)
   {
     if (estif[i][i]==0.0)
-    {      
+    {
       estif[i][i] = 1.0;
       cnt--;
     }
@@ -412,12 +412,12 @@ void xfem_f2_loc_ass_tangent()
         myls2->e.ls2->is_elcut==1 && cnt!=cnt1)
       dserror("severe error in local assembly!");
   }
-  
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of xfem_f2_loc_ass_tangent */
 
@@ -438,8 +438,8 @@ void xfem_f2_loc_ass_intforce(
 {
   INT        i;
   INT        i1;
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_enter("xfem_f2_loc_ass_intforce");
 #endif
 /*----------------------------------------------------------------------*/
@@ -455,10 +455,10 @@ void xfem_f2_loc_ass_intforce(
   }
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of xfem_f2_loc_ass_intforce */
 
@@ -475,8 +475,8 @@ initialize iarr, iand and 'temp' arrays.
 void xfem_f2_array_init()
 {
   INT     i,j;
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_enter("xfem_array_init");
 #endif
 /*----------------------------------------------------------------------*/
@@ -489,23 +489,23 @@ void xfem_f2_array_init()
   for (i=0; i<ntotal; i++)
   {
     etforce_temp[i] = 0.0;
-    eiforce_temp[i] = 0.0;    
+    eiforce_temp[i] = 0.0;
   }
-  
+
   for (i=0; i<ntotal; i++)
   {
     for (j=0; j<ntotal; j++)
     {
       estif_temp[i][j] = 0.0;
-      emass_temp[i][j] = 0.0;    
+      emass_temp[i][j] = 0.0;
     }
   }
-  
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of xfem_array_init */
 
@@ -523,7 +523,7 @@ void xfem_f2_init(
   ELEMENT *ele
   )
 {
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("xfem_f2_init");
 #endif
 /*----------------------------------------------------------------------*/
@@ -538,10 +538,10 @@ void xfem_f2_init(
   myls2 = ele->e.f2->my_ls;
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of xfem_f2_init */
 
@@ -559,8 +559,8 @@ void xfem_f2_iand()
 {
   INT       i;
   INT       locid;
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_enter("xfem_f2_iand");
 #endif
 /*----------------------------------------------------------------------*/
@@ -582,10 +582,10 @@ void xfem_f2_iand()
   }
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of xfem_f2_iand */
 /*! @} (documentation module close)*/

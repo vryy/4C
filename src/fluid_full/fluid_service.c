@@ -10,7 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
+/*!
 \addtogroup FLUID
 *//*! @{ (documentation module open)*/
 #ifdef D_FLUID
@@ -36,7 +36,7 @@ extern struct _GENPROB     genprob;
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of material laws                                              |
@@ -48,37 +48,37 @@ extern struct _MATERIAL  *mat;
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par; 
+ extern struct _PAR   par;
 /*!----------------------------------------------------------------------
 \brief file pointers
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
 
 static FLUID_DYNAMIC *fdyn;
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief routine to check starting algorithm
 
 <pre>                                                         genk 04/02
 
 this routine conrols the starting algorithms schemes. For the first 'nums'
-iteration steps a different time integration scheme may be used then 
+iteration steps a different time integration scheme may be used then
 during the rest of the simulation.
-			     
-</pre> 
+
+</pre>
 \param *nfrastep 	INT           (o)  number of fract. steps
 \param  init            INT           (i)  init flag
 
-\return void 
+\return void
 \warning this routine is not completely tested yet!
 
 ------------------------------------------------------------------------*/
@@ -93,9 +93,9 @@ static INT     itemax_s;
 static DOUBLE  theta_s ;
 static DOUBLE  thetas_s;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_startproc");
-#endif 
+#endif
 
 fdyn = alldyn[genprob.numff].fdyn;
 
@@ -137,7 +137,7 @@ else if (fdyn->step==(fdyn->nums+1)) /* set original parameter */
 
 /*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -145,24 +145,24 @@ return;
 } /* end of fluid_startproc*/
 
 
-/*!---------------------------------------------------------------------  
+/*!---------------------------------------------------------------------
 \brief calculating time independent time integration constants
 
 <pre>                                                       chfoe 09/03
 
-in this routine the constants for the time integration algorithms are 
+in this routine the constants for the time integration algorithms are
 calculated as far as they are independent of the time
-			     
-</pre>   
 
-\return void 
+</pre>
+
+\return void
 \warning only ONE-STEP-THETA implemented up to now!
 
 ------------------------------------------------------------------------*/
 void fluid_cons( void )
 {
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_cons");
 #endif
 /*----------------------------------------------------------------------*/
@@ -201,7 +201,7 @@ case 7:		/* 2nd order backward differencing BDF2 */
    {
      fdyn->nums += fdyn->step;
    }
-   
+
 break;
 
 
@@ -210,32 +210,32 @@ default:
 } /* end switch */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
-} /* end of fluid_cons*/ 
+} /* end of fluid_cons*/
 
 
-/*!---------------------------------------------------------------------  
+/*!---------------------------------------------------------------------
 \brief calculating time integration constants
 
 <pre>                                                         genk 03/02
 
-in this routine the constants for the time integration algorithms are 
+in this routine the constants for the time integration algorithms are
 calculated, here time dependent values only are calculated
-			     
-</pre> 
 
-\return void 
+</pre>
+
+\return void
 \warning only ONE-STEP-THETA implemented up to now!
 
 ------------------------------------------------------------------------*/
 void fluid_tcons( void )
 {
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_tcons");
 #endif
 
@@ -247,11 +247,11 @@ switch (fdyn->iop)
 case 1:		/* generalised alpha */
    if (fdyn->adaptive)
    {
-      if(fdyn->dta == 0.0) fdyn->dta = fdyn->dt;   
+      if(fdyn->dta == 0.0) fdyn->dta = fdyn->dt;
    }
    else if (fdyn->adaptive==0)
    {
-      fdyn->dta  = fdyn->dt;    
+      fdyn->dta  = fdyn->dt;
    }
    fdyn->thsl = fdyn->dta * fdyn->theta * fdyn->alpha_f / fdyn->alpha_m;
    fdyn->thpl = fdyn->thsl;
@@ -262,11 +262,11 @@ break;
 case 4:		/* one step theta */
    if (fdyn->adaptive)
    {
-      if(fdyn->dta == 0.0) fdyn->dta = fdyn->dt;   
+      if(fdyn->dta == 0.0) fdyn->dta = fdyn->dt;
    }
    else if (fdyn->adaptive==0)
    {
-      fdyn->dta  = fdyn->dt;    
+      fdyn->dta  = fdyn->dt;
    }
    fdyn->thsl = fdyn->dta*fdyn->theta;
    fdyn->thpl = fdyn->thsl;
@@ -280,17 +280,17 @@ case 7:		/* 2nd order backward differencing BDF2 */
    if (fdyn->adaptive)
    {
       if(fdyn->dta == 0.0) fdyn->dta = fdyn->dt;
-      fdyn->thsl = (DSQR(fdyn->dta) + fdyn->dta*fdyn->dtp) 
+      fdyn->thsl = (DSQR(fdyn->dta) + fdyn->dta*fdyn->dtp)
                      / (2.0*fdyn->dta + fdyn->dtp);
       fdyn->thpl = fdyn->thsl;
       fdyn->thsr = 0.0;
-      fdyn->thpr = fdyn->thsr; 
+      fdyn->thpr = fdyn->thsr;
       fdyn->thnr = 0.0;	/* a factor of an addend needed for gen alpha 2 */
 
    }
    else if (fdyn->adaptive==0)
    {
-      fdyn->dta  = fdyn->dt;    
+      fdyn->dta  = fdyn->dt;
       fdyn->thsl = fdyn->dta*TWO/THREE;
       fdyn->thpl = fdyn->thsl;
       fdyn->thsr = 0.0;
@@ -302,17 +302,17 @@ default:
    dserror ("constants for time algorithm not implemented yet!\n");
 }
 
-/*----------------------------------------------- treatment of pressure */ 
+/*----------------------------------------------- treatment of pressure */
 if (fdyn->iprerhs!=1)
     dserror ("treatment of pressure not implemented yet!\n");
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
-} /* end of fluid_tcons*/ 
+} /* end of fluid_tcons*/
 
 
 /*!---------------------------------------------------------------------
@@ -321,25 +321,25 @@ return;
 <pre>                                                         genk 03/02
 
 in this routine the flags for the different nonlinear iteration schemes
-are set. Depending on the iteration schemes the evaluation of some 
+are set. Depending on the iteration schemes the evaluation of some
 termes in the LHS or the RHS have to turned on or off:
 
-nir <->  EVALUATION OF NONLINEAR LHS N-REACTION 	    
-nil <->  EVALUATION OF LUMPED MASS MATRIX (Mvv-lumped)      
-nif <->  EVALUATION OF "TIME - RHS" (F-hat)		    
-nii <->  EVALUATION OF "ITERATION - RHS"		    
-nis <->  STATIONARY CASE (NO TIMEDEPENDENT TERMS)	   
-			     
-</pre> 
+nir <->  EVALUATION OF NONLINEAR LHS N-REACTION
+nil <->  EVALUATION OF LUMPED MASS MATRIX (Mvv-lumped)
+nif <->  EVALUATION OF "TIME - RHS" (F-hat)
+nii <->  EVALUATION OF "ITERATION - RHS"
+nis <->  STATIONARY CASE (NO TIMEDEPENDENT TERMS)
+
+</pre>
 \param  itnum      INT  	   (i)     actual number of iterations
-\return void 
+\return void
 \warning up to now, only fixed-point like iteration checked!!!
 
 ------------------------------------------------------------------------*/
 void fluid_icons( INT itnum )
 {
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_icons");
 #endif
 
@@ -405,18 +405,18 @@ case 3:		/* fixed point iteration */
    {
       if (itnum>1)
       {
-         fdyn->nii=2;  /* KI */     
+         fdyn->nii=2;  /* KI */
       }
       else
       {
-         fdyn->nif=2;      
-         fdyn->nii=3;  /* KFI */      
+         fdyn->nif=2;
+         fdyn->nii=3;  /* KFI */
       }
    }
    else if (fdyn->time_rhs == 0)	/* mass formulation of time rhs */
    {
-      fdyn->nim=1;      
-      fdyn->nii=3;  /* K(F)I */   
+      fdyn->nim=1;
+      fdyn->nii=3;  /* K(F)I */
    }
 break;
 default:
@@ -428,17 +428,17 @@ switch (fdyn->freesurf)
 {
 case 0: /* do nothing */
 break;
-case 1: /* explicit local langrage: include only for first iteration 
+case 1: /* explicit local langrage: include only for first iteration
            step in "time rhs" */
    if (itnum>1)
    {
       fdyn->surftens= 0;
-      fdyn->fsstnif = 0; 
+      fdyn->fsstnif = 0;
       fdyn->fsstnii = 0;
    }
    else
    {
-      fdyn->fsstnif = fdyn->surftens; 
+      fdyn->fsstnif = fdyn->surftens;
       fdyn->fsstnii = fdyn->surftens;
    }
 break;
@@ -446,7 +446,7 @@ case 2: case 6:/* partioned implicit local lagrange*/
    fdyn->nif=2;
    if (itnum>1)
    {
-      fdyn->fsstnif = 0; 
+      fdyn->fsstnif = 0;
       fdyn->fsstnii = fdyn->surftens;
    }
    else
@@ -466,41 +466,41 @@ default:
 }
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of fluid_icons*/
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief initialisation of solution history
 
 <pre>                                                         genk 04/02
 
 in this routine the solution history of the fluid field is initialised.
 The time-integration schemes require the solutions at different time-
-steps. They are stored in 	   
+steps. They are stored in
 node->sol_incement: solution history used for calculations
-      sol_increment.a.da[0][i]: solution at (n-1)    
-      sol_increment.a.da[1][i]: solution at (n)      
-      sol_increment.a.da[2][i]: solution at (n+g)    
-      sol_increment.a.da[3][i]: solution at (n+1)    
-      sol_increment.a.da[4][i]: grid velocity	     
-      sol_increment.a.da[5][i]: convective velocity at (n)  
-      sol_increment.a.da[6][i]: convective velocity at (n+1)		    
+      sol_increment.a.da[0][i]: solution at (n-1)
+      sol_increment.a.da[1][i]: solution at (n)
+      sol_increment.a.da[2][i]: solution at (n+g)
+      sol_increment.a.da[3][i]: solution at (n+1)
+      sol_increment.a.da[4][i]: grid velocity
+      sol_increment.a.da[5][i]: convective velocity at (n)
+      sol_increment.a.da[6][i]: convective velocity at (n+1)
 In node->sol one findes the converged solutions of the time-steps, which
 are written to the output-file and the pss-file.
 
 If the initial fluid fuild comes from the input-file 'fluid-start-data',
 these data are copied to sol_increment.
-			     
-</pre>   
+
+</pre>
 \param *actfield   FIELD           (i)
-\param *fdyn	   FLUID_DYNAMIC   (i)  
+\param *fdyn	   FLUID_DYNAMIC   (i)
 \param  numr	   INT             (i/o)   number of rows in sol_incr
 \param  str        FLUID_STRESS    (i)     flag for stress calculation
-\return void 
+\return void
 
 ------------------------------------------------------------------------*/
 void fluid_init(
@@ -510,14 +510,14 @@ void fluid_init(
                           CALC_ACTION       *action,
 			  CONTAINER         *container,
 		          INT                numr,
-		          FLUID_STRESS       str	
-	       )      
+		          FLUID_STRESS       str
+	       )
 {
 INT    i,j,k;           /* simply counters                              */
 INT    actmat;          /* number of actual material                    */
 INT    numdf;           /* number of dofs in this discretisation        */
 INT    numnp_total;     /* total number of nodes in this discretisation */
-INT    numele_total;    /* total number of elements in this discr.      */  
+INT    numele_total;    /* total number of elements in this discr.      */
 INT    numnp=0;         /* number of nodes at actual element            */
 INT    ldflag;
 NODE  *actnode;         /* the actual node                              */
@@ -551,7 +551,7 @@ DOUBLE eta,c,g,H,x,y,fac,fac1,sech;
 /* variables for beltrami */
 DOUBLE    visc,a,x1,x2,x3;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_init");
 #endif
 
@@ -559,7 +559,7 @@ dstrc_enter("fluid_init");
 fdyn = alldyn[genprob.numff].fdyn;
 
 fdyn->ishape = 1;
-  
+
 numdf = fdyn->numdf;
 numele_total = actfield->dis[0].numele;
 
@@ -602,7 +602,7 @@ if (fdyn->freesurf>0)
          }
       }
       else
-         actnode->xfs=NULL;   
+         actnode->xfs=NULL;
    }
 }
 
@@ -616,9 +616,9 @@ if (fdyn->freesurf==3 || fdyn->freesurf==5)
       {
          amredef(&(actnode->sol_increment),numr,actnode->numdf+addcol,"DA");
          amzero(&(actnode->sol_increment));
-         amredef(&(actnode->sol),actnode->sol.fdim,actnode->numdf+addcol,"DA");      
+         amredef(&(actnode->sol),actnode->sol.fdim,actnode->numdf+addcol,"DA");
          amzero(&(actnode->sol));
-         amredef(&(actnode->sol_mf),actnode->sol.fdim,actnode->numdf+addcol,"DA");      
+         amredef(&(actnode->sol_mf),actnode->sol.fdim,actnode->numdf+addcol,"DA");
          amzero(&(actnode->sol_mf));
          phi = actnode->x[numdf-2];
          actnode->sol.a.da[0][numdf] = phi;
@@ -659,40 +659,40 @@ case str_fsicoupling: /* allocate stress field for elements with fsi-coupled nod
       if (found==1)
       {
 #ifdef D_FLUID2
-         if (numdf==3)    
+         if (numdf==3)
             amdef("stress_ND",&(actele->e.f2->stress_ND),numnp,3,"DA");
 #endif
 #ifdef D_FLUID3
          if (numdf==4)
             amdef("stress_ND",&(actele->e.f3->stress_ND),numnp,6,"DA");
-#endif	 
+#endif
       }
    }
-break;   
+break;
 #endif
 case str_all: /* allocate stress field for all elements */
    for (i=0;i<numele_total;i++)
    {
-      actele = &(actfield->dis[0].element[i]);   
+      actele = &(actfield->dis[0].element[i]);
       numnp=actele->numnp;
 #ifdef D_FLUID2
-      if (numdf==3)    
+      if (numdf==3)
          amdef("stress_ND",&(actele->e.f2->stress_ND),numnp,3,"DA");
 #endif
 #ifdef D_FLUID3
       if (numdf==4)
          amdef("stress_ND",&(actele->e.f3->stress_ND),numnp,6,"DA");
-#endif	 
+#endif
    }
-break;   
-case str_liftdrag:  
+break;
+case str_liftdrag:
    for (i=0;i<numele_total;i++)
    {
-      actele = &(actfield->dis[0].element[i]); 
-#ifdef D_FLUID2      
+      actele = &(actfield->dis[0].element[i]);
+#ifdef D_FLUID2
       if (numdf==3)
       {
-         actgsurf=actele->g.gsurf;         
+         actgsurf=actele->g.gsurf;
          ldflag=0;
 	 for (j=0;j<actgsurf->ngline;j++)
          {
@@ -702,7 +702,7 @@ case str_liftdrag:
             if (actdline->liftdrag==NULL) continue;
 	    ldflag++;
 	    break;
-         }  
+         }
          if (ldflag>0)
             amdef("stress_ND",&(actele->e.f2->stress_ND),actele->numnp,6,"DA");
       }
@@ -710,7 +710,7 @@ case str_liftdrag:
 #ifdef D_FLUID3
       if (numdf==4)
       {
-         actgvol=actele->g.gvol;         
+         actgvol=actele->g.gvol;
          ldflag=0;
 	 for (j=0;j<actgvol->ngsurf;j++)
          {
@@ -720,13 +720,13 @@ case str_liftdrag:
             if (actdsurf->liftdrag==NULL) continue;
 	    ldflag++;
 	    break;
-         }  
+         }
          if (ldflag>0)
             amdef("stress_ND",&(actele->e.f3->stress_ND),actele->numnp,6,"DA");
       }
-#endif	
+#endif
    }
-break;   
+break;
 default:
    dserror("option for 'str' not implemented yet!\n");
 }
@@ -736,10 +736,10 @@ if (fdyn->surftens>0)
 {
    for (i=0;i<numele_total;i++)
    {
-      actele = &(actfield->dis[0].element[i]);      
+      actele = &(actfield->dis[0].element[i]);
 #ifdef D_FLUID2
       if (numdf==3)
-      {             
+      {
 	 if (actele->e.f2->fs_on==0) continue;
 	 {
 	    amdef("kappa_ND",&(actele->e.f2->kappa_ND),numnp,2,"DA");
@@ -766,7 +766,7 @@ if (fdyn->init>=1)
    if (fdyn->init==2) /*-------------------- initial data from pss file */
       restart_read_fluiddyn(fdyn->resstep,fdyn,actfield,actpart,actintra,
                             action,container);
-			    
+
 #ifdef D_FSI
    if (fdyn->init==6) /*--------------------------------- solitary wave */
    {
@@ -787,11 +787,11 @@ if (fdyn->init>=1)
 	 x   = actnode->x[0];
 	 y   = actnode->x[1];
 	 fac = fac1*(x-c*t);
-	 /* sech = sech(fac*xct)**2 = 1/cosh(fac*xct)**2 */ 
+	 /* sech = sech(fac*xct)**2 = 1/cosh(fac*xct)**2 */
 	 sech = cosh(fac);
 	 sech = ONE/sech/sech;
 	 eta  = d + H*sech;
-	 /*---------------------------------------- modify initial values */ 	 
+	 /*---------------------------------------- modify initial values */
 	 p    = dens*g*(eta-y);
 	 u1   = sqrt(g*d)*H/d*sech;
 	 u2   = sqrt(THREE*g*d)*(H/d)*sqrt(H/d)*(y/d)*sech*tanh(fac);
@@ -800,11 +800,11 @@ if (fdyn->init>=1)
 	 actnode->sol.a.da[0][0] = u1;
 	 actnode->sol.a.da[0][1] = u2;
 	 actnode->sol.a.da[0][2] = p ;
-	 actnode->sol_increment.a.da[1][0] = u1;  
-	 actnode->sol_increment.a.da[1][1] = u2;  
-	 actnode->sol_increment.a.da[1][2] = p ;  
-	 actnode->sol_increment.a.da[3][0] = u1;  
-	 actnode->sol_increment.a.da[3][1] = u2;  
+	 actnode->sol_increment.a.da[1][0] = u1;
+	 actnode->sol_increment.a.da[1][1] = u2;
+	 actnode->sol_increment.a.da[1][2] = p ;
+	 actnode->sol_increment.a.da[3][0] = u1;
+	 actnode->sol_increment.a.da[3][1] = u2;
 	 actnode->sol_increment.a.da[3][2] = p ;
          if (fdyn->freesurf==2 && actnode->xfs!=NULL)
 	 {
@@ -821,16 +821,16 @@ if (fdyn->init>=1)
                {
                   if (actgnode->dirich->dirich_onoff.a.iv[j]==1)
 	          {
-		     actnode->sol_increment.a.da[1][j] = ZERO;                  
-		     actnode->sol_increment.a.da[3][j] = ZERO;                  
+		     actnode->sol_increment.a.da[1][j] = ZERO;
+		     actnode->sol_increment.a.da[3][j] = ZERO;
                   }
-	       } /* end loop over dofs */	    
+	       } /* end loop over dofs */
 	    }
 	 }
-      }    
+      }
    }
 #endif
-#ifdef D_FSI   
+#ifdef D_FSI
    if (fdyn->init==7) /*-------------------------- wavebreaking problem */
    {
       actele = &(actfield->dis[0].element[0]);
@@ -850,11 +850,11 @@ if (fdyn->init>=1)
 	 x   = actnode->x[0];
 	 y   = actnode->x[1];
 	 fac = fac1*(x-c*t);
-	 /* sech = sech(fac*xct)**2 = 1/cosh(fac*xct)**2 */ 
+	 /* sech = sech(fac*xct)**2 = 1/cosh(fac*xct)**2 */
 	 sech = cosh(fac);
 	 sech = ONE/sech/sech;
 	 eta  = d + H*sech;
-	 /*---------------------------------------- modify initial values */ 	 
+	 /*---------------------------------------- modify initial values */
          if (x>=80.0)
          {
 	    p    = dens*g*(d-y);
@@ -871,11 +871,11 @@ if (fdyn->init>=1)
 	 actnode->sol.a.da[0][0] = u1;
 	 actnode->sol.a.da[0][1] = u2;
 	 actnode->sol.a.da[0][2] = p ;
-	 actnode->sol_increment.a.da[1][0] = u1;  
-	 actnode->sol_increment.a.da[1][1] = u2;  
-	 actnode->sol_increment.a.da[1][2] = p ;  
-	 actnode->sol_increment.a.da[3][0] = u1;  
-	 actnode->sol_increment.a.da[3][1] = u2;  
+	 actnode->sol_increment.a.da[1][0] = u1;
+	 actnode->sol_increment.a.da[1][1] = u2;
+	 actnode->sol_increment.a.da[1][2] = p ;
+	 actnode->sol_increment.a.da[3][0] = u1;
+	 actnode->sol_increment.a.da[3][1] = u2;
 	 actnode->sol_increment.a.da[3][2] = p ;
          if (fdyn->freesurf==2 && actnode->xfs!=NULL)
 	 {
@@ -892,13 +892,13 @@ if (fdyn->init>=1)
                {
                   if (actgnode->dirich->dirich_onoff.a.iv[j]==1)
 	          {
-		     actnode->sol_increment.a.da[1][j] = ZERO;                  
-		     actnode->sol_increment.a.da[3][j] = ZERO;                  
+		     actnode->sol_increment.a.da[1][j] = ZERO;
+		     actnode->sol_increment.a.da[3][j] = ZERO;
                   }
-	       } /* end loop over dofs */	    
+	       } /* end loop over dofs */
 	    }
 	 }
-      }    
+      }
    }
 #endif
    if (fdyn->init==8) /* Beltrami flow */
@@ -917,8 +917,8 @@ if (fdyn->init>=1)
 	 x1   = actnode->x[0];
 	 x2   = actnode->x[1];
 	 x3   = actnode->x[2];
-	 /* calculate initial values */ 	 
-	 p    = -a*a/2 * ( exp(2*a*x1) + exp(2*a*x2) + exp(2*a*x3) 
+	 /* calculate initial values */
+	 p    = -a*a/2 * ( exp(2*a*x1) + exp(2*a*x2) + exp(2*a*x3)
                 + 2 * sin(a*x1 + d*x2) * cos(a*x3 + d*x1) * exp(a*(x2+x3))
                 + 2 * sin(a*x2 + d*x3) * cos(a*x1 + d*x2) * exp(a*(x3+x1))
                 + 2 * sin(a*x3 + d*x1) * cos(a*x2 + d*x3) * exp(a*(x1+x2)) )
@@ -934,19 +934,19 @@ if (fdyn->init>=1)
 	 actnode->sol.a.da[0][1] = u2;
 	 actnode->sol.a.da[0][2] = u3;
 	 actnode->sol.a.da[0][3] = p ;
-	 actnode->sol_increment.a.da[0][0] = u1;  
-	 actnode->sol_increment.a.da[0][1] = u2;  
-	 actnode->sol_increment.a.da[0][2] = u3;  
-	 actnode->sol_increment.a.da[0][3] = p ;  
-	 actnode->sol_increment.a.da[1][0] = u1;  
-	 actnode->sol_increment.a.da[1][1] = u2;  
-	 actnode->sol_increment.a.da[1][2] = u3;  
-	 actnode->sol_increment.a.da[1][3] = p ;  
-	 actnode->sol_increment.a.da[3][0] = u1;  
-	 actnode->sol_increment.a.da[3][1] = u2;  
-	 actnode->sol_increment.a.da[3][2] = u3;  
+	 actnode->sol_increment.a.da[0][0] = u1;
+	 actnode->sol_increment.a.da[0][1] = u2;
+	 actnode->sol_increment.a.da[0][2] = u3;
+	 actnode->sol_increment.a.da[0][3] = p ;
+	 actnode->sol_increment.a.da[1][0] = u1;
+	 actnode->sol_increment.a.da[1][1] = u2;
+	 actnode->sol_increment.a.da[1][2] = u3;
+	 actnode->sol_increment.a.da[1][3] = p ;
+	 actnode->sol_increment.a.da[3][0] = u1;
+	 actnode->sol_increment.a.da[3][1] = u2;
+	 actnode->sol_increment.a.da[3][2] = u3;
 	 actnode->sol_increment.a.da[3][3] = p ;
-      }    
+      }
    }
 
    if (fdyn->init==9) /* Kim-Moin flow */
@@ -963,36 +963,36 @@ if (fdyn->init>=1)
          actnode=&(actfield->dis[0].node[i]);
 	 x1   = actnode->x[0];
 	 x2   = actnode->x[1];
-	 /* calculate initial values */ 	 
+	 /* calculate initial values */
 	 p    = -1.0/4.0 * ( cos(2.0*a*PI*x1) + cos(2.0*a*PI*x2) ) * exp(-4.0*a*a*PI*PI*t*visc);
-	 u1   = - cos(a*PI*x1) * sin(a*PI*x2) * exp(-2.0*a*a*PI*PI*t*visc); 
+	 u1   = - cos(a*PI*x1) * sin(a*PI*x2) * exp(-2.0*a*a*PI*PI*t*visc);
 	 u2   = + sin(a*PI*x1) * cos(a*PI*x2) * exp(-2.0*a*a*PI*PI*t*visc);
 	 /* write values to nodes */
 	 actnode->sol.a.da[0][0] = u1;
 	 actnode->sol.a.da[0][1] = u2;
 	 actnode->sol.a.da[0][2] = p ;
-	 actnode->sol_increment.a.da[0][0] = u1;  
-	 actnode->sol_increment.a.da[0][1] = u2;  
-	 actnode->sol_increment.a.da[0][2] = p ;  
-	 actnode->sol_increment.a.da[1][0] = u1;  
-	 actnode->sol_increment.a.da[1][1] = u2;  
-	 actnode->sol_increment.a.da[1][2] = p ;  
-	 actnode->sol_increment.a.da[3][0] = u1;  
-	 actnode->sol_increment.a.da[3][1] = u2;  
+	 actnode->sol_increment.a.da[0][0] = u1;
+	 actnode->sol_increment.a.da[0][1] = u2;
+	 actnode->sol_increment.a.da[0][2] = p ;
+	 actnode->sol_increment.a.da[1][0] = u1;
+	 actnode->sol_increment.a.da[1][1] = u2;
+	 actnode->sol_increment.a.da[1][2] = p ;
+	 actnode->sol_increment.a.da[3][0] = u1;
+	 actnode->sol_increment.a.da[3][1] = u2;
 	 actnode->sol_increment.a.da[3][2] = p ;
-      }    
+      }
    }
 }
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
-} /* end of fluid_init */ 
-   
-/*!---------------------------------------------------------------------                                         
+} /* end of fluid_init */
+
+/*!---------------------------------------------------------------------
 \brief storing results in solution history
 
 <pre>                                                         genk 05/02
@@ -1000,11 +1000,11 @@ return;
 in this routine the results in the DIST_VECTOR are put to the nodes in
 a certain place in ARRAY sol_increment.
 Result has to be allreduced and is put to the whole field on each proc.
-If necassary the norms for the iteration convergence check of the 
-nonlinear iteration scheme are calculated.	   
-			     
-</pre>   
-\param **actfield      FIELD	      (i)    actual field       
+If necassary the norms for the iteration convergence check of the
+nonlinear iteration scheme are calculated.
+
+</pre>
+\param **actfield      FIELD	      (i)    actual field
 \param  *actintra      INTRA	      (i)    actual intra comm.
 \param	*sol 	       DIST_VECTOR    (i)    solution vector
 \param	 place         INT	      (i)    place in sol_incr.
@@ -1013,23 +1013,23 @@ nonlinear iteration scheme are calculated.
 \param	*vrat          DOUBLE	      (o)    vel.  conv. ratio
 \param	*prat          DOUBLE	      (o)    pre.  conv. ratio
 \param  *grat          DOUBLE         (o)    grid  conv. ratio
-\return void 
+\return void
 
 ------------------------------------------------------------------------*/
-void fluid_result_incre(  
-                          FIELD             *actfield,    
-                          INTRA             *actintra,   
-			  DIST_VECTOR       *sol,        
-                          INT                place,      
-			  SPARSE_ARRAY      *sysarray,      
+void fluid_result_incre(
+                          FIELD             *actfield,
+                          INTRA             *actintra,
+			  DIST_VECTOR       *sol,
+                          INT                place,
+			  SPARSE_ARRAY      *sysarray,
 			  SPARSE_TYP        *sysarray_typ,
-			  DOUBLE            *vrat,        
+			  DOUBLE            *vrat,
 			  DOUBLE            *prat,
-                          DOUBLE            *grat          
+                          DOUBLE            *grat
 		       )
 {
 INT      i,j;          /* simply some counters                         */
-INT      max;       
+INT      max;
 INT      diff;
 INT      dof;          /* actual dof number                            */
 INT      predof;       /* number of pressure dof (2=2D; 3=3D)          */
@@ -1044,7 +1044,7 @@ NODE    *actnode;      /* actual node                                  */
 static ARRAY    result_a;
 static DOUBLE  *result;       /* redundandent result vector                   */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_result_incre");
 #endif
 
@@ -1070,7 +1070,7 @@ solserv_reddistvec(
 
 /* values in sol_increment are in XYZ co-sys - result is in xyz* co-sys
    so we have to tranform sol_increment for the convergence check       */
-locsys_trans_sol(actfield,0,1,place,0);   
+locsys_trans_sol(actfield,0,1,place,0);
 
 switch (fdyn->itnorm) /* switch to norm */
 {
@@ -1096,10 +1096,10 @@ case fncc_no:
          if (dof>=numeq_total) continue;
          actnode->sol_increment.a.da[place][j] = result[dof];
       } /* end of loop over dofs */
-     
+
    } /* end of loop over nodes */
 break;
-/*----------------------------------------------------------------------*/   
+/*----------------------------------------------------------------------*/
 case fncc_Linf: /* L_infinity norm */
    /*-----  loop nodes and put the result back to the node structure */
    for (i=0; i<actfield->dis[0].numnp; i++)
@@ -1130,15 +1130,15 @@ case fncc_Linf: /* L_infinity norm */
             actnode->sol_increment.a.da[place][j] = result[dof];
          }
          else /* vel - dof */
-         {          
+         {
             dvnorm = DMAX(dvnorm, FABS(result[dof]-actnode->sol_increment.a.da[place][j]));
             vnorm  = DMAX(vnorm, FABS(result[dof]));
             actnode->sol_increment.a.da[place][j] = result[dof];
          } /* endif vel dof */
-      } /* end of loop over dofs */        
-   } /* end of loop over nodes */      
-break; 
-/*-------------------------------------------------------------------------*/   
+      } /* end of loop over dofs */
+   } /* end of loop over nodes */
+break;
+/*-------------------------------------------------------------------------*/
 case fncc_L1: /* L_1 norm */
    /*-----------  loop nodes and put the result back to the node structure */
    for (i=0; i<actfield->dis[0].numnp; i++)
@@ -1166,18 +1166,18 @@ case fncc_L1: /* L_1 norm */
          {
             dgnorm += FABS(result[dof]-actnode->sol_increment.a.da[place][j]);
             gnorm  += FABS(result[dof]);
-            actnode->sol_increment.a.da[place][j] = result[dof];            
+            actnode->sol_increment.a.da[place][j] = result[dof];
          } /* endif grid velocity dofs */
          else /* vel - dof */
-         {          
+         {
             dvnorm += FABS(result[dof]-actnode->sol_increment.a.da[place][j]);
             vnorm  += FABS(result[dof]);
             actnode->sol_increment.a.da[place][j] = result[dof];
          } /* endif vel dof */
-      } /* end of loop over dofs */        
-   } /* end of loop over nodes */ 
-break; 
-/*-------------------------------------------------------------------------*/   
+      } /* end of loop over dofs */
+   } /* end of loop over nodes */
+break;
+/*-------------------------------------------------------------------------*/
 case fncc_L2: /* L_2 norm */
    /*-----------  loop nodes and put the result back to the node structure */
    for (i=0; i<actfield->dis[0].numnp; i++)
@@ -1205,27 +1205,27 @@ case fncc_L2: /* L_2 norm */
          {
             dgnorm += DSQR(result[dof]-actnode->sol_increment.a.da[place][j]);
             gnorm  += DSQR(result[dof]);
-            actnode->sol_increment.a.da[place][j] = result[dof];         
+            actnode->sol_increment.a.da[place][j] = result[dof];
          } /* endif grid velocity dofs */
          else /* vel - dof */
-         {          
+         {
             dvnorm += DSQR(result[dof]-actnode->sol_increment.a.da[place][j]);
             vnorm  += DSQR(result[dof]);
             actnode->sol_increment.a.da[place][j] = result[dof];
          } /* endif vel dof */
-      } /* end of loop over dofs */        
+      } /* end of loop over dofs */
    } /* end of loop over nodes */
    dvnorm = sqrt(dvnorm);
     vnorm = sqrt( vnorm);
    dpnorm = sqrt(dpnorm);
-    pnorm = sqrt( pnorm);  
+    pnorm = sqrt( pnorm);
    dgnorm = sqrt(dgnorm);
     gnorm = sqrt( gnorm);
-break; 
-/*-------------------------------------------------------------------*/   
+break;
+/*-------------------------------------------------------------------*/
 default:
    dserror("unknown norm for convergence check!\n");
-} /* end of switch(fdyn->itnorm) */  
+} /* end of switch(fdyn->itnorm) */
 
 /*------------------------------------------- check for "ZERO-field" */
 if (vnorm<EPS5)
@@ -1249,48 +1249,48 @@ if (gnorm<EPS5)
 /*------------------------------------- set final convergence ratios */
 *vrat = dvnorm/vnorm;
 *prat = dpnorm/pnorm;
-if (fdyn->freesurf==2 || fdyn->freesurf==5 || fdyn->freesurf==6) 
-   *grat = dgnorm/gnorm;   
+if (fdyn->freesurf==2 || fdyn->freesurf==5 || fdyn->freesurf==6)
+   *grat = dgnorm/gnorm;
 
 /*------------------------------------------- local co-ordinate system:
-  the values in sol_increment[3][] are given in the xyz* co-system, 
-  however everything else is in the XYZ co-system. So we have to 
+  the values in sol_increment[3][] are given in the xyz* co-system,
+  however everything else is in the XYZ co-system. So we have to
   tranform them from xyz* to XYZ                                        */
-locsys_trans_sol(actfield,0,1,place,1); 
+locsys_trans_sol(actfield,0,1,place,1);
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of  fluid_result_incre */
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief calculating norms for steady state check
 
 <pre>                                                         genk 05/02
 
-in this routine the velocity and pressure norms for the steady state 
+in this routine the velocity and pressure norms for the steady state
 check are calculated:
-   norm = ||U(n+1) - U(n)|| / ||U(n)||  		
-      solution at (n+1): node->sol_increment[3][j]			
-      solution at (n)  : node->sol_increment[1][j]			
-			     
-</pre>   
-\param *fdyn 	      FLUID_DYNAMIC  (i)   
+   norm = ||U(n+1) - U(n)|| / ||U(n)||
+      solution at (n+1): node->sol_increment[3][j]
+      solution at (n)  : node->sol_increment[1][j]
+
+</pre>
+\param *fdyn 	      FLUID_DYNAMIC  (i)
 \param *actfield      FIELD	     (i)   actual field
 \param  numeq_total   INT	     (i)   total number of equations
 \param *vrat	      DOUBLE	     (o)   vel.  conv. ratio
 \param *prat	      DOUBLE	     (o)   pres. conv. ratio
-\return void 
+\return void
 
 ------------------------------------------------------------------------*/
 void fluid_norm(
-                          FIELD             *actfield,    
-		          INT                numeq_total, 
-                          DOUBLE            *vrat,        
-		          DOUBLE            *prat          
+                          FIELD             *actfield,
+		          INT                numeq_total,
+                          DOUBLE            *vrat,
+		          DOUBLE            *prat
 	       )
 {
 INT         i,j;           /* simply some counters                      */
@@ -1305,7 +1305,7 @@ DOUBLE      dpnorm=ZERO;   /* norms					*/
 DOUBLE       pnorm=ZERO;   /* norms                                     */
 NODE       *actnode;       /* actual node                               */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_norm");
 #endif
 
@@ -1338,11 +1338,11 @@ case fnst_Linf: /* L_infinity norm */
       if (actdof>=numeq_total) continue;
       dpnorm = DMAX(dpnorm,FABS(actnode->sol_increment.a.da[3][predof]  \
 	                       -actnode->sol_increment.a.da[1][predof]));
-       pnorm = DMAX( pnorm,FABS(actnode->sol_increment.a.da[3][predof]));                
+       pnorm = DMAX( pnorm,FABS(actnode->sol_increment.a.da[3][predof]));
    } /* end of loop over nodes */
-break; 
+break;
 /*----------------------------------------------------------------------*/
-case fnst_L1: /* L_1 norm */   
+case fnst_L1: /* L_1 norm */
    /*--------------------------------------------------- loop all nodes */
    for (i=0;i<numnp_total;i++) /* loop nodes */
    {
@@ -1359,17 +1359,17 @@ case fnst_L1: /* L_1 norm */
       if (actdof>=numeq_total) continue;
       dpnorm += FABS(actnode->sol_increment.a.da[3][predof]  \
 	            -actnode->sol_increment.a.da[1][predof]);
-       pnorm += FABS(actnode->sol_increment.a.da[3][predof]);                
+       pnorm += FABS(actnode->sol_increment.a.da[3][predof]);
    } /* end of loop over nodes */
-break; 
+break;
 /*----------------------------------------------------------------------*/
-case fnst_L2: /* L_2 norm */   
+case fnst_L2: /* L_2 norm */
    /*--------------------------------------------------- loop all nodes */
    for (i=0;i<numnp_total;i++) /* loop nodes */
    {
       actnode=&(actfield->dis[0].node[i]);
       for (j=0;j<numvel;j++) /* loop vel-dofs */
-      { 
+      {
 	 actdof = actnode->dof[j];
          if (actdof>=numeq_total) continue;
          dvnorm += DSQR(actnode->sol_increment.a.da[3][j]  \
@@ -1380,17 +1380,17 @@ case fnst_L2: /* L_2 norm */
       if (actdof>=numeq_total) continue;
       dpnorm += DSQR(actnode->sol_increment.a.da[3][predof]  \
 	            -actnode->sol_increment.a.da[1][predof]);
-       pnorm += DSQR(actnode->sol_increment.a.da[3][predof]);                
+       pnorm += DSQR(actnode->sol_increment.a.da[3][predof]);
    } /* end of loop over nodes */
    dvnorm = sqrt(dvnorm);
     vnorm = sqrt( vnorm);
    dpnorm = sqrt(dpnorm);
-    pnorm = sqrt( pnorm);   
+    pnorm = sqrt( pnorm);
 break;
 /*----------------------------------------------------------------------*/
 default:
    dserror("unknown norm for steady state check!\n");
-} /* end of switch(fdyn->stnorm) */  
+} /* end of switch(fdyn->stnorm) */
 
 /*---------------------------------------------- check for "ZERO-field" */
 if (vnorm<EPS5)
@@ -1409,7 +1409,7 @@ if (pnorm<EPS5)
 *prat = dpnorm/pnorm;
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -1421,11 +1421,11 @@ return;
 
 <pre>                                                         genk 05/02
 
-in this routine the solution at postion 'from' in the nodal solution 
-history is copied to the positon 'to'.	
+in this routine the solution at postion 'from' in the nodal solution
+history is copied to the positon 'to'.
 The pressure is transformed from kinematic to real pressure
-			     
-</pre>     
+
+</pre>
 \param *actfield      FIELD	     (i)  actual field
 \param  disnum        INT	     (i)  number of the discr.
 \param  arrayfrom     INT	     (i)  index of the "from-array"
@@ -1433,18 +1433,18 @@ The pressure is transformed from kinematic to real pressure
 \param  from          INT            (i)  place in "from-array"
 \param  to            INT            (i)  place in "to-array"
 \param  numdf         INT            (i)  number of dofs -> 2D or 3D probl.
-\return void 
+\return void
 \sa fluid_init()
 
 ------------------------------------------------------------------------*/
-void fluid_sol_copy(       
+void fluid_sol_copy(
                           FIELD             *actfield,
 			  INT                disnum,
 			  INT                arrayfrom,
-			  INT                arrayto,  
-                          INT                from,     
-		          INT                to,       
-		          INT                numdf      
+			  INT                arrayto,
+                          INT                from,
+		          INT                to,
+		          INT                numdf
 		  )
 {
 INT         i,j;	/* simply some counters				*/
@@ -1456,13 +1456,13 @@ ELEMENT    *actele;	/* actual element				*/
 DISCRET    *actdis;
 ARRAY      *arrayf,*arrayt;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_sol_copy");
 #endif
 
-predof=numdf-1;  
+predof=numdf-1;
 
-/* since different materials are not allowed  one can work with the 
+/* since different materials are not allowed  one can work with the
    material parameters of any element ---------------------------------*/
 actele = &(actfield->dis[disnum].element[0]);
 dens  = mat[actele->mat-1].m.fluid->density;
@@ -1485,7 +1485,7 @@ for (i=0; i<actdis->numnp; i++)
    break;
    case 3:
       arrayf = &(actnode->sol_mf);
-   break;   
+   break;
    default:
       arrayf = NULL;
       dserror("Only 0,1,2,3 allowed for arrayfrom to select sol, sol_increment, sol_residual, sol_mf");
@@ -1504,7 +1504,7 @@ for (i=0; i<actdis->numnp; i++)
    break;
    case 3:
       arrayt = &(actnode->sol_mf);
-   break;      
+   break;
    default:
       arrayt = NULL;
       dserror("Only 0,1,2,3 allowed for arrayfrom to select sol, sol_increment, sol_residual, sol_mf");
@@ -1521,15 +1521,15 @@ for (i=0; i<actdis->numnp; i++)
       amredef(arrayt,arrayt->fdim+max+1,arrayt->sdim,"DA");
    }
    for (j=0;j<arrayf->sdim;j++)
-      arrayt->a.da[to][j] = arrayf->a.da[from][j];  
+      arrayt->a.da[to][j] = arrayf->a.da[from][j];
    /*----------------------------------------------- transform pressure */
-   arrayt->a.da[to][predof]*=dens;    
+   arrayt->a.da[to][predof]*=dens;
 } /* end of loop over nodes */
 
 
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -1542,34 +1542,34 @@ return;
 <pre>                                                         genk 05/02
 
 in this routine the pressure is transformed in the solution history.
-  
+
   index = 0: actnode->sol
   index = 1: actnode->sol_increment
   index = 2: actnode->sol_residual
   index = 3: actnode->sol_mf
-  
+
   option = 0: kinematic pressure -> real pressure
   option = 1: real pressure -> kinematic pressure
-  
+
   (kintematic pressure) = (real pressure)/density
-			     
-</pre>     
+
+</pre>
 \param *actfield      FIELD	     (i)  actual field
 \param  disnum        INT	     (i)  number of the discr.
 \param  index         INT	     (i)  index of the array
 \param  actpos        INT            (i)  position where to transform
 \param  predof        INT            (i)  postion of pressure dof
-\return void 
+\return void
 \sa
 
 ------------------------------------------------------------------------*/
-void fluid_transpres(       
+void fluid_transpres(
                           FIELD             *actfield,
 			  INT                disnum,
 			  INT                index,
 			  INT                actpos,
                           INT                predof,
-			  INT                option     
+			  INT                option
 		    )
 {
 INT         i;		/* simply some counters				*/
@@ -1579,11 +1579,11 @@ ELEMENT    *actele;	/* actual element				*/
 DISCRET    *actdis;	/* actual discretisation			*/
 ARRAY      *array;	/* pointer to solution array			*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_transpres");
 #endif
 
-/* since different materials are not allowed  one can work with the 
+/* since different materials are not allowed  one can work with the
    material parameters of any element ---------------------------------*/
 actele = &(actfield->dis[disnum].element[0]);
 dens  = mat[actele->mat-1].m.fluid->density;
@@ -1606,7 +1606,7 @@ for (i=0; i<actdis->numnp; i++)
    break;
    case 3:
       array = &(actnode->sol_mf);
-   break;   
+   break;
    default:
       array = NULL;
       dserror("Only 0,1,2,3 allowed for index to select sol, sol_increment, sol_residual, sol_mf");
@@ -1629,7 +1629,7 @@ for (i=0; i<actdis->numnp; i++)
 
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -1642,25 +1642,25 @@ return;
 
 <pre>                                                         genk 05/02
 
-in this routine the convergence ratios for the steady state check are 
+in this routine the convergence ratios for the steady state check are
 calculated and the result is printed to the screen.
-			     
-</pre> 
+
+</pre>
 \param *actfield      FIELD	     (i)  actual field
 \param  numeq_total   INT	     (i)  total number of equations
-\return INT steady  
+\return INT steady
 
 ------------------------------------------------------------------------*/
 INT fluid_steadycheck(
-                          FIELD             *actfield,   
-		          INT                numeq_total 
+                          FIELD             *actfield,
+		          INT                numeq_total
 		     )
 {
 INT         steady=0;   /* flag for steady state                        */
 DOUBLE      vrat,prat;  /* vel. & pres. ratios                          */
 FILE       *out = allfiles.out_out;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_steadycheck");
 #endif
 
@@ -1673,10 +1673,10 @@ fluid_norm(actfield,numeq_total,&vrat,&prat);
 if (par.myrank==0)
 {
    fprintf(out,"---------------------------------------------------\n");
-   switch (fdyn->stnorm) 
-   {  
+   switch (fdyn->stnorm)
+   {
    case fnst_Linf:
-      printf("   --> steady state check   (tolerance[norm]):  %10.3E [L_in] \n",  
+      printf("   --> steady state check   (tolerance[norm]):  %10.3E [L_in] \n",
 	        fdyn->sttol);
    break;
    case fnst_L1:
@@ -1695,15 +1695,15 @@ if (par.myrank==0)
    printf("         velocities: %10.3E	   pressures:   %10.3E  \n",vrat,prat);
    fprintf(out," - steady state check:    %10.3E   %10.3E |\n",vrat,prat);
 } /* endif (par.myrank) */
-/* check if the ratios are smaller than the given tolerance and set flag */	  
-if (vrat<fdyn->sttol && prat<fdyn->sttol)    
+/* check if the ratios are smaller than the given tolerance and set flag */
+if (vrat<fdyn->sttol && prat<fdyn->sttol)
 {
    steady=1;
    if (par.myrank==0)
    {
       printf("\n");
       printf("    >>>>>> STEADY STATE REACHED <<<<<< \n");
-      printf("\n");      
+      printf("\n");
       fprintf(out,"    >>>>>> STEADY STATE REACHED <<<<<<\n");
    }
 }
@@ -1712,7 +1712,7 @@ if (par.myrank==0)
 
 /*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -1726,30 +1726,30 @@ return (steady);
 
 in this routine the iteration convergence ratios are compared with
 the given tolerance. The result is printed out to the screen.
-			     
-</pre> 
+
+</pre>
 \param  vrat          DOUBLE  	     (i)  vel. conv. ratio
 \param  prat          DOUBLE         (i)  pres. conv. ratio
 \param  grat          DOUBLE         (i)  grid. conv. ratio
 \param	itnum 	      INT	     (i)  actual numb. of iter steps
 \param	te 	      DOUBLE	     (i)  time for element calcul.
 \param	ts	      DOUBLE	     (i)  solver time
-\return INT converged  
+\return INT converged
 
 ------------------------------------------------------------------------*/
 INT fluid_convcheck(
-                          DOUBLE             vrat,  
+                          DOUBLE             vrat,
 		          DOUBLE             prat,
-			  DOUBLE             grat,  
-                          INT                itnum, 
-		          DOUBLE             te,    
-		          DOUBLE             ts     
+			  DOUBLE             grat,
+                          INT                itnum,
+		          DOUBLE             te,
+		          DOUBLE             ts
 		   )
 {
 FILE       *out = allfiles.out_out;
 INT         converged=0;  /* flag for convergence check                  */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_convcheck");
 #endif
 
@@ -1758,23 +1758,23 @@ fdyn = alldyn[genprob.numff].fdyn;
 if (fdyn->itnorm!=fncc_no)
 {
    if (par.myrank==0) /* output to the screen */
-   { 
+   {
       switch(fdyn->itnorm)
       {
       case fncc_Linf: /* infinity norm */
-         printf("|  %3d/%3d   | %10.3E[L_in]  | %10.3E   | %10.3E   | {te: %10.3E} {ts:%10.3E} \n", 
+         printf("|  %3d/%3d   | %10.3E[L_in]  | %10.3E   | %10.3E   | {te: %10.3E} {ts:%10.3E} \n",
                  itnum,fdyn->itemax,fdyn->ittol,vrat,prat,te,ts);
       break;
       case fncc_L1: /* L_1 norm */
-         printf("|  %3d/%3d   | %10.3E[L_1 ]  | %10.3E   | %10.3E   | {te: %10.3E} {ts:%10.3E} \n", 
+         printf("|  %3d/%3d   | %10.3E[L_1 ]  | %10.3E   | %10.3E   | {te: %10.3E} {ts:%10.3E} \n",
               itnum,fdyn->itemax,fdyn->ittol,vrat,prat,te,ts);
       break;
       case fncc_L2: /* L_2 norm */
-         if (fdyn->freesurf>1)    
-         printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | {te: %10.3E} {ts:%10.3E} \n", 
+         if (fdyn->freesurf>1)
+         printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | {te: %10.3E} {ts:%10.3E} \n",
                  itnum,fdyn->itemax,fdyn->ittol,vrat,prat,grat,te,ts);
          else
-	 printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | {te: %10.3E} {ts:%10.3E} \n", 
+	 printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | {te: %10.3E} {ts:%10.3E} \n",
                  itnum,fdyn->itemax,fdyn->ittol,vrat,prat,te,ts);
       break;
       default:
@@ -1790,11 +1790,11 @@ if (fdyn->itnorm!=fncc_no)
    {
       if (fdyn->freesurf>1)
       printf("------------------------------------------------------------------------------- \n");
-      else      
-      printf("---------------------------------------------------------------- \n"); 
-      printf("|          >>>>>> not converged in itemax steps!               | \n");         
+      else
       printf("---------------------------------------------------------------- \n");
-      fprintf(out,"%5d | %10.3E | %2d | %10.3E | %10.3E |\n", 
+      printf("|          >>>>>> not converged in itemax steps!               | \n");
+      printf("---------------------------------------------------------------- \n");
+      fprintf(out,"%5d | %10.3E | %2d | %10.3E | %10.3E |\n",
           fdyn->step,fdyn->acttime,itnum,vrat,prat);
       fprintf(out,"not converged in itemax steps\n");
    }
@@ -1802,28 +1802,28 @@ if (fdyn->itnorm!=fncc_no)
    {
       if (fdyn->freesurf>1)
       printf("------------------------------------------------------------------------------- \n");
-      else      
-      printf("---------------------------------------------------------------- \n"); 
+      else
+      printf("---------------------------------------------------------------- \n");
       printf("\n");
-      fprintf(out,"%5d | %10.3E | %2d | %10.3E | %10.3E |\n", 
+      fprintf(out,"%5d | %10.3E | %2d | %10.3E | %10.3E |\n",
           fdyn->step,fdyn->acttime,itnum,vrat,prat);
    }
 } /* endif (fdyn->itchk) */
-else 
+else
 {
-   if (par.myrank==0) 
-   {      
-      printf("      iteration step: %3d / %3d \n",  
-                              itnum, fdyn->itemax) ;          
+   if (par.myrank==0)
+   {
+      printf("      iteration step: %3d / %3d \n",
+                              itnum, fdyn->itemax) ;
       if(itnum==fdyn->itemax)
       {
-	 printf("----------------------------------------------------------------- \n"); 
-         printf("\n");   
+	 printf("----------------------------------------------------------------- \n");
+         printf("\n");
       }
    }
-} /* endif (par.myrank) */   
+} /* endif (par.myrank) */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -1836,15 +1836,15 @@ return (converged);
 <pre>                                                         genk 05/02
 
 time-integration parameters are printed out to the screen
-			     
-</pre> 
-\return void 
+
+</pre>
+\return void
 
 ------------------------------------------------------------------------*/
 void fluid_algoout( void )
 {
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_algoout");
 #endif
 
@@ -1857,7 +1857,7 @@ switch(fdyn->iop)
 case 1:
    printf("TIME: %11.4E/%11.4E  DT = %11.4E  Generalised-Alpha1  STEP = %4d/%4d \n",
           fdyn->acttime,fdyn->maxtime,fdyn->dta,fdyn->step,fdyn->nstep);
-break;                  
+break;
 case 4:
    printf("TIME: %11.4E/%11.4E  DT = %11.4E  One-Step-Theta  STEP = %4d/%4d \n",
           fdyn->acttime,fdyn->maxtime,fdyn->dta,fdyn->step,fdyn->nstep);
@@ -1865,13 +1865,13 @@ break;
 case 7:
    printf("TIME: %11.4E/%11.4E  DT = %11.4E     BDF2         STEP = %4d/%4d \n",
           fdyn->acttime,fdyn->maxtime,fdyn->dta,fdyn->step,fdyn->nstep);
-break;         
+break;
 default:
    dserror("parameter out of range: IOP\n");
 } /* end of swtich(fdyn->iop) */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -1885,11 +1885,11 @@ return;
 shearstress is calcuted within a parellel loop over the elements.
 So the result is not available on all procs. Here they are reduced by
 MPI to all procs!
-			     
-</pre>   
-\param *actintra          INTRA         (i)   
+
+</pre>
+\param *actintra          INTRA         (i)
 \param *actfield          FIELD         (i)   the actual field
-\return void 
+\return void
 
 ------------------------------------------------------------------------*/
 void fluid_reduceshstr(INTRA             *actintra,
@@ -1901,14 +1901,14 @@ INT      i;
 NODE    *actnode;
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_reduceshstr");
 #endif
 
 fdyn = alldyn[genprob.numff].fdyn;
 
 /*------------------------------------------- get total number of nodes */
-numnp_total = actfield->dis[0].numnp;  
+numnp_total = actfield->dis[0].numnp;
 for (i=0; i<numnp_total; i++) /* loop nodes */
 {
    actnode = &(actfield->dis[0].node[i]);
@@ -1918,11 +1918,11 @@ for (i=0; i<numnp_total; i++) /* loop nodes */
    if (FABS(actnode->x[0]-fdyn->coord_scale[0])<EPS7 && FABS(actnode->x[1]-fdyn->coord_scale[1])<EPS15)
    MPI_Bcast(&(fdyn->washvel),1,MPI_DOUBLE,actnode->proc,
              actintra->MPI_INTRA_COMM);
-} 
+}
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
-dstrc_exit(); 
+#ifdef DEBUG
+dstrc_exit();
 #endif
 
 #endif
@@ -1936,11 +1936,11 @@ return;
 shearstress is calcuted within a parellel loop over the elements.
 So the result is not available on all procs. Here they are reduced by
 MPI to all procs!
-			     
-</pre>   
-\param *actintra         INTRA           (i)   
+
+</pre>
+\param *actintra         INTRA           (i)
 \param *actfield	       FIELD           (i)    the actual field
-\return void 
+\return void
 
 ------------------------------------------------------------------------*/
 void fluid_nullshstr(INTRA             *actintra,
@@ -1954,7 +1954,7 @@ INT      myrank,imyrank;
 NODE    *actnode;
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_nullshstr");
 #endif
 
@@ -1963,7 +1963,7 @@ fdyn = alldyn[genprob.numff].fdyn;
 /*------------------------------------------- get total number of nodes */
 myrank = par.myrank;
 imyrank= actintra->intra_rank;
-numnp_total = actfield->dis[0].numnp;  
+numnp_total = actfield->dis[0].numnp;
 
 if (imyrank!=0 || myrank!=0)
 for (i=0; i<actfield->dis[0].numnp; i++)
@@ -1973,7 +1973,7 @@ for (i=0; i<actfield->dis[0].numnp; i++)
 }
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -1988,21 +1988,21 @@ return;
 fluid stresses are calcuted within a parellel loop over the elements.
 So the results are not available on all procs. Here they are reduced by
 MPI to all procs!
-			     
-</pre>   
-\param *actintra         INTRA           (i)   
+
+</pre>
+\param *actintra         INTRA           (i)
 \param *actfield	 FIELD           (i)    the actual field
-\param *actsolv          SOLVAR          (i)    the actual solver variables 
+\param *actsolv          SOLVAR          (i)    the actual solver variables
 \param  numdf            INT             (i)    number of fluid dofs
 \param  flag             INT             (i)    a flag
-\return void 
+\return void
 
 ------------------------------------------------------------------------*/
-void fluid_reducestress(  
+void fluid_reducestress(
                           INTRA             *actintra,
                           PARTITION         *actpart,
                           FIELD             *actfield,
-			  INT                numdf, 
+			  INT                numdf,
 			  FLUID_STRESS       str
 		       )
 {
@@ -2021,7 +2021,7 @@ static ARRAY    recvbuffer_a;
 ELEMENT *actele;
 GNODE   *actgnode;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_reducestress");
 #endif
 
@@ -2048,11 +2048,11 @@ if (index_a.Typ!= cca_IV)
             if (actgnode->mfcpnode[genprob.numsf]==NULL) continue;
             index[actele->Id_loc]=coupled;
             coupled++;
-            break;    
+            break;
          } /* end of loop over nodes */
       }
    break;
-#endif       
+#endif
    default:
       dserror("str not valid for reduction\n");
    } /* end switch */
@@ -2086,7 +2086,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    numnp=actele->numnp;
    /*------------------------------------------- set buffer and dim */
 #ifdef D_FLUID2
-   if (numdf==3)    
+   if (numdf==3)
    {
       start=coupled*MAXNOD*3;
       for (j=0;j<numnp;j++)
@@ -2119,16 +2119,16 @@ for (i=0; i<actpart->pdis[0].numele; i++)
 /*------------------------------------------------------ allreduce the vector */
 MPI_Allreduce(buffer,recvbuffer,dim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
 
-/* now recbuffer contains all stresses, which have to be distrubuted to the 
+/* now recbuffer contains all stresses, which have to be distrubuted to the
    elements */
 for(i=0;i<numele_total;i++) /* loop elements */
 {
-   actele=&(actfield->dis[0].element[i]);  
+   actele=&(actfield->dis[0].element[i]);
    coupled=index[actele->Id_loc];
    if (coupled==-1) continue; /* no stress reduction */
    numnp=actele->numnp;
 #ifdef D_FLUID2
-   if (numdf==3)    
+   if (numdf==3)
    {
       start=coupled*MAXNOD*3;
       for (j=0;j<numnp;j++)
@@ -2159,27 +2159,27 @@ for(i=0;i<numele_total;i++) /* loop elements */
 } /* end of loop over all elements */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 #endif
 return;
 } /* end of fluid_reducestress*/
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief calculating errors for beltrami and kim-moin
 
 <pre>                                                         mn 02/04
 
-In this routine different velocity and pressure error norms for the 
+In this routine different velocity and pressure error norms for the
 beltramii and kim-moin flow are calculated.
-			     
-</pre>   
+
+</pre>
 \param *actfield      FIELD          (i)   actual field
 \param  index         INT            (i)   index for type of flow
                                            index = 1: beltrami
                                            index = 2: kim-moin
-\return void 
+\return void
 
 ------------------------------------------------------------------------*/
 void fluid_cal_error(
@@ -2220,7 +2220,7 @@ void fluid_cal_error(
   INT            numeq_total;
   FLUID_DYNAMIC *fdyn;                /* pointer to fluid dyn. inp.data   */
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("fluid_cal_error");
 #endif
 
@@ -2251,8 +2251,8 @@ void fluid_cal_error(
         x1   = actnode->x[0];
         x2   = actnode->x[1];
         x3   = actnode->x[2];
-        /* calculate analytical values */ 	 
-        p    = -a*a/2 * ( exp(2*a*x1) + exp(2*a*x2) + exp(2*a*x3) 
+        /* calculate analytical values */
+        p    = -a*a/2 * ( exp(2*a*x1) + exp(2*a*x2) + exp(2*a*x3)
             + 2 * sin(a*x1 + d*x2) * cos(a*x3 + d*x1) * exp(a*(x2+x3))
             + 2 * sin(a*x2 + d*x3) * cos(a*x1 + d*x2) * exp(a*(x3+x1))
             + 2 * sin(a*x3 + d*x1) * cos(a*x2 + d*x3) * exp(a*(x1+x2)) )
@@ -2276,7 +2276,7 @@ void fluid_cal_error(
         actdof = actnode->dof[predof];
         if (actdof>=numeq_total) continue;
         dpinorm = DMAX(dpinorm,FABS(actnode->sol_increment.a.da[3][predof] - p));
-        pinorm = DMAX( pinorm,FABS(p));                
+        pinorm = DMAX( pinorm,FABS(p));
 
 
         /* L1 norm */
@@ -2291,13 +2291,13 @@ void fluid_cal_error(
         actdof = actnode->dof[predof];
         if (actdof>=numeq_total) continue;
         dp1norm += FABS(actnode->sol_increment.a.da[3][predof] - p);
-        p1norm += FABS(p);                
+        p1norm += FABS(p);
 
 
-        /* L_2 norm */   
+        /* L_2 norm */
         actnode=&(actfield->dis[0].node[i]);
         for (j=0;j<numvel;j++) /* loop vel-dofs */
-        { 
+        {
           actdof = actnode->dof[j];
           if (actdof>=numeq_total) continue;
           dv2norm += pow(actnode->sol_increment.a.da[3][j] - u[j],2);
@@ -2307,7 +2307,7 @@ void fluid_cal_error(
         actdof = actnode->dof[predof];
         if (actdof>=numeq_total) continue;
         dp2norm += pow(actnode->sol_increment.a.da[3][predof] - p,2);
-        p2norm += pow(p,2);                
+        p2norm += pow(p,2);
 
       } /* end ol LOOP all nodes */
 
@@ -2315,7 +2315,7 @@ void fluid_cal_error(
       dv2norm = sqrt(dv2norm);
       v2norm = sqrt( v2norm);
       dp2norm = sqrt(dp2norm);
-      p2norm = sqrt( p2norm);   
+      p2norm = sqrt( p2norm);
 
 
       /* check for "ZERO-field" */
@@ -2389,7 +2389,7 @@ void fluid_cal_error(
         t      = fdyn->acttime;
         x1   = actnode->x[0];
         x2   = actnode->x[1];
-        /* calculate analytical values */ 	 
+        /* calculate analytical values */
         p      = -1.0/4.0 * ( cos(2.0*a*PI*x1) + cos(2.0*a*PI*x2) ) * exp(-4.0*a*a*PI*PI*t*visc);
         u[0]   = - cos(a*PI*x1) * sin(a*PI*x2) * exp(-2.0*a*a*PI*PI*t*visc);
         u[1]   = + sin(a*PI*x1) * cos(a*PI*x2) * exp(-2.0*a*a*PI*PI*t*visc);
@@ -2406,7 +2406,7 @@ void fluid_cal_error(
         actdof = actnode->dof[predof];
         if (actdof>=numeq_total) continue;
         dpinorm = DMAX(dpinorm,FABS(actnode->sol_increment.a.da[3][predof] - p));
-        pinorm = DMAX( pinorm,FABS(p));                
+        pinorm = DMAX( pinorm,FABS(p));
 
 
         /* L1 norm */
@@ -2421,13 +2421,13 @@ void fluid_cal_error(
         actdof = actnode->dof[predof];
         if (actdof>=numeq_total) continue;
         dp1norm += FABS(actnode->sol_increment.a.da[3][predof] - p);
-        p1norm += FABS(p);                
+        p1norm += FABS(p);
 
 
-        /* L_2 norm */   
+        /* L_2 norm */
         actnode=&(actfield->dis[0].node[i]);
         for (j=0;j<numvel;j++) /* loop vel-dofs */
-        { 
+        {
           actdof = actnode->dof[j];
           if (actdof>=numeq_total) continue;
           dv2norm += pow(actnode->sol_increment.a.da[3][j] - u[j],2);
@@ -2437,7 +2437,7 @@ void fluid_cal_error(
         actdof = actnode->dof[predof];
         if (actdof>=numeq_total) continue;
         dp2norm += pow(actnode->sol_increment.a.da[3][predof] - p,2);
-        p2norm += pow(p,2);                
+        p2norm += pow(p,2);
 
       } /* end ol LOOP all nodes */
 
@@ -2445,7 +2445,7 @@ void fluid_cal_error(
       dv2norm = sqrt(dv2norm);
       v2norm = sqrt( v2norm);
       dp2norm = sqrt(dp2norm);
-      p2norm = sqrt( p2norm);   
+      p2norm = sqrt( p2norm);
 
 
       /* check for "ZERO-field" */
@@ -2508,9 +2508,9 @@ void fluid_cal_error(
       dserror("Unknown type of flow for error calculation");
       break;
   }
-  
+
   /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 

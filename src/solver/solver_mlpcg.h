@@ -16,16 +16,16 @@ Maintainer: Michael Gee
 #ifndef SOLVER_MLPCG_H
 #define SOLVER_MLPCG_H
 
-/*! 
-\addtogroup MLPCG 
+/*!
+\addtogroup MLPCG
 *//*! @{ (documentation module open)*/
 
 /*!------------------------------------------------------------------------
 \brief presmoother enum
 
-m.gee 9/02  
+m.gee 9/02
 
-presmoother enum       
+presmoother enum
 
 -------------------------------------------------------------------------*/
 typedef enum _MLPCG_PRESMOOTH
@@ -38,9 +38,9 @@ typedef enum _MLPCG_PRESMOOTH
 /*!------------------------------------------------------------------------
 \brief presmoother enum
 
-m.gee 9/02  
+m.gee 9/02
 
-postmoother enum       
+postmoother enum
 
 -------------------------------------------------------------------------*/
 typedef enum _MLPCG_POSTMOOTH
@@ -53,9 +53,9 @@ typedef enum _MLPCG_POSTMOOTH
 /*!------------------------------------------------------------------------
 \brief coarsesolver enum
 
-m.gee 9/02  
+m.gee 9/02
 
-coarsesolver enum       
+coarsesolver enum
 
 -------------------------------------------------------------------------*/
 typedef enum _MLPCG_COARSESOLVE
@@ -70,9 +70,9 @@ typedef enum _MLPCG_COARSESOLVE
 /*!------------------------------------------------------------------------
 \brief variables needed by the MLPCG solver
 
-m.gee 9/02  
+m.gee 9/02
 
-variables needed by the MLPCG solver       
+variables needed by the MLPCG solver
 
 -------------------------------------------------------------------------*/
 typedef struct _MLPCGVARS
@@ -99,9 +99,9 @@ struct _PARTDISCRET    *partdis;     /*!< warning: this is a pointer to the part
 /*!------------------------------------------------------------------------
 \brief one level of the multilevel preconditioner
 
-m.gee 6/01  
+m.gee 6/01
 
-one level of the multilevel preconditioner       
+one level of the multilevel preconditioner
 
 -------------------------------------------------------------------------*/
 typedef struct _MLLEVEL
@@ -123,14 +123,14 @@ struct _DBCSR          *P;           /*!< the prolongator from this level+1 to t
 /*!------------------------------------------------------------------------
 \brief one level of the multilevel preconditioner
 
-m.gee 6/01  
+m.gee 6/01
 
-one level of the multilevel preconditioner       
+one level of the multilevel preconditioner
 
 -------------------------------------------------------------------------*/
 typedef struct _AGG
 {
-INT                     nblock;      /*!<  number of blocks in this aggregate */          
+INT                     nblock;      /*!<  number of blocks in this aggregate */
 INT                   **block;       /*!<  list of dof-blocks, which belong to this aggregate */
 INT                     numdf;       /*!<  number of dofs of this aggregate */
 INT                    *dof;         /*!<  dofs of the aggregate's supernode */
@@ -150,9 +150,9 @@ enum
 /*!------------------------------------------------------------------------
 \brief the ml preconditioner
 
-m.gee 6/01  
+m.gee 6/01
 
-this structure holds the complete ml preconditioner       
+this structure holds the complete ml preconditioner
 
 -------------------------------------------------------------------------*/
 typedef struct _MLPRECOND
@@ -180,17 +180,17 @@ ARRAY                   H;
 /*!------------------------------------------------------------------------
 \brief the ml solver
 
-m.gee 6/01  
+m.gee 6/01
 
-this structure holds everything for the ml-cg algorithm       
+this structure holds everything for the ml-cg algorithm
 
 -------------------------------------------------------------------------*/
 typedef struct _MLSOLVER
 {
 DOUBLE                     tol;         /*!< tolerance for the cg algorithm */
 INT                        maxiter;     /*!< max number of iterations for the cg algorithm */
-struct _ARRAY              r;           /*!< iterate vector of the cg-algorithm */     
-struct _ARRAY              runscale;    /*!< unscaled residuum */     
+struct _ARRAY              r;           /*!< iterate vector of the cg-algorithm */
+struct _ARRAY              runscale;    /*!< unscaled residuum */
 struct _ARRAY              z;           /*!< iterate vector of the cg-algorithm */
 struct _ARRAY              p;           /*!< iterate vector of the cg-algorithm */
 struct _ARRAY              q;           /*!< iterate vector of the cg-algorithm */

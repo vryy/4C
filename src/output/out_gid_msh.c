@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -41,7 +41,7 @@ extern struct _GENPROB     genprob;
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -67,7 +67,7 @@ INT           tot_numnp;
 
 INT           is_firstmesh;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("out_gid_msh");
 #endif
 /*----------------------------------------------------------------------*/
@@ -208,13 +208,13 @@ for (i=0; i<genprob.numfld; i++)
    {
       fprintf(out,"#-------------------------------------------------------------------------------\n");
       if (actgid->is_shell9_4_22) /*2x2 gp*/
-      {   
+      {
        fprintf(out,"# MESH %s FOR FIELD %s SHELL9 2x2x2 GP\n",actgid->shell9_4_22_name,actgid->fieldname);
        fprintf(out,"#-------------------------------------------------------------------------------\n");
        fprintf(out,"MESH %s DIMENSION 3 ELEMTYPE Hexahedra NNODE 8\n",actgid->shell9_4_22_name);
       }
       else if (actgid->is_shell9_4_33) /*3x3 gp*/
-      {   
+      {
        fprintf(out,"# MESH %s FOR FIELD %s SHELL9 3x3x3 GP\n",actgid->shell9_4_33_name,actgid->fieldname);
        fprintf(out,"#-------------------------------------------------------------------------------\n");
        fprintf(out,"MESH %s DIMENSION 3 ELEMTYPE Hexahedra NNODE 8\n",actgid->shell9_4_33_name);
@@ -225,7 +225,7 @@ for (i=0; i<genprob.numfld; i++)
          is_firstmesh=0;
          fprintf(out,"# printout ALL nodal coordinates of ALL fields in first mesh only\n");
          fprintf(out,"COORDINATES\n");
-         
+
          if (ioflags.struct_stress_gid_smo == 0 ) s9_out_gid_allcoords_unsmo(out,4);    /*unsmoothed stresses to gid*/
          if (ioflags.struct_stress_gid_smo == 1 ) s9_out_gid_allcoords(out,4);          /*  smoothed stresses to gid*/
 
@@ -378,7 +378,7 @@ for (i=0; i<genprob.numfld; i++)
          fprintf(out,"END COORDINATES\n");
       }
       /*------------------------------------------------ print elements */
-      /* gid shows Hex20 as Hex with eight nodes only, 
+      /* gid shows Hex20 as Hex with eight nodes only,
                                                so the output is reduced */
       fprintf(out,"ELEMENTS\n");
       for (j=0; j<actfield->dis[0].numele; j++)
@@ -454,7 +454,7 @@ for (i=0; i<genprob.numfld; i++)
       fprintf(out,"END ELEMENTS\n");
    }
 
-   
+
 
    if (actgid->is_fluid2_xfem_22)
    {
@@ -818,7 +818,7 @@ for (i=0; i<genprob.numfld; i++)
    }
 
 
-/*---------------------------------------------------------fh 06/02------*/     
+/*---------------------------------------------------------fh 06/02------*/
    if (actgid->is_wall1_11)
    {
       fprintf(out,"#-------------------------------------------------------------------------------\n");
@@ -882,7 +882,7 @@ for (i=0; i<genprob.numfld; i++)
 
 
    if (actgid->is_wall1_33)
-   {  
+   {
       /*- NNODE is only checked for first element,if you use different wall-types this will be a problem -*/
       firstele = &(actfield->dis[0].element[0]);
       fprintf(out,"#-------------------------------------------------------------------------------\n");
@@ -912,7 +912,7 @@ for (i=0; i<genprob.numfld; i++)
       fprintf(out,"END ELEMENTS\n");
    }
 
-/*---------------------------------------------------------fh 05/03------*/     
+/*---------------------------------------------------------fh 05/03------*/
    if (actgid->is_beam3_21)
    {
       fprintf(out,"#-------------------------------------------------------------------------------\n");
@@ -944,7 +944,7 @@ for (i=0; i<genprob.numfld; i++)
 
 
    if (actgid->is_beam3_22)
-   {  
+   {
       /*- NNODE is only checked for first element,if you use different wall-types this will be a problem -*/
       firstele = &(actfield->dis[0].element[0]);
       fprintf(out,"#-------------------------------------------------------------------------------\n");
@@ -1006,7 +1006,7 @@ for (i=0; i<genprob.numfld; i++)
 
 
    if (actgid->is_beam3_33)
-   {  
+   {
       /*- NNODE is only checked for first element,if you use different wall-types this will be a problem -*/
       firstele = &(actfield->dis[0].element[0]);
       fprintf(out,"#-------------------------------------------------------------------------------\n");
@@ -1036,7 +1036,7 @@ for (i=0; i<genprob.numfld; i++)
       fprintf(out,"END ELEMENTS\n");
    }
 
-/*----------------------------------------------------------------------*/       
+/*----------------------------------------------------------------------*/
    if (actgid->is_axishell)
    {
       fprintf(out,"#-------------------------------------------------------------------------------\n");
@@ -1065,7 +1065,7 @@ for (i=0; i<genprob.numfld; i++)
       }
       fprintf(out,"END ELEMENTS\n");
    }
-/*----------------------------------------------------------------------*/       
+/*----------------------------------------------------------------------*/
    if (actgid->is_interf_22)
    {
       firstele = &(actfield->dis[0].element[0]);
@@ -1126,7 +1126,7 @@ for (i=0; i<genprob.numfld; i++)
       }
       fprintf(out,"END ELEMENTS\n");
    }
-/*----------------------------------------------------------------------*/       
+/*----------------------------------------------------------------------*/
    if (actgid->is_wallge_22)
    {
       firstele = &(actfield->dis[0].element[0]);
@@ -1156,7 +1156,7 @@ for (i=0; i<genprob.numfld; i++)
       }
       fprintf(out,"END ELEMENTS\n");
    }
-/*----------------------------------------------------------------------*/       
+/*----------------------------------------------------------------------*/
    if (actgid->is_wallge_33)
    {
       firstele = &(actfield->dis[0].element[0]);
@@ -1187,11 +1187,11 @@ for (i=0; i<genprob.numfld; i++)
       fprintf(out,"END ELEMENTS\n");
    }
 
-   
+
 } /* end of (i=0; i<genprob.numfld; i++) */
 /*----------------------------------------------------------------------*/
 fflush(out);
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1208,7 +1208,7 @@ void out_gid_allcoords(FILE *out)
 INT           i,j;
 FIELD        *actfield;
 NODE         *actnode;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("out_gid_allcoords");
 #endif
 /*---------------------------------------------------- loop over fields */
@@ -1240,7 +1240,7 @@ for (i=0; i<genprob.numfld; i++)
    }
 }/* end of (i=0; i<genprob.numfld; i++) */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Michael Gee
@@ -38,7 +38,7 @@ DOUBLE       a3[3];
 ARRAY        collaverdir_a;
 DOUBLE     **collaverdir;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8init");
 #endif
 /*----------------------------------------------------------------------*/
@@ -119,10 +119,10 @@ for (i=0; i<actfield->dis[0].numnp; i++)
 }/* end of loop over all nodes */
 /*----------------------------------------------------------------------*/
 amdel(&collaverdir_a);
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of s8init */
 #endif
- 
+

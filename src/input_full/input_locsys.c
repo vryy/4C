@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Steffen Genkinger
@@ -25,7 +25,7 @@ static void inpdesign_vol_locsys(void);
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -44,20 +44,20 @@ extern struct _DESIGN *design;
  *----------------------------------------------------------------------*/
 INT            numlocsys;
 struct _LOCSYS *locsys;
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief input local co-ordinate system
 
 <pre>                                                         genk 04/04
-			     
+
 </pre>
-\return void                                               
-                                 
+\return void
+
 ------------------------------------------------------------------------*/
 void inp_cond_locsys()
 {
 INT  ierr;
 INT  i;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inp_cond_locsys");
 #endif
 
@@ -116,25 +116,25 @@ inpdesign_surf_locsys();
 inpdesign_vol_locsys();
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of inp_cond_locsys */
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief input local co-ordinate system
 
 <pre>                                                         genk 04/04
 
 read the local co-system from the input file. The so defined system has
  to be cartesian up to now!
-			     
+
 </pre>
 \param   *string     char           string to find
-\param    actnum     INT            
-\return void                                               
-                                 
+\param    actnum     INT
+\return void
+
 ------------------------------------------------------------------------*/
 static void inp_read_locsys(char *string, INT actnum)
 {
@@ -146,7 +146,7 @@ DOUBLE   *xloc, *yloc, *zloc;
 LOCSYS   *actlocsys;
 DLINE    *actdline1, *actdline2;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inp_read_locsys");
 #endif
 /*----------------------------------------------------------------------*/
@@ -168,14 +168,14 @@ xloc=amdef("xloc",&actlocsys->xloc,3,1,"DV");
 yloc=amdef("yloc",&actlocsys->yloc,3,1,"DV");
 zloc=amdef("zloc",&actlocsys->zloc,3,1,"DV");
 
-/*--------------------------------------------------- read typ of locsys */   
+/*--------------------------------------------------- read typ of locsys */
 frchk("None",&ierr);
-if (ierr==1) 
+if (ierr==1)
 {
    actlocsys->locsystyp = locsys_none;
 }
 frchk("BASEVEC",&ierr);
-if (ierr==1) 
+if (ierr==1)
 {
    actlocsys->locsystyp = locsys_basevec;
 
@@ -186,9 +186,9 @@ if (ierr==1)
    frdouble_n("XLOC",xloc,3,&ierr);
    frdouble_n("YLOC",yloc,3,&ierr);
    frdouble_n("ZLOC",zloc,3,&ierr);
-}   
+}
 frchk("LINEPLANE",&ierr);
-if (ierr==1) 
+if (ierr==1)
 {
    actlocsys->locsystyp = locsys_line_plane;
    /* in this case the system is created through a given DLine and a plane:
@@ -212,7 +212,7 @@ if (ierr==1)
       }
    }
    if (actdline1==NULL)
-      dserror("error reading locsys\n");   
+      dserror("error reading locsys\n");
    frchk("LX_PXY",&ierr);
    if (ierr==1)
    {
@@ -239,7 +239,7 @@ if (ierr==1)
       dserror("error reading locsys: given plane not implemented yet!\n");
 }
 frchk("LINELINE",&ierr);
-if (ierr==1) 
+if (ierr==1)
 {
    actlocsys->locsystyp = locsys_line_line;
    /* in this case the system is created through two given DLines which
@@ -278,7 +278,7 @@ if (ierr==1)
       dserror("locsys via LINEDZ not implemented yet\n");
    if (actdline1==NULL || actdline2==NULL)
       dserror("error reading locsys: none or only one LineID given\n");
-      
+
    /*--------------------------------------------------- x-base vector */
    for (i=0;i<3;i++)
       xloc[i] = actdline1->dnode[1]->x[i] - actdline1->dnode[0]->x[i];
@@ -296,8 +296,8 @@ if (ierr==1)
 {
    /* this co-sys type allows to define normal and tangential BCs along
       a curved line (see Gresho & Sani "Incompressible Flow and the
-      Finite Element Method (chapter 3.13.1 e) 
-      The co-sys is defined by the normal and tangent at the points - 
+      Finite Element Method (chapter 3.13.1 e)
+      The co-sys is defined by the normal and tangent at the points -
       this has to be done later                                        */
    actlocsys->locsystyp = locsys_fmc;
    goto end;
@@ -327,31 +327,31 @@ if (FABS(zloc[0]-(xloc[1]*yloc[2] - xloc[2]*yloc[1]))
 
 /*------------------------------------------ store the direction cosini */
 actlocsys->lXx=xloc[0];
-actlocsys->lXy=yloc[0];  
+actlocsys->lXy=yloc[0];
 actlocsys->lXz=zloc[0];
 actlocsys->lYx=xloc[1];
-actlocsys->lYy=yloc[1];  
+actlocsys->lYy=yloc[1];
 actlocsys->lYz=zloc[1];
 actlocsys->lZx=xloc[2];
-actlocsys->lZy=yloc[2]; 
+actlocsys->lZy=yloc[2];
 actlocsys->lZz=zloc[2];
-   
+
 /*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of inp_read_locsys */
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief input local co-ordinate system
 
 <pre>                                                         genk 04/04
-			     
+
 </pre>
-\return void                                               
-                                 
+\return void
+
 ------------------------------------------------------------------------*/
 static void inpdesign_nodal_locsys()
 {
@@ -362,7 +362,7 @@ INT    dnodeId;
 char  *colptr;
 DNODE *actdnode;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpdesign_nodal_locsys");
 #endif
 
@@ -388,7 +388,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    actdnode=NULL;
    for (i=0; i<design->ndnode; i++)
    {
-      if (design->dnode[i].Id ==  dnodeId) 
+      if (design->dnode[i].Id ==  dnodeId)
       {
          actdnode = &(design->dnode[i]);
          break;
@@ -405,21 +405,21 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 
 /*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of inpdesign_nodal_locsys */
 
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief input local co-ordinate system
 
 <pre>                                                         genk 04/04
-			     
+
 </pre>
-\return void                                               
-                                 
+\return void
+
 ------------------------------------------------------------------------*/
 static void inpdesign_line_locsys()
 {
@@ -430,7 +430,7 @@ INT    dlineId;
 char  *colptr;
 DLINE *actdline;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpdesign_line_locsys");
 #endif
 
@@ -456,7 +456,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    actdline=NULL;
    for (i=0; i<design->ndline; i++)
    {
-      if (design->dline[i].Id ==  dlineId) 
+      if (design->dline[i].Id ==  dlineId)
       {
          actdline = &(design->dline[i]);
          break;
@@ -473,21 +473,21 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 
 /*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of inpdesign_line_locsys */
 
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief input local co-ordinate system
 
 <pre>                                                         genk 04/04
-			     
+
 </pre>
-\return void                                               
-                                 
+\return void
+
 ------------------------------------------------------------------------*/
 static void inpdesign_surf_locsys()
 {
@@ -498,7 +498,7 @@ INT    dsurfId;
 char  *colptr;
 DSURF *actdsurf;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpdesign_surf_locsys");
 #endif
 
@@ -524,7 +524,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    actdsurf=NULL;
    for (i=0; i<design->ndsurf; i++)
    {
-      if (design->dsurf[i].Id ==  dsurfId) 
+      if (design->dsurf[i].Id ==  dsurfId)
       {
          actdsurf = &(design->dsurf[i]);
          break;
@@ -541,20 +541,20 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 
 /*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of inpdesign_surf_locsys */
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief input local co-ordinate system
 
 <pre>                                                         genk 04/04
-			     
+
 </pre>
-\return void                                               
-                                 
+\return void
+
 ------------------------------------------------------------------------*/
 static void inpdesign_vol_locsys()
 {
@@ -565,7 +565,7 @@ INT    dvolId;
 char  *colptr;
 DVOL *actdvol;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpdesign_vol_locsys");
 #endif
 
@@ -591,7 +591,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    actdvol=NULL;
    for (i=0; i<design->ndvol; i++)
    {
-      if (design->dvol[i].Id ==  dvolId) 
+      if (design->dvol[i].Id ==  dvolId)
       {
          actdvol = &(design->dvol[i]);
          break;
@@ -608,7 +608,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 
 /*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

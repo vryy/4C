@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Michael Gee
@@ -18,7 +18,7 @@ Maintainer: Michael Gee
  *----------------------------------------------------------------------*/
 void s8_eps(DOUBLE *strain,DOUBLE **gmkovc, DOUBLE **gmkovr)
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_eps");
 #endif
 /*----------------------------------------------------------------------*/
@@ -29,7 +29,7 @@ strain[3] = 0.5*(gmkovc[1][1] - gmkovr[1][1]);
 strain[4] = 0.5*(gmkovc[1][2] - gmkovr[1][2]);
 strain[5] = 0.5*(gmkovc[2][2] - gmkovr[2][2]);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

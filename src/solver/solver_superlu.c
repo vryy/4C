@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -21,7 +21,7 @@ Maintainer: Malte Neumann
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -29,7 +29,7 @@ extern struct _FILES  allfiles;
 /*----------------------------------------------------------------------*
  |  control solver lib SuperLU_MPI                       m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void solver_psuperlu_ucchb( 
+void solver_psuperlu_ucchb(
                       struct _SOLVAR         *actsolv,
                       struct _INTRA          *actintra,
                       struct _UCCHB          *ucchb,
@@ -45,15 +45,15 @@ INT            nprow;
 INT            npcol;
 INT            imyrank;
 INT            inprocs;
-DOUBLE         berr[1]; 
+DOUBLE         berr[1];
 
 PSUPERLUVARS  *psuperluvar;
 ARRAY          b_a;
 DOUBLE        *b;
 ARRAY          tmp_a;
 DOUBLE        *tmp;
- 
-#ifdef DEBUG 
+
+#ifdef DEBUG
 dstrc_enter("solver_psuperlu_ucchb");
 #endif
 /*----------------------------------------------------------------------*/
@@ -106,9 +106,9 @@ case 1:
    case 34: dserror("Number of procs in INTRA_COMM not supported, choose other"); break;
    case 35: nprow=7;   npcol=5; break;
    case 36: nprow=6;   npcol=6; break;
-   default:     
+   default:
         dserror("Number of procs in INTRA_COMM not supported, choose other"); break;
-   } 
+   }
    superlu_gridinit(actintra->MPI_INTRA_COMM,nprow,npcol,&(ucchb->grid));
    /*---- make a backup copy of xa and asub, because they could be destroyed */
    /*                                                        during solution */
@@ -117,7 +117,7 @@ case 1:
    am_alloc_copy(&(ucchb->asub),&(ucchb->asub_perm_backup));
    am_alloc_copy(&(ucchb->xa),&(ucchb->xa_perm_backup));
    /*--------------------------------- allocate and set the matrix structure */
-   dCreate_CompCol_Matrix(&(ucchb->A), 
+   dCreate_CompCol_Matrix(&(ucchb->A),
                           ucchb->numeq_total,
                           ucchb->numeq_total,
                           ucchb->nnz_total,
@@ -132,7 +132,7 @@ case 1:
    LUstructInit(ucchb->numeq_total,ucchb->numeq_total,&(ucchb->LUstruct));
    /*------------------------------------------------------- Init statistics */
    PStatInit(&(ucchb->stat));
-   /* set flag, that this matrix has been initialized and is ready for solve */   
+   /* set flag, that this matrix has been initialized and is ready for solve */
    ucchb->is_init    = 1;
    ucchb->ncall      = 0;
    ucchb->is_factored = 0;
@@ -155,10 +155,10 @@ case 0:
    for (i=0; i<rhs->numeq; i++)
    {
       dof      = ucchb->update.a.iv[i];
-      tmp[dof] = rhs->vec.a.dv[i]; 
+      tmp[dof] = rhs->vec.a.dv[i];
    }
    /*--------------------------------------------- allreduce rhs vector */
-   #ifdef PARALLEL 
+   #ifdef PARALLEL
    MPI_Allreduce(tmp,b,ucchb->numeq_total,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
    #endif
    amdel(&tmp_a);
@@ -167,7 +167,7 @@ case 0:
    {
       ucchb->options.Fact = FACTORED;
       amcopy(&(ucchb->asub_perm_backup),&(ucchb->asub));
-      amcopy(&(ucchb->xa_perm_backup),&(ucchb->xa));           
+      amcopy(&(ucchb->xa_perm_backup),&(ucchb->xa));
    }
    else/*-------------------------- matrix has not been factored before */
    {
@@ -203,25 +203,25 @@ case 0:
                                               ucchb->LUstruct.Llu->bufmax[2],
                                               ucchb->LUstruct.Llu->bufmax[3],
                                               ucchb->LUstruct.Llu->bufmax[4]);
-   fflush(allfiles.out_err);*/                                          
+   fflush(allfiles.out_err);*/
    /*---------------------------------------------- check for breakdown */
-   if (info) 
+   if (info)
    {
       printf("WARNING: Numerical Breakdown occured in call to SuperLU_MPI\n");
       printf("         results may be nonsense, continue....\n");
       fprintf(allfiles.out_err,"WARNING: Numerical Breakdown occured in call to SuperLU_MPI\n");
       fprintf(allfiles.out_err,"         results may be nonsense, continue....\n");
       fflush(stdout);
-   }       
+   }
    /* this solution could have permuted the row and column vectors asub */
    /* and xa. For the assembly routines it is necessary to have the     */
    /* original unpermuted vectors. So the vectors are overwritten here  */
    /* the backup-copy of them, which was built in the init phase of     */
-   /* this routine                                                      */ 
+   /* this routine                                                      */
    amcopy(&(ucchb->asub),&(ucchb->asub_perm_backup));
-   amcopy(&(ucchb->xa),&(ucchb->xa_perm_backup));           
+   amcopy(&(ucchb->xa),&(ucchb->xa_perm_backup));
    amcopy(&(ucchb->asub_backup),&(ucchb->asub));
-   amcopy(&(ucchb->xa_backup),&(ucchb->xa));           
+   amcopy(&(ucchb->xa_backup),&(ucchb->xa));
    /*---------- set flag, that this matrix is factored and count solves */
    ucchb->ncall++;
    ucchb->is_factored=1;
@@ -239,10 +239,10 @@ break;
 /*----------------------------------------------------------------------*/
 default:
    dserror("Unknown option for solver call to SuperLU");
-break;   
+break;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

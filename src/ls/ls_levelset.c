@@ -50,8 +50,8 @@ extern struct  _SOLVAR         *solv;
 
 <pre>                                                         m.gee 8/00
 -the partition of one proc (all discretizations)
--the type is in partition.h                                                  
-</pre> 
+-the type is in partition.h
+</pre>
 
 *----------------------------------------------------------------------*/
 extern struct _PARTITION      *partition;
@@ -66,7 +66,7 @@ extern struct _IO_FLAGS        ioflags;
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -99,8 +99,8 @@ static INT             actsysarray = 0;  /* number of actual sysarray        */
 
 static DOUBLE          lrat;
 static DOUBLE          t1,ts,te;
-static DOUBLE          tes = ZERO;     
-static DOUBLE          tss = ZERO;     
+static DOUBLE          tes = ZERO;
+static DOUBLE          tss = ZERO;
 static FIELD          *actfield;         /* pointer to active field          */
 static SOLVAR         *actsolv;          /* pointer to active sol. structure */
 static PARTITION      *actpart;          /* pointer to active partition      */
@@ -128,13 +128,13 @@ extended finite element problem
 *----------------------------------------------------------------------*/
 void ls_levelset(
   INT     eflag
-  )      
+  )
 {
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("ls_levelset");
 #endif
 /*----------------------------------------------------------------------*/
-  
+
   switch (eflag)
   {
 /*----------------------------------------- initialize levelset problem */
@@ -152,17 +152,17 @@ void ls_levelset(
 /*--------------------------------------------------------------- clean */
       case 99:
         ls_levelset_clea();
-        break;                
+        break;
 /*------------------------------------------------------------- default */
       default:
         dserror("action unknown\n");
   }
-  
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of ls_fluid */
 
@@ -180,7 +180,7 @@ void ls_levelset_init()
 {
   INT     i;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("ls_levelset_init");
 #endif
 /*----------------------------------------------------------------------*/
@@ -200,7 +200,7 @@ void ls_levelset_init()
    * if we are not parallel, we have to allocate an alibi
    * intra-communicator structure
    */
-#ifdef PARALLEL 
+#ifdef PARALLEL
   actintra    = &(par.intra[numls]);
 #else
   actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
@@ -231,7 +231,7 @@ void ls_levelset_init()
   actsolv->nrhs = 1;
   solserv_create_vec(&(actsolv->rhs),actsolv->nrhs,numeq_total,numeq,"DV");
   solserv_zero_vec(&(actsolv->rhs[0]));
-  /* allocate 1 dist. solution */		       
+  /* allocate 1 dist. solution */
   actsolv->nsol= 1;
   solserv_create_vec(&(actsolv->sol),actsolv->nsol,numeq_total,numeq,"DV");
   solserv_zero_vec(&(actsolv->sol[0]));
@@ -268,7 +268,7 @@ void ls_levelset_init()
 #endif
   for (i=0;i<par.nprocs;i++)
     if (par.myrank==i)
-      printf("PROC  %3d | FIELD LEVELSET     | number of equations      : %10d \n", 
+      printf("PROC  %3d | FIELD LEVELSET     | number of equations      : %10d \n",
              par.myrank,numeq);
 #ifdef PARALLEL
   MPI_Barrier(actintra->MPI_INTRA_COMM);
@@ -276,12 +276,12 @@ void ls_levelset_init()
   if (par.myrank==0)
     printf("          | FIELD LEVELSET     | total number of equations: %10d \n",numeq_total);
   if (par.myrank==0) printf("\n\n");
-       
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of ls_levelset_init */
 
@@ -300,19 +300,19 @@ void ls_levelset_solv()
   INT        itnum;
   INT        converged;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("ls_levelset_solv");
 #endif
 /*----------------------------------------------------------------------*/
 
   /* S O L U T I O N    P H A S E */
-  
+
   /*
    * nodal solution history levelset field =>
    * sol_increment[0][j] ... solution at time (n)
    * sol_increment[1][j] ... solution at time (n+1)
    */
-  
+
   /*
     there are only procs allowed in here, that belong to the levelset
     intracommunicator (in case of nonlinear levelset dyn., this should be all)
@@ -324,7 +324,7 @@ void ls_levelset_solv()
   ls_setdirich(actfield,lsdyn,1);
   /* initialise timerhs */
   amzero(&ftimerhs_a);
-  
+
   if (lsdyn->itchk!=0 && par.myrank==0)
   {
     printf("|------------------------------------------------|\n");
@@ -333,7 +333,7 @@ void ls_levelset_solv()
   itnum=1;
   lsdyn->nif = 1;
   /* N O N L I N E A R   I T E R A T I O N */
- nonlniter: 
+ nonlniter:
   /* intitialise global matrix and global rhs */
   solserv_zero_vec(&(actsolv->rhs[0]));
   solserv_zero_vec(&(actsolv->sol[0]));
@@ -360,7 +360,7 @@ void ls_levelset_solv()
     );
   lsdyn->nif = 0;
   te=ds_cputime()-t1;
-  tes+=te;	     
+  tes+=te;
   /*
    * build the actual rhs-vector =>
    * rhs = ftimerhs + fiterhs
@@ -411,12 +411,12 @@ void ls_levelset_solv()
     itnum++;
     goto nonlniter;
   }
-  
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of ls_levelset_solv */
 
@@ -432,7 +432,7 @@ finalization of sub-problem level set
 *----------------------------------------------------------------------*/
 void ls_levelset_fina()
 {
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("ls_levelset_fina");
 #endif
 /*----------------------------------------------------------------------*/
@@ -440,12 +440,12 @@ void ls_levelset_fina()
   /* F I N A L I Z E */
   /* copy solution from sol_increment[1][j] to sol_increment[0][j] */
   solserv_sol_copy(actfield,0,1,1,1,0);
-  
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of ls_levelset_fina */
 
@@ -462,7 +462,7 @@ end of sub-problem level set
 void ls_levelset_clea()
 {
   INT     i;
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("ls_levelset_clea");
 #endif
 /*----------------------------------------------------------------------*/
@@ -482,29 +482,29 @@ void ls_levelset_clea()
     if (par.myrank==i)
     {
       printf("\n");
-      printf("PROC  %3d | FIELD LEVELSET     | total time element for calculations: %10.3E \n", 
+      printf("PROC  %3d | FIELD LEVELSET     | total time element for calculations: %10.3E \n",
              par.myrank,tes);
-      printf("PROC  %3d | FIELD LEVELSET     | total time for solver              : %10.3E \n", 
+      printf("PROC  %3d | FIELD LEVELSET     | total time for solver              : %10.3E \n",
              par.myrank,tss);
     }
   }
 #ifdef PARALLEL
   MPI_Barrier(actintra->MPI_INTRA_COMM);
 #endif
-  /* tidy up */   
+  /* tidy up */
   amdel(&ftimerhs_a);
   amdel(&fiterhs_a);
   solserv_del_vec(&(actsolv->rhs),actsolv->nrhs);
   solserv_del_vec(&(actsolv->sol),actsolv->nsol);
-#ifndef PARALLEL 
+#ifndef PARALLEL
   CCAFREE(actintra);
 #endif
-  
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of ls_levelset_clea */
 /*! @} (documentation module close)*/

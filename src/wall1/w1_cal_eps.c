@@ -16,8 +16,8 @@ Maintainer: Andrea Hund
 #include "wall1.h"
 #include "wall1_prototypes.h"
 
-/*! 
-\addtogroup WALL1 
+/*!
+\addtogroup WALL1
 *//*! @{ (documentation module open)*/
 
 /*----------------------------------------------------------------------*
@@ -31,12 +31,12 @@ void w1_eps( DOUBLE   *disd,
 /*----------------------------------------------------------------------*/
 INT i;
 DOUBLE u11, u12, u21, u22, u33;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_eps");
 #endif
 /*----------------------------------------------------------------------*/
   for (i=0; i<4; i++) eps[i] = 0.0;
-  
+
   u11 = disd[0];
   u22 = disd[1];
   u12 = disd[2];
@@ -49,7 +49,7 @@ dstrc_enter("w1_eps");
   {
     eps[3] = 0.;
   }
-  
+
   if(wtype==rotat_symmet)
   {
     u33 = disd[4];
@@ -61,7 +61,7 @@ dstrc_enter("w1_eps");
     eps[3] = u33;
   }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

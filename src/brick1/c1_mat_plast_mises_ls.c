@@ -2,7 +2,7 @@
 \file
 \brief contains the routine c1mate, c1radg, c1matpg, c1pushf, c1elpag,
                             c1_mat_plast_mises_ls to perfom a stress
-                            update and to evaluate the algorithmic 
+                            update and to evaluate the algorithmic
                             tangent ( Mises-plasticity, large strain)
 
 <pre>
@@ -19,12 +19,12 @@ Maintainer: Andreas Lipka
 #include "brick1.h"
 #include "brick1_prototypes.h"
 
-/*! 
-\addtogroup BRICK1 
+/*!
+\addtogroup BRICK1
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief routines for mises plasticity with respect to large strains 
+\brief routines for mises plasticity with respect to large strains
 
 <pre>                                                              al 06/02
 This routine evaluates the material tangent for a hyberelastic
@@ -37,10 +37,10 @@ material law (Simo/Pister).
 \param   bmu    DOUBLE   (i) factor to speed up
 \param   sig2   DOUBLE   (i) equivalent stress
 \param   *devn  DOUBLE*  (i) deviator stresses
-\param   **d    DOUBLE** (i) material matrix  
+\param   **d    DOUBLE** (i) material matrix
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1elpag()
 *----------------------------------------------------------------------*/
 void c1mate(
@@ -55,7 +55,7 @@ void c1mate(
 INT    i, j;
 DOUBLE a, b, c, f, e, fac;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1mate");
 #endif
 /*----------------------------------------------------------------------*/
@@ -75,7 +75,7 @@ dstrc_enter("c1mate");
   d[2][2] = f + 2.*a + b*2.*devn[2];
   d[3][3] = e + bmu;
   d[4][4] = e + bmu;
-  d[5][5] = e + bmu; 
+  d[5][5] = e + bmu;
 
   d[0][1] = c - a + b*(devn[0]+devn[1]);
   d[0][2] = c - a + b*(devn[0]+devn[2]);
@@ -100,18 +100,18 @@ dstrc_enter("c1mate");
   d[5][1] = b*devn[5];
   d[3][2] = b*devn[3];
   d[4][2] = b*devn[4];
-  d[5][2] = b*devn[5];      
-  
+  d[5][2] = b*devn[5];
+
   fac=1.;
   for (i=0; i<6; i++) {
     for (j=0; j<6; j++) {
       d[i][j] = d[i][j]/fac;
   }}
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
-#endif  
-return; 
+#endif
+return;
 } /* end of c1mate */
 /*!----------------------------------------------------------------------
 \brief routines for radial return for elements with mises material model
@@ -123,17 +123,17 @@ radial return for elements with mises material model.
 Nonlinear Ramberg-Osgood -Hardening law (large def. model).
 
 </pre>
-\param   fhard  DOUBLE    (i) hardening modulus                      
-\param   uniax  DOUBLE    (i) yield stresse                          
-\param   bmu    DOUBLE    (i) factor to speed up                       
-\param   sig2   DOUBLE    (i) equivalent stress                                      
-\param   dhard  DOUBLE*   (i) hardening modulus                      
-\param   dev    DOUBLE*   (i) elastic predicor projected onto yield  
-\param   epstn  DOUBLE*   (i) equivalent uniaxial plastic strain     
-\param   dlam)  DOUBLE*   (i) increment of plastic multiplier        
+\param   fhard  DOUBLE    (i) hardening modulus
+\param   uniax  DOUBLE    (i) yield stresse
+\param   bmu    DOUBLE    (i) factor to speed up
+\param   sig2   DOUBLE    (i) equivalent stress
+\param   dhard  DOUBLE*   (i) hardening modulus
+\param   dev    DOUBLE*   (i) elastic predicor projected onto yield
+\param   epstn  DOUBLE*   (i) equivalent uniaxial plastic strain
+\param   dlam)  DOUBLE*   (i) increment of plastic multiplier
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1elpag()
 *----------------------------------------------------------------------*/
 void c1radg(
@@ -158,7 +158,7 @@ DOUBLE expo  = 0.;
 DOUBLE rlin  = 0.;
 DOUBLE rqua  = 0.;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1radg");
 #endif
 /*---------------------------------------  non-linear hardening rule ---*/
@@ -177,7 +177,7 @@ L500:
   epst = *epstn + ro23* *dlam;
 
 /* new hardening rate and  new uniaxial yield stress */
-  if(rqua!=0.) 
+  if(rqua!=0.)
   {
     if(epst<=alpha){
       *dhard = uniax*(rlin -2.*rqua*epst);
@@ -197,10 +197,10 @@ L500:
      mot = expo-1.;
      fortranpow(&epst,&epsth,&mot);
      *dhard = fhard*expo*epsth;
-     
+
      mot = expo;
      fortranpow(&epst,&epsth,&mot);
-     esig  = ro23*( fhard*epsth );   
+     esig  = ro23*( fhard*epsth );
     }
   }
 
@@ -219,7 +219,7 @@ L500:
 /* check convergence */
 
   if (esig == 0.) goto L500;
-  if ((dum = f / esig, fabs(dum)) > 1e-5) 
+  if ((dum = f / esig, fabs(dum)) > 1e-5)
   {
       if (i > 30) {
           dserror("local iteration exceeds limit");
@@ -231,7 +231,7 @@ L500:
 /* update plastic strain */
 
   *epstn += ro23* (*dlam);
-  if(rqua!=0.) 
+  if(rqua!=0.)
   {
       if(*epstn<=alpha){
         *dhard = uniax*(rlin -2.*rqua*(*epstn));
@@ -248,10 +248,10 @@ L500:
     }
   }
 
-/* new stress state */  
+/* new stress state */
   for (i=0;i<6;i++) dev[i] -= 2.*bmu*(*dlam)*rnorm[i];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -265,7 +265,7 @@ This routine forms the elasto-plastic consistent tangent material tensor.
 Nonlinear Ramberg-Osgood -Hardening law (large def. model).
 
 </pre>
-\param   dlam    DOUBLE  (i) increment of plastic multiplier         
+\param   dlam    DOUBLE  (i) increment of plastic multiplier
 \param   detf    DOUBLE  (i) determinant of jacobian
 \param   rmu     DOUBLE  (i) shear modulus
 \param   rk      DOUBLE  (i) bulk  modulus
@@ -273,23 +273,23 @@ Nonlinear Ramberg-Osgood -Hardening law (large def. model).
 \param   sig2    DOUBLE  (i) equivalent stress
 \param   hard    DOUBLE  (i) hardening modulus
 \param   devn    DOUBLE* (i) deviator stresses
-\param   d       DOUBLE**(o)  material matrix to be calculated       
+\param   d       DOUBLE**(o)  material matrix to be calculated
 
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1elpag()
 
 *----------------------------------------------------------------------*/
 void c1matpg(
-             DOUBLE dlam,   
+             DOUBLE dlam,
              DOUBLE detf,
              DOUBLE rk,
              DOUBLE bmu,
              DOUBLE sig2,
              DOUBLE hard,
              DOUBLE *devn,
-             DOUBLE **d)    
+             DOUBLE **d)
 {
 /*----------------------------------------------------------------------*/
 INT i, j;
@@ -298,7 +298,7 @@ DOUBLE rn2[6];
 DOUBLE drn2[6];
 DOUBLE aux[6][6];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1matpg");
 #endif
 /*----------------------------------------------------------------------*/
@@ -323,14 +323,14 @@ dstrc_enter("c1matpg");
   d[2][2] = f + (2.*a + b*2.*devn[2])*(1.-b1);
   d[3][3] = e + bmu*(1.-b1);
   d[4][4] = e + bmu*(1.-b1);
-  d[5][5] = e + bmu*(1.-b1); 
+  d[5][5] = e + bmu*(1.-b1);
 
   d[0][1] = c + ( - a + b*(devn[0]+devn[1]))*(1.-b1);
   d[0][2] = c + ( - a + b*(devn[0]+devn[2]))*(1.-b1);
   d[1][0] = c + ( - a + b*(devn[0]+devn[1]))*(1.-b1);
   d[2][0] = c + ( - a + b*(devn[0]+devn[2]))*(1.-b1);
   d[1][2] = c + ( - a + b*(devn[1]+devn[2]))*(1.-b1);
-  d[2][1] = c + ( - a + b*(devn[1]+devn[2]))*(1.-b1); 
+  d[2][1] = c + ( - a + b*(devn[1]+devn[2]))*(1.-b1);
   d[0][3] = b*devn[3]*(1.-b1);
   d[0][4] = b*devn[4]*(1.-b1);
   d[0][5] = b*devn[5]*(1.-b1);
@@ -348,7 +348,7 @@ dstrc_enter("c1matpg");
   d[5][1] = b*devn[5]*(1.-b1);
   d[3][2] = b*devn[3]*(1.-b1);
   d[4][2] = b*devn[4]*(1.-b1);
-  d[5][2] = b*devn[5]*(1.-b1);  
+  d[5][2] = b*devn[5]*(1.-b1);
 
   for (i=0; i<6; i++) {
     for (j=0; j<6; j++) {
@@ -370,7 +370,7 @@ dstrc_enter("c1matpg");
   drn2[2] = rn2[2] - trrn2;
   drn2[3] =  rn2[3];
   drn2[4] =  rn2[4];
-  drn2[5] =  rn2[5];         
+  drn2[5] =  rn2[5];
 
   for (i=0; i<6; i++) {
     for (j=0; j<6; j++) {
@@ -383,10 +383,10 @@ dstrc_enter("c1matpg");
       d[i][j] = d[i][j]/fac + 2.*sig2*(b1-1./b0)*(1./2.)*(aux[i][j]+aux[j][i])/fac;
   }}
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
-#endif  
-return; 
+#endif
+return;
 } /* end of c1matpg */
 /*!----------------------------------------------------------------------
 \brief routines performs a push forward(deformations)/pull-back(stresses)
@@ -397,27 +397,27 @@ This routine performs a push forward(deformations)/pull-back(stresses)
                    (large def. model).
 
 </pre>
-\param   be     DOUBLE*  (i) left Cauchy green         
+\param   be     DOUBLE*  (i) left Cauchy green
 \param   bet    DOUBLE*  (i) return tensor
 \param   fn     DOUBLE*  (i) deformation gradien
 
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1elpag()
 
 *----------------------------------------------------------------------*/
 void c1pushf(
-            DOUBLE *be,   
-            DOUBLE *bet,  
+            DOUBLE *be,
+            DOUBLE *bet,
             DOUBLE *fn
-            )   
+            )
 {
 /*----------------------------------------------------------------------*/
 INT dim3 = 3;
 DOUBLE fb[9],bbe[9],fc[9],fa[9];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1pushf");
 #endif
 /*----------------------------------------------------------------------*/
@@ -453,10 +453,10 @@ dstrc_enter("c1pushf");
   bet[4] = fa[7]; /* = fa[2,3] */
   bet[5] = fa[6]; /* = fa[1,3] */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
-#endif  
-return; 
+#endif
+return;
 } /* end of c1pushf */
 /*!----------------------------------------------------------------------
 \brief routines calculates stresses and stress increments
@@ -467,38 +467,38 @@ This routine calculates stresses and stress increments
 for large deformation model.
 
 </pre>
-\param        ym  DOUBLE    (i) young's modulus                     
-\param        pv  DOUBLE    (i) poisson's ratio                   
-\param     uniax  DOUBLE    (i) yield stresse                
-\param     fhard  DOUBLE    (i) hardening modulus            
-\param    stress  DOUBLE*   (o) ele stress (-resultant) vector  
+\param        ym  DOUBLE    (i) young's modulus
+\param        pv  DOUBLE    (i) poisson's ratio
+\param     uniax  DOUBLE    (i) yield stresse
+\param     fhard  DOUBLE    (i) hardening modulus
+\param    stress  DOUBLE*   (o) ele stress (-resultant) vector
 \param        fn  DOUBLE*   (i) deformation gradient
 \param       fni  DOUBLE*   (i) its inverse
 \param      detf  DOUBLE    (i) its determinant
-\param         d  DOUBLE**  (o) material matrix                    
-\param     epstn  DOUBLE*   (i) equivalent uniaxial plastic strain   
-\param      iupd  INT       (i) controls storing of stresses     
-\param       yip  INT       (i) update flag   
+\param         d  DOUBLE**  (o) material matrix
+\param     epstn  DOUBLE*   (i) equivalent uniaxial plastic strain
+\param      iupd  INT       (i) controls storing of stresses
+\param       yip  INT       (i) update flag
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1_mat_plast_mises_ls()
 
 *----------------------------------------------------------------------*/
 void c1elpag(
-             DOUBLE ym,      
-             DOUBLE pv,      
-             DOUBLE uniax,   
-             DOUBLE fhard,   
-             DOUBLE *stress, 
-             DOUBLE *sig,    
-             DOUBLE *fn,     
-             DOUBLE *fni,    
-             DOUBLE detf,    
-             DOUBLE **d,     
-             DOUBLE *epstn,  
-             INT    *iupd,   
-             INT    *yip)    
+             DOUBLE ym,
+             DOUBLE pv,
+             DOUBLE uniax,
+             DOUBLE fhard,
+             DOUBLE *stress,
+             DOUBLE *sig,
+             DOUBLE *fn,
+             DOUBLE *fni,
+             DOUBLE detf,
+             DOUBLE **d,
+             DOUBLE *epstn,
+             INT    *iupd,
+             INT    *yip)
 {
 /*----------------------------------------------------------------------*/
 INT i;
@@ -511,7 +511,7 @@ DOUBLE tau[6];
 DOUBLE dev[6];
 DOUBLE rnorm[6];
 DOUBLE faux[9];
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1elpag");
 #endif
 /*----------------------------------------------------------------------*/
@@ -548,13 +548,13 @@ dstrc_enter("c1elpag");
     dev[3] = rmu * sigf[3];
     dev[4] = rmu * sigf[4];
     dev[5] = rmu * sigf[5];
-    
+
     sig2 = ( dev[0]*dev[0] + dev[1]*dev[1] + dev[2]*dev[2])/2.
              + dev[3]*dev[3] + dev[4]*dev[4] + dev[5]*dev[5];
     sig2*=2.;
     sig2=sqrt(sig2);
 
-    if(rqua!=0.) 
+    if(rqua!=0.)
     {
         if(*epstn<=alpha){
           dhard = uniax*(rlin -2.*rqua*(*epstn));
@@ -564,28 +564,28 @@ dstrc_enter("c1elpag");
     } else {
          if(uniax!=0.){
               dhard = fhard + alpha*(expo*exp(-expo*(*epstn)));
-         }else{ 
+         }else{
               expoh = expo-1.;
               fortranpow(epstn,&epstnh,&expoh);
               dhard = fhard*expo*epstnh;
          }
     }
-    
+
     for (i=0; i<6; i++)
     {
-        if(sig2>0.){ 
+        if(sig2>0.){
           rnorm[i]=dev[i]/sig2;
         } else {
           rnorm[i]=dev[i];
-        } 
+        }
     }
 
 /*--------- yip = 2 ----------------------------------------------------*/
-    if (*yip==1) 
+    if (*yip==1)
     {
-      c1mate (detf,rk,bmu,sig2,rnorm,d); 
+      c1mate (detf,rk,bmu,sig2,rnorm,d);
 /*--------- yip = 2 ----------------------------------------------------*/
-    } else {    
+    } else {
       dlam = 0.;
       c1matpg (dlam,detf,rk,bmu,sig2,dhard,rnorm,d);
     }
@@ -595,7 +595,7 @@ dstrc_enter("c1elpag");
 
     stress[0]=(press + dev[0])/fac;
     stress[1]=(press + dev[1])/fac;
-    stress[2]=(press + dev[2])/fac;      
+    stress[2]=(press + dev[2])/fac;
     stress[3]=dev[3]/fac;
     stress[4]=dev[4]/fac;
     stress[5]=dev[5]/fac;
@@ -605,14 +605,14 @@ dstrc_enter("c1elpag");
   }/*???*/
 /*-------------------------------------------------- yield condition ---*/
 /*------ determine uniaxial yield stress (with non-linear hardening) ---*/
-  if(rqua!=0.) 
+  if(rqua!=0.)
   {
     if((*epstn)<=alpha){
       yld = sq23*uniax*(1. + rlin*(*epstn) -rqua*(*epstn)*(*epstn));
     }else{
       yld = sq23*uniax*(fhard*expo + rlin*(*epstn) -rqua*(*epstn)*(*epstn))/expo;
     }
-  } 
+  }
   else
   {
     if(uniax!=0.) {
@@ -621,7 +621,7 @@ dstrc_enter("c1elpag");
       fortranpow(epstn,&epstnh,&expo);
       yld = sq23*(fhard*epstnh);
     }
-  } 
+  }
 
 /*-----------------------------------------------------------------------|
 |   for large strains:                                                   |
@@ -653,14 +653,14 @@ dstrc_enter("c1elpag");
   ft = sig2 - yld;
   for (i=0; i<6; i++)
   {
-    if(sig2>0.){ 
+    if(sig2>0.){
       rnorm[i]=dev[i]/sig2;
     }else{
       rnorm[i]=dev[i];
-    } 
-  } 
+    }
+  }
 /*-------------------------------------------------- yield condition ---*/
-  if (ft<=tol) 
+  if (ft<=tol)
   {
 /*------------- state of stress within yield surface - E L A S T I C ---*/
     *yip=1;
@@ -681,7 +681,7 @@ dstrc_enter("c1elpag");
 
   stress[0]=(press + dev[0])/fac;
   stress[1]=(press + dev[1])/fac;
-  stress[2]=(press + dev[2])/fac;      
+  stress[2]=(press + dev[2])/fac;
   stress[3]=dev[3]/fac;
   stress[4]=dev[4]/fac;
   stress[5]=dev[5]/fac;
@@ -709,14 +709,14 @@ dstrc_enter("c1elpag");
 /*----------------------------------------------------------------------*/
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of c1elpag */
 /*----------------------------------------------------------------------*/
 /*!----------------------------------------------------------------------
-\brief routines calculates constitutive matrix - forces - plastic large strain 
+\brief routines calculates constitutive matrix - forces - plastic large strain
 - von Mises - 3D.
 
 <pre>                                                              al 06/02
@@ -724,24 +724,24 @@ This routine to establish local material law - plastic large strain
        stress-strain law for isotropic material for for a 3D-hex-element.
 
 </pre>
-\param        ym  DOUBLE    (i) young's modulus                     
-\param        pv  DOUBLE    (i) poisson's ratio                   
-\param     alfat  DOUBLE    (i) temperature expansion factor 
-\param     uniax  DOUBLE    (i) yield stresse                
-\param     fhard  DOUBLE    (i) hardening modulus            
-\param       ele  ELEMENT*  (i) actual element               
-\param       bop  DOUBLE**  (i) derivative operator          
-\param        ip  INT       (i) integration point Id                 
-\param    stress  DOUBLE*   (o) ele stress (-resultant) vector  
-\param         d  DOUBLE**  (o) material matrix                    
-\param      disd  DOUBLE*   (i) displacement derivatives     
-\param   g[6][6]  DOUBLE    (i) transformation matrix        
-\param  gi[6][6]  DOUBLE    (i) inverse of g                 
-\param    istore  INT       (i) controls storing of stresses     
-\param    newval  INT       (i) controls eval. of stresses   
+\param        ym  DOUBLE    (i) young's modulus
+\param        pv  DOUBLE    (i) poisson's ratio
+\param     alfat  DOUBLE    (i) temperature expansion factor
+\param     uniax  DOUBLE    (i) yield stresse
+\param     fhard  DOUBLE    (i) hardening modulus
+\param       ele  ELEMENT*  (i) actual element
+\param       bop  DOUBLE**  (i) derivative operator
+\param        ip  INT       (i) integration point Id
+\param    stress  DOUBLE*   (o) ele stress (-resultant) vector
+\param         d  DOUBLE**  (o) material matrix
+\param      disd  DOUBLE*   (i) displacement derivatives
+\param   g[6][6]  DOUBLE    (i) transformation matrix
+\param  gi[6][6]  DOUBLE    (i) inverse of g
+\param    istore  INT       (i) controls storing of stresses
+\param    newval  INT       (i) controls eval. of stresses
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1_mat_plast_mises_ls()
 
 *----------------------------------------------------------------------*/
@@ -752,7 +752,7 @@ void c1_mat_plast_mises_ls(
                         DOUBLE fhard,   /* hardening modulus            */
                         ELEMENT   *ele, /* actual element               */
                         INT ip,         /* integration point Id         */
-                        DOUBLE *stress, /*ele stress (-resultant) vector*/      
+                        DOUBLE *stress, /*ele stress (-resultant) vector*/
                         DOUBLE **d,     /* material matrix              */
                         DOUBLE  *disd,  /* displacement derivatives     */
                         INT istore,     /* controls storing of stresses */
@@ -778,7 +778,7 @@ DOUBLE sigf[6];
 DOUBLE sm;
 DOUBLE expo  = 0.;
 DOUBLE alpha = 0.;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1_mat_plast_mises_ls");
 #endif
 /*----------------------------------------------------------------------*/
@@ -798,7 +798,7 @@ dstrc_enter("c1_mat_plast_mises_ls");
           eps[8]*eps[3]*eps[5] -
           eps[7]*eps[1]*eps[8] -
           eps[5]*eps[6]*eps[0] -
-          eps[2]*eps[3]*eps[4] ); 
+          eps[2]*eps[3]*eps[4] );
 
   for (i=0; i<9; i++)
   { /* aux = (det)^(-1/3) * eps */
@@ -814,13 +814,13 @@ dstrc_enter("c1_mat_plast_mises_ls");
   stress1[3] = rmu * sigf[3];
   stress1[4] = rmu * sigf[4];
   stress1[5] = rmu * sigf[5];
- 
+
   press=det* log(det)*rk;
 
   fac=1.;
   stress1[0]=(press + stress1[0])/fac;
   stress1[1]=(press + stress1[1])/fac;
-  stress1[2]=(press + stress1[2])/fac ;     
+  stress1[2]=(press + stress1[2])/fac ;
 /*-------------------------------------------- evaluate new stresses ---*/
   if(yip>0)
   {
@@ -837,7 +837,7 @@ dstrc_enter("c1_mat_plast_mises_ls");
 /*----------------------------------------------------------------------*/
   if(newval==1)
   {
-    c1elpag(ym, pv, uniax, fhard, stress, sig, disd, disd1, detf, d, &epstn, &iupd, &yip);    
+    c1elpag(ym, pv, uniax, fhard, stress, sig, disd, disd1, detf, d, &epstn, &iupd, &yip);
 
   } else {
     iupd = 0;
@@ -856,7 +856,7 @@ dstrc_enter("c1_mat_plast_mises_ls");
     ele->e.c1->elewa[0].ipwa[ip].yip   = yip  ;
   }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -864,35 +864,35 @@ return;
 /*----------------------------------------------------------------------*/
  #endif
 /*! @} (documentation module close)*/
-       
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

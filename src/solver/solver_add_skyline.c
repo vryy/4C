@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -16,7 +16,7 @@ Maintainer: Malte Neumann
 
 /*----------------------------------------------------------------------*
  | global dense matrices for element routines             m.gee 9/01    |
- | (defined in global_calelm.c, so they are extern here)                |                
+ | (defined in global_calelm.c, so they are extern here)                |
  *----------------------------------------------------------------------*/
 extern struct _ARRAY estif_global;
 extern struct _ARRAY emass_global;
@@ -26,9 +26,9 @@ extern struct _ARRAY emass_global;
 /*!
  \brief assemble into a skyline matrix (original version)
 
- This routine assembles one or two element matrices (estiff_global and 
+ This routine assembles one or two element matrices (estiff_global and
  emass_global) into the global matrices in the skyline format.
-  
+
  \param actpart   *PARTITION    (i)  the partition we are working on
  \param actsolv   *SOLVAR       (i)  the solver we are using
  \param actintra  *INTRA        (i)  the intra-communicator we do not need
@@ -56,7 +56,7 @@ void  add_skyline(
   INT               numeq_total;           /* total number of equations */
   INT               numeq;                 /* number of equations on this proc */
   INT               lm[MAXDOFPERELE];      /* location vector for this element */
-#ifdef PARALLEL 
+#ifdef PARALLEL
   INT               owner[MAXDOFPERELE];   /* the owner of every dof */
 #endif
   INT               myrank;                /* my intra-proc number */
@@ -72,11 +72,11 @@ void  add_skyline(
   INT               distance;
   INT               index;
 
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_enter("add_skyline");
 #endif
-  
+
   /* set some pointers and variables */
   myrank     = actintra->intra_rank;
   nprocs     = actintra->intra_nprocs;
@@ -99,7 +99,7 @@ void  add_skyline(
     for (j=0; j<actele->node[i]->numdf; j++)
     {
       lm[counter]    = actele->node[i]->dof[j];
-#ifdef PARALLEL 
+#ifdef PARALLEL
       owner[counter] = actele->node[i]->proc;
 #endif
       counter++;
@@ -125,7 +125,7 @@ is then allreduced. This makes things very comfortable for the moment.
     if (ii>=numeq_total) continue;
 
     /* check for ownership of row ii */
-#ifdef PARALLEL 
+#ifdef PARALLEL
     if (owner[i]!=myrank) continue;
 #endif
 
@@ -158,7 +158,7 @@ is then allreduced. This makes things very comfortable for the moment.
   }/* end loop over i */
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return;
@@ -185,27 +185,27 @@ ARRAY    recv_a;
 DOUBLE  *recv;
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("redundant_skyline");
 #endif
 /*----------------------------------------------------------------------*/
 /*  NOTE:
           In this routine, for a relatively short time the system matrix
-          exists 2 times. This takes a lot of memory and may be a 
+          exists 2 times. This takes a lot of memory and may be a
           bottle neck!
           In MPI2 there exists a flag for in-place-Allreduce:
-          
+
           MPI_Allreduce(MPI_IN_PLACE,
                         ucchb->a.a.dv,
                         (ucchb->a.fdim)*(ucchb->a.sdim),
                         MPI_DOUBLE,
                         MPI_SUM,
                         actintra->MPI_INTRA_COMM);
-          
+
           But there is no MPI2 in for HP, yet.
 */
 /*----------------------------------------------------------------------*/
-#ifdef PARALLEL 
+#ifdef PARALLEL
 /*----------------------------------------------------------------------*/
 imyrank = actintra->intra_rank;
 inprocs = actintra->intra_nprocs;
@@ -213,7 +213,7 @@ inprocs = actintra->intra_nprocs;
 /*                      (all coupling conditions are done then as well) */
 /*--------------------------------------------------- allocate recvbuff */
 recv = amdef("recv_a",&recv_a,sky1->A.fdim,sky1->A.sdim,"DV");
-/*----------------------------------------------------------- Allreduce */  
+/*----------------------------------------------------------- Allreduce */
 MPI_Allreduce(sky1->A.a.dv,
               recv,
               (sky1->A.fdim)*(sky1->A.sdim),
@@ -224,7 +224,7 @@ MPI_Allreduce(sky1->A.a.dv,
 amcopy(&recv_a,&(sky1->A));
 if (sky2)
 {
-/*----------------------------------------------------------- Allreduce */  
+/*----------------------------------------------------------- Allreduce */
 MPI_Allreduce(sky2->A.a.dv,
               recv,
               (sky2->A.fdim)*(sky2->A.sdim),
@@ -236,9 +236,9 @@ amcopy(&recv_a,&(sky2->A));
 }
 /*----------------------------------------------------- delete recvbuff */
 amdel(&recv_a);
-#endif /*---------------------------------------------- end of PARALLEL */ 
+#endif /*---------------------------------------------- end of PARALLEL */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

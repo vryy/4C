@@ -21,8 +21,8 @@ Maintainer: Andreas Lipka
 #include "../solver/solver.h"
 #include "../headers/optimization.h"
 #include "opt_prototypes.h"
-/*! 
-\addtogroup OPTIMIZATION 
+/*!
+\addtogroup OPTIMIZATION
 *//*! @{ (documentation module open)*/
 
 
@@ -43,7 +43,7 @@ extern struct _FIELD      *field;
 
 <pre>                                                         m.gee 8/00
 -the partition of one proc (all discretizations)
--the type is in partition.h                                                  
+-the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -66,11 +66,11 @@ extern struct _STATIC_VAR  *statvar;
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par;                      
+ extern struct _PAR   par;
 /*----------------------------------------------------------------------*
  | enum _CALC_ACTION                                      m.gee 1/02    |
  | command passed from control routine to the element level             |
@@ -80,7 +80,7 @@ and the type is in partition.h
 extern enum _CALC_ACTION calc_action[MAXFIELD];
 /*!----------------------------------------------------------------------
 \brief the optimization main structure
-<pre>                                                            al 06/01   
+<pre>                                                            al 06/01
 defined in opt_cal_main.c
 </pre>
 *----------------------------------------------------------------------*/
@@ -92,24 +92,24 @@ defined in opt_cal_main.c
  *----------------------------------------------------------------------*/
 void opt_calsta(CALSTA_EXEC stalact)
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("opt_calsta");
 #endif
 /*----------------------------------------------------------------------*/
 
 if (statvar->linear==1 && statvar->nonlinear==1)
    dserror("linear and nonlinear static analysis on");
-   
-if (statvar->linear==1) 
+
+if (statvar->linear==1)
 {
    opt_stalin(stalact);
 }
-if (statvar->nonlinear==1) 
+if (statvar->nonlinear==1)
 {
    opt_stanln(stalact);
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -121,7 +121,7 @@ return;
 /*----------------------------------------------------------------------*
  |  routine to control linear static structural analysis    m.gee 6/01  |
  *----------------------------------------------------------------------*/
-void opt_stalin(CALSTA_EXEC stalact) 
+void opt_stalin(CALSTA_EXEC stalact)
 {
 INT           i;                /* a counter */
 INT           numeq;            /* number of equations on this proc */
@@ -142,7 +142,7 @@ SPARSE_TYP    array_typ;        /* type of psarse system matrix */
 container.isdyn   = 0;            /* static calculation */
 container.actndis = 0;            /* only one discretisation */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("opt_stalin");
 #endif
 /*----------------------------------------------------------------------*/
@@ -155,7 +155,7 @@ container.fieldtyp  = actfield->fieldtyp;
 actsolv     = &(solv[0]);
 actpart     = &(partition[0]);
 action      = &(calc_action[0]);
-#ifdef PARALLEL 
+#ifdef PARALLEL
 actintra    = &(par.intra[0]);
 #else
 actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
@@ -193,7 +193,7 @@ for (i=0; i<actsolv->nsol; i++)
 if(stalact==calsta_init || stalact==calsta_init_solve)
 {
   init=1;
-  solver_control(  
+  solver_control(
                     actsolv,
                     actintra,
                   &(actsolv->sysarray_typ[actsysarray]),
@@ -223,7 +223,7 @@ if(stalact==calsta_init || stalact==calsta_init_solve)
 }
 /*----------------------------------------- write output of mesh to gid */
 if (par.myrank==0&&opt->optstep==0)
-if (ioflags.struct_disp_gid||ioflags.struct_stress_gid) 
+if (ioflags.struct_disp_gid||ioflags.struct_stress_gid)
    out_gid_msh();
 /*------call element routines to calculate & assemble stiffness matrice */
 if(stalact==calsta_init_solve || stalact==calsta_solve)
@@ -240,7 +240,7 @@ if(stalact==calsta_init_solve || stalact==calsta_solve)
 /*-------------------------- the approbiate action is set inside calrhs */
 if(stalact==calsta_init_solve || stalact==calsta_solve)
 {
-  *action = calc_struct_eleload; 
+  *action = calc_struct_eleload;
   container.kstep   = 0;
   container.inherit = 1;
   calrhs(actfield,actsolv,actpart,actintra,actsysarray,
@@ -286,21 +286,21 @@ if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1 && stalact!=ca
    container.dirich       = NULL;
    container.global_numeq = 0;
    container.kstep        = 0;
-   calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,&container,action);   
+   calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,&container,action);
    /*-------------------------- reduce stresses, so they can be written */
    *action = calc_struct_stressreduce;
    container.kstep = 0;
    calreduce(actfield,actpart,actintra,action,&container);
    out_sol(actfield,actpart,actintra,0,0);
-   if (par.myrank==0 && stalact!=calsta_init) 
+   if (par.myrank==0 && stalact!=calsta_init)
    out_gid_sol("stress",actfield,actintra,opt->optstep,0,ZERO);
 }
 /*----------------------------------------------------------------------*/
 end:
-#ifndef PARALLEL 
+#ifndef PARALLEL
 CCAFREE(actintra);
 #endif
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

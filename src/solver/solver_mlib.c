@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -16,12 +16,12 @@ Maintainer: Malte Neumann
 
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
-#include "/opt/mlib/include/veclib.h" 
+#include "/opt/mlib/include/veclib.h"
 /* prototypes */
 /*----------------------------------------------------------------------*
  |  control solver lib MLIB                               al   10/01    |
  *----------------------------------------------------------------------*/
-void solver_mlib( 
+void solver_mlib(
                       struct _SOLVAR         *actsolv,
                       struct _INTRA          *actintra,
                       struct _ML_ARRAY_MDS   *mds,
@@ -45,31 +45,31 @@ void solver_mlib(
   DOUBLE      *vz;
   DOUBLE      *vzh;
   MLVAR        *mlvar;
-  #ifdef DEBUG 
+  #ifdef DEBUG
   dstrc_enter("solver_mlib");
   #endif
 /*----------------------------------------------------------------------*/
-  if(actsolv!=NULL) 
+  if(actsolv!=NULL)
   {
     mlvar = actsolv->mlvar;
     symm = mlvar->symm;
   }
 /*----------------------------------------------------------------------*/
 switch(option)
-{ 
+{
 case 1:/*========================= INITIALIZE THE SPARSE MATRIX PACKAGE */
-  
+
   firstsolve = 1;
   usedmatrix = 0;
-  
+
   mds->output = 6;
   mds->ierr   = 0;
-  
+
   dslein (&mds->numeq,&mlvar->msglvl,&mds->output,mds->global,&mds->ierr);
 
   usymm[0]='S';
   usymm[1]='U';
-  
+
   if(!symm) dslema (usymm,mds->global,&mds->ierr,2);
 /*--------------------------------------- INPUT THE MATRIX STRUCTURE ---*/
   dsleim(&mds->colstr.a.iv[0],&mds->rowind.a.iv[0],mds->global,&mds->ierr);
@@ -108,14 +108,14 @@ case 3:
 break;
 default:
    dserror("Unknown typ of ordering");
-break;   
+break;
 }
 if(mlvar->order>0)   dsleop (order, mds->global, &mds->ierr,mds->numeq);
 /*      IF ( IER .NE. 0 ) GO TO 8000*/
   dsleor (&mlvar->maxzer,mds->global,&mds->ierr);
 break;
 case 2:/*======================= INITIALIZE THE SPARSE MATRIX WITH ZERO */
-  
+
   usedmatrix = 0;
   if(firstsolve==1)
   {
@@ -126,14 +126,14 @@ case 2:/*======================= INITIALIZE THE SPARSE MATRIX WITH ZERO */
   if (!vz)  dserror("Allocation of memory INT 'add_mds' failed");
   vzh = vz;
   for (i=0; i<mds->nnz; i++) *(vzh++) = 0.0;
-  
+
   dslevm (&mds->colstr.a.iv[0],&mds->rowind.a.iv[0]  ,
           vz                  ,mds->global,&mds->ierr);
   CCAFREE(vz);
 break;
 case 0:/*============================================ calculation phase */
 /**/
-  
+
   firstsolve = 2;
 /*-------------- FACTOR THE MATRIX AND ESTIMATE ITS CONDITION NUMBER ---*/
   if(!usedmatrix)
@@ -156,16 +156,16 @@ case 0:/*============================================ calculation phase */
 /*  dslesl(&actsolv->nrhs, &(rhs->vec.a.dv[0]), &mds->numeq,
                                                  mds->global, &mds->ierr);
 */
-  if(mds->ierr!=0) exit; 
+  if(mds->ierr!=0) exit;
 /*-- print additional information, depends on the stage of execution ---*/
    if(mlvar->msglvl==4) dsleps (mds->global);
 break;/*=============================================================== */
 default:
    dserror("Unknown option for solver call to hp's mlib");
-break;   
+break;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

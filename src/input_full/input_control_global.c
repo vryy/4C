@@ -10,7 +10,7 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
-#include "../headers/standardtypes.h" 
+#include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 /*----------------------------------------------------------------------*
  | structures for level set                               irhan 04/04   |
@@ -25,7 +25,7 @@ Maintainer: Malte Neumann
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -49,14 +49,14 @@ extern struct _SOLVAR  *solv;
  | dedfined in global_control.c                                         |
  | ALLDYNA       *alldyn;                                               |
  *----------------------------------------------------------------------*/
-extern ALLDYNA        *alldyn;   
+extern ALLDYNA        *alldyn;
 /*----------------------------------------------------------------------*
  |                                                          al 08/02    |
  | pointer to allocate eigensolution variables                          |
  | dedfined in global_control.c                                         |
  | struct _ALLEIG       *alleig;                                        |
  *----------------------------------------------------------------------*/
-extern ALLEIG              *alleig;   
+extern ALLEIG              *alleig;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate static variables if needed                       |
@@ -74,7 +74,7 @@ extern struct _IO_FLAGS     ioflags;
  | vector of numfld FIELDs, defined in global_control.c                 |
  | struct _FIELD         *field;                                        |
  *----------------------------------------------------------------------*/
-extern struct _FIELD       *field;      
+extern struct _FIELD       *field;
 
 
 /*----------------------------------------------------------------------*
@@ -92,21 +92,21 @@ void inpctr_dyn_ls(LS_DYNAMIC *lsdyn);
 
 void inpctr()
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpctr");
 #endif
 
 /*---------------------------------------------- input of problem title */
    inpctrhed();
 /*--------------------------------------- input of general problem data */
-   inpctrprob(); 
+   inpctrprob();
 /*---------------------------------------- input of general solver data */
    if (genprob.probtyp == prb_fsi)
    {
       if (genprob.numfld!=3) dserror("numfld != 3 for FSI");
-      
+
       solv = (SOLVAR*)CCACALLOC(genprob.numfld,sizeof(SOLVAR));
-      
+
       solv[genprob.numsf].fieldtyp = structure;
       inpctrsol(&(solv[genprob.numsf]));
 
@@ -119,31 +119,31 @@ dstrc_enter("inpctr");
    if (genprob.probtyp == prb_structure)
    {
       if (genprob.numfld!=1) dserror("numfld != 1 for Structural Problem");
-      
+
       solv = (SOLVAR*)CCACALLOC(genprob.numfld,sizeof(SOLVAR));
-      
+
       solv[genprob.numsf].fieldtyp = structure;
       inpctrsol(&(solv[genprob.numsf]));
    }
    if (genprob.probtyp == prb_opt)
    {
       if (genprob.numfld!=1) dserror("numfld != 1 for Structural Problem");
-      
+
       solv = (SOLVAR*)CCACALLOC(genprob.numfld,sizeof(SOLVAR));
-      
+
       solv[0].fieldtyp = structure;
       inpctrsol(&(solv[0]));
    }
-   if (genprob.probtyp == prb_fluid)   
+   if (genprob.probtyp == prb_fluid)
    {
       solv = (SOLVAR*)CCACALLOC(genprob.numfld,sizeof(SOLVAR));
-      
+
       solv[genprob.numff].fieldtyp = fluid;
       inpctrsol(&(solv[genprob.numff]));
-      
+
       if (genprob.numfld==2)
       {
-        solv[genprob.numaf].fieldtyp = ale; 
+        solv[genprob.numaf].fieldtyp = ale;
 	inpctrsol(&(solv[genprob.numaf]));
       }
    }
@@ -160,14 +160,14 @@ dstrc_enter("inpctr");
    if (genprob.probtyp == prb_twophase)
    {
      if (genprob.numfld!=2) dserror("numfld != 2 for Two Phase Fluid Flow Problem");
-     
+
      /* initialize solver object */
      solv = (SOLVAR*)CCACALLOC(genprob.numfld,sizeof(SOLVAR));
 
      /* initialize solver for the fluid field */
      solv[genprob.numff].fieldtyp = fluid;
      inpctrsol(&(solv[genprob.numff]));
-     
+
      /* initialize solver for the levelset field */
      solv[genprob.numls].fieldtyp = levelset;
      inpctrsol(&(solv[genprob.numls]));
@@ -175,18 +175,18 @@ dstrc_enter("inpctr");
    if (genprob.probtyp == prb_levelset)
    {
      if (genprob.numfld!=1) dserror("numfld != 1 for Pure Level Set Problem");
-     
+
      /* initialize solver object */
      solv = (SOLVAR*)CCACALLOC(genprob.numfld,sizeof(SOLVAR));
 
      /* initialize solver for the levelset field */
      solv[genprob.numls].fieldtyp = levelset;
      inpctrsol(&(solv[genprob.numls]));
-   }   
+   }
 #endif
-   
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -203,7 +203,7 @@ void inpctrprob()
 INT  ierr;
 INT  restart;
 char buffer[50];
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpctrprob");
 #endif
 
@@ -238,7 +238,7 @@ ioflags.struct_stress_gid     =0;
 ioflags.struct_stress_gid_smo =0;
 ioflags.fluid_sol_gid         =0;
 ioflags.fluid_stress_gid      =0;
-ioflags.fluid_sol_file        =0; 
+ioflags.fluid_sol_file        =0;
 ioflags.fluid_vis_file        =0;
 ioflags.ale_disp_file         =0;
 ioflags.ale_disp_gid          =0;
@@ -258,9 +258,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
     if (strncmp("Optimisation"               ,buffer,12)==0) genprob.probtyp = prb_opt;
     if (strncmp("Ale"                        ,buffer, 3)==0) genprob.probtyp = prb_ale;
     if (strncmp("Two_Phase_Fluid_Flow"       ,buffer,20)==0) genprob.probtyp = prb_twophase;
-    if (strncmp("Levelset"                   ,buffer, 8)==0) genprob.probtyp = prb_levelset;        
+    if (strncmp("Levelset"                   ,buffer, 8)==0) genprob.probtyp = prb_levelset;
   }
-  
+
 #ifdef D_XFEM
   frchar("ENRONOFF"   ,buffer    ,&ierr);
   if (ierr==1)
@@ -270,8 +270,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
     else
       genprob.xfem_on_off=0;
   }
-#endif  
-  
+#endif
+
   frchar("TIMETYP"   ,buffer,            &ierr);
   if (ierr==1)
   {
@@ -314,13 +314,13 @@ if (genprob.probtyp==prb_twophase)
   /* set field numbers */
   genprob.numfld   = 2;
   genprob.numff    = 0;
-  genprob.numls    = 1;  
+  genprob.numls    = 1;
 }
 if (genprob.probtyp==prb_levelset)
 {
   /* set field numbers */
   genprob.numfld   = 1;
-  genprob.numls    = 0;  
+  genprob.numls    = 0;
 }
 #endif /* D_LS */
 
@@ -370,28 +370,28 @@ if (frfind("---IO")==1)
       if (strncmp(buffer,"yes",3)==0) ioflags.fluid_stress_gid=1;
       if (strncmp(buffer,"YES",3)==0) ioflags.fluid_stress_gid=1;
       if (strncmp(buffer,"Yes",3)==0) ioflags.fluid_stress_gid=1;
-    }     
+    }
     frchar("FLUID_SOL_GID",buffer,&ierr);
     if (ierr)
     {
       if (strncmp(buffer,"yes",3)==0) ioflags.fluid_sol_gid=1;
       if (strncmp(buffer,"YES",3)==0) ioflags.fluid_sol_gid=1;
       if (strncmp(buffer,"Yes",3)==0) ioflags.fluid_sol_gid=1;
-    }     
+    }
     frchar("FLUID_SOL_FILE",buffer,&ierr);
     if (ierr)
     {
       if (strncmp(buffer,"yes",3)==0) ioflags.fluid_sol_file=1;
       if (strncmp(buffer,"YES",3)==0) ioflags.fluid_sol_file=1;
       if (strncmp(buffer,"Yes",3)==0) ioflags.fluid_sol_file=1;
-    }     
+    }
     frchar("FLUID_VIS_FILE",buffer,&ierr);
     if (ierr)
     {
       if (strncmp(buffer,"yes",3)==0) ioflags.fluid_vis_file=1;
       if (strncmp(buffer,"YES",3)==0) ioflags.fluid_vis_file=1;
       if (strncmp(buffer,"Yes",3)==0) ioflags.fluid_vis_file=1;
-    } 
+    }
     frchar("ALE_DISP_FILE",buffer,&ierr);
     if (ierr)
     {
@@ -412,7 +412,7 @@ if (frfind("---IO")==1)
 }
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -429,7 +429,7 @@ void inpctrstat()
 INT  ierr;
 char buffer[50];
 INT  counter;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpctrstat");
 #endif
 /*----------------------------------------------------------------------*/
@@ -451,22 +451,22 @@ if (frfind("-STATIC")==1)
     if (ierr==1) {statvar->linear=1;statvar->nonlinear=0;}
     frchk("NONLINEAR",&ierr);
     if (ierr==1) {statvar->nonlinear=1;statvar->linear=0;}
-    /*------------------------- read for typ of kinematic sh 03/03 */   
+    /*------------------------- read for typ of kinematic sh 03/03 */
     frchar("KINTYP",buffer,&ierr);
     if (ierr==1)
     {
-      if (strncmp(buffer,"Geo_Lin",7)==0) 
+      if (strncmp(buffer,"Geo_Lin",7)==0)
         statvar->kintyp = geo_linear;
       if (strncmp(buffer,"Upd_Lagr",8)==0)
         statvar->kintyp = upd_lagr;
       if (strncmp(buffer,"Tot_Lagr",8)==0)
         statvar->kintyp = tot_lagr;
     }
-    /*------------------------- read for typ of pathfollowing technique */   
+    /*------------------------- read for typ of pathfollowing technique */
     frchar("NEWTONRAPHSO",buffer,&ierr);
     if (ierr==1)
     {
-      if (strncmp(buffer,"Displacement_Control",20)==0) 
+      if (strncmp(buffer,"Displacement_Control",20)==0)
         statvar->nr_controltyp = control_disp;
       if (strncmp(buffer,"Load_Control",12)==0)
         statvar->nr_controltyp = control_load;
@@ -481,14 +481,14 @@ if (frfind("-STATIC")==1)
     {
       if (strncmp(buffer,"Yes",3)==0) statvar->iarc=1;
       else                            statvar->iarc=0;
-    }  
+    }
     /*------------------------------ read for sign-changing-by-csp flag */
     frchar("SIGNCHCSP"   ,buffer,&ierr);
     if (ierr)
     {
       if (strncmp(buffer,"Yes",3)==0) statvar->signchcsp=1;
       else                            statvar->signchcsp=0;
-    }  
+    }
     /*-------------------------------------------------- read variables */
     frint("NUMSTEP",&(statvar->nstep)  ,&ierr);
     frint("MAXITER",&(statvar->maxiter),&ierr);
@@ -567,7 +567,7 @@ if (statvar->isrelstepsize==1)
 }
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -581,7 +581,7 @@ void inpctreig()
 {
 INT    i;
 FIELD *actfield;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpctreig");
 #endif
 /*----------------------------------------------------------------------*/
@@ -611,7 +611,7 @@ for (i=0; i<genprob.numfld; i++)
    }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -621,11 +621,11 @@ return;
  | input of eigensolution problem data                       al 8/02    |
  *----------------------------------------------------------------------*/
 void inpctr_eig_struct(ALLEIG *alleig)
-{ 
+{
 
 INT    ierr;
 char   buffer[50];
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpctr_eig_struct");
 #endif
 
@@ -638,7 +638,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    if (ierr==1)
    {
       if (strncmp(buffer,"SUBSPACE",8)==0)
-          
+
           alleig->soltyp=subspace;
       else
           alleig->soltyp=eig_none;
@@ -664,7 +664,7 @@ frrewind();
 
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -679,11 +679,11 @@ void inpctrdyn()
 {
 INT    i;
 FIELD *actfield;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpctrdyn");
 #endif
 /*----------------------------------------------------------------------*/
-if (genprob.probtyp==prb_fsi || 
+if (genprob.probtyp==prb_fsi ||
    (genprob.probtyp==prb_fluid &&  genprob.numfld>1))
    alldyn = (ALLDYNA*)CCACALLOC((genprob.numfld+1),sizeof(ALLDYNA));
 else
@@ -696,12 +696,12 @@ for (i=0; i<genprob.numfld; i++)
    switch(actfield->fieldtyp)
    {
        case fluid:
-#ifdef D_FLUID   
+#ifdef D_FLUID
          alldyn[i].fdyn = (FLUID_DYNAMIC*)CCACALLOC(1,sizeof(FLUID_DYNAMIC));
          inpctr_dyn_fluid(alldyn[i].fdyn);
 #else
          dserror("General FLUID problem not defined in Makefile!!!");
-#endif            
+#endif
          break;
        case ale:
 #ifdef D_ALE
@@ -719,8 +719,8 @@ for (i=0; i<genprob.numfld; i++)
        case levelset:
          alldyn[i].lsdyn = (LS_DYNAMIC*)CCACALLOC(1,sizeof(LS_DYNAMIC));
          inpctr_dyn_ls(alldyn[i].lsdyn);
-         break;	
-#endif	
+         break;
+#endif
        case none:
          dserror("Cannot find type of field");
          break;
@@ -730,7 +730,7 @@ for (i=0; i<genprob.numfld; i++)
    }
 }
 /*----------------------------------------------------------------------*/
- if (genprob.probtyp==prb_fsi || 
+ if (genprob.probtyp==prb_fsi ||
      (genprob.probtyp==prb_fluid &&  genprob.numfld>1))
  {
 #ifdef D_FSI
@@ -738,11 +738,11 @@ for (i=0; i<genprob.numfld; i++)
    inpctr_dyn_fsi(alldyn[i].fsidyn);
 #else
    dserror("General FSI problem not defined in Makefile!!!");
-#endif 
+#endif
  }
- 
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
  dstrc_exit();
 #endif
  return;
@@ -757,7 +757,7 @@ void inpctr_dyn_struct(STRUCT_DYNAMIC *sdyn)
 {
 INT    ierr;
 char   buffer[50];
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpctr_dyn_struct");
 #endif
 
@@ -784,7 +784,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       if (strncmp(buffer,"Yes",3)==0 ||
           strncmp(buffer,"yes",3)==0 ||
           strncmp(buffer,"YES",3)==0 )
-          
+
           sdyn->damp=1;
       else
           sdyn->damp=0;
@@ -795,7 +795,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       if (strncmp(buffer,"full",3)==0 ||
           strncmp(buffer,"Full",3)==0 ||
           strncmp(buffer,"FULL",3)==0 )
-          
+
           sdyn->iter=1;
       else
           sdyn->iter=0;
@@ -823,7 +823,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frdouble("GAMMA"   ,&(sdyn->gamma)  ,&ierr);
    frdouble("ALPHA_M" ,&(sdyn->alpha_m),&ierr);
    frdouble("ALPHA_F" ,&(sdyn->alpha_f),&ierr);
-#ifdef GEMM   
+#ifdef GEMM
    frdouble("XSI"     ,&(sdyn->xsi)    ,&ierr);
 #endif
 #ifdef WALLCONTACT
@@ -847,7 +847,7 @@ frrewind();
 /*----------------------------------------------------------------------*/
 
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -855,17 +855,17 @@ return;
 
 #ifdef D_FLUID
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief input of the FLUID DYNAMIC block in the input-file
 
 <pre>                                                         genk 03/02
 
 In this routine the data in the FLUID DYNAMIC block of the input file
-are read and stored in fdyn	       
+are read and stored in fdyn
 
 </pre>
-\param  *fdyn 	  FLUID_DATA       (o)	   
-\return void                                                                       
+\param  *fdyn 	  FLUID_DATA       (o)
+\return void
 
 ------------------------------------------------------------------------*/
 void inpctr_dyn_fluid(FLUID_DYNAMIC *fdyn)
@@ -874,7 +874,7 @@ INT    ierr;
 INT    i;
 INT    thetafound=0;
 char   buffer[50];
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpctr_dyn_fluid");
 #endif
 
@@ -885,16 +885,16 @@ fdyn->init=0;
 fdyn->iop=2;            /* default: one-step-theta */
 fdyn->iops=2;           /* default: one-step-theta */
 fdyn->mlfem = 0;	/* default: no multi-level algorithm */
-fdyn->numdf=genprob.ndim+1;  
-fdyn->ite=1;            /* default: fixed-point like */           
+fdyn->numdf=genprob.ndim+1;
+fdyn->ite=1;            /* default: fixed-point like */
 fdyn->itnorm=fncc_L2;   /* default: L2-norm */
 fdyn->itemax=10;
-fdyn->stchk=-1;         /* default: no steady state check */  
-fdyn->stnorm=fnst_L2;   /* default: L2-norm */ 
+fdyn->stchk=-1;         /* default: no steady state check */
+fdyn->stnorm=fnst_L2;   /* default: L2-norm */
 /* output flags */
-fdyn->uppss=1;  
-fdyn->upout=1;  
-fdyn->upres=1;  
+fdyn->uppss=1;
+fdyn->upout=1;
+fdyn->upres=1;
 fdyn->uprestart=20;
 fdyn->resstep=0;
 /* time stepping flags and variables */
@@ -904,7 +904,7 @@ fdyn->step=0;
 fdyn->nums=0;
 /* time integration variables */
 fdyn->maxtime=1000.0;
-fdyn->dt=0.01;    
+fdyn->dt=0.01;
 fdyn->max_dt = 1.0;	/* default: maximal time step size to 1.0 */
 fdyn->min_dt = 0.0;	/* default: minimal time step size to 0.0 */
 fdyn->theta=0.66;
@@ -914,11 +914,11 @@ fdyn->alpha_m=ONE;
 fdyn->lte = EPS3;	/* default: local truncation error for adapt. time*/
 /* special facilities flags */
 fdyn->iprerhs=1;        /* this value is not in the input file! */
-fdyn->viscstr=0;        /* default: do not include viscose stresses */   
+fdyn->viscstr=0;        /* default: do not include viscose stresses */
 fdyn->freesurf=0;       /* default: no free surface */
 fdyn->surftens=0;       /* default: do not include surface tension */
 fdyn->checkarea=0;
-fdyn->liftdrag=0;    
+fdyn->liftdrag=0;
 fdyn->adaptive=0;	/* default: no adaptive time stepping */
 fdyn->time_rhs=1;	/* default: build time rhs as W.A. Wall describes */
 
@@ -933,7 +933,7 @@ fdyn->stepke=0;
 fdyn->sttol=EPS6;
 fdyn->ittol=EPS6;
 
- 
+
 if (frfind("-FLUID DYNAMIC")==0) goto end;
 frread();
 while(strncmp(allfiles.actplace,"------",6)!=0)
@@ -942,44 +942,44 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchar("DYNAMICTYP",buffer,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"Projection_Method",17)==0) 
+      if (strncmp(buffer,"Projection_Method",17)==0)
          fdyn->dyntyp=1;
       else if (strncmp(buffer,"Nlin_Time_Int",13)==0)
          fdyn->dyntyp=0;
       else
-         dserror("DYNAMICTYP unknown");      
+         dserror("DYNAMICTYP unknown");
    }
    frchar("TIMEINTEGR"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"Stationary",10)==0) 
-         fdyn->iop=0; 
-      else if (strncmp(buffer,"Gen_Alfa",8)==0) 
-         fdyn->iop=1; 
-      else if (strncmp(buffer,"One_Step_Theta",14)==0) 
-         fdyn->iop=4;    
-      else if (strncmp(buffer,"BDF2",4)==0) 
-         fdyn->iop=7;  
+      if (strncmp(buffer,"Stationary",10)==0)
+         fdyn->iop=0;
+      else if (strncmp(buffer,"Gen_Alfa",8)==0)
+         fdyn->iop=1;
+      else if (strncmp(buffer,"One_Step_Theta",14)==0)
+         fdyn->iop=4;
+      else if (strncmp(buffer,"BDF2",4)==0)
+         fdyn->iop=7;
       else
          dserror("TIMEINTEGR-Type unknown");
    }
    frchar("STARTINGALGO"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"One_Step_Theta",14)==0) 
+      if (strncmp(buffer,"One_Step_Theta",14)==0)
          fdyn->iops=4;
       else
          dserror("STARTINGALGO unknown");
-   }   
+   }
    frchar("NONLINITER"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"fixed_point_like",16)==0) 
+      if (strncmp(buffer,"fixed_point_like",16)==0)
          fdyn->ite=1;
-      else if (strncmp(buffer,"Newton",6)==0) 
-         fdyn->ite=2;                  
+      else if (strncmp(buffer,"Newton",6)==0)
+         fdyn->ite=2;
       else
-         dserror("NONLINITER-Type unknown!");     
+         dserror("NONLINITER-Type unknown!");
    }
    frchar("CONVCHECK"  ,buffer    ,&ierr);
    if (ierr==1)
@@ -987,59 +987,59 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       if (strncmp(buffer,"No",2)==0 ||
           strncmp(buffer,"NO",2)==0 ||
 	  strncmp(buffer,"no",2)==0    )
-	 fdyn->itnorm=fncc_no;      	  
-      else if (strncmp(buffer,"L_infinity_norm",15)==0) 
+	 fdyn->itnorm=fncc_no;
+      else if (strncmp(buffer,"L_infinity_norm",15)==0)
          fdyn->itnorm=fncc_Linf;
-      else if (strncmp(buffer,"L_1_norm",8)==0) 
-         fdyn->itnorm=fncc_L1;                  
-      else if (strncmp(buffer,"L_2_norm",8)==0) 
+      else if (strncmp(buffer,"L_1_norm",8)==0)
+         fdyn->itnorm=fncc_L1;
+      else if (strncmp(buffer,"L_2_norm",8)==0)
          fdyn->itnorm=fncc_L2;
       else
-         dserror("Norm for CONVCHECK unknown");   
-   }   
+         dserror("Norm for CONVCHECK unknown");
+   }
    frchar("STEADYCHECK"  ,buffer    ,&ierr);
    if (ierr==1)
    {
       if (strncmp(buffer,"No",2)==0 ||
           strncmp(buffer,"NO",2)==0 ||
 	  strncmp(buffer,"no",2)==0    )
-	 fdyn->stnorm=fnst_no;	  
-      else if (strncmp(buffer,"L_infinity_norm",15)==0) 
+	 fdyn->stnorm=fnst_no;
+      else if (strncmp(buffer,"L_infinity_norm",15)==0)
          fdyn->stnorm=fnst_Linf;
-      else if (strncmp(buffer,"L_1_norm",8)==0) 
-         fdyn->stnorm=fnst_L1;                  
-      else if (strncmp(buffer,"L_2_norm",8)==0) 
+      else if (strncmp(buffer,"L_1_norm",8)==0)
+         fdyn->stnorm=fnst_L1;
+      else if (strncmp(buffer,"L_2_norm",8)==0)
          fdyn->stnorm=fnst_L2;
-      else     
-         dserror("Norm for STEADYCHECK unknown");   
+      else
+         dserror("Norm for STEADYCHECK unknown");
    }
    frchar("INITIALFIELD"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"zero_field",10)==0) 
+      if (strncmp(buffer,"zero_field",10)==0)
          fdyn->init=0;
-      else if (strncmp(buffer,"field_from_file",15)==0) 
+      else if (strncmp(buffer,"field_from_file",15)==0)
          fdyn->init=1;
-      else if (strncmp(buffer,"field_by_function",17)==0) 
-         fdyn->init=-1;                      
-      else if (strncmp(buffer,"SOLWAVE",7)==0) 
+      else if (strncmp(buffer,"field_by_function",17)==0)
+         fdyn->init=-1;
+      else if (strncmp(buffer,"SOLWAVE",7)==0)
          fdyn->init=6;
-      else if (strncmp(buffer,"WAVEBREAKING",12)==0) 
+      else if (strncmp(buffer,"WAVEBREAKING",12)==0)
          fdyn->init=7;
-      else if (strncmp(buffer,"BELTRAMI-FLOW",13)==0) 
+      else if (strncmp(buffer,"BELTRAMI-FLOW",13)==0)
          fdyn->init=8;
-      else if (strncmp(buffer,"KIM-MOIN-FLOW",13)==0) 
+      else if (strncmp(buffer,"KIM-MOIN-FLOW",13)==0)
          fdyn->init=9;
-      else if (strncmp(buffer,"BREAKING-DAM",12)==0) 
+      else if (strncmp(buffer,"BREAKING-DAM",12)==0)
          fdyn->init=10;
       else
          dserror("INITIALFIELD unknown!");
-   }   
+   }
    frchar("VISCSTRESS"   ,buffer    ,&ierr);
    if (ierr==1)
    {
       if (strncmp(buffer,"yes",3)==0 ||
-          strncmp(buffer,"YES",3)==0 ||                 
+          strncmp(buffer,"YES",3)==0 ||
 	  strncmp(buffer,"Yes",3)==0    )
          fdyn->viscstr=1;
       else if (strncmp(buffer,"No",2)==0 ||
@@ -1047,38 +1047,38 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 	       strncmp(buffer,"no",2)==0   )
          fdyn->viscstr=0;
       else
-         dserror("VISCSTRESS unknown!\n");	 
+         dserror("VISCSTRESS unknown!\n");
    }
    frchar("FREESURFACE"  ,buffer    ,&ierr);
    if (ierr==1)
    {
       if (strncmp(buffer,"No",2)==0 ||
           strncmp(buffer,"NO",2)==0 ||
-	  strncmp(buffer,"no",2)==0   ) 
+	  strncmp(buffer,"no",2)==0   )
          fdyn->freesurf=0;
       else if (strncmp(buffer,"loclag_exp",10)==0
-               && strlen(buffer)==10) 
+               && strlen(buffer)==10)
          fdyn->freesurf=1;
       else if (strncmp(buffer,"loclag_imp",10)==0
-               && strlen(buffer)==10) 
-         fdyn->freesurf=2;                  
+               && strlen(buffer)==10)
+         fdyn->freesurf=2;
       else if (strncmp(buffer,"hf_vert_sep",11)==0
                && strlen(buffer)==11)
-         fdyn->freesurf=3;                        
+         fdyn->freesurf=3;
       else if (strncmp(buffer,"hf_vert_imp",11)==0
                && strlen(buffer)==11)
-         fdyn->freesurf=5;                        
+         fdyn->freesurf=5;
       else if (strncmp(buffer,"genfs",5)==0
                && strlen(buffer)==5)
-         fdyn->freesurf=6;                        
+         fdyn->freesurf=6;
       else
-         dserror("Parameter FREESURFACE unknown!\n");     
+         dserror("Parameter FREESURFACE unknown!\n");
    }
    frchar("SURFTENSION"  ,buffer    ,&ierr);
    if (ierr==1)
    {
       if (strncmp(buffer,"yes",3)==0 ||
-          strncmp(buffer,"YES",3)==0 ||                 
+          strncmp(buffer,"YES",3)==0 ||
 	  strncmp(buffer,"Yes",3)==0    )
          fdyn->surftens=1;
       else if (strncmp(buffer,"No",2)==0 ||
@@ -1086,13 +1086,13 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 	       strncmp(buffer,"no",2)==0   )
          fdyn->surftens=0;
       else
-         dserror("SURFTENSION unknown!\n");	 
+         dserror("SURFTENSION unknown!\n");
    }
    frchar("CHECKAREA"  ,buffer    ,&ierr);
    if (ierr==1)
    {
       if (strncmp(buffer,"yes",3)==0 ||
-          strncmp(buffer,"YES",3)==0 ||                 
+          strncmp(buffer,"YES",3)==0 ||
 	  strncmp(buffer,"Yes",3)==0    )
          fdyn->checkarea=1;
       else if (strncmp(buffer,"No",2)==0 ||
@@ -1100,13 +1100,13 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 	       strncmp(buffer,"no",2)==0   )
          fdyn->checkarea=0;
       else
-         dserror("CHECKAREA unknown!\n");	 
+         dserror("CHECKAREA unknown!\n");
    }
    frchar("LIFTDRAG"  ,buffer    ,&ierr);
    if (ierr==1)
    {
       if (strncmp(buffer,"yes",3)==0 ||
-          strncmp(buffer,"YES",3)==0 ||                 
+          strncmp(buffer,"YES",3)==0 ||
 	  strncmp(buffer,"Yes",3)==0    )
          fdyn->liftdrag=1;
       else if (strncmp(buffer,"No",2)==0 ||
@@ -1114,32 +1114,32 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 	       strncmp(buffer,"no",2)==0   )
          fdyn->liftdrag=0;
       else
-         dserror("LIFTDRAG unknown!\n");	 
+         dserror("LIFTDRAG unknown!\n");
    }
    frchar("TURBULENCE"  ,buffer    ,&ierr);
    if (ierr==1)
    {
       if (strncmp(buffer,"No",2)==0 ||
           strncmp(buffer,"NO",2)==0 ||
-	  strncmp(buffer,"no",2)==0   ) 
+	  strncmp(buffer,"no",2)==0   )
          fdyn->turbu=0;
-      else if (strncmp(buffer,"algebraic",9)==0) 
+      else if (strncmp(buffer,"algebraic",9)==0)
          fdyn->turbu=1;
-      else if (strncmp(buffer,"kappa-eps",9)==0) 
-         fdyn->turbu=2;                      
-      else if (strncmp(buffer,"kappa-omega",11)==0) 
-         fdyn->turbu=3;                      
+      else if (strncmp(buffer,"kappa-eps",9)==0)
+         fdyn->turbu=2;
+      else if (strncmp(buffer,"kappa-omega",11)==0)
+         fdyn->turbu=3;
       else
          dserror("TURBULENCE unknown!");
-   }   
+   }
    frchar("DISC_CAPT"  ,buffer    ,&ierr);
    if (ierr==1)
    {
       if (strncmp(buffer,"No",2)==0 ||
           strncmp(buffer,"NO",2)==0 ||
-	  strncmp(buffer,"no",2)==0   ) 
+	  strncmp(buffer,"no",2)==0   )
          fdyn->dis_capt=0;
-      else if (strncmp(buffer,"Yes",3)==0) 
+      else if (strncmp(buffer,"Yes",3)==0)
          fdyn->dis_capt=1;
       else
          dserror("DISC_CAPT unknown!");
@@ -1149,59 +1149,59 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    {
       if (strncmp(buffer,"No",2)==0 ||
           strncmp(buffer,"NO",2)==0 ||
-	  strncmp(buffer,"no",2)==0   ) 
+	  strncmp(buffer,"no",2)==0   )
          fdyn->adaptive=0;
       else if (strncmp(buffer,"Yes",3)==0 ||
                strncmp(buffer,"YES",3)==0 ||
-	       strncmp(buffer,"yes",3)==0   ) 
+	       strncmp(buffer,"yes",3)==0   )
          fdyn->adaptive=1;
       else
-         dserror("ADAPT_TIME can not be read (yes/no)!");     
+         dserror("ADAPT_TIME can not be read (yes/no)!");
    }
    frchar("TIME_RHS"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"mass",4)==0) 
+      if (strncmp(buffer,"mass",4)==0)
          fdyn->time_rhs=0;
-      else if (strncmp(buffer,"classic",7)==0) 
+      else if (strncmp(buffer,"classic",7)==0)
          fdyn->time_rhs=1;
       else
-         dserror("TIME_RHS unknown!");     
+         dserror("TIME_RHS unknown!");
    }
    frchar("CONVECTERM"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"convective",10)==0) 
+      if (strncmp(buffer,"convective",10)==0)
          fdyn->conte=0;
-      else if (strncmp(buffer,"divergence",10)==0) 
-         fdyn->conte=1;                      
-      else if (strncmp(buffer,"skew_symmetric",14)==0) 
-         fdyn->conte=2;                      
+      else if (strncmp(buffer,"divergence",10)==0)
+         fdyn->conte=1;
+      else if (strncmp(buffer,"skew_symmetric",14)==0)
+         fdyn->conte=2;
       else
          dserror("Unknown convective term!");
-   }   
+   }
    frchar("VISCTERM"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"conventional",12)==0) 
+      if (strncmp(buffer,"conventional",12)==0)
          fdyn->vite=0;
-      else if (strncmp(buffer,"stress_divergence",17)==0) 
-         fdyn->vite=1;                      
+      else if (strncmp(buffer,"stress_divergence",17)==0)
+         fdyn->vite=1;
       else
          dserror("Unknown viscous term!");
-   }   
+   }
    frchar("SUBGRIDVISC"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"no",2)==0) 
+      if (strncmp(buffer,"no",2)==0)
          fdyn->sgvisc=0;
-      else if (strncmp(buffer,"artificial",10)==0) 
-         fdyn->sgvisc=1;                      
-      else if (strncmp(buffer,"Smagorinsky",11)==0) 
-         fdyn->sgvisc=2;                      
+      else if (strncmp(buffer,"artificial",10)==0)
+         fdyn->sgvisc=1;
+      else if (strncmp(buffer,"Smagorinsky",11)==0)
+         fdyn->sgvisc=2;
       else
          dserror("Unknown subgrid viscosity!");
-   }   
+   }
 
 /*--------------read INT */
    frint("UPPSS"      ,&(fdyn->uppss)     ,&ierr);
@@ -1210,7 +1210,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frint("RESSTEP"    ,&(fdyn->resstep)   ,&ierr);
    frint("RESTARTEVRY",&(fdyn->uprestart) ,&ierr);
    frint("NUMSTEP"    ,&(fdyn->nstep)     ,&ierr);
-   frint("STEADYSTEP" ,&(fdyn->stchk)     ,&ierr);   
+   frint("STEADYSTEP" ,&(fdyn->stchk)     ,&ierr);
    frint("NUMSTASTEPS" ,&(fdyn->nums)     ,&ierr);
    frint("STARTFUNCNO" ,&i                ,&ierr);
    if (ierr==1)
@@ -1218,8 +1218,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       if (fdyn->init==-1)
           fdyn->init=i;
    }
-   frint("ITEMAX" ,&(fdyn->itemax) ,&ierr);  
-   
+   frint("ITEMAX" ,&(fdyn->itemax) ,&ierr);
+
 /*--------------read DOUBLE */
    frdouble("TIMESTEP" ,&(fdyn->dt)     ,&ierr);
    frdouble("MAXTIME"  ,&(fdyn->maxtime),&ierr);
@@ -1258,9 +1258,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchar("MULEVELFEM"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"no",2)==0) 
+      if (strncmp(buffer,"no",2)==0)
          fdyn->mlfem=0;
-      else if (strncmp(buffer,"yes",3)==0) 
+      else if (strncmp(buffer,"yes",3)==0)
          fdyn->mlfem=1;
       else
          dserror("unknown Multilevel");
@@ -1268,13 +1268,13 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchar("TRANSTERM"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"no_approx",9)==0) 
+      if (strncmp(buffer,"no_approx",9)==0)
          fdyn->mlvar->transterm=0;
-      else if (strncmp(buffer,"neglect_sst",11)==0) 
+      else if (strncmp(buffer,"neglect_sst",11)==0)
          fdyn->mlvar->transterm=1;
-      else if (strncmp(buffer,"neglect_lst",11)==0) 
+      else if (strncmp(buffer,"neglect_lst",11)==0)
          fdyn->mlvar->transterm=2;
-      else if (strncmp(buffer,"neglect_both",12)==0) 
+      else if (strncmp(buffer,"neglect_both",12)==0)
          fdyn->mlvar->transterm=3;
       else
          dserror("unknown treatment of transient term");
@@ -1282,9 +1282,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchar("QUASTATBUB"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"no",2)==0) 
+      if (strncmp(buffer,"no",2)==0)
          fdyn->mlvar->quastabub=0;
-      else if (strncmp(buffer,"yes",3)==0) 
+      else if (strncmp(buffer,"yes",3)==0)
          fdyn->mlvar->quastabub=1;
       else
          dserror("unknown quasi-static bubbles");
@@ -1292,33 +1292,33 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchar("CONVECVEL"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"no_approx",9)==0) 
+      if (strncmp(buffer,"no_approx",9)==0)
          fdyn->mlvar->convel=0;
-      else if (strncmp(buffer,"ls_approx",9)==0) 
+      else if (strncmp(buffer,"ls_approx",9)==0)
          fdyn->mlvar->convel=1;
       else
          dserror("unknown convective velocity");
-   }	 
+   }
    frchar("SMSGVISC"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"no",2)==0) 
+      if (strncmp(buffer,"no",2)==0)
          fdyn->mlvar->smsgvi=0;
-      else if (strncmp(buffer,"artificial",10)==0) 
-         fdyn->mlvar->smsgvi=1;                      
-      else if (strncmp(buffer,"Smagorinsky",11)==0) 
-         fdyn->mlvar->smsgvi=2;                      
-      else if (strncmp(buffer,"dynamic",7)==0) 
-         fdyn->mlvar->smsgvi=3;                      
+      else if (strncmp(buffer,"artificial",10)==0)
+         fdyn->mlvar->smsgvi=1;
+      else if (strncmp(buffer,"Smagorinsky",11)==0)
+         fdyn->mlvar->smsgvi=2;
+      else if (strncmp(buffer,"dynamic",7)==0)
+         fdyn->mlvar->smsgvi=3;
       else
          dserror("Unknown submesh subgrid viscosity!");
-   }   
+   }
    frchar("SMSTABI"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"no",2)==0) 
+      if (strncmp(buffer,"no",2)==0)
          fdyn->mlvar->smstabi=0;
-      else if (strncmp(buffer,"yes",3)==0) 
+      else if (strncmp(buffer,"yes",3)==0)
          fdyn->mlvar->smstabi=1;
       else
          dserror("unknown submesh stabilization");
@@ -1326,17 +1326,17 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchar("SMSTABDO"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"USFEM_instat",12)==0) 
+      if (strncmp(buffer,"USFEM_instat",12)==0)
          fdyn->mlvar->smstado=-1;
-      else if (strncmp(buffer,"USFEM_CDR",9)==0) 
+      else if (strncmp(buffer,"USFEM_CDR",9)==0)
          fdyn->mlvar->smstado=-2;
-      else if (strncmp(buffer,"USFEM_stat",10)==0) 
+      else if (strncmp(buffer,"USFEM_stat",10)==0)
          fdyn->mlvar->smstado=-3;
-      else if (strncmp(buffer,"GLS-_instat",11)==0) 
+      else if (strncmp(buffer,"GLS-_instat",11)==0)
          fdyn->mlvar->smstado=1;
-      else if (strncmp(buffer,"GLS-_CDR",8)==0) 
+      else if (strncmp(buffer,"GLS-_CDR",8)==0)
          fdyn->mlvar->smstado=2;
-      else if (strncmp(buffer,"GLS-_stat",9)==0) 
+      else if (strncmp(buffer,"GLS-_stat",9)==0)
          fdyn->mlvar->smstado=3;
       else
          dserror("unknown differential operator for submesh stabilization");
@@ -1344,9 +1344,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchar("SMSTABNORM"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"L_1",3)==0) 
+      if (strncmp(buffer,"L_1",3)==0)
          fdyn->mlvar->smstano=1;
-      else if (strncmp(buffer,"L_2",3)==0) 
+      else if (strncmp(buffer,"L_2",3)==0)
          fdyn->mlvar->smstano=2;
       else
          dserror("unknown submesh stabilization norm");
@@ -1354,11 +1354,11 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchar("SMSTABMK"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"-1",2)==0) 
+      if (strncmp(buffer,"-1",2)==0)
          fdyn->mlvar->smstamk=-1;
-      else if (strncmp(buffer,"0",1)==0) 
+      else if (strncmp(buffer,"0",1)==0)
          fdyn->mlvar->smstamk=0;
-      else if (strncmp(buffer,"1",1)==0) 
+      else if (strncmp(buffer,"1",1)==0)
          fdyn->mlvar->smstamk=1;
       else
          dserror("unknown submesh mk");
@@ -1366,9 +1366,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchar("SMSTABNINTHS"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"at_center",9)==0) 
+      if (strncmp(buffer,"at_center",9)==0)
          fdyn->mlvar->smstani=0;
-      else if (strncmp(buffer,"every_intpt",11)==0) 
+      else if (strncmp(buffer,"every_intpt",11)==0)
          fdyn->mlvar->smstani=1;
       else
          dserror("unknown submesh number of int. points for elesize");
@@ -1376,9 +1376,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchar("SMORDER"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"linear",6)==0) 
+      if (strncmp(buffer,"linear",6)==0)
          fdyn->mlvar->smorder=1;
-      else if (strncmp(buffer,"quadratic",9)==0) 
+      else if (strncmp(buffer,"quadratic",9)==0)
          fdyn->mlvar->smorder=2;
       else
          dserror("unknown submesh element order");
@@ -1386,13 +1386,13 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchar("SMNONUNIF"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"no",2)==0) 
+      if (strncmp(buffer,"no",2)==0)
          fdyn->mlvar->smnunif=0;
-      else if (strncmp(buffer,"shishkin_type",13)==0) 
+      else if (strncmp(buffer,"shishkin_type",13)==0)
          fdyn->mlvar->smnunif=1;
-      else if (strncmp(buffer,"quadratic",9)==0) 
+      else if (strncmp(buffer,"quadratic",9)==0)
          fdyn->mlvar->smnunif=2;
-      else if (strncmp(buffer,"cubic",5)==0) 
+      else if (strncmp(buffer,"cubic",5)==0)
          fdyn->mlvar->smnunif=3;
       else
          dserror("unknown sub-submesh element order");
@@ -1400,9 +1400,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchar("SSMORD"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"linear",6)==0) 
+      if (strncmp(buffer,"linear",6)==0)
          fdyn->mlvar->ssmorder=1;
-      else if (strncmp(buffer,"quadratic",9)==0) 
+      else if (strncmp(buffer,"quadratic",9)==0)
          fdyn->mlvar->ssmorder=2;
       else
          dserror("unknown sub-submesh element order");
@@ -1410,13 +1410,13 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frchar("SSMNNUN"  ,buffer    ,&ierr);
    if (ierr==1)
    {
-      if (strncmp(buffer,"no",2)==0) 
+      if (strncmp(buffer,"no",2)==0)
          fdyn->mlvar->ssmnunif=0;
-      else if (strncmp(buffer,"shishkin_type",13)==0) 
+      else if (strncmp(buffer,"shishkin_type",13)==0)
          fdyn->mlvar->ssmnunif=1;
-      else if (strncmp(buffer,"quadratic",9)==0) 
+      else if (strncmp(buffer,"quadratic",9)==0)
          fdyn->mlvar->ssmnunif=2;
-      else if (strncmp(buffer,"cubic",5)==0) 
+      else if (strncmp(buffer,"cubic",5)==0)
          fdyn->mlvar->ssmnunif=3;
       else
          dserror("unknown sub-submesh element order");
@@ -1443,7 +1443,7 @@ if (fdyn->freesurf>0)
 dserror("Freesurf requires FSI functions to compile in!\n");
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1453,17 +1453,17 @@ return;
 
 #ifdef D_FSI
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief input of the FSI DYNAMIC block in the input-file
 
 <pre>                                                         genk 09/02
 
 In this routine the data in the FSI DYNAMIC block of the input file
-are read and stored in fsidyn	       
+are read and stored in fsidyn
 
 </pre>
-\param  *fsidyn 	  FSI_DATA       (o)	   
-\return void                                                                       
+\param  *fsidyn 	  FSI_DATA       (o)
+\return void
 
 ------------------------------------------------------------------------*/
 void inpctr_dyn_fsi(FSI_DYNAMIC *fsidyn)
@@ -1472,28 +1472,28 @@ INT    ierr;
 INT    length;
 char   buffer[50];
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpctr_dyn_fsi");
 #endif
 
 /*-------------------------------------------------- set default values */
 fsidyn->ifsi=1;             /* default: sequ. staggered */
 fsidyn->ipre=1;             /* default: d(n) */
-fsidyn->inrmfsi=1;           
+fsidyn->inrmfsi=1;
 fsidyn->ichecke=0;          /* default: no energy check */
-fsidyn->isdmax=1;  
-fsidyn->nstep=1;   
-fsidyn->itemax=1;  
-fsidyn->iale=1;             /* default pseudo structure */    
-fsidyn->uppss=1;    
+fsidyn->isdmax=1;
+fsidyn->nstep=1;
+fsidyn->itemax=1;
+fsidyn->iale=1;             /* default pseudo structure */
+fsidyn->uppss=1;
 fsidyn->upres=1;
 fsidyn->uprestart=1;
-fsidyn->dt=ONE/TEN;	
+fsidyn->dt=ONE/TEN;
 fsidyn->maxtime=1000.0;
-fsidyn->entol=EPS6;  
-fsidyn->relax=ONE;  
+fsidyn->entol=EPS6;
+fsidyn->relax=ONE;
 fsidyn->convtol=EPS6;
-    
+
 if (frfind("-FSI DYNAMIC")==0) goto end;
 frread();
 while(strncmp(allfiles.actplace,"------",6)!=0)
@@ -1503,47 +1503,47 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    if (ierr==1)
    {
       length = strlen(buffer);
-      if (strncmp(buffer,"basic_sequ_stagg",16)==0 && length==16) 
+      if (strncmp(buffer,"basic_sequ_stagg",16)==0 && length==16)
          fsidyn->ifsi=1;
-      else if (strncmp(buffer,"sequ_stagg_pred",15)==0 && length==15) 
-         fsidyn->ifsi=2;                 
+      else if (strncmp(buffer,"sequ_stagg_pred",15)==0 && length==15)
+         fsidyn->ifsi=2;
       else if (strncmp(buffer,"sequ_stagg_shift",15)==0 && length==15)
-         fsidyn->ifsi=3;  
-      else if (strncmp(buffer,"iter_stagg_fixed_rel_param",26)==0 && length==26) 
+         fsidyn->ifsi=3;
+      else if (strncmp(buffer,"iter_stagg_fixed_rel_param",26)==0 && length==26)
          fsidyn->ifsi=4;
-      else if (strncmp(buffer,"iter_stagg_AITKEN_rel_param",27)==0 && length==27) 
-         fsidyn->ifsi=5;      
-      else if (strncmp(buffer,"iter_stagg_steep_desc",21)==0 && length==21) 
+      else if (strncmp(buffer,"iter_stagg_AITKEN_rel_param",27)==0 && length==27)
+         fsidyn->ifsi=5;
+      else if (strncmp(buffer,"iter_stagg_steep_desc",21)==0 && length==21)
          fsidyn->ifsi=6;
-      else if (strncmp(buffer,"iter_stagg_CHEB_rel_param",25)==0 && length==25) 
-         fsidyn->ifsi=7;      
+      else if (strncmp(buffer,"iter_stagg_CHEB_rel_param",25)==0 && length==25)
+         fsidyn->ifsi=7;
       else
          dserror("Coupling Algorithm COUPALGO unknown");
    }
    frchar("PREDICTOR"  ,buffer    ,&ierr);
    if (ierr==1)
-   {            
+   {
       length = strlen(buffer);
       if (strncmp(buffer,"d(n)",4)==0 && length==4)
          fsidyn->ipre=1;
       else if (strncmp(buffer,"d(n)+dt*(1.5*v(n)-0.5*v(n-1))",29)==0 && length==29)
          fsidyn->ipre=2;
       else if (strncmp(buffer,"d(n)+dt*v(n)",12)==0 && length==12)
-            fsidyn->ipre=3;	 
+            fsidyn->ipre=3;
       else if (strncmp(buffer,"d(n)+dt*v(n)+0.5*dt^2*a(n)",26)==0 && length==26)
-            fsidyn->ipre=4;	 
-      else dserror("PREDICTOR unknown!\n"); 
-   }   
+            fsidyn->ipre=4;
+      else dserror("PREDICTOR unknown!\n");
+   }
    frchar("CONVCRIT"  ,buffer    ,&ierr);
    if (ierr==1)
    {
       length = strlen(buffer);
-      if (strncmp(buffer,"||g(i)||:sqrt(neq)",18)==0 && length==18) 
+      if (strncmp(buffer,"||g(i)||:sqrt(neq)",18)==0 && length==18)
          fsidyn->inrmfsi=1;
-      else if (strncmp(buffer,"||g(i)||:||g(0)||",17)==0 && length==17) 
+      else if (strncmp(buffer,"||g(i)||:||g(0)||",17)==0 && length==17)
          fsidyn->inrmfsi=2;
       else
-         dserror("Convergence criterion CONVCRIT unknown!");     
+         dserror("Convergence criterion CONVCRIT unknown!");
    }
    frchar("ENERGYCHECK"  ,buffer    ,&ierr);
    if (ierr==1)
@@ -1551,14 +1551,14 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       length = strlen(buffer);
       if ((strncmp(buffer,"No",2)==0  ||
            strncmp(buffer,"NO",2)==0  ||
-	   strncmp(buffer,"no",2)==0) && length==2) 
+	   strncmp(buffer,"no",2)==0) && length==2)
          fsidyn->ichecke=0;
       else if ((strncmp(buffer,"yes",3)==0  ||
-                strncmp(buffer,"YES",3)==0  ||                 
-	        strncmp(buffer,"Yes",3)==0) && length==3) 
+                strncmp(buffer,"YES",3)==0  ||
+	        strncmp(buffer,"Yes",3)==0) && length==3)
          fsidyn->ichecke=1;
       else
-         dserror("Parameter for ENERGYCHECK unknown!");     
+         dserror("Parameter for ENERGYCHECK unknown!");
    }
 
    frchar("IALE"    ,buffer    ,&ierr);
@@ -1581,14 +1581,14 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frdouble("MAXTIME"     ,&(fsidyn->maxtime),&ierr);
    frdouble("TOLENCHECK"  ,&(fsidyn->entol)  ,&ierr);
    frdouble("RELAX"       ,&(fsidyn->relax)  ,&ierr);
-   frdouble("CONVTOL"     ,&(fsidyn->convtol),&ierr);  
+   frdouble("CONVTOL"     ,&(fsidyn->convtol),&ierr);
    frread();
 }
 frrewind();
 
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1597,17 +1597,17 @@ return;
 #endif
 
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief input of the ALE DYNAMIC block in the input-file
 
 <pre>                                                           ck 12/02
 
 In this routine the data in the ALE DYNAMIC block of the input file
-are read and stored in adyn	       
+are read and stored in adyn
 
 </pre>
-\param  *adyn 	  ALE_DATA       (o)	   
-\return void                                                                       
+\param  *adyn 	  ALE_DATA       (o)
+\return void
 
 ------------------------------------------------------------------------*/
 #ifdef D_ALE
@@ -1616,7 +1616,7 @@ void inpctr_dyn_ale(ALE_DYNAMIC *adyn)
 INT    ierr;
 char buffer[50];
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inpctr_dyn_ale");
 #endif
 /*---------------------------------------------------- some defaults ---*/
@@ -1665,13 +1665,13 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 /*--------------read DOUBLE */
    frdouble("TIMESTEP", &(adyn->dt)     , &ierr);
    frdouble("MAXTIME" , &(adyn->maxtime), &ierr);
-   
+
    frread();
 }
 frrewind();
 
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1679,17 +1679,17 @@ return;
 #endif
 
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief input of the LS DYNAMIC block in the input-file
 
 <pre>                                                        irhan 04/04
 
 In this routine the data in the LS DYNAMIC block of the input file
-are read and stored in adyn	       
+are read and stored in adyn
 
 </pre>
-\param  *lsdyn->lsdata 	  LS_GEN_DATA       (o)	   
-\return void                                                                       
+\param  *lsdyn->lsdata 	  LS_GEN_DATA       (o)
+\return void
 
 ------------------------------------------------------------------------*/
 
@@ -1698,12 +1698,12 @@ void inpctr_dyn_ls(LS_DYNAMIC *lsdyn)
 {
   INT ierr;
   char buffer[50];
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_enter("inpctr_dyn_ls");
 #endif
-/*----------------------------------------------------------------------*/  
-  
+/*----------------------------------------------------------------------*/
+
   /* allocate memory for lsdata */
   lsdyn->lsdata = (LS_GEN_DATA*)CCACALLOC(1,sizeof(LS_GEN_DATA));
   /* set some parameters */
@@ -1717,9 +1717,9 @@ void inpctr_dyn_ls(LS_DYNAMIC *lsdyn)
     /* read INT */
     frint("NSTEP", &(lsdyn->nstep), &ierr);
     frint("NFSTEP", &(lsdyn->nfstep), &ierr);
-    frint("NFREINIT", &(lsdyn->nfreinit), &ierr);    
-    frint("NFREPRN", &(lsdyn->nfreprn), &ierr);    
-    frint("ITEMAX", &(lsdyn->itemax), &ierr);	
+    frint("NFREINIT", &(lsdyn->nfreinit), &ierr);
+    frint("NFREPRN", &(lsdyn->nfreprn), &ierr);
+    frint("ITEMAX", &(lsdyn->itemax), &ierr);
     frint("INIT", &(lsdyn->init), &ierr);
     frint("IOP", &(lsdyn->iop), &ierr);
     frint("ITE", &(lsdyn->ite), &ierr);
@@ -1744,10 +1744,10 @@ void inpctr_dyn_ls(LS_DYNAMIC *lsdyn)
     /* read INT */
     frint("FLAGVEL", &(lsdyn->lsdata->flag_vel), &ierr);
     frint("NUMLAYER", &(lsdyn->lsdata->numlayer), &ierr);
-    frint("SEARCHBAND", &(lsdyn->lsdata->searchband), &ierr);    
+    frint("SEARCHBAND", &(lsdyn->lsdata->searchband), &ierr);
     frint("NUMREINIT", &(lsdyn->lsdata->numreinit), &ierr);
     frint("NUMCIRC", &(lsdyn->lsdata->numcirc), &ierr);
-    frint("NUMLINE", &(lsdyn->lsdata->numline), &ierr);    
+    frint("NUMLINE", &(lsdyn->lsdata->numline), &ierr);
     /* read DOUBLE */
     frdouble("XC1", &(lsdyn->lsdata->xc1), &ierr);
     frdouble("YC1", &(lsdyn->lsdata->yc1), &ierr);
@@ -1770,7 +1770,7 @@ void inpctr_dyn_ls(LS_DYNAMIC *lsdyn)
     frdouble("YS3", &(lsdyn->lsdata->ys3), &ierr);
     frdouble("XE3", &(lsdyn->lsdata->xe3), &ierr);
     frdouble("YE3", &(lsdyn->lsdata->ye3), &ierr);
-    frdouble("RDT", &(lsdyn->lsdata->rdt), &ierr);    
+    frdouble("RDT", &(lsdyn->lsdata->rdt), &ierr);
     frdouble("EPSILON", &(lsdyn->lsdata->epsilon), &ierr);
     /* read character */
     frchar("BOUNDARYONOFF"   ,buffer    ,&ierr);
@@ -1781,7 +1781,7 @@ void inpctr_dyn_ls(LS_DYNAMIC *lsdyn)
       else if (strncmp(buffer,"off",3)==0)
         lsdyn->lsdata->boundary_on_off = 0;
       else
-        dserror("BOUNDARYONOFF unknown!\n");	 
+        dserror("BOUNDARYONOFF unknown!\n");
     }
     frchar("SETVEL"   ,buffer    ,&ierr);
     if (ierr==1)
@@ -1791,8 +1791,8 @@ void inpctr_dyn_ls(LS_DYNAMIC *lsdyn)
       else if (strncmp(buffer,"by_fluid",8)==0)
         lsdyn->lsdata->setvel = 2;
       else
-        dserror("SETVEL unknown!\n");	 
-    }    
+        dserror("SETVEL unknown!\n");
+    }
     frchar("ISSTAB"   ,buffer    ,&ierr);
     if (ierr==1)
     {
@@ -1801,7 +1801,7 @@ void inpctr_dyn_ls(LS_DYNAMIC *lsdyn)
       else if (strncmp(buffer,"no",2)==0)
         lsdyn->lsdata->isstab = 0;
       else
-        dserror("ISSTAB unknown!\n");	 
+        dserror("ISSTAB unknown!\n");
     }
     frchar("LOCALIZATION"   ,buffer    ,&ierr);
     if (ierr==1)
@@ -1811,7 +1811,7 @@ void inpctr_dyn_ls(LS_DYNAMIC *lsdyn)
       else if (strncmp(buffer,"off",3)==0)
         lsdyn->lsdata->localization = 0;
       else
-        dserror("LOCALIZATION unknown!\n");	 
+        dserror("LOCALIZATION unknown!\n");
     }
     frchar("REINITIALIZATION"   ,buffer    ,&ierr);
     if (ierr==1)
@@ -1821,7 +1821,7 @@ void inpctr_dyn_ls(LS_DYNAMIC *lsdyn)
       else if (strncmp(buffer,"off",3)==0)
         lsdyn->lsdata->reinitialization = 0;
       else
-        dserror("REINITIALIZATION unknown!\n");	 
+        dserror("REINITIALIZATION unknown!\n");
     }
     frchar("ANCHOR"   ,buffer    ,&ierr);
     if (ierr==1)
@@ -1831,7 +1831,7 @@ void inpctr_dyn_ls(LS_DYNAMIC *lsdyn)
       else if (strncmp(buffer,"no",2)==0)
         lsdyn->lsdata->anchor = 0;
       else
-        dserror("ANCHOR unknown!\n");	 
+        dserror("ANCHOR unknown!\n");
     }
     frchar("ALGO"   ,buffer    ,&ierr);
     if (ierr==1)
@@ -1841,7 +1841,7 @@ void inpctr_dyn_ls(LS_DYNAMIC *lsdyn)
       else if (strncmp(buffer,"implicit",8)==0)
         lsdyn->lsdata->algo = 1;
       else
-        dserror("ALGO unknown!\n");	 
+        dserror("ALGO unknown!\n");
     }
     frchar("ISSHARP"   ,buffer    ,&ierr);
     if (ierr==1)
@@ -1851,7 +1851,7 @@ void inpctr_dyn_ls(LS_DYNAMIC *lsdyn)
       else if (strncmp(buffer,"no",2)==0)
         lsdyn->lsdata->is_sharp = 0;
       else
-        dserror("ISSHARP unknown!\n");	 
+        dserror("ISSHARP unknown!\n");
     }
     frchar("PROBDESCR"   ,buffer    ,&ierr);
     if (ierr==1)
@@ -1863,14 +1863,14 @@ void inpctr_dyn_ls(LS_DYNAMIC *lsdyn)
       else if (strncmp(buffer,"dam",3)==0)
         lsdyn->lsdata->probdescr = 2;
       else
-        dserror("PROBDESCR unknown!\n");	 
+        dserror("PROBDESCR unknown!\n");
     }
     frread();
   }
   frrewind();
-  
-/*----------------------------------------------------------------------*/  
-#ifdef DEBUG 
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
   dstrc_exit();
 #endif
   return;

@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Michael Gee
@@ -25,7 +25,7 @@ extern struct _FIELD      *field;
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -42,7 +42,7 @@ extern struct _SOLVAR  *solv;
 
 <pre>                                                         m.gee 8/00
 -the partition of one proc (all discretizations)
--the type is in partition.h                                                  
+-the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -58,18 +58,18 @@ extern struct _IO_FLAGS     ioflags;
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
-extern struct _PAR   par;                      
+extern struct _PAR   par;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate dynamic variables if needed                      |
  | dedfined in global_control.c                                         |
  | struct _DYNAMIC      *dyn;                                           |
  *----------------------------------------------------------------------*/
-extern struct _DYNAMIC *dyn;   
+extern struct _DYNAMIC *dyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 02/02    |
  | number of load curves numcurve                                       |
@@ -102,8 +102,8 @@ extern enum _CALC_ACTION calc_action[MAXFIELD];
          constants[0] =  (1.0-alpham) * (1.0/beta)/(DSQR(dt))
          constants[3] =  (1.0-alphaf) * ((gamma/beta)/dt)
  *----------------------------------------------------------------------*/
-  
-void kefnln_struct(STRUCT_DYN_CALC *dynvar, 
+
+void kefnln_struct(STRUCT_DYN_CALC *dynvar,
                   STRUCT_DYNAMIC  *sdyn,
                   FIELD           *actfield,
                   SOLVAR          *actsolv,
@@ -114,7 +114,7 @@ void kefnln_struct(STRUCT_DYN_CALC *dynvar,
                   INT              damp_array)
 {
 DOUBLE a0,a1,a4;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("kefnln_struct");
 #endif
 /*----------------------------------------------------------------------*/
@@ -141,7 +141,7 @@ solserv_add_mat(actintra,
                 &(actsolv->sysarray[damp_array]),
                 a4);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -155,10 +155,10 @@ return;
  |  make effective load vector                               m.gee 02/02|
      *     RHSEFF=RHS + MASS(-DISPI,VEL,ACC) + DAMP(-DISPI,VEL,ACC)   *
 
-  Peff = rhs[0] - fie[0] 
-         + M*(-a1*dispi[0]+a2*vel[0]+a3*acc[0]) 
+  Peff = rhs[0] - fie[0]
+         + M*(-a1*dispi[0]+a2*vel[0]+a3*acc[0])
          + D*(-a4*dispi[0]+a5*vel[0]+a6*acc[0]) (if present)
-    
+
     a1 =  (1.0-alpham) * (1.0/beta)/(DSQR(dt))
     a2 = ((1.0-alpham) * (1.0/beta)/(DSQR(dt)))*dt
     a3 =  (1.0-alpham) / (2.0*beta) - 1.0
@@ -167,7 +167,7 @@ return;
     a6 =  (gamma/beta)/2.0 - 1.0) * dt * (1.0-alphaf)
 
  *----------------------------------------------------------------------*/
-void pefnln_struct(STRUCT_DYN_CALC *dynvar, 
+void pefnln_struct(STRUCT_DYN_CALC *dynvar,
                   STRUCT_DYNAMIC  *sdyn,
                   FIELD           *actfield,
                   SOLVAR          *actsolv,
@@ -181,7 +181,7 @@ void pefnln_struct(STRUCT_DYN_CALC *dynvar,
 {
 
 DOUBLE a1,a2,a3,a4,a5,a6,a7;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("pefnln_struct");
 #endif
 /*------------------------------------------------------Chung Hulbert --*/
@@ -269,7 +269,7 @@ if (sdyn->damp==1)
 /*----------------------------------------------------------------------*/
 } /* end of else if (sdyn->Typ = centr_diff) */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -296,18 +296,18 @@ return;
      ******************************************************************
 (ported from fortran)
  *----------------------------------------------------------------------*/
-void dynnle(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, INTRA *actintra, SOLVAR *actsolv, 
+void dynnle(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, INTRA *actintra, SOLVAR *actsolv,
            DIST_VECTOR *dispi, /* converged incremental displacements */
            DIST_VECTOR *fie1,  /* internal forces at time t-dt */
            DIST_VECTOR *fie2,  /* internal forces at time t */
-           DIST_VECTOR *rhs1,  /* load at time t                      */ 
-           DIST_VECTOR *rhs2,  /* load at time t-dt                   */ 
+           DIST_VECTOR *rhs1,  /* load at time t                      */
+           DIST_VECTOR *rhs2,  /* load at time t-dt                   */
            DIST_VECTOR *work0)
-           
+
 {
 DOUBLE deltae;
 DOUBLE deltaa;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("dyne");
 #endif
 /*----------------------------------------------------------------------*/
@@ -329,7 +329,7 @@ deltaa /= 2.0;
 dynvar->epot += deltae;
 dynvar->eout += deltaa;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -353,7 +353,7 @@ void dyne(STRUCT_DYN_CALC *dynvar,
          DIST_VECTOR     *vel,
          DIST_VECTOR     *work)
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("dyne");
 #endif
 /*------------------------------------------------- make kinetic energy */
@@ -367,7 +367,7 @@ solserv_sparsematvec(actintra,
 solserv_dot_vec(actintra,vel,work,&(dynvar->ekin));
 dynvar->ekin /= 2.0;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -386,7 +386,7 @@ NODE             *actnode;
 DISCRET          *actdis;
 DOUBLE            fint[MAXDOFPERNODE];
 DOUBLE            send;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("dyn_epot");
 #endif
 /*----------------------------------------------------------------------*/
@@ -411,7 +411,7 @@ MPI_Allreduce(&send,deltaepot,1,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
 *deltaepot = send;
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -428,7 +428,7 @@ void dyn_ekin(FIELD *actfield, SOLVAR *actsolv, PARTITION *actpart, INTRA *actin
 DOUBLE send;
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("dyn_ekin");
 #endif
 /*----------------------------------------------------------------------*/
@@ -445,7 +445,7 @@ send = container->ekin;
 MPI_Allreduce(&send,&(container->ekin),1,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -467,7 +467,7 @@ DOUBLE            sum;
 DOUBLE            vel[MAXDOFPERELE];
 DOUBLE            work[MAXDOFPERELE];
 INT               counter=0;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("dyn_ekin_local");
 #endif
 /*----------------------------------------------------------------------*/
@@ -477,11 +477,11 @@ nd   = actele->numnp * actele->node[0]->numdf;
 for (i=0; i<actele->numnp; i++)
 for (j=0; j<actele->node[i]->numdf; j++)
    vel[counter++] = actele->node[i]->sol.a.da[1][j];
-/*---------------------------------------------------------- work = M*v */   
+/*---------------------------------------------------------- work = M*v */
 for (i=0; i<nd; i++)
 {
    sum = 0.0;
-   for (j=0; j<nd; j++) 
+   for (j=0; j<nd; j++)
       sum += mass[i][j] * vel[j];
    work[i] = sum;
 }
@@ -492,7 +492,7 @@ deltaekin *= 0.5;
 container->ekin += deltaekin;
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -501,15 +501,15 @@ return;
  |                                                           m.gee 04/03|
  |  make incremental external energy  eout = 0.5*(rhs(t)+rhs(t-dt))*dispi|
  *----------------------------------------------------------------------*/
-void dyn_eout(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, INTRA *actintra, SOLVAR *actsolv, 
+void dyn_eout(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, INTRA *actintra, SOLVAR *actsolv,
               DIST_VECTOR *dispi, /* converged incremental displacements */
-              DIST_VECTOR *rhs1,  /* load at time t                      */ 
-              DIST_VECTOR *rhs2,  /* load at time t-dt                   */ 
+              DIST_VECTOR *rhs1,  /* load at time t                      */
+              DIST_VECTOR *rhs2,  /* load at time t-dt                   */
               DIST_VECTOR *work0)
-           
+
 {
 DOUBLE deltaa;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("dyn_eout");
 #endif
 /*----------------------------------------------------------------------*/
@@ -523,7 +523,7 @@ deltaa /= 2.0;
 /*------------------------------------------- increment external energy */
 dynvar->eout += deltaa;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -541,7 +541,7 @@ DOUBLE  beta;
 DOUBLE  gamma;
 DOUBLE  alpham;
 DOUBLE  alphaf;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("dyn_setconstants");
 #endif
 /*----------------------------------------------------------------------*/
@@ -569,7 +569,7 @@ constants[14] = dt;
 constants[15] = beta;
 constants[16] = gamma;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -580,7 +580,7 @@ return;
 void dyn_setconstants_expl(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, DOUBLE dt)
 {
 DOUBLE *constants;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("dyn_setconstants_expl");
 #endif
 /*----------------------------------------------------------------------*/
@@ -592,7 +592,7 @@ constants[2]  = 1.0 / constants[1];
 constants[3]  = 1.0 / (2.0*dt);
 constants[4]  = dt;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -610,7 +610,7 @@ return;
  |                                                                      |
  |                                                                      |
  *----------------------------------------------------------------------*/
-void dyn_nlnstructupd(FIELD *actfield,      STRUCT_DYN_CALC *dynvar, 
+void dyn_nlnstructupd(FIELD *actfield,      STRUCT_DYN_CALC *dynvar,
                       STRUCT_DYNAMIC *sdyn, SOLVAR *actsolv,
                       DIST_VECTOR *sol_old, DIST_VECTOR *sol_new,
                       DIST_VECTOR *rhs_new, DIST_VECTOR *rhs_old,
@@ -621,7 +621,7 @@ void dyn_nlnstructupd(FIELD *actfield,      STRUCT_DYN_CALC *dynvar,
 
 DOUBLE a1,a2,a3,a4,a5,a6;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("dyn_nlnstructupd");
 #endif
 /*----------------------------------------------------------------------*/
@@ -655,8 +655,8 @@ solserv_add_vec(work1,acc,a3);
 /*--------------------------------------- for prescribed displacements: */
 /*  sol[7] = a1*(sol[4]-sol[3])+a2*sol[6]+a3*sol[7] */
 /*----------------------------------------------------------------------*/
-solserv_cpdirich(actfield,0,0,7,8);               /* make a copy of sol[7] in sol[8] */              
-solserv_zerodirich(actfield,0,0,7);               /* init sol[7] to zero             */              
+solserv_cpdirich(actfield,0,0,7,8);               /* make a copy of sol[7] in sol[8] */
+solserv_zerodirich(actfield,0,0,7);               /* init sol[7] to zero             */
 solserv_assdirich_fac(actfield,0,0,4,3,7,a1,-a1); /* sol[7]+=a1*sol[4]-a1*sol[3]     */
 solserv_assdirich_fac(actfield,0,0,6,0,7,a2,0.0); /* sol[7]+=a2*sol[6]               */
 solserv_assdirich_fac(actfield,0,0,8,0,7,a3,0.0); /* sol[7]+=a3*sol[8]               */
@@ -672,22 +672,22 @@ solserv_add_vec(work1,vel,a6);
 /*--------------------------------------- for prescribed displacements: */
 /* sol[6] = a4*(sol[4]-sol[3])+a5*sol[6]+a6*sol[7]_old */
 /*----------------------------------------------------------------------*/
-solserv_adddirich(actfield,0,0,6,0,6,a5,0.0);     /* sol[6] = sol[6] * a5                 */ 
+solserv_adddirich(actfield,0,0,6,0,6,a5,0.0);     /* sol[6] = sol[6] * a5                 */
 solserv_assdirich_fac(actfield,0,0,4,3,6,a4,-a4); /* sol[6] += a4 * sol[4] + -a4 * sol[3] */
 solserv_assdirich_fac(actfield,0,0,8,0,6,a6,0.0); /* sol[6] += a6 * sol[8] (=sol[7]_old)  */
 
 /*--------------------------------------- zero the working place sol[8] */
-solserv_zerodirich(actfield,0,0,8);  
+solserv_zerodirich(actfield,0,0,8);
 
 /*--------------------------------- update the prescribed displacements */
 /*------------------------------------------------ copy u(t) -> u(t-dt) */
 /*                                                copy sol[4] to sol[3] */
-solserv_adddirich(actfield,0,0,4,0,3,1.0,0.0);  
+solserv_adddirich(actfield,0,0,4,0,3,1.0,0.0);
 /*----------------------------------------------------------- zero u(t) */
 /*                                                          zero sol[4] */
 solserv_zerodirich(actfield,0,0,4);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -704,7 +704,7 @@ DOUBLE  beta;
 DOUBLE  gamma;
 DOUBLE  alpham;
 DOUBLE  alphaf;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("dyn_nlnstruct_outhead");
 #endif
 /*----------------------------------------------------------------------*/
@@ -723,12 +723,12 @@ printf("------------------------------------------------------------------------
 printf("       Nonlinear Structural Dynamics\n");
 printf("\n");
 printf("       Generalized Alpha Method\n");
-printf("  beta=%f gamma=%f alpha_m=%f alpha_f=%f\n",beta,gamma,alpham,alphaf);    
+printf("  beta=%f gamma=%f alpha_m=%f alpha_f=%f\n",beta,gamma,alpham,alphaf);
 printf("--------------------------------------------------------------------------\n");
 /*----------------------------------------------------------------------*/
 fflush(allfiles.out_err);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -746,7 +746,7 @@ DOUBLE  gamma;
 DOUBLE  alpham;
 DOUBLE  alphaf;
 DOUBLE  xsi;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("dyn_nlngemm_outhead");
 #endif
 /*----------------------------------------------------------------------*/
@@ -766,12 +766,12 @@ printf("------------------------------------------------------------------------
 printf("       Nonlinear Structural Dynamics\n");
 printf("\n");
 printf("       Generalized Energy-Momentum Method\n");
-printf("  beta=%f gamma=%f alpha_m=%f alpha_f=%f xsi=%f\n",beta,gamma,alpham,alphaf,xsi);    
+printf("  beta=%f gamma=%f alpha_m=%f alpha_f=%f xsi=%f\n",beta,gamma,alpham,alphaf,xsi);
 printf("--------------------------------------------------------------------------\n");
 /*----------------------------------------------------------------------*/
 fflush(allfiles.out_err);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -783,7 +783,7 @@ return;
  *----------------------------------------------------------------------*/
 void dyn_nlnstru_outhead_expl()
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("dyn_nlnstru_outhead_expl");
 #endif
 /*----------------------------------------------------------------------*/
@@ -800,7 +800,7 @@ printf("------------------------------------------------------------------------
 /*----------------------------------------------------------------------*/
 fflush(allfiles.out_err);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -813,7 +813,7 @@ return;
  *----------------------------------------------------------------------*/
 void dyn_nlnstruct_outstep(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, INT numiter, DOUBLE dt)
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("dyn_nlnstruct_outstep");
 #endif
 /*----------------------------------------------------------------------*/
@@ -825,7 +825,7 @@ fprintf(allfiles.out_err,"STEP=%6d | NSTEP=%6d | TIME=%-14.8E | DT=%-14.8E | NUM
 /*----------------------------------------------------------------------*/
 fflush(allfiles.out_err);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -866,7 +866,7 @@ return;
  |                                                                           |
  | see PhD theses Mok page 165                                               |
  *---------------------------------------------------------------------------*/
-void assemble_dirich_dyn(ELEMENT *actele, ARRAY *estif_global, 
+void assemble_dirich_dyn(ELEMENT *actele, ARRAY *estif_global,
                          ARRAY *emass_global, CONTAINER *container)
 {
 INT                   i,j;
@@ -883,7 +883,7 @@ DOUBLE                dforces[MAXDOFPERELE];
 INT                   dirich_onoff[MAXDOFPERELE];
 INT                   lm[MAXDOFPERELE];
 GNODE                *actgnode;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("assemble_dirich_dyn");
 #endif
 /*----------------------------------------------------------------------*/
@@ -891,7 +891,7 @@ dstrc_enter("assemble_dirich_dyn");
 hasdirich=0;
 for (i=0; i<actele->numnp; i++)
 {
-   if (actele->node[i]->gnode->dirich != NULL) 
+   if (actele->node[i]->gnode->dirich != NULL)
    {
       hasdirich=1;
       break;
@@ -900,7 +900,7 @@ for (i=0; i<actele->numnp; i++)
 /*--------------------- there are no dirichlet conditions here so leave */
 if (hasdirich==0) goto end;
 /*--------------------------------------- check for presence of damping */
-if (ABS(container->dirichfacs[7]) > EPS13 || ABS(container->dirichfacs[8]) > EPS13) 
+if (ABS(container->dirichfacs[7]) > EPS13 || ABS(container->dirichfacs[8]) > EPS13)
 {
    idamp=1;
    mdamp = container->dirichfacs[7];
@@ -935,7 +935,7 @@ for (i=0; i<actele->numnp; i++)
 /*--------------------------------                 K * facs[6]          */
 /*                                       facs[6] is 0 in corrector call */
 /*----------------------------------------------------------------------*/
-/* 
+/*
 prescribed displacement increment (u(t) - u(t-dt)) are in node->sol[5][0..numdf-1]
 */
 counter=0;
@@ -969,12 +969,12 @@ for (i=0; i<nd; i++)
 
 /*----------------------------------------------------------------------*/
 /*--------------------------- make the entries M  * h(-du,udot,udotdot) */
-/* 
+/*
 this consists of three parts:
    M * facs[0] * sol[5][0..numdf-1]       sol[5] holds (u(t) - u(t-dt))
    M * facs[1] * sol[6][0..numdf-1]       sol[6] holds ddot(t)
    M * facs[2] * sol[7][0..numdf-1]       sol[7] holds ddotdot(t)
-*/   
+*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*
@@ -1075,12 +1075,12 @@ if (idamp)
 {
 /*----------------------------------------------------------------------*/
 /*--------------------------- make the entries C  * e(-du,udot,udotdot) */
-/* 
+/*
 this consists of three parts:
    C * facs[3] * sol[5][0..numdf-1]       sol[5] holds (u(t) - u(t-dt))
    C * facs[4] * sol[6][0..numdf-1]       sol[6] holds ddot(t)
    C * facs[5] * sol[7][0..numdf-1]       sol[7] holds ddotdot(t)
-*/   
+*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*
@@ -1190,7 +1190,7 @@ for (i=0; i<nd; i++)
 }
 /*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1208,7 +1208,7 @@ void dyn_keff_expl(INTRA *actintra,
 {
 DOUBLE a1;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("dyn_keff_expl");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1224,7 +1224,7 @@ if (damp_array>0)
                             &sysarray_typ[mass_array],&sysarray[mass_array],
                             1.0);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1252,7 +1252,7 @@ ARRAY     WORK_a;
 DOUBLE   *WORK;
 INT       info=1;
 INT      *irn,*jcn, nnz;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("dyn_eigen");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1296,9 +1296,9 @@ amdel(&A_a);
 amdel(&B_a);
 amdel(&EW_a);
 amdel(&WORK_a);
-dserror("Eigensolution finished "); 
+dserror("Eigensolution finished ");
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1327,7 +1327,7 @@ INT      *IWORK,liwork;
 INT       info=1;
 INT      *irn,*jcn, nnz;
 DIST_VECTOR    *distvecs;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_eigen");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1356,7 +1356,7 @@ for (k=0; k<nnz; k++)
    i = irn[k];
    j = jcn[k];
    A[i][j] = spostiff->A_loc.a.dv[k];
-} 
+}
 /*--------------------------- call lapack to calculate the eigenvalues */
 printf("Reached eigensolver\n");
 fflush(stdout);
@@ -1389,9 +1389,9 @@ amdel(&A_a);
 amdel(&EW_a);
 amdel(&WORK_a);
 amdel(&IWORK_a);
-dserror("Eigensolution finished "); 
+dserror("Eigensolution finished ");
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1411,7 +1411,7 @@ ELEMENT     *actele;
 DOUBLE       send[5],recv[5];
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("total_energy");
 #endif
 
@@ -1432,14 +1432,14 @@ dynvar->local_linmom[1] = 0.0;
 for (i=0; i<actpart->pdis[0].numele; i++)
 {
   actele = actpart->pdis[0].element[i];
-  
+
   if (actele->eltyp != el_wall1) continue;
   if (actele->proc != actintra->intra_rank) continue;
   dynvar->local_strain_energy    = dynvar->local_strain_energy  + actele->e.w1->strain_energy;
   dynvar->local_kinetic_energy   = dynvar->local_kinetic_energy + actele->e.w1->kinetic_energy;
   dynvar->local_linmom[0]        = dynvar->local_linmom[0] +  actele->e.w1->linmom[0];
   dynvar->local_linmom[1]        = dynvar->local_linmom[1] +  actele->e.w1->linmom[1];
-  dynvar->local_angular_momentum = dynvar->local_angular_momentum + actele->e.w1->angular_momentum;  
+  dynvar->local_angular_momentum = dynvar->local_angular_momentum + actele->e.w1->angular_momentum;
 }
 #ifdef PARALLEL
 send[0] = dynvar->local_strain_energy;
@@ -1454,8 +1454,8 @@ recv[2] = send[2];
 recv[3] = send[3];
 recv[4] = send[4];
 #endif
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -1,6 +1,6 @@
 /*!---------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -68,25 +68,25 @@ void math_addab(DOUBLE **a, DOUBLE **b, INT dim1, INT dim2, DOUBLE fact);
 
 
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief extract digits from integer number
 
-<pre>                                                         genk 04/02		     
-</pre>   
+<pre>                                                         genk 04/02
+</pre>
 \param  num	 INT   (i)    integer number
 \param *it	 INT   (o)    integer on position "thousand"
 \param *ih       INT   (o)    integer on position "hundred"
 \param *id       INT   (o)    integer on position "ten"
 \param *id       INT   (o)    integer on position "one"
-\return void 
+\return void
 
 ------------------------------------------------------------------------*/
 void math_intextract(
-                    INT num,    
-                    INT *it,    
-		    INT *ih,    
-		    INT *id,    
-		    INT *io     
+                    INT num,
+                    INT *it,
+		    INT *ih,
+		    INT *id,
+		    INT *io
 	            );
 
 /*----------------------------------------------------------------------*

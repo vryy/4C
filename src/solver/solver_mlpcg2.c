@@ -14,13 +14,13 @@ Maintainer: Michael Gee
 ---------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "../shell8/shell8.h"
-/*! 
-\addtogroup MLPCG 
+/*!
+\addtogroup MLPCG
 *//*! @{ (documentation module open)*/
 /*!----------------------------------------------------------------------
 \brief the multilevel preconditioner main structure
 
-<pre>                                                         m.gee 09/02    
+<pre>                                                         m.gee 09/02
 defined in solver_mlpcg.c
 </pre>
 
@@ -31,9 +31,9 @@ extern struct _MLPRECOND mlprecond;
 
 
 /*!---------------------------------------------------------------------
-\brief smoothed aggregation algebraic multigrid preconditioner                                              
+\brief smoothed aggregation algebraic multigrid preconditioner
 
-<pre>                                                        m.gee 10/02 
+<pre>                                                        m.gee 10/02
 on input r is the residuum, it is not altered on output !
 on input z is zero!         it is     altered on output
 This is the V-cycle preconditioner or *gamma=1
@@ -42,8 +42,8 @@ This is the W-cycle preconditioner or *gamma=2
 \param actlevel     INT          (i)   the active level in the grid hierachy
 \param z_a          ARRAY*       (o)   the correction on this active level
 \param r_a          ARRAY*       (i)   the residuum on this active level
-\param actintra     INTRA*       (i)   the intra-communicator of this field                  
-\return void                                               
+\param actintra     INTRA*       (i)   the intra-communicator of this field
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_precond_amgVW(INT    level,
@@ -74,7 +74,7 @@ DOUBLE   done=1.0;
 INT      ione=1;
 INT      izero=0;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_precond_amgVW");
 #endif
 /*----------------------------------------------------------------------*/
@@ -89,9 +89,9 @@ r        = r_a->a.dv;
 mlpcg_eigen(stiff,actintra);
 #endif
 /*----------------------------------------------------------------------*/
-if (level==0) 
+if (level==0)
    j = 1;
-else          
+else
    j = *gamma;
 /*----------------------------------------------------------------------*/
 if (level != nlevel-1)
@@ -203,7 +203,7 @@ amdel(&zwork_a);
 /*======================================================================*/
 
 exit:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -211,9 +211,9 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief smoothed aggregation algebraic multigrid preconditioner                                              
+\brief smoothed aggregation algebraic multigrid preconditioner
 
-<pre>                                                        m.gee 10/02 
+<pre>                                                        m.gee 10/02
 on input r is the residuum, it is not altered on output !
 on input z is zero!         it is     altered on output
 This is the F-cycle preconditioner or *gamma=2
@@ -221,8 +221,8 @@ This is the F-cycle preconditioner or *gamma=2
 \param actlevel     INT          (i)   the active level in the grid hierachy
 \param z_a          ARRAY*       (o)   the correction on this active level
 \param r_a          ARRAY*       (i)   the residuum on this active level
-\param actintra     INTRA*       (i)   the intra-communicator of this field                  
-\return void                                               
+\param actintra     INTRA*       (i)   the intra-communicator of this field
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_precond_amgF(INT    level,
@@ -252,7 +252,7 @@ DOUBLE   done=1.0;
 INT      ione=1;
 INT      izero=0;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_precond_amgF");
 #endif
 /*----------------------------------------------------------------------*/
@@ -263,9 +263,9 @@ numeq    = stiff->numeq;
 z        = z_a->a.dv;
 r        = r_a->a.dv;
 /*----------------------------------------------------------------------*/
-if (level==0) 
+if (level==0)
    j = 1;
-else          
+else
    j = *gamma;
 /*-------------------------------------allocate working copy of r and z */
 rwork = amdef("rwork",&rwork_a,numeq,1,"DV");
@@ -350,7 +350,7 @@ exit:
 amdel(&rwork_a);
 amdel(&zwork_a);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -360,24 +360,24 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief make presmoothing                                              
+\brief make presmoothing
 
-<pre>                                                        m.gee 10/02 
+<pre>                                                        m.gee 10/02
 
 </pre>
 \param z            DOUBLE*      (o)   the smoothed residuum, on input zero!
 \param r            DOUBLE*      (i)   the residuum
-\param csr          DBCSR*       (i)   the matrix on the active level 
+\param csr          DBCSR*       (i)   the matrix on the active level
 \param lev          MLLEVEL*     (i)   the structure of the active level
-\param actintra     INTRA*       (i)   the intra-communicator of this field                  
-\return void                                               
+\param actintra     INTRA*       (i)   the intra-communicator of this field
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_precond_presmo(DOUBLE *z, DOUBLE *r, DBCSR *csr, MLLEVEL *lev, INTRA *actintra, INT level)
 {
 INT j;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_precond_presmo");
 #endif
 /*----------------------------------------------------------------------*/
@@ -409,30 +409,30 @@ default:
 break;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of mlpcg_precond_presmo */
 /*!---------------------------------------------------------------------
-\brief make postsmoothing                                              
+\brief make postsmoothing
 
-<pre>                                                        m.gee 10/02 
+<pre>                                                        m.gee 10/02
 
 </pre>
 \param z            DOUBLE*      (o)   the smoothed residuum, on input zero!
 \param r            DOUBLE*      (i)   the residuum
-\param csr          DBCSR*       (i)   the matrix on the active level 
+\param csr          DBCSR*       (i)   the matrix on the active level
 \param lev          MLLEVEL*     (i)   the structure of the active level
-\param actintra     INTRA*       (i)   the intra-communicator of this field                  
-\return void                                               
+\param actintra     INTRA*       (i)   the intra-communicator of this field
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_precond_postsmo(DOUBLE *z, DOUBLE *r, DBCSR *csr, MLLEVEL *lev, INTRA *actintra, INT level)
 {
 INT j;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_precond_postsmo");
 #endif
 /*----------------------------------------------------------------------*/
@@ -464,28 +464,28 @@ default:
 break;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of mlpcg_precond_postsmo */
 /*!---------------------------------------------------------------------
-\brief make coarsest solution                                              
+\brief make coarsest solution
 
-<pre>                                                        m.gee 11/02 
+<pre>                                                        m.gee 11/02
 
 </pre>
 \param z            DOUBLE*      (o)   the smoothed residuum, on input zero!
 \param r            DOUBLE*      (i)   the residuum
 \param lev          MLLEVEL*     (i)   the structure of the active level
-\param actintra     INTRA*       (i)   the intra-communicator of this field                  
-\return void                                               
+\param actintra     INTRA*       (i)   the intra-communicator of this field
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_precond_coarsesolv(DOUBLE *z, DOUBLE *r, MLLEVEL *lev, INTRA *actintra)
 {
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_precond_coarsesolv");
 #endif
 /*----------------------------------------------------------------------*/
@@ -507,34 +507,34 @@ default:
 break;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of mlpcg_precond_coarsesolv */
 
- 
+
 
 /*!---------------------------------------------------------------------
-\brief create multilevel preconditioner                                              
+\brief create multilevel preconditioner
 
-<pre>                                                        m.gee 9/02 
+<pre>                                                        m.gee 9/02
 
 </pre>
-\param mlpcgvars    MLPCGVARS*   (i)   variables needed for mlpcg                   
-\param bdcsr        DBCSR*       (i)   the distributed  csr matrix                   
-\param actintra     INTRA*       (i)   the intra-communicator of this field                  
-\return void                                               
+\param mlpcgvars    MLPCGVARS*   (i)   variables needed for mlpcg
+\param bdcsr        DBCSR*       (i)   the distributed  csr matrix
+\param actintra     INTRA*       (i)   the intra-communicator of this field
+\return void
 
 ------------------------------------------------------------------------*/
-void mlpcg_precond_create(DBCSR     *bdcsr, 
+void mlpcg_precond_create(DBCSR     *bdcsr,
                           MLPCGVARS *mlpcgvars,
                           INTRA     *actintra)
 {
 INT        i;
 MLLEVEL   *actlev;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_precond_create");
 #endif
 /*----------------------------------------------------------------------*/
@@ -582,7 +582,7 @@ for (i=1; i<mlprecond.numlev; i++)
 mlprecond.level[0].csr = bdcsr;
 /*----------------------------------------------------------------------*/
 exit:;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -591,14 +591,14 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief init multilevel preconditioner                                              
+\brief init multilevel preconditioner
 
-<pre>                                                        m.gee 9/02 
+<pre>                                                        m.gee 9/02
 
 </pre>
-\param bdcsr      DBCSR*       (i)   the distributed  csr matrix                   
-\param actintra   INTRA*       (i)   the intra-communicator of this field                  
-\return void                                               
+\param bdcsr      DBCSR*       (i)   the distributed  csr matrix
+\param actintra   INTRA*       (i)   the intra-communicator of this field
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_precond_init(DBCSR  *bdcsr,MLPCGVARS *mlpcgvars, INTRA *actintra)
@@ -607,7 +607,7 @@ INT        i;
 MLLEVEL   *actlev;
 DOUBLE     t1,t2;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_precond_init");
 #endif
 /*-------------------------------- prepare the levels and the smoothers */
@@ -665,10 +665,10 @@ if (actintra->intra_rank==0)
    printf("level 0: size %d nnz %d\n",mlprecond.level[0].csr->numeq_total,
                                       mlprecond.level[0].csr->ja.fdim);
    fflush(stdout);
-}				   
+}
 #if 0
 mlpcg_printfmatrix(mlprecond.level[0].csr,actintra);
-#endif                                   
+#endif
 /*-------------------------------------------- loop level 1 to numlev-2 */
 for (i=1; i<mlprecond.numlev-1; i++)
 {
@@ -723,10 +723,10 @@ for (i=1; i<mlprecond.numlev-1; i++)
       printf("level %d: size %d nnz %d\n",i,mlprecond.level[i].csr->numeq_total,
                                             mlprecond.level[i].csr->ja.fdim);
       fflush(stdout);
-   }					    
+   }
 #if 0
    mlpcg_printfmatrix(mlprecond.level[i].csr,actintra);
-#endif                                   
+#endif
 }
 /*------------------------ make level numlev-1 (coarse grid) separately */
 /*------------------------------------------------------- make printout */
@@ -735,12 +735,12 @@ if (actintra->intra_rank==0)
    printf("level %d: size %d nnz %d\n",i,mlprecond.level[i].csr->numeq_total,
                                          mlprecond.level[i].csr->ja.fdim);
    fflush(stdout);
-}					 
+}
 #if 0
 mlpcg_printfmatrix(mlprecond.level[i].csr,actintra);
-#endif                                   
+#endif
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -748,20 +748,20 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief prolonge z down the finer level                                              
+\brief prolonge z down the finer level
 
-<pre>                                                        m.gee 11/02 
+<pre>                                                        m.gee 11/02
 z = P * zc
 </pre>
-\param zc         DOUBLE*     (o)   residuum in the dimension of the next level                   
+\param zc         DOUBLE*     (o)   residuum in the dimension of the next level
 \param z          DOUBLE*     (i)   residuum on the active level
 \param P          DBCSR*      (i)   the prolongator matrix
 \param coarsecsr  DBCSR*      (i)   the fine level stiffness matrix
-\param actintra   INTRA*      (i)   the intra-communicator of this field                  
-\return void                                               
+\param actintra   INTRA*      (i)   the intra-communicator of this field
+\return void
 
 ------------------------------------------------------------------------*/
-void mlpcg_precond_prolongz(DOUBLE *zc, DOUBLE *z, DBCSR *P, DBCSR *coarsecsr, 
+void mlpcg_precond_prolongz(DOUBLE *zc, DOUBLE *z, DBCSR *P, DBCSR *coarsecsr,
                             INTRA *actintra)
 {
 INT        i,j,n,m,counter;
@@ -779,7 +779,7 @@ MPI_Request *request;
 MPI_Status   status;
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_precond_prolongz");
 #endif
 /*----------------------------------------------------------------------*/
@@ -809,7 +809,7 @@ if (nproc>1)
    {
       actcol = ja[i];
       owner  = mlpcg_getowner(actcol,coarsecsr->owner,nproc);
-      if (owner==myrank) 
+      if (owner==myrank)
          continue;
       ineeds[myrank][owner] = 1;
    }
@@ -826,7 +826,7 @@ if (nproc>1)
    counter=0;
    for (n=0; n<nproc; n++)
    {
-      if (ineedr[n][myrank]==0) 
+      if (ineedr[n][myrank]==0)
          continue;
       MPI_Isend(coarsecsr->update.a.iv,
                 coarsecsr->numeq,
@@ -948,7 +948,7 @@ if (nproc>1)
 /*======================================================================*/
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -957,20 +957,20 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief restrict the residuum to the next level                                              
+\brief restrict the residuum to the next level
 
-<pre>                                                        m.gee 11/02 
+<pre>                                                        m.gee 11/02
 rc = Ptransposed * r
 </pre>
-\param rc         DOUBLE*     (o)   residuum in the dimension of the next level                   
+\param rc         DOUBLE*     (o)   residuum in the dimension of the next level
 \param r          DOUBLE*     (i)   residuum on the active level
 \param P          DBCSR*      (i)   the prolongator matrix
 \param coarsecsr  DBCSR*      (i)   the coarse level stiffness matrix
-\param actintra   INTRA*      (i)   the intra-communicator of this field                  
-\return void                                               
+\param actintra   INTRA*      (i)   the intra-communicator of this field
+\return void
 
 ------------------------------------------------------------------------*/
-void mlpcg_precond_restrictr(DOUBLE *rc, DOUBLE *r, DBCSR *P, DBCSR *coarsecsr, 
+void mlpcg_precond_restrictr(DOUBLE *rc, DOUBLE *r, DBCSR *P, DBCSR *coarsecsr,
                             INTRA *actintra)
 {
 INT        i,j,n,m,counter;
@@ -990,7 +990,7 @@ MPI_Request *request=NULL;
 MPI_Status   status;
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_precond_restrictr");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1115,14 +1115,14 @@ while (nrecv!=0)
    {
       actcol = recv_rindex[i];
       owner  = mlpcg_getowner(actcol,coarsecsr->owner,nproc);
-      if (owner != myrank) 
+      if (owner != myrank)
          continue;
       cindex = mlpcg_getindex(actcol,coarsecsr->update.a.iv,coarsecsr->numeq);
       if (cindex==-1) dserror("Cannot find local dof");
       rc[cindex] += recv_val[i];
    }
 }
-for (n=0; n<nsend*2; n++) 
+for (n=0; n<nsend*2; n++)
    MPI_Wait(&(request[n]),&status);
 #endif
 /*==============================================================tidy up */
@@ -1138,7 +1138,7 @@ if (nproc>1)
 }
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1150,15 +1150,15 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief restrict the system matrix to the next level                                              
+\brief restrict the system matrix to the next level
 
-<pre>                                                        m.gee 9/02 
+<pre>                                                        m.gee 9/02
 
 </pre>
-\param actlev      MLLEVEL*     (i)   the active level in the ml-precond.                   
+\param actlev      MLLEVEL*     (i)   the active level in the ml-precond.
 \param nextlev     MLLEVEL*     (i/o) the next coarser level.
-\param actintra   INTRA*        (i)   the intra-communicator of this field                  
-\return void                                               
+\param actintra   INTRA*        (i)   the intra-communicator of this field
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_precond_restrictK(MLLEVEL  *actlev, MLLEVEL *nextlev, INTRA *actintra)
@@ -1172,7 +1172,7 @@ INT      **blocks;
 INT        max=0;
 AGG       *actagg;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_precond_restrictK");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1188,10 +1188,10 @@ startdof = actlev->agg[0].dof[0];
 enddof   = actlev->agg[actlev->nagg-1].dof[actlev->agg[actlev->nagg-1].numdf-1];
 /*------------- now we have to collect the unknown total number of dofs */
 counter=0;
-for (i=0; i<actlev->nagg; i++) 
+for (i=0; i<actlev->nagg; i++)
 {
    counter += actlev->agg[i].numdf;
-   if (max < actlev->agg[i].numdf) 
+   if (max < actlev->agg[i].numdf)
       max = actlev->agg[i].numdf;
 }
 #ifdef PARALLEL
@@ -1209,8 +1209,8 @@ if (mlprecond.ncall==0)
 else
    mlpcg_csr_zero(nextlev->csr,actintra);
 /*----------------------------------------------------------------------*/
-/* 
-   for the restriction, we need a working csr matrix of dimensions      
+/*
+   for the restriction, we need a working csr matrix of dimensions
    nrow        = nrow of nextlev->csr
    ncol        = nrow of actlev->csr
    numeq_total = numeq_total of nextlev->csr
@@ -1226,11 +1226,11 @@ mlpcg_precond_PtKP(actlev->P,actlev->csr,nextlev->csr,work,actlev->agg,
 mlpcg_csr_destroy(work);
 work = CCAFREE(work);
 /*----------------------------------------------------------------------*/
-/* 
+/*
   due to boundary conditions there may be empty columns in the prolongator.
   This leads to zero rows and columns and zero diagonal element in the
   coarse grid stiffness matrices. Without influence on the physical behaviour,
-  a ONE is set on the diagonal of such rows 
+  a ONE is set on the diagonal of such rows
 */
 mlpcg_precond_checkdirich(nextlev->csr,actintra);
 /*--------------------------- close the stiffness matrix on coarse grid */
@@ -1254,7 +1254,7 @@ if (mlprecond.ncall==0)
 }
 /*----------------------------------------------------------------------*/
 fflush(stdout);
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1264,15 +1264,15 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief check for the first coupled row in the matrix                                             
+\brief check for the first coupled row in the matrix
 
-<pre>                                                        m.gee 10/02 
-build the owner array inside csr and check for the first coupled 
+<pre>                                                        m.gee 10/02
+build the owner array inside csr and check for the first coupled
 row in the matrix
 </pre>
 \param matrix     DBCSR* (i/o) the csr matrix to be ckecked
-\param actintra   INTRA* (i)   the intra-communicator of this field                  
-\return void                                               
+\param actintra   INTRA* (i)   the intra-communicator of this field
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_precond_check_fcd(DBCSR *matrix, INTRA *actintra)
@@ -1284,7 +1284,7 @@ INT           numeq,*update,*ia,*ja;
 DOUBLE       *a;
 DOUBLE        one=1.0;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_precond_check_fcd");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1323,24 +1323,24 @@ for (i=0; i<numeq; i++)
 }
 /*----------------------------------------------------------------------*/
 exit:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of mlpcg_precond_check_fcd */
 
 /*!---------------------------------------------------------------------
-\brief check for zero diagonal entries                                             
+\brief check for zero diagonal entries
 
-<pre>                                                        m.gee 10/02 
+<pre>                                                        m.gee 10/02
   due to boundary conditions there may be empty columns in the prolongator.
   This leads to zero rows and columns and zero diagonal element in the
   coarse grid stiffness matrices. Without influence on the physical behaviour,
-  a ONE is set on the diagonal of such rows 
+  a ONE is set on the diagonal of such rows
 </pre>
 \param matrix     DBCSR* (i/o) the csr matrix to be ckecked
-\param actintra   INTRA* (i)   the intra-communicator of this field                  
-\return void                                               
+\param actintra   INTRA* (i)   the intra-communicator of this field
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_precond_checkdirich(DBCSR *matrix, INTRA *actintra)
@@ -1351,7 +1351,7 @@ INT           numeq,*update,*ia,*ja;
 DOUBLE       *a;
 DOUBLE        one=1.0;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_precond_checkdirich");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1379,7 +1379,7 @@ for (i=0; i<numeq; i++)
       if (actcol == actrow)
       {
          foundit=1;
-         if (FABS(a[j])<EPS14) 
+         if (FABS(a[j])<EPS14)
          a[j] = 1.0;
          break;
       }
@@ -1395,7 +1395,7 @@ for (i=0; i<numeq; i++)
    }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1403,12 +1403,12 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief get directors from the shell8 element for rbm's                                              
+\brief get directors from the shell8 element for rbm's
 
-<pre>                                                        m.gee 9/02 
+<pre>                                                        m.gee 9/02
 
 </pre>
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void mlpcg_precond_getdirs(void)
@@ -1420,7 +1420,7 @@ ELEMENT      *actele;
 DOUBLE      **director;
 DOUBLE        fac;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mlpcg_precond_getdirs");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1428,16 +1428,16 @@ dstrc_enter("mlpcg_precond_getdirs");
 #ifndef D_SHELL8
 dserror("SHELL8 not compiled in! MLPCG is a SHELL8 solver!");
 #endif
-/*-------------------------------------------- get pointer to partition */   
+/*-------------------------------------------- get pointer to partition */
 actpdis = mlprecond.partdis;
 /*------------------------- allocate pointers to directors in mlprecond */
 if (mlprecond.director.Typ==cca_XX)
 {
    director = amdef("direct",&(mlprecond.director),actpdis->numnp,3,"DA");
    mlprecond.node = (NODE**)CCAMALLOC((actpdis->numnp)*sizeof(NODE*));
-}   
+}
 /*------------------- loop all nodes in actpdis and get there directors */
-/* 
+/*
 IMPORTANT NOTE:
 in the nonlinear dynamic or static case, it could be advisable to use the
 deformed configuration (total lagrange!) to create the rigid body modes !
@@ -1465,7 +1465,7 @@ for (i=0; i<actpdis->numnp; i++)
 }
 dsassert(counter==actpdis->numnp,"Number of nodes wrong");
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -8,14 +8,14 @@ Maintainer: Andrea Hund
             hund@statik.uni-stuttgart.de
             http://www.uni-stuttgart.de/ibs/members/hund/
             0771 - 685-6122
-</pre> 
+</pre>
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "wallge.h"
 #include "wallge_prototypes.h"
 
-/*! 
-\addtogroup WALLGE 
+/*!
+\addtogroup WALLGE
 *//*! @{ (documentation module open)*/
 
 
@@ -24,7 +24,7 @@ Maintainer: Andrea Hund
        of gradient enhanced wall element
 
 \param  *ele             ELEMENT        I: Actual element
-\param  *mat             MATERIAL       I: Material of actual element 
+\param  *mat             MATERIAL       I: Material of actual element
 \param  *bopd            DOUBLE         I: B-operator for displacements
 \param  *functe          DOUBLE         I: Ansatz-funct.for equiv.strain
 \param **bope            DOUBLE         I: B-operator for equiv.strain
@@ -34,13 +34,13 @@ Maintainer: Andrea Hund
 \param  *eps_vnl         DOUBLE       I/O: nonlocal equiv. strain at GP(scalar)
 \param  *grad_eps_vnl    DOUBLE       I/O: grad of nonl.equi.strain(vector)
 \param **D               DOUBLE       I/O: tangent d sig/d eps(matrix)
-\param  *E               DOUBLE       I/O: tangent d sig/d eps_v(vector) 
-\param  *F               DOUBLE       I/O: tangent d eps_v/d eps(vector) 
-\param   istore          INT            I: flag: istore=1 -> update 
-\param   newval          INT            I: flag: newval=1 -> just stress  
+\param  *E               DOUBLE       I/O: tangent d sig/d eps_v(vector)
+\param  *F               DOUBLE       I/O: tangent d eps_v/d eps(vector)
+\param   istore          INT            I: flag: istore=1 -> update
+\param   newval          INT            I: flag: newval=1 -> just stress
 
-\return void                                               
-\sa calling:   wge_mat_damage(); 
+\return void
+\sa calling:   wge_mat_damage();
     called by: wgestatic_ke();
 *----------------------------------------------------------------------*/
 void wge_call_mat(ELEMENT   *ele,     /* actual element                */
@@ -57,20 +57,20 @@ void wge_call_mat(ELEMENT   *ele,     /* actual element                */
                   DOUBLE    *E,       /* tangent d sig/d eps_v         */
                   DOUBLE    *F,       /* tangent d eps_v/d eps         */
                   INT        istore,  /* flag: istore=1 -> update      */
-                  INT        newval)  /* flag: newval=1 -> just stress */ 
+                  INT        newval)  /* flag: newval=1 -> just stress */
 {
 #ifdef D_WALLGE
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("wge_call_mat");
 #endif
 /*----------------------------------------------------------------------*/
 switch(mat->mattyp)
 {
 case m_damage_ge:
-   wge_mat_damage(mat->m.damage_ge->equival,   
-                  mat->m.damage_ge->damtyp,    
+   wge_mat_damage(mat->m.damage_ge->equival,
+                  mat->m.damage_ge->damtyp,
                   mat->m.damage_ge->youngs,
                   mat->m.damage_ge->nue,
                   mat->m.damage_ge->kappa_0,
@@ -100,12 +100,12 @@ break;
 }
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 #endif /*D_WALLGE*/
-return; 
+return;
 } /* end of wge_call_mat */
 /*----------------------------------------------------------------------*/
 /*! @} (documentation module close)*/

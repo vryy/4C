@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 'c1_lint' which performs integration of 
+\brief contains the routine 'c1_lint' which performs integration of
 element loads (edge, surface, volume loads)
 for a 3D hex element
 
@@ -17,7 +17,7 @@ Maintainer: Andreas Lipka
 #include "../headers/standardtypes.h"
 #include "brick1.h"
 #include "brick1_prototypes.h"
-/**/      
+/**/
 /*----------------------------------------------------------------------*
  |                                                                      |
  |    6-------18-------2           6----------------2                   |
@@ -40,8 +40,8 @@ Maintainer: Andreas Lipka
  |                                                                      |
  *----------------------------------------------------------------------*/
 
-/*! 
-\addtogroup BRICK1 
+/*!
+\addtogroup BRICK1
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
@@ -61,8 +61,8 @@ for a 3D hex element
 \param     wgy   DOUBLE* (i)   weights at gaussian point
 \param     zgp   DOUBLE* (i)   gp-coordinate in t direction
 \param     wgz   DOUBLE* (i)   weights at gaussian point
-\param    xyze   DOUBLE* (i)   element coordinates          
-\param   funct   DOUBLE* (i)   shape functions  
+\param    xyze   DOUBLE* (i)   element coordinates
+\param   funct   DOUBLE* (i)   shape functions
 \param   deriv   DOUBLE* (i)   derivatives of the shape functions
 \param     xjm   DOUBLE**(i)   the Jacobian matrix
 \param     iel      INT  (i)   number of element nodes
@@ -74,17 +74,17 @@ for a 3D hex element
 \param   eload   DOUBLE**(o)   element load vector
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1_eleload()
 
 *----------------------------------------------------------------------*/
 void c1_lint(
-             INT        ngr,       INT ngs,        INT ngt, 
+             INT        ngr,       INT ngs,        INT ngt,
              DOUBLE    *xgp,   DOUBLE *wgx,    DOUBLE *ygp,
              DOUBLE    *wgy,   DOUBLE *zgp,    DOUBLE *wgz,
              DOUBLE   *xyze, DOUBLE *funct, DOUBLE **deriv, DOUBLE **xjm,
              INT        iel,    INT ngnode,       INT *shn,  RSTF rstgeo,
-             INT    *lonoff,  DOUBLE *lval, 
+             INT    *lonoff,  DOUBLE *lval,
              DOUBLE **eload
              )
 {
@@ -94,7 +94,7 @@ void c1_lint(
    DOUBLE det0, ds;
    DOUBLE ap[3], ar[3];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1_lint");
 #endif
 /*----------------------------------------------------------------------*/
@@ -103,11 +103,11 @@ dstrc_enter("c1_lint");
       e1   = xgp[gpr];                  /* gp-coordinate in r direction */
       facr = wgx[gpr];                  /* weights at gaussian point    */
    for (gps=0; gps<ngs; gps++) {
-      e2   = ygp[gps];                  /* gp-coordinate in s direction */        
-      facs = wgy[gps];        
+      e2   = ygp[gps];                  /* gp-coordinate in s direction */
+      facs = wgy[gps];
    for (gpt=0; gpt<ngt; gpt++) {
-      e3   = zgp[gpt];                  /* gp-coordinate in t direction */        
-      fact = wgz[gpt];        
+      e3   = zgp[gpt];                  /* gp-coordinate in t direction */
+      fact = wgz[gpt];
       /*----------------- shape functions and derivatives at this point */
       c1_funct_deriv(funct,deriv,e1,e2,e3,iel,1);
       c1_jaco (deriv,xjm,&det0,xyze,iel);
@@ -167,10 +167,10 @@ dstrc_enter("c1_lint");
       }
    }}}/* end loop gpr over integration points */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of c1_lint */
 
 /*!----------------------------------------------------------------------
@@ -188,14 +188,14 @@ for a 3D hex element
 \param     init       INT  (i)   ==1 init phase for this routine
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
 void c1_eleload(
-             ELEMENT   *ele, 
-             C1_DATA   *data, 
-             DOUBLE    *loadvec,  
+             ELEMENT   *ele,
+             C1_DATA   *data,
+             DOUBLE    *loadvec,
              INT        init
              )
 {
@@ -204,12 +204,12 @@ INT                 i,j,cc;         /* some loopers and counters      */
 INT                 nir,nis,nit;      /* num GP in r/s/t direction      */
 INT                 iel;              /* numnp to this element          */
 const INT           numdf =3;
-static ARRAY        funct_a;          /* shape functions                */    
-static DOUBLE      *funct;     
-static ARRAY        deriv_a;          /* derivatives of shape functions */   
-static DOUBLE     **deriv;     
-static ARRAY        xjm_a;            /* jacobian matrix                */     
-static DOUBLE     **xjm;         
+static ARRAY        funct_a;          /* shape functions                */
+static DOUBLE      *funct;
+static ARRAY        deriv_a;          /* derivatives of shape functions */
+static DOUBLE     **deriv;
+static ARRAY        xjm_a;            /* jacobian matrix                */
+static DOUBLE     **xjm;
 DOUBLE              xyze[60];         /* element-node coordinates       */
 /* load specific */
 static ARRAY eload_a; static DOUBLE **eload;
@@ -238,11 +238,11 @@ static INT lhnod[12][3] = {0, 1,  8,  /* 1st line nodes */
                            2, 3, 10,
                            3, 0, 11,
                            4, 0, 16,
-                           1, 5, 17, 
+                           1, 5, 17,
                            2, 6, 18,
                            3, 7, 19,
                            4, 5, 12,
-                           5, 6, 13, 
+                           5, 6, 13,
                            6, 7, 14,
                            7, 4, 15};
 INT *lhn; /* pointer to line node topology */
@@ -255,12 +255,12 @@ static INT shnod[6][8] = {0, 1, 2, 3,  8,  9, 10, 11,  /* 1st surf nodes */
                           7, 6, 5, 4, 14, 13, 12, 15};
 INT *shn; /* pointer to surface node topology */
 /*--------------------- variables needed for integration of volu loads */
-static INT vhn[20] = 
+static INT vhn[20] =
                          {0, 1, 2, 3,  4, 5, 6, 7, 8,   /*  hex 8 nods */
              9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19};/*     20 nods */
 RSTF rstgeo;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1_eleload");
 #endif
 /*----------------------------------------------------------------------*/
@@ -268,20 +268,20 @@ dstrc_enter("c1_eleload");
   if (init==1)
   {
     eload     = amdef("eload",&eload_a,MAXDOFPERNODE,MAXNOD_BRICK1,"DA");
-    funct     = amdef("funct"  ,&funct_a,MAXNOD_BRICK1,1 ,"DV");       
-    deriv     = amdef("deriv"  ,&deriv_a,3,MAXNOD_BRICK1 ,"DA");       
-    xjm       = amdef("xjm"    ,&xjm_a ,numdf,numdf      ,"DA");           
+    funct     = amdef("funct"  ,&funct_a,MAXNOD_BRICK1,1 ,"DV");
+    deriv     = amdef("deriv"  ,&deriv_a,3,MAXNOD_BRICK1 ,"DA");
+    xjm       = amdef("xjm"    ,&xjm_a ,numdf,numdf      ,"DA");
 
     goto end;
   }
   else if (init==-1)/*------------------- delete phase for this routine */
   {
     amdel(&eload_a);
-    amdel(&funct_a);   
-    amdel(&deriv_a);   
-    amdel(&xjm_a);   
-  
-    goto end;  
+    amdel(&funct_a);
+    amdel(&deriv_a);
+    amdel(&xjm_a);
+
+    goto end;
   }
 /*---------------------------------------------------- initialize eload */
   amzero(&eload_a);
@@ -329,9 +329,9 @@ dstrc_enter("c1_eleload");
    /*------------------------------------ check number of nodes on line */
    ngnode = iel;
    /*--------------- make coordinates and weights of integration points */
-   ngr = nir; 
-   ngs = nis; 
-   ngt = nit; 
+   ngr = nir;
+   ngs = nis;
+   ngt = nit;
    for (i=0; i<ngr; i++) { xgp[i] = data->xgrr[i];
                            wgx[i] = data->wgtr[i]; }
    for (i=0; i<ngs; i++) { ygp[i] = data->xgss[i];
@@ -373,9 +373,9 @@ dstrc_enter("c1_eleload");
     /*----------------------------------- check number of nodes on line */
     ngnode = gline[line]->ngnode;
     /*-------------- make coordinates and weights of integration points */
-    ngr = nir; 
-    ngs = nis; 
-    ngt = nit; 
+    ngr = nir;
+    ngs = nis;
+    ngt = nit;
     for (i=0; i<ngr; i++) { xgp[i] = data->xgrr[i];
                             wgx[i] = data->wgtr[i]; }
     for (i=0; i<ngs; i++) { ygp[i] = data->xgss[i];
@@ -386,85 +386,85 @@ dstrc_enter("c1_eleload");
     lhn=lhnod[line];
     switch (line)
     {
-    case 0:/* first line - first node last node (quadratic:middle node) */                     
-       ngr = ngt = 1; 
+    case 0:/* first line - first node last node (quadratic:middle node) */
+       ngr = ngt = 1;
        xgp[0] =  1.;
        zgp[0] = -1.;
        wgx[0] = wgz[0] =  1.;
        rstgeo = psn; /* r = +1 | s={-0+} | t=-1 */
     break;
     case 1:
-       ngs = ngt = 1; 
+       ngs = ngt = 1;
        ygp[0] =  1.;
        zgp[0] = -1.;
        wgy[0] = wgz[0] =  1.;
        rstgeo = rpn; /* r = {-0+} | s=+1 | t=-1 */
     break;
     case 2:
-       ngr = ngt = 1; 
+       ngr = ngt = 1;
        xgp[0] = -1.;
        zgp[0] = -1.;
        wgx[0] = wgz[0] =  1.;
        rstgeo = nsn; /* r = -1 | s={-0+} | t=-1 */
     break;
     case 3:
-       ngs = ngt = 1; 
+       ngs = ngt = 1;
        ygp[0] = -1.;
        zgp[0] = -1.;
        wgy[0] = wgz[0] =  1.;
        rstgeo = rpn; /* r = {-0+} | s=-1 | t=-1 */
     break;
     case 4:
-       ngr = ngs = 1; 
+       ngr = ngs = 1;
        xgp[0] =  1.;
        ygp[0] = -1.;
        wgx[0] = wgy[0] =  1.;
        rstgeo = pnt; /* r =+1 | s=-1 | t={-0+} */
     break;
     case 5:
-       ngr = ngs = 1; 
+       ngr = ngs = 1;
        xgp[0] =  1.;
        ygp[0] =  1.;
        wgx[0] = wgy[0] =  1.;
        rstgeo = ppt; /* r =+1 | s=+1 | t={-0+} */
     break;
     case 6:
-       ngr = ngs = 1; 
+       ngr = ngs = 1;
        xgp[0] = -1.;
        ygp[0] =  1.;
        wgx[0] = wgy[0] =  1.;
        rstgeo = npt; /* r =-1 | s=+1 | t={-0+} */
     break;
     case 7:
-       ngr = ngs = 1; 
+       ngr = ngs = 1;
        xgp[0] = -1.;
        ygp[0] = -1.;
        wgx[0] = wgy[0] =  1.;
        rstgeo = nnt; /* r =-1 | s=-1 | t={-0+} */
     break;
     case 8:
-       ngr = ngt = 1; 
+       ngr = ngt = 1;
        xgp[0] =  1.;
        zgp[0] =  1.;
        wgx[0] = wgz[0] =  1.;
        rstgeo = psp; /* r = +1 | s={-0+} | t=+1 */
     break;
     case 9:
-       ngs = ngt = 1; 
+       ngs = ngt = 1;
        ygp[0] =  1.;
        zgp[0] =  1.;
        wgy[0] = wgz[0] =  1.;
        rstgeo = rpp; /* r = {-0+} | s=+1 | t=+1 */
     break;
     case 10:
-       ngr = ngt = 1; 
+       ngr = ngt = 1;
        xgp[0] = -1.;
        zgp[0] =  1.;
        wgx[0] = wgz[0] =  1.;
        rstgeo = nsn; /* r = -1 | s={-0+} | t=+1 */
     break;
     case 11:
-       ngs = ngt = 1; 
+       ngs = ngt = 1;
        ygp[0] = -1.;
        zgp[0] =  1.;
        wgy[0] = wgz[0] =  1.;
@@ -477,7 +477,7 @@ dstrc_enter("c1_eleload");
              iel, ngnode, lhn, rstgeo,
              lineneum[line]->neum_onoff.a.iv, lineneum[line]->neum_val.a.dv,
              eload );
-    /* the line number lie has been done, 
+    /* the line number lie has been done,
                                  so switch of the neumann pointer of it */
     ele->g.gvol->gline[line]->neum=NULL;
   }/* end loop line over lines */
@@ -506,9 +506,9 @@ dstrc_enter("c1_eleload");
     /*----------------------------------- check number of nodes on surf */
     ngnode = gsurf[surf]->ngnode;
     /*-------------- make coordinates and weights of integration points */
-    ngr = nir; 
-    ngs = nis; 
-    ngt = nit; 
+    ngr = nir;
+    ngs = nis;
+    ngt = nit;
     for (i=0; i<ngr; i++) { xgp[i] = data->xgrr[i];
                             wgx[i] = data->wgtr[i]; }
     for (i=0; i<ngs; i++) { ygp[i] = data->xgss[i];
@@ -519,38 +519,38 @@ dstrc_enter("c1_eleload");
     shn=shnod[surf];
     switch (surf)
     {
-    case 0:                  
-       ngt = 1; 
+    case 0:
+       ngt = 1;
        zgp[0] = -1.;
        wgz[0] =  1.;
        rstgeo = rsn;
     break;
     case 1:
-       ngr = 1; 
+       ngr = 1;
        xgp[0] =  1.;
        wgx[0] =  1.;
        rstgeo = pst;
     break;
     case 2:
-       ngs = 1; 
+       ngs = 1;
        ygp[0] =  1.;
        wgy[0] =  1.;
        rstgeo = rpt;
     break;
     case 3:
-       ngr = 1; 
+       ngr = 1;
        xgp[0] = -1.;
        wgx[0] =  1.;
        rstgeo = nst;
     break;
     case 4:
-       ngs = 1; 
+       ngs = 1;
        ygp[0] = -1.;
        wgy[0] =  1.;
        rstgeo = rnt;
     break;
     case 5:
-       ngt = 1; 
+       ngt = 1;
        zgp[0] =  1.;
        wgz[0] =  1.;
        rstgeo = rsp;
@@ -562,7 +562,7 @@ dstrc_enter("c1_eleload");
             iel, ngnode, shn, rstgeo,
             surfneum[surf]->neum_onoff.a.iv,surfneum[surf]->neum_val.a.dv,
             eload );
-    /* the surf number lie has been done, 
+    /* the surf number lie has been done,
                                  so switch of the neumann pointer of it */
     ele->g.gvol->gsurf[surf]->neum=NULL;
   }/* end loop surf over surfs */
@@ -589,10 +589,10 @@ endsurf:
   }
 /*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of c1_eleload */
 #endif
 /*! @} (documentation module close)*/

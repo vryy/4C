@@ -1,6 +1,6 @@
 /*!---------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Steffen Genkinger
@@ -12,11 +12,11 @@ Maintainer: Steffen Genkinger
 ---------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*
  | control structure                                      m.gee 5/02    |
- | for nonlinear structural dynamics                                    |           
+ | for nonlinear structural dynamics                                    |
  *----------------------------------------------------------------------*/
 typedef struct _VISUAL_DATA
 {
-INT                          step;     
+INT                          step;
 
 long int                     time;
 

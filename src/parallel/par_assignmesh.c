@@ -33,8 +33,8 @@ extern struct _GENPROB     genprob;
  *----------------------------------------------------------------------*/
 extern struct _SOLVAR  *solv;
 
-/*! 
-\addtogroup PARALLEL 
+/*!
+\addtogroup PARALLEL
 */
 /*! @{ (documentation module open)*/
 
@@ -43,7 +43,7 @@ extern struct _SOLVAR  *solv;
 
 <pre>                                                         m.gee 8/00
 the partition of one proc (all discretizations)
-the type is in partition.h                                                  
+the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -54,17 +54,17 @@ extern struct _PARTITION  *partition;
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
-extern struct _PAR   par;                      
+extern struct _PAR   par;
 
 /*!---------------------------------------------------------------------
 
-\brief assign fields to procs                                             
+\brief assign fields to procs
 
-<pre>                                                        m.gee 5/01 
+<pre>                                                        m.gee 5/01
 -allocates variable partition
 -allocates variable pdis in partition
 fills nodes and elements to the pdis variable in two different styles
@@ -72,7 +72,7 @@ fills nodes and elements to the pdis variable in two different styles
 -cuts are through nodes, every element is exactly on 1 proc (not used yet)
 </pre>
 
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void part_assignfield()
@@ -90,7 +90,7 @@ NODE      *actnode;
 PARTITION *actpart;
 SOLVAR    *actsolv;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("part_assignfield");
 #endif
 /*----------------------------------------------------------------------*/
@@ -108,7 +108,7 @@ for (i=0; i<genprob.numfld; i++)
    if (!partition[i].pdis) dserror("Allocation of memory failed");
    /*-------------------------------------------------------------------*/
    actpart  = &(partition[i]);
-#ifdef PARALLEL 
+#ifdef PARALLEL
    actintra = &(par.intra[i]);
 #else
    actintra    = (INTRA*)CCACALLOC(1,sizeof(INTRA));
@@ -135,10 +135,10 @@ for (i=0; i<genprob.numfld; i++)
          actpart->pdis[kk].node    = (NODE**)CCACALLOC(actpart->pdis[kk].numnp,sizeof(NODE*));
          if (actpart->pdis[kk].element==NULL) dserror("Allocation of element pointer in PARTITION failed");
          if (actpart->pdis[kk].node==NULL)    dserror("Allocation of node pointer in PARTITION failed");
-         for (j=0; j<actfield->dis[kk].numele; j++) 
+         for (j=0; j<actfield->dis[kk].numele; j++)
          actpart->pdis[kk].element[j] = &(actfield->dis[kk].element[j]);
-         for (j=0; j<actfield->dis[kk].numnp; j++)  
-         actpart->pdis[kk].node[j] = &(actfield->dis[kk].node[j]);      
+         for (j=0; j<actfield->dis[kk].numnp; j++)
+         actpart->pdis[kk].node[j] = &(actfield->dis[kk].node[j]);
       }
    }
    else
@@ -191,7 +191,7 @@ for (i=0; i<genprob.numfld; i++)
                }
             }
          }
-      /*------------------ loop and count nodes, do pointers to my nodes */   
+      /*------------------ loop and count nodes, do pointers to my nodes */
          counter=0;
          for (j=0; j<actfield->dis[kk].numnp; j++)
          {
@@ -203,7 +203,7 @@ for (i=0; i<genprob.numfld; i++)
          counter=0;
          for (j=0; j<actfield->dis[kk].numnp; j++)
          {
-            if (actfield->dis[kk].node[j].proc == imyrank) 
+            if (actfield->dis[kk].node[j].proc == imyrank)
             {
                actpart->pdis[kk].node[counter] = &(actfield->dis[kk].node[j]);
                counter++;
@@ -225,7 +225,7 @@ for (i=0; i<genprob.numfld; i++)
             proc = actpart->pdis[kk].element[j]->node[0]->proc;
             for (k=1; k<actpart->pdis[kk].element[j]->numnp; k++)
             {
-               if (actpart->pdis[kk].element[j]->node[k]->proc != proc) 
+               if (actpart->pdis[kk].element[j]->node[k]->proc != proc)
                {
                   isbou=1;
                   break;
@@ -248,13 +248,13 @@ for (i=0; i<genprob.numfld; i++)
             proc = actpart->pdis[kk].element[j]->node[0]->proc;
             for (k=1; k<actpart->pdis[kk].element[j]->numnp; k++)
             {
-               if (actpart->pdis[kk].element[j]->node[k]->proc != proc) 
+               if (actpart->pdis[kk].element[j]->node[k]->proc != proc)
                {
                   isbou=1;
                   break;
                }
             }
-            if (isbou==0) 
+            if (isbou==0)
             {
                actpart->pdis[kk].inner_element[counter] = actpart->pdis[kk].element[j];
                counter++;
@@ -286,7 +286,7 @@ for (i=0; i<genprob.numfld; i++)
          counter=0;
          for (j=0; j<actfield->dis[kk].numele; j++)
          {
-            if (actfield->dis[kk].element[j].proc == imyrank) 
+            if (actfield->dis[kk].element[j].proc == imyrank)
             {
                actpart->pdis[kk].element[counter] = &(actfield->dis[kk].element[j]);
                counter++;
@@ -330,7 +330,7 @@ for (i=0; i<genprob.numfld; i++)
          actpart->pdis[kk].inner_numele=0;
          actpart->pdis[kk].bou_element=NULL;
          actpart->pdis[kk].inner_element=NULL;
-      /*---------------------------- count the inner and boundary nodes */      
+      /*---------------------------- count the inner and boundary nodes */
          counter=0;
          counter2=0;
          for (j=0; j<actpart->pdis[kk].numnp; j++)
@@ -370,29 +370,29 @@ for (i=0; i<genprob.numfld; i++)
                   break;
                }
             }
-            if (isbou==1) 
+            if (isbou==1)
             {
                actpart->pdis[kk].bou_node[counter2] = actnode;
                counter2++;
             }
-            else          
+            else
             {
                actpart->pdis[kk].inner_node[counter] = actnode;
                counter++;
             }
          }
-         
+
       } /* end of part==2 */
       } /* end loop over discretisations */
 
 
    } /* end of inprocs > 1 */
-#ifndef PARALLEL 
+#ifndef PARALLEL
 CCAFREE(actintra);
 #endif
 }/* end of loop over fields */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 'saxiinp' which reads the axisymmetric 
+\brief contains the routine 'saxiinp' which reads the axisymmetric
        shell element
 
 <pre>
@@ -17,22 +17,22 @@ Maintainer: Malte Neumann
 #include "axishell.h"
 #include "axishell_prototypes.h"
 
-/*! 
+/*!
 \addtogroup AXISHELL
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
 \brief reads an axisymmetric shell element from the input file
 
-<pre>                                                              mn 05/03 
+<pre>                                                              mn 05/03
 This routine reads an axisymmetric shell element from the input file
 
 </pre>
 \param *ele  ELEMENT  (o)   the element
 
 \warning
-\return void                                               
-\sa caling:    ---; 
+\return void
+\sa caling:    ---;
     called by: inp_struct_field()
 
 *----------------------------------------------------------------------*/
@@ -43,17 +43,17 @@ void saxi_inp(
   INT  i;
   INT  ierr=0;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("saxi_inp");
 #endif
 
-  /* allocate the element */      
+  /* allocate the element */
   ele->e.saxi = (AXISHELL*)CCACALLOC(1,sizeof(AXISHELL));
   if (ele->e.saxi==NULL) dserror("Allocation of element failed");
 
   /* read elements topology */
   frchk("LINE2",&ierr);
-  if (ierr==1) 
+  if (ierr==1)
   {
     ele->distyp = line2;
     ele->numnp=2;
@@ -63,7 +63,7 @@ void saxi_inp(
     if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
   }
   frchk("LINE3",&ierr);
-  if (ierr==1) 
+  if (ierr==1)
   {
     ele->distyp = line3;
     ele->numnp=3;
@@ -80,7 +80,7 @@ void saxi_inp(
   frint("MAT",&(ele->mat),&ierr);
   if (ierr!=1) dserror("Reading of AXISHELL element failed");
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 

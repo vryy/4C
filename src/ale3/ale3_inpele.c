@@ -17,22 +17,22 @@ Maintainer: Malte Neumann
 #include "ale3.h"
 #include "../ale2/ale2.h"
 
-/*! 
-\addtogroup Ale 
+/*!
+\addtogroup Ale
 *//*! @{ (documentation module open)*/
 
 
 /*!----------------------------------------------------------------------
 \brief reads a 3d ale element from the input file
 
-<pre>                                                              mn 06/02 
+<pre>                                                              mn 06/02
 This routine reads a 3d ale element from the input file
 
 </pre>
 \param *ele  ELEMENT  (o)   the element
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa caling: ---; called by: inp_ale_field()
 
 *----------------------------------------------------------------------*/
@@ -45,11 +45,11 @@ void ale3inp(
   INT  ierr=0;
   INT  lmtmp;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("ale3inp");
 #endif
 
-  /* allocate the element */      
+  /* allocate the element */
   ele->e.ale3 = (ALE3*)CCACALLOC(1,sizeof(ALE3));
   if (ele->e.ale3==NULL) dserror("Allocation of element ALE failed");
 
@@ -112,7 +112,7 @@ void ale3inp(
   {
     frint_n("GP",&(ele->e.ale3->nGP[0]),3,&ierr);
     if (ierr!=1) dserror("Reading of ALE3 element failed\n");
-  }   
+  }
 
   /* read gaussian points for tetrahedral elements */
   if (ele->numnp==4 || ele->numnp==10)
@@ -125,7 +125,7 @@ void ale3inp(
   frint("JAC",&(ele->e.ale3->jacobi),&ierr);
   if (ierr!=1) dserror("Reading of ALE element failed");
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 
@@ -138,16 +138,16 @@ void ale3inp(
 /* we don't need this stuff, at least at the moment!!!!
                                                              genk 05/03 */
 /*!----------------------------------------------------------------------
-  \brief  copy element info from fluidfield to ale field 
+  \brief  copy element info from fluidfield to ale field
 
-  <pre>                                                              mg 04/01 
+  <pre>                                                              mg 04/01
 
   </pre>
-  \param *fluidfield  FIELD  (i/o)   
-  \param *alefield    FIELD  (i/o)   
+  \param *fluidfield  FIELD  (i/o)
+  \param *alefield    FIELD  (i/o)
 
   \warning There is nothing special to this routine
-  \return void                                               
+  \return void
   \sa caling: ---; called by: inpfield()
 
  *----------------------------------------------------------------------*/
@@ -166,14 +166,14 @@ void fluid_to_ale(
   ELEMENT *fluid_ele =NULL;
   ELEMENT *ale_ele;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("fluid_to_ale");
 #endif
 
   for (i=0; i<fluidfield->dis[0].numele; i++)
   {
     fluid_ele = &(fluidfield->dis[0].element[i]);
-#ifdef D_FLUID3 
+#ifdef D_FLUID3
     if (fluid_ele->eltyp==el_fluid3)
     {
       fluid_ele->e.f3->my_ale  = NULL;
@@ -182,9 +182,9 @@ void fluid_to_ale(
 #ifdef D_FLUID2
     if (fluid_ele->eltyp==el_fluid2)
     {
-      fluid_ele->e.f2->my_ale  = NULL;  
+      fluid_ele->e.f2->my_ale  = NULL;
     }
-#endif	  
+#endif
 }
 for (i=0; i<alefield->dis[0].numele; i++)
 {
@@ -196,14 +196,14 @@ for (i=0; i<alefield->dis[0].numele; i++)
    if (ale_ele->eltyp==el_ale2)
    {
        ale_ele->e.ale2->my_fluid = NULL;
-   }   
+   }
 }
 /*----------------------------------------------------------------------*/
 for (i=0; i<fluidfield->dis[0].numele; i++)/*------ loop fluid elements */
 {
     fluid_ele = &(fluidfield->dis[0].element[i]);
 
-#ifdef D_FLUID3    
+#ifdef D_FLUID3
     if (fluid_ele->eltyp==el_fluid3)
     {
       if (fluid_ele->e.f3->is_ale!=1) continue;
@@ -224,8 +224,8 @@ for (i=0; i<fluidfield->dis[0].numele; i++)/*------ loop fluid elements */
     } /* endif (fluid_ele->eltyp==el_fluid3) */
 #endif
 
-    
-#ifdef D_FLUID2 
+
+#ifdef D_FLUID2
     if (fluid_ele->eltyp==el_fluid2)
     {
       if (fluid_ele->e.f2->is_ale!=1) continue;
@@ -238,17 +238,17 @@ for (i=0; i<fluidfield->dis[0].numele; i++)/*------ loop fluid elements */
         find_compatible_ele(fluid_ele,ale_ele,&ierr);
         if (ierr==0) continue;
 
-        /* set ale flag in fluid element */       
+        /* set ale flag in fluid element */
         fluid_ele->e.f2->my_ale  = ale_ele;
         ale_ele->e.ale2->my_fluid = fluid_ele;
-        break;          
-      } /* end of loop over alefield */        
+        break;
+      } /* end of loop over alefield */
     } /* endif (fluid_ele->eltyp==el_fluid2) */
-#endif 
+#endif
 
   } /* end of loop over fluidfield */
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 
@@ -259,17 +259,17 @@ for (i=0; i<fluidfield->dis[0].numele; i++)/*------ loop fluid elements */
 
 
 /*!----------------------------------------------------------------------
-  \brief finds the compatible ale element 
+  \brief finds the compatible ale element
 
-  <pre>                                                              mg 04/01 
+  <pre>                                                              mg 04/01
 
   </pre>
-  \param *ele1    ELEMENT  (i/o)   
-  \param *ele2    ELEMENT  (i/o)   
-  \param *ierr    INT      (i/o)   
+  \param *ele1    ELEMENT  (i/o)
+  \param *ele2    ELEMENT  (i/o)
+  \param *ierr    INT      (i/o)
 
   \warning There is nothing special to this routine
-  \return void                                               
+  \return void
   \sa calling: ---; called by: fluid_to_ale()
 
  *----------------------------------------------------------------------*/
@@ -284,7 +284,7 @@ void find_compatible_ele(
   DOUBLE x1,y1,z1, x2,y2,z2;
   DOUBLE x,y,z;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("find_compatible_ele");
 #endif
 
@@ -313,7 +313,7 @@ void find_compatible_ele(
   if (x<=tol && y<=tol && z<=tol) *ierr=1;
   else *ierr=0;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
 

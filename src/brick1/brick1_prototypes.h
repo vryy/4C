@@ -12,8 +12,8 @@ Maintainer: Andreas Lipka
 *----------------------------------------------------------------------*/
 #ifdef D_BRICK1
 
-/*! 
-\addtogroup BRICK1 
+/*!
+\addtogroup BRICK1
 *//*! @{ (documentation module open)*/
 
 /*----------------------------------------------------------------------*
@@ -53,7 +53,7 @@ void c1matp1(DOUBLE e,       /* young's modulus                         */
              DOUBLE vnu,     /* poisson's ratio                         */
              DOUBLE sig2,
              DOUBLE *tau,    /* current stresses (local)                */
-             DOUBLE epstn,   /* equivalent uniaxial plastic strain      */ 
+             DOUBLE epstn,   /* equivalent uniaxial plastic strain      */
              DOUBLE dlam,    /* increment of plastic multiplier         */
              DOUBLE **cc);   /* material matrix to be calculated        */
 /*----------------------------------------------------------------------*
@@ -89,9 +89,9 @@ void c1intg(ELEMENT         *ele,       /* actual element */
 /*----------------------------------------------------------------------*
  | update of strain paramenters                          al    9/01     |
  *----------------------------------------------------------------------*/
-void c1upenh(  
+void c1upenh(
              ELEMENT    *ele,
-             DOUBLE      edis[60],  
+             DOUBLE      edis[60],
              DOUBLE      ehdis[3][10],
              INT         l1,
              INT         l3
@@ -99,7 +99,7 @@ void c1upenh(
 /*----------------------------------------------------------------------*
  | evaluation of residual                                al    9/01     |
  *----------------------------------------------------------------------*/
-void c1res( 
+void c1res(
            DOUBLE  *F,    /*  force vector integral (stress-resultants)*/
            DOUBLE   fac,  /*  multiplier for numerical integration     */
            DOUBLE **bop9, /*  b-operator matrix                        */
@@ -120,7 +120,7 @@ void c1rkefi(
             DOUBLE    *fieh, /* element residuals                 */
             DOUBLE     *fie, /*                                   */
             INT          l1
-           ); 
+           );
 /*----------------------------------------------------------------------*
  | include initial displacements to derivative operator     al 9/01     |
  | (eas-part)                                                           |
@@ -130,8 +130,8 @@ void c1bdish(
             DOUBLE      bn[3][10],/* bn-operator matrix */
             DOUBLE      disd[9],
             INT         iel,
-            INT         l3 
-           ); 
+            INT         l3
+           );
 /*----------------------------------------------------------------------*
  |program for evaluation of bop with extended deformations  al 9/01     |
  |(eas - kleine verz.)                                                  |
@@ -149,22 +149,22 @@ void c1bop9(
             DOUBLE      e3,
             INT         iel,
             INT         l1,
-            INT         l3 
-           ); 
+            INT         l3
+           );
 /*----------------------------------------------------------------------*
  | determine the transformation matrix for orthogonal    al    9/01     |
  | systems and its inverse                                              |
  | jacobian matrix at point 0,0,0                                       |
  *----------------------------------------------------------------------*/
-void c1t0( DOUBLE   fi[6][6],    
-           DOUBLE   ff[6][6],    
-           DOUBLE **xjm0); 
+void c1t0( DOUBLE   fi[6][6],
+           DOUBLE   ff[6][6],
+           DOUBLE **xjm0);
 /*----------------------------------------------------------------------*
  | shape functions and derivatives                               al 9/01|
  *----------------------------------------------------------------------*/
-void c1_funct_deriv(DOUBLE     *funct, 
-                    DOUBLE    **deriv, 
-                    DOUBLE      r, 
+void c1_funct_deriv(DOUBLE     *funct,
+                    DOUBLE    **deriv,
+                    DOUBLE      r,
                     DOUBLE      s,
                     DOUBLE      t,
                     INT         typ,
@@ -196,7 +196,7 @@ void c1_bdis( DOUBLE   **bop, /* b-operator matrix                      */
  | compute displacement derivatives                          al 9/01    |
  *----------------------------------------------------------------------*/
 void c1_disd(DOUBLE    **bop, /* b-operator matrix                      */
-             DOUBLE    *edis, /* element displacements                  */ 
+             DOUBLE    *edis, /* element displacements                  */
              DOUBLE    *disd, /* displacement derivatives               */
              INT         iel);/* number of element nodes                */
 /*----------------------------------------------------------------------*
@@ -206,13 +206,13 @@ void c1_disd(DOUBLE    **bop, /* b-operator matrix                      */
  |              and evaluation of element stresses                      |
  *----------------------------------------------------------------------*/
 void c1_call_mat(ELEMENT   *ele,
-                 MATERIAL  *mat, 
-                 INT ip,       
+                 MATERIAL  *mat,
+                 INT ip,
                  DOUBLE *stress,
                  DOUBLE *strain,
                  DOUBLE **d,
                  DOUBLE *disd,
-                 DOUBLE g[6][6], 
+                 DOUBLE g[6][6],
                  DOUBLE gi[6][6],
                  INT istore,
                  INT newval);
@@ -223,7 +223,7 @@ void c1_call_mat(ELEMENT   *ele,
  |              and evaluation of element stresses                      |
  *----------------------------------------------------------------------*/
 void c1_call_matd(ELEMENT   *ele,
-                 MATERIAL  *mat, 
+                 MATERIAL  *mat,
                  DOUBLE *stress,
                  DOUBLE *strain,
                  DOUBLE **d,
@@ -293,7 +293,7 @@ void c1_cstr(DOUBLE    *srst,     /* element vector with stress resultants */
  | program to determine global coordinates referring to the     al 9/01 |
  | natural ones                                                         |
  *----------------------------------------------------------------------*/
-void c1gcor( 
+void c1gcor(
              DOUBLE     *funct, /* value of form functions              */
              DOUBLE     *xyze,  /* element coordinates                  */
              INT         iel,   /* number of nodes                      */
@@ -310,14 +310,14 @@ DOUBLE c1rsn (
 void c1lgpl (
               INT i,
               INT n,
-              DOUBLE *zr,  
+              DOUBLE *zr,
               DOUBLE z,
               DOUBLE *value
               );
 void c1hxsm (
               INT nir,
               INT nis,
-              INT nit,  
+              INT nit,
               DOUBLE rk,
               DOUBLE sk,
               DOUBLE tk,
@@ -368,7 +368,7 @@ void c1_sext(
             DOUBLE *xgs,
             DOUBLE *xgt,
             INT nir,
-            INT nis, 
+            INT nis,
             INT nit,
             INT iel /* number of nodes */
             );
@@ -387,10 +387,10 @@ void c1_sext(
  |              =4 AXISYMMETRIC                                         |
  |                                                                      |
  *----------------------------------------------------------------------*/
-void c1_keku(DOUBLE  **s, 
-             DOUBLE  **bs, 
-             DOUBLE  **d, 
-             DOUBLE    fac, 
+void c1_keku(DOUBLE  **s,
+             DOUBLE  **bs,
+             DOUBLE  **d,
+             DOUBLE    fac,
              INT       nd,
              INT       neps);
 /*----------------------------------------------------------------------*
@@ -441,7 +441,7 @@ void c1mefm(DOUBLE *strain, /* global strains                           */
 void c1_mat_neohook(DOUBLE youngs,     /* young's modulus              */
                     DOUBLE possionratio, /* poisson's ratio            */
                     DOUBLE *disd,      /* displacement derivatives     */
-                    DOUBLE *stress,  /* ele stress (-resultant) vector */      
+                    DOUBLE *stress,  /* ele stress (-resultant) vector */
                     DOUBLE **d);     /* material matrix                */
 /*----------------------------------------------------------------------*
  | constitutive matrix - forces - linear elastic- von Mises - 3D al 9/01|
@@ -452,7 +452,7 @@ void c1_mat_plast_mises(DOUBLE ym,      /* young's modulus              */
                         DOUBLE fhard,   /* hardening modulus            */
                         ELEMENT   *ele, /* actual element               */
                         INT ip,         /* integration point Id         */
-                        DOUBLE *stress, /*ele stress (-resultant) vector*/      
+                        DOUBLE *stress, /*ele stress (-resultant) vector*/
                         DOUBLE **d,     /* material matrix              */
                         DOUBLE  *disd,  /* displacement derivatives     */
                         DOUBLE g[6][6], /* transformation matrix        */
@@ -502,24 +502,24 @@ void c1matpg(
  |   push forward(deformations)/pull-back(stresses)       al    9/01    |
  *----------------------------------------------------------------------*/
 void c1pushf(
-            DOUBLE *be,   
-            DOUBLE *bet,  
+            DOUBLE *be,
+            DOUBLE *bet,
             DOUBLE *fn
-            );  
+            );
 void c1elpag(
-             DOUBLE ym,      
-             DOUBLE pv,      
-             DOUBLE uniax,   
-             DOUBLE fhard,   
-             DOUBLE *stress, 
-             DOUBLE *sig,    
-             DOUBLE *fn,     
-             DOUBLE *fni,    
-             DOUBLE detf,    
-             DOUBLE **d,     
-             DOUBLE *epstn,  
-             INT    *iupd,   
-             INT    *yip);    
+             DOUBLE ym,
+             DOUBLE pv,
+             DOUBLE uniax,
+             DOUBLE fhard,
+             DOUBLE *stress,
+             DOUBLE *sig,
+             DOUBLE *fn,
+             DOUBLE *fni,
+             DOUBLE detf,
+             DOUBLE **d,
+             DOUBLE *epstn,
+             INT    *iupd,
+             INT    *yip);
 /*----------------------------------------------------------------------*
  |                                                              al 9/01 |
  | constitutive matrix - forces - plastic large strain - von Mises - 3D |
@@ -531,7 +531,7 @@ void c1_mat_plast_mises_ls(
                         DOUBLE fhard,   /* hardening modulus            */
                         ELEMENT   *ele, /* actual element               */
                         INT ip,         /* integration point Id         */
-                        DOUBLE *stress, /*ele stress (-resultant) vector*/      
+                        DOUBLE *stress, /*ele stress (-resultant) vector*/
                         DOUBLE **d,     /* material matrix              */
                         DOUBLE  *disd,  /* displacement derivatives     */
                         INT istore,     /* controls storing of stresses */
@@ -544,10 +544,10 @@ void c1init(PARTITION *actpart,MATERIAL    *mat );
  | integration of linear stiffness ke for BRICK1 element     al 9/01    |
  *----------------------------------------------------------------------*/
 void c1_cint(
-             ELEMENT   *ele, 
-             C1_DATA   *data, 
+             ELEMENT   *ele,
+             C1_DATA   *data,
              MATERIAL  *mat,
-             ARRAY     *estif_global, 
+             ARRAY     *estif_global,
              ARRAY      *emass_global,
              DOUBLE    *force,  /* global vector for internal forces (initialized!) */
              INT        init
@@ -584,7 +584,7 @@ void c1trss2global(DOUBLE *s,       /* stress vector to be transformed  */
 /*----------------------------------------------------------------------*
  | calculate global coordinates referring to the natural ones   al 9/01 |
  *----------------------------------------------------------------------*/
-void  c1gcor( 
+void  c1gcor(
              DOUBLE     *funct, /* value of form functions              */
              DOUBLE     *xyze,  /* element coordinates                  */
              INT         iel,   /* number of nodes                      */
@@ -592,21 +592,21 @@ void  c1gcor(
             );
 
 void c1_lint(
-             INT        ngr,       INT ngs,        INT ngt, 
+             INT        ngr,       INT ngs,        INT ngt,
              DOUBLE    *xgp,   DOUBLE *wgx,    DOUBLE *ygp,
              DOUBLE    *wgy,   DOUBLE *zgp,    DOUBLE *wgz,
              DOUBLE   *xyze, DOUBLE *funct, DOUBLE **deriv, DOUBLE **xjm,
              INT        iel,    INT ngnode,       INT *shn,  RSTF rstgeo,
-             INT    *lonoff,  DOUBLE *lval, 
+             INT    *lonoff,  DOUBLE *lval,
              DOUBLE **eload
              );
 /*----------------------------------------------------------------------*
  | calculate element loads (edge, surface, volume)              al 9/01 |
  *----------------------------------------------------------------------*/
 void c1_eleload(
-             ELEMENT   *ele, 
-             C1_DATA   *data, 
-             DOUBLE    *loadvec,  
+             ELEMENT   *ele,
+             C1_DATA   *data,
+             DOUBLE    *loadvec,
              INT        init
              );
 /*----------------------------------------------------------------------*
@@ -624,9 +624,9 @@ void c1_mat_mfcc(  MATERIAL  *mat,
 void c1_mat_nhmfcc( MATERIAL  *mat,     /* material data ...           */
                     DOUBLE *matdata,    /* variable mat. data, opti.   */
                     DOUBLE *disd,      /* displacement derivatives     */
-                    DOUBLE *stress,  /* ele stress (-resultant) vector */      
+                    DOUBLE *stress,  /* ele stress (-resultant) vector */
                     DOUBLE **d,         /* material matrix             */
-                    DOUBLE *ste);      
+                    DOUBLE *ste);
 /*----------------------------------------------------------------------*
  | calculate derivative of constitutive matrix                  al 9/01 |
  *----------------------------------------------------------------------*/
@@ -661,7 +661,7 @@ void c1_mat_plast_hashdel
                         ELEMENT   *ele, /* actual element               */
                         DOUBLE **bop,   /* derivative operator          */
                         INT       ip,   /* integration point            */
-                        DOUBLE *stress, /*ele stress (-resultant) vector*/      
+                        DOUBLE *stress, /*ele stress (-resultant) vector*/
                         DOUBLE **c,     /* material matrix              */
                         DOUBLE  *disd,  /* displacement derivatives     */
                         DOUBLE g[6][6], /* transformation matrix        */
@@ -672,8 +672,8 @@ void c1_mat_plast_hashdel
  |  integration routine for BRICK1 element                     al 6/01  |
  *----------------------------------------------------------------------*/
 void c1_oint(
-             ELEMENT   *ele, 
-             C1_DATA   *data, 
+             ELEMENT   *ele,
+             C1_DATA   *data,
              MATERIAL  *mat,
              DOUBLE    *retval,  /* return value */
              INT        init
@@ -686,14 +686,14 @@ void c1_getdensity(MATERIAL   *mat, DOUBLE *density);
  | mass matrix for brick1                                   al 08/02    |
  *----------------------------------------------------------------------*/
 void c1cptp(
-            DOUBLE     *funct, 
-            DOUBLE     *lmass, 
-            DOUBLE     *cmass, 
+            DOUBLE     *funct,
+            DOUBLE     *lmass,
+            DOUBLE     *cmass,
             DOUBLE     *emasdg,
-            INT         iel,   
-            INT         ilmp,  
+            INT         iel,
+            INT         ilmp,
             DOUBLE      fac
-            );  
+            );
 /*----------------------------------------------------------------------*
  | prototypes for fortran routines                               al 9/01|
  *----------------------------------------------------------------------*/
@@ -710,7 +710,7 @@ void c1inv6(DOUBLE *A,DOUBLE *B,INT *IRC);
 void c1inv3(DOUBLE *A);
 void c1invf (DOUBLE *FN,DOUBLE *FNI,DOUBLE *DETF);
 void c1ab (DOUBLE *A,DOUBLE *B,DOUBLE *R,INT *NZA,INT *NSA,INT *NSB,
-           DOUBLE *XNULL);                                 
+           DOUBLE *XNULL);
 
 
 #endif

@@ -32,13 +32,13 @@ extern struct _FIELD         *field;
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn; 
+extern ALLDYNA      *alldyn;
 /*!----------------------------------------------------------------------
 \brief file pointers
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -48,32 +48,32 @@ extern struct _FILES  allfiles;
 FILE  *in;                        /* pointer to flavia.res file        */
 char  line [500];                 /* actual line                       */
 INT   eof;                        /* flag for end of flavia.res file   */
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief read flavia.res file
 
-<pre>                                                         genk 07/02      
+<pre>                                                         genk 07/02
 
 in this function the result from the .flavia.res file is read in order
 to visualise it with VISUAL2/VISUAL3
 
-</pre>  
+</pre>
 \param  *actfield   FIELD      (i)       actual field
 \param  *ntsteps    INT        (o)       number of steps read
 \param  *time_a     ARRAY      (o)       time values
 \param  *FIRSTSTEP  INT        (o)       first step to visualise
 \param  *LASTSTEP   INT        (o)       last step to visualise
 \param  *DSTEP      INT        (o)       increment
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
-void visual_readflaviares(FIELD   *actfield, 
-                          INT     *ntsteps,  
+void visual_readflaviares(FIELD   *actfield,
+                          INT     *ntsteps,
 		          ARRAY   *time_a,
 			  ARRAY   *step_a,
 			  INT     *FIRSTSTEP,
 			  INT     *LASTSTEP,
-			  INT     *DSTEP	 
-		         )  
+			  INT     *DSTEP
+		         )
 {
 INT             i,k;              /* simply some counters	        */
 INT             screen;
@@ -87,7 +87,7 @@ INT             ALL;
 INT             var;
 #ifdef D_FSI
 INT             numnp_struct;
-INT             numnp_ale;        
+INT             numnp_ale;
 INT             numsf,numff;
 #endif
 static INT      firststep;
@@ -98,7 +98,7 @@ INT             counter=0;
 ARRAY           val_a;            /* temporary resutls                  */
 double        **val;
 ARRAY           globloc;          /* global - local node Ids            */
-char           *foundit = NULL;   
+char           *foundit = NULL;
 char           *end;
 FLUID_DYNAMIC  *fdyn;             /* pointer to fluid dynamic input data*/
 NODE           *actnode;          /* actual node                        */
@@ -109,7 +109,7 @@ FIELD          *structfield;
 FIELD          *fluidfield;
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("visual_readflaviares");
 #endif
 
@@ -127,10 +127,10 @@ aminit(&globloc,&mone);
 switch (actfield->fieldtyp)
 {
 case fluid:
-   numnp = actfield->dis[0].numnp;   
+   numnp = actfield->dis[0].numnp;
    for (i=0;i<numnp;i++)
    {
-      actnode = &(actfield->dis[0].node[i]);  
+      actnode = &(actfield->dis[0].node[i]);
       globloc.a.iv[actnode->Id] = actnode->Id_loc;
    }
    /* ---------------------------------------------------initialisation */
@@ -158,7 +158,7 @@ case fluid:
    case 10: ALL=1; break;
    case 48: ALL=0; dummy=getchar(); break;
    case 49: ALL=1; dummy=getchar(); break;
-   default: 
+   default:
       printf("\nTry again!\n");
       goto input1;
    }
@@ -168,7 +168,7 @@ case fluid:
       printf("     At which step shall the visualisation start? (min = 0) \n");
       scanf("%d",&firststep);
       printf("     At which step shall the visualisation end? (max = %d)\n",
-                stepin-1);   
+                stepin-1);
       scanf("%d",&laststep);
       if (laststep<=firststep || firststep<0 || laststep >= stepin)
       {
@@ -204,17 +204,17 @@ case fluid:
    }
    ncols = stepin;
    laststep = counter-incre;
-    
+
    /*---------------------------------------- allocate temporary arrays */
    val = amdef("val",&val_a,numnp,numdf,"DA");
    /*------------------------------------------------ create time array */
    amdef("time",time_a,ncols,1,"DV");
    /*------------------------------------------------ create step array */
-   amdef("step",step_a,ncols,1,"IV");   
+   amdef("step",step_a,ncols,1,"IV");
    /*----------------------------------------- allocate nodal sol field */
    for (i=0;i<numnp;i++)
    {
-      actnode=&(actfield->dis[0].node[i]);      
+      actnode=&(actfield->dis[0].node[i]);
       amredef(&(actnode->sol),ncols,numdf,"DA");
    }
    /*------------------------------------ find firststep in .flavia.res */
@@ -255,7 +255,7 @@ case fluid:
          foundit = strstr(line," ");
          foundit=strpbrk(foundit,"-.1234567890");
          /*---------------------------------------- read global node Id */
-	 num = strtod(foundit,&end)-1;   
+	 num = strtod(foundit,&end)-1;
 	 /*------------------------------------ determine local node Id */
 	 num = globloc.a.iv[num];
          if (num<0) dserror("node number not valid!\n");
@@ -263,7 +263,7 @@ case fluid:
          {
             foundit = strstr(foundit," ");
             foundit=strpbrk(foundit,"-.1234567890");
-            val[num][k] = strtod(foundit,&end); 
+            val[num][k] = strtod(foundit,&end);
          }
       }
       /*------------------------------------------ plausibility checkes */
@@ -281,13 +281,13 @@ case fluid:
          foundit = strstr(line," ");
          foundit=strpbrk(foundit,"-.1234567890");
          /*---------------------------------------- read global node Id */
-	 num = strtod(foundit,&end)-1;   
+	 num = strtod(foundit,&end)-1;
 	 /*------------------------------------ determine local node Id */
 	 num = globloc.a.iv[num];
          if (num<0) dserror("node number not valid!\n");
 	 foundit = strstr(foundit," ");
          foundit=strpbrk(foundit,"-.1234567890");
-         val[num][numdf-1] = strtod(foundit,&end); 
+         val[num][numdf-1] = strtod(foundit,&end);
       }
       /*------------------------------------------ plausibility checkes */
       if (fgets(line,499,in)==NULL)
@@ -297,7 +297,7 @@ case fluid:
       /*------------------------------------- copy results to the nodes */
       for (i=0;i<numnp;i++)
       {
-         actnode=&(actfield->dis[0].node[i]);      
+         actnode=&(actfield->dis[0].node[i]);
          num = actnode->Id_loc;
          for (k=0;k<numdf;k++)
             actnode->sol.a.da[counter][k]=val[num][k];
@@ -308,9 +308,9 @@ case fluid:
       if (stepin<=laststep)
       for (i=0;i<incre;i++)
       {
-         vis_frfind("# RESULT velocity on FIELD fluid");      
+         vis_frfind("# RESULT velocity on FIELD fluid");
          if (fgets(line,499,in)==NULL)
-            dserror("An error occured reading a line from .flavia.res\n");      
+            dserror("An error occured reading a line from .flavia.res\n");
       }
    }
    if (counter!=ncols)
@@ -319,7 +319,7 @@ case fluid:
    if (*ntsteps==0) dserror("no fluid results in .flavia.res\n");
    *FIRSTSTEP = firststep;
    *LASTSTEP  = laststep;
-   *DSTEP     = incre;   
+   *DSTEP     = incre;
    /*------------------------------------------- delete temporary arrays */
    amdel(&globloc);
    amdel(&val_a);
@@ -347,7 +347,7 @@ case structure:
    case 10: ALL=1; break;
    case 48: ALL=0; dummy=getchar(); break;
    case 49: ALL=1; dummy=getchar(); break;
-   default: 
+   default:
       printf("\nTry again!\n");
       goto input4;
    }
@@ -357,7 +357,7 @@ case structure:
       printf("     At which step shall the visualisation start? (min = 0) \n");
       scanf("%d",&firststep);
       printf("     At which step shall the visualisation end? (max = %d)\n",
-                stepin-1);   
+                stepin-1);
       scanf("%d",&laststep);
       if (laststep<=firststep || firststep<0 || laststep >= stepin)
       {
@@ -398,10 +398,10 @@ case structure:
    /*----------------------------------------------- create index array */
    for (i=0;i<numnp;i++)
    {
-      actnode = &(actfield->dis[0].node[i]);  
+      actnode = &(actfield->dis[0].node[i]);
       globloc.a.iv[actnode->Id] = actnode->Id_loc;
    }
-   actnode=&(actfield->dis[0].node[0]);      
+   actnode=&(actfield->dis[0].node[0]);
    numdf=actnode->numdf;
    if (numdf==6) numdf=3;
    /*---------------------------------------- allocate temporary arrays */
@@ -409,11 +409,11 @@ case structure:
    /*------------------------------------------------ create time array */
    amdef("time",time_a,ncols,1,"DV");
    /*------------------------------------------------ create step array */
-   amdef("step",step_a,ncols,1,"IV");   
+   amdef("step",step_a,ncols,1,"IV");
    /*----------------------------------------- allocate nodal sol field */
    for (i=0;i<numnp;i++)
    {
-      actnode=&(actfield->dis[0].node[i]);      
+      actnode=&(actfield->dis[0].node[i]);
       amredef(&(actnode->sol),ncols,actnode->numdf,"DA");
    }
    /*------------------------------------ find firststep in .flavia.res */
@@ -455,7 +455,7 @@ case structure:
          foundit = strstr(line," ");
          foundit=strpbrk(foundit,"-.1234567890");
          /*---------------------------------------- read global node Id */
-	 num = strtod(foundit,&end)-1;   
+	 num = strtod(foundit,&end)-1;
 	 /*------------------------------------ determine local node Id */
 	 num = globloc.a.iv[num];
          if (num<0) dserror("node number not valid!\n");
@@ -463,7 +463,7 @@ case structure:
          {
             foundit = strstr(foundit," ");
             foundit=strpbrk(foundit,"-.1234567890");
-            val[num][k] = strtod(foundit,&end); 
+            val[num][k] = strtod(foundit,&end);
          }
       }
       /*------------------------------------------ plausibility checkes */
@@ -472,7 +472,7 @@ case structure:
      /*------------------------------------- copy results to the nodes */
       for (i=0;i<numnp;i++)
       {
-         actnode=&(actfield->dis[0].node[i]);      
+         actnode=&(actfield->dis[0].node[i]);
 	 num = actnode->Id_loc;
          for (k=0;k<numdf;k++)
             actnode->sol.a.da[counter][k]=val[num][k];
@@ -483,9 +483,9 @@ case structure:
       if (stepin<=laststep)
       for (i=0;i<incre;i++)
       {
-         vis_frfind("# RESULT DISPLACEMENTS on FIELD FSI");      
+         vis_frfind("# RESULT DISPLACEMENTS on FIELD FSI");
          if (fgets(line,499,in)==NULL)
-            dserror("An error occured reading a line from .flavia.res\n");      
+            dserror("An error occured reading a line from .flavia.res\n");
       }
    }
    if (counter!=ncols)
@@ -526,7 +526,7 @@ case structure:
          foundit = strstr(line," ");
          foundit=strpbrk(foundit,"-.1234567890");
          /*---------------------------------------- read global node Id */
-	 num = strtod(foundit,&end)-1;   
+	 num = strtod(foundit,&end)-1;
 	 /*------------------------------------ determine local node Id */
 	 num = globloc.a.iv[num];
          if (num<0) dserror("node number not valid!\n");
@@ -534,7 +534,7 @@ case structure:
          {
             foundit = strstr(foundit," ");
             foundit=strpbrk(foundit,"-.1234567890");
-            val[num][k] = strtod(foundit,&end); 
+            val[num][k] = strtod(foundit,&end);
          }
       }
       /*------------------------------------------ plausibility checkes */
@@ -543,7 +543,7 @@ case structure:
      /*------------------------------------- copy results to the nodes */
       for (i=0;i<numnp;i++)
       {
-         actnode=&(actfield->dis[0].node[i]);      
+         actnode=&(actfield->dis[0].node[i]);
 	 num = actnode->Id_loc;
          for (k=0;k<numdf;k++)
             actnode->sol.a.da[counter][k+numdf]=val[num][k];
@@ -554,21 +554,21 @@ case structure:
       if (stepin<=laststep)
       for (i=0;i<incre;i++)
       {
-         vis_frfind("# RESULT FSI LOADS on FIELD STRUCTURE");      
+         vis_frfind("# RESULT FSI LOADS on FIELD STRUCTURE");
          if (fgets(line,499,in)==NULL)
-            dserror("An error occured reading a line from .flavia.res\n");      
+            dserror("An error occured reading a line from .flavia.res\n");
       }
    }
    if (counter!=ncols)
       dserror("an error occured reading .flavie.res!\n");
 #endif
-   amdel(&val_a);   
+   amdel(&val_a);
    amdel(&globloc);
    *FIRSTSTEP = firststep;
    *LASTSTEP  = laststep;
-   *DSTEP     = incre;   
+   *DSTEP     = incre;
 break;
-case ale:   
+case ale:
 #ifdef D_FSI
    numff = genprob.numff;
    numsf = genprob.numsf;
@@ -580,7 +580,7 @@ case ale:
    /*----------------------------------------------- create index array */
    for (i=0;i<numnp;i++)
    {
-      actnode = &(fluidfield->dis[0].node[i]);  
+      actnode = &(fluidfield->dis[0].node[i]);
       globloc.a.iv[actnode->Id] = actnode->Id_loc;
    }
    /* ---------------------------------------------------initialisation */
@@ -591,7 +591,7 @@ case ale:
    /*----------------------------------------- allocate nodal sol field */
    for (i=0;i<numnp_ale;i++)
    {
-      actnode=&(actfield->dis[0].node[i]);      
+      actnode=&(actfield->dis[0].node[i]);
       amredef(&(actnode->sol),ncols,numdf,"DA");
    }
    /*------------------------------------ find firststep in .flavia.res */
@@ -629,7 +629,7 @@ case ale:
          foundit = strstr(line," ");
          foundit=strpbrk(foundit,"-.1234567890");
          /*---------------------------------------- read global node Id */
-	 num = strtod(foundit,&end)-1;   
+	 num = strtod(foundit,&end)-1;
 	 /*------------------------------------ determine local node Id */
 	 num = globloc.a.iv[num];
          if (num<0) dserror("node number not valid!\n");
@@ -637,7 +637,7 @@ case ale:
          {
             foundit = strstr(foundit," ");
             foundit=strpbrk(foundit,"-.1234567890");
-            val[num][k] = strtod(foundit,&end); 
+            val[num][k] = strtod(foundit,&end);
          }
       }
       /*------------------------------------------ plausibility checkes */
@@ -648,7 +648,7 @@ case ale:
       /*------------------------------------- copy results to the nodes */
       for (i=0;i<numnp_ale;i++)
       {
-         actnode=&(actfield->dis[0].node[i]);      
+         actnode=&(actfield->dis[0].node[i]);
          actgnode = actnode->gnode;
 	 actfnode = actgnode->mfcpnode[numff];
 	 if (actfnode==NULL) continue;
@@ -662,16 +662,16 @@ case ale:
       if (stepin<=laststep)
       for (i=0;i<incre;i++)
       {
-         vis_frfind("# RESULT DISPLACEMENTS on FIELD FSI");      
+         vis_frfind("# RESULT DISPLACEMENTS on FIELD FSI");
          if (fgets(line,499,in)==NULL)
-            dserror("An error occured reading a line from .flavia.res\n");      
+            dserror("An error occured reading a line from .flavia.res\n");
       }
    }
    if (counter!=ncols)
       dserror("an error occured reading .flavie.res!\n");
    *ntsteps=ncols;
    if (*ntsteps==0) dserror("no displ. results in .flavia.res\n");
-   amdel(&val_a);   
+   amdel(&val_a);
    amdel(&globloc);
 #else
 dserror("FSI functions not compiled in!\n");
@@ -682,26 +682,26 @@ default:
 }
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of visual_readflaviares */
 /*!---------------------------------------------------------------------
-\brief find a character string in flavia.res                                            
+\brief find a character string in flavia.res
 
-<pre>                                                        genk 07/03 
+<pre>                                                        genk 07/03
 searches for a given character string in flavia.res
 </pre>
-\param string   char[]   (i)   string to search for in .flavia.res  
-\return void                                               
+\param string   char[]   (i)   string to search for in .flavia.res
+\return void
 
 ------------------------------------------------------------------------*/
 void vis_frfind(char string[])
 {
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("vis_frfind");
 #endif
 
@@ -720,7 +720,7 @@ while ( strstr(line,string) == NULL )
 }
 end:
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

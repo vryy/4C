@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -27,7 +27,7 @@ void solserv_create_vec(DIST_VECTOR **vector,INT numvectors,INT numeq_total,
 {
 INT                  i;
 DIST_VECTOR *actvector;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_create_vec");
 #endif
 /*----------------------------------------------------------------------*/
@@ -43,7 +43,7 @@ for (i=0; i<numvectors; i++)
    amdef("dist_vec",&(actvector->vec),numeq,1,typstr);
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -63,7 +63,7 @@ void solserv_del_vec(DIST_VECTOR **vector,INT numvectors)
 {
 INT                  i;
 DIST_VECTOR *actvector;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_del_vec");
 #endif
 /*--------------------------- loop the created vectors and delete them */
@@ -74,7 +74,7 @@ for (i=0; i<numvectors; i++)
 }
 CCAFREE(*vector);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -89,13 +89,13 @@ return;
  *----------------------------------------------------------------------*/
 void solserv_zero_vec(DIST_VECTOR *disvector)
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_zero_vec");
 #endif
 /*----------------------------------------------------------------------*/
 amzero(&(disvector->vec));
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -116,7 +116,7 @@ void solserv_add_vec(DIST_VECTOR *vec_from,DIST_VECTOR *vec_to,DOUBLE factor)
 INT                  i,dim;
 DOUBLE              *dfrom;
 DOUBLE              *dto;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_add_vec");
 #endif
 /*----------------------------------------------------------------------*/
@@ -128,7 +128,7 @@ dfrom = vec_from->vec.a.dv;
 dto   = vec_to->vec.a.dv;
 for (i=0; i<dim; i++) *(dto++) += (*(dfrom++) * factor);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -147,7 +147,7 @@ void solserv_copy_vec(DIST_VECTOR *vec_from,DIST_VECTOR *vec_to)
 INT                  i,dim;
 DOUBLE              *dfrom;
 DOUBLE              *dto;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_copy_vec");
 #endif
 /*----------------------------------------------------------------------*/
@@ -159,7 +159,7 @@ dfrom = vec_from->vec.a.dv;
 dto   = vec_to->vec.a.dv;
 for (i=0; i<dim; i++) *(dto++) = *(dfrom++);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -181,7 +181,7 @@ INT                  i;
 DOUBLE              *vec;
 DOUBLE               sendbuff;
 INT                  numeq;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_vecnorm_euclid");
 #endif
 /*----------------------------------------------------------------------*/
@@ -192,14 +192,14 @@ for (i=0; i<dist_vec->numeq; i++)
 {
    sendbuff += vec[i]*vec[i];
 }
-#ifdef PARALLEL 
+#ifdef PARALLEL
 MPI_Allreduce(&sendbuff,result,1,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
 #else
 *result = sendbuff;
 #endif
 *result = sqrt(*result);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -221,7 +221,7 @@ INT                  i;
 DOUBLE              *vec;
 DOUBLE               sendbuff=0.0;
 INT                  numeq;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_vecnorm_Linf");
 #endif
 /*----------------------------------------------------------------------*/
@@ -232,13 +232,13 @@ for (i=0; i<dist_vec->numeq; i++)
 {
    if (FABS(vec[i])>sendbuff) sendbuff = FABS(vec[i]);
 }
-#ifdef PARALLEL 
+#ifdef PARALLEL
 MPI_Allreduce(&sendbuff,result,1,MPI_DOUBLE,MPI_MAX,actintra->MPI_INTRA_COMM);
 #else
 *result = sendbuff;
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -253,7 +253,7 @@ return;
  |  INTRA *actintra (i) intra-communicator the DIST_VECTOR lives on     |
  |  SPARSE_TYP *sysarray_typ (i) sparsity typ of vector-matching matrix |
  |  SPARSE_ARRAY *sysarray   (i) sparse matrix the vector matches in    |
- |                               distribution                           | 
+ |                               distribution                           |
  |  DIST_VECTOR  *dist_vec   (i) vector the value shall be taken from   |
  |  INT           indiz      (i) field-local (unsupported) dof number   |
  |  DOUBLE       *result     (o) value in vector at the given dof       |
@@ -273,7 +273,7 @@ INT                  index =0;
 INT                 *update = NULL;
 DOUBLE              *vec;
 INT                  numeq;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_getele_vec");
 #endif
 /*----------------------------------------------------------------------*/
@@ -283,7 +283,7 @@ vec      = dist_vec->vec.a.dv;
 numeq    = dist_vec->numeq;
 switch(*sysarray_typ)
 {
- 
+
 #ifdef AZTEC_PACKAGE
 case msr:
    update = sysarray->msr->update.a.iv;
@@ -354,13 +354,13 @@ if(*sysarray_typ!=mds)
 }
 #ifndef PARALLEL /* this is sequentiell */
 if (index==-1) dserror("Cannot find indize in distributed vector");
-*result = dist_vec->vec.a.dv[index]; 
+*result = dist_vec->vec.a.dv[index];
 #else            /* this is parallel */
 bcaster=-1;
-if (index != -1) 
+if (index != -1)
 {
    bcaster = imyrank;
-   *result = dist_vec->vec.a.dv[index]; 
+   *result = dist_vec->vec.a.dv[index];
 }
 MPI_Allreduce(&bcaster,&recvbuff,1,MPI_INT,MPI_MAX,actintra->MPI_INTRA_COMM);
 bcaster = recvbuff;
@@ -369,7 +369,7 @@ if (bcaster==-1) dserror("Cannot find indize in distributed vector");
 MPI_Bcast(result,1,MPI_DOUBLE,bcaster,actintra->MPI_INTRA_COMM);
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -398,7 +398,7 @@ DOUBLE               globalsum;
 DOUBLE              *vec1;
 DOUBLE              *vec2;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_dot_vec");
 #endif
 /*----------------------------------------------------------------------*/
@@ -408,18 +408,18 @@ if (dist_vec1->numeq != dist_vec2->numeq)
 vec1 = dist_vec1->vec.a.dv;
 vec2 = dist_vec2->vec.a.dv;
 /*----------------------------------------------------------------------*/
-localsum = 0.0;   
+localsum = 0.0;
 
 for (i=0; i<dist_vec1->numeq; i++) localsum += vec1[i]*vec2[i];
 
-#ifdef PARALLEL 
+#ifdef PARALLEL
 MPI_Allreduce(&localsum,&globalsum,1,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
 *dot = globalsum;
 #else
 *dot = localsum;
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -440,7 +440,7 @@ INT                  i;
 INT                  dim;
 DOUBLE              *dptr;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_dot_vec");
 #endif
 /*----------------------------------------------------------------------*/
@@ -450,7 +450,7 @@ for (i=0; i<dim; i++) *(dptr++) *= scalar;
 /*----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -490,19 +490,19 @@ INT             i;
 INT             dof;
 INT             imyrank;
 INT             inprocs;
-#ifdef PARALLEL 
+#ifdef PARALLEL
 static DOUBLE  *recvbuff;
-static ARRAY    recv;    
+static ARRAY    recv;
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_reddistvec");
 #endif
 /*----------------------------------------------------------------------*/
 if (dim != distvec->numeq_total) dserror("Dimension mismatch");
 /*------------------------- allocate communication buffer, if necessary */
-#ifdef PARALLEL 
-if (recv.Typ != cca_DV) 
+#ifdef PARALLEL
+if (recv.Typ != cca_DV)
 {
    recvbuff = amdef("recvbuff",&recv,dim,1,"DV");
 }
@@ -527,13 +527,13 @@ case msr:
    for (i=0; i<sysarray->msr->numeq; i++)
    {
       dof = sysarray->msr->update.a.iv[i];
-#ifdef PARALLEL 
+#ifdef PARALLEL
       recvbuff[dof] = distvec->vec.a.dv[i];
 #else
       fullvec[dof] = distvec->vec.a.dv[i];
 #endif
    }
-#ifdef PARALLEL 
+#ifdef PARALLEL
    MPI_Allreduce(recvbuff,fullvec,dim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
 #endif
 break;
@@ -548,7 +548,7 @@ case parcsr:
       dof     = sysarray->parcsr->update.a.ia[imyrank][i];
       fullvec[dof] = distvec->vec.a.dv[i];
    }
-#ifdef PARALLEL 
+#ifdef PARALLEL
    MPI_Allreduce(fullvec,recvbuff,dim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
    for (i=0; i<dim; i++) fullvec[i] = recvbuff[i];
 #endif
@@ -564,7 +564,7 @@ case ucchb:
       dof = sysarray->ucchb->update.a.iv[i];
       fullvec[dof] = distvec->vec.a.dv[i];
    }
-#ifdef PARALLEL 
+#ifdef PARALLEL
    MPI_Allreduce(fullvec,recvbuff,dim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
    for (i=0; i<dim; i++) fullvec[i] = recvbuff[i];
 #endif
@@ -579,7 +579,7 @@ case dense:
       dof = sysarray->dense->update.a.iv[i];
       fullvec[dof] = distvec->vec.a.dv[i];
    }
-#ifdef PARALLEL 
+#ifdef PARALLEL
    MPI_Allreduce(fullvec,recvbuff,dim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
    for (i=0; i<dim; i++) fullvec[i] = recvbuff[i];
 #endif
@@ -605,7 +605,7 @@ case rc_ptr:
       dof = sysarray->rc_ptr->update.a.iv[i];
       fullvec[dof] = distvec->vec.a.dv[i];
    }
-#ifdef PARALLEL 
+#ifdef PARALLEL
    MPI_Allreduce(fullvec,recvbuff,dim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
    for (i=0; i<dim; i++) fullvec[i] = recvbuff[i];
 #endif
@@ -618,13 +618,13 @@ case spoolmatrix:
    for (i=0; i<sysarray->spo->numeq; i++)
    {
       dof = sysarray->spo->update.a.iv[i];
-#ifdef PARALLEL 
+#ifdef PARALLEL
       recvbuff[dof] = distvec->vec.a.dv[i];
 #else
       fullvec[dof] = distvec->vec.a.dv[i];
 #endif
    }
-#ifdef PARALLEL 
+#ifdef PARALLEL
    MPI_Allreduce(recvbuff,fullvec,dim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
 #endif
 break;
@@ -640,7 +640,7 @@ case ccf:
       dof = sysarray->ccf->update.a.iv[i];
       fullvec[dof] = distvec->vec.a.dv[i];
    }
-#ifdef PARALLEL 
+#ifdef PARALLEL
    MPI_Allreduce(fullvec,recvbuff,dim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
    for (i=0; i<dim; i++) fullvec[i] = recvbuff[i];
 #endif
@@ -655,7 +655,7 @@ case skymatrix:
       dof = sysarray->sky->update.a.iv[i];
       fullvec[dof] = distvec->vec.a.dv[i];
    }
-#ifdef PARALLEL 
+#ifdef PARALLEL
    MPI_Allreduce(fullvec,recvbuff,dim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
    for (i=0; i<dim; i++) fullvec[i] = recvbuff[i];
 #endif
@@ -668,13 +668,13 @@ case bdcsr:
    for (i=0; i<sysarray->bdcsr->numeq; i++)
    {
       dof = sysarray->bdcsr->update.a.iv[i];
-#ifdef PARALLEL 
+#ifdef PARALLEL
       recvbuff[dof] = distvec->vec.a.dv[i];
 #else
       fullvec[dof] = distvec->vec.a.dv[i];
 #endif
    }
-#ifdef PARALLEL 
+#ifdef PARALLEL
    MPI_Allreduce(recvbuff,fullvec,dim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
 #endif
 break;
@@ -686,13 +686,13 @@ case oll:
    for (i=0; i<sysarray->oll->numeq; i++)
    {
       dof = sysarray->oll->update.a.iv[i];
-#ifdef PARALLEL 
+#ifdef PARALLEL
       recvbuff[dof] = distvec->vec.a.dv[i];
 #else
       fullvec[dof] = distvec->vec.a.dv[i];
 #endif
    }
-#ifdef PARALLEL 
+#ifdef PARALLEL
    MPI_Allreduce(recvbuff,fullvec,dim,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
 #endif
 break;
@@ -705,7 +705,7 @@ default:
 break;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -743,7 +743,7 @@ INT             dof;
 INT             imyrank;
 INT             inprocs;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_distribdistvec");
 #endif
 /*----------------------------------------------------------------------*/
@@ -853,7 +853,7 @@ default:
 break;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -894,7 +894,7 @@ NODE    *actnode;
 ARRAY    result_a;
 DOUBLE  *result;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_result_total");
 #endif
 /*----------------------------------------------------------------------*/
@@ -919,12 +919,12 @@ for (i=0; i<actfield->dis[0].numnp; i++)
       dof = actnode->dof[j];
       if (dof>=numeq_total) continue;
       actnode->sol.a.da[place][j] = result[dof];
-   }   
+   }
 }
 /*----------------------------------------------------------------------*/
 amdel(&result_a);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -953,7 +953,7 @@ NODE    *actnode;
 ARRAY    result_a;
 DOUBLE  *result;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_result_incre");
 #endif
 
@@ -979,12 +979,12 @@ for (i=0; i<actfield->dis[ndis].numnp; i++)
       dof = actnode->dof[j];
       if (dof>=numeq_total) continue;
       actnode->sol_increment.a.da[place][j] = result[dof];
-   }   
+   }
 }
 /*----------------------------------------------------------------------*/
 amdel(&result_a);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1014,7 +1014,7 @@ NODE    *actnode;
 ARRAY    result_a;
 DOUBLE  *result;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_result_resid");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1039,12 +1039,12 @@ for (i=0; i<actfield->dis[0].numnp; i++)
       dof = actnode->dof[j];
       if (dof>=numeq_total) continue;
       actnode->sol_residual.a.da[place][j] = result[dof];
-   }   
+   }
 }
 /*----------------------------------------------------------------------*/
 amdel(&result_a);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -1071,7 +1071,7 @@ NODE    *actnode;
 ARRAY    result_a;
 DOUBLE  *result;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("solserv_result_mf");
 #endif
 /*----------------------------------------------------------------------*/
@@ -1096,12 +1096,12 @@ for (i=0; i<actfield->dis[0].numnp; i++)
       dof = actnode->dof[j];
       if (dof>=numeq_total) continue;
       actnode->sol_mf.a.da[place][j] = result[dof];
-   }   
+   }
 }
 /*----------------------------------------------------------------------*/
 amdel(&result_a);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

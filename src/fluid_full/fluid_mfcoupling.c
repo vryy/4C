@@ -10,21 +10,21 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
+/*!
 \addtogroup FLUID
 *//*! @{ (documentation module open)*/
 #ifdef D_FLUID
 #ifdef D_FSI
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
-#include "fluid_prototypes.h"  
+#include "fluid_prototypes.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
  | global variable GENPROB genprob is defined in global_control.c       |
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief create fluid multifield coupling conditions
 
 <pre>                                                         genk 01/03
@@ -34,24 +34,24 @@ Problems with freesurfaces have to be solved in an ALE-framework.
  create mulitfield solution history and set pointers to the corresponding
  nodes of the other fields
 
-</pre>   
+</pre>
 
-\param  *fluidfield  FIELD    (i)        
+\param  *fluidfield  FIELD    (i)
 \param  *alefield    FIELD    (i)
 
-\return void 
+\return void
 
 ------------------------------------------------------------------------*/
 void fluid_initmfcoupling(
                            FIELD         *fluidfield,
-			   FIELD         *alefield		
+			   FIELD         *alefield
 		         )
 {
-INT     numfnp,  numanp;                     /* number of nodes         */  
+INT     numfnp,  numanp;                     /* number of nodes         */
 INT     numfld;
 INT     i,j;                                 /* simply some counters    */
 INT     ierr;                                /* flag                    */
-INT     afound;                              /* flag                    */          
+INT     afound;                              /* flag                    */
 INT     numff,numaf;
 DOUBLE  tol=EPS8;                            /* tolerance for node dist */
 NODE   *actfnode, *actanode;                 /* actual nodes            */
@@ -61,9 +61,9 @@ INT    *aindex;
 DLINE  *actdline;
 DNODE  *actdnode;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_initmfcoupling");
-#endif	
+#endif
 
 /*--------------------------------------------- actual number of fields */
 numfld=genprob.numfld;
@@ -75,9 +75,9 @@ numfnp  = fluidfield->dis[0].numnp;
 numanp  = alefield->dis[0].numnp;
 
 /*---------------------------------------------------- loop fluid nodes */
-/* multifield solution history of fluid nodes:              
+/* multifield solution history of fluid nodes:
    actfnode->sol_mf.a.da[0][i]: velocity transfered to ale
-  ----------------------------------------------------------------------*/   
+  ----------------------------------------------------------------------*/
 for (i=0;i<numfnp;i++)
 {
    actfnode  = &(fluidfield->dis[0].node[i]);
@@ -107,9 +107,9 @@ for (i=0;i<numanp;i++)
 aindex = amdef("aindex",&aindex_a,numanp,1,"IV");
 for (i=0;i<numanp;i++) aindex[i]=1;
 
-/* find multifield coupled nodes and set ptrs to the corresponding  
+/* find multifield coupled nodes and set ptrs to the corresponding
    nodes of  the other fields ------------------------------------------*/
-/*--------------------------------------------------- loop fluid nodes  */    
+/*--------------------------------------------------- loop fluid nodes  */
 for (i=0;i<numfnp;i++)
 {
    actfnode  = &(fluidfield->dis[0].node[i]);
@@ -125,29 +125,29 @@ for (i=0;i<numfnp;i++)
       afound++;
       actagnode = actanode->gnode;
       aindex[j]=0;
-      break;          
-   } /* end of loop over ale nodes */      
-   
+      break;
+   } /* end of loop over ale nodes */
+
    /*------------------------------ set pointers to corresponding nodes */
    actfgnode->mfcpnode[numff]=actfnode;
-   if(afound>0)  
+   if(afound>0)
    {
-      actfgnode->mfcpnode[numaf]=actanode;   
+      actfgnode->mfcpnode[numaf]=actanode;
       actagnode->mfcpnode[numff]=actfnode;
-      actagnode->mfcpnode[numaf]=actanode;	    
+      actagnode->mfcpnode[numaf]=actanode;
    }
-}/* end of loop over fluidnodes */   
-   
+}/* end of loop over fluidnodes */
+
 /*------------------------------------------------- plausibility checks */
 for (i=0;i<numanp;i++)
 {
-   actanode  = &(alefield->dis[0].node[i]); 
+   actanode  = &(alefield->dis[0].node[i]);
    actagnode = actanode->gnode;
    dsassert(actagnode->mfcpnode!=NULL,"No fluid node for ale node!\n");
-   if (actagnode->freesurf==NULL) continue; 
-   dsassert(actagnode->dirich!=NULL,"No dirich condition for freesurf ale node!\n"); 
+   if (actagnode->freesurf==NULL) continue;
+   dsassert(actagnode->dirich!=NULL,"No dirich condition for freesurf ale node!\n");
    dsassert(actagnode->dirich->dirich_type==dirich_freesurf,
-   "wrong dirch_type at freesurface for ale node!\n");      
+   "wrong dirch_type at freesurface for ale node!\n");
    if (actanode->locsysId>0)
    {
       actfnode = actagnode->mfcpnode[genprob.numff];
@@ -155,11 +155,11 @@ for (i=0;i<numanp;i++)
       if (actfnode->locsysId != actanode->locsysId)
          dserror("locsysId at free surface not the same for ale and fluid!\n");
    }
-}   
+}
 
 /*-------------------------------------------------- print out coupling */
 if (genprob.visual==0)
-out_fluidmf(fluidfield);   
+out_fluidmf(fluidfield);
 
 /*--------------------------------------------- init the slip dirich BC */
 for (i=0;i<numfnp;i++)
@@ -168,7 +168,7 @@ for (i=0;i<numfnp;i++)
    actfgnode = actfnode->gnode;
    /*-------------------------------- we are looking for a design nodes */
    if (actfgnode->ondesigntyp==ondnode)
-   {   
+   {
       actdnode=actfgnode->d.dnode;
       /*-------------------------------------- find dline with slip DBC */
       ierr=0;
@@ -183,7 +183,7 @@ for (i=0;i<numfnp;i++)
       }
       if (ierr==0) continue;
       /*------ check if actual node is first or last node on this dline */
-      actdnode=actdline->dnode[0];   
+      actdnode=actdline->dnode[0];
       cheque_distance(&(actdnode->x[0]),&(actfnode->x[0]),tol,&ierr);
       if (ierr!=0)
       {
@@ -220,14 +220,14 @@ for (i=0;i<numfnp;i++)
          continue;
       }
    }
-}   
+}
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
-} /* end of fluid_initmfcoupling*/   
-#endif   
-#endif   	     
+} /* end of fluid_initmfcoupling*/
+#endif
+#endif
 /*! @} (documentation module close)*/

@@ -10,7 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-#ifdef D_FLUID3 
+#ifdef D_FLUID3
 #include "../headers/standardtypes.h"
 #include "fluid3_prototypes.h"
 #include "fluid3.h"
@@ -20,7 +20,7 @@ Maintainer: Steffen Genkinger
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -29,7 +29,7 @@ extern ALLDYNA      *alldyn;
 extern struct _GENPROB     genprob;
 
 static FLUID_DYNAMIC *fdyn;
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief galerkin part of time forces for vel dofs
 
 <pre>                                                         genk 05/02
@@ -41,8 +41,8 @@ is calculated:
 EULER/ALE:
       /
    + |  v * u     d_omega
-    /  
-    
+    /
+
 EULER:
                       /
    (-) (1-THETA)*dt  |  v * u * grad(u)     d_omega
@@ -51,40 +51,40 @@ EULER:
 ALE:
                       /
    (-) (1-THETA)*dt  |  v * c * grad(u)     d_omega
-                    /		  
+                    /
 
 EULER/ALE:
                       /
    (-) (1-THETA)*dt  |  2*nue * eps(v) : eps(u)  d_omega
-                    /  
-		  
+                    /
+
                     /
    + (1-THETA)*dt  |  div(v) * p  d_omega
-                  /		  		      
+                  /
 
 see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
 
-NOTE: vel2int = U(n)	     
+NOTE: vel2int = U(n)
       EULER: covint = U(n) * grad(U(n))
-      ALE:   covint = C(n) * grad(U(n))NOTE:					     
-      
+      ALE:   covint = C(n) * grad(U(n))NOTE:
+
 </pre>
 \param   *eforce      DOUBLE	          (i/o)  element force vector
 \param   *velint      DOUBLE	          (i)    vel. at integr. point
 \param   *vel2int     DOUBLE	          (i)    vel. at integr. point
 \param   *covint      DOUBLE	          (i)    conv. vel. at integr. p.
-\param	 *funct      DOUBLE	          (i)    nat. shape functions      
+\param	 *funct      DOUBLE	          (i)    nat. shape functions
 \param	**derxy      DOUBLE	          (i)    global derivatives
 \param	**vderxy     DOUBLE	          (i)    global vel. deriv.
 \param	  preint     DOUBLE	          (i)    pres. at integr. point
 \param	  visc       DOUBLE	          (i)    fluid viscosity
 \param	  fac        DOUBLE	          (i)    weighting factor
 \param	  iel        INT	             (i)    num. of nodes in ele
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
-void f3_calgaltfv( 
-                  DOUBLE          *eforce,    
+void f3_calgaltfv(
+                  DOUBLE          *eforce,
                   DOUBLE          *vel2int,
                   DOUBLE          *covint,
                   DOUBLE          *funct,
@@ -94,16 +94,16 @@ void f3_calgaltfv(
                   DOUBLE           visc,
                   DOUBLE           fac,
                   INT              iel
-                )  
+                )
 {
-INT    j,irow,isd,inode;  
+INT    j,irow,isd,inode;
 DOUBLE c;
 DOUBLE aux;
 DOUBLE facsr;
 DOUBLE facpr;
 DOUBLE fact[3];
- 
- #ifdef DEBUG 
+
+ #ifdef DEBUG
 dstrc_enter("f3_calgaltfv");
 #endif
 
@@ -118,8 +118,8 @@ c     = facsr * visc;
    Calculate intertia forces of time force vector:
       /
    + |  v * u     d_omega
-    /  
- *----------------------------------------------------------------------*/ 
+    /
+ *----------------------------------------------------------------------*/
 
 fact[0] = vel2int[0]*fac;
 fact[1] = vel2int[1]*fac;
@@ -139,7 +139,7 @@ for (inode=0;inode<iel;inode++)
 EULER:
                     /
    - (1-THETA)*dt  |  v * u * grad(u)     d_omega
-                  / 
+                  /
 ALE:
                     /
    - (1-THETA)*dt  |  v * c * grad(u)     d_omega
@@ -159,8 +159,8 @@ for (inode=0;inode<iel;inode++)
    Calculate viscous forces of time force vector:
                     /
    - (1-THETA)*dt  |  2*nue * eps(v) : eps(u)  d_omega
-                  /  
- *----------------------------------------------------------------------*/ 
+                  /
+ *----------------------------------------------------------------------*/
 irow=-1;
 for (inode=0;inode<iel;inode++)
 {
@@ -169,7 +169,7 @@ for (inode=0;inode<iel;inode++)
       irow++;
       for (j=0;j<3;j++)
       {
-         eforce[irow] -= (derxy[j][inode]*(vderxy[isd][j]+vderxy[j][isd])*c);  	                 
+         eforce[irow] -= (derxy[j][inode]*(vderxy[isd][j]+vderxy[j][isd])*c);
       } /* end of loop over j */
    } /* end of loop over isd */
 } /* end of loop over inode */
@@ -179,7 +179,7 @@ for (inode=0;inode<iel;inode++)
                     /
    + (1-THETA)*dt  |  div(v) * p  d_omega
                   /
- *----------------------------------------------------------------------*/ 
+ *----------------------------------------------------------------------*/
    aux = preint * facpr;
    irow=-1;
    for (inode=0;inode<iel;inode++)
@@ -190,16 +190,16 @@ for (inode=0;inode<iel;inode++)
          eforce[irow] += derxy[isd][inode]*aux;
       } /* end of loop over isd */
    } /* end of loop over inode */
- 
-/*----------------------------------------------------------------------*/ 
-#ifdef DEBUG 
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of f3_calgaltfv */
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief galerkin part of time forces for pre dofs
 
 <pre>                                                         genk 05/02
@@ -213,33 +213,33 @@ is calculated:
 
 see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
 
-NOTE:						       
-    there's only one full element force vector         
+NOTE:
+    there's only one full element force vector
     for pre-dofs the pointer eforce points to the entry
-    eforce[3*iel]				        	    
-      
+    eforce[3*iel]
+
 </pre>
 \param   *eforce      DOUBLE           (i/o)  element force vector
 \param   *funct       DOUBLE           (i)    nat. shape functions
 \param  **vderxy      DOUBLE           (i)    global vel. deriv.
-\param    fac         DOUBLE           (i)    weighting factor	     
+\param    fac         DOUBLE           (i)    weighting factor
 \param    iel         INT              (i)    num. of nodes in ele
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f3_calgaltfp(
-                   DOUBLE          *eforce,    
+                   DOUBLE          *eforce,
 		   DOUBLE          *funct,
 		   DOUBLE         **vderxy,
 		   DOUBLE           fac,
 		   INT              iel
-                  ) 
+                  )
 {
 INT      inode;
 DOUBLE   aux;
 DOUBLE   facsr;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f3_calgaltfp");
 #endif
 
@@ -259,15 +259,15 @@ for(inode=0;inode<iel;inode++)
    eforce[inode] += funct[inode]*aux;
 } /* end of loop over inode */
 
-/*----------------------------------------------------------------------*/ 
-#ifdef DEBUG 
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of f3_calgaltfp */
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief stabilisation part of time forces for vel dofs
 
 <pre>                                                         genk 05/02
@@ -276,7 +276,7 @@ return;
 In this routine the stabilisation part of the time forces for vel dofs
 is calculated:
 
-EULER:		 		                   	  		      
+EULER:
       /
    + |  tau_mu * u * grad(v) * u  d_omega
     /
@@ -285,22 +285,22 @@ ALE:
       /
    + |  tau_mu * c * grad(v) * u  d_omega
     /
-        
+
 EULER/ALE:
         /
    -/+ |  tau_mp * 2*nue * div( eps(v) ) * u  d_omega
       /
-      
+
 EULER:
                      /
    (-) (1-THETA)*dt |  tau_mu * u * grad(v) * u * grad(u) d_omega
-                   /          
-    
+                   /
+
 ALE:
                      /
    (-) (1-THETA)*dt |  tau_mu * c * grad(v) * c * grad(u) d_omega
-                   / 
-		   
+                   /
+
 EULER:
                      /
    +/- (1-THETA)*dt |  tau_mp * 2*nue * div( eps(v) ) * u * grad(u)  d_omega
@@ -311,7 +311,7 @@ ALE:
    +/- (1-THETA)*dt |  tau_mp * 2*nue * div( eps(v) ) * c * grad(u)  d_omega
                    /
 
-EULER:		   
+EULER:
                    /
    + (1-THETA)*dt |  tau_mu * 2*nue * u *grad(v) * div( eps(u) )  d_omega
                  /
@@ -321,21 +321,21 @@ ALE:
    + (1-THETA)*dt |  tau_mu * 2*nue * c *grad(v) * div( eps(u) )  d_omega
                  /
 
-EULER/ALE:		 
+EULER/ALE:
                      /
    -/+ (1-THETA)*dt |  tau_mp * 4*nue^2 * div( eps(v) ) * div ( eps(u) )  d_omega
-                   /		 
-		 	
+                   /
+
        /
   (-) |  tau_c * div(v) * div(u)  d_omega
      /
-   
+
 EULER:
                     /
   (-) (1-THETA)*dt | tau_mu * u * grad(v) * grad(p)   d_omega
                   /
 
-ALE:		
+ALE:
                     /
   (-) (1-THETA)*dt | tau_mu * c * grad(v) * grad(p)   d_omega
                   /
@@ -343,23 +343,23 @@ ALE:
 EULER/ALE:
                     /
   -/+ (1-THETA)*dt | tau_mp * 2*nue * div( eps(v) ) * grad(p)    d_omega
-                  /		  
-				       
+                  /
+
 see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
 
 NOTE: for EULER
-      in ONESTEP methods: velint = vel2int = U(n);  
-      in TWOSTEP methods: velint = U(n+gamma)      
+      in ONESTEP methods: velint = vel2int = U(n);
+      in TWOSTEP methods: velint = U(n+gamma)
       in TWOSTEP methods: vel2int= U(n)
       in ONESTEP methods: covint = U(n) * grad(U(n))
       in TWOSTEP methods: covint = U(n+gamma) * grad(U(n+gamma))
-       
+
 NOTE: for ALE
       only ONESTEP method implemented!!!
         velint = C(n)
 	vel2int= U(n)
 	covint = C(n) * grad(U(n))
-      
+
 </pre>
 \param   *ele        ELEMENT           (i)    actual element
 \param   *eforce     DOUBLE            (i/o)  element force vector
@@ -375,13 +375,13 @@ NOTE: for ALE
 \param	  visc       DOUBLE            (i)    fluid viscosity
 \param	  ihoel      INT               (i)    flag for higer ord. ele
 \param	  iel        INT               (i)    num. of nodes in ele
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f3_calstabtfv(
-                     STAB_PAR_GLS    *gls,  
+                     STAB_PAR_GLS    *gls,
                      ELEMENT         *ele,
-                     DOUBLE          *eforce,    
+                     DOUBLE          *eforce,
                      DOUBLE          *velint,
                      DOUBLE          *vel2int,
                      DOUBLE          *covint,
@@ -399,7 +399,7 @@ void f3_calstabtfv(
 INT    irow,isd,inode;
 DOUBLE c,cc;
 DOUBLE aux;
-DOUBLE taumu,taump,tauc; 
+DOUBLE taumu,taump,tauc;
 DOUBLE facsr;
 DOUBLE facpr;
 DOUBLE fvts   = 0.0;
@@ -408,16 +408,16 @@ DOUBLE fvvtsr = 0.0;
 DOUBLE fact[3];
 DOUBLE sign=ONE;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f3_calstabtfv");
-#endif	
+#endif
 
 /*---------------------------------------------------------- initialise */
 fdyn  = alldyn[genprob.numff].fdyn;
 
 dsassert(ele->e.f3->stab_type == stab_gls,
          "routine with no or wrong stabilisation called");
-  
+
 /*--------------------------------------------------- set some factors */
 #if 0
 taumu = fdyn->tau[0];
@@ -436,7 +436,7 @@ c     = facsr * visc;
 
 /*----------------------------------------------------------------------*
    Calculate inertia/convective stab-forces of time force vector:
-EULER:		 		                   	  		      
+EULER:
       /
    + |  tau_mu * u * grad(v) * u  d_omega
     /
@@ -488,21 +488,21 @@ if (gls->ivisc!=0 && ihoel!=0)
       eforce[irow+2] -= ( derxy2[4][inode]*vel2int[0]  \
                         + derxy2[5][inode]*vel2int[1]  \
                         + derxy2[2][inode]*vel2int[2] + aux*vel2int[2])*fvts;
-      irow += 3;			 
-   } /* end of loop over inode */   
+      irow += 3;
+   } /* end of loop over inode */
 } /* endif (ele->e.f3->ivisc!=0 && ihoel!=0) */
- 
+
 /*----------------------------------------------------------------------*
    Calculate convective/convective stab-forces of time force vector:
 EULER
                    /
    - (1-THETA)*dt |  tau_mu * u * grad(v) * u * grad(u) d_omega
-                 /		 
+                 /
 ALE:
                    /
    - (1-THETA)*dt |  tau_mu * c * grad(v) * c * grad(u) d_omega
-                 /		 
-		 
+                 /
+
  *----------------------------------------------------------------------*/
 if (gls->iadvec!=0)
 {
@@ -553,7 +553,7 @@ if (gls->ivisc!=0 && ihoel!=0)
       irow +=3;
    } /* end of loop over inode */
 } /* endif (ele->e.f3->ivisc!=0 && ihoel!=0) */
- 
+
 /*----------------------------------------------------------------------*
    Calculate viscous/convective stab-forces of time force vector:
 EULER:
@@ -564,7 +564,7 @@ ALE:
                    /
    + (1-THETA)*dt |  tau_mu * 2*nue * c *grad(v) * div( eps(u) )  d_omega
                  /
- *----------------------------------------------------------------------*/ 
+ *----------------------------------------------------------------------*/
 if (gls->iadvec!=0 && ihoel!=0)
 {
    cc = c*taumu;
@@ -591,7 +591,7 @@ if (gls->iadvec!=0 && ihoel!=0)
                      /
    -/+ (1-THETA)*dt |  tau_mp * 4*nue^2 * div( eps(v) ) * div ( eps(u) )  d_omega
                    /
- *----------------------------------------------------------------------*/ 
+ *----------------------------------------------------------------------*/
 if (gls->ivisc!=0 && ihoel!=0)
 {
    fvvtsr = fvtsr*visc;
@@ -610,20 +610,20 @@ if (gls->ivisc!=0 && ihoel!=0)
                        + derxy2[4][inode]*fact[2] + aux*fact[0]);
       eforce[irow+1] -= (derxy2[3][inode]*fact[0] \
                        + derxy2[1][inode]*fact[1] \
-                       + derxy2[5][inode]*fact[2] + aux*fact[1]);       
+                       + derxy2[5][inode]*fact[2] + aux*fact[1]);
       eforce[irow+2] -= (derxy2[4][inode]*fact[0] \
                        + derxy2[5][inode]*fact[1] \
                        + derxy2[2][inode]*fact[2] + aux*fact[2]);
    irow += 3;
    } /* end of loop over inode */
 } /* endif (ele->e.f3->ivisc!=0 && ihoel!=0) */
-   
+
 /*----------------------------------------------------------------------*
    Calculate continuity stab-forces of time force vector:
      /
   - |  tau_c * div(v) * div(u)  d_omega
    /
- *----------------------------------------------------------------------*/  
+ *----------------------------------------------------------------------*/
 if (gls->icont!=0)
 {
    aux = tauc*facsr*(vderxy[0][0] + vderxy[1][1] + vderxy[2][2]);
@@ -637,7 +637,7 @@ if (gls->icont!=0)
       } /* end of loop over isd */
    } /* end of loop over inode */
 } /* endif (ele->e.f3->ivisc!=0) */
- 
+
 /*----------------------------------------------------------------------*
    Calculate pressure/convective stab-forces of time force vector:
 EULER:
@@ -645,11 +645,11 @@ EULER:
   (-) (1-THETA)*dt | tau_mu * u * grad(v) * grad(p)   d_omega
                   /
 
-ALE:		
+ALE:
                     /
   (-) (1-THETA)*dt | tau_mu * c * grad(v) * grad(p)   d_omega
                   /
- *----------------------------------------------------------------------*/  
+ *----------------------------------------------------------------------*/
 if (gls->iadvec!=0)
 {
    fact[0] = taumu*pderxy[0]*facpr;
@@ -663,7 +663,7 @@ if (gls->iadvec!=0)
       for (isd=0;isd<3;isd++)
       {
          irow++;
-         eforce[irow] -= aux*fact[isd];	 
+         eforce[irow] -= aux*fact[isd];
       } /* end of loop over isd */
    } /* end of loop over inode */
 } /* endif (gls->iadvec!=0) */
@@ -673,7 +673,7 @@ if (gls->iadvec!=0)
                     /
   -/+ (1-THETA)*dt | tau_mp * 2*nue * div( eps(v) ) * grad(p)    d_omega
                   /
- *----------------------------------------------------------------------*/  
+ *----------------------------------------------------------------------*/
 if (gls->ivisc!=0 && ihoel!=0)
 {
    cc = facpr*visc*taump*sign;
@@ -681,28 +681,28 @@ if (gls->ivisc!=0 && ihoel!=0)
    for (inode=0;inode<iel;inode++)
    {
       aux = derxy2[0][inode] + derxy2[1][inode] + derxy2[2][inode];
-      eforce[irow]   += (derxy2[0][inode]*pderxy[0]  
-                       + derxy2[3][inode]*pderxy[1] 
+      eforce[irow]   += (derxy2[0][inode]*pderxy[0]
+                       + derxy2[3][inode]*pderxy[1]
                        + derxy2[4][inode]*pderxy[2] + aux*pderxy[0])*cc;
-      eforce[irow+1] += (derxy2[3][inode]*pderxy[0]  
-                       + derxy2[1][inode]*pderxy[1] 
+      eforce[irow+1] += (derxy2[3][inode]*pderxy[0]
+                       + derxy2[1][inode]*pderxy[1]
                        + derxy2[5][inode]*pderxy[2] + aux*pderxy[1])*cc;
-      eforce[irow+2] += (derxy2[4][inode]*pderxy[0] 
-                       + derxy2[5][inode]*pderxy[1] 
+      eforce[irow+2] += (derxy2[4][inode]*pderxy[0]
+                       + derxy2[5][inode]*pderxy[1]
                        + derxy2[2][inode]*pderxy[2] + aux*pderxy[2])*cc;
-      irow += 3;		
+      irow += 3;
    } /* end of loop over inode */
 } /* endif (ele->e.f3->iadvec!=0 && ihoel!=0) */
- 
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of f3_calstabtfv */
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief stabilisation part of time forces for pre dofs
 
 <pre>                                                         genk 05/02
@@ -711,11 +711,11 @@ return;
 In this routine the stabilisation part of the time forces for vel dofs
 is calculated:
 
-EULER/ALE:		 		                   	  		      
+EULER/ALE:
           /
    (-)   |  tau_mp * grad(q) * u  d_omega
         /
-      
+
 EULER:
                      /
    + (1-THETA)*dt   |  tau_mp * grad(q) * u * grad(u)  d_omega
@@ -725,18 +725,18 @@ ALE:
                      /
    + (1-THETA)*dt   |  tau_mp * grad(q) * c * grad(u)  d_omega
                    /
-		   		   
+
 EULER/ALE:
                      /
    + (1-THETA)*dt   |  tau_mp * grad(q) * grad(p)  d_omega
-                   /		         
-				       
+                   /
+
 see also dissertation of W.A. Wall chapter 4.4 'Navier-Stokes Loeser'
 
-NOTE:						       
-    there's only one full element force vector         
+NOTE:
+    there's only one full element force vector
     for pre-dofs the pointer eforce points to the entry
-    eforce[3*iel]				       
+    eforce[3*iel]
 
 NOTE: for EULER
       velint = U(n)
@@ -744,9 +744,9 @@ NOTE: for EULER
 
 NOTE: for ALE:
       velint = U(n)
-      covint = C(n) * grad(U(n))      
-      
-      
+      covint = C(n) * grad(U(n))
+
+
 </pre>
 \param   *eforce,     DOUBLE           (i/o)  element force vector
 \param  **derxy,      DOUBLE           (i)    global derivatives
@@ -758,13 +758,13 @@ NOTE: for ALE:
 \param	  fac,        DOUBLE           (i)    weighting factor
 \param	  ihoel,      INT              (i)    flag for higer ord. ele
 \param	  iel         INT              (i)    num. of nodes in ele
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f3_calstabtfp(
                      ELEMENT         *ele,
-                     STAB_PAR_GLS    *gls,  
-                     DOUBLE          *eforce,    
+                     STAB_PAR_GLS    *gls,
+                     DOUBLE          *eforce,
                      DOUBLE         **derxy,
                      DOUBLE         **vderxy2,
                      DOUBLE          *velint,
@@ -774,14 +774,14 @@ void f3_calstabtfp(
                      DOUBLE           fac,
                      INT              ihoel,
                      INT              iel
-                  ) 
+                  )
 {
 INT      inode;
 DOUBLE   fact[3];
 DOUBLE   facsr,facpr;
 DOUBLE   taump;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f3_calstabtfp");
 #endif
 
@@ -829,7 +829,7 @@ fact[1] = covint[1]*taump*facsr;
 fact[2] = covint[2]*taump*facsr;
 for (inode=0;inode<iel;inode++)
 {
-   eforce[inode] += (derxy[0][inode]*fact[0] + derxy[1][inode]*fact[1] 
+   eforce[inode] += (derxy[0][inode]*fact[0] + derxy[1][inode]*fact[1]
                    + derxy[2][inode]*fact[2]);
 } /* end of loop over inode */
 
@@ -843,7 +843,7 @@ for (inode=0;inode<iel;inode++)
 if (ihoel!=0)
 {
    fact[0] = (TWO*vderxy2[0][0] + vderxy2[1][3] + vderxy2[2][4] \
-                + vderxy2[0][1] + vderxy2[0][2])*taump*visc*facsr;   
+                + vderxy2[0][1] + vderxy2[0][2])*taump*visc*facsr;
    fact[1] = (TWO*vderxy2[1][1] + vderxy2[0][3] + vderxy2[2][5] \
                 + vderxy2[1][0] + vderxy2[1][2])*taump*visc*facsr;
    fact[2] = (TWO*vderxy2[2][2] + vderxy2[0][4] + vderxy2[1][5] \
@@ -873,7 +873,7 @@ if (ihoel!=0)
 
 /*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -883,4 +883,4 @@ return;
 
 
 #endif
- 
+

@@ -18,10 +18,10 @@ Maintainer: Andrea Hund
 
 
 #ifdef GEMM
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 #endif
 
-/*! 
+/*!
 \addtogroup WALL1
 *//*! @{ (documentation module open)*/
 
@@ -37,20 +37,20 @@ extern ALLDYNA      *alldyn;
  |                                                                      |
  *----------------------------------------------------------------------*/
 void w1_kg(ELEMENT *ele,
-           DOUBLE  **kg, 
-           DOUBLE  **boplin, 
+           DOUBLE  **kg,
+           DOUBLE  **boplin,
            DOUBLE  **stress,
-           DOUBLE    fac, 
+           DOUBLE    fac,
            INT       nd,
            INT       neps,
-	   INT       ip	   
+	   INT       ip
 	   )
 {
 INT i, j, r, m;
 DOUBLE int_stress[4][4];
 #ifdef GEMM
 STRUCT_DYNAMIC *sdyn;
-DOUBLE alpha_f, xsi;       
+DOUBLE alpha_f, xsi;
 #endif
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -72,7 +72,7 @@ for(i=0; i<4; i++)
   for(j=0; j<4; j++)
   {
 #ifdef GEMM
-  int_stress[i][j] = (1.0-alpha_f+xsi) * stress[i][j] + (alpha_f-xsi) * ele->e.w1->PK_history.a.d3[ip][i][j];   
+  int_stress[i][j] = (1.0-alpha_f+xsi) * stress[i][j] + (alpha_f-xsi) * ele->e.w1->PK_history.a.d3[ip][i][j];
 #else
   int_stress[i][j] = stress[i][j];
 #endif
@@ -87,7 +87,7 @@ for(i=0; i<nd; i++)
 
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

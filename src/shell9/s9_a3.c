@@ -24,22 +24,22 @@ Maintainer: Stefan Hartmann
 #include "../headers/standardtypes.h"
 #include "shell9.h"
 
-/*! 
-\addtogroup SHELL9 
+/*!
+\addtogroup SHELL9
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief evaluates the director at nodal points                                       
+\brief evaluates the director at nodal points
 
 <pre>                     m.gee 6/01              modified by    sh 02/03
-This routine evaluates the director at the nodal points of a shell9 
+This routine evaluates the director at the nodal points of a shell9
 element. The directors are normed to unit length an writen to the element
 array 'ele->e.s9->a3ref'.
 </pre>
 \param  ELEMENT   *ele   (i->modified for a3ref) actual shell9 element
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: s9init() [s9_init.c]
 
 *----------------------------------------------------------------------*/
@@ -59,7 +59,7 @@ ARRAY      deriv_a; DOUBLE **deriv;
 DOUBLE   **a3ref;
 DOUBLE    *thick;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9a3");
 #endif
 /*----------------------------------------------------------------------*/
@@ -83,8 +83,8 @@ for (i=0; i<iel; i++)
          gkov[idim][ialpha]=0.0;
          for (inode=0; inode<iel; inode++)
          {
-            gkov[idim][ialpha] += 
-            
+            gkov[idim][ialpha] +=
+
             deriv[ialpha][inode] * ele->node[inode]->x[idim];
          }
       }
@@ -104,7 +104,7 @@ for (j=0; j<3; j++) a3ref[j][i] = a3[j];
 /*----------------------------------------------------------------------*/
 amdel(&funct_a);
 amdel(&deriv_a);
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -112,10 +112,10 @@ return;
 
 
 /*!----------------------------------------------------------------------
-\brief evaluates the director at nodal points                                       
+\brief evaluates the director at nodal points
 
 <pre>              m.gee 10/01             modified by           sh 02/03
-This routine evaluates the director at the nodal points of a shell9 
+This routine evaluates the director at the nodal points of a shell9
 element. The directors are normed to unit length, but they are not writen
 on the element array but only used for the calculation of the element
 loads. Therefor no shared director is used.
@@ -125,13 +125,13 @@ NOTE: The routine is identical to 's9a3' except for the storage of a3ref!!
 \param  ELEMENT   *ele   (i) actual shell9 element
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: s9eleload() [s9_load1.c]
 
 *----------------------------------------------------------------------*/
 void s9a3ref_extern(DOUBLE   *funct,
                     DOUBLE  **deriv,
-                    DOUBLE  **a3ref, 
+                    DOUBLE  **a3ref,
                     ELEMENT  *ele)
 {
 INT        i,j;
@@ -144,7 +144,7 @@ DOUBLE     gkov[3][3];
 DOUBLE     a3[3];
 DOUBLE     a3norm;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9a3ref_extern");
 #endif
 /*----------------------------------------------------------------------*/
@@ -163,8 +163,8 @@ for (i=0; i<iel; i++)
          gkov[idim][ialpha]=0.0;
          for (inode=0; inode<iel; inode++)
          {
-            gkov[idim][ialpha] += 
-            
+            gkov[idim][ialpha] +=
+
             deriv[ialpha][inode] * ele->node[inode]->x[idim];
          }
       }
@@ -182,7 +182,7 @@ a3[2] *= a3norm;
 for (j=0; j<3; j++) a3ref[j][i] = a3[j];
 } /* end of loop over nodes */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -192,10 +192,10 @@ return;
 
 
 /*!----------------------------------------------------------------------
-\brief makes the modified director bischoff style                                      
+\brief makes the modified director bischoff style
 
 <pre>              m.gee 6/01              modified by           sh 02/03
-This routine evaluates the shared director at kink of adjacent shell9 
+This routine evaluates the shared director at kink of adjacent shell9
 elements. The modification is done according to Dis. Bischoff (p.129,
 picture 8.2c). The shared director is later put back on the element array
 'ele->e.s9->a3ref'
@@ -205,7 +205,7 @@ picture 8.2c). The shared director is later put back on the element array
 \param  DOUBLE  *a3       (o) shared director
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: s9init() [s9_init.c]
 
 *----------------------------------------------------------------------*/
@@ -219,7 +219,7 @@ DOUBLE     lenght;
 DOUBLE     denom;
 DOUBLE     alpha;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9averdir");
 #endif
 /*----------------------------------------------------------------------*/
@@ -242,38 +242,38 @@ for (i=1; i<numa3; i++)
    }
    else  /*----------------------- averaging of non-parallel directors */
    {
-      denom = 
+      denom =
                   (DSQR(dir_list[0][i])+DSQR(dir_list[2][i]))*DSQR(averdir[1])
                  +(-2.*dir_list[0][i]*averdir[0]*dir_list[1][i]-2.*dir_list[2][i]
                  *averdir[2]*dir_list[1][i])*averdir[1]+(DSQR(dir_list[2][i])
                  +DSQR(dir_list[1][i]))*DSQR(averdir[0])-2.*averdir[2]*averdir[0]
                  *dir_list[2][i]*dir_list[0][i]+(DSQR(dir_list[0][i])+DSQR(dir_list[1][i]))
                  *DSQR(averdir[2]);
-      
+
       if (ABS(denom)<=EPS13) dserror("Making of mod. directors failed");
-      
+
       alpha   =  (averdir[2]*dir_list[2][i]-DSQR(dir_list[0][i])+averdir[0]*dir_list[0][i]
                   -DSQR(dir_list[1][i])+dir_list[1][i]*averdir[1]-DSQR(dir_list[2][i]))/denom;
 
       davn[0] =-alpha*DSQR(averdir[1])*dir_list[0][i]+alpha*averdir[1]*averdir[0]*dir_list[1][i]
-               +averdir[0]+alpha*averdir[2]*averdir[0]*dir_list[2][i]-alpha*DSQR(averdir[2])*dir_list[0][i];       
+               +averdir[0]+alpha*averdir[2]*averdir[0]*dir_list[2][i]-alpha*DSQR(averdir[2])*dir_list[0][i];
 
       davn[1] =alpha*averdir[0]*averdir[1]*dir_list[0][i]+averdir[1]+alpha*averdir[2]*averdir[1]
-               *dir_list[2][i]-alpha*DSQR(averdir[0])*dir_list[1][i]-alpha*DSQR(averdir[2])*dir_list[1][i];       
+               *dir_list[2][i]-alpha*DSQR(averdir[0])*dir_list[1][i]-alpha*DSQR(averdir[2])*dir_list[1][i];
 
       davn[2] =-alpha*DSQR(averdir[1])*dir_list[2][i]+alpha*averdir[1]*averdir[2]*dir_list[1][i]
-               -alpha*DSQR(averdir[0])*dir_list[2][i]+alpha*averdir[0]*averdir[2]*dir_list[0][i]+averdir[2];       
+               -alpha*DSQR(averdir[0])*dir_list[2][i]+alpha*averdir[0]*averdir[2]*dir_list[0][i]+averdir[2];
    }
    a3[0] = davn[0];
    a3[1] = davn[1];
    a3[2] = davn[2];
-/*  make normation of director in s9_init.c -> elements could have different thicknesses !!!*/   
-/*   a3[0] = davn[0]/h2;*/   
+/*  make normation of director in s9_init.c -> elements could have different thicknesses !!!*/
+/*   a3[0] = davn[0]/h2;*/
 /*   a3[1] = davn[1]/h2;*/
 /*   a3[2] = davn[2]/h2;*/
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -5,8 +5,8 @@
 <pre>
 Maintainer: Volker Gravemeier
             vgravem@stanford.edu
-            
-            
+
+
 </pre>
 
 ------------------------------------------------------------------------*/
@@ -28,7 +28,7 @@ extern struct _MATERIAL  *mat;
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -43,8 +43,8 @@ static FLUID_DYNAMIC *fdyn;
 <pre>                                                       gravem 07/03
 
 In this routine, the characteristic submesh element length is calculated
-and the routine for the calculation of the stabilization parameter or 
-the subgrid viscosity (depending on the respective flag) is called. 
+and the routine for the calculation of the stabilization parameter or
+the subgrid viscosity (depending on the respective flag) is called.
 
 </pre>
 \param  *ele       ELEMENT	     (i)   actual element
@@ -64,25 +64,25 @@ the subgrid viscosity (depending on the respective flag) is called.
 \param **smxyze    DOUBLE 	     (i)   submesh element coordinates
 \param **smxyzep   DOUBLE 	     (i)   sm ele. coord. on parent dom.
 \param **cutp      DOUBLE 	     (-)   cutting points
-\return void             
+\return void
 
 ------------------------------------------------------------------------*/
-void f2_smelesize(ELEMENT         *ele,    
-		  FLUID_DATA	  *data, 
+void f2_smelesize(ELEMENT         *ele,
+		  FLUID_DATA	  *data,
 		  FLUID_DYN_ML    *mlvar,
-	          DOUBLE	  *funct,  
-	          DOUBLE	 **deriv,  
-	          DOUBLE	 **deriv2,		
-	          DOUBLE	  *smfunct,  
-	          DOUBLE	 **smderiv,  
-	          DOUBLE	 **smderiv2,		
-	          DOUBLE	 **derxy,  
-		  DOUBLE	 **xjm,    
-		  DOUBLE	 **evel,		 
-		  DOUBLE	  *velint, 
-	          DOUBLE	 **vderxy,  
-	          DOUBLE	 **smxyze,  
-	          DOUBLE	 **smxyzep,  
+	          DOUBLE	  *funct,
+	          DOUBLE	 **deriv,
+	          DOUBLE	 **deriv2,
+	          DOUBLE	  *smfunct,
+	          DOUBLE	 **smderiv,
+	          DOUBLE	 **smderiv2,
+	          DOUBLE	 **derxy,
+		  DOUBLE	 **xjm,
+		  DOUBLE	 **evel,
+		  DOUBLE	  *velint,
+	          DOUBLE	 **vderxy,
+	          DOUBLE	 **smxyze,
+	          DOUBLE	 **smxyzep,
 		  DOUBLE	 **cutp)
 {
 
@@ -101,9 +101,9 @@ DOUBLE  dx,dy;          /* values used for calculation of element size  */
 DOUBLE  gcoor[2],coor[2];/* global and local coordinates                */
 DIS_TYP typ,smtyp;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_smelesize");
-#endif		
+#endif
 
 /*---------------------------------------------------------- initialize */
 nsmtyp = mlvar->submesh.ntyp;
@@ -113,7 +113,7 @@ iel    = ele->numnp;
 smiel  = mlvar->submesh.numen;
 area  = ZERO;
 strle = ZERO;
- 
+
 actmat=ele->mat-1;
 visc = mat[actmat].m.fluid->viscosity;
 
@@ -128,7 +128,7 @@ case 1:    /* --> quad - element */
    facs = data->qwgt[0][0];
    f2_rec(smfunct,smderiv,smderiv2,e1,e2,smtyp,2);
 break;
-case 2:       /* --> tri - element */		   
+case 2:       /* --> tri - element */
    e1	= data->txgr[0][0];
    facr = data->twgt[0][0];
    e2	= data->txgs[0][0];
@@ -136,17 +136,17 @@ case 2:       /* --> tri - element */
    f2_tri(smfunct,smderiv,smderiv2,e1,e2,smtyp,2);
 break;
 default:
-   dserror("nsmtyp unknown!\n");      
+   dserror("nsmtyp unknown!\n");
 } /*end switch(nsmtyp) */
 
 if (mlvar->smesize<4)     /* compute area */
 {
-/* -------------------------------------------- compute jacobian matrix */      
+/* -------------------------------------------- compute jacobian matrix */
   f2_mljaco3(smxyze,smfunct,smderiv,xjm,&det,smiel,ele);
   fac=facr*facs*det;
   area += fac;
 }/* endif (mlvar->smesize<4) */
-  
+
 if (mlvar->smesize==4)    /* compute diagonal based diameter */
 {
   switch(nsmtyp)
@@ -159,7 +159,7 @@ if (mlvar->smesize==4)    /* compute diagonal based diameter */
     dy = smxyze[1][1] - smxyze[1][3];
     dia2 = sqrt(dx*dx+dy*dy);
 /*------ dia=sqrt(2)*area/(1/2*(dia1+dia2))=sqrt(8)*area/(dia1+dia2) ---*/
-    dia = sqrt(EIGHT)*area/(dia1+dia2); 
+    dia = sqrt(EIGHT)*area/(dia1+dia2);
   break;
   case 2:    /* get global coordinate of element center */
     f2_mlgcoor2(smfunct,smxyze,smiel,gcoor);
@@ -185,15 +185,15 @@ if (mlvar->smesize==5)    /* compute streamlength based on l-s velocity */
   case quad4: case quad8: case quad9:    /* --> quad - element */
     f2_rec(funct,deriv,deriv2,coor[0],coor[1],typ,2);
   break;
-  case tri3: case tri6:	/* --> tri - element */ 	     
+  case tri3: case tri6:	/* --> tri - element */
     f2_tri(funct,deriv,deriv2,coor[0],coor[1],typ,2);
   break;
   default:
-    dserror("typ unknown!\n");      
+    dserror("typ unknown!\n");
   } /*end switch(typ) */
   f2_veci(velint,funct,evel,iel);
   f2_mlgcoor2(smfunct,smxyze,smiel,gcoor);
-  f2_smstrlen(&strle,velint,smxyze,gcoor,cutp,typ);	      
+  f2_smstrlen(&strle,velint,smxyze,gcoor,cutp,typ);
 } /* endif (mlvar->smesize==5) */
 
 /*----------------------------------- set characteristic element length */
@@ -201,7 +201,7 @@ if      (mlvar->smesize==1) ele->e.f2->smcml = sqrt(area);
 else if (mlvar->smesize==2) ele->e.f2->smcml = TWO*sqrt(area/PI);
 else if (mlvar->smesize==3) ele->e.f2->smcml = sqrt(TWO*area/PI);
 else if (mlvar->smesize==4) ele->e.f2->smcml = dia;
-else if (mlvar->smesize==5) ele->e.f2->smcml = strle;  
+else if (mlvar->smesize==5) ele->e.f2->smcml = strle;
 
 if (mlvar->smesize<5)   /* compute l-s velocity */
 {
@@ -211,46 +211,46 @@ if (mlvar->smesize<5)   /* compute l-s velocity */
   case quad4: case quad8:  case quad9:   /* --> quad - element */
     f2_rec(funct,deriv,deriv2,coor[0],coor[1],typ,2);
   break;
-  case tri3: case tri6:	/* --> tri - element */ 	     
+  case tri3: case tri6:	/* --> tri - element */
     f2_tri(funct,deriv,deriv2,coor[0],coor[1],typ,2);
   break;
   default:
-    dserror("typ unknown!\n");      
+    dserror("typ unknown!\n");
   } /*end switch(typ) */
   f2_veci(velint,funct,evel,iel);
-}  
+}
 
-/*----------------------------------- calculate stabilization parameter */               
-if (mlvar->smstabi>0) f2_smstabpar(ele,mlvar,velint,visc,smiel,typ); 
+/*----------------------------------- calculate stabilization parameter */
+if (mlvar->smstabi>0) f2_smstabpar(ele,mlvar,velint,visc,smiel,typ);
 
-/*--------------------------------------------------- subgrid viscosity */               
+/*--------------------------------------------------- subgrid viscosity */
 if (mlvar->smsgvi==1 || mlvar->smsgvi==2)
-{ 
+{
   f2_mljaco(funct,deriv,xjm,&det,ele,iel);
 /*-------------------------------------------- compute global derivates */
   f2_gder(derxy,deriv,xjm,det,iel);
 /*----------------------- get velocity derivatives at integration point */
   f2_vder(vderxy,derxy,evel,iel);
-/*----------------------------------------- calculate subgrid viscosity */               
+/*----------------------------------------- calculate subgrid viscosity */
   f2_smsgvisc(ele,mlvar,velint,vderxy,visc,smiel,typ);
 }
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of f2_smelesize */
 
-/*!---------------------------------------------------------------------                                         
+/*!---------------------------------------------------------------------
 \brief routine to calculate streamlength for submesh for fluid2
 
 <pre>                                                       gravem 07/03
 
-In this routine, the submesh element streamlength for calculation of 
+In this routine, the submesh element streamlength for calculation of
 stabilization parameter is calculated.
-		     
+
 </pre>
 \param  *strle     DOUBLE   (o)    streamlength
 \param  *velint    DOUBLE   (i)    l-s velocities at integr. point
@@ -258,15 +258,15 @@ stabilization parameter is calculated.
 \param  *gcoor     DOUBLE   (i)    global coord. of int. point
 \param **cutp      DOUBLE   (-)    cutting points
 \param   typ	   DIS_TYP  (i)    flag for element type
-\return void                                               
-\sa f2_calelesize()                               
+\return void
+\sa f2_calelesize()
 
 ------------------------------------------------------------------------*/
-void f2_smstrlen(DOUBLE   *strle,     
-		 DOUBLE   *velint,   
-		 DOUBLE  **smxyze,	
-                 DOUBLE   *gcoor,    
-		 DOUBLE  **cutp,	     
+void f2_smstrlen(DOUBLE   *strle,
+		 DOUBLE   *velint,
+		 DOUBLE  **smxyze,
+                 DOUBLE   *gcoor,
+		 DOUBLE  **cutp,
 		 DIS_TYP   typ)
 {
 INT     nodcut=-1;
@@ -276,7 +276,7 @@ DOUBLE dl,dx,dy,dxh,dyh;
 DOUBLE x1,y1,x2,y2;
 DOUBLE dsub,dval;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_smstrlen");
 #endif
 
@@ -285,12 +285,12 @@ if (dval == ZERO)  /* no flow at this point - take some arbitr. measure for stre
 {
    dx = smxyze[0][2] - smxyze[0][0];
    dy = smxyze[1][2] - smxyze[1][0];
-   goto calc2;   
+   goto calc2;
 } /* enidf (dval == ZERO) */
 
 /*----------------------------------------------------------------------*
    streamlength is calculated via cutting points of velocity vector
-   with straight boundaries                                             
+   with straight boundaries
 */
 switch(typ)
 {
@@ -301,8 +301,8 @@ case tri3: case tri6:  /* max number of nodes for tri: 3 --> C-numbering nodmax 
    nodmax = 2;
 break;
 default:
-   dserror("typ unknown!\n");   
-} /* end switch(typ) */        
+   dserror("typ unknown!\n");
+} /* end switch(typ) */
  /*------------------------------------------------- get cutting points */
 for (inod=0;inod<nodmax;inod++)
 {
@@ -335,7 +335,7 @@ if (dl>=ZERO && dl <= ONE)
 {
    nodcut++;
    cutp[0][nodcut]=smxyze[0][nodmax]+dl*dxh;
-   cutp[1][nodcut]=smxyze[1][nodmax]+dl*dyh; 
+   cutp[1][nodcut]=smxyze[1][nodmax]+dl*dyh;
    if(nodcut==1)
       goto calc1;
 } /* endif  (dl>=ZERO && dl <= ONE) */
@@ -349,24 +349,24 @@ dy = cutp[1][1]-cutp[1][0];
 calc2:
 *strle = sqrt(dx*dx+dy*dy);
 
-/*----------------------------------------------------------------------*/		
-#ifdef DEBUG 
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
-} /* end of f2_smstrlen */		  
+} /* end of f2_smstrlen */
 
-void f2_mlcalelesize(ELEMENT         *ele,    
-		     FLUID_DATA      *data, 
-	             DOUBLE          *funct,  
-	             DOUBLE         **deriv,  
-	             DOUBLE         **deriv2,  		 
-	             DOUBLE         **derxy,  
-		     DOUBLE         **xjm,    
-		     DOUBLE         **evel,    		  
-		     DOUBLE          *velint, 
-	             DOUBLE         **vderxy,  
+void f2_mlcalelesize(ELEMENT         *ele,
+		     FLUID_DATA      *data,
+	             DOUBLE          *funct,
+	             DOUBLE         **deriv,
+	             DOUBLE         **deriv2,
+	             DOUBLE         **derxy,
+		     DOUBLE         **xjm,
+		     DOUBLE         **evel,
+		     DOUBLE          *velint,
+	             DOUBLE         **vderxy,
 		     DOUBLE         **cutp)
 {
 
@@ -389,9 +389,9 @@ DOUBLE  gcoor[2];       /* global coordinates                           */
 DIS_TYP typ;
 STAB_PAR_GLS *gls;	/* pointer to GLS stabilisation parameters	*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_mlcalelesize");
-#endif		
+#endif
 
 /*---------------------------------------------------------- initialise */
 fdyn = alldyn[genprob.numff].fdyn;
@@ -400,7 +400,7 @@ iel    = ele->numnp;
 typ    = ele->distyp;
 gls    = ele->e.f2->stabi.gls;
 
-dsassert(ele->e.f2->stab_type == stab_gls, 
+dsassert(ele->e.f2->stab_type == stab_gls,
          "routine with no or wrong stabilisation called");
 
 istrnint = gls->istrle * gls->ninths;
@@ -409,7 +409,7 @@ isharea  = fdyn->ishape * gls->iareavol;
 /*----------------------------------------------------------------------*
  | calculations at element center: area & streamlength                  |
  | NOTE:                                                                |
- |    area is always calculated using only 1 integrationpoint           |     
+ |    area is always calculated using only 1 integrationpoint           |
  |    --> it may be possible to save some operations here by replacing  |
  |         e1,e2,facr,facs with their constant values in the calls of   |
  |         f2_rec / f2_tri!!!!!!                                        |
@@ -430,7 +430,7 @@ if (isharea==1)
       facs = data->qwgt[0][0];
       f2_rec(funct,deriv,deriv2,e1,e2,typ,2);
    break;
-   case tri3: case tri6:       /* --> tri - element */              
+   case tri3: case tri6:       /* --> tri - element */
       e1   = data->txgr[0][0];
       facr = data->twgt[0][0];
       e2   = data->txgs[0][0];
@@ -438,10 +438,10 @@ if (isharea==1)
       f2_tri(funct,deriv,deriv2,e1,e2,typ,2);
    break;
    default:
-      dserror("typ unknown!\n");      
+      dserror("typ unknown!\n");
    } /*end switch(typ) */
    ieval++;
-/* -------------------------------------------- compute jacobian matrix */      
+/* -------------------------------------------- compute jacobian matrix */
    f2_mljaco(funct,deriv,xjm,&det,ele,iel);
    fac=facr*facs*det;
    area += fac;
@@ -451,7 +451,7 @@ if (isharea==1)
       ieval++;
       f2_mlgcoor(funct,ele,iel,gcoor);
       igc++;
-      f2_mlcalstrlen(&strle,velint,ele,gcoor,cutp,typ);            
+      f2_mlcalstrlen(&strle,velint,ele,gcoor,cutp,typ);
    } /* enidf (istrnint==1) */
    if (gls->idiaxy==1)    /* compute diagonal based diameter */
    {
@@ -465,7 +465,7 @@ if (isharea==1)
 	 dy = ele->node[1]->x[1] - ele->node[3]->x[1];
 	 dia2 = sqrt(dx*dx+dy*dy);
 /*------ dia=sqrt(2)*area/(1/2*(dia1+dia2))=sqrt(8)*area/(dia1+dia2) ---*/
-	 dia = sqrt(EIGHT)*area/(dia1+dia2); 
+	 dia = sqrt(EIGHT)*area/(dia1+dia2);
       break;
       case tri3: case tri6:    /* get global coordinate of element center */
          if (igc==0)
@@ -496,9 +496,9 @@ if (isharea==1)
       else if (gls->ihele[ilen]==4)
          ele->e.f2->hk[ilen] = dia;
       else if (gls->ninths==1)
-         ele->e.f2->hk[ilen] = strle;  
+         ele->e.f2->hk[ilen] = strle;
    } /* end loop over ilen */
-} /* endif (isharea==1) */   
+} /* endif (isharea==1) */
 
 /*----------------------------------------------------------------------*
  | calculations at element center: only streamlength                    |
@@ -506,7 +506,7 @@ if (isharea==1)
  |         e1,e2,facr,facs with their constant values in the calls of   |
  |         f2_rec / f2_tri!!!!!!                                        |
  *----------------------------------------------------------------------*/
-else if (istrnint==1 && isharea !=1) 
+else if (istrnint==1 && isharea !=1)
 {
    area  = ZERO;
    strle = ZERO;
@@ -521,7 +521,7 @@ else if (istrnint==1 && isharea !=1)
       facs = data->qwgt[0][0];
       f2_rec(funct,deriv,deriv2,e1,e2,typ,2);
    break;
-   case tri3: case tri6:       /* --> tri - element */              
+   case tri3: case tri6:       /* --> tri - element */
       e1   = data->txgr[0][0];
       facr = data->twgt[0][0];
       e2   = data->txgs[0][0];
@@ -532,20 +532,20 @@ else if (istrnint==1 && isharea !=1)
       dserror("typ unknown!\n");
    } /* end switch(typ) */
    ieval++;
-/* ------------------------------------------- compute jacobian matrix */      
+/* ------------------------------------------- compute jacobian matrix */
    f2_mljaco(funct,deriv,xjm,&det,ele,iel);
 /*----------------------------------------------- compute streamlength */
    f2_veci(velint,funct,evel,iel);
    ieval++;
    f2_mlgcoor(funct,ele,iel,gcoor);
    igc++;
-   f2_mlcalstrlen(&strle,velint,ele,gcoor,cutp,typ);       
+   f2_mlcalstrlen(&strle,velint,ele,gcoor,cutp,typ);
 /*--------------------------------------------------- set element sizes *
       loop over 3 different element sizes: vel/pre/cont  ---------------*/
    for (ilen=0;ilen<3;ilen++)
    {
       if (gls->ihele[ilen]==5)
-         ele->e.f2->hk[ilen] = strle;   
+         ele->e.f2->hk[ilen] = strle;
    } /* end loop over ilen */
 } /* endif (istrnint==1 && isharea !=1) */
 
@@ -568,20 +568,20 @@ if(gls->istapc==1 || istrnint==1)
          facs = data->qwgt[0][0];
          f2_rec(funct,deriv,deriv2,e1,e2,typ,2);
       break;
-      case tri3: case tri6:       /* --> tri - element */              
+      case tri3: case tri6:       /* --> tri - element */
          e1   = data->txgr[0][0];
          facr = data->twgt[0][0];
          e2   = data->txgs[0][0];
          facs = ONE;
          f2_tri(funct,deriv,deriv2,e1,e2,typ,2);
-      break;      
+      break;
       default:
          dserror("typ unknown!\n");
       } /* end switch(typ) */
       f2_veci(velint,funct,evel,iel);
       if (fdyn->sgvisc>0) f2_mljaco(funct,deriv,xjm,&det,ele,iel);
    break;
-   case 1:            
+   case 1:
       f2_veci(velint,funct,evel,iel);
    break;
    case 2:
@@ -589,37 +589,37 @@ if(gls->istapc==1 || istrnint==1)
    default:
       dserror("wrong value for ieval\n");
    } /* end swtich(ieval) */
-/*----------------------------------- calculate stabilisation parameter */               
+/*----------------------------------- calculate stabilisation parameter */
    actmat=ele->mat-1;
    visc = mat[actmat].m.fluid->viscosity;
-   f2_mlcalstabpar(ele,velint,visc,iel,typ,-1); 
-/*--------------------------------------------------- subgrid viscosity */               
+   f2_mlcalstabpar(ele,velint,visc,iel,typ,-1);
+/*--------------------------------------------------- subgrid viscosity */
    if (fdyn->sgvisc>0)
-   { 
+   {
 /*------------------------------------------- compute global derivates */
      f2_gder(derxy,deriv,xjm,det,iel);
 /*---------------------- get velocity derivatives at integration point */
      f2_vder(vderxy,derxy,evel,iel);
-/*---------------------------------------- calculate subgrid viscosity */               
+/*---------------------------------------- calculate subgrid viscosity */
      f2_calsgvisc(ele,velint,vderxy,visc,iel,typ);
    }
 } /* endif (ele->e.f2->istapc==1 || istrnint==1) */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of f2_mlcalelesize */
 
-void f2_mlcalelesize2(ELEMENT         *ele,    
-	              DOUBLE	    *funct,			  
-		      DOUBLE	    *velint, 
-		      DOUBLE	   **vderxy, 
-		      DOUBLE	   **cutp,   
-		      DOUBLE	     visc,   
-		      INT 	     iel,    
+void f2_mlcalelesize2(ELEMENT         *ele,
+	              DOUBLE	    *funct,
+		      DOUBLE	    *velint,
+		      DOUBLE	   **vderxy,
+		      DOUBLE	   **cutp,
+		      DOUBLE	     visc,
+		      INT 	     iel,
 		      DIS_TYP 	     typ)
 {
 INT    ilen;       /* simply a counter                                  */
@@ -628,7 +628,7 @@ DOUBLE strle;      /* stream length                                     */
 DOUBLE gcoor[2];   /* global coordinates                                */
 STAB_PAR_GLS *gls;	/* pointer to GLS stabilisation parameters	*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_mlcalelesize2");
 #endif
 
@@ -638,7 +638,7 @@ fdyn = alldyn[genprob.numff].fdyn;
 gls    = ele->e.f2->stabi.gls;
 istrnint = gls->istrle * gls->ninths;
 
-if (ele->e.f2->stab_type != stab_gls) 
+if (ele->e.f2->stab_type != stab_gls)
    dserror("routine with no or wrong stabilisation called");
 
 if (istrnint==2)
@@ -651,29 +651,29 @@ if (istrnint==2)
    for (ilen=0;ilen<3;ilen++)
    {
       if (gls->ihele[ilen]==5)
-         ele->e.f2->hk[ilen] = strle;   
+         ele->e.f2->hk[ilen] = strle;
    } /* end loop over ilen */
 } /* endif (istrnint==2) */
 
-/*----------------------------------- calculate stabilisation parameter */               
-f2_mlcalstabpar(ele,velint,visc,iel,typ,1); 
-   
-/*----------------------------------------- calculate subgrid viscosity */               
+/*----------------------------------- calculate stabilisation parameter */
+f2_mlcalstabpar(ele,velint,visc,iel,typ,1);
+
+/*----------------------------------------- calculate subgrid viscosity */
 if (fdyn->sgvisc>0) f2_calsgvisc(ele,velint,vderxy,visc,iel,typ);
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of f2_mlcalelesize2 */
 
-void f2_mlcalstrlen(DOUBLE   *strle,     
-		    DOUBLE   *velint,   
-		    ELEMENT  *ele,      
-                    DOUBLE   *gcoor,    
-		    DOUBLE  **cutp,	      
+void f2_mlcalstrlen(DOUBLE   *strle,
+		    DOUBLE   *velint,
+		    ELEMENT  *ele,
+                    DOUBLE   *gcoor,
+		    DOUBLE  **cutp,
 		    DIS_TYP   typ)
 {
 INT     nodcut=-1;
@@ -683,7 +683,7 @@ DOUBLE dl,dx,dy,dxh,dyh;
 DOUBLE x1,y1,x2,y2;
 DOUBLE dsub,dval;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_mlcalstrlen");
 #endif
 
@@ -692,12 +692,12 @@ if (dval == ZERO)  /* no flow at this point - take some arbitr. measure for stre
 {
    dx = ele->node[2]->x[0] - ele->node[0]->x[0];
    dy = ele->node[2]->x[1] - ele->node[0]->x[1];
-   goto calc2;   
+   goto calc2;
 } /* enidf (dval == ZERO) */
 
 /*----------------------------------------------------------------------*
    streamlength is calculated via cutting points of velocity vector
-   with straight boundaries                                             
+   with straight boundaries
 */
 switch(typ)
 {
@@ -708,8 +708,8 @@ case tri3: case tri6:  /* max number of nodes for tri: 3 --> C-numbering nodmax 
    nodmax = 2;
 break;
 default:
-   dserror("typ unknown!\n");   
-} /* end switch(typ) */        
+   dserror("typ unknown!\n");
+} /* end switch(typ) */
  /*------------------------------------------------- get cutting points */
 for (inod=0;inod<nodmax;inod++)
 {
@@ -742,7 +742,7 @@ if (dl>=ZERO && dl <= ONE)
 {
    nodcut++;
    cutp[0][nodcut]=ele->node[nodmax]->x[0]+dl*dxh;
-   cutp[1][nodcut]=ele->node[nodmax]->x[1]+dl*dyh; 
+   cutp[1][nodcut]=ele->node[nodmax]->x[1]+dl*dyh;
    if(nodcut==1)
       goto calc1;
 } /* endif  (dl>=ZERO && dl <= ONE) */
@@ -756,12 +756,12 @@ dy = cutp[1][1]-cutp[1][0];
 calc2:
 *strle = sqrt(dx*dx+dy*dy);
 
-/*----------------------------------------------------------------------*/		
-#ifdef DEBUG 
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
-} /* end of f2_mlcalstrlen */		  
+} /* end of f2_mlcalstrlen */
 
 #endif

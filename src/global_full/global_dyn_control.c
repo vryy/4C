@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Michael Gee
@@ -27,13 +27,13 @@ extern struct _GENPROB     genprob;
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |  routine to control dynamic execution                 m.gee 5/01     |
  *----------------------------------------------------------------------*/
 void caldyn()
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("caldyn");
 #endif
 /*----------------------------------------------------------------------*/
@@ -51,11 +51,11 @@ else if (alldyn[0].sdyn->Typ == Gen_EMM) {
   dyn_nln_gemm(); /* Generalized Energy-Momentum time integration */
 #else
   dserror("GEMM not supported");
-#endif 
+#endif
 }
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

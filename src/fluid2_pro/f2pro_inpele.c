@@ -10,33 +10,33 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
-\addtogroup FLUID2_PRO 
+/*!
+\addtogroup FLUID2_PRO
 *//*! @{ (documentation module open)*/
 #ifdef D_FLUID2_PRO
-#include "../headers/standardtypes.h" 
+#include "../headers/standardtypes.h"
 #include "fluid2pro_prototypes.h"
 #include "fluid2pro.h"
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief read fluid2 element from input-file
 
 <pre>                                                         genk 03/02
 </pre>
 \param  *ele	   ELEMENT	   (o)	   actual element
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f2pro_inp(ELEMENT *ele)
 {
 INT        i;             /* simply a counter                           */
 INT        ierr=0;        /* error flag                                 */
-char       buffer[50]; 
- 
-#ifdef DEBUG 
+char       buffer[50];
+
+#ifdef DEBUG
 dstrc_enter("f2pro_inp");
 #endif
 
-/*------------------------------------------------ allocate the element */      
+/*------------------------------------------------ allocate the element */
 ele->e.f2pro = (FLUID2_PRO*)CCACALLOC(1,sizeof(FLUID2_PRO));
 if (ele->e.f2pro==NULL) dserror("Allocation of element FLUID2_PRO failed\n");
 /*---------------------------------------------- read the element nodes */
@@ -77,7 +77,7 @@ if (ierr==1)
 }
 frchk("TRI3",&ierr);
 if (ierr==1)
-{   
+{
    dserror("tri3 for FLUID2_PRO not implemented yet!\n");
 /*   ele->numnp=3;
    ele->distyp=tri3;
@@ -98,7 +98,7 @@ if (ierr==1)
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed\n");
    frint_n("TRI6",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");*/
-} 
+}
 /*------------------------------------------ reduce node numbers by one */
 for (i=0; i<ele->numnp; i++) (ele->lm[i])--;
 /*-------------------------------------------- read the material number */
@@ -109,21 +109,21 @@ if (ele->mat==0) dserror("No material defined for FLUID2_PRO element\n");
 if (ele->numnp==4 || ele->numnp==8 || ele->numnp==9)
 {
    frint_n("GP",&(ele->e.f2pro->nGP[0]),2,&ierr);
-   if (ierr!=1) dserror("Reading of FLUID2_PRO element failed: integration\n");  
-}   
+   if (ierr!=1) dserror("Reading of FLUID2_PRO element failed: integration\n");
+}
 /*-------------------------- read gaussian points for triangle elements */
 if (ele->numnp==3 || ele->numnp==6)
 {
    dserror("TRI elements not possble for FLUID2_PRO\n");
-   frint("GP_TRI",&(ele->e.f2pro->nGP[0]),&ierr);   
+   frint("GP_TRI",&(ele->e.f2pro->nGP[0]),&ierr);
    if (ierr!=1) dserror("Reading of FLUID2_PRO element failed: integration\n");
    frchar("GP_ALT",buffer,&ierr);
 /*
 integration for TRI-elements is distinguished into different cases. This is
-necessary to get the right integration parameters from FLUID_DATA. 
+necessary to get the right integration parameters from FLUID_DATA.
 The flag for the integration case is saved in nGP[1]. For detailed informations
 see /fluid2/f2_intg.c.
-*/   
+*/
    switch(ele->e.f2pro->nGP[0])
    {
    case 1:
@@ -138,13 +138,13 @@ see /fluid2/f2_intg.c.
       else if (strncmp(buffer,"gaussrad",8)==0)
          ele->e.f2pro->nGP[1]=2;
       else
-         dserror("Reading of FLUID2 element failed: GP_ALT\n");	 
+         dserror("Reading of FLUID2 element failed: GP_ALT\n");
       break;
    case 4:
       if (strncmp(buffer,"standard",8)==0)
          ele->e.f2pro->nGP[1]=3;
       else
-         dserror("Reading of FLUID2 element failed: gauss-radau not possible!\n");  
+         dserror("Reading of FLUID2 element failed: gauss-radau not possible!\n");
       break;
    case 6:
        if (strncmp(buffer,"standard",8)==0)
@@ -152,7 +152,7 @@ see /fluid2/f2_intg.c.
       else if (strncmp(buffer,"gaussrad",8)==0)
          ele->e.f2pro->nGP[1]=5;
       else
-         dserror("Reading of FLUID2 element failed: GP_ALT\n");  
+         dserror("Reading of FLUID2 element failed: GP_ALT\n");
       break;
    case 7:
        if (strncmp(buffer,"standard",8)==0)
@@ -160,25 +160,25 @@ see /fluid2/f2_intg.c.
       else if (strncmp(buffer,"gaussrad",8)==0)
          ele->e.f2pro->nGP[1]=7;
       else
-         dserror("Reading of FLUID2 element failed: GP_ALT\n");  
+         dserror("Reading of FLUID2 element failed: GP_ALT\n");
       break;
    case 9:
       if (strncmp(buffer,"standard",8)==0)
          ele->e.f2pro->nGP[1]=8;
       else
-         dserror("Reading of FLUID2 element failed: gauss-radau not possible!\n");    
+         dserror("Reading of FLUID2 element failed: gauss-radau not possible!\n");
       break;
    case 12:
       if (strncmp(buffer,"standard",8)==0)
          ele->e.f2pro->nGP[1]=9;
       else
-         dserror("Reading of FLUID2 element failed: gauss-radau not possible!\n");   
+         dserror("Reading of FLUID2 element failed: gauss-radau not possible!\n");
       break;
    case 13:
       if (strncmp(buffer,"standard",8)==0)
          ele->e.f2pro->nGP[1]=10;
       else
-         dserror("Reading of FLUID2 element failed: gauss-radau not possible!\n");   
+         dserror("Reading of FLUID2 element failed: gauss-radau not possible!\n");
       break;
    default:
       dserror("Reading of FLUID2 element failed: integration points\n");
@@ -199,7 +199,7 @@ if (ierr==1)
             strncmp(buffer,"EULER",5)==0 ||
             strncmp(buffer,"Euler",5)==0 )
        ele->e.f2pro->is_ale=0;
-   else 
+   else
        dserror("Reading of FLUID2_PRO element failed: Euler/Ale\n");
 }
 else
@@ -210,30 +210,30 @@ if (ierr==1)
 {
    if (strncmp(buffer,"Q2Q1",4)==0)
        ele->e.f2pro->dm=dm_q2q1;
-   else 
+   else
        dserror("Reading of FLUID2_PRO element failed: DISMODE\n");
 }
 else
    dserror("Reading of FLUID2_PRO element failed: DISMODE\n");
 /*----------------------------- her now read all the other stuff needed */
 
-   
+
 /*--------------------------------------------------------------------- */
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of f2pro_inp */
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief create elements of other discretisations
 
 <pre>                                                         genk 08/02
 </pre>
-\param  *ele0    ELEMENT	   (i)	  
+\param  *ele0    ELEMENT	   (i)
 \parem  *ele1    ELEMENT           (o)
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f2pro_dis(
@@ -244,13 +244,13 @@ void f2pro_dis(
 {
 INT       j;             /* simply a counter                            */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2pro_dis");
 #endif
 
-/*------------------------------------------------ allocate the element */	
+/*------------------------------------------------ allocate the element */
 ele1->e.f2pro = (FLUID2_PRO*)CCACALLOC(1,sizeof(FLUID2_PRO));
-if (ele1->e.f2pro==NULL) dserror("Allocation of element FLUID2_PRO failed\n");  
+if (ele1->e.f2pro==NULL) dserror("Allocation of element FLUID2_PRO failed\n");
 
 /*----------------------------------------------- set some general data */
 ele1->Id=ele0->Id + numele;
@@ -270,16 +270,16 @@ case dm_q2q1:
    for (j=0;j<ele1->numnp;j++)
    {
       ele1->lm[j] = ele0->lm[j] + numnode;
-   } /* end of loop over all nodes */	
+   } /* end of loop over all nodes */
    ele1->e.f2pro->nGP[0]=2;
-   ele1->e.f2pro->nGP[1]=2; 
-break;     
+   ele1->e.f2pro->nGP[1]=2;
+break;
 default:
    dserror("DISMODE unknown!\n");
 } /* end switch(ele1->e.f2pro->dm) */
 
 /*--------------------------------------------------------------------- */
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 

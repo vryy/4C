@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Michael Gee
@@ -22,7 +22,7 @@ void s8intg(const ELEMENT   *ele,
                INT              option)
 {
 DOUBLE b,wgt,wgt0;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8intg");
 #endif
 /*----------------------------------------------------------------------*/
@@ -47,7 +47,7 @@ if (option==0)
        }
    if (ele->distyp == quad4 || /*---------------- quadrilateral elements */
        ele->distyp == quad8 ||
-       ele->distyp == quad9 ) 
+       ele->distyp == quad9 )
    {
        switch(ele->e.s8->nGP[0])/* direction r */
        {
@@ -168,7 +168,7 @@ if (option==0)
     }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

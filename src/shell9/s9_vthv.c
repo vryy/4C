@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 
- - s9_vthv: which calculates the modifications to the metrics due to EAS 
+\brief contains the routine
+ - s9_vthv: which calculates the modifications to the metrics due to EAS
            (additional strains Etilde)
 
 
@@ -17,13 +17,13 @@ Maintainer: Stefan Hartmann
 #include "../headers/standardtypes.h"
 #include "shell9.h"
 
-/*! 
-\addtogroup SHELL9 
+/*!
+\addtogroup SHELL9
 *//*! @{ (documentation module open)*/
 
 
 /*!----------------------------------------------------------------------
-\brief modified metrics due to EAS                                      
+\brief modified metrics due to EAS
 
 <pre>                     m.gee 11/01              modified by   sh 02/03
 This routine calculates the modification to the metrics in the shell body
@@ -35,14 +35,14 @@ due to EAS.
 \param  DOUBLE    *detc     (o)  determinant of gkovc (cur. config.)
 \param  DOUBLE     e3       (i)  zeta_3_L (within one material layer)
 \param  DOUBLE     h        (i)  total thickness of this element
-\param  DOUBLE    *klayhgt  (i)  hight of kin layer in % of total thickness of shell 
-\param  DOUBLE    *mlayhgt  (i)  hight of mat layer in % of adjacent kin layer 
-\param  INT        num_klay (i)  number of kin layers to this element  
-\param  INT        klay     (i)  actual kin layer 
-\param  INT        mlay     (i)  actual mat layer of this kin layer 
+\param  DOUBLE    *klayhgt  (i)  hight of kin layer in % of total thickness of shell
+\param  DOUBLE    *mlayhgt  (i)  hight of mat layer in % of adjacent kin layer
+\param  INT        num_klay (i)  number of kin layers to this element
+\param  INT        klay     (i)  actual kin layer
+\param  INT        mlay     (i)  actual mat layer of this kin layer
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: s9static_keug() [s9_static_keug.c]
 
 *----------------------------------------------------------------------*/
@@ -63,7 +63,7 @@ INT i;
 DOUBLE deltah, h_mlay, h_kl;
 DOUBLE zeta_kl,zeta,det_dummy;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9_vthv");
 #endif
 /*----------------------------------------------------------------------*/
@@ -97,7 +97,7 @@ math_inv3(gmkonc,&det_dummy);
 if (det_dummy <= 0.0) det_dummy = -det_dummy;
 *detc = sqrt(det_dummy);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

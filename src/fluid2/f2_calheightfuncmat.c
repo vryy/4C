@@ -1,12 +1,12 @@
 /*!----------------------------------------------------------------------
 \file
-\brief stiffness matrix for free surface via height function 
+\brief stiffness matrix for free surface via height function
 
 ------------------------------------------------------------------------*/
-/*! 
-\addtogroup FLUID2 
+/*!
+\addtogroup FLUID2
 *//*! @{ (documentation module open)*/
-#ifdef D_FLUID2 
+#ifdef D_FLUID2
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #include "fluid2.h"
@@ -16,7 +16,7 @@
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -46,7 +46,7 @@ In this routine the height function matrices are calculated:
 ##################################################
 
      /
-  - |  psi * Uy    d_gamma_FS   
+  - |  psi * Uy    d_gamma_FS
    /
 
     /
@@ -54,20 +54,20 @@ In this routine the height function matrices are calculated:
   /
 
    /
-  |   tau_SUPG * Ux * psi,x * Ux * phi,x  d_gamma_FS   
+  |   tau_SUPG * Ux * psi,x * Ux * phi,x  d_gamma_FS
  /
 
     /
--  |   tau_SUPG * Ux * psi,x * Uy   d_gamma_FS   
+-  |   tau_SUPG * Ux * psi,x * Uy   d_gamma_FS
   /
 
-        
-NOTE: there's only one elemass  				    
-      --> Mpsipsi is stored in emass[(3*iel)..(4*iel-1)][(3*iel)..(4*iel-1)] 
-NOTE: there's only one elestif  				    
-      --> Kpsipsi is stored in estif[(3*iel)..(4*iel-1)][(3*iel)..(4*iel-1)] 
-NOTE: there's only one elestif  				    
-      --> Kpsiv is stored in estif[(3*iel)..(4*iel-1)][(0)..(2*iel-1)] 
+
+NOTE: there's only one elemass
+      --> Mpsipsi is stored in emass[(3*iel)..(4*iel-1)][(3*iel)..(4*iel-1)]
+NOTE: there's only one elestif
+      --> Kpsipsi is stored in estif[(3*iel)..(4*iel-1)][(3*iel)..(4*iel-1)]
+NOTE: there's only one elestif
+      --> Kpsiv is stored in estif[(3*iel)..(4*iel-1)][(0)..(2*iel-1)]
 
 </pre>
 \param **emass     DOUBLE     (i/o)  ele mass matrix
@@ -79,31 +79,31 @@ NOTE: there's only one elestif
 \param   iel       INT        (i)    number of nodes of act. ele
 \param   ngnode    IN         (i)    number of nodes of act. edge
 \param  *iedgnod   INT        (i)    edge node numbers
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f2_calmat_vhf(
-                        DOUBLE         **emass,  
+                        DOUBLE         **emass,
                         DOUBLE         **estif,
-                        DOUBLE          *funct, 
+                        DOUBLE          *funct,
                         DOUBLE         **derxy,
                         DOUBLE          *velint,
                         DOUBLE           phiderxng,
-                        DOUBLE           fac,   
-                        INT              iel,    
+                        DOUBLE           fac,
+                        INT              iel,
                         INT              ngnode,
                         INT             *iedgnod
                          )
 {
 
-INT     irow, icol,irn,icn;  
-INT     nd;                 
+INT     irow, icol,irn,icn;
+INT     nd;
 DOUBLE  c,tau_supg,tau_dc;
 FLUID_DYNAMIC *fdyn;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_calmat_vhf");
-#endif		
+#endif
 
 fdyn    = alldyn[genprob.numff].fdyn;
 nd = NUMDOF_FLUID2*iel;
@@ -160,7 +160,7 @@ for(icn=0;icn<ngnode;icn++)
 /*----------------------------------------------------------------------*
    Calculate full Galerkin part of matrix Kpsiv:
      /
-  - |  psi * Uy    d_gamma_FS   
+  - |  psi * Uy    d_gamma_FS
    /
  *----------------------------------------------------------------------*/
 for(icn=0;icn<ngnode;icn++)
@@ -200,7 +200,7 @@ if (fdyn->hf_stab>0)
 /*----------------------------------------------------------------------*
    Calculate full stabilisation part of matrix Kpsipsi:
    /
-  |   tau_SUPG * Ux * psi,x * Ux_old * phi,x  d_gamma_FS   
+  |   tau_SUPG * Ux * psi,x * Ux_old * phi,x  d_gamma_FS
  /
  *----------------------------------------------------------------------*/
    c=fac*tau_supg*velint[0]*velint[0];
@@ -217,7 +217,7 @@ if (fdyn->hf_stab>0)
 /*----------------------------------------------------------------------*
    Calculate full stabilisation part of matrix Kpsipsi:
    /
-  |   tau_SUPG * Ux * psi,x * Ux * (phi,x)_old  d_gamma_FS   
+  |   tau_SUPG * Ux * psi,x * Ux * (phi,x)_old  d_gamma_FS
  /
  *----------------------------------------------------------------------*/
    c=fac*tau_supg*velint[0]*phiderxng;
@@ -235,7 +235,7 @@ if (fdyn->hf_stab>0)
 /*----------------------------------------------------------------------*
    Calculate full stabilisation part of matrix Kpsiv:
     /
--  |   tau_SUPG * Ux * psi,x * Uy   d_gamma_FS   
+-  |   tau_SUPG * Ux * psi,x * Uy   d_gamma_FS
   /
  *----------------------------------------------------------------------*/
    c=fac*tau_supg*velint[0];
@@ -250,8 +250,8 @@ if (fdyn->hf_stab>0)
    } /* end loop over icn */
 }
 
-/*----------------------------------------------------------------------*/ 
-#ifdef DEBUG 
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -271,23 +271,23 @@ In this routine the galerkin part of matrix Mpsipsi is calculated:
   /
 
    /
-  |   tau_SUPG * Ux * psi,x * Ux * phi,x  d_gamma_FS   
+  |   tau_SUPG * Ux * psi,x * Ux * phi,x  d_gamma_FS
  /
 
     /
--  |   tau_SUPG * Ux * psi,x * Uy   d_gamma_FS   
+-  |   tau_SUPG * Ux * psi,x * Uy   d_gamma_FS
   /
 
     /
    |  tau_DC * psi,x * phi,x    d_gamma_FS
   /
-        
-NOTE: there's only one elemass  				    
-      --> Mpsipsi is stored in emass[(3*iel)..(4*iel-1)][(3*iel)..(4*iel-1)] 
-NOTE: there's only one elestif  				    
-      --> Kpsipsi is stored in estif[(3*iel)..(4*iel-1)][(3*iel)..(4*iel-1)] 
-NOTE: there's only one elestif  				    
-      --> Kpsiv is stored in estif[(3*iel)..(4*iel-1)][(0)..(2*iel-1)] 
+
+NOTE: there's only one elemass
+      --> Mpsipsi is stored in emass[(3*iel)..(4*iel-1)][(3*iel)..(4*iel-1)]
+NOTE: there's only one elestif
+      --> Kpsipsi is stored in estif[(3*iel)..(4*iel-1)][(3*iel)..(4*iel-1)]
+NOTE: there's only one elestif
+      --> Kpsiv is stored in estif[(3*iel)..(4*iel-1)][(0)..(2*iel-1)]
 
 </pre>
 \param **emass     DOUBLE           (i/o)  ele mass matrix
@@ -299,40 +299,40 @@ NOTE: there's only one elestif
 \param   iel       INT              (i)    number of nodes of act. ele
 \param   ngnode    INT              (i)    number of nodes of act. edge
 \param  *iedgnod   INT              (i)    edge node numbers
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f2_calstabmat_vhf(
                            ELEMENT         *ele,
-		           DOUBLE         **emass,  
+		           DOUBLE         **emass,
                            DOUBLE         **estif,
-		           DOUBLE          *funct, 
+		           DOUBLE          *funct,
                            DOUBLE         **derxy,
                            DOUBLE          *velint,
-		           DOUBLE           fac,   
-		           INT              iel,    
+		           DOUBLE           fac,
+		           INT              iel,
 	  	           INT              ngnode,
                            INT             *iedgnod
                          )
 {
 
-INT     irow, icol,irn,icn;  
-INT     nd;                 
+INT     irow, icol,irn,icn;
+INT     nd;
 DOUBLE  c;
 DOUBLE  tau_dc, tau_supg;
 FLUID_DYNAMIC *fdyn;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_calgalmat_vhf");
-#endif		
+#endif
 
 fdyn    = alldyn[genprob.numff].fdyn;
 nd = NUMDOF_FLUID2*iel;
 
 #if 1
 if (iel==4)
-{   
-   dserror("heightfunc stabilisation");  
+{
+   dserror("heightfunc stabilisation");
    tau_supg = fdyn->tau[4];
 /*----------------------------------------------------------------------*
    Calculate full stabilisation part of matrix Mpsipsi:
@@ -354,7 +354,7 @@ if (iel==4)
 /*----------------------------------------------------------------------*
    Calculate full stabilisation part of matrix Kpsipsi:
    /
-  |   tau_SUPG * Ux * psi,x * Ux * phi,x  d_gamma_FS   
+  |   tau_SUPG * Ux * psi,x * Ux * phi,x  d_gamma_FS
  /
  *----------------------------------------------------------------------*/
    c=fac*tau_supg*velint[0]*velint[0];
@@ -371,7 +371,7 @@ if (iel==4)
 /*----------------------------------------------------------------------*
    Calculate full stabilisation part of matrix Kpsiv:
     /
--  |   tau_SUPG * Ux * psi,x * Uy   d_gamma_FS   
+-  |   tau_SUPG * Ux * psi,x * Uy   d_gamma_FS
   /
  *----------------------------------------------------------------------*/
    c=fac*tau_supg*velint[0];
@@ -410,8 +410,8 @@ if (iel==4)
 
 #endif
 
-/*----------------------------------------------------------------------*/ 
-#ifdef DEBUG 
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
 dstrc_exit();
 #endif
 

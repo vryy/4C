@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 'w1_mat_plast_mises' which calculates the 
+\brief contains the routine 'w1_mat_plast_mises' which calculates the
        constitutive matrix - forces - linear elastic - von Mises - 2D
        (plane stress, plane strain)
 
@@ -17,7 +17,7 @@ Maintainer: Andrea Hund
 #include "wall1.h"
 #include "wall1_prototypes.h"
 
-/*! 
+/*!
 \addtogroup WALL1
 *//*! @{ (documentation module open)*/
 
@@ -37,7 +37,7 @@ void w1_mat_plast_mises(DOUBLE ym,
                         DOUBLE  *gop,
                         DOUBLE  *alpha,
                         INT ip,
-                        DOUBLE *stress,       
+                        DOUBLE *stress,
                         DOUBLE **d,
                         INT istore,/* controls storing of new stresses to wa */
                         INT newval)/* controls evaluation of new stresses    */
@@ -61,7 +61,7 @@ DOUBLE dlam;
 DOUBLE dia;
 
 DOUBLE tauc[4];
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_mat_plast_mises");
 #endif
 /*----------------------------------------------------------------------*/
@@ -76,8 +76,8 @@ dstrc_enter("w1_mat_plast_mises");
  else isoft=0;
 /*------------ original global elastic matrix for current point -> D ---*/
   w1_mat_linel(ym, pv, wtype, d);
-/*--------------------------------- compute displacement derivatives ---*/        
-  w1_disd (ele,bop,gop,alpha,wtype,disd) ;                  
+/*--------------------------------- compute displacement derivatives ---*/
+  w1_disd (ele,bop,gop,alpha,wtype,disd) ;
 /*------------------------------------- get actual strains -> strain ---*/
   w1_eps (disd,wtype,strain);
 /*----------------------------- get old values -> sig, eps,epstn,yip ---*/
@@ -134,14 +134,14 @@ for (i=0; i<4; i++)
 |   3. CALCULATE TOTAL STRESS                                            |
 |   4. CHECK STRESS DEVIATOR AGAINST CURRENT YIELD SURFACE               |
 |-----------------------------------------------------------------------*/
-  
+
   for (i=0; i<4; i++) deleps[i] = strain[i] - eps[i];
-  
+
   for (i=0; i<4; i++) delsig[i] = 0.0;
   for (i=0; i<4; i++) for (j=0; j<4; j++) delsig[i] += d[i][j]*deleps[j];
-  
+
   for (i=0; i<4; i++) tau[i] = sig[i] + delsig[i] - qn[i];
-  
+
   sum = 0.0;
   for (i=0; i<4; i++) sum += sig[i] * delsig[i];
 
@@ -154,13 +154,13 @@ for (i=0; i<4; i++)
 /*-------------------------------------------------- yield condition ---*/
   w1yilcr(ym, hard, betah, sigy, epstn, isoft, dia, tau, &ft);
 /*------------- state of stress within yield surface - E L A S T I C ---*/
-  if (ft<tol) 
+  if (ft<tol)
   {
     yip = 1;
     for (i=0; i<4; i++) stress[i] = tau[i] + qn[i];
   }
 /*------------ state of stress outside yield surface - P L A S T I C ---*/
-  else 
+  else
   {
     yip = 2;
 
@@ -199,7 +199,7 @@ end:
     ele->e.w1->elewa[0].ipwa[ip].yip   = yip  ;
   }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

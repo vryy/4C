@@ -17,7 +17,7 @@ Maintainer: Andrea Hund
 #include "wall1.h"
 #include "wall1_prototypes.h"
 
-/*! 
+/*!
 \addtogroup WALL1
 *//*! @{ (documentation module open)*/
 
@@ -28,7 +28,7 @@ Maintainer: Andrea Hund
 void w1_mat_linelgeonon(DOUBLE ym,   /* youngs modolus */
                         DOUBLE pv,   /* poisson's ratio */
                         WALL_TYPE wtype,
-                        DOUBLE *strain, 
+                        DOUBLE *strain,
                         DOUBLE **d,
                         DOUBLE **stress,
                         INT numeps)
@@ -36,7 +36,7 @@ void w1_mat_linelgeonon(DOUBLE ym,   /* youngs modolus */
 DOUBLE e1, e2, e3, a1, b1, c1;
 DOUBLE svector[3];
 INT i,k;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_mat_linelgeonon");
 #endif
 /*-------------- some comments, so that even fluid people are able to
@@ -47,7 +47,7 @@ dstrc_enter("w1_mat_linelgeonon");
        | EPS_yy |
        | EPS_xy |
        | EPS_yx |
-      
+
 */
 /*---------------------------------material-tangente-- plane stress ---*/
   switch(wtype)
@@ -61,17 +61,17 @@ dstrc_enter("w1_mat_linelgeonon");
     d[0][1]=e2;
     d[0][2]=0.;
     d[0][3]=0.;
-    
+
     d[1][0]=e2;
     d[1][1]=e1;
     d[1][2]=0.;
-    d[1][3]=0.;    
-    
+    d[1][3]=0.;
+
     d[2][0]=0.;
     d[2][1]=0.;
     d[2][2]=e3;
     d[2][3]=e3;
-    
+
     d[3][0]=0.;
     d[3][1]=0.;
     d[3][2]=e3;
@@ -87,7 +87,7 @@ dstrc_enter("w1_mat_linelgeonon");
     d[0][1]=b1;
     d[0][2]=0.;
     d[0][3]=0.;
-    
+
     d[1][0]=b1;
     d[1][1]=a1;
     d[1][2]=0.;
@@ -97,35 +97,35 @@ dstrc_enter("w1_mat_linelgeonon");
     d[2][1]=0.;
     d[2][2]=c1/2.;
     d[2][3]=c1/2.;
-    
+
     d[3][0]=0.;
     d[3][1]=0.;
     d[3][2]=c1/2;
     d[3][3]=c1/2;
   break;
   }
-/*-------------------------- evaluate 2.PK-stresses -------------------*/ 
-/*------------------ Summenschleife -> += (2.PK stored as vecor) ------*/    
+/*-------------------------- evaluate 2.PK-stresses -------------------*/
+/*------------------ Summenschleife -> += (2.PK stored as vecor) ------*/
 for (k=0; k<3; k++)
-{ 
+{
   svector[k]=ZERO;
   for (i=0; i<numeps; i++)
-  { 
-     svector[k] += d[k][i] * strain[i];                     
+  {
+     svector[k] += d[k][i] * strain[i];
   }
 }
 /*------------------ 2.PK stored as matrix -----------------------------*/
-stress[0][0]=svector[0]; 
-stress[0][2]=svector[2]; 
-stress[1][1]=svector[1]; 
-stress[1][3]=svector[2]; 
-stress[2][0]=svector[2]; 
-stress[2][2]=svector[1]; 
-stress[3][1]=svector[2]; 
-stress[3][3]=svector[0]; 
-                  
+stress[0][0]=svector[0];
+stress[0][2]=svector[2];
+stress[1][1]=svector[1];
+stress[1][3]=svector[2];
+stress[2][0]=svector[2];
+stress[2][2]=svector[1];
+stress[3][1]=svector[2];
+stress[3][3]=svector[0];
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

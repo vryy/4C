@@ -1,6 +1,6 @@
 /*!---------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -47,7 +47,7 @@ void ntacal(void);
 /*----------------------------------------------------------------------*
   |  global_cal_control.c                               genk 10/03     |
  *----------------------------------------------------------------------*/
-void global_result_test(void); 
+void global_result_test(void);
 
 
 /*----------------------------------------------------------------------*
@@ -82,15 +82,15 @@ void ntainp(void);
   | global_locsys.c                                       genk 01/03    |
  *----------------------------------------------------------------------*/
 void locsys_inherit_to_node(void);
-void locsys_trans(ELEMENT *ele, DOUBLE **estif1, DOUBLE **estif2, 
+void locsys_trans(ELEMENT *ele, DOUBLE **estif1, DOUBLE **estif2,
                                 DOUBLE *vec1,    DOUBLE *vec2);
-void locsys_trans_sol(FIELD *actfield, INT idis, INT array, 
+void locsys_trans_sol(FIELD *actfield, INT idis, INT array,
                       INT place, INT flag);
-void locsys_trans_sol_dirich(FIELD *actfield, INT idis, INT array, 
+void locsys_trans_sol_dirich(FIELD *actfield, INT idis, INT array,
                              INT place, INT flag);
-void locsys_trans_nodval(ELEMENT *actele, DOUBLE *val, INT numdf, 
+void locsys_trans_nodval(ELEMENT *actele, DOUBLE *val, INT numdf,
                          INT iloccsys, INT flag);
-                                                                                                          
+
 /*----------------------------------------------------------------------*
   | global_monitoring.c                                  genk 01/03    |
  *----------------------------------------------------------------------*/
@@ -99,7 +99,7 @@ void monitoring(
                   INT            numf,
                   INT            actpos,
                   DOUBLE         time
-               ); 
+               );
 
 
 /*----------------------------------------------------------------------*
@@ -114,8 +114,8 @@ void ntadev(
   |  global_node_find.c                                 m.gee 11/01    |
  *----------------------------------------------------------------------*/
 void iscouple_find_node_comp(
-    NODE          *actnode, 
-    FIELD         *searchfield, 
+    NODE          *actnode,
+    FIELD         *searchfield,
     NODE         **partnernode,
     INT            coupleID,
     INT            dof);
@@ -127,8 +127,8 @@ void cheque_distance(
     INT           *ierr);
 
 void find_assign_coupset(
-    FIELD         *actfield, 
-    INT            coupleID, 
+    FIELD         *actfield,
+    INT            coupleID,
     INT           *counter);
 
 
@@ -148,24 +148,24 @@ void dyn_facfromcurve(
 
 DOUBLE dyn_facexplcurve(
     INT            actcurve,
-    DOUBLE         T);		   
+    DOUBLE         T);
 
 
 /*----------------------------------------------------------------------*
   | global_calelm.c                                     m.gee 11/01    |
  *----------------------------------------------------------------------*/
 void calelm(
-    FIELD         *actfield,     /* active field */        
+    FIELD         *actfield,     /* active field */
     SOLVAR        *actsolv,      /* active SOLVAR */
     PARTITION     *actpart,      /* my partition of this field */
     INTRA         *actintra,     /* my intra-communicator */
     INT            sysarray1,    /* number of first sparse system matrix */
     INT            sysarray2,    /* number of secnd system matrix, if present, else -1 */
     CONTAINER     *container,    /*!< contains variables defined in container.h */
-    CALC_ACTION   *action);       /* calculation option passed to element routines */            
+    CALC_ACTION   *action);       /* calculation option passed to element routines */
 
 void calinit(
-    FIELD         *actfield,   /* the active physical field */ 
+    FIELD         *actfield,   /* the active physical field */
     PARTITION     *actpart,    /* my partition of this field */
     CALC_ACTION   *action,
     CONTAINER     *container); /*!< contains variables defined in container.h */
@@ -175,7 +175,7 @@ void calreduce(
     PARTITION     *actpart,     /* my partition of this field */
     INTRA         *actintra,    /* the field's intra-communicator */
     CALC_ACTION   *action,      /* action for element routines */
-    CONTAINER     *container);  /*!< contains variables defined in container.h */               
+    CONTAINER     *container);  /*!< contains variables defined in container.h */
 
 
 /*----------------------------------------------------------------------*
@@ -194,7 +194,7 @@ void calrhs(
 void rhs_point_neum(
     DOUBLE        *rhs,
     INT            dimrhs,
-    PARTITION     *actpart);     
+    PARTITION     *actpart);
 
 
 /*----------------------------------------------------------------------*

@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routines 'b3_load', 'b3_fext' , 'b3_loadlin', 
-'b3_fextlin', 'b3_con_load', 'b3_con_loadlin',  
+\brief contains the routines 'b3_load', 'b3_fext' , 'b3_loadlin',
+'b3_fextlin', 'b3_con_load', 'b3_con_loadlin',
 
 <pre>
 Maintainer: Frank Huber
@@ -16,16 +16,16 @@ Maintainer: Frank Huber
 #include "beam3.h"
 #include "beam3_prototypes.h"
 
-/*! 
+/*!
 \addtogroup BEAM3
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief calculates the global element force vector for a spatial Bernoulli 
+\brief calculates the global element force vector for a spatial Bernoulli
 beam element
 
 <pre>                                                              fh 09/02
-This routine calculates the global element force vector for a spatial 
+This routine calculates the global element force vector for a spatial
 1d-Bernoulli-beam element (direct stiffness method)
 
 </pre>
@@ -35,20 +35,20 @@ This routine calculates the global element force vector for a spatial
 \param *loadvec  DOUBLE    (o)  global element load vector
 \param *hinge    INT       (i)  Hinge Code for actual beam element
 \param calcstep  INT       (i)  flag for calculation step
-               
+
 
 \warning done for n nodes per element
-\return void                                               
-\sa calling:   b3_fext() , b3_con_load() , b3_cal_trn() 
-    called by: beam3() , b3_cal_ele() 
+\return void
+\sa calling:   b3_fext() , b3_con_load() , b3_cal_trn()
+    called by: beam3() , b3_cal_ele()
 
 *----------------------------------------------------------------------*/
-void b3_load(ELEMENT   *ele,     
-             MATERIAL  *mat,     
+void b3_load(ELEMENT   *ele,
+             MATERIAL  *mat,
 	     DOUBLE   **stiff,
 	     DOUBLE    *loadvec,
-	     INT       *hinge,  
-	     INT        calcstep)   
+	     INT       *hinge,
+	     INT        calcstep)
 {
 INT          idof;               /* some loopers                    */
 INT          iel;                /* number of nodes per element     */
@@ -59,7 +59,7 @@ static ARRAY eload_a; static DOUBLE *eload;  /* static element load vector */
 static ARRAY trans_a; static DOUBLE **trans; /* transformation matrix */
 static ARRAY dummy_a; static DOUBLE *dummy;  /* dummy load vector */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("b3_load");
 #endif
 /*---------------------------------------------------------------------*/
@@ -70,7 +70,7 @@ if (calcstep==1)
   eload   = amdef("eload"  ,&eload_a,max,1                       ,"DV");
   dummy   = amdef("dummy"  ,&dummy_a,max,1                       ,"DV");
   trans   = amdef("trans"  ,&trans_a,max,max                     ,"DA");
-  
+
   goto end;
 }
 /*----------------------------------------------------------------------*/
@@ -81,7 +81,7 @@ else if (calcstep==-1)
 amdel(&eload_a);
 amdel(&trans_a);
 amdel(&dummy_a);
-goto end;  
+goto end;
 }
 /*----------------------------------------------------------------------*/
 /* calculation phase        (calcstep=3,4)                              */
@@ -101,7 +101,7 @@ iel=ele->numnp;
 
 if (calcstep==3)
 {
-   b3_fext(ele,mat,dummy); 
+   b3_fext(ele,mat,dummy);
    if (hinge[0] != 0) b3_con_load(stiff,dummy,hinge,iel);
    b3_cal_trn(ele, trans);
    math_mattrnvecdense(eload,trans,dummy,12,12,1,1);
@@ -128,14 +128,14 @@ else if (calcstep==4)
 }
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of b3_load */
 
 /*!----------------------------------------------------------------------
-\brief calculates the element force vector for a spatial Timoshenko beam 
+\brief calculates the element force vector for a spatial Timoshenko beam
 element
 
 <pre>                                                              fh 01/03
@@ -150,11 +150,11 @@ Timoshenko-beam element (Finite element method)
 \param fac       DOUBLE    (i)  weight of actual gauss point
 \param *loadvec  DOUBLE    (o)  global element load vector
 \param calcstep  INT       (i)  flag for calculation step
-               
+
 
 \warning done for n nodes per element
-\return void                                               
-\sa calling:   b3_fextlin() 
+\return void
+\sa calling:   b3_fextlin()
     called by: beam3() , b3_cal_ele()
 
 *----------------------------------------------------------------------*/
@@ -168,14 +168,14 @@ Timoshenko-beam element (Finite element method)
 |								       |
 |    r---1---------------3-------------------4-----------2---r  lin4   |
 |								       |
-*----------------------------------------------------------------------*/ 
-void b3_loadlin(ELEMENT  *ele,     
-                MATERIAL *mat,     
-        	DOUBLE   *func,    
-		DOUBLE    r,       
-		DOUBLE    fac,     
-		DOUBLE	 *loadvec, 
-		INT       calcstep)    
+*----------------------------------------------------------------------*/
+void b3_loadlin(ELEMENT  *ele,
+                MATERIAL *mat,
+        	DOUBLE   *func,
+		DOUBLE    r,
+		DOUBLE    fac,
+		DOUBLE	 *loadvec,
+		INT       calcstep)
 {
 INT          i;                  /* some loopers                    */
 INT          iel;                /* number of nodes per element     */
@@ -184,7 +184,7 @@ const INT    max = MAXDOFPERNODE*MAXNOD_BEAM3;
 
 static ARRAY dummy_a; static DOUBLE *dummy;  /* dummy load vector */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("b3_load");
 #endif
 /*---------------------------------------------------------------------*/
@@ -192,7 +192,7 @@ dstrc_enter("b3_load");
 /*---------------------------------------------------------------------*/
 if (calcstep==1)
 {
-  dummy   = amdef("dummy"  ,&dummy_a,max,1,                       "DV");  
+  dummy   = amdef("dummy"  ,&dummy_a,max,1,                       "DV");
   goto end;
 }
 /*----------------------------------------------------------------------*/
@@ -202,7 +202,7 @@ if (calcstep==1)
 else if (calcstep==-1)
 {
    amdel(&dummy_a);
-   goto end;  
+   goto end;
 }
 /*----------------------------------------------------------------------*/
 /* calculation phase        (calcstep=3)                                */
@@ -214,14 +214,14 @@ if (calcstep==3)
 {
    iel=ele->numnp;
    b3_fextlin(ele,mat,func,r,fac,dummy);
-   for (i=0; i<6*iel; i++) loadvec[i]+=dummy[i]; 
+   for (i=0; i<6*iel; i++) loadvec[i]+=dummy[i];
 }
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of b3_loadlin */
 
 /*!----------------------------------------------------------------------
@@ -229,19 +229,19 @@ return;
 beam element
 
 <pre>                                                              fh 09/02
-This routine calculates the local element force vector (line load)for a 
+This routine calculates the local element force vector (line load)for a
 spatial 1d-Bernoulli-beam element (direct stiffness method)
 
 </pre>
 \param *ele      ELEMENT   (i)  actual element
 \param *mat      MATERIAL  (i)  actual material
 \param *eload    DOUBLE    (o)  local  element load vector
-               
+
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling: ---;
-    called by: b3_load() 
+    called by: b3_load()
 
 *----------------------------------------------------------------------*/
 void b3_fext(ELEMENT     *ele,
@@ -259,7 +259,7 @@ DOUBLE gx,gy,gz,dx,dy,dz; /* length components */
 DOUBLE l_dl, d_gl; /* distance values */
 INT i,j; /* loopers(i = loaddirection x or y)(j=node) */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("b3_fext");
 #endif
 /*----------------------------------------------------------------------*/
@@ -294,8 +294,8 @@ case neum_none:
 |-----------------------------------------------------------------------*/
 
 /*------get neumann values p0,p1 from design element--------------------*/
-for (i=0; i<6; i++) 
-{  
+for (i=0; i<6; i++)
+{
    if (ele->g.gline->neum->neum_onoff.a.iv[i]==1)
    {
       pd[i]=ele->g.gline->neum->neum_val.a.dv[i];
@@ -305,11 +305,11 @@ for (i=0; i<6; i++)
 /*------determine length l_dl of design element-------------------------*/
 x0=ele->g.gline->dline->dnode[0]->x[0];
 y0=ele->g.gline->dline->dnode[0]->x[1];
-z0=ele->g.gline->dline->dnode[0]->x[2]; 
-   
+z0=ele->g.gline->dline->dnode[0]->x[2];
+
 x1=ele->g.gline->dline->dnode[1]->x[0];
 y1=ele->g.gline->dline->dnode[1]->x[1];
-z1=ele->g.gline->dline->dnode[1]->x[2]; 
+z1=ele->g.gline->dline->dnode[1]->x[2];
 
 dx=x1-x0;
 dy=y1-y0;
@@ -324,20 +324,20 @@ for (i=0; i<2; i++)
    xi=ele->g.gline->gnode[i]->node->x[0];
    yi=ele->g.gline->gnode[i]->node->x[1];
    zi=ele->g.gline->gnode[i]->node->x[2];
-   
+
    gx=xi-x0;
    gy=yi-y0;
    gz=zi-z0;
 
-   d_gl=sqrt(gx*gx+gy*gy+gz*gz);          
-   
+   d_gl=sqrt(gx*gx+gy*gy+gz*gz);
+
    xsi=d_gl/l_dl;
 
-/*--interpolate neumann value of actual node: pi=p0+xsi*(p1-p0)---------*/    
+/*--interpolate neumann value of actual node: pi=p0+xsi*(p1-p0)---------*/
    for (j=0; j<3; j++) pl[i][j]=pd[2*j]+xsi*(pd[2*j+1]-pd[2*j]);
    pl[i][3]=0.; /* value for couple line load set to zero */
 }
-   
+
    ni =pl[0][0];
    nk =pl[1][0];
    qyi=pl[0][1];
@@ -345,8 +345,8 @@ for (i=0; i<2; i++)
    qzi=pl[0][2];
    qzk=pl[1][2];
    mxi=pl[0][3];
-   mxk=pl[1][3];   
-    
+   mxk=pl[1][3];
+
 /*-------- direction of loads: Skript Baustatik VI S. 4.1 --------------*/
 /*-------element load vector node i sL0 for Bernoulli beam element------*/
    eload[0] = -l/6.*(2.*ni+nk);				/* S1 */
@@ -355,7 +355,7 @@ for (i=0; i<2; i++)
    eload[3] = -l/6.*(2.*mxi+mxk);			/* S4 */
    eload[4] = l2/60*(3.*qzi+2.*qzk);			/* S5 */
    eload[5] = -l2/60*(3.*qyi+2.*qyk);			/* S6 */
-      
+
 /*-------element load vector node k sL0 for Bernoulli beam element------*/
    eload[6] = -l/6.*(ni+2.*nk);				/* S7 */
    eload[7] = -l/60.*(9.*qyi+21.*qyk);			/* S8 */
@@ -379,14 +379,14 @@ break;
    tz=(force[2]+force[3])/2.;
    dtz=force[3]-force[2];
 /*-------------------- element load vector node i ----------------------*/
-/*   eload[0][0] = 
+/*   eload[0][0] =
    eload[1][0] = -l/60.*(21.*force[4]+9.*force[5]);
    eload[2][0] = -l/60.*(21.*force[2]+9.*force[3]);
    eload[3][0] = 0.;
    eload[4][0] = l*l/60*(3.*force[4]+2.*force[5]);
    eload[5][0] = l*l/60*(3.*force[2]+2.*force[3]);
-   
-/*-------------------- element load vector node i ----------------------*/   
+
+/*-------------------- element load vector node i ----------------------*/
 /*   eload[0][1] = -(force[0]+2.*force[1])/6.*l;
    eload[1][1] = -l/60.*(9.*force[4]+21.*force[5]);
    eload[2][1] = -l/60.*(9.*force[2]+21.*force[3]);
@@ -412,10 +412,10 @@ break;
 }/* end of switch(ele->g.gsurf->neum->neum_type)*/
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of  b3_fext*/
 
 /*!----------------------------------------------------------------------
@@ -433,19 +433,19 @@ Timoshenko-beam element (Finite element method)
 \param r         DOUBLE    (i)  actual gauss point
 \param fac       DOUBLE    (i)  weight of actual gauss point
 \param *eload    DOUBLE    (o)  global element load vector
-               
+
 
 \warning done for n nodes per element
-\return void                                               
-\sa calling:   ---; 
-    called by: b3_loadlin() 
+\return void
+\sa calling:   ---;
+    called by: b3_loadlin()
 
 *----------------------------------------------------------------------*/
-void b3_fextlin(ELEMENT     *ele,  
-                MATERIAL    *mat,  
-                DOUBLE      *func, 
-		DOUBLE       r,    
-		DOUBLE       fac,  
+void b3_fextlin(ELEMENT     *ele,
+                MATERIAL    *mat,
+                DOUBLE      *func,
+		DOUBLE       r,
+		DOUBLE       fac,
 		DOUBLE      *eload)
 {
 DOUBLE    p[6];   /* vector for line neumann values */
@@ -460,7 +460,7 @@ DOUBLE l_dl, d_gl; /* distance values */
 DOUBLE gx,gy,gz,dx,dy,dz; /* length components */
 INT       i,j;  /* loopers */
 INT       iel;  /* number of nodes per element */
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("b3_fextlin");
 #endif
 /*----------------------------------------------------------------------*/
@@ -488,8 +488,8 @@ case neum_none:
 |-----------------------------------------------------------------------*/
 
 /*------get neumann values p0,p1 from design element--------------------*/
-for (i=0; i<6; i++) 
-{  
+for (i=0; i<6; i++)
+{
    if (ele->g.gline->neum->neum_onoff.a.iv[i]==1)
    {
       pd[i]=ele->g.gline->neum->neum_val.a.dv[i];
@@ -500,11 +500,11 @@ for (i=0; i<6; i++)
 /*------determine length l_dl of design element-------------------------*/
 x0=ele->g.gline->dline->dnode[0]->x[0];
 y0=ele->g.gline->dline->dnode[0]->x[1];
-z0=ele->g.gline->dline->dnode[0]->x[2]; 
-   
+z0=ele->g.gline->dline->dnode[0]->x[2];
+
 x1=ele->g.gline->dline->dnode[1]->x[0];
 y1=ele->g.gline->dline->dnode[1]->x[1];
-z1=ele->g.gline->dline->dnode[1]->x[2]; 
+z1=ele->g.gline->dline->dnode[1]->x[2];
 
 dx=x1-x0;
 dy=y1-y0;
@@ -519,20 +519,20 @@ for (i=0; i<2; i++)
    xi=ele->g.gline->gnode[i]->node->x[0];
    yi=ele->g.gline->gnode[i]->node->x[1];
    zi=ele->g.gline->gnode[i]->node->x[2];
-   
+
    gx=xi-x0;
    gy=yi-y0;
    gz=zi-z0;
 
-   d_gl=sqrt(gx*gx+gy*gy+gz*gz);          
-   
+   d_gl=sqrt(gx*gx+gy*gy+gz*gz);
+
    xsi=d_gl/l_dl;
 
-/*--interpolate neumann value of actual node: pi=p0+xsi*(p1-p0)---------*/    
+/*--interpolate neumann value of actual node: pi=p0+xsi*(p1-p0)---------*/
    for (j=0; j<3; j++) pl[i][j]=pd[2*j]+xsi*(pd[2*j+1]-pd[2*j]);
    pl[i][3]=0.; /* value for couple line load set to zero */
 }
-   
+
    ni =pl[0][0];
    nk =pl[1][0];
    qyi=pl[0][1];
@@ -540,24 +540,24 @@ for (i=0; i<2; i++)
    qzi=pl[0][2];
    qzk=pl[1][2];
    mxi=pl[0][3];
-   mxk=pl[1][3];   
+   mxk=pl[1][3];
    myi=0.;
    myk=0.;
    mzi=0.;
    mzk=0.;
-/*---------special here: constant line load ---------------------------*/    
+/*---------special here: constant line load ---------------------------*/
     p[0]=ni+.5*(nk-ni)*(1+r);
     p[1]=qyi+.5*(qyk-qyi)*(1+r);
     p[2]=qzi+.5*(qzk-qzi)*(1+r);
     p[3]=mxi+.5*(mxk-mxi)*(1+r);
     p[4]=myi+.5*(myk-myi)*(1+r);
     p[5]=mzi+.5*(mzk-mzi)*(1+r);
-        
+
 /* numerical integration of element load vector F+=dx/dr*N(r)*w(r)*p(r) */
 /*-------------------- element load vector -----------------------------*/
    for (i=0; i<iel; i++)
    {   for (j=0; j<6; j++) eload[(i*6)+j]+=l/2.*func[i]*fac*p[j];
-   }       
+   }
 break;
 /*----------------------------------------------------------------------*/
 case neum_consthydro_z:
@@ -575,10 +575,10 @@ break;
 }/* end of switch(ele->g.gsurf->neum->neum_type)*/
 /*----------------------------------------------------------------------*/
 }
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of  b3_fextlin*/
 
 /*!----------------------------------------------------------------------
@@ -593,23 +593,23 @@ are any hinge conditions at the nodes
 \param *loadvec  DOUBLE    (o)  global element load vector
 \param *hc       INT       (i)  Hinge Code for actual beam element
 \param iel       INT       (i)  number of nodes per element
-               
+
 \warning This routine is adopted from CARAT (advanced to n nodes per ele)
-\return void                                               
-\sa calling:   ---; 
-    called by: b3_load() 
+\return void
+\sa calling:   ---;
+    called by: b3_load()
 
 *----------------------------------------------------------------------*/
 void b3_con_load(DOUBLE **estif,
-		 DOUBLE  *loadvec, 
+		 DOUBLE  *loadvec,
                  INT     *hc,
-		 INT      iel)  	   	     	     	     	     	     	   	     
+		 INT      iel)
 {
 INT            j, m, n; /* some loopers */
 DOUBLE         stfmc, frcdof; /* values to be condensed are stored here */
 /*----------------------------------------------------------------------*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("b3_conload");
 #endif
 /*----------------------------------------------------------------------*/
@@ -619,7 +619,7 @@ if (hc[j+1]>0)
 {
   stfmc=estif[j][j];
   if (estif[j][j]!=0.)
-  {	
+  {
   for (n=0; n<6*iel; n++) estif[j][n]=estif[j][n]/stfmc;
 /*-------------Condensation SL0-----------------------------------------*/
 frcdof=loadvec[j];
@@ -629,7 +629,7 @@ for (n=0; n<j; n++)
 {
   for (m=n; m<j; m++) estif[n][m]=estif[n][m]-estif[n][j]*estif[j][m];
   for (m=0; m<n; m++) estif[n][m]=estif[m][n];
-}     
+}
 /*-------------Condensation Kac and Kca---------------------------------*/
 for (n=j+1; n<6*iel; n++)
 {
@@ -638,13 +638,13 @@ for (n=j+1; n<6*iel; n++)
     estif[n][m]=estif[n][m]-estif[j][n]*estif[m][j];
     estif[m][n]=estif[n][m];
   }
-}                                   
+}
 /*-------------Condensation Kcc-----------------------------------------*/
 for (n=j+1; n<6*iel; n++)
 {
   for (m=n; m<6*iel; m++) estif[n][m]=estif[n][m]-estif[n][j]*estif[j][m];
   for (m=j+1; m<n; m++) estif[n][m]=estif[m][n];
-}                         
+}
 /*-------------Set Cond. domain equal zero------------------------------*/
 for (n=0; n<6*iel; n++)
 {
@@ -652,7 +652,7 @@ for (n=0; n<6*iel; n++)
   estif[n][j]=0.;
 }
 }
-else goto out;                                   
+else goto out;
 }
 }
 goto end;
@@ -663,18 +663,18 @@ for (j=0; j<6*iel; j++)
 }
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of b3_con_load */
 
 /*!----------------------------------------------------------------------
-\brief condensates the local element force vector of a Timoshenko beam 
+\brief condensates the local element force vector of a Timoshenko beam
 if necessary
 
 <pre>                                                              fh 02/03
-This routine condensates the local spatial element force vector of a 
+This routine condensates the local spatial element force vector of a
 Timoshenko beam if there are any hinge conditions at the end nodes of
 the element
 
@@ -682,16 +682,16 @@ the element
 \param *loadvec  DOUBLE   (i/o) local element load vector
 \param *hc       INT       (i)  Hinge Code for actual beam element
 \param iel       INT       (i)  number of nodes per element
-               
+
 \warning This routine is adopted from CARAT (advanced to n nodes per ele)
-\return void                                               
-\sa calling:   ---; 
+\return void
+\sa calling:   ---;
     called by: b3_cal_ele()
 
 *----------------------------------------------------------------------*/
-void b3_con_loadlin(DOUBLE  *loadvec, 
+void b3_con_loadlin(DOUBLE  *loadvec,
                     INT     *hc,
-		    INT      iel)  	   	     	     	     	     	     	   	     
+		    INT      iel)
 {
 INT            j;        /* looper */
 INT            val;      /* temporate value */
@@ -699,12 +699,12 @@ const INT      ndof = 6; /* number of dofs per element */
 DOUBLE         frcdof; /* values to be condensed are stored here */
 /*----------------------------------------------------------------------*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("b3_con_loadlin");
 #endif
 /*----------------------------------------------------------------------*/
 
-/* Within a Timoshenko beam element, the element forces are decouplded  */ 
+/* Within a Timoshenko beam element, the element forces are decouplded  */
 /* from the moments. So the condensation of the force vector can easily */
 /* be done by statical redistributing the load to the element nodes.    */
 /* The following code is valid only for trapezoidal element load.       */
@@ -714,15 +714,15 @@ val=iel-1;
 for (j=0; j<2*ndof; j++)
 {
   if (hc[j+1]>0)
-  {							       
+  {
     frcdof=loadvec[j];
     /* 2-noded beam element */
     if (val==1)
     {
        loadvec[j]=0.;
        /* hinge at beam end node i */
-       if (val*j<ndof) 
-       {  
+       if (val*j<ndof)
+       {
   	  loadvec[j+ndof]+=frcdof;
        }
        /* hinge at beam end node k */
@@ -735,7 +735,7 @@ for (j=0; j<2*ndof; j++)
        /* hinge at beam end node i */
        if (val*j<ndof)
        {
-  	  /* load vector = [node i, node k, internal node] */ 
+  	  /* load vector = [node i, node k, internal node] */
   	  loadvec[j+ndof]  -=frcdof;	/* node k	   */
   	  loadvec[j+2*ndof]+=2.*frcdof; /* internal node   */
        }
@@ -750,7 +750,7 @@ for (j=0; j<2*ndof; j++)
   }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

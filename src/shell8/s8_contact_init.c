@@ -15,29 +15,29 @@ Maintainer: Michael Gee
 #include "s8contact.h"
 #include "shell8.h"
 
-/*! 
-\addtogroup CONTACTS8 
+/*!
+\addtogroup CONTACTS8
 *//*! @{ (documentation module open)*/
 
 
 /*!----------------------------------------------------------------------
 \brief the contact main structure
 
-<pre>                                                         m.gee 2/03    
+<pre>                                                         m.gee 2/03
 defined in s8_contact_init.c
 </pre>
 
 *----------------------------------------------------------------------*/
 struct _SHELLCONTACT shellcontact;
 /*!---------------------------------------------------------------------
-\brief initialization of shell8 contact                                              
+\brief initialization of shell8 contact
 
-<pre>                                                        m.gee 2/03 
+<pre>                                                        m.gee 2/03
 </pre>
 \param actfield   FIELD*       (i)   the discretization
 \param actpart    PARTITION*   (i)   my partition of the discretization
-\param actintra   INTRA*       (i)   the intra-communicator of this field                  
-\return void                                               
+\param actintra   INTRA*       (i)   the intra-communicator of this field
+\return void
 
 ------------------------------------------------------------------------*/
 void s8contact_init(FIELD *actfield, PARTITION* actpart, INTRA *actintra)
@@ -52,7 +52,7 @@ DOUBLE        halfthick;
 INT           foundit;
 DOUBLE        diag;
 DOUBLE        dx,dy,dz;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8contact_init");
 #endif
 /*----------------------------------------------------------------------*/
@@ -119,14 +119,14 @@ for (i=0; i<actfield->dis[0].numele; i++)
    dz     = actele->node[2]->x[2] - actele->node[0]->x[2];
    diag   = dx*dx+dy*dy+dz*dz;
    diag   = sqrt(diag);
-   if (shellcontact.maxdiag < diag) 
+   if (shellcontact.maxdiag < diag)
    shellcontact.maxdiag = diag;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of s8contact_init */
 
 

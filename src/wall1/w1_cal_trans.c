@@ -1,10 +1,10 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 'w1_gld' which transforms local material 
+\brief contains the routine 'w1_gld' which transforms local material
        matrix to global axes
        contains the routine 'w1_lss' which transforms stress and strain
        local-global
-       contains the routine 'w1_sett' which sets the Transformation 
+       contains the routine 'w1_sett' which sets the Transformation
        matrices G and GI
        contains the routine 'w1_tram' which calculates the Transformation
        matrices G and G(Inv)
@@ -22,7 +22,7 @@ Maintainer: Andrea Hund
 #include "wall1.h"
 #include "wall1_prototypes.h"
 
-/*! 
+/*!
 \addtogroup WALL1
 *//*! @{ (documentation module open)*/
 
@@ -37,12 +37,12 @@ void w1_gld(DOUBLE **D,
 	    DOUBLE **G, DOUBLE **DGT)
 {
 INT numeps=4;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_gld");
 #endif
 math_matmattrndense(DGT,D,G,numeps,numeps,numeps,0,1.);
 math_matmatdense(D,G,DGT,numeps,numeps,numeps,0,1.);
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -62,7 +62,7 @@ void w1_lss(DOUBLE    *a,
 INT numeps=4;
 INT i;
 DOUBLE ga[4];
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_lss");
 #endif
  /*----------------------------------------------------------------*
@@ -79,7 +79,7 @@ switch (it) {
 	case 1: goto L2;
 	case 2: goto L3;
 	case 3: goto L4;
-}	
+}
 
 
  /*----------------------------------------------------------------*
@@ -120,7 +120,7 @@ L100:
     {
     	a[i] = ga[i];
     }
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -142,7 +142,7 @@ DOUBLE a11,a12,a21,a22;
 DOUBLE zero=0.;
 DOUBLE one=1.;
 INT i,j;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_sett");
 #endif
  /*----------------------------------------------------------------*
@@ -167,27 +167,27 @@ for (l=1; l<3; l++)
 	a12=A[0][1];
 	a22=A[1][1];
 	}
-	
+
 	B[0][0]=a11*a11;
 	B[1][0]=a12*a12;
 	B[2][0]=a11*a12;
 	B[3][0]=zero;
-	
+
 	B[0][1]=a21*a21;
 	B[1][1]=a22*a22;
 	B[2][1]=a21*a22;
 	B[3][1]=zero;
-	
+
 	B[0][2]=a11*a21*2.;
 	B[1][2]=a12*a22*2.;
 	B[2][2]=a11*a22+a21*a12;
 	B[3][2]=zero;
-	
+
 	B[0][3]=zero;
 	B[1][3]=zero;
 	B[2][3]=zero;
 	B[3][3]=one;
-	
+
 	if (l==1)
 	{
 	for (i=0; i<numeps; i++)
@@ -199,7 +199,7 @@ for (l=1; l<3; l++)
         }
 	}
 }
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -226,7 +226,7 @@ DOUBLE x3n;
 DOUBLE one=1.;
 DOUBLE length;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_tram");
 #endif
  /*----------------------------------------------------------------*
@@ -272,7 +272,7 @@ dum[1][1]=xc[1];
  |----------------------------------------------------------------*/
 w1_sett(dum,G,GI);
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

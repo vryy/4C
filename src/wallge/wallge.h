@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief headerfile for gradient enhance wall element, 
+\brief headerfile for gradient enhance wall element,
        containing structures
 
 <pre>
@@ -13,7 +13,7 @@ Maintainer: Andrea Hund
 *----------------------------------------------------------------------*/
 #ifdef D_WALLGE
 
-/*! 
+/*!
 \addtogroup WALLGE
 *//*! @{ (documentation module open)*/
 
@@ -22,7 +22,7 @@ Maintainer: Andrea Hund
 \brief gradient enhanced wall element
 
 <pre>                                                            ah 08/03
-This structure contains the working array at the Gaussian points for the 
+This structure contains the working array at the Gaussian points for the
 gradient enhanced wall element
 </pre>
 
@@ -31,18 +31,18 @@ gradient enhanced wall element
 typedef struct _WGE_IP_WA
 {
 DOUBLE       sig[4];      /* global stresses  */
-INT          yip;         /* flag  */              
-DOUBLE       kappa;       /* max. equivalent strain, ever reached  */              
-DOUBLE       damage;      /* damage variable -> for output  */              
-DOUBLE       aequistrain;      /* local equivalent strain  */              
-DOUBLE       aequistrain_nl;      /* nonlocal equivalent strain  */              
+INT          yip;         /* flag  */
+DOUBLE       kappa;       /* max. equivalent strain, ever reached  */
+DOUBLE       damage;      /* damage variable -> for output  */
+DOUBLE       aequistrain;      /* local equivalent strain  */
+DOUBLE       aequistrain_nl;      /* nonlocal equivalent strain  */
 } WGE_IP_WA;
 
 /*!----------------------------------------------------------------------
 \brief gradient enhanced wall element
 
 <pre>                                                            ah 08/03
-This structure contains the working arrays for the 
+This structure contains the working arrays for the
 gradient enhanced wall element
 </pre>
 
@@ -63,15 +63,15 @@ This structure contains information about the wall type: plane strain...
 *----------------------------------------------------------------------*/
 typedef enum _WALLGE_TYPE
 {
-                       pl_strain, 
+                       pl_strain,
                        pl_stress,
-                       rot_symmet  
+                       rot_symmet
 } WALLGE_TYPE;
 /*!----------------------------------------------------------------------
 \brief gradient enhanced wall element
 
 <pre>                                                            ah 08/03
-This structure contains all specific information for the 
+This structure contains all specific information for the
 gradient enhanced wall element
 </pre>
 
@@ -79,14 +79,14 @@ gradient enhanced wall element
 typedef struct _WALLGE
 {
 enum _WALLGE_TYPE    wgetype;       /*!< type of 2D problem, see above */
-INT           nGP[4];   
+INT           nGP[4];
 DOUBLE        thick;              /*!< thickness perpend. to wallplane */
-WGE_ELE_WA   *elwa;         
+WGE_ELE_WA   *elwa;
 enum
     {
     wge_xy,                         /*!< stresses in global orientaion */
     wge_rs                          /*!< stresses in local orientaion */
-    } stresstyp; 
+    } stresstyp;
 struct _ARRAY4D  stress_GP;
 struct _ARRAY4D  stress_ND;
 } WALLGE;
@@ -124,7 +124,7 @@ void wallge(PARTITION   *actpart,
             ARRAY       *emass_global,
             ARRAY       *intforce_global,
             CALC_ACTION *action,
-            CONTAINER   *container); 
+            CONTAINER   *container);
 /*----------------------------------------------------------------------*
  | read input of wallge element                         mn 05/03    |
  *----------------------------------------------------------------------*/

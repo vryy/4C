@@ -11,8 +11,8 @@ Maintainer: Malte Neumann
 
 *----------------------------------------------------------------------*/
 #ifdef D_ALE
-/*! 
-\addtogroup Ale 
+/*!
+\addtogroup Ale
 *//*! @{ (documentation module open)*/
 
 
@@ -64,8 +64,8 @@ DOUBLE        wgtt[4];         /*!< weights at natural coordinates r */
 
 
 /*!----------------------------------------------------------------------
-\brief  number of time curves for ale elements 
-                                                      
+\brief  number of time curves for ale elements
+
 <pre>                                                              mn 08/02
 number of time curves for ale elements
 </pre>
@@ -90,20 +90,20 @@ void ale3_bop(
  | ale_call_stiff.c                                          mn 06/02  |
  *----------------------------------------------------------------------*/
 void ale3_keku(
-    DOUBLE  **s, 
-    DOUBLE    bs[6][6*MAXNOD_BRICK1], 
-    DOUBLE    d[6][6], 
-    DOUBLE    fac, 
+    DOUBLE  **s,
+    DOUBLE    bs[6][6*MAXNOD_BRICK1],
+    DOUBLE    d[6][6],
+    DOUBLE    fac,
     INT       nd
     );
 /*----------------------------------------------------------------------*
  | ale2_call_stiff.c                                          mn 06/02  |
  *----------------------------------------------------------------------*/
 void ale2_keku(
-    DOUBLE  **s, 
-    DOUBLE  **bs, 
-    DOUBLE  **d, 
-    DOUBLE    fac, 
+    DOUBLE  **s,
+    DOUBLE  **bs,
+    DOUBLE  **d,
+    DOUBLE    fac,
     INT       nd,
     INT       neps
     );
@@ -111,8 +111,8 @@ void ale2_keku(
  | ale_dirich.c                                              mn 06/02  |
  *----------------------------------------------------------------------*/
 void ale_setdirich(
-    FIELD        *actfield, 
-    ALE_DYNAMIC  *adyn, 
+    FIELD        *actfield,
+    ALE_DYNAMIC  *adyn,
     INT           readstructpos
     );
 void ale_setdirich_increment(FIELD *actfield, ALE_DYNAMIC *adyn);
@@ -120,8 +120,8 @@ void ale_caldirich(ELEMENT *actele, DOUBLE *fullvec, INT dim,
 		   ARRAY *estif_global);
 void ale_caldirich_increment(ELEMENT *actele, DOUBLE *fullvec,
 		             INT dim, ARRAY *estif_global, INT place);
-void ale_setdirich_increment_fsi(FIELD        *actfield, 
-                                 ALE_DYNAMIC  *adyn, 
+void ale_setdirich_increment_fsi(FIELD        *actfield,
+                                 ALE_DYNAMIC  *adyn,
 				 INT           actpos);
 INT check_ale_dirich(ELEMENT *actele);
 /*----------------------------------------------------------------------*
@@ -144,9 +144,9 @@ void ale_init(
  | ale3_funct_deriv.c                                         mn 06/02  |
  *----------------------------------------------------------------------*/
 void ale3_funct_deriv(
-    DOUBLE      funct[MAXNOD_BRICK1], 
-    DOUBLE      deriv[3][MAXNOD_BRICK1], 
-    DOUBLE      r, 
+    DOUBLE      funct[MAXNOD_BRICK1],
+    DOUBLE      deriv[3][MAXNOD_BRICK1],
+    DOUBLE      r,
     DOUBLE      s,
     DOUBLE      t,
     DIS_TYP     typ,
@@ -188,15 +188,15 @@ void ale3_mat_linel(
  | ale3_static_ke.c                                           mn 06/02  |
  *----------------------------------------------------------------------*/
 void ale3_static_ke(
-    ELEMENT   *ele, 
-    ALE3_DATA  *data, 
+    ELEMENT   *ele,
+    ALE3_DATA  *data,
     MATERIAL  *mat,
-    ARRAY     *estif_global, 
+    ARRAY     *estif_global,
     INT        init
     );
 /*----------------------------------------------------------------------*
  | ale3_hourglass.c                                           mn 06/02  |
  *----------------------------------------------------------------------*/
- void ale3_hourglass(ELEMENT *ele, DOUBLE **s, DOUBLE vol); 
+ void ale3_hourglass(ELEMENT *ele, DOUBLE **s, DOUBLE vol);
 /*! @} (documentation module close)*/
 #endif

@@ -9,25 +9,25 @@
 #include "interf.h"
 #include "interf_prototypes.h"
 
-/*! 
+/*!
 \addtogroup INTERF
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief eleminates 2 of the nodes by dirichlet conditions if the 
+\brief eleminates 2 of the nodes by dirichlet conditions if the
        element is quadratic
 
 <pre>                                                              mn 05/03
-This routine eleminates 2 of the nodes by dirichlet conditions if the 
+This routine eleminates 2 of the nodes by dirichlet conditions if the
        element is quadratic
 
 </pre>
-\param **s       DOUBLE    (o)  blablabla 
+\param **s       DOUBLE    (o)  blablabla
 \param   dl      DOUBLE    (i)  blablabal
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling:  ---; 
+\return void
+\sa calling:  ---;
     caled by: assign_dof();
 
 *----------------------------------------------------------------------*/
@@ -45,14 +45,14 @@ INT      cnode,i,mynode;              /* some loopers     */
 DOUBLE   xrefe[4],yrefe[4];  /* reference coordinates of corner nodes */
 DOUBLE   L_one, L_two;       /* lengh of element edges */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("if_dirichnode");
 #endif
 /*----------- check orientation of element (which is my xi direction)---*/
 for (cnode=0; cnode<4; cnode++)
 {/* coordinates of corner nodes */
-  xrefe[cnode] = actele->node[cnode]->x[0];          
-  yrefe[cnode] = actele->node[cnode]->x[1];                
+  xrefe[cnode] = actele->node[cnode]->x[0];
+  yrefe[cnode] = actele->node[cnode]->x[1];
 }
 L_one = sqrt( (xrefe[1] - xrefe[0]) * (xrefe[1] - xrefe[0])
       +       (yrefe[1] - yrefe[0]) * (yrefe[1] - yrefe[0]));
@@ -70,27 +70,27 @@ if (L_one>L_two)
   amdef("val",&(actele->node[7]->gnode->dirich->dirich_val),6,1,"DV");
   amdef("curve",&(actele->node[7]->gnode->dirich->curve),6,1,"IV");
 
-  actele->node[5]->gnode->dirich->dirich_onoff.a.iv[0]=1; 
-  actele->node[5]->gnode->dirich->dirich_onoff.a.iv[1]=1; 
+  actele->node[5]->gnode->dirich->dirich_onoff.a.iv[0]=1;
+  actele->node[5]->gnode->dirich->dirich_onoff.a.iv[1]=1;
   for (i=2; i<6; i++)
   actele->node[5]->gnode->dirich->dirich_onoff.a.iv[i]=0;
-   
+
   for (i=0; i<6; i++)
   {
-    actele->node[5]->gnode->dirich->dirich_val.a.dv[i]=0.0; 
-    actele->node[5]->gnode->dirich->curve.a.iv[i]=0; 
+    actele->node[5]->gnode->dirich->dirich_val.a.dv[i]=0.0;
+    actele->node[5]->gnode->dirich->curve.a.iv[i]=0;
   }
 
-  actele->node[7]->gnode->dirich->dirich_onoff.a.iv[0]=1; 
-  actele->node[7]->gnode->dirich->dirich_onoff.a.iv[1]=1; 
+  actele->node[7]->gnode->dirich->dirich_onoff.a.iv[0]=1;
+  actele->node[7]->gnode->dirich->dirich_onoff.a.iv[1]=1;
   for (i=2; i<6; i++)
-  actele->node[7]->gnode->dirich->dirich_onoff.a.iv[i]=0; 
-  
+  actele->node[7]->gnode->dirich->dirich_onoff.a.iv[i]=0;
+
   for (i=0; i<6; i++)
   {
     actele->node[7]->gnode->dirich->dirich_val.a.dv[i]=0.0;
-    actele->node[7]->gnode->dirich->curve.a.iv[i]=0; 
-  } 
+    actele->node[7]->gnode->dirich->curve.a.iv[i]=0;
+  }
  }
 else if (L_two>L_one)
 {
@@ -103,35 +103,35 @@ else if (L_two>L_one)
   amdef("val",&(actele->node[6]->gnode->dirich->dirich_val),6,1,"DV");
   amdef("curve",&(actele->node[6]->gnode->dirich->curve),6,1,"IV");
 
-  actele->node[4]->gnode->dirich->dirich_onoff.a.iv[0]=1; 
+  actele->node[4]->gnode->dirich->dirich_onoff.a.iv[0]=1;
   actele->node[4]->gnode->dirich->dirich_onoff.a.iv[1]=1;
   for (i=2; i<6; i++)
-  actele->node[4]->gnode->dirich->dirich_onoff.a.iv[i]=0; 
+  actele->node[4]->gnode->dirich->dirich_onoff.a.iv[i]=0;
 
   for (i=0; i<6; i++)
   {
-    actele->node[4]->gnode->dirich->dirich_val.a.dv[i]=0.0; 
-    actele->node[4]->gnode->dirich->curve.a.iv[i]=0; 
+    actele->node[4]->gnode->dirich->dirich_val.a.dv[i]=0.0;
+    actele->node[4]->gnode->dirich->curve.a.iv[i]=0;
   }
 
-  actele->node[6]->gnode->dirich->dirich_onoff.a.iv[0]=1; 
-  actele->node[6]->gnode->dirich->dirich_onoff.a.iv[1]=1; 
+  actele->node[6]->gnode->dirich->dirich_onoff.a.iv[0]=1;
+  actele->node[6]->gnode->dirich->dirich_onoff.a.iv[1]=1;
   for (i=2; i<6; i++)
-  actele->node[6]->gnode->dirich->dirich_onoff.a.iv[i]=0; 
-  
+  actele->node[6]->gnode->dirich->dirich_onoff.a.iv[i]=0;
+
   for (i=0; i<6; i++)
   {
-    actele->node[6]->gnode->dirich->dirich_val.a.dv[i]=0.0; 
-    actele->node[6]->gnode->dirich->curve.a.iv[i]=0; 
+    actele->node[6]->gnode->dirich->dirich_val.a.dv[i]=0.0;
+    actele->node[6]->gnode->dirich->curve.a.iv[i]=0;
   }
 }
 
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of if_dirichnode */
 
 
@@ -144,7 +144,7 @@ return;
 void if_permstiff(DOUBLE **estif,
                   DOUBLE **Kdd,
                   INT      iele,
-                  INT      ield)   /* "mixed" element stiffness   */      
+                  INT      ield)   /* "mixed" element stiffness   */
 {
 
 INT            i,j;
@@ -153,7 +153,7 @@ INT            nodestarti,nodestartj;
 INT            dofi,dofj;
 INT            numdf;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("if_permstiff");
 #endif
 /*-------------------- (upper left part of estif) node 1-4 * node1-4 ---*/
@@ -227,11 +227,11 @@ if(ield>iele)
   }
 } /*-----endif-*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of if_permstiff */
 
 
@@ -243,7 +243,7 @@ return;
 void if_permforce(DOUBLE    *force,   /* "mixed" element int. force   */
                   DOUBLE    *fintd,    /*  int. force           */
                    INT       iele,    /* num.of equiv.strain nodes   */
-                   INT       ield)    /* num of displacement nodes  */      
+                   INT       ield)    /* num of displacement nodes  */
 {
 
 INT            i;
@@ -253,7 +253,7 @@ INT            dofi;
 INT            numdf;
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("if_permforce");
 #endif
 /*----------------------------------- (upper part of force) node 1-4 ---*/
@@ -279,11 +279,11 @@ if(ield>iele)
 } /*-----endif-*/
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of if_permforce */
 
 

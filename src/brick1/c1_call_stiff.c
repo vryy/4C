@@ -17,8 +17,8 @@ Maintainer: Andreas Lipka
 #include "brick1.h"
 #include "brick1_prototypes.h"
 
-/*! 
-\addtogroup BRICK1 
+/*!
+\addtogroup BRICK1
 *//*! @{ (documentation module open)*/
 
 
@@ -29,22 +29,22 @@ Maintainer: Andreas Lipka
 This routine calcuates the usual stiffness matrix for an 3D-hex-element.
 
 </pre>
-\param      s    DOUBLE**  (o)   element stiffness matrix 
-\param     bs    DOUBLE**  (i)   derivative operator  
+\param      s    DOUBLE**  (o)   element stiffness matrix
+\param     bs    DOUBLE**  (i)   derivative operator
 \param      d    DOUBLE**  (i)   constitutive matrix
 \param    fac    DOUBLE    (i)   integration factor
 \param     nd    INT       (i)   total number degrees of freedom of element
-\param   neps    INT       (i)   actual number of strain components 
+\param   neps    INT       (i)   actual number of strain components
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
-void c1_keku(DOUBLE  **s, 
-             DOUBLE  **bs, 
-             DOUBLE  **d, 
-             DOUBLE    fac, 
+void c1_keku(DOUBLE  **s,
+             DOUBLE  **bs,
+             DOUBLE  **d,
+             DOUBLE    fac,
              INT       nd,
              INT       neps)
 {
@@ -52,7 +52,7 @@ INT            i, j, k, l, m;
 DOUBLE         dum;
 DOUBLE         db[6];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1_keku");
 #endif
 /*----------------------------------------------------------------------*/
@@ -60,7 +60,7 @@ dstrc_enter("c1_keku");
    {
      for (k=0; k<neps; k++)
      {
-      db[k] = 0.0 ;                                                              
+      db[k] = 0.0 ;
        for (l=0; l<neps; l++)
        {
        db[k] = db[k] + d[k][l]*bs[l][j]*fac ;
@@ -68,7 +68,7 @@ dstrc_enter("c1_keku");
      }
      for (i=0; i<nd; i++)
      {
-       dum = 0.0 ;                                                                
+       dum = 0.0 ;
        for (m=0; m<neps; m++)
        {
         dum = dum + bs[m][i]*db[m] ;
@@ -77,7 +77,7 @@ dstrc_enter("c1_keku");
      }
    }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -91,14 +91,14 @@ return;
 This routine calcuates the usual stiffness matrix for an 3D-hex-element.
 
 </pre>
-\param      s    DOUBLE**  (o)   element stiffness matrix 
-\param     bn    DOUBLE**  (i)   b-operator matrix  
+\param      s    DOUBLE**  (o)   element stiffness matrix
+\param     bn    DOUBLE**  (i)   b-operator matrix
 \param      f    DOUBLE*   (i)   force vector integral (stress-resultants)
 \param    fac    DOUBLE    (i)   integration factor
 \param    iel    INT       (i)   number of nodes at actual element
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
@@ -112,7 +112,7 @@ INT            i, j, l, m, n, sc1, sc2;
 DOUBLE         g11, g12, g13, b11, b21, b31, n11, n22, n33, n12, n23, n31;
 DOUBLE         nb[9][3];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1vkg");
 #endif
 /*---------------------------- set values of force vector components ---*/
@@ -163,7 +163,7 @@ dstrc_enter("c1vkg");
 /*-------------------------------- end of loop over all nodal points ---*/
   }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 /*----------------------------------------------------------------------*/
@@ -180,10 +180,10 @@ This routine reorders stiffness matrix for 'gid'  hex20 for an 3D-hex-element.
 
 </pre>
 \param   **si    DOUBLE  (i)  element stiffness-matrix - convent.
-\param   **so    DOUBLE  (o)  element stiffness-matrix - gid.    
+\param   **so    DOUBLE  (o)  element stiffness-matrix - gid.
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
@@ -194,13 +194,13 @@ void c1kgid( DOUBLE  **si,  /* element stiffness-matrix - convent.      */
   INT i,j;
   INT reor[20] = {0,1,2,3,4,5,6,7,8,9,10,11,16,17,18,19,12,13,14,15};
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1kgid");
 #endif
 /*----------------------------------------------------------------------*/
    for (i=0; i<20; i++) {
       for (j=0; j<20; j++){
-        
+
         so[ reor[i]*3+0 ][ reor[j]*3+0 ]=si[i*3+0][j*3+0];
         so[ reor[i]*3+0 ][ reor[j]*3+1 ]=si[i*3+0][j*3+1];
         so[ reor[i]*3+0 ][ reor[j]*3+2 ]=si[i*3+0][j*3+2];
@@ -212,7 +212,7 @@ dstrc_enter("c1kgid");
         so[ reor[i]*3+2 ][ reor[j]*3+2 ]=si[i*3+2][j*3+2];
         }}
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 /*----------------------------------------------------------------------*/
@@ -229,10 +229,10 @@ This routine reorders force vector for 'gid'  hex20 for an 3D-hex-element.
 
 </pre>
 \param   fi    DOUBLE**  (i)  element force vector - convent.
-\param   fo    DOUBLE**  (o)  element force vector - gid.    
+\param   fo    DOUBLE**  (o)  element force vector - gid.
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1_cint()
 
 *----------------------------------------------------------------------*/
@@ -243,7 +243,7 @@ void c1fgid( DOUBLE  *fi,  /* element force vector - convent.       */
   INT i;
   INT reor[20] = {0,1,2,3,4,5,6,7,8,9,10,11,16,17,18,19,12,13,14,15};
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1fgid");
 #endif
 /*----------------------------------------------------------------------*/
@@ -254,7 +254,7 @@ dstrc_enter("c1fgid");
     fo[ reor[i]*3+2 ]=fi[i*3+2];
    }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 /*----------------------------------------------------------------------*/

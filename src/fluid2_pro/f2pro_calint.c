@@ -10,10 +10,10 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
-\addtogroup FLUID2_PRO 
+/*!
+\addtogroup FLUID2_PRO
 *//*! @{ (documentation module open)*/
-#ifdef D_FLUID2_PRO 
+#ifdef D_FLUID2_PRO
 #include "../headers/standardtypes.h"
 #include "../fluid2/fluid2_prototypes.h"
 #include "fluid2pro_prototypes.h"
@@ -30,7 +30,7 @@ extern struct _MATERIAL  *mat;
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -50,7 +50,7 @@ extern struct _GENPROB     genprob;
                                                              basol 11/02
 In this routine the element stiffness matrix, iteration-RHS and
 time-RHS for one fluid2pro element is calculated
-      
+
 </pre>
 \param  *elev	   ELEMENT	   (i)    actual element for velocity
 \param  *elep	   ELEMENT	   (i)    actual element for pressure
@@ -75,45 +75,45 @@ time-RHS for one fluid2pro element is calculated
 \param  *pderxy    DOUBLE	   (-)    global pres. derivatives
 \param **wa1       DOUBLE	   (-)    working array
 \param  *dirich    DOUBLE	   (-)    dirichlet vector
-\param **deriv2    DOUBLE	   (-)    second der. of the nat. shape funcs. 
+\param **deriv2    DOUBLE	   (-)    second der. of the nat. shape funcs.
 \param  *dirich_onoff DOUBLE	   (-)    element dirich_onoff values
-\return void                                                   
+\return void
 
 ------------------------------------------------------------------------*/
 void f2pro_calint(
 	       ELEMENT         *elev,
-	       ELEMENT         *elep, 
-               DOUBLE         **estif,   
+	       ELEMENT         *elep,
+               DOUBLE         **estif,
 	       DOUBLE         **emass,
 	       DOUBLE         **gradopr,
 	       DOUBLE         *etforce,
 	       DOUBLE         *eiforce,
-	       DOUBLE         **xyze, 
+	       DOUBLE         **xyze,
 	       DOUBLE         *funct,
-	       DOUBLE         *functpr,   
+	       DOUBLE         *functpr,
 	       DOUBLE         **deriv,
-	       DOUBLE         **derivpr,   
-	       DOUBLE         **xjm,     
+	       DOUBLE         **derivpr,
+	       DOUBLE         **xjm,
 	       DOUBLE         **derxy,
-	       DOUBLE         **derxypr,   
-	       DOUBLE         **eveln,   
-	       DOUBLE         *epren,   
-	       DOUBLE         *velint,  
-	       DOUBLE         *covint,  
-	       DOUBLE         **vderxy,  
+	       DOUBLE         **derxypr,
+	       DOUBLE         **eveln,
+	       DOUBLE         *epren,
+	       DOUBLE         *velint,
+	       DOUBLE         *covint,
+	       DOUBLE         **vderxy,
 	       DOUBLE         *pderxy,
-	       DOUBLE         **wa1,  
+	       DOUBLE         **wa1,
 	       DOUBLE         *dirich,
-	       DOUBLE         **deriv2,  
+	       DOUBLE         **deriv2,
 	       INT             *dirich_onoff
                )
-{ 
+{
 INT       iel;          /* number of nodes                                */
 INT       ielp;         /* number of nodes for pressure element           */
 INT       ntyp;         /* element type: 1 - quad; 2 - tri                */
 INT       nir,nis;      /* number of integration nodesin r,s direction    */
 INT       actmat;       /* material number of the element                 */
-INT       icode=2;      /* flag for eveluation of shape functions         */     
+INT       icode=2;      /* flag for eveluation of shape functions         */
 INT       lr, ls;       /* counter for integration                        */
 DOUBLE    dens;         /* density                                        */
 DOUBLE    visc;         /* viscosity                                      */
@@ -126,8 +126,8 @@ DIS_TYP   typ1;	        /* element type 1 (quad9)                         */
 DIS_TYP   typ2;	        /* element type 2 (quad4)                         */
 DISMODE   mode;         /* element discretization mode q2q1 or none       */
 FLUID_DYNAMIC *fdyn;    /* pointer to fluid dynamic variables             */
-static FLUID_DATA    *data;      
-#ifdef DEBUG 
+static FLUID_DATA    *data;
+#ifdef DEBUG
 dstrc_enter("f2pro_calint");
 #endif
 
@@ -135,11 +135,11 @@ dstrc_enter("f2pro_calint");
 fdyn = alldyn[genprob.numff].fdyn;
 data = fdyn->data;
 iel =elev->numnp;
-ielp=elep->numnp;                             
+ielp=elep->numnp;
 actmat=elev->mat-1;
 dens = mat[actmat].m.fluid->density;
 visc = mat[actmat].m.fluid->viscosity;
-ntyp = elev->e.f2pro->ntyp; 
+ntyp = elev->e.f2pro->ntyp;
 mode = elev->e.f2pro->dm;
 
 if (mode==dm_q2q1)
@@ -164,7 +164,7 @@ nis = elev->e.f2pro->nGP[1];
  |               start loop over integration points                     |
  *----------------------------------------------------------------------*/
 for (lr=0;lr<nir;lr++)
-{    
+{
    for (ls=0;ls<nis;ls++)
    {
       e1   = data->qxg[lr][nir-1];
@@ -173,7 +173,7 @@ for (lr=0;lr<nir;lr++)
       facs = data->qwgt[ls][nis-1];
       f2_rec(funct,deriv,deriv2,e1,e2,typ1,icode);
       /*-------------------------- we need the pressure shape fnct. too */
-      f2_rec(functpr,derivpr,deriv2,e1,e2,typ2,icode); 
+      f2_rec(functpr,derivpr,deriv2,e1,e2,typ2,icode);
       /*--------------------------------------- compute Jacobian matrix */
       f2_jaco(xyze,funct,deriv,xjm,&det,iel,elev);
       fac = facr*facs*det;
@@ -189,23 +189,23 @@ for (lr=0;lr<nir;lr++)
       /*---------------------------- compute standard Galerkin matrices */
       /*-------------- standard Galerkin mass matrix is stored in emass */
       /*--------------------- element stiffness matrix is stored in kvv */
-         if (fdyn->pro_kvv==1) 
+         if (fdyn->pro_kvv==1)
 	 f2pro_calkvv(estif,derxy,fac,visc,fdyn->dta,iel);
          /*-- calculate the Balancing Diffusivity Tensor and add to the */
          /*-------------------------------------------------- estif term*/
          f2pro_calbdt(elev,estif,velint,derxy,vderxy,funct,fac,visc,iel);
          /*-------------------------------- get the gradient operator C */
          if (fdyn->pro_gra==1)
-	 f2pro_gradopr(gradopr,derxy,functpr,fac,ielp,iel); 
+	 f2pro_gradopr(gradopr,derxy,functpr,fac,ielp,iel);
          /*-------------------------- calculate the element mass matrix */
          if (fdyn->pro_mvv==1)
-	 f2_calmvv(emass,funct,fac,iel);         
-         /*---- end of Galerkin matrices calculation for left hand side * 
-	  |                           (M+dt*K)u~(n+1)                   | 
+	 f2_calmvv(emass,funct,fac,iel);
+         /*---- end of Galerkin matrices calculation for left hand side *
+	  |                           (M+dt*K)u~(n+1)                   |
          /--------------------------------------------------------------*/
       }/*end of if(cal_mat==1)*/
       /*----------------------------------------------------------------*/
-      if (fdyn->pro_calrhs==1) 
+      if (fdyn->pro_calrhs==1)
       {
          /*---------------------- get pressure (n) at integration point */
          preint=f2_scali(functpr,epren,ielp);
@@ -214,20 +214,20 @@ for (lr=0;lr<nir;lr++)
          /*---------------------------- get global velocity derivatives */
          f2_vder(vderxy,derxy,eveln,iel);
          /*--------- get convective velocities (n) at integration point */
-         f2_covi(vderxy,velint,covint); 
+         f2_covi(vderxy,velint,covint);
          /*------------ calculate galerkin part of "Time-RHS" (vel-dofs)*/
          f2pro_calgaltfv(etforce,eiforce,velint,covint,vderxy,
 	                 funct,derxy,preint,visc,fac,fdyn->dta,iel);
       }/*end of if(fdyn->pro_calrhs==1)*/
    } /* end of loop over integration points ls*/
 } /* end of loop over integration points lr */
- 
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG     
-dstrc_exit(); 
+#ifdef DEBUG
+dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of f2pro_calint */
 
 #endif

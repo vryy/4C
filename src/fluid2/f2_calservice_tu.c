@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief service routines for fluid2 element 
+\brief service routines for fluid2 element
 
 <pre>
 Maintainer: Thomas Hettich
@@ -10,7 +10,7 @@ Maintainer: Thomas Hettich
 </pre>
 
 ------------------------------------------------------------------------*/
-#ifdef D_FLUID2TU 
+#ifdef D_FLUID2TU
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #include "fluid2_tu.h"
@@ -27,7 +27,7 @@ extern struct _MATERIAL  *mat;
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -36,12 +36,12 @@ extern ALLDYNA      *alldyn;
 extern struct _GENPROB     genprob;
 
 static FLUID_DYNAMIC *fdyn;
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief set all arrays for element calculation
 
 <pre>                                                         he  12/02
 
-				      
+
 </pre>
 \param   *ele      ELEMENT	     (i)    actual element
 \param   *elev     ELEMENT	     (i)    actual element for velocity
@@ -55,20 +55,20 @@ static FLUID_DYNAMIC *fdyn;
 \param   *epsilon    DOUBLE	     (o)    epsilon at time n+g
 \param  **evel       DOUBLE	     (o)    element velocities
 \param  **xzye       DOUBLE        (o)   nodal coordinates
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
-void f2_calset_tu( 
-	            ELEMENT         *ele,     
+void f2_calset_tu(
+	            ELEMENT         *ele,
                   ELEMENT         *elev,
-                  DOUBLE          *kapepsn,    
+                  DOUBLE          *kapepsn,
 	            DOUBLE          *kapepsg,
 	            DOUBLE          *kapepspro,
                   DOUBLE          *eddyg,
                   DOUBLE          *eddypro,
-	            DOUBLE          *kappa,    
-	            DOUBLE          *kappan,    
-	            DOUBLE          *epsilon,    
+	            DOUBLE          *kappa,
+	            DOUBLE          *kappan,
+	            DOUBLE          *epsilon,
 	            DOUBLE         **evel,
 	            DOUBLE         **xyze
                  )
@@ -76,9 +76,9 @@ void f2_calset_tu(
 INT i,j;            /* simply a counter                                 */
 INT kap_eps;
 NODE  *actnode;     /* actual node                                      */
-FLUID_DATA      *data;     
+FLUID_DATA      *data;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_calset_tu");
 #endif
 
@@ -91,7 +91,7 @@ for(i=0;i<ele->numnp;i++)
    xyze[0][i]=ele->node[i]->x[0];
    xyze[1][i]=ele->node[i]->x[1];
 }
- 
+
 /*---------------------------------------------------------------------*
  | position of the different solutions:                                |
  | node->sol_incement: solution history used for calculations          |
@@ -106,14 +106,14 @@ for(i=0;i<ele->numnp;i++)
  *---------------------------------------------------------------------*/
  if (fdyn->kapeps_flag==0) kap_eps=0;
  if (fdyn->kapeps_flag==1) kap_eps=2;
-   
+
    for(i=0;i<ele->numnp;i++) /* loop nodes of element */
    {
      actnode=ele->node[i];
 
-/*----------------------------------- set element kapeps (n+1,i)       */      
+/*----------------------------------- set element kapeps (n+1,i)       */
       kapepsg[i]  =actnode->sol_increment.a.da[3][kap_eps];
-/*----------------------------------- set element kapeps (n)           */      
+/*----------------------------------- set element kapeps (n)           */
       kapepsn[i]  =actnode->sol_increment.a.da[1][kap_eps];
 /*----------------------------------- set eddy viscosity for timestep  */
       eddyg[i]   =actnode->sol_increment.a.da[3][1];
@@ -131,8 +131,8 @@ for(i=0;i<ele->numnp;i++)
     }
 
 /*-------- for epsilon equation: kappan is needed for production term  */
-    if (fdyn->kapeps_flag==1) 
-    { 
+    if (fdyn->kapeps_flag==1)
+    {
      kappa[i]  =actnode->sol_increment.a.da[3][0];
 
      if (fdyn->kappan==2)
@@ -142,11 +142,11 @@ for(i=0;i<ele->numnp;i++)
      }
     }
 
-/*----------------------------------- set element kapeps (pro)         */      
+/*----------------------------------- set element kapeps (pro)         */
       kapepspro[i]=actnode->sol_increment.a.da[2][kap_eps];
 
 /*----------------------- get velocities calculated form Navier-Stokes */
-    for(j=0;j<2;j++) 
+    for(j=0;j<2;j++)
     {
       actnode=elev->node[i];
       evel[j][i]=actnode->sol_increment.a.da[3][j];
@@ -155,80 +155,80 @@ for(i=0;i<ele->numnp;i++)
  } /* end of loop over nodes of element */
 
 /*---------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of f2_calset */
 
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief routine to calculate kapeps at integration point
 
 <pre>                                                        he  12/02
-				      
+
 </pre>
 \param   *kapepsint   DOUBLE        (o)   kapeps at integration point
 \param   *funct       DOUBLE        (i)   shape functions
 \param   *ekapeps    DOUBLE        (i)   kapeps at element nodes
 \param    iel	    INT           (i)   number of nodes in this element
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f2_kapepsi(
-             DOUBLE  *kapepsint,     
-             DOUBLE  *funct,    
-	       DOUBLE  *kapeps,     
-             INT      iel       
-	     ) 
+             DOUBLE  *kapepsint,
+             DOUBLE  *funct,
+	       DOUBLE  *kapeps,
+             INT      iel
+	     )
 {
 INT     j;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_kapepsi");
 #endif
 /*---------------------------------------------------------------------*/
 
-   *kapepsint=ZERO; 
+   *kapepsint=ZERO;
    for (j=0;j<iel;j++) /* loop over all nodes j of the element */
    {
       *kapepsint += funct[j]*kapeps[j];
    } /* end loop over j */
-   
- 
+
+
 /*---------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of f2_kapepsi */
 
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief routine to calculate eddy-visc. at integration point
 
 <pre>                                                        he  12/02
-				      
+
 </pre>
 \param   *eddyint     DOUBLE        (o)   eddy at integration point
 \param   *funct       DOUBLE        (i)   shape functions
 \param   **eddy       DOUBLE        (i)   kapeps at element nodes
 \param    iel	    INT           (i)   number of nodes in this element
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f2_eddyi(
-             DOUBLE  *eddyint,     
-             DOUBLE  *funct,    
-	       DOUBLE  *eddy,     
-             INT      iel       
-	     ) 
+             DOUBLE  *eddyint,
+             DOUBLE  *funct,
+	       DOUBLE  *eddy,
+             INT      iel
+	     )
 {
 INT     j;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_eddyi");
 #endif
 
@@ -237,21 +237,21 @@ dstrc_enter("f2_eddyi");
    {
       *eddyint   += funct[j]*eddy[j];
    } /* end loop over j */
-   
- 
+
+
 /*---------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of f2_eddyi */
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief routine to calculate kappa for epsilon at integration point
 
 <pre>                                                        he  12/02
-				      
+
 </pre>
 \param   *kappaint     DOUBLE       (o)   kappa at integration point
 \param   *kappanint    DOUBLE       (o)   kappan at integration point
@@ -261,51 +261,51 @@ return;
 \param   *kappan       DOUBLE       (i)   kappan (start-value) kappa equation
 \param   *eps_pro      DOUBLE       (i)   epsilon for production term
 \param    iel	    INT           (i)   number of nodes in this element
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
-void f2_kappai_tu(	          
-             DOUBLE     *kappaint,     
-             DOUBLE     *kappanint,     
-             DOUBLE     *eps_proint,     
-             DOUBLE     *funct,    
-             DOUBLE     *kappa,    
-             DOUBLE     *kappan,    
-             DOUBLE     *eps_pro,    
-             INT         iel       
-	     ) 
+void f2_kappai_tu(
+             DOUBLE     *kappaint,
+             DOUBLE     *kappanint,
+             DOUBLE     *eps_proint,
+             DOUBLE     *funct,
+             DOUBLE     *kappa,
+             DOUBLE     *kappan,
+             DOUBLE     *eps_pro,
+             INT         iel
+	     )
 {
 INT     j;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_kappai_tu");
 #endif
 /*---------------------------------------------------------------------*/
 
    *kappaint  =ZERO;
-   *kappanint =ZERO; 
-   *eps_proint=ZERO; 
+   *kappanint =ZERO;
+   *eps_proint=ZERO;
    for (j=0;j<iel;j++) /* loop over all nodes j of the element */
    {
       *kappaint     += funct[j]*kappa[j];
       *kappanint    += funct[j]*kappan[j];
       *eps_proint   += funct[j]*eps_pro[j];
     } /* end loop over j */
-   
- 
+
+
 /*---------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of f2_kappai_tu */
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief routine to calculate C_u with R_t for LOW-REYNOLD's MODEL
 
 <pre>                                                        he  01/03
-				      
+
 </pre>
 \param    kapepsint     DOUBLE       (i)   kappa at integration point
 \param  **epsilon       DOUBLE       (i)   epsilon at nodes
@@ -313,45 +313,45 @@ return;
 \param    visc	      DOUBLE       (i)   molecular viscosity
 \param   *C_u           DOUBLE       (o)   factor
 \param    iel	    INT            (i)   number of nodes in this element
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
-void f2_C_kappa(	          
-             DOUBLE      kapepsint,     
+void f2_C_kappa(
+             DOUBLE      kapepsint,
              DOUBLE     *epsilon,
-             DOUBLE     *funct, 
-             DOUBLE      visc,    
+             DOUBLE     *funct,
+             DOUBLE      visc,
              DOUBLE     *C_u,
-             INT         iel       
-	     ) 
+             INT         iel
+	     )
 {
 INT     i;
 DOUBLE  R_t;           /* turbulent Reynold's number                    */
-DOUBLE  epsilonint;       
+DOUBLE  epsilonint;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_C_kappa");
 #endif
 /*---------------------------------------------------------------------*/
 
-epsilonint=ZERO; 
+epsilonint=ZERO;
 for (i=0;i<iel;i++) /* loop over all nodes i of the element */
 {
   epsilonint  += funct[i]*epsilon[i];
 } /* end loop over j */
-   
+
  R_t = pow(kapepsint,2) / (epsilonint*visc);
 
 *C_u = 0.09 * exp(-3.4/pow(1+R_t/50,2));
 /*---------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return;  
+return;
 } /* end of f2_C_kappa */
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief routine to calculate C_2 with R_t for LOW-REYNOLD's MODEL
 
 <pre>                                                        he  01/03
@@ -362,69 +362,69 @@ return;
 \param    visc	      DOUBLE       (i)   molecular viscosity
 \param   *C_2           DOUBLE       (o)   factor
 \param    iel	    INT            (i)   number of nodes in this element
-\return void                                                                       
-				      
+\return void
+
 ------------------------------------------------------------------------*/
-void f2_C_eps(	          
-             DOUBLE      kapepsint,     
+void f2_C_eps(
+             DOUBLE      kapepsint,
              DOUBLE      kappaint,
-             DOUBLE      visc,    
+             DOUBLE      visc,
              DOUBLE     *C_2,
-             INT         iel       
-	     ) 
+             INT         iel
+	     )
 {
 DOUBLE  R_t;           /* turbulent Reynold's number                    */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_C_eps");
 #endif
-/*---------------------------------------------------------------------*/   
+/*---------------------------------------------------------------------*/
 
  R_t = pow(kappaint,2) / (kapepsint*visc);
 
-*C_2 = 1.92 * (1-0.3*exp(-R_t*R_t)); 
+*C_2 = 1.92 * (1-0.3*exp(-R_t*R_t));
 /*---------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return;  
+return;
 } /* end of f2_C_eps */
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief routine to calculate (vderxy)^2 for LOW-REYNOLD's MODEL
 
 <pre>                                                        he  01/03
-				      
+
 </pre>
 \param   **vderxy2     DOUBLE       (i)   2nd deriv. for velocity at INT.
 \param    vderxy_12    DOUBLE       (o)   (vderxy)^2 at integration point
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
-void f2_v(	          
+void f2_v(
              DOUBLE    **vderxy2,
-             DOUBLE     *vderxy_12 
-	   ) 
+             DOUBLE     *vderxy_12
+	   )
 {
 DOUBLE  factor;
 INT     i;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_v");
 #endif
 /*----------------------------------------------------------------------
 
-                [ grad (grad (u)) ] ^2 
+                [ grad (grad (u)) ] ^2
 
 ----------------------------------------------------------------------
-  (u1,11)^2 + (u1,21)^2 + (u2,11)^2 + (u2,21)^2  + (u1,12)^2 + (u1,22)^2 
-+ (u2,12)^2 + (u2,22)^2   = 
-  (u1,11)^2 + 2*(u1,12)^2  +  (u1,22)^2   
+  (u1,11)^2 + (u1,21)^2 + (u2,11)^2 + (u2,21)^2  + (u1,12)^2 + (u1,22)^2
++ (u2,12)^2 + (u2,22)^2   =
+  (u1,11)^2 + 2*(u1,12)^2  +  (u1,22)^2
 + (u2,22)^2 + 2*(u2,21)^2  +  (u2,11)^2                                */
 
 *vderxy_12 = ZERO;
- 
+
  for (i=0; i<3; i++)
  {
   if(i==2) factor = 2.0;
@@ -433,14 +433,14 @@ dstrc_enter("f2_v");
  }
 
 /*---------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of f2_v */
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief routine to calculate factors for kappa-equation
 
 <pre>                                                        he  12/02
@@ -452,20 +452,20 @@ return;
 \param   *factor1     DOUBLE        (o)   factor
 \param   *factor2     DOUBLE        (o)   factor
 \param   *sig         DOUBLE        (o)   factor
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f2_fac_kappa(
-                  DOUBLE   C_u,     
-                  DOUBLE   eddyint,    
-	            DOUBLE  *factor,     
-	            DOUBLE  *factor1,     
-	            DOUBLE  *factor2,     
-	            DOUBLE  *sig     
-	           ) 
+                  DOUBLE   C_u,
+                  DOUBLE   eddyint,
+	            DOUBLE  *factor,
+	            DOUBLE  *factor1,
+	            DOUBLE  *factor2,
+	            DOUBLE  *sig
+	           )
 {
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_fac_kappa");
 #endif
 /*---------------------------------------------------------------------*/
@@ -474,20 +474,20 @@ dstrc_enter("f2_fac_kappa");
   *factor2=    C_u/eddyint;
   *factor1=1.0;
   *sig    =1.0;
- 
+
 /*---------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of f2_fac_kappa */
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief routine to calculate factors for epsilon-equation
 
 <pre>                                                        he  12/02
-				      
+
 </pre>
 \param    C_2        DOUBLE        (i)   factor
 \param    eps_proint DOUBLE        (i)   epsilon at integration point
@@ -497,22 +497,22 @@ return;
 \param   *factor1    DOUBLE        (o)   factor
 \param   *factor2    DOUBLE        (o)   factor
 \param   *sig        DOUBLE        (o)   factor
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f2_fac_eps(
-                  DOUBLE   C_2,     
-                  DOUBLE   eps_proint,    
-                  DOUBLE   kappaint,    
-                  DOUBLE   kappanint,    
-	            DOUBLE  *factor,     
-	            DOUBLE  *factor1,     
-	            DOUBLE  *factor2,     
-	            DOUBLE  *sig     
-	           ) 
+                  DOUBLE   C_2,
+                  DOUBLE   eps_proint,
+                  DOUBLE   kappaint,
+                  DOUBLE   kappanint,
+	            DOUBLE  *factor,
+	            DOUBLE  *factor1,
+	            DOUBLE  *factor2,
+	            DOUBLE  *sig
+	           )
 {
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_fac_eps");
 #endif
 /*---------------------------------------------------------------------*/
@@ -523,83 +523,83 @@ dstrc_enter("f2_fac_eps");
   *sig    =1.3;
 
 /*---------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of f2_fac_eps */
 
-/*!--------------------------------------------------------------------- 
-\brief routine to calculate production term (don't be confused from 
-factor 0.5 used in the comments in file f2_caltimerhs for the calculation 
-of the production rhs-part) 
+/*!---------------------------------------------------------------------
+\brief routine to calculate production term (don't be confused from
+factor 0.5 used in the comments in file f2_caltimerhs for the calculation
+of the production rhs-part)
 
 <pre>                                                        he  12/02
-				      
+
 </pre>
 \param   **vderxy     DOUBLE        (i)   vderi. at element nodes
 \param   *production  DOUBLE        (o)   production term
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f2_production(
-	            DOUBLE  **vderxy,     
-	            DOUBLE  *production    
-	           ) 
+	            DOUBLE  **vderxy,
+	            DOUBLE  *production
+	           )
 {
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_production");
 #endif
 /*---------------------------------------------------------------------
              production = grad(u):(grad(u) + (grad(u))^T)
 -----------------------------------------------------------------------*/
 
-*production  = 2*(pow(vderxy[0][0],2)+pow(vderxy[1][1],2)+vderxy[1][0]*vderxy[0][1])+ 
-                  pow(vderxy[0][1],2)+pow(vderxy[1][0],2);    
+*production  = 2*(pow(vderxy[0][0],2)+pow(vderxy[1][1],2)+vderxy[1][0]*vderxy[0][1])+
+                  pow(vderxy[0][1],2)+pow(vderxy[1][0],2);
 
 /*---------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of f2_production */
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief routine to calculate eddyviscosity for RANS at integration point
 
 <pre>                                                        he  01/03
-				      
+
 </pre>
 \param   *eleke        ELEMENT      (i)   actual element for kapeps
 \param   *eddyint      DOUBLE       (o)   eddy-visc. at integration point
 \param   *funct        DOUBLE       (i)   shape functions
 \param   *eddy         DOUBLE       (i)   eddy visc. on nodes
 \param    iel	    INT           (i)   number of nodes in this element
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
-void f2_eddyirans(	          
-             ELEMENT    *eleke,     
-             DOUBLE     *eddyint,     
-             DOUBLE     *funct,    
-             DOUBLE     *eddy,    
-             INT         iel       
-	     ) 
+void f2_eddyirans(
+             ELEMENT    *eleke,
+             DOUBLE     *eddyint,
+             DOUBLE     *funct,
+             DOUBLE     *eddy,
+             INT         iel
+	     )
 {
 INT     i,j;
 NODE    *actnode;      /* the actual node                               */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_eddyirans");
 #endif
 
    for(i=0;i<iel;i++) /* loop nodes of element */
    {
       actnode=eleke->node[i];
-/*----------------------------------- get kappa from nodes             */      
+/*----------------------------------- get kappa from nodes             */
       eddy[i] =actnode->sol_increment.a.da[3][1];
    }
 
@@ -608,41 +608,41 @@ dstrc_enter("f2_eddyirans");
    {
       *eddyint    += funct[j]*eddy[j];
    } /* end loop over j */
-   
- 
+
+
 /*---------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of f2_eddyirans */
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief routine to calculate kapeps derivatives at integration point
 
 <pre>                                                         he   12/02
 
 In this routine the derivatives of the kapeps w.r.t x/y are calculated
-				      
+
 </pre>
 \param   *kapepsderxy   DOUBLE        (o)   kapeps derivativs
 \param  **derxy         DOUBLE        (i)   global derivatives
 \param   *ekapeps       DOUBLE        (i)   kapeps at element nodes
 \param    iel	      INT           (i)   number of nodes in this element
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f2_kapepsder(
-             DOUBLE  *kapepsderxy,     
-             DOUBLE **derxy,    
-	       DOUBLE  *kapeps,    
-             INT      iel       
-	       ) 
+             DOUBLE  *kapepsderxy,
+             DOUBLE **derxy,
+	       DOUBLE  *kapeps,
+             INT      iel
+	       )
 {
 INT     i,j;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_kapepsder");
 #endif
 
@@ -657,39 +657,39 @@ for (i=0;i<2;i++) /* loop directions i */
 
 
 /*---------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of f2_kapepsder */
 
-/*!---------------------------------------------------------------------  
+/*!---------------------------------------------------------------------
 \brief routine to calculate 2nd kapeps derivatives at integration point
 
 <pre>                                                         he  12/02
 
 In this routine the 2nd derivatives of the kapeps
 w.r.t x/y are calculated
-				      
+
 </pre>
 \param   *kapepsderxy2  DOUBLE        (o)   2nd kapeps derivativs
 \param  **derxy2        DOUBLE        (i)   2nd global derivatives
 \param   *kapepsn       DOUBLE        (i)   velocites at element nodes
 \param    iel	      INT           (i)   number of nodes in this element
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f2_kapepsder2(
-                   DOUBLE  *kapepsderxy2,    
-                   DOUBLE **derxy2,    
-	             DOUBLE  *kapepsn,      
-	             INT      iel        
-	           ) 
+                   DOUBLE  *kapepsderxy2,
+                   DOUBLE **derxy2,
+	             DOUBLE  *kapepsn,
+	             INT      iel
+	           )
 {
 INT     i,j;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_vder2");
 #endif
 
@@ -703,37 +703,37 @@ for (i=0;i<3;i++)
 } /* end of loop over i */
 
 /*---------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of f2_kapepsder2 */
 
-/*!---------------------------------------------------------------------  
+/*!---------------------------------------------------------------------
 \brief routine to calculate 2nd kapeps derivatives at integration point
 
 <pre>                                                         he  03/03
 
 In this routine velint_dc for DISC. CAPT. is calc.
-				      
+
 </pre>
 \param   *velint        DOUBLE        (i)   2nd kapeps derivativs
 \param   *velint_dc     DOUBLE        (o)   2nd global derivatives
 \param   *kapepsderxy   DOUBLE        (i)   kapepsderiv.
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f2_vel_dc(
-                   DOUBLE  *velint,    
-                   DOUBLE  *velint_dc,    
-	             DOUBLE  *kapepsderxy      
-	         ) 
+                   DOUBLE  *velint,
+                   DOUBLE  *velint_dc,
+	             DOUBLE  *kapepsderxy
+	         )
 {
-DOUBLE skalar,square; 
+DOUBLE skalar,square;
 INT    idum;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_vel_dc");
 #endif
 /*---------------------------------------------------------------------*/
@@ -757,43 +757,43 @@ else
 
 
 /*---------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of f2_vel_dc */
 
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief permutation of element stiffness matrix
 
-<pre>                                                         he  12/02		 
+<pre>                                                         he  12/02
 
-routine to add galerkin and stabilisation parts of the elment	   
-stiffness matrix !  		   
-this is necessary since we would like to use the existing assembly 
-routines for the stiffness matrix				   
+routine to add galerkin and stabilisation parts of the elment
+stiffness matrix !
+this is necessary since we would like to use the existing assembly
+routines for the stiffness matrix
 
 </pre>
 \param  **estif   DOUBLE	 (i/o) ele stiffnes matrix
 \param  **emass   DOUBLE	 (i)   ele mass matrix
-\param  **tmp     DOUBLE	 (-)   working array		
+\param  **tmp     DOUBLE	 (-)   working array
 \param    iel	  INT		 (i)   number of nodes in ele
-\return void                                                                       
+\return void
 ------------------------------------------------------------------------*/
-void f2_estifadd_tu(                  
-		   DOUBLE         **estif,   
-		   DOUBLE         **emass, 
-		   DOUBLE         **tmp,   
+void f2_estifadd_tu(
+		   DOUBLE         **estif,
+		   DOUBLE         **emass,
+		   DOUBLE         **tmp,
 		   INT              iel
-	          ) 
+	          )
 {
 INT    i,j,icol,irow;     /* simply some counters                       */
 INT    nkapepsdof;        /* number of kapeps dofs                      */
 DOUBLE thsl;              /* factor for LHS (THETA*DT)                  */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_estifadd_tu");
 #endif
 
@@ -825,19 +825,19 @@ if (fdyn->nis==0)
 
 /*---------------------------------------- estif=emass+(theta*dt)*estif */
 for (i=0;i<nkapepsdof;i++)
-{   
-   for (j=0;j<nkapepsdof;j++) 
+{
+   for (j=0;j<nkapepsdof;j++)
    {
     estif[i][j] = tmp[i][j];
     } /* end of loop over j */
 } /* end of loop over i */
 
 /*---------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of f2_permestif */
 
 

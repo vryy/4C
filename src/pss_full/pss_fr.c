@@ -17,15 +17,15 @@ Maintainer: Malte Neumann
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par;                      
+ extern struct _PAR   par;
 
 
-/*! 
-\addtogroup FRSYSTEM 
+/*!
+\addtogroup FRSYSTEM
 *//*! @{ (documentation module open)*/
 
 
@@ -34,7 +34,7 @@ and the type is in partition.h
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 
@@ -42,9 +42,9 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 extern struct _FILES  allfiles;
 
 /*!---------------------------------------------------------------------
-\brief init file reading system                                              
+\brief init file reading system
 
-<pre>                                                        m.gee 8/00 
+<pre>                                                        m.gee 8/00
 The routine open the inputfile allfiles.input on proc 0 and
 reads it twice:
 -Only counting lines, which are no comment (comment: //)
@@ -52,7 +52,7 @@ reads it twice:
 -Broadcasting allfiles.input_file to all procs
 -Sets the fr-systems pointers used by the fr routines on all procs
 </pre>
-\return void                                                
+\return void
 
 ------------------------------------------------------------------------*/
 void frinit()
@@ -76,17 +76,17 @@ if (par.myrank==0)
 /* ----------------------------------check whether its a commentar line */
       if (strncmp(allfiles.line,"//",2)!=0)
       {
-         linecount++; 
+         linecount++;
       }
    }
 }
 /*--------------------------------------------broadcast number of lines */
-#ifdef PARALLEL 
+#ifdef PARALLEL
 if (par.nprocs>1)
 {
    MPI_Bcast(&linecount,1,MPI_INT,0,MPI_COMM_WORLD);
 }
-#endif 
+#endif
 allfiles.numrows=linecount;
 /*--------------------------------------allocate space for copy of file */
 allfiles.input_file_hook=(char*)CCACALLOC(linecount*(allfiles.numcol),sizeof(char));
@@ -122,7 +122,7 @@ if (par.myrank==0)
    }
 }
 /*--------------------------------broadcast the copy of the input file */
-#ifdef PARALLEL 
+#ifdef PARALLEL
 if (par.nprocs>1)
 {
       MPI_Bcast(allfiles.input_file_hook,
@@ -161,13 +161,13 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief rewind the copy of the input file                                              
+\brief rewind the copy of the input file
 
-<pre>                                                        m.gee 8/00 
+<pre>                                                        m.gee 8/00
 sets pointer allfiles.actplace to allfiles.input_file[0][0]
 </pre>
-\return void   
-                                             
+\return void
+
 ------------------------------------------------------------------------*/
 void frrewind()
 {
@@ -181,15 +181,15 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief find a character string                                             
+\brief find a character string
 
-<pre>                                                        m.gee 8/00 
+<pre>                                                        m.gee 8/00
 searches for a given character string in allfiles.input_file
 and sets allfiles.actplace to it
 If string is not found it returns 0 otherwise 1.
 </pre>
-\param string   char[]   (i)   string to search for in input                                
-\return INT                                               
+\param string   char[]   (i)   string to search for in input
+\return INT
 
 ------------------------------------------------------------------------*/
 INT frfind(char string[])
@@ -197,7 +197,7 @@ INT frfind(char string[])
 char message[100];
 INT  i=0;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("frfind");
 #endif
 
@@ -206,13 +206,13 @@ while ( strstr(allfiles.input_file[i],string) == NULL )
 {
    if ( i==allfiles.numrows-1)
    {
-      
+
       sprintf(message,"frfind:  String %s is not in input file",string);
       /*dserror(message);*/
       /*printf("%s\n",message);*/
       fprintf(allfiles.out_err,"%s\n",message);
       frrewind();
-#ifdef DEBUG 
+#ifdef DEBUG
       dstrc_exit();
 #endif
       return(0);
@@ -222,7 +222,7 @@ while ( strstr(allfiles.input_file[i],string) == NULL )
 allfiles.actrow=i;
 allfiles.actplace=strstr(allfiles.input_file[i],string);
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return(1);
@@ -233,18 +233,18 @@ return(1);
 
 
 /*!---------------------------------------------------------------------
-\brief sets a pointer to the next line in the copy of input                                             
+\brief sets a pointer to the next line in the copy of input
 
-<pre>                                                        m.gee 8/00 
+<pre>                                                        m.gee 8/00
 sets allfiles.actplace to the next line in allfiles.input_file
 </pre>
-\return void                                               
+\return void
 
 ------------------------------------------------------------------------*/
 void frread()
 {
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("frread");
 #endif
 
@@ -252,7 +252,7 @@ allfiles.actrow+=1;
 if (allfiles.actrow>=allfiles.numrows) dserror("Can't read line, end of input_file reached");
 allfiles.actplace=&(allfiles.input_file[allfiles.actrow][0]);
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -261,16 +261,16 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief reads n integers from input_file                                             
+\brief reads n integers from input_file
 
-<pre>                                                        m.gee 4/01 
+<pre>                                                        m.gee 4/01
 reads n integers from input_file
 </pre>
 \param string   char[]   (i)   string to search for in actual line
-\param var      INT*     (o)   adress of field to hold values read    
-\param num      INT      (i)   number of values to read 
+\param var      INT*     (o)   adress of field to hold values read
+\param num      INT      (i)   number of values to read
 \param ierr     INT*     (o)   =0  keyword not found / =1 values read
-\return void                                               
+\return void
 \sa frdouble_n() , frint()
 
 ------------------------------------------------------------------------*/
@@ -278,7 +278,7 @@ void frint_n(char string[],INT *var,INT num, INT *ierr)
 {
 INT  i=0;
 char *foundit = NULL;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("frint");
 #endif
 /*----------------------------------------------------------------------*/
@@ -298,7 +298,7 @@ else
 *ierr=0;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -307,16 +307,16 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief reads an integer from input_file                                            
+\brief reads an integer from input_file
 
-<pre>                                                        m.gee 8/00 
+<pre>                                                        m.gee 8/00
 reads an integer from input_file starting in allfiles.actrow
 Searches for the keyword and reads the first thing consisting of -1234567890 behind it
 </pre>
 \param string   char[]   (i)   string to search for in actual line
-\param var      INT*     (o)   adress of variable to hold value read    
+\param var      INT*     (o)   adress of variable to hold value read
 \param ierr     INT*     (o)   =0  keyword not found / =1 values read
-\return void                                               
+\return void
 \sa frdouble_n() , frint_n() , frdouble() , frchar()
 
 ------------------------------------------------------------------------*/
@@ -325,7 +325,7 @@ void frint(char string[],INT *var, INT *ierr)
 char message[100];
 INT  i=0;
 char *foundit = NULL;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("frint");
 #endif
 /*----------------------------------------------------------------------*/
@@ -350,7 +350,7 @@ else
 *ierr=0;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -358,17 +358,17 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief reads n doubles from input_file                                            
+\brief reads n doubles from input_file
 
-<pre>                                                        m.gee 8/00 
+<pre>                                                        m.gee 8/00
 reads n doubles from input_file starting in allfiles.actrow
-Searches for the keyword and reads the first thing consisting of -.1234567890 behind it. 
+Searches for the keyword and reads the first thing consisting of -.1234567890 behind it.
 All values to be read must then be continous
 </pre>
 \param string   char[]   (i)   string to search for in actual line
-\param var      DOUBLE*  (o)   adress of field to hold values read    
+\param var      DOUBLE*  (o)   adress of field to hold values read
 \param ierr     INT*     (o)   =0  keyword not found / =1 values read
-\return void                                               
+\return void
 \sa frdouble() , frint_n() , frint() , frchar()
 
 ------------------------------------------------------------------------*/
@@ -376,12 +376,12 @@ void frdouble_n(char string[],DOUBLE *var,INT num, INT *ierr)
 {
 INT  i;
 char *foundit = NULL;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("frdouble");
 #endif
 /*----------------------------------------------------------------------*/
 foundit = strstr(allfiles.input_file[allfiles.actrow],string);
-if (foundit != NULL) 
+if (foundit != NULL)
 {
    foundit += strlen(string);
    for (i=0; i<num; i++)
@@ -396,7 +396,7 @@ else
 *ierr=0;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -405,16 +405,16 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief reads a DOUBLE from input_file                                            
+\brief reads a DOUBLE from input_file
 
-<pre>                                                        m.gee 8/00 
+<pre>                                                        m.gee 8/00
 reads a DOUBLE from input_file starting in allfiles.actrow
 Searches for the keyword and reads the first thing consisting of -.1234567890 behind it.
 </pre>
 \param string   char[]   (i)   string to search for in actual line
-\param var      DOUBLE*  (o)   adress of variable to hold value read    
+\param var      DOUBLE*  (o)   adress of variable to hold value read
 \param ierr     INT*     (o)   =0  keyword not found / =1 value read
-\return void                                               
+\return void
 \sa frdouble_n() , frint_n() , frint() , frchar()
 
 ------------------------------------------------------------------------*/
@@ -422,12 +422,12 @@ void frdouble(char string[],DOUBLE *var, INT *ierr)
 {
 char *foundit = NULL;
 char *end;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("frdouble");
 #endif
 /*----------------------------------------------------------------------*/
 foundit = strstr(allfiles.input_file[allfiles.actrow],string);
-if (foundit != NULL) 
+if (foundit != NULL)
 {
    foundit += strlen(string);
    foundit=strpbrk(foundit,"-.1234567890");
@@ -439,7 +439,7 @@ else
 *ierr=0;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -450,30 +450,30 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief reads a charstring from input file                                            
+\brief reads a charstring from input file
 
-<pre>                                                        m.gee 8/00 
+<pre>                                                        m.gee 8/00
 searches for keyword string and reads continous charstring behind it
 user must assure, that the given charpointer space is long enough
 to hold the string
 </pre>
 \param string   char[]   (i)   string to search for in actual line
-\param var      char*    (o)   adress of variable to hold string read    
+\param var      char*    (o)   adress of variable to hold string read
 \param ierr     INT*     (o)   =0  keyword not found / =1 value read
-\return void                                               
-\sa frdouble_n() , frint_n() , frint() 
+\return void
+\sa frdouble_n() , frint_n() , frint()
 
 ------------------------------------------------------------------------*/
 void frchar(char string[],char *var, INT *ierr)
 {
 char *foundit = NULL;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("frchar");
 #endif
 
 foundit = strstr(allfiles.input_file[allfiles.actrow],string);
-if (foundit != NULL) 
+if (foundit != NULL)
 {
    foundit += strlen(string);
    sscanf(foundit," %s ",var);
@@ -484,7 +484,7 @@ else
 *ierr=0;
 }
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -494,14 +494,14 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief checks for a keyword in actual line                                            
+\brief checks for a keyword in actual line
 
-<pre>                                                        m.gee 8/00 
+<pre>                                                        m.gee 8/00
 checks for a keyword in actual line of input_file
 </pre>
 \param string   char[]   (i)   string to search for in actual line
 \param ierr     INT*     (o)   =0  keyword not found / =1 value read
-\return void                                               
+\return void
 \sa frdouble_n() , frint_n() , frint() , frchar()
 
 ------------------------------------------------------------------------*/
@@ -518,14 +518,14 @@ return;
 
 
 /*!---------------------------------------------------------------------
-\brief close and delete input file copy                                            
+\brief close and delete input file copy
 
-<pre>                                                        m.gee 4/01 
+<pre>                                                        m.gee 4/01
 close and delete input file copy. All memory allocated to the
 fr-system is freed
 </pre>
 \warning Nothing can be read after call to this routine
-\return void                                               
+\return void
 \sa frdouble_n() , frint_n() , frint() , frchar() , frchk()
 
 ------------------------------------------------------------------------*/

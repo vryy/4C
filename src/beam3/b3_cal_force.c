@@ -16,7 +16,7 @@ Maintainer: Frank Huber
 #include "beam3.h"
 #include "beam3_prototypes.h"
 
-/*! 
+/*!
 \addtogroup BEAM3
 *//*! @{ (documentation module open)*/
 
@@ -24,7 +24,7 @@ Maintainer: Frank Huber
 \brief calculates the internal forces of a Bernoulli beam element
 
 <pre>                                                              fh 10/02
-This routine calculates the internal force vector for a spatial 
+This routine calculates the internal force vector for a spatial
 1d-Bernoulli-beam element (direct stiffness method)
 
 </pre>
@@ -32,18 +32,18 @@ This routine calculates the internal force vector for a spatial
 \param **estif   DOUBLE    (i)  local element stiffness matrix
 \param *force    DOUBLE    (i)  local element load vector
 \param init      INT       (i)  flag if init (1) or calculation	(2,3)
-               
+
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: beam3() , b3_cal_ele()
 
 *----------------------------------------------------------------------*/
-void b3_cal_force(ELEMENT  *ele,     
-                  DOUBLE  **estif,     
-	          DOUBLE   *force,     
-	          INT	    init)       
+void b3_cal_force(ELEMENT  *ele,
+                  DOUBLE  **estif,
+	          DOUBLE   *force,
+	          INT	    init)
 {
 INT          i;                  /* some loopers                    */
 INT          idof;               /* some loopers                    */
@@ -53,7 +53,7 @@ const INT    numdf  = 6;         /* dof per node                    */
 static ARRAY eload_a; static DOUBLE *eload;  /* static element load vector */
 static ARRAY dummy_a; static DOUBLE *dummy;    /* static element displacement vector */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("b3_cal_force");
 #endif
 /*---------------------------------------------------------------------*/
@@ -61,7 +61,7 @@ dstrc_enter("b3_cal_force");
 /*---------------------------------------------------------------------*/
 if (init==1)
 {
-  dummy	  = amdef("dummy"   ,&dummy_a, 12,1		,"DV");  
+  dummy	  = amdef("dummy"   ,&dummy_a, 12,1		,"DV");
   eload   = amdef("eload"  ,&eload_a,  12,1		,"DV");
   goto end;
 }
@@ -72,7 +72,7 @@ else if (init==-1)
 {
 amdel(&eload_a);
 amdel(&dummy_a);
-goto end;  
+goto end;
 }
 /*----------------------------------------------------------------------*/
 /* calculation phase        (init=0)                                    */
@@ -88,8 +88,8 @@ for (idof=0; idof<numdf; idof++)
 for (idof=0; idof<numdf; idof++)
 {
   dummy[idof+numdf] = ele->node[1]->sol.a.da[0][idof];
-} 
-/*--------------calculate sLd------------------------------------------ */   
+}
+/*--------------calculate sLd------------------------------------------ */
 math_matvecdense(eload,estif,dummy,12,12,0,1.);
 
 /*--------------Add sLd to sL0----------------------------------------- */
@@ -106,17 +106,17 @@ for (i=0; i<numdf; i++)
 }
 /*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of b3_cal_force */
 
 /*!----------------------------------------------------------------------
 \brief calculates the internal forces of a Timoshenko beam element
 
 <pre>                                                              fh 01/03
-This routine calculates the internal force vector for a spatial 
+This routine calculates the internal force vector for a spatial
 1d-Timoshenko-beam element (Finite Element method)
 
 </pre>
@@ -124,24 +124,24 @@ This routine calculates the internal force vector for a spatial
 \param *force    DOUBLE    (i)  stress vector at actual gauss point
 \param lr        INT       (i)  number of actual gauss point
 \param option    INT       (i)  =0 -> force_GP, =1 -> force_ND
-               
+
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: b3_cal_ele()
 
 *----------------------------------------------------------------------*/
-void b3_cal_forcelin(ELEMENT  *ele,     
+void b3_cal_forcelin(ELEMENT  *ele,
                      DOUBLE   *force,
-	             INT       lr,      
+	             INT       lr,
 		     INT       option)
 {
 INT          i;                  /* looper                          */
 const INT    place  = 0;
 const INT    numdf  = 6;         /* dof per node                    */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("b3_cal_forcelin");
 #endif
 
@@ -163,17 +163,17 @@ else if (option==1)
    }
 /*----------------------------------------------------------------------*/
 }
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of b3_cal_forcelin */
 
 /*!----------------------------------------------------------------------
 \brief calculates the internal forces of a spatial 3D Timoshenko beam element
 
 <pre>                                                              fh 02/03
-This routine calculates the internal force vector for a spatial 
+This routine calculates the internal force vector for a spatial
 3D-Timoshenko-beam element (Finite Element method)
 
 </pre>
@@ -184,18 +184,18 @@ This routine calculates the internal force vector for a spatial
 \param s         DOUBLE    (i)  coordinate s of actual lobatto point
 \param t         DOUBLE    (i)  coordinate t of actual lobatto point
 \param option    INT       (i)  =0 -> force_GP, =1 -> force_ND
-               
+
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: b3_cal_ele()
 
 *----------------------------------------------------------------------*/
-void b3_cal_forcelin3D(ELEMENT  *ele,     
+void b3_cal_forcelin3D(ELEMENT  *ele,
                        DOUBLE   *stress,
-	               DOUBLE    facl,     
-	               INT       lr,      
+	               DOUBLE    facl,
+	               INT       lr,
 	               DOUBLE    s,
 	      	       DOUBLE    t,
 		       INT       option)
@@ -208,7 +208,7 @@ DOUBLE       gs;  /* inverse of shear correction factor */
 const INT    place  = 0;
 const INT    numdf  = 6;         /* dof per node                    */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("b3_cal_forcelin3D");
 #endif
 
@@ -253,10 +253,10 @@ ele->e.b3->force_ND.a.d3[place][5][lr]+=facl*(-stress[0]*s*0.5*b);
 /*----------------------------------------------------------------------*/
 }
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of b3_cal_forcelin3D */
 
 /*!----------------------------------------------------------------------
@@ -275,20 +275,20 @@ the actual beam element.
 \param nedof     INT       (i)  number of dofs per element
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: b3_cal_ele()
 
 *----------------------------------------------------------------------*/
 void b3_cal_eps(DOUBLE    *strain,
                 DOUBLE     pv,
-		DOUBLE    *edisp,     
-	        DOUBLE   **bop,     
+		DOUBLE    *edisp,
+	        DOUBLE   **bop,
 		INT        numeps,
-		INT        nedof)   
+		INT        nedof)
 {
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("b3_cal_eps");
 #endif
 
@@ -304,10 +304,10 @@ if (numeps==3)
    /* gamma yz */
    strain[5]=0.;
 }
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of b3_cal_eps */
 
 
@@ -323,7 +323,7 @@ This routine calculates the nodal element displacements.
 
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: b3_cal_ele()
 
@@ -336,7 +336,7 @@ const INT numdf=6;
 INT iel;
 INT i,idof;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("b3_edisp");
 #endif
 
@@ -349,10 +349,10 @@ for (i=0; i<iel; i++)
       edisp[idof+numdf*i] = ele->node[i]->sol.a.da[0][idof];
    }
 }
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of b3_edisp */
 
 
@@ -368,7 +368,7 @@ This routine calculates the nodal incremental element displacements.
 
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: b3_cal_ele()
 
@@ -381,7 +381,7 @@ const INT numdf=6;
 INT iel;
 INT i,idof;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("b3_dispinc");
 #endif
 
@@ -394,10 +394,10 @@ for (i=0; i<iel; i++)
       edisp[idof+numdf*i] = ele->node[i]->sol_increment.a.da[0][idof];
    }
 }
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of b3_dispinc */
 
 
@@ -411,10 +411,10 @@ to the nodes
 </pre>
 \param *ele      ELEMENT   (i)  actual element
 \param *data     B3_DATA   (o)  data for integration parameters
-               
+
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: b3_cal_ele()
 
@@ -433,7 +433,7 @@ DOUBLE r[4];
 DOUBLE g[4];
 DOUBLE fval[4];
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("b3_exforce");
 #endif
 
@@ -449,13 +449,13 @@ switch(ele->distyp)
 case line2:
 for (i=0; i<iel; i++)
 {
-  for (j=0; j<numdf; j++) 
+  for (j=0; j<numdf; j++)
   {
     for (k=0; k<ngauss; k++) fval[k]=ele->e.b3->force_GP.a.d3[place][j][k];
-    a=fval[0];       
+    a=fval[0];
     ele->e.b3->force_ND.a.d3[place][j][i] = a;
   }
-}   
+}
 break;
 /*----linear interpolation of internal forces: F(x)=a+b*(x-x0)-----------------------*/
 case line3:
@@ -469,18 +469,18 @@ for (i=0; i<iel; i++)
 {
    for (j=0; j<numdf; j++)
    {
-      for (k=0; k<ngauss; k++) fval[k]=ele->e.b3->force_GP.a.d3[place][j][k];          
+      for (k=0; k<ngauss; k++) fval[k]=ele->e.b3->force_GP.a.d3[place][j][k];
       a=fval[0];
       b=(fval[1]-fval[0])/g10;
       ele->e.b3->force_ND.a.d3[place][j][i] = a+b*(r[i]-g[0]);
    }
 }
 break;
-}                    
-#ifdef DEBUG 
+}
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of b3_exforce */
 
 #endif

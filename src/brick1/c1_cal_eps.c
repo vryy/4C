@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 'c1_eps' which evaluates linear/nonlinear 
-                                     strains from displacement derivatives 
+\brief contains the routine 'c1_eps' which evaluates linear/nonlinear
+                                     strains from displacement derivatives
 
 <pre>
 Maintainer: Andreas Lipka
@@ -17,8 +17,8 @@ Maintainer: Andreas Lipka
 #include "brick1.h"
 #include "brick1_prototypes.h"
 
-/*! 
-\addtogroup BRICK1 
+/*!
+\addtogroup BRICK1
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
@@ -34,7 +34,7 @@ for an 3D-hex-element.
 \param iform       INT   (i)   index for nonlinear formulation
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: c1_cint() and routines for plasticity
 
 *----------------------------------------------------------------------*/
@@ -48,7 +48,7 @@ DOUBLE fac, half;
 DOUBLE u11, u12, u13, u21, u22, u23, u31, u32, u33;
 DOUBLE dn[6];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("c1_eps");
 #endif
 /*----------------------------------------------------------------------*/
@@ -69,15 +69,15 @@ dstrc_enter("c1_eps");
   eps[2] = u33;
   eps[3] = u12 + u21;
   eps[4] = u23 + u32;
-  eps[5] = u13 + u31; 
+  eps[5] = u13 + u31;
 /*--------------------------------------- add nonlinear strain terms ---*/
   if (iform>1)
   {
     dn[0] = half * (u11*u11 + u21*u21 + u31*u31);
     dn[1] = half * (u12*u12 + u22*u22 + u32*u32);
     dn[2] = half * (u13*u13 + u23*u23 + u33*u33);
-    dn[3] = u11*u12 + u21*u22 + u31*u32; 
-    dn[4] = u12*u13 + u22*u23 + u32*u33; 
+    dn[3] = u11*u12 + u21*u22 + u31*u32;
+    dn[4] = u12*u13 + u22*u23 + u32*u33;
     dn[5] = u11*u13 + u21*u23 + u31*u33;
 /*----------------------------------------------------------------------*
  |   green-lagrange strains --> add      nonlinear strain terms         |
@@ -88,7 +88,7 @@ dstrc_enter("c1_eps");
       for (i=0; i<6; i++) eps[i] += fac*dn[i];
   }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -96,4 +96,4 @@ return;
 /*----------------------------------------------------------------------*/
 #endif
 /*! @} (documentation module close)*/
- 
+

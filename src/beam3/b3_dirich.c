@@ -15,7 +15,7 @@ Maintainer: Frank Huber
 #include "../headers/standardtypes.h"
 #include "beam3.h"
 
-/*! 
+/*!
 \addtogroup BEAM3
 *//*! @{ (documentation module open)*/
 
@@ -28,12 +28,12 @@ nodal displacement solution vector
 
 </pre>
 \param *actfield FIELD    (i/o)  actual field
-               
+
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
-    called by: beam3() 
+    called by: beam3()
 
 *----------------------------------------------------------------------*/
 void b3_setdirich(FIELD     *actfield)
@@ -44,30 +44,30 @@ INT                   i,j;          /* some loopers */
 INT                   numnp_total;  /* sum of all nodes of the field */
 DOUBLE                initval;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("b3_setdirich");
-#endif 
+#endif
 
 numnp_total  = actfield->dis[0].numnp;
 
 /*------------------------------------------------- loop over all nodes */
 for (i=0;i<numnp_total;i++)
 {
-   actnode  = &(actfield->dis[0].node[i]); 
-   actgnode = actnode->gnode;      
+   actnode  = &(actfield->dis[0].node[i]);
+   actgnode = actnode->gnode;
    if (actgnode->dirich==NULL)
          continue;
    for (j=0;j<actnode->numdf;j++)
    {
       if (actgnode->dirich->dirich_onoff.a.iv[j]==0)
          continue;
-      initval  = actgnode->dirich->dirich_val.a.dv[j];               
+      initval  = actgnode->dirich->dirich_val.a.dv[j];
       actnode->sol.a.da[0][j] = initval;
    }
 }
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

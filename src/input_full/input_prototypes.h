@@ -1,6 +1,6 @@
 /*!---------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -205,11 +205,11 @@ void inp_detailed_topology(
 
 
 /*!---------------------------------------------------------------------
-  \brief input of optimization data 
+  \brief input of optimization data
 
-  <pre>                                                          al  05/01      
-  </pre>  		 
-  \return void                                                                       
+  <pre>                                                          al  05/01
+  </pre>
+  \return void
   ------------------------------------------------------------------------*/
 void inpctropt(void);
 
@@ -217,9 +217,9 @@ void inpctropt(void);
 /*!---------------------------------------------------------------------
   \brief control execution of optimization
 
-  <pre>                                                          al  05/01      
-  </pre>  		 
-  \return void                                                                       
+  <pre>                                                          al  05/01
+  </pre>
+  \return void
   ------------------------------------------------------------------------*/
 void caloptmain(void);
 

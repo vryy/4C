@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 
- - s9intg: which gets the natural coordinates of the integration points 
+\brief contains the routine
+ - s9intg: which gets the natural coordinates of the integration points
            and their weights
 
 
@@ -17,12 +17,12 @@ Maintainer: Stefan Hartmann
 #include "../headers/standardtypes.h"
 #include "shell9.h"
 
-/*! 
-\addtogroup SHELL9 
+/*!
+\addtogroup SHELL9
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief integration points and weights                                      
+\brief integration points and weights
 
 <pre>                     m.gee 6/01              modified by    sh 10/02
 This routine gets the natural coordinates of the integration points and
@@ -33,7 +33,7 @@ their weights for a numerical integration
 \param  INT            option (i) ?
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: s9eleload()     [s9_load1.c]
                              s9static_keug() [s9_static_keug.c]
                              s9_stress()     [s9_stress.c]
@@ -45,7 +45,7 @@ void s9intg(const ELEMENT   *ele,
 {
 DOUBLE b,wgt,wgt0;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9intg");
 #endif
 /*----------------------------------------------------------------------*/
@@ -78,7 +78,7 @@ if (option==0)
        }
    if (ele->distyp == quad4 || /*---------------- quadrilateral elements */
        ele->distyp == quad8 ||
-       ele->distyp == quad9 ) 
+       ele->distyp == quad9 )
    {
        switch(ele->e.s9->nGP[0])/* direction r */
        {
@@ -199,7 +199,7 @@ if (option==0)
     }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -207,7 +207,7 @@ return;
 
 
 /*!----------------------------------------------------------------------
-\brief integration points for stress extrapolation                                     
+\brief integration points for stress extrapolation
 
 <pre>                                                            sh 07/03
 This routine gets the natural coordinates of the integration points and
@@ -217,7 +217,7 @@ their weights for a numerical integration  -> for stress extrapolation
 \param  INT            option (i) 4 (Q4) 9 (Q8/9)
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: s9_stress()     [s9_stress.c]
 
 *----------------------------------------------------------------------*/
@@ -226,7 +226,7 @@ void s9intg_str(S9_DATA         *data,
 {
 DOUBLE b;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9intg_str");
 #endif
 /*----------------------------------------------------------------------*/
@@ -273,7 +273,7 @@ else if (option == 9) /*3x3*/
 else dserror("wrong option for s9_intg_str");
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

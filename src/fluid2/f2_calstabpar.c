@@ -10,10 +10,10 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
-\addtogroup FLUID2 
+/*!
+\addtogroup FLUID2
 *//*! @{ (documentation module open)*/
-#ifdef D_FLUID2 
+#ifdef D_FLUID2
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #include "fluid2.h"
@@ -22,7 +22,7 @@ Maintainer: Steffen Genkinger
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -33,7 +33,7 @@ extern struct _FILES  allfiles;
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -44,86 +44,86 @@ extern struct _GENPROB     genprob;
 static DOUBLE Q13  = ONE/THREE;
 static DOUBLE Q112 = ONE/TWELVE;
 static FLUID_DYNAMIC *fdyn;
-/*!--------------------------------------------------------------------- 
-\brief routine to calculate stability parameter                
+/*!---------------------------------------------------------------------
+\brief routine to calculate stability parameter
 
-<pre>                                                         genk 04/02   
-  									 
-   ele->e.f2->iadvec: advection stab.					
-      0 = no								
-      1 = yes								
-   ele->e.f2->ipres: pressure stab.					
-      0 = no								
-      1 = yes								
-   ele->e.f2->ivisc: diffusion stab.					
-      0 = no								
-      1 = GLS-  							
-      2 = GLS+  							
-   ele->e.f2->icont: continuity stab.					
-      0 = no								
-      1 = yes								
-   ele->e.f2->istapa: version of stab. parameter			
-      35 = diss wall instationary					
-      36 = diss wall stationanary					
-   ele->e.f2->norm_P: p-norm						
-      p = 1<=p<=oo							
-      0 = max.-norm (p=oo)						
-   ele->e.f2->mk: higher order elements control flag			
-      0 = mk fixed (--> (bi)linear: 1/3, biquadr.: 1/12)		
-      1 = min(1/3,2*C)  						
-     -1 = mk=1/3  (--> element order via approx. nodal-distance)	
-   ele->e.f2->ihele[]:  						
-      x/y/z = length-def. for velocity/pressure/continuity stab 	
-      0 = don't compute 						
-      1 = sqrt(area)							
-      2 = area equivalent diameter					
-      3 = diameter/sqrt(2)						
-      4 = sqrt(2)*area/diagonal (rectangle) 4*area/s (triangle) 	
-      5 = streamlength (element length in flow direction		
-   ele->e.f2->ninths: number of integration points for streamlength	
-      1 = at center of element  					
-      2 = at every INT pt used for element.-stab.-matrices		
-   ele->e.f2->istapc: flag for stabilisation parameter calculation	
-      1 = at center of element  					
-      2 = at every integration point					
-   ele->e.f2->clamb \							
-   ele->e.f2->c1     |_>> stabilisation constants (input)		
-   ele->e.f2->c2     |  						
-   ele->e.f2->c3    /							
-   ele->e.f2->istrle: has streamlength to be computed			
-   ele->e.f2->iarea: calculation of area length 			
-   ele->e.f2->iduring: calculation during INT.-pt.loop  		
-   ele->e.f2->itau[0]: flag for tau_mu calc. (-1: before, 1:during)	
-   ele->e.f2->itau[1]: flag for tau_mp calc. (-1: before, 1:during)	
-   ele->e.f2->itau[2]: flag for tau_c calc. (-1: before, 1:during)	
-   ele->e.f2->hk[i]: element sizes (vel / pre / cont)			
-   ele->e.f2->idiaxy: has diagonals to be computed			
-   fdyn->tau[0]: stability parameter momentum / velocity (tau_mu)	
-   fdyn->tau[1]: stability parameter momentum / pressure (tau_mp)	
-   fdyn->tau[2]: stability parameter continuity (tau_c)		
+<pre>                                                         genk 04/02
+
+   ele->e.f2->iadvec: advection stab.
+      0 = no
+      1 = yes
+   ele->e.f2->ipres: pressure stab.
+      0 = no
+      1 = yes
+   ele->e.f2->ivisc: diffusion stab.
+      0 = no
+      1 = GLS-
+      2 = GLS+
+   ele->e.f2->icont: continuity stab.
+      0 = no
+      1 = yes
+   ele->e.f2->istapa: version of stab. parameter
+      35 = diss wall instationary
+      36 = diss wall stationanary
+   ele->e.f2->norm_P: p-norm
+      p = 1<=p<=oo
+      0 = max.-norm (p=oo)
+   ele->e.f2->mk: higher order elements control flag
+      0 = mk fixed (--> (bi)linear: 1/3, biquadr.: 1/12)
+      1 = min(1/3,2*C)
+     -1 = mk=1/3  (--> element order via approx. nodal-distance)
+   ele->e.f2->ihele[]:
+      x/y/z = length-def. for velocity/pressure/continuity stab
+      0 = don't compute
+      1 = sqrt(area)
+      2 = area equivalent diameter
+      3 = diameter/sqrt(2)
+      4 = sqrt(2)*area/diagonal (rectangle) 4*area/s (triangle)
+      5 = streamlength (element length in flow direction
+   ele->e.f2->ninths: number of integration points for streamlength
+      1 = at center of element
+      2 = at every INT pt used for element.-stab.-matrices
+   ele->e.f2->istapc: flag for stabilisation parameter calculation
+      1 = at center of element
+      2 = at every integration point
+   ele->e.f2->clamb \
+   ele->e.f2->c1     |_>> stabilisation constants (input)
+   ele->e.f2->c2     |
+   ele->e.f2->c3    /
+   ele->e.f2->istrle: has streamlength to be computed
+   ele->e.f2->iarea: calculation of area length
+   ele->e.f2->iduring: calculation during INT.-pt.loop
+   ele->e.f2->itau[0]: flag for tau_mu calc. (-1: before, 1:during)
+   ele->e.f2->itau[1]: flag for tau_mp calc. (-1: before, 1:during)
+   ele->e.f2->itau[2]: flag for tau_c calc. (-1: before, 1:during)
+   ele->e.f2->hk[i]: element sizes (vel / pre / cont)
+   ele->e.f2->idiaxy: has diagonals to be computed
+   fdyn->tau[0]: stability parameter momentum / velocity (tau_mu)
+   fdyn->tau[1]: stability parameter momentum / pressure (tau_mp)
+   fdyn->tau[2]: stability parameter continuity (tau_c)
 
 </pre>
 
 \param   *ele,        ELEMENT	      (i)    actual element
 \param   *velint,     DOUBLE	      (i)    vel at center
 \param    visc,       DOUBLE	      (i)    viscosity
-\param    iel,        INT	      (i)    number of nodes	     
+\param    iel,        INT	      (i)    number of nodes
 \param	  typ,        DIS_TYP	      (i)    element type
 \param	  iflag       INT	      (i)    flag for evaluation
-\return void                                                                       
+\return void
 
-------------------------------------------------------------------------*/ 
+------------------------------------------------------------------------*/
 void f2_calstabpar(
-	            ELEMENT         *ele,      
-		    DOUBLE          *velint,  
-		    DOUBLE           visc,    
-		    INT              iel,     
-		    DIS_TYP          typ,    
-		    INT              iflag    
+	            ELEMENT         *ele,
+		    DOUBLE          *velint,
+		    DOUBLE           visc,
+		    INT              iel,
+		    DIS_TYP          typ,
+		    INT              iflag
                   )
 {
 INT    isp;
-DOUBLE hdiv=ONE; 
+DOUBLE hdiv=ONE;
 DOUBLE velno;
 DOUBLE c_mk;
 DOUBLE dt;
@@ -132,9 +132,9 @@ DOUBLE hk;
 DOUBLE aux1;
 STAB_PAR_GLS *gls;	/* pointer to GLS stabilisation parameters	*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_calstabpar");
-#endif		
+#endif
 
 /*---------------------------------------------------------- initialise */
 gls  = ele->e.f2->stabi.gls;
@@ -154,7 +154,7 @@ case -1:
 /*      if (iel<10)
          hdiv = TWO;
       else */
-      hdiv = THREE;               
+      hdiv = THREE;
    }
    else if (typ==tri6)
    {
@@ -170,7 +170,7 @@ case 0:
       c_mk=Q112;
    else
       c_mk=Q13;
-break;   
+break;
 default:
    dserror("mk > 0 not implemented yet!\n");
 } /* end swtich (ele->e.f2->mk) */
@@ -187,13 +187,13 @@ case 35: /*-------------------------- version diss. Wall - instationary */
       if(isp==2)
       {
          re = c_mk*hk*velno/TWO/visc;  /* element reynolds number */
-         fdyn->tau[isp] = (gls->clamb)*velno*hk/TWO*DMIN(ONE,re);         
-         
+         fdyn->tau[isp] = (gls->clamb)*velno*hk/TWO*DMIN(ONE,re);
+
       }
       else
       {
          if (velno>EPS15)
-	 { 
+	 {
 	    aux1 = DMIN(hk/TWO/velno , c_mk*hk*hk/FOUR/visc);
             fdyn->tau[isp] = DMIN(dt , aux1);
          }
@@ -202,7 +202,7 @@ case 35: /*-------------------------- version diss. Wall - instationary */
       } /* end */
    } /* end of loop over isp */
 break;
-   
+
 case 36: /*---------------------------- version diss. Wall - stationary */
    dserror("stationary stabilisation not checked yet!!!\n");
    velno = sqrt(velint[0]*velint[0] + velint[1]*velint[1]); /*norm of vel*/
@@ -220,30 +220,30 @@ case 36: /*---------------------------- version diss. Wall - stationary */
 	    fdyn->tau[isp] = c_mk*hk*hk/FOUR/visc;
 	 else
 	    fdyn->tau[isp] = hk/TWO/velno;
-      } 
-   }   
+      }
+   }
 break;
 
 default:
-   dserror("stability parameter version ISTAP unknown!\n");   
+   dserror("stability parameter version ISTAP unknown!\n");
 } /* end switch (ele->e.f2->istapa) */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
-} /* end of f2_calstabpar*/	
+} /* end of f2_calstabpar*/
 
-/*!--------------------------------------------------------------------- 
-\brief routine to calculate stability parameter for height function               
+/*!---------------------------------------------------------------------
+\brief routine to calculate stability parameter for height function
 
-<pre>                                                         genk 06/03   
+<pre>                                                         genk 06/03
 
-\return void                                                                       
+\return void
 
-------------------------------------------------------------------------*/ 
+------------------------------------------------------------------------*/
 void f2_calstabpar_hf(
                         ELEMENT          *ele,
                         INT               ngnode,
@@ -259,9 +259,9 @@ void f2_calstabpar_hf(
 DOUBLE phidot,hs,aux,dx,dy;
 DOUBLE velno,rphi;
 static DOUBLE C_HF=ONE; /* constant for height function, usually ONE
-                           see GUELER, BEHR, TEZDUYAR (1999)             */ 
+                           see GUELER, BEHR, TEZDUYAR (1999)             */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_calstabpar_hf");
 #endif
 
@@ -270,9 +270,9 @@ fdyn = alldyn[genprob.numff].fdyn;
 
 /*--------------------------------------- compute hs according to Onate: */
 dx = xyze[0][iedgnod[0]]-xyze[0][iedgnod[1]];
-dy = xyze[1][iedgnod[0]]-xyze[1][iedgnod[1]]; 
+dy = xyze[1][iedgnod[0]]-xyze[1][iedgnod[1]];
 hs = FABS(dx*velint[0]+dy*velint[1]);
- 
+
 
 #if 1
 /*------------------------------------------------------ compute tau_DC */
@@ -283,10 +283,10 @@ if(0)
 #if 0
    switch (ele->e.f2->ihfs[0])
    {
-   case 1: /* GUELER, BEHR, TEZDUYAR (1999) */  
+   case 1: /* GUELER, BEHR, TEZDUYAR (1999) */
       hs=TWO*det;
       phidot = (phiintng - phiintn)/fdyn->dta;
-      aux  = phidot + velint[0]*phiderx - velint[1];  
+      aux  = phidot + velint[0]*phiderx - velint[1];
       rphi = FABS(aux)/fdyn->dphimax;
       fdyn->tau[3] = DMIN(ONE,C_HF*hs*hs*rphi);
    break;
@@ -308,8 +308,8 @@ if (0)
    switch (ele->e.f2->ihfs[1])
    {
    case 1:
-     fdyn->tau[4]= hs/TWO;      
-     fdyn->tau[4]= 0.01;      
+     fdyn->tau[4]= hs/TWO;
+     fdyn->tau[4]= 0.01;
    break;
    default:
       dserror("parameter ihfs[0] out of range!\n");
@@ -317,22 +317,22 @@ if (0)
 #endif
 }
 
-/*------------------------------------------------- print to error file */  
+/*------------------------------------------------- print to error file */
 #if 1
    fprintf(allfiles.out_err,"tau_dc = %12.10f  tau_supg = %12.10f\n",
           fdyn->tau[3],fdyn->tau[4]);
-   fflush(allfiles.out_err); 
+   fflush(allfiles.out_err);
 #endif
 
 #endif
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
-} /* end of f2_calstabpar_hf*/	
+} /* end of f2_calstabpar_hf*/
 
 #endif
 /*! @} (documentation module close)*/

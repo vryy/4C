@@ -12,17 +12,17 @@ Maintainer: Michael Gee
 *----------------------------------------------------------------------*/
 #ifdef S8CONTACT
 
-/*! 
-\addtogroup CONTACTS8 
+/*!
+\addtogroup CONTACTS8
 *//*! @{ (documentation module open)*/
 
 
 /*!------------------------------------------------------------------------
 \brief main structure all kinds of contact stuff is kept in for shell8
 
-m.gee 2/03  
+m.gee 2/03
 
-main structure all kinds of contact stuff is kept in   
+main structure all kinds of contact stuff is kept in
 
 -------------------------------------------------------------------------*/
 typedef struct _SHELLCONTACT
@@ -39,7 +39,7 @@ struct _CONTACTSLICE     *slice;
 /*!------------------------------------------------------------------------
 \brief flag indicating contact
 
-m.gee 2/03  
+m.gee 2/03
 
 flag indicating contact
 
@@ -52,7 +52,7 @@ typedef enum _SHELLCONTACTFLAG
 /*!------------------------------------------------------------------------
 \brief flag indicating which side of an element a slave is projecting on
 
-m.gee 2/03  
+m.gee 2/03
 
 flag indicating which side of an element a slave is projecting on
 
@@ -71,7 +71,7 @@ typedef enum _SHELLPROJECTON
 /*!------------------------------------------------------------------------
 \brief one special contact node for shell contact
 
-m.gee 2/03  
+m.gee 2/03
 
 one special contact node for shell contact
 
@@ -79,8 +79,8 @@ one special contact node for shell contact
 typedef struct _SHELLNODE
 {
 struct _NODE             *node;     /*!< ptr to node */
-DOUBLE                    xr[6];    /*!< reference coodinates of point including director of true length */            
-DOUBLE                    xc[6];    /*!< current   coodinates of point including director of true length */    
+DOUBLE                    xr[6];    /*!< reference coodinates of point including director of true length */
+DOUBLE                    xc[6];    /*!< current   coodinates of point including director of true length */
 /* geometry history */
 DOUBLE                    xc_his[6]; /*! current configuration of the last converged step */
 
@@ -138,7 +138,7 @@ struct _CONTACTBUCKET    *buck;
 /*!------------------------------------------------------------------------
 \brief restart of one special contact node for shell contact
 
-m.gee 3/03  
+m.gee 3/03
 
 one special contact node for shell contact
 
@@ -167,21 +167,21 @@ enum _SHELLPROJECTON      hisbotproj;  /*!< flag to indicate projection onto a t
 /*!------------------------------------------------------------------------
 \brief structure to restart the contact stuff
 
-m.gee 3/03  
+m.gee 3/03
 
 structure to restart the contact stuff
 
 -------------------------------------------------------------------------*/
 typedef struct _RESTARTCONTACT
 {
-INT                        numnp;       /*!< number of nodes in field */     
+INT                        numnp;       /*!< number of nodes in field */
 long int                   mainhandle;
 long int                  *handles;     /*!< the handles for the cnodes */
 } RESTARTCONTACT;
 /*!------------------------------------------------------------------------
 \brief a slice of the bucket search algorithm
 
-m.gee 3/03  
+m.gee 3/03
 
 slice of the bucket search algorithm
 
@@ -193,7 +193,7 @@ struct _CONTACTSTRIPE    *stripe;
 /*!------------------------------------------------------------------------
 \brief a stripe of the bucket search algorithm
 
-m.gee 3/03  
+m.gee 3/03
 
 slice of the bucket search algorithm
 
@@ -205,14 +205,14 @@ struct _CONTACTBUCKET    *buck;
 /*!------------------------------------------------------------------------
 \brief a bucket of the bucket search algorithm
 
-m.gee 3/03  
+m.gee 3/03
 
 slice of the bucket search algorithm
 
 -------------------------------------------------------------------------*/
 typedef struct _CONTACTBUCKET
 {
-INT                       ncnode;        /*!< number of cnode in this bucket */    
+INT                       ncnode;        /*!< number of cnode in this bucket */
 struct _SHELLNODE       **cnode;         /*!< ptrs to cnodes in this bucket */
 INT                       ijk[3];        /*!< ijk indizes of this bucket */
 } CONTACTBUCKET;
@@ -250,10 +250,10 @@ void s8_contact_orthproject(SHELLNODE  *actcnode,
                             DOUBLE     *distance,
                             INT        *success,
                             DOUBLE     *nue);
-void s8_contact_functderiv(DOUBLE     funct[], 
-                           DOUBLE    deriv[][4], 
+void s8_contact_functderiv(DOUBLE     funct[],
+                           DOUBLE    deriv[][4],
                            DOUBLE    deriv2[],
-                           DOUBLE      r, 
+                           DOUBLE      r,
                            DOUBLE      s);
 void s8_contact_metrics(DOUBLE x[][4],
                         DOUBLE a3[][4],

@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Michael Gee
@@ -39,7 +39,7 @@ INT    i;
 DOUBLE C4[3][3][3][3];
 DOUBLE stress2[6],strain2[6];
 DOUBLE E;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_tmat");
 #endif
 /*----------------------------------------------------------------------*/
@@ -47,19 +47,19 @@ dstrc_enter("s8_tmat");
 switch(mat->mattyp)
 {
 case m_stvenant:/*------------------------ st.venant-kirchhoff-material */
-   s8_eps(strain,gmkovc,gmkovr); 
+   s8_eps(strain,gmkovc,gmkovr);
    /*=============================== make material in curvilinear bases */
    s8_mat_linel(mat->m.stvenant,gmkonr,C);
    s8_mat_stress1(stress,strain,C);
    /*===================================================================*/
 break;
 case m_neohooke:/*------------------------------ kompressible neo-hooke */
-   s8_eps(strain,gmkovc,gmkovr); 
+   s8_eps(strain,gmkovc,gmkovr);
    s8_mat_neohooke(mat->m.neohooke,stress,C,gmkonr,gmkonc,detr,detc);
 break;
 case m_compogden:/*--------------------------------- kompressible ogden */
    /*-------------------------------------- make Green-Lagrange strains */
-   s8_eps(strain,gmkovc,gmkovr); 
+   s8_eps(strain,gmkovc,gmkovr);
    /*----------------------------- call compressible ogden material law */
    /*         Ogden hyperelasticity without deviatoric-volumetric split */
 /*
@@ -77,7 +77,7 @@ case m_compogden:/*--------------------------------- kompressible ogden */
 break;
 case m_viscohyper:/*-------------------------viscous kompressible ogden */
    /*-------------------------------------- make Green-Lagrange strains */
-   s8_eps(strain,gmkovc,gmkovr); 
+   s8_eps(strain,gmkovc,gmkovr);
    /*----------------------------- call compressible ogden material law */
    /*    viscous Ogden hyperelasticity with deviatoric-volumetric split */
    s8_mat_ogden_viscous(ele,mat->m.viscohyper,stress,C4,gkonr,gmkovc,ngauss);
@@ -94,7 +94,7 @@ default:
 break;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -107,7 +107,7 @@ return;
  *----------------------------------------------------------------------*/
 void s8_getdensity(MATERIAL   *mat, DOUBLE *density)
 {
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_getdensity");
 #endif
 /*----------------------------------------------------------------------*/
@@ -131,7 +131,7 @@ default:
 break;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -1,9 +1,9 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 
- - s9inp: which reads the input data of a shell9 element. 
-         NOTE: The material has to be read before this element, 
-               as the section data is defined within the material 
+\brief contains the routine
+ - s9inp: which reads the input data of a shell9 element.
+         NOTE: The material has to be read before this element,
+               as the section data is defined within the material
                (number of kinematic and material layers,...)
 
 
@@ -19,8 +19,8 @@ Maintainer: Stefan Hartmann
 #include "../headers/standardtypes.h"
 #include "shell9.h"
 
-/*! 
-\addtogroup SHELL9 
+/*!
+\addtogroup SHELL9
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
@@ -28,7 +28,7 @@ Maintainer: Stefan Hartmann
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -43,7 +43,7 @@ extern struct _MATERIAL  *mat;
 
 
 /*!----------------------------------------------------------------------
-\brief read shell9 element                                       
+\brief read shell9 element
 
 <pre>                     m.gee 6/01              modified by    sh 10/02
 This routine reads all input data for a shell9 element
@@ -52,7 +52,7 @@ This routine reads all input data for a shell9 element
 
 \warning The material has to be read before this element, as the section
          data is defined within the material (num_klay, ...)
-\return void                                               
+\return void
 \sa calling: ---; called by: inp_struct_field()   [input_mesh.c]
 
 *----------------------------------------------------------------------*/
@@ -67,24 +67,24 @@ INT          numdof_shell9;
 INT          num_klay;
 MATERIAL    *actmat;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s9inp");
 #endif
-/*------------------------------------------------ allocate the element */      
+/*------------------------------------------------ allocate the element */
 ele->e.s9 = (SHELL9*)CCACALLOC(1,sizeof(SHELL9));
 /*---------------------------------------------- read elements topology */
 frchk("QUAD4",&ierr);
-if (ierr==1) 
+if (ierr==1)
 {
    ele->distyp = quad4;
    ele->numnp=4;
    ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
- 
+
    frint_n("QUAD4",&(ele->lm[0]),ele->numnp,&ierr);
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
 }
 frchk("QUAD8",&ierr);
-if (ierr==1) 
+if (ierr==1)
 {
    ele->distyp = quad8;
    ele->numnp=8;
@@ -94,7 +94,7 @@ if (ierr==1)
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
 }
 frchk("QUAD9",&ierr);
-if (ierr==1) 
+if (ierr==1)
 {
    ele->distyp = quad9;
    ele->numnp=9;
@@ -104,7 +104,7 @@ if (ierr==1)
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
 }
 frchk("TRI3",&ierr);
-if (ierr==1) 
+if (ierr==1)
 {
    ele->distyp = tri3;
    ele->numnp=3;
@@ -114,7 +114,7 @@ if (ierr==1)
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
 }
 frchk("TRI6",&ierr);
-if (ierr==1) 
+if (ierr==1)
 {
    ele->distyp = tri6;
    ele->numnp=6;
@@ -149,7 +149,7 @@ if (actmat->mattyp != m_multi_layer) dserror("Wrong mattyp to SHELL9 element -> 
   {
      ele->e.s9->kinlay[i] = actmat->m.multi_layer->kinlay[i];
   }
- 
+
 /*---------------------------------- allocate array for internal forces */
 amdef("intforce",&(ele->e.s9->intforce),numdof_shell9*ele->numnp,1,"DV");
 /*------------------------------------------ reduce node numbers by one */
@@ -176,7 +176,7 @@ if (ierr)
    if (strncmp(buffer,"RST",3)==0)       ele->e.s9->forcetyp = s9_rst;
    if (strncmp(buffer,"RST_ortho",9)==0) ele->e.s9->forcetyp = s9_rst_ortho;
 }
-/*------------------------------------------------------------ read EAS */    
+/*------------------------------------------------------------ read EAS */
 colpointer = strstr(allfiles.actplace,"EAS");
 colpointer+=3;
 
@@ -184,7 +184,7 @@ colpointer+=3;
       MEMBRAN: E11,E12,E22 KONSTANT
   ----------------------------------------------------------------------*/
 colpointer = strpbrk(colpointer,"Nn");
-ierr = sscanf(colpointer," %s ",buffer);    
+ierr = sscanf(colpointer," %s ",buffer);
 if (ierr!=1) dserror("Reading of shell9 eas failed");
      if (strncmp(buffer,"none",4)==0)  ele->e.s9->eas[0]=0;
 else if (strncmp(buffer,"N4_1",4)==0)  ele->e.s9->eas[0]=1;
@@ -198,13 +198,13 @@ else if (strncmp(buffer,"N9_7",4)==0)  ele->e.s9->eas[0]=7;
 else if (strncmp(buffer,"N9_9",4)==0)  ele->e.s9->eas[0]=9;
 else if (strncmp(buffer,"N9_11",4)==0) ele->e.s9->eas[0]=11;
 else dserror("Wrong Parameter for EAS[0] -> E11,E12,E22 KONSTANT (Membran) SHELL9");
-colpointer += strlen(buffer);    
-    
+colpointer += strlen(buffer);
+
 /*----------------------------------------------------------------------
       BIEGUNG: E11,E12,E22 LINEAR
   ----------------------------------------------------------------------*/
 colpointer = strpbrk(colpointer,"Nn");
-ierr = sscanf(colpointer," %s ",buffer);    
+ierr = sscanf(colpointer," %s ",buffer);
 if (ierr!=1) dserror("Reading of shell9 eas failed");
      if (strncmp(buffer,"none",4)==0)  ele->e.s9->eas[1]=0;
 else if (strncmp(buffer,"N4_4",4)==0)  ele->e.s9->eas[1]=4;
@@ -214,13 +214,13 @@ else if (strncmp(buffer,"N4_7",4)==0)  ele->e.s9->eas[1]=7;
 else if (strncmp(buffer,"N9_9",4)==0)  ele->e.s9->eas[1]=9;
 else if (strncmp(buffer,"N9_11",4)==0) ele->e.s9->eas[1]=11;
 else dserror("Wrong Parameter for EAS[1] -> E11,E12,E22 LINEAR (Biegung) SHELL9");
-colpointer += strlen(buffer);    
-    
+colpointer += strlen(buffer);
+
 /*----------------------------------------------------------------------
       DICKENRICHTUNG: E33 LINEAR (--> 7P - FORMULIERUNG)
   ----------------------------------------------------------------------*/
 colpointer = strpbrk(colpointer,"Nn");
-ierr = sscanf(colpointer," %s ",buffer);    
+ierr = sscanf(colpointer," %s ",buffer);
 if (ierr!=1) dserror("Reading of shell9 eas failed");
      if (strncmp(buffer,"none",4)==0)  ele->e.s9->eas[2]=0;
 else if (strncmp(buffer,"N_1" ,4)==0)  ele->e.s9->eas[2]=1;
@@ -230,13 +230,13 @@ else if (strncmp(buffer,"N_6" ,4)==0)  ele->e.s9->eas[2]=6;
 else if (strncmp(buffer,"N_8" ,4)==0)  ele->e.s9->eas[2]=8;
 else if (strncmp(buffer,"N_9" ,4)==0)  ele->e.s9->eas[2]=9;
 else dserror("Wrong Parameter for EAS[2] -> E33 LINEAR (7P-Formulation) SHELL9");
-colpointer += strlen(buffer);    
+colpointer += strlen(buffer);
 
 /*----------------------------------------------------------------------
       QUERSCHUB: E13,E23 KONSTANT
   ----------------------------------------------------------------------*/
 colpointer = strpbrk(colpointer,"Nn");
-ierr = sscanf(colpointer," %s ",buffer);    
+ierr = sscanf(colpointer," %s ",buffer);
 if (ierr!=1) dserror("Reading of shell9 eas failed");
      if (strncmp(buffer,"none",4)==0)  ele->e.s9->eas[3]=0;
 else if (strncmp(buffer,"N4_2",4)==0)  ele->e.s9->eas[3]=2;
@@ -246,13 +246,13 @@ else if (strncmp(buffer,"N9_2",4)==0)  ele->e.s9->eas[3]=2;
 else if (strncmp(buffer,"N9_4",4)==0)  ele->e.s9->eas[3]=4;
 else if (strncmp(buffer,"N9_6",4)==0)  ele->e.s9->eas[3]=6;
 else dserror("Wrong Parameter for EAS[3] -> E13,E23 KONSTANT (Querschub) SHELL9");
-colpointer += strlen(buffer);    
+colpointer += strlen(buffer);
 
 /*----------------------------------------------------------------------
       QUERSCHUB: E13,E23 LINEAR
   ----------------------------------------------------------------------*/
 colpointer = strpbrk(colpointer,"Nn");
-ierr = sscanf(colpointer," %s ",buffer);    
+ierr = sscanf(colpointer," %s ",buffer);
 if (ierr!=1) dserror("Reading of shell9 eas failed");
      if (strncmp(buffer,"none",4)==0)  ele->e.s9->eas[4]=0;
 else if (strncmp(buffer,"N4_2",4)==0)  ele->e.s9->eas[4]=2;
@@ -275,7 +275,7 @@ if (nhyb>0)
 
    amdef("L",&(ele->e.s9->L),num_klay*ele->numnp*numdof_shell9,nhyb,"DA");
    amzero(&(ele->e.s9->L));
-   
+
    amdef("Rtilde",&(ele->e.s9->Rtilde),num_klay*nhyb,1,"DV");
    amzero(&(ele->e.s9->Rtilde));
 }
@@ -294,8 +294,8 @@ if (strncmp(buffer,"TQ",4)==0)    ele->e.s9->ans=3;*/
 frdouble("SDC",&(ele->e.s9->sdc),&ierr);
 if (ierr!=1) dserror("Reading of shell9 sdc failed");
 
-/*----------------------------------------------------------------------*/    
-#ifdef DEBUG 
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
 dstrc_exit();
 #endif
 

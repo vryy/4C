@@ -14,8 +14,8 @@ Maintainer: Stefan Hartmann
 *----------------------------------------------------------------------*/
 #ifdef D_SHELL9
 
-/*! 
-\addtogroup SHELL9 
+/*!
+\addtogroup SHELL9
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
@@ -43,7 +43,7 @@ DOUBLE        wgtt[3];
 \brief shell9 gausspoint working array
 
 <pre>                                                            sh 03/03
-This structure contains the working array for g.p. values 
+This structure contains the working array for g.p. values
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -70,7 +70,7 @@ DOUBLE   kappa_t;   /*!< internal variable -> controls evolution in tension*/
 \brief shell9 working array
 
 <pre>                                                            sh 03/03
-This structure contains the working array for element values 
+This structure contains the working array for element values
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -116,9 +116,9 @@ struct _ARRAY4D  stresses;    /*!< physical stresses at GPs*/
 /*-------------------------------------------- array of internal forces */
 struct _ARRAY    intforce;
 /*-------------------------------------------- variables needed for eas */
-INT              oldkstep;                
+INT              oldkstep;
 INT              eas[5];
-INT              nhyb; 
+INT              nhyb;
 struct _ARRAY    alfa;
 struct _ARRAY    Dtildinv;
 struct _ARRAY    L;
@@ -158,7 +158,7 @@ void s9_Scuca (DOUBLE S[6], DOUBLE **gkov);
 void s9a3(ELEMENT   *ele);
 void s9a3ref_extern(DOUBLE   *funct,
                     DOUBLE  **deriv,
-                    DOUBLE  **a3ref, 
+                    DOUBLE  **a3ref,
                     ELEMENT  *ele);
 void s9averdir(DOUBLE **dir_list, INT numa3, DOUBLE *a3);
 /*----------------------------------------------------------------------*
@@ -168,7 +168,7 @@ void s9_ans_colloqpoints(INT       nsansq,     INT       iel,
                          INT       ans,        DIS_TYP   distyp,
                          DOUBLE    xr1[],      DOUBLE    xs1[],
                          DOUBLE    xr2[],      DOUBLE    xs2[],
-                         DOUBLE   *funct1q[],  DOUBLE  **deriv1q[], 
+                         DOUBLE   *funct1q[],  DOUBLE  **deriv1q[],
                          DOUBLE   *funct2q[],  DOUBLE  **deriv2q[],
                          DOUBLE  **xrefe,      DOUBLE ***a3r,
                          DOUBLE  **xcure,      DOUBLE ***a3c,
@@ -199,36 +199,36 @@ void s9_ans_bbar_q(DOUBLE  **bop,        DOUBLE    frq[],      DOUBLE fsq[],
                    DOUBLE  **deriv1q[],  DOUBLE  **deriv2q[],
                    DOUBLE ***akovc1q[],  DOUBLE ***akovc2q[],
                    DOUBLE ***a3kvpc1q[], DOUBLE ***a3kvpc2q[],
-                   INT       iel,        INT       numdf, 
+                   INT       iel,        INT       numdf,
                    INT       num_klay,   INT       klay,
                    DOUBLE    condfac,    INT       nsansq);
-void s9_ans_tvhe_q(DOUBLE  **gmkovr,     DOUBLE  **gmkovc,    
-                   DOUBLE  **gmkonr,     DOUBLE  **gmkonc,    
+void s9_ans_tvhe_q(DOUBLE  **gmkovr,     DOUBLE  **gmkovc,
+                   DOUBLE  **gmkonr,     DOUBLE  **gmkonc,
                    DOUBLE ***amkovc,     DOUBLE ***amkovr,
-                   DOUBLE ***akovc,      DOUBLE ***akovr,     
+                   DOUBLE ***akovc,      DOUBLE ***akovr,
                    DOUBLE ***a3kvpc,     DOUBLE ***a3kvpr,
                    DOUBLE   *detr,       DOUBLE   *detc,
-                   DOUBLE ***amkovr1q[], DOUBLE ***amkovc1q[], 
-                   DOUBLE ***amkovr2q[], DOUBLE ***amkovc2q[], 
-                   DOUBLE    frq[],      DOUBLE    fsq[], 
-                   DOUBLE    e3,         INT       nansq, 
-                   DOUBLE    h,           
-                   DOUBLE   *klayhgt,     
-                   DOUBLE   *mlayhgt,     
-                   INT       num_klay,    
-                   INT       klay,        
-                   INT       mlay,        
+                   DOUBLE ***amkovr1q[], DOUBLE ***amkovc1q[],
+                   DOUBLE ***amkovr2q[], DOUBLE ***amkovc2q[],
+                   DOUBLE    frq[],      DOUBLE    fsq[],
+                   DOUBLE    e3,         INT       nansq,
+                   DOUBLE    h,
+                   DOUBLE   *klayhgt,
+                   DOUBLE   *mlayhgt,
+                   INT       num_klay,
+                   INT       klay,
+                   INT       mlay,
                    DOUBLE    condfac);
 void s9_ans_tvkg(DOUBLE **estif,     DOUBLE  *stress_r,
                  DOUBLE  *funct,     DOUBLE **deriv,
-                 INT      numdf,     INT      iel,         
+                 INT      numdf,     INT      iel,
                  DOUBLE   weight,
                  DOUBLE   frq[],     DOUBLE   fsq[],
                  DOUBLE  *funct1q[], DOUBLE  *funct2q[],
                  DOUBLE **deriv1q[], DOUBLE **deriv2q[],
                  INT      ansq,      INT       nsansq,
-                 INT      klay,                       
-                 INT      num_klay);                  
+                 INT      klay,
+                 INT      num_klay);
 /*----------------------------------------------------------------------*
  |  s9_btdb.c                                            m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -243,26 +243,26 @@ void s9_tmas(DOUBLE *funct, DOUBLE *thick, DOUBLE **emass, INT iel, INT numdf,
  |  s9_call_mat.c                                           sh 02/03    |
  *----------------------------------------------------------------------*/
 void s9_call_mat(ELEMENT    *ele,
-                 MULTIMAT   *multimat,  
+                 MULTIMAT   *multimat,
                  DOUBLE      stress[6],
                  DOUBLE      strain[6],
-                 DOUBLE    **C,         
+                 DOUBLE    **C,
                  DOUBLE    **gmkovc,
                  DOUBLE    **gmkovr,
                  DOUBLE    **gmkonr,
                  DOUBLE    **gkovr,
                  DOUBLE    **gkonr,
-                 INT         rot_axis,  
-                 DOUBLE      phi,       
-                 INT         ip,        
-                 INT         actlay,    
-                 INT         istore,    
-                 INT         newval);   
+                 INT         rot_axis,
+                 DOUBLE      phi,
+                 INT         ip,
+                 INT         actlay,
+                 INT         istore,
+                 INT         newval);
 void s9_getdensity(MATERIAL   *mat, DOUBLE *density);
 /*----------------------------------------------------------------------*
  |  s9_cdia.c                                               sh 10/03    |
  *----------------------------------------------------------------------*/
-void s9_cdia(ELEMENT   *ele, 
+void s9_cdia(ELEMENT   *ele,
              S9_DATA   *data,
              DOUBLE    *funct,
              DOUBLE   **deriv,
@@ -275,10 +275,10 @@ void s9_cdia(ELEMENT   *ele,
 void s9_eas(const INT    nhyb,
             const DOUBLE e1,
             const DOUBLE e2,
-            const INT    iel, 
-            const INT   *eas, 
+            const INT    iel,
+            const INT   *eas,
             DOUBLE     **P);
-void s9_transeas(DOUBLE      **P, 
+void s9_transeas(DOUBLE      **P,
                  DOUBLE      **transP,
                  DOUBLE      **T,
                  DOUBLE     ***akovr,
@@ -294,9 +294,9 @@ void s9_eps(DOUBLE strain[6],DOUBLE **gmkovc, DOUBLE **gmkovr);
 /*----------------------------------------------------------------------*
  |  s9_funcderiv.c                                       m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void s9_funct_deriv(DOUBLE     *funct, 
-                    DOUBLE    **deriv, 
-                    DOUBLE      r, 
+void s9_funct_deriv(DOUBLE     *funct,
+                    DOUBLE    **deriv,
+                    DOUBLE      r,
                     DOUBLE      s,
                     DIS_TYP     typ,
                     INT         option);
@@ -335,7 +335,7 @@ void s9jaco(DOUBLE    *funct,
             DOUBLE    *deta,
             INT        init,
             INT        num_klay,
-            DOUBLE    *klayhgt);     
+            DOUBLE    *klayhgt);
 /*----------------------------------------------------------------------*
  |  s9_load1.c                                           m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -350,7 +350,7 @@ void s9loadGP(ELEMENT    *ele,
               DOUBLE     *funct,
               INT         iel,
               DOUBLE      zi,
-              DOUBLE      shift);    
+              DOUBLE      shift);
 /*----------------------------------------------------------------------*
  |  s9_load_surf.c                                          sh 12/02    |
  *----------------------------------------------------------------------*/
@@ -371,7 +371,7 @@ void shell9(FIELD       *actfield,
             ARRAY       *emass_global,
             ARRAY       *intforce_global,
             CALC_ACTION *action,
-            CONTAINER   *container);    
+            CONTAINER   *container);
 /*----------------------------------------------------------------------*
  |  s9_mat_linel.c                                       m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -380,71 +380,71 @@ void s9_mat_stress1(DOUBLE stress[6], DOUBLE strain[6], DOUBLE **C);
 /*----------------------------------------------------------------------*
  |  s9_mat_plast_hoff.c                                     sh 03/03    |
  *----------------------------------------------------------------------*/
-void s9_mat_plast_hoff(PL_HOFF   *mat,       
-                       ELEMENT   *ele,       
-                       INT        ip,        
-                       INT        actlay,    
-                       DOUBLE     stress[6], 
-                       DOUBLE     strain[6], 
-                       DOUBLE   **d,         
-                       INT        istore,    
-                       INT        newval);   
+void s9_mat_plast_hoff(PL_HOFF   *mat,
+                       ELEMENT   *ele,
+                       INT        ip,
+                       INT        actlay,
+                       DOUBLE     stress[6],
+                       DOUBLE     strain[6],
+                       DOUBLE   **d,
+                       INT        istore,
+                       INT        newval);
 /*----------------------------------------------------------------------*
  |  s9_mat_plast_mises.c                                    sh 03/03    |
  *----------------------------------------------------------------------*/
-void s9_mat_plast_mises(DOUBLE     ym,        
-                        DOUBLE     pv,        
-                        DOUBLE     sigy,      
-                        DOUBLE     hard,      
-                        DOUBLE     gf,        
-                        DOUBLE     betah,     
-                        ELEMENT   *ele,       
-                        INT        ip,        
-                        INT        actlay,    
-                        DOUBLE     stress[6], 
-                        DOUBLE     strain[6], 
-                        DOUBLE   **d,         
-                        INT        istore,    
-                        INT        newval);   
+void s9_mat_plast_mises(DOUBLE     ym,
+                        DOUBLE     pv,
+                        DOUBLE     sigy,
+                        DOUBLE     hard,
+                        DOUBLE     gf,
+                        DOUBLE     betah,
+                        ELEMENT   *ele,
+                        INT        ip,
+                        INT        actlay,
+                        DOUBLE     stress[6],
+                        DOUBLE     strain[6],
+                        DOUBLE   **d,
+                        INT        istore,
+                        INT        newval);
 /*----------------------------------------------------------------------*
  |  s9_mat_plast_dp.c                                        sh 09/03    |
  *----------------------------------------------------------------------*/
-void s9_mat_plast_dp(DOUBLE     ym,        
-                     DOUBLE     pv,        
-                     DOUBLE     sigy,      
-                     DOUBLE     eh,        
-                     DOUBLE     gf,        
-                     DOUBLE     betah,     
-                     DOUBLE     phi,       
-                     ELEMENT   *ele,       
-                     INT        ip,        
-                     INT        actlay,    
-                     DOUBLE     stress[6], 
-                     DOUBLE     strain[6], 
-                     DOUBLE   **d,         
-                     INT        istore,    
-                     INT        newval);    
+void s9_mat_plast_dp(DOUBLE     ym,
+                     DOUBLE     pv,
+                     DOUBLE     sigy,
+                     DOUBLE     eh,
+                     DOUBLE     gf,
+                     DOUBLE     betah,
+                     DOUBLE     phi,
+                     ELEMENT   *ele,
+                     INT        ip,
+                     INT        actlay,
+                     DOUBLE     stress[6],
+                     DOUBLE     strain[6],
+                     DOUBLE   **d,
+                     INT        istore,
+                     INT        newval);
 /*----------------------------------------------------------------------*
  |  s9_mat_plast_epc.c                                       sh 10/03    |
  *----------------------------------------------------------------------*/
-void s9_mat_plast_epc(DOUBLE     Ec,        
-                      DOUBLE     vc,        
-                      DOUBLE     ftm,       
-                      DOUBLE     fcm,       
-                      DOUBLE     gt,        
-                      DOUBLE     gc, 
-                      DOUBLE     gamma1,    
-                      DOUBLE     gamma2,    
-                      DOUBLE     gamma3,    
-                      DOUBLE     gamma4,    
-                      ELEMENT   *ele,       
-                      INT        ip,        
-                      INT        actlay,    
-                      DOUBLE     stress[6], 
-                      DOUBLE     strain[6], 
-                      DOUBLE   **d,         
-                      INT        istore,    
-                      INT        newval);    
+void s9_mat_plast_epc(DOUBLE     Ec,
+                      DOUBLE     vc,
+                      DOUBLE     ftm,
+                      DOUBLE     fcm,
+                      DOUBLE     gt,
+                      DOUBLE     gc,
+                      DOUBLE     gamma1,
+                      DOUBLE     gamma2,
+                      DOUBLE     gamma3,
+                      DOUBLE     gamma4,
+                      ELEMENT   *ele,
+                      INT        ip,
+                      INT        actlay,
+                      DOUBLE     stress[6],
+                      DOUBLE     strain[6],
+                      DOUBLE   **d,
+                      INT        istore,
+                      INT        newval);
 /*----------------------------------------------------------------------*
  |  s9_math.c                                               sh 02/03    |
  *----------------------------------------------------------------------*/
@@ -452,8 +452,8 @@ void s9_Msort_bs9(DOUBLE **M);
 void s9_Msort_s9b(DOUBLE **M);
 void s9_Vsort_bs9(DOUBLE vec[6]);
 void s9_Vsort_s9b(DOUBLE vec[6]);
-void s9shear_cor(DOUBLE **C, DOUBLE xsi); 
-void s9_rot(DOUBLE phi,   INT    rot_axis, DOUBLE **gkov, 
+void s9shear_cor(DOUBLE **C, DOUBLE xsi);
+void s9_rot(DOUBLE phi,   INT    rot_axis, DOUBLE **gkov,
             DOUBLE g1[3], DOUBLE g2[3],    DOUBLE g3[3]);
 void s9_Teps(DOUBLE g1[3], DOUBLE g2[3], DOUBLE g3[3],DOUBLE T[6][6]);
 void s9_Ecama(DOUBLE E[6], DOUBLE T[6][6]);
@@ -483,22 +483,22 @@ void s9_read_restart(ELEMENT *actele, long int *handles, INT init);
 /*----------------------------------------------------------------------*
  |  s9_static_keug.c                                       m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void s9static_keug(ELEMENT   *ele,                        
-                   S9_DATA   *data,                       
-                   MATERIAL  *mat,                        
-                   ARRAY     *estif_global,               
-                   ARRAY     *emass_global,               
-                   INT        kintyp,                     
-                   DOUBLE    *force,                      
-                   INT        kstep,                      
-                   INT        init);                      
+void s9static_keug(ELEMENT   *ele,
+                   S9_DATA   *data,
+                   MATERIAL  *mat,
+                   ARRAY     *estif_global,
+                   ARRAY     *emass_global,
+                   INT        kintyp,
+                   DOUBLE    *force,
+                   INT        kstep,
+                   INT        init);
 /*----------------------------------------------------------------------*
  |  s9_stress.c                                          m.gee 02/02    |
  *----------------------------------------------------------------------*/
 void s9_stress(ELEMENT      *ele,
                S9_DATA      *data,
                MATERIAL     *mat,
-               INT           kintyp,   
+               INT           kintyp,
                INT           kstep,
                INT           init);
 void s9_stress_reduce(FIELD     *actfield,
@@ -510,7 +510,7 @@ void s9_stress_reduce(FIELD     *actfield,
 void s9_tforce(DOUBLE   **force,
                INT        ngauss,
                DOUBLE  ***akov,
-               INT        klay,    
+               INT        klay,
                ELEMENT   *ele);
 void s9_tstress(DOUBLE   **force,
                 DOUBLE    *stress,
@@ -529,10 +529,10 @@ void s9_tfte(DOUBLE  **force,
              DOUBLE ***amkov,
              DOUBLE    h,
              DOUBLE    e3,
-             DOUBLE   *klayhgt,   
-             DOUBLE   *mlayhgt,   
-             INT       klay,      
-             INT       mlay,      
+             DOUBLE   *klayhgt,
+             DOUBLE   *mlayhgt,
+             INT       klay,
+             INT       mlay,
              DOUBLE    fact,
              DOUBLE    detsm,
              DOUBLE    detsr);
@@ -547,12 +547,12 @@ void s9_tmtr(DOUBLE     e3,
              DOUBLE    *det,
              DOUBLE  ***akov,
              DOUBLE  ***a3kvp,
-             DOUBLE     h,           
-             DOUBLE    *klayhgt,     
-             DOUBLE    *mlayhgt,     
-             INT        num_klay,    
-             INT        klay,        
-             INT        mlay,        
+             DOUBLE     h,
+             DOUBLE    *klayhgt,
+             DOUBLE    *mlayhgt,
+             INT        num_klay,
+             INT        klay,
+             INT        mlay,
              DOUBLE     condfac);
 /*----------------------------------------------------------------------*
  |  s9_tvbo.c                                            m.gee 11/01    |
@@ -564,8 +564,8 @@ void s9_tvbo(DOUBLE    **bop,
              INT         numdf,
              DOUBLE   ***akov,
              DOUBLE   ***a3kvp,
-             INT         num_klay,    
-             INT         klay,        
+             INT         num_klay,
+             INT         klay,
              DOUBLE      condfac,
              INT         nsansq);
 /*----------------------------------------------------------------------*
@@ -586,13 +586,13 @@ void s9_tvhe(DOUBLE  **gmkovr,
              DOUBLE ***a3kvpc,
              DOUBLE ***a3kvpr,
              DOUBLE    e3,
-             INT       kintyp,    
-             DOUBLE    h,         
-             DOUBLE   *klayhgt,   
-             DOUBLE   *mlayhgt,   
-             INT       num_klay,  
-             INT       klay,      
-             INT       mlay,      
+             INT       kintyp,
+             DOUBLE    h,
+             DOUBLE   *klayhgt,
+             DOUBLE   *mlayhgt,
+             INT       num_klay,
+             INT       klay,
+             INT       mlay,
              DOUBLE    condfac);
 void s9_tvhe_lin(DOUBLE  **gmkovr,
                  DOUBLE  **gmkovc,
@@ -611,12 +611,12 @@ void s9_tvma(DOUBLE   **D,
              DOUBLE    *stress_r,
              DOUBLE     e3,
              DOUBLE     fact,
-             DOUBLE     h,           
-             DOUBLE    *klayhgt,     
-             DOUBLE    *mlayhgt,     
-             INT        num_klay,    
-             INT        klay,        
-             INT        mlay,        
+             DOUBLE     h,
+             DOUBLE    *klayhgt,
+             DOUBLE    *mlayhgt,
+             INT        num_klay,
+             INT        klay,
+             INT        mlay,
              DOUBLE     condfac);
 /*----------------------------------------------------------------------*
  |  s9_tvmr.c                                                sh 10/02   |
@@ -648,12 +648,12 @@ void s9_vthv(DOUBLE **gmkovc,
              DOUBLE  *epsh,
              DOUBLE  *detc,
              DOUBLE   e3,
-             DOUBLE   h,         
-             DOUBLE  *klayhgt,   
-             DOUBLE  *mlayhgt,   
-             INT      num_klay,  
-             INT      klay,      
-             INT      mlay,      
+             DOUBLE   h,
+             DOUBLE  *klayhgt,
+             DOUBLE  *mlayhgt,
+             INT      num_klay,
+             INT      klay,
+             INT      mlay,
              DOUBLE   condfac);
 /*----------------------------------------------------------------------*
  |  s9_tvkg.c         m.gee 02/02     modified for shell9   by sh02/03  |
@@ -665,24 +665,24 @@ void s9_tvkg(DOUBLE **estif,
              INT      numdf,
              INT      iel,
              DOUBLE   weight,
-             INT      klay,        
-             INT      num_klay);   
+             INT      klay,
+             INT      num_klay);
 /*----------------------------------------------------------------------*
  |  s9_xint.c                                            m.gee 02/02    |
  *----------------------------------------------------------------------*/
 void s9_xint(DOUBLE *result, DOUBLE *values, DOUBLE *funct, INT iel);
-DOUBLE s9con(DOUBLE    e3,       
-             INT       numlay,   
-             INT       ilay,     
-             INT       jlay,     
+DOUBLE s9con(DOUBLE    e3,
+             INT       numlay,
+             INT       ilay,
+             INT       jlay,
              DOUBLE    condfac);
-DOUBLE s9notr(INT       numlay,   
-              INT       ilay,     
-              INT       jlay);    
-DOUBLE s9ksi(INT       numlay,   
-             INT       ilay,     
-             INT       jlay,     
-             DOUBLE    condfac); 
+DOUBLE s9notr(INT       numlay,
+              INT       ilay,
+              INT       jlay);
+DOUBLE s9ksi(INT       numlay,
+             INT       ilay,
+             INT       jlay,
+             DOUBLE    condfac);
 /*----------------------------------------------------------------------*/
 #endif /*D_SHELL9*/
 /*! @} (documentation module close)*/

@@ -47,23 +47,23 @@ extern         ALLDYNA      *alldyn;
 
 
 
-static ARRAY               lset00_a; 
+static ARRAY               lset00_a;
 static DOUBLE             *lset00;       /* element nodal values at (n)         */
-static ARRAY               lset01_a; 
+static ARRAY               lset01_a;
 static DOUBLE             *lset01;       /* element nodal values at (n+1)       */
-static ARRAY               lset02_a; 
+static ARRAY               lset02_a;
 static DOUBLE             *lset02;       /* element nodal values for sign comp. */
-static ARRAY               velocity_a; 
+static ARRAY               velocity_a;
 static DOUBLE            **velocity;     /* elem. nodal velocities (from fluid) */
-static ARRAY               funct_a;  
+static ARRAY               funct_a;
 static DOUBLE             *funct;        /* shape functions                     */
-static ARRAY               deriv_a;  
+static ARRAY               deriv_a;
 static DOUBLE            **deriv;        /* first natural derivatives           */
 static ARRAY               xyze_a;
-static DOUBLE            **xyze;   
-static ARRAY               xjm_a;    
+static DOUBLE            **xyze;
+static ARRAY               xjm_a;
 static DOUBLE            **xjm;          /* Jacobian matrix                     */
-static ARRAY               derxy_a;  
+static ARRAY               derxy_a;
 static DOUBLE            **derxy;        /* global 1st derivatives              */
 static DOUBLE            **estif;        /* pointer to element tangent matrix   */
 static DOUBLE            **emass;        /* pointer to element mass matrix      */
@@ -94,19 +94,19 @@ control rouitne for 2D level set element
 void ls2(
   PARTITION   *actpart,
   INTRA       *actintra,
-  ELEMENT     *ele,             
-  ARRAY       *estif_global,   
-  ARRAY       *emass_global,   
+  ELEMENT     *ele,
+  ARRAY       *estif_global,
+  ARRAY       *emass_global,
   ARRAY       *etforce_global,
   ARRAY       *eiforce_global,
   CALC_ACTION *action
   )
 {
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("ls2");
 #endif
 /*----------------------------------------------------------------------*/
-  
+
   switch (*action)
   {
       case calc_ls_init:                /* initialize */
@@ -114,28 +114,28 @@ void ls2(
         emass   = emass_global->a.da;
         eiforce = eiforce_global->a.dv;
         etforce = etforce_global->a.dv;
-        
+
         ls2_init();
-        
+
         break;
-      case calc_ls:                     /* calculate element contributions */  	   	               
+      case calc_ls:                     /* calculate element contributions */
         amzero(estif_global);
         amzero(emass_global);
         amzero(eiforce_global);
         amzero(etforce_global);
-        
+
         ls2_calc(ele);
-        
+
         break;
       default:
         dserror("action unknown\n");
   }
-  
+
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of ls2 */
 
@@ -151,7 +151,7 @@ initialization phase for 2D level set element
 *----------------------------------------------------------------------*/
 void ls2_init()
 {
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("ls2_init");
 #endif
 /*----------------------------------------------------------------------*/
@@ -165,10 +165,10 @@ void ls2_init()
   xyze      = amdef("xyze"  , &xyze_a     , TWO           , MAXNOD_LS2    , "DA");
   derxy     = amdef("derxy" , &derxy_a    , TWO           , MAXNOD_LS2    , "DA");
   velocity  = amdef("vel"   , &velocity_a , TWO           , TWO*MAXNOD_LS2, "DA");
-  
+
   if (genprob.numls==-1)
     dserror("\n**ERROR** there is no levelset field initialized!\n");
-  
+
  end:
   /* set lsdyn */
   lsdyn = alldyn[genprob.numls].lsdyn;
@@ -181,12 +181,12 @@ void ls2_init()
 
   /* set integration data */
   ls2_intg(data);
-  
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of ls2_init */
 
@@ -204,17 +204,17 @@ void ls2_calc(
   ELEMENT* ele
   )
 {
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("ls2_calc");
 #endif
 /*----------------------------------------------------------------------*/
-  
+
   /* set nlayer */
   nlayer = ele->e.ls2->nlayer;
 
   /* set is_elcut */
   is_elcut = ele->e.ls2->is_elcut;
-  
+
   if (lsdyn->lsdata->reinitflag==1)
   {
     if (lsdyn->lsdata->localization==1 && nlayer==0)
@@ -229,13 +229,13 @@ void ls2_calc(
     else
       ls2_calc_nonlocalized(ele);
   }
-  
+
 /*----------------------------------------------------------------------*/
- end: 
-#ifdef DEBUG 
+ end:
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of ls2_calc */
 
@@ -263,13 +263,13 @@ void ls2_calc_nonlocalized(
   DOUBLE      e1,e2;
   INT         ntyp;
   DIS_TYP     typ;
-  
+
   DOUBLE      area=0.0;
   DOUBLE      tau=0.0; /* stabilization parameter */
   DOUBLE      velGP[2]={0.0,0.0};
   DOUBLE      velnorm=0.0;
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_enter("ls2_calc_nonlocalized");
 #endif
 /*----------------------------------------------------------------------*/
@@ -277,7 +277,7 @@ void ls2_calc_nonlocalized(
   /* set integration parameters */
   thdt  = (      lsdyn->theta)*lsdyn->dt;               /* (  theta)*dt */
   thdt1 = (1.0 - lsdyn->theta)*lsdyn->dt;		/* (1-theta)*dt */
-  
+
   /* set element parameters */
   iel = ele->numnp;
   typ = ele->distyp;
@@ -289,7 +289,7 @@ void ls2_calc_nonlocalized(
    */
 
   /*
-   * get nodal coordinates of the element and nodal values of the levelset 
+   * get nodal coordinates of the element and nodal values of the levelset
    * function at time step (n) and (n+1)
    */
   ls2_calset(ele,xyze,lset00,lset01);
@@ -318,7 +318,7 @@ void ls2_calc_nonlocalized(
       for (ls=0; ls<nis; ls++)
       {
         /* shape functions and their derivatives */
-        switch(ntyp)  
+        switch(ntyp)
         {
             case 1:
               e1   = data->xgq[lr][nir-1];
@@ -340,7 +340,7 @@ void ls2_calc_nonlocalized(
         /* Jacobian matrix */
         ls2_jaco(xyze,funct,deriv,xjm,&det,iel,ele);
         fac = facr*facs*det;
-        area += fac;      
+        area += fac;
       }
     }
 
@@ -351,7 +351,7 @@ void ls2_calc_nonlocalized(
     for (ls=0; ls<nis; ls++)
     {
       /* shape functions and their derivatives */
-      switch(ntyp)  
+      switch(ntyp)
       {
           case 1:
             e1   = data->xgq[lr][nir-1];
@@ -402,7 +402,7 @@ void ls2_calc_nonlocalized(
        */
       for (i=0; i<iel; i++)
         for (j=0; j<iel; j++)
-          emass[i][j] += funct[i]*funct[j]*fac;     
+          emass[i][j] += funct[i]*funct[j]*fac;
       /*
        * contribution due to stabilization
        */
@@ -437,12 +437,12 @@ void ls2_calc_nonlocalized(
   for (i=0; i<iel; i++)
     for (j=0; j<iel; j++)
       eiforce[i] += -emass[i][j]*lset01[j] -  estif[i][j]*lset01[j];
-  
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of ls2_calc_nonlocalized */
 
@@ -476,15 +476,15 @@ void ls2_calc_reinitialized(
   DOUBLE      area=0.0;
   DOUBLE      tau=0.0; /* stabilization parameter */
   DOUBLE      velnorm=0.0;
-  DOUBLE      normal[2]={0.0,0.0};  
+  DOUBLE      normal[2]={0.0,0.0};
   DOUBLE      velGP[2]={0.0,0.0};
   DOUBLE      gradnorm=0.0;
   DOUBLE      phi=0.0;
   DOUBLE      sign=0.0;
   DOUBLE      fs[4]={0.0,0.0,0.0,0.0};
   INT         locid;
- 
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_enter("ls2_calc_reinitialized");
 #endif
 /*----------------------------------------------------------------------*/
@@ -498,7 +498,7 @@ void ls2_calc_reinitialized(
   typ = ele->distyp;
   ntyp = ele->e.ls2->ntyp;
   /*
-   * get nodal coordinates of the element and nodal values of the levelset 
+   * get nodal coordinates of the element and nodal values of the levelset
    * function at time step (n) and (n+1)
    */
   ls2_calset(ele,xyze,lset00,lset01);
@@ -526,7 +526,7 @@ void ls2_calc_reinitialized(
       for (ls=0;ls<nis;ls++)
       {
         /* shape functions and their derivatives */
-        switch(ntyp)  
+        switch(ntyp)
         {
             case 1:
               e1   = data->xgq[lr][nir-1];
@@ -548,7 +548,7 @@ void ls2_calc_reinitialized(
         /* Jacobian matrix */
         ls2_jaco(xyze,funct,deriv,xjm,&det,iel,ele);
         fac = facr*facs*det;
-        area += fac;      
+        area += fac;
       }
     }
   }
@@ -558,7 +558,7 @@ void ls2_calc_reinitialized(
     for (ls=0; ls<nis; ls++)
     {
       /* shape functions and their derivatives */
-      switch(ntyp)  
+      switch(ntyp)
       {
           case 1:
             e1   = data->xgq[lr][nir-1];
@@ -624,7 +624,7 @@ void ls2_calc_reinitialized(
        */
       for (i=0; i<iel; i++)
         for (j=0; j<iel; j++)
-          emass[i][j] += funct[i]*funct[j]*fac;     
+          emass[i][j] += funct[i]*funct[j]*fac;
       /*
        * contribution due to stabilization
        */
@@ -648,13 +648,13 @@ void ls2_calc_reinitialized(
         for (j=0; j<iel; j++)
           for (k=0; k<2; k++)
             for (l=0; l<2; l++)
-              estif[i][j] += thdt*tau*velGP[k]*velGP[l]*derxy[k][i]*derxy[l][j]*fac;      
+              estif[i][j] += thdt*tau*velGP[k]*velGP[l]*derxy[k][i]*derxy[l][j]*fac;
       /*
       /* SOURCE term
        */
       /*
        * contribution due to Galerkin part
-       */      
+       */
       for (i=0; i<iel; i++)
         fs[i] -= sign*funct[i]*fac;
       /*
@@ -706,22 +706,22 @@ void ls2_calc_reinitialized(
         for (j=0; j<iel; j++)
         {
           emass[locid][    j] = 0.0;
-          emass[    j][locid] = 0.0;          
+          emass[    j][locid] = 0.0;
           estif[locid][j    ] = 0.0;
           estif[    j][locid] = 0.0;
         }
         /* reset vector components */
         etforce[locid] = 0.0;
-        eiforce[locid] = 0.0;        
+        eiforce[locid] = 0.0;
       }
     }
   }
-  
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of ls2_calc_reinitialized */
 
@@ -746,14 +746,14 @@ void ls2_calc_localized(
   INT     iel;
   NODE   *actnode;
 
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("ls2_calc_localized");
 #endif
 /*----------------------------------------------------------------------*/
 
   /* check whether element is active */
   if (nlayer!=0) dserror("\nelement is in active region");
-  
+
   iel = ele->numnp;
   /* initialize */
   for (i=0; i<iel; i++)
@@ -777,12 +777,12 @@ void ls2_calc_localized(
     actnode = ele->node[i];
     if (actnode->gnode->is_node_active!=0) estif[i][i] = 0.0;
   }
-  
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of ls2_calc_localized */
 
@@ -800,11 +800,11 @@ void ls2_setfluidvel(
   ELEMENT* ele
   )
 {
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_enter("ls2_setfluidvel");
 #endif
 /*----------------------------------------------------------------------*/
-  
+
   switch (lsdyn->lsdata->setvel)
   {
       case 1:
@@ -818,12 +818,12 @@ void ls2_setfluidvel(
       default:
         dserror("action unknown\n");
   }
-  
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of ls2_setfluidvel */
 
@@ -846,12 +846,12 @@ void ls2_setfluidvel_byuser(
   DOUBLE      dx1,dx2,dxl;
   DOUBLE      rad,rad2;
   DOUBLE      height = 1.0;
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_enter("ls2_setfluidvel_byuser");
 #endif
 /*----------------------------------------------------------------------*/
-  
+
   switch (flag)
   {
       case 1: /* uniform velocity in the horizontal direction */
@@ -921,12 +921,12 @@ void ls2_setfluidvel_byuser(
       default:
         dserror("action unknown\n");
   }
-  
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of ls2_setfluidfield_byuser */
 
@@ -948,8 +948,8 @@ void ls2_setfluidvel_byfluid(
   INT          iel;
   ELEMENT     *my_fluid;
   NODE	      *actnode;
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_enter("ls2_setfluidvel_byfluid");
 #endif
 /*----------------------------------------------------------------------*/
@@ -957,7 +957,7 @@ void ls2_setfluidvel_byfluid(
   /* corresponding fluid element */
   my_fluid = ele->e.ls2->my_fluid;
   iel = my_fluid->numnp;
-  
+
   for (i=0; i<iel; i++)
   {
     actnode = my_fluid->node[i];
@@ -972,12 +972,12 @@ void ls2_setfluidvel_byfluid(
     velocity[0][iel+i] = actnode->sol_increment.a.da[3][3];
     velocity[1][iel+i] = actnode->sol_increment.a.da[3][4];
   }
-  
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
+
   return;
 } /* end of ls2_setfluidvel_byfluid */
 /*! @} (documentation module close)*/

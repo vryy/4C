@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Michael Gee
@@ -20,7 +20,7 @@ void s8_BtDB(DOUBLE **estif, DOUBLE **bop, DOUBLE **D, INT iel,
                 INT numdf, DOUBLE weight, DOUBLE **work)
 {
 INT dim;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_BtDB");
 #endif
 /*----------------------------------------------------------------------*/
@@ -30,10 +30,10 @@ math_matmatdense(work,D,bop,12,12,dim,0,1.0);
 /*--------------------------- make multiplication estif += bop^t * work */
 math_mattrnmatdense(estif,bop,work,dim,12,dim,1,weight);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of s8_BtDB */
 #endif
- 
+

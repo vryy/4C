@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -11,7 +11,7 @@ Maintainer: Malte Neumann
 
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
-#ifdef PARALLEL 
+#ifdef PARALLEL
 
 #ifdef HPUX10
 #include "metis/metis.h"
@@ -37,8 +37,8 @@ Maintainer: Malte Neumann
 /*----------------------------------------------------------------------*
  | find a partner coupling compatible node                m.gee 8/00    |
  *----------------------------------------------------------------------*/
-void iscouple_find_node_comp(NODE  *actnode, 
-                             FIELD *searchfield, 
+void iscouple_find_node_comp(NODE  *actnode,
+                             FIELD *searchfield,
                              NODE **partnernode,
                              INT    coupleID,
                              INT    dof)
@@ -46,7 +46,7 @@ void iscouple_find_node_comp(NODE  *actnode,
 INT i;
 INT ierr;
 DOUBLE tol = EPS8;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("iscouple_find_node_comp");
 #endif
 /*----------------------------------------------------------------------*/
@@ -76,7 +76,7 @@ dstrc_enter("iscouple_find_node_comp");
    }
 finish:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -93,7 +93,7 @@ void cheque_distance(DOUBLE *x1, DOUBLE *x2, DOUBLE tol, INT *ierr)
 INT i;
 DOUBLE v[3];
 DOUBLE lenght;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("cheque_distance");
 #endif
 /*----------------------------------------------------------------------*/
@@ -103,7 +103,7 @@ lenght = sqrt(lenght);
 if (lenght <= tol) *ierr=1;
 else *ierr=0;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -117,20 +117,20 @@ return;
 /*----------------------------------------------------------------------*
  | assign a dofcoupling set                               m.gee 5/01    |
  *----------------------------------------------------------------------*/
-void find_assign_coupset(FIELD *actfield, 
-                            INT    coupleID, 
+void find_assign_coupset(FIELD *actfield,
+                            INT    coupleID,
                             INT   *counter)
 {
 INT i,l;
 INT dof;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("find_assign_coupset");
 #endif
 /*----------------------------------------------------------------------*/
 /*----- check in couple set for already given dof / dirichlet condition */
 /*
    if there is one dof in the coupling set which is dirichlet-conditioned, then the
-   whole coupling set has to be dirichlet-conditioned 
+   whole coupling set has to be dirichlet-conditioned
 */
 dof = -2;
 /*------------------------ check for a dirichlet condition in coupleset */
@@ -151,7 +151,7 @@ for (i=0; i<actfield->dis[0].numnp; i++)
          }
       }
    }
-}   
+}
 for (i=0; i<actfield->dis[0].numnp; i++)
 {
    if (actfield->dis[0].node[i].gnode->couple==NULL &&
@@ -178,7 +178,7 @@ for (i=0; i<actfield->dis[0].numnp; i++)
    for (l=0; l<actfield->dis[0].node[i].numdf; l++)
    {
       if (actfield->dis[0].node[i].gnode->couple->couple.a.ia[l][1]!=coupleID) continue;
-      
+
       if (actfield->dis[0].node[i].dof[l]==dof) goto finish;
       actfield->dis[0].node[i].dof[l]=dof;
    }
@@ -193,7 +193,7 @@ for (i=0; i<actfield->dis[0].numnp; i++)
    for (l=0; l<actfield->dis[0].node[i].numdf; l++)
    {
       if (actfield->dis[0].node[i].gnode->couple->couple.a.ia[l][1]!=coupleID) continue;
-      
+
       actfield->dis[0].node[i].dof[l]=*counter;
    }
 }
@@ -201,7 +201,7 @@ for (i=0; i<actfield->dis[0].numnp; i++)
 }
 finish:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 

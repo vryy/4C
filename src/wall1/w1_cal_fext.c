@@ -26,14 +26,14 @@ extern struct _GENPROB     genprob;
 /*----------------------------------------------------------------------*/
 typedef enum _RSF
 { /* r..r-dir., s..s-dir., n..-1.0, p..+1.0 */
-  rp, rn, ps, ns 
+  rp, rn, ps, ns
 } RSF;
 
 static ARRAY eload_a; static DOUBLE **eload;  /* static element load vector */
 static ARRAY funct_a; static DOUBLE  *funct;  /* ansatz-functions           */
 static ARRAY deriv_a; static DOUBLE **deriv;  /* derivatives of ansatz-funct*/
 static ARRAY xjm_a;   static DOUBLE **xjm;    /* jacobian matrix            */
-/*! 
+/*!
 \addtogroup WALL1
 *//*! @{ (documentation module open)*/
 
@@ -88,7 +88,7 @@ void w1_eleload(ELEMENT  *ele,     /* actual element                  */
                 W1_DATA  *data,    /* wall1- Data                     */
                 DOUBLE	 *loadvec, /* global element load vector fext */
                 INT	  init,    /* flag if init or calculation     */
-                INT       imyrank) 
+                INT       imyrank)
 {
 INT          lr,ls;              /* integration directions          */
 INT          i,j;                /* some loopers                    */
@@ -129,15 +129,15 @@ RSF rsgeo;                   /* integration direction on line          */
 /* init phase        (init=1)                                          */
 /*---------------------------------------------------------------------*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_eleload");
 #endif
 
 if (init==1)
 {
   eload   = amdef("eload"  ,&eload_a,MAXDOFPERNODE,MAXNOD_WALL1,"DA");
-  funct   = amdef("funct"  ,&funct_a,MAXNOD_WALL1,1            ,"DV");       
-  deriv   = amdef("deriv"  ,&deriv_a,2            ,MAXNOD_WALL1,"DA");       
+  funct   = amdef("funct"  ,&funct_a,MAXNOD_WALL1,1            ,"DV");
+  deriv   = amdef("deriv"  ,&deriv_a,2            ,MAXNOD_WALL1,"DA");
   xjm     = amdef("xjm_a"  ,&xjm_a  ,numdf        ,numdf       ,"DA");
   goto end;
 }
@@ -151,7 +151,7 @@ amdel(&eload_a);
 amdel(&funct_a);
 amdel(&deriv_a);
 amdel(&xjm_a);
-goto end;  
+goto end;
 }
 /*----------------------------------------------------------------------*/
 /* calculation phase        (init=0)                                    */
@@ -168,10 +168,10 @@ case quad4: case quad8: case quad9:  /* --> quad - element */
    nir = ele->e.w1->nGP[0];
    nis = ele->e.w1->nGP[1];
 break;
-case tri3: /* --> tri - element */  
+case tri3: /* --> tri - element */
    nir  = ele->e.w1->nGP[0];
    nis  = 1;
-   intc = ele->e.w1->nGP[1]-1;  
+   intc = ele->e.w1->nGP[1]-1;
 break;
 default:
    dserror("ele->distyp unknown! in 'w1_cal_fext.c' ");
@@ -199,7 +199,7 @@ if (imyrank==ele->proc)
     for (ls=0; ls<nis; ls++)/*------------------------ loop s direction */
     {
 /*--------------- get values of  shape functions and their derivatives */
-      switch(ele->distyp)  
+      switch(ele->distyp)
       {
        case quad4: case quad8: case quad9:  /* --> quad - element */
        e1   = data->xgrr[lr];
@@ -207,7 +207,7 @@ if (imyrank==ele->proc)
        e2   = data->xgss[ls];
        facs = data->wgts[ls];
       break;
-      case tri3:   /* --> tri - element */              
+      case tri3:   /* --> tri - element */
 	 e1   = data->txgr[lr][intc];
 	 facr = data->twgt[lr][intc];
 	 e2   = data->txgs[lr][intc];
@@ -218,17 +218,17 @@ if (imyrank==ele->proc)
       } /* end switch(ele->distyp) */
       /*-------- shape functions (and (not needed)their derivatives) */
       w1_funct_deriv(funct,deriv,e1,e2,ele->distyp,1);
-      /*-------------------------------------------- jacobian matrix */       
-      w1_jaco (deriv,xjm,&det,ele,iel); 
-      /*---------------------------------------- integration factor  */ 
-      fac = facr * facs * det; 
+      /*-------------------------------------------- jacobian matrix */
+      w1_jaco (deriv,xjm,&det,ele,iel);
+      /*---------------------------------------- integration factor  */
+      fac = facr * facs * det;
       /*---------------------------------------------- surface-load  */
-      w1_fextsurf(ele,eload,funct,fac,iel); 
-      }/*========================================== end of loop over ls */ 
+      w1_fextsurf(ele,eload,funct,fac,iel);
+      }/*========================================== end of loop over ls */
    }/*============================================= end of loop over lr */
    foundsurface=1;
-   /*                   the surface load of this element has been done, */  
-   /*                          -> switch off the surface load condition */ 
+   /*                   the surface load of this element has been done, */
+   /*                          -> switch off the surface load condition */
    ele->g.gsurf->neum=NULL;
 } /* endif (imyrank==ele->proc) */
 /*----------------------------------------------------------------------*/
@@ -246,7 +246,7 @@ for (i=0; i<ngline; i++)
    lineneum[i] = gline[i]->neum;
    if (lineneum[i]==NULL) continue;
    if (lineneum[i]->neum_type==neum_FSI) lineneum[i]=NULL;
-   if (lineneum[i]) foundline=1; 
+   if (lineneum[i]) foundline=1;
 }
 if (foundline==0) goto endline;
 /*-------------------------- loop over lines (with neumann conditions) */
@@ -258,22 +258,22 @@ for (line=0; line<ngline; line++)
    ngnode = gline[line]->ngnode;
    /*-------------------- coordinates and weights of integration points */
    /*--------- original GP-coordinates and weights for area-integration */
-   ngr = nir; 
-   ngs = nis; 
+   ngr = nir;
+   ngs = nis;
 
    switch (ele->distyp)
    {
     case quad4: case quad8: case quad9:  /* --> quad - element */
 /*--------------- get values of  shape functions and their derivatives */
-    for (i=0; i<ngr; i++) 
-    {      
+    for (i=0; i<ngr; i++)
+    {
       xgp[i] = data->xgrr[i];
-      wgx[i] = data->wgtr[i]; 
+      wgx[i] = data->wgtr[i];
     }
-    for (i=0; i<ngs; i++) 
-    { 
+    for (i=0; i<ngs; i++)
+    {
       ygp[i] = data->xgss[i];
-      wgy[i] = data->wgts[i]; 
+      wgy[i] = data->wgts[i];
     }
 
     for (i=0; i<ngr; i++) { xgp[i] = data->xgrr[i];
@@ -283,26 +283,26 @@ for (line=0; line<ngline; line++)
    /*--------- degeneration to line-integration-info for r-s directions */
     switch (line)
     {
-    case 0:  /* line1 (s=const=+1) - first,last,(quadratic:middle) node */                     
-       ngs    =  1; /*s=const -> only one integration point in s-direct */ 
+    case 0:  /* line1 (s=const=+1) - first,last,(quadratic:middle) node */
+       ngs    =  1; /*s=const -> only one integration point in s-direct */
        ygp[0] =  1.;/* line 1 -> s=const=+1                             */
        wgy[0] =  1.;
        rsgeo = rp; /*  r = {+ -> 0 -> -} |s = +1  */
     break;
     case 1:
-       ngr    =  1; 
+       ngr    =  1;
        xgp[0] = -1.;
        wgx[0] =  1.;
        rsgeo = ns; /*  r = -1 | s={+ -> 0 -> -}  */
     break;
     case 2:
-       ngs    = 1; 
+       ngs    = 1;
        ygp[0] = -1.;
        wgy[0] =  1.;
        rsgeo = rn; /*  r = {- -> 0 -> +} |s = -1  */
     break;
     case 3:
-       ngr    =  1; 
+       ngr    =  1;
        xgp[0] =  1.;
        wgx[0] =  1.;
        rsgeo = ps; /*  r =  1 | s={- -> 0 -> +}  */
@@ -322,17 +322,17 @@ for (line=0; line<ngline; line++)
           facs = wgy[ls];
           /*----------------------- shape functions and their derivatives */
           w1_funct_deriv(funct,deriv,e1,e2,ele->distyp,1);
-          /*--------------------------------------------- jacobian matrix */       
-          w1_jaco (deriv,xjm,&det,ele,iel); 
+          /*--------------------------------------------- jacobian matrix */
+          w1_jaco (deriv,xjm,&det,ele,iel);
           /*---------------------------------------------- line increment */
           ds = 0.0;
           switch (rsgeo)
           {
-          case rp: case rn: 
+          case rp: case rn:
             ds = DSQR(xjm[0][0])+DSQR(xjm[0][1]);
             ds = sqrt(ds);
           break;
-          case ps: case ns: 
+          case ps: case ns:
             ds = DSQR(xjm[1][0])+DSQR(xjm[1][1]);
             ds = sqrt(ds);
           break;
@@ -354,15 +354,15 @@ for (line=0; line<ngline; line++)
                     eload[i][j] += funct[j] * forceline[i] * facline;
                  }
              }
-       }/*========================================== end of loop over ls */ 
+       }/*========================================== end of loop over ls */
     }/*============================================= end of loop over lr */
     /* line number lie has been done,switch of the neumann pointer of it */
    break;
-   case tri3:   /* --> tri - element */              
+   case tri3:   /* --> tri - element */
 
       /*------------------------------------------------ get edge nodes */
       w1_iedg(iedgnod,ele,line,0);
-      
+
       /*--------------------------------------- set number of gauss points */
       nil = IMAX(nir,2);
 
@@ -384,7 +384,7 @@ for (line=0; line<ngline; line++)
                 forceline[i] = gline[line]->neum->neum_val.a.dv[i];
              }
              /*-------- add load vector component to element load vector */
-            
+
              for (j=0; j<ngnode; j++)
              {
               irow = iedgnod[j];
@@ -420,10 +420,10 @@ for (inode=0; inode<iel; inode++)
 }
 /*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of w1_eleload */
 
 /*----------------------------------------------------------------------*
@@ -437,7 +437,7 @@ void w1_fextsurf(ELEMENT    *ele,
 {
 DOUBLE    force[2];
 INT i,j;        /*-loopers(i = loaddirection x or y)(j=node)------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_fextsurf");
 #endif
 /*----------------------------------------------------------------------*/
@@ -480,10 +480,10 @@ break;
 /*----------------------------------------------------------------------*/
 }/* end of switch(ele->g.gsurf->neum->neum_type)*/
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of  w1_fextsurf*/
 
 /*!---------------------------------------------------------------------
@@ -503,10 +503,10 @@ are calculated.
 \return void
 
 ------------------------------------------------------------------------*/
-void w1_fsiload(ELEMENT  *ele,     
-                W1_DATA  *data,    
-                DOUBLE	 *loadvec, 
-                INT	  init,    
+void w1_fsiload(ELEMENT  *ele,
+                W1_DATA  *data,
+                DOUBLE	 *loadvec,
+                INT	  init,
                 INT       imyrank)
 {
 INT          lr;                 /* integration directions          */
@@ -523,7 +523,7 @@ DOUBLE       facr;               /* integration factor  GP-info     */
 /*--------------------- variables needed for integration of line loads */
 INT             foundline;   /* flag for lineload present or not       */
 INT             ngline;      /* number of geometrylines to the element */
-GLINE          *gline[4];    /* geometrylines of the element           */   
+GLINE          *gline[4];    /* geometrylines of the element           */
 NEUM_CONDITION *lineneum[4]; /* short grep on line-neum. conditions    */
 GNODE          *actsgnode;   /* actual structural gnode                */
 NODE           *actfnode;    /* actual fluid node                      */
@@ -534,14 +534,14 @@ INT             ngr;         /* number of GP'e for line-integration    */
 INT             iegnod[MAXNOD_WALL1];
 DOUBLE          xgp[3];      /* Coordinates of GP'es                   */
 DOUBLE          wgx[3];      /* weights at GP'es                       */
-DOUBLE          vnx,vny;     /* comp, of normal vector at INT point    */ 
+DOUBLE          vnx,vny;     /* comp, of normal vector at INT point    */
 DOUBLE          forceline[2];/* lineload value in x and y direct.(inp) */
 DOUBLE          sigmaint[3]; /* fluid stresses at integration point    */
 DOUBLE          nsigma[3][MAXNOD_WALL1]; /* nodal fluid stresses       */
 DOUBLE          xyzl[2][MAXNOD_WALL1]; /* nodal coordinates            */
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_fsiload");
 #endif
 
@@ -592,7 +592,7 @@ for (line=0; line<ngline; line++)
       actfnode  = actsgnode->mfcpnode[genprob.numff];
       /*------------- get the coordinates in the deformed configuration */
       xyzl[0][j] = actsnode->x[0]+actsnode->sol.a.da[0][0];
-      xyzl[1][j] = actsnode->x[1]+actsnode->sol.a.da[0][1];      
+      xyzl[1][j] = actsnode->x[1]+actsnode->sol.a.da[0][1];
       /*-- loop the 3 stresses and get values from sol_mf of fluid node */
       for (i=0;i<3;i++)
       {
@@ -601,7 +601,7 @@ for (line=0; line<ngline; line++)
    }
    /*-------------------- coordinates and weights of integration points */
    /*--------- original GP-coordinates and weights for area-integration */
-   ngr = nir; 
+   ngr = nir;
    for (i=0; i<ngr; i++) { xgp[i] = data->xgrr[i];
    			   wgx[i] = data->wgtr[i]; }
    /*----------------------------------- integration loop on actual line */
@@ -610,7 +610,7 @@ for (line=0; line<ngline; line++)
    {
       /*============================= gaussian point and weight at it ===*/
       e1   = xgp[lr];
-      facr = wgx[lr]; 
+      facr = wgx[lr];
       /*------------------- get shape function values on the actual edge */
       w1_degfuncderiv(funct,deriv,e1,ele->distyp,1);
       /*------------------------------------ compute load at gauss point */
@@ -618,7 +618,7 @@ for (line=0; line<ngline; line++)
       for (i=0;i<3;i++)
       {
    	 for (j=0;j<ngnode;j++) sigmaint[i]+=funct[j]*nsigma[i][j];
-      } 	 
+      }
       /*-------------------------- compute normal vector at gauss point *
        | see Mok et al in Engineering Computations (1999)               |
        *----------------------------------------------------------------*/
@@ -664,10 +664,10 @@ for (inode=0; inode<iel; inode++)
 dserror("FSI-functions not compiled in\n");
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of w1_fsiload */
 
 /*======================================================================*/
@@ -677,7 +677,7 @@ INT i;
 static INT iegq[4][4][2];
 static INT iegt[4][4][2];
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1iedg");
 #endif
 
@@ -754,10 +754,10 @@ else if (init==0)
 else
    dserror("parameter 'init' out of range\n");
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of w1iedg */
 
 

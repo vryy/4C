@@ -12,12 +12,12 @@ Maintainer: Frank Huber
 *----------------------------------------------------------------------*/
 #ifdef D_BEAM3
 
-/*! 
+/*!
 \addtogroup BEAM3
 *//*! @{ (documentation module open)*/
 
 /*------------------------------------------------------------------------*/
-/* RULE HOW TO ADD NEW FILES AND FUNCTIONS: 
+/* RULE HOW TO ADD NEW FILES AND FUNCTIONS:
    1.) THE FILENAMES ARE IN ALPHABETICAL ORDER !!!
    2.) FUNCTIONS ARE IN THE SAME ORDER LIKE IN THE FILE!!!
 */
@@ -28,8 +28,8 @@ Maintainer: Frank Huber
 \brief calculates the B-Operator matrix for a 3d beam element
 
 <pre>                                                              fh 02/03
-This routine calculates the B-Operator matrix for a 3D-beam element with 3 
-coordinates r,s,t. 
+This routine calculates the B-Operator matrix for a 3D-beam element with 3
+coordinates r,s,t.
 
 </pre>
 \param **bop    DOUBLE  (o)   B-Operator
@@ -44,26 +44,26 @@ coordinates r,s,t.
 \param a        DOUBLE  (i)   height of beam cross section
 \param iel      INT     (i)   number of element nodes
 \param init     INT     (i)   flag if initialization (init=1) or not
-               
+
 
 \warning This routine is not working yet, no call in other routines
-\return void                                               
-\sa calling: ---; called by: b3_cal_ele() 
+\return void
+\sa calling: ---; called by: b3_cal_ele()
 
 *----------------------------------------------------------------------*/
-void b3_boplin3D(DOUBLE    **bop,    
-                 DOUBLE    **deriv,  
-                 DOUBLE     *func,   
-	         DOUBLE    **xjm,    
-                 DOUBLE    **ijm,    
-	         DOUBLE    **V,      
-	         DOUBLE      s,      
-	         DOUBLE      t,      
-	         DOUBLE      b,      
-	         DOUBLE      a,      
+void b3_boplin3D(DOUBLE    **bop,
+                 DOUBLE    **deriv,
+                 DOUBLE     *func,
+	         DOUBLE    **xjm,
+                 DOUBLE    **ijm,
+	         DOUBLE    **V,
+	         DOUBLE      s,
+	         DOUBLE      t,
+	         DOUBLE      b,
+	         DOUBLE      a,
                  INT         iel,
-	         INT         init);    
-	    
+	         INT         init);
+
 /*!----------------------------------------------------------------------
 \brief calculates the B-Operator matrix for a 1d spatial beam element
 
@@ -76,19 +76,19 @@ beam element w.r.t. coordinate r.
 \param **deriv  DOUBLE  (i)   the derivatives of the shape functions
 \param *func    DOUBLE  (i)   the shape functions
 \param iel      INT     (i)   number of element nodes
-\param l2       DOUBLE  (i)   dx/dr transformation x -> r               
+\param l2       DOUBLE  (i)   dx/dr transformation x -> r
 
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling: ---; 
+\return void
+\sa calling: ---;
     called by: b3_cal_ele()
 
 *----------------------------------------------------------------------*/
-void b3_boplin(DOUBLE    **bop,    
-               DOUBLE    **deriv,  
-               DOUBLE     *func,   
-               INT         iel,    
+void b3_boplin(DOUBLE    **bop,
+               DOUBLE    **deriv,
+               DOUBLE     *func,
+               INT         iel,
 	       DOUBLE      l2);
 
 
@@ -99,7 +99,7 @@ void b3_boplin(DOUBLE    **bop,
 \brief calculates the internal forces of a Bernoulli beam element
 
 <pre>                                                              fh 10/02
-This routine calculates the internal force vector for a spatial 
+This routine calculates the internal force vector for a spatial
 1d-Bernoulli-beam element (direct stiffness method)
 
 </pre>
@@ -107,24 +107,24 @@ This routine calculates the internal force vector for a spatial
 \param **estif   DOUBLE    (i)  local element stiffness matrix
 \param *force    DOUBLE    (i)  local element load vector
 \param init      INT       (i)  flag if init (1) or calculation	(2,3)
-               
+
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: beam3() , b3_cal_ele()
 
 *----------------------------------------------------------------------*/
-void b3_cal_force(ELEMENT  *ele,     
-                  DOUBLE  **estif,     
-	          DOUBLE   *force,     
+void b3_cal_force(ELEMENT  *ele,
+                  DOUBLE  **estif,
+	          DOUBLE   *force,
 	          INT	    init);
-		   
+
 /*!----------------------------------------------------------------------
 \brief calculates the internal forces of a Timoshenko beam element
 
 <pre>                                                              fh 01/03
-This routine calculates the internal force vector for a spatial 
+This routine calculates the internal force vector for a spatial
 1d-Timoshenko-beam element (Finite Element method)
 
 </pre>
@@ -132,24 +132,24 @@ This routine calculates the internal force vector for a spatial
 \param *force    DOUBLE    (i)  stress vector at actual gauss point
 \param lr        INT       (i)  number of actual gauss point
 \param option    INT       (i)  =0 -> force_GP, =1 -> force_ND
-               
+
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: b3_cal_ele()
 
 *----------------------------------------------------------------------*/
-void b3_cal_forcelin(ELEMENT  *ele,     
-		     DOUBLE   *force,    
-	             INT       lr,      
+void b3_cal_forcelin(ELEMENT  *ele,
+		     DOUBLE   *force,
+	             INT       lr,
 		     INT       option);
-		      
+
 /*!----------------------------------------------------------------------
 \brief calculates the internal forces of a spatial 3D Timoshenko beam element
 
 <pre>                                                              fh 02/03
-This routine calculates the internal force vector for a spatial 
+This routine calculates the internal force vector for a spatial
 3D-Timoshenko-beam element (Finite Element method)
 
 </pre>
@@ -160,18 +160,18 @@ This routine calculates the internal force vector for a spatial
 \param s         DOUBLE    (i)  coordinate s of actual lobatto point
 \param t         DOUBLE    (i)  coordinate t of actual lobatto point
 \param option    INT       (i)  =0 -> force_GP, =1 -> force_ND
-               
+
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: b3_cal_ele()
 
 *----------------------------------------------------------------------*/
-void b3_cal_forcelin3D(ELEMENT  *ele,     
-		       DOUBLE   *stress,    
-	               DOUBLE    facl,     
-	               INT       lr,      
+void b3_cal_forcelin3D(ELEMENT  *ele,
+		       DOUBLE   *stress,
+	               DOUBLE    facl,
+	               INT       lr,
 	               DOUBLE    s,
 	       	       DOUBLE    t,
 		       INT       option);
@@ -192,15 +192,15 @@ the actual beam element.
 \param nedof     INT       (i)  number of dofs per element
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: b3_cal_ele()
 
 *----------------------------------------------------------------------*/
 void b3_cal_eps(DOUBLE    *strain,
                 DOUBLE     pv,
-		DOUBLE    *edisp,     
-	        DOUBLE   **bop,     
+		DOUBLE    *edisp,
+	        DOUBLE   **bop,
 		INT        numeps,
 		INT        nedof);
 
@@ -216,7 +216,7 @@ This routine calculates the nodal element displacements.
 
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: b3_cal_ele()
 
@@ -236,7 +236,7 @@ This routine calculates the nodal incremental element displacements.
 
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: b3_cal_ele()
 
@@ -254,17 +254,17 @@ to the nodes
 </pre>
 \param *ele      ELEMENT   (i)  actual element
 \param *data     B3_DATA   (o)  data for integration parameters
-               
+
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: b3_cal_ele()
 
 *-----------------------------------------------------------------------*/
 void b3_exforce(ELEMENT   *ele,
                 B3_DATA   *data);
-		 
+
 
 /************************************************************************
  | b3_cal_ele.c                                                       |
@@ -280,14 +280,14 @@ element load vector, internal forces)
 \param *ele            ELEMENT  (i/o) actual element
 \param *data           B3_DATA   (o)  data set for gauss points
 \param *mat            MATERIAL  (o)  actual material
-\param **estif_global  ARRAY     (o)  global element stiffness matrix 
+\param **estif_global  ARRAY     (o)  global element stiffness matrix
 \param *force          DOUBLE    (o)  global force vector
 \param *action         CALC_ACTION (i)  action to do
 \param init            INT       (i)  initialization (1) or calculation (2,3)
-               
+
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   b3_cal_sec() , b3_cal_lst() , b3_con_dof() , b3_cal_trn() ,
                b3_trans_stf() , b3_funct_deriv() , b3_jaco() , b3_boplin() ,
 	       b3_boplin3D() , b3_call_mat() , b3_keku() , b3_load() ,
@@ -296,24 +296,24 @@ element load vector, internal forces)
     called by: beam3()
 
 *----------------------------------------------------------------------*/
-void b3_cal_ele(ELEMENT     *ele, 
-                B3_DATA     *data, 
+void b3_cal_ele(ELEMENT     *ele,
+                B3_DATA     *data,
                 MATERIAL    *mat,
-                ARRAY       *estif_global, 
-                DOUBLE      *force,  
+                ARRAY       *estif_global,
+                DOUBLE      *force,
                 CALC_ACTION *action,
 		INT          init);
 
-	       
+
 /************************************************************************
  | b3_cal_fext.c                                                        |
- ************************************************************************/     
+ ************************************************************************/
  /*!----------------------------------------------------------------------
-\brief calculates the global element force vector for a spatial Bernoulli 
+\brief calculates the global element force vector for a spatial Bernoulli
 beam element
 
 <pre>                                                              fh 09/02
-This routine calculates the global element force vector for a spatial 
+This routine calculates the global element force vector for a spatial
 1d-Bernoulli-beam element (direct stiffness method)
 
 </pre>
@@ -323,23 +323,23 @@ This routine calculates the global element force vector for a spatial
 \param *loadvec  DOUBLE    (o)  global element load vector
 \param *hinge    INT       (i)  Hinge Code for actual beam element
 \param calcstep  INT       (i)  flag for calculation step
-               
+
 
 \warning done for n nodes per element
-\return void                                               
-\sa calling:   b3_fext() , b3_con_load() , b3_cal_trn() 
-    called by: beam3() , b3_cal_ele() 
+\return void
+\sa calling:   b3_fext() , b3_con_load() , b3_cal_trn()
+    called by: beam3() , b3_cal_ele()
 
 *----------------------------------------------------------------------*/
-void b3_load(ELEMENT   *ele,     
-             MATERIAL  *mat,     
+void b3_load(ELEMENT   *ele,
+             MATERIAL  *mat,
 	     DOUBLE   **stiff,
 	     DOUBLE    *loadvec,
-	     INT       *hinge,  
+	     INT       *hinge,
 	     INT        calcstep);
 
 /*!----------------------------------------------------------------------
-\brief calculates the element force vector for a spatial Timoshenko beam 
+\brief calculates the element force vector for a spatial Timoshenko beam
 element
 
 <pre>                                                              fh 01/03
@@ -354,11 +354,11 @@ Timoshenko-beam element (Finite element method)
 \param fac       DOUBLE    (i)  weight of actual gauss point
 \param *loadvec  DOUBLE    (o)  global element load vector
 \param calcstep  INT       (i)  flag for calculation step
-               
+
 
 \warning done for n nodes per element
-\return void                                               
-\sa calling:   b3_fextlin() 
+\return void
+\sa calling:   b3_fextlin()
     called by: beam3() , b3_cal_ele()
 
 *----------------------------------------------------------------------*/
@@ -372,13 +372,13 @@ Timoshenko-beam element (Finite element method)
 |								       |
 |    r---1---------------3-------------------4-----------2---r  lin4   |
 |								       |
-*----------------------------------------------------------------------*/ 
-void b3_loadlin(ELEMENT  *ele,     
-                MATERIAL *mat,     
-        	DOUBLE   *func,    
-		DOUBLE    r,       
-		DOUBLE    fac,     
-		DOUBLE	 *loadvec, 
+*----------------------------------------------------------------------*/
+void b3_loadlin(ELEMENT  *ele,
+                MATERIAL *mat,
+        	DOUBLE   *func,
+		DOUBLE    r,
+		DOUBLE    fac,
+		DOUBLE	 *loadvec,
 		INT       calcstep);
 
 /*!----------------------------------------------------------------------
@@ -386,25 +386,25 @@ void b3_loadlin(ELEMENT  *ele,
 beam element
 
 <pre>                                                              fh 09/02
-This routine calculates the local element force vector (line load)for a 
+This routine calculates the local element force vector (line load)for a
 spatial 1d-Bernoulli-beam element (direct stiffness method)
 
 </pre>
 \param *ele      ELEMENT   (i)  actual element
 \param *mat      MATERIAL  (i)  actual material
 \param *eload    DOUBLE    (o)  local  element load vector
-               
+
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling: ---;
-    called by: b3_load() 
+    called by: b3_load()
 
 *----------------------------------------------------------------------*/
 void b3_fext(ELEMENT     *ele,
              MATERIAL    *mat,
              DOUBLE      *eload);
-	     
+
 /*!----------------------------------------------------------------------
 \brief calculates the local element force vector for a spatial Timoshenko
 beam element
@@ -420,21 +420,21 @@ Timoshenko-beam element (Finite element method)
 \param r         DOUBLE    (i)  actual gauss point
 \param fac       DOUBLE    (i)  weight of actual gauss point
 \param *eload    DOUBLE    (o)  global element load vector
-               
+
 
 \warning done for n nodes per element
-\return void                                               
-\sa calling:   ---; 
-    called by: b3_loadlin() 
+\return void
+\sa calling:   ---;
+    called by: b3_loadlin()
 
 *----------------------------------------------------------------------*/
-void b3_fextlin(ELEMENT     *ele,  
-                MATERIAL    *mat,  
-                DOUBLE      *func, 
-		DOUBLE       r,    
-		DOUBLE       fac,  
+void b3_fextlin(ELEMENT     *ele,
+                MATERIAL    *mat,
+                DOUBLE      *func,
+		DOUBLE       r,
+		DOUBLE       fac,
 		DOUBLE      *eload);
-		
+
 /*!----------------------------------------------------------------------
 \brief condensates the local element force vector if necessary
 
@@ -447,24 +447,24 @@ are any hinge conditions at the nodes
 \param *loadvec  DOUBLE    (o)  global element load vector
 \param *hc       INT       (i)  Hinge Code for actual beam element
 \param iel       INT       (i)  number of nodes per element
-               
+
 \warning This routine is adopted from CARAT (advanced to n nodes per ele)
-\return void                                               
-\sa calling:   ---; 
+\return void
+\sa calling:   ---;
     called by: b3_load()
 
 *----------------------------------------------------------------------*/
 void b3_con_load(DOUBLE **estif,
-		 DOUBLE  *loadvec, 
+		 DOUBLE  *loadvec,
                  INT     *hc,
 		 INT      iel);
 
 /*!----------------------------------------------------------------------
-\brief condensates the local element force vector of a Timoshenko beam 
+\brief condensates the local element force vector of a Timoshenko beam
 if necessary
 
 <pre>                                                              fh 02/03
-This routine condensates the local spatial element force vector of a 
+This routine condensates the local spatial element force vector of a
 Timoshenko beam if there are any hinge conditions at the end nodes of
 the element
 
@@ -472,18 +472,18 @@ the element
 \param *loadvec  DOUBLE   (i/o) local element load vector
 \param *hc       INT       (i)  Hinge Code for actual beam element
 \param iel       INT       (i)  number of nodes per element
-               
+
 \warning This routine is adopted from CARAT (advanced to n nodes per ele)
-\return void                                               
-\sa calling:   ---; 
+\return void
+\sa calling:   ---;
     called by: b3_cal_ele()
 
 *----------------------------------------------------------------------*/
-void b3_con_loadlin(DOUBLE  *loadvec, 
+void b3_con_loadlin(DOUBLE  *loadvec,
                     INT     *hc,
 		    INT      iel);
 
-		 
+
 /************************************************************************
  | b3_cal_stiff.c                                                       |
  ************************************************************************/
@@ -499,17 +499,17 @@ This routine calculates the local element stiffness matrix of a spatial
 \param *mat      MATERIAL  (i)  actual material
 \param **estif   DOUBLE    (o)  local element stiffness matrix
 \param *hinge    INT       (i)  Hinge Code for actual beam element
-               
+
 
 \warning done for n nodes per element
-\return void                                               
+\return void
 \sa calling:   ---;
-    called by: b3_cal_ele() 
+    called by: b3_cal_ele()
 
 *----------------------------------------------------------------------*/
-void b3_cal_lst(ELEMENT  *ele, 
-                MATERIAL *mat, 
-		DOUBLE  **estif, 
+void b3_cal_lst(ELEMENT  *ele,
+                MATERIAL *mat,
+		DOUBLE  **estif,
 		INT      *hinge);
 
 /*!----------------------------------------------------------------------
@@ -521,12 +521,12 @@ element and the main moments of inertia
 
 </pre>
 \param *ele      ELEMENT  (i/O)  actual element
-               
+
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
-    called by: b3_cal_ele() 
+    called by: b3_cal_ele()
 
 *----------------------------------------------------------------------*/
 void b3_cal_sec(ELEMENT *ele);
@@ -543,12 +543,12 @@ actual element
 \param **A       DOUBLE    (O)  transformation matrix
 
 \warning done for n nodes per element
-\return void                                               
+\return void
 \sa calling:   ---;
-    called by: b3_cal_ele() 
+    called by: b3_cal_ele()
 
 *----------------------------------------------------------------------*/
-void b3_cal_trn(ELEMENT *ele, 
+void b3_cal_trn(ELEMENT *ele,
                 DOUBLE **A);
 
 /*!----------------------------------------------------------------------
@@ -559,17 +559,17 @@ This routine calculates the condensed local element stiffness matrix if
 there are any hinge conditions
 
 </pre>
-\param **estif   DOUBLE   (i/o) local element stiffness matrix 
+\param **estif   DOUBLE   (i/o) local element stiffness matrix
 \param *hc       INT       (i)  hinge code of actual element
 \param nedof     INT       (i)  number of dofs per element
 
 \warning done for n nodes per element
-\return void                                               
+\return void
 \sa calling:   ---;
-    called by: b3_cal_ele() 
+    called by: b3_cal_ele()
 
 *----------------------------------------------------------------------*/
-void b3_con_dof(DOUBLE **estif, 
+void b3_con_dof(DOUBLE **estif,
                 INT     *hc,
 		INT	 nedof);
 
@@ -580,42 +580,42 @@ void b3_con_dof(DOUBLE **estif,
 This routine does the statical condensation of the additional warping dofs
 
 </pre>
-\param **estif   DOUBLE   (i/o) local element stiffness matrix 
+\param **estif   DOUBLE   (i/o) local element stiffness matrix
 \param iel       INT       (i)  number of nodes per element
 \param nedof     INT       (i)  number of dofs per element
 
 \warning done for n nodes per element
-\return void                                               
+\return void
 \sa calling:   ---;
-    called by: b3_cal_ele() 
+    called by: b3_cal_ele()
 
 *----------------------------------------------------------------------*/
-void b3_con_warp(DOUBLE **estif, 
+void b3_con_warp(DOUBLE **estif,
 		 INT      iel,
 		 INT	  nedof);
-		   
+
 /*!----------------------------------------------------------------------
 \brief transforms local to global stiffness matrix
 
 <pre>                                                              fh 09/02
-This routine calculates the transformation of the local to the global 
+This routine calculates the transformation of the local to the global
 element stiffness matrix
 
 </pre>
-\param **K       DOUBLE    (i)  local element stiffness matrix 
-\param **TRN     DOUBLE    (i)  element transformation matrix 
+\param **K       DOUBLE    (i)  local element stiffness matrix
+\param **TRN     DOUBLE    (i)  element transformation matrix
 \param **estif   DOUBLE    (o)  global element stiffness matrix
 \param nedof     INT       (i)  number of dofs of the element
 \param calcstep  INT       (i)  flag for calculation step
 
 
 \warning done for n nodes per element
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: beam3() , b3_cal_ele()
 
 *----------------------------------------------------------------------*/
-void b3_trans_stf(DOUBLE **K, 
+void b3_trans_stf(DOUBLE **K,
                   DOUBLE **TRN,
 		  DOUBLE **estif,
 		  INT      nedof,
@@ -629,7 +629,7 @@ This routine calculates the local element stiffness matrix of a spatial
 Timoshenko beam (Finite Element method)
 
 </pre>
-\param **S       DOUBLE    (o)  local element stiffness matrix 
+\param **S       DOUBLE    (o)  local element stiffness matrix
 \param **bs      DOUBLE    (i)  B-Operator matrix
 \param **d       DOUBLE    (i)  Constitutive Matrix
 \param fac       DOUBLE    (i)  integration factor
@@ -637,16 +637,16 @@ Timoshenko beam (Finite Element method)
 \param neps      INT       (i)  actual number of strain components = 3
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: b3_cal_ele()
 
 *----------------------------------------------------------------------*/
-void b3_keku(DOUBLE  **s,    
-             DOUBLE  **bs,   
-             DOUBLE  **d,    
-             DOUBLE    fac,  
-             INT       nd,   
+void b3_keku(DOUBLE  **s,
+             DOUBLE  **bs,
+             DOUBLE  **d,
+             DOUBLE    fac,
+             INT       nd,
              INT       neps);
 
 
@@ -671,22 +671,22 @@ This routine selects the proper material law for a spatial 1d-beam-element
 \param newval    INT       (o)  flag for evaluating of new stresses
 
 \warning There is nothing special in this routine
-\return void                                               
-\sa calling:   b3_mat_linel() , b3_mat_plast_mises() 
+\return void
+\sa calling:   b3_mat_linel() , b3_mat_plast_mises()
     called by: b3_cal_ele()
 
 *----------------------------------------------------------------------*/
-void b3_call_mat(ELEMENT   *ele,  
-                 MATERIAL  *mat,  
+void b3_call_mat(ELEMENT   *ele,
+                 MATERIAL  *mat,
                  DOUBLE    *eps,
-		 DOUBLE   **bop,    
-                 DOUBLE   **d,      
+		 DOUBLE   **bop,
+                 DOUBLE   **d,
                  DOUBLE    *stress,
 		 INT        ip,
 		 INT        istore,
 		 INT        newval);
 
-		 
+
 /************************************************************************
  | b3_dirich.c                                                          |
  ************************************************************************/
@@ -699,12 +699,12 @@ nodal displacement solution vector
 
 </pre>
 \param *actfield FIELD    (i/o)  actual field
-               
+
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
-    called by: beam3() 
+    called by: beam3()
 
 *----------------------------------------------------------------------*/
 void b3_setdirich(FIELD     *actfield);
@@ -727,20 +727,20 @@ correspondent derivatives if necessary at the actual gauss point r
 \param r         DOUBLE    (i)  actual gauss point coordinate
 \param typ       DIS_TYP   (i)  LIN2, LIN3 or LIN4
 \param option    INT       (i)  flag for derivatives (1) or not (0)
-               
+
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: b3_cal_ele()
 
 *----------------------------------------------------------------------*/
-void b3_funct_deriv(DOUBLE     *funct, 
-                    DOUBLE    **deriv, 
-                    DOUBLE      r,     
-                    DIS_TYP     typ,     
+void b3_funct_deriv(DOUBLE     *funct,
+                    DOUBLE    **deriv,
+                    DOUBLE      r,
+                    DIS_TYP     typ,
                     INT         option);
-		    
+
 
 /************************************************************************
  | b3_init.c                                                            |
@@ -754,17 +754,17 @@ This routine initializes the actual beam element
 </pre>
 \param *actpart  PARTITION (i)  actual partition
 \param *mat      MATERIAL  (i)  actual material
-               
+
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   b3_intg()
-    called by: beam3() 
+    called by: beam3()
 
 *----------------------------------------------------------------------*/
 void b3_init(PARTITION *actpart,
              MATERIAL  *mat );
-	     
+
 
 /************************************************************************
  | b3_intg.c                                                            |
@@ -780,10 +780,10 @@ weighting factors for the actual Timoshenko-beam element
 \param *ele      ELEMENT   (i)  actual element
 \param *data     B3_DATA   (o)  data for integration parameters
 \param option    INT       (i)  initialization (0) or calculation (1)
-               
+
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: b3_cal_ele() , b3_init()
 
@@ -791,7 +791,7 @@ weighting factors for the actual Timoshenko-beam element
 void b3_intg(ELEMENT   *ele,
             B3_DATA   *data,
             INT        option);
-	    
+
 
 /************************************************************************
  | b3_jaco.c                                                            |
@@ -801,7 +801,7 @@ void b3_intg(ELEMENT   *ele,
 determinant
 
 <pre>                                                              fh 02/03
-This routine calculates the Jacobian Matrix at point r,s,t and the 
+This routine calculates the Jacobian Matrix at point r,s,t and the
 corresponding determinant of the actual Timoshenko beam element
 
 </pre>
@@ -811,62 +811,62 @@ corresponding determinant of the actual Timoshenko beam element
 \param **ijm     DOUBLE    (o)  Inverse of Jacobian Matrix
 \param **V       DOUBLE    (i)  Vs, Vt directions of local vectors s,t
 \param *det      DOUBLE    (o)  determinant of Jacobian Matrix
-\param s         DOUBLE    (i)  coordinate in local s-direction  
-\param t         DOUBLE    (i)  coordinate in local t-direction  
+\param s         DOUBLE    (i)  coordinate in local s-direction
+\param t         DOUBLE    (i)  coordinate in local t-direction
 \param *ele      ELEMENT   (i)  actual element
 \param iel       INT       (i)  number of element nodes
-               
+
 
 \warning This routine is not used yet.
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: b3_cal_ele()
 
 *----------------------------------------------------------------------*/
-void b3_jaco(DOUBLE     *funct, 
-             DOUBLE    **deriv, 
-             DOUBLE    **xjm,   
-             DOUBLE    **ijm,   
-	     DOUBLE    **V,     
-	     DOUBLE     *det,   
+void b3_jaco(DOUBLE     *funct,
+             DOUBLE    **deriv,
+             DOUBLE    **xjm,
+             DOUBLE    **ijm,
+	     DOUBLE    **V,
+	     DOUBLE     *det,
              DOUBLE      s,
 	     DOUBLE      t,
-	     ELEMENT    *ele,   
-             INT         iel);   
+	     ELEMENT    *ele,
+             INT         iel);
 
 
 /************************************************************************
  | b3_mat_linel.c                                                       |
- ************************************************************************/	      	    	     		    
+ ************************************************************************/
 /*!----------------------------------------------------------------------
 \brief calculates the constitutive matrix for a beam
 
 <pre>                                                              fh 10/02
-This routine calculates the linear elastic constitutive matrix for a 
-spatial 1d-Timoshenko-beam element 
+This routine calculates the linear elastic constitutive matrix for a
+spatial 1d-Timoshenko-beam element
 
 </pre>
 \param *ele      ELEMENT   (i)  actual element
 \param ym        DOUBLE    (i)  Youngs Modulus
-\param pv        DOUBLE    (i)  Poissons ratio 
+\param pv        DOUBLE    (i)  Poissons ratio
 \param **d       DOUBLE    (o)  Constitutive matrix
 
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: b3_call_mat()
 
 *----------------------------------------------------------------------*/
-void b3_mat_linel(ELEMENT *ele,    
-                  DOUBLE   ym,     
-                  DOUBLE   pv,     
-		  DOUBLE **d);      
+void b3_mat_linel(ELEMENT *ele,
+                  DOUBLE   ym,
+                  DOUBLE   pv,
+		  DOUBLE **d);
 
-		 		  		     		  		      		   
+
 /************************************************************************
  | b3_mat_plast_mises.c                                                 |
- ************************************************************************/	
+ ************************************************************************/
 /*!----------------------------------------------------------------------
 \brief calculates the constitutive matrix - forces for von Mises material
 
@@ -889,12 +889,12 @@ within a plastic calculation for von Mises material
 \param istore          INT         (i)  flag to control storing of new val to WA
 \param newval          INT         (i)  flog to control evaluation of new stresses
 \param init            INT         (i)  initialization (1) or calculation (2,3)
-               
+
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   b3_blowup_stress() , b3_compr_stress() , b3_blowup_strain() ,
-               b3_compr_strain() , b3_compr_Cep() , b3_kronecker() , 
+               b3_compr_strain() , b3_compr_Cep() , b3_kronecker() ,
 	       b3_cal_volCel() , b3_cal_devCel() , b3_cal_Cel() , b3_condense()
     called by: beam3() , b3_call_mat()
 
@@ -908,7 +908,7 @@ void b3_mat_plast_mises(DOUBLE    ym,
                         ELEMENT  *ele,
                         DOUBLE   *strain,
 			INT       ip,
-                        DOUBLE   *stress,       
+                        DOUBLE   *stress,
                         DOUBLE  **d,
                         INT       istore,
                         INT       newval,
@@ -925,14 +925,14 @@ This routine calculates the stress tensor (3*3) out of stress vector (6*1)
 \param **matrix  DOUBLE    (o)  stress tensor
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: b3_mat_plast_mises()
 
 *----------------------------------------------------------------------*/
 void b3_blowup_stress(DOUBLE  *vector,
                       DOUBLE **matrix);
-		      
+
 /*!----------------------------------------------------------------------
 \brief calculates stress vector (6*1) out of stress tensor (3*3)
 
@@ -944,14 +944,14 @@ This routine calculates the stress vector (6*1) out of stress tensor (3*3)
 \param **matrix  DOUBLE    (i)  stress tensor
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: b3_mat_plast_mises()
 
 *----------------------------------------------------------------------*/
 void b3_compr_stress(DOUBLE  *vector,
                      DOUBLE **matrix);
-		     
+
 /*!----------------------------------------------------------------------
 \brief calculates strain tensor (3*3) out of strain vector (6*1)
 
@@ -963,14 +963,14 @@ This routine calculates the strain tensor (3*3) out of strain vector (6*1)
 \param **matrix  DOUBLE    (o)  strain tensor
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: b3_mat_plast_mises()
 
 *----------------------------------------------------------------------*/
 void b3_blowup_strain(DOUBLE  *vector,
                       DOUBLE **matrix);
-		      
+
 /*!----------------------------------------------------------------------
 \brief calculates strain vector (6*1) out of strain tensor (3*3)
 
@@ -982,19 +982,19 @@ This routine calculates the strain vector (6*1) out of strain tensor (3*3)
 \param **matrix  DOUBLE    (i)  stress tensor
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: b3_mat_plast_mises()
 
 *----------------------------------------------------------------------*/
 void b3_compr_strain(DOUBLE  *vector,
                      DOUBLE **matrix);
-		     
+
 /*!----------------------------------------------------------------------
 \brief calculates Cep matrix (6*6) out of Cep tensor (3*3*3*3)
 
 <pre>                                                              fh 03/03
-This routine calculates the elastoplastic tangent matrix (6*6) out of 
+This routine calculates the elastoplastic tangent matrix (6*6) out of
 elastoplastic tangent tensor (3*3*3*3)
 
 </pre>
@@ -1002,14 +1002,14 @@ elastoplastic tangent tensor (3*3*3*3)
 \param ****tensor  DOUBLE    (i)  Cep tensor
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: b3_mat_plast_mises()
 
 *----------------------------------------------------------------------*/
 void b3_compr_Cep(DOUBLE   **matrix,
                   DOUBLE ****tensor);
-		  
+
 /*!----------------------------------------------------------------------
 \brief calculates Kronecker-delta for (3*3) tensor
 
@@ -1021,7 +1021,7 @@ This routine calculates the Kronecker-delta for (3*3) tensor
 
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: b3_mat_plast_mises()
 
@@ -1041,7 +1041,7 @@ This routine calculates the volumetric part of the elasticity tensor
 
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: b3_mat_plast_mises()
 
@@ -1049,7 +1049,7 @@ This routine calculates the volumetric part of the elasticity tensor
 void b3_cal_volCel(DOUBLE     bulk,
                    DOUBLE   **delta,
 	           DOUBLE ****c_vol);
-		   
+
 /*!----------------------------------------------------------------------
 \brief calculates volumetric part of elasticity tensor
 
@@ -1063,7 +1063,7 @@ This routine calculates the volumetric part of the elasticity tensor
 
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: b3_mat_plast_mises()
 
@@ -1071,7 +1071,7 @@ This routine calculates the volumetric part of the elasticity tensor
 void b3_cal_devCel(DOUBLE     shear,
                    DOUBLE   **delta,
 	           DOUBLE ****c_dev);
-		   
+
 /*!----------------------------------------------------------------------
 \brief calculates elasticity tensor
 
@@ -1086,7 +1086,7 @@ This routine calculates the elasticity tensor
 
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: b3_mat_plast_mises()
 
@@ -1095,7 +1095,7 @@ void b3_cal_Cel(DOUBLE     ym,
                 DOUBLE     pv,
                 DOUBLE   **delta,
                 DOUBLE ****c_el);
-		
+
 /*!----------------------------------------------------------------------
 \brief condensates stresses and elastoplastic tangent
 
@@ -1108,13 +1108,13 @@ This routine condensates the stresses and the elastoplastic tangent
 
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: b3_mat_plast_mises()
 
 *----------------------------------------------------------------------*/
 void b3_condense(DOUBLE **D,
-                 DOUBLE  *sig);		
+                 DOUBLE  *sig);
 
 
 /************************************************************************
@@ -1130,10 +1130,10 @@ This routine writes all the data needed to restart the beam element
 \param *actele         ELEMENT    (i/o) actual element
 \param nhandle         INT         (i)  number of handles
 \param *handles        LONGINT     (i)  handles
-               
+
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: beam3()
 
@@ -1150,10 +1150,10 @@ This routine reads all the data needed to restart the beam element
 \param *actele         ELEMENT    (i/o) actual element
 \param nhandle         INT         (i)  number of handles
 \param *handles        LONGINT     (i)  handles
-               
+
 
 \warning There is nothing special in this routine
-\return void                                               
+\return void
 \sa calling:   ---;
     called by: beam3()
 
@@ -1161,5 +1161,5 @@ This routine reads all the data needed to restart the beam element
 void b3_read_restart(ELEMENT *actele, INT nhandle, long int *handles);
 
 #endif
-/*! @} (documentation module close)*/		   
-		   		  		     		      		     		      			
+/*! @} (documentation module close)*/
+

@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -43,7 +43,7 @@ extern struct _GENPROB     genprob;
 void assign_dof(FIELD *actfield)
 {
 INT i,j,k,l;                       /* some counters */
-INT counter;                       
+INT counter;
 INT coupleID;                      /* Id of a coupling set from gid */
 INT dof;                           /* dof in progress */
 INT couple,geocouple,dirich;       /* flags for conditions */
@@ -53,7 +53,7 @@ INT max;
 
 INT numklay;                       /* number of kinematic layers if shell9 element */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("assign_dof");
 #endif
 /*----------------------------------------------------------------------*/
@@ -90,7 +90,7 @@ for (j=0; j<actfield->dis[0].numele; j++)
       {
 	 if (actele->node[k]->numdf < 6) actele->node[k]->numdf=6;
       }
-      break; 
+      break;
    case el_brick1:
       for (k=0; k<actele->numnp; k++)
       {
@@ -110,7 +110,7 @@ for (j=0; j<actfield->dis[0].numele; j++)
 #ifdef D_XFEM
          if (genprob.xfem_on_off==1) /* =>enriched formulation */
            actele->node[k]->numdf=5;
-#endif           
+#endif
       }
       break;
 #ifdef D_XFEM
@@ -119,8 +119,8 @@ for (j=0; j<actfield->dis[0].numele; j++)
       {
         if (actele->node[k]->numdf < 5) actele->node[k]->numdf=5;
       }
-      break;      
-#endif           
+      break;
+#endif
    case el_fluid3:
       for (k=0; k<actele->numnp; k++)
       {
@@ -166,7 +166,7 @@ for (j=0; j<actfield->dis[0].numele; j++)
       for (k=0; k<actele->numnp; k++)
         if (actele->node[k]->numdf < 1) actele->node[k]->numdf=1;
       break;
-#endif      
+#endif
    default:
       dserror("Unknown type of element, cannot assign number of dofs");
       break;
@@ -177,11 +177,11 @@ counter=0;
 for (j=0; j<actfield->dis[0].numnp; j++)
 {
    actfield->dis[0].node[j].dof  = (INT*)CCACALLOC(actfield->dis[0].node[j].numdf,sizeof(INT));
-   if (!(actfield->dis[0].node[j].dof)) 
+   if (!(actfield->dis[0].node[j].dof))
       dserror("Allocation of dof in NODE failed");
    /*------------------------- allocate the arrays to hold solutions */
    max = IMAX(3,actfield->dis[0].node[j].numdf);
-   
+
    amdef("sol",&(actfield->dis[0].node[j].sol),1,max,"DA");
    amzero(&(actfield->dis[0].node[j].sol));
 
@@ -192,8 +192,8 @@ for (j=0; j<actfield->dis[0].numnp; j++)
    amzero(&(actfield->dis[0].node[j].sol_residual));
    /*------------------------------------------- init all dofs to -2 */
    for (l=0; l<actfield->dis[0].node[j].numdf; l++) actfield->dis[0].node[j].dof[l]=-2;
-}   
-/*------- eliminate geostationary coupling conditions that conflict with 
+}
+/*------- eliminate geostationary coupling conditions that conflict with
    dofcoupling sets by putting the geostat coupling to the coupling set */
 coupleID=0;
 for (j=0; j<actfield->dis[0].numnp; j++)
@@ -214,10 +214,10 @@ for (j=0; j<actfield->dis[0].numnp; j++)
 					&partnernode,
 					actnode->gnode->couple->couple.a.ia[l][0],
 					l);
-	     if (partnernode==NULL) dserror("Cannot do geostationary coupling");					 
+	     if (partnernode==NULL) dserror("Cannot do geostationary coupling");
 	     partnernode->gnode->couple->couple.a.ia[l][1] =  coupleID;
 	     partnernode->gnode->couple->couple.a.ia[l][0] =  0;
-	     actnode->gnode->couple->couple.a.ia[l][0]     =  0;				 
+	     actnode->gnode->couple->couple.a.ia[l][0]     =  0;
 	 }
       }
    }
@@ -269,7 +269,7 @@ for (j=0; j<actfield->dis[0].numnp; j++)
 	    couple=0;
 	    geocouple=0;
 	    /*-------------------------- dof has dirichlet condition */
-	    if (actnode->gnode->dirich!=NULL && actnode->gnode->dirich->dirich_onoff.a.iv[l]!=0) 
+	    if (actnode->gnode->dirich!=NULL && actnode->gnode->dirich->dirich_onoff.a.iv[l]!=0)
 	    dirich=1;
 	    if (actnode->gnode->couple != NULL)
 	    {
@@ -304,7 +304,7 @@ for (j=0; j<actfield->dis[0].numnp; j++)
 					  &partnernode,
 					  coupleID,
 					  l);
-	       if (partnernode==NULL) dserror("Cannot do geostationary coupling"); 
+	       if (partnernode==NULL) dserror("Cannot do geostationary coupling");
 	       /* check wheher there already has been a dof assigned to partnernode */
 	       dof = partnernode->dof[l];
 	       if (dof==-2 && actnode->dof[l]==-2)
@@ -322,7 +322,7 @@ for (j=0; j<actfield->dis[0].numnp; j++)
 		  partnernode->dof[l] = actnode->dof[l];
 	       }
 	    }
-	  /*  else if (dirich==1 && couple==0 && geocouple==1) 
+	  /*  else if (dirich==1 && couple==0 && geocouple==1)
 	    dserror("Case dirichlet condition in geocoupleset not yet implemented");*/
 	 }/* end of loops over dofs */
       }/* end of has dirich and/or coupling condition */
@@ -344,9 +344,9 @@ for (j=0; j<actfield->dis[0].numnp; j++)
       }
    }
 }
-actfield->dis[0].numdf = counter;   
+actfield->dis[0].numdf = counter;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -13,7 +13,7 @@ Maintainer: Malte Neumann
 #include "../headers/standardtypes.h"
 #include "../fluid3/fluid3.h"
 #include "../ale3/ale3.h"
-#ifdef PARALLEL 
+#ifdef PARALLEL
 
 #ifdef HPUX10
 #include "metis/metis.h"
@@ -49,8 +49,8 @@ extern struct _FIELD      *field;
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
 
-/*! 
-\addtogroup PARALLEL 
+/*!
+\addtogroup PARALLEL
 */
 
 /*! @{ (documentation module open)*/
@@ -61,16 +61,16 @@ extern struct _GENPROB     genprob;
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par;                      
+ extern struct _PAR   par;
 
 /*!---------------------------------------------------------------------
-\brief initial partitioning of fields                                              
+\brief initial partitioning of fields
 
-<pre>                                                        m.gee 5/01  
+<pre>                                                        m.gee 5/01
 the partitioning of all fields is performed on all procs,
 so at least everyone nows which piece of every field is owned by who
 this routine lives in the MPI_COMM_WORLD space
@@ -80,8 +80,8 @@ partition from the corresponding fluid elements. This feature is switched
 off by malte neumann at the moment (Aug/2002)
 </pre>
 
-\return void                                               
-\sa part_assignfield()                                    
+\return void
+\sa part_assignfield()
 
 ------------------------------------------------------------------------*/
 void part_fields()
@@ -130,7 +130,7 @@ INT      edgecut;
 INT      wgtflag=2;
 #endif
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("part_fields");
 #endif
 
@@ -145,10 +145,10 @@ if (par.nprocs<=1)
    {
       actfield = &(field[i]);
       for(kk=0;kk<actfield->ndis;kk++)
-      {         
-         for (j=0; j<actfield->dis[kk].numele; j++) 
+      {
+         for (j=0; j<actfield->dis[kk].numele; j++)
          actfield->dis[kk].element[j].proc = 0;
-         for (j=0; j<actfield->dis[kk].numnp; j++)  
+         for (j=0; j<actfield->dis[kk].numnp; j++)
          actfield->dis[kk].node[j].proc    = 0;
       }
    }
@@ -160,7 +160,7 @@ inprocs=1;
 for (i=0; i<genprob.numfld; i++)
 {
 /*----------------------------------------------------------------------*/
-#ifdef PARALLEL 
+#ifdef PARALLEL
    actintra = &(par.intra[i]);
 /*------ check proc belonging to this intra-communicator group of procs */
    if (actintra->intra_fieldtyp==none) continue;
@@ -169,29 +169,29 @@ for (i=0; i<genprob.numfld; i++)
 #endif
 /*----------------------------------------------------------------------*/
    actfield = &(field[i]);
-/*---------------------------- init the local numbering of the elements */   
+/*---------------------------- init the local numbering of the elements */
 /*------------------------------ numbering is c style, starts with zero */
    counter=0;
    for (j=0; j<actfield->dis[0].numele; j++)
    {
       actfield->dis[0].element[j].Id_loc = counter;
       counter++;
-   }   
-/*--------------------------------------init the numbering of the nodes */   
-   counter=0; 
+   }
+/*--------------------------------------init the numbering of the nodes */
+   counter=0;
    for (j=0; j<actfield->dis[0].numnp; j++)
    {
       actfield->dis[0].node[j].Id_loc = counter;
       counter++;
    }
-/*------------------------------------------------- calculate the graph */   
-/*--------------------------------------- size of ARRAY xadj is numnp+1 */   
+/*------------------------------------------------- calculate the graph */
+/*--------------------------------------- size of ARRAY xadj is numnp+1 */
    amdef("xadj",&(xadj[i]),(actfield->dis[0].numnp+1),1,"IV");
    amzero(&(xadj[i]));
 /*------------------------------------- the vertex weights of the graph */
    amdef("vwgt",&(vwgt[i]),(actfield->dis[0].numnp)  ,1,"IV");
    aminit(&(vwgt[i]),&ione);
-/*----------------------------- size of array adjncy has to be computed */  
+/*----------------------------- size of array adjncy has to be computed */
    amdef("stack",&stack,1,1,"IV");
    amzero(&stack);
 /*------------------------------------- estimate size of adjncy to 1000 */
@@ -223,7 +223,7 @@ for (i=0; i<genprob.numfld; i++)
             counter++;
          }
       }
-/*--------------------------------------------- delete doubles on stack */         
+/*--------------------------------------------- delete doubles on stack */
       for (k=0; k<stack.fdim; k++)
       {
          counter=stack.a.iv[k];
@@ -232,8 +232,8 @@ for (i=0; i<genprob.numfld; i++)
          {
             if (stack.a.iv[l]==counter) stack.a.iv[l]=-1;
          }
-      }      
-/*-------------------------------------- count number of nodes on stack */      
+      }
+/*-------------------------------------- count number of nodes on stack */
       counter=0;
       for (k=0; k<stack.fdim; k++)
       {
@@ -259,25 +259,25 @@ for (i=0; i<genprob.numfld; i++)
                adjncy[i].a.iv[adjcounter] = stack.a.iv[k];
                adjcounter++;
             }
-         } 
+         }
       }
    }  /* end of loop over nodes */
-   amredef(&(adjncy[i]),(adjcounter),1,"IV");    
+   amredef(&(adjncy[i]),(adjcounter),1,"IV");
    amdel(&stack);
 /*------------------------------------------- do not partition ale field */
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 /*   if (actfield->fieldtyp==ale) continue;*/
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 /*-------------------------------- do not partition sequentiell version */
-   if (inprocs<=1) 
+   if (inprocs<=1)
    {
       amdel(&(adjncy[i]));
       amdel(&(xadj[i]));
       amdel(&(vwgt[i]));
       continue;
    }
-/*----------------- now allocate the rest of the arrays needed by metis */   
-   amdef("part",&part,actfield->dis[0].numnp,1,"IV");   
+/*----------------- now allocate the rest of the arrays needed by metis */
+   amdef("part",&part,actfield->dis[0].numnp,1,"IV");
 /*---- set the default options of metis (play with other options later) */
    options[0]=0;
    options[1]=3;
@@ -292,7 +292,7 @@ for (i=0; i<genprob.numfld; i++)
    {
       if (nparts < 8) /*----- better for a smaller number of partitions */
       {
-#ifdef PARALLEL 
+#ifdef PARALLEL
       METIS_PartGraphRecursive(
                                &(actfield->dis[0].numnp),
                                &(xadj[i].a.iv[0]),
@@ -310,7 +310,7 @@ for (i=0; i<genprob.numfld; i++)
       }
       else /*----------------- better for a larger number of partitions */
       {
-#ifdef PARALLEL 
+#ifdef PARALLEL
       METIS_PartGraphKway(
                           &(actfield->dis[0].numnp),
                           &(xadj[i].a.iv[0]),
@@ -318,7 +318,7 @@ for (i=0; i<genprob.numfld; i++)
                           &(vwgt[i].a.iv[0]),
                           NULL,
                           &wgtflag,
-                          &numflag, 
+                          &numflag,
                           &nparts,
                           options,
                           &edgecut,
@@ -328,7 +328,7 @@ for (i=0; i<genprob.numfld; i++)
       }
    }
 /*-------------------------------------- broadcast partitioning results */
-#ifdef PARALLEL 
+#ifdef PARALLEL
    MPI_Bcast(&(part.a.iv[0]),
              part.fdim,
              MPI_INT,
@@ -341,7 +341,7 @@ for (i=0; i<genprob.numfld; i++)
       actfield->dis[0].node[j].proc=part.a.iv[j];
    }
    amdel(&part);
-/*---------- check the nodes of all elements and assign element to proc */   
+/*---------- check the nodes of all elements and assign element to proc */
    amdef("part",&part,nparts,1,"IV");
    amzero(&part);
    amdef("part_proc",&part_proc,nparts,1,"IV");
@@ -361,7 +361,7 @@ for (i=0; i<genprob.numfld; i++)
       max  = 0;
       for (k=0; k<part.fdim; k++)
       {
-         if (part.a.iv[k]>=max) 
+         if (part.a.iv[k]>=max)
          {
             max  = part.a.iv[k];
             proc = k;
@@ -370,7 +370,7 @@ for (i=0; i<genprob.numfld; i++)
       counter=0;
       for (k=0; k<part.fdim; k++)
       {
-         if (part.a.iv[k]==max) 
+         if (part.a.iv[k]==max)
          {
             counter++;
             part_proc.a.iv[k]=1;
@@ -397,7 +397,7 @@ for (i=0; i<genprob.numfld; i++)
    amdel(&(xadj[i]));
    amdel(&(adjncy[i]));
    amdel(&(vwgt[i]));
-   /*--------------------------------------------- assign gline to proc */   
+   /*--------------------------------------------- assign gline to proc */
    gl_per_proc = amdef("gl_per_proc",&gl_per_proc_a,nparts,1,"IV");
    amzero(&gl_per_proc_a);
    lineproc = amdef("lineproc",&lineproc_a,MAXNODPERGLINE,1,"IV");
@@ -407,8 +407,8 @@ for (i=0; i<genprob.numfld; i++)
       actgline = &(actfield->dis[0].gline[j]);
       actgline->proc = -1;
    }
-   /* loop all glines and assign proc to these glines where all nodes 
-      belong to the same domain                                          */          
+   /* loop all glines and assign proc to these glines where all nodes
+      belong to the same domain                                          */
    for (j=0;j<ngline;j++)
    {
       actgline = &(actfield->dis[0].gline[j]);
@@ -424,7 +424,7 @@ for (i=0; i<genprob.numfld; i++)
       sameproc = 0;
       for (k=1;k<actgline->ngnode;k++)
       if (proc != lineproc[k]) sameproc=1;
-      if (sameproc==0) 
+      if (sameproc==0)
       {
          actgline->proc=proc;
 	 gl_per_proc[proc]+=1;
@@ -441,7 +441,7 @@ for (i=0; i<genprob.numfld; i++)
       {
          actgnode=actgline->gnode[k];
 	 proc2 = actgnode->node->proc;
-	 if (gl_per_proc[proc2]<gl_per_proc[proc]) proc = proc2;	 
+	 if (gl_per_proc[proc2]<gl_per_proc[proc]) proc = proc2;
       }
       actgline->proc=proc;
       gl_per_proc[proc]+=1;
@@ -453,14 +453,14 @@ for (i=0; i<genprob.numfld; i++)
 /* NOTICE: This is not ideal, as there is not an ale element to every fluid,
    so the partitioning as it is done for the fluid elements is not necesarily
    balanced for the ale field. Also this can only be done with compatible
-   ale fields */  
+   ale fields */
 #if 0
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (inprocs>1)
 for (kk=0;kk<actfield->ndis;kk++)
 {
    if (actfield->fieldtyp!=ale) continue;
-/*--------------------------------------------------- loop ale elements */   
+/*--------------------------------------------------- loop ale elements */
    for (j=0; j<actfield->dis[kk].numele; j++)
    {
       actele = &(actfield->dis[kk].element[j]);
@@ -477,11 +477,11 @@ for (kk=0;kk<actfield->ndis;kk++)
 #endif
 #ifdef D_FLUID2_PRO
 /*------------------------------------------------------------------------
-  For the FLUID2_PRO element we have two discretisations 
+  For the FLUID2_PRO element we have two discretisations
   (velocity=0 and pressure=1):
   discretisation 0 was partitioned by METIS and this is no copied to
   discretisation 1:
-*/  
+*/
 if (inprocs>1)
 {
    if (actfield->fieldtyp==fluid && actfield->ndis>1)
@@ -493,23 +493,23 @@ if (inprocs>1)
 	 dsassert(actvele->eltyp==el_fluid2_pro,
 	          "actfield=fluid & ndis>1 but eltyp!=el_fluid2_pro\n");
          dsassert(actpele->eltyp==el_fluid2_pro,
-	          "actfield=fluid & ndis>1 but eltyp!=el_fluid2_pro\n");		  
+	          "actfield=fluid & ndis>1 but eltyp!=el_fluid2_pro\n");
          actpele->proc = actvele->proc;
-         for (k=0; k<actpele->numnp; k++)         
-	 actpele->node[k]->proc = actvele->node[k]->proc;	 	 
+         for (k=0; k<actpele->numnp; k++)
+	 actpele->node[k]->proc = actvele->node[k]->proc;
       }
    }
 }
 #else
 /*------------------------------------------------------------------------
-  for solving the turbulence-models we need a 2nd discretisation. 
+  for solving the turbulence-models we need a 2nd discretisation.
   discretisation 0 was partitioned by METIS and this is no copied to
   discretisation 1:
 */
 if (inprocs>1)
 {
- if (actfield->fieldtyp==fluid && actfield->ndis>1) 
-/*----------------------------------- loop fluid elements for TURBULENCE*/   
+ if (actfield->fieldtyp==fluid && actfield->ndis>1)
+/*----------------------------------- loop fluid elements for TURBULENCE*/
  {
    for (j=0; j<actfield->dis[1].numele; j++)
    {
@@ -526,7 +526,7 @@ if (inprocs>1)
 }
 #endif
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Michael Gee
@@ -25,10 +25,10 @@ void calstatserv_findcontroldof(FIELD     *actfield,
                                 INT        control_node_global,
                                 INT        control_dof,
                                 NODE     **node,
-                                INT       *cdof) 
+                                INT       *cdof)
 {
 INT        i;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("calstatserv_findcontroldof");
 #endif
 /*----------------------------------------------------------------------*/
@@ -44,7 +44,7 @@ for (i=0; i<actfield->dis[0].numnp; i++)
 }
 if (!(*node)) dserror("Cannot find control node");
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -66,10 +66,10 @@ void calstatserv_findreldofs(FIELD     *actfield,
                              INT       *reldisnode_ID,
                              INT       *reldis_dof,
                              INT        num_reldis,
-                             INT       *reldof) 
+                             INT       *reldof)
 {
 INT        i,j;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("calstatserv_findreldofs");
 #endif
 /*----------------------------------------------------------------------*/
@@ -85,7 +85,7 @@ for (j=0; j<num_reldis; j++)
   }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -99,27 +99,27 @@ return;
  |                                                                      |
  *----------------------------------------------------------------------*/
 void get_stepsize(INT         kstep,
-                  STATIC_VAR *statvar) 
+                  STATIC_VAR *statvar)
 {
 INT        i,j;
 INT        fromstep[20];
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("get_stepsize");
 #endif
 /*----------------------------------------------------------------------*/
 for (i=0; i<20; i++)   fromstep[i] = 0;
 /*----------------------------------------------------------------------*/
 /*--it is really from 1 and not from 0! -*/
-for (i=1; i<statvar->numcurve; i++)   
+for (i=1; i<statvar->numcurve; i++)
 {
-  for (j=0; j<i; j++) 
-  {  
+  for (j=0; j<i; j++)
+  {
     fromstep[i] += statvar->actstep[j];
   }
 }
 /*----------------------------------------------------------------------*/
 statvar->stepsize = 0.0;
-for (i=0; i<statvar->numcurve; i++)   
+for (i=0; i<statvar->numcurve; i++)
 {
   if (kstep >= fromstep[i] && kstep <fromstep[i+1])
   {
@@ -135,7 +135,7 @@ if(statvar->stepsize ==0.0)  dserror("there must be something wrong with variabl
 
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

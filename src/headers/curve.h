@@ -1,6 +1,6 @@
 /*!---------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -17,7 +17,7 @@ Maintainer: Malte Neumann
 typedef enum _CURVTYP
 {
                        curve_none,
-                       curve_polygonal,  /* polygonal, piecewise linear curve */    
+                       curve_polygonal,  /* polygonal, piecewise linear curve */
                        curve_explicit    /* excplicit function */
 } CURVTYP;
 /*----------------------------------------------------------------------*
@@ -40,7 +40,7 @@ DOUBLE                 c2;            /* constant for explicit functions */
 
 
 /*!----------------------------------------------------------------------
-\brief enum of FUNCT types                                            
+\brief enum of FUNCT types
 
 <pre>                                                              mn 02/04
 This is the enumeration of all types for FUNCT
@@ -54,11 +54,11 @@ typedef enum _FUNCTTYP
                        funct_bel,           /* beltrami flow function */
                        funct_kim,           /* Kim-Moin flow function */
                        funct_cyl            /* 3d cylinder */
-} FUNCTTYP;                         
+} FUNCTTYP;
 
 
 /*!----------------------------------------------------------------------
-\brief structure FUNCT                                            
+\brief structure FUNCT
 
 <pre>                                                              mn 02/04
 This structure contains the data of one spatial loading function.
@@ -76,12 +76,12 @@ typedef struct _FUNCT
     struct _FUNCT_BEL   *funct_bel;        /* Beltrami flow function */
     struct _FUNCT_KIM   *funct_kim;        /* Kim-Moin flow function */
     struct _FUNCT_CYL   *funct_cyl;        /* 3D cylinder */
-  }                      typ;              /* name of union */ 
+  }                      typ;              /* name of union */
 
 } FUNCT;
 
 /*!----------------------------------------------------------------------
-\brief structure FUNCT_LIN                                            
+\brief structure FUNCT_LIN
 
 <pre>                                                              mn 02/04
 This structure contains all information about a linear loading function.
@@ -105,7 +105,7 @@ typedef struct _FUNCT_LIN
 } FUNCT_LIN;
 
 /*!----------------------------------------------------------------------
-\brief structure FUNCT_QUA                                            
+\brief structure FUNCT_QUA
 
 <pre>                                                              mn 02/04
 This structure contains all information about a quadratic loading function.
@@ -123,7 +123,7 @@ typedef struct _FUNCT_QUA
 
 
 /*!----------------------------------------------------------------------
-\brief structure FUNCT_KIM                                            
+\brief structure FUNCT_KIM
 
 <pre>                                                              mn 02/04
 This structure contains all information about a Kim-Moin loading function.
@@ -137,7 +137,7 @@ typedef struct _FUNCT_KIM
 
 
 /*!----------------------------------------------------------------------
-\brief structure FUNCT_BEL                                            
+\brief structure FUNCT_BEL
 
 <pre>                                                              mn 02/04
 This structure contains all information about a Beltrami loading function.
@@ -151,7 +151,7 @@ typedef struct _FUNCT_BEL
 
 
 /*!----------------------------------------------------------------------
-\brief structure FUNCT_CYL                                            
+\brief structure FUNCT_CYL
 
 <pre>                                                              mn 02/04
 This structure contains all information about a loading function.

@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Michael Gee
@@ -31,7 +31,7 @@ void s8_vthv(DOUBLE **gmkovc,
 DOUBLE det_dummy;
 DOUBLE zeta;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_vthv");
 #endif
 /*----------------------------------------------------------------------*/
@@ -52,7 +52,7 @@ math_inv3(gmkonc,&det_dummy);
 if (det_dummy <= 0.0) det_dummy = -det_dummy;
 *detc = sqrt(det_dummy);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

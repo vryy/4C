@@ -21,19 +21,19 @@ Maintainer: Baris Irhan
  *----------------------------------------------------------------------*/
 #include "../xfem/xfem.h"
 
-/* RULE HOW TO ADD NEW FILES AND FUNCTIONS: 
+/* RULE HOW TO ADD NEW FILES AND FUNCTIONS:
    1.) THE FILENAMES ARE IN ALPHABETICAL ORDER !!!
    2.) FUNCTIONS ARE IN THE SAME ORDER LIKE IN THE FILE !!!
 */
-/*! 
+/*!
 \addtogroup LEVELSET
 *//*! @{ (documentation module open)*/
 
 
 /* ls2_calfuncderiv.c */
 void ls2_funct(
-  DOUBLE*,     
-  DOUBLE**,    
+  DOUBLE*,
+  DOUBLE**,
   DOUBLE,
   DOUBLE,
   DIS_TYP
@@ -61,7 +61,7 @@ void ls2_gder(
 
 
 /* ls2_calset.c */
-void ls2_calset( 
+void ls2_calset(
   ELEMENT*,
   DOUBLE **,
   DOUBLE*,
@@ -69,8 +69,8 @@ void ls2_calset(
   );
 
 
-void ls2_calset1( 
-  ELEMENT*,     
+void ls2_calset1(
+  ELEMENT*,
   INT,
   DOUBLE*
   );
@@ -105,9 +105,9 @@ void ls2_intg(
 void ls2(
   PARTITION*,
   INTRA*,
-  ELEMENT*,             
-  ARRAY*,   
-  ARRAY*,   
+  ELEMENT*,
+  ARRAY*,
+  ARRAY*,
   ARRAY*,
   ARRAY*,
   CALC_ACTION*
@@ -215,7 +215,7 @@ void ls_init(
 
 void ls_init_single_circle(
   FIELD*,
-  LS_DYNAMIC*									
+  LS_DYNAMIC*
   );
 
 
@@ -251,7 +251,7 @@ void ls_init_triple_circle_sharp(
 
 void ls_init_single_line(
   FIELD*,
-  LS_DYNAMIC*									
+  LS_DYNAMIC*
   );
 
 
@@ -358,15 +358,15 @@ void ls_comppoint(
 
 
 void ls_updateneighbor(
-  ELEMENT*, 
+  ELEMENT*,
   INT,
   INT
   );
 
 
 void ls_makepatch(
-  ELEMENT*, 
-  ELEMENT *[], 
+  ELEMENT*,
+  ELEMENT *[],
   INT*
   );
 
@@ -419,7 +419,7 @@ void ls_printnodeinfo_to_file(
 void ls_setdata(void);
 
 
-void ls_printelements(void);				 
+void ls_printelements(void);
 
 
 void ls_printelement(
@@ -430,7 +430,7 @@ void ls_printelement(
 void ls_localize(void);
 
 
-void ls_to_matlab(void);									  
+void ls_to_matlab(void);
 
 
 void ls_polygon_con(
@@ -452,5 +452,5 @@ void ls_updt_material(void);
 void ls_check_profile(void);
 
 void ls_init_pres_bd(void);
-/*! @} (documentation module close)*/	    
+/*! @} (documentation module close)*/
 #endif

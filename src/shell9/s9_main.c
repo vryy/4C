@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 
+\brief contains the routine
  - shell9: the main routine of the multilayerd shell element
 
 
@@ -14,8 +14,8 @@ Maintainer: Stefan Hartmann
 *----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include "shell9.h"
-/*! 
-\addtogroup SHELL9 
+/*!
+\addtogroup SHELL9
 *//*! @{ (documentation module open)*/
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -25,14 +25,14 @@ Maintainer: Stefan Hartmann
 extern struct _MATERIAL  *mat;
 
 /*!----------------------------------------------------------------------
-\brief main shell9 control routine                                        
+\brief main shell9 control routine
 
 <pre>                     m.gee 6/01              modified by    sh 10/02
 This routine controls everything which has something to do with a shell9
 element.
 </pre>
 \param *actfield        FIELD       (i)   my field
-\param *actintra        INTRA       (i)   my intra-communicator 
+\param *actintra        INTRA       (i)   my intra-communicator
 \param *ele             ELEMENT     (i)   my element
 \param *estif_global    ARRAY       (i)   global stiffness matrix
 \param *emass_global    ARRAY       (i)   global mass      matrix
@@ -41,7 +41,7 @@ element.
 \param *container       CONTAINER   (i)   contains variables defined in container.h
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: calelm();calinit();calreduce   [global_calelm.c]
                              restart_write_nlnstructdyn()   [restart_control.c]
                              restart_read_nlnstructdyn()
@@ -72,7 +72,7 @@ INT          kintyp;  /* kintyp 0: geo_lin */
                       /* kintyp 1: upd_lagr */
                       /* kintyp 2: tot_lagr */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("shell9");
 #endif
 /*----------------------------------------------------------------------*/
@@ -156,7 +156,7 @@ break;/*----------------------------------------------------------------*/
 /*-------------------------------- calculate stresses in a certain step */
 case calc_struct_stress:
    imyrank = actintra->intra_rank;
-   if (imyrank==ele->proc) 
+   if (imyrank==ele->proc)
    {
       actmat = &(mat[ele->mat-1]);
       s9_stress(ele,&actdata,actmat,kintyp,container->kstep,0);
@@ -174,7 +174,7 @@ break;/*----------------------------------------------------------------*/
 case calc_struct_stressreduce:
    /*------------------------------------- not necessary in sequentiell */
    if (actintra->intra_nprocs==1) goto end;
-   s9_stress_reduce(actfield,actintra,container->kstep);      
+   s9_stress_reduce(actfield,actintra,container->kstep);
 break;/*----------------------------------------------------------------*/
 /*-----------------------------------------------------update variables */
 case calc_struct_update_istep:
@@ -203,12 +203,12 @@ break;
 }
 /*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 /*----------------------------------------------------------------------*/
 #endif /*D_SHELL9*/
 /*----------------------------------------------------------------------*/
-return; 
+return;
 } /* end of shell9 */
 /*! @} (documentation module close)*/

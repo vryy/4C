@@ -13,24 +13,24 @@ Maintainer: Malte Neumann
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 
-/*!---------------------------------------------------------------------  
+/*!---------------------------------------------------------------------
 \brief copy matrix csr-format to a other format
 
 <pre>                                                        genk  11/02
-                                                             basol 12/02   
+                                                             basol 12/02
 In this routine a matrix in CSR-format is copied to the actual matrix
-format which is used by the solver   
+format which is used by the solver
 
-</pre>   
+</pre>
 
-\param  *amatrix      SPARSE_ARRAY   a  sparse matrix              (o)      
+\param  *amatrix      SPARSE_ARRAY   a  sparse matrix              (o)
 \param  *amatrix_typ  SPARSE_TYP     sparse_typ of the matrx       (i)
 \param  *amatrix_csr  DBCSR          a matrix in CSR-format        (i)
 \param  *actintra     INTRA	     total number of equations     (i)
-    
-\return void 
-\warning this is all in progress 
-\warning only csr to msr available at the moment 
+
+\return void
+\warning this is all in progress
+\warning only csr to msr available at the moment
 
 ------------------------------------------------------------------------*/
 void solver_copy_csr(
@@ -55,7 +55,7 @@ ARRAY   wk_a,iwk_a;
 ARRAY   dummy_a;
 int *dummy;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("fluid_pmcpamatrix");
 #endif
 
@@ -121,12 +121,12 @@ case msr: /* copy A-matrix csr to msr format */
    /*--------------------------------------------------- copy backwards */
    for (i=numeq_total-1;i>=0;i--)
    {
-      for (k=ia[i+1]-1;k>=ia[i];k--) 
+      for (k=ia[i+1]-1;k>=ia[i];k--)
       {
          j=ja[k];
 	 if (j!=i)
 	 {
-	    iptr--; 
+	    iptr--;
 	    val[iptr] = a[k];
 	    bindx[iptr-1] = j;
          }
@@ -142,7 +142,7 @@ case msr: /* copy A-matrix csr to msr format */
    }
    for (i=numeq_total;i<iptr2+1;i++)
    {
-      bindx[i+1] = dummy[i];    
+      bindx[i+1] = dummy[i];
    }
    /*-------------------------------------------- delete working arrays */
    amdel(&wk_a);
@@ -154,9 +154,9 @@ dserror ("copy of matrix failed: sysarray_typ not implemented yet!!!\n");
 #endif
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
-} /* end of fluid_pmcpamatrix */ 
+} /* end of fluid_pmcpamatrix */

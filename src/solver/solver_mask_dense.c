@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -19,14 +19,14 @@ DOUBLE cmp_double(const void *a, const void *b );
 /*----------------------------------------------------------------------*
  |  calculate the mask of an msr matrix                  m.gee 5/01     |
  *----------------------------------------------------------------------*/
-void mask_dense(FIELD         *actfield, 
-                  PARTITION     *actpart, 
+void mask_dense(FIELD         *actfield,
+                  PARTITION     *actpart,
                   SOLVAR        *actsolv,
-                  INTRA         *actintra, 
+                  INTRA         *actintra,
                   DENSE         *dense)
 {
 INT       numeq;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("mask_dense");
 #endif
 /*----------------------------------------------------------------------*/
@@ -34,12 +34,12 @@ dstrc_enter("mask_dense");
    PARTITION is different on every proc.
    FIELD is the same everywhere
    In this routine, the vector update is determined
-   in size and allocated, the contents of the vector update 
+   in size and allocated, the contents of the vector update
    are calculated
 */
 /*------------------------------------------- put total size of problem */
 dense->numeq_total = actfield->dis[0].numeq;
-/* count number of eqns on proc and build processor-global couplingdof 
+/* count number of eqns on proc and build processor-global couplingdof
                                                                  matrix */
 dense_numeq(actfield,actpart,actsolv,actintra,&numeq);
 dense->numeq = numeq;
@@ -51,7 +51,7 @@ dense_update(actfield,actpart,actsolv,actintra,dense);
 /*----------------------------------------------------- allocate matrix */
 amdef("A",&(dense->A),(dense->numeq_total),(dense->numeq_total),"DA");
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -63,8 +63,8 @@ return;
 /*----------------------------------------------------------------------*
  |  count processor local and global number of equations    m.gee 5/01  |
  *----------------------------------------------------------------------*/
-void  dense_numeq(FIELD         *actfield, 
-                    PARTITION    *actpart, 
+void  dense_numeq(FIELD         *actfield,
+                    PARTITION    *actpart,
                     SOLVAR       *actsolv,
                     INTRA        *actintra,
                     INT          *numeq)
@@ -86,7 +86,7 @@ NODE     *actnode;
 
 INT       no_coupling = 0;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("dense_numeq");
 #endif
 /*----------------------------------------------------------------------*/
@@ -110,7 +110,7 @@ for (i=0; i<actfield->dis[0].numnp; i++)
       if (actnode->gnode->couple->couple.a.ia[l][0] != 0 ||
           actnode->gnode->couple->couple.a.ia[l][1] != 0 )
       {
-         if (counter>=actpart->pdis[0].coupledofs.fdim) 
+         if (counter>=actpart->pdis[0].coupledofs.fdim)
          amredef(&(actpart->pdis[0].coupledofs),(actpart->pdis[0].coupledofs.fdim+5000),1,"IV");
       /* the coupled dof could be dirichlet conditioned */
          if (actnode->dof[l]<actfield->dis[0].numeq)
@@ -131,7 +131,7 @@ amredef(&(actpart->pdis[0].coupledofs),counter,1,"IV");
 /*---------------------------------- delete the doubles in coupledofs */
 
 if (!no_coupling)
-{ 
+{
 
 for (i=0; i<actpart->pdis[0].coupledofs.fdim; i++)
 {
@@ -160,22 +160,22 @@ for (j=0; j<actpart->pdis[0].coupledofs.fdim; j++) actpart->pdis[0].coupledofs.a
 
 } /* end of if(!no_coupling) */
 
-/* processor looks on his own domain whether he has some of these coupdofs, 
-   puts this information in the array coupledofs in the column myrank+1, so it 
-   can be allreduced 
+/* processor looks on his own domain whether he has some of these coupdofs,
+   puts this information in the array coupledofs in the column myrank+1, so it
+   can be allreduced
 
    The matrix has the following style (after allreduce on all procs the same):
-   
+
                ----------------------
                | 12 | 1 | 0 | 1 | 0 |
                | 40 | 1 | 0 | 0 | 0 |
                | 41 | 1 | 1 | 1 | 1 |
                | 76 | 0 | 1 | 1 | 0 |
                ----------------------
-               
+
                column 0                : number of the coupled equation
                column 1 - inprocs+1 : proc has coupled equation or not
-               
+
 */
 
 if (!no_coupling)
@@ -209,7 +209,7 @@ else /*----------------------------------------------- parallel version */
       }
    }
 }
-/* ----- Allreduce the whole array, so every proc knows about where all 
+/* ----- Allreduce the whole array, so every proc knows about where all
                                                          coupledofs are */
 #ifdef PARALLEL
 sendsize = (actpart->pdis[0].coupledofs.fdim)*(inprocs);
@@ -262,13 +262,13 @@ for (i=0; i<actpart->pdis[0].numnp; i++)
       iscoupled=0;
       for (k=0; k<actpart->pdis[0].coupledofs.fdim; k++)
       {
-         if (dof == actpart->pdis[0].coupledofs.a.ia[k][0]) 
+         if (dof == actpart->pdis[0].coupledofs.a.ia[k][0])
          {
             iscoupled=1;
             break;
          }
       }
-      if (iscoupled==0) 
+      if (iscoupled==0)
       {
          if (dof < actfield->dis[0].numeq)
          counter++;
@@ -277,25 +277,25 @@ for (i=0; i<actpart->pdis[0].numnp; i++)
 }
 /*--- number of equations on this partition including the coupled ones */
 *numeq = counter;
-/* 
-   An inter-proc coupled equation produces communications calculating the 
+/*
+   An inter-proc coupled equation produces communications calculating the
    sparsity mask of the matrix
    An inter-proc coupled equation produces communications adding element
    matrices to the system matrix
    An inter-proc coupled equation ruins the bandwith locally
    ->
-   Now one processor has to be owner of the coupled equation. 
+   Now one processor has to be owner of the coupled equation.
    Try to distribute the coupled equations equally over the processors
 
    The matrix has the following style (after allreduce on all procs the same):
-   
+
                ----------------------
                | 12 | 2 | 0 | 1 | 0 |
                | 40 | 2 | 0 | 0 | 0 |
                | 41 | 1 | 2 | 1 | 1 |
                | 76 | 0 | 1 | 2 | 0 |
                ----------------------
-               
+
                column 0                : number of the coupled equation
                column 1 - inprocs+1 : proc has coupled equation or not
                                          2 indicates owner of equation
@@ -317,7 +317,7 @@ if (inprocs > 1)
       {
          for (j=0; j<inprocs; j++)
          {
-            if (actpart->pdis[0].coupledofs.a.ia[i][j+1]==1) 
+            if (actpart->pdis[0].coupledofs.a.ia[i][j+1]==1)
             {
                actpart->pdis[0].coupledofs.a.ia[i][j+1]=2;
                break;
@@ -330,7 +330,7 @@ if (inprocs > 1)
          proc=-1;
          for (j=0; j<inprocs; j++)
          {
-            if (actpart->pdis[0].coupledofs.a.ia[i][j+1]==1) 
+            if (actpart->pdis[0].coupledofs.a.ia[i][j+1]==1)
             {
                if (tmp[j]<=min)
                {
@@ -364,7 +364,7 @@ if (inprocs > 1)
 } /* end of if(!no_coupling) */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -378,8 +378,8 @@ return;
 /*----------------------------------------------------------------------*
  |  allocate update put dofs in update in ascending order   m.gee 5/01  |
  *----------------------------------------------------------------------*/
-void  dense_update(FIELD         *actfield, 
-                     PARTITION     *actpart, 
+void  dense_update(FIELD         *actfield,
+                     PARTITION     *actpart,
                      SOLVAR        *actsolv,
                      INTRA         *actintra,
                      DENSE         *dense)
@@ -393,7 +393,7 @@ INT       imyrank;
 INT       inprocs;
 NODE     *actnode;
 ARRAY     coupledofs;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("dense_update");
 #endif
 /*----------------------------------------------------------------------*/
@@ -428,9 +428,9 @@ for (i=0; i<actpart->pdis[0].numnp; i++)
             if (dof == coupledofs.a.ia[k][0])
             {
                /* am I owner of this dof or not */
-               if (coupledofs.a.ia[k][imyrank+1]==2) 
+               if (coupledofs.a.ia[k][imyrank+1]==2)
                foundit=2;
-               else if (coupledofs.a.ia[k][imyrank+1]==1)                                     
+               else if (coupledofs.a.ia[k][imyrank+1]==1)
                foundit=1;
                break;
             }
@@ -454,7 +454,7 @@ for (i=0; i<actpart->pdis[0].numnp; i++)
             continue;
          }
       }
-      
+
    }
 }
 /*---------- check whether the correct number of dofs have been counted */
@@ -464,7 +464,7 @@ qsort((INT*) update, counter, sizeof(INT), cmp_int);
 /*----------------------------------------------------------------------*/
 amdel(&coupledofs);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

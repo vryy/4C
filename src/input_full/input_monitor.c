@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Steffen Genkinger
@@ -16,7 +16,7 @@ Maintainer: Steffen Genkinger
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -32,7 +32,7 @@ extern struct _IO_FLAGS     ioflags;
  | vector of numfld FIELDs, defined in global_control.c                 |
  | struct _FIELD         *field;                                        |
  *----------------------------------------------------------------------*/
-extern struct _FIELD       *field;   
+extern struct _FIELD       *field;
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -46,11 +46,11 @@ extern struct _GENPROB     genprob;
 
 <pre>                                                         m.gee 8/00
 This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h                                                  
+and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par; 
+ extern struct _PAR   par;
 
 /*---------------------------------------------------------------------*
  | monotoring informations                                  genk 01/03 |
@@ -80,7 +80,7 @@ NODE *actnode;
 char  *colptr;
 char  *charpointer;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("inp_monitor");
 #endif
 
@@ -123,7 +123,7 @@ else
    ioflags.monitor=0;
    goto end;
 }
-   
+
 numsf=genprob.numsf;
 numff=genprob.numff;
 numaf=genprob.numaf;
@@ -134,7 +134,7 @@ numaf=genprob.numaf;
 if (numsf>=0 && cs>0)
 {
    smoni=&(moni[numsf]);
-   smoni->numnp=cs;  
+   smoni->numnp=cs;
    snode = amdef("monnodes",&(moni[numsf].monnodes),cs,2,"IA");
    aminit(&(moni[numsf].monnodes),&mone);
    sonoff = amdef("onoff",&(moni[numsf].onoff),cs,MAXDOFPERNODE,"IA");
@@ -147,9 +147,9 @@ if (numsf>=0 && cs>0)
    if ( (allfiles.out_smoni=fopen(allfiles.outputfile_name,"w"))==NULL)
    {
       printf("Opening of output file .structure.mon failed\n");
-#ifdef PARALLEL 
+#ifdef PARALLEL
       MPI_Finalize();
-#endif 
+#endif
       exit(1);
    }
    printf("Structure monitoring       %s\n",allfiles.outputfile_name);
@@ -168,7 +168,7 @@ else if (numsf<0 && cs>0)
 if (numff>=0 && cf>0)
 {
    fmoni=&(moni[numff]);
-   fmoni->numnp=cf;  
+   fmoni->numnp=cf;
    fnode = amdef("monnodes",&(moni[numff].monnodes),cf,2,"IA");
    aminit(&(moni[numff].monnodes),&mone);
    fonoff = amdef("onoff",&(moni[numff].onoff),cf,MAXDOFPERNODE,"IA");
@@ -181,9 +181,9 @@ if (numff>=0 && cf>0)
    if ( (allfiles.out_fmoni=fopen(allfiles.outputfile_name,"w"))==NULL)
    {
       printf("Opening of output file .fluid.mon failed\n");
-#ifdef PARALLEL 
+#ifdef PARALLEL
       MPI_Finalize();
-#endif 
+#endif
       exit(1);
    }
    printf("Fluid monitoring           %s\n",allfiles.outputfile_name);
@@ -202,7 +202,7 @@ else if (numff<0 && cf>0)
 if (numaf>=0 && ca>0)
 {
    amoni=&(moni[numaf]);
-   amoni->numnp=ca;  
+   amoni->numnp=ca;
    anode = amdef("monnodes",&(moni[numaf].monnodes),ca,2,"IA");
    aminit(&(moni[numaf].monnodes),&mone);
    aonoff = amdef("onoff",&(moni[numaf].onoff),ca,MAXDOFPERNODE,"IA");
@@ -215,9 +215,9 @@ if (numaf>=0 && ca>0)
    if ( (allfiles.out_amoni=fopen(allfiles.outputfile_name,"w"))==NULL)
    {
       printf("Opening of output file .fluid.mon failed\n");
-#ifdef PARALLEL 
+#ifdef PARALLEL
       MPI_Finalize();
-#endif 
+#endif
       exit(1);
    }
    printf("Ale monitoring             %s\n",allfiles.outputfile_name);
@@ -225,7 +225,7 @@ if (numaf>=0 && ca>0)
 else if (numaf>=0 && ca==0)
 {
    amoni=&(moni[numaf]);
-   amoni->numnp=ca;  
+   amoni->numnp=ca;
 }
 else if (numaf<0 && ca>0)
 {
@@ -250,8 +250,8 @@ if (frfind("--MONITORING")==1)
       /*------------------------------ move pointer behind the "-" sign */
       colptr = strstr(allfiles.actplace,"-");
       dsassert(colptr!=NULL,"Cannot read monitoring ");
-      colptr++;      
-      for (i=0; i<MAXDOFPERNODE; i++)     
+      colptr++;
+      for (i=0; i<MAXDOFPERNODE; i++)
         sonoff[cs][i] = strtol(colptr,&colptr,10);
       cs++;
     }
@@ -263,8 +263,8 @@ if (frfind("--MONITORING")==1)
       /*------------------------------ move pointer behind the "-" sign */
       colptr = strstr(allfiles.actplace,"-");
       dsassert(colptr!=NULL,"Cannot read monitoring ");
-      colptr++;      
-      for (i=0; i<MAXDOFPERNODE; i++)     
+      colptr++;
+      for (i=0; i<MAXDOFPERNODE; i++)
         fonoff[cf][i] = strtol(colptr,&colptr,10);
       cf++;
     }
@@ -276,8 +276,8 @@ if (frfind("--MONITORING")==1)
       /*------------------------------ move pointer behind the "-" sign */
       colptr = strstr(allfiles.actplace,"-");
       dsassert(colptr!=NULL,"Cannot read monitoring ");
-      colptr++;      
-      for (i=0; i<MAXDOFPERNODE; i++)     
+      colptr++;
+      for (i=0; i<MAXDOFPERNODE; i++)
         aonoff[ca][i] = strtol(colptr,&colptr,10);
       ca++;
     }
@@ -289,14 +289,14 @@ if (frfind("--MONITORING")==1)
 if (numsf>=0)
 {
    counter = 0;
-   for (i=0;i<smoni->numnp; i++) 
+   for (i=0;i<smoni->numnp; i++)
    {
       for (j=0;j<MAXDOFPERNODE; j++)
       {
-         if (sonoff[i][j]!=0) 
-         {         
+         if (sonoff[i][j]!=0)
+         {
 	    sonoff[i][j]=counter;
-	    counter++;      	
+	    counter++;
          }
          else sonoff[i][j]=-1;
       }
@@ -307,14 +307,14 @@ if (numsf>=0)
 if (numff>=0)
 {
    counter = 0;
-   for (i=0;i<fmoni->numnp; i++) 
+   for (i=0;i<fmoni->numnp; i++)
    {
       for (j=0;j<MAXDOFPERNODE; j++)
       {
-         if (fonoff[i][j]!=0) 
-         {         
+         if (fonoff[i][j]!=0)
+         {
 	    fonoff[i][j]=counter;
-   	    counter++;      	
+   	    counter++;
          }
          else fonoff[i][j]=-1;
       }
@@ -329,10 +329,10 @@ if (numaf>=0)
    {
       for (j=0;j<MAXDOFPERNODE; j++)
       {
-         if (aonoff[i][j]!=0) 
-         {         
+         if (aonoff[i][j]!=0)
+         {
 	    aonoff[i][j]=counter;
-	    counter++;      	
+	    counter++;
          }
          else aonoff[i][j]=-1;
       }
@@ -377,7 +377,7 @@ if (numff>=0 && fmoni->numnp>0)
       {
          if (fnode[j][0] == actId)
 	 {
-	    fnode[j][1] = i;            
+	    fnode[j][1] = i;
 	    break;
 	 }
       }
@@ -416,7 +416,7 @@ if (numaf>=0 && amoni->numnp>0)
 
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -13,8 +13,8 @@ Maintainer: Baris Irhan
 #ifdef D_XFEM
 #include "../headers/standardtypes.h"
 #include "xfem_prototypes.h"
-/*! 
-\addtogroup XFEM 
+/*!
+\addtogroup XFEM
 *//*! @{ (documentation module open)*/
 
 
@@ -31,7 +31,7 @@ extern struct _MATERIAL      *mat;
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -46,20 +46,20 @@ static INT            PREDOF=2;
 
 
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief set all arrays for element calculation
 
 <pre>                                                            irhan 05/04
 
-get the element velocities and the pressure at different times 
+get the element velocities and the pressure at different times
 
 NOTE: in contradiction to the old programm the kinematic pressure
-      is stored in the solution history; so one can avoid the	 
-      transformation in every time step 			 
-				 
+      is stored in the solution history; so one can avoid the
+      transformation in every time step
+
 NOTE: if there is no classic time rhs (as described in WAW) the array
          eveln is misused and does NOT contain the velocity at time (n)
-	 but rather a linear combination of old velocities and 
+	 but rather a linear combination of old velocities and
 	 accelerations depending upon the time integration scheme!!!!!
 </pre>
 
@@ -71,14 +71,14 @@ NOTE: if there is no classic time rhs (as described in WAW) the array
 \param   *edeadn   DOUBLE          (o)  ele dead load at n (selfweight)
 \param   *edeadng  DOUBLE          (o)  ele dead load at n+g (selfweight)
 \param   *hasext   INT             (o)  flag for external loads
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
-void xfem_f2_calset( 
-  ELEMENT            *ele,     
+void xfem_f2_calset(
+  ELEMENT            *ele,
   DOUBLE            **xyze,
-  DOUBLE            **eveln,    
-  DOUBLE            **evelng,   
+  DOUBLE            **eveln,
+  DOUBLE            **evelng,
   DOUBLE             *epren,
   DOUBLE             *edeadn,
   DOUBLE             *edeadng,
@@ -93,12 +93,12 @@ void xfem_f2_calset(
   DOUBLE   acttimefac;
   DOUBLE   dens;
   GSURF   *actgsurf;
-  
-#ifdef DEBUG 
+
+#ifdef DEBUG
   dstrc_enter("xfem_f2_calset");
 #endif
 /*---------------------------------------------------------------------*/
-  
+
   /* initialize */
   fdyn = alldyn[genprob.numff].fdyn;
   iel = ele->numnp;
@@ -109,7 +109,7 @@ void xfem_f2_calset(
     xyze[0][i] = ele->node[i]->x[0];
     xyze[1][i] = ele->node[i]->x[1];
   }
-  
+
 /*---------------------------------------------------------------------*
   | position of the different solutions:                               |
   | node->sol_incement: solution history used for calculations         |
@@ -119,7 +119,7 @@ void xfem_f2_calset(
   for(i=0; i<iel; i++) /*-------------- loop nodes of element */
   {
     actnode=ele->node[i];
-    /* set element velocities (n+gamma) */      
+    /* set element velocities (n+gamma) */
     /* => standart */
     evelng[0][i]=actnode->sol_increment.a.da[3][0];
     evelng[1][i]=actnode->sol_increment.a.da[3][1];
@@ -130,7 +130,7 @@ void xfem_f2_calset(
     if (genprob.xfem_on_off==0 &&
         (actnode->sol_increment.a.da[3][3]!=ZERO||actnode->sol_increment.a.da[3][4]!=ZERO))
       dserror("severe error in enriched formulation");
-    /* set supported pressures (n+1) */   
+    /* set supported pressures (n+1) */
   }
 
   /*
@@ -138,7 +138,7 @@ void xfem_f2_calset(
    * the time forces at a certain time step
    * is to be computed only once
    */
-  if(fdyn->nif!=0) 
+  if(fdyn->nif!=0)
   {
     for(i=0; i<iel; i++)
     {
@@ -154,8 +154,8 @@ void xfem_f2_calset(
       if (genprob.xfem_on_off==0 &&
           (actnode->sol_increment.a.da[1][3]!=ZERO||actnode->sol_increment.a.da[1][4]!=ZERO))
         dserror("severe error in enriched formulation");
-      /* set pressures (n) */   
-      epren[i]   =actnode->sol_increment.a.da[1][PREDOF];      
+      /* set pressures (n) */
+      epren[i]   =actnode->sol_increment.a.da[1][PREDOF];
     }
   }
 
@@ -186,13 +186,13 @@ void xfem_f2_calset(
       }
     }
   }
-  
+
 /*---------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
   dstrc_exit();
 #endif
-  
-  return; 
+
+  return;
 } /* end of xfem_f2_calset */
 /*! @} (documentation module close)*/
 #endif

@@ -10,7 +10,7 @@ Maintainer: Thomas Hettich
 </pre>
 
 ------------------------------------------------------------------------*/
-#ifdef D_FLUID2TU 
+#ifdef D_FLUID2TU
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #include "fluid2.h"
@@ -21,7 +21,7 @@ Maintainer: Thomas Hettich
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -38,22 +38,22 @@ static FLUID_DYNAMIC *fdyn;
 In this routine the stabilisation part of matrix Kvv is calculated:
 
     /
-   |  tau_tu * u * grad(kapome) * grad(psi) * u   d_omega + D.C. 
+   |  tau_tu * u * grad(kapome) * grad(psi) * u   d_omega + D.C.
   /
 
     /
-   |  -tau_tu * div[(nue+nue_t*sig)*grad(kapome)] * grad(psi) * u   d_omega + D.C. 
+   |  -tau_tu * div[(nue+nue_t*sig)*grad(kapome)] * grad(psi) * u   d_omega + D.C.
   /
-  
+
     /
-   |  tau_tu * factor * kapome_old * kapome * grad(psi) * u    d_omega + D.C. 
-  /  
+   |  tau_tu * factor * kapome_old * kapome * grad(psi) * u    d_omega + D.C.
+  /
 
 
 
 NOTE: there's only one elestif
       --> Kkapome is stored in estif[0..(iel-1)][0..(iel-1)]
-      
+
 </pre>
 \param  *ele	     ELEMENT	   (i)	   actual element
 \param  *elev	     ELEMENT	   (i)	   actual element for vel.
@@ -65,30 +65,30 @@ NOTE: there's only one elestif
 \param  *funct          DOUBLE	   (i)     nat. shape functions
 \param **derxy          DOUBLE	   (i)     global derivatives
 \param **derxy2         DOUBLE	   (i)     2nd global derivatives
-\param   fac	      DOUBLE	   (i)     weighting factor	   
+\param   fac	      DOUBLE	   (i)     weighting factor
 \param   visc	      DOUBLE	   (i)     fluid viscosity
 \param   factor	      DOUBLE	   (i)     factor
 \param   sig	      DOUBLE	   (i)     factor
 \param   iel	      INT		   (i)     num. of nodes in ele
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
-void f2_calstabkkapome(			      
-                ELEMENT         *ele,    
-		    ELEMENT         *elev,    
-		    DOUBLE         **estif,  
-		    DOUBLE           kapomeint, 
-		    DOUBLE          *velint, 
-		    DOUBLE          *velint_dc, 
-                DOUBLE           eddyint, 
-                DOUBLE          *funct,  
-		    DOUBLE         **derxy,  
-		    DOUBLE         **derxy2, 
-		    DOUBLE           fac,    
-		    DOUBLE           visc,   
+void f2_calstabkkapome(
+                ELEMENT         *ele,
+		    ELEMENT         *elev,
+		    DOUBLE         **estif,
+		    DOUBLE           kapomeint,
+		    DOUBLE          *velint,
+		    DOUBLE          *velint_dc,
+                DOUBLE           eddyint,
+                DOUBLE          *funct,
+		    DOUBLE         **derxy,
+		    DOUBLE         **derxy2,
+		    DOUBLE           fac,
+		    DOUBLE           visc,
 		    DOUBLE           factor,
 		    DOUBLE           sig,
-                INT              iel    
+                INT              iel
                    )
 {
 /*----------------------------------------------------------------------*
@@ -96,14 +96,14 @@ void f2_calstabkkapome(
  |   irow - row number in element matrix                                |
  |   icol - column number in element matrix                             |
  |   irn  - row node: number of node considered for matrix-row          |
- |   ird  - row dim.: number of spatial dimension at row node           |  
+ |   ird  - row dim.: number of spatial dimension at row node           |
 /-----------------------------------------------------------------------*/
 INT    irow,icol,irn,icn,ird;
 DOUBLE taumu,taumu_dc;
 DOUBLE c,c_dc;
 DOUBLE auxc,aux;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_calstabkkapome");
 #endif
 
@@ -128,7 +128,7 @@ c_dc = fac*taumu_dc;
       for(irn=0;irn<iel;irn++)
       {
          estif[irow][icol] += auxc*c   *(velint[0]   *derxy[0][irn]+velint[1]   *derxy[1][irn]);
-         estif[irow][icol] += auxc*c_dc*(velint_dc[0]*derxy[0][irn]+velint_dc[1]*derxy[1][irn]); 
+         estif[irow][icol] += auxc*c_dc*(velint_dc[0]*derxy[0][irn]+velint_dc[1]*derxy[1][irn]);
          irow += 1;
       } /* end of loop over irn */
       icol += 1;
@@ -138,11 +138,11 @@ c_dc = fac*taumu_dc;
     /
    |  -tau_tu * div[(nue+nue_t*sig)*grad(kapome)] * grad(psi) * u   d_omega =
   /
- 
+
     /
    |  -tau_tu *  (nue+nue_t*sig) *  div grad(kapome) * grad(psi) * u   d_omega
-  /                                    
- 
+  /
+
  *----------------------------------------------------------------------*/
    icol=0;
       for (icn=0;icn<iel;icn++)
@@ -151,9 +151,9 @@ c_dc = fac*taumu_dc;
        auxc = (visc+eddyint*sig)*(derxy2[0][icn]+derxy2[1][icn]);
 
 	 for (irn=0;irn<iel;irn++)
-	 {          
+	 {
           estif[irow][icol] -= auxc*c   *(derxy[0][irn]*velint[0]   +derxy[1][irn]*velint[1]);
-          estif[irow][icol] -= auxc*c_dc*(derxy[0][irn]*velint_dc[0]+derxy[1][irn]*velint_dc[1]);  
+          estif[irow][icol] -= auxc*c_dc*(derxy[0][irn]*velint_dc[0]+derxy[1][irn]*velint_dc[1]);
 	    irow += 1;
 	 } /* end of loop over irn */
 	 icol += 1;
@@ -173,14 +173,14 @@ c_dc = fac*taumu_dc;
 	 for (irn=0;irn<iel;irn++)
 	 {
           estif[irow][icol]     += auxc*c   *(velint[0]   *derxy[0][irn] + velint[1]   *derxy[1][irn]);
-          estif[irow][icol]     += auxc*c_dc*(velint_dc[0]*derxy[0][irn] + velint_dc[1]*derxy[1][irn]);  
+          estif[irow][icol]     += auxc*c_dc*(velint_dc[0]*derxy[0][irn] + velint_dc[1]*derxy[1][irn]);
           irow += 1;
 	 } /* end of loop over irn */
 	 icol += 1;
       } /* end of loop over icn */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -188,7 +188,7 @@ return;
 } /* end of f2_calstabkvv */
 
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief evaluate stabilisaton part of Mkapome
 
 <pre>                                                         he  02/03
@@ -198,11 +198,11 @@ In this routine the stabilisation part of matrix Mkapome is calculated:
     /
    |   tau_tu * grad(psi) * u * kapome  d_omega + D.C.
   /
-  
-  
-NOTE: there's only one elestif  			    
+
+
+NOTE: there's only one elestif
       --> Mkapeps is stored in emass[0..(iel-1)][0..(iel-1)]
-      
+
 </pre>
 \param  *ele	 ELEMENT	     (i)	   actual element
 \param **emass     DOUBLE	   (i/o)   ele mass matrix
@@ -212,18 +212,18 @@ NOTE: there's only one elestif
 \param **derxy     DOUBLE	   (i)     global derivatives
 \param   fac	   DOUBLE	   (i)     weighting factor
 \param   iel	   INT  	   (i)	   num. of nodes in ele
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
 void f2_calstabmkapome(
-                    ELEMENT         *ele,     
-		        DOUBLE         **emass,  
-    		        DOUBLE          *velint, 
-    		        DOUBLE          *velint_dc, 
-                    DOUBLE          *funct,  
-		        DOUBLE         **derxy,  
-		        DOUBLE           fac,    
-		        INT              iel    
+                    ELEMENT         *ele,
+		        DOUBLE         **emass,
+    		        DOUBLE          *velint,
+    		        DOUBLE          *velint_dc,
+                    DOUBLE          *funct,
+		        DOUBLE         **derxy,
+		        DOUBLE           fac,
+		        INT              iel
                      )
 {
 /*----------------------------------------------------------------------*
@@ -231,14 +231,14 @@ void f2_calstabmkapome(
  |   irow - row number in element matrix                                |
  |   icol - column number in element matrix                             |
  |   irn  - row node: number of node considered for matrix-row          |
- |   ird  - row dim.: number of spatial dimension at row node           |   
+ |   ird  - row dim.: number of spatial dimension at row node           |
 /-----------------------------------------------------------------------*/
 INT    irow,icol,irn,icn;
 DOUBLE taumu,taumu_dc;
 DOUBLE c,c_dc;
 DOUBLE auxc;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_calstabmkapome");
 #endif
 
@@ -266,14 +266,14 @@ c_dc = fac * taumu_dc;
       for (irn=0;irn<iel;irn++)
       {
 	 emass[irow][icol] += auxc*c   *(velint[0]   *derxy[0][irn]+velint[1]   *derxy[1][irn]);
- 	 emass[irow][icol] += auxc*c_dc*(velint_dc[0]*derxy[0][irn]+velint_dc[1]*derxy[1][irn]); 
+ 	 emass[irow][icol] += auxc*c_dc*(velint_dc[0]*derxy[0][irn]+velint_dc[1]*derxy[1][irn]);
 	 irow += 1;
       } /* end loop over irn */
-      icol += 1;      
+      icol += 1;
    } /* end loop over icn */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 

@@ -10,23 +10,23 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-/* RULE HOW TO ADD NEW FILES AND FUNCTIONS: 
+/* RULE HOW TO ADD NEW FILES AND FUNCTIONS:
    1.) THE FILENAMES ARE IN ALPHABETICAL ORDER !!!
    2.) FUNCTIONS ARE IN THE SAME ORDER LIKE IN THE FILE!!!
- *!---------------------------------------------------------------------                                         
+ *!---------------------------------------------------------------------
  ************************************************************************
  | f2pro_calbdt.c                                                       |
  ************************************************************************/
-void f2pro_calbdt(			      
-                    ELEMENT         *ele, 
-		    DOUBLE         **estif,  
-		    DOUBLE          *velint, 
-		    DOUBLE         **derxy,  
+void f2pro_calbdt(
+                    ELEMENT         *ele,
+		    DOUBLE         **estif,
+		    DOUBLE          *velint,
+		    DOUBLE         **derxy,
 		    DOUBLE         **vderxy,
                     DOUBLE          *funct,
-                    DOUBLE           fac,    
-		    DOUBLE          visc,   
-		    INT               iel    
+                    DOUBLE           fac,
+		    DOUBLE          visc,
+		    INT               iel
                    );
 
 /************************************************************************
@@ -34,29 +34,29 @@ void f2pro_calbdt(
  ************************************************************************/
 void f2pro_calint(
 	       ELEMENT         *elev,
-	       ELEMENT         *elep, 
-               DOUBLE         **estif,   
+	       ELEMENT         *elep,
+               DOUBLE         **estif,
 	       DOUBLE         **emass,
 	       DOUBLE         **gradopr,
 	       DOUBLE         *etforce,
 	       DOUBLE         *eiforce,
-	       DOUBLE         **xyze, 
+	       DOUBLE         **xyze,
 	       DOUBLE         *funct,
-	       DOUBLE         *functpr,   
+	       DOUBLE         *functpr,
 	       DOUBLE         **deriv,
-	       DOUBLE         **derivpr,   
-	       DOUBLE         **xjm,     
+	       DOUBLE         **derivpr,
+	       DOUBLE         **xjm,
 	       DOUBLE         **derxy,
-	       DOUBLE         **derxypr,   
-	       DOUBLE         **eveln,   
-	       DOUBLE         *epren,   
-	       DOUBLE         *velint,  
-	       DOUBLE         *covint,  
-	       DOUBLE         **vderxy,  
+	       DOUBLE         **derxypr,
+	       DOUBLE         **eveln,
+	       DOUBLE         *epren,
+	       DOUBLE         *velint,
+	       DOUBLE         *covint,
+	       DOUBLE         **vderxy,
 	       DOUBLE         *pderxy,
-	       DOUBLE         **wa1,  
+	       DOUBLE         **wa1,
 	       DOUBLE         *dirich,
-	       DOUBLE         **deriv2,  
+	       DOUBLE         **deriv2,
 	       INT              *dirich_onoff
                );
 
@@ -64,58 +64,58 @@ void f2pro_calint(
  | f2pro_calele.c                                                       |
  ************************************************************************/
 void f2pro_calele(
-	        ELEMENT        *elev, 
-	        ELEMENT        *elep,            
-                ARRAY          *estif_global,   
+	        ELEMENT        *elev,
+	        ELEMENT        *elep,
+                ARRAY          *estif_global,
                 ARRAY          *emass_global,
 		ARRAY          *lmass_global,
-		ARRAY          *gradopr_global,   
+		ARRAY          *gradopr_global,
 	        ARRAY          *etforce_global,
-		ARRAY          *eiforce_global, 
+		ARRAY          *eiforce_global,
 		ARRAY          *edforce_global,
-		INT             *hasdirich,      
-		INT             init            
+		INT             *hasdirich,
+		INT             init
 	       );
-	       
+
 /************************************************************************
  | f2pro_calgalmat.c                                                    |
  ************************************************************************/
 void f2pro_calkvv(
-                
-		DOUBLE         **estif,   
-		DOUBLE         **derxy,  
-		DOUBLE           fac,    
+
+		DOUBLE         **estif,
+		DOUBLE         **derxy,
+		DOUBLE           fac,
 		DOUBLE           visc,
-		DOUBLE           dt,   
-		INT                iel     
+		DOUBLE           dt,
+		INT                iel
               );
-void f2pro_lmass(        
-		DOUBLE         **lmass,   
-		DOUBLE         **emass,  
-		INT                iel     
+void f2pro_lmass(
+		DOUBLE         **lmass,
+		DOUBLE         **emass,
+		INT                iel
               );
 void f2pro_gradopr(
-                
-		DOUBLE         **gradopr,   
-		DOUBLE          **derxy,  
-		DOUBLE         *functpr,    
+
+		DOUBLE         **gradopr,
+		DOUBLE          **derxy,
+		DOUBLE         *functpr,
 		DOUBLE              fac,
-		INT                  ielp,    
-		INT                   iel   
-                );	      
+		INT                  ielp,
+		INT                   iel
+                );
 
 /************************************************************************
  | f2pro_calservice.c                                                   |
  ************************************************************************/
-void f2pro_calset( 
+void f2pro_calset(
 	        ELEMENT         *elevel,
 		ELEMENT         *elepre,
 		DOUBLE         **xyze,
-                DOUBLE         **eveln,    
-	        DOUBLE          *epren    
+                DOUBLE         **eveln,
+	        DOUBLE          *epren
 	      );
 void pro_putdirich_to_dof(FIELD *actfield, INT disnum, DOUBLE scale, INT place);
-void pro_putdirich_parabolic_to_dof(FIELD *actfield, INT disnum, DOUBLE scale, INT place);  
+void pro_putdirich_parabolic_to_dof(FIELD *actfield, INT disnum, DOUBLE scale, INT place);
 
 /************************************************************************
 | f2pro_caltimerhs.c                                                    |
@@ -123,18 +123,18 @@ void pro_putdirich_parabolic_to_dof(FIELD *actfield, INT disnum, DOUBLE scale, I
 void f2pro_calgaltfv(
                   DOUBLE          *etforce,
 		  DOUBLE          *eiforce,
-		  DOUBLE          *velint,   
+		  DOUBLE          *velint,
 		  DOUBLE          *covint,
-		  DOUBLE         **vderxy,   
-		  DOUBLE          *funct,    
-		  DOUBLE         **derxy,		      
-		  DOUBLE           preint,   
-		  DOUBLE           visc,     
+		  DOUBLE         **vderxy,
+		  DOUBLE          *funct,
+		  DOUBLE         **derxy,
+		  DOUBLE           preint,
+		  DOUBLE           visc,
 		  DOUBLE           fac,
-		  DOUBLE           dt,      
-		  INT               iel       
+		  DOUBLE           dt,
+		  INT               iel
               );
-	      
+
 /************************************************************************
  | f2pro_inpele.c                                                       |
  ************************************************************************/
@@ -163,4 +163,4 @@ void fluid2_pro(     PARTITION     *actpart,
 		     ARRAY         *gforce_global,
 		     CALC_ACTION   *action,
                      INT           *hasdirich
-	       );  	       
+	       );

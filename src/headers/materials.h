@@ -1,6 +1,6 @@
 /*!---------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -96,7 +96,7 @@ typedef struct _COMPOGDEN
      DOUBLE                    nue;            /* Possion ratio */
      DOUBLE                    beta;           /* the unphysical material constant called beta */
      DOUBLE                    alfap[3];       /* three parameters alfap */
-     DOUBLE                    mup[3];         /* three parameters nuep */  
+     DOUBLE                    mup[3];         /* three parameters nuep */
      DOUBLE                    density;        /* material specific weight */
      DOUBLE                    lambda;         /* 1. lame constant */
      DOUBLE                    kappa;          /* bulkmodulus */
@@ -114,7 +114,7 @@ typedef struct _VISCOHYPER
      DOUBLE                    nue;            /* Possion ratio */
      DOUBLE                    beta;           /* the unphysical material constant called beta */
      DOUBLE                    alfap[3];       /* three parameters alfap */
-     DOUBLE                    mup[3];         /* three parameters nuep */  
+     DOUBLE                    mup[3];         /* three parameters nuep */
      DOUBLE                    density;        /* material specific weight */
      DOUBLE                    lambda;         /* 1. lame constant */
      DOUBLE                    kappa;          /* bulkmodulus */
@@ -165,43 +165,43 @@ typedef struct _DAMAGE
  *----------------------------------------------------------------------*/
 typedef struct _PL_HOFF
 {
-     double                    emod1;         
-     double                    emod2;         
-     double                    emod3;         
-     double                    gmod12;         
-     double                    gmod13;         
-     double                    gmod23;         
-     double                    xnue12;         
-     double                    xnue13;         
-     double                    xnue23; 
-     double                    s11T;        
-     double                    s11C;        
-     double                    s22T;        
-     double                    s22C;        
-     double                    s33T;        
-     double                    s33C;        
-     double                    s12;        
-     double                    s23;        
-     double                    s13;        
+     double                    emod1;
+     double                    emod2;
+     double                    emod3;
+     double                    gmod12;
+     double                    gmod13;
+     double                    gmod23;
+     double                    xnue12;
+     double                    xnue13;
+     double                    xnue23;
+     double                    s11T;
+     double                    s11C;
+     double                    s22T;
+     double                    s22C;
+     double                    s33T;
+     double                    s33C;
+     double                    s12;
+     double                    s23;
+     double                    s13;
      double                    uniax;
-     double                    sh11T;        
-     double                    sh11C;        
-     double                    sh22T;        
-     double                    sh22C;        
-     double                    sh33T;        
-     double                    sh33C;        
-     double                    sh12;        
-     double                    sh23;        
-     double                    sh13;        
-     double                    ha11T;        
-     double                    ha11C;        
-     double                    ha22T;        
-     double                    ha22C;        
-     double                    ha33T;        
-     double                    ha33C;        
-     double                    ha12;        
-     double                    ha23;        
-     double                    ha13;        
+     double                    sh11T;
+     double                    sh11C;
+     double                    sh22T;
+     double                    sh22C;
+     double                    sh33T;
+     double                    sh33C;
+     double                    sh12;
+     double                    sh23;
+     double                    sh13;
+     double                    ha11T;
+     double                    ha11C;
+     double                    ha22T;
+     double                    ha22C;
+     double                    ha33T;
+     double                    ha33C;
+     double                    ha12;
+     double                    ha23;
+     double                    ha13;
 } PL_HOFF;
 
 /*----------------------------------------------------------------------*
@@ -275,11 +275,11 @@ typedef struct _PL_EPC
      DOUBLE                   *reb_so;     /* minimum bond length  */
      DOUBLE                   *reb_ds;     /* diameter  */
      DOUBLE                   *reb_rgamma; /* =4: deformed bars =2: plane par */
-     DOUBLE                   *reb_dens; 
-     DOUBLE                   *reb_alfat; 
-     DOUBLE                   *reb_emod; 
-     DOUBLE                   *reb_rebnue; 
-     DOUBLE                   *reb_sigy; 
+     DOUBLE                   *reb_dens;
+     DOUBLE                   *reb_alfat;
+     DOUBLE                   *reb_emod;
+     DOUBLE                   *reb_rebnue;
+     DOUBLE                   *reb_sigy;
      DOUBLE                   *reb_hard;
 } PL_EPC;
 /*----------------------------------------------------------------------*
@@ -404,7 +404,7 @@ typedef struct _MULTI_LAYER
 typedef struct _KINLAY
 {
      INT                       num_mlay;     /* number of material layer to this kinematic layer*/
-     DOUBLE                   *mlayhgt;      /* hgt of a material layer in % of thickness of the adjacent kinematic layer*/ 
+     DOUBLE                   *mlayhgt;      /* hgt of a material layer in % of thickness of the adjacent kinematic layer*/
      INT                      *mmatID;       /* ID of multilayer material in every material layer */
      DOUBLE                   *phi;          /* rotation of the material in one material layer */
      INT                      *rot;          /* axis of rotation of the material: x=1, y=2, z=3*/
@@ -437,40 +437,40 @@ typedef struct _MULTIMAT
  *----------------------------------------------------------------------*/
 typedef struct _ORTHOTROPIC
 {
-     DOUBLE                    emod1;         
-     DOUBLE                    emod2;         
-     DOUBLE                    emod3;         
-     DOUBLE                    gmod12;         
-     DOUBLE                    gmod13;         
-     DOUBLE                    gmod23;         
-     DOUBLE                    xnue12;         
-     DOUBLE                    xnue13;         
-     DOUBLE                    xnue23;         
+     DOUBLE                    emod1;
+     DOUBLE                    emod2;
+     DOUBLE                    emod3;
+     DOUBLE                    gmod12;
+     DOUBLE                    gmod13;
+     DOUBLE                    gmod23;
+     DOUBLE                    xnue12;
+     DOUBLE                    xnue13;
+     DOUBLE                    xnue23;
 } ORTHOTROPIC;
 /*----------------------------------------------------------------------*
  | interface elasto-damage-plasto surface material          ah 08/03    |
  *----------------------------------------------------------------------*/
 typedef struct _IFMAT
 {
-     DOUBLE                    emod;         
-     DOUBLE                    kmod;         
-     DOUBLE                    gmod;         
-     DOUBLE                    dick;         
-     DOUBLE                    qmod;         
-     DOUBLE                    deltan;         
-     DOUBLE                    deltat;         
-     DOUBLE                    mu;         
+     DOUBLE                    emod;
+     DOUBLE                    kmod;
+     DOUBLE                    gmod;
+     DOUBLE                    dick;
+     DOUBLE                    qmod;
+     DOUBLE                    deltan;
+     DOUBLE                    deltat;
+     DOUBLE                    mu;
 } IFMAT;
 /*----------------------------------------------------------------------*
  | isotropic damage material (mazars-pijadier-cabot)        ah 10/03    |
  *----------------------------------------------------------------------*/
 typedef struct _DAM_MP
 {
-     DOUBLE                    youngs;         
-     DOUBLE                    nue;         
-     DOUBLE                    kappa_0;         
-     DOUBLE                    alpha;         
-     DOUBLE                    beta;         
+     DOUBLE                    youngs;
+     DOUBLE                    nue;
+     DOUBLE                    kappa_0;
+     DOUBLE                    alpha;
+     DOUBLE                    beta;
 } DAM_MP;
 /*----------------------------------------------------------------------*
  | isotropic gradient enhanced damage material              ah 10/03    |
@@ -479,12 +479,12 @@ typedef struct _DAMAGE_GE
 {
      INT                       equival;
      INT                       damtyp;
-     DOUBLE                    crad;         
-     DOUBLE                    youngs;         
-     DOUBLE                    nue;         
-     DOUBLE                    kappa_0;         
+     DOUBLE                    crad;
+     DOUBLE                    youngs;
+     DOUBLE                    nue;
+     DOUBLE                    kappa_0;
      DOUBLE                    kappa_m;
-     DOUBLE                    alpha;         
-     DOUBLE                    beta;         
+     DOUBLE                    alpha;
+     DOUBLE                    beta;
      DOUBLE                    k_fac;
 } DAMAGE_GE;

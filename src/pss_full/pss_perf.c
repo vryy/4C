@@ -39,7 +39,7 @@ static INT    counter[100];
 /*!---------------------------------------------------------------------
   \brief routine to get the exact time
 
-  <pre>                                                        mn 01/04 
+  <pre>                                                        mn 01/04
   Gets the current system time.
   </pre>
   \return void
@@ -92,7 +92,7 @@ DOUBLE perf_time ()
   t1 =  (double)_tstart.tv_sec + (double)_tstart.tv_usec/(1000*1000);
   ret = t1;
 #endif
-  
+
 #ifdef WIN
   ret = 0.0;
 #endif
@@ -138,7 +138,7 @@ DOUBLE perf_time ()
 #endif
 
   /*----------------------------------------------------------------------*/
-  return (ret); 
+  return (ret);
 }
 
 
@@ -147,7 +147,7 @@ DOUBLE perf_time ()
 /*!---------------------------------------------------------------------
   \brief routine to meassure the performance
 
-  <pre>                                                        mn 01/04 
+  <pre>                                                        mn 01/04
   Initializes all counters with 0.
   </pre>
 
@@ -165,14 +165,14 @@ void perf_init_all ()
     counter[index] = 0;
   }
   /*----------------------------------------------------------------------*/
-  return; 
+  return;
 }
 
 
 /*!---------------------------------------------------------------------
   \brief routine to meassure the performance
 
-  <pre>                                                        mn 01/04 
+  <pre>                                                        mn 01/04
   Initializes one counters with 0.
   </pre>
 
@@ -187,7 +187,7 @@ void perf_init (INT index)
   sumtime[index] = 0.0;
   counter[index] = 0;
   /*----------------------------------------------------------------------*/
-  return; 
+  return;
 }
 
 
@@ -195,7 +195,7 @@ void perf_init (INT index)
 /*!---------------------------------------------------------------------
   \brief routine to meassure the performance
 
-  <pre>                                                        mn 01/04 
+  <pre>                                                        mn 01/04
   start of the region for one timer.
   </pre>
 
@@ -203,7 +203,7 @@ void perf_init (INT index)
   \return void
 
   ------------------------------------------------------------------------*/
-void perf_begin (INT index) 
+void perf_begin (INT index)
 {
   DOUBLE perf_cpu();
   DOUBLE perf_time();
@@ -211,14 +211,14 @@ void perf_begin (INT index)
   begtime[index] = perf_time();
 
   /*----------------------------------------------------------------------*/
-  return; 
+  return;
 }
 
 
 /*!---------------------------------------------------------------------
   \brief routine to meassure the performance
 
-  <pre>                                                        mn 01/04 
+  <pre>                                                        mn 01/04
   end of the region for one timer.
   </pre>
 
@@ -241,14 +241,14 @@ void perf_end (INT index)
   counter[index] += 1;
 
   /*----------------------------------------------------------------------*/
-  return; 
+  return;
 }
 
 
 /*!---------------------------------------------------------------------
   \brief routine to meassure the performance
 
-  <pre>                                                        mn 01/04 
+  <pre>                                                        mn 01/04
   Print the results for one timer.
   </pre>
 
@@ -288,14 +288,14 @@ void perf_print (INT index, char string[], INT bezug, INT ops)
   }
 
   /*----------------------------------------------------------------------*/
-  return; 
+  return;
 }
 
 
 /*!---------------------------------------------------------------------
   \brief routine to meassure the performance
 
-  <pre>                                                        mn 01/04 
+  <pre>                                                        mn 01/04
   Print the results for all timers.
   </pre>
 
@@ -306,7 +306,7 @@ void perf_out ()
 {
   INT i;
   INT user_perf;
-  
+
   /* --------------- print out time counters */
   printf("%2s %25s: %7s %12s %5s%3s %8s %8s\n",
       "ID",
@@ -367,7 +367,7 @@ void perf_out ()
   printf("%77s\n","-----------------------------------------------------------------------------");
 
   /*----------------------------------------------------------------------*/
-  return; 
+  return;
 }
 #endif
 
@@ -405,7 +405,7 @@ void perf_out ()
 #define HP_USER_CPU_TIME 1
 #define HP_SYSTEM_CPU_TIME 2
 #define HP_INTERRUPT_TIME 3
-#define HP_MAX_THREADS 1024 
+#define HP_MAX_THREADS 1024
 
 /* global data */
 static int first_call = 1;
@@ -444,7 +444,7 @@ double cputime_thread (void)
   if ( first_call ) {
     return_value = __lw_get_time_factors( &sec_per_itick , &boottime );
     if ( (return_value < 0) || (sec_per_itick < 0) ) {
-      fprintf( stderr , "cputime_thread: __lw_get_time_factors() failed.\n" ); 
+      fprintf( stderr , "cputime_thread: __lw_get_time_factors() failed.\n" );
       return( (double) -1 );
     }
     printf("sec_per_itick = %g boottime = %d\n",sec_per_itick,boottime);

@@ -2,7 +2,7 @@
 /*!------------------------------------------------------------------------
 \file
 \brief wallcontact.h headerfile for 2-D bilinear contact interfaces, containing
-structures and prototypes 
+structures and prototypes
 
 <pre>
 Maintainer: Michael Gee
@@ -12,15 +12,15 @@ Maintainer: Michael Gee
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
-\addtogroup CONTACT 
+/*!
+\addtogroup CONTACT
 *//*! @{ (documentation module open)*/
 
 /*!------------------------------------------------------------------------
 \brief main structure for 2-D contact (bilinear discretization)
 
 <pre>                                                           m.gee 10/02
-defined in wall_contact_detection.c                             
+defined in wall_contact_detection.c
 </pre>
 
 -------------------------------------------------------------------------*/
@@ -47,14 +47,14 @@ struct _GNODE     **g_slavenode;   /*!< Slave g_nodes are stored in these struct
 struct _GNODE     **contact_set;   /*!< Active contact g_nodes are stored in this structure*/
 INT                 set_size;      /*!< Size of the active set (g_nodes which are in contact)*/
 INT                 CET_flag;      /*!< Flag indicating Cons. Enforcement Tech. used (0: Penalty Met. 1: Aug. Lagr. Meth.)*/
-INT                 FR_flag;       /*!< Flag indicating Contact Pr. Type (0: Frictionless 1: Frictional)*/  
+INT                 FR_flag;       /*!< Flag indicating Contact Pr. Type (0: Frictionless 1: Frictional)*/
 DOUBLE              n_pen_par;     /*!< Normal Penalty Parameter*/
 DOUBLE              t_pen_par;     /*!< Tangential Penalty Parameter*/
 DOUBLE              fr_coef;       /*!< Coefficient of friction*/
 #ifdef GEMM
 DOUBLE              dt;            /*!<Time step size used in case of E-M INT. scheme with contact*/
 #endif
-enum _CONTACTFLAG   contactflag;   /*!< Contact flag*/ 
+enum _CONTACTFLAG   contactflag;   /*!< Contact flag*/
 
 } WALL_CONTACT;
 

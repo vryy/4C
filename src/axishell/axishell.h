@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief headerfile for axisymmetric shell element, 
+\brief headerfile for axisymmetric shell element,
        containing structures and prototypes
 
 <pre>
@@ -13,7 +13,7 @@ Maintainer: Malte Neumann
 *----------------------------------------------------------------------*/
 #ifdef D_AXISHELL
 
-/*! 
+/*!
   \addtogroup AXISHELL
   *//*! @{ (documentation module open)*/
 

@@ -10,11 +10,11 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
-\addtogroup FLUID2 
+/*!
+\addtogroup FLUID2
 *//*! @{ (documentation module open)*/
 #ifdef D_FSI
-#ifdef D_FLUID2 
+#ifdef D_FLUID2
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #include "fluid2.h"
@@ -25,7 +25,7 @@ Maintainer: Steffen Genkinger
 
 in this function the curvature at the free surface of a fluid2 element
 with linear shape functions is calculated.
-		     
+
 </pre>
 \param  **actgline GLINE           (i)    glines to actual element
 \param  *actlinefs                 (i)    free surface conditions
@@ -34,24 +34,24 @@ with linear shape functions is calculated.
 \param   actngline INT             (i)    num. of glines to element
 \param **xyze      DOUBLE          (-)    nodal coordinates
 \param **deriv     DOUBLE          (-)    natural deriv. of shape funct.
-\param **kappa     DOUBLE          (o)    nodal curvature  
-\return void                                                                       
+\param **kappa     DOUBLE          (o)    nodal curvature
+\return void
 
 ------------------------------------------------------------------------*/
-void f2_calq4curv( GLINE                        **actgline, 
+void f2_calq4curv( GLINE                        **actgline,
                      FLUID_FREESURF_CONDITION   **actlinefs,
 		     ELEMENT                    *actele,
 		     INT                         foundline,
 		     INT                         actngline,
 		     DOUBLE                    **xyze,
 		     DOUBLE                    **deriv,
-		     DOUBLE                    **kappa		    
+		     DOUBLE                    **kappa
 		   )
 {
 INT    actngnode;              /* number of gnodes                      */
 INT    iedgnod[MAXNOD_F2];     /* node numbers on act. edge             */
 INT    nbedgnod[MAXNOD_F2];    /* node numbers of neighbour edge        */
-INT    node;                   
+INT    node;
 INT    line;
 INT    nbfoundline;
 INT    k;                        /* counters                              */
@@ -76,7 +76,7 @@ ELEMENT *nbele;                /* neighbour element                     */
 NODE  *actnode;
 GNODE *actgnode;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_calq4curv");
 #endif
 
@@ -90,23 +90,23 @@ for (line=0;line<actngline;line++)
 {
    if (actlinefs[line]==NULL) continue;
    /*------------------------------------ check number of nodes on line */
-   actngnode = actgline[line]->ngnode;   
+   actngnode = actgline[line]->ngnode;
    dsassert(actngnode==2,"more than 2 nodes per edge for quad4!\n");
    /*--------------------------------------------------- get edge nodes */
-   f2_iedg(iedgnod,actele,line,0);  
-   /*-- get values of  shape functions and their derivatives at middle  
+   f2_iedg(iedgnod,actele,line,0);
+   /*-- get values of  shape functions and their derivatives at middle
        of actual line (e1=ZERO)  				        */
    f2_degrectri(funct,deriv,ZERO,actele->distyp,1);
-   /*------------------------- compute normal vector for actual edge 
+   /*------------------------- compute normal vector for actual edge
      	and determine global coordinates of midpoint ------------------ */
    actvn[0]=ZERO;
    actvn[1]=ZERO;
    actxy[0]=ZERO;
    actxy[1]=ZERO;
-   for(k=0;k<actngnode;k++) 
+   for(k=0;k<actngnode;k++)
    {
       node=iedgnod[k];
-      actvn[0]+=deriv[0][k]*xyze[1][node];      
+      actvn[0]+=deriv[0][k]*xyze[1][node];
       actvn[1]-=deriv[0][k]*xyze[0][node];
       actxy[0]+=funct[k]*xyze[0][node];
       actxy[1]+=funct[k]*xyze[1][node];
@@ -118,7 +118,7 @@ for (line=0;line<actngline;line++)
    for (ignod=0;ignod<actngnode;ignod++)
    {
       actgnode=actgline[line]->gnode[ignod];
-      actnode=actgnode->node;	
+      actnode=actgnode->node;
       foundit[ignod]=0;
       /*------------------------------------ loop elements at this node */
       for (nel=0;nel<actnode->numele;nel++)
@@ -131,7 +131,7 @@ for (line=0;line<actngline;line++)
          nbngline=nbele->g.gsurf->ngline;
          /*-------loop over lines, check for freesurface cond. on lines */
          for (nbline=0; nbline<nbngline; nbline++)
-         { 	   
+         {
      	    nbgline[nbline] = nbele->g.gsurf->gline[nbline];
      	    nblinefs[nbline] = nbgline[nbline]->freesurf;
 	    if(nblinefs[nbline]==NULL) continue;
@@ -140,8 +140,8 @@ for (line=0;line<actngline;line++)
          /*--- element only with node but not with line at free surface */
          if (nbfoundline==0) continue;
 	 if (nbfoundline==1 && actele==nbele) continue;
-	 foundit[ignod]=1; 
-         /*- how many glines at free surface does the neighbour 
+	 foundit[ignod]=1;
+         /*- how many glines at free surface does the neighbour
      	     element have!? --------------------------------------------*/
          switch(nbfoundline)
          {
@@ -160,32 +160,32 @@ for (line=0;line<actngline;line++)
      	      if (nblinefs[nbline]==NULL) continue;
 	      if (nbgline[nbline]->gnode[0]==actgnode ||
 	          nbgline[nbline]->gnode[1]==actgnode) break;
-	    }         
+	    }
          break;
          default:
             dserror("element with 3 free surface lines not possible!\n");
          }
-	 if (nbline==nbngline) continue;    
+	 if (nbline==nbngline) continue;
          /*------------------------ get coordinates of neigbour element */
          f2_alecoor(nbele,xyze);
          /*------------------------------ check number of nodes on line */
-         nbngnode = nbgline[nbline]->ngnode;     
+         nbngnode = nbgline[nbline]->ngnode;
          dsassert(nbngnode==2,"more than 2 nodes per edge for quad4!\n");
          /*--------------------------------------------- get edge nodes */
-         f2_iedg(nbedgnod,nbele,nbline,0);  
-        /*-- get values of  shape functions and their derivatives 
+         f2_iedg(nbedgnod,nbele,nbline,0);
+        /*-- get values of  shape functions and their derivatives
         	  at middle of actual line (e1=ZERO)	  	        */
          f2_degrectri(funct,deriv,ZERO,nbele->distyp,1);
-         /*------------------- compute normal vector for actual edge 
+         /*------------------- compute normal vector for actual edge
      	    and determine global coordinates of midpoint -------------- */
          nbvn[0]=ZERO;
          nbvn[1]=ZERO;
          nbxy[0]=ZERO;
          nbxy[1]=ZERO;
-         for(k=0;k<nbngnode;k++) 
+         for(k=0;k<nbngnode;k++)
          {
 	    node=nbedgnod[k];
-	    nbvn[0]+=deriv[0][k]*xyze[1][node];	  
+	    nbvn[0]+=deriv[0][k]*xyze[1][node];
 	    nbvn[1]-=deriv[0][k]*xyze[0][node];
 	    nbxy[0]+=funct[k]*xyze[0][node];
 	    nbxy[1]+=funct[k]*xyze[1][node];
@@ -217,7 +217,7 @@ for (line=0;line<actngline;line++)
      	    nbrad[ignod]  = sqrt(nbd[0]*nbd[0] + nbd[1]*nbd[1]);
 	   /*-- check if intersection point is inside fluid domain:
      			 s<0.0 --> kappa<0.0			        */
-     	    if (s<ZERO) 
+     	    if (s<ZERO)
      	    {
      	       actrad[ignod]*=-ONE;
      	       nbrad[ignod]*=-ONE;
@@ -226,7 +226,7 @@ for (line=0;line<actngline;line++)
       }
    }
    /*--------------------------------------- calculate nodal curvature */
-   for (ignod=0;ignod<actngnode;ignod++) 
+   for (ignod=0;ignod<actngnode;ignod++)
    {
        node=iedgnod[ignod];
        if (foundit[ignod]==1) /* regular neighbour element */
@@ -241,24 +241,24 @@ for (line=0;line<actngline;line++)
        {
           switch (ignod)
           {
-          case 0:	       
+          case 0:
 	     if      (foundit[1]==1) kappa[node][1]=ONE/actrad[1];
 	     else if (foundit[1]==2) kappa[node][1]=ZERO;
 	     else    dserror("element has no neighbour!!!\n");
           break;
-          case 1:       
+          case 1:
 	     if      (foundit[0]==1) kappa[node][1]=ONE/actrad[0];
-	     else if (foundit[0]==2) kappa[node][1]=ZERO; 
-	     else    dserror("element has no neighbour!!!\n");        
+	     else if (foundit[0]==2) kappa[node][1]=ZERO;
+	     else    dserror("element has no neighbour!!!\n");
           break;
           default:
 	     dserror("parameter out of range!\n");
           }
-       }	    
+       }
    }
-} 
-  
-#ifdef DEBUG 
+}
+
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -272,7 +272,7 @@ return;
 
 in this function the curvature for fluid2 element with quadratic shape
 functions is calculated.
-		     
+
 </pre>
 
 \param  **actgline    GLINE   (i)         glines to actual element
@@ -281,15 +281,15 @@ functions is calculated.
 \param   actngline            (i)         number of glines to element
 \param **xyze                 (-)         element coordinates
 \param **kappa                (o)         nodal curvature values
-\return void                                                                       
+\return void
 
 ------------------------------------------------------------------------*/
-void f2_calq8curv( GLINE                        **actgline, 
+void f2_calq8curv( GLINE                        **actgline,
                      FLUID_FREESURF_CONDITION   **actlinefs,
 		     ELEMENT                    *actele,
 		     INT                         actngline,
 		     DOUBLE                    **xyze,
-		     DOUBLE                    **kappa		    
+		     DOUBLE                    **kappa
 		   )
 {
 INT    i;
@@ -299,11 +299,11 @@ INT    iedgnod[MAXNOD_F2];
 DOUBLE a,b,q,r,s,top,bot,t0,func;
 DOUBLE v[2],otil[2],dist[2],k[3];
 DOUBLE lxy[2][3];
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f2_calq8curv");
 #endif
 
-/*-------------------------------------------- set element coordinates */ 
+/*-------------------------------------------- set element coordinates */
 f2_alecoor(actele,xyze);
 iel = actele->numnp;
 /*---------------------------------------------------------------------*
@@ -317,10 +317,10 @@ for (line=0;line<actngline;line++)
    /*----------------------------------- find gline at the free surface */
    if (actlinefs[line]==NULL) continue;
    /*------------------------------------ check number of nodes on line */
-   actngnode = actgline[line]->ngnode;	 
+   actngnode = actgline[line]->ngnode;
    dsassert(actngnode==3,"more than 3 nodes per edge for quad8/quad9!\n");
    /*--------------------------------------------------- get edge nodes */
-   f2_iedg(iedgnod,actele,line,0);  
+   f2_iedg(iedgnod,actele,line,0);
    /*-------------------------------------------------- get coordinates */
    for (i=0;i<actngnode;i++)
    {
@@ -334,7 +334,7 @@ for (line=0;line<actngline;line++)
    /*------ get projection point (local origin) from node 1 on vector v */
    bot = v[0]*v[0]+v[1]*v[1];
    top = (lxy[0][1]-lxy[0][0])*v[0] + (lxy[1][1]-lxy[1][0])*v[1];
-   t0  = top/bot;   
+   t0  = top/bot;
    otil[0] = lxy[0][0] + t0*v[0];
    otil[1] = lxy[1][0] + t0*v[1];
    /*------------------------- get distance from node 1 to local origin */
@@ -352,15 +352,15 @@ for (line=0;line<actngline;line++)
    dist[1] = otil[1]-lxy[1][2];
    r = sqrt(dist[0]*dist[0] + dist[1]*dist[1]);
    /*---------------- get coefficients of quadratic function along edge:
-                      f'(x) = 2*a*x + b                                 */      
+                      f'(x) = 2*a*x + b                                 */
    a = -s/q/r;
    b = -(s/r+a*r);
-   /*--------------------------------------- get curvature at the nodes */   
+   /*--------------------------------------- get curvature at the nodes */
    func = -TWO*a*q+b;
    func = ONE+func*func;
    k[0] = TWO*a/(func*sqrt(func));
    func = b;
-   func = ONE+func*func;   
+   func = ONE+func*func;
    k[1] = TWO*a/(func*sqrt(func));
    func = TWO*a*r+b;
    func = ONE+func*func;
@@ -374,7 +374,7 @@ for (line=0;line<actngline;line++)
 }
 
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

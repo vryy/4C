@@ -18,7 +18,7 @@ Maintainer: Malte Neumann
  | includes for solver package AZTEC 2.1                 m.gee 10/01    |
  *----------------------------------------------------------------------*/
 #ifdef AZTEC_PACKAGE
-#ifdef PARALLEL 
+#ifdef PARALLEL
 /*-------------------------------- with mpi parallel version of aztec2.1*/
 
 #ifdef HPUX10
@@ -105,7 +105,7 @@ Maintainer: Malte Neumann
 /*----------------------------------------------------------------------*
  | includes for solver package HYPRE 1.6.0               m.gee 10/01    |
  *----------------------------------------------------------------------*/
-#ifdef PARALLEL/*---------------- HYPRE exists only in parallel version */ 
+#ifdef PARALLEL/*---------------- HYPRE exists only in parallel version */
 #ifdef HYPRE_PACKAGE
 #include "utilities.h"
 #include "HYPRE.h"
@@ -119,7 +119,7 @@ Maintainer: Malte Neumann
 /*----------------------------------------------------------------------*
  | includes for solver package Spooles                    m.gee 4/02    |
  *----------------------------------------------------------------------*/
-#ifdef PARALLEL 
+#ifdef PARALLEL
 #ifdef SPOOLES_PACKAGE
 
 #ifdef HPUX10
@@ -181,7 +181,7 @@ Maintainer: Malte Neumann
 /*----------------------------------------------------------------------*
  | includes for solver package SuperLU_DIST              m.gee 10/01    |
  *----------------------------------------------------------------------*/
-#ifdef PARALLEL/*---------------- HYPRE exists only in parallel version */ 
+#ifdef PARALLEL/*---------------- HYPRE exists only in parallel version */
 #ifdef PARSUPERLU_PACKAGE
 #include "superlu_ddefs.h"
 #endif /* end of ifdef PARSUPERLU_PACKAGE */
@@ -201,7 +201,7 @@ typedef enum _SPARSE_TYP
   ucchb,                  /* unsymmetric column compressed Harwell-Boeing format */
   dense,                  /* dense matrix for Lapack */
   rc_ptr,                 /* row column pointer format for mumps */
-  skymatrix,              /* skyline format for solver colsol */  
+  skymatrix,              /* skyline format for solver colsol */
   spoolmatrix,            /* matrix object for solver spooles */
   ccf,                    /* compressed column format for umfpack */
   bdcsr,                  /* block distributed compressed sparse row format */
@@ -252,7 +252,7 @@ typedef struct _SOLVAR
   struct _MLPCGVARS      *mlpcgvars;         /* variables needed for MLPCG */
 #endif
 
-  INT                     nsysarray;         /* number of global sparse arrays for this field */   
+  INT                     nsysarray;         /* number of global sparse arrays for this field */
   enum  _SPARSE_TYP      *sysarray_typ;      /* vector of types for all sparse arrays */
   union _SPARSE_ARRAY    *sysarray;          /* vector of sparse arrays */
 
@@ -303,19 +303,19 @@ typedef struct _AZVAR
 {
   enum   _AZSOLVERTYP     azsolvertyp;        /* subtype of aztec solver, see enums.h */
   enum   _AZPRECTYP       azprectyp;          /* type of aztec preconditioner, see enums.h */
-  INT                     azreuse;            /* reuse of preconditioning feature, important, 
+  INT                     azreuse;            /* reuse of preconditioning feature, important,
                                                  but not yet implemented */
   INT                     azgfill;            /* percentage fill in allowed */
   INT                     aziter;             /* maximum number of iterations allowed */
-  INT                     azsub;              /* number of krylov subspaces for certain solvers 
+  INT                     azsub;              /* number of krylov subspaces for certain solvers
                                                  (e.g. gmres) */
   INT                     azgraph;            /* forgot about it.... */
   INT                     azpoly;             /* integer parameter with different meanings
                                                  dependent on type of precond. */
   DOUBLE                  azdrop;             /* numerical drop tolerance for preconditioners
                                                  using it, default: 0.0 */
-  DOUBLE                  azfill;             /* allowed fill-in in percent of the memory 
-                                                 used by the sparse matrix */             
+  DOUBLE                  azfill;             /* allowed fill-in in percent of the memory
+                                                 used by the sparse matrix */
   DOUBLE                  aztol;              /* tolerance */
   DOUBLE                  azomega;            /* relaxation parameter for some preconditioners */
   INT                     blockdiag;
@@ -336,7 +336,7 @@ typedef struct _HYPREVARS
   DOUBLE                  tol;              /* user-given tolerance */
   INT                     kryldim;          /* dimension of krylov subspace */
   DOUBLE                  threshold;        /* parameters for amg, see manual */
-  INT                     sweep[4];         
+  INT                     sweep[4];
   INT                     ifill;            /* fill in level for ilu */
   DOUBLE                  dfill;            /* fill in level in percent of the original
                                                matrix for ilu and parasails */
@@ -378,7 +378,7 @@ typedef struct _SKYMATRIX
   INT                     ncall;           /* how often was this matrix solved */
 
   INT                     numeq_total;     /* total number of unknowns */
-  INT                     numeq;           /* number of unknowns updated on this proc */ 
+  INT                     numeq;           /* number of unknowns updated on this proc */
   INT                     nnz_total;       /* total number of nonzero entries */
   INT                     nnz;             /* number of nonzeros on this proc */
 
@@ -389,10 +389,10 @@ typedef struct _SKYMATRIX
   DOUBLE                  det;
   /* some arrays that are used for parallel assembly, mainly in the case of
    * inter-proc-coupling conditions */
-#ifdef PARALLEL 
-  INT                     numcoupsend;     /* number of coupling information 
+#ifdef PARALLEL
+  INT                     numcoupsend;     /* number of coupling information
                                               to be send by this proc */
-  INT                     numcouprecv;     /* number of coupling information 
+  INT                     numcouprecv;     /* number of coupling information
                                               to be recv. by this proc */
   struct _ARRAY          *couple_d_send;   /* send and receive buffers if necessary */
   struct _ARRAY          *couple_i_send;
@@ -415,7 +415,7 @@ typedef struct _RC_PTR
   INT                     ncall;           /* how often was this matrix solved */
 
   INT                     numeq_total;     /* total number of unknowns */
-  INT                     numeq;           /* number of unknowns updated on this proc */ 
+  INT                     numeq;           /* number of unknowns updated on this proc */
   INT                     nnz_total;       /* total number of nonzero entries */
   INT                     nnz;             /* number of nonzeros on this proc */
 
@@ -433,12 +433,12 @@ typedef struct _RC_PTR
   struct _ARRAY           irn_glob;        /* on imyrank=0 the global row/column pointer arrays */
   struct _ARRAY           jcn_glob;
 
-  /* some arrays that are used for parallel assembly, mainly in the 
+  /* some arrays that are used for parallel assembly, mainly in the
    * case of inter-proc-coupling conditions */
-#ifdef PARALLEL 
+#ifdef PARALLEL
   INT                     numcoupsend;     /* number of coupling information
                                               to be send by this proc */
-  INT                     numcouprecv;     /* number of coupling information 
+  INT                     numcouprecv;     /* number of coupling information
                                               to be recv. by this proc */
   struct _ARRAY          *couple_d_send;   /* send and receive buffers if necessary */
   struct _ARRAY          *couple_i_send;
@@ -461,7 +461,7 @@ typedef struct _CCF
   INT                     ncall;           /* how often was this matrix solved */
 
   INT                     numeq_total;     /* total number of unknowns */
-  INT                     numeq;           /* number of unknowns updated on this proc */ 
+  INT                     numeq;           /* number of unknowns updated on this proc */
   INT                     nnz_total;       /* total number of nonzero entries */
   INT                     nnz;             /* number of nonzeros on this proc */
 
@@ -472,12 +472,12 @@ typedef struct _CCF
   struct _ARRAY           Ai;              /* row pointer vector */
   struct _ARRAY           Ax;              /* values of the matrix */
 
-  /* some arrays that are used for parallel assembly, mainly in the 
+  /* some arrays that are used for parallel assembly, mainly in the
    * case of inter-proc-coupling conditions */
-#ifdef PARALLEL 
-  INT                     numcoupsend;     /* number of coupling information 
+#ifdef PARALLEL
+  INT                     numcoupsend;     /* number of coupling information
                                               to be send by this proc */
-  INT                     numcouprecv;     /* number of coupling information 
+  INT                     numcouprecv;     /* number of coupling information
                                               to be recv. by this proc */
   struct _ARRAY          *couple_d_send;   /* send and receive buffers if necessary */
   struct _ARRAY          *couple_i_send;
@@ -498,7 +498,7 @@ typedef struct _DENSE
   INT                     ncall;           /* how often was this matrix solved */
 
   INT                     numeq_total;     /* total number of unknowns */
-  INT                     numeq;           /* number of unknowns updated on this proc */ 
+  INT                     numeq;           /* number of unknowns updated on this proc */
   INT                     nnz_total;       /* total number of nonzero entries */
   INT                     nnz;             /* number of nonzeros on this proc */
 
@@ -511,7 +511,7 @@ typedef struct _DENSE
 
   /* some arrays that are used for parallel assembly, mainly in the
    * case of inter-proc-coupling conditions */
-#ifdef PARALLEL 
+#ifdef PARALLEL
   INT                     numcoupsend;     /* number of coupling information
                                               to be send by this proc */
   INT                     numcouprecv;     /* number of coupling information
@@ -535,7 +535,7 @@ typedef struct _UCCHB
   INT                     ncall;            /* how often was this matrix solved */
 
   INT                     numeq_total;      /* total number of unknowns */
-  INT                     numeq;            /* number of unknowns updated on this proc */ 
+  INT                     numeq;            /* number of unknowns updated on this proc */
   INT                     nnz_total;        /* total number of nonzero entries */
   INT                     nnz;              /* number of nonzeros on this proc */
 
@@ -548,7 +548,7 @@ typedef struct _UCCHB
   struct _ARRAY           xa_backup;        /* backup of pointer vector of the ucchb */
   struct _ARRAY           xa_perm_backup;   /* permuted backup of pointer vector of the ucchb */
 
-#ifdef PARALLEL 
+#ifdef PARALLEL
 #ifdef PARSUPERLU_PACKAGE
   gridinfo_t              grid;             /* the 2D MPI-grid to solve on */
   superlu_options_t       options;          /* options for superLU */
@@ -558,7 +558,7 @@ typedef struct _UCCHB
   SuperMatrix             A;                /* the matrix structure */
 #endif
 
-  /* some arrays that are used for parallel assembly, mainly in the 
+  /* some arrays that are used for parallel assembly, mainly in the
    * case of inter-proc-coupling conditions */
   INT                     numcoupsend;     /* number of coupling information
                                               to be send by this proc */
@@ -582,7 +582,7 @@ typedef struct _H_PARCSR
   INT                     is_factored;      /* does precond. information exist ? */
   INT                     ncall;            /* how often was this matrix solved */
   INT                     numeq_total;      /* total number of unknowns */
-  INT                     numeq;            /* number of unknowns updated on this proc */ 
+  INT                     numeq;            /* number of unknowns updated on this proc */
   INT                     nnz;              /* number of nonzeros on this proc */
 
   struct _ARRAY           perm;                /* permutation of update for each proc, type is IA*/
@@ -598,7 +598,7 @@ typedef struct _H_PARCSR
 
   /* some arrays that are used for parallel assembly, mainly in the
    * case of inter-proc-coupling conditions */
-#ifdef PARALLEL 
+#ifdef PARALLEL
   INT                     numcoupsend;     /* number of coupling information
                                               to be send by this proc */
   INT                     numcouprecv;     /* number of coupling information
@@ -622,7 +622,7 @@ typedef struct _AZ_ARRAY_MSR
   INT                     is_transformed;   /* has the transformation been done? */
   INT                     ncall;            /* how often was this matrix solved */
   INT                     numeq_total;      /* total number of unknowns */
-  INT                     numeq;            /* number of unknowns updated on this proc */ 
+  INT                     numeq;            /* number of unknowns updated on this proc */
   INT                     nnz;              /* number of nonzeros on this proc */
 
   struct _ARRAY           update;           /* list of dofs updated on this proc */
@@ -639,7 +639,7 @@ typedef struct _AZ_ARRAY_MSR
   INT                     proc_config[AZ_PROC_SIZE]; /* MPI-configuration */
   INT                     options[AZ_OPTIONS_SIZE];  /* Aztec options */
   INT                    *data_org;                  /* Aztec internal data org. */
-  INT                    *external;                  /* list of external dofs often needed 
+  INT                    *external;                  /* list of external dofs often needed
                                                         by this proc */
   INT                    *update_index;              /* list of dofs updated on this proc */
   INT                    *extern_index;              /* list of external related dofs */
@@ -650,9 +650,9 @@ typedef struct _AZ_ARRAY_MSR
   AZ_PRECOND             *Aprec;                     /* the preconditioner object */
 #endif
 
-  /* some arrays that are used for parallel assembly, mainly in the 
+  /* some arrays that are used for parallel assembly, mainly in the
    * case of inter-proc-coupling conditions */
-#ifdef PARALLEL 
+#ifdef PARALLEL
   INT                     numcoupsend;     /* number of coupling information
                                               to be send by this proc */
   INT                     numcouprecv;     /* number of coupling information
@@ -675,13 +675,13 @@ typedef struct _SPOOLMAT
   INT                     is_factored;     /* does precond. information exist ? */
   INT                     ncall;           /* how often was this matrix solved */
   INT                     numeq_total;     /* total number of unknowns */
-  INT                     numeq;           /* number of unknowns updated on this proc */ 
+  INT                     numeq;           /* number of unknowns updated on this proc */
   INT                     nnz;             /* number of nonzeros on this proc */
 
   struct _ARRAY           update;          /* list of dofs updated on this proc */
   struct _ARRAY           irn_loc;         /* proc-local row pointer vector */
   struct _ARRAY           jcn_loc;         /* proc-local column pointer vector */
-  struct _ARRAY           rowptr;          /* INT vector holding the begin of each 
+  struct _ARRAY           rowptr;          /* INT vector holding the begin of each
                                               row in irn_loc */
   struct _ARRAY           A_loc;           /* the values of the matrix */
 
@@ -704,14 +704,14 @@ typedef struct _SPOOLMAT
   IV                     *vtxmapIV;
   DV                     *cumopsDV;
   IV                     *ownedColumnsIV;
-  InpMtx                 *newA;    
+  InpMtx                 *newA;
   DenseMtx               *newY;
   SolveMap               *solvemap;
 #endif
 
-  /* some arrays that are used for parallel assembly, mainly in the 
+  /* some arrays that are used for parallel assembly, mainly in the
    * case of inter-proc-coupling conditions */
-#ifdef PARALLEL 
+#ifdef PARALLEL
   INT                     numcoupsend;     /* number of coupling information
                                               to be send by this proc */
   INT                     numcouprecv;     /* number of coupling information
@@ -748,7 +748,7 @@ typedef struct _ML_ARRAY_MDS
   /* output */
   DOUBLE             rcond;       /* estimate the reciprocal of the l-norm
                                      condition number */
-  INT                inrtia[3];   /* number of positive, negative and 
+  INT                inrtia[3];   /* number of positive, negative and
                                      an indicator if there are zero
                                      eigenvalues */
   DOUBLE             global[150]; /* global communication array */
@@ -797,7 +797,7 @@ typedef struct _OLL
   INT                     sparsepat;     /*!< sparsepattern was printed to gnu */
 
   INT                     numeq_total;   /*!< total number of unknowns */
-  INT                     numeq;         /*!< number of unknowns updated on this proc */ 
+  INT                     numeq;         /*!< number of unknowns updated on this proc */
   INT                     nnz;           /*!< number of nonzeros on this proc */
 
   struct _ARRAY           update;        /*!< list of dofs updated on this proc */
@@ -814,20 +814,20 @@ typedef struct _OLL
   union _SPARSE_ARRAY    *sysarray;      /*!< sparse array in solver format */
   enum  _SPARSE_TYP      *sysarray_typ;  /*!< typ for sparse array */
 
-  struct _ARRAY           gdofrecv;      /*!< ghost dof list to receive 
-                                           gdofrecv.a.ia[0..fdim-1]    = dof 
-                                           numbers of external dofs needed 
+  struct _ARRAY           gdofrecv;      /*!< ghost dof list to receive
+                                           gdofrecv.a.ia[0..fdim-1]    = dof
+                                           numbers of external dofs needed
                                            sorted in ascending order */
   struct _ARRAY           recvbuff;
-  struct _ARRAY           computebuff;   /*!< after receiving all messages 
+  struct _ARRAY           computebuff;   /*!< after receiving all messages
                                            they are sorted to computebuff */
 #ifdef PARALLEL
   MPI_Status             *status;        /*!< receive status */
 #endif
-  struct _ARRAY           gdofsend;      /*!< ghost dof list to send to other 
-                                           procs (3D integer) gdofsend.a.ia[proc][0] = 
-                                           number of values to send to proc proc 
-                                           gdofsend.a.ia[proc][ 1..gdofsend.a.i3[proc][0] ] = 
+  struct _ARRAY           gdofsend;      /*!< ghost dof list to send to other
+                                           procs (3D integer) gdofsend.a.ia[proc][0] =
+                                           number of values to send to proc proc
+                                           gdofsend.a.ia[proc][ 1..gdofsend.a.i3[proc][0] ] =
                                            dof numbers to be send to proc proc in ascending order */
   struct _ARRAY           sendbuff;
 #ifdef PARALLEL
@@ -836,7 +836,7 @@ typedef struct _OLL
 
   /* some arrays that are used for parallel assembly, mainly in the
    * case of inter-proc-coupling conditions */
-#ifdef PARALLEL 
+#ifdef PARALLEL
   INT                     numcoupsend;   /*!< number of coupling information
                                            to be send by this proc */
   INT                     numcouprecv;   /*!< number of coupling information
@@ -867,11 +867,11 @@ typedef struct _MATENTRY
 
 
 /*!------------------------------------------------------------------------
-  \brief matrix needed by the MLPCG solver on the finest grid only   
+  \brief matrix needed by the MLPCG solver on the finest grid only
 
-  m.gee 6/01  
+  m.gee 6/01
 
-  matrix needed by the MLPCG solver on the finest grid only      
+  matrix needed by the MLPCG solver on the finest grid only
   -------------------------------------------------------------------------*/
 typedef struct _DBCSR
 {
@@ -880,34 +880,34 @@ typedef struct _DBCSR
   INT                     ncall;         /*!< how often was this matrix solved */
 
   INT                     numeq_total;   /*!< total number of unknowns */
-  INT                     numeq;         /*!< number of unknowns updated on this proc */ 
+  INT                     numeq;         /*!< number of unknowns updated on this proc */
   INT                     nnz;           /*!< number of nonzeros on this proc */
 
   INT                     owner[MAXPROC][2]; /*!< contains for each proc the lowest and highest
-                                               dof number 
-                                               owner[proc][0] lowest dof on proc 
+                                               dof number
+                                               owner[proc][0] lowest dof on proc
                                                owner[proc][1] highest dof on proc */
   struct _ARRAY           update;        /*!< list of dofs updated on this proc */
   struct _ARRAY           a;             /*!< the values of the sparse matrix */
   struct _ARRAY           ja;            /*!< the column indizes of the sparse matrix */
   struct _ARRAY           ia;            /*!< the row indizes of the sparse matrix */
-  struct _ARRAY           blocks;        /*!< nodal block information of csr matrix 
+  struct _ARRAY           blocks;        /*!< nodal block information of csr matrix
                                            block[i][0] = size of nodal block
                                            block[i][1..block[i][0]] = dofs to this block */
-  struct _ARRAY           gdofrecv;      /*!< ghost dof list to receive 
-                                           gdofrecv.a.ia[0..fdim-1]    = dof numbers 
-                                           of external dofs needed 
+  struct _ARRAY           gdofrecv;      /*!< ghost dof list to receive
+                                           gdofrecv.a.ia[0..fdim-1]    = dof numbers
+                                           of external dofs needed
                                            sorted in ascending order */
   struct _ARRAY           recvbuff;
-  struct _ARRAY           computebuff;   /*!< after receiving all messages they 
+  struct _ARRAY           computebuff;   /*!< after receiving all messages they
                                            are sorted to computebuff */
 #ifdef PARALLEL
   MPI_Status             *status;        /*!< receive status */
 #endif
   struct _ARRAY           gdofsend;      /*!< ghost dof list to send to other
-                                           procs (3D integer) gdofsend.a.ia[proc][0] = 
-                                           number of values to send to proc proc 
-                                           gdofsend.a.ia[proc][ 1..gdofsend.a.i3[proc][0] ] = 
+                                           procs (3D integer) gdofsend.a.ia[proc][0] =
+                                           number of values to send to proc proc
+                                           gdofsend.a.ia[proc][ 1..gdofsend.a.i3[proc][0] ] =
                                            dof numbers to be send to proc proc in ascending order */
   struct _ARRAY           sendbuff;
 #ifdef PARALLEL

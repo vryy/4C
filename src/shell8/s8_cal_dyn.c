@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Michael Gee
@@ -24,7 +24,7 @@ INT           i,j,k;
 DOUBLE        he,hehe;
 DOUBLE        helpf;
 DOUBLE        help;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s8_tmas");
 #endif
 /*----------------------------------------------------------------------*/
@@ -49,8 +49,8 @@ for (j=0; j<iel; j++)
     for (k=3; k<6; k++)
     {
        emass[j*numdf+k][i*numdf+k] += help;
-    }    
-    
+    }
+
     if (ABS(facvw) >= EPS14)
     {
        help = facvw * helpf * he;
@@ -61,10 +61,10 @@ for (j=0; j<iel; j++)
        emass[j*numdf+1][i*numdf+4] += help;
        emass[j*numdf+2][i*numdf+5] += help;
     }
-    
+
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;

@@ -1,6 +1,6 @@
 /*!---------------------------------------------------------------------
 \file
-\brief 
+\brief
 
 <pre>
 Maintainer: Malte Neumann
@@ -49,7 +49,7 @@ typedef struct _DNODE
    struct _FSI_COUPLE_CONDITION *fsicouple;
 #endif
 #ifdef D_FLUID
-   struct _FLUID_FREESURF_CONDITION *freesurf;   
+   struct _FLUID_FREESURF_CONDITION *freesurf;
 #endif
 #ifdef D_AXISHELL
    struct _SAXI_THICK_CONDITION   *thickness;
@@ -75,7 +75,7 @@ typedef struct _DLINE
    {
      struct _ARCLINE        *arcline;       /* arcline */
      struct _STLINE         *stline;        /* stline */
-   }                          props;        /* name of union */ 
+   }                          props;        /* name of union */
 
    /*------- design topology section */
    INT                       my_dnodeId[2]; /* IDs of design nodes to me */
@@ -97,7 +97,7 @@ typedef struct _DLINE
    struct _FSI_COUPLE_CONDITION *fsicouple;
    struct _SLIPDIRICH_CONDITION *slipdirich;
 #endif
-   
+
 #ifdef D_FLUID
    struct _FLUID_FREESURF_CONDITION *freesurf;
    struct _FLUID_LIFTDRAG_CONDITION *liftdrag;
@@ -116,10 +116,10 @@ typedef struct _DLINE
 
 
 /*!----------------------------------------------------------------------
-\brief structure ARCLINE                                            
+\brief structure ARCLINE
 
 <pre>                                                              mn 05/03
-This structure contains all geometric properties of an arcline. 
+This structure contains all geometric properties of an arcline.
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -134,10 +134,10 @@ typedef struct _ARCLINE
 } ARCLINE;
 
 /*!----------------------------------------------------------------------
-\brief structure STLINE                                            
+\brief structure STLINE
 
 <pre>                                                              mn 05/03
-This structure contains all geometric properties of a straight line. 
+This structure contains all geometric properties of a straight line.
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -175,10 +175,10 @@ typedef struct _DSURF
 #endif
 #ifdef D_FLUID
    struct _FLUID_FREESURF_CONDITION *freesurf;
-   struct _FLUID_LIFTDRAG_CONDITION *liftdrag;   
+   struct _FLUID_LIFTDRAG_CONDITION *liftdrag;
    /* fluid2 stabilisation is condition assigned to dsurface */
    enum _STABILISATION_TYP	stab_type;	/* enum of stabilisation	*/
-   union 
+   union
    {
      struct _STAB_PAR_GLS  *gls;/*! pointer to stabilisation parameters	*/
    /*  struct _STAB_PRES_PRO *pp; */
@@ -206,10 +206,10 @@ typedef struct _DVOL
    struct _NEUM_CONDITION   *neum;        /* neumann conditions to this DVOL, else NULL */
    struct _DIRICH_CONDITION *dirich;      /* dirichlet conditions to this DVOL, else NULL */
    struct _COUPLE_CONDITION *couple;      /* coupling conditions to this DVOL, else NULL */
-  
+
 #ifdef D_FLUID /* fluid3 stabilisation is condition assigned to dsurface */
    enum _STABILISATION_TYP	stab_type;	/* enum of stabilisation	*/
-   union 
+   union
    {
      struct _STAB_PAR_GLS  *gls;/*! pointer to stabilisation parameters	*/
    /*  struct _STAB_PRES_PRO *pp; */
