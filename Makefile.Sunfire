@@ -13,6 +13,8 @@
 # -DD_ALE       defines element ale
 # -DD_WALL1     defines element wall1
 # -DD_OPTIM      defines optimization
+# -DS8CONTACT    defines contact algorithms for shell8 contact
+# -DD_CONTACT    defines contact algos 2D (with wall element)
 #
 # -DDEBUG     defines debug mode: routine and array tracing 
 # -DPARALLEL  defines parallel version of programm
@@ -35,7 +37,7 @@
 #
 # 
 PFL       =  -DSUN -DD_SHELL8 -DD_SHELL9 -DD_BRICK1 -DD_FLUID2 -DD_FLUID3 -DD_ALE -DD_WALL1  \
-             -DPARALLEL -DSPOOLES_PACKAGE -DAZTEC_PACKAGE
+             -DPARALLEL -DSPOOLES_PACKAGE -DAZTEC_PACKAGE -DS8CONTACT -DD_CONTACT
 #
 # set correct paths
 # the library lib_sun.tar.gz is in /bau/stat16/users/statik/lib

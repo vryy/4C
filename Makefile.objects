@@ -37,6 +37,7 @@ OBJS2	      = src/global_full/global_control.o \
                 src/global_full/solver_control.o \
                 src/global_full/solver_service.o \
                 src/global_full/solver_service2.o \
+                src/global_full/solver_service3.o \
                 src/global_full/solver_add_data.o \
                 src/global_full/solver_add_msr.o \
                 src/global_full/solver_add_mlib.o \
@@ -115,6 +116,7 @@ OBJS6	      = src/shell8/s8_main.o \
                 src/shell8/s8_funcderiv.o \
                 src/shell8/s8_static_ke.o \
                 src/shell8/s8_static_keug.o \
+                src/shell8/s8_static_mass.o \
                 src/shell8/s8_cal_dyn.o \
                 src/shell8/s8_stress.o \
                 src/shell8/s8_tfte.o \
@@ -137,7 +139,14 @@ OBJS6	      = src/shell8/s8_main.o \
                 src/shell8/s8_ans.o \
                 src/shell8/s8_vthv.o \
                 src/shell8/s8_xint.o \
-                src/shell8/s8_init.o 
+                src/shell8/s8_init.o \
+                src/shell8/s8_contact1.o \
+                src/shell8/s8_contact2.o \
+                src/shell8/s8_contact_nearestnode.o \
+                src/shell8/s8_contact_project.o \
+                src/shell8/s8_contact_gap.o \
+                src/shell8/s8_contact_history.o \
+                src/shell8/s8_contact_init.o
 #                ale
 OBJS7 = \
                 src/ale3/ale_call_stiff.o \
@@ -192,7 +201,8 @@ OBJS10	      = src/math/sort_find.o \
 #                output
 OBJS11	      = src/output/out_global.o \
                 src/output/out_gid_msh.o \
-                src/output/out_gid_sol.o
+                src/output/out_gid_sol.o \
+                src/output/out_gid_soldyn.o
 #                wall1
 OBJS12	      = src/wall1/w1_bop.o \
                 src/wall1/w1_cal_deriv.o \
