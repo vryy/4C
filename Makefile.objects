@@ -10,14 +10,7 @@ OBJS_GLOBAL   = src/global_full/global_control.o \
                 src/global_full/global_ass_dof.o \
                 src/global_full/global_ass_dof_ndis.o \
                 src/global_full/cal_dyn_control.o \
-                src/global_full/cal_static_control.o \
-                src/global_full/cal_nlnstatic_control.o \
-                src/global_full/cal_nlndyn_struct.o \
-                src/global_full/cal_nlndyn_stru_expl.o \
-		src/global_full/cal_nlngemm_struct.o \
-                src/global_full/cal_static_service.o \
                 src/global_full/dyn_timecurve.o \
-                src/global_full/dyn_service.o \
                 src/global_full/map_node_find.o \
                 src/global_full/global_dofconnect.o \
                 src/global_full/global_monitoring.o \
@@ -27,6 +20,14 @@ OBJS_GLOBAL   = src/global_full/global_control.o \
                 src/global_full/restart_control.o \
                 src/global_full/machine_hpux.o \
 		src/global_full/check_max_sizes.o
+#                structure
+OBJS_STRUCTURE= src/structure/stru_dyn_nln.c.o \
+                src/structure/stru_dyn_nln_expl.c.o \
+                src/structure/stru_dyn_service.c.o \
+                src/structure/stru_gemm_nln.c.o \
+                src/structure/stru_static_lin.c.o \
+                src/structure/stru_static_nln.c.o \
+                src/structure/stru_static_service.c.o
 #                solver
 OBJS_SOLVER   = src/solver/solver_control.o \
                 src/solver/solver_service.o \
