@@ -937,9 +937,9 @@ C       ****************************************************************
      &		     'GRID-VEL. VECT. ',
      &		     'STOPPING TIME   ',
      &		     'MOVIE CREATION  ',
-     &               'TURB. KIN. ENERGY',
-     &               'TURB. DISS. RATE',
-     &               'TURB. VISCOSITY' /
+     &                 'TUR. KIN. ENERGY',
+     &                 'TUR. DISS. RATE',
+     &                 'TUR. VISCOSITY' /
 
        TITL='HOT PICS!!!!'
        IF(BGCOLOUR.EQ.0) THEN
