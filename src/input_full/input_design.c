@@ -7,7 +7,7 @@
 extern struct _FILES  allfiles;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
- | pointer to allocate design if needed                                 |
+ | pointer to allocate design                                           |
  | defined in global_control.c                                          |
  *----------------------------------------------------------------------*/
 extern struct _DESIGN *design;
