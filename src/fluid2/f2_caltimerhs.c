@@ -393,11 +393,18 @@ DOUBLE facpr;
 DOUBLE fvts,fvtsr,fvvtsr;
 DOUBLE fact[2];
 DOUBLE sign;
-  
+STAB_PAR_GLS *gls;	/* pointer to GLS stabilisation parameters	*/
+
 #ifdef DEBUG 
 dstrc_enter("f2_calstabtfv");
 #endif
 
+/*---------------------------------------------------------- initialise */
+gls    = ele->e.f2->stabi.gls;
+
+if (ele->e.f2->stab_type != stab_gls) 
+   dserror("routine with no or wrong stabilisation called");
+  
 /*--------------------------------------------------- set some factors */
 taumu = dynvar->tau[0];
 taump = dynvar->tau[1];
@@ -419,7 +426,7 @@ ALE:
    + |  tau_mu * c * grad(v) * u  d_omega
     /
  *----------------------------------------------------------------------*/
-if (ele->e.f2->iadvec!=0)
+if (gls->iadvec!=0)
 {
    fact[0] = vel2int[0]*fac*taumu;
    fact[1] = vel2int[1]*fac*taumu;
@@ -441,9 +448,9 @@ if (ele->e.f2->iadvec!=0)
    -/+ |  tau_mp * 2*nue * div( eps(v) ) * u  d_omega
       /
  *----------------------------------------------------------------------*/
-if (ele->e.f2->ivisc!=0 && ihoel!=0)
+if (gls->ivisc!=0 && ihoel!=0)
 {
-   switch (ele->e.f2->ivisc) /* choose stabilisation type --> sign */
+   switch (gls->ivisc) /* choose stabilisation type --> sign */
    {
    case 1: /* GLS- */
       sign = ONE;
@@ -480,7 +487,7 @@ ALE:
                  /		 
 		 
  *----------------------------------------------------------------------*/ 
-if (ele->e.f2->iadvec!=0)
+if (gls->iadvec!=0)
 {
    fact[0] = taumu*covint[0]*facsr;
    fact[1] = taumu*covint[1]*facsr;
@@ -508,7 +515,7 @@ ALE:
    +/- (1-THETA)*dt |  tau_mp * 2*nue * div( eps(v) ) * c * grad(u)  d_omega
                    /
  *----------------------------------------------------------------------*/
-if (ele->e.f2->ivisc!=0 && ihoel!=0)
+if (gls->ivisc!=0 && ihoel!=0)
 {
    fvtsr = fvts * dynvar->thsr;
    irow = 0;
@@ -534,7 +541,7 @@ ALE:
    + (1-THETA)*dt |  tau_mu * 2*nue * c *grad(v) * div( eps(u) )  d_omega
                  /
  *----------------------------------------------------------------------*/ 
-if (ele->e.f2->iadvec!=0 && ihoel!=0)
+if (gls->iadvec!=0 && ihoel!=0)
 {
    cc = c*taumu;
    fact[0] = (TWO*vderxy2[0][0] + vderxy2[0][1] + vderxy2[1][2])*cc;
@@ -555,7 +562,7 @@ if (ele->e.f2->iadvec!=0 && ihoel!=0)
    -/+ (1-THETA)*dt |  tau_mp * 4*nue^2 * div( eps(v) ) * div ( eps(u) )  d_omega
                    /
  *----------------------------------------------------------------------*/ 
-if (ele->e.f2->ivisc!=0 && ihoel!=0)
+if (gls->ivisc!=0 && ihoel!=0)
 {
    fvvtsr = fvtsr*visc;
    fact[0] = (TWO*vderxy2[0][0] + vderxy2[0][1] + vderxy2[1][2])*fvvtsr;
@@ -577,7 +584,7 @@ if (ele->e.f2->ivisc!=0 && ihoel!=0)
   - |  tau_c * div(v) * div(u)  d_omega
    /
  *----------------------------------------------------------------------*/  
-if (ele->e.f2->icont!=0) 
+if (gls->icont!=0) 
 {
    aux = tauc*facsr*(vderxy[0][0] + vderxy[1][1]);
    irow = -1;
@@ -603,7 +610,7 @@ ALE:
   (-) (1-THETA)*dt | tau_mu * c * grad(v) * grad(p)   d_omega
                   /
  *----------------------------------------------------------------------*/  
-if (ele->e.f2->iadvec!=0 && dynvar->iprerhs>0)
+if (gls->iadvec!=0 && dynvar->iprerhs>0)
 {
    fact[0] = taumu*pderxy[0]*facpr;
    fact[1] = taumu*pderxy[1]*facpr;
@@ -625,7 +632,7 @@ if (ele->e.f2->iadvec!=0 && dynvar->iprerhs>0)
   -/+ (1-THETA)*dt | tau_mp * 2*nue * div( eps(v) ) * grad(p)    d_omega
                   /
  *----------------------------------------------------------------------*/  
-if (ele->e.f2->ivisc!=0 && ihoel!=0 && dynvar->iprerhs>0)
+if (gls->ivisc!=0 && ihoel!=0 && dynvar->iprerhs>0)
 {
    cc = facpr*visc*taump*sign;
    irow=0;

@@ -60,6 +60,10 @@ void f2_calgalexfv(
 DOUBLE  facsl, facsr;
 INT     inode,irow,isd;
 
+#ifdef DEBUG 
+dstrc_enter("f2_calgalexfv");
+#endif		
+
 /*--------------------------------------------------- set some factors */
 facsl = fac*dynvar->thsl;
 facsr = fac*dynvar->thsr;
@@ -171,6 +175,18 @@ DOUBLE sign,aux;
 DOUBLE taumu,taump;
 DOUBLE c,fvts; 
 DOUBLE fact[2];
+STAB_PAR_GLS *gls;	/* pointer to GLS stabilisation parameters	*/
+
+#ifdef DEBUG 
+dstrc_enter("f2_calstabexfv");
+#endif		
+
+/*---------------------------------------------------------- initialise */
+gls    = ele->e.f2->stabi.gls;
+
+if (ele->e.f2->stab_type != stab_gls) 
+   dserror("routine with no or wrong stabilisation called");
+
 /*--------------------------------------------------- set some factors */
 taumu = dynvar->tau[0];
 taump = dynvar->tau[1];
@@ -197,7 +213,7 @@ ALE:
    + thetas(l,r)*dt |  taum_mu * c * grad(v) * b^   d_omega
                    /
  *----------------------------------------------------------------------*/
-if (ele->e.f2->iadvec!=0)
+if (gls->iadvec!=0)
 {
    fact[0] = edead[0]*fac*taumu*c;
    fact[1] = edead[1]*fac*taumu*c;
@@ -219,9 +235,9 @@ if (ele->e.f2->iadvec!=0)
    -/+ thetas(l,r)*dt |  tau_mp * 2*nue * div( eps(v) ) * b  d_omega
                      /
  *----------------------------------------------------------------------*/
-if (ele->e.f2->ivisc!=0 && ihoel!=0)
+if (gls->ivisc!=0 && ihoel!=0)
 {
-   switch (ele->e.f2->ivisc) /* choose stabilisation type --> sign */
+   switch (gls->ivisc) /* choose stabilisation type --> sign */
    {
    case 1: /* GLS- */
       sign = ONE;

@@ -21,30 +21,30 @@ static DOUBLE Q112 = ONE/TWELVE;
 
 <pre>                                                         genk 05/02   
   									 
-   ele->e.f3->iadvec: advection stab.					
+   ele->e.f3->stabi.gls->iadvec: advection stab.					
       0 = no								
       1 = yes								
-   ele->e.f3->ipres: pressure stab.					
+   ele->e.f3->stabi.gls->ipres: pressure stab.					
       0 = no								
       1 = yes								
-   ele->e.f3->ivisc: diffusion stab.					
+   ele->e.f3->stabi.gls->ivisc: diffusion stab.					
       0 = no								
       1 = GLS-  							
       2 = GLS+  							
-   ele->e.f3->icont: continuity stab.					
+   ele->e.f3->stabi.gls->icont: continuity stab.					
       0 = no								
       1 = yes								
-   ele->e.f3->istapa: version of stab. parameter			
+   ele->e.f3->stabi.gls->istapa: version of stab. parameter			
       35 = diss wall instationary					
       36 = diss wall stationanary					
-   ele->e.f3->norm_P: p-norm						
+   ele->e.f3->stabi.gls->norm_P: p-norm						
       p = 1<=p<=oo							
       0 = max.-norm (p=oo)						
-   ele->e.f3->mk: higher order elements control flag			
+   ele->e.f3->stabi.gls->mk: higher order elements control flag			
       0 = mk fixed (--> (bi)linear: 1/3, biquadr.: 1/12)		
       1 = min(1/3,2*C)  						
      -1 = mk=1/3  (--> element order via approx. nodal-distance)	
-   ele->e.f3->ihele[]:  						
+   ele->e.f3->stabi.gls->ihele[]:  						
       x/y/z = length-def. for velocity/pressure/continuity stab 	
       0 = don't compute 						
       1 = sqrt(area)							
@@ -52,24 +52,24 @@ static DOUBLE Q112 = ONE/TWELVE;
       3 = diameter/sqrt(2)						
       4 = sqrt(2)*area/diagonal (rectangle) 4*area/s (triangle) 	
       5 = streamlength (element length in flow direction		
-   ele->e.f3->ninths: number of integration points for streamlength	
+   ele->e.f3->stabi.gls->ninths: number of integration points for streamlength	
       1 = at center of element  					
       2 = at every INT pt used for element.-stab.-matrices		
-   ele->e.f3->istapc: flag for stabilisation parameter calculation	
+   ele->e.f3->stabi.gls->istapc: flag for stabilisation parameter calculation	
       1 = at center of element  					
       2 = at every integration point					
-   ele->e.f3->clamb \							
-   ele->e.f3->c1     |_>> stabilisation constants (input)		
-   ele->e.f3->c2     |  						
-   ele->e.f3->c3    /							
-   ele->e.f3->istrle: has streamlength to be computed			
-   ele->e.f3->iarea: calculation of area length 			
-   ele->e.f3->iduring: calculation during INT.-pt.loop  		
-   ele->e.f3->itau[0]: flag for tau_mu calc. (-1: before, 1:during)	
-   ele->e.f3->itau[1]: flag for tau_mp calc. (-1: before, 1:during)	
-   ele->e.f3->itau[2]: flag for tau_c calc. (-1: before, 1:during)	
+   ele->e.f3->stabi.gls->clamb \							
+   ele->e.f3->c1               |_>> stabilisation constants (input)		
+   ele->e.f3->c2               |  						
+   ele->e.f3->c3              /							
+   ele->e.f3->stabi.gls->istrle: has streamlength to be computed			
+   ele->e.f3->stabi.gls->iarea: calculation of area length 			
+   ele->e.f3->stabi.gls->iduring: calculation during INT.-pt.loop  		
+   ele->e.f3-->stabi.gls>itau[0]: flag for tau_mu calc. (-1: before, 1:during)	
+   ele->e.f3->stabi.gls->itau[1]: flag for tau_mp calc. (-1: before, 1:during)	
+   ele->e.f3->stabi.gls->itau[2]: flag for tau_c calc. (-1: before, 1:during)	
    ele->e.f3->hk[i]: element sizes (vel / pre / cont)			
-   ele->e.f3->idiaxy: has diagonals to be computed			
+   ele->e.f3->stabi.gls->idiaxy: has diagonals to be computed			
    dynvar->tau[0]: stability parameter momentum / velocity (tau_mu)	
    dynvar->tau[1]: stability parameter momentum / pressure (tau_mp)	
    dynvar->tau[2]: stability parameter continuity (tau_c)		
@@ -104,14 +104,20 @@ DOUBLE dt;
 DOUBLE re;
 DOUBLE hk;
 DOUBLE aux1;
+STAB_PAR_GLS *gls;	/* pointer to GLS stabilisation parameters	*/
 
 #ifdef DEBUG 
 dstrc_enter("f3_calstabpar");
-#endif
+#endif		
 
+/*---------------------------------------------------------- initialise */
+gls    = ele->e.f3->stabi.gls;
+
+if (ele->e.f3->stab_type != stab_gls) 
+   dserror("routine with no or wrong stabilisation called");
 
 /*------------------------ higher order element diameter modifications ? */
-switch(ele->e.f3->mk)
+switch(gls->mk)
 {
 case -1:
    c_mk = Q13;
@@ -140,7 +146,7 @@ default:
    dserror("mk > 0 not implemented yet!");
 } /* end swtich (ele->e.f3->mk) */
 /*---------------------------------- choose stability-parameter version */
-switch(ele->e.f3->istapa)
+switch(gls->istapa)
 {
 case 35: /*-------------------------- version diss. Wall - instationary */
    velno = sqrt(velint[0]*velint[0] \
@@ -149,14 +155,14 @@ case 35: /*-------------------------- version diss. Wall - instationary */
    dt = dynvar->dta;     /* check if dta or dt has to be chosen!!!!!!!! */
    for (isp=0;isp<3;isp++)
    {
-      if (ele->e.f3->itau[isp]!=iflag)
+      if (gls->itau[isp]!=iflag)
          continue;
       hk = ele->e.f3->hk[isp]/hdiv;
       switch(isp)
       {
       case 2:/* continiuty stabilisation */
          re = c_mk*hk*velno/TWO/visc;  /* element reynolds number */
-	 dynvar->tau[isp] = (ele->e.f3->clamb)*velno*hk/TWO*DMIN(ONE,re);         
+	 dynvar->tau[isp] = (gls->clamb)*velno*hk/TWO*DMIN(ONE,re);         
       break;
       default: /* velocity / pressure stabilisation */
          if (velno>EPS15)
@@ -179,14 +185,14 @@ case 36: /*---------------------------- version diss. Wall - stationary */
    aux1= velno*c_mk/FOUR/visc;
    for (isp=0;isp<3;isp++)
    {
-      if (ele->e.f3->itau[isp]!=iflag)
+      if (gls->itau[isp]!=iflag)
          continue;
       hk = ele->e.f3->hk[isp]/hdiv;
       re = aux1*hk;
       switch(isp)
       {
       case 2: /* continiuty stabilisation ### TWO VERSIONS ??? ###*/
-         dynvar->tau[isp] = (ele->e.f3->clamb)*velno*hk/TWO*DMIN(ONE,re);
+         dynvar->tau[isp] = (gls->clamb)*velno*hk/TWO*DMIN(ONE,re);
 /*         dynvar->tau[isp] = velno*hk/TWO*DMIN(ONE,re);*/
          break;
       default: /* velocity / pressure stabilisation */

@@ -118,6 +118,7 @@ DOUBLE    det;        /* determinant of jacobian matrix                 */
 DOUBLE    e1,e2;      /* natural coordinates of integr. point           */
 DOUBLE    preint;     /* pressure at integration point                  */
 DIS_TYP   typ;	      /* element type                                   */
+STAB_PAR_GLS *gls;	/* pointer to GLS stabilisation parameters	*/
 
 #ifdef DEBUG 
 dstrc_enter("f2_calint");
@@ -129,6 +130,10 @@ actmat=ele->mat-1;
 dens = mat[actmat].m.fluid->density;
 ntyp = ele->e.f2->ntyp; 
 typ  = ele->distyp;
+gls  = ele->e.f2->stabi.gls;
+
+if (ele->e.f2->stab_type != stab_gls) 
+   dserror("routine with no or wrong stabilisation called");
 
 /*------- get integraton data and check if elements are "higher order" */
 switch (ntyp)
@@ -208,7 +213,7 @@ for (lr=0;lr<nir;lr++)
 /*-------------------------------------------------- compute matrix Mvv */
 	 if (dynvar->nis==0 || dynvar->gen_alpha==1)	  	 	    
             f2_calmvv(emass,funct,fac,iel);
-      } /* endif (dynvar->nik>0 || dynvar->gen_alpha==1) */
+      } /* endif (dynvar->nik>0) */
       
 /*----------------------------------------------------------------------*
  |         compute Stabilisation matrices                               |
@@ -216,10 +221,10 @@ for (lr=0;lr<nir;lr++)
  |  Stabilisation matrices are all stored in one matrix "estif"         |
  |  Stabilisation mass matrices are all stored in one matrix "emass"    |
  *----------------------------------------------------------------------*/
-      if (ele->e.f2->istabi>0)
+      if (gls->istabi>0)
       { 
  /*-------------- compute stabilisation parameter during ntegration loop*/
-         if (ele->e.f2->iduring!=0)
+         if (gls->iduring!=0)
             f2_calelesize2(ele,dynvar,xyze,funct,velint,wa1,visc,iel,ntyp);
 /*------------------------------------ compute second global derivative */ 
          if (ihoel!=0)
@@ -237,7 +242,7 @@ for (lr=0;lr<nir;lr++)
             if (dynvar->nis==0 || dynvar->gen_alpha==1) 
                f2_calstabmvv(ele,dynvar,emass,velint, 
 	                     funct,derxy,derxy2,fac,visc,iel,ihoel); 
-            if (ele->e.f2->ipres!=0)	        
+            if (gls->ipres!=0)	        
             {
 /*---------------------------------------- stabilisation for matrix Kpv */
                f2_calstabkpv(ele,dynvar,estif,velint,NULL,vderxy,
@@ -248,7 +253,7 @@ for (lr=0;lr<nir;lr++)
             } /* endif (ele->e.f2->ipres!=0) */
          } /* endif (dynvar->nie==0) */
 /*---------------------------------------- stabilisation for matrix Kpp */
-         if (ele->e.f2->ipres!=0)
+         if (gls->ipres!=0)
 	    f2_calstabkpp(dynvar,estif,derxy,fac,iel);  
       } /* endif (ele->e.f2->istabi>0) */
 
@@ -265,13 +270,13 @@ for (lr=0;lr<nir;lr++)
          f2_covi(vderxy,velint,covint);
 /*-------------------- calculate galerkin part of "Iter-RHS" (vel dofs) */
          f2_calgalifv(dynvar,eiforce,covint,funct,fac,iel);
-         if (ele->e.f2->istabi>0)
+         if (gls->istabi>0)
 	 {
 /*------------------- calculate stabilisation for "Iter-RHS" (vel dofs) */
             f2_calstabifv(dynvar,ele,eiforce,covint,velint,funct,
 	                  derxy,derxy2,fac,visc,ihoel,iel);
 /*------------------- calculate stabilisation for "Iter-RHS" (pre dofs) */
-            if (ele->e.f2->ipres!=0)
+            if (gls->ipres!=0)
                f2_calstabifp(dynvar,&(eiforce[2*iel]),covint,derxy,fac,iel);
 	 } /* endif (ele->e.f2->istabi>0) */
       } /* endif (dynvar->nii!=0) */
@@ -283,13 +288,13 @@ for (lr=0;lr<nir;lr++)
  |  parts changing during the nonlinear iteration are added to          |
  |  Iteration Force Vector                                              |
  *----------------------------------------------------------------------*/
-      if (*hasext!=0 && ele->e.f2->istabi>0)
+      if (*hasext!=0 && gls->istabi>0)
       {
 /*------- compute stabilisation part of external RHS (vel dofs) at (n+1)*/
          f2_calstabexfv(dynvar,ele,eiforce,derxy,derxy2,edeadng,
 	                 velint,fac,visc,iel,ihoel,1); 
 /*------ compute stabilisation part of external RHS (pre dofs) at (n+1) */
-         if (ele->e.f2->ipres!=0)
+         if (gls->ipres!=0)
             f2_calstabexfp(dynvar,&(eiforce[2*iel]),derxy,edeadng,fac,iel,1);  
       } /* endif (*hasext!=0 && ele->e.f2->istabi>0)  */
 
@@ -331,14 +336,14 @@ for (lr=0;lr<nir;lr++)
 	              funct,derxy,vderxy,preint,visc,fac,iel);
 /*-------------------- calculate galerkin part of "Time-RHS" (pre-dofs) */
          f2_calgaltfp(dynvar,&(etforce[2*iel]),funct,vderxy,fac,iel);
-	 if (ele->e.f2->istabi>0)
+	 if (gls->istabi>0)
 	 {
 /*------------------- calculate stabilisation for "Time-RHS" (vel-dofs) */
             f2_calstabtfv(dynvar,ele,etforce,velint,vel2int,
 	                  covint,derxy,derxy2,vderxy,vderxy2,
 		          pderxy,fac,visc,ihoel,iel);
 /*------------------- calculate stabilisation for "Time-RHS" (pre-dofs) */
-            if (ele->e.f2->ipres!=0)
+            if (gls->ipres!=0)
 	       f2_calstabtfp(dynvar,&(etforce[2*iel]),derxy,vderxy2,
 	                     vel2int,covint,pderxy,visc,fac,ihoel,iel);
          } /* endif (ele->e.f2->istabi>0) */
@@ -353,13 +358,13 @@ for (lr=0;lr<nir;lr++)
 	 {
 /*--- compute galerkin part of external RHS (vel dofs) at (n) and (n+1) */
             f2_calgalexfv(dynvar,etforce,funct,edeadn,edeadng,fac,iel);
-	    if (ele->e.f2->istabi>0)
+	    if (gls->istabi>0)
 	    {
 /*-------- compute stabilisation part of external RHS (vel dofs) at (n) */
                f2_calstabexfv(dynvar,ele,etforce,derxy,derxy2,edeadn,
 	                      velint,fac,visc,iel,ihoel,0);
 /*--------------- compute stabilistaion part of external RHS (pre dofs) */
-               if (ele->e.f2->ipres!=0)
+               if (gls->ipres!=0)
                   f2_calstabexfp(dynvar,&(etforce[2*iel]),derxy,edeadn,fac,iel,0); 
             } /* endif (ele->e.f2->istabi>0) */
          } /* endif (*hasext!=0) */
@@ -491,6 +496,7 @@ INT       iedgnod[MAXNOD_F2];
 INT       line,ngnode;
 GLINE    *gline[4];
 FLUID_FREESURF_CONDITION *linefs[4];
+STAB_PAR_GLS *gls;	/* pointer to GLS stabilisation parameters	*/
 
 #ifdef DEBUG 
 dstrc_enter("f2_calinta");
@@ -505,6 +511,11 @@ gamma= mat[actmat].m.fluid->gamma;
 ntyp = ele->e.f2->ntyp; 
 typ  = ele->distyp;
 
+gls    = ele->e.f2->stabi.gls;
+
+if (ele->e.f2->stab_type != stab_gls) 
+   dserror("routine with no or wrong stabilisation called");
+   
 /*------- get integraton data and check if elements are "higher order" */
 switch (ntyp)
 {
@@ -599,10 +610,10 @@ for (lr=0;lr<nir;lr++)
  |  Stabilisation matrices are all stored in one matrix "estif"         |
  |  Stabilisation mass matrices are all stored in one matrix "emass"    |
  *----------------------------------------------------------------------*/
-      if (ele->e.f2->istabi>0)
+      if (gls->istabi>0)
       { 
  /*-------------- compute stabilisation parameter during ntegration loop*/
-         if (ele->e.f2->iduring!=0)
+         if (gls->iduring!=0)
             f2_calelesize2(ele,dynvar,xyze,funct,velint,wa1,visc,iel,ntyp);
 /*------------------------------------ compute second global derivative */ 
          if (ihoel!=0)
@@ -624,7 +635,7 @@ for (lr=0;lr<nir;lr++)
             if (dynvar->nis==0) 
                f2_calstabmvv(ele,dynvar,emass,alecovint, 
 	                     funct,derxy,derxy2,fac,visc,iel,ihoel); 
-            if (ele->e.f2->ipres!=0)	        
+            if (gls->ipres!=0)	        
             {
 /*---------------------------------------- stabilisation for matrix Kpv */
                f2_calstabkpv(ele,dynvar,estif,velint,gridvint,vderxy,
@@ -638,7 +649,7 @@ for (lr=0;lr<nir;lr++)
             } /* endif (ele->e.f2->ipres!=0) */
          } /* endif (dynvar->nie==0) */
 /*---------------------------------------- stabilisation for matrix Kpp */
-         if (ele->e.f2->ipres!=0)
+         if (gls->ipres!=0)
 	    f2_calstabkpp(dynvar,estif,derxy,fac,iel);  
       } /* endif (ele->e.f2->istabi>0) */
 
@@ -656,13 +667,13 @@ for (lr=0;lr<nir;lr++)
          f2_covi(vderxy,alecovint,covint);
 /*-------------------- calculate galerkin part of "Iter-RHS" (vel dofs) */
          f2_calgalifv(dynvar,eiforce,covint,funct,fac,iel);
-         if (ele->e.f2->istabi>0)
+         if (gls->istabi>0)
 	 {
 /*------------------- calculate stabilisation for "Iter-RHS" (vel dofs) */
             f2_calstabifv(dynvar,ele,eiforce,covint,alecovint,funct,
 	                  derxy,derxy2,fac,visc,ihoel,iel);
 /*------------------- calculate stabilisation for "Iter-RHS" (pre dofs) */
-            if (ele->e.f2->ipres!=0)
+            if (gls->ipres!=0)
                f2_calstabifp(dynvar,&(eiforce[2*iel]),covint,derxy,fac,iel);
 	 } /* endif (ele->e.f2->istabi>0) */
       } /* endif (dynvar->nii!=0) */
@@ -674,13 +685,13 @@ for (lr=0;lr<nir;lr++)
  |  parts changing during the nonlinear iteration are added to          |
  |  Iteration Force Vector                                              |
  *----------------------------------------------------------------------*/
-      if (*hasext!=0 && ele->e.f2->istabi>0)
+      if (*hasext!=0 && gls->istabi>0)
       {
 /*------- compute stabilisation part of external RHS (vel dofs) at (n+1)*/
          f2_calstabexfv(dynvar,ele,eiforce,derxy,derxy2,edeadng,
 	                 alecovint,fac,visc,iel,ihoel,1); 
 /*------ compute stabilisation part of external RHS (pre dofs) at (n+1) */
-         if (ele->e.f2->ipres!=0)
+         if (gls->ipres!=0)
             f2_calstabexfp(dynvar,&(eiforce[2*iel]),derxy,edeadng,fac,iel,1);  
       } /* endif (*hasext!=0 && ele->e.f2->istabi>0)  */
 /*----------------------------------------------------------------------*
@@ -723,14 +734,14 @@ for (lr=0;lr<nir;lr++)
 	              funct,derxy,vderxy,preint,visc,fac,iel);
 /*-------------------- calculate galerkin part of "Time-RHS" (pre-dofs) */
          f2_calgaltfp(dynvar,&(etforce[2*iel]),funct,vderxy,fac,iel); 
-	 if (ele->e.f2->istabi>0)
+	 if (gls->istabi>0)
 	 {
 /*------------------- calculate stabilisation for "Time-RHS" (vel-dofs) */
             f2_calstabtfv(dynvar,ele,etforce,alecovint,vel2int,
 	                  covint,derxy,derxy2,vderxy,vderxy2,
 		          pderxy,fac,visc,ihoel,iel);
 /*------------------- calculate stabilisation for "Time-RHS" (pre-dofs) */
-            if (ele->e.f2->ipres!=0)
+            if (gls->ipres!=0)
 	       f2_calstabtfp(dynvar,&(etforce[2*iel]),derxy,vderxy2,
 	                     vel2int,covint,pderxy,visc,fac,ihoel,iel);
          } /* endif (ele->e.f2->istabi>0) */
@@ -745,13 +756,13 @@ for (lr=0;lr<nir;lr++)
 	 {
 /*--- compute galerkin part of external RHS (vel dofs) at (n) and (n+1) */
             f2_calgalexfv(dynvar,etforce,funct,edeadn,edeadng,fac,iel);
-	    if (ele->e.f2->istabi>0)
+	    if (gls->istabi>0)
 	    {
 /*-------- compute stabilisation part of external RHS (vel dofs) at (n) */
                f2_calstabexfv(dynvar,ele,etforce,derxy,derxy2,edeadn,
 	                      alecovint,fac,visc,iel,ihoel,0);
 /*--------------- compute stabilistaion part of external RHS (pre dofs) */
-               if (ele->e.f2->ipres!=0)
+               if (gls->ipres!=0)
                   f2_calstabexfp(dynvar,&(etforce[2*iel]),derxy,edeadn,fac,iel,0); 
             } /* endif (ele->e.f2->istabi>0) */
          } /* endif (*hasext!=0) */

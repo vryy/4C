@@ -30,31 +30,13 @@ INT                nGP[3];   /*!< number of gaussian points in rs direct. */
 INT                is_ale;   /*!< flag whether there is ale to me or not  */
 struct _ELEMENT   *my_ale;   /*!< pointer to my ale ele, otherwise NULL   */
 
-/*--------------------------------------------------- stabilisation flags */
-INT                istabi;   /*!< stabilasation: 0=no; 1=yes		  */
-INT                iadvec;   /*!< adevction stab.: 0=no; 1=yes  	  */
-INT                ipres;    /*!< pressure stab.: 0=no; 1=yes		  */
-INT                ivisc;    /*!< diffusion stab.: 0=no; 1=GLS-; 2=GLS+   */
-INT                icont;    /*!< continuity stab.: 0=no; 1=yes 	  */
-INT                istapa;   /*!< version of stab. parameter		  */
-INT                istapc;   /*!< flag for stab parameter calculation	  */
-INT                mk;       /*!< 0=mk fixed 1=min(1/3,2*C); -1 mk=1/3    */
-INT                ihele[3]; /*!< x/y/z length-def. for vel/pres/cont stab*/
-INT                ninths;   /*!< number of integ. points for streamlength*/
-
-/*---------------------------------------------------- stabilisation norm */
-INT                norm_p;   /*!< p-norm: p+1<=infinity; 0=Max.norm       */
-
-/*----------------------------------------------- stabilisation constants */
-DOUBLE             clamb;
-
-/*------------------------------------ statiblisation control information */
-INT                istrle;   /*!< has streamlength to be computed	  */
-INT                ivol ;    /*!< calculation of area length		  */
-INT                iduring;  /*!< calculation during INT.-pt.loop	  */
-INT                itau[3];  /*!< has diagonals etc. to be computed	  */
-INT                idiaxy;   /*!< flags for tau_? calculation 
-			     	  (-1: before; 1: during		  */
+/*---------------------------------------------------- stabilisation ---*/
+enum _STABILISATION_TYP	stab_type;	/* enum of stabilisation	*/
+union 
+{
+  struct _STAB_PAR_GLS  *gls;	/*! pointer to stabilisation parameters	*/
+/*  struct _STAB_PRES_PRO *pp; */
+} stabi;
 
 /*--------------------------------- element sizes for stability parameter */
 DOUBLE             hk[3];    /*!< vel/pres/cont                           */

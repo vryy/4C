@@ -263,6 +263,7 @@ DOUBLE fac,facr;     /* factors                                         */
 DOUBLE facs,fact;    /* factors                                         */
 DOUBLE velino[3];    /* normed velocity vector at integration point     */
 DIS_TYP typ;
+STAB_PAR_GLS *gls;	/* pointer to GLS stabilisation parameters	*/
 
 #ifdef DEBUG 
 dstrc_enter("f3_mlcalelesize");
@@ -272,9 +273,13 @@ dstrc_enter("f3_mlcalelesize");
 ntyp   = ele->e.f3->ntyp;
 iel    = ele->numnp;
 typ    = ele->distyp;
+gls    = ele->e.f3->stabi.gls;
 
-istrnint = ele->e.f3->istrle * ele->e.f3->ninths;
-ishvol  = dynvar->ishape * ele->e.f3->ivol;
+if (ele->e.f3->stab_type != stab_gls) 
+   dserror("routine with no or wrong stabilisation called");
+
+istrnint = gls->istrle * gls->ninths;
+ishvol  = dynvar->ishape * gls->iareavol;
 
 /*----------------------------------------------------------------------*
  | calculations at element center: area & streamlength                  |
@@ -352,15 +357,15 @@ if (ishvol==1)
   ----loop over 3 different element sizes: vel/pre/cont  ---------------*/
    for(ilen=0;ilen<3;ilen++)
    {
-      if (ele->e.f3->ihele[ilen]==1)
+      if (gls->ihele[ilen]==1)
          ele->e.f3->hk[ilen] = pow(vol,(ONE/THREE));
-      else if (ele->e.f3->ihele[ilen]==2)
+      else if (gls->ihele[ilen]==2)
          ele->e.f3->hk[ilen] = pow((SIX*vol/PI),(ONE/THREE));
-      else if (ele->e.f3->ihele[ilen]==3)
+      else if (gls->ihele[ilen]==3)
          ele->e.f3->hk[ilen] = pow((SIX*vol/PI),(ONE/THREE))/sqrt(THREE);
-      else if (ele->e.f3->ihele[ilen]==4) 
+      else if (gls->ihele[ilen]==4) 
          dserror("ihele[i] = 4: calculation of element size not possible!!!");
-         else if (ele->e.f3->ninths==1)   
+         else if (gls->ninths==1)   
          ele->e.f3->hk[ilen] = strle; 
    } /* end of loop over ilen */
 } /* endif (ishvol==1) */
@@ -434,7 +439,7 @@ else if (istrnint==1 && ishvol !=1)
       loop over 3 different element sizes: vel/pre/cont  ---------------*/
    for (ilen=0;ilen<3;ilen++)
    {
-      if (ele->e.f3->ihele[ilen]==5)
+      if (gls->ihele[ilen]==5)
          ele->e.f3->hk[ilen] = strle;   
    } /* end of loop over ilen */
 } /* endif (istrnint==1 && ishvol !=1) */
@@ -442,7 +447,7 @@ else if (istrnint==1 && ishvol !=1)
 /*----------------------------------------------------------------------*
   calculate stabilisation parameter
  *----------------------------------------------------------------------*/
-if(ele->e.f3->istapc==1 || istrnint==1)
+if(gls->istapc==1 || istrnint==1)
 {
    switch(ieval) /* ival>2: vel at intpoint already available! */
    {
@@ -523,14 +528,20 @@ DOUBLE strle;      /* stream length                                     */
 DOUBLE val;	   /* temporary calculation value                       */
 DOUBLE velno;	   /* velocity norm                                     */
 DOUBLE velino[3];  /* normed velocity vector at integration point       */
+STAB_PAR_GLS *gls;	/* pointer to GLS stabilisation parameters	*/
 
 #ifdef DEBUG 
 dstrc_enter("f3_mlcalelesize2");
-#endif
+#endif		
 
 /*---------------------------------------------------------- initialise */
-istrnint = ele->e.f3->istrle * ele->e.f3->ninths;
+gls    = ele->e.f3->stabi.gls;
+istrnint = gls->istrle * gls->ninths;
 val = ZERO;
+
+if (ele->e.f3->stab_type != stab_gls) 
+   dserror("routine with no or wrong stabilisation called");
+
 
 if (istrnint==2)
 {
@@ -561,7 +572,7 @@ if (istrnint==2)
       loop over 3 different element sizes: vel/pre/cont  ---------------*/
    for (ilen=0;ilen<3;ilen++)
    {
-      if (ele->e.f3->ihele[ilen]==5)
+      if (gls->ihele[ilen]==5)
          ele->e.f3->hk[ilen] = strle;   
    } /* end of loop over ilen */
 } /* endif (istrnint==2) */

@@ -377,6 +377,7 @@ DOUBLE  dia,dia1,dia2;  /* values used for calculation of element size  */
 DOUBLE  dx,dy;          /* values used for calculation of element size  */
 DOUBLE  gcoor[2];       /* global coordinates                           */
 DIS_TYP typ;
+STAB_PAR_GLS *gls;	/* pointer to GLS stabilisation parameters	*/
 
 #ifdef DEBUG 
 dstrc_enter("f2_mlcalelesize");
@@ -386,9 +387,13 @@ dstrc_enter("f2_mlcalelesize");
 ntyp   = ele->e.f2->ntyp;
 iel    = ele->numnp;
 typ    = ele->distyp;
+gls    = ele->e.f2->stabi.gls;
 
-istrnint = ele->e.f2->istrle * ele->e.f2->ninths;
-isharea  = dynvar->ishape * ele->e.f2->iarea;
+if (ele->e.f2->stab_type != stab_gls) 
+   dserror("routine with no or wrong stabilisation called");
+
+istrnint = gls->istrle * gls->ninths;
+isharea  = dynvar->ishape * gls->iareavol;
 
 /*----------------------------------------------------------------------*
  | calculations at element center: area & streamlength                  |
@@ -437,7 +442,7 @@ if (isharea==1)
       igc++;
       f2_mlcalstrlen(&strle,velint,ele,gcoor,cutp,ntyp);            
    } /* enidf (istrnint==1) */
-   if (ele->e.f2->idiaxy==1)    /* compute diagonal based diameter */
+   if (gls->idiaxy==1)    /* compute diagonal based diameter */
    {
       switch(ntyp)
       {
@@ -471,15 +476,15 @@ if (isharea==1)
   ----loop over 3 different element sizes: vel/pre/cont  ---------------*/
    for(ilen=0;ilen<3;ilen++)
    {
-      if (ele->e.f2->ihele[ilen]==1)
+      if (gls->ihele[ilen]==1)
          ele->e.f2->hk[ilen] = sqrt(area);
-      else if (ele->e.f2->ihele[ilen]==2)
+      else if (gls->ihele[ilen]==2)
          ele->e.f2->hk[ilen] = TWO*sqrt(area/PI);
-      else if (ele->e.f2->ihele[ilen]==3)
+      else if (gls->ihele[ilen]==3)
          ele->e.f2->hk[ilen] = sqrt(TWO*area/PI);
-      else if (ele->e.f2->ihele[ilen]==4)
+      else if (gls->ihele[ilen]==4)
          ele->e.f2->hk[ilen] = dia;
-      else if (ele->e.f2->ninths==1)
+      else if (gls->ninths==1)
          ele->e.f2->hk[ilen] = strle;  
    } /* end loop over ilen */
 } /* endif (isharea==1) */   
@@ -528,7 +533,7 @@ else if (istrnint==1 && isharea !=1)
       loop over 3 different element sizes: vel/pre/cont  ---------------*/
    for (ilen=0;ilen<3;ilen++)
    {
-      if (ele->e.f2->ihele[ilen]==5)
+      if (gls->ihele[ilen]==5)
          ele->e.f2->hk[ilen] = strle;   
    } /* end loop over ilen */
 } /* endif (istrnint==1 && isharea !=1) */
@@ -536,7 +541,7 @@ else if (istrnint==1 && isharea !=1)
 /*----------------------------------------------------------------------*
   calculate stabilisation parameter
  *----------------------------------------------------------------------*/
-if(ele->e.f2->istapc==1 || istrnint==1)
+if(gls->istapc==1 || istrnint==1)
 {
    switch(ieval) /* ival>2: vel at intpoint already available! */
    {
@@ -611,13 +616,18 @@ INT    ilen;       /* simply a counter                                  */
 INT    istrnint;   /* evaluation flag                                   */
 DOUBLE strle;      /* stream length                                     */
 DOUBLE gcoor[2];   /* global coordinates                                */
+STAB_PAR_GLS *gls;	/* pointer to GLS stabilisation parameters	*/
 
 #ifdef DEBUG 
 dstrc_enter("f2_mlcalelesize2");
 #endif
 
 /*---------------------------------------------------------- initialise */
-istrnint = ele->e.f2->istrle * ele->e.f2->ninths;
+gls    = ele->e.f2->stabi.gls;
+istrnint = gls->istrle * gls->ninths;
+
+if (ele->e.f2->stab_type != stab_gls) 
+   dserror("routine with no or wrong stabilisation called");
 
 if (istrnint==2)
 {
@@ -628,7 +638,7 @@ if (istrnint==2)
       loop over 3 different element sizes: vel/pre/cont  ---------------*/
    for (ilen=0;ilen<3;ilen++)
    {
-      if (ele->e.f2->ihele[ilen]==5)
+      if (gls->ihele[ilen]==5)
          ele->e.f2->hk[ilen] = strle;   
    } /* end loop over ilen */
 } /* endif (istrnint==2) */

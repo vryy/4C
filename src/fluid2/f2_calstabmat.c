@@ -144,10 +144,17 @@ DOUBLE tauc;
 DOUBLE c,cc;
 DOUBLE aux,auxr,auxc;
 DOUBLE sign;
+STAB_PAR_GLS *gls;	/* pointer to GLS stabilisation parameters	*/
 
 #ifdef DEBUG 
 dstrc_enter("f2_calstabkvv");
 #endif
+
+/*---------------------------------------------------------- initialise */
+gls    = ele->e.f2->stabi.gls;
+
+if (ele->e.f2->stab_type != stab_gls) 
+   dserror("routine with no or wrong stabilisation called");
 
 /*---------------------------------------- set stabilisation parameter */
 taumu = dynvar->tau[0];
@@ -160,7 +167,7 @@ tauc  = dynvar->tau[2];
    |  tau_c * div(v) * div(u)   d_omega
   /
  *----------------------------------------------------------------------*/
-if (ele->e.f2->icont!=0)
+if (gls->icont!=0)
 {
    c = fac*tauc;
 
@@ -183,7 +190,7 @@ c = fac*taumu;
 cc = c;
 
 /*------------------------------ calculate advection stabilisation part */
-if (ele->e.f2->iadvec!=0)
+if (gls->iadvec!=0)
 {
 /*----------------------------------------------------------------------*
    Calculate advection stabilisation part Nc(u):
@@ -319,9 +326,9 @@ ALE:
 } /* end of advection stabilisation */
 
 /*-------------------------------- calculate viscous stabilisation part */
-if (ihoel!=0 && ele->e.f2->ivisc!=0)
+if (ihoel!=0 && gls->ivisc!=0)
 {   
-   switch (ele->e.f2->ivisc) /* choose stabilisation type --> sign */
+   switch (gls->ivisc) /* choose stabilisation type --> sign */
    {
    case 1: /* GLS- */
       sign = ONE;
@@ -555,10 +562,17 @@ DOUBLE taump;
 DOUBLE c;
 DOUBLE aux;
 DOUBLE sign;
+STAB_PAR_GLS *gls;	/* pointer to GLS stabilisation parameters	*/
 
 #ifdef DEBUG 
 dstrc_enter("f2_calstabkvp");
 #endif
+
+/*---------------------------------------------------------- initialise */
+gls    = ele->e.f2->stabi.gls;
+
+if (ele->e.f2->stab_type != stab_gls) 
+   dserror("routine with no or wrong stabilisation called");
 
 /*---------------------------------------- set stabilisation parameter */
 taumu = dynvar->tau[0];
@@ -567,7 +581,7 @@ taump = dynvar->tau[1];
 c = fac * taumu;
 
 /*------------------------------ calculate advection stabilisation part */
-if (ele->e.f2->iadvec!=0)
+if (gls->iadvec!=0)
 {
 /*----------------------------------------------------------------------*
    Calculate advection stabilisation:
@@ -595,7 +609,7 @@ ALE:
 } /* end of advection stabilisation */
 
 /*-------------------------------- calculate viscous stabilisation part */
-if (ele->e.f2->ivisc!=0 && ihoel!=0)
+if (gls->ivisc!=0 && ihoel!=0)
 {
 /*----------------------------------------------------------------------*
    Calculate viscous stabilisation parts for higher order elements:
@@ -603,7 +617,7 @@ if (ele->e.f2->ivisc!=0 && ihoel!=0)
    |  -/+ tau_mp * 2 * nue * div(eps(v)) * grad(p)  d_omega
   /
  *----------------------------------------------------------------------*/
-   switch (ele->e.f2->ivisc) /* choose stabilisation type --> sign */
+   switch (gls->ivisc) /* choose stabilisation type --> sign */
    {
    case 1: /* GLS- */
       sign = ONE;
@@ -707,10 +721,16 @@ DOUBLE taump,taumu;
 DOUBLE cc;
 DOUBLE aux,auxr,auxc;
 DOUBLE sign;
+STAB_PAR_GLS *gls;	/* pointer to GLS stabilisation parameters	*/
 
 #ifdef DEBUG 
 dstrc_enter("f2_calstabkvg");
 #endif
+/*---------------------------------------------------------- initialise */
+gls    = ele->e.f2->stabi.gls;
+
+if (ele->e.f2->stab_type != stab_gls) 
+   dserror("routine with no or wrong stabilisation called");
 
 /*---------------------------------------- set stabilisation parameter */
 taump = dynvar->tau[1];
@@ -723,7 +743,7 @@ ALE:
   (-) |  tau_mu * c * grad(v) * u_G * grad(u_old)   d_omega
      /  
  *----------------------------------------------------------------------*/
-if (ele->e.f2->iadvec!=0 && dynvar->nir!=0)  /* evaluate for Newton iteraton */
+if (gls->iadvec!=0 && dynvar->nir!=0)  /* evaluate for Newton iteraton */
 {
    cc = fac*taumu;
    icol=0;
@@ -745,9 +765,9 @@ if (ele->e.f2->iadvec!=0 && dynvar->nir!=0)  /* evaluate for Newton iteraton */
 } /* endif (dynvar->nir!=0) */
 
 /*-------------------------------- calculate viscous stabilisation part */
-if (ihoel!=0 && ele->e.f2->ivisc!=0 && dynvar->nir!=0)
+if (ihoel!=0 && gls->ivisc!=0 && dynvar->nir!=0)
 {                                       /* evaluate for Newton iteraton */
-   switch (ele->e.f2->ivisc) /* choose stabilisation type --> sign */
+   switch (gls->ivisc) /* choose stabilisation type --> sign */
    {
    case 1: /* GLS- */
       sign = ONE;
@@ -873,10 +893,17 @@ DOUBLE taump;
 DOUBLE c,cc;
 DOUBLE aux,auxc;
 DOUBLE sign;
+STAB_PAR_GLS *gls;	/* pointer to GLS stabilisation parameters	*/
 
 #ifdef DEBUG 
 dstrc_enter("f2_calstabmvv");
 #endif
+
+/*---------------------------------------------------------- initialise */
+gls    = ele->e.f2->stabi.gls;
+
+if (ele->e.f2->stab_type != stab_gls) 
+   dserror("routine with no or wrong stabilisation called");
 
 /*---------------------------------------- set stabilisation parameter */
 taumu = dynvar->tau[0];
@@ -886,7 +913,7 @@ c = fac * taumu;
 cc = c;
 
 /*------------------------------ calculate advection stabilisation part */
-if (ele->e.f2->iadvec!=0)
+if (gls->iadvec!=0)
 {
 /*----------------------------------------------------------------------*
    Calculate convection stabilisation part:
@@ -916,7 +943,7 @@ ALE:
 } /* end of advection stabilisation */
 
 /*-------------------------------- calculate viscous stabilisation part */
-if (ele->e.f2->ivisc!=0 && ihoel!=0)
+if (gls->ivisc!=0 && ihoel!=0)
 {
 /*----------------------------------------------------------------------*
    Calculate viscous stabilisation parts for higher order elements:
@@ -924,7 +951,7 @@ if (ele->e.f2->ivisc!=0 && ihoel!=0)
    |  -/+ tau_mp * 2 * nue * div(eps(v)) * u  d_omega
   /
  *----------------------------------------------------------------------*/
-   switch (ele->e.f2->ivisc) /* choose stabilisation type --> sign */
+   switch (gls->ivisc) /* choose stabilisation type --> sign */
    {
    case 1: /* GLS- */
       sign = ONE;

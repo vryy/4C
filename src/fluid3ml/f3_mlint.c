@@ -1014,6 +1014,7 @@ DOUBLE   det;	      /* determinant of jacobian matrix                 */
 DOUBLE   e1,e2,e3;    /* natural coordinates of integr. point           */
 DOUBLE   preintn;     /* pressure at integration point at times step n  */
 DIS_TYP  typ;         /* element type                                   */
+STAB_PAR_GLS *gls;	/* pointer to GLS stabilisation parameters	*/
 
 #ifdef DEBUG 
 dstrc_enter("f3_lsint");
@@ -1026,7 +1027,11 @@ dens = mat[actmat].m.fluid->density;
 visc = mat[actmat].m.fluid->viscosity;
 ntyp = ele->e.f3->ntyp; 
 typ  = ele->distyp;
+gls    = ele->e.f3->stabi.gls;
 
+if (ele->e.f3->stab_type != stab_gls) 
+   dserror("routine with no or wrong stabilisation called");
+   
 /*------- get integraton data and check if elements are "higher order" */
 switch (ntyp)
 {
@@ -1099,8 +1104,8 @@ for (lt=0;lt<nit;lt++)
    f3_vder(vderxy,derxy,evel,iel);
  
 /*---- compute stab. par. or subgrid viscosity during integration loop */
-      if (ele->e.f3->istabi>0 && ele->e.f3->iduring!=0 || 
-          dynvar->sgvisc>0    && ele->e.f3->iduring!=0)
+      if (gls->istabi>0 && gls->iduring!=0 || 
+          dynvar->sgvisc>0    && gls->iduring!=0)
         f3_mlcalelesize2(ele,dynvar,velint,vderxy,derxy,visc,iel,ntyp);
 /*----------------------------------------------------------------------*
  |         compute "Standard Galerkin" matrices                         |
@@ -1126,7 +1131,7 @@ for (lt=0;lt<nit;lt++)
  |  Stabilization matrices are all stored in one matrix "estif"         |
  |  Stabilization mass matrices are all stored in one matrix "emass"    |
  *----------------------------------------------------------------------*/
-   if (ele->e.f3->istabi>0)
+   if (gls->istabi>0)
    { 
 /*------------------------------------ compute second global derivative */ 
       if (ihoel!=0) f3_mlgder2(ele,xjm,wa2,derxy,derxy2,deriv2,iel);
@@ -1143,7 +1148,7 @@ for (lt=0;lt<nit;lt++)
          if (dynvar->nis==0) 
             f3_lscalstabmvv(ele,dynvar,emass,velint,vderxy,
 	                     funct,derxy,derxy2,fac,visc,iel,ihoel);
-         if (ele->e.f3->ipres!=0)	        
+         if (gls->ipres!=0)	        
          {
 /*---------------------------------------- stabilization for matrix Kpv */ 
             f3_lscalstabkpv(dynvar,estif,velint,vderxy,
@@ -1154,7 +1159,7 @@ for (lt=0;lt<nit;lt++)
          } /* endif (ele->e.f3->ipres!=0) */
       } /* endif (dynvar->nie==0) */
 /*---------------------------------------- stabilization for matrix Kpp */ 
-      if (ele->e.f3->ipres!=0)
+      if (gls->ipres!=0)
 	 f3_lscalstabkpp(dynvar,estif,derxy,fac,iel);  
    } /* endif (ele->e.f3->istabi>0) */ 
 

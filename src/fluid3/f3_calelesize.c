@@ -27,30 +27,30 @@ extern struct _MATERIAL  *mat;
 
 <pre>                                                         genk 05/02
 
-   ele->e.f3->iadvec: adevction stab.					 
+   ele->e.f3->stabi.gls->iadvec: adevction stab.					 
       0 = no								
       1 = yes								
-   ele->e.f3->ipres: pressure stab.					
+   ele->e.f3->stabi.gls->ipres: pressure stab.					
       0 = no								
       1 = yes								
-   ele->e.f3->ivisc: diffusion stab.					
+   ele->e.f3->stabi.gls->ivisc: diffusion stab.					
       0 = no								
       1 = GLS-  							
       2 = GLS+  							
-   ele->e.f3->icont: continuity stab.					
+   ele->e.f3->stabi.gls->icont: continuity stab.					
       0 = no								
       1 = yes								
-   ele->e.f3->istapa: version of stab. parameter			
+   ele->e.f3->stabi.gls->istapa: version of stab. parameter			
       35 = diss wall instationary					
       36 = diss wall stationanary					
-   ele->e.f3->norm_P: p-norm						
+   ele->e.f3->stabi.gls->norm_P: p-norm						
       p = 1<=p<=oo							
       0 = max.-norm (p=oo)						
-   ele->e.f3->mk: higher order elements control flag			
+   ele->e.f3->stabi.gls->mk: higher order elements control flag			
       0 = mk fixed (--> (bi)linear: 1/3, biquadr.: 1/12)		
       1 = min(1/3,2*C)  						
      -1 = mk=1/3  (--> element order via approx. nodal-distance)	
-   ele->e.f3->ihele[]:  						
+   ele->e.f3->stabi.gls->ihele[]:  						
       x/y/z = length-def. for velocity/pressure/continuity stab 	
       0 = don't compute 						
       1 = sqrt(area)							
@@ -58,24 +58,24 @@ extern struct _MATERIAL  *mat;
       3 = diameter/sqrt(2)						
       4 = sqrt(2)*area/diagonal (rectangle) 4*area/s (triangle) 	
       5 = streamlength (element length in flow direction		
-   ele->e.f3->ninths: number of integration points for streamlength	
+   ele->e.f3->stabi.gls->ninths: number of integration points for streamlength	
       1 = at center of element  					
       2 = at every INT pt used for element.-stab.-matrices		
-   ele->e.f3->istapc: flag for stabilisation parameter calculation	
+   ele->e.f3->stabi.gls->istapc: flag for stabilisation parameter calculation	
       1 = at center of element  					
       2 = at every integration point					
-   ele->e.f3->clamb \							
-   ele->e.f3->c1     |_>> stabilisation constants (input)		
-   ele->e.f3->c2     |  						
-   ele->e.f3->c3    /							
-   ele->e.f3->istrle: has streamlength to be computed			
-   ele->e.f3->iarea: calculation of area length 			
-   ele->e.f3->iduring: calculation during INT.-pt.loop  		
-   ele->e.f3->itau[0]: flag for tau_mu calc. (-1: before, 1:during)	
-   ele->e.f3->itau[1]: flag for tau_mp calc. (-1: before, 1:during)	
-   ele->e.f3->itau[2]: flag for tau_c calc. (-1: before, 1:during)	
+   ele->e.f3->stabi.gls->clamb \							
+   ele->e.f3->c1               |_>> stabilisation constants (input)		
+   ele->e.f3->c2               |  						
+   ele->e.f3->c3              /							
+   ele->e.f3->stabi.gls->istrle: has streamlength to be computed			
+   ele->e.f3->stabi.gls->iarea: calculation of area length 			
+   ele->e.f3->stabi.gls->iduring: calculation during INT.-pt.loop  		
+   ele->e.f3->stabi.gls->itau[0]: flag for tau_mu calc. (-1: before, 1:during)	
+   ele->e.f3->stabi.gls->itau[1]: flag for tau_mp calc. (-1: before, 1:during)	
+   ele->e.f3->stabi.gls->itau[2]: flag for tau_c calc. (-1: before, 1:during)	
    ele->e.f3->hk[i]: "element sizes" (vel / pre / cont) 		  
-   ele->e.f3->idiaxy: has diagonals to be computed			
+   ele->e.f3->stabi.gls->idiaxy: has diagonals to be computed			
    dynvar->tau[0]: stability parameter momentum / velocity (tau_mu)	
    dynvar->tau[1]: stability parameter momentum / pressure (tau_mp)	
    dynvar->tau[2]: stability parameter continuity (tau_c)
@@ -126,6 +126,7 @@ DOUBLE fac,facr;     /* factors                                         */
 DOUBLE facs,fact;    /* factors                                         */
 DOUBLE velino[3];    /* normed velocity vector at integration point     */
 DIS_TYP typ;
+STAB_PAR_GLS *gls;	/* pointer to GLS stabilisation parameters	*/
 
 #ifdef DEBUG 
 dstrc_enter("f3_calelesize");
@@ -135,9 +136,13 @@ dstrc_enter("f3_calelesize");
 ntyp   = ele->e.f3->ntyp;
 iel    = ele->numnp;
 typ    = ele->distyp;
+gls    = ele->e.f3->stabi.gls;
 
-istrnint = ele->e.f3->istrle * ele->e.f3->ninths;
-ishvol  = dynvar->ishape * ele->e.f3->ivol;
+if (ele->e.f3->stab_type != stab_gls) 
+   dserror("routine with no or wrong stabilisation called");
+
+istrnint = gls->istrle * gls->ninths;
+ishvol  = dynvar->ishape * gls->iareavol;
 
 /*----------------------------------------------------------------------*
  | calculations at element center: area & streamlength                  |
@@ -215,15 +220,15 @@ if (ishvol==1)
   ----loop over 3 different element sizes: vel/pre/cont  ---------------*/
    for(ilen=0;ilen<3;ilen++)
    {
-      if (ele->e.f3->ihele[ilen]==1)
+      if (gls->ihele[ilen]==1)
          ele->e.f3->hk[ilen] = pow(vol,(ONE/THREE));
-      else if (ele->e.f3->ihele[ilen]==2)
+      else if (gls->ihele[ilen]==2)
          ele->e.f3->hk[ilen] = pow((SIX*vol/PI),(ONE/THREE));
-      else if (ele->e.f3->ihele[ilen]==3)
+      else if (gls->ihele[ilen]==3)
          ele->e.f3->hk[ilen] = pow((SIX*vol/PI),(ONE/THREE))/sqrt(THREE);
-      else if (ele->e.f3->ihele[ilen]==4) 
+      else if (gls->ihele[ilen]==4) 
          dserror("ihele[i] = 4: calculation of element size not possible!!!");
-         else if (ele->e.f3->ninths==1)   
+         else if (gls->ninths==1)   
          ele->e.f3->hk[ilen] = strle; 
    } /* end of loop over ilen */
 } /* endif (ishvol==1) */
@@ -297,7 +302,7 @@ else if (istrnint==1 && ishvol !=1)
       loop over 3 different element sizes: vel/pre/cont  ---------------*/
    for (ilen=0;ilen<3;ilen++)
    {
-      if (ele->e.f3->ihele[ilen]==5)
+      if (gls->ihele[ilen]==5)
          ele->e.f3->hk[ilen] = strle;   
    } /* end of loop over ilen */
 } /* endif (istrnint==1 && ishvol !=1) */
@@ -305,7 +310,7 @@ else if (istrnint==1 && ishvol !=1)
 /*----------------------------------------------------------------------*
   calculate stabilisation parameter
  *----------------------------------------------------------------------*/
-if(ele->e.f3->istapc==1 || istrnint==1)
+if(gls->istapc==1 || istrnint==1)
 {
    switch(ieval) /* ival>2: vel at intpoint already available! */
    {
@@ -395,14 +400,19 @@ DOUBLE strle;      /* stream length                                     */
 DOUBLE val;	   /* temporary calculation value                       */
 DOUBLE velno;	   /* velocity norm                                     */
 DOUBLE velino[3];  /* normed velocity vector at integration point       */
+STAB_PAR_GLS *gls;	/* pointer to GLS stabilisation parameters	*/
 
 #ifdef DEBUG 
 dstrc_enter("f3_calelesize2");
-#endif
+#endif		
 
 /*---------------------------------------------------------- initialise */
-istrnint = ele->e.f3->istrle * ele->e.f3->ninths;
+gls      = ele->e.f3->stabi.gls;
+istrnint = gls->istrle * gls->ninths;
 val = ZERO;
+
+if (ele->e.f3->stab_type != stab_gls) 
+   dserror("routine with no or wrong stabilisation called");
 
 if (istrnint==2)
 {
@@ -433,7 +443,7 @@ if (istrnint==2)
       loop over 3 different element sizes: vel/pre/cont  ---------------*/
    for (ilen=0;ilen<3;ilen++)
    {
-      if (ele->e.f3->ihele[ilen]==5)
+      if (gls->ihele[ilen]==5)
          ele->e.f3->hk[ilen] = strle;   
    } /* end of loop over ilen */
 } /* endif (istrnint==2) */

@@ -563,10 +563,17 @@ DOUBLE tauc;
 DOUBLE con,ccon,beta,divv,cb,cbb,ccb;
 DOUBLE aux,auxr,auxc;
 DOUBLE signvi,signre;
+STAB_PAR_GLS *gls;	/* pointer to GLS stabilisation parameters	*/
 
 #ifdef DEBUG 
 dstrc_enter("f2_lscalstabkvv");
 #endif
+
+/*---------------------------------------------------------- initialise */
+gls    = ele->e.f2->stabi.gls;
+
+if (ele->e.f2->stab_type != stab_gls) 
+   dserror("routine with no or wrong stabilisation called");
 
 /*---------------------------------------- set stabilisation parameter */
 taumu = dynvar->tau[0];
@@ -590,7 +597,7 @@ default:
    dserror("unknown form of convective term");
 } /* end switch (dynvar->conte) */
 
-switch (ele->e.f2->ivisc) /* determine type of stabilization */
+switch (gls->ivisc) /* determine type of stabilization */
 {
 case -1: /* USFEM (but no viscous stabilization) */
    signre = -ONE;
@@ -620,7 +627,7 @@ default:
    |  tau_c * div(v) * div(u)   d_omega
   /
  *----------------------------------------------------------------------*/
-if (ele->e.f2->icont!=0)
+if (gls->icont!=0)
 {
    con = fac*tauc;
 
@@ -642,7 +649,7 @@ if (ele->e.f2->icont!=0)
 
 con = fac*taumu;
 
-if (ele->e.f2->iadvec!=0)
+if (gls->iadvec!=0)
 {
 /*----------------------------------------------------------------------*
    Calculate convection stabilisation part Nc(u):
@@ -937,7 +944,7 @@ if (ele->e.f2->iadvec!=0)
 /*----------------------------------------------------------------------*
    Calculate viscous stabilisation part for higher order elements:
  *----------------------------------------------------------------------*/   
-if (ihoel!=0 && ele->e.f2->ivisc>0)
+if (ihoel!=0 && gls->ivisc>0)
 {   
   ccon = fac * taump * visc * visc * signvi;
   
@@ -1292,10 +1299,17 @@ DOUBLE taump;
 DOUBLE con,beta,divv,cb;
 DOUBLE aux;
 DOUBLE signvi,signre;
+STAB_PAR_GLS *gls;	/* pointer to GLS stabilisation parameters	*/
 
 #ifdef DEBUG 
 dstrc_enter("f2_lscalstabkvp");
 #endif
+
+/*---------------------------------------------------------- initialise */
+gls    = ele->e.f2->stabi.gls;
+
+if (ele->e.f2->stab_type != stab_gls) 
+   dserror("routine with no or wrong stabilisation called");
 
 /*---------------------------------------- set stabilisation parameter */
 taumu = dynvar->tau[0];
@@ -1320,7 +1334,7 @@ default:
    dserror("unknown form of convective term");
 } /* end switch (dynvar->conte) */
 
-switch (ele->e.f2->ivisc) /* determine type of stabilization */
+switch (gls->ivisc) /* determine type of stabilization */
 {
 case -1: /* USFEM (but no viscous stabilization) */
    signre = -ONE;
@@ -1347,7 +1361,7 @@ default:
 /*----------------------------------------------------------------------*
    Calculate convection stabilisation:
  *----------------------------------------------------------------------*/
-if (ele->e.f2->iadvec!=0)
+if (gls->iadvec!=0)
 {
 /*----------------------------------------------------------------------*
     /
@@ -1394,7 +1408,7 @@ if (ele->e.f2->iadvec!=0)
 /*----------------------------------------------------------------------*
    Calculate viscous stabilisation parts for higher order elements:
  *----------------------------------------------------------------------*/
-if (ele->e.f2->ivisc>0 && ihoel!=0)
+if (gls->ivisc>0 && ihoel!=0)
 {
   con = fac * taump * visc * signvi;
   
@@ -1514,10 +1528,17 @@ DOUBLE taump;
 DOUBLE con,beta,divv,cb;
 DOUBLE aux,auxc;
 DOUBLE signvi,signre;
+STAB_PAR_GLS *gls;	/* pointer to GLS stabilisation parameters	*/
 
 #ifdef DEBUG 
 dstrc_enter("f2_lscalstabmvv");
 #endif
+
+/*---------------------------------------------------------- initialise */
+gls    = ele->e.f2->stabi.gls;
+
+if (ele->e.f2->stab_type != stab_gls) 
+   dserror("routine with no or wrong stabilisation called");
 
 /*---------------------------------------- set stabilisation parameter */
 taumu = dynvar->tau[0];
@@ -1542,7 +1563,7 @@ default:
    dserror("unknown form of convective term");
 } /* end switch (dynvar->conte) */
 
-switch (ele->e.f2->ivisc) /* determine type of stabilization */
+switch (gls->ivisc) /* determine type of stabilization */
 {
 case -1: /* USFEM (but no viscous stabilization) */
    signre = -ONE;
@@ -1569,7 +1590,7 @@ default:
 /*----------------------------------------------------------------------*
    Calculate convection stabilisation part:
  *----------------------------------------------------------------------*/
-if (ele->e.f2->iadvec!=0)
+if (gls->iadvec!=0)
 {
 /*----------------------------------------------------------------------*
     /
@@ -1619,8 +1640,10 @@ if (ele->e.f2->iadvec!=0)
 /*----------------------------------------------------------------------*
    Calculate viscous stabilisation parts for higher order elements:
  *----------------------------------------------------------------------*/
-if (ele->e.f2->ivisc>0 && ihoel!=0)
+if (ele->e.f2->stabi.gls->ivisc>0 && ihoel!=0)
 {
+  if (ele->e.f2->stab_type != stab_gls)
+     dserror("wrong stabilisation within ml context");
   con = fac * taump * visc * signvi;
   
   if (dynvar->vite==0)

@@ -107,14 +107,20 @@ DOUBLE dt;
 DOUBLE re;
 DOUBLE hk;
 DOUBLE aux1;
+STAB_PAR_GLS *gls;	/* pointer to GLS stabilisation parameters	*/
 
 #ifdef DEBUG 
 dstrc_enter("f2_calstabpar");
-#endif
+#endif		
 
+/*---------------------------------------------------------- initialise */
+gls    = ele->e.f2->stabi.gls;
+
+if (ele->e.f2->stab_type != stab_gls) 
+   dserror("routine with no or wrong stabilisation called");
 
 /*----------------------- higher order element diameter modifications ? */
-switch(ele->e.f2->mk)
+switch(gls->mk)
 {
 case -1:
    c_mk = Q13;
@@ -143,21 +149,21 @@ default:
    dserror("mk > 0 not implemented yet!\n");
 } /* end swtich (ele->e.f2->mk) */
 /*---------------------------------- choose stability-parameter version */
-switch(ele->e.f2->istapa)
+switch(gls->istapa)
 {
 case 35: /*-------------------------- version diss. Wall - instationary */
    velno = sqrt(velint[0]*velint[0] + velint[1]*velint[1]); /*norm of vel */
    dt = dynvar->dta;     /* check if dta or dt has to be chosen!!!!!!!! */
    for (isp=0;isp<3;isp++)
    {
-      if (ele->e.f2->itau[isp]!=iflag)
+      if (gls->itau[isp]!=iflag)
          continue;
       hk = ele->e.f2->hk[isp]/hdiv;
       switch(isp)
       {
       case 2:/* continiuty stabilisation */
          re = c_mk*hk*velno/TWO/visc;  /* element reynolds number */
-	 dynvar->tau[isp] = (ele->e.f2->clamb)*velno*hk/TWO*DMIN(ONE,re);         
+	 dynvar->tau[isp] = (gls->clamb)*velno*hk/TWO*DMIN(ONE,re);         
       break;
       default: /* velocity / pressure stabilisation */
          if (velno>EPS15)
@@ -178,14 +184,14 @@ case 36: /*---------------------------- version diss. Wall - stationary */
    aux1= velno*c_mk/FOUR/visc;
    for (isp=0;isp<3;isp++)
    {
-      if (ele->e.f2->itau[isp]!=iflag)
+      if (gls->itau[isp]!=iflag)
          continue;
       hk = ele->e.f2->hk[isp]/hdiv;
       re = aux1*hk;
       switch(isp)
       {
       case 2: /* continiuty stabilisation ### TWO VERSIONS ??? ###*/
-         dynvar->tau[isp] = (ele->e.f2->clamb)*velno*hk/TWO*DMIN(ONE,re);
+         dynvar->tau[isp] = (gls->clamb)*velno*hk/TWO*DMIN(ONE,re);
 /*        dynvar->tau[isp] = velno*hk/TWO*DMIN(ONE,re); */
       break;
       default: /* velocity / pressure stabilisation */

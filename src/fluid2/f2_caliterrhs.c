@@ -173,11 +173,18 @@ DOUBLE facsl,cc;
 DOUBLE aux, sign;
 DOUBLE taumu,taump;
 DOUBLE fact[2];
- 
+STAB_PAR_GLS *gls;	/* pointer to GLS stabilisation parameters	*/
+
 #ifdef DEBUG 
 dstrc_enter("f2_calgalifv");
 #endif
 
+/*---------------------------------------------------------- initialise */
+gls    = ele->e.f2->stabi.gls;
+
+if (ele->e.f2->stab_type != stab_gls) 
+   dserror("routine with no or wrong stabilisation called");
+ 
 /*--------------------------------------------------- set some factors */
 facsl = fac * dynvar->thsl * dynvar->sigma;
 taumu = dynvar->tau[0];
@@ -197,7 +204,7 @@ ALE:
    (+/-) THETA*dt |  tau_mu * c * grad(v) * c * grad(u)  d_omega
                  / 
  *----------------------------------------------------------------------*/ 
-if (ele->e.f2->iadvec!=0)
+if (gls->iadvec!=0)
 {
    fact[0] = taumu*covint[0]*facsl;
    fact[1] = taumu*covint[1]*facsl;
@@ -228,9 +235,9 @@ ALE:
                      /
 
  *----------------------------------------------------------------------*/ 
-if (ele->e.f2->ivisc!=0 && ihoel!=0)
+if (gls->ivisc!=0 && ihoel!=0)
 {
-   switch (ele->e.f2->ivisc) /* choose stabilisation type --> sign */
+   switch (gls->ivisc) /* choose stabilisation type --> sign */
    {
    case 1: /* GLS- */
       sign = ONE;

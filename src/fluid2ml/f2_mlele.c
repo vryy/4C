@@ -395,7 +395,9 @@ f2_smcopy(smrhs,ele,submesh->numeq,mlvar->nelbub);
 f2_bubele(data,dynvar,mlvar,submesh,ele);
 
 /*- calculate charact. l-s element length and stab. param. if necessary */
-if (ele->e.f2->istabi!=0) 
+if (ele->e.f2->stab_type != stab_gls) /* check for proper stabilisation */
+   dserror("wrong stabilisation in mulitlevel case");
+if (ele->e.f2->stabi.gls->istabi!=0) 
   f2_mlcalelesize(ele,data,dynvar,funct,deriv,deriv2,derxy,xjm,evel,velint,
                   vderxy,wa1);
 /*------------------ calculate large-scale part of element matrices and 
