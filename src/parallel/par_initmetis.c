@@ -108,7 +108,6 @@ for (i=0; i<genprob.numfld; i++)
    amzero(&(xadj[i]));
 /*------------------------------------- the vertex weights of the graph */
    amdef("vwgt",&(vwgt[i]),(actfield->numnp)  ,1,"IV");
-   amzero(&(vwgt[i]));
    aminit(&(vwgt[i]),&ione);
 /*----------------------------- size of array adjncy has to be computed */  
    amdef("stack",&stack,1,1,"IV");
@@ -186,7 +185,13 @@ for (i=0; i<genprob.numfld; i++)
 /*------------------------------------------- do not partition ale field */
    if (actfield->fieldtyp==ale) continue;
 /*-------------------------------- do not partition sequentiell version */
-   if (inprocs<=1) continue;
+   if (inprocs<=1) 
+   {
+      amdel(&(adjncy[i]));
+      amdel(&(xadj[i]));
+      amdel(&(vwgt[i]));
+      continue;
+   }
 /*----------------- now allocate the rest of the arrays needed by metis */   
    amdef("part",&part,actfield->numnp,1,"IV");   
 /*---- set the default options of metis (play with other options later) */
