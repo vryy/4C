@@ -151,10 +151,13 @@ void pefnln_struct(STRUCT_DYN_CALC *dynvar,
                   int              damp_array)
 {
 
-double a1,a2,a3,a4,a5,a6;
+double a1,a2,a3,a4,a5,a6,a7;
 #ifdef DEBUG 
 dstrc_enter("pefnln_struct");
 #endif
+/*------------------------------------------------------Chung Hulbert --*/
+if (sdyn->Typ == gen_alfa)
+{
 /*----------------------------------------------------------------------*/
 a1 = -dynvar->constants[0];
 a2 =  dynvar->constants[1];
@@ -209,6 +212,33 @@ if (sdyn->damp==1)
    /* rhs[0] += work[2] */
    solserv_add_vec(&work[2],&(actsolv->rhs[0]),1.0);
 }
+/*----------------------------------------------------------------------*/
+}
+else if (sdyn->Typ = centr_diff)/*----------- central difference method */
+{
+/*----------------------------------------------------------------------*/
+a5 =  dynvar->constants[4];
+a7 =  -1.0;
+a5 =  -a5/2.0;
+/*----------------------------------------------------------------------*/
+if (sdyn->damp==1)
+{
+   /* copy vel[0] to work[0] */
+   solserv_copy_vec(&vel[0],&work[0]);
+   /* work[0] = vel[0] * a7 */
+   solserv_scalarprod_vec(&work[0],a7);
+   /* work[0] = vel[0] * a7 + acc[0] * a5 */
+   solserv_add_vec(&acc[0],&work[0],a5);
+   /* make rhs[0] += damp_array * work[0] */
+   solserv_sparsematvec(actintra,
+                        &work[1],
+                        &(actsolv->sysarray[damp_array]),
+                        &(actsolv->sysarray_typ[damp_array]),
+                        &work[0]);
+   solserv_add_vec(&work[1],&(actsolv->rhs[0]),1.0);
+}
+/*----------------------------------------------------------------------*/
+} /* end of else if (sdyn->Typ = centr_diff) */
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -322,7 +352,7 @@ return;
 
 
 /*----------------------------------------------------------------------*
- |  set time integration constants                           m.gee 02/02|
+ |  set time integration constants for Gen alfa method       m.gee 02/02|
  *----------------------------------------------------------------------*/
 void dyn_setconstants(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, double dt)
 {
@@ -364,6 +394,33 @@ dstrc_exit();
 #endif
 return;
 } /* end of dyn_setconstants */
+/*----------------------------------------------------------------------*
+ |  set time integration constants for centr. diff method    m.gee 05/02|
+ *----------------------------------------------------------------------*/
+void dyn_setconstants_expl(STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn, double dt)
+{
+double *constants;
+double  beta;
+double  gamma;
+double  alpham;
+double  alphaf;
+#ifdef DEBUG 
+dstrc_enter("dyn_setconstants_expl");
+#endif
+/*----------------------------------------------------------------------*/
+constants = dynvar->constants;
+/*----------------------------------------------------------------------*/
+constants[0]  = 1.0/(dt*dt);
+constants[1]  = 2.0 * constants[0];
+constants[2]  = 1.0 / constants[1];
+constants[3]  = 1.0 / (2.0*dt);
+constants[4]  = dt;
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of dyn_setconstants_expl */
 
 
 
@@ -509,6 +566,36 @@ dstrc_exit();
 #endif
 return;
 } /* end of dyn_nlnstruct_outhead */
+
+
+
+/*----------------------------------------------------------------------*
+ |  print head of nln structural explicit dynamics           m.gee 05/02|
+ *----------------------------------------------------------------------*/
+void dyn_nlnstru_outhead_expl()
+{
+#ifdef DEBUG 
+dstrc_enter("dyn_nlnstru_outhead_expl");
+#endif
+/*----------------------------------------------------------------------*/
+fprintf(allfiles.out_err,"----------------------------------------------------------------------\n");
+fprintf(allfiles.out_err,"       Nonlinear Structural Dynamics\n");
+fprintf(allfiles.out_err,"\n");
+fprintf(allfiles.out_err,"       Central Difference Method\n");
+fprintf(allfiles.out_err,"----------------------------------------------------------------------\n");
+printf("--------------------------------------------------------------------------\n");
+printf("       Nonlinear Structural Dynamics\n");
+printf("\n");
+printf("       Central Difference Method\n");
+printf("--------------------------------------------------------------------------\n");
+/*----------------------------------------------------------------------*/
+fflush(allfiles.out_err);
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of dyn_nlnstru_outhead_expl */
 
 
 
@@ -898,3 +985,37 @@ dstrc_exit();
 #endif
 return;
 } /* end of assemble_dirich_dyn */
+
+
+
+/*----------------------------------------------------------------------*
+ |  make eff. left hand side for central diff method         m.gee 05/02|
+ *----------------------------------------------------------------------*/
+void dyn_keff_expl(INTRA *actintra,
+                   SPARSE_TYP *sysarray_typ, SPARSE_ARRAY *sysarray,
+                   int stiff_array, int mass_array, int damp_array,
+                   STRUCT_DYN_CALC *dynvar, STRUCT_DYNAMIC *sdyn)
+{
+double a1;
+
+#ifdef DEBUG 
+dstrc_enter("dyn_keff_expl");
+#endif
+/*----------------------------------------------------------------------*/
+a1 = dynvar->constants[4]/2.0;
+/*----------------------------------------------------------------------*/
+if (damp_array>0)
+{
+   solserv_add_mat(actintra,&sysarray_typ[stiff_array],&sysarray[stiff_array],
+                            &sysarray_typ[damp_array],&sysarray[damp_array],
+                            a1);
+}
+   solserv_add_mat(actintra,&sysarray_typ[stiff_array],&sysarray[stiff_array],
+                            &sysarray_typ[mass_array],&sysarray[mass_array],
+                            1.0);
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of dyn_keff_expl */

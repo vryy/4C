@@ -196,6 +196,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    case calc_struct_linstiff     : assemble_action = assemble_one_matrix; break;
    case calc_struct_nlnstiff     : assemble_action = assemble_one_matrix; break;
    case calc_struct_nlnstiffmass : assemble_action = assemble_two_matrix; break;
+   case calc_struct_internalforce: assemble_action = assemble_do_nothing; break;
    case calc_struct_eleload      : assemble_action = assemble_do_nothing; break;
    case calc_struct_stress       : assemble_action = assemble_do_nothing; break;
    case calc_struct_update_istep : assemble_action = assemble_do_nothing; break;
@@ -229,6 +230,7 @@ switch(*action)
 case calc_struct_linstiff      : assemble_action = assemble_one_exchange; break;
 case calc_struct_nlnstiff      : assemble_action = assemble_one_exchange; break;
 case calc_struct_nlnstiffmass  : assemble_action = assemble_two_exchange; break;
+case calc_struct_internalforce : assemble_action = assemble_do_nothing; break;
 case calc_struct_eleload       : assemble_action = assemble_do_nothing; break;
 case calc_struct_stress        : assemble_action = assemble_do_nothing; break;
 case calc_struct_update_istep  : assemble_action = assemble_do_nothing; break;

@@ -74,6 +74,18 @@ case calc_struct_nlnstiff:
                  kstep,
                  0);
 break;/*----------------------------------------------------------------*/
+/*---------------------------------calculate nonlinear stiffness matrix */
+case calc_struct_internalforce:
+   actmat = &(mat[ele->mat-1]);
+   s8static_keug(ele,
+                 &actdata,
+                 actmat,
+                 estif_global,
+                 NULL,
+                 intforce,
+                 kstep,
+                 0);
+break;/*----------------------------------------------------------------*/
 /*-------------------------- calculate linear stiffness and mass matrix */
 case calc_struct_linstiffmass:
 break;/*----------------------------------------------------------------*/

@@ -132,6 +132,13 @@ actsolv     = &(solv[0]);
 actpart     = &(partition[0]);
 action      = &(calc_action[0]);
 sdyn        =   alldyn[0].sdyn;
+/*----------------------------------------- check for explicit dynamics */
+if (sdyn->Typ == centr_diff)
+{
+   dyn_nln_stru_expl();
+   goto end_expl;
+}
+/*----------------------------------------------------------------------*/
 #ifdef PARALLEL 
 actintra    = &(par.intra[0]);
 /* if we are not parallel, we have to allocate an alibi intra-communicator structure */
@@ -869,6 +876,7 @@ solserv_del_vec(&work,3);
 #ifndef PARALLEL 
 FREE(actintra);
 #endif
+end_expl:
 #ifdef DEBUG 
 dstrc_exit();
 #endif

@@ -108,6 +108,7 @@ typedef enum _CALC_ACTION
                        calc_struct_linstiffmass,
                        calc_struct_nlnstiff,
                        calc_struct_nlnstiffmass,
+                       calc_struct_internalforce,
                        calc_struct_stress,
                        calc_struct_stressreduce,
                        calc_struct_eleload,

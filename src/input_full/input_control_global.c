@@ -363,13 +363,19 @@ dstrc_enter("inpctr_dyn_struct");
 
 sdyn->updevry_disp=1;
 sdyn->updevry_stress=1;
+sdyn->res_write_evry=1;
 
 frfind("-STRUCTURAL DYNAMIC");
 frread();
 while(strncmp(allfiles.actplace,"------",6)!=0)
 {
 /*--------------read chars */
-   frchar("DYNAMICTYP",sdyn->dyntyp,&ierr);
+   frchar("DYNAMICTYP",buffer,&ierr);
+   if (ierr==1)
+   {
+      if (strncmp(buffer,"Centr_Diff",10)==0) sdyn->Typ = centr_diff;
+      if (strncmp(buffer,"Gen_Alfa",8)==0)    sdyn->Typ = gen_alfa;
+   }
    frchar("DAMPING"   ,buffer    ,&ierr);
    if (ierr==1)
    {
