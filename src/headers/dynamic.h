@@ -142,7 +142,8 @@ enum
 		                    stiffened with min J_element^2 */
                   two_step,      /*!< calculation in 2 steps per timestep */
 		  springs,       /*!< springs rather than continous pseudo material */
-		  laplace        /*!< Laplace smoothing algorithm */
+		  laplace,       /*!< Laplace smoothing algorithm */
+                  LAS            /*!< large amplitude sloshing */
    } typ;                        /*!< switch dynamic algorithm */
 
 enum

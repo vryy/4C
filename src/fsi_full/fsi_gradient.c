@@ -109,7 +109,7 @@ solserv_sol_add(structfield, 0, 3, 3, 1, 6,-1.0);
 
 /*=== 5.b ===*/
 /*--------------------- solve Ale mesh with sol_mf[6][i] used as DBC ---*/
-fsi_ale(alefield, 6, numfa);
+fsi_ale(alefield, 6);
 /* note: The ale solution of the auxiliary problem is always performed 
          linear. */
 
@@ -138,11 +138,11 @@ for (i=0;i<numnp_fluid;i++) /*----------------------- loop all nodes ---*/
 
 /*=== 5.e,f,g ===*/
 /*------------------------------------------------------ solve fluid ---*/
-fsi_fluid(fluidfield,6,numff);
+fsi_fluid(fluidfield,6);
 
 /*=== 5.h ===*/
 /*-------------------------------------------------- solve structure ---*/
-fsi_struct(structfield,6,numfs,0);
+fsi_struct(structfield,6,0);
 
 /*=== 5.i ===*/
 /*----------------------------------- determine relaxation parameter ---*/

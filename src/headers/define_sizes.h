@@ -35,7 +35,7 @@ Maintainer: Malte Neumann
  | maximum number of dofs to a node -> can be more than 6 for shell9    |
  *----------------------------------------------------------------------*/
 #ifndef MAXDOFPERNODE
-#define MAXDOFPERNODE    (5)
+#define MAXDOFPERNODE    (3)
 #endif
 
 /*----------------------------------------------------------------------*
@@ -73,7 +73,7 @@ Maintainer: Malte Neumann
  * feature.
  */
 #ifndef MAXNUMMATRICES
-#define MAXNUMMATRICES  10
+#define MAXNUMMATRICES  (10)
 #endif
 
 /*----------------------------------------------------------------------*

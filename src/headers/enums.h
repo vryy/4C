@@ -181,9 +181,12 @@ typedef enum _CALC_ACTION
                        calc_fluid_vort,
 		       calc_fluid_stress,
 		       calc_fluid_curvature,
+		       calc_fluid_heightfunc,
 		       calc_fluid_liftdrag,
                        calc_fluid_shearvelo,
 		       calc_fluid_time_rhs,
+		       calc_fluid_stab,
+		       calc_fluid_normal,
 		       /* ale */		
 		       calc_ale_init,   	/* classic linear ale calculation */
 		       calc_ale_stiff,

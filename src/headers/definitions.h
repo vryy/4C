@@ -127,19 +127,20 @@ typedef char      CHAR;
 #define s8jacb              s8jacb_
 #define solveq              solveq_
 #define sspace              sspace_
-#define v2_cursor           v2_cursor_
 #define v2call              v2call_
 #define v2data              v2data_
 #define v2grid              v2grid_
 #define v2scal              v2scal_
-#define v2update            v2update_
 #define v2vect              v2vect_
+#define v2_cursor           v2_cursor__
+#define v2update            v2update_
+#define qat2v2              qat2v2_
 #define v3call              v3call_
 #define v3grid              v3grid_
-#define v3scal              v3scal_
 #define v3surface           v3surface_
-#define v3update            v3update_
+#define v3scal              v3scal_
 #define v3vect              v3vect_
+#define v3update            v3update_
 
 #endif
 
@@ -254,16 +255,15 @@ static INT iminarg1,iminarg2;
 /*----------------------------------------------------------------------*
  | exact PI                                                             |
  *----------------------------------------------------------------------*/
-#define PI               (asin(1.0)*2.0)
-
+/*#define PI               (asin(1.0)*2.0) */
+#define PI                 (3.1415926535897932)
+/*#define PI (3.141592653589793238462643383279502884197169399375)*/
 /*----------------------------------------------------------------------*
  | maximum number columns in input file                                 |
  *----------------------------------------------------------------------*/
 #define MAXNUMCOL        (500)
 
-/*----------------------------------------------------------------------*
- | maximum size of a file system is able to handle (KB)                 |
- *----------------------------------------------------------------------*/
+
 #define MAXFILESIZE     (2000000)
 
 /*----------------------------------------------------------------------*
@@ -299,6 +299,10 @@ static INT iminarg1,iminarg2;
 /*----------------------------------------------------------------------*
  | a set of different tolerances                                        |
  *----------------------------------------------------------------------*/
+#define EPS1             (1.0E-01)
+#define EPS2             (1.0E-02)
+#define EPS3             (1.0E-03)
+#define EPS4             (1.0E-04)
 #define EPS5             (1.0E-05)
 #define EPS6             (1.0E-06)
 #define EPS7             (1.0E-07)

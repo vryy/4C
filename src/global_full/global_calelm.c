@@ -439,6 +439,8 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
    case calc_fluid                  : assemble_action = assemble_one_matrix; break;
    case calc_fluid_liftdrag         : assemble_action = assemble_do_nothing; break;
    case calc_fluid_vort             : assemble_action = assemble_do_nothing; break;
+   case calc_fluid_stab             : assemble_action = assemble_do_nothing; break;
+   case calc_fluid_normal           : assemble_action = assemble_do_nothing; break;
    case calc_fluid_stress           : assemble_action = assemble_do_nothing; break;
    case calc_fluid_shearvelo        : assemble_action = assemble_do_nothing; break;
    case calc_fluid_f2pro            : assemble_action = assemble_two_matrix; break;
@@ -595,6 +597,8 @@ case calc_ale_rhs                : assemble_action = assemble_do_nothing;   brea
 case calc_fluid                  : assemble_action = assemble_one_exchange; break;
 case calc_fluid_liftdrag         : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_vort             : assemble_action = assemble_do_nothing;   break;
+case calc_fluid_stab             : assemble_action = assemble_do_nothing;   break;
+case calc_fluid_normal           : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_stress           : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_shearvelo        : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_f2pro	         : assemble_action = assemble_do_nothing;   break;
@@ -657,6 +661,8 @@ case calc_ale_stiff_laplace      : assemble_action = assemble_close_1matrix; bre
 case calc_fluid                  : assemble_action = assemble_close_1matrix; break;
 case calc_fluid_liftdrag         : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_vort             : assemble_action = assemble_do_nothing;   break;
+case calc_fluid_stab             : assemble_action = assemble_do_nothing;   break;
+case calc_fluid_normal           : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_stress           : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_shearvelo        : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_f2pro	         : assemble_action = assemble_do_nothing;   break;
@@ -707,6 +713,8 @@ if(actsolv->sysarray_typ[sysarray1]==oll)
       actsolv->sysarray[sysarray1].oll->is_masked = 1; break;
     case calc_fluid_liftdrag:
     case calc_fluid_vort:
+    case calc_fluid_stab:
+    case calc_fluid_normal:
     case calc_fluid_stress:
     case calc_fluid_f2pro:
     case calc_fluid_amatrix:
