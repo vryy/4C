@@ -65,6 +65,8 @@ case curve_polygonal:
       dserror("Load curve in dynamic only impl. abstime yet");
    }
 break;
+case curve_explicit: /* there's nothing to initialise */
+break;
 case curve_none:
    dserror("Type of timecurve unknown");
 break;
@@ -127,6 +129,9 @@ case curve_polygonal:
       dserror("Load curve in dynamic only impl. abstime yet");
    }
 break;
+case curve_explicit:
+   *fac = dyn_facexplcurve(actcurve,T);
+break;   
 case curve_none:
    dserror("Type of timecurve unknown");
 break;
@@ -134,9 +139,78 @@ default:
    dserror("Type of timecurve unknown");
 break;
 }
+
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
 #endif
+
 return;
 } /* end of dyn_facfromcurve */
+
+/*----------------------------------------------------------------------*
+ |  get factor at a certain time T defined by any explict function      |
+ |                                                           genk 06/02 |
+ *----------------------------------------------------------------------*/
+double dyn_facexplcurve(int actcurve,   /* number of actual time curve  */
+                        double T        /* actual time                  */
+		       )
+{
+int numex;          /* number of explicit time curve                    */
+double val1, fac;
+double c1,c2;
+
+#ifdef DEBUG 
+dstrc_enter("dyn_facexplcurve");
+#endif
+
+numex=curve[actcurve].numex;
+c1=curve[actcurve].c1;
+c2=curve[actcurve].c2;
+
+/*----------------------------------------------------------------------*/
+switch (numex)
+{
+case -1:
+   if (T <= ONE)
+   {
+      val1 = T*PI/2;
+      fac = sin(val1);      
+   }
+   else
+      fac = ONE;
+   break;
+   
+case -2:
+   if (T <= c1)
+   {
+      val1 = T/c1*PI/2;
+      fac = sin(val1);      
+   }
+   else
+      fac = ONE;         
+   break;
+   
+case -3:
+   if (T < EPS6) 
+   {
+      fac = ZERO;
+   }
+   else
+   {
+      val1 = ONE - ONE/T;
+      fac = exp(val1);
+   }
+   break;
+   
+default:
+   dserror("Number of explicit timecurve (NUMEX) unknown\n");
+}   
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+
+return((double)(fac));;
+}   /* end of dyn_facexplcurve */
