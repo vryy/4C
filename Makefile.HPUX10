@@ -42,7 +42,7 @@ include ./Makefile.personal_path
 # -DSUPERLU_PACKAGE    defines interface to solver library SuperLU (not impl. yet)
 # -DMUMPS_PACKAGE      defines interface to solver library Mumps (only in parallel HPUX11)
 # -DUMFPACK            defines interface to solver library Umfpack
-# -DSPOOLES_PACKAGE    defines interface to solver library Spooles (only in parallel HPUX11)
+# -DSPOOLES_PACKAGE    defines interface to solver library Spooles (only in parallel)
 #
 # -DVISUAL2_PACKAGE    defines visualisation tool VISUAL2 (only in seriell HPUX10)
 #                      (add -lVisual2 -lX11 to INCLUEDS!!!)
@@ -53,24 +53,28 @@ include ./Makefile.personal_path
 #
 # sequentiell part
 #--------------------------------------------------------------------
-PROGRAM_NAME  = cca_seq_10.20.exe
-FXX   = f77
-CCX   = cc
-LDX   = cc
-PFL   = -DD_FLUID -DD_FLUID2 -DD_FLUID3 -DD_BRICK1 -DD_SHELL8 -DD_ALE -DD_WALL1 -DAZTEC_PACKAGE 
-AZTEC = -laztec_seriell21
-#--------------------------------------------------------------------
+PROGRAM_NAME  = cca_seq_10.20.
+FXX     = f77
+CCX     = cc
+LDX     = cc
+PFL     = -DD_FLUID -DD_FLUID2 -DD_FLUID3 -DD_BRICK1 -DD_ALE -DD_SHELL8 \
+          -DD_WALL1 -DAZTEC_PACKAGE -DUMFPACK
+AZTEC   = -laztec_seriell21
+UMFPACK = -lumfpack40_hpux10_32
+SPOOLES = 
+##--------------------------------------------------------------------
 #
 # parallel part
 #--------------------------------------------------------------------
-#PROGRAM_NAME  = cca_par_10.20.exe
+#PROGRAM_NAME  = cca_par_10.20.
 #FXX     = /opt/mpi/bin/mpif77
 #CCX     = /opt/mpi/bin/mpicc
 #LDX     = /opt/mpi/bin/mpicc
-#PFL     = -DPARALLEL  -DD_FLUID2  -DD_SHELL8 -DD_FLUID3 -DD_ALE -DD_BRICK1 -DD_WALL1 \
-#          -DAZTEC_PACKAGE -DUMFPACK
+#PFL     = -DPARALLEL -DD_FLUID -DD_FLUID2 -DD_FLUID3 -DD_BRICK1 -DD_ALE \
+#          -DD_SHELL8 -DD_WALL1 -DAZTEC_PACKAGE -DUMFPACK -DSPOOLES_PACKAGE  
 #AZTEC   = -laztec_par21
 #UMFPACK = -lumfpack40_hpux10_32
+#SPOOLES = -lspoolesMPI_10.20  -lspooles_10.20
 #
 #--------------------------------------------------------------------
 #
@@ -82,10 +86,12 @@ RM	 = /bin/rm -f
 # switch between fast and debug compilation by uncommenting 
 # the approbiate flags:
 #------------------------------------------------ this is debug-32bit
+PROGRAMM      =  $(PROGRAM_NAME)debg
 CFLAGS        = -D__HP__ +w1 +e -Aa -Ae  -g ${PFL} -DDEBUG
 FFLAGS        = -g -I/opt/mpi/include/
 #------------------------------------------------- this is fast-32bit
-#CFLAGS       = -D__HP__  +e -Ae +w1  -OAa +Onolimit ${PFL}
+#PROGRAMM      =  $(PROGRAM_NAME)fast
+#CFLAGS        = -D__HP__  +w1 +e -Aa -Ae -O +Onolimit  ${PFL}
 #FFLAGS        = +O2 +Onolimit -I/opt/mpi/include/
 #--------------------------------------------------------------------
 LDFLAGS	 = -L/usr/lib -L/opt/fortran/lib -lcl -lc -lM -lm 
@@ -103,6 +109,7 @@ INCLUDES = -I/opt/mpi/include/ \
            -L/bau/stat33/users/statik/lib/BLACS/LIB \
            -L/bau/stat33/users/statik/lib/MUMPS4.1.6/lib \
            -L/bau/stat33/users/statik/lib/UMFPACK/lib \
+           -L/bau/stat16/users/statik/lib/spooles \
            -llapack_hppa \
            -lHYPRE_DistributedMatrix \
            -lHYPRE_DistributedMatrixPilutSolver \
@@ -129,7 +136,8 @@ INCLUDES = -I/opt/mpi/include/ \
            -lscalapack_HPPA \
            -lmumps \
            -lblas \
-           -lumfpack40_hpux10_32  
+           -lumfpack40_hpux10_32 \
+           $(SPOOLES)
 #           -lPEX5 -lVisual2 -lX11
 # sparsekit is not used at the moment
 #           -lskit 
@@ -146,7 +154,7 @@ include ./Makefile.objects
 #--------------------------------------------------------------------
 # targets
 #
-PROGRAM       = $(PROGRAM_NAME)
+PROGRAM       = $(PROGRAMM)
 #
 # dependencies
 #
