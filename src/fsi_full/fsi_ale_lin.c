@@ -258,8 +258,8 @@ monitoring(actfield,numfa,0,0,adyn->time);
 
 /*------------------------------------------- print out results to .out */
 #ifdef PARALLEL 
-if (ioflags.ale_disp_gid==1 && par.myrank==0)
-out_gid_domains(actfield);
+/*if (ioflags.ale_disp_gid==1 && par.myrank==0)
+out_gid_domains(actfield);*/
 #endif
 
 break;
