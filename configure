@@ -266,6 +266,16 @@ if grep '^D_MAT' "$2" 2>&1 > /dev/null ; then
     OBJECTS="$OBJECTS \$(OBJS_MAT)"
 fi
 
+# LS
+if grep '^D_LS' "$2" 2>&1 > /dev/null ; then
+    OBJECTS="$OBJECTS \$(OBJS_LS)"
+fi
+
+# XFEM
+if grep '^D_XFEM' "$2" 2>&1 > /dev/null ; then
+    OBJECTS="$OBJECTS \$(OBJS_XFEM)"
+fi
+
 
 
 # build the Makefile
