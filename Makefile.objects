@@ -9,25 +9,25 @@ OBJS_GLOBAL   = src/global_full/global_control.o \
                 src/global_full/global_init_control.o \
                 src/global_full/global_ass_dof.o \
                 src/global_full/global_ass_dof_ndis.o \
-                src/global_full/cal_dyn_control.o \
-                src/global_full/dyn_timecurve.o \
-                src/global_full/map_node_find.o \
+                src/global_full/global_dyn_control.o \
+                src/global_full/global_timecurve.o \
+                src/global_full/global_node_find.o \
                 src/global_full/global_dofconnect.o \
                 src/global_full/global_monitoring.o \
                 src/global_full/global_result_test.o \
                 src/global_full/global_calelm.o \
                 src/global_full/global_calrhs.o \
-                src/global_full/restart_control.o \
-                src/global_full/machine_hpux.o \
-		src/global_full/check_max_sizes.o
+                src/global_full/global_restart_control.o \
+                src/global_full/global_open_files.o \
+		src/global_full/global_check_max.o
 #                structure
-OBJS_STRUCTURE= src/structure/stru_dyn_nln.c.o \
-                src/structure/stru_dyn_nln_expl.c.o \
-                src/structure/stru_dyn_service.c.o \
-                src/structure/stru_gemm_nln.c.o \
-                src/structure/stru_static_lin.c.o \
-                src/structure/stru_static_nln.c.o \
-                src/structure/stru_static_service.c.o
+OBJS_STRUCTURE= src/structure/stru_dyn_nln.o \
+                src/structure/stru_dyn_nln_expl.o \
+                src/structure/stru_dyn_service.o \
+                src/structure/stru_gemm_nln.o \
+                src/structure/stru_static_lin.o \
+                src/structure/stru_static_nln.o \
+                src/structure/stru_static_service.o
 #                solver
 OBJS_SOLVER   = src/solver/solver_control.o \
                 src/solver/solver_service.o \
