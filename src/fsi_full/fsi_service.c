@@ -332,25 +332,25 @@ switch (fsidyn->ifsi)
 {
 case 1:
    printf("BASIC SEQUENTIAL STAGGERED SCHEME\n");
-   printf("TIME: %10.3#E/%10.3#E   DT=%10.3#E   STEP=%4d/%4d\n",
+   printf("TIME: %10.3E/%10.3E   DT=%10.3E   STEP=%4d/%4d\n",
       fsidyn->time,fsidyn->maxtime,fsidyn->dt,fsidyn->step,fsidyn->nstep);
    printf("\n");
 break;
 case 2:
    printf("SEQUENTIAL STAGGERED SCHEME WITH PREDICTOR\n");
-   printf("TIME: %10.3#E/%10.3#E   DT=%10.3#E   STEP=%4d/%4d\n",
+   printf("TIME: %10.3E/%10.3E   DT=%10.3E   STEP=%4d/%4d\n",
       fsidyn->time,fsidyn->maxtime,fsidyn->dt,fsidyn->step,fsidyn->nstep);
    printf("\n");   
 break;
 case 4:
    printf("ITERATIVE STAGGERED SCHEME WITH FIXED RELAXATION PARAMETER\n");
-   printf("TIME: %10.3#E/%10.3#E   DT=%10.3#E   STEP=%4d/%4d   ITNUM=%4d/%4d\n",
+   printf("TIME: %10.3E/%10.3E   DT=%10.3E   STEP=%4d/%4d   ITNUM=%4d/%4d\n",
       fsidyn->time,fsidyn->maxtime,fsidyn->dt,fsidyn->step,fsidyn->nstep,itnum,fsidyn->itemax);
    printf("\n");  
 break;
 case 5:
    printf("ITERATIVE STAGGERED SCHEME WITH RELAXATION PARAMETER VIA AITKEN ITERATION\n");
-   printf("TIME: %10.3#E/%10.3#E   DT=%10.3#E   STEP=%4d/%4d   ITNUM=%4d/%4d\n",
+   printf("TIME: %10.3E/%10.3E   DT=%10.3E   STEP=%4d/%4d   ITNUM=%4d/%4d\n",
       fsidyn->time,fsidyn->maxtime,fsidyn->dt,fsidyn->step,fsidyn->nstep,itnum,fsidyn->itemax);
    printf("\n");  
 break;  
@@ -696,14 +696,14 @@ switch (fsidyn->inrmfsi)
 case 1:
    if (converged==0)
    {
-      printf("|| g(i) || / sqrt(neq) = %10.3#E >= TOL = %10.3#E \n",
+      printf("|| g(i) || / sqrt(neq) = %10.3E >= TOL = %10.3E \n",
               grat,fsidyn->convtol);
       printf("NO CONVERGENCE OF ITERATION OVER FIELDS!\n");
      printf("\n");
    }
    if (converged==1)
    {
-      printf("|| g(i) || / sqrt(neq) = %10.3#E >= TOL = %10.3#E \n",
+      printf("|| g(i) || / sqrt(neq) = %10.3E >= TOL = %10.3E \n",
               grat,fsidyn->convtol);
       printf("NO CONVERGENCE OF ITERATION OVER FIELDS AFTER ITEMAX STEPS!\n");
       printf("                ***** CONTINUING ****\n");
@@ -711,7 +711,7 @@ case 1:
    }    	
    if (converged>=2)
    {
-      printf("|| g(i) || / sqrt(neq) = %10.3#E < TOL = %10.3#E \n",
+      printf("|| g(i) || / sqrt(neq) = %10.3E < TOL = %10.3E \n",
               grat,fsidyn->convtol);
       printf("CONVERGENCE OF ITERATION OVER FIELDS!\n");
       printf("\n");
@@ -720,14 +720,14 @@ break;
 case 2:   
    if (converged==0)
    {
-      printf("|| g(i) || / || g(0) || = %10.3#E >= TOL = %10.3#E \n",
+      printf("|| g(i) || / || g(0) || = %10.3E >= TOL = %10.3E \n",
               grat,fsidyn->convtol);
       printf("NO CONVERGENCE OF ITERATION OVER FIELDS!\n");
       printf("\n");
    }
    if (converged==1)
    {
-      printf("|| g(i) || / || g(0) || = %10.3#E >= TOL = %10.3#E \n",
+      printf("|| g(i) || / || g(0) || = %10.3E >= TOL = %10.3E \n",
               grat,fsidyn->convtol);
       printf("NO CONVERGENCE OF ITERATION OVER FIELDS AFTER ITEMAX STEPS!\n");
       printf("                ***** CONTINUING ****\n");
@@ -735,7 +735,7 @@ case 2:
    }    	
    if (converged>=2)
    {
-      printf("|| g(i) || / || g(0) || = %10.3#E < TOL = %10.3#E \n",
+      printf("|| g(i) || / || g(0) || = %10.3E < TOL = %10.3E \n",
               grat,fsidyn->convtol);
       printf("CONVERGENCE OF ITERATION OVER FIELDS!\n");
       printf("\n");

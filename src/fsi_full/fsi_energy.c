@@ -161,7 +161,7 @@ if (fsidyn->deltaeint>fsidyn->entol)
    printf("\n");
    printf("##################################################\n");
    printf("SUM OF ENERGY CREATED AT FS-INTERFACE > TOLERANCE:\n");
-   printf("DELTAEINT = %10.3#E > ENTOL = %10.3#E\n",
+   printf("DELTAEINT = %10.3E > ENTOL = %10.3#E\n",
            fsidyn->deltaeint,fsidyn->entol);
    printf("  ==> COMPUTATION BECOMES UNSTABLE ... STOPPING \n");
    printf("##################################################\n");
