@@ -135,6 +135,7 @@ for (i=0;i<numanp;i++)
 }   
 
 /*-------------------------------------------------- print out coupling */
+if (genprob.visual==0)
 out_fluidmf(fluidfield);   
 
    
