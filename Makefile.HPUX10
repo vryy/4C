@@ -28,6 +28,7 @@
 #  =============
 # -DD_FLUID      defines general fluid problem
 # -DD_FSI        defines general FSI problem
+# -DD_SSI        defines general SSI problem
 # -DD_OPTIM      defines optimization
 # -DD_CONTACT    defines contact algorithms
 # -DD_LS         defines for level set problem
@@ -38,6 +39,7 @@
 # -DS8CONTACT    defines contact algorithms for shell8 contact
 # -DWALLCONTACT  defines contact algorithms for wall contact
 # -DGEMM         defines Generalized Energy-Momentum Int. Scheme
+# -DD_MORTAR     defines Mortar coupling for SSI or FSI problems
 #
 #  TOOLS:
 #  ======
@@ -81,7 +83,7 @@
 #  use these defines for compilation
 #--------------------------------------------------------------------
 PFL1  = -DHPUX10 \
-	-DD_FLUID -DD_FLUID2 -DD_FLUID3 -DD_FSI -DD_ALE \
+	-DD_FLUID -DD_FLUID2 -DD_FLUID3 -DD_FSI -DD_ALE -DD_SSI -DD_MORTAR \
 	-DD_AXISHELL -DD_BRICK1 -DD_OPTIM -DD_BEAM3 -DD_SHELL9 -DD_MAT \
 	-DD_SHELL8 -DD_CONTACT -DS8CONTACT \
         -DD_WALL1 -DD_INTERF  -DD_WALLGE -DD_LS -DD_XFEM \
@@ -186,7 +188,7 @@ PROGRAM       = $(PROGRAMM)
 $(PROGRAM):	$(OBJS_MAIN) $(OBJS_GLOBAL) $(OBJS_SOLVER) $(OBJS_PSS) $(OBJS_INPUT) \
 		$(OBJS_PAR) $(OBJS_MATH) $(OBJS_OUTPUT) $(OBJS_FORTRAN) \
 		$(OBJS_FLUID) $(OBJS_FLUID3) $(OBJS_FLUID2) $(OBJS_ALE) \
-		$(OBJS_FSI) $(OBJS_F2PRO) $(OBJS_F2ML) $(OBJS_F3ML) \
+		$(OBJS_FSI) $(OBJS_SSI) $(OBJS_F2PRO) $(OBJS_F2ML) $(OBJS_F3ML) \
 		$(OBJS_BRICK1) $(OBJS_BEAM3) $(OBJS_OPT) $(OBJS_MAT) \
 		$(OBJS_SHELL9) $(OBJS_SHELL8) $(OBJS_AXISHELL) \
 		$(OBJS_WALL1) $(OBJS_WALLGE) $(OBJS_IF) $(OBJS_LS) $(OBJS_XFEM)
@@ -195,7 +197,7 @@ $(PROGRAM):	$(OBJS_MAIN) $(OBJS_GLOBAL) $(OBJS_SOLVER) $(OBJS_PSS) $(OBJS_INPUT)
 		$(OBJS_MAIN) $(OBJS_GLOBAL) $(OBJS_SOLVER) $(OBJS_PSS) $(OBJS_INPUT) \
 		$(OBJS_PAR) $(OBJS_MATH) $(OBJS_OUTPUT) $(OBJS_FORTRAN) \
 		$(OBJS_FLUID) $(OBJS_FLUID3) $(OBJS_FLUID2) $(OBJS_ALE) \
-		$(OBJS_FSI) $(OBJS_F2PRO) $(OBJS_F2ML) $(OBJS_F3ML) \
+		$(OBJS_FSI) $(OBJS_SSI) $(OBJS_F2PRO) $(OBJS_F2ML) $(OBJS_F3ML) \
 		$(OBJS_BRICK1) $(OBJS_BEAM3) $(OBJS_OPT) $(OBJS_MAT) \
 		$(OBJS_SHELL9) $(OBJS_SHELL8) $(OBJS_AXISHELL) \
 		$(OBJS_WALL1) $(OBJS_WALLGE) $(OBJS_IF) $(OBJS_LS) $(OBJS_XFEM) \
@@ -252,6 +254,9 @@ $(OBJS_FLUID):
 $(OBJS_FSI):
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
+$(OBJS_SSI):
+		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+
 $(OBJS_SHELL9):
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
@@ -302,7 +307,7 @@ clean:
 	rm -rf 	$(OBJS_MAIN) $(OBJS_GLOBAL) $(OBJS_SOLVER) $(OBJS_PSS) $(OBJS_INPUT) \
 		$(OBJS_PAR) $(OBJS_MATH) $(OBJS_OUTPUT) $(OBJS_FORTRAN) \
 		$(OBJS_FLUID) $(OBJS_FLUID3) $(OBJS_FLUID2) $(OBJS_ALE) \
-		$(OBJS_FSI) $(OBJS_F2PRO) $(OBJS_F2ML) $(OBJS_F3ML) \
+		$(OBJS_FSI) $(OBJS_SSI) $(OBJS_F2PRO) $(OBJS_F2ML) $(OBJS_F3ML) \
 		$(OBJS_BRICK1) $(OBJS_BEAM3) $(OBJS_OPT) $(OBJS_MAT) \
 		$(OBJS_SHELL9) $(OBJS_SHELL8) $(OBJS_AXISHELL) \
 		$(OBJS_WALL1) $(OBJS_WALLGE) $(OBJS_IF) $(OBJS_LS) $(OBJS_XFEM)
