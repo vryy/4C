@@ -69,6 +69,17 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          if (!(solv->azvar)) dserror("Allocation of AZVAR failed");
          azvar = solv->azvar;
       }
+      /*-------------------------------------------------- Aztec solver */
+      if (strncmp("Aztec_VBR",buffer,9)==0) 
+      {
+#ifndef AZTEC_PACKAGE
+         dserror("Aztec package is not compiled in");
+#endif
+         solv->solvertyp = aztec_vbr;
+         solv->azvar = (AZVAR*)CALLOC(1,sizeof(AZVAR));
+         if (!(solv->azvar)) dserror("Allocation of AZVAR failed");
+         azvar = solv->azvar;
+      }
       /*---------------------------------------- HYPRE solver BoomerAMG */
       if (strncmp("HYPRE_BoomerAMG",buffer,15)==0) 
       {
@@ -191,6 +202,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    switch (solv->solvertyp)
    {
    case aztec_msr:/*--------------------------------- read solver aztec */
+   case aztec_vbr:
       frchar("AZSOLVE"   ,buffer,&ierr);
       if (ierr==1)
       {
@@ -222,6 +234,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frint("AZSUB"  ,&(azvar->azsub),&ierr);
       frint("AZGRAPH",&(azvar->azgraph),&ierr);
       frint("AZPOLY" ,&(azvar->azpoly),&ierr);
+      frint("AZBDIAG" ,&(azvar->blockdiag),&ierr);
       frdouble("AZDROP" ,&(azvar->azdrop)  ,&ierr);
       frdouble("AZFILL" ,&(azvar->azfill)  ,&ierr);
       frdouble("AZTOL"  ,&(azvar->aztol)   ,&ierr);

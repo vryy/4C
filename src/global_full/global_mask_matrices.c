@@ -40,6 +40,7 @@ void mask_global_matrices()
 {
 int i,j,k,l;               /* some counters */
 int isaztec_msr  =0;       /* flag for a certain sparsity pattern */
+int isaztec_vbr  =0;       
 int ishypre      =0;
 int isucchb      =0;
 int isdense      =0;
@@ -86,6 +87,13 @@ for (i=0; i<genprob.numfld; i++)
       if (actsolv->parttyp != cut_elements)
       dserror("Partitioning has to be Cut_Elements for solution with HYPRE"); 
       else isaztec_msr=1;
+   }
+   /*---------- matrix is distributed variable block row DVBR for Aztec */
+   if (actsolv->solvertyp==aztec_vbr)
+   {
+      if (actsolv->parttyp != cut_elements)
+      dserror("Partitioning has to be Cut_Elements for solution with HYPRE"); 
+      else isaztec_vbr=1;
    }
    /*------------------------------------------- matrix is hypre_parcsr */
    if (
@@ -173,6 +181,23 @@ for (i=0; i<genprob.numfld; i++)
       }
       mask_msr(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].msr);
       isaztec_msr=0;
+   }
+   /*------------------------- matrix is ditributed variable block row */
+   if (isaztec_vbr==1)
+   {
+      actsolv->nsysarray = 1;
+      actsolv->sysarray_typ = (SPARSE_TYP*)  CALLOC(actsolv->nsysarray,sizeof(SPARSE_TYP));
+      actsolv->sysarray     = (SPARSE_ARRAY*)CALLOC(actsolv->nsysarray,sizeof(SPARSE_ARRAY));
+      if (!actsolv->sysarray_typ || !actsolv->sysarray)
+         dserror("Allocation of SPARSE_ARRAY failed");
+      for (i=0; i<actsolv->nsysarray; i++)
+      {
+         actsolv->sysarray_typ[i] = vbr;
+         actsolv->sysarray[i].vbr = (AZ_ARRAY_VBR*)CALLOC(1,sizeof(AZ_ARRAY_VBR));
+         if (actsolv->sysarray[i].vbr==NULL) dserror("Allocation of AZ_ARRAY_VBR failed");
+      }
+      mask_vbr(actfield,actpart,actsolv,actintra,actsolv->sysarray[0].vbr);
+      isaztec_vbr=0;
    }
    /*------------------------------------- matrix is Spooles's matrix  */
    if (isspooles==1)
