@@ -138,7 +138,6 @@ for (i=0; i<genprob.numfld; i++)
    }
    else
    {
-       dsassert(actpart->ndis==1,"parallel version of par_assignfield not checked yet!\n");
       /*-------------- do only for procs wqithin the intra-communicator */
       if (actintra->intra_fieldtyp==none) continue;
       /*------------------------------------ check for typ of partition */
