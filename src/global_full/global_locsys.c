@@ -116,7 +116,7 @@ create local co-ordinate system on node level
 void locsys_inherit_to_node()
 {
 INT      i,j,k,l;
-INT      locsysId;
+INT      locsysId=-1;
 NODE     *actnode;
 GNODE    *actgnode;
 ELEMENT  *actele;
@@ -457,13 +457,13 @@ flag = 0 : transform sol in XYZ to xyz*
 void locsys_trans_sol(FIELD *actfield, INT idis, INT array,
                       INT place, INT flag)
 {
-INT      i,j;           /* simply some counters */
-INT      iloccsys;      /* index of locsys */
-INT      numdf;         /* number of dofs at node */
-INT      numnp_total;   /* total number of nodes in field */
-DOUBLE   **nodalsol;    /* pointer to nodal array */
-NODE     *actnode;      /* actual node */
-ELEMENT  *actele;       /* actual element */
+INT      i,j;             /* simply some counters */
+INT      iloccsys;        /* index of locsys */
+INT      numdf;           /* number of dofs at node */
+INT      numnp_total;     /* total number of nodes in field */
+DOUBLE   **nodalsol=NULL; /* pointer to nodal array */
+NODE     *actnode;        /* actual node */
+ELEMENT  *actele;         /* actual element */
 
 #ifdef DEBUG
 dstrc_enter("locsys_trans_sol");
