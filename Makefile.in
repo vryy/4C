@@ -9,11 +9,18 @@ include ./Makefile.objects
 #
 # dependencies
 #
-$(PROGRAM):     $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) $(OBJS7) $(OBJS8) \
-                $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) $(OBJS14) \
-                $(OBJS15) $(OBJS16) $(OBJS17) $(OBJS18) $(OBJS_OPT) $(OBJS_AXISHELL) $(OBJS_MAT) $(OBJS_F2PRO)
+$(PROGRAM):     $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) \
+	        $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) \
+		$(OBJS13) $(OBJS14) $(OBJS15) $(OBJS16) $(OBJS17) $(OBJS18) \
+		$(OBJS_OPT) $(OBJS_AXISHELL) $(OBJS_MAT) $(OBJS_F2PRO) \
+		$(OBJS_WALLGE) $(OBJS_IF)
 		@echo "Linking $(LD) $(LDFLAGS) $(LIBS) $(INCLUDES) -o $(PROGRAM)"
-		@$(LD) $(LDFLAGS) $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) $(OBJS14) $(OBJS15) $(OBJS16) $(OBJS17) $(OBJS18) $(OBJS_OPT) $(OBJS_AXISHELL) $(OBJS_MAT) $(OBJS_F2PRO) $(LIBS)  -o $(PROGRAM)
+		@$(LD) $(LDFLAGS) $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) \
+		$(OBJS6) $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) \
+		$(OBJS13) $(OBJS14) $(OBJS15) $(OBJS16) $(OBJS17) $(OBJS18) \
+		$(OBJS_OPT) $(OBJS_AXISHELL) $(OBJS_MAT) $(OBJS_F2PRO) \
+		$(OBJS_WALLGE) $(OBJS_IF) \
+		$(LIBS)  -o $(PROGRAM)
 
 
 $(OBJS1):
@@ -78,6 +85,12 @@ $(OBJS_MAT):
 
 $(OBJS_F2PRO):
 		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+		
+$(OBJS_IF):
+		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
+
+$(OBJS_WALLGE):
+		$(CC) $(CFLAGS) $(INCLUDES) -c ${SRC}/${@D}/$(*F).c -o ${SRC}/$@
 
 # fortran
 $(OBJS13):     
@@ -92,6 +105,7 @@ $(OBJS13):
 clean:
 	rm -rf  $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) \
                 $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) \
-                $(OBJS13) $(OBJS14) $(OBJS15) $(OBJS16) $(OBJS17) $(OBJS18) $(OBJS_OPT) \
-                $(OBJS_AXISHELL) $(OBJS_MAT) $(OBJS_F2PRO)
+                $(OBJS13) $(OBJS14) $(OBJS15) $(OBJS16) $(OBJS17) $(OBJS18) \
+		$(OBJS_OPT) $(OBJS_AXISHELL) $(OBJS_MAT) $(OBJS_F2PRO) \
+		$(OBJS_WALLGE) $(OBJS_IF)
 
