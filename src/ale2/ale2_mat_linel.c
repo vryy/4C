@@ -7,7 +7,7 @@ linear elastic constitutive matrix for a 2D ale element
 Maintainer: Christiane Foerster
             foerster@statik.uni-stuttgart.de
             http://www.uni-stuttgart.de/ibs/members/foerster/
-            0711 - 685-6127
+            0711 - 685-6572
 </pre>
 
 *----------------------------------------------------------------------*/
