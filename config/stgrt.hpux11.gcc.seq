@@ -28,7 +28,7 @@ LIBS="-lcl -lc -lm -lg2c -lveclib -llapack"
 
 # FAST
 PROGRAMNAME=cca_11_seq
-CFLAGS_OPT="-O +Onolimit"
+CFLAGS_OPT="-O"
 FFLAGS_OPT="-O"
 CFLAGS="-ansi -DHPUX_GNU -Wall"
 FFLAGS="-Wall"
