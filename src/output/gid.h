@@ -48,6 +48,14 @@ typedef struct _GIDSET
      char                      *ale_111_name;
      INT                        is_ale_222;             /* 8-noded ale 2x2x2 GP */
      char                      *ale_222_name;
+     INT			is_beam3_21;		/* 2-noded beam3 1 GP */
+     char		       *beam3_21_name;
+     INT			is_beam3_22;		/* 2-noded beam3 2 GP */
+     char		       *beam3_22_name;
+     INT			is_beam3_32;		/* 3-noded beam3 2 GP */
+     char		       *beam3_32_name;
+     INT			is_beam3_33;		/* 3-noded beam3 3 GP */
+     char		       *beam3_33_name;
      INT                        is_ale_tri_1;           /* 3-noded tri ale 1 GP */
      char                      *ale_tri_1_name;
      INT                        is_ale_tri_3;           /* 3-noded tri ale 3 GP */

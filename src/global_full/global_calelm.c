@@ -12,6 +12,7 @@
 #include "../fluid2/fluid2_prototypes.h"
 #include "../ale3/ale3.h"
 #include "../ale2/ale2.h"
+#include "../beam3/beam3.h"
 
 /*----------------------------------------------------------------------*
  | enum _CALC_ACTION                                      m.gee 1/02    |
@@ -267,6 +268,13 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
 	ale2(actpart,actintra,actele,
         &estif_global,
         action,container);
+   break;
+   case el_beam3:
+        container->handsize = 0;
+      	container->handles  = NULL;
+	beam3(actfield,actpart,actintra,actele,
+	      &estif_global,&emass_global,&intforce_global,
+	      action,container);                  
    break;
    case el_none:
       dserror("Typ of element unknown");
@@ -550,6 +558,7 @@ INT is_fluid2_tu=0;
 INT is_fluid3=0;
 INT is_ale3=0;
 INT is_ale2=0;
+INT is_beam3=0;
 
 ELEMENT *actele;              /* active element */
 /*----------------------------------------------------------------------*/
@@ -588,6 +597,9 @@ for (i=0; i<actfield->dis[kk].numele; i++)
    break;
    case el_wall1:
       is_wall1=1;
+   break;
+   case el_beam3:
+      is_beam3=1;
    break;
    case el_fluid2:
       is_fluid2=1;
@@ -682,6 +694,14 @@ if (is_ale2==1)
 {
    ale2(actpart,NULL,NULL,&estif_global,action,container);
 }
+/*-------------------------------- init all kind of routines for beam3  */
+if (is_beam3==1)
+{
+   container->handsize = 0;
+   container->handles  = NULL;
+   beam3(actfield,actpart,NULL,NULL,&estif_global,&emass_global,&intforce_global,
+         action,container);
+}
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -713,6 +733,8 @@ INT is_wall1 =0;
 INT is_fluid1=0;
 INT is_fluid3=0;
 INT is_ale3=0;
+INT is_beam3=0;
+
 ELEMENT *actele;
 #ifdef DEBUG 
 dstrc_enter("calreduce");
@@ -747,6 +769,9 @@ for (i=0; i<actfield->dis[0].numele; i++)
    break;
    case el_ale3:
       is_ale3=1;
+   break;
+   case el_beam3:
+      is_beam3=1;
    break;
    default:
       dserror("Unknown typ of element");
@@ -789,6 +814,10 @@ if (is_fluid3==1)
 }
 /*-----------------------------------------------reduce results for ale */
 if (is_ale3==1)
+{
+}
+/*---------------------------------------------reduce results for beam3 */
+if (is_beam3==1)
 {
 }
 /*----------------------------------------------------------------------*/

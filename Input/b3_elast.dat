@@ -1,0 +1,308 @@
+==================================================================
+                        General Data File C_CARAT
+==================================================================
+-------------------------------------------------------------TITLE
+Default_title
+------------------------------------------------------PROBLEM SIZE
+ELEMENTS           9 
+NODES             10
+DIM                3
+MATERIALS          1
+NUMDF        6
+-------------------------------------------------------PROBLEM TYP
+PROBLEMTYP   Structure
+NUMFIELD     1
+TIMETYP      Static
+TRACE        secure
+RESTART      0
+----------------------------------------------------------------IO
+STRUCT_DISP_FILE   Yes
+STRUCT_STRESS_FILE Yes
+STRUCT_DISP_GID    Yes
+STRUCT_STRESS_GID  Yes
+FLUID_SOL_FILE     No
+------------------------------------------------------------STATIC
+GEOLINEAR
+------------------------------------------------STRUCTURAL DYNAMIC
+DYNAMICTYP   Gen_Alfa
+EIGEN        0
+RESEVRYDISP  10
+RESEVRYSTRS  20
+RESTARTEVRY  20
+TIMESTEP     0.05 
+NUMSTEP      200 
+MAXTIME      5.0
+BETA         0.25 
+GAMMA        0.5 
+ALPHA_M      0.5 
+ALPHA_F      0.5
+DAMPING      Yes 
+M_DAMP       0.5 
+K_DAMP       0.5
+ITERATION    full 
+TOLDISP      1.0E-08
+MAXITER      50
+-----------------------------------------------------FLUID DYNAMIC
+SOLVE_FLUID  No
+DYNAMICTYP   Nlin_Time_Int
+TIMEINTEGR   One_Step_Theta
+NUMDF        3
+IPRERHS      1
+NUMCONT      1
+UPPSS        100
+SAVESTEP     100
+MAXTIME      5.0
+NUMSTEP      200  
+TIMESTEP     0.05
+ALPHA        1.00
+THETA        1.00
+GAMMA        1.00
+NONLINITER   fixed_point_like
+ITEMAX       3
+CONVCHECK    No
+CONVTOL      1.0E-6
+STEADYCHECK  No
+STEADYSTEP   5
+STEADYTOL    1.0E-6
+STARTINGALGO One_Step_Theta
+NUMSTASTEPS  0
+FLUID_START1 0.67
+INITIALFIELD zero_field
+STARTFUNCNO  2
+------------------------------------------------------FLUID SOLVER
+SOLVER         Aztec_MSR
+AZSOLVE        CG
+AZPREC         ILU
+AZREUSE        0  
+AZDROP         0.0  
+AZFILL         2.0  
+AZGFILL        0  
+AZTOL          1.0E-08  
+AZITER         2500  
+AZSUB          50  
+AZOMEGA        1.0  
+AZGRAPH        1  
+AZPOLY         5  
+PARTITION      Cut_Elements
+-----------------------------------------------------STRUCT SOLVER
+SOLVER         Colsol
+PARTITION      Cut_Elements
+--------------------------------------------------------ALE SOLVER
+SOLVER         Aztec_MSR
+AZSOLVE        CG
+AZPREC         ILU
+AZREUSE        0  
+AZDROP         0.0  
+AZFILL         2.0  
+AZGFILL        0  
+AZTOL          1.0E-08  
+AZITER         2500  
+AZSUB          50  
+AZOMEGA        1.0  
+AZGRAPH        1  
+AZPOLY         5  
+PARTITION      Cut_Elements
+------------------------------------------------DESIGN DESCRIPTION
+NDPOINT 10
+NDLINE  9
+NDSURF  0
+NDVOL   0
+-----------------------------------------------------DESIGN POINTS
+POINT
+Num: 1 HigherEntity: 4 conditions: 1 material: 0
+Coord: 0.000000 0.000000 0.000000
+END POINT
+POINT
+Num: 2 HigherEntity: 3 conditions: 1 material: 0
+Coord: 3.535000 -3.535000 0.000000
+END POINT
+POINT
+Num: 3 HigherEntity: 3 conditions: 1 material: 0
+Coord: 8.035000 -3.535000 0.000000
+END POINT
+POINT
+Num: 4 HigherEntity: 2 conditions: 1 material: 0
+Coord: 11.035000 -1.535000 0.000000
+END POINT
+POINT
+Num: 5 HigherEntity: 1 conditions: 2 material: 0
+Coord: -1.000000 0.000000 0.000000
+END POINT
+POINT
+Num: 6 HigherEntity: 1 conditions: 2 material: 0
+Coord: 0.000000 1.000000 0.000000
+END POINT
+POINT
+Num: 7 HigherEntity: 1 conditions: 2 material: 0
+Coord: 0.000000 0.000000 1.000000
+END POINT
+POINT
+Num: 8 HigherEntity: 1 conditions: 2 material: 0
+Coord: 3.535000 -3.535000 1.000000
+END POINT
+POINT
+Num: 9 HigherEntity: 1 conditions: 2 material: 0
+Coord: 8.035000 -3.535000 1.000000
+END POINT
+POINT
+Num: 10 HigherEntity: 1 conditions: 2 material: 0
+Coord: 11.035000 -1.535000 1.000000
+END POINT
+------------------------------------------------------DESIGN LINES
+STLINE
+Num: 1 HigherEntity: 0 conditions: 3 material: 2
+Meshing Info: (num=2,NOE=9) Elemtype=1 IsStructured=1 size=1 Meshing=Default
+Points: 1 2
+END STLINE
+STLINE
+Num: 2 HigherEntity: 0 conditions: 2 material: 2
+Meshing Info: (num=2,NOE=9) Elemtype=1 IsStructured=1 size=1 Meshing=Default
+Points: 2 3
+END STLINE
+STLINE
+Num: 3 HigherEntity: 0 conditions: 2 material: 2
+Meshing Info: (num=2,NOE=9) Elemtype=1 IsStructured=1 size=1 Meshing=Default
+Points: 3 4
+END STLINE
+STLINE
+Num: 4 HigherEntity: 0 conditions: 2 material: 2
+Meshing Info: (num=2,NOE=9) Elemtype=1 IsStructured=1 size=1 Meshing=Default
+Points: 5 1
+END STLINE
+STLINE
+Num: 5 HigherEntity: 0 conditions: 2 material: 2
+Meshing Info: (num=2,NOE=9) Elemtype=1 IsStructured=1 size=1 Meshing=Default
+Points: 6 1
+END STLINE
+STLINE
+Num: 6 HigherEntity: 0 conditions: 2 material: 2
+Meshing Info: (num=2,NOE=9) Elemtype=1 IsStructured=1 size=1 Meshing=Default
+Points: 1 7
+END STLINE
+STLINE
+Num: 7 HigherEntity: 0 conditions: 2 material: 2
+Meshing Info: (num=2,NOE=9) Elemtype=1 IsStructured=1 size=1 Meshing=Default
+Points: 2 8
+END STLINE
+STLINE
+Num: 8 HigherEntity: 0 conditions: 2 material: 2
+Meshing Info: (num=2,NOE=9) Elemtype=1 IsStructured=1 size=1 Meshing=Default
+Points: 3 9
+END STLINE
+STLINE
+Num: 9 HigherEntity: 0 conditions: 2 material: 2
+Meshing Info: (num=2,NOE=9) Elemtype=1 IsStructured=1 size=1 Meshing=Default
+Points: 4 10
+END STLINE
+---------------------------------------------------DESIGN SURFACES
+----------------------------------------------------DESIGN VOLUMES
+------------------------------------DESIGN POINT DIRICH CONDITIONS 
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DPOINT 6
+ E 5 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
+ E 6 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
+ E 7 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
+ E 8 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
+ E 9 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
+ E 10 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
+-------------------------------------DESIGN LINE DIRICH CONDITIONS 
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DLINE 0
+-------------------------------------DESIGN SURF DIRICH CONDITIONS 
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DSURF 0
+--------------------------------------DESIGN VOL DIRICH CONDITIONS 
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DVOL 0
+-----------------------------------DESIGN POINT NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL 
+DPOINT 0
+------------------------------------DESIGN LINE NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL VAL VAL
+DLINE 1
+ E 1 -   none 0 0 0 0 1 1 0.0 0.0 0.0 0.0 1.0 1.0 
+------------------------------------DESIGN SURF NEUMANN CONDITIONS
+// DOBJECT CURVE TYPE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL 
+DSURF 0
+-------------------------------------DESIGN VOL NEUMANN CONDITIONS
+// DOBJECT CURVE TYPE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL 
+DVOL 0
+----------------------------------DESIGN COUPLING POINT CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
+DPOINT 0
+-----------------------------------DESIGN COUPLING LINE CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
+DLINE 0
+-----------------------------------DESIGN COUPLING SURF CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
+DSURF 0
+------------------------------------DESIGN COUPLING VOL CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
+DVOL 0
+-----------------------------------------------DNODE-NODE TOPOLOGY
+NODE       8 DNODE 1
+NODE       6 DNODE 2
+NODE       4 DNODE 3
+NODE       2 DNODE 4
+NODE      10 DNODE 5
+NODE       9 DNODE 6
+NODE       7 DNODE 7
+NODE       5 DNODE 8
+NODE       3 DNODE 9
+NODE       1 DNODE 10
+-----------------------------------------------DLINE-NODE TOPOLOGY
+NODE       8 DLINE 1
+NODE       6 DLINE 1
+NODE       6 DLINE 2
+NODE       4 DLINE 2
+NODE       4 DLINE 3
+NODE       2 DLINE 3
+NODE      10 DLINE 4
+NODE       8 DLINE 4
+NODE       9 DLINE 5
+NODE       8 DLINE 5
+NODE       8 DLINE 6
+NODE       7 DLINE 6
+NODE       6 DLINE 7
+NODE       5 DLINE 7
+NODE       4 DLINE 8
+NODE       3 DLINE 8
+NODE       2 DLINE 9
+NODE       1 DLINE 9
+-----------------------------------------------DSURF-NODE TOPOLOGY
+-----------------------------------------------DVOL-NODE TOPOLOGY
+-------------------------------------------------------NODE COORDS
+NODE 1  COORD 11.035000  -1.535000  1.000000
+NODE 2  COORD 11.035000  -1.535000  0.000000
+NODE 3  COORD 8.035000  -3.535000  1.000000
+NODE 4  COORD 8.035000  -3.535000  0.000000
+NODE 5  COORD 3.535000  -3.535000  1.000000
+NODE 6  COORD 3.535000  -3.535000  0.000000
+NODE 7  COORD 0.000000  0.000000  1.000000
+NODE 8  COORD 0.000000  0.000000  0.000000
+NODE 9  COORD 0.000000  1.000000  0.000000
+NODE 10  COORD -1.000000  0.000000  0.000000
+----------------------------------------------------------ELEMENTS
+------------------------------------------------STRUCTURE ELEMENTS
+      1 BEAM3 LIN2       8      6 REF 0.0 0.0 1.0      MAT   1 AREA 10000000000.0 GS 1.0 HEIGHT 1.0 IYY 0.75 IZZ 0.75 IYZ 0.0 IT 1.0 IKE 1 GP 3 CODE 0 0 0 0 0 0 0 0 0 0 0 0 
+      2 BEAM3 LIN2       6      4 REF 3.535 -3.535 1.0 MAT   1 AREA 10000000000.0 GS 1.0 HEIGHT 1.0 IYY 0.75 IZZ 0.75 IYZ 0.0 IT 1.0 IKE 1 GP 3 CODE 0 0 0 0 0 0 0 0 0 0 0 0 
+      3 BEAM3 LIN2       4      2 REF 8.035 -3.535 1.0 MAT   1 AREA 10000000000.0 GS 1.0 HEIGHT 1.0 IYY 0.75 IZZ 0.75 IYZ 0.0 IT 1.0 IKE 1 GP 3 CODE 0 0 0 0 0 0 0 0 0 0 0 0 
+      4 BEAM3 LIN2      10      8 REF 0.0 0.0 1.0      MAT   1 AREA 10000000000.0 GS 1.0 HEIGHT 1.0 IYY 0.75 IZZ 0.75 IYZ 0.0 IT 1.0 IKE 1 GP 3 CODE 0 0 0 0 0 0 0 0 0 0 1 1 
+      5 BEAM3 LIN2       9      8 REF 0.0 0.0 1.0      MAT   1 AREA 10000000000.0 GS 1.0 HEIGHT 1.0 IYY 0.75 IZZ 0.75 IYZ 0.0 IT 1.0 IKE 1 GP 3 CODE 0 0 0 0 0 0 0 0 0 0 1 1 
+      6 BEAM3 LIN2       8      7 REF 0.0 -1.0 0.0     MAT   1 AREA 10000000000.0 GS 1.0 HEIGHT 1.0 IYY 0.75 IZZ 0.75 IYZ 0.0 IT 1.0 IKE 1 GP 3 CODE 0 0 0 0 1 1 0 0 0 0 0 0 
+      7 BEAM3 LIN2       6      5 REF 0.0 -1.0 0.0     MAT   1 AREA 10000000000.0 GS 1.0 HEIGHT 1.0 IYY 0.75 IZZ 0.75 IYZ 0.0 IT 1.0 IKE 1 GP 3 CODE 0 0 0 0 1 1 0 0 0 0 0 0 
+      8 BEAM3 LIN2       4      3 REF 0.0 -1.0 0.0     MAT   1 AREA 10000000000.0 GS 1.0 HEIGHT 1.0 IYY 0.75 IZZ 0.75 IYZ 0.0 IT 1.0 IKE 1 GP 3 CODE 0 0 0 0 1 1 0 0 0 0 0 0 
+      9 BEAM3 LIN2       2      1 REF 0.0 -1.0 0.0     MAT   1 AREA 10000000000.0 GS 1.0 HEIGHT 1.0 IYY 0.75 IZZ 0.75 IYZ 0.0 IT 1.0 IKE 1 GP 3 CODE 0 0 0 0 1 1 0 0 0 0 0 0 
+----------------------------------------------------FLUID ELEMENTS
+------------------------------------------------------ALE ELEMENTS
+---------------------------------------------------------MATERIALS
+MAT       1 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 0.0
+------------------------------------------------------CONTROL NODE
+-------------------------------------------------------LOAD CURVES
+------------------------------------------------------------CURVE1
+------------------------------------------------------------CURVE2
+------------------------------------------------------------CURVE3
+------------------------------------------------------------CURVE4
+------------------------------------------------------------CURVE5
+---------------------------------------------------------------END
+// END

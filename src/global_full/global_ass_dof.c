@@ -67,6 +67,12 @@ for (j=0; j<actfield->dis[0].numele; j++)
       }
       #endif /*D_SHELL9*/
       break;
+   case el_beam3:
+      for (k=0; k<actele->numnp; k++)
+      {
+	 if (actele->node[k]->numdf < 6) actele->node[k]->numdf=6;
+      }
+      break; 
    case el_brick1:
       for (k=0; k<actele->numnp; k++)
       {
@@ -88,6 +94,7 @@ for (j=0; j<actfield->dis[0].numele; j++)
    case el_fluid3:
       for (k=0; k<actele->numnp; k++)
       {
+
 	 if (actele->node[k]->numdf < 4) actele->node[k]->numdf=4;
       }
       break;

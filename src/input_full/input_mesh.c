@@ -15,6 +15,7 @@
 #include "../ale3/ale3.h"
 #include "../ale2/ale2.h"
 #include "../axishell/axishell.h"
+#include "../beam3/beam3.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
@@ -443,6 +444,21 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    {
       structfield->dis[0].element[counter].eltyp=el_wall1;
       w1inp(&(structfield->dis[0].element[counter]));
+   }
+#endif
+/*------------------------------------------------ elementtyp is BEAM3  */
+   frchk("BEAM3",&ierr);
+   if (ierr==1)
+   {
+#ifndef D_BEAM3 
+      dserror("BEAM3 needed but not defined in Makefile");
+#endif
+   }
+#ifdef D_BEAM3 
+   if (ierr==1) 
+   {
+      structfield->dis[0].element[counter].eltyp=el_beam3;
+      b3inp(&(structfield->dis[0].element[counter]));
    }
 #endif
 /*------------------------------------------------ elementtyp is WALL  */

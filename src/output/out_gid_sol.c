@@ -4,6 +4,7 @@
 #include "../shell9/shell9.h"
 #include "../wall1/wall1.h"
 #include "../brick1/brick1.h"
+#include "../beam3/beam3.h"
 #include "../ale2/ale2.h"
 #include "../ale3/ale3.h"
 #include "../axishell/axishell.h"
@@ -118,10 +119,14 @@ for (i=0; i<genprob.numfld; i++)
    actgid->is_ale_tri_3 = 0;
    actgid->is_ale_111   = 0;
    actgid->is_ale_222   = 0;
-   actgid->is_ale_tet_1 = 0;
-   actgid->is_ale_tet_4 = 0;
    actgid->is_wall1_22  = 0;
    actgid->is_wall1_33  = 0;
+   actgid->is_beam3_21  = 0;
+   actgid->is_beam3_22  = 0;
+   actgid->is_beam3_32  = 0;
+   actgid->is_beam3_33  = 0;
+   actgid->is_ale_tet_1 = 0;
+   actgid->is_ale_tet_4 = 0;
    actgid->is_axishell  = 0;
    /*---------------------------- check for different types of elements */
    for (j=0; j<actfield->dis[0].numele; j++)
@@ -298,6 +303,39 @@ for (i=0; i<genprob.numfld; i++)
          }
       break;
 #endif /*D_WALL1*/
+#ifdef D_BEAM3
+/*---------------------------------------------------------fh 10/02----*/
+      case el_beam3:    
+         if (actele->numnp==2)
+	 {
+	    if (actele->e.b3->nGP[0]==1) 
+	    {
+	       actgid->is_beam3_21 = 1;
+	       actgid->beam3_21_name  = "beam3_21";
+	    }
+	    if (actele->e.b3->nGP[0]==2) 
+	    {
+	       actgid->is_beam3_22 = 1;
+	       actgid->beam3_22_name  = "beam3_22";
+	    }
+	 }
+	 if (actele->numnp==3)
+	 {
+	    if (actele->e.b3->nGP[0]==2) 
+	    {
+	       actgid->is_beam3_32 = 1;
+	       actgid->beam3_32_name  = "beam3_32";
+	    }
+	    if (actele->e.b3->nGP[0]==3) 
+	    {
+	       actgid->is_beam3_33 = 1;
+	       actgid->beam3_33_name  = "beam3_33";
+	    }
+	 }	  	  
+      break;
+
+#endif /*D_BEAM3*/
+
 /*---------------------------------------------------------fh 06/02----*/
 #ifdef D_AXISHELL
       case el_axishell:    
@@ -621,6 +659,60 @@ for (i=0; i<genprob.numfld; i++)
    fprintf(out,"NATURAL COORDINATES: Internal\n");
    fprintf(out,"END GAUSSPOINTS\n");
    }
+#ifdef D_BEAM3
+   if (actgid->is_beam3_21)
+   {
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s BEAM3 1 GP\n",actgid->fieldname);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Linear %c%s%c\n",
+                                                             sign,actgid->beam3_21_name,sign,
+							     sign,actgid->beam3_21_name,sign);
+   fprintf(out,"NUMBER OF GAUSS POINTS: 1\n");
+   fprintf(out,"NODES NOT INCLUDED\n");
+   fprintf(out,"NATURAL COORDINATES: Internal\n");
+   fprintf(out,"END GAUSSPOINTS\n");
+   }
+   if (actgid->is_beam3_22)
+   {
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s BEAM3 2 GP\n",actgid->fieldname);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Linear %c%s%c\n",
+                                                             sign,actgid->beam3_22_name,sign,
+							     sign,actgid->beam3_22_name,sign);
+   fprintf(out,"NUMBER OF GAUSS POINTS: 2\n");
+   fprintf(out,"NODES NOT INCLUDED\n");
+   fprintf(out,"NATURAL COORDINATES: Internal\n");
+   fprintf(out,"END GAUSSPOINTS\n");
+   }
+   if (actgid->is_beam3_32)
+   {
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s BEAM3 2 GP\n",actgid->fieldname);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Linear %c%s%c\n",
+                                                             sign,actgid->beam3_32_name,sign,
+							     sign,actgid->beam3_32_name,sign);
+   fprintf(out,"NUMBER OF GAUSS POINTS: 2\n");
+   fprintf(out,"NODES NOT INCLUDED\n");
+   fprintf(out,"NATURAL COORDINATES: Internal\n");
+   fprintf(out,"END GAUSSPOINTS\n");
+   }
+   if (actgid->is_beam3_33)
+   {
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s BEAM3 3 GP\n",actgid->fieldname);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Linear %c%s%c\n",
+                                                             sign,actgid->beam3_33_name,sign,
+							     sign,actgid->beam3_33_name,sign);
+   fprintf(out,"NUMBER OF GAUSS POINTS: 3\n");
+   fprintf(out,"NODES NOT INCLUDED\n");
+   fprintf(out,"NATURAL COORDINATES: Internal\n");
+   fprintf(out,"END GAUSSPOINTS\n");
+   }   
+#endif /*D_BEAM3*/
    /* ---------------------------------------------------------------- */
    if (actgid->is_axishell)
    {
@@ -1114,6 +1206,85 @@ if (actgid->is_wall1_33)
    }
    fprintf(out,"END VALUES\n");
 }
+
+#ifdef D_BEAM3
+if (actgid->is_beam3_21)
+{
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# RESULT Domains on MESH %s\n",actgid->beam3_21_name);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"RESULT %cDomains%c %cpcarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+                                                                               sign,actgid->beam3_21_name,sign);
+   fprintf(out,"VALUES\n");
+   for (i=0; i<actfield->dis[0].numele; i++)
+   {
+      actele = &(actfield->dis[0].element[i]);
+      if (actele->eltyp != el_beam3) continue;
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
+      for (j=1; j<4; j++)
+      fprintf(out,"            %18.5E\n",(double)actele->proc); 
+   }
+   fprintf(out,"END VALUES\n");
+}
+
+
+if (actgid->is_beam3_22)
+{
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# RESULT Domains on MESH %s\n",actgid->beam3_22_name);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"RESULT %cDomains%c %cpcarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+                                                                               sign,actgid->beam3_22_name,sign);
+   fprintf(out,"VALUES\n");
+   for (i=0; i<actfield->dis[0].numele; i++)
+   {
+      actele = &(actfield->dis[0].element[i]);
+      if (actele->eltyp != el_beam3) continue;
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
+      for (j=1; j<9; j++)
+      fprintf(out,"            %18.5E\n",(double)actele->proc); 
+   }
+   fprintf(out,"END VALUES\n");
+}
+if (actgid->is_beam3_32)
+{
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# RESULT Domains on MESH %s\n",actgid->beam3_32_name);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"RESULT %cDomains%c %cpcarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+                                                                               sign,actgid->beam3_32_name,sign);
+   fprintf(out,"VALUES\n");
+   for (i=0; i<actfield->dis[0].numele; i++)
+   {
+      actele = &(actfield->dis[0].element[i]);
+      if (actele->eltyp != el_beam3) continue;
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
+      for (j=1; j<4; j++)
+      fprintf(out,"            %18.5E\n",(double)actele->proc); 
+   }
+   fprintf(out,"END VALUES\n");
+}
+
+
+if (actgid->is_beam3_22)
+{
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# RESULT Domains on MESH %s\n",actgid->beam3_33_name);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"RESULT %cDomains%c %cpcarat%c 0 SCALAR ONGAUSSPOINTS %c%s%c\n",sign,sign,sign,sign,
+                                                                               sign,actgid->beam3_33_name,sign);
+   fprintf(out,"VALUES\n");
+   for (i=0; i<actfield->dis[0].numele; i++)
+   {
+      actele = &(actfield->dis[0].element[i]);
+      if (actele->eltyp != el_beam3) continue;
+      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
+      for (j=1; j<9; j++)
+      fprintf(out,"            %18.5E\n",(double)actele->proc); 
+   }
+   fprintf(out,"END VALUES\n");
+}
+#endif
 /*----------------------------------------------------------------------*/
 fflush(out);
 #ifdef DEBUG 
@@ -2114,6 +2285,222 @@ if (strncmp(string,"stress",stringlenght)==0)
     dserror("stress output for 4-noded ale not yet impl.");
    }
 #endif
+#ifdef D_BEAM3
+   if (actgid->is_beam3_21)
+   {
+      ngauss=1;
+      resulttype        = "MATRIX";
+      resultplace       = "ONGAUSSPOINTS";
+      gpset             = actgid->beam3_21_name;
+      rangetable        = actgid->standardrangetable;
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"# RESULT beam3_forces on FIELD %s\n",actgid->fieldname);
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"RESULT %cbeam3_forces%c %cpcarat%c %d %s %s %c%s%c\n",
+                                                             sign,sign,
+                                                             sign,sign,
+                                                             step,
+                                                             resulttype,
+                                                             resultplace,
+                                                             sign,gpset,sign
+                                                             );
+      fprintf(out,"COMPONENTNAMES %cN-x%c,%cV-y%c,%cV-z%c,%cM-x%c,%cM-y%c,%cM-z%c\n",
+             sign,sign,
+	     sign,sign,
+	     sign,sign,
+	     sign,sign,
+	     sign,sign,
+	     sign,sign);
+      fprintf(out,"VALUES\n");
+      for (i=0; i<actfield->dis[0].numele; i++)
+      {
+         actele = &(actfield->dis[0].element[i]);
+         if (actele->eltyp != el_beam3 ) continue;
+         stress=actele->e.b3->force_GP.a.d3[place];
+	 fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                             actele->Id+1,
+			     stress[0][0],
+			     stress[1][0],
+			     stress[2][0],
+			     stress[3][0],
+			     stress[4][0],
+			     stress[5][0]
+			     );      
+      }
+      fprintf(out,"END VALUES\n");
+   }
+   
+   if (actgid->is_beam3_22)
+   {
+      ngauss=2;
+      resulttype        = "MATRIX";
+      resultplace       = "ONGAUSSPOINTS";
+      gpset             = actgid->beam3_22_name;
+      rangetable        = actgid->standardrangetable;
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"# RESULT beam3_forces on FIELD %s\n",actgid->fieldname);
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"RESULT %cbeam3_forces%c %cpcarat%c %d %s %s %c%s%c\n",
+                                                             sign,sign,
+                                                             sign,sign,
+                                                             step,
+                                                             resulttype,
+                                                             resultplace,
+                                                             sign,gpset,sign
+                                                             );
+      fprintf(out,"COMPONENTNAMES %cN-x%c,%cV-y%c,%cV-z%c,%cM-x%c,%cM-y%c,%cM-z%c\n",
+             sign,sign,
+	     sign,sign,
+	     sign,sign,
+	     sign,sign,
+	     sign,sign,
+	     sign,sign);
+      fprintf(out,"VALUES\n");
+      for (i=0; i<actfield->dis[0].numele; i++)
+      {
+         actele = &(actfield->dis[0].element[i]);
+         if (actele->eltyp != el_beam3 ) continue;
+         stress=actele->e.b3->force_GP.a.d3[place];
+	 fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                             actele->Id+1,
+			     stress[0][0],
+			     stress[1][0],
+			     stress[2][0],
+			     stress[3][0],
+			     stress[4][0],
+			     stress[5][0]
+			     );
+	 fprintf(out,"     %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                             actele->Id+1,
+			     stress[0][1],
+			     stress[1][1],
+			     stress[2][1],
+			     stress[3][1],
+			     stress[4][1],
+			     stress[5][1]
+			     );	 		     
+      }
+      fprintf(out,"END VALUES\n");
+      
+   }
+
+   if (actgid->is_beam3_32)
+   {
+      ngauss=2;
+      resulttype        = "MATRIX";
+      resultplace       = "ONGAUSSPOINTS";
+      gpset             = actgid->beam3_32_name;
+      rangetable        = actgid->standardrangetable;
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"# RESULT beam3_forces on FIELD %s\n",actgid->fieldname);
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"RESULT %cbeam3_forces%c %cpcarat%c %d %s %s %c%s%c\n",
+                                                             sign,sign,
+                                                             sign,sign,
+                                                             step,
+                                                             resulttype,
+                                                             resultplace,
+                                                             sign,gpset,sign
+                                                             );
+      fprintf(out,"COMPONENTNAMES %cN-x%c,%cV-y%c,%cV-z%c,%cM-x%c,%cM-y%c,%cM-z%c\n",
+             sign,sign,
+	     sign,sign,
+	     sign,sign,
+	     sign,sign,
+	     sign,sign,
+	     sign,sign);
+      fprintf(out,"VALUES\n");
+      for (i=0; i<actfield->dis[0].numele; i++)
+      {
+         actele = &(actfield->dis[0].element[i]);
+         if (actele->eltyp != el_beam3 ) continue;
+         stress=actele->e.b3->force_GP.a.d3[place];
+	 fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                             actele->Id+1,
+			     stress[0][0],
+			     stress[1][0],
+			     stress[2][0],
+			     stress[3][0],
+			     stress[4][0],
+			     stress[5][0]
+			     );      
+	 fprintf(out,"     %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                             actele->Id+1,
+			     stress[0][1],
+			     stress[1][1],
+			     stress[2][1],
+			     stress[3][1],
+			     stress[4][1],
+			     stress[5][1]
+			     );      
+      }
+      fprintf(out,"END VALUES\n");
+   }
+   
+   if (actgid->is_beam3_33)
+   {
+      ngauss=2;
+      resulttype        = "MATRIX";
+      resultplace       = "ONGAUSSPOINTS";
+      gpset             = actgid->beam3_33_name;
+      rangetable        = actgid->standardrangetable;
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"# RESULT beam3_forces on FIELD %s\n",actgid->fieldname);
+      fprintf(out,"#-------------------------------------------------------------------------------\n");
+      fprintf(out,"RESULT %cbeam3_forces%c %cpcarat%c %d %s %s %c%s%c\n",
+                                                             sign,sign,
+                                                             sign,sign,
+                                                             step,
+                                                             resulttype,
+                                                             resultplace,
+                                                             sign,gpset,sign
+                                                             );
+      fprintf(out,"COMPONENTNAMES %cN-x%c,%cV-y%c,%cV-z%c,%cM-x%c,%cM-y%c,%cM-z%c\n",
+             sign,sign,
+	     sign,sign,
+	     sign,sign,
+	     sign,sign,
+	     sign,sign,
+	     sign,sign);
+      fprintf(out,"VALUES\n");
+      for (i=0; i<actfield->dis[0].numele; i++)
+      {
+         actele = &(actfield->dis[0].element[i]);
+         if (actele->eltyp != el_beam3 ) continue;
+         stress=actele->e.b3->force_GP.a.d3[place];
+	 fprintf(out," %6d %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                             actele->Id+1,
+			     stress[0][0],
+			     stress[1][0],
+			     stress[2][0],
+			     stress[3][0],
+			     stress[4][0],
+			     stress[5][0]
+			     );
+	 fprintf(out,"     %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                             actele->Id+1,
+			     stress[0][1],
+			     stress[1][1],
+			     stress[2][1],
+			     stress[3][1],
+			     stress[4][1],
+			     stress[5][1]
+			     );	 		     
+	 fprintf(out,"     %18.5E %18.5E %18.5E %18.5E %18.5E %18.5E \n",
+                             actele->Id+1,
+			     stress[0][2],
+			     stress[1][2],
+			     stress[2][2],
+			     stress[3][2],
+			     stress[4][2],
+			     stress[5][2]
+			     );	 		     
+      }
+      fprintf(out,"END VALUES\n");
+      
+   }
+#endif
+
 } /* end of (strncmp(string,"stress",stringlenght)==0) */
 /*========================================= result type is velocity */
 if (strncmp(string,"velocity",stringlenght)==0)

@@ -5,6 +5,7 @@
 #include "../shell8/shell8.h"
 #include "../shell9/shell9.h"
 #include "../wall1/wall1.h"
+#include "../beam3/beam3.h"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -249,9 +250,15 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    case el_ale3:
        dserror("Restart for ale not yet impl.");
    break;
+   case el_beam3:
+      container->handsize = 5;
+      container->handles  = ele_handles[i];
+      beam3(actfield,actpart,actintra,actele,
+            NULL,NULL,NULL,action,container);     
+   break;
    case el_none:
       dserror("Typ of element unknown");
-   break;
+   break;   
    default:
       dserror("Typ of element unknown");
    }/* end of calling elements */
@@ -803,9 +810,15 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    case el_ale3:
        dserror("Restart for ale not yet impl.");
    break;
+   case el_beam3:
+       container->handsize = 5;
+       container->handles = ele_handles[i];
+       beam3(actfield,actpart,actintra,actele,
+             NULL,NULL,NULL,action,container);       
+   break;
    case el_none:
       dserror("Typ of element unknown");
-   break;
+   break;   
    default:
       dserror("Typ of element unknown");
    }/* end of calling elements */
@@ -1074,6 +1087,13 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    break;
    case el_ale3:
        dserror("Restart for ale not yet impl.");
+   break;
+   case el_beam3:
+       container->kstep = 0;
+       container->handsize = 5;
+       container->handles = ele_handles[i];
+       beam3(actfield,actpart,actintra,actele,
+             NULL,NULL,NULL,action,container);       
    break;
    case el_none:
       dserror("Typ of element unknown");

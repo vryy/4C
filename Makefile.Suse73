@@ -15,6 +15,7 @@ SRC       =  /home/neumann/work/wdir/ccarat_saxi/
 # -DD_ALE       defines element ale
 # -DD_WALL1     defines element wall1
 # -DD_OPTIM      defines optimization
+# -DD_BEAM3      defines element beam3
 # -DS8CONTACT    defines contact algorithms for shell8 contact
 # -DD_CONTACT    defines contact algos 2D (with wall element)
 # -DD_AXISHELL   defines axishell element
@@ -51,7 +52,7 @@ PROGRAM_NAME  = cca_seq_linux.
 FXX      = g77
 CCX	 = gcc
 LDX      = $(CC)
-PFL       =  -DSUSE73 -DD_BRICK1 -DD_FLUID -DD_FLUID2 -DD_FLUID3 -DD_SHELL8 -DD_ALE -DD_WALL1 -DAZTEC_PACKAGE -DD_AXISHELL 
+PFL       =  -DSUSE73 -DD_BRICK1 -DD_FLUID -DD_FLUID2 -DD_FLUID3 -DD_SHELL8 -DD_BEAM3 -DD_ALE -DD_WALL1 -DAZTEC_PACKAGE -DD_AXISHELL 
 AZTEC      = -laztec_seq
 SPOOLES  = -lspooles
 #--------------------------------------------------------------------
@@ -63,7 +64,7 @@ SPOOLES  = -lspooles
 #FXX      = /usr/local/mpich-1.2.5/bin/mpif77
 #CCX	 = /usr/local/mpich-1.2.5/bin/mpicc
 #LDX      = /usr/local/mpich-1.2.5/bin/mpicc
-#PFL      =  -DPARALLEL -DSUSE73 -DD_BRICK1 -DD_FLUID -DD_FLUID2 -DD_FLUID2_PRO -DD_FLUID3 -DD_SHELL8 \
+#PFL      =  -DPARALLEL -DSUSE73 -DD_BRICK1 -DD_FLUID -DD_FLUID2 -DD_FLUID2_PRO -DD_FLUID3 -DD_BEAM3 -DD_SHELL8 \
 #	    -DD_SHELL9 -DD_ALE -DD_WALL1 -DD_OPTIM -DS8CONTACT -DD_CONTACT -DAZTEC_PACKAGE -DSPOOLES_PACKAGE -DD_AXISHELL 
 #AZTEC      = -laztec_par
 #SPOOLES  = -lspoolesMPI -lspooles
@@ -205,6 +206,11 @@ $(OBJS17):
 		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $(*F).c $<
 		@echo "MainMake is back."
 #
+$(OBJS18):     
+		@echo "Making $@ ..."
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $(*F).c $<
+		@echo "MainMake is back."
+#
 $(OBJS_OPT):     
 		@echo "Making $@ ..."
 		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c $(*F).c $<
@@ -227,6 +233,6 @@ $(OBJS13):
 clean:
 	rm -rf  $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) \
                 $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) \
-                $(OBJS13) $(OBJS14) $(OBJS15) $(OBJS16) $(OBJS17) $(OBJS_OPT) \
+                $(OBJS13) $(OBJS14) $(OBJS15) $(OBJS16) $(OBJS17) $(OBJS18) $(OBJS_OPT) \
 		$(OBJS_AXISHELL)
 

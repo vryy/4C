@@ -9,6 +9,9 @@
 #ifdef D_WALL1
   #include "../wall1/wall1.h"
 #endif /*D_WALL1*/
+#ifdef D_BEAM3
+  #include "../beam3/beam3.h"
+#endif /*D_BEAM3*/
 #ifdef D_BRICK1
   #include "../brick1/brick1.h"
 #endif /*D_BRICK1*/
@@ -232,6 +235,9 @@ fprintf(out,"ELE glob_Id %6d loc_Id %6d ALE3\n",actele->Id,actele->Id_loc);
 break;
 case el_ale2:
 fprintf(out,"ELE glob_Id %6d loc_Id %6d ALE2\n",actele->Id,actele->Id_loc);
+break;
+case el_beam3:
+fprintf(out,"ELE glob_Id %6d loc_Id %6d BEAM3\n",actele->Id,actele->Id_loc);
 break;
 case el_axishell:
 fprintf(out,"ELE glob_Id %6d loc_Id %6d AXISHELL\n",actele->Id,actele->Id_loc);
@@ -776,6 +782,28 @@ for (j=0; j<actfield->dis[0].numele; j++)
 #endif /*D_BRICK1*/   
    break;
    
+   case el_beam3:
+#ifdef D_BEAM3
+       ngauss = actele->e.b3->nGP[0];          
+       fprintf(out,"________________________________________________________________________________\n");
+       fprintf(out,"Element glob_Id %d loc_Id %d                BEAM3\n",actele->Id,actele->Id_loc);
+       fprintf(out,"\n");
+       fprintf(out,"Gaussian         Nx           Vy           Vz           Mx           My           Mz\n");
+       for (i=0; i<ngauss; i++)
+       {
+       fprintf(out,"Gauss %d       %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E \n",
+       i,
+       actele->e.b3->force_GP.a.d3[place][0][i],
+       actele->e.b3->force_GP.a.d3[place][1][i],
+       actele->e.b3->force_GP.a.d3[place][2][i],
+       actele->e.b3->force_GP.a.d3[place][3][i],
+       actele->e.b3->force_GP.a.d3[place][4][i],
+       actele->e.b3->force_GP.a.d3[place][5][i]
+       );
+       }                    
+#endif /*D_BEAM3*/   
+   break;
+      
    default:
       dserror("unknown type of element");
    break;
@@ -835,6 +863,28 @@ for (j=0; j<actfield->dis[0].numele; j++)
    #endif /*D_WALL1*/                       
    break;
    
+   case el_beam3:
+#ifdef D_BEAM3          
+       numnp = actele->numnp;
+       fprintf(out,"________________________________________________________________________________\n");
+       fprintf(out,"Element glob_Id %d loc_Id %d                BEAM3\n",actele->Id,actele->Id_loc);
+       fprintf(out,"\n");
+       fprintf(out,"Nodal            Nx           Vy           Vz           Mx           My           Mz\n");
+       for (i=0; i<numnp; i++)
+       {
+       fprintf(out,"Node %d  IEL %d %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E %12.3#E \n",
+       actele->node[i]->Id,
+       i,
+       actele->e.b3->force_ND.a.d3[place][0][i],
+       actele->e.b3->force_ND.a.d3[place][1][i],
+       actele->e.b3->force_ND.a.d3[place][2][i],
+       actele->e.b3->force_ND.a.d3[place][3][i],
+       actele->e.b3->force_ND.a.d3[place][4][i],
+       actele->e.b3->force_ND.a.d3[place][5][i]
+       );
+       }                    
+#endif /*D_BEAM3*/
+   break;      
    }
 }
 

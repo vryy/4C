@@ -369,6 +369,23 @@ OBJS17       = src/shell9/s9_main.o \
                 src/shell9/s9_tvmr.o \
                 src/shell9/s9_vthv.o \
                 src/shell9/s9_xint.o 
+#                beam3
+OBJS18        = src/beam3/b3_bop.o \
+                src/beam3/b3_cal_ele.o \
+                src/beam3/b3_cal_fext.o \
+                src/beam3/b3_cal_force.o \
+                src/beam3/b3_cal_stiff.o \
+                src/beam3/b3_call_mat.o \
+                src/beam3/b3_dirich.o \
+                src/beam3/b3_funcderiv.o \
+                src/beam3/b3_init.o \
+                src/beam3/b3_inpele.o \
+                src/beam3/b3_intg.o \
+                src/beam3/b3_jaco.o \
+                src/beam3/b3_main.o \
+                src/beam3/b3_mat_linel.o \
+                src/beam3/b3_mat_plast_mises.o \
+                src/beam3/b3_restart.o 
 #                optimization
 OBJS_OPT      = src/optimization/opt_cal_main.o \
                 src/optimization/input_optdata.o \

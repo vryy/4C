@@ -34,6 +34,7 @@ include ./Makefile.personal_path
 # -DD_WALL1      defines element wall1
 # -DD_CONTACT    defines contact algos 2D (with wall element)
 # -DD_OPTIM      defines optimization
+# -DD_BEAM3      defines element beam3
 # -DD_AXISHELL   defines axishell element
 #
 # -DDEBUG     defines debug mode: routine and array tracing 
@@ -69,7 +70,7 @@ FXX	= f77
 CCX	= cc
 LDX	= cc
 PFL	= -DHPUX10 -DD_FSI -DD_FLUID -DD_OPTIM -DS8CONTACT -DD_CONTACT  \
-	  -DD_FLUID2 -DD_FLUID3 -DD_WALL1 -DD_SHELL9 -DD_BRICK1 -DD_SHELL8 -DD_ALE \
+	  -DD_FLUID2 -DD_FLUID3 -DD_WALL1 -DD_BEAM3 -DD_SHELL9 -DD_BRICK1 -DD_SHELL8 -DD_ALE \
 	  -DAZTEC_PACKAGE -DUMFPACK
 AZTEC	= -laztec_seriell21
 UMFPACK = -lumfpack40_hpux10_32
@@ -83,7 +84,7 @@ SPOOLES =
 #CCX	 = /opt/mpi/bin/mpicc
 #LDX	 = /opt/mpi/bin/mpicc
 #PFL	 = -DPARALLEL -DHPUX10 -DD_FLUID -DD_FSI -DD_OPTIM -DS8CONTACT -DD_CONTACT  \
-#	   -DD_FLUID2 -DD_FLUID3 -DD_WALL1 -DD_SHELL9 -DD_BRICK1 -DD_SHELL8 -DD_ALE \
+#	   -DD_FLUID2 -DD_FLUID3 -DD_WALL1 -DD_BEAM3 -DD_SHELL9 -DD_BRICK1 -DD_SHELL8 -DD_ALE \
 #	   -DAZTEC_PACKAGE -DUMFPACK -DSPOOLES_PACKAGE 
 #AZTEC   = -laztec_par21
 #UMFPACK = -lumfpack40_hpux10_32
@@ -98,13 +99,13 @@ RM	 = /bin/rm -f
 # switch between fast and debug compilation by uncommenting 
 # the approbiate flags:
 #------------------------------------------------ this is debug-32bit
-PROGRAMM      =  $(PROGRAM_NAME)debg
-CFLAGS        = -D__HP__ +w1 +e -Aa -Ae  -g ${PFL} -DDEBUG
-FFLAGS        = -g -I/opt/mpi/include/
+#PROGRAMM      =  $(PROGRAM_NAME)debg
+#CFLAGS        = -D__HP__ +w1 +e -Aa -Ae  -g ${PFL} -DDEBUG
+#FFLAGS        = -g -I/opt/mpi/include/
 #------------------------------------------------- this is fast-32bit
-#PROGRAMM      =  $(PROGRAM_NAME)fast
-#CFLAGS        = -D__HP__  +w1 +e -Aa -Ae -O +Onolimit  ${PFL}
-#FFLAGS        = +O2 +Onolimit -I/opt/mpi/include/
+PROGRAMM      =  $(PROGRAM_NAME)fast
+CFLAGS        = -D__HP__  +w1 +e -Aa -Ae -O +Onolimit  ${PFL}
+FFLAGS        = +O2 +Onolimit -I/opt/mpi/include/
 #--------------------------------------------------------------------
 LDFLAGS	 = -L/usr/lib -L/opt/fortran/lib -lcl -lc -lM -lm 
 INCLUDES = -I/opt/mpi/include/ \
@@ -172,11 +173,11 @@ PROGRAM       = $(PROGRAMM)
 #
 $(PROGRAM):     $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) $(OBJS7) $(OBJS8) \
                 $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) $(OBJS14) $(OBJS15) \
-                $(OBJS16) $(OBJS17) $(OBJS_OPT) $(OBJS_AXISHELL)
+                $(OBJS16) $(OBJS17) $(OBJS18) $(OBJS_OPT) $(OBJS_AXISHELL)
 		@echo "Linking $(PROGRAM) ..."
 		@$(LD) $(LDFLAGS) $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) \
                 $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) $(OBJS13) $(OBJS14) \
-                $(OBJS15) $(OBJS16) $(OBJS17) $(OBJS_OPT) $(OBJS_AXISHELL) \
+                $(OBJS15) $(OBJS16) $(OBJS17) $(OBJS18) $(OBJS_OPT) $(OBJS_AXISHELL) \
 		$(LIBS) $(INCLUDES) -o $(PROGRAM)
 		@echo "done"
 
@@ -261,6 +262,11 @@ $(OBJS17):
 		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
 		@echo "MainMake is back."
 #
+$(OBJS18):     
+		@echo "Making $@ ..."
+		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
+		@echo "MainMake is back."
+#
 $(OBJS_OPT):     
 		@echo "Making $@ ..."
 		cd ${SRC}; cd ${@D}; $(CC) $(CFLAGS) $(INCLUDES) -c  ${<F}
@@ -287,6 +293,6 @@ $(OBJS13):
 clean:
 	rm -rf  $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) \
                 $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10) $(OBJS11) $(OBJS12) \
-                $(OBJS13) $(OBJS14) $(OBJS15) $(OBJS16) $(OBJS17) \
-		$(OBJS_OPT) $(OBJS_AXISHELL) 
+                $(OBJS13) $(OBJS14) $(OBJS15) $(OBJS16) $(OBJS17) $(OBJS18) \
+		$(OBJS_OPT) $(OBJS_AXISHELL)
 $

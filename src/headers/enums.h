@@ -67,6 +67,7 @@ typedef enum _ELEMENT_TYP
                        el_shell9,      /* multi layer shell element */
                        el_brick1,      /* structural brick element */
                        el_wall1,       /* 2D plane stress - plane strain element */
+                       el_beam3,       /* structural 3D-beam element */
                        el_fluid2,      /* 2D fluid element */
                        el_fluid2_pro,  /* 2D fluid element */
                        el_fluid2_tu,   /* 2D fluid element for turbulence */
