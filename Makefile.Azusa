@@ -49,37 +49,35 @@ LAPACK       =  /opt/intel/mkl/lib/64
 #
 CC	 = /opt/NECmpi/bin/mpicc
 F77      = /opt/NECmpi/bin/mpif90
-LD       = $(CC)
+LD       = $(F77)
 RM	 = /bin/rm -f
 #---------------------------------------------------------------
 #                                            this is debug 64bit
 #---------------------------------------------------------------
-#CFLAGS   = -g -ansi $(PFL) -DDEBUG
+#CFLAGS   = -g -ansi -Wall $(PFL) -DDEBUG
 #FFLAGS   = -g 
 #LDFLAGS  = -g 
 #LDOPTS   = -g 
 #LIBPATHS = -L$(COMPILER)/lib -L$(LAPACK) -L$(METISDIR) -L$(SPOOLESDIR) -L$(AZTECDIR)
-#LIBS	  = $(LIBPATHS) -lF90 -lIEPCF90 -lc -lm -lspooles_Ita1_64 -lmetis_azusa \
-#	    $(LAPACK)/libguide.so $(LAPACK)/libmkl_lapack.a $(LAPACK)/libmkl_itp.a \
-#	    -lmpi
+#LIBS	 = $(LIBPATHS) -lF90 -lIEPCF90 -lc -lm -lspooles_Ita1_64 -lmetis_azusa \
+#	   $(LAPACK)/libguide.so $(LAPACK)/libmkl_lapack.a $(LAPACK)/libmkl_itp.a -lmpi
 #PROGRAM  = cca_ita1_debg.exe
 #----------------------------------------------------------------
 #                                             this is fast 64 bit
 #----------------------------------------------------------------
-CFLAGS   = -O4 -ansi $(PFL) 
-FFLAGS   = -O 
+CFLAGS   = -O3  -parallel -tpp1  -ansi  $(PFL) 
+FFLAGS   = -O3  -parallel -tpp1 
 LDFLAGS  = -O 
 LDOPTS   =  
 LIBPATHS = -L$(COMPILER)/lib -L$(LAPACK) -L$(METISDIR) -L$(SPOOLESDIR) -L$(AZTECDIR)
 LIBS	 = $(LIBPATHS) -lF90 -lIEPCF90 -lc -lm -lspooles_Ita1_64 -lmetis_azusa \
-	   $(LAPACK)/libguide.so $(LAPACK)/libmkl_lapack.a $(LAPACK)/libmkl_itp.a \
-	   -lmpi
+	   $(LAPACK)/libguide.so $(LAPACK)/libmkl_lapack.a $(LAPACK)/libmkl_itp.a -lmpi
 PROGRAM  = cca_ita1_fast.exe
 #----------------------------------------------------------------
 #
 #
 #
-INCLUDES  =  -I$(COMPILER)/include/ 
+INCLUDES  =  -I/opt/NECcomp/glibc-2.2.4/include/ 
 #
 #----------------------- binaries -----------------------------------
 include ./Makefile.objects
