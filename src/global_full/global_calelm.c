@@ -228,12 +228,14 @@ for (i=0; i<actpart->pdis[kk].numele; i++)
             action, container);
    break;
    case el_fluid2: 
+#ifdef D_FLUID
       if(container->turbu==2 || container->turbu==3) actele2 = actpart->pdis[1].element[i];
       else                                           actele2 = NULL;
       fluid2(actpart,actintra,actele,actele2,
              &estif_global,&emass_global,
              &etforce_global,&eiforce_global,&edforce_global,
 	       action,&hasdirich,&hasext,container);
+#endif
    break;
    case el_fluid2_tu: 
       actele2 = actpart->pdis[0].element[i];

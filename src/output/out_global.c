@@ -981,9 +981,11 @@ for (j=0; j<actfield->dis[0].numnp; j++)
    {
     if(actnode2->sol_increment.a.da[3][0] == 0.0 && actnode2->sol_increment.a.da[3][1] == 0.0)
     {
+#ifdef D_FLUID   
      fprintf(out,"COORD_X %20.3E C_F %20.7E",actnode2->x[0],actnode2->fluid_varia->c_f_shear);
      actnode2->fluid_varia->c_f_shear = ZERO;
      fprintf(out,"\n");
+#endif
     }
    }
 }

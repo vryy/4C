@@ -244,7 +244,9 @@ for (kk=0;kk<actfield->ndis;kk++)
 #endif             
 	    break;
 	    case 21:   
+#ifdef D_FLUID
 	       f2tu_ass_dof(actnode,&counter,0);
+#endif
           break;
 	    default:
                for (l=0; l<actnode->numdf; l++)
