@@ -80,6 +80,17 @@ extern struct _FIELD       *field;
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
 
+/*!----------------------------------------------------------------------
+\brief ranks and communicators
+
+<pre>                                                         m.gee 8/00
+This structure struct _PAR par; is defined in main_ccarat.c
+and the type is in partition.h                                                  
+</pre>
+
+*----------------------------------------------------------------------*/
+ extern struct _PAR   par; 
+
 /*---------------------------------------------------------------------*
  | monotoring informations                                  genk 01/03 |
  *---------------------------------------------------------------------*/
@@ -106,6 +117,9 @@ NODE *actnode;
 #ifdef DEBUG
 dstrc_enter("monitoring");
 #endif
+
+myrank = par.myrank;
+if (myrank>0) goto end;
 
 actmoni = &(moni[numf]);
 numnp   = actmoni->numnp;
