@@ -188,7 +188,8 @@ OBJS8	      = src/parallel/par_initmetis.o \
                 src/parallel/par_make_comm.o \
                 src/parallel/par_assignmesh.o
 #                brick1
-OBJS9	      = src/brick1/c1_bop.o \
+OBJS9	      = src/brick1/c1_out.o \
+                src/brick1/c1_bop.o \
                 src/brick1/c1_call_mat.o \
                 src/brick1/c1_call_stiff.o \
                 src/brick1/c1_funcderiv.o \
