@@ -67,6 +67,7 @@ DOUBLE          x3s;
 DOUBLE          hgt;                               /* element thickness */
 DOUBLE          det_dummy;
 INT             mlay,klay,num_mlay;
+DOUBLE          mlayhgt_dummy[10];
 INT             mod;
 
 static ARRAY    gkov_a;  static DOUBLE **gkov;
@@ -159,12 +160,12 @@ else if (e3 == 1.0) /*top surface of shell body = top of last kinematic layer*/
 }
 else dserror("wrong value for e3 in s9_jaco!");
 
-mlayhgt[klay] = 100.0;
+mlayhgt_dummy[klay] = 100.0;
 num_mlay   = 1;
 mlay       = 0;
 
 s9_tmtr(x,a3r,e3,gkov,gkon,gmkov,gmkon,&det_dummy,
-        funct,deriv,iel,akov,a3kvp,hgt,klayhgt,mlayhgt,
+        funct,deriv,iel,akov,a3kvp,hgt,klayhgt,mlayhgt_dummy,
         num_klay,num_mlay,klay,mlay,1.0);
 /*--------------------------------------------------------------- */
 xjm[0][0]=gkov[0][0];
