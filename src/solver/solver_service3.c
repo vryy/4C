@@ -87,9 +87,11 @@ return;
  | INT    arrayfrom (i) indize of the array, 0 = sol                    |
  |                                           1 = sol_increment          |
  |                                           2 = sol_residual           |
+ |                                           3 = sol_mf                 |
  | INT    arrayto   (i) indize of the array, 0 = sol                    |
  |                                           1 = sol_increment          |
  |                                           2 = sol_residual           |
+ |                                           3 = sol_mf                 |
  | INT    from    (i) row in ARRAY sol to be set to zero                | 
  *----------------------------------------------------------------------*/
 void solserv_sol_copy(FIELD *actfield, INT disnum, INT arrayfrom, INT arrayto, 

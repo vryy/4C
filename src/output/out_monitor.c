@@ -70,6 +70,8 @@ extern struct _MONITOR *moni;
 
 \param *actfield    FIELD   (i)     actual field   
 \param  numf        INT     (i)     number of field
+\param  time        DOUBLE  (i)     the actual time
+\param  init        INT     (i)     flag
 
 \return void                                                                             
 
