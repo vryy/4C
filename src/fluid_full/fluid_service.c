@@ -1283,12 +1283,12 @@ case fncc_no:
       for (j=0; j<actnode->numdf; j++) /* loop dofs */
       {
          dof = actnode->dof[j];
-#ifndef SOLVE_DIRICH
-         if (dof>=numeq_total) continue;
-#else
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
          if (actnode->gnode->dirich!=NULL &&
              actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
            continue;
+#else
+         if (dof>=numeq_total) continue;
 #endif
          actnode->sol_increment.a.da[place][j] = result[dof];
       } /* end of loop over dofs */
@@ -1312,12 +1312,12 @@ case fncc_Linf: /* L_infinity norm */
       for (j=0; j<actnode->numdf; j++) /* loop dofs and calculate the norms */
       {
          dof = actnode->dof[j];
-#ifndef SOLVE_DIRICH
-         if (dof>=numeq_total) continue;
-#else
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
          if (actnode->gnode->dirich!=NULL &&
              actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
            continue;
+#else
+         if (dof>=numeq_total) continue;
 #endif
          if (j==predof) /* pressure dof */
          {
@@ -1357,12 +1357,12 @@ case fncc_L1: /* L_1 norm */
       for (j=0; j<actnode->numdf; j++) /* loop dofs and calculate the norms */
       {
          dof = actnode->dof[j];
-#ifndef SOLVE_DIRICH
-         if (dof>=numeq_total) continue;
-#else
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
          if (actnode->gnode->dirich!=NULL &&
              actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
            continue;
+#else
+         if (dof>=numeq_total) continue;
 #endif
          if (j==predof) /* pressure dof */
          {
@@ -1402,12 +1402,12 @@ case fncc_L2: /* L_2 norm */
       for (j=0; j<actnode->numdf; j++) /* loop dofs and calculate the norms */
       {
          dof = actnode->dof[j];
-#ifndef SOLVE_DIRICH
-         if (dof>=numeq_total) continue;
-#else
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
          if (actnode->gnode->dirich!=NULL &&
              actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
            continue;
+#else
+         if (dof>=numeq_total) continue;
 #endif
          if (j==predof) /* pressure dof */
          {
@@ -1544,24 +1544,24 @@ case fnst_Linf: /* L_infinity norm */
       for (j=0;j<numvel;j++) /* loop vel-dofs */
       {
 	 actdof = actnode->dof[j];
-#ifndef SOLVE_DIRICH
-         if (actdof>=numeq_total) continue;
-#else
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
          if (actnode->gnode->dirich!=NULL &&
              actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
            continue;
+#else
+         if (actdof>=numeq_total) continue;
 #endif
          dvnorm = DMAX(dvnorm,FABS(actnode->sol_increment.a.da[ipos.velnp][j]  \
 	                          -actnode->sol_increment.a.da[ipos.veln][j]));
           vnorm = DMAX( vnorm,FABS(actnode->sol_increment.a.da[ipos.velnp][j]));
       } /* end of loop over vel-dofs */
       actdof = actnode->dof[predof];
-#ifndef SOLVE_DIRICH
-      if (actdof>=numeq_total) continue;
-#else
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
       if (actnode->gnode->dirich!=NULL &&
           actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
         continue;
+#else
+      if (actdof>=numeq_total) continue;
 #endif
       dpnorm = DMAX(dpnorm,FABS(actnode->sol_increment.a.da[ipos.velnp][predof]  \
 	                       -actnode->sol_increment.a.da[ipos.veln][predof]));
@@ -1577,24 +1577,24 @@ case fnst_L1: /* L_1 norm */
       for (j=0;j<numvel;j++) /* loop vel-dofs */
       {
 	 actdof = actnode->dof[j];
-#ifndef SOLVE_DIRICH
-         if (actdof>=numeq_total) continue;
-#else
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
          if (actnode->gnode->dirich!=NULL &&
              actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
            continue;
+#else
+         if (actdof>=numeq_total) continue;
 #endif
          dvnorm += FABS(actnode->sol_increment.a.da[ipos.velnp][j]  \
 	               -actnode->sol_increment.a.da[ipos.veln][j]);
           vnorm += FABS(actnode->sol_increment.a.da[ipos.velnp][j]);
       } /* end of loop over vel-dofs */
       actdof = actnode->dof[predof];
-#ifndef SOLVE_DIRICH
-      if (actdof>=numeq_total) continue;
-#else
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
       if (actnode->gnode->dirich!=NULL &&
           actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
         continue;
+#else
+      if (actdof>=numeq_total) continue;
 #endif
       dpnorm += FABS(actnode->sol_increment.a.da[ipos.velnp][predof]  \
 	            -actnode->sol_increment.a.da[ipos.veln][predof]);
@@ -1610,24 +1610,24 @@ case fnst_L2: /* L_2 norm */
       for (j=0;j<numvel;j++) /* loop vel-dofs */
       {
 	 actdof = actnode->dof[j];
-#ifndef SOLVE_DIRICH
-         if (actdof>=numeq_total) continue;
-#else
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
          if (actnode->gnode->dirich!=NULL &&
              actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
            continue;
+#else
+         if (actdof>=numeq_total) continue;
 #endif
          dvnorm += DSQR(actnode->sol_increment.a.da[ipos.velnp][j]  \
 	               -actnode->sol_increment.a.da[ipos.veln][j]);
           vnorm += DSQR(actnode->sol_increment.a.da[ipos.velnp][j]);
       } /* end of loop over vel-dofs */
       actdof = actnode->dof[predof];
-#ifndef SOLVE_DIRICH
-      if (actdof>=numeq_total) continue;
-#else
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
       if (actnode->gnode->dirich!=NULL &&
           actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
         continue;
+#else
+      if (actdof>=numeq_total) continue;
 #endif
       dpnorm += DSQR(actnode->sol_increment.a.da[ipos.velnp][predof]  \
 	            -actnode->sol_increment.a.da[ipos.veln][predof]);
@@ -2558,24 +2558,24 @@ void fluid_cal_error(
         for (j=0;j<numvel;j++) /* loop vel-dofs */
         {
           actdof = actnode->dof[j];
-#ifndef SOLVE_DIRICH
-          if (actdof>=numeq_total) continue;
-#else
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
           if (actnode->gnode->dirich!=NULL &&
               actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
             continue;
+#else
+          if (actdof>=numeq_total) continue;
 #endif
           dvinorm = DMAX(dvinorm,FABS(actnode->sol_increment.a.da[ipos.velnp][j] - u[j]));
           vinorm = DMAX( vinorm,FABS(u[j]));
         } /* end of loop over vel-dofs */
 
         actdof = actnode->dof[predof];
-#ifndef SOLVE_DIRICH
-        if (actdof>=numeq_total) continue;
-#else
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
         if (actnode->gnode->dirich!=NULL &&
             actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
           continue;
+#else
+        if (actdof>=numeq_total) continue;
 #endif
         dpinorm = DMAX(dpinorm,FABS(actnode->sol_increment.a.da[ipos.velnp][predof] - p));
         pinorm = DMAX( pinorm,FABS(p));
@@ -2585,24 +2585,24 @@ void fluid_cal_error(
         for (j=0;j<numvel;j++) /* loop vel-dofs */
         {
           actdof = actnode->dof[j];
-#ifndef SOLVE_DIRICH
-          if (actdof>=numeq_total) continue;
-#else
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
           if (actnode->gnode->dirich!=NULL &&
               actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
             continue;
+#else
+          if (actdof>=numeq_total) continue;
 #endif
           dv1norm += FABS(actnode->sol_increment.a.da[ipos.velnp][j] - u[j]);
           v1norm += FABS(u[j]);
         } /* end of loop over vel-dofs */
 
         actdof = actnode->dof[predof];
-#ifndef SOLVE_DIRICH
-        if (actdof>=numeq_total) continue;
-#else
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
         if (actnode->gnode->dirich!=NULL &&
             actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
           continue;
+#else
+        if (actdof>=numeq_total) continue;
 #endif
         dp1norm += FABS(actnode->sol_increment.a.da[ipos.velnp][predof] - p);
         p1norm += FABS(p);
@@ -2613,24 +2613,24 @@ void fluid_cal_error(
         for (j=0;j<numvel;j++) /* loop vel-dofs */
         {
           actdof = actnode->dof[j];
-#ifndef SOLVE_DIRICH
-          if (actdof>=numeq_total) continue;
-#else
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
           if (actnode->gnode->dirich!=NULL &&
               actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
             continue;
+#else
+          if (actdof>=numeq_total) continue;
 #endif
           dv2norm += pow(actnode->sol_increment.a.da[ipos.velnp][j] - u[j],2);
           v2norm += pow(u[j],2);
         } /* end of loop over vel-dofs */
 
         actdof = actnode->dof[predof];
-#ifndef SOLVE_DIRICH
-        if (actdof>=numeq_total) continue;
-#else
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
         if (actnode->gnode->dirich!=NULL &&
             actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
           continue;
+#else
+        if (actdof>=numeq_total) continue;
 #endif
         dp2norm += pow(actnode->sol_increment.a.da[ipos.velnp][predof] - p,2);
         p2norm += pow(p,2);
@@ -2724,24 +2724,24 @@ void fluid_cal_error(
         for (j=0;j<numvel;j++) /* loop vel-dofs */
         {
           actdof = actnode->dof[j];
-#ifndef SOLVE_DIRICH
-          if (actdof>=numeq_total) continue;
-#else
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
           if (actnode->gnode->dirich!=NULL &&
               actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
             continue;
+#else
+          if (actdof>=numeq_total) continue;
 #endif
           dvinorm = DMAX(dvinorm,FABS(actnode->sol_increment.a.da[ipos.velnp][j] - u[j]));
           vinorm = DMAX( vinorm,FABS(u[j]));
         } /* end of loop over vel-dofs */
 
         actdof = actnode->dof[predof];
-#ifndef SOLVE_DIRICH
-        if (actdof>=numeq_total) continue;
-#else
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
         if (actnode->gnode->dirich!=NULL &&
             actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
           continue;
+#else
+        if (actdof>=numeq_total) continue;
 #endif
         dpinorm = DMAX(dpinorm,FABS(actnode->sol_increment.a.da[ipos.velnp][predof] - p));
         pinorm = DMAX( pinorm,FABS(p));
@@ -2751,24 +2751,24 @@ void fluid_cal_error(
         for (j=0;j<numvel;j++) /* loop vel-dofs */
         {
           actdof = actnode->dof[j];
-#ifndef SOLVE_DIRICH
-          if (actdof>=numeq_total) continue;
-#else
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
           if (actnode->gnode->dirich!=NULL &&
               actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
             continue;
+#else
+          if (actdof>=numeq_total) continue;
 #endif
           dv1norm += FABS(actnode->sol_increment.a.da[ipos.velnp][j] - u[j]);
           v1norm += FABS(u[j]);
         } /* end of loop over vel-dofs */
 
         actdof = actnode->dof[predof];
-#ifndef SOLVE_DIRICH
-        if (actdof>=numeq_total) continue;
-#else
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
         if (actnode->gnode->dirich!=NULL &&
             actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
           continue;
+#else
+        if (actdof>=numeq_total) continue;
 #endif
         dp1norm += FABS(actnode->sol_increment.a.da[ipos.velnp][predof] - p);
         p1norm += FABS(p);
@@ -2779,24 +2779,24 @@ void fluid_cal_error(
         for (j=0;j<numvel;j++) /* loop vel-dofs */
         {
           actdof = actnode->dof[j];
-#ifndef SOLVE_DIRICH
-          if (actdof>=numeq_total) continue;
-#else
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
           if (actnode->gnode->dirich!=NULL &&
               actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
             continue;
+#else
+          if (actdof>=numeq_total) continue;
 #endif
           dv2norm += pow(actnode->sol_increment.a.da[ipos.velnp][j] - u[j],2);
           v2norm += pow(u[j],2);
         } /* end of loop over vel-dofs */
 
         actdof = actnode->dof[predof];
-#ifndef SOLVE_DIRICH
-        if (actdof>=numeq_total) continue;
-#else
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
         if (actnode->gnode->dirich!=NULL &&
             actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
           continue;
+#else
+        if (actdof>=numeq_total) continue;
 #endif
         dp2norm += pow(actnode->sol_increment.a.da[ipos.velnp][predof] - p,2);
         p2norm += pow(p,2);

@@ -197,10 +197,12 @@ typedef char      CHAR;
 #define f3fmassrhs         f3fmassrhs_
 #define f3fsigint          f3fsigint_
 
-#define faddmsr             faddmsr_
-#define faddmsrp            faddmsrp_
-#define faddmsrd            faddmsrd_
-#define faddmsrdp           faddmsrdp_
+#define fadm               fadm_
+#define fadmp              fadmp_
+#define fadmd              fadmd_
+#define fadmdp             fadmdp_
+#define fadmd2             fadmd2_
+#define fadmd2p            fadmd2p_
 
 #endif
 

@@ -111,7 +111,7 @@ static  INT        *invbindx = NULL;
 
   INT         lm[MAXNOD*MAXDOFPERNODE];
   INT         owner[MAXNOD*MAXDOFPERNODE];
-#ifdef SOLVE_DIRICH
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
   INT         dirich[MAXNOD*MAXDOFPERNODE];
 #endif
 
@@ -234,7 +234,7 @@ static  INT        *invbindx = NULL;
               owner[counter] = actele->node[i]->proc+1;
 #endif
 
-#ifdef SOLVE_DIRICH
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
               if (actele->node[i]->gnode->dirich!=NULL &&
                   actele->node[i]->gnode->dirich->dirich_onoff.a.iv[j]!=0)
                 dirich[counter] = 1;
@@ -261,50 +261,10 @@ static  INT        *invbindx = NULL;
 #endif
 
 
-#ifndef SOLVE_DIRICH
+#if defined(SOLVE_DIRICH)
 
 #ifndef PARALLEL
-          faddmsr(
-              estif_f,
-              &lm[0],
-              &owner[0],
-              invupd,
-              bindx,
-              invbindx,
-              val,
-              &myrank,
-              &nprocs,
-              &numeq_total,
-              &numeq,
-              &numnp,
-              &nd,
-              &aloopl,
-              &loopl,
-              &l);
-#else
-          faddmsrp(
-              estif_f,
-              &lm[0],
-              &owner[0],
-              invupd,
-              bindx,
-              invbindx,
-              val,
-              &myrank,
-              &nprocs,
-              &numeq_total,
-              &numeq,
-              &numnp,
-              &nd,
-              &aloopl,
-              &loopl,
-              &l);
-#endif
-
-#else
-
-#ifndef PARALLEL
-          faddmsrd(
+          fadmd(
               estif_f,
               &lm[0],
               &owner[0],
@@ -323,7 +283,7 @@ static  INT        *invbindx = NULL;
               &loopl,
               &l);
 #else
-          faddmsrdp(
+          fadmdp(
               estif_f,
               &lm[0],
               &owner[0],
@@ -343,7 +303,90 @@ static  INT        *invbindx = NULL;
               &l);
 #endif
 
+#elif defined(SOLVE_DIRICH2)
+
+#ifndef PARALLEL
+          fadmd2(
+              estif_f,
+              &lm[0],
+              &owner[0],
+              &dirich[0],
+              invupd,
+              bindx,
+              invbindx,
+              val,
+              &myrank,
+              &nprocs,
+              &numeq_total,
+              &numeq,
+              &numnp,
+              &nd,
+              &aloopl,
+              &loopl,
+              &l);
+#else
+          fadmd2p(
+              estif_f,
+              &lm[0],
+              &owner[0],
+              &dirich[0],
+              invupd,
+              bindx,
+              invbindx,
+              val,
+              &myrank,
+              &nprocs,
+              &numeq_total,
+              &numeq,
+              &numnp,
+              &nd,
+              &aloopl,
+              &loopl,
+              &l);
 #endif
+
+#else
+
+#ifndef PARALLEL
+          fadm(
+              estif_f,
+              &lm[0],
+              &owner[0],
+              invupd,
+              bindx,
+              invbindx,
+              val,
+              &myrank,
+              &nprocs,
+              &numeq_total,
+              &numeq,
+              &numnp,
+              &nd,
+              &aloopl,
+              &loopl,
+              &l);
+#else
+          fadmp(
+              estif_f,
+              &lm[0],
+              &owner[0],
+              invupd,
+              bindx,
+              invbindx,
+              val,
+              &myrank,
+              &nprocs,
+              &numeq_total,
+              &numeq,
+              &numnp,
+              &nd,
+              &aloopl,
+              &loopl,
+              &l);
+#endif
+
+#endif
+
 
 
 #ifdef PERF

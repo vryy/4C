@@ -236,9 +236,30 @@ for (j=0; j<actfield->dis[0].numnp; j++)
 
 /*--------------------------------------------------------- assign dofs */
 
-/* dirichlet conditioned dofs are not solved for */
+/* dirichlet conditioned dofs are solved for */
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
 
-#ifndef SOLVE_DIRICH
+printf("\nSolve also for dirichlet b.c.!!\n\n");
+
+/* include dirichlet conditioned dofs in the global matrix */
+for (j=0; j<actfield->dis[0].numnp; j++)
+{
+  actnode = &(actfield->dis[0].node[j]);
+
+  for (l=0; l<actnode->numdf; l++)
+  {
+    actnode->dof[l] = counter;
+    counter++;
+  }
+}
+
+actfield->dis[0].numeq = counter;
+actfield->dis[0].numdf = counter;
+
+
+#else
+/* dirichlet conditioned dofs are NOT solved for */
+
 for (j=0; j<actfield->dis[0].numnp; j++)
 {
   actnode = &(actfield->dis[0].node[j]);
@@ -357,25 +378,6 @@ for (j=0; j<actfield->dis[0].numnp; j++)
       }
    }
 }
-actfield->dis[0].numdf = counter;
-
-#else
-
-printf("\nSolve also for dirichlet b.c.!!\n\n");
-
-/* include dirichlet conditioned dofs in the global matrix */
-for (j=0; j<actfield->dis[0].numnp; j++)
-{
-  actnode = &(actfield->dis[0].node[j]);
-
-  for (l=0; l<actnode->numdf; l++)
-  {
-    actnode->dof[l] = counter;
-    counter++;
-  }
-}
-
-actfield->dis[0].numeq = counter;
 actfield->dis[0].numdf = counter;
 
 #endif

@@ -17,18 +17,18 @@ Maintainer: Malte Neumann
  |  routine to assemble element arrays to global sparse arrays m.gee 9/01|
  *----------------------------------------------------------------------*/
 void assemble(
-                 INT                    sysarray1, /* number of first sparse system matrix */
-                 struct _ARRAY         *elearray1, /* pointer to first dense element matrix */
-                 INT                    sysarray2, /* number of first sparse system matrix or -1 if not given */
-                 struct _ARRAY         *elearray2, /* pointer to second dense element matrix or NULL is not present*/
-                 struct _PARTITION     *actpart,   /* my partition of theactive field */
-                 struct _SOLVAR        *actsolv,   /* the active SOLVAR */
-                 struct _INTRA         *actintra,  /* the active intracommunicator */
-                 struct _ELEMENT       *actele,    /* the element to assemble */
-                 enum _ASSEMBLE_ACTION  assemble_action,  /* the assembly option */
-                 CONTAINER             *container  /* contains variables defined in container.h */
-                )
-/*----------------------------------------------------------------------*/
+    INT                    sysarray1, /* number of first sparse system matrix */
+    struct _ARRAY         *elearray1, /* pointer to first dense element matrix */
+    INT                    sysarray2, /* number of first sparse system matrix or -1 if not given */
+    struct _ARRAY         *elearray2, /* pointer to second dense element matrix or NULL is not present*/
+    struct _PARTITION     *actpart,   /* my partition of theactive field */
+    struct _SOLVAR        *actsolv,   /* the active SOLVAR */
+    struct _INTRA         *actintra,  /* the active intracommunicator */
+    struct _ELEMENT       *actele,    /* the element to assemble */
+    enum _ASSEMBLE_ACTION  assemble_action,  /* the assembly option */
+    CONTAINER             *container  /* contains variables defined in container.h */
+    )
+
 {
 enum  _SPARSE_TYP    sysa1_typ;
 union _SPARSE_ARRAY *sysa1;
@@ -37,8 +37,8 @@ union _SPARSE_ARRAY *sysa2;
 
   DOUBLE    **estif;                /* element matrix to be added to system matrix */
   DOUBLE    **emass;                /* element matrix to be added to system matrix */
-#ifdef SOLVE_DIRICH
-  INT         i,j,counter;
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
+  INT         i,j,ii,jj,counter,counter2;
   INT         numdf;
 #endif
 
@@ -72,7 +72,7 @@ else
 }
 
 /* for SOLVE_DIRICH, manipulate the element matrices */
-#ifdef SOLVE_DIRICH
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
 if (assemble_action==assemble_two_matrix || assemble_action==assemble_one_matrix)
 {
   counter = 0;
@@ -83,8 +83,31 @@ if (assemble_action==assemble_two_matrix || assemble_action==assemble_one_matrix
       if (actele->node[i]->gnode->dirich!=NULL &&
           actele->node[i]->gnode->dirich->dirich_onoff.a.iv[j]!=0)
       {
+#ifdef SOLVE_DIRICH2
+        /* set the whole row and column of the constraint dof to zero
+         * and the main diagonal to one */
+        counter2 = 0;
+        for (ii=0; ii<actele->numnp; ii++)
+        {
+          for (jj=0; jj<actele->node[ii]->numdf; jj++)
+          {
+            estif[counter2][counter] = 0.0;
+            estif[counter][counter2] = 0.0;
+            estif[counter][counter]  = 1.0;
+            if (sysarray2>=0)
+            {
+              emass[counter2][counter] = 0.0;
+              emass[counter][counter2] = 0.0;
+              emass[counter][counter]  = 1.0;
+            }
+            counter2++;
+          }
+        }
+#else
+        /* set the main diagonal of the onstraint dof to a very lareg number */
         estif[counter][counter] = 9.99e29;
         if (sysarray2>=0) emass[counter][counter] = 9.99e29;
+#endif
       }
       counter++;
     }

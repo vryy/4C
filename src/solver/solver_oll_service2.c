@@ -371,6 +371,8 @@ void oll_delete(OLL*  matrix)
   if (matrix->request != NULL)
     CCAFREE(matrix->request);
 #endif
+
+#if 0
   /*------------------------------------------- destroy the matrix itself */
   if (matrix->col != NULL) matrix->col = CCAFREE(matrix->col);
   if (matrix->row != NULL)
@@ -391,6 +393,12 @@ void oll_delete(OLL*  matrix)
     }
   }
   matrix->row = CCAFREE(matrix->row);
+#endif
+
+  if (matrix->col != NULL) matrix->col = CCAFREE(matrix->col);
+  if (matrix->row != NULL) matrix->row = CCAFREE(matrix->row);
+  if (matrix->spare != NULL) matrix->spare = CCAFREE(matrix->spare);
+
   /*----------------------------------------------------------------------*/
 #ifdef DEBUG
   dstrc_exit();
@@ -1012,12 +1020,18 @@ void oll_to_sky(
   sky->is_factored = 0;
   sky->ncall = 0;
 
+  if (sky->update.Typ != cca_XX)
+    amdel(&(sky->update));
+  
   am_alloc_copy(&(oll->update),&(sky->update));
 
   /* --------------------------------------------- create skyline mtrix */
   row = oll->row;
   col = oll->col;
   /*----------------------------------------------------- allocate maxaf */
+  if (sky->maxaf.Typ != cca_XX)
+    amdel(&(sky->maxaf));
+  
   maxaf = amdef("maxaf",&(sky->maxaf),sky->numeq_total+1,1,"IV");
   /*---------------------------------------------------------allocate A */
   /* calculate size of a */
@@ -1026,6 +1040,10 @@ void oll_to_sky(
   {
     adim += (i - col[i]->r + 1 );
   }
+
+  if (sky->A.Typ != cca_XX)
+    amdel(&(sky->A));
+  
   a = amdef("A",&(sky->A),adim,1,"DV");
 
   /* ------------------------------ copy oll matrix into skyline format */
@@ -1110,6 +1128,9 @@ void oll_to_spo(
   spo->is_factored = 0;
   spo->ncall = 0;
 
+  if (spo->update.Typ != cca_XX)
+    amdel(&(spo->update));
+
   am_alloc_copy(&(oll->update),&(spo->update));
 
   /*----------------------------------------------------------------------*/
@@ -1168,6 +1189,9 @@ void oll_to_msr(
   msr->is_factored = 0;
   msr->ncall = 0;
 
+  if (msr->update.Typ != cca_XX)
+    amdel(&(msr->update));
+
   am_alloc_copy(&(oll->update),&(msr->update));
 
   /* ------------------------------------------------- create msr matrix */
@@ -1176,6 +1200,12 @@ void oll_to_msr(
   nnz   = oll->nnz;
   numeq = oll->numeq;
   /*---------------------------------------------- allocate bindx and val */
+  if (msr->bindx.Typ != cca_XX)
+    amdel(&(msr->bindx));
+
+  if (msr->val.Typ != cca_XX)
+    amdel(&(msr->val));
+
   bindx     = amdef("bindx",&(msr->bindx)       ,(msr->nnz+1),1,"IV");
   val       = amdef("val"  ,&(msr->val)         ,(msr->nnz+1),1,"DV");
   bindx_b   = amdef("bindx",&(msr->bindx_backup),(msr->nnz+1),1,"IV");
@@ -1217,6 +1247,12 @@ void oll_to_msr(
     dserror("Error in copying oll to msr");
 
   /*--------- make backup copy of bindx, as it is permuted in solution */
+  if (msr->bindx_backup.Typ != cca_XX)
+    amdel(&(msr->bindx_backup));
+
+  if (msr->val_backup.Typ != cca_XX)
+    amdel(&(msr->val_backup));
+
   am_alloc_copy(&(msr->bindx),&(msr->bindx_backup));
   am_alloc_copy(&(msr->val),&(msr->val_backup));
 
@@ -1249,6 +1285,7 @@ void oll_to_ccf(
 CCF	   *ccf;         /* a sparse matrix in compressed column format */
 INT	   *Ap;          /* column pointer vector			*/
 INT	   *Ai;          /* row pointer vector			        */
+INT        *update;      /* dofs updated on this proc                   */
 DOUBLE     *Ax;          /* values of the matrix			*/
 MATENTRY **col;          /* matrix column                               */
 MATENTRY  *actentry;     /* actual matrix entry                         */
@@ -1272,6 +1309,10 @@ col   = oll->col;
 nnz   = oll->nnz;
 numeq = oll->numeq;
 numeq_total = oll->numeq_total;
+oll->sysarray[0].ccf->numeq_total = oll->numeq_total;
+oll->sysarray[0].ccf->numeq = oll->numeq;
+oll->sysarray[0].ccf->nnz = oll->nnz;          
+oll->sysarray[0].ccf->nnz_total = oll->nnz;          
 
 /*--------------------------------------------- redefine matrix vectors */
 Ap = amredef(&(oll->sysarray[0].ccf->Ap),numeq_total+1,1,"IV");
