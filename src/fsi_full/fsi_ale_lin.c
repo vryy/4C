@@ -300,7 +300,7 @@ init_bin_out_field(&out_context,
 /*--------------------------------------------------- check for restart */
 if (genprob.restart!=0)
 {
-#if defined(BINIO) && defined(NEW_RESTART_READ)
+#if defined(BINIO)
    restart_read_bin_aledyn(adyn,
                            &(actsolv->sysarray_typ[actsysarray]),
                            &(actsolv->sysarray[actsysarray]),
@@ -324,7 +324,7 @@ if (ioflags.monitor==1)
 /*------------------------------------------- print out results to .out */
 out_sol(actfield,actpart,actintra,adyn->step,actpos);
 #ifdef PARALLEL
-/*if (ioflags.ale_disp_gid==1 && par.myrank==0)
+/*if (ioflags.ale_disp==1 && par.myrank==0)
 out_gid_domains(actfield);*/
 #endif
 
@@ -431,7 +431,7 @@ outstep++;
 pssstep++;
 restartstep++;
 
-if (pssstep==fsidyn->uppss && ioflags.fluid_vis_file==1 && par.myrank==0)
+if (pssstep==fsidyn->uppss && ioflags.fluid_vis==1 && par.myrank==0)
 {
    pssstep=0;
    /*--------------------------------------------- store time in time_a */
@@ -441,7 +441,7 @@ if (pssstep==fsidyn->uppss && ioflags.fluid_vis_file==1 && par.myrank==0)
    actpos++;
 }
 
-if (outstep==adyn->updevry_disp && ioflags.ale_disp_file==1)
+if (outstep==adyn->updevry_disp && ioflags.ale_disp==1 && ioflags.output_out==1)
 {
     outstep=0;
     out_sol(actfield,actpart,actintra,adyn->step,actpos);
@@ -456,9 +456,10 @@ monitoring(actfield,numaf,actpos,adyn->time);
 if (restartstep==fsidyn->uprestart)
 {
    restartstep=0;
-   restart_write_aledyn(adyn,actfield,actpart,actintra);
 #ifdef BINIO
    restart_write_bin_aledyn(&out_context, adyn);
+#else
+   restart_write_aledyn(adyn,actfield,actpart,actintra);
 #endif
 }
 
@@ -559,11 +560,11 @@ if (actintra->intra_fieldtyp != ale) break;
 if (pssstep==0) actpos--;
 
 /*------------------------------------------- print out results to .out */
-if (outstep!=0 && ioflags.ale_disp_file==1)
+if (outstep!=0 && ioflags.ale_disp==1 && ioflags.output_out==1)
 out_sol(actfield,actpart,actintra,adyn->step,actpos);
 
 /*------------------------------------------- print out result to 0.pss */
-if (ioflags.fluid_vis_file==1 && par.myrank==0)
+if (ioflags.fluid_vis==1 && par.myrank==0)
 {
    if (pssstep!=0)
    {

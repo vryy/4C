@@ -344,7 +344,7 @@ if(stalact == calsta_init || stalact==calsta_init_solve)
 }
 /*----------------------------------------- write output of mesh to gid */
 if (par.myrank==0)
-if (ioflags.struct_disp_gid||ioflags.struct_stress_gid)
+if (ioflags.output_gid)
    out_gid_msh();
 /*-------------------------------------- create the original rhs vector */
 /*-------------------------- the approbiate action is set inside calrhs */
@@ -377,8 +377,7 @@ if(stalact == calsta_init || stalact==calsta_init_solve)
 }
 amzero(&(nln_data.arcfac));
 /*----------------------------------------- output to GID postprozessor */
-if (ioflags.struct_disp_gid==1 || ioflags.struct_stress_gid==1)
-if (par.myrank==0)
+if (ioflags.output_gid==1 && par.myrank==0)
 {
    /* colors the partitions in the postprocessing, if this is sequentiell*/
    /*              the picture of the partitions can be quite boring... */
@@ -607,7 +606,7 @@ for (kstep=0; kstep<nstep; kstep++)
    /*-------------------------------------- perform stress calculation */
    if (mod_stress==0 || mod_displ==0)
    {
-      if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1)
+      if (ioflags.struct_stress==1)
       {
          *action = calc_struct_stress;
          container.dvec         = NULL;
@@ -629,18 +628,18 @@ for (kstep=0; kstep<nstep; kstep++)
    /*--------------------------------------- print out results to .out */
    if (mod_stress==0 || mod_displ==0)
    {
-      if (ioflags.struct_stress_file==1 && ioflags.struct_disp_file==1)
+      if (ioflags.struct_stress==1 && ioflags.struct_disp==1 && ioflags.output_out==1)
       {
         out_sol(actfield,actpart,actintra,kstep,0);
       }
    }
    /*----------------------------------------- printout results to gid */
-   if (par.myrank==0)
+   if (par.myrank==0 && ioflags.output_gid==1)
    {
-       if (ioflags.struct_disp_gid==1 && mod_displ==0)
-       out_gid_sol("displacement",actfield,actintra,kstep,0,ZERO);
-       if (ioflags.struct_stress_gid==1 && mod_stress==0)
-       out_gid_sol("stress"      ,actfield,actintra,kstep,0,ZERO);
+       if (ioflags.struct_disp==1 && mod_displ==0)
+         out_gid_sol("displacement",actfield,actintra,kstep,0,ZERO);
+       if (ioflags.struct_stress==1 && mod_stress==0)
+         out_gid_sol("stress"      ,actfield,actintra,kstep,0,ZERO);
    }
    /*----------------------------------- printout results to pss file */
    if(mod_restart==0)

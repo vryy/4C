@@ -289,12 +289,11 @@ init_bin_out_field(&out_context,
 #endif
 
 /*----------------------------------------- write output of mesh to gid */
-if (par.myrank==0)
-if (ioflags.struct_disp_gid||ioflags.struct_stress_gid)
+if (par.myrank==0 && ioflags.output_gid==1)
    out_gid_msh();
 /*-------------------------------------- write output of submesh to gid */
 #ifdef D_MLSTRUCT
-if (genprob.multisc_struct == 1 && (ioflags.struct_sm_disp_gid ||ioflags.struct_sm_stress_gid ))
+if (genprob.multisc_struct == 1 && ioflags.output_gid==1)
 {
    out_gid_smsol_init();
    out_gid_submesh();
@@ -327,8 +326,7 @@ nln_data.rlpre = 0.0;
 amdef("arcfac",&(nln_data.arcfac),nstep,1,"DV");
 amzero(&(nln_data.arcfac));
 /*----------------------------------------- output to GID postprozessor */
-if (ioflags.struct_disp_gid==1 || ioflags.struct_stress_gid==1)
-if (par.myrank==0)
+if (par.myrank==0 && ioflags.output_gid==1)
 {
    /* colors the partitions in the postprocessing, if this is sequentiell*/
    /*              the picture of the partitions can be quite boring... */
@@ -386,7 +384,7 @@ for (kstep=0; kstep<nstep; kstep++)
      stepsi=statvar->stepsize;
      restartevery = statvar->resevery_restart;
    /*------------------------------------ read restart from pss- file --*/
-#if defined(BINIO) && defined(NEW_RESTART_READ)
+#if defined(BINIO)
      restart_read_bin_nlnstructstat(statvar,
                                     &nln_data,
                                     &array_typ,
@@ -468,7 +466,7 @@ for (kstep=0; kstep<nstep; kstep++)
    /*-------------------------------------- perform stress calculation */
    if (mod_stress==0 || mod_displ==0)
    {
-      if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1)
+      if (ioflags.struct_stress==1)
       {
          *action = calc_struct_stress;
          container.dvec         = NULL;
@@ -487,33 +485,39 @@ for (kstep=0; kstep<nstep; kstep++)
    /*--------------------------------------- print out results to .out */
    if (mod_stress==0 || mod_displ==0)
    {
-      if (ioflags.struct_stress_file==1 && ioflags.struct_disp_file==1)
+      if (ioflags.struct_stress==1 && ioflags.struct_disp==1 && ioflags.output_out==1)
       {
         out_sol(actfield,actpart,actintra,kstep,0);
       }
    }
    /*----------------------------------------- printout results to gid */
-   if (par.myrank==0)
+   if (par.myrank==0 && ioflags.output_gid==1)
    {
-       if (ioflags.struct_disp_gid==1 && mod_displ==0)
+       if (ioflags.struct_disp==1 && mod_displ==0)
        out_gid_sol("displacement",actfield,actintra,kstep,0,ZERO);
-       if (ioflags.struct_stress_gid==1 && mod_stress==0)
+       if (ioflags.struct_stress==1 && mod_stress==0)
        out_gid_sol("stress"      ,actfield,actintra,kstep,0,ZERO);
    }
    /*------------------------------ printout multiscale results to gid */
 #ifdef D_MLSTRUCT
-   if (genprob.multisc_struct && ioflags.struct_sm_disp_gid && mod_displ==0)
-     out_gid_smdisp("displacement",kstep);
-   if (genprob.multisc_struct && ioflags.struct_sm_stress_gid && mod_stress==0)
-     out_gid_smstress("stress",kstep); 
+   if (par.myrank==0 && ioflags.output_gid==1)
+   {
+     if (genprob.multisc_struct && ioflags.struct_sm_disp && mod_displ==0)
+       out_gid_smdisp("displacement",kstep);
+     if (genprob.multisc_struct && ioflags.struct_sm_stress && mod_stress==0)
+       out_gid_smstress("stress",kstep); 
+   }
 #endif
 
 #ifdef BINIO
-   if (ioflags.struct_disp_gid==1 && mod_displ==0)
-     out_results(&out_context, 0, kstep, 0, OUTPUT_DISPLACEMENT);
+   if (ioflags.output_bin==1)
+   {
+     if (ioflags.struct_disp==1 && mod_displ==0)
+       out_results(&out_context, 0, kstep, 0, OUTPUT_DISPLACEMENT);
 
-   if (ioflags.struct_stress_gid==1 && mod_stress==0)
-     out_results(&out_context, 0, kstep, 0, OUTPUT_STRESS);
+     if (ioflags.struct_stress==1 && mod_stress==0)
+       out_results(&out_context, 0, kstep, 0, OUTPUT_STRESS);
+   }
 #endif
 
    /*----------------------------------- printout results to pss file */
@@ -522,6 +526,15 @@ for (kstep=0; kstep<nstep; kstep++)
    switch(controltyp)
     {
     case control_disp:                        /* displacement control */
+#ifdef BINIO
+      restart_write_bin_nlnstructstat(&out_context,
+                                      statvar,
+                                      &nln_data,
+                                      kstep,
+                                      actsolv->nrhs, actsolv->rhs,
+                                      actsolv->nsol, actsolv->sol,
+                                      1            , dispi);
+#else
       restart_write_nlnstructstat(statvar,
                            &nln_data,
                            actfield,
@@ -533,14 +546,6 @@ for (kstep=0; kstep<nstep; kstep++)
                            actsolv->nsol, actsolv->sol,
                            1            , dispi,
                            &container);  /* contains variables defined in container.h */
-#ifdef BINIO
-      restart_write_bin_nlnstructstat(&out_context,
-                                      statvar,
-                                      &nln_data,
-                                      kstep,
-                                      actsolv->nrhs, actsolv->rhs,
-                                      actsolv->nsol, actsolv->sol,
-                                      1            , dispi);
 #endif
     break;
     case control_arc:                            /* arclenght control */

@@ -175,7 +175,7 @@ fsi_struct(structfield,mctrl,itnum);
 
 if (genprob.restart!=0)
 {
-#if defined(BINIO) && defined(NEW_RESTART_READ)
+#if defined(BINIO)
    restart_read_bin_fsidyn(fsidyn, genprob.restart);
 #else
    restart_read_fsidyn(genprob.restart,fsidyn);
@@ -352,9 +352,10 @@ if (resstep==fsidyn->upres)
 if (restartstep==fsidyn->uprestart)
 {
    restartstep=0;
-   restart_write_fsidyn(fsidyn);
 #ifdef BINIO
    restart_write_bin_fsidyn(fsidyn);
+#else
+   restart_write_fsidyn(fsidyn);
 #endif
 }
 

@@ -1770,8 +1770,8 @@ if (strncmp(string,"displacement",stringlenght)==0)
                                                        sign,componentnames[2],sign
                                                        );
 
-       if (ioflags.struct_stress_gid_smo == 0 ) s9_out_gid_sol_dis_unsmo(out,actfield,place);    /*unsmoothed stresses to gid*/
-       if (ioflags.struct_stress_gid_smo == 1 ) s9_out_gid_sol_dis(out,actfield,place);          /*  smoothed stresses to gid*/
+       if (ioflags.struct_stress_smo == 0 ) s9_out_gid_sol_dis_unsmo(out,actfield,place);    /*unsmoothed stresses to gid*/
+       if (ioflags.struct_stress_smo == 1 ) s9_out_gid_sol_dis(out,actfield,place);          /*  smoothed stresses to gid*/
 
     goto next;
    }
@@ -2292,8 +2292,8 @@ if (strncmp(string,"stress",stringlenght)==0)
 
       /*write stresses at gp*/
 
-      if (ioflags.struct_stress_gid_smo == 0 ) s9_out_gid_sol_str_unsmo(out,actfield,place);    /*unsmoothed stresses to gid*/
-      if (ioflags.struct_stress_gid_smo == 1 ) s9_out_gid_sol_str(out,actfield,place);          /*  smoothed stresses to gid*/
+      if (ioflags.struct_stress_smo == 0 ) s9_out_gid_sol_str_unsmo(out,actfield,place);    /*unsmoothed stresses to gid*/
+      if (ioflags.struct_stress_smo == 1 ) s9_out_gid_sol_str(out,actfield,place);          /*  smoothed stresses to gid*/
 
       fprintf(out,"END VALUES\n");
    }

@@ -156,7 +156,7 @@ void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield)
 
   /* ------------- write displacements of structure field */
   /*----------------------------------------------------------------------*/
-  if (ioflags.struct_disp_gid==1||ioflags.fluid_sol_gid==1)
+  if (ioflags.struct_disp==1||ioflags.fluid_sol==1)
   {
     resulttype        = "VECTOR";
     resultplace       = "ONNODES";
@@ -204,7 +204,7 @@ void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield)
     /*-------------------------------------------------------------------*/
     fprintf(out,"VALUES\n");
   }
-  if (ioflags.struct_disp_gid==1 && structfield!=NULL)
+  if (ioflags.struct_disp==1 && structfield!=NULL)
   {
     for (i=0; i<structfield->dis[0].numnp; i++)
     {
@@ -235,7 +235,7 @@ void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield)
     /* write displacements of fluid field */
     /*-------------------------------------------------------------------*/
   }
-  if (ioflags.fluid_sol_gid==1)
+  if (ioflags.fluid_sol==1)
   {
     for (i=0; i<fluidfield->dis[0].numnp; i++)
     {
@@ -284,7 +284,7 @@ void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield)
       }
     }
   }
-  if (ioflags.struct_disp_gid==1||ioflags.fluid_sol_gid==1)
+  if (ioflags.struct_disp==1||ioflags.fluid_sol==1)
   {
     fprintf(out,"END VALUES\n");
   }
@@ -293,7 +293,7 @@ void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield)
   /* ------------- write fsi loads of structure field
    THIS DOES NOT WORK UP TO NOW!!!
   /-----------------------------------------------------------------------*/
-  if (ioflags.struct_disp_gid==1||ioflags.fluid_sol_gid==1)
+  if (ioflags.struct_disp==1||ioflags.fluid_sol==1)
   {
     resulttype        = "VECTOR";
     resultplace       = "ONNODES";
@@ -341,7 +341,7 @@ void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield)
     /*-------------------------------------------------------------------*/
     fprintf(out,"VALUES\n");
   }
-  if (ioflags.struct_disp_gid==1 && structfield!=NULL)
+  if (ioflags.struct_disp==1 && structfield!=NULL)
   {
     for (i=0; i<structfield->dis[0].numnp; i++)
     {
@@ -369,14 +369,14 @@ void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield)
       }
     }
   }
-  if (ioflags.struct_disp_gid==1||ioflags.fluid_sol_gid==1)
+  if (ioflags.struct_disp==1||ioflags.fluid_sol==1)
   {
     fprintf(out,"END VALUES\n");
   }
 #endif
 
   /* write velocities and pressure of fluid field */
-  if (ioflags.fluid_sol_gid==1)
+  if (ioflags.fluid_sol==1)
   {
     out_gid_sol("velocity",fluidfield,actintraf,fdyn->step,fsidyn->actpos,fsidyn->time);
     out_gid_sol("pressure",fluidfield,actintraf,fdyn->step,fsidyn->actpos,fsidyn->time);
@@ -384,12 +384,12 @@ void out_gid_sol_fsi(FIELD *fluidfield, FIELD *structfield)
 
 
   /* write velocities, accelerations and stresses of structure field */
-  if (ioflags.struct_disp_gid==1 && structfield!=NULL)
+  if (ioflags.struct_disp==1 && structfield!=NULL)
   {
     out_gid_sol("velocities",structfield,actintras,sdyn->step,1,fsidyn->time);
     out_gid_sol("accelerations",structfield,actintras,sdyn->step,2,fsidyn->time);
   }
-  if (ioflags.struct_stress_gid==1 && structfield!=NULL)
+  if (ioflags.struct_stress==1 && structfield!=NULL)
     out_gid_sol("stress"      ,structfield,actintras,sdyn->step,0,fsidyn->time);
 
 

@@ -437,7 +437,7 @@ break;
 switch(actfield->fieldtyp)
 {
 case structure:
-   if (ioflags.struct_disp_file==1)
+   if (ioflags.struct_disp==1)
    {
    fprintf(out,"================================================================================\n");
    fprintf(out,"Converged Solution of Discretisation %d in step %d \n",0,step);
@@ -484,7 +484,7 @@ case structure:
    }
 break;
 case fluid:
-   if (ioflags.fluid_sol_file==1)
+   if (ioflags.output_out==1 && ioflags.fluid_sol==1)
    {
       for (kk=0;kk<actfield->ndis;kk++)
       {
@@ -507,7 +507,7 @@ case fluid:
    }
 break;
 case ale:
-   if (ioflags.ale_disp_file==1)
+   if (ioflags.ale_disp==1)
    {
    fprintf(out,"================================================================================\n");
    fprintf(out,"Converged Solution of Discretisation %d in step %d \n",0,step);
@@ -532,7 +532,7 @@ default: dserror("Cannot print fieldtype");
 switch(actfield->fieldtyp)
 {
 case structure:
-if (ioflags.struct_stress_file==1)
+if (ioflags.struct_stress==1)
 for (j=0; j<actfield->dis[0].numele; j++)
 {
    actele = &(actfield->dis[0].element[j]);

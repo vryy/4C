@@ -210,8 +210,7 @@ init_bin_out_field(&out_context,
 #endif
 
 /*----------------------------------------- write output of mesh to gid */
-if (par.myrank==0)
-if (ioflags.struct_disp_gid||ioflags.struct_stress_gid)
+if (par.myrank==0 && ioflags.output_gid==1)
    out_gid_msh();
 /*------call element routines to calculate & assemble stiffness matrice */
 *action = calc_struct_linstiff;
@@ -252,7 +251,7 @@ solserv_result_total(
                      &(actsolv->sysarray_typ[actsysarray])
                     );
 /*------------------------------------------ perform stress calculation */
-if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1)
+if (ioflags.struct_stress==1)
 {
    *action = calc_struct_stress;
    container.dvec         = NULL;
@@ -264,11 +263,21 @@ if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1)
    *action = calc_struct_stressreduce;
    container.kstep = 0;
    calreduce(actfield,actpart,actintra,action,&container);
-   out_sol(actfield,actpart,actintra,0,0);
 }
 
+
+/* printout results to out */
+if (ioflags.output_out==1 && ioflags.struct_disp==1)
+{
+  out_sol(actfield,actpart,actintra,0,0);
+}
+
+
+/* printout results to binary file */
 #ifdef BINIO
-  if (ioflags.struct_disp_gid==1) {
+if (ioflags.output_bin==1)
+{
+  if (ioflags.struct_disp==1) {
     out_results(&out_context, 0, 0, 0, OUTPUT_DISPLACEMENT);
 
 #ifdef D_AXISHELL
@@ -277,13 +286,15 @@ if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1)
 #endif
   }
 
-  if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1) {
+  if (ioflags.struct_stress==1) {
     out_results(&out_context, 0, 0, 0, OUTPUT_STRESS);
   }
+}
 #endif
 
-/*--------------------------------------------- printout results to gid */
-if (ioflags.struct_disp_gid==1 && par.myrank==0)
+
+/* printout results to gid */
+if (ioflags.output_gid==1 && ioflags.struct_disp==1 && par.myrank==0)
 {
    out_gid_sol("displacement",actfield,actintra,0,0,ZERO);
    out_gid_domains(actfield);
@@ -292,12 +303,14 @@ if (ioflags.struct_disp_gid==1 && par.myrank==0)
    out_gid_sol("axi_loads",actfield,actintra,0,0,ZERO);
 #endif
 }
-/*---------------------------------------------- printout stress to gid */
-if ( (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1) && par.myrank==0)
+
+/* printout stress to gid */
+if (ioflags.output_gid==1 && ioflags.struct_stress==1 && par.myrank==0)
 {
    out_gid_sol("stress"      ,actfield,actintra,0,0,ZERO);
 }
-/*----------------------------------------------------------------------*/
+
+
 end:
 
 #ifdef BINIO

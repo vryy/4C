@@ -472,10 +472,9 @@ init_bin_out_field(&out_context,
 #endif
 
 /*----------------------------------------- output to GID postprozessor */
-if (ioflags.struct_disp_gid==1 || ioflags.struct_stress_gid==1)
-if (par.myrank==0)
+if (ioflags.output_gid==1 && par.myrank==0)
 {
-   out_gid_domains(actfield);
+  out_gid_domains(actfield);
 }
 
 /*--------------------------------------------------- check for restart */
@@ -489,7 +488,7 @@ if (restart)
    nstep = sdyn->nstep;
    maxtime = sdyn->maxtime;
    /*----------------------------------- the step to read in is restart */
-#if defined(BINIO) && defined(NEW_RESTART_READ)
+#if defined(BINIO)
    restart_read_bin_nlnstructdyn(sdyn,
                                  &dynvar,
                                  &(actsolv->sysarray_typ[stiff_array]),
@@ -1030,7 +1029,7 @@ outstep++;
 if (outstep==sdyn->updevry_disp)
 {
    outstep=0;
-   if (ioflags.struct_stress_file==1)
+   if (ioflags.struct_stress==1)
    {
       *action = calc_struct_stress;
       container.dvec          = NULL;
@@ -1044,7 +1043,7 @@ if (outstep==sdyn->updevry_disp)
       container.kstep = 0;
       calreduce(actfield,actpart,actintra,action,&container);
    }
-   if (ioflags.struct_stress_file==1 || ioflags.struct_disp_file==1)
+   if ( (ioflags.struct_stress==1 || ioflags.struct_disp==1) && ioflags.output_out==1)
       out_sol(actfield,actpart,actintra,sdyn->step,0);
 }
 /*-------------------------------------- write restart data to pss file */
@@ -1052,17 +1051,6 @@ restartstep++;
 if (restartstep==fsidyn->uprestart)
 {
    restartstep=0;
-   restart_write_nlnstructdyn(sdyn,&dynvar,actfield,actpart,actintra,action,
-                              actsolv->nrhs, actsolv->rhs,
-                              actsolv->nsol, actsolv->sol,
-                              1            , dispi       ,
-                              1            , vel         ,
-                              1            , acc         ,
-                              3            , fie         ,
-                              3            , work        ,
-                              &intforce_a,
-                              &dirich_a,
-                              &container);  /* contains variables defined in container.h */
 #ifdef BINIO
    restart_write_bin_nlnstructdyn(&out_context,
                                   sdyn,
@@ -1074,6 +1062,18 @@ if (restartstep==fsidyn->uprestart)
                                   1            , acc         ,
                                   3            , fie         ,
                                   3            , work);
+#else
+   restart_write_nlnstructdyn(sdyn,&dynvar,actfield,actpart,actintra,action,
+                              actsolv->nrhs, actsolv->rhs,
+                              actsolv->nsol, actsolv->sol,
+                              1            , dispi       ,
+                              1            , vel         ,
+                              1            , acc         ,
+                              3            , fie         ,
+                              3            , work        ,
+                              &intforce_a,
+                              &dirich_a,
+                              &container);  /* contains variables defined in container.h */
 #endif
 }
 
@@ -1094,16 +1094,19 @@ break;
  *======================================================================*/
 case 98:
 #ifdef BINIO
-  out_results(&out_context, sdyn->time, sdyn->step, 0, OUTPUT_DISPLACEMENT);
+  if (ioflags.output_bin)
+  {
+    out_results(&out_context, sdyn->time, sdyn->step, 0, OUTPUT_DISPLACEMENT);
 
-  /* This was not implemented before. I doubt it works. */
-  if (ioflags.struct_disp_gid==1) {
-    out_results(&out_context, sdyn->time, sdyn->step, 1, OUTPUT_VELOCITY);
-    out_results(&out_context, sdyn->time, sdyn->step, 2, OUTPUT_ACCELERATION);
-  }
+    /* This was not implemented before. I doubt it works. */
+    if (ioflags.struct_disp==1) {
+      out_results(&out_context, sdyn->time, sdyn->step, 1, OUTPUT_VELOCITY);
+      out_results(&out_context, sdyn->time, sdyn->step, 2, OUTPUT_ACCELERATION);
+    }
 
-  if (ioflags.struct_stress_gid==1) {
-    out_results(&out_context, sdyn->time, sdyn->step, 0, OUTPUT_STRESS);
+    if (ioflags.struct_stress==1) {
+      out_results(&out_context, sdyn->time, sdyn->step, 0, OUTPUT_STRESS);
+    }
   }
 #endif
   break;
@@ -1120,7 +1123,7 @@ if (actintra->intra_fieldtyp != structure) break;
 if (outstep!=0)
 {
    outstep=0;
-   if (ioflags.struct_stress_file==1)
+   if (ioflags.struct_stress==1)
    {
       *action = calc_struct_stress;
       container.dvec          = NULL;
@@ -1134,7 +1137,7 @@ if (outstep!=0)
       container.kstep = 0;
       calreduce(actfield,actpart,actintra,action,&container);
    }
-   if (ioflags.struct_stress_file==1 || ioflags.struct_disp_file==1)
+   if ( (ioflags.struct_stress==1 || ioflags.struct_disp==1) && ioflags.output_out==1)
       out_sol(actfield,actpart,actintra,sdyn->step,0);
 }
 

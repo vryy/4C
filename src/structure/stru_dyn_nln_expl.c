@@ -323,8 +323,7 @@ init_assembly(actpart,actsolv,actintra,actfield,mass_array,0);
 calinit(actfield,actpart,action,&container);
 
 /*----------------------------------------- write output of mesh to gid */
-if (par.myrank==0)
-if (ioflags.struct_disp_gid||ioflags.struct_stress_gid)
+if (par.myrank==0 && ioflags.output_gid==1)
    out_gid_msh();
 
 /*----------------------- call elements to calculate stiffness and mass */
@@ -405,8 +404,7 @@ init_bin_out_field(&out_context,
 #endif
 
 /*----------------------------------------- output to GID postprozessor */
-if (ioflags.struct_disp_gid==1 || ioflags.struct_stress_gid==1)
-if (par.myrank==0)
+if (par.myrank==0 && ioflags.output_gid==1)
 {
    out_gid_domains(actfield);
 }
@@ -460,7 +458,7 @@ if (restart)
    /*------------- save the restart interval, as it will be overwritten */
    mod_res_write = sdyn->res_write_evry;
    /*----------------------------------- the step to read in is restart */
-#if defined(BINIO) && defined(NEW_RESTART_READ)
+#if defined(BINIO)
    restart_read_bin_nlnstructdyn(sdyn, &dynvar,
                                  &(actsolv->sysarray_typ[stiff_array]),
                                  &(actsolv->sysarray[stiff_array]),
@@ -622,7 +620,7 @@ mod_stress    = sdyn->step % sdyn->updevry_stress;
 mod_res_write = sdyn->step % sdyn->res_write_evry;
 /*------------------------------------------ perform stress calculation */
 if (mod_stress==0 || mod_disp==0)
-if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1)
+if (ioflags.struct_stress==1)
 {
    *action = calc_struct_stress;
    container.dvec         = NULL;
@@ -638,38 +636,52 @@ if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1)
 }
 /*-------------------------------------------- print out results to out */
 if (mod_stress==0 || mod_disp==0)
-if (ioflags.struct_stress_file==1 && ioflags.struct_disp_file==1)
+if (ioflags.struct_stress==1 && ioflags.struct_disp==1 && ioflags.output_out==1)
 {
   out_sol(actfield,actpart,actintra,sdyn->step,0);
 }
 /*--------------------------------------------- printout results to gid */
 #ifdef BINIO
+if (ioflags.output_bin==1)
+{
 if (mod_disp==0)
-  if (ioflags.struct_disp_gid==1) {
+  if (ioflags.struct_disp==1) {
     out_results(&out_context, sdyn->time, sdyn->step, 0, OUTPUT_DISPLACEMENT);
     out_results(&out_context, sdyn->time, sdyn->step, 1, OUTPUT_VELOCITY);
     out_results(&out_context, sdyn->time, sdyn->step, 2, OUTPUT_ACCELERATION);
   }
 if (mod_stress==0)
-  if (ioflags.struct_stress_gid==1)
+  if (ioflags.struct_stress==1)
     out_results(&out_context, sdyn->time, sdyn->step, 0, OUTPUT_STRESS);
+}
 #endif
 
-if (par.myrank==0)
+if (par.myrank==0 && ioflags.output_gid==1)
 {
    if (mod_disp==0)
-   if (ioflags.struct_disp_gid==1)
+   if (ioflags.struct_disp==1)
    {
       out_gid_sol("displacement",actfield,actintra,sdyn->step,0,ZERO);
       out_gid_sol("velocities",actfield,actintra,sdyn->step,1,ZERO);
       out_gid_sol("accelerations",actfield,actintra,sdyn->step,2,ZERO);
    }
    if (mod_stress==0)
-   if (ioflags.struct_stress_gid==1)
+   if (ioflags.struct_stress==1)
    out_gid_sol("stress"      ,actfield,actintra,sdyn->step,0,ZERO);
 }
 /*-------------------------------------- write restart data to pss file */
 if (mod_res_write==0) {
+#ifdef BINIO
+restart_write_bin_nlnstructdyn(&out_context,
+                               sdyn, &dynvar,
+                               actsolv->nrhs, actsolv->rhs,
+                               actsolv->nsol, actsolv->sol,
+                               1            , dispi       ,
+                               1            , vel         ,
+                               1            , acc         ,
+                               3            , fie         ,
+                               3            , work);
+#else
 restart_write_nlnstructdyn(sdyn,
                            &dynvar,
                            actfield,
@@ -687,16 +699,6 @@ restart_write_nlnstructdyn(sdyn,
                            &dirich_a,
                            &container   /* contains variables defined in container.h */
                            );
-#ifdef BINIO
-restart_write_bin_nlnstructdyn(&out_context,
-                               sdyn, &dynvar,
-                               actsolv->nrhs, actsolv->rhs,
-                               actsolv->nsol, actsolv->sol,
-                               1            , dispi       ,
-                               1            , vel         ,
-                               1            , acc         ,
-                               3            , fie         ,
-                               3            , work);
 #endif
 }
 /*----------------------------------------------------- print time step */

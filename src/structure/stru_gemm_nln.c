@@ -384,8 +384,7 @@ init_assembly(actpart,actsolv,actintra,actfield,mass_array,0);
 calinit(actfield,actpart,action,&container);
 
 /*----------------------------------------- write output of mesh to gid */
-if (par.myrank==0)
-if (ioflags.struct_disp_gid||ioflags.struct_stress_gid)
+if (par.myrank==0 && ioflags.output_gid==1)
    out_gid_msh();
 
 /*----------- init the contact algorithms for contact with wall element */
@@ -449,8 +448,7 @@ sdyn->step = -1;
 sdyn->time = 0.0;
 
 /*----------------------------------------- output to GID postprozessor */
-if (ioflags.struct_disp_gid==1 || ioflags.struct_stress_gid==1)
-if (par.myrank==0)
+if (par.myrank==0 && ioflags.output_gid==1)
 {
    out_gid_domains(actfield);
 }
@@ -533,7 +531,7 @@ if (restart)
    mod_res_write = sdyn->res_write_evry;
    updevry_disp  = sdyn->updevry_disp;
    /*----------------------------------- the step to read in is restart */
-#if defined(BINIO) && defined(NEW_RESTART_READ)
+#if defined(BINIO)
    restart_read_bin_nlnstructdyn(sdyn, &dynvar,
                                  &(actsolv->sysarray_typ[stiff_array]),
                                  &(actsolv->sysarray[stiff_array]),
@@ -1082,7 +1080,7 @@ mod_stress    = sdyn->step % sdyn->updevry_stress;
 mod_res_write = sdyn->step % sdyn->res_write_evry;
 /*------------------------------------------ perform stress calculation */
 if (mod_stress==0 || mod_disp==0)
-if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1)
+if (ioflags.struct_stress==1)
 {
    *action = calc_struct_stress;
    container.dvec          = NULL;
@@ -1098,33 +1096,36 @@ if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1)
 }
 /*-------------------------------------------- print out results to out */
 if (mod_stress==0 || mod_disp==0)
-if (ioflags.struct_stress_file==1 && ioflags.struct_disp_file==1)
+if (ioflags.struct_stress==1 && ioflags.struct_disp==1 && ioflags.output_out==1)
 {
   out_sol(actfield,actpart,actintra,sdyn->step,0);
 }
 /*-------------------------- printout results to gid no time adaptivity */
 #ifdef BINIO
-if (timeadapt==0) {
-  if (mod_disp==0)
-    if (ioflags.struct_disp_gid==1) {
-      out_results(&out_context, sdyn->time, sdyn->step, 0, OUTPUT_DISPLACEMENT);
+if (ioflags.output_bin==1)
+{
+  if (timeadapt==0) {
+    if (mod_disp==0)
+      if (ioflags.struct_disp==1) {
+        out_results(&out_context, sdyn->time, sdyn->step, 0, OUTPUT_DISPLACEMENT);
 #ifdef WALLCONTACT
-      if (contactflag)
-        out_results(&out_context, sdyn->time, sdyn->step, 9, OUTPUT_CONTACT);
+        if (contactflag)
+          out_results(&out_context, sdyn->time, sdyn->step, 9, OUTPUT_CONTACT);
 #endif
-    }
-  if (mod_stress==0)
-    if (ioflags.struct_stress_gid==1) {
-      out_results(&out_context, sdyn->time, sdyn->step, 0, OUTPUT_STRESS);
-    }
+      }
+    if (mod_stress==0)
+      if (ioflags.struct_stress==1) {
+        out_results(&out_context, sdyn->time, sdyn->step, 0, OUTPUT_STRESS);
+      }
+  }
 }
 #endif
 
 if (timeadapt==0)
-if (par.myrank==0)
+if (par.myrank==0 && ioflags.output_gid==1)
 {
    if (mod_disp==0)
-   if (ioflags.struct_disp_gid==1)
+   if (ioflags.struct_disp==1)
    {
       out_gid_soldyn("displacement",actfield,actintra,sdyn->step,0,sdyn->time);
       /*out_gid_soldyn("velocity",actfield,actintra,sdyn->step,1,sdyn->time);*/
@@ -1136,7 +1137,7 @@ if (par.myrank==0)
 
    }
    if (mod_stress==0)
-   if (ioflags.struct_stress_gid==1)
+   if (ioflags.struct_stress==1)
    {
       out_gid_soldyn("stress"      ,actfield,actintra,sdyn->step,0,sdyn->time);
    }
@@ -1182,6 +1183,17 @@ if (timeadapt)
 /*-------------------------------------- write restart data to pss file */
 if (mod_res_write==0)
 {
+#ifdef BINIO
+restart_write_bin_nlnstructdyn(&out_context,
+                               sdyn, &dynvar,
+                               actsolv->nrhs, actsolv->rhs,
+                               actsolv->nsol, actsolv->sol,
+                               1            , dispi       ,
+                               1            , vel         ,
+                               1            , acc         ,
+                               3            , fie         ,
+                               3            , work);
+#else
 restart_write_nlnstructdyn(sdyn,&dynvar,actfield,actpart,actintra,action,
                            actsolv->nrhs, actsolv->rhs,
                            actsolv->nsol, actsolv->sol,
@@ -1193,16 +1205,6 @@ restart_write_nlnstructdyn(sdyn,&dynvar,actfield,actpart,actintra,action,
                            &intforce_a,
                            &dirich_a,
                            &container);     /* contains variables defined in container.h */
-#ifdef BINIO
-restart_write_bin_nlnstructdyn(&out_context,
-                               sdyn, &dynvar,
-                               actsolv->nrhs, actsolv->rhs,
-                               actsolv->nsol, actsolv->sol,
-                               1            , dispi       ,
-                               1            , vel         ,
-                               1            , acc         ,
-                               3            , fie         ,
-                               3            , work);
 #endif
 }
 /*----------------------------------------------------- print time step */

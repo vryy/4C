@@ -668,7 +668,7 @@ outstep++;
 pssstep++;
 restartstep++;
 
-if (pssstep==fsidyn->uppss && ioflags.fluid_vis_file==1)
+if (pssstep==fsidyn->uppss && ioflags.fluid_vis==1)
 {
    pssstep=0;
    /*--------------------------------------------- store time in time_a */
@@ -683,7 +683,7 @@ if (pssstep==fsidyn->uppss && ioflags.fluid_vis_file==1)
 solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol,3,actpos);
 fluid_transpres(actfield,0,0,actpos,fdyn->numdf-1,0);
 
-if (outstep==fdyn->upout && ioflags.fluid_sol_file==1)
+if (outstep==fdyn->upout && ioflags.output_out==1 && ioflags.fluid_sol==1)
 {
    outstep=0;
    out_sol(actfield,actpart,actintra,fdyn->step,actpos);
@@ -693,9 +693,10 @@ if (outstep==fdyn->upout && ioflags.fluid_sol_file==1)
 if (restartstep==fsidyn->uprestart)
 {
    restartstep=0;
-   restart_write_fluiddyn(fdyn,actfield,actpart,actintra,action,&container);
 #ifdef BINIO
    restart_write_bin_fluiddyn(&out_context, fdyn);
+#else
+   restart_write_fluiddyn(fdyn,actfield,actpart,actintra,action,&container);
 #endif
 }
 
@@ -864,7 +865,8 @@ break;
  *======================================================================*/
 case 98:
 #ifdef BINIO
-  if (ioflags.fluid_sol_gid==1) {
+  if (ioflags.output_bin==1 && ioflags.fluid_sol==1)
+  {
     out_results(&out_context, fdyn->acttime, fdyn->step, actpos, OUTPUT_VELOCITY);
     out_results(&out_context, fdyn->acttime, fdyn->step, actpos, OUTPUT_PRESSURE);
   }
@@ -881,11 +883,11 @@ if (actintra->intra_fieldtyp != fluid) break;
 if (pssstep==0) actpos--;
 
 /*------------------------------------- print out solution to .out file */
-if (outstep!=0 && ioflags.fluid_sol_file==1)
+if (outstep!=0 && ioflags.output_out==1 && ioflags.fluid_sol==1)
 out_sol(actfield,actpart,actintra,fdyn->step,actpos);
 
 /*------------------------------------ print out solution to 0.pss file */
-if (ioflags.fluid_vis_file==1)
+if (ioflags.fluid_vis==1)
 {
    if (pssstep!=0)
    {

@@ -222,8 +222,7 @@ if(stalact==calsta_init || stalact==calsta_init_solve)
   calinit(actfield,actpart,action,&container);
 }
 /*----------------------------------------- write output of mesh to gid */
-if (par.myrank==0&&opt->optstep==0)
-if (ioflags.struct_disp_gid||ioflags.struct_stress_gid)
+if (par.myrank==0 && opt->optstep==0 && ioflags.output_gid==1)
    out_gid_msh();
 /*------call element routines to calculate & assemble stiffness matrice */
 if(stalact==calsta_init_solve || stalact==calsta_solve)
@@ -273,13 +272,13 @@ if(stalact==calsta_init_solve || stalact==calsta_solve)
                     );
 }
 /*--------------------------------------------- printout results to gid */
-if (ioflags.struct_disp_gid==1 && par.myrank==0 && stalact!=calsta_init)
+if (ioflags.output_gid==1 && ioflags.struct_disp==1 && par.myrank==0 && stalact!=calsta_init)
 {
    out_gid_sol("displacement",actfield,actintra,opt->optstep,0,ZERO);
    /* out_gid_domains(actfield); */
 }
 /*------------------------------------------ perform stress calculation */
-if (ioflags.struct_stress_file==1 || ioflags.struct_stress_gid==1 && stalact!=calsta_init)
+if (ioflags.struct_stress==1 && stalact!=calsta_init)
 {
    *action = calc_struct_stress;
    container.dvec         = NULL;

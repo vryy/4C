@@ -160,7 +160,7 @@ fprintf(out,"#------------------------------------------------------------------
 
 /* ------------- write displacements of master field */
 /*----------------------------------------------------------------------*/
-if (ioflags.struct_disp_gid==1||ioflags.fluid_sol_gid==1)
+if (ioflags.struct_disp==1||ioflags.fluid_sol==1)
 {
   resulttype        = "VECTOR";
   resultplace       = "ONNODES";
@@ -207,7 +207,7 @@ if (ioflags.struct_disp_gid==1||ioflags.fluid_sol_gid==1)
   /*-------------------------------------------------------------------*/
   fprintf(out,"VALUES\n");
 }
-if (ioflags.struct_disp_gid==1 && masterfield!=NULL)
+if (ioflags.struct_disp==1 && masterfield!=NULL)
 {
   for (i=0; i<masterfield->dis[0].numnp; i++)
   {
@@ -239,7 +239,7 @@ if (ioflags.struct_disp_gid==1 && masterfield!=NULL)
   /* write displacements of slave field */
   /*-------------------------------------------------------------------*/
 }
-if (ioflags.struct_disp_gid==1)
+if (ioflags.struct_disp==1)
 {
   for (i=0; i<slavefield->dis[0].numnp; i++)
   {
@@ -270,14 +270,14 @@ if (ioflags.struct_disp_gid==1)
     }
   }
 }
-if (ioflags.struct_disp_gid==1||ioflags.fluid_sol_gid==1)
+if (ioflags.struct_disp==1||ioflags.fluid_sol==1)
 {
   fprintf(out,"END VALUES\n");
 }
 /*---------------------------------------------------- some output ---*/
-if (ioflags.struct_stress_gid==1 && masterfield!=NULL)
+if (ioflags.struct_stress==1 && masterfield!=NULL)
   out_gid_sol("stress"      ,masterfield,actintram,ssidyn->step,0,ssidyn->time);
-if (ioflags.struct_stress_gid==1 && slavefield!=NULL)
+if (ioflags.struct_stress==1 && slavefield!=NULL)
   out_gid_sol("stress"      ,slavefield,actintram,ssidyn->step,0,ssidyn->time);
 
 fflush(out);
