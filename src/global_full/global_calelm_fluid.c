@@ -158,7 +158,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    case el_shell8:
       shell8(actfield,actpart,actintra,actele,
              &estif_global,&emass_global,&intforce_global,
-             kstep,action);
+             kstep,0,NULL,action);
    break;
    case el_brick1:
       brick1(actpart,actintra,actele,
@@ -314,7 +314,7 @@ for (i=0; i<actfield->dis[0].numele; i++)
 /*------------------------------- init all kind of routines for shell8  */
 if (is_shell8==1)
 {
-   shell8(actfield,actpart,NULL,NULL,&estif_global,&emass_global,&intforce_global,0,action);
+   shell8(actfield,actpart,NULL,NULL,&estif_global,&emass_global,&intforce_global,0,0,NULL,action);
 }
 /*-------------------------------- init all kind of routines for brick1 */
 if (is_brick1==1)
