@@ -8,6 +8,251 @@
 *//*! @{ (documentation module open)*/
 
 /*!---------------------------------------------------------------------
+\brief Einige Hinweise zur Performance                                              
+
+<pre>
+Man hat beim Programmieren einen sehr grossen Einfluss darauf, ob
+ein eine bestimmte Sache langsam oder schnell gerechnet wird, darum hier
+einige Hinweise:
+
+----*----
+Generelles
+
+Der Computer ist dumm und macht daher gerne dumme Sachen, d.h.
+
+- Schnell abgearbeitet wird alles, was in moeglichst grossen Mengen 
+in moeglichst EINFACHER Form abgespeichert ist.
+(Das beste sind lange Vektoren)
+  
+- Der Compiler holt mit seiner Optimierung einen betraechtlichen 
+Geschwindigkeitszuwachs aus dem Code, wenn er in der Lage ist
+die Strukturen eines Programmes LOKAL zu sehen und die Operationen vorherzusagen
+if/switch                                                           :  schlecht
+Strukturen                                                          :  schlecht
+Pointer                                                             :  sehr problematisch
+Pointer auf Srukturen                                               :  schlecht
+verschachtelte Daten                                                :  schlecht
+lange Vektoren (mit fuer den Compiler sichtbarer Groesse)           :  sehr gut
+starr dimensionierte Matrizen                                       :  sehr gut
+dynamische Matrizen gut wenn Groesse fuer den Compiler sichtbar     :  gut
+einfache, sehr grosse Funktionen                                    :  sehr gut
+viele kleine Funktionen                                             :  schlecht
+viele Flags, ueber die viele Entscheidungen gefaellt werden         :  schlecht
+  
+
+----*----
+Man sollte sich in Erinnerung rufen, an welcher Stelle im Code man
+gerade arbeitet, da dies bestimmt, wie haeufig etwas ausgefuehrt wird. 
+Grundsaetzlich sind
+
+in Steuerungsroutinen:
+
+skalare Operationen            praktisch umsonst
+vektorwertige Operationen      teuer
+Aufrufe von Elementen          teuer
+Aufrufe von solserv-Routinen   teuer
+sparse matrix Operationen      teuer - sehr teuer
+(Natuerlich kommt es noch darauf an, ob man etwas einmalig macht
+ oder sich z.B. in einer Iterationsschleife befindet)
+ 
+in Elementroutinen:            
+
+skalare Operationen               preiswert
+vektorwertige Operationen         o.k. wenn gut programmiert
+dense matrix Operationen          o.k. wenn gut programmiert
+Aufrufe von Eigenwert oder 
+Loesern im Element                sehr teuer
+Verzweigungen und switches        teuer und behindern den Compiler
+kurzlaufende Schleifen            teurer als ausschreiben
+Funktionsaufrufe                  teuer aber noetig
+aufrufe von am-Funktionen      	  teuer
+Operationen mit strings als flags teuer
+Zugriffe in Strukturen direkt 
+oder ueber Pointer		  teuer und behindern den Compiler
+
+
+Am Integrationspunkt
+
+skalare Operationen            preiswert in kleinen Mengen
+vektorwertige Operationen      o.k. wenn gut programmiert
+dense matrix Operationen       o.k. wenn gut programmiert
+Aufrufe von Eigenwert oder 
+Loesern im Element             sehr teuer
+Verzweigungen und switches        teuer und behindern den Compiler
+kurzlaufende Schleifen            teurer als ausschreiben
+Funktionsaufrufe                  teuer aber noetig
+aufrufe von am-Funktionen      	  teuer
+Operationen mit strings als flags teuer
+Zugriffe in Strukturen direkt 
+oder ueber Pointer		  teuer und behindern den Compiler
+
+Mehr Sorgfalt sollte also dort angewandt werden, wo Operationen haeufiger
+ausgefuehrt werden. Als Belohnung fuer das Ausprobieren verschiedener
+moeglicher Arten der Programmierung koennen u.U. massive Geschwindigkeitszuwaechse
+erzielt werden.
+
+----*----
+skalare Operationen
+
+Eine Division ist deutlich teuer als jede andere skalare Verknuepfung, daher
+wenn moeglich Divisionen vorwegnehmen:
+\code
+anstatt
+for (i=0; i<n; i++)
+{
+   b[i] = a[i]/2.0;
+}
+lieber
+half = 1.0/2.0;
+for (i=0; i<n; i++)
+{
+   b[i] = a[i]*half;
+}
+\endcode
+
+----*----
+vektor- und matrix-wertige Operationen
+
+Koennen entweder mit Schleifen gemacht, ausgeschrieben oder unter Verwendung
+von speziellen Serviceroutinen gemacht werden.
+Grundsaetzlich gilt:
+
+- Kurze Schleifen lieber ausschreiben: 
+\code
+anstatt
+for (i=0; i<3; i++)
+{
+   b[i] = a[i]*c[i];
+}
+lieber
+b[0] = a[0]*c[0];
+b[1] = a[1]*c[1];
+b[2] = a[2]*c[2];
+\endcode
+- Wenn schon Schleifen, dann moeglichst buendeln:
+\code
+anstatt
+for (i=0; i<3; i++) b[i] = a[i]*c[i];
+for (i=0; i<3; i++) d[i] = e[i]*f[i];
+for (i=0; i<3; i++) g[i] = h[i]*j[i];
+for (i=0; i<3; i++) n[i] = l[i]*k[i];
+lieber
+for (i=0; i<3; i++)
+{
+   b[i] = a[i]*c[i];
+   d[i] = e[i]*f[i];
+   g[i] = h[i]*j[i];
+   n[i] = l[i]*k[i];
+}
+\endcode
+
+- tensorielle Ausdruecke lieber in Matrixform programmieren
+(Tensor 4.Stufe als 2D Matrix speichern)
+
+- Bei komplexeren und/oder groesseren Vektoroperationen
+auf eine Serviceroutine zurueckgreifen. Dies kann
+eine von uns in der math Sammlung selbst geschriebene, jedoch bevorzugt
+eine 'geklaute' Routine sein. Bei groesseren Matrizen (so ab Dimension 30)
+lohnt sich der Aufruf von BLAS Routinen, die als lib sowieso dazugelinkt sind.
+(BLAS Aufrufe findet man z.B. unter netlib.org erlaeutert)
+
+- Serviceroutinen fuer matrix-vektor Operationen sollten bevorzugt in Fortran sein.
+
+- Gelegentlich ist es auch moeglich 2D Matrizen als Vektoren zu interpretieren
+und die Operationen mit einem Vektor auszufuehren anstatt mit einer Matrix
+\code
+anstatt
+for (i=0; i<10; i++)
+for (j=0; j<10; j++) 
+{
+   A[i][j] = A[i][j] * xi;
+}
+lieber
+for (i=0; i<100; i++)
+{
+  A[0][i] = A[0][i] * xi;
+} 
+\endcode
+Dies geht insbesondere mit 2D-4D Matrizen, die mit dem am-System erzeugt wurden auch,
+da diese im letzten Laufindex physikalisch kontinuierlich sind.
+
+- logische Abbrueche und Verzweigungen mit if oder switch 
+in Schleifen vermeiden da diese den Compiler an der Optimierung der 
+Schleife hindern:
+\code
+anstatt
+for (i=0; i<10; i++)
+{
+   A[i] = b[i] * c[i]; 
+
+   if (FABS(A[i])<EPS12) break;
+}
+lieber
+for (i=0; i<10; i++)
+{
+   A[i] = b[i] * c[i]; 
+}
+for (i=0; i<10; i++)
+if (FABS(A[i])<EPS12) break;
+\endcode
+
+----*----
+logische Steuerungen des Programmablaufs
+
+Grundsaetzlich ist schlichter Code schneller als komplizierter, soll heissen:
+
+- Auf Integrationspunkt- und Elementebene moeglichst wenig if und switch
+
+- Auf Integrationspunkt- und Elementebene haben Aufrufe von 
+hoeheren c-Bibliothekroutinen wie printf, strcmp, o.ae. nichts verloren
+da diese richtig teuer sind/sein koennen / die Optimierung des Compilers stoeren
+
+- Auf Integrationspunkt- und Elementebene sollten Felder statische Groessen haben und
+entweder Lokalvariablen fester Groesse sein, oder mittels am-System EINMAL 
+als static deklariert werden.
+Das Anlegen und Loeschen von dynamischen Matrizen ist hier sauteuer (und sehr fehlertraechtig). 
+
+- Funktionen sollten spezialisiert sein, also eine extra Funktion fuer jede spezifische
+Aufgabe schreiben, anstatt einer grossen, die ueber n flags n*n verschiedene Dinge tun kann.
+  
+- Andererseits Funktionen, die nur 'dumm' etwas ausrechnen, ohne Entscheidungen zu faellen
+nicht in viele kleine Subroutinen splitten. Fuer den Compiler ist es besser, wenn moeglichst viel
+in einer Routine steht. 
+
+----*----
+selbstverstaendliches, was praktisch doch immer wieder auftaucht
+
+- Nicht die gleichen Dinge mehrfach ausrechnen
+
+- Nicht Sachen ausrechnen, die man nicht haben moechte, und die fuer den
+Fortgang einer Simulation auch keine Bedeutung haben
+
+- Nur Daten auf Platte schreiben, die man gedenkt hinterher auch anzukucken und auszuwerten
+(Kostet Platz UND ist langsam)
+
+- Kollegen fragen, wenn man sich nicht sicher ist, wie man etwas umsetzen soll
+
+- etc...
+
+</pre>
+------------------------------------------------------------------------*/
+void performance()
+{
+#ifdef DEBUG 
+dstrc_enter("performance");
+#endif
+/*----------------------------------------------------------------------*/
+/* Code */
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of frint */
+
+
+
+/*!---------------------------------------------------------------------
 \brief general appearance of a routine                                              
 
 <pre>                                                    author month/year 
