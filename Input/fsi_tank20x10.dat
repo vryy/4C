@@ -4,12 +4,12 @@
 //             http://www.uni-stuttgart.de/ibs/members/genkinger/
 //             0711 - 685-6127
 // 
-// necessary defines: -DD_FLUID -DD_FLUID2 -DAZTEC_PACKAGE -DUMFPACK -DRESULTTEST -DD_FSI -DD_ALE -DD_WALL1
+// necessary defines: -DD_FLUID -DD_FLUID2 -DAZTEC_PACKAGE -DRESULTTEST -DD_FSI -DD_ALE -DD_WALL1
 //
 // #define MAXNOD           (4)
 // #define MAXELE           (4)
 // #define MAXDOFPERNODE    (5)
-// #define MAXGAUSS         (3)
+// #define MAXGAUSS         (4)
 //
 ==================================================================
                         General Data File C_CARAT
