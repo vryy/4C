@@ -27,17 +27,6 @@ This routine ... for an 3D-hex-element.
 \return void                                               
 \sa calling: ---; called by: c1_cint()
 
-*----------------------------------------------------------------------*/
-/* 
-the 64bit linker expects an underslash appended to calls for
-fortran90 subroutines:
-*/
-#ifdef SIXTYFOUR 
-#define c1invf   c1invf_
-#define mxmab   mxmab_
-#define mxmabt   mxmabt_
-#define fortranpow  fortranpow_
-#endif
 /*----------------------------------------------------------------------*
  |                                                        al    9/01    |
  |   evaluation of the elastic constitutive matrix (large strains)      |

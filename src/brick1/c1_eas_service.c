@@ -14,15 +14,6 @@
 \addtogroup BRICK1 
 *//*! @{ (documentation module open)*/
 
-/* 
-the 64bit linker expects an underslash appended to calls for
-fortran90 subroutines:
-*/
-#ifdef SIXTYFOUR 
-#define solveq   solveq_
-#define mxmab   mxmab_
-#endif
-
 /*!----------------------------------------------------------------------
 \brief determine the transformation matrix
 

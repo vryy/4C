@@ -51,6 +51,17 @@ typedef char      CHAR;
 #define dsygv  dsygv_
 #define dsyevd dsyevd_
 #define colsol colsol_
+#define c1inv6 c1inv6_
+#define c1ab   c1ab_
+#define mxmatb mxmatb_
+#define mxmabt mxmabt_
+#define fortranpow fortranpow_
+#define mxmab  mxmab_
+#define c1invf c1invf_
+#define solveq solveq_
+#define c1jacb c1jacb_
+#define dsyev  dsyev_
+#define mumps_interface   mumps_interface_
 #endif
 /* append underslash for CUSS Sunfire */
 #ifdef SUN 
@@ -63,16 +74,40 @@ typedef char      CHAR;
 #define dsygv  dsygv_
 #define dsyevd dsyevd_
 #define colsol colsol_
+#define c1inv6 c1inv6_
+#define c1ab   c1ab_
+#define mxmatb mxmatb_
+#define mxmabt mxmabt_
+#define fortranpow fortranpow_
+#define mxmab  mxmab_
+#define c1invf c1invf_
+#define solveq solveq_
+#define c1jacb c1jacb_
+#define dsyev  dsyev_
+#define mumps_interface   mumps_interface_
 #endif
+/* append underslash for SIXTYFOUR */
 #ifdef SIXTYFOUR 
 #define dsytrf dsytrf_
 #define dsytri dsytri_
 #define dsytrs dsytrs_
 #define dgetrf dgetrf_
+#define dgetri dgetri_
 #define dgetrs dgetrs_
 #define dsygv  dsygv_
 #define dsyevd dsyevd_
 #define colsol colsol_
+#define c1inv6 c1inv6_
+#define c1ab   c1ab_
+#define mxmatb mxmatb_
+#define mxmabt mxmabt_
+#define fortranpow fortranpow_
+#define mxmab  mxmab_
+#define c1invf c1invf_
+#define solveq solveq_
+#define c1jacb c1jacb_
+#define dsyev  dsyev_
+#define mumps_interface   mumps_interface_
 #endif
 
 /*----------------------------------------------------------------------*

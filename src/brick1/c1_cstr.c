@@ -8,13 +8,6 @@
 #include "../headers/standardtypes.h"
 #include "brick1.h"
 #include "brick1_prototypes.h"
-/* 
-the 64bit linker expects an underslash appended to calls for
-fortran90 subroutines:
-*/
-#ifdef SIXTYFOUR 
-#define c1jacb   c1jacb_
-#endif
 
 /*! 
 \addtogroup BRICK1 

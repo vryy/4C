@@ -26,7 +26,7 @@ SRC       =  /home/<name>/wdir/ccarat/
 # -DSPOOLES_PACKAGE    defines interface to solver library Spooles (only in parallel HPUX11)
 #
 # 
-PFL       =  -DSUSE73 -DD_BRICK1 -DD_FLUID1 -DD_SHELL8 -DD_ALE -DD_WALL1
+PFL       =  -DSUSE73 -DD_BRICK1 -DD_FLUID -DD_FLUID2 -DD_FLUID3 -DD_SHELL8 -DD_ALE -DD_WALL1 -DAZTEC_PACKAGE
 #
 # utilities
 #
@@ -52,7 +52,10 @@ LDOPTS   = -a archive -v -W1 -M
 
 LIBS	 =  -L/usr/lib -lc -lm -lF77ext -lf2c \
             -L/usr/lib/gcc-lib/i486-suse-linux/2.95.3 -lg2c  \
-            -L/home/<name>/lib -llapack -lblas -lmetis_linux  
+            -L../lib_linux/lapack/lib -llapack \
+	    -L../lib_linux/blas/lib -lblas \
+	    -L../lib_linux/metis/lib -lmetis \
+	    -L../lib_linux/aztec21/lib -laztec
                 
 
 

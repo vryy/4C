@@ -16,7 +16,11 @@
 #endif
 #else
 /*------------------------ without mpi , sequentiel version of aztec2.1 */
+#ifndef SUSE73
 #include </bau/stat33/users/statik/lib/AZTEC21/az_aztec.h>
+#else
+#include "../../../lib_linux/aztec21/lib/az_aztec.h"
+#endif
 #endif
 #endif /* end of ifdef AZTEC_PACKAGE */
 
