@@ -40,6 +40,19 @@ extern ALLDYNA      *alldyn;
  | global variable GENPROB genprob is defined in global_control.c       |
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
+/*!----------------------------------------------------------------------
+\brief positions of physical values in node arrays
+
+<pre>                                                        chfoe 11/04
+
+This structure contains the positions of the various fluid solutions 
+within the nodal array of sol_increment.a.da[ipos][dim].
+
+extern variable defined in fluid_service.c
+</pre>
+
+------------------------------------------------------------------------*/
+extern struct _FLUID_POSITION ipos;
 
 static FLUID_DYNAMIC *fdyn;
 /*!---------------------------------------------------------------------
@@ -62,6 +75,7 @@ NOTE: if there is no classic time rhs (as described in WAW) the array
 \param  **xyze     DOUBLE           (o)  nodal coordinates
 \param  **eveln    DOUBLE           (o)  ele vels at time n
 \param  **evelng   DOUBLE           (o)  ele vels at time n+g
+\param  **evhist   DOUBLE           (o)  history vector
 \param   *epren    DOUBLE           (o)  ele pres at time n
 \param   *edeadn   DOUBLE           (o)  ele dead load at n (selfweight)
 \param   *edeadng  DOUBLE           (o)  ele dead load at n+g (selfweight)
@@ -69,19 +83,22 @@ NOTE: if there is no classic time rhs (as described in WAW) the array
 \return void
 
 ------------------------------------------------------------------------*/
-void f2_calset(
-                  ELEMENT         *ele,
-                  DOUBLE         **xyze,
-                  DOUBLE         **eveln,
-                  DOUBLE         **evelng,
-                  DOUBLE          *epren,
-                  DOUBLE          *edeadn,
-                  DOUBLE          *edeadng,
-                  INT             *hasext
-	           )
+void f2_calset( 
+	        ELEMENT         *ele,     
+                DOUBLE         **xyze,
+                DOUBLE         **eveln,    
+	        DOUBLE         **evelng,   
+	        DOUBLE         **evhist,
+	        DOUBLE          *epren,
+		DOUBLE          *edeadn,
+		DOUBLE          *edeadng,
+		INT             *hasext
+	      )
 {
 INT    i;           /* simply some counters                             */
 INT    actcurve;    /* actual time curve                                */
+INT    nodesol, nodehist; /* position flags for sol_increment           */
+INT    ndsolold;          /* position flags for sol_increment           */
 DOUBLE acttimefac;  /* time factor from actual curve                    */
 DOUBLE acttimefacn; /* time factor at time (n)                          */
 DOUBLE acttime;
@@ -92,64 +109,46 @@ GSURF *actgsurf;
 dstrc_enter("f2_calset");
 #endif
 
+/*------------------------------------------------------- initialise ---*/
 fdyn = alldyn[genprob.numff].fdyn;
+nodesol  = ipos.velnp;
+nodehist = ipos.hist;
+ndsolold = ipos.veln;
 
-/*-------------------------------------------- set element coordinates */
+/*-------------------------------------------- set element coordinates -*/
 for(i=0;i<ele->numnp;i++)
 {
    xyze[0][i]=ele->node[i]->x[0];
    xyze[1][i]=ele->node[i]->x[1];
 }
 
-/*---------------------------------------------------------------------*
- | position of the different solutions:                                |
- | node->sol_incement: solution history used for calculations          |
- |       sol_increment[0][i]: solution at (n-1)                        |
- |	 sol_increment[1][i]: solution at (n)                          |
- |	 sol_increment[2][i]: solution at (n+g)                        |
- |	 sol_increment[3][i]: solution at (n+1)                        |
- *---------------------------------------------------------------------*/
-
-
 /* -> implicit time integration method ---------*/
 for(i=0;i<ele->numnp;i++) /* loop nodes of element */
 {
    actnode=ele->node[i];
 /*----------------------------------- set element velocities (n+gamma) */
-   evelng[0][i]=actnode->sol_increment.a.da[3][0];
-   evelng[1][i]=actnode->sol_increment.a.da[3][1];
-/*-------------------------------------- set supported pressures (n+1) */
+   evelng[0][i]=actnode->sol_increment.a.da[nodesol][0];
+   evelng[1][i]=actnode->sol_increment.a.da[nodesol][1];   
+/*---------------------------------------------- set pressures (n+1) ---*/
+   epren[i]   =actnode->sol_increment.a.da[nodesol][PREDOF];  
+
+/*if (fdyn->turbu > 2) /* for laminar calculations only*/
+/*{
+/*--------------------------------------- set vel. histories at (n) ---*/
+   evhist[0][i] = actnode->sol_increment.a.da[nodehist][0];
+   evhist[1][i] = actnode->sol_increment.a.da[nodehist][1];  
+/*}
+/*------------------------------------ set element velocities at (n) ---*/	 
+   eveln[0][i]=actnode->sol_increment.a.da[ndsolold][0];
+   eveln[1][i]=actnode->sol_increment.a.da[ndsolold][1];       
+/*   Kleine Ersetzung, fuer das Oseen-Problem!!! */ 
+/*   evelng[0][i]=actnode->sol.a.da[0][0] * exp(-8.0*PI*PI*fdyn->acttime*0.01);
+   evelng[1][i]=actnode->sol.a.da[0][1] * exp(-8.0*PI*PI*fdyn->acttime*0.01); 
+
+/*-------------------------------------- set supported pressures (n+1) */   
 } /* end of loop over nodes of element */
 
 
-if(fdyn->nif!=0) /* -> computation of time forces "on" --------------
-                      -> velocities and pressure at (n) are needed ----*/
-{
-   for(i=0;i<ele->numnp;i++) /* loop nodes of element */
-   {
-      actnode=ele->node[i];
-/*------------------------------------- set element velocities at (n) */
-      eveln[0][i]=actnode->sol_increment.a.da[1][0];
-      eveln[1][i]=actnode->sol_increment.a.da[1][1];
-/*------------------------------------------------- set pressures (n) */
-      epren[i]   =actnode->sol_increment.a.da[1][PREDOF];
-   } /* end of loop over nodes of element */
-} /* endif (fdyn->nif!=0) */
-
-if(fdyn->nim!=0) /* -> computation of mass rhs "on" ------------------
-                      -> vel(n)+a*acc(n) are needed --------------------*/
-/* NOTE: if there is no classic time rhs (as described in WAW) the array
-         eveln is misused and does NOT contain the velocity at time (n)
-	 but rather a linear combination of old velocities and
-	 accelerations depending upon the time integration scheme!!!!!*/
-{
-   for(i=0;i<ele->numnp;i++) /* loop nodes of element */
-   {
-      actnode=ele->node[i];
-      eveln[0][i] = actnode->sol_increment.a.da[2][0];
-      eveln[1][i] = actnode->sol_increment.a.da[2][1];
-   } /* end of loop over nodes of element */
-} /* endif (fdyn->nim!=0) */
 
 /*------------------------------------------------ check for dead load */
 actgsurf = ele->g.gsurf;
@@ -193,7 +192,9 @@ dstrc_exit();
 return;
 } /* end of f2_calset */
 
-/*!---------------------------------------------------------------------
+
+
+/*!--------------------------------------------------------------------- 
 \brief set all arrays for element calculation for ALE
 
 <pre>                                                         genk 10/02
@@ -208,9 +209,11 @@ NOTE: in contradiction to the old programm the kinematic pressure
 
 \param   *ele       ELEMENT         (i)    actual element
 \param   *ele       ELEMENT	    (i)    actual element
+\param  **xyz0      DOUBLE          (o)    nodal coordinates at initial time
 \param  **xyze      DOUBLE          (o)    nodal coordinates at time n+theta
 \param  **eveln     DOUBLE          (o)    ele vels at time n
 \param  **evelng    DOUBLE          (o)    ele vels at time n+g
+\param  **evhist    DOUBLE          (o)    history vector
 \param  **ealecovn  DOUBLE          (o)    ALE-convective vels at time n
 \param  **ealecovng DOUBLE          (o)    ALE-convective vels at time n+g
 \param  **egridv    DOUBLE          (o)    element grid velocity
@@ -231,6 +234,7 @@ void f2_calseta(
                   DOUBLE         **xyze,
                   DOUBLE         **eveln,
                   DOUBLE         **evelng,
+                  DOUBLE         **evhist,
                   DOUBLE         **ealecovn,
                   DOUBLE         **ealecovng,
                   DOUBLE         **egridv,
@@ -288,31 +292,29 @@ for(i=0;i<ele->numnp;i++) /* loop nodes of element */
 {
    actfnode=ele->node[i];
 /*------------------------------------ set element velocities (n+gamma) */
-   evelng[0][i]   =actfnode->sol_increment.a.da[3][0];
-   evelng[1][i]   =actfnode->sol_increment.a.da[3][1];
-   ealecovng[0][i]=actfnode->sol_increment.a.da[6][0];
-   ealecovng[1][i]=actfnode->sol_increment.a.da[6][1];
-   egridv[0][i]   =actfnode->sol_increment.a.da[4][0];
-   egridv[1][i]   =actfnode->sol_increment.a.da[4][1];
-} /* end of loop over nodes of element */
+   evelng[0][i]   =actfnode->sol_increment.a.da[ipos.velnp][0];
+   evelng[1][i]   =actfnode->sol_increment.a.da[ipos.velnp][1];
+   ealecovng[0][i]=actfnode->sol_increment.a.da[ipos.convnp][0];
+   ealecovng[1][i]=actfnode->sol_increment.a.da[ipos.convnp][1];
+   egridv[0][i]   =actfnode->sol_increment.a.da[ipos.gridv][0];
+   egridv[1][i]   =actfnode->sol_increment.a.da[ipos.gridv][1];
+   
+/*--------------------------------------- set vel. histories at (n) ---*/
+   evhist[0][i] = actfnode->sol_increment.a.da[ipos.hist][0];
+   evhist[1][i] = actfnode->sol_increment.a.da[ipos.hist][1];  
+/*------------------------------------ set element velocities at (n) ---*/	 
+   eveln[0][i]=actfnode->sol_increment.a.da[ipos.veln][0];
+   eveln[1][i]=actfnode->sol_increment.a.da[ipos.veln][1];      
+/*---------------------------------------------- set pressures (n+1) ---*/
+   epren[i]   =actfnode->sol_increment.a.da[ipos.velnp][PREDOF];
+   
+   /* noch einmal kurz zurueck zur time rhs */
+      ealecovn[0][i]=actfnode->sol_increment.a.da[ipos.convn][0];
+      ealecovn[1][i]=actfnode->sol_increment.a.da[ipos.convn][1];
+} /* end of loop over nodes of element */  
 
-if(fdyn->nif!=0) /* -> computation if time forces "on" --------------
-                      -> velocities and pressure at (n) are needed ----*/
-{
-   for(i=0;i<ele->numnp;i++) /* loop nodes of element */
-   {
-      actfnode=ele->node[i];
-/*------------------------------------- set element velocities at (n) */
-      eveln[0][i] =actfnode->sol_increment.a.da[1][0];
-      eveln[1][i] =actfnode->sol_increment.a.da[1][1];
-      ealecovn[0][i]=actfnode->sol_increment.a.da[5][0];
-      ealecovn[1][i]=actfnode->sol_increment.a.da[5][1];
-/*------------------------------------------------- set pressures (n) */
-      epren[i]    =actfnode->sol_increment.a.da[1][PREDOF];
-   } /* end of loop over nodes of element */
-} /* endif (fdyn->nif!=0) */
 
-/*------------------------------------------------ check for dead load */
+/*----------------------------------------------- check for dead load */
 actgsurf = ele->g.gsurf;
 if (actgsurf->neum!=NULL)
 {
@@ -394,10 +396,10 @@ if (ele->e.f2->fs_on==5)
       actfnode=ele->node[i];
       if(actfnode->xfs==NULL) continue;
 #if 0
-      ephing[i]=actfnode->sol_increment.a.da[3][3];
+      ephing[i]=actfnode->sol_increment.a.da[ipos.velnp][3];
 #endif
       ephing[i]=actfnode->xfs[1];
-      ephin[i] =actfnode->sol_increment.a.da[1][3];
+      ephin[i] =actfnode->sol_increment.a.da[ipos.velnp][3];
    }
 }
 
@@ -436,11 +438,16 @@ return;
    nodal coordinates of actual element are evaluated. since nodes at the
    free surface have changing coordinates during the nonlin. iteration
    one has to treat them separately.
+   Correct integration over moving domains has to be performed over the
+   newest spatial configuration (in any case of theta)! Refere to me
+   (Christiane Foerster) for details on geometric conservation and time
+   integration on deforming domains!
 
 </pre>
 
+\warning Coordinates at new time level n+1 are returned! chfoe 03/05
+
 \param   *ele       ELEMENT         (i)    actual element
-\param   *ele       ELEMENT	    (i)    actual element
 \param  **xyze      DOUBLE          (o)    nodal coordinates at time n+theta
 \return void
 
@@ -452,9 +459,7 @@ void f2_alecoor(
 {
 #ifdef D_FSI
 INT i,j;
-DOUBLE omt,theta;
-DOUBLE xy,xyn,xyng;
-DOUBLE dt;
+DOUBLE xy;
 NODE  *actfnode;    /* actual fluid node                                */
 NODE  *actanode;    /* actual ale node                                  */
 GNODE *actfgnode;   /* actual fluid gnode                               */
@@ -464,14 +469,6 @@ GNODE *actfgnode;   /* actual fluid gnode                               */
 dstrc_enter("f2_alecoor");
 #endif
 
-
-
-fdyn  = alldyn[genprob.numff].fdyn;
-
-theta = fdyn->theta;
-omt = 1.0 - theta;
-dt = fdyn->dta;
-
 /*-------------------------------------------- set element coordinates */
 for(i=0;i<ele->numnp;i++)
 {
@@ -479,28 +476,19 @@ for(i=0;i<ele->numnp;i++)
    actfgnode = actfnode->gnode;
    actanode = actfgnode->mfcpnode[genprob.numaf];
    dsassert(actanode!=NULL,"cannot read from NULL-pointer!\n");
+
    if(actfnode->xfs==NULL) /* no free surface */
    {
       for (j=0;j<2;j++)
       {
          xy     = actfnode->x[j];
-         xyng   = xy + actanode->sol_mf.a.da[1][j];
-         xyn    = xy + actanode->sol_mf.a.da[0][j];
-         xyze[j][i] =  theta*(xyng)+omt*(xyn);
+         xyze[j][i] = xy + actanode->sol_mf.a.da[1][j];
       }
    }
    else /* free surface */
-   {
       for (j=0;j<2;j++)
-      {
-         xy     = actfnode->x[j];
-         xyn    = xy + actanode->sol_mf.a.da[0][j];
-         xyng   = actfnode->xfs[j];
-         xyze[j][i] =  theta*(xyng)+omt*(xyn);
-      }
-   }
+         xyze[j][i] = actfnode->xfs[j];
 }
-
 /*---------------------------------------------------------------------*/
 #ifdef DEBUG
 dstrc_exit();
@@ -518,7 +506,7 @@ return;
 \brief set element coordinates during ALE calculations for relaxation
 parameter of steepest descent method
 
-<pre>                                                         ChFoe 08/03
+<pre>                                                         chfoe 08/03
 
 
 </pre>
@@ -535,7 +523,7 @@ void f2_alecoor_sd(
 {
 #ifdef D_FSI
 INT i,j;
-DOUBLE omt,theta;
+DOUBLE theta;
 NODE  *actfnode;    /* actual fluid node                                */
 NODE  *actanode;    /* actual ale node                                  */
 GNODE *actfgnode;   /* actual fluid gnode                               */
@@ -548,7 +536,6 @@ dstrc_enter("f2_alecoor_sd");
 fdyn  = alldyn[genprob.numff].fdyn;
 
 theta = fdyn->theta;
-omt = 1.0 - theta;
 
 /*-------------------------------------------- set element coordinates */
 
@@ -571,13 +558,6 @@ for(i=0;i<ele->numnp;i++)
    else /* node on implicit free surface */
    {
    dserror("implicit free surface with steepest descent method not yet implementd");
-/*      for (j=0;j<2;j++)
-      {
-         xy    = actfnode->x[j];
-	        xyn   = xy + actanode->sol_mf.a.da[0][j];
-	        xyng  = xyn + actfnode->sol_increment.a.da[3][j+NUMDF]*dt;
-         xyze[j][i] =  theta*(xyng)+omt*(xyn);
-      } */
    }
 }
 
