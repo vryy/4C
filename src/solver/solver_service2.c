@@ -2,6 +2,13 @@
 #include "../headers/solution.h"
 /*----------------------------------------------------------------------*
  |  create number of distributed vectors - collective call ! m.gee 10/01|
+ |  DIST_VECTOR **vector (i/o) adress of pointer a vector of            |
+ |                             DIST_VECTORs will be allocated to        |
+ |  int numvectors       (i)   number of DIST_VECTORs to allocate       |
+ |  int numeq_total      (i)   proc-global dimension of the DIST_VECTORs|
+ |  int numeq            (i)   proc_local  dimension of the DIST_VECTORs|
+ |  char typstr[]        (i)   ="DV" for double-DIST_VECTORs            |
+ |  the values in the DIST_VECTORs is NOT initialized                   |
  *----------------------------------------------------------------------*/
 void solserv_create_vec(DIST_VECTOR **vector,int numvectors,int numeq_total,
                         int numeq,char typstr[])
@@ -35,6 +42,10 @@ return;
 
 /*----------------------------------------------------------------------*
  |   delete number of distributed vectors - collective call ! m.gee 2/02|
+ |  DIST_VECTOR **vector (i/o) adress of pointer a vector of            |
+ |                             DIST_VECTORs is allocated to             |
+ |  int numvectors       (i)   number of DIST_VECTORs to free           |
+ |  the routine frees all DIST_VECTORs in vector and sets vector=NULL   |
  *----------------------------------------------------------------------*/
 void solserv_del_vec(DIST_VECTOR **vector,int numvectors)
 {
@@ -62,6 +73,7 @@ return;
 
 /*----------------------------------------------------------------------*
  |  init a distributed vector to zero - collective call !    m.gee 10/01|
+ |  DIST_VECTOR *disvector (i/o) adress of a DIST_VECTOR to be set to 0.0|
  *----------------------------------------------------------------------*/
 void solserv_zero_vec(DIST_VECTOR *disvector)
 {
@@ -83,6 +95,10 @@ return;
 
 /*----------------------------------------------------------------------*
  |  add contents of the vector vec_from to vec_to            m.gee 10/01|
+ |  vec_to->vec.a.dv[i] += vec_from->vec.a.dv[i]*factor                 |
+ |  DIST_VECTOR *vec_from (i)   vector to be added to another vector    |
+ |  DIST_VECTOR *vec_to   (i/o) vector to be added to                   |
+ |  double factor         (i)   scaling factor                          |
  *----------------------------------------------------------------------*/
 void solserv_add_vec(DIST_VECTOR *vec_from,DIST_VECTOR *vec_to,double factor)
 {
@@ -112,6 +128,10 @@ return;
 
 /*----------------------------------------------------------------------*
  |  copy contents of the vector vec_from to vec_to           m.gee 11/01|
+ |  vec_to->vec.a.dv[i] = vec_from->vec.a.dv[i]                         |
+ |  DIST_VECTOR *vec_from (i)   vector to be copied to another vector   |
+ |  DIST_VECTOR *vec_to   (i/o) vector to be copied to                  |
+ |  user must assure matching dimensions and types                      |
  *----------------------------------------------------------------------*/
 void solserv_copy_vec(DIST_VECTOR *vec_from,DIST_VECTOR *vec_to)
 {
@@ -141,6 +161,10 @@ return;
 
 /*----------------------------------------------------------------------*
  |  make euclidian norm of a distributed vector              m.gee 11/01|
+ |  *result = sqrt( sumof(vec[i]*vec[i]) )                              |
+ |  INTRA *actintra (i) intra-communicator the DIST_VECTOR lives on     |
+ |  DIST_VECTOR *dist_vec (i) vector to make norm of                    |
+ |  double *result        (o) norm of the vector                        |
  *----------------------------------------------------------------------*/
 void solserv_vecnorm_euclid(INTRA *actintra,DIST_VECTOR *dist_vec,double *result)
 {
@@ -177,6 +201,10 @@ return;
 
 /*----------------------------------------------------------------------*
  |  find  absolute maximum value in a vector (Linf-Norm)     m.gee 02/02|
+ |  *result = MAX( ABS(vec[i]) )                                        |
+ |  INTRA *actintra (i) intra-communicator the DIST_VECTOR lives on     |
+ |  DIST_VECTOR *dist_vec (i) vector to make norm of                    |
+ |  double *result        (o) norm of the vector                        |
  *----------------------------------------------------------------------*/
 void solserv_vecnorm_Linf(INTRA *actintra,DIST_VECTOR *dist_vec,double *result)
 {
@@ -212,6 +240,15 @@ return;
 
 /*----------------------------------------------------------------------*
  |  get a certain entry from a distr. vector to all procs    m.gee 11/01|
+ |  returns the value of dof indiz in the vector dist_vec on all procs  |
+ |  INTRA *actintra (i) intra-communicator the DIST_VECTOR lives on     |
+ |  SPARSE_TYP *sysarray_typ (i) sparsity typ of vector-matching matrix |
+ |  SPARSE_ARRAY *sysarray   (i) sparse matrix the vector matches in    |
+ |                               distribution                           | 
+ |  DIST_VECTOR  *dist_vec   (i) vector the value shall be taken from   |
+ |  int           indiz      (i) field-local (unsupported) dof number   |
+ |  double       *result     (o) value in vector at the given dof       |
+ |                               returned redundant on all procs        |
  *----------------------------------------------------------------------*/
 void solserv_getele_vec(INTRA*actintra,SPARSE_TYP *sysarray_typ,
                         SPARSE_ARRAY *sysarray,DIST_VECTOR *dist_vec,
@@ -293,6 +330,12 @@ return;
 
 /*----------------------------------------------------------------------*
  |  make dot product between 2 distr. vectors                m.gee 11/01|
+ |  *dot = sumover_i( vec1[i]*vec2[i] )                                 |
+ |  INTRA *actintra (i) intra-communicator the DIST_VECTORs live on     |
+ |  DIST_VECTOR *dist_vec1 (i) first vector to be multiplied            |
+ |  DIST_VECTOR *dist_vec2 (i) scnd  vector to be multiplied            |
+ |  double      *dot       (o) result of vector-vector multiplication   |
+ |                             returned redundant on all procs          |
  *----------------------------------------------------------------------*/
 void solserv_dot_vec(INTRA *actintra,DIST_VECTOR *dist_vec1,
                      DIST_VECTOR *dist_vec2,double *dot)
@@ -335,6 +378,9 @@ return;
 
 /*----------------------------------------------------------------------*
  |  make product between scalar and distr. vector            m.gee 11/01|
+ |  vec[i] = vec[i] * scalar                                            |
+ |  DIST_VECTOR *dist_vec (i/o) vector to be multiplied by scalar       |
+ |  double       scalar   (o)   scalar value                            |
  *----------------------------------------------------------------------*/
 void solserv_scalarprod_vec(DIST_VECTOR *dist_vec,double scalar)
 {
@@ -365,6 +411,24 @@ return;
  |  Allreduce a distributed vector in an INTRACOMM           m.gee 10/01|
  |  This is a collective call!                                          |
  |  distributed vector to full redundant vector                         |
+ |                                                                      |
+ |  note that the disributed vectors match a certain type of sparse     |
+ |  matrix in the layout of distribution and values. This means, that   |
+ |  the value of a certain dof are NOT in distvec->vec.a.dv[dof]!!!!!   |
+ |                                                                      |
+ |  the redundant vector fullvec holds values of a certain dof in       |
+ |  fullvec[dof]                                                        |
+ |                                                                      |
+ |  the values in the given DIST_VECTOR are copied to a vector of       |
+ |  size numeq_total, which is redundant on all procs                   |
+ |  DIST_VECTOR *distvec (i) DIST_VECTORto be 'allreduced'              |
+ |  SPARSE_ARRAY *sysarray (i) sparse matrix matching the distribution  |
+ |                             of distvec                               |
+ |  SPARSE_TYP *sysarray_typ (i) type of sparse matrix                  |
+ |  double *fullvec (o) vector of lenght numeq_total will be holding    |
+ |                      the values from distvec in correct dof-ordering:|
+ |                      fullvec[dof] = value of a certain dof           |
+ |  INTRA *actintra (i) intra-communicator the DIST_VECTOR lives on     |
  *----------------------------------------------------------------------*/
 void solserv_reddistvec(DIST_VECTOR *distvec,SPARSE_ARRAY *sysarray,
                         SPARSE_TYP *sysarray_typ,double *fullvec,
@@ -517,6 +581,21 @@ return;
  |  distribute a full redundant vector                       m.gee 02/02|
  |  This is a collective call!                                          |
  |  full redundant vector to distributed vector                         |
+ |  this routine is the inverse of solserv_reddistvec                   |
+ |  It copies the values in a vector fullvec of size numeq_total, that  |
+ |  is ordered such that fullvec[dof] = value at dof                    |
+ |  to a distributed vector matching a certain sparse matrix in         |
+ |  distribution of values. Note that in the distvec the values         |
+ |  value_at_dof are NOT in distvec->vec.a.dv[dof] !!!!                 |
+ |                                                                      |
+ |  DIST_VECTOR *distvec (o) DIST_VECTOR to be copied to                |
+ |  SPARSE_ARRAY *sysarray (i) sparse matrix matching the distribution  |
+ |                             of distvec                               |
+ |  SPARSE_TYP *sysarray_typ (i) type of sparse matrix                  |
+ |  double *fullvec (o) vector of lenght numeq_total  holding           |
+ |                      the values  correct dof-ordering:               |
+ |                      fullvec[dof] = value of a certain dof           |
+ |  INTRA *actintra (i) intra-communicator the DIST_VECTOR lives on     |
  *----------------------------------------------------------------------*/
 void solserv_distribdistvec(DIST_VECTOR  *distvec,SPARSE_ARRAY *sysarray,
                             SPARSE_TYP *sysarray_typ,double *fullvec,
@@ -613,10 +692,23 @@ return;
  |  Put the results of a DIST_VECTOR to the nodes in a       m.gee 10/01|
  |  certain place  in ARRAY sol                                         |
  |  Result has to be allreduced and are put to the whole                |
- |  field on each proc                                                  |
+ |  field on each procs                                                 |
+ |  FIELD *actfield (i) the active field                                |
+ |  INTRA *actintra (i) intra-communicator the DIST_VECTOR lives on     |
+ |  DIST_VECTOR *sol (i) vector of values to be put to the nodes        |
+ |  int place        (i) place in the ARRAY node->sol where to put the  |
+ |                       values. Every structure NODE has an ARRAY sol  |
+ |                       of type sol.a.da[place][0..numdf-1]            |
+ |                       if place >= actual dimensions of the ARRAY sol |
+ |                       sol is enlarged                                |
+ |  SPARSE_ARRAY *sysarray (i) sparse matrix matching the distribution  |
+ |                             of DIST_VECTOR *sol                      |
+ |  SPARSE_TYP *sysarray_typ (i) type of sparse matrix                  |
+ |                                                                      |
  *----------------------------------------------------------------------*/
 void solserv_result_total(FIELD *actfield,INTRA *actintra,DIST_VECTOR *sol,
-                          int place,SPARSE_ARRAY *sysarray,SPARSE_TYP *sysarray_typ)
+                          int place,SPARSE_ARRAY *sysarray,
+                          SPARSE_TYP *sysarray_typ)
 {
 int      i,j;
 int      max;
@@ -636,14 +728,7 @@ numeq_total = sol->numeq_total;
 /*------------------------- allocate space to allreduce the DIST_VECTOR */
 result = amdef("result",&result_a,numeq_total,1,"DV");
          amzero(&result_a);
-solserv_reddistvec(
-                      sol,
-                      sysarray,
-                      sysarray_typ,
-                      result,
-                      sol->numeq_total,
-                      actintra
-                     );
+solserv_reddistvec(sol,sysarray,sysarray_typ,result,sol->numeq_total,actintra);
 /*------------ loop nodes and put the result back to the node structure */
 for (i=0; i<actfield->dis[0].numnp; i++)
 {
@@ -653,7 +738,7 @@ for (i=0; i<actfield->dis[0].numnp; i++)
    {
       diff = place - actnode->sol.fdim;
       max  = IMAX(diff,5);
-      amredef(&(actnode->sol),actnode->sol.fdim+max,actnode->sol.sdim,"DA");
+      amredef(&(actnode->sol),actnode->sol.fdim+max+1,actnode->sol.sdim,"DA");
    }
    for (j=0; j<actnode->numdf; j++)
    {
@@ -661,7 +746,6 @@ for (i=0; i<actfield->dis[0].numnp; i++)
       if (dof>=numeq_total) continue;
       actnode->sol.a.da[place][j] = result[dof];
    }   
-   
 }
 /*----------------------------------------------------------------------*/
 amdel(&result_a);
@@ -680,6 +764,7 @@ return;
  |  certain place in ARRAY sol_increment                                |
  |  Result have to bee allreduced and are put to the whole              |
  |  field on each proc                                                  |
+ |  Functionality is the same as in solserv_result_total                |
  *----------------------------------------------------------------------*/
 void solserv_result_incre(FIELD *actfield,INTRA *actintra,DIST_VECTOR *sol,
                           int place,SPARSE_ARRAY *sysarray,SPARSE_TYP *sysarray_typ)
@@ -702,14 +787,7 @@ numeq_total = sol->numeq_total;
 /*------------------------- allocate space to allreduce the DIST_VECTOR */
 result = amdef("result",&result_a,numeq_total,1,"DV");
          amzero(&result_a);
-solserv_reddistvec(
-                      sol,
-                      sysarray,
-                      sysarray_typ,
-                      result,
-                      sol->numeq_total,
-                      actintra
-                     );
+solserv_reddistvec(sol,sysarray,sysarray_typ,result,sol->numeq_total,actintra);
 /*------------ loop nodes and put the result back to the node structure */
 for (i=0; i<actfield->dis[0].numnp; i++)
 {
@@ -719,7 +797,7 @@ for (i=0; i<actfield->dis[0].numnp; i++)
    {
       diff = place - actnode->sol_increment.fdim;
       max  = IMAX(diff,5);
-      amredef(&(actnode->sol_increment),actnode->sol_increment.fdim+max,actnode->sol_increment.sdim,"DA");
+      amredef(&(actnode->sol_increment),actnode->sol_increment.fdim+max+1,actnode->sol_increment.sdim,"DA");
    }
    for (j=0; j<actnode->numdf; j++)
    {
@@ -727,7 +805,6 @@ for (i=0; i<actfield->dis[0].numnp; i++)
       if (dof>=numeq_total) continue;
       actnode->sol_increment.a.da[place][j] = result[dof];
    }   
-   
 }
 /*----------------------------------------------------------------------*/
 amdel(&result_a);
@@ -746,9 +823,11 @@ return;
  |  certain place in ARRAY sol_residual                                 |
  |  Result have to bee allreduced and are put to the whole              |
  |  field on each proc                                                  |
+ |  Functionality is the same as in solserv_result_total                |
  *----------------------------------------------------------------------*/
 void solserv_result_resid(FIELD *actfield,INTRA *actintra,DIST_VECTOR *sol,
-                          int place,SPARSE_ARRAY *sysarray,SPARSE_TYP *sysarray_typ)
+                          int place,SPARSE_ARRAY *sysarray,
+                          SPARSE_TYP *sysarray_typ)
 {
 int      i,j;
 int      max;
@@ -768,14 +847,7 @@ numeq_total = sol->numeq_total;
 /*------------------------- allocate space to allreduce the DIST_VECTOR */
 result = amdef("result",&result_a,numeq_total,1,"DV");
          amzero(&result_a);
-solserv_reddistvec(
-                      sol,
-                      sysarray,
-                      sysarray_typ,
-                      result,
-                      sol->numeq_total,
-                      actintra
-                     );
+solserv_reddistvec(sol,sysarray,sysarray_typ,result,sol->numeq_total,actintra);
 /*------------ loop nodes and put the result back to the node structure */
 for (i=0; i<actfield->dis[0].numnp; i++)
 {
@@ -785,7 +857,7 @@ for (i=0; i<actfield->dis[0].numnp; i++)
    {
       diff = place - actnode->sol_residual.fdim;
       max  = IMAX(diff,5);
-      amredef(&(actnode->sol_residual),actnode->sol_residual.fdim+max,actnode->sol_residual.sdim,"DA");
+      amredef(&(actnode->sol_residual),actnode->sol_residual.fdim+max+1,actnode->sol_residual.sdim,"DA");
    }
    for (j=0; j<actnode->numdf; j++)
    {
@@ -793,7 +865,6 @@ for (i=0; i<actfield->dis[0].numnp; i++)
       if (dof>=numeq_total) continue;
       actnode->sol_residual.a.da[place][j] = result[dof];
    }   
-   
 }
 /*----------------------------------------------------------------------*/
 amdel(&result_a);
@@ -803,3 +874,280 @@ dstrc_exit();
 #endif
 return;
 } /* end of solserv_result_resid */
+
+
+
+/*----------------------------------------------------------------------*
+ |                                                            m.gee 3/02|
+ | dirichlet conditions are scaled by scale and written to sol in the   |
+ | given place place                                                    |
+ | This routine takes values from the structure actnode->gnode->dirich  |
+ | and scales them by a given factor scale. Then it writes these values |
+ | the ARRAY node->sol in the given place                               |
+ | actnode->sol.a.da[place][j] = actnode->gnode->dirich_val.a.dv[j]*scale|
+ | Nothing is done for dofs or nodes which do not have a dirichlet      |
+ | condition                                                            |
+ | FIELD *actfield (i) active field                                     |
+ | int    disnum   (i) indize of the discretization in actfield to be used|
+ | double scale    (i) scaling factor for dirichlet condition           |
+ | int place       (i) row to put values in the ARRAY sol               |
+ *----------------------------------------------------------------------*/
+void solserv_putdirich_to_dof(FIELD *actfield, int disnum, double scale, 
+                              int place)
+{
+int               i,j;
+int               diff,max;
+NODE             *actnode;
+DISCRET          *actdis;
+DIRICH_CONDITION *dirich;
+#ifdef DEBUG 
+dstrc_enter("solserv_putdirich_to_dof");
+#endif
+/*----------------------------------------------------------------------*/
+actdis = &(actfield->dis[disnum]);
+/*------------ loop nodes and put the result back to the node structure */
+for (i=0; i<actdis->numnp; i++)
+{
+   actnode = &(actdis->node[i]);
+   /*--------- do nothing if there is no dirichlet condition on actnode */
+   if (actnode->gnode->dirich==NULL) continue;
+   /*------------------------------------------ get dirichlet condition */
+   dirich = actnode->gnode->dirich;
+   /* of the given place is outside the dimensions of ARRAY sol enlarge it */
+   if (place >= actnode->sol.fdim)
+   {
+      diff = place - actnode->sol.fdim;
+      max  = IMAX(diff,5);
+      amredef(&(actnode->sol),actnode->sol.fdim+max+1,actnode->sol.sdim,"DA");
+   }
+   /* put values dirich->dirich_val.a.dv[j] * scale to actnode->sol.a.dv[place] */
+   for (j=0; j<actnode->numdf; j++)
+   {
+      if (dirich->dirich_onoff.a.iv[j]==0) continue;
+      actnode->sol.a.da[place][j] = dirich->dirich_val.a.dv[j] * scale;
+   }   
+}
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of solserv_putdirich_to_dof */
+
+
+
+/*----------------------------------------------------------------------*
+ |                                                            m.gee 3/02|
+ | entries in sol in the place  placefrom1 and placefrom2 are added     |
+ | node->sol[to][..] = node->sol[from1][..] * facfrom1 +                |
+ |                     node->sol[from2][..] * facfrom2                  |
+ |                                                                      |
+ | This is ONLY performed for dofs which have a dirichlet condition     |
+ |                                                                      |
+ | FIELD *actfield (i) active field                                     |
+ | int    disnum   (i) indize of the discretization in actfield to be used|
+ | int    from1    (i) place in ARRAY sol to take the values from       |
+ | int    from2    (i) place in ARRAY sol to take the values from       |
+ | int    to       (i) place in ARRAY sol to write values to            |
+ | double facfrom1 (i) scaling factor vor values from from1             |
+ | double facfrom2 (i) scaling factor vor values from from2             |
+ *----------------------------------------------------------------------*/
+void solserv_adddirich(FIELD *actfield, int disnum,
+                              int from1,int from2,int to,
+                              double facfrom1, double facfrom2)
+{
+int               i,j;
+int               diff,max;
+NODE             *actnode;
+DISCRET          *actdis;
+DIRICH_CONDITION *dirich;
+#ifdef DEBUG 
+dstrc_enter("solserv_adddirich");
+#endif
+/*----------------------------------------------------------------------*/
+actdis = &(actfield->dis[disnum]);
+/*------------ loop nodes and put the result back to the node structure */
+for (i=0; i<actdis->numnp; i++)
+{
+   actnode = &(actdis->node[i]);
+   if (actnode->gnode->dirich==NULL) continue;
+   dirich = actnode->gnode->dirich;
+   max = IMAX(from1,from2);
+   max = IMAX(max,to);
+   if (max >= actnode->sol.fdim)
+   {
+      diff = max - actnode->sol.fdim;
+      max  = IMAX(diff,5);
+      amredef(&(actnode->sol),actnode->sol.fdim+max+1,actnode->sol.sdim,"DA");
+   }
+   for (j=0; j<actnode->numdf; j++)
+   {
+      if (dirich->dirich_onoff.a.iv[j]==0) continue;
+      actnode->sol.a.da[to][j] = 
+      actnode->sol.a.da[from1][j]*facfrom1 + 
+      actnode->sol.a.da[from2][j]*facfrom2;
+   }   
+   
+}
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of solserv_adddirich */
+
+
+/*----------------------------------------------------------------------*
+ |                                                            m.gee 3/02|
+ | entries in sol in the place  placefrom1 and placefrom2 are added     |
+ | node->sol[to][..] += node->sol[from1][..] * facfrom1 +               |
+ |                      node->sol[from2][..] * facfrom2                 |
+ |                                                                      |
+ | same functionality as solserv_adddirich but adds to sol in the place to|
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+void solserv_assdirich_fac(FIELD *actfield, int disnum,
+                           int from1,int from2,int to, 
+                           double facfrom1, double facfrom2)
+{
+int               i,j;
+int               diff,max;
+NODE             *actnode;
+DISCRET          *actdis;
+DIRICH_CONDITION *dirich;
+#ifdef DEBUG 
+dstrc_enter("solserv_assdirich_fac");
+#endif
+/*----------------------------------------------------------------------*/
+actdis = &(actfield->dis[disnum]);
+/*------------ loop nodes and put the result back to the node structure */
+for (i=0; i<actdis->numnp; i++)
+{
+   actnode = &(actdis->node[i]);
+   if (actnode->gnode->dirich==NULL) continue;
+   dirich = actnode->gnode->dirich;
+   max = IMAX(from1,from2);
+   max = IMAX(max,to);
+   if (max >= actnode->sol.fdim)
+   {
+      diff = max - actnode->sol.fdim;
+      max  = IMAX(diff,5);
+      amredef(&(actnode->sol),actnode->sol.fdim+max+1,actnode->sol.sdim,"DA");
+   }
+   for (j=0; j<actnode->numdf; j++)
+   {
+      if (dirich->dirich_onoff.a.iv[j]==0) continue;
+      actnode->sol.a.da[to][j] += 
+      actnode->sol.a.da[from1][j]*facfrom1 + 
+      actnode->sol.a.da[from2][j]*facfrom2;
+   }   
+   
+}
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of solserv_assdirich_fac */
+
+
+
+/*----------------------------------------------------------------------*
+ |                                                            m.gee 3/02|
+ | entries in sol in the place  placefrom1  are copied to  place to     |
+ | node->sol[to][..] = node->sol[from][..]                              |
+ |                                                                      |
+ | This is only performed for dofs which have a dirichlet condition on them |
+ |                                                                      |
+ | FIELD *actfield (i) active field                                     |
+ | int    disnum   (i) indize of the discretization in actfield to be used|
+ | int    to       (i) place in ARRAY sol to write values to            |
+ | int    from     (i) place in ARRAY sol to take the values from       |
+ *----------------------------------------------------------------------*/
+void solserv_cpdirich(FIELD *actfield, int disnum,
+                      int from,int to)
+{
+int               i,j;
+int               diff,max;
+NODE             *actnode;
+DISCRET          *actdis;
+DIRICH_CONDITION *dirich;
+#ifdef DEBUG 
+dstrc_enter("solserv_cpdirich");
+#endif
+/*----------------------------------------------------------------------*/
+actdis = &(actfield->dis[disnum]);
+for (i=0; i<actdis->numnp; i++)
+{
+   actnode = &(actdis->node[i]);
+   if (actnode->gnode->dirich==NULL) continue;
+   dirich = actnode->gnode->dirich;
+   max = IMAX(from,to);
+   if (max >= actnode->sol.fdim)
+   {
+      diff = max - actnode->sol.fdim;
+      max  = IMAX(diff,5);
+      amredef(&(actnode->sol),actnode->sol.fdim+max+1,actnode->sol.sdim,"DA");
+   }
+   for (j=0; j<actnode->numdf; j++)
+   {
+      if (dirich->dirich_onoff.a.iv[j]==0) continue;
+      actnode->sol.a.da[to][j] = actnode->sol.a.da[from][j];
+   }   
+}
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of solserv_cpdirich */
+
+
+
+/*----------------------------------------------------------------------*
+ |                                                            m.gee 3/02|
+ | init sol[place] to zero                                              |
+ |                                                                      |
+ | This is only performed for dofs which have a dirichlet condition on them |
+ |                                                                      |
+ | FIELD *actfield (i) active field                                     |
+ | int    disnum   (i) indize of the discretization in actfield to be used|
+ | int    place    (i) row in ARRAY sol to be set to zero               | 
+ *----------------------------------------------------------------------*/
+void solserv_zerodirich(FIELD *actfield, int disnum, int place)
+{
+int               i,j;
+int               diff,max;
+NODE             *actnode;
+DISCRET          *actdis;
+DIRICH_CONDITION *dirich;
+#ifdef DEBUG 
+dstrc_enter("solserv_zerodirich");
+#endif
+/*----------------------------------------------------------------------*/
+actdis = &(actfield->dis[disnum]);
+for (i=0; i<actdis->numnp; i++)
+{
+   actnode = &(actdis->node[i]);
+   if (actnode->gnode->dirich==NULL) continue;
+   dirich = actnode->gnode->dirich;
+   if (place >= actnode->sol.fdim)
+   {
+      diff = place - actnode->sol.fdim;
+      max  = IMAX(diff,5);
+      amredef(&(actnode->sol),actnode->sol.fdim+max+1,actnode->sol.sdim,"DA");
+   }
+   for (j=0; j<actnode->numdf; j++)
+   {
+      if (dirich->dirich_onoff.a.iv[j]==0) continue;
+      actnode->sol.a.da[place][j] = 0.0;
+   }   
+}
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of solserv_zerodirich */
+
+

@@ -515,3 +515,108 @@ return;
 } /* end of assemble_vec */
 
 
+/*----------------------------------------------------------------------*
+ |  assembles an element vector to a redundant global vector m.gee 3/02 |
+ *----------------------------------------------------------------------*/
+void assemble_intforce(ELEMENT *actele, double *fullvec, int dim,
+                       ARRAY *elevec_a)
+{
+int                   i,j;
+int                   dof;
+int                   numdf;
+double               *elevec;
+#ifdef DEBUG 
+dstrc_enter("assemble_intforce");
+#endif
+/*----------------------------------------------------------------------*/
+elevec = elevec_a->a.dv;
+/*----------------------------------------------------------------------*/
+for (i=0; i<actele->numnp; i++)
+{
+   numdf = actele->node[i]->numdf;
+   for (j=0; j<numdf; j++)
+   {
+      dof = actele->node[i]->dof[j];
+      if (dof >= dim) continue;
+      fullvec[dof] += elevec[i*numdf+j];
+   }
+}
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of assemble_intforce */
+
+
+/*---------------------------------------------------------------------------*
+ |  dirichlet conditions to an element vector elevec_a       m.gee 3/02      |
+ |  and then assembles this element vector of cond. dirich.conditions to the |
+ |  global vector fullvec                                                    |
+ *---------------------------------------------------------------------------*/
+void assemble_dirich(ELEMENT *actele, double *fullvec, int dim,
+                     ARRAY *estif_global)
+{
+int                   i,j;
+int                   dof;
+int                   numdf;
+int                   iel;
+int                   nd=0;
+double              **estif;
+double                dirich[MAXDOFPERELE];
+double                dforces[MAXDOFPERELE];
+int                   dirich_onoff[MAXDOFPERELE];
+int                   lm[MAXDOFPERELE];
+GNODE                *actgnode;
+#ifdef DEBUG 
+dstrc_enter("assemble_dirich");
+#endif
+/*----------------------------------------------------------------------*/
+estif  = estif_global->a.da;
+/*---------------------------------- set number of dofs on this element */
+for (i=0; i<actele->numnp; i++) nd += actele->node[i]->numdf;
+/*---------------------------- init the vectors dirich and dirich_onoff */
+for (i=0; i<nd; i++)
+{
+   dirich[i] = 0.0;
+   dforces[i] = 0.0;
+   dirich_onoff[i] = 0;
+}
+/*-------------------------------- fill vectors dirich and dirich_onoff */
+for (i=0; i<actele->numnp; i++)
+{
+   numdf    = actele->node[i]->numdf;
+   actgnode = actele->node[i]->gnode;
+   for (j=0; j<numdf; j++)
+   {
+      lm[i*numdf+j] = actele->node[i]->dof[j];
+      if (actgnode->dirich==NULL) continue;
+      dirich_onoff[i*numdf+j] = actgnode->dirich->dirich_onoff.a.iv[j];
+      dirich[i*numdf+j] = actgnode->dirich->dirich_val.a.dv[j];
+   }
+}
+/*----------------------------------------- loop rows of element matrix */
+for (i=0; i<nd; i++)
+{
+   /*------------------------------------- do nothing for supported row */
+   if (dirich_onoff[i]!=0) continue;
+   /*---------------------------------- loop columns of unsupported row */
+   for (j=0; j<nd; j++)
+   {
+      /*---------------------------- do nothing for unsupported columns */
+      if (dirich_onoff[j]==0) continue;
+      dforces[i] += estif[i][j] * dirich[j];
+   }/* loop j over columns */
+}/* loop i over rows */
+/*-------- now assemble the vector dforces to the global vector fullvec */
+for (i=0; i<nd; i++)
+{
+   if (lm[i] >= dim) continue;
+   fullvec[lm[i]] += dforces[i];
+}
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG 
+dstrc_exit();
+#endif
+return;
+} /* end of assemble_dirich */

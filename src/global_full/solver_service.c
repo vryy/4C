@@ -2,7 +2,23 @@
 #include "../headers/solution.h"
 
 /*----------------------------------------------------------------------*
+ |                                                           m.gee 03/02|
+ | prototypes of functions only visible in this file                    |
+ *----------------------------------------------------------------------*/
+static void solserv_cp_rc_ptrmask(INTRA *actintra, RC_PTR *from, RC_PTR *to);
+static void solserv_cp_ucchbmask(UCCHB *from, UCCHB *to);
+static void solserv_cp_skymask(SKYMATRIX *from, SKYMATRIX *to);
+static void solserv_cp_msrmask(AZ_ARRAY_MSR *from, AZ_ARRAY_MSR *to);
+static void solserv_cp_densemask(DENSE *from, DENSE *to);
+static void solserv_matvec_msr(INTRA *actintra,AZ_ARRAY_MSR *msr,double *work1,double *work2);
+static void solserv_matvec_sky(INTRA *actintra,SKYMATRIX *sky,double *work1,double *work2);
+static void solserv_matvec_dense(INTRA *actintra,DENSE *dense,double *work1,double *work2);
+
+/*----------------------------------------------------------------------*
  |  make A = A * factor                                      m.gee 02/02|
+ | SPARSE_TYP *Atyp (i)        type of sparse matrix                    |
+ | SPARSE_ARRAY *A  (i/o)      sparse matrix                            |
+ | double factor    (i)        factor                                   |
  *----------------------------------------------------------------------*/
 void solserv_scal_mat(SPARSE_TYP *Atyp,SPARSE_ARRAY *A,double factor)
 {
@@ -52,6 +68,12 @@ return;
 
 /*----------------------------------------------------------------------*
  |  make A = A + B * factor                                  m.gee 02/02|
+ | INTRA *actintra  (i)     intra-communicator the matrices live on     |
+ | SPARSE_TYP *Atyp (i)     type of sparse matrix                       |
+ | SPARSE_ARRAY *A  (i/o)   sparse matrix                               |
+ | SPARSE_TYP *Btyp (i)     type of sparse matrix                       |
+ | SPARSE_ARRAY *B  (i)     sparse matrix                               |
+ | double factor    (i)     factor                                      |
  *----------------------------------------------------------------------*/
 void solserv_add_mat(INTRA *actintra,
                      SPARSE_TYP *Atyp,
@@ -107,6 +129,10 @@ return;
 
 /*----------------------------------------------------------------------*
  |  get dimensions of sparse matrix                          m.gee 02/02|
+ | SPARSE_ARRAY mat  (i)     sparse matrix                              |
+ | SPARSE_TYP mattyp (i)     type of sparse matrix                      |
+ | int *numeq        (o)     proc-local dimension of sparse matrix      |
+ | int *numeq_total  (o)     global dimension of sparse matrix          |
  *----------------------------------------------------------------------*/
 void solserv_getmatdims(SPARSE_ARRAY mat,SPARSE_TYP mattyp,
                         int *numeq, int *numeq_total)
@@ -163,6 +189,9 @@ return;
 
 /*----------------------------------------------------------------------*
  |  init a distributed matrix to zero - collective call !    m.gee 10/01|
+ | INTRA *actintra  (i)     intra-communicator the matrices live on     |
+ | SPARSE_ARRAY *mat  (i/o)    sparse matrix                            |
+ | SPARSE_TYP *mattyp (i)    type of sparse matrix                      |
  *----------------------------------------------------------------------*/
 void solserv_zero_mat(INTRA *actintra, SPARSE_ARRAY *mat,SPARSE_TYP *mattyp)
 {
@@ -236,6 +265,11 @@ return;
 /*----------------------------------------------------------------------*
  |  copies the sparsity mask of a system matrix              m.gee 02/02|
  |  for the new sparsity mask, a suitable structure is allocated        |
+ | INTRA        *actintra (i)  intra-communicator the matrices live on  |
+ | SPARSE_TYP   *typfrom  (i)  type of sparsity mask to be copied       |
+ | SPARSE_ARRAY *matfrom  (i)  sparsity mask to be copied               |
+ | SPARSE_TYP   *typto    (o)  type of sparsity mask to be copied to    |
+ | SPARSE_ARRAY *matto    (o)  sparsity mask to be allocated and copied |
  *----------------------------------------------------------------------*/
 void solserv_alloc_cp_sparsemask(INTRA        *actintra, 
                                  SPARSE_TYP   *typfrom,
@@ -304,8 +338,9 @@ return;
 /*----------------------------------------------------------------------*
  |  copies the sparsity mask of a rc_ptr matrix              m.gee 02/02|
  |  for the new sparsity mask, all memory is allocated                  |
+ |  called by solserv_alloc_cp_sparsemask only!                         |
  *----------------------------------------------------------------------*/
-void solserv_cp_rc_ptrmask(INTRA *actintra, RC_PTR *from, RC_PTR *to)
+static void solserv_cp_rc_ptrmask(INTRA *actintra, RC_PTR *from, RC_PTR *to)
 {
 int i;
 #ifdef DEBUG 
@@ -352,8 +387,9 @@ return;
 /*----------------------------------------------------------------------*
  |  copies the sparsity mask of a ucchb matrix               m.gee 02/02|
  |  for the new sparsity mask, all memory is allocated                  |
+ |  called by solserv_alloc_cp_sparsemask only!                         |
  *----------------------------------------------------------------------*/
-void solserv_cp_ucchbmask(UCCHB *from, UCCHB *to)
+static void solserv_cp_ucchbmask(UCCHB *from, UCCHB *to)
 {
 int i;
 #ifdef DEBUG 
@@ -391,8 +427,9 @@ return;
 /*----------------------------------------------------------------------*
  |  copies the sparsity mask of a skyline matrix             m.gee 02/02|
  |  for the new sparsity mask, all memory is allocated                  |
+ |  called by solserv_alloc_cp_sparsemask only!                         |
  *----------------------------------------------------------------------*/
-void solserv_cp_skymask(SKYMATRIX *from, SKYMATRIX *to)
+static void solserv_cp_skymask(SKYMATRIX *from, SKYMATRIX *to)
 {
 int i;
 #ifdef DEBUG 
@@ -428,8 +465,9 @@ return;
 /*----------------------------------------------------------------------*
  |  copies the sparsity mask of a msr matrix                 m.gee 02/02|
  |  for the new sparsity mask, all memory is allocated                  |
+ |  called by solserv_alloc_cp_sparsemask only!                         |
  *----------------------------------------------------------------------*/
-void solserv_cp_msrmask(AZ_ARRAY_MSR *from, AZ_ARRAY_MSR *to)
+static void solserv_cp_msrmask(AZ_ARRAY_MSR *from, AZ_ARRAY_MSR *to)
 {
 int i;
 #ifdef DEBUG 
@@ -467,8 +505,9 @@ return;
 /*----------------------------------------------------------------------*
  |  copies the sparsity mask of a dense matrix               m.gee 02/02|
  |  for the new sparsity mask, all memory is allocated                  |
+ |  called by solserv_alloc_cp_sparsemask only!                         |
  *----------------------------------------------------------------------*/
-void solserv_cp_densemask(DENSE *from, DENSE *to)
+static void solserv_cp_densemask(DENSE *from, DENSE *to)
 {
 #ifdef DEBUG 
 dstrc_enter("solserv_cp_densemask");
@@ -498,6 +537,11 @@ return;
 
 /*----------------------------------------------------------------------*
  |  make matrix vector multiplication                        m.gee 02/02|
+ | INTRA        *actintra (i)  intra-communicator the matrices live on  |
+ | DIST_VECTOR  *result   (o)  result = mat * vec                       |
+ | SPARSE_ARRAY *mat      (i)  sparse matrix                            |
+ | SPARSE_TYP   *mattyp   (i)  type of sparse matrix                    |
+ | DIST_VECTOR  *vec      (i)  vector to be multiplied with             |
  *----------------------------------------------------------------------*/
 void solserv_sparsematvec(INTRA        *actintra,
                           DIST_VECTOR  *result,
@@ -578,8 +622,9 @@ return;
 
 /*----------------------------------------------------------------------*
  |  make matrix vector multiplication with dense matrix      m.gee 02/02|
+ |  called by solserv_sparsematvec only !                               |
  *----------------------------------------------------------------------*/
-void solserv_matvec_msr(INTRA        *actintra,
+static void solserv_matvec_msr(INTRA        *actintra,
                         AZ_ARRAY_MSR *msr,
                         double       *work1,
                         double       *work2)
@@ -647,8 +692,9 @@ C     *  INSTITUT FUER BAUSTATIK  *  CREATED / CHANGED                 *
 C     *  UNIVERSITAET  STUTTGART  *  04.05.92/           O. PETERSEN   *
 C     ******************************************************************
          ported to C                                     m.gee
+ |  called by solserv_sparsematvec only !                               |
  *----------------------------------------------------------------------*/
-void solserv_matvec_sky(INTRA        *actintra,
+static void solserv_matvec_sky(INTRA        *actintra,
                         SKYMATRIX    *sky,
                         double       *work1,
                         double       *work2)
@@ -692,8 +738,9 @@ return;
 
 /*----------------------------------------------------------------------*
  |  make matrix vector multiplication with dense matrix      m.gee 02/02|
+ |  called by solserv_sparsematvec only !                               |
  *----------------------------------------------------------------------*/
-void solserv_matvec_dense(INTRA        *actintra,
+static void solserv_matvec_dense(INTRA        *actintra,
                           DENSE        *dense,
                           double       *work1,
                           double       *work2)

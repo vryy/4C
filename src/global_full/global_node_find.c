@@ -23,16 +23,14 @@ dstrc_enter("iscouple_find_node_comp");
 *partnernode=NULL;
    for (i=0; i<searchfield->dis[0].numnp; i++)
    {
-      /* no conditions on this node */
-      if (searchfield->dis[0].node[i].c==NULL) continue;
       /* no coupling conditions on this node */
-      if (searchfield->dis[0].node[i].c->iscoupled==0) continue;
+      if (searchfield->dis[0].node[i].gnode->couple==NULL) continue;
       /* I do not find myself */
       if (searchfield->dis[0].node[i].Id_loc == actnode->Id_loc) continue;
          /* check for the right coupling set */
          /*
          Note: At the moment only the given dof is checked here */
-         if (searchfield->dis[0].node[i].c->couple.a.ia[dof][0]==coupleID)
+         if (searchfield->dis[0].node[i].gnode->couple->couple.a.ia[dof][0]==coupleID)
          {
             /* check geometrical distance */
             cheque_distance(actnode->x,searchfield->dis[0].node[i].x,tol,&ierr);
@@ -108,14 +106,15 @@ dof = -2;
 /*------------------------ check for a dirichlet condition in coupleset */
 for (i=0; i<actfield->dis[0].numnp; i++)
 {
-   if (actfield->dis[0].node[i].c==NULL) continue;
-   if (actfield->dis[0].node[i].c->iscoupled==0) continue;
+   if (actfield->dis[0].node[i].gnode->couple==NULL &&
+       actfield->dis[0].node[i].gnode->dirich==NULL) continue;
+   if (actfield->dis[0].node[i].gnode->couple==NULL) continue;
    for (l=0; l<actfield->dis[0].node[i].numdf; l++)
    {
-      if (actfield->dis[0].node[i].c->couple.a.ia[l][1]!=coupleID) continue;
-      if (actfield->dis[0].node[i].c->isdirich==1)
+      if (actfield->dis[0].node[i].gnode->couple->couple.a.ia[l][1]!=coupleID) continue;
+      if (actfield->dis[0].node[i].gnode->dirich!=NULL)
       {
-         if (actfield->dis[0].node[i].c->dirich_onoff.a.iv[l]!=0)
+         if (actfield->dis[0].node[i].gnode->dirich->dirich_onoff.a.iv[l]!=0)
          {
             dof = -1;
             goto assign;
@@ -125,11 +124,12 @@ for (i=0; i<actfield->dis[0].numnp; i++)
 }   
 for (i=0; i<actfield->dis[0].numnp; i++)
 {
-   if (actfield->dis[0].node[i].c==NULL) continue;
-   if (actfield->dis[0].node[i].c->iscoupled==0) continue;
+   if (actfield->dis[0].node[i].gnode->couple==NULL &&
+       actfield->dis[0].node[i].gnode->dirich==NULL) continue;
+   if (actfield->dis[0].node[i].gnode->couple==NULL) continue;
    for (l=0; l<actfield->dis[0].node[i].numdf; l++)
    {
-      if (actfield->dis[0].node[i].c->couple.a.ia[l][1]!=coupleID) continue;
+      if (actfield->dis[0].node[i].gnode->couple->couple.a.ia[l][1]!=coupleID) continue;
       if (actfield->dis[0].node[i].dof[l]!=-2)
       {
          dof = actfield->dis[0].node[i].dof[l];
@@ -142,11 +142,12 @@ assign:
 if (dof != -2)
 for (i=0; i<actfield->dis[0].numnp; i++)
 {
-   if (actfield->dis[0].node[i].c==NULL) continue;
-   if (actfield->dis[0].node[i].c->iscoupled==0) continue;
+   if (actfield->dis[0].node[i].gnode->couple==NULL &&
+       actfield->dis[0].node[i].gnode->dirich==NULL) continue;
+   if (actfield->dis[0].node[i].gnode->couple==NULL) continue;
    for (l=0; l<actfield->dis[0].node[i].numdf; l++)
    {
-      if (actfield->dis[0].node[i].c->couple.a.ia[l][1]!=coupleID) continue;
+      if (actfield->dis[0].node[i].gnode->couple->couple.a.ia[l][1]!=coupleID) continue;
       
       if (actfield->dis[0].node[i].dof[l]==dof) goto finish;
       actfield->dis[0].node[i].dof[l]=dof;
@@ -156,11 +157,12 @@ else
 {
 for (i=0; i<actfield->dis[0].numnp; i++)
 {
-   if (actfield->dis[0].node[i].c==NULL) continue;
-   if (actfield->dis[0].node[i].c->iscoupled==0) continue;
+   if (actfield->dis[0].node[i].gnode->couple==NULL &&
+       actfield->dis[0].node[i].gnode->dirich==NULL) continue;
+   if (actfield->dis[0].node[i].gnode->couple==NULL) continue;
    for (l=0; l<actfield->dis[0].node[i].numdf; l++)
    {
-      if (actfield->dis[0].node[i].c->couple.a.ia[l][1]!=coupleID) continue;
+      if (actfield->dis[0].node[i].gnode->couple->couple.a.ia[l][1]!=coupleID) continue;
       
       actfield->dis[0].node[i].dof[l]=*counter;
    }
