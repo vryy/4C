@@ -53,10 +53,8 @@ void s9jaco(DOUBLE    *funct,
             DOUBLE    *deta,
             INT        init,
             INT        num_klay,
-            DOUBLE    *klayhgt,     /* hight of kin layer in % of total thickness of shell */
-            DOUBLE    *mlayhgt)     /* hight of mat layer in % of adjacent kin layer */
+            DOUBLE    *klayhgt)     /* hight of kin layer in % of total thickness of shell */
 {
-INT             i,j,k;
 DOUBLE          x1r;
 DOUBLE          x2r;
 DOUBLE          x3r;
@@ -67,7 +65,7 @@ DOUBLE          x3s;
 DOUBLE          hgt;                               /* element thickness */
 DOUBLE          det_dummy;
 INT             mlay,klay,num_mlay;
-DOUBLE          mlayhgt_dummy[10];
+DOUBLE          mlayhgt_dummy[MAXKLAY_SHELL9];
 INT             mod;
 
 static ARRAY    gkov_a;  static DOUBLE **gkov;
@@ -87,6 +85,7 @@ static ARRAY4D  amkov_a; static DOUBLE ***amkov;   /* kovaraiant metric tensor a
 static ARRAY4D  amkon_a; static DOUBLE ***amkon;   /* kontravar.--------------"------------ ref.config. */
 static ARRAY4D  a3kvp_a; static DOUBLE ***a3kvp;   /* partiel derivatives of normal vector ref.config. */
 
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9jaco");
 #endif
@@ -164,9 +163,8 @@ mlayhgt_dummy[klay] = 100.0;
 num_mlay   = 1;
 mlay       = 0;
 
-s9_tmtr(x,a3r,e3,gkov,gkon,gmkov,gmkon,&det_dummy,
-        funct,deriv,iel,akov,a3kvp,hgt,klayhgt,mlayhgt_dummy,
-        num_klay,num_mlay,klay,mlay,1.0);
+s9_tmtr(e3,gkov,gkon,gmkov,gmkon,&det_dummy,akov,a3kvp,hgt,
+        klayhgt,mlayhgt_dummy,num_klay,klay,mlay,1.0);
 /*--------------------------------------------------------------- */
 xjm[0][0]=gkov[0][0];
 xjm[0][1]=gkov[1][0];

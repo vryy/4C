@@ -34,6 +34,7 @@ DOUBLE s9_local_coord_node(INT node, INT flag, enum _DIS_TYP typ)
 DOUBLE     coord;
 const DOUBLE node489[9][2] = {{1.0,1.0},{-1.0,1.0},{-1.0,-1.0},{1.0,-1.0},
                               {0.0,1.0},{-1.0,0.0},{0.0,-1.0},{1.0,0.0},{0.0,0.0}}; 
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9_local_coord_node");
 #endif

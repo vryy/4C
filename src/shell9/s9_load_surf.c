@@ -39,15 +39,15 @@ void s9_surf(DOUBLE **eload, INT nsurf, INT numklay, INT iel)
 {
 INT     i,j,l;
 INT     midlay;   /* middle layer if uneven number of numklay */
-INT     fact;     /* factor depending on the norm of a3 */
+DOUBLE  fact;     /* factor depending on the norm of a3 */
 INT     mod;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9_surf");
 #endif
 /*--------- factor due to norm of a3 -----------------------------------*/
-/*fact = 1; /* |a3_L| = h_L */
-/*fact = 2; /* |a3_L| = 0.5 * h_L    -> A3_IST_EINHALB*/
+/*fact = 1;*/ /* |a3_L| = h_L */
+/*fact = 2;*/ /* |a3_L| = 0.5 * h_L    -> A3_IST_EINHALB*/
 fact = (1.0/A3FAC_SHELL9);
 /*---------- NSURF = MID -----------------------------------------------*/
 if (nsurf == 1) goto end;
@@ -162,17 +162,17 @@ of a multilayerd shell element (shell9)  -> Point loads!
 *-----------------------------------------------------------------------*/
 void s9_surf_P(DOUBLE *pload, INT nsurf, INT numklay)
 {
-INT     i,j,l;
+INT     j,l;
 INT     midlay;   /*middle layer if uneven number of numklay */
-INT     fact;     /* factor depending on the norm of a3 */
+DOUBLE  fact;     /* factor depending on the norm of a3 */
 INT     mod;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9_surf_P");
 #endif
 /*--------- factor due to norm of a3 -----------------------------------*/
-/*fact = 1; /* |a3_L| = h_L */
-/*fact = 2; /* |a3_L| = 0.5 * h_L    -> A3_IST_EINHALB*/
+/*fact = 1;*/ /* |a3_L| = h_L */
+/*fact = 2;*/ /* |a3_L| = 0.5 * h_L    -> A3_IST_EINHALB*/
 fact = (1.0/A3FAC_SHELL9);
 /*---------- NSURF = MID -----------------------------------------------*/
 if (nsurf == 1) goto end;
@@ -268,7 +268,7 @@ component is to be loaded -> shell element (shell9)  -> Point loads!
 *-----------------------------------------------------------------------*/
 void s9_surf_onoff(INT *pload, INT nsurf, INT numklay)
 {
-INT     i,j,l;
+INT     j,l;
 INT     midlay;   /*middle layer if uneven number of numklay */
 INT     mod;
 /*----------------------------------------------------------------------*/

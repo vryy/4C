@@ -25,9 +25,9 @@ of the shell body.
 NOTE: Sorting of stresses and strains differ in shell8 and shell9
       s8: [11,12,13,22,23,33] <=> s9: [11,12,22,13,23,33]
 </pre>
-\param  STVENANT  *mat   (i) Material properties
-\param  DOUBLE   **g     (i) kovariant basis vector
-\param  DOUBLE   **CC    (o) konsitutive matrix
+\param  STVENANT  *mat     (i) Material properties
+\param  DOUBLE   **g       (i) kovariant basis vector
+\param  DOUBLE   **CC      (o) konsitutive matrix
 
 \warning There is nothing special to this routine
 \return void                                               
@@ -41,6 +41,7 @@ DOUBLE xsi=1.0; /*----- shear correction coefficient not yet introduced */
 DOUBLE C[3][3][3][3]; /*--------------------------- constitutive tensor */
 DOUBLE l1,l2;/*----------------------------------------- lame constants */
 DOUBLE emod,nue;/*--------------------------------------- mat constants */
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9_mat_linel");
 #endif
@@ -115,16 +116,17 @@ NOTE: Sorting of stresses and strains differ in shell8 and shell9
 </pre>
 \param  DOUBLE   *stress  (o) PK II stresses
 \param  DOUBLE   *strain  (i) green-lagrange strains
-\param  DOUBLE  **CC      (i) konsitutive matrix
+\param  DOUBLE  **C       (i) konsitutive matrix
 
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: s9_call_mat()   [s9_call_mat.c]
 
 *----------------------------------------------------------------------*/
-void s9_mat_stress1(DOUBLE *stress, DOUBLE *strain, DOUBLE **C)
+void s9_mat_stress1(DOUBLE stress[6], DOUBLE strain[6], DOUBLE **C)
 {
-DOUBLE E[6];
+DOUBLE   E[6];
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9_mat_linel");
 #endif
@@ -135,6 +137,7 @@ E[5] = strain[5];
 E[1] = strain[1] * 2.0;
 E[3] = strain[3] * 2.0;
 E[4] = strain[4] * 2.0;
+
 math_matvecdense(stress,C,E,6,6,0,1.0);
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 

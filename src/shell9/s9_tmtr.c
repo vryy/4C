@@ -23,24 +23,18 @@ formulation, the e3-value has to be transformed into a 'unity'-thickness
 format so that the gaussian integration is valid again. For more detail
 see Dis. Braun (p.77 -> material layer & p.115f for kinematic layers)
 </pre>
-\param  DOUBLE   **x       (i)  coordinates at nodal points
-\param  DOUBLE  ***a3      (i)  director of each kinematic layer
 \param  DOUBLE     e3      (i)  zeta_3_L (within one material layer)
 \param  DOUBLE   **gkov    (o)  kovariant basis vectors at specified location in shell body
 \param  DOUBLE   **gkon    (o)  kontravariant basis vectors at specified location in shell body
 \param  DOUBLE   **gmkov   (o)  kovariant metric at specified location in shell body
 \param  DOUBLE   **gmkon   (o)  kontravariant metric at specified location in shell body
 \param  DOUBLE    *det     (o)  determinant of gkov (-> Jacobi determinant)
-\param  DOUBLE    *funct   (i)  shape functions at GP
-\param  DOUBLE   **deriv   (i)  shape function derivatives at GP
-\param  INT        iel     (i)  number of nodes to this element
 \param  DOUBLE  ***akov    (i)  kovariant basis vectors in reference layer of each kinematic layer
 \param  DOUBLE  ***a3kvp   (i)  partial derivatives of a3_L for each kinematic layer
 \param  DOUBLE     h       (i)  total thickness of this element
 \param  DOUBLE    *klayhgt (i)  hight of kin layer in % of total thickness of shell 
 \param  DOUBLE    *mlayhgt (i)  hight of mat layer in % of adjacent kin layer 
 \param  INT        num_klay(i)  number of kin layers to this element  
-\param  INT        num_mlay(i)  number of mat layers to this kin layer 
 \param  INT        klay    (i)  actual kin layer 
 \param  INT        mlay    (i)  actual mat layer of this kin layer 
 
@@ -51,31 +45,26 @@ see Dis. Braun (p.77 -> material layer & p.115f for kinematic layers)
                              s9jaco()        [s9_jaco.c]
 
 *----------------------------------------------------------------------*/
-void s9_tmtr(DOUBLE   **x,
-             DOUBLE  ***a3,
-             DOUBLE     e3,
+void s9_tmtr(DOUBLE     e3,
              DOUBLE   **gkov,
              DOUBLE   **gkon,
              DOUBLE   **gmkov,
              DOUBLE   **gmkon,
              DOUBLE    *det,
-             DOUBLE    *funct,
-             DOUBLE   **deriv,
-             INT        iel,
              DOUBLE  ***akov,
              DOUBLE  ***a3kvp,
              DOUBLE     h,           /* total thickness of this element */
              DOUBLE    *klayhgt,     /* hight of kin layer in % of total thickness of shell */
              DOUBLE    *mlayhgt,     /* hight of mat layer in % of adjacent kin layer */
              INT        num_klay,    /* number of kin layers to this element */  
-             INT        num_mlay,    /* number of mat layers to this kin layer */
              INT        klay,        /* actual kin layer */
              INT        mlay,        /* actual mat layer of this kin layer */
              DOUBLE     condfac)
 {
-INT    i,j,k,kl,ml,idim,ialpha,inode,jlay;
+INT    i,j,k,idim,jlay;
 DOUBLE deltah, h_mlay, h_kl;
 DOUBLE zeta_kl,zeta,det_dummy;
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9_tmtr");
 #endif

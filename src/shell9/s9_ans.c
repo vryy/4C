@@ -64,10 +64,11 @@ void s9_ans_colloqpoints(INT       nsansq,     INT       iel,
                          DOUBLE  **akonh,
                          DOUBLE  **amkovh,
                          DOUBLE  **amkonh,
-                         INT       num_klay,   INT       numdf)
+                         INT       num_klay)
 {
 INT    i;   
 DOUBLE det_dummy;         
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9_ans_colloqpoints");
 #endif
@@ -125,6 +126,7 @@ void s9_ans_colloqcoords(DOUBLE xqr1[], DOUBLE xqs1[],
                          INT    iel,    INT    ans)
 {
 DOUBLE rthreei;
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9_ans_colloq");
 #endif
@@ -139,6 +141,10 @@ if (ans==1)
 
       xqr2[0] = -1.0;     xqs2[0] =  0.0; /* point (-1.0/ 0.0) */
       xqr2[1] =  1.0;     xqs2[1] =  0.0; /* point ( 1.0/ 0.0) */
+   }
+   if (iel==8)/* 8-noded element */
+   {
+      dserror("ANS Q for QUAD8 not implemented 's9_ans_colloqcoords'  ");
    }
    if (iel==9)/* 9-noded element */
    {
@@ -183,12 +189,13 @@ natural coordinates r,s
 
 *----------------------------------------------------------------------*/
 void s9_ansq_funct(DOUBLE frq[], DOUBLE fsq[], DOUBLE r, DOUBLE s,
-                   INT    iel,   INT    nsansq)
+                   INT    iel)
 {
 DOUBLE rthreei;
 DOUBLE pr[3],ps[3];
 DOUBLE qr[2],qs[2];
 DOUBLE rr[3],rs[3];
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9_ansq_funct");
 #endif
@@ -200,6 +207,10 @@ if (iel==4)
    
    fsq[0] = 0.5 * (1.0 - r);
    fsq[1] = 0.5 * (1.0 + r);
+}
+if (iel==8)/* 8-noded element */
+{
+   dserror("ANS Q for QUAD8 not implemented   's9_ansq_funct'   ");
 }
 if (iel==9)
 {
@@ -279,8 +290,7 @@ void s9_ans_bbar_q(DOUBLE  **bop,        DOUBLE    frq[],      DOUBLE fsq[],
                    INT       num_klay,   INT       klay,
                    DOUBLE    condfac,    INT       nsansq)
 {
-INT    i,j,jlay,inode, node_start;
-INT    numdof_shell9 = numdf;
+INT    jlay,inode, node_start;
 INT    isamp;
 DOUBLE a1x1, a1y1, a1z1; 
 DOUBLE a2x2, a2y2, a2z2;
@@ -303,6 +313,7 @@ DOUBLE fsis;
 
 INT    idof, jdof;
 DOUBLE fac,  fac1;
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9_ans_bbar_q");
 #endif
@@ -443,26 +454,19 @@ due to ans for querschub.
 
 *----------------------------------------------------------------------*/
 void s9_ans_tvhe_q(DOUBLE  **gmkovr,     DOUBLE  **gmkovc,    
-                   DOUBLE  **gmkonr,     DOUBLE  **gmkonc,
-                   DOUBLE  **gkovr,      DOUBLE  **gkovc,     
+                   DOUBLE  **gmkonr,     DOUBLE  **gmkonc,    
                    DOUBLE ***amkovc,     DOUBLE ***amkovr,
                    DOUBLE ***akovc,      DOUBLE ***akovr,     
                    DOUBLE ***a3kvpc,     DOUBLE ***a3kvpr,
                    DOUBLE   *detr,       DOUBLE   *detc,
                    DOUBLE ***amkovr1q[], DOUBLE ***amkovc1q[], 
-                   DOUBLE ***akovr1q[] , DOUBLE ***akovc1q[] ,
-                   DOUBLE ***a3kvpr1q[], DOUBLE ***a3kvpc1q[],
                    DOUBLE ***amkovr2q[], DOUBLE ***amkovc2q[], 
-                   DOUBLE ***akovr2q[] , DOUBLE ***akovc2q[] ,
-                   DOUBLE ***a3kvpr2q[], DOUBLE ***a3kvpc2q[],
                    DOUBLE    frq[],      DOUBLE    fsq[], 
                    DOUBLE    e3,         INT       nansq, 
-                   INT       iel,       
                    DOUBLE    h,           /* total thickness of this element */
                    DOUBLE   *klayhgt,     /* hight of kin layer in % of total thickness of shell */
                    DOUBLE   *mlayhgt,     /* hight of mat layer in % of adjacent kin layer */
                    INT       num_klay,    /* number of kin layers to this element */
-                   INT       num_mlay,    /* number of mat layers to this kin layer */
                    INT       klay,        /* actual kin layer */
                    INT       mlay,        /* actual mat layer of this kin layer */
                    DOUBLE    condfac)
@@ -485,6 +489,7 @@ DOUBLE b32r=0.0;
 DOUBLE deltah, h_mlay, h_kl;
 DOUBLE zeta_kl,zeta,det_dummy;
 
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9_ans_tvhe_q");
 #endif
@@ -616,7 +621,6 @@ void s9_ans_tvkg(DOUBLE **estif,     DOUBLE  *stress_r,
                  INT      num_klay)                   /* number of kin layers to this element */ 
 {
 INT     i,inode,jnode;
-INT     i_indiz,j_indiz;
 INT     idof,jdof;
 INT     jlay;
 DOUBLE  fac1;
@@ -652,6 +656,7 @@ DOUBLE  sm31;
 DOUBLE  sm22;
 DOUBLE  sm32;
 
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9_ans_tvkg");
 #endif

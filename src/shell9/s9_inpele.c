@@ -52,18 +52,13 @@ void s9inp(ELEMENT *ele)
 {
 INT          i;
 INT          ierr=0;
-INT          quad;
-INT          counter;
-long int     topology[100];
 char        *colpointer;
 char         buffer[50];
 INT          nhyb=0;
 INT          numdof_shell9;
 INT          num_klay;
-KINLAY      *actkinlay;
-INT          dummy_int;
 MATERIAL    *actmat;
-
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9inp");
 #endif
@@ -189,6 +184,7 @@ else if (strncmp(buffer,"N4_3",4)==0)  ele->e.s9->eas[0]=3;
 else if (strncmp(buffer,"N4_4",4)==0)  ele->e.s9->eas[0]=4;
 else if (strncmp(buffer,"N4_5",4)==0)  ele->e.s9->eas[0]=5;
 else if (strncmp(buffer,"N4_7",4)==0)  ele->e.s9->eas[0]=7;
+
 else if (strncmp(buffer,"N9_7",4)==0)  ele->e.s9->eas[0]=7;
 else if (strncmp(buffer,"N9_9",4)==0)  ele->e.s9->eas[0]=9;
 else if (strncmp(buffer,"N9_11",4)==0) ele->e.s9->eas[0]=11;
@@ -204,8 +200,8 @@ if (ierr!=1) dserror("Reading of shell9 eas failed");
      if (strncmp(buffer,"none",4)==0)  ele->e.s9->eas[1]=0;
 else if (strncmp(buffer,"N4_4",4)==0)  ele->e.s9->eas[1]=4;
 else if (strncmp(buffer,"N4_5",4)==0)  ele->e.s9->eas[1]=5;
-else if (strncmp(buffer,"N4_6",4)==0)  ele->e.s9->eas[1]=6;
 else if (strncmp(buffer,"N4_7",4)==0)  ele->e.s9->eas[1]=7;
+
 else if (strncmp(buffer,"N9_9",4)==0)  ele->e.s9->eas[1]=9;
 else if (strncmp(buffer,"N9_11",4)==0) ele->e.s9->eas[1]=11;
 else dserror("Wrong Parameter for EAS[1] -> E11,E12,E22 LINEAR (Biegung) SHELL9");
@@ -218,13 +214,13 @@ colpointer = strpbrk(colpointer,"Nn");
 ierr = sscanf(colpointer," %s ",buffer);    
 if (ierr!=1) dserror("Reading of shell9 eas failed");
      if (strncmp(buffer,"none",4)==0)  ele->e.s9->eas[2]=0;
-else if (strncmp(buffer,"N_1",4)==0)   ele->e.s9->eas[2]=1;
-else if (strncmp(buffer,"N_3",4)==0)   ele->e.s9->eas[2]=3;
-else if (strncmp(buffer,"N_4",4)==0)   ele->e.s9->eas[2]=4;
+else if (strncmp(buffer,"N_1" ,4)==0)  ele->e.s9->eas[2]=1;
+else if (strncmp(buffer,"N_3" ,4)==0)  ele->e.s9->eas[2]=3;
+else if (strncmp(buffer,"N_4" ,4)==0)  ele->e.s9->eas[2]=4;
+else if (strncmp(buffer,"N_6" ,4)==0)  ele->e.s9->eas[2]=6;
+else if (strncmp(buffer,"N_8" ,4)==0)  ele->e.s9->eas[2]=8;
+else if (strncmp(buffer,"N_9" ,4)==0)  ele->e.s9->eas[2]=9;
 else dserror("Wrong Parameter for EAS[2] -> E33 LINEAR (7P-Formulation) SHELL9");
-/*if (strncmp(buffer,"N_6",4)==0)   ele->e.s9->eas[2]=6;
-if (strncmp(buffer,"N_8",4)==0)   ele->e.s9->eas[2]=8;
-if (strncmp(buffer,"N_9",4)==0)   ele->e.s9->eas[2]=9;*/
 colpointer += strlen(buffer);    
 
 /*----------------------------------------------------------------------
@@ -236,6 +232,7 @@ if (ierr!=1) dserror("Reading of shell9 eas failed");
      if (strncmp(buffer,"none",4)==0)  ele->e.s9->eas[3]=0;
 else if (strncmp(buffer,"N4_2",4)==0)  ele->e.s9->eas[3]=2;
 else if (strncmp(buffer,"N4_4",4)==0)  ele->e.s9->eas[3]=4;
+
 else if (strncmp(buffer,"N9_2",4)==0)  ele->e.s9->eas[3]=2;
 else if (strncmp(buffer,"N9_4",4)==0)  ele->e.s9->eas[3]=4;
 else if (strncmp(buffer,"N9_6",4)==0)  ele->e.s9->eas[3]=6;
@@ -251,6 +248,7 @@ if (ierr!=1) dserror("Reading of shell9 eas failed");
      if (strncmp(buffer,"none",4)==0)  ele->e.s9->eas[4]=0;
 else if (strncmp(buffer,"N4_2",4)==0)  ele->e.s9->eas[4]=2;
 else if (strncmp(buffer,"N4_4",4)==0)  ele->e.s9->eas[4]=4;
+
 else if (strncmp(buffer,"N9_2",4)==0)  ele->e.s9->eas[4]=2;
 else if (strncmp(buffer,"N9_4",4)==0)  ele->e.s9->eas[4]=4;
 else if (strncmp(buffer,"N9_6",4)==0)  ele->e.s9->eas[4]=6;
@@ -263,24 +261,24 @@ if (nhyb>0)
    amdef("alfa",&(ele->e.s9->alfa),num_klay,nhyb,"DA");
    amzero(&(ele->e.s9->alfa));
 
-   for (i=0; i<num_klay; i++) amdef("Dtildinv",&(ele->e.s9->Dtildinv[i]),nhyb,nhyb,"DA");
-   for (i=0; i<num_klay; i++) amzero(&(ele->e.s9->Dtildinv[i]));
+   amdef("Dtildinv",&(ele->e.s9->Dtildinv),num_klay*nhyb,nhyb,"DA");
+   amzero(&(ele->e.s9->Dtildinv));
 
-   for (i=0; i<num_klay; i++) amdef("Lt",&(ele->e.s9->Lt[i]),nhyb,ele->numnp*numdof_shell9,"DA");
-   for (i=0; i<num_klay; i++) amzero(&(ele->e.s9->Lt[i]));
+   amdef("L",&(ele->e.s9->L),num_klay*ele->numnp*numdof_shell9,nhyb,"DA");
+   amzero(&(ele->e.s9->L));
    
-   for (i=0; i<num_klay; i++) amdef("Rtilde",&(ele->e.s9->Rtilde[i]),nhyb,1,"DV");
-   for (i=0; i<num_klay; i++) amzero(&(ele->e.s9->Rtilde[i]));
+   amdef("Rtilde",&(ele->e.s9->Rtilde),num_klay*nhyb,1,"DV");
+   amzero(&(ele->e.s9->Rtilde));
 }
 /*------------------------------------------------------------ read ANS */
 frchar("ANS",buffer,&ierr);
 if (ierr!=1) dserror("reading of shell9 ans failed");
      if (strncmp(buffer,"none",4)==0)  ele->e.s9->ans=0;
-else if (strncmp(buffer,"Q",4)==0)     ele->e.s9->ans=1;
+else if (strncmp(buffer,"Q"   ,4)==0)  ele->e.s9->ans=1;
 else dserror("Wrong Parameter for ans -> SHELL9");
 /*if (strncmp(buffer,"T",4)==0)     ele->e.s9->ans=2;
 if (strncmp(buffer,"QT",4)==0)    ele->e.s9->ans=3;
-if (strncmp(buffer,"TQ",4)==0)    ele->e.s9->ans=3;
+if (strncmp(buffer,"TQ",4)==0)    ele->e.s9->ans=3;*/
 /************************************************************************/
 /************************************************************************/
 /*------------------------------------------------------------ read sdc */

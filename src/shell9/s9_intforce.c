@@ -38,6 +38,7 @@ void s9_intforce(DOUBLE *intforce, DOUBLE *stress_r, DOUBLE **bop,
 {
 INT nd;
 
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9_intforce");
 #endif

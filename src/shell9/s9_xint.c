@@ -40,6 +40,7 @@ This routine calculates the superposition of weighted function values
 void s9_xint(DOUBLE *result, DOUBLE *values, DOUBLE *funct, INT iel)
 {
 INT              i;
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9_xint");
 #endif
@@ -97,6 +98,7 @@ DOUBLE        delta;
 DOUBLE        fac;
 INT           mid;    /* reference layer or the one under the reference area */
 INT           mod;
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9con"); 
 #endif
@@ -204,6 +206,7 @@ DOUBLE        e33;
 DOUBLE        s9notr;
 INT           mid;    /* reference layer or the one under the reference area */
 INT           mod;
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9notr"); 
 #endif
@@ -297,6 +300,7 @@ DOUBLE        delta;
 DOUBLE        fac;
 INT           mid;    /* reference layer or the one under the reference area */
 INT           mod;
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9ksi"); 
 #endif

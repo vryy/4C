@@ -18,7 +18,6 @@
 <pre>                     m.gee 6/01              modified by    sh 10/02
 This routine calculates the B-Operator for compatible strains
 </pre>
-\param  DOUBLE     e1,e2   (i)  natural coordinates at GP
 \param  DOUBLE   **bop     (o)  B-Operator matrix
 \param  DOUBLE    *funct   (i)  shape functions at GP
 \param  DOUBLE   **deriv   (i)  shape function derivatives at GP
@@ -35,9 +34,7 @@ This routine calculates the B-Operator for compatible strains
 \sa calling: ---; called by: s9static_keug() [s9_static_keug.c]
 
 *----------------------------------------------------------------------*/
-void s9_tvbo(DOUBLE      e1,
-             DOUBLE      e2,
-             DOUBLE    **bop,
+void s9_tvbo(DOUBLE    **bop,
              DOUBLE     *funct,
              DOUBLE    **deriv,
              INT         iel,
@@ -49,8 +46,7 @@ void s9_tvbo(DOUBLE      e1,
              DOUBLE      condfac,
              INT         nsansq)
 {
-INT    i,j,jlay,inode,node_start;
-INT    numdof_shell9 = numdf;
+INT    jlay,inode,node_start;
 DOUBLE a1x,a1y,a1z,a2x,a2y,a2z;
 DOUBLE a3xi,a3yi,a3zi;
 DOUBLE a3xj,a3yj,a3zj;
@@ -58,6 +54,7 @@ DOUBLE a31xj,a31yj,a31zj,a32xj,a32yj,a32zj;
 DOUBLE pk,pk1,pk2;
 INT    idof, jdof;
 DOUBLE fac, fac1;
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9_tvbo");
 #endif
@@ -65,7 +62,7 @@ dstrc_enter("s9_tvbo");
 /*for (i=0; i<12; i++)
 {
    for (j=0; j<numdof_shell9*MAXNOD_SHELL9; j++) bop[i][j]= 0.0;
-}
+}*/
 /*----------------------------------------------------------------------*/
   idof = 3 + (klay) * 3;
   a3xi=akov[0][2][klay];
@@ -253,7 +250,6 @@ for (jlay=0; jlay<num_klay; jlay++)
 
 } /* end of loop over all kinematic layers*/
 /*----------------------------------------------------------------------*/
-end:
 #ifdef DEBUG 
 dstrc_exit();
 #endif

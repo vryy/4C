@@ -65,14 +65,11 @@ different layers and writes them to the flavia.msh file
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: out_gid_msh()
-/*----------------------------------------------------------------------*
- |  routine to calculate and write all needed nodal coordinates         |
- |  to visualize a multilayerd shell element with Hexahedra elements    |
- |  in gid                                                  sh 12/02    |
- *----------------------------------------------------------------------*/
+
+*-----------------------------------------------------------------------*/
 void s9_out_gid_allcoords_unsmo(FILE *out,INT type)
 {
-INT           i,j,k,l,m,mlay,klay,jlay;
+INT           i,j,k,l,mlay,klay,jlay;
 DOUBLE        zeta,e3;
 DOUBLE        thick;              /*total thicknes of shell element*/
 DOUBLE        klayhgt;            /*thickness of aktual layer in per cent of total thickness*/
@@ -91,6 +88,7 @@ DOUBLE        sum_hgt,sum_hgt_mid;
 INT           tot_lay,sum_lay,sum_lay_old;
 DOUBLE        x[3],x_u[3],x_o[3]; /*coordinats*/
 FIELD        *actfield;
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9_out_gid_allcoords_unsmo");
 #endif
@@ -145,7 +143,7 @@ for (i=0; i<genprob.numfld; i++)
             {
                klayhgt = actele->e.s9->klayhgt[jlay];
                hl      = (klayhgt/100)*thick;
-              /* hl      = 0.5*hl;   /*norm of director is half of kinematic layer hight*/
+              /* hl      = 0.5*hl;*/   /*norm of director is half of kinematic layer hight*/
                hl      = A3FAC_SHELL9*hl;   
                e3 = -1.0; /*bottom*/
                zeta = s9con(e3,num_klay,klay,jlay,1.0);
@@ -169,7 +167,7 @@ for (i=0; i<genprob.numfld; i++)
                {
                   klayhgt = actele->e.s9->klayhgt[jlay];
                   hl      = (klayhgt/100)*thick;
-                  /*hl      = 0.5*hl;   /*norm of director is half of kinematic layer hight*/
+                  /*hl      = 0.5*hl; */  /*norm of director is half of kinematic layer hight*/
                   hl      = A3FAC_SHELL9*hl;   
                   e3 = +1.0; /*top*/
                   zeta = s9con(e3,num_klay,klay,jlay,1.0);
@@ -237,7 +235,7 @@ for (i=0; i<genprob.numfld; i++)
             {
                klayhgt = actele->e.s9->klayhgt[jlay];
                hl      = (klayhgt/100)*thick;
-               /*hl      = 0.5*hl;   /*norm of director is half of kinematic layer hight*/
+               /*hl      = 0.5*hl;*/   /*norm of director is half of kinematic layer hight*/
                hl      = A3FAC_SHELL9*hl;   
                e3 = -1.0; /*bottom*/
                zeta = s9con(e3,num_klay,klay,jlay,1.0);
@@ -261,7 +259,7 @@ for (i=0; i<genprob.numfld; i++)
                {
                   klayhgt = actele->e.s9->klayhgt[jlay];
                   hl      = (klayhgt/100)*thick;
-                  /*hl      = 0.5*hl;   /*norm of director is half of kinematic layer hight*/
+                  /*hl      = 0.5*hl;*/   /*norm of director is half of kinematic layer hight*/
                   hl      = A3FAC_SHELL9*hl;   /*norm of director is half of kinematic layer hight*/
                   e3 = +1.0; /*top*/
                   zeta = s9con(e3,num_klay,klay,jlay,1.0);
@@ -326,7 +324,7 @@ for (i=0; i<genprob.numfld; i++)
          else  dserror("wrong element type for gid mesh -> unsmo !!!");
       } /*end loop over all nodes to actele */   
    }/*end loop over all elements */
-}/* end of (i=0; i<genprob.numfld; i++)
+}/* end of (i=0; i<genprob.numfld; i++)*/
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -349,17 +347,14 @@ flavia.msh file
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: out_gid_msh()
-/*----------------------------------------------------------------------*
- |  routine to write the element topology for a multilayerd shell       |
- |  element to visualize in gid -> Hexahedra elements       sh 12/02    |
- *----------------------------------------------------------------------*/
+
+*-----------------------------------------------------------------------*/
 void s9_out_gid_eletop_unsmo(FILE *out,INT type,INT j)
 {
-INT           i,k,klay,lay;
+INT           i,k,lay;
 INT           numnp;            /*number of nodal points*/
 INT           numele;           /*number of elements*/
 INT           num_klay;
-INT           num_mlay;
 INT           tot_lay;          /*sum of all layers: kinematic and material*/
 INT           node_ID;          /*nodal ID*/
 INT           ele_ID;           /*element ID*/
@@ -494,7 +489,7 @@ for (i=0; i<genprob.numfld; i++)
   }
 
    else  dserror("wrong element type for gid mesh -> unsmo !!!");
-}/* end of (i=0; i<genprob.numfld; i++)
+}/* end of (i=0; i<genprob.numfld; i++)*/
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -516,13 +511,11 @@ component in the different layers and writes them to the flavia.res file
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: out_gid_sol()
-/*----------------------------------------------------------------------*
- |  routine to calcualate and to write nodal displacements of a shell9  |
- |  element to visualize in gid -> Hexahedra elements       sh 12/02    |
- *----------------------------------------------------------------------*/
+
+*-----------------------------------------------------------------------*/
 void s9_out_gid_sol_dis_unsmo(FILE *out,FIELD *actfield,INT place)
 {
-INT           i,j,k,l,m,mlay,klay,jlay;
+INT           j,k,l,mlay,klay,jlay;
 INT           numele;                   /*number of elements*/
 INT           numnp;                    /*number of nodal points*/
 DOUBLE        thick;
@@ -790,19 +783,15 @@ The only problem is to write in the right order
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: out_gid_sol()
-/*----------------------------------------------------------------------*
- |  routine to calcualate and to write gp stresses of a shell9          |
- |  element to visualize in gid -> Hexahedra elements        sh 1/03    |
- *----------------------------------------------------------------------*/
+
+*-----------------------------------------------------------------------*/
 void s9_out_gid_sol_str_unsmo(FILE *out,FIELD *actfield,INT place)
 {
-INT           i,j,k,l,m,klay,lay;
+INT           j,k,lay;
 INT           numnp;            /*number of nodal points in actfield */
 INT           numele;           /*number of elements to actnode -> in plane*/
 INT           num_node;         /*number of nodes to an element*/
 DOUBLE      **stress;
-DOUBLE        sum_str_u, sum_str_oo, sum_str_uo;
-DOUBLE        strK[6],strKo[6],strK_save[6],strK_mid[6];          
 INT           node_ID;                  /*nodal ID*/
 INT           print_ID;
 INT           ele_ID;
@@ -810,10 +799,7 @@ INT           stress_ID;
 INT           stress_ID_o;
 INT           stress_ID_u;
 INT           num_klay;
-INT           num_mlay;
-INT           tot_lay,sum_lay,sum_lay_old;
-NODE         *actnode;
-INT           is_edge;                  /*is_edge=1: actnode is a edge node to the element, else middle node*/
+INT           tot_lay;
 ELEMENT      *actele;
 
 

@@ -29,7 +29,7 @@ shell9 metrics in current and reference configuration
 \sa calling: ---; called by: s9_call_mat()   [s9_call_mat.c]
 
 *----------------------------------------------------------------------*/
-void s9_eps(DOUBLE *strain,DOUBLE **gmkovc, DOUBLE **gmkovr)
+void s9_eps(DOUBLE strain[6],DOUBLE **gmkovc, DOUBLE **gmkovr)
 {
 #ifdef DEBUG 
 dstrc_enter("s9_eps");

@@ -31,7 +31,6 @@ direction of multilayer shell element.
 \param  DOUBLE  *klayhgt (i)  hight of kin layer in % of total thickness of shell 
 \param  DOUBLE  *mlayhgt (i)  hight of mat layer in % of adjacent kin layer 
 \param  INT      num_klay(i)  number of kin layers to this element  
-\param  INT      num_mlay(i)  number of mat layers to this kin layer 
 \param  INT      klay    (i)  actual kin layer 
 \param  INT      mlay    (i)  actual mat layer of this kin layer 
 
@@ -50,7 +49,6 @@ void s9_tvma(DOUBLE   **D,
              DOUBLE    *klayhgt,     /* hight of kin layer in % of total thickness of shell */
              DOUBLE    *mlayhgt,     /* hight of mat layer in % of adjacent kin layer */
              INT        num_klay,    /* number of kin layers to this element */  
-             INT        num_mlay,    /* number of mat layers to this kin layer */
              INT        klay,        /* actual kin layer */
              INT        mlay,        /* actual mat layer of this kin layer */
              DOUBLE     condfac)
@@ -59,6 +57,7 @@ INT i,i6,j,j6;
 DOUBLE deltah, h_mlay, h_kl;
 DOUBLE zeta_kl,zeta;
 DOUBLE stress_fact, C_fact;
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9_tvma");
 #endif
@@ -101,7 +100,7 @@ for (i=0; i<6; i++)
    {
       D[i][j]=D[j][i];
    }
-}
+}*/
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();

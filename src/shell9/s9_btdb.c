@@ -35,9 +35,8 @@ This routine calculates the stiffness matrix Ke
 void s9_BtDB(DOUBLE **estif, DOUBLE **bop,    DOUBLE **D,   INT iel,
              INT      numdf, DOUBLE   weight, DOUBLE **work)
 {
-INT i,j,k;
 INT dim;
-DOUBLE sum;
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9_BtDB");
 #endif

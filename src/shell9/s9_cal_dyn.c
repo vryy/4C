@@ -18,10 +18,11 @@
 void s9_tmas(DOUBLE *funct, DOUBLE *thick, DOUBLE **emass, INT iel, INT numdf,
              DOUBLE facv,   DOUBLE facw,   DOUBLE facvw)
 {
-INT           i,j,k,l;
+INT           i,j,k;
 DOUBLE        he,hehe;
 DOUBLE        helpf;
 DOUBLE        help;
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9_tmas");
 #endif

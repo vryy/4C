@@ -49,7 +49,7 @@ extern struct _FILES  allfiles;
 /*!----------------------------------------------------------------------
 \brief writes the DOFs in the outputfile                                      
 
-<pre>                                                              sh 012/02
+<pre>                                                           sh 012/02
 This routine writes the DOFs of a shell9 element to the outputfile
 </pre>
 \param  *actnode NODE    (i)   actual node for which the DOFs are written
@@ -59,9 +59,7 @@ This routine writes the DOFs of a shell9 element to the outputfile
 \return void                                               
 \sa calling: ---; called by: out_general()
 
-/*----------------------------------------------------------------------*
- | Degrees of Freedom -> Output file                          sh 12/02  |
- *----------------------------------------------------------------------*/
+*-----------------------------------------------------------------------*/
 void s9out_dof(NODE *actnode,INT j)
 {
 INT        i;
@@ -103,7 +101,7 @@ return;
 /*!----------------------------------------------------------------------
 \brief writes the nodal displacements to the outputfile                                       
 
-<pre>                                                              sh 012/02
+<pre>                                                           sh 012/02
 This routine writes the displacements of several layers of a shell9 element 
 to the outputfile
 </pre>
@@ -113,9 +111,8 @@ to the outputfile
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: out_sol()
-/*----------------------------------------------------------------------*
- | Nodal displacements -> Output file                         sh 12/02  |
- *----------------------------------------------------------------------*/
+
+*-----------------------------------------------------------------------*/
 void s9out_nodal_dis(NODE *actnode,INT place)
 {
 INT        i,j,klay,jlay;
@@ -134,12 +131,12 @@ num_klay = (numdf-3)/3;
 /*----------------------------------------------------------------------*/
 /* write x,y,z displacement of Middle Surface */
 fprintf(out,"    NODE         DISPLACEMENT X   DISPLACEMENT Y   DISPLACEMENT Z\n\n");
-fprintf(out," %6d           %10.6#E     %10.6#E     %10.6#E\n\n",
+fprintf(out," %6d           %10.6E     %10.6E     %10.6E\n\n",
         actnode->Id,actnode->sol.a.da[place][0],actnode->sol.a.da[place][1],actnode->sol.a.da[place][2]);
 
 /* write displacements of diff. vector components layerwise */
 fprintf(out,"    NODE  LAYER  DIFF.VECTOR WX   DIFF.VECTOR WY   DIFF.VECTOR WZ\n\n");
-for (i=1; i<=num_klay; i++) fprintf(out," %6d%6d    %10.6#E    %10.6#E    %10.6#E\n",
+for (i=1; i<=num_klay; i++) fprintf(out," %6d%6d    %10.6E    %10.6E    %10.6E\n",
                                     actnode->Id,i,actnode->sol.a.da[place][0+3*i],
                                     actnode->sol.a.da[place][1+3*i],actnode->sol.a.da[place][2+3*i]);
 fprintf(out,"  DISPLACEMENT ACROSS THE THICKNESS\n");
@@ -166,7 +163,7 @@ for (klay=num_klay-1; klay>=0; klay--)
        {
            dis[i][j] = dis[i][j] + actnode->sol.a.da[place][j];
        }
-       fprintf(out," %6d%6d     %10.6#E     %10.6#E     %10.6#E\n",
+       fprintf(out," %6d%6d     %10.6E     %10.6E     %10.6E\n",
                    actnode->Id,klay+1,dis[i][0],dis[i][1],dis[i][2]);
    }
 }
@@ -179,7 +176,8 @@ return;
 } /* end of s9out_nodal_dis */
 
 /*!----------------------------------------------------------------------
-\brief calcualtes and writes coordinates to the flavia.msh file                                      
+\brief calcualtes and writes coordinates to visualize a multilayerd shell 
+       element with Hexahedra elementsto the flavia.msh file                                      
 
 <pre>                                                              sh 012/02
 This routine calculates the coordinates of the nodal keypoints in the 
@@ -191,11 +189,8 @@ different layers and writes them to the flavia.msh file
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: out_gid_msh()
-/*----------------------------------------------------------------------*
- |  routine to calculate and write all needed nodal coordinates         |
- |  to visualize a multilayerd shell element with Hexahedra elements    |
- |  in gid                                                  sh 12/02    |
- *----------------------------------------------------------------------*/
+
+*-----------------------------------------------------------------------*/
 void s9_out_gid_allcoords(FILE *out,INT type)
 {
 INT           i,j,k,l,m,mlay,klay,jlay;
@@ -215,6 +210,7 @@ INT           is_edge;            /*is_edge=1: actnode is a edge node to the ele
 FIELD        *actfield;
 NODE         *actnode;
 ELEMENT      *actele;
+/*-----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9_out_gid_allcoords");
 #endif
@@ -265,7 +261,7 @@ for (i=0; i<genprob.numfld; i++)
          {
             klayhgt = actnode->element[0]->e.s9->klayhgt[jlay];
             hl      = (klayhgt/100)*thick;
-            /*hl      = 0.5*hl;   /*norm of director is half of kinematic layer hight*/
+            /*hl      = 0.5*hl;*/   /*norm of director is half of kinematic layer hight*/
             hl      = A3FAC_SHELL9*hl;   
             e3 = -1.0; /*bottom*/
             zeta = s9con(e3,num_klay,klay,jlay,1.0);
@@ -288,7 +284,7 @@ for (i=0; i<genprob.numfld; i++)
             {
                klayhgt = actnode->element[0]->e.s9->klayhgt[jlay];
                hl      = (klayhgt/100)*thick;
-               /*hl      = 0.5*hl;   /*norm of director is half of kinematic layer hight*/
+               /*hl      = 0.5*hl;*/   /*norm of director is half of kinematic layer hight*/
                hl      = A3FAC_SHELL9*hl;
                e3 = +1.0; /*top*/
                zeta = s9con(e3,num_klay,klay,jlay,1.0);
@@ -348,7 +344,7 @@ for (i=0; i<genprob.numfld; i++)
          {
             klayhgt = actnode->element[0]->e.s9->klayhgt[jlay];
             hl      = (klayhgt/100)*thick;
-            /*hl      = 0.5*hl;   /*norm of director is half of kinematic layer hight*/
+            /*hl      = 0.5*hl; */  /*norm of director is half of kinematic layer hight*/
             hl      = A3FAC_SHELL9*hl;  
             e3 = -1.0; /*bottom*/
             zeta = s9con(e3,num_klay,klay,jlay,1.0);
@@ -371,7 +367,7 @@ for (i=0; i<genprob.numfld; i++)
             {
                klayhgt = actnode->element[0]->e.s9->klayhgt[jlay];
                hl      = (klayhgt/100)*thick;
-               /*hl      = 0.5*hl;   /*norm of director is half of kinematic layer hight*/
+               /*hl      = 0.5*hl;*/   /*norm of director is half of kinematic layer hight*/
                hl      = A3FAC_SHELL9*hl;   
                e3 = +1.0; /*top*/
                zeta = s9con(e3,num_klay,klay,jlay,1.0);
@@ -416,7 +412,7 @@ for (i=0; i<genprob.numfld; i++)
       }
       else  dserror("wrong element type for gid mesh !!!");
    }
-}/* end of (i=0; i<genprob.numfld; i++)
+}/* end of (i=0; i<genprob.numfld; i++)*/
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -425,7 +421,8 @@ return;
 } /* end of s9_out_gid_allcoords */
 
 /*!----------------------------------------------------------------------
-\brief writes the element topology to the flavia.msh file                                      
+\brief writes the element topology for a multilayerd shell                                       
+       element to visualize in gid -> Hexahedra elements
 
 <pre>                                                              sh 012/02
 This routine writes the topology of the calculated 3-D elements to the
@@ -438,10 +435,8 @@ flavia.msh file
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: out_gid_msh()
-/*----------------------------------------------------------------------*
- |  routine to write the element topology for a multilayerd shell       |
- |  element to visualize in gid -> Hexahedra elements       sh 12/02    |
- *----------------------------------------------------------------------*/
+
+*-----------------------------------------------------------------------*/
 void s9_out_gid_eletop(FILE *out,INT type,ELEMENT *actele)
 {
 INT           i,k,klay,lay;
@@ -568,7 +563,7 @@ for (i=0; i<genprob.numfld; i++)
       }
    }
    else  dserror("wrong element type for gid mesh !!!");
-}/* end of (i=0; i<genprob.numfld; i++)
+}/* end of (i=0; i<genprob.numfld; i++)*/
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
@@ -577,7 +572,8 @@ return;
 } /* end of s9_out_gid_eletop */
 
 /*!----------------------------------------------------------------------
-\brief calculates and writes the nodal displacements to the flavia.res file                                      
+\brief calculates and writes the nodal displacements of a shell9  
+       element to visualize in gid -> Hexahedra elements                                     
 
 <pre>                                                              sh 012/02
 This routine calculates the nodal displacement from the different vector
@@ -589,13 +585,11 @@ component in the different layers and writes them to the flavia.res file
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: out_gid_sol()
-/*----------------------------------------------------------------------*
- |  routine to calcualate and to write nodal displacements of a shell9  |
- |  element to visualize in gid -> Hexahedra elements       sh 12/02    |
- *----------------------------------------------------------------------*/
+
+*-----------------------------------------------------------------------*/
 void s9_out_gid_sol_dis(FILE *out,FIELD *actfield,INT place)
 {
-INT           i,j,k,m,mlay,klay,jlay;
+INT           i,j,m,mlay,klay,jlay;
 INT           numnp;                    /*number of nodal points*/
 DOUBLE        thick;
 INT           num_klay,num_mlay;
@@ -796,7 +790,7 @@ return;
 
 /*!----------------------------------------------------------------------
 \brief writes the physical stresses, extrapolated from GP to nodal points
- to the flavia.res file                                      
+ to the flavia.res file -> Hexahedra elements                     
 
 <pre>                                                              sh 1/03
 This routine writes the physical stresses, extrapolated from GP to nodal 
@@ -810,10 +804,8 @@ The only problem is to write in the right order
 \warning There is nothing special to this routine
 \return void                                               
 \sa calling: ---; called by: out_gid_sol()
-/*----------------------------------------------------------------------*
- |  routine to calcualate and to write gp stresses of a shell9          |
- |  element to visualize in gid -> Hexahedra elements        sh 1/03    |
- *----------------------------------------------------------------------*/
+
+*-----------------------------------------------------------------------*/
 void s9_out_gid_sol_str(FILE *out,FIELD *actfield,INT place)
 {
 INT           i,j,k,l,m,klay,lay;
@@ -826,7 +818,7 @@ DOUBLE        strK[6],strKo[6],strK_save[6],strK_mid[6];
 INT           node_ID;                  /*nodal ID*/
 INT           num_klay;
 INT           num_mlay;
-INT           sum_lay,sum_lay_old;
+INT           sum_lay;
 NODE         *actnode;
 INT           is_edge;                  /*is_edge=1: actnode is a edge node to the element, else middle node*/
 

@@ -60,7 +60,7 @@ void s9_tfte(DOUBLE  **force,
              DOUBLE    detsm,
              DOUBLE    detsr)
 {
-INT    i,j;
+INT    i;
 DOUBLE s11,s12,s21,s13,s31,s22,s23,s32,s33;
 DOUBLE xu;
 DOUBLE hh;
@@ -78,6 +78,7 @@ DOUBLE xu33=0.0;
 
 DOUBLE deltah, h_mlay, h_kl,zeta_kl;
 
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9_tfte");
 #endif

@@ -390,6 +390,7 @@ INT    i,j,k;
 DOUBLE t[3][3];
 DOUBLE h[3][3];
 DOUBLE sum;
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9_tettr");
 #endif

@@ -44,7 +44,7 @@ void s9_tvkg(DOUBLE **estif,
              INT      klay,        /* actual kin layer */
              INT      num_klay)    /* number of kin layers to this element */  
 {
-INT     i,inode,jnode;
+INT     inode,jnode;
 INT     idof,jdof;
 INT     jlay;
 DOUBLE  fac1;
@@ -80,7 +80,7 @@ DOUBLE  sm21;
 DOUBLE  sm31;
 DOUBLE  sm22;
 DOUBLE  sm32;
-
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9_tvkg");
 #endif

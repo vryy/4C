@@ -50,7 +50,7 @@ ARRAY      funct_a; DOUBLE  *funct;
 ARRAY      deriv_a; DOUBLE **deriv;
 DOUBLE   **a3ref;
 DOUBLE    *thick;
-
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9a3");
 #endif
@@ -135,7 +135,7 @@ DOUBLE     r,s;
 DOUBLE     gkov[3][3];
 DOUBLE     a3[3];
 DOUBLE     a3norm;
-
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9a3ref_extern");
 #endif
@@ -204,13 +204,14 @@ picture 8.2c). The shared director is later put back on the element array
 *----------------------------------------------------------------------*/
 void s9averdir(DOUBLE **dir_list, INT numa3, DOUBLE *a3, DOUBLE h2)
 {
-INT        i,j,k,node;
+INT        i;
 DOUBLE     averdir[3];
 DOUBLE     davn[3];
 DOUBLE     normal[3];
 DOUBLE     lenght;
 DOUBLE     denom;
 DOUBLE     alpha;
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9averdir");
 #endif

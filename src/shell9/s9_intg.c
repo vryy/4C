@@ -36,6 +36,7 @@ void s9intg(const ELEMENT   *ele,
             INT              option)
 {
 DOUBLE b,wgt,wgt0;
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9intg");
 #endif
@@ -208,6 +209,7 @@ void s9intg_str(S9_DATA         *data,
                 INT              option)
 {
 DOUBLE b;
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9intg_str");
 #endif

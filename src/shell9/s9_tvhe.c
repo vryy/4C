@@ -41,7 +41,6 @@ metics 'gmkovc' and 'gmkonc' are re-calculated.
 \param  DOUBLE    *klayhgt  (i)  hight of kin layer in % of total thickness of shell 
 \param  DOUBLE    *mlayhgt  (i)  hight of mat layer in % of adjacent kin layer 
 \param  INT        num_klay (i)  number of kin layers to this element  
-\param  INT        num_mlay (i)  number of mat layers to this kin layer 
 \param  INT        klay     (i)  actual kin layer 
 \param  INT        mlay     (i)  actual mat layer of this kin layer 
 
@@ -71,7 +70,6 @@ void s9_tvhe(DOUBLE  **gmkovr,
              DOUBLE   *klayhgt,   /* hight of kin layer in % of total thickness of shell */
              DOUBLE   *mlayhgt,   /* hight of mat layer in % of adjacent kin layer */
              INT       num_klay,  /* number of kin layers to this element */
-             INT       num_mlay,  /* number of mat layers to this kin layer */
              INT       klay,      /* actual kin layer */
              INT       mlay,      /* actual mat layer of this kin layer */
              DOUBLE    condfac)
@@ -94,7 +92,7 @@ DOUBLE b32r=0.0;
 DOUBLE deltah, h_mlay, h_kl;
 DOUBLE zeta_kl,zeta,det_dummy;
 DOUBLE heps[3][3];
-
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9_tvhe");
 #endif
@@ -240,7 +238,7 @@ INT i,j,k;
 DOUBLE heps[3][3];
 DOUBLE det_dummy;
 
-
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9_tvhe_lin");
 #endif

@@ -54,7 +54,7 @@ void s9_stress(ELEMENT      *ele,
                INT           kstep,
                INT           init)
 {
-INT                 i,j,k,l,kl,ml;
+INT                 i,j,k,kl,ml;
 
 INT                 nir,nis,nit;
 INT                 lr,ls,lt;
@@ -103,15 +103,15 @@ DOUBLE              detsrc;
 DOUBLE              h[3];                                   /* working array */
 DOUBLE              da;                                     /* area on mid surface */
 
-DOUBLE              stress[6], stress_r[12];                /* stress and stress resultants */
+DOUBLE              stress[6];                              /* stress and stress resultants */
 DOUBLE              strain[6];                              /* strains */
 
 static ARRAY        strK_a;      static DOUBLE **gp_strK;   /* element array for stresses on nodal points */
 
 static ARRAY        stress_a;    static DOUBLE **gp_stress; /* element array for stresses on gaussian points */
                                       DOUBLE ***ele_stress; /* pointer to array of stress history in element */
-/*static ARRAY        forces_a;    static DOUBLE **gp_forces; /* element array for forces (stress resultants) on gaussian points */
-/*                                      DOUBLE ***ele_forces; /* pointer to array of stress history in element */
+/*static ARRAY        forces_a;    static DOUBLE **gp_forces;*/ /* element array for forces (stress resultants) on gaussian points */
+/*                                      DOUBLE ***ele_forces;*/ /* pointer to array of stress history in element */
 
 static ARRAY        C_a;         static DOUBLE **C;         /* material tensor */
 static ARRAY        D_a;         static DOUBLE **D;         /* material tensor integrated in thickness direction */
@@ -157,6 +157,7 @@ static ARRAY        gkonc_a;     static DOUBLE **gkonc;     /* kontravar.-------
 static ARRAY        gmkovc_a;    static DOUBLE **gmkovc;    /* kovaraiant metric tensor at Int point current.config. */
 static ARRAY        gmkonc_a;    static DOUBLE **gmkonc;    /* kontravar.--------------"------------ current.config. */
 
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9_stress");
 #endif
@@ -294,11 +295,11 @@ for (kl=0; kl<num_klay; kl++) /*loop over all kinematic layers*/
   for (k=0; k<iel; k++)           /*loop over all nodes per layer*/
   {
      hte[k] = ele->e.s9->thick_node.a.dv[k];
-     /*if (ele->e.s9->dfield == 0)      /*Layerthicknes, norm(a3L) = HL */
+     /*if (ele->e.s9->dfield == 0)*/      /*Layerthicknes, norm(a3L) = HL */
      h2 = ele->e.s9->thick_node.a.dv[k] * klayhgt[kl]/100. * condfac;
-     /*h2 = 0.5*h2; /*A3_IST_EINHALB halber Direktor*/
+     /*h2 = 0.5*h2;*/ /*A3_IST_EINHALB halber Direktor*/
      h2 = A3FAC_SHELL9 * h2;
-     /*else if (ele->e.s9->dfield == 1) /*half of shell thickness, norm(a3) = H/2*/
+     /*else if (ele->e.s9->dfield == 1)*/ /*half of shell thickness, norm(a3) = H/2*/
      /*  h2 = ele->e.s9->thick_node.a.dv[k]/2. * condfac;*/
  
      a3r[0][k][kl] = a3ref[0][k] * h2;
@@ -364,25 +365,23 @@ for (lr=0; lr<nir; lr++)
                e3   = data->xgpt[lt];
                fact = data->wgtt[lt];
                /*-------------------- basis vectors and metrics at shell body */ 
-               s9_tmtr(xrefe,a3r,e3,gkovr,gkonr,gmkovr,gmkonr,&detsmr,
-                          funct,deriv,iel,akovr,a3kvpr,hgt,klayhgt,mlayhgt,
-                          num_klay,num_mlay,kl,ml,condfac);
+               s9_tmtr(e3,gkovr,gkonr,gmkovr,gmkonr,&detsmr,akovr,a3kvpr,hgt,
+                       klayhgt,mlayhgt,num_klay,kl,ml,condfac);
 
-               s9_tmtr(xcure,a3c,e3,gkovc,gkonc,gmkovc,gmkonc,&detsmc,
-                          funct,deriv,iel,akovc,a3kvpc,hgt,klayhgt,mlayhgt,
-                          num_klay,num_mlay,kl,ml,condfac);
+               s9_tmtr(e3,gkovc,gkonc,gmkovc,gmkonc,&detsmc,akovc,a3kvpc,hgt,
+                       klayhgt,mlayhgt,num_klay,kl,ml,condfac);
                /*--------------------------------- metric at gp in shell body */
                s9_tvhe(gmkovr,gmkovc,gmkonr,gmkonc,gkovr,gkovc,&detsrr,&detsrc,
                        amkovc,amkovr,akovc,akovr,a3kvpc,a3kvpr,e3,kintyp,hgt,
-                       klayhgt,mlayhgt,num_klay,num_mlay,kl,ml,condfac);
+                       klayhgt,mlayhgt,num_klay,kl,ml,condfac);
                /*------------------------------------------ call material law */
                actmultimat = &(multimat[ele->e.s9->kinlay[kl].mmatID[ml]-1]);
                rot_axis = mat->m.multi_layer->kinlay[kl].rot[ml];
                phi = mat->m.multi_layer->kinlay[kl].phi[ml];
                
                ip = 2* ngauss + lt;
-               s9_call_mat(ele,actmultimat,stress,strain,C,gmkovc,gmkonc,gmkovr,gmkonr,
-                           gkovc,gkonc,gkovr,gkonr,rot_axis,phi);
+               s9_call_mat(ele,actmultimat,stress,strain,C,gmkovc,gmkovr,gmkonr,
+                           gkovr,gkonr,rot_axis,phi,ip,actlay,istore,newval);
                /*- calculates physical stresses at gaussian point in respect to local/global coordinat system */
                ID_stress = ngauss + (2*actlay + lt) * (nir*nis);  /*write gp's layerwise*/
                s9_tstress(gp_stress,stress,ID_stress,gkovr,ele);
@@ -540,7 +539,6 @@ This routine make redundant stresses to the shell9 elements, which is only
 necessary in parallel.
 </pre>
 \param *actfield    FIELD       (i)   my field
-\param *actpart     PARTITION   (i)   my partition
 \param *actintra    INTRA       (i)   my intra-communicator 
 \param  kstep       INT         (i)   actual step in nonlinear analysis
 
@@ -550,7 +548,6 @@ necessary in parallel.
 
 *----------------------------------------------------------------------*/
 void s9_stress_reduce(FIELD     *actfield,
-                      PARTITION *actpart,
                       INTRA     *actintra,
                       INT        kstep)
 {
@@ -563,6 +560,7 @@ DOUBLE     **buffer;
 ARRAY        mpi_buffer1;
 DOUBLE     **buffer1;
 
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9_stress_reduce");
 #endif
@@ -588,7 +586,7 @@ for (i=0; i<actfield->dis[0].numele; i++)
                  actele->e.s9->forces.sdim,
                  actele->e.s9->forces.tdim,
                  actele->e.s9->forces.fodim);
-   }
+   }*/
    /*------------- stresses at nodal points  ---------------------------*/
    if (actele->e.s9->stresses.fdim <= kstep) 
    {
@@ -623,7 +621,7 @@ for (i=0; i<actfield->dis[0].numele; i++)
    }
 } /* end of (i=0; i<actfield->numele; i++) */
 /*----------------------------------------------------------------------*/
-/*amdel(&mpi_buffer);  /* for the forces*/
+/*amdel(&mpi_buffer);*/  /* for the forces*/
 amdel(&mpi_buffer1);
 #ifdef DEBUG 
 dstrc_exit();

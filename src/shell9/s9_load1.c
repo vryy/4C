@@ -40,7 +40,7 @@ void s9eleload(ELEMENT  *ele,
 {
 INT          lr,ls;
 INT          i,j,k,kl;
-INT          inode,idof,dof;
+INT          inode,idof;
 INT          nir;
 INT          nis;
 INT          nit;
@@ -54,7 +54,7 @@ DOUBLE       h2;
 DOUBLE       condfac;
 
 DOUBLE       hte[MAXNOD_SHELL9];                /* element thickness at nodal points */
-/*DOUBLE      *hte;                               /* element thickness at nodal points */
+/*DOUBLE      *hte;  */                           /* element thickness at nodal points */
 DOUBLE       e1,e2,e3;
 DOUBLE       facr,facs,wgt;
 DOUBLE       deta;
@@ -79,9 +79,6 @@ static ARRAY a3ref_a; static DOUBLE **a3ref;
 static ARRAY4D a3r_a; static DOUBLE ***a3r;     /* a3 in reference config -> for each kinematic layer */
 static ARRAY4D a3c_a; static DOUBLE ***a3c;     /* a3 in current   config (a3r + disp) */
 
-S9_DATA      actdata;
-NODE        *actnode;
-
 /*--------------------- variables needed for integration of line loads */
 INT             ngline;
 INT             ngnode;
@@ -97,8 +94,9 @@ DOUBLE          xgp_n[3];
 DOUBLE          wgp[3];
 INT             dir;
 DOUBLE          ds;
-DOUBLE          ap[3],ar[3];
+DOUBLE          ar[3];
 
+/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_enter("s9eleload");
 #endif
@@ -175,11 +173,11 @@ for (kl=0; kl<num_klay; kl++) /*loop over all kinematic layers*/
   for (k=0; k<iel; k++)           /*loop over all nodes per layer*/
   {
      hte[k] = ele->e.s9->thick_node.a.dv[k];
-     /*if (ele->e.s9->dfield == 0)      /*Layerthicknes, norm(a3L) = HL */
+     /*if (ele->e.s9->dfield == 0) */     /*Layerthicknes, norm(a3L) = HL */
      h2 = ele->e.s9->thick_node.a.dv[k] * klayhgt[kl]/100. * condfac;
-     /*h2 = 0.5*h2; /*A3_IST_EINHALB halber Direktor*/
+     /*h2 = 0.5*h2;*/ /*A3_IST_EINHALB halber Direktor*/
      h2 = A3FAC_SHELL9 * h2;
-     /*else if (ele->e.s9->dfield == 1) /*half of shell thickness, norm(a3) = H/2*/
+     /*else if (ele->e.s9->dfield == 1)*/ /*half of shell thickness, norm(a3) = H/2*/
      /*  h2 = ele->e.s9->thick_node.a.dv[k]/2. * condfac;*/
  
      x[0][k] = ele->node[k]->x[0];
@@ -223,15 +221,15 @@ for (lr=0; lr<nir; lr++)/*---------------------------- loop r-direction */
       /*------- evaluate Jacobian matrix xjm to calculate shell shifter */
       if (ele->g.gsurf->neum->neum_type==neum_live)
       {
-         s9jaco(funct,deriv,x,xjm,hte,a3r,-1.0,iel,&detau,0,num_klay,klayhgt,mlayhgt);
-         s9jaco(funct,deriv,x,xjm,hte,a3r,+1.0,iel,&detao,0,num_klay,klayhgt,mlayhgt);
-         s9jaco(funct,deriv,x,xjm,hte,a3r,  e3,iel,&deta ,0,num_klay,klayhgt,mlayhgt);
+         s9jaco(funct,deriv,x,xjm,hte,a3r,-1.0,iel,&detau,0,num_klay,klayhgt);
+         s9jaco(funct,deriv,x,xjm,hte,a3r,+1.0,iel,&detao,0,num_klay,klayhgt);
+         s9jaco(funct,deriv,x,xjm,hte,a3r,  e3,iel,&deta ,0,num_klay,klayhgt);
       }
       else
       {
-         s9jaco(funct,deriv,xc,xjm,hte,a3c,-1.0,iel,&detau,0,num_klay,klayhgt,mlayhgt);
-         s9jaco(funct,deriv,xc,xjm,hte,a3c,+1.0,iel,&detao,0,num_klay,klayhgt,mlayhgt);
-         s9jaco(funct,deriv,xc,xjm,hte,a3c,  e3,iel,&deta ,0,num_klay,klayhgt,mlayhgt);
+         s9jaco(funct,deriv,xc,xjm,hte,a3c,-1.0,iel,&detau,0,num_klay,klayhgt);
+         s9jaco(funct,deriv,xc,xjm,hte,a3c,+1.0,iel,&detao,0,num_klay,klayhgt);
+         s9jaco(funct,deriv,xc,xjm,hte,a3c,  e3,iel,&deta ,0,num_klay,klayhgt);
       }
       /*------------------ evaluate determinant of shell shifter ------ */         
       detzto = detao/deta;
@@ -251,7 +249,7 @@ for (lr=0; lr<nir; lr++)/*---------------------------- loop r-direction */
       if      (nsurf == 1) shift = 1.0;
       else if (nsurf == 2) shift = detzto;
       else if (nsurf == 3) shift = detzbo;
-      s9loadGP(ele,eload1,wgt,xjm,funct,deriv,iel,xi,yi,zi,shift);
+      s9loadGP(ele,eload1,wgt,xjm,funct,iel,zi,shift);
    } /* end of loop over ls */
 } /* end of loop over lr */
 
@@ -493,7 +491,7 @@ This routine performs the integration surface loads for a shell9 element
 \param  DOUBLE   *funct   (i)  shape functions at GP
 \param  DOUBLE  **deriv   (i)  shape function derivatives at GP
 \param  INT       iel     (i)  number of nodes to this element
-\param  DOUBLE    xi,yi,zi(i)  coordinates at GP
+\param  DOUBLE    zi      (i)  z-coordinates at GP
 \param  DOUBLE    shift   (i)  value of shell shifter (->surface loads)
 
 \warning There is nothing special to this routine
@@ -506,10 +504,7 @@ void s9loadGP(ELEMENT    *ele,
               DOUBLE      wgt,
               DOUBLE    **xjm,
               DOUBLE     *funct,
-              DOUBLE    **deriv,
               INT         iel,
-              DOUBLE      xi,
-              DOUBLE      yi,
               DOUBLE      zi,
               DOUBLE      shift)    /*shell shifter if top,bot */
 {
@@ -622,8 +617,6 @@ break;
 
 }/* end of switch(ele->g.gsurf->neum->neum_type)*/
 /*----------------------------------------------------------------------*/
-end:
-/*----------------------------------------------------------------------*/
 #ifdef DEBUG 
 dstrc_exit();
 #endif
@@ -632,18 +625,3 @@ return;
 /*----------------------------------------------------------------------*/
 #endif /*D_SHELL9*/
 /*! @} (documentation module close)*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
