@@ -12,7 +12,7 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 *----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
 /*----------------------------------------------------------------------*
-|  control solver Umpfack                            s.offermanns 05/02 |
+|  control solver Umpfack                                      mn 05/03 |
 *----------------------------------------------------------------------*/
 void solver_umfpack(struct _SOLVAR         *actsolv,
                     struct _INTRA          *actintra,
@@ -74,10 +74,6 @@ case 1:
 
    /* get the default control parameters */
    umfpack_di_defaults (control) ;
-#ifdef DEBUG 
-   control [UMFPACK_PRL] = 5 ;
-   umfpack_di_report_info (control, info) ;
-#endif
 
    break;
       
@@ -121,6 +117,9 @@ case 0:
        t = umfpack_timer ( ) ;
        /* get the default control parameters */
        umfpack_di_defaults (control) ;
+       control [UMFPACK_PIVOT_TOLERANCE] = 0.2;
+       control [UMFPACK_IRSTEP]          =   5;
+
 #ifdef DEBUG 
        control [UMFPACK_PRL] = 5 ;
 #endif
@@ -164,6 +163,10 @@ case 0:
        t = umfpack_timer ( ) - t ;
        fprintf(allfiles.out_err,"umfpack solve complete.  Total time: %5.2f (seconds)\n", t);
 
+/*#ifdef DEBUG 
+   control [UMFPACK_PRL] = 5 ;
+   umfpack_di_report_info (control, info);
+#endif*/
 
    }/* end of (imyrank==0) */
    /*------------------------------------------------- broadcast result */
