@@ -28,7 +28,7 @@ struct _DESIGN       *design;
 #ifdef SUSE73
 DYNAMIC *dyn;   
 #else
-extern struct _DYNAMIC *dyn;   
+struct _DYNAMIC *dyn;   
 #endif
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
