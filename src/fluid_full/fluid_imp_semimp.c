@@ -151,6 +151,8 @@ ARRAY           fiterhs_a;
 double         *fiterhs;	    /* iteration - RHS  		*/
 ARRAY           time_a;             /* stored time                      */
 
+CONTAINER       container;          /*!< contains variables defined in container.h */
+
 #ifdef DEBUG 
 dstrc_enter("fluid_isi");
 #endif
@@ -162,7 +164,7 @@ actsolv     = &(solv[0]);
 actpart     = &(partition[0]);
 action      = &(calc_action[0]);
 dynvar      = &(fdyn->dynvar);
-
+container.fieldtyp = actfield->fieldtyp;
 /*---------------- if we are not parallel, we have to allocate an alibi * 
   ---------------------------------------- intra-communicator structure */
 #ifdef PARALLEL 
@@ -256,7 +258,7 @@ init_assembly(actpart,actsolv,actintra,actfield,actsysarray);
 	       	       
 /*------------------------------- init the element calculating routines */
 *action = calc_fluid_init;
-calinit_fluid(actfield,actpart,action);
+calinit(actfield,actpart,action,&container);
 
 /*-------------------------------------- print out initial data to .out */
 out_sol(actfield,actpart,actintra,fdyn->step,actpos);
@@ -312,9 +314,14 @@ amzero(&fiterhs_a);
 /*-------------- form incremental matrices, residual and element forces */
 *action = calc_fluid;
 t1=ds_cputime();
-calelm_fluid(actfield,actsolv,actpart,actintra,actsysarray,-1,
-             ftimerhs,fiterhs,numeq_total,dynvar->nii,
-	     dynvar->nif,0,action);
+container.ftimerhs     = ftimerhs;
+container.fiterhs      = fiterhs;
+container.global_numeq = numeq_total;
+container.nii          = dynvar->nii;
+container.nif          = dynvar->nif;
+container.kstep        = 0;
+calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,
+       &container,action);
 te=ds_cputime()-t1;
 tes+=te;	     
 

@@ -32,7 +32,6 @@ OBJS2	      = src/global_full/global_control.o \
                 src/global_full/global_mask_spooles.o \
                 src/global_full/global_mask_bdcsr.o \
                 src/global_full/global_calelm.o \
-                src/global_full/global_calelm_fluid.o \
                 src/global_full/global_calrhs.o \
                 src/global_full/global_visual.o \
                 src/global_full/solver_control.o \

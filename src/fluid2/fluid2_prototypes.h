@@ -1666,6 +1666,7 @@ void fluid2(
 	    ARRAY       *edforce_global, 
             CALC_ACTION *action,
 	    int         *hasdirich,
-	    int         *hasext       
-	   );
+	    int         *hasext,       
+	    CONTAINER   *container
+            );
 	    
