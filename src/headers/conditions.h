@@ -20,7 +20,8 @@ typedef struct _NEUM_CONDITION
      neum_FSI,
      pres_domain_load,
      neum_consthydro_z,
-     neum_increhydro_z
+     neum_increhydro_z,
+     neum_orthopressure
      }                         neum_type;
 
      enum
