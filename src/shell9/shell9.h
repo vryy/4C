@@ -60,6 +60,9 @@ DOUBLE   dkappa[6]; /*!< */
 DOUBLE   gamma[6];  /*!< */
 DOUBLE   rkappa[9]; /*!< */
 DOUBLE   dhard;     /*!< */
+/* epc   ...*/
+DOUBLE   kappa_c;   /*!< internal variable -> controls evolution in compression*/
+DOUBLE   kappa_t;   /*!< internal variable -> controls evolution in tension*/
 } S9_IP_WA;
 
 
@@ -421,6 +424,27 @@ void s9_mat_plast_dp(DOUBLE     ym,
                      DOUBLE   **d,         
                      INT        istore,    
                      INT        newval);    
+/*----------------------------------------------------------------------*
+ |  s9_mat_plast_epc.c                                       sh 10/03    |
+ *----------------------------------------------------------------------*/
+void s9_mat_plast_epc(DOUBLE     Ec,        
+                      DOUBLE     vc,        
+                      DOUBLE     ftm,       
+                      DOUBLE     fcm,       
+                      DOUBLE     gt,        
+                      DOUBLE     gc, 
+                      DOUBLE     gamma1,    
+                      DOUBLE     gamma2,    
+                      DOUBLE     gamma3,    
+                      DOUBLE     gamma4,    
+                      ELEMENT   *ele,       
+                      INT        ip,        
+                      INT        actlay,    
+                      DOUBLE     stress[6], 
+                      DOUBLE     strain[6], 
+                      DOUBLE   **d,         
+                      INT        istore,    
+                      INT        newval);    
 /*----------------------------------------------------------------------*
  |  s9_math.c                                               sh 02/03    |
  *----------------------------------------------------------------------*/

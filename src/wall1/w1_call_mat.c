@@ -148,6 +148,30 @@ dstrc_enter("w1_call_mat");
                        istore,                   
                        newval);                  
   break;                                         
+#ifdef D_MAT
+  case m_pl_epc3D:/*------ elastoplastic concrete material law 3D --- sh 12/03 -*/
+    w1_mat_plast_epc3D(mat->m.pl_epc->youngs      ,
+                       mat->m.pl_epc->possionratio,
+                       mat->m.pl_epc->ftm         ,
+                       mat->m.pl_epc->fcm         ,
+                       mat->m.pl_epc->gt          ,
+                       mat->m.pl_epc->gc          ,
+                       mat->m.pl_epc->gamma1      ,
+                       mat->m.pl_epc->gamma2      ,
+                       mat->m.pl_epc->gamma3      ,
+                       mat->m.pl_epc->gamma4      ,
+                       ele,                      
+                       wtype,                    
+                       bop,
+                       gop,
+                       alpha,
+                       ip,                       
+                       stress,                   
+                       d,                        
+                       istore,                   
+                       newval);                  
+  break;                                         
+#endif
   case m_dam_mp:/*--------------------- isotropic damage ---*/
     w1_mat_dam_mp(mat->m.dam_mp->youngs,
                    mat->m.dam_mp->nue,

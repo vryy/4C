@@ -244,6 +244,51 @@ case m_pl_dp:/*------------------- drucker prager material law ---*/
    /*transform  stresses from cartesian to curvilinear */
    s9_Scacu(stress,gkonr);
 break;
+case m_pl_epc:/*------ Elasto Plastic Concrete (Menrath) material law ---*/
+   s9_eps(strain,gmkovc,gmkovr);        /* get strains: curvilinear*/
+
+   /* transform strains from curvilinear to cartesian */
+   s9_Ecuca(strain,gkonr);  
+   /* do sorting from "shell9" = [11,12,22,13,23,33] -> "brick" = [11,22,33,12,23,13] */
+   s9_Vsort_s9b(strain); 
+   
+   /*Elasto Plastic Concrete (Menrath), formulated in cartesian coordinate system, sorting: [11,22,33,12,23,13] */
+   s9_mat_plast_epc(multimat->m.pl_epc->youngs,       /* young's modulus              */
+                    multimat->m.pl_epc->possionratio, /* poisson's ratio              */
+                    multimat->m.pl_epc->ftm,          /* tensile strength             */
+                    multimat->m.pl_epc->fcm,          /* compressive strength         */
+                    multimat->m.pl_epc->gt,           /* tensile fracture energie     */
+                    multimat->m.pl_epc->gc,           /* compressive fracture energie */
+                    multimat->m.pl_epc->gamma1,       /* fitting parameter            */
+                    multimat->m.pl_epc->gamma2,       /* fitting parameter            */
+                    multimat->m.pl_epc->gamma3,       /* fitting parameter            */
+                    multimat->m.pl_epc->gamma4,       /* fitting parameter            */
+                    ele,                              /* actual element               */
+                    ip,                               /* integration point Id         */
+                    actlay,                           /* actual layer                 */
+                    stress,                           /* vector of stresses [11,22,33,12,23,13]  */
+                    strain,                           /* vector of strains  [11,22,33,12,23,13]  */
+                    C,                                /* constitutive matrix          */
+                    istore,                           /* controls storing of stresses */
+                    newval);                          /* controls eval. of stresses   */
+                 
+   /* do sorting from "brick" = [11,22,33,12,23,13] -> "shell9" = [11,12,22,13,23,33] */
+   s9_Msort_bs9(C);
+
+
+   /*transform the C-Matrix from cartesian to curvilinear*/
+/*TEST ===> check when to use sym/unsym!!!!!!!!!!1*/
+   s9_Ccacu_unsym(C,gkonr);
+/*TEST*/
+
+
+   /* do sorting from "brick" = [11,22,33,12,23,13] -> "shell9" = [11,12,22,13,23,33] */
+   s9_Vsort_bs9(stress);  
+   /*transform  stresses from cartesian to curvilinear */
+   s9_Scacu(stress,gkonr);
+break;
+
+
 default:
    dserror("Ilegal typ of material for this element");
 break;

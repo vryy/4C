@@ -230,6 +230,31 @@ void w1_mat_plast_epc(DOUBLE emod      , /* young's modulus             */
                       DOUBLE **d,        /* constitutive matrix         */
                       INT istore,        /* controls storing of stresses*/
                       INT newval);       /* controls eval. of stresses  */  
+/*-----------------------------------------------------------------------*
+|  w1_mat_plast_epc3D.c                                        sh 12/03  |
+|  const. matrix - forces - elastoplastic concrete - 3D                  |
+|  condensed to plane stress, plane strain                               |
+*-----------------------------------------------------------------------*/
+void w1_mat_plast_epc3D(DOUBLE     Ec,     
+                        DOUBLE     vc,     
+                        DOUBLE     ftm,    
+                        DOUBLE     fcm,    
+                        DOUBLE     gt,     
+                        DOUBLE     gc, 
+                        DOUBLE     gamma1, 
+                        DOUBLE     gamma2, 
+                        DOUBLE     gamma3, 
+                        DOUBLE     gamma4, 
+                        ELEMENT   *ele,    
+                        WALL_TYPE  wtype,  
+                        DOUBLE   **bop,    
+                        DOUBLE    *gop,
+                        DOUBLE    *alpha,
+                        INT        ip,     
+                        DOUBLE    *stressc, 
+                        DOUBLE   **d,      
+                        INT        istore, 
+                        INT        newval); 
 /*-----------------------------------------------------------------------|
 | w1_mat_plast_epc_serv.c                                     al 9/01    |
 |      initialize d-components d[0][3], d[1][3], d[2][3], d[3][3]        |
@@ -1189,7 +1214,6 @@ void w1_degrectri(DOUBLE     *funct,
                   DIS_TYP     typ,
                   INT         option);
 void w1_edgejaco(ELEMENT    *ele, 
-                 DOUBLE     *funct,    
                  DOUBLE    **deriv,   
                  DOUBLE    **xjm,     
                  DOUBLE     *det,          

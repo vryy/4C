@@ -93,22 +93,30 @@ if (init==1)
      sdim = max number of possible entries in ipwa per GP (35 at the moment) 
             * max number of GP (3x3x2 = 18 at the moment) */
 
-    /*  pl_mises or pl_dp*/      
-    /*  DOUBLE       epstn;  /* equivalent strain                            */
-    /*  INT          yip;    /* stress state: 1=elastic 2=plastic            */
-    /*  DOUBLE       sig[6]; /* stresses                           [6]       */
-    /*  DOUBLE       eps[6]  /* strains                            [6]       */
-    /*  DOUBLE       qn[6]   /* backstress                         [6]       */
-    /*      ( == 20 )                                                        */
+    /*  pl_mises or pl_dp*/         
+    /*  DOUBLE       epstn;        equivalent strain                          */
+    /*  INT          yip;          stress state: 1=elastic 2=plastic          */
+    /*  DOUBLE       sig[6];       stresses                           [6]     */
+    /*  DOUBLE       eps[6]        strains                            [6]     */
+    /*  DOUBLE       qn[6]         backstress                         [6]     */
+    /*      ( == 20 )                                                         */
+
+    /*  pl_epc */      
+    /*  INT          yip;          stress state: 1=elastic 2=plastic          */
+    /*  DOUBLE       kappa_t;      equivalent strain (tension)                */
+    /*  DOUBLE       kappa_c;      equivalent strain (compression)            */
+    /*  DOUBLE       sig[6];       stresses                            [6]    */
+    /*  DOUBLE       eps[6]        strains                             [6]    */
+    /*      ( == 15 )                                                         */
 
     /*  pl_hoff */      
-    /*  INT          yip;       /* stress state: 1=elastic 2=plastic          */
-    /*  DOUBLE       dhard;     /* equivalent strain                          */
-    /*  DOUBLE       sig[6];    /* stresses                             [6]   */
-    /*  DOUBLE       eps[6]     /* strains                              [6]   */
-    /*  DOUBLE       dkappa[6]; /*                                      [6]   */
-    /*  DOUBLE       gamma[6];  /*                                      [6]   */
-    /*  DOUBLE       rkappa[9]; /*                                      [9]   */
+    /*  INT          yip;          stress state: 1=elastic 2=plastic          */
+    /*  DOUBLE       dhard;        equivalent strain                          */
+    /*  DOUBLE       sig[6];       stresses                             [6]   */
+    /*  DOUBLE       eps[6]        strains                              [6]   */
+    /*  DOUBLE       dkappa[6];                                         [6]   */
+    /*  DOUBLE       gamma[6];                                          [6]   */
+    /*  DOUBLE       rkappa[9];                                         [9]   */
     /*      ( == 35 )                                                         */
 
    elewares     = amdef("elewares"  ,&elewares_a,MAXLAY_SHELL9,35*18,"DA");    
@@ -197,6 +205,28 @@ for (kl=0; kl<num_klay; kl++) /*loop all kinematic layers*/
              }
            }
         } /*end pl_mises of pl_dp*/
+
+        /* pl_epc */
+        else if (actmultimat->mattyp == m_pl_epc   )
+        {
+           for (k=0; k<size_j; k++)/*write for every gausspoint -> elewares*/
+           {
+             elewares[actlay][n] = (double) actele->e.s9->elewa[actlay].ipwa[k].yip;
+             n++;
+             elewares[actlay][n] = actele->e.s9->elewa[actlay].ipwa[k].kappa_t;
+             n++;
+             elewares[actlay][n] = actele->e.s9->elewa[actlay].ipwa[k].kappa_c;
+             n++;
+
+             for (j=0; j<6; j++)
+             {
+               elewares[actlay][n] = actele->e.s9->elewa[actlay].ipwa[k].sig[j];
+               n++;
+               elewares[actlay][n] = actele->e.s9->elewa[actlay].ipwa[k].eps[j];
+               n++;
+             }
+           }
+        } /*end pl_epc */
 
         /* pl_hoff */
         else if (actmultimat->mattyp ==  m_pl_hoff)
@@ -421,6 +451,28 @@ for (kl=0; kl<num_klay; kl++) /*loop all kinematic layers*/
              }
            }
         } /*end pl_mises of pl_dp*/
+
+        /* pl_epc */
+        else if (actmultimat->mattyp == m_pl_epc   )
+        {
+           for (k=0; k<size_j; k++)/*read for every gausspoint*/
+           {
+             actele->e.s9->elewa[actlay].ipwa[k].yip     = (int) elewares[actlay][n];
+             n++;
+             actele->e.s9->elewa[actlay].ipwa[k].kappa_t = elewares[actlay][n];
+             n++;
+             actele->e.s9->elewa[actlay].ipwa[k].kappa_c = elewares[actlay][n];
+             n++;
+
+             for (j=0; j<6; j++)
+             {
+               actele->e.s9->elewa[actlay].ipwa[k].sig[j]    = elewares[actlay][n];
+               n++;
+               actele->e.s9->elewa[actlay].ipwa[k].eps[j]    = elewares[actlay][n];
+               n++;
+             }
+           }
+        } /*end pl_epc */
 
         /* pl_hoff */
         else if (actmultimat->mattyp ==  m_pl_hoff)

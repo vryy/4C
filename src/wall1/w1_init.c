@@ -135,6 +135,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
      mat[actele->mat-1].mattyp == m_pl_mises_3D ||  /*Stefan's mises 3D*/ 
      mat[actele->mat-1].mattyp == m_pl_dp || 
      mat[actele->mat-1].mattyp == m_pl_epc ||
+     mat[actele->mat-1].mattyp == m_pl_epc3D ||
      mat[actele->mat-1].mattyp == m_damage )
   {/*matplast01*/
     size_i = 1;
@@ -172,13 +173,16 @@ for (i=0; i<actpart->pdis[0].numele; i++)
       actele->e.w1->elewa[0].ipwa[k].di   = (DOUBLE*)CCACALLOC(4,sizeof(DOUBLE));
       }
 
-      if(mat[actele->mat-1].mattyp == m_pl_epc )
+      if(mat[actele->mat-1].mattyp == m_pl_epc ||
+         mat[actele->mat-1].mattyp == m_pl_epc3D)
       {
       actele->e.w1->elewa[0].ipwa[k].sigc = (DOUBLE*)CCACALLOC(4,sizeof(DOUBLE));
       actele->e.w1->elewa[0].ipwa[k].grad = (DOUBLE*)CCACALLOC(4,sizeof(DOUBLE));
       actele->e.w1->elewa[0].ipwa[k].dlam = (DOUBLE*)CCACALLOC(2,sizeof(DOUBLE));
       actele->e.w1->elewa[0].ipwa[k].dlam[0] = 0.;
       actele->e.w1->elewa[0].ipwa[k].dlam[1] = 0.;
+      actele->e.w1->elewa[0].ipwa[k].kappa_t = 0.;
+      actele->e.w1->elewa[0].ipwa[k].kappa_c = 0.;
       actele->e.w1->elewa[0].ipwa[k].sigi = (DOUBLE*)CCACALLOC(4,sizeof(DOUBLE));
       actele->e.w1->elewa[0].ipwa[k].epsi = (DOUBLE*)CCACALLOC(4,sizeof(DOUBLE));
       actele->e.w1->elewa[0].ipwa[k].di   = (DOUBLE*)CCACALLOC(4,sizeof(DOUBLE));
@@ -216,7 +220,8 @@ for (i=0; i<actpart->pdis[0].numele; i++)
         actele->e.w1->elewa[0].ipwa[k].epsi[j] = 0.;
         actele->e.w1->elewa[0].ipwa[k].di[  j] = 0.;
         }
-        if(mat[actele->mat-1].mattyp == m_pl_epc  )
+        if(mat[actele->mat-1].mattyp == m_pl_epc ||
+           mat[actele->mat-1].mattyp == m_pl_epc3D )
         {
         actele->e.w1->elewa[0].ipwa[k].sigc[j] = 0.;
         actele->e.w1->elewa[0].ipwa[k].grad[j] = 0.;
@@ -234,7 +239,8 @@ for (i=0; i<actpart->pdis[0].numele; i++)
     {
        w1cdia(actele, &data, funct_h, deriv_h, xjm_h);
     }
-    else if(mat[actele->mat-1].mattyp == m_pl_epc  )
+    else if(mat[actele->mat-1].mattyp == m_pl_epc ||
+            mat[actele->mat-1].mattyp == m_pl_epc3D )
     {
        w1cdia(actele, &data, funct_h, deriv_h, xjm_h);
     }

@@ -99,7 +99,20 @@ if (init==1)
     /*  DOUBLE       di[4]       part of constitutive matrix for cond.  [4]   */
     /*      ( == 30 )                                                         */
 
-   elewares     = amdef("elewares"  ,&elewares_a,1,30*9,"DA");    
+    /*  pl_epc3D */      
+    /*  INT          yip;        stress state: 1=elastic 2=plastic            */
+    /*  DOUBLE       dlam[0];    equivalent strain (tension)                  */
+    /*  DOUBLE       dlam[1];    equivalent strain (compression)              */
+    /*  DOUBLE       sig[4];     stresses                               [4]   */
+    /*  DOUBLE       eps[4]      strains                                [4]   */
+    /*  DOUBLE       sigc[4];    stresses condensed                     [4]   */
+    /*  DOUBLE       grad[4];    total gradient                         [4]   */
+    /*  DOUBLE       sigi[4];    stresses for condensation              [4]   */
+    /*  DOUBLE       epsi[4]     strains for condensation               [4]   */
+    /*  DOUBLE       di[4]       part of constitutive matrix for cond.  [4]   */
+    /*      ( == 31 )                                                         */
+
+   elewares     = amdef("elewares"  ,&elewares_a,1,31*9,"DA");    
 
    goto end;
 }
@@ -181,7 +194,38 @@ else if(mat->mattyp == m_pl_mises_3D )
   }
 } /*end pl_mises_3D */
 
-else dserror("Unknown mattyp in 'w1_write_restart' ");
+/* pl_epc_3D */
+else if(mat[actele->mat-1].mattyp == m_pl_epc3D )
+{
+  for (k=0; k<size_j; k++)/*read for every gausspoint*/
+  {
+    elewares[0][n] = (double) actele->e.w1->elewa[0].ipwa[k].yip;
+    n++;
+    elewares[0][n] = actele->e.w1->elewa[0].ipwa[k].dlam[0];
+    n++;
+    elewares[0][n] = actele->e.w1->elewa[0].ipwa[k].dlam[1];
+    n++;
+    for (j=0; j<4; j++)
+    {
+      elewares[0][n] = actele->e.w1->elewa[0].ipwa[k].sig[j];
+      n++;
+      elewares[0][n] = actele->e.w1->elewa[0].ipwa[k].eps[j];
+      n++;
+      elewares[0][n] = actele->e.w1->elewa[0].ipwa[k].sigc[j];
+      n++;
+      elewares[0][n] = actele->e.w1->elewa[0].ipwa[k].grad[j];
+      n++;
+      elewares[0][n] = actele->e.w1->elewa[0].ipwa[k].sigi[j];
+      n++;
+      elewares[0][n] = actele->e.w1->elewa[0].ipwa[k].epsi[j];
+      n++;
+      elewares[0][n] = actele->e.w1->elewa[0].ipwa[k].di[  j];
+      n++;
+    }
+  }
+} /*end pl_epc3D */
+
+else printf("WARNING: Unknown mattyp in 'w1_write_restart'\n");  
 
 handles[0]+=1;
 if (handles[0]+1 > nhandle) dserror("Handle range too small for element in 'w1_write_restart' ");
@@ -232,7 +276,7 @@ if (init==1)
 {
    /*for dimensions see w1_write_restart */
                
-   elewares     = amdef("elewares"  ,&elewares_a,1,30*9,"DA");    
+   elewares     = amdef("elewares"  ,&elewares_a,1,31*9,"DA");    
 
    goto end;
 }
@@ -325,7 +369,38 @@ else if(mat->mattyp == m_pl_mises_3D )
   }
 } /*end pl_mises_3D */
 
-else dserror("Unknown mattyp in 'w1_read_restart' ");
+/* pl_epc_3D */
+else if(mat[actele->mat-1].mattyp == m_pl_epc3D )
+{
+  for (k=0; k<size_j; k++)/*read for every gausspoint*/
+  {
+    actele->e.w1->elewa[0].ipwa[k].yip     = (int) elewares[0][n];
+    n++;
+    actele->e.w1->elewa[0].ipwa[k].dlam[0] = elewares[0][n];
+    n++;
+    actele->e.w1->elewa[0].ipwa[k].dlam[1] = elewares[0][n];
+    n++;
+    for (j=0; j<4; j++)
+    {
+      actele->e.w1->elewa[0].ipwa[k].sig[j]    = elewares[0][n];
+      n++;
+      actele->e.w1->elewa[0].ipwa[k].eps[j]    = elewares[0][n];
+      n++;
+      actele->e.w1->elewa[0].ipwa[k].sigc[j]   = elewares[0][n];
+      n++;
+      actele->e.w1->elewa[0].ipwa[k].grad[j]   = elewares[0][n];
+      n++;
+      actele->e.w1->elewa[0].ipwa[k].sigi[j]   = elewares[0][n];
+      n++;
+      actele->e.w1->elewa[0].ipwa[k].epsi[j]   = elewares[0][n];
+      n++;
+      actele->e.w1->elewa[0].ipwa[k].di[  j]   = elewares[0][n];
+      n++;
+    }
+  }
+} /*end pl_epc3D */
+
+else printf("WARNING: Unknown mattyp in 'w1_write_restart'\n");  
 
 /*----------------------------------------------------------------------*/
 end:

@@ -71,6 +71,10 @@ DOUBLE       *sigi; /* stresses from last iteration step            */
 DOUBLE       *epsi; /* strains from last iteration step             */    
 DOUBLE       *di  ; /* components d41,d42,d43,d44 of the            */
                     /* constitutive tensor from last iteration step */
+/* epc3D   ...*/  /*SH 12/03*/
+DOUBLE   kappa_c;   /*!< internal variable -> controls evolution in compression*/
+DOUBLE   kappa_t;   /*!< internal variable -> controls evolution in tension*/
+                    /* constitutive tensor from last iteration step */
 /* rebar */    
 DOUBLE       *rsig;   /* stress */ 
 DOUBLE       *reps;   /* strain */
