@@ -220,6 +220,7 @@ INT fsi_convcheck(            FIELD            *structfield,
 			      INT               itnum
 		 );
 void fsi_init_ale(FIELD *actfield,INT numr);
+void fluid_init_pos_ale(void);
 
 /************************************************************************
  | fsi_struct.c                                                         |

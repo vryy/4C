@@ -65,6 +65,20 @@ extern INT            numcurve;
 extern struct _CURVE *curve;
 
 static FSI_DYNAMIC  *fsidyn;               /* fluid dynamic variables   */
+static FLUID_DYNAMIC *fdyn;
+/*!----------------------------------------------------------------------
+\brief positions of physical values in node arrays
+
+<pre>                                                        chfoe 11/04
+
+This structure contains the positions of the various fluid solutions 
+within the nodal array of sol_increment.a.da[ipos][dim].
+
+extern variable defined in fluid_service.c
+</pre>
+
+------------------------------------------------------------------------*/
+extern struct _FLUID_POSITION ipos;
 /*!---------------------------------------------------------------------
 \brief calculate the grid velocity
 
@@ -101,7 +115,6 @@ DOUBLE  phi,phin;        /* heightfunction values                       */
 NODE   *actfnode;        /* actual fluid node                           */
 NODE   *actanode;        /* actual ale node                             */
 GNODE  *actfgnode;       /* actual fluid gnode                          */
-FLUID_DYNAMIC *fdyn;
 
 #ifdef DEBUG
 dstrc_enter("fsi_alecp");
@@ -132,7 +145,7 @@ numaf        = genprob.numaf;
 switch (phase)
 {
 case 1: /* ALE-PHASE I: get grid velocity from mesh displacements ------*/
-   /*--------------------------------------------------- loop all nodes */
+   /*------------------------------------------------ loop all nodes */
    for (i=0;i<numnp_total;i++)
    {
       actfnode  = &(fluidfield->dis[0].node[i]);
@@ -143,8 +156,7 @@ case 1: /* ALE-PHASE I: get grid velocity from mesh displacements ------*/
       {
           dxyzn  = actanode->sol_mf.a.da[0][j];
           dxyz   = actanode->sol_mf.a.da[1][j];
-          actfnode->sol_increment.a.da[4][j] = (dxyz-dxyzn)/dt;
-
+          actfnode->sol_increment.a.da[ipos.gridv][j] = (dxyz-dxyzn)/dt;
       } /* end of loop over vel dofs */
    } /* end of loop over all nodes */
 break;
@@ -156,8 +168,8 @@ case 2: case 6: /* ALE-PHASE II: update grid velocity at free surface
       actfnode  = &(fluidfield->dis[0].node[i]);
       if (actfnode->xfs==NULL) continue;
       for (j=0;j<numveldof;j++)
-      actfnode->sol_increment.a.da[4][j]
-         = actfnode->sol_increment.a.da[3][j+numdf];
+      actfnode->sol_increment.a.da[ipos.gridv][j]
+         = actfnode->sol_increment.a.da[ipos.velnp][j+numdf];
 
    } /* end of loop over nodes */
 break;
@@ -168,8 +180,8 @@ case 3: case 5: /* ALE-PHASE II: update grid velocity at free surface
       actfnode  = &(fluidfield->dis[0].node[i]);
       if (actfnode->xfs==NULL) continue;
       phi  = actfnode->xfs[phipos];
-      phin = actfnode->sol_increment.a.da[1][numdf];
-      actfnode->sol_increment.a.da[4][phipos] = (phi-phin)/dt;
+      phin = actfnode->sol_increment.a.da[ipos.veln][numdf];
+      actfnode->sol_increment.a.da[ipos.gridv][phipos] = (phi-phin)/dt;
    }  /* end of loop over nodes */
 break;
 default:
@@ -247,7 +259,7 @@ for (i=0;i<numnp_total;i++)
    {
       actfnode->sol_increment.a.da[pos1][j]
          =   actfnode->sol_increment.a.da[pos2][j]
-         - actfnode->sol_increment.a.da[4][j];
+         - actfnode->sol_increment.a.da[ipos.gridv][j];
    }
 }
 
@@ -723,7 +735,7 @@ gnorm = sqrt(gnorm);
 switch (fsidyn->inrmfsi)
 {
 case 1: /* scaled_2-norm_of_residual */
-   fac  = sqrt(fsidyn->numsid);
+   fac  = sqrt((DOUBLE)fsidyn->numsid);
    grat = gnorm/fac;
 break;
 case 2: /* 2-norm_of_residual_of_1st_iter */
@@ -850,6 +862,73 @@ dstrc_exit();
 #endif
 return;
 } /* end of fsi_init_ale */
+
+
+/*!---------------------------------------------------------------------
+\brief init positions in sol_increment 
+
+<pre>                                                        chfoe 11/04
+
+This routine inits the positions in sol_increment in the case of an ALE
+problem.
+
+</pre>
+\return void
+
+------------------------------------------------------------------------*/
+void fluid_init_pos_ale(void)
+{
+FSI_DYNAMIC    *fsidyn;
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_enter("fluid_init_pos_ale");
+#endif
+
+fdyn = alldyn[genprob.numff].fdyn;
+fsidyn = alldyn[genprob.numaf+1].fsidyn;
+
+/*----------------------------------------------------------------------*/
+switch (fdyn->iop)
+{
+case 4:     /*--- One step Theta ---------------------------------------*/
+   ipos.velnm  = 0;
+   ipos.veln   = 1;
+   ipos.hist   = 2;
+   ipos.velnp  = 3;
+   ipos.gridv  = 4;
+   ipos.convn  = 5;
+   ipos.convnp = 6;
+   ipos.accn   = 7;
+   ipos.accnm  = 8;
+   if (fsidyn->ifsi == 6) ipos.relax = 9;
+   ipos.stresspro = 9;
+   ipos.pred   =-1;
+   ipos.terr   =-1;
+break;
+case 7:     /*--- BDF2 -------------------------------------------------*/
+   ipos.velnm  = 0;
+   ipos.veln   = 1;
+   ipos.hist   = 2;
+   ipos.velnp  = 3;
+   ipos.gridv  = 4;
+   ipos.convn  = 5;
+   ipos.convnp = 6;
+   if (fsidyn->ifsi == 6) ipos.relax = 7;
+   ipos.stresspro = 7;
+   ipos.accn   =-1;
+   ipos.accnm  =-1;
+   ipos.pred   =-1;
+   ipos.terr   =-1;
+break;
+default: dserror("desired time stepping scheme not (fully) implemented.");
+}
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
 
 #endif
 /*! @} (documentation module close)*/

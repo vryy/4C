@@ -36,6 +36,19 @@ extern struct _GENPROB     genprob;
  | This structure struct _PAR par; is defined in main_ccarat.c
  *----------------------------------------------------------------------*/
 extern struct _PAR   par;
+/*!----------------------------------------------------------------------
+\brief positions of physical values in node arrays
+
+<pre>                                                        chfoe 11/04
+
+This structure contains the positions of the various fluid solutions 
+within the nodal array of sol_increment.a.da[ipos][dim].
+
+extern variable defined in fluid_service.c
+</pre>
+
+------------------------------------------------------------------------*/
+extern struct _FLUID_POSITION ipos;
 
 static FSI_DYNAMIC    *fsidyn;
 
@@ -115,7 +128,6 @@ fsi_ale(alefield, 6);
 
 /*=== 5.c,d ===*/
 /*------------------------------------- create some additional space ---*/
-solserv_sol_zero(fluidfield,0,node_array_sol_increment,7);
 solserv_sol_zero(alefield,0,node_array_sol_mf,2);
 /*------------------------------------- mesh velocity to fluid field ---*/
 for (i=0;i<numnp_fluid;i++) /*----------------------- loop all nodes ---*/
@@ -130,7 +142,7 @@ for (i=0;i<numnp_fluid;i++) /*----------------------- loop all nodes ---*/
        actr   = actanode->sol_increment.a.da[0][j];
        initr  = actanode->x[j];
        /* grid velocity */
-       actfnode->sol_increment.a.da[4][j] = actr/dt;
+       actfnode->sol_increment.a.da[ipos.gridv][j] = actr/dt;
        /* grid position */
        actanode->sol_mf.a.da[2][j] = actr + initr;
    } /* end of loop over vel dofs */
