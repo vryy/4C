@@ -97,7 +97,7 @@ PROGRAM  = cca_sun_debg.exe
 INCLUDES  =  -I/usr/include/ -I$(NAGCDIR)/include
 #
 #----------------------- binaries -----------------------------------
-include ./Makefile.src
+include ./Makefile.objects
 #--------------------------------------------------------------------
 #
 #

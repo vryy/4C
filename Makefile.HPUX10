@@ -140,7 +140,7 @@ LDOPTS        = -a archive -v
 LIBS	      =  
 #
 #----------------------- binaries -----------------------------------
-include ./Makefile.src
+include ./Makefile.objects
 #--------------------------------------------------------------------
 #
 # targets

@@ -57,7 +57,7 @@ LIBS	 =  -L/usr/lib -lc -lm -lF77ext -lf2c \
 
 
 #----------------------- binaries -----------------------------------
-include ./Makefile.src
+include ./Makefile.objects
 #--------------------------------------------------------------------
 #
 #
