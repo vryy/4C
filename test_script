@@ -130,7 +130,7 @@ else
   '
 fi
  
-liste=' ale2_nln.dat '
+#liste=' ale2_nln.dat '
 
 # loop this list
 for file in $liste; do 
