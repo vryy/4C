@@ -50,6 +50,7 @@ DOUBLE      knc[8][4];    /* mixed stiffness compat. - incompatible */
 DOUBLE      fintn[4];     /* internal forces of incomp modes        */
 DOUBLE      alpha[4];     /* INT.dof for inc modes of last loadst k */
 } W1_IMODE_WA;
+
 typedef struct _W1_IP_WA
 {
 DOUBLE      sig[4]; /* global stresses                              */
@@ -167,6 +168,12 @@ struct _ARRAY4D  stress_ND;
 #ifdef GEMM
 struct _ARRAY4D b_bar_history;
 struct _ARRAY4D PK_history;
+#endif
+#ifdef D_SSI
+   enum _SSI_COUPTYP         ssi_couptyp;
+#endif
+#ifdef D_FSI
+   enum _FSI_COUPTYP         fsi_couptyp;
 #endif
 } WALL1;
 /*----------------------------------------------------------------------*
