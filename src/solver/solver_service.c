@@ -294,7 +294,6 @@ break;
 case msr:
    amzero(&(mat->msr->val));
    mat->msr->is_factored=0;
-   mat->msr->is_transformed=0;
 break;
 case parcsr:/*---- this stupid package does not have a zero function!!!!*/
 #ifdef HYPRE_PACKAGE
@@ -805,71 +804,8 @@ case msr:
   DOUBLE     *tmprhs;
   ARRAY       tmprhs_a;
 
-/*----------------------- transform matrix to processor local numbering */
-    if (msr_array->is_transformed==0) {
-      msr_array->is_transformed = 1;
-      
-      if (msr_array->Amat != NULL) {
-        AZ_matrix_destroy(&(msr_array->Amat)); msr_array->Amat        =NULL;
-      }
-      if (msr_array->external != NULL) {
-        free(msr_array->external);             msr_array->external      =NULL;
-      }
-      if (msr_array->update_index != NULL) {
-        free(msr_array->update_index);         msr_array->update_index  =NULL;
-      }
-      if (msr_array->extern_index != NULL) {
-        free(msr_array->extern_index);         msr_array->extern_index  =NULL;
-      }
-      if (msr_array->data_org != NULL) {
-        free(msr_array->data_org);             msr_array->data_org      =NULL;
-      }
-      
-      /* Make backup copy of bindx, as it is permuted in
-       * solution. This has to be done on demand as we need the same
-       * thing for solving linear systems.
-       *
-       * In a sense we abuse bindx_backup because it no longer
-       * contains backup data. Instead all communication with aztec
-       * relys on bindx_backup (transformed) and the outside world ---
-       * that is the assembling --- used the original bindx. */
-      if (msr_array->bindx_backup.Typ == cca_XX) {
-        am_alloc_copy(&(msr_array->bindx),&(msr_array->bindx_backup));
-      }
-      else {
-        amcopy(&(msr_array->bindx),&(msr_array->bindx_backup));
-      }
-
-      AZ_transform(msr_array->proc_config,
-                   &(msr_array->external),
-                   msr_array->bindx_backup.a.iv,
-                   msr_array->val.a.dv,
-                   msr_array->update.a.iv,
-                   &(msr_array->update_index),
-                   &(msr_array->extern_index),
-                   &(msr_array->data_org),
-                   msr_array->numeq,
-                   NULL,
-                   NULL,
-                   NULL,
-                   NULL,
-                   AZ_MSR_MATRIX);
-
-      /* create Aztec structure AZ_MATRIX */
-      msr_array->Amat = AZ_matrix_create(msr_array->data_org[AZ_N_internal]+
-                                         msr_array->data_org[AZ_N_border]);
-
-      /* attach dmsr-matrix to this structure */
-      AZ_set_MSR(msr_array->Amat, 
-                 msr_array->bindx_backup.a.iv, 
-                 msr_array->val.a.dv, 
-                 msr_array->data_org, 
-                 0, 
-                 NULL, 
-                 AZ_LOCAL);
-    }
-    
-
+  dsassert(msr_array->is_init==1, "uninitialized matrix in matrix-vector-product");
+  
   /* reorder rhs-vector */
   tmprhs = amdef("tmprhs",&tmprhs_a,msr_array->numeq+msr_array->N_external,1,"DV");
   for (i=0; i<msr_array->numeq; ++i) {

@@ -619,7 +619,6 @@ typedef struct _AZ_ARRAY_MSR
 {
   INT                     is_init;          /* was this matrix initialized ? */
   INT                     is_factored;      /* does precond. information exist ? */
-  INT                     is_transformed;   /* has the transformation been done? */
   INT                     ncall;            /* how often was this matrix solved */
   INT                     numeq_total;      /* total number of unknowns */
   INT                     numeq;            /* number of unknowns updated on this proc */ 
