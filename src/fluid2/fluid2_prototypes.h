@@ -60,7 +60,7 @@ void f2_curvature(
 		   INT             imyrank
 		 );
 /************************************************************************
- | f2_calele_tu.c                                                          |
+ | f2_calele_tu.c                                                       |
  ************************************************************************/
 void f2_calele_tu(
                 FLUID_DATA     *data, 
@@ -79,7 +79,7 @@ void f2_calele_tu(
                 );
 
 /************************************************************************
- | f2_calele_tu_1.c                                                          |
+ | f2_calele_tu_1.c                                                     |
  ************************************************************************/
 void f2_calele_tu_1(
                 FLUID_DATA     *data, 
@@ -139,7 +139,7 @@ void f2_calstrlen(
                  );
 
 /************************************************************************
- | f2_calelesize_tu.c                                                      |
+ | f2_calelesize_tu.c                                                   |
  ************************************************************************/
 void f2_calelesize_tu(			     
 	           ELEMENT         *ele,    
@@ -170,7 +170,7 @@ void f2_calstrlen_tu(
                  );
                  
 /************************************************************************
- | f2_calelesize_tu_1.c                                                  |
+ | f2_calelesize_tu_1.c                                                 |
  ************************************************************************/
 void f2_calelesize_tu_1(			     
 	           ELEMENT         *ele,    
@@ -372,7 +372,7 @@ void f2_calkgedge(
                 );
 		
 /************************************************************************
- | f2_calgalmat_tu.c                                                       |
+ | f2_calgalmat_tu.c                                                    |
  ************************************************************************/
 void f2_calkkapeps(
                 FLUID_DYN_CALC  *dynvar,
@@ -397,7 +397,7 @@ void f2_calmkapeps(
               );
 
 /************************************************************************
- | f2_calgalmat_tu_1.c                                                       |
+ | f2_calgalmat_tu_1.c                                                  |
  ************************************************************************/
 void f2_calkkapome(
                 FLUID_DYN_CALC  *dynvar,
@@ -495,7 +495,7 @@ void f2_calinta(
 	      );
 	      
 /************************************************************************
- | f2_calint_tu.c                                                          |
+ | f2_calint_tu.c                                                       |
  ************************************************************************/
 void f2_calint_tu(
                FLUID_DATA      *data,     
@@ -534,7 +534,7 @@ void f2_calint_tu(
                );	      	      	      	     	     	    	   	   
 
 /************************************************************************
- | f2_calint_tu_1.c                                                          |
+ | f2_calint_tu_1.c                                                     |
  ************************************************************************/
 void f2_calint_tu_1(
                FLUID_DATA      *data,     
@@ -606,42 +606,8 @@ void f2_calstabifp(
                  );
 
 /************************************************************************
- | f2_caliterrhs_tu.c                                                      |
+ | f2_caliterrhs_tu.c                                                   |
  ************************************************************************/ 
-/*!--------------------------------------------------------------------- 
-\brief galerkin part of iteration forces for kapeps dofs
-
-<pre>                                                        he  12/02
-
-In this routine the galerkin part of the iteration forces for kapeps dofs
-is calculated:
-
-                    / 
-          THETA*dt | factor * (kapeps_old)^2 * psi  d_omega
-                  /  
-
-
-LOW-REYNOLD's MODEL only for epsilon:
-    
-                   / 
-   (+)   THETA*dt | 2.0*visc*nue_t* (vderxy2_12)^2 * psi  d_omega
-                 /  
-
-      
-</pre>
-\param  *dynvar      FLUID_DYN_CALC  (i)
-\param  *eforce      DOUBLE	    (i/o)   element force vector
-\param   eddyint     DOUBLE	     (i)    eddy-visc at integr. point
-\param   kapepsint   DOUBLE	     (i)    kapeps at integr. point
-\param  *funct       DOUBLE	     (i)    nat. shape funcs
-\param   fac 	   DOUBLE	     (i)    weighting factor
-\param   factor2 	   DOUBLE	     (i)    factor
-\param   vderxy_12   DOUBLE	     (i)    factor
-\param   visc 	   DOUBLE	     (i)    viscosity
-\param   iel	   INT           (i)	num. of nodes of act. ele
-\return void                                                                       
-
-------------------------------------------------------------------------*/
 void f2_calgalifkapeps(
                   FLUID_DYN_CALC  *dynvar, 
                   DOUBLE          *eforce,
@@ -654,45 +620,6 @@ void f2_calgalifkapeps(
                   DOUBLE           visc,  
                   INT              iel      
                  );  
-/*!---------------------------------------------------------------------  
-\brief stabilisation part of iteration forces for kapeps dofs
-
-<pre>                                                         he  12/02
-
-In this routine the stabilisation part of the iteration forces for kapeps
-
-
-           /
- THETA*dt | tau_tu * factor * (kapeps_old)^2 * grad(psi) * u  d_omega
-         /
-
-
-LOW-REYNOLD's MODEL only for epsilon:
-
-
-              / 
-(+) THETA*dt | tau_tu * 2.0*visc*nue_t* (vderxy2_12)^2 *  grad(psi) * u  d_omega
-            /  
-
-      
-</pre>
-\param   *dynvar   FLUID_DYN_CALC  (i)
-\param   *ele      ELEMENT	   (i)    actual element
-\param   *eforce   DOUBLE	   (i/o)  element force vector
-\param    kapepsint DOUBLE	   (i)    kapeps at integr. point
-\param   *velint   DOUBLE	   (i)    vel at integr. point
-\param   *velint_dc DOUBLE	   (i)    vel at integr. point for D.C.
-\param    eddyint  DOUBLE	   (i)    eddy-visc. at integr. point
-\param   *funct    DOUBLE	   (i)    nat. shape funcs
-\param  **derxy    DOUBLE	   (i)    global derivative
-\param    fac 	 DOUBLE	   (i)    weighting factor
-\param    factor2  DOUBLE	   (i)    factor
-\param    vderxy_12 DOUBLE	   (i)    factor
-\param    visc     DOUBLE	   (i)    fluid viscosity
-\param    iel	   INT	   (i)    num. of nodes of act. ele
-\return void                                                                       
-
-------------------------------------------------------------------------*/
 void f2_calstabifkapeps(
                   FLUID_DYN_CALC  *dynvar, 
                   ELEMENT         *ele,      
@@ -711,7 +638,7 @@ void f2_calstabifkapeps(
                   );  
 
 /************************************************************************
- | f2_caliterrhs_tu_1.c                                                  |
+ | f2_caliterrhs_tu_1.c                                                 |
  ************************************************************************/ 
 void f2_calgalifkapome(
                   FLUID_DYN_CALC  *dynvar, 
@@ -1169,7 +1096,7 @@ void f2_calstabmpv(
                    );
 
 /************************************************************************
- | f2_calstabmat_tu.c                                                      |
+ | f2_calstabmat_tu.c                                                   |
  ************************************************************************/
 void f2_calstabkkapeps(			      
                 ELEMENT         *ele,    
@@ -1203,7 +1130,7 @@ void f2_calstabmkapeps(
                     );
                  
 /************************************************************************
- | f2_calstabmat_tu_1.c                                                  |
+ | f2_calstabmat_tu_1.c                                                 |
  ************************************************************************/
 void f2_calstabkkapome(			      
                 ELEMENT         *ele,    
@@ -1251,7 +1178,7 @@ void f2_calstabpar(
                   );
 		  
 /************************************************************************
- | f2_calstabpar_tu.c                                                      |
+ | f2_calstabpar_tu.c                                                   |
  ************************************************************************/
 void f2_calstabpar_tu(
 	            ELEMENT         *ele,      
@@ -1363,7 +1290,7 @@ void f2_calstabtfp(
                   );
 
 /************************************************************************
- | f2_caltimerhs_tu.c                                                      |
+ | f2_caltimerhs_tu.c                                                   |
  ************************************************************************/
 void f2_calgaltfkapeps(
                   FLUID_DYN_CALC  *dynvar, 
@@ -1408,7 +1335,7 @@ void f2_calstabtfkapeps(
                   INT              iel      
                   );
 /************************************************************************
- | f2_caltimerhs_tu_1.c                                                  |
+ | f2_caltimerhs_tu_1.c                                                 |
  ************************************************************************/
 void f2_calgaltfkapome(
                   FLUID_DYN_CALC  *dynvar, 
@@ -1453,7 +1380,7 @@ void f2_calstabtfkapome(
                   );
 
 /************************************************************************
- | f2_caltimerhspro_tu.c                                                      |
+ | f2_caltimerhspro_tu.c                                                |
  ************************************************************************/
 void f2_calgalprofkapeps(
                   FLUID_DYN_CALC  *dynvar, 
@@ -1484,7 +1411,7 @@ void f2_calstabprofkapeps(
                   );
            
 /************************************************************************
- | f2_caltimerhspro_tu_1.c                                               |
+ | f2_caltimerhspro_tu_1.c                                              |
  ************************************************************************/
 void f2_calgalprofkapome(
                   FLUID_DYN_CALC  *dynvar, 
@@ -1512,7 +1439,7 @@ void f2_calstabprofkapome(
                   INT              iel      
                   );
 /************************************************************************
- | f2_caltuvisc.c                                                        |
+ | f2_caltuvisc.c                                                       |
  ************************************************************************/
 DOUBLE f2_calvisc(
 	           ELEMENT    *ele,
@@ -1534,7 +1461,7 @@ void f2_calvort(
 void f2_inp(ELEMENT *ele, INT counter);
 
 /************************************************************************
- | f2_inpele_tu.c                                                          |
+ | f2_inpele_tu.c                                                       |
  ************************************************************************/
 void f2tu_dis(ELEMENT *ele0, ELEMENT *ele1);
 
@@ -1569,7 +1496,7 @@ void fluid2(
 	    CONTAINER   *container
             );
 /************************************************************************
- | f2_main_tu.c                                                            |
+ | f2_main_tu.c                                                         |
  ************************************************************************/
 void fluid2_tu(
             PARTITION   *actpart,
@@ -1587,4 +1514,12 @@ void fluid2_tu(
 	      INT         *hasext,
             CONTAINER   *container
 	   );
+
+/************************************************************************
+ | f2_restart.c                                                         |
+ ************************************************************************/
+void f2_write_restart(ELEMENT *actele, INT nhandle, long int *handles);
+void f2_read_restart( ELEMENT *actele, INT nhandle, long int *handles);
+
+
 /*! @} (documentation module close)*/	    

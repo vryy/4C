@@ -146,6 +146,14 @@ case calc_fluid_shearvelo:
    f2_shearstress(ele,dynvar);
 break;
 
+/*------------------------------------------------------- write restart */
+case write_restart:
+   f2_write_restart(ele,container->handsize,container->handles);
+break;   
+/*-------------------------------------------------------- read restart */
+case read_restart:
+   f2_read_restart(ele,container->handsize,container->handles);
+break;   
 /*----------------------------------------------------------------------*/
 default:
    dserror("action unknown\n");
