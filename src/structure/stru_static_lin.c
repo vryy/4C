@@ -96,6 +96,9 @@ INT           numeq_total;      /* total number of equations over all procs */
 INT           init;             /* init flag for solver */
 INT           actsysarray;      /* active sparse system matrix in actsolv->sysarray[] */
 
+static ARRAY   dirich_a;
+static double *dirich;
+
 SOLVAR       *actsolv;          /* pointer to the fields SOLVAR structure */
 PARTITION    *actpart;          /* pointer to the fields PARTITION structure */
 FIELD        *actfield;         /* pointer to the structural FIELD */
@@ -149,6 +152,8 @@ actsolv->nrhs=2;
 actsolv->nsol=2;
 solserv_create_vec(&(actsolv->rhs),2,numeq_total,numeq,"DV");
 solserv_create_vec(&(actsolv->sol),2,numeq_total,numeq,"DV");
+dirich = amdef("dirich",&dirich_a,numeq_total,1,"DV");
+amzero(&dirich_a);
 /*------------------------------ init the created dist. vectors to zero */
 for (i=0; i<actsolv->nrhs; i++)
    solserv_zero_vec(&(actsolv->rhs[i]));
@@ -196,6 +201,9 @@ container.point_neum = 1;
 *action = calc_struct_eleload;
 calrhs(actfield,actsolv,actpart,actintra,actsysarray,
        &(actsolv->rhs[actsysarray]),action,&container);
+assemble_vec(actintra,&(actsolv->sysarray_typ[actsysarray]),
+             &(actsolv->sysarray[actsysarray]),
+	     &(actsolv->rhs[actsysarray]),dirich,-1.0);
 /*--------------------------------------------------------- call solver */
 init=0;
 solver_control(
