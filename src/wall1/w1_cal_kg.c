@@ -78,11 +78,12 @@ for(i=0; i<4; i++)
 #endif
   }
 /*------------------------------------------------------------New format*/
-  for(i=0; i<nd; i++)
-    for(j=0; j<nd; j++)
+/*---------------------------------------------- perform B^T * SIGMA * B*/
+for(i=0; i<nd; i++)
+   for(j=0; j<nd; j++)
       for(r=0; r<neps; r++)
-        for(m=0; m<neps; m++)
-	kg[i][j] += boplin[r][i]*int_stress[r][m]*boplin[m][j]*fac;
+         for(m=0; m<neps; m++)
+            kg[i][j] += boplin[r][i]*int_stress[r][m]*boplin[m][j]*fac;
 
 
 /*----------------------------------------------------------------------*/
