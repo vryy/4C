@@ -49,10 +49,8 @@ void solver_spo_oll(
   INT        nnz,numeq,numeq_total;
   INT        seed = 10101;
   INT        nedges;
-  INT       *irn,*jcn;
   INT       *update;
   INT       *rowind1,nrow;
-  DOUBLE    *A_loc;
 
   MATENTRY  **row;
   MATENTRY   *actentry;
@@ -143,20 +141,6 @@ void solver_spo_oll(
       {
         amdel(&recv_a);
         recv = amdef("recv",&recv_a,numeq_total,1,"DV");
-      }
-      /*----------------------------------------------------------------------*/
-      /* print the matrix in a format that can be read by the spooles test drivers*/   
-      if (msglvl)
-      {
-        fprintf(mtxf,"%d %d %d\n",numeq_total,numeq_total,nnz);
-        for (i=0; i<nnz; i++)
-          fprintf(mtxf,"%d %d %18.12E \n",irn[i],jcn[i],A_loc[i]);
-        fflush(mtxf);
-
-        fprintf(rhsf,"%d 1\n",numeq);
-        for (i=0; i<numeq; i++)
-          fprintf(rhsf,"%d %18.12E \n",update[i],b[i]);
-        fflush(rhsf);
       }
       /*----------------------------------------------------------------------*/
       /*
