@@ -4,7 +4,7 @@
 //             http://www.uni-stuttgart.de/ibs/members/gee/
 //             0711 - 685-6572
 // 
-// necessary defines: D_SHELL8 CHECK_MAX
+// necessary defines: D_SHELL8 CHECK_MAX RESULTTEST
 //
 // #define MAXNOD           (9)
 // #define MAXELE           (2)
@@ -361,5 +361,9 @@ NODE      15 DOF 3
 ------------------------------------------------------------CURVE3
 ------------------------------------------------------------CURVE4
 ------------------------------------------------------------CURVE5
+------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS 1 NODE 11 POSITION sol(1,1) NAME x VALUE -4.6433318306381546 TOLERANCE 1e-9
+STRUCTURE DIS 1 NODE 11 POSITION sol(1,2) NAME y VALUE 0.1472397557923989 TOLERANCE 1e-9
+STRUCTURE DIS 1 NODE 11 POSITION sol(1,3) NAME z VALUE 3.8717008003414386 TOLERANCE 1e-9
 ---------------------------------------------------------------END
 // END
