@@ -164,7 +164,7 @@ if (genprob.restart)
     if (par.myrank==0)
     printf("restart           from     %s\n",allfiles.outputfile_name);
     /*----------------------- set file pointer to the end of pss file */
-    fseek(allfiles.out_pss,0,SEEK_END);
+    fseek(allfiles.in_pss,0,SEEK_END);
 
      strncpy(charpointer,".respss",7);
      if ( (allfiles.out_pss=fopen(allfiles.outputfile_name,"w+b"))==NULL)
