@@ -214,7 +214,7 @@ static INT iminarg1,iminarg2;
 /*----------------------------------------------------------------------*
  | maximum number of gaussian points in an element                      |
  *----------------------------------------------------------------------*/
-#define MAXGAUSS         (4)  
+#define MAXGAUSS         (4)  /* Maxgauss=numlay*lr*ls*lt   */
 
 /*----------------------------------------------------------------------*
  | maximum number of dofs to an element                                 |
@@ -295,6 +295,7 @@ static INT iminarg1,iminarg2;
 #define A3FAC_SHELL9     (1.0) /* makes it possible to change the norm of a3L */
                                /* A3FAC_SHELL9 = 0.5 : |a3L| = 0.5 * hL -> as in shell8 */
                                /* A3FAC_SHELL9 = 1.0 : |a3L| = 1.0 * hL -> like in Dis. Braun */
+#define MAXNODESTRESS_SHELL9 (54) /* Numnod*lt*numlay */
 /*----------------------------------------------------------------------*
  | wall1                                                                |
  *----------------------------------------------------------------------*/
