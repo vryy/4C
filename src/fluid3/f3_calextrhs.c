@@ -321,7 +321,7 @@ void f3_calstabexfp(
 INT    inode;
 DOUBLE c;
 DOUBLE taump;
-DOUBLE fact[2];
+DOUBLE fact[3];
 
 if (gls->ipres==0) goto end; /* no pressure stabilisation */
 fdyn    = alldyn[genprob.numff].fdyn;
