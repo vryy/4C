@@ -361,7 +361,7 @@ if (assemble_action==assemble_two_exchange)
       break;
 #endif
 
-#ifdef PARALLEL
+#ifdef PARSUPERLU_PACKAGE
       case ucchb:
          dserror("Simultanous assembly of 2 system matrices not yet impl.");
       break;
@@ -432,7 +432,7 @@ if (assemble_action==assemble_one_exchange)
       break;
 #endif
 
-#ifdef PARALLEL
+#ifdef PARSUPERLU_PACKAGE
       case ucchb:
          redundant_ucchb(actpart,actsolv,actintra,sysa1->ucchb);
       break;
@@ -573,7 +573,7 @@ case parcsr:
 break;
 #endif
 
-#ifdef PARALLEL
+#ifdef PARSUPERLU_PACKAGE
 case ucchb:
    numcoupsend       = &(actsolv->sysarray[actsysarray].ucchb->numcoupsend);
    numcouprecv       = &(actsolv->sysarray[actsysarray].ucchb->numcouprecv);
