@@ -13,6 +13,7 @@ Maintainer: Steffen Genkinger
 #ifdef RESULTTEST
 #include "../headers/standardtypes.h"
 #include "../axishell/axishell.h"
+#include "../shell9/shell9.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -228,7 +229,7 @@ case prb_structure:
       fprintf(err,"actual = %24.16lf, given = %24.16lf\n",actresult,givenresult);
       if (FABS(actresult-givenresult)>EPS6)
          dserror("RESULTCHECK: vely not correct!");
-      /*-------------------------------------------------- check stress */
+      /*-------------------------------------------------- check stress */  
       /*actresult   = structfield->dis[0].element[123].e.saxi.stress_GP;*/
       actresult   = structfield->dis[0].element[123].e.saxi->stress_GP.a.d3[0][2][0];
       givenresult = -169.4900467515912;
@@ -237,6 +238,62 @@ case prb_structure:
          dserror("RESULTCHECK: pressure not correct!");
    }
 #endif
+#ifdef D_SHELL9
+   /*-------------------------- check results of  shell9_el_lay_eans.dat */
+   if(strstr(allfiles.title[0],"SHELL9_7P_el_lay") != NULL)
+   {
+      /*-- check result of node with global Id 6 */
+      printf("\nChecking results for SHELL9_7P_el_lay ...\n");
+      /*-------------------------------------------- check displacement */
+      actresult   = structfield->dis[0].node[6].sol.a.da[0][1];
+      givenresult = 0.004085462018049922;
+      fprintf(err,"actual = %24.16lf, given = %24.16lf\n",actresult,givenresult);
+      if (FABS(actresult-givenresult)>EPS6)
+         dserror("RESULTCHECK: displacement not correct!");
+      /*-------------------------------------------------- check stresses */
+      actresult   = structfield->dis[0].element[3].e.s9->stresses.a.d3[0][2][0];
+      givenresult = 1.323600311248807;
+      fprintf(err,"actual = %24.16lf, given = %24.16lf\n",actresult,givenresult);
+      if (FABS(actresult-givenresult)>EPS6)
+         dserror("RESULTCHECK: stresses not correct!");
+   }
+   /*-------------------------- check results of  shell9_kreuz_easnl.dat */
+   if(strstr(allfiles.title[0],"SHELL9_ortho_geoNL") != NULL)
+   {
+      /*-- check result of node with global Id 48 after 3rd step*/
+      printf("\nChecking results for SHELL9_ortho_geoNL ...\n");
+      /*-------------------------------------------- check displacement */
+      actresult   = structfield->dis[0].node[48].sol.a.da[0][1];
+      givenresult = 0.03653441520182501;
+      fprintf(err,"actual = %24.16lf, given = %24.16lf\n",actresult,givenresult);
+      if (FABS(actresult-givenresult)>EPS6)
+         dserror("RESULTCHECK: displacement not correct!");
+      /*-------------------------------------------------- check stresses */
+      actresult   = structfield->dis[0].element[8].e.s9->stresses.a.d3[0][0][3];
+      givenresult = 26.42108001591104;
+      fprintf(err,"actual = %24.16lf, given = %24.16lf\n",actresult,givenresult);
+      if (FABS(actresult-givenresult)>EPS6)
+         dserror("RESULTCHECK: stresses not correct!");
+   }
+   /*-------------------------- check results of  shell9_matnl.dat */
+   if(strstr(allfiles.title[0],"SHELL9_scordelis_matNL") != NULL)
+   {
+      /*-- check result of node with global Id 11 after 3rd step*/
+      printf("\nChecking results for SHELL9_scordelis_matNL ...\n");
+      /*-------------------------------------------- check displacement */
+      actresult   = structfield->dis[0].node[11].sol.a.da[0][2];
+      givenresult = 0.006214781874804086;
+      fprintf(err,"actual = %24.16lf, given = %24.16lf\n",actresult,givenresult);
+      if (FABS(actresult-givenresult)>EPS6)
+         dserror("RESULTCHECK: displacement not correct!");
+      /*-------------------------------------------------- check stresses */
+      actresult   = structfield->dis[0].element[11].e.s9->stresses.a.d3[0][0][1];
+      givenresult = 0.3065420533487162;
+      fprintf(err,"actual = %24.16lf, given = %24.16lf\n",actresult,givenresult);
+      if (FABS(actresult-givenresult)>EPS6)
+         dserror("RESULTCHECK: stresses not correct!");
+   }
+#endif /*D_SHELL9*/
 break;
 case prb_opt:
 break;
