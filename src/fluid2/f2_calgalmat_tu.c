@@ -10,7 +10,7 @@ Maintainer: Thomas Hettich
 </pre>
 
 ------------------------------------------------------------------------*/
-#ifdef D_FLUID2 
+#ifdef D_FLUID2TU 
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 /*----------------------------------------------------------------------*
@@ -96,7 +96,7 @@ void f2_calkkapeps(
  |   icol - column number in element matrix                             |
  |   irn  - row node: number of node considered for matrix-row          |
  |   icn  - column node: number of node considered for matrix column    |  
-/*----------------------------------------------------------------------*/
+/-----------------------------------------------------------------------*/
 INT     irow, icol,irn,icn;
 DOUBLE  auxc;
 
@@ -238,7 +238,7 @@ void f2_calmkapeps(
  |   icol - column number in element matrix                             |
  |   irn  - row node: number of node considered for matrix-row          |
  |   icn  - column node: number of node considered for matrix column    |  
-/*----------------------------------------------------------------------*/
+/-----------------------------------------------------------------------*/
 INT     irow, icol,irn,icn;  
 DOUBLE  auxc;
 

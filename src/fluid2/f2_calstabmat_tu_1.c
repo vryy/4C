@@ -10,7 +10,7 @@ Maintainer: Thomas Hettich
 </pre>
 
 ------------------------------------------------------------------------*/
-#ifdef D_FLUID2 
+#ifdef D_FLUID2TU 
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #include "fluid2.h"
@@ -97,7 +97,7 @@ void f2_calstabkkapome(
  |   icol - column number in element matrix                             |
  |   irn  - row node: number of node considered for matrix-row          |
  |   ird  - row dim.: number of spatial dimension at row node           |  
-/*----------------------------------------------------------------------*/
+/-----------------------------------------------------------------------*/
 INT    irow,icol,irn,icn,ird;
 DOUBLE taumu,taumu_dc;
 DOUBLE c,c_dc;
@@ -232,7 +232,7 @@ void f2_calstabmkapome(
  |   icol - column number in element matrix                             |
  |   irn  - row node: number of node considered for matrix-row          |
  |   ird  - row dim.: number of spatial dimension at row node           |   
-/*----------------------------------------------------------------------*/
+/-----------------------------------------------------------------------*/
 INT    irow,icol,irn,icn;
 DOUBLE taumu,taumu_dc;
 DOUBLE c,c_dc;

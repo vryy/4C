@@ -10,7 +10,7 @@ Maintainer: Thomas Hettich
 </pre>
 
 ------------------------------------------------------------------------*/
-#ifdef D_FLUID2 
+#ifdef D_FLUID2TU 
 #include "../headers/standardtypes.h"
 #include "../fluid_full/fluid_prototypes.h"
 #include "fluid2_prototypes.h"
@@ -44,19 +44,19 @@ This routine controls the element evaluation:
                                  
 ------------------------------------------------------------------------*/
 void f2_calele_tu(
-                FLUID_DATA     *data, 
-	          ELEMENT        *eleke,             
-                ELEMENT        *elev,          
-                ARRAY          *estif_global,   
-                ARRAY          *emass_global,   
-	          ARRAY          *etforce_global,       
-	          ARRAY          *eiforce_global, 
-                ARRAY          *edforce_global,		
-                ARRAY          *eproforce_global,		
-                INT            *hasdirich,      
-                INT            *hasext,
-		    INT             init            
-	         )
+                  FLUID_DATA     *data, 
+                  ELEMENT        *eleke,             
+                  ELEMENT        *elev,          
+                  ARRAY          *estif_global,   
+                  ARRAY          *emass_global,   
+                  ARRAY          *etforce_global,       
+                  ARRAY          *eiforce_global, 
+                  ARRAY          *edforce_global,		
+                  ARRAY          *eproforce_global,		
+                  INT            *hasdirich,      
+                  INT            *hasext,
+                  INT             init            
+                )
 {
 INT              hasdead;
 static ARRAY     kapepsn_a;     /* element turbulent ken. energy  at (n)    */

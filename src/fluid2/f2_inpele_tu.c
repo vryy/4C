@@ -10,7 +10,7 @@ Maintainer: Thomas Hettich
 </pre>
 
 ------------------------------------------------------------------------*/
-#ifdef D_FLUID2 
+#ifdef D_FLUID2TU 
 #include "../headers/standardtypes.h" 
 #include "fluid2_prototypes.h"
 #include "fluid2_tu.h"
@@ -45,7 +45,6 @@ void f2tu_dis(
   ele1->e.f2_tu->is_ale=ele0->e.f2->is_ale;
   ele1->numnp=ele0->numnp;
   ele1->distyp=ele0->distyp;
-  ele1->e.f2_tu->ntyp=ele0->e.f2->ntyp;
 
   ele1->lm = (INT*)CCACALLOC(ele1->numnp,sizeof(INT));
   if (ele1->lm==NULL) dserror("Allocation of lm in ELEMENT failed\n");

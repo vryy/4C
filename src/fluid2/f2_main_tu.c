@@ -65,16 +65,18 @@ void fluid2_tu(
             ELEMENT     *elev,            
             ARRAY       *estif_global,   
             ARRAY       *emass_global,   
-	      ARRAY       *etforce_global, 
-	      ARRAY       *eiforce_global, 
+            ARRAY       *etforce_global, 
+            ARRAY       *eiforce_global, 
             ARRAY       *edforce_global, 
             ARRAY       *eproforce_global, 
             CALC_ACTION *action,
-	      INT         *hasdirich,
-	      INT         *hasext,
+            INT         *hasdirich,
+            INT         *hasext,
             CONTAINER   *container
 	   )
 {
+/*----------------------------------------------------------------------*/
+#ifdef D_FLUID2TU 
 /*----------------------------------------------------------------------*/
 
 static INT              numff;      /* actual number of fluid field     */
@@ -171,6 +173,7 @@ break;
 dstrc_exit();
 #endif
 /*----------------------------------------------------------------------*/
+#endif
 return; 
 } /* end of fluid2 */
 

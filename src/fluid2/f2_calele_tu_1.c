@@ -10,7 +10,7 @@ Maintainer: Thomas Hettich
 </pre>
 
 ------------------------------------------------------------------------*/
-#ifdef D_FLUID2 
+#ifdef D_FLUID2TU 
 #include "../headers/standardtypes.h"
 #include "../fluid_full/fluid_prototypes.h"
 #include "fluid2_prototypes.h"

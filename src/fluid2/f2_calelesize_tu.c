@@ -10,7 +10,7 @@ Maintainer: Thomas Hettich
 </pre>
 
 ------------------------------------------------------------------------*/
-#ifdef D_FLUID2 
+#ifdef D_FLUID2TU 
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #include "fluid2.h"
@@ -66,7 +66,6 @@ void f2_calelesize_tu(
                  DOUBLE         **cutp
                  )
 {
-INT     ntyp;           /* element type (TRI or QUAD)  		      */
 INT     actmat;         /* number of actual material		            */
 INT     iel;            /* number of nodes of actual element            */
 INT     icode=2;        /* flag for eveluation of shape functions       */     
@@ -85,15 +84,14 @@ dstrc_enter("f2_calelesize_tu");
 /*---------------------------------------------------------- initialise */
 actmat = ele->mat-1;
 visc   = mat[actmat].m.fluid->viscosity;
-ntyp   = ele->e.f2_tu->ntyp;
 iel    = ele->numnp;
 typ    = ele->distyp;
 
 /*------ get values of integration parameters, shape functions and their
          derivatives ---------------------------------------------------*/
-   switch(ntyp)
+   switch(typ)
    {
-   case 1:    /* --> quad - element */
+   case quad4: case quad8: case quad9:    /* --> quad - element */
       icode= 3;
       ihoel= 1;
       e1   = data->qxg[0][0];
@@ -102,7 +100,7 @@ typ    = ele->distyp;
       facs = data->qwgt[0][0];
       f2_rec(funct,deriv,deriv2,e1,e2,typ,icode);
    break;
-   case 2:       /* --> tri - element */              
+   case tri3: case tri6:       /* --> tri - element */              
      if (iel>3)
      {
       icode   = 3;
@@ -115,8 +113,8 @@ typ    = ele->distyp;
       f2_tri(funct,deriv,deriv2,e1,e2,typ,icode);
    break;
    default:
-      dserror("ntyp unknown!\n");      
-   } /*end switch(ntyp) */
+      dserror("typ unknown!\n");      
+   } /*end switch(typ) */
      
 /*-------------------------------------------- compute Jacobian matrix */
    f2_jaco(xyze,funct,deriv,xjm,&det,iel,ele);
@@ -128,7 +126,7 @@ typ    = ele->distyp;
    f2_eddyi(&eddyint,funct,eddyg,iel);
 
 /*---------------------------------- get velocity at center of element */               
-   f2_veli(velint,funct,evel,iel);    
+   f2_veci(velint,funct,evel,iel);    
 
 /*------------------- calculate stabilisation parameter for DISC. CAPT. */
    f2_kapepsder(kapepsderxy,derxy,kapepsn,iel);
@@ -136,7 +134,7 @@ typ    = ele->distyp;
 
 /*---------------- get streamlenght for elementlenght for DISC. CAPT.  */
    f2_gcoor(xyze,funct,iel,gcoor);
-   f2_calstrlen_tu(velint_dc,ele,gcoor,cutp,ntyp);       
+   f2_calstrlen_tu(velint_dc,ele,gcoor,cutp,typ);       
 
 /*----------------------------------- calculate stabilisation parameter */                
    f2_calstabpar_tu(ele,elev,eddyint,velint,velint_dc,visc); 
@@ -164,7 +162,7 @@ straight.
 \param  *ele 	    ELEMENT  (i)    actual element
 \param  *gcoor        DOUBLE   (i)    global coord. of INT. point
 \param **cutp         DOUBLE   (-)    cutting points
-\param   ntyp	    INT      (i)    flag for element type
+\param   typ	    DIS_TYP     (i)    flag for element type
 \return void                                               
 
 ------------------------------------------------------------------------*/
@@ -173,14 +171,13 @@ void f2_calstrlen_tu(
 		         ELEMENT  *ele,      
                      DOUBLE   *gcoor,    
 		         DOUBLE  **cutp,             
-		         INT       ntyp      
+		         DIS_TYP       typ      
                      )
 {
 INT     nodcut=-1;
 INT     nodmax;
 INT     inod;
 DOUBLE dl,dx,dy,dxh,dyh;
-DOUBLE x1,y1,x2,y2;
 DOUBLE dsub,dval;
 
 #ifdef DEBUG 
@@ -199,17 +196,17 @@ if (dval == ZERO)  /* no flow at this point - take some arbitr. measure for stre
    streamlength is calculated via cutting points of velocity vector
    with straight boundaries                                             
 */
-switch(ntyp)
+switch(typ)
 {
-case 1: /* max number of nodes for quad: 4 --> C-numbering nodmax = 4-1 */
+case quad4: case quad8: case quad9: /* max number of nodes for quad: 4 --> C-numbering nodmax = 4-1 */
    nodmax = 3;
 break;
-case 2:  /* max number of nodes for tri: 3 --> C-numbering nodmax = 3-1 */
+case tri3: case tri6:  /* max number of nodes for tri: 3 --> C-numbering nodmax = 3-1 */
    nodmax = 2;
 break;
 default:
-   dserror("ntyp unknown!\n");   
-} /* end switch(ntyp) */        
+   dserror("typ unknown!\n");   
+} /* end switch(typ) */        
  /*------------------------------------------------- get cutting points */
 for (inod=0;inod<nodmax;inod++)
 {

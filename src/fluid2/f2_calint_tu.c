@@ -10,7 +10,7 @@ Maintainer: Thomas Hettich
 </pre>
 
 ------------------------------------------------------------------------*/
-#ifdef D_FLUID2 
+#ifdef D_FLUID2TU
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
 #include "fluid2_tu.h"
@@ -121,7 +121,6 @@ void f2_calint_tu(
 { 
 INT       i,j;        /* simply a counter                               */
 INT       iel;        /* number of nodes                                */
-INT       ntyp;       /* element type: 1 - quad; 2 - tri                */
 INT       intc;       /* "integration case" for tri for further infos
                           see f2_inpele.c and f2_intg.c                 */
 INT       nir,nis;    /* number of integration nodesin r,s direction    */
@@ -157,22 +156,21 @@ iel=ele->numnp;
 actmat=ele->mat-1;
 dens = mat[actmat].m.fluid->density;
 visc = mat[actmat].m.fluid->viscosity;
-ntyp = ele->e.f2_tu->ntyp; 
 typ  = ele->distyp;
 
 fdyn   = alldyn[genprob.numff].fdyn;
 
 /*------- get integraton data and check if elements are "higher order" */
-switch (ntyp)
+switch (typ)
 {
-case 1:  /* --> quad - element */
+case quad4: case quad8: case quad9:  /* --> quad - element */
    icode   = 3;
    ihoel   = 1;
    /* initialise integration */
    nir = ele->e.f2_tu->nGP[0];
    nis = ele->e.f2_tu->nGP[1];
 break;
-case 2: /* --> tri - element */  
+case tri3: case tri6: /* --> tri - element */  
    if (iel>3)
    {
       icode   = 3;
@@ -184,8 +182,8 @@ case 2: /* --> tri - element */
    intc = ele->e.f2_tu->nGP[1];  
 break;
 default:
-   dserror("ntyp unknown!");
-} /* end switch(ntyp) */
+   dserror("typ unknown!");
+} /* end switch(typ) */
 
 /*----------------------------------------------------------------------*
  |               start loop over integration points                     |
@@ -195,16 +193,16 @@ for (lr=0;lr<nir;lr++)
    for (ls=0;ls<nis;ls++)
    {
 /*--------------- get values of  shape functions and their derivatives */
-      switch(ntyp)  
+      switch(typ)  
       {
-      case 1:   /* --> quad - element */
+      case quad4: case quad8: case quad9:   /* --> quad - element */
 	 e1   = data->qxg[lr][nir-1];
        facr = data->qwgt[lr][nir-1];
 	 e2   = data->qxg[ls][nis-1];
 	 facs = data->qwgt[ls][nis-1];
        f2_rec(funct,deriv,deriv2,e1,e2,typ,icode);
       break;
-      case 2:   /* --> tri - element */              
+      case tri3: case tri6:   /* --> tri - element */              
 	 e1   = data->txgr[lr][intc];
 	 facr = data->twgt[lr][intc];
 	 e2   = data->txgs[lr][intc];
@@ -212,18 +210,18 @@ for (lr=0;lr<nir;lr++)
 	 f2_tri(funct,deriv,deriv2,e1,e2,typ,icode);
       break; 
       default:
-         dserror("ntyp unknown!");
-      } /* end switch(ntyp) */
+         dserror("typ unknown!");
+      } /* end switch(typ) */
 /*-------------------------------------------- compute Jacobian matrix */
       f2_jaco(xyze,funct,deriv,xjm,&det,iel,ele);
       fac = facr*facs*det;
 
 /*------------------------------------------- compute global derivates */
       f2_gder(derxy,deriv,xjm,det,iel);
-      f2_gder2(ele,xyze,xjm,wa1,wa2,derxy,derxy2,deriv2,iel);
+      f2_gder2(xyze,xjm,wa1,wa2,derxy,derxy2,deriv2,iel);
 
 /*--------------------- get element vel. and vel. at integration point */               
-      f2_veli(velint,funct,evel,iel);    
+      f2_veci(velint,funct,evel,iel);    
 
 /*-------------------------------- get eddy-visc. at integration point */               
       f2_eddyi(&eddyint,funct,eddyg,iel);
