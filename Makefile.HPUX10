@@ -143,6 +143,8 @@ OBJS2	      = ${SRC}/global_full/global_control.o \
                 ${SRC}/global_full/cal_nlnstatic_control.o \
                 ${SRC}/global_full/cal_nlndyn_struct.o \
                 ${SRC}/global_full/cal_static_service.o \
+                ${SRC}/global_full/dyn_timecurve.o \
+                ${SRC}/global_full/dyn_service.o \
                 ${SRC}/global_full/map_node_find.o \
                 ${SRC}/global_full/global_mask_matrices.o \
                 ${SRC}/global_full/global_mask_msr.o \
@@ -207,6 +209,7 @@ OBJS6	      = ${SRC}/shell8/s8_main.o \
                 ${SRC}/shell8/s8_funcderiv.o \
                 ${SRC}/shell8/s8_static_ke.o \
                 ${SRC}/shell8/s8_static_keug.o \
+                ${SRC}/shell8/s8_cal_dyn.o \
                 ${SRC}/shell8/s8_stress.o \
                 ${SRC}/shell8/s8_tfte.o \
                 ${SRC}/shell8/s8_tforce.o \
